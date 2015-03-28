@@ -51,32 +51,11 @@ LibraryScanner::LibraryScanner(QWidget* pParentWidget, TrackCollection* collecti
 
     // Move LibraryScanner to its own thread so that our signals/slots will
     // queue to our event loop.
-    moveToThread(this);
-    m_pool.moveToThread(this);
 
     unsigned static id = 0; // the id of this LibraryScanner, for debugging purposes
     setObjectName(QString("LibraryScanner %1").arg(++id));
 
-    m_pool.setMaxThreadCount(kScannerThreadPoolSize);
-
-    // Listen to signals from our public methods (invoked by other threads) and
-    // connect them to our slots to run the command on the scanner thread.
-    connect(this, SIGNAL(startScan()),
-            this, SLOT(slotStartScan()));
-
-    // Force the GUI thread's TrackInfoObject cache to be cleared when a library
-    // scan is finished, because we might have modified the database directly
-    // when we detected moved files, and the TIOs corresponding to the moved
-    // files would then have the wrong track location.
-    connect(this, SIGNAL(scanFinished()),
-            &(collection->getTrackDAO()), SLOT(clearCache()));
-    connect(this, SIGNAL(trackAdded(TrackPointer)),
-            &(collection->getTrackDAO()), SLOT(databaseTrackAdded(TrackPointer)));
-    connect(this, SIGNAL(tracksMoved(QSet<int>, QSet<int>)),
-            &(collection->getTrackDAO()), SLOT(databaseTracksMoved(QSet<int>, QSet<int>)));
-    connect(this, SIGNAL(tracksChanged(QSet<int>)),
-            &(collection->getTrackDAO()), SLOT(databaseTracksChanged(QSet<int>)));
-
+    
     // Parented to pParentWidget so we don't need to delete it.
     LibraryScannerDlg* pProgress = new LibraryScannerDlg(pParentWidget);
     connect(this, SIGNAL(progressLoading(QString)),
@@ -134,6 +113,27 @@ LibraryScanner::~LibraryScanner() {
 
 void LibraryScanner::run() {
     Trace trace("LibraryScanner");
+    moveToThread(this);
+    m_pool.moveToThread(this);
+    m_pool.setMaxThreadCount(kScannerThreadPoolSize);
+
+    // Listen to signals from our public methods (invoked by other threads) and
+    // connect them to our slots to run the command on the scanner thread.
+    connect(this, SIGNAL(startScan()),
+            this, SLOT(slotStartScan()));
+
+    // Force the GUI thread's TrackInfoObject cache to be cleared when a library
+    // scan is finished, because we might have modified the database directly
+    // when we detected moved files, and the TIOs corresponding to the moved
+    // files would then have the wrong track location.
+    connect(this, SIGNAL(scanFinished()),
+            &(m_pCollection->getTrackDAO()), SLOT(clearCache()));
+    connect(this, SIGNAL(trackAdded(TrackPointer)),
+            &(m_pCollection->getTrackDAO()), SLOT(databaseTrackAdded(TrackPointer)));
+    connect(this, SIGNAL(tracksMoved(QSet<int>, QSet<int>)),
+            &(m_pCollection->getTrackDAO()), SLOT(databaseTracksMoved(QSet<int>, QSet<int>)));
+    connect(this, SIGNAL(tracksChanged(QSet<int>)),
+            &(m_pCollection->getTrackDAO()), SLOT(databaseTracksChanged(QSet<int>)));
 
     if (!m_database.isValid()) {
         m_database = QSqlDatabase::cloneDatabase(m_pCollection->getDatabase(), "LIBRARY_SCANNER");
