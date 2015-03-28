@@ -80,14 +80,23 @@ PresetInfo::PresetInfo(const QString preset_path)
             } else if (protocol=="osc") {
                 qDebug("OSC product info parsing not yet implemented");
                 //products.append(parseOSCProduct(product);
-            } else {
+            } else if (protocol=="keyboard") {
+                products.append(parseKbdProduct(product));
+            }
+            else {
                 qDebug("Product specification missing protocol attribute");
             }
             product = product.nextSiblingElement("product");
         }
     }
 }
+QHash<QString,QString> PresetInfo::parseKbdProduct(const QDomElement& element) const {
+    // <product protocol="bulk" vendor_id="0x06f8" product_id="0x0b105" in_epaddr="0x82" out_epaddr="0x03">
 
+    QHash<QString, QString> product;
+    product.insert("protocol", element.attribute("protocol",""));
+    return product;
+}
 QHash<QString,QString> PresetInfo::parseBulkProduct(const QDomElement& element) const {
     // <product protocol="bulk" vendor_id="0x06f8" product_id="0x0b105" in_epaddr="0x82" out_epaddr="0x03">
 
@@ -140,6 +149,7 @@ PresetInfoEnumerator::PresetInfoEnumerator(ConfigObject<ConfigValue>* pConfig) {
 
     // Static list of supported default extensions, sorted by popularity
     fileExtensions.append(QString(MIDI_PRESET_EXTENSION));
+    fileExtensions.append(QString(KBD_PRESET_EXTENSION));
     fileExtensions.append(QString(HID_PRESET_EXTENSION));
     fileExtensions.append(QString(BULK_PRESET_EXTENSION));
 

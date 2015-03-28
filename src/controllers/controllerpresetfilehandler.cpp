@@ -41,7 +41,9 @@ ControllerPresetPointer ControllerPresetFileHandler::loadPreset(const QString& p
     ControllerPresetFileHandler* pHandler = NULL;
     if (scriptPath.endsWith(MIDI_PRESET_EXTENSION, Qt::CaseInsensitive)) {
         pHandler = new MidiControllerPresetFileHandler();
-    } else if (scriptPath.endsWith(HID_PRESET_EXTENSION, Qt::CaseInsensitive) ||
+    } else if (scriptPath.endsWith(KBD_PRESET_EXTENSION, Qt::CaseInsensitive) ||
+              scriptPath.endsWith(HID_PRESET_EXTENSION, Qt::CaseInsensitive) ||
+
                scriptPath.endsWith(BULK_PRESET_EXTENSION, Qt::CaseInsensitive)) {
         pHandler = new HidControllerPresetFileHandler();
     }

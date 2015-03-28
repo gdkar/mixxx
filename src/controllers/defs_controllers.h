@@ -33,6 +33,7 @@ inline QString localPresetsPath(ConfigObject<ConfigValue>* pConfig) {
     return dir.absolutePath().append("/");
 }
 
+#define KBD_PRESET_EXTENSION ".kbd.xml"
 #define HID_PRESET_EXTENSION ".hid.xml"
 #define MIDI_PRESET_EXTENSION ".midi.xml"
 #define BULK_PRESET_EXTENSION ".bulk.xml"

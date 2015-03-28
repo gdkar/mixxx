@@ -25,7 +25,7 @@
 #ifdef __BULK__
 #include "controllers/bulk/bulkenumerator.h"
 #endif
-
+#include "controllers/kbd/kbdenumerator.h"
 // http://developer.qt.nokia.com/wiki/Threads_Events_QObjects
 
 // Poll every 1ms (where possible) for good controller response
@@ -80,7 +80,9 @@ ControllerManager::ControllerManager(ConfigObject<ConfigValue>* pConfig)
     m_pMainThreadPresetEnumerator = new PresetInfoEnumerator(m_pConfig);
 
     // Instantiate all enumerators
+    m_enumerators.append(new KbdEnumerator());
     m_enumerators.append(new PortMidiEnumerator());
+
 #ifdef __HSS1394__
     m_enumerators.append(new Hss1394Enumerator());
 #endif

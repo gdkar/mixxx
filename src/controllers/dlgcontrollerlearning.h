@@ -38,6 +38,7 @@ class DlgControllerLearning : public QDialog,
     DlgControllerLearning(QWidget *parent, Controller *controller);
     virtual ~DlgControllerLearning();
 
+    void visit(KbdController* pController);
     void visit(MidiController* pController);
     void visit(HidController* pController);
     void visit(BulkController* pController);

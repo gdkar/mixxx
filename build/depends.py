@@ -480,7 +480,7 @@ class MixxxCore(Feature):
         return True
 
     def sources(self, build):
-        sources = ["mixxxkeyboard.cpp",
+        sources = [#"mixxxkeyboard.cpp",
 
                    "configobject.cpp",
                    "control/control.cpp",
@@ -636,6 +636,8 @@ class MixxxCore(Feature):
                    "controllers/midi/midicontrollerpresetfilehandler.cpp",
                    "controllers/midi/midienumerator.cpp",
                    "controllers/midi/midioutputhandler.cpp",
+                   "controllers/kbd/kbdcontroller.cpp",
+                   "controllers/kbd/kbdenumerator.cpp",
                    "controllers/qtscript-bytearray/bytearrayclass.cpp",
                    "controllers/qtscript-bytearray/bytearrayprototype.cpp",
                    "controllers/softtakeover.cpp",

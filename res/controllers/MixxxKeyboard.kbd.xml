@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='utf-8'?>
+<MixxxControllerPreset schemaVersion="1" mixxxVersion="1.11+">
+    <info>
+        <name>MixxxKeyboard</name>
+        <author>gabriel d. karpman</author>
+        <description>keyboard bindings for keyboard-as-controller</description>
+    </info>
+    <controller id="MixxxKeyboard">
+      <scriptfiles>
+            <file filename="MixxxKeyboard-scripts.js" functionprefix="MixxxKeyboard"/>
+        </scriptfiles>
+    </controller>
+</MixxxControllerPreset>

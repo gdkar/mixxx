@@ -46,7 +46,8 @@
 #include "library/scanner/libraryscanner.h"
 #include "library/librarytablemodel.h"
 #include "controllers/controllermanager.h"
-#include "mixxxkeyboard.h"
+#include "controllers/kbd/kbdcontroller.h"
+//#include "mixxxkeyboard.h"
 #include "playermanager.h"
 #include "recording/defs_recording.h"
 #include "recording/recordingmanager.h"
@@ -776,7 +777,8 @@ void MixxxMainWindow::initializeKeyboard() {
 
     //Empty keyboard configuration
     m_pKbdConfigEmpty = new ConfigObject<ConfigValueKbd>("");
-
+    m_pKbdConfig      = new ConfigObject<ConfigValueKbd>("");
+    /*
     if (QFile::exists(userKeyboard)) {
         qDebug() << "Found and will use custom keyboard preset" << userKeyboard;
         m_pKbdConfig = new ConfigObject<ConfigValueKbd>(userKeyboard);
@@ -798,14 +800,15 @@ void MixxxMainWindow::initializeKeyboard() {
             }
         }
         m_pKbdConfig = new ConfigObject<ConfigValueKbd>(defaultKeyboard);
-    }
+    }*/
 
     // TODO(XXX) leak pKbdConfig, MixxxKeyboard owns it? Maybe roll all keyboard
     // initialization into MixxxKeyboard
     // Workaround for today: MixxxKeyboard calls delete
     bool keyboardShortcutsEnabled = m_pConfig->getValueString(
         ConfigKey("[Keyboard]", "Enabled")) == "1";
-    m_pKeyboard = new MixxxKeyboard(keyboardShortcutsEnabled ? m_pKbdConfig : m_pKbdConfigEmpty);
+    m_pKeyboard = KbdController::getKeyboard();
+//    m_pKeyboard = new MixxxKeyboard(keyboardShortcutsEnabled ? m_pKbdConfig : m_pKbdConfigEmpty);
 }
 
 void toggleVisibility(ConfigKey key, bool enable) {
@@ -1603,11 +1606,11 @@ void MixxxMainWindow::slotFileQuit()
 void MixxxMainWindow::slotOptionsKeyboard(bool toggle) {
     if (toggle) {
         //qDebug() << "Enable keyboard shortcuts/mappings";
-        m_pKeyboard->setKeyboardConfig(m_pKbdConfig);
+//        m_pKeyboard->setKeyboardConfig(m_pKbdConfig);
         m_pConfig->set(ConfigKey("[Keyboard]","Enabled"), ConfigValue(1));
     } else {
         //qDebug() << "Disable keyboard shortcuts/mappings";
-        m_pKeyboard->setKeyboardConfig(m_pKbdConfigEmpty);
+//        m_pKeyboard->setKeyboardConfig(m_pKbdConfigEmpty);
         m_pConfig->set(ConfigKey("[Keyboard]","Enabled"), ConfigValue(0));
     }
 }

@@ -22,9 +22,9 @@
 #include <QEvent>
 #include <QKeyEvent>
 #include <QMultiHash>
-
+#include "controllers/kbd/kbdcontroller.h"
 #include "configobject.h"
-
+/*
 class ControlObject;
 
 // This class provides handling of keyboard events.
@@ -64,5 +64,5 @@ class MixxxKeyboard : public QObject {
     // Multi-hash of key sequence to
     QMultiHash<QKeySequence, ConfigKey> m_keySequenceToControlHash;
 };
-
+*/
 #endif

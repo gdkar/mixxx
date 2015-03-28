@@ -389,7 +389,10 @@ void DlgControllerLearning::visit(MidiController* pMidiController) {
 
     emit(startLearning());
 }
-
+void DlgControllerLearning::visit(KbdController* pHidController) {
+    qDebug() << "ERROR: DlgControllerLearning does not support Keyboard devices.";
+    Q_UNUSED(pHidController);
+}
 void DlgControllerLearning::visit(HidController* pHidController) {
     qDebug() << "ERROR: DlgControllerLearning does not support HID devices.";
     Q_UNUSED(pHidController);
