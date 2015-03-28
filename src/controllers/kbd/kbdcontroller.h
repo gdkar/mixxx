@@ -31,32 +31,16 @@ class MixxxKeyboard: public QObject {
     void incomingData(QByteArray data);
   protected:
   private:
-    struct KeyRec{
-      static KeyRec *fromKeyEvent(QKeyEvent *e){
-        KeyRec *rec = new KeyRec();
-#ifdef __APPLE__
-        rec->keyId     = e->key();
-#else
-        rec->keyId     = e->nativeScanCode();
-#endif
-        rec->modifiers = e->modifiers();
-        rec->type      = e->type();
-        return rec;
-      }
-      QByteArray data(){
-        QByteArray ret;
-        int keyOut = keyId|modifiers;
-        ret.append((const char*)&keyOut,sizeof(keyId));
-        ret.append((const char*)&type,sizeof(type));
-        return ret;
-      }
-      int keyId;
-      int modifiers;
-      int type;
+    struct KbdKey{
+      static KbdKey fromKeyEvent(QKeyEvent *e);
+      QByteArray toBytes();
+      int   code;
+      int   scan;
+      int   mods;
+      int   type;
     };
-    QKeySequence getKeySeq(QKeyEvent *e);
     ConfigObject<ConfigValueKbd> *m_pKbdConfig;
-    QHash<int, KeyRec> m_qActiveKeyHash;
+    QHash<int, KbdKey> m_qActiveKeyHash;
     QAtomicInt m_stop;
 };
 

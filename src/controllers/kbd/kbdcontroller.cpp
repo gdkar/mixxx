@@ -11,7 +11,26 @@
 #include "controllers/defs_controllers.h"
 #include "util/compatibility.h"
 #include "util/trace.h"
-
+MixxxKeyboard::KbdKey MixxxKeyboard::KbdKey::fromKeyEvent(QKeyEvent *e){
+  KbdKey key;
+  key.code = e->key();
+  key.mods = e->modifiers();
+  key.type = e->type();
+#ifdef __APPLE__
+  key.scan = e->key();
+#else
+  key.scan = e->nativeScanCode();
+#endif
+  return key;
+};
+QByteArray MixxxKeyboard::KbdKey::toBytes(){
+        QByteArray ret;
+        int keyOut = code|mods;
+        ret.append((const char*)&keyOut,sizeof(keyOut));
+        ret.append((const char*)&scan, sizeof(scan));
+        ret.append((const char*)&type,sizeof(type));
+        return ret;
+      }
 MixxxKeyboard::MixxxKeyboard()
           :m_stop(0)
           {
@@ -24,22 +43,21 @@ bool MixxxKeyboard::eventFilter(QObject *obj, QEvent *e){
   Q_UNUSED(obj);
   if(e->type() == QEvent::FocusOut){
     qDebug() << "got focus out; flushing all the keys!";
-    foreach(KeyRec rec,m_qActiveKeyHash){
-      rec.type = QEvent::KeyRelease;
-      emit(incomingData(rec.data()));      
+    foreach(KbdKey key,m_qActiveKeyHash){
+      key.type = QEvent::KeyRelease;
+      emit(incomingData(key.toBytes()));      
     }
     m_qActiveKeyHash.clear();
+    return true;
   }
   else if(e->type() == QEvent::KeyPress || e->type()==QEvent::KeyRelease){
-    QKeyEvent *ke = (QKeyEvent*)e;
-    KeyRec *rec = KeyRec::fromKeyEvent(ke);
-    if(rec->type==QEvent::KeyPress){
-      m_qActiveKeyHash.insert(rec->keyId,*rec);
-    }else if(rec->type == QEvent::KeyRelease){
-      m_qActiveKeyHash.remove(rec->keyId);
+    KbdKey key = KbdKey::fromKeyEvent((QKeyEvent*)e);
+    if(key.type==QEvent::KeyPress){
+      m_qActiveKeyHash.insert(key.scan,key);
+    }else if(key.type == QEvent::KeyRelease){
+      m_qActiveKeyHash.remove(key.scan);
     }
-    emit(incomingData(rec->data()));
-    delete rec;
+    emit(incomingData(key.toBytes()));
     return true;
   }
   return false;
