@@ -22,10 +22,10 @@ WSearchLineEdit::WSearchLineEdit(QWidget* pParent)
     m_place = true;
     showPlaceholder();
 
-    QShortcut *setFocusShortcut = new QShortcut(
-        QKeySequence(tr("Ctrl+F", "Search|Focus")), this);
-    connect(setFocusShortcut, SIGNAL(activated()),
-            this, SLOT(setFocus()));
+//    QShortcut *setFocusShortcut = new QShortcut(
+//        QKeySequence(tr("Ctrl+F", "Search|Focus")), this);
+//    connect(setFocusShortcut, SIGNAL(activated()),
+//            this, SLOT(setFocus()));
     QShortcut *clearTextShortcut = new QShortcut(
         QKeySequence(tr("Esc", "Search|Clear")), this, 0, 0,
         Qt::WidgetShortcut);

@@ -9,6 +9,7 @@
 #define DLGPREFCONTROLLER_H_
 
 #include <QHash>
+#include <QTextEdit>
 #include <QSortFilterProxyModel>
 
 #include "controllers/controllerinputmappingtablemodel.h"
@@ -75,6 +76,7 @@ class DlgPrefController : public DlgPreferencePage {
     void addScript();
     void removeScript();
     void openScript();
+    void saveScript();
 
     void midiInputMappingsLearned(const MidiInputMappings& mappings);
 
@@ -87,6 +89,7 @@ class DlgPrefController : public DlgPreferencePage {
     QString presetWikiLink(const ControllerPresetPointer pPreset) const;
     void savePreset(QString path);
     void initTableView(QTableView* pTable);
+    void initTextEdit(QTextEdit *pEdit);
 
     void enableDevice();
     void disableDevice();
@@ -101,6 +104,7 @@ class DlgPrefController : public DlgPreferencePage {
     QSortFilterProxyModel* m_pInputProxyModel;
     ControllerOutputMappingTableModel* m_pOutputTableModel;
     QSortFilterProxyModel* m_pOutputProxyModel;
+    QFileInfo m_currentOpenScript;
     bool m_bDirty;
 };
 

@@ -38,7 +38,7 @@ DlgPrefController::DlgPrefController(QWidget* parent, Controller* controller,
     initTableView(m_ui.m_pInputMappingTableView);
     initTableView(m_ui.m_pOutputMappingTableView);
     initTableView(m_ui.m_pScriptsTableWidget);
-
+    initTextEdit(m_ui.m_pScriptsTextEditWidget);
     connect(m_pController, SIGNAL(presetLoaded(ControllerPresetPointer)),
             this, SLOT(slotPresetLoaded(ControllerPresetPointer)));
     // TODO(rryan): Eh, this really isn't thread safe but it's the way it's been
@@ -100,6 +100,8 @@ DlgPrefController::DlgPrefController(QWidget* parent, Controller* controller,
             this, SLOT(removeScript()));
     connect(m_ui.btnOpenScript, SIGNAL(clicked()),
             this, SLOT(openScript()));
+    connect(m_ui.btnSaveScript, SIGNAL(clicked()),
+            this, SLOT(saveScript()));
 
     slotUpdate();
 }
@@ -408,6 +410,13 @@ void DlgPrefController::initTableView(QTableView* pTable) {
     pTable->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     pTable->setAlternatingRowColors(true);
 }
+void DlgPrefController::initTextEdit(QTextEdit * pEdit) {
+    pEdit->setReadOnly(false);
+    pEdit->setTabChangesFocus(false);
+    pEdit->setFontPointSize(7);
+    pEdit->setFontFamily("monospace");
+}
+
 
 void DlgPrefController::slotPresetLoaded(ControllerPresetPointer preset) {
     m_ui.labelLoadedPreset->setText(presetName(preset));
@@ -717,13 +726,30 @@ void DlgPrefController::openScript() {
         selectedRows.insert(index.row());
     }
     QList<QString> scriptPaths = ControllerManager::getPresetPaths(m_pConfig);
-
     foreach (int row, selectedRows) {
         QString scriptName = m_ui.m_pScriptsTableWidget->item(row, 0)->text();
-
         QString scriptPath = ControllerManager::getAbsolutePath(scriptName, scriptPaths);
         if (!scriptPath.isEmpty()) {
-            QDesktopServices::openUrl(QUrl::fromLocalFile(scriptPath));
+          QFile file(scriptPath);
+          if(file.open(QFile::ReadOnly|QFile::Text)){
+            m_ui.m_pScriptsTextEditWidget->setPlainText(file.readAll());
+            m_currentOpenScript.setFile(file);
+            break;
+          }
+        //    QDesktopServices::openUrl(QUrl::fromLocalFile(scriptPath));
         }
+    }
+}
+
+void DlgPrefController::saveScript() {
+    QList<QString> scriptPaths = ControllerManager::getPresetPaths(m_pConfig);
+    QString fileName = QFileDialog::getSaveFileName(this,tr("Save Script As..."),
+        m_currentOpenScript.absolutePath(),tr("All Files (*);;Script Files(*.js)"));
+    if(fileName.isEmpty())
+      return;
+    QFile file(fileName);
+    if(file.open(QFile::WriteOnly|QFile::Text)){
+      QDataStream out(&file);
+      out << m_ui.m_pScriptsTextEditWidget->toPlainText();
     }
 }
