@@ -26,7 +26,7 @@ GLSLRGBWaveformWidget::GLSLRGBWaveformWidget(const char* group, QWidget* parent)
 
 GLSLWaveformWidget::GLSLWaveformWidget(const char* group, QWidget* parent,
                                        bool rgbRenderer)
-        : QGLWidget(parent, SharedGLContext::getWidget()),
+        : QOpenGLWidget(parent),
           WaveformWidgetAbstract(group) {
     addRenderer<WaveformRenderBackground>();
     addRenderer<WaveformRendererEndOfTrack>();
@@ -43,14 +43,14 @@ GLSLWaveformWidget::GLSLWaveformWidget(const char* group, QWidget* parent,
     setAttribute(Qt::WA_NoSystemBackground);
     setAttribute(Qt::WA_OpaquePaintEvent);
 
-    setAutoBufferSwap(false);
+//    setAutoBufferSwap(false);
 
-    qDebug() << "Created QGLWidget. Context"
+    qDebug() << "Created QOpenGLWidget. Context"
              << "Valid:" << context()->isValid()
-             << "Sharing:" << context()->isSharing();
+             << "Sharing:" << QOpenGLContext::areSharing(context(),SharedGLContext::getWidget());
 
     // Initialization requires activating our context.
-    if (QGLContext::currentContext() != context()) {
+    if (QOpenGLContext::currentContext() != context()) {
         makeCurrent();
     }
     m_initSuccess = init();
@@ -61,7 +61,7 @@ GLSLWaveformWidget::~GLSLWaveformWidget() {
 }
 
 void GLSLWaveformWidget::castToQWidget() {
-    m_widget = static_cast<QWidget*>(static_cast<QGLWidget*>(this));
+    m_widget = static_cast<QWidget*>(static_cast<QOpenGLWidget*>(this));
 }
 
 void GLSLWaveformWidget::paintEvent(QPaintEvent* event) {
@@ -73,7 +73,7 @@ int GLSLWaveformWidget::render() {
     int t1;
     //int t2, t3;
     timer.start();
-    // QPainter makes QGLContext::currentContext() == context()
+    // QPainter makes QOpenGLContext::currentContext() == context()
     // this may delayed until previous buffer swap finished
     QPainter painter(this);
     t1 = timer.restart();

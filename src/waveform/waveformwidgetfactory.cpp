@@ -3,8 +3,8 @@
 #include <QTimer>
 #include <QWidget>
 #include <QtDebug>
-#include <QGLFormat>
-#include <QGLShaderProgram>
+#include <QSurfaceFormat>
+#include <QOpenGLShaderProgram>
 
 #include "waveform/waveformwidgetfactory.h"
 
@@ -77,14 +77,15 @@ WaveformWidgetFactory::WaveformWidgetFactory() :
     m_visualGain[Mid] = 1.0;
     m_visualGain[High] = 1.0;
 
-    if (QGLFormat::hasOpenGL()) {
-        QGLFormat glFormat;
-        glFormat.setDirectRendering(true);
-        glFormat.setDoubleBuffer(true);
-        glFormat.setDepth(false);
+//    if (QSurfaceFormat::hasOpenGL()) {
+        QSurfaceFormat glFormat;
+//        glFormat.setDirectRendering(true);
+        glFormat.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
+//        glFormat.setDoubleBuffer(true);
+        glFormat.setDepthBufferSize(24);
         // Disable waiting for vertical Sync
-        // This can be enabled when using a single Threads for each QGLContext
-        // Setting 1 causes QGLContext::swapBuffer to sleep until the next VSync
+        // This can be enabled when using a single Threads for each QOpenGLContext
+        // Setting 1 causes QOpenGLContext::swapBuffer to sleep until the next VSync
 #if defined(__APPLE__)
         // On OS X, syncing to vsync has good performance FPS-wise and
         // eliminates tearing.
@@ -98,36 +99,36 @@ WaveformWidgetFactory::WaveformWidgetFactory() :
 #endif
 
 
-        glFormat.setRgba(true);
-        QGLFormat::setDefaultFormat(glFormat);
+//        glFormat.setRgba(true);
+        QSurfaceFormat::setDefaultFormat(glFormat);
 
-        QGLFormat::OpenGLVersionFlags version = QGLFormat::openGLVersionFlags();
-
-        int majorVersion = 0;
-        int minorVersion = 0;
-        if (version == QGLFormat::OpenGL_Version_None) {
+//        QSurfaceFormat::OpenGLVersionFlags version = QOpenGLFormat::openGLVersionFlags();
+        
+        int majorVersion = glFormat.majorVersion();
+        int minorVersion = glFormat.minorVersion();
+/*        if (version == QOpenGLFormat::OpenGL_Version_None) {
             m_openGLVersion = "None";
-        } else if (version & QGLFormat::OpenGL_Version_3_0) {
+        } else if (version & QOpenGLFormat::OpenGL_Version_3_0) {
             majorVersion = 3;
-        } else if (version & QGLFormat::OpenGL_Version_2_1) {
+        } else if (version & QOpenGLFormat::OpenGL_Version_2_1) {
             majorVersion = 2;
             minorVersion = 1;
-        } else if (version & QGLFormat::OpenGL_Version_2_0) {
+        } else if (version & QOpenGLFormat::OpenGL_Version_2_0) {
             majorVersion = 2;
             minorVersion = 0;
-        } else if (version & QGLFormat::OpenGL_Version_1_5) {
+        } else if (version & QOpenGLFormat::OpenGL_Version_1_5) {
             majorVersion = 1;
             minorVersion = 5;
-        } else if (version & QGLFormat::OpenGL_Version_1_4) {
+        } else if (version & QOpenGLFormat::OpenGL_Version_1_4) {
             majorVersion = 1;
             minorVersion = 4;
-        } else if (version & QGLFormat::OpenGL_Version_1_3) {
+        } else if (version & QOpenGLFormat::OpenGL_Version_1_3) {
             majorVersion = 1;
             minorVersion = 3;
-        } else if (version & QGLFormat::OpenGL_Version_1_2) {
+        } else if (version & QOpenGLFormat::OpenGL_Version_1_2) {
             majorVersion = 1;
             minorVersion = 2;
-        } else if (version & QGLFormat::OpenGL_Version_1_1) {
+        } else if (version & QOpenGLFormat::OpenGL_Version_1_1) {
             majorVersion = 1;
             minorVersion = 1;
         }
@@ -135,15 +136,15 @@ WaveformWidgetFactory::WaveformWidgetFactory() :
         if (majorVersion != 0) {
             m_openGLVersion = QString::number(majorVersion) + "." +
                     QString::number(minorVersion);
-        }
-
+        }*/
+//        majorVersion = 
         m_openGLAvailable = true;
 
-        QGLWidget* glWidget = new QGLWidget(); // create paint device
-        // QGLShaderProgram::hasOpenGLShaderPrograms(); valgind error
-        m_openGLShaderAvailable = QGLShaderProgram::hasOpenGLShaderPrograms(glWidget->context());
+        QOpenGLWidget* glWidget = new QOpenGLWidget(); // create paint device
+        // QOpenGLShaderProgram::hasOpenGLShaderPrograms(); valgind error
+        m_openGLShaderAvailable = QOpenGLShaderProgram::hasOpenGLShaderPrograms(glWidget->context());
         delete glWidget;
-    }
+//    }
 
     evaluateWidgets();
     m_time.start();
@@ -279,7 +280,7 @@ void WaveformWidgetFactory::setFrameRate(int frameRate) {
     if (m_config) {
         m_config->set(ConfigKey("[Waveform]","FrameRate"), ConfigValue(m_frameRate));
     }
-    m_vsyncThread->setUsSyncIntervalTime(1e6 / m_frameRate);
+    m_vsyncThread->setNsSyncIntervalTime(1e6 / m_frameRate);
 }
 
 void WaveformWidgetFactory::setEndOfTrackWarningTime(int endTime) {
@@ -493,7 +494,7 @@ void WaveformWidgetFactory::swap() {
             for (int i = 0; i < m_waveformWidgetHolders.size(); i++) {
                 WaveformWidgetAbstract* pWaveformWidget = m_waveformWidgetHolders[i].m_waveformWidget;
                 if (pWaveformWidget->getWidth() > 0) {
-                    QGLWidget* glw = dynamic_cast<QGLWidget*>(pWaveformWidget->getWidget());
+                    QOpenGLWidget* glw = dynamic_cast<QOpenGLWidget*>(pWaveformWidget->getWidget());
                     if (glw) {
                         m_vsyncThread->swapGl(glw, i);
                     }

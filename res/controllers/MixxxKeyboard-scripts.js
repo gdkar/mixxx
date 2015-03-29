@@ -25,6 +25,18 @@ var KeyboardConfig = (function(){return {"67108874": {"control": "ViewMenu_ShowS
  "group": "[Channel1]"},
  "26": {"control": "loop_double",
  "group": "[Channel1]"},
+  "112":{control:"SelectPrevPlaylist",group:"[Playlist]"},
+  "117":{control:"SelectNextPlaylist",group:"[Playlist]"},
+  "116":{control:"SelectNextTrack",group:"[Playlist]"},
+  "111":{control:"SelectPrevTrack",group:"[Playlist]"},
+  "34" :{control:"headGain_down",group:"[Master]"},
+  "35" :{control:"headGain_up",group:"[Master]"},
+  "67108898" :{control:"headMix_down",group:"[Master]"},
+  "67108899" :{control:"headMix_up",group:"[Master]"},
+
+  "33554466" :{control:"gain_down",group:"[Master]"},
+  "33554467" :{control:"gain_up",group:"[Master]"},
+
  "67108891": {"control": "OptionsMenu_Preferences",
  "group": "[KeyboardShortcuts]"},
  "67108892": {"control": "OptionsMenu_EnableVinyl1",
@@ -53,8 +65,13 @@ var KeyboardConfig = (function(){return {"67108874": {"control": "ViewMenu_ShowS
  "group": "[Master]"},
  '28':{'control':'volume_down','group':'[Channel1]'},
  '14':{'control':'volume_up','group':'[Channel1]'},
+ '33554460':{'control':'volume_down_small','group':'[Channel1]'},
+ '33554446':{'control':'volume_up_small','group':'[Channel1]'},
  '29':{'control':'volume_down','group':'[Channel2]'},
- '15':{'control':'volume_up','group':'[Channel1]'},
+ '15':{'control':'volume_up','group':'[Channel2]'},
+ '33554447':{'control':'volume_up_small','group':'[Channel2]'},
+ '33554461':{'control':'volume_down_small','group':'[Channel2]'},
+
  "44": {"control": "back",
  "group": "[Channel2]"},
  "67108909": {"control": "passthrough",
@@ -445,6 +462,7 @@ var modmap = {"plusminus": 126,
  "bracketleft": 34,
  "KP_5": 84};
   var MixxxDebug = this.MixxxDebug   = function MixxxDebug(msg){print("[MixxxKeyboard] "+msg);}
+  var MixxxDebugPrint = true;
   var MixxxKeyEvent = this.MixxxKeyEvent = function MixxxKeyEvent(data){
       this.code      = data[0] + (data[1]<<8) + (data[2]<<16);
       this.mods      = (0x7e&data[3]) <<24;
@@ -482,13 +500,17 @@ var modmap = {"plusminus": 126,
   };
   var incomingData = this.incomingData = function IncomingData(data,len){
     var evt = new MixxxKeyEvent(data);
-    MixxxDebug( (evt.scan|evt.mods).toString()+"\t"+evt.modString()+"\t"+evt.keyCode()+"\t["+evt.typeString()+"]");
+    if(MixxxDebugPrint)
+      MixxxDebug( (evt.scan|evt.mods).toString()+"\t"+evt.modString()+"\t"+evt.keyCode()+"\t["+evt.typeString()+"]");
     var out;
     if(out = KeyboardConfig[(evt.scan|evt.mods).toString()]){
 //      MixxxDebug(out['control']+' '+out['group']);
 //      if(out['control']=='play' && evt.typeString()=='KeyRelease')
 //        return;
       engine.setValue(out['group'],out['control'],evt.typeString()=='KeyPress'?1:0);
+    }
+    if((evt.scan|evt.mods)==100663336 && evt.typeString()=='KeyPress'){
+      MixxxDebugPrint = !MixxxDebugPrint;
     }
   }
 }

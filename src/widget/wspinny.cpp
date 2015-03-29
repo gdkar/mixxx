@@ -3,7 +3,8 @@
 #include <QUrl>
 #include <QMimeData>
 #include <QStylePainter>
-
+#include <QOpenGLContext>
+#include <QOpenGLWidget>
 #include "controlobject.h"
 #include "controlobjectthread.h"
 #include "library/coverartcache.h"
@@ -20,7 +21,7 @@
 WSpinny::WSpinny(QWidget* parent, const QString& group,
                  ConfigObject<ConfigValue>* pConfig,
                  VinylControlManager* pVCMan)
-        : QGLWidget(QGLFormat(QGL::SampleBuffers), parent, SharedGLContext::getWidget()),
+        : QOpenGLWidget( parent),
           WBaseWidget(this),
           m_group(group),
           m_pConfig(pConfig),
@@ -65,9 +66,9 @@ WSpinny::WSpinny(QWidget* parent, const QString& group,
 #endif
     //Drag and drop
     setAcceptDrops(true);
-    qDebug() << "WSpinny(): Created QGLWidget, Context"
-             << "Valid:" << context()->isValid()
-             << "Sharing:" << context()->isSharing();
+    qDebug() << "WSpinny(): Created QOpenGLWidget, Context"
+             << "Valid:" << context()->isValid();
+//             << "Sharing:" << context()->isSharing();
 
     CoverArtCache* pCache = CoverArtCache::instance();
     if (pCache != NULL) {
@@ -634,7 +635,7 @@ bool WSpinny::event(QEvent* pEvent) {
     if (pEvent->type() == QEvent::ToolTip) {
         updateTooltip();
     }
-    return QGLWidget::event(pEvent);
+    return QOpenGLWidget::event(pEvent);
 }
 
 void WSpinny::dragEnterEvent(QDragEnterEvent* event) {

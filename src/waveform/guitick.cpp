@@ -24,7 +24,7 @@ GuiTick::~GuiTick() {
 // with the configured waveform frame rate
 void GuiTick::process() {
     qint64 elapsedNs = m_cpuTimer.restart();
-    double elapsedS = elapsedNs / 1000000000.0;
+    double elapsedS = elapsedNs * 1e-9;
     m_cpuTimeLastTick += elapsedS;
     m_pCOGuiTickTime->set(m_cpuTimeLastTick);
 

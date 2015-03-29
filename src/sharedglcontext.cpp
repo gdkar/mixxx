@@ -1,23 +1,23 @@
 #include <QtDebug>
-#include <QGLContext>
+#include <QOpenGLContext>
 #include <QGLFormat>
-#include <QGLWidget>
+#include <QOpenGLContext>
 
 #include "sharedglcontext.h"
 
-const QGLWidget* SharedGLContext::s_pSharedGLWidget = NULL;
+QOpenGLContext * SharedGLContext::s_pSharedGLContext= NULL;
 
 // static
-void SharedGLContext::setWidget(const QGLWidget* pWidget) {
-    s_pSharedGLWidget = pWidget;
+void SharedGLContext::setWidget(QOpenGLContext * pWidget) {
+    s_pSharedGLContext = pWidget;
     qDebug() << "Set root GL Context widget valid:"
              << pWidget << (pWidget && pWidget->isValid());
-    const QGLContext* pContext = pWidget->context();
+    QOpenGLContext* pContext = pWidget;
     qDebug() << "Created root GL Context valid:" << pContext
              << (pContext && pContext->isValid());
-    if (pWidget) {
-        QGLFormat format = pWidget->format();
-        qDebug() << "Root GL Context format:";
+//    if (pWidget) {
+//        QGLSurfaceFormat format = pWidget->format();
+/*        qDebug() << "Root GL Context format:";
         qDebug() << "Double Buffering:" << format.doubleBuffer();
         qDebug() << "Swap interval:" << format.swapInterval();
         qDebug() << "Depth buffer:" << format.depth();
@@ -27,11 +27,11 @@ void SharedGLContext::setWidget(const QGLWidget* pWidget) {
         qDebug() << "Sample buffers:" << format.sampleBuffers();
         qDebug() << "Samples:" << format.samples();
         qDebug() << "Stencil buffers:" << format.stencil();
-        qDebug() << "Stereo:" << format.stereo();
-    }
+        qDebug() << "Stereo:" << format.stereo();*/
+//    }
 }
 
 // static
-const QGLWidget* SharedGLContext::getWidget() {
-    return s_pSharedGLWidget;
+QOpenGLContext * SharedGLContext::getWidget() {
+    return s_pSharedGLContext;
 }

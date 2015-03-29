@@ -77,7 +77,7 @@
 #include "util/math.h"
 #include "util/experiment.h"
 #include "util/font.h"
-
+#include <QOpenGLContext>
 #ifdef __VINYLCONTROL__
 #include "vinylcontrol/defs_vinylcontrol.h"
 #include "vinylcontrol/vinylcontrolmanager.h"
@@ -331,11 +331,11 @@ MixxxMainWindow::MixxxMainWindow(QApplication* pApp, const CmdlineArgs& args)
     qDebug() << "Creating ControllerManager";
     m_pControllerManager = new ControllerManager(m_pConfig);
 
-    // Before creating the first skin we need to create a QGLWidget so that all
-    // the QGLWidget's we create can use it as a shared QGLContext.
-    QGLWidget* pContextWidget = new QGLWidget(this);
-    pContextWidget->hide();
-    SharedGLContext::setWidget(pContextWidget);
+    // Before creating the first skin we need to create a QOpenGLWidget so that all
+    // the QOpenGLWidget's we create can use it as a shared QGLContext.
+    QOpenGLContext * pContext= new QOpenGLContext (this);
+//    pContext->hide();
+    SharedGLContext::setWidget(pContext);
 
     WaveformWidgetFactory::create();
     WaveformWidgetFactory::instance()->startVSync(this);

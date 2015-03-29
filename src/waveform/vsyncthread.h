@@ -31,7 +31,7 @@
     #undef Unsorted
 #endif
 
-class QGLWidget;
+class QOpenGLWidget;
 class GuiTick;
 class MixxxMainWindow;
 
@@ -47,7 +47,7 @@ class VSyncThread : public QThread {
         ST_COUNT // Dummy Type at last, counting possible types
     };
 
-    static void swapGl(QGLWidget* glw, int index);
+    static void swapGl(QOpenGLWidget* glw, int index);
 
     VSyncThread(MixxxMainWindow* mixxMainWindow);
     ~VSyncThread();
@@ -55,18 +55,18 @@ class VSyncThread : public QThread {
     void run();
     void stop();
 
-    bool waitForVideoSync(QGLWidget* glw);
+    bool waitForVideoSync(QOpenGLWidget* glw);
     int elapsed();
-    int usToNextSync();
-    void setUsSyncIntervalTime(int usSyncTimer);
+    int nsToNextSync();
+    void setNsSyncIntervalTime(int nsSyncTimer);
     void setVSyncType(int mode);
     int droppedFrames();
     void setSwapWait(int sw);
-    int usFromTimerToNextSync(PerformanceTimer* timer);
+    int nsFromTimerToNextSync(PerformanceTimer* timer);
     void vsyncSlotFinished();
     void getAvailableVSyncTypes(QList<QPair<int, QString > >* list);
-    void setupSync(QGLWidget* glw, int index);
-    void waitUntilSwap(QGLWidget* glw);
+    void setupSync(QOpenGLWidget* glw, int index);
+    void waitUntilSwap(QOpenGLWidget* glw);
 
   signals:
     void vsyncRender();
@@ -74,14 +74,14 @@ class VSyncThread : public QThread {
 
   private:
     bool m_bDoRendering;
-    QGLWidget *m_glw;
+    QOpenGLWidget *m_glw;
 
 #if defined(__APPLE__)
 
 #elif defined(__WINDOWS__)
 
 #else
-    void initGlxext(QGLWidget* glw);
+    void initGlxext(QOpenGLWidget* glw);
     bool glXExtensionSupported(Display *dpy, int screen, const char *extension);
 
     PFNGLXGETVIDEOSYNCSGIPROC glXGetVideoSyncSGI;
@@ -108,16 +108,17 @@ class VSyncThread : public QThread {
 #endif
 
     bool m_vSyncTypeChanged;
-    int m_usSyncIntervalTime;
-    int m_usWaitToSwap;
+    int64_t m_nsSyncIntervalTime;
+    int64_t m_nominalFrames;
+    int64_t m_nsWaitToSwap;
     enum VSyncMode m_vSyncMode;
     bool m_syncOk;
-    int m_droppedFrames;
-    int m_swapWait;
+    int64_t m_droppedFrames;
+    int64_t m_swapWait;
     PerformanceTimer m_timer;
     QSemaphore m_semaVsyncSlot;
     double m_displayFrameRate;
-    int m_vSyncPerRendering;
+    int64_t m_vSyncPerRendering;
 
 
     GuiTick* m_pGuiTick;

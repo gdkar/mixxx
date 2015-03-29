@@ -12,11 +12,12 @@
 #include "waveform/renderers/waveformrendermarkrange.h"
 #include "waveform/renderers/waveformrendererendoftrack.h"
 #include "waveform/renderers/waveformrenderbeat.h"
-
+#include <QOpenGLContext>
+#include <QOpenGLWidget>>
 #include "util/performancetimer.h"
 
 GLSimpleWaveformWidget::GLSimpleWaveformWidget(const char* group, QWidget* parent)
-        : QGLWidget(parent, SharedGLContext::getWidget()),
+        : QOpenGLWidget(parent) ,
           WaveformWidgetAbstract(group) {
     addRenderer<WaveformRenderBackground>();
     addRenderer<WaveformRendererEndOfTrack>();
@@ -29,25 +30,25 @@ GLSimpleWaveformWidget::GLSimpleWaveformWidget(const char* group, QWidget* paren
     setAttribute(Qt::WA_NoSystemBackground);
     setAttribute(Qt::WA_OpaquePaintEvent);
 
-    setAutoBufferSwap(false);
+//    setAutoBufferSwap(false);
 
-    qDebug() << "Created QGLWidget. Context"
+    qDebug() << "Created QOpenGLWidget. Context"
              << "Valid:" << context()->isValid()
-             << "Sharing:" << context()->isSharing();
-    if (QGLContext::currentContext() != context()) {
+             << "Sharing:" << QOpenGLContext::areSharing(context(), SharedGLContext::getWidget());
+    if (QOpenGLContext::currentContext() != context()) {
         makeCurrent();
     }
     m_initSuccess = init();
 }
 
 GLSimpleWaveformWidget::~GLSimpleWaveformWidget() {
-    if (QGLContext::currentContext() != context()) {
+    if (QOpenGLContext::currentContext() != context()) {
         makeCurrent();
     }
 }
 
 void GLSimpleWaveformWidget::castToQWidget() {
-    m_widget = static_cast<QWidget*>(static_cast<QGLWidget*>(this));
+    m_widget = static_cast<QWidget*>(static_cast<QOpenGLWidget*>(this));
 }
 
 void GLSimpleWaveformWidget::paintEvent(QPaintEvent* event) {
@@ -59,7 +60,7 @@ int GLSimpleWaveformWidget::render() {
     int t1;
     //int t2, t3;
     timer.start();
-    // QPainter makes QGLContext::currentContext() == context()
+    // QPainter makes QOpenGLContext::currentContext() == context()
     // this may delayed until previous buffer swap finished
     QPainter painter(this);
     t1 = timer.restart();
