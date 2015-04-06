@@ -282,7 +282,6 @@ extern FidFilter *mkfilter(char *, ...);
  #define asinh(xx) my_asinh(xx)
 #endif
 
-
 //
 //	Support code
 //
@@ -311,7 +310,7 @@ strdupf(char *fmt, ...) {
    int len;
    va_start(ap, fmt);
    len= vsnprintf(buf, sizeof(buf), fmt, ap);
-   if (len < 0 || len >= sizeof(buf)-1) 
+   if (len < 0 || len >= (int)sizeof(buf)-1) 
       error("strdupf exceeded buffer");
    rv= strdup(buf);
    if (!rv) error("Out of memory");
@@ -695,7 +694,7 @@ stack_filter(int order, int n_head, int n_val, ...) {
 
    // Check length
    len= ((char*)p)-((char*)q);
-   if (len != FFCSIZE(n_head-1, n_val))
+   if ((size_t)len != (FFCSIZE(n_head-1, n_val)))
       error("Internal error; bad call to stack_filter(); length mismatch (%d,%d)",
 	    len, FFCSIZE(n_head-1, n_val));
    
@@ -823,26 +822,52 @@ do_bandstop(int mz, double f0, double f1) {
 //	Filter design routines and supporting code
 //
 
+#define UNUSED(x) ((void)(x))
+
 static FidFilter*
 des_bpre(double rate, double f0, double f1, int order, int n_arg, double *arg) {
+    UNUSED(rate);
+    UNUSED(f0);
+    UNUSED(f1);
+    UNUSED(order);
+    UNUSED(n_arg);
+    UNUSED(arg);
    bandpass_res(f0, arg[0]);
    return z2fidfilter(1.0, ~0);	// FIR constant
 }
 
 static FidFilter*
 des_bsre(double rate, double f0, double f1, int order, int n_arg, double *arg) {
-   bandstop_res(f0, arg[0]);
+    UNUSED(rate);
+    UNUSED(f0);
+    UNUSED(f1);
+    UNUSED(order);
+    UNUSED(n_arg);
+    UNUSED(arg);   
+    bandstop_res(f0, arg[0]);
    return z2fidfilter(1.0, 0);	// FIR not constant, depends on freq
 }
 
 static FidFilter*
 des_apre(double rate, double f0, double f1, int order, int n_arg, double *arg) {
-   allpass_res(f0, arg[0]);
+    UNUSED(rate);
+    UNUSED(f0);
+    UNUSED(f1);
+    UNUSED(order);
+    UNUSED(n_arg);
+    UNUSED(arg);   
+    allpass_res(f0, arg[0]);
    return z2fidfilter(1.0, 0);	// FIR not constant, depends on freq
 }
 
 static FidFilter*
 des_pi(double rate, double f0, double f1, int order, int n_arg, double *arg) {
+    UNUSED(rate);
+    UNUSED(f0);
+    UNUSED(f1);
+    UNUSED(order);
+    UNUSED(n_arg);
+    UNUSED(arg);   
    prop_integral(prewarp(f0));
    s2z_bilinear();
    return z2fidfilter(1.0, 0);	// FIR not constant, depends on freq
@@ -850,6 +875,12 @@ des_pi(double rate, double f0, double f1, int order, int n_arg, double *arg) {
 
 static FidFilter*
 des_piz(double rate, double f0, double f1, int order, int n_arg, double *arg) {
+    UNUSED(rate);
+    UNUSED(f0);
+    UNUSED(f1);
+    UNUSED(order);
+    UNUSED(n_arg);
+    UNUSED(arg);   
    prop_integral(prewarp(f0));
    s2z_matchedZ();
    return z2fidfilter(1.0, 0);	// FIR not constant, depends on freq
@@ -857,54 +888,108 @@ des_piz(double rate, double f0, double f1, int order, int n_arg, double *arg) {
 
 static FidFilter*
 des_lpbe(double rate, double f0, double f1, int order, int n_arg, double *arg) {
+  UNUSED(rate);
+    UNUSED(f0);
+    UNUSED(f1);
+    UNUSED(order);
+    UNUSED(n_arg);
+    UNUSED(arg);   
    bessel(order);
    return do_lowpass(BL, f0);
 }
 
 static FidFilter*
 des_hpbe(double rate, double f0, double f1, int order, int n_arg, double *arg) {
+    UNUSED(rate);
+    UNUSED(f0);
+    UNUSED(f1);
+    UNUSED(order);
+    UNUSED(n_arg);
+    UNUSED(arg);   
    bessel(order);
    return do_highpass(BL, f0);
 }
 
 static FidFilter*
 des_bpbe(double rate, double f0, double f1, int order, int n_arg, double *arg) {
+    UNUSED(rate);
+    UNUSED(f0);
+    UNUSED(f1);
+    UNUSED(order);
+    UNUSED(n_arg);
+    UNUSED(arg);   
    bessel(order);
    return do_bandpass(BL, f0, f1);
 }
 
 static FidFilter*
 des_bsbe(double rate, double f0, double f1, int order, int n_arg, double *arg) {
+    UNUSED(rate);
+    UNUSED(f0);
+    UNUSED(f1);
+    UNUSED(order);
+    UNUSED(n_arg);
+    UNUSED(arg);   
    bessel(order);
    return do_bandstop(BL, f0, f1);
 }
 
 static FidFilter*
 des_lpbez(double rate, double f0, double f1, int order, int n_arg, double *arg) {
+    UNUSED(rate);
+    UNUSED(f0);
+    UNUSED(f1);
+    UNUSED(order);
+    UNUSED(n_arg);
+    UNUSED(arg);   
    bessel(order);
    return do_lowpass(MZ, f0);
 }
 
 static FidFilter*
 des_hpbez(double rate, double f0, double f1, int order, int n_arg, double *arg) {
+    UNUSED(rate);
+    UNUSED(f0);
+    UNUSED(f1);
+    UNUSED(order);
+    UNUSED(n_arg);
+    UNUSED(arg);   
    bessel(order);
    return do_highpass(MZ, f0);
 }
 
 static FidFilter*
 des_bpbez(double rate, double f0, double f1, int order, int n_arg, double *arg) {
+    UNUSED(rate);
+    UNUSED(f0);
+    UNUSED(f1);
+    UNUSED(order);
+    UNUSED(n_arg);
+    UNUSED(arg);   
    bessel(order);
    return do_bandpass(MZ, f0, f1);
 }
 
 static FidFilter*
 des_bsbez(double rate, double f0, double f1, int order, int n_arg, double *arg) {
+    UNUSED(rate);
+    UNUSED(f0);
+    UNUSED(f1);
+    UNUSED(order);
+    UNUSED(n_arg);
+    UNUSED(arg);   
    bessel(order);
    return do_bandstop(MZ, f0, f1);
 }
 
 static FidFilter*	// Butterworth-Bessel cross
 des_lpbube(double rate, double f0, double f1, int order, int n_arg, double *arg) {
+    UNUSED(rate);
+    UNUSED(f0);
+    UNUSED(f1);
+    UNUSED(order);
+    UNUSED(n_arg);
+    UNUSED(arg);   
    double tmp[MAXPZ];
    int a;
    bessel(order); memcpy(tmp, pol, order * sizeof(double));
@@ -916,102 +1001,204 @@ des_lpbube(double rate, double f0, double f1, int order, int n_arg, double *arg)
 
 static FidFilter*
 des_lpbu(double rate, double f0, double f1, int order, int n_arg, double *arg) {
+    UNUSED(rate);
+    UNUSED(f0);
+    UNUSED(f1);
+    UNUSED(order);
+    UNUSED(n_arg);
+    UNUSED(arg);   
    butterworth(order);
    return do_lowpass(BL, f0);
 }
 
 static FidFilter*
 des_hpbu(double rate, double f0, double f1, int order, int n_arg, double *arg) {
+    UNUSED(rate);
+    UNUSED(f0);
+    UNUSED(f1);
+    UNUSED(order);
+    UNUSED(n_arg);
+    UNUSED(arg);   
    butterworth(order);
    return do_highpass(BL, f0);
 }
 
 static FidFilter*
 des_bpbu(double rate, double f0, double f1, int order, int n_arg, double *arg) {
+    UNUSED(rate);
+    UNUSED(f0);
+    UNUSED(f1);
+    UNUSED(order);
+    UNUSED(n_arg);
+    UNUSED(arg);   
    butterworth(order);
    return do_bandpass(BL, f0, f1);
 }
 
 static FidFilter*
 des_bsbu(double rate, double f0, double f1, int order, int n_arg, double *arg) {
+    UNUSED(rate);
+    UNUSED(f0);
+    UNUSED(f1);
+    UNUSED(order);
+    UNUSED(n_arg);
+    UNUSED(arg);   
    butterworth(order);
    return do_bandstop(BL, f0, f1);
 }
 
 static FidFilter*
 des_lpbuz(double rate, double f0, double f1, int order, int n_arg, double *arg) {
+    UNUSED(rate);
+    UNUSED(f0);
+    UNUSED(f1);
+    UNUSED(order);
+    UNUSED(n_arg);
+    UNUSED(arg);   
+
    butterworth(order);
    return do_lowpass(MZ, f0);
 }
 
 static FidFilter*
 des_hpbuz(double rate, double f0, double f1, int order, int n_arg, double *arg) {
+ UNUSED(rate);
+    UNUSED(f0);
+    UNUSED(f1);
+    UNUSED(order);
+    UNUSED(n_arg);
+    UNUSED(arg);   
    butterworth(order);
    return do_highpass(MZ, f0);
 }
 
 static FidFilter*
 des_bpbuz(double rate, double f0, double f1, int order, int n_arg, double *arg) {
+ UNUSED(rate);
+    UNUSED(f0);
+    UNUSED(f1);
+    UNUSED(order);
+    UNUSED(n_arg);
+    UNUSED(arg);   
    butterworth(order);
    return do_bandpass(MZ, f0, f1);
 }
 
 static FidFilter*
 des_bsbuz(double rate, double f0, double f1, int order, int n_arg, double *arg) {
+ UNUSED(rate);
+    UNUSED(f0);
+    UNUSED(f1);
+    UNUSED(order);
+    UNUSED(n_arg);
+    UNUSED(arg);   
    butterworth(order);
    return do_bandstop(MZ, f0, f1);
 }
 
 static FidFilter*
 des_lpch(double rate, double f0, double f1, int order, int n_arg, double *arg) {
-   chebyshev(order, arg[0]);
+ UNUSED(rate);
+    UNUSED(f0);
+    UNUSED(f1);
+    UNUSED(order);
+    UNUSED(n_arg);
+    UNUSED(arg);      chebyshev(order, arg[0]);
    return do_lowpass(BL, f0);
 }
 
 static FidFilter*
 des_hpch(double rate, double f0, double f1, int order, int n_arg, double *arg) {
-   chebyshev(order, arg[0]);
+ UNUSED(rate);
+    UNUSED(f0);
+    UNUSED(f1);
+    UNUSED(order);
+    UNUSED(n_arg);
+    UNUSED(arg);   
+    chebyshev(order, arg[0]);
    return do_highpass(BL, f0);
 }
 
 static FidFilter*
 des_bpch(double rate, double f0, double f1, int order, int n_arg, double *arg) {
-   chebyshev(order, arg[0]);
+    UNUSED(rate);
+    UNUSED(f0);
+    UNUSED(f1);
+    UNUSED(order);
+    UNUSED(n_arg);
+    UNUSED(arg);     
+    chebyshev(order, arg[0]);
    return do_bandpass(BL, f0, f1);
 }
 
 static FidFilter*
 des_bsch(double rate, double f0, double f1, int order, int n_arg, double *arg) {
+    UNUSED(rate);
+    UNUSED(f0);
+    UNUSED(f1);
+    UNUSED(order);
+    UNUSED(n_arg);
+    UNUSED(arg);     
    chebyshev(order, arg[0]);
    return do_bandstop(BL, f0, f1);
 }
 
 static FidFilter*
 des_lpchz(double rate, double f0, double f1, int order, int n_arg, double *arg) {
-   chebyshev(order, arg[0]);
+    UNUSED(rate);
+    UNUSED(f0);
+    UNUSED(f1);
+    UNUSED(order);
+    UNUSED(n_arg);
+    UNUSED(arg);     
+    chebyshev(order, arg[0]);
    return do_lowpass(MZ, f0);
 }
 
 static FidFilter*
 des_hpchz(double rate, double f0, double f1, int order, int n_arg, double *arg) {
-   chebyshev(order, arg[0]);
+    UNUSED(rate);
+    UNUSED(f0);
+    UNUSED(f1);
+    UNUSED(order);
+    UNUSED(n_arg);
+    UNUSED(arg);     
+    chebyshev(order, arg[0]);
    return do_highpass(MZ, f0);
 }
 
 static FidFilter*
 des_bpchz(double rate, double f0, double f1, int order, int n_arg, double *arg) {
-   chebyshev(order, arg[0]);
+    UNUSED(rate);
+    UNUSED(f0);
+    UNUSED(f1);
+    UNUSED(order);
+    UNUSED(n_arg);
+    UNUSED(arg);     
+    chebyshev(order, arg[0]);
    return do_bandpass(MZ, f0, f1);
 }
 
 static FidFilter*
 des_bschz(double rate, double f0, double f1, int order, int n_arg, double *arg) {
-   chebyshev(order, arg[0]);
+    UNUSED(rate);
+    UNUSED(f0);
+    UNUSED(f1);
+    UNUSED(order);
+    UNUSED(n_arg);
+    UNUSED(arg);     
+    chebyshev(order, arg[0]);
    return do_bandstop(MZ, f0, f1);
 }
 
 static FidFilter*
 des_lpbq(double rate, double f0, double f1, int order, int n_arg, double *arg) {
+    UNUSED(rate);
+    UNUSED(f0);
+    UNUSED(f1);
+    UNUSED(order);
+    UNUSED(n_arg);
+    UNUSED(arg);     
    double omega= 2 * M_PI * f0;
    double cosv= cos(omega);
    double alpha= sin(omega) / 2 / arg[0];
@@ -1023,6 +1210,13 @@ des_lpbq(double rate, double f0, double f1, int order, int n_arg, double *arg) {
 
 static FidFilter*
 des_hpbq(double rate, double f0, double f1, int order, int n_arg, double *arg) {
+    UNUSED(rate);
+    UNUSED(f0);
+    UNUSED(f1);
+    UNUSED(order);
+    UNUSED(n_arg);
+    UNUSED(arg);     
+ 
    double omega= 2 * M_PI * f0;
    double cosv= cos(omega);
    double alpha= sin(omega) / 2 / arg[0];
@@ -1034,6 +1228,13 @@ des_hpbq(double rate, double f0, double f1, int order, int n_arg, double *arg) {
 
 static FidFilter*
 des_bpbq(double rate, double f0, double f1, int order, int n_arg, double *arg) {
+    UNUSED(rate);
+    UNUSED(f0);
+    UNUSED(f1);
+    UNUSED(order);
+    UNUSED(n_arg);
+    UNUSED(arg);     
+
    double omega= 2 * M_PI * f0;
    double cosv= cos(omega);
    double alpha= sin(omega) / 2 / arg[0];
@@ -1045,6 +1246,13 @@ des_bpbq(double rate, double f0, double f1, int order, int n_arg, double *arg) {
 
 static FidFilter*
 des_bsbq(double rate, double f0, double f1, int order, int n_arg, double *arg) {
+    UNUSED(rate);
+    UNUSED(f0);
+    UNUSED(f1);
+    UNUSED(order);
+    UNUSED(n_arg);
+    UNUSED(arg);     
+
    double omega= 2 * M_PI * f0;
    double cosv= cos(omega);
    double alpha= sin(omega) / 2 / arg[0];
@@ -1055,6 +1263,14 @@ des_bsbq(double rate, double f0, double f1, int order, int n_arg, double *arg) {
 
 static FidFilter*
 des_apbq(double rate, double f0, double f1, int order, int n_arg, double *arg) {
+    UNUSED(rate);
+    UNUSED(f0);
+    UNUSED(f1);
+    UNUSED(order);
+    UNUSED(n_arg);
+    UNUSED(arg);     
+
+
    double omega= 2 * M_PI * f0;
    double cosv= cos(omega);
    double alpha= sin(omega) / 2 / arg[0];
@@ -1065,6 +1281,13 @@ des_apbq(double rate, double f0, double f1, int order, int n_arg, double *arg) {
 
 static FidFilter*
 des_pkbq(double rate, double f0, double f1, int order, int n_arg, double *arg) {
+    UNUSED(rate);
+    UNUSED(f0);
+    UNUSED(f1);
+    UNUSED(order);
+    UNUSED(n_arg);
+    UNUSED(arg);     
+
    double omega= 2 * M_PI * f0;
    double cosv= cos(omega);
    double alpha= sin(omega) / 2 / arg[0];
@@ -1076,6 +1299,13 @@ des_pkbq(double rate, double f0, double f1, int order, int n_arg, double *arg) {
 
 static FidFilter*
 des_lsbq(double rate, double f0, double f1, int order, int n_arg, double *arg) {
+    UNUSED(rate);
+    UNUSED(f0);
+    UNUSED(f1);
+    UNUSED(order);
+    UNUSED(n_arg);
+    UNUSED(arg);     
+
    double omega= 2 * M_PI * f0;
    double cosv= cos(omega);
    double sinv= sin(omega);
@@ -1094,6 +1324,13 @@ des_lsbq(double rate, double f0, double f1, int order, int n_arg, double *arg) {
 
 static FidFilter*
 des_hsbq(double rate, double f0, double f1, int order, int n_arg, double *arg) {
+      UNUSED(rate);
+    UNUSED(f0);
+    UNUSED(f1);
+    UNUSED(order);
+    UNUSED(n_arg);
+    UNUSED(arg);     
+
    double omega= 2 * M_PI * f0;
    double cosv= cos(omega);
    double sinv= sin(omega);
@@ -1112,6 +1349,13 @@ des_hsbq(double rate, double f0, double f1, int order, int n_arg, double *arg) {
 
 static FidFilter*
 des_lpbl(double rate, double f0, double f1, int order, int n_arg, double *arg) {
+    UNUSED(rate);
+    UNUSED(f0);
+    UNUSED(f1);
+    UNUSED(order);
+    UNUSED(n_arg);
+    UNUSED(arg);     
+
    double wid= 0.4109205/f0;
    double tot, adj;
    int max= (int)floor(wid);
@@ -1136,6 +1380,13 @@ des_lpbl(double rate, double f0, double f1, int order, int n_arg, double *arg) {
 
 static FidFilter*
 des_lphm(double rate, double f0, double f1, int order, int n_arg, double *arg) {
+    UNUSED(rate);
+    UNUSED(f0);
+    UNUSED(f1);
+    UNUSED(order);
+    UNUSED(n_arg);
+    UNUSED(arg);     
+
    double wid= 0.3262096/f0;
    double tot, adj;
    int max= (int)floor(wid);
@@ -1159,6 +1410,13 @@ des_lphm(double rate, double f0, double f1, int order, int n_arg, double *arg) {
 
 static FidFilter*
 des_lphn(double rate, double f0, double f1, int order, int n_arg, double *arg) {
+    UNUSED(rate);
+    UNUSED(f0);
+    UNUSED(f1);
+    UNUSED(order);
+    UNUSED(n_arg);
+    UNUSED(arg);     
+
    double wid= 0.360144/f0;
    double tot, adj;
    int max= (int)floor(wid);
@@ -1182,6 +1440,13 @@ des_lphn(double rate, double f0, double f1, int order, int n_arg, double *arg) {
 
 static FidFilter*
 des_lpba(double rate, double f0, double f1, int order, int n_arg, double *arg) {
+    UNUSED(rate);
+    UNUSED(f0);
+    UNUSED(f1);
+    UNUSED(order);
+    UNUSED(n_arg);
+    UNUSED(arg);     
+
    double wid= 0.3189435/f0;
    double tot, adj;
    int max= (int)floor(wid);
@@ -1359,7 +1624,7 @@ fid_design(const char *spec, double rate, double freq0, double freq1, int f_adj,
    char *err;
 
    // Parse the filter-spec
-   sp.spec= spec;
+   sp.spec= (char *)spec;
    sp.in_f0= freq0;
    sp.in_f1= freq1;
    sp.in_adj= f_adj;
@@ -1618,7 +1883,7 @@ fid_design_coef(double *coef, int n_coef, const char *spec, double rate,
    int a, len;
    int cnt= 0;
    double gain= 1.0;
-   double *iir, *fir, iir_adj;
+   double *iir, *fir=NULL, iir_adj=0L;
    static double const_one= 1;
    int n_iir, n_fir;
    int iir_cbm, fir_cbm;
@@ -1943,7 +2208,7 @@ fid_rewrite_spec(const char *spec, double freq0, double freq1, int adj,
 		 char **spec2p, double *freq0p, double *freq1p, int *adjp) {
    Spec sp;
    char *err;
-   sp.spec= spec;
+   sp.spec= (char*)spec;
    sp.in_f0= freq0;
    sp.in_f1= freq1;
    sp.in_adj= adj;

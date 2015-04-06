@@ -76,7 +76,7 @@ typedef unsigned char uchar;
 static double 
 filter_step(void *fbuf, double iir) {
    double *coef= ((RunBuf*)fbuf)->coef;
-   uchar *cmd= ((RunBuf*)fbuf)->cmd;
+   uchar *cmd= (uchar*)((RunBuf*)fbuf)->cmd;
    double *buf= &((RunBuf*)fbuf)->buf[0];
    uchar ch;
    double fir= 0;
@@ -237,7 +237,7 @@ fid_run_new(FidFilter *filt, double (**funcpp)(void *,double)) {
    while (filt->len) {
       int n_iir, n_fir, cnt;
       double *iir, *fir;
-      double adj;
+      double adj = 0;
       if (filt->typ == 'F' && filt->len == 1) {
 	 gain *= filt->val[0];
 	 filt= FFNEXT(filt);
