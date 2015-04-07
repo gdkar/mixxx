@@ -590,6 +590,7 @@ PluginAdapterBase::Impl::vampGetRemainingFeatures(VampPluginHandle handle)
 void
 PluginAdapterBase::Impl::vampReleaseFeatureSet(VampFeatureList *fs)
 {
+    (void )fs;
 #ifdef DEBUG_PLUGIN_ADAPTER
     std::cerr << "PluginAdapterBase::Impl::vampReleaseFeatureSet" << std::endl;
 #endif

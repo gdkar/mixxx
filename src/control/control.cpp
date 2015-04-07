@@ -229,31 +229,15 @@ double ControlDoublePrivate::getParameterForValue(double value) const {
     return value;
 }
 
-double ControlDoublePrivate::getParameterForMidiValue(double midiValue) const {
+void ControlDoublePrivate::setParameter(double dParam) {
     QSharedPointer<ControlNumericBehavior> pBehavior = m_pBehavior;
     if (!pBehavior.isNull()) {
-        return pBehavior->midiValueToParameter(midiValue);
-    }
-    return midiValue;
-}
-
-void ControlDoublePrivate::setMidiParameter(MidiOpCode opcode, double dParam) {
-    QSharedPointer<ControlNumericBehavior> pBehavior = m_pBehavior;
-    if (!pBehavior.isNull()) {
-        pBehavior->setValueFromMidiParameter(opcode, dParam, this);
+        pBehavior->setValueFromParameter(dParam, this);
     } else {
         set(dParam, NULL);
     }
 }
 
-double ControlDoublePrivate::getMidiParameter() const {
-    QSharedPointer<ControlNumericBehavior> pBehavior = m_pBehavior;
-    double value = get();
-    if (!pBehavior.isNull()) {
-        value = pBehavior->valueToMidiParameter(value);
-    }
-    return value;
-}
 
 bool ControlDoublePrivate::connectValueChangeRequest(const QObject* receiver,
         const char* method, Qt::ConnectionType type) {

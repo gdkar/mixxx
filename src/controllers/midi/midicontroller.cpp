@@ -373,26 +373,24 @@ void MidiController::processInputMapping(const MidiInputMapping& mapping,
         // directly to 0x40. See ControlLinPotmeterBehavior and
         // ControlPotmeterBehavior for more fun of this variety :).
         newValue = static_cast<double>(iValue) / 128.0;
-        newValue = math_min(newValue, 127.0);
+        newValue /= 128.0;
+        newValue = math_min(newValue, 1.0);
     } else {
-        double currControlValue = pCO->getMidiParameter();
+        double currControlValue = pCO->getParameter();
         newValue = computeValue(mapping.options, currControlValue, value);
     }
 
     // ControlPushButton ControlObjects only accept NOTE_ON, so if the midi
     // mapping is <button> we override the Midi 'status' appropriately.
-    if (mapping.options.button || mapping.options.sw) {
-        opCode = MIDI_NOTE_ON;
-    }
-
+    //
     if (mapping.options.soft_takeover) {
         // This is the only place to enable it if it isn't already.
         m_st.enable(pCO);
-        if (m_st.ignore(pCO, pCO->getParameterForMidiValue(newValue))) {
+        if (m_st.ignore(pCO, pCO->getParameterForValue(newValue))) {
             return;
         }
     }
-    pCO->setValueFromMidi(static_cast<MidiOpCode>(opCode), newValue);
+    pCO->setParameter(newValue);
 }
 
 double MidiController::computeValue(MidiOptions options, double _prevmidivalue, double _newmidivalue) {
@@ -400,11 +398,11 @@ double MidiController::computeValue(MidiOptions options, double _prevmidivalue, 
     double diff = 0.;
 
     if (options.all == 0) {
-        return _newmidivalue;
+        return (_newmidivalue)/128.;
     }
 
     if (options.invert) {
-        return 127. - _newmidivalue;
+        return (128. - _newmidivalue)/128.;
     }
 
     if (options.rot64 || options.rot64_inv) {
@@ -418,53 +416,50 @@ double MidiController::computeValue(MidiOptions options, double _prevmidivalue, 
             tempval += diff;
         else
             tempval -= diff;
-        return (tempval < 0. ? 0. : (tempval > 127. ? 127.0 : tempval));
+        tempval *= (1.0/128.);
+        return (tempval < 0. ? 0. : (tempval > 1. ? 1.0 : tempval));
     }
 
     if (options.rot64_fast) {
         tempval = _prevmidivalue;
         diff = _newmidivalue - 64.;
-        diff *= 1.5;
+        diff *= (1.5/128.0);
         tempval += diff;
-        return (tempval < 0. ? 0. : (tempval > 127. ? 127.0 : tempval));
+        return (tempval < 0. ? 0. : (tempval > 1. ? 1.0 : tempval));
     }
-
     if (options.diff) {
         //Interpret 7-bit signed value using two's compliment.
         if (_newmidivalue >= 64.)
-            _newmidivalue = _newmidivalue - 128.;
+            _newmidivalue = (_newmidivalue - 128.)/128.;
         //Apply sensitivity to signed value. FIXME
        // if(sensitivity > 0)
         //    _newmidivalue = _newmidivalue * ((double)sensitivity / 50.);
         //Apply new value to current value.
         _newmidivalue = _prevmidivalue + _newmidivalue;
     }
-
     if (options.selectknob) {
         //Interpret 7-bit signed value using two's compliment.
         if (_newmidivalue >= 64.)
-            _newmidivalue = _newmidivalue - 128.;
+            _newmidivalue = (_newmidivalue - 128.)/128.;
         //Apply sensitivity to signed value. FIXME
         //if(sensitivity > 0)
         //    _newmidivalue = _newmidivalue * ((double)sensitivity / 50.);
         //Since this is a selection knob, we do not want to inherit previous values.
     }
-
     if (options.button) {
         _newmidivalue = _newmidivalue != 0;
     }
-
     if (options.sw) {
         _newmidivalue = 1;
     }
-
     if (options.spread64) {
         //qDebug() << "MIDI_OPT_SPREAD64";
         // BJW: Spread64: Distance away from centre point (aka "relative CC")
         // Uses a similar non-linear scaling formula as ControlTTRotary::getValueFromWidget()
         // but with added sensitivity adjustment. This formula is still experimental.
-
-        _newmidivalue = _newmidivalue - 64.;
+        _newmidivalue = (_newmidivalue-1)/126.;
+          
+//        _newmidivalue = _newmidivalue - 64.;
         //FIXME
         //double distance = _newmidivalue - 64.;
         // _newmidivalue = distance * distance * sensitivity / 50000.;
@@ -478,6 +473,7 @@ double MidiController::computeValue(MidiOptions options, double _prevmidivalue, 
         if (_newmidivalue > 64.) {
             _newmidivalue -= 128.;
         }
+        _newmidivalue /= 128.;
         _newmidivalue += _prevmidivalue;
         //if (_prevmidivalue != 0.0) { qDebug() << "AAAAAAAAAAAA" << _prevmidivalue; }
     }
@@ -486,7 +482,9 @@ double MidiController::computeValue(MidiOptions options, double _prevmidivalue, 
         if (_newmidivalue > 64.) {
             _newmidivalue -= 128.;
         }
+        _newmidivalue/=128.0;
         _newmidivalue = _prevmidivalue + (_newmidivalue * 3);
+
     }
 
     return _newmidivalue;

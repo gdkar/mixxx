@@ -17,7 +17,7 @@ InternalClock::InternalClock(const char* pGroup, SyncableListener* pEngineSync)
           m_dBeatLength(m_iOldSampleRate * 60.0 / m_dOldBpm),
           m_dClockPosition(0) {
     // Pick a wide range (1 to 200) and allow out of bounds sets. This lets you
-    // map a soft-takeover MIDI knob to the master BPM. This also creates bpm_up
+    // map a soft-takeover knob to the master BPM. This also creates bpm_up
     // and bpm_down controls.
     // bpm_up / bpm_down steps by 1
     // bpm_up_small / bpm_down_small steps by 0.1

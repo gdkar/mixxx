@@ -41,7 +41,7 @@ class CmdlineArgs {
                 i++;
             } else if (QString::fromLocal8Bit(argv[i]).contains("--midiDebug", Qt::CaseInsensitive) ||
                        QString::fromLocal8Bit(argv[i]).contains("--controllerDebug", Qt::CaseInsensitive)) {
-                m_midiDebug = true;
+                m_controllerDebug = true;
             } else if (QString::fromLocal8Bit(argv[i]).contains("--developer", Qt::CaseInsensitive)) {
                 m_developer = true;
 
@@ -55,7 +55,7 @@ class CmdlineArgs {
     }
     const QList<QString>& getMusicFiles() const { return m_musicFiles; }
     bool getStartInFullscreen() const { return m_startInFullscreen; }
-    bool getMidiDebug() const { return m_midiDebug; }
+    bool getControllerDebug() const { return m_controllerDebug; }
     bool getDeveloper() const { return m_developer; }
     bool getSafeMode() const { return m_safeMode; }
     bool getTimelineEnabled() const { return !m_timelinePath.isEmpty(); }
@@ -68,7 +68,7 @@ class CmdlineArgs {
   private:
     CmdlineArgs() :
         m_startInFullscreen(false), //Initialize vars
-        m_midiDebug(false),
+        m_controllerDebug(false),
         m_developer(false),
         m_safeMode(false),
         m_settingsPath(QDir::homePath().append("/").append(SETTINGS_PATH)) {
@@ -77,7 +77,7 @@ class CmdlineArgs {
 
     QList<QString> m_musicFiles;    /* List of files to load into players at startup */
     bool m_startInFullscreen;       /* Start in fullscreen mode */
-    bool m_midiDebug;
+    bool m_controllerDebug;
     bool m_developer; // Developer Mode
     bool m_safeMode;
     QString m_locale;

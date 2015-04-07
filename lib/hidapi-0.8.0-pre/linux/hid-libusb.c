@@ -337,7 +337,7 @@ static wchar_t *get_usb_string(libusb_device_handle *dev, uint8_t idx)
 	
 	buf[sizeof(buf)-1] = '\0';
 	
-	if (len+1 < sizeof(buf))
+	if ((size_t)(len+1) < sizeof(buf))
 		buf[len+1] = '\0';
 	
 	/* Initialize iconv. */
@@ -1172,6 +1172,7 @@ int HID_API_EXPORT_CALL hid_get_indexed_string(hid_device *dev, int string_index
 
 HID_API_EXPORT const wchar_t * HID_API_CALL  hid_error(hid_device *dev)
 {
+  (void)dev;
 	return NULL;
 }
 
