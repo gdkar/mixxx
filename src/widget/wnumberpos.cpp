@@ -76,7 +76,6 @@ void WNumberPos::slotSetTrackSampleRate(double dSampleRate) {
 }
 
 void WNumberPos::setValue(double dValue) {
-    // Ignore midi-scaled signals from the skin connection.
     Q_UNUSED(dValue);
     // Update our value with the old value.
     slotSetValue(m_dOldValue);

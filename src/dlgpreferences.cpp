@@ -87,6 +87,7 @@ DlgPreferences::DlgPreferences(MixxxMainWindow * mixxx, SkinLoader* pSkinLoader,
     m_wvinylcontrol = new DlgPrefVinyl(this, pVCManager, m_pConfig);
     addPageWidget(m_wvinylcontrol);
 #else
+    Q_UNUSED(pVCManager);
     m_wnovinylcontrol = new DlgPrefNoVinyl(this, soundman, m_pConfig);
     addPageWidget(m_wnovinylcontrol);
 #endif

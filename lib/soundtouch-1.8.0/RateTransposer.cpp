@@ -128,9 +128,7 @@ void RateTransposer::putSamples(const SAMPLETYPE *samples, uint nSamples)
 // Returns amount of samples returned in the "dest" buffer.
 // The maximum amount of samples that can be returned at a time is set by
 // the 'set_returnBuffer_size' function.
-void RateTransposer::processSamples(const SAMPLETYPE *src, uint nSamples)
-{
-    uint count;
+void RateTransposer::processSamples(const SAMPLETYPE *src, uint nSamples){
 
     if (nSamples == 0) return;
 
@@ -141,7 +139,7 @@ void RateTransposer::processSamples(const SAMPLETYPE *src, uint nSamples)
     // the filter
     if (bUseAAFilter == false) 
     {
-        count = pTransposer->transpose(outputBuffer, inputBuffer);
+        pTransposer->transpose(outputBuffer, inputBuffer);
         return;
     }
 

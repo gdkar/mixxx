@@ -242,7 +242,7 @@ int main(int argc, char * argv[])
                             next virtual deck.\n\
 \n\
     --resourcePath PATH     Top-level directory where Mixxx should look\n\
-                            for its resource files such as MIDI mappings,\n\
+                            for its resource files such as controller mappings,\n\
                             overriding the default installation location.\n\
 \n\
     --pluginPath PATH       Top-level directory where Mixxx should look\n\

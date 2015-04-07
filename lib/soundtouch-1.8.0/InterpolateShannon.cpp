@@ -179,6 +179,7 @@ int InterpolateShannon::transposeMulti(SAMPLETYPE *pdest,
                     const SAMPLETYPE *psrc, 
                     int &srcSamples)
 {
+    (void)psrc;(void)srcSamples;(void)pdest;
     // not implemented
     assert(false);
     return 0;
