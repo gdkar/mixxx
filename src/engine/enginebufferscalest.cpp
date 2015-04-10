@@ -126,7 +126,7 @@ CSAMPLE* EngineBufferScaleST::getScaled(unsigned long buf_size) {
     bool last_read_failed = false;
     while (remaining_frames > 0) {
         unsigned long received_frames = m_pSoundTouch->receiveSamples(
-                (SAMPLETYPE*)read, remaining_frames);
+                (CSAMPLE*)read, remaining_frames);
         remaining_frames -= received_frames;
         total_received_frames += received_frames;
         read += received_frames * iNumChannels;
