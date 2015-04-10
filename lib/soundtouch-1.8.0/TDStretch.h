@@ -114,8 +114,8 @@ protected:
     int sampleReq;
     float tempo;
 
-    SAMPLETYPE *pMidBuffer;
-    SAMPLETYPE *pMidBufferUnaligned;
+    CSAMPLE *pMidBuffer;
+    CSAMPLE *pMidBufferUnaligned;
     int overlapLength;
     int seekLength;
     int seekWindowLength;
@@ -139,19 +139,19 @@ protected:
     virtual void clearCrossCorrState();
     void calculateOverlapLength(int overlapMs);
 
-    virtual double calcCrossCorr(const SAMPLETYPE *mixingPos, const SAMPLETYPE *compare, double &norm) const;
-    virtual double calcCrossCorrAccumulate(const SAMPLETYPE *mixingPos, const SAMPLETYPE *compare, double &norm) const;
+    virtual double calcCrossCorr(const CSAMPLE *mixingPos, const CSAMPLE *compare, double &norm) const;
+    virtual double calcCrossCorrAccumulate(const CSAMPLE *mixingPos, const CSAMPLE *compare, double &norm) const;
 
-    virtual int seekBestOverlapPositionFull(const SAMPLETYPE *refPos);
-    virtual int seekBestOverlapPositionQuick(const SAMPLETYPE *refPos);
-    int seekBestOverlapPosition(const SAMPLETYPE *refPos);
+    virtual int seekBestOverlapPositionFull(const CSAMPLE *refPos);
+    virtual int seekBestOverlapPositionQuick(const CSAMPLE *refPos);
+    int seekBestOverlapPosition(const CSAMPLE *refPos);
 
-    virtual void overlapStereo(SAMPLETYPE *output, const SAMPLETYPE *input) const;
-    virtual void overlapMono(SAMPLETYPE *output, const SAMPLETYPE *input) const;
-    virtual void overlapMulti(SAMPLETYPE *output, const SAMPLETYPE *input) const;
+    virtual void overlapStereo(CSAMPLE *output, const CSAMPLE *input) const;
+    virtual void overlapMono(CSAMPLE *output, const CSAMPLE *input) const;
+    virtual void overlapMulti(CSAMPLE *output, const CSAMPLE *input) const;
 
     void clearMidBuffer();
-    void overlap(SAMPLETYPE *output, const SAMPLETYPE *input, uint ovlPos) const;
+    void overlap(CSAMPLE *output, const CSAMPLE *input, uint ovlPos) const;
 
     void calcSeqParameters();
 
@@ -222,7 +222,7 @@ public:
     /// Adds 'numsamples' pcs of samples from the 'samples' memory position into
     /// the input of the object.
     virtual void putSamples(
-            const SAMPLETYPE *samples,  ///< Input sample data
+            const CSAMPLE *samples,  ///< Input sample data
             uint numSamples                         ///< Number of samples in 'samples' so that one sample
                                                     ///< contains both channels if stereo
             );

@@ -60,11 +60,7 @@ class FIFOSampleBuffer : public FIFOSamplePipe
 {
 private:
     /// Sample buffer.
-    SAMPLETYPE *buffer;
-
-    // Raw unaligned buffer memory. 'buffer' is made aligned by pointing it to first
-    // 16-byte aligned location of this buffer
-    SAMPLETYPE *bufferUnaligned;
+    CSAMPLE *buffer;
 
     /// Sample buffer size in bytes
     uint sizeInBytes;
@@ -107,7 +103,7 @@ public:
     /// When using this function to output samples, also remember to 'remove' the
     /// output samples from the buffer by calling the 
     /// 'receiveSamples(numSamples)' function
-    virtual SAMPLETYPE *ptrBegin();
+    virtual CSAMPLE *ptrBegin();
 
     /// Returns a pointer to the end of the used part of the sample buffer (i.e. 
     /// where the new samples are to be inserted). This function may be used for 
@@ -117,7 +113,7 @@ public:
     /// When using this function as means for inserting new samples, also remember 
     /// to increase the sample count afterwards, by calling  the 
     /// 'putSamples(numSamples)' function.
-    SAMPLETYPE *ptrEnd(
+    CSAMPLE *ptrEnd(
                 uint slackCapacity   ///< How much free capacity (in samples) there _at least_ 
                                      ///< should be so that the caller can succesfully insert the 
                                      ///< desired samples to the buffer. If necessary, the function 
@@ -126,7 +122,7 @@ public:
 
     /// Adds 'numSamples' pcs of samples from the 'samples' memory position to
     /// the sample buffer.
-    virtual void putSamples(const SAMPLETYPE *samples,  ///< Pointer to samples.
+    virtual void putSamples(const CSAMPLE *samples,  ///< Pointer to samples.
                             uint numSamples                         ///< Number of samples to insert.
                             );
 
@@ -144,7 +140,7 @@ public:
     /// 'numsample' samples in the buffer, returns all that available.
     ///
     /// \return Number of samples returned.
-    virtual uint receiveSamples(SAMPLETYPE *output, ///< Buffer where to copy output samples.
+    virtual uint receiveSamples(CSAMPLE *output, ///< Buffer where to copy output samples.
                                 uint maxSamples                 ///< How many samples to receive at max.
                                 );
 
@@ -176,7 +172,7 @@ public:
 
     /// allow trimming (downwards) amount of samples in pipeline.
     /// Returns adjusted amount of samples
-    uint adjustAmountOfSamples(uint numSamples);
+    uint trimBackTo(uint numSamples);
 };
 
 }

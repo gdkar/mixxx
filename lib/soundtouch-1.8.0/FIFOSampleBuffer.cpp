@@ -58,7 +58,6 @@ FIFOSampleBuffer::FIFOSampleBuffer(int numChannels)
     assert(numChannels > 0);
     sizeInBytes = 0; // reasonable initial value
     buffer = NULL;
-    bufferUnaligned = NULL;
     samplesInBuffer = 0;
     bufferPos = 0;
     channels = (uint)numChannels;
@@ -69,8 +68,7 @@ FIFOSampleBuffer::FIFOSampleBuffer(int numChannels)
 // destructor
 FIFOSampleBuffer::~FIFOSampleBuffer()
 {
-    delete[] bufferUnaligned;
-    bufferUnaligned = NULL;
+    delete[] buffer;
     buffer = NULL;
 }
 
@@ -94,7 +92,7 @@ void FIFOSampleBuffer::rewind()
 {
     if (buffer && bufferPos) 
     {
-        memmove(buffer, ptrBegin(), sizeof(SAMPLETYPE) * channels * samplesInBuffer);
+        memmove(buffer, ptrBegin(), sizeof(CSAMPLE) * channels * samplesInBuffer);
         bufferPos = 0;
     }
 }
@@ -102,9 +100,9 @@ void FIFOSampleBuffer::rewind()
 
 // Adds 'numSamples' pcs of samples from the 'samples' memory position to 
 // the sample buffer.
-void FIFOSampleBuffer::putSamples(const SAMPLETYPE *samples, uint nSamples)
+void FIFOSampleBuffer::putSamples(const CSAMPLE *samples, uint nSamples)
 {
-    memcpy(ptrEnd(nSamples), samples, sizeof(SAMPLETYPE) * nSamples * channels);
+    memcpy(ptrEnd(nSamples), samples, sizeof(CSAMPLE) * nSamples * channels);
     samplesInBuffer += nSamples;
 }
 
@@ -137,7 +135,7 @@ void FIFOSampleBuffer::putSamples(uint nSamples)
 // When using this function as means for inserting new samples, also remember 
 // to increase the sample count afterwards, by calling  the 
 // 'putSamples(numSamples)' function.
-SAMPLETYPE *FIFOSampleBuffer::ptrEnd(uint slackCapacity) 
+CSAMPLE *FIFOSampleBuffer::ptrEnd(uint slackCapacity) 
 {
     ensureCapacity(samplesInBuffer + slackCapacity);
     return buffer + samplesInBuffer * channels;
@@ -151,7 +149,7 @@ SAMPLETYPE *FIFOSampleBuffer::ptrEnd(uint slackCapacity)
 // When using this function to output samples, also remember to 'remove' the
 // outputted samples from the buffer by calling the 
 // 'receiveSamples(numSamples)' function
-SAMPLETYPE *FIFOSampleBuffer::ptrBegin()
+CSAMPLE *FIFOSampleBuffer::ptrBegin()
 {
     assert(buffer);
     return buffer + bufferPos * channels;
@@ -164,27 +162,21 @@ SAMPLETYPE *FIFOSampleBuffer::ptrBegin()
 // as well as to round the buffer size up to the virtual memory page size.
 void FIFOSampleBuffer::ensureCapacity(uint capacityRequirement)
 {
-    SAMPLETYPE *tempUnaligned, *temp;
+    CSAMPLE  *temp;
 
     if (capacityRequirement > getCapacity()) 
     {
         // enlarge the buffer in 4kbyte steps (round up to next 4k boundary)
-        sizeInBytes = (capacityRequirement * channels * sizeof(SAMPLETYPE) + 4095) & (uint)-4096;
+        sizeInBytes = (capacityRequirement * channels * sizeof(CSAMPLE) + 4095) & (uint)-4096;
         assert(sizeInBytes % 2 == 0);
-        tempUnaligned = new SAMPLETYPE[sizeInBytes / sizeof(SAMPLETYPE) + 16 / sizeof(SAMPLETYPE)];
-        if (tempUnaligned == NULL)
-        {
-            ST_THROW_RT_ERROR("Couldn't allocate memory!\n");
-        }
+        temp= reinterpret_cast<CSAMPLE*>(new long double [sizeInBytes / sizeof(long double) ]);
+        if (temp== NULL){ST_THROW_RT_ERROR("Couldn't allocate memory!\n");}
         // Align the buffer to begin at 16byte cache line boundary for optimal performance
-        temp = (SAMPLETYPE *)SOUNDTOUCH_ALIGN_POINTER_16(tempUnaligned);
-        if (samplesInBuffer)
-        {
-            memcpy(temp, ptrBegin(), samplesInBuffer * channels * sizeof(SAMPLETYPE));
+        if (samplesInBuffer){
+            memcpy(temp, ptrBegin(), samplesInBuffer * channels * sizeof(CSAMPLE));
         }
-        delete[] bufferUnaligned;
+        delete[] buffer;
         buffer = temp;
-        bufferUnaligned = tempUnaligned;
         bufferPos = 0;
     } 
     else 
@@ -198,7 +190,7 @@ void FIFOSampleBuffer::ensureCapacity(uint capacityRequirement)
 // Returns the current buffer capacity in terms of samples
 uint FIFOSampleBuffer::getCapacity() const
 {
-    return sizeInBytes / (channels * sizeof(SAMPLETYPE));
+    return sizeInBytes / (channels * sizeof(CSAMPLE));
 }
 
 
@@ -214,13 +206,13 @@ uint FIFOSampleBuffer::numSamples() const
 // are less than 'numsample' samples in the buffer, returns all available.
 //
 // Returns number of samples copied.
-uint FIFOSampleBuffer::receiveSamples(SAMPLETYPE *output, uint maxSamples)
+uint FIFOSampleBuffer::receiveSamples(CSAMPLE *output, uint maxSamples)
 {
     uint num;
 
     num = (maxSamples > samplesInBuffer) ? samplesInBuffer : maxSamples;
 
-    memcpy(output, ptrBegin(), channels * sizeof(SAMPLETYPE) * num);
+    memcpy(output, ptrBegin(), channels * sizeof(CSAMPLE) * num);
     return receiveSamples(num);
 }
 
@@ -263,7 +255,7 @@ void FIFOSampleBuffer::clear()
 
 /// allow trimming (downwards) amount of samples in pipeline.
 /// Returns adjusted amount of samples
-uint FIFOSampleBuffer::adjustAmountOfSamples(uint numSamples)
+uint FIFOSampleBuffer::trimBackTo(uint numSamples)
 {
     if (numSamples < samplesInBuffer)
     {

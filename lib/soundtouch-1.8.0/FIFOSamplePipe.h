@@ -51,6 +51,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include "STTypes.h"
+#include "Util.h"
 
 namespace soundtouch
 {
@@ -70,11 +71,11 @@ public:
     /// When using this function to output samples, also remember to 'remove' the
     /// output samples from the buffer by calling the 
     /// 'receiveSamples(numSamples)' function
-    virtual SAMPLETYPE *ptrBegin() = 0;
+    virtual CSAMPLE *ptrBegin() = 0;
 
     /// Adds 'numSamples' pcs of samples from the 'samples' memory position to
     /// the sample buffer.
-    virtual void putSamples(const SAMPLETYPE *samples,  ///< Pointer to samples.
+    virtual void putSamples(const CSAMPLE *samples,  ///< Pointer to samples.
                             uint numSamples             ///< Number of samples to insert.
                             ) = 0;
 
@@ -94,7 +95,7 @@ public:
     /// 'numsample' samples in the buffer, returns all that available.
     ///
     /// \return Number of samples returned.
-    virtual uint receiveSamples(SAMPLETYPE *output, ///< Buffer where to copy output samples.
+    virtual uint receiveSamples(CSAMPLE *output, ///< Buffer where to copy output samples.
                                 uint maxSamples                 ///< How many samples to receive at max.
                                 ) = 0;
 
@@ -117,7 +118,7 @@ public:
 
     /// allow trimming (downwards) amount of samples in pipeline.
     /// Returns adjusted amount of samples
-    virtual uint adjustAmountOfSamples(uint numSamples) = 0;
+    virtual uint trimBackTo(uint numSamples) = 0;
 
 };
 
@@ -175,7 +176,7 @@ protected:
     /// When using this function to output samples, also remember to 'remove' the
     /// output samples from the buffer by calling the 
     /// 'receiveSamples(numSamples)' function
-    virtual SAMPLETYPE *ptrBegin()
+    virtual CSAMPLE *ptrBegin()
     {
         return output->ptrBegin();
     }
@@ -187,7 +188,7 @@ public:
     /// 'numsample' samples in the buffer, returns all that available.
     ///
     /// \return Number of samples returned.
-    virtual uint receiveSamples(SAMPLETYPE *outBuffer, ///< Buffer where to copy output samples.
+    virtual uint receiveSamples(CSAMPLE *outBuffer, ///< Buffer where to copy output samples.
                                 uint maxSamples                    ///< How many samples to receive at max.
                                 )
     {
@@ -222,9 +223,9 @@ public:
 
     /// allow trimming (downwards) amount of samples in pipeline.
     /// Returns adjusted amount of samples
-    virtual uint adjustAmountOfSamples(uint numSamples)
+    virtual uint trimBackTo(uint numSamples)
     {
-        return output->adjustAmountOfSamples(numSamples);
+        return output->trimBackTo(numSamples);
     }
 
 };

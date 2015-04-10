@@ -291,7 +291,7 @@ void SoundTouch::setSampleRate(uint srate)
 
 // Adds 'numSamples' pcs of samples from the 'samples' memory position into
 // the input of the object.
-void SoundTouch::putSamples(const SAMPLETYPE *samples, uint nSamples)
+void SoundTouch::putSamples(const CSAMPLE *samples, uint nSamples)
 {
     if (bSrateSet == false) 
     {
@@ -348,7 +348,7 @@ void SoundTouch::flush()
     int i;
     int nUnprocessed;
     int nOut;
-    SAMPLETYPE *buff = new SAMPLETYPE[64 * channels];
+    CSAMPLE *buff = new CSAMPLE[64 * channels];
     
     // check how many samples still await processing, and scale
     // that by tempo & rate to get expected output sample count
@@ -358,7 +358,7 @@ void SoundTouch::flush()
     nOut = numSamples();        // ready samples currently in buffer ...
     nOut += nUnprocessed;       // ... and how many we expect there to be in the end
     
-    memset(buff, 0, 64 * channels * sizeof(SAMPLETYPE));
+    memset(buff, 0, 64 * channels * sizeof(CSAMPLE));
     // "Push" the last active samples out from the processing pipeline by
     // feeding blank samples into the processing pipeline until new, 
     // processed samples appear in the output (not however, more than 
@@ -371,7 +371,7 @@ void SoundTouch::flush()
             // Enough new samples have appeared into the output!
             // As samples come from processing with bigger chunks, now truncate it
             // back to maximum "nOut" samples to improve duration accuracy 
-            adjustAmountOfSamples(nOut);
+            trimBackTo(nOut);
 
             // finish
             break;  

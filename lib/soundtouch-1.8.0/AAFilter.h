@@ -81,8 +81,8 @@ public:
     /// Applies the filter to the given sequence of samples. 
     /// Note : The amount of outputted samples is by value of 'filter length' 
     /// smaller than the amount of input samples.
-    uint evaluate(SAMPLETYPE *dest, 
-                  const SAMPLETYPE *src, 
+    uint evaluate(CSAMPLE *dest, 
+                  const CSAMPLE *src, 
                   uint numSamples, 
                   uint numChannels) const;
 

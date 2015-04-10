@@ -60,22 +60,22 @@ protected:
     uint resultDivFactor;
 
     // Result divider value.
-    SAMPLETYPE resultDivider;
+    CSAMPLE resultDivider;
 
     // Memory for filter coefficients
-    SAMPLETYPE *filterCoeffs;
+    CSAMPLE *filterCoeffs;
 
     // Memory for keeping temporary sums in multichannel processing
-    LONG_SAMPLETYPE *sum;
+    CSAMPLE_GAIN *sum;
     uint sumsize;
 
-    virtual uint evaluateFilterStereo(SAMPLETYPE *dest, 
-                                      const SAMPLETYPE *src, 
+    virtual uint evaluateFilterStereo(CSAMPLE *dest, 
+                                      const CSAMPLE *src, 
                                       uint numSamples) const;
-    virtual uint evaluateFilterMono(SAMPLETYPE *dest, 
-                                    const SAMPLETYPE *src, 
+    virtual uint evaluateFilterMono(CSAMPLE *dest, 
+                                    const CSAMPLE *src, 
                                     uint numSamples) const;
-    virtual uint evaluateFilterMulti(SAMPLETYPE *dest, const SAMPLETYPE *src, uint numSamples, uint numChannels);
+    virtual uint evaluateFilterMulti(CSAMPLE *dest, const CSAMPLE *src, uint numSamples, uint numChannels);
 
 public:
     FIRFilter();
@@ -92,39 +92,20 @@ public:
     /// smaller than the amount of input samples.
     ///
     /// \return Number of samples copied to 'dest'.
-    uint evaluate(SAMPLETYPE *dest, 
-                  const SAMPLETYPE *src, 
+    uint evaluate(CSAMPLE *dest, 
+                  const CSAMPLE *src, 
                   uint numSamples, 
                   uint numChannels);
 
     uint getLength() const;
 
-    virtual void setCoefficients(const SAMPLETYPE *coeffs, 
+    virtual void setCoefficients(const CSAMPLE *coeffs, 
                                  uint newLength, 
                                  uint uResultDivFactor);
 };
 
 
 // Optional subclasses that implement CPU-specific optimizations:
-
-#ifdef SOUNDTOUCH_ALLOW_MMX
-
-/// Class that implements MMX optimized functions exclusive for 16bit integer samples type.
-    class FIRFilterMMX : public FIRFilter
-    {
-    protected:
-        short *filterCoeffsUnalign;
-        short *filterCoeffsAlign;
-
-        virtual uint evaluateFilterStereo(short *dest, const short *src, uint numSamples) const;
-    public:
-        FIRFilterMMX();
-        ~FIRFilterMMX();
-
-        virtual void setCoefficients(const short *coeffs, uint newLength, uint uResultDivFactor);
-    };
-
-#endif // SOUNDTOUCH_ALLOW_MMX
 
 
 #ifdef SOUNDTOUCH_ALLOW_SSE

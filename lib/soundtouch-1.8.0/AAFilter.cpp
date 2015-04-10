@@ -58,7 +58,7 @@ using namespace soundtouch;
 #ifdef _DEBUG_SAVE_AAFILTER_COEFFICIENTS
     #include <stdio.h>
 
-    static void _DEBUG_SAVE_AAFIR_COEFFS(SAMPLETYPE *coeffs, int len)
+    static void _DEBUG_SAVE_AAFIR_COEFFS(CSAMPLE *coeffs, int len)
     {
         FILE *fptr = fopen("aa_filter_coeffs.txt", "wt");
         if (fptr == NULL) return;
@@ -126,7 +126,7 @@ void AAFilter::calculateCoeffs()
     double wc;
     double scaleCoeff, sum;
     double *work;
-    SAMPLETYPE *coeffs;
+    CSAMPLE *coeffs;
 
     assert(length >= 2);
     assert(length % 4 == 0);
@@ -134,7 +134,7 @@ void AAFilter::calculateCoeffs()
     assert(cutoffFreq <= 0.5);
 
     work = new double[length];
-    coeffs = new SAMPLETYPE[length];
+    coeffs = new CSAMPLE[length];
 
     wc = 2.0 * PI * cutoffFreq;
     tempCoeff = TWOPI / (double)length;
@@ -183,7 +183,7 @@ void AAFilter::calculateCoeffs()
         // ensure no overfloods
         assert(temp >= -32768 && temp <= 32767);
 //#endif
-        coeffs[i] = (SAMPLETYPE)temp;
+        coeffs[i] = (CSAMPLE)temp;
     }
 
     // Set coefficients. Use divide factor 14 => divide result by 2^14 = 16384
@@ -199,7 +199,7 @@ void AAFilter::calculateCoeffs()
 // Applies the filter to the given sequence of samples. 
 // Note : The amount of outputted samples is by value of 'filter length' 
 // smaller than the amount of input samples.
-uint AAFilter::evaluate(SAMPLETYPE *dest, const SAMPLETYPE *src, uint numSamples, uint numChannels) const
+uint AAFilter::evaluate(CSAMPLE *dest, const CSAMPLE *src, uint numSamples, uint numChannels) const
 {
     return pFIR->evaluate(dest, src, numSamples, numChannels);
 }
@@ -211,8 +211,8 @@ uint AAFilter::evaluate(SAMPLETYPE *dest, const SAMPLETYPE *src, uint numSamples
 /// smaller than the amount of input samples.
 uint AAFilter::evaluate(FIFOSampleBuffer &dest, FIFOSampleBuffer &src) const
 {
-    SAMPLETYPE *pdest;
-    const SAMPLETYPE *psrc;
+    CSAMPLE *pdest;
+    const CSAMPLE *psrc;
     uint numSrcSamples;
     uint result;
     int numChannels = src.getChannels();

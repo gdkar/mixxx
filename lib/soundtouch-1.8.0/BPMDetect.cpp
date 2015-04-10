@@ -171,10 +171,10 @@ BPMDetect::~BPMDetect()
 /// poor-man's anti-alias filtering, but it's not so critical in this kind of application
 /// (it'd also be difficult to design a high-quality filter with steep cut-off at very 
 /// narrow band)
-int BPMDetect::decimate(SAMPLETYPE *dest, const SAMPLETYPE *src, int numsamples)
+int BPMDetect::decimate(CSAMPLE *dest, const CSAMPLE *src, int numsamples)
 {
     int count, outcount;
-    LONG_SAMPLETYPE out;
+    CSAMPLE_GAIN out;
 
     assert(channels > 0);
     assert(decimateBy > 0);
@@ -194,7 +194,7 @@ int BPMDetect::decimate(SAMPLETYPE *dest, const SAMPLETYPE *src, int numsamples)
         if (decimateCount >= decimateBy) 
         {
             // Store every Nth sample only
-            out = (LONG_SAMPLETYPE)(decimateSum / (decimateBy * channels));
+            out = (CSAMPLE_GAIN)(decimateSum / (decimateBy * channels));
             decimateSum = 0;
             decimateCount = 0;
 #ifdef SOUNDTOUCH_INTEGER_SAMPLES
@@ -208,7 +208,7 @@ int BPMDetect::decimate(SAMPLETYPE *dest, const SAMPLETYPE *src, int numsamples)
                 out = -32768;
             }
 #endif // SOUNDTOUCH_INTEGER_SAMPLES
-            dest[outcount] = (SAMPLETYPE)out;
+            dest[outcount] = (CSAMPLE)out;
             outcount ++;
         }
     }
@@ -221,14 +221,14 @@ int BPMDetect::decimate(SAMPLETYPE *dest, const SAMPLETYPE *src, int numsamples)
 void BPMDetect::updateXCorr(int process_samples)
 {
     int offs;
-    SAMPLETYPE *pBuffer;
+    CSAMPLE *pBuffer;
     
     assert(buffer->numSamples() >= (uint)(process_samples + windowLen));
 
     pBuffer = buffer->ptrBegin();
     for (offs = windowStart; offs < windowLen; offs ++) 
     {
-        LONG_SAMPLETYPE sum;
+        CSAMPLE_GAIN sum;
         int i;
 
         sum = 0;
@@ -248,13 +248,13 @@ void BPMDetect::updateXCorr(int process_samples)
 
 
 // Calculates envelope of the sample data
-void BPMDetect::calcEnvelope(SAMPLETYPE *samples, int numsamples) 
+void BPMDetect::calcEnvelope(CSAMPLE *samples, int numsamples) 
 {
     const static double decay = 0.7f;               // decay constant for smoothing the envelope
     const static double norm = (1 - decay);
 
     int i;
-    LONG_SAMPLETYPE out;
+    CSAMPLE_GAIN out;
     double val;
 
     for (i = 0; i < numsamples; i ++) 
@@ -274,21 +274,21 @@ void BPMDetect::calcEnvelope(SAMPLETYPE *samples, int numsamples)
         // smooth amplitude envelope
         envelopeAccu *= decay;
         envelopeAccu += val;
-        out = (LONG_SAMPLETYPE)(envelopeAccu * norm);
+        out = (CSAMPLE_GAIN)(envelopeAccu * norm);
 
 #ifdef SOUNDTOUCH_INTEGER_SAMPLES
         // cut peaks (shouldn't be necessary though)
         if (out > 32767) out = 32767;
 #endif // SOUNDTOUCH_INTEGER_SAMPLES
-        samples[i] = (SAMPLETYPE)out;
+        samples[i] = (CSAMPLE)out;
     }
 }
 
 
 
-void BPMDetect::inputSamples(const SAMPLETYPE *samples, int numSamples)
+void BPMDetect::inputSamples(const CSAMPLE *samples, int numSamples)
 {
-    SAMPLETYPE decimated[DECIMATED_BLOCK_SAMPLES];
+    CSAMPLE decimated[DECIMATED_BLOCK_SAMPLES];
 
     // iterate so that max INPUT_BLOCK_SAMPLES processed per iteration
     while (numSamples > 0)

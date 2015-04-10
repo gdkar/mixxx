@@ -68,14 +68,14 @@ public:
 protected:
     virtual void resetRegisters() = 0;
 
-    virtual int transposeMono(SAMPLETYPE *dest, 
-                        const SAMPLETYPE *src, 
+    virtual int transposeMono(CSAMPLE *dest, 
+                        const CSAMPLE *src, 
                         int &srcSamples)  = 0;
-    virtual int transposeStereo(SAMPLETYPE *dest, 
-                        const SAMPLETYPE *src, 
+    virtual int transposeStereo(CSAMPLE *dest, 
+                        const CSAMPLE *src, 
                         int &srcSamples) = 0;
-    virtual int transposeMulti(SAMPLETYPE *dest, 
-                        const SAMPLETYPE *src, 
+    virtual int transposeMulti(CSAMPLE *dest, 
+                        const CSAMPLE *src, 
                         int &srcSamples) = 0;
 
     static ALGORITHM algorithm;
@@ -125,7 +125,7 @@ protected:
     /// Returns amount of samples returned in the "dest" buffer.
     /// The maximum amount of samples that can be returned at a time is set by
     /// the 'set_returnBuffer_size' function.
-    void processSamples(const SAMPLETYPE *src, 
+    void processSamples(const CSAMPLE *src, 
                         uint numSamples);
 
 public:
@@ -165,7 +165,7 @@ public:
 
     /// Adds 'numSamples' pcs of samples from the 'samples' memory position into
     /// the input of the object.
-    void putSamples(const SAMPLETYPE *samples, uint numSamples);
+    void putSamples(const CSAMPLE *samples, uint numSamples);
 
     /// Clears all the samples in the object
     void clear();

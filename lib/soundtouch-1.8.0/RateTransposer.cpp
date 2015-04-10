@@ -118,7 +118,7 @@ void RateTransposer::setRate(float newRate)
 
 // Adds 'nSamples' pcs of samples from the 'samples' memory position into
 // the input of the object.
-void RateTransposer::putSamples(const SAMPLETYPE *samples, uint nSamples)
+void RateTransposer::putSamples(const CSAMPLE *samples, uint nSamples)
 {
     processSamples(samples, nSamples);
 }
@@ -128,7 +128,7 @@ void RateTransposer::putSamples(const SAMPLETYPE *samples, uint nSamples)
 // Returns amount of samples returned in the "dest" buffer.
 // The maximum amount of samples that can be returned at a time is set by
 // the 'set_returnBuffer_size' function.
-void RateTransposer::processSamples(const SAMPLETYPE *src, uint nSamples){
+void RateTransposer::processSamples(const CSAMPLE *src, uint nSamples){
 
     if (nSamples == 0) return;
 
@@ -225,8 +225,8 @@ int TransposerBase::transpose(FIFOSampleBuffer &dest, FIFOSampleBuffer &src)
     int numSrcSamples = src.numSamples();
     int sizeDemand = (int)((float)numSrcSamples / rate) + 8;
     int numOutput;
-    SAMPLETYPE *psrc = src.ptrBegin();
-    SAMPLETYPE *pdest = dest.ptrEnd(sizeDemand);
+    CSAMPLE *psrc = src.ptrBegin();
+    CSAMPLE *pdest = dest.ptrEnd(sizeDemand);
 
 #ifndef USE_MULTICH_ALWAYS
     if (numChannels == 1)
@@ -277,14 +277,10 @@ void TransposerBase::setRate(float newRate)
 // static factory function
 TransposerBase *TransposerBase::newInstance()
 {
-#ifdef SOUNDTOUCH_INTEGER_SAMPLES
-    // Notice: For integer arithmetics support only linear algorithm (due to simplest calculus)
-    return ::new InterpolateLinearInteger;
-#else
     switch (algorithm)
     {
         case LINEAR:
-            return new InterpolateLinearFloat;
+            return new InterpolateLinear;
 
         case CUBIC:
             return new InterpolateCubic;
@@ -296,5 +292,4 @@ TransposerBase *TransposerBase::newInstance()
             assert(false);
             return NULL;
     }
-#endif
 }

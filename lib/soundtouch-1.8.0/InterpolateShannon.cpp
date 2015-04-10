@@ -77,8 +77,8 @@ void InterpolateShannon::resetRegisters()
 
 /// Transpose mono audio. Returns number of produced output samples, and 
 /// updates "srcSamples" to amount of consumed source samples
-int InterpolateShannon::transposeMono(SAMPLETYPE *pdest, 
-                    const SAMPLETYPE *psrc, 
+int InterpolateShannon::transposeMono(CSAMPLE *pdest, 
+                    const CSAMPLE *psrc, 
                     int &srcSamples)
 {
     int i;
@@ -94,20 +94,13 @@ int InterpolateShannon::transposeMono(SAMPLETYPE *pdest,
         out  = psrc[0] * sinc(-3.0 - fract) * _kaiser8[0];
         out += psrc[1] * sinc(-2.0 - fract) * _kaiser8[1];
         out += psrc[2] * sinc(-1.0 - fract) * _kaiser8[2];
-        if (fract < 1e-6)
-        {
-            out += psrc[3] * _kaiser8[3];     // sinc(0) = 1
-        }
-        else
-        {
-            out += psrc[3] * sinc(- fract) * _kaiser8[3];
-        }
+        out += psrc[3] * sinc( 0.0 - fract) * _kaiser8[3];
         out += psrc[4] * sinc( 1.0 - fract) * _kaiser8[4];
         out += psrc[5] * sinc( 2.0 - fract) * _kaiser8[5];
         out += psrc[6] * sinc( 3.0 - fract) * _kaiser8[6];
         out += psrc[7] * sinc( 4.0 - fract) * _kaiser8[7];
 
-        pdest[i] = (SAMPLETYPE)out;
+        pdest[i] = (CSAMPLE)out;
         i ++;
 
         // update position fraction
@@ -125,8 +118,8 @@ int InterpolateShannon::transposeMono(SAMPLETYPE *pdest,
 
 /// Transpose stereo audio. Returns number of produced output samples, and 
 /// updates "srcSamples" to amount of consumed source samples
-int InterpolateShannon::transposeStereo(SAMPLETYPE *pdest, 
-                    const SAMPLETYPE *psrc, 
+int InterpolateShannon::transposeStereo(CSAMPLE *pdest, 
+                    const CSAMPLE *psrc, 
                     int &srcSamples)
 {
     int i;
@@ -156,8 +149,8 @@ int InterpolateShannon::transposeStereo(SAMPLETYPE *pdest,
         w = sinc( 4.0 - fract) * _kaiser8[7];
         out0 += psrc[14] * w; out1 += psrc[15] * w;
 
-        pdest[2*i]   = (SAMPLETYPE)out0;
-        pdest[2*i+1] = (SAMPLETYPE)out1;
+        pdest[2*i]   = (CSAMPLE)out0;
+        pdest[2*i+1] = (CSAMPLE)out1;
         i ++;
 
         // update position fraction
@@ -175,8 +168,8 @@ int InterpolateShannon::transposeStereo(SAMPLETYPE *pdest,
 
 /// Transpose stereo audio. Returns number of produced output samples, and 
 /// updates "srcSamples" to amount of consumed source samples
-int InterpolateShannon::transposeMulti(SAMPLETYPE *pdest, 
-                    const SAMPLETYPE *psrc, 
+int InterpolateShannon::transposeMulti(CSAMPLE *pdest, 
+                    const CSAMPLE *psrc, 
                     int &srcSamples)
 {
     (void)psrc;(void)srcSamples;(void)pdest;

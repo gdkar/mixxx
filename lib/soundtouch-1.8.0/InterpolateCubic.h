@@ -46,14 +46,14 @@ class InterpolateCubic : public TransposerBase
 {
 protected:
     virtual void resetRegisters();
-    virtual int transposeMono(SAMPLETYPE *dest, 
-                        const SAMPLETYPE *src, 
+    virtual int transposeMono(CSAMPLE *dest, 
+                        const CSAMPLE *src, 
                         int &srcSamples);
-    virtual int transposeStereo(SAMPLETYPE *dest, 
-                        const SAMPLETYPE *src, 
+    virtual int transposeStereo(CSAMPLE *dest, 
+                        const CSAMPLE *src, 
                         int &srcSamples);
-    virtual int transposeMulti(SAMPLETYPE *dest, 
-                        const SAMPLETYPE *src, 
+    virtual int transposeMulti(CSAMPLE *dest, 
+                        const CSAMPLE *src, 
                         int &srcSamples);
 
     float fract;

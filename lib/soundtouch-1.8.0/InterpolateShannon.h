@@ -51,14 +51,14 @@ class InterpolateShannon : public TransposerBase
 {
 protected:
     void resetRegisters();
-    int transposeMono(SAMPLETYPE *dest, 
-                        const SAMPLETYPE *src, 
+    int transposeMono(CSAMPLE *dest, 
+                        const CSAMPLE *src, 
                         int &srcSamples);
-    int transposeStereo(SAMPLETYPE *dest, 
-                        const SAMPLETYPE *src, 
+    int transposeStereo(CSAMPLE *dest, 
+                        const CSAMPLE *src, 
                         int &srcSamples);
-    int transposeMulti(SAMPLETYPE *dest, 
-                        const SAMPLETYPE *src, 
+    int transposeMulti(CSAMPLE *dest, 
+                        const CSAMPLE *src, 
                         int &srcSamples);
 
     float fract;
