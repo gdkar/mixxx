@@ -47,7 +47,8 @@ CachingReader::CachingReader(QString group,
         c->state = Chunk::FREE;
 
         m_chunks.push_back(c);
-        m_freeChunks.push_back(c);
+        c->next_free = m_freeChunks;
+        m_freeChunks = c;
 
         bufferStart += CachingReaderWorker::kSamplesPerChunk;
     }
@@ -75,7 +76,7 @@ CachingReader::~CachingReader() {
 
     m_pWorker->quitWait();
     delete m_pWorker;
-    m_freeChunks.clear();
+    m_freeChunks = NULL;
     m_allocatedChunks.clear();
     m_lruChunk = m_mruChunk = NULL;
     qDeleteAll(m_chunks);
@@ -110,7 +111,6 @@ Chunk* CachingReader::removeFromLRUList(Chunk* chunk, Chunk* head) {
 
     return head;
 }
-
 // static
 Chunk* CachingReader::insertIntoLRUList(Chunk* chunk, Chunk* head) {
     if (chunk == NULL) {
@@ -152,7 +152,8 @@ void CachingReader::freeChunk(Chunk* pChunk) {
     pChunk->state = Chunk::FREE;
     pChunk->chunk_number = -1;
     pChunk->length = 0;
-    m_freeChunks.push_back(pChunk);
+    pChunk->next_free = m_freeChunks;
+    m_freeChunks = pChunk;
 }
 
 void CachingReader::freeAllChunks() {
@@ -175,26 +176,26 @@ void CachingReader::freeAllChunks() {
             pChunk->length = 0;
             pChunk->next_lru = NULL;
             pChunk->prev_lru = NULL;
-            m_freeChunks.append(pChunk);
+            pChunk->next_free = m_freeChunks;
+            m_freeChunks      = pChunk;
         }
     }
 }
 
 Chunk* CachingReader::allocateChunk(int chunk) {
-    if (m_freeChunks.isEmpty()) {
+    if (m_freeChunks==NULL) {
         return NULL;
     }
-    Chunk* pChunk = m_freeChunks.takeFirst();
+    Chunk* pChunk = m_freeChunks;
+    m_freeChunks  = pChunk->next_free;
+    pChunk->next_free = NULL;
     pChunk->state = Chunk::ALLOCATED;
     pChunk->chunk_number = chunk;
-
     //qDebug() << "Allocating chunk" << pChunk << pChunk->chunk_number;
     m_allocatedChunks.insert(pChunk->chunk_number, pChunk);
-
     // Insert the chunk into the least-recently-used linked list as the "most
     // recently used" item.
     m_mruChunk = insertIntoLRUList(pChunk, m_mruChunk);
-
     // If this chunk has no next least-recently-used pointer then it is the
     // least recently used chunk despite having just been allocated. This only
     // happens if this is the first allocated chunk.

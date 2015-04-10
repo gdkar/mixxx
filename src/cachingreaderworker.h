@@ -24,7 +24,8 @@ typedef struct Chunk {
     CSAMPLE* data;
     Chunk* prev_lru;
     Chunk* next_lru;
-
+    Chunk* next_free;
+    TrackPointer track;
     enum State {
         FREE,
         ALLOCATED,
