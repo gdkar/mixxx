@@ -213,7 +213,7 @@ void ControlDoublePrivate::setParameter(double dParam, QObject* pSender) {
     if (pBehavior.isNull()) {
         set(dParam, pSender);
     } else {
-        set(pBehavior->parameterToValue(dParam), pSender);
+        pBehavior->setValueFromParameter(dParam, this);
     }
 }
 
