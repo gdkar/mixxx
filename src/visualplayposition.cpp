@@ -61,7 +61,8 @@ double VisualPlayPosition::getAtNextVSync(VSyncThread* vsyncThread) {
     //return testPos;
 
     if (m_valid) {
-        VisualPlayPositionData data = m_data.getValue();
+        VisualPlayPositionData data;
+        data = m_data.getValue();
         int usRefToVSync = vsyncThread->usFromTimerToNextSync(&data.m_referenceTime);
         int offset = usRefToVSync - data.m_callbackEntrytoDac;
         double playPos = data.m_enginePlayPos;  // load playPos for the first sample in Buffer

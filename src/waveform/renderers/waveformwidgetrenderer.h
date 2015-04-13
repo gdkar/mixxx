@@ -5,7 +5,9 @@
 #include <QTime>
 #include <QVector>
 #include <QtDebug>
-
+#include <QWidget>
+#include <QOpenGLWidget>
+#include <QOpenGLFunctions>
 #include "trackinfoobject.h"
 #include "util.h"
 #include "waveform/renderers/waveformrendererabstract.h"

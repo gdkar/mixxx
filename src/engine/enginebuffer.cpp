@@ -407,12 +407,14 @@ void EngineBuffer::queueNewPlaypos(double newpos, enum SeekRequest seekType) {
     // All seeks need to be done in the Engine thread so queue it up.
     // Write the position before the seek type, to reduce a possible race
     // condition effect
-    m_queuedPosition.setValue(newpos);
+    m_queuedPosition.reset(new SeekData(seekType,newpos));
     m_iSeekQueued = seekType;
 }
 
 void EngineBuffer::requestSyncPhase() {
+  m_queuedPosition.reset(new SeekData(SEEK_PHASE));
     m_iSeekQueued = SEEK_PHASE;
+
 }
 
 void EngineBuffer::requestEnableSync(bool enabled) {
@@ -1194,9 +1196,13 @@ void EngineBuffer::processSeek() {
     // We need to read position just after reading seekType, to ensure that we read
     // the matching poition to seek_typ or a position from a new seek just queued from an other thread
     // the later case is ok, because we will process the new seek in the next call anyway.
-    SeekRequest seekType =
-            static_cast<SeekRequest>(m_iSeekQueued.fetchAndStoreRelease(NO_SEEK));
-    double position = m_queuedPosition.getValue();
+//    SeekRequest seekType =
+//            static_cast<SeekRequest>(m_iSeekQueued.fetchAndStoreRelease(NO_SEEK));
+    QSharedPointer<SeekData> data(NULL);
+    m_queuedPosition.swap(data);
+    if(!data)return;
+    SeekRequest seekType = data->m_type;
+    double      position = data->m_position;
     switch (seekType) {
         case NO_SEEK:
             return;

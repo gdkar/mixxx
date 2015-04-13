@@ -138,11 +138,8 @@ WaveformWidgetFactory::WaveformWidgetFactory() :
         }
 
         m_openGLAvailable = true;
-
-        QGLWidget* glWidget = new QGLWidget(); // create paint device
         // QGLShaderProgram::hasOpenGLShaderPrograms(); valgind error
-        m_openGLShaderAvailable = QGLShaderProgram::hasOpenGLShaderPrograms(glWidget->context());
-        delete glWidget;
+        m_openGLShaderAvailable = true;
     }
 
     evaluateWidgets();
@@ -484,7 +481,7 @@ void WaveformWidgetFactory::render() {
 
 void WaveformWidgetFactory::swap() {
     ScopedTimer t("WaveformWidgetFactory::swap() %1waveforms", m_waveformWidgetHolders.size());
-
+#if 0
     // Do this in an extra slot to be sure to hit the desired interval
     if (!m_skipRender) {
         if (m_type) {   // no regular updates for an empty waveform
@@ -504,6 +501,7 @@ void WaveformWidgetFactory::swap() {
         }
     }
     //qDebug() << "swap end" << m_vsyncThread->elapsed();
+#endif
     m_vsyncThread->vsyncSlotFinished();
 }
 

@@ -207,17 +207,43 @@ void ControlDoublePrivate::setBehavior(ControlNumericBehavior* pBehavior) {
     // used in any other function
     m_pBehavior = QSharedPointer<ControlNumericBehavior>(pBehavior);
 }
-
+void ControlDoublePrivate::setBehavior(QJSValue &behavior){
+  QJSValue result;
+  if(behavior.isCallable())
+    result = behavior.call(QJSValueList());
+  if(result.isError() || ! result.isObject())
+    result =behavior;
+  if ( result.isObject()){
+    if(result.property("setParameter").isCallable() && result.property("getParameter").isCallable()){
+      m_behavior = result;
+      m_set_parameter = m_behavior.property("setParameter");
+      m_get_parameter = m_behavior.property("getParameter");
+    }
+  }
+}
+void ControlDoublePrivate::setBehavior(const QString &behavior){
+  QJSValue value = s_engine->evaluate(behavior);
+  if(!value.isError() && value.isObject()){
+    if(value.property("setParameter").isCallable() && value.property("getParameter").isCallable()){
+      m_behavior = value;
+      m_set_parameter = m_behavior.property("setParameter");
+      m_get_parameter = m_behavior.property("getParameter");
+    }
+  }
+}
 void ControlDoublePrivate::setParameter(double dParam, QObject* pSender) {
     QSharedPointer<ControlNumericBehavior> pBehavior = m_pBehavior;
-    if (pBehavior.isNull()) {
-        set(dParam, pSender);
-    } else {
+    if (!pBehavior.isNull()) {
         pBehavior->setValueFromParameter(dParam, this);
+    } else {
+        set(dParam, pSender);
     }
 }
 
-double ControlDoublePrivate::getParameter() const {
+double ControlDoublePrivate::getParameter()  {
+    if(m_get_parameter.isCallable()){
+      return m_get_parameter.call(QJSValueList()).toNumber();
+    }
     return getParameterForValue(get());
 }
 
@@ -230,11 +256,19 @@ double ControlDoublePrivate::getParameterForValue(double value) const {
 }
 
 void ControlDoublePrivate::setParameter(double dParam) {
-    QSharedPointer<ControlNumericBehavior> pBehavior = m_pBehavior;
-    if (!pBehavior.isNull()) {
-        pBehavior->setValueFromParameter(dParam, this);
-    } else {
+    if(m_set_parameter.isCallable()){
+      QJSValueList args;
+      args << dParam;
+      set(m_set_parameter.call(args).toNumber(),this);
+    }else {
+      
+      QSharedPointer<ControlNumericBehavior> pBehavior = m_pBehavior;
+        if (!pBehavior.isNull()) {
+          pBehavior->setValueFromParameter(dParam, this);
+      }
+     else {
         set(dParam, NULL);
+      }
     }
 }
 

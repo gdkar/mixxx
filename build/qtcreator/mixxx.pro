@@ -82,7 +82,10 @@ QT += core \
     svg \
     opengl \
     script \
-    qt3support
+    qt3support\
+    qml\
+    quick\
+    multimedia
 
 CONFIG(debug) { # gdbmacros is required for inspecting Qt datatypes using gdb within QtC
     exists($$(QTDIR)/../share/qtcreator/gdbmacros/gdbmacros.cpp) {

@@ -20,7 +20,8 @@
 // Used for id's inside controlConnection objects
 // (closure compatible version of connectControl)
 #include <QUuid>
-
+#include <QtQml>
+#include <QtQuick>
 const int kDecks = 16;
 
 // Use 1ms for the Alpha-Beta dt. We're assuming the OS actually gives us a 1ms

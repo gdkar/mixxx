@@ -112,10 +112,21 @@ class Stat {
     QVector<double> m_values;
     double m_report_count;
     double m_sum;
+    double m_sum_sqr;
     double m_min;
     double m_max;
     double m_variance_mk;
     double m_variance_sk;
+    double m_std;
+    double m_leftend;
+    double m_rightend;
+    size_t m_lowcount;
+    size_t m_highcount;
+    size_t m_bin_count;
+    double m_scalefactor;
+    double m_median;
+    size_t             m_bins;
+    size_t            *m_median_bins;
     QMap<double, double> m_histogram;
 
     static bool track(const QString& tag,

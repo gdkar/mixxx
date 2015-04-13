@@ -30,7 +30,7 @@ GLVSyncTestWidget::GLVSyncTestWidget(const char* group, QWidget* parent)
     setAttribute(Qt::WA_NoSystemBackground);
     setAttribute(Qt::WA_OpaquePaintEvent);
 
-    setAutoBufferSwap(false);
+    setAutoBufferSwap(true);
 
     if (QGLContext::currentContext() != context()) {
         makeCurrent();

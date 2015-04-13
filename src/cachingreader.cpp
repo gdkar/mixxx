@@ -47,8 +47,8 @@ CachingReader::CachingReader(QString group,
         c->state = Chunk::FREE;
 
         m_chunks.push_back(c);
-        c->next_free = m_freeChunks;
-        m_freeChunks = c;
+        c->next_free = m_freeChunks.loadAcquire();
+        m_freeChunks.storeRelease(c);
 
         bufferStart += CachingReaderWorker::kSamplesPerChunk;
     }
@@ -76,7 +76,7 @@ CachingReader::~CachingReader() {
 
     m_pWorker->quitWait();
     delete m_pWorker;
-    m_freeChunks = NULL;
+    m_freeChunks.store(NULL);
     m_allocatedChunks.clear();
     m_lruChunk = m_mruChunk = NULL;
     qDeleteAll(m_chunks);
@@ -152,8 +152,10 @@ void CachingReader::freeChunk(Chunk* pChunk) {
     pChunk->state = Chunk::FREE;
     pChunk->chunk_number = -1;
     pChunk->length = 0;
-    pChunk->next_free = m_freeChunks;
-    m_freeChunks = pChunk;
+    Chunk *expected;
+    do{
+      pChunk->next_free = expected = m_freeChunks.loadAcquire();
+    }while(!m_freeChunks.testAndSetRelease(expected, pChunk));
 }
 
 void CachingReader::freeAllChunks() {
@@ -176,8 +178,10 @@ void CachingReader::freeAllChunks() {
             pChunk->length = 0;
             pChunk->next_lru = NULL;
             pChunk->prev_lru = NULL;
-            pChunk->next_free = m_freeChunks;
-            m_freeChunks      = pChunk;
+            Chunk * expected;
+            do{
+              pChunk->next_free = expected = m_freeChunks.loadAcquire();
+            }while(!m_freeChunks.testAndSetRelease(expected,pChunk));
         }
     }
 }
@@ -186,8 +190,10 @@ Chunk* CachingReader::allocateChunk(int chunk) {
     if (m_freeChunks==NULL) {
         return NULL;
     }
-    Chunk* pChunk = m_freeChunks;
-    m_freeChunks  = pChunk->next_free;
+    Chunk * pChunk;
+    do{
+       pChunk = m_freeChunks.loadAcquire();
+    }while(!m_freeChunks.testAndSetRelease(pChunk,pChunk->next_free));
     pChunk->next_free = NULL;
     pChunk->state = Chunk::ALLOCATED;
     pChunk->chunk_number = chunk;

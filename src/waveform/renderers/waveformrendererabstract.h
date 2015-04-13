@@ -9,7 +9,8 @@
 
 class WaveformWidgetRenderer;
 
-class WaveformRendererAbstract {
+class WaveformRendererAbstract : public QObject {
+  Q_OBJECT
   public:
     explicit WaveformRendererAbstract(WaveformWidgetRenderer* waveformWidgetRenderer);
     virtual ~WaveformRendererAbstract();

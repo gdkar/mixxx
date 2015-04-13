@@ -2,7 +2,8 @@
 #define CONTROLBEHAVIOR_H
 
 #include <QTimer>
-
+#include <QtQml>
+#include <QtQuick>
 
 class ControlDoublePrivate;
 

@@ -26,7 +26,7 @@ GLSLRGBWaveformWidget::GLSLRGBWaveformWidget(const char* group, QWidget* parent)
 
 GLSLWaveformWidget::GLSLWaveformWidget(const char* group, QWidget* parent,
                                        bool rgbRenderer)
-        : QGLWidget(parent, SharedGLContext::getWidget()),
+        : QGLWidget(parent),
           WaveformWidgetAbstract(group) {
     addRenderer<WaveformRenderBackground>();
     addRenderer<WaveformRendererEndOfTrack>();
@@ -43,11 +43,7 @@ GLSLWaveformWidget::GLSLWaveformWidget(const char* group, QWidget* parent,
     setAttribute(Qt::WA_NoSystemBackground);
     setAttribute(Qt::WA_OpaquePaintEvent);
 
-    setAutoBufferSwap(false);
-
-    qDebug() << "Created QGLWidget. Context"
-             << "Valid:" << context()->isValid()
-             << "Sharing:" << context()->isSharing();
+    setAutoBufferSwap(true);
 
     // Initialization requires activating our context.
     if (QGLContext::currentContext() != context()) {

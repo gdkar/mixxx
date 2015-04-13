@@ -4,6 +4,8 @@
 #include <limits>
 
 #include <QAtomicInt>
+#include <QSharedPointer>
+#include <QAtomicInteger>
 #include <QObject>
 
 #include "util/compatibility.h"
@@ -57,13 +59,39 @@ class ControlRingValue {
     T m_value;
     mutable QAtomicInt m_readerSlots;
 };
-
 // Ring buffer based implementation for all Types sizeof(T) > sizeof(void*)
 
 // An implementation of ControlValueAtomicBase for non-atomic types T. Uses a
 // ring-buffer of ControlRingValues and a read pointer and write pointer to
 // provide getValue()/setValue() methods which *sacrifice perfect consistency*
 // for the benefit of wait-free read/write access to a value.
+template<typename T, bool ATOMIC = false>
+class ControlValueAtomicBase {
+  public:
+    inline T getValue() const{
+      QSharedPointer<T > data(m_data);
+      if(data){
+        T ret( *data);
+        return ret; 
+      }
+      return T();
+    }
+    inline void setValue(const T& value){
+//      QSharedPointer<T> data(new T(value));
+//      m_data = data;
+      T *data = new T;
+      *data = value;
+      QSharedPointer<T > p_data(data);
+      m_data.swap(p_data);
+    }
+  protected:
+    ControlValueAtomicBase()
+      :m_data(NULL){
+      }
+  private:
+  QSharedPointer<T >   m_data;
+};
+/*
 template<typename T, bool ATOMIC = false>
 class ControlValueAtomicBase {
   public:
@@ -114,7 +142,7 @@ class ControlValueAtomicBase {
     ControlRingValue<T> m_ring[cRingSize];
     QAtomicInt m_readIndex;
     QAtomicInt m_writeIndex;
-};
+};*/
 
 // Specialized template for types that are deemed to be atomic on the target
 // architecture. Instead of using a read/write ring to guarantee atomicity,

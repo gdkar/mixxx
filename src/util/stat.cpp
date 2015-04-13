@@ -3,6 +3,8 @@
 #include <QStringList>
 #include <QtDebug>
 
+#include <stdlib.h>
+#include <string.h>
 #include "util/stat.h"
 #include "util/time.h"
 #include "util/math.h"
@@ -16,7 +18,10 @@ Stat::Stat()
           m_min(std::numeric_limits<double>::max()),
           m_max(std::numeric_limits<double>::min()),
           m_variance_mk(0),
-          m_variance_sk(0) {
+          m_variance_sk(0),
+          m_scalefactor(0),
+          m_bins(1024),
+          m_median_bins(new size_t[m_bins]){
 }
 
 QString Stat::valueUnits() const {
@@ -38,9 +43,8 @@ QString Stat::valueUnits() const {
 
 void Stat::processReport(const StatReport& report) {
     m_report_count++;
-    if (m_compute & (Stat::SUM | Stat::AVERAGE)) {
-        m_sum += report.value;
-    }
+    m_sum     += report.value;
+    m_sum_sqr += report.value*report.value;
     if (m_compute & Stat::MAX && report.value > m_max) {
         m_max = report.value;
     }
@@ -60,11 +64,40 @@ void Stat::processReport(const StatReport& report) {
             m_variance_sk += (report.value - variance_mk_prev) * (report.value - m_variance_mk);
         }
     }
+    
+    if(m_scalefactor){
+      if(report.value < m_leftend)m_lowcount++;
+      else if(report.value<m_rightend){
+        m_median_bins[(int)((report.value - m_leftend)*m_scalefactor)]++;
+      }else{
+        m_highcount++;
+      }
 
-    if (m_compute & Stat::HISTOGRAM) {
-        m_histogram[report.value] += 1.0;
     }
-
+    if(!m_scalefactor || m_lowcount >= m_report_count/2 || m_highcount >= m_report_count/2){
+        double mean = m_sum/m_report_count;
+        m_std = sqrt(variance());
+        m_scalefactor = m_std!=0?m_bins/(2*m_std):0;
+        m_leftend  = mean-m_std;
+        m_rightend = mean+m_std;
+        memset(m_median_bins,0,m_bins*sizeof(size_t));
+        m_lowcount = m_highcount=0;
+        for(int i = 0; i<m_values.size();i++){
+          if(m_values[i] < m_leftend)m_lowcount++;            
+          else if(m_values[i]<m_rightend){
+            m_median_bins[(int)((m_values[i]-m_leftend)*m_scalefactor)]++;
+          }else
+            m_highcount++;
+        }
+      }
+    if(m_scalefactor){
+      size_t below = m_lowcount;
+      int i = 0;
+      for(i = 0; i < m_bins && below < m_report_count/2;i++){
+        below += m_median_bins[i];
+      }
+      m_median = m_leftend + (i+0.5)/m_scalefactor;
+    }
     if (m_compute & Stat::VALUES) {
         m_values.push_back(report.value);
     }
@@ -119,6 +152,7 @@ QDebug operator<<(QDebug dbg, const Stat &stat) {
     }
 
     if (stat.m_compute & Stat::SAMPLE_MEDIAN) {
+      stats << "median=" + QString::number(stat.m_median)+stat.valueUnits();
         // TODO(rryan): implement
     }
 

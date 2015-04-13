@@ -13,6 +13,7 @@ StatModel::StatModel(QObject* pParent)
     setHeaderData(STAT_COLUMN_SUM, Qt::Horizontal, tr("Sum"));
     setHeaderData(STAT_COLUMN_MIN, Qt::Horizontal, tr("Min"));
     setHeaderData(STAT_COLUMN_MAX, Qt::Horizontal, tr("Max"));
+    setHeaderData(STAT_COLUMN_MEDIAN, Qt::Horizontal, tr("Median"));
     setHeaderData(STAT_COLUMN_MEAN, Qt::Horizontal, tr("Mean"));
     setHeaderData(STAT_COLUMN_VARIANCE, Qt::Horizontal, tr("Variance"));
     setHeaderData(STAT_COLUMN_STDDEV, Qt::Horizontal, tr("Standard Deviation"));
@@ -83,6 +84,8 @@ QVariant StatModel::data(const QModelIndex& index,
         case STAT_COLUMN_MAX:
             return std::numeric_limits<double>::min() == stat.m_max ?
                     QVariant("XXX") : QVariant(stat.m_max);
+        case STAT_COLUMN_MEDIAN:
+            return stat.m_median;
         case STAT_COLUMN_MEAN:
             return stat.m_report_count > 0 ?
                     QVariant(stat.m_sum / stat.m_report_count) : QVariant("XXX");

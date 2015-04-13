@@ -10,6 +10,9 @@
 
 #include <QEvent>
 #include <QtScript>
+#include <QtQml>
+#include <QJSEngine>
+#include <QJSValue>
 #include <QMessageBox>
 #include <QFileSystemWatcher>
 
@@ -23,6 +26,9 @@
 class Controller;
 class ControlObjectThread;
 class ControllerEngine;
+class QQmlEngine;
+class QJSEngine;
+class QJSValue;
 
 // ControllerEngineConnection class for closure-compatible engine.connectControl
 class ControllerEngineConnection {
@@ -128,6 +134,7 @@ class ControllerEngine : public QObject {
     // Execute a particular function with a list of arguments
     bool execute(QString function, const QByteArray data);
     bool execute(QScriptValue function, const QByteArray data);
+    bool execute(QJSValue function, const QByteArray data);
     // Execute a particular function with a data buffer
     //TODO: redo this one
     //bool execute(QString function, const QByteArray data);
@@ -159,6 +166,8 @@ class ControllerEngine : public QObject {
     void callFunctionOnObjects(QList<QString>, QString, QScriptValueList args = QScriptValueList());
     bool checkException();
     QScriptEngine *m_pEngine;
+    QJSEngine     *m_jsEngine;
+    QQmlEngine    *m_qmlEngine;
 
     ControlObjectThread* getControlObjectThread(QString group, QString name);
 

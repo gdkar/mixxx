@@ -20,7 +20,7 @@
 WSpinny::WSpinny(QWidget* parent, const QString& group,
                  ConfigObject<ConfigValue>* pConfig,
                  VinylControlManager* pVCMan)
-        : QGLWidget(QGLFormat(QGL::SampleBuffers), parent, SharedGLContext::getWidget()),
+        : QGLWidget(QGLFormat(QGL::SampleBuffers), parent),
           WBaseWidget(this),
           m_group(group),
           m_pConfig(pConfig),
@@ -65,10 +65,6 @@ WSpinny::WSpinny(QWidget* parent, const QString& group,
 #endif
     //Drag and drop
     setAcceptDrops(true);
-    qDebug() << "WSpinny(): Created QGLWidget, Context"
-             << "Valid:" << context()->isValid()
-             << "Sharing:" << context()->isSharing();
-
     CoverArtCache* pCache = CoverArtCache::instance();
     if (pCache != NULL) {
         connect(pCache, SIGNAL(coverFound(const QObject*, const int,

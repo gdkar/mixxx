@@ -4,6 +4,9 @@
 #include <QtDebug>
 #include <QMutex>
 #include <QSemaphore>
+#include <QAtomicPointer>
+#include <QAtomicInteger>
+#include <QSharedPointer>
 #include <QThread>
 #include <QString>
 #include <QScopedPointer>

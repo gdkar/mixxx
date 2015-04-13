@@ -125,6 +125,8 @@ void VSyncThread::swapGl(QGLWidget* glw, int index) {
     Q_UNUSED(index);
     // No need for glw->makeCurrent() here.
     //qDebug() << "swapGl" << m_timer.elapsed();
+    Q_UNUSED(glw);
+#if 0
 #if defined(__APPLE__)
     glw->swapBuffers();
 #elif defined(__WINDOWS__)
@@ -136,6 +138,7 @@ void VSyncThread::swapGl(QGLWidget* glw, int index) {
 #else
     glw->swapBuffers();
 #endif // QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+#endif
 #endif
 }
 

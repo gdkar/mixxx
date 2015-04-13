@@ -27,9 +27,19 @@
 
 class ControlObject : public QObject {
     Q_OBJECT
+    Q_PROPERTY(double parameter READ getParameter WRITE setParameter NOTIFY valueChanged SCRIPTABLE true STORED false)
+    Q_PROPERTY(double value READ get WRITE set NOTIFY valueChanged SCRIPTABLE true STORED false)
+    Q_PROPERTY(QString description READ description WRITE setDescription SCRIPTABLE true STORED false)
+    Q_PROPERTY(QString name READ name WRITE setName SCRIPTABLE true STORED false)
+    Q_PROPERTY(ConfigKey key READ getKey SCRIPTABLE true STORED false )
   public:
     ControlObject();
-
+    ControlObject(const ControlObject &other):QObject(),m_key(other.m_key),m_pControl(other.m_pControl){}
+    ControlObject &operator = (ControlObject other){
+      m_pControl = other.m_pControl;
+      m_key      = other.m_key;
+      return *this;
+    }
     // bIgnoreNops: Don't emit a signal if the CO is set to its current value.
     // bTrack: Record statistics about this control.
     // bPersist: Store value on exit, load on startup.

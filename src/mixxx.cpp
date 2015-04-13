@@ -76,7 +76,9 @@
 #include "util/math.h"
 #include "util/experiment.h"
 #include "util/font.h"
-
+#include <QtQml>
+#include <QJSEngine>
+#include <QJSValue>
 #ifdef __VINYLCONTROL__
 #include "vinylcontrol/defs_vinylcontrol.h"
 #include "vinylcontrol/vinylcontrolmanager.h"
@@ -115,7 +117,10 @@ MixxxMainWindow::MixxxMainWindow(QApplication* pApp, const CmdlineArgs& args)
           m_iNumConfiguredDecks(0) {
     // We use QSet<int> in signals in the library.
     qRegisterMetaType<QSet<int> >("QSet<int>");
-
+    qRegisterMetaType<ConfigKey>("ConfigKey");
+    qRegisterMetaType<ControlObject>("ControlObject");
+    m_pQml         = new QQmlEngine(this);
+    m_scriptEngine = new QJSEngine(this);
     logBuildDetails();
     ScopedTimer t("MixxxMainWindow::MixxxMainWindow");
     m_runtime_timer.start();
@@ -127,7 +132,7 @@ MixxxMainWindow::MixxxMainWindow(QApplication* pApp, const CmdlineArgs& args)
     Upgrade upgrader;
     m_pConfig = upgrader.versionUpgrade(args.getSettingsPath());
     ControlDoublePrivate::setUserConfig(m_pConfig);
-
+    ControlDoublePrivate::setEngine(m_scriptEngine);
     Sandbox::initialize(m_pConfig->getSettingsPath().append("/sandbox.cfg"));
 
     // Only record stats in developer mode.
@@ -359,9 +364,9 @@ MixxxMainWindow::MixxxMainWindow(QApplication* pApp, const CmdlineArgs& args)
 
     // Before creating the first skin we need to create a QGLWidget so that all
     // the QGLWidget's we create can use it as a shared QGLContext.
-    QGLWidget* pContextWidget = new QGLWidget(this);
-    pContextWidget->hide();
-    SharedGLContext::setWidget(pContextWidget);
+//    QGLWidget* pContextWidget = new QGLWidget(this);
+//    pContextWidget->hide();
+//    SharedGLContext::setWidget(pContextWidget);
 
     // Load skin to a QWidget that we set as the central widget. Assignment
     // intentional in next line.

@@ -153,7 +153,7 @@ class CachingReader : public QObject {
 
     // List of free chunks. Linked list so that we have constant time insertions
     // and deletions. Iteration is not necessary.
-    Chunk* m_freeChunks;
+    QAtomicPointer<Chunk> m_freeChunks;
 
     // Keeps track of what Chunks we've allocated and indexes them based on what
     // chunk number they are allocated to.

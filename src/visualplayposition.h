@@ -28,8 +28,29 @@ class VSyncThread;
 //               ^Render Waveform sample X            |  ^VSync (New waveform is displayed
 //                by use usFromTimerToNextSync        ^swap Buffer
 
-class VisualPlayPositionData {
+class VisualPlayPositionData: public QObject {
+  Q_OBJECT
   public:
+    VisualPlayPositionData(){}
+    VisualPlayPositionData(const VisualPlayPositionData &other):
+      m_referenceTime(other.m_referenceTime),
+      m_callbackEntrytoDac(other.m_callbackEntrytoDac),
+      m_enginePlayPos(other.m_enginePlayPos),
+      m_rate(other.m_rate),
+      m_positionStep(other.m_positionStep),
+      m_pSlipPosition(other.m_pSlipPosition){
+      
+    }
+    VisualPlayPositionData & operator = (VisualPlayPositionData  other){
+      m_referenceTime=other.m_referenceTime;
+      m_callbackEntrytoDac=other.m_callbackEntrytoDac;
+      m_rate=other.m_rate;
+      m_enginePlayPos=other.m_enginePlayPos;
+      m_positionStep=other.m_positionStep;
+      m_pSlipPosition=other.m_pSlipPosition;
+      return *this;
+    }
+   ~VisualPlayPositionData(){}
     PerformanceTimer m_referenceTime;
     int m_callbackEntrytoDac; // Time from Audio Callback Entry to first sample of Buffer is transfered to DAC
     double m_enginePlayPos; // Play position of fist Sample in Buffer
@@ -37,7 +58,7 @@ class VisualPlayPositionData {
     double m_positionStep;
     double m_pSlipPosition;
 };
-
+Q_DECLARE_METATYPE(VisualPlayPositionData)
 
 class VisualPlayPosition : public QObject {
     Q_OBJECT

@@ -92,7 +92,22 @@ const int ENGINE_RAMP_NONE = 0;
 const int ENGINE_RAMP_UP = 1;
 
 //const int kiRampLength = 3;
+    enum SeekRequest {
+        NO_SEEK,
+        SEEK_STANDARD,
+        SEEK_EXACT,
+        SEEK_PHASE
+    };
 
+struct SeekData{
+      public:
+        SeekData(SeekRequest type=NO_SEEK,double position=0):
+          m_type(type),
+          m_position(position)
+      {}
+        SeekRequest   m_type;
+        double        m_position;
+    };
 class EngineBuffer : public EngineObject {
      Q_OBJECT
   private:
@@ -103,13 +118,6 @@ class EngineBuffer : public EngineObject {
         SYNC_REQUEST_ENABLEDISABLE,
     };
   public:
-    enum SeekRequest {
-        NO_SEEK,
-        SEEK_STANDARD,
-        SEEK_EXACT,
-        SEEK_PHASE
-    };
-
     enum KeylockEngine {
         SOUNDTOUCH,
         RUBBERBAND,
@@ -374,7 +382,8 @@ class EngineBuffer : public EngineObject {
     QAtomicInt m_iSeekQueued;
     QAtomicInt m_iEnableSyncQueued;
     QAtomicInt m_iSyncModeQueued;
-    ControlValueAtomic<double> m_queuedPosition;
+    QSharedPointer<SeekData> m_queuedPosition;
+//    ControlValueAtomic<SeekData> m_queuedPosition;
 
     // Holds the last sample value of the previous buffer. This is used when ramping to
     // zero in case of an immediate stop of the playback

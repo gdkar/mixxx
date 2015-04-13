@@ -27,7 +27,8 @@
 // REMOVE ME
 #include <QtDebug>
 #include <QResizeEvent>
-
+class QJSEngine;
+class QQmlEngine;
 class EngineMaster;
 class Library;
 class LibraryScanner;
@@ -186,7 +187,9 @@ class MixxxMainWindow : public QMainWindow {
 
     // The mixing engine.
     EngineMaster* m_pEngine;
-
+    
+    QQmlEngine*   m_pQml;
+    QJSEngine*    m_scriptEngine;
     // The skin loader
     SkinLoader* m_pSkinLoader;
 

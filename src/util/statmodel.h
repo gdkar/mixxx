@@ -22,6 +22,7 @@ class StatModel : public QAbstractTableModel {
         STAT_COLUMN_SUM,
         STAT_COLUMN_MIN,
         STAT_COLUMN_MAX,
+        STAT_COLUMN_MEDIAN,
         STAT_COLUMN_MEAN,
         STAT_COLUMN_VARIANCE,
         STAT_COLUMN_STDDEV,

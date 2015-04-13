@@ -6,13 +6,16 @@
 #include <QString>
 #include <QObject>
 #include <QAtomicPointer>
-
+#include <QSharedPointer>
+#include <QtQuick>
+#include <QJSEngine>
+#include <QJSValue>
+#include <QtQml>
 #include "control/controlbehavior.h"
 #include "control/controlvalue.h"
 #include "configobject.h"
 
 class ControlObject;
-
 class ControlDoublePrivate : public QObject {
     Q_OBJECT
   public:
@@ -24,7 +27,9 @@ class ControlDoublePrivate : public QObject {
     static void setUserConfig(ConfigObject<ConfigValue>* pConfig) {
         s_pUserConfig = pConfig;
     }
-
+    static void setEngine(QJSEngine *engine){
+      s_engine = engine;
+    }
     // Adds a ConfigKey for 'alias' to the control for 'key'. Can be used for
     // supporting a legacy / deprecated control. The 'key' control must exist
     // for this to work.
@@ -76,9 +81,11 @@ class ControlDoublePrivate : public QObject {
     // The caller must not delete the behavior at any time. The memory is managed
     // by this function.
     void setBehavior(ControlNumericBehavior* pBehavior);
+    void setBehavior(QJSValue & behavior);
+    void setBehavior(const QString &behavior);
 
     void setParameter(double dParam, QObject* pSender);
-    double getParameter() const;
+    double getParameter() ;
     double getParameterForValue(double value) const;
     void setParameter(double dParam);
 
@@ -155,6 +162,9 @@ class ControlDoublePrivate : public QObject {
     // The default control value.
     ControlValueAtomic<double> m_defaultValue;
 
+    QJSValue                                 m_behavior;
+    QJSValue                                 m_set_parameter;
+    QJSValue                                 m_get_parameter;
     QSharedPointer<ControlNumericBehavior> m_pBehavior;
 
     ControlObject* m_pCreatorCO;
@@ -172,9 +182,10 @@ class ControlDoublePrivate : public QObject {
     // Hash of aliases between ConfigKeys. Solely used for looking up the first
     // alias associated with a key.
     static QHash<ConfigKey, ConfigKey> s_qCOAliasHash;
-
+    static QJSEngine *s_engine;
     // Mutex guarding access to s_qCOHash and s_qCOAliasHash.
     static QMutex s_qCOHashMutex;
+
 };
 
 
