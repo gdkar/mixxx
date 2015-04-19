@@ -258,6 +258,8 @@ EngineBuffer::EngineBuffer(QString group, ConfigObject<ConfigValue>* _config,
 
     m_fwdButton = ControlObject::getControl(ConfigKey(group, "fwd"));
     m_backButton = ControlObject::getControl(ConfigKey(group, "back"));
+    m_jogFwdButton = ControlObject::getControl(ConfigKey(group, "jog_fwd"));
+    m_jogBackButton = ControlObject::getControl(ConfigKey(group, "jog_back"));
 
     m_pKeyControl = new KeyControl(group, _config);
     addControl(m_pKeyControl);
