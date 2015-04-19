@@ -468,6 +468,29 @@ class FAAD(Feature):
             raise Exception(
                 'Could not find libfaad or the libfaad development headers.')
 
+class Mpg123(Feature):
+    def description(self):
+        return "libmpg123 plugin"
+
+    def enabled(self, build):
+        build.flags['mpg123'] = util.get_flags(build.env, 'mpg123', 0)
+        if int(build.flags['mpg123']):
+            return True
+        return False
+
+    def add_options(self, build, vars):
+        vars.Add('mpg123',
+                 'Set to 1 to enable libmpg123 decoder plugin', 0)
+
+    def configure(self, build, conf):
+        if not self.enabled(build):
+            return
+        have_mpg123 = conf.CheckLib(['mpg123', 'libmpg123'], autoadd=False)
+        if not have_mpg123:
+            raise Exception(
+                'Could not find libmpg123 or its development headers.')
+
+
 
 class WavPack(Feature):
     def description(self):
