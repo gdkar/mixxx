@@ -9,7 +9,7 @@ WTime::WTime(QWidget *parent)
           m_sTimeFormat("h:mm AP"),
           m_iInterval(s_iMinuteInterval) {
     m_pTimer = new QTimer(this);
-    m_pTimer.setType(Qt::PreciseTimer);
+    m_pTimer->setTimerType(Qt::PreciseTimer);
 }
 
 WTime::~WTime() {

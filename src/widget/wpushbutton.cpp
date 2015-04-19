@@ -38,7 +38,7 @@ WPushButton::WPushButton(QWidget* pParent)
           m_leftButtonMode(ControlPushButton::PUSH),
           m_rightButtonMode(ControlPushButton::PUSH) {
     setStates(0);
-    m_clickTimer.setType(Qt::PreciseTimer);
+    m_clickTimer.setTimerType(Qt::PreciseTimer);
 }
 
 WPushButton::WPushButton(QWidget* pParent, ControlPushButton::ButtonMode leftButtonMode,
