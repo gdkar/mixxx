@@ -15,6 +15,20 @@ SkinContext::SkinContext(ConfigObject<ConfigValue>* pConfig,
           m_pScriptEngine(new QScriptEngine()),
           m_pScriptDebugger(new QScriptEngineDebugger()),
           m_pSingletons(new SingletonMap) {
+    QScriptValue context = m_pScriptEngine->pushContext()->activationObject();
+    QScriptValue newGlobal = m_pScriptEngine->newObject();
+    QScriptValueIterator it(m_pScriptEngine->globalObject());
+    while (it.hasNext()) {
+        it.next();
+        newGlobal.setProperty(it.name(), it.value());
+    }
+    m_pScriptEngine->setGlobalObject(newGlobal);
+
+    for (QHash<QString, QString>::const_iterator it = m_variables.begin();
+         it != m_variables.end(); ++it) {
+        m_pScriptEngine->globalObject().setProperty(it.key(), it.value());
+    }
+
     enableDebugger(true);
     // the extensions are imported once and will be passed to the children
     // global object as properties of the parent's global object.
