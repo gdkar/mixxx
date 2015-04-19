@@ -87,20 +87,12 @@ double TDStretchSSE::calcCrossCorr(const float *pV1, const float *pV2, double &n
     // Compile-time define SOUNDTOUCH_ALLOW_NONEXACT_SIMD_OPTIMIZATION is provided
     // for choosing if this little cheating is allowed.
 
-#ifdef SOUNDTOUCH_ALLOW_NONEXACT_SIMD_OPTIMIZATION
     // Little cheating allowed, return valid correlation only for 
     // aligned locations, meaning every second round for stereo sound.
 
     #define _MM_LOAD    _mm_load_ps
 
-    if (((ulongptr)pV1) & 15) return -1e50;    // skip unaligned locations
-
-#else
-    // No cheating allowed, use unaligned load & take the resulting
-    // performance hit.
-    #define _MM_LOAD    _mm_loadu_ps
-#endif 
-
+    if (((ulongptr)pV1) & 15){
     // ensure overlapLength is divisible by 8
     assert((overlapLength % 8) == 0);
 
@@ -145,39 +137,55 @@ double TDStretchSSE::calcCrossCorr(const float *pV1, const float *pV2, double &n
 
     float *pvSum = (float*)&vSum;
     return (double)(pvSum[0] + pvSum[1] + pvSum[2] + pvSum[3]) / sqrt(norm < 1e-9 ? 1.0 : norm);
-
-    /* This is approximately corresponding routine in C-language yet without normalization:
-    double corr, norm;
-    uint i;
+    }else{
+#undef _MM_LOAD
+#define _MM_LOAD _mm_loadu_ps
+    // ensure overlapLength is divisible by 8
+    assert((overlapLength % 8) == 0);
 
     // Calculates the cross-correlation value between 'pV1' and 'pV2' vectors
-    corr = norm = 0.0;
+    // Note: pV2 _must_ be aligned to 16-bit boundary, pV1 need not.
+    pVec1 = (const float*)pV1;
+    pVec2 = (const __m128*)pV2;
+    vSum = vNorm = _mm_setzero_ps();
+
+    // Unroll the loop by factor of 4 * 4 operations. Use same routine for
+    // stereo & mono, for mono it just means twice the amount of unrolling.
     for (i = 0; i < channels * overlapLength / 16; i ++) 
     {
-        corr += pV1[0] * pV2[0] +
-                pV1[1] * pV2[1] +
-                pV1[2] * pV2[2] +
-                pV1[3] * pV2[3] +
-                pV1[4] * pV2[4] +
-                pV1[5] * pV2[5] +
-                pV1[6] * pV2[6] +
-                pV1[7] * pV2[7] +
-                pV1[8] * pV2[8] +
-                pV1[9] * pV2[9] +
-                pV1[10] * pV2[10] +
-                pV1[11] * pV2[11] +
-                pV1[12] * pV2[12] +
-                pV1[13] * pV2[13] +
-                pV1[14] * pV2[14] +
-                pV1[15] * pV2[15];
+        __m128 vTemp;
+        // vSum += pV1[0..3] * pV2[0..3]
+        vTemp = _MM_LOAD(pVec1);
+        vSum  = _mm_add_ps(vSum,  _mm_mul_ps(vTemp ,pVec2[0]));
+        vNorm = _mm_add_ps(vNorm, _mm_mul_ps(vTemp ,vTemp));
 
-    for (j = 0; j < 15; j ++) norm += pV1[j] * pV1[j];
+        // vSum += pV1[4..7] * pV2[4..7]
+        vTemp = _MM_LOAD(pVec1 + 4);
+        vSum  = _mm_add_ps(vSum, _mm_mul_ps(vTemp, pVec2[1]));
+        vNorm = _mm_add_ps(vNorm, _mm_mul_ps(vTemp ,vTemp));
 
-        pV1 += 16;
-        pV2 += 16;
+        // vSum += pV1[8..11] * pV2[8..11]
+        vTemp = _MM_LOAD(pVec1 + 8);
+        vSum  = _mm_add_ps(vSum, _mm_mul_ps(vTemp, pVec2[2]));
+        vNorm = _mm_add_ps(vNorm, _mm_mul_ps(vTemp ,vTemp));
+
+        // vSum += pV1[12..15] * pV2[12..15]
+        vTemp = _MM_LOAD(pVec1 + 12);
+        vSum  = _mm_add_ps(vSum, _mm_mul_ps(vTemp, pVec2[3]));
+        vNorm = _mm_add_ps(vNorm, _mm_mul_ps(vTemp ,vTemp));
+
+        pVec1 += 16;
+        pVec2 += 4;
     }
-    return corr / sqrt(norm);
-    */
+
+    // return value = vSum[0] + vSum[1] + vSum[2] + vSum[3]
+    float *pvNorm = (float*)&vNorm;
+    norm = (pvNorm[0] + pvNorm[1] + pvNorm[2] + pvNorm[3]);
+
+    float *pvSum = (float*)&vSum;
+    return (double)(pvSum[0] + pvSum[1] + pvSum[2] + pvSum[3]) / sqrt(norm < 1e-9 ? 1.0 : norm);
+    }
+#undef _MM_LOAD
 }
 
 

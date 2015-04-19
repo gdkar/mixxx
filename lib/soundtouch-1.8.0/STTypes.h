@@ -51,7 +51,7 @@ typedef unsigned long   ulong;
 
 
 // Helper macro for aligning pointer up to next 16-byte boundary
-#define SOUNDTOUCH_ALIGN_POINTER_16(x)      ( ( (ulongptr)(x) + 15 ) & ~(ulongptr)15 )
+#define SOUNDTOUCH_ALIGN_POINTER_16(x)      (typeof(x))( ( (ulongptr)(x) + 15 ) & ~(ulongptr)15 )
 
 
 #if (defined(__GNUC__) && !defined(ANDROID))
