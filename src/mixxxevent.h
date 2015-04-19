@@ -21,7 +21,6 @@
   enum Type
   {
     Control = QEvent::User+1,
-    Midi,
     Reader,
   };
 
