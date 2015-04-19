@@ -69,7 +69,7 @@ void EngineVuMeter::process(CSAMPLE* pIn, const int iBufferSize) {
         // Since VU meters are a rolling sum of audio, the no-op checks in
         // ControlObject will not prevent us from causing tons of extra
         // work. Because of this, we use an epsilon here to be gentle on the GUI
-        // and MIDI controllers.
+        // and controllers.
         if (fabs(m_fRMSvolumeL - m_ctrlVuMeterL->get()) > epsilon)
             m_ctrlVuMeterL->set(m_fRMSvolumeL);
         if (fabs(m_fRMSvolumeR - m_ctrlVuMeterR->get()) > epsilon)

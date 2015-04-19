@@ -1,5 +1,5 @@
-#ifndef LIBRARYMIDICONTROL_H
-#define LIBRARYMIDICONTROL_H
+#ifndef LIBRARYCONTROL_H
+#define LIBRARYCONTROL_H
 
 #include <QObject>
 
@@ -92,4 +92,4 @@ class LibraryControl : public QObject {
     QMap<QString, LoadToGroupController*> m_loadToGroupControllers;
 };
 
-#endif //LIBRARYMIDICONTROL_H
+#endif //LIBRARYCONTROL_H

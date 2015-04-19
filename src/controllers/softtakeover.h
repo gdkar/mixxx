@@ -49,7 +49,7 @@ class SoftTakeoverCtrl {
     // Disable soft-takeover for the given Control
     void disable(ControlObject* control);
     // Check to see if the new value for the Control should be ignored
-    bool ignore(ControlObject* control, double newMidiParameter);
+    bool ignore(ControlObject* control, double newParameter);
 
   private:
     QHash<ControlObject*, SoftTakeover*> m_softTakeoverHash;
