@@ -1175,7 +1175,7 @@ void MixxxMainWindow::initActions()
             this, SLOT(slotOptionsKeyboard(bool)));
 
     QString preferencesTitle = tr("&Preferences");
-    QString preferencesText = tr("Change Mixxx settings (e.g. playback, MIDI, controls)");
+    QString preferencesText = tr("Change Mixxx settings (e.g. playback, controls)");
     m_pOptionsPreferences = new QAction(preferencesTitle, this);
 #ifdef __APPLE__
     m_pOptionsPreferences->setShortcut(

@@ -27,7 +27,6 @@ WLibrarySidebar::WLibrarySidebar(QWidget* parent)
     header()->setStretchLastSection(false);
     header()->setResizeMode(QHeaderView::ResizeToContents);
     header()->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
-    m_expandTimer.setType(Qt::PreciseTimer);
 }
 
 WLibrarySidebar::~WLibrarySidebar() {

@@ -35,7 +35,7 @@ public:
 
     static bool verifyControlValueValidity(QString controlGroup, QAbstractItemModel *model,
                                            const QModelIndex &index);
-    /** These getters are used by the "Add Control" dialog in the MIDI prefs. */
+    /** These getters are used by the "Add Control" dialog in the prefs. */
     static QStringList getChannelControlValues() { return m_channelControlValues; };
     static QStringList getMasterControlValues() { return m_masterControlValues; };
     static QStringList getPlaylistControlValues() { return m_playlistControlValues; };

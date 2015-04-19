@@ -142,7 +142,7 @@ class BpmControl : public EngineControl {
     // The current effective BPM of the engine
     ControlLinPotmeter* m_pEngineBpm;
 
-    // Used for bpm tapping from GUI and MIDI
+    // Used for bpm tapping from GUI and controller engine 
     ControlPushButton* m_pButtonTap;
 
     // Button for sync'ing with the other EngineBuffer

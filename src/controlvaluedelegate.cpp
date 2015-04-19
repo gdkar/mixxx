@@ -245,7 +245,6 @@ void ControlValueDelegate::setEditorData(QWidget* editor,
 
 void ControlValueDelegate::setModelData(QWidget* editor, QAbstractItemModel* model,
                                         const QModelIndex& index) const {
-    QString midiType = 0;
     QComboBox *comboBox = static_cast<QComboBox*>(editor);
     //comboBox->interpretText();
 

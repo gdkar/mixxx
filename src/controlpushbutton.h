@@ -19,8 +19,7 @@
 #define CONTROLPUSHBUTTON_H
 
 #include "controlobject.h"
-#include "controllers/midi/midimessage.h"
-
+#include "control/controlbehavior.h"
 /**
   *@author Tue and Ken Haste Andersen
   */
@@ -28,25 +27,19 @@
 class ControlPushButton : public ControlObject {
     Q_OBJECT
   public:
-    enum ButtonMode {
-         PUSH = 0,
-         TOGGLE,
-         POWERWINDOW,
-         LONGPRESSLATCHING,
-         TRIGGER,
-    };
+    typedef ControlPushButtonBehavior::ButtonMode ButtonMode;
 
     static QString buttonModeToString(int mode) {
         switch(mode) {
-            case ControlPushButton::PUSH:
+            case ControlPushButtonBehavior::PUSH:
                 return "PUSH";
-            case ControlPushButton::TOGGLE:
+            case ControlPushButtonBehavior::TOGGLE:
                 return "TOGGLE";
-            case ControlPushButton::POWERWINDOW:
+            case ControlPushButtonBehavior::POWERWINDOW:
                 return "POWERWINDOW";
-            case ControlPushButton::LONGPRESSLATCHING:
+            case ControlPushButtonBehavior::LONGPRESSLATCHING:
                 return "LONGPRESSLATCHING";
-            case ControlPushButton::TRIGGER:
+            case ControlPushButtonBehavior::TRIGGER:
                 return "TRIGGER";
             default:
                 return "UNKNOWN";
@@ -59,11 +52,11 @@ class ControlPushButton : public ControlObject {
     inline ButtonMode getButtonMode() const {
         return m_buttonMode;
     }
-    void setButtonMode(enum ButtonMode mode);
+    void setButtonMode(ButtonMode mode);
     void setStates(int num_states);
 
   private:
-    enum ButtonMode m_buttonMode;
+    ButtonMode m_buttonMode;
     int m_iNoStates;
 };
 
