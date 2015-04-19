@@ -38,7 +38,7 @@ WSearchLineEdit::WSearchLineEdit(QWidget* pParent)
     // Set up a timer to search after a few hundred milliseconds timeout.  This
     // stops us from thrashing the database if you type really fast.
     m_searchTimer.setSingleShot(true);
-    m_searchTimer.setType(Qt::PreciseTimer);
+    m_searchTimer.setTimerType(Qt::PreciseTimer);
     connect(&m_searchTimer, SIGNAL(timeout()),
             this, SLOT(triggerSearch()));
 
