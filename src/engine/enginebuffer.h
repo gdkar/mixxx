@@ -179,6 +179,9 @@ class EngineBuffer : public EngineObject {
     void slotControlStart(double);
     void slotControlEnd(double);
     void slotControlSeek(double);
+    void slotControlSeekRelative(double);
+    void slotControlJogFwd(double);
+    void slotControlJogBack(double);
     void slotControlSeekAbs(double);
     void slotControlSeekExact(double);
     void slotControlSlip(double);
@@ -326,6 +329,8 @@ class EngineBuffer : public EngineObject {
 
     ControlObject* m_fwdButton;
     ControlObject* m_backButton;
+    ControlObject* m_jogFwdButton;
+    ControlObject* m_jogBackButton;
     ControlPushButton* m_pSlipButton;
 
     ControlObject* m_rateEngine;

@@ -192,7 +192,10 @@ EngineBuffer::EngineBuffer(QString group, ConfigObject<ConfigValue>* _config,
     connect(m_playposSlider, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlSeek(double)),
             Qt::DirectConnection);
-
+    connect(m_jogFwdButton,SIGNAL(valueChanged(double)),
+        this,SLOT(slotControlJogFwd(double)),Qt::DirectConnection);
+    connect(m_jogBackButton,SIGNAL(valueChanged(double)),
+        this,SLOT(slotControlJogBack(double)),Qt::DirectConnection);
     // Control used to communicate ratio playpos to GUI thread
     m_visualPlayPos = VisualPlayPosition::getVisualPlayPosition(m_group);
 
@@ -256,6 +259,8 @@ EngineBuffer::EngineBuffer(QString group, ConfigObject<ConfigValue>* _config,
 
     m_fwdButton = ControlObject::getControl(ConfigKey(group, "fwd"));
     m_backButton = ControlObject::getControl(ConfigKey(group, "back"));
+    m_jogFwdButton = ControlObject::getControl(ConfigKey(group, "jog_fwd"));
+    m_jogBackButton = ControlObject::getControl(ConfigKey(group, "jog_back"));
 
     m_pKeyControl = new KeyControl(group, _config);
     addControl(m_pKeyControl);
@@ -709,7 +714,21 @@ void EngineBuffer::slotControlStop(double v)
         m_playButton->set(0);
     }
 }
-
+void EngineBuffer::slotControlSeekRelative(double v){
+  if(v!=0){
+    double fFractionalPlayPos = m_playposSlider->get();
+    double delta = fractionalPlayposFromAbsolute(v);
+    doSeekFractional(fFractionalPlayPos+delta,SEEK_EXACT);
+  }
+}
+void EngineBuffer::slotControlJogFwd(double v){
+  if(v>0.0)
+    slotControlSeekRelative(m_iLastBufferSize*3);
+}
+void EngineBuffer::slotControlJogBack(double v){
+  if(v>0.0)
+    slotControlSeekRelative(m_iLastBufferSize*-5);
+}
 void EngineBuffer::slotControlSlip(double v)
 {
     m_slipEnabled = static_cast<int>(v > 0.0);
