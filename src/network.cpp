@@ -55,7 +55,7 @@ void NetworkTimeouts::addReply(QNetworkReply* reply) {
   
     connect(reply, SIGNAL(destroyed()), SLOT(replyFinished()));
     connect(reply, SIGNAL(finished()), SLOT(replyFinished()));
-    m_timers[reply] = startTimer(m_timeout_msec);
+    m_timers[reply] = startTimer(m_timeout_msec,Qt::PreciseTimer);
 }
 
 void NetworkTimeouts::replyFinished() {

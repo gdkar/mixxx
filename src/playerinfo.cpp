@@ -29,7 +29,7 @@ static PlayerInfo* m_pPlayerInfo = NULL;
 PlayerInfo::PlayerInfo()
         : m_pCOxfader(new ControlObjectThread("[Master]","crossfader")),
           m_currentlyPlayingDeck(-1) {
-    startTimer(kPlayingDeckUpdateIntervalMillis);
+    startTimer(kPlayingDeckUpdateIntervalMillis,Qt::PreciseTimer);
 }
 
 PlayerInfo::~PlayerInfo() {

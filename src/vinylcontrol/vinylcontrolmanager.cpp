@@ -123,7 +123,7 @@ void VinylControlManager::addSignalQualityListener(VinylSignalQualityListener* p
     m_pProcessor->setSignalQualityReporting(true);
 
     if (m_iTimerId == -1) {
-        m_iTimerId = startTimer(MIXXX_VINYL_SCOPE_UPDATE_LATENCY_MS);
+        m_iTimerId = startTimer(MIXXX_VINYL_SCOPE_UPDATE_LATENCY_MS,Qt::PreciseTimer);
     }
 }
 
