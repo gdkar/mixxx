@@ -25,7 +25,7 @@ VSyncThread::VSyncThread(MixxxMainWindow* mixxxMainWindow)
         : QThread(mixxxMainWindow),
           m_bDoRendering(true),
           m_vSyncTypeChanged(false),
-          m_usSyncIntervalTime(33333),
+          m_nsSyncIntervalTime(33333),
           m_vSyncMode(ST_TIMER),
           m_syncOk(false),
           m_droppedFrames(0),
@@ -51,9 +51,9 @@ void VSyncThread::run() {
     Counter droppedFrames("VsyncThread real time error");
     QThread::currentThread()->setObjectName("VSyncThread");
 
-    m_usWaitToSwap = m_usSyncIntervalTime;
+    m_nsWaitToSwap = m_nsSyncIntervalTime;
     m_timer.start();
-
+    m_nextVSync = 0;
     while (m_bDoRendering) {
         if (m_vSyncMode == ST_FREE) {
             // for benchmark only!
@@ -70,8 +70,8 @@ void VSyncThread::run() {
             Event::end("VsyncThread vsync swap");
 
             m_timer.restart();
-            m_usWaitToSwap = 1000;
-            usleep(1000);
+            m_nsWaitToSwap = 1000000;
+            usleep(m_nsWaitToSwap/1000);
         } else { // if (m_vSyncMode == ST_TIMER) {
 
             Event::start("VsyncThread vsync render");
@@ -83,12 +83,12 @@ void VSyncThread::run() {
             Event::end("VsyncThread vsync render");
 
             // qDebug() << "ST_TIMER                      " << usLast << usRest;
-            int usRemainingForSwap = m_usWaitToSwap - (int)m_timer.elapsed() / 1000;
+            qint64 nsRemainingForSwap = m_nsWaitToSwap - (qint64)m_timer.elapsed() ;
             // waiting for interval by sleep
-            if (usRemainingForSwap > 100) {
-                Event::start("VsyncThread usleep for VSync");
-                usleep(usRemainingForSwap);
-                Event::end("VsyncThread usleep for VSync");
+            if (nsRemainingForSwap        > 100000) {
+                Event::start("VsyncThread nsleep for VSync");
+                usleep((nsRemainingForSwap/1000)-100);
+                Event::end  ("VsyncThread nsleep for VSync");
             }
 
             Event::start("VsyncThread vsync swap");
@@ -100,17 +100,22 @@ void VSyncThread::run() {
             m_semaVsyncSlot.acquire();
             Event::end("VsyncThread vsync swap");
 
+            qint64 now    = m_absolute.elapsed();
+            m_nextVSync   = (m_nextVSync?m_nextVSync:now)+(1e9/m_displayFrameRate);
+            if(m_nextVSync < now){
+              m_nextVSync = now + (1e9/m_displayFrameRate);
+            }
             // <- Assume we are VSynced here ->
-            int usLastSwapTime = (int)m_timer.restart() / 1000;
-            if (usRemainingForSwap < 0) {
+            qint64 nsLastSwapTime = (qint64)m_timer.restart() ;
+            if (nsRemainingForSwap < 0) {
                 // Our swapping call was already delayed
                 // The real swap might happens on the following VSync, depending on driver settings
                 m_droppedFrames++; // Count as Real Time Error
                 droppedFrames.increment();
             }
             // try to stay in right intervals
-            m_usWaitToSwap = m_usSyncIntervalTime +
-                    ((m_usWaitToSwap - usLastSwapTime) % m_usSyncIntervalTime);
+            m_nsWaitToSwap = m_nsSyncIntervalTime +
+                    ((m_nsWaitToSwap - nsLastSwapTime) % m_nsSyncIntervalTime);
         }
 
         // Qt timers are not that useful in our case, because they
@@ -139,13 +144,13 @@ void VSyncThread::swapGl(QGLWidget* glw, int index) {
 #endif
 }
 
-int VSyncThread::elapsed() {
-    return (int)m_timer.elapsed() / 1000;
+qint64 VSyncThread::elapsed() {
+    return (qint64)m_timer.elapsed() ;
 }
 
-void VSyncThread::setUsSyncIntervalTime(int syncTime) {
-    m_usSyncIntervalTime = syncTime;
-    m_vSyncPerRendering = round(m_displayFrameRate * m_usSyncIntervalTime / 1000);
+void VSyncThread::setNsSyncIntervalTime(qint64 syncTime) {
+    m_nsSyncIntervalTime = syncTime;
+    m_vSyncPerRendering = round(m_displayFrameRate * m_nsSyncIntervalTime );
 }
 
 void VSyncThread::setVSyncType(int type) {
@@ -157,20 +162,20 @@ void VSyncThread::setVSyncType(int type) {
     m_vSyncTypeChanged = true;
 }
 
-int VSyncThread::usToNextSync() {
-    int usRest = m_usWaitToSwap - ((int)m_timer.elapsed() / 1000);
+qint64 VSyncThread::nsToNextSync() {
+    qint64 nsRest = m_nsSyncIntervalTime - ((qint64)m_timer.elapsed() );
     // int math is fine here, because we do not expect times > 4.2 s
-    if (usRest < 0) {
-        usRest %= m_usSyncIntervalTime;
-        usRest += m_usSyncIntervalTime;
+    if (nsRest < 0) {
+        nsRest %= m_nsSyncIntervalTime;
+        nsRest += m_nsSyncIntervalTime;
     }
-    return usRest;
+    return nsRest;
 }
 
-int VSyncThread::usFromTimerToNextSync(PerformanceTimer* timer) {
-    int usDifference = (int)m_timer.difference(timer) / 1000;
+qint64 VSyncThread::nsFromTimerToNextSync(PerformanceTimer* timer) {
+    qint64 nsDifference = (qint64)m_timer.difference(timer) ;
     // int math is fine here, because we do not expect times > 4.2 s
-    return usDifference + m_usWaitToSwap;
+    return nsDifference + m_nsWaitToSwap;
 }
 
 int VSyncThread::droppedFrames() {

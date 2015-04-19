@@ -56,13 +56,13 @@ class VSyncThread : public QThread {
     void stop();
 
     bool waitForVideoSync(QGLWidget* glw);
-    int elapsed();
-    int usToNextSync();
-    void setUsSyncIntervalTime(int usSyncTimer);
+    qint64 elapsed();
+    qint64 nsToNextSync();
+    void setNsSyncIntervalTime(qint64  nsSyncTimer);
     void setVSyncType(int mode);
     int droppedFrames();
-    void setSwapWait(int sw);
-    int usFromTimerToNextSync(PerformanceTimer* timer);
+    void setSwapWait(qint64 sw);
+    qint64 nsFromTimerToNextSync(PerformanceTimer* timer);
     void vsyncSlotFinished();
     void getAvailableVSyncTypes(QList<QPair<int, QString > >* list);
     void setupSync(QGLWidget* glw, int index);
@@ -108,13 +108,15 @@ class VSyncThread : public QThread {
 #endif
 
     bool m_vSyncTypeChanged;
-    int m_usSyncIntervalTime;
-    int m_usWaitToSwap;
+    qint64 m_nsSyncIntervalTime;
+    qint64 m_nsWaitToSwap;
     enum VSyncMode m_vSyncMode;
     bool m_syncOk;
     int m_droppedFrames;
-    int m_swapWait;
+    qint64 m_swapWait;
     PerformanceTimer m_timer;
+    PerformanceTimer m_absolute;
+    qint64           m_nextVSync;
     QSemaphore m_semaVsyncSlot;
     double m_displayFrameRate;
     int m_vSyncPerRendering;

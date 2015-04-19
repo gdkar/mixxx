@@ -37,7 +37,7 @@ class VisualPlayPositionData {
     double m_positionStep;
     double m_pSlipPosition;
 };
-
+Q_DECLARE_TYPEINFO(VisualPlayPositionData,Q_PRIMITIVE_TYPE);
 
 class VisualPlayPosition : public QObject {
     Q_OBJECT
@@ -72,7 +72,7 @@ class VisualPlayPosition : public QObject {
     QString m_key;
     bool m_invalidTimeInfoWarned;
 
-    static QMap<QString, QWeakPointer<VisualPlayPosition> > m_listVisualPlayPosition;
+    static QMap<QString, QSharedPointer<VisualPlayPosition> > m_listVisualPlayPosition;
     // Time info from the Sound device, updated just after audio callback is called
     static PaStreamCallbackTimeInfo m_timeInfo;
     // Time stamp for m_timeInfo in main CPU time
