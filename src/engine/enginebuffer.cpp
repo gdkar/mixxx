@@ -192,10 +192,9 @@ EngineBuffer::EngineBuffer(QString group, ConfigObject<ConfigValue>* _config,
     connect(m_playposSlider, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlSeek(double)),
             Qt::DirectConnection);
-    connect(m_jogFwdButton,SIGNAL(valueChanged(double)),
-        this,SLOT(slotControlJogFwd(double)),Qt::DirectConnection);
-    connect(m_jogBackButton,SIGNAL(valueChanged(double)),
-        this,SLOT(slotControlJogBack(double)),Qt::DirectConnection);
+    m_jogFwdButton = new ControlPushButton(ConfigKey(group, "jog_fwd"));
+    m_jogBackButton = new ControlPushButton(ConfigKey(group, "jog_back"));
+
     // Control used to communicate ratio playpos to GUI thread
     m_visualPlayPos = VisualPlayPosition::getVisualPlayPosition(m_group);
 
@@ -803,6 +802,13 @@ void EngineBuffer::process(CSAMPLE* pOutput, const int iBufferSize) {
         // Update the slipped position and seek if it was disabled.
         processSlip(iBufferSize);
         processSyncRequests();
+        bool joggingFwd = m_jogFwdButton->toBool();
+        bool joggingBack = m_jogBackButton->toBool();
+        if(joggingFwd&&!joggingBack){
+            slotControlSeekRelative(3*iBufferSize);
+        }else if(joggingBack){
+          slotControlSeekRelative(-5*iBufferSize);
+        }
         processSeek();
 
         // speed is the ratio between track-time and real-time
