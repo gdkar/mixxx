@@ -43,7 +43,7 @@ EngineDeck::EngineDeck(const ChannelHandleAndGroup& handle_group,
     }
 
     // Set up passthrough utilities and fields
-    m_pPassing->setButtonMode(ControlPushButton::POWERWINDOW);
+    m_pPassing->setButtonMode(ControlPushButtonBehavior::POWERWINDOW);
     m_bPassthroughIsActive = false;
     m_bPassthroughWasActive = false;
 

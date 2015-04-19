@@ -135,7 +135,7 @@ EngineBuffer::EngineBuffer(QString group, ConfigObject<ConfigValue>* _config,
 
     // Play button
     m_playButton = new ControlPushButton(ConfigKey(m_group, "play"));
-    m_playButton->setButtonMode(ControlPushButton::TOGGLE);
+    m_playButton->setButtonMode(ControlPushButtonBehavior::TOGGLE);
     m_playButton->connectValueChangeRequest(
             this, SLOT(slotControlPlayRequest(double)),
             Qt::DirectConnection);
@@ -160,7 +160,7 @@ EngineBuffer::EngineBuffer(QString group, ConfigObject<ConfigValue>* _config,
 
     // Start button
     m_startButton = new ControlPushButton(ConfigKey(m_group, "start"));
-    m_startButton->setButtonMode(ControlPushButton::TRIGGER);
+    m_startButton->setButtonMode(ControlPushButtonBehavior::TRIGGER);
     connect(m_startButton, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlStart(double)),
             Qt::DirectConnection);
@@ -172,7 +172,7 @@ EngineBuffer::EngineBuffer(QString group, ConfigObject<ConfigValue>* _config,
             Qt::DirectConnection);
 
     m_pSlipButton = new ControlPushButton(ConfigKey(m_group, "slip_enabled"));
-    m_pSlipButton->setButtonMode(ControlPushButton::TOGGLE);
+    m_pSlipButton->setButtonMode(ControlPushButtonBehavior::TOGGLE);
     connect(m_pSlipButton, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlSlip(double)),
             Qt::DirectConnection);
@@ -197,7 +197,7 @@ EngineBuffer::EngineBuffer(QString group, ConfigObject<ConfigValue>* _config,
     m_visualPlayPos = VisualPlayPosition::getVisualPlayPosition(m_group);
 
     m_pRepeat = new ControlPushButton(ConfigKey(m_group, "repeat"));
-    m_pRepeat->setButtonMode(ControlPushButton::TOGGLE);
+    m_pRepeat->setButtonMode(ControlPushButtonBehavior::TOGGLE);
 
     // Sample rate
     m_pSampleRate = new ControlObjectSlave("[Master]", "samplerate", this);
@@ -211,7 +211,7 @@ EngineBuffer::EngineBuffer(QString group, ConfigObject<ConfigValue>* _config,
     m_pTrackSampleRate = new ControlObject(ConfigKey(m_group, "track_samplerate"));
 
     m_pKeylock = new ControlPushButton(ConfigKey(m_group, "keylock"));
-    m_pKeylock->setButtonMode(ControlPushButton::TOGGLE);
+    m_pKeylock->setButtonMode(ControlPushButtonBehavior::TOGGLE);
     m_pKeylock->set(false);
 
     m_pEject = new ControlPushButton(ConfigKey(m_group, "eject"));

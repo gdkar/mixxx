@@ -15,7 +15,7 @@ EffectButtonParameterSlot::EffectButtonParameterSlot(const QString& group,
             ConfigKey(m_group, itemPrefix + QString("_loaded")));
     m_pControlValue = new ControlPushButton(
             ConfigKey(m_group, itemPrefix));
-    m_pControlValue->setButtonMode(ControlPushButton::POWERWINDOW);
+    m_pControlValue->setButtonMode(ControlPushButtonBehavior::POWERWINDOW);
     m_pControlType = new ControlObject(
             ConfigKey(m_group, itemPrefix + QString("_type")));
 

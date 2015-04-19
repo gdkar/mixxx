@@ -212,7 +212,7 @@ TEST_F(MidiControllerTest, ReceiveMessage_ToggleCO_PushOnOff) {
     // (NOTE_OFF, 0x00) for release.
     ConfigKey key("[Channel1]", "keylock");
     ControlPushButton cpb(key);
-    cpb.setButtonMode(ControlPushButton::TOGGLE);
+    cpb.setButtonMode(ControlPushButtonBehavior::TOGGLE);
 
     unsigned char channel = 0x01;
     unsigned char control = 0x10;
@@ -241,7 +241,7 @@ TEST_F(MidiControllerTest, ReceiveMessage_ToggleCO_PushOnOn) {
     // (NOTE_ON, 0x00) for release.
     ConfigKey key("[Channel1]", "keylock");
     ControlPushButton cpb(key);
-    cpb.setButtonMode(ControlPushButton::TOGGLE);
+    cpb.setButtonMode(ControlPushButtonBehavior::TOGGLE);
 
     unsigned char channel = 0x01;
     unsigned char control = 0x10;
@@ -268,7 +268,7 @@ TEST_F(MidiControllerTest, ReceiveMessage_ToggleCO_ToggleOnOff_ButtonMidiOption)
     // push button.
     ConfigKey key("[Channel1]", "keylock");
     ControlPushButton cpb(key);
-    cpb.setButtonMode(ControlPushButton::TOGGLE);
+    cpb.setButtonMode(ControlPushButtonBehavior::TOGGLE);
 
     unsigned char channel = 0x01;
     unsigned char control = 0x10;
@@ -302,7 +302,7 @@ TEST_F(MidiControllerTest, ReceiveMessage_ToggleCO_ToggleOnOff_SwitchMidiOption)
     // button rather than a momentary push button.
     ConfigKey key("[Channel1]", "keylock");
     ControlPushButton cpb(key);
-    cpb.setButtonMode(ControlPushButton::TOGGLE);
+    cpb.setButtonMode(ControlPushButtonBehavior::TOGGLE);
 
     unsigned char channel = 0x01;
     unsigned char control = 0x10;
@@ -352,7 +352,7 @@ TEST_F(MidiControllerTest, ReceiveMessage_ToggleCO_PushCC) {
     // as (CC, 0x7f) for press and (CC, 0x00) for release.
     ConfigKey key("[Channel1]", "keylock");
     ControlPushButton cpb(key);
-    cpb.setButtonMode(ControlPushButton::TOGGLE);
+    cpb.setButtonMode(ControlPushButtonBehavior::TOGGLE);
 
     unsigned char channel = 0x01;
     unsigned char control = 0x10;

@@ -24,7 +24,7 @@ class FakeMaster {
     FakeMaster()
             : crossfader(ConfigKey("[Master]", "crossfader"), -1.0, 1.0),
               crossfaderReverse(ConfigKey("[Mixer Profile]", "xFaderReverse")) {
-        crossfaderReverse.setButtonMode(ControlPushButton::TOGGLE);
+        crossfaderReverse.setButtonMode(ControlPushButtonBehavior::TOGGLE);
     }
 
     ControlPotmeter crossfader;
@@ -38,8 +38,8 @@ class FakeDeck : public BaseTrackPlayer {
               playposition(ConfigKey(group, "playposition"), 0.0, 1.0, true),
               play(ConfigKey(group, "play")),
               repeat(ConfigKey(group, "repeat")) {
-        play.setButtonMode(ControlPushButton::TOGGLE);
-        repeat.setButtonMode(ControlPushButton::TOGGLE);
+        play.setButtonMode(ControlPushButtonBehavior::TOGGLE);
+        repeat.setButtonMode(ControlPushButtonBehavior::TOGGLE);
     }
 
     void fakeTrackLoadedEvent(TrackPointer pTrack) {

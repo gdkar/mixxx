@@ -13,11 +13,11 @@ EffectParameterSlot::EffectParameterSlot(const QString& group, const unsigned in
             ConfigKey(m_group, itemPrefix + QString("_loaded")));
     m_pControlLinkType = new ControlPushButton(
             ConfigKey(m_group, itemPrefix + QString("_link_type")));
-    m_pControlLinkType->setButtonMode(ControlPushButton::TOGGLE);
+    m_pControlLinkType->setButtonMode(ControlPushButtonBehavior::TOGGLE);
     m_pControlLinkType->setStates(EffectManifestParameter::NUM_LINK_TYPES);
     m_pControlLinkInverse = new ControlPushButton(
             ConfigKey(m_group, itemPrefix + QString("_link_inverse")));
-    m_pControlLinkInverse->setButtonMode(ControlPushButton::TOGGLE);
+    m_pControlLinkInverse->setButtonMode(ControlPushButtonBehavior::TOGGLE);
     m_pControlValue = new ControlEffectKnob(
             ConfigKey(m_group, itemPrefix));
     m_pControlType = new ControlObject(

@@ -36,20 +36,20 @@ SyncControl::SyncControl(const QString& group, ConfigObject<ConfigValue>* pConfi
                                        Qt::DirectConnection);
 
     m_pSyncMode.reset(new ControlPushButton(ConfigKey(group, "sync_mode")));
-    m_pSyncMode->setButtonMode(ControlPushButton::TOGGLE);
+    m_pSyncMode->setButtonMode(ControlPushButtonBehavior::TOGGLE);
     m_pSyncMode->setStates(SYNC_NUM_MODES);
     m_pSyncMode->connectValueChangeRequest(
             this, SLOT(slotSyncModeChangeRequest(double)), Qt::DirectConnection);
 
     m_pSyncMasterEnabled.reset(
             new ControlPushButton(ConfigKey(group, "sync_master")));
-    m_pSyncMasterEnabled->setButtonMode(ControlPushButton::TOGGLE);
+    m_pSyncMasterEnabled->setButtonMode(ControlPushButtonBehavior::TOGGLE);
     m_pSyncMasterEnabled->connectValueChangeRequest(
             this, SLOT(slotSyncMasterEnabledChangeRequest(double)), Qt::DirectConnection);
 
     m_pSyncEnabled.reset(
             new ControlPushButton(ConfigKey(group, "sync_enabled")));
-    m_pSyncEnabled->setButtonMode(ControlPushButton::LONGPRESSLATCHING);
+    m_pSyncEnabled->setButtonMode(ControlPushButtonBehavior::LONGPRESSLATCHING);
     m_pSyncEnabled->connectValueChangeRequest(
             this, SLOT(slotSyncEnabledChangeRequest(double)), Qt::DirectConnection);
 

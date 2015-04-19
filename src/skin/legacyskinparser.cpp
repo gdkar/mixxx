@@ -101,7 +101,7 @@ ControlObject* controlFromConfigKey(ConfigKey key, bool bPersist,
     // Since the usual behavior here is to create a skin-defined push
     // button, actually make it a push button and set it to toggle.
     ControlPushButton* controlButton = new ControlPushButton(key, bPersist);
-    controlButton->setButtonMode(ControlPushButton::TOGGLE);
+    controlButton->setButtonMode(ControlPushButtonBehavior::TOGGLE);
     if (created) {
         *created = true;
     }

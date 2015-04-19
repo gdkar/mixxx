@@ -35,8 +35,8 @@
 
 WPushButton::WPushButton(QWidget* pParent)
         : WWidget(pParent),
-          m_leftButtonMode(ControlPushButton::PUSH),
-          m_rightButtonMode(ControlPushButton::PUSH) {
+          m_leftButtonMode(ControlPushButtonBehavior::PUSH),
+          m_rightButtonMode(ControlPushButtonBehavior::PUSH) {
     setStates(0);
     m_clickTimer.setType(Qt::PreciseTimer);
 }
@@ -127,7 +127,7 @@ void WPushButton::setup(QDomNode node, const SkinContext& context) {
 
     if (leftConnection) {
         bool leftClickForcePush = context.selectBool(node, "LeftClickIsPushButton", false);
-        m_leftButtonMode = ControlPushButton::PUSH;
+        m_leftButtonMode = ControlPushButtonBehavior::PUSH;
         if (!leftClickForcePush) {
             const ConfigKey& configKey = leftConnection->getKey();
             ControlPushButton* p = dynamic_cast<ControlPushButton*>(
@@ -139,9 +139,9 @@ void WPushButton::setup(QDomNode node, const SkinContext& context) {
         if (leftConnection->getEmitOption() &
                 ControlParameterWidgetConnection::EMIT_DEFAULT) {
             switch (m_leftButtonMode) {
-                case ControlPushButton::PUSH:
-                case ControlPushButton::LONGPRESSLATCHING:
-                case ControlPushButton::POWERWINDOW:
+                case ControlPushButtonBehavior::PUSH:
+                case ControlPushButtonBehavior::LONGPRESSLATCHING:
+                case ControlPushButtonBehavior::POWERWINDOW:
                     leftConnection->setEmitOption(
                             ControlParameterWidgetConnection::EMIT_ON_PRESS_AND_RELEASE);
                     break;
@@ -168,15 +168,15 @@ void WPushButton::setup(QDomNode node, const SkinContext& context) {
     if (!m_rightConnections.isEmpty()) {
         ControlParameterWidgetConnection* rightConnection = m_rightConnections.at(0);
         bool rightClickForcePush = context.selectBool(node, "RightClickIsPushButton", false);
-        m_rightButtonMode = ControlPushButton::PUSH;
+        m_rightButtonMode = ControlPushButtonBehavior::PUSH;
         if (!rightClickForcePush) {
             const ConfigKey configKey = rightConnection->getKey();
             ControlPushButton* p = dynamic_cast<ControlPushButton*>(
                     ControlObject::getControl(configKey));
             if (p) {
                 m_rightButtonMode = p->getButtonMode();
-                if (m_rightButtonMode != ControlPushButton::PUSH &&
-                        m_rightButtonMode != ControlPushButton::TRIGGER) {
+                if (m_rightButtonMode != ControlPushButtonBehavior::PUSH &&
+                        m_rightButtonMode != ControlPushButtonBehavior::TRIGGER) {
                     SKIN_WARNING(node, context)
                             << "WPushButton::setup: Connecting a Pushbutton not in PUSH or TRIGGER mode is not implemented\n"
                             << "Please set <RightClickIsPushButton>true</RightClickIsPushButton>";
@@ -186,9 +186,9 @@ void WPushButton::setup(QDomNode node, const SkinContext& context) {
         if (rightConnection->getEmitOption() &
                 ControlParameterWidgetConnection::EMIT_DEFAULT) {
             switch (m_rightButtonMode) {
-                case ControlPushButton::PUSH:
-                case ControlPushButton::LONGPRESSLATCHING:
-                case ControlPushButton::POWERWINDOW:
+                case ControlPushButtonBehavior::PUSH:
+                case ControlPushButtonBehavior::LONGPRESSLATCHING:
+                case ControlPushButtonBehavior::POWERWINDOW:
                     rightConnection->setEmitOption(
                             ControlParameterWidgetConnection::EMIT_ON_PRESS_AND_RELEASE);
                     break;
@@ -323,7 +323,7 @@ void WPushButton::mousePressEvent(QMouseEvent * e) {
     const bool leftClick = e->button() == Qt::LeftButton;
     const bool rightClick = e->button() == Qt::RightButton;
 
-    if (m_leftButtonMode == ControlPushButton::POWERWINDOW
+    if (m_leftButtonMode == ControlPushButtonBehavior::POWERWINDOW
             && m_iNoStates == 2) {
         if (leftClick) {
             if (getControlParameterLeft() == 0.0) {
@@ -341,7 +341,7 @@ void WPushButton::mousePressEvent(QMouseEvent * e) {
     if (rightClick) {
         // This is the secondary button function allways a Pushbutton
         // due the leak of visual feedback we do not allow a toggle function
-        if (m_rightButtonMode == ControlPushButton::PUSH
+        if (m_rightButtonMode == ControlPushButtonBehavior::PUSH
                 || m_iNoStates == 1) {
             m_bPressed = true;
             setControlParameterRightDown(1.0);
@@ -352,7 +352,7 @@ void WPushButton::mousePressEvent(QMouseEvent * e) {
 
     if (leftClick) {
         double emitValue;
-        if (m_leftButtonMode == ControlPushButton::PUSH
+        if (m_leftButtonMode == ControlPushButtonBehavior::PUSH
                 || m_iNoStates == 1) {
             // This is either forced to behave like a push button on left-click
             // or this is a push button.
@@ -363,7 +363,7 @@ void WPushButton::mousePressEvent(QMouseEvent * e) {
             if (!isnan(emitValue) && m_iNoStates > 0) {
                 emitValue = static_cast<int>(emitValue + 1.0) % m_iNoStates;
             }
-            if (m_leftButtonMode == ControlPushButton::LONGPRESSLATCHING) {
+            if (m_leftButtonMode == ControlPushButtonBehavior::LONGPRESSLATCHING) {
                 m_clickTimer.setSingleShot(true);
                 m_clickTimer.start(ControlPushButtonBehavior::kLongPressLatchingTimeMillis);
             }
@@ -389,7 +389,7 @@ void WPushButton::mouseReleaseEvent(QMouseEvent * e) {
     const bool leftClick = e->button() == Qt::LeftButton;
     const bool rightClick = e->button() == Qt::RightButton;
 
-    if (m_leftButtonMode == ControlPushButton::POWERWINDOW
+    if (m_leftButtonMode == ControlPushButtonBehavior::POWERWINDOW
             && m_iNoStates == 2) {
         if (leftClick) {
             const bool rightButtonDown = QApplication::mouseButtons() & Qt::RightButton;
@@ -409,7 +409,7 @@ void WPushButton::mouseReleaseEvent(QMouseEvent * e) {
         // This is the secondary clickButton function,
         // due the leak of visual feedback we do not allow a toggle
         // function
-        if (m_rightButtonMode == ControlPushButton::PUSH
+        if (m_rightButtonMode == ControlPushButtonBehavior::PUSH
                 || m_iNoStates == 1) {
             m_bPressed = false;
             setControlParameterRightUp(0.0);
@@ -420,12 +420,12 @@ void WPushButton::mouseReleaseEvent(QMouseEvent * e) {
 
     if (leftClick) {
         double emitValue = getControlParameterLeft();
-        if (m_leftButtonMode == ControlPushButton::PUSH
+        if (m_leftButtonMode == ControlPushButtonBehavior::PUSH
                 || m_iNoStates == 1) {
             // This is a Pushbutton
             emitValue = 0.0;
         } else {
-            if (m_leftButtonMode == ControlPushButton::LONGPRESSLATCHING
+            if (m_leftButtonMode == ControlPushButtonBehavior::LONGPRESSLATCHING
                     && m_clickTimer.isActive() && emitValue >= 1.0) {
                 // revert toggle if button is released too early
                 if (!isnan(emitValue) && m_iNoStates > 0) {

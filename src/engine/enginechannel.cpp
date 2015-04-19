@@ -24,11 +24,11 @@ EngineChannel::EngineChannel(const ChannelHandleAndGroup& handle_group,
                              EngineChannel::ChannelOrientation defaultOrientation)
         : m_group(handle_group) {
     m_pPFL = new ControlPushButton(ConfigKey(getGroup(), "pfl"));
-    m_pPFL->setButtonMode(ControlPushButton::TOGGLE);
+    m_pPFL->setButtonMode(ControlPushButtonBehavior::TOGGLE);
     m_pMaster = new ControlPushButton(ConfigKey(getGroup(), "master"));
-    m_pMaster->setButtonMode(ControlPushButton::TOGGLE);
+    m_pMaster->setButtonMode(ControlPushButtonBehavior::TOGGLE);
     m_pOrientation = new ControlPushButton(ConfigKey(getGroup(), "orientation"));
-    m_pOrientation->setButtonMode(ControlPushButton::TOGGLE);
+    m_pOrientation->setButtonMode(ControlPushButtonBehavior::TOGGLE);
     m_pOrientation->setStates(3);
     m_pOrientation->set(defaultOrientation);
     m_pOrientationLeft = new ControlPushButton(ConfigKey(getGroup(), "orientation_left"));
@@ -41,7 +41,7 @@ EngineChannel::EngineChannel(const ChannelHandleAndGroup& handle_group,
     connect(m_pOrientationCenter, SIGNAL(valueChanged(double)),
             this, SLOT(slotOrientationCenter(double)), Qt::DirectConnection);
     m_pTalkover = new ControlPushButton(ConfigKey(getGroup(), "talkover"));
-    m_pTalkover->setButtonMode(ControlPushButton::POWERWINDOW);
+    m_pTalkover->setButtonMode(ControlPushButtonBehavior::POWERWINDOW);
 }
 
 EngineChannel::~EngineChannel() {

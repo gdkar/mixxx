@@ -49,7 +49,7 @@ CueControl::CueControl(QString group,
     // 1.0 -> Denon mode
 
     m_pCueSet = new ControlPushButton(ConfigKey(group, "cue_set"));
-    m_pCueSet->setButtonMode(ControlPushButton::TRIGGER);
+    m_pCueSet->setButtonMode(ControlPushButtonBehavior::TRIGGER);
     connect(m_pCueSet, SIGNAL(valueChanged(double)),
             this, SLOT(cueSet(double)),
             Qt::DirectConnection);
