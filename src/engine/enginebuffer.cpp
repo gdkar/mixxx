@@ -192,6 +192,8 @@ EngineBuffer::EngineBuffer(QString group, ConfigObject<ConfigValue>* _config,
     connect(m_playposSlider, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlSeek(double)),
             Qt::DirectConnection);
+    m_jogFwdButton = new ControlPushButton(ConfigKey(group, "jog_fwd"));
+    m_jogBackButton = new ControlPushButton(ConfigKey(group, "jog_back"));
 
     // Control used to communicate ratio playpos to GUI thread
     m_visualPlayPos = VisualPlayPosition::getVisualPlayPosition(m_group);
@@ -709,7 +711,21 @@ void EngineBuffer::slotControlStop(double v)
         m_playButton->set(0);
     }
 }
-
+void EngineBuffer::slotControlSeekRelative(double v){
+  if(v!=0){
+    double fFractionalPlayPos = m_playposSlider->get();
+    double delta = fractionalPlayposFromAbsolute(v);
+    doSeekFractional(fFractionalPlayPos+delta,SEEK_EXACT);
+  }
+}
+void EngineBuffer::slotControlJogFwd(double v){
+  if(v>0.0)
+    slotControlSeekRelative(m_iLastBufferSize*3);
+}
+void EngineBuffer::slotControlJogBack(double v){
+  if(v>0.0)
+    slotControlSeekRelative(m_iLastBufferSize*-5);
+}
 void EngineBuffer::slotControlSlip(double v)
 {
     m_slipEnabled = static_cast<int>(v > 0.0);
@@ -784,6 +800,13 @@ void EngineBuffer::process(CSAMPLE* pOutput, const int iBufferSize) {
         // Update the slipped position and seek if it was disabled.
         processSlip(iBufferSize);
         processSyncRequests();
+        bool joggingFwd = m_jogFwdButton->toBool();
+        bool joggingBack = m_jogBackButton->toBool();
+        if(joggingFwd&&!joggingBack){
+            slotControlSeekRelative(3*iBufferSize);
+        }else if(joggingBack){
+          slotControlSeekRelative(-5*iBufferSize);
+        }
         processSeek();
 
         // speed is the ratio between track-time and real-time
