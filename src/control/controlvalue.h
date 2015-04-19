@@ -73,18 +73,21 @@ class ControlRingValue {
 // sizeof(T), but honestly if we can't guarantee that we're all kinds of fucked
 // anyway. reads are always consistent and wait-free if t::operator delete is.
 
+
 template<typename T, bool ATOMIC = false>
 class ControlValueAtomicBase {
   public:
     inline T getValue() const {
+        T value;
         QSharedPointer<T> data(m_data);
-        return data ? *data : T();
+        if(data)
+          value = *data;
+        return value;
     }
 
     inline void setValue(const T& value) {
-        QSharedPointer<T> data(new T);
         /* requires T to have a copy assignment operator, but whatever */
-        *data = value;
+        QSharedPointer<T> data = QSharedPointer<T>::create(value);
         /* atomically replace the shared pointer contents accessible by
          * new readers. current readers will have a reference to the old
          * value, so we can't reclaim it until they all drop their 
@@ -96,7 +99,10 @@ class ControlValueAtomicBase {
     QSharedPointer<T> data(new T);
     *data = other;
     m_data.swap(data);
-    other = data? *data : T();
+    if(data)
+      other = *data;
+    else
+      other = T();
   }
 
   protected:
@@ -192,6 +198,38 @@ class ControlValueAtomicBase<T, true>{
 #endif
     QAtomicInteger<quintptr> m_int;
 };
+#if 0
+#include "util/compatibility.h"
+#ifdef MIXXX_HAVE_ATOMIC_128
+#include <stdlib.h>
+template<typename T>
+class ControlValueAtomicBase<T,false,true>{
+  public:
+    ControlValueAtomicBase(){
+    }
+   ~ControlValueAtomicBase(){}
+  inline T getValue(){
+    T value;
+    MixxxAtomicInt128 other = m_int;
+    memmove(reinterpret_cast<char *>(&value),reinterpret_cast<char*>(&other),sizeof(T));
+    return value;
+  }
+  inline void  setValue(const T &value){
+    MixxxAtomicInt128 other;
+    memmove(reinterpret_cast<char*>(&other),reinterpret_cast<char*>(&value),sizeof(T));
+    m_int = other;
+  }
+  inline void swap(T & value){
+    MixxxAtomicInt128 other;
+    memmove(reinterpret_cast<char*>(&other),reinterpret_cast<char*>(&value),sizeof(T));
+    other = m_int.fetchAndStoreRelaxed(other);
+    memmove(reinterpret_cast<char*>(&value),reinterpret_cast<char*>(&other),sizeof(T));
+  }
+  private:
+  MixxxAtomicInt128 m_int;
+};
+#endif
+#endif
 // ControlValueAtomic is a wrapper around ControlValueAtomicBase which uses the
 // sizeof(T) to determine which underlying implementation of
 // ControlValueAtomicBase to use. For types where sizeof(T) <= sizeof(void*),
@@ -199,11 +237,10 @@ class ControlValueAtomicBase<T, true>{
 // atomic on the architecture is used.
 template<typename T>
 class ControlValueAtomic
-    : public ControlValueAtomicBase<T, sizeof(T) <= sizeof(quintptr)> {
-  public:
-
+      :  public ControlValueAtomicBase<T, sizeof(T) <= sizeof(quintptr)> {
+    public:
     ControlValueAtomic()
-        : ControlValueAtomicBase<T, sizeof(T) <= sizeof(quintptr)>() {
+        : ControlValueAtomicBase<T, sizeof(T) <= sizeof(quintptr)> (){
     }
 };
 template<typename T>
