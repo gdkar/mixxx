@@ -80,7 +80,7 @@ bool MixxxKeyboard::eventFilter(QObject*, QEvent* e) {
                         // Since setting the value might cause us to go down
                         // a route that would eventually clear the active
                         // key list, do that last.
-                        control->setParamaeter( 1);
+                        control->setParameter( 1);
                         result = true;
                     } else {
                         qDebug() << "Warning: Keyboard key is configured for nonexistent control:"
