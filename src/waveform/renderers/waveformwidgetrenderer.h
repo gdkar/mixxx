@@ -115,7 +115,8 @@ class WaveformWidgetRenderer {
     double m_gain;
     ControlObjectThread* m_pTrackSamplesControlObject;
     int m_trackSamples;
-
+    ControlObjectThread* m_pSampleRateControlObject;
+    double m_sampleRate;
 #ifdef WAVEFORMWIDGETRENDERER_DEBUG
     QTime* m_timer;
     int m_lastFrameTime;

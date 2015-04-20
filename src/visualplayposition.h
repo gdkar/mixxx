@@ -31,11 +31,10 @@ class VSyncThread;
 class VisualPlayPositionData {
   public:
     PerformanceTimer m_referenceTime;
-    int m_callbackEntrytoDac; // Time from Audio Callback Entry to first sample of Buffer is transfered to DAC
     double m_enginePlayPos; // Play position of fist Sample in Buffer
     double m_rate;
-    double m_positionStep;
     double m_pSlipPosition;
+    double m_callbackEntrytoDac; // Time from Audio Callback Entry to first sample of Buffer is transfered to DAC
 };
 Q_DECLARE_TYPEINFO(VisualPlayPositionData,Q_PRIMITIVE_TYPE);
 
@@ -47,9 +46,9 @@ class VisualPlayPosition : public QObject {
 
     // WARNING: Not thread safe. This function must be called only from the
     // engine thread.
-    void set(double playPos, double rate, double positionStep, double pSlipPosition);
+    void set(double playPos, double rate, double pSlipPosition);
     double getAtNextVSync(VSyncThread* vsyncThread);
-    void getPlaySlipAt(int usFromNow, double* playPosition, double* slipPosition);
+    void getPlaySlipAt(double fromNow, double* playPosition, double* slipPosition);
     double getEnginePlayPos();
 
     // WARNING: Not thread safe. This function must only be called from the main
