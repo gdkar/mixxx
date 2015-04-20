@@ -118,6 +118,7 @@ class ControlValueAtomicBase {
 // direct assignment/read of an aligned member variable is used.
 template<typename T>
 class ControlValueAtomicBase<T, true>{
+  typedef typename QIntegerForSize<sizeof(T)>::Unsigned uint;
   public:
     ControlValueAtomicBase()
              {
@@ -130,54 +131,14 @@ class ControlValueAtomicBase<T, true>{
     }
     inline void setValue(const T& value) {
         quintptr new_val;
-    switch(sizeof(T)){
-      case 1:{
-            const quint8 *int_ptr = reinterpret_cast<const quint8*>(&value);
-            new_val = *int_ptr;
-            break;
-            }
-      case 2:{
-            const quint16 *int_ptr = reinterpret_cast<const quint16*>(&value);
-            new_val = *int_ptr;
-            break;
-            }
-      case 4:{
-            const quint32 *int_ptr = reinterpret_cast<const quint32*>(&value);
-            new_val = *int_ptr;
-            break;
-            }
-      case 8:{
-            const quint64 *int_ptr = reinterpret_cast<const quint64*>(&value);
-            new_val = *int_ptr;
-            break;
-            }
-        }
+        const uint *int_ptr = reinterpret_cast<const uint*>(&value);
+        new_val=*int_ptr;
         m_int.store(new_val);
     }
     inline void swap(T & value){
-         quintptr new_val;
-    switch(sizeof(T)){
-      case 1:{
-            const quint8 *int_ptr = reinterpret_cast<const quint8*>(&value);
-            new_val = *int_ptr;
-            break;
-            }
-      case 2:{
-            const quint16 *int_ptr = reinterpret_cast<const quint16*>(&value);
-            new_val = *int_ptr;
-            break;
-            }
-      case 4:{
-            const quint32 *int_ptr = reinterpret_cast<const quint32*>(&value);
-            new_val = *int_ptr;
-            break;
-            }
-      case 8:{
-            const quint64 *int_ptr = reinterpret_cast<const quint64*>(&value);
-            new_val = *int_ptr;
-            break;
-            }
-        }
+        quintptr new_val;
+        const uint *int_ptr = reinterpret_cast<const uint*>(&value);
+        new_val = *int_ptr;
         new_val = m_int.fetchAndStoreOrdered(new_val);
         const T *t_ptr = reinterpret_cast<T*>(&new_val);
         value = *t_ptr;
@@ -198,38 +159,6 @@ class ControlValueAtomicBase<T, true>{
 #endif
     QAtomicInteger<quintptr> m_int;
 };
-#if 0
-#include "util/compatibility.h"
-#ifdef MIXXX_HAVE_ATOMIC_128
-#include <stdlib.h>
-template<typename T>
-class ControlValueAtomicBase<T,false,true>{
-  public:
-    ControlValueAtomicBase(){
-    }
-   ~ControlValueAtomicBase(){}
-  inline T getValue(){
-    T value;
-    MixxxAtomicInt128 other = m_int;
-    memmove(reinterpret_cast<char *>(&value),reinterpret_cast<char*>(&other),sizeof(T));
-    return value;
-  }
-  inline void  setValue(const T &value){
-    MixxxAtomicInt128 other;
-    memmove(reinterpret_cast<char*>(&other),reinterpret_cast<char*>(&value),sizeof(T));
-    m_int = other;
-  }
-  inline void swap(T & value){
-    MixxxAtomicInt128 other;
-    memmove(reinterpret_cast<char*>(&other),reinterpret_cast<char*>(&value),sizeof(T));
-    other = m_int.fetchAndStoreRelaxed(other);
-    memmove(reinterpret_cast<char*>(&value),reinterpret_cast<char*>(&other),sizeof(T));
-  }
-  private:
-  MixxxAtomicInt128 m_int;
-};
-#endif
-#endif
 // ControlValueAtomic is a wrapper around ControlValueAtomicBase which uses the
 // sizeof(T) to determine which underlying implementation of
 // ControlValueAtomicBase to use. For types where sizeof(T) <= sizeof(void*),
