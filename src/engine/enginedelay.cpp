@@ -31,10 +31,10 @@ EngineDelay::EngineDelay(const char* group, ConfigKey delayControl)
     m_pDelayPot = new ControlPotmeter(delayControl, 0, kdMaxDelayPot, false, true, false, true);
     m_pDelayPot->setDefaultValue(0);
     connect(m_pDelayPot, SIGNAL(valueChanged(double)), this,
-            SLOT(slotDelayChanged()), Qt::DirectConnection);
+            SLOT(slotDelayChanged()), static_cast<Qt::ConnectionType>(Qt::UniqueConnection|Qt::QueuedConnection));
 
     m_pSampleRate = new ControlObjectSlave(group, "samplerate", this);
-    m_pSampleRate->connectValueChanged(SLOT(slotDelayChanged()), Qt::DirectConnection);
+    m_pSampleRate->connectValueChanged(SLOT(slotDelayChanged()), static_cast<Qt::ConnectionType>(Qt::UniqueConnection|Qt::QueuedConnection));
 }
 
 EngineDelay::~EngineDelay() {

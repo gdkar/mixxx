@@ -62,20 +62,20 @@ RateControl::RateControl(QString group,
     m_pForwardButton = new ControlPushButton(ConfigKey(group, "fwd"));
     connect(m_pForwardButton, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlFastForward(double)),
-            Qt::DirectConnection);
+            static_cast<Qt::ConnectionType>(Qt::UniqueConnection|Qt::QueuedConnection));
     m_pForwardButton->set(0);
 
     // Back button
     m_pBackButton = new ControlPushButton(ConfigKey(group, "back"));
     connect(m_pBackButton, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlFastBack(double)),
-            Qt::DirectConnection);
+            static_cast<Qt::ConnectionType>(Qt::UniqueConnection|Qt::QueuedConnection));
     m_pBackButton->set(0);
 
     m_pReverseRollButton = new ControlPushButton(ConfigKey(group, "reverseroll"));
     connect(m_pReverseRollButton, SIGNAL(valueChanged(double)),
             this, SLOT(slotReverseRollActivate(double)),
-            Qt::DirectConnection);
+            static_cast<Qt::ConnectionType>(Qt::UniqueConnection|Qt::QueuedConnection));
 
     m_pSlipEnabled = new ControlObjectSlave(group, "slip_enabled", this);
 
@@ -88,50 +88,50 @@ RateControl::RateControl(QString group,
         new ControlPushButton(ConfigKey(group,"rate_perm_down"));
     connect(buttonRatePermDown, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlRatePermDown(double)),
-            Qt::DirectConnection);
+            static_cast<Qt::ConnectionType>(Qt::UniqueConnection|Qt::QueuedConnection));
 
     buttonRatePermDownSmall =
         new ControlPushButton(ConfigKey(group,"rate_perm_down_small"));
     connect(buttonRatePermDownSmall, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlRatePermDownSmall(double)),
-            Qt::DirectConnection);
+            static_cast<Qt::ConnectionType>(Qt::UniqueConnection|Qt::QueuedConnection));
 
     buttonRatePermUp =
         new ControlPushButton(ConfigKey(group,"rate_perm_up"));
     connect(buttonRatePermUp, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlRatePermUp(double)),
-            Qt::DirectConnection);
+            static_cast<Qt::ConnectionType>(Qt::UniqueConnection|Qt::QueuedConnection));
 
     buttonRatePermUpSmall =
         new ControlPushButton(ConfigKey(group,"rate_perm_up_small"));
     connect(buttonRatePermUpSmall, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlRatePermUpSmall(double)),
-            Qt::DirectConnection);
+            static_cast<Qt::ConnectionType>(Qt::UniqueConnection|Qt::QueuedConnection));
 
     // Temporary rate-change buttons
     buttonRateTempDown =
         new ControlPushButton(ConfigKey(group,"rate_temp_down"));
     connect(buttonRateTempDown, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlRateTempDown(double)),
-            Qt::DirectConnection);
+            static_cast<Qt::ConnectionType>(Qt::UniqueConnection|Qt::QueuedConnection));
 
     buttonRateTempDownSmall =
         new ControlPushButton(ConfigKey(group,"rate_temp_down_small"));
     connect(buttonRateTempDownSmall, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlRateTempDownSmall(double)),
-            Qt::DirectConnection);
+            static_cast<Qt::ConnectionType>(Qt::UniqueConnection|Qt::QueuedConnection));
 
     buttonRateTempUp =
         new ControlPushButton(ConfigKey(group,"rate_temp_up"));
     connect(buttonRateTempUp, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlRateTempUp(double)),
-            Qt::DirectConnection);
+            static_cast<Qt::ConnectionType>(Qt::UniqueConnection|Qt::QueuedConnection));
 
     buttonRateTempUpSmall =
         new ControlPushButton(ConfigKey(group,"rate_temp_up_small"));
     connect(buttonRateTempUpSmall, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlRateTempUpSmall(double)),
-            Qt::DirectConnection);
+            static_cast<Qt::ConnectionType>(Qt::UniqueConnection|Qt::QueuedConnection));
 
     // We need the sample rate so we can guesstimate something close
     // what latency is.

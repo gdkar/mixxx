@@ -50,7 +50,7 @@ EngineDeck::EngineDeck(const ChannelHandleAndGroup& handle_group,
     // Set up passthrough toggle button
     connect(m_pPassing, SIGNAL(valueChanged(double)),
             this, SLOT(slotPassingToggle(double)),
-            Qt::DirectConnection);
+            static_cast<Qt::ConnectionType>(Qt::UniqueConnection|Qt::QueuedConnection));
 
     m_pSampleRate = new ControlObjectSlave("[Master]", "samplerate");
 

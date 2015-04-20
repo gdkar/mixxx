@@ -33,13 +33,13 @@ EngineChannel::EngineChannel(const ChannelHandleAndGroup& handle_group,
     m_pOrientation->set(defaultOrientation);
     m_pOrientationLeft = new ControlPushButton(ConfigKey(getGroup(), "orientation_left"));
     connect(m_pOrientationLeft, SIGNAL(valueChanged(double)),
-            this, SLOT(slotOrientationLeft(double)), Qt::DirectConnection);
+            this, SLOT(slotOrientationLeft(double)), static_cast<Qt::ConnectionType>(Qt::UniqueConnection|Qt::QueuedConnection));
     m_pOrientationRight = new ControlPushButton(ConfigKey(getGroup(), "orientation_right"));
     connect(m_pOrientationRight, SIGNAL(valueChanged(double)),
-            this, SLOT(slotOrientationRight(double)), Qt::DirectConnection);
+            this, SLOT(slotOrientationRight(double)), static_cast<Qt::ConnectionType>(Qt::UniqueConnection|Qt::QueuedConnection));
     m_pOrientationCenter = new ControlPushButton(ConfigKey(getGroup(), "orientation_center"));
     connect(m_pOrientationCenter, SIGNAL(valueChanged(double)),
-            this, SLOT(slotOrientationCenter(double)), Qt::DirectConnection);
+            this, SLOT(slotOrientationCenter(double)), static_cast<Qt::ConnectionType>(Qt::UniqueConnection|Qt::QueuedConnection));
     m_pTalkover = new ControlPushButton(ConfigKey(getGroup(), "talkover"));
     m_pTalkover->setButtonMode(ControlPushButtonBehavior::POWERWINDOW);
 }
