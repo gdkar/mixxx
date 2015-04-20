@@ -1287,6 +1287,8 @@ void EngineBuffer::updateIndicators(double speed, int iBufferSize) {
     m_iSamplesCalculated += iBufferSize;
 
     double fFractionalPlaypos = fractionalPlayposFromAbsolute(m_filepos_play);
+    double sampleRate        = m_pSampleRate->get();
+    double dPlayposSeconds    = m_filepos_play/sampleRate;
     if(speed > 0 && fFractionalPlaypos == 1.0) {
         speed = 0;
     }
@@ -1299,7 +1301,7 @@ void EngineBuffer::updateIndicators(double speed, int iBufferSize) {
 
     // Update indicators that are only updated after every
     // sampleRate/kiUpdateRate samples processed.  (e.g. playposSlider)
-    if (m_iSamplesCalculated > (m_pSampleRate->get() / kiPlaypositionUpdateRate)) {
+    if (m_iSamplesCalculated > (sampleRate / kiPlaypositionUpdateRate)) {
         m_playposSlider->set(fFractionalPlaypos);
         m_pCueControl->updateIndicators();
 
@@ -1320,9 +1322,8 @@ void EngineBuffer::updateIndicators(double speed, int iBufferSize) {
 
     // Update visual control object, this needs to be done more often than the
     // playpos slider
-    m_visualPlayPos->set(fFractionalPlaypos, speed,
-            (double)iBufferSize/m_trackSamplesOld,
-            fractionalPlayposFromAbsolute(m_dSlipPosition));
+    m_visualPlayPos->set(dPlayposSeconds, speed,
+            (m_dSlipPosition)/sampleRate);
 }
 
 void EngineBuffer::hintReader(const double dRate) {
