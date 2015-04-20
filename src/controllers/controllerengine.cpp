@@ -106,8 +106,8 @@ Purpose: Resolves a function name to a QScriptValue including
 Input:   -
 Output:  -
 -------- ------------------------------------------------------ */
-QScriptValue ControllerEngine::resolveFunction(QString function, bool useCache) const {
-    if (useCache && m_scriptValueCache.contains(function)) {
+QScriptValue ControllerEngine::resolveFunction(QString function) const {
+    if (m_scriptValueCache.contains(function)) {
         return m_scriptValueCache.value(function);
     }
 
