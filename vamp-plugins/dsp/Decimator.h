@@ -18,8 +18,8 @@
 class Decimator  
 {
 public:
-    void process( const double* src, double* dst );
-    void process( const float* src, float* dst );
+    void process( const double* const src, double* dst );
+    void process( const float* const src, float* dst );
 
     /**
      * Construct a Decimator to operate on input blocks of length
@@ -33,10 +33,8 @@ public:
      */
     Decimator( unsigned int inLength, unsigned int decFactor );
     virtual ~Decimator();
-
     int getFactor() const { return m_decFactor; }
     static int getHighestSupportedFactor() { return 8; }
-
 private:
     void resetFilter();
     void deInitialise();

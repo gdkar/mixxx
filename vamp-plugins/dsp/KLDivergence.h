@@ -28,7 +28,6 @@ class KLDivergence
 public:
     KLDivergence() { }
     ~KLDivergence() { }
-
     /**
      * Calculate a symmetrised Kullback-Leibler divergence of Gaussian
      * models based on mean and variance vectors.  All input vectors
@@ -38,7 +37,6 @@ public:
                             const vector<double> &variances1,
                             const vector<double> &means2,
                             const vector<double> &variances2);
-
     /**
      * Calculate a Kullback-Leibler divergence of two probability
      * distributions.  Input vectors must be of equal size.  If

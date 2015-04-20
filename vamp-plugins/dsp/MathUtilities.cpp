@@ -20,87 +20,60 @@
 #include <cmath>
 
 
-double MathUtilities::mod(double x, double y)
-{
-    double a = floor( x / y );
-
-    double b = x - ( y * a );
-    return b;
+double MathUtilities::mod(double x, double y){
+    const double a = floor( x / y );
+    return  x - ( y * a );
 }
 
-double MathUtilities::princarg(double ang)
-{
-    double ValOut;
-
-    ValOut = mod( ang + M_PI, -2 * M_PI ) + M_PI;
-
-    return ValOut;
+double MathUtilities::princarg(double ang){
+    return mod( ang + M_PI, -2 * M_PI ) + M_PI;
 }
 
-void MathUtilities::getAlphaNorm(const double *data, unsigned int len, unsigned int alpha, double* ANorm)
-{
+void MathUtilities::getAlphaNorm(const double *data, unsigned int len, unsigned int alpha, double* ANorm){
     unsigned int i;
     double temp = 0.0;
     double a=0.0;
 	
-    for( i = 0; i < len; i++)
-    {
+    for( i = 0; i < len; i++){
 	temp = data[ i ];
-		
 	a  += ::pow( fabs(temp), double(alpha) );
     }
     a /= ( double )len;
     a = ::pow( a, ( 1.0 / (double) alpha ) );
-
     *ANorm = a;
 }
 
-double MathUtilities::getAlphaNorm( const std::vector <double> &data, unsigned int alpha )
-{
+double MathUtilities::getAlphaNorm( const std::vector <double> &data, unsigned int alpha ){
     unsigned int i;
     unsigned int len = data.size();
     double temp = 0.0;
     double a=0.0;
-	
-    for( i = 0; i < len; i++)
-    {
-	temp = data[ i ];
-		
+    for( i = 0; i < len; i++){
+        temp = data[ i ];
 	a  += ::pow( fabs(temp), double(alpha) );
     }
     a /= ( double )len;
     a = ::pow( a, ( 1.0 / (double) alpha ) );
-
     return a;
 }
 
-double MathUtilities::round(double x)
-{
+double MathUtilities::round(double x){
     double val = (double)floor(x + 0.5);
-  
     return val;
 }
 
-double MathUtilities::median(const double *src, unsigned int len)
-{
+double MathUtilities::median(const double *src, unsigned int len){
     unsigned int i, j;
     double tmp = 0.0;
     double tempMedian;
     double medianVal;
- 
     double* scratch = new double[ len ];//Vector < double > sortedX = Vector < double > ( size );
-
-    for ( i = 0; i < len; i++ )
-    {
+    for ( i = 0; i < len; i++ ){
 	scratch[i] = src[i];
     }
-
-    for ( i = 0; i < len - 1; i++ )
-    {
-	for ( j = 0; j < len - 1 - i; j++ )
-	{
-	    if ( scratch[j + 1] < scratch[j] )
-	    {
+    for ( i = 0; i < len - 1; i++ ){
+	for ( j = 0; j < len - 1 - i; j++ ){
+	    if ( scratch[j + 1] < scratch[j] ){
 		// compare the two neighbors
 		tmp = scratch[j]; // swap a[j] and a[j+1]
 		scratch[j] = scratch[j + 1];
@@ -109,145 +82,100 @@ double MathUtilities::median(const double *src, unsigned int len)
 	}
     }
     int middle;
-    if ( len % 2 == 0 )
-    {
+    if ( len % 2 == 0 ){
 	middle = len / 2;
 	tempMedian = ( scratch[middle] + scratch[middle - 1] ) / 2;
-    }
-    else
-    {
+    }else{
 	middle = ( int )floor( len / 2.0 );
 	tempMedian = scratch[middle];
     }
-
     medianVal = tempMedian;
-
     delete [] scratch;
     return medianVal;
 }
 
-double MathUtilities::sum(const double *src, unsigned int len)
-{
+double MathUtilities::sum(const double *src, unsigned int len){
     unsigned int i ;
     double retVal =0.0;
-
-    for(  i = 0; i < len; i++)
-    {
+    for(  i = 0; i < len; i++){
 	retVal += src[ i ];
     }
-
     return retVal;
 }
 
-double MathUtilities::mean(const double *src, unsigned int len)
-{
+double MathUtilities::mean(const double *src, unsigned int len){
     double retVal =0.0;
-
     double s = sum( src, len );
-	
     retVal =  s  / (double)len;
-
     return retVal;
 }
 
 double MathUtilities::mean(const std::vector<double> &src,
                            unsigned int start,
-                           unsigned int count)
-{
+                           unsigned int count){
     double sum = 0.;
-	
-    for (int i = 0; i < count; ++i)
-    {
+    for (int i = 0; i < count; ++i){
         sum += src[start + i];
     }
-
     return sum / count;
 }
 
-void MathUtilities::getFrameMinMax(const double *data, unsigned int len, double *min, double *max)
-{
+void MathUtilities::getFrameMinMax(const double *data, unsigned int len, double *min, double *max){
     unsigned int i;
     double temp = 0.0;
     double a=0.0;
-
     if (len == 0) {
         *min = *max = 0;
         return;
     }
-	
     *min = data[0];
     *max = data[0];
-
-    for( i = 0; i < len; i++)
-    {
+    for( i = 0; i < len; i++){
 	temp = data[ i ];
-
-	if( temp < *min )
-	{
+	if( temp < *min ){
 	    *min =  temp ;
 	}
-	if( temp > *max )
-	{
+	if( temp > *max ){
 	    *max =  temp ;
 	}
 		
     }
 }
 
-int MathUtilities::getMax( double* pData, unsigned int Length, double* pMax )
-{
+int MathUtilities::getMax( double* pData, unsigned int Length, double* pMax ){
 	unsigned int index = 0;
 	unsigned int i;
 	double temp = 0.0;
-	
 	double max = pData[0];
-
-	for( i = 0; i < Length; i++)
-	{
+	for( i = 0; i < Length; i++){
 		temp = pData[ i ];
-
-		if( temp > max )
-		{
+		if( temp > max ){
 			max =  temp ;
 			index = i;
 		}
 		
    	}
-
 	if (pMax) *pMax = max;
-
-
 	return index;
 }
 
-int MathUtilities::getMax( const std::vector<double> & data, double* pMax )
-{
+int MathUtilities::getMax( const std::vector<double> & data, double* pMax ){
 	unsigned int index = 0;
 	unsigned int i;
 	double temp = 0.0;
-	
 	double max = data[0];
-
-	for( i = 0; i < data.size(); i++)
-	{
+	for( i = 0; i < data.size(); i++){
 		temp = data[ i ];
-
-		if( temp > max )
-		{
+		if( temp > max ){
 			max =  temp ;
 			index = i;
 		}
-		
    	}
-
 	if (pMax) *pMax = max;
-
-
 	return index;
 }
 
-void MathUtilities::circShift( double* pData, int length, int shift)
-{
+void MathUtilities::circShift( double* pData, int length, int shift){
 	shift = shift % length;
 	double temp;
 	int i,n;
@@ -265,19 +193,14 @@ void MathUtilities::circShift( double* pData, int length, int shift)
     }
 }
 
-int MathUtilities::compareInt (const void * a, const void * b)
-{
+int MathUtilities::compareInt (const void * a, const void * b){
   return ( *(int*)a - *(int*)b );
 }
 
-void MathUtilities::normalise(double *data, int length, NormaliseType type)
-{
+void MathUtilities::normalise(double *data, int length, NormaliseType type){
     switch (type) {
-
     case NormaliseNone: return;
-
-    case NormaliseUnitSum:
-    {
+    case NormaliseUnitSum:{
         double sum = 0.0;
         for (int i = 0; i < length; ++i) {
             sum += data[i];
@@ -289,9 +212,7 @@ void MathUtilities::normalise(double *data, int length, NormaliseType type)
         }
     }
     break;
-
-    case NormaliseUnitMax:
-    {
+    case NormaliseUnitMax:{
         double max = 0.0;
         for (int i = 0; i < length; ++i) {
             if (fabs(data[i]) > max) {
@@ -305,56 +226,42 @@ void MathUtilities::normalise(double *data, int length, NormaliseType type)
         }
     }
     break;
-
     }
 }
 
-void MathUtilities::normalise(std::vector<double> &data, NormaliseType type)
-{
+void MathUtilities::normalise(std::vector<double> &data, NormaliseType type){
     switch (type) {
-
-    case NormaliseNone: return;
-
-    case NormaliseUnitSum:
-    {
-        double sum = 0.0;
-        for (int i = 0; i < data.size(); ++i) sum += data[i];
-        if (sum != 0.0) {
-            for (int i = 0; i < data.size(); ++i) data[i] /= sum;
+        case NormaliseNone: return;
+        case NormaliseUnitSum:{
+            double sum = 0.0;
+            for (int i = 0; i < data.size(); ++i) sum += data[i];
+            if (sum != 0.0) {
+                for (int i = 0; i < data.size(); ++i) data[i] /= sum;
+            }
         }
-    }
-    break;
-
-    case NormaliseUnitMax:
-    {
-        double max = 0.0;
-        for (int i = 0; i < data.size(); ++i) {
-            if (fabs(data[i]) > max) max = fabs(data[i]);
+        break;
+        case NormaliseUnitMax:{
+            double max = 0.0;
+            for (int i = 0; i < data.size(); ++i) {
+                if (fabs(data[i]) > max) max = fabs(data[i]);
+            }
+            if (max != 0.0) {
+                for (int i = 0; i < data.size(); ++i) data[i] /= max;
+            }
         }
-        if (max != 0.0) {
-            for (int i = 0; i < data.size(); ++i) data[i] /= max;
-        }
-    }
-    break;
-
+        break;
     }
 }
 
-void MathUtilities::adaptiveThreshold(std::vector<double> &data)
-{
+void MathUtilities::adaptiveThreshold(std::vector<double> &data){
     int sz = int(data.size());
     if (sz == 0) return;
-
     std::vector<double> smoothed(sz);
-	
     int p_pre = 8;
     int p_post = 7;
-
     for (int i = 0; i < sz; ++i) {
-
         int first = std::max(0,      i - p_pre);
         int last  = std::min(sz - 1, i + p_post);
-
         smoothed[i] = mean(data, first, last - first + 1);
     }
 
