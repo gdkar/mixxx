@@ -46,7 +46,7 @@ class ConfigKey {
     QString group, item;
 };
 Q_DECLARE_METATYPE(ConfigKey);
-
+Q_DECLARE_TYPEINFO(ConfigKey,Q_MOVABLE_TYPE);
 // comparison function for ConfigKeys. Used by a QHash in ControlObject
 inline bool operator==(const ConfigKey& c1, const ConfigKey& c2) {
     return c1.group == c2.group && c1.item == c2.item;
@@ -83,7 +83,8 @@ class ConfigValue {
     QString value;
     friend bool operator==(const ConfigValue& s1, const ConfigValue& s2);
 };
-
+Q_DECLARE_METATYPE(ConfigValue);
+Q_DECLARE_TYPEINFO(ConfigValue,Q_MOVABLE_TYPE);
 class ConfigValueKbd : public ConfigValue {
   public:
     ConfigValueKbd();
@@ -97,6 +98,8 @@ class ConfigValueKbd : public ConfigValue {
 
     QKeySequence m_qKey;
 };
+Q_DECLARE_METATYPE(ConfigValueKbd);
+Q_DECLARE_TYPEINFO(ConfigValueKbd,Q_MOVABLE_TYPE);
 
 template <class ValueType> class ConfigOption {
   public:
@@ -109,7 +112,6 @@ template <class ValueType> class ConfigOption {
     ValueType* val;
     ConfigKey* key;
 };
-
 template <class ValueType> class ConfigObject {
   public:
     ConfigKey key;
