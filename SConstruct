@@ -79,6 +79,7 @@ Import('sources')
 # SoundSourceM4A can get at sounddevice.cpp, which it needs to build
 # and link properly. This sucks but it's the best way I can find -- bkgood
 VariantDir("plugins/soundsourcempg123", "src", duplicate=0)
+VariantDir("plugins/soundsourcelavf","src",duplicate=0)
 VariantDir("plugins/soundsourcem4a", "src", duplicate=0)
 VariantDir("plugins/soundsourcewv", "src", duplicate=0)
 VariantDir("plugins/soundsourcemediafoundation", "src", duplicate=0)

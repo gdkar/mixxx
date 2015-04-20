@@ -1,0 +1,46 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+import os
+import sys
+import SCons
+import shutil
+
+Import('build')
+
+
+# On Posix default SCons.LIBPREFIX = 'lib', on Windows default SCons.LIBPREFIX = ''
+
+lavf_sources = [
+    "soundsourcelavf.cpp",
+    "sources/soundsource.cpp",
+    "sources/soundsourceplugin.cpp",
+    "sources/audiosource.cpp",
+    "samplebuffer.cpp",
+    "singularsamplebuffer.cpp",
+    "sampleutil.cpp",
+    "metadata/trackmetadata.cpp",
+    "metadata/trackmetadatataglib.cpp"
+]
+
+#Tell SCons to build the SoundSourceLavfplugin
+#=========================
+if int(build.flags['ffmpeg']):
+    env = build.env.Clone()
+
+    conf = Configure(env)
+
+
+    # We have to check for libfaad version 2.6 or 2.7. In libfaad
+    # version 2.7, the type for the samplerate is unsigned long*,
+    # while in 2.6 the type is uint32_t*. We can use the optional
+    # call parameter to CheckLibWithHeader to build a test file to
+    # check which one this faad.h supports.
+
+    env = conf.Finish()
+    SHLIBPREFIX='lib' #Makes the filename "libsoundsourcelavf" consistently across platforms to make our lives easier.
+    sslavf= env.SharedLibrary('soundsourcelavf', lavf)
+
+    #Pass this soundsourcelavflibrary object file back to the SConscript above us.
+    Return("sslavf")
+else:
+    Return("")
