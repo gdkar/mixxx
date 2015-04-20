@@ -37,16 +37,12 @@ public:
 
     ConstantQ( CQConfig Config );
     ~ConstantQ();
-
     double* process( const double* FFTData );
-
     void sparsekernel();
-
     double hamming(int len, int n) {
 	double out = 0.54 - 0.46*cos(2*PI*n/len);
 	return(out);
     }
-	
     int getnumwin() { return m_numWin;}
     double getQ() { return m_dQ;}
     int getK() {return m_uK ;}

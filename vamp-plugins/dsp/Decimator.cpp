@@ -21,34 +21,25 @@
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-Decimator::Decimator( unsigned int inLength, unsigned int decFactor )
-{
-
+Decimator::Decimator( unsigned int inLength, unsigned int decFactor ){
     m_inputLength = 0;
     m_outputLength = 0;
     m_decFactor = 1;
-
     initialise( inLength, decFactor );
 }
 
-Decimator::~Decimator()
-{
+Decimator::~Decimator(){
     deInitialise();
 }
 
-void Decimator::initialise( unsigned int inLength, unsigned int decFactor)
-{
+void Decimator::initialise( unsigned int inLength, unsigned int decFactor){
     m_inputLength = inLength;
     m_decFactor = decFactor;
     m_outputLength = m_inputLength / m_decFactor;
-
     decBuffer = new double[ m_inputLength ];
-
     // If adding new factors here, add them to
     // getHighestSupportedFactor in the header as well
-
-    if(m_decFactor == 8)
-    {
+    if(m_decFactor == 8){
         //////////////////////////////////////////////////
         b[0] = 0.060111378492136;
         b[1] = -0.257323420830598;
@@ -58,7 +49,6 @@ void Decimator::initialise( unsigned int inLength, unsigned int decFactor)
         b[5] = 0.420583503165928;
         b[6] = -0.257323420830598;
         b[7] = 0.060111378492136;
-
         a[0] = 1;
         a[1] = -5.667654878577432;
         a[2] = 14.062452278088417;
@@ -68,9 +58,7 @@ void Decimator::initialise( unsigned int inLength, unsigned int decFactor)
         a[6] = 2.577553446979888;
         a[7] = -0.326903916815751;
         //////////////////////////////////////////////////
-    }
-    else if( m_decFactor == 4 )
-    {
+    }else if( m_decFactor == 4 ){
 	//////////////////////////////////////////////////
 	b[ 0 ] = 0.10133306904918619;
 	b[ 1 ] = -0.2447523353702363;
@@ -90,9 +78,7 @@ void Decimator::initialise( unsigned int inLength, unsigned int decFactor)
 	a[ 6 ] = 0.83043385136748382;
 	a[ 7 ] = -0.094420800837809335;
 	//////////////////////////////////////////////////
-    }
-    else if( m_decFactor == 2 )
-    {
+    }else if( m_decFactor == 2 ){
 	//////////////////////////////////////////////////
 	b[ 0 ] = 0.20898944260075727;
 	b[ 1 ] = 0.40011234879814367;
@@ -111,13 +97,10 @@ void Decimator::initialise( unsigned int inLength, unsigned int decFactor)
 	a[ 5 ] = 0.18705341389316466;
 	a[ 6 ] = 0.23659265908013868;
 	a[ 7 ] = 0.032352924250533946;
-    }
-    else
-    {
-        if ( m_decFactor != 1 ) {
-            std::cerr << "WARNING: Decimator::initialise: unsupported decimation factor " << m_decFactor << ", no antialiasing filter will be used" << std::endl;
+    }else{if ( m_decFactor != 1 ) {
+            std::cerr << "WARNING: Decimator::initialise: unsupported decimation factor " 
+                      << m_decFactor << ", no antialiasing filter will be used" << std::endl;
         }
-
 	//////////////////////////////////////////////////
 	b[ 0 ] = 1;
 	b[ 1 ] = 0;
@@ -141,23 +124,31 @@ void Decimator::initialise( unsigned int inLength, unsigned int decFactor)
     resetFilter();
 }
 
-void Decimator::deInitialise()
-{
+void Decimator::deInitialise(){
     delete [] decBuffer;
 }
 
-void Decimator::resetFilter()
-{
+void Decimator::resetFilter(){
     Input = Output = 0;
-
     o1=o2=o3=o4=o5=o6=o7=0;
 }
 
-void Decimator::doAntiAlias(const double *src, double *dst, unsigned int length)
-{
-
-    for( unsigned int i = 0; i < length; i++ )
-    {
+void Decimator::doAntiAlias(const double *src, double *dst, unsigned int length){
+    for( unsigned int i = 0; i < length; i++ ){
+	Input = (double)src[ i ];
+	Output = Input * b[ 0 ] + o1;
+	o1 = Input * b[ 1 ] - Output * a[ 1 ] + o2;
+	o2 = Input * b[ 2 ] - Output * a[ 2 ] + o3;
+	o3 = Input * b[ 3 ] - Output * a[ 3 ] + o4;
+	o4 = Input * b[ 4 ] - Output * a[ 4 ] + o5;
+	o5 = Input * b[ 5 ] - Output * a[ 5 ] + o6;
+	o6 = Input * b[ 6 ] - Output * a[ 6 ] + o7;
+	o7 = Input * b[ 7 ] - Output * a[ 7 ] ;
+	dst[ i ] = Output;
+    }
+}
+void Decimator::doAntiAlias(const float *src, double *dst, unsigned int length){
+    for( unsigned int i = 0; i < length; i++ ){
 	Input = (double)src[ i ];
 
 	Output = Input * b[ 0 ] + o1;
@@ -172,55 +163,19 @@ void Decimator::doAntiAlias(const double *src, double *dst, unsigned int length)
 
 	dst[ i ] = Output;
     }
-
 }
-
-void Decimator::doAntiAlias(const float *src, double *dst, unsigned int length)
-{
-
-    for( unsigned int i = 0; i < length; i++ )
-    {
-	Input = (double)src[ i ];
-
-	Output = Input * b[ 0 ] + o1;
-
-	o1 = Input * b[ 1 ] - Output * a[ 1 ] + o2;
-	o2 = Input * b[ 2 ] - Output * a[ 2 ] + o3;
-	o3 = Input * b[ 3 ] - Output * a[ 3 ] + o4;
-	o4 = Input * b[ 4 ] - Output * a[ 4 ] + o5;
-	o5 = Input * b[ 5 ] - Output * a[ 5 ] + o6;
-	o6 = Input * b[ 6 ] - Output * a[ 6 ] + o7;
-	o7 = Input * b[ 7 ] - Output * a[ 7 ] ;
-
-	dst[ i ] = Output;
-    }
-
-}
-
-void Decimator::process(const double *src, double *dst)
-{
+void Decimator::process(const double *src, double *dst){
     if( m_decFactor != 1 )
-    {
 	doAntiAlias( src, decBuffer, m_inputLength );
-    }
     unsigned idx = 0;
-
     for( unsigned int i = 0; i < m_outputLength; i++ )
-    {
 	dst[ idx++ ] = decBuffer[ m_decFactor * i ];
-    }
 }
 
-void Decimator::process(const float *src, float *dst)
-{
+void Decimator::process(const float *src, float *dst){
     if( m_decFactor != 1 )
-    {
 	doAntiAlias( src, decBuffer, m_inputLength );
-    }
     unsigned idx = 0;
-
     for( unsigned int i = 0; i < m_outputLength; i++ )
-    {
 	dst[ idx++ ] = decBuffer[ m_decFactor * i ];
-    }
 }

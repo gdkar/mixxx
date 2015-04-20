@@ -29,8 +29,7 @@ using std::vector;
 // 44100, but surely the fixed window sizes and comb filtering will
 // make it prefer double or half time when run at e.g. 96000?
 
-class TempoTrackV2  
-{
+class TempoTrackV2  {
 public:
     /**
      * Construct a tempo tracker that will operate on beat detection
@@ -42,17 +41,14 @@ public:
      */
     TempoTrackV2(float sampleRate, size_t dfIncrement);
     ~TempoTrackV2();
-
     // Returned beat periods are given in df increment units; tempi in bpm
     void calculateBeatPeriod(const vector<double> &df,
                              vector<double> &beatPeriod,
                              vector<double> &tempi);
-
     // Returned beat positions are given in df increment units
     void calculateBeats(const vector<double> &df,
                         const vector<double> &beatPeriod,
                         vector<double> &beats);
-
 private:
     typedef vector<int> i_vec_t;
     typedef vector<vector<int> > i_mat_t;

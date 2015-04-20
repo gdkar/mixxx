@@ -29,9 +29,7 @@ struct ChromaConfig{
     MathUtilities::NormaliseType normalise;
 };
 
-class Chromagram 
-{
-
+class Chromagram {
 public:	
     Chromagram( ChromaConfig Config );
     ~Chromagram();
@@ -39,10 +37,8 @@ public:
     double* process( const double *data ); // time domain
     double* process( const double *real, const double *imag ); // frequency domain
     void unityNormalise( double* src );
-
     // Complex arithmetic
     double kabs( double real, double imag );
-	
     // Results
     unsigned int getK() { return m_uK;}
     unsigned int getFrameSize() { return m_frameSize; }
