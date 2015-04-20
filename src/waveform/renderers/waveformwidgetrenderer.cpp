@@ -87,7 +87,7 @@ bool WaveformWidgetRenderer::init() {
             m_group, "total_gain");
     m_pTrackSamplesControlObject = new ControlObjectThread(
             m_group, "track_samples");
-
+    m_pSampleRateControlObject = new ControlObjectThread(m_group,"track_samplerate");
     for (int i = 0; i < m_rendererStack.size(); ++i) {
         if (!m_rendererStack[i]->init()) {
             return false;
@@ -130,20 +130,21 @@ void WaveformWidgetRenderer::onPreRender(VSyncThread* vsyncThread) {
     }
 
 
-    m_playPos = m_visualPlayPosition->getAtNextVSync(vsyncThread);
+    m_sampleRate      = m_pSampleRateControlObject->get();
+    m_playPos         = m_visualPlayPosition->getAtNextVSync(vsyncThread)*m_sampleRate/m_trackSamples;;
     // m_playPos = -1 happens, when a new track is in buffer but m_visualPlayPosition was not updated
 
-    if (m_audioSamplePerPixel && m_playPos != -1) {
+    if (m_audioSamplePerPixel && m_playPos >=0 ) {
         // Track length in pixels.
         m_trackPixelCount = static_cast<double>(m_trackSamples) / 2.0 / m_audioSamplePerPixel;
 
         // Ratio of half the width of the renderer to the track length in
         // pixels. Percent of the track shown in half the waveform widget.
-        double displayedLengthHalf = static_cast<double>(m_width) / m_trackPixelCount / 2.0;
+        double displayedLengthHalf = static_cast<double>(m_width) *0.5 /m_trackPixelCount;
         // Avoid pixel jitter in play position by rounding to the nearest track
         // pixel.
         m_playPos = round(m_playPos * m_trackPixelCount) / m_trackPixelCount; // Avoid pixel jitter in play position
-        m_playPosVSample = m_playPos * waveformDataSize;
+        m_playPosVSample = (m_playPos *m_sampleRate/m_trackSamples) * waveformDataSize;
 
         m_firstDisplayedPosition = m_playPos - displayedLengthHalf;
         m_lastDisplayedPosition = m_playPos + displayedLengthHalf;

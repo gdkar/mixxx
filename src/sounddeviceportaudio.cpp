@@ -167,8 +167,8 @@ Result SoundDevicePortAudio::open(bool isClkRefDevice, int syncBuffers) {
 
     // Get latency in milleseconds
     qDebug() << "framesPerBuffer:" << m_framesPerBuffer;
-    double bufferMSec = m_framesPerBuffer / m_dSampleRate * 1000;
-    qDebug() << "Requested sample rate: " << m_dSampleRate << "Hz, latency:" << bufferMSec << "ms";
+    double bufferSize = m_framesPerBuffer / m_dSampleRate ;
+    qDebug() << "Requested sample rate: " << m_dSampleRate << "Hz, latency:" << bufferSize*1e-3<< "ms";
 
     qDebug() << "Output channels:" << m_outputParams.channelCount << "| Input channels:"
         << m_inputParams.channelCount;
@@ -184,12 +184,12 @@ Result SoundDevicePortAudio::open(bool isClkRefDevice, int syncBuffers) {
     //Fill out the rest of the info.
     m_outputParams.device = m_devId;
     m_outputParams.sampleFormat = paFloat32;
-    m_outputParams.suggestedLatency = bufferMSec / 1000.0;
+    m_outputParams.suggestedLatency = bufferSize;
     m_outputParams.hostApiSpecificStreamInfo = NULL;
 
     m_inputParams.device  = m_devId;
     m_inputParams.sampleFormat  = paFloat32;
-    m_inputParams.suggestedLatency = bufferMSec / 1000.0;
+    m_inputParams.suggestedLatency = bufferSize;
     m_inputParams.hostApiSpecificStreamInfo = NULL;
 
     qDebug() << "Opening stream with id" << m_devId;
@@ -290,15 +290,15 @@ Result SoundDevicePortAudio::open(bool isClkRefDevice, int syncBuffers) {
     // Get the actual details of the stream & update Mixxx's data
     const PaStreamInfo* streamDetails = Pa_GetStreamInfo(pStream);
     m_dSampleRate = streamDetails->sampleRate;
-    double currentLatencyMSec = streamDetails->outputLatency * 1000;
-    qDebug() << "   Actual sample rate: " << m_dSampleRate << "Hz, latency:" << currentLatencyMSec << "ms";
+    double currentLatency = streamDetails->outputLatency * 1000;
+    qDebug() << "   Actual sample rate: " << m_dSampleRate << "Hz, latency:" << currentLatency*1e-3 << "ms";
 
     if (isClkRefDevice) {
         // Update the samplerate and latency ControlObjects, which allow the
         // waveform view to properly correct for the latency.
-        ControlObject::set(ConfigKey("[Master]", "latency"), currentLatencyMSec);
+        ControlObject::set(ConfigKey("[Master]", "latency"), currentLatency);
         ControlObject::set(ConfigKey("[Master]", "samplerate"), m_dSampleRate);
-        ControlObject::set(ConfigKey("[Master]", "audio_buffer_size"), bufferMSec);
+        ControlObject::set(ConfigKey("[Master]", "audio_buffer_size"), bufferSize);
 
         if (m_pMasterAudioLatencyOverloadCount) {
             m_pMasterAudioLatencyOverloadCount->set(0);
