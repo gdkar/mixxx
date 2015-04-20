@@ -175,7 +175,8 @@ QDebug operator<<(QDebug dbg, const Stat &stat) {
         QStringList histogram;
         histogram << "(-inf,"+QString::number(stat.m_bin_left)+"]:"+QString::number(stat.m_bin_low_count);
         for(int i =0;i<stat.m_bins.size();i++){
-          histogram << "["+QString::number(stat.m_bin_left+i/stat.m_bin_scale)+","+QString::number(stat.m_bin_left+(i+1)/stat.m_bin_scale)+"):" +QString::number(stat.m_bins[i]);
+          if(stat.m_bins[i])
+            histogram << "["+QString::number(stat.m_bin_left+i/stat.m_bin_scale)+","+QString::number(stat.m_bin_left+(i+1)/stat.m_bin_scale)+"):" +QString::number(stat.m_bins[i]);
         }
         histogram << "["+QString::number(stat.m_bin_left+(stat.m_bins.size()/stat.m_bin_scale))+",+inf):"+QString::number(stat.m_bin_high_count);
         stats << "histogram=" + histogram.join(",");
