@@ -131,7 +131,7 @@ void WaveformWidgetRenderer::onPreRender(VSyncThread* vsyncThread) {
 
 
     m_sampleRate      = m_pSampleRateControlObject->get();
-    m_playPos         = m_visualPlayPosition->getAtNextVSync(vsyncThread)*m_sampleRate/m_trackSamples;;
+    m_playPos         = (m_visualPlayPosition->getAtNextVSync(vsyncThread)*m_sampleRate)/(m_trackSamples/2);
     // m_playPos = -1 happens, when a new track is in buffer but m_visualPlayPosition was not updated
 
     if (m_audioSamplePerPixel && m_playPos >=0 ) {
@@ -144,7 +144,7 @@ void WaveformWidgetRenderer::onPreRender(VSyncThread* vsyncThread) {
         // Avoid pixel jitter in play position by rounding to the nearest track
         // pixel.
         m_playPos = round(m_playPos * m_trackPixelCount) / m_trackPixelCount; // Avoid pixel jitter in play position
-        m_playPosVSample = (m_playPos *m_sampleRate/m_trackSamples) * waveformDataSize;
+        m_playPosVSample = (m_playPos ) * waveformDataSize;
 
         m_firstDisplayedPosition = m_playPos - displayedLengthHalf;
         m_lastDisplayedPosition = m_playPos + displayedLengthHalf;

@@ -222,7 +222,7 @@ class EngineBuffer : public EngineObject {
 
     void ejectTrack();
 
-    double fractionalPlayposFromAbsolute(double absolutePlaypos);
+    inline double fractionalPlayposFromAbsolute(double absolutePlaypos);
 
     void doSeekFractional(double fractionalPos, enum SeekRequest seekType);
     void doSeekPlayPos(double playpos, enum SeekRequest seekType);
