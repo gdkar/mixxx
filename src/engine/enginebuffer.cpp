@@ -125,60 +125,60 @@ EngineBuffer::EngineBuffer(QString group, ConfigObject<ConfigValue>* _config,
     m_pReader = new CachingReader(group, _config);
     connect(m_pReader, SIGNAL(trackLoading()),
             this, SLOT(slotTrackLoading()),
-            Qt::DirectConnection);
+            static_cast<Qt::ConnectionType>(Qt::QueuedConnection||Qt::UniqueConnection));
     connect(m_pReader, SIGNAL(trackLoaded(TrackPointer, int, int)),
             this, SLOT(slotTrackLoaded(TrackPointer, int, int)),
-            Qt::DirectConnection);
+            static_cast<Qt::ConnectionType>(Qt::QueuedConnection||Qt::UniqueConnection));
     connect(m_pReader, SIGNAL(trackLoadFailed(TrackPointer, QString)),
             this, SLOT(slotTrackLoadFailed(TrackPointer, QString)),
-            Qt::DirectConnection);
+            static_cast<Qt::ConnectionType>(Qt::QueuedConnection||Qt::UniqueConnection));
 
     // Play button
     m_playButton = new ControlPushButton(ConfigKey(m_group, "play"));
     m_playButton->setButtonMode(ControlPushButtonBehavior::TOGGLE);
     m_playButton->connectValueChangeRequest(
             this, SLOT(slotControlPlayRequest(double)),
-            Qt::DirectConnection);
+            static_cast<Qt::ConnectionType>(Qt::QueuedConnection||Qt::UniqueConnection));
 
     //Play from Start Button (for sampler)
     m_playStartButton = new ControlPushButton(ConfigKey(m_group, "start_play"));
     connect(m_playStartButton, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlPlayFromStart(double)),
-            Qt::DirectConnection);
+            static_cast<Qt::ConnectionType>(Qt::QueuedConnection||Qt::UniqueConnection));
 
     // Jump to start and stop button
     m_stopStartButton = new ControlPushButton(ConfigKey(m_group, "start_stop"));
     connect(m_stopStartButton, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlJumpToStartAndStop(double)),
-            Qt::DirectConnection);
+            static_cast<Qt::ConnectionType>(Qt::QueuedConnection||Qt::UniqueConnection));
 
     //Stop playback (for sampler)
     m_stopButton = new ControlPushButton(ConfigKey(m_group, "stop"));
     connect(m_stopButton, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlStop(double)),
-            Qt::DirectConnection);
+            static_cast<Qt::ConnectionType>(Qt::QueuedConnection||Qt::UniqueConnection));
 
     // Start button
     m_startButton = new ControlPushButton(ConfigKey(m_group, "start"));
     m_startButton->setButtonMode(ControlPushButtonBehavior::TRIGGER);
     connect(m_startButton, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlStart(double)),
-            Qt::DirectConnection);
+            static_cast<Qt::ConnectionType>(Qt::QueuedConnection||Qt::UniqueConnection));
 
     // End button
     m_endButton = new ControlPushButton(ConfigKey(m_group, "end"));
     connect(m_endButton, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlEnd(double)),
-            Qt::DirectConnection);
+            static_cast<Qt::ConnectionType>(Qt::QueuedConnection||Qt::UniqueConnection));
 
     m_pSlipButton = new ControlPushButton(ConfigKey(m_group, "slip_enabled"));
     m_pSlipButton->setButtonMode(ControlPushButtonBehavior::TOGGLE);
     connect(m_pSlipButton, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlSlip(double)),
-            Qt::DirectConnection);
+            static_cast<Qt::ConnectionType>(Qt::QueuedConnection||Qt::UniqueConnection));
     connect(m_pSlipButton, SIGNAL(valueChangedFromEngine(double)),
             this, SLOT(slotControlSlip(double)),
-            Qt::DirectConnection);
+            static_cast<Qt::ConnectionType>(Qt::QueuedConnection||Qt::UniqueConnection));
 
     // Actual rate (used in visuals, not for control)
     m_rateEngine = new ControlObject(ConfigKey(m_group, "rateEngine"));
@@ -191,7 +191,7 @@ EngineBuffer::EngineBuffer(QString group, ConfigObject<ConfigValue>* _config,
         ConfigKey(m_group, "playposition"), 0.0, 1.0, 0, 0, true);
     connect(m_playposSlider, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlSeek(double)),
-            Qt::DirectConnection);
+            static_cast<Qt::ConnectionType>(Qt::QueuedConnection||Qt::UniqueConnection));
     m_jogFwdButton = new ControlPushButton(ConfigKey(group, "jog_fwd"));
     m_jogBackButton = new ControlPushButton(ConfigKey(group, "jog_back"));
 
@@ -207,7 +207,7 @@ EngineBuffer::EngineBuffer(QString group, ConfigObject<ConfigValue>* _config,
     m_pKeylockEngine = new ControlObjectSlave("[Master]", "keylock_engine", this);
     m_pKeylockEngine->connectValueChanged(this,
                                           SLOT(slotKeylockEngineChanged(double)),
-                                          Qt::DirectConnection);
+            static_cast<Qt::ConnectionType>(Qt::QueuedConnection||Qt::UniqueConnection));
 
     m_pTrackSamples = new ControlObject(ConfigKey(m_group, "track_samples"));
     m_pTrackSampleRate = new ControlObject(ConfigKey(m_group, "track_samplerate"));
@@ -219,7 +219,7 @@ EngineBuffer::EngineBuffer(QString group, ConfigObject<ConfigValue>* _config,
     m_pEject = new ControlPushButton(ConfigKey(m_group, "eject"));
     connect(m_pEject, SIGNAL(valueChanged(double)),
             this, SLOT(slotEjectTrack(double)),
-            Qt::DirectConnection);
+            static_cast<Qt::ConnectionType>(Qt::QueuedConnection||Qt::UniqueConnection));
 
     // Quantization Controller for enabling and disabling the
     // quantization (alignment) of loop in/out positions and (hot)cues with
@@ -292,7 +292,7 @@ EngineBuffer::EngineBuffer(QString group, ConfigObject<ConfigValue>* _config,
 
     m_pPassthroughEnabled.reset(new ControlObjectSlave(group, "passthrough", this));
     m_pPassthroughEnabled->connectValueChanged(this, SLOT(slotPassthroughChanged(double)),
-                                               Qt::DirectConnection);
+            static_cast<Qt::ConnectionType>(Qt::QueuedConnection||Qt::UniqueConnection));
 
     //m_iRampIter = 0;
 #ifdef __SCALER_DEBUG__
@@ -1361,10 +1361,10 @@ void EngineBuffer::addControl(EngineControl* pControl) {
     pControl->setEngineBuffer(this);
     connect(this, SIGNAL(trackLoaded(TrackPointer)),
             pControl, SLOT(trackLoaded(TrackPointer)),
-            Qt::DirectConnection);
+            static_cast<Qt::ConnectionType>(Qt::QueuedConnection||Qt::UniqueConnection));
     connect(this, SIGNAL(trackUnloaded(TrackPointer)),
             pControl, SLOT(trackUnloaded(TrackPointer)),
-            Qt::DirectConnection);
+            static_cast<Qt::ConnectionType>(Qt::QueuedConnection||Qt::UniqueConnection));
 }
 
 void EngineBuffer::bindWorkers(EngineWorkerScheduler* pWorkerScheduler) {

@@ -15,6 +15,8 @@
 // unnecessary checks for possible connections.
 class ControlObjectSlave : public QObject {
     Q_OBJECT
+    Q_PROPERTY(double value READ get WRITE set RESET reset NOTIFY valueChanged STORED false);
+    Q_PROPERTY(double parameter READ getParameter WRITE setParameter RESET reset NOTIFY valueChanged STORED false);
   public:
     ControlObjectSlave(QObject* pParent = NULL);
     ControlObjectSlave(const QString& g, const QString& i, QObject* pParent = NULL);
@@ -97,7 +99,7 @@ class ControlObjectSlave : public QObject {
   protected slots:
     // Receives the value from the master control and re-emits either
     // valueChanged(double) or valueChangedByThis(double) based on pSetter.
-    inline void slotValueChanged(double v, QObject* pSetter) {
+    inline void slotValueChanged(double v, QObject* pSetter=0) {
         if (pSetter != this) {
             // This is base implementation of this function without scaling
             emit(valueChanged(v));

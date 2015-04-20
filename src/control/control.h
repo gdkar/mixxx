@@ -15,6 +15,11 @@ class ControlObject;
 
 class ControlDoublePrivate : public QObject {
     Q_OBJECT
+    Q_PROPERTY(double value READ get WRITE set RESET reset NOTIFY valueChanged );
+    Q_PROPERTY(double defaultValue READ defaultValue WRITE setDefaultValue NOTIFY defaultValueChanged STORED false);
+    Q_PROPERTY(double  parameter READ getParameter WRITE setParameter NOTIFY valueChanged STORED false);
+    Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged );
+    Q_PROPERTY(QString description READ description WRITE setDescription NOTIFY descriptionChanged );
   public:
     virtual ~ControlDoublePrivate();
 
@@ -60,7 +65,7 @@ class ControlDoublePrivate : public QObject {
     }
 
     // Sets the control value.
-    void set(double value, QObject* pSender);
+    void set(double value, QObject* pSender=0);
     // directly sets the control value. Must be used from and only from the
     // ValueChangeRequest slot.
     void setAndConfirm(double value, QObject* pSender);
@@ -77,7 +82,7 @@ class ControlDoublePrivate : public QObject {
     // by this function.
     void setBehavior(ControlNumericBehavior* pBehavior);
 
-    void setParameter(double dParam, QObject* pSender);
+    void setParameter(double dParam, QObject* pSender=0);
     double getParameter() const;
     double getParameterForValue(double value) const;
 
@@ -117,8 +122,11 @@ class ControlDoublePrivate : public QObject {
   signals:
     // Emitted when the ControlDoublePrivate value changes. pSender is a
     // pointer to the setter of the value (potentially NULL).
-    void valueChanged(double value, QObject* pSender);
+    void valueChanged(double value, QObject* pSender=0);
+    void defaultValueChanged(double value);
     void valueChangeRequest(double value);
+    void nameChanged(QString);
+    void descriptionChanged(QString);
 
   private:
     ControlDoublePrivate(ConfigKey key, ControlObject* pCreatorCO,
@@ -135,13 +143,10 @@ class ControlDoublePrivate : public QObject {
 
     // User-visible, i18n name for what the control is.
     QString m_name;
-
     // User-visible, i18n descripton for what the control does.
     QString m_description;
-
     // Whether to ignore sets which would have no effect.
     bool m_bIgnoreNops;
-
     // Whether to track value changes with the stats framework.
     bool m_bTrack;
     QString m_trackKey;

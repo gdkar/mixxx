@@ -27,6 +27,10 @@
 
 class ControlObject : public QObject {
     Q_OBJECT
+    Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged STORED false);
+    Q_PROPERTY(QString description READ description WRITE setDescription NOTIFY descriptionChanged STORED false);
+    Q_PROPERTY(double value READ get WRITE set RESET reset NOTIFY valueChanged STORED false);
+    Q_PROPERTY(double defaultValue READ defaultValue WRITE setDefaultValue NOTIFY defaultValueChanged STORED false);
   public:
     ControlObject();
 
@@ -144,7 +148,9 @@ class ControlObject : public QObject {
   signals:
     void valueChanged(double);
     void valueChangedFromEngine(double);
-
+    void defaultValueChanged(double);
+    void nameChanged(QString);
+    void descriptionChanged(QString);
   public:
 
   protected:
