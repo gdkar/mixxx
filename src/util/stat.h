@@ -99,17 +99,26 @@ class Stat {
     }
 
     explicit Stat();
-    void processReport(const StatReport& report);
+    void processReport( StatReport& report);
     QString valueUnits() const;
 
     double variance() const {
         return m_report_count > 1 ? m_variance_sk / (m_report_count - 1) : 0.0;
     }
-
+    void rebin();
+    double approximate_median();
     QString m_tag;
     StatType m_type;
     ComputeFlags m_compute;
-    QVector<double> m_values;
+    QVector<double>   m_values;
+    QVector<quint64>  m_bins;
+    quint64           m_bin_count;
+    quint64           m_bin_low_count;
+    quint64           m_bin_high_count;
+    double            m_bin_left;
+    double            m_bin_right;
+    double            m_bin_scale;
+    double            m_approximate_median;
     double m_report_count;
     double m_sum;
     double m_min;
