@@ -26,13 +26,13 @@ public:
                   float* highGain);
 
   protected:
-    ControlObjectSlave* m_pEQEnabled;
-    ControlObjectSlave* m_pLowFilterControlObject;
-    ControlObjectSlave* m_pMidFilterControlObject;
-    ControlObjectSlave* m_pHighFilterControlObject;
-    ControlObjectSlave* m_pLowKillControlObject;
-    ControlObjectSlave* m_pMidKillControlObject;
-    ControlObjectSlave* m_pHighKillControlObject;
+    QSharedPointer<ControlObjectSlave> m_pEQEnabled;
+    QSharedPointer<ControlObjectSlave> m_pLowFilterControlObject;
+    QSharedPointer<ControlObjectSlave> m_pMidFilterControlObject;
+    QSharedPointer<ControlObjectSlave> m_pHighFilterControlObject;
+    QSharedPointer<ControlObjectSlave> m_pLowKillControlObject;
+    QSharedPointer<ControlObjectSlave> m_pMidKillControlObject;
+    QSharedPointer<ControlObjectSlave> m_pHighKillControlObject;
 
     Qt::Alignment m_alignment;
 

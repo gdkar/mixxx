@@ -5,7 +5,7 @@
 #include "waveform/renderers/waveformrenderbeat.h"
 
 #include "controlobject.h"
-#include "controlobjectthread.h"
+#include "controlobjectslave.h"
 #include "track/beats.h"
 #include "trackinfoobject.h"
 #include "waveform/renderers/waveformwidgetrenderer.h"
@@ -19,13 +19,10 @@ WaveformRenderBeat::WaveformRenderBeat(WaveformWidgetRenderer* waveformWidgetRen
 }
 
 WaveformRenderBeat::~WaveformRenderBeat() {
-    if (m_pBeatActive)
-        delete m_pBeatActive;
 }
 
 bool WaveformRenderBeat::init() {
-    m_pBeatActive = new ControlObjectThread(
-            m_waveformRenderer->getGroup(), "beat_active");
+    m_pBeatActive .reset(new ControlObjectSlave(m_waveformRenderer->getGroup(), "beat_active"));
     return m_pBeatActive->valid();
 }
 
@@ -91,9 +88,7 @@ void WaveformRenderBeat::draw(QPainter* painter, QPaintEvent* /*event*/) {
 
         m_beats[beatCount++].setLine(xBeatPoint, 0.0f, xBeatPoint, rendererHeight);
     }
-
     // Make sure to use constData to prevent detaches!
     painter->drawLines(m_beats.constData(), beatCount);
-
     painter->restore();
 }

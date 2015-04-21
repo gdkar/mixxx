@@ -41,7 +41,7 @@ class WaveformWidgetRenderer {
     double getLastDisplayedPosition() const { return m_lastDisplayedPosition;}
 
     void setZoom(int zoom);
-
+    void setVisibleDuration(double duration);
     double getVisualSamplePerPixel() const { return m_visualSamplePerPixel;};
     double getAudioSamplePerPixel() const { return m_audioSamplePerPixel;};
 
@@ -54,17 +54,20 @@ class WaveformWidgetRenderer {
     //stable and deterministic
     // Transform sample index to pixel in track.
     inline double transformSampleIndexInRendererWorld(int sampleIndex) const {
-        const double relativePosition = (double)sampleIndex / (double)m_trackSamples;
+        const double relativePosition = (double)sampleIndex / (double)m_sampleRate;
         return transformPositionInRendererWorld(relativePosition);
     }
-    // Transform position (percentage of track) to pixel in track.
+    // Transform position (seconds of track) to pixel in track.
     inline double transformPositionInRendererWorld(double position) const {
-        return m_trackPixelCount * (position - m_firstDisplayedPosition);
+        return m_pixelsPerSecond * position;
     }
 
     double getPlayPos() const { return m_playPos;}
     double getPlayPosVSample() const { return m_playPosVSample;}
     double getZoomFactor() const { return m_zoomFactor;}
+    double getVisibleDuration()const{return m_visibleDuration;}
+    double getSampleRate()const{return m_sampleRate;}
+    double getPixelsPerSecond()const{return m_pixelsPerSecond;}
     double getRateAdjust() const { return m_rateAdjust;}
     double getGain() const { return m_gain;}
     int getTrackSamples() const { return m_trackSamples;}
@@ -96,10 +99,12 @@ class WaveformWidgetRenderer {
     double m_trackPixelCount;
 
     double m_zoomFactor;
+    double m_visibleDuration;
     double m_rateAdjust;
+    double m_sampleRate;
     double m_visualSamplePerPixel;
     double m_audioSamplePerPixel;
-
+    double m_pixelsPerSecond;
     //TODO: vRince create some class to manage control/value
     //ControlConnection
     QSharedPointer<VisualPlayPosition> m_visualPlayPosition;
@@ -116,7 +121,6 @@ class WaveformWidgetRenderer {
     ControlObjectThread* m_pTrackSamplesControlObject;
     int m_trackSamples;
     ControlObjectThread* m_pSampleRateControlObject;
-    double m_sampleRate;
 #ifdef WAVEFORMWIDGETRENDERER_DEBUG
     QTime* m_timer;
     int m_lastFrameTime;

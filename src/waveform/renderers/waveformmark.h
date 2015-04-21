@@ -8,7 +8,7 @@
 #include "configobject.h"
 #include "skin/skincontext.h"
 
-class ControlObjectThread;
+class ControlObjectSlave;
 class QDomNode;
 class WaveformSignalColors;
 
@@ -22,14 +22,14 @@ class WaveformMark {
     void setKeyAndIndex(const ConfigKey& key, int i);
 
   private:
-    ControlObjectThread* m_pointControl;
+    QSharedPointer<ControlObjectSlave> m_pointControl;
 
-    QColor m_color;
-    QColor m_textColor;
-    QString m_text;
-    Qt::Alignment m_align;
-    QString m_pixmapPath;
-    QImage m_image;
+    QColor               m_color;
+    QColor               m_textColor;
+    QString              m_text;
+    Qt::Alignment        m_align;
+    QString              m_pixmapPath;
+    QImage               m_image;
 
     friend class WaveformMarkSet;
     friend class WaveformRenderMark;

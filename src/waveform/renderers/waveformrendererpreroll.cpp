@@ -29,7 +29,8 @@ void WaveformRendererPreroll::draw(QPainter* painter, QPaintEvent* event) {
         return;
     }
     double samplesPerPixel = m_waveformRenderer->getVisualSamplePerPixel();
-    double numberOfSamples = m_waveformRenderer->getWidth() * samplesPerPixel;
+    double numberOfPixels  = m_waveformRenderer->getVisibleDuration() * m_waveformRenderer->getPixelsPerSecond();
+    double numberOfSamples = m_waveformRenderer->getVisibleDuration() * m_waveformRenderer->getSampleRate();
 
     // TODO (vRince) not really accurate since waveform size une visual reasampling and
     // have two mores samples to hold the complete visual data
@@ -60,7 +61,6 @@ void WaveformRendererPreroll::draw(QPainter* painter, QPaintEvent* event) {
             rest %= (int)((polyWidth + 1) * samplesPerPixel);
             index = numberOfSamples + rest;
         }
-
         polygon.translate(((qreal)index) / samplesPerPixel, 0);
         while (index > 0) {
             painter->drawPolygon(polygon);

@@ -4,8 +4,10 @@
 #include <QMutex>
 #include <QByteArray>
 #include <QString>
-#include <QAtomicInt>
-#include <QSharedPointer>
+#include <QVector>
+#include <qatomic.h>
+#include <qsharedpointer.h>
+#include <qmath.h>
 #include <QMutexLocker>
 #include <vector>
 
@@ -23,11 +25,10 @@ union WaveformData {
         unsigned char all;
     } filtered;
     int m_i;
-
     WaveformData() {}
     WaveformData(int i) { m_i = i;}
 };
-
+Q_DECLARE_TYPEINFO(WaveformData,Q_PRIMITIVE_TYPE);
 class Waveform {
   public:
     explicit Waveform(const QByteArray pData = QByteArray());
@@ -92,11 +93,11 @@ class Waveform {
 
     // Atomically lookup the completion of the waveform. Represents the number
     // of data elements that have been processed out of dataSize.
-    int getCompletion() const {
-        return load_atomic(m_completion);
+    quint64 getCompletion() const {
+        return m_completion.load();
     }
-    void setCompletion(int completion) {
-        m_completion = completion;
+    void setCompletion(quint64 completion) {
+        m_completion.store(completion);
     }
 
     // We do not lock the mutex since m_textureStride is not changed after
@@ -162,17 +163,13 @@ class Waveform {
     double m_visualSampleRate;
     // Not allowed to change after the constructor runs.
     double m_audioVisualRatio;
-
     // We create an NxN texture out of m_data's buffer in the GLSL renderer. The
     // stride is N. Not allowed to change after the constructor runs.
     int m_textureStride;
-
     // For performance, completion is shared as a QAtomicInt and does not lock
     // the mutex. The completion of the waveform calculation.
-    QAtomicInt m_completion;
-
+    QAtomicInteger<quint64> m_completion;
     mutable QMutex m_mutex;
-
     DISALLOW_COPY_AND_ASSIGN(Waveform);
 };
 
