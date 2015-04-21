@@ -271,7 +271,7 @@ MixxxMainWindow::MixxxMainWindow(QApplication* pApp, const CmdlineArgs& args)
     m_pVCManager->init();
 #endif
 
-    m_pNumDecks = new ControlObjectThread(ConfigKey("[Master]", "num_decks"),
+    m_pNumDecks = new ControlObjectSlave(ConfigKey("[Master]", "num_decks"),
                                           this);
     connect(m_pNumDecks, SIGNAL(valueChanged(double)),
             this, SLOT(slotNumDecksChanged(double)));

@@ -21,7 +21,7 @@
 #include <QEvent>
 
 #include "mixxxkeyboard.h"
-#include "controlobject.h"
+#include "controlobjectslave.h"
 #include "util/cmdlineargs.h"
 
 
@@ -58,21 +58,17 @@ bool MixxxKeyboard::eventFilter(QObject*, QEvent* e) {
         // Just for returning true if we are consuming this key event
 
         foreach (const KeyDownInformation& keyDownInfo, m_qActiveKeyList) {
-            if (keyDownInfo.keyId == keyId) {
+            if (keyDownInfo.keyId == keyId && keyDownInfo.modifiers == ke->modifiers()) {
                 return true;
             }
         }
-
         QKeySequence ks = getKeySeq(ke);
         if (!ks.isEmpty()) {
             // Check if a shortcut is defined
             bool result = false;
-            for (QMultiHash<QKeySequence, ConfigKey>::const_iterator it =
-                         m_keySequenceToControlHash.find(ks);
-                 it != m_keySequenceToControlHash.end() && it.key() == ks; ++it) {
-                const ConfigKey& configKey = it.value();
-                if (configKey.group != "[KeyboardShortcuts]") {
-                    ControlObject* control = ControlObject::getControl(configKey);
+            for (QMultiHash<QKeySequence, QSharedPointer<ControlObjectSlave> >::const_iterator it =
+                         m_keyToCtrlsMap.find(ks);it != m_keyToCtrlsMap.end() && it.key() == ks; ++it) {
+                    ControlObjectSlave *control = it.value().data(); 
                     if (control) {
                         // Add key to active key list
                         m_qActiveKeyList.append(KeyDownInformation(
@@ -80,16 +76,12 @@ bool MixxxKeyboard::eventFilter(QObject*, QEvent* e) {
                         // Since setting the value might cause us to go down
                         // a route that would eventually clear the active
                         // key list, do that last.
-                        control->setParameter( 1);
+                        control->setParameter(1);
                         result = true;
-                    } else {
-                        qDebug() << "Warning: Keyboard key is configured for nonexistent control:"
-                                 << configKey.group << configKey.item;
-                    }
+                    } 
                 }
-            }
             return result;
-        }
+          }
     } else if (e->type()==QEvent::KeyRelease) {
         QKeyEvent* ke = (QKeyEvent*)e;
 
@@ -117,12 +109,13 @@ bool MixxxKeyboard::eventFilter(QObject*, QEvent* e) {
         // Run through list of active keys to see if the released key is active
         for (int i = m_qActiveKeyList.size() - 1; i >= 0; i--) {
             const KeyDownInformation& keyDownInfo = m_qActiveKeyList[i];
-            ControlObject* pControl = keyDownInfo.pControl;
             if (keyDownInfo.keyId == keyId ||
                     (clearModifiers > 0 && keyDownInfo.modifiers == clearModifiers)) {
                 if (!autoRepeat) {
+                    ControlObjectSlave* pControl = keyDownInfo.pControl;
                     pControl->setParameter( 0);
                     m_qActiveKeyList.removeAt(i);
+                    i--;
                 }
                 // Due to the modifier clearing workaround we might match multiple keys for
                 // release.
@@ -180,9 +173,12 @@ void MixxxKeyboard::setKeyboardConfig(ConfigObject<ConfigValueKbd>* pKbdConfigOb
             pKbdConfigObject->toHash();
 
     m_keySequenceToControlHash.clear();
-    for (QHash<ConfigKey, ConfigValueKbd>::const_iterator it =
-                 keyboardConfig.begin(); it != keyboardConfig.end(); ++it) {
-        m_keySequenceToControlHash.insert(it.value().m_qKey, it.key());
+    for(QHashIterator<ConfigKey,ConfigValueKbd> it(keyboardConfig);it.hasNext();){
+      it.next();
+      m_keySequenceToControlHash.insert(it.value().m_qKey,it.key());
+      ControlObjectSlave *slave = new ControlObjectSlave(it.key(),this);
+      if(slave)
+          m_keyToCtrlsMap.insert(it.value().m_qKey,QSharedPointer<ControlObjectSlave>(slave));
     }
     m_pKbdConfigObject = pKbdConfigObject;
 }

@@ -18,10 +18,10 @@ class ControlObjectSlave : public QObject {
     Q_PROPERTY(double value READ get WRITE set RESET reset NOTIFY valueChanged STORED false);
     Q_PROPERTY(double parameter READ getParameter WRITE setParameter RESET reset NOTIFY valueChanged STORED false);
   public:
-    ControlObjectSlave(QObject* pParent = NULL);
-    ControlObjectSlave(const QString& g, const QString& i, QObject* pParent = NULL);
-    ControlObjectSlave(const char* g, const char* i, QObject* pParent = NULL);
-    ControlObjectSlave(const ConfigKey& key, QObject* pParent = NULL);
+    explicit ControlObjectSlave(QObject* pParent = NULL);
+    explicit ControlObjectSlave(const QString& g, const QString& i, QObject* pParent = NULL);
+    explicit ControlObjectSlave(const char* g, const char* i, QObject* pParent = NULL);
+    explicit ControlObjectSlave(const ConfigKey& key, QObject* pParent = NULL);
     virtual ~ControlObjectSlave();
 
     void initialize(const ConfigKey& key);
@@ -61,7 +61,12 @@ class ControlObjectSlave : public QObject {
     inline double getParameterForValue(double value) const {
         return m_pControl ? m_pControl->getParameterForValue(value) : 0.0;
     }
-
+    inline double defaultValue()const{
+      return m_pControl?m_pControl->defaultValue():0.0;
+    }
+    inline void setDefaultValue(double v){
+      if(m_pControl)m_pControl->setDefaultValue(v);
+    }
   public slots:
     // Set the control to a new value. Non-blocking.
     inline void slotSet(double v) {
@@ -79,6 +84,7 @@ class ControlObjectSlave : public QObject {
             m_pControl->setParameter(v, this);
         }
     }
+
     // Resets the control to its default value. Thread safe, non-blocking.
     void reset() {
         if (m_pControl) {
@@ -86,7 +92,7 @@ class ControlObjectSlave : public QObject {
             // not know the resulting value so it makes sense that we should emit a
             // general valueChanged() signal even though the change originated from
             // us. For this reason, we provide NULL here so that the change is
-            // broadcast as valueChanged() and not valueChangedByThis().
+            // broadcast as valueChanged() and not 
             m_pControl->reset();
         }
     }
@@ -98,7 +104,7 @@ class ControlObjectSlave : public QObject {
 
   protected slots:
     // Receives the value from the master control and re-emits either
-    // valueChanged(double) or valueChangedByThis(double) based on pSetter.
+    // valueChanged(double) or based on pSetter.
     inline void slotValueChanged(double v, QObject* pSetter=0) {
         if (pSetter != this) {
             // This is base implementation of this function without scaling

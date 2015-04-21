@@ -404,7 +404,7 @@ double WSpinny::calculateAngle(double playpos) {
     }
 
     // Convert playpos to seconds.
-    double t = playpos * trackFrames / trackSampleRate;
+    double t = playpos ;
 
     // Bad samplerate or number of track samples.
     if (isnan(t)) {

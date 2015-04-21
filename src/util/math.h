@@ -6,7 +6,6 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 #include <algorithm>
-
 #include "util/assert.h"
 
 // If we don't do this then we get the C90 fabs from the global namespace which

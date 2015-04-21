@@ -32,12 +32,12 @@ class ControlObject : public QObject {
     Q_PROPERTY(double value READ get WRITE set RESET reset NOTIFY valueChanged STORED false);
     Q_PROPERTY(double defaultValue READ defaultValue WRITE setDefaultValue NOTIFY defaultValueChanged STORED false);
   public:
-    ControlObject();
+    explicit ControlObject();
 
     // bIgnoreNops: Don't emit a signal if the CO is set to its current value.
     // bTrack: Record statistics about this control.
     // bPersist: Store value on exit, load on startup.
-    ControlObject(ConfigKey key,
+    explicit ControlObject(ConfigKey key,
                   bool bIgnoreNops=true, bool bTrack=false,
                   bool bPersist=false);
     virtual ~ControlObject();
@@ -79,7 +79,7 @@ class ControlObject : public QObject {
     }
 
     // Returns the value of the ControlObject
-    inline double get() const {
+    inline virtual double get() const {
         return m_pControl ? m_pControl->get() : 0.0;
     }
 
@@ -92,13 +92,13 @@ class ControlObject : public QObject {
     static double get(const ConfigKey& key);
 
     // Sets the ControlObject value. May require confirmation by owner.
-    inline void set(double value) {
+    virtual void set(double value) {
         if (m_pControl) {
             m_pControl->set(value, this);
         }
     }
     // Sets the ControlObject value and confirms it.
-    inline void setAndConfirm(double value) {
+    virtual void setAndConfirm(double value) {
         if (m_pControl) {
             m_pControl->setAndConfirm(value, this);
         }
@@ -107,18 +107,18 @@ class ControlObject : public QObject {
     static void set(const ConfigKey& key, const double& value);
 
     // Sets the default value
-    inline void reset() {
+    virtual void reset() {
         if (m_pControl) {
             m_pControl->reset();
         }
     }
 
-    inline void setDefaultValue(double dValue) {
+    virtual void setDefaultValue(double dValue) {
         if (m_pControl) {
             m_pControl->setDefaultValue(dValue);
         }
     }
-    inline double defaultValue() const {
+    virtual  double defaultValue() const {
         return m_pControl ? m_pControl->defaultValue() : 0.0;
     }
 
@@ -151,7 +151,6 @@ class ControlObject : public QObject {
     void defaultValueChanged(double);
     void nameChanged(QString);
     void descriptionChanged(QString);
-  public:
 
   protected:
     // Key of the object
@@ -159,12 +158,12 @@ class ControlObject : public QObject {
     QSharedPointer<ControlDoublePrivate> m_pControl;
 
   private slots:
-    void privateValueChanged(double value, QObject* pSetter);
+    void privateValueChanged(double value,QObject *pSender=0);
 
   private:
     void initialize(ConfigKey key, bool bIgnoreNops, bool bTrack,
                     bool bPersist);
-    inline bool ignoreNops() const {
+    virtual bool ignoreNops() const {
         return m_pControl ? m_pControl->ignoreNops() : true;
     }
 };

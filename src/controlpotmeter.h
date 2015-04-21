@@ -26,12 +26,12 @@
   */
 
 class ControlPushButton;
-class ControlObjectThread;
+class ControlObjectSlave;
 
 class PotmeterControls : public QObject {
     Q_OBJECT
   public:
-    PotmeterControls(const ConfigKey& key);
+    explicit PotmeterControls(const ConfigKey& key);
     virtual ~PotmeterControls();
 
     void setStepCount(int count) {
@@ -41,7 +41,13 @@ class PotmeterControls : public QObject {
     void setSmallStepCount(int count) {
         m_smallStepCount = count;
     }
-
+    int stepCount()const{return m_stepCount;}
+    int smallStepCount()const{return m_smallStepCount;}
+    void set(double v);
+    double get() const;
+    void reset();
+    void setDefaultValue(double);
+    double defaultValue()const;
   public slots:
     // Increases the value.
     void incValue(double);
@@ -65,15 +71,18 @@ class PotmeterControls : public QObject {
     void toggleMinusValue(double);
 
   private:
-    ControlObjectThread* m_pControl;
+    ControlObjectSlave* m_pControl;
     int m_stepCount;
     double m_smallStepCount;
 };
 
 class ControlPotmeter : public ControlObject {
     Q_OBJECT
+    Q_PROPERTY(double value READ get WRITE set RESET reset NOTIFY valueChanged STORED false);
+    Q_PROPERTY(int stepCount READ stepCount WRITE setStepCount NOTIFY stepCountChanged STORED false);
+    Q_PROPERTY(int smallStepCount READ smallStepCount WRITE setSmallStepCount NOTIFY smallStepCountChanged STORED false);
   public:
-    ControlPotmeter(ConfigKey key, double dMinValue = 0.0, double dMaxValue = 1.0,
+    explicit ControlPotmeter(ConfigKey key, double dMinValue = 0.0, double dMaxValue = 1.0,
                     bool allowOutOfBounds = false,
                     bool bIgnoreNops = true,
                     bool bTrack = false,
@@ -81,15 +90,24 @@ class ControlPotmeter : public ControlObject {
     virtual ~ControlPotmeter();
 
     // Sets the step count of the associated PushButtons.
+    virtual void setDefaultValue(double);
+    virtual double defaultValue()const;
+    virtual void   set(double);
+    virtual double get() const;
+    virtual void   reset();
     void setStepCount(int count);
+    int  stepCount()const;
 
     // Sets the small step count of the associated PushButtons.
     void setSmallStepCount(int count);
-
+    int  smallStepCount()const;
     // Sets the minimum and maximum allowed value. The control value is reset
     // when calling this method
     void setRange(double dMinValue, double dMaxValue, bool allowOutOfBounds);
-
+  signals:
+    void valueChanged(double);
+    void stepCountChanged(int);
+    void smallStepCountChanged(int);
   protected:
     bool m_bAllowOutOfBounds;
     PotmeterControls m_controls;

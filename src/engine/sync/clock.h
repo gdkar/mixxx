@@ -4,7 +4,6 @@
 class Clock {
   public:
     virtual ~Clock() {}
-
     virtual double getBeatDistance() const = 0;
     virtual void setMasterBeatDistance(double beatDistance) = 0;
 

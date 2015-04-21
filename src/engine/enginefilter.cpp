@@ -48,21 +48,32 @@ EngineFilter::EngineFilter(char * conf, int predefinedType)
         ff = fid_design(conf, 44100., -1., -1., 1, NULL);
         qDebug() << "Filter " << conf << " Setup: 0x" << ff;
         run = fid_run_new(ff, &funcp);
-        fbuf1 = fid_run_newbuf(run);
-        fbuf2 = fid_run_newbuf(run);
-        processSample = funcp;
+        FidData *data = new FidData;
+        data->run   = run;
+        data->ff    = ff;
+        data->funcp = funcp;
+        data->buf   = fid_run_newbuf(run);
+        fbuf1       = data;
+        data        = new FidData;
+        data->run   = run;
+        data->ff    = ff;
+        data->funcp = funcp;
+        data->buf   = fid_run_newbuf(run);
+        fbuf2       = data;
+        processSample = processSampleFuncp;
     }
     int i;
     for(i=0; i < FILTER_BUF_SIZE; i++)
         buf1[i] = buf2[i] = 0;
 }
 
-EngineFilter::~EngineFilter()
-{
-    if(processSample == funcp) //if we used fidlib
+EngineFilter::~EngineFilter(){
+    if(processSample == processSampleFuncp) //if we used fidlib
     {
-        fid_run_freebuf(fbuf2);
-        fid_run_freebuf(fbuf1);
+        fid_run_freebuf(((FidData*)fbuf2)->buf);
+        fid_run_freebuf(((FidData*)fbuf1)->buf);
+        delete ((FidData*)fbuf2);
+        delete ((FidData*)fbuf1);
         fid_run_free(run);
         free(ff);
     }
@@ -70,24 +81,27 @@ EngineFilter::~EngineFilter()
 
 
 
-void EngineFilter::process(CSAMPLE* pInOut, const int iBufferSize)
-{
+void EngineFilter::process(CSAMPLE* pInOut, const int iBufferSize){
     int i;
     for(i = 0; i < iBufferSize; i += 2)
     {
-        pInOut[i] = (CSAMPLE) processSample(fbuf1, (double) pInOut[i]);
-        pInOut[i + 1] = (CSAMPLE) processSample(fbuf2, (double) pInOut[i + 1]);
+        pInOut[i] = (CSAMPLE) processSample(fbuf1, (CSAMPLE) pInOut[i]);
+        pInOut[i + 1] = (CSAMPLE) processSample(fbuf2, (CSAMPLE) pInOut[i + 1]);
     }
 }
 
-
+CSAMPLE processSampleFuncp(void *bufIn, const CSAMPLE sample){
+  EngineFilter::FidData *data = reinterpret_cast<EngineFilter::FidData*>(bufIn);
+  double out = (double) data->funcp(data->buf,(double)sample);
+  return (CSAMPLE)out;
+}
 // 250Hz-3Khz Butterworth
-double processSampleBp(void *bufIn, const double sample)
+CSAMPLE processSampleBp(void *bufIn, const CSAMPLE sample)
 {
-    double *buf = (double*) bufIn;
-    double val = sample;
-   double tmp, fir, iir;
-   tmp= buf[0]; memmove(buf, buf+1, 15*sizeof(double));
+    CSAMPLE *buf = (CSAMPLE*) bufIn;
+    CSAMPLE val = sample;
+   CSAMPLE  tmp, fir, iir;
+   tmp= buf[0]; memmove(buf, buf+1, 15*sizeof(CSAMPLE));
    // use 8.73843261546594e-007 below for unity gain at 100% level
    iir= val * 8.738432615466217e-007;
    iir -= 0.8716357571117795*tmp; fir= tmp;
@@ -133,12 +147,12 @@ double processSampleBp(void *bufIn, const double sample)
 }
 
 //3Khz butterworth
-double processSampleHp(void *bufIn, const double sample)
+CSAMPLE processSampleHp(void *bufIn, const CSAMPLE sample)
 {
-    double *buf = (double*) bufIn;
-    double val = sample;
-   double tmp, fir, iir;
-   tmp= buf[0]; memmove(buf, buf+1, 7*sizeof(double));
+    CSAMPLE *buf = (CSAMPLE*) bufIn;
+    CSAMPLE  val = sample;
+   CSAMPLE tmp, fir, iir;
+   tmp= buf[0]; memmove(buf, buf+1, 7*sizeof(CSAMPLE));
    // use 0.3307380993576275 below for unity gain at 100% level
    iir= val * 0.3307380993576274;
    iir -= 0.8503595356078639*tmp; fir= tmp;
@@ -162,12 +176,12 @@ double processSampleHp(void *bufIn, const double sample)
    buf[7]= iir; val= fir;
    return val;
 }
-double processSampleLp(void *bufIn, const double sample)
+CSAMPLE processSampleLp(void *bufIn, const CSAMPLE sample)
 {
-    double *buf = (double*) bufIn;
-    double val = sample;
-       double tmp, fir, iir;
-   tmp= buf[0]; memmove(buf, buf+1, 7*sizeof(double));
+    CSAMPLE *buf = (CSAMPLE*) bufIn;
+    CSAMPLE val = sample;
+    CSAMPLE tmp, fir, iir;
+   tmp= buf[0]; memmove(buf, buf+1, 7*sizeof(CSAMPLE));
    iir= val * 9.245468558718278e-015;
    iir -= 0.9862009760667707*tmp; fir= tmp;
    iir -= -1.984941152135637*buf[0]; fir += buf[0]+buf[0];

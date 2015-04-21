@@ -95,27 +95,21 @@ class ControlObjectThread : public QObject {
             // not know the resulting value so it makes sense that we should emit a
             // general valueChanged() signal even though the change originated from
             // us. For this reason, we provide NULL here so that the change is
-            // broadcast as valueChanged() and not valueChangedByThis().
             m_pControl->reset();
         }
     }
 
   signals:
     void valueChanged(double);
-    // This means that the control value has changed as a result of a mutation
-    // (set/add/sub/reset) originating from this object.
-    void valueChangedByThis(double);
 
   protected slots:
     // Receives the value from the master control and re-emits either
-    // valueChanged(double) or valueChangedByThis(double) based on pSetter.
+    // valueChanged(double) or based on pSetter.
     inline void slotValueChanged(double v, QObject* pSetter) {
         if (pSetter != this) {
             // This is base implementation of this function without scaling
             emit(valueChanged(v));
-        } else {
-            emit(valueChangedByThis(v));
-        }
+        } 
     }
 
   protected:

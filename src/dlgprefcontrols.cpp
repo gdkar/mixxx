@@ -22,7 +22,7 @@
 #include <QWidget>
 #include <QLocale>
 #include <QDesktopWidget>
-
+#include "controlobjectslave.h"
 #include "basetrackplayer.h"
 #include "dlgprefcontrols.h"
 #include "configobject.h"
@@ -115,7 +115,7 @@ DlgPrefControls::DlgPrefControls(QWidget * parent, MixxxMainWindow * mixxx,
             this, SLOT(slotKeylockMode(int)));
     m_keylockMode = m_pConfig->getValueString(
             ConfigKey("[Controls]", "keylockMode"), "0").toInt();
-    foreach (ControlObjectThread* pControl, m_keylockModeControls) {
+    foreach (ControlObjectSlave * pControl, m_keylockModeControls) {
         pControl->slotSet(m_keylockMode);
     }
 
@@ -375,6 +375,7 @@ void DlgPrefControls::slotUpdateSchemes() {
 }
 
 void DlgPrefControls::slotUpdate() {
+    if(!m_rateRangeControls.size())return;
     double deck1RateRange = m_rateRangeControls[0]->get();
     double deck1RateDir = m_rateDirControls[0]->get();
 
@@ -460,31 +461,33 @@ void DlgPrefControls::slotSetRateRange(int pos) {
     qDebug() << "slotSetRateRange" << pos << range;
 
     // Set rate range for every group
-    foreach (ControlObjectThread* pControl, m_rateRangeControls) {
+    foreach (ControlObjectSlave* pControl, m_rateRangeControls) {
         pControl->slotSet(range);
     }
 
     // Reset rate for every group
-    foreach (ControlObjectThread* pControl, m_rateControls) {
+    foreach (ControlObjectSlave* pControl, m_rateControls) {
         pControl->slotSet(0);
     }
 }
 
 void DlgPrefControls::slotSetRateDir(int index) {
+    if(!m_rateDirControls.size())
+      return;
     float dir = 1.;
     if (index == 1)
         dir = -1.;
     float oldDir = m_rateDirControls[0]->get();
 
     // Set rate direction for every group
-    foreach (ControlObjectThread* pControl, m_rateDirControls) {
+    foreach (ControlObjectSlave* pControl, m_rateDirControls) {
         pControl->slotSet(dir);
     }
 
     // If the setting was changed, ie the old direction is not equal to the new one,
     // multiply the rate by -1 so the current sound does not change.
     if(fabs(dir - oldDir) > 0.1) {
-        foreach (ControlObjectThread* pControl, m_rateControls) {
+        foreach (ControlObjectSlave* pControl, m_rateControls) {
             pControl->slotSet(-1 * pControl->get());
         }
     }
@@ -506,7 +509,7 @@ void DlgPrefControls::slotSetCueDefault(int)
     m_pConfig->set(ConfigKey("[Controls]", "CueDefault"), ConfigValue(cueIndex));
 
     // Set cue behavior for every group
-    foreach (ControlObjectThread* pControl, m_cueControls) {
+    foreach (ControlObjectSlave* pControl, m_cueControls) {
         pControl->slotSet(cueIndex);
     }
 }
@@ -604,6 +607,8 @@ void DlgPrefControls::slotSetRateRamp(bool mode) {
 }
 
 void DlgPrefControls::slotApply() {
+    if(!m_rateRangeControls.size())
+      return;
     double deck1RateRange = m_rateRangeControls[0]->get();
     double deck1RateDir = m_rateDirControls[0]->get();
 
@@ -629,7 +634,7 @@ void DlgPrefControls::slotApply() {
     m_pConfig->set(ConfigKey("[Controls]", "PitchAndKeylockMode"),
             ConfigValue(m_keylockMode));
     // Set cue behavior for every group
-    foreach (ControlObjectThread* pControl, m_keylockModeControls) {
+    foreach (ControlObjectSlave* pControl, m_keylockModeControls) {
         pControl->slotSet(m_keylockMode);
     }
 }
@@ -675,15 +680,15 @@ void DlgPrefControls::slotNumDecksChanged(double new_count) {
 
     for (int i = m_iNumConfiguredDecks; i < numdecks; ++i) {
         QString group = PlayerManager::groupForDeck(i);
-        m_rateControls.push_back(new ControlObjectThread(
+        m_rateControls.push_back(new ControlObjectSlave(
                 group, "rate"));
-        m_rateRangeControls.push_back(new ControlObjectThread(
+        m_rateRangeControls.push_back(new ControlObjectSlave(
                 group, "rateRange"));
-        m_rateDirControls.push_back(new ControlObjectThread(
+        m_rateDirControls.push_back(new ControlObjectSlave(
                 group, "rate_dir"));
-        m_cueControls.push_back(new ControlObjectThread(
+        m_cueControls.push_back(new ControlObjectSlave(
                 group, "cue_mode"));
-        m_keylockModeControls.push_back(new ControlObjectThread(
+        m_keylockModeControls.push_back(new ControlObjectSlave(
                         group, "keylockMode"));
         m_keylockModeControls.last()->set(m_keylockMode);
     }
@@ -701,15 +706,15 @@ void DlgPrefControls::slotNumSamplersChanged(double new_count) {
 
     for (int i = m_iNumConfiguredSamplers; i < numsamplers; ++i) {
         QString group = PlayerManager::groupForSampler(i);
-        m_rateControls.push_back(new ControlObjectThread(
+        m_rateControls.push_back(new ControlObjectSlave(
                 group, "rate"));
-        m_rateRangeControls.push_back(new ControlObjectThread(
+        m_rateRangeControls.push_back(new ControlObjectSlave(
                 group, "rateRange"));
-        m_rateDirControls.push_back(new ControlObjectThread(
+        m_rateDirControls.push_back(new ControlObjectSlave(
                 group, "rate_dir"));
-        m_cueControls.push_back(new ControlObjectThread(
+        m_cueControls.push_back(new ControlObjectSlave(
                 group, "cue_mode"));
-        m_keylockModeControls.push_back(new ControlObjectThread(
+        m_keylockModeControls.push_back(new ControlObjectSlave(
                         group, "keylockMode"));
         m_keylockModeControls.last()->set(m_keylockMode);
     }

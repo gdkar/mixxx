@@ -29,7 +29,7 @@ KeyControl::KeyControl(QString group,
     m_pPitch->setSmallStepCount(120);
     connect(m_pPitch, SIGNAL(valueChanged(double)),
             this, SLOT(slotPitchChanged(double)),
-            Qt::DirectConnection);
+            static_cast<Qt::ConnectionType>(Qt::UniqueConnection|Qt::QueuedConnection));
 
     // pitch_adjust is the distance to the linear pitch in semitones
     // set by the speed slider or to the locked key.
@@ -41,33 +41,33 @@ KeyControl::KeyControl(QString group,
     m_pPitchAdjust->setSmallStepCount(60);
     connect(m_pPitchAdjust, SIGNAL(valueChanged(double)),
             this, SLOT(slotPitchAdjustChanged(double)),
-            Qt::DirectConnection);
+            static_cast<Qt::ConnectionType>(Qt::UniqueConnection|Qt::QueuedConnection));
 
     m_pButtonSyncKey = new ControlPushButton(ConfigKey(group, "sync_key"));
     connect(m_pButtonSyncKey, SIGNAL(valueChanged(double)),
             this, SLOT(slotSyncKey(double)),
-            Qt::DirectConnection);
+            static_cast<Qt::ConnectionType>(Qt::UniqueConnection|Qt::QueuedConnection));
 
     m_pButtonResetKey = new ControlPushButton(ConfigKey(group, "reset_key"));
     connect(m_pButtonResetKey, SIGNAL(valueChanged(double)),
             this, SLOT(slotResetKey(double)),
-            Qt::DirectConnection);
+            static_cast<Qt::ConnectionType>(Qt::UniqueConnection|Qt::QueuedConnection));
 
     m_pFileKey = new ControlObject(ConfigKey(group, "file_key"));
     connect(m_pFileKey, SIGNAL(valueChanged(double)),
             this, SLOT(slotFileKeyChanged(double)),
-            Qt::DirectConnection);
+            static_cast<Qt::ConnectionType>(Qt::UniqueConnection|Qt::QueuedConnection));
 
     m_pEngineKey = new ControlObject(ConfigKey(group, "key"));
     connect(m_pEngineKey, SIGNAL(valueChanged(double)),
             this, SLOT(slotSetEngineKey(double)),
-            Qt::DirectConnection);
+            static_cast<Qt::ConnectionType>(Qt::UniqueConnection|Qt::QueuedConnection));
 
     m_pEngineKeyDistance = new ControlPotmeter(ConfigKey(group, "visual_key_distance"),
                                                -0.5, 0.5);
     connect(m_pEngineKeyDistance, SIGNAL(valueChanged(double)),
             this, SLOT(slotSetEngineKeyDistance(double)),
-            Qt::DirectConnection);
+            static_cast<Qt::ConnectionType>(Qt::UniqueConnection|Qt::QueuedConnection));
 
     m_keylockMode = new ControlPushButton(ConfigKey(group, "keylockMode"));
     m_keylockMode->setButtonMode(ControlPushButtonBehavior::TOGGLE);
@@ -76,54 +76,54 @@ KeyControl::KeyControl(QString group,
     m_pRateSlider = ControlObject::getControl(ConfigKey(group, "rate"));
     connect(m_pRateSlider, SIGNAL(valueChanged(double)),
             this, SLOT(slotRateChanged()),
-            Qt::DirectConnection);
+            static_cast<Qt::ConnectionType>(Qt::UniqueConnection|Qt::QueuedConnection));
     connect(m_pRateSlider, SIGNAL(valueChangedFromEngine(double)),
             this, SLOT(slotRateChanged()),
-            Qt::DirectConnection);
+            static_cast<Qt::ConnectionType>(Qt::UniqueConnection|Qt::QueuedConnection));
 
     m_pRateRange = ControlObject::getControl(ConfigKey(group, "rateRange"));
     connect(m_pRateRange, SIGNAL(valueChanged(double)),
             this, SLOT(slotRateChanged()),
-            Qt::DirectConnection);
+            static_cast<Qt::ConnectionType>(Qt::UniqueConnection|Qt::QueuedConnection));
     connect(m_pRateRange, SIGNAL(valueChangedFromEngine(double)),
             this, SLOT(slotRateChanged()),
-            Qt::DirectConnection);
+            static_cast<Qt::ConnectionType>(Qt::UniqueConnection|Qt::QueuedConnection));
 
     m_pRateDir = ControlObject::getControl(ConfigKey(group, "rate_dir"));
     connect(m_pRateDir, SIGNAL(valueChanged(double)),
             this, SLOT(slotRateChanged()),
-            Qt::DirectConnection);
+            static_cast<Qt::ConnectionType>(Qt::UniqueConnection|Qt::QueuedConnection));
     connect(m_pRateDir, SIGNAL(valueChangedFromEngine(double)),
             this, SLOT(slotRateChanged()),
-            Qt::DirectConnection);
+            static_cast<Qt::ConnectionType>(Qt::UniqueConnection|Qt::QueuedConnection));
 
     m_pVCEnabled = ControlObject::getControl(ConfigKey(group, "vinylcontrol_enabled"));
     if (m_pVCEnabled) {
         connect(m_pVCEnabled, SIGNAL(valueChanged(double)),
                 this, SLOT(slotRateChanged()),
-                Qt::DirectConnection);
+                static_cast<Qt::ConnectionType>(Qt::UniqueConnection|Qt::QueuedConnection));
         connect(m_pVCEnabled, SIGNAL(valueChangedFromEngine(double)),
                 this, SLOT(slotRateChanged()),
-                Qt::DirectConnection);
+                static_cast<Qt::ConnectionType>(Qt::UniqueConnection|Qt::QueuedConnection));
     }
 
     m_pVCRate = ControlObject::getControl(ConfigKey(group, "vinylcontrol_rate"));
     if (m_pVCRate) {
         connect(m_pVCRate, SIGNAL(valueChanged(double)),
                 this, SLOT(slotRateChanged()),
-                Qt::DirectConnection);
+                static_cast<Qt::ConnectionType>(Qt::UniqueConnection|Qt::QueuedConnection));
         connect(m_pVCRate, SIGNAL(valueChangedFromEngine(double)),
                 this, SLOT(slotRateChanged()),
-                Qt::DirectConnection);
+                static_cast<Qt::ConnectionType>(Qt::UniqueConnection|Qt::QueuedConnection));
     }
 
     m_pKeylock = ControlObject::getControl(ConfigKey(group, "keylock"));
     connect(m_pKeylock, SIGNAL(valueChanged(double)),
             this, SLOT(slotRateChanged()),
-            Qt::DirectConnection);
+            static_cast<Qt::ConnectionType>(Qt::UniqueConnection|Qt::QueuedConnection));
     connect(m_pKeylock, SIGNAL(valueChangedFromEngine(double)),
             this, SLOT(slotRateChanged()),
-            Qt::DirectConnection);
+            static_cast<Qt::ConnectionType>(Qt::UniqueConnection|Qt::QueuedConnection));
 }
 
 KeyControl::~KeyControl() {

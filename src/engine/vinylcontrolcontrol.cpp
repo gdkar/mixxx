@@ -24,7 +24,7 @@ VinylControlControl::VinylControlControl(QString group, ConfigObject<ConfigValue
     m_pControlVinylSeek = new ControlObject(ConfigKey(group, "vinylcontrol_seek"));
     connect(m_pControlVinylSeek, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlVinylSeek(double)),
-            Qt::DirectConnection);
+            static_cast<Qt::ConnectionType>(Qt::UniqueConnection|Qt::QueuedConnection));
 
     m_pControlVinylRate = new ControlObject(ConfigKey(group, "vinylcontrol_rate"));
     m_pControlVinylScratching = new ControlPushButton(ConfigKey(group, "vinylcontrol_scratching"));

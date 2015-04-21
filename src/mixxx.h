@@ -50,7 +50,6 @@ class DlgDeveloperTools;
 #include "util/timer.h"
 
 class ControlObjectSlave;
-class ControlObjectThread;
 class QTranslator;
 
 // This Class is the base class for Mixxx. It sets up the main
@@ -297,7 +296,7 @@ class MixxxMainWindow : public QMainWindow {
     QList<ControlObjectSlave*> m_pVinylControlEnabled;
     QList<ControlObjectSlave*> m_pPassthroughEnabled;
     QList<ControlObjectSlave*> m_pAuxiliaryPassthrough;
-    ControlObjectThread* m_pNumDecks;
+    ControlObjectSlave* m_pNumDecks;
     int m_iNumConfiguredDecks;
     QList<ControlObjectSlave*> m_micTalkoverControls;
     QSignalMapper* m_VCControlMapper;

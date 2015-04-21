@@ -17,7 +17,7 @@
 
 #include "controlpushbutton.h"
 #include "controlpotmeter.h"
-#include "controlobjectthread.h"
+#include "controlobjectslave.h"
 
 ControlPotmeter::ControlPotmeter(ConfigKey key, double dMinValue, double dMaxValue,
                                  bool allowOutOfBounds,
@@ -41,9 +41,29 @@ ControlPotmeter::~ControlPotmeter() {
 void ControlPotmeter::setStepCount(int count) {
     m_controls.setStepCount(count);
 }
-
+int ControlPotmeter::stepCount()const{
+  return m_controls.stepCount();
+}
+void ControlPotmeter::setDefaultValue(double v){
+  m_controls.setDefaultValue(v);
+}
+double ControlPotmeter::defaultValue()const{
+  return m_controls.defaultValue();
+}
+int ControlPotmeter::smallStepCount()const{
+  return m_controls.smallStepCount();
+}
 void ControlPotmeter::setSmallStepCount(int count) {
     m_controls.setSmallStepCount(count);
+}
+void ControlPotmeter::set(double v){
+  m_controls.set(v);
+}
+double ControlPotmeter::get()const{
+  return m_controls.get();
+}
+void ControlPotmeter::reset(){
+  m_controls.reset();
 }
 
 void ControlPotmeter::setRange(double dMinValue, double dMaxValue,
@@ -57,7 +77,7 @@ void ControlPotmeter::setRange(double dMinValue, double dMaxValue,
 }
 
 PotmeterControls::PotmeterControls(const ConfigKey& key)
-        : m_pControl(new ControlObjectThread(key)),
+        : m_pControl(new ControlObjectSlave(key)),
           m_stepCount(10),
           m_smallStepCount(100) {
     // These controls are deleted when the ControlPotmeter is since
@@ -178,7 +198,15 @@ void PotmeterControls::setToMinusOne(double v) {
         m_pControl->set(-1.0);
     }
 }
-
+void PotmeterControls::reset(){
+  m_pControl->reset();
+}
+void PotmeterControls::set(double v){
+  m_pControl->set(v);
+}
+double PotmeterControls::get()const{
+  return m_pControl->get();
+}
 void PotmeterControls::setToDefault(double v) {
     if (v > 0) {
         m_pControl->reset();
@@ -191,7 +219,12 @@ void PotmeterControls::toggleValue(double v) {
         m_pControl->set(value > 0.0 ? 0.0 : 1.0);
     }
 }
-
+void PotmeterControls::setDefaultValue(double v){
+  m_pControl->setDefaultValue(v);
+}
+double PotmeterControls::defaultValue()const{
+  return m_pControl->defaultValue();
+}
 void PotmeterControls::toggleMinusValue(double v) {
     if (v > 0) {
         double value = m_pControl->get();

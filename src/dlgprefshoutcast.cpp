@@ -22,7 +22,7 @@
 #include "defs_urls.h"
 #include "dlgprefshoutcast.h"
 #include "shoutcast/defs_shoutcast.h"
-#include "controlobjectthread.h"
+#include "controlobjectslave.h"
 
 const char* kDefaultMetadataFormat = "$artist - $title";
 
@@ -31,7 +31,7 @@ DlgPrefShoutcast::DlgPrefShoutcast(QWidget *parent, ConfigObject<ConfigValue> *_
           m_pConfig(_config) {
     setupUi(this);
 
-    m_pUpdateShoutcastFromPrefs = new ControlObjectThread(
+    m_pUpdateShoutcastFromPrefs = new ControlObjectSlave(
             SHOUTCAST_PREF_KEY, "update_from_prefs");
 
     // Enable live broadcasting checkbox

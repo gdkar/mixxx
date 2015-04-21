@@ -19,7 +19,8 @@
 #include <QHash>
 #include <QSet>
 #include <QMutexLocker>
-
+#include <QObject>
+#include <QMetaMethod>
 #include "controlobject.h"
 #include "control/control.h"
 #include "util/stat.h"
@@ -52,14 +53,15 @@ void ControlObject::initialize(ConfigKey key, bool bIgnoreNops, bool bTrack,
 
     // getControl can fail and return a NULL control even with the create flag.
     if (m_pControl) {
-        connect(m_pControl.data(), SIGNAL(valueChanged(double, QObject*)),
-                this, SLOT(privateValueChanged(double, QObject*)),
+        const ControlDoublePrivate *obj = m_pControl.data();
+        connect(obj, &ControlDoublePrivate::valueChanged,
+                this, &ControlObject::privateValueChanged,
                 Qt::DirectConnection);
     }
 }
 
 // slot
-void ControlObject::privateValueChanged(double dValue, QObject* pSender) {
+void ControlObject::privateValueChanged(double dValue,QObject *pSender) {
     // Only emit valueChanged() if we did not originate this change.
     if (pSender != this) {
         emit(valueChanged(dValue));
@@ -118,6 +120,7 @@ void ControlObject::set(const ConfigKey& key, const double& value) {
 bool ControlObject::connectValueChangeRequest(const QObject* receiver,
                                               const char* method,
                                               Qt::ConnectionType type) {
+    type = static_cast<Qt::ConnectionType>(type|Qt::UniqueConnection);
     bool ret = false;
     if (m_pControl) {
         ret = m_pControl->connectValueChangeRequest(receiver, method, type);

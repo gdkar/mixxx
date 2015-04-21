@@ -189,8 +189,8 @@ EngineBuffer::EngineBuffer(QString group, ConfigObject<ConfigValue>* _config,
 
     m_playposSlider = new ControlLinPotmeter(
         ConfigKey(m_group, "playposition"), 0.0, 1.0, 0, 0, true);
-    connect(m_playposSlider, SIGNAL(valueChanged(double)),
-            this, SLOT(slotControlSeek(double)),
+    connect(m_playposSlider, &ControlLinPotmeter::valueChanged,
+            this, &EngineBuffer::slotControlSeek,
             static_cast<Qt::ConnectionType>(Qt::QueuedConnection||Qt::UniqueConnection));
     m_jogFwdButton = new ControlPushButton(ConfigKey(group, "jog_fwd"));
     m_jogBackButton = new ControlPushButton(ConfigKey(group, "jog_back"));
@@ -256,9 +256,9 @@ EngineBuffer::EngineBuffer(QString group, ConfigObject<ConfigValue>* _config,
     m_pSyncControl->setEngineControls(m_pRateControl, m_pBpmControl);
     pMixingEngine->getEngineSync()->addSyncableDeck(m_pSyncControl);
 
-    m_fwdButton = ControlObject::getControl(ConfigKey(group, "fwd"));
-    m_backButton = ControlObject::getControl(ConfigKey(group, "back"));
-    m_jogFwdButton = ControlObject::getControl(ConfigKey(group, "jog_fwd"));
+    m_fwdButton     = ControlObject::getControl(ConfigKey(group, "fwd"));
+    m_backButton    = ControlObject::getControl(ConfigKey(group, "back"));
+    m_jogFwdButton  = ControlObject::getControl(ConfigKey(group, "jog_fwd"));
     m_jogBackButton = ControlObject::getControl(ConfigKey(group, "jog_back"));
 
     m_pKeyControl = new KeyControl(group, _config);
@@ -1391,24 +1391,6 @@ double EngineBuffer::getVisualPlayPos() {
 double EngineBuffer::getTrackSamples() {
     return m_pTrackSamples->get();
 }
-
-/*
-void EngineBuffer::setReader(CachingReader* pReader) {
-    disconnect(m_pReader, 0, this, 0);
-    delete m_pReader;
-    m_pReader = pReader;
-    m_pReadAheadManager->setReader(pReader);
-    connect(m_pReader, SIGNAL(trackLoading()),
-            this, SLOT(slotTrackLoading()),
-            Qt::DirectConnection);
-    connect(m_pReader, SIGNAL(trackLoaded(TrackPointer, int, int)),
-            this, SLOT(slotTrackLoaded(TrackPointer, int, int)),
-            Qt::DirectConnection);
-    connect(m_pReader, SIGNAL(trackLoadFailed(TrackPointer, QString)),
-            this, SLOT(slotTrackLoadFailed(TrackPointer, QString)),
-            Qt::DirectConnection);
-}
-*/
 
 void EngineBuffer::setScalerForTest(EngineBufferScale* pScaleVinyl,
                                     EngineBufferScale* pScaleKeylock) {

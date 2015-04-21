@@ -52,6 +52,12 @@ void ControlDoublePrivate::initialize() {
     }
     m_defaultValue.setValue(0);
     m_value.setValue(value);
+    connect(this,&ControlDoublePrivate::queuedSet,
+            this,&ControlDoublePrivate::onQueuedSet,
+            Qt::QueuedConnection);
+    connect(this,&ControlDoublePrivate::queuedSetParameter,
+            this,&ControlDoublePrivate::onQueuedSetParameter,
+            Qt::QueuedConnection);
 
     //qDebug() << "Creating:" << m_trackKey << "at" << &m_value << sizeof(m_value);
 
@@ -171,22 +177,35 @@ void ControlDoublePrivate::reset() {
     // general valueChanged() signal even though we know the originator.
     set(defaultValue, NULL);
 }
-
-void ControlDoublePrivate::set(double value, QObject* pSender) {
-    // If the behavior says to ignore the set, ignore it.
+void ControlDoublePrivate::onQueuedSet(double value,QObject *pSender){
     QSharedPointer<ControlNumericBehavior> pBehavior = m_pBehavior;
-    if (!pBehavior.isNull() && !pBehavior->setFilter(&value)) {
+    if ((!pBehavior.isNull() && !pBehavior->setFilter(&value)) 
+      ||(m_bIgnoreNops && m_value.getValue() == value)) {
         return;
     }
+    m_value.setValue(value);
+    emit(valueChanged(value,pSender));
+
+    if (m_bTrack) {
+        Stat::track(m_trackKey, static_cast<Stat::StatType>(m_trackType),
+                    static_cast<Stat::ComputeFlags>(m_trackFlags), value);
+    }
+}
+void ControlDoublePrivate::set(double value, QObject* pSender) {
+    // If the behavior says to ignore the set, ignore it.
+    if(m_bIgnoreNops && m_value.getValue()==value)
+      return;
     if (m_confirmRequired) {
         emit(valueChangeRequest(value));
     } else {
-        setInner(value, pSender);
+        emit(queuedSet(value,pSender));
+//        setInner(value, pSender);
     }
 }
 
 void ControlDoublePrivate::setAndConfirm(double value, QObject* pSender) {
-    setInner(value, pSender);
+    emit queuedSet(value);
+//    setInner(value, pSender);
 }
 
 void ControlDoublePrivate::setInner(double value, QObject* pSender) {
@@ -194,7 +213,7 @@ void ControlDoublePrivate::setInner(double value, QObject* pSender) {
         return;
     }
     m_value.setValue(value);
-    emit(valueChanged(value, pSender));
+    emit(valueChanged(value,pSender));
 
     if (m_bTrack) {
         Stat::track(m_trackKey, static_cast<Stat::StatType>(m_trackType),
@@ -207,8 +226,10 @@ void ControlDoublePrivate::setBehavior(ControlNumericBehavior* pBehavior) {
     // used in any other function
     m_pBehavior = QSharedPointer<ControlNumericBehavior>(pBehavior);
 }
-
-void ControlDoublePrivate::setParameter(double dParam, QObject* pSender) {
+void ControlDoublePrivate::setParameter(double dParam, QObject* pSender){
+  emit(queuedSetParameter(dParam,pSender));
+}
+void ControlDoublePrivate::onQueuedSetParameter(double dParam, QObject* pSender) {
     QSharedPointer<ControlNumericBehavior> pBehavior = m_pBehavior;
     if (pBehavior.isNull()) {
         set(dParam, pSender);
@@ -232,6 +253,9 @@ double ControlDoublePrivate::getParameterForValue(double value) const {
 bool ControlDoublePrivate::connectValueChangeRequest(const QObject* receiver,
         const char* method, Qt::ConnectionType type) {
     // confirmation is only required if connect was successful
+    if(m_confirmRequired)
+      return false;
+    type = static_cast<Qt::ConnectionType>(type|Qt::UniqueConnection);
     m_confirmRequired = connect(this, SIGNAL(valueChangeRequest(double)),
                 receiver, method, type);
     return m_confirmRequired;

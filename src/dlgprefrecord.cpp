@@ -22,7 +22,7 @@
 #include "recording/defs_recording.h"
 #include "controlobject.h"
 #include "encoder/encoder.h"
-#include "controlobjectthread.h"
+#include "controlobjectslave.h"
 #include "util/sandbox.h"
 
 DlgPrefRecord::DlgPrefRecord(QWidget* parent, ConfigObject<ConfigValue>* pConfig)
@@ -37,7 +37,7 @@ DlgPrefRecord::DlgPrefRecord(QWidget* parent, ConfigObject<ConfigValue>* pConfig
     setupUi(this);
 
     // See RECORD_* #defines in defs_recording.h
-    m_pRecordControl = new ControlObjectThread(
+    m_pRecordControl = new ControlObjectSlave(
             RECORDING_PREF_KEY, "status");
 
     m_pRadioOgg = new QRadioButton("Ogg Vorbis");

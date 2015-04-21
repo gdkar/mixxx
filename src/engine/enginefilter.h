@@ -34,17 +34,22 @@ class EngineFilter : public EngineObject {
     virtual ~EngineFilter();
 
     void process(CSAMPLE* pInOut, const int iBufferSize);
+    struct FidData{
+      FidFilter *ff;
+      FidFunc   *funcp;
+      FidRun    *run;
+      void      *buf;
+    };
 
   protected:
-    double iir;
-    double fir;
-    double tmp;
+    CSAMPLE  iir;
+    CSAMPLE  fir;
+    CSAMPLE  tmp;
 #define FILTER_BUF_SIZE 16
-    double buf1[FILTER_BUF_SIZE];
-    double buf2[FILTER_BUF_SIZE];
-
+    CSAMPLE  buf1[FILTER_BUF_SIZE];
+    CSAMPLE  buf2[FILTER_BUF_SIZE];
   private:
-    double (*processSample)(void *buf, const double sample);
+    CSAMPLE (*processSample)(void *buf, const CSAMPLE sample);
 
     FidFilter *ff;
     FidFunc *funcp;
@@ -52,10 +57,10 @@ class EngineFilter : public EngineObject {
     void *fbuf1;
     void *fbuf2;
 };
-
-double processSampleDynamic(void *buf, const double sample);
-double processSampleHp(void *buf, const double sample);
-double processSampleBp(void *buf, const double sample);
-double processSampleLp(void *buf, const double sample);
+CSAMPLE processSampleFuncp  (void *buf, const CSAMPLE sample);
+CSAMPLE processSampleDynamic(void *buf, const CSAMPLE sample);
+CSAMPLE processSampleHp(void *buf, const CSAMPLE sample);
+CSAMPLE processSampleBp(void *buf, const CSAMPLE sample);
+CSAMPLE processSampleLp(void *buf, const CSAMPLE sample);
 
 #endif

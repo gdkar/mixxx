@@ -122,17 +122,22 @@ class ControlDoublePrivate : public QObject {
   signals:
     // Emitted when the ControlDoublePrivate value changes. pSender is a
     // pointer to the setter of the value (potentially NULL).
-    void valueChanged(double value, QObject* pSender=0);
+//    void valueChanged(double value, QObject* pSender);
+    void valueChanged(double value,QObject *pSender=0);
     void defaultValueChanged(double value);
     void valueChangeRequest(double value);
     void nameChanged(QString);
     void descriptionChanged(QString);
-
+    void queuedSet(double value,QObject *pSender=0);
+    void queuedSetParameter(double value, QObject *pSender=0);
+  private slots:
+    void setInner(double value, QObject* pSender=0);
+    void onQueuedSet(double value,QObject *pSender=0);
+    void onQueuedSetParameter(double value, QObject *pSender=0);
   private:
     ControlDoublePrivate(ConfigKey key, ControlObject* pCreatorCO,
                          bool bIgnoreNops, bool bTrack, bool bPersist);
     void initialize();
-    void setInner(double value, QObject* pSender);
 
     ConfigKey m_key;
 
