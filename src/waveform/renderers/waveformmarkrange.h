@@ -2,10 +2,11 @@
 #define WAVEFORMMARKRANGE_H
 
 #include <QImage>
-
+#include <qsharedpointer.h>
+#include <qatomic.h>
 #include "skin/skincontext.h"
 
-class ControlObjectThread;
+class ControlObjectSlave;
 class QDomNode;
 class WaveformSignalColors;
 
@@ -32,9 +33,9 @@ class WaveformMarkRange {
   private:
     void generateImage(int weidth, int height);
 
-    ControlObjectThread* m_markStartPointControl;
-    ControlObjectThread* m_markEndPointControl;
-    ControlObjectThread* m_markEnabledControl;
+    QSharedPointer<ControlObjectSlave> m_markStartPointControl;
+    QSharedPointer<ControlObjectSlave> m_markEndPointControl;
+    QSharedPointer<ControlObjectSlave> m_markEnabledControl;
 
     QColor m_activeColor;
     QColor m_disabledColor;

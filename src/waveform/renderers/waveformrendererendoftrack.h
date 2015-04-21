@@ -3,6 +3,8 @@
 
 #include <QColor>
 #include <QTime>
+#include <qsharedpointer.h>
+#include <qatomic.h>
 //#include <QLinearGradient>
 
 #include "util.h"
@@ -11,7 +13,7 @@
 #include "waveform/waveformwidgetfactory.h"
 
 class ControlObject;
-class ControlObjectThread;
+class ControlObjectSlave;
 
 class WaveformRendererEndOfTrack : public WaveformRendererAbstract {
   public:
@@ -26,16 +28,16 @@ class WaveformRendererEndOfTrack : public WaveformRendererAbstract {
     virtual void draw(QPainter* painter, QPaintEvent* event);
 
   private:
-    ControlObjectThread*  m_pEndOfTrackControl;
+    QSharedPointer<ControlObjectSlave>  m_pEndOfTrackControl;
     bool m_endOfTrackEnabled;
-    ControlObjectThread* m_pTrackSampleRate;
-    ControlObjectThread* m_pPlayControl;
-    ControlObjectThread* m_pLoopControl;
+    QSharedPointer<ControlObjectSlave> m_pTrackSampleRate;
+    QSharedPointer<ControlObjectSlave> m_pPlayControl;
+    QSharedPointer<ControlObjectSlave> m_pLoopControl;
 
     QColor m_color;
     QTime m_timer;
-    int m_remainingTimeTriggerSeconds;
-    int m_blinkingPeriodMillis;
+    double m_remainingTimeTriggerSeconds;
+    double m_blinkingPeriodMillis;
 
     QVector<QRect> m_backRects;
     QPen m_pen;

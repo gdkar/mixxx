@@ -34,7 +34,6 @@ void WaveformMarkSet::setup(const QString& group, const QDomNode& node,
             m_marks.push_back(WaveformMark());
             WaveformMark& mark = m_marks.back();
             mark.setup(group, child, context, signalColors);
-
             if (mark.m_pointControl) {
                 // guarantee uniqueness even if there is a misdesigned skin
                 QString item = mark.m_pointControl->getKey().item;
@@ -46,18 +45,14 @@ void WaveformMarkSet::setup(const QString& group, const QDomNode& node,
         }
         child = child.nextSibling();
     }
-
     // check if there is a default mark and compare declared
     // and to create all missing hot_cues
     if (hasDefaultMark) {
         for (int i = 1; i < NUM_HOT_CUES; ++i) {
             QString hotCueControlItem = "hotcue_" + QString::number(i) + "_position";
-            ControlObject* pHotcue = ControlObject::getControl(
-                    ConfigKey(group, hotCueControlItem));
-            if (pHotcue == NULL) {
-                continue;
-            }
-
+            QSharedPointer<ControlObjectSlave> pHotcue (new ControlObjectSlave(
+                    ConfigKey(group, hotCueControlItem)));
+            if (pHotcue == NULL) continue;
             if (controlItemSet.insert(hotCueControlItem).second) {
                 //qDebug() << "WaveformRenderMark::setup - Automatic mark" << hotCueControlItem;
                 m_marks.push_back(m_defaultMark);

@@ -127,18 +127,13 @@ QByteArray Waveform::toByteArray() const {
 }
 
 void Waveform::readByteArray(const QByteArray& data) {
-    if (data.isNull()) {
-        return;
-    }
-
+    if (data.isNull()) return;
     io::Waveform waveform;
-
     if (!waveform.ParseFromArray(data.constData(), data.size())) {
         qDebug() << "ERROR: Could not parse Waveform from QByteArray of size "
                  << data.size();
         return;
     }
-
     if (!waveform.has_visual_sample_rate() ||
         !waveform.has_audio_visual_ratio() ||
         !waveform.has_signal_all() ||

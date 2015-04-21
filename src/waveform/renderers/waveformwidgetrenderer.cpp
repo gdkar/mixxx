@@ -129,25 +129,28 @@ void WaveformWidgetRenderer::onPreRender(VSyncThread* vsyncThread) {
         m_audioSamplePerPixel = 0.0;
     }
 
-
     m_sampleRate      = m_pSampleRateControlObject->get();
-    m_playPos         = (m_visualPlayPosition->getAtNextVSync(vsyncThread)*m_sampleRate)/(m_trackSamples/2);
+    m_playPos         = (m_visualPlayPosition->getAtNextVSync(vsyncThread));
+    double m_pixelsPerSecond = m_sampleRate/m_audioSamplePerPixel;
     // m_playPos = -1 happens, when a new track is in buffer but m_visualPlayPosition was not updated
-
+    
     if (m_audioSamplePerPixel && m_playPos >=0 ) {
+        m_playPosVSample = (m_playPos) * m_pixelsPerSecond ;
         // Track length in pixels.
-        m_trackPixelCount = static_cast<double>(m_trackSamples) / 2.0 / m_audioSamplePerPixel;
+        m_trackPixelCount = static_cast<double>(m_trackSamples) / (2.0 * m_audioSamplePerPixel);
 
         // Ratio of half the width of the renderer to the track length in
         // pixels. Percent of the track shown in half the waveform widget.
-        double displayedLengthHalf = static_cast<double>(m_width) *0.5 /m_trackPixelCount;
+        double displayedLengthHalf = m_visibleDuration/2;
         // Avoid pixel jitter in play position by rounding to the nearest track
         // pixel.
-        m_playPos = round(m_playPos * m_trackPixelCount) / m_trackPixelCount; // Avoid pixel jitter in play position
+        m_playPosVSample         = round(m_playPosVSample);
+        m_firstDisplayedPosition = m_playPos - (
+//        m_playPos = round(m_playPos * m_trackPixelCount) / m_trackPixelCount; // Avoid pixel jitter in play position
         m_playPosVSample = (m_playPos ) * waveformDataSize;
 
-        m_firstDisplayedPosition = m_playPos - displayedLengthHalf;
-        m_lastDisplayedPosition = m_playPos + displayedLengthHalf;
+        m_firstDisplayedPosition = m_playPos -displayLengthHalf;
+        m_lastDisplayedPosition  = m_playPos + displayLengthHalf;
     } else {
         m_playPos = -1; // disable renderers
     }

@@ -2,12 +2,13 @@
 #define WAVEFORMRENDERBEAT_H
 
 #include <QColor>
-
+#include <qsharedpointer.h>
+#include <qatomic.h>
 #include "waveform/renderers/waveformrendererabstract.h"
 #include "util.h"
 #include "skin/skincontext.h"
 
-class ControlObjectThread;
+class ControlObjectSlave;
 
 class WaveformRenderBeat : public WaveformRendererAbstract {
   public:
@@ -20,9 +21,8 @@ class WaveformRenderBeat : public WaveformRendererAbstract {
 
   private:
     QColor m_beatColor;
-    ControlObjectThread* m_pBeatActive;
+    QSharedPointer<ControlObjectSlave> m_pBeatActive;
     QVector<QLineF> m_beats;
-
     DISALLOW_COPY_AND_ASSIGN(WaveformRenderBeat);
 };
 

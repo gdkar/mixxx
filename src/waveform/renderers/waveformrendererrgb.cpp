@@ -130,12 +130,12 @@ void WaveformRendererRGB::draw(QPainter* painter,
         qreal blue  = maxLowF * m_rgbLowColor_b + maxMidF * m_rgbMidColor_b + maxHighF * m_rgbHighColor_b;
 
         // Compute maximum (needed for value normalization)
-        qreal max = math_max3(red, green, blue);
+        qreal max = 1.0/math_max3(red, green, blue);
 
         // Prevent division by zero
-        if (max > 0.0f) {
+        if (max > 0.0) {
             // Set color
-            color.setRgbF(red / max, green / max, blue / max);
+            color.setRgbF(red * max, green * max, blue * max);
 
             painter->setPen(color);
             switch (m_alignment) {

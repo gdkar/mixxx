@@ -53,40 +53,19 @@ WaveformRendererSignalBase::~WaveformRendererSignalBase() {
 }
 
 void WaveformRendererSignalBase::deleteControls() {
-    if (m_pEQEnabled)
-        delete m_pEQEnabled;
-    if (m_pLowFilterControlObject)
-        delete m_pLowFilterControlObject;
-    if (m_pMidFilterControlObject)
-        delete m_pMidFilterControlObject;
-    if (m_pHighFilterControlObject)
-        delete m_pHighFilterControlObject;
-    if (m_pLowKillControlObject)
-        delete m_pLowKillControlObject;
-    if (m_pMidKillControlObject)
-        delete m_pMidKillControlObject;
-    if (m_pHighKillControlObject)
-        delete m_pHighKillControlObject;
 }
 
 bool WaveformRendererSignalBase::init() {
     deleteControls();
 
     //create controls
-    m_pEQEnabled = new ControlObjectSlave(
-            m_waveformRenderer->getGroup(), "filterWaveformEnable");
-    m_pLowFilterControlObject = new ControlObjectSlave(
-            m_waveformRenderer->getGroup(), "filterLow");
-    m_pMidFilterControlObject = new ControlObjectSlave(
-            m_waveformRenderer->getGroup(), "filterMid");
-    m_pHighFilterControlObject = new ControlObjectSlave(
-            m_waveformRenderer->getGroup(), "filterHigh");
-    m_pLowKillControlObject = new ControlObjectSlave(
-            m_waveformRenderer->getGroup(), "filterLowKill");
-    m_pMidKillControlObject = new ControlObjectSlave(
-            m_waveformRenderer->getGroup(), "filterMidKill");
-    m_pHighKillControlObject = new ControlObjectSlave(
-            m_waveformRenderer->getGroup(), "filterHighKill");
+    m_pEQEnabled.reset( new ControlObjectSlave(m_waveformRenderer->getGroup(), "filterWaveformEnable"));
+    m_pLowFilterControlObject .reset( new ControlObjectSlave(m_waveformRenderer->getGroup(), "filterLow"));
+    m_pMidFilterControlObject .reset( new ControlObjectSlave(m_waveformRenderer->getGroup(), "filterMid"));
+    m_pHighFilterControlObject .reset( new ControlObjectSlave(m_waveformRenderer->getGroup(), "filterHigh"));
+    m_pLowKillControlObject .reset( new ControlObjectSlave(m_waveformRenderer->getGroup(), "filterLowKill"));
+    m_pMidKillControlObject .reset( new ControlObjectSlave(m_waveformRenderer->getGroup(), "filterMidKill"));
+    m_pHighKillControlObject .reset(new newControlObjectSlave(m_waveformRenderer->getGroup(), "filterHighKill"));
 
     return onInit();
 }
