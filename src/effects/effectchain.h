@@ -20,6 +20,13 @@ typedef QSharedPointer<EffectChain> EffectChainPointer;
 // thread-safe and must only be used from the main thread.
 class EffectChain : public QObject {
     Q_OBJECT
+    Q_PROPERTY(bool enabled READ enabled WRITE setEnabled NOTIFY enabledChanged);
+    Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged);
+    Q_PROPERTY(double mix READ mix WRITE setMix NOTIFY mixChanged);
+    Q_PROPERTY(InsertionType insertionType READ insertionType WRITE setInsertionType NOTIFY insertionTypeChanged);
+    Q_PROPERTY(QString id READ id CONSTANT);
+    Q_PROPERTY(QString description READ description WRITE setDescription NOTIFY descriptionChanged);
+    Q_ENUMS(InsertionType);
   public:
     EffectChain(EffectsManager* pEffectsManager, const QString& id,
                 EffectChainPointer prototype=EffectChainPointer());
@@ -132,5 +139,6 @@ class EffectChain : public QObject {
 
     DISALLOW_COPY_AND_ASSIGN(EffectChain);
 };
-
+Q_DECLARE_TYPEINFO(EffectChain::InsertionType,Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(EffectChain::InsertionType);
 #endif /* EFFECTCHAIN_H */

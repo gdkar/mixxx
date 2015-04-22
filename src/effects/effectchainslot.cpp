@@ -29,7 +29,7 @@ EffectChainSlot::EffectChainSlot(EffectRack* pRack, const QString& group,
         this, SLOT(slotControlChainLoaded(double)));
 
     m_pControlChainEnabled = new ControlPushButton(ConfigKey(m_group, "enabled"));
-    m_pControlChainEnabled->setButtonMode(ControlPushButton::POWERWINDOW);
+    m_pControlChainEnabled->setButtonMode(ControlPushButtonBehavior::POWERWINDOW);
     // Default to enabled. The skin might not show these buttons.
     m_pControlChainEnabled->setDefaultValue(true);
     m_pControlChainEnabled->set(true);
@@ -48,7 +48,7 @@ EffectChainSlot::EffectChainSlot(EffectRack* pRack, const QString& group,
     m_pControlChainSuperParameter->setDefaultValue(0.0);
 
     m_pControlChainInsertionType = new ControlPushButton(ConfigKey(m_group, "insertion_type"));
-    m_pControlChainInsertionType->setButtonMode(ControlPushButton::TOGGLE);
+    m_pControlChainInsertionType->setButtonMode(ControlPushButtonBehavior::TOGGLE);
     m_pControlChainInsertionType->setStates(EffectChain::NUM_INSERTION_TYPES);
     connect(m_pControlChainInsertionType, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlChainInsertionType(double)));
@@ -273,7 +273,7 @@ void EffectChainSlot::registerChannel(const ChannelHandleAndGroup& handle_group)
     }
     ControlPushButton* pEnableControl = new ControlPushButton(
             ConfigKey(m_group, QString("group_%1_enable").arg(handle_group.name())));
-    pEnableControl->setButtonMode(ControlPushButton::POWERWINDOW);
+    pEnableControl->setButtonMode(ControlPushButtonBehavior::POWERWINDOW);
 
     ChannelInfo* pInfo = new ChannelInfo(handle_group, pEnableControl);
     m_channelInfoByName[handle_group.name()] = pInfo;

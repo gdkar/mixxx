@@ -125,5 +125,5 @@ class EffectManifest {
     QList<EffectManifestParameter> m_parameters;
     bool m_effectRampsFromDry;
 };
-
+Q_DECLARE_TYPEINFO(EffectManifest,Q_MOVABLE_TYPE);
 #endif /* EFFECTMANIFEST_H */

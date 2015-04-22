@@ -34,7 +34,7 @@ class EffectsBackend : public QObject {
   signals:
     void effectRegistered();
 
-  protected:
+  protected :
     void registerEffect(const QString& id,
                         const EffectManifest& manifest,
                         EffectInstantiatorPointer pInstantiator);

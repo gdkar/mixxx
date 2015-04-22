@@ -22,7 +22,11 @@ typedef QSharedPointer<Effect> EffectPointer;
 // thread. The getEngineEffect() method can be used to get a pointer to the
 // Engine-thread representation of the effect.
 class Effect : public QObject {
-    Q_OBJECT
+    Q_OBJECT;
+    Q_PROPERTY(quint numKnobParameters READ numKnobParameters CONSTANT);
+    Q_PROPERTY(quint numButtonParameters READ numButtonParameters CONSTANT);
+    Q_PROPERTY(bool enabled READ enabled WRITE setEnabled NOTIFY enabledChanged);
+    Q_PROPERTY(EffectManifest manifest READ getManifest);
   public:
     typedef bool (*ParameterFilterFnc)(EffectParameter*);
 

@@ -49,7 +49,7 @@ template <typename T>
 class PerChannelEffectProcessor : public EffectProcessor {
     struct ChannelStateHolder {
         ChannelStateHolder() : state(NULL) { }
-        T* state;
+        QSharedPointer<T> state;
     };
   public:
     PerChannelEffectProcessor() {
@@ -58,8 +58,6 @@ class PerChannelEffectProcessor : public EffectProcessor {
         for (typename ChannelHandleMap<ChannelStateHolder>::iterator it =
                      m_channelState.begin();
              it != m_channelState.end(); ++it) {
-            T* pState = it->state;
-            delete pState;
         }
         m_channelState.clear();
     }
@@ -77,8 +75,8 @@ class PerChannelEffectProcessor : public EffectProcessor {
                          const unsigned int sampleRate,
                          const EffectProcessor::EnableState enableState,
                          const GroupFeatureState& groupFeatures) {
-        T* pState = getOrCreateChannelState(handle);
-        processChannel(handle, pState, pInput, pOutput, numSamples, sampleRate,
+        QSharedPointer<T> pState = getOrCreateChannelState(handle);
+        processChannel(handle, pState.data(), pInput, pOutput, numSamples, sampleRate,
                        enableState, groupFeatures);
     }
 
@@ -91,10 +89,10 @@ class PerChannelEffectProcessor : public EffectProcessor {
                                 const GroupFeatureState& groupFeatures) = 0;
 
   private:
-    inline T* getOrCreateChannelState(const ChannelHandle& handle) {
+    inline QSharedPointer<T> getOrCreateChannelState(const ChannelHandle& handle) {
         ChannelStateHolder& holder = m_channelState[handle];
-        if (holder.state == NULL) {
-            holder.state = new T();
+        if (holder.state .isNull()) {
+            holder.state.reset(new T());
         }
         return holder.state;
     }
