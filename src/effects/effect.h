@@ -23,8 +23,8 @@ typedef QSharedPointer<Effect> EffectPointer;
 // Engine-thread representation of the effect.
 class Effect : public QObject {
     Q_OBJECT;
-    Q_PROPERTY(quint numKnobParameters READ numKnobParameters CONSTANT);
-    Q_PROPERTY(quint numButtonParameters READ numButtonParameters CONSTANT);
+    Q_PROPERTY(quint32 numKnobParameters READ numKnobParameters CONSTANT);
+    Q_PROPERTY(quint32 numButtonParameters READ numButtonParameters CONSTANT);
     Q_PROPERTY(bool enabled READ enabled WRITE setEnabled NOTIFY enabledChanged);
     Q_PROPERTY(EffectManifest manifest READ getManifest);
   public:
