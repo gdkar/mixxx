@@ -4,8 +4,8 @@
 #include <QList>
 
 #include "waveformmark.h"
-#include "skin/skincontext.h"
 
+class SkinContext;
 class WaveformWidgetRenderer;
 
 class WaveformMarkSet {
@@ -14,7 +14,7 @@ class WaveformMarkSet {
     virtual ~WaveformMarkSet();
 
     void setup(const QString& group, const QDomNode& node,
-               const SkinContext& context,
+               SkinContext* context,
                const WaveformSignalColors& signalColors);
     void clear();
 

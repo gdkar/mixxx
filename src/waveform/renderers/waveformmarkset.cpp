@@ -1,6 +1,6 @@
 #include <set>
 #include <QtDebug>
-
+#include "skin/skincontext.h"
 #include "waveformmarkset.h"
 #include "engine/cuecontrol.h"
 #include "controlobject.h"
@@ -13,7 +13,7 @@ WaveformMarkSet::~WaveformMarkSet() {
 }
 
 void WaveformMarkSet::setup(const QString& group, const QDomNode& node,
-                            const SkinContext& context,
+                            SkinContext* context,
                             const WaveformSignalColors& signalColors) {
 
     clear();

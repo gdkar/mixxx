@@ -11,12 +11,12 @@
 #include "widget/wskincolor.h"
 #include "widget/wwidget.h"
 #include "widget/wimagestore.h"
-
+#include "skin/skincontext.h"
 WaveformRenderMark::WaveformRenderMark(WaveformWidgetRenderer* waveformWidgetRenderer) :
     WaveformRendererAbstract(waveformWidgetRenderer) {
 }
 
-void WaveformRenderMark::setup(const QDomNode& node, const SkinContext& context) {
+void WaveformRenderMark::setup(const QDomNode& node, SkinContext* context) {
     m_marks.setup(m_waveformRenderer->getGroup(), node, context,
                   *m_waveformRenderer->getWaveformSignalColors());
 }

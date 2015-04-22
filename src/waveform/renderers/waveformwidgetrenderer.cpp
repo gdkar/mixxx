@@ -242,7 +242,7 @@ void WaveformWidgetRenderer::resize(int width, int height) {
     }
 }
 
-void WaveformWidgetRenderer::setup(const QDomNode& node, const SkinContext& context) {
+void WaveformWidgetRenderer::setup(const QDomNode& node, SkinContext* context) {
     m_colors.setup(node, context);
     for (int i = 0; i < m_rendererStack.size(); ++i) {
         m_rendererStack[i]->setup(node, context);

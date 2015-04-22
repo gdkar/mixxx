@@ -4,10 +4,11 @@
 #include <QString>
 #include <QImage>
 #include <QColor>
-
+#include <qsharedpointer.h>
+#include <qatomic.h>
+#include <qmath.h>
 #include "configobject.h"
-#include "skin/skincontext.h"
-
+class SkinContext;
 class ControlObjectSlave;
 class QDomNode;
 class WaveformSignalColors;
@@ -17,7 +18,7 @@ class WaveformMark {
     WaveformMark();
     ~WaveformMark();
     void setup(const QString& group, const QDomNode& node,
-               const SkinContext& context,
+               SkinContext* context,
                const WaveformSignalColors& signalColors);
     void setKeyAndIndex(const ConfigKey& key, int i);
 

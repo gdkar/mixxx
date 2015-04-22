@@ -11,13 +11,13 @@
 #include "skin/skincontext.h"
 
 class WaveformWidgetRenderer;
-
+class SkinContext;
 class WaveformRenderBackground : public WaveformRendererAbstract {
   public:
     explicit WaveformRenderBackground(WaveformWidgetRenderer* waveformWidgetRenderer);
     virtual ~WaveformRenderBackground();
 
-    virtual void setup(const QDomNode& node, const SkinContext& context);
+    virtual void setup(const QDomNode& node,  SkinContext* context);
     virtual void draw(QPainter* painter, QPaintEvent* event);
 
   private:

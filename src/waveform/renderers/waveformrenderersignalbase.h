@@ -3,8 +3,7 @@
 
 #include "waveformrendererabstract.h"
 #include "waveformsignalcolors.h"
-#include "skin/skincontext.h"
-
+class SkinContext;
 class ControlObject;
 class ControlObjectSlave;
 
@@ -14,7 +13,7 @@ public:
     virtual ~WaveformRendererSignalBase();
 
     virtual bool init();
-    virtual void setup(const QDomNode& node, const SkinContext& context);
+    virtual void setup(const QDomNode& node,  SkinContext * context);
 
     virtual bool onInit() {return true;}
     virtual void onSetup(const QDomNode &node) = 0;

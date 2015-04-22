@@ -71,8 +71,8 @@ bool WaveformRendererSignalBase::init() {
 }
 
 void WaveformRendererSignalBase::setup(const QDomNode& node,
-                                       const SkinContext& context) {
-    QString alignString = context.selectString(node, "Align").toLower();
+                                       SkinContext* context) {
+    QString alignString = context->selectString(node, "Align").toLower();
     if (alignString == "bottom") {
         m_alignment = Qt::AlignBottom;
     } else if (alignString == "top") {

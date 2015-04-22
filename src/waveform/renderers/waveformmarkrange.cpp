@@ -2,7 +2,7 @@
 #include <QtDebug>
 
 #include "waveformmarkrange.h"
-
+#include "skin/skincontext.h"
 #include "waveformsignalcolors.h"
 #include "controlobject.h"
 #include "controlobjectslave.h"
@@ -46,9 +46,9 @@ double WaveformMarkRange::end() {
 }
 
 void WaveformMarkRange::setup(const QString& group, const QDomNode& node,
-                              const SkinContext& context,
+                              SkinContext* context,
                               const WaveformSignalColors& signalColors) {
-    m_activeColor = context.selectString(node, "Color");
+    m_activeColor = context->selectString(node, "Color");
     if (!m_activeColor.isValid()) {
         //vRince kind of legacy fallback ...
         // As a fallback, grab the mark color from the parent's MarkerColor
@@ -58,20 +58,20 @@ void WaveformMarkRange::setup(const QString& group, const QDomNode& node,
         m_activeColor = WSkinColor::getCorrectColor(m_activeColor);
     }
 
-    m_disabledColor = context.selectString(node, "DisabledColor");
+    m_disabledColor = context->selectString(node, "DisabledColor");
     if (!m_disabledColor.isValid()) {
         //vRince kind of legacy fallback ...
         // Read the text color, otherwise use the parent's SignalColor.
         m_disabledColor = signalColors.getSignalColor();
         qDebug() << "Didn't get mark TextColor, using parent's <SignalColor>:" << m_disabledColor;
     }
-    QString startControl = context.selectString(node, "StartControl");
+    QString startControl = context->selectString(node, "StartControl");
     if (!startControl.isEmpty()) {m_markStartPointControl.reset(new ControlObjectSlave(group, startControl));
     }
-    QString endControl = context.selectString(node, "EndControl");
+    QString endControl = context->selectString(node, "EndControl");
     if (!endControl.isEmpty()) {m_markEndPointControl.reset(new ControlObjectSlave(group, endControl));
     }
-    QString enabledControl = context.selectString(node, "EnabledControl");
+    QString enabledControl = context->selectString(node, "EnabledControl");
     if (!enabledControl.isEmpty()) {m_markEnabledControl.reset(new ControlObjectSlave(group, enabledControl));
     }
 }

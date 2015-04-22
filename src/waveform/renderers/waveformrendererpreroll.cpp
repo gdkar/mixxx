@@ -4,7 +4,7 @@
 #include <QPolygonF>
 
 #include "waveform/renderers/waveformrendererpreroll.h"
-
+#include "skin/skincontext.h"
 #include "waveform/renderers/waveformwidgetrenderer.h"
 #include "waveform/waveform.h"
 #include "widget/wskincolor.h"
@@ -17,8 +17,8 @@ WaveformRendererPreroll::WaveformRendererPreroll(WaveformWidgetRenderer* wavefor
 WaveformRendererPreroll::~WaveformRendererPreroll() {
 }
 
-void WaveformRendererPreroll::setup(const QDomNode& node, const SkinContext& context) {
-    m_color.setNamedColor(context.selectString(node, "SignalColor"));
+void WaveformRendererPreroll::setup(const QDomNode& node,  SkinContext* context) {
+    m_color.setNamedColor(context->selectString(node, "SignalColor"));
     m_color = WSkinColor::getCorrectColor(m_color);
 }
 

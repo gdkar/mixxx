@@ -48,7 +48,7 @@ WWaveformViewer::~WWaveformViewer() {
     delete m_pWheel;
 }
 
-void WWaveformViewer::setup(QDomNode node, const SkinContext& context) {
+void WWaveformViewer::setup(QDomNode node,  SkinContext *context) {
     Q_UNUSED(context);
     if (m_waveformWidget) {
         m_waveformWidget->setup(node, context);

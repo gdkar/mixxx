@@ -42,13 +42,13 @@ WaveformWidgetAbstractHandle::WaveformWidgetAbstractHandle()
 WaveformWidgetHolder::WaveformWidgetHolder()
     : m_waveformWidget(NULL),
       m_waveformViewer(NULL),
-      m_skinContextCache(NULL, QString()) {
+      m_skinContextCache(NULL) {
 }
 
 WaveformWidgetHolder::WaveformWidgetHolder(WaveformWidgetAbstract* waveformWidget,
                                            WWaveformViewer* waveformViewer,
                                            const QDomNode& node,
-                                           const SkinContext *skinContext)
+                                           SkinContext *skinContext)
     : m_waveformWidget(waveformWidget),
       m_waveformViewer(waveformViewer),
       m_skinNodeCache(node.cloneNode()),
@@ -243,7 +243,7 @@ void WaveformWidgetFactory::addTimerListener(QWidget* pWidget) {
 
 bool WaveformWidgetFactory::setWaveformWidget(WWaveformViewer* viewer,
                                               const QDomElement& node,
-                                              QSharedPointer<SkinContext>& context) {
+                                              SkinContext *context) {
     int index = findIndexOf(viewer);
     if (index != -1) {
         qDebug() << "WaveformWidgetFactory::setWaveformWidget - "\
@@ -255,7 +255,7 @@ bool WaveformWidgetFactory::setWaveformWidget(WWaveformViewer* viewer,
     // constructor (pure virtual)
     WaveformWidgetAbstract* waveformWidget = createWaveformWidget(m_type, viewer);
     viewer->setWaveformWidget(waveformWidget);
-    viewer->setup(node, *context);
+    viewer->setup(node, context);
 
     // create new holder
     if (index == -1) {

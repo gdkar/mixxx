@@ -4,8 +4,8 @@
 #include <QImage>
 #include <qsharedpointer.h>
 #include <qatomic.h>
-#include "skin/skincontext.h"
 
+class SkinContext;
 class ControlObjectSlave;
 class QDomNode;
 class WaveformSignalColors;
@@ -27,7 +27,7 @@ class WaveformMarkRange {
     double end();
 
     void setup(const QString &group, const QDomNode& node,
-               const SkinContext& context,
+               SkinContext* context,
                const WaveformSignalColors& signalColors);
 
   private:
