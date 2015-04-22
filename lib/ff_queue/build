@@ -1,0 +1,1 @@
+g++ -o ffq ff_queue.cpp -Iff -lpthread -lrt -m64 -O3 -fomit-frame-pointer -finline-functions -fno-strict-aliasing
