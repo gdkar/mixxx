@@ -5,9 +5,10 @@
 #include <QString>
 #include <QDomNode>
 #include <QDomElement>
-#include <QScriptEngine>
+#include <QJSEngine>
 #include <QDir>
-#include <QScriptEngineDebugger>
+#include <QJSValue>
+#include <QtQml>
 #include <QtDebug>
 
 #include "configobject.h"
@@ -20,7 +21,8 @@
 // A class for managing the current context/environment when processing a
 // skin. Used hierarchically by LegacySkinParser to create new contexts and
 // evaluate skin XML nodes while loading the skin.
-class SkinContext {
+class SkinContext:public QObject {
+  Q_OBJECT;
   public:
     SkinContext(ConfigObject<ConfigValue>* pConfig, const QString& xmlPath);
     SkinContext(const SkinContext& parent);
@@ -71,11 +73,11 @@ class SkinContext {
     Paintable::DrawMode selectScaleMode(const QDomElement& element,
                                         Paintable::DrawMode defaultDrawMode) const;
 
-    QScriptValue evaluateScript(const QString& expression,
+    QJSValue evaluateScript(const QString& expression,
                                 const QString& filename=QString(),
                                 int lineNumber=1);
-    QScriptValue importScriptExtension(const QString& extensionName);
-    const QSharedPointer<QScriptEngine> getScriptEngine() const;
+    QJSValue importScriptExtension(const QString& extensionName);
+    const QSharedPointer<QQmlEngine > getScriptEngine() const;
     void enableDebugger(bool state) const;
 
     QDebug logWarning(const char* file, const int line, const QDomNode& node) const;
@@ -95,10 +97,9 @@ class SkinContext {
     QString m_skinBasePath;
     ConfigObject<ConfigValue>* m_pConfig;
 
-    QHash<QString, QString> m_variables;
-    QSharedPointer<QScriptEngine> m_pScriptEngine;
-    QSharedPointer<QScriptEngineDebugger> m_pScriptDebugger;
-    QScriptValue m_parentGlobal;
+    QHash<QString, QString>    m_variables;
+    QSharedPointer<QQmlEngine> m_pScriptEngine;
+    QQmlContext               *m_pContext;
 
     // The SingletonContainer map is passed to child SkinContexts, so that all
     // templates in the tree can share a single map.

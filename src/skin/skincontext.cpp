@@ -1,8 +1,8 @@
 #include <QtDebug>
 #include <QStringList>
-#include <QScriptValue>
+#include <QJSValue>
 #include <QAction>
-#include <QScriptValueIterator>
+#include <QJSValueIterator>
 
 #include "skin/skincontext.h"
 #include "skin/svgparser.h"
@@ -12,28 +12,27 @@ SkinContext::SkinContext(ConfigObject<ConfigValue>* pConfig,
                          const QString& xmlPath)
         : m_xmlPath(xmlPath),
           m_pConfig(pConfig),
-          m_pScriptEngine(new QScriptEngine()),
-          m_pScriptDebugger(new QScriptEngineDebugger()),
+          m_pScriptEngine(new QQmlEngine()),
           m_pSingletons(new SingletonMap) {
-    QScriptValue context = m_pScriptEngine->pushContext()->activationObject();
-    QScriptValue newGlobal = m_pScriptEngine->newObject();
-    QScriptValueIterator it(m_pScriptEngine->globalObject());
+    QQmlContext *newContext = new QQmlContext(m_pScriptEngine.data(),this);
+    QQmlEngine::setContextForObject(this,newContext);
+    QJSValueIterator it(m_pScriptEngine->globalObject());
     while (it.hasNext()) {
         it.next();
-        newGlobal.setProperty(it.name(), it.value());
+        newContext->setContextProperty(it.name(), it.value());
     }
-    m_pScriptEngine->setGlobalObject(newGlobal);
+    //m_pScriptEngine->setGlobalObject(newGlobal);
 
     for (QHash<QString, QString>::const_iterator it = m_variables.begin();
          it != m_variables.end(); ++it) {
-        m_pScriptEngine->globalObject().setProperty(it.key(), it.value());
+        newContext->setContextProperty(it.key(), it.value());
     }
 
     enableDebugger(true);
     // the extensions are imported once and will be passed to the children
     // global object as properties of the parent's global object.
-    importScriptExtension("console");
-    importScriptExtension("svg");
+//    importScriptExtension("console");
+//    importScriptExtension("svg");
     m_pScriptEngine->installTranslatorFunctions();
 }
 
@@ -49,14 +48,12 @@ SkinContext::SkinContext(const SkinContext& parent)
 
     // we generate a new global object to preserve the scope between
     // a context and its children
-    QScriptValue context = m_pScriptEngine->pushContext()->activationObject();
-    QScriptValue newGlobal = m_pScriptEngine->newObject();
-    QScriptValueIterator it(m_parentGlobal);
-    while (it.hasNext()) {
-        it.next();
-        newGlobal.setProperty(it.name(), it.value());
-    }
-    m_pScriptEngine->setGlobalObject(newGlobal);
+//    QJSValue context = m_pScriptEngine->pushContext()->activationObject();
+//    while (it.hasNext()) {
+//        it.next();
+//        newGlobal.setProperty(it.name(), it.value());
+//    }
+//    m_pScriptEngine->setGlobalObject(newGlobal);
 
     for (QHash<QString, QString>::const_iterator it = m_variables.begin();
          it != m_variables.end(); ++it) {
@@ -65,8 +62,6 @@ SkinContext::SkinContext(const SkinContext& parent)
 }
 
 SkinContext::~SkinContext() {
-    m_pScriptEngine->popContext();
-    m_pScriptEngine->setGlobalObject(m_parentGlobal);
 }
 
 QString SkinContext::variable(const QString& name) const {
@@ -75,8 +70,7 @@ QString SkinContext::variable(const QString& name) const {
 
 void SkinContext::setVariable(const QString& name, const QString& value) {
     m_variables[name] = value;
-    QScriptValue context = m_pScriptEngine->currentContext()->activationObject();
-    context.setProperty(name, value);
+    m_pContext->setContextProperty(name, value);
 }
 
 void SkinContext::setXmlPath(const QString& xmlPath) {
@@ -210,7 +204,7 @@ QString SkinContext::selectAttributeString(const QDomElement& element,
 
 QString SkinContext::variableNodeToText(const QDomElement& variableNode) const {
     if (variableNode.hasAttribute("expression")) {
-        QScriptValue result = m_pScriptEngine->evaluate(
+        QJSValue result = m_pScriptEngine->evaluate(
             variableNode.attribute("expression"), m_xmlPath,
             variableNode.lineNumber());
         return result.toString();
@@ -291,33 +285,25 @@ Paintable::DrawMode SkinContext::selectScaleMode(
  * All the methods below exist to access some of the scriptEngine features
  * from the svgParser.
  */
-QScriptValue SkinContext::evaluateScript(const QString& expression,
+QJSValue  SkinContext::evaluateScript(const QString& expression,
                                          const QString& filename,
                                          int lineNumber) {
     return m_pScriptEngine->evaluate(expression, filename, lineNumber);
 }
 
-QScriptValue SkinContext::importScriptExtension(const QString& extensionName) {
-    QScriptValue out = m_pScriptEngine->importExtension(extensionName);
-    if (m_pScriptEngine->hasUncaughtException()) {
-        qDebug() << out.toString();
-    }
-    return out;
+QJSValue SkinContext::importScriptExtension(const QString& extensionName) {
+    //QJSValue out = m_pScriptEngine->importExtension(extensionName);
+//    if (m_pScriptEngine->hasUncaughtException()) {
+//        qDebug() << out.toString();
+//    }
+    return QJSValue(false);
 }
 
-const QSharedPointer<QScriptEngine> SkinContext::getScriptEngine() const {
+const QSharedPointer<QQmlEngine> SkinContext::getScriptEngine() const {
     return m_pScriptEngine;
 }
 
 void SkinContext::enableDebugger(bool state) const {
-    if (CmdlineArgs::Instance().getDeveloper() && m_pConfig != NULL &&
-            m_pConfig->getValueString(ConfigKey("[ScriptDebugger]", "Enabled")) == "1") {
-        if (state) {
-            m_pScriptDebugger->attachTo(m_pScriptEngine.data());
-        } else {
-            m_pScriptDebugger->detach();
-        }
-    }
 }
 
 QDebug SkinContext::logWarning(const char* file, const int line,

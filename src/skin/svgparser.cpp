@@ -1,6 +1,6 @@
 #include <QtDebug>
 #include <QStringList>
-#include <QScriptValue>
+#include <QtQml>
 
 #include "skin/svgparser.h"
 
@@ -106,12 +106,12 @@ void SvgParser::parseElement(QDomNode* node) const {
                 qDebug() << "ERROR: Failed to open script file";
             }
             QTextStream in(&scriptFile);
-            QScriptValue result = m_context.evaluateScript(in.readAll(),
+            QJSValue result = m_context.evaluateScript(in.readAll(),
                                                            scriptPath);
         }
         // Evaluates the content of the script element
         // QString expression = m_context.nodeToString(*node);
-        QScriptValue result = m_context.evaluateScript(
+        QJSValue result = m_context.evaluateScript(
             element.text(), m_currentFile, node->lineNumber());
     }
 }
@@ -122,8 +122,8 @@ void SvgParser::parseAttributes(const QDomNode& node) const {
     QDomElement element = node.toElement();
 
     // Retrieving hooks pattern from script extension
-    QScriptValue global = m_context.getScriptEngine()->globalObject();
-    QScriptValue hooksPattern = global.property("svg")
+    QJSValue global = m_context.getScriptEngine()->globalObject();
+    QJSValue hooksPattern = global.property("svg")
         .property("getHooksPattern").call(global.property("svg"));
     QRegExp hookRx;
     if (!hooksPattern.isNull())
@@ -176,13 +176,13 @@ QByteArray SvgParser::saveToQByteArray(const QDomNode& svgNode) const {
     return out;
 }
 
-QScriptValue SvgParser::evaluateTemplateExpression(const QString& expression,
+QJSValue SvgParser::evaluateTemplateExpression(const QString& expression,
                                                    int lineNumber) const {
-    QScriptValue out = m_context.evaluateScript(
+    QJSValue out = m_context.evaluateScript(
         expression, m_currentFile, lineNumber);
     if (m_context.getScriptEngine()->hasUncaughtException()) {
         // return an empty string as replacement for the in-attribute expression
-        return QScriptValue();
+        return QJSValue ();
     } else {
         return out;
     }

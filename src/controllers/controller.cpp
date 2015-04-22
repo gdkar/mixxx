@@ -6,7 +6,9 @@
 */
 
 #include <QApplication>
-#include <QScriptValue>
+#include <QJSValue>
+#include <QJSEngine>
+#include <QJSValueList>
 
 #include "controllers/controller.h"
 #include "controllers/defs_controllers.h"
@@ -125,7 +127,7 @@ void Controller::receive(const QByteArray data) {
             continue;
         }
         function.append(".incomingData");
-        QScriptValue incomingData = m_pEngine->resolveFunction(function);
+        QJSValue incomingData = m_pEngine->resolveFunction(function);
         if (!m_pEngine->execute(incomingData, data)) {
             qWarning() << "Controller: Invalid script function" << function;
         }
