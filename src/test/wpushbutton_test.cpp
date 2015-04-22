@@ -30,10 +30,10 @@ class WPushButtonTest : public MixxxTest {
 TEST_F(WPushButtonTest, QuickPressNoLatchTest) {
     QScopedPointer<ControlPushButton> pPushControl(
         new ControlPushButton(ConfigKey("[Test]", "push")));
-    pPushControl->setButtonMode(ControlPushButton::LONGPRESSLATCHING);
+    pPushControl->setButtonMode(ControlPushButtonBehavior::LONGPRESSLATCHING);
 
-    m_pButton.reset(new WPushButton(NULL, ControlPushButton::LONGPRESSLATCHING,
-                                    ControlPushButton::PUSH));
+    m_pButton.reset(new WPushButton(NULL, ControlPushButtonBehavior::LONGPRESSLATCHING,
+                                    ControlPushButtonBehavior::PUSH));
     m_pButton->setStates(2);
     m_pButton->addLeftConnection(
         new ControlParameterWidgetConnection(
@@ -55,10 +55,10 @@ TEST_F(WPushButtonTest, QuickPressNoLatchTest) {
 TEST_F(WPushButtonTest, LongPressLatchTest) {
     QScopedPointer<ControlPushButton> pPushControl(
         new ControlPushButton(ConfigKey("[Test]", "push")));
-    pPushControl->setButtonMode(ControlPushButton::LONGPRESSLATCHING);
+    pPushControl->setButtonMode(ControlPushButtonBehavior::LONGPRESSLATCHING);
 
-    m_pButton.reset(new WPushButton(NULL, ControlPushButton::LONGPRESSLATCHING,
-                                    ControlPushButton::PUSH));
+    m_pButton.reset(new WPushButton(NULL, ControlPushButtonBehavior::LONGPRESSLATCHING,
+                                    ControlPushButtonBehavior::PUSH));
     m_pButton->setStates(2);
     m_pButton->addLeftConnection(
         new ControlParameterWidgetConnection(

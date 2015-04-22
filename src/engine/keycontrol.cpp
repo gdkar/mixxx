@@ -70,7 +70,7 @@ KeyControl::KeyControl(QString group,
             Qt::DirectConnection);
 
     m_keylockMode = new ControlPushButton(ConfigKey(group, "keylockMode"));
-    m_keylockMode->setButtonMode(ControlPushButton::TOGGLE);
+    m_keylockMode->setButtonMode(ControlPushButtonBehavior::TOGGLE);
 
     // In case of vinyl control "rate" is a filtered mean value for display
     m_pRateSlider = ControlObject::getControl(ConfigKey(group, "rate"));

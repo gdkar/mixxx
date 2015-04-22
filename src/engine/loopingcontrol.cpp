@@ -976,7 +976,7 @@ BeatLoopingControl::BeatLoopingControl(QString group, double size)
     // is the state of the beatloop control (1 for enabled, 0 for disabled).
     m_pLegacy = new ControlPushButton(
             keyForControl(group, "beatloop_%1", size));
-    m_pLegacy->setButtonMode(ControlPushButton::TOGGLE);
+    m_pLegacy->setButtonMode(ControlPushButtonBehavior::TOGGLE);
     connect(m_pLegacy, SIGNAL(valueChanged(double)),
             this, SLOT(slotLegacy(double)),
             Qt::DirectConnection);

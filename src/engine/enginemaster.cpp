@@ -133,7 +133,7 @@ EngineMaster::EngineMaster(ConfigObject<ConfigValue>* _config,
 
     // Master / Headphone split-out mode (for devices with only one output).
     m_pHeadSplitEnabled = new ControlPushButton(ConfigKey(group, "headSplit"));
-    m_pHeadSplitEnabled->setButtonMode(ControlPushButton::TOGGLE);
+    m_pHeadSplitEnabled->setButtonMode(ControlPushButtonBehavior::TOGGLE);
     m_pHeadSplitEnabled->set(0.0);
 
     m_pTalkoverDucking = new EngineTalkoverDucking(_config, group);
@@ -158,14 +158,14 @@ EngineMaster::EngineMaster(ConfigObject<ConfigValue>* _config,
     // X-Fader Setup
     m_pXFaderMode = new ControlPushButton(
             ConfigKey("[Mixer Profile]", "xFaderMode"));
-    m_pXFaderMode->setButtonMode(ControlPushButton::TOGGLE);
+    m_pXFaderMode->setButtonMode(ControlPushButtonBehavior::TOGGLE);
     m_pXFaderCurve = new ControlPotmeter(
             ConfigKey("[Mixer Profile]", "xFaderCurve"), 0., 2.);
     m_pXFaderCalibration = new ControlPotmeter(
             ConfigKey("[Mixer Profile]", "xFaderCalibration"), -2., 2.);
     m_pXFaderReverse = new ControlPushButton(
             ConfigKey("[Mixer Profile]", "xFaderReverse"));
-    m_pXFaderReverse->setButtonMode(ControlPushButton::TOGGLE);
+    m_pXFaderReverse->setButtonMode(ControlPushButtonBehavior::TOGGLE);
 
     m_pKeylockEngine = new ControlObject(ConfigKey(group, "keylock_engine"),
                                          true, false, true);
@@ -606,7 +606,7 @@ void EngineMaster::addChannel(EngineChannel* pChannel) {
     pChannelInfo->m_pVolumeControl->set(1.0);
     pChannelInfo->m_pMuteControl = new ControlPushButton(
             ConfigKey(group, "mute"));
-    pChannelInfo->m_pMuteControl->setButtonMode(ControlPushButton::POWERWINDOW);
+    pChannelInfo->m_pMuteControl->setButtonMode(ControlPushButtonBehavior::POWERWINDOW);
     pChannelInfo->m_pBuffer = SampleUtil::alloc(MAX_BUFFER_LEN);
     SampleUtil::clear(pChannelInfo->m_pBuffer, MAX_BUFFER_LEN);
     m_channels.append(pChannelInfo);
