@@ -14,7 +14,6 @@
 #include "trackinfoobject.h"
 
 class Analyser {
-
 public:
     virtual bool initialise(TrackPointer tio, int sampleRate, int totalSamples) = 0;
     virtual bool loadStored(TrackPointer tio) const = 0;

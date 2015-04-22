@@ -197,7 +197,7 @@ class Qt(Dependence):
             'QtTest', 'QtScriptTools'
         ]
         if qt5:
-            qt_modules.extend(['QtWidgets', 'QtConcurrent'])
+            qt_modules.extend(['QtWidgets', 'QtConcurrent','QtQml','QtQuick'])
         return qt_modules
 
     def satisfy(self):
@@ -486,6 +486,7 @@ class MixxxCore(Feature):
                    "control/control.cpp",
                    "control/controlbehavior.cpp",
                    "control/controlmodel.cpp",
+                   "control/controlqobject.cpp",
                    "controlobject.cpp",
                    "controlobjectslave.cpp",
                    "controlobjectthread.cpp",
@@ -823,6 +824,7 @@ class MixxxCore(Feature):
                    "waveform/renderers/waveformrendererpreroll.cpp",
 
                    "waveform/renderers/waveformrendererfilteredsignal.cpp",
+                   "waveform/renderers/waveformrenderersimplesignal.cpp",
                    "waveform/renderers/waveformrendererhsv.cpp",
                    "waveform/renderers/waveformrendererrgb.cpp",
                    "waveform/renderers/qtwaveformrendererfilteredsignal.cpp",
