@@ -200,7 +200,16 @@ class EffectManifestParameter {
 
     bool m_showInParametertSlot;
 };
-
+Q_DECLARE_METATYPE(EffectManifestParameter::ControlHint);
+Q_DECLARE_TYPEINFO(EffectManifestParameter::ControlHint,Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(EffectManifestParameter::SemanticHint);
+Q_DECLARE_TYPEINFO(EffectManifestParameter::SemanticHint,Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(EffectManifestParameter::UnitsHint);
+Q_DECLARE_TYPEINFO(EffectManifestParameter::UnitsHint,Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(EffectManifestParameter::LinkType);
+Q_DECLARE_TYPEINFO(EffectManifestParameter::LinkType,Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(EffectManifestParameter);
+Q_DECLARE_TYPEINFO(EffectManifestParameter,Q_MOVABLE_TYPE);
 QDebug operator<<(QDebug dbg, const EffectManifestParameter& parameter);
 
 #endif /* EFFECTMANIFESTPARAMETER_H */

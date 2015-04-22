@@ -16,7 +16,15 @@ class EffectsManager;
 // always within acceptable ranges. This class is NOT thread-safe and must only
 // be used from the main thread.
 class EffectParameter : public QObject {
-    Q_OBJECT
+    Q_OBJECT;
+    Q_PROPERTY(QString id READ id STORED false);
+    Q_PROPERTY(QString name READ name STORED false);
+    Q_PROPERTY(QString description READ description STORED false);
+    Q_PROPERTY(EffectManifestParameter manifest READ manifest);
+    Q_PROPERTY(double minimum READ getMinimum WRITE setMinimum NOTIFY minimumChanged STORED false);
+    Q_PROPERTY(double maximum READ getMaximum WRITE setMaximum NOTIFY maximumChanged STORED false);
+    Q_PROPERTY(double value READ getValue WRITE setValue NOTIFY valueChanged STORED false);
+    Q_PROPERTY(double defaultValue READ getDefault WRITE setDefault NOTIFY defaultChanged STORED false);
   public:
     EffectParameter(Effect* pEffect, EffectsManager* pEffectsManager,
                     int iParameterNumber, const EffectManifestParameter& parameter);
@@ -28,16 +36,14 @@ class EffectParameter : public QObject {
     ///////////////////////////////////////////////////////////////////////////
     // Parameter Information
     ///////////////////////////////////////////////////////////////////////////
-
-    const EffectManifestParameter& manifest() const;
-    const QString id() const;
-    const QString name() const;
-    const QString description() const;
-
+    Q_INVOKABLE const EffectManifestParameter& manifest() const;
+    Q_INVOKABLE const QString id() const;
+    Q_INVOKABLE const QString name() const;
+    Q_INVOKABLE const QString description() const;
     ///////////////////////////////////////////////////////////////////////////
     // Value Settings
     ///////////////////////////////////////////////////////////////////////////
-
+  public:
     EffectManifestParameter::LinkType getDefaultLinkType() const;
     double getNeutralPointOnScale() const;
 
@@ -59,8 +65,10 @@ class EffectParameter : public QObject {
     void updateEngineState();
 
   signals:
-    void valueChanged(double value);
-
+    void valueChanged(double);
+    void defaultChanged(double);
+    void minimumChanged(double);
+    void maximumChanged(double);
   private:
     QString debugString() const {
         return QString("EffectParameter(%1)").arg(m_parameter.name());

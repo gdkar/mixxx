@@ -28,7 +28,7 @@ EffectParameterSlot::EffectParameterSlot(const QString& group, const unsigned in
     connect(m_pControlLinkInverse, SIGNAL(valueChanged(double)),
             this, SLOT(slotLinkInverseChanged(double)));
     connect(m_pControlValue, SIGNAL(valueChanged(double)),
-            this, SLOT(slotValueChanged(double)));
+            this, SLOT(onValueChanged(double)));
 
     // Read-only controls.
     m_pControlType->connectValueChangeRequest(
@@ -245,7 +245,7 @@ double EffectParameterSlot::getValueParameter() const {
     return m_pControlValue->getParameter();
 }
 
-void EffectParameterSlot::slotValueChanged(double v) {
+void EffectParameterSlot::onValueChanged(double v) {
     if (m_pEffectParameter) {
         m_pEffectParameter->setValue(v);
     }

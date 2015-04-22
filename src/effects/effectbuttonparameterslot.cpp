@@ -20,7 +20,7 @@ EffectButtonParameterSlot::EffectButtonParameterSlot(const QString& group,
             ConfigKey(m_group, itemPrefix + QString("_type")));
 
     connect(m_pControlValue, SIGNAL(valueChanged(double)),
-            this, SLOT(slotValueChanged(double)));
+            this, SLOT(onValueChanged(double)));
 
     // Read-only controls.
     m_pControlType->connectValueChangeRequest(
@@ -104,7 +104,7 @@ void EffectButtonParameterSlot::slotParameterValueChanged(double value) {
     m_pControlValue->set(value);
 }
 
-void EffectButtonParameterSlot::slotValueChanged(double v) {
+void EffectButtonParameterSlot::onValueChanged(double v) {
     if (m_pEffectParameter) {
         m_pEffectParameter->setValue(v);
     }

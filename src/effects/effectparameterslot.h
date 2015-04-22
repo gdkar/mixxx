@@ -46,7 +46,7 @@ class EffectParameterSlot : public EffectParameterSlotBase {
   private slots:
     // Solely for handling control changes
     void slotParameterValueChanged(double value);
-    void slotValueChanged(double v);
+    void onValueChanged(double v);
     void slotLinkTypeChanging(double v);
     void slotLinkInverseChanged(double v);
 

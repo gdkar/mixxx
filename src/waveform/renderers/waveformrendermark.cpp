@@ -39,13 +39,15 @@ void WaveformRenderMark::draw(QPainter* painter, QPaintEvent* /*event*/) {
         if (mark.m_image.isNull()) generateMarkImage(mark);
         int samplePosition = mark.m_pointControl->get();
         if (samplePosition > 0.0) {
-            double currentMarkPoint = m_waveformRenderer->transformSampleIndexInRendererWorld(samplePosition);
+            double currentMarkOffset= (samplePosition / m_waveformRenderer->getSampleRate())-m_waveformRenderer->getFirstDisplayedPosition();
+            double relativePos = currentMarkOffset *m_waveformRenderer->getWidth()/(m_waveformRenderer->getLastDisplayedPosition()-m_waveformRenderer->getFirstDisplayedPosition());
             // NOTE: vRince I guess image width is odd to display the center on the exact line !
             //external image should respect that ...
-            const int markHalfWidth = mark.m_image.width() / 2.0;
-            //check if the current point need to be displayed
-            if (currentMarkPoint > -markHalfWidth && currentMarkPoint < m_waveformRenderer->getWidth() + markHalfWidth)
-                painter->drawImage(QPoint(currentMarkPoint-markHalfWidth,0), mark.m_image);
+            const double markHalfWidth = mark.m_image.width() / 2.0;
+            if(relativePos >=-markHalfWidth && relativePos <=markHalfWidth){
+              //check if the current point need to be displayed
+              painter->drawImage(QPoint(relativePos-markHalfWidth,0), mark.m_image);
+            }
         }
     }
     painter->restore();
