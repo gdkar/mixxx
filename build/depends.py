@@ -845,6 +845,7 @@ class MixxxCore(Feature):
                    "waveform/widgets/waveformwidgetabstract.cpp",
                    "waveform/widgets/emptywaveformwidget.cpp",
                    "waveform/widgets/softwarewaveformwidget.cpp",
+                   "waveform/widgets/softwaresimplewaveformwidget.cpp",
                    "waveform/widgets/hsvwaveformwidget.cpp",
                    "waveform/widgets/rgbwaveformwidget.cpp",
                    "waveform/widgets/qtwaveformwidget.cpp",

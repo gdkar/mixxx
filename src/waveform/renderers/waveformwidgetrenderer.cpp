@@ -118,6 +118,7 @@ void WaveformWidgetRenderer::onPreRender(VSyncThread* vsyncThread) {
     //vRince for the moment only more than one sample per pixel is supported
     //due to the fact we play the visual play pos modulo floor m_visualSamplePerPixel ...
     double visualSamplePerPixel = m_zoomFactor * (1.0 + m_rateAdjust);
+//    m_visibleDuration = 5/(m_zoomFactor *(1.0+m_rateAdjust));
     m_visualSamplePerPixel = math_max(1.0, visualSamplePerPixel);
 
     TrackPointer pTrack(m_pTrack);
@@ -128,10 +129,9 @@ void WaveformWidgetRenderer::onPreRender(VSyncThread* vsyncThread) {
     } else {
         m_audioSamplePerPixel = 0.0;
     }
-
     m_sampleRate      = m_pSampleRateControlObject->get();
     m_playPos         = (m_visualPlayPosition->getAtNextVSync(vsyncThread));
-    double m_pixelsPerSecond = m_sampleRate/m_audioSamplePerPixel;
+    m_pixelsPerSecond = m_sampleRate/m_audioSamplePerPixel;
     // m_playPos = -1 happens, when a new track is in buffer but m_visualPlayPosition was not updated
     
     if (m_audioSamplePerPixel && m_playPos >=0 ) {
@@ -141,7 +141,7 @@ void WaveformWidgetRenderer::onPreRender(VSyncThread* vsyncThread) {
 
         // Ratio of half the width of the renderer to the track length in
         // pixels. Percent of the track shown in half the waveform widget.
-        double displayedLengthHalf = m_visibleDuration/2;
+        double displayedLengthHalf =   m_width/(2.0*m_pixelsPerSecond);
         // Avoid pixel jitter in play position by rounding to the nearest track
         // pixel.
         m_playPosVSample         = round(m_playPosVSample);
@@ -251,7 +251,8 @@ void WaveformWidgetRenderer::setup(const QDomNode& node, SkinContext* context) {
 
 void WaveformWidgetRenderer::setZoom(int zoom) {
     //qDebug() << "WaveformWidgetRenderer::setZoom" << zoom;
-    m_zoomFactor = math_clamp<double>(zoom, s_waveformMinZoom, s_waveformMaxZoom);
+    m_zoomFactor      = math_clamp<double>(zoom, s_waveformMinZoom, s_waveformMaxZoom);
+    m_visibleDuration = 5/m_zoomFactor;
 }
 
 void WaveformWidgetRenderer::setTrack(TrackPointer track) {

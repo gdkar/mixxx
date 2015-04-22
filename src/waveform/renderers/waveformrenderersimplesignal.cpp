@@ -51,8 +51,8 @@ void WaveformRendererSimpleSignal::draw(QPainter* painter,
       }
       m_path = QPainterPath();
       quint64 size = dataSize * 64 / waveform->getVisualSampleRate();
-      m_upper = simplify_path(waveform,size, FilterIndex::All,ChannelIndex::Left);
-      m_lower = simplify_path(waveform,size, FilterIndex::All,ChannelIndex::Right);
+      m_upper = simplify_waveform(waveform,size, FilterIndex::All,ChannelIndex::Left);
+      m_lower = simplify_waveform(waveform,size, FilterIndex::All,ChannelIndex::Right);
       m_path.moveTo(m_upper.front());
       for(int i = 0; i < m_upper.size();i++){
         m_path.lineTo(m_upper[i]);
@@ -90,8 +90,8 @@ void WaveformRendererSimpleSignal::draw(QPainter* painter,
     }
 
     painter->setPen(QPen(QBrush(m_pColors->getSignalColor()), 1));
+    painter->scale(m_waveformRenderer->getWidth()/(m_waveformRenderer->getLastDisplayedPosition()-m_waveformRenderer->getFirstDisplayedPosition()),m_waveformRenderer->getHeight()*allGain);
     painter->translate(-m_waveformRenderer->getFirstDisplayedPosition(),halfHeight);
-    painter->scale(1.0/(m_waveformRenderer->getLastDisplayedPosition()-m_waveformRenderer->getFirstDisplayedPosition()),allGain/halfHeight);
     painter->drawPath(m_path);
     painter->restore();
 }

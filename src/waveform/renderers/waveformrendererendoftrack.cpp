@@ -81,7 +81,7 @@ void WaveformRendererEndOfTrack::draw(QPainter* painter,
     m_endOfTrackEnabled = m_pEndOfTrackControl->get() > 0.5;
     m_remainingTimeTriggerSeconds = WaveformWidgetFactory::instance()->getEndOfTrackWarningTime();
     // special case of track not long enough
-    const double trackLength = 0.5 * trackSamples / sampleRate;
+    const double trackLength = trackSamples / (double)sampleRate;
     if (sampleRate < 0.1 //not ready
             || trackSamples < 0.1 //not ready
             || m_pPlayControl->get() < 0.5 //not playing
@@ -116,7 +116,7 @@ void WaveformRendererEndOfTrack::draw(QPainter* painter,
 
     //ScopedTimer t("WaveformRendererEndOfTrack::draw");
     const double elapsed = fmod(m_timer.elapsed(), m_blinkingPeriodMillis);
-    const double blickIntensity = (double)(2 * abs(elapsed - m_blinkingPeriodMillis/2)) /
+    const double blickIntensity = (double)(2 * std::abs(elapsed - m_blinkingPeriodMillis/2)) /
             m_blinkingPeriodMillis;
     const double criticalIntensity = (m_remainingTimeTriggerSeconds - remainingTime) /
             m_remainingTimeTriggerSeconds;

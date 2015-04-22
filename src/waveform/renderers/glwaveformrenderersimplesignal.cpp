@@ -47,14 +47,14 @@ void GLWaveformRendererSimpleSignal::draw(QPainter* painter, QPaintEvent* /*even
         return;
     }
 
-    double firstVisualIndex = m_waveformRenderer->getFirstDisplayedPosition() * dataSize;
-    double lastVisualIndex = m_waveformRenderer->getLastDisplayedPosition() * dataSize;
+    double firstVisualIndex = m_waveformRenderer->getFirstDisplayedPosition() * waveform->getVisualSampleRate();
+    double lastVisualIndex = m_waveformRenderer->getLastDisplayedPosition() * waveform->getVisualSampleRate();
 
     const int firstIndex = int(firstVisualIndex+0.5);
-    firstVisualIndex = firstIndex - firstIndex%2;
+    firstVisualIndex = firstIndex-firstIndex%2;
 
     const int lastIndex = int(lastVisualIndex+0.5);
-    lastVisualIndex = lastIndex + lastIndex%2;
+    lastVisualIndex = lastIndex+lastIndex%2;
 
     // Reset device for native painting
     painter->beginNativePainting();
@@ -92,7 +92,7 @@ void GLWaveformRendererSimpleSignal::draw(QPainter* painter, QPaintEvent* /*even
         glEnd();
 
         glLineWidth(1.1);
-        glEnable(GL_LINE_SMOOTH);
+        glDisable(GL_LINE_SMOOTH);
 
         glBegin(GL_LINES); {
             for (int visualIndex = firstVisualIndex;
@@ -129,7 +129,7 @@ void GLWaveformRendererSimpleSignal::draw(QPainter* painter, QPaintEvent* /*even
         glScalef(1.f, allGain, 1.f);
 
         glLineWidth(1.1);
-        glEnable(GL_LINE_SMOOTH);
+        glDisable(GL_LINE_SMOOTH);
 
         glBegin(GL_LINES); {
             for (int visualIndex = firstVisualIndex;

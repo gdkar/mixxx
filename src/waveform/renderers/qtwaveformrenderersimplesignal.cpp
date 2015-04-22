@@ -84,8 +84,8 @@ void QtWaveformRendererSimpleSignal::draw(QPainter* painter, QPaintEvent* /*even
         painter->drawLine(0,0,m_waveformRenderer->getWidth(),0);
     }
 
-    const double firstVisualIndex = m_waveformRenderer->getFirstDisplayedPosition() * dataSize;
-    const double lastVisualIndex = m_waveformRenderer->getLastDisplayedPosition() * dataSize;
+    const double firstVisualIndex = m_waveformRenderer->getFirstDisplayedPosition() * waveform->getVisualSampleRate();
+    const double lastVisualIndex = m_waveformRenderer->getLastDisplayedPosition() * waveform->getVisualSampleRate();
     m_polygon.clear();
     m_polygon.reserve(2 * m_waveformRenderer->getWidth() + 2);
     m_polygon.append(QPointF(0.0, 0.0));

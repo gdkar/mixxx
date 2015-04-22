@@ -11,7 +11,7 @@
 #include <cmath>
 #include "waveform/waveform.h"
 
-QVector<QPointF>  simplify_path(const QVector<QPointF> &path,int size){
+static QVector<QPointF>  simplify_path(const QVector<QPointF> &path,int size){
   QVector<QPointF> ret;
   QVector<double>  L(path.size());
   QVector<double>  T(path.size());
@@ -35,7 +35,7 @@ QVector<QPointF>  simplify_path(const QVector<QPointF> &path,int size){
   }
   return ret;
 }
-QVector<QPointF>  simplify_path(ConstWaveformPointer&path, int size,FilterIndex part,ChannelIndex channel){
+static QVector<QPointF>  simplify_waveform(ConstWaveformPointer&path, int size,FilterIndex part,ChannelIndex channel){
   QVector<QPointF> pts;
   double vsr = 1/(2*path->getVisualSampleRate());
   double yscale = 1.0/256;
