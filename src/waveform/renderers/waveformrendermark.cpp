@@ -105,9 +105,8 @@ void WaveformRenderMark::generateMarkImage(WaveformMark& mark) {
         //draw the label rect
         QColor rectColor = mark.m_color;
         rectColor.setAlpha(150);
-        rectColor.darker(200);
         painter.setPen(mark.m_color);
-        painter.setBrush(QBrush(rectColor));
+        painter.setBrush(QBrush(rectColor.darker(200)));
         painter.drawRoundedRect(labelRect, 2.0, 2.0);
         //painter.drawRect(labelRect);
         //draw text

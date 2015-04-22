@@ -51,13 +51,13 @@ void WaveformRendererSimpleSignal::draw(QPainter* painter,
       }
       m_path = QPainterPath();
       quint64 size = dataSize * 64 / waveform->getVisualSampleRate();
-      m_upper = path_simplify(m_path,size, -1,ChannelIndex::Left);
-      m_lower = path_simplify(m_path,size, -1,ChannelIndex::Right);
+      m_upper = simplify_path(waveform,size, FilterIndex::All,ChannelIndex::Left);
+      m_lower = simplify_path(waveform,size, FilterIndex::All,ChannelIndex::Right);
       m_path.moveTo(m_upper.front());
-      for(quint64 i = 0; i < m_upper.size();i++){
+      for(int i = 0; i < m_upper.size();i++){
         m_path.lineTo(m_upper[i]);
       }
-      for(quint64 i = m_lower.size()-1;i>=0;i--){
+      for(int i = m_lower.size()-1;i>=0;i--){
         QPointF pt = m_lower[i];
         pt.setY(-pt.y());
         m_path.lineTo(pt);

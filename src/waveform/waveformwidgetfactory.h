@@ -45,7 +45,7 @@ class WaveformWidgetHolder {
     WaveformWidgetAbstract* m_waveformWidget;
     WWaveformViewer* m_waveformViewer;
     QDomNode m_skinNodeCache;
-    SkinContext m_skinContextCache;
+    SkinContext *m_skinContextCache;
 
     friend class WaveformWidgetFactory;
 };
@@ -63,7 +63,7 @@ class WaveformWidgetFactory : public QObject, public Singleton<WaveformWidgetFac
     //creates the waveform widget and bind it to the viewer
     //clean-up every thing if needed
     bool setWaveformWidget(WWaveformViewer* viewer,
-                           const QDomElement &node, const SkinContext& context);
+                           const QDomElement &node, QSharedPointer<SkinContext>& context);
 
     void setFrameRate(int frameRate);
     int getFrameRate() const { return m_frameRate;}

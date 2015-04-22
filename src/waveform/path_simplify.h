@@ -18,7 +18,7 @@ QVector<QPointF>  simplify_path(const QVector<QPointF> &path,quint64 size){
   L[0]=0;
   T[0]=0;
   qreal last_angle;
-  for(quint64 i=1;i<path.size();i++){
+  for(int i=1;i<path.size();i++){
     QVector2D v(path[i]-path[i-1]);
     L[i] = L[i-1]+v.length();
     qreal angle = std::atan2(v.y(),v.x());
@@ -27,7 +27,7 @@ QVector<QPointF>  simplify_path(const QVector<QPointF> &path,quint64 size){
   }
   const double fN = (L.back()*T.back())/size;
   double       threshold = 0;
-  for(quint64 i = 0,k=0;i<path.size() && k<=size;i++){
+  for(int i = 0,k=0;i<path.size() && k<=size;i++){
     if(L[i]*T[i]>=threshold)
       ret.push_back(path[i]);
       k++;
