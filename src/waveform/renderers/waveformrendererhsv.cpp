@@ -50,8 +50,8 @@ void WaveformRendererHSV::draw(QPainter* painter,
     painter->setWorldMatrixEnabled(false);
     painter->resetTransform();
 
-    const double firstVisualIndex = m_waveformRenderer->getFirstDisplayedPosition() * dataSize;
-    const double lastVisualIndex = m_waveformRenderer->getLastDisplayedPosition() * dataSize;
+    const double firstVisualIndex = m_waveformRenderer->getFirstDisplayedPosition() * waveform->getVisualSampleRate();
+    const double lastVisualIndex = m_waveformRenderer->getLastDisplayedPosition() * waveform->getVisualSampleRate();
 
     const double offset = firstVisualIndex;
 

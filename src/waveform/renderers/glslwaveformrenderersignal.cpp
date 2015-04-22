@@ -264,8 +264,8 @@ void GLSLWaveformRendererSignal::draw(QPainter* painter, QPaintEvent* /*event*/)
     float lowGain(1.0), midGain(1.0), highGain(1.0), allGain(1.0);
     getGains(&allGain, &lowGain, &midGain, &highGain);
 
-    double firstVisualIndex = m_waveformRenderer->getFirstDisplayedPosition() * dataSize/2.0;
-    double lastVisualIndex = m_waveformRenderer->getLastDisplayedPosition() * dataSize/2.0;
+    double firstVisualIndex = m_waveformRenderer->getFirstDisplayedPosition() * waveform->getVisualSampleRate();
+    double lastVisualIndex = m_waveformRenderer->getLastDisplayedPosition() * waveform->getVisualSampleRate();
 
     // const int firstIndex = int(firstVisualIndex+0.5);
     // firstVisualIndex = firstIndex - firstIndex%2;
@@ -403,20 +403,6 @@ void GLSLWaveformRendererSignal::draw(QPainter* painter, QPaintEvent* /*event*/)
 
     glDisable(GL_TEXTURE_2D);
     glDisable(GL_ALPHA_TEST);
-
-    //DEBUG
-    /*
-    glBegin(GL_LINE_LOOP);
-    {
-        glColor4f(0.5,1.0,0.5,0.75);
-        glVertex3f(-1.0f,-1.0f, 0.0f);
-        glVertex3f(1.0f, 1.0f, 0.0f);
-        glVertex3f(1.0f,-1.0f, 0.0f);
-        glVertex3f(-1.0f, 1.0f, 0.0f);
-    }
-    glEnd();
-    */
-
     glPopMatrix();
     glMatrixMode(GL_PROJECTION);
     glPopMatrix();

@@ -37,24 +37,25 @@ static QVector<QPointF>  simplify_path(const QVector<QPointF> &path,int size){
 }
 static QVector<QPointF>  simplify_waveform(ConstWaveformPointer&path, int size,FilterIndex part,ChannelIndex channel){
   QVector<QPointF> pts;
-  double vsr = 1/(2*path->getVisualSampleRate());
-  double yscale = 1.0/256;
+  float vsr = 1/(path->getVisualSampleRate());
+  float yscale = 1.0/255;
+  int c = channel==ChannelIndex::Left?0:1;
   switch(part){
     case FilterIndex::Low:
-      for(int i=static_cast<int>(channel);i<path->getDataSize();i+=2)
-        pts.push_back(QPointF(i*vsr,path->getLow(i)*yscale));
+      for(int i=static_cast<int>(channel);i<path->getDataSize()/2;i++)
+        pts.push_back(QPointF(i*vsr,path->getLow(2*i+c)*yscale));
       break;
     case FilterIndex::Mid:
-      for(int i=static_cast<int>(channel);i<path->getDataSize();i+=2)
-        pts.push_back(QPointF(i*vsr,path->getMid(i)*yscale));
+      for(int i=static_cast<int>(channel);i<path->getDataSize()/2;i++)
+        pts.push_back(QPointF(i*vsr,path->getMid(2*i+c)*yscale));
       break;
     case FilterIndex::High:
-      for(int i=static_cast<int>(channel);i<path->getDataSize();i+=2)
-        pts.push_back(QPointF(i*vsr,path->getHigh(i)*yscale));
+      for(int i=static_cast<int>(channel);i<path->getDataSize()/2;i++)
+        pts.push_back(QPointF(i*vsr,path->getHigh(2*i+c)*yscale));
       break;
     default:
-      for(int i=static_cast<int>(channel);i<path->getDataSize();i+=2)
-        pts.push_back(QPointF(i*vsr,path->getAll(i)*yscale));
+      for(int i=static_cast<int>(channel);i<path->getDataSize()/2;i++)
+        pts.push_back(QPointF(i*vsr,path->getAll(2*i_c)*yscale));
       break;
   }
   return simplify_path(pts,size);

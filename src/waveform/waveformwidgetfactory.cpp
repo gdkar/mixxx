@@ -4,8 +4,12 @@
 #include <QWidget>
 #include <QtDebug>
 #include <QGLFormat>
+#include <QSurfaceFormat>
+#include <QOpenGLShaderProgram>
+#include <QOpenGLContext>
+#include <QOpenGLFunctions>
 #include <QGLShaderProgram>
-
+#include "sharedglcontext.h"
 #include "waveform/waveformwidgetfactory.h"
 
 #include "skin/skincontext.h"
@@ -79,11 +83,11 @@ WaveformWidgetFactory::WaveformWidgetFactory() :
     m_visualGain[Mid] = 1.0;
     m_visualGain[High] = 1.0;
 
-    if (QGLFormat::hasOpenGL()) {
-        QGLFormat glFormat;
-        glFormat.setDirectRendering(true);
-        glFormat.setDoubleBuffer(true);
-        glFormat.setDepth(false);
+        QSurfaceFormat  glFormat;
+        glFormat.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
+        glFormat.setDepthBufferSize(0);
+        glFormat.setProfile(QSurfaceFormat::NoProfile);
+        glFormat.setRenderableType(QSurfaceFormat::OpenGL);
         // Disable waiting for vertical Sync
         // This can be enabled when using a single Threads for each QGLContext
         // Setting 1 causes QGLContext::swapBuffer to sleep until the next VSync
@@ -100,12 +104,11 @@ WaveformWidgetFactory::WaveformWidgetFactory() :
 #endif
 
 
-        glFormat.setRgba(true);
-        QGLFormat::setDefaultFormat(glFormat);
-
+//        glFormat.setRgba(true);
+        QSurfaceFormat::setDefaultFormat(glFormat);
         QGLFormat::OpenGLVersionFlags version = QGLFormat::openGLVersionFlags();
 
-        int majorVersion = 0;
+        int majorVersion = 0 ;
         int minorVersion = 0;
         if (version == QGLFormat::OpenGL_Version_None) {
             m_openGLVersion = "None";
@@ -140,12 +143,12 @@ WaveformWidgetFactory::WaveformWidgetFactory() :
         }
 
         m_openGLAvailable = true;
-
-        QGLWidget* glWidget = new QGLWidget(); // create paint device
+        QOpenGLContext *ctx = SharedGLContext::getContext();
+                
+//        QOpenGLWidget* glWidget = new QGLWidget(); // create paint device
         // QGLShaderProgram::hasOpenGLShaderPrograms(); valgind error
-        m_openGLShaderAvailable = QGLShaderProgram::hasOpenGLShaderPrograms(glWidget->context());
-        delete glWidget;
-    }
+        m_openGLShaderAvailable = true;//QGLShaderProgram::hasOpenGLShaderPrograms(glWidget->context());
+//        delete glWidget;
 
     evaluateWidgets();
     m_time.start();

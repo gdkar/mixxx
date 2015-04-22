@@ -145,11 +145,13 @@ void WaveformWidgetRenderer::onPreRender(VSyncThread* vsyncThread) {
         // Avoid pixel jitter in play position by rounding to the nearest track
         // pixel.
         m_playPosVSample         = round(m_playPosVSample);
+        m_playPos = round(m_playPos * m_pixelsPerSecond)/m_pixelsPerSecond;
 //        m_playPos = round(m_playPos * m_trackPixelCount) / m_trackPixelCount; // Avoid pixel jitter in play position
         m_playPosVSample = (m_playPos ) * waveformDataSize;
 
         m_firstDisplayedPosition = m_playPos -displayedLengthHalf;
         m_lastDisplayedPosition  = m_playPos + displayedLengthHalf;
+        m_visibleDuration = m_width/m_pixelsPerSecond;
     } else {
         m_playPos = -1; // disable renderers
     }
@@ -252,7 +254,6 @@ void WaveformWidgetRenderer::setup(const QDomNode& node, SkinContext* context) {
 void WaveformWidgetRenderer::setZoom(int zoom) {
     //qDebug() << "WaveformWidgetRenderer::setZoom" << zoom;
     m_zoomFactor      = math_clamp<double>(zoom, s_waveformMinZoom, s_waveformMaxZoom);
-    m_visibleDuration = 5/m_zoomFactor;
 }
 
 void WaveformWidgetRenderer::setTrack(TrackPointer track) {

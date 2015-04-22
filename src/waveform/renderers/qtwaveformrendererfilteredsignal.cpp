@@ -116,8 +116,8 @@ int QtWaveformRendererFilteredSignal::buildPolygon() {
         return 0;
     }
 
-    const double firstVisualIndex = m_waveformRenderer->getFirstDisplayedPosition() * dataSize;
-    const double lastVisualIndex = m_waveformRenderer->getLastDisplayedPosition() * dataSize;
+    const double firstVisualIndex = m_waveformRenderer->getFirstDisplayedPosition() * waveform->getVisualSampleRate();;
+    const double lastVisualIndex = m_waveformRenderer->getLastDisplayedPosition() * waveform->getVisualSampleRate();
 
     m_polygon[0].clear();
     m_polygon[1].clear();

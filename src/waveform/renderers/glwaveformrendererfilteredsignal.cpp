@@ -94,10 +94,9 @@ void GLWaveformRendererFilteredSignal::draw(QPainter* painter, QPaintEvent* /*ev
         }
         glEnd();
 
-        glLineWidth(1.1);
         glEnable(GL_LINE_SMOOTH);
 
-        glBegin(GL_TRIANGLE_STRIP); {
+        glBegin(GL_LINES); {
             for (int visualIndex = firstVisualIndex;
                  visualIndex < lastVisualIndex;
                  visualIndex += 2) {
@@ -146,10 +145,9 @@ void GLWaveformRendererFilteredSignal::draw(QPainter* painter, QPaintEvent* /*ev
 
         glScalef(1.f,allGain,1.f);
 
-        glLineWidth(1.1);
         glEnable(GL_LINE_SMOOTH);
 
-        glBegin(GL_TRIANGLE_STRIP); {
+        glBegin(GL_LINES); {
             for (int visualIndex = firstVisualIndex;
                  visualIndex < lastVisualIndex;
                  visualIndex += 2) {

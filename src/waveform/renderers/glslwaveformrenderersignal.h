@@ -3,6 +3,8 @@
 
 #include <QGLFramebufferObject>
 #include <QGLShaderProgram>
+#include <QOpenGLShaderProgram>
+#include <QOpenGLContext>
 #include <QtOpenGL>
 
 #include "waveformrenderersignalbase.h"

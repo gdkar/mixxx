@@ -42,8 +42,8 @@ void GLWaveformRendererRGB::draw(QPainter* painter, QPaintEvent* /*event*/) {
         return;
     }
 
-    double firstVisualIndex = m_waveformRenderer->getFirstDisplayedPosition() * dataSize;
-    double lastVisualIndex = m_waveformRenderer->getLastDisplayedPosition() * dataSize;
+    double firstVisualIndex = m_waveformRenderer->getFirstDisplayedPosition() *waveform->getVisualSampleRate();
+    double lastVisualIndex = m_waveformRenderer->getLastDisplayedPosition() * waveform->getVisualSampleRate();
 
     const int firstIndex = int(firstVisualIndex + 0.5);
     firstVisualIndex = firstIndex - firstIndex % 2;
