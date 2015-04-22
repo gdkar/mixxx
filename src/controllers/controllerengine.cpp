@@ -786,10 +786,7 @@ QJSValue ControllerEngine::connectControl(QString group, QString name,
     if (function.isCallable()) {
         qDebug() << "Connection:" << group << name;
         connect(cot, SIGNAL(valueChanged(double)),
-                this, SLOT(slotValueChanged(double)),
-                Qt::QueuedConnection);
-        connect(cot, SIGNAL(valueChangedByThis(double)),
-                this, SLOT(slotValueChanged(double)),
+                this, SLOT(onValueChanged(double)),
                 Qt::QueuedConnection);
 
         ControllerEngineConnection conn;
@@ -838,9 +835,7 @@ void ControllerEngine::disconnectControl(const ControllerEngineConnection conn) 
         // Only disconnect the signal if there are no other instances of this control using it
         if (!m_connectedControls.contains(conn.key)) {
             disconnect(cot, SIGNAL(valueChanged(double)),
-                       this, SLOT(slotValueChanged(double)));
-            disconnect(cot, SIGNAL(valueChangedByThis(double)),
-                       this, SLOT(slotValueChanged(double)));
+                       this, SLOT(onValueChanged(double)));
         }
     } else {
         qWarning() << "Could not Disconnect connection" << conn.id;
@@ -855,10 +850,10 @@ void ControllerEngineConnectionScriptValue::disconnect() {
    Purpose: Receives valueChanged() slots from ControlObjects, and
    fires off the appropriate script function.
    -------- ------------------------------------------------------ */
-void ControllerEngine::slotValueChanged(double value) {
+void ControllerEngine::onValueChanged(double value) {
     ControlObjectThread* senderCOT = dynamic_cast<ControlObjectThread*>(sender());
     if (senderCOT == NULL) {
-        qWarning() << "ControllerEngine::slotValueChanged() Shouldn't happen -- sender == NULL";
+        qWarning() << "ControllerEngine::onValueChanged() Shouldn't happen -- sender == NULL";
         return;
     }
 
@@ -892,7 +887,7 @@ void ControllerEngine::slotValueChanged(double value) {
             }
         }
     } else {
-        qWarning() << "ControllerEngine::slotValueChanged() Received signal from ControlObject that is not connected to a script function.";
+        qWarning() << "ControllerEngine::onValueChanged() Received signal from ControlObject that is not connected to a script function.";
     }
 }
 

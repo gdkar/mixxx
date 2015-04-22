@@ -9,13 +9,13 @@ WidgetStackControlListener::WidgetStackControlListener(QObject* pParent,
           m_control(pControl ? pControl->getKey() : ConfigKey()),
           m_index(index) {
     connect(&m_control, SIGNAL(valueChanged(double)),
-            this, SLOT(slotValueChanged(double)));
+            this, SLOT(onValueChanged(double)));
 }
 
 WidgetStackControlListener::~WidgetStackControlListener() {
 }
 
-void WidgetStackControlListener::slotValueChanged(double v) {
+void WidgetStackControlListener::onValueChanged(double v) {
     if (v > 0.0) {
         emit(switchToWidget());
     } else {

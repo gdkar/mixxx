@@ -49,7 +49,9 @@ class ControlObjectSlave : public QObject {
     inline bool toBool() const {
         return get() > 0.0;
     }
-
+    inline bool operator !() const{
+      return get()<=0;
+    }
     // Returns the parameterized value of the object. Thread safe, non-blocking.
     inline double getParameter() const {
         return m_pControl ? m_pControl->getParameter() : 0.0;
@@ -84,7 +86,7 @@ class ControlObjectSlave : public QObject {
             // not know the resulting value so it makes sense that we should emit a
             // general valueChanged() signal even though the change originated from
             // us. For this reason, we provide NULL here so that the change is
-            // broadcast as valueChanged() and not valueChangedByThis().
+            // broadcast as valueChanged() 
             m_pControl->reset();
         }
     }
@@ -96,8 +98,8 @@ class ControlObjectSlave : public QObject {
 
   protected slots:
     // Receives the value from the master control and re-emits either
-    // valueChanged(double) or valueChangedByThis(double) based on pSetter.
-    inline void slotValueChanged(double v, QObject* pSetter) {
+    // valueChanged(double) or based on pSetter.
+    inline void onValueChanged(double v, QObject* pSetter) {
         if (pSetter != this) {
             // This is base implementation of this function without scaling
             emit(valueChanged(v));

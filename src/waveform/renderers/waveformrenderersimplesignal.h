@@ -2,8 +2,7 @@
 #define WAVEFORMRENDERERSIMPLESIGNAL_H
 
 #include "waveformrenderersignalbase.h"
-#include "waveform/waveform.h"
-#include "waveform/path_simplify.h"
+
 #include <vector>
 #include <QLineF>
 
@@ -22,12 +21,11 @@ class WaveformRendererSimpleSignal : public WaveformRendererSignalBase {
     virtual void onResize();
 
   private:
-    QVector<QPointF>      m_upper;
-    QVector<QPointF>      m_lower;
-    QVector<QPointF>          m_path;
-    ConstWaveformPointer  m_wf;
-    int               m_prev_size;
+    std::vector<QLineF> m_lowLines;
+    std::vector<QLineF> m_midLines;
+    std::vector<QLineF> m_highLines;
+
     DISALLOW_COPY_AND_ASSIGN(WaveformRendererSimpleSignal);
 };
 
-#endif // WAVEFORMRENDERERSIMPLESIGNAL_H
+#endif // WAVEFORMRENDERERILTEREDSIGNAL_H

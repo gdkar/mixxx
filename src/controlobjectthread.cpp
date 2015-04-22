@@ -44,7 +44,7 @@ void ControlObjectThread::initialize(const ConfigKey& key) {
     }
     if (m_pControl) {
         connect(m_pControl.data(), SIGNAL(valueChanged(double, QObject*)),
-                this, SLOT(slotValueChanged(double, QObject*)),
+                this, SIGNAL(valueChanged(double, QObject*)),
                 Qt::DirectConnection);
     }
 }

@@ -77,7 +77,7 @@ void GLWaveformRendererSimpleSignal::draw(QPainter* painter, QPaintEvent* /*even
         glPushMatrix();
         glLoadIdentity();
 
-        glScalef(1.f, allGain, 1.f);
+        glScalef(1.f, allGain/2.0f, 1.f);
 
         glLineWidth(1.0);
         glDisable(GL_LINE_SMOOTH);
