@@ -2,11 +2,10 @@
 #define WAVEFORMRENDERERSIGNALBASE_H
 
 #include "waveformrendererabstract.h"
-#include "waveformsignalcolors.h"
 class SkinContext;
 class ControlObject;
 class ControlObjectSlave;
-
+class WaveformSignalColors;
 class WaveformRendererSignalBase : public WaveformRendererAbstract {
 public:
     explicit WaveformRendererSignalBase(WaveformWidgetRenderer* waveformWidgetRenderer);

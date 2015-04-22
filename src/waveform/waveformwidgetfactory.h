@@ -9,8 +9,8 @@
 #include "configobject.h"
 #include "waveform/widgets/waveformwidgettype.h"
 #include "waveform/waveform.h"
-#include "skin/skincontext.h"
 
+class SkinContext;
 class WWaveformViewer;
 class WaveformWidgetAbstract;
 class QTimer;

@@ -2,8 +2,10 @@
 
 #include <QDomNode>
 
+#include "skin/skincontext.h"
 #include "waveform/waveformwidgetfactory.h"
 #include "waveformwidgetrenderer.h"
+#include "waveformsignalcolors.h"
 #include "controlobject.h"
 #include "controlobjectslave.h"
 #include "widget/wskincolor.h"

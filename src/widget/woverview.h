@@ -24,19 +24,18 @@
 #include "waveform/renderers/waveformsignalcolors.h"
 #include "waveform/renderers/waveformmarkset.h"
 #include "waveform/renderers/waveformmarkrange.h"
-#include "skin/skincontext.h"
 
 // Waveform overview display
 // @author Tue Haste Andersen
 class Waveform;
-
+class SkinContext;
 class WOverview : public WWidget {
     Q_OBJECT
   public:
     WOverview(const char* pGroup, ConfigObject<ConfigValue>* pConfig, QWidget* parent=NULL);
     virtual ~WOverview();
 
-    void setup(QDomNode node, const SkinContext& context);
+    void setup(QDomNode node, SkinContext* context);
 
   public slots:
     void onConnectedControlChanged(double dParameter, double dValue);

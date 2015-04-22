@@ -14,7 +14,6 @@ class GLWaveformRendererRGB : public WaveformRendererSignalBase {
     virtual void draw(QPainter* painter, QPaintEvent* event);
 
   private:
-    DISALLOW_COPY_AND_ASSIGN(GLWaveformRendererRGB);
 };
 
 #endif // GLWAVEFORMRENDERERRGB_H

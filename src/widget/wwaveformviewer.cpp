@@ -12,6 +12,7 @@
 #include "trackinfoobject.h"
 #include "waveform/widgets/waveformwidgetabstract.h"
 #include "widget/wwaveformviewer.h"
+#include "skin/skincontext.h"
 #include "waveform/waveformwidgetfactory.h"
 #include "util/dnd.h"
 #include "util/math.h"

@@ -6,8 +6,8 @@
 #include <qatomic.h>
 #include "waveform/renderers/waveformrendererabstract.h"
 #include "util.h"
-#include "skin/skincontext.h"
 
+class SkinContext;
 class ControlObjectSlave;
 
 class WaveformRenderBeat : public WaveformRendererAbstract {
@@ -16,7 +16,7 @@ class WaveformRenderBeat : public WaveformRendererAbstract {
     virtual ~WaveformRenderBeat();
 
     virtual bool init();
-    virtual void setup(const QDomNode& node, const SkinContext& context);
+    virtual void setup(const QDomNode& node, SkinContext *context);
     virtual void draw(QPainter* painter, QPaintEvent* event);
 
   private:

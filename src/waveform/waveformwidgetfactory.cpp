@@ -8,6 +8,7 @@
 
 #include "waveform/waveformwidgetfactory.h"
 
+#include "skin/skincontext.h"
 #include "controlpotmeter.h"
 #include "waveform/widgets/emptywaveformwidget.h"
 #include "waveform/widgets/softwarewaveformwidget.h"

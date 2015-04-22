@@ -818,7 +818,7 @@ QWidget* LegacySkinParser::parseOverview(QDomElement node) {
             m_pPlayerManager, SLOT(slotLoadToPlayer(QString, QString)));
 
     commonWidgetSetup(node, overviewWidget);
-    overviewWidget->setup(node, *m_pContext);
+    overviewWidget->setup(node, m_pContext);
     overviewWidget->installEventFilter(m_pKeyboard);
     overviewWidget->installEventFilter(m_pControllerManager->getControllerLearningEventFilter());
     overviewWidget->Init();

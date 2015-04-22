@@ -10,8 +10,8 @@
 
 #include "trackinfoobject.h"
 #include "widget/wwidget.h"
-#include "skin/skincontext.h"
 
+class SkinContext;
 class ControlObjectSlave;
 class WaveformWidgetAbstract;
 class ControlPotmeter;

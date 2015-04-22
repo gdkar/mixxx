@@ -26,6 +26,7 @@
 #include "wskincolor.h"
 #include "widget/controlwidgetconnection.h"
 #include "trackinfoobject.h"
+#include "skin/skincontext.h"
 #include "util/math.h"
 #include "util/timer.h"
 #include "util/dnd.h"
@@ -65,20 +66,20 @@ WOverview::~WOverview() {
     }
 }
 
-void WOverview::setup(QDomNode node, const SkinContext& context) {
+void WOverview::setup(QDomNode node,  SkinContext *context) {
     m_signalColors.setup(node, context);
 
     m_qColorBackground = m_signalColors.getBgColor();
 
     // Clear the background pixmap, if it exists.
     m_backgroundPixmap = QPixmap();
-    m_backgroundPixmapPath = context.selectString(node, "BgPixmap");
+    m_backgroundPixmapPath = context->selectString(node, "BgPixmap");
     if (m_backgroundPixmapPath != "") {
-        m_backgroundPixmap = QPixmap(context.getSkinPath(m_backgroundPixmapPath));
+        m_backgroundPixmap = QPixmap(context->getSkinPath(m_backgroundPixmapPath));
     }
 
     m_endOfTrackColor = QColor(200, 25, 20);
-    const QString endOfTrackColorName = context.selectString(node, "EndOfTrackColor");
+    const QString endOfTrackColorName = context->selectString(node, "EndOfTrackColor");
     if (!endOfTrackColorName.isNull()) {
         m_endOfTrackColor.setNamedColor(endOfTrackColorName);
         m_endOfTrackColor = WSkinColor::getCorrectColor(m_endOfTrackColor);
