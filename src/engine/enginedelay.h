@@ -35,8 +35,8 @@ class EngineDelay : public EngineObject {
     void slotDelayChanged();
 
   private:
-    ControlPotmeter* m_pDelayPot;
-    ControlObjectSlave* m_pSampleRate;
+    QSharedPointer<ControlPotmeter> m_pDelayPot;
+    QSharedPointer<ControlObjectSlave> m_pSampleRate;
     CSAMPLE* m_pDelayBuffer;
     int m_iDelayPos;
     int m_iDelay;
