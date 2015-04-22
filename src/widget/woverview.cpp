@@ -19,9 +19,9 @@
 #include <QPixmap>
 #include <QUrl>
 #include <QMimeData>
-
+#include <qsharedpointer.h>
 #include "controlobject.h"
-#include "controlobjectthread.h"
+#include "controlobjectslave.h"
 #include "woverview.h"
 #include "wskincolor.h"
 #include "widget/controlwidgetconnection.h"
@@ -50,19 +50,16 @@ WOverview::WOverview(const char *pGroup, ConfigObject<ConfigValue>* pConfig, QWi
         m_dAnalyserProgress(-1.0),
         m_bAnalyserFinalizing(false),
         m_trackLoaded(false) {
-    m_endOfTrackControl = new ControlObjectThread(
-            m_group, "end_of_track");
-    connect(m_endOfTrackControl, SIGNAL(valueChanged(double)),
+    m_endOfTrackControl.reset( new ControlObjectSlave(
+            m_group, "end_of_track"));
+    connect(m_endOfTrackControl.data(), SIGNAL(valueChanged(double)),
              this, SLOT(onEndOfTrackChange(double)));
-    m_trackSamplesControl = new ControlObjectThread(m_group, "track_samples");
-    m_playControl = new ControlObjectThread(m_group, "play");
+    m_trackSamplesControl .reset( new ControlObjectSlave(m_group, "track_samples"));
+    m_playControl .reset(new ControlObjectSlave(m_group, "play"));
     setAcceptDrops(true);
 }
 
 WOverview::~WOverview() {
-    delete m_endOfTrackControl;
-    delete m_trackSamplesControl;
-    delete m_playControl;
     if (m_pWaveformSourceImage) {
         delete m_pWaveformSourceImage;
     }
@@ -97,7 +94,7 @@ void WOverview::setup(QDomNode node, const SkinContext& context) {
     for (int i = 0; i < m_marks.size(); ++i) {
         WaveformMark& mark = m_marks[i];
         if (mark.m_pointControl) {
-            connect(mark.m_pointControl, SIGNAL(valueChanged(double)),
+            connect(mark.m_pointControl.data(), SIGNAL(valueChanged(double)),
                     this, SLOT(onMarkChanged(double)));
         }
     }
@@ -110,15 +107,15 @@ void WOverview::setup(QDomNode node, const SkinContext& context) {
             markRange.setup(m_group, child, context, m_signalColors);
 
             if (markRange.m_markEnabledControl) {
-                connect(markRange.m_markEnabledControl, SIGNAL(valueChanged(double)),
+                connect(markRange.m_markEnabledControl.data(), SIGNAL(valueChanged(double)),
                         this, SLOT(onMarkRangeChange(double)));
             }
             if (markRange.m_markStartPointControl) {
-                connect(markRange.m_markStartPointControl, SIGNAL(valueChanged(double)),
+                connect(markRange.m_markStartPointControl.data(), SIGNAL(valueChanged(double)),
                         this, SLOT(onMarkRangeChange(double)));
             }
             if (markRange.m_markEndPointControl) {
-                connect(markRange.m_markEndPointControl, SIGNAL(valueChanged(double)),
+                connect(markRange.m_markEndPointControl.data(), SIGNAL(valueChanged(double)),
                         this, SLOT(onMarkRangeChange(double)));
             }
         }

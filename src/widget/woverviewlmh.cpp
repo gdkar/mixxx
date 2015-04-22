@@ -19,7 +19,7 @@ bool WOverviewLMH::drawNextPixmapPart() {
 
     //qDebug() << "WOverview::drawNextPixmapPart() - m_waveform" << m_waveform;
 
-    int currentCompletion;
+    quint64 currentCompletion;
 
     ConstWaveformPointer pWaveform = getWaveform();
     if (!pWaveform) {
@@ -41,16 +41,16 @@ bool WOverviewLMH::drawNextPixmapPart() {
     }
 
     // Always multiple of 2
-    const int waveformCompletion = pWaveform->getCompletion();
+    const quint64 waveformCompletion = pWaveform->getCompletion();
     // Test if there is some new to draw (at least of pixel width)
-    const int completionIncrement = waveformCompletion - m_actualCompletion;
+    const quint64 completionIncrement = waveformCompletion - m_actualCompletion;
 
-    int visiblePixelIncrement = completionIncrement * width() / dataSize;
+    quint64 visiblePixelIncrement = completionIncrement * width() / dataSize;
     if (completionIncrement < 2 || visiblePixelIncrement == 0) {
         return false;
     }
 
-    const int nextCompletion = m_actualCompletion + completionIncrement;
+    const quint64 nextCompletion = m_actualCompletion + completionIncrement;
 
     //qDebug() << "WOverview::drawNextPixmapPart() - nextCompletion:"
     //         << nextCompletion
