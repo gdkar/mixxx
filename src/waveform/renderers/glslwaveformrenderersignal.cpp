@@ -264,14 +264,14 @@ void GLSLWaveformRendererSignal::draw(QPainter* painter, QPaintEvent* /*event*/)
     float lowGain(1.0), midGain(1.0), highGain(1.0), allGain(1.0);
     getGains(&allGain, &lowGain, &midGain, &highGain);
 
-    double firstVisualIndex = m_waveformRenderer->getFirstDisplayedPosition() * waveform->getVisualSampleRate();
-    double lastVisualIndex = m_waveformRenderer->getLastDisplayedPosition() * waveform->getVisualSampleRate();
+    double firstVisualIndex = (m_waveformRenderer->getFirstDisplayedPosition() * waveform->getVisualSampleRate())/2;
+    double lastVisualIndex = (m_waveformRenderer->getLastDisplayedPosition() * waveform->getVisualSampleRate())/2;
 
-    // const int firstIndex = int(firstVisualIndex+0.5);
-    // firstVisualIndex = firstIndex - firstIndex%2;
+     const int firstIndex = int(firstVisualIndex+0.5);
+     firstVisualIndex = firstIndex - firstIndex%2;
 
-    // const int lastIndex = int(lastVisualIndex+0.5);
-    // lastVisualIndex = lastIndex + lastIndex%2;
+     const int lastIndex = int(lastVisualIndex+0.5);
+     lastVisualIndex = lastIndex + lastIndex%2;
 
     //qDebug() << "GAIN" << allGain << lowGain << midGain << highGain;
 

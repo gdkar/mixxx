@@ -24,7 +24,7 @@ class WaveformRendererSimpleSignal : public WaveformRendererSignalBase {
   private:
     QVector<QPointF>      m_upper;
     QVector<QPointF>      m_lower;
-    QPainterPath          m_path;
+    QVector<QPointF>          m_path;
     ConstWaveformPointer  m_wf;
     int               m_prev_size;
     DISALLOW_COPY_AND_ASSIGN(WaveformRendererSimpleSignal);

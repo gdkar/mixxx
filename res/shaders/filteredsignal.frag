@@ -31,8 +31,8 @@ void main(void) {
     vec2 uv = gl_TexCoord[0].st;
     vec4 pixel = gl_FragCoord;
 
-    float new_currentIndex = floor(firstVisualIndex + uv.x *
-                                   (lastVisualIndex - firstVisualIndex)) * 2;
+    float new_currentIndex = floor(firstVisualIndex/2 + uv.x *
+                                   (lastVisualIndex/2 - firstVisualIndex/2)) * 2;
 
     // Texture coordinates put (0,0) at the bottom left, so show the right
     // channel if we are in the bottom half.

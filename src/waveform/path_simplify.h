@@ -55,7 +55,7 @@ static QVector<QPointF>  simplify_waveform(ConstWaveformPointer&path, int size,F
       break;
     default:
       for(int i=static_cast<int>(channel);i<path->getDataSize()/2;i++)
-        pts.push_back(QPointF(i*vsr,path->getAll(2*i_c)*yscale));
+        pts.push_back(QPointF(i*vsr,path->getAll(2*i+c)*yscale));
       break;
   }
   return simplify_path(pts,size);
