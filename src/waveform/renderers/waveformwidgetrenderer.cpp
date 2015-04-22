@@ -145,12 +145,11 @@ void WaveformWidgetRenderer::onPreRender(VSyncThread* vsyncThread) {
         // Avoid pixel jitter in play position by rounding to the nearest track
         // pixel.
         m_playPosVSample         = round(m_playPosVSample);
-        m_firstDisplayedPosition = m_playPos - (
 //        m_playPos = round(m_playPos * m_trackPixelCount) / m_trackPixelCount; // Avoid pixel jitter in play position
         m_playPosVSample = (m_playPos ) * waveformDataSize;
 
-        m_firstDisplayedPosition = m_playPos -displayLengthHalf;
-        m_lastDisplayedPosition  = m_playPos + displayLengthHalf;
+        m_firstDisplayedPosition = m_playPos -displayedLengthHalf;
+        m_lastDisplayedPosition  = m_playPos + displayedLengthHalf;
     } else {
         m_playPos = -1; // disable renderers
     }

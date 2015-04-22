@@ -129,6 +129,7 @@ class Waveform {
 
     void dump() const;
 
+    double getVisualSampleRate() const { return m_visualSampleRate; }
   private:
     void readByteArray(const QByteArray& data);
     void resize(int size);
@@ -139,7 +140,6 @@ class Waveform {
     inline unsigned char& mid(int i) { return m_data[i].filtered.mid;}
     inline unsigned char& high(int i) { return m_data[i].filtered.high;}
     inline unsigned char& all(int i) { return m_data[i].filtered.all;}
-    double getVisualSampleRate() const { return m_visualSampleRate; }
 
     // If stored in the database, the ID of the waveform.
     int m_id;

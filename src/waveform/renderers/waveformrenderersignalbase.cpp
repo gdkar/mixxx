@@ -65,7 +65,7 @@ bool WaveformRendererSignalBase::init() {
     m_pHighFilterControlObject .reset( new ControlObjectSlave(m_waveformRenderer->getGroup(), "filterHigh"));
     m_pLowKillControlObject .reset( new ControlObjectSlave(m_waveformRenderer->getGroup(), "filterLowKill"));
     m_pMidKillControlObject .reset( new ControlObjectSlave(m_waveformRenderer->getGroup(), "filterMidKill"));
-    m_pHighKillControlObject .reset(new newControlObjectSlave(m_waveformRenderer->getGroup(), "filterHighKill"));
+    m_pHighKillControlObject .reset(new ControlObjectSlave(m_waveformRenderer->getGroup(), "filterHighKill"));
 
     return onInit();
 }
