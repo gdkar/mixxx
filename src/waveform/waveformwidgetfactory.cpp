@@ -11,6 +11,7 @@
 #include "controlpotmeter.h"
 #include "waveform/widgets/emptywaveformwidget.h"
 #include "waveform/widgets/softwarewaveformwidget.h"
+#include "waveform/widgets/softwaresimplewaveformwidget.h"
 #include "waveform/widgets/hsvwaveformwidget.h"
 #include "waveform/widgets/rgbwaveformwidget.h"
 #include "waveform/widgets/glrgbwaveformwidget.h"
@@ -535,7 +536,11 @@ void WaveformWidgetFactory::evaluateWidgets() {
             developerOnly = EmptyWaveformWidget::developerOnly();
             break;
         case WaveformWidgetType::SoftwareSimpleWaveform:
-            continue; // //TODO(vrince):
+            widgetName =SoftwareSimpleWaveformWidget::getWaveformWidgetName();
+            useOpenGl = SoftwareSimpleWaveformWidget::useOpenGl();
+            useOpenGLShaders=SoftwareSimpleWaveformWidget::useOpenGLShaders();
+            developerOnly = SoftwareSimpleWaveformWidget::developerOnly();
+            break;
         case WaveformWidgetType::SoftwareWaveform:
             widgetName = SoftwareWaveformWidget::getWaveformWidgetName();
             useOpenGl = SoftwareWaveformWidget::useOpenGl();
@@ -646,6 +651,9 @@ WaveformWidgetAbstract* WaveformWidgetFactory::createWaveformWidget(
         case WaveformWidgetType::SoftwareWaveform:
             widget = new SoftwareWaveformWidget(viewer->getGroup(), viewer);
             break;
+        case WaveformWidgetType::SoftwareSimpleWaveform:
+            widget = new SoftwareSimpleWaveformWidget(viewer->getGroup(),viewer);
+            break;
         case WaveformWidgetType::HSVWaveform:
             widget = new HSVWaveformWidget(viewer->getGroup(), viewer);
             break;
@@ -677,7 +685,6 @@ WaveformWidgetAbstract* WaveformWidgetFactory::createWaveformWidget(
             widget = new GLVSyncTestWidget(viewer->getGroup(), viewer);
             break;
         default:
-        //case WaveformWidgetType::SoftwareSimpleWaveform: TODO: (vrince)
         //case WaveformWidgetType::EmptyWaveform:
             widget = new EmptyWaveformWidget(viewer->getGroup(), viewer);
             break;
