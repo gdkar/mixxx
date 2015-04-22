@@ -16,11 +16,6 @@ SkinContext::SkinContext(ConfigObject<ConfigValue>* pConfig,
           m_pSingletons(new SingletonMap) {
     QQmlContext *newContext = new QQmlContext(m_pScriptEngine.data(),this);
     QQmlEngine::setContextForObject(this,newContext);
-    QJSValueIterator it(m_pScriptEngine->globalObject());
-    while (it.hasNext()) {
-        it.next();
-        newContext->setContextProperty(it.name(), it.value());
-    }
     //m_pScriptEngine->setGlobalObject(newGlobal);
 
     for (QHash<QString, QString>::const_iterator it = m_variables.begin();
@@ -28,7 +23,6 @@ SkinContext::SkinContext(ConfigObject<ConfigValue>* pConfig,
         newContext->setContextProperty(it.key(), it.value());
     }
 
-    enableDebugger(true);
     // the extensions are imported once and will be passed to the children
     // global object as properties of the parent's global object.
 //    importScriptExtension("console");
@@ -42,8 +36,6 @@ SkinContext::SkinContext(const SkinContext& parent)
           m_pConfig(parent.m_pConfig),
           m_variables(parent.variables()),
           m_pScriptEngine(parent.m_pScriptEngine),
-          m_pScriptDebugger(parent.m_pScriptDebugger),
-          m_parentGlobal(m_pScriptEngine->globalObject()),
           m_pSingletons(parent.m_pSingletons) {
 
     // we generate a new global object to preserve the scope between
@@ -54,7 +46,8 @@ SkinContext::SkinContext(const SkinContext& parent)
 //        newGlobal.setProperty(it.name(), it.value());
 //    }
 //    m_pScriptEngine->setGlobalObject(newGlobal);
-
+    m_pContext = new QQmlContext(m_pScriptEngine.data(),this);
+    QQmlEngine::setContextForObject(this,m_pContext);
     for (QHash<QString, QString>::const_iterator it = m_variables.begin();
          it != m_variables.end(); ++it) {
         m_pScriptEngine->globalObject().setProperty(it.key(), it.value());

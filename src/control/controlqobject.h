@@ -4,9 +4,6 @@
 #include <QObject>
 #include <QtQml>
 #include <QtScript>
-#include <QScriptEngine>
-#include <QScriptContext>
-#include <QScriptValue>
 #include <QJSValue>
 #include <QJSValueList>
 #include <QJSEngine>
