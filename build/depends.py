@@ -902,8 +902,6 @@ class MixxxCore(Feature):
                    "encoder/encodermp3.cpp",
                    "encoder/encodervorbis.cpp",
 
-                   "tapfilter.cpp",
-
                    "util/pa_ringbuffer.c",
                    "util/sleepableqthread.cpp",
                    "util/statsmanager.cpp",
@@ -922,6 +920,8 @@ class MixxxCore(Feature):
                    "util/task.cpp",
                    "util/experiment.cpp",
                    "util/xml.cpp",
+                   "util/tapfilter.cpp",
+                   "util/movinginterquartilemean.cpp",
 
                    '#res/mixxx.qrc'
                    ]
