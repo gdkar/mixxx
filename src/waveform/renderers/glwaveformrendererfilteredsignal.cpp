@@ -27,24 +27,15 @@ void GLWaveformRendererFilteredSignal::onSetup(const QDomNode& /*node*/) {
 void GLWaveformRendererFilteredSignal::draw(QPainter* painter, QPaintEvent* /*event*/) {
 
     TrackPointer pTrack = m_waveformRenderer->getTrackInfo();
-    if (!pTrack) {
-        return;
-    }
+    if (!pTrack) return;
 
     ConstWaveformPointer waveform = pTrack->getWaveform();
-    if (waveform.isNull()) {
-        return;
-    }
-
+    if (waveform.isNull()) return;
     const int dataSize = waveform->getDataSize();
-    if (dataSize <= 1) {
-        return;
-    }
+    if (dataSize <= 1) return;
 
     const WaveformData* data = waveform->data();
-    if (data == NULL) {
-        return;
-    }
+    if (data == NULL) return;
 
     double firstVisualIndex = m_waveformRenderer->getFirstDisplayedPosition() * waveform->getVisualSampleRate();
     double lastVisualIndex = m_waveformRenderer->getLastDisplayedPosition() * waveform->getVisualSampleRate();
@@ -93,26 +84,38 @@ void GLWaveformRendererFilteredSignal::draw(QPainter* painter, QPaintEvent* /*ev
             glVertex2f(lastVisualIndex,0);
         }
         glEnd();
-
         glEnable(GL_LINE_SMOOTH);
-
         glBegin(GL_LINES); {
-            for (int visualIndex = firstVisualIndex;
-                 visualIndex < lastVisualIndex;
-                 visualIndex += 2) {
+            maxLow[0]  = (float)data[visualIndex  ].filtered.low;
+            maxMid[0]  = (float)data[visualIndex  ].filtered.mid;
+            maxHigh[0] = (float)data[visualIndex  ].filtered.high;
+            maxLow[1]  = (float)data[visualIndex+1].filtered.low;
+            maxMid[1]  = (float)data[visualIndex+1].filtered.mid;
+            maxHigh[1] = (float)data[visualIndex+1].filtered.high;
 
-                if (visualIndex < 0)
-                    continue;
+            for (int visualIndex = firstVisualIndex;visualIndex < lastVisualIndex;visualIndex += 2) {
+                if (visualIndex < 0)continue;
+                if (visualIndex > dataSize - 1)break;
 
-                if (visualIndex > dataSize - 1)
-                    break;
+                {
+                  float l    = data[visualIndex].filtered.low;
+                  float m    = data[visualIndex].filtered.mid;
+                  float h    = data[visualIndex].filtered.high;
+                  maxLow[0]  = maxLow[0 ]<l ? l : maxLow[0];
+                  maxMid[0]  = maxMid[0 ]<l ? m : maxMid[0];
+                  maxHigh[0] = maxHigh[0]<l ? h : maxHigh[0];
+                }
+                {
+                  float l    = data[visualIndex+1].filtered.low;
+                  float m    = data[visualIndex+1].filtered.mid;
+                  float h    = data[visualIndex+1].filtered.high;
+                  maxLow[0]  = maxLow[0 ]<l ? l : maxLow[0];
+                  maxMid[0]  = maxMid[0 ]<l ? m : maxMid[0];
+                  maxHigh[0] = maxHigh[0]<l ? h : maxHigh[0];
+                }
 
-                maxLow[0] = (float)data[visualIndex].filtered.low;
-                maxMid[0] = (float)data[visualIndex].filtered.mid;
-                maxHigh[0] = (float)data[visualIndex].filtered.high;
-                maxLow[1] = (float)data[visualIndex+1].filtered.low;
-                maxMid[1] = (float)data[visualIndex+1].filtered.mid;
-                maxHigh[1] = (float)data[visualIndex+1].filtered.high;
+                if (visualIndex < 0)continue;
+                if (visualIndex > dataSize - 1)break;
 
                 meanIndex = visualIndex;
 
