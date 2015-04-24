@@ -1,8 +1,10 @@
 #include "control/controlqobject.h"
 
-ControlQObject::ControlQObject(QObject *parent)
-:QObject(parent)
-{
+ControlQObject::ControlQObject(QJSEngine *engine,QJSValue ctx, QObject *parent)
+:QObject(parent?parent:engine),
+ m_engine(engine),
+ m_context(ctx.isObject()?ctx:m_engine->globalObject()){
+  m_thisObject = m_engine->toScriptValue(this);
   connect(this,&ControlQObject::parameterRequest,
           this,&ControlQObject::setParameter,
           Qt::QueuedConnection);
@@ -28,21 +30,6 @@ void    ControlQObject::setBehavior(QJSValue &behavior_){
     m_behavior = behavior_;
     emit(behaviorChanged(m_behavior));
   }
-}
-void    ControlQObject::setBehavior(QJSValue &thisObject_, QJSValue &behavior_){
-  bool thisObjectChanged_ = !thisObject_.equals(m_thisObject);
-  bool behaviorChanged_   = false;
-  if(!behavior_.equals( m_behavior) && ((!behavior_.isError() && behavior_.isCallable())||(behavior_.isUndefined()))){
-    m_behavior = behavior_;
-    behaviorChanged_ = true;
-  }
-  if(thisObjectChanged_){
-    m_thisObject = thisObject_;
-    emit(thisObjectChanged(m_thisObject));
-  }
-  if(behaviorChanged_)
-    emit(behaviorChanged(m_behavior));
-    
 }
 void    ControlQObject::setValue(double v){
   if(v!=value()){
@@ -77,7 +64,13 @@ void    ControlQObject::setDefaultValue(double v){
 }
 void    ControlQObject::setName(QString v){
   if(v!=name()){
+    if(!name().isEmpty()){
+      QJSValue old_object = m_context.property(name());
+      if(old_object.equals(m_thisObject))
+        m_context.setProperty(name(),QJSValue());
+    }
     m_name.setValue(v);
+    m_context.setProperty(name(),m_thisObject);
     emit(nameChanged(v));
   }
 }

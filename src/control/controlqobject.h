@@ -19,15 +19,17 @@
 #include "control/controlvalue.h"
 class ControlQObject : public QObject{
   Q_OBJECT;
-  Q_PROPERTY(double value READ value WRITE setValue RESET reset NOTIFY valueChanged);
-  Q_PROPERTY(double parameter READ parameter WRITE setParameter RESET reset NOTIFY parameterChanged);
-  Q_PROPERTY(double defaultValue READ defaultValue WRITE setDefaultValue NOTIFY defaultValueChanged);
-  Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged);
-  Q_PROPERTY(QString description READ description WRITE setDescription NOTIFY descriptionChanged);
+  Q_PROPERTY(double   value READ value WRITE setValue RESET reset NOTIFY valueChanged);
+  Q_PROPERTY(double   parameter READ parameter WRITE setParameter RESET reset NOTIFY parameterChanged);
+  Q_PROPERTY(double   defaultValue READ defaultValue WRITE setDefaultValue NOTIFY defaultValueChanged);
+  Q_PROPERTY(QString  name READ name WRITE setName NOTIFY nameChanged);
+  Q_PROPERTY(QString  description READ description WRITE setDescription NOTIFY descriptionChanged);
   Q_PROPERTY(QJSValue thisObject READ thisObject WRITE setThisObject NOTIFY thisObjectChanged);
   Q_PROPERTY(QJSValue behavior READ behavior WRITE setBehavior NOTIFY behaviorChanged);
+  Q_PROPERTY(QJSEngine *engine READ engine CONSTANT);
+  Q_PROPERTY(QJSValue  context READ context );
 public:
-  ControlQObject(QObject *parent=0); 
+  ControlQObject(QJSEngine *engine, QJSValue ctx=QJSValue(),QObject *parent=0); 
   virtual ~ControlQObject();
 
   Q_INVOKABLE double  value()const;
@@ -37,6 +39,8 @@ public:
   Q_INVOKABLE QString description()const;
   Q_INVOKABLE QJSValue &thisObject();
   Q_INVOKABLE QJSValue &behavior();
+  Q_INVOKABLE QJSValue &context(){return m_context;}
+  Q_INVOKABLE QJSEngine *engine(){return m_engine;}
 signals:
   void valueChanged(double);
   void parameterRequest(double);
@@ -56,13 +60,14 @@ public slots:
   void    reset();
   void    setThisObject(QJSValue &thisObject_);
   void    setBehavior(QJSValue &behavior_);
-  void    setBehavior(QJSValue &thisObject_, QJSValue &behavior_);
 private:
   ControlValueAtomic<double>    m_parameter;
   ControlValueAtomic<double>    m_value;
   ControlValueAtomic<double>    m_defaultValue;
   ControlValueAtomic<QString>   m_name;
   ControlValueAtomic<QString>   m_description;
+  QJSEngine                    *m_engine;
+  QJSValue                      m_context;
   QJSValue                      m_thisObject;
   QJSValue                      m_behavior;
 };
