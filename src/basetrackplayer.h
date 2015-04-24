@@ -6,7 +6,8 @@
 #include "baseplayer.h"
 #include "engine/enginechannel.h"
 #include "engine/enginedeck.h"
-
+#include <QJSEngine>
+#include <QJSValue>
 class EngineMaster;
 class ControlObject;
 class ControlPotmeter;
@@ -46,6 +47,7 @@ class BaseTrackPlayerImpl : public BaseTrackPlayer {
     Q_OBJECT
   public:
     BaseTrackPlayerImpl(QObject* pParent,
+                        QJSEngine* pEngine,
                         ConfigObject<ConfigValue>* pConfig,
                         EngineMaster* pMixingEngine,
                         EffectsManager* pEffectsManager,
@@ -72,6 +74,9 @@ class BaseTrackPlayerImpl : public BaseTrackPlayer {
     void slotPlayToggled(double);
 
   private:
+    QJSEngine                * m_engine;
+    QJSValue                   m_context;
+    QJSValue                  m_thisObject;
     ConfigObject<ConfigValue>* m_pConfig;
     TrackPointer m_pLoadedTrack;
 

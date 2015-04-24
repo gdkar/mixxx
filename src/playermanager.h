@@ -6,7 +6,8 @@
 
 #include <QList>
 #include <QMutex>
-
+#include <QJSEngine>
+#include <QJSValue>
 #include "configobject.h"
 #include "trackinfoobject.h"
 
@@ -38,7 +39,7 @@ class PlayerManagerInterface {
     // Get the preview deck by its deck number. Preview decks are numbered
     // starting with 1.
     virtual PreviewDeck* getPreviewDeck(unsigned int libPreviewPlayer) const = 0;
-
+    virtual QJSEngine  * getScriptEngine() = 0;
     // Returns the number of preview decks.
     virtual unsigned int numberOfPreviewDecks() const = 0;
 
@@ -109,7 +110,7 @@ class PlayerManager : public QObject, public PlayerManagerInterface {
 
     // Get the sampler by its number. Samplers are numbered starting with 1.
     Sampler* getSampler(unsigned int sampler) const;
-
+    QJSEngine  *getScriptEngine(){return m_engine;}
     // Binds signals between PlayerManager and Library. Does not store a pointer
     // to the Library.
     void bindToLibrary(Library* pLibrary);
@@ -179,7 +180,7 @@ class PlayerManager : public QObject, public PlayerManagerInterface {
     ControlObject* m_pCONumDecks;
     ControlObject* m_pCONumSamplers;
     ControlObject* m_pCONumPreviewDecks;
-
+    QJSEngine    * m_engine;
     QList<Deck*> m_decks;
     QList<Sampler*> m_samplers;
     QList<PreviewDeck*> m_preview_decks;

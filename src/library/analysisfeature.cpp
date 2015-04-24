@@ -10,7 +10,7 @@
 #include "dlganalysis.h"
 #include "widget/wlibrary.h"
 #include "mixxxkeyboard.h"
-#include "analyserqueue.h"
+#include "analyser/analyserqueue.h"
 #include "soundsourceproxy.h"
 #include "util/dnd.h"
 #include "util/debug.h"

@@ -7,6 +7,7 @@ class Sampler : public BaseTrackPlayerImpl {
     Q_OBJECT
     public:
     Sampler(QObject* pParent,
+            QJSEngine *pEngine,
             ConfigObject<ConfigValue> *pConfig,
             EngineMaster* pMixingEngine,
             EffectsManager* pEffectsManager,

@@ -9,7 +9,7 @@
 #include "deck.h"
 #include "sampler.h"
 #include "previewdeck.h"
-#include "analyserqueue.h"
+#include "analyser/analyserqueue.h"
 #include "controlobject.h"
 #include "samplerbank.h"
 #include "library/library.h"
@@ -26,6 +26,7 @@ PlayerManager::PlayerManager(ConfigObject<ConfigValue>* pConfig,
                              EffectsManager* pEffectsManager,
                              EngineMaster* pEngine) :
         m_mutex(QMutex::Recursive),
+        m_engine(new QJSEngine(this)),
         m_pConfig(pConfig),
         m_pSoundManager(pSoundManager),
         m_pEffectsManager(pEffectsManager),
@@ -275,7 +276,7 @@ void PlayerManager::addDeckInner() {
         orientation = EngineChannel::RIGHT;
     }
 
-    Deck* pDeck = new Deck(this, m_pConfig, m_pEngine, m_pEffectsManager,
+    Deck* pDeck = new Deck(this,m_engine, m_pConfig, m_pEngine, m_pEffectsManager,
                            orientation, group);
     if (m_pAnalyserQueue) {
         connect(pDeck, SIGNAL(newTrackLoaded(TrackPointer)),
@@ -329,7 +330,7 @@ void PlayerManager::addSamplerInner() {
     // All samplers are in the center
     EngineChannel::ChannelOrientation orientation = EngineChannel::CENTER;
 
-    Sampler* pSampler = new Sampler(this, m_pConfig, m_pEngine,
+    Sampler* pSampler = new Sampler(this, m_engine, m_pConfig, m_pEngine,
                                     m_pEffectsManager, orientation, group);
     if (m_pAnalyserQueue) {
         connect(pSampler, SIGNAL(newTrackLoaded(TrackPointer)),
@@ -356,7 +357,7 @@ void PlayerManager::addPreviewDeckInner() {
     // All preview decks are in the center
     EngineChannel::ChannelOrientation orientation = EngineChannel::CENTER;
 
-    PreviewDeck* pPreviewDeck = new PreviewDeck(this, m_pConfig, m_pEngine,
+    PreviewDeck* pPreviewDeck = new PreviewDeck(this,m_engine, m_pConfig, m_pEngine,
                                                 m_pEffectsManager, orientation,
                                                 group);
     if (m_pAnalyserQueue) {

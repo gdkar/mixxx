@@ -7,6 +7,7 @@ class PreviewDeck : public BaseTrackPlayerImpl {
     Q_OBJECT
   public:
     PreviewDeck(QObject* pParent,
+                QJSEngine* pEngine,
                 ConfigObject<ConfigValue> *pConfig,
                 EngineMaster* pMixingEngine,
                 EffectsManager* pEffectsManager,

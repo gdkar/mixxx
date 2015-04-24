@@ -2,7 +2,7 @@
 
 #include "basetrackplayer.h"
 #include "playerinfo.h"
-
+#include "control/controlqobject.h"
 #include "controlobject.h"
 #include "controlpotmeter.h"
 #include "trackinfoobject.h"
@@ -11,7 +11,7 @@
 #include "engine/enginemaster.h"
 #include "track/beatgrid.h"
 #include "waveform/renderers/waveformwidgetrenderer.h"
-#include "analyserqueue.h"
+#include "analyser/analyserqueue.h"
 #include "util/sandbox.h"
 #include "effects/effectsmanager.h"
 
@@ -20,6 +20,7 @@ BaseTrackPlayer::BaseTrackPlayer(QObject* pParent, const QString& group)
 }
 
 BaseTrackPlayerImpl::BaseTrackPlayerImpl(QObject* pParent,
+                                         QJSEngine *pEngine,
                                          ConfigObject<ConfigValue>* pConfig,
                                          EngineMaster* pMixingEngine,
                                          EffectsManager* pEffectsManager,
@@ -28,6 +29,8 @@ BaseTrackPlayerImpl::BaseTrackPlayerImpl(QObject* pParent,
                                          bool defaultMaster,
                                          bool defaultHeadphones)
         : BaseTrackPlayer(pParent, group),
+          m_engine(pEngine?pEngine:new QJSEngine(pParent)),
+          m_context(m_engine->newQObject(pParent)),
           m_pConfig(pConfig),
           m_pLoadedTrack(),
           m_pLowFilter(NULL),
@@ -39,6 +42,12 @@ BaseTrackPlayerImpl::BaseTrackPlayerImpl(QObject* pParent,
           m_pSpeed(NULL),
           m_pPitchAdjust(NULL),
           m_replaygainPending(false) {
+    if(!m_context.isObject()){
+      m_context = m_engine->newQObject(pParent);
+      m_engine->globalObject().setProperty(pParent->objectName(),m_context);
+    }
+    m_thisObject = m_engine->newQObject(this);
+    m_context.setProperty(group,m_thisObject);
     ChannelHandleAndGroup channelGroup =
             pMixingEngine->registerChannelGroup(group);
     m_pChannel = new EngineDeck(channelGroup, pConfig, pMixingEngine,
@@ -334,6 +343,14 @@ EngineDeck* BaseTrackPlayerImpl::getEngineDeck() const {
 
 void BaseTrackPlayerImpl::setupEqControls() {
     const QString group = getGroup();
+    QStringList controls ;
+    controls << "filterLow" << "filterMid" << "filterHigh" << "filterLowKill"
+                         << "filterMidKill" << "filterHighKill" << "rate" << "pitch_adjust";
+    foreach(const QString &control,controls){
+      ControlQObject *cqo=new ControlQObject(m_engine,m_context,this);
+      cqo->setName(control);
+      m_context.setProperty(control,cqo->thisObject());
+    }
     m_pLowFilter = new ControlObjectSlave(group, "filterLow");
     m_pMidFilter = new ControlObjectSlave(group, "filterMid");
     m_pHighFilter = new ControlObjectSlave(group, "filterHigh");
