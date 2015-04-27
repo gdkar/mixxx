@@ -28,8 +28,8 @@ EngineBufferScaleRubberBand::EngineBufferScaleRubberBand(
     m_retrieve_buffer[0] = SampleUtil::alloc(MAX_BUFFER_LEN);
     m_retrieve_buffer[1] = SampleUtil::alloc(MAX_BUFFER_LEN);
 
-    // m_iSampleRate defaults to 44100.
-    initializeRubberBand(m_iSampleRate);
+    // m_dSampleRate defaults to 44100.
+    initializeRubberBand(m_dSampleRate);
 }
 
 EngineBufferScaleRubberBand::~EngineBufferScaleRubberBand() {
@@ -43,13 +43,13 @@ EngineBufferScaleRubberBand::~EngineBufferScaleRubberBand() {
     }
 }
 
-void EngineBufferScaleRubberBand::initializeRubberBand(int iSampleRate) {
+void EngineBufferScaleRubberBand::initializeRubberBand(double dSampleRate) {
     if (m_pRubberBand) {
         delete m_pRubberBand;
         m_pRubberBand = NULL;
     }
     m_pRubberBand = new RubberBandStretcher(
-        iSampleRate, 2,
+        dSampleRate, 2,
         RubberBandStretcher::OptionProcessRealTime);
     m_pRubberBand->setMaxProcessSize(kRubberBandBlockSize);
     // Setting the time ratio to a very high value will cause RubberBand
@@ -120,9 +120,9 @@ void EngineBufferScaleRubberBand::setScaleParameters(double base_rate,
     m_dPitchRatio = *pPitchRatio;
 }
 
-void EngineBufferScaleRubberBand::setSampleRate(int iSampleRate) {
-    initializeRubberBand(iSampleRate);
-    m_iSampleRate = iSampleRate;
+void EngineBufferScaleRubberBand::setSampleRate(double dSampleRate) {
+    initializeRubberBand(dSampleRate);
+    m_dSampleRate = dSampleRate;
 }
 
 void EngineBufferScaleRubberBand::clear() {

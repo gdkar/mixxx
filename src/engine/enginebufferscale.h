@@ -28,6 +28,7 @@
 //  Why do we even have this parameter? -- Sean)
 #define MAX_SEEK_SPEED 100.0
 #define MIN_SEEK_SPEED 0.010
+class ReadAheadManager;
 // I'll hurt you if you change MIN_SEEK_SPEED. SoundTouch freaks out and
 // just gives us stuttering if you set the speed to be lower than this.
 // This took me ages to figure out.
@@ -40,7 +41,7 @@
 class EngineBufferScale : public QObject {
     Q_OBJECT
   public:
-    EngineBufferScale();
+    EngineBufferScale(ReadAheadManager *pReadAheadManager=0);
     virtual ~EngineBufferScale();
 
     // Sets the scaling parameters.
@@ -65,8 +66,8 @@ class EngineBufferScale : public QObject {
     }
 
     // Set the desired output sample rate.
-    virtual void setSampleRate(int iSampleRate) {
-        m_iSampleRate = iSampleRate;
+    virtual void setSampleRate(double dSampleRate) {
+        m_dSampleRate = dSampleRate;
     }
 
     /** Get new playpos after call to scale() */
@@ -77,7 +78,7 @@ class EngineBufferScale : public QObject {
     virtual CSAMPLE* getScaled(unsigned long buf_size) = 0;
 
   protected:
-    int m_iSampleRate;
+    double m_dSampleRate;
     double m_dBaseRate;
     bool m_bSpeedAffectsPitch;
     double m_dTempoRatio;

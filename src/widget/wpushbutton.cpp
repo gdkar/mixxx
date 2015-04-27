@@ -323,55 +323,51 @@ void WPushButton::mousePressEvent(QMouseEvent * e) {
     const bool leftClick = e->button() == Qt::LeftButton;
     const bool rightClick = e->button() == Qt::RightButton;
 
-    if (m_leftButtonMode == ControlPushButtonBehavior::POWERWINDOW
-            && m_iNoStates == 2) {
+    if (m_leftButtonMode == ControlPushButtonBehavior::POWERWINDOW && m_iNoStates == 2) {
         if (leftClick) {
             if (getControlParameterLeft() == 0.0) {
                 m_clickTimer.setSingleShot(true);
                 m_clickTimer.start(ControlPushButtonBehavior::kPowerWindowTimeMillis);
             }
-            m_bPressed = true;
+            m_lPressed = true;
+            m_rPressed = false;
+            setControlParameterRightUp(0.0);
             setControlParameterLeftDown(1.0);
-            restyleAndRepaint();
         }
         // discharge right clicks here, because is used for latching in POWERWINDOW mode
-        return;
+    }else{
+      if (rightClick) {
+          // This is the secondary button function allways a Pushbutton
+          // due the leak of visual feedback we do not allow a toggle function
+          if (m_rightButtonMode == ControlPushButtonBehavior::PUSH || m_iNoStates == 1) {
+              m_rPressed = true;
+              setControlParameterRightDown(1.0);
+          }
+      }
+      if (leftClick) {
+          double emitValue;
+          if (m_leftButtonMode == ControlPushButtonBehavior::PUSH
+                  || m_iNoStates == 1) {
+              // This is either forced to behave like a push button on left-click
+              // or this is a push button.
+              emitValue = 1.0;
+          } else {
+              // Toggle thru the states
+              emitValue = getControlParameterLeft();
+              if (!isnan(emitValue) && m_iNoStates > 0) {
+                  emitValue = static_cast<int>(emitValue + 1.0) % m_iNoStates;
+              }
+              if (m_leftButtonMode == ControlPushButtonBehavior::LONGPRESSLATCHING) {
+                  m_clickTimer.setSingleShot(true);
+                  m_clickTimer.start(ControlPushButtonBehavior::kLongPressLatchingTimeMillis);
+              }
+          }
+          m_lPressed = true;
+          setControlParameterLeftDown(emitValue);
+      }
     }
-
-    if (rightClick) {
-        // This is the secondary button function allways a Pushbutton
-        // due the leak of visual feedback we do not allow a toggle function
-        if (m_rightButtonMode == ControlPushButtonBehavior::PUSH
-                || m_iNoStates == 1) {
-            m_bPressed = true;
-            setControlParameterRightDown(1.0);
-            restyleAndRepaint();
-        }
-        return;
-    }
-
-    if (leftClick) {
-        double emitValue;
-        if (m_leftButtonMode == ControlPushButtonBehavior::PUSH
-                || m_iNoStates == 1) {
-            // This is either forced to behave like a push button on left-click
-            // or this is a push button.
-            emitValue = 1.0;
-        } else {
-            // Toggle thru the states
-            emitValue = getControlParameterLeft();
-            if (!isnan(emitValue) && m_iNoStates > 0) {
-                emitValue = static_cast<int>(emitValue + 1.0) % m_iNoStates;
-            }
-            if (m_leftButtonMode == ControlPushButtonBehavior::LONGPRESSLATCHING) {
-                m_clickTimer.setSingleShot(true);
-                m_clickTimer.start(ControlPushButtonBehavior::kLongPressLatchingTimeMillis);
-            }
-        }
-        m_bPressed = true;
-        setControlParameterLeftDown(emitValue);
-        restyleAndRepaint();
-    }
+    m_bPressed = m_lPressed || m_rPressed;
+    restyleAndRepaint();
 }
 
 void WPushButton::focusOutEvent(QFocusEvent* e) {
@@ -381,6 +377,8 @@ void WPushButton::focusOutEvent(QFocusEvent* e) {
         // the pressed flag if the Primary touch point is moved to an
         // other widget
         m_bPressed = false;
+        m_lPressed = false;
+        m_rPressed = false;
         restyleAndRepaint();
     }
 }
@@ -397,48 +395,45 @@ void WPushButton::mouseReleaseEvent(QMouseEvent * e) {
                 // Release button after timer, but not if right button is clicked
                 setControlParameterLeftUp(0.0);
             }
-            m_bPressed = false;
+            m_lPressed = false;
         } else if (rightClick) {
-            m_bPressed = false;
+            m_rPressed = false;
         }
-        restyleAndRepaint();
-        return;
+    }else{
+      if (rightClick) {
+          // This is the secondary clickButton function,
+          // due the leak of visual feedback we do not allow a toggle
+          // function
+          if (m_rightButtonMode == ControlPushButtonBehavior::PUSH
+                  || m_iNoStates == 1) {
+              m_rPressed = false;
+              setControlParameterRightUp(0.0);
+          }
+      }
+      if (leftClick) {
+          double emitValue = getControlParameterLeft();
+          if (m_leftButtonMode == ControlPushButtonBehavior::PUSH
+                  || m_iNoStates == 1) {
+              // This is a Pushbutton
+              emitValue = 0.0;
+          } else {
+              if (m_leftButtonMode == ControlPushButtonBehavior::LONGPRESSLATCHING
+                      && m_clickTimer.isActive() && emitValue >= 1.0) {
+                  // revert toggle if button is released too early
+                  if (!isnan(emitValue) && m_iNoStates > 0) {
+                      emitValue = static_cast<int>(emitValue - 1.0) % m_iNoStates;
+                  }
+              } else {
+                  // Nothing special happens when releasing a normal toggle button
+              }
+          }
+          m_lPressed = false;
+          setControlParameterLeftUp(emitValue);
+      }
     }
+    m_bPressed = m_lPressed||m_rPressed;
+    restyleAndRepaint();
 
-    if (rightClick) {
-        // This is the secondary clickButton function,
-        // due the leak of visual feedback we do not allow a toggle
-        // function
-        if (m_rightButtonMode == ControlPushButtonBehavior::PUSH
-                || m_iNoStates == 1) {
-            m_bPressed = false;
-            setControlParameterRightUp(0.0);
-            restyleAndRepaint();
-        }
-        return;
-    }
-
-    if (leftClick) {
-        double emitValue = getControlParameterLeft();
-        if (m_leftButtonMode == ControlPushButtonBehavior::PUSH
-                || m_iNoStates == 1) {
-            // This is a Pushbutton
-            emitValue = 0.0;
-        } else {
-            if (m_leftButtonMode == ControlPushButtonBehavior::LONGPRESSLATCHING
-                    && m_clickTimer.isActive() && emitValue >= 1.0) {
-                // revert toggle if button is released too early
-                if (!isnan(emitValue) && m_iNoStates > 0) {
-                    emitValue = static_cast<int>(emitValue - 1.0) % m_iNoStates;
-                }
-            } else {
-                // Nothing special happens when releasing a normal toggle button
-            }
-        }
-        m_bPressed = false;
-        setControlParameterLeftUp(emitValue);
-        restyleAndRepaint();
-    }
 }
 
 void WPushButton::fillDebugTooltip(QStringList* debug) {

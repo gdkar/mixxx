@@ -36,6 +36,8 @@
 
 class WPushButton : public WWidget {
     Q_OBJECT
+    Q_PROPERTY(bool pressed READ isPressed NOTIFY pressedChanged);
+    Q_PROPERTY(int displayValue READ readDisplayValue NOTIFY displayValueChanged)
   public:
     WPushButton(QWidget* pParent = NULL);
     // Used by WPushButtonTest.
@@ -43,7 +45,6 @@ class WPushButton : public WWidget {
                 ControlPushButton::ButtonMode rightButtonMode);
     virtual ~WPushButton();
 
-    Q_PROPERTY(bool pressed READ isPressed);
 
     bool isPressed() const {
         return m_bPressed;
@@ -53,7 +54,6 @@ class WPushButton : public WWidget {
     // The declaration #MyButton[displayValue="0"] { } will define the style
     // when the widget is in state 0.  This allows for effects like reversing
     // background and foreground colors to indicate enabled/disabled state.
-    Q_PROPERTY(int displayValue READ readDisplayValue NOTIFY displayValueChanged)
 
     int readDisplayValue() const {
         double value = getControlParameterDisplay();
@@ -70,7 +70,8 @@ class WPushButton : public WWidget {
     void setStates(int iStatesW);
 
   signals:
-    void displayValueChanged(int value);
+    void pressedChanged(bool);
+    void displayValueChanged(int );
 
   public slots:
     virtual void onConnectedControlChanged(double dParameter, double dValue);
@@ -96,6 +97,8 @@ class WPushButton : public WWidget {
 
     // True, if the button is currently pressed
     bool m_bPressed;
+    bool m_lPressed;
+    bool m_rPressed;
 
     // Array of associated pixmaps
     int m_iNoStates;

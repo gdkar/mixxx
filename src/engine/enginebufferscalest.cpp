@@ -40,7 +40,7 @@ EngineBufferScaleST::EngineBufferScaleST(ReadAheadManager *pReadAheadManager)
     m_pSoundTouch->setRate(m_dBaseRate);
     m_pSoundTouch->setPitch(1.0);
     m_pSoundTouch->setSetting(SETTING_USE_QUICKSEEK, 1);
-    m_pSoundTouch->setSampleRate(m_iSampleRate > 0 ? m_iSampleRate : 44100);
+    m_pSoundTouch->setSampleRate(m_dSampleRate > 0 ? m_dSampleRate : 44100);
 
     buffer_back = new CSAMPLE[kiSoundTouchReadAheadLength*2];
 
@@ -99,9 +99,9 @@ void EngineBufferScaleST::setScaleParameters(double base_rate,
     // changed direction. I removed it because this is handled by EngineBuffer.
 }
 
-void EngineBufferScaleST::setSampleRate(int iSampleRate) {
-    m_pSoundTouch->setSampleRate(iSampleRate);
-    m_iSampleRate = iSampleRate;
+void EngineBufferScaleST::setSampleRate(double dSampleRate) {
+    m_pSoundTouch->setSampleRate(dSampleRate);
+    m_dSampleRate = dSampleRate;
 }
 
 void EngineBufferScaleST::clear() {

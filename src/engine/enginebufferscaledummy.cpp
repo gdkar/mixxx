@@ -7,8 +7,7 @@
 
 EngineBufferScaleDummy::EngineBufferScaleDummy(ReadAheadManager* pReadAheadManager)
     : EngineBufferScale(),
-      m_pReadAheadManager(pReadAheadManager)
-{
+      m_pReadAheadManager(pReadAheadManager){
     m_samplesRead = 0.0;
 }
 

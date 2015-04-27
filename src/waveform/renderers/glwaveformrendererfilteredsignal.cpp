@@ -86,6 +86,10 @@ void GLWaveformRendererFilteredSignal::draw(QPainter* painter, QPaintEvent* /*ev
         glEnd();
         glEnable(GL_LINE_SMOOTH);
         glBegin(GL_LINES); {
+            
+            for (int visualIndex = firstVisualIndex;visualIndex < lastVisualIndex;visualIndex += 2) {
+                if (visualIndex < 0)continue;
+                if (visualIndex > dataSize - 1)break;
             maxLow[0]  = (float)data[visualIndex  ].filtered.low;
             maxMid[0]  = (float)data[visualIndex  ].filtered.mid;
             maxHigh[0] = (float)data[visualIndex  ].filtered.high;
@@ -93,11 +97,7 @@ void GLWaveformRendererFilteredSignal::draw(QPainter* painter, QPaintEvent* /*ev
             maxMid[1]  = (float)data[visualIndex+1].filtered.mid;
             maxHigh[1] = (float)data[visualIndex+1].filtered.high;
 
-            for (int visualIndex = firstVisualIndex;visualIndex < lastVisualIndex;visualIndex += 2) {
-                if (visualIndex < 0)continue;
-                if (visualIndex > dataSize - 1)break;
-
-                {
+            /*    {
                   float l    = data[visualIndex].filtered.low;
                   float m    = data[visualIndex].filtered.mid;
                   float h    = data[visualIndex].filtered.high;
@@ -115,7 +115,7 @@ void GLWaveformRendererFilteredSignal::draw(QPainter* painter, QPaintEvent* /*ev
                 }
 
                 if (visualIndex < 0)continue;
-                if (visualIndex > dataSize - 1)break;
+                if (visualIndex > dataSize - 1)break;*/
 
                 meanIndex = visualIndex;
 

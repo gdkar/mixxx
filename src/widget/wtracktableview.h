@@ -11,7 +11,7 @@
 #include "library/trackmodel.h" // Can't forward declare enums
 #include "library/coverart.h"
 #include "widget/wlibrarytableview.h"
-#include "dlgtagfetcher.h"
+#include "dialogs/dlgtagfetcher.h"
 
 class ControlObjectThread;
 class DlgTrackInfo;
