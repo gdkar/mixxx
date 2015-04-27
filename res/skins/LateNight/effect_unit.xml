@@ -11,7 +11,7 @@
     <ObjectName>EffectUnit<Variable name="EffectUnit"/></ObjectName>
     <Layout>vertical</Layout>
     <SizePolicy>me,f</SizePolicy>
-    <MinimumSize>300,60</MinimumSize>
+    <MinimumSize>300,70</MinimumSize>
     <MaximumSize>350,-1</MaximumSize>
     <Children>
       <WidgetGroup>
@@ -168,11 +168,11 @@
                     <SizePolicy>min,min</SizePolicy>
                     <Children>
                       <Template src="skin:effect_unit_group_control_button.xml">
-                        <SetVariable name="group_name">Master</SetVariable>
+                        <SetVariable name="group_name">MASTER</SetVariable>
                         <SetVariable name="group_group">[Master]</SetVariable>
                       </Template>
                       <Template src="skin:effect_unit_group_control_button.xml">
-                        <SetVariable name="group_name">Head</SetVariable>
+                        <SetVariable name="group_name">HEAD</SetVariable>
                         <SetVariable name="group_group">[Headphone]</SetVariable>
                       </Template>
                     </Children>

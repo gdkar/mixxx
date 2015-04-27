@@ -21,7 +21,7 @@
    Purpose: Creates a new simulated latching push-button.
    Input:   key - Key for the configuration file
    -------- ------------------------------------------------------ */
-ControlPushButton::ControlPushButton(ConfigKey key, bool bPersist)
+ControlPushButton::ControlPushButton(ConfigKey key, double defaultValue, bool bPersist)
         : ControlObject(key, false, false, bPersist),
           m_buttonMode(ControlPushButtonBehavior::PUSH),
           m_iNoStates(2) {
