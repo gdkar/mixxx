@@ -15,7 +15,7 @@
 *                                                                         *
 ***************************************************************************/
 
-#include "controlpushbutton.h"
+#include "control/controlpushbutton.h"
 #include "effects/effectsmanager.h"
 #include "engine/effects/engineeffectsmanager.h"
 #include "engine/enginebuffer.h"
@@ -48,26 +48,19 @@ EngineDeck::EngineDeck(const ChannelHandleAndGroup& handle_group,
     m_bPassthroughWasActive = false;
 
     // Set up passthrough toggle button
-    connect(m_pPassing, SIGNAL(valueChanged(double)),
-            this, SLOT(slotPassingToggle(double)),
+    connect(m_pPassing.data(), SIGNAL(valueChanged(double)),
+            this, SLOT(onPassingToggle(double)),
             Qt::DirectConnection);
 
-    m_pSampleRate = new ControlObjectSlave("[Master]", "samplerate");
+    m_pSampleRate.reset(new ControlObjectSlave("[Master]", "samplerate"));
 
     // Set up additional engines
-    m_pPregain = new EnginePregain(getGroup());
-    m_pVUMeter = new EngineVuMeter(getGroup());
-    m_pBuffer = new EngineBuffer(getGroup(), pConfig, this, pMixingEngine);
+    m_pPregain.reset( new EnginePregain(getGroup()));
+    m_pVUMeter.reset( new EngineVuMeter(getGroup()));
+    m_pBuffer.reset(new EngineBuffer(getGroup(), pConfig, this, pMixingEngine));
 }
 
-EngineDeck::~EngineDeck() {
-    delete m_pPassing;
-
-    delete m_pBuffer;
-    delete m_pPregain;
-    delete m_pVUMeter;
-    delete m_pSampleRate;
-}
+EngineDeck::~EngineDeck() {}
 
 void EngineDeck::process(CSAMPLE* pOut, const int iBufferSize) {
     GroupFeatureState features;
@@ -96,7 +89,7 @@ void EngineDeck::process(CSAMPLE* pOut, const int iBufferSize) {
     // Apply pregain
     m_pPregain->process(pOut, iBufferSize);
     // Process effects enabled for this channel
-    if (m_pEngineEffectsManager != NULL) {
+    if (!m_pEngineEffectsManager.isNull()  ) {
         // This is out of date by a callback but some effects will want the RMS
         // volume.
         m_pVUMeter->collectFeatures(&features);
@@ -108,34 +101,19 @@ void EngineDeck::process(CSAMPLE* pOut, const int iBufferSize) {
     m_pVUMeter->process(pOut, iBufferSize);
 }
 
-void EngineDeck::postProcess(const int iBufferSize) {
-    m_pBuffer->postProcess(iBufferSize);
-}
-
-EngineBuffer* EngineDeck::getEngineBuffer() {
-    return m_pBuffer;
-}
-
+void EngineDeck::postProcess(const int iBufferSize) {m_pBuffer->postProcess(iBufferSize);}
+EngineBuffer* EngineDeck::getEngineBuffer() {return m_pBuffer.data();}
 bool EngineDeck::isActive() {
-    if (m_bPassthroughWasActive && !m_bPassthroughIsActive) {
-        return true;
-    }
-
+    if (m_bPassthroughWasActive && !m_bPassthroughIsActive) {return true;}
     return (m_pBuffer->isTrackLoaded() || isPassthroughActive());
 }
-
 void EngineDeck::receiveBuffer(AudioInput input, const CSAMPLE* pBuffer, unsigned int nFrames) {
     Q_UNUSED(input);
     Q_UNUSED(nFrames);
     // Skip receiving audio input if passthrough is not active
-    if (!m_bPassthroughIsActive) {
-        m_sampleBuffer = NULL;
-        return;
-    } else {
-        m_sampleBuffer = pBuffer;
-    }
+    if (!m_bPassthroughIsActive) {m_sampleBuffer = NULL;return;
+    } else {m_sampleBuffer = pBuffer;}
 }
-
 void EngineDeck::onInputConfigured(AudioInput input) {
     if (input.getType() != AudioPath::VINYLCONTROL) {
         // This is an error!
@@ -144,7 +122,6 @@ void EngineDeck::onInputConfigured(AudioInput input) {
     }
     m_sampleBuffer =  NULL;
 }
-
 void EngineDeck::onInputUnconfigured(AudioInput input) {
     if (input.getType() != AudioPath::VINYLCONTROL) {
         // This is an error!
@@ -153,11 +130,5 @@ void EngineDeck::onInputUnconfigured(AudioInput input) {
     }
     m_sampleBuffer = NULL;
 }
-
-bool EngineDeck::isPassthroughActive() const {
-    return (m_bPassthroughIsActive && m_sampleBuffer);
-}
-
-void EngineDeck::slotPassingToggle(double v) {
-    m_bPassthroughIsActive = v > 0;
-}
+bool EngineDeck::isPassthroughActive() const {return (m_bPassthroughIsActive && m_sampleBuffer);}
+void EngineDeck::onPassingToggle(double v) {m_bPassthroughIsActive = v > 0;}

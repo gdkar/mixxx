@@ -23,12 +23,12 @@
 #include <QTextCodec>
 
 #include "configobject.h"
-#include "controlobject.h"
-#include "controlobjectthread.h"
-#include "controlobjectslave.h"
+#include "control/controlobject.h"
+#include "control/controlobjectthread.h"
+#include "control/controlobjectslave.h"
 #include "encoder/encodercallback.h"
 #include "engine/sidechain/sidechainworker.h"
-#include "errordialoghandler.h"
+#include "dialogs/errordialoghandler.h"
 #include "trackinfoobject.h"
 
 #define SHOUTCAST_DISCONNECTED 0

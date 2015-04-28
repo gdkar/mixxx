@@ -28,7 +28,7 @@
 #include "engine/enginemaster.h"
 #include "engine/enginebuffer.h"
 #include "soundmanagerutil.h"
-#include "controlobject.h"
+#include "control/controlobject.h"
 #include "vinylcontrol/defs_vinylcontrol.h"
 #include "sampleutil.h"
 #include "util/cmdlineargs.h"
@@ -147,9 +147,9 @@ void SoundManager::closeDevices() {
     // onInputDisconnected/onOutputDisconnected.
     foreach (SoundDevice* pDevice, m_devices) {
         foreach (AudioInput in, pDevice->inputs()) {
-            // Need to tell all registered AudioDestinations for this AudioInput
+            // Need to tell all registered AudioSinks for this AudioInput
             // that the input was disconnected.
-            for (QHash<AudioInput, AudioDestination*>::const_iterator it =
+            for (QHash<AudioInput, AudioSink*>::const_iterator it =
                          m_registeredDestinations.find(in);
                  it != m_registeredDestinations.end() && it.key() == in; ++it) {
                 it.value()->onInputUnconfigured(in);
@@ -335,9 +335,9 @@ Result SoundManager::setupDevices() {
 
             m_inputBuffers.append(aib.getBuffer());
 
-            // Check if any AudioDestination is registered for this AudioInput
+            // Check if any AudioSink is registered for this AudioInput
             // and call the onInputConnected method.
-            for (QHash<AudioInput, AudioDestination*>::const_iterator it =
+            for (QHash<AudioInput, AudioSink*>::const_iterator it =
                          m_registeredDestinations.find(in);
                  it != m_registeredDestinations.end() && it.key() == in; ++it) {
                 it.value()->onInputConfigured(in);
@@ -489,7 +489,7 @@ void SoundManager::pushInputBuffers(const QList<AudioInputBuffer>& inputs,
                  e = inputs.end(); i != e; ++i) {
         const AudioInputBuffer& in = *i;
         CSAMPLE* pInputBuffer = in.getBuffer();
-        for (QHash<AudioInput, AudioDestination*>::const_iterator it =
+        for (QHash<AudioInput, AudioSink*>::const_iterator it =
                 m_registeredDestinations.find(in);
                 it != m_registeredDestinations.end() && it.key() == in; ++it) {
             it.value()->receiveBuffer(in, pInputBuffer, iFramesPerBuffer);
@@ -526,7 +526,7 @@ void SoundManager::registerOutput(AudioOutput output, AudioSource *src) {
     emit(outputRegistered(output, src));
 }
 
-void SoundManager::registerInput(AudioInput input, AudioDestination *dest) {
+void SoundManager::registerInput(AudioInput input, AudioSink *dest) {
     if (m_registeredDestinations.contains(input)) {
         // note that this can be totally ok if we just want a certain
         // AudioInput to be going to a different AudioDest -bkgood

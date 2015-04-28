@@ -24,11 +24,7 @@ struct ReverbGroupState {
         reverb.activate();
         crossfade_buffer = SampleUtil::alloc(MAX_BUFFER_LEN);
     }
-
-    ~ReverbGroupState() {
-        SampleUtil::free(crossfade_buffer);
-    }
-
+    ~ReverbGroupState() {SampleUtil::free(crossfade_buffer);}
     MixxxPlateX2 reverb;
     CSAMPLE* crossfade_buffer;
     double prev_bandwidth;
@@ -39,10 +35,8 @@ class ReverbEffect : public PerChannelEffectProcessor<ReverbGroupState> {
   public:
     ReverbEffect(EngineEffect* pEffect, const EffectManifest& manifest);
     virtual ~ReverbEffect();
-
     static QString getId();
     static EffectManifest getManifest();
-
     // See effectprocessor.h
     void processChannel(const ChannelHandle& handle,
                         ReverbGroupState* pState,
@@ -53,13 +47,9 @@ class ReverbEffect : public PerChannelEffectProcessor<ReverbGroupState> {
                         const GroupFeatureState& groupFeatures);
 
   private:
-    QString debugString() const {
-        return getId();
-    }
-
+    QString debugString() const {return getId();}
     EngineEffectParameter* m_pBandWidthParameter;
     EngineEffectParameter* m_pDampingParameter;
-
     DISALLOW_COPY_AND_ASSIGN(ReverbEffect);
 };
 

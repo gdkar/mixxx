@@ -1,8 +1,8 @@
 #include "library/autodj/autodjprocessor.h"
 
 #include "library/trackcollection.h"
-#include "controlpushbutton.h"
-#include "controlobjectslave.h"
+#include "control/controlpushbutton.h"
+#include "control/controlobjectslave.h"
 #include "util/math.h"
 #include "playermanager.h"
 #include "basetrackplayer.h"

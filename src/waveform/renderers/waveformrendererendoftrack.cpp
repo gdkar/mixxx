@@ -5,8 +5,8 @@
 #include "waveformrendererendoftrack.h"
 #include "waveformwidgetrenderer.h"
 
-#include "controlobject.h"
-#include "controlobjectthread.h"
+#include "control/controlobject.h"
+#include "control/controlobjectthread.h"
 
 #include "widget/wskincolor.h"
 #include "widget/wwidget.h"

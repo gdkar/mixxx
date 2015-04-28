@@ -6,7 +6,7 @@
 #include "vinylcontrol/vinylcontrol.h"
 #include "vinylcontrol/vinylcontrolxwax.h"
 #include "util/defs.h"
-#include "controlpushbutton.h"
+#include "control/controlpushbutton.h"
 #include "util/timer.h"
 #include "util/event.h"
 #include "sampleutil.h"

@@ -6,8 +6,8 @@
 #include <QString>
 
 #include "util.h"
-#include "controlobject.h"
-#include "controlpushbutton.h"
+#include "control/controlobject.h"
+#include "control/controlpushbutton.h"
 #include "effects/effect.h"
 #include "effects/effectparameterslot.h"
 #include "effects/effectbuttonparameterslot.h"

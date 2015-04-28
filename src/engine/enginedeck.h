@@ -19,11 +19,10 @@
 #define ENGINEDECK_H
 
 #include "configobject.h"
-#include "controlobjectslave.h"
-#include "controlpushbutton.h"
+#include "control/controlobjectslave.h"
+#include "control/controlpushbutton.h"
 #include "engine/engineobject.h"
 #include "engine/enginechannel.h"
-#include "util/circularbuffer.h"
 
 #include "soundmanagerutil.h"
 
@@ -36,7 +35,7 @@ class EffectsManager;
 class EngineEffectsManager;
 class ControlPushButton;
 
-class EngineDeck : public EngineChannel, public AudioDestination {
+class EngineDeck : public EngineChannel, public AudioSink {
     Q_OBJECT
   public:
     EngineDeck(const ChannelHandleAndGroup& handle_group, ConfigObject<ConfigValue>* pConfig,
@@ -54,7 +53,7 @@ class EngineDeck : public EngineChannel, public AudioDestination {
 
     // This is called by SoundManager whenever there are new samples from the
     // configured input to be processed. This is run in the callback thread of
-    // the soundcard this AudioDestination was registered for! Beware, in the
+    // the soundcard this AudioSink was registered for! Beware, in the
     // case of multiple soundcards, this method is not re-entrant but it may be
     // concurrent with EngineMaster processing.
     virtual void receiveBuffer(AudioInput input, const CSAMPLE* pBuffer,
@@ -72,18 +71,18 @@ class EngineDeck : public EngineChannel, public AudioDestination {
     bool isPassthroughActive() const;
 
   public slots:
-    void slotPassingToggle(double v);
+    void onPassingToggle(double v);
 
   private:
     ConfigObject<ConfigValue>* m_pConfig;
-    EngineBuffer* m_pBuffer;
-    EnginePregain* m_pPregain;
-    EngineVuMeter* m_pVUMeter;
-    EngineEffectsManager* m_pEngineEffectsManager;
-    ControlObjectSlave* m_pSampleRate;
+    QSharedPointer<EngineBuffer> m_pBuffer;
+    QSharedPointer<EnginePregain> m_pPregain;
+    QSharedPointer<EngineVuMeter> m_pVUMeter;
+    QSharedPointer<EngineEffectsManager> m_pEngineEffectsManager;
+    QSharedPointer<ControlObjectSlave> m_pSampleRate;
 
     // Begin vinyl passthrough fields
-    ControlPushButton* m_pPassing;
+    QSharedPointer<ControlPushButton> m_pPassing;
     const CSAMPLE* volatile m_sampleBuffer;
     bool m_bPassthroughIsActive;
     bool m_bPassthroughWasActive;

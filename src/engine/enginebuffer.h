@@ -27,7 +27,7 @@
 #include "engine/sync/syncable.h"
 #include "trackinfoobject.h"
 #include "configobject.h"
-#include "rotary.h"
+#include "control/rotary.h"
 #include "control/controlvalue.h"
 #include "cachingreader.h"
 

@@ -16,7 +16,6 @@ using std::fabs;
 #define math_max std::max
 #define math_min std::min
 #define math_max3(a, b, c) math_max(math_max((a), (b)), (c))
-
 // Restrict value to the range [min, max]. Undefined behavior if min > max.
 template <typename T>
 inline T math_clamp(T value, T min, T max) {
@@ -30,9 +29,7 @@ inline T math_clamp(T value, T min, T max) {
 // hack this to support floating point values! The programmer should be required
 // to manually convert so they are aware of the conversion.
 template <typename T>
-inline bool even(T value) {
-    return value % 2 == 0;
-}
+inline bool even(T value) {return value % 2 == 0;}
 
 #ifdef _MSC_VER
 // VC++ uses _isnan() instead of isnan() and !_finite instead of isinf.

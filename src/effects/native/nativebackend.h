@@ -10,9 +10,7 @@ class NativeBackend : public EffectsBackend {
     virtual ~NativeBackend();
 
   private:
-    QString debugString() const {
-        return "NativeBackend";
-    }
+    QString debugString() const {return "NativeBackend";}
 };
 
 #endif /* NATIVEBACKEND_H */

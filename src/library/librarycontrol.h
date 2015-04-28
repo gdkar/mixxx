@@ -3,7 +3,7 @@
 
 #include <QObject>
 
-#include "controlobjectthread.h"
+#include "control/controlobjectthread.h"
 
 class ControlObject;
 class ControlPushButton;

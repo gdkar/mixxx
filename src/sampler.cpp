@@ -1,6 +1,6 @@
 #include "sampler.h"
 
-#include "controlobject.h"
+#include "control/controlobject.h"
 
 Sampler::Sampler(QObject* pParent,
                  ConfigObject<ConfigValue>* pConfig,

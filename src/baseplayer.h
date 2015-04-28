@@ -9,10 +9,7 @@ class BasePlayer : public QObject {
   public:
     BasePlayer(QObject* pParent, QString group);
     virtual ~BasePlayer();
-
-    inline const QString& getGroup() {
-        return m_group;
-    }
+    inline const QString& getGroup() const{return m_group;}
 
   private:
     const QString m_group;

@@ -9,9 +9,9 @@
 #include "controllers/controllerengine.h"
 
 #include "controllers/controller.h"
-#include "controlobject.h"
-#include "controlobjectthread.h"
-#include "errordialoghandler.h"
+#include "control/controlobject.h"
+#include "control/controlobjectthread.h"
+#include "dialogs/errordialoghandler.h"
 #include "playermanager.h"
 // to tell the msvs compiler about `isnan`
 #include "util/math.h"

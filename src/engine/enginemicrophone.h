@@ -4,11 +4,10 @@
 #ifndef ENGINEMICROPHONE_H
 #define ENGINEMICROPHONE_H
 
-#include "controlobjectslave.h"
-#include "controlpushbutton.h"
+#include "control/controlobjectslave.h"
+#include "control/controlpushbutton.h"
 #include "engine/enginechannel.h"
 #include "engine/enginevumeter.h"
-#include "util/circularbuffer.h"
 
 #include "soundmanagerutil.h"
 
@@ -18,7 +17,7 @@ class ControlAudioTaperPot;
 
 // EngineMicrophone is an EngineChannel that implements a mixing source whose
 // samples are fed directly from the SoundManager
-class EngineMicrophone : public EngineChannel, public AudioDestination {
+class EngineMicrophone : public EngineChannel, public AudioSink {
     Q_OBJECT
   public:
     EngineMicrophone(const ChannelHandleAndGroup& handle_group,
@@ -33,7 +32,7 @@ class EngineMicrophone : public EngineChannel, public AudioDestination {
 
     // This is called by SoundManager whenever there are new samples from the
     // configured input to be processed. This is run in the callback thread of
-    // the soundcard this AudioDestination was registered for! Beware, in the
+    // the soundcard this AudioSink was registered for! Beware, in the
     // case of multiple soundcards, this method is not re-entrant but it may be
     // concurrent with EngineMaster processing.
     virtual void receiveBuffer(AudioInput input, const CSAMPLE* pBuffer,

@@ -39,8 +39,7 @@ inline float pow7 (float x) { return x * (pow6 (x)); }
 inline float pow8 (float x) { return pow2 (pow4 (x)); }
 
 inline float 
-sgn (float x)
-{
+sgn (float x){
 	union { float f; uint32 i; } u;
 	u.f = x;
 	u.i &= 0x80000000;
@@ -49,14 +48,11 @@ sgn (float x)
 }
 
 inline bool
-isprime (int v)
-{
+isprime (int v){
 	if (v <= 3)
 		return true;
-	
 	if (!(v & 1))
 		return false;
-
 	// NOTE(rryan): float cast added for MSVC.
 	for (int i = 3; i < (int) sqrt ((float)v) + 1; i += 2)
 		if ((v % i) == 0)

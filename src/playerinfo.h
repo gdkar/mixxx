@@ -22,7 +22,7 @@
 #include <QMap>
 #include <QTimerEvent>
 
-#include "controlobjectthread.h"
+#include "control/controlobjectthread.h"
 #include "trackinfoobject.h"
 
 class PlayerInfo : public QObject {
@@ -36,13 +36,11 @@ class PlayerInfo : public QObject {
     QMap<QString, TrackPointer> getLoadedTracks();
     bool isTrackLoaded(const TrackPointer& pTrack) const;
     bool isFileLoaded(const QString& track_location) const;
-
   signals:
     void currentPlayingDeckChanged(int deck);
     void currentPlayingTrackChanged(TrackPointer pTrack);
     void trackLoaded(QString group, TrackPointer pTrack);
     void trackUnloaded(QString group, TrackPointer pTrack);
-
   private:
     class DeckControls {
         public:
@@ -64,17 +62,14 @@ class PlayerInfo : public QObject {
     void updateCurrentPlayingDeck();
     int getCurrentPlayingDeck();
     DeckControls* getDeckControls(int i);
-
     PlayerInfo();
     virtual ~PlayerInfo();
-
     mutable QMutex m_mutex;
     ControlObjectThread* m_pCOxfader;
     // QMap is faster than QHash for small count of elements < 50
     QMap<QString, TrackPointer> m_loadedTrackMap;
     int m_currentlyPlayingDeck;
     QList<DeckControls*> m_deckControlList;
-
     static PlayerInfo* m_pPlayerinfo;
 };
 

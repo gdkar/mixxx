@@ -31,27 +31,18 @@ class ControlPushButton;
 
 class EngineChannel : public EngineObject {
     Q_OBJECT
+    Q_ENUMS(EngineChannel::ChannelOrientation);
   public:
     enum ChannelOrientation {
         LEFT = 0,
         CENTER,
         RIGHT,
     };
-
-    EngineChannel(const ChannelHandleAndGroup& handle_group,
-                  ChannelOrientation defaultOrientation = CENTER);
+    EngineChannel(const ChannelHandleAndGroup& handle_group,ChannelOrientation defaultOrientation = CENTER);
     virtual ~EngineChannel();
-
     virtual ChannelOrientation getOrientation() const;
-
-    inline const ChannelHandle& getHandle() const {
-        return m_group.handle();
-    }
-
-    virtual const QString& getGroup() const {
-        return m_group.name();
-    }
-
+    inline const ChannelHandle& getHandle() const {return m_group.handle();}
+    virtual const QString& getGroup() const {return m_group.name();}
     virtual bool isActive() = 0;
     void setPfl(bool enabled);
     virtual bool isPflEnabled() const;
@@ -59,20 +50,15 @@ class EngineChannel : public EngineObject {
     virtual bool isMasterEnabled() const;
     void setTalkover(bool enabled);
     virtual bool isTalkoverEnabled() const;
-
     virtual void process(CSAMPLE* pOut, const int iBufferSize) = 0;
     virtual void postProcess(const int iBuffersize) = 0;
-
     // TODO(XXX) This hack needs to be removed.
-    virtual EngineBuffer* getEngineBuffer() {
-        return NULL;
-    }
+    virtual EngineBuffer* getEngineBuffer() {return NULL;}
 
   private slots:
-    void slotOrientationLeft(double v);
-    void slotOrientationRight(double v);
-    void slotOrientationCenter(double v);
-
+    void onOrientationLeft(double v);
+    void onOrientationRight(double v);
+    void onOrientationCenter(double v);
   private:
     const ChannelHandleAndGroup m_group;
     ControlPushButton* m_pMaster;
@@ -83,5 +69,6 @@ class EngineChannel : public EngineObject {
     ControlPushButton* m_pOrientationCenter;
     ControlPushButton* m_pTalkover;
 };
-
+Q_DECLARE_METATYPE(EngineChannel::ChannelOrientation);
+Q_DECLARE_TYPEINFO(EngineChannel::ChannelOrientation,Q_PRIMITIVE_TYPE);
 #endif

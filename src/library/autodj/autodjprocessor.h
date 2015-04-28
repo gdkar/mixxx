@@ -10,7 +10,7 @@
 #include "configobject.h"
 #include "library/playlisttablemodel.h"
 #include "engine/enginechannel.h"
-#include "controlobjectslave.h"
+#include "control/controlobjectslave.h"
 
 class ControlPushButton;
 class TrackCollection;

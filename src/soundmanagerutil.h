@@ -173,7 +173,7 @@ public:
     virtual void onOutputDisconnected(AudioOutput output) { Q_UNUSED(output); };
 };
 
-class AudioDestination {
+class AudioSink {
 public:
     // This is called by SoundManager whenever there are new samples from the
     // configured input to be processed. This is run in the clock reference

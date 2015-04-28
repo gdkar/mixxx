@@ -19,7 +19,7 @@ class ControlPushButton;
 // the engine callback and feeding those samples to the VinylControl
 // classes. The most important thing is that the connection between the engine
 // callback and VinylControlProcessor (the receiveBuffer method) is lock-free.
-class VinylControlProcessor : public QThread, public AudioDestination {
+class VinylControlProcessor : public QThread, public AudioSink {
     Q_OBJECT
   public:
     VinylControlProcessor(QObject* pParent, ConfigObject<ConfigValue>* pConfig);
@@ -49,9 +49,9 @@ class VinylControlProcessor : public QThread, public AudioDestination {
 
     // This is called by SoundManager whenever there are new samples from the
     // configured input to be processed. This is run in the callback thread of
-    // the soundcard this AudioDestination was registered for! Beware, this
+    // the soundcard this AudioSink was registered for! Beware, this
     // method is re-entrant since the VinylControlProcessor is registered for
-    // multiple AudioDestinations, however it is not re-entrant for a given
+    // multiple AudioSinks, however it is not re-entrant for a given
     // AudioInput index.
     void receiveBuffer(AudioInput input, const CSAMPLE* pBuffer,
                        unsigned int iNumFrames);

@@ -17,8 +17,8 @@
 
 #include "engine/enginechannel.h"
 
-#include "controlobject.h"
-#include "controlpushbutton.h"
+#include "control/controlobject.h"
+#include "control/controlpushbutton.h"
 
 EngineChannel::EngineChannel(const ChannelHandleAndGroup& handle_group,
                              EngineChannel::ChannelOrientation defaultOrientation)
@@ -33,13 +33,13 @@ EngineChannel::EngineChannel(const ChannelHandleAndGroup& handle_group,
     m_pOrientation->set(defaultOrientation);
     m_pOrientationLeft = new ControlPushButton(ConfigKey(getGroup(), "orientation_left"));
     connect(m_pOrientationLeft, SIGNAL(valueChanged(double)),
-            this, SLOT(slotOrientationLeft(double)), Qt::DirectConnection);
+            this, SLOT(onOrientationLeft(double)), Qt::DirectConnection);
     m_pOrientationRight = new ControlPushButton(ConfigKey(getGroup(), "orientation_right"));
     connect(m_pOrientationRight, SIGNAL(valueChanged(double)),
-            this, SLOT(slotOrientationRight(double)), Qt::DirectConnection);
+            this, SLOT(onOrientationRight(double)), Qt::DirectConnection);
     m_pOrientationCenter = new ControlPushButton(ConfigKey(getGroup(), "orientation_center"));
     connect(m_pOrientationCenter, SIGNAL(valueChanged(double)),
-            this, SLOT(slotOrientationCenter(double)), Qt::DirectConnection);
+            this, SLOT(onOrientationCenter(double)), Qt::DirectConnection);
     m_pTalkover = new ControlPushButton(ConfigKey(getGroup(), "talkover"));
     m_pTalkover->setButtonMode(ControlPushButton::POWERWINDOW);
 }
@@ -78,23 +78,11 @@ bool EngineChannel::isTalkoverEnabled() const {
     return m_pTalkover->toBool();
 }
 
-void EngineChannel::slotOrientationLeft(double v) {
-    if (v > 0) {
-        m_pOrientation->set(LEFT);
-    }
-}
+void EngineChannel::onOrientationLeft(double v) {if (v > 0) {m_pOrientation->set(LEFT);}}
 
-void EngineChannel::slotOrientationRight(double v) {
-    if (v > 0) {
-        m_pOrientation->set(RIGHT);
-    }
-}
+void EngineChannel::onOrientationRight(double v) {if (v > 0) {m_pOrientation->set(RIGHT);}}
 
-void EngineChannel::slotOrientationCenter(double v) {
-    if (v > 0) {
-        m_pOrientation->set(CENTER);
-    }
-}
+void EngineChannel::onOrientationCenter(double v) {if (v > 0) {m_pOrientation->set(CENTER);}}
 
 EngineChannel::ChannelOrientation EngineChannel::getOrientation() const {
     double dOrientation = m_pOrientation->get();

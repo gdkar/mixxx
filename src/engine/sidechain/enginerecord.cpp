@@ -18,8 +18,8 @@
 #include "engine/sidechain/enginerecord.h"
 
 #include "configobject.h"
-#include "controlobject.h"
-#include "controlobjectslave.h"
+#include "control/controlobject.h"
+#include "control/controlobjectslave.h"
 #include "encoder/encoder.h"
 
 #ifdef __FFMPEGFILE__
@@ -30,7 +30,7 @@
 #include "encoder/encodervorbis.h"
 #endif
 
-#include "errordialoghandler.h"
+#include "dialogs/errordialoghandler.h"
 #include "playerinfo.h"
 #include "recording/defs_recording.h"
 #include "util/event.h"

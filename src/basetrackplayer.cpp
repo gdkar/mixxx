@@ -3,15 +3,15 @@
 #include "basetrackplayer.h"
 #include "playerinfo.h"
 
-#include "controlobject.h"
-#include "controlpotmeter.h"
+#include "control/controlobject.h"
+#include "control/controlpotmeter.h"
 #include "trackinfoobject.h"
 #include "engine/enginebuffer.h"
 #include "engine/enginedeck.h"
 #include "engine/enginemaster.h"
 #include "track/beatgrid.h"
 #include "waveform/renderers/waveformwidgetrenderer.h"
-#include "analyserqueue.h"
+#include "analyser/analyserqueue.h"
 #include "util/sandbox.h"
 #include "effects/effectsmanager.h"
 

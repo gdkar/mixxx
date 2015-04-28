@@ -7,7 +7,7 @@
 #include <QWidget>
 
 #include "configobject.h"
-#include "dlgcoverartfullsize.h"
+#include "dialogs/dlgcoverartfullsize.h"
 #include "trackinfoobject.h"
 #include "library/coverartcache.h"
 #include "skin/skincontext.h"

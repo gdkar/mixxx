@@ -4,8 +4,8 @@
 #include <QMimeData>
 #include <QStylePainter>
 
-#include "controlobject.h"
-#include "controlobjectthread.h"
+#include "control/controlobject.h"
+#include "control/controlobjectthread.h"
 #include "library/coverartcache.h"
 #include "sharedglcontext.h"
 #include "util/dnd.h"

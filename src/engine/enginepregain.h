@@ -18,7 +18,7 @@
 #define ENGINEPREGAIN_H
 
 #include "engine/engineobject.h"
-#include "controlobject.h"
+#include "control/controlobject.h"
 #include "util/performancetimer.h"
 
 class ControlAudioTaperPot;

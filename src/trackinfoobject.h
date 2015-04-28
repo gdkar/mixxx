@@ -38,7 +38,6 @@
 #include "waveform/waveform.h"
 
 class Cue;
-
 class TrackInfoObject;
 typedef QSharedPointer<TrackInfoObject> TrackPointer;
 typedef QWeakPointer<TrackInfoObject> TrackWeakPointer;
@@ -51,51 +50,51 @@ class TrackInfoObject : public QObject {
     Q_OBJECT
   public:
     // Initialize a new track with the filename.
-    TrackInfoObject(const QString& file="",
+    explicit TrackInfoObject(const QString& file="",
                     SecurityTokenPointer pToken=SecurityTokenPointer(),
                     bool parseHeader=true,
                     bool parseCoverArt=false);
     // Initialize track with a QFileInfo class
-    TrackInfoObject(const QFileInfo& fileInfo,
+    explicit TrackInfoObject(const QFileInfo& fileInfo,
                     SecurityTokenPointer pToken=SecurityTokenPointer(),
                     bool parseHeader=true,
                     bool parseCoverArt=false);
     // Creates a new track given information from the xml file.
-    TrackInfoObject(const QDomNode &);
+    explicit TrackInfoObject(const QDomNode &);
     virtual ~TrackInfoObject();
-
     // Parse file metadata. If no file metadata is present, attempts to extract
     // artist and title information from the filename.
-    void parse(bool parseCoverArt);
-
+    virtual void parse(bool parseCoverArt);
     // Returns the duration in seconds
-    int getDuration() const;
+    virtual int getDuration() const;
     // Set duration in seconds
-    void setDuration(int);
+    virtual void setDuration(int);
     // Returns the duration as a string: H:MM:SS
-    QString getDurationStr() const;
+    virtual QString getDurationStr() const;
 
     // Accessors for various stats of the file on disk. These are auto-populated
     // when the TIO is constructed, or when setLocation() is called.
 
-    Q_PROPERTY(QString artist READ getArtist WRITE setArtist)
-    Q_PROPERTY(QString title READ getTitle WRITE setTitle)
-    Q_PROPERTY(QString album READ getAlbum WRITE setAlbum)
-    Q_PROPERTY(QString albumArtist READ getAlbumArtist WRITE setAlbumArtist)
-    Q_PROPERTY(QString genre READ getGenre WRITE setGenre)
-    Q_PROPERTY(QString composer READ getComposer WRITE setComposer)
-    Q_PROPERTY(QString grouping READ getGrouping WRITE setGrouping)
-    Q_PROPERTY(QString year READ getYear WRITE setYear)
-    Q_PROPERTY(QString track_number READ getTrackNumber WRITE setTrackNumber)
-    Q_PROPERTY(int times_played READ getTimesPlayed)
-    Q_PROPERTY(QString comment READ getComment WRITE setComment)
-    Q_PROPERTY(double bpm READ getBpm WRITE setBpm)
+    Q_PROPERTY(QString artist READ getArtist WRITE setArtist NOTIFY artistChanged)
+    Q_PROPERTY(QString title READ getTitle WRITE setTitle NOTIFY titleChanged)
+    Q_PROPERTY(QString album READ getAlbum WRITE setAlbum NOTIFY albumChanged)
+    Q_PROPERTY(QString albumArtist READ getAlbumArtist WRITE setAlbumArtist NOTIFY albumArtistChanged)
+    Q_PROPERTY(QString genre READ getGenre WRITE setGenre NOTIFY genreChanged)
+    Q_PROPERTY(QString composer READ getComposer WRITE setComposer NOTIFY composerChanged)
+    Q_PROPERTY(QString grouping READ getGrouping WRITE setGrouping NOTIFY groupingChanged)
+    Q_PROPERTY(QString year READ getYear WRITE setYear NOTIFY yearChanged)
+    Q_PROPERTY(QString track_number READ getTrackNumber WRITE setTrackNumber NOTIFY trackNumberChanged)
+    Q_PROPERTY(int times_played READ getTimesPlayed NOTIFY timesPlayedChanged)
+    Q_PROPERTY(QString comment READ getComment WRITE setComment NOTIFY commentChanged)
+    Q_PROPERTY(double bpm READ getBpm WRITE setBpm NOTIFY bpmChanged)
     Q_PROPERTY(QString bpmFormatted READ getBpmStr STORED false)
-    Q_PROPERTY(QString key READ getKeyText WRITE setKeyText)
-    Q_PROPERTY(int duration READ getDuration WRITE setDuration)
+    Q_PROPERTY(QString key READ getKeyText WRITE setKeyText NOTIFY keyTextChanged)
+    Q_PROPERTY(int duration READ getDuration WRITE setDuration NOTIFY durationChanged)
     Q_PROPERTY(QString durationFormatted READ getDurationStr STORED false)
+    Q_PROPERTY(float replayGain READ getReplayGain WRITE setReplayGain NOTIFY replayGainChanged);
+    Q_PROPERTY(int channels READ getChannels WRITE setChannels NOTIFY channelsChanged);
 
-
+  public slots:
     // Returns absolute path to the file, including the filename.
     QString getLocation() const;
     QString getCanonicalLocation() const;
@@ -286,9 +285,10 @@ class TrackInfoObject : public QObject {
     void setDeleteOnReferenceExpiration(bool deleteOnReferenceExpiration);
 
   public slots:
-    void slotCueUpdated();
+    void onCueUpdated();
 
   signals:
+    void keyTextChanged(QString);
     void waveformUpdated();
     void waveformSummaryUpdated();
     void coverArtUpdated();
@@ -304,8 +304,24 @@ class TrackInfoObject : public QObject {
     void clean(TrackInfoObject* pTrack);
     void referenceExpired(TrackInfoObject* pTrack);
 
+    void artistChanged(QString);
+    void titleChanged(QString);
+    void albumChanged(QString);
+    void albumArtistChanged(QString);
+    void genreChanged(QString);
+    void composerChanged(QString);
+    void groupingChanged(QString);
+    void yearChanged(QString);
+    void trackNumberChanged(QString);
+    void timesPlayedChanged(int);
+    void playedChanged(bool);
+    void commentChanged(QString);
+    void bpmChanged(double);
+    void durationChanged(int);
+    void channelsChanged(int);
+    void replayGainChanged(double);
   private slots:
-    void slotBeatsUpdated();
+    void onBeatsUpdated();
 
   private:
     // Common initialization function between all TIO constructors.
@@ -313,31 +329,23 @@ class TrackInfoObject : public QObject {
 
     void setMetadata(const Mixxx::TrackMetadata& trackMetadata);
     void getMetadata(Mixxx::TrackMetadata* pTrackMetadata);
-
     // Set whether the TIO is dirty not. This should never be called except by
     // TIO local methods or the TrackDAO.
     void setDirty(bool bDirty);
-
     // Set a unique identifier for the track. Only used by services like
     // TrackDAO
     void setId(int iId);
-
     // Whether the track should delete itself when its reference count drops to
     // zero. Used for cleaning up after shutdown.
     volatile bool m_bDeleteOnReferenceExpiration;
-
     // Flag that indicates whether or not the TIO has changed. This is used by
     // TrackDAO to determine whether or not to write the Track back.
     bool m_bDirty;
-
     // Special flag for telling if the track location was changed.
     bool m_bLocationChanged;
-
     // The file
     QFileInfo m_fileInfo;
-
     SecurityTokenPointer m_pSecurityToken;
-
     // Metadata
     // Album
     QString m_sAlbum;
@@ -357,8 +365,6 @@ class TrackInfoObject : public QObject {
     QString m_sYear;
     // Track Number
     QString m_sTrackNumber;
-
-
     // File type
     QString m_sType;
     // User comment
@@ -389,29 +395,20 @@ class TrackInfoObject : public QObject {
     float m_fCuePoint;
     // Date the track was added to the library
     QDateTime m_dateAdded;
-
     Keys m_keys;
-
     // BPM lock
     bool m_bBpmLock;
-
     // The list of cue points for the track
     QList<Cue*> m_cuePoints;
-
     // Mutex protecting access to object
     mutable QMutex m_qMutex;
-
     // Storage for the track's beats
     BeatsPointer m_pBeats;
-
     //Visual waveform data
     ConstWaveformPointer m_waveform;
     ConstWaveformPointer m_waveformSummary;
-
     QAtomicInt m_analyserProgress; // in 0.1%
-
     CoverArt m_coverArt;
-
     friend class TrackDAO;
     friend class AutoDJProcessorTest;
 };

@@ -5,8 +5,8 @@
 #include <QFile>
 #include <QThread>
 
-#include "controlobject.h"
-#include "controlpotmeter.h"
+#include "control/controlobject.h"
+#include "control/controlpotmeter.h"
 #include "configobject.h"
 #include "controllers/controllerengine.h"
 #include "test/mixxxtest.h"

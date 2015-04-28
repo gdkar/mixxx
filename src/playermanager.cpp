@@ -4,13 +4,13 @@
 
 #include "playermanager.h"
 
-#include "controlobject.h"
+#include "control/controlobject.h"
 #include "trackinfoobject.h"
 #include "deck.h"
 #include "sampler.h"
 #include "previewdeck.h"
-#include "analyserqueue.h"
-#include "controlobject.h"
+#include "analyser/analyserqueue.h"
+#include "control/controlobject.h"
 #include "samplerbank.h"
 #include "library/library.h"
 #include "library/trackcollection.h"

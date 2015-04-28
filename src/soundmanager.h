@@ -32,7 +32,7 @@ class EngineMaster;
 class AudioOutput;
 class AudioInput;
 class AudioSource;
-class AudioDestination;
+class AudioSink;
 class ControlObject;
 
 #define MIXXX_PORTAUDIO_JACK_STRING "JACK Audio Connection Kit"
@@ -103,7 +103,7 @@ class SoundManager : public QObject {
     void readProcess();
 
     void registerOutput(AudioOutput output, AudioSource *src);
-    void registerInput(AudioInput input, AudioDestination *dest);
+    void registerInput(AudioInput input, AudioSink *dest);
     QList<AudioOutput> registeredOutputs() const;
     QList<AudioInput> registeredInputs() const;
 
@@ -111,7 +111,7 @@ class SoundManager : public QObject {
     void devicesUpdated(); // emitted when pointers to SoundDevices go stale
     void devicesSetup(); // emitted when the sound devices have been set up
     void outputRegistered(AudioOutput output, AudioSource *src);
-    void inputRegistered(AudioInput input, AudioDestination *dest);
+    void inputRegistered(AudioInput input, AudioSink *dest);
 
   private:
     void setJACKName() const;
@@ -129,7 +129,7 @@ class SoundManager : public QObject {
     SoundManagerConfig m_config;
     SoundDevice* m_pErrorDevice;
     QHash<AudioOutput, AudioSource*> m_registeredSources;
-    QHash<AudioInput, AudioDestination*> m_registeredDestinations;
+    QHash<AudioInput, AudioSink*> m_registeredDestinations;
     ControlObject* m_pControlObjectSoundStatusCO;
     ControlObject* m_pControlObjectVinylControlGainCO;
 };

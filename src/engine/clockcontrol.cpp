@@ -1,10 +1,10 @@
 #include "engine/clockcontrol.h"
 
-#include "controlobject.h"
+#include "control/controlobject.h"
 #include "configobject.h"
 #include "cachingreader.h"
 #include "engine/enginecontrol.h"
-#include "controlobjectslave.h"
+#include "control/controlobjectslave.h"
 
 ClockControl::ClockControl(QString group, ConfigObject<ConfigValue>* pConfig)
         : EngineControl(group, pConfig) {

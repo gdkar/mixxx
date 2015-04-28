@@ -5,11 +5,10 @@
 #ifndef ENGINEAUX_H
 #define ENGINEAUX_H
 
-#include "controlobjectslave.h"
-#include "controlpushbutton.h"
+#include "control/controlobjectslave.h"
+#include "control/controlpushbutton.h"
 #include "engine/enginechannel.h"
 #include "engine/enginevumeter.h"
-#include "util/circularbuffer.h"
 #include "soundmanagerutil.h"
 
 class EffectsManager;
@@ -18,7 +17,7 @@ class ControlAudioTaperPot;
 
 // EngineAux is an EngineChannel that implements a mixing source whose
 // samples are fed directly from the SoundManager
-class EngineAux : public EngineChannel, public AudioDestination {
+class EngineAux : public EngineChannel, public AudioSink {
     Q_OBJECT
   public:
     EngineAux(const ChannelHandleAndGroup& handle_group, EffectsManager* pEffectsManager);
@@ -32,7 +31,7 @@ class EngineAux : public EngineChannel, public AudioDestination {
 
     // This is called by SoundManager whenever there are new samples from the
     // configured input to be processed. This is run in the callback thread of
-    // the soundcard this AudioDestination was registered for! Beware, in the
+    // the soundcard this AudioSink was registered for! Beware, in the
     // case of multiple soundcards, this method is not re-entrant but it may be
     // concurrent with EngineMaster processing.
     virtual void receiveBuffer(AudioInput input, const CSAMPLE* pBuffer,

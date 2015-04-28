@@ -7,8 +7,8 @@
 #include <QStackedWidget>
 #include <QEvent>
 
-#include "controlobject.h"
-#include "controlobjectthread.h"
+#include "control/controlobject.h"
+#include "control/controlobjectthread.h"
 #include "widget/wbasewidget.h"
 
 class WidgetStackControlListener : public QObject {

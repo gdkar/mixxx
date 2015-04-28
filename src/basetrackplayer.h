@@ -19,6 +19,7 @@ class EffectsManager;
 // rest of Mixxx. Also makes testing a lot easier.
 class BaseTrackPlayer : public BasePlayer {
     Q_OBJECT
+    Q_ENUMS(TrackLoadReset);
   public:
     // The ordering here corresponds to the ordering of the preferences combo box.
     enum TrackLoadReset {
@@ -26,22 +27,19 @@ class BaseTrackPlayer : public BasePlayer {
         RESET_PITCH,
         RESET_PITCH_AND_SPEED,
     };
-
     BaseTrackPlayer(QObject* pParent, const QString& group);
     virtual ~BaseTrackPlayer() {}
-
     virtual TrackPointer getLoadedTrack() const = 0;
-
   public slots:
     virtual void slotLoadTrack(TrackPointer pTrack, bool bPlay=false) = 0;
-
   signals:
     void loadTrack(TrackPointer pTrack, bool bPlay=false);
     void loadTrackFailed(TrackPointer pTrack);
     void newTrackLoaded(TrackPointer pLoadedTrack);
     void unloadingTrack(TrackPointer pAboutToBeUnloaded);
 };
-
+Q_DECLARE_METATYPE(BaseTrackPlayer::TrackLoadReset);
+Q_DECLARE_TYPEINFO(BaseTrackPlayer::TrackLoadReset,Q_PRIMITIVE_TYPE);
 class BaseTrackPlayerImpl : public BaseTrackPlayer {
     Q_OBJECT
   public:
@@ -54,15 +52,11 @@ class BaseTrackPlayerImpl : public BaseTrackPlayer {
                         bool defaultMaster,
                         bool defaultHeadphones);
     virtual ~BaseTrackPlayerImpl();
-
     TrackPointer getLoadedTrack() const;
-
     // TODO(XXX): Only exposed to let the passthrough AudioInput get
     // connected. Delete me when EngineMaster supports AudioInput assigning.
     EngineDeck* getEngineDeck() const;
-
     void setupEqControls();
-
   public slots:
     void slotLoadTrack(TrackPointer track, bool bPlay=false);
     void slotFinishLoading(TrackPointer pTrackInfoObject);
@@ -70,11 +64,9 @@ class BaseTrackPlayerImpl : public BaseTrackPlayer {
     void slotUnloadTrack(TrackPointer track);
     void slotSetReplayGain(double replayGain);
     void slotPlayToggled(double);
-
   private:
     ConfigObject<ConfigValue>* m_pConfig;
     TrackPointer m_pLoadedTrack;
-
     // Waveform display related controls
     ControlPotmeter* m_pWaveformZoom;
     ControlObject* m_pEndOfTrack;
@@ -96,7 +88,6 @@ class BaseTrackPlayerImpl : public BaseTrackPlayer {
     ControlObjectSlave* m_pSpeed;
     ControlObjectSlave* m_pPitchAdjust;
     EngineDeck* m_pChannel;
-
     bool m_replaygainPending;
 };
 

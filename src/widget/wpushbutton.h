@@ -29,7 +29,7 @@
 
 #include "widget/wwidget.h"
 #include "widget/wpixmapstore.h"
-#include "controlpushbutton.h"
+#include "control/controlpushbutton.h"
 #include "skin/skincontext.h"
 #include "controlwidgetconnection.h"
 #include "util/math.h"

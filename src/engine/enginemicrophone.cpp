@@ -9,7 +9,7 @@
 #include "sampleutil.h"
 #include "effects/effectsmanager.h"
 #include "engine/effects/engineeffectsmanager.h"
-#include "controlaudiotaperpot.h"
+#include "control/controlaudiotaperpot.h"
 
 
 EngineMicrophone::EngineMicrophone(const ChannelHandleAndGroup& handle_group,

@@ -39,30 +39,18 @@ class Sine
 		double b;
 
 	public:
-		Sine()
-			{ 
-				b = 0;
-				y[0] = y[1] = 0;
-				z = 0;
-			}
+		Sine(){ b = 0;y[0] = y[1] = 0;z = 0;}
 
 		Sine (double f, double fs, double phase)
-			{
-				set_f (f, fs, phase);
-			}
+			{set_f (f, fs, phase);}
 
 		Sine (double w, double phase = 0.)
-			{
-				set_f (w, phase);
-			}
+			{set_f (w, phase);}
 
 		inline void set_f (double f, double fs, double phase)
-			{
-				set_f (f*2*M_PI/fs, phase);
-			}
+			{set_f (f*2*M_PI/fs, phase);}
 
-		inline void set_f (double w, double phase)
-			{
+		inline void set_f (double w, double phase){
 				b = 2 * cos (w);
 				y[0] = sin (phase - w);
 				y[1] = sin (phase - w * 2);
@@ -70,41 +58,32 @@ class Sine
 			}
 
 		/* advance and return 1 sample */
-		inline double get()
-			{
-				register double s = b * y[z]; 
+		inline double get(){
+				double s = b * y[z]; 
 				z ^= 1;
 				s -= y[z];
 				return y[z] = s;
 			}
 
-		double get_phase()
-			{
+		double get_phase(){
 				double x0 = y[z], x1 = b * y[z] - y[z^1];
 				double phi = asin (x0);
-				
 				/* slope is falling, we're into the 2nd half. */
-				if (x1 < x0)
-					return M_PI - phi;
-
+				if (x1 < x0) return M_PI - phi;
 				return phi;
 			}
 };
 
 /* same as above but including a damping coefficient d */
 class DampedSine
-: public Sine
-{
+: public Sine{
 	public:
 		double d;
-
 	public:
 		DampedSine()
 			{ d = 1; }
-
-		inline double get()
-			{
-				register double s = b * y[z]; 
+		inline double get(){
+				double s = b * y[z]; 
 				z ^= 1;
 				s -= d * y[z];
 				return y[z] = d * s;

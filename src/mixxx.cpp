@@ -26,15 +26,15 @@
 
 #include "mixxx.h"
 
-#include "analyserqueue.h"
-#include "controlpotmeter.h"
-#include "controlobjectslave.h"
+#include "analyser/analyserqueue.h"
+#include "control/controlpotmeter.h"
+#include "control/controlobjectslave.h"
 #include "deck.h"
 #include "defs_urls.h"
-#include "dlgabout.h"
-#include "dlgpreferences.h"
-#include "dlgprefeq.h"
-#include "dlgdevelopertools.h"
+#include "dialogs/dlgabout.h"
+#include "dialogs/dlgpreferences.h"
+#include "dialogs/dlgprefeq.h"
+#include "dialogs/dlgdevelopertools.h"
 #include "engine/enginemaster.h"
 #include "engine/enginemicrophone.h"
 #include "effects/effectsmanager.h"
@@ -68,7 +68,7 @@
 #include "util/timer.h"
 #include "util/time.h"
 #include "util/version.h"
-#include "controlpushbutton.h"
+#include "control/controlpushbutton.h"
 #include "util/compatibility.h"
 #include "util/sandbox.h"
 #include "playerinfo.h"
@@ -83,7 +83,7 @@
 #endif
 
 #ifdef __MODPLUG__
-#include "dlgprefmodplug.h"
+#include "dialogs/dlgprefmodplug.h"
 #endif
 
 // static

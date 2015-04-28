@@ -33,7 +33,7 @@ http://svn.xiph.org/trunk/vorbis/examples/encoder_example.c
 
 #include "encoder/encodervorbis.h"
 #include "encoder/encodercallback.h"
-#include "errordialoghandler.h"
+#include "dialogs/errordialoghandler.h"
 
 EncoderVorbis::EncoderVorbis(EncoderCallback* pCallback)
         : m_bStreamInitialized(false),

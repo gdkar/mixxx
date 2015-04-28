@@ -6,8 +6,8 @@
 #include <QString>
 
 #include "configobject.h"
-#include "controlobject.h"
-#include "controlobjectthread.h"
+#include "control/controlobject.h"
+#include "control/controlobjectthread.h"
 #include "recording/defs_recording.h"
 
 //

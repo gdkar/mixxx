@@ -4,7 +4,7 @@
 
 #include "engine/enginebufferscalerubberband.h"
 
-#include "controlobject.h"
+#include "control/controlobject.h"
 #include "engine/readaheadmanager.h"
 #include "sampleutil.h"
 #include "track/keyutils.h"
