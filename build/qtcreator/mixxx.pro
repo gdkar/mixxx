@@ -96,20 +96,20 @@ CONFIG(debug) { # gdbmacros is required for inspecting Qt datatypes using gdb wi
     }
 }
 
-HEADERS += $$UI_DIR/ui_dlgaboutdlg.h \
-    $$UI_DIR/ui_dlgmidilearning.h \
-    $$UI_DIR/ui_dlgprefcontrolsdlg.h \
-    $$UI_DIR/ui_dlgprefcrossfaderdlg.h \
-    $$UI_DIR/ui_dlgprefeqdlg.h \
-    $$UI_DIR/ui_dlgpreferencesdlg.h \
-    $$UI_DIR/ui_dlgprefmidibindingsdlg.h \
-    $$UI_DIR/ui_dlgprefplaylistdlg.h \
-    $$UI_DIR/ui_dlgtagfetcher.h \
-    $$UI_DIR/ui_dlgprefrecorddlg.h \
-    $$UI_DIR/ui_dlgprefsounddlg.h \
-    $$UI_DIR/ui_dlgprefvinyldlg.h \
-    $$UI_DIR/ui_dlgprefnovinyldlg.h \
-    $$UI_DIR/ui_dlgprefnomididlg.h
+HEADERS += $$UI_DIR/dialogs/ui_dlgaboutdlg.h \
+    $$UI_DIR/dialogs/ui_dlgmidilearning.h \
+    $$UI_DIR/dialogs/ui_dlgprefcontrolsdlg.h \
+    $$UI_DIR/dialogs/ui_dlgprefcrossfaderdlg.h \
+    $$UI_DIR/dialogs/ui_dlgprefeqdlg.h \
+    $$UI_DIR/dialogs/ui_dlgpreferencesdlg.h \
+    $$UI_DIR/dialogs/ui_dlgprefmidibindingsdlg.h \
+    $$UI_DIR/dialogs/ui_dlgprefplaylistdlg.h \
+    $$UI_DIR/dialogs/ui_dlgtagfetcher.h \
+    $$UI_DIR/dialogs/ui_dlgprefrecorddlg.h \
+    $$UI_DIR/dialogs/ui_dlgprefsounddlg.h \
+    $$UI_DIR/dialogs/ui_dlgprefvinyldlg.h \
+    $$UI_DIR/dialogs/ui_dlgprefnovinyldlg.h \
+    $$UI_DIR/dialogs/ui_dlgprefnomididlg.h
 
 INCLUDEPATH += src \
     lib/replaygain \
