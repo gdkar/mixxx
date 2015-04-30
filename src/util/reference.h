@@ -13,13 +13,10 @@ template <class T>
 class ReferenceHolder : public BaseReferenceHolder {
   public:
     ReferenceHolder(QSharedPointer<T>& reference)
-            : m_reference(reference) {
-    }
+            : m_reference(reference) 
+    {}
     virtual ~ReferenceHolder() {}
-
   private:
     QSharedPointer<T> m_reference;
 };
-
-
 #endif /* REFERENCE_H */

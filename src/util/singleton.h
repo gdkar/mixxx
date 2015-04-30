@@ -8,25 +8,26 @@ class Singleton
 {
 public:
     static T* create() {
-        if (!m_instance) {
-            m_instance = new T();
+        T* current = s_instance.load();
+        if(Q_UNLIKELY(!current)){
+          current = new T();
+          if(Q_UNLIKELY(!s_instance.testAndSetRelaxed(0,current))){
+            delete current;
+            current = s_instance.load();
+          }
         }
-        return m_instance;
+        return current;
     }
-
     static T* instance() {
-        if (m_instance == NULL) {
-            qWarning() << "Singleton class has not been created yet, returning NULL";
-        }
-        return m_instance;
+//        if (s_instance == NULL) {qWarning() << "Singleton class has not been created yet, returning NULL";}
+        return create();
     }
-
-    static void destroy() {
-        if (m_instance) {
-            delete m_instance;
+    static void destroy() {T* current = s_instance.load();
+      if(Q_LIKELY(current)){
+        if(Q_LIKELY(s_instance.testAndSetRelaxed(current,0)))
+          delete current;
         }
     }
-
 protected:
     Singleton() {}
     virtual ~Singleton() {}
@@ -35,10 +36,8 @@ private:
     //hide copy constructor and assign operator
     Singleton(const Singleton&) {}
     const Singleton& operator= (const Singleton&) {}
-
-    static T* m_instance;
+    static QAtomicPointer<T> s_instance;
 };
-
-template<class T> T* Singleton<T>::m_instance = 0;
+template<class T> T* Singleton<T>::s_instance = 0;
 
 #endif // SINGLETON_H

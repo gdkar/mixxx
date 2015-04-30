@@ -117,7 +117,7 @@ class EngineBuffer : public EngineObject {
     };
 
     EngineBuffer(QString _group, ConfigObject<ConfigValue>* _config,
-                 EngineChannel* pChannel, EngineMaster* pMixingEngine);
+                 EngineChannel* pChannel, EngineMaster* pMixingEngine, QObject *pParaent=0);
     virtual ~EngineBuffer();
 
     void bindWorkers(EngineWorkerScheduler* pWorkerScheduler);
@@ -405,5 +405,5 @@ class EngineBuffer : public EngineObject {
 
     QSharedPointer<VisualPlayPosition> m_visualPlayPos;
 };
-
+Q_DECLARE_TYPEINFO(EngineBuffer,Q_COMPLEX_TYPE);
 #endif

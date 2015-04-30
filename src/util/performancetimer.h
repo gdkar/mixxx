@@ -50,9 +50,8 @@
 //
 
 #include <QtCore/qglobal.h>
-
-class PerformanceTimer
-{
+#include <qelapsedtimer.h>
+class PerformanceTimer{
 public:
     PerformanceTimer() {
       t1 = 0;
@@ -61,10 +60,9 @@ public:
 #endif
     };
     void start();
-    qint64 elapsed() const;
+    qint64 elapsed() const; /* nanoseconds */
     qint64 restart();
     qint64 difference(PerformanceTimer* timer);
-
 private:
     qint64 t1;
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)

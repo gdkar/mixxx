@@ -115,23 +115,13 @@ class PlayerManager : public QObject, public PlayerManagerInterface {
     void bindToLibrary(Library* pLibrary);
 
     // Returns the group for the ith sampler where i is zero indexed
-    static QString groupForSampler(int i) {
-        return QString("[Sampler%1]").arg(i+1);
-    }
-
+    static QString groupForSampler(int i) {return QString("[Sampler%1]").arg(i+1);}
     // Returns the group for the ith deck where i is zero indexed
-    static QString groupForDeck(int i) {
-        return QString("[Channel%1]").arg(i+1);
-    }
-
+    static QString groupForDeck(int i) {return QString("[Channel%1]").arg(i+1);}
     // Returns the group for the ith PreviewDeck where i is zero indexed
-    static QString groupForPreviewDeck(int i) {
-        return QString("[PreviewDeck%1]").arg(i+1);
-    }
-
+    static QString groupForPreviewDeck(int i) {return QString("[PreviewDeck%1]").arg(i+1);}
     // Used to determine if the user has configured an input for the given vinyl deck.
     bool hasVinylInput(int inputnum) const;
-
   public slots:
     // Slots for loading tracks into a Player, which is either a Sampler or a Deck
     void slotLoadTrackToPlayer(TrackPointer pTrack, QString group, bool play = false);
@@ -174,7 +164,7 @@ class PlayerManager : public QObject, public PlayerManagerInterface {
     ConfigObject<ConfigValue>* m_pConfig;
     SoundManager* m_pSoundManager;
     EffectsManager* m_pEffectsManager;
-    EngineMaster* m_pEngine;
+    EngineMaster  *m_pEngine;
     AnalyserQueue* m_pAnalyserQueue;
     ControlObject* m_pCONumDecks;
     ControlObject* m_pCONumSamplers;

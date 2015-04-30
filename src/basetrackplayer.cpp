@@ -41,11 +41,11 @@ BaseTrackPlayerImpl::BaseTrackPlayerImpl(QObject* pParent,
           m_replaygainPending(false) {
     ChannelHandleAndGroup channelGroup =
             pMixingEngine->registerChannelGroup(group);
-    m_pChannel = new EngineDeck(channelGroup, pConfig, pMixingEngine,
-                                pEffectsManager, defaultOrientation);
+    m_pChannel.reset(new EngineDeck(channelGroup, pConfig, pMixingEngine,
+                                pEffectsManager, defaultOrientation));
 
     EngineBuffer* pEngineBuffer = m_pChannel->getEngineBuffer();
-    pMixingEngine->addChannel(m_pChannel);
+    pMixingEngine->addChannel(m_pChannel.data());
 
     // Set the routing option defaults for the master and headphone mixes.
     m_pChannel->setMaster(defaultMaster);
@@ -329,7 +329,7 @@ void BaseTrackPlayerImpl::slotPlayToggled(double v) {
 }
 
 EngineDeck* BaseTrackPlayerImpl::getEngineDeck() const {
-    return m_pChannel;
+    return m_pChannel.data();
 }
 
 void BaseTrackPlayerImpl::setupEqControls() {

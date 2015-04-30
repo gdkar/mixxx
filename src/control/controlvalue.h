@@ -32,19 +32,14 @@ class ControlRingValue {
   public:
     ControlRingValue()
         : m_value(T()),
-          m_readerSlots(cReaderSlotCnt) {
-    }
-
+          m_readerSlots(cReaderSlotCnt) {}
     bool tryGet(T* value) const {
         // Read while consuming one readerSlot
         bool hasSlot = (m_readerSlots.fetchAndAddAcquire(-1) > 0);
-        if (hasSlot) {
-            *value = m_value;
-        }
+        if (hasSlot) {*value = m_value;}
         (void)m_readerSlots.fetchAndAddRelease(1);
         return hasSlot;
     }
-
     bool trySet(const T& value) {
         // try to lock this element entirely for reading
         if (m_readerSlots.testAndSetAcquire(cReaderSlotCnt, 0)) {
@@ -54,7 +49,6 @@ class ControlRingValue {
         }
         return false;
    }
-
   private:
     T m_value;
     mutable QAtomicInt m_readerSlots;
@@ -84,7 +78,6 @@ class ControlValueAtomicBase {
           value = *data;
         return value;
     }
-
     inline void setValue(const T& value) {
         /* requires T to have a copy assignment operator, but whatever */
         QSharedPointer<T> data = QSharedPointer<T>::create(value);
@@ -99,16 +92,10 @@ class ControlValueAtomicBase {
     QSharedPointer<T> data(new T);
     *data = other;
     m_data.swap(data);
-    if(data)
-      other = *data;
-    else
-      other = T();
+    other = (data)? *data:T();
   }
-
   protected:
-    ControlValueAtomicBase(){
-    }
-
+    ControlValueAtomicBase(){}
   private:
     QSharedPointer<T>   m_data;
 };
@@ -118,46 +105,30 @@ class ControlValueAtomicBase {
 // direct assignment/read of an aligned member variable is used.
 template<typename T>
 class ControlValueAtomicBase<T, true>{
-  typedef typename QIntegerForSize<sizeof(T)>::Unsigned uint;
+  typedef typename QIntegerForSize<sizeof(T)>::Unsigned uint_type;
   public:
-    ControlValueAtomicBase()
-             {
-      setValue(T());
-    }
+    ControlValueAtomicBase(){setValue(T());}
     inline T getValue() const {
-        quintptr as_int = m_int.load(); 
+        uint_type as_int = m_int.load(); 
         const T * int_ptr = reinterpret_cast<T*>(&as_int);
         return *int_ptr;
     }
     inline void setValue(const T& value) {
-        quintptr new_val;
-        const uint *int_ptr = reinterpret_cast<const uint*>(&value);
+        uint_type new_val;
+        const uint_type *int_ptr = reinterpret_cast<const uint_type*>(&value);
         new_val=*int_ptr;
         m_int.store(new_val);
     }
     inline void swap(T & value){
-        quintptr new_val;
-        const uint *int_ptr = reinterpret_cast<const uint*>(&value);
+        uint_type new_val;
+        const uint_type *int_ptr = reinterpret_cast<const uint_type *>(&value);
         new_val = *int_ptr;
         new_val = m_int.fetchAndStoreOrdered(new_val);
         const T *t_ptr = reinterpret_cast<T*>(&new_val);
         value = *t_ptr;
     }
   private:
-#if 0
-#if defined(__GNUC__)
-    T m_value __attribute__ ((aligned(sizeof(void*))));
-#elif defined(_MSC_VER)
-#ifdef _WIN64
-    T __declspec(align(8)) m_value;
-#else
-    T __declspec(align(4)) m_value;
-#endif
-#else
-    T m_value;
-#endif
-#endif
-    QAtomicInteger<quintptr> m_int;
+    QAtomicInteger<uint_type> m_int;
 };
 // ControlValueAtomic is a wrapper around ControlValueAtomicBase which uses the
 // sizeof(T) to determine which underlying implementation of
@@ -165,12 +136,9 @@ class ControlValueAtomicBase<T, true>{
 // the specialized implementation of ControlValueAtomicBase for types that are
 // atomic on the architecture is used.
 template<typename T>
-class ControlValueAtomic
-      :  public ControlValueAtomicBase<T, sizeof(T) <= sizeof(quintptr)> {
+class ControlValueAtomic :  public ControlValueAtomicBase<T, sizeof(T) <= sizeof(quintptr)> {
     public:
-    ControlValueAtomic()
-        : ControlValueAtomicBase<T, sizeof(T) <= sizeof(quintptr)> (){
-    }
+    ControlValueAtomic() : ControlValueAtomicBase<T, sizeof(T) <= sizeof(quintptr)> (){}
 };
 template<typename T>
 inline void swap(ControlValueAtomic<T> &lhs, T&rhs){

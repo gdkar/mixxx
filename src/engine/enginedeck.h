@@ -38,9 +38,9 @@ class ControlPushButton;
 class EngineDeck : public EngineChannel, public AudioSink {
     Q_OBJECT
   public:
-    EngineDeck(const ChannelHandleAndGroup& handle_group, ConfigObject<ConfigValue>* pConfig,
+    explicit EngineDeck(const ChannelHandleAndGroup& handle_group, ConfigObject<ConfigValue>* pConfig,
                EngineMaster* pMixingEngine, EffectsManager* pEffectsManager,
-               EngineChannel::ChannelOrientation defaultOrientation = CENTER);
+               EngineChannel::ChannelOrientation defaultOrientation = CENTER, QObject *pParent=0);
     virtual ~EngineDeck();
 
     virtual void process(CSAMPLE* pOutput, const int iBufferSize);
@@ -87,5 +87,5 @@ class EngineDeck : public EngineChannel, public AudioSink {
     bool m_bPassthroughIsActive;
     bool m_bPassthroughWasActive;
 };
-
+Q_DECLARE_TYPEINFO(EngineDeck,Q_COMPLEX_TYPE);
 #endif

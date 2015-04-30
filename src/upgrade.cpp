@@ -114,12 +114,12 @@ ConfigObject<ConfigValue>* Upgrade::versionUpgrade(const QString& settingsPath) 
         newFilePath = newLocation.arg("MixxxMIDIBindings.xml");
         oldFile = new QFile(oldFilePath);
         if (oldFile->exists()) {
-            qWarning() << "The MIDI mapping file format has changed in this version of Mixxx. You will need to reconfigure your MIDI controller. See the Wiki for full details on the new format.";
+            qWarning() << "The mapping file format has changed in this version of Mixxx. You will need to reconfigure your controller. See the Wiki for full details on the new format.";
             if (oldFile->copy(newFilePath))
                 oldFile->remove();
             else {
-                if (oldFile->error()==14) qDebug() << errorText.arg("MIDI mapping", oldFilePath, newFilePath) << "The destination file already exists.";
-                else qDebug() << errorText.arg("MIDI mapping", oldFilePath, newFilePath) << "Error #" << oldFile->error();
+                if (oldFile->error()==14) qDebug() << errorText.arg("mapping", oldFilePath, newFilePath) << "The destination file already exists.";
+                else qDebug() << errorText.arg("mapping", oldFilePath, newFilePath) << "Error #" << oldFile->error();
             }
         }
         // Tidy up

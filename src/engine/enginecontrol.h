@@ -36,7 +36,7 @@ class EngineControl : public QObject {
     Q_OBJECT
   public:
     EngineControl(QString group,
-                  ConfigObject<ConfigValue>* _config);
+                  ConfigObject<ConfigValue>* _config, QObject *pParent=0);
     virtual ~EngineControl();
 
     // Called by EngineBuffer::process every latency period. See the above
@@ -110,5 +110,5 @@ class EngineControl : public QObject {
     EngineBuffer* m_pEngineBuffer;
     ControlObjectThread m_numDecks;
 };
-
+Q_DECLARE_TYPEINFO(EngineControl,Q_COMPLEX_TYPE);
 #endif /* ENGINECONTROL_H */

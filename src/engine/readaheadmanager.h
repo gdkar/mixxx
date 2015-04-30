@@ -46,22 +46,14 @@ class ReadAheadManager {
     void addRateControl(RateControl* pRateControl);
 
     // Get the current read-ahead position in samples.
-    virtual inline int getPlaypos() const {
-        return m_iCurrentPosition;
-    }
-
+    virtual inline int getPlaypos() const {return m_iCurrentPosition;}
     virtual void notifySeek(int iSeekPosition);
-
     // hintReader allows the ReadAheadManager to provide hints to the reader to
     // indicate that the given portion of a song is about to be read.
     virtual void hintReader(double dRate, HintVector* hintList);
-
     virtual int getEffectiveVirtualPlaypositionFromLog(double currentVirtualPlayposition,
                                                        double numConsumedSamples);
-
-    virtual void setReader(CachingReader* pReader) {
-        m_pReader = pReader;
-    }
+    virtual void setReader(CachingReader* pReader) {m_pReader = pReader;}
 
   private:
     // An entry in the read log indicates the virtual playposition the read

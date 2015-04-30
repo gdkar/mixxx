@@ -19,7 +19,7 @@ class BpmControl : public EngineControl {
     Q_OBJECT
 
   public:
-    BpmControl(QString group, ConfigObject<ConfigValue>* _config);
+    BpmControl(QString group, ConfigObject<ConfigValue>* _config, QObject *pParent=0);
     virtual ~BpmControl();
 
     double getBpm() const;
@@ -139,7 +139,7 @@ class BpmControl : public EngineControl {
     // The current effective BPM of the engine
     ControlLinPotmeter* m_pEngineBpm;
 
-    // Used for bpm tapping from GUI and MIDI
+    // Used for bpm tapping from GUI  
     ControlPushButton* m_pButtonTap;
 
     // Button for sync'ing with the other EngineBuffer

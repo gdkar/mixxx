@@ -59,7 +59,7 @@ class SoundDevice {
     virtual void readProcess() = 0;
     virtual void writeProcess() = 0;
     virtual QString getError() const = 0;
-    virtual unsigned int getDefaultSampleRate() const = 0;
+    virtual double getDefaultSampleRate() const = 0;
     int getNumOutputChannels() const;
     int getNumInputChannels() const;
     SoundDeviceError addOutput(const AudioOutputBuffer& out);

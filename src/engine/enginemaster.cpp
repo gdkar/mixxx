@@ -51,8 +51,10 @@ EngineMaster::EngineMaster(ConfigObject<ConfigValue>* _config,
                            const char* group,
                            EffectsManager* pEffectsManager,
                            bool bEnableSidechain,
-                           bool bRampingGain)
-        : m_pEngineEffectsManager(pEffectsManager ? pEffectsManager->getEngineEffectsManager() : NULL),
+                           bool bRampingGain,
+                           QObject *pParent)
+        : QObject(pParent),
+          m_pEngineEffectsManager(pEffectsManager ? pEffectsManager->getEngineEffectsManager() : NULL),
           m_bRampingGain(bRampingGain),
           m_masterGainOld(0.0),
           m_headphoneMasterGainOld(0.0),
@@ -226,15 +228,17 @@ EngineMaster::~EngineMaster() {
     }
 
     delete m_pWorkerScheduler;
-
-    for (int i = 0; i < m_channels.size(); ++i) {
-        ChannelInfo* pChannelInfo = m_channels[i];
-        SampleUtil::free(pChannelInfo->m_pBuffer);
-        delete pChannelInfo->m_pChannel;
-        delete pChannelInfo->m_pVolumeControl;
-        delete pChannelInfo->m_pMuteControl;
-        delete pChannelInfo;
+    m_activeChannels.clear();
+    for(int i = 0; i < m_channels.size(); ++i){
+      SampleUtil::free(m_channels[i]->m_pBuffer);
     }
+    m_channels.clear();
+/*    for (int i = 0; i < m_channels.size(); ++i) {
+        ChannelInfo* pChannelInfo = m_channels[i];
+          if(pChannelInfo){
+          delete pChannelInfo;
+        }
+    }*/
 }
 
 const CSAMPLE* EngineMaster::getMasterBuffer() const {
@@ -257,12 +261,11 @@ void EngineMaster::processChannels(int iBufferSize) {
     EngineChannel* pMasterChannel = m_pMasterSync->getMaster();
     // Reserve the first place for the master channel which
     // should be processed first
-    m_activeChannels.append(NULL);
+    m_activeChannels.append(0);
     int activeChannelsStartIndex = 1; // Nothing at 0 yet
     for (int i = 0; i < m_channels.size(); ++i) {
-        ChannelInfo* pChannelInfo = m_channels[i];
-        EngineChannel* pChannel = pChannelInfo->m_pChannel;
-
+        QSharedPointer<ChannelInfo> pChannelInfo(m_channels[i]);
+        EngineChannel* pChannel=m_channels[i]->m_pChannel;
         // Skip inactive channels.
         if (!pChannel || !pChannel->isActive()) {
             continue;
@@ -272,31 +275,31 @@ void EngineMaster::processChannels(int iBufferSize) {
             // talkover is an exclusive channel
             // once talkover is enabled it is not used in
             // xFader-Mix
-            m_activeTalkoverChannels.append(pChannelInfo);
+            m_activeTalkoverChannels.append(pChannelInfo.data());
 
             // Check if we need to fade out the master channel
             GainCache& gainCache = m_channelMasterGainCache[i];
             if (gainCache.m_gain) {
                 gainCache.m_fadeout = true;
-                m_activeBusChannels[pChannel->getOrientation()].append(pChannelInfo);
+                m_activeBusChannels[pChannel->getOrientation()].append(pChannelInfo.data());
              }
         } else {
             // Check if we need to fade out the channel
             GainCache& gainCache = m_channelTalkoverGainCache[i];
             if (gainCache.m_gain) {
                 gainCache.m_fadeout = true;
-                m_activeTalkoverChannels.append(pChannelInfo);
+                m_activeTalkoverChannels.append(pChannelInfo.data());
             }
             if (pChannel->isMasterEnabled() &&
                     !pChannelInfo->m_pMuteControl->toBool()) {
                 // the xFader-Mix
-                m_activeBusChannels[pChannel->getOrientation()].append(pChannelInfo);
+                m_activeBusChannels[pChannel->getOrientation()].append(pChannelInfo.data());
             } else {
                 // Check if we need to fade out the channel
                 GainCache& gainCache = m_channelMasterGainCache[i];
                 if (gainCache.m_gain) {
                     gainCache.m_fadeout = true;
-                    m_activeBusChannels[pChannel->getOrientation()].append(pChannelInfo);
+                    m_activeBusChannels[pChannel->getOrientation()].append(pChannelInfo.data());
                 }
             }
         }
@@ -304,40 +307,36 @@ void EngineMaster::processChannels(int iBufferSize) {
         // If the channel is enabled for previewing in headphones, copy it
         // over to the headphone buffer
         if (pChannel->isPflEnabled()) {
-            m_activeHeadphoneChannels.append(pChannelInfo);
+            m_activeHeadphoneChannels.append(pChannelInfo.data());
         } else {
             // Check if we need to fade out the channel
             GainCache& gainCache = m_channelHeadphoneGainCache[i];
             if (gainCache.m_gain) {
                 m_channelHeadphoneGainCache[i].m_fadeout = true;
-                m_activeHeadphoneChannels.append(pChannelInfo);
+                m_activeHeadphoneChannels.append(pChannelInfo.data());
             }
         }
 
         // If necessary, add the channel to the list of buffers to process.
         if (pChannel == pMasterChannel) {
             // If this is the sync master, it should be processed first.
-            m_activeChannels.replace(0, pChannelInfo);
+            m_activeChannels[0]=pChannelInfo.data();
             activeChannelsStartIndex = 0;
         } else {
-            m_activeChannels.append(pChannelInfo);
+            m_activeChannels.append(pChannelInfo.data());
         }
     }
 
     // Now that the list is built and ordered, do the processing.
-    for (int i = activeChannelsStartIndex;
-             i < m_activeChannels.size(); ++i) {
-        ChannelInfo* pChannelInfo = m_activeChannels[i];
-        EngineChannel* pChannel = pChannelInfo->m_pChannel;
-        pChannel->process(pChannelInfo->m_pBuffer, iBufferSize);
+    for (int i = activeChannelsStartIndex; i < m_activeChannels.size(); ++i) {
+        m_activeChannels[i]->m_pChannel->process(m_activeChannels[i]->m_pBuffer, iBufferSize);
     }
 
     // After all the engines have been processed, trigger post-processing
     // which ensures that all channels are updating certain values at the
     // same point in time.  This prevents sync from failing depending on
     // if the sync target was processed before or after the sync origin.
-    for (int i = activeChannelsStartIndex;
-            i < m_activeChannels.size(); ++i) {
+    for (int i = activeChannelsStartIndex; i < m_activeChannels.size(); ++i) {
         m_activeChannels[i]->m_pChannel->postProcess(iBufferSize);
     }
 }
@@ -596,16 +595,16 @@ void EngineMaster::process(const int iBufferSize) {
 }
 
 void EngineMaster::addChannel(EngineChannel* pChannel) {
-    ChannelInfo* pChannelInfo = new ChannelInfo(m_channels.size());
+    QSharedPointer<ChannelInfo> pChannelInfo ( new ChannelInfo(m_channels.size()));
     pChannelInfo->m_pChannel = pChannel;
     const QString& group = pChannel->getGroup();
     pChannelInfo->m_handle = m_channelHandleFactory.getOrCreateHandle(group);
-    pChannelInfo->m_pVolumeControl = new ControlAudioTaperPot(
-            ConfigKey(group, "volume"), -20, 0, 1);
+    pChannelInfo->m_pVolumeControl.reset(new ControlAudioTaperPot(
+            ConfigKey(group, "volume"), -20, 0, 1));
     pChannelInfo->m_pVolumeControl->setDefaultValue(1.0);
     pChannelInfo->m_pVolumeControl->set(1.0);
-    pChannelInfo->m_pMuteControl = new ControlPushButton(
-            ConfigKey(group, "mute"));
+    pChannelInfo->m_pMuteControl.reset( new ControlPushButton(
+            ConfigKey(group, "mute")));
     pChannelInfo->m_pMuteControl->setButtonMode(ControlPushButton::POWERWINDOW);
     pChannelInfo->m_pBuffer = SampleUtil::alloc(MAX_BUFFER_LEN);
     SampleUtil::clear(pChannelInfo->m_pBuffer, MAX_BUFFER_LEN);
@@ -633,7 +632,7 @@ void EngineMaster::addChannel(EngineChannel* pChannel) {
 
 EngineChannel* EngineMaster::getChannel(const QString& group) {
     for (int i = 0; i < m_channels.size(); ++i) {
-        ChannelInfo* pChannelInfo = m_channels[i];
+        QSharedPointer<ChannelInfo> pChannelInfo(m_channels[i]);
         if (pChannelInfo->m_pChannel->getGroup() == group) {
             return pChannelInfo->m_pChannel;
         }
@@ -653,7 +652,7 @@ const CSAMPLE* EngineMaster::getOutputBusBuffer(unsigned int i) const {
 
 const CSAMPLE* EngineMaster::getChannelBuffer(QString group) const {
     for (int i = 0; i < m_channels.size(); ++i) {
-        const ChannelInfo* pChannelInfo = m_channels[i];
+        const QSharedPointer<ChannelInfo> pChannelInfo (m_channels[i]);
         if (pChannelInfo->m_pChannel->getGroup() == group) {
             return pChannelInfo->m_pBuffer;
         }

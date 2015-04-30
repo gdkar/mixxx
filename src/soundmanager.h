@@ -80,10 +80,10 @@ class SoundManager : public QObject {
     SoundDevice* getErrorDevice() const;
 
     // Returns a list of samplerates we will attempt to support for a given API.
-    QList<unsigned int> getSampleRates(QString api) const;
+    QList<double> getSampleRates(QString api) const;
 
     // Convenience overload for SoundManager::getSampleRates(QString)
-    QList<unsigned int> getSampleRates() const;
+    QList<double> getSampleRates() const;
 
     // Get a list of host APIs supported by PortAudio.
     QList<QString> getHostAPIList() const;
@@ -102,16 +102,16 @@ class SoundManager : public QObject {
     void writeProcess();
     void readProcess();
 
-    void registerOutput(AudioOutput output, AudioSource *src);
-    void registerInput(AudioInput input, AudioSink *dest);
+    void registerOutput(AudioOutput output, AudioSource*src);
+    void registerInput(AudioInput input, AudioSink*dest);
     QList<AudioOutput> registeredOutputs() const;
     QList<AudioInput> registeredInputs() const;
 
   signals:
     void devicesUpdated(); // emitted when pointers to SoundDevices go stale
     void devicesSetup(); // emitted when the sound devices have been set up
-    void outputRegistered(AudioOutput output, AudioSource *src);
-    void inputRegistered(AudioInput input, AudioSink *dest);
+    void outputRegistered(AudioOutput output, AudioSource*src);
+    void inputRegistered(AudioInput input, AudioSink*dest);
 
   private:
     void setJACKName() const;
@@ -120,16 +120,16 @@ class SoundManager : public QObject {
     ConfigObject<ConfigValue> *m_pConfig;
 #ifdef __PORTAUDIO__
     bool m_paInitialized;
-    unsigned int m_jackSampleRate;
+    double m_jackSampleRate;
 #endif
     QList<SoundDevice*> m_devices;
-    QList<unsigned int> m_samplerates;
+    QList<double> m_samplerates;
     QList<CSAMPLE*> m_inputBuffers;
 
     SoundManagerConfig m_config;
     SoundDevice* m_pErrorDevice;
-    QHash<AudioOutput, AudioSource*> m_registeredSources;
-    QHash<AudioInput, AudioSink*> m_registeredDestinations;
+    QHash<AudioOutput, AudioSource* > m_registeredSources;
+    QHash<AudioInput, AudioSink* > m_registeredDestinations;
     ControlObject* m_pControlObjectSoundStatusCO;
     ControlObject* m_pControlObjectVinylControlGainCO;
 };

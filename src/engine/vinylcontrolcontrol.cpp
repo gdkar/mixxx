@@ -4,8 +4,8 @@
 #include "library/dao/cue.h"
 #include "util/math.h"
 
-VinylControlControl::VinylControlControl(QString group, ConfigObject<ConfigValue>* pConfig)
-        : EngineControl(group, pConfig),
+VinylControlControl::VinylControlControl(QString group, ConfigObject<ConfigValue>* pConfig, QObject *pParent)
+        : EngineControl(group, pConfig, pParent),
           m_bSeekRequested(false) {
     m_pControlVinylStatus = new ControlObject(ConfigKey(group, "vinylcontrol_status"));
     m_pControlVinylSpeedType = new ControlObject(ConfigKey(group, "vinylcontrol_speed_type"));

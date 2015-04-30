@@ -3,8 +3,7 @@
 
 #include "util/performancetimer.h"
 
-class ThreadCpuTimer
-{
+class ThreadCpuTimer{
 public:
     void start();
     qint64 elapsed() const;

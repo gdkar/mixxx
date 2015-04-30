@@ -13,15 +13,15 @@ static const double kLockOriginalKey = 0;
 static const double kLockCurrentKey = 1;
 
 KeyControl::KeyControl(QString group,
-                       ConfigObject<ConfigValue>* pConfig)
-        : EngineControl(group, pConfig) {
+                       ConfigObject<ConfigValue>* pConfig, QObject *pParent)
+        : EngineControl(group, pConfig, pParent) {
     m_pitchRateInfo.pitchRatio = 1.0;
     m_pitchRateInfo.tempoRatio = 1.0;
     m_pitchRateInfo.pitchTweakRatio = 1.0;
     m_pitchRateInfo.keylock = false;
 
     // pitch is the distance to the original pitch in semitones
-    // knob in semitones; 9.4 ct per midi step allowOutOfBounds = true;
+    // knob in semitones; 9.4 ct per step allowOutOfBounds = true;
     m_pPitch = new ControlPotmeter(ConfigKey(group, "pitch"), -6.0, 6.0, true);
     // Course adjust by full semitone steps.
     m_pPitch->setStepCount(12);
@@ -33,7 +33,7 @@ KeyControl::KeyControl(QString group,
 
     // pitch_adjust is the distance to the linear pitch in semitones
     // set by the speed slider or to the locked key.
-    // pitch_adjust knob in semitones; 4.7 ct per midi step; allowOutOfBounds = true;
+    // pitch_adjust knob in semitones; 4.7 ct per step; allowOutOfBounds = true;
     m_pPitchAdjust = new ControlPotmeter(ConfigKey(group, "pitch_adjust"), -3.0, 3.0, true);
     // Course adjust by full semitone steps.
     m_pPitchAdjust->setStepCount(6);

@@ -30,8 +30,8 @@ class ControlObjectSlave;
 /**
   * Abstract class used in widgets connected to ControlObjects. Derived
   * widgets can implement the signal and slot for manipulating the widgets
-  * value. The widgets internal value should match that of a MIDI control.
-  * The ControlObject can contain another mapping of the MIDI/Widget
+  * value. The widgets internal value should match that of a control.
+  * The ControlObject can contain another mapping of the Widget
   * value, but the mapping should always be done in the ControlObject.
   *
   *@author Tue & Ken Haste Andersen

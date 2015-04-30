@@ -25,7 +25,7 @@ const unsigned int SoundManagerConfig::kMaxAudioBufferSizeIndex = 7;
 
 const QString SoundManagerConfig::kDefaultAPI = QString("None");
 // Sample Rate even the cheap sound Devices will support most likely
-const unsigned int SoundManagerConfig::kFallbackSampleRate = 48000;
+const double       SoundManagerConfig::kFallbackSampleRate = 48000;
 const unsigned int SoundManagerConfig::kDefaultDeckCount = 2;
 // audioBufferSizeIndex=5 means about 21 ms of latency which is default in trunk r2453 -- bkgood
 const int SoundManagerConfig::kDefaultAudioBufferSizeIndex = 5;
@@ -176,11 +176,11 @@ bool SoundManagerConfig::checkAPI(const SoundManager &soundManager) {
     return true;
 }
 
-unsigned int SoundManagerConfig::getSampleRate() const {
+double SoundManagerConfig::getSampleRate() const {
     return m_sampleRate;
 }
 
-void SoundManagerConfig::setSampleRate(unsigned int sampleRate) {
+void SoundManagerConfig::setSampleRate(double sampleRate) {
     // making sure we don't divide by zero elsewhere
     m_sampleRate = sampleRate != 0 ? sampleRate : kFallbackSampleRate;
 }
@@ -382,7 +382,7 @@ void SoundManagerConfig::loadDefaults(SoundManager *soundManager, unsigned int f
         }
     }
 
-    unsigned int defaultSampleRate = kFallbackSampleRate;
+    double defaultSampleRate = kFallbackSampleRate;
     if (flags & SoundManagerConfig::DEVICES) {
         clearOutputs();
         clearInputs();
@@ -400,7 +400,7 @@ void SoundManagerConfig::loadDefaults(SoundManager *soundManager, unsigned int f
         }
     }
     if (flags & SoundManagerConfig::OTHER) {
-        QList<unsigned int> sampleRates = soundManager->getSampleRates(m_api);
+        QList<double > sampleRates = soundManager->getSampleRates(m_api);
         if (sampleRates.contains(defaultSampleRate)) {
             m_sampleRate = defaultSampleRate;
         } else if (sampleRates.contains(kFallbackSampleRate)) {

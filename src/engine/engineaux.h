@@ -20,15 +20,12 @@ class ControlAudioTaperPot;
 class EngineAux : public EngineChannel, public AudioSink {
     Q_OBJECT
   public:
-    EngineAux(const ChannelHandleAndGroup& handle_group, EffectsManager* pEffectsManager);
+    EngineAux(const ChannelHandleAndGroup& handle_group, EffectsManager* pEffectsManager, QObject *pParent=0);
     virtual ~EngineAux();
-
     bool isActive();
-
     // Called by EngineMaster whenever is requesting a new buffer of audio.
     virtual void process(CSAMPLE* pOutput, const int iBufferSize);
     virtual void postProcess(const int iBufferSize) { Q_UNUSED(iBufferSize) }
-
     // This is called by SoundManager whenever there are new samples from the
     // configured input to be processed. This is run in the callback thread of
     // the soundcard this AudioSink was registered for! Beware, in the
@@ -36,15 +33,12 @@ class EngineAux : public EngineChannel, public AudioSink {
     // concurrent with EngineMaster processing.
     virtual void receiveBuffer(AudioInput input, const CSAMPLE* pBuffer,
                                unsigned int nFrames);
-
     // Called by SoundManager whenever the aux input is connected to a
     // soundcard input.
     virtual void onInputConfigured(AudioInput input);
-
     // Called by SoundManager whenever the aux input is disconnected from
     // a soundcard input.
     virtual void onInputUnconfigured(AudioInput input);
-
   private:
     EngineEffectsManager* m_pEngineEffectsManager;
     EngineVuMeter m_vuMeter;

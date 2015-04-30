@@ -13,7 +13,7 @@ class ClockControl: public EngineControl {
     Q_OBJECT
   public:
     ClockControl(QString group,
-                 ConfigObject<ConfigValue>* pConfig);
+                 ConfigObject<ConfigValue>* pConfig, QObject *pParent=0);
 
     virtual ~ClockControl();
 

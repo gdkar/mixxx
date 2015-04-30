@@ -18,18 +18,16 @@ class ControlAudioTaperPot;
 // EngineMicrophone is an EngineChannel that implements a mixing source whose
 // samples are fed directly from the SoundManager
 class EngineMicrophone : public EngineChannel, public AudioSink {
-    Q_OBJECT
+    Q_OBJECT;
+
   public:
     EngineMicrophone(const ChannelHandleAndGroup& handle_group,
                      EffectsManager* pEffectsManager);
     virtual ~EngineMicrophone();
-
     bool isActive();
-
     // Called by EngineMaster whenever is requesting a new buffer of audio.
     virtual void process(CSAMPLE* pOutput, const int iBufferSize);
     virtual void postProcess(const int iBufferSize) { Q_UNUSED(iBufferSize) }
-
     // This is called by SoundManager whenever there are new samples from the
     // configured input to be processed. This is run in the callback thread of
     // the soundcard this AudioSink was registered for! Beware, in the
@@ -37,18 +35,14 @@ class EngineMicrophone : public EngineChannel, public AudioSink {
     // concurrent with EngineMaster processing.
     virtual void receiveBuffer(AudioInput input, const CSAMPLE* pBuffer,
                                unsigned int iNumSamples);
-
     // Called by SoundManager whenever the microphone input is connected to a
     // soundcard input.
     virtual void onInputConfigured(AudioInput input);
-
     // Called by SoundManager whenever the microphone input is disconnected from
     // a soundcard input.
     virtual void onInputUnconfigured(AudioInput input);
-
     bool isSolo();
     double getSoloDamping();
-
   private:
     EngineEffectsManager* m_pEngineEffectsManager;
     EngineVuMeter m_vuMeter;

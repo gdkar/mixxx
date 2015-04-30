@@ -22,15 +22,11 @@ const SAMPLE SAMPLE_MAX = SHRT_MAX;
 
 // Limits the range of a SAMPLE value to [SAMPLE_MIN, SAMPLE_MAX].
 inline
-SAMPLE SAMPLE_clamp(SAMPLE in) {
-    return math_clamp(in, SAMPLE_MIN, SAMPLE_MAX);
-}
+SAMPLE SAMPLE_clamp(SAMPLE in) {return math_clamp(in, SAMPLE_MIN, SAMPLE_MAX);}
 
 // Limits the range of a SAMPLE value to [-SAMPLE_MAX, SAMPLE_MAX].
 inline
-SAMPLE SAMPLE_clampSymmetric(SAMPLE in) {
-    return math_clamp(in, static_cast<SAMPLE>(-SAMPLE_MAX), SAMPLE_MAX);
-}
+SAMPLE SAMPLE_clampSymmetric(SAMPLE in) {return math_clamp(in, static_cast<SAMPLE>(-SAMPLE_MAX), SAMPLE_MAX);}
 
 // 32-bit single precision floating-point sample data
 // normalized within the range [-1.0, 1.0] with a peak
@@ -44,9 +40,7 @@ const CSAMPLE CSAMPLE_PEAK = CSAMPLE_ONE;
 
 // Limits the range of a CSAMPLE value to [-CSAMPLE_PEAK, CSAMPLE_PEAK].
 inline
-CSAMPLE CSAMPLE_clamp(CSAMPLE in) {
-    return math_clamp(in, -CSAMPLE_PEAK, CSAMPLE_PEAK);
-}
+CSAMPLE CSAMPLE_clamp(CSAMPLE in) {return math_clamp(in, -CSAMPLE_PEAK, CSAMPLE_PEAK);}
 
 // Gain values for weighted calculations of CSAMPLE
 // data in the range [0.0, 1.0]. Same data type as
@@ -59,8 +53,6 @@ const float CSAMPLE_GAIN_MAX = CSAMPLE_GAIN_ONE;
 
 // Limits the range of a CSAMPLE_GAIN value to [CSAMPLE_GAIN_MIN, CSAMPLE_GAIN_MAX].
 inline
-CSAMPLE_GAIN CSAMPLE_GAIN_clamp(CSAMPLE_GAIN in) {
-    return math_clamp(in, CSAMPLE_GAIN_MIN, CSAMPLE_GAIN_MAX);
-}
+CSAMPLE_GAIN CSAMPLE_GAIN_clamp(CSAMPLE_GAIN in) {return math_clamp(in, CSAMPLE_GAIN_MIN, CSAMPLE_GAIN_MAX);}
 
 #endif /* TYPES_H */

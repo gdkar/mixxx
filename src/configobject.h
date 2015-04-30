@@ -45,7 +45,6 @@ class ConfigKey {
 
     QString group, item;
 };
-Q_DECLARE_METATYPE(ConfigKey);
 
 // comparison function for ConfigKeys. Used by a QHash in ControlObject
 inline bool operator==(const ConfigKey& c1, const ConfigKey& c2) {
@@ -66,8 +65,6 @@ inline uint qHash(const ConfigKey& key) {
 inline uint qHash(const QKeySequence& key) {
     return qHash(key.toString());
 }
-
-
 // The value corresponding to a key. The basic value is a string, but can be
 // subclassed to more specific needs.
 class ConfigValue {
@@ -147,5 +144,10 @@ template <class ValueType> class ConfigObject {
     // not be opened; otherwise true.
     bool Parse();
 };
-
+Q_DECLARE_METATYPE(ConfigKey);
+Q_DECLARE_TYPEINFO(ConfigKey,Q_MOVABLE_TYPE);
+Q_DECLARE_METATYPE(ConfigValue);
+Q_DECLARE_TYPEINFO(ConfigValue,Q_MOVABLE_TYPE);
+Q_DECLARE_METATYPE(ConfigValueKbd);
+Q_DECLARE_TYPEINFO(ConfigValueKbd,Q_MOVABLE_TYPE);
 #endif

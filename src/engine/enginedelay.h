@@ -26,7 +26,7 @@ class ControlObjectSlave;
 class EngineDelay : public EngineObject {
     Q_OBJECT
   public:
-    EngineDelay(const char* group, ConfigKey delayControl);
+    EngineDelay(const char* group, ConfigKey delayControl, QObject *pParent=0);
     virtual ~EngineDelay();
 
     void process(CSAMPLE* pInOut, const int iBufferSize);

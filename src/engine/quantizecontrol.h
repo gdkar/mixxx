@@ -16,7 +16,7 @@ class ControlObjectThread;
 class QuantizeControl : public EngineControl {
     Q_OBJECT
   public:
-    QuantizeControl(QString group, ConfigObject<ConfigValue>* pConfig);
+    QuantizeControl(QString group, ConfigObject<ConfigValue>* pConfig, QObject *pParent=0);
     virtual ~QuantizeControl();
 
     virtual void setCurrentSample(const double dCurrentSample,

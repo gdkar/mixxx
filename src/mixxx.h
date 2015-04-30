@@ -23,7 +23,7 @@
 #include <QMainWindow>
 #include <QString>
 #include <QDir>
-
+#include <QQmlEngine>
 // REMOVE ME
 #include <QtDebug>
 #include <QResizeEvent>
@@ -53,6 +53,10 @@ class DlgDeveloperTools;
 class ControlObjectSlave;
 class ControlObject;
 class QTranslator;
+class QQmlComponent;
+class QQmlContext;
+class QJSEngine;
+class QJSValue;
 
 // This Class is the base class for Mixxx. It sets up the main
 // window and providing a menubar.
@@ -180,6 +184,9 @@ class MixxxMainWindow : public QMainWindow {
     void linkSkinWidget(ControlObjectSlave** pCOS,
                         ConfigKey key, const char* slot);
     void updateCheckedMenuAction(QAction* menuAction, ConfigKey key);
+
+    QQmlEngine      m_qmlEngine;
+    QQmlContext    *m_qmlContext;
 
     // Pointer to the root GUI widget
     QWidget* m_pWidgetParent;

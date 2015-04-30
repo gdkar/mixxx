@@ -17,15 +17,8 @@ class TransformNode {
 class TransformAdd : public TransformNode {
   public:
     TransformAdd(double addend) : m_addend(addend) {}
-
-    double transform(double argument) const {
-        return argument + m_addend;
-    }
-
-    double transformInverse(double argument) const {
-        return argument - m_addend;
-    }
-
+    double transform(double argument) const {return argument + m_addend;}
+    double transformInverse(double argument) const {return argument - m_addend;}
   private:
     double m_addend;
 };
@@ -33,27 +26,15 @@ class TransformAdd : public TransformNode {
 class TransformInvert : public TransformNode {
   public:
     TransformInvert() {}
-
-    double transform(double argument) const {
-        return -argument;
-    }
-
-    double transformInverse(double argument) const {
-        return -argument;
-    }
+    double transform(double argument) const {return -argument;}
+    double transformInverse(double argument) const {return -argument;}
 };
 
 class TransformNot : public TransformNode {
   public:
     TransformNot() {}
-
-    double transform(double argument) const {
-        return !static_cast<bool>(argument);
-    }
-
-    double transformInverse(double argument) const {
-        return !static_cast<bool>(argument);
-    }
+    double transform(double argument) const {return !static_cast<bool>(argument);}
+    double transformInverse(double argument) const {return !static_cast<bool>(argument);}
 };
 
 class ValueTransformer {
@@ -63,12 +44,9 @@ class ValueTransformer {
 
     static ValueTransformer* parseFromXml(QDomElement transformElement,
                                           const SkinContext& context);
-
   private:
     ValueTransformer();
-
     void addTransformer(TransformNode* pTransformer);
-
     QList<TransformNode*> m_transformers;
 };
 

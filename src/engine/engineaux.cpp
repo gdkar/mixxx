@@ -12,8 +12,8 @@
 #include "engine/effects/engineeffectsmanager.h"
 #include "control/controlaudiotaperpot.h"
 
-EngineAux::EngineAux(const ChannelHandleAndGroup& handle_group, EffectsManager* pEffectsManager)
-        : EngineChannel(handle_group, EngineChannel::CENTER),
+EngineAux::EngineAux(const ChannelHandleAndGroup& handle_group, EffectsManager* pEffectsManager, QObject *pParent)
+        : EngineChannel(handle_group, EngineChannel::CENTER, pParent),
           m_pEngineEffectsManager(pEffectsManager ? pEffectsManager->getEngineEffectsManager() : NULL),
           m_vuMeter(getGroup()),
           m_pEnabled(new ControlObject(ConfigKey(getGroup(), "enabled"))),

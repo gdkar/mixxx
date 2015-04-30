@@ -39,7 +39,7 @@ public:
     };
     static const unsigned int kMaxAudioBufferSizeIndex;
     static const QString kDefaultAPI;
-    static const unsigned int kFallbackSampleRate;
+    static const double kFallbackSampleRate;
     static const unsigned int kDefaultDeckCount;
     static const int kDefaultAudioBufferSizeIndex;
     static const int kDefaultSyncBuffers;
@@ -52,8 +52,8 @@ public:
     QString getAPI() const;
     void setAPI(const QString &api);
     bool checkAPI(const SoundManager &soundManager);
-    unsigned int getSampleRate() const;
-    void setSampleRate(unsigned int sampleRate);
+    double getSampleRate() const;
+    void setSampleRate(double sampleRate);
     bool checkSampleRate(const SoundManager &soundManager);
 
     // Record the number of decks configured with this setup so they can
@@ -82,7 +82,7 @@ private:
     QString m_api;
     // none of our sample rates are actually decimals, this avoids
     // the weirdness using floating point can introduce
-    unsigned int m_sampleRate;
+    double m_sampleRate;
     unsigned int m_deckCount;
     // m_latency is an index > 0, where 1 is a latency of 1ms and
     // higher indices represent subsequently higher latencies (storing

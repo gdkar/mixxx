@@ -21,8 +21,8 @@ const int filterLength = 5;
 const int kLocalBpmSpan = 4;
 
 BpmControl::BpmControl(QString group,
-                       ConfigObject<ConfigValue>* _config) :
-        EngineControl(group, _config),
+                       ConfigObject<ConfigValue>* _config, QObject *pParent) :
+        EngineControl(group, _config, pParent),
         m_dPreviousSample(0),
         m_dSyncTargetBeatDistance(0.0),
         m_dSyncInstantaneousBpm(0.0),
@@ -75,7 +75,7 @@ BpmControl::BpmControl(QString group,
             Qt::DirectConnection);
 
     // Pick a wide range (1 to 200) and allow out of bounds sets. This lets you
-    // map a soft-takeover MIDI knob to the BPM. This also creates bpm_up and
+    // map a soft-takeover knob to the BPM. This also creates bpm_up and
     // bpm_down controls.
     // bpm_up / bpm_down steps by 1
     // bpm_up_small / bpm_down_small steps by 0.1

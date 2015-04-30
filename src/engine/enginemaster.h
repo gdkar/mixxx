@@ -57,7 +57,7 @@ class EngineMaster : public QObject, public AudioSource {
                  const char* pGroup,
                  EffectsManager* pEffectsManager,
                  bool bEnableSidechain,
-                 bool bRampingGain);
+                 bool bRampingGain, QObject *pParent=0);
     virtual ~EngineMaster();
 
     // Get access to the sample buffers. None of these are thread safe. Only to
@@ -145,8 +145,8 @@ class EngineMaster : public QObject, public AudioSource {
         ChannelHandle m_handle;
         EngineChannel* m_pChannel;
         CSAMPLE* m_pBuffer;
-        ControlObject* m_pVolumeControl;
-        ControlPushButton* m_pMuteControl;
+        QSharedPointer<ControlObject> m_pVolumeControl;
+        QSharedPointer<ControlPushButton> m_pMuteControl;
         int m_index;
     };
 
@@ -272,7 +272,7 @@ class EngineMaster : public QObject, public AudioSource {
     bool m_bRampingGain;
 
     // List of channels added to the engine.
-    QVarLengthArray<ChannelInfo*, kPreallocatedChannels> m_channels;
+    QVarLengthArray<QSharedPointer<ChannelInfo>, kPreallocatedChannels> m_channels;
 
     // The previous gain of each channel for each mixing output (master,
     // headphone, talkover).

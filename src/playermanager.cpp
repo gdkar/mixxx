@@ -295,6 +295,7 @@ void PlayerManager::addDeckInner() {
     m_decks.append(pDeck);
 
     // Register the deck output with SoundManager (deck is 0-indexed to SoundManager)
+
     m_pSoundManager->registerOutput(
         AudioOutput(AudioOutput::DECK, 0, 0, number - 1), m_pEngine);
 

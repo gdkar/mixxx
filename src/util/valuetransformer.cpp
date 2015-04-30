@@ -27,18 +27,12 @@ double ValueTransformer::transformInverse(double argument) const {
 // static
 ValueTransformer* ValueTransformer::parseFromXml(QDomElement transformElement,
                                                  const SkinContext& context) {
-    if (transformElement.isNull() || !transformElement.hasChildNodes()) {
-        return NULL;
-    }
-
+    if (transformElement.isNull() || !transformElement.hasChildNodes()) {return NULL;}
     ValueTransformer* pTransformer = new ValueTransformer();
     QDomNodeList children = transformElement.childNodes();
     for (int i = 0; i < children.count(); ++i) {
         QDomNode node = children.at(i);
-        if (!node.isElement()) {
-            continue;
-        }
-
+        if (!node.isElement()) {continue;}
         QDomElement element = node.toElement();
         if (element.nodeName() == "Invert") {
             pTransformer->addTransformer(new TransformInvert());
@@ -46,9 +40,7 @@ ValueTransformer* ValueTransformer::parseFromXml(QDomElement transformElement,
             QString value = context.nodeToString(element);
             bool ok = false;
             double addend = value.toDouble(&ok);
-            if (ok) {
-                pTransformer->addTransformer(new TransformAdd(addend));
-            }
+            if (ok) {pTransformer->addTransformer(new TransformAdd(addend));}
         } else if (element.nodeName() == "Not") {
             pTransformer->addTransformer(new TransformNot());
         }

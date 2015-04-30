@@ -19,8 +19,8 @@ static const double CUE_MODE_DENON = 2.0;
 static const double CUE_MODE_NUMARK = 3.0;
 
 CueControl::CueControl(QString group,
-                       ConfigObject<ConfigValue>* _config) :
-        EngineControl(group, _config),
+                       ConfigObject<ConfigValue>* _config, QObject *pParent) :
+        EngineControl(group, _config, pParent),
         m_bHotcueCancel(false),
         m_bPreviewing(false),
         m_bPreviewingHotcue(false),
@@ -566,7 +566,7 @@ void CueControl::hotcuePositionChanged(HotcueControl* pControl, double newPositi
             detachCue(pControl->getHotcueNumber());
         } else if (newPosition > 0 && newPosition < m_pTrackSamples->get()) {
             int position = newPosition;
-            // People writing from MIDI land, elsewhere might be careless.
+            // People writing from controller land, elsewhere might be careless.
             if (position % 2 != 0) {
                 position--;
             }

@@ -21,7 +21,7 @@
 #include <QEvent>
 
 #include "mixxxkeyboard.h"
-#include "control/controlobject.h"
+#include "control/controlobjectslave.h"
 #include "util/cmdlineargs.h"
 
 
@@ -48,7 +48,7 @@ bool MixxxKeyboard::eventFilter(QObject*, QEvent* e) {
         // On Mac OSX the nativeScanCode is empty (const 1) http://doc.qt.nokia.com/4.7/qkeyevent.html#nativeScanCode
         // We may loose the release event if a the shift key is pressed later
         // and there is character shift like "1" -> "!"
-        int keyId = ke->key();
+        int keyId = ke->nativeVirtualKey();
 #else
         int keyId = ke->nativeScanCode();
 #endif
@@ -58,34 +58,28 @@ bool MixxxKeyboard::eventFilter(QObject*, QEvent* e) {
         // Just for returning true if we are consuming this key event
 
         foreach (const KeyDownInformation& keyDownInfo, m_qActiveKeyList) {
-            if (keyDownInfo.keyId == keyId) {
-                return true;
-            }
+            if (keyDownInfo.keyId == keyId) {return true;}
         }
-
         QKeySequence ks = getKeySeq(ke);
         if (!ks.isEmpty()) {
             // Check if a shortcut is defined
             bool result = false;
-            for (QMultiHash<QKeySequence, ConfigKey>::const_iterator it =
-                         m_keySequenceToControlHash.find(ks);
-                 it != m_keySequenceToControlHash.end() && it.key() == ks; ++it) {
-                const ConfigKey& configKey = it.value();
-                if (configKey.group != "[KeyboardShortcuts]") {
-                    ControlObject* control = ControlObject::getControl(configKey);
-                    if (control) {
-                        //qDebug() << configKey << "MIDI_NOTE_ON" << 1;
+            for (QHash<QKeySequence, QSharedPointer<ControlObjectSlave> >::iterator it =
+                         m_keysequence_to_cos.find(ks); it != m_keysequence_to_cos.end() && it.key() == ks; ++it) {
+                  QSharedPointer<ControlObjectSlave> cos (it.value());
+                  if(cos){
+                    const ConfigKey & configkey = cos->getKey();
+                    if (configkey.group != "[KeyboardShortcuts]") {
                         // Add key to active key list
-                        m_qActiveKeyList.append(KeyDownInformation(
-                            keyId, ke->modifiers(), control));
+                        m_qActiveKeyList.append(KeyDownInformation(keyId, ke->modifiers(), cos));
                         // Since setting the value might cause us to go down
                         // a route that would eventually clear the active
                         // key list, do that last.
-                        control->setValueFromMidi(MIDI_NOTE_ON, 1);
+                        cos->setParameter( 1);
                         result = true;
                     } else {
                         qDebug() << "Warning: Keyboard key is configured for nonexistent control:"
-                                 << configKey.group << configKey.item;
+                                 << configkey.group << configkey.item;
                     }
                 }
             }
@@ -96,34 +90,28 @@ bool MixxxKeyboard::eventFilter(QObject*, QEvent* e) {
 
 #ifdef __APPLE__
         // On Mac OSX the nativeScanCode is empty
-        int keyId = ke->key();
+        int keyId = ke->nativeVirtualKey();
 #else
         int keyId = ke->nativeScanCode();
 #endif
         bool autoRepeat = ke->isAutoRepeat();
-
         //qDebug() << "KeyRelease event =" << ke->key() << "AutoRepeat =" << autoRepeat << "KeyId =" << keyId;
-
         int clearModifiers = 0;
 #ifdef __APPLE__
         // OS X apparently doesn't deliver KeyRelease events when you are
         // holding Ctrl. So release all key-presses that were triggered with
         // Ctrl.
-        if (ke->key() == Qt::Key_Control) {
-            clearModifiers = Qt::ControlModifier;
-        }
+        if (ke->key() == Qt::Key_Control) {clearModifiers = Qt::ControlModifier;}
 #endif
-
         bool matched = false;
         // Run through list of active keys to see if the released key is active
         for (int i = m_qActiveKeyList.size() - 1; i >= 0; i--) {
-            const KeyDownInformation& keyDownInfo = m_qActiveKeyList[i];
-            ControlObject* pControl = keyDownInfo.pControl;
+            KeyDownInformation& keyDownInfo = m_qActiveKeyList[i];
+            QSharedPointer<ControlObjectSlave> cos(keyDownInfo.cos);
             if (keyDownInfo.keyId == keyId ||
                     (clearModifiers > 0 && keyDownInfo.modifiers == clearModifiers)) {
                 if (!autoRepeat) {
-                    //qDebug() << pControl->getKey() << "MIDI_NOTE_OFF" << 0;
-                    pControl->setValueFromMidi(MIDI_NOTE_OFF, 0);
+                    cos->setParameter(0);
                     m_qActiveKeyList.removeAt(i);
                 }
                 // Due to the modifier clearing workaround we might match multiple keys for
@@ -178,17 +166,14 @@ void MixxxKeyboard::setKeyboardConfig(ConfigObject<ConfigValueKbd>* pKbdConfigOb
     // invert the mapping to create an injection from key sequence to
     // ConfigKey. This allows a key sequence to trigger multiple controls in
     // Mixxx.
-    QHash<ConfigKey, ConfigValueKbd> keyboardConfig =
-            pKbdConfigObject->toHash();
-
-    m_keySequenceToControlHash.clear();
-    for (QHash<ConfigKey, ConfigValueKbd>::const_iterator it =
-                 keyboardConfig.begin(); it != keyboardConfig.end(); ++it) {
-        m_keySequenceToControlHash.insert(it.value().m_qKey, it.key());
+    QHash<ConfigKey, ConfigValueKbd> keyboardConfig = pKbdConfigObject->toHash();
+    m_keysequence_to_cos.clear();
+    for (QHash<ConfigKey, ConfigValueKbd>::iterator it = keyboardConfig.begin(); it != keyboardConfig.end(); ++it) {
+        if(!m_cached_cos.contains(it.key()))
+          m_cached_cos.insert(it.key(),QSharedPointer<ControlObjectSlave>(new ControlObjectSlave(it.key())));
+        m_keysequence_to_cos.insert(it.value().m_qKey, m_cached_cos.value(it.key()));
     }
     m_pKbdConfigObject = pKbdConfigObject;
 }
 
-ConfigObject<ConfigValueKbd>* MixxxKeyboard::getKeyboardConfig() {
-    return m_pKbdConfigObject;
-}
+ConfigObject<ConfigValueKbd>* MixxxKeyboard::getKeyboardConfig() {return m_pKbdConfigObject;}

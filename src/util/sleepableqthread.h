@@ -12,15 +12,7 @@ class SleepableQThread : public QThread {
 public:
     explicit SleepableQThread(QObject *parent = NULL) : QThread(parent) { }
     virtual ~SleepableQThread() { }
-    static void sleep(unsigned long secs) {
-        QThread::sleep(secs);
-    }
-
-    static void msleep(unsigned long msecs) {
-        QThread::msleep(msecs);
-    }
-
-    static void usleep(unsigned long usecs) {
-        QThread::usleep(usecs);
-    }
+    static void sleep(unsigned long secs) {QThread::sleep(secs);}
+    static void msleep(unsigned long msecs) {QThread::msleep(msecs);}
+    static void usleep(unsigned long usecs) {QThread::usleep(usecs);}
 };

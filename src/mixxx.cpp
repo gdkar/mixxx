@@ -23,9 +23,19 @@
 #include <QDesktopWidget>
 #include <QDesktopServices>
 #include <QUrl>
-
+#include <QtQml>
+#include <QtQuick>
+#include <QQmlEngine>
+#include <QQmlContext>
+#include <QQmlComponent>
+#include <QQmlProperty>
+#include <QJSEngine>
+#include <QJSValue>
+#include <QJSValueIterator>
 #include "mixxx.h"
 
+#include <QtQml>
+#include <QtQuick>
 #include "analyser/analyserqueue.h"
 #include "control/controlpotmeter.h"
 #include "control/controlobjectslave.h"
@@ -36,6 +46,10 @@
 #include "dialogs/dlgprefeq.h"
 #include "dialogs/dlgdevelopertools.h"
 #include "engine/enginemaster.h"
+#include "engine/enginecontrol.h"
+#include "engine/enginebuffer.h"
+#include "engine/engineobject.h"
+#include "engine/enginedeck.h"
 #include "engine/enginemicrophone.h"
 #include "effects/effectsmanager.h"
 #include "effects/native/nativebackend.h"
@@ -115,6 +129,9 @@ MixxxMainWindow::MixxxMainWindow(QApplication* pApp, const CmdlineArgs& args)
           m_iNumConfiguredDecks(0) {
     // We use QSet<int> in signals in the library.
     qRegisterMetaType<QSet<int> >("QSet<int>");
+//    qmlRegisterType<EngineBuffer>("com.mixxx.engine",0,0,"EngineBuffer");
+//    qmlRegisterType<EngineDeck>("com.mixxx.engine",0,0,"EngineDeck");
+//    qmlRegisterType<EngineMaster>("com.mixxx.engine",0,0,"EngineMaster");
 
     logBuildDetails();
     ScopedTimer t("MixxxMainWindow::MixxxMainWindow");
@@ -186,9 +203,7 @@ MixxxMainWindow::MixxxMainWindow(QApplication* pApp, const CmdlineArgs& args)
         }
         ChannelHandleAndGroup channelGroup =
                 m_pEngine->registerChannelGroup(group);
-        EngineMicrophone* pMicrophone =
-                new EngineMicrophone(channelGroup, m_pEffectsManager);
-
+        EngineMicrophone* pMicrophone =(new EngineMicrophone(channelGroup, m_pEffectsManager));
         // What should channelbase be?
         AudioInput micInput = AudioInput(AudioPath::MICROPHONE, 0, 0, i);
         m_pEngine->addChannel(pMicrophone);
@@ -209,18 +224,15 @@ MixxxMainWindow::MixxxMainWindow(QApplication* pApp, const CmdlineArgs& args)
     for (int i = 0; i < kAuxiliaryCount; ++i) {
         QString group = QString("[Auxiliary%1]").arg(i + 1);
         ChannelHandleAndGroup channelGroup = m_pEngine->registerChannelGroup(group);
-        EngineAux* pAux = new EngineAux(channelGroup, m_pEffectsManager);
-
+        EngineAux* pAux=( new EngineAux(channelGroup, m_pEffectsManager));
         // What should channelbase be?
         AudioInput auxInput = AudioInput(AudioPath::AUXILIARY, 0, 0, i);
         m_pEngine->addChannel(pAux);
         m_pSoundManager->registerInput(auxInput, pAux);
         m_pNumAuxiliaries->set(m_pNumAuxiliaries->get() + 1);
 
-        m_pAuxiliaryPassthrough.push_back(
-                new ControlObjectSlave(group, "passthrough"));
-        ControlObjectSlave* auxiliary_passthrough =
-                m_pAuxiliaryPassthrough.back();
+        m_pAuxiliaryPassthrough.push_back(new ControlObjectSlave(group, "passthrough"));
+        ControlObjectSlave* auxiliary_passthrough = m_pAuxiliaryPassthrough.back();
 
         // These non-vinyl passthrough COs have their index offset by the max
         // number of vinyl inputs.
@@ -332,7 +344,8 @@ MixxxMainWindow::MixxxMainWindow(QApplication* pApp, const CmdlineArgs& args)
     //  but do not set up controllers until the end of the application startup
     qDebug() << "Creating ControllerManager";
     m_pControllerManager = new ControllerManager(m_pConfig);
-
+    m_qmlEngine.setParent(this);
+    m_qmlContext = new QQmlContext(&m_qmlEngine,this);
     WaveformWidgetFactory::create();
     WaveformWidgetFactory::instance()->startVSync(this);
     WaveformWidgetFactory::instance()->setConfig(m_pConfig);
@@ -1187,7 +1200,7 @@ void MixxxMainWindow::initActions()
             this, SLOT(slotOptionsKeyboard(bool)));
 
     QString preferencesTitle = tr("&Preferences");
-    QString preferencesText = tr("Change Mixxx settings (e.g. playback, MIDI, controls)");
+    QString preferencesText = tr("Change Mixxx settings (e.g. playback, controls)");
     m_pOptionsPreferences = new QAction(preferencesTitle, this);
 #ifdef __APPLE__
     m_pOptionsPreferences->setShortcut(

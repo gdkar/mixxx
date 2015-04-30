@@ -21,11 +21,11 @@
 #include <QObject>
 #include <QEvent>
 #include <QKeyEvent>
-#include <QMultiHash>
+#include <QHash>
 
 #include "configobject.h"
 
-class ControlObject;
+class ControlObjectSlave;
 
 // This class provides handling of keyboard events.
 class MixxxKeyboard : public QObject {
@@ -44,15 +44,15 @@ class MixxxKeyboard : public QObject {
 
   private:
     struct KeyDownInformation {
-        KeyDownInformation(int keyId, int modifiers, ControlObject* pControl)
+        KeyDownInformation(int keyId, int modifiers, QSharedPointer<ControlObjectSlave> _cos)
                 : keyId(keyId),
                   modifiers(modifiers),
-                  pControl(pControl) {
+                  cos(_cos) {
         }
 
         int keyId;
         int modifiers;
-        ControlObject* pControl;
+        QSharedPointer<ControlObjectSlave> cos;
     };
 
     // Returns a valid QString with modifier keys from a QKeyEvent
@@ -62,7 +62,8 @@ class MixxxKeyboard : public QObject {
     // Pointer to keyboard config object
     ConfigObject<ConfigValueKbd> *m_pKbdConfigObject;
     // Multi-hash of key sequence to
-    QMultiHash<QKeySequence, ConfigKey> m_keySequenceToControlHash;
+    QHash<ConfigKey, QSharedPointer<ControlObjectSlave > > m_cached_cos;
+    QHash<QKeySequence, QSharedPointer<ControlObjectSlave> >          m_keysequence_to_cos;
 };
 
 #endif
