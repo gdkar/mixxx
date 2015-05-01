@@ -392,7 +392,7 @@ void MidiController::processInputMapping(const MidiInputMapping& mapping,
             return;
         }
     }
-    pCO->setParameter(static_cast<MidiOpCode>(opCode), newValue);
+    pCO->setParameter( newValue);
 }
 
 double MidiController::computeValue(MidiOptions options, double _prevmidivalue, double _newmidivalue) {

@@ -16,7 +16,7 @@
 #include <xmmintrin.h>
 
 /* Additional bits in the MXCSR.  */
-#if !defined(_MM_DENORMALS_ZERO_MASK) && !defined(_MM_DENORMALS_ZERO_ON && !defined(_MM_DENORMALS_ZERO_OFF)
+#if !defined(_MM_DENORMALS_ZERO_MASK) && !defined(_MM_DENORMALS_ZERO_ON) && !defined(_MM_DENORMALS_ZERO_OFF)
 #define _MM_DENORMALS_ZERO_MASK     0x0040
 #define _MM_DENORMALS_ZERO_ON       0x0040
 #define _MM_DENORMALS_ZERO_OFF      0x0000

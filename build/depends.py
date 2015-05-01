@@ -484,6 +484,7 @@ class MixxxCore(Feature):
 
                    "configobject.cpp",
                    "control/control.cpp",
+                   "control/controlgroup.cpp",
                    "control/controlbehavior.cpp",
                    "control/controlmodel.cpp",
                    "control/controlobject.cpp",

@@ -38,6 +38,6 @@ private:
     const Singleton& operator= (const Singleton&) {}
     static QAtomicPointer<T> s_instance;
 };
-template<class T> T* Singleton<T>::s_instance = 0;
+template<class T> QAtomicPointer<T>  Singleton<T>::s_instance = 0;
 
 #endif // SINGLETON_H

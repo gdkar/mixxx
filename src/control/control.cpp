@@ -250,7 +250,7 @@ double ControlDoublePrivate::getParameterForValue(double value) const {
     return value;
 }
 
-ool ControlDoublePrivate::connectValueChangeRequest(const QObject* receiver,
+bool ControlDoublePrivate::connectValueChangeRequest(const QObject* receiver,
         const char* method, Qt::ConnectionType type) {
     // confirmation is only required if connect was successful
     m_confirmRequired = connect(this, SIGNAL(valueChangeRequest(double)),
