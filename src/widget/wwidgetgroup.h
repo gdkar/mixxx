@@ -35,7 +35,7 @@ class WWidgetGroup : public QFrame, public WBaseWidget {
     Q_PROPERTY(int layoutSpacing READ layoutSpacing WRITE setLayoutSpacing DESIGNABLE true);
     Q_PROPERTY(QRect layoutContentsMargins READ layoutContentsMargins WRITE setLayoutContentsMargins DESIGNABLE true);
     Q_PROPERTY(Qt::Alignment layoutAlignment READ layoutAlignment WRITE setLayoutAlignment DESIGNABLE true);
-
+  public slots:
     int layoutSpacing() const;
     void setLayoutSpacing(int spacing);
     QRect layoutContentsMargins() const;
@@ -52,7 +52,6 @@ class WWidgetGroup : public QFrame, public WBaseWidget {
     virtual void resizeEvent(QResizeEvent* re);
     bool event(QEvent* pEvent);
     void fillDebugTooltip(QStringList* debug);
-
   private:
     // Associated background pixmap
     PaintablePointer m_pPixmapBack;

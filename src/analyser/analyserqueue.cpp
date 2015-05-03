@@ -48,7 +48,7 @@ AnalyserQueue::AnalyserQueue(TrackCollection* pTrackCollection)
           m_queue_size(0) {
     Q_UNUSED(pTrackCollection);
     connect(this, SIGNAL(updateProgress()),
-            this, SLOT(slotUpdateProgress()));
+            this, SLOT(onUpdateProgress()));
 }
 
 AnalyserQueue::~AnalyserQueue() {
@@ -390,7 +390,7 @@ void AnalyserQueue::emitUpdateProgress(TrackPointer tio, int progress) {
 }
 
 //slot
-void AnalyserQueue::slotUpdateProgress() {
+void AnalyserQueue::onUpdateProgress() {
     if (m_progressInfo.current_track) {
         m_progressInfo.current_track->setAnalyserProgress(m_progressInfo.track_progress);
     }
@@ -402,7 +402,7 @@ void AnalyserQueue::slotUpdateProgress() {
 }
 
 //slot
-void AnalyserQueue::slotAnalyseTrack(TrackPointer tio) {
+void AnalyserQueue::onAnalyseTrack(TrackPointer tio) {
     // This slot is called from the decks and and samplers when the track was loaded.
     m_aiCheckPriorities = true;
     queueAnalyseTrack(tio);

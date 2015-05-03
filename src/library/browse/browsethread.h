@@ -24,9 +24,7 @@
 // other than the GUI thread.
 class BrowseTableModel;
 class BrowseThread;
-
 typedef QSharedPointer<BrowseThread> BrowseThreadPointer;
-
 class BrowseThread : public QThread {
     Q_OBJECT
   public:
@@ -34,25 +32,19 @@ class BrowseThread : public QThread {
     void executePopulation(const MDir& path, BrowseTableModel* client);
     void run();
     static BrowseThreadPointer getInstanceRef();
-
   signals:
     void rowsAppended(const QList< QList<QStandardItem*> >&, BrowseTableModel*);
     void clearModel(BrowseTableModel*);
-
   private:
     BrowseThread(QObject *parent = 0);
-
     void populateModel();
-
     QMutex m_mutex;
     QWaitCondition m_locationUpdated;
     volatile bool m_bStopThread;
-
     // You must hold m_path_mutex to touch m_path or m_model_observer
     QMutex m_path_mutex;
     MDir m_path;
     BrowseTableModel* m_model_observer;
-
     static QWeakPointer<BrowseThread> m_weakInstanceRef;
 };
 

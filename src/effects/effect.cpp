@@ -149,13 +149,13 @@ bool Effect::isKnobParameter(EffectParameter* parameter) {
 }
 
 EffectParameter* Effect::getFilteredParameterForSlot(ParameterFilterFnc filterFnc,
-                                                     unsigned int slotNumber) {
+                                                     unsigned int onNumber) {
     // It's normal to ask for a parameter that doesn't exist. Callers must check
     // for NULL.
     unsigned int num = 0;
     foreach(EffectParameter* parameter, m_parameters) {
         if (parameter->manifest().showInParameterSlot() && filterFnc(parameter)) {
-            if(num == slotNumber) {
+            if(num == onNumber) {
                 return parameter;
             }
             ++num;
@@ -164,12 +164,12 @@ EffectParameter* Effect::getFilteredParameterForSlot(ParameterFilterFnc filterFn
     return NULL;
 }
 
-EffectParameter* Effect::getKnobParameterForSlot(unsigned int slotNumber) {
-    return getFilteredParameterForSlot(isKnobParameter, slotNumber);
+EffectParameter* Effect::getKnobParameterForSlot(unsigned int onNumber) {
+    return getFilteredParameterForSlot(isKnobParameter, onNumber);
 }
 
-EffectParameter* Effect::getButtonParameterForSlot(unsigned int slotNumber) {
-    return getFilteredParameterForSlot(isButtonParameter, slotNumber);
+EffectParameter* Effect::getButtonParameterForSlot(unsigned int onNumber) {
+    return getFilteredParameterForSlot(isButtonParameter, onNumber);
 }
 
 QDomElement Effect::toXML(QDomDocument* doc) const {

@@ -21,7 +21,7 @@ TEST_F(BeatsTranslateTest, SimpleTranslateMatch) {
 
     // Seek deck 1 forward a bit.
     const double delta = 2222.0;
-    m_pChannel1->getEngineBuffer()->slotControlSeekAbs(delta);
+    m_pChannel1->getEngineBuffer()->onControlSeekAbs(delta);
     ProcessBuffer();
     EXPECT_TRUE(m_pChannel1->getEngineBuffer()->getVisualPlayPos() > 0);
 

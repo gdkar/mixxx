@@ -37,7 +37,7 @@ QSize WStarRating::sizeHint() const {
     return widgetSize;
 }
 
-void WStarRating::slotTrackLoaded(TrackPointer track) {
+void WStarRating::onTrackLoaded(TrackPointer track) {
     if (track) {
         m_pCurrentTrack = track;
         connect(track.data(), SIGNAL(changed(TrackInfoObject*)),
@@ -46,7 +46,7 @@ void WStarRating::slotTrackLoaded(TrackPointer track) {
     }
 }
 
-void WStarRating::slotTrackUnloaded(TrackPointer track) {
+void WStarRating::onTrackUnloaded(TrackPointer track) {
     Q_UNUSED(track);
     if (m_pCurrentTrack) {
         disconnect(m_pCurrentTrack.data(), 0, this, 0);

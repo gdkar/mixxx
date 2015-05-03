@@ -23,7 +23,7 @@ VinylControlControl::VinylControlControl(QString group, ConfigObject<ConfigValue
 
     m_pControlVinylSeek = new ControlObject(ConfigKey(group, "vinylcontrol_seek"));
     connect(m_pControlVinylSeek, SIGNAL(valueChanged(double)),
-            this, SLOT(slotControlVinylSeek(double)),
+            this, SLOT(onControlVinylSeek(double)),
             Qt::DirectConnection);
 
     m_pControlVinylRate = new ControlObject(ConfigKey(group, "vinylcontrol_rate"));
@@ -82,7 +82,7 @@ void VinylControlControl::notifySeekQueued() {
     }
 }
 
-void VinylControlControl::slotControlVinylSeek(double fractionalPos) {
+void VinylControlControl::onControlVinylSeek(double fractionalPos) {
     // Prevent NaN's from sneaking into the engine.
     if (isnan(fractionalPos)) {
         return;

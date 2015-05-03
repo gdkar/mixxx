@@ -38,14 +38,14 @@ class HotcueControl : public QObject {
     inline void setPreviewingPosition(int iPosition) { m_iPreviewingPosition = iPosition; }
 
   private slots:
-    void slotHotcueSet(double v);
-    void slotHotcueGoto(double v);
-    void slotHotcueGotoAndPlay(double v);
-    void slotHotcueGotoAndStop(double v);
-    void slotHotcueActivate(double v);
-    void slotHotcueActivatePreview(double v);
-    void slotHotcueClear(double v);
-    void slotHotcuePositionChanged(double newPosition);
+    void onHotcueSet(double v);
+    void onHotcueGoto(double v);
+    void onHotcueGotoAndPlay(double v);
+    void onHotcueGotoAndStop(double v);
+    void onHotcueActivate(double v);
+    void onHotcueActivatePreview(double v);
+    void onHotcueClear(double v);
+    void onHotcuePositionChanged(double newPosition);
 
   signals:
     void hotcueSet(HotcueControl* pHotcue, double v);

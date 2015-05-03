@@ -14,10 +14,10 @@ SamplerBank::SamplerBank(PlayerManager* pPlayerManager)
     DEBUG_ASSERT(m_pPlayerManager);
     m_pLoadControl = new ControlPushButton(ConfigKey("[Sampler]", "LoadSamplerBank"));
     connect(m_pLoadControl, SIGNAL(valueChanged(double)),
-            this, SLOT(slotLoadSamplerBank(double)));
+            this, SLOT(onLoadSamplerBank(double)));
     m_pSaveControl = new ControlPushButton(ConfigKey("[Sampler]", "SaveSamplerBank"));
     connect(m_pSaveControl, SIGNAL(valueChanged(double)),
-            this, SLOT(slotSaveSamplerBank(double)));
+            this, SLOT(onSaveSamplerBank(double)));
 }
 
 SamplerBank::~SamplerBank() {
@@ -25,7 +25,7 @@ SamplerBank::~SamplerBank() {
     delete m_pSaveControl;
 }
 
-void SamplerBank::slotSaveSamplerBank(double v) {
+void SamplerBank::onSaveSamplerBank(double v) {
     if (v == 0.0 || m_pPlayerManager == NULL) {
         return;
     }
@@ -90,7 +90,7 @@ void SamplerBank::slotSaveSamplerBank(double v) {
     file.close();
 }
 
-void SamplerBank::slotLoadSamplerBank(double v) {
+void SamplerBank::onLoadSamplerBank(double v) {
     if (v == 0.0 || m_pPlayerManager == NULL) {
         return;
     }
@@ -149,9 +149,9 @@ void SamplerBank::slotLoadSamplerBank(double v) {
 
                 if (!group.isEmpty()) {
                     if (location.isEmpty()) {
-                        m_pPlayerManager->slotLoadTrackToPlayer(TrackPointer(), group);
+                        m_pPlayerManager->onLoadTrackToPlayer(TrackPointer(), group);
                     } else {
-                        m_pPlayerManager->slotLoadToPlayer(location, group);
+                        m_pPlayerManager->onLoadToPlayer(location, group);
                     }
                 }
 

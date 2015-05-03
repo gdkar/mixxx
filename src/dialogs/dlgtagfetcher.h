@@ -37,7 +37,7 @@ class DlgTagFetcher : public QDialog,  public Ui::DlgTagFetcher {
     void fetchTagFinished(const TrackPointer,const QList<TrackPointer>& tracks);
     void resultSelected();
     void fetchTagProgress(QString);
-    void slotNetworkError(int, QString);
+    void onNetworkError(int, QString);
     void apply();
     void quit();
 

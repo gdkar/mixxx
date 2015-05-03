@@ -7,7 +7,7 @@
 #include "control/controlobject.h"
 #include "configobject.h"
 #include "control/controlpushbutton.h"
-#include "cachingreader.h"
+#include "engine/cachingreader.h"
 #include "engine/quantizecontrol.h"
 #include "engine/enginecontrol.h"
 #include "util/assert.h"
@@ -42,7 +42,7 @@ void QuantizeControl::trackLoaded(TrackPointer pTrack) {
         m_pTrack = pTrack;
         m_pBeats = m_pTrack->getBeats();
         connect(m_pTrack.data(), SIGNAL(beatsUpdated()),
-                this, SLOT(slotBeatsUpdated()));
+                this, SLOT(onBeatsUpdated()));
         // Initialize prev and next beat as if current position was zero.
         // If there is a cue point, the value will be updated.
         lookupBeatPositions(0.0);
@@ -54,7 +54,7 @@ void QuantizeControl::trackUnloaded(TrackPointer pTrack) {
     Q_UNUSED(pTrack);
     if (m_pTrack) {
         disconnect(m_pTrack.data(), SIGNAL(beatsUpdated()),
-                   this, SLOT(slotBeatsUpdated()));
+                   this, SLOT(onBeatsUpdated()));
     }
     m_pTrack.clear();
     m_pBeats.clear();
@@ -63,7 +63,7 @@ void QuantizeControl::trackUnloaded(TrackPointer pTrack) {
     m_pCOClosestBeat->set(-1);
 }
 
-void QuantizeControl::slotBeatsUpdated() {
+void QuantizeControl::onBeatsUpdated() {
     if (m_pTrack) {
         m_pBeats = m_pTrack->getBeats();
         lookupBeatPositions(getCurrentSample());

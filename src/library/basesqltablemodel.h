@@ -31,14 +31,12 @@ class BaseSqlTableModel : public QAbstractTableModel, public TrackModel {
     virtual bool isColumnInternal(int column) = 0;
     virtual bool isColumnHiddenByDefault(int column);
     virtual TrackModel::CapabilitiesFlags getCapabilities() const = 0;
-
     // functions that can be implemented
     // function to reimplement for external libraries
     virtual TrackPointer getTrack(const QModelIndex& index) const;
     // calls readWriteFlags() by default, reimplement this if the child calls
     // should be readOnly
     virtual Qt::ItemFlags flags(const QModelIndex &index) const;
-
     ////////////////////////////////////////////////////////////////////////////
     // Other public methods
     ////////////////////////////////////////////////////////////////////////////
@@ -113,23 +111,17 @@ class BaseSqlTableModel : public QAbstractTableModel, public TrackModel {
     // called.
     QString orderByClause() const;
     QSqlDatabase database() const;
-
     struct RowInfo {
         int trackId;
         int order;
         QVector<QVariant> metadata;
-
         bool operator<(const RowInfo& other) const {
             // -1 is greater than anything
-            if (order == -1) {
-                return false;
-            } else if (other.order == -1) {
-                return true;
-            }
+            if (order == -1) {return false;
+            } else if (other.order == -1) {return true;}
             return order < other.order;
         }
     };
-
     class SortColumn {
       public:
         SortColumn(int column, Qt::SortOrder order)
@@ -160,7 +152,6 @@ class BaseSqlTableModel : public QAbstractTableModel, public TrackModel {
     QString m_tableOrderBy;
     int m_trackSourceSortColumn;
     Qt::SortOrder m_trackSourceSortOrder;
-
     DISALLOW_COPY_AND_ASSIGN(BaseSqlTableModel);
 };
 

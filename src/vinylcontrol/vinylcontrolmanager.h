@@ -58,7 +58,7 @@ class VinylControlManager : public QObject {
     void requestReloadConfig();
 
   private slots:
-    void slotNumDecksChanged(double);
+    void onNumDecksChanged(double);
 
   private:
     ConfigObject<ConfigValue>* m_pConfig;

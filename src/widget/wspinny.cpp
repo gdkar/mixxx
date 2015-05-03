@@ -73,7 +73,7 @@ WSpinny::WSpinny(QWidget* parent, const QString& group,
     if (pCache != NULL) {
         connect(pCache, SIGNAL(coverFound(const QObject*, const int,
                                           const CoverInfo&, QPixmap, bool)),
-                this, SLOT(slotCoverFound(const QObject*, const int,
+                this, SLOT(onCoverFound(const QObject*, const int,
                                           const CoverInfo&, QPixmap, bool)));
     }
 
@@ -240,10 +240,10 @@ void WSpinny::maybeUpdate() {
     }
 }
 
-void WSpinny::slotLoadTrack(TrackPointer pTrack) {
+void WSpinny::onLoadTrack(TrackPointer pTrack) {
     if (m_loadedTrack) {
         disconnect(m_loadedTrack.data(), SIGNAL(coverArtUpdated()),
-                   this, SLOT(slotTrackCoverArtUpdated()));
+                   this, SLOT(onTrackCoverArtUpdated()));
     }
     m_lastRequestedCover = CoverInfo();
     m_loadedCover = QPixmap();
@@ -251,16 +251,16 @@ void WSpinny::slotLoadTrack(TrackPointer pTrack) {
     m_loadedTrack = pTrack;
     if (m_loadedTrack) {
         connect(m_loadedTrack.data(), SIGNAL(coverArtUpdated()),
-                this, SLOT(slotTrackCoverArtUpdated()));
+                this, SLOT(onTrackCoverArtUpdated()));
     }
 
-    slotTrackCoverArtUpdated();
+    onTrackCoverArtUpdated();
 }
 
-void WSpinny::slotReset() {
+void WSpinny::onReset() {
     if (m_loadedTrack) {
         disconnect(m_loadedTrack.data(), SIGNAL(coverArtUpdated()),
-                   this, SLOT(slotTrackCoverArtUpdated()));
+                   this, SLOT(onTrackCoverArtUpdated()));
     }
     m_loadedTrack = TrackPointer();
     m_lastRequestedCover = CoverInfo();
@@ -269,7 +269,7 @@ void WSpinny::slotReset() {
     update();
 }
 
-void WSpinny::slotTrackCoverArtUpdated() {
+void WSpinny::onTrackCoverArtUpdated() {
     if (m_loadedTrack) {
         m_lastRequestedCover = m_loadedTrack->getCoverInfo();
         m_lastRequestedCover.trackLocation = m_loadedTrack->getLocation();
@@ -281,7 +281,7 @@ void WSpinny::slotTrackCoverArtUpdated() {
     }
 }
 
-void WSpinny::slotCoverFound(const QObject* pRequestor, int requestReference,
+void WSpinny::onCoverFound(const QObject* pRequestor, int requestReference,
                              const CoverInfo& info, QPixmap pixmap,
                              bool fromCache) {
     Q_UNUSED(info);
@@ -289,7 +289,7 @@ void WSpinny::slotCoverFound(const QObject* pRequestor, int requestReference,
 
     if (pRequestor == this && m_loadedTrack &&
             m_loadedTrack->getId() == requestReference) {
-        qDebug() << "WSpinny::slotCoverFound" << pRequestor << info
+        qDebug() << "WSpinny::onCoverFound" << pRequestor << info
                  << pixmap.size();
         m_loadedCover = pixmap;
         m_loadedCoverScaled = scaledCoverArt(pixmap);
@@ -552,7 +552,7 @@ void WSpinny::mouseMoveEvent(QMouseEvent * e) {
         //Convert deltaTheta into a percentage of song length.
         double absPos = calculatePositionFromAngle(theta);
         double absPosInSamples = absPos * m_pTrackSamples->get();
-        m_pScratchPos->slotSet(absPosInSamples - m_dInitialPos);
+        m_pScratchPos->onSet(absPosInSamples - m_dInitialPos);
     } else if (e->buttons() & Qt::MidButton) {
     } else if (e->buttons() & Qt::NoButton) {
         setCursor(QCursor(Qt::OpenHandCursor));
@@ -583,11 +583,11 @@ void WSpinny::mousePressEvent(QMouseEvent * e)
         theta += m_iFullRotations * 360.0;
         m_dInitialPos = calculatePositionFromAngle(theta) * m_pTrackSamples->get();
 
-        m_pScratchPos->slotSet(0);
-        m_pScratchToggle->slotSet(1.0);
+        m_pScratchPos->onSet(0);
+        m_pScratchToggle->onSet(1.0);
 
         if (e->button() == Qt::RightButton) {
-            m_pSlipEnabled->slotSet(1.0);
+            m_pSlipEnabled->onSet(1.0);
         }
 
         // Trigger a mouse move to immediately line up the vinyl with the cursor
@@ -599,10 +599,10 @@ void WSpinny::mouseReleaseEvent(QMouseEvent * e)
 {
     if (e->button() == Qt::LeftButton || e->button() == Qt::RightButton) {
         QApplication::restoreOverrideCursor();
-        m_pScratchToggle->slotSet(0.0);
+        m_pScratchToggle->onSet(0.0);
         m_iFullRotations = 0;
         if (e->button() == Qt::RightButton) {
-            m_pSlipEnabled->slotSet(0.0);
+            m_pSlipEnabled->onSet(0.0);
         }
     }
 }

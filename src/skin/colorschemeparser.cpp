@@ -14,27 +14,17 @@
 void ColorSchemeParser::setupLegacyColorSchemes(QDomElement docElem,
                                                 ConfigObject<ConfigValue>* pConfig) {
     QDomNode colsch = docElem.namedItem("Schemes");
-
     if (!colsch.isNull() && colsch.isElement()) {
         QString schname = pConfig->getValueString(ConfigKey("[Config]","Scheme"));
         QDomNode sch = colsch.firstChild();
-
         bool found = false;
-
-        if (schname.isEmpty()) {
             // If no scheme stored, accept the first one in the file
-            found = true;
-        }
-
+        if (schname.isEmpty()) {found = true;}
         while (!sch.isNull() && !found) {
             QString thisname = XmlParse::selectNodeQString(sch, "Name");
-            if (thisname == schname) {
-                found = true;
-            } else {
-                sch = sch.nextSibling();
-            }
+            if (thisname == schname) {found = true;}
+            else {sch = sch.nextSibling();}
         }
-
         if (found) {
             QSharedPointer<ImgSource> imsrc =
                     QSharedPointer<ImgSource>(parseFilters(sch.namedItem("Filters")));
@@ -56,25 +46,16 @@ void ColorSchemeParser::setupLegacyColorSchemes(QDomElement docElem,
 ImgSource* ColorSchemeParser::parseFilters(QDomNode filt) {
 
     // TODO: Move this code into ImgSource
-    if (!filt.hasChildNodes()) {
-        return 0;
-    }
-
+    if (!filt.hasChildNodes()) {return 0;}
     ImgSource * ret = new ImgLoader();
-
     QDomNode f = filt.firstChild();
-
     while (!f.isNull()) {
         QString name = f.nodeName().toLower();
-        if (name == "invert") {
-            ret = new ImgInvert(ret);
-        } else if (name == "hueinv") {
-            ret = new ImgHueInv(ret);
-        } else if (name == "add") {
-            ret = new ImgAdd(ret, XmlParse::selectNodeInt(f, "Amount"));
-        } else if (name == "scalewhite") {
-            ret = new ImgScaleWhite(ret, XmlParse::selectNodeFloat(f, "Amount"));
-        } else if (name == "hsvtweak") {
+        if (name == "invert") {ret = new ImgInvert(ret);}
+        else if (name == "hueinv") {ret = new ImgHueInv(ret);}
+        else if (name == "add") {ret = new ImgAdd(ret, XmlParse::selectNodeInt(f, "Amount"));}
+        else if (name == "scalewhite") {ret = new ImgScaleWhite(ret, XmlParse::selectNodeFloat(f, "Amount"));}
+        else if (name == "hsvtweak") {
             int hmin = 0;
             int hmax = 359;
             int smin = 0;
@@ -105,11 +86,8 @@ ImgSource* ColorSchemeParser::parseFilters(QDomNode filt) {
 
             ret = new ImgHSVTweak(ret, hmin, hmax, smin, smax, vmin, vmax, hfact, hconst,
                                   sfact, sconst, vfact, vconst);
-        } else {
-            qDebug() << "Unkown image filter:" << name;
-        }
+        } else {qDebug() << "Unkown image filter:" << name;}
         f = f.nextSibling();
     }
-
     return ret;
 }

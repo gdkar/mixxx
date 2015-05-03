@@ -19,12 +19,12 @@ WCoverArtMenu::~WCoverArtMenu() {
 void WCoverArtMenu::createActions() {
     m_pChange = new QAction(tr("Choose new cover",
             "change cover art location"), this);
-    connect(m_pChange, SIGNAL(triggered()), this, SLOT(slotChange()));
+    connect(m_pChange, SIGNAL(triggered()), this, SLOT(onChange()));
     addAction(m_pChange);
 
     m_pUnset = new QAction(tr("Unset cover",
             "clears the set cover art -- does not touch files on disk"), this);
-    connect(m_pUnset, SIGNAL(triggered()), this, SLOT(slotUnset()));
+    connect(m_pUnset, SIGNAL(triggered()), this, SLOT(onUnset()));
     addAction(m_pUnset);
 
     m_pReload = new QAction(tr("Reload from track/folder",
@@ -38,7 +38,7 @@ void WCoverArtMenu::setCoverArt(TrackPointer pTrack, const CoverInfo& info) {
     m_coverInfo = info;
 }
 
-void WCoverArtMenu::slotChange() {
+void WCoverArtMenu::onChange() {
     // get initial directory (trackdir or coverdir)
     QString initialDir;
 
@@ -91,14 +91,14 @@ void WCoverArtMenu::slotChange() {
     art.info.source = CoverInfo::USER_SELECTED;
     art.info.coverLocation = selectedCoverPath;
     art.info.hash = CoverArtUtils::calculateHash(art.image);
-    qDebug() << "WCoverArtMenu::slotChange emit" << art;
+    qDebug() << "WCoverArtMenu::onChange emit" << art;
     emit(coverArtSelected(art));
 }
 
-void WCoverArtMenu::slotUnset() {
+void WCoverArtMenu::onUnset() {
     CoverArt art;
     art.info.type = CoverInfo::NONE;
     art.info.source = CoverInfo::USER_SELECTED;
-    qDebug() << "WCoverArtMenu::slotUnset emit" << art;
+    qDebug() << "WCoverArtMenu::onUnset emit" << art;
     emit(coverArtSelected(art));
 }

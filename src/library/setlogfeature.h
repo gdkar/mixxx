@@ -29,16 +29,16 @@ public:
   public slots:
     void onRightClick(const QPoint& globalPos);
     void onRightClickChild(const QPoint& globalPos, QModelIndex index);
-    void slotJoinWithPrevious();
-    void slotGetNewPlaylist();
+    void onJoinWithPrevious();
+    void onGetNewPlaylist();
 
   protected:
     void buildPlaylistList();
     void decorateChild(TreeItem *pChild, int playlist_id);
 
   private slots:
-    void slotPlayingTrackChanged(TrackPointer currentPlayingTrack);
-    void slotPlaylistTableChanged(int playlistId);
+    void onPlayingTrackChanged(TrackPointer currentPlayingTrack);
+    void onPlaylistTableChanged(int playlistId);
 
   private:
     QString getRootViewHtml() const;

@@ -72,41 +72,41 @@ class AutoDJCratesDAO : public QObject, public virtual DAO {
 
   private slots:
     // Signaled by the track DAO when a track's information is updated.
-    void slotTrackDirty(int trackId);
+    void onTrackDirty(int trackId);
 
     // Signaled by the crate DAO when a crate is added.
-    void slotCrateAdded(int crateId);
+    void onCrateAdded(int crateId);
 
     // Signaled by the crate DAO when a crate is deleted.
-    void slotCrateDeleted(int crateId);
+    void onCrateDeleted(int crateId);
 
     // Signaled by the crate DAO when a crate's auto-DJ status changes.
-    void slotCrateAutoDjChanged(int crateId, bool added);
+    void onCrateAutoDjChanged(int crateId, bool added);
 
     // Signaled by the crate DAO when a track is added to a crate.
-    void slotCrateTrackAdded(int crateId, int trackId);
+    void onCrateTrackAdded(int crateId, int trackId);
 
     // Signaled by the crate DAO when a track is removed from a crate.
-    void slotCrateTrackRemoved(int crateId, int trackId);
+    void onCrateTrackRemoved(int crateId, int trackId);
 
     // Signaled by the playlist DAO when a playlist is added.
-    void slotPlaylistAdded(int playlistId);
+    void onPlaylistAdded(int playlistId);
 
     // Signaled by the playlist DAO when a playlist is deleted.
-    void slotPlaylistDeleted(int playlistId);
+    void onPlaylistDeleted(int playlistId);
 
     // Signaled by the playlist DAO when a track is added to a playlist.
-    void slotPlaylistTrackAdded(int playlistId, int trackId,
+    void onPlaylistTrackAdded(int playlistId, int trackId,
                                 int position);
 
     // Signaled by the playlist DAO when a track is removed from a playlist.
-    void slotPlaylistTrackRemoved(int playlistId, int trackId,
+    void onPlaylistTrackRemoved(int playlistId, int trackId,
                                   int position);
 
     // Signaled by the PlayerInfo singleton when a track is loaded to, or
     // unloaded from, a deck.
-    void slotPlayerInfoTrackLoaded(QString group, TrackPointer pTrack);
-    void slotPlayerInfoTrackUnloaded(QString group, TrackPointer pTrack);
+    void onPlayerInfoTrackLoaded(QString group, TrackPointer pTrack);
+    void onPlayerInfoTrackUnloaded(QString group, TrackPointer pTrack);
 
   private:
 

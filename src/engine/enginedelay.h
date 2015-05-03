@@ -32,7 +32,7 @@ class EngineDelay : public EngineObject {
     void process(CSAMPLE* pInOut, const int iBufferSize);
 
   public slots:
-    void slotDelayChanged();
+    void onDelayChanged();
 
   private:
     ControlPotmeter* m_pDelayPot;

@@ -24,14 +24,14 @@ class DlgPrefControllers : public DlgPreferencePage, public Ui::DlgPrefControlle
     bool handleTreeItemClick(QTreeWidgetItem* clickedItem);
 
   public slots:
-    void slotUpdate();
-    void slotApply();
-    void slotCancel();
+    void onUpdate();
+    void onApply();
+    void onCancel();
 
   private slots:
     void rescanControllers();
-    void slotHighlightDevice(DlgPrefController* dialog, bool enabled);
-    void slotOpenLocalFile(const QString& file);
+    void onHighlightDevice(DlgPrefController* dialog, bool enabled);
+    void onOpenLocalFile(const QString& file);
 
   private:
     void destroyControllerWidgets();

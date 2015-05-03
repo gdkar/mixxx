@@ -102,29 +102,29 @@ class AutoDJFeature : public LibraryFeature {
 
   private slots:
     // Add a crate to the auto-DJ queue.
-    void slotAddCrateToAutoDj(int crateId);
+    void onAddCrateToAutoDj(int crateId);
 
     // Implements the context-menu item.
-    void slotRemoveCrateFromAutoDj();
+    void onRemoveCrateFromAutoDj();
 
     // Signaled by the crate DAO when a crate is added.
-    void slotCrateAdded(int crateId);
+    void onCrateAdded(int crateId);
 
     // Signaled by the crate DAO when a crate is renamed.
-    void slotCrateRenamed(int crateId, QString newName);
+    void onCrateRenamed(int crateId, QString newName);
 
     // Signaled by the crate DAO when a crate is deleted.
-    void slotCrateDeleted(int crateId);
+    void onCrateDeleted(int crateId);
 
     // Signaled by the crate DAO when a crate's auto-DJ status changes.
-    void slotCrateAutoDjChanged(int crateId, bool added);
+    void onCrateAutoDjChanged(int crateId, bool added);
 
     // Adds a random track from all loaded crates to the auto-DJ queue.
-    void slotAddRandomTrack(bool);
+    void onAddRandomTrack(bool);
 
     // Adds a random track from the queue upon hitting minimum number
     // of tracks in the playlist
-    void slotRandomQueue(int);
+    void onRandomQueue(int);
 
 };
 

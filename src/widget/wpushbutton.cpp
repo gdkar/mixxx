@@ -327,6 +327,7 @@ void WPushButton::mousePressEvent(QMouseEvent * e) {
         if (leftClick) {
             if (getControlParameterLeft() == 0.0) {
                 m_clickTimer.setSingleShot(true);
+                m_clickTimer.setTimerType(Qt::PreciseTimer);
                 m_clickTimer.start(ControlPushButtonBehavior::kPowerWindowTimeMillis);
             }
             m_bPressed = true;
@@ -364,6 +365,7 @@ void WPushButton::mousePressEvent(QMouseEvent * e) {
             }
             if (m_leftButtonMode == ControlPushButton::LONGPRESSLATCHING) {
                 m_clickTimer.setSingleShot(true);
+                m_clickTimer.setTimerType(Qt::PreciseTimer);
                 m_clickTimer.start(ControlPushButtonBehavior::kLongPressLatchingTimeMillis);
             }
         }

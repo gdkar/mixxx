@@ -14,27 +14,27 @@ class DlgPreferencePage : public QWidget {
     // Called when the preference dialog is shown to the user (not necessarily
     // when this PreferencePage is shown to the user). At this point, the
     // PreferencePage should update all of its setting to the latest values.
-    virtual void slotUpdate() {}
+    virtual void onUpdate() {}
 
     // Called when the user clicks the global "Apply" button. The preference
     // dialog should make all of the current setting of the UI widgets active.
-    virtual void slotApply() {}
+    virtual void onApply() {}
 
     // Called when the user clicks the global "Cancel" button. The preference
     // dialog should revert all of the changes the user made since the last
-    // slotUpdate.
-    virtual void slotCancel() {}
+    // onUpdate.
+    virtual void onCancel() {}
 
     // Called when the user clicks the global "Reset to Defaults" button. The
     // preference dialog should revert settings to their default values.
-    virtual void slotResetToDefaults() {}
+    virtual void onResetToDefaults() {}
 
     // Called when the preferences dialog is shown to the user (not necessarily
     // when this PreferencePage is shown to the user).
-    virtual void slotShow() {}
+    virtual void onShow() {}
 
     // Called when the preferences dialog is hidden from the user.
-    virtual void slotHide() {}
+    virtual void onHide() {}
 };
 
 

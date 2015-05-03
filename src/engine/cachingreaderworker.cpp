@@ -4,7 +4,7 @@
 #include "control/controlobject.h"
 #include "control/controlobjectthread.h"
 
-#include "cachingreaderworker.h"
+#include "engine/cachingreaderworker.h"
 #include "trackinfoobject.h"
 #include "soundsourceproxy.h"
 #include "util/compatibility.h"

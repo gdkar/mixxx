@@ -14,19 +14,19 @@ class DlgPrefAutoDJ : public DlgPreferencePage, public Ui::DlgPrefAutoDJDlg {
     virtual ~DlgPrefAutoDJ();
 
   public slots:
-    void slotUpdate();
-    void slotApply();
-    void slotResetToDefaults();
-    void slotCancel() ;
+    void onUpdate();
+    void onApply();
+    void onResetToDefaults();
+    void onCancel() ;
 
   private slots:
-    void slotSetAutoDjRequeue(int);
-    void slotSetAutoDjMinimumAvailable(int);
-    void slotSetAutoDjUseIgnoreTime(int);
-    void slotSetAutoDjIgnoreTime(const QTime &a_rTime);
-    void slotSetAutoDJRandomQueueMin(int);
-    void slotEnableAutoDJRandomQueueComboBox(int);
-    void slotEnableAutoDJRandomQueue(int);
+    void onSetAutoDjRequeue(int);
+    void onSetAutoDjMinimumAvailable(int);
+    void onSetAutoDjUseIgnoreTime(int);
+    void onSetAutoDjIgnoreTime(const QTime &a_rTime);
+    void onSetAutoDJRandomQueueMin(int);
+    void onEnableAutoDJRandomQueueComboBox(int);
+    void onEnableAutoDJRandomQueue(int);
 
   private:
     ConfigObject<ConfigValue>* m_pConfig;

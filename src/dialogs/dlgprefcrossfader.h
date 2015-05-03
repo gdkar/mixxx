@@ -39,11 +39,11 @@ class DlgPrefCrossfader : public DlgPreferencePage, public Ui::DlgPrefCrossfader
 
   public slots:
     /** Update X-Fader */
-    void slotUpdateXFader();
+    void onUpdateXFader();
     /** Apply changes to widget */
-    void slotApply();
-    void slotUpdate();
-    void slotResetToDefaults();
+    void onApply();
+    void onUpdate();
+    void onResetToDefaults();
 
   signals:
     void apply(const QString &);

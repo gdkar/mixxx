@@ -24,7 +24,7 @@ RecordingManager::RecordingManager(ConfigObject<ConfigValue>* pConfig, EngineMas
           m_durationRecorded("") {
     m_pToggleRecording = new ControlPushButton(ConfigKey(RECORDING_PREF_KEY, "toggle_recording"));
     connect(m_pToggleRecording, SIGNAL(valueChanged(double)),
-            this, SLOT(slotToggleRecording(double)));
+            this, SLOT(onToggleRecording(double)));
     m_recReadyCO = new ControlObject(ConfigKey(RECORDING_PREF_KEY, "status"));
     m_recReady = new ControlObjectThread(m_recReadyCO->getKey());
 
@@ -36,11 +36,11 @@ RecordingManager::RecordingManager(ConfigObject<ConfigValue>* pConfig, EngineMas
     if (pSidechain) {
         EngineRecord* pEngineRecord = new EngineRecord(m_pConfig);
         connect(pEngineRecord, SIGNAL(isRecording(bool)),
-                this, SLOT(slotIsRecording(bool)));
+                this, SLOT(onIsRecording(bool)));
         connect(pEngineRecord, SIGNAL(bytesRecorded(int)),
-                this, SLOT(slotBytesRecorded(int)));
+                this, SLOT(onBytesRecorded(int)));
         connect(pEngineRecord, SIGNAL(durationRecorded(QString)),
-                this, SLOT(slotDurationRecorded(QString)));
+                this, SLOT(onDurationRecorded(QString)));
         pSidechain->addSideChainWorker(pEngineRecord);
     }
 }
@@ -61,7 +61,7 @@ QString RecordingManager::formatDateTimeForFilename(QDateTime dateTime) const {
     return formatted;
 }
 
-void RecordingManager::slotSetRecording(bool recording) {
+void RecordingManager::onSetRecording(bool recording) {
     if (recording && !isRecordingActive()) {
         startRecording();
     } else if (!recording && isRecordingActive()) {
@@ -69,7 +69,7 @@ void RecordingManager::slotSetRecording(bool recording) {
     }
 }
 
-void RecordingManager::slotToggleRecording(double v) {
+void RecordingManager::onToggleRecording(double v) {
     if (v > 0) {
         if (isRecordingActive()) {
             stopRecording();
@@ -110,13 +110,13 @@ void RecordingManager::startRecording(bool generateFileName) {
         m_pConfig->set(ConfigKey(RECORDING_PREF_KEY, "CuePath"), new_base_filename +".cue");
         m_recordingFile = QFileInfo(m_recordingLocation).fileName();
     }
-    m_recReady->slotSet(RECORD_READY);
+    m_recReady->onSet(RECORD_READY);
 }
 
 void RecordingManager::stopRecording()
 {
     qDebug() << "Recording stopped";
-    m_recReady->slotSet(RECORD_OFF);
+    m_recReady->onSet(RECORD_OFF);
     m_recordingFile = "";
     m_recordingLocation = "";
     m_iNumberOfBytesRecorded = 0;
@@ -145,7 +145,7 @@ QString& RecordingManager::getRecordingDir() {
 }
 
 // Only called when recording is active.
-void RecordingManager::slotDurationRecorded(QString durationStr)
+void RecordingManager::onDurationRecorded(QString durationStr)
 {
     if(m_durationRecorded != durationStr)
     {
@@ -155,7 +155,7 @@ void RecordingManager::slotDurationRecorded(QString durationStr)
 }
 
 // Only called when recording is active.
-void RecordingManager::slotBytesRecorded(int bytes)
+void RecordingManager::onBytesRecorded(int bytes)
 {
     // auto conversion to long
     m_iNumberOfBytesRecorded += bytes;
@@ -169,7 +169,7 @@ void RecordingManager::slotBytesRecorded(int bytes)
     emit(bytesRecorded(m_iNumberOfBytesRecorded));
 }
 
-void RecordingManager::slotIsRecording(bool isRecordingActive)
+void RecordingManager::onIsRecording(bool isRecordingActive)
 {
     //qDebug() << "SlotIsRecording " << isRecording;
 

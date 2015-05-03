@@ -57,12 +57,9 @@ class WSingletonContainer : public WWidgetGroup {
     // Prepares the container and remembers the widget, but does not add the
     // widget to the container.
     WSingletonContainer(QWidget* pParent=NULL);
-
     virtual void setup(QDomNode node, const SkinContext& context);
-
   public slots:
     virtual void showEvent(QShowEvent* event);
-
   private:
     QPointer<QWidget> m_pWidget;
     QLayout* m_pLayout;

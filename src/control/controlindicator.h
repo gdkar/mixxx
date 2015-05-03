@@ -24,8 +24,8 @@ class ControlIndicator : public ControlObject {
     void blinkValueChanged();
 
   private slots:
-    void slotGuiTick50ms(double cpuTime);
-    void slotBlinkValueChanged();
+    void onGuiTick50ms(double cpuTime);
+    void onBlinkValueChanged();
 
   private:
     void toggle();

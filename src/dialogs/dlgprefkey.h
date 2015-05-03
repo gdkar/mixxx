@@ -18,9 +18,9 @@ class DlgPrefKey : public DlgPreferencePage, Ui::DlgPrefKeyDlg {
 
   public slots:
     // Apply changes to widget
-    void slotApply();
-    void slotUpdate();
-    void slotResetToDefaults();
+    void onApply();
+    void onUpdate();
+    void onResetToDefaults();
 
   private slots:
     void pluginSelected(int i);

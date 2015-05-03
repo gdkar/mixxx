@@ -48,10 +48,9 @@ class AnalysisFeature : public LibraryFeature {
     void analyzeTracks(QList<int> trackIds);
 
   private slots:
-    void slotProgressUpdate(int num_left);
+    void onProgressUpdate(int num_left);
     void stopAnalysis();
     void cleanupAnalyser();
-
   private:
     // Sets the title of this feature to the default name, given by
     // m_sAnalysisTitleName
@@ -61,7 +60,6 @@ class AnalysisFeature : public LibraryFeature {
     // where x is the current track being analyzed and y is the total number of
     // tracks in the job
     void setTitleProgress(int trackNum, int totalNum);
-
     ConfigObject<ConfigValue>* m_pConfig;
     TrackCollection* m_pTrackCollection;
     AnalyserQueue* m_pAnalyserQueue;

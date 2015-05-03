@@ -64,27 +64,27 @@ class SyncControl : public EngineControl, public Syncable {
 
   private slots:
     // Fired by changes in play.
-    void slotControlPlay(double v);
+    void onControlPlay(double v);
 
     // Fired by changes in vinyl control status.
-    void slotVinylControlChanged(double v);
+    void onVinylControlChanged(double v);
 
     // Fired when passthrough mode is enabled or disabled.
-    void slotPassthroughChanged(double v);
+    void onPassthroughChanged(double v);
 
     // Fired when a track is ejected.
-    void slotEjectPushed(double v);
+    void onEjectPushed(double v);
 
     // Fired by changes in rate, rate_dir, rateRange.
-    void slotRateChanged();
+    void onRateChanged();
 
     // Fired by changes in file_bpm.
-    void slotFileBpmChanged();
+    void onFileBpmChanged();
 
     // Change request handlers for sync properties.
-    void slotSyncModeChangeRequest(double state);
-    void slotSyncEnabledChangeRequest(double enabled);
-    void slotSyncMasterEnabledChangeRequest(double state);
+    void onSyncModeChangeRequest(double state);
+    void onSyncEnabledChangeRequest(double enabled);
+    void onSyncMasterEnabledChangeRequest(double state);
 
   private:
     FRIEND_TEST(SyncControlTest, TestDetermineBpmMultiplier);

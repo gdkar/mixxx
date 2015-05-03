@@ -31,13 +31,13 @@ WCoverArt::WCoverArt(QWidget* parent,
     if (pCache != NULL) {
         connect(pCache, SIGNAL(coverFound(const QObject*, const int,
                                           const CoverInfo&, QPixmap, bool)),
-                this, SLOT(slotCoverFound(const QObject*, const int,
+                this, SLOT(onCoverFound(const QObject*, const int,
                                           const CoverInfo&, QPixmap, bool)));
     }
     connect(m_pMenu, SIGNAL(coverArtSelected(const CoverArt&)),
-            this, SLOT(slotCoverArtSelected(const CoverArt&)));
+            this, SLOT(onCoverArtSelected(const CoverArt&)));
     connect(m_pMenu, SIGNAL(reloadCoverArt()),
-            this, SLOT(slotReloadCoverArt()));
+            this, SLOT(onReloadCoverArt()));
 }
 
 WCoverArt::~WCoverArt() {
@@ -80,7 +80,7 @@ void WCoverArt::setup(QDomNode node, const SkinContext& context) {
     m_defaultCoverScaled = scaledCoverArt(m_defaultCover);
 }
 
-void WCoverArt::slotReloadCoverArt() {
+void WCoverArt::onReloadCoverArt() {
     if (m_loadedTrack) {
         CoverArtCache* pCache = CoverArtCache::instance();
         if (pCache) {
@@ -89,28 +89,28 @@ void WCoverArt::slotReloadCoverArt() {
     }
 }
 
-void WCoverArt::slotCoverArtSelected(const CoverArt& art) {
+void WCoverArt::onCoverArtSelected(const CoverArt& art) {
     if (m_loadedTrack) {
-        // Will trigger slotTrackCoverArtUpdated().
+        // Will trigger onTrackCoverArtUpdated().
         m_loadedTrack->setCoverArt(art);
     }
 }
 
-void WCoverArt::slotEnable(bool enable) {
+void WCoverArt::onEnable(bool enable) {
     bool wasDisabled = !m_bEnable && enable;
     m_bEnable = enable;
 
     if (wasDisabled) {
-        slotLoadTrack(m_loadedTrack);
+        onLoadTrack(m_loadedTrack);
     }
 
     update();
 }
 
-void WCoverArt::slotReset() {
+void WCoverArt::onReset() {
     if (m_loadedTrack) {
         disconnect(m_loadedTrack.data(), SIGNAL(coverArtUpdated()),
-                   this, SLOT(slotTrackCoverArtUpdated()));
+                   this, SLOT(onTrackCoverArtUpdated()));
     }
     m_loadedTrack = TrackPointer();
     m_lastRequestedCover = CoverInfo();
@@ -119,7 +119,7 @@ void WCoverArt::slotReset() {
     update();
 }
 
-void WCoverArt::slotCoverFound(const QObject* pRequestor, int requestReference,
+void WCoverArt::onCoverFound(const QObject* pRequestor, int requestReference,
                                const CoverInfo& info, QPixmap pixmap,
                                bool fromCache) {
     Q_UNUSED(info);
@@ -130,7 +130,7 @@ void WCoverArt::slotCoverFound(const QObject* pRequestor, int requestReference,
 
     if (pRequestor == this && m_loadedTrack &&
             m_loadedTrack->getId() == requestReference) {
-        qDebug() << "WCoverArt::slotCoverFound" << pRequestor << info
+        qDebug() << "WCoverArt::onCoverFound" << pRequestor << info
                  << pixmap.size();
         m_loadedCover = pixmap;
         m_loadedCoverScaled = scaledCoverArt(pixmap);
@@ -138,7 +138,7 @@ void WCoverArt::slotCoverFound(const QObject* pRequestor, int requestReference,
     }
 }
 
-void WCoverArt::slotTrackCoverArtUpdated() {
+void WCoverArt::onTrackCoverArtUpdated() {
     if (m_loadedTrack) {
         m_lastRequestedCover = m_loadedTrack->getCoverInfo();
         m_lastRequestedCover.trackLocation = m_loadedTrack->getLocation();
@@ -150,10 +150,10 @@ void WCoverArt::slotTrackCoverArtUpdated() {
     }
 }
 
-void WCoverArt::slotLoadTrack(TrackPointer pTrack) {
+void WCoverArt::onLoadTrack(TrackPointer pTrack) {
     if (m_loadedTrack) {
         disconnect(m_loadedTrack.data(), SIGNAL(coverArtUpdated()),
-                   this, SLOT(slotTrackCoverArtUpdated()));
+                   this, SLOT(onTrackCoverArtUpdated()));
     }
     m_lastRequestedCover = CoverInfo();
     m_loadedCover = QPixmap();
@@ -161,14 +161,14 @@ void WCoverArt::slotLoadTrack(TrackPointer pTrack) {
     m_loadedTrack = pTrack;
     if (m_loadedTrack) {
         connect(m_loadedTrack.data(), SIGNAL(coverArtUpdated()),
-                this, SLOT(slotTrackCoverArtUpdated()));
+                this, SLOT(onTrackCoverArtUpdated()));
     }
 
     if (!m_bEnable) {
         return;
     }
 
-    slotTrackCoverArtUpdated();
+    onTrackCoverArtUpdated();
 }
 
 QPixmap WCoverArt::scaledCoverArt(const QPixmap& normal) {

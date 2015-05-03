@@ -31,13 +31,13 @@ DlgPrefWaveform::DlgPrefWaveform(QWidget* pParent, MixxxMainWindow* pMixxx,
     }
 
     // The GUI is not fully setup so connecting signals before calling
-    // slotUpdate can generate rebootMixxxView calls.
+    // onUpdate can generate rebootMixxxView calls.
     // TODO(XXX): Improve this awkwardness.
-    slotUpdate();
+    onUpdate();
     connect(frameRateSpinBox, SIGNAL(valueChanged(int)),
-            this, SLOT(slotSetFrameRate(int)));
+            this, SLOT(onSetFrameRate(int)));
     connect(endOfTrackWarningTimeSpinBox, SIGNAL(valueChanged(int)),
-            this, SLOT(slotSetWaveformEndRender(int)));
+            this, SLOT(onSetWaveformEndRender(int)));
     connect(frameRateSlider, SIGNAL(valueChanged(int)),
             frameRateSpinBox, SLOT(setValue(int)));
     connect(frameRateSpinBox, SIGNAL(valueChanged(int)),
@@ -48,31 +48,31 @@ DlgPrefWaveform::DlgPrefWaveform(QWidget* pParent, MixxxMainWindow* pMixxx,
             endOfTrackWarningTimeSlider, SLOT(setValue(int)));
 
     connect(waveformTypeComboBox, SIGNAL(activated(int)),
-            this, SLOT(slotSetWaveformType(int)));
+            this, SLOT(onSetWaveformType(int)));
     connect(defaultZoomComboBox, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(slotSetDefaultZoom(int)));
+            this, SLOT(onSetDefaultZoom(int)));
     connect(synchronizeZoomCheckBox, SIGNAL(clicked(bool)),
-            this, SLOT(slotSetZoomSynchronization(bool)));
+            this, SLOT(onSetZoomSynchronization(bool)));
     connect(allVisualGain,SIGNAL(valueChanged(double)),
-            this,SLOT(slotSetVisualGainAll(double)));
+            this,SLOT(onSetVisualGainAll(double)));
     connect(lowVisualGain,SIGNAL(valueChanged(double)),
-            this,SLOT(slotSetVisualGainLow(double)));
+            this,SLOT(onSetVisualGainLow(double)));
     connect(midVisualGain,SIGNAL(valueChanged(double)),
-            this,SLOT(slotSetVisualGainMid(double)));
+            this,SLOT(onSetVisualGainMid(double)));
     connect(highVisualGain,SIGNAL(valueChanged(double)),
-            this,SLOT(slotSetVisualGainHigh(double)));
+            this,SLOT(onSetVisualGainHigh(double)));
     connect(normalizeOverviewCheckBox,SIGNAL(toggled(bool)),
-            this,SLOT(slotSetNormalizeOverview(bool)));
+            this,SLOT(onSetNormalizeOverview(bool)));
     connect(factory, SIGNAL(waveformMeasured(float,int)),
-            this, SLOT(slotWaveformMeasured(float,int)));
+            this, SLOT(onWaveformMeasured(float,int)));
     connect(waveformOverviewComboBox,SIGNAL(currentIndexChanged(int)),
-            this,SLOT(slotSetWaveformOverviewType(int)));
+            this,SLOT(onSetWaveformOverviewType(int)));
 }
 
 DlgPrefWaveform::~DlgPrefWaveform() {
 }
 
-void DlgPrefWaveform::slotUpdate() {
+void DlgPrefWaveform::onUpdate() {
     WaveformWidgetFactory* factory = WaveformWidgetFactory::instance();
 
     if (factory->isOpenGLAvailable()) {
@@ -107,10 +107,10 @@ void DlgPrefWaveform::slotUpdate() {
     }
 }
 
-void DlgPrefWaveform::slotApply() {
+void DlgPrefWaveform::onApply() {
 }
 
-void DlgPrefWaveform::slotResetToDefaults() {
+void DlgPrefWaveform::onResetToDefaults() {
     WaveformWidgetFactory* factory = WaveformWidgetFactory::instance();
 
     // Get the default we ought to use based on whether the user has OpenGL or
@@ -143,13 +143,13 @@ void DlgPrefWaveform::slotResetToDefaults() {
     endOfTrackWarningTimeSlider->setValue(30);
 }
 
-void DlgPrefWaveform::slotSetFrameRate(int frameRate) {
+void DlgPrefWaveform::onSetFrameRate(int frameRate) {
     WaveformWidgetFactory::instance()->setFrameRate(frameRate);
 }
-void DlgPrefWaveform::slotSetWaveformEndRender(int endTime) {
+void DlgPrefWaveform::onSetWaveformEndRender(int endTime) {
     WaveformWidgetFactory::instance()->setEndOfTrackWarningTime(endTime);
 }
-void DlgPrefWaveform::slotSetWaveformType(int index) {
+void DlgPrefWaveform::onSetWaveformType(int index) {
     // Ignore sets for -1 since this happens when we clear the combobox.
     if (index < 0) {
         return;
@@ -157,40 +157,40 @@ void DlgPrefWaveform::slotSetWaveformType(int index) {
     WaveformWidgetFactory::instance()->setWidgetTypeFromHandle(index);
 }
 
-void DlgPrefWaveform::slotSetWaveformOverviewType(int index) {
+void DlgPrefWaveform::onSetWaveformOverviewType(int index) {
     m_pConfig->set(ConfigKey("[Waveform]","WaveformOverviewType"), ConfigValue(index));
     m_pMixxx->rebootMixxxView();
 }
 
-void DlgPrefWaveform::slotSetDefaultZoom(int index) {
+void DlgPrefWaveform::onSetDefaultZoom(int index) {
     WaveformWidgetFactory::instance()->setDefaultZoom(index + 1);
 }
 
-void DlgPrefWaveform::slotSetZoomSynchronization(bool checked) {
+void DlgPrefWaveform::onSetZoomSynchronization(bool checked) {
     WaveformWidgetFactory::instance()->setZoomSync(checked);
 }
 
-void DlgPrefWaveform::slotSetVisualGainAll(double gain) {
+void DlgPrefWaveform::onSetVisualGainAll(double gain) {
     WaveformWidgetFactory::instance()->setVisualGain(WaveformWidgetFactory::All,gain);
 }
 
-void DlgPrefWaveform::slotSetVisualGainLow(double gain) {
+void DlgPrefWaveform::onSetVisualGainLow(double gain) {
     WaveformWidgetFactory::instance()->setVisualGain(WaveformWidgetFactory::Low,gain);
 }
 
-void DlgPrefWaveform::slotSetVisualGainMid(double gain) {
+void DlgPrefWaveform::onSetVisualGainMid(double gain) {
     WaveformWidgetFactory::instance()->setVisualGain(WaveformWidgetFactory::Mid,gain);
 }
 
-void DlgPrefWaveform::slotSetVisualGainHigh(double gain) {
+void DlgPrefWaveform::onSetVisualGainHigh(double gain) {
     WaveformWidgetFactory::instance()->setVisualGain(WaveformWidgetFactory::High,gain);
 }
 
-void DlgPrefWaveform::slotSetNormalizeOverview(bool normalize) {
+void DlgPrefWaveform::onSetNormalizeOverview(bool normalize) {
     WaveformWidgetFactory::instance()->setOverviewNormalized(normalize);
 }
 
-void DlgPrefWaveform::slotWaveformMeasured(float frameRate, int droppedFrames) {
+void DlgPrefWaveform::onWaveformMeasured(float frameRate, int droppedFrames) {
     frameRateAverage->setText(
             QString::number((double)frameRate, 'f', 2) + " : " +
             tr("dropped frames") + " " + QString::number(droppedFrames));

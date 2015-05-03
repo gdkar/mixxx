@@ -42,9 +42,9 @@ class DlgPrefShoutcast : public DlgPreferencePage, public Ui::DlgPrefShoutcastDl
 
   public slots:
     /** Apply changes to widget */
-    void slotApply();
-    void slotUpdate();
-    void slotResetToDefaults();
+    void onApply();
+    void onUpdate();
+    void onResetToDefaults();
 
   signals:
     void apply(const QString &);

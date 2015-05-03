@@ -10,15 +10,15 @@ BaseExternalLibraryFeature::BaseExternalLibraryFeature(QObject* pParent,
           m_pTrackCollection(pCollection) {
     m_pAddToAutoDJAction = new QAction(tr("Add to Auto DJ Queue (bottom)"), this);
     connect(m_pAddToAutoDJAction, SIGNAL(triggered()),
-            this, SLOT(slotAddToAutoDJ()));
+            this, SLOT(onAddToAutoDJ()));
 
     m_pAddToAutoDJTopAction = new QAction(tr("Add to Auto DJ Queue (top)"), this);
     connect(m_pAddToAutoDJTopAction, SIGNAL(triggered()),
-            this, SLOT(slotAddToAutoDJTop()));
+            this, SLOT(onAddToAutoDJTop()));
 
     m_pImportAsMixxxPlaylistAction = new QAction(tr("Import Playlist"), this);
     connect(m_pImportAsMixxxPlaylistAction, SIGNAL(triggered()),
-            this, SLOT(slotImportAsMixxxPlaylist()));
+            this, SLOT(onImportAsMixxxPlaylist()));
 }
 
 BaseExternalLibraryFeature::~BaseExternalLibraryFeature() {
@@ -45,18 +45,18 @@ void BaseExternalLibraryFeature::onRightClickChild(const QPoint& globalPos, QMod
     menu.exec(globalPos);
 }
 
-void BaseExternalLibraryFeature::slotAddToAutoDJ() {
-    //qDebug() << "slotAddToAutoDJ() row:" << m_lastRightClickedIndex.data();
+void BaseExternalLibraryFeature::onAddToAutoDJ() {
+    //qDebug() << "onAddToAutoDJ() row:" << m_lastRightClickedIndex.data();
     addToAutoDJ(false);
 }
 
-void BaseExternalLibraryFeature::slotAddToAutoDJTop() {
-    //qDebug() << "slotAddToAutoDJTop() row:" << m_lastRightClickedIndex.data();
+void BaseExternalLibraryFeature::onAddToAutoDJTop() {
+    //qDebug() << "onAddToAutoDJTop() row:" << m_lastRightClickedIndex.data();
     addToAutoDJ(true);
 }
 
 void BaseExternalLibraryFeature::addToAutoDJ(bool bTop) {
-    // qDebug() << "slotAddToAutoDJ() row:" << m_lastRightClickedIndex.data();
+    // qDebug() << "onAddToAutoDJ() row:" << m_lastRightClickedIndex.data();
 
     QList<int> trackIds;
     QString playlist;
@@ -69,8 +69,8 @@ void BaseExternalLibraryFeature::addToAutoDJ(bool bTop) {
     playlistDao.addTracksToAutoDJQueue(trackIds, bTop);
 }
 
-void BaseExternalLibraryFeature::slotImportAsMixxxPlaylist() {
-    // qDebug() << "slotAddToAutoDJ() row:" << m_lastRightClickedIndex.data();
+void BaseExternalLibraryFeature::onImportAsMixxxPlaylist() {
+    // qDebug() << "onAddToAutoDJ() row:" << m_lastRightClickedIndex.data();
 
     QList<int> trackIds;
     QString playlist;

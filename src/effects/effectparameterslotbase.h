@@ -31,8 +31,8 @@ class EffectParameterSlotBase : public QObject {
 
   protected slots:
     // Solely for handling control changes
-    void slotLoaded(double v);
-    void slotValueType(double v);
+    void onLoaded(double v);
+    void onValueType(double v);
 
   protected:
     const unsigned int m_iParameterSlotNumber;

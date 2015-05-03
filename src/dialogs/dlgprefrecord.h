@@ -36,18 +36,18 @@ class DlgPrefRecord : public DlgPreferencePage, public Ui::DlgPrefRecordDlg  {
 
   public slots:
     // Apply changes to widget
-    void slotApply();
-    void slotUpdate();
-    void slotResetToDefaults();
+    void onApply();
+    void onUpdate();
+    void onResetToDefaults();
 
 
-    void slotEncoding();
-    void slotSliderQuality();
-    void slotRecordPathChange();
-    void slotEnableCueFile(int);
-    void slotChangeSplitSize();
+    void onEncoding();
+    void onSliderQuality();
+    void onRecordPathChange();
+    void onEnableCueFile(int);
+    void onChangeSplitSize();
     // Dialog to browse for recordings directory
-    void slotBrowseRecordingsDir();
+    void onBrowseRecordingsDir();
 
   signals:
     void apply(const QString &);

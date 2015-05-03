@@ -27,7 +27,7 @@ DlgMissing::DlgMissing(QWidget* parent, ConfigObject<ConfigValue>* pConfig,
     m_pTrackTableView->loadTrackModel(m_pMissingTableModel);
 
     connect(btnPurge, SIGNAL(clicked()),
-            m_pTrackTableView, SLOT(slotPurge()));
+            m_pTrackTableView, SLOT(onPurge()));
     connect(btnPurge, SIGNAL(clicked()),
             this, SLOT(clicked()));
     connect(btnSelect, SIGNAL(clicked()),

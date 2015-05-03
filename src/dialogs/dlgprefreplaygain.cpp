@@ -18,17 +18,17 @@ DlgPrefReplayGain::DlgPrefReplayGain(QWidget * parent, ConfigObject<ConfigValue>
 
     //Connections
     connect(EnableGain, SIGNAL(stateChanged(int)),
-            this, SLOT(slotSetRGEnabled()));
+            this, SLOT(onSetRGEnabled()));
     connect(EnableAnalyser, SIGNAL(stateChanged(int)),
-            this, SLOT(slotSetRGAnalyserEnabled()));
+            this, SLOT(onSetRGAnalyserEnabled()));
     connect(SliderReplayGainBoost, SIGNAL(valueChanged(int)),
-            this, SLOT(slotUpdateReplayGainBoost()));
+            this, SLOT(onUpdateReplayGainBoost()));
     connect(SliderReplayGainBoost, SIGNAL(sliderReleased()),
-            this, SLOT(slotApply()));
+            this, SLOT(onApply()));
     connect(SliderDefaultBoost, SIGNAL(valueChanged(int)),
-            this, SLOT(slotUpdateDefaultBoost()));
+            this, SLOT(onUpdateDefaultBoost()));
     connect(SliderDefaultBoost, SIGNAL(sliderReleased()),
-            this, SLOT(slotApply()));
+            this, SLOT(onApply()));
 
     loadSettings();
 }
@@ -57,12 +57,12 @@ void DlgPrefReplayGain::loadSettings() {
             ConfigKey(kConfigKey, "ReplayGainAnalyserEnabled"), "1").toInt();
     EnableAnalyser->setChecked(analyserEnabled);
 
-    slotUpdate();
-    slotUpdateReplayGainBoost();
-    slotUpdateDefaultBoost();
+    onUpdate();
+    onUpdateReplayGainBoost();
+    onUpdateDefaultBoost();
 }
 
-void DlgPrefReplayGain::slotResetToDefaults() {
+void DlgPrefReplayGain::onResetToDefaults() {
     EnableGain->setChecked(true);
     // Turn ReplayGain Analyser on by default as it does not give appreciable
     // delay on recent hardware (<5 years old).
@@ -79,33 +79,33 @@ void DlgPrefReplayGain::slotResetToDefaults() {
             QString("%1 dB").arg(iDefaultBoost));
 
 
-    slotUpdate();
-    slotApply();
+    onUpdate();
+    onApply();
 }
 
-void DlgPrefReplayGain::slotSetRGEnabled() {
+void DlgPrefReplayGain::onSetRGEnabled() {
     if (EnableGain->isChecked()) {
         config->set(ConfigKey(kConfigKey,"ReplayGainEnabled"), ConfigValue(1));
     } else {
         config->set(ConfigKey(kConfigKey,"ReplayGainEnabled"), ConfigValue(0));
     }
-    slotUpdate();
-    slotApply();
+    onUpdate();
+    onApply();
 }
 
-void DlgPrefReplayGain::slotSetRGAnalyserEnabled() {
+void DlgPrefReplayGain::onSetRGAnalyserEnabled() {
     int enabled = EnableAnalyser->isChecked() ? 1 : 0;
     config->set(ConfigKey(kConfigKey,"ReplayGainAnalyserEnabled"),
                 ConfigValue(enabled));
-    slotApply();
+    onApply();
 }
 
-void DlgPrefReplayGain::slotUpdateReplayGainBoost() {
+void DlgPrefReplayGain::onUpdateReplayGainBoost() {
     int value = SliderReplayGainBoost->value();
     config->set(ConfigKey(kConfigKey, "InitialReplayGainBoost"),
                 ConfigValue(value));
     setLabelCurrentReplayGainBoost(value);
-    slotApply();
+    onApply();
 }
 
 void DlgPrefReplayGain::setLabelCurrentReplayGainBoost(int value) {
@@ -114,16 +114,16 @@ void DlgPrefReplayGain::setLabelCurrentReplayGainBoost(int value) {
                   QString::number(value + kReplayGainReferenceLUFS), QString().sprintf("%+d", value)));
 }
 
-void DlgPrefReplayGain::slotUpdateDefaultBoost() {
+void DlgPrefReplayGain::onUpdateDefaultBoost() {
     int value = SliderDefaultBoost->value();
     config->set(ConfigKey(kConfigKey, "InitialDefaultBoost"),
                 ConfigValue(value));
     LabelCurrentDefaultBoost->setText(
             QString("%1 dB").arg(value));
-    slotApply();
+    onApply();
 }
 
-void DlgPrefReplayGain::slotUpdate() {
+void DlgPrefReplayGain::onUpdate() {
     if (config->getValueString(
             ConfigKey(kConfigKey,"ReplayGainEnabled")).toInt() == 1) {
         SliderReplayGainBoost->setEnabled(true);
@@ -134,7 +134,7 @@ void DlgPrefReplayGain::slotUpdate() {
     }
 }
 
-void DlgPrefReplayGain::slotApply() {
+void DlgPrefReplayGain::onApply() {
     double replayGainBoostDb = SliderReplayGainBoost->value();
     m_replayGainBoost.set(db2ratio(replayGainBoostDb));
     double defaultBoostDb = SliderDefaultBoost->value();

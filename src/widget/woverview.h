@@ -40,9 +40,9 @@ class WOverview : public WWidget {
 
   public slots:
     void onConnectedControlChanged(double dParameter, double dValue);
-    void slotLoadNewTrack(TrackPointer pTrack);
-    void slotTrackLoaded(TrackPointer pTrack);
-    void slotUnloadTrack(TrackPointer pTrack);
+    void onLoadNewTrack(TrackPointer pTrack);
+    void onTrackLoaded(TrackPointer pTrack);
+    void onUnloadTrack(TrackPointer pTrack);
 
   signals:
     void trackDropped(QString filename, QString group);
@@ -79,8 +79,8 @@ class WOverview : public WWidget {
     void onMarkChanged(double v);
     void onMarkRangeChange(double v);
 
-    void slotWaveformSummaryUpdated();
-    void slotAnalyserProgress(int progress);
+    void onWaveformSummaryUpdated();
+    void onAnalyserProgress(int progress);
 
   private:
     // Append the waveform overview pixmap according to available data in waveform

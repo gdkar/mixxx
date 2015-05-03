@@ -12,13 +12,8 @@ class WBaseWidget {
   public:
     WBaseWidget(QWidget* pWidget);
     virtual ~WBaseWidget();
-
     virtual void Init();
-
-    QWidget* toQWidget() {
-        return m_pWidget;
-    }
-
+    QWidget* toQWidget() {return m_pWidget;}
     void appendBaseTooltip(const QString& tooltip) {
         m_baseTooltip.append(tooltip);
         m_pWidget->setToolTip(m_baseTooltip);

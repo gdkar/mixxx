@@ -14,8 +14,8 @@ class SamplerBank : public QObject {
     virtual ~SamplerBank();
 
   private slots:
-    void slotSaveSamplerBank(double v);
-    void slotLoadSamplerBank(double v);
+    void onSaveSamplerBank(double v);
+    void onLoadSamplerBank(double v);
 
   private:
     PlayerManager* m_pPlayerManager;

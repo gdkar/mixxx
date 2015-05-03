@@ -34,17 +34,17 @@ class DlgPrefController : public DlgPreferencePage {
 
   public slots:
     // Called when we should apply / save our changes.
-    void slotApply();
+    void onApply();
     // Called when we should cancel the changes made.
-    void slotCancel();
+    void onCancel();
     // Called when preference dialog (not this dialog) is displayed.
-    void slotUpdate();
+    void onUpdate();
     // Called when the user toggles the enabled checkbox.
-    void slotEnableDevice(bool enable);
+    void onEnableDevice(bool enable);
     // Called when the user selects a preset from the combobox.
-    void slotLoadPreset(int index);
+    void onLoadPreset(int index);
     // Mark that we need to apply the settings.
-    void slotDirty();
+    void onDirty();
     // Reload the mappings in the dropdown dialog
     void enumeratePresets();
 
@@ -58,7 +58,7 @@ class DlgPrefController : public DlgPreferencePage {
     void mappingEnded();
 
   private slots:
-    void slotPresetLoaded(ControllerPresetPointer preset);
+    void onPresetLoaded(ControllerPresetPointer preset);
 
     // Input mappings
     void addInputMapping();

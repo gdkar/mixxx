@@ -68,7 +68,7 @@ class LibraryScanner : public QThread {
     void tracksMoved(QSet<int> oldTrackIds, QSet<int> newTrackIds);
     void tracksChanged(QSet<int> changedTrackIds);
 
-    // Emitted by scan() to invoke slotStartScan in the scanner thread's event
+    // Emitted by scan() to invoke onStartScan in the scanner thread's event
     // loop.
     void startScan();
 
@@ -79,8 +79,8 @@ class LibraryScanner : public QThread {
     void queueTask(ScannerTask* pTask);
 
   private slots:
-    void slotStartScan();
-    void slotFinishScan();
+    void onStartScan();
+    void onFinishScan();
 
     // ScannerTask signal handlers.
     void taskDone(bool success);

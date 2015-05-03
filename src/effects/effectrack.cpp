@@ -16,9 +16,9 @@ EffectRack::EffectRack(EffectsManager* pEffectsManager,
           m_controlClearRack(ConfigKey(m_group, "clear")),
           m_pEngineEffectRack(NULL) {
     connect(&m_controlClearRack, SIGNAL(valueChanged(double)),
-            this, SLOT(slotClearRack(double)));
+            this, SLOT(onClearRack(double)));
     m_controlNumEffectChainSlots.connectValueChangeRequest(
-            this, SLOT(slotNumEffectChainSlots(double)));
+            this, SLOT(onNumEffectChainSlots(double)));
     addToEngine();
 }
 
@@ -74,14 +74,14 @@ void EffectRack::registerChannel(const ChannelHandleAndGroup& handle_group) {
     }
 }
 
-void EffectRack::slotNumEffectChainSlots(double v) {
+void EffectRack::onNumEffectChainSlots(double v) {
     // Ignore sets to num_effectchain_slots
     Q_UNUSED(v);
-    //qDebug() << debugString() << "slotNumEffectChainSlots" << v;
+    //qDebug() << debugString() << "onNumEffectChainSlots" << v;
     qWarning() << "WARNING: num_effectchain_slots is a read-only control.";
 }
 
-void EffectRack::slotClearRack(double v) {
+void EffectRack::onClearRack(double v) {
     if (v > 0) {
         foreach (EffectChainSlotPointer pChainSlot, m_effectChainSlots) {
             pChainSlot->clear();

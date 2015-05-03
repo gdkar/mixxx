@@ -16,7 +16,7 @@ WTrackText::WTrackText(const char *group, ConfigObject<ConfigValue> *pConfig, QW
 WTrackText::~WTrackText() {
 }
 
-void WTrackText::slotTrackLoaded(TrackPointer track) {
+void WTrackText::onTrackLoaded(TrackPointer track) {
     if (track) {
         m_pCurrentTrack = track;
         connect(track.data(), SIGNAL(changed(TrackInfoObject*)),
@@ -25,7 +25,7 @@ void WTrackText::slotTrackLoaded(TrackPointer track) {
     }
 }
 
-void WTrackText::slotTrackUnloaded(TrackPointer track) {
+void WTrackText::onTrackUnloaded(TrackPointer track) {
     Q_UNUSED(track);
     if (m_pCurrentTrack) {
         disconnect(m_pCurrentTrack.data(), 0, this, 0);

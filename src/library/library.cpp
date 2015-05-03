@@ -65,11 +65,11 @@ Library::Library(QObject* parent, ConfigObject<ConfigValue>* pConfig,
     BrowseFeature* browseFeature = new BrowseFeature(
         this, pConfig, m_pTrackCollection, m_pRecordingManager);
     connect(browseFeature, SIGNAL(scanLibrary()),
-            parent, SLOT(slotScanLibrary()));
+            parent, SLOT(onScanLibrary()));
     connect(parent, SIGNAL(libraryScanStarted()),
-            browseFeature, SLOT(slotLibraryScanStarted()));
+            browseFeature, SLOT(onLibraryScanStarted()));
     connect(parent, SIGNAL(libraryScanFinished()),
-            browseFeature, SLOT(slotLibraryScanFinished()));
+            browseFeature, SLOT(onLibraryScanFinished()));
     addFeature(browseFeature);
     addFeature(new RecordingFeature(this, pConfig, m_pTrackCollection, m_pRecordingManager));
     addFeature(new SetlogFeature(this, pConfig, m_pTrackCollection));
@@ -160,9 +160,9 @@ void Library::bindSidebarWidget(WLibrarySidebar* pSidebarWidget) {
     connect(pSidebarWidget, SIGNAL(rightClicked(const QPoint&, const QModelIndex&)),
             m_pSidebarModel, SLOT(rightClicked(const QPoint&, const QModelIndex&)));
 
-    pSidebarWidget->slotSetFont(m_trackTableFont);
+    pSidebarWidget->onSetFont(m_trackTableFont);
     connect(this, SIGNAL(setTrackTableFont(QFont)),
-            pSidebarWidget, SLOT(slotSetFont(QFont)));
+            pSidebarWidget, SLOT(onSetFont(QFont)));
 }
 
 void Library::bindWidget(WLibrary* pLibraryWidget,
@@ -173,9 +173,9 @@ void Library::bindWidget(WLibrary* pLibraryWidget,
     connect(this, SIGNAL(showTrackModel(QAbstractItemModel*)),
             pTrackTableView, SLOT(loadTrackModel(QAbstractItemModel*)));
     connect(pTrackTableView, SIGNAL(loadTrack(TrackPointer)),
-            this, SLOT(slotLoadTrack(TrackPointer)));
+            this, SLOT(onLoadTrack(TrackPointer)));
     connect(pTrackTableView, SIGNAL(loadTrackToPlayer(TrackPointer, QString, bool)),
-            this, SLOT(slotLoadTrackToPlayer(TrackPointer, QString, bool)));
+            this, SLOT(onLoadTrackToPlayer(TrackPointer, QString, bool)));
     pLibraryWidget->registerView(m_sTrackViewName, pTrackTableView);
 
     connect(this, SIGNAL(switchToView(const QString&)),
@@ -215,23 +215,23 @@ void Library::addFeature(LibraryFeature* feature) {
     m_features.push_back(feature);
     m_pSidebarModel->addLibraryFeature(feature);
     connect(feature, SIGNAL(showTrackModel(QAbstractItemModel*)),
-            this, SLOT(slotShowTrackModel(QAbstractItemModel*)));
+            this, SLOT(onShowTrackModel(QAbstractItemModel*)));
     connect(feature, SIGNAL(switchToView(const QString&)),
-            this, SLOT(slotSwitchToView(const QString&)));
+            this, SLOT(onSwitchToView(const QString&)));
     connect(feature, SIGNAL(loadTrack(TrackPointer)),
-            this, SLOT(slotLoadTrack(TrackPointer)));
+            this, SLOT(onLoadTrack(TrackPointer)));
     connect(feature, SIGNAL(loadTrackToPlayer(TrackPointer, QString, bool)),
-            this, SLOT(slotLoadTrackToPlayer(TrackPointer, QString, bool)));
+            this, SLOT(onLoadTrackToPlayer(TrackPointer, QString, bool)));
     connect(feature, SIGNAL(restoreSearch(const QString&)),
-            this, SLOT(slotRestoreSearch(const QString&)));
+            this, SLOT(onRestoreSearch(const QString&)));
     connect(feature, SIGNAL(enableCoverArtDisplay(bool)),
             this, SIGNAL(enableCoverArtDisplay(bool)));
     connect(feature, SIGNAL(trackSelected(TrackPointer)),
             this, SIGNAL(trackSelected(TrackPointer)));
 }
 
-void Library::slotShowTrackModel(QAbstractItemModel* model) {
-    //qDebug() << "Library::slotShowTrackModel" << model;
+void Library::onShowTrackModel(QAbstractItemModel* model) {
+    //qDebug() << "Library::onShowTrackModel" << model;
     TrackModel* trackModel = dynamic_cast<TrackModel*>(model);
     DEBUG_ASSERT_AND_HANDLE(trackModel) {
         return;
@@ -241,40 +241,40 @@ void Library::slotShowTrackModel(QAbstractItemModel* model) {
     emit(restoreSearch(trackModel->currentSearch()));
 }
 
-void Library::slotSwitchToView(const QString& view) {
-    //qDebug() << "Library::slotSwitchToView" << view;
+void Library::onSwitchToView(const QString& view) {
+    //qDebug() << "Library::onSwitchToView" << view;
     emit(switchToView(view));
 }
 
-void Library::slotLoadTrack(TrackPointer pTrack) {
+void Library::onLoadTrack(TrackPointer pTrack) {
     emit(loadTrack(pTrack));
 }
 
-void Library::slotLoadLocationToPlayer(QString location, QString group) {
+void Library::onLoadLocationToPlayer(QString location, QString group) {
     TrackPointer pTrack = m_pTrackCollection->getTrackDAO()
             .getOrAddTrack(location, true, NULL);
     emit(loadTrackToPlayer(pTrack, group));
 }
 
-void Library::slotLoadTrackToPlayer(TrackPointer pTrack, QString group, bool play) {
+void Library::onLoadTrackToPlayer(TrackPointer pTrack, QString group, bool play) {
     emit(loadTrackToPlayer(pTrack, group, play));
 }
 
-void Library::slotRestoreSearch(const QString& text) {
+void Library::onRestoreSearch(const QString& text) {
     emit(restoreSearch(text));
 }
 
-void Library::slotRefreshLibraryModels() {
+void Library::onRefreshLibraryModels() {
    m_pMixxxLibraryFeature->refreshLibraryModels();
    m_pAnalysisFeature->refreshLibraryModels();
 }
 
-void Library::slotCreatePlaylist() {
-    m_pPlaylistFeature->slotCreatePlaylist();
+void Library::onCreatePlaylist() {
+    m_pPlaylistFeature->onCreatePlaylist();
 }
 
-void Library::slotCreateCrate() {
-    m_pCrateFeature->slotCreateCrate();
+void Library::onCreateCrate() {
+    m_pCrateFeature->onCreateCrate();
 }
 
 void Library::onSkinLoadFinished() {
@@ -282,7 +282,7 @@ void Library::onSkinLoadFinished() {
     m_pSidebarModel->activateDefaultSelection();
 }
 
-void Library::slotRequestAddDir(QString dir) {
+void Library::onRequestAddDir(QString dir) {
     // We only call this method if the user has picked a new directory via a
     // file dialog. This means the system sandboxer (if we are sandboxed) has
     // granted us permission to this folder. Create a security bookmark while we
@@ -305,7 +305,7 @@ void Library::slotRequestAddDir(QString dir) {
     }
 }
 
-void Library::slotRequestRemoveDir(QString dir, RemovalType removalType) {
+void Library::onRequestRemoveDir(QString dir, RemovalType removalType) {
     switch (removalType) {
         case Library::HideTracks:
             // Mark all tracks in this directory as deleted but DON'T purge them
@@ -341,7 +341,7 @@ void Library::slotRequestRemoveDir(QString dir, RemovalType removalType) {
     }
 }
 
-void Library::slotRequestRelocateDir(QString oldDir, QString newDir) {
+void Library::onRequestRelocateDir(QString oldDir, QString newDir) {
     // We only call this method if the user has picked a relocated directory via
     // a file dialog. This means the system sandboxer (if we are sandboxed) has
     // granted us permission to this folder. Create a security bookmark while we
@@ -368,12 +368,12 @@ QStringList Library::getDirs() {
     return m_pTrackCollection->getDirectoryDAO().getDirs();
 }
 
-void Library::slotSetTrackTableFont(const QFont& font) {
+void Library::onSetTrackTableFont(const QFont& font) {
     m_trackTableFont = font;
     emit(setTrackTableFont(font));
 }
 
-void Library::slotSetTrackTableRowHeight(int rowHeight) {
+void Library::onSetTrackTableRowHeight(int rowHeight) {
     m_iTrackTableRowHeight = rowHeight;
     emit(setTrackTableRowHeight(rowHeight));
 }

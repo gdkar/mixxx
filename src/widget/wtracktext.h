@@ -19,8 +19,8 @@ class WTrackText : public WLabel {
     void trackDropped(QString fileName, QString group);
 
   public slots:
-    void slotTrackLoaded(TrackPointer track);
-    void slotTrackUnloaded(TrackPointer track);
+    void onTrackLoaded(TrackPointer track);
+    void onTrackUnloaded(TrackPointer track);
 
   private slots:
     void updateLabel(TrackInfoObject*);

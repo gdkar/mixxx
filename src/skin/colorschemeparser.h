@@ -2,9 +2,7 @@
 #define COLORSCHEMEPARSER_H
 
 #include "configobject.h"
-
 class ImgSource;
-
 class ColorSchemeParser {
   public:
     static void setupLegacyColorSchemes(QDomElement docElem, ConfigObject<ConfigValue>* pConfig);

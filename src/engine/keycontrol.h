@@ -35,14 +35,14 @@ class KeyControl : public EngineControl {
     void collectFeatures(GroupFeatureState* pGroupFeatures) const;
 
   private slots:
-    void slotSetEngineKey(double);
-    void slotSetEngineKeyDistance(double);
-    void slotFileKeyChanged(double);
-    void slotPitchChanged(double);
-    void slotPitchAdjustChanged(double);
-    void slotRateChanged();
-    void slotSyncKey(double);
-    void slotResetKey(double);
+    void onSetEngineKey(double);
+    void onSetEngineKeyDistance(double);
+    void onFileKeyChanged(double);
+    void onPitchChanged(double);
+    void onPitchAdjustChanged(double);
+    void onRateChanged();
+    void onSyncKey(double);
+    void onResetKey(double);
 
   private:
     void setEngineKey(double key, double key_distance);

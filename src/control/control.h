@@ -9,6 +9,7 @@
 
 #include "control/controlbehavior.h"
 #include "control/controlvalue.h"
+#include "control/statevariable.h"
 #include "configobject.h"
 
 class ControlObject;

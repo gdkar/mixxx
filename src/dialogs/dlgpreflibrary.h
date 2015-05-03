@@ -46,18 +46,18 @@ class DlgPrefLibrary : public DlgPreferencePage, public Ui::DlgPrefLibraryDlg  {
 
   public slots:
     // Common preference page slots.
-    void slotUpdate();
-    void slotShow();
-    void slotHide();
-    void slotResetToDefaults();
-    void slotApply();
-    void slotCancel();
+    void onUpdate();
+    void onShow();
+    void onHide();
+    void onResetToDefaults();
+    void onApply();
+    void onCancel();
 
     // Dialog to browse for music file directory
-    void slotAddDir();
-    void slotRemoveDir();
-    void slotRelocateDir();
-    void slotExtraPlugins();
+    void onAddDir();
+    void onRemoveDir();
+    void onRelocateDir();
+    void onExtraPlugins();
 
   signals:
     void apply();
@@ -69,8 +69,8 @@ class DlgPrefLibrary : public DlgPreferencePage, public Ui::DlgPrefLibraryDlg  {
     void setTrackTableRowHeight(int rowHeight);
 
   private slots:
-    void slotRowHeightValueChanged(int);
-    void slotSelectFont();
+    void onRowHeightValueChanged(int);
+    void onSelectFont();
 
   private:
     void initialiseDirList();

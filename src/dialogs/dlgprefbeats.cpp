@@ -50,7 +50,7 @@ DlgPrefBeats::DlgPrefBeats(QWidget *parent, ConfigObject<ConfigValue> *_config)
             this, SLOT(maxBpmRangeChanged(int)));
 
     connect(bReanalyse,SIGNAL(stateChanged(int)),
-            this, SLOT(slotReanalyzeChanged(int)));
+            this, SLOT(onReanalyzeChanged(int)));
 }
 
 DlgPrefBeats::~DlgPrefBeats() {
@@ -59,8 +59,8 @@ DlgPrefBeats::~DlgPrefBeats() {
 void DlgPrefBeats::loadSettings() {
     if(m_pconfig->getValueString(
         ConfigKey(VAMP_CONFIG_KEY, VAMP_ANALYSER_BEAT_PLUGIN_ID))==QString("")) {
-        slotResetToDefaults();
-        slotApply();    // Write to config file so AnalyzerBeats can get the data
+        onResetToDefaults();
+        onApply();    // Write to config file so AnalyzerBeats can get the data
         return;
     }
 
@@ -84,15 +84,15 @@ void DlgPrefBeats::loadSettings() {
         ConfigKey(BPM_CONFIG_KEY, BPM_FAST_ANALYSIS_ENABLED)).toInt());
 
     if (!m_listIdentifier.contains(pluginid)) {
-        slotResetToDefaults();
+        onResetToDefaults();
     }
     m_minBpm = m_pconfig->getValueString(ConfigKey(BPM_CONFIG_KEY, BPM_RANGE_START)).toInt();
     m_maxBpm = m_pconfig->getValueString(ConfigKey(BPM_CONFIG_KEY, BPM_RANGE_END)).toInt();
 
-    slotUpdate();
+    onUpdate();
 }
 
-void DlgPrefBeats::slotResetToDefaults() {
+void DlgPrefBeats::onResetToDefaults() {
     if (!m_listIdentifier.isEmpty()) {
         if (m_listIdentifier.contains("qm-tempotracker:0")) {
             m_selectedAnalyser = "qm-tempotracker:0";
@@ -112,42 +112,42 @@ void DlgPrefBeats::slotResetToDefaults() {
     m_bReanalyze = false;
     m_minBpm = 70;
     m_maxBpm = 140;
-    slotUpdate();
+    onUpdate();
 }
 
 void DlgPrefBeats::pluginSelected(int i) {
     if (i==-1)
         return;
     m_selectedAnalyser = m_listIdentifier[i];
-    slotUpdate();
+    onUpdate();
 }
 
 void DlgPrefBeats::analyserEnabled(int i) {
     m_banalyserEnabled = static_cast<bool>(i);
-    slotUpdate();
+    onUpdate();
 }
 
 void DlgPrefBeats::fixedtempoEnabled(int i) {
     m_bfixedtempoEnabled = static_cast<bool>(i);
-    slotUpdate();
+    onUpdate();
 }
 
 void DlgPrefBeats::offsetEnabled(int i) {
     m_boffsetEnabled = static_cast<bool>(i);
-    slotUpdate();
+    onUpdate();
 }
 
 void DlgPrefBeats::minBpmRangeChanged(int value) {
     m_minBpm = value;
-    slotUpdate();
+    onUpdate();
 }
 
 void DlgPrefBeats::maxBpmRangeChanged(int value) {
     m_maxBpm = value;
-    slotUpdate();
+    onUpdate();
 }
 
-void DlgPrefBeats::slotUpdate() {
+void DlgPrefBeats::onUpdate() {
     bfixedtempo->setEnabled(m_banalyserEnabled);
     boffset->setEnabled((m_banalyserEnabled && m_bfixedtempoEnabled));
     plugincombo->setEnabled(m_banalyserEnabled);
@@ -172,7 +172,7 @@ void DlgPrefBeats::slotUpdate() {
 
     int comboselected = m_listIdentifier.indexOf(m_selectedAnalyser);
     if (comboselected == -1) {
-        qDebug()<<"DlgPrefBeats: Plugin("<<m_selectedAnalyser<<") not found in slotUpdate()";
+        qDebug()<<"DlgPrefBeats: Plugin("<<m_selectedAnalyser<<") not found in onUpdate()";
         return;
     }
 
@@ -182,17 +182,17 @@ void DlgPrefBeats::slotUpdate() {
     bReanalyse->setChecked(m_bReanalyze);
 }
 
-void DlgPrefBeats::slotReanalyzeChanged(int value) {
+void DlgPrefBeats::onReanalyzeChanged(int value) {
     m_bReanalyze = static_cast<bool>(value);
-    slotUpdate();
+    onUpdate();
 }
 
 void DlgPrefBeats::fastAnalysisEnabled(int i) {
     m_FastAnalysisEnabled = static_cast<bool>(i);
-    slotUpdate();
+    onUpdate();
 }
 
-void DlgPrefBeats::slotApply() {
+void DlgPrefBeats::onApply() {
     int selected = m_listIdentifier.indexOf(m_selectedAnalyser);
     if (selected == -1)
         return;

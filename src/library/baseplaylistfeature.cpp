@@ -30,58 +30,58 @@ BasePlaylistFeature::BasePlaylistFeature(QObject* parent,
           m_rootViewName(rootViewName) {
     m_pCreatePlaylistAction = new QAction(tr("Create New Playlist"),this);
     connect(m_pCreatePlaylistAction, SIGNAL(triggered()),
-            this, SLOT(slotCreatePlaylist()));
+            this, SLOT(onCreatePlaylist()));
 
     m_pAddToAutoDJAction = new QAction(tr("Add to Auto DJ Queue (bottom)"), this);
     connect(m_pAddToAutoDJAction, SIGNAL(triggered()),
-            this, SLOT(slotAddToAutoDJ()));
+            this, SLOT(onAddToAutoDJ()));
 
     m_pAddToAutoDJTopAction = new QAction(tr("Add to Auto DJ Queue (top)"), this);
     connect(m_pAddToAutoDJTopAction, SIGNAL(triggered()),
-            this, SLOT(slotAddToAutoDJTop()));
+            this, SLOT(onAddToAutoDJTop()));
 
     m_pDeletePlaylistAction = new QAction(tr("Remove"),this);
     connect(m_pDeletePlaylistAction, SIGNAL(triggered()),
-            this, SLOT(slotDeletePlaylist()));
+            this, SLOT(onDeletePlaylist()));
 
     m_pRenamePlaylistAction = new QAction(tr("Rename"),this);
     connect(m_pRenamePlaylistAction, SIGNAL(triggered()),
-            this, SLOT(slotRenamePlaylist()));
+            this, SLOT(onRenamePlaylist()));
 
     m_pLockPlaylistAction = new QAction(tr("Lock"),this);
     connect(m_pLockPlaylistAction, SIGNAL(triggered()),
-            this, SLOT(slotTogglePlaylistLock()));
+            this, SLOT(onTogglePlaylistLock()));
 
     m_pDuplicatePlaylistAction = new QAction(tr("Duplicate"), this);
     connect(m_pDuplicatePlaylistAction, SIGNAL(triggered()),
-            this, SLOT(slotDuplicatePlaylist()));
+            this, SLOT(onDuplicatePlaylist()));
 
     m_pImportPlaylistAction = new QAction(tr("Import Playlist"),this);
     connect(m_pImportPlaylistAction, SIGNAL(triggered()),
-            this, SLOT(slotImportPlaylist()));
+            this, SLOT(onImportPlaylist()));
 
     m_pExportPlaylistAction = new QAction(tr("Export Playlist"), this);
     connect(m_pExportPlaylistAction, SIGNAL(triggered()),
-            this, SLOT(slotExportPlaylist()));
+            this, SLOT(onExportPlaylist()));
 
     m_pAnalyzePlaylistAction = new QAction(tr("Analyze entire Playlist"), this);
     connect(m_pAnalyzePlaylistAction, SIGNAL(triggered()),
-            this, SLOT(slotAnalyzePlaylist()));
+            this, SLOT(onAnalyzePlaylist()));
 
     connect(&m_playlistDao, SIGNAL(added(int)),
-            this, SLOT(slotPlaylistTableChanged(int)));
+            this, SLOT(onPlaylistTableChanged(int)));
 
     connect(&m_playlistDao, SIGNAL(deleted(int)),
-            this, SLOT(slotPlaylistTableChanged(int)));
+            this, SLOT(onPlaylistTableChanged(int)));
 
     connect(&m_playlistDao, SIGNAL(renamed(int,QString)),
-            this, SLOT(slotPlaylistTableRenamed(int,QString)));
+            this, SLOT(onPlaylistTableRenamed(int,QString)));
 
     connect(&m_playlistDao, SIGNAL(changed(int)),
-            this, SLOT(slotPlaylistTableChanged(int)));
+            this, SLOT(onPlaylistTableChanged(int)));
 
     connect(&m_playlistDao, SIGNAL(lockChanged(int)),
-            this, SLOT(slotPlaylistTableChanged(int)));
+            this, SLOT(onPlaylistTableChanged(int)));
 }
 
 BasePlaylistFeature::~BasePlaylistFeature() {
@@ -129,7 +129,7 @@ void BasePlaylistFeature::activateChild(const QModelIndex& index) {
     }
 }
 
-void BasePlaylistFeature::slotRenamePlaylist() {
+void BasePlaylistFeature::onRenamePlaylist() {
     int playlistId = playlistIdFromIndex(m_lastRightClickedIndex);
     if (playlistId == -1) {
         return;
@@ -175,12 +175,12 @@ void BasePlaylistFeature::slotRenamePlaylist() {
     m_playlistDao.renamePlaylist(playlistId, newName);
 }
 
-void BasePlaylistFeature::slotPlaylistTableRenamed(int playlistId,
+void BasePlaylistFeature::onPlaylistTableRenamed(int playlistId,
                                                    QString /* a_strName */) {
-    slotPlaylistTableChanged(playlistId);
+    onPlaylistTableChanged(playlistId);
 }
 
-void BasePlaylistFeature::slotDuplicatePlaylist() {
+void BasePlaylistFeature::onDuplicatePlaylist() {
     int oldPlaylistId = playlistIdFromIndex(m_lastRightClickedIndex);
     if (oldPlaylistId == -1) {
         return;
@@ -227,7 +227,7 @@ void BasePlaylistFeature::slotDuplicatePlaylist() {
     }
 }
 
-void BasePlaylistFeature::slotTogglePlaylistLock() {
+void BasePlaylistFeature::onTogglePlaylistLock() {
     int playlistId = playlistIdFromIndex(m_lastRightClickedIndex);
     if (playlistId == -1) {
         return;
@@ -239,7 +239,7 @@ void BasePlaylistFeature::slotTogglePlaylistLock() {
     }
 }
 
-void BasePlaylistFeature::slotCreatePlaylist() {
+void BasePlaylistFeature::onCreatePlaylist() {
     if (!m_pPlaylistTableModel) {
         return;
     }
@@ -285,8 +285,8 @@ void BasePlaylistFeature::slotCreatePlaylist() {
     }
 }
 
-void BasePlaylistFeature::slotDeletePlaylist() {
-    //qDebug() << "slotDeletePlaylist() row:" << m_lastRightClickedIndex.data();
+void BasePlaylistFeature::onDeletePlaylist() {
+    //qDebug() << "onDeletePlaylist() row:" << m_lastRightClickedIndex.data();
     int playlistId = playlistIdFromIndex(m_lastRightClickedIndex);
     if (playlistId == -1) {
         return;
@@ -309,8 +309,8 @@ void BasePlaylistFeature::slotDeletePlaylist() {
 }
 
 
-void BasePlaylistFeature::slotImportPlaylist() {
-    qDebug() << "slotImportPlaylist() row:" ; //<< m_lastRightClickedIndex.data();
+void BasePlaylistFeature::onImportPlaylist() {
+    qDebug() << "onImportPlaylist() row:" ; //<< m_lastRightClickedIndex.data();
 
     if (!m_pPlaylistTableModel) {
         return;
@@ -364,7 +364,7 @@ void BasePlaylistFeature::slotImportPlaylist() {
     }
 }
 
-void BasePlaylistFeature::slotExportPlaylist() {
+void BasePlaylistFeature::onExportPlaylist() {
     if (!m_pPlaylistTableModel) {
         return;
     }
@@ -462,18 +462,18 @@ void BasePlaylistFeature::slotExportPlaylist() {
     }
 }
 
-void BasePlaylistFeature::slotAddToAutoDJ() {
-    //qDebug() << "slotAddToAutoDJ() row:" << m_lastRightClickedIndex.data();
+void BasePlaylistFeature::onAddToAutoDJ() {
+    //qDebug() << "onAddToAutoDJ() row:" << m_lastRightClickedIndex.data();
     addToAutoDJ(false); // Top = True
 }
 
-void BasePlaylistFeature::slotAddToAutoDJTop() {
-    //qDebug() << "slotAddToAutoDJTop() row:" << m_lastRightClickedIndex.data();
+void BasePlaylistFeature::onAddToAutoDJTop() {
+    //qDebug() << "onAddToAutoDJTop() row:" << m_lastRightClickedIndex.data();
     addToAutoDJ(true); // bTop = True
 }
 
 void BasePlaylistFeature::addToAutoDJ(bool bTop) {
-    //qDebug() << "slotAddToAutoDJ() row:" << m_lastRightClickedIndex.data();
+    //qDebug() << "onAddToAutoDJ() row:" << m_lastRightClickedIndex.data();
     if (m_lastRightClickedIndex.isValid()) {
         int playlistId = playlistIdFromIndex(m_lastRightClickedIndex);
         if (playlistId >= 0) {
@@ -483,7 +483,7 @@ void BasePlaylistFeature::addToAutoDJ(bool bTop) {
     }
 }
 
-void BasePlaylistFeature::slotAnalyzePlaylist() {
+void BasePlaylistFeature::onAnalyzePlaylist() {
     if (m_lastRightClickedIndex.isValid()) {
         int playlistId = playlistIdFromIndex(m_lastRightClickedIndex);
         if (playlistId >= 0) {
@@ -510,7 +510,7 @@ void BasePlaylistFeature::bindWidget(WLibrary* libraryWidget,
 
 void BasePlaylistFeature::htmlLinkClicked(const QUrl& link) {
     if (QString(link.path()) == "create") {
-        slotCreatePlaylist();
+        onCreatePlaylist();
     } else {
         qDebug() << "Unknonw playlist link clicked" << link.path();
     }

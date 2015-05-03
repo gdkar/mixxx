@@ -21,7 +21,7 @@ class WSplitter : public QSplitter, public WBaseWidget {
     bool event(QEvent* pEvent);
 
   private slots:
-    void slotSplitterMoved();
+    void onSplitterMoved();
 
   private:
     ConfigObject<ConfigValue>* m_pConfig;

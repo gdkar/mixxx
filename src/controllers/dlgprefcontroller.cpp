@@ -40,14 +40,14 @@ DlgPrefController::DlgPrefController(QWidget* parent, Controller* controller,
     initTableView(m_ui.m_pScriptsTableWidget);
 
     connect(m_pController, SIGNAL(presetLoaded(ControllerPresetPointer)),
-            this, SLOT(slotPresetLoaded(ControllerPresetPointer)));
+            this, SLOT(onPresetLoaded(ControllerPresetPointer)));
     // TODO(rryan): Eh, this really isn't thread safe but it's the way it's been
     // since 1.11.0. We shouldn't be calling Controller methods because it lives
     // in a different thread. Booleans (like isOpen()) are fine but a complex
     // object like a preset involves QHash's and other data structures that
     // really don't like concurrent access.
     ControllerPresetPointer pPreset = m_pController->getPreset();
-    slotPresetLoaded(pPreset);
+    onPresetLoaded(pPreset);
 
     m_ui.labelDeviceName->setText(m_pController->getName());
     QString category = m_pController->getCategory();
@@ -59,11 +59,11 @@ DlgPrefController::DlgPrefController(QWidget* parent, Controller* controller,
 
     // When the user picks a preset, load it.
     connect(m_ui.comboBoxPreset, SIGNAL(activated(int)),
-            this, SLOT(slotLoadPreset(int)));
+            this, SLOT(onLoadPreset(int)));
 
     // When the user toggles the Enabled checkbox, toggle.
     connect(m_ui.chkEnabledDevice, SIGNAL(clicked(bool)),
-            this, SLOT(slotEnableDevice(bool)));
+            this, SLOT(onEnableDevice(bool)));
 
     // Connect our signals to controller manager.
     connect(this, SIGNAL(openController(Controller*)),
@@ -93,7 +93,7 @@ DlgPrefController::DlgPrefController(QWidget* parent, Controller* controller,
 
     // Scripts
     connect(m_ui.m_pScriptsTableWidget, SIGNAL(cellChanged(int, int)),
-            this, SLOT(slotDirty()));
+            this, SLOT(onDirty()));
     connect(m_ui.btnAddScript, SIGNAL(clicked()),
             this, SLOT(addScript()));
     connect(m_ui.btnRemoveScript, SIGNAL(clicked()),
@@ -101,7 +101,7 @@ DlgPrefController::DlgPrefController(QWidget* parent, Controller* controller,
     connect(m_ui.btnOpenScript, SIGNAL(clicked()),
             this, SLOT(openScript()));
 
-    slotUpdate();
+    onUpdate();
 }
 
 DlgPrefController::~DlgPrefController() {
@@ -126,10 +126,10 @@ void DlgPrefController::showLearningWizard() {
             return;
         }
     }
-    slotApply();
+    onApply();
 
     // After this point we consider the mapping wizard as dirtying the preset.
-    slotDirty();
+    onDirty();
 
     // Note that DlgControllerLearning is set to delete itself on close using
     // the Qt::WA_DeleteOnClose attribute (so this "new" doesn't leak memory)
@@ -156,7 +156,7 @@ void DlgPrefController::showLearningWizard() {
 
 void DlgPrefController::midiInputMappingsLearned(const MidiInputMappings& mappings) {
     // This is just a shortcut since doing a round-trip from Learning ->
-    // Controller -> slotPresetLoaded -> setPreset is too heavyweight.
+    // Controller -> onPresetLoaded -> setPreset is too heavyweight.
     if (m_pInputTableModel != NULL) {
         m_pInputTableModel->addMappings(mappings);
     }
@@ -226,7 +226,7 @@ QString DlgPrefController::presetWikiLink(const ControllerPresetPointer pPreset)
     return url;
 }
 
-void DlgPrefController::slotDirty() {
+void DlgPrefController::onDirty() {
     m_bDirty = true;
 }
 
@@ -271,7 +271,7 @@ void DlgPrefController::enumeratePresets() {
     }
 }
 
-void DlgPrefController::slotUpdate() {
+void DlgPrefController::onUpdate() {
     enumeratePresets();
 
     // Check if the controller is open.
@@ -287,7 +287,7 @@ void DlgPrefController::slotUpdate() {
     m_ui.outputMappingsTab->setEnabled(isMappable);
 }
 
-void DlgPrefController::slotCancel() {
+void DlgPrefController::onCancel() {
     if (m_pInputTableModel != NULL) {
         m_pInputTableModel->cancel();
     }
@@ -297,7 +297,7 @@ void DlgPrefController::slotCancel() {
     }
 }
 
-void DlgPrefController::slotApply() {
+void DlgPrefController::onApply() {
     if (m_bDirty) {
         // Apply the presets and load the resulting preset.
         if (m_pInputTableModel != NULL) {
@@ -350,7 +350,7 @@ void DlgPrefController::slotApply() {
     }
 }
 
-void DlgPrefController::slotLoadPreset(int chosenIndex) {
+void DlgPrefController::onLoadPreset(int chosenIndex) {
     if (chosenIndex == 0) {
         // User picked ...
         return;
@@ -386,7 +386,7 @@ void DlgPrefController::slotLoadPreset(int chosenIndex) {
     // into the preferences GUI and then load it to the actual controller once
     // the user hits apply.
     emit(loadPreset(m_pController, pPreset));
-    slotDirty();
+    onDirty();
 }
 
 void DlgPrefController::initTableView(QTableView* pTable) {
@@ -409,7 +409,7 @@ void DlgPrefController::initTableView(QTableView* pTable) {
     pTable->setAlternatingRowColors(true);
 }
 
-void DlgPrefController::slotPresetLoaded(ControllerPresetPointer preset) {
+void DlgPrefController::onPresetLoaded(ControllerPresetPointer preset) {
     m_ui.labelLoadedPreset->setText(presetName(preset));
     m_ui.labelLoadedPresetDescription->setText(presetDescription(preset));
     m_ui.labelLoadedPresetAuthor->setText(presetAuthor(preset));
@@ -444,11 +444,11 @@ void DlgPrefController::slotPresetLoaded(ControllerPresetPointer preset) {
             new ControllerInputMappingTableModel(this);
     // If the model reports changes, mark ourselves as dirty.
     connect(pInputModel, SIGNAL(dataChanged(QModelIndex, QModelIndex)),
-            this, SLOT(slotDirty()));
+            this, SLOT(onDirty()));
     connect(pInputModel, SIGNAL(rowsInserted(QModelIndex, int, int)),
-            this, SLOT(slotDirty()));
+            this, SLOT(onDirty()));
     connect(pInputModel, SIGNAL(rowsRemoved(QModelIndex, int, int)),
-            this, SLOT(slotDirty()));
+            this, SLOT(onDirty()));
     pInputModel->setPreset(preset);
 
     QSortFilterProxyModel* pInputProxyModel = new QSortFilterProxyModel(this);
@@ -530,8 +530,8 @@ void DlgPrefController::slotPresetLoaded(ControllerPresetPointer preset) {
     }
 }
 
-void DlgPrefController::slotEnableDevice(bool enable) {
-    slotDirty();
+void DlgPrefController::onEnableDevice(bool enable) {
+    onDirty();
 
     // Set tree item text to normal/bold.
     emit(controllerEnabled(this, enable));
@@ -559,7 +559,7 @@ void DlgPrefController::addInputMapping() {
         m_ui.m_pInputMappingTableView->selectionModel()->select(
             QItemSelection(left, right), QItemSelectionModel::Clear | QItemSelectionModel::Select);
         m_ui.m_pInputMappingTableView->scrollTo(left);
-        slotDirty();
+        onDirty();
     }
 }
 
@@ -570,7 +570,7 @@ void DlgPrefController::removeInputMappings() {
         QModelIndexList selectedIndices = selection.indexes();
         if (selectedIndices.size() > 0 && m_pInputTableModel) {
             m_pInputTableModel->removeMappings(selectedIndices);
-            slotDirty();
+            onDirty();
         }
     }
 }
@@ -584,7 +584,7 @@ void DlgPrefController::clearAllInputMappings() {
     }
     if (m_pInputTableModel) {
         m_pInputTableModel->clear();
-        slotDirty();
+        onDirty();
     }
 }
 
@@ -600,7 +600,7 @@ void DlgPrefController::addOutputMapping() {
         m_ui.m_pOutputMappingTableView->selectionModel()->select(
             QItemSelection(left, right), QItemSelectionModel::Clear | QItemSelectionModel::Select);
         m_ui.m_pOutputMappingTableView->scrollTo(left);
-        slotDirty();
+        onDirty();
     }
 }
 
@@ -611,7 +611,7 @@ void DlgPrefController::removeOutputMappings() {
         QModelIndexList selectedIndices = selection.indexes();
         if (selectedIndices.size() > 0 && m_pOutputTableModel) {
             m_pOutputTableModel->removeMappings(selectedIndices);
-            slotDirty();
+            onDirty();
         }
     }
 }
@@ -625,7 +625,7 @@ void DlgPrefController::clearAllOutputMappings() {
     }
     if (m_pOutputTableModel) {
         m_pOutputTableModel->clear();
-        slotDirty();
+        onDirty();
     }
 }
 
@@ -670,7 +670,7 @@ void DlgPrefController::addScript() {
                                                          Qt::ItemIsUserCheckable));
     m_ui.m_pScriptsTableWidget->setItem(newRow, 2, pScriptBuiltin);
 
-    slotDirty();
+    onDirty();
 }
 
 void DlgPrefController::removeScript() {
@@ -702,7 +702,7 @@ void DlgPrefController::removeScript() {
         lastRow = row;
         m_ui.m_pScriptsTableWidget->removeRow(row);
     }
-    slotDirty();
+    onDirty();
 }
 
 void DlgPrefController::openScript() {

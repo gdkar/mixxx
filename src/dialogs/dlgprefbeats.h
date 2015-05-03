@@ -22,9 +22,9 @@ class DlgPrefBeats : public DlgPreferencePage, public Ui::DlgBeatsDlg {
 
   public slots:
     // Apply changes to widget
-    void slotApply();
-    void slotUpdate();
-    void slotResetToDefaults();
+    void onApply();
+    void onUpdate();
+    void onResetToDefaults();
 
   private slots:
     void pluginSelected(int i);
@@ -34,7 +34,7 @@ class DlgPrefBeats : public DlgPreferencePage, public Ui::DlgBeatsDlg {
     void fastAnalysisEnabled(int i);
     void minBpmRangeChanged(int value);
     void maxBpmRangeChanged(int value);
-    void slotReanalyzeChanged(int value);
+    void onReanalyzeChanged(int value);
 
   private:
     void populate();

@@ -4,7 +4,7 @@
 #include "control/controlobject.h"
 #include "control/controlobjectthread.h"
 
-#include "cachingreader.h"
+#include "engine/cachingreader.h"
 #include "trackinfoobject.h"
 #include "sampleutil.h"
 #include "util/counter.h"
@@ -26,11 +26,8 @@ CachingReader::CachingReader(QString group,
           m_lruChunk(NULL),
           m_sampleBuffer(CachingReaderWorker::kSamplesPerChunk * maximumChunksInMemory),
           m_iTrackNumFramesCallbackSafe(0) {
-
     m_allocatedChunks.reserve(m_sampleBuffer.size());
-
     CSAMPLE* bufferStart = m_sampleBuffer.data();
-
     // Divide up the allocated raw memory buffer into total_chunks
     // chunks. Initialize each chunk to hold nothing and add it to the free
     // list.
@@ -42,17 +39,13 @@ CachingReader::CachingReader(QString group,
         c->next_lru = NULL;
         c->prev_lru = NULL;
         c->state = Chunk::FREE;
-
         m_chunks.push_back(c);
         m_freeChunks.push_back(c);
-
         bufferStart += CachingReaderWorker::kSamplesPerChunk;
     }
-
     m_pWorker = new CachingReaderWorker(group,
             &m_chunkReadRequestFIFO,
             &m_readerStatusFIFO);
-
     // Forward signals from worker
     connect(m_pWorker, SIGNAL(trackLoading()),
             this, SIGNAL(trackLoading()),
@@ -63,13 +56,11 @@ CachingReader::CachingReader(QString group,
     connect(m_pWorker, SIGNAL(trackLoadFailed(TrackPointer, QString)),
             this, SIGNAL(trackLoadFailed(TrackPointer, QString)),
             Qt::DirectConnection);
-
     m_pWorker->start(QThread::HighPriority);
 }
 
 
 CachingReader::~CachingReader() {
-
     m_pWorker->quitWait();
     delete m_pWorker;
     m_freeChunks.clear();

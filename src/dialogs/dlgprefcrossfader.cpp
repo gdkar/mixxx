@@ -45,14 +45,14 @@ DlgPrefCrossfader::DlgPrefCrossfader(QWidget * parent, ConfigObject<ConfigValue>
 
     loadSettings();
 
-    connect(SliderXFader, SIGNAL(valueChanged(int)), this, SLOT(slotUpdateXFader()));
-    connect(SliderXFader, SIGNAL(sliderMoved(int)), this, SLOT(slotUpdateXFader()));
-    connect(SliderXFader, SIGNAL(sliderReleased()), this, SLOT(slotUpdateXFader()));
-    connect(SliderXFader, SIGNAL(sliderReleased()), this, SLOT(slotApply()));
+    connect(SliderXFader, SIGNAL(valueChanged(int)), this, SLOT(onUpdateXFader()));
+    connect(SliderXFader, SIGNAL(sliderMoved(int)), this, SLOT(onUpdateXFader()));
+    connect(SliderXFader, SIGNAL(sliderReleased()), this, SLOT(onUpdateXFader()));
+    connect(SliderXFader, SIGNAL(sliderReleased()), this, SLOT(onApply()));
 
     //Update the crossfader curve graph and other setings when the crossfader mode is changed.
-    connect(radioButtonAdditive, SIGNAL(clicked(bool)), this, SLOT(slotUpdate()));
-    connect(radioButtonConstantPower, SIGNAL(clicked(bool)), this, SLOT(slotUpdate()));
+    connect(radioButtonAdditive, SIGNAL(clicked(bool)), this, SLOT(onUpdate()));
+    connect(radioButtonConstantPower, SIGNAL(clicked(bool)), this, SLOT(onUpdate()));
 }
 
 DlgPrefCrossfader::~DlgPrefCrossfader() {
@@ -79,37 +79,37 @@ void DlgPrefCrossfader::loadSettings() {
     m_xFaderReverse = config->getValueString(ConfigKey(kConfigKey, "xFaderReverse")).toInt() == 1;
     checkBoxReverse->setChecked(m_xFaderReverse);
 
-    slotUpdateXFader();
-    slotApply();
+    onUpdateXFader();
+    onApply();
 }
 
 /** Set the default values for all the widgets */
-void DlgPrefCrossfader::slotResetToDefaults() {
+void DlgPrefCrossfader::onResetToDefaults() {
     SliderXFader->setValue(0);
     m_xFaderMode = MIXXX_XFADER_ADDITIVE;
     radioButtonAdditive->setChecked(true);
     SliderXFader->setValue(SliderXFader->minimum());
     checkBoxReverse->setChecked(false);
-    slotUpdate();
-    slotApply();
+    onUpdate();
+    onApply();
 }
 
 /** Apply and save any changes made in the dialog */
-void DlgPrefCrossfader::slotApply() {
-    m_COTMode.slotSet(m_xFaderMode);
-    m_COTCurve.slotSet(m_transform);
-    m_COTCalibration.slotSet(m_cal);
+void DlgPrefCrossfader::onApply() {
+    m_COTMode.onSet(m_xFaderMode);
+    m_COTCurve.onSet(m_transform);
+    m_COTCalibration.onSet(m_cal);
     if (checkBoxReverse->isChecked() != m_xFaderReverse) {
-        m_COTReverse.slotSet(checkBoxReverse->isChecked());
+        m_COTReverse.onSet(checkBoxReverse->isChecked());
         double position = m_COTCrossfader.get();
-        m_COTCrossfader.slotSet(0.0 - position);
+        m_COTCrossfader.onSet(0.0 - position);
         m_xFaderReverse = checkBoxReverse->isChecked();
     }
-    slotUpdateXFader();
+    onUpdateXFader();
 }
 
 /** Update the dialog when the crossfader mode is changed */
-void DlgPrefCrossfader::slotUpdate() {
+void DlgPrefCrossfader::onUpdate() {
     if (radioButtonAdditive->isChecked()) {
         m_xFaderMode = MIXXX_XFADER_ADDITIVE;
 //         SliderXFader->setValue(SliderXFader->minimum());
@@ -121,7 +121,7 @@ void DlgPrefCrossfader::slotUpdate() {
         SliderXFader->setValue((int)sliderVal);
     }
 
-    slotUpdateXFader();
+    onUpdateXFader();
 }
 
 /** Draw the crossfader curve graph. Only needs to get drawn when a change has been made.*/
@@ -198,7 +198,7 @@ void DlgPrefCrossfader::drawXfaderDisplay()
 }
 
 /** Update and save the crossfader's parameters from the dialog's widgets. **/
-void DlgPrefCrossfader::slotUpdateXFader() {
+void DlgPrefCrossfader::onUpdateXFader() {
     m_transform = 1. + ((double) SliderXFader->value() / SliderXFader->maximum() * MIXXX_XFADER_STEEPNESS_COEFF);
 
     m_cal = EngineXfader::getCalibration(m_transform);

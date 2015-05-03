@@ -43,20 +43,20 @@ class BasePlaylistFeature : public LibraryFeature {
     virtual void activateChild(const QModelIndex& index);
     virtual void htmlLinkClicked(const QUrl& link);
 
-    virtual void slotPlaylistTableChanged(int playlistId) = 0;
-    void slotPlaylistTableRenamed(int playlistId, QString a_strName);
-    void slotCreatePlaylist();
+    virtual void onPlaylistTableChanged(int playlistId) = 0;
+    void onPlaylistTableRenamed(int playlistId, QString a_strName);
+    void onCreatePlaylist();
 
   protected slots:
-    void slotDeletePlaylist();
-    void slotDuplicatePlaylist();
-    void slotAddToAutoDJ();
-    void slotAddToAutoDJTop();
-    void slotRenamePlaylist();
-    void slotTogglePlaylistLock();
-    void slotImportPlaylist();
-    void slotExportPlaylist();
-    void slotAnalyzePlaylist();
+    void onDeletePlaylist();
+    void onDuplicatePlaylist();
+    void onAddToAutoDJ();
+    void onAddToAutoDJTop();
+    void onRenamePlaylist();
+    void onTogglePlaylistLock();
+    void onImportPlaylist();
+    void onExportPlaylist();
+    void onAnalyzePlaylist();
 
   protected:
     virtual QModelIndex constructChildModel(int selected_id);

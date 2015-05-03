@@ -258,8 +258,8 @@ DlgAbout::DlgAbout(QWidget* parent) :  QDialog(parent), Ui::DlgAboutDlg() {
 DlgAbout::~DlgAbout() {
 }
 
-void DlgAbout::slotApply() {
+void DlgAbout::onApply() {
 }
 
-void DlgAbout::slotUpdate() {
+void DlgAbout::onUpdate() {
 }

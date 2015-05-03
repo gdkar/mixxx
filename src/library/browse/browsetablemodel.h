@@ -38,7 +38,6 @@ const int COLUMN_FILE_CREATION_TIME = 19;
 // Usage: Recording and Browse feature.
 class BrowseTableModel : public QStandardItemModel, public virtual TrackModel {
     Q_OBJECT
-
   public:
     BrowseTableModel(QObject* parent, TrackCollection* pTrackCollection, RecordingManager* pRec);
     virtual ~BrowseTableModel();
@@ -67,9 +66,9 @@ class BrowseTableModel : public QStandardItemModel, public virtual TrackModel {
     virtual bool isColumnSortable(int column);
 
   public slots:
-    void slotClear(BrowseTableModel*);
-    void slotInsert(const QList< QList<QStandardItem*> >&, BrowseTableModel*);
-    void trackLoaded(QString group, TrackPointer pTrack);
+    void onClear(BrowseTableModel*);
+    void onInsert(const QList< QList<QStandardItem*> >&, BrowseTableModel*);
+    void onTrackLoaded(QString group, TrackPointer pTrack);
 
   private:
     void removeTracks(QStringList trackLocations);

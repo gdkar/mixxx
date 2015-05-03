@@ -47,13 +47,13 @@ WTrackTableView::WTrackTableView(QWidget * parent,
     // it unreadable. Bug #673411
     m_pTrackInfo = new DlgTrackInfo(NULL, m_DlgTagFetcher);
     connect(m_pTrackInfo, SIGNAL(next()),
-            this, SLOT(slotNextTrackInfo()));
+            this, SLOT(onNextTrackInfo()));
     connect(m_pTrackInfo, SIGNAL(previous()),
-            this, SLOT(slotPrevTrackInfo()));
+            this, SLOT(onPrevTrackInfo()));
     connect(&m_DlgTagFetcher, SIGNAL(next()),
-            this, SLOT(slotNextDlgTagFetcher()));
+            this, SLOT(onNextDlgTagFetcher()));
     connect(&m_DlgTagFetcher, SIGNAL(previous()),
-            this, SLOT(slotPrevDlgTagFetcher()));
+            this, SLOT(onPrevDlgTagFetcher()));
 
     connect(&m_loadTrackMapper, SIGNAL(mapped(QString)),
             this, SLOT(loadSelectionToGroup(QString)));
@@ -63,7 +63,7 @@ WTrackTableView::WTrackTableView(QWidget * parent,
     connect(&m_samplerMapper, SIGNAL(mapped(QString)),
             this, SLOT(loadSelectionToGroup(QString)));
     connect(&m_BpmMapper, SIGNAL(mapped(int)),
-            this, SLOT(slotScaleBpm(int)));
+            this, SLOT(onScaleBpm(int)));
 
     m_pNumSamplers = new ControlObjectThread(
             "[Master]", "num_samplers");
@@ -85,9 +85,9 @@ WTrackTableView::WTrackTableView(QWidget * parent,
     m_pCoverMenu = new WCoverArtMenu(this);
     m_pCoverMenu->setTitle(tr("Cover Art"));
     connect(m_pCoverMenu, SIGNAL(coverArtSelected(const CoverArt&)),
-            this, SLOT(slotCoverArtSelected(const CoverArt&)));
+            this, SLOT(onCoverArtSelected(const CoverArt&)));
     connect(m_pCoverMenu, SIGNAL(reloadCoverArt()),
-            this, SLOT(slotReloadCoverArt()));
+            this, SLOT(onReloadCoverArt()));
 
 
     // Disable editing
@@ -99,7 +99,7 @@ WTrackTableView::WTrackTableView(QWidget * parent,
 
     //Connect slots and signals to make the world go 'round.
     connect(this, SIGNAL(doubleClicked(const QModelIndex &)),
-            this, SLOT(slotMouseDoubleClicked(const QModelIndex &)));
+            this, SLOT(onMouseDoubleClicked(const QModelIndex &)));
 
     connect(&m_playlistMapper, SIGNAL(mapped(int)),
             this, SLOT(addSelectionToPlaylist(int)));
@@ -107,10 +107,10 @@ WTrackTableView::WTrackTableView(QWidget * parent,
             this, SLOT(addSelectionToCrate(int)));
 
     m_pCOTGuiTick = new ControlObjectSlave("[Master]", "guiTick50ms");
-    m_pCOTGuiTick->connectValueChanged(this, SLOT(slotGuiTick50ms(double)));
+    m_pCOTGuiTick->connectValueChanged(this, SLOT(onGuiTick50ms(double)));
 
     connect(this, SIGNAL(scrollValueChanged(int)),
-            this, SLOT(slotScrollValueChanged(int)));
+            this, SLOT(onScrollValueChanged(int)));
 
     QShortcut *setFocusShortcut = new QShortcut(
         QKeySequence(tr("ESC", "Focus")), this);
@@ -167,7 +167,7 @@ void WTrackTableView::enableCachedOnly() {
     m_lastUserActionNanos = Time::elapsed();
 }
 
-void WTrackTableView::slotScrollValueChanged(int) {
+void WTrackTableView::onScrollValueChanged(int) {
     enableCachedOnly();
 }
 
@@ -178,7 +178,7 @@ void WTrackTableView::selectionChanged(const QItemSelection& selected,
     QTableView::selectionChanged(selected, deselected);
 }
 
-void WTrackTableView::slotGuiTick50ms(double) {
+void WTrackTableView::onGuiTick50ms(double) {
     // if the user is stopped in the same row for more than 0.1 s,
     // we load un-cached cover arts as well.
     qint64 timeDeltaNanos = Time::elapsed() - m_lastUserActionNanos;
@@ -235,7 +235,7 @@ void WTrackTableView::loadTrackModel(QAbstractItemModel *model) {
     }
 
     // The "coverLocation" and "hash" column numbers are required very often
-    // by slotLoadCoverArt(). As this value will not change when the model
+    // by onLoadCoverArt(). As this value will not change when the model
     // still the same, we must avoid doing hundreds of "fieldIndex" calls
     // when it is completely unnecessary...
     m_iCoverSourceColumn = trackModel->fieldIndex(LIBRARYTABLE_COVERART_SOURCE);
@@ -379,39 +379,39 @@ void WTrackTableView::createActions() {
     DEBUG_ASSERT(m_pSamplerMenu);
 
     m_pRemoveAct = new QAction(tr("Remove"), this);
-    connect(m_pRemoveAct, SIGNAL(triggered()), this, SLOT(slotRemove()));
+    connect(m_pRemoveAct, SIGNAL(triggered()), this, SLOT(onRemove()));
 
     m_pHideAct = new QAction(tr("Hide from Library"), this);
-    connect(m_pHideAct, SIGNAL(triggered()), this, SLOT(slotHide()));
+    connect(m_pHideAct, SIGNAL(triggered()), this, SLOT(onHide()));
 
     m_pUnhideAct = new QAction(tr("Unhide from Library"), this);
-    connect(m_pUnhideAct, SIGNAL(triggered()), this, SLOT(slotUnhide()));
+    connect(m_pUnhideAct, SIGNAL(triggered()), this, SLOT(onUnhide()));
 
     m_pPurgeAct = new QAction(tr("Purge from Library"), this);
-    connect(m_pPurgeAct, SIGNAL(triggered()), this, SLOT(slotPurge()));
+    connect(m_pPurgeAct, SIGNAL(triggered()), this, SLOT(onPurge()));
 
     m_pPropertiesAct = new QAction(tr("Properties"), this);
     connect(m_pPropertiesAct, SIGNAL(triggered()),
-            this, SLOT(slotShowTrackInfo()));
+            this, SLOT(onShowTrackInfo()));
 
     m_pFileBrowserAct = new QAction(tr("Open in File Browser"), this);
     connect(m_pFileBrowserAct, SIGNAL(triggered()),
-            this, SLOT(slotOpenInFileBrowser()));
+            this, SLOT(onOpenInFileBrowser()));
 
     m_pAutoDJAct = new QAction(tr("Add to Auto-DJ Queue (bottom)"), this);
-    connect(m_pAutoDJAct, SIGNAL(triggered()), this, SLOT(slotSendToAutoDJ()));
+    connect(m_pAutoDJAct, SIGNAL(triggered()), this, SLOT(onSendToAutoDJ()));
 
     m_pAutoDJTopAct = new QAction(tr("Add to Auto-DJ Queue (top)"), this);
     connect(m_pAutoDJTopAct, SIGNAL(triggered()),
-            this, SLOT(slotSendToAutoDJTop()));
+            this, SLOT(onSendToAutoDJTop()));
 
     m_pReloadMetadataAct = new QAction(tr("Reload Metadata from File"), this);
     connect(m_pReloadMetadataAct, SIGNAL(triggered()),
-            this, SLOT(slotReloadTrackMetadata()));
+            this, SLOT(onReloadTrackMetadata()));
 
     m_pReloadMetadataFromMusicBrainzAct = new QAction(tr("Get Metadata from MusicBrainz"),this);
     connect(m_pReloadMetadataFromMusicBrainzAct, SIGNAL(triggered()),
-            this, SLOT(slotShowDlgTagFetcher()));
+            this, SLOT(onShowDlgTagFetcher()));
 
     m_pAddToPreviewDeck = new QAction(tr("Load to Preview Deck"), this);
     // currently there is only one preview deck so just map it here.
@@ -422,14 +422,14 @@ void WTrackTableView::createActions() {
 
     m_pResetPlayedAct = new QAction(tr("Reset Play Count"), this);
     connect(m_pResetPlayedAct, SIGNAL(triggered()),
-            this, SLOT(slotResetPlayed()));
+            this, SLOT(onResetPlayed()));
 
     m_pBpmLockAction = new QAction(tr("Lock BPM"), this);
     m_pBpmUnlockAction = new QAction(tr("Unlock BPM"), this);
     connect(m_pBpmLockAction, SIGNAL(triggered()),
-            this, SLOT(slotLockBpm()));
+            this, SLOT(onLockBpm()));
     connect(m_pBpmUnlockAction, SIGNAL(triggered()),
-            this, SLOT(slotUnlockBpm()));
+            this, SLOT(onUnlockBpm()));
 
     //new BPM actions
     m_pBpmDoubleAction = new QAction(tr("Double BPM"), this);
@@ -453,11 +453,11 @@ void WTrackTableView::createActions() {
 
     m_pClearBeatsAction = new QAction(tr("Clear BPM and Beatgrid"), this);
     connect(m_pClearBeatsAction, SIGNAL(triggered()),
-            this, SLOT(slotClearBeats()));
+            this, SLOT(onClearBeats()));
 }
 
 // slot
-void WTrackTableView::slotMouseDoubleClicked(const QModelIndex &index) {
+void WTrackTableView::onMouseDoubleClicked(const QModelIndex &index) {
     if (!modelHasCapabilities(TrackModel::TRACKMODELCAPS_LOADTODECK)) {
         return;
     }
@@ -506,7 +506,7 @@ void WTrackTableView::loadSelectionToGroup(QString group, bool play) {
     }
 }
 
-void WTrackTableView::slotRemove() {
+void WTrackTableView::onRemove() {
     QModelIndexList indices = selectionModel()->selectedRows();
     if (indices.size() > 0) {
         TrackModel* trackModel = getTrackModel();
@@ -516,7 +516,7 @@ void WTrackTableView::slotRemove() {
     }
 }
 
-void WTrackTableView::slotPurge() {
+void WTrackTableView::onPurge() {
     QModelIndexList indices = selectionModel()->selectedRows();
     if (indices.size() > 0) {
         TrackModel* trackModel = getTrackModel();
@@ -526,7 +526,7 @@ void WTrackTableView::slotPurge() {
     }
 }
 
-void WTrackTableView::slotOpenInFileBrowser() {
+void WTrackTableView::onOpenInFileBrowser() {
     TrackModel* trackModel = getTrackModel();
     if (!trackModel)
         return;
@@ -564,7 +564,7 @@ void WTrackTableView::slotOpenInFileBrowser() {
     }
 }
 
-void WTrackTableView::slotHide() {
+void WTrackTableView::onHide() {
     QModelIndexList indices = selectionModel()->selectedRows();
     if (indices.size() > 0) {
         TrackModel* trackModel = getTrackModel();
@@ -574,7 +574,7 @@ void WTrackTableView::slotHide() {
     }
 }
 
-void WTrackTableView::slotUnhide() {
+void WTrackTableView::onUnhide() {
     QModelIndexList indices = selectionModel()->selectedRows();
 
     if (indices.size() > 0) {
@@ -585,7 +585,7 @@ void WTrackTableView::slotUnhide() {
     }
 }
 
-void WTrackTableView::slotShowTrackInfo() {
+void WTrackTableView::onShowTrackInfo() {
     QModelIndexList indices = selectionModel()->selectedRows();
 
     if (indices.size() > 0) {
@@ -593,7 +593,7 @@ void WTrackTableView::slotShowTrackInfo() {
     }
 }
 
-void WTrackTableView::slotNextTrackInfo() {
+void WTrackTableView::onNextTrackInfo() {
     QModelIndex nextRow = currentTrackInfoIndex.sibling(
         currentTrackInfoIndex.row()+1, currentTrackInfoIndex.column());
     if (nextRow.isValid()) {
@@ -604,7 +604,7 @@ void WTrackTableView::slotNextTrackInfo() {
     }
 }
 
-void WTrackTableView::slotPrevTrackInfo() {
+void WTrackTableView::onPrevTrackInfo() {
     QModelIndex prevRow = currentTrackInfoIndex.sibling(
         currentTrackInfoIndex.row()-1, currentTrackInfoIndex.column());
     if (prevRow.isValid()) {
@@ -629,7 +629,7 @@ void WTrackTableView::showTrackInfo(QModelIndex index) {
     m_pTrackInfo->show();
 }
 
-void WTrackTableView::slotNextDlgTagFetcher() {
+void WTrackTableView::onNextDlgTagFetcher() {
     QModelIndex nextRow = currentTrackInfoIndex.sibling(
         currentTrackInfoIndex.row()+1, currentTrackInfoIndex.column());
     if (nextRow.isValid()) {
@@ -640,7 +640,7 @@ void WTrackTableView::slotNextDlgTagFetcher() {
     }
 }
 
-void WTrackTableView::slotPrevDlgTagFetcher() {
+void WTrackTableView::onPrevDlgTagFetcher() {
     QModelIndex prevRow = currentTrackInfoIndex.sibling(
         currentTrackInfoIndex.row()-1, currentTrackInfoIndex.column());
     if (prevRow.isValid()) {
@@ -665,7 +665,7 @@ void WTrackTableView::showDlgTagFetcher(QModelIndex index) {
     m_DlgTagFetcher.show();
 }
 
-void WTrackTableView::slotShowDlgTagFetcher() {
+void WTrackTableView::onShowDlgTagFetcher() {
     QModelIndexList indices = selectionModel()->selectedRows();
 
     if (indices.size() > 0) {
@@ -1239,7 +1239,7 @@ void WTrackTableView::keyPressEvent(QKeyEvent* event) {
 void WTrackTableView::loadSelectedTrack() {
     QModelIndexList indexes = selectionModel()->selectedRows();
     if (indexes.size() > 0) {
-        slotMouseDoubleClicked(indexes.at(0));
+        onMouseDoubleClicked(indexes.at(0));
     }
 }
 
@@ -1247,12 +1247,12 @@ void WTrackTableView::loadSelectedTrackToGroup(QString group, bool play) {
     loadSelectionToGroup(group, play);
 }
 
-void WTrackTableView::slotSendToAutoDJ() {
+void WTrackTableView::onSendToAutoDJ() {
     // append to auto DJ
     sendToAutoDJ(false); // bTop = false
 }
 
-void WTrackTableView::slotSendToAutoDJTop() {
+void WTrackTableView::onSendToAutoDJTop() {
     sendToAutoDJ(true); // bTop = true
 }
 
@@ -1299,7 +1299,7 @@ void WTrackTableView::sendToAutoDJ(bool bTop) {
     }
 }
 
-void WTrackTableView::slotReloadTrackMetadata() {
+void WTrackTableView::onReloadTrackMetadata() {
     if (!modelHasCapabilities(TrackModel::TRACKMODELCAPS_RELOADMETADATA)) {
         return;
     }
@@ -1321,7 +1321,7 @@ void WTrackTableView::slotReloadTrackMetadata() {
 }
 
 //slot for reset played count, sets count to 0 of one or more tracks
-void WTrackTableView::slotResetPlayed() {
+void WTrackTableView::onResetPlayed() {
     QModelIndexList indices = selectionModel()->selectedRows();
     TrackModel* trackModel = getTrackModel();
 
@@ -1525,15 +1525,15 @@ void WTrackTableView::doSortByColumn(int headerSection) {
     }
 }
 
-void WTrackTableView::slotLockBpm() {
+void WTrackTableView::onLockBpm() {
     lockBpm(true);
 }
 
-void WTrackTableView::slotUnlockBpm() {
+void WTrackTableView::onUnlockBpm() {
     lockBpm(false);
 }
 
-void WTrackTableView::slotScaleBpm(int scale) {
+void WTrackTableView::onScaleBpm(int scale) {
     TrackModel* trackModel = getTrackModel();
     if (trackModel == NULL) {
         return;
@@ -1579,7 +1579,7 @@ void WTrackTableView::lockBpm(bool lock) {
     }
 }
 
-void WTrackTableView::slotClearBeats() {
+void WTrackTableView::onClearBeats() {
     TrackModel* trackModel = getTrackModel();
     if (trackModel == NULL) {
         return;
@@ -1596,7 +1596,7 @@ void WTrackTableView::slotClearBeats() {
     }
 }
 
-void WTrackTableView::slotCoverArtSelected(const CoverArt& art) {
+void WTrackTableView::onCoverArtSelected(const CoverArt& art) {
     TrackModel* trackModel = getTrackModel();
     if (trackModel == NULL) {
         return;
@@ -1610,7 +1610,7 @@ void WTrackTableView::slotCoverArtSelected(const CoverArt& art) {
     }
 }
 
-void WTrackTableView::slotReloadCoverArt() {
+void WTrackTableView::onReloadCoverArt() {
     TrackModel* trackModel = getTrackModel();
     if (trackModel == NULL) {
         return;

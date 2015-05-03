@@ -23,8 +23,6 @@
 #include <QString>
 #include <QTextCodec>
 #include <QIODevice>
-#include <QFile>
-
 #include <stdio.h>
 #include <iostream>
 
@@ -52,38 +50,28 @@ extern "C" {
 #include <windows.h>
 #ifdef DEBUGCONSOLE
 #include <io.h> // Debug Console
-
 void InitDebugConsole() { // Open a Debug Console so we can printf
     int fd;
     FILE *fp;
-
     FreeConsole();
     if (AllocConsole()) {
         SetConsoleTitleA("Mixxx Debug Messages");
-
         fd = _open_osfhandle((long) GetStdHandle(STD_OUTPUT_HANDLE), 0);
         fp = _fdopen(fd, "w");
-
         *stdout = *fp;
         setvbuf(stdout, NULL, _IONBF, 0);
-
         fd = _open_osfhandle((long) GetStdHandle(STD_ERROR_HANDLE), 0);
         fp = _fdopen(fd, "w");
-
         *stderr = *fp;
         setvbuf(stderr, NULL, _IONBF, 0);
     }
 }
 #endif // DEBUGCONSOLE
 #endif // __WINDOWS__
-
 QStringList plugin_paths; //yes this is global. sometimes global is good.
-
 //void qInitImages_mixxx();
-
 QFile Logfile; // global logfile variable
 QMutex mutexLogfile;
-
 /* Debug message handler which outputs to both a logfile and a
  * and prepends the thread the message came from too.
  */
@@ -93,7 +81,6 @@ void MessageHandler(QtMsgType type,
 #else
                     const QMessageLogContext&, const QString& input) {
 #endif
-
     // It's possible to deadlock if any method in this function can
     // qDebug/qWarning/etc. Writing to a closed QFile, for example, produces a
     // qWarning which causes a deadlock. That's why every use of Logfile is
@@ -101,46 +88,32 @@ void MessageHandler(QtMsgType type,
     QMutexLocker locker(&mutexLogfile);
     QByteArray ba;
     QThread* thread = QThread::currentThread();
-    if (thread) {
-        ba = "[" + QThread::currentThread()->objectName().toLocal8Bit() + "]: ";
-    } else {
-        ba = "[?]: ";
-    }
+    if (thread) {ba = "[" + QThread::currentThread()->objectName().toLocal8Bit() + "]: ";
+    } else {ba = "[?]: ";}
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
     ba += input;
 #else
     ba += input.toLocal8Bit();
 #endif
     ba += "\n";
-
     if (!Logfile.isOpen()) {
         // This Must be done in the Message Handler itself, to guarantee that the
         // QApplication is initialized
         QString logLocation = CmdlineArgs::Instance().getSettingsPath();
         QString logFileName;
-
         // Rotate old logfiles
-        //FIXME: cerr << doesn't get printed until after mixxx quits (???)
         for (int i = 9; i >= 0; --i) {
-            if (i == 0) {
-                logFileName = QString("%1/mixxx.log").arg(logLocation);
-            } else {
-                logFileName = QString("%1/mixxx.log.%2").arg(logLocation).arg(i);
-            }
+            if (i == 0) {logFileName = QString("%1/mixxx.log").arg(logLocation);
+            } else {logFileName = QString("%1/mixxx.log.%2").arg(logLocation).arg(i);}
             QFileInfo logbackup(logFileName);
             if (logbackup.exists()) {
-                QString olderlogname =
-                        QString("%1/mixxx.log.%2").arg(logLocation).arg(i + 1);
+                QString olderlogname = QString("%1/mixxx.log.%2").arg(logLocation).arg(i + 1);
                 // This should only happen with number 10
-                if (QFileInfo(olderlogname).exists()) {
-                    QFile::remove(olderlogname);
-                }
-                if (!QFile::rename(logFileName, olderlogname)) {
-                    std::cerr << "Error rolling over logfile " << logFileName.toStdString();
-                }
+                if (QFileInfo(olderlogname).exists()) {QFile::remove(olderlogname);}
+                if (!QFile::rename(logFileName, olderlogname)) 
+                  {fprintf(stderr, "Error rolling over logfile %s", logFileName.toLocal8Bit().constData());}
             }
         }
-
         // WARNING(XXX) getSettingsPath() may not be ready yet. This causes
         // Logfile writes below to print qWarnings which in turn recurse into
         // MessageHandler -- potentially deadlocking.
@@ -149,13 +122,10 @@ void MessageHandler(QtMsgType type,
         Logfile.setFileName(logFileName);
         Logfile.open(QIODevice::WriteOnly | QIODevice::Text);
     }
-
     switch (type) {
     case QtDebugMsg:
 #ifdef __WINDOWS__  //wtf? -kousu 2/2009
-        if (strstr(input, "doneCurrent")) {
-            break;
-        }
+        if (strstr(input, "doneCurrent")) {break;}
 #endif
         fprintf(stderr, "Debug %s", ba.constData());
         if (Logfile.isOpen()) {
@@ -192,14 +162,10 @@ void MessageHandler(QtMsgType type,
         }
         break;
     }
-    if (Logfile.isOpen()) {
-        Logfile.flush();
-    }
+    if (Logfile.isOpen()) {Logfile.flush();}
 }
 
-int main(int argc, char * argv[])
-{
-
+int main(int argc, char * argv[]){
 #ifdef Q_OS_LINUX
     XInitThreads();
 #endif
@@ -298,9 +264,9 @@ int main(int argc, char * argv[])
 #endif
 
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-    qInstallMsgHandler(MessageHandler);
+    qInstallMsgHandler(&MessageHandler);
 #else
-    qInstallMessageHandler(MessageHandler);
+    qInstallMessageHandler(&MessageHandler);
 #endif
 
     // Other things depend on this name to enforce thread exclusivity,

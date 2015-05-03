@@ -26,35 +26,35 @@ DeckAttributes::DeckAttributes(int index,
           m_repeat(group, "repeat"),
           m_pPlayer(pPlayer) {
     connect(m_pPlayer, SIGNAL(newTrackLoaded(TrackPointer)),
-            this, SLOT(slotTrackLoaded(TrackPointer)));
+            this, SLOT(onTrackLoaded(TrackPointer)));
     connect(m_pPlayer, SIGNAL(loadTrackFailed(TrackPointer)),
-            this, SLOT(slotTrackLoadFailed(TrackPointer)));
+            this, SLOT(onTrackLoadFailed(TrackPointer)));
     connect(m_pPlayer, SIGNAL(unloadingTrack(TrackPointer)),
-            this, SLOT(slotTrackUnloaded(TrackPointer)));
-    m_playPos.connectValueChanged(this, SLOT(slotPlayPosChanged(double)));
-    m_play.connectValueChanged(this, SLOT(slotPlayChanged(double)));
+            this, SLOT(onTrackUnloaded(TrackPointer)));
+    m_playPos.connectValueChanged(this, SLOT(onPlayPosChanged(double)));
+    m_play.connectValueChanged(this, SLOT(onPlayChanged(double)));
 }
 
 DeckAttributes::~DeckAttributes() {
 }
 
-void DeckAttributes::slotPlayChanged(double v) {
+void DeckAttributes::onPlayChanged(double v) {
     emit(playChanged(this, v > 0.0));
 }
 
-void DeckAttributes::slotPlayPosChanged(double v) {
+void DeckAttributes::onPlayPosChanged(double v) {
     emit(playPositionChanged(this, v));
 }
 
-void DeckAttributes::slotTrackLoaded(TrackPointer pTrack) {
+void DeckAttributes::onTrackLoaded(TrackPointer pTrack) {
     emit(trackLoaded(this, pTrack));
 }
 
-void DeckAttributes::slotTrackLoadFailed(TrackPointer pTrack) {
+void DeckAttributes::onTrackLoadFailed(TrackPointer pTrack) {
     emit(trackLoadFailed(this, pTrack));
 }
 
-void DeckAttributes::slotTrackUnloaded(TrackPointer pTrack) {
+void DeckAttributes::onTrackUnloaded(TrackPointer pTrack) {
     emit(trackUnloaded(this, pTrack));
 }
 

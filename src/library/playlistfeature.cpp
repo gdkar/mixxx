@@ -180,12 +180,12 @@ void PlaylistFeature::decorateChild(TreeItem* item, int playlist_id) {
     }
 }
 
-void PlaylistFeature::slotPlaylistTableChanged(int playlistId) {
+void PlaylistFeature::onPlaylistTableChanged(int playlistId) {
     if (!m_pPlaylistTableModel) {
         return;
     }
 
-    //qDebug() << "slotPlaylistTableChanged() playlistId:" << playlistId;
+    //qDebug() << "onPlaylistTableChanged() playlistId:" << playlistId;
     enum PlaylistDAO::HiddenType type = m_playlistDao.getHiddenType(playlistId);
     if (type == PlaylistDAO::PLHT_NOT_HIDDEN ||
         type == PlaylistDAO::PLHT_UNKNOWN) { // In case of a deleted Playlist

@@ -28,19 +28,19 @@ class DlgRecording : public QWidget, public Ui::DlgRecording, public virtual Lib
     virtual void onSearch(const QString& text);
     virtual void onShow();
     virtual void loadSelectedTrack();
-    virtual void slotSendToAutoDJ();
-    virtual void slotSendToAutoDJTop();
+    virtual void onSendToAutoDJ();
+    virtual void onSendToAutoDJTop();
     virtual void loadSelectedTrackToGroup(QString group, bool play);
     virtual void moveSelection(int delta);
     inline const QString currentSearch() { return m_proxyModel.currentSearch(); }
 
   public slots:
     void toggleRecording(bool toggle);
-    void slotRecordingEnabled(bool);
-    void slotBytesRecorded(long);
+    void onRecordingEnabled(bool);
+    void onBytesRecorded(long);
     void refreshBrowseModel();
-    void slotRestoreSearch();
-    void slotDurationRecorded(QString durationRecorded);
+    void onRestoreSearch();
+    void onDurationRecorded(QString durationRecorded);
     void setTrackTableFont(const QFont& font);
     void setTrackTableRowHeight(int rowHeight);
 

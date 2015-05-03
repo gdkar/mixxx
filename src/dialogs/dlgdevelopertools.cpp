@@ -56,15 +56,15 @@ DlgDeveloperTools::DlgDeveloperTools(QWidget* pParent,
 
     // Connect search box signals to the library
     connect(controlSearch, SIGNAL(search(const QString&)),
-            this, SLOT(slotControlSearch(const QString&)));
+            this, SLOT(onControlSearch(const QString&)));
     connect(controlSearch, SIGNAL(searchCleared()),
-            this, SLOT(slotControlSearchClear()));
+            this, SLOT(onControlSearchClear()));
 
     // Set up the log search box
     connect(logSearch, SIGNAL(returnPressed()),
-            this, SLOT(slotLogSearch()));
+            this, SLOT(onLogSearch()));
     connect(logSearchButton, SIGNAL(clicked()),
-            this, SLOT(slotLogSearch()));
+            this, SLOT(onLogSearch()));
 
     m_logCursor = logTextView->textCursor();
 
@@ -108,15 +108,15 @@ void DlgDeveloperTools::timerEvent(QTimerEvent* pEvent) {
     }
 }
 
-void DlgDeveloperTools::slotControlSearch(const QString& search) {
+void DlgDeveloperTools::onControlSearch(const QString& search) {
     m_controlProxyModel.setFilterFixedString(search);
 }
 
-void DlgDeveloperTools::slotControlSearchClear() {
+void DlgDeveloperTools::onControlSearchClear() {
     m_controlProxyModel.setFilterFixedString(QString());
 }
 
-void DlgDeveloperTools::slotLogSearch() {
+void DlgDeveloperTools::onLogSearch() {
     QString textToFind = logSearch->text();
     m_logCursor = logTextView->document()->find(textToFind, m_logCursor);
     logTextView->setTextCursor(m_logCursor);

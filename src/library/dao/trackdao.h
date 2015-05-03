@@ -184,10 +184,10 @@ class TrackDAO : public QObject, public virtual DAO {
     void databaseTracksChanged(QSet<int> tracksChanged);
 
   private slots:
-    void slotTrackDirty(TrackInfoObject* pTrack);
-    void slotTrackChanged(TrackInfoObject* pTrack);
-    void slotTrackClean(TrackInfoObject* pTrack);
-    void slotTrackReferenceExpired(TrackInfoObject* pTrack);
+    void onTrackDirty(TrackInfoObject* pTrack);
+    void onTrackChanged(TrackInfoObject* pTrack);
+    void onTrackClean(TrackInfoObject* pTrack);
+    void onTrackReferenceExpired(TrackInfoObject* pTrack);
 
   private:
     bool isTrackFormatSupported(TrackInfoObject* pTrack) const;

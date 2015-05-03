@@ -38,26 +38,26 @@ class SidebarModel : public QAbstractItemModel {
     void clicked(const QModelIndex& index);
     void doubleClicked(const QModelIndex& index);
     void rightClicked(const QPoint& globalPos, const QModelIndex& index);
-    void slotFeatureSelect(LibraryFeature* pFeature, const QModelIndex& index = QModelIndex());
+    void onFeatureSelect(LibraryFeature* pFeature, const QModelIndex& index = QModelIndex());
 
     // Slots for every single QAbstractItemModel signal
-    // void slotColumnsAboutToBeInserted(const QModelIndex& parent, int start, int end);
-    // void slotColumnsAboutToBeRemoved(const QModelIndex& parent, int start, int end);
-    // void slotColumnsInserted(const QModelIndex& parent, int start, int end);
-    // void slotColumnsRemoved(const QModelIndex& parent, int start, int end);
-    void slotDataChanged(const QModelIndex& topLeft, const QModelIndex & bottomRight);
-    //void slotHeaderDataChanged(Qt::Orientation orientation, int first, int last);
-    // void slotLayoutAboutToBeChanged();
-    // void slotLayoutChanged();
-    // void slotModelAboutToBeReset();
-    // void slotModelReset();
-    void slotRowsAboutToBeInserted(const QModelIndex& parent, int start, int end);
-    void slotRowsAboutToBeRemoved(const QModelIndex& parent, int start, int end);
-    void slotRowsInserted(const QModelIndex& parent, int start, int end);
-    void slotRowsRemoved(const QModelIndex& parent, int start, int end);
-    void slotModelReset();
-    void slotFeatureIsLoading(LibraryFeature*, bool selectFeature);
-    void slotFeatureLoadingFinished(LibraryFeature*);
+    // void onColumnsAboutToBeInserted(const QModelIndex& parent, int start, int end);
+    // void onColumnsAboutToBeRemoved(const QModelIndex& parent, int start, int end);
+    // void onColumnsInserted(const QModelIndex& parent, int start, int end);
+    // void onColumnsRemoved(const QModelIndex& parent, int start, int end);
+    void onDataChanged(const QModelIndex& topLeft, const QModelIndex & bottomRight);
+    //void onHeaderDataChanged(Qt::Orientation orientation, int first, int last);
+    // void onLayoutAboutToBeChanged();
+    // void onLayoutChanged();
+    // void onModelAboutToBeReset();
+    // void onModelReset();
+    void onRowsAboutToBeInserted(const QModelIndex& parent, int start, int end);
+    void onRowsAboutToBeRemoved(const QModelIndex& parent, int start, int end);
+    void onRowsInserted(const QModelIndex& parent, int start, int end);
+    void onRowsRemoved(const QModelIndex& parent, int start, int end);
+    void onModelReset();
+    void onFeatureIsLoading(LibraryFeature*, bool selectFeature);
+    void onFeatureLoadingFinished(LibraryFeature*);
 
   signals:
     void selectIndex(const QModelIndex& index);

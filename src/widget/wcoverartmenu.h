@@ -27,8 +27,8 @@ class WCoverArtMenu : public QMenu {
     void reloadCoverArt();
 
   private slots:
-    void slotChange();
-    void slotUnset();
+    void onChange();
+    void onUnset();
 
   private:
     void createActions();

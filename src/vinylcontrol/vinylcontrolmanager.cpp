@@ -53,11 +53,11 @@ VinylControlManager::~VinylControlManager() {
 
 void VinylControlManager::init() {
     m_pNumDecks = new ControlObjectSlave("[Master]", "num_decks", this);
-    m_pNumDecks->connectValueChanged(SLOT(slotNumDecksChanged(double)));
-    slotNumDecksChanged(m_pNumDecks->get());
+    m_pNumDecks->connectValueChanged(SLOT(onNumDecksChanged(double)));
+    onNumDecksChanged(m_pNumDecks->get());
 }
 
-void VinylControlManager::slotNumDecksChanged(double dNumDecks) {
+void VinylControlManager::onNumDecksChanged(double dNumDecks) {
     int num_decks = static_cast<int>(dNumDecks);
 
     // Complain if we try to create more decks than we can handle.
@@ -123,7 +123,7 @@ void VinylControlManager::addSignalQualityListener(VinylSignalQualityListener* p
     m_pProcessor->setSignalQualityReporting(true);
 
     if (m_iTimerId == -1) {
-        m_iTimerId = startTimer(MIXXX_VINYL_SCOPE_UPDATE_LATENCY_MS);
+        m_iTimerId = startTimer(MIXXX_VINYL_SCOPE_UPDATE_LATENCY_MS, Qt::PreciseTimer);
     }
 }
 

@@ -23,7 +23,6 @@
 #define DEVICE_NODE "::mixxx_device_node::"
 
 class TrackCollection;
-
 class BrowseFeature : public LibraryFeature {
     Q_OBJECT
   public:
@@ -32,26 +31,21 @@ class BrowseFeature : public LibraryFeature {
                   TrackCollection* pTrackCollection,
                   RecordingManager* pRec);
     virtual ~BrowseFeature();
-
     QVariant title();
     QIcon getIcon();
-
     void bindWidget(WLibrary* libraryWidget,
                     MixxxKeyboard* keyboard);
-
     TreeItemModel* getChildModel();
-
   public slots:
-    void slotAddQuickLink();
-    void slotRemoveQuickLink();
-    void slotAddToLibrary();
+    void onAddQuickLink();
+    void onRemoveQuickLink();
+    void onAddToLibrary();
     void activate();
     void activateChild(const QModelIndex& index);
     void onRightClickChild(const QPoint& globalPos, QModelIndex index);
     void onLazyChildExpandation(const QModelIndex& index);
-    void slotLibraryScanStarted();
-    void slotLibraryScanFinished();
-
+    void onLibraryScanStarted();
+    void onLibraryScanFinished();
   signals:
     void setRootIndex(const QModelIndex&);
     void requestAddDir(QString);

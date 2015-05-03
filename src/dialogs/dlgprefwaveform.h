@@ -17,23 +17,23 @@ class DlgPrefWaveform : public DlgPreferencePage, public Ui::DlgPrefWaveformDlg 
     virtual ~DlgPrefWaveform();
 
   public slots:
-    void slotUpdate();
-    void slotApply();
-    void slotResetToDefaults();
-    void slotSetWaveformEndRender(int endTime);
+    void onUpdate();
+    void onApply();
+    void onResetToDefaults();
+    void onSetWaveformEndRender(int endTime);
 
   private slots:
-    void slotSetFrameRate(int frameRate);
-    void slotSetWaveformType(int index);
-    void slotSetWaveformOverviewType(int index);
-    void slotSetDefaultZoom(int index);
-    void slotSetZoomSynchronization(bool checked);
-    void slotSetVisualGainAll(double gain);
-    void slotSetVisualGainLow(double gain);
-    void slotSetVisualGainMid(double gain);
-    void slotSetVisualGainHigh(double gain);
-    void slotSetNormalizeOverview(bool normalize);
-    void slotWaveformMeasured(float frameRate, int droppedFrames);
+    void onSetFrameRate(int frameRate);
+    void onSetWaveformType(int index);
+    void onSetWaveformOverviewType(int index);
+    void onSetDefaultZoom(int index);
+    void onSetZoomSynchronization(bool checked);
+    void onSetVisualGainAll(double gain);
+    void onSetVisualGainLow(double gain);
+    void onSetVisualGainMid(double gain);
+    void onSetVisualGainHigh(double gain);
+    void onSetNormalizeOverview(bool normalize);
+    void onWaveformMeasured(float frameRate, int droppedFrames);
 
   private:
     void initWaveformControl();

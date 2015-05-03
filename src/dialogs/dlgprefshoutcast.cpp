@@ -177,14 +177,14 @@ DlgPrefShoutcast::DlgPrefShoutcast(QWidget *parent, ConfigObject<ConfigValue> *_
         tmp_string = kDefaultMetadataFormat;
     metadata_format->setText(tmp_string);
 
-    slotApply();
+    onApply();
 }
 
 DlgPrefShoutcast::~DlgPrefShoutcast() {
     delete m_pUpdateShoutcastFromPrefs;
 }
 
-void DlgPrefShoutcast::slotResetToDefaults() {
+void DlgPrefShoutcast::onResetToDefaults() {
     // Make sure to keep these values in sync with the constructor.
     enableLiveBroadcasting->setChecked(false);
     comboBoxServerType->setCurrentIndex(0);
@@ -211,12 +211,12 @@ void DlgPrefShoutcast::slotResetToDefaults() {
     custom_title->setText("");
 }
 
-void DlgPrefShoutcast::slotUpdate() {
+void DlgPrefShoutcast::onUpdate() {
     enableLiveBroadcasting->setChecked((bool)m_pConfig->getValueString(
         ConfigKey(SHOUTCAST_PREF_KEY,"enabled")).toInt());
 }
 
-void DlgPrefShoutcast::slotApply()
+void DlgPrefShoutcast::onApply()
 {
     m_pConfig->set(ConfigKey(SHOUTCAST_PREF_KEY, "enabled"),       ConfigValue(enableLiveBroadcasting->isChecked()));
 
@@ -259,5 +259,5 @@ void DlgPrefShoutcast::slotApply()
     m_pConfig->set(ConfigKey(SHOUTCAST_PREF_KEY, "metadata_format"), ConfigValue(metadata_format->text()));
 
     //Tell the EngineShoutcast object to update with these values by toggling this control object.
-    m_pUpdateShoutcastFromPrefs->slotSet(1.0);
+    m_pUpdateShoutcastFromPrefs->onSet(1.0);
 }

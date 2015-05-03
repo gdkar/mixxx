@@ -42,27 +42,27 @@ class DlgPrefEQ : public DlgPreferencePage, public Ui::DlgPrefEQDlg  {
     QString getQuickEffectGroupForDeck(int deck) const;
 
   public slots:
-    void slotEqEffectChangedOnDeck(int effectIndex);
-    void slotQuickEffectChangedOnDeck(int effectIndex);
-    void slotNumDecksChanged(double numDecks);
-    void slotSingleEqChecked(int checked);
+    void onEqEffectChangedOnDeck(int effectIndex);
+    void onQuickEffectChangedOnDeck(int effectIndex);
+    void onNumDecksChanged(double numDecks);
+    void onSingleEqChecked(int checked);
     // Slot for toggling between advanced and basic views
-    void slotPopulateDeckEffectSelectors();
+    void onPopulateDeckEffectSelectors();
     // Update Hi EQ
-    void slotUpdateHiEQ();
+    void onUpdateHiEQ();
     // Update Lo EQ
-    void slotUpdateLoEQ();
+    void onUpdateLoEQ();
     // Apply changes to widget
-    void slotApply();
-    void slotUpdate();
-    void slotResetToDefaults();
-    void slotUpdateEqAutoReset(int);
-    void slotBypass(int state);
+    void onApply();
+    void onUpdate();
+    void onResetToDefaults();
+    void onUpdateEqAutoReset(int);
+    void onBypass(int state);
     // Update the Master EQ
-    void slotUpdateMasterEQParameter(int value);
-    void slotMasterEQToDefault();
+    void onUpdateMasterEQParameter(int value);
+    void onMasterEQToDefault();
     void setMasterEQParameter(int i, double value);
-    void slotMasterEqEffectChanged(int effectIndex);
+    void onMasterEqEffectChanged(int effectIndex);
 
   signals:
     void apply(const QString &);

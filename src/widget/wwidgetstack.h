@@ -26,7 +26,7 @@ class WidgetStackControlListener : public QObject {
     void onCurrentWidgetChanged(int index);
 
   private slots:
-    void slotValueChanged(double v);
+    void onValueChanged(double v);
 
   private:
     ControlObjectThread m_control;

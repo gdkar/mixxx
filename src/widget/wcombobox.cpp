@@ -7,7 +7,7 @@ WComboBox::WComboBox(QWidget* pParent)
         : QComboBox(pParent),
           WBaseWidget(this) {
     connect(this, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(slotCurrentIndexChanged(int)));
+            this, SLOT(onCurrentIndexChanged(int)));
 }
 
 WComboBox::~WComboBox() {
@@ -50,6 +50,6 @@ void WComboBox::onConnectedControlChanged(double dParameter, double dValue) {
     }
 }
 
-void WComboBox::slotCurrentIndexChanged(int index) {
+void WComboBox::onCurrentIndexChanged(int index) {
     setControlParameter(index);
 }

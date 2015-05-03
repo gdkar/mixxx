@@ -63,20 +63,20 @@ bool SongDownloader::downloadFromQueue() {
     m_pRequest->setRawHeader("User-Agent", mixxxUABA);
     m_pReply = m_pNetwork->get(*m_pRequest);
 
-    connect(m_pReply, SIGNAL(readyRead()), this, SLOT(slotReadyRead()));
+    connect(m_pReply, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
     connect(m_pReply, SIGNAL(error(QNetworkReply::NetworkError)),
-         this, SLOT(slotError(QNetworkReply::NetworkError)));
+         this, SLOT(onError(QNetworkReply::NetworkError)));
     connect(m_pReply, SIGNAL(downloadProgress(qint64, qint64)),
-            this, SLOT(slotProgress(qint64, qint64)));
+            this, SLOT(onProgress(qint64, qint64)));
     connect(m_pReply, SIGNAL(downloadProgress(qint64, qint64)),
             this, SIGNAL(downloadProgress(qint64, qint64)));
     connect(m_pReply, SIGNAL(finished()),
-            this, SLOT(slotDownloadFinished()));
+            this, SLOT(onDownloadFinished()));
 
     return true;
 }
 
-void SongDownloader::slotReadyRead() {
+void SongDownloader::onReadyRead() {
     //Magic. Isn't this how C++ is supposed to work?
     //m_pDownloadedFile << m_pReply;
     //Update: :(
@@ -88,7 +88,7 @@ void SongDownloader::slotReadyRead() {
     }
 }
 
-void SongDownloader::slotError(QNetworkReply::NetworkError error) {
+void SongDownloader::onError(QNetworkReply::NetworkError error) {
     Q_UNUSED(error);
     qDebug() << "SongDownloader: Network error while trying to download a plugin.";
 
@@ -98,12 +98,12 @@ void SongDownloader::slotError(QNetworkReply::NetworkError error) {
     emit(downloadError());
 }
 
-void SongDownloader::slotProgress(qint64 bytesReceived, qint64 bytesTotal) {
+void SongDownloader::onProgress(qint64 bytesReceived, qint64 bytesTotal) {
     qDebug() << bytesReceived << "/" << bytesTotal;
     emit(downloadProgress(bytesReceived, bytesTotal));
 }
 
-void SongDownloader::slotDownloadFinished() {
+void SongDownloader::onDownloadFinished() {
     qDebug() << "SongDownloader: Download finished!";
     //Finish up with the reply and close the file handle
     m_pReply->deleteLater();

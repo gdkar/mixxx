@@ -45,35 +45,35 @@ class DlgPrefControls : public DlgPreferencePage, public Ui::DlgPrefControlsDlg 
     virtual ~DlgPrefControls();
 
   public slots:
-    void slotUpdate();
-    void slotApply();
-    void slotResetToDefaults();
+    void onUpdate();
+    void onApply();
+    void onResetToDefaults();
 
-    void slotSetRateRange(int pos);
-    void slotSetRateDir(int pos);
-    void slotKeylockMode(int pos);
-    void slotSetRateTempLeft(double);
-    void slotSetRateTempRight(double);
-    void slotSetRatePermLeft(double);
-    void slotSetRatePermRight(double);
-    void slotSetTooltips(int pos);
-    void slotSetSkin(int);
-    void slotSetScheme(int);
-    void slotUpdateSchemes();
-    void slotSetPositionDisplay(int);
-    void slotSetPositionDisplay(double);
-    void slotSetAllowTrackLoadToPlayingDeck(int);
-    void slotSetCueDefault(int);
-    void slotSetCueRecall(int);
-    void slotSetRateRamp(bool);
-    void slotSetRateRampSensitivity(int);
-    void slotSetLocale(int);
-    void slotSetStartInFullscreen(int index);
+    void onSetRateRange(int pos);
+    void onSetRateDir(int pos);
+    void onKeylockMode(int pos);
+    void onSetRateTempLeft(double);
+    void onSetRateTempRight(double);
+    void onSetRatePermLeft(double);
+    void onSetRatePermRight(double);
+    void onSetTooltips(int pos);
+    void onSetSkin(int);
+    void onSetScheme(int);
+    void onUpdateSchemes();
+    void onSetPositionDisplay(int);
+    void onSetPositionDisplay(double);
+    void onSetAllowTrackLoadToPlayingDeck(int);
+    void onSetCueDefault(int);
+    void onSetCueRecall(int);
+    void onSetRateRamp(bool);
+    void onSetRateRampSensitivity(int);
+    void onSetLocale(int);
+    void onSetStartInFullscreen(int index);
 
-    void slotNumDecksChanged(double);
-    void slotNumSamplersChanged(double);
+    void onNumDecksChanged(double);
+    void onNumSamplersChanged(double);
     
-    void slotUpdateSpeedAutoReset(int);
+    void onUpdateSpeedAutoReset(int);
 
   private:
     void notifyRebootNecessary();
@@ -84,7 +84,7 @@ class DlgPrefControls : public DlgPreferencePage, public Ui::DlgPrefControlsDlg 
     ControlObjectSlave* m_pNumDecks;
     ControlObjectSlave* m_pNumSamplers;
     QList<ControlObjectThread*> m_cueControls;
-    QList<ControlObjectThread*> m_rateControls;
+    QList<ControlPotmeter*>     m_rateControls;
     QList<ControlObjectThread*> m_rateDirControls;
     QList<ControlObjectThread*> m_rateRangeControls;
     QList<ControlObjectThread*> m_keylockModeControls;

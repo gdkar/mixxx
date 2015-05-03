@@ -543,30 +543,30 @@ ControlPickerMenu::ControlPickerMenu(QWidget* pParent)
                 QMenu* effectSlotMenu = addSubmenu(m_effectStr.arg(iEffectSlotNumber),
                                                    effectUnitMenu);
 
-                QString slotDescriptionPrefix =
+                QString onDescriptionPrefix =
                         QString("%1, %2").arg(descriptionPrefix,
                                               m_effectStr.arg(iEffectSlotNumber));
 
                 addPrefixedControl(effectSlotGroup, "clear",
                                    tr("Clear"), tr("Clear the current effect"),
-                                   slotDescriptionPrefix,
+                                   onDescriptionPrefix,
                                    effectSlotMenu);
                 addPrefixedControl(effectSlotGroup, "enabled",
                                    tr("Toggle"), tr("Toggle the current effect"),
-                                   slotDescriptionPrefix,
+                                   onDescriptionPrefix,
                                    effectSlotMenu);
                 addPrefixedControl(effectSlotGroup, "next_effect",
                                    tr("Next"), tr("Switch to next effect"),
-                                   slotDescriptionPrefix,
+                                   onDescriptionPrefix,
                                    effectSlotMenu);
                 addPrefixedControl(effectSlotGroup, "prev_effect",
                                    tr("Previous"), tr("Switch to the previous effect"),
-                                   slotDescriptionPrefix,
+                                   onDescriptionPrefix,
                                    effectSlotMenu);
                 addPrefixedControl(effectSlotGroup, "effect_selector",
                                    tr("Next or Previous"),
                                    tr("Switch to either next or previous effect"),
-                                   slotDescriptionPrefix,
+                                   onDescriptionPrefix,
                                    effectSlotMenu);
 
                 const int numParameterSlots = ControlObject::get(
@@ -586,7 +586,7 @@ ControlPickerMenu::ControlPickerMenu(QWidget* pParent)
                         effectSlotMenu);
 
                     QString parameterDescriptionPrefix =
-                            QString("%1, %2").arg(slotDescriptionPrefix,
+                            QString("%1, %2").arg(onDescriptionPrefix,
                                                   m_parameterStr.arg(iParameterSlotNumber));
 
                     // Likely to change soon.

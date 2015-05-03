@@ -18,10 +18,10 @@ class SongDownloader : public QObject {
     bool downloadSongFromURL(QUrl& url);
 
   public slots:
-    void slotReadyRead();
-    void slotError(QNetworkReply::NetworkError error);
-    void slotProgress(qint64 bytesReceived, qint64 bytesTotal);
-    void slotDownloadFinished();
+    void onReadyRead();
+    void onError(QNetworkReply::NetworkError error);
+    void onProgress(qint64 bytesReceived, qint64 bytesTotal);
+    void onDownloadFinished();
     //void finishedSlot(QNetworkReply* reply);
 
   signals:

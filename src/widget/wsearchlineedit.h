@@ -34,11 +34,11 @@ class WSearchLineEdit : public QLineEdit, public WBaseWidget {
 
   public slots:
     void restoreSearch(const QString& text);
-    void slotTextChanged(const QString& text);
+    void onTextChanged(const QString& text);
 
   private slots:
     void updateCloseButton(const QString& text);
-    void slotSetupTimer(const QString& text);
+    void onSetupTimer(const QString& text);
     void triggerSearch();
     void onSearchTextCleared();
 

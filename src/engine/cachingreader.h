@@ -1,4 +1,4 @@
-// cachingreader.h
+// engine/cachingreader.h
 // Created 7/9/2009 by RJ Ryan (rryan@mit.edu)
 
 #ifndef CACHINGREADER_H
@@ -16,7 +16,7 @@
 #include "trackinfoobject.h"
 #include "engine/engineworker.h"
 #include "util/fifo.h"
-#include "cachingreaderworker.h"
+#include "engine/cachingreaderworker.h"
 
 // A Hint is an indication to the CachingReader that a certain section of a
 // SoundSource will be used 'soon' and so it should be brought into memory by
@@ -111,9 +111,7 @@ class CachingReader : public QObject {
     static Chunk* insertIntoLRUList(Chunk* chunk, Chunk* head);
 
     // Given a sample number, return the chunk number corresponding to it.
-    inline static int chunkForFrame(int frame_number) {
-        return frame_number / CachingReaderWorker::kFramesPerChunk;
-    }
+    inline static int chunkForFrame(int frame_number) {return frame_number / CachingReaderWorker::kFramesPerChunk;}
 
     const ConfigObject<ConfigValue>* m_pConfig;
 

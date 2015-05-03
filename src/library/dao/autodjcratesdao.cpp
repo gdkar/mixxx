@@ -166,44 +166,44 @@ void AutoDJCratesDAO::createAutoDjCratesDatabase() {
     // Be notified when a track is modified.
     // We only care when the number of times it's been played changes.
     connect(&m_rTrackDAO, SIGNAL(trackDirty(int)),
-            this, SLOT(slotTrackDirty(int)));
+            this, SLOT(onTrackDirty(int)));
 
     // Be notified when the status of crates changes.
     // We only care about the crates labeled as auto-DJ, and tracks added to,
     // and removed from, such crates.
     connect(&m_rCrateDAO, SIGNAL(added(int)),
-            this, SLOT(slotCrateAdded(int)));
+            this, SLOT(onCrateAdded(int)));
     connect(&m_rCrateDAO, SIGNAL(deleted(int)),
-            this, SLOT(slotCrateDeleted(int)));
+            this, SLOT(onCrateDeleted(int)));
     connect(&m_rCrateDAO, SIGNAL(autoDjChanged(int,bool)),
-            this, SLOT(slotCrateAutoDjChanged(int,bool)));
+            this, SLOT(onCrateAutoDjChanged(int,bool)));
     connect(&m_rCrateDAO, SIGNAL(trackAdded(int,int)),
-            this, SLOT(slotCrateTrackAdded(int,int)));
+            this, SLOT(onCrateTrackAdded(int,int)));
     connect(&m_rCrateDAO, SIGNAL(trackRemoved(int,int)),
-            this, SLOT(slotCrateTrackRemoved(int,int)));
+            this, SLOT(onCrateTrackRemoved(int,int)));
 
     // Be notified when playlists are added/removed.
     // We only care about set-log playlists.
     connect(&m_rPlaylistDAO, SIGNAL(added(int)),
-            this, SLOT(slotPlaylistAdded(int)));
+            this, SLOT(onPlaylistAdded(int)));
     connect(&m_rPlaylistDAO, SIGNAL(deleted(int)),
-            this, SLOT(slotPlaylistDeleted(int)));
+            this, SLOT(onPlaylistDeleted(int)));
 
     // Be notified when tracks are added/removed from playlists.
     // We only care about the auto-DJ playlist and the set-log playlists.
     connect(&m_rPlaylistDAO, SIGNAL(trackAdded(int,int,int)),
-            this, SLOT(slotPlaylistTrackAdded(int,int,int)));
+            this, SLOT(onPlaylistTrackAdded(int,int,int)));
     connect(&m_rPlaylistDAO, SIGNAL(trackRemoved(int,int,int)),
-            this, SLOT(slotPlaylistTrackRemoved(int,int,int)));
+            this, SLOT(onPlaylistTrackRemoved(int,int,int)));
 
     // Be notified when tracks are loaded to, or unloaded from, a deck.
     // These count as auto-DJ references, i.e. prevent the track from being
     // selected randomly.
     connect(&PlayerInfo::instance(), SIGNAL(trackLoaded(QString,TrackPointer)),
-            this, SLOT(slotPlayerInfoTrackLoaded(QString,TrackPointer)));
+            this, SLOT(onPlayerInfoTrackLoaded(QString,TrackPointer)));
     connect(&PlayerInfo::instance(),
             SIGNAL(trackUnloaded(QString,TrackPointer)),
-            this, SLOT(slotPlayerInfoTrackUnloaded(QString,TrackPointer)));
+            this, SLOT(onPlayerInfoTrackUnloaded(QString,TrackPointer)));
 
     // Remember that the auto-DJ-crates database has been created.
     m_bAutoDjCratesDbCreated = true;
@@ -515,7 +515,7 @@ int AutoDJCratesDAO::getRandomTrackId(void) {
 }
 
 // Signaled by the track DAO when a track's information is updated.
-void AutoDJCratesDAO::slotTrackDirty(int trackId) {
+void AutoDJCratesDAO::onTrackDirty(int trackId) {
     // Update our record of the number of times played, if that changed.
     TrackPointer pTrack = m_rTrackDAO.getTrack(trackId);
     if (pTrack == NULL) {
@@ -543,21 +543,21 @@ void AutoDJCratesDAO::slotTrackDirty(int trackId) {
 }
 
 // Signaled by the crate DAO when a crate is added.
-void AutoDJCratesDAO::slotCrateAdded(int crateId) {
+void AutoDJCratesDAO::onCrateAdded(int crateId) {
     // If this newly-added crate is in the auto-DJ queue, add it to the list.
     if (m_rCrateDAO.isCrateInAutoDj(crateId)) {
-        slotCrateAutoDjChanged(crateId, true);
+        onCrateAutoDjChanged(crateId, true);
     }
 }
 
-void AutoDJCratesDAO::slotCrateDeleted(int crateId) {
+void AutoDJCratesDAO::onCrateDeleted(int crateId) {
     // The crate can't be queried for its auto-DJ status, because it's been
     // deleted by the time this code is reached.  But we can handle that.
     // Another solution would be to add a "crateDeleting" signal to CrateDAO.
-    slotCrateAutoDjChanged(crateId, false);
+    onCrateAutoDjChanged(crateId, false);
 }
 
-void AutoDJCratesDAO::slotCrateAutoDjChanged(int crateId, bool added) {
+void AutoDJCratesDAO::onCrateAutoDjChanged(int crateId, bool added) {
     // Handle a crate that's entered the auto-DJ queue differently than one that
     // is leaving it.  (Obviously.)
     ScopedTransaction oTransaction(m_rDatabase);
@@ -660,7 +660,7 @@ void AutoDJCratesDAO::slotCrateAutoDjChanged(int crateId, bool added) {
     }
 }
 
-void AutoDJCratesDAO::slotCrateTrackAdded(int a_iCrateId, int a_iTrackId) {
+void AutoDJCratesDAO::onCrateTrackAdded(int a_iCrateId, int a_iTrackId) {
     // Skip this if it's not an auto-DJ crate.
     if (!m_rCrateDAO.isCrateInAutoDj(a_iCrateId)) {
         return;
@@ -728,7 +728,7 @@ void AutoDJCratesDAO::slotCrateTrackAdded(int a_iCrateId, int a_iTrackId) {
     oTransaction.commit();
 }
 
-void AutoDJCratesDAO::slotCrateTrackRemoved(int crateId, int trackId) {
+void AutoDJCratesDAO::onCrateTrackRemoved(int crateId, int trackId) {
     // Skip this if it's not an auto-DJ crate.
     if (!m_rCrateDAO.isCrateInAutoDj(crateId))
         return;
@@ -762,7 +762,7 @@ void AutoDJCratesDAO::slotCrateTrackRemoved(int crateId, int trackId) {
 }
 
 // Signaled by the playlistDAO when a playlist is added.
-void AutoDJCratesDAO::slotPlaylistAdded(int playlistId) {
+void AutoDJCratesDAO::onPlaylistAdded(int playlistId) {
     // We only care about changes to set-log playlists.
     if (m_rPlaylistDAO.getHiddenType(playlistId)
             == PlaylistDAO::PLHT_SET_LOG) {
@@ -772,7 +772,7 @@ void AutoDJCratesDAO::slotPlaylistAdded(int playlistId) {
 }
 
 // Signaled by the playlistDAO when a playlist is deleted.
-void AutoDJCratesDAO::slotPlaylistDeleted(int playlistId) {
+void AutoDJCratesDAO::onPlaylistDeleted(int playlistId) {
     // We only care about changes to set-log playlists.
     int iIndex = m_lstSetLogPlaylistIds.indexOf(playlistId);
     if (iIndex >= 0) {
@@ -782,7 +782,7 @@ void AutoDJCratesDAO::slotPlaylistDeleted(int playlistId) {
 }
 
 // Signaled by the playlist DAO when a track is added to a playlist.
-void AutoDJCratesDAO::slotPlaylistTrackAdded(int playlistId, int trackId,
+void AutoDJCratesDAO::onPlaylistTrackAdded(int playlistId, int trackId,
                                              int /* a_iPosition */) {
     // Deal with changes to the auto-DJ playlist.
     if (playlistId == m_iAutoDjPlaylistId) {
@@ -806,7 +806,7 @@ void AutoDJCratesDAO::slotPlaylistTrackAdded(int playlistId, int trackId,
 }
 
 // Signaled by the playlist DAO when a track is removed from a playlist.
-void AutoDJCratesDAO::slotPlaylistTrackRemoved(int playlistId,
+void AutoDJCratesDAO::onPlaylistTrackRemoved(int playlistId,
                                                int trackId,
                                                int /* a_iPosition */) {
     // Deal with changes to the auto-DJ playlist.
@@ -831,7 +831,7 @@ void AutoDJCratesDAO::slotPlaylistTrackRemoved(int playlistId,
 }
 
 // Signaled by the PlayerInfo singleton when a track is loaded to a deck.
-void AutoDJCratesDAO::slotPlayerInfoTrackLoaded(QString a_strGroup,
+void AutoDJCratesDAO::onPlayerInfoTrackLoaded(QString a_strGroup,
                                                 TrackPointer a_pTrack) {
     // This gets called with a null track during an unload.  Filter that out.
     if (a_pTrack == NULL) {
@@ -861,7 +861,7 @@ void AutoDJCratesDAO::slotPlayerInfoTrackLoaded(QString a_strGroup,
 }
 
 // Signaled by the PlayerInfo singleton when a track is unloaded from a deck.
-void AutoDJCratesDAO::slotPlayerInfoTrackUnloaded(QString group,
+void AutoDJCratesDAO::onPlayerInfoTrackUnloaded(QString group,
                                                   TrackPointer pTrack) {
     // This counts as an auto-DJ reference.  The idea is to prevent tracks that
     // are loaded into a deck from being randomly chosen.

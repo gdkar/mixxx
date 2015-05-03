@@ -23,7 +23,7 @@ class ClockControl: public EngineControl {
   public slots:
     virtual void trackLoaded(TrackPointer pTrack);
     virtual void trackUnloaded(TrackPointer pTrack);
-    void slotBeatsUpdated();
+    void onBeatsUpdated();
 
   private:
     ControlObject* m_pCOBeatActive;

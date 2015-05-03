@@ -9,6 +9,7 @@ WTime::WTime(QWidget *parent)
           m_sTimeFormat("h:mm AP"),
           m_iInterval(s_iMinuteInterval) {
     m_pTimer = new QTimer(this);
+    m_pTimer->setTimerType(Qt::PreciseTimer);
 }
 
 WTime::~WTime() {
@@ -19,8 +20,7 @@ void WTime::setup(QDomNode node, const SkinContext& context) {
     WLabel::setup(node, context);
     setTimeFormat(node, context);
     m_pTimer->start(m_iInterval);
-    connect(m_pTimer, SIGNAL(timeout()),
-            this, SLOT(refreshTime()));
+    connect(m_pTimer, &QTimer::timeout,this, &WTime::refreshTime);
     refreshTime();
 }
 
@@ -48,7 +48,5 @@ void WTime::setTimeFormat(QDomNode node, const SkinContext& context) {
 void WTime::refreshTime() {
     QTime time = QTime::currentTime();
     QString timeString = time.toString(m_sTimeFormat);
-    if (text() != timeString) {
-        setText(timeString);
-    }
+    if (text() != timeString) {setText(timeString);}
 }

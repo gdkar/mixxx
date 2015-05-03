@@ -20,6 +20,7 @@
 
 #include "engine/engineobject.h"
 #include "engine/channelhandle.h"
+#include "control/statevariable.h"
 #include "configobject.h"
 
 class ControlObject;
@@ -31,8 +32,7 @@ class ControlPushButton;
 
 class EngineChannel : public EngineObject {
     Q_OBJECT
-    Q_ENUMS(EngineChannel::ChannelOrientation);
-    Q_PROPERTY(ChannelOrientation orientation READ getOrientation WRITE setOrientation NOTIFY orientationChanged);
+    Q_ENUMS(ChannelOrientation);
     Q_PROPERTY(QString group READ getGroup NOTIFY groupChanged);
     Q_PROPERTY(bool pflEnabled READ isPflEnabled WRITE setPfl NOTIFY pflEnabledChanged);
     Q_PROPERTY(bool masterEnabled READ isMasterEnabled WRITE setMaster NOTIFY masterEnabledChanged);
@@ -75,6 +75,7 @@ class EngineChannel : public EngineObject {
     const ChannelHandleAndGroup m_group;
     ControlPushButton* m_pMaster;
     ControlPushButton* m_pPFL;
+//    StateVar<enum ChannelOrientation>  m_orientation;
     ControlPushButton* m_pOrientation;
     ControlPushButton* m_pOrientationLeft;
     ControlPushButton* m_pOrientationRight;

@@ -32,10 +32,10 @@ EngineDelay::EngineDelay(const char* group, ConfigKey delayControl, QObject *pPa
     m_pDelayPot = new ControlPotmeter(delayControl, 0, kdMaxDelayPot, false, true, false, 0.0, true);
     m_pDelayPot->setDefaultValue(0);
     connect(m_pDelayPot, SIGNAL(valueChanged(double)), this,
-            SLOT(slotDelayChanged()), Qt::DirectConnection);
+            SLOT(onDelayChanged()), Qt::DirectConnection);
 
     m_pSampleRate = new ControlObjectSlave(group, "samplerate", this);
-    m_pSampleRate->connectValueChanged(SLOT(slotDelayChanged()), Qt::DirectConnection);
+    m_pSampleRate->connectValueChanged(SLOT(onDelayChanged()), Qt::DirectConnection);
 }
 
 EngineDelay::~EngineDelay() {
@@ -43,7 +43,7 @@ EngineDelay::~EngineDelay() {
     delete m_pDelayPot;
 }
 
-void EngineDelay::slotDelayChanged() {
+void EngineDelay::onDelayChanged() {
     double newDelay = m_pDelayPot->get();
     double sampleRate = m_pSampleRate->get();
 

@@ -219,6 +219,7 @@ void ControlPushButtonBehavior::setValueFromParameter(
             double value = pControl->get();
             pControl->set(!value, NULL);
             m_pushTimer.setSingleShot(true);
+            m_pushTimer.setTimerType(Qt::PreciseTimer);
             m_pushTimer.start(kPowerWindowTimeMillis);
         } else if (!m_pushTimer.isActive()) {
             // Disable after releasing a long press

@@ -24,7 +24,7 @@ void WTrackProperty::setup(QDomNode node, const SkinContext& context) {
     m_property = context.selectString(node, "Property");
 }
 
-void WTrackProperty::slotTrackLoaded(TrackPointer track) {
+void WTrackProperty::onTrackLoaded(TrackPointer track) {
     if (track) {
         m_pCurrentTrack = track;
         connect(track.data(), SIGNAL(changed(TrackInfoObject*)),
@@ -33,7 +33,7 @@ void WTrackProperty::slotTrackLoaded(TrackPointer track) {
     }
 }
 
-void WTrackProperty::slotTrackUnloaded(TrackPointer track) {
+void WTrackProperty::onTrackUnloaded(TrackPointer track) {
     Q_UNUSED(track);
     if (m_pCurrentTrack) {
         disconnect(m_pCurrentTrack.data(), 0, this, 0);

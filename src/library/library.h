@@ -77,21 +77,21 @@ public:
     static const int kDefaultRowHeightPx;
 
   public slots:
-    void slotShowTrackModel(QAbstractItemModel* model);
-    void slotSwitchToView(const QString& view);
-    void slotLoadTrack(TrackPointer pTrack);
-    void slotLoadTrackToPlayer(TrackPointer pTrack, QString group, bool play);
-    void slotLoadLocationToPlayer(QString location, QString group);
-    void slotRestoreSearch(const QString& text);
-    void slotRefreshLibraryModels();
-    void slotCreatePlaylist();
-    void slotCreateCrate();
-    void slotRequestAddDir(QString directory);
-    void slotRequestRemoveDir(QString directory, Library::RemovalType removalType);
-    void slotRequestRelocateDir(QString previousDirectory, QString newDirectory);
+    void onShowTrackModel(QAbstractItemModel* model);
+    void onSwitchToView(const QString& view);
+    void onLoadTrack(TrackPointer pTrack);
+    void onLoadTrackToPlayer(TrackPointer pTrack, QString group, bool play);
+    void onLoadLocationToPlayer(QString location, QString group);
+    void onRestoreSearch(const QString& text);
+    void onRefreshLibraryModels();
+    void onCreatePlaylist();
+    void onCreateCrate();
+    void onRequestAddDir(QString directory);
+    void onRequestRemoveDir(QString directory, Library::RemovalType removalType);
+    void onRequestRelocateDir(QString previousDirectory, QString newDirectory);
     void onSkinLoadFinished();
-    void slotSetTrackTableFont(const QFont& font);
-    void slotSetTrackTableRowHeight(int rowHeight);
+    void onSetTrackTableFont(const QFont& font);
+    void onSetTrackTableRowHeight(int rowHeight);
 
   signals:
     void showTrackModel(QAbstractItemModel* model);

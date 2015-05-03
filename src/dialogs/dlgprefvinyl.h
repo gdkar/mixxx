@@ -35,22 +35,22 @@ class DlgPrefVinyl : public DlgPreferencePage, Ui::DlgPrefVinylDlg  {
     virtual ~DlgPrefVinyl();
 
   public slots:
-    void slotUpdate();
-    void slotApply();
-    void slotResetToDefaults();
+    void onUpdate();
+    void onApply();
+    void onResetToDefaults();
 
-    void slotHide();
-    void slotShow();
+    void onHide();
+    void onShow();
     void VinylTypeSlotApply();
-    void slotVinylGainApply();
-    void slotUpdateVinylGain();
+    void onVinylGainApply();
+    void onUpdateVinylGain();
 
   private slots:
-    void slotNumDecksChanged(double);
-    void slotVinylType1Changed(QString);
-    void slotVinylType2Changed(QString);
-    void slotVinylType3Changed(QString);
-    void slotVinylType4Changed(QString);
+    void onNumDecksChanged(double);
+    void onVinylType1Changed(QString);
+    void onVinylType2Changed(QString);
+    void onVinylType3Changed(QString);
+    void onVinylType4Changed(QString);
 
   private:
     void setDeckWidgetsVisible(int deck, bool visible);

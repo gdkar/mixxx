@@ -63,17 +63,17 @@ class DlgControllerLearning : public QDialog,
     void controlClicked(ControlObject* pControl);
     void comboboxIndexChanged(int index);
 
-    void slotMessageReceived(unsigned char status,
+    void onMessageReceived(unsigned char status,
                              unsigned char control,
                              unsigned char value);
 
-    void slotCancelLearn();
-    void slotChooseControlPressed();
-    void slotTimerExpired();
+    void onCancelLearn();
+    void onChooseControlPressed();
+    void onTimerExpired();
     void slotFirstMessageTimeout();
-    void slotRetry();
-    void slotStartLearningPressed();
-    void slotMidiOptionsChanged();
+    void onRetry();
+    void onStartLearningPressed();
+    void onMidiOptionsChanged();
 
   private slots:
     void showControlMenu();

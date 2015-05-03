@@ -36,7 +36,7 @@ LibraryScannerDlg::LibraryScannerDlg(QWidget* parent, Qt::WindowFlags f)
 
     QPushButton* pCancel = new QPushButton(tr("Cancel"), this);
     connect(pCancel, SIGNAL(clicked()),
-            this, SLOT(slotCancel()));
+            this, SLOT(onCancel()));
     pLayout->addWidget(pCancel);
 
     QLabel* pCurrent = new QLabel(this);
@@ -53,8 +53,8 @@ LibraryScannerDlg::LibraryScannerDlg(QWidget* parent, Qt::WindowFlags f)
 LibraryScannerDlg::~LibraryScannerDlg() {
 }
 
-void LibraryScannerDlg::slotUpdate(QString path) {
-    //qDebug() << "LibraryScannerDlg slotUpdate" << m_timer.elapsed() << path;
+void LibraryScannerDlg::onUpdate(QString path) {
+    //qDebug() << "LibraryScannerDlg onUpdate" << m_timer.elapsed() << path;
     if (!m_bCancelled && m_timer.elapsed() > 2000) {
        setVisible(true);
     }
@@ -65,8 +65,8 @@ void LibraryScannerDlg::slotUpdate(QString path) {
     }
 }
 
-void LibraryScannerDlg::slotUpdateCover(QString path) {
-    //qDebug() << "LibraryScannerDlg slotUpdate" << m_timer.elapsed() << path;
+void LibraryScannerDlg::onUpdateCover(QString path) {
+    //qDebug() << "LibraryScannerDlg onUpdate" << m_timer.elapsed() << path;
     if (!m_bCancelled && m_timer.elapsed() > 2000) {
        setVisible(true);
     }
@@ -79,20 +79,20 @@ void LibraryScannerDlg::slotUpdateCover(QString path) {
     }
 }
 
-void LibraryScannerDlg::slotCancel() {
+void LibraryScannerDlg::onCancel() {
     qDebug() << "Cancelling library scan...";
     m_bCancelled = true;
     emit(scanCancelled());
     hide();
 }
 
-void LibraryScannerDlg::slotScanStarted() {
+void LibraryScannerDlg::onScanStarted() {
     m_bCancelled = false;
     m_timer.start();
 }
 
-void LibraryScannerDlg::slotScanFinished() {
-    // Raise this flag to prevent any latent slotUpdates() from showing the
+void LibraryScannerDlg::onScanFinished() {
+    // Raise this flag to prevent any latent onUpdates() from showing the
     // dialog again.
     m_bCancelled = true;
 

@@ -32,11 +32,11 @@ class RecordingManager : public QObject
     virtual ~RecordingManager();
 
 
-    // This will try to start recording. If successful, slotIsRecording will be
+    // This will try to start recording. If successful, onIsRecording will be
     // called and a signal isRecording will be emitted.
     // Parameter semantic: If true, the method computes the filename based on
     // date/time information. This is the default behavior. If false,
-    // slotBytesRecorded just noticed that recording must be interrupted
+    // onBytesRecorded just noticed that recording must be interrupted
     // to split the file. The nth filename will follow the date/time
     // name of the first split but with a suffix.
     void startRecording(bool generateFileName=true);
@@ -55,13 +55,13 @@ class RecordingManager : public QObject
     void durationRecorded(QString);
 
   public slots:
-    void slotIsRecording(bool);
-    void slotBytesRecorded(int);
-    void slotDurationRecorded(QString);
+    void onIsRecording(bool);
+    void onBytesRecorded(int);
+    void onDurationRecorded(QString);
 
   private slots:
-    void slotSetRecording(bool recording);
-    void slotToggleRecording(double v);
+    void onSetRecording(bool recording);
+    void onToggleRecording(double v);
 
   private:
     QString formatDateTimeForFilename(QDateTime dateTime) const;

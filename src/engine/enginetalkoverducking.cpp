@@ -9,14 +9,14 @@ EngineTalkoverDucking::EngineTalkoverDucking(
       m_pConfig(pConfig),
       m_group(group) {
     m_pMasterSampleRate = new ControlObjectSlave(m_group, "samplerate", this);
-    m_pMasterSampleRate->connectValueChanged(SLOT(slotSampleRateChanged(double)),
+    m_pMasterSampleRate->connectValueChanged(SLOT(onSampleRateChanged(double)),
                                              Qt::DirectConnection);
 
     m_pDuckStrength = new ControlPotmeter(ConfigKey(m_group, "duckStrength"), 0.0, 1.0);
     m_pDuckStrength->set(
             m_pConfig->getValueString(ConfigKey(m_group, "duckStrength"), "90").toDouble() / 100);
     connect(m_pDuckStrength, SIGNAL(valueChanged(double)),
-            this, SLOT(slotDuckStrengthChanged(double)),
+            this, SLOT(onDuckStrengthChanged(double)),
             Qt::DirectConnection);
 
     // We only allow the strength to be configurable for now.  The next most likely
@@ -35,7 +35,7 @@ EngineTalkoverDucking::EngineTalkoverDucking(
             m_pConfig->getValueString(
                 ConfigKey(m_group, "duckMode"), QString::number(AUTO)).toDouble());
     connect(m_pTalkoverDucking, SIGNAL(valueChanged(double)),
-            this, SLOT(slotDuckModeChanged(double)),
+            this, SLOT(onDuckModeChanged(double)),
             Qt::DirectConnection);
 }
 
@@ -47,20 +47,20 @@ EngineTalkoverDucking::~EngineTalkoverDucking() {
     delete m_pTalkoverDucking;
 }
 
-void EngineTalkoverDucking::slotSampleRateChanged(double samplerate) {
+void EngineTalkoverDucking::onSampleRateChanged(double samplerate) {
     setParameters(
             DUCK_THRESHOLD, m_pDuckStrength->get(),
             samplerate / 2 * .1, samplerate / 2);
 }
 
-void EngineTalkoverDucking::slotDuckStrengthChanged(double strength) {
+void EngineTalkoverDucking::onDuckStrengthChanged(double strength) {
     setParameters(
             DUCK_THRESHOLD, strength,
             m_pMasterSampleRate->get() / 2 * .1, m_pMasterSampleRate->get() / 2);
     m_pConfig->set(ConfigKey(m_group, "duckStrength"), ConfigValue(strength * 100));
 }
 
-void EngineTalkoverDucking::slotDuckModeChanged(double mode) {
+void EngineTalkoverDucking::onDuckModeChanged(double mode) {
    m_pConfig->set(ConfigKey(m_group, "duckMode"), ConfigValue(mode));
 }
 

@@ -45,6 +45,7 @@ WaveformWidgetRenderer::WaveformWidgetRenderer(const char* group)
 
 #ifdef WAVEFORMWIDGETRENDERER_DEBUG
     m_timer = new QTime();
+    m_timer->setTimerType(Qt::PreciseTimer);
     currentFrame = 0;
     m_lastFrameTime = 0;
     m_lastSystemFrameTime = 0;
@@ -167,25 +168,16 @@ void WaveformWidgetRenderer::draw(QPainter* painter, QPaintEvent* event) {
 #ifdef WAVEFORMWIDGETRENDERER_DEBUG
     m_lastSystemFrameTime = m_timer->restart();
 #endif
-
     //PerformanceTimer timer;
     //timer.start();
-
     // not ready to display need to wait until track initialization is done
     // draw only first is stack (background)
     int stackSize = m_rendererStack.size();
     if (m_trackSamples <= 0.0 || m_playPos == -1) {
-        if (stackSize) {
-            m_rendererStack.at(0)->draw(painter, event);
-        }
-        return;
+        if (stackSize) {m_rendererStack.at(0)->draw(painter, event);}return;
     } else {
-        for (int i = 0; i < stackSize; i++) {
-            // qDebug() << i << " a  " << timer.restart();
-            m_rendererStack.at(i)->draw(painter, event);
-            // qDebug() << i << " e " << timer.restart();
-        }
-
+        for (int i = 0; i < stackSize; i++) 
+          {m_rendererStack.at(i)->draw(painter, event);}
         painter->setPen(m_colors.getPlayPosColor());
         painter->drawLine(m_width/2,0,m_width/2,m_height);
         painter->setOpacity(0.5);
@@ -218,15 +210,12 @@ void WaveformWidgetRenderer::draw(QPainter* painter, QPaintEvent* event) {
                       QString::number(m_gain) + " | " +
                       QString::number(m_rateDir) + " | " +
                       QString::number(m_zoomFactor));
-
     m_lastFrameTime = m_timer->restart();
-
     ++currentFrame;
     currentFrame = currentFrame%100;
     m_lastSystemFramesTime[currentFrame] = m_lastSystemFrameTime;
     m_lastFramesTime[currentFrame] = m_lastFrameTime;
 #endif
-
     //qDebug() << "draw() ende" << timer.restart();
 }
 
@@ -241,9 +230,8 @@ void WaveformWidgetRenderer::resize(int width, int height) {
 
 void WaveformWidgetRenderer::setup(const QDomNode& node, const SkinContext& context) {
     m_colors.setup(node, context);
-    for (int i = 0; i < m_rendererStack.size(); ++i) {
-        m_rendererStack[i]->setup(node, context);
-    }
+    for (int i = 0; i < m_rendererStack.size(); ++i) 
+      {m_rendererStack[i]->setup(node, context);}
 }
 
 void WaveformWidgetRenderer::setZoom(int zoom) {
@@ -256,7 +244,6 @@ void WaveformWidgetRenderer::setTrack(TrackPointer track) {
     //used to postpone first display until track sample is actually available
     m_trackSamples = -1.0;
 
-    for (int i = 0; i < m_rendererStack.size(); ++i) {
-        m_rendererStack[i]->onSetTrack();
-    }
+    for (int i = 0; i < m_rendererStack.size(); ++i) 
+      {m_rendererStack[i]->onSetTrack();}
 }

@@ -24,17 +24,17 @@ EffectParameterSlot::EffectParameterSlot(const QString& group, const unsigned in
             ConfigKey(m_group, itemPrefix + QString("_type")));
 
     m_pControlLinkType->connectValueChangeRequest(
-            this, SLOT(slotLinkTypeChanging(double)));
+            this, SLOT(onLinkTypeChanging(double)));
     connect(m_pControlLinkInverse, SIGNAL(valueChanged(double)),
-            this, SLOT(slotLinkInverseChanged(double)));
+            this, SLOT(onLinkInverseChanged(double)));
     connect(m_pControlValue, SIGNAL(valueChanged(double)),
-            this, SLOT(slotValueChanged(double)));
+            this, SLOT(onValueChanged(double)));
 
     // Read-only controls.
     m_pControlType->connectValueChangeRequest(
-            this, SLOT(slotValueType(double)));
+            this, SLOT(onValueType(double)));
     m_pControlLoaded->connectValueChangeRequest(
-            this, SLOT(slotLoaded(double)));
+            this, SLOT(onLoaded(double)));
 
 
     m_pSoftTakeover = new SoftTakeover();
@@ -94,7 +94,7 @@ void EffectParameterSlot::loadEffect(EffectPointer pEffect) {
             }
 
             connect(m_pEffectParameter, SIGNAL(valueChanged(double)),
-                    this, SLOT(slotParameterValueChanged(double)));
+                    this, SLOT(onParameterValueChanged(double)));
         }
     }
     emit(updated());
@@ -117,12 +117,12 @@ void EffectParameterSlot::clear() {
     emit(updated());
 }
 
-void EffectParameterSlot::slotParameterValueChanged(double value) {
-    //qDebug() << debugString() << "slotParameterValueChanged" << value.toDouble();
+void EffectParameterSlot::onParameterValueChanged(double value) {
+    //qDebug() << debugString() << "onParameterValueChanged" << value.toDouble();
     m_pControlValue->set(value);
 }
 
-void EffectParameterSlot::slotLinkTypeChanging(double v) {
+void EffectParameterSlot::onLinkTypeChanging(double v) {
     m_pSoftTakeover->ignoreNext();
     if (v > EffectManifestParameter::LINK_LINKED) {
         double neutral = m_pEffectParameter->getNeutralPointOnScale();
@@ -144,7 +144,7 @@ void EffectParameterSlot::slotLinkTypeChanging(double v) {
     m_pControlLinkType->setAndConfirm(v);
 }
 
-void EffectParameterSlot::slotLinkInverseChanged(double v) {
+void EffectParameterSlot::onLinkInverseChanged(double v) {
     Q_UNUSED(v);
     m_pSoftTakeover->ignoreNext();
 }
@@ -245,7 +245,7 @@ double EffectParameterSlot::getValueParameter() const {
     return m_pControlValue->getParameter();
 }
 
-void EffectParameterSlot::slotValueChanged(double v) {
+void EffectParameterSlot::onValueChanged(double v) {
     if (m_pEffectParameter) {
         m_pEffectParameter->setValue(v);
     }

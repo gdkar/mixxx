@@ -157,7 +157,7 @@ void ControllerEngine::gracefulShutdown() {
         ControlObjectThread* pScratch2Enable =
                 getControlObjectThread(group, "scratch2_enable");
         if (pScratch2Enable != NULL) {
-            pScratch2Enable->slotSet(0);
+            pScratch2Enable->onSet(0);
         }
     }
 
@@ -649,7 +649,7 @@ void ControllerEngine::setValue(QString group, QString name, double newValue) {
     if (cot != NULL) {
         ControlObject* pControl = ControlObject::getControl(cot->getKey());
         if (pControl && !m_st.ignore(pControl, cot->getParameterForValue(newValue))) {
-            cot->slotSet(newValue);
+            cot->onSet(newValue);
         }
     }
 }
@@ -845,10 +845,10 @@ QScriptValue ControllerEngine::connectControl(QString group, QString name,
     if (function.isFunction()) {
         qDebug() << "Connection:" << group << name;
         connect(cot, SIGNAL(valueChanged(double)),
-                this, SLOT(slotValueChanged(double)),
+                this, SLOT(onValueChanged(double)),
                 Qt::QueuedConnection);
         connect(cot, SIGNAL(valueChangedByThis(double)),
-                this, SLOT(slotValueChanged(double)),
+                this, SLOT(onValueChanged(double)),
                 Qt::QueuedConnection);
 
         ControllerEngineConnection conn;
@@ -899,9 +899,9 @@ void ControllerEngine::disconnectControl(const ControllerEngineConnection conn) 
         // Only disconnect the signal if there are no other instances of this control using it
         if (!m_connectedControls.contains(conn.key)) {
             disconnect(cot, SIGNAL(valueChanged(double)),
-                       this, SLOT(slotValueChanged(double)));
+                       this, SLOT(onValueChanged(double)));
             disconnect(cot, SIGNAL(valueChangedByThis(double)),
-                       this, SLOT(slotValueChanged(double)));
+                       this, SLOT(onValueChanged(double)));
         }
     } else {
         qWarning() << "Could not Disconnect connection" << conn.id;
@@ -916,10 +916,10 @@ void ControllerEngineConnectionScriptValue::disconnect() {
    Purpose: Receives valueChanged() slots from ControlObjects, and
    fires off the appropriate script function.
    -------- ------------------------------------------------------ */
-void ControllerEngine::slotValueChanged(double value) {
+void ControllerEngine::onValueChanged(double value) {
     ControlObjectThread* senderCOT = dynamic_cast<ControlObjectThread*>(sender());
     if (senderCOT == NULL) {
-        qWarning() << "ControllerEngine::slotValueChanged() Shouldn't happen -- sender == NULL";
+        qWarning() << "ControllerEngine::onValueChanged() Shouldn't happen -- sender == NULL";
         return;
     }
 
@@ -953,7 +953,7 @@ void ControllerEngine::slotValueChanged(double value) {
             }
         }
     } else {
-        qWarning() << "ControllerEngine::slotValueChanged() Received signal from ControlObject that is not connected to a script function.";
+        qWarning() << "ControllerEngine::onValueChanged() Received signal from ControlObject that is not connected to a script function.";
     }
 }
 
@@ -1095,7 +1095,7 @@ int ControllerEngine::beginTimer(int interval, QScriptValue timerCallback,
     // This makes use of every QObject's internal timer mechanism. Nice, clean,
     // and simple. See http://doc.trolltech.com/4.6/qobject.html#startTimer for
     // details
-    int timerId = startTimer(interval);
+    int timerId = startTimer(interval,Qt::PreciseTimer);
     TimerInfo info;
     info.callback = timerCallback;
     QScriptContext *ctxt = m_pEngine->currentContext();
@@ -1285,7 +1285,7 @@ void ControllerEngine::scratchEnable(int deck, int intervalsPerRev, double rpm,
 
     // Set scratch2_enable
     if (pScratch2Enable != NULL) {
-        pScratch2Enable->slotSet(1);
+        pScratch2Enable->onSet(1);
     }
 }
 
@@ -1338,7 +1338,7 @@ void ControllerEngine::scratchProcess(int timerId) {
     if (pScratch2 == NULL) {
         return; // abort and maybe it'll work on the next pass
     }
-    pScratch2->slotSet(newRate);
+    pScratch2->onSet(newRate);
 
     // Reset accumulator
     m_intervalAccumulator[deck] = 0;
@@ -1355,10 +1355,10 @@ void ControllerEngine::scratchProcess(int timerId) {
 
         if (m_brakeActive[deck]) {
             // If in brake mode, set scratch2 rate to 0 and turn off the play button.
-            pScratch2->slotSet(0.0);
+            pScratch2->onSet(0.0);
             ControlObjectThread* pPlay = getControlObjectThread(group, "play");
             if (pPlay != NULL) {
-                pPlay->slotSet(0.0);
+                pPlay->onSet(0.0);
             }
         }
 
@@ -1368,7 +1368,7 @@ void ControllerEngine::scratchProcess(int timerId) {
         if (pScratch2Enable == NULL) {
             return; // abort and maybe it'll work on the next pass
         }
-        pScratch2Enable->slotSet(0);
+        pScratch2Enable->onSet(0);
 
         // Remove timer
         killTimer(timerId);
@@ -1395,7 +1395,7 @@ void ControllerEngine::scratchDisable(int deck, bool ramp) {
         // Clear scratch2_enable
         ControlObjectThread* pScratch2Enable = getControlObjectThread(group, "scratch2_enable");
         if (pScratch2Enable != NULL) {
-            pScratch2Enable->slotSet(0);
+            pScratch2Enable->onSet(0);
         }
         // Can't return here because we need scratchProcess to stop the timer.
         // So it's still actually ramping, we just won't hear or see it.
@@ -1468,7 +1468,7 @@ void ControllerEngine::brake(int deck, bool activate, double factor, double rate
     // enable/disable scratch2 mode
     ControlObjectThread* pScratch2Enable = getControlObjectThread(group, "scratch2_enable");
     if (pScratch2Enable != NULL) {
-        pScratch2Enable->slotSet(activate ? 1 : 0);
+        pScratch2Enable->onSet(activate ? 1 : 0);
     }
 
     // used in scratchProcess for the different timer behavior we need
@@ -1485,7 +1485,7 @@ void ControllerEngine::brake(int deck, bool activate, double factor, double rate
 
         ControlObjectThread* pScratch2 = getControlObjectThread(group, "scratch2");
         if (pScratch2 != NULL) {
-            pScratch2->slotSet(rate);
+            pScratch2->onSet(rate);
         }
 
         // setup the filter using the default values of alpha and beta

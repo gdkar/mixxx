@@ -18,7 +18,6 @@ class SkinLoader {
   public:
     SkinLoader(ConfigObject<ConfigValue>* pConfig);
     virtual ~SkinLoader();
-
     QWidget* loadDefaultSkin(QWidget* pParent,
                              MixxxKeyboard* pKeyboard,
                              PlayerManager* pPlayerManager,
@@ -26,16 +25,13 @@ class SkinLoader {
                              Library* pLibrary,
                              VinylControlManager* pVCMan,
                              EffectsManager* pEffectsManager);
-
     QString getSkinPath();
     QList<QDir> getSkinSearchPaths();
-
   private:
     QString getConfiguredSkinPath();
     QString getDefaultSkinName() const;
     QString getDefaultSkinPath();
     QString pickResizableSkin(QString oldSkin);
-
     ConfigObject<ConfigValue>* m_pConfig;
 };
 

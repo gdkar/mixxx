@@ -71,11 +71,11 @@ class DeckAttributes : public QObject {
     void trackUnloaded(DeckAttributes* deck, TrackPointer pTrack);
 
   private slots:
-    void slotPlayPosChanged(double v);
-    void slotPlayChanged(double v);
-    void slotTrackLoaded(TrackPointer pTrack);
-    void slotTrackLoadFailed(TrackPointer pTrack);
-    void slotTrackUnloaded(TrackPointer pTrack);
+    void onPlayPosChanged(double v);
+    void onPlayChanged(double v);
+    void onTrackLoaded(TrackPointer pTrack);
+    void onTrackLoadFailed(TrackPointer pTrack);
+    void onTrackUnloaded(TrackPointer pTrack);
 
   public:
     int index;

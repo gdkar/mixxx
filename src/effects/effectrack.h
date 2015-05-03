@@ -49,8 +49,8 @@ class EffectRack : public QObject {
     }
 
   public slots:
-    void slotClearRack(double v);
-    void slotNumEffectChainSlots(double v);
+    void onClearRack(double v);
+    void onNumEffectChainSlots(double v);
 
   private slots:
     void loadNextChain(const unsigned int iChainSlotNumber,

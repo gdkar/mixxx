@@ -33,9 +33,9 @@ class CoverArtDelegate : public QStyledItemDelegate {
     // in these cases 'paint()' would be called very often
     // and it might make CoverDelegate starts many searches,
     // which could bring performance issues.
-    void slotOnlyCachedCoverArt(bool b);
+    void onOnlyCachedCoverArt(bool b);
 
-    void slotCoverFound(const QObject* pRequestor,
+    void onCoverFound(const QObject* pRequestor,
                         int requestReference,
                         const CoverInfo& info,
                         QPixmap pixmap, bool fromCache);

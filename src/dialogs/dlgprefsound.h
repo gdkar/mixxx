@@ -54,9 +54,9 @@ class DlgPrefSound : public DlgPreferencePage, public Ui::DlgPrefSoundDlg  {
     void updatedAPI();
 
   public slots:
-    void slotUpdate(); // called on show
-    void slotApply();  // called on ok button
-    void slotResetToDefaults();
+    void onUpdate(); // called on show
+    void onApply();  // called on ok button
+    void onResetToDefaults();
     void bufferUnderflow(double count);
     void masterLatencyChanged(double latency);
     void headDelayChanged(double value);

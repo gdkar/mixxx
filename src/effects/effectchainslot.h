@@ -31,7 +31,7 @@ class EffectChainSlot : public QObject {
 
     unsigned int numSlots() const;
     EffectSlotPointer addEffectSlot(const QString& group);
-    EffectSlotPointer getEffectSlot(unsigned int slotNumber);
+    EffectSlotPointer getEffectSlot(unsigned int onNumber);
 
     void loadEffectChain(EffectChainPointer pEffectChain);
     EffectChainPointer getEffectChain() const;
@@ -52,11 +52,11 @@ class EffectChainSlot : public QObject {
     }
 
   signals:
-    // Indicates that the effect pEffect has been loaded into slotNumber of
+    // Indicates that the effect pEffect has been loaded into onNumber of
     // EffectChainSlot chainNumber. pEffect may be an invalid pointer, which
     // indicates that a previously loaded effect was removed from the slot.
     void effectLoaded(EffectPointer pEffect, unsigned int chainNumber,
-                      unsigned int slotNumber);
+                      unsigned int onNumber);
 
     // Indicates that the given EffectChain was loaded into this
     // EffectChainSlot
@@ -93,30 +93,30 @@ class EffectChainSlot : public QObject {
 
 
   private slots:
-    void slotChainEffectsChanged(bool shouldEmit=true);
-    void slotChainNameChanged(const QString& name);
-    void slotChainSuperParameterChanged(double parameter);
-    void slotChainEnabledChanged(bool enabled);
-    void slotChainMixChanged(double mix);
-    void slotChainInsertionTypeChanged(EffectChain::InsertionType type);
-    void slotChainChannelStatusChanged(const QString& group, bool enabled);
+    void onChainEffectsChanged(bool shouldEmit=true);
+    void onChainNameChanged(const QString& name);
+    void onChainSuperParameterChanged(double parameter);
+    void onChainEnabledChanged(bool enabled);
+    void onChainMixChanged(double mix);
+    void onChainInsertionTypeChanged(EffectChain::InsertionType type);
+    void onChainChannelStatusChanged(const QString& group, bool enabled);
 
-    void slotEffectLoaded(EffectPointer pEffect, unsigned int slotNumber);
+    void onEffectLoaded(EffectPointer pEffect, unsigned int onNumber);
     // Clears the effect in the given position in the loaded EffectChain.
-    void slotClearEffect(unsigned int iEffectSlotNumber);
+    void onClearEffect(unsigned int iEffectSlotNumber);
 
-    void slotControlClear(double v);
-    void slotControlNumEffects(double v);
-    void slotControlNumEffectSlots(double v);
-    void slotControlChainLoaded(double v);
-    void slotControlChainEnabled(double v);
-    void slotControlChainMix(double v);
-    void slotControlChainSuperParameter(double v);
-    void slotControlChainInsertionType(double v);
-    void slotControlChainSelector(double v);
-    void slotControlChainNextPreset(double v);
-    void slotControlChainPrevPreset(double v);
-    void slotChannelStatusChanged(const QString& group);
+    void onControlClear(double v);
+    void onControlNumEffects(double v);
+    void onControlNumEffectSlots(double v);
+    void onControlChainLoaded(double v);
+    void onControlChainEnabled(double v);
+    void onControlChainMix(double v);
+    void onControlChainSuperParameter(double v);
+    void onControlChainInsertionType(double v);
+    void onControlChainSelector(double v);
+    void onControlChainNextPreset(double v);
+    void onControlChainPrevPreset(double v);
+    void onChannelStatusChanged(const QString& group);
 
   private:
     QString debugString() const {

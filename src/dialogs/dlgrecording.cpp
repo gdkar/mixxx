@@ -33,11 +33,11 @@ DlgRecording::DlgRecording(QWidget* parent, ConfigObject<ConfigValue>* pConfig,
             m_pTrackTableView, SLOT(setTrackTableRowHeight(int)));
 
     connect(m_pRecordingManager, SIGNAL(isRecording(bool)),
-            this, SLOT(slotRecordingEnabled(bool)));
+            this, SLOT(onRecordingEnabled(bool)));
     connect(m_pRecordingManager, SIGNAL(bytesRecorded(long)),
-            this, SLOT(slotBytesRecorded(long)));
+            this, SLOT(onBytesRecorded(long)));
     connect(m_pRecordingManager, SIGNAL(durationRecorded(QString)),
-            this, SLOT(slotDurationRecorded(QString)));
+            this, SLOT(onDurationRecorded(QString)));
 
     QBoxLayout* box = dynamic_cast<QBoxLayout*>(layout());
     DEBUG_ASSERT_AND_HANDLE(box) { //Assumes the form layout is a QVBox/QHBoxLayout!
@@ -76,7 +76,7 @@ void DlgRecording::onSearch(const QString& text) {
     m_proxyModel.search(text);
 }
 
-void DlgRecording::slotRestoreSearch() {
+void DlgRecording::onRestoreSearch() {
     emit(restoreSearch(currentSearch()));
 }
 
@@ -84,12 +84,12 @@ void DlgRecording::loadSelectedTrack() {
     m_pTrackTableView->loadSelectedTrack();
 }
 
-void DlgRecording::slotSendToAutoDJ() {
-    m_pTrackTableView->slotSendToAutoDJ();
+void DlgRecording::onSendToAutoDJ() {
+    m_pTrackTableView->onSendToAutoDJ();
 }
 
-void DlgRecording::slotSendToAutoDJTop() {
-    m_pTrackTableView->slotSendToAutoDJTop();
+void DlgRecording::onSendToAutoDJTop() {
+    m_pTrackTableView->onSendToAutoDJTop();
 }
 
 void DlgRecording::loadSelectedTrackToGroup(QString group, bool play) {
@@ -114,7 +114,7 @@ void DlgRecording::toggleRecording(bool toggle) {
     }
 }
 
-void DlgRecording::slotRecordingEnabled(bool isRecording) {
+void DlgRecording::onRecordingEnabled(bool isRecording) {
     if (isRecording) {
         pushButtonRecording->setText((tr("Stop Recording")));
     } else {
@@ -126,14 +126,14 @@ void DlgRecording::slotRecordingEnabled(bool isRecording) {
 }
 
 // gets number of recorded bytes and update label
-void DlgRecording::slotBytesRecorded(long bytes) {
+void DlgRecording::onBytesRecorded(long bytes) {
     double megabytes = bytes / 1048576.0;
     m_bytesRecordedStr = QString::number(megabytes,'f',2);
     refreshLabel();
 }
 
 // gets recorded duration and update label
-void DlgRecording::slotDurationRecorded(QString durationRecorded) {
+void DlgRecording::onDurationRecorded(QString durationRecorded) {
     m_durationRecordedStr = durationRecorded;
     refreshLabel();
 }

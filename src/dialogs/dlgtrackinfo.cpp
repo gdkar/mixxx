@@ -41,9 +41,9 @@ void DlgTrackInfo::init() {
     txtLocation->viewport()->setAutoFillBackground(false);
 
     connect(btnNext, SIGNAL(clicked()),
-            this, SLOT(slotNext()));
+            this, SLOT(onNext()));
     connect(btnPrev, SIGNAL(clicked()),
-            this, SLOT(slotPrev()));
+            this, SLOT(onPrev()));
     connect(btnApply, SIGNAL(clicked()),
             this, SLOT(apply()));
     connect(btnOK, SIGNAL(clicked()),
@@ -55,13 +55,13 @@ void DlgTrackInfo::init() {
             this, SLOT(fetchTag()));
 
     connect(bpmDouble, SIGNAL(clicked()),
-            this, SLOT(slotBpmDouble()));
+            this, SLOT(onBpmDouble()));
     connect(bpmHalve, SIGNAL(clicked()),
-            this, SLOT(slotBpmHalve()));
+            this, SLOT(onBpmHalve()));
     connect(bpmTwoThirds, SIGNAL(clicked()),
-            this, SLOT(slotBpmTwoThirds()));
+            this, SLOT(onBpmTwoThirds()));
     connect(bpmThreeFourth, SIGNAL(clicked()),
-            this, SLOT(slotBpmThreeFourth()));
+            this, SLOT(onBpmThreeFourth()));
 
     connect(btnCueActivate, SIGNAL(clicked()),
             this, SLOT(cueActivate()));
@@ -70,21 +70,21 @@ void DlgTrackInfo::init() {
     connect(bpmTap, SIGNAL(pressed()),
             m_pTapFilter.data(), SLOT(tap()));
     connect(m_pTapFilter.data(), SIGNAL(tapped(double, int)),
-            this, SLOT(slotBpmTap(double, int)));
+            this, SLOT(onBpmTap(double, int)));
     connect(btnReloadFromFile, SIGNAL(clicked()),
             this, SLOT(reloadTrackMetadata()));
     connect(btnOpenFileBrowser, SIGNAL(clicked()),
-            this, SLOT(slotOpenInFileBrowser()));
+            this, SLOT(onOpenInFileBrowser()));
 
     CoverArtCache* pCache = CoverArtCache::instance();
     if (pCache != NULL) {
         connect(pCache, SIGNAL(coverFound(const QObject*, const int, const CoverInfo&, QPixmap, bool)),
-                this, SLOT(slotCoverFound(const QObject*, const int, const CoverInfo&, QPixmap, bool)));
+                this, SLOT(onCoverFound(const QObject*, const int, const CoverInfo&, QPixmap, bool)));
     }
     connect(m_pWCoverArtLabel, SIGNAL(coverArtSelected(const CoverArt&)),
-            this, SLOT(slotCoverArtSelected(const CoverArt&)));
+            this, SLOT(onCoverArtSelected(const CoverArt&)));
     connect(m_pWCoverArtLabel, SIGNAL(reloadCoverArt()),
-            this, SLOT(slotReloadCoverArt()));
+            this, SLOT(onReloadCoverArt()));
 }
 
 void DlgTrackInfo::OK() {
@@ -105,11 +105,11 @@ void DlgTrackInfo::trackUpdated() {
 
 }
 
-void DlgTrackInfo::slotNext() {
+void DlgTrackInfo::onNext() {
     emit(next());
 }
 
-void DlgTrackInfo::slotPrev() {
+void DlgTrackInfo::onPrev() {
     emit(previous());
 }
 
@@ -198,31 +198,31 @@ void DlgTrackInfo::loadTrack(TrackPointer pTrack) {
             this, SLOT(updateTrackMetadata()));
 }
 
-void DlgTrackInfo::slotCoverFound(const QObject* pRequestor,
+void DlgTrackInfo::onCoverFound(const QObject* pRequestor,
                                   int requestReference, const CoverInfo& info,
                                   QPixmap pixmap, bool fromCache) {
     Q_UNUSED(fromCache);
     if (pRequestor == this && m_pLoadedTrack &&
             m_pLoadedTrack->getId() == requestReference) {
-        qDebug() << "DlgTrackInfo::slotPixmapFound" << pRequestor << info
+        qDebug() << "DlgTrackInfo::onPixmapFound" << pRequestor << info
                  << pixmap.size();
         m_pWCoverArtLabel->setCoverArt(m_pLoadedTrack, m_loadedCoverInfo, pixmap);
     }
 }
 
-void DlgTrackInfo::slotReloadCoverArt() {
+void DlgTrackInfo::onReloadCoverArt() {
     if (m_pLoadedTrack) {
         // TODO(rryan) move this out of the main thread. The issue is that
         // CoverArtCache::requestGuessCover mutates the provided track whereas
         // in DlgTrackInfo we delay changing the track until the user hits apply
         // (or cancels the edit).
         CoverArt art = CoverArtUtils::guessCoverArt(m_pLoadedTrack);
-        slotCoverArtSelected(art);
+        onCoverArtSelected(art);
     }
 }
 
-void DlgTrackInfo::slotCoverArtSelected(const CoverArt& art) {
-    qDebug() << "DlgTrackInfo::slotCoverArtSelected" << art;
+void DlgTrackInfo::onCoverArtSelected(const CoverArt& art) {
+    qDebug() << "DlgTrackInfo::onCoverArtSelected" << art;
     m_loadedCoverInfo = art.info;
     // TODO(rryan) don't use track ID as a reference
     int reference = 0;
@@ -236,7 +236,7 @@ void DlgTrackInfo::slotCoverArtSelected(const CoverArt& art) {
     }
 }
 
-void DlgTrackInfo::slotOpenInFileBrowser() {
+void DlgTrackInfo::onOpenInFileBrowser() {
     if (m_pLoadedTrack.isNull()) {
         return;
     }
@@ -443,23 +443,23 @@ void DlgTrackInfo::clear() {
     m_pWCoverArtLabel->setCoverArt(TrackPointer(), m_loadedCoverInfo, QPixmap());
 }
 
-void DlgTrackInfo::slotBpmDouble() {
+void DlgTrackInfo::onBpmDouble() {
     spinBpm->setValue(spinBpm->value() * 2.0);
 }
 
-void DlgTrackInfo::slotBpmHalve() {
+void DlgTrackInfo::onBpmHalve() {
     spinBpm->setValue(spinBpm->value() / 2.0);
 }
 
-void DlgTrackInfo::slotBpmTwoThirds() {
+void DlgTrackInfo::onBpmTwoThirds() {
     spinBpm->setValue(spinBpm->value() * (2./3.));
 }
 
-void DlgTrackInfo::slotBpmThreeFourth() {
+void DlgTrackInfo::onBpmThreeFourth() {
     spinBpm->setValue(spinBpm->value() * (3./4.));
 }
 
-void DlgTrackInfo::slotBpmTap(double averageLength, int numSamples) {
+void DlgTrackInfo::onBpmTap(double averageLength, int numSamples) {
     Q_UNUSED(numSamples);
     if (averageLength == 0) {
         return;

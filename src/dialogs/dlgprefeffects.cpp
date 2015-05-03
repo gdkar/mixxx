@@ -13,10 +13,10 @@ DlgPrefEffects::DlgPrefEffects(QWidget* pParent,
     connect(availableEffectsList,
             SIGNAL(currentItemChanged(QListWidgetItem*, QListWidgetItem*)),
             this,
-            SLOT(slotEffectSelected(QListWidgetItem*, QListWidgetItem*)));
+            SLOT(onEffectSelected(QListWidgetItem*, QListWidgetItem*)));
 }
 
-void DlgPrefEffects::slotUpdate() {
+void DlgPrefEffects::onUpdate() {
     clear();
     QStringList effectIds = m_pEffectsManager->getAvailableEffects();
 
@@ -39,11 +39,11 @@ void DlgPrefEffects::addEffectToList(const QString& effectId) {
     availableEffectsList->addItem(pItem);
 }
 
-void DlgPrefEffects::slotApply() {
+void DlgPrefEffects::onApply() {
     // Nothing to apply.
 }
 
-void DlgPrefEffects::slotResetToDefaults() {
+void DlgPrefEffects::onResetToDefaults() {
     // Nothing to reset.
 }
 
@@ -56,7 +56,7 @@ void DlgPrefEffects::clear() {
     effectType->clear();
 }
 
-void DlgPrefEffects::slotEffectSelected(QListWidgetItem* pCurrent,
+void DlgPrefEffects::onEffectSelected(QListWidgetItem* pCurrent,
                                         QListWidgetItem* pPrevious) {
     Q_UNUSED(pPrevious);
     if (pCurrent == NULL) {

@@ -32,8 +32,8 @@ class AnalyserQueue : public QThread {
             ConfigObject<ConfigValue>* pConfig, TrackCollection* pTrackCollection);
 
   public slots:
-    void slotAnalyseTrack(TrackPointer tio);
-    void slotUpdateProgress();
+    void onAnalyseTrack(TrackPointer tio);
+    void onUpdateProgress();
 
   signals:
     void trackProgress(int progress);

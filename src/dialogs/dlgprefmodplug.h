@@ -21,9 +21,9 @@ class DlgPrefModplug : public DlgPreferencePage {
 
   public slots:
     /** Apply changes to widget */
-    void slotApply();
-    void slotUpdate();
-    void slotResetToDefaults();
+    void onApply();
+    void onUpdate();
+    void onResetToDefaults();
 
     void loadSettings();
     void saveSettings();

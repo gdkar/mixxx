@@ -8,9 +8,9 @@ ControlIndicator::ControlIndicator(ConfigKey key)
     m_pCOTGuiTickTime = new ControlObjectThread("[Master]", "guiTickTime"); // Tick time in audio buffer resolution
     m_pCOTGuiTick50ms = new ControlObjectThread("[Master]", "guiTick50ms");
     connect(m_pCOTGuiTick50ms, SIGNAL(valueChanged(double)),
-            this, SLOT(slotGuiTick50ms(double)));
+            this, SLOT(onGuiTick50ms(double)));
     connect(this, SIGNAL(blinkValueChanged()),
-            this, SLOT(slotBlinkValueChanged()));
+            this, SLOT(onBlinkValueChanged()));
 }
 
 ControlIndicator::~ControlIndicator() {
@@ -25,7 +25,7 @@ void ControlIndicator::setBlinkValue(enum BlinkValue bv) {
     }
 }
 
-void ControlIndicator::slotGuiTick50ms(double cpuTime) {
+void ControlIndicator::onGuiTick50ms(double cpuTime) {
     if (m_nextSwitchTime <= cpuTime) {
         switch (m_blinkValue) {
         case RATIO1TO1_500MS:
@@ -45,7 +45,7 @@ void ControlIndicator::slotGuiTick50ms(double cpuTime) {
     }
 }
 
-void ControlIndicator::slotBlinkValueChanged() {
+void ControlIndicator::onBlinkValueChanged() {
     double oldValue = get();
 
     switch (m_blinkValue) {

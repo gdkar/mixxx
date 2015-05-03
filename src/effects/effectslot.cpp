@@ -16,23 +16,23 @@ EffectSlot::EffectSlot(const QString& group,
           m_group(group) {
     m_pControlLoaded = new ControlObject(ConfigKey(m_group, "loaded"));
     m_pControlLoaded->connectValueChangeRequest(
-        this, SLOT(slotLoaded(double)));
+        this, SLOT(onLoaded(double)));
 
     m_pControlNumParameters = new ControlObject(ConfigKey(m_group, "num_parameters"));
     m_pControlNumParameters->connectValueChangeRequest(
-        this, SLOT(slotNumParameters(double)));
+        this, SLOT(onNumParameters(double)));
 
     m_pControlNumParameterSlots = new ControlObject(ConfigKey(m_group, "num_parameterslots"));
     m_pControlNumParameterSlots->connectValueChangeRequest(
-        this, SLOT(slotNumParameterSlots(double)));
+        this, SLOT(onNumParameterSlots(double)));
 
     m_pControlNumButtonParameters = new ControlObject(ConfigKey(m_group, "num_button_parameters"));
     m_pControlNumButtonParameters->connectValueChangeRequest(
-        this, SLOT(slotNumParameters(double)));
+        this, SLOT(onNumParameters(double)));
 
     m_pControlNumButtonParameterSlots = new ControlObject(ConfigKey(m_group, "num_button_parameterslots"));
     m_pControlNumButtonParameterSlots->connectValueChangeRequest(
-        this, SLOT(slotNumParameterSlots(double)));
+        this, SLOT(onNumParameterSlots(double)));
 
     m_pControlEnabled = new ControlPushButton(ConfigKey(m_group, "enabled"));
     m_pControlEnabled->setButtonMode(ControlPushButton::POWERWINDOW);
@@ -40,24 +40,24 @@ EffectSlot::EffectSlot(const QString& group,
     m_pControlEnabled->setDefaultValue(true);
     m_pControlEnabled->set(true);
     connect(m_pControlEnabled, SIGNAL(valueChanged(double)),
-            this, SLOT(slotEnabled(double)));
+            this, SLOT(onEnabled(double)));
 
     m_pControlNextEffect = new ControlPushButton(ConfigKey(m_group, "next_effect"));
     connect(m_pControlNextEffect, SIGNAL(valueChanged(double)),
-            this, SLOT(slotNextEffect(double)));
+            this, SLOT(onNextEffect(double)));
 
     m_pControlPrevEffect = new ControlPushButton(ConfigKey(m_group, "prev_effect"));
     connect(m_pControlPrevEffect, SIGNAL(valueChanged(double)),
-            this, SLOT(slotPrevEffect(double)));
+            this, SLOT(onPrevEffect(double)));
 
     // Ignoring no-ops is important since this is for +/- tickers.
     m_pControlEffectSelector = new ControlObject(ConfigKey(m_group, "effect_selector"), false);
     connect(m_pControlEffectSelector, SIGNAL(valueChanged(double)),
-            this, SLOT(slotEffectSelector(double)));
+            this, SLOT(onEffectSelector(double)));
 
     m_pControlClear = new ControlPushButton(ConfigKey(m_group, "clear"));
     connect(m_pControlClear, SIGNAL(valueChanged(double)),
-            this, SLOT(slotClear(double)));
+            this, SLOT(onClear(double)));
 
     for (unsigned int i = 0; i < kDefaultMaxParameters; ++i) {
         addEffectParameterSlot();
@@ -113,51 +113,51 @@ unsigned int EffectSlot::numButtonParameterSlots() const {
     return m_buttonParameters.size();
 }
 
-void EffectSlot::slotLoaded(double v) {
+void EffectSlot::onLoaded(double v) {
     Q_UNUSED(v);
-    //qDebug() << debugString() << "slotLoaded" << v;
+    //qDebug() << debugString() << "onLoaded" << v;
     qWarning() << "WARNING: loaded is a read-only control.";
 }
 
-void EffectSlot::slotNumParameters(double v) {
+void EffectSlot::onNumParameters(double v) {
     Q_UNUSED(v);
-    //qDebug() << debugString() << "slotNumParameters" << v;
+    //qDebug() << debugString() << "onNumParameters" << v;
     qWarning() << "WARNING: num_parameters is a read-only control.";
 }
 
-void EffectSlot::slotNumParameterSlots(double v) {
+void EffectSlot::onNumParameterSlots(double v) {
     Q_UNUSED(v);
-    //qDebug() << debugString() << "slotNumParameterSlots" << v;
+    //qDebug() << debugString() << "onNumParameterSlots" << v;
     qWarning() << "WARNING: num_parameterslots is a read-only control.";
 }
 
-void EffectSlot::slotEnabled(double v) {
-    //qDebug() << debugString() << "slotEnabled" << v;
+void EffectSlot::onEnabled(double v) {
+    //qDebug() << debugString() << "onEnabled" << v;
     if (m_pEffect) {
         m_pEffect->setEnabled(v > 0);
     }
 }
 
-void EffectSlot::slotEffectEnabledChanged(bool enabled) {
+void EffectSlot::onEffectEnabledChanged(bool enabled) {
     m_pControlEnabled->set(enabled);
 }
 
-EffectParameterSlotPointer EffectSlot::getEffectParameterSlot(unsigned int slotNumber) {
-    //qDebug() << debugString() << "getEffectParameterSlot" << slotNumber;
-    if (slotNumber >= static_cast<unsigned int>(m_parameters.size())) {
-        qWarning() << "WARNING: slotNumber out of range";
+EffectParameterSlotPointer EffectSlot::getEffectParameterSlot(unsigned int onNumber) {
+    //qDebug() << debugString() << "getEffectParameterSlot" << onNumber;
+    if (onNumber >= static_cast<unsigned int>(m_parameters.size())) {
+        qWarning() << "WARNING: onNumber out of range";
         return EffectParameterSlotPointer();
     }
-    return m_parameters[slotNumber];
+    return m_parameters[onNumber];
 }
 
-EffectButtonParameterSlotPointer EffectSlot::getEffectButtonParameterSlot(unsigned int slotNumber) {
-    //qDebug() << debugString() << "getEffectParameterSlot" << slotNumber;
-    if (slotNumber >= static_cast<unsigned int>(m_buttonParameters.size())) {
-        qWarning() << "WARNING: slotNumber out of range";
+EffectButtonParameterSlotPointer EffectSlot::getEffectButtonParameterSlot(unsigned int onNumber) {
+    //qDebug() << debugString() << "getEffectParameterSlot" << onNumber;
+    if (onNumber >= static_cast<unsigned int>(m_buttonParameters.size())) {
+        qWarning() << "WARNING: onNumber out of range";
         return EffectButtonParameterSlotPointer();
     }
-    return m_buttonParameters[slotNumber];
+    return m_buttonParameters[onNumber];
 }
 
 void EffectSlot::loadEffect(EffectPointer pEffect) {
@@ -174,7 +174,7 @@ void EffectSlot::loadEffect(EffectPointer pEffect) {
         pEffect->setEnabled(m_pControlEnabled->get() > 0.0);
 
         connect(pEffect.data(), SIGNAL(enabledChanged(bool)),
-                this, SLOT(slotEffectEnabledChanged(bool)));
+                this, SLOT(onEffectEnabledChanged(bool)));
 
         while (static_cast<unsigned int>(m_parameters.size()) < pEffect->numKnobParameters()) {
             addEffectParameterSlot();
@@ -218,19 +218,19 @@ void EffectSlot::clear() {
     emit(updated());
 }
 
-void EffectSlot::slotPrevEffect(double v) {
+void EffectSlot::onPrevEffect(double v) {
     if (v > 0) {
-        slotEffectSelector(-1);
+        onEffectSelector(-1);
     }
 }
 
-void EffectSlot::slotNextEffect(double v) {
+void EffectSlot::onNextEffect(double v) {
     if (v > 0) {
-        slotEffectSelector(1);
+        onEffectSelector(1);
     }
 }
 
-void EffectSlot::slotEffectSelector(double v) {
+void EffectSlot::onEffectSelector(double v) {
     if (v > 0) {
         emit(nextEffect(m_iChainNumber, m_iEffectNumber, m_pEffect));
     } else if (v < 0) {
@@ -238,7 +238,7 @@ void EffectSlot::slotEffectSelector(double v) {
     }
 }
 
-void EffectSlot::slotClear(double v) {
+void EffectSlot::onClear(double v) {
     if (v > 0) {
         emit(clearEffect(m_iEffectNumber));
     }

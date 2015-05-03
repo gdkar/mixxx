@@ -20,14 +20,14 @@ LoadToGroupController::LoadToGroupController(QObject* pParent, const QString& gr
           m_group(group) {
     m_pLoadControl = new ControlPushButton(ConfigKey(group, "LoadSelectedTrack"));
     connect(m_pLoadControl, SIGNAL(valueChanged(double)),
-            this, SLOT(slotLoadToGroup(double)));
+            this, SLOT(onLoadToGroup(double)));
 
     m_pLoadAndPlayControl = new ControlPushButton(ConfigKey(group, "LoadSelectedTrackAndPlay"));
     connect(m_pLoadAndPlayControl, SIGNAL(valueChanged(double)),
-            this, SLOT(slotLoadToGroupAndPlay(double)));
+            this, SLOT(onLoadToGroupAndPlay(double)));
 
     connect(this, SIGNAL(loadToGroup(QString, bool)),
-            pParent, SLOT(slotLoadSelectedTrackToGroup(QString, bool)));
+            pParent, SLOT(onLoadSelectedTrackToGroup(QString, bool)));
 }
 
 LoadToGroupController::~LoadToGroupController() {
@@ -35,13 +35,13 @@ LoadToGroupController::~LoadToGroupController() {
     delete m_pLoadAndPlayControl;
 }
 
-void LoadToGroupController::slotLoadToGroup(double v) {
+void LoadToGroupController::onLoadToGroup(double v) {
     if (v > 0) {
         emit(loadToGroup(m_group, false));
     }
 }
 
-void LoadToGroupController::slotLoadToGroupAndPlay(double v) {
+void LoadToGroupController::onLoadToGroupAndPlay(double v) {
     if (v > 0) {
         emit(loadToGroup(m_group, true));
     }
@@ -56,75 +56,75 @@ LibraryControl::LibraryControl(Library* pLibrary)
           m_numSamplers("[Master]", "num_samplers"),
           m_numPreviewDecks("[Master]", "num_preview_decks") {
 
-    slotNumDecksChanged(m_numDecks.get());
-    slotNumSamplersChanged(m_numSamplers.get());
-    slotNumPreviewDecksChanged(m_numPreviewDecks.get());
+    onNumDecksChanged(m_numDecks.get());
+    onNumSamplersChanged(m_numSamplers.get());
+    onNumPreviewDecksChanged(m_numPreviewDecks.get());
     connect(&m_numDecks, SIGNAL(valueChanged(double)),
-            this, SLOT(slotNumDecksChanged(double)));
+            this, SLOT(onNumDecksChanged(double)));
     connect(&m_numSamplers, SIGNAL(valueChanged(double)),
-            this, SLOT(slotNumSamplersChanged(double)));
+            this, SLOT(onNumSamplersChanged(double)));
     connect(&m_numPreviewDecks, SIGNAL(valueChanged(double)),
-            this, SLOT(slotNumPreviewDecksChanged(double)));
+            this, SLOT(onNumPreviewDecksChanged(double)));
 
     // Make controls for library navigation and track loading.
 
     m_pSelectNextTrack = new ControlPushButton(ConfigKey("[Playlist]", "SelectNextTrack"));
     connect(m_pSelectNextTrack, SIGNAL(valueChanged(double)),
-            this, SLOT(slotSelectNextTrack(double)));
+            this, SLOT(onSelectNextTrack(double)));
 
     m_pSelectPrevTrack = new ControlPushButton(ConfigKey("[Playlist]", "SelectPrevTrack"));
     connect(m_pSelectPrevTrack, SIGNAL(valueChanged(double)),
-            this, SLOT(slotSelectPrevTrack(double)));
+            this, SLOT(onSelectPrevTrack(double)));
 
     // Ignoring no-ops is important since this is for +/- tickers.
     m_pSelectTrack = new ControlObject(ConfigKey("[Playlist]","SelectTrackKnob"), false);
     connect(m_pSelectTrack, SIGNAL(valueChanged(double)),
-            this, SLOT(slotSelectTrack(double)));
+            this, SLOT(onSelectTrack(double)));
 
     m_pSelectNextSidebarItem = new ControlPushButton(ConfigKey("[Playlist]", "SelectNextPlaylist"));
     connect(m_pSelectNextSidebarItem, SIGNAL(valueChanged(double)),
-            this, SLOT(slotSelectNextSidebarItem(double)));
+            this, SLOT(onSelectNextSidebarItem(double)));
 
     m_pSelectPrevSidebarItem = new ControlPushButton(ConfigKey("[Playlist]", "SelectPrevPlaylist"));
     connect(m_pSelectPrevSidebarItem, SIGNAL(valueChanged(double)),
-            this, SLOT(slotSelectPrevSidebarItem(double)));
+            this, SLOT(onSelectPrevSidebarItem(double)));
 
     // Ignoring no-ops is important since this is for +/- tickers.
     m_pSelectSidebarItem = new ControlObject(ConfigKey("[Playlist]", "SelectPlaylist"), false);
     connect(m_pSelectSidebarItem, SIGNAL(valueChanged(double)),
-            this, SLOT(slotSelectSidebarItem(double)));
+            this, SLOT(onSelectSidebarItem(double)));
 
     m_pToggleSidebarItem = new ControlPushButton(ConfigKey("[Playlist]", "ToggleSelectedSidebarItem"));
     connect(m_pToggleSidebarItem, SIGNAL(valueChanged(double)),
-            this, SLOT(slotToggleSelectedSidebarItem(double)));
+            this, SLOT(onToggleSelectedSidebarItem(double)));
 
     m_pLoadSelectedIntoFirstStopped = new ControlPushButton(ConfigKey("[Playlist]","LoadSelectedIntoFirstStopped"));
     connect(m_pLoadSelectedIntoFirstStopped, SIGNAL(valueChanged(double)),
-            this, SLOT(slotLoadSelectedIntoFirstStopped(double)));
+            this, SLOT(onLoadSelectedIntoFirstStopped(double)));
 
     m_pAutoDjAddTop = new ControlPushButton(ConfigKey("[Playlist]","AutoDjAddTop"));
     connect(m_pAutoDjAddTop, SIGNAL(valueChanged(double)),
-            this, SLOT(slotAutoDjAddTop(double)));
+            this, SLOT(onAutoDjAddTop(double)));
 
     m_pAutoDjAddBottom = new ControlPushButton(ConfigKey("[Playlist]","AutoDjAddBottom"));
     connect(m_pAutoDjAddBottom, SIGNAL(valueChanged(double)),
-            this, SLOT(slotAutoDjAddBottom(double)));
+            this, SLOT(onAutoDjAddBottom(double)));
 
     // Ignoring no-ops is important since this is for +/- tickers.
     m_pFontSizeKnob = new ControlObject(
             ConfigKey("[Library]", "font_size_knob"), false);
     connect(m_pFontSizeKnob, SIGNAL(valueChanged(double)),
-            this, SLOT(slotFontSize(double)));
+            this, SLOT(onFontSize(double)));
 
     m_pFontSizeDecrement = new ControlPushButton(
             ConfigKey("[Library]", "font_size_decrement"));
     connect(m_pFontSizeDecrement, SIGNAL(valueChanged(double)),
-            this, SLOT(slotDecrementFontSize(double)));
+            this, SLOT(onDecrementFontSize(double)));
 
     m_pFontSizeIncrement = new ControlPushButton(
             ConfigKey("[Library]", "font_size_increment"));
     connect(m_pFontSizeIncrement, SIGNAL(valueChanged(double)),
-            this, SLOT(slotIncrementFontSize(double)));
+            this, SLOT(onIncrementFontSize(double)));
 }
 
 LibraryControl::~LibraryControl() {
@@ -152,7 +152,7 @@ void LibraryControl::maybeCreateGroupController(const QString& group) {
     }
 }
 
-void LibraryControl::slotNumDecksChanged(double v) {
+void LibraryControl::onNumDecksChanged(double v) {
     int iNumDecks = v;
 
     if (iNumDecks < 0) {
@@ -164,7 +164,7 @@ void LibraryControl::slotNumDecksChanged(double v) {
     }
 }
 
-void LibraryControl::slotNumSamplersChanged(double v) {
+void LibraryControl::onNumSamplersChanged(double v) {
     int iNumSamplers = v;
 
     if (iNumSamplers < 0) {
@@ -176,7 +176,7 @@ void LibraryControl::slotNumSamplersChanged(double v) {
     }
 }
 
-void LibraryControl::slotNumPreviewDecksChanged(double v) {
+void LibraryControl::onNumPreviewDecksChanged(double v) {
     int iNumPreviewDecks = v;
 
     if (iNumPreviewDecks < 0) {
@@ -215,7 +215,7 @@ void LibraryControl::sidebarWidgetDeleted() {
     m_pSidebarWidget = NULL;
 }
 
-void LibraryControl::slotLoadSelectedTrackToGroup(QString group, bool play) {
+void LibraryControl::onLoadSelectedTrackToGroup(QString group, bool play) {
     if (m_pLibraryWidget == NULL) {
         return;
     }
@@ -227,7 +227,7 @@ void LibraryControl::slotLoadSelectedTrackToGroup(QString group, bool play) {
     activeView->loadSelectedTrackToGroup(group, play);
 }
 
-void LibraryControl::slotLoadSelectedIntoFirstStopped(double v) {
+void LibraryControl::onLoadSelectedIntoFirstStopped(double v) {
     if (m_pLibraryWidget == NULL) {
         return;
     }
@@ -241,7 +241,7 @@ void LibraryControl::slotLoadSelectedIntoFirstStopped(double v) {
     }
 }
 
-void LibraryControl::slotAutoDjAddTop(double v) {
+void LibraryControl::onAutoDjAddTop(double v) {
     if (m_pLibraryWidget == NULL) {
         return;
     }
@@ -251,11 +251,11 @@ void LibraryControl::slotAutoDjAddTop(double v) {
         if (!activeView) {
             return;
         }
-        activeView->slotSendToAutoDJTop();
+        activeView->onSendToAutoDJTop();
     }
 }
 
-void LibraryControl::slotAutoDjAddBottom(double v) {
+void LibraryControl::onAutoDjAddBottom(double v) {
     if (m_pLibraryWidget == NULL) {
         return;
     }
@@ -265,23 +265,22 @@ void LibraryControl::slotAutoDjAddBottom(double v) {
         if (!activeView) {
             return;
         }
-        activeView->slotSendToAutoDJ();
+        activeView->onSendToAutoDJ();
     }
 }
 
-void LibraryControl::slotSelectNextTrack(double v) {
+void LibraryControl::onSelectNextTrack(double v) {
+    if (v > 0) {onSelectTrack(1);
+    }
+}
+
+void LibraryControl::onSelectPrevTrack(double v) {
     if (v > 0) {
-        slotSelectTrack(1);
+        onSelectTrack(-1);
     }
 }
 
-void LibraryControl::slotSelectPrevTrack(double v) {
-    if (v > 0) {
-        slotSelectTrack(-1);
-    }
-}
-
-void LibraryControl::slotSelectTrack(double v) {
+void LibraryControl::onSelectTrack(double v) {
     if (m_pLibraryWidget == NULL) {
         return;
     }
@@ -295,7 +294,7 @@ void LibraryControl::slotSelectTrack(double v) {
     activeView->moveSelection(i);
 }
 
-void LibraryControl::slotSelectSidebarItem(double v) {
+void LibraryControl::onSelectSidebarItem(double v) {
     if (m_pSidebarWidget == NULL) {
         return;
     }
@@ -316,41 +315,41 @@ void LibraryControl::slotSelectSidebarItem(double v) {
     }
 }
 
-void LibraryControl::slotSelectNextSidebarItem(double v) {
+void LibraryControl::onSelectNextSidebarItem(double v) {
     if (v > 0) {
-        slotSelectSidebarItem(1);
+        onSelectSidebarItem(1);
     }
 }
 
-void LibraryControl::slotSelectPrevSidebarItem(double v) {
+void LibraryControl::onSelectPrevSidebarItem(double v) {
     if (v > 0) {
-        slotSelectSidebarItem(-1);
+        onSelectSidebarItem(-1);
     }
 }
 
-void LibraryControl::slotToggleSelectedSidebarItem(double v) {
+void LibraryControl::onToggleSelectedSidebarItem(double v) {
     if (m_pSidebarWidget != NULL && v > 0) {
         m_pSidebarWidget->toggleSelectedItem();
     }
 }
 
-void LibraryControl::slotFontSize(double v) {
+void LibraryControl::onFontSize(double v) {
     if (v == 0.0) {
         return;
     }
     QFont font = m_pLibrary->getTrackTableFont();
     font.setPointSizeF(font.pointSizeF() + v);
-    m_pLibrary->slotSetTrackTableFont(font);
+    m_pLibrary->onSetTrackTableFont(font);
 }
 
-void LibraryControl::slotIncrementFontSize(double v) {
+void LibraryControl::onIncrementFontSize(double v) {
     if (v > 0.0) {
-        slotFontSize(1);
+        onFontSize(1);
     }
 }
 
-void LibraryControl::slotDecrementFontSize(double v) {
+void LibraryControl::onDecrementFontSize(double v) {
     if (v > 0.0) {
-        slotFontSize(-1);
+        onFontSize(-1);
     }
 }

@@ -82,79 +82,79 @@ class MixxxMainWindow : public QMainWindow {
 
   public slots:
 
-    //void slotQuitFullScreen();
-    void slotFileLoadSongPlayer(int deck);
+    //void onQuitFullScreen();
+    void onFileLoadSongPlayer(int deck);
     // Opens a file in player 1
-    void slotFileLoadSongPlayer1();
+    void onFileLoadSongPlayer1();
     // Opens a file in player 2
-    void slotFileLoadSongPlayer2();
+    void onFileLoadSongPlayer2();
     // exits the application
-    void slotFileQuit();
+    void onFileQuit();
 
     // toggle vinyl control - Don't #ifdef this because MOC is dumb
-    void slotControlVinylControl(int);
-    void slotCheckboxVinylControl(int);
-    void slotControlPassthrough(int);
-    void slotControlAuxiliary(int);
+    void onControlVinylControl(int);
+    void onCheckboxVinylControl(int);
+    void onControlPassthrough(int);
+    void onControlAuxiliary(int);
     // toogle keyboard on-off
-    void slotOptionsKeyboard(bool toggle);
+    void onOptionsKeyboard(bool toggle);
     // Preference dialog
-    void slotOptionsPreferences();
+    void onOptionsPreferences();
     // shows an about dlg
-    void slotHelpAbout();
+    void onHelpAbout();
     // visits support section of website
-    void slotHelpSupport();
+    void onHelpSupport();
     // Visits a feedback form
-    void slotHelpFeedback();
+    void onHelpFeedback();
     // Open the manual.
-    void slotHelpManual();
+    void onHelpManual();
     // Visits translation interface on launchpad.net
-    void slotHelpTranslation();
+    void onHelpTranslation();
     // Scan or rescan the music library directory
-    void slotScanLibrary();
+    void onScanLibrary();
     // Enables the "Rescan Library" menu item. This gets disabled when a scan is running.
-    void slotEnableRescanLibraryAction();
+    void onEnableRescanLibraryAction();
     //Updates the checkboxes for Recording and Livebroadcasting when connection drops, or lame is not available
-    void slotOptionsMenuShow();
+    void onOptionsMenuShow();
     // toogle on-screen widget visibility
-    void slotViewShowSamplers(bool);
-    void slotViewShowVinylControl(bool);
-    void slotViewShowMicrophone(bool);
-    void slotViewShowPreviewDeck(bool);
-    void slotViewShowEffects(bool);
-    void slotViewShowCoverArt(bool);
-    void slotViewMaximizeLibrary(bool);
+    void onViewShowSamplers(bool);
+    void onViewShowVinylControl(bool);
+    void onViewShowMicrophone(bool);
+    void onViewShowPreviewDeck(bool);
+    void onViewShowEffects(bool);
+    void onViewShowCoverArt(bool);
+    void onViewMaximizeLibrary(bool);
     // toogle full screen mode
-    void slotViewFullScreen(bool toggle);
+    void onViewFullScreen(bool toggle);
     // Reload the skin.
-    void slotDeveloperReloadSkin(bool toggle);
+    void onDeveloperReloadSkin(bool toggle);
     // Open the developer tools dialog.
-    void slotDeveloperTools();
-    void slotDeveloperToolsClosed();
-    void slotDeveloperStatsExperiment();
-    void slotDeveloperStatsBase();
+    void onDeveloperTools();
+    void onDeveloperToolsClosed();
+    void onDeveloperStatsExperiment();
+    void onDeveloperStatsBase();
     // toogle the script debugger
-    void slotDeveloperDebugger(bool toggle);
+    void onDeveloperDebugger(bool toggle);
 
-    void slotToCenterOfPrimaryScreen();
+    void onToCenterOfPrimaryScreen();
 
     void onNewSkinLoaded();
 
     // Activated when the number of decks changed, so we can update the UI.
-    void slotNumDecksChanged(double);
+    void onNumDecksChanged(double);
 
     // Activated when the talkover button is pushed on a microphone so we
     // can alert the user if a mic is not configured.
-    void slotTalkoverChanged(int);
+    void onTalkoverChanged(int);
 
-    void slotUpdateWindowTitle(TrackPointer pTrack);
+    void onUpdateWindowTitle(TrackPointer pTrack);
 
-    void slotToggleCheckedVinylControl();
-    void slotToggleCheckedSamplers();
-    void slotToggleCheckedMicrophone();
-    void slotToggleCheckedPreviewDeck();
-    void slotToggleCheckedEffects();
-    void slotToggleCheckedCoverArt();
+    void onToggleCheckedVinylControl();
+    void onToggleCheckedSamplers();
+    void onToggleCheckedMicrophone();
+    void onToggleCheckedPreviewDeck();
+    void onToggleCheckedEffects();
+    void onToggleCheckedCoverArt();
 
   signals:
     void newSkinLoaded();

@@ -9,13 +9,13 @@ WidgetStackControlListener::WidgetStackControlListener(QObject* pParent,
           m_control(pControl ? pControl->getKey() : ConfigKey()),
           m_index(index) {
     connect(&m_control, SIGNAL(valueChanged(double)),
-            this, SLOT(slotValueChanged(double)));
+            this, SLOT(onValueChanged(double)));
 }
 
 WidgetStackControlListener::~WidgetStackControlListener() {
 }
 
-void WidgetStackControlListener::slotValueChanged(double v) {
+void WidgetStackControlListener::onValueChanged(double v) {
     if (v > 0.0) {
         emit(switchToWidget());
     } else {
@@ -25,9 +25,9 @@ void WidgetStackControlListener::slotValueChanged(double v) {
 
 void WidgetStackControlListener::onCurrentWidgetChanged(int index) {
     if (index == m_index && m_control.get() == 0.0) {
-        m_control.slotSet(1.0);
+        m_control.onSet(1.0);
     } else if (index != m_index && m_control.get() != 0.0) {
-        m_control.slotSet(0.0);
+        m_control.onSet(0.0);
     }
 }
 

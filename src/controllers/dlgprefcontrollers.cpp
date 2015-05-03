@@ -20,7 +20,7 @@ DlgPrefControllers::DlgPrefControllers(DlgPreferences* pPreferences,
     setupControllerWidgets();
 
     connect(&m_buttonMapper, SIGNAL(mapped(QString)),
-            this, SLOT(slotOpenLocalFile(QString)));
+            this, SLOT(onOpenLocalFile(QString)));
 
     connect(btnOpenSystemPresets, SIGNAL(clicked()),
             &m_buttonMapper, SLOT(map()));
@@ -42,28 +42,28 @@ DlgPrefControllers::~DlgPrefControllers() {
     destroyControllerWidgets();
 }
 
-void DlgPrefControllers::slotOpenLocalFile(const QString& file) {
+void DlgPrefControllers::onOpenLocalFile(const QString& file) {
     QDesktopServices::openUrl(QUrl::fromLocalFile(file));
 }
 
-void DlgPrefControllers::slotUpdate() {
+void DlgPrefControllers::onUpdate() {
     // Update our sub-windows.
     foreach (DlgPrefController* pControllerWindows, m_controllerWindows) {
-        pControllerWindows->slotUpdate();
+        pControllerWindows->onUpdate();
     }
 }
 
-void DlgPrefControllers::slotCancel() {
+void DlgPrefControllers::onCancel() {
     // Update our sub-windows.
     foreach (DlgPrefController* pControllerWindows, m_controllerWindows) {
-        pControllerWindows->slotCancel();
+        pControllerWindows->onCancel();
     }
 }
 
-void DlgPrefControllers::slotApply() {
+void DlgPrefControllers::onApply() {
     // Update our sub-windows.
     foreach (DlgPrefController* pControllerWindows, m_controllerWindows) {
-        pControllerWindows->slotApply();
+        pControllerWindows->onApply();
     }
 
     // Save all controller presets.
@@ -127,7 +127,7 @@ void DlgPrefControllers::setupControllerWidgets() {
         m_pDlgPreferences->addPageWidget(controllerDlg);
 
         connect(controllerDlg, SIGNAL(controllerEnabled(DlgPrefController*, bool)),
-                this, SLOT(slotHighlightDevice(DlgPrefController*, bool)));
+                this, SLOT(onHighlightDevice(DlgPrefController*, bool)));
 
         QTreeWidgetItem * controllerWindowLink = new QTreeWidgetItem(QTreeWidgetItem::Type);
         controllerWindowLink->setIcon(0, QIcon(":/images/preferences/ic_preferences_controllers.png"));
@@ -149,7 +149,7 @@ void DlgPrefControllers::setupControllerWidgets() {
     txtNoControllersAvailable->setVisible(controllerList.empty());
 }
 
-void DlgPrefControllers::slotHighlightDevice(DlgPrefController* dialog, bool enabled) {
+void DlgPrefControllers::onHighlightDevice(DlgPrefController* dialog, bool enabled) {
     int dialogIndex = m_controllerWindows.indexOf(dialog);
     if (dialogIndex < 0) {
         return;

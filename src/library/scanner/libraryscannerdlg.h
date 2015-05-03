@@ -31,11 +31,11 @@ class LibraryScannerDlg : public QWidget {
     virtual ~LibraryScannerDlg();
 
   public slots:
-    void slotUpdate(QString path);
-    void slotUpdateCover(QString path);
-    void slotCancel();
-    void slotScanFinished();
-    void slotScanStarted();
+    void onUpdate(QString path);
+    void onUpdateCover(QString path);
+    void onCancel();
+    void onScanFinished();
+    void onScanStarted();
 
   signals:
     void scanCancelled();

@@ -2,7 +2,7 @@
 
 #include "control/controlobject.h"
 #include "configobject.h"
-#include "cachingreader.h"
+#include "engine/cachingreader.h"
 #include "engine/enginecontrol.h"
 #include "control/controlobjectslave.h"
 
@@ -25,7 +25,7 @@ void ClockControl::trackLoaded(TrackPointer pTrack) {
     // Disconnect any previously loaded track/beats
     if (m_pTrack) {
         disconnect(m_pTrack.data(), SIGNAL(beatsUpdated()),
-                   this, SLOT(slotBeatsUpdated()));
+                   this, SLOT(onBeatsUpdated()));
     }
     m_pBeats.clear();
     m_pTrack.clear();
@@ -34,7 +34,7 @@ void ClockControl::trackLoaded(TrackPointer pTrack) {
         m_pTrack = pTrack;
         m_pBeats = m_pTrack->getBeats();
         connect(m_pTrack.data(), SIGNAL(beatsUpdated()),
-                this, SLOT(slotBeatsUpdated()));
+                this, SLOT(onBeatsUpdated()));
     }
 }
 
@@ -43,7 +43,7 @@ void ClockControl::trackUnloaded(TrackPointer pTrack) {
     trackLoaded(TrackPointer());
 }
 
-void ClockControl::slotBeatsUpdated() {
+void ClockControl::onBeatsUpdated() {
     if(m_pTrack) {
         m_pBeats = m_pTrack->getBeats();
     }

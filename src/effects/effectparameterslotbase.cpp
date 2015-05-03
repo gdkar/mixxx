@@ -37,15 +37,15 @@ QString EffectParameterSlotBase::description() const {
     return tr("No effect loaded.");
 }
 
-void EffectParameterSlotBase::slotLoaded(double v) {
+void EffectParameterSlotBase::onLoaded(double v) {
     Q_UNUSED(v);
-    //qDebug() << debugString() << "slotLoaded" << v;
+    //qDebug() << debugString() << "onLoaded" << v;
     qWarning() << "WARNING: loaded is a read-only control.";
 }
 
-void EffectParameterSlotBase::slotValueType(double v) {
+void EffectParameterSlotBase::onValueType(double v) {
     Q_UNUSED(v);
-    //qDebug() << debugString() << "slotValueType" << v;
+    //qDebug() << debugString() << "onValueType" << v;
     qWarning() << "WARNING: value_type is a read-only control.";
 }
 

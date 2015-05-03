@@ -121,7 +121,7 @@ void AnalysisFeature::analyzeTracks(QList<int> trackIds) {
         connect(m_pAnalyserQueue, SIGNAL(trackProgress(int)),
                 m_pAnalysisView, SLOT(trackAnalysisProgress(int)));
         connect(m_pAnalyserQueue, SIGNAL(trackFinished(int)),
-                this, SLOT(slotProgressUpdate(int)));
+                this, SLOT(onProgressUpdate(int)));
         connect(m_pAnalyserQueue, SIGNAL(trackFinished(int)),
                 m_pAnalysisView, SLOT(trackAnalysisFinished(int)));
 
@@ -143,7 +143,7 @@ void AnalysisFeature::analyzeTracks(QList<int> trackIds) {
     emit(trackAnalysisStarted(trackIds.size()));
 }
 
-void AnalysisFeature::slotProgressUpdate(int num_left) {
+void AnalysisFeature::onProgressUpdate(int num_left) {
     int num_tracks = m_pAnalysisView->getNumTracks();
     if (num_left > 0) {
         int currentTrack = num_tracks - num_left + 1;

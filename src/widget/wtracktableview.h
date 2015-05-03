@@ -44,39 +44,39 @@ class WTrackTableView : public WLibraryTableView {
 
   public slots:
     void loadTrackModel(QAbstractItemModel* model);
-    void slotMouseDoubleClicked(const QModelIndex &);
-    void slotUnhide();
-    void slotPurge();
+    void onMouseDoubleClicked(const QModelIndex &);
+    void onUnhide();
+    void onPurge();
     void onSearchStarting();
     void onSearchCleared();
-    void slotSendToAutoDJ();
-    void slotSendToAutoDJTop();
+    void onSendToAutoDJ();
+    void onSendToAutoDJTop();
 
   private slots:
-    void slotRemove();
-    void slotHide();
-    void slotOpenInFileBrowser();
-    void slotShowTrackInfo();
-    void slotShowDlgTagFetcher();
-    void slotNextTrackInfo();
-    void slotNextDlgTagFetcher();
-    void slotPrevTrackInfo();
-    void slotPrevDlgTagFetcher();
-    void slotReloadTrackMetadata();
-    void slotResetPlayed();
+    void onRemove();
+    void onHide();
+    void onOpenInFileBrowser();
+    void onShowTrackInfo();
+    void onShowDlgTagFetcher();
+    void onNextTrackInfo();
+    void onNextDlgTagFetcher();
+    void onPrevTrackInfo();
+    void onPrevDlgTagFetcher();
+    void onReloadTrackMetadata();
+    void onResetPlayed();
     void addSelectionToPlaylist(int iPlaylistId);
     void addSelectionToCrate(int iCrateId);
     void loadSelectionToGroup(QString group, bool play = false);
     void doSortByColumn(int headerSection);
-    void slotLockBpm();
-    void slotUnlockBpm();
-    void slotScaleBpm(int);
-    void slotClearBeats();
+    void onLockBpm();
+    void onUnlockBpm();
+    void onScaleBpm(int);
+    void onClearBeats();
     // Signalled 20 times per second (every 50ms) by GuiTick.
-    void slotGuiTick50ms(double);
-    void slotScrollValueChanged(int);
-    void slotCoverArtSelected(const CoverArt& art);
-    void slotReloadCoverArt();
+    void onGuiTick50ms(double);
+    void onScrollValueChanged(int);
+    void onCoverArtSelected(const CoverArt& art);
+    void onReloadCoverArt();
 
   private:
     void sendToAutoDJ(bool bTop);

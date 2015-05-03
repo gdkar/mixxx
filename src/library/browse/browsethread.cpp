@@ -36,7 +36,6 @@ BrowseThread::BrowseThread(QObject *parent)
     start(QThread::LowPriority);
 
 }
-
 BrowseThread::~BrowseThread() {
     qDebug() << "Wait to finish browser background thread";
     m_bStopThread = true;
@@ -47,22 +46,19 @@ BrowseThread::~BrowseThread() {
     wait();
     qDebug() << "Browser background thread terminated!";
 }
-
 // static
 BrowseThreadPointer BrowseThread::getInstanceRef() {
     BrowseThreadPointer strong = m_weakInstanceRef.toStrongRef();
     if (!strong) {
         s_Mutex.lock();
         strong = m_weakInstanceRef.toStrongRef();
-        if (!strong) {
-            strong = BrowseThreadPointer(new BrowseThread());
-            m_weakInstanceRef = strong.toWeakRef();
-        }
+        if (!strong) 
+        {strong = BrowseThreadPointer(new BrowseThread());
+         m_weakInstanceRef = strong.toWeakRef();}
         s_Mutex.unlock();
     }
     return strong;
 }
-
 void BrowseThread::executePopulation(const MDir& path, BrowseTableModel* client) {
     m_path_mutex.lock();
     m_path = path;
@@ -70,38 +66,27 @@ void BrowseThread::executePopulation(const MDir& path, BrowseTableModel* client)
     m_path_mutex.unlock();
     m_locationUpdated.wakeAll();
 }
-
 void BrowseThread::run() {
     QThread::currentThread()->setObjectName("BrowseThread");
     m_mutex.lock();
-
     while (!m_bStopThread) {
         //Wait until the user has selected a folder
         m_locationUpdated.wait(&m_mutex);
         Trace trace("BrowseThread");
-
         //Terminate thread if Mixxx closes
-        if(m_bStopThread) {
-            break;
-        }
+        if(m_bStopThread) {break;}
         // Populate the model
         populateModel();
     }
     m_mutex.unlock();
 }
-
 namespace {
-
 class YearItem: public QStandardItem {
 public:
-    explicit YearItem(QString year):
-        QStandardItem(year) {
-    }
-
+    explicit YearItem(QString year):QStandardItem(year) {}
     QVariant data(int role) const {
         switch (role) {
-        case Qt::DisplayRole:
-        {
+        case Qt::DisplayRole:{
             const QString year(QStandardItem::data(role).toString());
             return Mixxx::TrackMetadata::formatCalendarYear(year);
         }
@@ -118,20 +103,14 @@ void BrowseThread::populateModel() {
     MDir thisPath = m_path;
     BrowseTableModel* thisModelObserver = m_model_observer;
     m_path_mutex.unlock();
-
     // Refresh the name filters in case we loaded new SoundSource plugins.
     QStringList nameFilters(SoundSourceProxy::supportedFileExtensionsString().split(" "));
-
-    QDirIterator fileIt(thisPath.dir().canonicalPath(), nameFilters,
-                        QDir::Files | QDir::NoDotAndDotDot);
-
+    QDirIterator fileIt(thisPath.dir().canonicalPath(), nameFilters,QDir::Files | QDir::NoDotAndDotDot);
     // remove all rows
     // This is a blocking operation
     // see signal/slot connection in BrowseTableModel
     emit(clearModel(thisModelObserver));
-
     QList< QList<QStandardItem*> > rows;
-
     int row = 0;
     // Iterate over the files
     while (fileIt.hasNext()) {
@@ -140,7 +119,6 @@ void BrowseThread::populateModel() {
         m_path_mutex.lock();
         MDir newPath = m_path;
         m_path_mutex.unlock();
-
         if (thisPath.dir() != newPath.dir()) {
             qDebug() << "Abort populateModel()";
             return populateModel();
@@ -153,7 +131,6 @@ void BrowseThread::populateModel() {
         QStandardItem* item = new QStandardItem("0");
         item->setData("0", Qt::UserRole);
         row_data.insert(COLUMN_PREVIEW, item);
-
         item = new QStandardItem(tio.getFilename());
         item->setToolTip(item->text());
         item->setData(item->text(), Qt::UserRole);
@@ -211,8 +188,7 @@ void BrowseThread::populateModel() {
         item->setData(item->text(), Qt::UserRole);
         row_data.insert(COLUMN_COMMENT, item);
 
-        QString duration = Time::formatSeconds(qVariantValue<int>(
-                tio.getDuration()), false);
+        QString duration = Time::formatSeconds(qVariantValue<int>(tio.getDuration()), false);
         item = new QStandardItem(duration);
         item->setToolTip(item->text());
         item->setData(item->text(), Qt::UserRole);

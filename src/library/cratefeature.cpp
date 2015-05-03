@@ -34,59 +34,59 @@ CrateFeature::CrateFeature(QObject* parent,
     Q_UNUSED(parent);
     m_pCreateCrateAction = new QAction(tr("Create New Crate"),this);
     connect(m_pCreateCrateAction, SIGNAL(triggered()),
-            this, SLOT(slotCreateCrate()));
+            this, SLOT(onCreateCrate()));
 
     m_pDeleteCrateAction = new QAction(tr("Remove"),this);
     connect(m_pDeleteCrateAction, SIGNAL(triggered()),
-            this, SLOT(slotDeleteCrate()));
+            this, SLOT(onDeleteCrate()));
 
     m_pRenameCrateAction = new QAction(tr("Rename"),this);
     connect(m_pRenameCrateAction, SIGNAL(triggered()),
-            this, SLOT(slotRenameCrate()));
+            this, SLOT(onRenameCrate()));
 
     m_pLockCrateAction = new QAction(tr("Lock"),this);
     connect(m_pLockCrateAction, SIGNAL(triggered()),
-            this, SLOT(slotToggleCrateLock()));
+            this, SLOT(onToggleCrateLock()));
 
     m_pImportPlaylistAction = new QAction(tr("Import Crate"),this);
     connect(m_pImportPlaylistAction, SIGNAL(triggered()),
-            this, SLOT(slotImportPlaylist()));
+            this, SLOT(onImportPlaylist()));
 
     m_pExportPlaylistAction = new QAction(tr("Export Crate"), this);
     connect(m_pExportPlaylistAction, SIGNAL(triggered()),
-            this, SLOT(slotExportPlaylist()));
+            this, SLOT(onExportPlaylist()));
 
     m_pDuplicateCrateAction = new QAction(tr("Duplicate"),this);
     connect(m_pDuplicateCrateAction, SIGNAL(triggered()),
-            this, SLOT(slotDuplicateCrate()));
+            this, SLOT(onDuplicateCrate()));
 
     m_pAnalyzeCrateAction = new QAction(tr("Analyze entire Crate"),this);
     connect(m_pAnalyzeCrateAction, SIGNAL(triggered()),
-            this, SLOT(slotAnalyzeCrate()));
+            this, SLOT(onAnalyzeCrate()));
 
 #ifdef __AUTODJCRATES__
 
     m_pAutoDjTrackSource = new QAction(tr("Auto DJ Track Source"),this);
     m_pAutoDjTrackSource->setCheckable(true);
     connect(m_pAutoDjTrackSource, SIGNAL(changed()),
-            this, SLOT(slotAutoDjTrackSourceChanged()));
+            this, SLOT(onAutoDjTrackSourceChanged()));
 
 #endif // __AUTODJCRATES__
 
     connect(&m_crateDao, SIGNAL(added(int)),
-            this, SLOT(slotCrateTableChanged(int)));
+            this, SLOT(onCrateTableChanged(int)));
 
     connect(&m_crateDao, SIGNAL(deleted(int)),
-            this, SLOT(slotCrateTableChanged(int)));
+            this, SLOT(onCrateTableChanged(int)));
 
     connect(&m_crateDao, SIGNAL(changed(int)),
-            this, SLOT(slotCrateTableChanged(int)));
+            this, SLOT(onCrateTableChanged(int)));
 
     connect(&m_crateDao, SIGNAL(renamed(int,QString)),
-            this, SLOT(slotCrateTableRenamed(int,QString)));
+            this, SLOT(onCrateTableRenamed(int,QString)));
 
     connect(&m_crateDao, SIGNAL(lockChanged(int)),
-            this, SLOT(slotCrateTableChanged(int)));
+            this, SLOT(onCrateTableChanged(int)));
 
     // construct child model
     TreeItem *rootItem = new TreeItem();
@@ -249,7 +249,7 @@ void CrateFeature::onRightClickChild(const QPoint& globalPos, QModelIndex index)
     menu.exec(globalPos);
 }
 
-void CrateFeature::slotCreateCrate() {
+void CrateFeature::onCreateCrate() {
     QString name;
     bool validNameGiven = false;
 
@@ -291,7 +291,7 @@ void CrateFeature::slotCreateCrate() {
     }
 }
 
-void CrateFeature::slotDeleteCrate() {
+void CrateFeature::onDeleteCrate() {
     int crateId = crateIdFromIndex(m_lastRightClickedIndex);
     if (crateId == -1) {
         return;
@@ -312,7 +312,7 @@ void CrateFeature::slotDeleteCrate() {
     }
 }
 
-void CrateFeature::slotRenameCrate() {
+void CrateFeature::onRenameCrate() {
     int crateId = crateIdFromIndex(m_lastRightClickedIndex);
     if (crateId == -1) {
         return;
@@ -361,7 +361,7 @@ void CrateFeature::slotRenameCrate() {
     }
 }
 
-void CrateFeature::slotDuplicateCrate() {
+void CrateFeature::onDuplicateCrate() {
     int oldCrateId = crateIdFromIndex(m_lastRightClickedIndex);
     if (oldCrateId == -1) {
         return;
@@ -412,7 +412,7 @@ void CrateFeature::slotDuplicateCrate() {
     }
 }
 
-void CrateFeature::slotToggleCrateLock() {
+void CrateFeature::onToggleCrateLock() {
     int crateId = crateIdFromIndex(m_lastRightClickedIndex);
     if (crateId == -1) {
         return;
@@ -425,7 +425,7 @@ void CrateFeature::slotToggleCrateLock() {
     }
 }
 
-void CrateFeature::slotAutoDjTrackSourceChanged() {
+void CrateFeature::onAutoDjTrackSourceChanged() {
 #ifdef __AUTODJCRATES__
     int crateId = crateIdFromIndex(m_lastRightClickedIndex);
     if (crateId != -1) {
@@ -530,8 +530,8 @@ void CrateFeature::clearChildModel() {
     m_crateList.clear();
 }
 
-void CrateFeature::slotImportPlaylist() {
-    qDebug() << "slotImportPlaylist() row:" ; //<< m_lastRightClickedIndex.data();
+void CrateFeature::onImportPlaylist() {
+    qDebug() << "onImportPlaylist() row:" ; //<< m_lastRightClickedIndex.data();
 
     QString lastCrateDirectory = m_pConfig->getValueString(
             ConfigKey("[Library]", "LastImportExportCrateDirectory"),
@@ -581,7 +581,7 @@ void CrateFeature::slotImportPlaylist() {
     }
 }
 
-void CrateFeature::slotAnalyzeCrate() {
+void CrateFeature::onAnalyzeCrate() {
     if (m_lastRightClickedIndex.isValid()) {
         int crateId = crateIdFromIndex(m_lastRightClickedIndex);
         if (crateId >= 0) {
@@ -591,7 +591,7 @@ void CrateFeature::slotAnalyzeCrate() {
     }
 }
 
-void CrateFeature::slotExportPlaylist() {
+void CrateFeature::onExportPlaylist() {
     qDebug() << "Export crate" << m_lastRightClickedIndex.data();
 
     QString lastCrateDirectory = m_pConfig->getValueString(
@@ -661,8 +661,8 @@ void CrateFeature::slotExportPlaylist() {
     }
 }
 
-void CrateFeature::slotCrateTableChanged(int crateId) {
-    //qDebug() << "slotPlaylistTableChanged() playlistId:" << playlistId;
+void CrateFeature::onCrateTableChanged(int crateId) {
+    //qDebug() << "onPlaylistTableChanged() playlistId:" << playlistId;
     clearChildModel();
     m_lastRightClickedIndex = constructChildModel(crateId);
     // Switch the view to the crate.
@@ -671,14 +671,14 @@ void CrateFeature::slotCrateTableChanged(int crateId) {
     emit(featureSelect(this, m_lastRightClickedIndex));
 }
 
-void CrateFeature::slotCrateTableRenamed(int a_iCrateId,
+void CrateFeature::onCrateTableRenamed(int a_iCrateId,
                                          QString /* a_strName */) {
-    slotCrateTableChanged(a_iCrateId);
+    onCrateTableChanged(a_iCrateId);
 }
 
 void CrateFeature::htmlLinkClicked(const QUrl& link) {
     if (QString(link.path())=="create") {
-        slotCreateCrate();
+        onCreateCrate();
     } else {
         qDebug() << "Unknown crate link clicked" << link;
     }

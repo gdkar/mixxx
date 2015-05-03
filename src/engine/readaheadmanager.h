@@ -10,7 +10,7 @@
 
 #include "util/types.h"
 #include "util/math.h"
-#include "cachingreader.h"
+#include "engine/cachingreader.h"
 
 class LoopingControl;
 class RateControl;
@@ -37,21 +37,19 @@ class ReadAheadManager {
     // direction the audio is progressing in. Returns the total number of
     // samples read into buffer. Note that it is very common that the total
     // samples read is less than the requested number of samples.
-    virtual int getNextSamples(double dRate, CSAMPLE* buffer, int requested_samples);
-
-
+    virtual double getNextSamples(double dRate, CSAMPLE* buffer, double requested_samples);
     // Used to add a new EngineControls that ReadAheadManager will use to decide
     // which samples to return.
     void addLoopingControl();
     void addRateControl(RateControl* pRateControl);
 
     // Get the current read-ahead position in samples.
-    virtual inline int getPlaypos() const {return m_iCurrentPosition;}
-    virtual void notifySeek(int iSeekPosition);
+    virtual inline double getPlaypos() const {return m_dCurrentPosition;}
+    virtual void notifySeek(double dSeekPosition);
     // hintReader allows the ReadAheadManager to provide hints to the reader to
     // indicate that the given portion of a song is about to be read.
     virtual void hintReader(double dRate, HintVector* hintList);
-    virtual int getEffectiveVirtualPlaypositionFromLog(double currentVirtualPlayposition,
+    virtual double getEffectiveVirtualPlaypositionFromLog(double currentVirtualPlayposition,
                                                        double numConsumedSamples);
     virtual void setReader(CachingReader* pReader) {m_pReader = pReader;}
 
@@ -76,10 +74,8 @@ class ReadAheadManager {
             // being interpreted as a seek in the common case.
             return virtualPlaypositionStart <= virtualPlaypositionEndNonInclusive;
         }
-
         double length() const {
-            return fabs(virtualPlaypositionEndNonInclusive -
-                       virtualPlaypositionStart);
+            return fabs(virtualPlaypositionEndNonInclusive - virtualPlaypositionStart);
         }
 
         // Moves the start position forward or backward (depending on
@@ -113,7 +109,7 @@ class ReadAheadManager {
     LoopingControl* m_pLoopingControl;
     RateControl* m_pRateControl;
     QLinkedList<ReadLogEntry> m_readAheadLog;
-    int m_iCurrentPosition;
+    double  m_dCurrentPosition;
     CachingReader* m_pReader;
     CSAMPLE* m_pCrossFadeBuffer;
 };

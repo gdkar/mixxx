@@ -7,7 +7,7 @@ WSplitter::WSplitter(QWidget* pParent, ConfigObject<ConfigValue> *pConfig)
           WBaseWidget(this),
           m_pConfig(pConfig) {
     connect(this, SIGNAL(splitterMoved(int,int)),
-            this, SLOT(slotSplitterMoved()));
+            this, SLOT(onSplitterMoved()));
 }
 
 WSplitter::~WSplitter() {
@@ -73,7 +73,7 @@ void WSplitter::setup(QDomNode node, const SkinContext& context) {
     }
 }
 
-void WSplitter::slotSplitterMoved() {
+void WSplitter::onSplitterMoved() {
     if (!m_configKey.group.isEmpty() && !m_configKey.item.isEmpty()) {
         QStringList sizeStrList;
         foreach (const int& sizeInt, sizes()) {

@@ -22,7 +22,7 @@ class WComboBox : public QComboBox, public WBaseWidget {
     bool event(QEvent* pEvent);
 
   private slots:
-    void slotCurrentIndexChanged(int index);
+    void onCurrentIndexChanged(int index);
 };
 
 #endif /* WCOMBOBOX_H */

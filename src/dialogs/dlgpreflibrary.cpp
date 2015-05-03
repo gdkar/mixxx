@@ -38,27 +38,27 @@ DlgPrefLibrary::DlgPrefLibrary(QWidget * parent,
           m_baddedDirectory(false),
           m_iOriginalTrackTableRowHeight(Library::kDefaultRowHeightPx) {
     setupUi(this);
-    slotUpdate();
+    onUpdate();
     checkbox_ID3_sync->setVisible(false);
 
     connect(this, SIGNAL(requestAddDir(QString)),
-            m_pLibrary, SLOT(slotRequestAddDir(QString)));
+            m_pLibrary, SLOT(onRequestAddDir(QString)));
     connect(this, SIGNAL(requestRemoveDir(QString, Library::RemovalType)),
-            m_pLibrary, SLOT(slotRequestRemoveDir(QString, Library::RemovalType)));
+            m_pLibrary, SLOT(onRequestRemoveDir(QString, Library::RemovalType)));
     connect(this, SIGNAL(requestRelocateDir(QString,QString)),
-            m_pLibrary, SLOT(slotRequestRelocateDir(QString,QString)));
+            m_pLibrary, SLOT(onRequestRelocateDir(QString,QString)));
     connect(PushButtonAddDir, SIGNAL(clicked()),
-            this, SLOT(slotAddDir()));
+            this, SLOT(onAddDir()));
     connect(PushButtonRemoveDir, SIGNAL(clicked()),
-            this, SLOT(slotRemoveDir()));
+            this, SLOT(onRemoveDir()));
     connect(PushButtonRelocateDir, SIGNAL(clicked()),
-            this, SLOT(slotRelocateDir()));
-    //connect(pushButtonM4A, SIGNAL(clicked()), this, SLOT(slotM4ACheck()));
+            this, SLOT(onRelocateDir()));
+    //connect(pushButtonM4A, SIGNAL(clicked()), this, SLOT(onM4ACheck()));
     connect(pushButtonExtraPlugins, SIGNAL(clicked()),
-            this, SLOT(slotExtraPlugins()));
+            this, SLOT(onExtraPlugins()));
 
     // plugins are loaded in src/main.cpp way early in boot so this is safe
-    // here, doesn't need done at every slotUpdate
+    // here, doesn't need done at every onUpdate
     QStringList plugins(SoundSourceProxy::supportedFileExtensionsByPlugins());
     if (plugins.length() > 0) {
         pluginsLabel->setText(plugins.join(", "));
@@ -68,24 +68,24 @@ DlgPrefLibrary::DlgPrefLibrary(QWidget * parent,
     int rowHeight = m_pLibrary->getTrackTableRowHeight();
     spinBoxRowHeight->setValue(rowHeight);
     connect(spinBoxRowHeight, SIGNAL(valueChanged(int)),
-            this, SLOT(slotRowHeightValueChanged(int)));
+            this, SLOT(onRowHeightValueChanged(int)));
 
     connect(libraryFontButton, SIGNAL(clicked()),
-            this, SLOT(slotSelectFont()));
+            this, SLOT(onSelectFont()));
     connect(this, SIGNAL(setTrackTableFont(QFont)),
-            m_pLibrary, SLOT(slotSetTrackTableFont(QFont)));
+            m_pLibrary, SLOT(onSetTrackTableFont(QFont)));
     connect(this, SIGNAL(setTrackTableRowHeight(int)),
-            m_pLibrary, SLOT(slotSetTrackTableRowHeight(int)));
+            m_pLibrary, SLOT(onSetTrackTableRowHeight(int)));
 }
 
 DlgPrefLibrary::~DlgPrefLibrary() {
 }
 
-void DlgPrefLibrary::slotShow() {
+void DlgPrefLibrary::onShow() {
     m_baddedDirectory = false;
 }
 
-void DlgPrefLibrary::slotHide() {
+void DlgPrefLibrary::onHide() {
     if (!m_baddedDirectory) {
         return;
     }
@@ -129,11 +129,11 @@ void DlgPrefLibrary::initialiseDirList() {
     }
 }
 
-void DlgPrefLibrary::slotExtraPlugins() {
+void DlgPrefLibrary::onExtraPlugins() {
     QDesktopServices::openUrl(QUrl(MIXXX_ADDONS_URL));
 }
 
-void DlgPrefLibrary::slotResetToDefaults() {
+void DlgPrefLibrary::onResetToDefaults() {
     checkBox_library_scan->setChecked(false);
     checkbox_ID3_sync->setChecked(false);
     checkBox_use_relative_path->setChecked(false);
@@ -148,7 +148,7 @@ void DlgPrefLibrary::slotResetToDefaults() {
     setLibraryFont(QApplication::font());
 }
 
-void DlgPrefLibrary::slotUpdate() {
+void DlgPrefLibrary::onUpdate() {
     initialiseDirList();
     checkBox_library_scan->setChecked((bool)m_pconfig->getValueString(
             ConfigKey("[Library]","RescanOnStartup")).toInt());
@@ -184,24 +184,24 @@ void DlgPrefLibrary::slotUpdate() {
     setLibraryFont(m_originalTrackTableFont);
 }
 
-void DlgPrefLibrary::slotCancel() {
+void DlgPrefLibrary::onCancel() {
     // Undo any changes in the library font or row height.
     emit(setTrackTableRowHeight(m_iOriginalTrackTableRowHeight));
     emit(setTrackTableFont(m_originalTrackTableFont));
 }
 
-void DlgPrefLibrary::slotAddDir() {
+void DlgPrefLibrary::onAddDir() {
     QString fd = QFileDialog::getExistingDirectory(
         this, tr("Choose a music directory"),
         QDesktopServices::storageLocation(QDesktopServices::MusicLocation));
     if (!fd.isEmpty()) {
         emit(requestAddDir(fd));
-        slotUpdate();
+        onUpdate();
         m_baddedDirectory = true;
     }
 }
 
-void DlgPrefLibrary::slotRemoveDir() {
+void DlgPrefLibrary::onRemoveDir() {
     QModelIndex index = dirList->currentIndex();
     QString fd = index.data().toString();
     QMessageBox removeMsgBox;
@@ -254,10 +254,10 @@ void DlgPrefLibrary::slotRemoveDir() {
     }
 
     emit(requestRemoveDir(fd, removalType));
-    slotUpdate();
+    onUpdate();
 }
 
-void DlgPrefLibrary::slotRelocateDir() {
+void DlgPrefLibrary::onRelocateDir() {
     QModelIndex index = dirList->currentIndex();
     QString currentFd = index.data().toString();
 
@@ -278,11 +278,11 @@ void DlgPrefLibrary::slotRelocateDir() {
 
     if (!fd.isEmpty()) {
         emit(requestRelocateDir(currentFd, fd));
-        slotUpdate();
+        onUpdate();
     }
 }
 
-void DlgPrefLibrary::slotApply() {
+void DlgPrefLibrary::onApply() {
     m_pconfig->set(ConfigKey("[Library]","RescanOnStartup"),
                 ConfigValue((int)checkBox_library_scan->isChecked()));
     m_pconfig->set(ConfigKey("[Library]","WriteAudioTags"),
@@ -324,7 +324,7 @@ void DlgPrefLibrary::slotApply() {
     m_pconfig->Save();
 }
 
-void DlgPrefLibrary::slotRowHeightValueChanged(int height) {
+void DlgPrefLibrary::onRowHeightValueChanged(int height) {
     emit(setTrackTableRowHeight(height));
 }
 
@@ -342,7 +342,7 @@ void DlgPrefLibrary::setLibraryFont(const QFont& font) {
     spinBoxRowHeight->setMinimum(fontHeight);
 }
 
-void DlgPrefLibrary::slotSelectFont() {
+void DlgPrefLibrary::onSelectFont() {
     // False if the user cancels font selection.
     bool ok = false;
     QFont font = QFontDialog::getFont(&ok, m_pLibrary->getTrackTableFont(),

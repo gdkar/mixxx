@@ -31,9 +31,9 @@ class BaseExternalLibraryFeature : public LibraryFeature {
     QModelIndex m_lastRightClickedIndex;
 
   private slots:
-    void slotAddToAutoDJ();
-    void slotAddToAutoDJTop();
-    void slotImportAsMixxxPlaylist();
+    void onAddToAutoDJ();
+    void onAddToAutoDJTop();
+    void onImportAsMixxxPlaylist();
 
   private:
     void addToAutoDJ(bool bTop);

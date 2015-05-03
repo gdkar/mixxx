@@ -17,13 +17,13 @@ CoverArtDelegate::CoverArtDelegate(QObject *parent)
           m_iIdColumn(-1) {
     // This assumes that the parent is wtracktableview
     connect(parent, SIGNAL(onlyCachedCoverArt(bool)),
-            this, SLOT(slotOnlyCachedCoverArt(bool)));
+            this, SLOT(onOnlyCachedCoverArt(bool)));
 
     CoverArtCache* pCache = CoverArtCache::instance();
     if (pCache) {
         connect(pCache, SIGNAL(coverFound(const QObject*, int, const CoverInfo&,
                                           QPixmap, bool)),
-                this, SLOT(slotCoverFound(const QObject*, int, const CoverInfo&,
+                this, SLOT(onCoverFound(const QObject*, int, const CoverInfo&,
                                           QPixmap, bool)));
     }
 
@@ -55,7 +55,7 @@ CoverArtDelegate::CoverArtDelegate(QObject *parent)
 CoverArtDelegate::~CoverArtDelegate() {
 }
 
-void CoverArtDelegate::slotOnlyCachedCoverArt(bool b) {
+void CoverArtDelegate::onOnlyCachedCoverArt(bool b) {
     m_bOnlyCachedCover = b;
 
     // If we can request non-cache covers now, request updates for all rows that
@@ -68,13 +68,13 @@ void CoverArtDelegate::slotOnlyCachedCoverArt(bool b) {
     }
 }
 
-void CoverArtDelegate::slotCoverFound(const QObject* pRequestor,
+void CoverArtDelegate::onCoverFound(const QObject* pRequestor,
                                       int requestReference,
                                       const CoverInfo& info,
                                       QPixmap pixmap, bool fromCache) {
     Q_UNUSED(info);
     if (pRequestor == this && !pixmap.isNull() && !fromCache) {
-        // qDebug() << "CoverArtDelegate::slotCoverFound" << pRequestor << info
+        // qDebug() << "CoverArtDelegate::onCoverFound" << pRequestor << info
         //          << pixmap.size();
         QLinkedList<int> rows = m_hashToRow.take(requestReference);
         foreach(int row, rows) {
@@ -112,7 +112,7 @@ void CoverArtDelegate::paint(QPainter *painter,
     info.hash = index.sibling(index.row(), m_iCoverHashColumn).data().toUInt();
     info.trackLocation = index.sibling(index.row(), m_iTrackLocationColumn).data().toString();
 
-    // We listen for updates via slotCoverFound above and signal to
+    // We listen for updates via onCoverFound above and signal to
     // BaseSqlTableModel when a row's cover is ready.
     QPixmap pixmap = pCache->requestCover(info, this, info.hash, option.rect.width(),
                                           m_bOnlyCachedCover, true);

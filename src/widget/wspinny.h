@@ -33,8 +33,8 @@ class WSpinny : public QGLWidget, public WBaseWidget, public VinylSignalQualityL
     void dropEvent(QDropEvent *event);
 
   public slots:
-    void slotLoadTrack(TrackPointer);
-    void slotReset();
+    void onLoadTrack(TrackPointer);
+    void onReset();
     void updateVinylControlSpeed(double rpm);
     void updateVinylControlEnabled(double enabled);
     void updateVinylControlSignalEnabled(double enabled);
@@ -42,9 +42,9 @@ class WSpinny : public QGLWidget, public WBaseWidget, public VinylSignalQualityL
 
   protected slots:
     void maybeUpdate();
-    void slotCoverFound(const QObject* pRequestor, int requestReference,
+    void onCoverFound(const QObject* pRequestor, int requestReference,
                         const CoverInfo& info, QPixmap pixmap, bool fromCache);
-    void slotTrackCoverArtUpdated();
+    void onTrackCoverArtUpdated();
 
 
   signals:

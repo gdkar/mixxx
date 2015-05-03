@@ -25,9 +25,9 @@ class EngineTalkoverDucking : public QObject, public EngineSideChainCompressor {
     CSAMPLE getGain(int numFrames);
 
   public slots:
-    void slotSampleRateChanged(double);
-    void slotDuckStrengthChanged(double);
-    void slotDuckModeChanged(double);
+    void onSampleRateChanged(double);
+    void onDuckStrengthChanged(double);
+    void onDuckModeChanged(double);
 
   private:
     ConfigObject<ConfigValue>* m_pConfig;

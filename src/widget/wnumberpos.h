@@ -23,10 +23,10 @@ class WNumberPos : public WNumber {
 
   private slots:
     void setValue(double dValue);
-    void slotSetValue(double);
-    void slotSetRemain(double dRemain);
-    void slotSetTrackSampleRate(double dSampleRate);
-    void slotSetTrackSamples(double dSamples);
+    void onSetValue(double);
+    void onSetRemain(double dRemain);
+    void onSetTrackSampleRate(double dSampleRate);
+    void onSetTrackSamples(double dSamples);
 
   private:
     // Old value set

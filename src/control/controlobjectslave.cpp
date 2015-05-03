@@ -45,7 +45,7 @@ bool ControlObjectSlave::connectValueChanged(const QObject* receiver,
             // Connect to ControlObjectPrivate only if required. Do not allow
             // duplicate connections.
             connect(m_pControl.data(), SIGNAL(valueChanged(double, QObject*)),
-                    this, SLOT(slotValueChanged(double, QObject*)),
+                    this, SLOT(onValueChanged(double, QObject*)),
                     static_cast<Qt::ConnectionType>(Qt::DirectConnection |
                                                     Qt::UniqueConnection));
         }

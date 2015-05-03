@@ -60,14 +60,14 @@ class ControllerManager : public QObject {
     void closeController(Controller* pController);
 
     // Writes out presets for currently connected input devices
-    void slotSavePresets(bool onlyActive=false);
+    void onSavePresets(bool onlyActive=false);
 
   private slots:
     // Open whatever controllers are selected in the preferences. This currently
     // only runs on start-up but maybe should instead be signaled by the
     // preferences dialog on apply, and only open/close changed devices
-    int slotSetUpDevices();
-    void slotShutdown();
+    int onSetUpDevices();
+    void onShutdown();
     bool loadPreset(Controller* pController,
                     ControllerPresetPointer preset);
     // Calls poll() on all devices that have isPolling() true.

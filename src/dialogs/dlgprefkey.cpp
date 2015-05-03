@@ -99,8 +99,8 @@ void DlgPrefKey::loadSettings() {
 
     if(m_pConfig->getValueString(
         ConfigKey(VAMP_CONFIG_KEY, VAMP_ANALYSER_KEY_PLUGIN_ID)) == "") {
-        slotResetToDefaults();
-        slotApply(); // Write to config file so AnalyserKey can get the data
+        onResetToDefaults();
+        onApply(); // Write to config file so AnalyserKey can get the data
         return;
     }
 
@@ -144,12 +144,12 @@ void DlgPrefKey::loadSettings() {
     }
 
     if (!m_listIdentifier.contains(pluginid)) {
-        slotResetToDefaults();
+        onResetToDefaults();
     }
-    slotUpdate();
+    onUpdate();
 }
 
-void DlgPrefKey::slotResetToDefaults() {
+void DlgPrefKey::onResetToDefaults() {
     m_bAnalyserEnabled = true;
     m_bFastAnalysisEnabled = false;
     m_bReanalyzeEnabled = false;
@@ -162,7 +162,7 @@ void DlgPrefKey::slotResetToDefaults() {
     radioNotationTraditional->setChecked(true);
     setNotationTraditional(true);
 
-    slotUpdate();
+    onUpdate();
 }
 
 void DlgPrefKey::pluginSelected(int i) {
@@ -170,25 +170,25 @@ void DlgPrefKey::pluginSelected(int i) {
         return;
     }
     m_selectedAnalyser = m_listIdentifier[i];
-    slotUpdate();
+    onUpdate();
 }
 
 void DlgPrefKey::analyserEnabled(int i) {
     m_bAnalyserEnabled = static_cast<bool>(i);
-    slotUpdate();
+    onUpdate();
 }
 
 void DlgPrefKey::fastAnalysisEnabled(int i) {
     m_bFastAnalysisEnabled = static_cast<bool>(i);
-    slotUpdate();
+    onUpdate();
 }
 
 void DlgPrefKey::reanalyzeEnabled(int i){
     m_bReanalyzeEnabled = static_cast<bool>(i);
-    slotUpdate();
+    onUpdate();
 }
 
-void DlgPrefKey::slotApply() {
+void DlgPrefKey::onApply() {
     int selected = m_listIdentifier.indexOf(m_selectedAnalyser);
     if (selected == -1) {
         return;
@@ -257,12 +257,12 @@ void DlgPrefKey::slotApply() {
     m_pConfig->Save();
 }
 
-void DlgPrefKey::slotUpdate() {
+void DlgPrefKey::onUpdate() {
     plugincombo->setEnabled(m_bAnalyserEnabled);
     banalyserenabled->setChecked(m_bAnalyserEnabled);
     bfastAnalysisEnabled->setChecked(m_bFastAnalysisEnabled);
     breanalyzeEnabled->setChecked(m_bReanalyzeEnabled);
-    slotApply();
+    onApply();
 
     if (!m_bAnalyserEnabled) {
         return;
@@ -270,7 +270,7 @@ void DlgPrefKey::slotUpdate() {
 
     int comboselected = m_listIdentifier.indexOf(m_selectedAnalyser);
     if (comboselected == -1) {
-        qDebug() << "DlgPrefKey: Plugin not found in slotUpdate()";
+        qDebug() << "DlgPrefKey: Plugin not found in onUpdate()";
         return;
     }
     plugincombo->setCurrentIndex(comboselected);
@@ -325,7 +325,7 @@ void DlgPrefKey::setNotationCustom(bool active) {
          it != m_keyLineEdits.end(); ++it) {
         it.value()->setEnabled(true);
     }
-    slotUpdate();
+    onUpdate();
 }
 
 void DlgPrefKey::setNotation(KeyUtils::KeyNotation notation) {
@@ -334,7 +334,7 @@ void DlgPrefKey::setNotation(KeyUtils::KeyNotation notation) {
         it.value()->setText(KeyUtils::keyToString(it.key(), notation));
         it.value()->setEnabled(false);
     }
-    slotUpdate();
+    onUpdate();
 }
 
 void DlgPrefKey::setNotationTraditional(bool active) {

@@ -30,11 +30,11 @@ class EffectSlot : public QObject {
 
     unsigned int numParameterSlots() const;
     EffectParameterSlotPointer addEffectParameterSlot();
-    EffectParameterSlotPointer getEffectParameterSlot(unsigned int slotNumber);
+    EffectParameterSlotPointer getEffectParameterSlot(unsigned int onNumber);
 
     unsigned int numButtonParameterSlots() const;
     EffectButtonParameterSlotPointer addEffectButtonParameterSlot();
-    EffectButtonParameterSlotPointer getEffectButtonParameterSlot(unsigned int slotNumber);
+    EffectButtonParameterSlotPointer getEffectButtonParameterSlot(unsigned int onNumber);
 
     void onChainSuperParameterChanged(double parameter, bool force=false);
 
@@ -53,15 +53,15 @@ class EffectSlot : public QObject {
     // Request that this EffectSlot load the given Effect
     void loadEffect(EffectPointer pEffect);
 
-    void slotLoaded(double v);
-    void slotNumParameters(double v);
-    void slotNumParameterSlots(double v);
-    void slotEnabled(double v);
-    void slotNextEffect(double v);
-    void slotPrevEffect(double v);
-    void slotClear(double v);
-    void slotEffectSelector(double v);
-    void slotEffectEnabledChanged(bool enabled);
+    void onLoaded(double v);
+    void onNumParameters(double v);
+    void onNumParameterSlots(double v);
+    void onEnabled(double v);
+    void onNextEffect(double v);
+    void onPrevEffect(double v);
+    void onClear(double v);
+    void onEffectSelector(double v);
+    void onEffectEnabledChanged(bool enabled);
 
   signals:
     // Indicates that the effect pEffect has been loaded into this

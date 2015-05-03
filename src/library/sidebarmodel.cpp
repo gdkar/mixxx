@@ -20,27 +20,27 @@ SidebarModel::~SidebarModel() {
 void SidebarModel::addLibraryFeature(LibraryFeature* feature) {
     m_sFeatures.push_back(feature);
     connect(feature, SIGNAL(featureIsLoading(LibraryFeature*, bool)),
-            this, SLOT(slotFeatureIsLoading(LibraryFeature*, bool)));
+            this, SLOT(onFeatureIsLoading(LibraryFeature*, bool)));
     connect(feature, SIGNAL(featureLoadingFinished(LibraryFeature*)),
-            this, SLOT(slotFeatureLoadingFinished(LibraryFeature*)));
+            this, SLOT(onFeatureLoadingFinished(LibraryFeature*)));
     connect(feature, SIGNAL(featureSelect(LibraryFeature*, const QModelIndex&)),
-            this, SLOT(slotFeatureSelect(LibraryFeature*, const QModelIndex&)));
+            this, SLOT(onFeatureSelect(LibraryFeature*, const QModelIndex&)));
 
     QAbstractItemModel* model = feature->getChildModel();
 
     connect(model, SIGNAL(modelReset()),
-            this, SLOT(slotModelReset()));
+            this, SLOT(onModelReset()));
     connect(model, SIGNAL(dataChanged(const QModelIndex&,const QModelIndex&)),
-            this, SLOT(slotDataChanged(const QModelIndex&,const QModelIndex&)));
+            this, SLOT(onDataChanged(const QModelIndex&,const QModelIndex&)));
 
     connect(model, SIGNAL(rowsAboutToBeInserted(const QModelIndex&, int, int)),
-            this, SLOT(slotRowsAboutToBeInserted(const QModelIndex&, int, int)));
+            this, SLOT(onRowsAboutToBeInserted(const QModelIndex&, int, int)));
     connect(model, SIGNAL(rowsAboutToBeRemoved(const QModelIndex&, int, int)),
-            this, SLOT(slotRowsAboutToBeRemoved(const QModelIndex&, int, int)));
+            this, SLOT(onRowsAboutToBeRemoved(const QModelIndex&, int, int)));
     connect(model, SIGNAL(rowsInserted(const QModelIndex&, int, int)),
-            this, SLOT(slotRowsInserted(const QModelIndex&, int, int)));
+            this, SLOT(onRowsInserted(const QModelIndex&, int, int)));
     connect(model, SIGNAL(rowsRemoved(const QModelIndex&, int, int)),
-            this, SLOT(slotRowsRemoved(const QModelIndex&, int, int)));
+            this, SLOT(onRowsRemoved(const QModelIndex&, int, int)));
 
 }
 
@@ -332,45 +332,45 @@ QModelIndex SidebarModel::translateSourceIndex(const QModelIndex& index) {
     return translatedIndex;
 }
 
-void SidebarModel::slotDataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight) {
+void SidebarModel::onDataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight) {
     Q_UNUSED(topLeft);
     Q_UNUSED(bottomRight);
-    //qDebug() << "slotDataChanged topLeft:" << topLeft << "bottomRight:" << bottomRight;
+    //qDebug() << "onDataChanged topLeft:" << topLeft << "bottomRight:" << bottomRight;
 }
 
-void SidebarModel::slotRowsAboutToBeInserted(const QModelIndex& parent, int start, int end) {
-    //qDebug() << "slotRowsABoutToBeInserted" << parent << start << end;
+void SidebarModel::onRowsAboutToBeInserted(const QModelIndex& parent, int start, int end) {
+    //qDebug() << "onRowsABoutToBeInserted" << parent << start << end;
 
     QModelIndex newParent = translateSourceIndex(parent);
     beginInsertRows(newParent, start, end);
 }
 
-void SidebarModel::slotRowsAboutToBeRemoved(const QModelIndex& parent, int start, int end) {
-    //qDebug() << "slotRowsABoutToBeRemoved" << parent << start << end;
+void SidebarModel::onRowsAboutToBeRemoved(const QModelIndex& parent, int start, int end) {
+    //qDebug() << "onRowsABoutToBeRemoved" << parent << start << end;
 
     QModelIndex newParent = translateSourceIndex(parent);
     beginRemoveRows(newParent, start, end);
 }
 
-void SidebarModel::slotRowsInserted(const QModelIndex& parent, int start, int end) {
+void SidebarModel::onRowsInserted(const QModelIndex& parent, int start, int end) {
     Q_UNUSED(parent);
     Q_UNUSED(start);
     Q_UNUSED(end);
-    //qDebug() << "slotRowsInserted" << parent << start << end;
+    //qDebug() << "onRowsInserted" << parent << start << end;
     //QModelIndex newParent = translateSourceIndex(parent);
     endInsertRows();
 }
 
-void SidebarModel::slotRowsRemoved(const QModelIndex& parent, int start, int end) {
+void SidebarModel::onRowsRemoved(const QModelIndex& parent, int start, int end) {
     Q_UNUSED(parent);
     Q_UNUSED(start);
     Q_UNUSED(end);
-    //qDebug() << "slotRowsRemoved" << parent << start << end;
+    //qDebug() << "onRowsRemoved" << parent << start << end;
     //QModelIndex newParent = translateSourceIndex(parent);
     endRemoveRows();
 }
 
-void SidebarModel::slotModelReset() {
+void SidebarModel::onModelReset() {
     // If a child model is reset, we can't really do anything but reset(). This
     // will close any open items.
     reset();
@@ -381,19 +381,19 @@ void SidebarModel::slotModelReset() {
  * See RhythmboxFeature for an example, in which the title becomes '(loading) Rhythmbox'
  * If selectFeature is true, the feature is selected when the title change occurs.
  */
-void SidebarModel::slotFeatureIsLoading(LibraryFeature * feature, bool selectFeature) {
+void SidebarModel::onFeatureIsLoading(LibraryFeature * feature, bool selectFeature) {
     featureRenamed(feature);
     if (selectFeature) {
-        slotFeatureSelect(feature);
+        onFeatureSelect(feature);
     }
 }
 
 /* Tobias: This slot is somewhat redundant but I decided
  * to leave it for code readability reasons
  */
-void SidebarModel::slotFeatureLoadingFinished(LibraryFeature * feature) {
+void SidebarModel::onFeatureLoadingFinished(LibraryFeature * feature) {
     featureRenamed(feature);
-    slotFeatureSelect(feature);
+    onFeatureSelect(feature);
 }
 
 void SidebarModel::featureRenamed(LibraryFeature* pFeature) {
@@ -405,7 +405,7 @@ void SidebarModel::featureRenamed(LibraryFeature* pFeature) {
     }
 }
 
-void SidebarModel::slotFeatureSelect(LibraryFeature* pFeature, const QModelIndex& featureIndex) {
+void SidebarModel::onFeatureSelect(LibraryFeature* pFeature, const QModelIndex& featureIndex) {
     QModelIndex ind;
     if (featureIndex.isValid()) {
         TreeItem* item = (TreeItem*)featureIndex.internalPointer();

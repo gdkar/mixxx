@@ -11,7 +11,6 @@ class PixmapSource {
     PixmapSource();
     PixmapSource(const QString& filepath);
     virtual ~PixmapSource();
-
     bool isEmpty() const;
     bool isSVG() const;
     bool isBitmap() const;
@@ -20,13 +19,11 @@ class PixmapSource {
     QString getPath() const;
     QByteArray getData() const;
     QString getId() const;
-
   private:
     enum Type {
         SVG,
         BITMAP
     };
-
     QString m_path;
     QByteArray m_baData;
     enum Type m_eType;

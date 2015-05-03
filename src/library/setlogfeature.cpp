@@ -21,13 +21,13 @@ SetlogFeature::SetlogFeature(QObject* parent,
                                                    true); //show all tracks
     m_pJoinWithPreviousAction = new QAction(tr("Join with previous"), this);
     connect(m_pJoinWithPreviousAction, SIGNAL(triggered()),
-            this, SLOT(slotJoinWithPrevious()));
+            this, SLOT(onJoinWithPrevious()));
 
     m_pGetNewPlaylist = new QAction(tr("Create new history playlist"), this);
-    connect(m_pGetNewPlaylist, SIGNAL(triggered()), this, SLOT(slotGetNewPlaylist()));
+    connect(m_pGetNewPlaylist, SIGNAL(triggered()), this, SLOT(onGetNewPlaylist()));
 
     // initialised in a new generic slot(get new history playlist purpose)
-    emit(slotGetNewPlaylist());
+    emit(onGetNewPlaylist());
 
     //construct child model
     TreeItem *rootItem = new TreeItem();
@@ -58,7 +58,7 @@ void SetlogFeature::bindWidget(WLibrary* libraryWidget,
     BasePlaylistFeature::bindWidget(libraryWidget,
                                     keyboard);
     connect(&PlayerInfo::instance(), SIGNAL(currentPlayingTrackChanged(TrackPointer)),
-            this, SLOT(slotPlayingTrackChanged(TrackPointer)));
+            this, SLOT(onPlayingTrackChanged(TrackPointer)));
 }
 
 void SetlogFeature::onRightClick(const QPoint& globalPos) {
@@ -148,8 +148,8 @@ void SetlogFeature::decorateChild(TreeItem* item, int playlist_id) {
     }
 }
 
-void SetlogFeature::slotGetNewPlaylist() {
-    //qDebug() << "slotGetNewPlaylist() succesfully triggered !";
+void SetlogFeature::onGetNewPlaylist() {
+    //qDebug() << "onGetNewPlaylist() succesfully triggered !";
 
     // create a new playlist for today
     QString set_log_name_format;
@@ -173,11 +173,11 @@ void SetlogFeature::slotGetNewPlaylist() {
         qDebug() << "An unknown error occurred while creating playlist: " << set_log_name;
     }
 
-    slotPlaylistTableChanged(m_playlistId); // For moving selection
+    onPlaylistTableChanged(m_playlistId); // For moving selection
     emit(showTrackModel(m_pPlaylistTableModel));
 }
 
-void SetlogFeature::slotJoinWithPrevious() {
+void SetlogFeature::onJoinWithPrevious() {
     //qDebug() << "slotJoinWithPrevious() row:" << m_lastRightClickedIndex.data();
 
     if (m_lastRightClickedIndex.isValid()) {
@@ -220,7 +220,7 @@ void SetlogFeature::slotJoinWithPrevious() {
                 qDebug() << "slotJoinWithPrevious() current:" << currentPlaylistId << " previous:" << previousPlaylistId;
                 if (m_playlistDao.copyPlaylistTracks(currentPlaylistId, previousPlaylistId)) {
                     m_playlistDao.deletePlaylist(currentPlaylistId);
-                    slotPlaylistTableChanged(previousPlaylistId); // For moving selection
+                    onPlaylistTableChanged(previousPlaylistId); // For moving selection
                     emit(showTrackModel(m_pPlaylistTableModel));
                 }
             }
@@ -228,7 +228,7 @@ void SetlogFeature::slotJoinWithPrevious() {
     }
 }
 
-void SetlogFeature::slotPlayingTrackChanged(TrackPointer currentPlayingTrack) {
+void SetlogFeature::onPlayingTrackChanged(TrackPointer currentPlayingTrack) {
     if (!currentPlayingTrack) {
         return;
     }
@@ -274,12 +274,12 @@ void SetlogFeature::slotPlayingTrackChanged(TrackPointer currentPlayingTrack) {
     }
 }
 
-void SetlogFeature::slotPlaylistTableChanged(int playlistId) {
+void SetlogFeature::onPlaylistTableChanged(int playlistId) {
     if (!m_pPlaylistTableModel) {
         return;
     }
 
-    //qDebug() << "slotPlaylistTableChanged() playlistId:" << playlistId;
+    //qDebug() << "onPlaylistTableChanged() playlistId:" << playlistId;
     PlaylistDAO::HiddenType type = m_playlistDao.getHiddenType(playlistId);
     if (type == PlaylistDAO::PLHT_SET_LOG ||
         type == PlaylistDAO::PLHT_UNKNOWN) { // In case of a deleted Playlist

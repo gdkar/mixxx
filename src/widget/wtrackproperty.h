@@ -22,8 +22,8 @@ class WTrackProperty : public WLabel {
     void trackDropped(QString filename, QString group);
 
   public slots:
-    void slotTrackLoaded(TrackPointer track);
-    void slotTrackUnloaded(TrackPointer track);
+    void onTrackLoaded(TrackPointer track);
+    void onTrackUnloaded(TrackPointer track);
 
   private slots:
     void updateLabel(TrackInfoObject*);

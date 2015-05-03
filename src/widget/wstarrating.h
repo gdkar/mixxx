@@ -21,8 +21,8 @@ class WStarRating : public QWidget, public WBaseWidget {
     QSize sizeHint() const;
 
   public slots:
-    void slotTrackLoaded(TrackPointer track);
-    void slotTrackUnloaded(TrackPointer track);
+    void onTrackLoaded(TrackPointer track);
+    void onTrackUnloaded(TrackPointer track);
 
   private slots:
     void updateRating(TrackInfoObject*);

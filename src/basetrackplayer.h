@@ -31,7 +31,7 @@ class BaseTrackPlayer : public BasePlayer {
     virtual ~BaseTrackPlayer() {}
     virtual TrackPointer getLoadedTrack() const = 0;
   public slots:
-    virtual void slotLoadTrack(TrackPointer pTrack, bool bPlay=false) = 0;
+    virtual void onLoadTrack(TrackPointer pTrack, bool bPlay=false) = 0;
   signals:
     void loadTrack(TrackPointer pTrack, bool bPlay=false);
     void loadTrackFailed(TrackPointer pTrack);
@@ -58,12 +58,12 @@ class BaseTrackPlayerImpl : public BaseTrackPlayer {
     EngineDeck* getEngineDeck() const;
     void setupEqControls();
   public slots:
-    void slotLoadTrack(TrackPointer track, bool bPlay=false);
-    void slotFinishLoading(TrackPointer pTrackInfoObject);
-    void slotLoadFailed(TrackPointer pTrackInfoObject, QString reason);
-    void slotUnloadTrack(TrackPointer track);
-    void slotSetReplayGain(double replayGain);
-    void slotPlayToggled(double);
+    void onLoadTrack(TrackPointer track, bool bPlay=false);
+    void onFinishLoading(TrackPointer pTrackInfoObject);
+    void onLoadFailed(TrackPointer pTrackInfoObject, QString reason);
+    void onUnloadTrack(TrackPointer track);
+    void onSetReplayGain(double replayGain);
+    void onPlayToggled(double);
   private:
     ConfigObject<ConfigValue>* m_pConfig;
     TrackPointer m_pLoadedTrack;

@@ -16,7 +16,7 @@ WCoverArtLabel::WCoverArtLabel(QWidget* parent)
     setAlignment(Qt::AlignCenter);
     setContextMenuPolicy(Qt::CustomContextMenu);
     connect(this, SIGNAL(customContextMenuRequested(QPoint)),
-            this, SLOT(slotCoverMenu(QPoint)));
+            this, SLOT(onCoverMenu(QPoint)));
     connect(m_pCoverMenu, SIGNAL(coverArtSelected(const CoverArt&)),
             this, SIGNAL(coverArtSelected(const CoverArt&)));
     connect(m_pCoverMenu, SIGNAL(reloadCoverArt()),
@@ -53,7 +53,7 @@ void WCoverArtLabel::setCoverArt(TrackPointer pTrack, const CoverInfo& info, QPi
     setMaximumSize(frameSize);
 }
 
-void WCoverArtLabel::slotCoverMenu(const QPoint& pos) {
+void WCoverArtLabel::onCoverMenu(const QPoint& pos) {
     m_pCoverMenu->popup(mapToGlobal(pos));
 }
 

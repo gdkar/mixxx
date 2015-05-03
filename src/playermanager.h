@@ -123,25 +123,25 @@ class PlayerManager : public QObject, public PlayerManagerInterface {
     // Used to determine if the user has configured an input for the given vinyl deck.
     bool hasVinylInput(int inputnum) const;
   public slots:
-    // Slots for loading tracks into a Player, which is either a Sampler or a Deck
-    void slotLoadTrackToPlayer(TrackPointer pTrack, QString group, bool play = false);
-    void slotLoadToPlayer(QString location, QString group);
+    // ons for loading tracks into a Player, which is either a Sampler or a Deck
+    void onLoadTrackToPlayer(TrackPointer pTrack, QString group, bool play = false);
+    void onLoadToPlayer(QString location, QString group);
 
-    // Slots for loading tracks to decks
-    void slotLoadTrackIntoNextAvailableDeck(TrackPointer pTrack);
+    // ons for loading tracks to decks
+    void onLoadTrackIntoNextAvailableDeck(TrackPointer pTrack);
     // Loads the location to the deck. deckNumber is 1-indexed
-    void slotLoadToDeck(QString location, int deckNumber);
+    void onLoadToDeck(QString location, int deckNumber);
 
     // Loads the location to the preview deck. previewDeckNumber is 1-indexed
-    void slotLoadToPreviewDeck(QString location, int previewDeckNumber);
-    // Slots for loading tracks to samplers
-    void slotLoadTrackIntoNextAvailableSampler(TrackPointer pTrack);
+    void onLoadToPreviewDeck(QString location, int previewDeckNumber);
+    // ons for loading tracks to samplers
+    void onLoadTrackIntoNextAvailableSampler(TrackPointer pTrack);
     // Loads the location to the sampler. samplerNumber is 1-indexed
-    void slotLoadToSampler(QString location, int samplerNumber);
+    void onLoadToSampler(QString location, int samplerNumber);
 
-    void slotNumDecksControlChanged(double v);
-    void slotNumSamplersControlChanged(double v);
-    void slotNumPreviewDecksControlChanged(double v);
+    void onNumDecksControlChanged(double v);
+    void onNumSamplersControlChanged(double v);
+    void onNumPreviewDecksControlChanged(double v);
 
   signals:
     void loadLocationToPlayer(QString location, QString group);

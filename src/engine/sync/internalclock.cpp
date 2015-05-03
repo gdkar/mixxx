@@ -24,19 +24,19 @@ InternalClock::InternalClock(const char* pGroup, SyncableListener* pEngineSync)
     m_pClockBpm.reset(new ControlLinPotmeter(ConfigKey(m_group, "bpm"),
                                           1, 200, 1, 0.1, true));
     connect(m_pClockBpm.data(), SIGNAL(valueChanged(double)),
-            this, SLOT(slotBpmChanged(double)),
+            this, SLOT(onBpmChanged(double)),
             Qt::DirectConnection);
 
     m_pClockBeatDistance.reset(new ControlObject(ConfigKey(m_group, "beat_distance")));
     connect(m_pClockBeatDistance.data(), SIGNAL(valueChanged(double)),
-            this, SLOT(slotBeatDistanceChanged(double)),
+            this, SLOT(onBeatDistanceChanged(double)),
             Qt::DirectConnection);
 
     m_pSyncMasterEnabled.reset(
         new ControlPushButton(ConfigKey(pGroup, "sync_master")));
     m_pSyncMasterEnabled->setButtonMode(ControlPushButton::TOGGLE);
     m_pSyncMasterEnabled->connectValueChangeRequest(
-        this, SLOT(slotSyncMasterEnabledChangeRequest(double)),
+        this, SLOT(onSyncMasterEnabledChangeRequest(double)),
         Qt::DirectConnection);
 }
 
@@ -58,7 +58,7 @@ void InternalClock::requestSyncPhase() {
     // TODO(owilliams): This should probably be how we reset the internal beat distance.
 }
 
-void InternalClock::slotSyncMasterEnabledChangeRequest(double state) {
+void InternalClock::onSyncMasterEnabledChangeRequest(double state) {
     bool currentlyMaster = getSyncMode() == SYNC_MASTER;
 
     if (state > 0.0) {
@@ -129,12 +129,12 @@ void InternalClock::setMasterParams(double beatDistance, double baseBpm, double 
     setMasterBeatDistance(beatDistance);
 }
 
-void InternalClock::slotBpmChanged(double bpm) {
+void InternalClock::onBpmChanged(double bpm) {
     updateBeatLength(m_iOldSampleRate, bpm);
     m_pEngineSync->notifyBpmChanged(this, bpm);
 }
 
-void InternalClock::slotBeatDistanceChanged(double beat_distance) {
+void InternalClock::onBeatDistanceChanged(double beat_distance) {
     if (beat_distance < 0.0 || beat_distance > 1.0) {
         return;
     }

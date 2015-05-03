@@ -376,6 +376,32 @@ class ReplayGain(Dependence):
     def configure(self, build, conf):
         build.env.Append(CPPPATH="#lib/replaygain")
 
+class RubberBand(Dependence):
+    RUBBERBAND_PATH = "rubberband"
+
+    def source(self, build):
+        return [ ("#lib/{}/src" + x).format(self.RUBBERBAND_PATH) for x in  (
+            "rubberband-c.cpp",
+            "RubberBandStretcher.cpp",
+            "StretcherProcess.cpp",
+            "StretchCalculator.cpp",
+            "dsp/AudioCurveCalculator.cpp",
+            "audiocurves/CompondAudioCurve.cpp",
+            "audiocurves/SpectralDifferenceAudioCurve.cpp",
+            "audiocurves/HighFrequencyAudioCurve.cpp",
+            "audiocurves/SilentAudioCurve.cpp",
+            "audiocurves/ConstantAudioCurve.cpp",
+            "audiocurves/PercussiveAudioCurve.cpp",
+            "dsp/Resampler.cpp",
+            "dsp/FFT.cpp",
+            "system/Allocators.cpp",
+            "system/sysutils.cpp",
+            "system/Thread.cpp",
+            "StretcherChnnelData.cpp",
+            "StretcherImpl.cpp") ]
+        def configure(self, build, conf, env=None):
+            if env is None: env = build.env
+            env.Append(CPPPATH=["#lib/{}".format(self.RUBBERBAND_PATH)])
 
 class SoundTouch(Dependence):
     SOUNDTOUCH_PATH = 'soundtouch-1.8.0'
@@ -606,8 +632,8 @@ class MixxxCore(Feature):
                    "engine/clockcontrol.cpp",
                    "engine/readaheadmanager.cpp",
                    "engine/enginetalkoverducking.cpp",
-                   "cachingreader.cpp",
-                   "cachingreaderworker.cpp",
+                   "engine/cachingreader.cpp",
+                   "engine/cachingreaderworker.cpp",
 
                    "analyser/analyserrg.cpp",
                    "analyser/analyserqueue.cpp",
@@ -899,7 +925,7 @@ class MixxxCore(Feature):
                    "encoder/encoder.cpp",
                    "encoder/encodermp3.cpp",
                    "encoder/encodervorbis.cpp",
-
+                    
                    "util/pa_ringbuffer.c",
                    "util/sleepableqthread.cpp",
                    "util/statsmanager.cpp",

@@ -34,8 +34,8 @@ class DlgTrackInfo : public QDialog, public Ui::DlgTrackInfo {
     void previous();
 
   private slots:
-    void slotNext();
-    void slotPrev();
+    void onNext();
+    void onPrev();
     void OK();
     void apply();
     void cancel();
@@ -45,20 +45,20 @@ class DlgTrackInfo : public QDialog, public Ui::DlgTrackInfo {
     void cueActivate();
     void cueDelete();
 
-    void slotBpmDouble();
-    void slotBpmHalve();
-    void slotBpmTwoThirds();
-    void slotBpmThreeFourth();
-    void slotBpmTap(double averageLength, int numSamples);
+    void onBpmDouble();
+    void onBpmHalve();
+    void onBpmTwoThirds();
+    void onBpmThreeFourth();
+    void onBpmTap(double averageLength, int numSamples);
 
     void reloadTrackMetadata();
     void updateTrackMetadata();
-    void slotOpenInFileBrowser();
+    void onOpenInFileBrowser();
 
-    void slotCoverFound(const QObject* pRequestor, int requestReference,
+    void onCoverFound(const QObject* pRequestor, int requestReference,
                         const CoverInfo& info, QPixmap pixmap, bool fromCache);
-    void slotCoverArtSelected(const CoverArt& art);
-    void slotReloadCoverArt();
+    void onCoverArtSelected(const CoverArt& art);
+    void onReloadCoverArt();
 
   private:
     void populateFields(TrackPointer pTrack);

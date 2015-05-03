@@ -28,7 +28,7 @@ WSearchLineEdit::WSearchLineEdit(QWidget* pParent)
             this, SLOT(setFocus()));
 
     connect(this, SIGNAL(textChanged(const QString&)),
-            this, SLOT(slotTextChanged(const QString&)));
+            this, SLOT(onTextChanged(const QString&)));
 
     // Set up a timer to search after a few hundred milliseconds timeout.  This
     // stops us from thrashing the database if you type really fast.
@@ -37,7 +37,7 @@ WSearchLineEdit::WSearchLineEdit(QWidget* pParent)
             this, SLOT(triggerSearch()));
 
     connect(this, SIGNAL(textChanged(const QString&)),
-            this, SLOT(slotSetupTimer(const QString&)));
+            this, SLOT(onSetupTimer(const QString&)));
 
     // When you hit enter, it will trigger the search.
     connect(this, SIGNAL(returnPressed()),
@@ -153,7 +153,7 @@ void WSearchLineEdit::restoreSearch(const QString& text) {
     updateCloseButton(text);
 }
 
-void WSearchLineEdit::slotSetupTimer(const QString& text)
+void WSearchLineEdit::onSetupTimer(const QString& text)
 {
     Q_UNUSED(text);
     m_searchTimer.stop();
@@ -195,7 +195,7 @@ void WSearchLineEdit::onSearchTextCleared() {
     emit(searchCleared());
 }
 
-void WSearchLineEdit::slotTextChanged(const QString& text) {
+void WSearchLineEdit::onTextChanged(const QString& text) {
     if (text.isEmpty()) {
         triggerSearch();
         emit(searchCleared());

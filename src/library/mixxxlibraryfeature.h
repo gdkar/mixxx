@@ -33,20 +33,16 @@ class MixxxLibraryFeature : public LibraryFeature {
                         TrackCollection* pTrackCollection,
                         ConfigObject<ConfigValue>* pConfig);
     virtual ~MixxxLibraryFeature();
-
     QVariant title();
     QIcon getIcon();
     bool dropAccept(QList<QUrl> urls, QObject* pSource);
     bool dragMoveAccept(QUrl url);
     TreeItemModel* getChildModel();
-    void bindWidget(WLibrary* pLibrary,
-                    MixxxKeyboard* pKeyboard);
-
+    void bindWidget(WLibrary* pLibrary,MixxxKeyboard* pKeyboard);
   public slots:
     void activate();
     void activateChild(const QModelIndex& index);
     void refreshLibraryModels();
-
   private:
     const QString kMissingTitle;
     const QString kHiddenTitle;

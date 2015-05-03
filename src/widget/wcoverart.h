@@ -24,19 +24,19 @@ class WCoverArt : public QWidget, public WBaseWidget {
     void setup(QDomNode node, const SkinContext& context);
 
   public slots:
-    void slotLoadTrack(TrackPointer);
-    void slotReset();
-    void slotEnable(bool);
+    void onLoadTrack(TrackPointer);
+    void onReset();
+    void onEnable(bool);
 
   signals:
     void trackDropped(QString filename, QString group);
 
   private slots:
-    void slotCoverFound(const QObject* pRequestor, int requestReference,
+    void onCoverFound(const QObject* pRequestor, int requestReference,
                         const CoverInfo& info, QPixmap pixmap, bool fromCache);
-    void slotCoverArtSelected(const CoverArt& art);
-    void slotReloadCoverArt();
-    void slotTrackCoverArtUpdated();
+    void onCoverArtSelected(const CoverArt& art);
+    void onReloadCoverArt();
+    void onTrackCoverArtUpdated();
 
   protected:
     void paintEvent(QPaintEvent*);

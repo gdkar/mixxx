@@ -22,16 +22,16 @@ DlgPrefModplug::~DlgPrefModplug() {
     delete m_pUi;
 }
 
-void DlgPrefModplug::slotApply() {
+void DlgPrefModplug::onApply() {
     applySettings();
     saveSettings();
 }
 
-void DlgPrefModplug::slotUpdate() {
+void DlgPrefModplug::onUpdate() {
     loadSettings();
 }
 
-void DlgPrefModplug::slotResetToDefaults() {
+void DlgPrefModplug::onResetToDefaults() {
     m_pUi->memoryLimit->setValue(256);
     m_pUi->oversampling->setChecked(true);
     m_pUi->noiseReduction->setChecked(false);

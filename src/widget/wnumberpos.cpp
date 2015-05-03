@@ -17,8 +17,8 @@ WNumberPos::WNumberPos(const char* group, QWidget* parent)
     m_pShowTrackTimeRemaining = new ControlObjectThread(
             "[Controls]", "ShowDurationRemaining");
     m_pShowTrackTimeRemaining->connectValueChanged(
-            this, SLOT(slotSetRemain(double)));
-    slotSetRemain(m_pShowTrackTimeRemaining->get());
+            this, SLOT(onSetRemain(double)));
+    onSetRemain(m_pShowTrackTimeRemaining->get());
 
     // We use the engine's playposition value directly because the parameter
     // normalization done by the widget system used to be unusable for this
@@ -26,12 +26,12 @@ WNumberPos::WNumberPos(const char* group, QWidget* parent)
     // result, the <Connection> parameter is no longer necessary in skin
     // definitions, but leaving it in is harmless.
     m_pVisualPlaypos = new ControlObjectThread(group, "playposition");
-    m_pVisualPlaypos->connectValueChanged(this, SLOT(slotSetValue(double)));
+    m_pVisualPlaypos->connectValueChanged(this, SLOT(onSetValue(double)));
 
     m_pTrackSamples = new ControlObjectThread(
             group, "track_samples");
     m_pTrackSamples->connectValueChanged(
-            this, SLOT(slotSetTrackSamples(double)));
+            this, SLOT(onSetTrackSamples(double)));
 
     // Tell the CO to re-emit its value since we could be created after it was
     // set to a valid value.
@@ -40,13 +40,13 @@ WNumberPos::WNumberPos(const char* group, QWidget* parent)
     m_pTrackSampleRate = new ControlObjectThread(
             group, "track_samplerate");
     m_pTrackSampleRate->connectValueChanged(
-            this, SLOT(slotSetTrackSampleRate(double)));
+            this, SLOT(onSetTrackSampleRate(double)));
 
     // Tell the CO to re-emit its value since we could be created after it was
     // set to a valid value.
     m_pTrackSampleRate->emitValueChanged();
 
-    slotSetValue(m_pVisualPlaypos->get());
+    onSetValue(m_pVisualPlaypos->get());
 }
 
 WNumberPos::~WNumberPos() {
@@ -61,28 +61,28 @@ void WNumberPos::mousePressEvent(QMouseEvent* pEvent) {
 
     if (leftClick) {
         setRemain(!m_bRemain);
-        m_pShowTrackTimeRemaining->slotSet(m_bRemain ? 1.0 : 0.0);
+        m_pShowTrackTimeRemaining->onSet(m_bRemain ? 1.0 : 0.0);
     }
 }
 
-void WNumberPos::slotSetTrackSamples(double dSamples) {
+void WNumberPos::onSetTrackSamples(double dSamples) {
     m_dTrackSamples = dSamples;
-    slotSetValue(m_dOldValue);
+    onSetValue(m_dOldValue);
 }
 
-void WNumberPos::slotSetTrackSampleRate(double dSampleRate) {
+void WNumberPos::onSetTrackSampleRate(double dSampleRate) {
     m_dTrackSampleRate = dSampleRate;
-    slotSetValue(m_dOldValue);
+    onSetValue(m_dOldValue);
 }
 
 void WNumberPos::setValue(double dValue) {
     // Ignore scaled signals from the skin connection.
     Q_UNUSED(dValue);
     // Update our value with the old value.
-    slotSetValue(m_dOldValue);
+    onSetValue(m_dOldValue);
 }
 
-void WNumberPos::slotSetValue(double dValue) {
+void WNumberPos::onSetValue(double dValue) {
     m_dOldValue = dValue;
 
     double valueMillis = 0.0;
@@ -105,7 +105,7 @@ void WNumberPos::slotSetValue(double dValue) {
     setText(valueString);
 }
 
-void WNumberPos::slotSetRemain(double remain) {
+void WNumberPos::onSetRemain(double remain) {
     setRemain(remain > 0.0);
 }
 
@@ -119,5 +119,5 @@ void WNumberPos::setRemain(bool bRemain) {
         m_skinText = "";
     }
     // Have the widget redraw itself with its current value.
-    slotSetValue(m_dOldValue);
+    onSetValue(m_dOldValue);
 }

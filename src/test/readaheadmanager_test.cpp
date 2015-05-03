@@ -4,7 +4,7 @@
 #include <QScopedPointer>
 
 #include "mixxxtest.h"
-#include "cachingreader.h"
+#include "engine/cachingreader.h"
 #include "control/controlobject.h"
 #include "engine/loopingcontrol.h"
 #include "engine/readaheadmanager.h"

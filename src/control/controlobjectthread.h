@@ -77,7 +77,7 @@ class ControlObjectThread : public QObject {
 
   public slots:
     // Set the control to a new value. Non-blocking.
-    inline void slotSet(double v) {
+    inline void onSet(double v) {
         set(v);
     }
 
@@ -109,7 +109,7 @@ class ControlObjectThread : public QObject {
   protected slots:
     // Receives the value from the master control and re-emits either
     // valueChanged(double) or valueChangedByThis(double) based on pSetter.
-    inline void slotValueChanged(double v, QObject* pSetter) {
+    inline void onValueChanged(double v, QObject* pSetter) {
         if (pSetter != this) {
             // This is base implementation of this function without scaling
             emit(valueChanged(v));

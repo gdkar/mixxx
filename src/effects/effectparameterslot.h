@@ -45,10 +45,10 @@ class EffectParameterSlot : public EffectParameterSlotBase {
 
   private slots:
     // Solely for handling control changes
-    void slotParameterValueChanged(double value);
-    void slotValueChanged(double v);
-    void slotLinkTypeChanging(double v);
-    void slotLinkInverseChanged(double v);
+    void onParameterValueChanged(double value);
+    void onValueChanged(double v);
+    void onLinkTypeChanging(double v);
+    void onLinkInverseChanged(double v);
 
   private:
     QString debugString() const {

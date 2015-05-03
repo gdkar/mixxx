@@ -33,7 +33,7 @@ void DlgTagFetcher::init() {
     connect(&m_TagFetcher, SIGNAL(fetchProgress(QString)),
             this, SLOT(fetchTagProgress(QString)));
     connect(&m_TagFetcher, SIGNAL(networkError(int, QString)),
-            this, SLOT(slotNetworkError(int, QString)));
+            this, SLOT(onNetworkError(int, QString)));
 
     // Resize columns, this can't be set in the ui file
     results->setColumnWidth(0, 50);  // Track column
@@ -110,7 +110,7 @@ void DlgTagFetcher::fetchTagFinished(const TrackPointer track,
     updateStack();
 }
 
-void DlgTagFetcher::slotNetworkError(int errorCode, QString app) {
+void DlgTagFetcher::onNetworkError(int errorCode, QString app) {
     m_networkError = errorCode==0 ?  FTWERROR : HTTPERROR;
     m_data.m_pending = false;
     QString httpStatusMessage = tr("HTTP Status: %1");

@@ -15,12 +15,12 @@ class DlgPrefEffects : public DlgPreferencePage, public Ui::DlgPrefEffectsDlg {
                    EffectsManager* pEffectsManager);
     virtual ~DlgPrefEffects() {}
 
-    void slotUpdate();
-    void slotApply();
-    void slotResetToDefaults();
+    void onUpdate();
+    void onApply();
+    void onResetToDefaults();
 
   private slots:
-    void slotEffectSelected(QListWidgetItem* pCurrent,
+    void onEffectSelected(QListWidgetItem* pCurrent,
                             QListWidgetItem* pPrevious);
 
   private:

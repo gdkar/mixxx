@@ -17,14 +17,14 @@ class DlgPrefReplayGain: public DlgPreferencePage,
 
   public slots:
     // Update initial gain increment
-    void slotUpdateReplayGainBoost();
-    void slotUpdateDefaultBoost();
-    void slotSetRGEnabled();
-    void slotSetRGAnalyserEnabled();
+    void onUpdateReplayGainBoost();
+    void onUpdateDefaultBoost();
+    void onSetRGEnabled();
+    void onSetRGAnalyserEnabled();
 
-    void slotApply();
-    void slotUpdate();
-    void slotResetToDefaults();
+    void onApply();
+    void onUpdate();
+    void onResetToDefaults();
 
   signals:
     void apply(const QString &);

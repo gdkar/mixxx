@@ -288,13 +288,13 @@ void TrackDAO::saveTrack(TrackInfoObject* pTrack) {
     }
 }
 
-void TrackDAO::slotTrackDirty(TrackInfoObject* pTrack) {
+void TrackDAO::onTrackDirty(TrackInfoObject* pTrack) {
     // Should not be possible.
     DEBUG_ASSERT_AND_HANDLE(pTrack != NULL) {
         return;
     }
 
-    // qDebug() << "TrackDAO::slotTrackDirty" << pTrack << "ID"
+    // qDebug() << "TrackDAO::onTrackDirty" << pTrack << "ID"
     //          << pTrack->getId() << pTrack->getInfo();
     // This is a private slot that is connected to TIO's created by this
     // TrackDAO. It is a way for the track to notify us that it has been
@@ -308,13 +308,13 @@ void TrackDAO::slotTrackDirty(TrackInfoObject* pTrack) {
     }
 }
 
-void TrackDAO::slotTrackClean(TrackInfoObject* pTrack) {
+void TrackDAO::onTrackClean(TrackInfoObject* pTrack) {
     // Should not be possible.
     DEBUG_ASSERT_AND_HANDLE(pTrack != NULL) {
         return;
     }
 
-    // qDebug() << "TrackDAO::slotTrackClean" << pTrack << "ID"
+    // qDebug() << "TrackDAO::onTrackClean" << pTrack << "ID"
     //          << pTrack->getId() << pTrack->getInfo();
     // This is a private slot that is connected to TIO's created by this
     // TrackDAO. It is a way for the track to notify us that it has been cleaned
@@ -343,13 +343,13 @@ void TrackDAO::databaseTracksChanged(QSet<int> tracksChanged) {
     emit(tracksAdded(tracksChanged));
 }
 
-void TrackDAO::slotTrackChanged(TrackInfoObject* pTrack) {
+void TrackDAO::onTrackChanged(TrackInfoObject* pTrack) {
     // Should not be possible.
     DEBUG_ASSERT_AND_HANDLE(pTrack != NULL) {
         return;
     }
 
-    // qDebug() << "TrackDAO::slotTrackChanged" << pTrack << "ID"
+    // qDebug() << "TrackDAO::onTrackChanged" << pTrack << "ID"
     //          << pTrack->getId() << pTrack->getInfo();
     // This is a private slot that is connected to TIO's created by this
     // TrackDAO. It is a way for the track to notify us that it changed.  It is
@@ -936,13 +936,13 @@ void TrackDAO::purgeTracks(const QList<int>& ids) {
     emit(forceModelUpdate());
 }
 
-void TrackDAO::slotTrackReferenceExpired(TrackInfoObject* pTrack) {
+void TrackDAO::onTrackReferenceExpired(TrackInfoObject* pTrack) {
     // Should not be possible.
     DEBUG_ASSERT_AND_HANDLE(pTrack != NULL) {
         return;
     }
 
-    // qDebug() << "TrackDAO::slotTrackReferenceExpired" << pTrack << "ID"
+    // qDebug() << "TrackDAO::onTrackReferenceExpired" << pTrack << "ID"
     //          << pTrack->getId() << pTrack->getInfo();
     // This is a private slot that is connected to TIO's created by this
     // TrackDAO. It is a way for the track to notify us once its reference count
@@ -1289,19 +1289,19 @@ TrackPointer TrackDAO::getTrackFromDB(const int id) const {
 
     // Listen to dirty and changed signals
     connect(pTrack.data(), SIGNAL(dirty(TrackInfoObject*)),
-            this, SLOT(slotTrackDirty(TrackInfoObject*)),
+            this, SLOT(onTrackDirty(TrackInfoObject*)),
             Qt::DirectConnection);
     connect(pTrack.data(), SIGNAL(clean(TrackInfoObject*)),
-            this, SLOT(slotTrackClean(TrackInfoObject*)),
+            this, SLOT(onTrackClean(TrackInfoObject*)),
             Qt::DirectConnection);
     connect(pTrack.data(), SIGNAL(changed(TrackInfoObject*)),
-            this, SLOT(slotTrackChanged(TrackInfoObject*)),
+            this, SLOT(onTrackChanged(TrackInfoObject*)),
             Qt::DirectConnection);
     // Queued connection. We are not in a rush to process reference
     // count expirations and it can produce dangerous signal loops.
     // See: https://bugs.launchpad.net/mixxx/+bug/1365708
     connect(pTrack.data(), SIGNAL(referenceExpired(TrackInfoObject*)),
-            this, SLOT(slotTrackReferenceExpired(TrackInfoObject*)),
+            this, SLOT(onTrackReferenceExpired(TrackInfoObject*)),
             Qt::QueuedConnection);
 
     m_sTracksMutex.lock();

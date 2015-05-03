@@ -9,11 +9,24 @@
 
 #include <QCoreApplication>
 #include <QDir>
+#include <QFile>
+#include <QIODevice>
+#include <QHostAddress>
 #include <QNetworkAccessManager>
 #include <QNetworkDiskCache>
 #include <QNetworkReply>
-
+#include <QAbstractSocket>
+#include <QUdpSocket>
+#include <QSslSocket>
+#include <QTcpSocket>
+#include <QString>
+#include <QTime>
+#include <QTimer>
+#include <qelapsedtimer.h>
+#include <qnetworkconfigmanager.h>
+#include <qnetworksession.h>
 #include "network.h"
+
 
 NetworkAccessManager::NetworkAccessManager(QObject* parent)
                     : QNetworkAccessManager(parent) {
@@ -26,20 +39,17 @@ QNetworkReply* NetworkAccessManager::createRequest(Operation op,
     new_request.setRawHeader("User-Agent", QString("%1 %2").arg(
         QCoreApplication::applicationName(),
         QCoreApplication::applicationVersion()).toUtf8());
-    
     if (op == QNetworkAccessManager::PostOperation &&
         !new_request.header(QNetworkRequest::ContentTypeHeader).isValid()) {
         new_request.setHeader(QNetworkRequest::ContentTypeHeader,
                             "application/x-www-form-urlencoded");
     }
-
     // Prefer the cache unless the caller has changed the setting already
     if (request.attribute(QNetworkRequest::CacheLoadControlAttribute).toInt()
         == QNetworkRequest::PreferNetwork) {
         new_request.setAttribute(QNetworkRequest::CacheLoadControlAttribute,
                                 QNetworkRequest::PreferCache);
     }
-    
     return QNetworkAccessManager::createRequest(op, new_request, outgoingData);
 }
 
@@ -50,9 +60,7 @@ NetworkTimeouts::NetworkTimeouts(int timeout_msec, QObject* parent)
 }
 
 void NetworkTimeouts::addReply(QNetworkReply* reply) {
-    if (m_timers.contains(reply))
-        return;
-  
+    if (m_timers.contains(reply)) return;
     connect(reply, SIGNAL(destroyed()), SLOT(replyFinished()));
     connect(reply, SIGNAL(finished()), SLOT(replyFinished()));
     m_timers[reply] = startTimer(m_timeout_msec);
@@ -60,14 +68,10 @@ void NetworkTimeouts::addReply(QNetworkReply* reply) {
 
 void NetworkTimeouts::replyFinished() {
     QNetworkReply* reply = reinterpret_cast<QNetworkReply*>(sender());
-    if (m_timers.contains(reply)) {
-        killTimer(m_timers.take(reply));
-    }
+    if (m_timers.contains(reply)) {killTimer(m_timers.take(reply));}
 }
 
 void NetworkTimeouts::timerEvent(QTimerEvent* e) {
     QNetworkReply* reply = m_timers.key(e->timerId());
-    if (reply) {
-      reply->abort();
-    }
+    if (reply) {reply->abort();}
 }

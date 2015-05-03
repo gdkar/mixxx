@@ -72,48 +72,48 @@ QString BaseTrackCache::columnSortForFieldIndex(int index) const {
     return m_columnCache.columnSortForFieldIndex(index);
 }
 
-void BaseTrackCache::slotTracksAdded(QSet<int> trackIds) {
+void BaseTrackCache::onTracksAdded(QSet<int> trackIds) {
     if (sDebug) {
-        qDebug() << this << "slotTracksAdded" << trackIds.size();
+        qDebug() << this << "onTracksAdded" << trackIds.size();
     }
     updateTracksInIndex(trackIds);
 }
 
-void BaseTrackCache::slotDbTrackAdded(TrackPointer pTrack) {
+void BaseTrackCache::onDbTrackAdded(TrackPointer pTrack) {
     if (sDebug) {
-        qDebug() << this << "slotDbTrackAdded";
+        qDebug() << this << "onDbTrackAdded";
     }
     updateIndexWithTrackpointer(pTrack);
 }
 
-void BaseTrackCache::slotTracksRemoved(QSet<int> trackIds) {
+void BaseTrackCache::onTracksRemoved(QSet<int> trackIds) {
     if (sDebug) {
-        qDebug() << this << "slotTracksRemoved" << trackIds.size();
+        qDebug() << this << "onTracksRemoved" << trackIds.size();
     }
     foreach (int trackId, trackIds) {
         m_trackInfo.remove(trackId);
     }
 }
 
-void BaseTrackCache::slotTrackDirty(int trackId) {
+void BaseTrackCache::onTrackDirty(int trackId) {
     if (sDebug) {
-        qDebug() << this << "slotTrackDirty" << trackId;
+        qDebug() << this << "onTrackDirty" << trackId;
     }
     m_dirtyTracks.insert(trackId);
 }
 
-void BaseTrackCache::slotTrackChanged(int trackId) {
+void BaseTrackCache::onTrackChanged(int trackId) {
     if (sDebug) {
-        qDebug() << this << "slotTrackChanged" << trackId;
+        qDebug() << this << "onTrackChanged" << trackId;
     }
     QSet<int> trackIds;
     trackIds.insert(trackId);
     emit(tracksChanged(trackIds));
 }
 
-void BaseTrackCache::slotTrackClean(int trackId) {
+void BaseTrackCache::onTrackClean(int trackId) {
     if (sDebug) {
-        qDebug() << this << "slotTrackClean" << trackId;
+        qDebug() << this << "onTrackClean" << trackId;
     }
     m_dirtyTracks.remove(trackId);
     updateTrackInIndex(trackId);

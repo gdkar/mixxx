@@ -54,38 +54,32 @@ class LoopingControl : public EngineControl {
     // hintReader will add to hintList hints both the loop in and loop out
     // sample, if set.
     virtual void hintReader(HintVector* pHintList);
-
     virtual void notifySeek(double dNewPlaypos);
-
   public slots:
-    void slotLoopIn(double);
-    void slotLoopOut(double);
-    void slotLoopExit(double);
-    void slotReloopExit(double);
-    void slotLoopStartPos(double);
-    void slotLoopEndPos(double);
+    void onLoopIn(double);
+    void onLoopOut(double);
+    void onLoopExit(double);
+    void onReloopExit(double);
+    void onLoopStartPos(double);
+    void onLoopEndPos(double);
     virtual void trackLoaded(TrackPointer pTrack);
     virtual void trackUnloaded(TrackPointer pTrack);
-    void slotUpdatedTrackBeats();
+    void onUpdatedTrackBeats();
 
     // Generate a loop of 'beats' length. It can also do fractions for a
     // beatslicing effect.
-    void slotBeatLoop(double loopSize, bool keepStartPoint=false);
-    void slotBeatLoopActivate(BeatLoopingControl* pBeatLoopControl);
-    void slotBeatLoopActivateRoll(BeatLoopingControl* pBeatLoopControl);
-    void slotBeatLoopDeactivate(BeatLoopingControl* pBeatLoopControl);
-    void slotBeatLoopDeactivateRoll(BeatLoopingControl* pBeatLoopControl);
-
+    void onBeatLoop(double loopSize, bool keepStartPoint=false);
+    void onBeatLoopActivate(BeatLoopingControl* pBeatLoopControl);
+    void onBeatLoopActivateRoll(BeatLoopingControl* pBeatLoopControl);
+    void onBeatLoopDeactivate(BeatLoopingControl* pBeatLoopControl);
+    void onBeatLoopDeactivateRoll(BeatLoopingControl* pBeatLoopControl);
     // Jump forward or backward by beats.
-    void slotBeatJump(double beats);
-
+    void onBeatJump(double beats);
     // Move the loop by beats.
-    void slotLoopMove(double beats);
-
-    void slotLoopScale(double);
-    void slotLoopDouble(double);
-    void slotLoopHalve(double);
-
+    void onLoopMove(double beats);
+    void onLoopScale(double);
+    void onLoopDouble(double);
+    void onLoopHalve(double);
   private:
     void setLoopingEnabled(bool enabled);
     void clearActiveBeatLoop();
@@ -94,7 +88,6 @@ class LoopingControl : public EngineControl {
     // the beat.  It will even keep multi-bar phrasing correct with 4/4 tracks.
     void seekInsideAdjustedLoop(int old_loop_in, int old_loop_out,
                                 int new_loop_in, int new_loop_out);
-
     ControlObject* m_pCOLoopStartPosition;
     ControlObject* m_pCOLoopEndPosition;
     ControlObject* m_pCOLoopEnabled;
@@ -147,8 +140,8 @@ class LoopMoveControl : public QObject {
     void loopMove(double beats);
 
   public slots:
-    void slotMoveForward(double value);
-    void slotMoveBackward(double value);
+    void onMoveForward(double value);
+    void onMoveBackward(double value);
 
   private:
     double m_dLoopMoveSize;
@@ -168,8 +161,8 @@ class BeatJumpControl : public QObject {
     void beatJump(double beats);
 
   public slots:
-    void slotJumpForward(double value);
-    void slotJumpBackward(double value);
+    void onJumpForward(double value);
+    void onJumpBackward(double value);
 
   private:
     double m_dBeatJumpSize;
@@ -191,10 +184,10 @@ class BeatLoopingControl : public QObject {
         return m_dBeatLoopSize;
     }
   public slots:
-    void slotLegacy(double value);
-    void slotActivate(double value);
-    void slotActivateRoll(double value);
-    void slotToggle(double value);
+    void onLegacy(double value);
+    void onActivate(double value);
+    void onActivateRoll(double value);
+    void onToggle(double value);
 
   signals:
     void activateBeatLoop(BeatLoopingControl*);

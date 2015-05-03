@@ -70,7 +70,7 @@ DlgPreferences::DlgPreferences(MixxxMainWindow * mixxx, SkinLoader* pSkinLoader,
 #endif
 
     connect(buttonBox, SIGNAL(clicked(QAbstractButton*)),
-            this, SLOT(slotButtonPressed(QAbstractButton*)));
+            this, SLOT(onButtonPressed(QAbstractButton*)));
 
 
     createIcons();
@@ -95,7 +95,7 @@ DlgPreferences::DlgPreferences(MixxxMainWindow * mixxx, SkinLoader* pSkinLoader,
     m_wlibrary = new DlgPrefLibrary(this, m_pConfig, pLibrary);
     addPageWidget(m_wlibrary);
     connect(m_wlibrary, SIGNAL(scanLibrary()),
-            mixxx, SLOT(slotScanLibrary()));
+            mixxx, SLOT(onScanLibrary()));
     m_wcontrols = new DlgPrefControls(this, mixxx, pSkinLoader, pPlayerManager, m_pConfig);
     addPageWidget(m_wcontrols);
     m_wwaveform = new DlgPrefWaveform(this, mixxx, m_pConfig);
@@ -273,7 +273,7 @@ void DlgPreferences::changePage(QTreeWidgetItem* current, QTreeWidgetItem* previ
         current = previous;
 
     if (current == m_pSoundButton) {
-        m_wsound->slotUpdate();
+        m_wsound->onUpdate();
       switchToPage(m_wsound);
     } else if (current == m_pLibraryButton) {
         switchToPage(m_wlibrary);
@@ -376,20 +376,20 @@ void DlgPreferences::onShow() {
     emit(showDlg());
 }
 
-void DlgPreferences::slotButtonPressed(QAbstractButton* pButton) {
+void DlgPreferences::onButtonPressed(QAbstractButton* pButton) {
     QDialogButtonBox::ButtonRole role = buttonBox->buttonRole(pButton);
     DlgPreferencePage* pCurrentPage = currentPage();
     switch (role) {
         case QDialogButtonBox::ResetRole:
             // Only reset to defaults on the current page.
             if (pCurrentPage != NULL) {
-                pCurrentPage->slotResetToDefaults();
+                pCurrentPage->onResetToDefaults();
             }
             break;
         case QDialogButtonBox::ApplyRole:
             // Only apply settings on the current page.
             if (pCurrentPage != NULL) {
-                pCurrentPage->slotApply();
+                pCurrentPage->onApply();
             }
             break;
         case QDialogButtonBox::AcceptRole:
@@ -407,18 +407,18 @@ void DlgPreferences::slotButtonPressed(QAbstractButton* pButton) {
 
 void DlgPreferences::addPageWidget(DlgPreferencePage* pWidget) {
     connect(this, SIGNAL(showDlg()),
-            pWidget, SLOT(slotShow()));
+            pWidget, SLOT(onShow()));
     connect(this, SIGNAL(closeDlg()),
-            pWidget, SLOT(slotHide()));
+            pWidget, SLOT(onHide()));
     connect(this, SIGNAL(showDlg()),
-            pWidget, SLOT(slotUpdate()));
+            pWidget, SLOT(onUpdate()));
 
     connect(this, SIGNAL(applyPreferences()),
-            pWidget, SLOT(slotApply()));
+            pWidget, SLOT(onApply()));
     connect(this, SIGNAL(cancelPreferences()),
-            pWidget, SLOT(slotCancel()));
+            pWidget, SLOT(onCancel()));
     connect(this, SIGNAL(resetToDefaults()),
-            pWidget, SLOT(slotResetToDefaults()));
+            pWidget, SLOT(onResetToDefaults()));
 
     QScrollArea* sa = new QScrollArea(pagesWidget);
     sa->setWidgetResizable(true);

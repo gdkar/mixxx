@@ -47,17 +47,17 @@ class CrateFeature : public LibraryFeature {
     void onRightClick(const QPoint& globalPos);
     void onRightClickChild(const QPoint& globalPos, QModelIndex index);
 
-    void slotCreateCrate();
-    void slotDeleteCrate();
-    void slotRenameCrate();
-    void slotDuplicateCrate();
-    void slotAutoDjTrackSourceChanged();
-    void slotToggleCrateLock();
-    void slotImportPlaylist();
-    void slotExportPlaylist();
-    void slotAnalyzeCrate();
-    void slotCrateTableChanged(int playlistId);
-    void slotCrateTableRenamed(int playlistId, QString a_strName);
+    void onCreateCrate();
+    void onDeleteCrate();
+    void onRenameCrate();
+    void onDuplicateCrate();
+    void onAutoDjTrackSourceChanged();
+    void onToggleCrateLock();
+    void onImportPlaylist();
+    void onExportPlaylist();
+    void onAnalyzeCrate();
+    void onCrateTableChanged(int playlistId);
+    void onCrateTableRenamed(int playlistId, QString a_strName);
     void htmlLinkClicked(const QUrl& link);
 
   private:

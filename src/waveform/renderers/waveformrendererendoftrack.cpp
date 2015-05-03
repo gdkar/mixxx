@@ -38,7 +38,7 @@ bool WaveformRendererEndOfTrack::init() {
 
     m_pEndOfTrackControl = new ControlObjectThread(
             m_waveformRenderer->getGroup(), "end_of_track");
-    m_pEndOfTrackControl->slotSet(0.);
+    m_pEndOfTrackControl->onSet(0.);
     m_endOfTrackEnabled = false;
 
     m_pTrackSampleRate = new ControlObjectThread(
@@ -99,7 +99,7 @@ void WaveformRendererEndOfTrack::draw(QPainter* painter,
             || trackLength <= m_remainingTimeTriggerSeconds //track too short
             ) {
         if (m_endOfTrackEnabled) {
-            m_pEndOfTrackControl->slotSet(0.0);
+            m_pEndOfTrackControl->onSet(0.0);
             m_endOfTrackEnabled = false;
         }
         return;
@@ -111,7 +111,7 @@ void WaveformRendererEndOfTrack::draw(QPainter* painter,
 
     if (remainingTime > m_remainingTimeTriggerSeconds) {
         if (m_endOfTrackEnabled) {
-            m_pEndOfTrackControl->slotSet(0.);
+            m_pEndOfTrackControl->onSet(0.);
             m_endOfTrackEnabled = false;
         }
         return;
@@ -119,7 +119,7 @@ void WaveformRendererEndOfTrack::draw(QPainter* painter,
 
     // end of track is on
     if (!m_endOfTrackEnabled) {
-        m_pEndOfTrackControl->slotSet(1.);
+        m_pEndOfTrackControl->onSet(1.);
         m_endOfTrackEnabled = true;
 
         //qDebug() << "EndOfTrack ON";

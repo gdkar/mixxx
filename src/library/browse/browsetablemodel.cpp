@@ -68,36 +68,26 @@ BrowseTableModel::BrowseTableModel(QObject* parent,
 
     m_pBrowseThread = BrowseThread::getInstanceRef();
     connect(m_pBrowseThread.data(), SIGNAL(clearModel(BrowseTableModel*)),
-            this, SLOT(slotClear(BrowseTableModel*)),
+            this, SLOT(onClear(BrowseTableModel*)),
             Qt::QueuedConnection);
 
     connect(m_pBrowseThread.data(),
             SIGNAL(rowsAppended(const QList< QList<QStandardItem*> >&, BrowseTableModel*)),
             this,
-            SLOT(slotInsert(const QList< QList<QStandardItem*> >&, BrowseTableModel*)),
+            SLOT(onInsert(const QList< QList<QStandardItem*> >&, BrowseTableModel*)),
             Qt::QueuedConnection);
 
-    connect(&PlayerInfo::instance(), SIGNAL(trackLoaded(QString, TrackPointer)),
-            this, SLOT(trackLoaded(QString, TrackPointer)));
-    trackLoaded(m_previewDeckGroup, PlayerInfo::instance().getTrackInfo(m_previewDeckGroup));
+    connect(&PlayerInfo::instance(), SIGNAL(onTrackLoaded(QString, TrackPointer)),
+            this, SLOT(onTrackLoaded(QString, TrackPointer)));
+    onTrackLoaded(m_previewDeckGroup, PlayerInfo::instance().getTrackInfo(m_previewDeckGroup));
 }
-
-BrowseTableModel::~BrowseTableModel() {
-}
-
-const QList<int>& BrowseTableModel::searchColumns() const {
-    return m_searchColumns;
-}
-
-void BrowseTableModel::addSearchColumn(int index) {
-    m_searchColumns.push_back(index);
-}
-
+BrowseTableModel::~BrowseTableModel() {}
+const QList<int>& BrowseTableModel::searchColumns() const {return m_searchColumns;}
+void BrowseTableModel::addSearchColumn(int index) {m_searchColumns.push_back(index);}
 void BrowseTableModel::setPath(const MDir& path) {
     m_current_directory = path;
     m_pBrowseThread->executePopulation(m_current_directory, this);
 }
-
 TrackPointer BrowseTableModel::getTrack(const QModelIndex& index) const {
     QString track_location = getTrackLocation(index);
     if (m_pRecordingManager->getRecordingLocation() == track_location) {
@@ -259,19 +249,19 @@ QMimeData* BrowseTableModel::mimeData(const QModelIndexList &indexes) const {
     return mimeData;
 }
 
-void BrowseTableModel::slotClear(BrowseTableModel* caller_object) {
+void BrowseTableModel::onClear(BrowseTableModel* caller_object) {
     if (caller_object == this) {
         removeRows(0, rowCount());
     }
 }
 
-void BrowseTableModel::slotInsert(const QList< QList<QStandardItem*> >& rows,
+void BrowseTableModel::onInsert(const QList< QList<QStandardItem*> >& rows,
                                   BrowseTableModel* caller_object) {
     // There exists more than one BrowseTableModel in Mixxx We only want to
     // receive items here, this object has 'ordered' by the BrowserThread
     // (singleton)
     if (caller_object == this) {
-        //qDebug() << "BrowseTableModel::slotInsert";
+        //qDebug() << "BrowseTableModel::onInsert";
         for (int i = 0; i < rows.size(); ++i) {
             appendRow(rows.at(i));
         }
@@ -401,7 +391,7 @@ bool BrowseTableModel::setData(const QModelIndex &index, const QVariant &value,
     }
 }
 
-void BrowseTableModel::trackLoaded(QString group, TrackPointer pTrack) {
+void BrowseTableModel::onTrackLoaded(QString group, TrackPointer pTrack) {
     if (group == m_previewDeckGroup) {
         for (int row = 0; row < rowCount(); ++row) {
             QModelIndex i = index(row, COLUMN_PREVIEW);

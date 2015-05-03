@@ -22,28 +22,22 @@ class ControlWidgetConnection : public QObject {
 
     double getControlParameter() const;
     double getControlParameterForValue(double value) const;
-
-    const ConfigKey& getKey() const {
-        return m_pControl->getKey();
-    }
-
+    const ConfigKey& getKey() const {return m_pControl->getKey();}
     virtual QString toDebugString() const = 0;
-
   protected slots:
-    virtual void slotControlValueChanged(double v) = 0;
-
+    virtual void onControlValueChanged(double v) = 0;
   protected:
     void setControlParameter(double v);
-
     WBaseWidget* m_pWidget;
     QScopedPointer<ControlObjectSlave> m_pControl;
-
   private:
     QScopedPointer<ValueTransformer> m_pValueTransformer;
 };
 
 class ControlParameterWidgetConnection : public ControlWidgetConnection {
-    Q_OBJECT
+    Q_OBJECT;
+    Q_ENUMS(EmitOption);
+    Q_ENUMS(DirectionOption);
   public:
     enum EmitOption {
         EMIT_NEVER                = 0x00,
@@ -55,19 +49,13 @@ class ControlParameterWidgetConnection : public ControlWidgetConnection {
 
     static QString emitOptionToString(EmitOption option) {
         switch (option & EMIT_ON_PRESS_AND_RELEASE) {
-            case EMIT_NEVER:
-                return "NEVER";
-            case EMIT_ON_PRESS:
-                return "PRESS";
-            case EMIT_ON_RELEASE:
-                return "RELEASE";
-            case EMIT_ON_PRESS_AND_RELEASE:
-                return "PRESS_AND_RELEASE";
-            default:
-                return "UNKNOWN";
+            case EMIT_NEVER:return "NEVER";
+            case EMIT_ON_PRESS:return "PRESS";
+            case EMIT_ON_RELEASE:return "RELEASE";
+            case EMIT_ON_PRESS_AND_RELEASE:return "PRESS_AND_RELEASE";
+            default:return "UNKNOWN";
         }
     }
-
     enum DirectionOption {
         DIR_NON                  = 0x00,
         DIR_FROM_WIDGET          = 0x01,
@@ -75,46 +63,35 @@ class ControlParameterWidgetConnection : public ControlWidgetConnection {
         DIR_FROM_AND_TO_WIDGET   = 0x03,
         DIR_DEFAULT              = 0x04
     };
-
     static QString directionOptionToString(DirectionOption option) {
         switch (option & DIR_FROM_AND_TO_WIDGET) {
-            case DIR_NON:
-                return "NON";
-            case DIR_FROM_WIDGET:
-                return "FROM_WIDGET";
-            case DIR_TO_WIDGET:
-                return "TO_WIDGET";
-            case DIR_FROM_AND_TO_WIDGET:
-                return "FROM_AND_TO_WIDGET";
-            default:
-                return "UNKNOWN";
+            case DIR_NON:return "NON";
+            case DIR_FROM_WIDGET:return "FROM_WIDGET";
+            case DIR_TO_WIDGET:return "TO_WIDGET";
+            case DIR_FROM_AND_TO_WIDGET:return "FROM_AND_TO_WIDGET";
+            default:return "UNKNOWN";
         }
     }
-
     ControlParameterWidgetConnection(WBaseWidget* pBaseWidget,
                                      ControlObjectSlave* pControl,
                                      ValueTransformer* pTransformer,
                                      DirectionOption directionOption,
                                      EmitOption emitOption);
     virtual ~ControlParameterWidgetConnection();
-
     void Init();
-
     QString toDebugString() const;
-
+  public slots:
     int getDirectionOption() const { return m_directionOption; };
     int getEmitOption() const { return m_emitOption; };
-
     void setDirectionOption(enum DirectionOption v) { m_directionOption = v; };
     void setEmitOption(enum EmitOption v) { m_emitOption = v; };
-
     void resetControl();
     void setControlParameter(double v);
     void setControlParameterDown(double v);
     void setControlParameterUp(double v);
 
   private slots:
-    virtual void slotControlValueChanged(double v);
+    virtual void onControlValueChanged(double v);
 
   private:
     DirectionOption m_directionOption;
@@ -122,19 +99,16 @@ class ControlParameterWidgetConnection : public ControlWidgetConnection {
 };
 
 class ControlWidgetPropertyConnection : public ControlWidgetConnection {
-    Q_OBJECT
+    Q_OBJECT;
   public:
     ControlWidgetPropertyConnection(WBaseWidget* pBaseWidget,
                                     ControlObjectSlave* pControl,
                                     ValueTransformer* pTransformer,
                                     const QString& property);
     virtual ~ControlWidgetPropertyConnection();
-
     QString toDebugString() const;
-
   private slots:
-    virtual void slotControlValueChanged(double v);
-
+    virtual void onControlValueChanged(double v);
   private:
     QByteArray m_propertyName;
 };

@@ -34,8 +34,8 @@ public:
 public slots:
 
     /** Apply changes to widget */
-    void slotApply();
-    void slotUpdate();
+    void onApply();
+    void onUpdate();
 signals:
     void apply(const QString &);
 private:

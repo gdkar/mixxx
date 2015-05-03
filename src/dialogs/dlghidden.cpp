@@ -28,11 +28,11 @@ DlgHidden::DlgHidden(QWidget* parent, ConfigObject<ConfigValue>* pConfig,
     m_pTrackTableView->loadTrackModel(m_pHiddenTableModel);
 
     connect(btnUnhide, SIGNAL(clicked()),
-            m_pTrackTableView, SLOT(slotUnhide()));
+            m_pTrackTableView, SLOT(onUnhide()));
     connect(btnUnhide, SIGNAL(clicked()),
             this, SLOT(clicked()));
     connect(btnPurge, SIGNAL(clicked()),
-            m_pTrackTableView, SLOT(slotPurge()));
+            m_pTrackTableView, SLOT(onPurge()));
     connect(btnPurge, SIGNAL(clicked()),
             this, SLOT(clicked()));
     connect(btnSelect, SIGNAL(clicked()),

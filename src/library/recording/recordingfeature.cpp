@@ -57,7 +57,7 @@ void RecordingFeature::bindWidget(WLibrary* pLibraryWidget,
     connect(this, SIGNAL(refreshBrowseModel()),
             pRecordingView, SLOT(refreshBrowseModel()));
     connect(this, SIGNAL(requestRestoreSearch()),
-            pRecordingView, SLOT(slotRestoreSearch()));
+            pRecordingView, SLOT(onRestoreSearch()));
     connect(pRecordingView, SIGNAL(restoreSearch(QString)),
             this, SIGNAL(restoreSearch(QString)));
 }

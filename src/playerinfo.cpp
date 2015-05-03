@@ -29,7 +29,7 @@ static PlayerInfo* m_pPlayerInfo = NULL;
 PlayerInfo::PlayerInfo()
         : m_pCOxfader(new ControlObjectThread("[Master]","crossfader")),
           m_currentlyPlayingDeck(-1) {
-    startTimer(kPlayingDeckUpdateIntervalMillis);
+    startTimer(kPlayingDeckUpdateIntervalMillis, Qt::PreciseTimer);
 }
 
 PlayerInfo::~PlayerInfo() {
@@ -63,9 +63,7 @@ void PlayerInfo::setTrackInfo(const QString& group, const TrackPointer& track) {
         pOld = m_loadedTrackMap.value(group);
         m_loadedTrackMap.insert(group, track);
     }
-    if (pOld) {
-        emit(trackUnloaded(group, pOld));
-    }
+    if (pOld) {emit(trackUnloaded(group, pOld));}
     emit(trackLoaded(group, track));
 }
 
@@ -74,9 +72,7 @@ bool PlayerInfo::isTrackLoaded(const TrackPointer& pTrack) const {
     QMapIterator<QString, TrackPointer> it(m_loadedTrackMap);
     while (it.hasNext()) {
         it.next();
-        if (it.value() == pTrack) {
-            return true;
-        }
+        if (it.value() == pTrack) {return true;}
     }
     return false;
 }
@@ -94,18 +90,13 @@ bool PlayerInfo::isFileLoaded(const QString& track_location) const {
         it.next();
         TrackPointer pTrack = it.value();
         if (pTrack) {
-            if (pTrack->getLocation() == track_location) {
-                return true;
-            }
+            if (pTrack->getLocation() == track_location) {return true;}
         }
     }
     return false;
 }
 
-void PlayerInfo::timerEvent(QTimerEvent* pTimerEvent) {
-    Q_UNUSED(pTimerEvent);
-    updateCurrentPlayingDeck();
-}
+void PlayerInfo::timerEvent(QTimerEvent* /* pTimerEvent*/) {updateCurrentPlayingDeck();}
 
 void PlayerInfo::updateCurrentPlayingDeck() {
     QMutexLocker locker(&m_mutex);

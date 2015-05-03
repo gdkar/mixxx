@@ -20,13 +20,13 @@ EffectButtonParameterSlot::EffectButtonParameterSlot(const QString& group,
             ConfigKey(m_group, itemPrefix + QString("_type")));
 
     connect(m_pControlValue, SIGNAL(valueChanged(double)),
-            this, SLOT(slotValueChanged(double)));
+            this, SLOT(onValueChanged(double)));
 
     // Read-only controls.
     m_pControlType->connectValueChangeRequest(
-            this, SLOT(slotValueType(double)));
+            this, SLOT(onValueType(double)));
     m_pControlLoaded->connectValueChangeRequest(
-            this, SLOT(slotLoaded(double)));
+            this, SLOT(onLoaded(double)));
 
     clear();
 }
@@ -78,7 +78,7 @@ void EffectButtonParameterSlot::loadEffect(EffectPointer pEffect) {
             m_pControlLoaded->setAndConfirm(1.0);
 
             connect(m_pEffectParameter, SIGNAL(valueChanged(double)),
-                    this, SLOT(slotParameterValueChanged(double)));
+                    this, SLOT(onParameterValueChanged(double)));
         }
     }
     emit(updated());
@@ -99,12 +99,12 @@ void EffectButtonParameterSlot::clear() {
     emit(updated());
 }
 
-void EffectButtonParameterSlot::slotParameterValueChanged(double value) {
-    //qDebug() << debugString() << "slotParameterValueChanged" << value.toDouble();
+void EffectButtonParameterSlot::onParameterValueChanged(double value) {
+    //qDebug() << debugString() << "onParameterValueChanged" << value.toDouble();
     m_pControlValue->set(value);
 }
 
-void EffectButtonParameterSlot::slotValueChanged(double v) {
+void EffectButtonParameterSlot::onValueChanged(double v) {
     if (m_pEffectParameter) {
         m_pEffectParameter->setValue(v);
     }

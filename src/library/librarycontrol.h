@@ -22,8 +22,8 @@ class LoadToGroupController : public QObject {
     void loadToGroup(QString group, bool);
 
   public slots:
-    void slotLoadToGroup(double v);
-    void slotLoadToGroupAndPlay(double v);
+    void onLoadToGroup(double v);
+    void onLoadToGroupAndPlay(double v);
 
   private:
     QString m_group;
@@ -43,26 +43,26 @@ class LibraryControl : public QObject {
   private slots:
     void libraryWidgetDeleted();
     void sidebarWidgetDeleted();
-    void slotLoadSelectedTrackToGroup(QString group, bool play);
-    void slotSelectNextTrack(double v);
-    void slotSelectPrevTrack(double v);
-    void slotSelectTrack(double v);
-    void slotSelectSidebarItem(double v);
-    void slotSelectNextSidebarItem(double v);
-    void slotSelectPrevSidebarItem(double v);
-    void slotToggleSelectedSidebarItem(double v);
-    void slotLoadSelectedIntoFirstStopped(double v);
-    void slotAutoDjAddTop(double v);
-    void slotAutoDjAddBottom(double v);
+    void onLoadSelectedTrackToGroup(QString group, bool play);
+    void onSelectNextTrack(double v);
+    void onSelectPrevTrack(double v);
+    void onSelectTrack(double v);
+    void onSelectSidebarItem(double v);
+    void onSelectNextSidebarItem(double v);
+    void onSelectPrevSidebarItem(double v);
+    void onToggleSelectedSidebarItem(double v);
+    void onLoadSelectedIntoFirstStopped(double v);
+    void onAutoDjAddTop(double v);
+    void onAutoDjAddBottom(double v);
 
     void maybeCreateGroupController(const QString& group);
-    void slotNumDecksChanged(double v);
-    void slotNumSamplersChanged(double v);
-    void slotNumPreviewDecksChanged(double v);
+    void onNumDecksChanged(double v);
+    void onNumSamplersChanged(double v);
+    void onNumPreviewDecksChanged(double v);
 
-    void slotFontSize(double v);
-    void slotIncrementFontSize(double v);
-    void slotDecrementFontSize(double v);
+    void onFontSize(double v);
+    void onIncrementFontSize(double v);
+    void onDecrementFontSize(double v);
 
   private:
     Library* m_pLibrary;

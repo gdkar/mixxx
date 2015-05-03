@@ -62,7 +62,7 @@ LibraryScanner::LibraryScanner(QWidget* pParentWidget, TrackCollection* collecti
     // Listen to signals from our public methods (invoked by other threads) and
     // connect them to our slots to run the command on the scanner thread.
     connect(this, SIGNAL(startScan()),
-            this, SLOT(slotStartScan()));
+            this, SLOT(onStartScan()));
 
     // Force the GUI thread's TrackInfoObject cache to be cleared when a library
     // scan is finished, because we might have modified the database directly
@@ -80,19 +80,19 @@ LibraryScanner::LibraryScanner(QWidget* pParentWidget, TrackCollection* collecti
     // Parented to pParentWidget so we don't need to delete it.
     LibraryScannerDlg* pProgress = new LibraryScannerDlg(pParentWidget);
     connect(this, SIGNAL(progressLoading(QString)),
-            pProgress, SLOT(slotUpdate(QString)));
+            pProgress, SLOT(onUpdate(QString)));
     connect(this, SIGNAL(progressHashing(QString)),
-            pProgress, SLOT(slotUpdate(QString)));
+            pProgress, SLOT(onUpdate(QString)));
     connect(this, SIGNAL(scanStarted()),
-            pProgress, SLOT(slotScanStarted()));
+            pProgress, SLOT(onScanStarted()));
     connect(this, SIGNAL(scanFinished()),
-            pProgress, SLOT(slotScanFinished()));
+            pProgress, SLOT(onScanFinished()));
     connect(pProgress, SIGNAL(scanCancelled()),
             this, SLOT(cancel()));
     connect(&m_trackDao, SIGNAL(progressVerifyTracksOutside(QString)),
-            pProgress, SLOT(slotUpdate(QString)));
+            pProgress, SLOT(onUpdate(QString)));
     connect(&m_trackDao, SIGNAL(progressCoverArt(QString)),
-            pProgress, SLOT(slotUpdateCover(QString)));
+            pProgress, SLOT(onUpdateCover(QString)));
 
     start();
 }
@@ -167,8 +167,8 @@ void LibraryScanner::run() {
     qDebug() << "LibraryScanner event loop stopped.";
 }
 
-void LibraryScanner::slotStartScan() {
-    qDebug() << "LibraryScanner::slotStartScan";
+void LibraryScanner::onStartScan() {
+    qDebug() << "LibraryScanner::onStartScan";
     QSet<QString> trackLocations = m_trackDao.getTrackLocations();
     QHash<QString, int> directoryHashes = m_libraryHashDao.getDirectoryHashes();
     QRegExp extensionFilter =
@@ -229,7 +229,7 @@ void LibraryScanner::slotStartScan() {
     // If there are no directories then we have nothing to do. Cleanup and
     // finish the scan immediately.
     if (dirs.isEmpty()) {
-        slotFinishScan();
+        onFinishScan();
         return;
     }
 
@@ -237,7 +237,7 @@ void LibraryScanner::slotStartScan() {
     // done, TaskWatcher will signal slotFinishScan.
     TaskWatcher* pWatcher = &m_scannerGlobal->getTaskWatcher();
     connect(pWatcher, SIGNAL(allTasksDone()),
-            this, SLOT(slotFinishScan()));
+            this, SLOT(onFinishScan()));
 
     foreach (const QString& dirPath, dirs) {
         // Acquire a security bookmark for this directory if we are in a
@@ -251,10 +251,10 @@ void LibraryScanner::slotStartScan() {
     }
 }
 
-void LibraryScanner::slotFinishScan() {
-    qDebug() << "LibraryScanner::slotFinishScan";
+void LibraryScanner::onFinishScan() {
+    qDebug() << "LibraryScanner::onFinishScan";
     if (m_scannerGlobal.isNull()) {
-        qWarning() << "No scanner global state exists in LibraryScanner::slotFinishScan";
+        qWarning() << "No scanner global state exists in LibraryScanner::onFinishScan";
         return;
     }
 

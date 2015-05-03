@@ -19,7 +19,7 @@ void WEffectPushButton::setup(QDomNode node, const SkinContext& context) {
 
     m_pButtonMenu = new QMenu(this);
     connect(m_pButtonMenu, SIGNAL(triggered(QAction*)),
-            this, SLOT(slotActionChosen(QAction*)));
+            this, SLOT(onActionChosen(QAction*)));
 
     // EffectWidgetUtils propagates NULLs so this is all safe.
     EffectRackPointer pRack = EffectWidgetUtils::getEffectRackFromNode(
@@ -117,7 +117,7 @@ void WEffectPushButton::parameterUpdated() {
     }
 }
 
-void WEffectPushButton::slotActionChosen(QAction* action) {
+void WEffectPushButton::onActionChosen(QAction* action) {
     action->setChecked(true);
     setControlParameter(action->data().toDouble());
 }

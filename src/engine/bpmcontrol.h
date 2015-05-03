@@ -81,22 +81,22 @@ class BpmControl : public EngineControl {
     virtual void trackUnloaded(TrackPointer pTrack);
 
   private slots:
-    void slotSetEngineBpm(double);
-    void slotFileBpmChanged(double);
-    void slotAdjustBeatsFaster(double);
-    void slotAdjustBeatsSlower(double);
-    void slotTranslateBeatsEarlier(double);
-    void slotTranslateBeatsLater(double);
-    void slotControlPlay(double);
-    void slotControlBeatSync(double);
-    void slotControlBeatSyncPhase(double);
-    void slotControlBeatSyncTempo(double);
-    void slotTapFilter(double,int);
-    void slotBpmTap(double);
-    void slotAdjustRateSlider();
-    void slotUpdatedTrackBeats();
-    void slotBeatsTranslate(double);
-    void slotBeatsTranslateMatchAlignment(double);
+    void onSetEngineBpm(double);
+    void onFileBpmChanged(double);
+    void onAdjustBeatsFaster(double);
+    void onAdjustBeatsSlower(double);
+    void onTranslateBeatsEarlier(double);
+    void onTranslateBeatsLater(double);
+    void onControlPlay(double);
+    void onControlBeatSync(double);
+    void onControlBeatSyncPhase(double);
+    void onControlBeatSyncTempo(double);
+    void onTapFilter(double,int);
+    void onBpmTap(double);
+    void onAdjustRateSlider();
+    void onUpdatedTrackBeats();
+    void onBeatsTranslate(double);
+    void onBeatsTranslateMatchAlignment(double);
 
   private:
     SyncMode getSyncMode() const {

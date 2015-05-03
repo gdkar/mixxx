@@ -28,7 +28,7 @@ class WEffectPushButton : public WPushButton {
 
   private slots:
     void parameterUpdated();
-    void slotActionChosen(QAction* action);
+    void onActionChosen(QAction* action);
 
   private:
     EffectsManager* m_pEffectsManager;

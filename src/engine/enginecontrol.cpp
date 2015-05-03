@@ -97,19 +97,19 @@ EngineBuffer* EngineControl::getEngineBuffer() {
 
 void EngineControl::seekAbs(double playPosition) {
     if (m_pEngineBuffer) {
-        m_pEngineBuffer->slotControlSeekAbs(playPosition);
+        m_pEngineBuffer->onControlSeekAbs(playPosition);
     }
 }
 
 void EngineControl::seekExact(double playPosition) {
     if (m_pEngineBuffer) {
-        m_pEngineBuffer->slotControlSeekExact(playPosition);
+        m_pEngineBuffer->onControlSeekExact(playPosition);
     }
 }
 
 void EngineControl::seek(double sample) {
     if (m_pEngineBuffer) {
-        m_pEngineBuffer->slotControlSeek(sample);
+        m_pEngineBuffer->onControlSeek(sample);
     }
 }
 

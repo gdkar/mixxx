@@ -28,7 +28,7 @@ KeyControl::KeyControl(QString group,
     // Fine adjust with semitone / 10 = 10 ct;.
     m_pPitch->setSmallStepCount(120);
     connect(m_pPitch, SIGNAL(valueChanged(double)),
-            this, SLOT(slotPitchChanged(double)),
+            this, SLOT(onPitchChanged(double)),
             Qt::DirectConnection);
 
     // pitch_adjust is the distance to the linear pitch in semitones
@@ -40,33 +40,33 @@ KeyControl::KeyControl(QString group,
     // Fine adjust with semitone / 10 = 10 ct;.
     m_pPitchAdjust->setSmallStepCount(60);
     connect(m_pPitchAdjust, SIGNAL(valueChanged(double)),
-            this, SLOT(slotPitchAdjustChanged(double)),
+            this, SLOT(onPitchAdjustChanged(double)),
             Qt::DirectConnection);
 
     m_pButtonSyncKey = new ControlPushButton(ConfigKey(group, "sync_key"));
     connect(m_pButtonSyncKey, SIGNAL(valueChanged(double)),
-            this, SLOT(slotSyncKey(double)),
+            this, SLOT(onSyncKey(double)),
             Qt::DirectConnection);
 
     m_pButtonResetKey = new ControlPushButton(ConfigKey(group, "reset_key"));
     connect(m_pButtonResetKey, SIGNAL(valueChanged(double)),
-            this, SLOT(slotResetKey(double)),
+            this, SLOT(onResetKey(double)),
             Qt::DirectConnection);
 
     m_pFileKey = new ControlObject(ConfigKey(group, "file_key"));
     connect(m_pFileKey, SIGNAL(valueChanged(double)),
-            this, SLOT(slotFileKeyChanged(double)),
+            this, SLOT(onFileKeyChanged(double)),
             Qt::DirectConnection);
 
     m_pEngineKey = new ControlObject(ConfigKey(group, "key"));
     connect(m_pEngineKey, SIGNAL(valueChanged(double)),
-            this, SLOT(slotSetEngineKey(double)),
+            this, SLOT(onSetEngineKey(double)),
             Qt::DirectConnection);
 
     m_pEngineKeyDistance = new ControlPotmeter(ConfigKey(group, "visual_key_distance"),
                                                -0.5, 0.5);
     connect(m_pEngineKeyDistance, SIGNAL(valueChanged(double)),
-            this, SLOT(slotSetEngineKeyDistance(double)),
+            this, SLOT(onSetEngineKeyDistance(double)),
             Qt::DirectConnection);
 
     m_keylockMode = new ControlPushButton(ConfigKey(group, "keylockMode"));
@@ -75,54 +75,54 @@ KeyControl::KeyControl(QString group,
     // In case of vinyl control "rate" is a filtered mean value for display
     m_pRateSlider = ControlObject::getControl(ConfigKey(group, "rate"));
     connect(m_pRateSlider, SIGNAL(valueChanged(double)),
-            this, SLOT(slotRateChanged()),
+            this, SLOT(onRateChanged()),
             Qt::DirectConnection);
     connect(m_pRateSlider, SIGNAL(valueChangedFromEngine(double)),
-            this, SLOT(slotRateChanged()),
+            this, SLOT(onRateChanged()),
             Qt::DirectConnection);
 
     m_pRateRange = ControlObject::getControl(ConfigKey(group, "rateRange"));
     connect(m_pRateRange, SIGNAL(valueChanged(double)),
-            this, SLOT(slotRateChanged()),
+            this, SLOT(onRateChanged()),
             Qt::DirectConnection);
     connect(m_pRateRange, SIGNAL(valueChangedFromEngine(double)),
-            this, SLOT(slotRateChanged()),
+            this, SLOT(onRateChanged()),
             Qt::DirectConnection);
 
     m_pRateDir = ControlObject::getControl(ConfigKey(group, "rate_dir"));
     connect(m_pRateDir, SIGNAL(valueChanged(double)),
-            this, SLOT(slotRateChanged()),
+            this, SLOT(onRateChanged()),
             Qt::DirectConnection);
     connect(m_pRateDir, SIGNAL(valueChangedFromEngine(double)),
-            this, SLOT(slotRateChanged()),
+            this, SLOT(onRateChanged()),
             Qt::DirectConnection);
 
     m_pVCEnabled = ControlObject::getControl(ConfigKey(group, "vinylcontrol_enabled"));
     if (m_pVCEnabled) {
         connect(m_pVCEnabled, SIGNAL(valueChanged(double)),
-                this, SLOT(slotRateChanged()),
+                this, SLOT(onRateChanged()),
                 Qt::DirectConnection);
         connect(m_pVCEnabled, SIGNAL(valueChangedFromEngine(double)),
-                this, SLOT(slotRateChanged()),
+                this, SLOT(onRateChanged()),
                 Qt::DirectConnection);
     }
 
     m_pVCRate = ControlObject::getControl(ConfigKey(group, "vinylcontrol_rate"));
     if (m_pVCRate) {
         connect(m_pVCRate, SIGNAL(valueChanged(double)),
-                this, SLOT(slotRateChanged()),
+                this, SLOT(onRateChanged()),
                 Qt::DirectConnection);
         connect(m_pVCRate, SIGNAL(valueChangedFromEngine(double)),
-                this, SLOT(slotRateChanged()),
+                this, SLOT(onRateChanged()),
                 Qt::DirectConnection);
     }
 
     m_pKeylock = ControlObject::getControl(ConfigKey(group, "keylock"));
     connect(m_pKeylock, SIGNAL(valueChanged(double)),
-            this, SLOT(slotRateChanged()),
+            this, SLOT(onRateChanged()),
             Qt::DirectConnection);
     connect(m_pKeylock, SIGNAL(valueChangedFromEngine(double)),
-            this, SLOT(slotRateChanged()),
+            this, SLOT(onRateChanged()),
             Qt::DirectConnection);
 }
 
@@ -156,13 +156,13 @@ double KeyControl::getKey() {
     return m_pEngineKey->get();
 }
 
-void KeyControl::slotRateChanged() {
+void KeyControl::onRateChanged() {
     m_updateRateRequest = 1;
     updateRate();
 }
 
 void KeyControl::updateRate() {
-    //qDebug() << "KeyControl::slotRateChanged 1" << m_pitchRateInfo.pitchRatio;
+    //qDebug() << "KeyControl::onRateChanged 1" << m_pitchRateInfo.pitchRatio;
 
     // If rate is not 1.0 then we have to try and calculate the octave change
     // caused by it.
@@ -170,7 +170,7 @@ void KeyControl::updateRate() {
     if(m_pVCEnabled && m_pVCEnabled->toBool()) {
         m_pitchRateInfo.tempoRatio = m_pVCRate->get();
     } else {
-        m_pitchRateInfo.tempoRatio = 1.0 + m_pRateDir->get() * m_pRateRange->get() * m_pRateSlider->get();
+        m_pitchRateInfo.tempoRatio = 1.0 + m_pRateDir->get() * m_pRateSlider->get();
     }
 
     if (m_pitchRateInfo.tempoRatio == 0) {
@@ -230,10 +230,10 @@ void KeyControl::updateRate() {
     double dFileKey = m_pFileKey->get();
     updateKeyCOs(dFileKey, pitchOctaves);
 
-    // qDebug() << "KeyControl::slotRateChanged 2" << m_pitchRatio << m_speedSliderPitchRatio;
+    // qDebug() << "KeyControl::onRateChanged 2" << m_pitchRatio << m_speedSliderPitchRatio;
 }
 
-void KeyControl::slotFileKeyChanged(double value) {
+void KeyControl::onFileKeyChanged(double value) {
     updateKeyCOs(value,  m_pPitch->get() / 12);
 }
 
@@ -252,12 +252,12 @@ void KeyControl::updateKeyCOs(double fileKeyNumeric, double pitchOctaves) {
 }
 
 
-void KeyControl::slotSetEngineKey(double key) {
+void KeyControl::onSetEngineKey(double key) {
     // Always set to a full key, reset key_distance
     setEngineKey(key, 0.0);
 }
 
-void KeyControl::slotSetEngineKeyDistance(double key_distance) {
+void KeyControl::onSetEngineKeyDistance(double key_distance) {
     setEngineKey(m_pEngineKey->get(), key_distance);
 }
 
@@ -276,11 +276,11 @@ void KeyControl::setEngineKey(double key, double key_distance) {
     double pitchToTakeOctaves = (stepsToTake + key_distance) / 12.0;
 
     m_pPitch->set(pitchToTakeOctaves * 12);
-    slotPitchChanged(pitchToTakeOctaves * 12);
+    onPitchChanged(pitchToTakeOctaves * 12);
     return;
 }
 
-void KeyControl::slotPitchChanged(double pitch) {
+void KeyControl::onPitchChanged(double pitch) {
     Q_UNUSED(pitch)
     m_updatePitchRequest = 1;
     updatePitch();
@@ -289,7 +289,7 @@ void KeyControl::slotPitchChanged(double pitch) {
 void KeyControl::updatePitch() {
     double pitch = m_pPitch->get();
 
-    //qDebug() << "KeyControl::slotPitchChanged 1" << pitch <<
+    //qDebug() << "KeyControl::onPitchChanged 1" << pitch <<
     //        m_pitchRateInfo.pitchRatio <<
     //        m_pitchRateInfo.pitchTweakRatio <<
     //        m_pitchRateInfo.tempoRatio;
@@ -306,13 +306,13 @@ void KeyControl::updatePitch() {
             KeyUtils::powerOf2ToSemitoneChange(m_pitchRateInfo.pitchTweakRatio));
     updateKeyCOs(dFileKey, KeyUtils::powerOf2ToOctaveChange(pitchKnobRatio));
 
-    //qDebug() << "KeyControl::slotPitchChanged 2" << pitch <<
+    //qDebug() << "KeyControl::onPitchChanged 2" << pitch <<
     //        m_pitchRateInfo.pitchRatio <<
     //        m_pitchRateInfo.pitchTweakRatio <<
     //        m_pitchRateInfo.tempoRatio;
 }
 
-void KeyControl::slotPitchAdjustChanged(double pitchAdjust) {
+void KeyControl::onPitchAdjustChanged(double pitchAdjust) {
     Q_UNUSED(pitchAdjust);
     m_updatePitchAdjustRequest = 1;
     updatePitchAdjust();
@@ -321,7 +321,7 @@ void KeyControl::slotPitchAdjustChanged(double pitchAdjust) {
 void KeyControl::updatePitchAdjust() {
     double pitchAdjust = m_pPitchAdjust->get();
 
-    //qDebug() << "KeyControl::slotPitchAdjustChanged 1" << pitchAdjust <<
+    //qDebug() << "KeyControl::onPitchAdjustChanged 1" << pitchAdjust <<
     //        m_pitchRateInfo.pitchRatio <<
     //        m_pitchRateInfo.pitchTweakRatio <<
     //        m_pitchRateInfo.tempoRatio;
@@ -338,22 +338,22 @@ void KeyControl::updatePitchAdjust() {
     double dFileKey = m_pFileKey->get();
     updateKeyCOs(dFileKey, KeyUtils::powerOf2ToOctaveChange(m_pitchRateInfo.pitchRatio));
 
-    //qDebug() << "KeyControl::slotPitchAdjustChanged 2" << pitchAdjust <<
+    //qDebug() << "KeyControl::onPitchAdjustChanged 2" << pitchAdjust <<
     //        m_pitchRateInfo.pitchRatio <<
     //        m_pitchRateInfo.pitchTweakRatio <<
     //        m_pitchRateInfo.tempoRatio;
 }
 
-void KeyControl::slotSyncKey(double v) {
+void KeyControl::onSyncKey(double v) {
     if (v > 0) {
         EngineBuffer* pOtherEngineBuffer = pickSyncTarget();
         syncKey(pOtherEngineBuffer);
     }
 }
 
-void KeyControl::slotResetKey(double v) {
+void KeyControl::onResetKey(double v) {
     if (v > 0) {
-        slotSetEngineKey(m_pFileKey->get());
+        onSetEngineKey(m_pFileKey->get());
     }
 }
 
@@ -380,7 +380,7 @@ bool KeyControl::syncKey(EngineBuffer* pOtherEngineBuffer) {
     double pitchToTakeOctaves = (stepsToTake + otherDistance) / 12.0;
 
     m_pPitch->set(pitchToTakeOctaves * 12);
-    slotPitchChanged(pitchToTakeOctaves * 12);
+    onPitchChanged(pitchToTakeOctaves * 12);
     return true;
 }
 

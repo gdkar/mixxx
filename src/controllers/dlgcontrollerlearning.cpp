@@ -83,10 +83,10 @@ DlgControllerLearning::DlgControllerLearning(QWidget * parent,
     connect(pushButtonChooseControl, SIGNAL(clicked()), this, SLOT(showControlMenu()));
     connect(pushButtonClose, SIGNAL(clicked()), this, SLOT(close()));
     connect(pushButtonClose_2, SIGNAL(clicked()), this, SLOT(close()));
-    connect(pushButtonCancelLearn, SIGNAL(clicked()), this, SLOT(slotCancelLearn()));
-    connect(pushButtonRetry, SIGNAL(clicked()), this, SLOT(slotRetry()));
-    connect(pushButtonStartLearn, SIGNAL(clicked()), this, SLOT(slotStartLearningPressed()));
-    connect(pushButtonLearnAnother, SIGNAL(clicked()), this, SLOT(slotChooseControlPressed()));
+    connect(pushButtonCancelLearn, SIGNAL(clicked()), this, SLOT(onCancelLearn()));
+    connect(pushButtonRetry, SIGNAL(clicked()), this, SLOT(onRetry()));
+    connect(pushButtonStartLearn, SIGNAL(clicked()), this, SLOT(onStartLearningPressed()));
+    connect(pushButtonLearnAnother, SIGNAL(clicked()), this, SLOT(onChooseControlPressed()));
 #ifdef CONTROLLERLESSTESTING
     connect(pushButtonFakeControl, SIGNAL(clicked()), this, SLOT(DEBUGFakeMidiMessage()));
     connect(pushButtonFakeControl2, SIGNAL(clicked()), this, SLOT(DEBUGFakeMidiMessage2()));
@@ -96,23 +96,23 @@ DlgControllerLearning::DlgControllerLearning(QWidget * parent,
 #endif
 
     // We only want to listen to clicked() so we don't fire
-    // slotMidiOptionsChanged when we change the checkboxes programmatically.
+    // onMidiOptionsChanged when we change the checkboxes programmatically.
     connect(midiOptionSwitchMode, SIGNAL(clicked()),
-            this, SLOT(slotMidiOptionsChanged()));
+            this, SLOT(onMidiOptionsChanged()));
     connect(midiOptionSoftTakeover, SIGNAL(clicked()),
-            this, SLOT(slotMidiOptionsChanged()));
+            this, SLOT(onMidiOptionsChanged()));
     connect(midiOptionInvert, SIGNAL(clicked()),
-            this, SLOT(slotMidiOptionsChanged()));
+            this, SLOT(onMidiOptionsChanged()));
     connect(midiOptionSelectKnob, SIGNAL(clicked()),
-            this, SLOT(slotMidiOptionsChanged()));
+            this, SLOT(onMidiOptionsChanged()));
 
-    slotChooseControlPressed();
+    onChooseControlPressed();
 
     // Wait 1 second until we detect the control the user moved.
     m_lastMessageTimer.setInterval(1500);
     m_lastMessageTimer.setSingleShot(true);
     connect(&m_lastMessageTimer, SIGNAL(timeout()),
-            this, SLOT(slotTimerExpired()));
+            this, SLOT(onTimerExpired()));
 
     m_firstMessageTimer.setInterval(7000);
     m_firstMessageTimer.setSingleShot(true);
@@ -168,7 +168,7 @@ void DlgControllerLearning::resetWizard(bool keepCurrentControl) {
     labelErrorText->setText("");
 }
 
-void DlgControllerLearning::slotChooseControlPressed() {
+void DlgControllerLearning::onChooseControlPressed() {
     // If we learned messages, commit them.
     if (m_messagesLearned) {
         commitMapping();
@@ -187,7 +187,7 @@ void DlgControllerLearning::startListening() {
     emit(listenForClicks());
 }
 
-void DlgControllerLearning::slotStartLearningPressed() {
+void DlgControllerLearning::onStartLearningPressed() {
     if (m_currentControl.isNull()) {
         return;
     }
@@ -197,15 +197,15 @@ void DlgControllerLearning::slotStartLearningPressed() {
 
 #ifdef CONTROLLERLESSTESTING
 void DlgControllerLearning::DEBUGFakeMidiMessage() {
-    slotMessageReceived(MIDI_CC, 0x20, 0x41);
+    onMessageReceived(MIDI_CC, 0x20, 0x41);
 }
 
 void DlgControllerLearning::DEBUGFakeMidiMessage2() {
-    slotMessageReceived(MIDI_CC, 0x20, 0x3F);
+    onMessageReceived(MIDI_CC, 0x20, 0x3F);
 }
 #endif
 
-void DlgControllerLearning::slotMessageReceived(unsigned char status,
+void DlgControllerLearning::onMessageReceived(unsigned char status,
                                                 unsigned char control,
                                                 unsigned char value) {
     // Ignore message since we don't have a control yet.
@@ -259,7 +259,7 @@ void DlgControllerLearning::slotMessageReceived(unsigned char status,
     }
 }
 
-void DlgControllerLearning::slotCancelLearn() {
+void DlgControllerLearning::onCancelLearn() {
     resetWizard(true);
     stackedWidget->setCurrentWidget(page1Choose);
     startListening();
@@ -277,7 +277,7 @@ void DlgControllerLearning::slotFirstMessageTimeout() {
     startListening();
 }
 
-void DlgControllerLearning::slotTimerExpired() {
+void DlgControllerLearning::onTimerExpired() {
     // It's been a timer interval since we last got a message. Let's try to
     // detect mappings.
     MidiInputMappings mappings =
@@ -334,14 +334,14 @@ void DlgControllerLearning::slotTimerExpired() {
     stackedWidget->setCurrentWidget(page3Confirm);
 }
 
-void DlgControllerLearning::slotRetry() {
+void DlgControllerLearning::onRetry() {
     // If the user hit undo, instruct the controller to forget the mapping we
     // just added. So reset, but keep the control currently being learned.
     resetWizard(true);
-    slotStartLearningPressed();
+    onStartLearningPressed();
 }
 
-void DlgControllerLearning::slotMidiOptionsChanged() {
+void DlgControllerLearning::onMidiOptionsChanged() {
     if (!m_messagesLearned) {
         // This shouldn't happen because we disable the MIDI options when a
         // message has not been learned.
@@ -373,7 +373,7 @@ void DlgControllerLearning::visit(MidiController* pMidiController) {
     m_pMidiController = pMidiController;
 
     connect(m_pMidiController, SIGNAL(messageReceived(unsigned char, unsigned char, unsigned char)),
-            this, SLOT(slotMessageReceived(unsigned char, unsigned char, unsigned char)));
+            this, SLOT(onMessageReceived(unsigned char, unsigned char, unsigned char)));
 
     connect(this, SIGNAL(learnTemporaryInputMappings(MidiInputMappings)),
             m_pMidiController, SLOT(learnTemporaryInputMappings(MidiInputMappings)));

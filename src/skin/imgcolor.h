@@ -21,27 +21,22 @@
 #include "imgsource.h"
 
 class ImgAdd : public ImgColorProcessor {
-
 public:
     ImgAdd(ImgSource* parent, int amt);
     virtual QColor doColorCorrection(QColor c);
-
 private:
     int m_amt;
 };
 
 class ImgMax : public ImgColorProcessor {
-
 public:
     ImgMax(ImgSource* parent, int amt);
     virtual QColor doColorCorrection(QColor c);
-
 private:
     int m_amt;
 };
 
 class ImgScaleWhite : public ImgColorProcessor {
-
 public:
     inline ImgScaleWhite(ImgSource* parent, float amt)
         : ImgColorProcessor(parent), m_amt(amt) {}
@@ -51,18 +46,15 @@ private:
 };
 
 class ImgHueRot : public ImgColorProcessor {
-
 public:
     inline ImgHueRot(ImgSource* parent, int amt)
         : ImgColorProcessor(parent), m_amt(amt) {}
     virtual QColor doColorCorrection(QColor c);
-
 private:
     int m_amt;
 };
 
 class ImgHueInv : public ImgColorProcessor {
-
 public:
     inline ImgHueInv(ImgSource* parent) : ImgColorProcessor(parent) {}
     virtual QColor doColorCorrection(QColor c);

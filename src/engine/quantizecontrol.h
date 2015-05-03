@@ -27,7 +27,7 @@ class QuantizeControl : public EngineControl {
     virtual void trackUnloaded(TrackPointer pTrack);
 
   private slots:
-    void slotBeatsUpdated();
+    void onBeatsUpdated();
 
   private:
     // Update positions of previous and next beats from beatgrid.

@@ -89,17 +89,17 @@ MixxxLibraryFeature::MixxxLibraryFeature(Library* pLibrary,
     BaseTrackCache* pBaseTrackCache = new BaseTrackCache(
             pTrackCollection, tableName, LIBRARYTABLE_ID, columns, true);
     connect(&m_trackDao, SIGNAL(trackDirty(int)),
-            pBaseTrackCache, SLOT(slotTrackDirty(int)));
+            pBaseTrackCache, SLOT(onTrackDirty(int)));
     connect(&m_trackDao, SIGNAL(trackClean(int)),
-            pBaseTrackCache, SLOT(slotTrackClean(int)));
+            pBaseTrackCache, SLOT(onTrackClean(int)));
     connect(&m_trackDao, SIGNAL(trackChanged(int)),
-            pBaseTrackCache, SLOT(slotTrackChanged(int)));
+            pBaseTrackCache, SLOT(onTrackChanged(int)));
     connect(&m_trackDao, SIGNAL(tracksAdded(QSet<int>)),
-            pBaseTrackCache, SLOT(slotTracksAdded(QSet<int>)));
+            pBaseTrackCache, SLOT(onTracksAdded(QSet<int>)));
     connect(&m_trackDao, SIGNAL(tracksRemoved(QSet<int>)),
-            pBaseTrackCache, SLOT(slotTracksRemoved(QSet<int>)));
+            pBaseTrackCache, SLOT(onTracksRemoved(QSet<int>)));
     connect(&m_trackDao, SIGNAL(dbTrackAdded(TrackPointer)),
-            pBaseTrackCache, SLOT(slotDbTrackAdded(TrackPointer)));
+            pBaseTrackCache, SLOT(onDbTrackAdded(TrackPointer)));
 
     m_pBaseTrackCache = QSharedPointer<BaseTrackCache>(pBaseTrackCache);
     pTrackCollection->setTrackSource(m_pBaseTrackCache);
