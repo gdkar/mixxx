@@ -3,7 +3,7 @@
 /*
     Rubber Band Library
     An audio time-stretching and pitch-shifting library.
-    Copyright 2007-2014 Particular Programs Ltd.
+    Copyright 2007-2012 Particular Programs Ltd.
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -111,24 +111,24 @@ protected:
     size_t m_sampleRate;
     size_t m_channels;
 
-    void prepareChannelMS(const size_t channel, const float *const *inputs,
-                          const size_t offset, const size_t samples, float *prepared);
-    size_t consumeChannel(const size_t channel, const float *const *inputs,
-                          const size_t offset, size_t samples, const bool final);
-    void processChunks(const size_t channel, bool &any, bool &last);
+    void prepareChannelMS(size_t channel, const float *const *inputs,
+                          size_t offset, size_t samples, float *prepared);
+    size_t consumeChannel(size_t channel, const float *const *inputs,
+                          size_t offset, size_t samples, bool final);
+    void processChunks(size_t channel, bool &any, bool &last);
     bool processOneChunk(); // across all channels, for real time use
-    bool processChunkForChannel(const size_t channel, const size_t phaseIncrement,
-                                size_t shiftIncrement, const bool phaseReset);
-    bool testInbufReadSpace(const size_t channel);
+    bool processChunkForChannel(size_t channel, size_t phaseIncrement,
+                                size_t shiftIncrement, bool phaseReset);
+    bool testInbufReadSpace(size_t channel);
     void calculateIncrements(size_t &phaseIncrement,
                              size_t &shiftIncrement, bool &phaseReset);
-    bool getIncrements(const size_t channel, size_t &phaseIncrement,
+    bool getIncrements(size_t channel, size_t &phaseIncrement,
                        size_t &shiftIncrement, bool &phaseReset);
-    void analyseChunk(const size_t channel);
-    void modifyChunk(const size_t channel, const size_t outputIncrement, const bool phaseReset);
+    void analyseChunk(size_t channel);
+    void modifyChunk(size_t channel, size_t outputIncrement, bool phaseReset);
     void formantShiftChunk(size_t channel);
-    void synthesiseChunk(const size_t channel, const size_t shiftIncrement);
-    void writeChunk(const size_t channel, const size_t shiftIncrement, const bool last);
+    void synthesiseChunk(size_t channel, size_t shiftIncrement);
+    void writeChunk(size_t channel, size_t shiftIncrement, bool last);
 
     void calculateSizes();
     void configure();
@@ -139,7 +139,7 @@ protected:
     size_t roundUp(size_t value); // to next power of two
 
     template <typename T, typename S>
-    void cutShiftAndFold(T *target, const int targetSize,
+    void cutShiftAndFold(T *target, int targetSize,
                          S *src, // destructive to src
                          Window<float> *window) {
         window->cut(src);

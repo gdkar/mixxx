@@ -1,5 +1,5 @@
 #include "glwaveformrendererfilteredsignal.h"
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "waveform/waveform.h"
 #include "waveformwidgetrenderer.h"
 #include "control/controlobjectthread.h"

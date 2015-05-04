@@ -20,7 +20,8 @@
 #include "sampleutil.h"
 #include "util/math.h"
 
-EngineVuMeter::EngineVuMeter(QString group, QObject *pParent):EngineObject(pParent) {
+EngineVuMeter::EngineVuMeter(QString group, QObject *pParent) {
+    setParent(pParent);
     // The VUmeter widget is controlled via a controlpotmeter, which means
     // that it should react on the setValue(int) signal.
     m_ctrlVuMeter = new ControlPotmeter(ConfigKey(group, "VuMeter"), 0., 1.);

@@ -25,8 +25,7 @@ static inline bool useAlignedAlloc() {
     // This will work on all targets and compilers.
     // It will return true on MSVC 32 bit builds and false for
     // Linux 32 and 64 bit builds
-    return (sizeof(long double) == 8 && sizeof(CSAMPLE*) <= 8 &&
-            sizeof(CSAMPLE*) == sizeof(size_t));
+    return (sizeof(long double) == 8 && sizeof(CSAMPLE*) <= 8 && sizeof(CSAMPLE*) == sizeof(size_t));
 }
 
 // static
@@ -48,25 +47,7 @@ CSAMPLE* SampleUtil::alloc(int size) {
     // TODO(XXX): Replace with C++11 aligned_alloc.
     // TODO(XXX): consider 32 byte alignement to optimize for AVX builds 
     if (useAlignedAlloc()) {
-#ifdef _MSC_VER
-        return static_cast<CSAMPLE*>(_aligned_malloc(sizeof(CSAMPLE)*size, 16));
-#else
-        // This block will be only used on non-Windows platforms that don't
-        // produce 16-byte aligned pointers via malloc. We allocate 16 bytes of
-        // slack space so that we can align the pointer we return to the caller.
-        const size_t alignment = 16;
-        const size_t unaligned_size = sizeof(CSAMPLE[size]) + alignment;
-        void* pUnaligned = std::malloc(unaligned_size);
-        if (pUnaligned == NULL) {
-            return NULL;
-        }
-        // Shift
-        void* pAligned = (void*)(((size_t)pUnaligned & ~(alignment - 1)) + alignment);
-        // Store pointer to the original buffer in the slack space before the
-        // shifted pointer.
-        *((void**)(pAligned) - 1) = pUnaligned;
-        return static_cast<CSAMPLE*>(pAligned);
-#endif
+        return static_cast<CSAMPLE*>(aligned_alloc(16, sizeof(CSAMPLE)*size));
     } else {
         // Our platform already produces 16-byte aligned pointers (or is an exotic target) 
         // We should be explicit about what we want from the system.
@@ -78,15 +59,9 @@ CSAMPLE* SampleUtil::alloc(int size) {
 void SampleUtil::free(CSAMPLE* pBuffer) {
     // See SampleUtil::alloc() for details
     if (useAlignedAlloc()) {
-        if (pBuffer == NULL) {
-            return;
-        }
-#ifdef _MSC_VER
-        _aligned_free(pBuffer);
-#else
+        if (pBuffer == NULL) return;
         // Pointer to the original memory is stored before pBuffer
-        std::free(*((void**)((void*)pBuffer) - 1));
-#endif
+        free(pBuffer);
     } else {
         delete[] pBuffer;
     }

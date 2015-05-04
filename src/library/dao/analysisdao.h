@@ -6,7 +6,7 @@
 
 #include "configobject.h"
 #include "library/dao/dao.h"
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 
 class AnalysisDao : public DAO {
   public:

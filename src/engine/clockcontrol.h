@@ -4,7 +4,7 @@
 #include "configobject.h"
 #include "engine/enginecontrol.h"
 
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "track/beats.h"
 
 class ControlObjectSlave;

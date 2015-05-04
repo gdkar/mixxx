@@ -1,7 +1,7 @@
 #include <QtDebug>
 #include <QtSql>
 
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "library/dao/playlistdao.h"
 #include "library/queryutil.h"
 #include "library/trackcollection.h"

@@ -6,7 +6,7 @@
 
 #include "waveform/renderers/waveformwidgetrenderer.h"
 #include "waveformwidgettype.h"
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 
 class VSyncThread;
 

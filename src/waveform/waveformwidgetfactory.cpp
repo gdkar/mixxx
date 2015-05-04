@@ -279,7 +279,7 @@ void WaveformWidgetFactory::setFrameRate(int frameRate) {
     if (m_config) {
         m_config->set(ConfigKey("[Waveform]","FrameRate"), ConfigValue(m_frameRate));
     }
-    m_vsyncThread->setUsSyncIntervalTime(1e6 / m_frameRate);
+    m_vsyncThread->setSyncIntervalTime(1.0 / m_frameRate);
 }
 
 void WaveformWidgetFactory::setEndOfTrackWarningTime(int endTime) {

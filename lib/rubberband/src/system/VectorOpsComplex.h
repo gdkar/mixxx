@@ -3,7 +3,7 @@
 /*
     Rubber Band Library
     An audio time-stretching and pitch-shifting library.
-    Copyright 2007-2014 Particular Programs Ltd.
+    Copyright 2007-2012 Particular Programs Ltd.
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -25,65 +25,81 @@
 #define _RUBBERBAND_VECTOR_OPS_COMPLEX_H_
 
 #include "VectorOps.h"
-#include "base/Profiler.h"
-#include <cmath>
+
+
 namespace RubberBand {
 
 
 template<typename T>
-inline void c_phasor(T &real, T &imag, T phase)
+inline void c_phasor(T *real, T *imag, T phase)
 {
     //!!! IPP contains ippsSinCos_xxx in ippvm.h -- these are
     //!!! fixed-accuracy, test and compare
 #if defined HAVE_VDSP
     int one = 1;
     if (sizeof(T) == sizeof(float)) {
-        vvsincosf((float *)&imag, (float *)&real, (const float *)&phase, &one);
+        vvsincosf((float *)imag, (float *)real, (const float *)&phase, &one);
     } else {
-        vvsincos((double *)&imag, (double *)&real, (const double *)&phase, &one);
+        vvsincos((double *)imag, (double *)real, (const double *)&phase, &one);
     }
 #elif defined LACK_SINCOS
-        real = std::cos(phase);
-        imag = std::sin(phase);
+    if (sizeof(T) == sizeof(float)) {
+        *real = cosf(phase);
+        *imag = sinf(phase);
+    } else {
+        *real = cos(phase);
+        *imag = sin(phase);
+    }
 #elif defined __GNUC__
     if (sizeof(T) == sizeof(float)) {
-        sincosf(phase, (float *)&imag, (float *)&real);
+        sincosf(phase, (float *)imag, (float *)real);
     } else {
-        sincos(phase, (double *)&imag, (double *)&real);
+        sincos(phase, (double *)imag, (double *)real);
     }
 #else
-        *real = std::cos(phase);
-        *imag = std::sin(phase);
+    if (sizeof(T) == sizeof(float)) {
+        *real = cosf(phase);
+        *imag = sinf(phase);
+    } else {
+        *real = cos(phase);
+        *imag = sin(phase);
+    }
 #endif
 }
+
 template<typename T>
-inline T approximate_atan2(T x, T y){
-    static const T coeff1 = M_PI/4;
-    static const T coeff2 = 3*M_PI/4;
-    const T  absy=(y<0)?-y:y;
-    const T r = (x>=0)?((x-absy)/(x+absy)):((x+absy)/(absy-x));
-    const T r2 = r*r;
-    const T a = (0.1963f*r2 - 0.9817)*r +( (x>=0)?(coeff1):(coeff2));
-    return (y<0)?-a:a;
-}
-#ifndef USE_APPROXIMATE_ATAN2
-template<typename T>
-inline void c_magphase(T &mag, T &phase, T real, T imag)
-{
-    mag = std::sqrt(real * real + imag * imag);
-    phase = std::atan2(imag, real);
-}
-#else
-template<typename T >
-inline void c_magphase(T &mag, T &phase, T real, T imag)
-{
-    T atan = approximate_atan2<T>(real, imag);
-    phase = atan;
-    mag = std::sqrt(real * real + imag * imag);
+inline void c_magphase(T *mag, T *phase, T real, T imag){
+    *mag = sqrt(real * real + imag * imag);
+    *phase = atan2(imag, real);
 }
 
-// NB arguments in opposite order from usual for atan2f
+inline float approximate_atan2f(float real, float imag){
+    static const float pi = M_PI;
+    static const float pi2 = M_PI / 2;
 
+    float abs_imag = (imag<0)?-imag:imag;
+    float dif      = real - abs_imag;
+    float sum      = real + abs_imag;
+    float ratio    = (real<0)?-sum/dif : dif/sum;
+    float ratio2   = ratio * ratio;
+    float aprox    = (0.1963f*ratio2 - 0.9817f) * ratio2 + ((real>=0)?(M_PI/4):(3*M_PI/4));
+    return imag<0 ? - aprox:aprox;
+}
+
+
+template<>
+inline void c_magphase(float *mag, float *phase, float real, float imag){
+    float atan = approximate_atan2f(real, imag);
+    *phase = atan;
+    *mag = sqrtf(real * real + imag * imag);
+}
+#if 0
+template<>
+inline void c_magphase(float *mag, float *phase, float real, float imag)
+{
+    *mag = sqrtf(real * real + imag * imag);
+    *phase = atan2f(imag, real);
+}
 #endif
 
 
@@ -94,27 +110,20 @@ void v_polar_to_cartesian(T *const R__ real,
                           const S *const R__ phase,
                           const int count)
 {
-    Profiler profiler("VectorOpsComplex::v_polar_to_cartesian");
-    (void)__builtin_assume_aligned(real,16);
-    (void)__builtin_assume_aligned(imag,16);
-    (void)__builtin_assume_aligned(mag,16);
-    (void)__builtin_assume_aligned(phase,16);
     for (int i = 0; i < count; ++i) {
-        c_phasor<T>(real[i], imag[i], phase[i]);
-        const T magi =T( mag[i]);
-        real[i]*=magi;
-        imag[i]*=magi;
+        c_phasor<T>(real + i, imag + i, phase[i]);
     }
+    v_multiply(real, mag, count);
+    v_multiply(imag, mag, count);
 }
 
 template<typename T>
 void v_polar_interleaved_to_cartesian_inplace(T *const R__ srcdst,
                                               const int count)
 {
-    Profiler profiler("VectorOpsComplex::v_polar_interleaved_to_cartesian_inplace");
+    T real, imag;
     for (int i = 0; i < count*2; i += 2) {
-        T real, imag;
-        c_phasor(real, imag, srcdst[i+1]);
+        c_phasor(&real, &imag, srcdst[i+1]);
         real *= srcdst[i];
         imag *= srcdst[i];
         srcdst[i] = real;
@@ -128,10 +137,9 @@ void v_polar_to_cartesian_interleaved(T *const R__ dst,
                                       const S *const R__ phase,
                                       const int count)
 {
-    Profiler profiler("VectorOpsComplex::v_polar_to_cartesian_interleaved");
+    T real, imag;
     for (int i = 0; i < count; ++i) {
-        T real, imag;
-        c_phasor<T>(real,imag, phase[i]);
+        c_phasor<T>(&real, &imag, phase[i]);
         real *= mag[i];
         imag *= mag[i];
         dst[i*2] = real;
@@ -187,9 +195,8 @@ void v_cartesian_to_polar(T *const R__ mag,
                           const S *const R__ imag,
                           const int count)
 {
-    Profiler profiler("VectorOpsComplex::v_cartesian_to_polar");
     for (int i = 0; i < count; ++i) {
-        c_magphase<T>(mag[i], phase[i], real[i], imag[i]);
+        c_magphase<T>(mag + i, phase + i, real[i], imag[i]);
     }
 }
 
@@ -199,9 +206,8 @@ void v_cartesian_interleaved_to_polar(T *const R__ mag,
                                       const S *const R__ src,
                                       const int count)
 {
-    Profiler profiler("VectorOpsComplex::v_cartesian_interleaved_to_polar");
     for (int i = 0; i < count; ++i) {
-        c_magphase<T>(mag[i], phase[i], src[i*2], src[i*2+1]);
+        c_magphase<T>(mag + i, phase + i, src[i*2], src[i*2+1]);
     }
 }
 
@@ -241,10 +247,9 @@ template<typename T>
 void v_cartesian_to_polar_interleaved_inplace(T *const R__ srcdst,
                                               const int count)
 {
-    Profiler profiler("VectorOpsComplex::v_cartesian_to_polar_interleaved_inplace");
+    T mag, phase;
     for (int i = 0; i < count * 2; i += 2) {
-        T mag, phase;
-        c_magphase(mag, phase, srcdst[i], srcdst[i+1]);
+        c_magphase(&mag, &phase, srcdst[i], srcdst[i+1]);
         srcdst[i] = mag;
         srcdst[i+1] = phase;
     }

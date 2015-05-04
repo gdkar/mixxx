@@ -27,6 +27,7 @@
 #include "dialogs/dlgprefcontrols.h"
 #include "configobject.h"
 #include "control/controlobject.h"
+#include "control/controlpotmeter.h"
 #include "control/controlobjectslave.h"
 #include "widget/wnumberpos.h"
 #include "engine/enginebuffer.h"
@@ -484,8 +485,8 @@ void DlgPrefControls::onSetRateDir(int index) {
     // If the setting was changed, ie the old direction is not equal to the new one,
     // multiply the rate by -1 so the current sound does not change.
     if(fabs(dir - oldDir) > 0.1) {
-        foreach (ControlObjectThread* pControl, m_rateControls) {
-            pControl->onSet(-1 * pControl->get());
+        foreach (ControlPotmeter* pControl, m_rateControls) {
+            pControl->set(-1 * pControl->get());
         }
     }
 

@@ -15,7 +15,7 @@
 
 #include "library/dao/trackdao.h"
 #include "library/columncache.h"
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "util.h"
 
 class SearchQueryParser;

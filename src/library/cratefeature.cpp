@@ -20,7 +20,7 @@
 #include "widget/wlibrary.h"
 #include "mixxxkeyboard.h"
 #include "treeitem.h"
-#include "soundsourceproxy.h"
+#include "sources/soundsourceproxy.h"
 #include "util/dnd.h"
 #include "util/time.h"
 

@@ -9,7 +9,7 @@
 
 #include "configobject.h"
 #include "skin/skincontext.h"
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "vinylcontrol/vinylsignalquality.h"
 #include "widget/wbasewidget.h"
 #include "widget/wwidget.h"

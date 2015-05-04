@@ -1,4 +1,5 @@
 #include "effects/native/bessel4lvmixeqeffect.h"
+
 #include "util/math.h"
 
 // static

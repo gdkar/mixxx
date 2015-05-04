@@ -64,7 +64,7 @@ TrackPointer DeckAttributes::getLoadedTrack() const {
 
 AutoDJProcessor::AutoDJProcessor(QObject* pParent,
                                  ConfigObject<ConfigValue>* pConfig,
-                                 PlayerManagerInterface* pPlayerManager,
+                                 PlayerManager* pPlayerManager,
                                  int iAutoDJPlaylistId,
                                  TrackCollection* pTrackCollection)
         : QObject(pParent),

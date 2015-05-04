@@ -9,7 +9,7 @@
 
 #include "configobject.h"
 #include "control/controlobjectthread.h"
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "control/controlvalue.h"
 #include "engine/effects/groupfeaturestate.h"
 #include "engine/cachingreader.h"

@@ -3,7 +3,7 @@
 /*
     Rubber Band Library
     An audio time-stretching and pitch-shifting library.
-    Copyright 2007-2014 Particular Programs Ltd.
+    Copyright 2007-2012 Particular Programs Ltd.
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -52,9 +52,8 @@
 #ifndef NO_TIMING
 #include <map>
 #include <string>
-#include <cstdlib>
-#include <pthread.h>
 #endif
+
 namespace RubberBand {
 
 #ifndef NO_TIMING
@@ -82,10 +81,6 @@ protected:
 #else
     struct timeval m_start;
 #endif
-    static pthread_once_t m_showOnDestruct_once;
-    static void showOnDestruct_dtor(){
-        atexit(dump);
-    }
     bool m_showOnDestruct;
     bool m_ended;
 
@@ -96,6 +91,7 @@ protected:
     static WorstCallMap m_worstCalls;
     static void add(const char *, float);
 };
+
 #else
 
 #ifdef NO_TIMING_COMPLETE_NOOP

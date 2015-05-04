@@ -459,6 +459,9 @@ void DlgPrefSound::updateAudioBufferSizes(int sampleRateIndex) {
     // find the first that gives us a buffer size >= 1 ms -- bkgood
     // no div-by-0 in the next line because we don't allow srates of 0 in our
     // srate list when we construct it in the ctor -- bkgood
+    const unsigned int cache_step = 64/(2*sizeof(CSAMPLE));
+    framesPerBuffer = 1e-3*sampleRate;
+    framesPerBuffer = (framesPerBuffer+(cache_step-1))&(~(cache_step-1));
     for (; framesPerBuffer / sampleRate * 1000 < 1.0; framesPerBuffer *= 2) {}
     audioBufferComboBox->clear();
     for (unsigned int i = 0; i < SoundManagerConfig::kMaxAudioBufferSizeIndex; ++i) {
@@ -541,7 +544,7 @@ void DlgPrefSound::bufferUnderflow(double count) {
 }
 
 void DlgPrefSound::masterLatencyChanged(double latency) {
-    currentLatency->setText(QString("%1 ms").arg(latency));
+    currentLatency->setText(QString("%1 s").arg(latency));
     update();
 }
 

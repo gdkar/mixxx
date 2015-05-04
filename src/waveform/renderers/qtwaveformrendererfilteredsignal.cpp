@@ -4,7 +4,7 @@
 #include "waveform/waveform.h"
 #include "waveform/waveformwidgetfactory.h"
 #include "control/controlobjectslave.h"
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "util/math.h"
 
 #include <QLineF>

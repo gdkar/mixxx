@@ -4,7 +4,6 @@
 #include "engine/enginefilteriir.h"
 
 class EngineFilterBessel8Low : public EngineFilterIIR<8, IIR_LP> {
-    Q_OBJECT
   public:
     EngineFilterBessel8Low(int sampleRate, double freqCorner1);
     void setFrequencyCorners(int sampleRate, double freqCorner1);

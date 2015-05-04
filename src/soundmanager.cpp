@@ -32,7 +32,7 @@
 #include "vinylcontrol/defs_vinylcontrol.h"
 #include "sampleutil.h"
 #include "util/cmdlineargs.h"
-
+#include "util/types.h"
 #ifdef __PORTAUDIO__
 typedef PaError (*SetJackClientName)(const char *name);
 #endif
@@ -259,8 +259,7 @@ void SoundManager::queryDevices() {
          */
         SoundDevicePortAudio *currentDevice = new SoundDevicePortAudio(m_pConfig, this, deviceInfo, i);
         m_devices.push_back(currentDevice);
-        if (!strcmp(Pa_GetHostApiInfo(deviceInfo->hostApi)->name,
-                    MIXXX_PORTAUDIO_JACK_STRING)) {
+        if (!strcmp(Pa_GetHostApiInfo(deviceInfo->hostApi)->name, MIXXX_PORTAUDIO_JACK_STRING)) {
             m_jackSampleRate = deviceInfo->defaultSampleRate;
         }
     }
@@ -326,14 +325,15 @@ Result SoundManager::setupDevices() {
             isInput = true;
             // TODO(bkgood) look into allocating this with the frames per
             // buffer value from SMConfig
-            AudioInputBuffer aib(in, SampleUtil::alloc(MAX_BUFFER_LEN));
+            AudioInput aib(in);
+            aib.setBuffer(SampleUtil::alloc(MAX_BUFFER_LEN));
             err = device->addInput(aib) != SOUNDDEVICE_ERROR_OK ? ERR : OK;
             if (err != OK) {
-                delete [] aib.getBuffer();
+                delete [] aib.buffer();
                 goto closeAndError;
             }
 
-            m_inputBuffers.append(aib.getBuffer());
+            m_inputBuffers.append(aib.buffer());
 
             // Check if any AudioSink is registered for this AudioInput
             // and call the onInputConnected method.
@@ -347,13 +347,13 @@ Result SoundManager::setupDevices() {
             isOutput = true;
             // following keeps us from asking for a channel buffer EngineMaster
             // doesn't have -- bkgood
-            const CSAMPLE* pBuffer = m_registeredSources.value(out)->buffer(out);
+            CSAMPLE* pBuffer = m_registeredSources.value(out)->buffer(out);
             if (pBuffer == NULL) {
                 qDebug() << "AudioSource returned null for" << out.getString();
                 continue;
             }
 
-            AudioOutputBuffer aob(out, pBuffer);
+            AudioOutput aob=out;aob.setBuffer( pBuffer);
             err = device->addOutput(aob) != SOUNDDEVICE_ERROR_OK ? ERR : OK;
             if (err != OK) goto closeAndError;
             if (out.getType() == AudioOutput::MASTER) {
@@ -483,12 +483,12 @@ void SoundManager::onDeviceOutputCallback(const unsigned int iFramesPerBuffer) {
     m_pMaster->process(iFramesPerBuffer*2);
 }
 
-void SoundManager::pushInputBuffers(const QList<AudioInputBuffer>& inputs,
+void SoundManager::pushInputBuffers(const QList<AudioInput>& inputs,
                                     const unsigned int iFramesPerBuffer) {
-   for (QList<AudioInputBuffer>::ConstIterator i = inputs.begin(),
+   for (QList<AudioInput>::ConstIterator i = inputs.begin(),
                  e = inputs.end(); i != e; ++i) {
-        const AudioInputBuffer& in = *i;
-        CSAMPLE* pInputBuffer = in.getBuffer();
+        const AudioInput& in = *i;
+        CSAMPLE* pInputBuffer = in.buffer();
         for (QHash<AudioInput, AudioSink* >::const_iterator it =
                 m_registeredDestinations.find(in);
                 it != m_registeredDestinations.end() && it.key() == in; ++it) {

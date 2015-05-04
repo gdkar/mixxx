@@ -55,30 +55,24 @@ SkinContext::~SkinContext() {
     m_pScriptEngine->setGlobalObject(m_parentGlobal);
 }
 
-QString SkinContext::variable(const QString& name) const {
-    return m_variables.value(name, QString());
-}
-
+QString SkinContext::variable(const QString& name) const 
+{return m_variables.value(name, QString());}
 void SkinContext::setVariable(const QString& name, const QString& value) {
     m_variables[name] = value;
     QScriptValue context = m_pScriptEngine->currentContext()->activationObject();
     context.setProperty(name, value);
 }
 
-void SkinContext::setXmlPath(const QString& xmlPath) {
-    m_xmlPath = xmlPath;
-}
+void SkinContext::setXmlPath(const QString& xmlPath) {m_xmlPath = xmlPath;}
 
 void SkinContext::updateVariables(const QDomNode& node) {
     QDomNode child = node.firstChild();
     while (!child.isNull()) {
-        if (child.isElement() && child.nodeName() == "SetVariable") {
-            updateVariable(child.toElement());
-        }
+        if (child.isElement() && child.nodeName() == "SetVariable") 
+        {updateVariable(child.toElement());}
         child = child.nextSibling();
     }
 }
-
 void SkinContext::updateVariable(const QDomElement& element) {
     if (!element.hasAttribute("name")) {
         qDebug() << "Can't update variable without name:" << element.text();
@@ -89,59 +83,48 @@ void SkinContext::updateVariable(const QDomElement& element) {
     setVariable(name, value);
 }
 
-bool SkinContext::hasNode(const QDomNode& node, const QString& nodeName) const {
-    return !selectNode(node, nodeName).isNull();
-}
+bool SkinContext::hasNode(const QDomNode& node, const QString& nodeName) const
+{return !selectNode(node, nodeName).isNull();}
 
 QDomNode SkinContext::selectNode(const QDomNode& node,
                                  const QString& nodeName) const {
     QDomNode child = node.firstChild();
     while (!child.isNull()) {
-        if (child.nodeName() == nodeName) {
-            return child;
-        }
+        if (child.nodeName() == nodeName) {return child;}
         child = child.nextSibling();
     }
     return child;
 }
-
 QDomElement SkinContext::selectElement(const QDomNode& node,
                                        const QString& nodeName) const {
     QDomNode child = selectNode(node, nodeName);
     return child.toElement();
 }
-
 QString SkinContext::selectString(const QDomNode& node,
                                   const QString& nodeName) const {
     QDomElement child = selectElement(node, nodeName);
     return nodeToString(child);
 }
-
 float SkinContext::selectFloat(const QDomNode& node,
                                const QString& nodeName) const {
     bool ok = false;
     float conv = nodeToString(selectElement(node, nodeName)).toFloat(&ok);
     return ok ? conv : 0.0f;
 }
-
 double SkinContext::selectDouble(const QDomNode& node,
                                  const QString& nodeName) const {
     bool ok = false;
     double conv = nodeToString(selectElement(node, nodeName)).toDouble(&ok);
     return ok ? conv : 0.0;
 }
-
 int SkinContext::selectInt(const QDomNode& node,
                            const QString& nodeName,
                            bool* pOk) const {
     bool ok = false;
     int conv = nodeToString(selectElement(node, nodeName)).toInt(&ok);
-    if (pOk != NULL) {
-        *pOk = ok;
-    }
+    if (pOk != NULL) {*pOk = ok;}
     return ok ? conv : 0;
 }
-
 bool SkinContext::selectBool(const QDomNode& node,
                              const QString& nodeName,
                              bool defaultValue) const {
@@ -152,14 +135,10 @@ bool SkinContext::selectBool(const QDomNode& node,
     }
     return defaultValue;
 }
-
 bool SkinContext::hasNodeSelectString(const QDomNode& node,
                                       const QString& nodeName, QString *value) const {
     QDomNode child = selectNode(node, nodeName);
-    if (!child.isNull()) {
-        *value = nodeToString(child);
-        return true;
-    }
+    if (!child.isNull()) {*value = nodeToString(child);return true;}
     return false;
 }
 
@@ -210,9 +189,7 @@ QString SkinContext::variableNodeToText(const QDomElement& variableNode) const {
             // string then return the node text. Use nodeToString to translate
             // embedded variable references.
             return nodeToString(variableNode);
-        } else {
-            return variable(variableName);
-        }
+        } else {return variable(variableName);}
     }
     return nodeToString(variableNode);
 }
@@ -227,9 +204,7 @@ QString SkinContext::nodeToString(const QDomNode& node) const {
             } else {
                 qDebug() << "Unhandled tag in node:" << child.nodeName();
             }
-        } else if (child.isText()) {
-            result.append(child.nodeValue());
-        }
+        } else if (child.isText()) {result.append(child.nodeValue());}
         // Ignore all other node types.
         child = child.nextSibling();
     }

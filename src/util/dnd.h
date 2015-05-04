@@ -12,7 +12,7 @@
 
 #include "configobject.h"
 #include "control/controlobject.h"
-#include "soundsourceproxy.h"
+#include "sources/soundsourceproxy.h"
 #include "library/parser.h"
 #include "library/parserm3u.h"
 #include "library/parserpls.h"

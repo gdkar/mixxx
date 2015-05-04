@@ -14,7 +14,7 @@
 #include "util/sandbox.h"
 #include "util/file.h"
 #include "util/regex.h"
-#include "soundsourceproxy.h"
+#include "sources/soundsourceproxy.h"
 
 class CoverArtUtils {
   public:

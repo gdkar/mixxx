@@ -923,19 +923,19 @@ class FFMPEG(Feature):
             # Mac OS X does have FFMPEG available (with libswresample) from
             # macports or homebrew
             # Microsoft Windows can download FFMPEG or Libav resample libraries
-
-            if conf.CheckForPKG('libavresample', '0.0.3'):
-                build.env.ParseConfig('pkg-config libavresample \
-                                       --silence-errors --cflags --libs')
-                build.env.Append(CPPDEFINES='__FFMPEGFILE__')
-                build.env.Append(CPPDEFINES='__LIBAVRESAMPLE__')
-                self.status = "Enabled -- with libavresample"
-            elif conf.CheckForPKG('libswresample', '0.0.1'):
+            if conf.CheckForPKG('libswresample', '0.0.1'):
                 build.env.ParseConfig('pkg-config libswresample \
                                        --silence-errors --cflags --libs')
                 build.env.Append(CPPDEFINES='__FFMPEGFILE__')
                 build.env.Append(CPPDEFINES='__LIBSWRESAMPLE__')
                 self.status = "Enabled -- with libswresample"
+
+            elif conf.CheckForPKG('libavresample', '0.0.3'):
+                build.env.ParseConfig('pkg-config libavresample \
+                                       --silence-errors --cflags --libs')
+                build.env.Append(CPPDEFINES='__FFMPEGFILE__')
+                build.env.Append(CPPDEFINES='__LIBAVRESAMPLE__')
+                self.status = "Enabled -- with libavresample"
             else:
                 build.env.Append(CPPDEFINES='__FFMPEGFILE__')
                 build.env.Append(CPPDEFINES='__FFMPEGOLDAPI__')
@@ -1167,7 +1167,6 @@ class Optimize(Feature):
             # fftw3 (used by rubberband) in Ubuntu Trusty
             # -O3 -fomit-frame-pointer -mtune=native -malign-double
             # -fstrict-aliasing -fno-schedule-insns -ffast-math
-
 
 class AutoDjCrates(Feature):
     def description(self):

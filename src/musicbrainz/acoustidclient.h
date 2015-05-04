@@ -15,7 +15,7 @@
 #include <QtNetwork>
 
 #include "network.h"
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 
 class QXmlStreamReader;
 

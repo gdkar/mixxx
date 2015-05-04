@@ -14,7 +14,7 @@
 #include <QDir>
 #include <QFile>
 #include <QtDebug>
-#include "trackinfoobject.h" //needed for importing 1.7.x library
+#include "track/trackinfoobject.h" //needed for importing 1.7.x library
 #include "util/xml.h" //needed for importing 1.7.x library
 #include "legacylibraryimporter.h"
 

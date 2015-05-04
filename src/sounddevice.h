@@ -62,12 +62,12 @@ class SoundDevice {
     virtual double getDefaultSampleRate() const = 0;
     int getNumOutputChannels() const;
     int getNumInputChannels() const;
-    SoundDeviceError addOutput(const AudioOutputBuffer& out);
-    SoundDeviceError addInput(const AudioInputBuffer& in);
-    const QList<AudioInputBuffer>& inputs() const {
+    SoundDeviceError addOutput(const AudioOutput& out);
+    SoundDeviceError addInput(const AudioInput& in);
+    const QList<AudioInput>& inputs() const {
         return m_audioInputs;
     }
-    const QList<AudioOutputBuffer>& outputs() const {
+    const QList<AudioOutput>& outputs() const {
         return m_audioOutputs;
     }
 
@@ -106,8 +106,8 @@ class SoundDevice {
     // The name of the audio API used by this device.
     QString m_hostAPI;
     unsigned int m_framesPerBuffer;
-    QList<AudioOutputBuffer> m_audioOutputs;
-    QList<AudioInputBuffer> m_audioInputs;
+    QList<AudioOutput> m_audioOutputs;
+    QList<AudioInput> m_audioInputs;
 };
 
 #endif

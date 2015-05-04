@@ -13,7 +13,7 @@
 #include <QAbstractItemModel>
 #include <QUrl>
 
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "treeitemmodel.h"
 #include "library/coverartcache.h"
 

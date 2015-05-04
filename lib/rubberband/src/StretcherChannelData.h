@@ -3,7 +3,7 @@
 /*
     Rubber Band Library
     An audio time-stretching and pitch-shifting library.
-    Copyright 2007-2014 Particular Programs Ltd.
+    Copyright 2007-2012 Particular Programs Ltd.
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -30,11 +30,13 @@
 
 //#define EXPERIMENT 1
 
-namespace RubberBand{
+namespace RubberBand
+{
 
 class Resampler;
 
-class RubberBandStretcher::Impl::ChannelData{
+class RubberBandStretcher::Impl::ChannelData
+{
 public:        
     /**
      * Construct a ChannelData structure.
@@ -106,34 +108,33 @@ public:
     process_t *prevError;
     process_t *unwrappedPhase;
 
-    float     *accumulator;
-    size_t     accumulatorFill;
-    float     *windowAccumulator;
-    float     *ms; // only used when mid-side processing
-    float     *interpolator; // only used when time-domain smoothing is on
-    int        interpolatorScale;
+    float *accumulator;
+    size_t accumulatorFill;
+    float *windowAccumulator;
+    float *interpolator; // only used when time-domain smoothing is on
+    int interpolatorScale;
 
-    float     *fltbuf;
+    float *fltbuf;
     process_t *dblbuf; // owned by FFT object, only used for time domain FFT i/o
     process_t *envelope; // for cepstral formant shift
-    bool       unchanged;
+    bool unchanged;
 
     size_t prevIncrement; // only used in RT mode
 
     size_t chunkCount;
     size_t inCount;
-    long   inputSize; // set only after known (when data ended); -1 previously
+    long inputSize; // set only after known (when data ended); -1 previously
     size_t outCount;
 
-    bool    draining;
-    bool    outputComplete;
+    bool draining;
+    bool outputComplete;
 
-    FFT    *fft;
+    FFT *fft;
     std::map<size_t, FFT *> ffts;
 
     Resampler *resampler;
-    float      *resamplebuf;
-    size_t      resamplebufSize;
+    float *resamplebuf;
+    size_t resamplebufSize;
 
 private:
     void construct(const std::set<size_t> &sizes,

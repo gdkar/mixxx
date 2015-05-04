@@ -6,7 +6,7 @@
 #include <QVector>
 #include <QtDebug>
 
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "util.h"
 #include "waveform/renderers/waveformrendererabstract.h"
 #include "waveform/renderers/waveformsignalcolors.h"

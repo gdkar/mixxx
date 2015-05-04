@@ -25,7 +25,7 @@
 #include "util/types.h"
 #include "engine/engineobject.h"
 #include "engine/sync/syncable.h"
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "configobject.h"
 #include "control/rotary.h"
 #include "control/controlvalue.h"
@@ -114,7 +114,7 @@ class EngineBuffer : public EngineObject {
     };
 
     EngineBuffer(QString _group, ConfigObject<ConfigValue>* _config,
-                 EngineChannel* pChannel, EngineMaster* pMixingEngine, QObject *pParaent=0);
+                 EngineChannel* pChannel, EngineMaster* pMixingEngine);
     virtual ~EngineBuffer();
 
     void bindWorkers(EngineWorkerScheduler* pWorkerScheduler);

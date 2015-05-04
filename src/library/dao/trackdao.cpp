@@ -12,11 +12,11 @@
 
 #include "metadata/audiotagger.h"
 #include "library/queryutil.h"
-#include "soundsourceproxy.h"
+#include "sources/soundsourceproxy.h"
 #include "track/beatfactory.h"
 #include "track/beats.h"
 #include "track/keyfactory.h"
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "library/coverart.h"
 #include "library/coverartutils.h"
 #include "library/dao/cratedao.h"

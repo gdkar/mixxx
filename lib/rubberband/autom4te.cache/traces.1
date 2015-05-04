@@ -184,96 +184,76 @@ m4trace:configure.ac:6: -1- m4_pattern_allow([^CC$])
 m4trace:configure.ac:6: -1- m4_pattern_allow([^CC$])
 m4trace:configure.ac:6: -1- m4_pattern_allow([^CC$])
 m4trace:configure.ac:6: -1- m4_pattern_allow([^ac_ct_CC$])
-m4trace:configure.ac:7: -1- m4_pattern_allow([^CPP$])
-m4trace:configure.ac:7: -1- m4_pattern_allow([^CPPFLAGS$])
-m4trace:configure.ac:7: -1- m4_pattern_allow([^CPP$])
-m4trace:configure.ac:7: -1- m4_pattern_allow([^GREP$])
-m4trace:configure.ac:7: -1- m4_pattern_allow([^EGREP$])
-m4trace:configure.ac:7: -1- m4_pattern_allow([^STDC_HEADERS$])
-m4trace:configure.ac:8: -1- m4_pattern_allow([^WORDS_BIGENDIAN$])
-m4trace:configure.ac:8: -1- m4_pattern_allow([^AC_APPLE_UNIVERSAL_BUILD$])
-m4trace:configure.ac:10: -1- PKG_CHECK_MODULES([SRC], [samplerate])
-m4trace:configure.ac:10: -1- PKG_PROG_PKG_CONFIG
-m4trace:configure.ac:10: -1- m4_pattern_forbid([^_?PKG_[A-Z_]+$])
-m4trace:configure.ac:10: -1- m4_pattern_allow([^PKG_CONFIG(_(PATH|LIBDIR|SYSROOT_DIR|ALLOW_SYSTEM_(CFLAGS|LIBS)))?$])
-m4trace:configure.ac:10: -1- m4_pattern_allow([^PKG_CONFIG_(DISABLE_UNINSTALLED|TOP_BUILD_DIR|DEBUG_SPEW)$])
-m4trace:configure.ac:10: -1- m4_pattern_allow([^PKG_CONFIG$])
-m4trace:configure.ac:10: -1- m4_pattern_allow([^PKG_CONFIG_PATH$])
-m4trace:configure.ac:10: -1- m4_pattern_allow([^PKG_CONFIG_LIBDIR$])
-m4trace:configure.ac:10: -1- m4_pattern_allow([^PKG_CONFIG$])
+m4trace:configure.ac:6: -1- m4_pattern_allow([^CPP$])
+m4trace:configure.ac:6: -1- m4_pattern_allow([^CPPFLAGS$])
+m4trace:configure.ac:6: -1- m4_pattern_allow([^CPP$])
+m4trace:configure.ac:6: -1- m4_pattern_allow([^GREP$])
+m4trace:configure.ac:6: -1- m4_pattern_allow([^EGREP$])
+m4trace:configure.ac:6: -1- m4_pattern_allow([^STDC_HEADERS$])
+m4trace:configure.ac:7: -1- m4_pattern_allow([^WORDS_BIGENDIAN$])
+m4trace:configure.ac:7: -1- m4_pattern_allow([^AC_APPLE_UNIVERSAL_BUILD$])
+m4trace:configure.ac:9: -1- PKG_CHECK_MODULES([SRC], [samplerate])
+m4trace:configure.ac:9: -1- PKG_PROG_PKG_CONFIG
+m4trace:configure.ac:9: -1- m4_pattern_forbid([^_?PKG_[A-Z_]+$])
+m4trace:configure.ac:9: -1- m4_pattern_allow([^PKG_CONFIG(_(PATH|LIBDIR|SYSROOT_DIR|ALLOW_SYSTEM_(CFLAGS|LIBS)))?$])
+m4trace:configure.ac:9: -1- m4_pattern_allow([^PKG_CONFIG_(DISABLE_UNINSTALLED|TOP_BUILD_DIR|DEBUG_SPEW)$])
+m4trace:configure.ac:9: -1- m4_pattern_allow([^PKG_CONFIG$])
+m4trace:configure.ac:9: -1- m4_pattern_allow([^PKG_CONFIG_PATH$])
+m4trace:configure.ac:9: -1- m4_pattern_allow([^PKG_CONFIG_LIBDIR$])
+m4trace:configure.ac:9: -1- m4_pattern_allow([^PKG_CONFIG$])
+m4trace:configure.ac:9: -1- m4_pattern_allow([^SRC_CFLAGS$])
+m4trace:configure.ac:9: -1- m4_pattern_allow([^SRC_LIBS$])
+m4trace:configure.ac:9: -1- PKG_CHECK_EXISTS([samplerate], [pkg_cv_[]SRC_CFLAGS=`$PKG_CONFIG --[]cflags "samplerate" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes ], [pkg_failed=yes])
+m4trace:configure.ac:9: -1- PKG_CHECK_EXISTS([samplerate], [pkg_cv_[]SRC_LIBS=`$PKG_CONFIG --[]libs "samplerate" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes ], [pkg_failed=yes])
+m4trace:configure.ac:9: -1- _PKG_SHORT_ERRORS_SUPPORTED
 m4trace:configure.ac:10: -1- m4_pattern_allow([^SRC_CFLAGS$])
-m4trace:configure.ac:10: -1- m4_pattern_allow([^SRC_LIBS$])
-m4trace:configure.ac:10: -1- PKG_CHECK_EXISTS([samplerate], [pkg_cv_[]SRC_CFLAGS=`$PKG_CONFIG --[]cflags "samplerate" 2>/dev/null`
+m4trace:configure.ac:11: -1- m4_pattern_allow([^SRC_LIBS$])
+m4trace:configure.ac:13: -1- PKG_CHECK_MODULES([SNDFILE], [sndfile])
+m4trace:configure.ac:13: -1- m4_pattern_allow([^SNDFILE_CFLAGS$])
+m4trace:configure.ac:13: -1- m4_pattern_allow([^SNDFILE_LIBS$])
+m4trace:configure.ac:13: -1- PKG_CHECK_EXISTS([sndfile], [pkg_cv_[]SNDFILE_CFLAGS=`$PKG_CONFIG --[]cflags "sndfile" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes ], [pkg_failed=yes])
-m4trace:configure.ac:10: -1- PKG_CHECK_EXISTS([samplerate], [pkg_cv_[]SRC_LIBS=`$PKG_CONFIG --[]libs "samplerate" 2>/dev/null`
-		      test "x$?" != "x0" && pkg_failed=yes ], [pkg_failed=yes])
-m4trace:configure.ac:10: -1- _PKG_SHORT_ERRORS_SUPPORTED
-m4trace:configure.ac:11: -1- m4_pattern_allow([^SRC_CFLAGS$])
-m4trace:configure.ac:12: -1- m4_pattern_allow([^SRC_LIBS$])
-m4trace:configure.ac:13: -1- PKG_CHECK_MODULES([SWR], [libswresample])
-m4trace:configure.ac:13: -1- m4_pattern_allow([^SWR_CFLAGS$])
-m4trace:configure.ac:13: -1- m4_pattern_allow([^SWR_LIBS$])
-m4trace:configure.ac:13: -1- PKG_CHECK_EXISTS([libswresample], [pkg_cv_[]SWR_CFLAGS=`$PKG_CONFIG --[]cflags "libswresample" 2>/dev/null`
-		      test "x$?" != "x0" && pkg_failed=yes ], [pkg_failed=yes])
-m4trace:configure.ac:13: -1- PKG_CHECK_EXISTS([libswresample], [pkg_cv_[]SWR_LIBS=`$PKG_CONFIG --[]libs "libswresample" 2>/dev/null`
+m4trace:configure.ac:13: -1- PKG_CHECK_EXISTS([sndfile], [pkg_cv_[]SNDFILE_LIBS=`$PKG_CONFIG --[]libs "sndfile" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes ], [pkg_failed=yes])
 m4trace:configure.ac:13: -1- _PKG_SHORT_ERRORS_SUPPORTED
-m4trace:configure.ac:14: -1- m4_pattern_allow([^SWR_CFLAGS$])
-m4trace:configure.ac:15: -1- m4_pattern_allow([^SWR_LIBS$])
-m4trace:configure.ac:16: -1- PKG_CHECK_MODULES([AVUTIL], [libavutil])
-m4trace:configure.ac:16: -1- m4_pattern_allow([^AVUTIL_CFLAGS$])
-m4trace:configure.ac:16: -1- m4_pattern_allow([^AVUTIL_LIBS$])
-m4trace:configure.ac:16: -1- PKG_CHECK_EXISTS([libavutil], [pkg_cv_[]AVUTIL_CFLAGS=`$PKG_CONFIG --[]cflags "libavutil" 2>/dev/null`
+m4trace:configure.ac:14: -1- m4_pattern_allow([^SNDFILE_CFLAGS$])
+m4trace:configure.ac:15: -1- m4_pattern_allow([^SNDFILE_LIBS$])
+m4trace:configure.ac:17: -1- PKG_CHECK_MODULES([FFTW], [fftw3])
+m4trace:configure.ac:17: -1- m4_pattern_allow([^FFTW_CFLAGS$])
+m4trace:configure.ac:17: -1- m4_pattern_allow([^FFTW_LIBS$])
+m4trace:configure.ac:17: -1- PKG_CHECK_EXISTS([fftw3], [pkg_cv_[]FFTW_CFLAGS=`$PKG_CONFIG --[]cflags "fftw3" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes ], [pkg_failed=yes])
-m4trace:configure.ac:16: -1- PKG_CHECK_EXISTS([libavutil], [pkg_cv_[]AVUTIL_LIBS=`$PKG_CONFIG --[]libs "libavutil" 2>/dev/null`
+m4trace:configure.ac:17: -1- PKG_CHECK_EXISTS([fftw3], [pkg_cv_[]FFTW_LIBS=`$PKG_CONFIG --[]libs "fftw3" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes ], [pkg_failed=yes])
-m4trace:configure.ac:16: -1- _PKG_SHORT_ERRORS_SUPPORTED
-m4trace:configure.ac:17: -1- m4_pattern_allow([^AVUTIL_CFLAGS$])
-m4trace:configure.ac:18: -1- m4_pattern_allow([^AVUTIL_LIBS$])
-m4trace:configure.ac:20: -1- PKG_CHECK_MODULES([SNDFILE], [sndfile])
-m4trace:configure.ac:20: -1- m4_pattern_allow([^SNDFILE_CFLAGS$])
-m4trace:configure.ac:20: -1- m4_pattern_allow([^SNDFILE_LIBS$])
-m4trace:configure.ac:20: -1- PKG_CHECK_EXISTS([sndfile], [pkg_cv_[]SNDFILE_CFLAGS=`$PKG_CONFIG --[]cflags "sndfile" 2>/dev/null`
+m4trace:configure.ac:17: -1- _PKG_SHORT_ERRORS_SUPPORTED
+m4trace:configure.ac:18: -1- m4_pattern_allow([^FFTW_CFLAGS$])
+m4trace:configure.ac:19: -1- m4_pattern_allow([^FFTW_LIBS$])
+m4trace:configure.ac:21: -1- PKG_CHECK_MODULES([FFTWF], [fftw3f])
+m4trace:configure.ac:21: -1- m4_pattern_allow([^FFTWF_CFLAGS$])
+m4trace:configure.ac:21: -1- m4_pattern_allow([^FFTWF_LIBS$])
+m4trace:configure.ac:21: -1- PKG_CHECK_EXISTS([fftw3f], [pkg_cv_[]FFTWF_CFLAGS=`$PKG_CONFIG --[]cflags "fftw3f" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes ], [pkg_failed=yes])
-m4trace:configure.ac:20: -1- PKG_CHECK_EXISTS([sndfile], [pkg_cv_[]SNDFILE_LIBS=`$PKG_CONFIG --[]libs "sndfile" 2>/dev/null`
+m4trace:configure.ac:21: -1- PKG_CHECK_EXISTS([fftw3f], [pkg_cv_[]FFTWF_LIBS=`$PKG_CONFIG --[]libs "fftw3f" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes ], [pkg_failed=yes])
-m4trace:configure.ac:20: -1- _PKG_SHORT_ERRORS_SUPPORTED
-m4trace:configure.ac:21: -1- m4_pattern_allow([^SNDFILE_CFLAGS$])
-m4trace:configure.ac:22: -1- m4_pattern_allow([^SNDFILE_LIBS$])
-m4trace:configure.ac:24: -1- PKG_CHECK_MODULES([FFTW], [fftw3])
-m4trace:configure.ac:24: -1- m4_pattern_allow([^FFTW_CFLAGS$])
-m4trace:configure.ac:24: -1- m4_pattern_allow([^FFTW_LIBS$])
-m4trace:configure.ac:24: -1- PKG_CHECK_EXISTS([fftw3], [pkg_cv_[]FFTW_CFLAGS=`$PKG_CONFIG --[]cflags "fftw3" 2>/dev/null`
+m4trace:configure.ac:21: -1- _PKG_SHORT_ERRORS_SUPPORTED
+m4trace:configure.ac:22: -1- m4_pattern_allow([^FFTWF_CFLAGS$])
+m4trace:configure.ac:23: -1- m4_pattern_allow([^FFTWF_LIBS$])
+m4trace:configure.ac:25: -1- m4_pattern_allow([^HAVE_LADSPA_H$])
+m4trace:configure.ac:26: -1- m4_pattern_allow([^HAVE_PTHREAD_H$])
+m4trace:configure.ac:28: -1- PKG_CHECK_MODULES([Vamp], [vamp-sdk])
+m4trace:configure.ac:28: -1- m4_pattern_allow([^Vamp_CFLAGS$])
+m4trace:configure.ac:28: -1- m4_pattern_allow([^Vamp_LIBS$])
+m4trace:configure.ac:28: -1- PKG_CHECK_EXISTS([vamp-sdk], [pkg_cv_[]Vamp_CFLAGS=`$PKG_CONFIG --[]cflags "vamp-sdk" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes ], [pkg_failed=yes])
-m4trace:configure.ac:24: -1- PKG_CHECK_EXISTS([fftw3], [pkg_cv_[]FFTW_LIBS=`$PKG_CONFIG --[]libs "fftw3" 2>/dev/null`
-		      test "x$?" != "x0" && pkg_failed=yes ], [pkg_failed=yes])
-m4trace:configure.ac:24: -1- _PKG_SHORT_ERRORS_SUPPORTED
-m4trace:configure.ac:25: -1- m4_pattern_allow([^FFTW_CFLAGS$])
-m4trace:configure.ac:26: -1- m4_pattern_allow([^FFTW_LIBS$])
-m4trace:configure.ac:28: -1- PKG_CHECK_MODULES([FFTWF], [fftw3f])
-m4trace:configure.ac:28: -1- m4_pattern_allow([^FFTWF_CFLAGS$])
-m4trace:configure.ac:28: -1- m4_pattern_allow([^FFTWF_LIBS$])
-m4trace:configure.ac:28: -1- PKG_CHECK_EXISTS([fftw3f], [pkg_cv_[]FFTWF_CFLAGS=`$PKG_CONFIG --[]cflags "fftw3f" 2>/dev/null`
-		      test "x$?" != "x0" && pkg_failed=yes ], [pkg_failed=yes])
-m4trace:configure.ac:28: -1- PKG_CHECK_EXISTS([fftw3f], [pkg_cv_[]FFTWF_LIBS=`$PKG_CONFIG --[]libs "fftw3f" 2>/dev/null`
+m4trace:configure.ac:28: -1- PKG_CHECK_EXISTS([vamp-sdk], [pkg_cv_[]Vamp_LIBS=`$PKG_CONFIG --[]libs "vamp-sdk" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes ], [pkg_failed=yes])
 m4trace:configure.ac:28: -1- _PKG_SHORT_ERRORS_SUPPORTED
-m4trace:configure.ac:29: -1- m4_pattern_allow([^FFTWF_CFLAGS$])
-m4trace:configure.ac:30: -1- m4_pattern_allow([^FFTWF_LIBS$])
-m4trace:configure.ac:33: -1- m4_pattern_allow([^HAVE_LADSPA_H$])
-m4trace:configure.ac:34: -1- m4_pattern_allow([^HAVE_PTHREAD_H$])
-m4trace:configure.ac:36: -1- PKG_CHECK_MODULES([Vamp], [vamp-sdk])
-m4trace:configure.ac:36: -1- m4_pattern_allow([^Vamp_CFLAGS$])
-m4trace:configure.ac:36: -1- m4_pattern_allow([^Vamp_LIBS$])
-m4trace:configure.ac:36: -1- PKG_CHECK_EXISTS([vamp-sdk], [pkg_cv_[]Vamp_CFLAGS=`$PKG_CONFIG --[]cflags "vamp-sdk" 2>/dev/null`
-		      test "x$?" != "x0" && pkg_failed=yes ], [pkg_failed=yes])
-m4trace:configure.ac:36: -1- PKG_CHECK_EXISTS([vamp-sdk], [pkg_cv_[]Vamp_LIBS=`$PKG_CONFIG --[]libs "vamp-sdk" 2>/dev/null`
-		      test "x$?" != "x0" && pkg_failed=yes ], [pkg_failed=yes])
-m4trace:configure.ac:36: -1- _PKG_SHORT_ERRORS_SUPPORTED
-m4trace:configure.ac:37: -1- m4_pattern_allow([^Vamp_CFLAGS$])
-m4trace:configure.ac:38: -1- m4_pattern_allow([^Vamp_LIBS$])
-m4trace:configure.ac:53: -1- _m4_warn([obsolete], [AC_OUTPUT should be used without arguments.
+m4trace:configure.ac:29: -1- m4_pattern_allow([^Vamp_CFLAGS$])
+m4trace:configure.ac:30: -1- m4_pattern_allow([^Vamp_LIBS$])
+m4trace:configure.ac:45: -1- _m4_warn([obsolete], [AC_OUTPUT should be used without arguments.
 You should run autoupdate.], [])
-m4trace:configure.ac:53: -1- m4_pattern_allow([^LIB@&t@OBJS$])
-m4trace:configure.ac:53: -1- m4_pattern_allow([^LTLIBOBJS$])
-m4trace:configure.ac:53: -1- _m4_warn([obsolete], [AC_C_BIGENDIAN should be used with AC_CONFIG_HEADERS], [])
+m4trace:configure.ac:45: -1- m4_pattern_allow([^LIB@&t@OBJS$])
+m4trace:configure.ac:45: -1- m4_pattern_allow([^LTLIBOBJS$])
+m4trace:configure.ac:45: -1- _m4_warn([obsolete], [AC_C_BIGENDIAN should be used with AC_CONFIG_HEADERS], [])

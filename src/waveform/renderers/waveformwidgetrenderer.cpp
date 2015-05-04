@@ -5,7 +5,7 @@
 #include "widget/wwidget.h"
 #include "control/controlobject.h"
 #include "control/controlobjectthread.h"
-#include "visualplayposition.h"
+#include "waveform/visualplayposition.h"
 #include "util/math.h"
 #include "util/performancetimer.h"
 
@@ -107,13 +107,12 @@ void WaveformWidgetRenderer::onPreRender(VSyncThread* vsyncThread) {
     //Fetch parameters before rendering in order the display all sub-renderers with the same values
     m_rate = m_pRateControlObject->get();
     m_rateDir = m_pRateDirControlObject->get();
-    m_rateRange = m_pRateRangeControlObject->get();
     // This gain adjustment compensates for an arbitrary /2 gain chop in
     // EnginePregain. See the comment there.
     m_gain = m_pGainControlObject->get() * 2;
 
     //Legacy stuff (Ryan it that OK?) -> Limit our rate adjustment to < 99%, "Bad Things" might happen otherwise.
-    m_rateAdjust = m_rateDir * math_min(0.99, m_rate * m_rateRange);
+    m_rateAdjust = math_max(-0.99, m_rateDir*m_rate );
 
     //rate adjust may have change sampling per
     //vRince for the moment only more than one sample per pixel is supported
@@ -124,20 +123,13 @@ void WaveformWidgetRenderer::onPreRender(VSyncThread* vsyncThread) {
     TrackPointer pTrack(m_pTrack);
     ConstWaveformPointer pWaveform = pTrack ? pTrack->getWaveform() : ConstWaveformPointer();
     int waveformDataSize = pWaveform ? pWaveform->getDataSize() : 0;
-    if (pWaveform) {
-        m_audioSamplePerPixel = m_visualSamplePerPixel * pWaveform->getAudioVisualRatio();
-    } else {
-        m_audioSamplePerPixel = 0.0;
-    }
-
-
+    if (pWaveform) {m_audioSamplePerPixel = m_visualSamplePerPixel * pWaveform->getAudioVisualRatio();
+    } else {m_audioSamplePerPixel = 0.0;}
     m_playPos = m_visualPlayPosition->getAtNextVSync(vsyncThread);
     // m_playPos = -1 happens, when a new track is in buffer but m_visualPlayPosition was not updated
-
     if (m_audioSamplePerPixel && m_playPos != -1) {
         // Track length in pixels.
         m_trackPixelCount = static_cast<double>(m_trackSamples) / 2.0 / m_audioSamplePerPixel;
-
         // Ratio of half the width of the renderer to the track length in
         // pixels. Percent of the track shown in half the waveform widget.
         double displayedLengthHalf = static_cast<double>(m_width) / m_trackPixelCount / 2.0;
@@ -145,10 +137,9 @@ void WaveformWidgetRenderer::onPreRender(VSyncThread* vsyncThread) {
         // pixel.
         m_playPos = round(m_playPos * m_trackPixelCount) / m_trackPixelCount; // Avoid pixel jitter in play position
         m_playPosVSample = m_playPos * waveformDataSize;
-
         m_firstDisplayedPosition = m_playPos - displayedLengthHalf;
         m_lastDisplayedPosition = m_playPos + displayedLengthHalf;
-    } else {
+    } else{
         m_playPos = -1; // disable renderers
     }
 

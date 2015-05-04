@@ -29,7 +29,7 @@
 #include "encoder/encodercallback.h"
 #include "engine/sidechain/sidechainworker.h"
 #include "dialogs/errordialoghandler.h"
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 
 #define SHOUTCAST_DISCONNECTED 0
 #define SHOUTCAST_CONNECTING 1

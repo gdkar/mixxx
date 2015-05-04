@@ -3,7 +3,7 @@
 /*
     Rubber Band Library
     An audio time-stretching and pitch-shifting library.
-    Copyright 2007-2014 Particular Programs Ltd.
+    Copyright 2007-2012 Particular Programs Ltd.
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -23,7 +23,6 @@
 
 #include "Profiler.h"
 
-#include <unistd.h>
 #include <algorithm>
 #include <set>
 #include <string>
@@ -171,14 +170,10 @@ Profiler::getReport()
     return report;
 }
 
-pthread_once_t Profiler::m_showOnDestruct_once = PTHREAD_ONCE_INIT;
 Profiler::Profiler(const char* c) :
     m_c(c),
     m_ended(false)
 {
-#ifndef NO_TIMING 
-    pthread_once(&Profiler::m_showOnDestruct_once, Profiler::showOnDestruct_dtor);
-#endif
 #ifdef PROFILE_CLOCKS
     m_start = clock();
 #else

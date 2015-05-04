@@ -61,9 +61,7 @@ VinylControlProcessor::~VinylControlProcessor() {
     VinylControlXwax::freeLUTs();
 }
 
-void VinylControlProcessor::setSignalQualityReporting(bool enable) {
-    m_bReportSignalQuality = enable;
-}
+void VinylControlProcessor::setSignalQualityReporting(bool enable) {m_bReportSignalQuality = enable;}
 
 void VinylControlProcessor::shutdown() {
     m_bQuit = true;
@@ -78,7 +76,6 @@ void VinylControlProcessor::requestReloadConfig() {
 void VinylControlProcessor::run() {
     unsigned static id = 0; //the id of this thread, for debugging purposes //XXX copypasta (should factor this out somehow), -kousu 2/2009
     QThread::currentThread()->setObjectName(QString("VinylControlProcessor %1").arg(++id));
-
     while (!m_bQuit) {
         Event::start("VinylControlProcessor");
         if (m_bReloadConfig) {

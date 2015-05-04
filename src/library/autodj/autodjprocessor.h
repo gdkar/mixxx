@@ -6,7 +6,7 @@
 #include <QModelIndexList>
 
 #include "util.h"
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "configobject.h"
 #include "library/playlisttablemodel.h"
 #include "engine/enginechannel.h"
@@ -14,7 +14,7 @@
 
 class ControlPushButton;
 class TrackCollection;
-class PlayerManagerInterface;
+class PlayerManager;
 class BaseTrackPlayer;
 
 class DeckAttributes : public QObject {
@@ -114,7 +114,7 @@ class AutoDJProcessor : public QObject {
 
     AutoDJProcessor(QObject* pParent,
                     ConfigObject<ConfigValue>* pConfig,
-                    PlayerManagerInterface* pPlayerManager,
+                    PlayerManager* pPlayerManager,
                     int iAutoDJPlaylistId,
                     TrackCollection* pCollection);
     virtual ~AutoDJProcessor();
@@ -191,7 +191,7 @@ class AutoDJProcessor : public QObject {
     bool removeTrackFromTopOfQueue(TrackPointer pTrack);
 
     ConfigObject<ConfigValue>* m_pConfig;
-    PlayerManagerInterface* m_pPlayerManager;
+    PlayerManager* m_pPlayerManager;
     PlaylistTableModel* m_pAutoDJTableModel;
 
     AutoDJState m_eState;

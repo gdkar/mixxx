@@ -3,7 +3,7 @@
 
 #include "sampler.h"
 #include "samplerbank.h"
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "control/controlpushbutton.h"
 #include "playermanager.h"
 #include "util/assert.h"
@@ -13,11 +13,9 @@ SamplerBank::SamplerBank(PlayerManager* pPlayerManager)
           m_pPlayerManager(pPlayerManager) {
     DEBUG_ASSERT(m_pPlayerManager);
     m_pLoadControl = new ControlPushButton(ConfigKey("[Sampler]", "LoadSamplerBank"));
-    connect(m_pLoadControl, SIGNAL(valueChanged(double)),
-            this, SLOT(onLoadSamplerBank(double)));
+    connect(m_pLoadControl, SIGNAL(valueChanged(double)),this, SLOT(onLoadSamplerBank(double)));
     m_pSaveControl = new ControlPushButton(ConfigKey("[Sampler]", "SaveSamplerBank"));
-    connect(m_pSaveControl, SIGNAL(valueChanged(double)),
-            this, SLOT(onSaveSamplerBank(double)));
+    connect(m_pSaveControl, SIGNAL(valueChanged(double)),this, SLOT(onSaveSamplerBank(double)));
 }
 
 SamplerBank::~SamplerBank() {
@@ -69,13 +67,9 @@ void SamplerBank::onSaveSamplerBank(double v) {
 
     for (unsigned int i = 0; i < m_pPlayerManager->numSamplers(); ++i) {
         Sampler* pSampler = m_pPlayerManager->getSampler(i + 1);
-        if (pSampler == NULL) {
-            continue;
-        }
+        if (pSampler == NULL) {continue;}
         QDomElement samplerNode = doc.createElement(QString("sampler"));
-
         samplerNode.setAttribute("group", pSampler->getGroup());
-
         TrackPointer pTrack = pSampler->getLoadedTrack();
         if (pTrack) {
             QString samplerLocation = pTrack->getLocation();
@@ -83,9 +77,7 @@ void SamplerBank::onSaveSamplerBank(double v) {
         }
         root.appendChild(samplerNode);
     }
-
     QString docStr = doc.toString();
-
     file.write(docStr.toUtf8().constData());
     file.close();
 }

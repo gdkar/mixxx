@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QRunnable>
 
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "library/scanner/scannerglobal.h"
 
 class LibraryScanner;
@@ -15,9 +15,7 @@ class ScannerTask : public QObject, public QRunnable {
     ScannerTask(LibraryScanner* pScanner,
                 const ScannerGlobalPointer scannerGlobal);
     virtual ~ScannerTask();
-
     virtual void run() = 0;
-
   signals:
     void taskDone(bool success);
     void queueTask(ScannerTask* pTask);
@@ -34,9 +32,7 @@ class ScannerTask : public QObject, public QRunnable {
     void progressHashing(const QString& directoryPath);
 
   protected:
-    void setSuccess(bool success) {
-        m_success = success;
-    }
+    void setSuccess(bool success) {m_success = success;}
 
     LibraryScanner* m_pScanner;
     const ScannerGlobalPointer m_scannerGlobal;

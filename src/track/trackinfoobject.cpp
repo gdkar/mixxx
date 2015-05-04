@@ -26,10 +26,10 @@
 #include <QtDebug>
 #include <QRegExp>
 
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 
 #include "control/controlobject.h"
-#include "soundsourceproxy.h"
+#include "sources/soundsourceproxy.h"
 #include "metadata/trackmetadata.h"
 #include "util/xml.h"
 #include "track/beatfactory.h"

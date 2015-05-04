@@ -6,7 +6,7 @@
 #include <QtSql>
 
 #include "util.h"
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "library/searchquery.h"
 
 class SearchQueryParser {

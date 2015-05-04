@@ -6,6 +6,12 @@
 #include "util/math.h"
 #include "sampleutil.h"
 #include "engine/enginefilterdelay.h"
+#include "engine/enginefilter.h"
+#include "engine/enginefilteriir.h"
+#include "effects/effect.h"
+#include <QObject>
+#include <QVector>
+#include <new>
 
 static const int kMaxDelay = 3300; // allows a 30 Hz filter at 97346;
 static const int kRampDone = -1; 

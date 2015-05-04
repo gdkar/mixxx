@@ -25,8 +25,8 @@
 #include <QCoreApplication>
 #include <QApplication>
 
-#include "trackinfoobject.h"
-#include "soundsourceproxy.h"
+#include "track/trackinfoobject.h"
+#include "sources/soundsourceproxy.h"
 #ifdef __MAD__
 #include "sources/soundsourcemp3.h"
 #endif

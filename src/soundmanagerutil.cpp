@@ -21,33 +21,32 @@
  * @param channelBase the first channel in the group.
  * @param channels the number of channels.
  */
+ChannelGroup::ChannelGroup():m_bitmap(0),m_buffer(0),m_base(0),m_span(0){}
 ChannelGroup::ChannelGroup(unsigned char channelBase, unsigned char channels)
-  : m_channelBase(channelBase)
-  , m_channels(channels) {
+:m_bitmap(0)
+,m_buffer(0)
+,m_base(channelBase)
+,m_span(channels){
+  for(quint8 i = channelBase; i < channelBase+channels; i++)
+    m_bitmap |= (1<<i);
 }
 
 /**
  * @return This ChannelGroup's base channel
  */
-unsigned char ChannelGroup::getChannelBase() const {
-    return m_channelBase;
-}
+unsigned char ChannelGroup::getChannelBase() const {return m_base;}
 
 /**
  * @return The number of channels in this ChannelGroup
  */
-unsigned char ChannelGroup::getChannelCount() const {
-    return m_channels;
-}
-
+unsigned char ChannelGroup::getChannelCount() const {return m_span;}
 /**
  * Defines equality between two ChannelGroups.
  * @return true if the two ChannelGroups share a common base channel
  *          and channel count, otherwise false.
  */
 bool ChannelGroup::operator==(const ChannelGroup &other) const {
-    return m_channelBase == other.m_channelBase
-        && m_channels == other.m_channels;
+    return m_bitmap == other.m_bitmap && m_top == other.m_top;
 }
 
 /**
@@ -57,7 +56,8 @@ bool ChannelGroup::operator==(const ChannelGroup &other) const {
  *          false otherwise.
  */
 bool ChannelGroup::clashesWith(const ChannelGroup &other) const {
-    if (m_channels == 0 || other.m_channels == 0) {
+  return (m_bitmap&other.m_bitmap);
+/*    if (m_channels == 0 || other.m_channels == 0) {
         return false; // can't clash if there are no channels in use
     }
     return (m_channelBase > other.m_channelBase
@@ -65,16 +65,14 @@ bool ChannelGroup::clashesWith(const ChannelGroup &other) const {
         ||
         (other.m_channelBase > m_channelBase
         && other.m_channelBase < m_channelBase + m_channels)
-        || m_channelBase == other.m_channelBase;
+        || m_channelBase == other.m_channelBase;*/
 }
 
 /**
  * Generates a hash of this ChannelGroup, so it can act as a key in a QHash.
  * @return a hash for this ChannelGroup
  */
-unsigned int ChannelGroup::getHash() const {
-    return 0 | (m_channels << 8) | m_channelBase;
-}
+unsigned int ChannelGroup::getHash() const {return m_bitmap;}//return 0 | (m_channels << 8) | m_channelBase;}
 
 /**
  * Constructs an AudioPath object (must be called by a child class's
@@ -83,48 +81,38 @@ unsigned int ChannelGroup::getHash() const {
  * @param channels the number of channels used.
  */
 AudioPath::AudioPath(unsigned char channelBase, unsigned char channels)
-    : m_type(INVALID),
-      m_channelGroup(channelBase, channels),
-      m_index(0) {
+     : m_channelGroup(channelBase, channels)
+{
 }
 
 /**
  * @return This AudioPath's type
  */
-AudioPathType AudioPath::getType() const {
-    return m_type;
-}
+AudioPathType AudioPath::getType() const {return static_cast<AudioPath::AudioPathType>(m_channelGroup.getType());}
 
 /**
  * @return This AudioPath's ChannelGroup instance.
  */
-ChannelGroup AudioPath::getChannelGroup() const {
-    return m_channelGroup;
-}
+//ChannelGroup AudioPath::getChannelGroup() const {return m_channelGroup;}
 
 /**
  * @return This AudioPath's index, or 0 if this AudioPath isn't indexable.
  */
-unsigned char AudioPath::getIndex() const {
-    return m_index;
-}
+//unsigned char AudioPath::getIndex() const {return m_channelGroup.getIndex();}
 
 /**
  * Defines equality for AudioPath objects.
  * @return true of this and other share a common type and index.
  */
-bool AudioPath::operator==(const AudioPath &other) const {
-    return m_type == other.m_type
-        && m_index == other.m_index;
-}
+bool AudioPath::operator==(const AudioPath &other) const 
+{return getType() == other.getType() && getIndex() == other.getIndex();}
 
 /**
  * Generates a hash of this AudioPath, so it can act as a key in a QHash.
  * @return a hash for this AudioPath
  */
-unsigned int AudioPath::getHash() const {
-    return 0 | (m_type << 8) | m_index;
-}
+unsigned int AudioPath::getHash() const 
+{return 0 | (getType() << 8) | getIndex();}
 
 /**
  * Checks if this AudioPath's channels clash with another's
@@ -138,7 +126,7 @@ bool AudioPath::channelsClash(const AudioPath &other) const {
  * Returns a string describing the AudioPath for user benefit.
  */
 QString AudioPath::getString() const {
-    return getTrStringFromType(m_type, m_index);
+    return getTrStringFromType(getType(), getIndex());
 }
 
 /**
@@ -152,20 +140,13 @@ QString AudioPath::getStringFromType(AudioPathType type) {
         // this shouldn't happen but g++ complains if I don't
         // handle this -- bkgood
         return QString::fromAscii("Invalid");
-    case MASTER:
-        return QString::fromAscii("Master");
-    case HEADPHONES:
-        return QString::fromAscii("Headphones");
-    case BUS:
-        return QString::fromAscii("Bus");
-    case DECK:
-        return QString::fromAscii("Deck");
-    case VINYLCONTROL:
-        return QString::fromAscii("Vinyl Control");
-    case MICROPHONE:
-        return QString::fromAscii("Microphone");
-    case AUXILIARY:
-        return QString::fromAscii("Auxiliary");
+    case MASTER:return QString::fromAscii("Master");
+    case HEADPHONES:return QString::fromAscii("Headphones");
+    case BUS:return QString::fromAscii("Bus");
+    case DECK:return QString::fromAscii("Deck");
+    case VINYLCONTROL:return QString::fromAscii("Vinyl Control");
+    case MICROPHONE:return QString::fromAscii("Microphone");
+    case AUXILIARY:return QString::fromAscii("Auxiliary");
     }
     return QString::fromAscii("Unknown path type %1").arg(type);
 }
@@ -180,10 +161,8 @@ QString AudioPath::getTrStringFromType(AudioPathType type, unsigned char index) 
         // this shouldn't happen but g++ complains if I don't
         // handle this -- bkgood
         return QObject::tr("Invalid");
-    case MASTER:
-        return QObject::tr("Master");
-    case HEADPHONES:
-        return QObject::tr("Headphones");
+    case MASTER:return QObject::tr("Master");
+    case HEADPHONES:return QObject::tr("Headphones");
     case BUS:
         switch (index) {
         case EngineChannel::LEFT:
@@ -246,8 +225,7 @@ bool AudioPath::isIndexed(AudioPathType type) {
     case DECK:
     case VINYLCONTROL:
     case AUXILIARY:
-    case MICROPHONE:
-        return true;
+    case MICROPHONE: return true;
     default:
         break;
     }
@@ -259,28 +237,21 @@ bool AudioPath::isIndexed(AudioPathType type) {
  * @note This method is static.
  */
 AudioPathType AudioPath::getTypeFromInt(int typeInt) {
-    if (typeInt < 0 || typeInt >= AudioPath::INVALID) {
-        return AudioPath::INVALID;
-    }
+    if (typeInt < 0 || typeInt >= AudioPath::NB_TYPES) { return AudioPath::NB_TYPES;}
     return static_cast<AudioPathType>(typeInt);
 }
 
 // static
 unsigned char AudioPath::minChannelsForType(AudioPathType type) {
     switch (type) {
-    case AudioPath::VINYLCONTROL:
-        return 2;
-    default:
-        return 1;
-    }
+    case AudioPath::VINYLCONTROL: return 2;
+    default:return 1;}
 }
 
 // static
 unsigned char AudioPath::maxChannelsForType(AudioPathType type) {
     switch (type) {
-    default:
-        return 2;
-    }
+    default: return 2;}
 }
 
 /**
@@ -292,16 +263,10 @@ AudioOutput::AudioOutput(AudioPathType type,
                          unsigned char index)
     : AudioPath(channelBase, channels) {
     setType(type);
-    if (isIndexed(type)) {
-        m_index = index;
-    } else {
-        m_index = 0;
-    }
+    setIndex(isIndexed(type)?index:0);
 }
 
-AudioOutput::~AudioOutput() {
-
-}
+AudioOutput::~AudioOutput() {}
 
 /**
  * Writes this AudioOutput's data to an XML element, preallocated from an XML
@@ -309,8 +274,8 @@ AudioOutput::~AudioOutput() {
  */
 QDomElement AudioOutput::toXML(QDomElement *element) const {
     element->setTagName("output");
-    element->setAttribute("type", AudioPath::getStringFromType(m_type));
-    element->setAttribute("index", m_index);
+    element->setAttribute("type", AudioPath::getStringFromType(getType()));
+    element->setAttribute("index", getIndex());
     element->setAttribute("channel", m_channelGroup.getChannelBase());
     element->setAttribute("channel_count", m_channelGroup.getChannelCount());
     return *element;
@@ -322,16 +287,14 @@ QDomElement AudioOutput::toXML(QDomElement *element) const {
  */
 AudioOutput AudioOutput::fromXML(const QDomElement &xml) {
     AudioPathType type(AudioPath::getTypeFromString(xml.attribute("type")));
-    unsigned int index(xml.attribute("index", "0").toUInt());
-    unsigned int channel(xml.attribute("channel", "0").toUInt());
-    unsigned int channels(xml.attribute("channel_count", "0").toUInt());
+    unsigned char index(xml.attribute("index", "0").toUInt());
+    unsigned char channel(xml.attribute("channel", "0").toUInt());
+    unsigned char channels(xml.attribute("channel_count", "0").toUInt());
     // In Mixxx <1.12.0 we didn't save channels to file since they directly
     // corresponded to the type. To migrate users over, use mono for all
     // microphones and stereo for everything else since previously microphone
     // inputs were the only mono AudioPath.
-    if (channels == 0) {
-        channels = type == MICROPHONE ? 1 : 2;
-    }
+    if (channels == 0) {channels = type == MICROPHONE ? 1 : 2;}
     return AudioOutput(type, channel, channels, index);
 }
 
@@ -354,11 +317,8 @@ QList<AudioPathType> AudioOutput::getSupportedTypes() {
  * AudioOutput::getSupportedTypes.
  */
 void AudioOutput::setType(AudioPathType type) {
-    if (AudioOutput::getSupportedTypes().contains(type)) {
-        m_type = type;
-    } else {
-        m_type = AudioPath::INVALID;
-    }
+    if (AudioOutput::getSupportedTypes().contains(type)) {m_channelGroup.setType(type);
+    } else {m_channelGroup.setType(AudioPath::INVALID);}
 }
 
 /**
@@ -370,16 +330,10 @@ AudioInput::AudioInput(AudioPathType type,
                        unsigned char index)
         : AudioPath(channelBase, channels) {
     setType(type);
-    if (isIndexed(type)) {
-        m_index = index;
-    } else {
-        m_index = 0;
-    }
+    setIndex(isIndexed(type)?index:0);
 }
 
-AudioInput::~AudioInput() {
-
-}
+AudioInput::~AudioInput() {}
 
 /**
  * Writes this AudioInput's data to an XML element, preallocated from an XML
@@ -387,8 +341,8 @@ AudioInput::~AudioInput() {
  */
 QDomElement AudioInput::toXML(QDomElement *element) const {
     element->setTagName("input");
-    element->setAttribute("type", AudioPath::getStringFromType(m_type));
-    element->setAttribute("index", m_index);
+    element->setAttribute("type", AudioPath::getStringFromType(getType()));
+    element->setAttribute("index", getIndex());
     element->setAttribute("channel", m_channelGroup.getChannelBase());
     element->setAttribute("channel_count", m_channelGroup.getChannelCount());
     return *element;
@@ -434,30 +388,20 @@ QList<AudioPathType> AudioInput::getSupportedTypes() {
  * AudioInput::getSupportedTypes.
  */
 void AudioInput::setType(AudioPathType type) {
-    if (AudioInput::getSupportedTypes().contains(type)) {
-        m_type = type;
-    } else {
-        m_type = AudioPath::INVALID;
-    }
+    m_channelGroup.setType((AudioInput::getSupportedTypes().contains(type)) ? type:AudioPath::INVALID);
 }
 
 /**
  * Defined for QHash, so ChannelGroup can be used as a QHash key.
  */
-unsigned int qHash(const ChannelGroup &group) {
-    return group.getHash();
-}
+unsigned int qHash(const ChannelGroup &group) {return group.getHash();}
 
 /**
  * Defined for QHash, so AudioOutput can be used as a QHash key.
  */
-unsigned int qHash(const AudioOutput &output) {
-    return output.getHash();
-}
+unsigned int qHash(const AudioOutput &output) {return output.getHash();}
 
 /**
  * Defined for QHash, so AudioInput can be used as a QHash key.
  */
-unsigned int qHash(const AudioInput &input) {
-    return input.getHash();
-}
+unsigned int qHash(const AudioInput &input) {return input.getHash();}

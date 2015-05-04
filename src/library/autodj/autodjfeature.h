@@ -26,7 +26,7 @@
 
 class DlgAutoDJ;
 class Library;
-class PlayerManagerInterface;
+class PlayerManager;
 class TrackCollection;
 class AutoDJProcessor;
 
@@ -35,7 +35,7 @@ class AutoDJFeature : public LibraryFeature {
   public:
     AutoDJFeature(Library* pLibrary,
                   ConfigObject<ConfigValue>* pConfig,
-                  PlayerManagerInterface* pPlayerManager,
+                  PlayerManager* pPlayerManager,
                   TrackCollection* pTrackCollection);
     virtual ~AutoDJFeature();
 

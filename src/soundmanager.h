@@ -51,71 +51,53 @@ class SoundManager : public QObject {
   public:
     SoundManager(ConfigObject<ConfigValue> *pConfig, EngineMaster *_master);
     virtual ~SoundManager();
-
     // Returns a list of all devices we've enumerated that match the provided
     // filterApi, and have at least one output or input channel if the
     // bOutputDevices or bInputDevices are set, respectively.
     QList<SoundDevice*> getDeviceList(QString filterAPI, bool bOutputDevices, bool bInputDevices);
-
     // Closes all the open sound devices. Because multiple soundcards might be
     // open, this method simply runs through the list of all known soundcards
     // (from PortAudio) and attempts to close them all. Closing a soundcard that
     // isn't open is safe.
     void closeDevices();
-
     // Closes all the devices and empties the list of devices we have.
     void clearDeviceList();
-
     // Creates a list of sound devices that PortAudio sees.
     void queryDevices();
-
     // Opens all the devices chosen by the user in the preferences dialog, and
     // establishes the proper connections between them and the mixing engine.
     Result setupDevices();
-
     // Playermanager will notify us when the number of decks changes.
     void setConfiguredDeckCount(int count);
     int getConfiguredDeckCount() const;
-
     SoundDevice* getErrorDevice() const;
-
     // Returns a list of samplerates we will attempt to support for a given API.
     QList<double> getSampleRates(QString api) const;
-
     // Convenience overload for SoundManager::getSampleRates(QString)
     QList<double> getSampleRates() const;
-
     // Get a list of host APIs supported by PortAudio.
     QList<QString> getHostAPIList() const;
     SoundManagerConfig getConfig() const;
     Result setConfig(SoundManagerConfig config);
     void checkConfig();
-
     void onDeviceOutputCallback(const unsigned int iFramesPerBuffer);
-
     // Used by SoundDevices to "push" any audio from their inputs that they have
     // into the mixing engine.
-    void pushInputBuffers(const QList<AudioInputBuffer>& inputs,
+    void pushInputBuffers(const QList<AudioInput>& inputs,
                           const unsigned int iFramesPerBuffer);
-
-
     void writeProcess();
     void readProcess();
-
     void registerOutput(AudioOutput output, AudioSource*src);
     void registerInput(AudioInput input, AudioSink*dest);
     QList<AudioOutput> registeredOutputs() const;
     QList<AudioInput> registeredInputs() const;
-
   signals:
     void devicesUpdated(); // emitted when pointers to SoundDevices go stale
     void devicesSetup(); // emitted when the sound devices have been set up
     void outputRegistered(AudioOutput output, AudioSource*src);
     void inputRegistered(AudioInput input, AudioSink*dest);
-
   private:
     void setJACKName() const;
-
     EngineMaster *m_pMaster;
     ConfigObject<ConfigValue> *m_pConfig;
 #ifdef __PORTAUDIO__

@@ -3,7 +3,7 @@
 
 #include <QObject>
 
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 
 class ChromaPrinter: public QObject {
   Q_OBJECT

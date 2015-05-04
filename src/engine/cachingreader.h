@@ -13,7 +13,7 @@
 
 #include "util/types.h"
 #include "configobject.h"
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "engine/engineworker.h"
 #include "util/fifo.h"
 #include "engine/cachingreaderworker.h"

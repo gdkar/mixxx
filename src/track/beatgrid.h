@@ -4,7 +4,7 @@
 #include <QMutex>
 #include <QObject>
 
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "track/beats.h"
 #include "proto/beats.pb.h"
 

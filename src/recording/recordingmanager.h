@@ -24,14 +24,11 @@
 class EngineMaster;
 class ControlPushButton;
 
-class RecordingManager : public QObject
-{
+class RecordingManager : public QObject{
     Q_OBJECT
   public:
     RecordingManager(ConfigObject<ConfigValue>* pConfig, EngineMaster* pEngine);
     virtual ~RecordingManager();
-
-
     // This will try to start recording. If successful, onIsRecording will be
     // called and a signal isRecording will be emitted.
     // Parameter semantic: If true, the method computes the filename based on

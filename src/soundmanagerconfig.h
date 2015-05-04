@@ -43,10 +43,8 @@ public:
     static const unsigned int kDefaultDeckCount;
     static const int kDefaultAudioBufferSizeIndex;
     static const int kDefaultSyncBuffers;
-
     SoundManagerConfig();
     ~SoundManagerConfig();
-
     bool readFromDisk();
     bool writeToDisk() const;
     QString getAPI() const;
@@ -55,13 +53,11 @@ public:
     double getSampleRate() const;
     void setSampleRate(double sampleRate);
     bool checkSampleRate(const SoundManager &soundManager);
-
     // Record the number of decks configured with this setup so they can
     // be created and configured.
     unsigned int getDeckCount() const;
     void setDeckCount(unsigned int deckCount);
     void setCorrectDeckCount(int configuredDeckCount);
-
     unsigned int getAudioBufferSizeIndex() const;
     unsigned int getFramesPerBuffer() const;
     void setAudioBufferSizeIndex(unsigned int latency);

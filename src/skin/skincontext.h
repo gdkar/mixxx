@@ -25,30 +25,23 @@ class SkinContext {
     SkinContext(ConfigObject<ConfigValue>* pConfig, const QString& xmlPath);
     SkinContext(const SkinContext& parent);
     virtual ~SkinContext();
-
     // Gets a path relative to the skin path.
-    QString getSkinPath(const QString& relativePath) const {
-        return QDir(m_skinBasePath).filePath(relativePath);
-    }
-
+    QString getSkinPath(const QString& relativePath) const 
+    {return QDir(m_skinBasePath).filePath(relativePath);}
     // Sets the base path used by getSkinPath.
-    void setSkinBasePath(const QString& skinBasePath) {
-        m_skinBasePath = skinBasePath;
-    }
+    void setSkinBasePath(const QString& skinBasePath) 
+    {m_skinBasePath = skinBasePath;}
 
     // Variable lookup and modification methods.
     QString variable(const QString& name) const;
-    const QHash<QString, QString>& variables() const {
-        return m_variables;
-    }
+    const QHash<QString, QString>& variables() const
+    {return m_variables;}
     void setVariable(const QString& name, const QString& value);
     void setXmlPath(const QString& xmlPath);
-
     // Updates the SkinContext with all the <SetVariable> children of node.
     void updateVariables(const QDomNode& node);
     // Updates the SkinContext with 'element', a <SetVariable> node.
     void updateVariable(const QDomElement& element);
-
     // Methods for evaluating nodes given the context.
     bool hasNode(const QDomNode& node, const QString& nodeName) const;
     QDomNode selectNode(const QDomNode& node, const QString& nodeName) const;
@@ -70,31 +63,22 @@ class SkinContext {
     PixmapSource getPixmapSource(const QDomNode& pixmapNode) const;
     Paintable::DrawMode selectScaleMode(const QDomElement& element,
                                         Paintable::DrawMode defaultDrawMode) const;
-
     QScriptValue evaluateScript(const QString& expression,
                                 const QString& filename=QString(),
                                 int lineNumber=1);
     QScriptValue importScriptExtension(const QString& extensionName);
     const QSharedPointer<QScriptEngine> getScriptEngine() const;
     void enableDebugger(bool state) const;
-
     QDebug logWarning(const char* file, const int line, const QDomNode& node) const;
-
-    void defineSingleton(QString objectName, QWidget* widget) {
-        return m_pSingletons->insertSingleton(objectName, widget);
-    }
-
-    QWidget* getSingletonWidget(QString objectName) const {
-        return m_pSingletons->getSingletonWidget(objectName);
-    }
-
+    void defineSingleton(QString objectName, QWidget* widget) 
+    {return m_pSingletons->insertSingleton(objectName, widget);}
+    QWidget* getSingletonWidget(QString objectName) const 
+    {return m_pSingletons->getSingletonWidget(objectName);}
   private:
     QString variableNodeToText(const QDomElement& element) const;
-
     QString m_xmlPath;
     QString m_skinBasePath;
     ConfigObject<ConfigValue>* m_pConfig;
-
     QHash<QString, QString> m_variables;
     QSharedPointer<QScriptEngine> m_pScriptEngine;
     QSharedPointer<QScriptEngineDebugger> m_pScriptDebugger;

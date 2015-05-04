@@ -255,11 +255,12 @@ unsigned int SoundManagerConfig::getFramesPerBuffer() const {
     DEBUG_ASSERT_AND_HANDLE(audioBufferSizeIndex > 0) {
         audioBufferSizeIndex = kDefaultAudioBufferSizeIndex;
     }
-    unsigned int framesPerBuffer = 1;
+    const unsigned int step = 64/sizeof(CSAMPLE)/2;
+    unsigned int framesPerBuffer = 8;
     double sampleRate = m_sampleRate; // need this to avoid int division
+    double sampleFreq = 1/sampleRate;
     // first, get to the framesPerBuffer value corresponding to latency index 1
-    for (; framesPerBuffer / sampleRate * 1000 < 1.0; framesPerBuffer *= 2) {
-    }
+    for (; framesPerBuffer * sampleFreq < 5e-4; framesPerBuffer += step) {}
     // then, keep going until we get to our desired latency index (if not 1)
     for (unsigned int latencyIndex = 1; latencyIndex < audioBufferSizeIndex; ++latencyIndex) {
         framesPerBuffer <<= 1; // *= 2

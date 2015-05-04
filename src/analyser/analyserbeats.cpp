@@ -10,7 +10,7 @@
 #include <QHash>
 #include <QString>
 
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "track/beatmap.h"
 #include "track/beatfactory.h"
 #include "analyser/analyserbeats.h"

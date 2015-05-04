@@ -3,7 +3,7 @@
 
 #include "sources/soundsource.h"
 
-#include "circularsamplebuffer.h"
+#include "singularsamplebuffer.h"
 
 #include <FLAC/stream_decoder.h>
 

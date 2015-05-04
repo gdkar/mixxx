@@ -25,7 +25,6 @@ Import('build')
 Import('sources')
 Import('soundsource_plugins')
 Import('mixxxminimal_plugins')
-
 env = build.env
 flags = build.flags
 

@@ -3,7 +3,7 @@
 /*
     Rubber Band Library
     An audio time-stretching and pitch-shifting library.
-    Copyright 2007-2014 Particular Programs Ltd.
+    Copyright 2007-2012 Particular Programs Ltd.
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -25,7 +25,7 @@
 
 #include "system/Allocators.h"
 #include "system/VectorOps.h"
-#include <cmath>
+
 namespace RubberBand
 {
 
@@ -34,12 +34,14 @@ SpectralDifferenceAudioCurve::SpectralDifferenceAudioCurve(Parameters parameters
     AudioCurveCalculator(parameters)
 {
     m_mag = allocate<double>(m_lastPerceivedBin + 1);
+    m_tmpbuf = allocate<double>(m_lastPerceivedBin + 1);
     v_zero(m_mag, m_lastPerceivedBin + 1);
 }
 
 SpectralDifferenceAudioCurve::~SpectralDifferenceAudioCurve()
 {
     deallocate(m_mag);
+    deallocate(m_tmpbuf);
 }
 
 void
@@ -49,31 +51,35 @@ SpectralDifferenceAudioCurve::reset()
 }
 
 void
-SpectralDifferenceAudioCurve::setFftSize(int newSize){
+SpectralDifferenceAudioCurve::setFftSize(int newSize)
+{
     deallocate(m_tmpbuf);
     deallocate(m_mag);
     AudioCurveCalculator::setFftSize(newSize);
     m_mag = allocate<double>(m_lastPerceivedBin + 1);
+    m_tmpbuf = allocate<double>(m_lastPerceivedBin + 1);
     reset();
 }
 
 float
 SpectralDifferenceAudioCurve::processFloat(const float *R__ mag, int increment)
 {
-    float result = 0.0;
+    double result = 0.0;
 
     const int hs1 = m_lastPerceivedBin + 1;
-    for(int i = 0; i < hs1; i++){
-        const float conv = (float)mag[i];
-        const float sqr  = conv*conv;
-        const float sqr_minus = sqr-m_mag[i];
-        const float sqrt_abs  = sqrt(sqr_minus<0?-sqr_minus:sqr_minus);
-        result +=  sqrt_abs;
-        m_mag[i] = sqr;
 
+    v_convert(m_tmpbuf, mag, hs1);
+    v_square(m_tmpbuf, hs1);
+    v_subtract(m_mag, m_tmpbuf, hs1);
+    v_abs(m_mag, hs1);
+    v_sqrt(m_mag, hs1);
+    
+    for (int i = 0; i < hs1; ++i) {
+        result += m_mag[i];
     }
-    return result;
 
+    v_copy(m_mag, m_tmpbuf, hs1);
+    return result;
 }
 
 double
@@ -82,15 +88,18 @@ SpectralDifferenceAudioCurve::processDouble(const double *R__ mag, int increment
     double result = 0.0;
 
     const int hs1 = m_lastPerceivedBin + 1;
-    for(int i = 0; i < hs1; i++){
-        const double conv = (double)mag[i];
-        const double sqr  = conv*conv;
-        const double sqr_minus = sqr-m_mag[i];
-        const double sqrt_abs  = sqrt(sqr_minus<0?-sqr_minus:sqr_minus);
-        result +=  sqrt_abs;
-        m_mag[i] = sqr;
 
+    v_convert(m_tmpbuf, mag, hs1);
+    v_square(m_tmpbuf, hs1);
+    v_subtract(m_mag, m_tmpbuf, hs1);
+    v_abs(m_mag, hs1);
+    v_sqrt(m_mag, hs1);
+    
+    for (int i = 0; i < hs1; ++i) {
+        result += m_mag[i];
     }
+
+    v_copy(m_mag, m_tmpbuf, hs1);
     return result;
 }
 

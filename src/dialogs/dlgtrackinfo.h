@@ -8,7 +8,7 @@
 #include <QScopedPointer>
 
 #include "dialogs/ui_dlgtrackinfo.h"
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "dialogs/dlgtagfetcher.h"
 #include "library/coverart.h"
 #include "util/tapfilter.h"

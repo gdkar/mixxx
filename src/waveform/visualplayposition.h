@@ -31,7 +31,7 @@ class VSyncThread;
 class VisualPlayPositionData {
   public:
     PerformanceTimer m_referenceTime;
-    int m_callbackEntrytoDac; // Time from Audio Callback Entry to first sample of Buffer is transfered to DAC
+    double m_callbackEntrytoDac; // Time from Audio Callback Entry to first sample of Buffer is transfered to DAC
     double m_enginePlayPos; // Play position of fist Sample in Buffer
     double m_rate;
     double m_positionStep;
@@ -49,7 +49,7 @@ class VisualPlayPosition : public QObject {
     // engine thread.
     void set(double playPos, double rate, double positionStep, double pSlipPosition);
     double getAtNextVSync(VSyncThread* vsyncThread);
-    void getPlaySlipAt(int usFromNow, double* playPosition, double* slipPosition);
+    void getPlaySlipAt(double fromNow, double* playPosition, double* slipPosition);
     double getEnginePlayPos();
 
     // WARNING: Not thread safe. This function must only be called from the main
@@ -72,7 +72,7 @@ class VisualPlayPosition : public QObject {
     QString m_key;
     bool m_invalidTimeInfoWarned;
 
-    static QMap<QString, QWeakPointer<VisualPlayPosition> > m_listVisualPlayPosition;
+    static QMap<QString, QSharedPointer<VisualPlayPosition> > m_listVisualPlayPosition;
     // Time info from the Sound device, updated just after audio callback is called
     static PaStreamCallbackTimeInfo m_timeInfo;
     // Time stamp for m_timeInfo in main CPU time

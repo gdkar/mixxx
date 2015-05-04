@@ -3,7 +3,7 @@
 
 #include <QDialog>
 #include "dialogs/ui_dlgtagfetcher.h"
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "musicbrainz/tagfetcher.h"
 
 

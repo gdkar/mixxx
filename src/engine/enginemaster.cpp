@@ -241,11 +241,11 @@ EngineMaster::~EngineMaster() {
     }*/
 }
 
-const CSAMPLE* EngineMaster::getMasterBuffer() const {
+CSAMPLE* EngineMaster::getMasterBuffer() const {
     return m_pMaster;
 }
 
-const CSAMPLE* EngineMaster::getHeadphoneBuffer() const {
+CSAMPLE* EngineMaster::getHeadphoneBuffer() const {
     return m_pHead;
 }
 
@@ -598,7 +598,7 @@ void EngineMaster::addChannel(EngineChannel* pChannel) {
     QSharedPointer<ChannelInfo> pChannelInfo ( new ChannelInfo(m_channels.size()));
     pChannelInfo->m_pChannel = pChannel;
     const QString& group = pChannel->getGroup();
-    pChannelInfo->m_handle = m_channelHandleFactory.getOrCreateHandle(group);
+    pChannelInfo->m_handle = ChannelHandle(group);
     pChannelInfo->m_pVolumeControl.reset(new ControlAudioTaperPot(
             ConfigKey(group, "volume"), -20, 0, 1));
     pChannelInfo->m_pVolumeControl->setDefaultValue(1.0);
@@ -640,17 +640,17 @@ EngineChannel* EngineMaster::getChannel(const QString& group) {
     return NULL;
 }
 
-const CSAMPLE* EngineMaster::getDeckBuffer(unsigned int i) const {
+CSAMPLE* EngineMaster::getDeckBuffer(unsigned int i) const {
     return getChannelBuffer(PlayerManager::groupForDeck(i));
 }
 
-const CSAMPLE* EngineMaster::getOutputBusBuffer(unsigned int i) const {
+CSAMPLE* EngineMaster::getOutputBusBuffer(unsigned int i) const {
     if (i <= EngineChannel::RIGHT)
         return m_pOutputBusBuffers[i];
     return NULL;
 }
 
-const CSAMPLE* EngineMaster::getChannelBuffer(QString group) const {
+CSAMPLE* EngineMaster::getChannelBuffer(QString group) const {
     for (int i = 0; i < m_channels.size(); ++i) {
         const QSharedPointer<ChannelInfo> pChannelInfo (m_channels[i]);
         if (pChannelInfo->m_pChannel->getGroup() == group) {
@@ -660,7 +660,7 @@ const CSAMPLE* EngineMaster::getChannelBuffer(QString group) const {
     return NULL;
 }
 
-const CSAMPLE* EngineMaster::buffer(AudioOutput output) const {
+CSAMPLE* EngineMaster::buffer(AudioOutput output) const {
     switch (output.getType()) {
     case AudioOutput::MASTER:
         return getMasterBuffer();

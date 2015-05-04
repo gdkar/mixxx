@@ -2,8 +2,10 @@
 #define BASETRACKPLAYER_H
 
 #include "configobject.h"
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "baseplayer.h"
+#include <qhash.h>
+#include <qsharedpointer.h>
 #include "engine/enginechannel.h"
 #include "engine/enginedeck.h"
 

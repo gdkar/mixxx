@@ -6,7 +6,7 @@
 
 #include "configobject.h"
 #include "control/controlobjectslave.h"
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "library/libraryview.h"
 #include "library/trackmodel.h" // Can't forward declare enums
 #include "library/coverart.h"

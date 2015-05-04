@@ -3,7 +3,7 @@
 /*
     Rubber Band Library
     An audio time-stretching and pitch-shifting library.
-    Copyright 2007-2014 Particular Programs Ltd.
+    Copyright 2007-2012 Particular Programs Ltd.
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -86,7 +86,6 @@ RubberBandStretcher::Impl::ChannelData::construct(const std::set<size_t> &sizes,
 
     accumulator = allocate_and_zero<float>(maxSize);
     windowAccumulator = allocate_and_zero<float>(maxSize);
-    ms = allocate_and_zero<float>(maxSize);
     interpolator = allocate_and_zero<float>(maxSize);
     interpolatorScale = 0;
 
@@ -177,8 +176,8 @@ RubberBandStretcher::Impl::ChannelData::setSizes(size_t windowSize,
     envelope = reallocate_and_zero(envelope, oldReal, realSize);
     fltbuf = reallocate_and_zero(fltbuf, oldMax, maxSize);
     dblbuf = reallocate_and_zero(dblbuf, oldMax, maxSize);
-    ms = reallocate_and_zero(ms, oldMax, maxSize);
-    interpolator = reallocate_and_zero(interpolator, oldMax, maxSize);
+
+    interpolator = reallocate_and_zero<float>(interpolator, oldMax, maxSize);
 
     // But we do want to preserve data in these
 
@@ -244,12 +243,9 @@ RubberBandStretcher::Impl::ChannelData::~ChannelData()
     deallocate(prevError);
     deallocate(unwrappedPhase);
     deallocate(envelope);
-    deallocate(interpolator);
-    deallocate(ms);
     deallocate(accumulator);
     deallocate(windowAccumulator);
     deallocate(fltbuf);
-    deallocate(dblbuf);
 
     for (std::map<size_t, FFT *>::iterator i = ffts.begin();
          i != ffts.end(); ++i) {

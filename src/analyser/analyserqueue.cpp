@@ -3,10 +3,10 @@
 #include <QtDebug>
 #include <QMutexLocker>
 
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "playerinfo.h"
 #include "analyser/analyserqueue.h"
-#include "soundsourceproxy.h"
+#include "sources/soundsourceproxy.h"
 #include "playerinfo.h"
 #include "util/timer.h"
 #include "library/trackcollection.h"

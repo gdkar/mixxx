@@ -46,7 +46,7 @@ class ControlPushButton;
 class DlgDeveloperTools;
 
 #include "configobject.h"
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "util/cmdlineargs.h"
 #include "util/timer.h"
 

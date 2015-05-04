@@ -3,7 +3,7 @@
 /*
     Rubber Band Library
     An audio time-stretching and pitch-shifting library.
-    Copyright 2007-2014 Particular Programs Ltd.
+    Copyright 2007-2012 Particular Programs Ltd.
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -70,11 +70,14 @@ PercussiveAudioCurve::processFloat(const float *R__ mag, int increment)
 
     for (int n = 1; n <= sz; ++n) {
         float v = 0.f;
-        v = (m_prevMag[n]>zeroThresh)?(float)mag[n]/m_prevMag[n]:(mag[n]>zeroThresh)?threshold:0;
-        count        += (v>=threshold);
-        nonZeroCount += (mag[n]>zeroThresh);
-        m_prevMag[n] = mag[n];
+        if (m_prevMag[n] > zeroThresh) v = mag[n] / m_prevMag[n];
+        else if (mag[n] > zeroThresh) v = threshold;
+        bool above = (v >= threshold);
+        if (above) ++count;
+        if (mag[n] > zeroThresh) ++nonZeroCount;
     }
+
+    v_convert(m_prevMag, mag, sz + 1);
 
     if (nonZeroCount == 0) return 0;
     else return float(count) / float(nonZeroCount);
@@ -83,8 +86,8 @@ PercussiveAudioCurve::processFloat(const float *R__ mag, int increment)
 double
 PercussiveAudioCurve::processDouble(const double *R__ mag, int increment)
 {
-    static double threshold = powf(10.f, 0.15f); // 3dB rise in square of magnitude
-    static double zeroThresh = powf(10.f, -8);
+    static double threshold = powf(10., 0.15); // 3dB rise in square of magnitude
+    static double zeroThresh = powf(10., -8);
 
     int count = 0;
     int nonZeroCount = 0;
@@ -92,12 +95,15 @@ PercussiveAudioCurve::processDouble(const double *R__ mag, int increment)
     const int sz = m_lastPerceivedBin;
 
     for (int n = 1; n <= sz; ++n) {
-        double v = 0.f;
-        v = (m_prevMag[n]>zeroThresh)?(double)mag[n]/m_prevMag[n]:(mag[n]>zeroThresh)?threshold:0;
-        count        += (v>=threshold);
-        nonZeroCount += (mag[n]>zeroThresh);
-        m_prevMag[n] = mag[n];
+        double v = 0.0;
+        if (m_prevMag[n] > zeroThresh) v = mag[n] / m_prevMag[n];
+        else if (mag[n] > zeroThresh) v = threshold;
+        bool above = (v >= threshold);
+        if (above) ++count;
+        if (mag[n] > zeroThresh) ++nonZeroCount;
     }
+
+    v_copy(m_prevMag, mag, sz + 1);
 
     if (nonZeroCount == 0) return 0;
     else return double(count) / double(nonZeroCount);

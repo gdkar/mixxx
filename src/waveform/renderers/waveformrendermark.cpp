@@ -5,7 +5,7 @@
 #include "waveform/renderers/waveformrendermark.h"
 
 #include "control/controlobjectthread.h"
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "waveform/renderers/waveformwidgetrenderer.h"
 #include "waveform/waveform.h"
 #include "widget/wskincolor.h"

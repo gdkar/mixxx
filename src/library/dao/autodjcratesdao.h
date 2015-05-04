@@ -4,7 +4,7 @@
 #include <QObject>
 
 #include "configobject.h"
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "library/dao/dao.h"
 #include "util.h"
 

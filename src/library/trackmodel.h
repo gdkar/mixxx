@@ -6,7 +6,7 @@
 #include <QItemDelegate>
 #include <QtSql>
 
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "library/dao/settingsdao.h"
 
 /** Pure virtual (abstract) class that provides an interface for data models which

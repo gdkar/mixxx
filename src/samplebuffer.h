@@ -38,9 +38,7 @@ public:
     explicit SampleBuffer(SINT size);
     virtual ~SampleBuffer();
 
-    SINT size() const {
-        return m_size;
-    }
+    SINT size() const {return m_size;}
 
     CSAMPLE* data(SINT offset = 0) {
         DEBUG_ASSERT(0 <= offset);
@@ -55,12 +53,8 @@ public:
         return m_data + offset;
     }
 
-    CSAMPLE& operator[](SINT index) {
-        return *data(index);
-    }
-    const CSAMPLE& operator[](SINT index) const {
-        return *data(index);
-    }
+    CSAMPLE& operator[](SINT index) {return *data(index);}
+    const CSAMPLE& operator[](SINT index) const {return *data(index);}
 
     // Exchanges the members of two buffers in conformance with the
     // implementation of all STL containers. Required for exception
@@ -90,12 +84,8 @@ public:
             DEBUG_ASSERT(m_size >= offset);
             return m_data + offset;
         }
-        SINT size() const {
-            return m_size;
-        }
-        const CSAMPLE& operator[](SINT index) const {
-            return *data(index);
-        }
+        SINT size() const {return m_size;}
+        const CSAMPLE& operator[](SINT index) const {return *data(index);}
     private:
         const CSAMPLE* m_data;
         SINT m_size;
@@ -114,12 +104,8 @@ public:
             DEBUG_ASSERT(m_size >= offset);
             return m_data + offset;
         }
-        SINT size() const {
-            return m_size;
-        }
-        CSAMPLE& operator[](SINT index) const {
-            return *data(index);
-        }
+        SINT size() const {return m_size;}
+        CSAMPLE& operator[](SINT index) const {return *data(index);        }
     private:
         CSAMPLE* m_data;
         SINT m_size;

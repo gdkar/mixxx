@@ -3,7 +3,7 @@
 /*
     Rubber Band Library
     An audio time-stretching and pitch-shifting library.
-    Copyright 2007-2014 Particular Programs Ltd.
+    Copyright 2007-2012 Particular Programs Ltd.
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -31,7 +31,7 @@
 #include "system/sysutils.h"
 #include "system/VectorOps.h"
 #include "system/Allocators.h"
-#include "base/Profiler.h"
+
 namespace RubberBand {
 
 enum WindowType {
@@ -80,7 +80,7 @@ public:
     }
 
     inline void add(T *const R__ dst, T scale) const {
-        v_add_with_gain(dst, m_cache, scale, m_size);
+        v_add_with_gain(dst, m_cache, m_size, scale);
     }
 
     inline T getRMS() const {
@@ -111,7 +111,6 @@ protected:
 template <typename T>
 void Window<T>::encache()
 {
-    Profiler profiler("Window::encache");
     if (!m_cache) m_cache = allocate<T>(m_size);
 
     const int n = m_size;
@@ -145,29 +144,23 @@ void Window<T>::encache()
         cosinewin(m_cache, 0.42, 0.50, 0.08, 0.0);
 	break;
 	    
-    case GaussianWindow:{
-        const int N = n-1;
-        const T NoverTwo = N*.5;
-        const T NoverSix = NoverTwo/3;
+    case GaussianWindow:
 	for (i = 0; i < n; ++i) {
-            const T innerPow = (i-NoverTwo)/NoverSix;
-            const T innerPowSquared = - innerPow*innerPow;
-            m_cache[i] *= pow(2, innerPowSquared);
+            m_cache[i] *= pow(2, - pow((i - (n-1)/2.0) / ((n-1)/2.0 / 3), 2));
 	}
 	break;
-    } 
+	    
     case ParzenWindow:
     {
-        const int N = n-1;
-        const T NasT =T(N);
+        int N = n-1;
         for (i = 0; i < N/4; ++i) {
-            T m = 2 * pow(1.0 - (NasT/2 - i) / (NasT/2), 3);
+            T m = 2 * pow(1.0 - (T(N)/2 - i) / (T(N)/2), 3);
             m_cache[i] *= m;
             m_cache[N-i] *= m;
         }
         for (i = N/4; i <= N/2; ++i) {
             int wn = i - N/2;
-            T m = 1.0 - 6 * pow(wn / (NasT/2), 2) * (1.0 - abs(wn) / (NasT/2));
+            T m = 1.0 - 6 * pow(wn / (T(N)/2), 2) * (1.0 - abs(wn) / (T(N)/2));
             m_cache[i] *= m;
             m_cache[N-i] *= m;
         }            
@@ -191,25 +184,14 @@ void Window<T>::encache()
 }
 
 template <typename T>
-void Window<T>::cosinewin(T *mult, const T a0, const T _a1, const T a2, const T _a3)
+void Window<T>::cosinewin(T *mult, T a0, T a1, T a2, T a3)
 {
-    const int n = int(m_size);
-    const double  twoPiOverN = (double)2*M_PI/(double)n;
-    const double  fourPiOverN = (double)4*M_PI/(double)n;
-    const double  sixPiOverN = (double)6*M_PI/(double)n;
-    const T a1 = -_a1;
-    const T a3 = -_a3;
-    double twoTimesArg =0;
-    double fourTimesArg=0;
-    double sixTimesArg =0;
+    int n = int(m_size);
     for (int i = 0; i < n; ++i) {
-        const T firstTwo  = a0 + a1*cos(twoTimesArg);
-        const T secondTwo = a2*cos(fourTimesArg) +  a3 * cos(sixTimesArg);
-        mult[i] *= (firstTwo + secondTwo);
-        twoTimesArg +=twoPiOverN;
-        fourTimesArg+=fourPiOverN;
-        sixTimesArg+=sixPiOverN;
-
+        mult[i] *= (a0
+                    - a1 * cos(2 * M_PI * i / n)
+                    + a2 * cos(4 * M_PI * i / n)
+                    - a3 * cos(6 * M_PI * i / n));
     }
 }
 

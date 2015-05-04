@@ -26,14 +26,11 @@ class ControlObjectSlave;
 class EngineDelay : public EngineObject {
     Q_OBJECT
   public:
-    EngineDelay(const char* group, ConfigKey delayControl, QObject *pParent=0);
+    EngineDelay(const char* group, ConfigKey delayControl);
     virtual ~EngineDelay();
-
     void process(CSAMPLE* pInOut, const int iBufferSize);
-
   public slots:
     void onDelayChanged();
-
   private:
     ControlPotmeter* m_pDelayPot;
     ControlObjectSlave* m_pSampleRate;

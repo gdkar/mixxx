@@ -25,7 +25,7 @@
 #include <QFontMetrics>
 
 #include "dialogs/dlgpreflibrary.h"
-#include "soundsourceproxy.h"
+#include "sources/soundsourceproxy.h"
 
 #define MIXXX_ADDONS_URL "http://www.mixxx.org/wiki/doku.php/add-ons"
 

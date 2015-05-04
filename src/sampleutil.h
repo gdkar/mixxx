@@ -46,10 +46,8 @@ class SampleUtil {
     // Allocated a buffer of CSAMPLE's with length size. Ensures that the buffer
     // is 16-byte aligned for SSE enhancement.
     static CSAMPLE* alloc(int size);
-
     // Frees a 16-byte aligned buffer allocated by SampleUtil::alloc()
     static void free(CSAMPLE* pBuffer);
-
     // Sets every sample in pBuffer to zero
     inline
     static void clear(CSAMPLE* pBuffer, int iNumSamples) {
@@ -58,7 +56,6 @@ class SampleUtil {
         memset(pBuffer, 0, sizeof(*pBuffer) * iNumSamples);
         //fill(pBuffer, CSAMPLE_ZERO, iNumSamples);
     }
-
     // Sets every sample in pBuffer to value
     inline
     static void fill(CSAMPLE* pBuffer, CSAMPLE value,
@@ -95,9 +92,7 @@ class SampleUtil {
             }
         } else
 #endif
-        {
-            memcpy(pDest, pSrc, iNumSamples * sizeof(CSAMPLE));
-        }
+        {memcpy(pDest, pSrc, iNumSamples * sizeof(CSAMPLE));}
     }
 
     // Limits a CSAMPLE value to the valid range [-CSAMPLE_PEAK, CSAMPLE_PEAK]
@@ -111,8 +106,7 @@ class SampleUtil {
     }
 
     // Multiply every sample in pBuffer by gain
-    static void applyGain(CSAMPLE* pBuffer, CSAMPLE gain,
-            int iNumSamples);
+    static void applyGain(CSAMPLE* pBuffer, CSAMPLE gain,int iNumSamples);
 
     // Copy pSrc to pDest and multiply each sample by a factor of gain.
     // For optimum performance use the in-place function applyGain()

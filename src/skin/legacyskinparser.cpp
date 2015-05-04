@@ -371,116 +371,66 @@ QList<QWidget*> LegacySkinParser::parseNode(QDomElement node) {
             pOuterWidget->layout()->addWidget(pInnerWidget);
             result.append(pOuterWidget);
         }
-    } else if (nodeName == "SliderComposed") {
-        result = wrapWidget(parseStandardWidget<WSliderComposed>(node));
-    } else if (nodeName == "PushButton") {
-        result = wrapWidget(parseStandardWidget<WPushButton>(node));
-    } else if (nodeName == "EffectPushButton") {
-        result = wrapWidget(parseEffectPushButton(node));
-    } else if (nodeName == "ComboBox") {
-        result = wrapWidget(parseStandardWidget<WComboBox>(node));
-    } else if (nodeName == "Overview") {
-        result = wrapWidget(parseOverview(node));
-    } else if (nodeName == "Visual") {
-        result = wrapWidget(parseVisual(node));
-    } else if (nodeName == "Text") {
-        result = wrapWidget(parseText(node));
-    } else if (nodeName == "TrackProperty") {
-        result = wrapWidget(parseTrackProperty(node));
-    } else if (nodeName == "StarRating") {
-        result = wrapWidget(parseStarRating(node));
-    } else if (nodeName == "VuMeter") {
-        result = wrapWidget(parseStandardWidget<WVuMeter>(node, true));
-    } else if (nodeName == "StatusLight") {
-        result = wrapWidget(parseStandardWidget<WStatusLight>(node));
-    } else if (nodeName == "Display") {
-        result = wrapWidget(parseStandardWidget<WDisplay>(node));
-    } else if (nodeName == "NumberRate") {
-        result = wrapWidget(parseNumberRate(node));
-    } else if (nodeName == "NumberPos") {
-        result = wrapWidget(parseNumberPos(node));
+    } else if (nodeName == "SliderComposed") {result = wrapWidget(parseStandardWidget<WSliderComposed>(node));
+    } else if (nodeName == "PushButton") {result = wrapWidget(parseStandardWidget<WPushButton>(node));
+    } else if (nodeName == "EffectPushButton") {result = wrapWidget(parseEffectPushButton(node));
+    } else if (nodeName == "ComboBox") {result = wrapWidget(parseStandardWidget<WComboBox>(node));
+    } else if (nodeName == "Overview") {result = wrapWidget(parseOverview(node));
+    } else if (nodeName == "Visual") {result = wrapWidget(parseVisual(node));
+    } else if (nodeName == "Text") {result = wrapWidget(parseText(node));
+    } else if (nodeName == "TrackProperty") {result = wrapWidget(parseTrackProperty(node));
+    } else if (nodeName == "StarRating") {result = wrapWidget(parseStarRating(node));
+    } else if (nodeName == "VuMeter") {result = wrapWidget(parseStandardWidget<WVuMeter>(node, true));
+    } else if (nodeName == "StatusLight") {result = wrapWidget(parseStandardWidget<WStatusLight>(node));
+    } else if (nodeName == "Display") {result = wrapWidget(parseStandardWidget<WDisplay>(node));
+    } else if (nodeName == "NumberRate") {result = wrapWidget(parseNumberRate(node));
+    } else if (nodeName == "NumberPos") {result = wrapWidget(parseNumberPos(node));
     } else if (nodeName == "Number" || nodeName == "NumberBpm") {
-        // NumberBpm is deprecated, and is now the same as a Number
-        result = wrapWidget(parseLabelWidget<WNumber>(node));
-    } else if (nodeName == "NumberDb") {
-        result = wrapWidget(parseLabelWidget<WNumberDb>(node));
-    } else if (nodeName == "Label") {
-        result = wrapWidget(parseLabelWidget<WLabel>(node));
-    } else if (nodeName == "Knob") {
-        result = wrapWidget(parseStandardWidget<WKnob>(node));
-    } else if (nodeName == "KnobComposed") {
-        result = wrapWidget(parseStandardWidget<WKnobComposed>(node));
-    } else if (nodeName == "TableView") {
-        result = wrapWidget(parseTableView(node));
-    } else if (nodeName == "CoverArt") {
-        result = wrapWidget(parseCoverArt(node));
-    } else if (nodeName == "SearchBox") {
-        result = wrapWidget(parseSearchBox(node));
-    } else if (nodeName == "WidgetGroup") {
-        result = wrapWidget(parseWidgetGroup(node));
-    } else if (nodeName == "WidgetStack") {
-        result = wrapWidget(parseWidgetStack(node));
-    } else if (nodeName == "SizeAwareStack") {
-        result = wrapWidget(parseSizeAwareStack(node));
-    } else if (nodeName == "EffectChainName") {
-        result = wrapWidget(parseEffectChainName(node));
-    } else if (nodeName == "EffectName") {
-        result = wrapWidget(parseEffectName(node));
-    } else if (nodeName == "EffectParameterName") {
-        result = wrapWidget(parseEffectParameterName(node));
-    } else if (nodeName == "EffectButtonParameterName") {
-        result = wrapWidget(parseEffectButtonParameterName(node));
-    } else if (nodeName == "Spinny") {
-        result = wrapWidget(parseSpinny(node));
-    } else if (nodeName == "Time") {
-        result = wrapWidget(parseLabelWidget<WTime>(node));
-    } else if (nodeName == "Splitter") {
-        result = wrapWidget(parseSplitter(node));
-    } else if (nodeName == "LibrarySidebar") {
-        result = wrapWidget(parseLibrarySidebar(node));
-    } else if (nodeName == "Library") {
-        result = wrapWidget(parseLibrary(node));
-    } else if (nodeName == "Key") {
-        result = wrapWidget(parseEngineKey(node));
-    } else if (nodeName == "SetVariable") {
-        m_pContext->updateVariable(node);
-    } else if (nodeName == "Template") {
-        result = parseTemplate(node);
-    } else if (nodeName == "SingletonDefinition") {
-        parseSingletonDefinition(node);
-    } else if (nodeName == "SingletonContainer") {
-        result = wrapWidget(parseStandardWidget<WSingletonContainer>(node));
-    } else {
-        SKIN_WARNING(node, *m_pContext) << "Invalid node name in skin:"
-                                       << nodeName;
-    }
-
-    if (sDebug) {
-        qDebug() << "END PARSE NODE" << nodeName;
-    }
+        // NumberBpm is deprecated, and is now the same as a Numberresult = wrapWidget(parseLabelWidget<WNumber>(node));
+    } else if (nodeName == "NumberDb") {result = wrapWidget(parseLabelWidget<WNumberDb>(node));
+    } else if (nodeName == "Label") {result = wrapWidget(parseLabelWidget<WLabel>(node));
+    } else if (nodeName == "Knob") {result = wrapWidget(parseStandardWidget<WKnob>(node));
+    } else if (nodeName == "KnobComposed") {result = wrapWidget(parseStandardWidget<WKnobComposed>(node));
+    } else if (nodeName == "TableView") {result = wrapWidget(parseTableView(node));
+    } else if (nodeName == "CoverArt") {result = wrapWidget(parseCoverArt(node));
+    } else if (nodeName == "SearchBox") {result = wrapWidget(parseSearchBox(node));
+    } else if (nodeName == "WidgetGroup") {result = wrapWidget(parseWidgetGroup(node));
+    } else if (nodeName == "WidgetStack") {result = wrapWidget(parseWidgetStack(node));
+    } else if (nodeName == "SizeAwareStack") {result = wrapWidget(parseSizeAwareStack(node));
+    } else if (nodeName == "EffectChainName") {result = wrapWidget(parseEffectChainName(node));
+    } else if (nodeName == "EffectName") {result = wrapWidget(parseEffectName(node));
+    } else if (nodeName == "EffectParameterName") {result = wrapWidget(parseEffectParameterName(node));
+    } else if (nodeName == "EffectButtonParameterName") {result = wrapWidget(parseEffectButtonParameterName(node));
+    } else if (nodeName == "Spinny") {result = wrapWidget(parseSpinny(node));
+    } else if (nodeName == "Time") {result = wrapWidget(parseLabelWidget<WTime>(node));
+    } else if (nodeName == "Splitter") {result = wrapWidget(parseSplitter(node));
+    } else if (nodeName == "LibrarySidebar") {result = wrapWidget(parseLibrarySidebar(node));
+    } else if (nodeName == "Library") {result = wrapWidget(parseLibrary(node));
+    } else if (nodeName == "Key") {result = wrapWidget(parseEngineKey(node));
+    } else if (nodeName == "SetVariable") {m_pContext->updateVariable(node);
+    } else if (nodeName == "Template") {result = parseTemplate(node);
+    } else if (nodeName == "SingletonDefinition") {parseSingletonDefinition(node);
+    } else if (nodeName == "SingletonContainer") {result = wrapWidget(parseStandardWidget<WSingletonContainer>(node));
+    } else {SKIN_WARNING(node, *m_pContext) << "Invalid node name in skin:"<< nodeName;}
+    if (sDebug) {qDebug() << "END PARSE NODE" << nodeName;}
     return result;
 }
 
 QWidget* LegacySkinParser::parseSplitter(QDomElement node) {
     WSplitter* pSplitter = new WSplitter(m_pParent, m_pConfig);
     commonWidgetSetup(node, pSplitter);
-
     QDomNode childrenNode = m_pContext->selectNode(node, "Children");
     QWidget* pOldParent = m_pParent;
     m_pParent = pSplitter;
-
     if (!childrenNode.isNull()) {
         // Descend chilren
         QDomNodeList children = childrenNode.childNodes();
-
         for (int i = 0; i < children.count(); ++i) {
             QDomNode node = children.at(i);
-
             if (node.isElement()) {
                 QList<QWidget*> children = parseNode(node.toElement());
                 foreach (QWidget* pChild, children) {
-                    if (pChild == NULL)
-                        continue;
+                    if (pChild == NULL)continue;
                     pSplitter->addWidget(pChild);
                 }
             }
@@ -498,12 +448,9 @@ QWidget* LegacySkinParser::parseWidgetGroup(QDomElement node) {
     commonWidgetSetup(node, pGroup);
     pGroup->setup(node, *m_pContext);
     pGroup->Init();
-
     QDomNode childrenNode = m_pContext->selectNode(node, "Children");
-
     QWidget* pOldParent = m_pParent;
     m_pParent = pGroup;
-
     if (!childrenNode.isNull()) {
         // Descend children
         QDomNodeList children = childrenNode.childNodes();
@@ -511,11 +458,8 @@ QWidget* LegacySkinParser::parseWidgetGroup(QDomElement node) {
             QDomNode node = children.at(i);
             if (node.isElement()) {
                 QList<QWidget*> children = parseNode(node.toElement());
-
                 foreach (QWidget* pChild, children) {
-                    if (pChild == NULL) {
-                        continue;
-                    }
+                    if (pChild == NULL) {continue;}
                     pGroup->addWidget(pChild);
                 }
             }
@@ -529,11 +473,9 @@ QWidget* LegacySkinParser::parseWidgetStack(QDomElement node) {
     bool createdNext = false;
     ControlObject* pNextControl = controlFromConfigNode(
             node.toElement(), "NextControl", &createdNext);
-
     bool createdPrev = false;
     ControlObject* pPrevControl = controlFromConfigNode(
             node.toElement(), "PrevControl", &createdPrev);
-
     bool createdCurrentPage = false;
     ControlObject* pCurrentPageControl = NULL;
     QString currentpage_co = node.attribute("currentpage");
@@ -544,43 +486,24 @@ QWidget* LegacySkinParser::parseWidgetStack(QDomElement node) {
         pCurrentPageControl = controlFromConfigKey(configKey, 0.0, persist,
                                                    &createdCurrentPage);
     }
-
-    WWidgetStack* pStack = new WWidgetStack(m_pParent, pNextControl,
-                                            pPrevControl, pCurrentPageControl);
+    WWidgetStack* pStack = new WWidgetStack(m_pParent, pNextControl,pPrevControl, pCurrentPageControl);
     pStack->setObjectName("WidgetStack");
     pStack->setContentsMargins(0, 0, 0, 0);
     commonWidgetSetup(node, pStack);
-
-    if (createdNext && pNextControl) {
-        pNextControl->setParent(pStack);
-    }
-
-    if (createdPrev && pPrevControl) {
-        pPrevControl->setParent(pStack);
-    }
-
-    if (createdCurrentPage) {
-        pCurrentPageControl->setParent(pStack);
-    }
-
+    if (createdNext && pNextControl) {pNextControl->setParent(pStack);}
+    if (createdPrev && pPrevControl) {pPrevControl->setParent(pStack);}
+    if (createdCurrentPage) {pCurrentPageControl->setParent(pStack);}
     QWidget* pOldParent = m_pParent;
     m_pParent = pStack;
-
     QDomNode childrenNode = m_pContext->selectNode(node, "Children");
     if (!childrenNode.isNull()) {
         // Descend chilren
         QDomNodeList children = childrenNode.childNodes();
-
         for (int i = 0; i < children.count(); ++i) {
             QDomNode node = children.at(i);
-
-            if (!node.isElement()) {
-                continue;
-            }
+            if (!node.isElement()) {continue;}
             QDomElement element = node.toElement();
-
             QList<QWidget*> child_widgets = parseNode(element);
-
             if (child_widgets.empty()) {
                 SKIN_WARNING(node, *m_pContext)
                         << "WidgetStack child produced no widget.";

@@ -5,7 +5,7 @@
 #include "control/controlobjectthread.h"
 
 #include "engine/cachingreader.h"
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "sampleutil.h"
 #include "util/counter.h"
 #include "util/math.h"

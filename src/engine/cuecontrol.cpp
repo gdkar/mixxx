@@ -8,7 +8,7 @@
 #include "control/controlobject.h"
 #include "control/controlpushbutton.h"
 #include "control/controlindicator.h"
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "library/dao/cue.h"
 #include "engine/cachingreader.h"
 #include "vinylcontrol/defs_vinylcontrol.h"

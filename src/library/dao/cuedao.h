@@ -7,7 +7,7 @@
 #include <QMap>
 #include <QSqlDatabase>
 
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "library/dao/dao.h"
 
 #define CUE_TABLE "cues"

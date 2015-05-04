@@ -3,7 +3,7 @@
 /*
     Rubber Band Library
     An audio time-stretching and pitch-shifting library.
-    Copyright 2007-2014 Particular Programs Ltd.
+    Copyright 2007-2012 Particular Programs Ltd.
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -37,7 +37,6 @@
 #include "system/sysutils.h"
 #include "system/Allocators.h"
 
-#include "base/Profiler.h"
 //#define DEBUG_SCAVENGER 1
 
 namespace RubberBand {
@@ -131,7 +130,6 @@ template <typename T>
 Scavenger<T>::Scavenger(int sec, int defaultObjectListSize) :
     m_objects(ObjectTimeList(defaultObjectListSize)),
     m_sec(sec),
-    m_lastExcess(0),
     m_claimed(0),
     m_scavenged(0),
     m_asExcess(0)
@@ -161,7 +159,7 @@ void
 Scavenger<T>::claim(T *t)
 {
 //    std::cerr << "Scavenger::claim(" << t << ")" << std::endl;
-    Profiler profiler("RubberBandStretcher::Scavenger::claim");
+
     struct timeval tv;
     (void)gettimeofday(&tv, 0);
     int sec = tv.tv_sec;
@@ -187,7 +185,6 @@ template <typename T>
 void
 Scavenger<T>::scavenge(bool clearNow)
 {
-    Profiler profiler("RubberBandStretcher::Scavenger::scavange");
 #ifdef DEBUG_SCAVENGER
     std::cerr << "Scavenger::scavenge: claimed " << m_claimed << ", scavenged " << m_scavenged << ", cleared as excess " << m_asExcess << std::endl;
 #endif

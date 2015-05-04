@@ -2,7 +2,7 @@
 #include <QtDebug>
 
 #include "dialogs/dlgtrackinfo.h"
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "library/coverartcache.h"
 #include "library/coverartutils.h"
 #include "library/dao/cue.h"

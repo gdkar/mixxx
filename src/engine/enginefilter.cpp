@@ -19,9 +19,8 @@
 #include <QtDebug>
 
 
-EngineFilter::EngineFilter(char * conf, int predefinedType, QObject *pParent)
-        : EngineObject(pParent),
-          iir(0),
+EngineFilter::EngineFilter(char * conf, int predefinedType)
+        : iir(0),
           fir(0),
           tmp(0),
           ff(NULL),

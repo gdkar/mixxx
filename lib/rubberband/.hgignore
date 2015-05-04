@@ -10,7 +10,4 @@ lib/*
 *.log
 *.bak
 config.status
-doc/html
-*.rej
-cov-int
-*~
+

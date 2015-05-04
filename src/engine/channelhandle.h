@@ -20,36 +20,60 @@
 #include <QHash>
 #include <QString>
 #include <QVarLengthArray>
-
+#include <qsharedpointer.h>
+#include <qatomic.h>
+#include <qmath.h>
 #include "util/assert.h"
+#include "util/singleton.h"
 
 // A wrapper around an integer handle. Used to uniquely identify and refer to
 // channels (headphone output, master output, deck 1, microphone 4, etc.) of
 // audio in the engine.
 class ChannelHandle {
+    class ChannelCache : public QObject, public Singleton<ChannelCache>{
+      QAtomicInteger<int>    m_serial;
+      QVector<QString>       m_intern;
+      const QString          null_str;
+      QHash<QString,int>     m_lookup;
+      public:
+          ChannelCache():m_serial(0){}
+          int query(const QString &s){
+          if(m_lookup.contains(s)){
+            return m_lookup.value(s);
+          }else{
+            int i=0, next = m_serial.fetchAndAddRelaxed(1);
+            if(next >= m_intern.size()) m_intern.resize((next+1)*4);
+            m_intern[next] = s;
+            for(;i<next && m_intern[i]!=s;i++){}
+            if(next==i){m_lookup.insert(s,next);}
+            else{next = i;}
+            return next;
+          }
+        }
+        int alloc(){return m_serial.fetchAndAddRelaxed(1);}
+        void rename(const int i, const QString &s){
+          QString prev = s;
+          m_intern[i].swap(prev);
+          m_lookup.insert(s,i);
+        }
+        const QString &name(const int i){
+          if(0<=i&&i < m_intern.size())
+            return m_intern.at(i);
+          return null_str;
+          }
+    };
   public:
-    ChannelHandle() : m_iHandle(-1) {
-    }
-
-    inline bool valid() const {
-        return m_iHandle >= 0;
-    }
-
-    inline int handle() const {
-        return m_iHandle;
-    }
-
+    ChannelHandle() : m_iHandle(ChannelCache::instance()->alloc()) {}
+    ChannelHandle(const QString & _name):m_iHandle(ChannelCache::instance()->query(_name)){}
+    ChannelHandle(const ChannelHandle &other):m_iHandle(other.m_iHandle){}
+    const QString &name() const{return ChannelCache::instance()->name(m_iHandle);}
+    void setName(const QString &_name){ChannelCache::instance()->rename(m_iHandle,_name);}
+    inline bool  valid() const {return m_iHandle >= 0;}
+    inline int   handle() const {return m_iHandle;}
   private:
-    ChannelHandle(int iHandle)
-            : m_iHandle(iHandle) {
-    }
-
-    void setHandle(int iHandle) {
-        m_iHandle = iHandle;
-    }
-
+    ChannelHandle(int iHandle): m_iHandle(iHandle) {}
+    void setHandle(int iHandle) {m_iHandle = iHandle;}
     int m_iHandle;
-
     friend class ChannelHandleFactory;
 };
 

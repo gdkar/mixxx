@@ -7,7 +7,7 @@
 #include <QLibrary>
 #include <QRegExp>
 
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "sources/soundsourceplugin.h"
 #include "util/sandbox.h"
 

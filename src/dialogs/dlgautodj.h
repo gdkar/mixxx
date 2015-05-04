@@ -6,13 +6,14 @@
 
 #include "dialogs/ui_dlgautodj.h"
 #include "configobject.h"
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "library/libraryview.h"
 #include "library/library.h"
 #include "library/trackcollection.h"
 #include "library/autodj/autodjprocessor.h"
 #include "mixxxkeyboard.h"
 
+class PlayerManager;
 class PlaylistTableModel;
 class WTrackTableView;
 

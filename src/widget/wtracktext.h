@@ -6,7 +6,7 @@
 #include <QMouseEvent>
 
 #include "configobject.h"
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "widget/wlabel.h"
 
 class WTrackText : public WLabel {

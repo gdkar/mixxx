@@ -3,7 +3,7 @@
 /*
     Rubber Band Library
     An audio time-stretching and pitch-shifting library.
-    Copyright 2007-2014 Particular Programs Ltd.
+    Copyright 2007-2012 Particular Programs Ltd.
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -56,13 +56,16 @@ using RubberBand::gettimeofday;
 using RubberBand::usleep;
 #endif
 
-double tempo_convert(const char *str){
+double tempo_convert(const char *str)
+{
     char *d = strchr((char *)str, ':');
+
     if (!d || !*d) {
         double m = atof(str);
         if (m != 0.0) return 1.0 / m;
         else return 1.0;
     }
+
     char *a = strdup(str);
     char *b = strdup(d+1);
     a[d-str] = '\0';
@@ -74,8 +77,10 @@ double tempo_convert(const char *str){
     else return 1.0;
 }
 
-int main(int argc, char **argv){
+int main(int argc, char **argv)
+{
     int c;
+
     double ratio = 1.0;
     double duration = 0.0;
     double pitchshift = 0.0;
@@ -96,18 +101,23 @@ int main(int argc, char **argv){
     bool help = false;
     bool version = false;
     bool quiet = false;
+
     bool haveRatio = false;
+
     std::string mapfile;
+
     enum {
         NoTransients,
         BandLimitedTransients,
         Transients
     } transients = Transients;
+
     enum {
         CompoundDetector,
         PercussiveDetector,
         SoftDetector
     } detector = CompoundDetector;
+
     while (1) {
         int optionIndex = 0;
 
@@ -147,6 +157,7 @@ int main(int argc, char **argv){
                         "t:p:d:RLPFc:f:T:D:qhVM:",
                         longOpts, &optionIndex);
         if (c == -1) break;
+
         switch (c) {
         case 'h': help = true; break;
         case 'V': version = true; break;
@@ -188,7 +199,7 @@ int main(int argc, char **argv){
         cerr << endl;
 	cerr << "Rubber Band" << endl;
         cerr << "An audio time-stretching and pitch-shifting library and utility program." << endl;
-	cerr << "Copyright 2007-2014 Particular Programs Ltd." << endl;
+	cerr << "Copyright 2007-2012 Particular Programs Ltd." << endl;
         cerr << endl;
 	cerr << "   Usage: " << argv[0] << " [options] <infile.wav> <outfile.wav>" << endl;
         cerr << endl;
@@ -285,7 +296,9 @@ int main(int argc, char **argv){
         }
         cerr << ")" << endl;
     }
+
     std::map<size_t, size_t> mapping;
+    
     if (mapfile != "") {
         std::ifstream ifile(mapfile.c_str());
         if (!ifile.is_open()) {
@@ -318,18 +331,25 @@ int main(int argc, char **argv){
             ++lineno;
         }
         ifile.close();
-        if (!quiet) {cerr << "Read " << mapping.size() << " line(s) from map file" << endl;}
+
+        if (!quiet) {
+            cerr << "Read " << mapping.size() << " line(s) from map file" << endl;
+        }
     }
+
     char *fileName = strdup(argv[optind++]);
     char *fileNameOut = strdup(argv[optind++]);
+
     SNDFILE *sndfile;
     SNDFILE *sndfileOut;
     SF_INFO sfinfo;
     SF_INFO sfinfoOut;
     memset(&sfinfo, 0, sizeof(SF_INFO));
+
     sndfile = sf_open(fileName, SFM_READ, &sfinfo);
     if (!sndfile) {
-	cerr << "ERROR: Failed to open input file \"" << fileName << "\": "<< sf_strerror(sndfile) << endl;
+	cerr << "ERROR: Failed to open input file \"" << fileName << "\": "
+	     << sf_strerror(sndfile) << endl;
 	return 1;
     }
 
@@ -341,19 +361,24 @@ int main(int argc, char **argv){
         double induration = double(sfinfo.frames) / double(sfinfo.samplerate);
         if (induration != 0.0) ratio = duration / induration;
     }
+
     sfinfoOut.channels = sfinfo.channels;
     sfinfoOut.format = sfinfo.format;
     sfinfoOut.frames = int(sfinfo.frames * ratio + 0.1);
     sfinfoOut.samplerate = sfinfo.samplerate;
     sfinfoOut.sections = sfinfo.sections;
     sfinfoOut.seekable = sfinfo.seekable;
+
     sndfileOut = sf_open(fileNameOut, SFM_WRITE, &sfinfoOut) ;
     if (!sndfileOut) {
-	cerr << "ERROR: Failed to open output file \"" << fileNameOut << "\" for writing: "<< sf_strerror(sndfileOut) << endl;
+	cerr << "ERROR: Failed to open output file \"" << fileNameOut << "\" for writing: "
+	     << sf_strerror(sndfileOut) << endl;
 	return 1;
     }
+    
     int ibs = 1024;
     size_t channels = sfinfo.channels;
+
     RubberBandStretcher::Options options = 0;
     if (realtime)    options |= RubberBandStretcher::OptionProcessRealTime;
     if (precise)     options |= RubberBandStretcher::OptionStretchPrecise;
@@ -388,6 +413,7 @@ int main(int argc, char **argv){
         options |= RubberBandStretcher::OptionTransientsCrisp;
         break;
     }
+
     switch (detector) {
     case CompoundDetector:
         options |= RubberBandStretcher::OptionDetectorCompound;
@@ -399,7 +425,11 @@ int main(int argc, char **argv){
         options |= RubberBandStretcher::OptionDetectorSoft;
         break;
     }
-    if (pitchshift != 0.0) {frequencyshift *= pow(2.0, pitchshift / 12);}
+
+    if (pitchshift != 0.0) {
+        frequencyshift *= pow(2.0, pitchshift / 12);
+    }
+
     cerr << "Using time ratio " << ratio;
     cerr << " and frequency ratio " << frequencyshift << endl;
 
@@ -408,61 +438,104 @@ int main(int argc, char **argv){
 #endif
     timeval tv;
     (void)gettimeofday(&tv, 0);
+
     RubberBandStretcher::setDefaultDebugLevel(debug);
+
     RubberBandStretcher ts(sfinfo.samplerate, channels, options,
                            ratio, frequencyshift);
+
     ts.setExpectedInputDuration(sfinfo.frames);
+
     float *fbuf = new float[channels * ibs];
     float **ibuf = new float *[channels];
     for (size_t i = 0; i < channels; ++i) ibuf[i] = new float[ibs];
+
     int frame = 0;
     int percent = 0;
+
     sf_seek(sndfile, 0, SEEK_SET);
+
     if (!realtime) {
-        if (!quiet) {cerr << "Pass 1: Studying..." << endl;}
+
+        if (!quiet) {
+            cerr << "Pass 1: Studying..." << endl;
+        }
+
         while (frame < sfinfo.frames) {
+
             int count = -1;
+
             if ((count = sf_readf_float(sndfile, fbuf, ibs)) <= 0) break;
+        
             for (size_t c = 0; c < channels; ++c) {
                 for (int i = 0; i < count; ++i) {
                     float value = fbuf[i * channels + c];
                     ibuf[c][i] = value;
                 }
             }
+
             bool final = (frame + ibs >= sfinfo.frames);
+
             ts.study(ibuf, count, final);
+
             int p = int((double(frame) * 100.0) / sfinfo.frames);
             if (p > percent || frame == 0) {
                 percent = p;
-                if (!quiet) {cerr << "\r" << percent << "% ";}
+                if (!quiet) {
+                    cerr << "\r" << percent << "% ";
+                }
             }
+
             frame += ibs;
         }
-        if (!quiet) {cerr << "\rCalculating profile..." << endl;}
+
+        if (!quiet) {
+            cerr << "\rCalculating profile..." << endl;
+        }
+
         sf_seek(sndfile, 0, SEEK_SET);
     }
+
     frame = 0;
     percent = 0;
-    if (!mapping.empty()) {ts.setKeyFrameMap(mapping);}
+
+    if (!mapping.empty()) {
+        ts.setKeyFrameMap(mapping);
+    }
+    
     size_t countIn = 0, countOut = 0;
+
     while (frame < sfinfo.frames) {
+
         int count = -1;
+
 	if ((count = sf_readf_float(sndfile, fbuf, ibs)) < 0) break;
+        
         countIn += count;
+
         for (size_t c = 0; c < channels; ++c) {
             for (int i = 0; i < count; ++i) {
                 float value = fbuf[i * channels + c];
                 ibuf[c][i] = value;
             }
         }
+
         bool final = (frame + ibs >= sfinfo.frames);
-        if (debug > 2) {cerr << "count = " << count << ", ibs = " << ibs << ", frame = " << frame << ", frames = " << sfinfo.frames << ", final = " << final << endl;}
+
+        if (debug > 2) {
+            cerr << "count = " << count << ", ibs = " << ibs << ", frame = " << frame << ", frames = " << sfinfo.frames << ", final = " << final << endl;
+        }
+
         ts.process(ibuf, count, final);
+
         int avail = ts.available();
         if (debug > 1) cerr << "available = " << avail << endl;
+
         if (avail > 0) {
             float **obf = new float *[channels];
-            for (size_t i = 0; i < channels; ++i) {obf[i] = new float[avail];}
+            for (size_t i = 0; i < channels; ++i) {
+                obf[i] = new float[avail];
+            }
             ts.retrieve(obf, avail);
             countOut += avail;
             float *fobf = new float[channels * avail];
@@ -500,18 +573,26 @@ int main(int argc, char **argv){
                 cerr << "\r" << percent << "% ";
             }
 	}
+
         frame += ibs;
     }
-    if (!quiet) {cerr << "\r    " << endl;}
+
+    if (!quiet) {
+        cerr << "\r    " << endl;
+    }
     int avail;
+
     while ((avail = ts.available()) >= 0) {
 
         if (debug > 1) {
             cerr << "(completing) available = " << avail << endl;
         }
+
         if (avail > 0) {
             float **obf = new float *[channels];
-            for (size_t i = 0; i < channels; ++i) {obf[i] = new float[avail];}
+            for (size_t i = 0; i < channels; ++i) {
+                obf[i] = new float[avail];
+            }
             ts.retrieve(obf, avail);
             countOut += avail;
             float *fobf = new float[channels * avail];

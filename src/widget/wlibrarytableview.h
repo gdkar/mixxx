@@ -10,7 +10,7 @@
 
 #include "configobject.h"
 #include "library/libraryview.h"
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "library/coverartcache.h"
 
 

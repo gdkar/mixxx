@@ -9,7 +9,7 @@
 
 #include "control/controlobject.h"
 #include "control/controlobjectslave.h"
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "waveform/widgets/waveformwidgetabstract.h"
 #include "widget/wwaveformviewer.h"
 #include "waveform/waveformwidgetfactory.h"

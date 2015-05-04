@@ -15,7 +15,12 @@ class RegexUtils {
         // Turn the list into a "\\.(jpg|gif|etc)$" style regex string
         return QString("\\.(%1)$").arg(extensions.join("|"));
     }
-
+    static QStringList fileExtensionsGlob(QStringList extensions){
+      for(int i = 0; i<extensions.size();i++){
+        extensions[i] = "*."+QRegExp::escape(extensions[i]);
+      }
+      return extensions;
+    }
   private:
     RegexUtils() {}
 };

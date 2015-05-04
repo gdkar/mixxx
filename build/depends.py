@@ -376,7 +376,7 @@ class ReplayGain(Dependence):
     def configure(self, build, conf):
         build.env.Append(CPPPATH="#lib/replaygain")
 
-class RubberBand(Dependence):
+class LocalRubberBand(Dependence):
     RUBBERBAND_PATH = "rubberband"
 
     def source(self, build):
@@ -509,6 +509,7 @@ class MixxxCore(Feature):
         sources = ["mixxxkeyboard.cpp",
 
                    "configobject.cpp",
+                   "control/rotary.cpp",
                    "control/control.cpp",
                    "control/controlgroup.cpp",
                    "control/controlbehavior.cpp",
@@ -529,9 +530,6 @@ class MixxxCore(Feature):
                    "dialogs/dlgpreferences.cpp",
                    "dialogs/dlgprefsound.cpp",
                    "dialogs/dlgprefsounditem.cpp",
-                   "controllers/dlgprefcontroller.cpp",
-                   "controllers/dlgcontrollerlearning.cpp",
-                   "controllers/dlgprefcontrollers.cpp",
                    "dialogs/dlgpreflibrary.cpp",
                    "dialogs/dlgprefcontrols.cpp",
                    "dialogs/dlgprefwaveform.cpp",
@@ -551,6 +549,9 @@ class MixxxCore(Feature):
                    "dialogs/dlgmissing.cpp",
                    "dialogs/dlgdevelopertools.cpp",
                    "dialogs/dlgcoverartfullsize.cpp",
+                   "dialogs/dlgprefrecord.cpp",
+                   "dialogs/dlgrecording.cpp",
+                   "dialogs/errordialoghandler.cpp",
 
                    "effects/effectmanifest.cpp",
                    "effects/effectmanifestparameter.cpp",
@@ -595,9 +596,12 @@ class MixxxCore(Feature):
 
                    "engine/engineworker.cpp",
                    "engine/engineworkerscheduler.cpp",
+
                    "engine/enginebuffer.cpp",
                    "engine/enginebufferscale.cpp",
                    "engine/enginebufferscalelinear.cpp",
+
+                   "engine/enginefilter.cpp",
                    "engine/enginefilterbiquad1.cpp",
                    "engine/enginefiltermoogladder4.cpp",
                    "engine/enginefilterbessel4.cpp",
@@ -606,19 +610,18 @@ class MixxxCore(Feature):
                    "engine/enginefilterbutterworth8.cpp",
                    "engine/enginefilterlinkwitzriley4.cpp",
                    "engine/enginefilterlinkwitzriley8.cpp",
-                   "engine/enginefilter.cpp",
                    "engine/engineobject.cpp",
                    "engine/enginepregain.cpp",
                    "engine/enginechannel.cpp",
                    "engine/enginemaster.cpp",
                    "engine/enginedelay.cpp",
-                   "engine/enginevumeter.cpp",
-                   "engine/enginesidechaincompressor.cpp",
-                   "engine/sidechain/enginesidechain.cpp",
                    "engine/enginexfader.cpp",
-                   "engine/enginemicrophone.cpp",
+                   "engine/enginevumeter.cpp",
                    "engine/enginedeck.cpp",
                    "engine/engineaux.cpp",
+                   "engine/enginesidechaincompressor.cpp",
+                   "engine/sidechain/enginesidechain.cpp",
+                   "engine/enginemicrophone.cpp",
                    "engine/channelmixer_autogen.cpp",
 
                    "engine/enginecontrol.cpp",
@@ -644,19 +647,22 @@ class MixxxCore(Feature):
                    "controllers/controllerengine.cpp",
                    "controllers/controllerenumerator.cpp",
                    "controllers/controllerlearningeventfilter.cpp",
+                   "controllers/controlpickermenu.cpp",
                    "controllers/controllermanager.cpp",
                    "controllers/controllerpresetfilehandler.cpp",
                    "controllers/controllerpresetinfo.cpp",
-                   "controllers/controlpickermenu.cpp",
                    "controllers/controllermappingtablemodel.cpp",
                    "controllers/controllerinputmappingtablemodel.cpp",
                    "controllers/controlleroutputmappingtablemodel.cpp",
+                   "controllers/learningutils.cpp",
                    "controllers/delegates/controldelegate.cpp",
                    "controllers/delegates/midichanneldelegate.cpp",
                    "controllers/delegates/midiopcodedelegate.cpp",
                    "controllers/delegates/midibytedelegate.cpp",
                    "controllers/delegates/midioptionsdelegate.cpp",
-                   "controllers/learningutils.cpp",
+                   "controllers/dlgprefcontroller.cpp",
+                   "controllers/dlgcontrollerlearning.cpp",
+                   "controllers/dlgprefcontrollers.cpp",
                    "controllers/midi/midimessage.cpp",
                    "controllers/midi/midiutils.cpp",
                    "controllers/midi/midicontroller.cpp",
@@ -670,12 +676,8 @@ class MixxxCore(Feature):
                    "main.cpp",
                    "mixxx.cpp",
                    "mixxxapplication.cpp",
-                   "dialogs/errordialoghandler.cpp",
                    "upgrade.cpp",
 
-                   "sources/soundsourceplugin.cpp",
-                   "sources/soundsource.cpp",
-                   "sources/audiosource.cpp",
 
                    "metadata/trackmetadata.cpp",
                    "metadata/trackmetadatataglib.cpp",
@@ -727,6 +729,7 @@ class MixxxCore(Feature):
                    "widget/wcoverartlabel.cpp",
                    "widget/wcoverartmenu.cpp",
                    "widget/wsingletoncontainer.cpp",
+                   "widget/wwaveformviewer.cpp",
 
                    "network.cpp",
                    "musicbrainz/tagfetcher.cpp",
@@ -736,7 +739,6 @@ class MixxxCore(Feature):
                    "musicbrainz/chromaprinter.cpp",
                    "musicbrainz/musicbrainzclient.cpp",
 
-                   "control/rotary.cpp",
                    "widget/wtracktableview.cpp",
                    "widget/wtracktableviewheader.cpp",
                    "widget/wlibrarysidebar.cpp",
@@ -775,7 +777,6 @@ class MixxxCore(Feature):
                    "library/browse/foldertreemodel.cpp",
 
                    "library/recording/recordingfeature.cpp",
-                   "dialogs/dlgrecording.cpp",
                    "recording/recordingmanager.cpp",
                    "engine/sidechain/enginerecord.cpp",
 
@@ -831,9 +832,10 @@ class MixxxCore(Feature):
                    "library/parserm3u.cpp",
                    "library/parsercsv.cpp",
 
-                   "soundsourceproxy.cpp",
-
-                   "widget/wwaveformviewer.cpp",
+                   "sources/soundsourceproxy.cpp",
+                   "sources/soundsourceplugin.cpp",
+                   "sources/soundsource.cpp",
+                   "sources/audiosource.cpp",
 
                    "waveform/waveform.cpp",
                    "waveform/waveformfactory.cpp",
@@ -881,6 +883,7 @@ class MixxxCore(Feature):
                    "waveform/widgets/glslwaveformwidget.cpp",
 
                    "waveform/widgets/glrgbwaveformwidget.cpp",
+                   "waveform/visualplayposition.cpp",
 
                    "skin/imginvert.cpp",
                    "skin/imgloader.cpp",
@@ -898,7 +901,7 @@ class MixxxCore(Feature):
                    "singularsamplebuffer.cpp",
                    "circularsamplebuffer.cpp",
 
-                   "trackinfoobject.cpp",
+                   "track/trackinfoobject.cpp",
                    "track/beatgrid.cpp",
                    "track/beatmap.cpp",
                    "track/beatfactory.cpp",
@@ -918,9 +921,7 @@ class MixxxCore(Feature):
                    "soundmanager.cpp",
                    "soundmanagerconfig.cpp",
                    "soundmanagerutil.cpp",
-                   "dialogs/dlgprefrecord.cpp",
                    "playerinfo.cpp",
-                   "visualplayposition.cpp",
 
                    "encoder/encoder.cpp",
                    "encoder/encodermp3.cpp",

@@ -30,9 +30,8 @@ class EngineFilterBlock;
 class EngineVuMeter;
 class ControlPushButton;
 
-class EngineChannel : public EngineObject {
+class EngineChannel : public EngineObject{
     Q_OBJECT
-    Q_ENUMS(ChannelOrientation);
     Q_PROPERTY(QString group READ getGroup NOTIFY groupChanged);
     Q_PROPERTY(bool pflEnabled READ isPflEnabled WRITE setPfl NOTIFY pflEnabledChanged);
     Q_PROPERTY(bool masterEnabled READ isMasterEnabled WRITE setMaster NOTIFY masterEnabledChanged);
@@ -46,7 +45,6 @@ class EngineChannel : public EngineObject {
     EngineChannel(const ChannelHandleAndGroup& handle_group,ChannelOrientation defaultOrientation = CENTER, QObject *pParent=0);
     virtual ~EngineChannel();
   public slots:
-    virtual void setOrientation(ChannelOrientation o);
     virtual ChannelOrientation getOrientation() const;
     inline const ChannelHandle& getHandle() const {return m_group.handle();}
     virtual const QString& getGroup() const {return m_group.name();}
@@ -63,7 +61,6 @@ class EngineChannel : public EngineObject {
     virtual EngineBuffer* getEngineBuffer() {return NULL;}
   signals:
     void groupChanged(const QString &);
-    void orientationChanged(ChannelOrientation);
     void pflEnabledChanged(bool);
     void masterEnabledChanged(bool);
     void talkoverEnabledChanged(bool);

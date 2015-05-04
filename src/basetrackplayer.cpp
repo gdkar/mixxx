@@ -5,7 +5,7 @@
 
 #include "control/controlobject.h"
 #include "control/controlpotmeter.h"
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "engine/enginebuffer.h"
 #include "engine/enginedeck.h"
 #include "engine/enginemaster.h"
@@ -269,24 +269,12 @@ void BaseTrackPlayerImpl::onFinishLoading(TrackPointer pTrackInfoObject)
         }
     }
     if(m_pConfig->getValueString(ConfigKey("[Mixer Profile]", "EqAutoReset"), 0).toInt()) {
-        if (m_pLowFilter != NULL) {
-            m_pLowFilter->set(1.0);
-        }
-        if (m_pMidFilter != NULL) {
-            m_pMidFilter->set(1.0);
-        }
-        if (m_pHighFilter != NULL) {
-            m_pHighFilter->set(1.0);
-        }
-        if (m_pLowFilterKill != NULL) {
-            m_pLowFilterKill->set(0.0);
-        }
-        if (m_pMidFilterKill != NULL) {
-            m_pMidFilterKill->set(0.0);
-        }
-        if (m_pHighFilterKill != NULL) {
-            m_pHighFilterKill->set(0.0);
-        }
+        if (m_pLowFilter != NULL) {m_pLowFilter->set(1.0);}
+        if (m_pMidFilter != NULL) {m_pMidFilter->set(1.0);}
+        if (m_pHighFilter != NULL) {m_pHighFilter->set(1.0);}
+        if (m_pLowFilterKill != NULL) {m_pLowFilterKill->set(0.0);}
+        if (m_pMidFilterKill != NULL) {m_pMidFilterKill->set(0.0);}
+        if (m_pHighFilterKill != NULL) {m_pHighFilterKill->set(0.0);}
         m_pPreGain->set(1.0);
     }
     int reset = m_pConfig->getValueString(ConfigKey(
@@ -295,30 +283,21 @@ void BaseTrackPlayerImpl::onFinishLoading(TrackPointer pTrackInfoObject)
     switch (reset) {
       case RESET_PITCH_AND_SPEED:
         // Note: speed may affect pitch
-        if (m_pSpeed != NULL) {
-            m_pSpeed->set(0.0);
-        }
+        if (m_pSpeed != NULL) {m_pSpeed->set(0.0);}
         // Fallthrough intended
       case RESET_PITCH:
-        if (m_pPitchAdjust != NULL) {
-            m_pPitchAdjust->set(0.0);
-        }
+        if (m_pPitchAdjust != NULL) {m_pPitchAdjust->set(0.0);}
     }
     emit(newTrackLoaded(m_pLoadedTrack));
 }
 
-TrackPointer BaseTrackPlayerImpl::getLoadedTrack() const {
-    return m_pLoadedTrack;
-}
+TrackPointer BaseTrackPlayerImpl::getLoadedTrack() const {return m_pLoadedTrack;}
 
 void BaseTrackPlayerImpl::onSetReplayGain(double replayGain) {
     // Do not change replay gain when track is playing because
     // this may lead to an unexpected volume change
-    if (m_pPlay->get() == 0.0) {
-        m_pReplayGain->onSet(replayGain);
-    } else {
-        m_replaygainPending = true;
-    }
+    if (m_pPlay->get() == 0.0) {m_pReplayGain->onSet(replayGain);
+    } else {m_replaygainPending = true;}
 }
 
 void BaseTrackPlayerImpl::onPlayToggled(double v) {
@@ -328,9 +307,7 @@ void BaseTrackPlayerImpl::onPlayToggled(double v) {
     }
 }
 
-EngineDeck* BaseTrackPlayerImpl::getEngineDeck() const {
-    return m_pChannel.data();
-}
+EngineDeck* BaseTrackPlayerImpl::getEngineDeck() const {return m_pChannel.data();}
 
 void BaseTrackPlayerImpl::setupEqControls() {
     const QString group = getGroup();

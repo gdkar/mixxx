@@ -1,6 +1,6 @@
 #include "musicbrainz/chromaprinter.h"
 
-#include "soundsourceproxy.h"
+#include "sources/soundsourceproxy.h"
 #include "samplebuffer.h"
 #include "sampleutil.h"
 

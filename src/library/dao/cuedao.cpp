@@ -7,7 +7,7 @@
 
 #include "library/dao/cuedao.h"
 #include "library/dao/cue.h"
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "library/queryutil.h"
 #include "util/assert.h"
 

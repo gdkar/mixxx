@@ -98,7 +98,7 @@ mixxxminimal_plugins = SConscript(
 # Setup and build the "mixxx" executable target. Also sets up our install
 # targets for each platform.
 SConscript(File('src/SConscript'), variant_dir=Dir(build.build_dir), duplicate=0,
-           exports=['build', 'sources', 'soundsource_plugins', 'mixxxminimal_plugins'])
+           exports=['build', 'sources', 'soundsource_plugins', 'mixxxminimal_plugins', ])
 
 # For convenience, copy the Mixxx binary out of the build directory to the
 # root. Don't do it on windows because the binary can't run on its own and needs

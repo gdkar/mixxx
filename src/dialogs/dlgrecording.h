@@ -9,7 +9,7 @@
 #include "library/trackcollection.h"
 #include "mixxxkeyboard.h"
 #include "recording/recordingmanager.h"
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "dialogs/ui_dlgrecording.h"
 
 class AnalyserQueue;

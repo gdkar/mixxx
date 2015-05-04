@@ -14,7 +14,7 @@
 
 #include "configobject.h"
 #include "library/dao/dao.h"
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "util.h"
 
 #define LIBRARY_TABLE "library"

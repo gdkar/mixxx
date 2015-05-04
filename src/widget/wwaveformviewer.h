@@ -8,7 +8,7 @@
 #include <QList>
 #include <QMutex>
 
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "widget/wwidget.h"
 #include "skin/skincontext.h"
 

@@ -62,7 +62,7 @@ class EngineMaster : public QObject, public AudioSource {
 
     // Get access to the sample buffers. None of these are thread safe. Only to
     // be called by SoundManager.
-    const CSAMPLE* buffer(AudioOutput output) const;
+    CSAMPLE* buffer(AudioOutput output) const;
 
     inline const QString& getMasterGroup() const {return m_masterHandle.name();}
     inline const QString& getHeadphoneGroup() const {return m_headphoneHandle.name();}
@@ -70,7 +70,7 @@ class EngineMaster : public QObject, public AudioSource {
     inline const QString& getBusCenterGroup() const {return m_busCenterHandle.name();}
     inline const QString& getBusRightGroup() const {return m_busRightHandle.name();}
     ChannelHandleAndGroup registerChannelGroup(const QString& group) {
-        return ChannelHandleAndGroup(m_channelHandleFactory.getOrCreateHandle(group), group);
+        return ChannelHandleAndGroup(ChannelHandle(group), group);
     }
     // WARNING: These methods are called by the main thread. They should only
     // touch the volatile bool connected indicators (see below). However, when
@@ -102,11 +102,11 @@ class EngineMaster : public QObject, public AudioSource {
     // Provide access to the master sync so enginebuffers can know what their rate controller is.
     EngineSync* getEngineSync() const{return m_pMasterSync;}
     // These are really only exposed for tests to use.
-    const CSAMPLE* getMasterBuffer() const;
-    const CSAMPLE* getHeadphoneBuffer() const;
-    const CSAMPLE* getOutputBusBuffer(unsigned int i) const;
-    const CSAMPLE* getDeckBuffer(unsigned int i) const;
-    const CSAMPLE* getChannelBuffer(QString name) const;
+    CSAMPLE* getMasterBuffer() const;
+    CSAMPLE* getHeadphoneBuffer() const;
+    CSAMPLE* getOutputBusBuffer(unsigned int i) const;
+    CSAMPLE* getDeckBuffer(unsigned int i) const;
+    CSAMPLE* getChannelBuffer(QString name) const;
     EngineSideChain* getSideChain() const {return m_pSideChain;}
     struct ChannelInfo {
         ChannelInfo(int index)
@@ -240,7 +240,6 @@ class EngineMaster : public QObject, public AudioSource {
     // respective output.
     void processChannels(int iBufferSize);
 
-    ChannelHandleFactory m_channelHandleFactory;
     EngineEffectsManager* m_pEngineEffectsManager;
     bool m_bRampingGain;
 

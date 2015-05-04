@@ -23,32 +23,22 @@ class EffectSlot : public QObject {
                const unsigned int iChainNumber,
                const unsigned int iEffectNumber);
     virtual ~EffectSlot();
-
     // Return the currently loaded effect, if any. If no effect is loaded,
     // returns a null EffectPointer.
     EffectPointer getEffect() const;
-
     unsigned int numParameterSlots() const;
     EffectParameterSlotPointer addEffectParameterSlot();
     EffectParameterSlotPointer getEffectParameterSlot(unsigned int onNumber);
-
     unsigned int numButtonParameterSlots() const;
     EffectButtonParameterSlotPointer addEffectButtonParameterSlot();
     EffectButtonParameterSlotPointer getEffectButtonParameterSlot(unsigned int onNumber);
-
     void onChainSuperParameterChanged(double parameter, bool force=false);
-
     // ensures that Softtakover is bypassed for the following
     // ChainParameterChange. Uses for testing only
     void syncSofttakeover();
-
     // Unload the currently loaded effect
     void clear();
-
-    const QString& getGroup() const {
-        return m_group;
-    }
-
+    const QString& getGroup() const {return m_group;}
   public slots:
     // Request that this EffectSlot load the given Effect
     void loadEffect(EffectPointer pEffect);

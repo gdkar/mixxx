@@ -6,7 +6,7 @@
 
 #include "analyser/analyser.h"
 #include "configobject.h"
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "vamp/vampanalyser.h"
 
 class AnalyserKey : public Analyser {

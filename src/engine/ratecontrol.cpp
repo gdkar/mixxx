@@ -264,13 +264,13 @@ void RateControl::onControlFastBack(double v)
 void RateControl::onControlRatePermDown(double){
     // Adjusts temp rate down if button pressed
     if (buttonRatePermDown->get())
-        m_pRateSlider->set(m_pRateSlider->get() - m_pRateDir->get() * m_dPerm);}
+        m_pRateSlider->set(m_pRateSlider->get() - m_pRateDir->get() * m_dPerm);
 }
 
 void RateControl::onControlRatePermDownSmall(double){
     // Adjusts temp rate down if button pressed
     if (buttonRatePermDownSmall->get())
-        m_pRateSlider->set(m_pRateSlider->get() - m_pRateDir->get() * m_dPermSmall );}
+        m_pRateSlider->set(m_pRateSlider->get() - m_pRateDir->get() * m_dPermSmall );
 }
 // Adjusts temp rate up if button pressed
 void RateControl::onControlRatePermUp(double){

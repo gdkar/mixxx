@@ -11,7 +11,7 @@
 #include "util/counter.h"
 #include "util/math.h"
 #include "util/defs.h"
-
+#include "util/types.h"
 using RubberBand::RubberBandStretcher;
 
 // This is the default increment from RubberBand 1.8.1.
@@ -24,19 +24,15 @@ EngineBufferScaleRubberBand::EngineBufferScaleRubberBand(
           m_pRubberBand(NULL),
           m_pReadAheadManager(pReadAheadManager) {
     qDebug() << "RubberBand version" << RUBBERBAND_VERSION;
-
     m_retrieve_buffer[0] = SampleUtil::alloc(MAX_BUFFER_LEN);
     m_retrieve_buffer[1] = SampleUtil::alloc(MAX_BUFFER_LEN);
-
     // m_iSampleRate defaults to 44100.
     initializeRubberBand(m_iSampleRate);
 }
-
 EngineBufferScaleRubberBand::~EngineBufferScaleRubberBand() {
     SampleUtil::free(m_buffer_back);
     SampleUtil::free(m_retrieve_buffer[0]);
     SampleUtil::free(m_retrieve_buffer[1]);
-
     if (m_pRubberBand) {
         delete m_pRubberBand;
         m_pRubberBand = NULL;
@@ -48,9 +44,9 @@ void EngineBufferScaleRubberBand::initializeRubberBand(int iSampleRate) {
         delete m_pRubberBand;
         m_pRubberBand = NULL;
     }
-    m_pRubberBand = new RubberBandStretcher(
-        iSampleRate, 2,
-        RubberBandStretcher::OptionProcessRealTime);
+    m_pRubberBand = new RubberBandStretcher(iSampleRate, 2, RubberBandStretcher::OptionProcessRealTime
+                                                          | RubberBandStretcher::OptionPitchHighConsistency
+                                                          | RubberBandStretcher::OptionThreadingAlways);
     m_pRubberBand->setMaxProcessSize(kRubberBandBlockSize);
     // Setting the time ratio to a very high value will cause RubberBand
     // to preallocate buffers large enough to (almost certainly)
@@ -65,7 +61,6 @@ void EngineBufferScaleRubberBand::setScaleParameters(double base_rate,
     // Negative speed means we are going backwards. pitch does not affect
     // the playback direction.
     m_bBackwards = *pTempoRatio < 0;
-
     // Due to a bug in RubberBand, setting the timeRatio to a large value can
     // cause division-by-zero SIGFPEs. We limit the minimum seek speed to
     // prevent exceeding RubberBand's limits.
@@ -79,11 +74,9 @@ void EngineBufferScaleRubberBand::setScaleParameters(double base_rate,
         // Let the caller know we ignored their speed.
         speed_abs = *pTempoRatio = 0;
     }
-
     // RubberBand handles checking for whether the change in pitchScale is a
     // no-op.
     double pitchScale = base_rate * *pPitchRatio;
-
     if (pitchScale > 0) {
         //qDebug() << "EngineBufferScaleRubberBand setPitchScale" << *pitch << pitchScale;
         m_pRubberBand->setPitchScale(pitchScale);
@@ -98,7 +91,6 @@ void EngineBufferScaleRubberBand::setScaleParameters(double base_rate,
         //qDebug() << "EngineBufferScaleRubberBand setTimeRatio" << 1 / timeRatioInverse;
         m_pRubberBand->setTimeRatio(1.0 / timeRatioInverse);
     }
-
     if (m_pRubberBand->getInputIncrement() == 0) {
         qWarning() << "EngineBufferScaleRubberBand inputIncrement is 0."
                    << "On RubberBand <=1.8.1 a SIGFPE is imminent despite"
@@ -121,21 +113,16 @@ void EngineBufferScaleRubberBand::setScaleParameters(double base_rate,
 }
 
 void EngineBufferScaleRubberBand::setSampleRate(int iSampleRate) {
-    initializeRubberBand(iSampleRate);
     m_iSampleRate = iSampleRate;
+    initializeRubberBand(m_iSampleRate);
 }
 
-void EngineBufferScaleRubberBand::clear() {
-    m_pRubberBand->reset();
-}
-
+void EngineBufferScaleRubberBand::clear() {m_pRubberBand->reset();}
 size_t EngineBufferScaleRubberBand::retrieveAndDeinterleave(CSAMPLE* pBuffer,
                                                             size_t frames) {
     size_t frames_available = m_pRubberBand->available();
     size_t frames_to_read = math_min(frames_available, frames);
-    size_t received_frames = m_pRubberBand->retrieve(
-        (float* const*)m_retrieve_buffer, frames_to_read);
-
+    size_t received_frames = m_pRubberBand->retrieve((CSAMPLE* const*)m_retrieve_buffer, frames_to_read);
     for (size_t i = 0; i < received_frames; ++i) {
         pBuffer[i*2] = m_retrieve_buffer[0][i];
         pBuffer[i*2+1] = m_retrieve_buffer[1][i];
@@ -152,7 +139,7 @@ void EngineBufferScaleRubberBand::deinterleaveAndProcess(
         m_retrieve_buffer[1][i] = pBuffer[i*2+1];
     }
 
-    m_pRubberBand->process((const float* const*)m_retrieve_buffer,
+    m_pRubberBand->process((const CSAMPLE* const*)m_retrieve_buffer,
                            frames, flush);
 }
 

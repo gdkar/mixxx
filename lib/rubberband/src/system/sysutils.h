@@ -3,7 +3,7 @@
 /*
     Rubber Band Library
     An audio time-stretching and pitch-shifting library.
-    Copyright 2007-2014 Particular Programs Ltd.
+    Copyright 2007-2012 Particular Programs Ltd.
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -23,18 +23,14 @@
 
 #ifndef _RUBBERBAND_SYSUTILS_H_
 #define _RUBBERBAND_SYSUTILS_H_
-
+#include "rubberband/RubberBandStretcher.h"
 #ifdef __MSVC__
 #include "float_cast/float_cast.h"
 #define R__ __restrict
 #endif
 
-#ifdef __clang__
-#define R__ __restrict__
-#else
 #ifdef __GNUC__
 #define R__ __restrict__
-#endif
 #endif
 
 #ifndef R__
@@ -56,13 +52,11 @@
 #define getpid _getpid
 #endif
 
-#if defined(__MSVC__) && _MSC_VER < 1700
+#ifdef __MSVC__
 #define uint8_t unsigned __int8
 #define uint16_t unsigned __int16
 #define uint32_t unsigned __int32
-#elif defined(__MSVC__)
 #define ssize_t long
-#include <stdint.h>
 #else
 #include <stdint.h>
 #endif

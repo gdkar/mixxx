@@ -40,7 +40,7 @@
 #include "library/scanner/scannerglobal.h"
 #include "library/scanner/scannertask.h"
 #include "util/sandbox.h"
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 
 class TrackCollection;
 

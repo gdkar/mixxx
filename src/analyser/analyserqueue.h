@@ -3,7 +3,7 @@
 
 #include "configobject.h"
 #include "analyser/analyser.h"
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "sources/audiosource.h"
 #include "samplebuffer.h"
 

@@ -42,29 +42,21 @@ class EngineBufferScaleST : public EngineBufferScale {
   public:
     EngineBufferScaleST(ReadAheadManager* pReadAheadManager);
     virtual ~EngineBufferScaleST();
-
     virtual void setScaleParameters(double base_rate,
                                     double* pTempoRatio,
                                     double* pPitchRatio);
-
     virtual void setSampleRate(int iSampleRate);
-
     // Scale buffer.
     CSAMPLE* getScaled(unsigned long buf_size);
-
     // Flush buffer.
     void clear();
-
   private:
     // Holds the playback direction.
     bool m_bBackwards;
-
     // Temporary buffer for reading from the RAMAN.
     CSAMPLE* buffer_back;
-
     // SoundTouch time/pitch scaling lib
     soundtouch::SoundTouch* m_pSoundTouch;
-
     // The read-ahead manager that we use to fetch samples
     ReadAheadManager* m_pReadAheadManager;
 };

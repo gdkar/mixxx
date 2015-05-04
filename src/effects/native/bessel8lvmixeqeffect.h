@@ -11,7 +11,6 @@
 #include "engine/effects/engineeffect.h"
 #include "engine/effects/engineeffectparameter.h"
 #include "engine/enginefilterbessel8.h"
-#include "engine/enginefilterdelay.h"
 #include "util.h"
 #include "util/types.h"
 #include "util/defs.h"

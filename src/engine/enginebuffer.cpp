@@ -40,7 +40,7 @@
 #include "engine/keycontrol.h"
 #include "engine/sync/synccontrol.h"
 #include "engine/quantizecontrol.h"
-#include "visualplayposition.h"
+#include "waveform/visualplayposition.h"
 #include "engine/cuecontrol.h"
 #include "engine/clockcontrol.h"
 #include "engine/enginemaster.h"
@@ -57,15 +57,14 @@
 #include "engine/vinylcontrolcontrol.h"
 #endif
 
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 
 const double kLinearScalerElipsis = 1.00058; // 2^(0.01/12): changes < 1 cent allows a linear scaler
 const int kSamplesPerFrame = 2; // Engine buffer uses Stereo frames only
 
 EngineBuffer::EngineBuffer(QString group, ConfigObject<ConfigValue>* _config,
-                           EngineChannel* pChannel, EngineMaster* pMixingEngine, QObject *pParent)
-        : EngineObject(pParent),
-          m_group(group),
+                           EngineChannel* pChannel, EngineMaster* pMixingEngine)
+        : m_group(group),
           m_pConfig(_config),
           m_pLoopingControl(NULL),
           m_pSyncControl(NULL),

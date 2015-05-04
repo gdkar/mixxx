@@ -5,7 +5,7 @@
 #include "waveform/waveformwidgetfactory.h"
 #include "control/controlobjectslave.h"
 #include "widget/wskincolor.h"
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "widget/wwidget.h"
 #include "util/math.h"
 

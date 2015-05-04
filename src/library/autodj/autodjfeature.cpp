@@ -19,7 +19,7 @@
 #include "library/treeitem.h"
 #include "widget/wlibrary.h"
 #include "mixxxkeyboard.h"
-#include "soundsourceproxy.h"
+#include "sources/soundsourceproxy.h"
 #include "util/dnd.h"
 
 const QString AutoDJFeature::m_sAutoDJViewName = QString("Auto DJ");
@@ -27,7 +27,7 @@ static const int kMaxRetrieveAttempts = 3;
 
 AutoDJFeature::AutoDJFeature(Library* pLibrary,
                              ConfigObject<ConfigValue>* pConfig,
-                             PlayerManagerInterface* pPlayerManager,
+                             PlayerManager* pPlayerManager,
                              TrackCollection* pTrackCollection)
         : LibraryFeature(pLibrary),
           m_pConfig(pConfig),

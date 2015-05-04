@@ -13,7 +13,7 @@
 #include "engine/enginecontrol.h"
 #include "util/math.h"
 
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "track/beats.h"
 
 double LoopingControl::s_dBeatSizes[] = { 0.03125, 0.0625, 0.125, 0.25, 0.5,

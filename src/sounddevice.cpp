@@ -40,18 +40,9 @@ SoundDevice::SoundDevice(ConfigObject<ConfigValue> * config, SoundManager * sm)
 SoundDevice::~SoundDevice() {
 }
 
-int SoundDevice::getNumInputChannels() const {
-    return m_iNumInputChannels;
-}
-
-int SoundDevice::getNumOutputChannels() const {
-    return m_iNumOutputChannels;
-}
-
-void SoundDevice::setHostAPI(QString api) {
-    m_hostAPI = api;
-}
-
+int SoundDevice::getNumInputChannels() const {return m_iNumInputChannels;}
+int SoundDevice::getNumOutputChannels() const {return m_iNumOutputChannels;}
+void SoundDevice::setHostAPI(QString api) {m_hostAPI = api;}
 void SoundDevice::setSampleRate(double sampleRate) {
     if (sampleRate <= 0.0) {
         // this is the default value used elsewhere in this file
@@ -71,13 +62,10 @@ void SoundDevice::setFramesPerBuffer(unsigned int framesPerBuffer) {
     m_framesPerBuffer = framesPerBuffer;
 }
 
-SoundDeviceError SoundDevice::addOutput(const AudioOutputBuffer &out) {
+SoundDeviceError SoundDevice::addOutput(const AudioOutput &out) {
     //Check if the output channels are already used
-    foreach (AudioOutputBuffer myOut, m_audioOutputs) {
-        if (out.channelsClash(myOut)) {
-            return SOUNDDEVICE_ERROR_DUPLICATE_OUTPUT_CHANNEL;
-        }
-    }
+    foreach (AudioOutput myOut, m_audioOutputs) 
+    {if (out.channelsClash(myOut)) {return SOUNDDEVICE_ERROR_DUPLICATE_OUTPUT_CHANNEL;}}
     if (out.getChannelGroup().getChannelBase()
             + out.getChannelGroup().getChannelCount() > getNumOutputChannels()) {
         return SOUNDDEVICE_ERROR_EXCESSIVE_OUTPUT_CHANNEL;
@@ -86,11 +74,8 @@ SoundDeviceError SoundDevice::addOutput(const AudioOutputBuffer &out) {
     return SOUNDDEVICE_ERROR_OK;
 }
 
-void SoundDevice::clearOutputs() {
-    m_audioOutputs.clear();
-}
-
-SoundDeviceError SoundDevice::addInput(const AudioInputBuffer &in) {
+void SoundDevice::clearOutputs() {m_audioOutputs.clear();}
+SoundDeviceError SoundDevice::addInput(const AudioInput&in) {
     // DON'T check if the input channels are already used, there's no reason
     // we can't send the same inputted samples to different places in mixxx.
     // -- bkgood 20101108
@@ -129,24 +114,22 @@ void SoundDevice::composeOutputBuffer(CSAMPLE* outputBuffer,
     if (iFrameSize == 2 && m_audioOutputs.size() == 1 &&
             m_audioOutputs.at(0).getChannelGroup().getChannelCount() == 2) {
         // Special case for one stereo device only
-        const AudioOutputBuffer& out = m_audioOutputs.at(0);
-        const CSAMPLE* pAudioOutputBuffer = out.getBuffer(); // Always Stereo
+        const AudioOutput& out = m_audioOutputs.at(0);
+        const CSAMPLE* pAudioOutputBuffer = out.buffer(); // Always Stereo
         pAudioOutputBuffer = &pAudioOutputBuffer[framesReadOffset*2];
-        SampleUtil::copyClampBuffer(outputBuffer, pAudioOutputBuffer,
-               framesToCompose * 2);
+        SampleUtil::copyClampBuffer(outputBuffer, pAudioOutputBuffer, framesToCompose * 2);
     } else {
         // Reset sample for each open channel
         SampleUtil::clear(outputBuffer, framesToCompose * iFrameSize);
-
-        for (QList<AudioOutputBuffer>::iterator i = m_audioOutputs.begin(),
+        for (QList<AudioOutput>::iterator i = m_audioOutputs.begin(),
                      e = m_audioOutputs.end(); i != e; ++i) {
-            AudioOutputBuffer& out = *i;
+            AudioOutput& out = *i;
 
             const ChannelGroup outChans = out.getChannelGroup();
             const int iChannelCount = outChans.getChannelCount();
             const int iChannelBase = outChans.getChannelBase();
 
-            const CSAMPLE* pAudioOutputBuffer = out.getBuffer();
+            const CSAMPLE* pAudioOutputBuffer = out.buffer();
             // advanced to offset; pAudioOutputBuffer is always stereo
             pAudioOutputBuffer = &pAudioOutputBuffer[framesReadOffset*2];
             if (iChannelCount == 1) {
@@ -199,33 +182,31 @@ void SoundDevice::composeInputBuffer(const CSAMPLE* inputBuffer,
     if (iFrameSize == 1 && m_audioInputs.size() == 1 &&
             m_audioInputs.at(0).getChannelGroup().getChannelCount() == 1) {
         // One mono device only
-        const AudioInputBuffer& in = m_audioInputs.at(0);
-        CSAMPLE* pInputBuffer = in.getBuffer(); // Always Stereo
+        const AudioInput& in = m_audioInputs.at(0);
+        CSAMPLE* pInputBuffer = in.buffer(); // Always Stereo
         pInputBuffer = &pInputBuffer[framesWriteOffset * 2];
         for (unsigned int iFrameNo = 0; iFrameNo < framesToPush; ++iFrameNo) {
-            pInputBuffer[iFrameNo * 2] =
-                    inputBuffer[iFrameNo];
-            pInputBuffer[iFrameNo * 2 + 1] =
-                    inputBuffer[iFrameNo];
+            pInputBuffer[iFrameNo * 2] = inputBuffer[iFrameNo];
+            pInputBuffer[iFrameNo * 2 + 1] = inputBuffer[iFrameNo];
         }
     } else if (iFrameSize == 2 && m_audioInputs.size() == 1 &&
             m_audioInputs.at(0).getChannelGroup().getChannelCount() == 2) {
         // One stereo device only
-        const AudioInputBuffer& in = m_audioInputs.at(0);
-        CSAMPLE* pInputBuffer = in.getBuffer(); // Always Stereo
+        const AudioInput& in = m_audioInputs.at(0);
+        CSAMPLE* pInputBuffer = in.buffer(); // Always Stereo
         pInputBuffer = &pInputBuffer[framesWriteOffset * 2];
         SampleUtil::copy(pInputBuffer, inputBuffer, framesToPush * 2);
     } else {
         // Non Stereo input (iFrameSize != 2)
         // Do crazy deinterleaving of the audio into the correct m_inputBuffers.
 
-        for (QList<AudioInputBuffer>::const_iterator i = m_audioInputs.begin(),
+        for (QList<AudioInput>::const_iterator i = m_audioInputs.begin(),
                      e = m_audioInputs.end(); i != e; ++i) {
-            const AudioInputBuffer& in = *i;
+            const AudioInput& in = *i;
             ChannelGroup chanGroup = in.getChannelGroup();
             int iChannelCount = chanGroup.getChannelCount();
             int iChannelBase = chanGroup.getChannelBase();
-            CSAMPLE* pInputBuffer = in.getBuffer();
+            CSAMPLE* pInputBuffer = in.buffer();
             pInputBuffer = &pInputBuffer[framesWriteOffset * 2];
 
             for (unsigned int iFrameNo = 0; iFrameNo < framesToPush; ++iFrameNo) {
@@ -235,15 +216,11 @@ void SoundDevice::composeInputBuffer(const CSAMPLE* inputBuffer,
                 unsigned int iLocalFrameBase = iFrameNo * 2;
 
                 if (iChannelCount == 1) {
-                    pInputBuffer[iLocalFrameBase] =
-                            inputBuffer[iFrameBase + iChannelBase];
-                    pInputBuffer[iLocalFrameBase + 1] =
-                            inputBuffer[iFrameBase + iChannelBase];
+                    pInputBuffer[iLocalFrameBase] =      inputBuffer[iFrameBase + iChannelBase];
+                    pInputBuffer[iLocalFrameBase + 1] =  inputBuffer[iFrameBase + iChannelBase];
                 } else if (iChannelCount > 1) {
-                    pInputBuffer[iLocalFrameBase] =
-                            inputBuffer[iFrameBase + iChannelBase];
-                    pInputBuffer[iLocalFrameBase + 1] =
-                            inputBuffer[iFrameBase + iChannelBase + 1];
+                    pInputBuffer[iLocalFrameBase] =      inputBuffer[iFrameBase + iChannelBase];
+                    pInputBuffer[iLocalFrameBase + 1] =  inputBuffer[iFrameBase + iChannelBase + 1];
                 }
             }
         }
@@ -253,10 +230,10 @@ void SoundDevice::composeInputBuffer(const CSAMPLE* inputBuffer,
 void SoundDevice::clearInputBuffer(const unsigned int framesToPush,
                                    const unsigned int framesWriteOffset) {
 
-    for (QList<AudioInputBuffer>::const_iterator i = m_audioInputs.begin(),
+    for (QList<AudioInput>::const_iterator i = m_audioInputs.begin(),
                  e = m_audioInputs.end(); i != e; ++i) {
-        const AudioInputBuffer& in = *i;
-        CSAMPLE* pInputBuffer = in.getBuffer();  // Always stereo
+        const AudioInput& in = *i;
+        CSAMPLE* pInputBuffer = in.buffer();  // Always stereo
         SampleUtil::clear(&pInputBuffer[framesWriteOffset * 2], framesToPush * 2);
     }
 }

@@ -21,11 +21,9 @@ ClockControl::~ClockControl() {
 void ClockControl::trackLoaded(TrackPointer pTrack) {
     // Clear on-beat control
     m_pCOBeatActive->set(0.0);
-
     // Disconnect any previously loaded track/beats
     if (m_pTrack) {
-        disconnect(m_pTrack.data(), SIGNAL(beatsUpdated()),
-                   this, SLOT(onBeatsUpdated()));
+        disconnect(m_pTrack.data(), SIGNAL(beatsUpdated()), this, SLOT(onBeatsUpdated()));
     }
     m_pBeats.clear();
     m_pTrack.clear();
@@ -33,8 +31,7 @@ void ClockControl::trackLoaded(TrackPointer pTrack) {
     if (pTrack) {
         m_pTrack = pTrack;
         m_pBeats = m_pTrack->getBeats();
-        connect(m_pTrack.data(), SIGNAL(beatsUpdated()),
-                this, SLOT(onBeatsUpdated()));
+        connect(m_pTrack.data(), SIGNAL(beatsUpdated()), this, SLOT(onBeatsUpdated()));
     }
 }
 
@@ -43,11 +40,7 @@ void ClockControl::trackUnloaded(TrackPointer pTrack) {
     trackLoaded(TrackPointer());
 }
 
-void ClockControl::onBeatsUpdated() {
-    if(m_pTrack) {
-        m_pBeats = m_pTrack->getBeats();
-    }
-}
+void ClockControl::onBeatsUpdated() {if(m_pTrack) {m_pBeats = m_pTrack->getBeats();}}
 
 double ClockControl::process(const double dRate,
                              const double currentSample,

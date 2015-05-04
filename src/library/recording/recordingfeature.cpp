@@ -2,7 +2,7 @@
 // Created 03/26/2010 by Tobias Rafreider
 
 #include "dialogs/dlgrecording.h"
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "library/treeitem.h"
 #include "library/recording/recordingfeature.h"
 #include "library/library.h"

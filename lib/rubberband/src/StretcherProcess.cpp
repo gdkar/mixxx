@@ -3,7 +3,7 @@
 /*
     Rubber Band Library
     An audio time-stretching and pitch-shifting library.
-    Copyright 2007-2014 Particular Programs Ltd.
+    Copyright 2007-2012 Particular Programs Ltd.
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -147,35 +147,31 @@ RubberBandStretcher::Impl::resampleBeforeStretching() const
 }
 
 void
-RubberBandStretcher::Impl::prepareChannelMS(const size_t c,
+RubberBandStretcher::Impl::prepareChannelMS(size_t c,
                                             const float *const *inputs,
-                                            const size_t offset,
-                                            const size_t samples, 
+                                            size_t offset,
+                                            size_t samples, 
                                             float *prepared)
 {
-    if(c==0){
-        for (size_t i = 0; i < samples; ++i) {
-            float left = inputs[0][i + offset];
-            float right = inputs[1][i + offset];
-            float mid = (left + right) / 2;
+    for (size_t i = 0; i < samples; ++i) {
+        float left = inputs[0][i + offset];
+        float right = inputs[1][i + offset];
+        float mid = (left + right) / 2;
+        float side = (left - right) / 2;
+        if (c == 0) {
             prepared[i] = mid;
-        }
-    }else{
-        for (size_t i = 0; i < samples; ++i) {
-            float left = inputs[0][i + offset];
-            float right = inputs[1][i + offset];
-            float side = (left - right) / 2;
+        } else {
             prepared[i] = side;
         }
     }
 }
     
 size_t
-RubberBandStretcher::Impl::consumeChannel(const size_t c,
+RubberBandStretcher::Impl::consumeChannel(size_t c,
                                           const float *const *inputs,
-                                          const size_t offset,
+                                          size_t offset,
                                           size_t samples,
-                                          const bool final)
+                                          bool final)
 {
     Profiler profiler("RubberBandStretcher::Impl::consumeChannel");
 
@@ -187,6 +183,7 @@ RubberBandStretcher::Impl::consumeChannel(const size_t c,
 
     bool resampling = resampleBeforeStretching();
 
+    float *ms = 0;
     const float *input = 0;
 
     bool useMidSide = ((m_options & OptionChannelsTogether) &&
@@ -217,8 +214,9 @@ RubberBandStretcher::Impl::consumeChannel(const size_t c,
 #endif
 
         if (useMidSide) {
-            prepareChannelMS(c, inputs, offset, samples, cd.ms);
-            input = cd.ms;
+            ms = (float *)alloca(samples * sizeof(float));
+            prepareChannelMS(c, inputs, offset, samples, ms);
+            input = ms;
         } else {
             input = inputs[c] + offset;
         }
@@ -254,8 +252,9 @@ RubberBandStretcher::Impl::consumeChannel(const size_t c,
     } else {
 
         if (useMidSide) {
-            prepareChannelMS(c, inputs, offset, toWrite, cd.ms);
-            input = cd.ms;
+            ms = (float *)alloca(toWrite * sizeof(float));
+            prepareChannelMS(c, inputs, offset, toWrite, ms);
+            input = ms;
         } else {
             input = inputs[c] + offset;
         }
@@ -267,7 +266,7 @@ RubberBandStretcher::Impl::consumeChannel(const size_t c,
 }
 
 void
-RubberBandStretcher::Impl::processChunks(const size_t c, bool &any, bool &last)
+RubberBandStretcher::Impl::processChunks(size_t c, bool &any, bool &last)
 {
     Profiler profiler("RubberBandStretcher::Impl::processChunks");
 
@@ -281,8 +280,6 @@ RubberBandStretcher::Impl::processChunks(const size_t c, bool &any, bool &last)
 
     last = false;
     any = false;
-
-    float *tmp = 0;
 
     while (!last) {
 
@@ -315,8 +312,8 @@ RubberBandStretcher::Impl::processChunks(const size_t c, bool &any, bool &last)
             if (m_debugLevel > 1) {
                 cerr << "channel " << c << " breaking down overlong increment " << shiftIncrement << " into " << bit << "-size bits" << endl;
             }
-            if (!tmp) tmp = allocate<float>(m_aWindowSize);
             analyseChunk(c);
+            float *tmp = (float *)alloca(m_aWindowSize * sizeof(float));
             v_copy(tmp, cd.fltbuf, m_aWindowSize);
             for (size_t i = 0; i < shiftIncrement; i += bit) {
                 v_copy(cd.fltbuf, tmp, m_aWindowSize);
@@ -335,8 +332,6 @@ RubberBandStretcher::Impl::processChunks(const size_t c, bool &any, bool &last)
             cerr << "channel " << c << ": last = " << last << ", chunkCount = " << cd.chunkCount << endl;
         }
     }
-
-    if (tmp) deallocate(tmp);
 }
 
 bool
@@ -383,7 +378,7 @@ RubberBandStretcher::Impl::processOneChunk()
 }
 
 bool
-RubberBandStretcher::Impl::testInbufReadSpace(const size_t c)
+RubberBandStretcher::Impl::testInbufReadSpace(size_t c)
 {
     Profiler profiler("RubberBandStretcher::Impl::testInbufReadSpace");
 
@@ -439,10 +434,10 @@ RubberBandStretcher::Impl::testInbufReadSpace(const size_t c)
 }
 
 bool 
-RubberBandStretcher::Impl::processChunkForChannel(const size_t c,
-                                                  const size_t phaseIncrement,
+RubberBandStretcher::Impl::processChunkForChannel(size_t c,
+                                                  size_t phaseIncrement,
                                                   size_t shiftIncrement,
-                                                  const bool phaseReset)
+                                                  bool phaseReset)
 {
     Profiler profiler("RubberBandStretcher::Impl::processChunkForChannel");
 
@@ -665,7 +660,7 @@ RubberBandStretcher::Impl::calculateIncrements(size_t &phaseIncrementRtn,
 }
 
 bool
-RubberBandStretcher::Impl::getIncrements(const size_t channel,
+RubberBandStretcher::Impl::getIncrements(size_t channel,
                                          size_t &phaseIncrementRtn,
                                          size_t &shiftIncrementRtn,
                                          bool &phaseReset)
@@ -741,7 +736,7 @@ RubberBandStretcher::Impl::getIncrements(const size_t channel,
 }
 
 void
-RubberBandStretcher::Impl::analyseChunk(const size_t channel)
+RubberBandStretcher::Impl::analyseChunk(size_t channel)
 {
     Profiler profiler("RubberBandStretcher::Impl::analyseChunk");
 
@@ -762,9 +757,9 @@ RubberBandStretcher::Impl::analyseChunk(const size_t channel)
 }
 
 void
-RubberBandStretcher::Impl::modifyChunk(const size_t channel,
-                                       const size_t outputIncrement,
-                                       const bool phaseReset)
+RubberBandStretcher::Impl::modifyChunk(size_t channel,
+                                       size_t outputIncrement,
+                                       bool phaseReset)
 {
     Profiler profiler("RubberBandStretcher::Impl::modifyChunk");
 
@@ -906,7 +901,7 @@ RubberBandStretcher::Impl::modifyChunk(const size_t channel,
 
 
 void
-RubberBandStretcher::Impl::formantShiftChunk(const size_t channel)
+RubberBandStretcher::Impl::formantShiftChunk(size_t channel)
 {
     Profiler profiler("RubberBandStretcher::Impl::formantShiftChunk");
 
@@ -935,7 +930,7 @@ RubberBandStretcher::Impl::formantShiftChunk(const size_t channel)
 
     v_scale(dblbuf, factor, cutoff);
 
-    process_t *spare = (process_t *)alloca((hs + 1) * sizeof(process_t));
+    double *spare = (double *)alloca((hs + 1) * sizeof(double));
     cd.fft->forward(dblbuf, envelope, spare);
 
     v_exp(envelope, hs + 1);
@@ -966,8 +961,8 @@ RubberBandStretcher::Impl::formantShiftChunk(const size_t channel)
 }
 
 void
-RubberBandStretcher::Impl::synthesiseChunk(const size_t channel,
-                                           const size_t shiftIncrement)
+RubberBandStretcher::Impl::synthesiseChunk(size_t channel,
+                                           size_t shiftIncrement)
 {
     Profiler profiler("RubberBandStretcher::Impl::synthesiseChunk");
 
@@ -1038,7 +1033,8 @@ RubberBandStretcher::Impl::synthesiseChunk(const size_t channel,
 }
 
 void
-RubberBandStretcher::Impl::writeChunk(const size_t channel, const size_t shiftIncrement, const bool last){
+RubberBandStretcher::Impl::writeChunk(size_t channel, size_t shiftIncrement, bool last)
+{
     Profiler profiler("RubberBandStretcher::Impl::writeChunk");
 
     ChannelData &cd = *m_channelData[channel];

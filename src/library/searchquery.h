@@ -7,7 +7,7 @@
 #include <QString>
 #include <QStringList>
 
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "proto/keys.pb.h"
 
 QVariant getTrackValueForColumn(const TrackPointer& pTrack, const QString& column);

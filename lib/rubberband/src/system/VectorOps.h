@@ -3,7 +3,7 @@
 /*
     Rubber Band Library
     An audio time-stretching and pitch-shifting library.
-    Copyright 2007-2014 Particular Programs Ltd.
+    Copyright 2007-2012 Particular Programs Ltd.
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -33,7 +33,8 @@
 #endif
 
 #ifdef HAVE_VDSP
-#include <Accelerate/Accelerate.h>
+#include <vecLib/vDSP.h>
+#include <vecLib/vForce.h>
 #endif
 
 #include <cstring>
@@ -288,8 +289,8 @@ inline void v_add_channels(T *const R__ *const R__ dst,
 template<typename T, typename G>
 inline void v_add_with_gain(T *const R__ dst,
                             const T *const R__ src,
-                            const G gain,
-                            const int count)
+                            const int count,
+                            const G gain)
 {
     for (int i = 0; i < count; ++i) {
         dst[i] += src[i] * gain;
@@ -299,12 +300,12 @@ inline void v_add_with_gain(T *const R__ dst,
 template<typename T, typename G>
 inline void v_add_channels_with_gain(T *const R__ *const R__ dst,
                                      const T *const R__ *const R__ src,
-                                     const G gain,
                                      const int channels,
-                                     const int count)
+                                     const int count,
+                                     const G gain)
 {
     for (int c = 0; c < channels; ++c) {
-        v_add_with_gain(dst[c], src[c], gain, count);
+        v_add_with_gain(dst[c], src[c], count, gain);
     }
 }
 
@@ -404,9 +405,8 @@ inline void v_divide(T *const R__ dst,
                      const T *const R__ src,
                      const int count)
 {
-    const T one = T(1.0);
     for (int i = 0; i < count; ++i) {
-        dst[i] *= (one/src[i]);
+        dst[i] /= src[i];
     }
 }
 
@@ -510,11 +510,10 @@ inline void v_log(double *const R__ dst,
     ippsLn_64f_I(dst, count);
 }
 #elif defined HAVE_VDSP
-/* no in-place vForce functions for these -- can we use the
- * out-of-place functions with equal input and output vectors? can we
- * use an out-of-place one with temporary buffer and still be faster
- * than doing it any other way?
- */
+// no in-place vForce functions for these -- can we use the
+// out-of-place functions with equal input and output vectors? can we
+// use an out-of-place one with temporary buffer and still be faster
+// than doing it any other way?
 template<>
 inline void v_log(float *const R__ dst,
                   const int count)
@@ -556,11 +555,10 @@ inline void v_exp(double *const R__ dst,
     ippsExp_64f_I(dst, count);
 }
 #elif defined HAVE_VDSP
-/* no in-place vForce functions for these -- can we use the
- * out-of-place functions with equal input and output vectors? can we
- * use an out-of-place one with temporary buffer and still be faster
- * than doing it any other way?
- */
+// no in-place vForce functions for these -- can we use the
+// out-of-place functions with equal input and output vectors? can we
+// use an out-of-place one with temporary buffer and still be faster
+// than doing it any other way?
 template<>
 inline void v_exp(float *const R__ dst,
                   const int count)
@@ -602,11 +600,10 @@ inline void v_sqrt(double *const R__ dst,
     ippsSqrt_64f_I(dst, count);
 }
 #elif defined HAVE_VDSP
-/* no in-place vForce functions for these -- can we use the
- * out-of-place functions with equal input and output vectors? can we
- * use an out-of-place one with temporary buffer and still be faster
- * than doing it any other way?
- */
+// no in-place vForce functions for these -- can we use the
+// out-of-place functions with equal input and output vectors? can we
+// use an out-of-place one with temporary buffer and still be faster
+// than doing it any other way?
 template<>
 inline void v_sqrt(float *const R__ dst,
                    const int count)
@@ -677,7 +674,7 @@ inline void v_abs(float *const R__ dst,
                   const int count)
 {
     float tmp[count];
-#if (defined(MACOSX_DEPLOYMENT_TARGET) && MACOSX_DEPLOYMENT_TARGET <= 1070 && MAC_OS_X_VERSION_MIN_REQUIRED <= 1070)
+#if (MACOSX_DEPLOYMENT_TARGET <= 1070 && MAC_OS_X_VERSION_MIN_REQUIRED <= 1070)
     vvfabf(tmp, dst, &count);
 #else
     vvfabsf(tmp, dst, &count);
@@ -690,13 +687,16 @@ template<typename T>
 inline void v_interleave(T *const R__ dst,
                          const T *const R__ *const R__ src,
                          const int channels, 
-                         const int count){
+                         const int count)
+{
+    int idx = 0;
     switch (channels) {
     case 2:
-        /* common case, may be vectorized by compiler if hardcoded */
+        // common case, may be vectorized by compiler if hardcoded
         for (int i = 0; i < count; ++i) {
-            dst[2*i+0] = src[0][i];
-            dst[2*i+1] = src[1][i];
+            for (int j = 0; j < 2; ++j) {
+                dst[idx++] = src[j][i];
+            }
         }
         return;
     case 1:
@@ -705,7 +705,7 @@ inline void v_interleave(T *const R__ dst,
     default:
         for (int i = 0; i < count; ++i) {
             for (int j = 0; j < channels; ++j) {
-                dst[channels*i+j] = src[j][i];
+                dst[idx++] = src[j][i];
             }
         }
     }
@@ -720,20 +720,23 @@ inline void v_interleave(float *const R__ dst,
 {
     ippsInterleave_32f((const Ipp32f **)src, channels, count, dst);
 }
-/* IPP does not (currently?) provide double-precision interleave*/
+// IPP does not (currently?) provide double-precision interleave
 #endif
 
 template<typename T>
 inline void v_deinterleave(T *const R__ *const R__ dst,
                            const T *const R__ src,
                            const int channels, 
-                           const int count){
+                           const int count)
+{
+    int idx = 0;
     switch (channels) {
     case 2:
-        /* common case, may be vectorized by compiler if hardcoded */
+        // common case, may be vectorized by compiler if hardcoded
         for (int i = 0; i < count; ++i) {
-            dst[0][i] = src[2*i+0];
-            dst[1][i] = src[2*i+1];
+            for (int j = 0; j < 2; ++j) {
+                dst[j][i] = src[idx++];
+            }
         }
         return;
     case 1:
@@ -742,7 +745,7 @@ inline void v_deinterleave(T *const R__ *const R__ dst,
     default:
         for (int i = 0; i < count; ++i) {
             for (int j = 0; j < channels; ++j) {
-                dst[j][i] = src[channels*i+j];
+                dst[j][i] = src[idx++];
             }
         }
     }
@@ -757,12 +760,13 @@ inline void v_deinterleave(float *const R__ *const R__ dst,
 {
     ippsDeinterleave_32f((const Ipp32f *)src, channels, count, (Ipp32f **)dst);
 }
-/* IPP does not (currently?) provide double-precision deinterleave */
+// IPP does not (currently?) provide double-precision deinterleave
 #endif
 
 template<typename T>
 inline void v_fftshift(T *const R__ ptr,
-                       const int count){
+                       const int count)
+{
     const int hs = count/2;
     for (int i = 0; i < hs; ++i) {
         T t = ptr[i];

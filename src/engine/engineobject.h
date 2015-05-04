@@ -28,22 +28,26 @@
   */
 
 class EngineObject : public QObject {
-    Q_OBJECT;
+    Q_OBJECT
   public:
-    explicit EngineObject( QObject *pParent=0);
+    EngineObject();
     virtual ~EngineObject();
-    Q_INVOKABLE virtual void process(CSAMPLE* pInOut,const int iBufferSize) = 0;
+    virtual void process(CSAMPLE* pInOut,const int iBufferSize) = 0;
+
     // Sub-classes re-implement and populate GroupFeatureState with the features
     // they extract.
-    Q_INVOKABLE virtual void collectFeatures(GroupFeatureState* ) const {}
+    virtual void collectFeatures(GroupFeatureState* pGroupFeatures) const {
+        Q_UNUSED(pGroupFeatures);
+    }
 };
 
 class EngineObjectConstIn : public QObject {
-    Q_OBJECT;
+    Q_OBJECT
   public:
-    explicit EngineObjectConstIn(QObject *pParent=0);
+    EngineObjectConstIn();
     virtual ~EngineObjectConstIn();
-    Q_INVOKABLE virtual void process(const CSAMPLE* pIn, CSAMPLE* pOut,
+
+    virtual void process(const CSAMPLE* pIn, CSAMPLE* pOut,
                          const int iBufferSize) = 0;
 };
 

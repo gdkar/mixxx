@@ -27,7 +27,6 @@ class ScannerUtil {
 #endif
         return blacklist;
     }
-
   private:
     ScannerUtil() {}
 };

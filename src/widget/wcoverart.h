@@ -8,7 +8,7 @@
 
 #include "configobject.h"
 #include "dialogs/dlgcoverartfullsize.h"
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "library/coverartcache.h"
 #include "skin/skincontext.h"
 #include "widget/wbasewidget.h"

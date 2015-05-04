@@ -13,7 +13,7 @@
 #include <QFont>
 
 #include "configobject.h"
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "recording/recordingmanager.h"
 #include "analysisfeature.h"
 #include "library/coverartcache.h"
@@ -32,14 +32,13 @@ class PlaylistFeature;
 class CrateFeature;
 class LibraryControl;
 class MixxxKeyboard;
-class PlayerManagerInterface;
-
+class PlayerManager;
 class Library : public QObject {
     Q_OBJECT
 public:
     Library(QObject* parent,
             ConfigObject<ConfigValue>* pConfig,
-            PlayerManagerInterface* pPlayerManager,
+            PlayerManager* pPlayerManager,
             RecordingManager* pRecordingManager);
     virtual ~Library();
 

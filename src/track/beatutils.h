@@ -17,16 +17,8 @@ class BeatUtils {
             (bpm >= min_bpm && bpm <= max_bpm)) {
             return bpm;
         }
-
-        if (!aboveRange) {
-            while (bpm > max_bpm) {
-                bpm /= 2.0;
-            }
-        }
-        while (bpm < min_bpm) {
-            bpm *= 2.0;
-        }
-
+        if (!aboveRange) {while (bpm > max_bpm) {bpm /= 2.0;}}
+        while (bpm < min_bpm) {bpm *= 2.0;}
         return bpm;
     }
 
@@ -38,10 +30,8 @@ class BeatUtils {
      * from which the statistical median is computed. This value provides
      * a pretty good guess of the global BPM value.
      */
-    static double calculateBpm(const QVector<double>& beats, int SampleRate,
-                               int min_bpm, int max_bpm);
-    static double findFirstCorrectBeat(const QVector<double> rawBeats,
-                                       const int SampleRate, const double global_bpm);
+    static double calculateBpm(const QVector<double>& beats, int SampleRate, int min_bpm, int max_bpm);
+    static double findFirstCorrectBeat(const QVector<double> rawBeats, const int SampleRate, const double global_bpm);
 
     /* This implement a method to find the best offset so that
      * the grid generated from bpm is close enough to the one we get from vamp.

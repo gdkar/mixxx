@@ -11,7 +11,7 @@
  *   -- Adam
  */
 
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 
 class Analyser {
 

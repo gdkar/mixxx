@@ -7,7 +7,7 @@
 
 #include "configobject.h"
 #include "skin/skincontext.h"
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "widget/wlabel.h"
 
 class WTrackProperty : public WLabel {

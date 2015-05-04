@@ -6,7 +6,7 @@
 #include <QStylePainter>
 
 #include "skin/skincontext.h"
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 
 #include "library/starrating.h"
 #include "widget/wbasewidget.h"

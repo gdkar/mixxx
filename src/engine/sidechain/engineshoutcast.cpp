@@ -35,7 +35,7 @@
 #include "encoder/encodermp3.h"
 #include "encoder/encodervorbis.h"
 #include "shoutcast/defs_shoutcast.h"
-#include "trackinfoobject.h"
+#include "track/trackinfoobject.h"
 #include "util/sleep.h"
 
 #define TIMEOUT 10
