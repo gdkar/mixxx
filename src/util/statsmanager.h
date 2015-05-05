@@ -32,27 +32,16 @@ class StatsManager : public QThread, public Singleton<StatsManager> {
   public:
     explicit StatsManager();
     virtual ~StatsManager();
-
     // Returns true if write succeeds.
     bool maybeWriteReport(const StatReport& report);
-
     static bool s_bStatsManagerEnabled;
-
     // Tell the StatsManager to emit statUpdated for every stat that exists.
-    void emitAllStats() {
-        m_emitAllStats = 1;
-    }
-
-    void updateStats() {
-        m_statsPipeCondition.wakeAll();
-    }
-
+    void emitAllStats() {m_emitAllStats = 1;}
+    void updateStats() {m_statsPipeCondition.wakeAll();}
   signals:
     void statUpdated(const Stat& stat);
-
   protected:
     virtual void run();
-
   private:
     void processIncomingStatReports();
     StatsPipe* getStatsPipeForThread();

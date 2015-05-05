@@ -33,9 +33,7 @@ class Sandbox {
     static void shutdown();
 
     // Returns true if we are in a sandbox.
-    static bool enabled() {
-        return s_bInSandbox;
-    }
+    static bool enabled() {return s_bInSandbox;}
 
     // Prompt the user to give us access to the path with an open-file dialog.
     static bool askForAccess(const QString& canonicalPath);
@@ -58,22 +56,16 @@ class Sandbox {
     static bool createSecurityToken(const QDir& dir) {
         return createSecurityToken(dir.canonicalPath(), true);
     }
-
     static SecurityTokenPointer openSecurityToken(const QFileInfo& info, bool create);
     static SecurityTokenPointer openSecurityToken(const QDir& dir, bool create);
-
   private:
     Sandbox() {}
-
     static ConfigKey keyForCanonicalPath(const QString& canonicalPath);
-
     // Must hold s_mutex to call this.
     static SecurityTokenPointer openTokenFromBookmark(const QString& canonicalPath,
                                                       const QString& bookmarkBase64);
-
     // Creates a security token. s_mutex is not needed for this method.
     static bool createSecurityToken(const QString& canonicalPath, bool isDirectory);
-
     static QMutex s_mutex;
     static bool s_bInSandbox;
     static ConfigObject<ConfigValue>* s_pSandboxPermissions;

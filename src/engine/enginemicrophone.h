@@ -19,7 +19,6 @@ class ControlAudioTaperPot;
 // samples are fed directly from the SoundManager
 class EngineMicrophone : public EngineChannel, public AudioSink {
     Q_OBJECT;
-
   public:
     EngineMicrophone(const ChannelHandleAndGroup& handle_group,
                      EffectsManager* pEffectsManager);
@@ -50,7 +49,6 @@ class EngineMicrophone : public EngineChannel, public AudioSink {
     ControlAudioTaperPot* m_pPregain;
     ControlObjectSlave* m_pSampleRate;
     const CSAMPLE* volatile m_sampleBuffer;
-
     bool m_wasActive;
 };
 

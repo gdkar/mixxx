@@ -23,7 +23,7 @@
 #include <QLocale>
 #include <QDesktopWidget>
 
-#include "trackplayerbase.h"
+#include "trackplayer.h"
 #include "dialogs/dlgprefcontrols.h"
 #include "configobject.h"
 #include "control/controlobject.h"
@@ -328,7 +328,7 @@ DlgPrefControls::DlgPrefControls(QWidget * parent, MixxxMainWindow * mixxx,
             ConfigKey("[Controls]", "RateRampSensitivity")).toInt());
 
     // Update Speed Auto Reset Slider Box
-    // This corresponds to the enum in trackplayerbase.h TrackLoadReset.
+    // This corresponds to the enum in trackplayer.h TrackLoadReset.
     ComboBoxResetSpeedAndPitch->addItem(tr("Off"));
     ComboBoxResetSpeedAndPitch->addItem(tr("Reset key adjustment on track load"));
     ComboBoxResetSpeedAndPitch->addItem(tr("Reset key and speed on track load"));
@@ -337,7 +337,7 @@ DlgPrefControls::DlgPrefControls(QWidget * parent, MixxxMainWindow * mixxx,
     // TODO: All defaults should only be set in onResetToDefaults.
     m_speedAutoReset = m_pConfig->getValueString(
                     ConfigKey("[Controls]", "SpeedAutoReset"),
-                    QString("%1").arg(TrackPlayerBase::RESET_PITCH)).toInt();
+                    QString("%1").arg(TrackPlayer::RESET_PITCH)).toInt();
 
     onUpdate();
 }
@@ -437,8 +437,8 @@ void DlgPrefControls::onResetToDefaults() {
     spinBoxPermRateRight->setValue(0.05);
 
     // Speed auto reset combobox
-    m_speedAutoReset = TrackPlayerBase::RESET_PITCH;
-    ComboBoxResetSpeedAndPitch->setCurrentIndex(TrackPlayerBase::RESET_PITCH);
+    m_speedAutoReset = TrackPlayer::RESET_PITCH;
+    ComboBoxResetSpeedAndPitch->setCurrentIndex(TrackPlayer::RESET_PITCH);
 
     m_keylockMode = 0;
     ComboBoxKeylockMode->setCurrentIndex(m_keylockMode);

@@ -9,8 +9,8 @@
 #include "util/cmdlineargs.h"
 
 // In practice we process stats pipes about once a minute @1ms latency.
-const int kStatsPipeSize = 1 << 20;
-const int kProcessLength = kStatsPipeSize * 4 / 5;
+const int kStatsPipeSize = 1 << 16;
+const int kProcessLength = kStatsPipeSize * 3 / 4;
 
 // static
 bool StatsManager::s_bStatsManagerEnabled = false;
@@ -35,7 +35,6 @@ StatsManager::StatsManager()
     moveToThread(this);
     start(QThread::LowPriority);
 }
-
 StatsManager::~StatsManager() {
     s_bStatsManagerEnabled = false;
     m_quit = 1;
@@ -49,7 +48,6 @@ StatsManager::~StatsManager() {
          it != m_stats.end(); ++it) {
         qDebug() << it.value();
     }
-
     if (!m_baseStats.isEmpty()) {
         qDebug() << "=====================================";
         qDebug() << "BASE STATS";
@@ -59,7 +57,6 @@ StatsManager::~StatsManager() {
             qDebug() << it.value();
         }
     }
-
     if (!m_experimentStats.isEmpty()) {
         qDebug() << "=====================================";
         qDebug() << "EXPERIMENT STATS";
@@ -70,7 +67,6 @@ StatsManager::~StatsManager() {
         }
     }
     qDebug() << "=====================================";
-
     if (CmdlineArgs::Instance().getTimelineEnabled()) {
         writeTimeline(CmdlineArgs::Instance().getTimelinePath());
     }
@@ -88,17 +84,14 @@ QString humanizeNanos(qint64 nanos) {
     if (seconds > 1) {
         return QString("%1s").arg(QString::number(seconds));
     }
-
     double millis = static_cast<double>(nanos) / 1e6;
     if (millis > 1) {
         return QString("%1ms").arg(QString::number(millis));
     }
-
     double micros = static_cast<double>(nanos) / 1e3;
     if (micros > 1) {
         return QString("%1us").arg(QString::number(micros));
     }
-
     return QString("%1ns").arg(QString::number(nanos));
 }
 
@@ -109,51 +102,46 @@ void StatsManager::writeTimeline(const QString& filename) {
                  << timeline.fileName();
         return;
     }
-
     if (m_events.isEmpty()) {
         qDebug() << "No events recorded.";
         return;
     }
-
     // Sort by time.
     qSort(m_events.begin(), m_events.end(), OrderByTime());
-
     qint64 last_time = m_events[0].m_time;
-
     QMap<QString, qint64> startTimes;
     QMap<QString, qint64> endTimes;
     QMap<QString, Stat> tagStats;
-
     QTextStream out(&timeline);
     foreach (const Event& event, m_events) {
         qint64 last_start = startTimes.value(event.m_tag, -1);
         qint64 last_end = endTimes.value(event.m_tag, -1);
-
         qint64 duration_since_last_start = last_start == -1 ? 0 : event.m_time - last_start;
         qint64 duration_since_last_end = last_end == -1 ? 0 : event.m_time - last_end;
-
         if (event.m_type == Stat::EVENT_START) {
             // We last saw a start and we just saw another start.
-            if (last_start > last_end) {
-                qDebug() << "Mismatched start/end pair" << event.m_tag;
-            }
+            if (last_start > last_end) {qDebug() << "Mismatched start/end pair" << event.m_tag;}
             startTimes[event.m_tag] = event.m_time;
         } else if (event.m_type == Stat::EVENT_END) {
             // We last saw an end and we just saw another end.
-            if (last_end > last_start) {
-                qDebug() << "Mismatched start/end pair" << event.m_tag;
-            }
+            if (last_end > last_start) {qDebug() << "Mismatched start/end pair" << event.m_tag;}
             endTimes[event.m_tag] = event.m_time;
         }
-
-        // TODO(rryan): CSV escaping
         qint64 elapsed = event.m_time - last_time;
+        QString tag(event.m_tag);
+        tag.replace("\"","\"\"");
+        tag = "\""+tag+"\"";
         out << event.m_time << ","
             << "+" << humanizeNanos(elapsed) << ","
             << "+" << humanizeNanos(duration_since_last_start) << ","
             << "+" << humanizeNanos(duration_since_last_end) << ","
             << Stat::statTypeToString(event.m_type) << ","
-            << event.m_tag << "\n";
+        /*  CSV escaping ( note that RFC4180 CSV fields may always be enclosed
+         *  in double quotes; as such, we're guaranteed a valid CSV field value as
+         *  long as we replace any ( now internal ) double quotes with escaped pairs
+         *  and then surround with quotes.
+         */
+           << tag << "\n";
         last_time = event.m_time;
     }
 
@@ -167,9 +155,7 @@ void StatsManager::onStatsPipeDestroyed(StatsPipe* pPipe) {
 }
 
 StatsPipe* StatsManager::getStatsPipeForThread() {
-    if (m_threadStatsPipes.hasLocalData()) {
-        return m_threadStatsPipes.localData();
-    }
+    if (m_threadStatsPipes.hasLocalData()) {return m_threadStatsPipes.localData();}
     StatsPipe* pResult = new StatsPipe(this);
     m_threadStatsPipes.setLocalData(pResult);
     QMutexLocker locker(&m_statsPipeLock);
@@ -179,14 +165,10 @@ StatsPipe* StatsManager::getStatsPipeForThread() {
 
 bool StatsManager::maybeWriteReport(const StatReport& report) {
     StatsPipe* pStatsPipe = getStatsPipeForThread();
-    if (pStatsPipe == NULL) {
-        return false;
-    }
+    if (pStatsPipe == NULL) {return false;}
     bool success = pStatsPipe->write(&report, 1) == 1;
     int space = pStatsPipe->writeAvailable();
-    if (space < kProcessLength) {
-        m_statsPipeCondition.wakeAll();
-    }
+    if (space < kProcessLength) {m_statsPipeCondition.wakeAll();}
     return success;
 }
 
@@ -201,7 +183,6 @@ void StatsManager::processIncomingStatReports() {
             info.m_compute = report.compute;
             info.processReport(report);
             emit(statUpdated(info));
-
             if (report.compute & Stat::STATS_EXPERIMENT) {
                 Stat& experiment = m_experimentStats[tag];
                 experiment.m_tag = tag;
@@ -215,7 +196,6 @@ void StatsManager::processIncomingStatReports() {
                 base.m_compute = report.compute;
                 base.processReport(report);
             }
-
             if (CmdlineArgs::Instance().getTimelineEnabled() &&
                     (report.type == Stat::EVENT ||
                      report.type == Stat::EVENT_START ||
@@ -240,7 +220,6 @@ void StatsManager::run() {
         // want to print the most accurate stat report on shutdown.
         processIncomingStatReports();
         m_statsPipeLock.unlock();
-
         if (load_atomic(m_emitAllStats) == 1) {
             for (QMap<QString, Stat>::const_iterator it = m_stats.begin();
                  it != m_stats.end(); ++it) {
@@ -248,7 +227,6 @@ void StatsManager::run() {
             }
             m_emitAllStats = 0;
         }
-
         if (load_atomic(m_quit) == 1) {
             qDebug() << "StatsManager thread shutting down.";
             break;

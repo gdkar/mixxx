@@ -75,7 +75,8 @@ class Stat {
         // Used for marking stats recorded in BASE mode.
         STATS_BASE        = 0x1000,
     };
-    typedef int ComputeFlags;
+    Q_DECLARE_FLAGS(ComputeFlags,ComputeTypes);
+//    typedef int ComputeFlags;
 
     static Experiment::Mode modeFromFlags(ComputeFlags flags) {
         if (flags & Stat::STATS_EXPERIMENT) {
@@ -124,6 +125,7 @@ class Stat {
                       double value);
 };
 
+Q_DECLARE_OPERATORS_FOR_FLAGS(Stat::ComputeFlags);
 QDebug operator<<(QDebug dbg, const Stat &stat);
 
 struct StatReport {

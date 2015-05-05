@@ -1,6 +1,6 @@
 #include <QFileDialog>
 #include <QMessageBox>
-#include "trackplayerbase.h"
+#include "trackplayer.h"
 #include "samplerbank.h"
 #include "track/trackinfoobject.h"
 #include "control/controlpushbutton.h"
@@ -65,7 +65,7 @@ void SamplerBank::onSaveSamplerBank(double v) {
     doc.appendChild(root);
 
     for (unsigned int i = 0; i < m_pPlayerManager->numSamplers(); ++i) {
-        TrackPlayerBaseImpl* pSampler = m_pPlayerManager->getSampler(i + 1);
+        TrackPlayer* pSampler = m_pPlayerManager->getSampler(i + 1);
         if (pSampler == NULL) {continue;}
         QDomElement samplerNode = doc.createElement(QString("sampler"));
         samplerNode.setAttribute("group", pSampler->getGroup());

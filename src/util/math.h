@@ -4,6 +4,7 @@
 // Causes MSVC to define M_PI and friends.
 // http://msdn.microsoft.com/en-us/library/4hwaceh6.aspx
 #define _USE_MATH_DEFINES
+#include <qmath.h>
 #include <cmath>
 #include <algorithm>
 
@@ -13,17 +14,18 @@
 // is only defined for double.
 template<typename T>
 inline T fabs(const T&a){return a<0?-a:a;}
-#define math_max std::max
-#define math_min std::min
+template<typename T>
+inline T math_max(const T a,const T b){return (a<b)?b:a;}
+template<typename T>
+inline T math_min(const T a,const T b){return (a>b)?b:a;}
+template<typename T>
+inline T math_clamp(const T value, const T min, const T max){return (value<min)?min:((value>max)?max:value);}
+template<typename T,typename U>
+inline T math_clamp(const T value, const U min, const U max){const U u(value); return T((u<min)?min:((u>max)?max:u));}
+
+//#define math_max std::max
+//#define math_min std::min
 #define math_max3(a, b, c) math_max(math_max((a), (b)), (c))
-// Restrict value to the range [min, max]. Undefined behavior if min > max.
-template <typename T>
-inline T math_clamp(T value, T min, T max) {
-    // DEBUG_ASSERT compiles out in release builds so it does not affect
-    // vectorization or pipelining of clamping in tight loops.
-    DEBUG_ASSERT(min <= max);
-    return math_max(min, math_min(max, value));
-}
 
 // NOTE(rryan): It is an error to call even() on a floating point number. Do not
 // hack this to support floating point values! The programmer should be required

@@ -18,29 +18,20 @@ class FIFO {
             : m_data(NULL) {
         size = roundUpToPowerOf2(size);
         // If we can't represent the next higher power of 2 then bail.
-        if (size < 0) {
-            return;
-        }
+        if (size < 0) {return;}
         m_data = new DataType[size];
         memset(m_data, 0, sizeof(DataType) * size);
-        PaUtil_InitializeRingBuffer(
-                &m_ringBuffer, sizeof(DataType), size, m_data);
+        PaUtil_InitializeRingBuffer(&m_ringBuffer, sizeof(DataType), size, m_data);
     }
-    virtual ~FIFO() {
-        delete [] m_data;
-    }
-    int readAvailable() const {
-        return PaUtil_GetRingBufferReadAvailable(&m_ringBuffer);
-    }
-    int writeAvailable() const {
-        return PaUtil_GetRingBufferWriteAvailable(&m_ringBuffer);
-    }
-    int read(DataType* pData, int count) {
-        return PaUtil_ReadRingBuffer(&m_ringBuffer, pData, count);
-    }
-    int write(const DataType* pData, int count) {
-        return PaUtil_WriteRingBuffer(&m_ringBuffer, pData, count);
-    }
+    virtual ~FIFO() {delete [] m_data;}
+    int readAvailable() const 
+    {return PaUtil_GetRingBufferReadAvailable(&m_ringBuffer);}
+    int writeAvailable() const 
+    {return PaUtil_GetRingBufferWriteAvailable(&m_ringBuffer);}
+    int read(DataType* pData, int count) 
+    {return PaUtil_ReadRingBuffer(&m_ringBuffer, pData, count);}
+    int write(const DataType* pData, int count) 
+    {return PaUtil_WriteRingBuffer(&m_ringBuffer, pData, count);}
     void writeBlocking(const DataType* pData, int count) {
         int written = 0;
         while (written != count) {
@@ -55,18 +46,16 @@ class FIFO {
         return PaUtil_GetRingBufferWriteRegions(&m_ringBuffer, count,
                 (void**)dataPtr1, sizePtr1, (void**)dataPtr2, sizePtr2);
     }
-    int releaseWriteRegions(int count) {
-        return PaUtil_AdvanceRingBufferWriteIndex(&m_ringBuffer, count);
-    }
+    int releaseWriteRegions(int count) 
+    {return PaUtil_AdvanceRingBufferWriteIndex(&m_ringBuffer, count);}
     int aquireReadRegions(int count,
             DataType** dataPtr1, ring_buffer_size_t* sizePtr1,
             DataType** dataPtr2, ring_buffer_size_t* sizePtr2) {
         return PaUtil_GetRingBufferReadRegions(&m_ringBuffer, count,
                 (void**)dataPtr1, sizePtr1, (void**)dataPtr2, sizePtr2);
     }
-    int releaseReadRegions(int count) {
-        return PaUtil_AdvanceRingBufferReadIndex(&m_ringBuffer, count);
-    }
+    int releaseReadRegions(int count) 
+    {return PaUtil_AdvanceRingBufferReadIndex(&m_ringBuffer, count);}
   private:
     DataType* m_data;
     PaUtilRingBuffer m_ringBuffer;
@@ -89,16 +78,13 @@ class MessagePipe {
               m_pTwoWayMessagePipeReference(pTwoWayMessagePipeReference),
               m_bSerializeWrites(serialize_writes) {
     }
-
     // Returns the number of ReceiverMessageType messages waiting to be read by
     // the receiver. Non-blocking.
     inline int messageCount() const {return m_sender_messages.readAvailable();}
-
     // Read a ReceiverMessageType written by the receiver addressed to the
     // sender. Non-blocking.
     inline int readMessages(ReceiverMessageType* messages, int count) 
     {return m_sender_messages.read(messages, count);}
-
     // Writes up to 'count' messages from the 'message' array to the receiver
     // and returns the number of successfully written messages. If
     // serializeWrites is active, this method is blocking.
@@ -173,5 +159,4 @@ class TwoWayMessagePipe {
     DISALLOW_COPY_AND_ASSIGN(TwoWayMessagePipe<SenderMessageType COMMA ReceiverMessageType>);
 #undef COMMA
 };
-
 #endif /* FIFO_H */

@@ -12,23 +12,11 @@ class MFile {
     MFile(const QString& name);
     MFile(const MFile& other);
     virtual ~MFile();
-
-    QFile& file() {
-        return m_file;
-    }
-
-    const QFile& file() const {
-        return m_file;
-    }
-
-    SecurityTokenPointer token() {
-        return m_pSecurityToken;
-    }
-
+    QFile& file() {return m_file;}
+    const QFile& file() const {return m_file;}
+    SecurityTokenPointer token() {return m_pSecurityToken;}
     bool canAccess();
-
     MFile& operator=(const MFile& other);
-
   private:
     QString m_fileName;
     QFile m_file;
@@ -41,23 +29,11 @@ class MDir {
     MDir(const QString& name);
     MDir(const MDir& other);
     virtual ~MDir();
-
-    QDir& dir() {
-        return m_dir;
-    }
-
-    const QDir& dir() const {
-        return m_dir;
-    }
-
-    SecurityTokenPointer token() {
-        return m_pSecurityToken;
-    }
-
+    QDir& dir() {return m_dir;}
+    const QDir& dir() const {return m_dir;}
+    SecurityTokenPointer token() {return m_pSecurityToken;}
     bool canAccess();
-
     MDir& operator=(const MDir& other);
-
   private:
     QString m_dirPath;
     QDir m_dir;

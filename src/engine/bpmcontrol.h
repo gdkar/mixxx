@@ -97,16 +97,11 @@ class BpmControl : public EngineControl {
     void onUpdatedTrackBeats();
     void onBeatsTranslate(double);
     void onBeatsTranslateMatchAlignment(double);
-
   private:
-    SyncMode getSyncMode() const {
-        return syncModeFromDouble(m_pSyncMode->get());
-    }
+    SyncMode getSyncMode() const {return syncModeFromDouble(m_pSyncMode->get());}
     bool syncTempo();
     double calcSyncAdjustment(double my_percentage, bool userTweakingSync);
-
     friend class SyncControl;
-
     // ControlObjects that come from EngineBuffer
     ControlObjectSlave* m_pPlayButton;
     ControlObjectSlave* m_pReverseButton;
@@ -114,19 +109,15 @@ class BpmControl : public EngineControl {
     ControlObject* m_pQuantize;
     ControlObjectSlave* m_pRateRange;
     ControlObjectSlave* m_pRateDir;
-
     // ControlObjects that come from QuantizeControl
     QScopedPointer<ControlObjectSlave> m_pNextBeat;
     QScopedPointer<ControlObjectSlave> m_pPrevBeat;
     QScopedPointer<ControlObjectSlave> m_pClosestBeat;
-
     // ControlObjects that come from LoopingControl
     ControlObjectSlave* m_pLoopEnabled;
     ControlObjectSlave* m_pLoopStartPosition;
     ControlObjectSlave* m_pLoopEndPosition;
-
     ControlObjectSlave* m_pVCEnabled;
-
     // The current loaded file's detected BPM
     ControlObject* m_pFileBpm;
     // The average bpm around the current playposition;
@@ -135,26 +126,20 @@ class BpmControl : public EngineControl {
     ControlPushButton* m_pAdjustBeatsSlower;
     ControlPushButton* m_pTranslateBeatsEarlier;
     ControlPushButton* m_pTranslateBeatsLater;
-
     // The current effective BPM of the engine
     ControlLinPotmeter* m_pEngineBpm;
-
     // Used for bpm tapping from GUI  
     ControlPushButton* m_pButtonTap;
-
     // Button for sync'ing with the other EngineBuffer
     ControlPushButton* m_pButtonSync;
     ControlPushButton* m_pButtonSyncPhase;
     ControlPushButton* m_pButtonSyncTempo;
-
     // Button that translates the beats so the nearest beat is on the current
     // playposition.
     ControlPushButton* m_pTranslateBeats;
     // Button that translates beats to match another playing deck
     ControlPushButton* m_pBeatsTranslateMatchAlignment;
-
     double m_dPreviousSample;
-
     // Master Sync objects and values.
     ControlObject* m_pSyncMode;
     ControlObjectSlave* m_pThisBeatDistance;
@@ -164,12 +149,9 @@ class BpmControl : public EngineControl {
     bool m_resetSyncAdjustment;
     FRIEND_TEST(EngineSyncTest, UserTweakBeatDistance);
     double m_dUserOffset;
-
     TapFilter m_tapFilter;
-
     TrackPointer m_pTrack;
     BeatsPointer m_pBeats;
-
     QString m_sGroup;
 };
 

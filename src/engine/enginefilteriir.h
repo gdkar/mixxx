@@ -514,7 +514,8 @@ template<>
 inline double EngineFilterIIR<4, IIR_HPMO>::processSample(double* coef,
                                                         double* buf,
                                                         double val) {
-   tmp= buf[0]; buf[0] = buf[1]; buf[1] = buf[2]; buf[2] = buf[3];
+   double tmp, fir, iir;
+   tmp = buf[0]; buf[0] = buf[1]; buf[1] = buf[2]; buf[2] = buf[3];
    iir= val * coef[0];
    iir -= coef[1]*tmp; fir= -tmp;
    fir += iir;

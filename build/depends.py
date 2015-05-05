@@ -910,7 +910,7 @@ class MixxxCore(Feature):
                    "track/keyfactory.cpp",
                    "track/keyutils.cpp",
 
-                   "trackplayerbase.cpp",
+                   "trackplayer.cpp",
                    "playermanager.cpp",
                    "samplerbank.cpp",
                    "sounddevice.cpp",

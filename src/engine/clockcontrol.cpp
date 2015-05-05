@@ -22,12 +22,9 @@ void ClockControl::trackLoaded(TrackPointer pTrack) {
     // Clear on-beat control
     m_pCOBeatActive->set(0.0);
     // Disconnect any previously loaded track/beats
-    if (m_pTrack) {
-        disconnect(m_pTrack.data(), SIGNAL(beatsUpdated()), this, SLOT(onBeatsUpdated()));
-    }
+    if (m_pTrack) {disconnect(m_pTrack.data(), SIGNAL(beatsUpdated()), this, SLOT(onBeatsUpdated()));}
     m_pBeats.clear();
     m_pTrack.clear();
-
     if (pTrack) {
         m_pTrack = pTrack;
         m_pBeats = m_pTrack->getBeats();
@@ -39,9 +36,7 @@ void ClockControl::trackUnloaded(TrackPointer pTrack) {
     Q_UNUSED(pTrack)
     trackLoaded(TrackPointer());
 }
-
 void ClockControl::onBeatsUpdated() {if(m_pTrack) {m_pBeats = m_pTrack->getBeats();}}
-
 double ClockControl::process(const double dRate,
                              const double currentSample,
                              const double totalSamples,
@@ -49,19 +44,15 @@ double ClockControl::process(const double dRate,
     Q_UNUSED(totalSamples);
     Q_UNUSED(iBuffersize);
     double samplerate = m_pCOSampleRate->get();
-
     // TODO(XXX) should this be customizable, or latency dependent?
     const double blinkSeconds = 0.100;
-
     // Multiply by two to get samples from frames. Interval is scaled linearly
     // by the rate.
     const double blinkIntervalSamples = 2.0 * samplerate * (1.0 * dRate) * blinkSeconds;
-
     if (m_pBeats) {
         double closestBeat = m_pBeats->findClosestBeat(currentSample);
         double distanceToClosestBeat = fabs(currentSample - closestBeat);
         m_pCOBeatActive->set(distanceToClosestBeat < blinkIntervalSamples / 2.0);
     }
-
     return kNoTrigger;
 }
