@@ -910,11 +910,7 @@ class MixxxCore(Feature):
                    "track/keyfactory.cpp",
                    "track/keyutils.cpp",
 
-                   "baseplayer.cpp",
-                   "basetrackplayer.cpp",
-                   "deck.cpp",
-                   "sampler.cpp",
-                   "previewdeck.cpp",
+                   "trackplayerbase.cpp",
                    "playermanager.cpp",
                    "samplerbank.cpp",
                    "sounddevice.cpp",
@@ -926,7 +922,8 @@ class MixxxCore(Feature):
                    "encoder/encoder.cpp",
                    "encoder/encodermp3.cpp",
                    "encoder/encodervorbis.cpp",
-                    
+                
+                   "util/vm_ringbuffer.cpp",
                    "util/pa_ringbuffer.c",
                    "util/sleepableqthread.cpp",
                    "util/statsmanager.cpp",

@@ -1,11 +1,12 @@
 #ifndef BASETRACKPLAYER_H
 #define BASETRACKPLAYER_H
+#include <qhash.h>
+#include <qobject.h>
+#include <qsharedpointer.h>
+#include <qatomic.h>
 
 #include "configobject.h"
 #include "track/trackinfoobject.h"
-#include "baseplayer.h"
-#include <qhash.h>
-#include <qsharedpointer.h>
 #include "engine/enginechannel.h"
 #include "engine/enginedeck.h"
 
@@ -17,11 +18,12 @@ class ControlObjectSlave;
 class AnalyserQueue;
 class EffectsManager;
 
-// Interface for not leaking implementation details of BaseTrackPlayer into the
+// Interface for not leaking implementation details of TrackPlayerBase into the
 // rest of Mixxx. Also makes testing a lot easier.
-class BaseTrackPlayer : public BasePlayer {
+class TrackPlayerBase : public QObject {
     Q_OBJECT
     Q_ENUMS(TrackLoadReset);
+    Q_PROPERTY(QString group READ getGroup CONSTANT );
   public:
     // The ordering here corresponds to the ordering of the preferences combo box.
     enum TrackLoadReset {
@@ -29,23 +31,27 @@ class BaseTrackPlayer : public BasePlayer {
         RESET_PITCH,
         RESET_PITCH_AND_SPEED,
     };
-    BaseTrackPlayer(QObject* pParent, const QString& group);
-    virtual ~BaseTrackPlayer() {}
+    TrackPlayerBase(QObject* pParent, const QString& group);
+    virtual ~TrackPlayerBase() {}
     virtual TrackPointer getLoadedTrack() const = 0;
   public slots:
     virtual void onLoadTrack(TrackPointer pTrack, bool bPlay=false) = 0;
+    virtual inline const QString &getGroup() const{return m_group;}
   signals:
     void loadTrack(TrackPointer pTrack, bool bPlay=false);
     void loadTrackFailed(TrackPointer pTrack);
     void newTrackLoaded(TrackPointer pLoadedTrack);
     void unloadingTrack(TrackPointer pAboutToBeUnloaded);
+
+  private:
+    const QString m_group;
 };
-Q_DECLARE_METATYPE(BaseTrackPlayer::TrackLoadReset);
-Q_DECLARE_TYPEINFO(BaseTrackPlayer::TrackLoadReset,Q_PRIMITIVE_TYPE);
-class BaseTrackPlayerImpl : public BaseTrackPlayer {
+Q_DECLARE_METATYPE(TrackPlayerBase::TrackLoadReset);
+Q_DECLARE_TYPEINFO(TrackPlayerBase::TrackLoadReset,Q_PRIMITIVE_TYPE);
+class TrackPlayerBaseImpl : public TrackPlayerBase {
     Q_OBJECT
   public:
-    BaseTrackPlayerImpl(QObject* pParent,
+    TrackPlayerBaseImpl(QObject* pParent,
                         ConfigObject<ConfigValue>* pConfig,
                         EngineMaster* pMixingEngine,
                         EffectsManager* pEffectsManager,
@@ -53,7 +59,7 @@ class BaseTrackPlayerImpl : public BaseTrackPlayer {
                         QString group,
                         bool defaultMaster,
                         bool defaultHeadphones);
-    virtual ~BaseTrackPlayerImpl();
+    virtual ~TrackPlayerBaseImpl();
     TrackPointer getLoadedTrack() const;
     // TODO(XXX): Only exposed to let the passthrough AudioInput get
     // connected. Delete me when EngineMaster supports AudioInput assigning.

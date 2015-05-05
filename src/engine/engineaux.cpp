@@ -20,14 +20,10 @@ EngineAux::EngineAux(const ChannelHandleAndGroup& handle_group, EffectsManager* 
           m_pPregain(new ControlAudioTaperPot(ConfigKey(getGroup(), "pregain"), -12, 12, 0.5)),
           m_sampleBuffer(NULL),
           m_wasActive(false) {
-    if (pEffectsManager != NULL) {
-        pEffectsManager->registerChannel(handle_group);
-    }
-
+    if (pEffectsManager != NULL) {pEffectsManager->registerChannel(handle_group);}
     // by default Aux is enabled on the master and disabled on PFL. User
     // can over-ride by setting the "pfl" or "master" controls.
     setMaster(true);
-
     m_pSampleRate = new ControlObjectSlave("[Master]", "samplerate");
 }
 
@@ -40,12 +36,8 @@ EngineAux::~EngineAux() {
 
 bool EngineAux::isActive() {
     bool enabled = m_pEnabled->get() > 0.0;
-    if (enabled && m_sampleBuffer) {
-        m_wasActive = true;
-    } else if (m_wasActive) {
-        m_vuMeter.reset();
-        m_wasActive = false;
-    }
+    if (enabled && m_sampleBuffer) {m_wasActive = true;} 
+    else if (m_wasActive) {m_vuMeter.reset();m_wasActive = false;}
     return m_wasActive;
 }
 
@@ -79,21 +71,15 @@ void EngineAux::receiveBuffer(AudioInput input, const CSAMPLE* pBuffer,
 void EngineAux::process(CSAMPLE* pOut, const int iBufferSize) {
     const CSAMPLE* sampleBuffer = m_sampleBuffer; // save pointer on stack
     double pregain =  m_pPregain->get();
-    if (sampleBuffer) {
-        SampleUtil::copyWithGain(pOut, sampleBuffer, pregain, iBufferSize);
-        m_sampleBuffer = NULL;
-    } else {
-        SampleUtil::clear(pOut, iBufferSize);
-    }
-
+    if (sampleBuffer) {SampleUtil::copyWithGain(pOut, sampleBuffer, pregain, iBufferSize);m_sampleBuffer = NULL;
+    } else {SampleUtil::clear(pOut, iBufferSize);}
     if (m_pEngineEffectsManager != NULL) {
         GroupFeatureState features;
         // This is out of date by a callback but some effects will want the RMS
         // volume.
         m_vuMeter.collectFeatures(&features);
         // Process effects enabled for this channel
-        m_pEngineEffectsManager->process(getHandle(), pOut, iBufferSize,
-                                         m_pSampleRate->get(), features);
+        m_pEngineEffectsManager->process(getHandle(), pOut, iBufferSize,m_pSampleRate->get(), features);
     }
     // Update VU meter
     m_vuMeter.process(pOut, iBufferSize);

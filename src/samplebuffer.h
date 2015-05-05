@@ -37,9 +37,7 @@ public:
     }
     explicit SampleBuffer(SINT size);
     virtual ~SampleBuffer();
-
     SINT size() const {return m_size;}
-
     CSAMPLE* data(SINT offset = 0) {
         DEBUG_ASSERT(0 <= offset);
         // >=: allow access to one element behind allocated memory
@@ -52,10 +50,8 @@ public:
         DEBUG_ASSERT(m_size >= offset);
         return m_data + offset;
     }
-
     CSAMPLE& operator[](SINT index) {return *data(index);}
     const CSAMPLE& operator[](SINT index) const {return *data(index);}
-
     // Exchanges the members of two buffers in conformance with the
     // implementation of all STL containers. Required for exception
     // safe programming and as a workaround for the missing resize
@@ -64,13 +60,10 @@ public:
         std::swap(m_data, other.m_data);
         std::swap(m_size, other.m_size);
     }
-
     // Fills the whole buffer with zeroes
     void clear();
-
     // Fills the whole buffer with the same value
     void fill(CSAMPLE value);
-
     class ReadableChunk {
     public:
         ReadableChunk(const SampleBuffer& buffer, SINT offset, SINT length)

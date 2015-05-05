@@ -12,9 +12,7 @@
 
 class ControlObject;
 class Deck;
-class Sampler;
-class PreviewDeck;
-class BaseTrackPlayer;
+class TrackPlayerBaseImpl;
 
 class Library;
 class EngineMaster;
@@ -37,7 +35,7 @@ class PlayerManager : public QObject{
     void addConfiguredDecks();
     // Add a sampler to the PlayerManager
     void addSampler();
-    // Add a PreviewDeck to the PlayerManager
+    // Add a TrackPlayerBaseImpl to the PlayerManager
     void addPreviewDeck();
     // Return the number of players. Thread-safe.
     static unsigned int numDecks();
@@ -54,13 +52,13 @@ class PlayerManager : public QObject{
     // Return the number of preview decks. Thread-safe.
     static unsigned int numPreviewDecks();
     unsigned int numberOfPreviewDecks() const {return numPreviewDecks();}
-    // Get a BaseTrackPlayer (i.e. a Deck or a Sampler) by its group
-    BaseTrackPlayer* getPlayer(QString group) const;
+    // Get a TrackPlayerBaseImpl (i.e. a Deck or a Sampler) by its group
+    TrackPlayerBaseImpl* getPlayer(QString group) const;
     // Get the deck by its deck number. Decks are numbered starting with 1.
-    Deck* getDeck(unsigned int player) const;
-    PreviewDeck* getPreviewDeck(unsigned int libPreviewPlayer) const;
+    TrackPlayerBaseImpl* getDeck(unsigned int player) const;
+    TrackPlayerBaseImpl* getPreviewDeck(unsigned int libPreviewPlayer) const;
     // Get the sampler by its number. Samplers are numbered starting with 1.
-    Sampler* getSampler(unsigned int sampler) const;
+    TrackPlayerBaseImpl* getSampler(unsigned int sampler) const;
     // Binds signals between PlayerManager and Library. Does not store a pointer
     // to the Library.
     void bindToLibrary(Library* pLibrary);
@@ -68,7 +66,7 @@ class PlayerManager : public QObject{
     static QString groupForSampler(int i) {return QString("[Sampler%1]").arg(i+1);}
     // Returns the group for the ith deck where i is zero indexed
     static QString groupForDeck(int i) {return QString("[Channel%1]").arg(i+1);}
-    // Returns the group for the ith PreviewDeck where i is zero indexed
+    // Returns the group for the ith TrackPlayerBaseImpl where i is zero indexed
     static QString groupForPreviewDeck(int i) {return QString("[PreviewDeck%1]").arg(i+1);}
     // Used to determine if the user has configured an input for the given vinyl deck.
     bool hasVinylInput(int inputnum) const;
@@ -112,10 +110,10 @@ class PlayerManager : public QObject{
     ControlObject* m_pCONumDecks;
     ControlObject* m_pCONumSamplers;
     ControlObject* m_pCONumPreviewDecks;
-    QList<Deck*> m_decks;
-    QList<Sampler*> m_samplers;
-    QList<PreviewDeck*> m_preview_decks;
-    QMap<QString, BaseTrackPlayer*> m_players;
+    QList<TrackPlayerBaseImpl*> m_decks;
+    QList<TrackPlayerBaseImpl*> m_samplers;
+    QList<TrackPlayerBaseImpl*> m_preview_decks;
+    QMap<QString, TrackPlayerBaseImpl*> m_players;
 };
 
 #endif // PLAYERMANAGER_H

@@ -13,7 +13,6 @@ class EngineFilterBessel4Low : public EngineFilterIIR<4, IIR_LP> {
     // Optimized for freqCorner / 20
     int setFrequencyCornersForIntDelay(double desiredCorner1Ratio, int maxDelay);
 };
-
 class EngineFilterBessel4Band : public EngineFilterIIR<8, IIR_BP> {
     Q_OBJECT
   public:
@@ -22,7 +21,6 @@ class EngineFilterBessel4Band : public EngineFilterIIR<8, IIR_BP> {
     void setFrequencyCorners(int sampleRate, double freqCorner1,
             double freqCorner2);
 };
-
 class EngineFilterBessel4High : public EngineFilterIIR<4, IIR_HP> {
     Q_OBJECT
   public:

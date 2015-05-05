@@ -1,6 +1,6 @@
 #include <QMessageBox>
 
-#include "basetrackplayer.h"
+#include "trackplayerbase.h"
 #include "playerinfo.h"
 
 #include "control/controlobject.h"
@@ -15,11 +15,12 @@
 #include "util/sandbox.h"
 #include "effects/effectsmanager.h"
 
-BaseTrackPlayer::BaseTrackPlayer(QObject* pParent, const QString& group)
-        : BasePlayer(pParent, group) {
+TrackPlayerBase::TrackPlayerBase(QObject* pParent, const QString& group)
+        : QObject(pParent)
+        , m_group( group) {
 }
 
-BaseTrackPlayerImpl::BaseTrackPlayerImpl(QObject* pParent,
+TrackPlayerBaseImpl::TrackPlayerBaseImpl(QObject* pParent,
                                          ConfigObject<ConfigValue>* pConfig,
                                          EngineMaster* pMixingEngine,
                                          EffectsManager* pEffectsManager,
@@ -27,7 +28,7 @@ BaseTrackPlayerImpl::BaseTrackPlayerImpl(QObject* pParent,
                                          QString group,
                                          bool defaultMaster,
                                          bool defaultHeadphones)
-        : BaseTrackPlayer(pParent, group),
+        : TrackPlayerBase(pParent, group),
           m_pConfig(pConfig),
           m_pLoadedTrack(),
           m_pLowFilter(NULL),
@@ -95,7 +96,7 @@ BaseTrackPlayerImpl::BaseTrackPlayerImpl(QObject* pParent,
             this, SLOT(onPlayToggled(double)));
 }
 
-BaseTrackPlayerImpl::~BaseTrackPlayerImpl() {
+TrackPlayerBaseImpl::~TrackPlayerBaseImpl() {
     if (m_pLoadedTrack) {
         emit(unloadingTrack(m_pLoadedTrack));
         disconnect(m_pLoadedTrack.data(), 0, m_pBPM, 0);
@@ -124,7 +125,7 @@ BaseTrackPlayerImpl::~BaseTrackPlayerImpl() {
     delete m_pPitchAdjust;
 }
 
-void BaseTrackPlayerImpl::onLoadTrack(TrackPointer track, bool bPlay) {
+void TrackPlayerBaseImpl::onLoadTrack(TrackPointer track, bool bPlay) {
     // Before loading the track, ensure we have access. This uses lazy
     // evaluation to make sure track isn't NULL before we dereference it.
     if (!track.isNull() && !Sandbox::askForAccess(track->getCanonicalLocation())) {
@@ -189,7 +190,7 @@ void BaseTrackPlayerImpl::onLoadTrack(TrackPointer track, bool bPlay) {
     emit(loadTrack(track, bPlay));
 }
 
-void BaseTrackPlayerImpl::onLoadFailed(TrackPointer track, QString reason) {
+void TrackPlayerBaseImpl::onLoadFailed(TrackPointer track, QString reason) {
     // TODO(rryan): Currently load failed doesn't clear the deck as an unload
     // would. Should we?
     if (track != NULL) {
@@ -202,7 +203,7 @@ void BaseTrackPlayerImpl::onLoadFailed(TrackPointer track, QString reason) {
     QMessageBox::warning(NULL, tr("Couldn't load track."), reason);
 }
 
-void BaseTrackPlayerImpl::onUnloadTrack(TrackPointer) {
+void TrackPlayerBaseImpl::onUnloadTrack(TrackPointer) {
     if (m_pLoadedTrack) {
         // WARNING: Never. Ever. call bare disconnect() on an object. Mixxx
         // relies on signals and slots to get tons of things done. Don't
@@ -230,7 +231,7 @@ void BaseTrackPlayerImpl::onUnloadTrack(TrackPointer) {
     PlayerInfo::instance().setTrackInfo(getGroup(), m_pLoadedTrack);
 }
 
-void BaseTrackPlayerImpl::onFinishLoading(TrackPointer pTrackInfoObject)
+void TrackPlayerBaseImpl::onFinishLoading(TrackPointer pTrackInfoObject)
 {
     m_replaygainPending = false;
     // Read the tags if required
@@ -291,25 +292,25 @@ void BaseTrackPlayerImpl::onFinishLoading(TrackPointer pTrackInfoObject)
     emit(newTrackLoaded(m_pLoadedTrack));
 }
 
-TrackPointer BaseTrackPlayerImpl::getLoadedTrack() const {return m_pLoadedTrack;}
+TrackPointer TrackPlayerBaseImpl::getLoadedTrack() const {return m_pLoadedTrack;}
 
-void BaseTrackPlayerImpl::onSetReplayGain(double replayGain) {
+void TrackPlayerBaseImpl::onSetReplayGain(double replayGain) {
     // Do not change replay gain when track is playing because
     // this may lead to an unexpected volume change
     if (m_pPlay->get() == 0.0) {m_pReplayGain->onSet(replayGain);
     } else {m_replaygainPending = true;}
 }
 
-void BaseTrackPlayerImpl::onPlayToggled(double v) {
+void TrackPlayerBaseImpl::onPlayToggled(double v) {
     if (!v && m_replaygainPending) {
         m_pReplayGain->onSet(m_pLoadedTrack->getReplayGain());
         m_replaygainPending = false;
     }
 }
 
-EngineDeck* BaseTrackPlayerImpl::getEngineDeck() const {return m_pChannel.data();}
+EngineDeck* TrackPlayerBaseImpl::getEngineDeck() const {return m_pChannel.data();}
 
-void BaseTrackPlayerImpl::setupEqControls() {
+void TrackPlayerBaseImpl::setupEqControls() {
     const QString group = getGroup();
     m_pLowFilter = new ControlObjectSlave(group, "filterLow");
     m_pMidFilter = new ControlObjectSlave(group, "filterMid");

@@ -39,7 +39,6 @@
 #include "analyser/analyserqueue.h"
 #include "control/controlpotmeter.h"
 #include "control/controlobjectslave.h"
-#include "deck.h"
 #include "defs_urls.h"
 #include "dialogs/dlgabout.h"
 #include "dialogs/dlgpreferences.h"
