@@ -185,7 +185,7 @@ void BaseTrackPlayerImpl::onLoadTrack(TrackPointer track, bool bPlay) {
                 this, SLOT(onSetReplayGain(double)));
     }
 
-    //Request a new track from the reader
+    // Request a new track from the reader
     emit(loadTrack(track, bPlay));
 }
 

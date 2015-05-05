@@ -228,21 +228,23 @@ void WOverview::onTrackLoaded(TrackPointer pTrack) {
     }
 }
 
-void WOverview::onUnloadTrack(TrackPointer /*pTrack*/) {
-    if (m_pCurrentTrack) {
+void WOverview::onUnloadTrack(TrackPointer pTrack) {
+    // it may happen that this call is a delayed call
+    // of a track that was already replaced
+    //qDebug() << "WOverview::slotUnloadTrack(TrackPointer pTrack)";
+    if (pTrack != NULL && pTrack == m_pCurrentTrack) {
         disconnect(m_pCurrentTrack.data(), SIGNAL(waveformSummaryUpdated()),
                    this, SLOT(onWaveformSummaryUpdated()));
         disconnect(m_pCurrentTrack.data(), SIGNAL(analyserProgress(int)),
                    this, SLOT(onAnalyserProgress(int)));
+        m_pCurrentTrack.clear();
+        m_pWaveform.clear();
+        m_actualCompletion = 0;
+        m_waveformPeak = -1.0;
+        m_pixmapDone = false;
+        m_trackLoaded = false;
+        update();
     }
-    m_pCurrentTrack.clear();
-    m_pWaveform.clear();
-    m_actualCompletion = 0;
-    m_waveformPeak = -1.0;
-    m_pixmapDone = false;
-    m_trackLoaded = false;
-
-    update();
 }
 
 void WOverview::onEndOfTrackChange(double v) {
