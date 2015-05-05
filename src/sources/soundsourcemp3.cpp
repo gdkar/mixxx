@@ -249,7 +249,13 @@ Result SoundSourceMp3::tryOpen(const AudioSourceConfig& /*audioSrcCfg*/) {
         }
 
         const SINT madChannelCount = MAD_NCHANNELS(&madHeader);
-        if ((0 < maxChannelCount) && (madChannelCount != maxChannelCount)) {
+        if (!isValidChannelCount(madChannelCount)) {
+            qWarning() << "Invalid number of channels"
+                    << madChannelCount
+                    << "in MP3 frame header:"
+                    << m_file.fileName();
+        }
+        if (isValidChannelCount(maxChannelCount) && (madChannelCount != maxChannelCount)) {
             qWarning() << "Differing number of channels"
                     << madChannelCount << "<>" << maxChannelCount
                     << "in some MP3 frame headers:"
