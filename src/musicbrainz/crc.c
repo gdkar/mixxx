@@ -116,7 +116,6 @@ crc_t crc_update(crc_t crc, const unsigned char *data, size_t data_len){
     while (data_len--) {
         tbl_idx = (crc ^ *data) & 0xff;
         crc = (crc_table[tbl_idx] ^ (crc >> 8)) & 0xffffffff;
-
         data++;
     }
     return crc & 0xffffffff;

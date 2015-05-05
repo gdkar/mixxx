@@ -33,23 +33,19 @@ TagFetcher::TagFetcher(QObject* parent)
             this, SIGNAL(networkError(int, QString)));
 }
 
-QString TagFetcher::getFingerprint(const TrackPointer tio) {
-    return ChromaPrinter(NULL).getFingerprint(tio);
-}
-
+QString TagFetcher::getFingerprint(const TrackPointer tio) 
+  {return ChromaPrinter(NULL).getFingerprint(tio);}
 void TagFetcher::startFetch(const TrackPointer track) {
     cancel();
     // qDebug() << "start to fetch track metadata";
     QList<TrackPointer> tracks;
     tracks.append(track);
     m_tracks = tracks;
-
     QFuture<QString> future = QtConcurrent::mapped(m_tracks, getFingerprint);
     m_pFingerprintWatcher = new QFutureWatcher<QString>(this);
     m_pFingerprintWatcher->setFuture(future);
     connect(m_pFingerprintWatcher, SIGNAL(resultReadyAt(int)),
             SLOT(fingerprintFound(int)));
-
     foreach (const TrackPointer ptrack, m_tracks) {
         emit(fetchProgress(tr("Fingerprinting track")));
     }
@@ -59,11 +55,9 @@ void TagFetcher::cancel() {
     // qDebug()<< "Cancel tagfetching";
     if (m_pFingerprintWatcher) {
         m_pFingerprintWatcher->cancel();
-
         delete m_pFingerprintWatcher;
         m_pFingerprintWatcher = NULL;
     }
-
     m_AcoustidClient.cancelAll();
     m_MusicbrainzClient.cancelAll();
     m_tracks.clear();
@@ -71,18 +65,13 @@ void TagFetcher::cancel() {
 
 void TagFetcher::fingerprintFound(int index) {
     QFutureWatcher<QString>* watcher = reinterpret_cast<QFutureWatcher<QString>*>(sender());
-    if (!watcher || index >= m_tracks.count()) {
-        return;
-    }
-
+    if (!watcher || index >= m_tracks.count()) {return;}
     const QString fingerprint = watcher->resultAt(index);
     const TrackPointer ptrack = m_tracks[index];
-
     if (fingerprint.isEmpty()) {
         emit(resultAvailable(ptrack, QList<TrackPointer>()));
         return;
     }
-
     emit(fetchProgress(tr("Identifying track")));
     // qDebug() << "start to look up the MBID";
     m_AcoustidClient.start(index, fingerprint, ptrack->getDuration());

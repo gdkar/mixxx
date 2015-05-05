@@ -456,7 +456,7 @@ void DlgPrefControls::onSetRateRange(int pos) {
         range = 0.06;
     if (pos == 1)
         range = 0.08;
-
+    m_pConfig->set(ConfigKey("[Controls]","RateRange"),pos);
     qDebug() << "onSetRateRange" << pos << range;
 
     // Set rate range for every group

@@ -21,9 +21,7 @@ namespace{
     QString calcFingerprint(const Mixxx::AudioSourcePointer& pAudioSource) {
         SINT numFrames = kFingerprintDuration * pAudioSource->getFrameRate();
         // check that the song is actually longer then the amount of audio we use
-        if (numFrames > pAudioSource->getFrameCount()) {
-            numFrames = pAudioSource->getFrameCount();
-        }
+        if (numFrames > pAudioSource->getFrameCount()) {numFrames = pAudioSource->getFrameCount();}
         QTime timerReadingFile;
         timerReadingFile.start();
         // Allocate a sample buffer with maximum size to avoid the
@@ -65,7 +63,6 @@ namespace{
                                            CHROMAPRINT_ALGORITHM_DEFAULT,
                                            &encoded,
                                            &encoded_size, 1);
-
             fingerprint.append(reinterpret_cast<char*>(encoded), encoded_size);
             chromaprint_dealloc(fprint);
             chromaprint_dealloc(encoded);
@@ -75,11 +72,7 @@ namespace{
         return fingerprint;
     }
 }
-
-ChromaPrinter::ChromaPrinter(QObject* parent)
-             : QObject(parent) {
-}
-
+ChromaPrinter::ChromaPrinter(QObject* parent) : QObject(parent) {}
 QString ChromaPrinter::getFingerprint(TrackPointer pTrack) {
     SoundSourceProxy soundSourceProxy(pTrack);
     Mixxx::AudioSourceConfig audioSrcCfg;
