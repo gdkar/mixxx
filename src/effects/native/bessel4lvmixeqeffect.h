@@ -9,7 +9,7 @@
 #include "effects/effectprocessor.h"
 #include "engine/effects/engineeffect.h"
 #include "engine/effects/engineeffectparameter.h"
-#include "engine/enginefilterbessel4.h"
+#include "engine/filter/enginefilterbessel4.h"
 #include "util.h"
 #include "util/types.h"
 #include "util/defs.h"

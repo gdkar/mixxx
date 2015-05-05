@@ -22,7 +22,7 @@
 #include "engine/enginedeck.h"
 #include "engine/enginepregain.h"
 #include "engine/enginevumeter.h"
-#include "engine/enginefilterbessel4.h"
+#include "engine/filter/enginefilterbessel4.h"
 
 #include "sampleutil.h"
 

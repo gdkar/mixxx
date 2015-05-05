@@ -5,8 +5,8 @@
 
 #include "analyser/analyserwaveform.h"
 #include "engine/engineobject.h"
-#include "engine/enginefilterbutterworth8.h"
-#include "engine/enginefilterbessel4.h"
+#include "engine/filter/enginefilterbutterworth8.h"
+#include "engine/filter/enginefilterbessel4.h"
 #include "library/trackcollection.h"
 #include "library/dao/analysisdao.h"
 #include "track/trackinfoobject.h"

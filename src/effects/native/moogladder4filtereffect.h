@@ -5,7 +5,7 @@
 #include "effects/effectprocessor.h"
 #include "engine/effects/engineeffect.h"
 #include "engine/effects/engineeffectparameter.h"
-#include "engine/enginefiltermoogladder4.h"
+#include "engine/filter/enginefiltermoogladder4.h"
 #include "sampleutil.h"
 #include "util.h"
 #include "util/defs.h"

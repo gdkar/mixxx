@@ -5,7 +5,7 @@
 #include "effects/effectprocessor.h"
 #include "engine/effects/engineeffect.h"
 #include "engine/effects/engineeffectparameter.h"
-#include "engine/enginefilterbiquad1.h"
+#include "engine/filter/enginefilterbiquad1.h"
 #include "sampleutil.h"
 #include "util.h"
 #include "util/defs.h"

@@ -5,9 +5,9 @@
 #include "util/defs.h"
 #include "util/math.h"
 #include "sampleutil.h"
-#include "engine/enginefilterdelay.h"
-#include "engine/enginefilter.h"
-#include "engine/enginefilteriir.h"
+#include "engine/filter/enginefilterdelay.h"
+#include "engine/filter/enginefilter.h"
+#include "engine/filter/enginefilteriir.h"
 #include "effects/effect.h"
 #include <QObject>
 #include <QVector>
