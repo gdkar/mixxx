@@ -179,7 +179,7 @@ void WSpinny::setup(QDomNode node, const SkinContext& context) {
             m_group, "play");
     m_pPlayPos = new ControlObjectThread(
             m_group, "playposition");
-    m_pVisualPlayPos = VisualPlayPosition::getVisualPlayPosition(m_group);
+    m_pVisualPlayPos=VisualPlayPosition::getVisualPlayPosition(m_group);
     m_pTrackSamples = new ControlObjectThread(
             m_group, "track_samples");
     m_pTrackSampleRate = new ControlObjectThread(

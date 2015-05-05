@@ -344,7 +344,6 @@ DlgPrefControls::DlgPrefControls(QWidget * parent, MixxxMainWindow * mixxx,
 
 DlgPrefControls::~DlgPrefControls() {
     delete m_pControlPositionDisplay;
-    qDeleteAll(m_rateControls);
     qDeleteAll(m_rateDirControls);
     qDeleteAll(m_cueControls);
     qDeleteAll(m_rateRangeControls);
@@ -676,19 +675,13 @@ void DlgPrefControls::onNumDecksChanged(double new_count) {
 
     for (int i = m_iNumConfiguredDecks; i < numdecks; ++i) {
         QString group = PlayerManager::groupForDeck(i);
-        m_rateControls.push_back(qobject_cast<ControlPotmeter*>(ControlObject::getControl(
-                group, "rate")));
-        m_rateRangeControls.push_back(new ControlObjectThread(
-                group, "rateRange"));
-        m_rateDirControls.push_back(new ControlObjectThread(
-                group, "rate_dir"));
-        m_cueControls.push_back(new ControlObjectThread(
-                group, "cue_mode"));
-        m_keylockModeControls.push_back(new ControlObjectThread(
-                        group, "keylockMode"));
+        m_rateControls.push_back(qobject_cast<ControlPotmeter*>(ControlObject::getControl(group, "rate")));
+        m_rateRangeControls.push_back(new ControlObjectThread(group, "rateRange"));
+        m_rateDirControls.push_back(new ControlObjectThread(group, "rate_dir"));
+        m_cueControls.push_back(new ControlObjectThread(group, "cue_mode"));
+        m_keylockModeControls.push_back(new ControlObjectThread(group, "keylockMode"));
         m_keylockModeControls.last()->set(m_keylockMode);
     }
-
     m_iNumConfiguredDecks = numdecks;
     onSetRateDir(m_pConfig->getValueString(ConfigKey("[Controls]", "RateDir")).toInt());
     onSetRateRange(m_pConfig->getValueString(ConfigKey("[Controls]", "RateRange")).toInt());

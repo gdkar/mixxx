@@ -76,7 +76,7 @@ WaveformWidgetRenderer::~WaveformWidgetRenderer() {
 bool WaveformWidgetRenderer::init() {
 
     //qDebug() << "WaveformWidgetRenderer::init";
-    m_visualPlayPosition = VisualPlayPosition::getVisualPlayPosition(m_group);
+    m_visualPlayPosition=VisualPlayPosition::getVisualPlayPosition(m_group);
 
     m_pRateControlObject = new ControlObjectThread(
             m_group, "rate");

@@ -87,7 +87,7 @@ void EngineDeck::process(CSAMPLE* pOut, const int iBufferSize) {
     // Apply pregain
     m_pPregain->process(pOut, iBufferSize);
     // Process effects enabled for this channel
-    if (!m_pEngineEffectsManager.isNull()  ) {
+    if (!!m_pEngineEffectsManager  ) {
         // This is out of date by a callback but some effects will want the RMS
         // volume.
         m_pVUMeter->collectFeatures(&features);

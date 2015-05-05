@@ -7,7 +7,7 @@
 #include "waveform/vsyncthread.h"
 
 //static
-QMap<QString, QSharedPointer<VisualPlayPosition> > VisualPlayPosition::m_listVisualPlayPosition;
+QMap<QString, QWeakPointer<VisualPlayPosition> > VisualPlayPosition::m_listVisualPlayPosition;
 PaStreamCallbackTimeInfo VisualPlayPosition::m_timeInfo = { 0.0, 0.0, 0.0 };
 PerformanceTimer VisualPlayPosition::m_timeInfoTime;
 
@@ -96,9 +96,7 @@ double VisualPlayPosition::getEnginePlayPos() {
     if (m_valid) {
         VisualPlayPositionData data = m_data.getValue();
         return data.m_enginePlayPos;
-    } else {
-        return -1;
-    }
+    } else {return -1;}
 }
 
 void VisualPlayPosition::onAudioBufferSizeChanged(double size) {
@@ -107,7 +105,7 @@ void VisualPlayPosition::onAudioBufferSizeChanged(double size) {
 
 //static
 QSharedPointer<VisualPlayPosition> VisualPlayPosition::getVisualPlayPosition(QString group) {
-    QSharedPointer<VisualPlayPosition> vpp = m_listVisualPlayPosition.value(group);
+    QSharedPointer<VisualPlayPosition> vpp(m_listVisualPlayPosition.value(group));
     if (vpp.isNull()) {
         vpp = QSharedPointer<VisualPlayPosition>(new VisualPlayPosition(group));
         m_listVisualPlayPosition.insert(group, vpp);

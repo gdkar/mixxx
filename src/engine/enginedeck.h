@@ -74,18 +74,18 @@ class EngineDeck : public EngineChannel, public AudioSink {
     void onPassingToggle(double v);
 
   private:
-    ConfigObject<ConfigValue>* m_pConfig;
-    QSharedPointer<EngineBuffer> m_pBuffer;
-    QSharedPointer<EnginePregain> m_pPregain;
-    QSharedPointer<EngineVuMeter> m_pVUMeter;
-    QSharedPointer<EngineEffectsManager> m_pEngineEffectsManager;
+    ConfigObject<ConfigValue>*         m_pConfig;
+    QSharedPointer<EngineBuffer>       m_pBuffer;
+    QSharedPointer<EnginePregain>      m_pPregain;
+    QSharedPointer<EngineVuMeter>      m_pVUMeter;
+    EngineEffectsManager*              m_pEngineEffectsManager;
     QSharedPointer<ControlObjectSlave> m_pSampleRate;
 
     // Begin vinyl passthrough fields
-    QSharedPointer<ControlPushButton> m_pPassing;
-    const CSAMPLE* volatile m_sampleBuffer;
-    bool m_bPassthroughIsActive;
-    bool m_bPassthroughWasActive;
+    QSharedPointer<ControlPushButton>  m_pPassing;
+    const CSAMPLE* volatile            m_sampleBuffer;
+    bool                               m_bPassthroughIsActive;
+    bool                               m_bPassthroughWasActive;
 };
 Q_DECLARE_TYPEINFO(EngineDeck,Q_COMPLEX_TYPE);
 #endif
