@@ -8,6 +8,7 @@
 *.rej
 *_build
 *~
+.hg
 .#*
 .sconf_temp
 .sconsign.branch

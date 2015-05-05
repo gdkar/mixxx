@@ -1,0 +1,29 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+import os
+import sys
+import SCons, SCons.Script as SSCons
+import shutil
+
+Import('build')
+
+
+# On Posix default SCons.LIBPREFIX = 'lib', on Windows default SCons.LIBPREFIX = ''
+
+internal_rubberband_sources = SSCons.Glob("src/**/*.cpp")+SSCons.Glob("rubberband/**/*.h")
+
+#Tell SCons to build the SoundSourcempg123 plugin
+#=========================
+if int(build.flags['internal_rubberband']):
+    env = build.env.Clone()
+
+    conf = Configure(env)
+    build.env.Append(CXXFLAGS=["-std=gnu++14","-Wno-error", "-Wno-c++11-narrowing","-Wno-inconsistent-missing-override","-fPIC"])
+    env = conf.Finish()
+    SHLIBPREFIX='lib' 
+    internal_rubberband_bin = env.SharedLibrary('internal_rubberband', internal_rubberband_sources)
+
+    #Pass this soundsourcempg123 library object file back to the SConscript above us.
+    Return("internal_rubberband_bin")
+else:
+    Return("")
