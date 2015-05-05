@@ -899,7 +899,6 @@ class MixxxCore(Feature):
                    "sampleutil.cpp",
                    "samplebuffer.cpp",
                    "singularsamplebuffer.cpp",
-                   "circularsamplebuffer.cpp",
 
                    "track/trackinfoobject.cpp",
                    "track/beatgrid.cpp",

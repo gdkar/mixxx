@@ -56,7 +56,6 @@ class PlayerInfo : public QObject {
             ControlObjectThread m_volume;
             ControlObjectThread m_orientation;
     };
-
     void clearControlCache();
     void timerEvent(QTimerEvent* pTimerEvent);
     void updateCurrentPlayingDeck();

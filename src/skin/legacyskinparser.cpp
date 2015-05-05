@@ -559,25 +559,17 @@ QWidget* LegacySkinParser::parseSizeAwareStack(QDomElement node) {
     pStack->setObjectName("SizeAwareStack");
     pStack->setContentsMargins(0, 0, 0, 0);
     commonWidgetSetup(node, pStack);
-
     QWidget* pOldParent = m_pParent;
     m_pParent = pStack;
-
     QDomNode childrenNode = m_pContext->selectNode(node, "Children");
     if (!childrenNode.isNull()) {
         // Descend chilren
         QDomNodeList children = childrenNode.childNodes();
-
         for (int i = 0; i < children.count(); ++i) {
             QDomNode node = children.at(i);
-
-            if (!node.isElement()) {
-                continue;
-            }
+            if (!node.isElement()) {continue;}
             QDomElement element = node.toElement();
-
             QList<QWidget*> children = parseNode(element);
-
             if (children.empty()) {
                 SKIN_WARNING(node, *m_pContext)
                         << "SizeAwareStack child produced no widget.";
@@ -590,15 +582,10 @@ QWidget* LegacySkinParser::parseSizeAwareStack(QDomElement node) {
                         << "All but the first are ignored.";
             }
             QWidget* pChild = children[0];
-
-            if (pChild == NULL) {
-                continue;
-            }
-
+            if (pChild == NULL) {continue;}
             pStack->addWidget(pChild);
         }
     }
-
     m_pParent = pOldParent;
     return pStack;
 }
@@ -609,39 +596,27 @@ QWidget* LegacySkinParser::parseBackground(QDomElement node,
     QLabel* bg = new QLabel(pInnerWidget);
 
     QString filename = m_pContext->selectString(node, "Path");
-    QPixmap* background = WPixmapStore::getPixmapNoCache(
-        m_pContext->getSkinPath(filename));
-
+    QPixmap* background = WPixmapStore::getPixmapNoCache(m_pContext->getSkinPath(filename));
     bg->move(0, 0);
-    if (background != NULL && !background->isNull()) {
-        bg->setPixmap(*background);
-    }
-
+    if (background != NULL && !background->isNull()) {bg->setPixmap(*background);}
     bg->lower();
-
     pInnerWidget->move(0,0);
     if (background != NULL && !background->isNull()) {
         pInnerWidget->setFixedSize(background->width(), background->height());
         pOuterWidget->setMinimumSize(background->width(), background->height());
     }
-
     // Default background color is now black, if people want to do <invert/>
     // filters they'll have to figure something out for this.
     QColor c(0,0,0);
-    if (m_pContext->hasNode(node, "BgColor")) {
-        c.setNamedColor(m_pContext->selectString(node, "BgColor"));
-    }
-
+    if (m_pContext->hasNode(node, "BgColor")) {c.setNamedColor(m_pContext->selectString(node, "BgColor"));}
     QPalette palette;
     palette.setBrush(QPalette::Window, WSkinColor::getCorrectColor(c));
     pOuterWidget->setBackgroundRole(QPalette::Window);
     pOuterWidget->setPalette(palette);
     pOuterWidget->setAutoFillBackground(true);
-
     // WPixmapStore::getPixmapNoCache() allocated background and gave us
     // ownership. QLabel::setPixmap makes a copy, so we have to delete this.
     delete background;
-
     return bg;
 }
 
@@ -684,28 +659,18 @@ void LegacySkinParser::setupLabelWidget(QDomElement element, WLabel* pLabel) {
 
 QWidget* LegacySkinParser::parseOverview(QDomElement node) {
     QString channelStr = lookupNodeGroup(node);
-
     const char* pSafeChannelStr = safeChannelString(channelStr);
-
     TrackPlayer* pPlayer = m_pPlayerManager->getPlayer(channelStr);
-
-    if (pPlayer == NULL)
-        return NULL;
-
+    if (pPlayer == NULL)return NULL;
     WOverview* overviewWidget = NULL;
-
     // "RGB" = "2", "HSV" = "1" or "Filtered" = "0" (LMH) waveform overview type
     int type = m_pConfig->getValueString(ConfigKey("[Waveform]","WaveformOverviewType"), "0").toInt();
-    if (type == 0) {
-        overviewWidget = new WOverviewLMH(pSafeChannelStr, m_pConfig, m_pParent);
-    } else if (type == 1) {
-        overviewWidget = new WOverviewHSV(pSafeChannelStr, m_pConfig, m_pParent);
-    } else {
-        overviewWidget = new WOverviewRGB(pSafeChannelStr, m_pConfig, m_pParent);
-    }
-
-    connect(overviewWidget, SIGNAL(trackDropped(QString, QString)),
-            m_pPlayerManager, SLOT(onLoadToPlayer(QString, QString)));
+    if (type == 0) 
+    {overviewWidget = new WOverviewLMH(pSafeChannelStr, m_pConfig, m_pParent);} 
+    else if (type == 1) 
+    {overviewWidget = new WOverviewHSV(pSafeChannelStr, m_pConfig, m_pParent);} 
+    else {overviewWidget = new WOverviewRGB(pSafeChannelStr, m_pConfig, m_pParent);}
+    connect(overviewWidget, SIGNAL(trackDropped(QString, QString)),m_pPlayerManager, SLOT(onLoadToPlayer(QString, QString)));
 
     commonWidgetSetup(node, overviewWidget);
     overviewWidget->setup(node, *m_pContext);
@@ -714,51 +679,42 @@ QWidget* LegacySkinParser::parseOverview(QDomElement node) {
     overviewWidget->Init();
 
     // Connect the player's load and unload signals to the overview widget.
-    connect(pPlayer, SIGNAL(loadTrack(TrackPointer)),
-            overviewWidget, SLOT(onLoadNewTrack(TrackPointer)));
-    connect(pPlayer, SIGNAL(newTrackLoaded(TrackPointer)),
-            overviewWidget, SLOT(onTrackLoaded(TrackPointer)));
-    connect(pPlayer, SIGNAL(loadTrackFailed(TrackPointer)),
-               overviewWidget, SLOT(onUnloadTrack(TrackPointer)));
-    connect(pPlayer, SIGNAL(unloadingTrack(TrackPointer)),
-            overviewWidget, SLOT(onUnloadTrack(TrackPointer)));
-
+    connect(pPlayer, &TrackPlayer::loadTrack,
+            overviewWidget, &WOverview::onLoadNewTrack);
+    connect(pPlayer, &TrackPlayer::newTrackLoaded,
+            overviewWidget, &WOverview::onTrackLoaded);
+    connect(pPlayer, &TrackPlayer::loadTrackFailed,
+               overviewWidget, &WOverview::onUnloadTrack);
+    connect(pPlayer, &TrackPlayer::unloadingTrack,
+            overviewWidget, &WOverview::onUnloadTrack);
     //just in case track already loaded
     overviewWidget->onLoadNewTrack(pPlayer->getLoadedTrack());
-
     return overviewWidget;
 }
 
 QWidget* LegacySkinParser::parseVisual(QDomElement node) {
     QString channelStr = lookupNodeGroup(node);
     TrackPlayer* pPlayer = m_pPlayerManager->getPlayer(channelStr);
-
     const char* pSafeChannelStr = safeChannelString(channelStr);
-
-    if (pPlayer == NULL)
-        return NULL;
-
+    if (pPlayer == NULL)return NULL;
     WWaveformViewer* viewer = new WWaveformViewer(pSafeChannelStr, m_pConfig, m_pParent);
     viewer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     WaveformWidgetFactory* factory = WaveformWidgetFactory::instance();
     factory->setWaveformWidget(viewer, node, *m_pContext);
-
     //qDebug() << "::parseVisual: parent" << m_pParent << m_pParent->size();
     //qDebug() << "::parseVisual: viewer" << viewer << viewer->size();
-
     viewer->installEventFilter(m_pKeyboard);
     viewer->installEventFilter(m_pControllerManager->getControllerLearningEventFilter());
     commonWidgetSetup(node, viewer);
     viewer->Init();
-
     // connect display with loading/unloading of tracks
-    QObject::connect(pPlayer, SIGNAL(newTrackLoaded(TrackPointer)),
-                     viewer, SLOT(onTrackLoaded(TrackPointer)));
-    QObject::connect(pPlayer, SIGNAL(unloadingTrack(TrackPointer)),
-                     viewer, SLOT(onTrackUnloaded(TrackPointer)));
+    QObject::connect(pPlayer, &TrackPlayer::newTrackLoaded,
+                     viewer, &WWaveformViewer::onTrackLoaded);
+    QObject::connect(pPlayer, &TrackPlayer::unloadingTrack,
+                     viewer, &WWaveformViewer::onTrackUnloaded);
 
-    connect(viewer, SIGNAL(trackDropped(QString, QString)),
-            m_pPlayerManager, SLOT(onLoadToPlayer(QString, QString)));
+    connect(viewer, &WWaveformViewer::trackDropped,
+            m_pPlayerManager, &PlayerManager::onLoadToPlayer);
 
     // if any already loaded
     viewer->onTrackLoaded(pPlayer->getLoadedTrack());
@@ -769,26 +725,18 @@ QWidget* LegacySkinParser::parseVisual(QDomElement node) {
 QWidget* LegacySkinParser::parseText(QDomElement node) {
     QString channelStr = lookupNodeGroup(node);
     const char* pSafeChannelStr = safeChannelString(channelStr);
-
     TrackPlayer* pPlayer = m_pPlayerManager->getPlayer(channelStr);
-
-    if (!pPlayer)
-        return NULL;
-
+    if (!pPlayer)return NULL;
     WTrackText* p = new WTrackText(pSafeChannelStr, m_pConfig, m_pParent);
     setupLabelWidget(node, p);
-
     connect(pPlayer, SIGNAL(newTrackLoaded(TrackPointer)),
             p, SLOT(onTrackLoaded(TrackPointer)));
     connect(pPlayer, SIGNAL(unloadingTrack(TrackPointer)),
             p, SLOT(onTrackUnloaded(TrackPointer)));
     connect(p, SIGNAL(trackDropped(QString,QString)),
             m_pPlayerManager, SLOT(onLoadToPlayer(QString,QString)));
-
     TrackPointer pTrack = pPlayer->getLoadedTrack();
-    if (pTrack) {
-        p->onTrackLoaded(pTrack);
-    }
+    if (pTrack) {p->onTrackLoaded(pTrack);}
 
     return p;
 }
@@ -811,27 +759,18 @@ QWidget* LegacySkinParser::parseTrackProperty(QDomElement node) {
             p, SLOT(onTrackUnloaded(TrackPointer)));
     connect(p, SIGNAL(trackDropped(QString,QString)),
             m_pPlayerManager, SLOT(onLoadToPlayer(QString,QString)));
-
     TrackPointer pTrack = pPlayer->getLoadedTrack();
-    if (pTrack) {
-        p->onTrackLoaded(pTrack);
-    }
-
+    if (pTrack) {p->onTrackLoaded(pTrack);}
     return p;
 }
 
 QWidget* LegacySkinParser::parseStarRating(QDomElement node) {
     QString channelStr = lookupNodeGroup(node);
     const char* pSafeChannelStr = safeChannelString(channelStr);
-
     TrackPlayer* pPlayer = m_pPlayerManager->getPlayer(channelStr);
-
-    if (!pPlayer)
-        return NULL;
-
+    if (!pPlayer)return NULL;
     WStarRating* p = new WStarRating(pSafeChannelStr, m_pParent);
     p->setup(node, *m_pContext);
-
     connect(pPlayer, SIGNAL(newTrackLoaded(TrackPointer)),
             p, SLOT(onTrackLoaded(TrackPointer)));
     connect(pPlayer, SIGNAL(unloadingTrack(TrackPointer)),
@@ -873,9 +812,7 @@ QWidget* LegacySkinParser::parseNumberRate(QDomElement node) {
 
 QWidget* LegacySkinParser::parseNumberPos(QDomElement node) {
     QString channelStr = lookupNodeGroup(node);
-
     const char* pSafeChannelStr = safeChannelString(channelStr);
-
     WNumberPos* p = new WNumberPos(pSafeChannelStr, m_pParent);
     setupLabelWidget(node, p);
     return p;

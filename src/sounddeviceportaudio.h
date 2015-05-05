@@ -65,11 +65,8 @@ class SoundDevicePortAudio : public SoundDevice {
                         const PaStreamCallbackTimeInfo *timeInfo,
                         PaStreamCallbackFlags statusFlags);
 
-    virtual double getDefaultSampleRate() const {
-        return m_deviceInfo ? static_cast<double>(
-            m_deviceInfo->defaultSampleRate) : 44100;
-    }
-
+    virtual double getDefaultSampleRate() const 
+    {return m_deviceInfo ? static_cast<double>(m_deviceInfo->defaultSampleRate) : 44100;}
   private:
     // PortAudio stream for this device.
     PaStream* volatile m_pStream;
@@ -95,7 +92,7 @@ class SoundDevicePortAudio : public SoundDevice {
     ControlObjectSlave* m_pMasterAudioLatencyUsage;
     ControlObjectSlave* m_pMasterAudioLatencyOverload;
     int m_underflowUpdateCount;
-    static volatile int m_underflowHappend;
+    QAtomicInteger<qint64> m_underflowHappend;
     qint64 m_nsInAudioCb;
     int m_framesSinceAudioLatencyUsageUpdate;
     int m_syncBuffers;

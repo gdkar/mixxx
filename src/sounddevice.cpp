@@ -34,20 +34,14 @@ SoundDevice::SoundDevice(ConfigObject<ConfigValue> * config, SoundManager * sm)
           m_iNumInputChannels(2),
           m_dSampleRate(44100.0),
           m_hostAPI("Unknown API"),
-          m_framesPerBuffer(0) {
-}
-
-SoundDevice::~SoundDevice() {
-}
-
+          m_framesPerBuffer(0) {}
+SoundDevice::~SoundDevice() {}
 int SoundDevice::getNumInputChannels() const {return m_iNumInputChannels;}
 int SoundDevice::getNumOutputChannels() const {return m_iNumOutputChannels;}
 void SoundDevice::setHostAPI(QString api) {m_hostAPI = api;}
 void SoundDevice::setSampleRate(double sampleRate) {
-    if (sampleRate <= 0.0) {
-        // this is the default value used elsewhere in this file
-        sampleRate = 44100.0;
-    }
+    // this is the default value used elsewhere in this file
+    if (sampleRate <= 0.0) {sampleRate = 44100.0;}
     m_dSampleRate = sampleRate;
 }
 
@@ -66,8 +60,7 @@ SoundDeviceError SoundDevice::addOutput(const AudioOutput &out) {
     //Check if the output channels are already used
     foreach (AudioOutput myOut, m_audioOutputs) 
     {if (out.channelsClash(myOut)) {return SOUNDDEVICE_ERROR_DUPLICATE_OUTPUT_CHANNEL;}}
-    if (out.getChannelGroup().getChannelBase()
-            + out.getChannelGroup().getChannelCount() > getNumOutputChannels()) {
+    if (out.getChannelGroup().getChannelBase() + out.getChannelGroup().getChannelCount() > getNumOutputChannels()) {
         return SOUNDDEVICE_ERROR_EXCESSIVE_OUTPUT_CHANNEL;
     }
     m_audioOutputs.append(out);
@@ -79,26 +72,16 @@ SoundDeviceError SoundDevice::addInput(const AudioInput&in) {
     // DON'T check if the input channels are already used, there's no reason
     // we can't send the same inputted samples to different places in mixxx.
     // -- bkgood 20101108
-    if (in.getChannelGroup().getChannelBase()
-            + in.getChannelGroup().getChannelCount() > getNumInputChannels()) {
+    if (in.getChannelGroup().getChannelBase() + in.getChannelGroup().getChannelCount() > getNumInputChannels()) {
         return SOUNDDEVICE_ERROR_EXCESSIVE_INPUT_CHANNEL;
     }
     m_audioInputs.append(in);
     return SOUNDDEVICE_ERROR_OK;
 }
 
-void SoundDevice::clearInputs() {
-    m_audioInputs.clear();
-}
-
-bool SoundDevice::operator==(const SoundDevice &other) const {
-    return this->getInternalName() == other.getInternalName();
-}
-
-bool SoundDevice::operator==(const QString &other) const {
-    return getInternalName() == other;
-}
-
+void SoundDevice::clearInputs() {m_audioInputs.clear();}
+bool SoundDevice::operator==(const SoundDevice &other) const {return this->getInternalName() == other.getInternalName();}
+bool SoundDevice::operator==(const QString &other) const {return getInternalName() == other;}
 void SoundDevice::composeOutputBuffer(CSAMPLE* outputBuffer,
                                       const unsigned int framesToCompose,
                                       const unsigned int framesReadOffset,
@@ -124,7 +107,6 @@ void SoundDevice::composeOutputBuffer(CSAMPLE* outputBuffer,
         for (QList<AudioOutput>::iterator i = m_audioOutputs.begin(),
                      e = m_audioOutputs.end(); i != e; ++i) {
             AudioOutput& out = *i;
-
             const ChannelGroup outChans = out.getChannelGroup();
             const int iChannelCount = outChans.getChannelCount();
             const int iChannelBase = outChans.getChannelBase();
@@ -153,9 +135,7 @@ void SoundDevice::composeOutputBuffer(CSAMPLE* outputBuffer,
                     // this will make sure a sample from each channel is copied
                     for (int iChannel = 0; iChannel < iChannelCount; ++iChannel) {
                         outputBuffer[iFrameBase + iChannelBase + iChannel] =
-                                SampleUtil::clampSample(
-                                        pAudioOutputBuffer[iLocalFrameBase + iChannel]);
-
+                                SampleUtil::clampSample(pAudioOutputBuffer[iLocalFrameBase + iChannel]);
                         // Input audio pass-through (useful for debugging)
                         //if (in)
                         //    output[iFrameBase + src.channelBase + iChannel] =
@@ -200,8 +180,7 @@ void SoundDevice::composeInputBuffer(const CSAMPLE* inputBuffer,
         // Non Stereo input (iFrameSize != 2)
         // Do crazy deinterleaving of the audio into the correct m_inputBuffers.
 
-        for (QList<AudioInput>::const_iterator i = m_audioInputs.begin(),
-                     e = m_audioInputs.end(); i != e; ++i) {
+        for (QList<AudioInput>::const_iterator i = m_audioInputs.begin(), e = m_audioInputs.end(); i != e; ++i) {
             const AudioInput& in = *i;
             ChannelGroup chanGroup = in.getChannelGroup();
             int iChannelCount = chanGroup.getChannelCount();
@@ -214,7 +193,6 @@ void SoundDevice::composeInputBuffer(const CSAMPLE* inputBuffer,
                 // sample in a frame)
                 unsigned int iFrameBase = iFrameNo * iFrameSize;
                 unsigned int iLocalFrameBase = iFrameNo * 2;
-
                 if (iChannelCount == 1) {
                     pInputBuffer[iLocalFrameBase] =      inputBuffer[iFrameBase + iChannelBase];
                     pInputBuffer[iLocalFrameBase + 1] =  inputBuffer[iFrameBase + iChannelBase];
@@ -226,12 +204,8 @@ void SoundDevice::composeInputBuffer(const CSAMPLE* inputBuffer,
         }
     }
 }
-
-void SoundDevice::clearInputBuffer(const unsigned int framesToPush,
-                                   const unsigned int framesWriteOffset) {
-
-    for (QList<AudioInput>::const_iterator i = m_audioInputs.begin(),
-                 e = m_audioInputs.end(); i != e; ++i) {
+void SoundDevice::clearInputBuffer(const unsigned int framesToPush, const unsigned int framesWriteOffset) {
+    for (QList<AudioInput>::const_iterator i = m_audioInputs.begin(), e = m_audioInputs.end(); i != e; ++i) {
         const AudioInput& in = *i;
         CSAMPLE* pInputBuffer = in.buffer();  // Always stereo
         SampleUtil::clear(&pInputBuffer[framesWriteOffset * 2], framesToPush * 2);

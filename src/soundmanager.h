@@ -83,8 +83,7 @@ class SoundManager : public QObject {
     void onDeviceOutputCallback(const unsigned int iFramesPerBuffer);
     // Used by SoundDevices to "push" any audio from their inputs that they have
     // into the mixing engine.
-    void pushInputBuffers(const QList<AudioInput>& inputs,
-                          const unsigned int iFramesPerBuffer);
+    void pushInputBuffers(const QList<AudioInput>& inputs,const unsigned int iFramesPerBuffer);
     void writeProcess();
     void readProcess();
     void registerOutput(AudioOutput output, AudioSource*src);

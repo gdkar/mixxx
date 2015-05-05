@@ -22,7 +22,7 @@ class ControllerManager;
 class SkinContext;
 class WLabel;
 class ControlObject;
-
+class ControlObjectSlave;
 class LegacySkinParser : public QObject, public SkinParser {
     Q_OBJECT
   public:
@@ -119,9 +119,7 @@ class LegacySkinParser : public QObject, public SkinParser {
 
     QString lookupNodeGroup(QDomElement node);
     static const char* safeChannelString(QString channelStr);
-    ControlObject* controlFromConfigNode(QDomElement element,
-                                         const QString& nodeName,
-                                         bool* created);
+    ControlObject* controlFromConfigNode(QDomElement element,const QString& nodeName,bool* created);
 
     ConfigObject<ConfigValue>* m_pConfig;
     MixxxKeyboard* m_pKeyboard;
