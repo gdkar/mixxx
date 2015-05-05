@@ -34,18 +34,12 @@ class EngineBufferScaleLinear : public EngineBufferScale  {
   public:
     EngineBufferScaleLinear(ReadAheadManager *pReadAheadManager);
     virtual ~EngineBufferScaleLinear();
-
-    CSAMPLE* getScaled(unsigned long buf_size);
-    void clear();
-
-    virtual void setScaleParameters(double base_rate,
-                                    double* pTempoRatio,
-                                    double* pPitchRatio);
+    virtual CSAMPLE* getScaled(unsigned long buf_size);
+    virtual void clear();
+    virtual void setScaleParameters(double base_rate,double* pTempoRatio,double* pPitchRatio);
 
   private:
-    CSAMPLE* do_scale(CSAMPLE* buf, unsigned long buf_size,
-                      int *samples_read);
-
+    CSAMPLE* do_scale(CSAMPLE* buf, unsigned long buf_size,int *samples_read);
     /** Holds playback direction */
     bool m_bBackwards;
     bool m_bClear;
@@ -57,7 +51,6 @@ class EngineBufferScaleLinear : public EngineBufferScale  {
     int m_bufferIntSize;
     CSAMPLE m_floorSampleOld[2];
     // The read-ahead manager that we use to fetch samples
-    ReadAheadManager* m_pReadAheadManager;
     double m_dCurrentFrame;
     double m_dNextFrame;
 };

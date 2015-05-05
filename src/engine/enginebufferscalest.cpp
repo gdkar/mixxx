@@ -32,15 +32,14 @@
 using namespace soundtouch;
 
 EngineBufferScaleST::EngineBufferScaleST(ReadAheadManager *pReadAheadManager)
-    : EngineBufferScale(),
-      m_bBackwards(false),
-      m_pReadAheadManager(pReadAheadManager) {
+    : EngineBufferScale(pReadAheadManager),
+      m_bBackwards(false){
     m_pSoundTouch = new soundtouch::SoundTouch();
     m_pSoundTouch->setChannels(2);
     m_pSoundTouch->setRate(m_dBaseRate);
     m_pSoundTouch->setPitch(1.0);
     m_pSoundTouch->setSetting(SETTING_USE_QUICKSEEK, 1);
-    m_pSoundTouch->setSampleRate(m_iSampleRate > 0 ? m_iSampleRate : 44100);
+    m_pSoundTouch->setSampleRate(m_dSampleRate > 0 ? m_dSampleRate : 44100);
     buffer_back = new CSAMPLE[kiSoundTouchReadAheadLength*2];
     // Setting the tempo to a very low value will force SoundTouch
     // to preallocate buffers large enough to (almost certainly)
@@ -90,9 +89,12 @@ void EngineBufferScaleST::setScaleParameters(double base_rate,
     // changed direction. I removed it because this is handled by EngineBuffer.
 }
 
-void EngineBufferScaleST::setSampleRate(int iSampleRate) {
-    m_pSoundTouch->setSampleRate(iSampleRate);
-    m_iSampleRate = iSampleRate;
+void EngineBufferScaleST::setSampleRate(double dSampleRate) {
+  if(sampleRate()!=dSampleRate){
+    m_pSoundTouch->setSampleRate(dSampleRate);
+    m_dSampleRate = dSampleRate;
+    emit(sampleRateChanged(sampleRate()));
+  }
 }
 
 void EngineBufferScaleST::clear() {m_pSoundTouch->clear();}
@@ -129,10 +131,7 @@ CSAMPLE* EngineBufferScaleST::getScaled(unsigned long buf_size) {
                 total_read_frames += iAvailFrames;
                 m_pSoundTouch->putSamples(buffer_back, iAvailFrames);
             } else {
-                if (last_read_failed) {
-                    m_pSoundTouch->flush();
-                    break;
-                }
+                if (last_read_failed) {m_pSoundTouch->flush();break;}
                 last_read_failed = true;
             }
         }
@@ -150,5 +149,6 @@ CSAMPLE* EngineBufferScaleST::getScaled(unsigned long buf_size) {
     // shifting as a tempo shift of (1/m_dPitchAdjust) and a rate shift of
     // (*m_dPitchAdjust) so these two cancel out.
     m_samplesRead = m_dBaseRate * m_dTempoRatio * total_received_frames * iNumChannels;
+    emit(samplesReadChanged(getSamplesRead()));
     return m_buffer;
 }

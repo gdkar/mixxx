@@ -31,12 +31,13 @@ class TrackPlayer : public QObject {
         RESET_PITCH_AND_SPEED = 3,
     };
     Q_DECLARE_FLAGS(TrackLoadFlags,TrackLoadReset);
+    TrackPlayer(QObject *pParent, const QString &group);
     TrackPlayer(QObject* pParent,
                         ConfigObject<ConfigValue>* pConfig,
                         EngineMaster* pMixingEngine,
                         EffectsManager* pEffectsManager,
                         EngineChannel::ChannelOrientation defaultOrientation,
-                        QString group,
+                        const QString &group,
                         bool defaultMaster,
                         bool defaultHeadphones);
     virtual ~TrackPlayer();

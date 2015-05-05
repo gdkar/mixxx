@@ -49,17 +49,14 @@ EngineFilter::EngineFilter(char * conf, int predefinedType)
         run = fid_run_new(ff, &funcp);
         fbuf1 = fid_run_newbuf(run);
         fbuf2 = fid_run_newbuf(run);
-        processSample = funcp;
+        processSample = &processSampleDynamic;
     }
     int i;
-    for(i=0; i < FILTER_BUF_SIZE; i++)
-        buf1[i] = buf2[i] = 0;
+    for(i=0; i < FILTER_BUF_SIZE; i++)buf1[i] = buf2[i] = 0;
 }
 
-EngineFilter::~EngineFilter()
-{
-    if(processSample == funcp) //if we used fidlib
-    {
+EngineFilter::~EngineFilter(){
+    if(processSample == &processSampleDynamic) {
         fid_run_freebuf(fbuf2);
         fid_run_freebuf(fbuf1);
         fid_run_free(run);
@@ -72,14 +69,17 @@ EngineFilter::~EngineFilter()
 void EngineFilter::process(CSAMPLE* pInOut, const int iBufferSize){
     int i;
     for(i = 0; i < iBufferSize; i += 2){
-        pInOut[i] = (CSAMPLE) processSample(fbuf1, (double) pInOut[i]);
-        pInOut[i + 1] = (CSAMPLE) processSample(fbuf2, (double) pInOut[i + 1]);
+        pInOut[i] = (CSAMPLE) processSample(0,fbuf1, (double) pInOut[i]);
+        pInOut[i + 1] = (CSAMPLE) processSample(0,fbuf2, (double) pInOut[i + 1]);
     }
 }
-
+double processSampleDynamic(void *vFuncp, void *bufIn, const double sample){
+  FidFunc *funcp = reinterpret_cast<FidFunc*>(vFuncp);
+  return funcp(bufIn,sample);
+}
 
 // 250Hz-3Khz Butterworth
-double processSampleBp(void *bufIn, const double sample){
+double processSampleBp(void *, void *bufIn, const double sample){
     double *buf = (double*) bufIn;
     double val = sample;
    double tmp, fir, iir;
@@ -108,8 +108,6 @@ double processSampleBp(void *bufIn, const double sample){
    iir= val;
    iir -= 0.5508744524070673*tmp; fir= tmp;
    iir -= -1.437951258090782*buf[8]; fir += buf[8]+buf[8];
-   fir += iir;
-   tmp= buf[9]; buf[9]= iir; val= fir;
    iir= val;
    iir -= 0.940359918647641*tmp; fir= tmp;
    iir -= -1.938825711089784*buf[10]; fir += buf[10]+buf[10];
@@ -129,8 +127,7 @@ double processSampleBp(void *bufIn, const double sample){
 }
 
 //3Khz butterworth
-double processSampleHp(void *bufIn, const double sample)
-{
+double processSampleHp(void*,void *bufIn, const double sample){
     double *buf = (double*) bufIn;
     double val = sample;
    double tmp, fir, iir;
@@ -158,8 +155,7 @@ double processSampleHp(void *bufIn, const double sample)
    buf[7]= iir; val= fir;
    return val;
 }
-double processSampleLp(void *bufIn, const double sample)
-{
+double processSampleLp(void*, void *bufIn, const double sample){
     double *buf = (double*) bufIn;
     double val = sample;
        double tmp, fir, iir;

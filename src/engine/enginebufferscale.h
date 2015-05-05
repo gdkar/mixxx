@@ -21,7 +21,7 @@
 #include <QObject>
 
 #include "util/types.h"
-
+#include "engine/readaheadmanager.h"
 // MAX_SEEK_SPEED needs to be good and high to allow room for the very high
 //  instantaneous velocities of advanced scratching (Uzi) and spin-backs.
 //  (Yes, I can actually spin the SCS.1d faster than 15x nominal.
@@ -39,10 +39,14 @@
 
 class EngineBufferScale : public QObject {
     Q_OBJECT
+    Q_PROPERTY(double sampleRate READ sampleRate WRITE setSampleRate NOTIFY sampleRateChanged);
+    Q_PROPERTY(double tempoRatio READ tempoRatio WRITE setTempoRatio RESET resetTempoRatio NOTIFY tempoRatioChanged);
+    Q_PROPERTY(double pitchRatio READ pitchRatio WRITE setPitchRatio RESET resetTempoRatio NOTIFY pitchRatioChanged);
+    Q_PROPERTY(double baseRate   READ baseRate WRITE setBaseRate NOTIFY baseRateChanged);
+    Q_PROPERTY(double samplesRead READ getSamplesRead NOTIFY samplesReadChanged);
   public:
-    EngineBufferScale();
+    EngineBufferScale(ReadAheadManager *pReadAheadManager);
     virtual ~EngineBufferScale();
-
     // Sets the scaling parameters.
     // * The base rate (ratio of track sample rate to output sample rate).
     // * The tempoRatio describes the tempo change in fraction of
@@ -63,21 +67,33 @@ class EngineBufferScale : public QObject {
         m_dTempoRatio = *pTempoRatio;
         m_dPitchRatio = *pPitchRatio;
     }
-
     // Set the desired output sample rate.
-    virtual void setSampleRate(int iSampleRate) {
-        m_iSampleRate = iSampleRate;
-    }
-
+    virtual void setSampleRate(double dSampleRate) {if(dSampleRate!=m_dSampleRate){m_dSampleRate = dSampleRate;emit sampleRateChanged(dSampleRate);}}
+    virtual double sampleRate() const{return m_dSampleRate;}
+    virtual void   setTempoRatio(double v){if(tempoRatio()!=v){double tr = v; double pr = pitchRatio();setScaleParameters(baseRate(),&tr,&pr);emit(tempoRatioChanged(tr));}}
+    virtual void   resetTempoRatio(){setTempoRatio(1.0);}
+    virtual double tempoRatio()  const{return m_dTempoRatio;}
+    virtual void   setPitchRatio(double v){if(pitchRatio()!=v){double tr = tempoRatio(); double pr = v;setScaleParameters(baseRate(),&tr,&pr);emit(pitchRatioChanged(tr));}}
+    virtual void resetPitchRatio(){setPitchRatio(1.0);}
+    virtual double pitchRatio() const{return m_dPitchRatio;}
+    virtual double baseRate() const{return m_dBaseRate;}
+    virtual void setBaseRate(double v) {if(baseRate()!=v){double tr=tempoRatio(); double pr=pitchRatio();setScaleParameters(v,&tr,&pr); emit(baseRateChanged(v));}}
+    virtual ReadAheadManager *readAheadManager()const{return m_pReadAheadManager;}
     /** Get new playpos after call to scale() */
-    double getSamplesRead();
+    virtual double getSamplesRead();
     /** Called from EngineBuffer when seeking, to ensure the buffers are flushed */
     virtual void clear() = 0;
     /** Scale buffer */
     virtual CSAMPLE* getScaled(unsigned long buf_size) = 0;
-
+  signals:
+    void sampleRateChanged(double);
+    void tempoRatioChanged(double);
+    void pitchRatioChanged(double);
+    void baseRateChanged(double);
+    void samplesReadChanged(double);
   protected:
-    int m_iSampleRate;
+    ReadAheadManager *m_pReadAheadManager;
+    double  m_dSampleRate;
     double m_dBaseRate;
     bool m_bSpeedAffectsPitch;
     double m_dTempoRatio;

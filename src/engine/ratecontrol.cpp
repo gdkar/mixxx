@@ -42,92 +42,70 @@ RateControl::RateControl(QString group,
       m_eRampBackMode(RATERAMP_RAMPBACK_NONE),
       m_dRateTempRampbackChange(0.0) {
     m_pScratchController = new PositionScratchController(group);
-
     m_pRateDir = new ControlObject(ConfigKey(group, "rate_dir"));
     m_pRateRange = new ControlObject(ConfigKey(group, "rateRange"));
     // Allow rate slider to go out of bounds so that master sync rate
     // adjustments are not capped.
-    m_pRateSlider = new ControlPotmeter(ConfigKey(group, "rate"),
-                                        -1.0, 1.0, true);
+    m_pRateSlider = new ControlPotmeter(ConfigKey(group, "rate"),-1.0, 1.0, true);
     m_pRate = new ControlPotmeter(ConfigKey(group,"engine_rate"),-4,4,true);
-
     // Search rate. Rate used when searching in sound. This overrules the
     // playback rate
     m_pRateSearch = new ControlPotmeter(ConfigKey(group, "rateSearch"), -300., 300.);
-
     // Reverse button
     m_pReverseButton = new ControlPushButton(ConfigKey(group, "reverse"));
     m_pReverseButton->set(0);
-
     // Forward button
     m_pForwardButton = new ControlPushButton(ConfigKey(group, "fwd"));
     connect(m_pForwardButton, SIGNAL(valueChanged(double)),
             this, SLOT(onControlFastForward(double)),
             Qt::DirectConnection);
     m_pForwardButton->set(0);
-
     // Back button
     m_pBackButton = new ControlPushButton(ConfigKey(group, "back"));
     connect(m_pBackButton, SIGNAL(valueChanged(double)),
             this, SLOT(onControlFastBack(double)),
             Qt::DirectConnection);
     m_pBackButton->set(0);
-
     m_pReverseRollButton = new ControlPushButton(ConfigKey(group, "reverseroll"));
     connect(m_pReverseRollButton, SIGNAL(valueChanged(double)),
             this, SLOT(onReverseRollActivate(double)),
             Qt::DirectConnection);
-
     m_pSlipEnabled = new ControlObjectSlave(group, "slip_enabled", this);
-
     m_pVCEnabled = ControlObject::getControl(ConfigKey(getGroup(), "vinylcontrol_enabled"));
     m_pVCScratching = ControlObject::getControl(ConfigKey(getGroup(), "vinylcontrol_scratching"));
     m_pVCMode = ControlObject::getControl(ConfigKey(getGroup(), "vinylcontrol_mode"));
-
     // Permanent rate-change buttons
     buttonRatePermDown = new ControlPushButton(ConfigKey(group,"rate_perm_down"));
     connect(buttonRatePermDown, SIGNAL(valueChanged(double)),
             this, SLOT(onControlRatePermDown(double)),
             Qt::DirectConnection);
-
     buttonRatePermDownSmall = new ControlPushButton(ConfigKey(group,"rate_perm_down_small"));
     connect(buttonRatePermDownSmall, SIGNAL(valueChanged(double)),
             this, SLOT(onControlRatePermDownSmall(double)),
             Qt::DirectConnection);
-
-    buttonRatePermUp =
-        new ControlPushButton(ConfigKey(group,"rate_perm_up"));
+    buttonRatePermUp = new ControlPushButton(ConfigKey(group,"rate_perm_up"));
     connect(buttonRatePermUp, SIGNAL(valueChanged(double)),
             this, SLOT(onControlRatePermUp(double)),
             Qt::DirectConnection);
-
-    buttonRatePermUpSmall =
-        new ControlPushButton(ConfigKey(group,"rate_perm_up_small"));
+    buttonRatePermUpSmall = new ControlPushButton(ConfigKey(group,"rate_perm_up_small"));
     connect(buttonRatePermUpSmall, SIGNAL(valueChanged(double)),
             this, SLOT(onControlRatePermUpSmall(double)),
             Qt::DirectConnection);
-
     // Temporary rate-change buttons
-    buttonRateTempDown =
-        new ControlPushButton(ConfigKey(group,"rate_temp_down"));
+    buttonRateTempDown = new ControlPushButton(ConfigKey(group,"rate_temp_down"));
     connect(buttonRateTempDown, SIGNAL(valueChanged(double)),
             this, SLOT(onControlRateTempDown(double)),
             Qt::DirectConnection);
-
-    buttonRateTempDownSmall =
-        new ControlPushButton(ConfigKey(group,"rate_temp_down_small"));
+    buttonRateTempDownSmall = new ControlPushButton(ConfigKey(group,"rate_temp_down_small"));
     connect(buttonRateTempDownSmall, SIGNAL(valueChanged(double)),
             this, SLOT(onControlRateTempDownSmall(double)),
             Qt::DirectConnection);
-
-    buttonRateTempUp =
-        new ControlPushButton(ConfigKey(group,"rate_temp_up"));
+    buttonRateTempUp = new ControlPushButton(ConfigKey(group,"rate_temp_up"));
     connect(buttonRateTempUp, SIGNAL(valueChanged(double)),
             this, SLOT(onControlRateTempUp(double)),
             Qt::DirectConnection);
 
-    buttonRateTempUpSmall =
-        new ControlPushButton(ConfigKey(group,"rate_temp_up_small"));
+    buttonRateTempUpSmall = new ControlPushButton(ConfigKey(group,"rate_temp_up_small"));
     connect(buttonRateTempUpSmall, SIGNAL(valueChanged(double)),
             this, SLOT(onControlRateTempUpSmall(double)),
             Qt::DirectConnection);
@@ -148,27 +126,19 @@ RateControl::RateControl(QString group,
     m_pScratch2Enable = new ControlPushButton(ConfigKey(group, "scratch2_enable"));
     m_pScratch2Enable->set(0);
 
-    m_pScratch2Scratching = new ControlPushButton(ConfigKey(group,
-                                                            "scratch2_indicates_scratching"));
+    m_pScratch2Scratching = new ControlPushButton(ConfigKey(group, "scratch2_indicates_scratching"));
     // Enable by default, because it was always scratching before introducing
     // this control.
     m_pScratch2Scratching->set(1.0);
-
-
     m_pJog = new ControlObject(ConfigKey(group, "jog"));
     m_pJogFilter = new Rotary();
     // FIXME: This should be dependent on sample rate/block size or something
     m_pJogFilter->setFilterLength(25);
-
     // Update Internal Settings
     // Set Pitchbend Mode
-    m_eRateRampMode = (RateControl::RATERAMP_MODE)
-            getConfig()->getValueString(ConfigKey("[Controls]","RateRamp")).toInt();
-
+    m_eRateRampMode = (RateControl::RATERAMP_MODE) getConfig()->getValueString(ConfigKey("[Controls]","RateRamp")).toInt();
     // Set the Sensitivity
-    m_iRateRampSensitivity =
-            getConfig()->getValueString(ConfigKey("[Controls]","RateRampSensitivity")).toInt();
-
+    m_iRateRampSensitivity = getConfig()->getValueString(ConfigKey("[Controls]","RateRampSensitivity")).toInt();
     m_pSyncMode = new ControlObjectSlave(group, "sync_mode", this);
 }
 
@@ -203,47 +173,23 @@ RateControl::~RateControl() {
     delete m_pJogFilter;
     delete m_pScratchController;
 }
-
-void RateControl::setBpmControl(BpmControl* bpmcontrol) {
-    m_pBpmControl = bpmcontrol;
+void RateControl::setBpmControl(BpmControl* bpmcontrol) {m_pBpmControl = bpmcontrol;}
+void RateControl::setRateRamp(bool linearMode){
+    m_eRateRampMode = linearMode ? RateControl::RATERAMP_LINEAR : RateControl::RATERAMP_STEP;
 }
 
-void RateControl::setRateRamp(bool linearMode)
-{
-    m_eRateRampMode = linearMode ?
-            RateControl::RATERAMP_LINEAR : RateControl::RATERAMP_STEP;
-}
-
-void RateControl::setRateRampSensitivity(int sense)
-{
+void RateControl::setRateRampSensitivity(int sense){
     // Reverse the actual sensitivity value passed.
     // That way the gui works in an intuitive manner.
     sense = RATE_SENSITIVITY_MAX - sense + RATE_SENSITIVITY_MIN;
-    if (sense < RATE_SENSITIVITY_MIN) {
-        m_iRateRampSensitivity = RATE_SENSITIVITY_MIN;
-    } else if (sense > RATE_SENSITIVITY_MAX) {
-        m_iRateRampSensitivity = RATE_SENSITIVITY_MAX;
-    } else {
-        m_iRateRampSensitivity = sense;
-    }
+    if (sense < RATE_SENSITIVITY_MIN) {m_iRateRampSensitivity = RATE_SENSITIVITY_MIN;
+    } else if (sense > RATE_SENSITIVITY_MAX) {m_iRateRampSensitivity = RATE_SENSITIVITY_MAX;
+    } else {m_iRateRampSensitivity = sense;}
 }
-
-void RateControl::setTemp(double v) {
-    m_dTemp = v;
-}
-
-void RateControl::setTempSmall(double v) {
-    m_dTempSmall = v;
-}
-
-void RateControl::setPerm(double v) {
-    m_dPerm = v;
-}
-
-void RateControl::setPermSmall(double v) {
-    m_dPermSmall = v;
-}
-
+void RateControl::setTemp(double v) {m_dTemp = v;}
+void RateControl::setTempSmall(double v) {m_dTempSmall = v;}
+void RateControl::setPerm(double v) {m_dPerm = v;}
+void RateControl::setPermSmall(double v) {m_dPermSmall = v;}
 void RateControl::onReverseRollActivate(double v) {
     if (v > 0.0) {
         m_pSlipEnabled->set(1);
@@ -255,32 +201,24 @@ void RateControl::onReverseRollActivate(double v) {
 }
 
 //qDebug() << "onControlFastForward(" << v << ")";
-void RateControl::onControlFastForward(double v)
-  {m_pRateSearch->set((v==0)? 0.:4.);}
+void RateControl::onControlFastForward(double v){m_pRateSearch->set((v==0)? 0.:4.);}
 //qDebug() << "onControlFastBack(" << v << ")";
-void RateControl::onControlFastBack(double v)
-  {m_pRateSearch->set((v==0)?0.0:-4.0);}
-
+void RateControl::onControlFastBack(double v){m_pRateSearch->set((v==0)?0.0:-4.0);}
 void RateControl::onControlRatePermDown(double){
     // Adjusts temp rate down if button pressed
-    if (buttonRatePermDown->get())
-        m_pRateSlider->set(m_pRateSlider->get() - m_pRateDir->get() * m_dPerm);
+    if (buttonRatePermDown->get())m_pRateSlider->set(m_pRateSlider->get() - m_pRateDir->get() * m_dPerm);
 }
-
 void RateControl::onControlRatePermDownSmall(double){
     // Adjusts temp rate down if button pressed
-    if (buttonRatePermDownSmall->get())
-        m_pRateSlider->set(m_pRateSlider->get() - m_pRateDir->get() * m_dPermSmall );
+    if (buttonRatePermDownSmall->get())m_pRateSlider->set(m_pRateSlider->get() - m_pRateDir->get() * m_dPermSmall );
 }
 // Adjusts temp rate up if button pressed
 void RateControl::onControlRatePermUp(double){
-    if (buttonRatePermUp->get()) 
-    {m_pRateSlider->set(m_pRateSlider->get() + m_pRateDir->get() * m_dPerm );}
+    if (buttonRatePermUp->get()) {m_pRateSlider->set(m_pRateSlider->get() + m_pRateDir->get() * m_dPerm );}
 }
 // Adjusts temp rate up if button pressed
 void RateControl::onControlRatePermUpSmall(double){
-    if (buttonRatePermUpSmall->get())
-        m_pRateSlider->set(m_pRateSlider->get() + m_pRateDir->get() * m_dPermSmall );  
+    if (buttonRatePermUpSmall->get()) m_pRateSlider->set(m_pRateSlider->get() + m_pRateDir->get() * m_dPermSmall );  
 }
 // Set the state of the Temporary button. Logic is handled in ::process()
 void RateControl::onControlRateTempDown(double){
@@ -292,7 +230,6 @@ void RateControl::onControlRateTempDown(double){
         m_ePbCurrent = m_ePbPressed;
     }
 }
-
 void RateControl::onControlRateTempDownSmall(double){
     // Set the state of the Temporary button. Logic is handled in ::process()
     if (buttonRateTempDownSmall->get() && !(m_ePbPressed & RateControl::RATERAMP_DOWN)){
@@ -328,14 +265,8 @@ void RateControl::trackLoaded(TrackPointer pTrack) {
     if (m_pTrack) {trackUnloaded(m_pTrack);}
     m_pTrack = pTrack;
 }
-
-void RateControl::trackUnloaded(TrackPointer pTrack) {
-    Q_UNUSED(pTrack);
-    m_pTrack.clear();
-}
-
-double RateControl::getRawRate() const 
-{return m_pRateSlider->get() * m_pRateDir->get();}
+void RateControl::trackUnloaded(TrackPointer ) {m_pTrack.clear();}
+double RateControl::getRawRate() const {return m_pRateSlider->get() * m_pRateDir->get();}
 double RateControl::getWheelFactor() const {return m_pWheel->get();}
 double RateControl::getJogFactor() const {
     // FIXME: Sensitivity should be configurable separately?
@@ -348,9 +279,7 @@ double RateControl::getJogFactor() const {
     if (isnan(jogValue) || isnan(jogFactor)) {jogFactor = 0.0;}
     return jogFactor;
 }
-
-SyncMode RateControl::getSyncMode() const 
-{return syncModeFromDouble(m_pSyncMode->get());}
+SyncMode RateControl::getSyncMode() const  {return syncModeFromDouble(m_pSyncMode->get());}
 double RateControl::calculateSpeed(double baserate, double speed, bool paused,
                                    int iSamplesPerBuffer,
                                    bool* pReportScratching,
@@ -390,7 +319,6 @@ double RateControl::calculateSpeed(double baserate, double speed, bool paused,
                 // Scratch: a rate multiplier
                 // Jog: a linear additive effect whose value is filtered (springs back)
                 // Temp: pitch bend
-
                 // New scratch behavior - overrides playback speed (and old behavior)
                 if (useScratch2Value) {rate = scratchFactor;}
                 else {rate = speed + getTempRate();rate += wheelFactor;}
@@ -405,8 +333,7 @@ double RateControl::calculateSpeed(double baserate, double speed, bool paused,
             *pReportScratching = true;
         } else {
             // If master sync is on, respond to it -- but vinyl and scratch mode always override.
-            if (getSyncMode() == SYNC_FOLLOWER && !paused &&
-                    !bVinylControlEnabled && !useScratch2Value) {
+            if (getSyncMode() == SYNC_FOLLOWER && !paused && !bVinylControlEnabled && !useScratch2Value) {
                 if (m_pBpmControl == NULL) {
                     qDebug() << "ERROR: calculateRate m_pBpmControl is null during master sync";
                     return 1.0;

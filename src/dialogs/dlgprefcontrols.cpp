@@ -95,20 +95,18 @@ DlgPrefControls::DlgPrefControls(QWidget * parent, MixxxMainWindow * mixxx,
         m_pConfig->set(ConfigKey("[Controls]", "RateRange"),ConfigValue(2));
 
     ComboBoxRateRange->clear();
-    ComboBoxRateRange->addItem(tr("6%"));
-    ComboBoxRateRange->addItem(tr("8% (Technics SL-1210)"));
-    ComboBoxRateRange->addItem(tr("10%"));
-    ComboBoxRateRange->addItem(tr("20%"));
-    ComboBoxRateRange->addItem(tr("30%"));
-    ComboBoxRateRange->addItem(tr("40%"));
-    ComboBoxRateRange->addItem(tr("50%"));
-    ComboBoxRateRange->addItem(tr("60%"));
-    ComboBoxRateRange->addItem(tr("70%"));
-    ComboBoxRateRange->addItem(tr("80%"));
-    ComboBoxRateRange->addItem(tr("90%"));
-    connect(ComboBoxRateRange, SIGNAL(activated(int)),
-            this, SLOT(onSetRateRange(int)));
-
+    ComboBoxRateRange->addItem(tr("6%"), QVariant(.06));
+    ComboBoxRateRange->addItem(tr("8% (Technics SL-1210)"),QVariant(.08));
+    ComboBoxRateRange->addItem(tr("10%"),QVariant(.1));
+    ComboBoxRateRange->addItem(tr("20%"),QVariant(.2));
+    ComboBoxRateRange->addItem(tr("30%"),QVariant(.3));
+    ComboBoxRateRange->addItem(tr("40%"),QVariant(.4));
+    ComboBoxRateRange->addItem(tr("50%"),QVariant(.5));
+    ComboBoxRateRange->addItem(tr("60%"),QVariant(.6));
+    ComboBoxRateRange->addItem(tr("70%"),QVariant(.7));
+    ComboBoxRateRange->addItem(tr("80%"),QVariant(.8));
+    ComboBoxRateRange->addItem(tr("90%"),QVariant(.9));
+    connect(ComboBoxRateRange, SIGNAL(activated(int)),this, SLOT(onSetRateRange(int)));
     ComboBoxKeylockMode->clear();
     ComboBoxKeylockMode->addItem(tr("Lock original key"));
     ComboBoxKeylockMode->addItem(tr("Lock current key"));
@@ -451,19 +449,13 @@ void DlgPrefControls::onSetLocale(int pos) {
 }
 
 void DlgPrefControls::onSetRateRange(int pos) {
-    double range = static_cast<double>(pos-1) / 10.0;
-    if (pos == 0)
-        range = 0.06;
-    if (pos == 1)
-        range = 0.08;
+    double range = ComboBoxRateRange->itemData(pos).toDouble();
     m_pConfig->set(ConfigKey("[Controls]","RateRange"),pos);
     qDebug() << "onSetRateRange" << pos << range;
-
     // Set rate range for every group
     foreach (ControlPotmeter* pControl, m_rateControls) {
         pControl->setRange(-range,range,true);
     }
-
     // Reset rate for every group
 //    foreach (ControlObjectThread* pControl, m_rateControls) {
 //        pControl->onSet(0);
@@ -472,14 +464,11 @@ void DlgPrefControls::onSetRateRange(int pos) {
 
 void DlgPrefControls::onSetRateDir(int index) {
     float dir = 1.;
-    if (index == 1)
-        dir = -1.;
+    if (index == 1) dir = -1.;
     float oldDir = m_rateDirControls[0]->get();
 
     // Set rate direction for every group
-    foreach (ControlObjectThread* pControl, m_rateDirControls) {
-        pControl->onSet(dir);
-    }
+    foreach (ControlObjectThread* pControl, m_rateDirControls) {pControl->onSet(dir);}
 
     // If the setting was changed, ie the old direction is not equal to the new one,
     // multiply the rate by -1 so the current sound does not change.
@@ -567,28 +556,28 @@ void DlgPrefControls::onSetRateTempLeft(double v) {
     QString str;
     str = str.setNum(v, 'f');
     m_pConfig->set(ConfigKey("[Controls]", "RateTempLeft"),ConfigValue(str));
-    RateControl::setTemp(v);
+    RateControl::setTemp(v/1000);
 }
 
 void DlgPrefControls::onSetRateTempRight(double v) {
     QString str;
     str = str.setNum(v, 'f');
     m_pConfig->set(ConfigKey("[Controls]", "RateTempRight"),ConfigValue(str));
-    RateControl::setTempSmall(v);
+    RateControl::setTempSmall(v/100);
 }
 
 void DlgPrefControls::onSetRatePermLeft(double v) {
     QString str;
     str = str.setNum(v, 'f');
     m_pConfig->set(ConfigKey("[Controls]", "RatePermLeft"),ConfigValue(str));
-    RateControl::setPerm(v);
+    RateControl::setPerm(v/100);
 }
 
 void DlgPrefControls::onSetRatePermRight(double v) {
     QString str;
     str = str.setNum(v, 'f');
     m_pConfig->set(ConfigKey("[Controls]", "RatePermRight"),ConfigValue(str));
-    RateControl::setPermSmall(v);
+    RateControl::setPermSmall(v/100);
 }
 
 void DlgPrefControls::onSetRateRampSensitivity(int sense) {
@@ -598,48 +587,28 @@ void DlgPrefControls::onSetRateRampSensitivity(int sense) {
 }
 
 void DlgPrefControls::onSetRateRamp(bool mode) {
-    m_pConfig->set(ConfigKey("[Controls]", "RateRamp"),
-                   ConfigValue(groupBoxRateRamp->isChecked()));
+    m_pConfig->set(ConfigKey("[Controls]", "RateRamp"),ConfigValue(groupBoxRateRamp->isChecked()));
     RateControl::setRateRamp(mode);
 }
 
 void DlgPrefControls::onApply() {
     double deck1RateRange = m_rateRangeControls[0]->get();
     double deck1RateDir = m_rateDirControls[0]->get();
-
     // Write rate range to config file
-    double idx = (10. * deck1RateRange) + 1;
-    if (deck1RateRange <= 0.07)
-        idx = 0.;
-    else if (deck1RateRange <= 0.09)
-        idx = 1.;
-
-    m_pConfig->set(ConfigKey("[Controls]", "RateRange"), ConfigValue((int)idx));
-
+    int idx = ComboBoxRateRange->currentIndex();
+    m_pConfig->set(ConfigKey("[Controls]", "RateRange"), ConfigValue(idx));
     // Write rate direction to config file
-    if (deck1RateDir == 1) {
-        m_pConfig->set(ConfigKey("[Controls]", "RateDir"), ConfigValue(0));
-    } else {
-        m_pConfig->set(ConfigKey("[Controls]", "RateDir"), ConfigValue(1));
-    }
-
-    m_pConfig->set(ConfigKey("[Controls]", "SpeedAutoReset"),
-            ConfigValue(m_speedAutoReset));
-
-    m_pConfig->set(ConfigKey("[Controls]", "PitchAndKeylockMode"),
-            ConfigValue(m_keylockMode));
+    m_pConfig->set(ConfigKey("[Controls]", "RateDir"), ConfigValue(!deck1RateDir));
+    m_pConfig->set(ConfigKey("[Controls]", "SpeedAutoReset"),ConfigValue(m_speedAutoReset));
+    m_pConfig->set(ConfigKey("[Controls]", "PitchAndKeylockMode"),ConfigValue(m_keylockMode));
     // Set cue behavior for every group
-    foreach (ControlObjectThread* pControl, m_keylockModeControls) {
-        pControl->onSet(m_keylockMode);
-    }
+    foreach (ControlObjectThread* pControl, m_keylockModeControls) {pControl->onSet(m_keylockMode);}
 }
 
 //Returns TRUE if skin fits to screen resolution, FALSE otherwise
-bool DlgPrefControls::checkSkinResolution(QString skin)
-{
+bool DlgPrefControls::checkSkinResolution(QString skin){
     int screenWidth = QApplication::desktop()->width();
     int screenHeight = QApplication::desktop()->height();
-
     const QRegExp min_size_regex("<MinimumSize>(\\d+), *(\\d+)<");
     QFile skinfile(skin + "/skin.xml");
     if (skinfile.open(QFile::ReadOnly | QFile::Text)) {
@@ -652,8 +621,7 @@ bool DlgPrefControls::checkSkinResolution(QString skin)
             }
         }
         if (found_size) {
-            return !(min_size_regex.cap(1).toInt() > screenWidth ||
-                     min_size_regex.cap(2).toInt() > screenHeight);
+            return !(min_size_regex.cap(1).toInt() > screenWidth ||min_size_regex.cap(2).toInt() > screenHeight);
         }
     }
 
@@ -689,30 +657,18 @@ void DlgPrefControls::onNumDecksChanged(double new_count) {
 
 void DlgPrefControls::onNumSamplersChanged(double new_count) {
     int numsamplers = static_cast<int>(new_count);
-    if (numsamplers <= m_iNumConfiguredSamplers) {
-        return;
-    }
-
+    if (numsamplers <= m_iNumConfiguredSamplers) {return;}
     for (int i = m_iNumConfiguredSamplers; i < numsamplers; ++i) {
         QString group = PlayerManager::groupForSampler(i);
-        m_rateControls.push_back(qobject_cast<ControlPotmeter*>(ControlObject::getControl(
-                group, "rate")));
-        m_rateRangeControls.push_back(new ControlObjectThread(
-                group, "rateRange"));
-        m_rateDirControls.push_back(new ControlObjectThread(
-                group, "rate_dir"));
-        m_cueControls.push_back(new ControlObjectThread(
-                group, "cue_mode"));
-        m_keylockModeControls.push_back(new ControlObjectThread(
-                        group, "keylockMode"));
+        m_rateControls.push_back(qobject_cast<ControlPotmeter*>(ControlObject::getControl(group, "rate")));
+        m_rateRangeControls.push_back(new ControlObjectThread(group, "rateRange"));
+        m_rateDirControls.push_back(new ControlObjectThread(group, "rate_dir"));
+        m_cueControls.push_back(new ControlObjectThread(group, "cue_mode"));
+        m_keylockModeControls.push_back(new ControlObjectThread(group, "keylockMode"));
         m_keylockModeControls.last()->set(m_keylockMode);
     }
-
     m_iNumConfiguredSamplers = numsamplers;
     onSetRateDir(m_pConfig->getValueString(ConfigKey("[Controls]", "RateDir")).toInt());
     onSetRateRange(m_pConfig->getValueString(ConfigKey("[Controls]", "RateRange")).toInt());
 }
-
-void DlgPrefControls::onUpdateSpeedAutoReset(int i) {
-    m_speedAutoReset = i;
-}
+void DlgPrefControls::onUpdateSpeedAutoReset(int i) {m_speedAutoReset = i;}

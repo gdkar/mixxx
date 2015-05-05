@@ -45,7 +45,7 @@ class EngineBufferScaleST : public EngineBufferScale {
     virtual void setScaleParameters(double base_rate,
                                     double* pTempoRatio,
                                     double* pPitchRatio);
-    virtual void setSampleRate(int iSampleRate);
+    virtual void setSampleRate(double dSampleRate);
     // Scale buffer.
     CSAMPLE* getScaled(unsigned long buf_size);
     // Flush buffer.
@@ -57,8 +57,6 @@ class EngineBufferScaleST : public EngineBufferScale {
     CSAMPLE* buffer_back;
     // SoundTouch time/pitch scaling lib
     soundtouch::SoundTouch* m_pSoundTouch;
-    // The read-ahead manager that we use to fetch samples
-    ReadAheadManager* m_pReadAheadManager;
 };
 
 #endif

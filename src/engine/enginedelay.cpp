@@ -32,7 +32,6 @@ EngineDelay::EngineDelay(const char* group, ConfigKey delayControl):
     m_pDelayPot->setDefaultValue(0);
     connect(m_pDelayPot, SIGNAL(valueChanged(double)), this,
             SLOT(onDelayChanged()), Qt::DirectConnection);
-
     m_pSampleRate = new ControlObjectSlave(group, "samplerate", this);
     m_pSampleRate->connectValueChanged(SLOT(onDelayChanged()), Qt::DirectConnection);
 }
@@ -64,7 +63,6 @@ void EngineDelay::process(CSAMPLE* pInOut, const int iBufferSize) {
             // put sample into delay buffer:
             m_pDelayBuffer[m_iDelayPos] = pInOut[i];
             m_iDelayPos = (m_iDelayPos + 1) % kiMaxDelay;
-
             // Take delayed sample from delay buffer and copy it to dest buffer:
             pInOut[i] = m_pDelayBuffer[iDelaySourcePos];
             iDelaySourcePos = (iDelaySourcePos + 1) % kiMaxDelay;

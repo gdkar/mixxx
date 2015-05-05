@@ -52,11 +52,11 @@ private:
     CSAMPLE        *m_buffer;
     union{
       struct{
-    quint32         m_serial;
-    quint8          m_type;
-    quint8          m_index;
-    quint8          m_base;
-    quint8          m_span;
+        quint32         m_serial;
+        quint8          m_type;
+        quint8          m_index;
+        quint8          m_base;
+        quint8          m_span;
       };
       quint64       m_top;
     };
@@ -191,9 +191,7 @@ Q_DECLARE_METATYPE(AudioInput);
 Q_DECLARE_TYPEINFO(AudioInput,Q_PRIMITIVE_TYPE);
 Q_DECLARE_METATYPE(AudioOutput);
 Q_DECLARE_TYPEINFO(AudioOutput,Q_PRIMITIVE_TYPE);
-
 typedef AudioPath::AudioPathType AudioPathType;
-
 // globals for QHash
 unsigned int qHash(const ChannelGroup &group);
 unsigned int qHash(const AudioOutput &output);

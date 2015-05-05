@@ -27,6 +27,7 @@
 #define PREDEF_BP 2
 #define PREDEF_LP 3
 
+typedef double (*ProcessSampleFunc)(void *coefs, void *buf, const double sample);
 class EngineFilter : public EngineObject {
     Q_OBJECT
   public:
@@ -41,7 +42,7 @@ class EngineFilter : public EngineObject {
     double buf1[FILTER_BUF_SIZE];
     double buf2[FILTER_BUF_SIZE];
   private:
-    double (*processSample)(void *buf, const double sample);
+    ProcessSampleFunc   processSample;
     FidFilter *ff;
     FidFunc *funcp;
     FidRun *run;
@@ -49,9 +50,9 @@ class EngineFilter : public EngineObject {
     void *fbuf2;
 };
 
-double processSampleDynamic(void *buf, const double sample);
-double processSampleHp(void *buf, const double sample);
-double processSampleBp(void *buf, const double sample);
-double processSampleLp(void *buf, const double sample);
+double processSampleDynamic(void*coefs, void *buf, const double sample);
+double processSampleHp(void*coefs, void *buf, const double sample);
+double processSampleBp(void*coefs, void* buf, const double sample);
+double processSampleLp(void*coefs, void *buf, const double sample);
 
 #endif

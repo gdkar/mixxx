@@ -6,22 +6,12 @@
 
 
 EngineBufferScaleDummy::EngineBufferScaleDummy(ReadAheadManager* pReadAheadManager)
-    : EngineBufferScale(),
-      m_pReadAheadManager(pReadAheadManager)
-{
-    m_samplesRead = 0.0;
+    : EngineBufferScale(pReadAheadManager){
+      m_samplesRead = 0.0;
 }
 
-EngineBufferScaleDummy::~EngineBufferScaleDummy()
-{
-
-}
-
-void EngineBufferScaleDummy::clear()
-{
-}
-
-
+EngineBufferScaleDummy::~EngineBufferScaleDummy(){}
+void EngineBufferScaleDummy::clear(){}
 CSAMPLE* EngineBufferScaleDummy::getScaled(unsigned long buf_size) {
     m_samplesRead = 0.0;
     double rate = m_dBaseRate * m_dTempoRatio;
@@ -32,16 +22,13 @@ CSAMPLE* EngineBufferScaleDummy::getScaled(unsigned long buf_size) {
     int samples_remaining = buf_size;
     CSAMPLE* buffer_back = m_buffer;
     while (samples_remaining > 0) {
-        int read_samples = m_pReadAheadManager->getNextSamples(rate,
-                                                               buffer_back,
-                                                               samples_remaining);
+        int read_samples = m_pReadAheadManager->getNextSamples(rate,buffer_back,samples_remaining);
         samples_remaining -= read_samples;
         buffer_back += read_samples;
     }
-
     // Interpreted as number of virtual song samples consumed.
     m_samplesRead = buf_size;
-
+    emit sampleReadChanged(m_samplesRead);
 /*
         //START OF BASIC/ROCKSOLID LINEAR INTERPOLATION CODE
 
@@ -69,6 +56,5 @@ CSAMPLE* EngineBufferScaleDummy::getScaled(unsigned long buf_size) {
         //END OF LINEAR INTERPOLATION CODE
 
     //qDebug() << iBaseLength << playpos << new_playpos << buf_size << numSamplesToCopy;
-
     return m_buffer;
 }

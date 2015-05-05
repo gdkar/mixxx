@@ -147,19 +147,16 @@ struct EffectsResponse {
         // Must come last.
         NUM_STATUS_CODES
     };
-
     EffectsResponse()
             : request_id(-1),
               success(false),
               status(NUM_STATUS_CODES) {
     }
-
     EffectsResponse(const EffectsRequest& request, bool succeeded=false)
             : request_id(request.request_id),
               success(succeeded),
               status(NUM_STATUS_CODES) {
     }
-
     qint64 request_id;
     bool success;
     StatusCode status;
