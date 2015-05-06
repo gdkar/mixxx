@@ -295,8 +295,10 @@ int CachingReader::read(int sample, int num_samples, CSAMPLE* buffer) {
         DEBUG_ASSERT(zero_samples <= samples_remaining);
         SampleUtil::clear(buffer, zero_samples);
         samples_remaining -= zero_samples;
-        //everything is zeros, easy
-        if (samples_remaining == 0) {return 0;}
+        if (samples_remaining == 0) {
+            //everything is zeros, easy
+            return zero_samples;
+        }
         buffer += zero_samples;
         sample += zero_samples;
         DEBUG_ASSERT(0 <= sample);

@@ -63,8 +63,11 @@ void CachingReaderWorker::processChunkReadRequest(
         update->status = CHUNK_READ_INVALID;
         return;
     }
-    const SINT framesRemaining = m_pAudioSource->getFrameIndexMax() - seekFrameIndex;
-    const SINT framesToRead = math_min(kFramesPerChunk, framesRemaining);
+
+    const SINT framesRemaining =
+            m_pAudioSource->getMaxFrameIndex() - seekFrameIndex;
+    const SINT framesToRead =
+            math_min(kFramesPerChunk, framesRemaining);
     if (0 >= framesToRead) {
         // No more data available for reading
         update->status = CHUNK_READ_EOF;
