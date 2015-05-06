@@ -171,7 +171,6 @@ double ControlAudioTaperPotBehavior::parameterToValue(double dParam) {
 
 
 void ControlAudioTaperPotBehavior::setValueFromParameter(double dParam,ControlDoublePrivate* pControl) {
-    Q_UNUSED(o);
     pControl->set(parameterToValue(dParam), NULL);
 }
 
