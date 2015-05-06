@@ -13,7 +13,7 @@ namespace {
 // appropriate amount to pre-fetch from the ExtAudioFile API. Oddly, the "prime"
 // information -- which AIUI is supposed to tell us this information -- is zero
 // for this file. We use the same frame pre-fetch count from SoundSourceMp3.
-static const int kMp3StabilizationFrames =
+static const SINT kMp3StabilizationFrames =
         SoundSource::kMp3SeekFramePrefetchCount * 1152;
 static CSAMPLE kMp3StabilizationScratchBuffer[kMp3StabilizationFrames *
                                               AudioSource::kChannelCountStereo];
@@ -156,8 +156,8 @@ SINT SoundSourceCoreAudio::seekSampleFrame(SINT frameIndex) {
     DEBUG_ASSERT(isValidFrameIndex(frameIndex));
 
     // See comments above on kMp3StabilizationFrames.
-    const SINT stabilization_frames = m_bFileIsMp3 ? math_min<SINT>(
-            kMp3StabilizationFrames, frameIndex + m_headerFrames) : 0;
+    const SINT stabilization_frames = m_bFileIsMp3 ? math_min(
+            kMp3StabilizationFrames, SINT(frameIndex + m_headerFrames)) : 0;
     OSStatus err = ExtAudioFileSeek(
             m_audioFile, frameIndex + m_headerFrames - stabilization_frames);
     if (stabilization_frames > 0) {
