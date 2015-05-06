@@ -25,7 +25,7 @@ typedef struct Chunk {
     CSAMPLE* stereoSamples;
     Chunk* prev_lru;
     Chunk* next_lru;
-
+    Chunk* next_free;
     enum State {
         FREE,
         ALLOCATED,
@@ -34,13 +34,14 @@ typedef struct Chunk {
     };
     State state;
 } Chunk;
-
+Q_DECLARE_METATYPE(Chunk);
+Q_DECLARE_TYPEINFO(Chunk,Q_MOVABLE_TYPE);
 typedef struct ChunkReadRequest {
     Chunk* chunk;
-
     ChunkReadRequest() { chunk = NULL; }
 } ChunkReadRequest;
-
+Q_DECLARE_METATYPE(ChunkReadRequest);
+Q_DECLARE_TYPEINFO(ChunkReadRequest,Q_PRIMITIVE_TYPE);
 enum ReaderStatus {
     INVALID,
     TRACK_NOT_LOADED,
@@ -49,7 +50,8 @@ enum ReaderStatus {
     CHUNK_READ_EOF,
     CHUNK_READ_INVALID
 };
-
+Q_DECLARE_METATYPE(ReaderStatus);
+Q_DECLARE_TYPEINFO(ReaderStatus,Q_PRIMITIVE_TYPE);
 typedef struct ReaderStatusUpdate {
     ReaderStatus status;
     Chunk* chunk;
@@ -60,7 +62,8 @@ typedef struct ReaderStatusUpdate {
         , trackFrameCount(0) {
     }
 } ReaderStatusUpdate;
-
+Q_DECLARE_METATYPE(ReaderStatusUpdate);
+Q_DECLARE_TYPEINFO(ReaderStatusUpdate,Q_PRIMITIVE_TYPE);
 class CachingReaderWorker : public EngineWorker {
     Q_OBJECT
 
@@ -87,7 +90,7 @@ class CachingReaderWorker : public EngineWorker {
   signals:
     // Emitted once a new track is loaded and ready to be read from.
     void trackLoading();
-    void trackLoaded(TrackPointer pTrack, int iSampleRate, int iNumSamples);
+    void trackLoaded(TrackPointer pTrack, double dSampleRate, int iNumSamples);
     void trackLoadFailed(TrackPointer pTrack, QString reason);
   private:
     QString m_group;
@@ -104,8 +107,7 @@ class CachingReaderWorker : public EngineWorker {
     void loadTrack(const TrackPointer& pTrack);
     // Read the given chunk_number from the file into pChunk's data
     // buffer. Fills length/sample information about Chunk* as well.
-    void processChunkReadRequest(ChunkReadRequest* request,
-                                 ReaderStatusUpdate* update);
+    void processChunkReadRequest(ChunkReadRequest* request, ReaderStatusUpdate* update);
     // The current audio source of the track loaded
     Mixxx::AudioSourcePointer m_pAudioSource;
     QAtomicInt m_stop;

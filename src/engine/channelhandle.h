@@ -182,57 +182,29 @@ class ChannelHandleMap {
     typedef typename QVarLengthArray<T, kMaxExpectedGroups>::iterator iterator;
 
     const T& at(const ChannelHandle& handle) const {
-        if (!handle.valid()) {
-            return m_dummy;
-        }
+        if (!handle.valid()) {return m_dummy;}
         return m_data.at(handle.handle());
     }
-
     void insert(const ChannelHandle& handle, const T& value) {
-        if (!handle.valid()) {
-            return;
-        }
+        if (!handle.valid()) {return;}
 
         int iHandle = handle.handle();
         maybeExpand(iHandle + 1);
         m_data[iHandle] = value;
     }
-
     T& operator[](const ChannelHandle& handle) {
-        if (!handle.valid()) {
-            return m_dummy;
-        }
+        if (!handle.valid()) {return m_dummy;}
         int iHandle = handle.handle();
         maybeExpand(iHandle + 1);
         return m_data[iHandle];
     }
-
-    void clear() {
-        m_data.clear();
-    }
-
-    typename container_type::iterator begin() {
-        return m_data.begin();
-    }
-
-    typename container_type::const_iterator begin() const {
-        return m_data.begin();
-    }
-
-    typename container_type::iterator end() {
-        return m_data.end();
-    }
-
-    typename container_type::const_iterator end() const {
-        return m_data.end();
-    }
-
+    void clear() {m_data.clear();}
+    typename container_type::iterator begin() {return m_data.begin();}
+    typename container_type::const_iterator begin() const {return m_data.begin();}
+    typename container_type::iterator end() {return m_data.end();}
+    typename container_type::const_iterator end() const {return m_data.end();}
   private:
-    inline void maybeExpand(int iSize) {
-        if (m_data.size() < iSize) {
-            m_data.resize(iSize);
-        }
-    }
+    inline void maybeExpand(int iSize) {if (m_data.size() < iSize) {m_data.resize(iSize);}}
     container_type m_data;
     T m_dummy;
 };

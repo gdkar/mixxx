@@ -22,8 +22,8 @@
 
 EngineChannel::EngineChannel(const ChannelHandleAndGroup& handle_group,
                              EngineChannel::ChannelOrientation defaultOrientation, QObject *pParent)
-        :m_group(handle_group) {
-          setParent(pParent);
+        : EngineObject(pParent),
+          m_group(handle_group) {
     m_pPFL = new ControlPushButton(ConfigKey(getGroup(), "pfl"));
     m_pPFL->setButtonMode(ControlPushButton::TOGGLE);
     m_pMaster = new ControlPushButton(ConfigKey(getGroup(), "master"));

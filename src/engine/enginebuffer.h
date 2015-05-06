@@ -25,11 +25,12 @@
 #include "util/types.h"
 #include "engine/engineobject.h"
 #include "engine/sync/syncable.h"
+#include "engine/cachingreader.h"
 #include "track/trackinfoobject.h"
 #include "configobject.h"
 #include "control/rotary.h"
 #include "control/controlvalue.h"
-#include "engine/cachingreader.h"
+#include "control/statevariable.h"
 
 //for the writer
 #ifdef __SCALER_DEBUG__
@@ -114,7 +115,7 @@ class EngineBuffer : public EngineObject {
     };
 
     EngineBuffer(QString _group, ConfigObject<ConfigValue>* _config,
-                 EngineChannel* pChannel, EngineMaster* pMixingEngine);
+                 EngineChannel* pChannel, EngineMaster* pMixingEngine, QObject *pParent=0);
     virtual ~EngineBuffer();
 
     void bindWorkers(EngineWorkerScheduler* pWorkerScheduler);
@@ -231,6 +232,7 @@ class EngineBuffer : public EngineObject {
     // List of hints to provide to the CachingReader
     HintVector m_hintList;
     // The current sample to play in the file.
+
     double m_filepos_play;
     // The previous callback's speed. Used to check if the scaler parameters
     // need updating.

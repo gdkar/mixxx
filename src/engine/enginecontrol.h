@@ -8,7 +8,7 @@
 #include <QList>
 
 #include "configobject.h"
-#include "control/controlobjectthread.h"
+#include "control/controlobjectslave.h"
 #include "track/trackinfoobject.h"
 #include "control/controlvalue.h"
 #include "engine/effects/groupfeaturestate.h"
@@ -35,8 +35,7 @@ const double kNoTrigger = -1;
 class EngineControl : public QObject {
     Q_OBJECT
   public:
-    EngineControl(QString group,
-                  ConfigObject<ConfigValue>* _config, QObject *pParent=0);
+    EngineControl(QString group,ConfigObject<ConfigValue>* _config, QObject *pParent=0);
     virtual ~EngineControl();
 
     // Called by EngineBuffer::process every latency period. See the above
@@ -108,7 +107,7 @@ class EngineControl : public QObject {
     ControlValueAtomic<SampleOfTrack> m_sampleOfTrack;
     EngineMaster* m_pEngineMaster;
     EngineBuffer* m_pEngineBuffer;
-    ControlObjectThread m_numDecks;
+    ControlObjectSlave m_numDecks;
 };
 Q_DECLARE_TYPEINFO(EngineControl,Q_COMPLEX_TYPE);
 #endif /* ENGINECONTROL_H */
