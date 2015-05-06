@@ -41,93 +41,36 @@ double EngineControl::getTrigger(const double,
                                  const int) {
     return kNoTrigger;
 }
-
-void EngineControl::trackLoaded(TrackPointer) {
-}
-
-void EngineControl::trackUnloaded(TrackPointer) {
-}
-
-void EngineControl::hintReader(HintVector*) {
-}
-
-void EngineControl::setEngineMaster(EngineMaster* pEngineMaster) {
-    m_pEngineMaster = pEngineMaster;
-}
-
-void EngineControl::setEngineBuffer(EngineBuffer* pEngineBuffer) {
-    m_pEngineBuffer = pEngineBuffer;
-}
-
+void EngineControl::trackLoaded(TrackPointer) {}
+void EngineControl::trackUnloaded(TrackPointer) {}
+void EngineControl::hintReader(HintVector*) {}
+void EngineControl::setEngineMaster(EngineMaster* pEngineMaster) {m_pEngineMaster = pEngineMaster;}
+void EngineControl::setEngineBuffer(EngineBuffer* pEngineBuffer) {m_pEngineBuffer = pEngineBuffer;}
 void EngineControl::setCurrentSample(const double dCurrentSample, const double dTotalSamples) {
     SampleOfTrack sot;
     sot.current = dCurrentSample;
     sot.total = dTotalSamples;
     m_sampleOfTrack.setValue(sot);
 }
-
-double EngineControl::getCurrentSample() const {
-    return m_sampleOfTrack.getValue().current;
-}
-
-double EngineControl::getTotalSamples() const {
-    return m_sampleOfTrack.getValue().total;
-}
-
+double EngineControl::getCurrentSample() const {return m_sampleOfTrack.getValue().current;}
+double EngineControl::getTotalSamples() const {return m_sampleOfTrack.getValue().total;}
 bool EngineControl::atEndPosition() const {
     SampleOfTrack sot = m_sampleOfTrack.getValue();
     return (sot.current >= sot.total);
 }
-
-QString EngineControl::getGroup() const {
-    return m_group;
-}
-
-ConfigObject<ConfigValue>* EngineControl::getConfig() {
-    return m_pConfig;
-}
-
-EngineMaster* EngineControl::getEngineMaster() {
-    return m_pEngineMaster;
-}
-
-EngineBuffer* EngineControl::getEngineBuffer() {
-    return m_pEngineBuffer;
-}
-
-void EngineControl::seekAbs(double playPosition) {
-    if (m_pEngineBuffer) {
-        m_pEngineBuffer->onControlSeekAbs(playPosition);
-    }
-}
-
-void EngineControl::seekExact(double playPosition) {
-    if (m_pEngineBuffer) {
-        m_pEngineBuffer->onControlSeekExact(playPosition);
-    }
-}
-
-void EngineControl::seek(double sample) {
-    if (m_pEngineBuffer) {
-        m_pEngineBuffer->onControlSeek(sample);
-    }
-}
-
-void EngineControl::notifySeek(double dNewPlaypos) {
-    Q_UNUSED(dNewPlaypos);
-}
-
+QString EngineControl::getGroup() const {return m_group;}
+ConfigObject<ConfigValue>* EngineControl::getConfig() {return m_pConfig;}
+EngineMaster* EngineControl::getEngineMaster() {return m_pEngineMaster;}
+EngineBuffer* EngineControl::getEngineBuffer() {return m_pEngineBuffer;}
+void EngineControl::seekAbs(double playPosition) {if (m_pEngineBuffer) {m_pEngineBuffer->onControlSeekAbs(playPosition);}}
+void EngineControl::seekExact(double playPosition) {if (m_pEngineBuffer) {m_pEngineBuffer->onControlSeekExact(playPosition);}}
+void EngineControl::seek(double sample) {if (m_pEngineBuffer) {m_pEngineBuffer->onControlSeek(sample);}}
+void EngineControl::notifySeek(double dNewPlaypos) {Q_UNUSED(dNewPlaypos);}
 EngineBuffer* EngineControl::pickSyncTarget() {
     EngineMaster* pMaster = getEngineMaster();
-    if (!pMaster) {
-        return NULL;
-    }
-
+    if (!pMaster) {return NULL;}
     EngineSync* pEngineSync = pMaster->getEngineSync();
-    if (pEngineSync == NULL) {
-        return NULL;
-    }
-
+    if (pEngineSync == NULL) {return NULL;}
     // TODO(rryan): Remove. This is a linear search over groups in
     // EngineMaster. We should pass the EngineChannel into EngineControl.
     EngineChannel* pThisChannel = pMaster->getChannel(getGroup());

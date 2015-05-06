@@ -31,7 +31,7 @@ typedef double (*ProcessSampleFunc)(void *coefs, void *buf, const double sample)
 class EngineFilter : public EngineObject {
     Q_OBJECT
   public:
-    EngineFilter(char* conf, int predefinedType = 0);
+    EngineFilter(char* conf, int predefinedType = 0, QObject*pParent=0);
     virtual ~EngineFilter();
     void process(CSAMPLE* pInOut, const int iBufferSize);
   protected:

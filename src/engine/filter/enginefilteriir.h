@@ -26,8 +26,9 @@ enum IIRPass {
 template<unsigned int SIZE, enum IIRPass PASS>
 class EngineFilterIIR : public EngineObjectConstIn {
   public:
-    EngineFilterIIR()
-            : m_doRamping(false),
+    EngineFilterIIR( QObject *pParent=0)
+            : EngineObjectConstIn(pParent),
+              m_doRamping(false),
               m_doStart(false),
               m_startFromDry(false) {
         memset(m_coef, 0, sizeof(m_coef));

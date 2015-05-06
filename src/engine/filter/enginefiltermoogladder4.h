@@ -48,7 +48,8 @@ class EngineFilterMoogLadderBase : public EngineObjectConstIn {
          CSAMPLE m_amf;
     };
   public:
-    EngineFilterMoogLadderBase(unsigned int sampleRate, float cutoff, float resonance) {
+    EngineFilterMoogLadderBase(unsigned int sampleRate, float cutoff, float resonance,QObject *pParent=0):
+ EngineObjectConstIn(pParent) {
         setParameter(sampleRate, cutoff, resonance);
         initBuffers();
     }
@@ -191,12 +192,12 @@ class EngineFilterMoogLadderBase : public EngineObjectConstIn {
 class EngineFilterMoogLadder4Low : public EngineFilterMoogLadderBase<LP_OVERS> {
     Q_OBJECT
   public:
-    EngineFilterMoogLadder4Low(int sampleRate, double freqCorner1, double resonance);
+    EngineFilterMoogLadder4Low(int sampleRate, double freqCorner1, double resonance, QObject *pParent=0);
 };
 class EngineFilterMoogLadder4High : public EngineFilterMoogLadderBase<HP_OVERS> {
     Q_OBJECT
   public:
-    EngineFilterMoogLadder4High(int sampleRate, double freqCorner1, double resonance);
+    EngineFilterMoogLadder4High(int sampleRate, double freqCorner1, double resonance, QObject *pParent=0);
 };
 
 #endif // ENGINEFILTERMOOGLADDER4_H

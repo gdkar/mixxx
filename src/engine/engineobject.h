@@ -30,7 +30,7 @@
 class EngineObject : public QObject {
     Q_OBJECT
   public:
-    EngineObject();
+    EngineObject( QObject *pParent = 0);
     virtual ~EngineObject();
     virtual void process(CSAMPLE* pInOut,const int iBufferSize) = 0;
 
@@ -39,16 +39,18 @@ class EngineObject : public QObject {
     virtual void collectFeatures(GroupFeatureState* pGroupFeatures) const {
         Q_UNUSED(pGroupFeatures);
     }
+  private:
 };
 
 class EngineObjectConstIn : public QObject {
     Q_OBJECT
   public:
-    EngineObjectConstIn();
+    EngineObjectConstIn(QObject *pParent =0);
     virtual ~EngineObjectConstIn();
 
     virtual void process(const CSAMPLE* pIn, CSAMPLE* pOut,
                          const int iBufferSize) = 0;
+  private:
 };
 
 #endif

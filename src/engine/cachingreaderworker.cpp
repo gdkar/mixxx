@@ -94,11 +94,9 @@ void CachingReaderWorker::newTrack(TrackPointer pTrack) {
 void CachingReaderWorker::run() {
     unsigned static id = 0; //the id of this thread, for debugging purposes
     QThread::currentThread()->setObjectName(QString("CachingReaderWorker %1").arg(++id));
-
     TrackPointer pLoadTrack;
     ChunkReadRequest request;
     ReaderStatusUpdate status;
-
     Event::start(m_tag);
     while (!load_atomic(m_stop)) {
         if (m_newTrack) {
@@ -177,8 +175,7 @@ void CachingReaderWorker::loadTrack(const TrackPointer& pTrack) {
     }
 
     // Emit that the track is loaded.
-    const SINT sampleCount =
-            m_pAudioSource->getFrameCount() * kChunkChannels;
+    const SINT sampleCount = m_pAudioSource->getFrameCount() * kChunkChannels;
     emit(trackLoaded(pTrack, m_pAudioSource->getFrameRate(), sampleCount));
 }
 

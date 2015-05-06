@@ -81,39 +81,38 @@ class StateVarBase<T, true>{
 // the specialized implementation of ControlValueAtomicBase for types that are
 // atomic on the architecture is used.
 template<typename T>
-class StateVar :  public StateVarBase<T, sizeof(T) <= sizeof(quintptr)>, public QObject {
-    Q_OBJECT;
+class StateVar :  public QObject, public  StateVarBase<T, sizeof(T) <= sizeof(quintptr)>  {
+/*    Q_OBJECT;
     Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged);
     Q_PROPERTY(QString desciption READ description WRITE setDescription NOTIFY descriptionChanged);
-    Q_PROPERTY(T value READ value WRITE setValue NOTIFY valueChanged);
+    Q_PROPERTY(T value READ value WRITE setValue NOTIFY valueChanged);*/
     public:
-    explicit StateVar(QObject *pParent = 0) : StateVarBase<T, sizeof(T) <= sizeof(quintptr)> ()
-    , QObject(pParent) {}
-    explicit StateVar(const StateVar<T> &other):QObject(other.parent()),m_name(other.m_name),m_description(other.m_description){
+    explicit StateVar() : StateVarBase<T, sizeof(T) <= sizeof(quintptr)> ()
+     {}
+    explicit StateVar(const StateVar<T> &other):m_name(other.m_name),m_description(other.m_description){
       setValue(other.value()); 
-      setObjectName(other.objectName());
     }
-    explicit StateVar(const QString & name, const T &initial = T(),QObject *pParent = 0) : StateVarBase<T, sizeof(T) <= sizeof(quintptr)> (), QObject(pParent),m_name(name)
+    explicit StateVar(const QString & name, const T &initial = T()) : m_name(name)
      {setValue(initial);}
     virtual ~StateVar(){}
-    signals:
+/*    signals:
       void nameChanged(const QString &);
       void descriptionChanged(const QString &);
       void valueChanged(const T&);
-    public slots:
+    public slots:*/
       virtual const QString &name()const{return m_name;}
       virtual void setName(const QString&new_name){
         if(new_name!=name()){
           m_name =new_name;
-          setObjectName(new_name);
-          emit(nameChanged(name()));
+/*          setObjectName(new_name);*/
+/*          emit(nameChanged(name()));*/
         }
       }
       virtual const QString &description(){return m_description;}
       virtual void setDescription(const QString &new_desc){
         if(new_desc !=description()){
           m_description = new_desc;
-          emit(descriptionChanged(description()));
+/*          emit(descriptionChanged(description()));*/
         }
       }
       T value()const { return StateVarBase<T,sizeof(T)<=sizeof(quintptr)>::get();}
@@ -122,12 +121,14 @@ class StateVar :  public StateVarBase<T, sizeof(T) <= sizeof(quintptr)>, public 
     QString           m_name;
     QString           m_description;
 };
-template<typename T>
-inline void swap(StateVar<T> &lhs, T&rhs){
-  lhs.swap(rhs);
-}
-template<typename T>
-inline void swap(T &lhs, StateVar<T> &rhs){
-  lhs.swap(rhs);
-}
+namespace std{
+  template<typename T>
+  inline void swap(StateVar<T> &lhs, T&rhs){
+    lhs.swap(rhs);
+  }
+  template<typename T>
+  inline void swap(T &lhs, StateVar<T> &rhs){
+    lhs.swap(rhs);
+  }
+};
 #endif /* CONTROL_STATEVARIABLE_H */

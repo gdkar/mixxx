@@ -34,7 +34,8 @@ typedef struct Hint {
     // priority >10.
     int priority;
 } Hint;
-
+Q_DECLARE_METATYPE(Hint);
+Q_DECLARE_TYPEINFO(Hint,Q_PRIMITIVE_TYPE);
 // Note that we use a QVarLengthArray here instead of a QVector. Since this list
 // is cleared on every callback and potentially referenced multiples times it's
 // nicer to use a QVarLengthArray over a QVector because of two things:
@@ -74,13 +75,10 @@ class CachingReader : public QObject {
     CachingReader(QString group,
                   ConfigObject<ConfigValue>* _config);
     virtual ~CachingReader();
-
     virtual void process();
-
     // Read num_samples from the SoundSource starting with sample into
     // buffer. Returns the total number of samples actually written to buffer.
     virtual int read(int sample, int num_samples, CSAMPLE* buffer);
-
     // Issue a list of hints, but check whether any of the hints request a chunk
     // that is not in the cache. If any hints do request a chunk not in cache,
     // then wake the reader so that it can process them. Must only be called
@@ -91,81 +89,59 @@ class CachingReader : public QObject {
     // processed in the work thread, so the reader must be woken up via wake()
     // for this to take effect.
     virtual void newTrack(TrackPointer pTrack);
-
-    void setScheduler(EngineWorkerScheduler* pScheduler) {
-        m_pWorker->setScheduler(pScheduler);
-    }
-
+    void setScheduler(EngineWorkerScheduler* pScheduler) {m_pWorker->setScheduler(pScheduler);}
     const static int maximumChunksInMemory;
-
   signals:
     // Emitted once a new track is loaded and ready to be read from.
     void trackLoading();
-    void trackLoaded(TrackPointer pTrack, int iSampleRate, int iNumSamples);
+    void trackLoaded(TrackPointer pTrack, double  dSampleRate, int iNumSamples);
     void trackLoadFailed(TrackPointer pTrack, QString reason);
-
   private:
     // Removes a chunk from the LRU list
     static Chunk* removeFromLRUList(Chunk* chunk, Chunk* head);
     // Inserts a chunk into the LRU list
     static Chunk* insertIntoLRUList(Chunk* chunk, Chunk* head);
-
     // Given a sample number, return the chunk number corresponding to it.
     inline static int chunkForFrame(int frame_number) {return frame_number / CachingReaderWorker::kFramesPerChunk;}
-
     const ConfigObject<ConfigValue>* m_pConfig;
-
     // Thread-safe FIFOs for communication between the engine callback and
     // reader thread.
     FIFO<ChunkReadRequest> m_chunkReadRequestFIFO;
     FIFO<ReaderStatusUpdate> m_readerStatusFIFO;
-
     // Looks for the provided chunk number in the index of in-memory chunks and
     // returns it if it is present. If not, returns NULL. If it is present then
     // freshenChunk is called on the chunk to make it the MRU chunk.
     Chunk* lookupChunkAndFreshen(int chunk_number);
-
     // Looks for the provided chunk number in the index of in-memory chunks and
     // returns it if it is present. If not, returns NULL.
     Chunk* lookupChunk(int chunk_number);
-
     // Moves the provided chunk to the MRU position.
     void freshenChunk(Chunk* pChunk);
-
     // Returns a Chunk to the free list
     void freeChunk(Chunk* pChunk);
-
     // Returns all allocated chunks to the free list
     void freeAllChunks();
-
     // Gets a chunk from the free list. Returns NULL if none available.
     Chunk* allocateChunk(int chunk);
-
     // Gets a chunk from the free list, frees the LRU Chunk if none available.
     Chunk* allocateChunkExpireLRU(int chunk);
-
     ReaderStatus m_readerStatus;
-
     // Keeps track of all Chunks we've allocated.
     QVector<Chunk*> m_chunks;
-
     // List of free chunks. Linked list so that we have constant time insertions
     // and deletions. Iteration is not necessary.
     QLinkedList<Chunk*> m_freeChunks;
-
     // Keeps track of what Chunks we've allocated and indexes them based on what
     // chunk number they are allocated to.
     QHash<int, Chunk*> m_allocatedChunks;
 
-    // The linked list of recently-used chunks.
+    // The linked list of recently-used chunks
+    Chunk* m_freeChunk;
     Chunk* m_mruChunk;
     Chunk* m_lruChunk;
-
     // The raw memory buffer which is divided up into chunks.
     SampleBuffer m_sampleBuffer;
-
     int m_iTrackNumFramesCallbackSafe;
-
     CachingReaderWorker* m_pWorker;
 };
 

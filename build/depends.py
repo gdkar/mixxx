@@ -525,7 +525,7 @@ class MixxxCore(Feature):
                    "control/controlpushbutton.cpp",
                    "control/controlindicator.cpp",
                    "control/controlttrotary.cpp",
-
+                   "control/statevariable.cpp",
                    "preferences/dlgpreferencepage.cpp",
                    "dialogs/dlgpreferences.cpp",
                    "dialogs/dlgprefsound.cpp",
