@@ -14,7 +14,7 @@ namespace {
 // information -- which AIUI is supposed to tell us this information -- is zero
 // for this file. We use the same frame pre-fetch count from SoundSourceMp3.
 static const int kMp3StabilizationFrames =
-        AudioSource::kMp3SeekFramePrefetchCount * 1152;
+        SoundSource::kMp3SeekFramePrefetchCount * 1152;
 static CSAMPLE kMp3StabilizationScratchBuffer[kMp3StabilizationFrames *
                                               AudioSource::kChannelCountStereo];
 
@@ -86,7 +86,7 @@ Result SoundSourceCoreAudio::tryOpen(const AudioSourceConfig& audioSrcCfg) {
 
     // create the output format
     const UInt32 numChannels =
-            (kChannelCountZero < audioSrcCfg.channelCountHint) ? audioSrcCfg.channelCountHint : 2;
+            isValidChannelCount(audioSrcCfg.channelCountHint) ? audioSrcCfg.channelCountHint : 2;
     m_outputFormat = CAStreamBasicDescription(m_inputFormat.mSampleRate,
             numChannels, CAStreamBasicDescription::kPCMFormatFloat32, true);
 
