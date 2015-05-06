@@ -3,7 +3,6 @@
 
 #include "configobject.h"
 #include "trackinfoobject.h"
-#include "baseplayer.h"
 #include "engine/enginechannel.h"
 #include "engine/enginedeck.h"
 
@@ -17,8 +16,10 @@ class EffectsManager;
 
 // Interface for not leaking implementation details of BaseTrackPlayer into the
 // rest of Mixxx. Also makes testing a lot easier.
-class BaseTrackPlayer : public BasePlayer {
-    Q_OBJECT
+class BaseTrackPlayer : public QObject {
+    Q_OBJECT;
+    Q_PROPERTY(QString group READ getGroup CONSTANT);
+    const QString m_group;
   public:
     // The ordering here corresponds to the ordering of the preferences combo box.
     enum TrackLoadReset {
@@ -31,7 +32,7 @@ class BaseTrackPlayer : public BasePlayer {
     virtual ~BaseTrackPlayer() {}
 
     virtual TrackPointer getLoadedTrack() const = 0;
-
+    inline const QString& getGroup(){return m_group;}
   public slots:
     virtual void slotLoadTrack(TrackPointer pTrack, bool bPlay=false) = 0;
 

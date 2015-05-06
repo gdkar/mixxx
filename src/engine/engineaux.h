@@ -9,7 +9,6 @@
 #include "controlpushbutton.h"
 #include "engine/enginechannel.h"
 #include "engine/enginevumeter.h"
-#include "util/circularbuffer.h"
 #include "soundmanagerutil.h"
 
 class EffectsManager;

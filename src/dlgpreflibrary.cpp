@@ -61,7 +61,7 @@ DlgPrefLibrary::DlgPrefLibrary(QWidget * parent,
     // here, doesn't need done at every slotUpdate
     QStringList plugins(SoundSourceProxy::supportedFileExtensionsByPlugins());
     if (plugins.length() > 0) {
-        pluginsLabel->setText(plugins.join(", "));
+//        pluginsLabel->setText(plugins.join(", "));
     }
 
     // Set default direction as stored in config file

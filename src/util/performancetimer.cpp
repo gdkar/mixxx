@@ -269,23 +269,12 @@ qint64 PerformanceTimer::difference(PerformanceTimer* timer)
 #else
 
 // default implementation (no hi-perf timer) does nothing
-void PerformanceTimer::start()
-{
-}
+void PerformanceTimer::start(){}
 
-qint64 PerformanceTimer::elapsed() const
-{
-    return 0;
-}
+qint64 PerformanceTimer::elapsed() const{return 0;}
 
-qint64 PerformanceTimer::restart() const
-{
-    return 0;
-}
+qint64 PerformanceTimer::restart() const{return 0;}
 
-qint64 PerformanceTimer::difference(PerformanceTimer* timer)
-{
-    return 0;
-}
+qint64 PerformanceTimer::difference(PerformanceTimer* timer){return 0;}
 
 #endif

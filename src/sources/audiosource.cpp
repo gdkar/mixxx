@@ -4,11 +4,6 @@
 
 namespace Mixxx {
 
-/*static*/ const CSAMPLE AudioSource::kSampleValueZero =
-        CSAMPLE_ZERO;
-/*static*/ const CSAMPLE AudioSource::kSampleValuePeak =
-        CSAMPLE_PEAK;
-
 AudioSource::AudioSource(QUrl url)
         : UrlResource(url),
           m_channelCount(kChannelCountDefault),
@@ -41,7 +36,7 @@ SINT AudioSource::getSampleBufferSize(
         SINT numberOfFrames,
         bool readStereoSamples) const {
     if (readStereoSamples) {
-        return numberOfFrames * 2;
+        return numberOfFrames * kChannelCountStereo;
     } else {
         return frames2samples(numberOfFrames);
     }

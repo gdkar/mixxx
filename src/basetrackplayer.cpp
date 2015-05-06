@@ -16,7 +16,7 @@
 #include "effects/effectsmanager.h"
 
 BaseTrackPlayer::BaseTrackPlayer(QObject* pParent, const QString& group)
-        : BasePlayer(pParent, group) {
+        : QObject(pParent),m_group( group) {
 }
 
 BaseTrackPlayerImpl::BaseTrackPlayerImpl(QObject* pParent,

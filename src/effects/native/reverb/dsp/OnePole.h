@@ -31,45 +31,31 @@
 namespace DSP {
 	
 template <class T>
-class OnePoleLP
-{
+class OnePoleLP{
 	public:
 		T a0, b1, y1;
-
-		OnePoleLP (double d = 1.)
-			{
+		OnePoleLP (double d = 1.){
 				set (d);
 				y1 = 0.;
 			}
-
-		inline void reset()
-			{
+		inline void reset(){
 				y1 = 0.;
 			}
-
-		inline void set_f (T fc)
-			{
+		inline void set_f (T fc){
 				set (1 - exp(-2*M_PI*fc));
 			}
-
-		inline void set (T d)
-			{
+		inline void set (T d){
 				a0 = d;
 				b1 = 1 - d;
 			}
-
-		inline T process (T x)
-			{
+		inline T process (T x){
 				return y1 = a0*x + b1*y1;
 			}
-		
-		inline void decay (T d)
-			{
+		inline void decay (T d){
 				a0 *= d;
 				b1 = 1. - a0;
 			}
 };
-
 template <class T>
 class OnePoleHP
 {

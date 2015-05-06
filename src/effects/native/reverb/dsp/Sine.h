@@ -72,7 +72,7 @@ class Sine
 		/* advance and return 1 sample */
 		inline double get()
 			{
-				register double s = b * y[z]; 
+				double s = b * y[z]; 
 				z ^= 1;
 				s -= y[z];
 				return y[z] = s;
@@ -93,18 +93,14 @@ class Sine
 
 /* same as above but including a damping coefficient d */
 class DampedSine
-: public Sine
-{
+: public Sine{
 	public:
 		double d;
-
 	public:
 		DampedSine()
 			{ d = 1; }
-
-		inline double get()
-			{
-				register double s = b * y[z]; 
+		inline double get(){
+				double s = b * y[z]; 
 				z ^= 1;
 				s -= d * y[z];
 				return y[z] = d * s;

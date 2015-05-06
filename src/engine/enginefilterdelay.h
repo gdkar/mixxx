@@ -79,8 +79,8 @@ class EngineFilterDelay : public EngineObjectConstIn {
                 return;
             }
 
-            double cross_mix = 0.0;
-            double cross_inc = 2 / static_cast<double>(iBufferSize);
+            CSAMPLE cross_mix = 0.0;
+            CSAMPLE cross_inc = 2 / static_cast<CSAMPLE>(iBufferSize);
 
             for (int i = 0; i < iBufferSize; ++i) {
                 // put sample into delay buffer:
@@ -110,7 +110,7 @@ class EngineFilterDelay : public EngineObjectConstIn {
     int m_delaySamples;
     int m_oldDelaySamples;
     int m_delayPos;
-    double m_buf[SIZE];
+    CSAMPLE m_buf[SIZE];
     bool m_doRamping;
     bool m_doStart;
 };

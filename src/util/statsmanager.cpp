@@ -9,23 +9,17 @@
 #include "util/cmdlineargs.h"
 
 // In practice we process stats pipes about once a minute @1ms latency.
-const int kStatsPipeSize = 1 << 20;
-const int kProcessLength = kStatsPipeSize * 4 / 5;
 
 // static
 bool StatsManager::s_bStatsManagerEnabled = false;
 
-StatsPipe::StatsPipe(StatsManager* pManager)
-        : FIFO<StatReport>(kStatsPipeSize),
-          m_pManager(pManager) {
+StatsPipe::StatsPipe()
+        : FFItemBuffer<StatReport,kStatsPipeSize>(),
+          m_pManager(StatsManager::instance()) {
     qRegisterMetaType<Stat>("Stat");
 }
 
-StatsPipe::~StatsPipe() {
-    if (m_pManager) {
-        m_pManager->onStatsPipeDestroyed(this);
-    }
-}
+StatsPipe::~StatsPipe() {if (m_pManager) {m_pManager->onStatsPipeDestroyed(this);}}
 
 StatsManager::StatsManager()
         : QThread(),
@@ -167,14 +161,13 @@ void StatsManager::onStatsPipeDestroyed(StatsPipe* pPipe) {
 }
 
 StatsPipe* StatsManager::getStatsPipeForThread() {
-    if (m_threadStatsPipes.hasLocalData()) {
-        return m_threadStatsPipes.localData();
+    if (Q_UNLIKELY(!m_threadStatsPipes.hasLocalData())) {
+      fl_holder_type * pResult = new fl_holder_type(&m_freeList);
+      m_threadStatsPipes.setLocalData(pResult);
     }
-    StatsPipe* pResult = new StatsPipe(this);
-    m_threadStatsPipes.setLocalData(pResult);
-    QMutexLocker locker(&m_statsPipeLock);
-    m_statsPipes.push_back(pResult);
-    return pResult;
+//    QMutexLocker locker(&m_statsPipeLock);
+//    m_statsPipes.push_back(pResult);
+    return m_threadStatsPipes.localData()->item();
 }
 
 bool StatsManager::maybeWriteReport(const StatReport& report) {
@@ -182,18 +175,18 @@ bool StatsManager::maybeWriteReport(const StatReport& report) {
     if (pStatsPipe == NULL) {
         return false;
     }
-    bool success = pStatsPipe->write(&report, 1) == 1;
-    int space = pStatsPipe->writeAvailable();
-    if (space < kProcessLength) {
-        m_statsPipeCondition.wakeAll();
-    }
+    bool success = pStatsPipe->write(report) ;
+    qint64 count = pStatsPipe->count();
+    if (((count % kProcessLength)==0)) {m_statsPipeCondition.wakeAll();}
     return success;
 }
 
 void StatsManager::processIncomingStatReports() {
     StatReport report;
-    foreach (StatsPipe* pStatsPipe, m_statsPipes) {
-        while (pStatsPipe->read(&report, 1) == 1) {
+    fl_iter_type pipes(m_freeList);
+    while(pipes.hasNext()){
+        StatsPipe &rStatsPipe = pipes.next();
+        while (rStatsPipe.read(report)) {
             QString tag = QString::fromUtf8(report.tag);
             Stat& info = m_stats[tag];
             info.m_tag = tag;

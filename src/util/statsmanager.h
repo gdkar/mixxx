@@ -13,15 +13,19 @@
 #include <QList>
 
 #include "util/fifo.h"
+#include "util/ff_ringbuffer.h"
+#include "util/reference.h"
 #include "util/singleton.h"
 #include "util/stat.h"
 #include "util/event.h"
 
 class StatsManager;
+const int kStatsPipeSize = 1 << 20;
+const int kProcessLength = kStatsPipeSize / 2;
 
-class StatsPipe : public FIFO<StatReport> {
+class StatsPipe : public FFItemBuffer<StatReport,kStatsPipeSize> {
   public:
-    StatsPipe(StatsManager* pManager);
+    StatsPipe();
     virtual ~StatsPipe();
   private:
     StatsManager* m_pManager;
@@ -29,6 +33,10 @@ class StatsPipe : public FIFO<StatReport> {
 
 class StatsManager : public QThread, public Singleton<StatsManager> {
     Q_OBJECT
+    typedef FreeList<StatsPipe>   fl_type;
+    typedef FreeList<StatsPipe>::Link fl_link_type;
+    typedef FreeListIterator<StatsPipe> fl_iter_type;
+    typedef FreeListHolder<StatsPipe> fl_holder_type;
   public:
     explicit StatsManager();
     virtual ~StatsManager();
@@ -54,6 +62,7 @@ class StatsManager : public QThread, public Singleton<StatsManager> {
     virtual void run();
 
   private:
+    fl_type       m_freeList;
     void processIncomingStatReports();
     StatsPipe* getStatsPipeForThread();
     void onStatsPipeDestroyed(StatsPipe* pPipe);
@@ -69,7 +78,7 @@ class StatsManager : public QThread, public Singleton<StatsManager> {
     QWaitCondition m_statsPipeCondition;
     QMutex m_statsPipeLock;
     QList<StatsPipe*> m_statsPipes;
-    QThreadStorage<StatsPipe*> m_threadStatsPipes;
+    QThreadStorage<fl_holder_type*> m_threadStatsPipes;
 
     friend class StatsPipe;
 };

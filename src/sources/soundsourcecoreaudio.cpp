@@ -6,6 +6,9 @@ namespace Mixxx {
 
 namespace {
 
+// The maximum number of samples per MP3 frame
+const SINT kMp3MaxFrameSize = 1152;
+
 // NOTE(rryan): For every MP3 seek we jump back kStabilizationFrames frames from
 // the seek position and read forward to allow the decoder to stabilize. The
 // cover-test.mp3 file needs this otherwise SoundSourceProxyTest.seekForward
@@ -13,10 +16,11 @@ namespace {
 // appropriate amount to pre-fetch from the ExtAudioFile API. Oddly, the "prime"
 // information -- which AIUI is supposed to tell us this information -- is zero
 // for this file. We use the same frame pre-fetch count from SoundSourceMp3.
-static const int kMp3StabilizationFrames =
-        AudioSource::kMp3SeekFramePrefetchCount * 1152;
-static CSAMPLE kMp3StabilizationScratchBuffer[kMp3StabilizationFrames *
-                                              AudioSource::kChannelCountStereo];
+const SINT kMp3StabilizationFrames =
+        SoundSource::kMp3SeekFramePrefetchCount * kMp3MaxFrameSize;
+
+CSAMPLE kMp3StabilizationScratchBuffer[kMp3StabilizationFrames *
+                                       AudioSource::kChannelCountStereo];
 
 }  // namespace
 
@@ -86,7 +90,7 @@ Result SoundSourceCoreAudio::tryOpen(const AudioSourceConfig& audioSrcCfg) {
 
     // create the output format
     const UInt32 numChannels =
-            (kChannelCountZero < audioSrcCfg.channelCountHint) ? audioSrcCfg.channelCountHint : 2;
+            isValidChannelCount(audioSrcCfg.channelCountHint) ? audioSrcCfg.channelCountHint : 2;
     m_outputFormat = CAStreamBasicDescription(m_inputFormat.mSampleRate,
             numChannels, CAStreamBasicDescription::kPCMFormatFloat32, true);
 
@@ -156,8 +160,8 @@ SINT SoundSourceCoreAudio::seekSampleFrame(SINT frameIndex) {
     DEBUG_ASSERT(isValidFrameIndex(frameIndex));
 
     // See comments above on kMp3StabilizationFrames.
-    const SINT stabilization_frames = m_bFileIsMp3 ? math_min<SINT>(
-            kMp3StabilizationFrames, frameIndex + m_headerFrames) : 0;
+    const SINT stabilization_frames = m_bFileIsMp3 ? math_min(
+            kMp3StabilizationFrames, SINT(frameIndex + m_headerFrames)) : 0;
     OSStatus err = ExtAudioFileSeek(
             m_audioFile, frameIndex + m_headerFrames - stabilization_frames);
     if (stabilization_frames > 0) {

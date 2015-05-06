@@ -9,7 +9,7 @@ namespace Mixxx {
 namespace {
 
 // MP3 does only support 1 or 2 channels
-const SINT kChannelCountMax = 2;
+const SINT kChannelCountMax = AudioSource::kChannelCountStereo;
 
 // mp3 supports 9 different frame rates
 const int kFrameRateCount = 9;
@@ -63,7 +63,7 @@ int getFrameRateByIndex(int frameRateIndex) {
 }
 
 
-const CSAMPLE kMadScale = AudioSource::kSampleValuePeak / CSAMPLE(MAD_F_ONE);
+const CSAMPLE kMadScale = CSAMPLE_PEAK / CSAMPLE(MAD_F_ONE);
 
 inline CSAMPLE madScaleSampleValue(mad_fixed_t sampleValue) {
     return sampleValue * kMadScale;
@@ -161,7 +161,7 @@ SoundSourceMp3::SoundSourceMp3(QUrl url)
           m_fileSize(0),
           m_pFileData(NULL),
           m_avgSeekFrameCount(0),
-          m_curFrameIndex(kFrameIndexMin),
+          m_curFrameIndex(getMinFrameIndex()),
           m_madSynthCount(0) {
     m_seekFrameList.reserve(kSeekFrameListCapacity);
     initDecoding();
@@ -202,7 +202,7 @@ Result SoundSourceMp3::tryOpen(const AudioSourceConfig& /*audioSrcCfg*/) {
     // a SIGBUS error might occur that is not handled and will terminate
     // Mixxx immediately. This behavior is documented in the manpage of
     // mmap(). It has already appeared due to hardware errors and is
-    // described by the following bug:
+    // described in the following bug report:
     // https://bugs.launchpad.net/mixxx/+bug/1452005
 
     // Transfer it to the mad stream-buffer:
@@ -212,7 +212,7 @@ Result SoundSourceMp3::tryOpen(const AudioSourceConfig& /*audioSrcCfg*/) {
 
     DEBUG_ASSERT(m_seekFrameList.empty());
     m_avgSeekFrameCount = 0;
-    m_curFrameIndex = kFrameIndexMin;
+    m_curFrameIndex = getMinFrameIndex();
     int headerPerFrameRate[kFrameRateCount];
     for (int i = 0; i < kFrameRateCount; ++i) {
         headerPerFrameRate[i] = 0;
@@ -364,7 +364,7 @@ Result SoundSourceMp3::tryOpen(const AudioSourceConfig& /*audioSrcCfg*/) {
     addSeekFrame(m_curFrameIndex, 0);
 
     // Reset positions
-    m_curFrameIndex = kFrameIndexMin;
+    m_curFrameIndex = getMinFrameIndex();
 
     // Restart decoding at the beginning of the audio stream
     m_curFrameIndex = restartDecoding(m_seekFrameList.front());
@@ -401,7 +401,7 @@ SINT SoundSourceMp3::restartDecoding(
     // Discard decoded output
     m_madSynthCount = 0;
 
-    if (kFrameIndexMin == seekFrame.frameIndex) {
+    if (getMinFrameIndex() == seekFrame.frameIndex) {
         mad_frame_finish(&m_madFrame);
         mad_synth_finish(&m_madSynth);
     }
@@ -409,7 +409,7 @@ SINT SoundSourceMp3::restartDecoding(
 
     mad_stream_init(&m_madStream);
     mad_stream_options(&m_madStream, MAD_OPTION_IGNORECRC);
-    if (kFrameIndexMin == seekFrame.frameIndex) {
+    if (getMinFrameIndex() == seekFrame.frameIndex) {
         mad_synth_init(&m_madSynth);
         mad_frame_init(&m_madFrame);
     }
@@ -418,7 +418,7 @@ SINT SoundSourceMp3::restartDecoding(
     mad_stream_buffer(&m_madStream, seekFrame.pInputData,
             m_fileSize - (seekFrame.pInputData - m_pFileData));
 
-    if (kFrameIndexMin < seekFrame.frameIndex) {
+    if (getMinFrameIndex() < seekFrame.frameIndex) {
         // Muting is done here to eliminate potential pops/clicks
         // from skipping Rob Leslie explains why here:
         // http://www.mars.org/mailman/public/mad-dev/2001-August/000321.html
@@ -455,8 +455,8 @@ SINT SoundSourceMp3::findSeekFrameIndex(
     // Check preconditions
     DEBUG_ASSERT(0 < m_avgSeekFrameCount);
     DEBUG_ASSERT(!m_seekFrameList.empty());
-    DEBUG_ASSERT(kFrameIndexMin == m_seekFrameList.front().frameIndex);
-    DEBUG_ASSERT(SINT(kFrameIndexMin + getMaxFrameIndex()) == m_seekFrameList.back().frameIndex);
+    DEBUG_ASSERT(getMinFrameIndex() == m_seekFrameList.front().frameIndex);
+    DEBUG_ASSERT(getMaxFrameIndex() == m_seekFrameList.back().frameIndex);
 
     SINT lowerBound =
             0;
@@ -564,8 +564,8 @@ SINT SoundSourceMp3::readSampleFrames(
     DEBUG_ASSERT(isValidFrameIndex(m_curFrameIndex));
     DEBUG_ASSERT(getSampleBufferSize(numberOfFrames, readStereoSamples) <= sampleBufferSize);
 
-    const SINT numberOfFramesTotal = math_min(numberOfFrames,
-            SINT(getMaxFrameIndex() - m_curFrameIndex));
+    const SINT numberOfFramesTotal = math_min(
+            numberOfFrames, getMaxFrameIndex() - m_curFrameIndex);
 
     CSAMPLE* pSampleBuffer = sampleBuffer;
     SINT numberOfFramesRemaining = numberOfFramesTotal;
@@ -667,18 +667,15 @@ SINT SoundSourceMp3::readSampleFrames(
                     for (SINT i = 0; i < synthReadCount; ++i) {
                         const CSAMPLE sampleValue = madScaleSampleValue(
                                 m_madSynth.pcm.samples[0][madSynthOffset + i]);
-                        *pSampleBuffer = sampleValue;
-                        ++pSampleBuffer;
-                        *pSampleBuffer = sampleValue;
-                        ++pSampleBuffer;
+                        *pSampleBuffer++ = sampleValue;
+                        *pSampleBuffer++ = sampleValue;
                     }
                 } else {
                     // Mono -> Mono: Copy 1st channel
                     for (SINT i = 0; i < synthReadCount; ++i) {
                         const CSAMPLE sampleValue = madScaleSampleValue(
                                 m_madSynth.pcm.samples[0][madSynthOffset + i]);
-                        *pSampleBuffer = sampleValue;
-                        ++pSampleBuffer;
+                        *pSampleBuffer++ = sampleValue;
                     }
                 }
             } else {
@@ -688,14 +685,12 @@ SINT SoundSourceMp3::readSampleFrames(
                 // AudioSource must also provide 2 channels, because the
                 // maximum channel count of all MP3 frames is used.
                 DEBUG_ASSERT(kChannelCountStereo == getChannelCount());
-                // Stereo -> Stereo: Copy 1st+2nd channel
+                // Stereo -> Stereo: Copy 1st + 2nd channel
                 for (SINT i = 0; i < synthReadCount; ++i) {
-                    *pSampleBuffer = madScaleSampleValue(
+                    *pSampleBuffer++ = madScaleSampleValue(
                             m_madSynth.pcm.samples[0][madSynthOffset + i]);
-                    ++pSampleBuffer;
-                    *pSampleBuffer = madScaleSampleValue(
+                    *pSampleBuffer++ = madScaleSampleValue(
                             m_madSynth.pcm.samples[1][madSynthOffset + i]);
-                    ++pSampleBuffer;
                 }
             }
         }

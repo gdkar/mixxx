@@ -115,8 +115,8 @@ class EngineFilterMoogLadderBase : public EngineObjectConstIn {
                 pOutput[i+1] = processSample(pIn[i+1], &m_buf[1]);
             }
         } else {
-            double cross_mix = 0.0;
-            double cross_inc = 4.0 / static_cast<double>(iBufferSize);
+            CSAMPLE cross_mix = 0.0;
+            CSAMPLE cross_inc = 4.0 / static_cast<CSAMPLE >(iBufferSize);
             for (int i = 0; i < iBufferSize; i += 2) {
                 // Do a linear cross fade between the output of the old
                 // Filter and the new filter.
@@ -129,10 +129,10 @@ class EngineFilterMoogLadderBase : public EngineObjectConstIn {
                 // of the new filter but it turns out that this produces
                 // a gain drop due to the filter delay which is more
                 // conspicuous than the settling noise.
-                double old1 = pIn[i];
-                double old2 = pIn[i + 1];
-                double new1 = processSample(pIn[i], &m_buf[0]);
-                double new2 = processSample(pIn[i+1], &m_buf[1]);
+                CSAMPLE old1 = pIn[i];
+                CSAMPLE old2 = pIn[i + 1];
+                CSAMPLE new1 = processSample(pIn[i], &m_buf[0]);
+                CSAMPLE new2 = processSample(pIn[i+1], &m_buf[1]);
 
                 if (i < iBufferSize / 2) {
                     pOutput[i] = old1;

@@ -17,11 +17,9 @@ struct FilterGroupState {
     FilterGroupState();
     ~FilterGroupState();
     void setFilters(int sampleRate, double lowFreq, double highFreq);
-
     CSAMPLE* m_pBuf;
     EngineFilterBiquad1Low* m_pLowFilter;
     EngineFilterBiquad1High* m_pHighFilter;
-
     double m_loFreq;
     double m_q;
     double m_hiFreq;
@@ -32,10 +30,8 @@ class FilterEffect : public PerChannelEffectProcessor<FilterGroupState> {
   public:
     FilterEffect(EngineEffect* pEffect, const EffectManifest& manifest);
     virtual ~FilterEffect();
-
     static QString getId();
     static EffectManifest getManifest();
-
     // See effectprocessor.h
     void processChannel(const ChannelHandle& handle,
                         FilterGroupState* pState,
@@ -44,16 +40,11 @@ class FilterEffect : public PerChannelEffectProcessor<FilterGroupState> {
                         const unsigned int sampleRate,
                         const EffectProcessor::EnableState enableState,
                         const GroupFeatureState& groupFeatures);
-
   private:
-    QString debugString() const {
-        return getId();
-    }
-
+    QString debugString() const {return getId();}
     EngineEffectParameter* m_pLPF;
     EngineEffectParameter* m_pQ;
     EngineEffectParameter* m_pHPF;
-
     DISALLOW_COPY_AND_ASSIGN(FilterEffect);
 };
 

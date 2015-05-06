@@ -151,9 +151,9 @@
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="QLabel" name="pluginsLabel">
-        <property name="text">
-         <string>None</string>
+        <widget class="QListView" name="pluginsListView">
+        <property name="uniformItemSizes">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
