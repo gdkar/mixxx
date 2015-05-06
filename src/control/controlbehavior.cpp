@@ -15,7 +15,7 @@ double ControlNumericBehavior::parameterToValue(double dParam) {
     return dParam;
 }
 
-void ControlNumericBehavior::setValueFromParameter(double dParam, ControlDoublePrivate* pControl) {
+void ControlNumericBehavior::setValueFromParameter(double dParam, ControlValueDouble* pControl) {
     pControl->set(parameterToValue(dParam), NULL);
 }
 
@@ -168,7 +168,7 @@ double ControlAudioTaperPotBehavior::parameterToValue(double dParam) {
 }
 
 void ControlAudioTaperPotBehavior::setValueFromParameter(double dParam,
-                                                           ControlDoublePrivate* pControl) {
+                                                           ControlValueDouble* pControl) {
     pControl->set(parameterToValue(dParam), NULL);
 }
 
@@ -198,7 +198,7 @@ ControlPushButtonBehavior::ControlPushButtonBehavior(ButtonMode buttonMode,
 }
 
 void ControlPushButtonBehavior::setValueFromParameter(
-        double dParam, ControlDoublePrivate* pControl) {
+        double dParam, ControlValueDouble* pControl) {
     // Calculate pressed State of the Button
     // Some controller like the RMX2 are sending always NOTE_ON
     // with a changed dParam 127 for pressed an 0 for released.

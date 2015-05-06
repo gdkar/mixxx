@@ -91,7 +91,7 @@ class ControlObjectSlave : public QObject {
 
   signals:
     // This signal must not connected by connect(). Use connectValueChanged()
-    // instead. It will connect to the base ControlDoublePrivate as well.
+    // instead. It will connect to the base ControlValueDouble as well.
     void valueChanged(double);
 
   protected slots:
@@ -107,7 +107,7 @@ class ControlObjectSlave : public QObject {
   protected:
     ConfigKey m_key;
     // Pointer to connected control.
-    QSharedPointer<ControlDoublePrivate> m_pControl;
+    QSharedPointer<ControlValueDouble> m_pControl;
 };
 
 #endif // CONTROLOBJECTSLAVE_H

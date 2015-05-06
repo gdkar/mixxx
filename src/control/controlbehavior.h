@@ -3,7 +3,7 @@
 
 #include <QTimer>
 
-class ControlDoublePrivate;
+class ControlValueDouble;
 
 class ControlNumericBehavior {
   public:
@@ -16,7 +16,7 @@ class ControlNumericBehavior {
     virtual double valueToParameter(double dValue);
     virtual double parameterToValue(double dParam);
     virtual void setValueFromParameter(double dParam,
-                                           ControlDoublePrivate* pControl);
+                                           ControlValueDouble* pControl);
 };
 
 class ControlPotmeterBehavior : public ControlNumericBehavior {
@@ -65,7 +65,7 @@ class ControlAudioTaperPotBehavior : public ControlPotmeterBehavior {
     virtual double valueToParameter(double dValue);
     virtual double parameterToValue(double dParam);
     virtual void setValueFromParameter(double dParam,
-                                           ControlDoublePrivate* pControl);
+                                           ControlValueDouble* pControl);
 
   protected:
     // a knob position between 0 and 1 where the gain is 1 (0dB)
@@ -101,7 +101,7 @@ class ControlPushButtonBehavior : public ControlNumericBehavior {
 
     ControlPushButtonBehavior(ButtonMode buttonMode, int iNumStates);
     virtual void setValueFromParameter(double dParam,
-                                           ControlDoublePrivate* pControl);
+                                           ControlValueDouble* pControl);
 
   private:
     ButtonMode m_buttonMode;

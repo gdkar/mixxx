@@ -111,7 +111,7 @@ EngineMaster::EngineMaster(ConfigObject<ConfigValue>* _config,
 
     // Legacy: the master "gain" control used to be named "volume" in Mixxx
     // 1.11.0 and earlier. See Bug #1306253.
-    ControlDoublePrivate::insertAlias(ConfigKey(group, "volume"),
+    ControlValueDouble::insertAlias(ConfigKey(group, "volume"),
                                       ConfigKey(group, "gain"));
 
     // VU meter:
@@ -125,7 +125,7 @@ EngineMaster::EngineMaster(ConfigObject<ConfigValue>* _config,
 
     // Legacy: the headphone "headGain" control used to be named "headVolume" in
     // Mixxx 1.11.0 and earlier. See Bug #1306253.
-    ControlDoublePrivate::insertAlias(ConfigKey(group, "headVolume"),
+    ControlValueDouble::insertAlias(ConfigKey(group, "headVolume"),
                                       ConfigKey(group, "headGain"));
 
     // Headphone mix (left/right)

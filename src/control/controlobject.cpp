@@ -45,7 +45,7 @@ void ControlObject::initialize(ConfigKey key, bool bIgnoreNops, bool bTrack,
 
     // Don't bother looking up the control if key is NULL. Prevents log spew.
     if (!m_key.isNull()) {
-        m_pControl = ControlDoublePrivate::getControl(m_key, true, this,
+        m_pControl = ControlValueDouble::getControl(m_key, true, this,
                                                       bIgnoreNops, bTrack,
                                                       defaultValue, bPersist);
     }
@@ -71,7 +71,7 @@ void ControlObject::privateValueChanged(double dValue, QObject* pSender) {
 // static
 ControlObject* ControlObject::getControl(const ConfigKey& key, bool warn) {
     //qDebug() << "ControlObject::getControl for (" << key.group << "," << key.item << ")";
-    QSharedPointer<ControlDoublePrivate> pCDP = ControlDoublePrivate::getControl(key, warn);
+    QSharedPointer<ControlValueDouble> pCDP = ControlValueDouble::getControl(key, warn);
     if (pCDP) {
         return pCDP->getCreatorCO();
     }
@@ -80,7 +80,7 @@ ControlObject* ControlObject::getControl(const ConfigKey& key, bool warn) {
 
 // static
 double ControlObject::get(const ConfigKey& key) {
-    QSharedPointer<ControlDoublePrivate> pCop = ControlDoublePrivate::getControl(key);
+    QSharedPointer<ControlValueDouble> pCop = ControlValueDouble::getControl(key);
     return pCop ? pCop->get() : 0.0;
 }
 
@@ -106,7 +106,7 @@ void ControlObject::setParameterFrom(double v, QObject* pSender) {
 
 // static
 void ControlObject::set(const ConfigKey& key, const double& value) {
-    QSharedPointer<ControlDoublePrivate> pCop = ControlDoublePrivate::getControl(key);
+    QSharedPointer<ControlValueDouble> pCop = ControlValueDouble::getControl(key);
     if (pCop) {
         pCop->set(value, NULL);
     }

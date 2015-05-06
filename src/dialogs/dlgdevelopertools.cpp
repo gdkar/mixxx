@@ -10,14 +10,14 @@ DlgDeveloperTools::DlgDeveloperTools(QWidget* pParent,
     Q_UNUSED(pConfig);
     setupUi(this);
 
-    QList<QSharedPointer<ControlDoublePrivate> > controlsList;
-    ControlDoublePrivate::getControls(&controlsList);
+    QList<QSharedPointer<ControlValueDouble> > controlsList;
+    ControlValueDouble::getControls(&controlsList);
     QHash<ConfigKey, ConfigKey> controlAliases =
-            ControlDoublePrivate::getControlAliases();
+            ControlValueDouble::getControlAliases();
 
-    for (QList<QSharedPointer<ControlDoublePrivate> >::const_iterator it = controlsList.begin();
+    for (QList<QSharedPointer<ControlValueDouble> >::const_iterator it = controlsList.begin();
             it != controlsList.end(); ++it) {
-        const QSharedPointer<ControlDoublePrivate>& pControl = *it;
+        const QSharedPointer<ControlValueDouble>& pControl = *it;
         if (pControl) {
             m_controlModel.addControl(pControl->getKey(), pControl->name(),
                                       pControl->description());

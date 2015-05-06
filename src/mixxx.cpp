@@ -142,7 +142,7 @@ MixxxMainWindow::MixxxMainWindow(QApplication* pApp, const CmdlineArgs& args)
     // after an upgrade and make any needed changes.
     Upgrade upgrader;
     m_pConfig = upgrader.versionUpgrade(args.getSettingsPath());
-    ControlDoublePrivate::setUserConfig(m_pConfig);
+    ControlValueDouble::setUserConfig(m_pConfig);
 
     Sandbox::initialize(m_pConfig->getSettingsPath().append("/sandbox.cfg"));
 
@@ -485,15 +485,15 @@ MixxxMainWindow::~MixxxMainWindow() {
     delete m_pNumDecks;
 
     // Check for leaked ControlObjects and give warnings.
-    QList<QSharedPointer<ControlDoublePrivate> > leakedControls;
+    QList<QSharedPointer<ControlValueDouble> > leakedControls;
     QList<ConfigKey> leakedConfigKeys;
 
-    ControlDoublePrivate::getControls(&leakedControls);
+    ControlValueDouble::getControls(&leakedControls);
 
     if (leakedControls.size() > 0) {
         qDebug() << "WARNING: The following" << leakedControls.size()
                  << "controls were leaked:";
-        foreach (QSharedPointer<ControlDoublePrivate> pCDP, leakedControls) {
+        foreach (QSharedPointer<ControlValueDouble> pCDP, leakedControls) {
             if (pCDP.isNull()) {
                 continue;
             }
@@ -529,7 +529,7 @@ MixxxMainWindow::~MixxxMainWindow() {
     qDebug() << "delete config " << qTime.elapsed();
     Sandbox::shutdown();
 
-    ControlDoublePrivate::setUserConfig(NULL);
+    ControlValueDouble::setUserConfig(NULL);
     delete m_pConfig;
 
     delete m_pKeyboard;

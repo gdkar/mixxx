@@ -14,14 +14,14 @@
 
 class ControlObject;
 
-class ControlDoublePrivate : public QObject {
+class ControlValueDouble : public QObject {
     Q_OBJECT;
     Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged);
     Q_PROPERTY(QString description READ description WRITE setDescription NOTIFY descriptionChanged);
     Q_PROPERTY(double value READ get WRITE set RESET reset NOTIFY valueChanged);
     Q_PROPERTY(double defaultValue READ defaultValue WRITE setDefaultValue NOTIFY defaultValueChanged);
   public:
-    virtual ~ControlDoublePrivate();
+    virtual ~ControlValueDouble();
     // Used to implement control persistence. All controls that are marked
     // "persist in user config" get and set their value on creation/deletion
     // using this ConfigObject.
@@ -30,16 +30,16 @@ class ControlDoublePrivate : public QObject {
     // supporting a legacy / deprecated control. The 'key' control must exist
     // for this to work.
     static void insertAlias(const ConfigKey& alias, const ConfigKey& key);
-    // Gets the ControlDoublePrivate matching the given ConfigKey. If pCreatorCO
-    // is non-NULL, allocates a new ControlDoublePrivate for the ConfigKey if
+    // Gets the ControlValueDouble matching the given ConfigKey. If pCreatorCO
+    // is non-NULL, allocates a new ControlValueDouble for the ConfigKey if
     // one does not exist.
-    static QSharedPointer<ControlDoublePrivate> getControl(
+    static QSharedPointer<ControlValueDouble> getControl(
             const ConfigKey& key, bool warn = true,
             ControlObject* pCreatorCO = NULL, bool bIgnoreNops = true, bool bTrack = false,
             double defaultValue = 0.0, bool bPersist = false);
 
-    // Adds all ControlDoublePrivate that currently exist to pControlList
-    static void getControls(QList<QSharedPointer<ControlDoublePrivate> >* pControlsList);
+    // Adds all ControlValueDouble that currently exist to pControlList
+    static void getControls(QList<QSharedPointer<ControlValueDouble> >* pControlsList);
 
     static QHash<ConfigKey, ConfigKey> getControlAliases();
 
@@ -86,7 +86,7 @@ class ControlDoublePrivate : public QObject {
                                    const char* method, Qt::ConnectionType type);
 
   signals:
-    // Emitted when the ControlDoublePrivate value changes. pSender is a
+    // Emitted when the ControlValueDouble value changes. pSender is a
     // pointer to the setter of the value (potentially NULL).
     void valueChanged(double value, QObject* pSender);
     void valueChanged(double);
@@ -99,7 +99,7 @@ class ControlDoublePrivate : public QObject {
     // If bPersist is true and the configuration object is not null, the initial
     // value for this control is the value stored in the configuration.
     // Otherwise, defaultValue is used.
-    ControlDoublePrivate(ConfigKey key, ControlObject* pCreatorCO,
+    ControlValueDouble(ConfigKey key, ControlObject* pCreatorCO,
                          bool bIgnoreNops, bool bTrack, double defaultValue,
                          bool bPersist);
     void initialize(double defaultValue);
@@ -146,8 +146,8 @@ class ControlDoublePrivate : public QObject {
     // configuration object would be arduous.
     static ConfigObject<ConfigValue>* s_pUserConfig;
 
-    // Hash of ControlDoublePrivate instantiations.
-    static QHash<ConfigKey, QWeakPointer<ControlDoublePrivate> > s_qCOHash;
+    // Hash of ControlValueDouble instantiations.
+    static QHash<ConfigKey, QWeakPointer<ControlValueDouble> > s_qCOHash;
     // Hash of aliases between ConfigKeys. Solely used for looking up the first
     // alias associated with a key.
     static QHash<ConfigKey, ConfigKey> s_qCOAliasHash;

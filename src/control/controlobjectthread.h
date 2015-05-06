@@ -121,7 +121,7 @@ class ControlObjectThread : public QObject {
   protected:
     ConfigKey m_key;
     // Pointer to connected control.
-    QSharedPointer<ControlDoublePrivate> m_pControl;
+    QSharedPointer<ControlValueDouble> m_pControl;
 };
 
 #endif

@@ -408,40 +408,40 @@ void EqualizerRack::configureEffectChainSlotForGroup(EffectChainSlotPointer pSlo
     EffectSlotPointer pEffectSlot = pSlot->getEffectSlot(0);
     if (pEffectSlot) {
         const QString& effectSlotGroup = pEffectSlot->getGroup();
-        ControlDoublePrivate::insertAlias(ConfigKey(groupName, "filterLow"),
+        ControlValueDouble::insertAlias(ConfigKey(groupName, "filterLow"),
                                           ConfigKey(effectSlotGroup, "parameter1"));
 
-        ControlDoublePrivate::insertAlias(ConfigKey(groupName, "filterMid"),
+        ControlValueDouble::insertAlias(ConfigKey(groupName, "filterMid"),
                                           ConfigKey(effectSlotGroup, "parameter2"));
 
-        ControlDoublePrivate::insertAlias(ConfigKey(groupName, "filterHigh"),
+        ControlValueDouble::insertAlias(ConfigKey(groupName, "filterHigh"),
                                           ConfigKey(effectSlotGroup, "parameter3"));
 
-        ControlDoublePrivate::insertAlias(ConfigKey(groupName, "filterLowKill"),
+        ControlValueDouble::insertAlias(ConfigKey(groupName, "filterLowKill"),
                                           ConfigKey(effectSlotGroup, "button_parameter1"));
 
-        ControlDoublePrivate::insertAlias(ConfigKey(groupName, "filterMidKill"),
+        ControlValueDouble::insertAlias(ConfigKey(groupName, "filterMidKill"),
                                           ConfigKey(effectSlotGroup, "button_parameter2"));
 
-        ControlDoublePrivate::insertAlias(ConfigKey(groupName, "filterHighKill"),
+        ControlValueDouble::insertAlias(ConfigKey(groupName, "filterHighKill"),
                                           ConfigKey(effectSlotGroup, "button_parameter3"));
 
-        ControlDoublePrivate::insertAlias(ConfigKey(groupName, "filterLow_loaded"),
+        ControlValueDouble::insertAlias(ConfigKey(groupName, "filterLow_loaded"),
                                           ConfigKey(effectSlotGroup, "parameter1_loaded"));
 
-        ControlDoublePrivate::insertAlias(ConfigKey(groupName, "filterMid_loaded"),
+        ControlValueDouble::insertAlias(ConfigKey(groupName, "filterMid_loaded"),
                                           ConfigKey(effectSlotGroup, "parameter2_loaded"));
 
-        ControlDoublePrivate::insertAlias(ConfigKey(groupName, "filterHigh_loaded"),
+        ControlValueDouble::insertAlias(ConfigKey(groupName, "filterHigh_loaded"),
                                           ConfigKey(effectSlotGroup, "parameter3_loaded"));
 
-        ControlDoublePrivate::insertAlias(ConfigKey(groupName, "filterLowKill_loaded"),
+        ControlValueDouble::insertAlias(ConfigKey(groupName, "filterLowKill_loaded"),
                                           ConfigKey(effectSlotGroup, "button_parameter1_loaded"));
 
-        ControlDoublePrivate::insertAlias(ConfigKey(groupName, "filterMidKill_loaded"),
+        ControlValueDouble::insertAlias(ConfigKey(groupName, "filterMidKill_loaded"),
                                           ConfigKey(effectSlotGroup, "button_parameter2_loaded"));
 
-        ControlDoublePrivate::insertAlias(ConfigKey(groupName, "filterHighKill_loaded"),
+        ControlValueDouble::insertAlias(ConfigKey(groupName, "filterHighKill_loaded"),
                                           ConfigKey(effectSlotGroup, "button_parameter3_loaded"));
     }
 }
