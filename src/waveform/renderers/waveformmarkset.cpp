@@ -2,6 +2,8 @@
 #include <QtDebug>
 
 #include "waveformmarkset.h"
+#include "control/controlobjectslave.h"
+#include "control/controlobjectthread.h"
 #include "engine/cuecontrol.h"
 #include "control/controlobject.h"
 

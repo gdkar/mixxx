@@ -5,7 +5,7 @@
 #include "waveform/renderers/waveformrenderbeat.h"
 
 #include "control/controlobject.h"
-#include "control/controlobjectthread.h"
+#include "control/controlobjectslave.h"
 #include "track/beats.h"
 #include "track/trackinfoobject.h"
 #include "waveform/renderers/waveformwidgetrenderer.h"
@@ -24,7 +24,7 @@ WaveformRenderBeat::~WaveformRenderBeat() {
 }
 
 bool WaveformRenderBeat::init() {
-    m_pBeatActive = new ControlObjectThread(
+    m_pBeatActive = new ControlObjectSlave(
             m_waveformRenderer->getGroup(), "beat_active");
     return m_pBeatActive->valid();
 }

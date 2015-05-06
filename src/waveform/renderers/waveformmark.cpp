@@ -4,7 +4,7 @@
 
 #include "waveformwidgetrenderer.h"
 #include "control/controlobject.h"
-#include "control/controlobjectthread.h"
+#include "control/controlobjectslave.h"
 #include "widget/wskincolor.h"
 
 WaveformMark::WaveformMark()
@@ -22,7 +22,7 @@ void WaveformMark::setup(const QString& group, const QDomNode& node,
                          const WaveformSignalColors& signalColors) {
     QString item = context.selectString(node, "Control");
     if (!item.isEmpty()) {
-        m_pointControl = new ControlObjectThread(group, item);
+        m_pointControl = new ControlObjectSlave(group, item);
     }
 
     m_color = context.selectString(node, "Color");
@@ -57,6 +57,6 @@ void WaveformMark::setup(const QString& group, const QDomNode& node,
 
 
 void WaveformMark::setKeyAndIndex(const ConfigKey& key, int i) {
-    m_pointControl = new ControlObjectThread(key);
+    m_pointControl = new ControlObjectSlave(key);
     m_text = m_text.arg(i);
 }

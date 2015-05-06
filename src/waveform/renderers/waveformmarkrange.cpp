@@ -5,7 +5,7 @@
 
 #include "waveformsignalcolors.h"
 #include "control/controlobject.h"
-#include "control/controlobjectthread.h"
+#include "control/controlobjectslave.h"
 #include "widget/wskincolor.h"
 
 WaveformMarkRange::WaveformMarkRange()
@@ -71,16 +71,16 @@ void WaveformMarkRange::setup(const QString& group, const QDomNode& node,
 
     QString startControl = context.selectString(node, "StartControl");
     if (!startControl.isEmpty()) {
-        m_markStartPointControl = new ControlObjectThread(group, startControl);
+        m_markStartPointControl = new ControlObjectSlave(group, startControl);
     }
     QString endControl = context.selectString(node, "EndControl");
     if (!endControl.isEmpty()) {
-        m_markEndPointControl = new ControlObjectThread(
+        m_markEndPointControl = new ControlObjectSlave(
                 group, endControl);
     }
     QString enabledControl = context.selectString(node, "EnabledControl");
     if (!enabledControl.isEmpty()) {
-        m_markEnabledControl = new ControlObjectThread(
+        m_markEnabledControl = new ControlObjectSlave(
                 group, enabledControl);
     }
 }
