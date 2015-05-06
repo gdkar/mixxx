@@ -33,6 +33,7 @@ build_type = ARGUMENTS.get('build', None)
 toolchain = ARGUMENTS.get('toolchain', None)
 
 available_features = [features.Mad,
+                      features.Mpg123,
                       features.CoreAudio,
                       features.MediaFoundation,
                       features.HSS1394,
@@ -79,6 +80,7 @@ Import('sources')
 # and link properly. This sucks but it's the best way I can find -- bkgood
 VariantDir("plugins/soundsourcem4a", "src", duplicate=0)
 VariantDir("plugins/soundsourcewv", "src", duplicate=0)
+VariantDir("plugins/soundsourcempg123","src",duplicate=0)
 VariantDir("plugins/soundsourcemediafoundation", "src", duplicate=0)
 
 # Build our soundsource plugins

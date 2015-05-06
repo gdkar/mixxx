@@ -148,7 +148,22 @@ class Bulk(Feature):
                 'controllers/hid/hidcontrollerpresetfilehandler.cpp')
         return sources
 
-
+class Mpg123(Feature):
+    def description(self):
+        return "libmpg123 MP3 decoder plugin"
+    def default(self,build):
+        return 1
+    def enabled(self,build):
+        build.flags['mpg123'] = util.get_flags(build.env,"mpg123", self.default(build));
+        return True if int(build.flags['mpg123']) else False
+    def add_options(self,build,vars):
+        vars.Add("mpg123","set to 1 to enable libmpg123 decoder plugin",self.default(build))
+    def configure(self,build,conf):
+        if not self.enabled(build):
+            return
+        if not conf.CheckLib(['libmpg123','mpg123']):
+            raise Exception("Did not find libmpg123, mpg123 or its development headers.")
+        build.env.Append(CPPDefines="__MPG123__")
 class Mad(Feature):
     def description(self):
         return "MAD MP3 Decoder"
