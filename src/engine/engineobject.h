@@ -21,7 +21,6 @@
 #include <QObject>
 
 #include "util/types.h"
-#include "engine/effects/groupfeaturestate.h"
 
 /**
   *@author Tue and Ken Haste Andersen
@@ -32,14 +31,9 @@ class EngineObject : public QObject {
   public:
     EngineObject();
     virtual ~EngineObject();
-    virtual void process(CSAMPLE* pInOut,
-                         const int iBufferSize) = 0;
+    virtual void process(CSAMPLE* pInOut,const int iBufferSize) = 0;
 
-    // Sub-classes re-implement and populate GroupFeatureState with the features
     // they extract.
-    virtual void collectFeatures(GroupFeatureState* pGroupFeatures) const {
-        Q_UNUSED(pGroupFeatures);
-    }
 };
 
 class EngineObjectConstIn : public QObject {
@@ -47,9 +41,7 @@ class EngineObjectConstIn : public QObject {
   public:
     EngineObjectConstIn();
     virtual ~EngineObjectConstIn();
-
-    virtual void process(const CSAMPLE* pIn, CSAMPLE* pOut,
-                         const int iBufferSize) = 0;
+    virtual void process(const CSAMPLE* pIn, CSAMPLE* pOut, const int iBufferSize) = 0;
 };
 
 #endif

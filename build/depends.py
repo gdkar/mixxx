@@ -880,7 +880,6 @@ class MixxxCore(Feature):
                    "track/keyfactory.cpp",
                    "track/keyutils.cpp",
 
-                   "baseplayer.cpp",
                    "basetrackplayer.cpp",
                    "deck.cpp",
                    "sampler.cpp",

@@ -144,10 +144,8 @@ void GraphicEQEffect::processChannel(const ChannelHandle& handle,
                                      const CSAMPLE* pInput, CSAMPLE* pOutput,
                                      const unsigned int numSamples,
                                      const unsigned int sampleRate,
-                                     const EffectProcessor::EnableState enableState,
-                                     const GroupFeatureState& groupFeatures) {
+                                     const EffectProcessor::EnableState enableState){
     Q_UNUSED(handle);
-    Q_UNUSED(groupFeatures);
 
     // If the sample rate has changed, initialize the filters using the new
     // sample rate

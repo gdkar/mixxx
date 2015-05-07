@@ -45,8 +45,7 @@ class GraphicEQEffect : public PerChannelEffectProcessor<GraphicEQEffectGroupSta
                         const CSAMPLE* pInput, CSAMPLE *pOutput,
                         const unsigned int numSamples,
                         const unsigned int sampleRate,
-                        const EffectProcessor::EnableState enableState,
-                        const GroupFeatureState& groupFeatureState);
+                        const EffectProcessor::EnableState enableState);
 
   private:
     QString debugString() const {

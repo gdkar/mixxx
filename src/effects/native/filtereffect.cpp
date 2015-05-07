@@ -94,10 +94,8 @@ void FilterEffect::processChannel(const ChannelHandle& handle,
                                   const CSAMPLE* pInput, CSAMPLE* pOutput,
                                   const unsigned int numSamples,
                                   const unsigned int sampleRate,
-                                  const EffectProcessor::EnableState enableState,
-                                  const GroupFeatureState& groupFeatures) {
+                                  const EffectProcessor::EnableState enableState){
     Q_UNUSED(handle);
-    Q_UNUSED(groupFeatures);
     Q_UNUSED(sampleRate);
 
     double hpf;

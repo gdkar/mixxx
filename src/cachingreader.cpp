@@ -19,8 +19,8 @@ const int CachingReader::maximumChunksInMemory = 80;
 CachingReader::CachingReader(QString group,
                              ConfigObject<ConfigValue>* config)
         : m_pConfig(config),
-          m_chunkReadRequestFIFO(1024),
-          m_readerStatusFIFO(1024),
+          m_chunkReadRequestFIFO(),
+          m_readerStatusFIFO(),
           m_readerStatus(INVALID),
           m_mruChunk(NULL),
           m_lruChunk(NULL),
@@ -250,7 +250,7 @@ void CachingReader::newTrack(TrackPointer pTrack) {
 
 void CachingReader::process() {
     ReaderStatusUpdate status;
-    while (m_readerStatusFIFO.read(&status, 1) == 1) {
+    while (m_readerStatusFIFO.read(status) ) {
         // qDebug() << "Got ReaderStatusUpdate:" << status.status
         //          << (status.chunk ? status.chunk->chunk_number : -1);
         if (status.status == TRACK_NOT_LOADED) {
@@ -513,7 +513,7 @@ void CachingReader::hintAndMaybeWake(const HintVector& hintList) {
                 request.chunk = pChunk;
                 // qDebug() << "Requesting read of chunk" << current << "into" << pChunk;
                 // qDebug() << "Requesting read into " << request.chunk->data;
-                if (m_chunkReadRequestFIFO.write(&request, 1) != 1) {
+                if (m_chunkReadRequestFIFO.write(request) ) {
                     qDebug() << "ERROR: Could not submit read request for "
                              << current;
                 }

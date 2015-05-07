@@ -152,8 +152,7 @@ EngineEffectChain::ChannelStatus& EngineEffectChain::getChannelStatus(
 void EngineEffectChain::process(const ChannelHandle& handle,
                                 CSAMPLE* pInOut,
                                 const unsigned int numSamples,
-                                const unsigned int sampleRate,
-                                const GroupFeatureState& groupFeatures) {
+                                const unsigned int sampleRate){
     ChannelStatus& channel_info = getChannelStatus(handle);
 
     if (m_enableState == EffectProcessor::DISABLED
@@ -187,7 +186,7 @@ void EngineEffectChain::process(const ChannelHandle& handle,
                 }
                 pEffect->process(handle, pInOut, pInOut,
                                  numSamples, sampleRate,
-                                 effectiveEnableState, groupFeatures);
+                                 effectiveEnableState);
             }
         } else if (wet_gain_old == 0.0 && wet_gain == 0.0) {
             // Fully dry, no ramp, insert optimization. No action is needed
@@ -206,7 +205,7 @@ void EngineEffectChain::process(const ChannelHandle& handle,
                 CSAMPLE* pIntermediateOutput = m_pBuffer;
                 pEffect->process(handle, pIntermediateInput, pIntermediateOutput,
                                  numSamples, sampleRate,
-                                 effectiveEnableState, groupFeatures);
+                                 effectiveEnableState);
                 anyProcessed = true;
             }
 
@@ -234,7 +233,7 @@ void EngineEffectChain::process(const ChannelHandle& handle,
             CSAMPLE* pIntermediateOutput = m_pBuffer;
             pEffect->process(handle, pIntermediateInput,
                              pIntermediateOutput, numSamples, sampleRate,
-                             effectiveEnableState, groupFeatures);
+                             effectiveEnableState);
             anyProcessed = true;
         }
 

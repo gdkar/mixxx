@@ -25,25 +25,19 @@ ControlWidgetConnection::~ControlWidgetConnection() {
 }
 
 void ControlWidgetConnection::setControlParameter(double parameter) {
-    if (m_pValueTransformer != NULL) {
-        parameter = m_pValueTransformer->transformInverse(parameter);
-    }
+    if (m_pValueTransformer != NULL)  parameter = m_pValueTransformer->transformInverse(parameter);
     m_pControl->setParameter(parameter);
 }
 
 double ControlWidgetConnection::getControlParameter() const {
     double parameter = m_pControl->getParameter();
-    if (m_pValueTransformer != NULL) {
-        parameter = m_pValueTransformer->transform(parameter);
-    }
+    if (m_pValueTransformer != NULL)  parameter = m_pValueTransformer->transform(parameter);
     return parameter;
 }
 
 double ControlWidgetConnection::getControlParameterForValue(double value) const {
     double parameter = m_pControl->getParameterForValue(value);
-    if (m_pValueTransformer != NULL) {
-        parameter = m_pValueTransformer->transform(parameter);
-    }
+    if (m_pValueTransformer != NULL)  parameter = m_pValueTransformer->transform(parameter);
     return parameter;
 }
 
@@ -81,9 +75,7 @@ void ControlParameterWidgetConnection::slotControlValueChanged(double value) {
 }
 
 void ControlParameterWidgetConnection::resetControl() {
-    if (m_directionOption & DIR_FROM_WIDGET) {
-        m_pControl->reset();
-    }
+    if (m_directionOption & DIR_FROM_WIDGET) m_pControl->reset();
 }
 
 void ControlParameterWidgetConnection::setControlParameter(double v) {
@@ -93,15 +85,13 @@ void ControlParameterWidgetConnection::setControlParameter(double v) {
 }
 
 void ControlParameterWidgetConnection::setControlParameterDown(double v) {
-    if ((m_directionOption & DIR_FROM_WIDGET) && (m_emitOption & EMIT_ON_PRESS)) {
+    if ((m_directionOption & DIR_FROM_WIDGET) && (m_emitOption & EMIT_ON_PRESS)) 
         ControlWidgetConnection::setControlParameter(v);
-    }
 }
 
 void ControlParameterWidgetConnection::setControlParameterUp(double v) {
-    if ((m_directionOption & DIR_FROM_WIDGET) && (m_emitOption & EMIT_ON_RELEASE)) {
+    if ((m_directionOption & DIR_FROM_WIDGET) && (m_emitOption & EMIT_ON_RELEASE)) 
         ControlWidgetConnection::setControlParameter(v);
-    }
 }
 
 ControlWidgetPropertyConnection::ControlWidgetPropertyConnection(WBaseWidget* pBaseWidget,
@@ -128,14 +118,12 @@ void ControlWidgetPropertyConnection::slotControlValueChanged(double v) {
     QVariant parameter;
     QWidget* pWidget = m_pWidget->toQWidget();
     QVariant property = pWidget->property(m_propertyName.constData());
-    if (property.type() == QVariant::Bool) {
+    if (property.type() == QVariant::Bool) 
         parameter = getControlParameterForValue(v) > 0;
-    } else {
+    else 
         parameter = getControlParameterForValue(v);
-    }
 
-    if (!pWidget->setProperty(m_propertyName.constData(),parameter)) {
+    if (!pWidget->setProperty(m_propertyName.constData(),parameter)) 
         qDebug() << "Setting property" << m_propertyName
                 << "to widget failed. Value:" << parameter;
-    }
 }

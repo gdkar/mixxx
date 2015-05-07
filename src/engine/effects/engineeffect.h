@@ -14,7 +14,6 @@
 #include "engine/channelhandle.h"
 #include "engine/effects/engineeffectparameter.h"
 #include "engine/effects/message.h"
-#include "engine/effects/groupfeaturestate.h"
 
 class EngineEffect : public EffectsRequestHandler {
   public:
@@ -39,8 +38,7 @@ class EngineEffect : public EffectsRequestHandler {
                  const CSAMPLE* pInput, CSAMPLE* pOutput,
                  const unsigned int numSamples,
                  const unsigned int sampleRate,
-                 const EffectProcessor::EnableState enableState,
-                 const GroupFeatureState& groupFeatures);
+                 const EffectProcessor::EnableState enableState);
 
     bool enabled() const {
         return m_enableState != EffectProcessor::DISABLED;

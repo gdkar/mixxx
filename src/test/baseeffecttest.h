@@ -38,8 +38,7 @@ class MockEffectProcessor : public EffectProcessor {
                                CSAMPLE* pOutput,
                                const unsigned int numSamples,
                                const unsigned int sampleRate,
-                               const EffectProcessor::EnableState enableState,
-                               const GroupFeatureState& groupFeatures));
+                               const EffectProcessor::EnableState enableState));
 
     MOCK_METHOD1(initialize, void(const QSet<ChannelHandleAndGroup>& registeredChannels));
 };

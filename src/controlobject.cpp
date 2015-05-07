@@ -94,23 +94,17 @@ double ControlObject::getParameterForValue(double value) const {
 
 
 void ControlObject::setParameter(double v) {
-    if (m_pControl) {
-        m_pControl->setParameter(v, this);
-    }
+    if (m_pControl) {m_pControl->setParameter(v, this);}
 }
 
 void ControlObject::setParameterFrom(double v, QObject* pSender) {
-    if (m_pControl) {
-        m_pControl->setParameter(v, pSender);
-    }
+    if (m_pControl) {m_pControl->setParameter(v, pSender);}
 }
 
 // static
 void ControlObject::set(const ConfigKey& key, const double& value) {
     QSharedPointer<ControlDoublePrivate> pCop = ControlDoublePrivate::getControl(key);
-    if (pCop) {
-        pCop->set(value, NULL);
-    }
+    if (pCop) {pCop->set(value, NULL);}
 }
 
 bool ControlObject::connectValueChangeRequest(const QObject* receiver,

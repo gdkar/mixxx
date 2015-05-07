@@ -53,8 +53,7 @@ class LinkwitzRiley8EQEffect : public PerChannelEffectProcessor<LinkwitzRiley8EQ
                         const CSAMPLE* pInput, CSAMPLE *pOutput,
                         const unsigned int numSamples,
                         const unsigned int sampleRate,
-                        const EffectProcessor::EnableState enableState,
-                        const GroupFeatureState& groupFeatureState);
+                        const EffectProcessor::EnableState enableState);
 
   private:
     QString debugString() const {

@@ -66,10 +66,8 @@ void BitCrusherEffect::processChannel(const ChannelHandle& handle,
                                       const CSAMPLE* pInput, CSAMPLE* pOutput,
                                       const unsigned int numSamples,
                                       const unsigned int sampleRate,
-                                      const EffectProcessor::EnableState enableState,
-                                      const GroupFeatureState& groupFeatures) {
+                                      const EffectProcessor::EnableState enableState){
     Q_UNUSED(handle);
-    Q_UNUSED(groupFeatures);
     Q_UNUSED(sampleRate); // we are normalized to 1
     Q_UNUSED(enableState); // no need to ramp, it is just a bitcrusher ;-)
 

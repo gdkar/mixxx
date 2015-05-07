@@ -133,10 +133,9 @@ void EngineEffectsManager::onCallbackStart() {
 void EngineEffectsManager::process(const ChannelHandle& handle,
                                    CSAMPLE* pInOut,
                                    const unsigned int numSamples,
-                                   const unsigned int sampleRate,
-                                   const GroupFeatureState& groupFeatures) {
+                                   const unsigned int sampleRate){
     foreach (EngineEffectRack* pRack, m_racks) {
-        pRack->process(handle, pInOut, numSamples, sampleRate, groupFeatures);
+        pRack->process(handle, pInOut, numSamples, sampleRate);
     }
 }
 

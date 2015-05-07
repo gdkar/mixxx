@@ -213,6 +213,7 @@ void ControlPushButtonBehavior::setValueFromParameter(double dParam, ControlDoub
             double value = pControl->get();
             pControl->set(!value, NULL);
             m_pushTimer.setSingleShot(true);
+            m_pushTimer.setTimerType(Qt::PreciseTimer);
             m_pushTimer.start(kPowerWindowTimeMillis);
         } else if (!m_pushTimer.isActive()) {
             // Disable after releasing a long press
@@ -231,6 +232,7 @@ void ControlPushButtonBehavior::setValueFromParameter(double dParam, ControlDoub
                 pControl->set(value, NULL);
                 if (m_buttonMode == LONGPRESSLATCHING) {
                     m_pushTimer.setSingleShot(true);
+                    m_pushTimer.setTimerType(Qt::PreciseTimer);
                     m_pushTimer.start(kLongPressLatchingTimeMillis);
                 }
             } else {
@@ -244,10 +246,7 @@ void ControlPushButtonBehavior::setValueFromParameter(double dParam, ControlDoub
             }
         }
     } else { // Not a toggle button (trigger only when button pushed)
-        if (pressed) {
-            pControl->set(1., NULL);
-        } else {
-            pControl->set(0., NULL);
-        }
+        if (pressed) {pControl->set(1., NULL);
+        } else {pControl->set(0., NULL);}
     }
 }

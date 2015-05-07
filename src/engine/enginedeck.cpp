@@ -70,7 +70,6 @@ EngineDeck::~EngineDeck() {
 }
 
 void EngineDeck::process(CSAMPLE* pOut, const int iBufferSize) {
-    GroupFeatureState features;
     // Feed the incoming audio through if passthrough is active
     const CSAMPLE* sampleBuffer = m_sampleBuffer; // save pointer on stack
     if (isPassthroughActive() && sampleBuffer) {
@@ -88,7 +87,6 @@ void EngineDeck::process(CSAMPLE* pOut, const int iBufferSize) {
 
         // Process the raw audio
         m_pBuffer->process(pOut, iBufferSize);
-        m_pBuffer->collectFeatures(&features);
         m_pPregain->setSpeed(m_pBuffer->getSpeed());
         m_bPassthroughWasActive = false;
     }
@@ -99,10 +97,9 @@ void EngineDeck::process(CSAMPLE* pOut, const int iBufferSize) {
     if (m_pEngineEffectsManager != NULL) {
         // This is out of date by a callback but some effects will want the RMS
         // volume.
-        m_pVUMeter->collectFeatures(&features);
         m_pEngineEffectsManager->process(
                 getHandle(), pOut, iBufferSize,
-                static_cast<unsigned int>(m_pSampleRate->get()), features);
+                static_cast<unsigned int>(m_pSampleRate->get()));
     }
     // Update VU meter
     m_pVUMeter->process(pOut, iBufferSize);

@@ -444,16 +444,15 @@ void EngineMaster::process(const int iBufferSize) {
 
     // Process master channel effects
     if (m_pEngineEffectsManager) {
-        GroupFeatureState busFeatures;
         m_pEngineEffectsManager->process(m_busLeftHandle.handle(),
                                          m_pOutputBusBuffers[EngineChannel::LEFT],
-                                         iBufferSize, iSampleRate, busFeatures);
+                                         iBufferSize, iSampleRate);
         m_pEngineEffectsManager->process(m_busCenterHandle.handle(),
                                          m_pOutputBusBuffers[EngineChannel::CENTER],
-                                         iBufferSize, iSampleRate, busFeatures);
+                                         iBufferSize, iSampleRate);
         m_pEngineEffectsManager->process(m_busRightHandle.handle(),
                                          m_pOutputBusBuffers[EngineChannel::RIGHT],
-                                         iBufferSize, iSampleRate, busFeatures);
+                                         iBufferSize, iSampleRate);
     }
 
     if (masterEnabled) {
@@ -477,15 +476,10 @@ void EngineMaster::process(const int iBufferSize) {
 
         // Process master channel effects
         if (m_pEngineEffectsManager) {
-            GroupFeatureState masterFeatures;
             // Well, this is delayed by one buffer (it's dependent on the
             // output). Oh well.
-            if (m_pVumeter != NULL) {
-                m_pVumeter->collectFeatures(&masterFeatures);
-            }
             m_pEngineEffectsManager->process(m_masterHandle.handle(), m_pMaster,
-                                             iBufferSize, iSampleRate,
-                                             masterFeatures);
+                                             iBufferSize, iSampleRate);
         }
 
         // Apply master gain after effects.
@@ -547,11 +541,9 @@ void EngineMaster::process(const int iBufferSize) {
     if (headphoneEnabled) {
         // Process headphone channel effects
         if (m_pEngineEffectsManager) {
-            GroupFeatureState headphoneFeatures;
             m_pEngineEffectsManager->process(m_headphoneHandle.handle(),
                                              m_pHead,
-                                             iBufferSize, iSampleRate,
-                                             headphoneFeatures);
+                                             iBufferSize, iSampleRate);
         }
         // Head volume
         CSAMPLE headphoneGain = m_pHeadGain->get();

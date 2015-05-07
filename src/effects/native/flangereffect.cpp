@@ -78,11 +78,9 @@ void FlangerEffect::processChannel(const ChannelHandle& handle,
                                    const CSAMPLE* pInput, CSAMPLE* pOutput,
                                    const unsigned int numSamples,
                                    const unsigned int sampleRate,
-                                   const EffectProcessor::EnableState enableState,
-                                   const GroupFeatureState& groupFeatures) {
+                                   const EffectProcessor::EnableState enableState){
     Q_UNUSED(handle);
     Q_UNUSED(enableState);
-    Q_UNUSED(groupFeatures);
     Q_UNUSED(sampleRate);
     CSAMPLE lfoPeriod = m_pPeriodParameter->value();
     CSAMPLE lfoDepth = m_pDepthParameter->value();

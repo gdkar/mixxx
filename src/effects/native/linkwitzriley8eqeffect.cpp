@@ -153,10 +153,8 @@ void LinkwitzRiley8EQEffect::processChannel(const ChannelHandle& handle,
                                             const CSAMPLE* pInput, CSAMPLE* pOutput,
                                             const unsigned int numSamples,
                                             const unsigned int sampleRate,
-                                            const EffectProcessor::EnableState enableState,
-                                            const GroupFeatureState& groupFeatures) {
+                                            const EffectProcessor::EnableState enableState){
     Q_UNUSED(handle);
-    Q_UNUSED(groupFeatures);
 
     float fLow = 0.f, fMid = 0.f, fHigh = 0.f;
     if (!m_pKillLow->toBool()) {

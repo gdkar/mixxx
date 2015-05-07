@@ -91,8 +91,7 @@ void EngineEffect::process(const ChannelHandle& handle,
                            const CSAMPLE* pInput, CSAMPLE* pOutput,
                            const unsigned int numSamples,
                            const unsigned int sampleRate,
-                           const EffectProcessor::EnableState enableState,
-                           const GroupFeatureState& groupFeatures) {
+                           const EffectProcessor::EnableState enableState){
     EffectProcessor::EnableState effectiveEnableState = m_enableState;
     if (enableState == EffectProcessor::DISABLING) {
         effectiveEnableState = EffectProcessor::DISABLING;
@@ -101,7 +100,7 @@ void EngineEffect::process(const ChannelHandle& handle,
     }
 
     m_pProcessor->process(handle, pInput, pOutput, numSamples, sampleRate,
-            effectiveEnableState, groupFeatures);
+            effectiveEnableState);
     if (!m_effectRampsFromDry) {
         // the effect does not fade, so we care for it
         if (effectiveEnableState == EffectProcessor::DISABLING) {

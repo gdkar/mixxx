@@ -26,8 +26,8 @@ const SINT CachingReaderWorker::kFramesPerChunk = 8192; // ~ 170 ms at 48 kHz
 const SINT CachingReaderWorker::kSamplesPerChunk = kFramesPerChunk * kChunkChannels;
 
 CachingReaderWorker::CachingReaderWorker(QString group,
-        FIFO<ChunkReadRequest>* pChunkReadRequestFIFO,
-        FIFO<ReaderStatusUpdate>* pReaderStatusFIFO)
+        FFItemBuffer<ChunkReadRequest,1024>* pChunkReadRequestFIFO,
+        FFItemBuffer<ReaderStatusUpdate,1024>* pReaderStatusFIFO)
         : m_group(group),
           m_tag(QString("CachingReaderWorker %1").arg(m_group)),
           m_pChunkReadRequestFIFO(pChunkReadRequestFIFO),
@@ -120,10 +120,10 @@ void CachingReaderWorker::run() {
             m_newTrack = TrackPointer();
             m_newTrackMutex.unlock();
             loadTrack(pLoadTrack);
-        } else if (m_pChunkReadRequestFIFO->read(&request, 1) == 1) {
+        } else if (m_pChunkReadRequestFIFO->read(request) ) {
             // Read the requested chunks.
             processChunkReadRequest(&request, &status);
-            m_pReaderStatusFIFO->writeBlocking(&status, 1);
+            m_pReaderStatusFIFO->write(status);
         } else {
             Event::end(m_tag);
             m_semaRun.acquire();
@@ -163,7 +163,7 @@ void CachingReaderWorker::loadTrack(const TrackPointer& pTrack) {
         // Must unlock before emitting to avoid deadlock
         qDebug() << m_group << "CachingReaderWorker::loadTrack() load failed for\""
                  << filename << "\", unlocked reader lock";
-        m_pReaderStatusFIFO->writeBlocking(&status, 1);
+        m_pReaderStatusFIFO->write(status);
         emit(trackLoadFailed(
             pTrack, QString("The file '%1' could not be found.").arg(filename)));
         return;
@@ -176,7 +176,7 @@ void CachingReaderWorker::loadTrack(const TrackPointer& pTrack) {
         // Must unlock before emitting to avoid deadlock
         qDebug() << m_group << "CachingReaderWorker::loadTrack() load failed for\""
                  << filename << "\", file invalid, unlocked reader lock";
-        m_pReaderStatusFIFO->writeBlocking(&status, 1);
+        m_pReaderStatusFIFO->write(status);
         emit(trackLoadFailed(
             pTrack, QString("The file '%1' could not be loaded.").arg(filename)));
         return;
@@ -184,15 +184,15 @@ void CachingReaderWorker::loadTrack(const TrackPointer& pTrack) {
 
     status.trackFrameCount = m_pAudioSource->getFrameCount();
     status.status = TRACK_LOADED;
-    m_pReaderStatusFIFO->writeBlocking(&status, 1);
+    m_pReaderStatusFIFO->write(status);
 
     // Clear the chunks to read list.
     ChunkReadRequest request;
-    while (m_pChunkReadRequestFIFO->read(&request, 1) == 1) {
+    while (m_pChunkReadRequestFIFO->read(request) ) {
         qDebug() << "Skipping read request for " << request.chunk->chunk_number;
         status.status = CHUNK_READ_INVALID;
         status.chunk = request.chunk;
-        m_pReaderStatusFIFO->writeBlocking(&status, 1);
+        m_pReaderStatusFIFO->write(status);
     }
 
     // Emit that the track is loaded.

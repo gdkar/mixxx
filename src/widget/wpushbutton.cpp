@@ -55,7 +55,6 @@ void WPushButton::setup(QDomNode node, const SkinContext& context) {
     // Number of states
     int iNumStates = context.selectInt(node, "NumberStates");
     setStates(iNumStates);
-
     // Set background pixmap if available
     if (context.hasNode(node, "BackPath")) {
         QDomElement backPathNode = context.selectElement(node, "BackPath");
@@ -63,11 +62,9 @@ void WPushButton::setup(QDomNode node, const SkinContext& context) {
         if (!backgroundSource.isEmpty()) {
             // The implicit default in <1.12.0 was FIXED so we keep it for
             // backwards compatibility.
-            setPixmapBackground(backgroundSource,
-                                context.selectScaleMode(backPathNode, Paintable::FIXED));
+            setPixmapBackground(backgroundSource,context.selectScaleMode(backPathNode, Paintable::FIXED));
         }
     }
-
     // Load pixmaps for associated states
     QDomNode state = context.selectNode(node, "State");
     while (!state.isNull()) {
@@ -75,40 +72,27 @@ void WPushButton::setup(QDomNode node, const SkinContext& context) {
             // support for variables in State elements
             SkinContext stateContext(context);
             stateContext.updateVariables(state);
-
             int iState = stateContext.selectInt(state, "Number");
             if (iState < m_iNoStates) {
-
                 QDomElement unpressedNode = stateContext.selectElement(state, "Unpressed");
                 PixmapSource pixmapSource = stateContext.getPixmapSource(unpressedNode);
                 // The implicit default in <1.12.0 was FIXED so we keep it for
                 // backwards compatibility.
-                Paintable::DrawMode unpressedMode =
-                        stateContext.selectScaleMode(unpressedNode, Paintable::FIXED);
-                if (!pixmapSource.isEmpty()) {
-                    setPixmap(iState, false, pixmapSource, unpressedMode);
-                }
+                Paintable::DrawMode unpressedMode = stateContext.selectScaleMode(unpressedNode, Paintable::FIXED);
+                if (!pixmapSource.isEmpty())  setPixmap(iState, false, pixmapSource, unpressedMode);
 
                 QDomElement pressedNode = stateContext.selectElement(state, "Pressed");
                 pixmapSource = stateContext.getPixmapSource(pressedNode);
                 // The implicit default in <1.12.0 was FIXED so we keep it for
                 // backwards compatibility.
-                Paintable::DrawMode pressedMode =
-                        stateContext.selectScaleMode(pressedNode, Paintable::FIXED);
-                if (!pixmapSource.isEmpty()) {
-                    setPixmap(iState, true, pixmapSource, pressedMode);
-                }
+                Paintable::DrawMode pressedMode = stateContext.selectScaleMode(pressedNode, Paintable::FIXED);
+                if (!pixmapSource.isEmpty())  setPixmap(iState, true, pixmapSource, pressedMode);
 
                 m_text.replace(iState, stateContext.selectString(state, "Text"));
                 QString alignment = stateContext.selectString(state, "Alignment").toLower();
-                if (alignment == "left") {
-                    m_align.replace(iState, Qt::AlignLeft);
-                } else if (alignment == "right") {
-                    m_align.replace(iState, Qt::AlignRight);
-                } else {
-                    // Default is center.
-                    m_align.replace(iState, Qt::AlignCenter);
-                }
+                if (alignment == "left") {m_align.replace(iState, Qt::AlignLeft);
+                } else if (alignment == "right") {m_align.replace(iState, Qt::AlignRight);
+                } else {m_align.replace(iState, Qt::AlignCenter);}
             }
         }
         state = state.nextSibling();
@@ -123,17 +107,13 @@ void WPushButton::setup(QDomNode node, const SkinContext& context) {
     } else {
         leftConnection = m_leftConnections.at(0);
     }
-
     if (leftConnection) {
         bool leftClickForcePush = context.selectBool(node, "LeftClickIsPushButton", false);
         m_leftButtonMode = ControlPushButton::PUSH;
         if (!leftClickForcePush) {
             const ConfigKey& configKey = leftConnection->getKey();
-            ControlPushButton* p = dynamic_cast<ControlPushButton*>(
-                    ControlObject::getControl(configKey));
-            if (p) {
-                m_leftButtonMode = p->getButtonMode();
-            }
+            ControlPushButton* p = dynamic_cast<ControlPushButton*>(ControlObject::getControl(configKey));
+            if (p) {m_leftButtonMode = p->getButtonMode();}
         }
         if (leftConnection->getEmitOption() &
                 ControlParameterWidgetConnection::EMIT_DEFAULT) {
@@ -141,17 +121,14 @@ void WPushButton::setup(QDomNode node, const SkinContext& context) {
                 case ControlPushButton::PUSH:
                 case ControlPushButton::LONGPRESSLATCHING:
                 case ControlPushButton::POWERWINDOW:
-                    leftConnection->setEmitOption(
-                            ControlParameterWidgetConnection::EMIT_ON_PRESS_AND_RELEASE);
+                    leftConnection->setEmitOption(ControlParameterWidgetConnection::EMIT_ON_PRESS_AND_RELEASE);
                     break;
                 default:
-                    leftConnection->setEmitOption(
-                            ControlParameterWidgetConnection::EMIT_ON_PRESS);
+                    leftConnection->setEmitOption(ControlParameterWidgetConnection::EMIT_ON_PRESS);
                     break;
             }
         }
-        if (leftConnection->getDirectionOption() &
-                        ControlParameterWidgetConnection::DIR_DEFAULT) {
+        if (leftConnection->getDirectionOption() & ControlParameterWidgetConnection::DIR_DEFAULT) {
             if (m_pDisplayConnection == leftConnection) {
                 leftConnection->setDirectionOption(ControlParameterWidgetConnection::DIR_FROM_AND_TO_WIDGET);
             } else {
@@ -163,7 +140,6 @@ void WPushButton::setup(QDomNode node, const SkinContext& context) {
             }
         }
     }
-
     if (!m_rightConnections.isEmpty()) {
         ControlParameterWidgetConnection* rightConnection = m_rightConnections.at(0);
         bool rightClickForcePush = context.selectBool(node, "RightClickIsPushButton", false);
@@ -236,7 +212,6 @@ void WPushButton::setPixmap(int iState, bool bPressed, PixmapSource source,
     }
     pixmaps.replace(iState, pPixmap);
 }
-
 void WPushButton::setPixmapBackground(PixmapSource source,
                                       Paintable::DrawMode mode) {
     // Load background pixmap
@@ -280,50 +255,26 @@ void WPushButton::paintEvent(QPaintEvent* e) {
     option.initFrom(this);
     QStylePainter p(this);
     p.drawPrimitive(QStyle::PE_Widget, option);
-
-    if (m_iNoStates == 0) {
-        return;
-    }
-
-    if (m_pPixmapBack) {
-        m_pPixmapBack->draw(rect(), &p);
-    }
-
-    const QVector<PaintablePointer>& pixmaps = m_bPressed ?
-            m_pressedPixmaps : m_unpressedPixmaps;
-
-
+    if (m_iNoStates == 0) {return;}
+    if (m_pPixmapBack) {m_pPixmapBack->draw(rect(), &p);}
+    const QVector<PaintablePointer>& pixmaps = m_bPressed ? m_pressedPixmaps : m_unpressedPixmaps;
     // m_text, m_pressedPixmaps and m_unpressedPixmaps are all the same size (as
     // per setup()) so if one is empty, all are empty.
-    if (pixmaps.isEmpty()) {
-        return;
-    }
-
+    if (pixmaps.isEmpty()) {return;}
     int idx = readDisplayValue();
     // Just in case m_iNoStates is somehow different from pixmaps.size().
-    if (idx < 0) {
-        idx = 0;
-    } else if (idx >= pixmaps.size()) {
-        idx = pixmaps.size() - 1;
-    }
-
+    if (idx < 0) {idx = 0;
+    } else if (idx >= pixmaps.size()) {idx = pixmaps.size() - 1;}
     PaintablePointer pPixmap = pixmaps.at(idx);
-    if (!pPixmap.isNull() && !pPixmap->isNull()) {
-        pPixmap->draw(rect(), &p);
-    }
-
+    if (!pPixmap.isNull() && !pPixmap->isNull()) {pPixmap->draw(rect(), &p);}
     QString text = m_text.at(idx);
-    if (!text.isEmpty()) {
-        p.drawText(rect(), m_align.at(idx), text);
-    }
+    if (!text.isEmpty()) {p.drawText(rect(), m_align.at(idx), text);}
 }
-
 void WPushButton::mousePressEvent(QMouseEvent * e) {
     const bool leftClick = e->button() == Qt::LeftButton;
     const bool rightClick = e->button() == Qt::RightButton;
 
-    if (m_leftButtonMode == ControlPushButton::POWERWINDOW
-            && m_iNoStates == 2) {
+    if (m_leftButtonMode == ControlPushButton::POWERWINDOW && m_iNoStates == 2) {
         if (leftClick) {
             if (getControlParameterLeft() == 0.0) {
                 m_clickTimer.setSingleShot(true);
@@ -336,19 +287,16 @@ void WPushButton::mousePressEvent(QMouseEvent * e) {
         // discharge right clicks here, because is used for latching in POWERWINDOW mode
         return;
     }
-
     if (rightClick) {
         // This is the secondary button function allways a Pushbutton
         // due the leak of visual feedback we do not allow a toggle function
-        if (m_rightButtonMode == ControlPushButton::PUSH
-                || m_iNoStates == 1) {
+        if (m_rightButtonMode == ControlPushButton::PUSH || m_iNoStates == 1) {
             m_bPressed = true;
             setControlParameterRightDown(1.0);
             restyleAndRepaint();
         }
         return;
     }
-
     if (leftClick) {
         double emitValue;
         if (m_leftButtonMode == ControlPushButton::PUSH
@@ -388,8 +336,7 @@ void WPushButton::mouseReleaseEvent(QMouseEvent * e) {
     const bool leftClick = e->button() == Qt::LeftButton;
     const bool rightClick = e->button() == Qt::RightButton;
 
-    if (m_leftButtonMode == ControlPushButton::POWERWINDOW
-            && m_iNoStates == 2) {
+    if (m_leftButtonMode == ControlPushButton::POWERWINDOW && m_iNoStates == 2) {
         if (leftClick) {
             const bool rightButtonDown = QApplication::mouseButtons() & Qt::RightButton;
             if (m_bPressed && !m_clickTimer.isActive() && !rightButtonDown) {
@@ -397,13 +344,10 @@ void WPushButton::mouseReleaseEvent(QMouseEvent * e) {
                 setControlParameterLeftUp(0.0);
             }
             m_bPressed = false;
-        } else if (rightClick) {
-            m_bPressed = false;
-        }
+        } else if (rightClick) {m_bPressed = false;}
         restyleAndRepaint();
         return;
     }
-
     if (rightClick) {
         // This is the secondary clickButton function,
         // due the leak of visual feedback we do not allow a toggle
@@ -416,7 +360,6 @@ void WPushButton::mouseReleaseEvent(QMouseEvent * e) {
         }
         return;
     }
-
     if (leftClick) {
         double emitValue = getControlParameterLeft();
         if (m_leftButtonMode == ControlPushButton::PUSH

@@ -5,7 +5,6 @@
 
 #include "engine/channelhandle.h"
 #include "engine/effects/message.h"
-#include "engine/effects/groupfeaturestate.h"
 
 class EngineEffectChain;
 
@@ -21,8 +20,7 @@ class EngineEffectRack : public EffectsRequestHandler {
     void process(const ChannelHandle& handle,
                  CSAMPLE* pInOut,
                  const unsigned int numSamples,
-                 const unsigned int sampleRate,
-                 const GroupFeatureState& groupFeatures);
+                 const unsigned int sampleRate);
 
     int number() const {
         return m_iRackNumber;

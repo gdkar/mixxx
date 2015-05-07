@@ -6,7 +6,6 @@
 #include "util/types.h"
 #include "util/fifo.h"
 #include "engine/effects/message.h"
-#include "engine/effects/groupfeaturestate.h"
 #include "engine/channelhandle.h"
 
 class EngineEffectRack;
@@ -30,8 +29,7 @@ class EngineEffectsManager : public EffectsRequestHandler {
     virtual void process(const ChannelHandle& handle,
                          CSAMPLE* pInOut,
                          const unsigned int numSamples,
-                         const unsigned int sampleRate,
-                         const GroupFeatureState& groupFeatures);
+                         const unsigned int sampleRate);
 
     bool processEffectsRequest(
         const EffectsRequest& message,

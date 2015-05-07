@@ -148,8 +148,6 @@ class EngineBuffer : public EngineObject {
     double getVisualPlayPos();
     double getTrackSamples();
 
-    void collectFeatures(GroupFeatureState* pGroupFeatures) const;
-
     // For dependency injection of readers.
     //void setReader(CachingReader* pReader);
 

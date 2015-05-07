@@ -11,6 +11,7 @@
 #include "engine/engineworker.h"
 #include "sources/audiosource.h"
 #include "util/fifo.h"
+#include "util/ff_ringbuffer.h"
 
 
 // forward declaration(s)
@@ -67,8 +68,8 @@ class CachingReaderWorker : public EngineWorker {
   public:
     // Construct a CachingReader with the given group.
     CachingReaderWorker(QString group,
-            FIFO<ChunkReadRequest>* pChunkReadRequestFIFO,
-            FIFO<ReaderStatusUpdate>* pReaderStatusFIFO);
+            FFItemBuffer<ChunkReadRequest,1024>* pChunkReadRequestFIFO,
+            FFItemBuffer<ReaderStatusUpdate,1024>* pReaderStatusFIFO);
     virtual ~CachingReaderWorker();
 
     // Request to load a new track. wake() must be called afterwards.
@@ -104,8 +105,8 @@ class CachingReaderWorker : public EngineWorker {
 
     // Thread-safe FIFOs for communication between the engine callback and
     // reader thread.
-    FIFO<ChunkReadRequest>* m_pChunkReadRequestFIFO;
-    FIFO<ReaderStatusUpdate>* m_pReaderStatusFIFO;
+    FFItemBuffer<ChunkReadRequest,1024>* m_pChunkReadRequestFIFO;
+    FFItemBuffer<ReaderStatusUpdate,1024>* m_pReaderStatusFIFO;
 
     // Queue of Tracks to load, and the corresponding lock. Must acquire the
     // lock to touch.

@@ -22,7 +22,7 @@ QList<QString> SoundSourceMPG123::supportedFileExtensions() {
 SoundSourceMPG123::SoundSourceMPG123(QUrl url)
         : SoundSourcePlugin(url, "mpg123"),
           m_h(0),
-          m_curFrameIndex(kFrameIndexMin) {
+          m_curFrameIndex(0) {
   mpg123_init();
   m_h = mpg123_new(NULL,NULL);
 

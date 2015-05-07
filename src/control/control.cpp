@@ -223,9 +223,7 @@ double ControlDoublePrivate::getParameter() const {
 
 double ControlDoublePrivate::getParameterForValue(double value) const {
     QSharedPointer<ControlNumericBehavior> pBehavior = m_pBehavior;
-    if (!pBehavior.isNull()) {
-        value = pBehavior->valueToParameter(value);
-    }
+    if (!pBehavior.isNull()) {value = pBehavior->valueToParameter(value);}
     return value;
 }
 

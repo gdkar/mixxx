@@ -11,7 +11,6 @@
 #include "controlobjectthread.h"
 #include "trackinfoobject.h"
 #include "control/controlvalue.h"
-#include "engine/effects/groupfeaturestate.h"
 #include "cachingreader.h"
 
 class EngineMaster;
@@ -73,10 +72,6 @@ class EngineControl : public QObject {
     bool atEndPosition() const;
     QString getGroup() const;
 
-    // Called to collect player features for effects processing.
-    virtual void collectFeatureState(GroupFeatureState* pGroupFeatures) const {
-        Q_UNUSED(pGroupFeatures);
-    }
 
     // Called whenever a seek occurs to allow the EngineControl to respond.
     virtual void notifySeek(double dNewPlaypo);

@@ -44,8 +44,7 @@ class EchoEffect : public PerChannelEffectProcessor<EchoGroupState> {
                         const CSAMPLE* pInput, CSAMPLE* pOutput,
                         const unsigned int numSamples,
                         const unsigned int sampleRate,
-                        const EffectProcessor::EnableState enableState,
-                        const GroupFeatureState& groupFeatures);
+                        const EffectProcessor::EnableState enableState);
 
   private:
     int getDelaySamples(double delay_time, const unsigned int sampleRate) const;

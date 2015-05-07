@@ -43,8 +43,7 @@ class MoogLadder4FilterEffect : public PerChannelEffectProcessor<MoogLadder4Filt
                         const CSAMPLE* pInput, CSAMPLE *pOutput,
                         const unsigned int numSamples,
                         const unsigned int sampleRate,
-                        const EffectProcessor::EnableState enableState,
-                        const GroupFeatureState& groupFeatures);
+                        const EffectProcessor::EnableState enableState);
 
   private:
     QString debugString() const {

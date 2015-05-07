@@ -6,7 +6,6 @@
 #include <QPair>
 
 #include "util/types.h"
-#include "engine/effects/groupfeaturestate.h"
 #include "engine/channelhandle.h"
 
 class EngineEffect;
@@ -39,8 +38,7 @@ class EffectProcessor {
                          const CSAMPLE* pInput, CSAMPLE* pOutput,
                          const unsigned int numSamples,
                          const unsigned int sampleRate,
-                         const enum EnableState enableState,
-                         const GroupFeatureState& groupFeatures) = 0;
+                         const enum EnableState enableState) = 0;
 };
 
 // Helper class for automatically fetching channel state parameters upon receipt
@@ -75,11 +73,10 @@ class PerChannelEffectProcessor : public EffectProcessor {
                          const CSAMPLE* pInput, CSAMPLE* pOutput,
                          const unsigned int numSamples,
                          const unsigned int sampleRate,
-                         const EffectProcessor::EnableState enableState,
-                         const GroupFeatureState& groupFeatures) {
+                         const EffectProcessor::EnableState enableState) {
         T* pState = getOrCreateChannelState(handle);
         processChannel(handle, pState, pInput, pOutput, numSamples, sampleRate,
-                       enableState, groupFeatures);
+                       enableState);
     }
 
     virtual void processChannel(const ChannelHandle& handle,
@@ -87,8 +84,7 @@ class PerChannelEffectProcessor : public EffectProcessor {
                                 const CSAMPLE* pInput, CSAMPLE* pOutput,
                                 const unsigned int numSamples,
                                 const unsigned int sampleRate,
-                                const EffectProcessor::EnableState enableState,
-                                const GroupFeatureState& groupFeatures) = 0;
+                                const EffectProcessor::EnableState enableState) = 0;
 
   private:
     inline T* getOrCreateChannelState(const ChannelHandle& handle) {
