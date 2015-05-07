@@ -196,8 +196,7 @@ void CachingReaderWorker::loadTrack(const TrackPointer& pTrack) {
     }
 
     // Emit that the track is loaded.
-    const SINT sampleCount =
-            m_pAudioSource->getFrameCount() * kChunkChannels;
+    const SINT sampleCount = m_pAudioSource->getFrameCount() * kChunkChannels;
     emit(trackLoaded(pTrack, m_pAudioSource->getFrameRate(), sampleCount));
 }
 

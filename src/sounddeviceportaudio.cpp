@@ -336,6 +336,11 @@ Result SoundDevicePortAudio::close() {
                                                    //BIG FAT WARNING: Pa_AbortStream() will kill threads while they're
                                                    //waiting on a mutex, which will leave the mutex in an screwy
                                                    //state. Don't use it!
+                                                   //uh, second BFW, by the way: the only threads Pa_AbortStream will kill
+                                                   // ( and it will, admittedly, rather abruptly ) are, uh, callback threads,
+                                                   // i.e. in theory running RT priority, sched FIFO in callback context, so
+                                                   // OH GOD if there's a possibility one of those going down is going to
+                                                   // trash a mutex then we've been doing this so many different kinds of wrong.
 
         if (err != paNoError) {
             qWarning() << "PortAudio: Stop stream error:" << Pa_GetErrorText(err) << getInternalName();

@@ -2,8 +2,8 @@
 #define MIXXX_SOUNDSOURCEFLAC_H
 
 #include "sources/soundsource.h"
-
-#include "circularsamplebuffer.h"
+#include "singularsamplebuffer.h"
+#include "samplebuffer.h"
 
 #include <FLAC/stream_decoder.h>
 

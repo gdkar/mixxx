@@ -43,6 +43,7 @@ class FreeList{
     Link *link = m_head.loadAcquire();
     while(link){
       Link *next = link->next;
+      m_head.storeRelease(next);
       delete link;
       link = next;
     }

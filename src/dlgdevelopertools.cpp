@@ -69,7 +69,7 @@ DlgDeveloperTools::DlgDeveloperTools(QWidget* pParent,
     m_logCursor = logTextView->textCursor();
 
     // Update at 2FPS.
-    startTimer(500);
+    startTimer(500,Qt::PreciseTimer);
 
     // Delete this dialog when its closed. We don't want any persistence.
     setAttribute(Qt::WA_DeleteOnClose);

@@ -1,5 +1,4 @@
 #include <QtDebug>
-#include <QMutexLocker>
 #include <QTextStream>
 #include <QFile>
 #include <QMetaType>
@@ -19,7 +18,7 @@ StatsPipe::StatsPipe()
     qRegisterMetaType<Stat>("Stat");
 }
 
-StatsPipe::~StatsPipe() {if (m_pManager) {m_pManager->onStatsPipeDestroyed(this);}}
+StatsPipe::~StatsPipe() {}
 
 StatsManager::StatsManager()
         : QThread(),
@@ -33,7 +32,7 @@ StatsManager::StatsManager()
 StatsManager::~StatsManager() {
     s_bStatsManagerEnabled = false;
     m_quit = 1;
-    m_statsPipeCondition.wakeAll();
+    m_statsPipeSem.release();
     wait();
     qDebug() << "StatsManager shutdown report:";
     qDebug() << "=====================================";
@@ -128,45 +127,33 @@ void StatsManager::writeTimeline(const QString& filename) {
 
         if (event.m_type == Stat::EVENT_START) {
             // We last saw a start and we just saw another start.
-            if (last_start > last_end) {
-                qDebug() << "Mismatched start/end pair" << event.m_tag;
-            }
+            if (last_start > last_end) {qDebug() << "Mismatched start/end pair" << event.m_tag;}
             startTimes[event.m_tag] = event.m_time;
         } else if (event.m_type == Stat::EVENT_END) {
             // We last saw an end and we just saw another end.
-            if (last_end > last_start) {
-                qDebug() << "Mismatched start/end pair" << event.m_tag;
-            }
+            if (last_end > last_start) {qDebug() << "Mismatched start/end pair" << event.m_tag;}
             endTimes[event.m_tag] = event.m_time;
         }
-
-        // TODO(rryan): CSV escaping
         qint64 elapsed = event.m_time - last_time;
+        QString mtag(event.m_tag);
+        mtag.replace("\"","\"\"");
         out << event.m_time << ","
             << "+" << humanizeNanos(elapsed) << ","
             << "+" << humanizeNanos(duration_since_last_start) << ","
             << "+" << humanizeNanos(duration_since_last_end) << ","
             << Stat::statTypeToString(event.m_type) << ","
-            << event.m_tag << "\n";
+            <<"\"" <<mtag << "\"\n";
         last_time = event.m_time;
     }
-
     timeline.close();
 }
 
-void StatsManager::onStatsPipeDestroyed(StatsPipe* pPipe) {
-    QMutexLocker locker(&m_statsPipeLock);
-    processIncomingStatReports();
-    m_statsPipes.removeAll(pPipe);
-}
 
 StatsPipe* StatsManager::getStatsPipeForThread() {
     if (Q_UNLIKELY(!m_threadStatsPipes.hasLocalData())) {
       fl_holder_type * pResult = new fl_holder_type(&m_freeList);
       m_threadStatsPipes.setLocalData(pResult);
     }
-//    QMutexLocker locker(&m_statsPipeLock);
-//    m_statsPipes.push_back(pResult);
     return m_threadStatsPipes.localData()->item();
 }
 
@@ -177,7 +164,7 @@ bool StatsManager::maybeWriteReport(const StatReport& report) {
     }
     bool success = pStatsPipe->write(report) ;
     qint64 count = pStatsPipe->count();
-    if (((count % kProcessLength)==0)) {m_statsPipeCondition.wakeAll();}
+    if (((count % kProcessLength)==0)) {m_statsPipeSem.release();}
     return success;
 }
 
@@ -227,13 +214,10 @@ void StatsManager::processIncomingStatReports() {
 void StatsManager::run() {
     qDebug() << "StatsManager thread starting up.";
     while (true) {
-        m_statsPipeLock.lock();
-        m_statsPipeCondition.wait(&m_statsPipeLock);
+        m_statsPipeSem.acquire();
         // We want to process reports even when we are about to quit since we
         // want to print the most accurate stat report on shutdown.
         processIncomingStatReports();
-        m_statsPipeLock.unlock();
-
         if (load_atomic(m_emitAllStats) == 1) {
             for (QMap<QString, Stat>::const_iterator it = m_stats.begin();
                  it != m_stats.end(); ++it) {

@@ -7,8 +7,8 @@
 #include <QThread>
 #include <QAtomicInt>
 #include <QtDebug>
-#include <QMutex>
 #include <QWaitCondition>
+#include <QSemaphore>
 #include <QThreadStorage>
 #include <QList>
 
@@ -52,7 +52,7 @@ class StatsManager : public QThread, public Singleton<StatsManager> {
     }
 
     void updateStats() {
-        m_statsPipeCondition.wakeAll();
+        m_statsPipeSem.release();
     }
 
   signals:
@@ -65,7 +65,6 @@ class StatsManager : public QThread, public Singleton<StatsManager> {
     fl_type       m_freeList;
     void processIncomingStatReports();
     StatsPipe* getStatsPipeForThread();
-    void onStatsPipeDestroyed(StatsPipe* pPipe);
     void writeTimeline(const QString& filename);
 
     QAtomicInt m_emitAllStats;
@@ -74,9 +73,7 @@ class StatsManager : public QThread, public Singleton<StatsManager> {
     QMap<QString, Stat> m_baseStats;
     QMap<QString, Stat> m_experimentStats;
     QList<Event> m_events;
-
-    QWaitCondition m_statsPipeCondition;
-    QMutex m_statsPipeLock;
+    QSemaphore     m_statsPipeSem;
     QList<StatsPipe*> m_statsPipes;
     QThreadStorage<fl_holder_type*> m_threadStatsPipes;
 

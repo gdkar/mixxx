@@ -1095,7 +1095,7 @@ int ControllerEngine::beginTimer(int interval, QScriptValue timerCallback,
     // This makes use of every QObject's internal timer mechanism. Nice, clean,
     // and simple. See http://doc.trolltech.com/4.6/qobject.html#startTimer for
     // details
-    int timerId = startTimer(interval);
+    int timerId = startTimer(interval,Qt::PreciseTimer);
     TimerInfo info;
     info.callback = timerCallback;
     QScriptContext *ctxt = m_pEngine->currentContext();
@@ -1278,7 +1278,7 @@ void ControllerEngine::scratchEnable(int deck, int intervalsPerRev, double rpm,
     }
 
     // 1ms is shortest possible, OS dependent
-    int timerId = startTimer(kScratchTimerMs);
+    int timerId = startTimer(kScratchTimerMs,Qt::PreciseTimer);
 
     // Associate this virtual deck with this timer for later processing
     m_scratchTimers[timerId] = deck;
@@ -1480,7 +1480,7 @@ void ControllerEngine::brake(int deck, bool activate, double factor, double rate
         m_rampTo[deck] = 0.0;
 
         // setup timer and set scratch2
-        int timerId = startTimer(kScratchTimerMs);
+        int timerId = startTimer(kScratchTimerMs,Qt::PreciseTimer);
         m_scratchTimers[timerId] = deck;
 
         ControlObjectThread* pScratch2 = getControlObjectThread(group, "scratch2");

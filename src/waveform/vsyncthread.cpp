@@ -87,7 +87,7 @@ void VSyncThread::run() {
             // waiting for interval by sleep
             if (usRemainingForSwap > 100) {
                 Event::start("VsyncThread usleep for VSync");
-                usleep(usRemainingForSwap);
+                usleep(usRemainingForSwap - 125);
                 Event::end("VsyncThread usleep for VSync");
             }
 

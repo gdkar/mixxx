@@ -40,9 +40,7 @@ SoundDevice::SoundDevice(ConfigObject<ConfigValue> * config, SoundManager * sm)
 SoundDevice::~SoundDevice() {
 }
 
-int SoundDevice::getNumInputChannels() const {
-    return m_iNumInputChannels;
-}
+int SoundDevice::getNumInputChannels() const {return m_iNumInputChannels;}
 
 int SoundDevice::getNumOutputChannels() const {
     return m_iNumOutputChannels;

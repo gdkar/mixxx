@@ -513,7 +513,7 @@ void CachingReader::hintAndMaybeWake(const HintVector& hintList) {
                 request.chunk = pChunk;
                 // qDebug() << "Requesting read of chunk" << current << "into" << pChunk;
                 // qDebug() << "Requesting read into " << request.chunk->data;
-                if (m_chunkReadRequestFIFO.write(request) ) {
+                if (!m_chunkReadRequestFIFO.write(request) ) {
                     qDebug() << "ERROR: Could not submit read request for "
                              << current;
                 }
