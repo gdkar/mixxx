@@ -18,6 +18,15 @@ SkinContext::SkinContext(ConfigObject<ConfigValue>* pConfig,
     enableDebugger(true);
     // the extensions are imported once and will be passed to the children
     // global object as properties of the parent's global object.
+    QScriptValue context = m_pScriptEngine->pushContext()->activationObject();
+    QScriptValue newGlobal = m_pScriptEngine->newObject();
+    QScriptValueIterator it(m_parentGlobal);
+    while (it.hasNext()) {
+        it.next();
+        newGlobal.setProperty(it.name(), it.value());
+    }
+    m_pScriptEngine->setGlobalObject(newGlobal);
+
     importScriptExtension("console");
     importScriptExtension("svg");
     m_pScriptEngine->installTranslatorFunctions();
