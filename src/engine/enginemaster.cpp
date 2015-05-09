@@ -218,7 +218,6 @@ EngineMaster::~EngineMaster() {
     for (int i = 0; i < m_channels.size(); ++i) {
         ChannelInfo* pChannelInfo = m_channels[i];
         SampleUtil::free(pChannelInfo->m_pBuffer);
-        delete pChannelInfo->m_pChannel;
         delete pChannelInfo->m_pVolumeControl;
         delete pChannelInfo->m_pMuteControl;
         delete pChannelInfo;

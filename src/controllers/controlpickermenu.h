@@ -12,23 +12,16 @@ class ControlPickerMenu : public QMenu {
   public:
     ControlPickerMenu(QWidget* pParent);
     virtual ~ControlPickerMenu();
-
-    const QList<ConfigKey>& controlsAvailable() const {
-        return m_controlsAvailable;
-    }
-
+    const QList<ConfigKey>& controlsAvailable() const {return m_controlsAvailable;}
     bool controlExists(ConfigKey key) const;
     QString descriptionForConfigKey(ConfigKey key) const;
     QString controlTitleForConfigKey(ConfigKey key) const;
-
   signals:
     // Emitted when the user selects a control from the menu.
     void controlPicked(ConfigKey control);
-
   private slots:
     // Triggered when user selects a control from the menu.
     void controlChosen(int controlIndex);
-
   private:
     QMenu* addSubmenu(QString title, QMenu* pParent=NULL);
     void addControl(QString group, QString control, QString title,

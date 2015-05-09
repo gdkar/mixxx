@@ -49,87 +49,36 @@ class ControlObject : public QObject {
         return getControl(key, warn);
     }
 
-    QString name() const {
-        return m_pControl ?  m_pControl->name() : QString();
-    }
-
-    void setName(const QString& name) {
-        if (m_pControl) {
-            m_pControl->setName(name);
-        }
-    }
-
-    const QString description() const {
-        return m_pControl ?  m_pControl->description() : QString();
-    }
-
-    void setDescription(const QString& description) {
-        if (m_pControl) {
-            m_pControl->setDescription(description);
-        }
-    }
-
+    QString name() const {return m_pControl ?  m_pControl->name() : QString();}
+    void setName(const QString& name) {if (m_pControl) {m_pControl->setName(name);}}
+    const QString description() const {return m_pControl ?  m_pControl->description() : QString();}
+    void setDescription(const QString& description) {if (m_pControl) {m_pControl->setDescription(description);}}
     // Return the key of the object
-    inline ConfigKey getKey() const {
-        return m_key;
-    }
-
+    inline ConfigKey getKey() const {return m_key;}
     // Returns the value of the ControlObject
-    inline double get() const {
-        return m_pControl ? m_pControl->get() : 0.0;
-    }
-
+    inline double get() const {return m_pControl ? m_pControl->get() : 0.0;}
     // Returns the bool interpretation of the ControlObject
-    inline bool toBool() const {
-        return get() > 0.0;
-    }
-
+    inline bool toBool() const {return get() > 0.0;}
     // Instantly returns the value of the ControlObject
     static double get(const ConfigKey& key);
-
     // Sets the ControlObject value. May require confirmation by owner.
-    inline void set(double value) {
-        if (m_pControl) {
-            m_pControl->set(value, this);
-        }
-    }
+    inline void set(double value) {if (m_pControl) {m_pControl->set(value, this);}}
     // Sets the ControlObject value and confirms it.
-    inline void setAndConfirm(double value) {
-        if (m_pControl) {
-            m_pControl->setAndConfirm(value, this);
-        }
-    }
+    inline void setAndConfirm(double value) {if (m_pControl) {m_pControl->setAndConfirm(value, this);}}
     // Instantly sets the value of the ControlObject
     static void set(const ConfigKey& key, const double& value);
-
     // Sets the default value
-    inline void reset() {
-        if (m_pControl) {
-            m_pControl->reset();
-        }
-    }
-
-    inline void setDefaultValue(double dValue) {
-        if (m_pControl) {
-            m_pControl->setDefaultValue(dValue);
-        }
-    }
-    inline double defaultValue() const {
-        return m_pControl ? m_pControl->defaultValue() : 0.0;
-    }
-
+    inline void reset() {if (m_pControl) {m_pControl->reset();}}
+    inline void setDefaultValue(double dValue) {if (m_pControl) {m_pControl->setDefaultValue(dValue);}}
+    inline double defaultValue() const {return m_pControl ? m_pControl->defaultValue() : 0.0;}
     // Returns the parameterized value of the object. Thread safe, non-blocking.
     virtual double getParameter() const;
-
     // Returns the parameterized value of the object. Thread safe, non-blocking.
     virtual double getParameterForValue(double value) const;
-
     // Sets the control parameterized value to v. Thread safe, non-blocking.
     virtual void setParameter(double v);
-
     // Sets the control parameterized value to v. Thread safe, non-blocking.
     virtual void setParameterFrom(double v, QObject* pSender = NULL);
-
     // Connects a Qt slot to a signal that is delivered when a new value change
     // request arrives for this control.
     // Qt::AutoConnection: Qt ensures that the signal slot is called from the
@@ -137,8 +86,7 @@ class ControlObject : public QObject {
     // You need to use Qt::DirectConnection for the engine objects, since the
     // audio thread has no Qt event queue. But be a ware of race conditions in this case.
     // ref: http://qt-project.org/doc/qt-4.8/qt.html#ConnectionType-enum
-    bool connectValueChangeRequest(const QObject* receiver,
-                                   const char* method, Qt::ConnectionType type = Qt::AutoConnection);
+    bool connectValueChangeRequest(const QObject* receiver,const char* method, Qt::ConnectionType type = Qt::AutoConnection);
 
   signals:
     void valueChanged(double);

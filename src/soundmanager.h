@@ -49,7 +49,7 @@ class ControlObject;
 class SoundManager : public QObject {
     Q_OBJECT
   public:
-    SoundManager(ConfigObject<ConfigValue> *pConfig, EngineMaster *_master);
+    SoundManager(ConfigObject<ConfigValue> *pConfig, EngineMaster *_master,QObject*pParent=0);
     virtual ~SoundManager();
 
     // Returns a list of all devices we've enumerated that match the provided

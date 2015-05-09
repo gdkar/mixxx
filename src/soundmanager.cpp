@@ -38,8 +38,9 @@ typedef PaError (*SetJackClientName)(const char *name);
 #endif
 
 SoundManager::SoundManager(ConfigObject<ConfigValue> *pConfig,
-                           EngineMaster *pMaster)
-        : m_pMaster(pMaster),
+                           EngineMaster *pMaster,QObject*pParent)
+        : QObject(pParent),
+          m_pMaster(pMaster),
           m_pConfig(pConfig),
 #ifdef __PORTAUDIO__
           m_paInitialized(false),
@@ -57,18 +58,13 @@ SoundManager::SoundManager(ConfigObject<ConfigValue> *pConfig,
     m_pControlObjectSoundStatusCO = new ControlObject(ConfigKey("[SoundManager]", "status"));
     m_pControlObjectSoundStatusCO->set(SOUNDMANAGER_DISCONNECTED);
     m_pControlObjectVinylControlGainCO = new ControlObject(ConfigKey(VINYL_PREF_KEY, "gain"));
-
     //Hack because PortAudio samplerate enumeration is slow as hell on Linux (ALSA dmix sucks, so we can't blame PortAudio)
     m_samplerates.push_back(44100);
     m_samplerates.push_back(48000);
     m_samplerates.push_back(96000);
-
     queryDevices(); // initializes PortAudio so SMConfig:loadDefaults can do
                     // its thing if it needs to
-
-    if (!m_config.readFromDisk()) {
-        m_config.loadDefaults(this, SoundManagerConfig::ALL);
-    }
+    if (!m_config.readFromDisk()) {m_config.loadDefaults(this, SoundManagerConfig::ALL);}
     checkConfig();
     m_config.writeToDisk(); // in case anything changed by applying defaults
 }
@@ -85,7 +81,6 @@ SoundManager::~SoundManager() {
 #endif
     // vinyl control proxies and input buffers are freed in closeDevices, called
     // by clearDeviceList -- bkgood
-
     delete m_pControlObjectSoundStatusCO;
     delete m_pControlObjectVinylControlGainCO;
 }
@@ -93,7 +88,6 @@ SoundManager::~SoundManager() {
 QList<SoundDevice*> SoundManager::getDeviceList(
     QString filterAPI, bool bOutputDevices, bool bInputDevices) {
     //qDebug() << "SoundManager::getDeviceList";
-
     if (filterAPI == "None") {
         QList<SoundDevice*> emptyList;
         return emptyList;

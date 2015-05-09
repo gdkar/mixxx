@@ -11,9 +11,7 @@
 
 ControlPickerMenu::ControlPickerMenu(QWidget* pParent)
         : QMenu(pParent) {
-    connect(&m_actionMapper, SIGNAL(mapped(int)),
-            this, SLOT(controlChosen(int)));
-
+    connect(&m_actionMapper, SIGNAL(mapped(int)),this, SLOT(controlChosen(int)));
     m_effectMasterOutputStr = tr("Master Output");
     m_effectHeadphoneOutputStr = tr("Headphone Output");
     m_deckStr = tr("Deck %1");
@@ -381,8 +379,7 @@ ControlPickerMenu::ControlPickerMenu(QWidget* pParent)
     QMenu* effectsMenu = addSubmenu(tr("Effects"));
 
     // Quick Effect Rack COs
-    const int iNumDecks = ControlObject::get(
-            ConfigKey("[Master]", "num_decks"));
+    const int iNumDecks = ControlObject::get(ConfigKey("[Master]", "num_decks"));
     QMenu* quickEffectMenu = addSubmenu(tr("Quick Effects"), effectsMenu);
     for (int i = 1; i <= iNumDecks; ++i) {
         addPrefixedControl(QString("[QuickEffectRack1_[Channel%1]]").arg(i),
@@ -470,8 +467,7 @@ ControlPickerMenu::ControlPickerMenu(QWidget* pParent)
                                m_effectHeadphoneOutputStr, groupDescriptionPrefix,
                                effectUnitGroups);
 
-            const int iNumDecks = ControlObject::get(
-                ConfigKey("[Master]", "num_decks"));
+            const int iNumDecks = ControlObject::get(ConfigKey("[Master]", "num_decks"));
             for (int iDeckNumber = 1; iDeckNumber <= iNumDecks; ++iDeckNumber) {
                 // PlayerManager::groupForDeck is 0-indexed.
                 QString playerGroup = PlayerManager::groupForDeck(iDeckNumber - 1);
@@ -484,8 +480,7 @@ ControlPickerMenu::ControlPickerMenu(QWidget* pParent)
                                    effectUnitGroups);
             }
 
-            const int iNumSamplers = ControlObject::get(
-                    ConfigKey("[Master]", "num_samplers"));
+            const int iNumSamplers = ControlObject::get(ConfigKey("[Master]", "num_samplers"));
             for (int iSamplerNumber = 1; iSamplerNumber <= iNumSamplers;
                  ++iSamplerNumber) {
                 // PlayerManager::groupForSampler is 0-indexed.
@@ -500,8 +495,7 @@ ControlPickerMenu::ControlPickerMenu(QWidget* pParent)
 
             }
 
-            const int iNumMicrophones = ControlObject::get(
-                ConfigKey("[Master]", "num_microphones"));
+            const int iNumMicrophones = ControlObject::get(ConfigKey("[Master]", "num_microphones"));
             for (int iMicrophoneNumber = 1; iMicrophoneNumber <= iNumMicrophones;
                  ++iMicrophoneNumber) {
                 QString micGroup = "[Microphone]";
@@ -517,8 +511,7 @@ ControlPickerMenu::ControlPickerMenu(QWidget* pParent)
                                    effectUnitGroups);
             }
 
-            const int iNumAuxiliaries = ControlObject::get(
-                    ConfigKey("[Master]", "num_auxiliaries"));
+            const int iNumAuxiliaries = ControlObject::get(ConfigKey("[Master]", "num_auxiliaries"));
             for (int iAuxiliaryNumber = 1; iAuxiliaryNumber <= iNumAuxiliaries;
                  ++iAuxiliaryNumber) {
                 QString auxGroup = QString("[Auxiliary%1]").arg(iAuxiliaryNumber);
@@ -531,8 +524,7 @@ ControlPickerMenu::ControlPickerMenu(QWidget* pParent)
                                    effectUnitGroups);
             }
 
-            const int numEffectSlots = ControlObject::get(
-                    ConfigKey(effectUnitGroup, "num_effectslots"));
+            const int numEffectSlots = ControlObject::get(ConfigKey(effectUnitGroup, "num_effectslots"));
             for (int iEffectSlotNumber = 1; iEffectSlotNumber <= numEffectSlots;
                      ++iEffectSlotNumber) {
                 const QString effectSlotGroup =
@@ -569,8 +561,7 @@ ControlPickerMenu::ControlPickerMenu(QWidget* pParent)
                                    slotDescriptionPrefix,
                                    effectSlotMenu);
 
-                const int numParameterSlots = ControlObject::get(
-                        ConfigKey(effectSlotGroup, "num_parameterslots"));
+                const int numParameterSlots = ControlObject::get(ConfigKey(effectSlotGroup, "num_parameterslots"));
                 for (int iParameterSlotNumber = 1; iParameterSlotNumber <= numParameterSlots;
                      ++iParameterSlotNumber) {
                     // The parameter slot group is the same as the effect slot
@@ -606,10 +597,8 @@ ControlPickerMenu::ControlPickerMenu(QWidget* pParent)
             }
         }
     }
-
     // Microphone Controls
     QMenu* microphoneMenu = addSubmenu(tr("Microphone / Auxiliary"));
-
     addMicrophoneAndAuxControl("talkover",
                                tr("Microphone On/Off"),
                                tr("Microphone on/off"), microphoneMenu,
@@ -730,20 +719,15 @@ void ControlPickerMenu::addControl(QString group, QString control, QString title
                                    QString description,
                                    QMenu* pMenu,
                                    bool addReset) {
-    QAction* pAction = pMenu->addAction(title, &m_actionMapper,
-                                        SLOT(map()));
+    QAction* pAction = pMenu->addAction(title, &m_actionMapper,SLOT(map()));
     m_actionMapper.setMapping(pAction, m_controlsAvailable.size());
     addAvailableControl(ConfigKey(group, control), title, description);
-
     if (addReset) {
-        QString resetDescription = QString("%1 (%2)").arg(title,
-                                                          m_resetStr);
+        QString resetDescription = QString("%1 (%2)").arg(title,m_resetStr);
         QString resetControl = QString("%1_set_default").arg(control);
-        QAction* pResetAction = pMenu->addAction(resetDescription,
-                                                 &m_actionMapper, SLOT(map()));
+        QAction* pResetAction = pMenu->addAction(resetDescription,&m_actionMapper, SLOT(map()));
         m_actionMapper.setMapping(pResetAction, m_controlsAvailable.size());
-        addAvailableControl(ConfigKey(group, resetControl),
-                            resetDescription, resetDescription);
+        addAvailableControl(ConfigKey(group, resetControl),resetDescription, resetDescription);
     }
 }
 
@@ -753,22 +737,16 @@ void ControlPickerMenu::addPrefixedControl(QString group, QString control,
                                            QMenu* pMenu, bool addReset) {
     QAction* pAction = pMenu->addAction(controlTitle, &m_actionMapper, SLOT(map()));
     m_actionMapper.setMapping(pAction, m_controlsAvailable.size());
-
     QString title = QString("%1: %2").arg(descriptionPrefix, controlTitle);
-    QString description = QString("%1: %2").arg(descriptionPrefix,
-                                                controlDescription);
+    QString description = QString("%1: %2").arg(descriptionPrefix,controlDescription);
     addAvailableControl(ConfigKey(group, control), title, description);
-
     if (addReset) {
         QString resetMenuTitle = QString("%1 (%2)").arg(controlTitle, m_resetStr);
         QString resetMenuDescription = QString("%1 (%2)").arg(controlDescription, m_resetStr);
         QString resetControl = QString("%1_set_default").arg(control);
-        QAction* pResetAction = pMenu->addAction(resetMenuTitle,
-                                                 &m_actionMapper, SLOT(map()));
-        QString resetTitle = QString("%1: %2").arg(descriptionPrefix,
-                                                   resetMenuTitle);
-        QString resetDescription = QString("%1: %2").arg(descriptionPrefix,
-                                                         resetMenuDescription);
+        QAction* pResetAction = pMenu->addAction(resetMenuTitle,&m_actionMapper, SLOT(map()));
+        QString resetTitle = QString("%1: %2").arg(descriptionPrefix,resetMenuTitle);
+        QString resetDescription = QString("%1: %2").arg(descriptionPrefix,resetMenuDescription);
         m_actionMapper.setMapping(pResetAction, m_controlsAvailable.size());
         addAvailableControl(ConfigKey(group, resetControl),
                             resetTitle, resetDescription);
@@ -784,10 +762,8 @@ void ControlPickerMenu::addPlayerControl(QString control, QString controlTitle,
     const int iNumSamplers = ControlObject::get(ConfigKey("[Master]", "num_samplers"));
     const int iNumDecks = ControlObject::get(ConfigKey("[Master]", "num_decks"));
     const int iNumPreviewDecks = ControlObject::get(ConfigKey("[Master]", "num_preview_decks"));
-
     QMenu* controlMenu = new QMenu(controlTitle, pMenu);
     pMenu->addMenu(controlMenu);
-
     QMenu* resetControlMenu = NULL;
     QString resetControl = QString("%1_set_default").arg(control);
     if (addReset) {
@@ -795,18 +771,14 @@ void ControlPickerMenu::addPlayerControl(QString control, QString controlTitle,
         resetControlMenu = new QMenu(resetHelpText, pMenu);
         pMenu->addMenu(resetControlMenu);
     }
-
     for (int i = 1; deckControls && i <= iNumDecks; ++i) {
         // PlayerManager::groupForDeck is 0-indexed.
         QString group = PlayerManager::groupForDeck(i - 1);
-        QString title = QString("%1: %2").arg(
-            m_deckStr.arg(QString::number(i)), controlTitle);
-        QString description = QString("%1: %2").arg(
-            m_deckStr.arg(QString::number(i)), controlDescription);
+        QString title = QString("%1: %2").arg(m_deckStr.arg(QString::number(i)), controlTitle);
+        QString description = QString("%1: %2").arg(m_deckStr.arg(QString::number(i)), controlDescription);
         QAction* pAction = controlMenu->addAction(m_deckStr.arg(i), &m_actionMapper, SLOT(map()));
         m_actionMapper.setMapping(pAction, m_controlsAvailable.size());
         addAvailableControl(ConfigKey(group, control), title, description);
-
         if (resetControlMenu) {
             QString resetTitle = QString("%1 (%2)").arg(title, m_resetStr);
             QString resetDescription = QString("%1 (%2)").arg(description, m_resetStr);
@@ -815,18 +787,14 @@ void ControlPickerMenu::addPlayerControl(QString control, QString controlTitle,
             addAvailableControl(ConfigKey(group, resetControl), resetTitle, resetDescription);
         }
     }
-
     for (int i = 1; previewdeckControls && i <= iNumPreviewDecks; ++i) {
         // PlayerManager::groupForPreviewDeck is 0-indexed.
         QString group = PlayerManager::groupForPreviewDeck(i - 1);
-        QString title = QString("%1: %2").arg(
-            m_previewdeckStr.arg(QString::number(i)), controlTitle);
-        QString description = QString("%1: %2").arg(
-            m_previewdeckStr.arg(QString::number(i)), controlDescription);
+        QString title = QString("%1: %2").arg(m_previewdeckStr.arg(QString::number(i)), controlTitle);
+        QString description = QString("%1: %2").arg(m_previewdeckStr.arg(QString::number(i)), controlDescription);
         QAction* pAction = controlMenu->addAction(m_previewdeckStr.arg(i), &m_actionMapper, SLOT(map()));
         m_actionMapper.setMapping(pAction, m_controlsAvailable.size());
         addAvailableControl(ConfigKey(group, control), title, description);
-
         if (resetControlMenu) {
             QString resetTitle = QString("%1 (%2)").arg(title, m_resetStr);
             QString resetDescription = QString("%1 (%2)").arg(description, m_resetStr);
@@ -835,18 +803,14 @@ void ControlPickerMenu::addPlayerControl(QString control, QString controlTitle,
             addAvailableControl(ConfigKey(group, resetControl), resetTitle, resetDescription);
         }
     }
-
     for (int i = 1; samplerControls && i <= iNumSamplers; ++i) {
         // PlayerManager::groupForSampler is 0-indexed.
         QString group = PlayerManager::groupForSampler(i - 1);
-        QString title = QString("%1: %2").arg(
-            m_samplerStr.arg(QString::number(i)), controlTitle);
-        QString description = QString("%1: %2").arg(
-            m_samplerStr.arg(QString::number(i)), controlDescription);
+        QString title = QString("%1: %2").arg(m_samplerStr.arg(QString::number(i)), controlTitle);
+        QString description = QString("%1: %2").arg(m_samplerStr.arg(QString::number(i)), controlDescription);
         QAction* pAction = controlMenu->addAction(m_samplerStr.arg(i), &m_actionMapper, SLOT(map()));
         m_actionMapper.setMapping(pAction, m_controlsAvailable.size());
         addAvailableControl(ConfigKey(group, control), title, description);
-
         if (resetControlMenu) {
             QString resetTitle = QString("%1 (%2)").arg(title, m_resetStr);
             QString resetDescription = QString("%1 (%2)").arg(description, m_resetStr);
@@ -879,24 +843,16 @@ void ControlPickerMenu::addMicrophoneAndAuxControl(QString control,
         const int kNumMicrophones = ControlObject::get(ConfigKey("[Master]", "num_microphones"));
         for (int i = 1; i <= kNumMicrophones; ++i) {
             QString group = "[Microphone]";
-            if (i > 1) {
-                group = QString("[Microphone%1]").arg(i);
-            }
-
-            QString title = QString("%1: %2").arg(
-                m_microphoneStr.arg(QString::number(i)), controlTitle);
-            QString description = QString("%1: %2").arg(
-                m_microphoneStr.arg(QString::number(i)), controlDescription);
-            QAction* pAction = controlMenu->addAction(m_microphoneStr.arg(i),
-                                                      &m_actionMapper, SLOT(map()));
+            if (i > 1) {group = QString("[Microphone%1]").arg(i);}
+            QString title = QString("%1: %2").arg(m_microphoneStr.arg(QString::number(i)), controlTitle);
+            QString description = QString("%1: %2").arg(m_microphoneStr.arg(QString::number(i)), controlDescription);
+            QAction* pAction = controlMenu->addAction(m_microphoneStr.arg(i),&m_actionMapper, SLOT(map()));
             m_actionMapper.setMapping(pAction, m_controlsAvailable.size());
             addAvailableControl(ConfigKey(group, control), title, description);
-
             if (addReset) {
                 QString resetTitle = QString("%1 (%2)").arg(title, m_resetStr);
                 QString resetDescription = QString("%1 (%2)").arg(controlDescription, m_resetStr);
-                QAction* pResetAction = resetControlMenu->addAction(
-                    m_microphoneStr.arg(i), &m_actionMapper, SLOT(map()));
+                QAction* pResetAction = resetControlMenu->addAction(m_microphoneStr.arg(i), &m_actionMapper, SLOT(map()));
                 m_actionMapper.setMapping(pResetAction, m_controlsAvailable.size());
                 addAvailableControl(ConfigKey(group, resetControl), resetTitle, resetDescription);
             }
@@ -977,18 +933,14 @@ void ControlPickerMenu::addPreviewDeckControl(QString control,
 }
 
 QMenu* ControlPickerMenu::addSubmenu(QString title, QMenu* pParent) {
-    if (pParent == NULL) {
-        pParent = this;
-    }
+    if (pParent == NULL) {pParent = this;}
     QMenu* subMenu = new QMenu(title, pParent);
     pParent->addMenu(subMenu);
     return subMenu;
 }
 
 void ControlPickerMenu::controlChosen(int controlIndex) {
-    if (controlIndex < 0 || controlIndex >= m_controlsAvailable.size()) {
-        return;
-    }
+    if (controlIndex < 0 || controlIndex >= m_controlsAvailable.size()) {return;}
     emit(controlPicked(m_controlsAvailable[controlIndex]));
 }
 
@@ -1000,14 +952,8 @@ void ControlPickerMenu::addAvailableControl(ConfigKey key,
     m_titlesByKey.insert(key, title);
 }
 
-bool ControlPickerMenu::controlExists(ConfigKey key) const {
-    return m_titlesByKey.contains(key);
-}
+bool ControlPickerMenu::controlExists(ConfigKey key) const {return m_titlesByKey.contains(key);}
 
-QString ControlPickerMenu::descriptionForConfigKey(ConfigKey key) const {
-    return m_descriptionsByKey.value(key, QString());
-}
+QString ControlPickerMenu::descriptionForConfigKey(ConfigKey key) const {return m_descriptionsByKey.value(key, QString());}
 
-QString ControlPickerMenu::controlTitleForConfigKey(ConfigKey key) const {
-    return m_titlesByKey.value(key, QString());
-}
+QString ControlPickerMenu::controlTitleForConfigKey(ConfigKey key) const {return m_titlesByKey.value(key, QString());}

@@ -55,7 +55,8 @@ class PlayerManager : public QObject, public PlayerManagerInterface {
     PlayerManager(ConfigObject<ConfigValue>* pConfig,
                   SoundManager* pSoundManager,
                   EffectsManager* pEffectsManager,
-                  EngineMaster* pEngine);
+                  EngineMaster* pEngine,
+                  QObject *pParent=0);
     virtual ~PlayerManager();
 
     // Add a deck to the PlayerManager

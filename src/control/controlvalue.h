@@ -67,10 +67,11 @@ class ControlRingValue {
 // sizeof(T), but honestly if we can't guarantee that we're all kinds of fucked
 // anyway. reads are always consistent and wait-free if t::operator delete is.
 
-
 template<typename T, bool ATOMIC = false>
 class ControlValueAtomicBase {
   public:
+    ControlValueAtomicBase(){setValue(T());}
+    ControlValueAtomicBase(const T&val){setValue(val);}
     inline T getValue() const {
         T value;
         QSharedPointer<T> data(m_data);
@@ -94,9 +95,9 @@ class ControlValueAtomicBase {
     m_data.swap(data);
     other = (data)? *data:T();
   }
+  inline ControlValueAtomicBase<T,ATOMIC>& operator =(const T& val){setValue(val);return *this;}
+  inline ControlValueAtomicBase<T,ATOMIC>& operator =(const ControlValueAtomicBase<T,ATOMIC>& other){setValue(other.getValue());return *this;}
   protected:
-    ControlValueAtomicBase(){}
-  private:
     QSharedPointer<T>   m_data;
 };
 
@@ -108,6 +109,7 @@ class ControlValueAtomicBase<T, true>{
   typedef typename QIntegerForSize<sizeof(T)>::Unsigned uint_type;
   public:
     ControlValueAtomicBase(){setValue(T());}
+    ControlValueAtomicBase(const T &val){setValue(val);}
     inline T getValue() const {
         uint_type as_int = m_int.load(); 
         const T * int_ptr = reinterpret_cast<T*>(&as_int);
@@ -127,6 +129,9 @@ class ControlValueAtomicBase<T, true>{
         const T *t_ptr = reinterpret_cast<T*>(&new_val);
         value = *t_ptr;
     }
+  inline ControlValueAtomicBase<T,true>& operator =(const T& val){setValue(val);return *this;}
+  inline ControlValueAtomicBase<T,true>& operator =(const ControlValueAtomicBase<T,true>& other){setValue(other.getValue());return *this;}
+
   private:
     QAtomicInteger<uint_type> m_int;
 };
