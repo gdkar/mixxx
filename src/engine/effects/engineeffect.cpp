@@ -11,12 +11,10 @@ EngineEffect::EngineEffect(const EffectManifest& manifest,
     const QList<EffectManifestParameter>& parameters = m_manifest.parameters();
     for (int i = 0; i < parameters.size(); ++i) {
         const EffectManifestParameter& parameter = parameters.at(i);
-        EngineEffectParameter* pParameter =
-                new EngineEffectParameter(parameter);
+        EngineEffectParameter* pParameter = new EngineEffectParameter(parameter);
         m_parameters[i] = pParameter;
         m_parametersById[parameter.id()] = pParameter;
     }
-
     // Creating the processor must come last.
     m_pProcessor = pInstantiator->instantiate(this, manifest);
     m_pProcessor->initialize(registeredChannels);
@@ -24,9 +22,7 @@ EngineEffect::EngineEffect(const EffectManifest& manifest,
 }
 
 EngineEffect::~EngineEffect() {
-    if (kEffectDebugOutput) {
-        qDebug() << debugString() << "destroyed";
-    }
+    if (kEffectDebugOutput) {qDebug() << debugString() << "destroyed";}
     delete m_pProcessor;
     m_parametersById.clear();
     for (int i = 0; i < m_parameters.size(); ++i) {
@@ -36,8 +32,7 @@ EngineEffect::~EngineEffect() {
     }
 }
 
-bool EngineEffect::processEffectsRequest(const EffectsRequest& message,
-                                         EffectsResponsePipe* pResponsePipe) {
+bool EngineEffect::processEffectsRequest(const EffectsRequest& message,EffectsResponsePipe* pResponsePipe) {
     EngineEffectParameter* pParameter = NULL;
     EffectsResponse response(message);
 
@@ -47,13 +42,11 @@ bool EngineEffect::processEffectsRequest(const EffectsRequest& message,
                 qDebug() << debugString() << "SET_EFFECT_PARAMETERS"
                          << "enabled" << message.SetEffectParameters.enabled;
             }
-
             if (m_enableState != EffectProcessor::DISABLED && !message.SetEffectParameters.enabled) {
                 m_enableState = EffectProcessor::DISABLING;
             } else if (m_enableState == EffectProcessor::DISABLED && message.SetEffectParameters.enabled) {
                 m_enableState = EffectProcessor::ENABLING;
             }
-
             response.success = true;
             pResponsePipe->writeMessages(&response, 1);
             return true;
@@ -86,21 +79,15 @@ bool EngineEffect::processEffectsRequest(const EffectsRequest& message,
     }
     return false;
 }
-
 void EngineEffect::process(const ChannelHandle& handle,
                            const CSAMPLE* pInput, CSAMPLE* pOutput,
                            const unsigned int numSamples,
                            const unsigned int sampleRate,
                            const EffectProcessor::EnableState enableState){
     EffectProcessor::EnableState effectiveEnableState = m_enableState;
-    if (enableState == EffectProcessor::DISABLING) {
-        effectiveEnableState = EffectProcessor::DISABLING;
-    } else if (enableState == EffectProcessor::ENABLING) {
-        effectiveEnableState = EffectProcessor::ENABLING;
-    }
-
-    m_pProcessor->process(handle, pInput, pOutput, numSamples, sampleRate,
-            effectiveEnableState);
+    if (enableState == EffectProcessor::DISABLING) {effectiveEnableState = EffectProcessor::DISABLING;
+    } else if (enableState == EffectProcessor::ENABLING) {effectiveEnableState = EffectProcessor::ENABLING;}
+    m_pProcessor->process(handle, pInput, pOutput, numSamples, sampleRate,effectiveEnableState);
     if (!m_effectRampsFromDry) {
         // the effect does not fade, so we care for it
         if (effectiveEnableState == EffectProcessor::DISABLING) {
@@ -117,10 +104,6 @@ void EngineEffect::process(const ChannelHandle& handle,
                     numSamples);
         }
     }
-
-    if (m_enableState == EffectProcessor::DISABLING) {
-        m_enableState = EffectProcessor::DISABLED;
-    } else if (m_enableState == EffectProcessor::ENABLING) {
-        m_enableState = EffectProcessor::ENABLED;
-    }
+    if (m_enableState == EffectProcessor::DISABLING) {m_enableState = EffectProcessor::DISABLED;
+    } else if (m_enableState == EffectProcessor::ENABLING) {m_enableState = EffectProcessor::ENABLED;}
 }

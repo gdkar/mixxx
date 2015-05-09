@@ -4,17 +4,16 @@
 #define DUCK_THRESHOLD 0.1
 
 EngineTalkoverDucking::EngineTalkoverDucking(
-        ConfigObject<ConfigValue>* pConfig, const char* group)
-    : EngineSideChainCompressor(group),
+        ConfigObject<ConfigValue>* pConfig, const char* group, QObject*pParent)
+    : QObject(pParent),
+      EngineSideChainCompressor(group),
       m_pConfig(pConfig),
       m_group(group) {
     m_pMasterSampleRate = new ControlObjectSlave(m_group, "samplerate", this);
-    m_pMasterSampleRate->connectValueChanged(SLOT(slotSampleRateChanged(double)),
-                                             Qt::DirectConnection);
+    m_pMasterSampleRate->connectValueChanged(SLOT(slotSampleRateChanged(double)),Qt::DirectConnection);
 
     m_pDuckStrength = new ControlPotmeter(ConfigKey(m_group, "duckStrength"), 0.0, 1.0);
-    m_pDuckStrength->set(
-            m_pConfig->getValueString(ConfigKey(m_group, "duckStrength"), "90").toDouble() / 100);
+    m_pDuckStrength->set(m_pConfig->getValueString(ConfigKey(m_group, "duckStrength"), "90").toDouble() / 100);
     connect(m_pDuckStrength, SIGNAL(valueChanged(double)),
             this, SLOT(slotDuckStrengthChanged(double)),
             Qt::DirectConnection);

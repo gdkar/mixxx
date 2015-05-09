@@ -6,8 +6,8 @@
 #include "engine/enginecontrol.h"
 #include "controlobjectslave.h"
 
-ClockControl::ClockControl(QString group, ConfigObject<ConfigValue>* pConfig)
-        : EngineControl(group, pConfig) {
+ClockControl::ClockControl(QString group, ConfigObject<ConfigValue>* pConfig,QObject*pParent)
+        : EngineControl(group, pConfig,pParent) {
     m_pCOBeatActive = new ControlObject(ConfigKey(group, "beat_active"));
     m_pCOBeatActive->set(0.0);
     m_pCOSampleRate = new ControlObjectSlave("[Master]","samplerate");

@@ -9,8 +9,9 @@
 template<unsigned int SIZE>
 class EngineFilterDelay : public EngineObjectConstIn {
   public:
-    EngineFilterDelay()
-            : m_delaySamples(0),
+    EngineFilterDelay( QObject *pParent=0)
+            : EngineObjectConstIn(pParent),
+              m_delaySamples(0),
               m_oldDelaySamples(0),
               m_delayPos(0),
               m_doRamping(false),
@@ -18,9 +19,7 @@ class EngineFilterDelay : public EngineObjectConstIn {
         // Set the current buffers to 0
         memset(m_buf, 0, sizeof(m_buf));
     }
-
     virtual ~EngineFilterDelay() {};
-
     void pauseFilter() {
         // Set the current buffers to 0
         if (!m_doStart) {
@@ -28,18 +27,14 @@ class EngineFilterDelay : public EngineObjectConstIn {
             m_doStart = true;
         }
     }
-
     void setDelay(unsigned int delaySamples) {
         m_oldDelaySamples = m_delaySamples;
         m_delaySamples = delaySamples;
         m_doRamping = true;
     }
-
-    virtual void process(const CSAMPLE* pIn, CSAMPLE* pOutput,
-                         const int iBufferSize) {
+    virtual void process(const CSAMPLE* pIn, CSAMPLE* pOutput,const int iBufferSize) {
         if (!m_doRamping) {
             int delaySourcePos = (m_delayPos + SIZE - m_delaySamples) % SIZE;
-
             DEBUG_ASSERT_AND_HANDLE(delaySourcePos >= 0) {
                 SampleUtil::copy(pOutput, pIn, iBufferSize);
                 return;
@@ -48,7 +43,6 @@ class EngineFilterDelay : public EngineObjectConstIn {
                 SampleUtil::copy(pOutput, pIn, iBufferSize);
                 return;
             }
-
             for (int i = 0; i < iBufferSize; ++i) {
                 // put sample into delay buffer:
                 m_buf[m_delayPos] = pIn[i];
@@ -62,31 +56,16 @@ class EngineFilterDelay : public EngineObjectConstIn {
             int delaySourcePos = (m_delayPos + SIZE - m_delaySamples + iBufferSize / 2) % SIZE;
             int oldDelaySourcePos = (m_delayPos + SIZE - m_oldDelaySamples) % SIZE;
 
-            DEBUG_ASSERT_AND_HANDLE(delaySourcePos >= 0) {
-                SampleUtil::copy(pOutput, pIn, iBufferSize);
-                return;
-            }
-            DEBUG_ASSERT_AND_HANDLE(delaySourcePos <= static_cast<int>(SIZE)) {
-                SampleUtil::copy(pOutput, pIn, iBufferSize);
-                return;
-            }
-            DEBUG_ASSERT_AND_HANDLE(oldDelaySourcePos >= 0) {
-                SampleUtil::copy(pOutput, pIn, iBufferSize);
-                return;
-            }
-            DEBUG_ASSERT_AND_HANDLE(oldDelaySourcePos <= static_cast<int>(SIZE)) {
-                SampleUtil::copy(pOutput, pIn, iBufferSize);
-                return;
-            }
-
+            DEBUG_ASSERT_AND_HANDLE(delaySourcePos >= 0) {SampleUtil::copy(pOutput, pIn, iBufferSize);return;}
+            DEBUG_ASSERT_AND_HANDLE(delaySourcePos <= static_cast<int>(SIZE)) {SampleUtil::copy(pOutput, pIn, iBufferSize);return;}
+            DEBUG_ASSERT_AND_HANDLE(oldDelaySourcePos >= 0) {SampleUtil::copy(pOutput, pIn, iBufferSize);return;}
+            DEBUG_ASSERT_AND_HANDLE(oldDelaySourcePos <= static_cast<int>(SIZE)) {SampleUtil::copy(pOutput, pIn, iBufferSize);return;}
             CSAMPLE cross_mix = 0.0;
             CSAMPLE cross_inc = 2 / static_cast<CSAMPLE>(iBufferSize);
-
             for (int i = 0; i < iBufferSize; ++i) {
                 // put sample into delay buffer:
                 m_buf[m_delayPos] = pIn[i];
                 m_delayPos = (m_delayPos + 1) % SIZE;
-
                 // Take delayed sample from delay buffer and copy it to dest buffer:
                 if (i < iBufferSize / 2) {
                     // only ramp the second half of the buffer, because we do
@@ -105,7 +84,6 @@ class EngineFilterDelay : public EngineObjectConstIn {
         }
         m_doStart = false;
     }
-
   protected:
     int m_delaySamples;
     int m_oldDelaySamples;

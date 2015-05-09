@@ -24,26 +24,17 @@ class VinylControlProcessor : public QThread, public AudioDestination {
   public:
     VinylControlProcessor(QObject* pParent, ConfigObject<ConfigValue>* pConfig);
     virtual ~VinylControlProcessor();
-
     // Called from main thread. Must only touch m_bReportSignalQuality.
     void setSignalQualityReporting(bool enable);
-
     // Called from the main thread. Must only touch m_bQuit;
     void shutdown();
-
     // Called from the main thread. Must only touch m_bReload;
     void requestReloadConfig();
-
     bool deckConfigured(int index) const;
-
-    FIFO<VinylSignalQualityReport>* getSignalQualityFifo() {
-        return &m_signalQualityFifo;
-    }
-
+    FIFO<VinylSignalQualityReport>* getSignalQualityFifo() {return &m_signalQualityFifo;}
   public slots:
     virtual void onInputConfigured(AudioInput input);
     virtual void onInputUnconfigured(AudioInput input);
-
     // Called by the engine callback. Must not touch any state in
     // VinylControlProcessor except for m_samplePipes. NOTE:
 
@@ -53,18 +44,13 @@ class VinylControlProcessor : public QThread, public AudioDestination {
     // method is re-entrant since the VinylControlProcessor is registered for
     // multiple AudioDestinations, however it is not re-entrant for a given
     // AudioInput index.
-    void receiveBuffer(AudioInput input, const CSAMPLE* pBuffer,
-                       unsigned int iNumFrames);
-
+    void receiveBuffer(AudioInput input, const CSAMPLE* pBuffer,unsigned int iNumFrames);
   protected:
     void run();
-
   private slots:
     void toggleDeck(double value);
-
   private:
     void reloadConfig();
-
     ConfigObject<ConfigValue>* m_pConfig;
     ControlPushButton* m_pToggle;
     // A pre-allocated array of FIFOs for writing samples from the engine

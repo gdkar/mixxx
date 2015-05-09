@@ -16,13 +16,11 @@ class EffectManifestParameter {
         CONTROL_TOGGLE_STEPPING  // For button and enum controls, not accessible
                                  // form many controllers, no linking to super knob
     };
-
     enum SemanticHint {
         SEMANTIC_UNKNOWN = 0,
         SEMANTIC_SAMPLES,
         SEMANTIC_NOTE,
     };
-
     enum UnitsHint {
         UNITS_UNKNOWN = 0,
         UNITS_TIME,
@@ -30,7 +28,6 @@ class EffectManifestParameter {
         UNITS_SAMPLERATE, // fraction of the samplerate
         UNITS_BEATS, // multiples of a beat
     };
-
     enum LinkType {
         LINK_NONE = 0,  // Not controlled by the super knob
         LINK_LINKED,  // Controlled by the super knob as it is
@@ -39,7 +36,6 @@ class EffectManifestParameter {
         LINK_LINKED_LEFT_RIGHT, // Controlled by both sides of the super knob
         NUM_LINK_TYPES
     };
-
     EffectManifestParameter()
             : m_controlHint(CONTROL_UNKNOWN),
               m_semanticHint(SEMANTIC_UNKNOWN),
@@ -60,41 +56,19 @@ class EffectManifestParameter {
     // Parameter Information
     ////////////////////////////////////////////////////////////////////////////////
 
-    virtual const QString& id() const {
-        return m_id;
-    }
-    virtual void setId(const QString& id) {
-        m_id = id;
-    }
-
-    virtual const QString& name() const {
-        return m_name;
-    }
-    virtual void setName(const QString& name) {
-        m_name = name;
-    }
-
-    virtual const QString& description() const {
-        return m_description;
-    }
-    virtual void setDescription(const QString& description) {
-        m_description = description;
-    }
-
+    virtual const QString& id() const {return m_id;}
+    virtual void setId(const QString& id) {m_id = id;}
+    virtual const QString& name() const {return m_name;}
+    virtual void setName(const QString& name) {m_name = name;}
+    virtual const QString& description() const {return m_description;}
+    virtual void setDescription(const QString& description) {m_description = description;}
     ////////////////////////////////////////////////////////////////////////////////
     // Usage hints
     ////////////////////////////////////////////////////////////////////////////////
 
-    virtual ControlHint controlHint() const {
-        return m_controlHint;
-    }
-    virtual void setControlHint(ControlHint controlHint) {
-        m_controlHint = controlHint;
-    }
-
-    virtual SemanticHint semanticHint() const {
-        return m_semanticHint;
-    }
+    virtual ControlHint controlHint() const {return m_controlHint;}
+    virtual void setControlHint(ControlHint controlHint) {m_controlHint = controlHint;}
+    virtual SemanticHint semanticHint() const {return m_semanticHint;}
     virtual void setSemanticHint(SemanticHint semanticHint) {
         m_semanticHint = semanticHint;
     }

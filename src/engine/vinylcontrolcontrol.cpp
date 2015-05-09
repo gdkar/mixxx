@@ -13,12 +13,9 @@ VinylControlControl::VinylControlControl(QString group, ConfigObject<ConfigValue
     //Convert the ConfigKey's value into a double for the CO (for fast reads).
     QString strVinylSpeedType = pConfig->getValueString(ConfigKey(group,
                                                       "vinylcontrol_speed_type"));
-    if (strVinylSpeedType == MIXXX_VINYL_SPEED_33) {
-        m_pControlVinylSpeedType->set(MIXXX_VINYL_SPEED_33_NUM);
-    } else if (strVinylSpeedType == MIXXX_VINYL_SPEED_45) {
-        m_pControlVinylSpeedType->set(MIXXX_VINYL_SPEED_45_NUM);
-    } else {
-        m_pControlVinylSpeedType->set(MIXXX_VINYL_SPEED_33_NUM);
+    if (strVinylSpeedType == MIXXX_VINYL_SPEED_33) {m_pControlVinylSpeedType->set(MIXXX_VINYL_SPEED_33_NUM);
+    } else if (strVinylSpeedType == MIXXX_VINYL_SPEED_45) {m_pControlVinylSpeedType->set(MIXXX_VINYL_SPEED_45_NUM);
+    } else {m_pControlVinylSpeedType->set(MIXXX_VINYL_SPEED_33_NUM);
     }
 
     m_pControlVinylSeek = new ControlObject(ConfigKey(group, "vinylcontrol_seek"));

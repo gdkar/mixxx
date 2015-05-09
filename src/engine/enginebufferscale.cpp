@@ -19,8 +19,10 @@
 #include "util/defs.h"
 #include "sampleutil.h"
 
-EngineBufferScale::EngineBufferScale()
-        : m_iSampleRate(44100),
+EngineBufferScale::EngineBufferScale(ReadAheadManager *pRAMan, QObject*pParent)
+        : QObject(pParent),
+          m_pReadAheadManager(pRAMan),
+          m_dSampleRate(44100),
           m_dBaseRate(1.0),
           m_bSpeedAffectsPitch(false),
           m_dTempoRatio(1.0),

@@ -40,14 +40,14 @@ class SoundTouch;
 class EngineBufferScaleST : public EngineBufferScale {
     Q_OBJECT
   public:
-    EngineBufferScaleST(ReadAheadManager* pReadAheadManager);
+    EngineBufferScaleST(ReadAheadManager* pReadAheadManager,QObject*pParent=0);
     virtual ~EngineBufferScaleST();
 
     virtual void setScaleParameters(double base_rate,
                                     double* pTempoRatio,
                                     double* pPitchRatio);
 
-    virtual void setSampleRate(int iSampleRate);
+    virtual void setSampleRate(double dSampleRate);
 
     // Scale buffer.
     CSAMPLE* getScaled(unsigned long buf_size);

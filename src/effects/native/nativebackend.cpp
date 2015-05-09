@@ -34,7 +34,6 @@ NativeBackend::NativeBackend(QObject* pParent)
     registerEffect<ReverbEffect>();
 #endif
 }
-
 NativeBackend::~NativeBackend() {
     //qDebug() << debugString() << "destroyed";
 }

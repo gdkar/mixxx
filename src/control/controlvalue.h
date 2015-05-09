@@ -140,12 +140,73 @@ class ControlValueAtomic :  public ControlValueAtomicBase<T, sizeof(T) <= sizeof
     public:
     ControlValueAtomic() : ControlValueAtomicBase<T, sizeof(T) <= sizeof(quintptr)> (){}
 };
-template<typename T>
-inline void swap(ControlValueAtomic<T> &lhs, T&rhs){
-  lhs.swap(rhs);
-}
-template<typename T>
-inline void swap(T &lhs, ControlValueAtomic<T>&rhs){
-  lhs.swap(rhs);
-}
+class ControlValueDouble : public QObject {
+  Q_OBJECT;
+  Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged);
+  Q_PROPERTY(QString description READ description WRITE setDescription NOTIFY descriptionChanged);
+  Q_PROPERTY(double value READ value WRITE setValue RESET resetValue NOTIFY valueChanged);
+  Q_PROPERTY(double defaultValue READ defaultValue WRITE setDefaultValue NOTIFY defaultValueChanged);
+  ControlValueAtomic<double>        m_value;
+  ControlValueAtomic<double>        m_defaultValue;
+  QString                           m_name;
+  QString                           m_description;
+public:
+  explicit ControlValueDouble(double default_value, const QString &_name,QObject *pParent =0);
+  explicit ControlValueDouble(const QString& _name, QObject *pParent=0);
+  virtual ~ControlValueDouble();
+public slots:
+  virtual const QString& name()const{return m_name;}
+  virtual void setName(const QString&val){if(val!=name()){m_name=val;if(!val.isNull())setObjectName(val);emit nameChanged(val);}}
+  virtual const QString& description()const{return m_description;}
+  virtual void setDescription(const QString&val){if(val!=description()){m_description=val;emit descriptionChanged(val);}}
+  virtual double value() const{return m_value.getValue();}
+  virtual void setValue(double val){if(value()!=val){m_value.setValue(val);emit valueChanged(val);}}
+  virtual void resetValue(){setValue(defaultValue());}
+  virtual double defaultValue() const{return m_defaultValue.getValue();}
+  virtual void setDefaultValue(double val){if(val!=defaultValue()){m_defaultValue.setValue(val);emit defaultValueChanged(val);}}
+signals:
+    void nameChanged(const QString&);
+    void descriptionChanged(const QString&);
+    void valueChanged(double);
+    void defaultValueChanged(double);
+public:
+  virtual operator bool() const{return value()!=0;}
+  virtual operator double()const{return value();}
+  virtual operator int()const{return static_cast<int>(value());}
+  virtual operator long long() const{return static_cast<long long>(value());}
+  virtual ControlValueDouble &operator =(const ControlValueDouble &other){setValue(other.value());return *this;}
+  virtual ControlValueDouble &operator =(double v){setValue(v); return *this;}
+  virtual ControlValueDouble &operator =(bool v){setValue(v?1.0:0.0);return *this;}
+  virtual ControlValueDouble &operator =(int v){setValue(static_cast<double>(v));return *this;}
+  virtual ControlValueDouble &operator =(long long v){setValue(static_cast<double>(v));return *this;}
+  virtual bool operator !() const{return value()==0;}
+  virtual bool operator ==(const ControlValueDouble &other){return value()==other.value();}
+  virtual bool operator !=(const ControlValueDouble &other){return value()!=other.value();}
+  virtual bool operator > (const ControlValueDouble &other){return value() > other.value();}
+  virtual bool operator < (const ControlValueDouble &other){return value() < other.value();}
+  virtual void swap(double &other){m_value.swap(other);}
+  virtual void swap(int &other){double val = static_cast<double>(other);m_value.swap(val);other=static_cast<int>(val);}
+  virtual void swap(bool &other){double val = other?1.0:0.0;m_value.swap(val);other = val!=0.0;}
+  virtual void swap(long long &other){double val = static_cast<double>(other);m_value.swap(val);other=static_cast<long long>(val);}
+};
+namespace std{
+  inline void swap(ControlValueDouble &lhs, double &rhs){
+    lhs.swap(rhs);
+  }
+  inline void swap(ControlValueDouble &lhs, int &rhs){lhs.swap(rhs);}
+  inline void swap(ControlValueDouble &lhs, long long &rhs){lhs.swap(rhs);}
+  inline void swap(ControlValueDouble &lhs, bool &rhs){lhs.swap(rhs);}
+  inline void swap(double &lhs, ControlValueDouble &rhs){rhs.swap(lhs);}
+  inline void swap(int &lhs, ControlValueDouble &rhs){rhs.swap(lhs);}
+  inline void swap(long long &lhs, ControlValueDouble &rhs){rhs.swap(lhs);}
+  inline void swap(bool &lhs, ControlValueDouble &rhs){rhs.swap(lhs);}
+  template<typename T>
+  inline void swap(ControlValueAtomic<T> &lhs, T&rhs){
+    lhs.swap(rhs);
+  }
+  template<typename T>
+  inline void swap(T &lhs, ControlValueAtomic<T>&rhs){
+    lhs.swap(rhs);
+  }
+};
 #endif /* CONTROLVALUE_H */

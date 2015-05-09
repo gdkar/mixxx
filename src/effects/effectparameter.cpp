@@ -34,148 +34,70 @@ EffectParameter::EffectParameter(Effect* pEffect, EffectsManager* pEffectsManage
      // Finally, set the value to the default.
      m_value = m_default;
 }
-
 EffectParameter::~EffectParameter() {
     //qDebug() << debugString() << "destroyed";
 }
-
-const EffectManifestParameter& EffectParameter::manifest() const {
-    return m_parameter;
-}
-
-const QString EffectParameter::id() const {
-    return m_parameter.id();
-}
-
-const QString EffectParameter::name() const {
-    return m_parameter.name();
-}
-
-const QString EffectParameter::description() const {
-    return m_parameter.description();
-}
-
+const EffectManifestParameter& EffectParameter::manifest() const {return m_parameter;}
+const QString EffectParameter::id() const {return m_parameter.id();}
+const QString EffectParameter::name() const {return m_parameter.name();}
+const QString EffectParameter::description() const {return m_parameter.description();}
 // static
-bool EffectParameter::clampValue(double* pValue,
-                                 const double& minimum, const double& maximum) {
-    if (*pValue < minimum) {
-        *pValue = minimum;
-        return true;
-    } else if (*pValue > maximum) {
-        *pValue = maximum;
-        return true;
-    }
+bool EffectParameter::clampValue(double* pValue,const double& minimum, const double& maximum) {
+    if (*pValue < minimum) {*pValue = minimum;return true;
+    } else if (*pValue > maximum) {*pValue = maximum;return true;}
     return false;
 }
-
-bool EffectParameter::clampValue() {
-    return clampValue(&m_value, m_minimum, m_maximum);
-}
-
-bool EffectParameter::clampDefault() {
-    return clampValue(&m_default, m_minimum, m_maximum);
-}
-
-bool EffectParameter::clampRanges() {
-    if (m_minimum > m_maximum) {
-        m_maximum = m_minimum;
-        return true;
-    }
-    return false;
-}
-
-EffectManifestParameter::LinkType EffectParameter::getDefaultLinkType() const {
-    return m_parameter.defaultLinkType();
-}
-
-double EffectParameter::getNeutralPointOnScale() const {
-    return m_parameter.neutralPointOnScale();
-}
-
-double EffectParameter::getValue() const {
-    return m_value;
-}
+bool EffectParameter::clampValue() {return clampValue(&m_value, m_minimum, m_maximum);}
+bool EffectParameter::clampDefault() {return clampValue(&m_default, m_minimum, m_maximum);}
+bool EffectParameter::clampRanges() {if (m_minimum > m_maximum) {m_maximum = m_minimum;return true;}return false;}
+EffectManifestParameter::LinkType EffectParameter::getDefaultLinkType() const {return m_parameter.defaultLinkType();}
+double EffectParameter::getNeutralPointOnScale() const {return m_parameter.neutralPointOnScale();}
+double EffectParameter::getValue() const {return m_value;}
 
 void EffectParameter::setValue(double value) {
     // TODO(XXX) Handle inf, -inf, and nan
     m_value = value;
-
-    if (clampValue()) {
-        qWarning() << debugString() << "WARNING: Value was outside of limits, clamped.";
-    }
-
+    if (clampValue()) {qWarning() << debugString() << "WARNING: Value was outside of limits, clamped.";}
     m_value = value;
-
     updateEngineState();
     emit(valueChanged(m_value));
 }
-
-double EffectParameter::getDefault() const {
-    return m_default;
-}
-
+double EffectParameter::getDefault() const {return m_default;}
 void EffectParameter::setDefault(double dflt) {
     m_default = dflt;
-
-    if (clampDefault()) {
-        qWarning() << debugString() << "WARNING: Default parameter value was outside of range, clamped.";
-    }
-
+    if (clampDefault()) {qWarning() << debugString() << "WARNING: Default parameter value was outside of range, clamped.";}
     m_default = dflt;
-
     updateEngineState();
 }
-
-double EffectParameter::getMinimum() const {
-    return m_minimum;
-}
-
+double EffectParameter::getMinimum() const {return m_minimum;}
 void EffectParameter::setMinimum(double minimum) {
     // There's a degenerate case here where the maximum could be lower
     // than the manifest minimum. If that's the case, then the minimum
     // value is currently below the manifest minimum. Since similar
     // guards exist in the setMaximum call, this should not be able to
     // happen.
-    DEBUG_ASSERT_AND_HANDLE(m_minimum >= m_parameter.getMinimum()) {
-        return;
-    }
-
+    DEBUG_ASSERT_AND_HANDLE(m_minimum >= m_parameter.getMinimum()) {return;}
     m_minimum = minimum;
     if (m_minimum < m_parameter.getMinimum()) {
         qWarning() << debugString() << "WARNING: Minimum value is less than plugin's absolute minimum, clamping.";
         m_minimum = m_parameter.getMinimum();
     }
-
     if (m_minimum > m_maximum) {
         qWarning() << debugString() << "WARNING: New minimum was above maximum, clamped.";
         m_minimum = m_maximum;
     }
-
-    if (clampValue()) {
-        qWarning() << debugString() << "WARNING: Value was outside of new minimum, clamped.";
-    }
-
-    if (clampDefault()) {
-        qWarning() << debugString() << "WARNING: Default was outside of new minimum, clamped.";
-    }
-
+    if (clampValue()) {qWarning() << debugString() << "WARNING: Value was outside of new minimum, clamped.";}
+    if (clampDefault()) {qWarning() << debugString() << "WARNING: Default was outside of new minimum, clamped.";}
     updateEngineState();
 }
-
-double EffectParameter::getMaximum() const {
-    return m_maximum;
-}
-
+double EffectParameter::getMaximum() const {return m_maximum;}
 void EffectParameter::setMaximum(double maximum) {
     // There's a degenerate case here where the minimum could be larger
     // than the manifest maximum. If that's the case, then the maximum
     // value is currently above the manifest maximum. Since similar
     // guards exist in the setMinimum call, this should not be able to
     // happen.
-    DEBUG_ASSERT_AND_HANDLE(m_maximum <= m_parameter.getMaximum()) {
-        return;
-    }
-
+    DEBUG_ASSERT_AND_HANDLE(m_maximum <= m_parameter.getMaximum()) {return;}
     m_maximum = maximum;
     if (m_maximum > m_parameter.getMaximum()) {
         qWarning() << debugString() << "WARNING: Maximum value is less than plugin's absolute maximum, clamping.";
@@ -186,27 +108,16 @@ void EffectParameter::setMaximum(double maximum) {
         qWarning() << debugString() << "WARNING: New maximum was below the minimum, clamped.";
         m_maximum = m_minimum;
     }
-
-    if (clampValue()) {
-        qWarning() << debugString() << "WARNING: Value was outside of new maximum, clamped.";
-    }
-
-    if (clampDefault()) {
-        qWarning() << debugString() << "WARNING: Default was outside of new maximum, clamped.";
-    }
-
+    if (clampValue()) {qWarning() << debugString() << "WARNING: Value was outside of new maximum, clamped.";}
+    if (clampDefault()) {qWarning() << debugString() << "WARNING: Default was outside of new maximum, clamped.";}
     updateEngineState();
 }
 
-EffectManifestParameter::ControlHint EffectParameter::getControlHint() const {
-    return m_parameter.controlHint();
-}
+EffectManifestParameter::ControlHint EffectParameter::getControlHint() const {return m_parameter.controlHint();}
 
 void EffectParameter::updateEngineState() {
     EngineEffect* pEngineEffect = m_pEffect->getEngineEffect();
-    if (!pEngineEffect) {
-        return;
-    }
+    if (!pEngineEffect) {return;}
     EffectsRequest* pRequest = new EffectsRequest();
     pRequest->type = EffectsRequest::SET_PARAMETER_PARAMETERS;
     pRequest->pTargetEffect = pEngineEffect;

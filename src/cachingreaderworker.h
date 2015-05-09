@@ -26,7 +26,7 @@ typedef struct Chunk {
     CSAMPLE* stereoSamples;
     Chunk* prev_lru;
     Chunk* next_lru;
-
+    Chunk* next_free;
     enum State {
         FREE,
         ALLOCATED,
@@ -38,7 +38,6 @@ typedef struct Chunk {
 
 typedef struct ChunkReadRequest {
     Chunk* chunk;
-
     ChunkReadRequest() { chunk = NULL; }
 } ChunkReadRequest;
 
@@ -126,6 +125,13 @@ class CachingReaderWorker : public EngineWorker {
 
     QAtomicInt m_stop;
 };
-
+Q_DECLARE_METATYPE(Chunk);
+Q_DECLARE_TYPEINFO(Chunk,Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(ChunkReadRequest);
+Q_DECLARE_TYPEINFO(ChunkReadRequest,Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(ReaderStatus);
+Q_DECLARE_TYPEINFO(ReaderStatus,Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(ReaderStatusUpdate);
+Q_DECLARE_TYPEINFO(ReaderStatusUpdate,Q_PRIMITIVE_TYPE);
 
 #endif /* CACHINGREADERWORKER_H */

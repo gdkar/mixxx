@@ -32,8 +32,9 @@ ControlObject* EnginePregain::s_pEnableReplayGain = NULL;
 /*----------------------------------------------------------------
    A pregaincontrol is ... a pregain.
    ----------------------------------------------------------------*/
-EnginePregain::EnginePregain(QString group)
-        : m_dSpeed(0),
+EnginePregain::EnginePregain(QString group, QObject *pParent)
+        : EngineObject(pParent),
+          m_dSpeed(0),
           m_fPrevGain(1.0),
           m_bSmoothFade(false) {
     m_pPotmeterPregain = new ControlAudioTaperPot(ConfigKey(group, "pregain"), -12, 12, 0.5);

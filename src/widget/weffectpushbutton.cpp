@@ -16,25 +16,17 @@ WEffectPushButton::~WEffectPushButton() {
 void WEffectPushButton::setup(QDomNode node, const SkinContext& context) {
     // Setup parent class.
     WPushButton::setup(node, context);
-
     m_pButtonMenu = new QMenu(this);
-    connect(m_pButtonMenu, SIGNAL(triggered(QAction*)),
-            this, SLOT(slotActionChosen(QAction*)));
-
+    connect(m_pButtonMenu, SIGNAL(triggered(QAction*)),this, SLOT(slotActionChosen(QAction*)));
     // EffectWidgetUtils propagates NULLs so this is all safe.
-    EffectRackPointer pRack = EffectWidgetUtils::getEffectRackFromNode(
-            node, context, m_pEffectsManager);
-    EffectChainSlotPointer pChainSlot = EffectWidgetUtils::getEffectChainSlotFromNode(
-            node, context, pRack);
-    EffectSlotPointer pEffectSlot = EffectWidgetUtils::getEffectSlotFromNode(
-            node, context, pChainSlot);
+    EffectRackPointer pRack = EffectWidgetUtils::getEffectRackFromNode(node, context, m_pEffectsManager);
+    EffectChainSlotPointer pChainSlot = EffectWidgetUtils::getEffectChainSlotFromNode(node, context, pRack);
+    EffectSlotPointer pEffectSlot = EffectWidgetUtils::getEffectSlotFromNode(node, context, pChainSlot);
     EffectParameterSlotBasePointer pParameterSlot =
-            EffectWidgetUtils::getButtonParameterSlotFromNode(
-                    node, context, pEffectSlot);
+            EffectWidgetUtils::getButtonParameterSlotFromNode(node, context, pEffectSlot);
     if (pParameterSlot) {
         m_pEffectParameterSlot = pParameterSlot;
-        connect(pParameterSlot.data(), SIGNAL(updated()),
-                this, SLOT(parameterUpdated()));
+        connect(pParameterSlot.data(), SIGNAL(updated()),this, SLOT(parameterUpdated()));
         parameterUpdated();
     } else {
         SKIN_WARNING(node, context)
@@ -109,10 +101,7 @@ void WEffectPushButton::parameterUpdated() {
         action->setText(options[i].first);
         action->setData(options[i].second);
         action->setCheckable(true);
-
-        if (options[i].second == value) {
-            action->setChecked(true);
-        }
+        if (options[i].second == value) {action->setChecked(true);}
         m_pButtonMenu->addAction(action);
     }
 }

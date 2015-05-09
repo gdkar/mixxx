@@ -12,12 +12,10 @@ WEffectParameterBase::WEffectParameterBase(QWidget* pParent, EffectsManager* pEf
 WEffectParameterBase::~WEffectParameterBase() {
 }
 
-void WEffectParameterBase::setEffectParameterSlot(
-        EffectParameterSlotBasePointer pEffectParameterSlot) {
+void WEffectParameterBase::setEffectParameterSlot(EffectParameterSlotBasePointer pEffectParameterSlot) {
     m_pEffectParameterSlot = pEffectParameterSlot;
     if (m_pEffectParameterSlot) {
-        connect(m_pEffectParameterSlot.data(), SIGNAL(updated()),
-                this, SLOT(parameterUpdated()));
+        connect(m_pEffectParameterSlot.data(), SIGNAL(updated()),this, SLOT(parameterUpdated()));
     }
     parameterUpdated();
 }

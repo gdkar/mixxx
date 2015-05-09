@@ -483,6 +483,7 @@ class MixxxCore(Feature):
         sources = ["mixxxkeyboard.cpp",
 
                    "configobject.cpp",
+                   "control/controlvalue.cpp",
                    "control/control.cpp",
                    "control/controlbehavior.cpp",
                    "control/controlmodel.cpp",

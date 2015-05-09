@@ -13,18 +13,14 @@ class VinylControlControl : public EngineControl {
   public:
     VinylControlControl(QString group, ConfigObject<ConfigValue>* pConfig);
     virtual ~VinylControlControl();
-
     void trackLoaded(TrackPointer pTrack);
     void trackUnloaded(TrackPointer pTrack);
-
     // If the engine asks for a seek, we may need to disable absolute mode.
     void notifySeekQueued();
     bool isEnabled();
     bool isScratching();
-
   private slots:
     void slotControlVinylSeek(double fractionalPos);
-
   private:
     ControlObject* m_pControlVinylRate;
     ControlObject* m_pControlVinylSeek;

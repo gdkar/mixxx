@@ -67,7 +67,6 @@ EngineMaster::EngineMaster(ConfigObject<ConfigValue>* _config,
     m_bBusOutputConnected[EngineChannel::RIGHT] = false;
     m_pWorkerScheduler = new EngineWorkerScheduler(this);
     m_pWorkerScheduler->start(QThread::HighPriority);
-
     if (pEffectsManager) {
         pEffectsManager->registerChannel(m_masterHandle);
         pEffectsManager->registerChannel(m_headphoneHandle);
@@ -75,48 +74,37 @@ EngineMaster::EngineMaster(ConfigObject<ConfigValue>* _config,
         pEffectsManager->registerChannel(m_busCenterHandle);
         pEffectsManager->registerChannel(m_busRightHandle);
     }
-
     // Master sample rate
     m_pMasterSampleRate = new ControlObject(ConfigKey(group, "samplerate"), true, true);
     m_pMasterSampleRate->set(44100.);
-
     // Latency control
     m_pMasterLatency = new ControlObject(ConfigKey(group, "latency"), true, true);
     m_pMasterAudioBufferSize = new ControlObject(ConfigKey(group, "audio_buffer_size"));
     m_pAudioLatencyOverloadCount = new ControlObject(ConfigKey(group, "audio_latency_overload_count"), true, true);
     m_pAudioLatencyUsage = new ControlPotmeter(ConfigKey(group, "audio_latency_usage"), 0.0, 0.25);
     m_pAudioLatencyOverload  = new ControlPotmeter(ConfigKey(group, "audio_latency_overload"), 0.0, 1.0);
-
     // Master rate
     m_pMasterRate = new ControlPotmeter(ConfigKey(group, "rate"), -1.0, 1.0);
-
     // Master sync controller
     m_pMasterSync = new EngineSync(_config);
-
     // The last-used bpm value is saved in the destructor of EngineSync.
-    double default_bpm = _config->getValueString(ConfigKey("[InternalClock]", "bpm"),
-                                                 "124.0").toDouble();
+    double default_bpm = _config->getValueString(ConfigKey("[InternalClock]", "bpm"),"124.0").toDouble();
     ControlObject::getControl(ConfigKey("[InternalClock]","bpm"))->set(default_bpm);
-
     // Crossfader
     m_pCrossfader = new ControlPotmeter(ConfigKey(group, "crossfader"), -1., 1.);
-
     // Balance
     m_pBalance = new ControlPotmeter(ConfigKey(group, "balance"), -1., 1.);
-
     // Master gain
     m_pMasterGain = new ControlAudioTaperPot(ConfigKey(group, "gain"), -14, 14, 0.5);
 
     // Legacy: the master "gain" control used to be named "volume" in Mixxx
     // 1.11.0 and earlier. See Bug #1306253.
-    ControlDoublePrivate::insertAlias(ConfigKey(group, "volume"),
-                                      ConfigKey(group, "gain"));
+    ControlDoublePrivate::insertAlias(ConfigKey(group, "volume"),ConfigKey(group, "gain"));
 
     // VU meter:
-    m_pVumeter = new EngineVuMeter(group);
-
-    m_pMasterDelay = new EngineDelay(group, ConfigKey(group, "delay"));
-    m_pHeadDelay = new EngineDelay(group, ConfigKey(group, "headDelay"));
+    m_pVumeter = new EngineVuMeter(group,this);
+    m_pMasterDelay = new EngineDelay(group, ConfigKey(group, "delay"),this);
+    m_pHeadDelay = new EngineDelay(group, ConfigKey(group, "headDelay"),this);
 
     // Headphone volume
     m_pHeadGain = new ControlAudioTaperPot(ConfigKey(group, "headGain"), -14, 14, 0.5);

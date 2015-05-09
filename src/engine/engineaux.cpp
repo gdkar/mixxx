@@ -12,25 +12,21 @@
 #include "engine/effects/engineeffectsmanager.h"
 #include "controlaudiotaperpot.h"
 
-EngineAux::EngineAux(const ChannelHandleAndGroup& handle_group, EffectsManager* pEffectsManager)
-        : EngineChannel(handle_group, EngineChannel::CENTER),
+EngineAux::EngineAux(const ChannelHandleAndGroup& handle_group, EffectsManager* pEffectsManager,QObject*pParent)
+        : EngineChannel(handle_group, EngineChannel::CENTER,pParent),
           m_pEngineEffectsManager(pEffectsManager ? pEffectsManager->getEngineEffectsManager() : NULL),
-          m_vuMeter(getGroup()),
+          m_vuMeter(getGroup(),this),
           m_pEnabled(new ControlObject(ConfigKey(getGroup(), "enabled"))),
           m_pPregain(new ControlAudioTaperPot(ConfigKey(getGroup(), "pregain"), -12, 12, 0.5)),
           m_sampleBuffer(NULL),
           m_wasActive(false) {
-    if (pEffectsManager != NULL) {
-        pEffectsManager->registerChannel(handle_group);
-    }
+    if (pEffectsManager != NULL) {pEffectsManager->registerChannel(handle_group);}
 
     // by default Aux is enabled on the master and disabled on PFL. User
     // can over-ride by setting the "pfl" or "master" controls.
     setMaster(true);
-
     m_pSampleRate = new ControlObjectSlave("[Master]", "samplerate");
 }
-
 EngineAux::~EngineAux() {
     qDebug() << "~EngineAux()";
     delete m_pEnabled;
@@ -40,12 +36,8 @@ EngineAux::~EngineAux() {
 
 bool EngineAux::isActive() {
     bool enabled = m_pEnabled->get() > 0.0;
-    if (enabled && m_sampleBuffer) {
-        m_wasActive = true;
-    } else if (m_wasActive) {
-        m_vuMeter.reset();
-        m_wasActive = false;
-    }
+    if (enabled && m_sampleBuffer) {m_wasActive = true;
+    } else if (m_wasActive) {m_vuMeter.reset();m_wasActive = false;}
     return m_wasActive;
 }
 
@@ -82,10 +74,7 @@ void EngineAux::process(CSAMPLE* pOut, const int iBufferSize) {
     if (sampleBuffer) {
         SampleUtil::copyWithGain(pOut, sampleBuffer, pregain, iBufferSize);
         m_sampleBuffer = NULL;
-    } else {
-        SampleUtil::clear(pOut, iBufferSize);
-    }
-
+    } else {SampleUtil::clear(pOut, iBufferSize);}
     if (m_pEngineEffectsManager != NULL) {
         // This is out of date by a callback but some effects will want the RMS
         // volume.

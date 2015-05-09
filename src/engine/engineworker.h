@@ -21,18 +21,12 @@ class EngineWorker : public QThread {
   public:
     EngineWorker();
     virtual ~EngineWorker();
-
     virtual void run();
-
     void setScheduler(EngineWorkerScheduler* pScheduler);
     bool workReady();
-    void wake() {
-        m_semaRun.release();
-    }
-
+    void wake() {m_semaRun.release();}
   protected:
     QSemaphore m_semaRun;
-
   private:
     EngineWorkerScheduler* m_pScheduler;
 };

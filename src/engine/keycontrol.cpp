@@ -13,8 +13,8 @@ static const double kLockOriginalKey = 0;
 static const double kLockCurrentKey = 1;
 
 KeyControl::KeyControl(QString group,
-                       ConfigObject<ConfigValue>* pConfig)
-        : EngineControl(group, pConfig) {
+                       ConfigObject<ConfigValue>* pConfig,QObject*pParent)
+        : EngineControl(group, pConfig,pParent) {
     m_pitchRateInfo.pitchRatio = 1.0;
     m_pitchRateInfo.tempoRatio = 1.0;
     m_pitchRateInfo.pitchTweakRatio = 1.0;

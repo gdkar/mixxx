@@ -119,14 +119,11 @@ struct EffectsRequest {
             int iParameter;
         } SetParameterParameters;
     };
-
     ////////////////////////////////////////////////////////////////////////////
     // Message-specific, non-POD values that can't be part of the above union.
     ////////////////////////////////////////////////////////////////////////////
-
     // Used by ENABLE_EFFECT_CHAIN_FOR_CHANNEL and DISABLE_EFFECT_CHAIN_FOR_CHANNEL.
     ChannelHandle channel;
-
     // Used by SET_EFFECT_PARAMETER.
     double minimum;
     double maximum;
@@ -167,15 +164,11 @@ struct EffectsResponse {
 
 // For communicating from the main thread to the EngineEffectsManager.
 typedef MessagePipe<EffectsRequest*, EffectsResponse> EffectsRequestPipe;
-
 // For communicating from the EngineEffectsManager to the main thread.
 typedef MessagePipe<EffectsResponse, EffectsRequest*> EffectsResponsePipe;
-
 class EffectsRequestHandler {
   public:
-    virtual bool processEffectsRequest(
-        const EffectsRequest& message,
-        EffectsResponsePipe* pResponsePipe) = 0;
+    virtual bool processEffectsRequest(const EffectsRequest& message,EffectsResponsePipe* pResponsePipe) = 0;
 };
 
 #endif /* MESSAGE_H */

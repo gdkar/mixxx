@@ -40,7 +40,6 @@ void EngineEffectsManager::onCallbackStart() {
                 } else {
                     processed = request->pTargetRack->processEffectsRequest(
                         *request, m_pResponsePipe.data());
-
                     if (processed) {
                         // When an effect-chain becomes active (part of a rack), keep
                         // it in our master list so that we can respond to
@@ -109,7 +108,6 @@ void EngineEffectsManager::onCallbackStart() {
                 } else {
                     processed = request->pTargetEffect
                             ->processEffectsRequest(*request, m_pResponsePipe.data());
-
                     if (!processed) {
                         // If we got here, the message was not handled for an
                         // unknown reason.
@@ -123,10 +121,7 @@ void EngineEffectsManager::onCallbackStart() {
                 response.status = EffectsResponse::UNHANDLED_MESSAGE_TYPE;
                 break;
         }
-
-        if (!processed) {
-            m_pResponsePipe->writeMessages(&response, 1);
-        }
+        if (!processed) {m_pResponsePipe->writeMessages(&response, 1);}
     }
 }
 
@@ -150,11 +145,7 @@ bool EngineEffectsManager::addEffectRack(EngineEffectRack* pRack) {
     m_racks.append(pRack);
     return true;
 }
-
-bool EngineEffectsManager::removeEffectRack(EngineEffectRack* pRack) {
-    return m_racks.removeAll(pRack) > 0;
-}
-
+bool EngineEffectsManager::removeEffectRack(EngineEffectRack* pRack) {return m_racks.removeAll(pRack) > 0;}
 bool EngineEffectsManager::processEffectsRequest(const EffectsRequest& message,
                                                  EffectsResponsePipe* pResponsePipe) {
     EffectsResponse response(message);

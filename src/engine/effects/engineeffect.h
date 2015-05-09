@@ -21,18 +21,9 @@ class EngineEffect : public EffectsRequestHandler {
                  const QSet<ChannelHandleAndGroup>& registeredChannels,
                  EffectInstantiatorPointer pInstantiator);
     virtual ~EngineEffect();
-
-    const QString& name() const {
-        return m_manifest.name();
-    }
-
-    EngineEffectParameter* getParameterById(const QString& id) {
-        return m_parametersById.value(id, NULL);
-    }
-
-    bool processEffectsRequest(
-        const EffectsRequest& message,
-        EffectsResponsePipe* pResponsePipe);
+    const QString& name() const {return m_manifest.name();}
+    EngineEffectParameter* getParameterById(const QString& id) {return m_parametersById.value(id, NULL);}
+    bool processEffectsRequest(const EffectsRequest& message,EffectsResponsePipe* pResponsePipe);
 
     void process(const ChannelHandle& handle,
                  const CSAMPLE* pInput, CSAMPLE* pOutput,
@@ -40,15 +31,9 @@ class EngineEffect : public EffectsRequestHandler {
                  const unsigned int sampleRate,
                  const EffectProcessor::EnableState enableState);
 
-    bool enabled() const {
-        return m_enableState != EffectProcessor::DISABLED;
-    }
-
+    bool enabled() const {return m_enableState != EffectProcessor::DISABLED;}
   private:
-    QString debugString() const {
-        return QString("EngineEffect(%1)").arg(m_manifest.name());
-    }
-
+    QString debugString() const {return QString("EngineEffect(%1)").arg(m_manifest.name());}
     EffectManifest m_manifest;
     EffectProcessor* m_pProcessor;
     EffectProcessor::EnableState m_enableState;

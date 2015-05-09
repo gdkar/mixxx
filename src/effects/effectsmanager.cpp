@@ -54,12 +54,9 @@ EffectsManager::~EffectsManager() {
 }
 
 void EffectsManager::addEffectsBackend(EffectsBackend* pBackend) {
-    DEBUG_ASSERT_AND_HANDLE(pBackend) {
-        return;
-    }
+    DEBUG_ASSERT_AND_HANDLE(pBackend) {return;}
     m_effectsBackends.append(pBackend);
-    connect(pBackend, SIGNAL(effectRegistered()),
-            this, SIGNAL(availableEffectsUpdated()));
+    connect(pBackend, SIGNAL(effectRegistered()),this, SIGNAL(availableEffectsUpdated()));
 }
 
 void EffectsManager::registerChannel(const ChannelHandleAndGroup& handle_group) {
@@ -112,19 +109,10 @@ bool EffectsManager::isEQ(const QString& effectId) const {
 
 QString EffectsManager::getNextEffectId(const QString& effectId) {
     const QList<QString> effects = getAvailableEffects();
-
-    if (effects.isEmpty()) {
-        return QString();
-    }
-
-    if (effectId.isNull()) {
-        return effects.first();
-    }
-
+    if (effects.isEmpty()) {return QString();}
+    if (effectId.isNull()) {return effects.first();}
     int index = effects.indexOf(effectId);
-    if (++index >= effects.size()) {
-        index = 0;
-    }
+    if (++index >= effects.size()) {index = 0;}
     return effects.at(index);
 }
 
@@ -132,18 +120,11 @@ QString EffectsManager::getPrevEffectId(const QString& effectId) {
     const QList<QString> effects = getAvailableEffects();
     //qSort(effects.begin(), effects.end());  For alphabetical order
 
-    if (effects.isEmpty()) {
-        return QString();
-    }
-
-    if (effectId.isNull()) {
-        return effects.last();
-    }
+    if (effects.isEmpty()) {return QString();}
+    if (effectId.isNull()) {return effects.last();}
 
     int index = effects.indexOf(effectId);
-    if (--index < 0) {
-        index = effects.size() - 1;
-    }
+    if (--index < 0) {index = effects.size() - 1;}
     return effects.at(index);
 
 }
@@ -213,53 +194,43 @@ void EffectsManager::setupDefaults() {
     pStandardRack->addEffectChainSlot();
     pStandardRack->addEffectChainSlot();
 
-    EffectChainPointer pChain = EffectChainPointer(new EffectChain(
-           this, "org.mixxx.effectchain.flanger"));
+    EffectChainPointer pChain = EffectChainPointer(new EffectChain(this, "org.mixxx.effectchain.flanger"));
     pChain->setName(tr("Flanger"));
-    EffectPointer pEffect = instantiateEffect(
-           "org.mixxx.effects.flanger");
+    EffectPointer pEffect = instantiateEffect("org.mixxx.effects.flanger");
     pChain->addEffect(pEffect);
     m_pEffectChainManager->addEffectChain(pChain);
 
-    pChain = EffectChainPointer(new EffectChain(
-            this, "org.mixxx.effectchain.bitcrusher"));
+    pChain = EffectChainPointer(new EffectChain(this, "org.mixxx.effectchain.bitcrusher"));
     pChain->setName(tr("BitCrusher"));
     pEffect = instantiateEffect("org.mixxx.effects.bitcrusher");
     pChain->addEffect(pEffect);
     m_pEffectChainManager->addEffectChain(pChain);
 
-    pChain = EffectChainPointer(new EffectChain(
-            this, "org.mixxx.effectchain.filter"));
+    pChain = EffectChainPointer(new EffectChain(this, "org.mixxx.effectchain.filter"));
     pChain->setName(tr("Filter"));
     pEffect = instantiateEffect("org.mixxx.effects.filter");
     pChain->addEffect(pEffect);
     m_pEffectChainManager->addEffectChain(pChain);
 
 #ifndef __MACAPPSTORE__
-    pChain = EffectChainPointer(new EffectChain(
-            this, "org.mixxx.effectchain.reverb"));
+    pChain = EffectChainPointer(new EffectChain(this, "org.mixxx.effectchain.reverb"));
     pChain->setName(tr("Reverb"));
     pEffect = instantiateEffect("org.mixxx.effects.reverb");
     pChain->addEffect(pEffect);
     m_pEffectChainManager->addEffectChain(pChain);
 #endif
-
-    pChain = EffectChainPointer(new EffectChain(
-            this, "org.mixxx.effectchain.echo"));
+    pChain = EffectChainPointer(new EffectChain(this, "org.mixxx.effectchain.echo"));
     pChain->setName(tr("Echo"));
     pEffect = instantiateEffect("org.mixxx.effects.echo");
     pChain->addEffect(pEffect);
     m_pEffectChainManager->addEffectChain(pChain);
-
     // These controls are used inside EQ Effects
     m_pLoEqFreq = new ControlPotmeter(ConfigKey("[Mixer Profile]", "LoEQFrequency"), 0., 22040);
     m_pHiEqFreq = new ControlPotmeter(ConfigKey("[Mixer Profile]", "HiEQFrequency"), 0., 22040);
-
     // Add an EqualizerRack.
     EqualizerRackPointer pEqRack = addEqualizerRack();
     // Add Master EQ here, because EngineMaster is already up
     pEqRack->addEffectChainSlotForGroup("[Master]");
-
     // Add a QuickEffectRack
     addQuickEffectRack();
 }
@@ -282,10 +253,7 @@ bool EffectsManager::writeRequest(EffectsRequest* request) {
         return false;
     }
 
-    if (m_pRequestPipe.isNull()) {
-        delete request;
-        return false;
-    }
+    if (m_pRequestPipe.isNull()) {delete request;return false;}
 
     // This is effectively only GC at this point so only deal with responses
     // when writing new requests.
@@ -302,25 +270,18 @@ bool EffectsManager::writeRequest(EffectsRequest* request) {
 }
 
 void EffectsManager::processEffectsResponses() {
-    if (m_pRequestPipe.isNull()) {
-        return;
-    }
-
+    if (m_pRequestPipe.isNull()) {return;}
     EffectsResponse response;
     while (m_pRequestPipe->readMessages(&response, 1) == 1) {
-        QHash<qint64, EffectsRequest*>::iterator it =
-                m_activeRequests.find(response.request_id);
-
+        QHash<qint64, EffectsRequest*>::iterator it =m_activeRequests.find(response.request_id);
         if (it == m_activeRequests.end()) {
             qWarning() << debugString()
                        << "WARNING: EffectsResponse with an inactive request_id:"
                        << response.request_id;
         }
-
         while (it != m_activeRequests.end() &&
                it.key() == response.request_id) {
             EffectsRequest* pRequest = it.value();
-
             if (!response.success) {
                 qWarning() << debugString() << "WARNING: Failed EffectsRequest"
                            << "type" << pRequest->type;
@@ -339,7 +300,6 @@ void EffectsManager::processEffectsResponses() {
                     delete pRequest->RemoveEffectRack.pRack;
                 }
             }
-
             delete pRequest;
             it = m_activeRequests.erase(it);
         }

@@ -63,8 +63,9 @@ const double kLinearScalerElipsis = 1.00058; // 2^(0.01/12): changes < 1 cent al
 const int kSamplesPerFrame = 2; // Engine buffer uses Stereo frames only
 
 EngineBuffer::EngineBuffer(QString group, ConfigObject<ConfigValue>* _config,
-                           EngineChannel* pChannel, EngineMaster* pMixingEngine)
-        : m_group(group),
+                           EngineChannel* pChannel, EngineMaster* pMixingEngine,QObject*pParent)
+        : EngineObject(pParent),
+          m_group(group),
           m_pConfig(_config),
           m_pLoopingControl(NULL),
           m_pSyncControl(NULL),

@@ -13,14 +13,14 @@ class ReadAheadManager;
 class EngineBufferScaleRubberBand : public EngineBufferScale {
     Q_OBJECT
   public:
-    EngineBufferScaleRubberBand(ReadAheadManager* pReadAheadManager);
+    EngineBufferScaleRubberBand(ReadAheadManager* pReadAheadManager,QObject*pParent=0);
     virtual ~EngineBufferScaleRubberBand();
 
     virtual void setScaleParameters(double base_rate,
                                     double* pTempoRatio,
                                     double* pPitchRatio);
 
-    virtual void setSampleRate(int iSampleRate);
+    virtual void setSampleRate(double dSampleRate);
 
     // Read and scale buf_size samples from the provided RAMAN.
     CSAMPLE* getScaled(unsigned long buf_size);
@@ -29,7 +29,7 @@ class EngineBufferScaleRubberBand : public EngineBufferScale {
     void clear();
 
     // Reset RubberBand library with new samplerate.
-    void initializeRubberBand(int iSampleRate);
+    void initializeRubberBand(double dSampleRate);
   private:
     void deinterleaveAndProcess(const CSAMPLE* pBuffer, size_t frames, bool flush);
     size_t retrieveAndDeinterleave(CSAMPLE* pBuffer, size_t frames);

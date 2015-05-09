@@ -32,7 +32,7 @@ const int kiLinearScaleReadAheadLength = 10240;
 
 class EngineBufferScaleLinear : public EngineBufferScale  {
   public:
-    EngineBufferScaleLinear(ReadAheadManager *pReadAheadManager);
+    EngineBufferScaleLinear(ReadAheadManager *pReadAheadManager,QObject*pParent=0);
     virtual ~EngineBufferScaleLinear();
 
     CSAMPLE* getScaled(unsigned long buf_size);

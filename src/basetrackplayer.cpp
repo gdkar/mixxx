@@ -30,6 +30,15 @@ BaseTrackPlayerImpl::BaseTrackPlayerImpl(QObject* pParent,
         : BaseTrackPlayer(pParent, group),
           m_pConfig(pConfig),
           m_pLoadedTrack(),
+          m_bpm(-1,"bpm",this),
+          m_key(-1,"key",this),
+          m_preGain(1.0,"preGain",this),
+          m_replayGain(1.0,"replayGain",this),
+          m_playing(0.0,"playing",this),
+          m_speed(1.0,"speed",this),
+          m_pitch(1.0,"pitch",this),
+          m_position(-1,"position",this),
+          m_duration(0.0,"duration",this),
           m_pLowFilter(NULL),
           m_pMidFilter(NULL),
           m_pHighFilter(NULL),
@@ -39,60 +48,41 @@ BaseTrackPlayerImpl::BaseTrackPlayerImpl(QObject* pParent,
           m_pSpeed(NULL),
           m_pPitchAdjust(NULL),
           m_replaygainPending(false) {
-    ChannelHandleAndGroup channelGroup =
-            pMixingEngine->registerChannelGroup(group);
-    m_pChannel = new EngineDeck(channelGroup, pConfig, pMixingEngine,
-                                pEffectsManager, defaultOrientation);
-
+    ChannelHandleAndGroup channelGroup = pMixingEngine->registerChannelGroup(group);
+    m_pChannel = new EngineDeck(channelGroup, pConfig, pMixingEngine,pEffectsManager, defaultOrientation,this);
     EngineBuffer* pEngineBuffer = m_pChannel->getEngineBuffer();
     pMixingEngine->addChannel(m_pChannel);
-
     // Set the routing option defaults for the master and headphone mixes.
     m_pChannel->setMaster(defaultMaster);
     m_pChannel->setPfl(defaultHeadphones);
-
     // Connect our signals and slots with the EngineBuffer's signals and
     // slots. This will let us know when the reader is done loading a track, and
     // let us request that the reader load a track.
-    connect(this, SIGNAL(loadTrack(TrackPointer, bool)),
-            pEngineBuffer, SLOT(slotLoadTrack(TrackPointer, bool)));
-    connect(pEngineBuffer, SIGNAL(trackLoaded(TrackPointer)),
-            this, SLOT(slotFinishLoading(TrackPointer)));
-    connect(pEngineBuffer, SIGNAL(trackLoadFailed(TrackPointer, QString)),
-            this, SLOT(slotLoadFailed(TrackPointer, QString)));
-    connect(pEngineBuffer, SIGNAL(trackUnloaded(TrackPointer)),
-            this, SLOT(slotUnloadTrack(TrackPointer)));
-
+    connect(this, SIGNAL(loadTrack(TrackPointer, bool)),pEngineBuffer, SLOT(slotLoadTrack(TrackPointer, bool)));
+    connect(pEngineBuffer, SIGNAL(trackLoaded(TrackPointer)),this, SLOT(slotFinishLoading(TrackPointer)));
+    connect(pEngineBuffer, SIGNAL(trackLoadFailed(TrackPointer, QString)),this, SLOT(slotLoadFailed(TrackPointer, QString)));
+    connect(pEngineBuffer, SIGNAL(trackUnloaded(TrackPointer)),this, SLOT(slotUnloadTrack(TrackPointer)));
     // Get loop point control objects
-    m_pLoopInPoint = new ControlObjectThread(
-            getGroup(),"loop_start_position");
-    m_pLoopOutPoint = new ControlObjectThread(
-            getGroup(),"loop_end_position");
-
+    m_pLoopInPoint = new ControlObjectThread(getGroup(),"loop_start_position");
+    m_pLoopOutPoint = new ControlObjectThread(getGroup(),"loop_end_position");
     // Duration of the current song, we create this one because nothing else does.
     m_pDuration = new ControlObject(ConfigKey(getGroup(), "duration"));
-
     // Waveform controls
     m_pWaveformZoom = new ControlPotmeter(ConfigKey(group, "waveform_zoom"),
                                           WaveformWidgetRenderer::s_waveformMinZoom,
                                           WaveformWidgetRenderer::s_waveformMaxZoom);
     m_pWaveformZoom->set(1.0);
-    m_pWaveformZoom->setStepCount(WaveformWidgetRenderer::s_waveformMaxZoom -
-            WaveformWidgetRenderer::s_waveformMinZoom);
-    m_pWaveformZoom->setSmallStepCount(WaveformWidgetRenderer::s_waveformMaxZoom -
-            WaveformWidgetRenderer::s_waveformMinZoom);
-
+    m_pWaveformZoom->setStepCount(WaveformWidgetRenderer::s_waveformMaxZoom -WaveformWidgetRenderer::s_waveformMinZoom);
+    m_pWaveformZoom->setSmallStepCount(WaveformWidgetRenderer::s_waveformMaxZoom -WaveformWidgetRenderer::s_waveformMinZoom);
     m_pEndOfTrack = new ControlObject(ConfigKey(group, "end_of_track"));
     m_pEndOfTrack->set(0.);
-
     m_pPreGain = new ControlObjectSlave(ConfigKey(group, "pregain"));
     //BPM of the current song
     m_pBPM = new ControlObjectThread(group, "file_bpm");
     m_pKey = new ControlObjectThread(group, "file_key");
     m_pReplayGain = new ControlObjectThread(group, "replaygain");
     m_pPlay = new ControlObjectThread(group, "play");
-    connect(m_pPlay, SIGNAL(valueChanged(double)),
-            this, SLOT(slotPlayToggled(double)));
+    connect(m_pPlay, SIGNAL(valueChanged(double)),this, SLOT(slotPlayToggled(double)));
 }
 
 BaseTrackPlayerImpl::~BaseTrackPlayerImpl() {
@@ -103,7 +93,6 @@ BaseTrackPlayerImpl::~BaseTrackPlayerImpl() {
         disconnect(m_pLoadedTrack.data(), 0, m_pKey, 0);
         m_pLoadedTrack.clear();
     }
-
     delete m_pDuration;
     delete m_pWaveformZoom;
     delete m_pEndOfTrack;
@@ -127,11 +116,7 @@ BaseTrackPlayerImpl::~BaseTrackPlayerImpl() {
 void BaseTrackPlayerImpl::slotLoadTrack(TrackPointer track, bool bPlay) {
     // Before loading the track, ensure we have access. This uses lazy
     // evaluation to make sure track isn't NULL before we dereference it.
-    if (!track.isNull() && !Sandbox::askForAccess(track->getCanonicalLocation())) {
-        // We don't have access.
-        return;
-    }
-
+    if (!track.isNull() && !Sandbox::askForAccess(track->getCanonicalLocation())) {return;}
     //Disconnect the old track's signals.
     if (m_pLoadedTrack) {
         // Save the loops that are currently set in a loop cue. If no loop cue is
@@ -145,9 +130,7 @@ void BaseTrackPlayerImpl::slotLoadTrack(TrackPointer track, bool bPlay) {
             QListIterator<Cue*> it(cuePoints);
             while (it.hasNext()) {
                 Cue* pCue = it.next();
-                if (pCue->getType() == Cue::LOOP) {
-                    pLoopCue = pCue;
-                }
+                if (pCue->getType() == Cue::LOOP) {pLoopCue = pCue;}
             }
             if (!pLoopCue) {
                 pLoopCue = m_pLoadedTrack->addCue();
@@ -156,7 +139,6 @@ void BaseTrackPlayerImpl::slotLoadTrack(TrackPointer track, bool bPlay) {
             pLoopCue->setPosition(loopStart);
             pLoopCue->setLength(loopEnd - loopStart);
         }
-
         // WARNING: Never. Ever. call bare disconnect() on an object. Mixxx
         // relies on signals and slots to get tons of things done. Don't
         // randomly disconnect things.
@@ -164,25 +146,18 @@ void BaseTrackPlayerImpl::slotLoadTrack(TrackPointer track, bool bPlay) {
         disconnect(m_pLoadedTrack.data(), 0, m_pBPM, 0);
         disconnect(m_pLoadedTrack.data(), 0, this, 0);
         disconnect(m_pLoadedTrack.data(), 0, m_pKey, 0);
-
         m_pReplayGain->slotSet(0);
 
         // Causes the track's data to be saved back to the library database.
         emit(unloadingTrack(m_pLoadedTrack));
     }
-
     m_pLoadedTrack = track;
     if (m_pLoadedTrack) {
         // Listen for updates to the file's BPM
-        connect(m_pLoadedTrack.data(), SIGNAL(bpmUpdated(double)),
-                m_pBPM, SLOT(slotSet(double)));
-
-        connect(m_pLoadedTrack.data(), SIGNAL(keyUpdated(double)),
-                m_pKey, SLOT(slotSet(double)));
-
+        connect(m_pLoadedTrack.data(), SIGNAL(bpmUpdated(double)),m_pBPM, SLOT(slotSet(double)));
+        connect(m_pLoadedTrack.data(), SIGNAL(keyUpdated(double)),m_pKey, SLOT(slotSet(double)));
         // Listen for updates to the file's Replay Gain
-        connect(m_pLoadedTrack.data(), SIGNAL(ReplayGainUpdated(double)),
-                this, SLOT(slotSetReplayGain(double)));
+        connect(m_pLoadedTrack.data(), SIGNAL(ReplayGainUpdated(double)),this, SLOT(slotSetReplayGain(double)));
     }
 
     // Request a new track from the reader
@@ -195,13 +170,10 @@ void BaseTrackPlayerImpl::slotLoadFailed(TrackPointer track, QString reason) {
     if (track != NULL) {
         qDebug() << "Failed to load track" << track->getLocation() << reason;
         emit(loadTrackFailed(track));
-    } else {
-        qDebug() << "Failed to load track (NULL track object)" << reason;
-    }
+    } else {qDebug() << "Failed to load track (NULL track object)" << reason;}
     // Alert user.
     QMessageBox::warning(NULL, tr("Couldn't load track."), reason);
 }
-
 void BaseTrackPlayerImpl::slotUnloadTrack(TrackPointer) {
     if (m_pLoadedTrack) {
         // WARNING: Never. Ever. call bare disconnect() on an object. Mixxx
@@ -224,36 +196,27 @@ void BaseTrackPlayerImpl::slotUnloadTrack(TrackPointer) {
     m_pLoopInPoint->slotSet(-1);
     m_pLoopOutPoint->slotSet(-1);
     m_pLoadedTrack.clear();
-
     // Update the PlayerInfo class that is used in EngineShoutcast to replace
     // the metadata of a stream
     PlayerInfo::instance().setTrackInfo(getGroup(), m_pLoadedTrack);
 }
 
-void BaseTrackPlayerImpl::slotFinishLoading(TrackPointer pTrackInfoObject)
-{
+void BaseTrackPlayerImpl::slotFinishLoading(TrackPointer pTrackInfoObject){
     m_replaygainPending = false;
     // Read the tags if required
-    if (!m_pLoadedTrack->getHeaderParsed()) {
-        m_pLoadedTrack->parse(false);
-    }
-
+    if (!m_pLoadedTrack->getHeaderParsed()) {m_pLoadedTrack->parse(false);}
     // m_pLoadedTrack->setPlayedAndUpdatePlaycount(true); // Actually the song is loaded but not played
-
     // Update the BPM and duration values that are stored in ControlObjects
     m_pDuration->set(m_pLoadedTrack->getDuration());
     m_pBPM->slotSet(m_pLoadedTrack->getBpm());
     m_pKey->slotSet(m_pLoadedTrack->getKey());
     m_pReplayGain->slotSet(m_pLoadedTrack->getReplayGain());
-
     // Update the PlayerInfo class that is used in EngineShoutcast to replace
     // the metadata of a stream
     PlayerInfo::instance().setTrackInfo(getGroup(), m_pLoadedTrack);
-
     // Reset the loop points.
     m_pLoopInPoint->slotSet(-1);
     m_pLoopOutPoint->slotSet(-1);
-
     const QList<Cue*> trackCues = pTrackInfoObject->getCuePoints();
     QListIterator<Cue*> it(trackCues);
     while (it.hasNext()) {
@@ -269,56 +232,33 @@ void BaseTrackPlayerImpl::slotFinishLoading(TrackPointer pTrackInfoObject)
         }
     }
     if(m_pConfig->getValueString(ConfigKey("[Mixer Profile]", "EqAutoReset"), 0).toInt()) {
-        if (m_pLowFilter != NULL) {
-            m_pLowFilter->set(1.0);
-        }
-        if (m_pMidFilter != NULL) {
-            m_pMidFilter->set(1.0);
-        }
-        if (m_pHighFilter != NULL) {
-            m_pHighFilter->set(1.0);
-        }
-        if (m_pLowFilterKill != NULL) {
-            m_pLowFilterKill->set(0.0);
-        }
-        if (m_pMidFilterKill != NULL) {
-            m_pMidFilterKill->set(0.0);
-        }
-        if (m_pHighFilterKill != NULL) {
-            m_pHighFilterKill->set(0.0);
-        }
+        if (m_pLowFilter != NULL) {m_pLowFilter->set(1.0);}
+        if (m_pMidFilter != NULL) {m_pMidFilter->set(1.0);}
+        if (m_pHighFilter != NULL) {m_pHighFilter->set(1.0);}
+        if (m_pLowFilterKill != NULL) {m_pLowFilterKill->set(0.0);}
+        if (m_pMidFilterKill != NULL) {m_pMidFilterKill->set(0.0);}
+        if (m_pHighFilterKill != NULL) {m_pHighFilterKill->set(0.0);}
         m_pPreGain->set(1.0);
     }
-    int reset = m_pConfig->getValueString(ConfigKey(
-            "[Controls]", "SpeedAutoReset"),
-            QString("%1").arg(RESET_PITCH)).toInt();
+    int reset = m_pConfig->getValueString(ConfigKey("[Controls]", "SpeedAutoReset"),QString("%1").arg(RESET_PITCH)).toInt();
     switch (reset) {
       case RESET_PITCH_AND_SPEED:
         // Note: speed may affect pitch
-        if (m_pSpeed != NULL) {
-            m_pSpeed->set(0.0);
-        }
+        if (m_pSpeed != NULL) {m_pSpeed->set(0.0);}
         // Fallthrough intended
       case RESET_PITCH:
-        if (m_pPitchAdjust != NULL) {
-            m_pPitchAdjust->set(0.0);
-        }
+        if (m_pPitchAdjust != NULL) {m_pPitchAdjust->set(0.0);}
     }
     emit(newTrackLoaded(m_pLoadedTrack));
 }
 
-TrackPointer BaseTrackPlayerImpl::getLoadedTrack() const {
-    return m_pLoadedTrack;
-}
+TrackPointer BaseTrackPlayerImpl::getLoadedTrack() const {return m_pLoadedTrack;}
 
 void BaseTrackPlayerImpl::slotSetReplayGain(double replayGain) {
     // Do not change replay gain when track is playing because
     // this may lead to an unexpected volume change
-    if (m_pPlay->get() == 0.0) {
-        m_pReplayGain->slotSet(replayGain);
-    } else {
-        m_replaygainPending = true;
-    }
+    if (m_pPlay->get() == 0.0) {m_pReplayGain->slotSet(replayGain);
+    } else {m_replaygainPending = true;}
 }
 
 void BaseTrackPlayerImpl::slotPlayToggled(double v) {
@@ -327,11 +267,7 @@ void BaseTrackPlayerImpl::slotPlayToggled(double v) {
         m_replaygainPending = false;
     }
 }
-
-EngineDeck* BaseTrackPlayerImpl::getEngineDeck() const {
-    return m_pChannel;
-}
-
+EngineDeck* BaseTrackPlayerImpl::getEngineDeck() const {return m_pChannel;}
 void BaseTrackPlayerImpl::setupEqControls() {
     const QString group = getGroup();
     m_pLowFilter = new ControlObjectSlave(group, "filterLow");

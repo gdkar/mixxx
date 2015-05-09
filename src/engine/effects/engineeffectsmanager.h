@@ -31,18 +31,11 @@ class EngineEffectsManager : public EffectsRequestHandler {
                          const unsigned int numSamples,
                          const unsigned int sampleRate);
 
-    bool processEffectsRequest(
-        const EffectsRequest& message,
-        EffectsResponsePipe* pResponsePipe);
-
+    bool processEffectsRequest(const EffectsRequest& message,EffectsResponsePipe* pResponsePipe);
   private:
-    QString debugString() const {
-        return QString("EngineEffectsManager");
-    }
-
+    QString debugString() const {return QString("EngineEffectsManager");}
     bool addEffectRack(EngineEffectRack* pRack);
     bool removeEffectRack(EngineEffectRack* pRack);
-
     QScopedPointer<EffectsResponsePipe> m_pResponsePipe;
     QList<EngineEffectRack*> m_racks;
     QList<EngineEffectChain*> m_chains;

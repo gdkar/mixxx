@@ -117,7 +117,7 @@ class EngineBuffer : public EngineObject {
     };
 
     EngineBuffer(QString _group, ConfigObject<ConfigValue>* _config,
-                 EngineChannel* pChannel, EngineMaster* pMixingEngine);
+                 EngineChannel* pChannel, EngineMaster* pMixingEngine,QObject*pParent=0);
     virtual ~EngineBuffer();
 
     void bindWorkers(EngineWorkerScheduler* pWorkerScheduler);

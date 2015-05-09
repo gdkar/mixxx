@@ -15,7 +15,7 @@ class EngineTalkoverDucking : public QObject, public EngineSideChainCompressor {
         MANUAL,
     };
 
-    EngineTalkoverDucking(ConfigObject<ConfigValue>* pConfig, const char* group);
+    EngineTalkoverDucking(ConfigObject<ConfigValue>* pConfig, const char* group,QObject*pParent=0);
     virtual ~EngineTalkoverDucking();
 
     TalkoverDuckSetting getMode() const {

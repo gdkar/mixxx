@@ -3,9 +3,9 @@
 
 #include <QMutex>
 #include <QThreadPool>
-#include <QWaitCondition>
-
-#include "util/fifo.h"
+#include <qsemaphore.h>
+#include "util/ff_ringbuffer.h"
+//#include "util/fifo.h"
 
 // The max engine workers that can be expected to run within a callback
 // (e.g. the max that we will schedule). Must be a power of 2.
@@ -30,9 +30,8 @@ class EngineWorkerScheduler : public QThread {
     // runWorkers was run. This should only be touched from the engine callback.
     bool m_bWakeScheduler;
 
-    FIFO<EngineWorker*> m_scheduleFIFO;
-    QWaitCondition m_waitCondition;
-    QMutex m_mutex;
+    FFPtrBuffer<EngineWorker,1024> m_scheduleFIFO;
+    QSemaphore     m_waitSem;
     volatile bool m_bQuit;
 };
 

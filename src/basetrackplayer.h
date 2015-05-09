@@ -75,7 +75,15 @@ class BaseTrackPlayerImpl : public BaseTrackPlayer {
   private:
     ConfigObject<ConfigValue>* m_pConfig;
     TrackPointer m_pLoadedTrack;
-
+    ControlValueDouble        m_bpm;
+    ControlValueDouble        m_key;
+    ControlValueDouble        m_preGain;
+    ControlValueDouble        m_replayGain;
+    ControlValueDouble        m_playing;
+    ControlValueDouble        m_speed;
+    ControlValueDouble        m_pitch;
+    ControlValueDouble        m_position;
+    ControlValueDouble        m_duration;
     // Waveform display related controls
     ControlPotmeter* m_pWaveformZoom;
     ControlObject* m_pEndOfTrack;
@@ -97,7 +105,6 @@ class BaseTrackPlayerImpl : public BaseTrackPlayer {
     ControlObjectSlave* m_pSpeed;
     ControlObjectSlave* m_pPitchAdjust;
     EngineDeck* m_pChannel;
-
     bool m_replaygainPending;
 };
 

@@ -23,8 +23,9 @@
 const int kiMaxDelay = 40000; // 208 ms @ 96 kb/s
 const double kdMaxDelayPot = 200; // 200 ms
 
-EngineDelay::EngineDelay(const char* group, ConfigKey delayControl)
-        : m_iDelayPos(0),
+EngineDelay::EngineDelay(const char* group, ConfigKey delayControl,QObject*pParent)
+        : EngineObject(pParent),
+          m_iDelayPos(0),
           m_iDelay(0) {
     m_pDelayBuffer = SampleUtil::alloc(kiMaxDelay);
     SampleUtil::clear(m_pDelayBuffer, kiMaxDelay);

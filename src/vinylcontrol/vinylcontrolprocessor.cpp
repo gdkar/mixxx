@@ -25,14 +25,8 @@ VinylControlProcessor::VinylControlProcessor(QObject* pParent, ConfigObject<Conf
           m_bReportSignalQuality(false),
           m_bQuit(false),
           m_bReloadConfig(false) {
-    connect(m_pToggle, SIGNAL(valueChanged(double)),
-            this, SLOT(toggleDeck(double)),
-            Qt::DirectConnection);
-
-    for (int i = 0; i < kMaximumVinylControlInputs; ++i) {
-        m_samplePipes[i] = new FIFO<CSAMPLE>(SAMPLE_PIPE_FIFO_SIZE);
-    }
-
+    connect(m_pToggle, SIGNAL(valueChanged(double)),this, SLOT(toggleDeck(double)),Qt::DirectConnection);
+    for (int i = 0; i < kMaximumVinylControlInputs; ++i) {m_samplePipes[i] = new FIFO<CSAMPLE>(SAMPLE_PIPE_FIFO_SIZE);}
     start(QThread::HighPriority);
 }
 
@@ -43,27 +37,22 @@ VinylControlProcessor::~VinylControlProcessor() {
 
     delete m_pToggle;
     SampleUtil::free(m_pWorkBuffer);
-
     {
         QMutexLocker locker(&m_processorsLock);
         for (int i = 0; i < kMaximumVinylControlInputs; ++i) {
             VinylControl* pProcessor = m_processors.at(i);
             m_processors[i] = NULL;
             delete pProcessor;
-
             delete m_samplePipes[i];
             m_samplePipes[i] = NULL;
         }
     }
-
     // xwax has a global LUT that we need to free after we've shut down our
     // vinyl control threads because it's not thread-safe.
     VinylControlXwax::freeLUTs();
 }
 
-void VinylControlProcessor::setSignalQualityReporting(bool enable) {
-    m_bReportSignalQuality = enable;
-}
+void VinylControlProcessor::setSignalQualityReporting(bool enable) {m_bReportSignalQuality = enable;}
 
 void VinylControlProcessor::shutdown() {
     m_bQuit = true;
@@ -81,34 +70,26 @@ void VinylControlProcessor::run() {
 
     while (!m_bQuit) {
         Event::start("VinylControlProcessor");
-        if (m_bReloadConfig) {
-            reloadConfig();
-            m_bReloadConfig = false;
+        if (m_bReloadConfig) {reloadConfig();m_bReloadConfig = false;
         }
-
         for (int i = 0; i < kMaximumVinylControlInputs; ++i) {
             QMutexLocker locker(&m_processorsLock);
             VinylControl* pProcessor = m_processors[i];
             locker.unlock();
             FIFO<CSAMPLE>* pSamplePipe = m_samplePipes[i];
-
             if (pSamplePipe->readAvailable() > 0) {
                 int samplesRead = pSamplePipe->read(m_pWorkBuffer, MAX_BUFFER_LEN);
-
                 if (samplesRead % 2 != 0) {
                     qWarning() << "VinylControlProcessor received non-even number of samples via sample FIFO.";
                     samplesRead--;
                 }
                 int framesRead = samplesRead / 2;
-
-                if (pProcessor) {
-                    pProcessor->analyzeSamples(m_pWorkBuffer, framesRead);
+                if (pProcessor) {pProcessor->analyzeSamples(m_pWorkBuffer, framesRead);
                 } else {
                     // Samples are being written to a non-existent processor. Warning?
                     qWarning() << "Samples written to non-existent VinylControl processor:" << i;
                 }
             }
-
             // TODO(rryan) define a time-based update rate. This will update way
             // too quickly.
             if (pProcessor && m_bReportSignalQuality) {
@@ -121,11 +102,7 @@ void VinylControlProcessor::run() {
                 }
             }
         }
-
-        if (m_bQuit) {
-            break;
-        }
-
+        if (m_bQuit) {break;}
         // Wait for a signal from the main thread or engine thread that we
         // should wake up and process input.
         Event::end("VinylControlProcessor");
@@ -139,13 +116,8 @@ void VinylControlProcessor::reloadConfig() {
     for (int i = 0; i < kMaximumVinylControlInputs; ++i) {
         QMutexLocker locker(&m_processorsLock);
         VinylControl* pCurrent = m_processors[i];
-
-        if (pCurrent == NULL) {
-            continue;
-        }
-
-        VinylControl *pNew = new VinylControlXwax(
-            m_pConfig, kVCGroup.arg(i + 1));
+        if (pCurrent == NULL) {continue;}
+        VinylControl *pNew = new VinylControlXwax(m_pConfig, kVCGroup.arg(i + 1));
         m_processors.replace(i, pNew);
         locker.unlock();
         // Delete outside of the critical section to avoid deadlocks.
@@ -165,10 +137,7 @@ void VinylControlProcessor::onInputConfigured(AudioInput input) {
         qWarning() << "VinylControlProcessor::onInputConnected got invalid index:" << index;
         return;
     }
-
-    VinylControl *pNew = new VinylControlXwax(
-        m_pConfig, kVCGroup.arg(index + 1));
-
+    VinylControl *pNew = new VinylControlXwax(m_pConfig, kVCGroup.arg(index + 1));
     QMutexLocker locker(&m_processorsLock);
     VinylControl* pCurrent = m_processors.at(index);
     m_processors.replace(index, pNew);
@@ -182,15 +151,12 @@ void VinylControlProcessor::onInputUnconfigured(AudioInput input) {
         qDebug() << "WARNING: AudioInput type is not VINYLCONTROL. Ignoring.";
         return;
     }
-
     unsigned char index = input.getIndex();
-
     if (index >= kMaximumVinylControlInputs) {
         // Should not be possible.
         qWarning() << "VinylControlProcessor::onInputDisconnected got invalid index:" << index;
         return;
     }
-
     QMutexLocker locker(&m_processorsLock);
     VinylControl* pVC = m_processors.at(index);
     m_processors.replace(index, NULL);
@@ -199,49 +165,31 @@ void VinylControlProcessor::onInputUnconfigured(AudioInput input) {
     delete pVC;
 }
 
-bool VinylControlProcessor::deckConfigured(int index) const {
-    return m_processors[index] != NULL;
-}
-
-void VinylControlProcessor::receiveBuffer(AudioInput input,
-                                          const CSAMPLE* pBuffer,
-                                          unsigned int nFrames) {
+bool VinylControlProcessor::deckConfigured(int index) const {return m_processors[index] != NULL;}
+void VinylControlProcessor::receiveBuffer(AudioInput input,const CSAMPLE* pBuffer,unsigned int nFrames) {
     ScopedTimer t("VinylControlProcessor::receiveBuffer");
     if (input.getType() != AudioInput::VINYLCONTROL) {
         qDebug() << "WARNING: AudioInput type is not VINYLCONTROL. Ignoring incoming buffer.";
         return;
     }
-
     unsigned char vcIndex = input.getIndex();
-
     if (vcIndex >= kMaximumVinylControlInputs) {
         // Should not be possible.
         return;
     }
-
     FIFO<CSAMPLE>* pSamplePipe = m_samplePipes[vcIndex];
-
-    if (pSamplePipe == NULL) {
-        // Should not be possible.
-        return;
-    }
-
+    if (pSamplePipe == NULL) {return;}
     const int kChannels = 2;
     const int nSamples = nFrames * kChannels;
     int samplesWritten = pSamplePipe->write(pBuffer, nSamples);
-
     if (samplesWritten < nSamples) {
-        qWarning() << "ERROR: Buffer overflow in VinylControlProcessor. Dropping samples on the floor."
-                   << "VCIndex:" << vcIndex;
+        qWarning() << "ERROR: Buffer overflow in VinylControlProcessor. Dropping samples on the floor." << "VCIndex:" << vcIndex;
     }
-
     m_samplesAvailableSignal.wakeAll();
 }
 
 void VinylControlProcessor::toggleDeck(double value) {
-    if (!value)
-        return;
-
+    if (!value) return;
     /** few different cases here:
      * 1. No decks have vinyl control enabled.
      * 2. One deck has vinyl control enabled.
@@ -268,7 +216,6 @@ void VinylControlProcessor::toggleDeck(double value) {
             enabled = i;
         }
     }
-
     if (enabled > -1 && m_processors.size() > 1) {
         // handle case 2
 
@@ -276,11 +223,7 @@ void VinylControlProcessor::toggleDeck(double value) {
         while (!m_processors[nextProxy]) {
             nextProxy = (nextProxy + 1) % m_processors.size();
         } // guaranteed to terminate as there's at least 1 non-null proxy
-
-        if (nextProxy == enabled) {
-            return;
-        }
-
+        if (nextProxy == enabled) {return;}
         VinylControl* pEnabled = m_processors[enabled];
         VinylControl* pNextProxy = m_processors[nextProxy];
         locker.unlock();
@@ -289,11 +232,7 @@ void VinylControlProcessor::toggleDeck(double value) {
     } else if (enabled == -1) {
         // handle case 1, or we just don't have any processors
         foreach (VinylControl* pProcessor, m_processors) {
-            if (pProcessor) {
-                locker.unlock();
-                pProcessor->toggleVinylControl(true);
-                return;
-            }
+            if (pProcessor) {locker.unlock();pProcessor->toggleVinylControl(true);return;}
         }
     }
 }
