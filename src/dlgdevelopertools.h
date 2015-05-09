@@ -14,25 +14,19 @@
 class DlgDeveloperTools : public QDialog, public Ui::DlgDeveloperTools {
     Q_OBJECT
   public:
-    DlgDeveloperTools(QWidget* pParent,
-                      ConfigObject<ConfigValue>* pConfig);
+    DlgDeveloperTools(QWidget* pParent,ConfigObject<ConfigValue>* pConfig);
     virtual ~DlgDeveloperTools();
-
   protected:
     void timerEvent(QTimerEvent* pTimerEvent);
-
   private slots:
     void slotControlSearch(const QString& search);
     void slotControlSearchClear();
     void slotLogSearch();
-
   private:
     ControlModel m_controlModel;
     QSortFilterProxyModel m_controlProxyModel;
-
     StatModel m_statModel;
     QSortFilterProxyModel m_statProxyModel;
-
     QFile m_logFile;
     QTextCursor m_logCursor;
 

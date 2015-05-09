@@ -28,28 +28,20 @@
 #define CONTROLGROUP_FLANGER_STRING  "[Flanger]"
 #define CONTROLGROUP_MICROPHONE_STRING  "[Microphone]"
 
-class ControlGroupDelegate : public QItemDelegate
-{
- Q_OBJECT
-
+class ControlGroupDelegate : public QItemDelegate{
+  Q_OBJECT
+  static QStringList m_controlGroups;
 public:
   ControlGroupDelegate(QObject *parent = 0);
-
- QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option,
-                       const QModelIndex &index) const;
- void paint(QPainter *painter, const QStyleOptionViewItem &option,
-                          const QModelIndex &index) const;
+ QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option,const QModelIndex &index) const;
+ void paint(QPainter *painter, const QStyleOptionViewItem &option,const QModelIndex &index) const;
  void setEditorData(QWidget *editor, const QModelIndex &index) const;
- void setModelData(QWidget *editor, QAbstractItemModel *model,
-                   const QModelIndex &index) const;
-
+ void setModelData(QWidget *editor, QAbstractItemModel *model,const QModelIndex &index) const;
  void updateEditorGeometry(QWidget *editor,
-     const QStyleOptionViewItem &option, const QModelIndex &index) const;
-    /** This getter is used by the "Add Control" GUI */
-    static QStringList getControlGroups() { return m_controlGroups; };
-
-private:
-    static QStringList m_controlGroups;
+ const QStyleOptionViewItem &option, const QModelIndex &index) const;
+ /** This getter is used by the "Add Control" GUI */
+ static QStringList getControlGroups() { return m_controlGroups; };
+ static void addControlGroup(const QString &group);
 
 };
 

@@ -11,7 +11,7 @@
 #include "controlpushbutton.h"
 #include "engine/enginemaster.h"
 
-RecordingManager::RecordingManager(ConfigObject<ConfigValue>* pConfig, EngineMaster* pEngine, QObject*)
+RecordingManager::RecordingManager(ConfigObject<ConfigValue>* pConfig, EngineMaster* pEngine, QObject* pParent)
         : QObject(pParent),
           m_pConfig(pConfig),
           m_recordingDir(""),
