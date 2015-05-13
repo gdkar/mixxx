@@ -900,7 +900,6 @@ class MixxxCore(Feature):
                    "encoder/encodervorbis.cpp",
 
                    "util/pa_ringbuffer.c",
-                   "util/sleepableqthread.cpp",
                    "util/statsmanager.cpp",
                    "util/stat.cpp",
                    "util/statmodel.cpp",

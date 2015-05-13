@@ -13,7 +13,7 @@
 namespace Mixxx {
 
 // forward declaration(s)
-class AudioSourceConfig;
+struct AudioSourceConfig;
 
 // Common interface and base class for audio sources.
 //
@@ -240,7 +240,7 @@ protected:
             bool readStereoSamples = false) const;
 
 private:
-    friend class AudioSourceConfig;
+    friend struct AudioSourceConfig;
 
     static const SINT kChannelCountZero = 0;
     static const SINT kChannelCountDefault = kChannelCountZero;
