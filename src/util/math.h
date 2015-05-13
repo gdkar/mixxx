@@ -25,7 +25,10 @@ inline T math_clamp(T value, T min, T max) {
     DEBUG_ASSERT(min <= max);
     return math_max(min, math_min(max, value));
 }
-
+template <typename T, T min = -1, T max = 1>
+inline T clamp(T value){
+  return value<min? min : (value>max ? max : value);
+}
 // NOTE(rryan): It is an error to call even() on a floating point number. Do not
 // hack this to support floating point values! The programmer should be required
 // to manually convert so they are aware of the conversion.

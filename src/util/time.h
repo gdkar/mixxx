@@ -16,6 +16,8 @@
 
 class Time {
   public:
+    static const int kNanoSecondsPerSecond = 1000000000;
+    static const int kNanoSecondsPerMs = 1000000;
     static const int kMillisPerSecond = 1000;
     static const int kSecondsPerMinute = 60;
     static const int kSecondsPerHour = 60 * kSecondsPerMinute;
@@ -24,16 +26,13 @@ class Time {
     static void start() {
         s_timer.start();
     }
-
     // Returns the time elapsed since Mixxx started up in nanoseconds.
     static qint64 elapsed() {
         return s_timer.elapsed();
     }
-
     static uint elapsedMsecs() {
-        return (uint)(s_timer.elapsed() / 1000);
+        return (uint)(s_timer.elapsed() / kNanoSecondsPerMs);
     }
-
     // The standard way of formatting a time in seconds. Used for display of
     // track duration, etc. showCentis indicates whether to include
     // centisecond-precision or to round to the nearest second.
@@ -41,7 +40,6 @@ class Time {
         if (dSeconds < 0) {
             return "?";
         }
-
         const int days = static_cast<int>(dSeconds) / kSecondsPerDay;
         dSeconds -= days * kSecondsPerDay;
 
@@ -60,10 +58,8 @@ class Time {
         if (showCentis) {
             timeString = timeString.left(timeString.length() - 1);
         }
-
         return timeString;
     }
-
   private:
     static LLTIMER s_timer;
 };

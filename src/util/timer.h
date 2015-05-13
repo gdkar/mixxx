@@ -16,36 +16,29 @@ class Timer {
     Timer(const QString& key,
           Stat::ComputeFlags compute = kDefaultComputeFlags);
     void start();
-
     // Restart the timer returning the nanoseconds since it was last
     // started/restarted. If report is true, reports the elapsed time to the
     // associated Stat key.
     qint64 restart(bool report);
-
     // Returns nanoseconds since start/restart was called. If report is true,
     // reports the elapsed time to the associated Stat key.
     qint64 elapsed(bool report);
-
   protected:
     QString m_key;
     Stat::ComputeFlags m_compute;
     bool m_running;
     PerformanceTimer m_time;
 };
-
 class SuspendableTimer : public Timer {
   public:
-    SuspendableTimer(const QString& key,
-            Stat::ComputeFlags compute = kDefaultComputeFlags);
+    SuspendableTimer(const QString& key,Stat::ComputeFlags compute = kDefaultComputeFlags);
     void start();
     qint64 suspend();
     void go();
     qint64 elapsed(bool report);
-
   private:
     qint64 m_leapTime;
 };
-
 class ScopedTimer {
   public:
     ScopedTimer(const char* key, int i,

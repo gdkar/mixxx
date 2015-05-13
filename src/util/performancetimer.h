@@ -64,7 +64,6 @@ public:
     qint64 elapsed() const;
     qint64 restart();
     qint64 difference(PerformanceTimer* timer);
-
 private:
     qint64 t1;
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
