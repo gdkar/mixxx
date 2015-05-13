@@ -23,7 +23,6 @@ class Beats {
   public:
     Beats() { }
     virtual ~Beats() { }
-
     enum Capabilities {
         BEATSCAP_NONE          = 0x0000,
         BEATSCAP_ADDREMOVE     = 0x0001,
@@ -33,12 +32,9 @@ class Beats {
         BEATSCAP_SET           = 0x0010
     };
     typedef int CapabilitiesFlags; // Allows us to do ORing
-
     virtual Beats::CapabilitiesFlags getCapabilities() const = 0;
-
     // Serialization
     virtual QByteArray* toByteArray() const = 0;
-
     // A string representing the version of the beat-processing code that
     // produced this Beats instance. Used by BeatsFactory for associating a
     // given serialization with the version that produced it.
@@ -46,7 +42,6 @@ class Beats {
     // A sub-version can be used to represent the preferences used to generate
     // the beats object.
     virtual QString getSubVersion() const = 0;
-
     ////////////////////////////////////////////////////////////////////////////
     // Beat calculations
     ////////////////////////////////////////////////////////////////////////////
@@ -60,12 +55,10 @@ class Beats {
     // track, or -1 if none exists. If dSamples refers to the location of a
     // beat, dSamples is returned.
     virtual double findNextBeat(double dSamples) const = 0;
-
     // Starting from sample dSamples, return the sample of the previous beat in
     // the track, or -1 if none exists. If dSamples refers to the location of
     // beat, dSamples is returned.
     virtual double findPrevBeat(double dSamples) const = 0;
-
     // Starting from sample dSamples, fill the samples of the previous beat
     // and next beat.  Either can be -1 if none exists.  If dSamples refers
     // to the location of the beat, the first value is dSamples, and the second

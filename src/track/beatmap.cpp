@@ -17,42 +17,25 @@ using mixxx::track::io::Beat;
 
 const int kFrameSize = 2;
 
-inline double samplesToFrames(const double samples) {
-    return floor(samples / kFrameSize);
-}
-
-inline double framesToSamples(const int frames) {
-    return frames * kFrameSize;
-}
-
-bool BeatLessThan(const Beat& beat1, const Beat& beat2) {
-    return beat1.frame_position() < beat2.frame_position();
-}
-
+inline double samplesToFrames(const double samples) {return floor(samples / kFrameSize);}
+inline double framesToSamples(const int frames) {return frames * kFrameSize;}
+bool BeatLessThan(const Beat& beat1, const Beat& beat2) {return beat1.frame_position() < beat2.frame_position();}
 class BeatMapIterator : public BeatIterator {
   public:
     BeatMapIterator(BeatList::const_iterator start, BeatList::const_iterator end)
             : m_currentBeat(start),
               m_endBeat(end) {
         // Advance to the first enabled beat.
-        while (m_currentBeat != m_endBeat && !m_currentBeat->enabled()) {
-            ++m_currentBeat;
-        }
+        while (m_currentBeat != m_endBeat && !m_currentBeat->enabled()) {++m_currentBeat;}
     }
-
-    virtual bool hasNext() const {
-        return m_currentBeat != m_endBeat;
-    }
+    virtual bool hasNext() const {return m_currentBeat != m_endBeat;}
 
     virtual double next() {
         double beat = framesToSamples(m_currentBeat->frame_position());
         ++m_currentBeat;
-        while (m_currentBeat != m_endBeat && !m_currentBeat->enabled()) {
-            ++m_currentBeat;
-        }
+        while (m_currentBeat != m_endBeat && !m_currentBeat->enabled()) {++m_currentBeat;}
         return beat;
     }
-
   private:
     BeatList::const_iterator m_currentBeat;
     BeatList::const_iterator m_endBeat;
@@ -63,26 +46,20 @@ BeatMap::BeatMap(TrackPointer pTrack, int iSampleRate,
         : QObject(),
           m_mutex(QMutex::Recursive) {
     initialize(pTrack, iSampleRate);
-    if (pByteArray != NULL) {
-        readByteArray(pByteArray);
-    }
+    if (pByteArray != NULL) {readByteArray(pByteArray);}
 }
-
 BeatMap::BeatMap(TrackPointer pTrack, int iSampleRate,
                  const QVector<double>& beats)
         : QObject(),
           m_mutex(QMutex::Recursive) {
     initialize(pTrack, iSampleRate);
-    if (beats.size() > 0) {
-        createFromBeatVector(beats);
-    }
+    if (beats.size() > 0) {createFromBeatVector(beats);}
 }
 
 void BeatMap::initialize(TrackPointer pTrack, int iSampleRate) {
     m_iSampleRate = iSampleRate > 0 ? iSampleRate : pTrack->getSampleRate();
     m_dCachedBpm = 0;
     m_dLastFrame = 0;
-
     if (!pTrack.isNull()) {
         // BeatMap should live in the same thread as the track it is associated
         // with.
@@ -90,19 +67,14 @@ void BeatMap::initialize(TrackPointer pTrack, int iSampleRate) {
     }
 }
 
-BeatMap::~BeatMap() {
-}
+BeatMap::~BeatMap() {}
 
 QByteArray* BeatMap::toByteArray() const {
     QMutexLocker locker(&m_mutex);
     // No guarantees BeatLists are made of a data type which located adjacent
     // items in adjacent memory locations.
     mixxx::track::io::BeatMap map;
-
-    for (int i = 0; i < m_beats.size(); ++i) {
-        map.add_beat()->CopyFrom(m_beats[i]);
-    }
-
+    for (int i = 0; i < m_beats.size(); ++i) {map.add_beat()->CopyFrom(m_beats[i]);}
     std::string output;
     map.SerializeToString(&output);
     QByteArray* pByteArray = new QByteArray(output.data(), output.length());
@@ -124,12 +96,9 @@ void BeatMap::readByteArray(const QByteArray* pByteArray) {
 }
 
 void BeatMap::createFromBeatVector(const QVector<double>& beats) {
-    if (beats.isEmpty()) {
-       return;
-    }
+    if (beats.isEmpty()) {return;}
     double previous_beatpos = -1;
     Beat beat;
-
     foreach (double beatpos, beats) {
         // beatpos is in frames. Do not accept fractional frames.
         beatpos = floor(beatpos);
@@ -145,37 +114,15 @@ void BeatMap::createFromBeatVector(const QVector<double>& beats) {
     onBeatlistChanged();
 }
 
-QString BeatMap::getVersion() const {
-    QMutexLocker locker(&m_mutex);
-    return BEAT_MAP_VERSION;
-}
-
-QString BeatMap::getSubVersion() const {
-    QMutexLocker locker(&m_mutex);
-    return m_subVersion;
-}
-
-void BeatMap::setSubVersion(QString subVersion) {
-    m_subVersion = subVersion;
-}
-
-bool BeatMap::isValid() const {
-    return m_iSampleRate > 0 && m_beats.size() > 0;
-}
-
-double BeatMap::findNextBeat(double dSamples) const {
-    return findNthBeat(dSamples, 1);
-}
-
-double BeatMap::findPrevBeat(double dSamples) const {
-    return findNthBeat(dSamples, -1);
-}
-
+QString BeatMap::getVersion() const {return BEAT_MAP_VERSION;}
+QString BeatMap::getSubVersion() const {return m_subVersion;}
+void BeatMap::setSubVersion(QString subVersion) {m_subVersion = subVersion;}
+bool BeatMap::isValid() const {return m_iSampleRate > 0 && m_beats.size() > 0;}
+double BeatMap::findNextBeat(double dSamples) const {return findNthBeat(dSamples, 1);}
+double BeatMap::findPrevBeat(double dSamples) const {return findNthBeat(dSamples, -1);}
 double BeatMap::findClosestBeat(double dSamples) const {
     QMutexLocker locker(&m_mutex);
-    if (!isValid()) {
-        return -1;
-    }
+    if (!isValid()) {return -1;}
     double prevBeat;
     double nextBeat;
     findPrevNextBeats(dSamples, &prevBeat, &nextBeat);
@@ -190,28 +137,17 @@ double BeatMap::findClosestBeat(double dSamples) const {
 
 double BeatMap::findNthBeat(double dSamples, int n) const {
     QMutexLocker locker(&m_mutex);
-
-    if (!isValid() || n == 0) {
-        return -1;
-    }
-
+    if (!isValid() || n == 0) {return -1;}
     Beat beat;
     // Reduce sample offset to a frame offset.
     beat.set_frame_position(samplesToFrames(dSamples));
-
     // it points at the first occurence of beat or the next largest beat
-    BeatList::const_iterator it =
-            qLowerBound(m_beats.begin(), m_beats.end(), beat, BeatLessThan);
-
+    BeatList::const_iterator it = qLowerBound(m_beats.begin(), m_beats.end(), beat, BeatLessThan);
     // If the position is within 1/10th of a second of the next or previous
     // beat, pretend we are on that beat.
     const double kFrameEpsilon = 0.1 * m_iSampleRate;
-
     // Back-up by one.
-    if (it != m_beats.begin()) {
-        --it;
-    }
-
+    if (it != m_beats.begin()) {--it;}
     // Scan forward to find whether we are on a beat.
     BeatList::const_iterator on_beat = m_beats.end();
     BeatList::const_iterator previous_beat = m_beats.end();
@@ -247,9 +183,7 @@ double BeatMap::findNthBeat(double dSamples, int n) const {
 
     if (n > 0) {
         for (; next_beat != m_beats.end(); ++next_beat) {
-            if (!next_beat->enabled()) {
-                continue;
-            }
+            if (!next_beat->enabled()) {continue;}
             if (n == 1) {
                 // Return a sample offset
                 return framesToSamples(next_beat->frame_position());
@@ -259,50 +193,33 @@ double BeatMap::findNthBeat(double dSamples, int n) const {
     } else if (n < 0 && previous_beat != m_beats.end()) {
         for (; true; --previous_beat) {
             if (previous_beat->enabled()) {
-                if (n == -1) {
-                    // Return a sample offset
-                    return framesToSamples(previous_beat->frame_position());
-                }
+                if (n == -1) {return framesToSamples(previous_beat->frame_position());}
                 ++n;
             }
-
             // Don't step before the start of the list.
-            if (previous_beat == m_beats.begin()) {
-                break;
-            }
+            if (previous_beat == m_beats.begin()) {break;}
         }
     }
     return -1;
 }
 
-bool BeatMap::findPrevNextBeats(double dSamples,
-                                double* dpPrevBeatSamples,
-                                double* dpNextBeatSamples) const {
+bool BeatMap::findPrevNextBeats(double dSamples,double* dpPrevBeatSamples,double* dpNextBeatSamples) const {
     QMutexLocker locker(&m_mutex);
-
     if (!isValid()) {
         *dpPrevBeatSamples = -1;
         *dpNextBeatSamples = -1;
         return false;
     }
-
     Beat beat;
     // Reduce sample offset to a frame offset.
     beat.set_frame_position(samplesToFrames(dSamples));
-
     // it points at the first occurence of beat or the next largest beat
-    BeatList::const_iterator it =
-            qLowerBound(m_beats.begin(), m_beats.end(), beat, BeatLessThan);
-
+    BeatList::const_iterator it = qLowerBound(m_beats.begin(), m_beats.end(), beat, BeatLessThan);
     // If the position is within 1/10th of a second of the next or previous
     // beat, pretend we are on that beat.
     const double kFrameEpsilon = 0.1 * m_iSampleRate;
-
     // Back-up by one.
-    if (it != m_beats.begin()) {
-        --it;
-    }
-
+    if (it != m_beats.begin()) {--it;}
     // Scan forward to find whether we are on a beat.
     BeatList::const_iterator on_beat = m_beats.end();
     BeatList::const_iterator previous_beat = m_beats.end();
@@ -340,9 +257,7 @@ bool BeatMap::findPrevNextBeats(double dSamples,
     *dpNextBeatSamples = -1;
 
     for (; next_beat != m_beats.end(); ++next_beat) {
-        if (!next_beat->enabled()) {
-            continue;
-        }
+        if (!next_beat->enabled()) {continue;}
         *dpNextBeatSamples = framesToSamples(next_beat->frame_position());
         break;
     }
@@ -352,11 +267,8 @@ bool BeatMap::findPrevNextBeats(double dSamples,
                 *dpPrevBeatSamples = framesToSamples(previous_beat->frame_position());
                 break;
             }
-
             // Don't step before the start of the list.
-            if (previous_beat == m_beats.begin()) {
-                break;
-            }
+            if (previous_beat == m_beats.begin()) {break;}
         }
     }
     return *dpPrevBeatSamples != -1 && *dpNextBeatSamples != -1;
@@ -390,27 +302,17 @@ BeatIterator* BeatMap::findBeats(double startSample, double stopSample) const {
 
 bool BeatMap::hasBeatInRange(double startSample, double stopSample) const {
     QMutexLocker locker(&m_mutex);
-    if (!isValid() || startSample > stopSample) {
-        return false;
-    }
+    if (!isValid() || startSample > stopSample) {return false;}
     double curBeat = findNextBeat(startSample);
-    if (curBeat <= stopSample) {
-        return true;
-    }
+    if (curBeat <= stopSample) {return true;}
     return false;
 }
 
-double BeatMap::getBpm() const {
-    QMutexLocker locker(&m_mutex);
-    if (!isValid())
-        return -1;
-    return m_dCachedBpm;
-}
+double BeatMap::getBpm() const {return m_dCachedBpm;}
 
 double BeatMap::getBpmRange(double startSample, double stopSample) const {
     QMutexLocker locker(&m_mutex);
-    if (!isValid())
-        return -1;
+    if (!isValid())return -1;
     Beat startBeat, stopBeat;
     startBeat.set_frame_position(samplesToFrames(startSample));
     stopBeat.set_frame_position(samplesToFrames(stopSample));
@@ -452,14 +354,10 @@ void BeatMap::addBeat(double dBeatSample) {
     QMutexLocker locker(&m_mutex);
     Beat beat;
     beat.set_frame_position(samplesToFrames(dBeatSample));
-    BeatList::iterator it = qLowerBound(
-        m_beats.begin(), m_beats.end(), beat, BeatLessThan);
-
+    BeatList::iterator it = qLowerBound(m_beats.begin(), m_beats.end(), beat, BeatLessThan);
     // Don't insert a duplicate beat. TODO(XXX) determine what epsilon to
     // consider a beat identical to another.
-    if (it->frame_position() == beat.frame_position())
-        return;
-
+    if (it->frame_position() == beat.frame_position())return;
     m_beats.insert(it, beat);
     onBeatlistChanged();
     locker.unlock();
@@ -470,15 +368,11 @@ void BeatMap::removeBeat(double dBeatSample) {
     QMutexLocker locker(&m_mutex);
     Beat beat;
     beat.set_frame_position(samplesToFrames(dBeatSample));
-    BeatList::iterator it = qLowerBound(
-        m_beats.begin(), m_beats.end(), beat, BeatLessThan);
-
+    BeatList::iterator it = qLowerBound(m_beats.begin(), m_beats.end(), beat, BeatLessThan);
     // In case there are duplicates, remove every instance of dBeatSample
     // TODO(XXX) add invariant checks against this
     // TODO(XXX) determine what epsilon to consider a beat identical to another
-    while (it->frame_position() == beat.frame_position()) {
-        it = m_beats.erase(it);
-    }
+    while (it->frame_position() == beat.frame_position()) {it = m_beats.erase(it);}
     onBeatlistChanged();
     locker.unlock();
     emit(updated());
@@ -489,26 +383,19 @@ void BeatMap::moveBeat(double dBeatSample, double dNewBeatSample) {
     Beat beat, newBeat;
     beat.set_frame_position(samplesToFrames(dBeatSample));
     newBeat.set_frame_position(samplesToFrames(dNewBeatSample));
-
-    BeatList::iterator it = qLowerBound(
-        m_beats.begin(), m_beats.end(), beat, BeatLessThan);
-
+    BeatList::iterator it = qLowerBound(m_beats.begin(), m_beats.end(), beat, BeatLessThan);
     // In case there are duplicates, remove every instance of dBeatSample
     // TODO(XXX) add invariant checks against this
     // TODO(XXX) determine what epsilon to consider a beat identical to another
     while (it->frame_position() == beat.frame_position()) {
-        if (newBeat.enabled() != it->enabled()) {
-            newBeat.set_enabled(it->enabled());
-        }
+        if (newBeat.enabled() != it->enabled()) {newBeat.set_enabled(it->enabled());}
         it = m_beats.erase(it);
     }
 
     // Now add a beat to dNewBeatSample
     it = qLowerBound(m_beats.begin(), m_beats.end(), newBeat, BeatLessThan);
     // TODO(XXX) beat epsilon
-    if (it->frame_position() != newBeat.frame_position()) {
-        m_beats.insert(it, newBeat);
-    }
+    if (it->frame_position() != newBeat.frame_position()) {m_beats.insert(it, newBeat);}
     onBeatlistChanged();
     locker.unlock();
     emit(updated());
@@ -517,19 +404,13 @@ void BeatMap::moveBeat(double dBeatSample, double dNewBeatSample) {
 void BeatMap::translate(double dNumSamples) {
     QMutexLocker locker(&m_mutex);
     // Converting to frame offset
-    if (!isValid()) {
-        return;
-    }
-
+    if (!isValid()) {return;}
     double dNumFrames = samplesToFrames(dNumSamples);
     for (BeatList::iterator it = m_beats.begin();
          it != m_beats.end(); ++it) {
         double newpos = it->frame_position() + dNumFrames;
-        if (newpos >= 0) {
-            it->set_frame_position(newpos);
-        } else {
-            m_beats.erase(it);
-        }
+        if (newpos >= 0) {it->set_frame_position(newpos);
+        } else {m_beats.erase(it);}
     }
     onBeatlistChanged();
     locker.unlock();
@@ -538,10 +419,7 @@ void BeatMap::translate(double dNumSamples) {
 
 void BeatMap::scale(double dScalePercentage) {
     QMutexLocker locker(&m_mutex);
-    if (!isValid() || dScalePercentage <= 0.0 || m_beats.isEmpty()) {
-        return;
-    }
-
+    if (!isValid() || dScalePercentage <= 0.0 || m_beats.isEmpty()) {return;}
     // Scale the distance between every beat by 1/dScalePercentage to scale the
     // BPM by dScalePercentage.
     const double kScaleBeatDistance = 1.0 / dScalePercentage;

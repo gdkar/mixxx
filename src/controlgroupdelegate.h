@@ -41,7 +41,7 @@ public:
  const QStyleOptionViewItem &option, const QModelIndex &index) const;
  /** This getter is used by the "Add Control" GUI */
  static QStringList getControlGroups() { return m_controlGroups; };
- static void addControlGroup(const QString &group);
+ static void addControlGroup(QString group);
 
 };
 

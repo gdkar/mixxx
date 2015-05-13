@@ -20,21 +20,17 @@ class BeatGrid : public QObject, public virtual Beats {
     // Construct a BeatGrid. If a more accurate sample rate is known, provide it
     // in the iSampleRate parameter -- otherwise pass 0. If pByteArray is
     // non-NULL, the BeatGrid will be deserialized from the byte array.
-    BeatGrid(TrackInfoObject* pTrack, int iSampleRate,
-             const QByteArray* pByteArray=NULL);
+    BeatGrid(TrackInfoObject* pTrack, int iSampleRate,const QByteArray* pByteArray=NULL);
     virtual ~BeatGrid();
-
     // Initializes the BeatGrid to have a BPM of dBpm and the first beat offset
     // of dFirstBeatSample. Does not generate an updated() signal, since it is
     // meant for initialization.
     void setGrid(double dBpm, double dFirstBeatSample);
-
     // The following are all methods from the Beats interface, see method
     // comments in beats.h
 
-    virtual Beats::CapabilitiesFlags getCapabilities() const {
-        return BEATSCAP_TRANSLATE | BEATSCAP_SCALE | BEATSCAP_SET;
-    }
+    virtual Beats::CapabilitiesFlags getCapabilities() const 
+    {return BEATSCAP_TRANSLATE | BEATSCAP_SCALE | BEATSCAP_SET;}
 
     virtual QByteArray* toByteArray() const;
     virtual QString getVersion() const;

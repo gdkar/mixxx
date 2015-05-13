@@ -29,41 +29,27 @@ const double kHistogramDecimalScale = pow(10.0, kHistogramDecimalPlaces);
 const double kBpmFilterTolerance = 1.0;
 
 void BeatUtils::printBeatStatistics(const QVector<double>& beats, int SampleRate) {
-    if (!sDebug) {
-        return;
-    }
+    if (!sDebug) {return;}
     QMap<double, int> frequency;
-
     for (int i = N; i < beats.size(); i += 1) {
         double beat_start = beats.at(i-N);
         double beat_end = beats.at(i);
-
         // Time needed to count a bar (N beats)
         const double time = (beat_end - beat_start)/SampleRate;
         double local_bpm = 60.0 * N / time;
-
         qDebug() << "Beat" << i << "local BPM:" << local_bpm;
-
         local_bpm = floor(local_bpm * kHistogramDecimalScale + 0.5) / kHistogramDecimalScale;
         frequency[local_bpm] += 1;
     }
-
     qDebug() << "Rounded local BPM histogram:";
-
     QMapIterator<double, int> it(frequency);
-    while (it.hasNext()) {
-        it.next();
-        qDebug() << it.key() << ":" << it.value();
-    }
+    while (it.hasNext()) {it.next();qDebug() << it.key() << ":" << it.value();}
 }
 
 // Given a sorted set of numbers, find the sample median.
 // http://en.wikipedia.org/wiki/Median#The_sample_median
 double BeatUtils::computeSampleMedian(QList<double> sortedItems) {
-    if (sortedItems.empty()) {
-        return 0.0;
-    }
-
+    if (sortedItems.empty()) {return 0.0;}
     // When there are an even number of elements, the sample median is the mean
     // of the middle 2 elements.
     if (sortedItems.size() % 2 == 0) {
@@ -87,14 +73,11 @@ QList<double> BeatUtils::computeWindowedBpmsAndFrequencyHistogram(
         //get start and end sample of the beats
         double start_sample = beats.at(i - windowSize);
         double end_sample = beats.at(i);
-
         // Time needed to count a bar (4 beats)
         double time = (end_sample - start_sample)/sampleRate;
         double localBpm = 60.0 * windowSize / time;
-
         // round BPM to have two decimal places
-        double roundedBpm = floor(localBpm * kHistogramDecimalScale + 0.5) /
-                kHistogramDecimalScale;
+        double roundedBpm = floor(localBpm * kHistogramDecimalScale + 0.5) / kHistogramDecimalScale;
 
         // add to local BPM to list and increment frequency count
         averageBpmList << roundedBpm;
@@ -130,12 +113,8 @@ double BeatUtils::computeFilteredWeightedAverage(
             }
         }
     }
-    if (sDebug) {
-        qDebug() << "Sum of filtered frequencies: " << filterSum;
-    }
-    if (filterSum == 0) {
-        return filterCenter;
-    }
+    if (sDebug) {qDebug() << "Sum of filtered frequencies: " << filterSum;}
+    if (filterSum == 0) {return filterCenter;}
     return filterWeightedAverage / static_cast<double>(filterSum);
 }
 
@@ -174,15 +153,11 @@ double BeatUtils::calculateBpm(const QVector<double>& beats, int SampleRate,
      * BPM.
      */
 
-    if (beats.size() < 2) {
-        return 0;
-    }
+    if (beats.size() < 2) {return 0;}
 
     // If we don't have enough beats for our regular approach, just divide the #
     // of beats by the duration in minutes.
-    if (beats.size() <= N) {
-        return 60.0 * (beats.size()-1) * SampleRate / (beats.last() - beats.first());
-    }
+    if (beats.size() <= N) {return 60.0 * (beats.size()-1) * SampleRate / (beats.last() - beats.first());}
 
     QMap<double, int> frequency_table;
     QList<double> average_bpm_list = computeWindowedBpmsAndFrequencyHistogram(
@@ -350,27 +325,20 @@ double BeatUtils::calculateOffset(
     return floor(bestOffset + beatLength1Epsilon);
 }
 
-double BeatUtils::findFirstCorrectBeat(const QVector<double> rawbeats,
-                                       const int SampleRate, const double global_bpm) {
+double BeatUtils::findFirstCorrectBeat(const QVector<double> rawbeats,const int SampleRate, const double global_bpm) {
     for (int i = N; i < rawbeats.size(); i++) {
         // get start and end sample of the beats
         double start_sample = rawbeats.at(i-N);
         double end_sample = rawbeats.at(i);
-
         // The time in seconds represented by this sample range.
         double time = (end_sample - start_sample)/SampleRate;
-
         // Average BPM within this sample range.
         double avg_bpm = 60.0 * N / time;
-
         //qDebug() << "Local BPM between beat " << (i-N) << " and " << i << " is " << avg_bpm;
 
         // If the local BPM is within kCorrectBeatLocalBpmEpsilon of the global
         // BPM then use this window as the first beat.
-        if (fabs(global_bpm - avg_bpm) <= kCorrectBeatLocalBpmEpsilon) {
-            //qDebug() << "Using beat " << (i-N) << " as first beat";
-            return start_sample;
-        }
+        if (fabs(global_bpm - avg_bpm) <= kCorrectBeatLocalBpmEpsilon) {return start_sample;}
     }
 
     // If we didn't find any beat that matched the window, return the first
@@ -383,34 +351,19 @@ double BeatUtils::calculateFixedTempoFirstBeat(
     bool enableOffsetCorrection,
     const QVector<double> rawbeats, const int sampleRate,
     const int totalSamples, const double globalBpm) {
-    if (rawbeats.size() == 0) {
-        return 0;
-    }
-
-    if (!enableOffsetCorrection) {
-        return rawbeats.first();
-    }
+    if (rawbeats.size() == 0) {return 0;}
+    if (!enableOffsetCorrection) {return rawbeats.first();}
 
     QVector <double> corrbeats;
     // Length of a beat at globalBpm in mono samples.
     const double beat_length = 60.0 * sampleRate / globalBpm;
-
-
-    double firstCorrectBeat = findFirstCorrectBeat(
-        rawbeats, sampleRate, globalBpm);
+    double firstCorrectBeat = findFirstCorrectBeat(rawbeats, sampleRate, globalBpm);
 
     // We start building a fixed beat grid at globalBpm and the first beat from
     // rawbeats that matches globalBpm.
     double i = firstCorrectBeat;
-    while (i <= totalSamples) {
-        corrbeats << i;
-        i += beat_length;
-    }
-
-    if (rawbeats.size() == 1 || corrbeats.size()==1) {
-        return firstCorrectBeat;
-    }
-
+    while (i <= totalSamples) {corrbeats << i;i += beat_length;}
+    if (rawbeats.size() == 1 || corrbeats.size()==1) {return firstCorrectBeat;}
     /*
      * calculateOffset compares the beats from the analyser and the
      * beats from the beat grid constructed above in corrbeats.
@@ -420,16 +373,11 @@ double BeatUtils::calculateFixedTempoFirstBeat(
     // // Adjust firstCorrectBeat by offset
     // firstCorrectBeat += offset;
 
-
     // Find the smallest positive beat that is linked to firstCorrectBeat by
     // beat_length steps.
     double FirstFrame = firstCorrectBeat;
-    while (FirstFrame < 0) {
-        FirstFrame += beat_length;
-    }
-    while (FirstFrame > beat_length) {
-        FirstFrame -= beat_length;
-    }
+    while (FirstFrame < 0) {FirstFrame += beat_length;}
+    while (FirstFrame > beat_length) {FirstFrame -= beat_length;}
 
     // Round to nearest integer.
     double firstBeat = floor(FirstFrame + 0.5);

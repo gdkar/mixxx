@@ -32,7 +32,7 @@ public:
  void setModelData(QWidget *editor, QAbstractItemModel *model,const QModelIndex &index) const;
  void updateEditorGeometry(QWidget *editor,const QStyleOptionViewItem &option, const QModelIndex &index) const;
  static bool verifyControlValueValidity(QString controlGroup, QAbstractItemModel *model,const QModelIndex &index);
- static void addControlValue(const QString &group, const QString &value);
+ static void addControlValue(QString group,QString value);
  /** These getters are used by the "Add Control" dialog in the MIDI prefs. */
  static QStringList getChannelControlValues() { return m_channelControlValues; };
  static QStringList getMasterControlValues() { return m_masterControlValues; };

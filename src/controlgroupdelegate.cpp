@@ -7,7 +7,7 @@
 
 #include "configobject.h"
 //Need this to know MIDIINPUTTABLEINDEX_CONTROLOBJECTVALUE
-#include "controllers/midi/midiinputmappingtablemodel.h"
+#include "controllers/controllerinputmappingtablemodel.h"
 #include "controlvaluedelegate.h"
 #include "controlgroupdelegate.h"
 
@@ -88,6 +88,6 @@ void ControlGroupDelegate::updateEditorGeometry(QWidget *editor,const QStyleOpti
                                            const QModelIndex &/* index */) const
 {editor->setGeometry(option.rect);}
 /*static*/
-void ControlGroupDelegate::addControlGroup(const QString&group){
+void ControlGroupDelegate::addControlGroup(QString group){
   if(!m_controlGroups.contains(group))m_controlGroups.append(group);
 }

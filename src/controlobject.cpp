@@ -19,8 +19,6 @@
 #include <QHash>
 #include <QSet>
 #include <QMutexLocker>
-#include "controlgroupdelegate.h"
-#include "controlvaluedelegate.h"
 #include "controlobject.h"
 #include "control/control.h"
 #include "util/stat.h"
@@ -29,10 +27,7 @@
 ControlObject::ControlObject() {
 }
 
-ControlObject::ControlObject(ConfigKey key, bool bIgnoreNops, bool bTrack,
-                             bool bPersist) {
-    ControlGroupDelegate::addControlGroup(key.group);
-    ControlValueDelegate::addControlValue(key.group,key.item);
+ControlObject::ControlObject(ConfigKey key, bool bIgnoreNops, bool bTrack,bool bPersist) {
     initialize(key, bIgnoreNops, bTrack, bPersist);
 }
 
