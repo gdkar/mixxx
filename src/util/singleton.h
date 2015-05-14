@@ -16,17 +16,16 @@ public:
     static void destroy() {
     }
 
-protected:
-    Singleton():m_instance(new T()) {}
-    virtual ~Singleton() {delete m_instance;}
+  protected:
+    Singleton() {}
+    virtual ~Singleton() {}
 
-private:
-    //hide copy constructor and assign operator
+  private:
+    // hide copy constructor and assign operator
     Singleton(const Singleton&) {}
     const Singleton& operator= (const Singleton&) {}
     T*                   m_instance;
     static Singleton<T>* s_singleton;
 };
 template<class T> Singleton<T>* Singleton<T>::s_singleton= new Singleton<T>();
-
 #endif // SINGLETON_H
