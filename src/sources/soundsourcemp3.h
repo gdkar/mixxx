@@ -12,15 +12,13 @@
 #include <mad.h>
 
 #include <QFile>
-
+#include <QVector>
 #include <vector>
-
 namespace Mixxx {
 
 class SoundSourceMp3: public SoundSource {
 public:
     static QList<QString> supportedFileExtensions();
-
     explicit SoundSourceMp3(QUrl url);
     ~SoundSourceMp3();
     virtual void close() Q_DECL_OVERRIDE;
@@ -29,11 +27,9 @@ public:
     virtual SINT readSampleFrames(SINT numberOfFrames,CSAMPLE* sampleBuffer) Q_DECL_OVERRIDE;
     virtual SINT readSampleFramesStereo(SINT numberOfFrames,
         CSAMPLE* sampleBuffer, SINT sampleBufferSize) Q_DECL_OVERRIDE;
-
     virtual SINT readSampleFrames(SINT numberOfFrames,
             CSAMPLE* sampleBuffer, SINT sampleBufferSize,
             bool readStereoSamples) Q_DECL_OVERRIDE;
-
 private:
     virtual Result tryOpen(const AudioSourceConfig& audioSrcCfg) Q_DECL_OVERRIDE;
     QFile m_file;
@@ -49,7 +45,7 @@ private:
      * of past decoded frame, and their exact position. If a seek occurs and it is within the
      * range of frames we keep track of a precise seek occurs, otherwise an unprecise seek is performed
      */
-    typedef std::vector<SeekFrameType> SeekFrameList;
+    typedef QVector<SeekFrameType> SeekFrameList;
     SeekFrameList m_seekFrameList; // ordered-by frameIndex
     SINT m_avgSeekFrameCount; // avg. sample frames per MP3 frame
     void addSeekFrame(SINT frameIndex, const unsigned char* pInputData);
@@ -70,7 +66,8 @@ private:
     mad_synth m_madSynth;
     SINT m_madSynthCount; // left overs from the previous read
 };
-
+Q_DECLARE_TYPEINFO(SoundSourceMp3::SeekFrameType,Q_PRIMITIVE_TYPE);
+Q_DECLARE_METATYPE(SoundSourceMp3::SeekFrameType);
 } // namespace Mixxx
 
 #endif // MIXXX_SOUNDSOURCEMP3_H

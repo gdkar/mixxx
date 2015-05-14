@@ -40,7 +40,7 @@ double TrackMetadata::parseBpm(const QString& sBpm, bool* pValid) {
     return kBpmUndefined;
 }
 QString TrackMetadata::formatBpm(double bpm) {
-      returnTrackMetadata::isBpmValidD(bpm)? QString::number(bpm):QString();
+      return TrackMetadata::isBpmValid(bpm)? QString::number(bpm):QString();
 }
 
 QString TrackMetadata::formatBpm(int bpm) {

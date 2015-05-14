@@ -25,36 +25,27 @@
 #include <libavutil/opt.h>
 
 #include <QVector>
-
 namespace Mixxx {
-
 struct ffmpegLocationObject {
     SINT pos;
     SINT pts;
     SINT startFrame;
 };
-
 struct ffmpegCacheObject {
     SINT startFrame;
     SINT length;
     quint8 *bytes;
 };
-
 class SoundSourceFFmpeg : public SoundSource {
 public:
     static QList<QString> supportedFileExtensions();
-
     explicit SoundSourceFFmpeg(QUrl url);
-    ~SoundSourceFFmpeg();
-
-    void close() /*override*/;
-
-    SINT seekSampleFrame(SINT frameIndex) /*override*/;
-
-    SINT readSampleFrames(SINT numberOfFrames, CSAMPLE* sampleBuffer) /*override*/;
-
+    virtual ~SoundSourceFFmpeg();
+    virtual void close() Q_DECL_OVERRIDE /*override*/;
+    virtual SINT seekSampleFrame(SINT frameIndex) Q_DECL_OVERRIDE /*override*/;
+    virtual SINT readSampleFrames(SINT numberOfFrames, CSAMPLE* sampleBuffer) Q_DECL_OVERRIDE/*override*/;
 private:
-    Result tryOpen(const AudioSourceConfig& audioSrcCfg) /*override*/;
+    virtual Result tryOpen(const AudioSourceConfig& audioSrcCfg) Q_DECL_OVERRIDE /*override*/;
 
     bool readFramesToCache(unsigned int count, SINT offset);
     bool getBytesFromCache(char *buffer, SINT offset, SINT size);
@@ -62,7 +53,6 @@ private:
     void clearCache();
 
     unsigned int read(unsigned long size, SAMPLE*);
-
     AVFormatContext *m_pFormatCtx;
     int m_iAudioStream;
     AVCodecContext *m_pCodecCtx;

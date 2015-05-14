@@ -10,32 +10,24 @@ namespace Mixxx {
 QList<QString> SoundSourceFFmpeg::supportedFileExtensions() {
     QList<QString> list;
     AVInputFormat *l_SInputFmt  = NULL;
-
     while ((l_SInputFmt = av_iformat_next(l_SInputFmt))) {
-        if (l_SInputFmt->name == NULL) {
-            break;
-        }
-
-        if (!strcmp(l_SInputFmt->name, "flac")) {
-            list.append("flac");
-        } else if (!strcmp(l_SInputFmt->name, "ogg")) {
-            list.append("ogg");
-        } else if (!strcmp(l_SInputFmt->name, "mov,mp4,m4a,3gp,3g2,mj2")) {
-            list.append("m4a");
-        } else if (!strcmp(l_SInputFmt->name, "mp4")) {
-            list.append("mp4");
-        } else if (!strcmp(l_SInputFmt->name, "mp3")) {
-            list.append("mp3");
-        } else if (!strcmp(l_SInputFmt->name, "aac")) {
-            list.append("aac");
-        } else if (!strcmp(l_SInputFmt->name, "opus") ||
-                   !strcmp(l_SInputFmt->name, "libopus")) {
-            list.append("opus");
-        } else if (!strcmp(l_SInputFmt->name, "wma")) {
-            list.append("wma");
-        }
+        if (l_SInputFmt->name == NULL) {break;}
+        if (l_SInputFmt->extensions){
+          QString claimed_extensions(l_SInputFmt->extensions);
+          QStringList split_extensions = claimed_extensions.split(',');
+          foreach(QString s,split_extensions){
+            if(!list.contains(s))
+              list.append(s);
+          }
+        }else if (!strcmp(l_SInputFmt->name, "flac")) {list.append("flac");}
+        else if (!strcmp(l_SInputFmt->name, "ogg")) {list.append("ogg");}
+        else if (!strcmp(l_SInputFmt->name, "mov,mp4,m4a,3gp,3g2,mj2")) {list.append("m4a");}
+        else if (!strcmp(l_SInputFmt->name, "mp4")) {list.append("mp4");}
+        else if (!strcmp(l_SInputFmt->name, "mp3")) {list.append("mp3");}
+        else if (!strcmp(l_SInputFmt->name, "aac")) {list.append("aac");}
+        else if (!strcmp(l_SInputFmt->name, "opus") || !strcmp(l_SInputFmt->name, "libopus")) {list.append("opus");}
+        else if (!strcmp(l_SInputFmt->name, "wma")) {list.append("wma");}
     }
-
     return list;
 }
 
@@ -506,27 +498,19 @@ SINT SoundSourceFFmpeg::seekSampleFrame(SINT frameIndex) {
     return frameIndex;
 }
 
-SINT SoundSourceFFmpeg::readSampleFrames(SINT numberOfFrames,
-        CSAMPLE* sampleBuffer) {
-
+SINT SoundSourceFFmpeg::readSampleFrames(SINT numberOfFrames,CSAMPLE* sampleBuffer) {
     if (m_SCache.size() == 0) {
         // Make sure we allways start at begining and cache have some
         // material that we can consume.
         seekSampleFrame(0);
         m_bIsSeeked = false;
     }
-
     getBytesFromCache((char *)sampleBuffer, m_currentMixxxFrameIndex, numberOfFrames);
-
     //  As this is also Hack
     // If we don't seek like we don't on analyzer.. keep
     // place in mind..
-    if (m_bIsSeeked == false) {
-        m_currentMixxxFrameIndex += numberOfFrames;
-    }
-
+    if (m_bIsSeeked == false) {m_currentMixxxFrameIndex += numberOfFrames;}
     m_bIsSeeked = false;
-
     return numberOfFrames;
 }
 

@@ -165,13 +165,14 @@ void SoundSourceMp3::finishDecoding() {
 Result SoundSourceMp3::tryOpen(const AudioSourceConfig& /*audioSrcCfg*/) {
     DEBUG_ASSERT(!hasChannelCount());
     DEBUG_ASSERT(!hasFrameRate());
-
     DEBUG_ASSERT(!m_file.isOpen());
     if (!m_file.open(QIODevice::ReadOnly)) {
         qWarning() << "Failed to open file:" << m_file.fileName();
         return ERR;
     }
-    // Get a pointer to the file using memory mapped IO
+    // Get a pointer to the file using mmap ( this is only sort of kind of 
+    // "memory mapped IO" in a classic sense, and only on very particular
+    // and rather strange systems. )
     m_fileSize = m_file.size();
     m_pFileData = m_file.map(0, m_fileSize);
     // NOTE(uklotzde): If the file disappears unexpectedly while mapped
@@ -204,7 +205,6 @@ Result SoundSourceMp3::tryOpen(const AudioSourceConfig& /*audioSrcCfg*/) {
                 break;
             }
         }
-
         // Grab data from madHeader
         const unsigned int madSampleRate = madHeader.samplerate;
         // TODO(XXX): Replace DEBUG_ASSERT with static_assert
@@ -213,9 +213,7 @@ Result SoundSourceMp3::tryOpen(const AudioSourceConfig& /*audioSrcCfg*/) {
         const mad_units madUnits = static_cast<mad_units>(madSampleRate);
         const long madFrameLength = mad_timer_count(madHeader.duration, madUnits);
         if (0 >= madFrameLength) {
-            qWarning() << "Skipping MP3 frame with invalid length"
-                    << madFrameLength
-                    << "in:" << m_file.fileName();
+            qWarning() << "Skipping MP3 frame with invalid length"<< madFrameLength<< "in:" << m_file.fileName();
             // Skip frame
             continue;
         }
@@ -272,8 +270,7 @@ Result SoundSourceMp3::tryOpen(const AudioSourceConfig& /*audioSrcCfg*/) {
         }
     }
     if (differentRates > 1) {
-        qWarning() << "Differing sample rate in some headers:"
-                   << m_file.fileName();
+        qWarning() << "Differing sample rate in some headers:" << m_file.fileName();
         if (headerPerFrameRate[0]) qWarning() << "8 kHz:" << headerPerFrameRate[0];
         if (headerPerFrameRate[1]) qWarning() << "11.025 kHz:" << headerPerFrameRate[1];
         if (headerPerFrameRate[2]) qWarning() << "12 kHz:" << headerPerFrameRate[2];
@@ -283,12 +280,10 @@ Result SoundSourceMp3::tryOpen(const AudioSourceConfig& /*audioSrcCfg*/) {
         if (headerPerFrameRate[6]) qWarning() << "32 kHz:" << headerPerFrameRate[6];
         if (headerPerFrameRate[7]) qWarning() << "44.1 kHz:" << headerPerFrameRate[7];
         if (headerPerFrameRate[8]) qWarning() << "48 kHz:" << headerPerFrameRate[8];
-
         qWarning() << "MP3 files with varying sample rate are not supported!";
         qWarning() << "Since this happens most likely due to a corrupt file";
         qWarning() << "Mixxx tries to plays it with the most common sample rate for this file";
     }
-
     if (mostCommonFrameRateIndex < kFrameRateCount) {
         setFrameRate(getFrameRateByIndex(mostCommonFrameRateIndex));
     } else {
@@ -329,8 +324,7 @@ void SoundSourceMp3::close() {
     initDecoding();
 }
 
-SINT SoundSourceMp3::restartDecoding(
-        const SeekFrameType& seekFrame) {
+SINT SoundSourceMp3::restartDecoding(const SeekFrameType& seekFrame) {
     qDebug() << "restartDecoding @" << seekFrame.frameIndex;
     // Discard decoded output
     m_madSynthCount = 0;
@@ -347,7 +341,6 @@ SINT SoundSourceMp3::restartDecoding(
     }
     // Fill input buffer
     mad_stream_buffer(&m_madStream, seekFrame.pInputData,m_fileSize - (seekFrame.pInputData - m_pFileData));
-
     if (getMinFrameIndex() < seekFrame.frameIndex) {
         // Muting is done here to eliminate potential pops/clicks
         // from skipping Rob Leslie explains why here:
@@ -363,9 +356,7 @@ SINT SoundSourceMp3::restartDecoding(
     }
     return seekFrame.frameIndex;
 }
-void SoundSourceMp3::addSeekFrame(
-        SINT frameIndex,
-        const unsigned char* pInputData) {
+void SoundSourceMp3::addSeekFrame(SINT frameIndex,const unsigned char* pInputData) {
     DEBUG_ASSERT(m_seekFrameList.empty() ||
             (m_seekFrameList.back().frameIndex < frameIndex));
     DEBUG_ASSERT(m_seekFrameList.empty() ||
@@ -376,7 +367,6 @@ void SoundSourceMp3::addSeekFrame(
     seekFrame.frameIndex = frameIndex;
     m_seekFrameList.push_back(seekFrame);
 }
-
 SINT SoundSourceMp3::findSeekFrameIndex(SINT frameIndex) const {
     // Check preconditions
     DEBUG_ASSERT(0 < m_avgSeekFrameCount);
@@ -409,7 +399,6 @@ SINT SoundSourceMp3::findSeekFrameIndex(SINT frameIndex) const {
             (m_seekFrameList[seekFrameIndex + 1].frameIndex > frameIndex));
     return seekFrameIndex;
 }
-
 SINT SoundSourceMp3::seekSampleFrame(SINT frameIndex) {
     DEBUG_ASSERT(isValidFrameIndex(m_curFrameIndex));
     DEBUG_ASSERT(isValidFrameIndex(frameIndex));
@@ -434,7 +423,6 @@ SINT SoundSourceMp3::seekSampleFrame(SINT frameIndex) {
             // Restart decoding at the beginning of the audio stream
             seekFrameIndex = 0;
         }
-
         m_curFrameIndex = restartDecoding(m_seekFrameList[seekFrameIndex]);
             // out of range -> abort
         if (getMaxFrameIndex() <= m_curFrameIndex) {return m_curFrameIndex;}
@@ -453,13 +441,9 @@ SINT SoundSourceMp3::readSampleFrames(SINT numberOfFrames, CSAMPLE* sampleBuffer
     return readSampleFrames(numberOfFrames,sampleBuffer, frames2samples(numberOfFrames),false);
 }
 SINT SoundSourceMp3::readSampleFramesStereo(SINT numberOfFrames, CSAMPLE* sampleBuffer,SINT sampleBufferSize) {
-    return readSampleFrames(numberOfFrames,
-            sampleBuffer, sampleBufferSize,
-            true);
+    return readSampleFrames(numberOfFrames,sampleBuffer, sampleBufferSize,true);
 }
-SINT SoundSourceMp3::readSampleFrames(
-        SINT numberOfFrames, CSAMPLE* sampleBuffer,
-        SINT sampleBufferSize, bool readStereoSamples) {
+SINT SoundSourceMp3::readSampleFrames(SINT numberOfFrames, CSAMPLE* sampleBuffer,SINT sampleBufferSize, bool readStereoSamples) {
     DEBUG_ASSERT(isValidFrameIndex(m_curFrameIndex));
     DEBUG_ASSERT(getSampleBufferSize(numberOfFrames, readStereoSamples) <= sampleBufferSize);
     const SINT numberOfFramesTotal = math_min(numberOfFrames, getMaxFrameIndex() - m_curFrameIndex);
@@ -485,7 +469,7 @@ SINT SoundSourceMp3::readSampleFrames(
                 }
                 if (isUnrecoverableError(m_madStream)) {
                     qWarning() << "Unrecoverable MP3 frame decoding error:"
-                            << mad_stream_errorstr(&m_madStream);
+                               << mad_stream_errorstr(&m_madStream);
                     // Abort
                     break;
                 }
@@ -496,11 +480,11 @@ SINT SoundSourceMp3::readSampleFrames(
                         // over prefetched frames after seeking.
                         if (pSampleBuffer) {
                             qWarning() << "Recoverable MP3 frame decoding error:"
-                                    << mad_stream_errorstr(&m_madStream);
+                                       << mad_stream_errorstr(&m_madStream);
                         } else {
                             // Decoded samples will simply be discarded
                             qDebug() << "Recoverable MP3 frame decoding error while skipping:"
-                                << mad_stream_errorstr(&m_madStream);
+                                     << mad_stream_errorstr(&m_madStream);
                         }
                     }
                     // Acknowledge error...
@@ -518,7 +502,7 @@ SINT SoundSourceMp3::readSampleFrames(
             const SINT madFrameChannelCount = MAD_NCHANNELS(&m_madFrame.header);
             if (madFrameChannelCount != getChannelCount()) {
                 qDebug() << "MP3 frame header with mismatching number of channels"
-                        << madFrameChannelCount << "<>" << getChannelCount();
+                         << madFrameChannelCount << "<>" << getChannelCount();
             }
 #endif
             // Once decoded the frame is synthesized to PCM samples
@@ -527,7 +511,7 @@ SINT SoundSourceMp3::readSampleFrames(
             const SINT madSynthSampleRate =  m_madSynth.pcm.samplerate;
             if (madSynthSampleRate != getFrameRate()) {
                 qDebug() << "Reading MP3 data with different sampling rate"
-                        << madSynthSampleRate << "<>" << getFrameRate();
+                         << madSynthSampleRate << "<>" << getFrameRate();
             }
 #endif
             m_madSynthCount = m_madSynth.pcm.length;
@@ -544,7 +528,7 @@ SINT SoundSourceMp3::readSampleFrames(
 #ifndef QT_NO_DEBUG_OUTPUT
             if (madSynthChannelCount != getChannelCount()) {
                 qDebug() << "Reading MP3 data with different number of channels"
-                        << madSynthChannelCount << "<>" << getChannelCount();
+                         << madSynthChannelCount << "<>" << getChannelCount();
             }
 #endif
             if (kChannelCountMono == madSynthChannelCount) {
@@ -554,16 +538,14 @@ SINT SoundSourceMp3::readSampleFrames(
                     // or the AudioSource itself provides a stereo signal.
                     // Mono -> Stereo: Copy 1st channel twice
                     for (SINT i = 0; i < synthReadCount; ++i) {
-                        const CSAMPLE sampleValue = madScaleSampleValue(
-                                m_madSynth.pcm.samples[0][madSynthOffset + i]);
+                        const CSAMPLE sampleValue = madScaleSampleValue( m_madSynth.pcm.samples[0][madSynthOffset + i]);
                         *pSampleBuffer++ = sampleValue;
                         *pSampleBuffer++ = sampleValue;
                     }
                 } else {
                     // Mono -> Mono: Copy 1st channel
                     for (SINT i = 0; i < synthReadCount; ++i) {
-                        const CSAMPLE sampleValue = madScaleSampleValue(
-                                m_madSynth.pcm.samples[0][madSynthOffset + i]);
+                        const CSAMPLE sampleValue = madScaleSampleValue(m_madSynth.pcm.samples[0][madSynthOffset + i]);
                         *pSampleBuffer++ = sampleValue;
                     }
                 }
@@ -576,10 +558,8 @@ SINT SoundSourceMp3::readSampleFrames(
                 DEBUG_ASSERT(kChannelCountStereo == getChannelCount());
                 // Stereo -> Stereo: Copy 1st + 2nd channel
                 for (SINT i = 0; i < synthReadCount; ++i) {
-                    *pSampleBuffer++ = madScaleSampleValue(
-                            m_madSynth.pcm.samples[0][madSynthOffset + i]);
-                    *pSampleBuffer++ = madScaleSampleValue(
-                            m_madSynth.pcm.samples[1][madSynthOffset + i]);
+                    *pSampleBuffer++ = madScaleSampleValue(m_madSynth.pcm.samples[0][madSynthOffset + i]);
+                    *pSampleBuffer++ = madScaleSampleValue(m_madSynth.pcm.samples[1][madSynthOffset + i]);
                 }
             }
         }

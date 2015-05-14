@@ -218,7 +218,7 @@ protected:
             bool readStereoSamples = false) const;
 
 private:
-    friend class AudioSourceConfig;
+    friend struct AudioSourceConfig;
 
     static const SINT kChannelCountZero = 0;
     static const SINT kChannelCountDefault = kChannelCountZero;
