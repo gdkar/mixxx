@@ -3,32 +3,22 @@
 #include "util/math.h"
 
 namespace Mixxx {
-
 /*static*/ const double TrackMetadata::kBpmUndefined = 0.0;
 /*static*/ const double TrackMetadata::kBpmMin = 0.0; // lower bound (exclusive)
 /*static*/ const double TrackMetadata::kBpmMax = 300.0; // upper bound (inclusive)
-
 /*static*/ const double TrackMetadata::kReplayGainUndefined = 0.0;
 /*static*/ const double TrackMetadata::kReplayGainMin = 0.0; // lower bound (inclusive)
 /*static*/ const double TrackMetadata::kReplayGain0dB = 1.0;
-
 /*static*/ const int TrackMetadata::kCalendarYearInvalid = 0;
-
 double TrackMetadata::parseBpm(const QString& sBpm, bool* pValid) {
-    if (pValid) {
-        *pValid = false;
-    }
-    if (sBpm.trimmed().isEmpty()) {
-        return kBpmUndefined;
-    }
+    if (pValid) {*pValid = false;}
+    if (sBpm.trimmed().isEmpty()) {return kBpmUndefined;}
     bool bpmValid = false;
     double bpm = sBpm.toDouble(&bpmValid);
     if (bpmValid) {
         if (kBpmUndefined == bpm) {
             // special case
-            if (pValid) {
-                *pValid = true;
-            }
+            if (pValid) {*pValid = true;}
             return bpm;
         }
         while (kBpmMax < bpm) {
@@ -39,9 +29,7 @@ double TrackMetadata::parseBpm(const QString& sBpm, bool* pValid) {
             bpm /= 10.0;
         }
         if (TrackMetadata::isBpmValid(bpm)) {
-            if (pValid) {
-                *pValid = true;
-            }
+            if (pValid) {*pValid = true;}
             return bpm;
         } else {
             qDebug() << "Invalid BPM value:" << sBpm << "->" << bpm;
@@ -51,34 +39,19 @@ double TrackMetadata::parseBpm(const QString& sBpm, bool* pValid) {
     }
     return kBpmUndefined;
 }
-
 QString TrackMetadata::formatBpm(double bpm) {
-    if (TrackMetadata::isBpmValid(bpm)) {
-        return QString::number(bpm);
-    } else {
-        return QString();
-    }
+      returnTrackMetadata::isBpmValidD(bpm)? QString::number(bpm):QString();
 }
 
 QString TrackMetadata::formatBpm(int bpm) {
-    if (TrackMetadata::isBpmValid(bpm)) {
-        return QString::number(bpm);
-    } else {
-        return QString();
-    }
+    return TrackMetadata::isBpmValid(bpm)?QString::number(bpm):QString();
 }
-
 namespace {
-
 const QString kReplayGainUnit("dB");
 const QString kReplayGainSuffix(" " + kReplayGainUnit);
-
 } // anonymous namespace
-
 double TrackMetadata::parseReplayGain(QString sReplayGain, bool* pValid) {
-    if (pValid) {
-        *pValid = false;
-    }
+    if (pValid) {*pValid = false;}
     QString normalizedReplayGain(sReplayGain.trimmed());
     const int plusIndex = normalizedReplayGain.indexOf('+');
     if (0 == plusIndex) {
@@ -90,9 +63,7 @@ double TrackMetadata::parseReplayGain(QString sReplayGain, bool* pValid) {
         // strip trailing unit suffix
         normalizedReplayGain = normalizedReplayGain.left(unitIndex).trimmed();
     }
-    if (normalizedReplayGain.isEmpty()) {
-        return kReplayGainUndefined;
-    }
+    if (normalizedReplayGain.isEmpty()) {return kReplayGainUndefined;}
     bool replayGainValid = false;
     const double replayGainDb = normalizedReplayGain.toDouble(&replayGainValid);
     if (replayGainValid) {
@@ -105,39 +76,26 @@ double TrackMetadata::parseReplayGain(QString sReplayGain, bool* pValid) {
         if (kReplayGain0dB == replayGain) {
             // special case
             qDebug() << "Ignoring possibly undefined replay gain:" << formatReplayGain(replayGain);
-            if (pValid) {
-                *pValid = true;
-            }
+            if (pValid) {*pValid = true;}
             return kReplayGainUndefined;
         }
         if (TrackMetadata::isReplayGainValid(replayGain)) {
-            if (pValid) {
-                *pValid = true;
-            }
+            if (pValid) {*pValid = true;}
             return replayGain;
-        } else {
-            qDebug() << "Invalid replay gain value:" << sReplayGain << " -> "<< replayGain;
-        }
-    } else {
-        qDebug() << "Failed to parse replay gain:" << sReplayGain;
-    }
+        } else {qDebug() << "Invalid replay gain value:" << sReplayGain << " -> "<< replayGain;}
+    } else {qDebug() << "Failed to parse replay gain:" << sReplayGain;}
     return kReplayGainUndefined;
 }
 
 QString TrackMetadata::formatReplayGain(double replayGain) {
-    if (isReplayGainValid(replayGain)) {
-        return QString::number(ratio2db(replayGain)) + kReplayGainSuffix;
-    } else {
-        return QString();
-    }
+    return (isReplayGainValid(replayGain)) ?
+        QString::number(ratio2db(replayGain)) + kReplayGainSuffix:
+        QString();
 }
-
 int TrackMetadata::parseCalendarYear(QString year, bool* pValid) {
     const QDateTime dateTime(parseDateTime(year));
     if (0 < dateTime.date().year()) {
-        if (pValid) {
-            *pValid = true;
-        }
+        if (pValid) {*pValid = true;}
         return dateTime.date().year();
     } else {
         bool calendarYearValid = false;
@@ -154,18 +112,14 @@ int TrackMetadata::parseCalendarYear(QString year, bool* pValid) {
         }
         if (calendarYearValid) {
             return calendarYear;
-        } else {
-            return kCalendarYearInvalid;
-        }
+        } else {return kCalendarYearInvalid;}
     }
 }
 
 QString TrackMetadata::formatCalendarYear(QString year, bool* pValid) {
     bool calendarYearValid = false;
     int calendarYear = parseCalendarYear(year, &calendarYearValid);
-    if (pValid) {
-        *pValid = calendarYearValid;
-    }
+    if (pValid) {*pValid = calendarYearValid;}
     if (calendarYearValid) {
         return QString::number(calendarYear);
     } else {

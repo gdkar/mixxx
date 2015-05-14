@@ -5,19 +5,15 @@
 // TagLib has support for the Ogg Opus file format since version 1.9
 #define TAGLIB_HAS_OPUSFILE \
     ((TAGLIB_MAJOR_VERSION > 1) || ((TAGLIB_MAJOR_VERSION == 1) && (TAGLIB_MINOR_VERSION >= 9)))
-
 // TagLib has support for hasID3v2Tag()/ID3v2Tag() for WAV files since version 1.9
 #define TAGLIB_HAS_WAV_ID3V2TAG \
     (TAGLIB_MAJOR_VERSION > 1) || ((TAGLIB_MAJOR_VERSION == 1) && (TAGLIB_MINOR_VERSION >= 9))
-
 // TagLib has full support for MP4 atom types since version 1.8
 #define TAGLIB_HAS_MP4_ATOM_TYPES \
     (TAGLIB_MAJOR_VERSION > 1) || ((TAGLIB_MAJOR_VERSION == 1) && (TAGLIB_MINOR_VERSION >= 8))
-
 // TagLib has support for has<TagType>() style functions since version 1.9
 #define TAGLIB_HAS_TAG_CHECK \
     (TAGLIB_MAJOR_VERSION > 1) || ((TAGLIB_MAJOR_VERSION == 1) && (TAGLIB_MINOR_VERSION >= 9))
-
 #include <taglib/tfile.h>
 #include <taglib/tmap.h>
 #include <taglib/tstringlist.h>
@@ -40,7 +36,6 @@
 namespace Mixxx {
 
 namespace {
-
 const QString kFileTypeAIFF("aiff");
 const QString kFileTypeFLAC("flac");
 const QString kFileTypeMP3("mp3");
@@ -49,7 +44,6 @@ const QString kFileTypeOggVorbis("ogg");
 const QString kFileTypeOggOpus("opus");
 const QString kFileTypeWAV("wav");
 const QString kFileTypeWavPack("wv");
-
 inline bool hasID3v2Tag(TagLib::MPEG::File& file) {
 #if TAGLIB_HAS_TAG_CHECK
     return file.hasID3v2Tag();
@@ -57,7 +51,6 @@ inline bool hasID3v2Tag(TagLib::MPEG::File& file) {
     return NULL != file.ID3v2Tag();
 #endif
 }
-
 inline bool hasAPETag(TagLib::MPEG::File& file) {
 #if TAGLIB_HAS_TAG_CHECK
     return file.hasAPETag();
@@ -65,7 +58,6 @@ inline bool hasAPETag(TagLib::MPEG::File& file) {
     return NULL != file.APETag();
 #endif
 }
-
 inline bool hasID3v2Tag(TagLib::FLAC::File& file) {
 #if TAGLIB_HAS_TAG_CHECK
     return file.hasID3v2Tag();
