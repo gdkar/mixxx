@@ -1,5 +1,6 @@
 #include "test/mixxxtest.h"
 #include "util/singleton.h"
+#include "mixxxapplication.h"
 
 #ifdef __FFMPEGFILE__
 extern "C" {
@@ -7,8 +8,6 @@ extern "C" {
 #include <libavformat/avformat.h>
 }
 #endif
-
-#include "mixxxapplication.h"
 
 // Specialize the Singleton template for QApplication because it doesn't have a
 // 0-args constructor.

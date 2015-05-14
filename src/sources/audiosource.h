@@ -39,26 +39,54 @@ public:
     // Returns the number of channels. The number of channels
     // must be constant over time.
     inline SINT getChannelCount() const {return m_channelCount;}
+
     // Returns the number of frames per second. This equals
     // the number samples for each channel per second, which
     // must be uniform among all channels. The frame rate
     // must be constant over time.
-    inline SINT getFrameRate() const {return m_frameRate;}
-    inline bool isValid() const {return hasChannelCount() && hasFrameRate();}
+
+    inline SINT getFrameRate() const {
+        return m_frameRate;
+    }
+
+    inline bool isValid() const {
+        return hasChannelCount() && hasFrameRate();
+    }
+
     // Returns the total number of frames.
-    inline SINT getFrameCount() const {return m_frameCount;}
-    inline bool isEmpty() const {return kFrameCountZero >= getFrameCount();}
+    inline SINT getFrameCount() const {
+        return m_frameCount;
+    }
+
+    inline bool isEmpty() const {
+        return kFrameCountZero >= getFrameCount();
+    }
+
     // The actual duration in seconds.
     // Well defined only for valid files!
-    inline bool hasDuration() const {return isValid();}
-    inline SINT getDuration() const {return getFrameRate()?getFrameCount() / getFrameRate():0;}
+    inline bool hasDuration() const {
+        return isValid();
+    }
+    inline SINT getDuration() const {
+        DEBUG_ASSERT(hasDuration()); // prevents division by zero
+        return getFrameCount() / getFrameRate();
+    }
+
     // The bitrate is measured in kbit/s (kbps).
-    inline static bool isValidBitrate(SINT bitrate) {return kBitrateZero < bitrate;}
-    inline bool hasBitrate() const {return isValidBitrate(m_bitrate);}
+    inline static bool isValidBitrate(SINT bitrate) {
+        return kBitrateZero < bitrate;
+    }
+    inline bool hasBitrate() const {
+        return isValidBitrate(m_bitrate);
+    }
     // Setting the bitrate is optional when opening a file.
     // The bitrate is not needed for decoding, it is only used
     // for informational purposes.
-    inline SINT getBitrate() const {return hasBitrate()?m_bitrate:-1;}
+    inline SINT getBitrate() const {
+        DEBUG_ASSERT(hasBitrate()); // prevents reading an invalid bitrate
+        return m_bitrate;
+    }
+
     // Conversion: #frames -> #samples
     template<typename T>
     inline T frames2samples(T frameCount) const {
@@ -161,28 +189,52 @@ public:
     }
 protected:
     explicit AudioSource(QUrl url);
-    inline static bool isValidChannelCount(SINT channelCount) {return kChannelCountZero < channelCount;}
-    inline bool hasChannelCount() const {return isValidChannelCount(getChannelCount());}
+
+    inline static bool isValidChannelCount(SINT channelCount) {
+        return kChannelCountZero < channelCount;
+    }
+    inline bool hasChannelCount() const {
+        return isValidChannelCount(getChannelCount());
+    }
     void setChannelCount(SINT channelCount);
-    inline static bool isValidFrameRate(SINT frameRate) {return kFrameRateZero < frameRate;}
-    inline bool hasFrameRate() const {return isValidFrameRate(getFrameRate());}
+
+    inline static bool isValidFrameRate(SINT frameRate) {
+        return kFrameRateZero < frameRate;
+    }
+    inline bool hasFrameRate() const {
+        return isValidFrameRate(getFrameRate());
+    }
     void setFrameRate(SINT frameRate);
-    inline static bool isValidFrameCount(SINT frameCount) {return kFrameCountZero <= frameCount;}
+
+    inline static bool isValidFrameCount(SINT frameCount) {
+        return kFrameCountZero <= frameCount;
+    }
     void setFrameCount(SINT frameCount);
+
     void setBitrate(SINT bitrate);
-    SINT getSampleBufferSize(SINT numberOfFrames,bool readStereoSamples = false) const;
+
+    SINT getSampleBufferSize(
+            SINT numberOfFrames,
+            bool readStereoSamples = false) const;
+
 private:
-    friend struct AudioSourceConfig;
+    friend class AudioSourceConfig;
+
     static const SINT kChannelCountZero = 0;
     static const SINT kChannelCountDefault = kChannelCountZero;
+
     static const SINT kFrameRateZero = 0;
     static const SINT kFrameRateDefault = kFrameRateZero;
+
     static const SINT kFrameCountZero = 0;
     static const SINT kFrameCountDefault = kFrameCountZero;
+
     // 0-based indexing of sample frames
     static const SINT kFrameIndexMin = 0;
+
     static const SINT kBitrateZero = 0;
     static const SINT kBitrateDefault = kBitrateZero;
+
     SINT m_channelCount;
     SINT m_frameRate;
     SINT m_frameCount;

@@ -1,4 +1,5 @@
 #include "sources/soundsourcemp3.h"
+#include "sources/mp3decoding.h"
 
 #include "util/math.h"
 
@@ -62,6 +63,15 @@ int getFrameRateByIndex(int frameRateIndex) {
 }
 const CSAMPLE kMadScale = CSAMPLE_PEAK / CSAMPLE(MAD_F_ONE);
 inline CSAMPLE madScaleSampleValue(mad_fixed_t sampleValue) {return sampleValue * kMadScale;}
+
+
+const CSAMPLE kMadScale = CSAMPLE_PEAK / CSAMPLE(MAD_F_ONE);
+
+inline CSAMPLE madScaleSampleValue(mad_fixed_t sampleValue) {
+    return sampleValue * kMadScale;
+}
+
+>>>>>>> 45886777fbc2bf5b486b8505de69bccb30c3d838
 // Optimization: Reserve initial capacity for seek frame list
 const SINT kMinutesPerFile = 10; // enough for the majority of files (tunable)
 const SINT kSecondsPerMinute = 60; // fixed
@@ -210,12 +220,6 @@ Result SoundSourceMp3::tryOpen(const AudioSourceConfig& /*audioSrcCfg*/) {
             continue;
         }
         const SINT madChannelCount = MAD_NCHANNELS(&madHeader);
-        if (!isValidChannelCount(madChannelCount)) {
-            qWarning() << "Invalid number of channels"
-                    << madChannelCount
-                    << "in MP3 frame header:"
-                    << m_file.fileName();
-        }
         if (isValidChannelCount(maxChannelCount) && (madChannelCount != maxChannelCount)) {
             qWarning() << "Differing number of channels"
                     << madChannelCount << "<>" << maxChannelCount
@@ -343,6 +347,7 @@ SINT SoundSourceMp3::restartDecoding(
     }
     // Fill input buffer
     mad_stream_buffer(&m_madStream, seekFrame.pInputData,m_fileSize - (seekFrame.pInputData - m_pFileData));
+
     if (getMinFrameIndex() < seekFrame.frameIndex) {
         // Muting is done here to eliminate potential pops/clicks
         // from skipping Rob Leslie explains why here:

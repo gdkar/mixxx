@@ -1,4 +1,5 @@
 #include "sources/soundsourcecoreaudio.h"
+#include "sources/mp3decoding.h"
 
 #include "util/math.h"
 
