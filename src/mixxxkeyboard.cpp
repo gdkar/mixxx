@@ -22,6 +22,7 @@
 
 #include "mixxxkeyboard.h"
 #include "controlobject.h"
+#include "controlobjectslave.h"
 #include "util/cmdlineargs.h"
 
 
@@ -33,8 +34,7 @@ MixxxKeyboard::MixxxKeyboard(ConfigObject<ConfigValueKbd>* pKbdConfigObject,
     setKeyboardConfig(pKbdConfigObject);
 }
 
-MixxxKeyboard::~MixxxKeyboard() {
-}
+MixxxKeyboard::~MixxxKeyboard() {}
 
 bool MixxxKeyboard::eventFilter(QObject*, QEvent* e) {
     if (e->type() == QEvent::FocusOut) {
@@ -43,7 +43,6 @@ bool MixxxKeyboard::eventFilter(QObject*, QEvent* e) {
         m_qActiveKeyList.clear();
     } else if (e->type() == QEvent::KeyPress) {
         QKeyEvent* ke = (QKeyEvent *)e;
-
 #ifdef __APPLE__
         // On Mac OSX the nativeScanCode is empty (const 1) http://doc.qt.nokia.com/4.7/qkeyevent.html#nativeScanCode
         // We may loose the release event if a the shift key is pressed later
@@ -67,27 +66,19 @@ bool MixxxKeyboard::eventFilter(QObject*, QEvent* e) {
         if (!ks.isEmpty()) {
             // Check if a shortcut is defined
             bool result = false;
-            for (QMultiHash<QKeySequence, ConfigKey>::const_iterator it =
-                         m_keySequenceToControlHash.find(ks);
-                 it != m_keySequenceToControlHash.end() && it.key() == ks; ++it) {
-                const ConfigKey& configKey = it.value();
-                if (configKey.group != "[KeyboardShortcuts]") {
-                    ControlObject* control = ControlObject::getControl(configKey);
-                    if (control) {
-                        //qDebug() << configKey << "MIDI_NOTE_ON" << 1;
-                        // Add key to active key list
-                        m_qActiveKeyList.append(KeyDownInformation(
-                            keyId, ke->modifiers(), control));
-                        // Since setting the value might cause us to go down
-                        // a route that would eventually clear the active
-                        // key list, do that last.
-                        control->setValueFromMidi(MIDI_NOTE_ON, 1);
-                        result = true;
-                    } else {
-                        qDebug() << "Warning: Keyboard key is configured for nonexistent control:"
-                                 << configKey.group << configKey.item;
-                    }
-                }
+            for (QMultiHash<QKeySequence, QSharedPointer<ControlObjectSlave> >::const_iterator it = m_keySequenceToControlHash.constFind(ks);
+                 it != m_keySequenceToControlHash.constEnd() && it.key() == ks; ++it) {
+                QSharedPointer<ControlObjectSlave> pCos (it.value().data());
+                if (!!pCos && pCos->getKey().group != "[KeyboardShortcuts]") {
+                      //qDebug() << configKey << "MIDI_NOTE_ON" << 1;
+                      // Add key to active key list
+                      m_qActiveKeyList.append(KeyDownInformation(keyId, ke->modifiers(), pCos));
+                      // Since setting the value might cause us to go down
+                      // a route that would eventually clear the active
+                      // key list, do that last.
+                      pCos->setParameter( 1);
+                      result = true;
+                  } 
             }
             return result;
         }
@@ -118,12 +109,12 @@ bool MixxxKeyboard::eventFilter(QObject*, QEvent* e) {
         // Run through list of active keys to see if the released key is active
         for (int i = m_qActiveKeyList.size() - 1; i >= 0; i--) {
             const KeyDownInformation& keyDownInfo = m_qActiveKeyList[i];
-            ControlObject* pControl = keyDownInfo.pControl;
             if (keyDownInfo.keyId == keyId ||
                     (clearModifiers > 0 && keyDownInfo.modifiers == clearModifiers)) {
                 if (!autoRepeat) {
+                    QSharedPointer<ControlObjectSlave> pCos(keyDownInfo.pCos);
                     //qDebug() << pControl->getKey() << "MIDI_NOTE_OFF" << 0;
-                    pControl->setValueFromMidi(MIDI_NOTE_OFF, 0);
+                    pCos->setParameter(0);
                     m_qActiveKeyList.removeAt(i);
                 }
                 // Due to the modifier clearing workaround we might match multiple keys for
@@ -180,11 +171,13 @@ void MixxxKeyboard::setKeyboardConfig(ConfigObject<ConfigValueKbd>* pKbdConfigOb
     // Mixxx.
     QHash<ConfigKey, ConfigValueKbd> keyboardConfig =
             pKbdConfigObject->toHash();
-
+    QHash<ConfigKey, QSharedPointer<ControlObjectSlave> > cosCache;
     m_keySequenceToControlHash.clear();
     for (QHash<ConfigKey, ConfigValueKbd>::const_iterator it =
-                 keyboardConfig.begin(); it != keyboardConfig.end(); ++it) {
-        m_keySequenceToControlHash.insert(it.value().m_qKey, it.key());
+                 keyboardConfig.constBegin(); it != keyboardConfig.constEnd(); ++it) {
+        if(!cosCache.contains(it.key()))
+          cosCache.insert(it.key(),QSharedPointer<ControlObjectSlave>(new ControlObjectSlave(it.key())));
+        m_keySequenceToControlHash.insert(it.value().m_qKey, cosCache.value(it.key()));
     }
     m_pKbdConfigObject = pKbdConfigObject;
 }

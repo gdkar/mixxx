@@ -6,20 +6,14 @@
 
 
 EngineBufferScaleDummy::EngineBufferScaleDummy(ReadAheadManager* pReadAheadManager)
-    : EngineBufferScale(),
-      m_pReadAheadManager(pReadAheadManager)
-{
-    m_samplesRead = 0.0;
-}
+    : EngineBufferScale(pReadAheadManager)
+{m_samplesRead = 0.0;}
 
 EngineBufferScaleDummy::~EngineBufferScaleDummy()
-{
-
-}
+{}
 
 void EngineBufferScaleDummy::clear()
-{
-}
+{}
 
 
 CSAMPLE* EngineBufferScaleDummy::getScaled(unsigned long buf_size) {

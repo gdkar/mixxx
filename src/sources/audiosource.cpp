@@ -47,28 +47,21 @@ SINT AudioSource::readSampleFramesStereo(
         CSAMPLE* sampleBuffer,
         SINT sampleBufferSize) {
     DEBUG_ASSERT(getSampleBufferSize(numberOfFrames, true) <= sampleBufferSize);
-
     switch (getChannelCount()) {
-        case 1: // mono channel
-        {
-            const SINT readFrameCount = readSampleFrames(
-                    numberOfFrames, sampleBuffer);
+        case 1: {
+            const SINT readFrameCount = readSampleFrames(numberOfFrames, sampleBuffer);
             SampleUtil::doubleMonoToDualMono(sampleBuffer, readFrameCount);
             return readFrameCount;
         }
-        case 2: // stereo channel(s)
-        {
+        case 2: {
             return readSampleFrames(numberOfFrames, sampleBuffer);
         }
-        default: // multiple (3 or more) channels
-        {
+        default: {
             const SINT numberOfSamplesToRead = frames2samples(numberOfFrames);
             if (numberOfSamplesToRead <= sampleBufferSize) {
                 // efficient in-place transformation
-                const SINT readFrameCount = readSampleFrames(
-                        numberOfFrames, sampleBuffer);
-                SampleUtil::copyMultiToStereo(sampleBuffer, sampleBuffer,
-                        readFrameCount, getChannelCount());
+                const SINT readFrameCount = readSampleFrames(numberOfFrames, sampleBuffer);
+                SampleUtil::copyMultiToStereo(sampleBuffer, sampleBuffer,readFrameCount, getChannelCount());
                 return readFrameCount;
             } else {
                 // inefficient transformation through a temporary buffer
@@ -78,10 +71,8 @@ SINT AudioSource::readSampleFramesStereo(
                         << "The size of the provided sample buffer is"
                         << sampleBufferSize;
                 SampleBuffer tempBuffer(numberOfSamplesToRead);
-                const SINT readFrameCount = readSampleFrames(
-                        numberOfFrames, tempBuffer.data());
-                SampleUtil::copyMultiToStereo(sampleBuffer, tempBuffer.data(),
-                        readFrameCount, getChannelCount());
+                const SINT readFrameCount = readSampleFrames(numberOfFrames, tempBuffer.data());
+                SampleUtil::copyMultiToStereo(sampleBuffer, tempBuffer.data(),readFrameCount, getChannelCount());
                 return readFrameCount;
             }
         }

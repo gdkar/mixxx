@@ -10,23 +10,15 @@ typedef char** (*getSupportedFileExtensionsFunc)();
 typedef int (*getSoundSourceAPIVersionFunc)();
 /// New in version 3
 typedef void (*freeFileExtensionsFunc)(char** fileExts);
-
 namespace Mixxx {
-
 // Common base class for SoundSource plugins
 class SoundSourcePlugin: public SoundSource {
 public:
-    static char** allocFileExtensions(
-            const QList<QString>& supportedFileExtensions);
+    static char** allocFileExtensions(const QList<QString>& supportedFileExtensions);
     static void freeFileExtensions(char** fileExtensions);
-
 protected:
-    inline explicit SoundSourcePlugin(QUrl url)
-            : SoundSource(url) {
-    }
-    inline SoundSourcePlugin(QUrl url, QString type)
-            : SoundSource(url, type) {
-    }
+    inline explicit SoundSourcePlugin(QUrl url): SoundSource(url) {}
+    inline SoundSourcePlugin(QUrl url, QString type): SoundSource(url, type) {}
 };
 
 } // namespace Mixxx

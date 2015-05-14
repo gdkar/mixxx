@@ -21,36 +21,27 @@ namespace Mixxx {
 class SoundSource: public MetadataSource, public AudioSource {
 public:
     static QString getTypeFromUrl(QUrl url);
-
-    const QString& getType() const {
-        return m_type;
-    }
-
-    Result parseTrackMetadata(Mixxx::TrackMetadata* pMetadata) const /*override*/;
-
-    QImage parseCoverArt() const /*override*/;
-
+    virtual const QString& getType() const {return m_type;}
+    virtual Result parseTrackMetadata(Mixxx::TrackMetadata* pMetadata) const /*override*/;
+    virtual QImage parseCoverArt() const /*override*/;
     // Opens the AudioSource for reading audio data.
     //
     // Since reopening is not supported close() will be called
     // implicitly before the AudioSource is actually opened.
-    Result open(const AudioSourceConfig& audioSrcCfg = AudioSourceConfig());
-
+    virtual Result open(const AudioSourceConfig& audioSrcCfg = AudioSourceConfig());
     // Closes the AudioSource and frees all resources.
     //
     // Might be called even if the AudioSource has never been
     // opened, has already been closed, or if opening has failed.
     virtual void close() = 0;
-
     // In the worst case up to 29 MP3 frames need to be prefetched
     // for accurate seeking:
     // http://www.mars.org/mailman/public/mad-dev/2002-May/000634.html
     // Used by both SoundSourceMp3 and SoundSourceCoreAudio.
     static const SINT kMp3SeekFramePrefetchCount = 29;
-
 protected:
     explicit SoundSource(QUrl url);
-    SoundSource(QUrl url, QString type);
+    explicit SoundSource(QUrl url, QString type);
 
 private:
     // Tries to open the AudioSource for reading audio data
@@ -61,12 +52,9 @@ private:
     // should instead be prepared for the following invocation
     // of close().
     virtual Result tryOpen(const AudioSourceConfig& audioSrcCfg) = 0;
-
     const QString m_type;
 };
-
 typedef QSharedPointer<SoundSource> SoundSourcePointer;
-
 } //namespace Mixxx
 
 #endif // MIXXX_SOUNDSOURCE_H

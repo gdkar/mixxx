@@ -23,33 +23,27 @@ public:
 
     explicit SoundSourceMp3(QUrl url);
     ~SoundSourceMp3();
+    virtual void close() Q_DECL_OVERRIDE;
+    virtual SINT seekSampleFrame(SINT frameIndex) Q_DECL_OVERRIDE;
 
-    void close() /*override*/;
+    virtual SINT readSampleFrames(SINT numberOfFrames,CSAMPLE* sampleBuffer) Q_DECL_OVERRIDE;
+    virtual SINT readSampleFramesStereo(SINT numberOfFrames,
+        CSAMPLE* sampleBuffer, SINT sampleBufferSize) Q_DECL_OVERRIDE;
 
-    SINT seekSampleFrame(SINT frameIndex) /*override*/;
-
-    SINT readSampleFrames(SINT numberOfFrames,
-            CSAMPLE* sampleBuffer) /*override*/;
-    SINT readSampleFramesStereo(SINT numberOfFrames,
-            CSAMPLE* sampleBuffer, SINT sampleBufferSize) /*override*/;
-
-    SINT readSampleFrames(SINT numberOfFrames,
+    virtual SINT readSampleFrames(SINT numberOfFrames,
             CSAMPLE* sampleBuffer, SINT sampleBufferSize,
-            bool readStereoSamples);
+            bool readStereoSamples) Q_DECL_OVERRIDE;
 
 private:
-    Result tryOpen(const AudioSourceConfig& audioSrcCfg) /*override*/;
-
+    virtual Result tryOpen(const AudioSourceConfig& audioSrcCfg) Q_DECL_OVERRIDE;
     QFile m_file;
     quint64 m_fileSize;
     unsigned char* m_pFileData;
-
     /** Struct used to store mad frames for seeking */
     struct SeekFrameType {
         SINT frameIndex;
         const unsigned char* pInputData;
     };
-
     /** It is not possible to make a precise seek in an mp3 file without decoding the whole stream.
      * To have precise seek within a limited range from the current decode position, we keep track
      * of past decoded frame, and their exact position. If a seek occurs and it is within the
@@ -58,14 +52,10 @@ private:
     typedef std::vector<SeekFrameType> SeekFrameList;
     SeekFrameList m_seekFrameList; // ordered-by frameIndex
     SINT m_avgSeekFrameCount; // avg. sample frames per MP3 frame
-
     void addSeekFrame(SINT frameIndex, const unsigned char* pInputData);
-
     /** Returns the position in m_seekFrameList of the requested frame index. */
     SINT findSeekFrameIndex(SINT frameIndex) const;
-
     SINT m_curFrameIndex;
-
     // NOTE(uklotzde): Each invocation of initDecoding() must be
     // followed by an invocation of finishDecoding(). In between
     // 2 matching invocations restartDecoding() might invoked any
@@ -74,12 +64,10 @@ private:
     void initDecoding();
     SINT restartDecoding(const SeekFrameType& seekFrame);
     void finishDecoding();
-
     // MAD decoder
     mad_stream m_madStream;
     mad_frame m_madFrame;
     mad_synth m_madSynth;
-
     SINT m_madSynthCount; // left overs from the previous read
 };
 

@@ -36,11 +36,11 @@
 /**
   *@author Tue & Ken Haste Andersen
   */
-
+class ReadAheadManager;
 class EngineBufferScale : public QObject {
     Q_OBJECT
   public:
-    EngineBufferScale();
+    EngineBufferScale(ReadAheadManager *pRAMAN=0);
     virtual ~EngineBufferScale();
 
     // Sets the scaling parameters.
@@ -65,8 +65,8 @@ class EngineBufferScale : public QObject {
     }
 
     // Set the desired output sample rate.
-    virtual void setSampleRate(int iSampleRate) {
-        m_iSampleRate = iSampleRate;
+    virtual void setSampleRate(double dSampleRate) {
+        m_dSampleRate = dSampleRate;
     }
 
     /** Get new playpos after call to scale() */
@@ -77,7 +77,8 @@ class EngineBufferScale : public QObject {
     virtual CSAMPLE* getScaled(unsigned long buf_size) = 0;
 
   protected:
-    int m_iSampleRate;
+    ReadAheadManager *m_pReadAheadManager;
+    int m_dSampleRate;
     double m_dBaseRate;
     bool m_bSpeedAffectsPitch;
     double m_dTempoRatio;

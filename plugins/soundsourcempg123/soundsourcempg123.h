@@ -32,7 +32,7 @@ public:
             CSAMPLE* sampleBuffer) /*override*/;
 
 private:
-    Result tryOpen(SINT channelCountHint) /*override*/;
+    Result tryOpen(const AudioSourceConfig& config) /*override*/;
 
     mpg123_handle *m_h;
 

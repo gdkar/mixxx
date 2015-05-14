@@ -22,7 +22,7 @@ QList<QString> SoundSourceMPG123::supportedFileExtensions() {
 SoundSourceMPG123::SoundSourceMPG123(QUrl url)
         : SoundSourcePlugin(url, "mpg123"),
           m_h(0),
-          m_curFrameIndex(kFrameIndexMin) {
+          m_curFrameIndex(0) {
   mpg123_init();
   m_h = mpg123_new(NULL,NULL);
 
@@ -34,7 +34,7 @@ SoundSourceMPG123::~SoundSourceMPG123() {
   mpg123_exit();
 }
 
-Result SoundSourceMPG123::tryOpen(SINT channelCountHint) {
+Result SoundSourceMPG123::tryOpen(const AudioSourceConfig &config) {
   int ret;
     if(mpg123_param(m_h,MPG123_ADD_FLAGS,MPG123_FORCE_STEREO|MPG123_FORCE_FLOAT|MPG123_GAPLESS|MPG123_SKIP_ID3V2,0.0f)!=MPG123_OK||
       mpg123_param(m_h,MPG123_VERBOSE,3,0.0f)!=MPG123_OK||

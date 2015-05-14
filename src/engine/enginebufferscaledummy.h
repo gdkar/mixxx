@@ -35,8 +35,6 @@ class EngineBufferScaleDummy : public EngineBufferScale {
     /** Scale buffer */
     CSAMPLE* getScaled(unsigned long buf_size);
 
-  private:
-    ReadAheadManager* m_pReadAheadManager;
 };
 
 #endif

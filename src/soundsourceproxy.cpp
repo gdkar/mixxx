@@ -56,10 +56,8 @@ QMap<QString, QLibrary*> SoundSourceProxy::m_plugins;
 QMap<QString, getSoundSourceFunc> SoundSourceProxy::m_extensionsSupportedByPlugins;
 QMutex SoundSourceProxy::m_extensionsMutex;
 
-namespace
-{
-SecurityTokenPointer openSecurityToken(QString qFilename,
-        SecurityTokenPointer pToken) {
+namespace{
+SecurityTokenPointer openSecurityToken(QString qFilename,SecurityTokenPointer pToken) {
     if (pToken.isNull()) {
         // Open a security token for the file if we are in a sandbox.
         QFileInfo info(qFilename);
@@ -69,14 +67,12 @@ SecurityTokenPointer openSecurityToken(QString qFilename,
     }
 }
 }
-
 //Constructor
 SoundSourceProxy::SoundSourceProxy(QString qFilename,
         SecurityTokenPointer pToken)
         : m_pSecurityToken(openSecurityToken(qFilename, pToken))
                 , m_pSoundSource(initialize(qFilename)) {
 }
-
 //Other constructor
 SoundSourceProxy::SoundSourceProxy(TrackPointer pTrack)
         : m_pTrack(pTrack)
@@ -85,23 +81,18 @@ SoundSourceProxy::SoundSourceProxy(TrackPointer pTrack)
                         pTrack->getSecurityToken()))
                         , m_pSoundSource(initialize(pTrack->getLocation())) {
 }
-
 // static
 void SoundSourceProxy::loadPlugins() {
     // Scan for and initialize all plugins.
     QList<QDir> pluginDirs;
     QStringList nameFilters;
-
     const QString& pluginPath = CmdlineArgs::Instance().getPluginPath();
     if (!pluginPath.isEmpty()) {
         qDebug() << "Adding plugin path from commandline arg:" << pluginPath;
         pluginDirs << QDir(pluginPath);
     }
-
-    const QString dataLocation = QDesktopServices::storageLocation(
-            QDesktopServices::DataLocation);
+    const QString dataLocation = QDesktopServices::storageLocation(QDesktopServices::DataLocation);
     const QString applicationPath = QCoreApplication::applicationDirPath();
-
 #ifdef __LINUX__
     // TODO(rryan): Why can't we use applicationDirPath() and assume it's in the
     // 'bin' folder of $PREFIX, so we just traverse
@@ -110,12 +101,10 @@ void SoundSourceProxy::loadPlugins() {
     if (libPluginDir.cd("plugins") && libPluginDir.cd("soundsource")) {
         pluginDirs << libPluginDir;
     }
-
     QDir dataPluginDir(dataLocation);
     if (dataPluginDir.cd("plugins") && dataPluginDir.cd("soundsource")) {
         pluginDirs << dataPluginDir;
     }
-
     // For people who build from source.
     QDir developer32Root(applicationPath);
     if (developer32Root.cd("lin32_build") && developer32Root.cd("plugins")) {
@@ -139,7 +128,6 @@ void SoundSourceProxy::loadPlugins() {
     if (bundlePluginDir.cdUp() && bundlePluginDir.cd("PlugIns")) {
         pluginDirs << bundlePluginDir;
     }
-
     // For people who build from source.
     QDir developer32Root(applicationPath);
     if (developer32Root.cd("osx32_build") && developer32Root.cd("plugins")) {
@@ -154,18 +142,13 @@ void SoundSourceProxy::loadPlugins() {
     if (dataPluginDir.cd("Plugins") && dataPluginDir.cd("soundsource")) {
         pluginDirs << dataPluginDir;
     }
-
     nameFilters << "libsoundsource*";
 #endif
-
     foreach(QDir dir, pluginDirs){
     QStringList files = dir.entryList(nameFilters, QDir::Files | QDir::NoDotAndDotDot);
-    foreach (const QString& file, files) {
-        getPlugin(dir.filePath(file));
-    }
+    foreach (const QString& file, files) {getPlugin(dir.filePath(file));}
 }
 }
-
 // static
 Mixxx::SoundSourcePointer SoundSourceProxy::initialize(
         const QString& qFilename) {
@@ -176,7 +159,6 @@ Mixxx::SoundSourcePointer SoundSourceProxy::initialize(
         qWarning() << "Unknown file type:" << qFilename;
         return Mixxx::SoundSourcePointer();
     }
-
 #ifdef __FFMPEGFILE__
     return Mixxx::SoundSourcePointer(new Mixxx::SoundSourceFFmpeg(url));
 #endif
@@ -202,14 +184,12 @@ Mixxx::SoundSourcePointer SoundSourceProxy::initialize(
 #endif
     } else if (m_extensionsSupportedByPlugins.contains(type)) {
         getSoundSourceFunc getter = m_extensionsSupportedByPlugins.value(type);
-        if (getter)
-        {
+        if (getter){
             qDebug() << "Getting SoundSource plugin object for" << type;
             return Mixxx::SoundSourcePointer(getter(url.toLocalFile()));
         }
         else {
-            qDebug() << "Failed to resolve getSoundSource in plugin for" <<
-                    type;
+            qDebug() << "Failed to resolve getSoundSource in plugin for" << type;
             return Mixxx::SoundSourcePointer(); //Failed to load plugin
         }
 #ifdef __SNDFILE__
@@ -220,16 +200,11 @@ Mixxx::SoundSourcePointer SoundSourceProxy::initialize(
         return Mixxx::SoundSourcePointer();
     }
 }
-
 // static
-QLibrary* SoundSourceProxy::getPlugin(QString lib_filename)
-        {
+QLibrary* SoundSourceProxy::getPlugin(QString lib_filename){
     static QMutex mutex;
     QMutexLocker locker(&mutex);
-
-    if (m_plugins.contains(lib_filename)) {
-        return m_plugins.value(lib_filename);
-    }
+    if (m_plugins.contains(lib_filename)) {return m_plugins.value(lib_filename);}
     QScopedPointer<QLibrary> plugin(new QLibrary(lib_filename));
     if (!plugin->load()) {
         qDebug() << "Failed to dynamically load" << lib_filename
@@ -252,82 +227,65 @@ QLibrary* SoundSourceProxy::getPlugin(QString lib_filename)
         //Missing getSoundSourceAPIVersion symbol
         incompatible = true;
     }
-    if (incompatible)
-    {
+    if (incompatible){
         //Plugin is using an older/incompatible version of the
         //plugin API!
-        qDebug() << "Plugin" << lib_filename
-                << "is incompatible with your version of Mixxx!";
+        qDebug() << "Plugin" << lib_filename << "is incompatible with your version of Mixxx!";
         return NULL;
     }
-
     //Map the file extensions this plugin supports onto a function
     //pointer to the "getter" function that gets a SoundSourceBlah.
-    getSoundSourceFunc getter = (getSoundSourceFunc)
-            plugin->resolve("getSoundSource");
+    getSoundSourceFunc getter = (getSoundSourceFunc)plugin->resolve("getSoundSource");
     // Getter function not found.
     if (getter == NULL) {
-        qDebug() << "ERROR: Couldn't resolve getter function. Plugin"
-                << lib_filename << "corrupt.";
+        qDebug() << "ERROR: Couldn't resolve getter function. Plugin"<< lib_filename << "corrupt.";
         return NULL;
     }
-
     // Did you export it properly in your plugin?
     getSupportedFileExtensionsFunc getFileExts =
-            (getSupportedFileExtensionsFunc)
-            plugin->resolve("supportedFileExtensions");
+      (getSupportedFileExtensionsFunc)plugin->resolve("supportedFileExtensions");
     if (getFileExts == NULL) {
         qDebug() << "ERROR: Couldn't resolve getFileExts function. Plugin"
                 << lib_filename << "corrupt.";
         return NULL;
     }
-
     freeFileExtensionsFunc freeFileExts =
             reinterpret_cast<freeFileExtensionsFunc>(
             plugin->resolve("freeFileExtensions"));
     if (freeFileExts == NULL) {
-        qDebug() << "ERROR: Couldn't resolve freeFileExts function. Plugin"
-                << lib_filename << "corrupt.";
+        qDebug() << "ERROR: Couldn't resolve freeFileExts function. Plugin"<< lib_filename << "corrupt.";
         return NULL;
     }
-
     char** supportedFileExtensions = getFileExts();
     int i = 0;
     while (supportedFileExtensions[i] != NULL) {
         qDebug() << "Plugin supports:" << supportedFileExtensions[i];
-        m_extensionsSupportedByPlugins.insert(
-                QString(supportedFileExtensions[i]), getter);
+        m_extensionsSupportedByPlugins.insert(QString(supportedFileExtensions[i]), getter);
         i++;
     }
     freeFileExts(supportedFileExtensions);
-
     QLibrary* pPlugin = plugin.take();
     // Add the plugin to our list of loaded QLibraries/plugins and take
     // ownership of the QLibrary from its QScopedPointer so it is not deleted.
     m_plugins.insert(lib_filename, pPlugin);
-
     // So now we have a list of file extensions (eg. "m4a", "mp4", etc) that map
     // onto the getter function for this plugin (eg. the function that returns a
     // SoundSourceM4A object)
     return pPlugin;
 }
-
 Mixxx::AudioSourcePointer SoundSourceProxy::openAudioSource(const Mixxx::AudioSourceConfig& audioSrcCfg) {
     if (m_pAudioSource) {
         qDebug() << "AudioSource is already open";
         return m_pAudioSource;
     }
-
     if (!m_pSoundSource) {
         qDebug() << "No SoundSource available";
         return m_pAudioSource;
     }
-
     if (OK != m_pSoundSource->open(audioSrcCfg)) {
         qWarning() << "Failed to open SoundSource";
         return m_pAudioSource;
     }
-
     if (!m_pSoundSource->isValid()) {
         qWarning() << "Invalid file:" << m_pSoundSource->getUrlString()
                 << "channels" << m_pSoundSource->getChannelCount()
@@ -338,7 +296,6 @@ Mixxx::AudioSourcePointer SoundSourceProxy::openAudioSource(const Mixxx::AudioSo
         qWarning() << "Empty file:" << m_pSoundSource->getUrlString();
         return m_pAudioSource;
     }
-
     // Overwrite metadata with actual audio properties
     if (m_pTrack) {
         m_pTrack->setChannels(m_pSoundSource->getChannelCount());
@@ -350,9 +307,7 @@ Mixxx::AudioSourcePointer SoundSourceProxy::openAudioSource(const Mixxx::AudioSo
             m_pTrack->setBitrate(m_pSoundSource->getBitrate());
         }
     }
-
     m_pAudioSource = m_pSoundSource;
-
     return m_pAudioSource;
 }
 
@@ -363,10 +318,8 @@ void SoundSourceProxy::closeAudioSource() {
         m_pAudioSource.clear();
     }
 }
-
 // static
-QStringList SoundSourceProxy::supportedFileExtensions()
-{
+QStringList SoundSourceProxy::supportedFileExtensions(){
     QMutexLocker locker(&m_extensionsMutex);
     QList<QString> supportedFileExtensions;
 #ifdef __FFMPEGFILE__
@@ -396,7 +349,6 @@ QStringList SoundSourceProxy::supportedFileExtensions()
 
     return supportedFileExtensions;
 }
-
 // static
 QStringList SoundSourceProxy::supportedFileExtensionsByPlugins() {
     QMutexLocker locker(&m_extensionsMutex);
@@ -404,7 +356,6 @@ QStringList SoundSourceProxy::supportedFileExtensionsByPlugins() {
     supportedFileExtensions.append(m_extensionsSupportedByPlugins.keys());
     return supportedFileExtensions;
 }
-
 // static
 QString SoundSourceProxy::supportedFileExtensionsString() {
     QStringList supportedFileExtList =
@@ -415,14 +366,11 @@ QString SoundSourceProxy::supportedFileExtensionsString() {
     }
     return supportedFileExtList.join(" ");
 }
-
 // static
 QString SoundSourceProxy::supportedFileExtensionsRegex() {
-    QStringList supportedFileExtList =
-            SoundSourceProxy::supportedFileExtensions();
+    QStringList supportedFileExtList = SoundSourceProxy::supportedFileExtensions();
     return RegexUtils::fileExtensionsRegex(supportedFileExtList);
 }
-
 // static
 bool SoundSourceProxy::isFilenameSupported(QString fileName) {
     if (m_supportedFileRegex.isEmpty()) {

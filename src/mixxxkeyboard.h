@@ -24,7 +24,9 @@
 #include <QMultiHash>
 
 #include "configobject.h"
-
+#include <qatomic.h>
+#include <qsharedpointer.h>
+class ControlObjectSlave;
 class ControlObject;
 
 // This class provides handling of keyboard events.
@@ -44,15 +46,15 @@ class MixxxKeyboard : public QObject {
 
   private:
     struct KeyDownInformation {
-        KeyDownInformation(int keyId, int modifiers, ControlObject* pControl)
+        KeyDownInformation(int keyId, int modifiers, QSharedPointer<ControlObjectSlave> pControl)
                 : keyId(keyId),
                   modifiers(modifiers),
-                  pControl(pControl) {
+                  pCos(pControl) {
         }
 
         int keyId;
         int modifiers;
-        ControlObject* pControl;
+        QSharedPointer<ControlObjectSlave> pCos;
     };
 
     // Returns a valid QString with modifier keys from a QKeyEvent
@@ -62,7 +64,7 @@ class MixxxKeyboard : public QObject {
     // Pointer to keyboard config object
     ConfigObject<ConfigValueKbd> *m_pKbdConfigObject;
     // Multi-hash of key sequence to
-    QMultiHash<QKeySequence, ConfigKey> m_keySequenceToControlHash;
+    QMultiHash<QKeySequence, QSharedPointer<ControlObjectSlave> > m_keySequenceToControlHash;
 };
 
 #endif

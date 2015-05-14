@@ -24,12 +24,11 @@
 #include "util/assert.h"
 
 EngineBufferScaleLinear::EngineBufferScaleLinear(ReadAheadManager *pReadAheadManager)
-    : EngineBufferScale(),
+    : EngineBufferScale(pReadAheadManager),
       m_bBackwards(false),
       m_bClear(false),
       m_dRate(1.0),
       m_dOldRate(1.0),
-      m_pReadAheadManager(pReadAheadManager),
       m_dCurrentFrame(0.0),
       m_dNextFrame(0.0)
 {

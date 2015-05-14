@@ -4,31 +4,18 @@
 #include "util/assert.h"
 
 #include <QUrl>
-
 namespace Mixxx {
-
 class UrlResource {
 public:
     virtual ~UrlResource() {}
-
-    const QUrl& getUrl() const {
-        return m_url;
-    }
-    QString getUrlString() const {
-        return m_url.toString();
-    }
-
+    const QUrl& getUrl() const {return m_url;}
+    QString getUrlString() const {return m_url.toString();}
 protected:
     explicit UrlResource(QUrl url)
-        : m_url(url) {
-    }
-
-    inline QString getLocalFileName() const {
-        return getUrl().toLocalFile();
-    }
-    inline QByteArray getLocalFileNameBytes() const {
-        return getLocalFileName().toLocal8Bit();
-    }
+        : m_url(url) {}
+    inline QString getLocalFileName() const {return getUrl().toLocalFile();}
+    inline QByteArray getLocalFileNameBytes() const 
+    {return getLocalFileName().toLocal8Bit();}
 
 private:
     const QUrl m_url;
