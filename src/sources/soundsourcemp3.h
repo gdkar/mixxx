@@ -23,7 +23,6 @@ public:
     ~SoundSourceMp3();
     virtual void close() Q_DECL_OVERRIDE;
     virtual SINT seekSampleFrame(SINT frameIndex) Q_DECL_OVERRIDE;
-
     virtual SINT readSampleFrames(SINT numberOfFrames,CSAMPLE* sampleBuffer) Q_DECL_OVERRIDE;
     virtual SINT readSampleFramesStereo(SINT numberOfFrames,
         CSAMPLE* sampleBuffer, SINT sampleBufferSize) Q_DECL_OVERRIDE;

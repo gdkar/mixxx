@@ -49,14 +49,14 @@ class VSyncThread : public QThread {
 
     static void swapGl(QGLWidget* glw, int index);
 
-    VSyncThread(MixxxMainWindow* mixxMainWindow);
-    ~VSyncThread();
+    explicit VSyncThread(MixxxMainWindow* mixxMainWindow);
+    virtual ~VSyncThread();
 
-    void run();
-    void stop();
+    virtual void run();
+    virtual void stop();
 
     bool waitForVideoSync(QGLWidget* glw);
-    int elapsed();
+    virtual int elapsed();
     int usToNextSync();
     void setUsSyncIntervalTime(int usSyncTimer);
     void setVSyncType(int mode);

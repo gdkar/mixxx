@@ -50,19 +50,13 @@ private:
 
     int m_winPre;
     int m_winPost;
-
     double m_alphaNormParam;
-
     double* filtSrc;
     double* filtDst;
-
     double* m_filtScratchIn;
     double* m_filtScratchOut;
-
     FiltFiltConfig m_FilterConfigParams;
-
     FiltFilt* m_FiltFilt;
-
     bool m_isMedianPositive;
 };
 

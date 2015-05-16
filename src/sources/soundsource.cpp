@@ -20,12 +20,8 @@ SoundSource::SoundSource(QUrl url, QString type)
 Result SoundSource::open(const AudioSourceConfig& audioSrcCfg) {
     close(); // reopening is not supported
     Result result;
-    try {
-        result = tryOpen(audioSrcCfg);
-    } catch (...) {
-        close();
-        throw;
-    }
+    try {result = tryOpen(audioSrcCfg);}
+    catch (...) {close();throw;}
     if (OK != result) {close();}
     return result;
 }

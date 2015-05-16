@@ -25,21 +25,18 @@
 #include "DFProcess.h"
 
 
-struct PPWinThresh
-{
+struct PPWinThresh{
     unsigned int pre;
     unsigned int  post;
 };
 
-struct QFitThresh
-{
+struct QFitThresh{
     double a;
     double b;
     double c;
 };
 
-struct PPickParams
-{
+struct PPickParams{
     unsigned int length; //Detection FunctionLength
     double tau; // time resolution of the detection function:
     unsigned int alpha; //alpha-norm parameter
@@ -51,30 +48,22 @@ struct PPickParams
     QFitThresh QuadThresh;
 };
 
-class PeakPicking  
-{
+class PeakPicking  {
 public:
     PeakPicking( PPickParams Config );
     virtual ~PeakPicking();
-	
     void process( double* src, unsigned int len, vector<int> &onsets  );
-
 
 private:
     void initialise( PPickParams Config  );
     void deInitialise();
     int  quadEval( vector<double> &src, vector<int> &idx );
-	
     DFProcConfig m_DFProcessingParams;
-
     unsigned int m_DFLength ;
     double Qfilta ;
     double Qfiltb;
     double Qfiltc;
-
-
     double* m_workBuffer;
-	
     DFProcess*	m_DFSmoothing;
 };
 

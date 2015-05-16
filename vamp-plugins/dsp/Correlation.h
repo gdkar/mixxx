@@ -18,8 +18,7 @@
 
 #define  EPS  2.2204e-016
 
-class Correlation  
-{
+class Correlation  {
 public:
     void doAutoUnBiased( double* src, double* dst, unsigned int length );
     Correlation();

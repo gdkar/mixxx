@@ -16,7 +16,6 @@ protected:
     inline QString getLocalFileName() const {return getUrl().toLocalFile();}
     inline QByteArray getLocalFileNameBytes() const 
     {return getLocalFileName().toLocal8Bit();}
-
 private:
     const QUrl m_url;
 };

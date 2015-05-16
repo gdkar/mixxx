@@ -35,18 +35,16 @@ public:
 
 private:
 
-    unsigned long	m_ulSampleLen;		// DataLength (samples)
-    unsigned int	m_framesRead;		// Read Frames Index
+    unsigned long       m_ulSampleLen;          // DataLength (samples)
+    unsigned int        m_framesRead;           // Read Frames Index
 
-    double*			m_srcBuffer;
-    double*			m_dataFrame;		// Analysis Frame Buffer
-    double*			m_strideFrame;		// Stride Frame Buffer
-    unsigned int	m_frameLength;		// Analysis Frame Length
-    unsigned int	m_stepSize;		// Analysis Frame Stride
-
-    unsigned int	m_maxFrames;
-
-    unsigned long	m_ulSrcIndex;
+    double*             m_srcBuffer;
+    double*             m_dataFrame;            // Analysis Frame Buffer
+    double*             m_strideFrame;          // Stride Frame Buffer
+    unsigned int        m_frameLength;          // Analysis Frame Length
+    unsigned int        m_stepSize;             // Analysis Frame Stride
+    unsigned int        m_maxFrames;
+    unsigned long       m_ulSrcIndex;
 };
 
 #endif

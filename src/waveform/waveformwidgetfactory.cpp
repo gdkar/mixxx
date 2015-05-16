@@ -711,10 +711,8 @@ void WaveformWidgetFactory::startVSync(MixxxMainWindow* mixxxMainWindow) {
     m_vsyncThread = new VSyncThread(mixxxMainWindow);
     m_vsyncThread->start(QThread::NormalPriority);
 
-    connect(m_vsyncThread, SIGNAL(vsyncRender()),
-            this, SLOT(render()));
-    connect(m_vsyncThread, SIGNAL(vsyncSwap()),
-            this, SLOT(swap()));
+    connect(m_vsyncThread, SIGNAL(vsyncRender()),this, SLOT(render()));
+    connect(m_vsyncThread, SIGNAL(vsyncSwap()),this, SLOT(swap()));
 }
 
 void WaveformWidgetFactory::getAvailableVSyncTypes(QList<QPair<int, QString > >* pList) {

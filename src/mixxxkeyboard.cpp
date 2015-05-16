@@ -68,15 +68,14 @@ bool MixxxKeyboard::eventFilter(QObject*, QEvent* e) {
             bool result = false;
             for (QMultiHash<QKeySequence, QSharedPointer<ControlObjectSlave> >::const_iterator it = m_keySequenceToControlHash.constFind(ks);
                  it != m_keySequenceToControlHash.constEnd() && it.key() == ks; ++it) {
-                QSharedPointer<ControlObjectSlave> pCos (it.value().data());
-                if (!!pCos && pCos->getKey().group != "[KeyboardShortcuts]") {
+                if (!it.value().isNull() ) {
                       //qDebug() << configKey << "MIDI_NOTE_ON" << 1;
                       // Add key to active key list
-                      m_qActiveKeyList.append(KeyDownInformation(keyId, ke->modifiers(), pCos));
+                      m_qActiveKeyList.append(KeyDownInformation(keyId, ke->modifiers(), it.value()));
                       // Since setting the value might cause us to go down
                       // a route that would eventually clear the active
                       // key list, do that last.
-                      pCos->setParameter( 1);
+                      it.value()->setParameter( 1);
                       result = true;
                   } 
             }
@@ -112,10 +111,11 @@ bool MixxxKeyboard::eventFilter(QObject*, QEvent* e) {
             if (keyDownInfo.keyId == keyId ||
                     (clearModifiers > 0 && keyDownInfo.modifiers == clearModifiers)) {
                 if (!autoRepeat) {
-                    QSharedPointer<ControlObjectSlave> pCos(keyDownInfo.pCos);
+                  if(keyDownInfo.pCos.data()){
+                    keyDownInfo.pCos.data()->setParameter(0);
+                  }
                     //qDebug() << pControl->getKey() << "MIDI_NOTE_OFF" << 0;
-                    pCos->setParameter(0);
-                    m_qActiveKeyList.removeAt(i);
+                  m_qActiveKeyList.removeAt(i);
                 }
                 // Due to the modifier clearing workaround we might match multiple keys for
                 // release.

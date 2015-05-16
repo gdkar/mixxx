@@ -32,8 +32,7 @@ VSyncThread::VSyncThread(MixxxMainWindow* mixxxMainWindow)
           m_swapWait(0),
           m_displayFrameRate(60.0),
           m_vSyncPerRendering(1),
-          m_pGuiTick(mixxxMainWindow->getGuiTick()) {
-}
+          m_pGuiTick(mixxxMainWindow->getGuiTick()) {}
 
 VSyncThread::~VSyncThread() {
     m_bDoRendering = false;

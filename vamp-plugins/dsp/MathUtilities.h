@@ -25,8 +25,7 @@
 
 #include "nan-inf.h"
 
-class MathUtilities  
-{
+class MathUtilities  {
 public:	
     static double round( double x );
 
@@ -37,34 +36,23 @@ public:
                         unsigned int start, unsigned int count );
     static double sum( const double* src, unsigned int len );
     static double median( const double* src, unsigned int len );
-
     static double princarg( double ang );
     static double mod( double x, double y);
-
     static void	  getAlphaNorm(const double *data, unsigned int len, unsigned int alpha, double* ANorm);
     static double getAlphaNorm(const std::vector <double> &data, unsigned int alpha );
-
     static void   circShift( double* data, int length, int shift);
-
     static int	  getMax( double* data, unsigned int length, double* max = 0 );
     static int	  getMax( const std::vector<double> &data, double* max = 0 );
     static int    compareInt(const void * a, const void * b);
-
     enum NormaliseType {
         NormaliseNone,
         NormaliseUnitSum,
         NormaliseUnitMax
     };
-
-    static void   normalise(double *data, int length,
-                            NormaliseType n = NormaliseUnitMax);
-
-    static void   normalise(std::vector<double> &data,
-                            NormaliseType n = NormaliseUnitMax);
-
+    static void   normalise(double *data, int length,NormaliseType n = NormaliseUnitMax);
+    static void   normalise(std::vector<double> &data,NormaliseType n = NormaliseUnitMax);
     // moving mean threshholding:
     static void adaptiveThreshold(std::vector<double> &data);
-
     static bool isPowerOfTwo(int x);
     static int nextPowerOfTwo(int x); // e.g. 1300 -> 2048, 2048 -> 2048
     static int previousPowerOfTwo(int x); // e.g. 1300 -> 1024, 2048 -> 2048

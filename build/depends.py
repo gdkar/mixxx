@@ -163,7 +163,8 @@ class Qt(Dependence):
                        'osx': '/Library/Frameworks',
                        'windows': 'C:\\qt\\4.6.0'}
 
-    DEFAULT_QT5DIRS64 = {'linux': '/usr/lib/x86_64-linux-gnu/qt5',
+#    DEFAULT_QT5DIRS64 = {'linux': '/usr/lib/x86_64-linux-gnu/qt5',
+    DEFAULT_QT5DIRS64 = {'linux': '/usr/local/Qt-5.5.0-beta',
                          'osx': '/Library/Frameworks',
                          'windows': 'C:\\qt\\5.0.1'}
 
@@ -197,7 +198,9 @@ class Qt(Dependence):
             'QtTest', 'QtScriptTools'
         ]
         if qt5:
-            qt_modules.extend(['QtWidgets', 'QtConcurrent'])
+            qt_modules.extend(['QtWidgets', 'QtConcurrent', 
+                'QtQml', 'QtQuick', 'QtQmlDevTools', 
+                'QtMultimedia'])
         return qt_modules
 
     def satisfy(self):
@@ -283,6 +286,10 @@ class Qt(Dependence):
                 'QtNetwork'  : ['QT_NETWORK_LIB'],
                 'QtCore'     : ['QT_CORE_LIB'],
                 'QtWidgets'  : ['QT_WIDGETS_LIB'],
+                'QtQml'      : ['QT_QML_LIB'],
+                'QtMultimedia':['QT_MULTIMEDIA_LIB'],
+                'QtQmlDevTools':['QT_QML_DEV_TOOLS_LIB'],
+                'QtQuick'    : ['QT_QUICK_LIB'],
             }
 
             module_defines = qt5_module_defines if qt5 else qt4_module_defines

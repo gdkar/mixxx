@@ -46,24 +46,18 @@ public:
     virtual SINT readSampleFrames(SINT numberOfFrames, CSAMPLE* sampleBuffer) Q_DECL_OVERRIDE/*override*/;
 private:
     virtual Result tryOpen(const AudioSourceConfig& audioSrcCfg) Q_DECL_OVERRIDE /*override*/;
-
     bool readFramesToCache(unsigned int count, SINT offset);
     bool getBytesFromCache(char *buffer, SINT offset, SINT size);
     SINT getSizeofCache();
     void clearCache();
-
     unsigned int read(unsigned long size, SAMPLE*);
     AVFormatContext *m_pFormatCtx;
     int m_iAudioStream;
     AVCodecContext *m_pCodecCtx;
     AVCodec *m_pCodec;
-
     EncoderFfmpegResample *m_pResample;
-
     SINT m_currentMixxxFrameIndex;
-
     bool m_bIsSeeked;
-
     SINT m_lCacheFramePos;
     SINT m_lCacheStartFrame;
     SINT m_lCacheEndFrame;

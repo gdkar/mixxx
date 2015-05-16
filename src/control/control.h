@@ -80,19 +80,11 @@ class ControlDoublePrivate : public QObject {
     void setParameter(double dParam, QObject* pSender);
     double getParameter() const;
     double getParameterForValue(double value) const;
-    double getParameterForMidiValue(double midiValue) const;
 
-    void setMidiParameter(MidiOpCode opcode, double dParam);
-    double getMidiParameter() const;
-
-    inline bool ignoreNops() const {
-        return m_bIgnoreNops;
-    }
-
+    inline bool ignoreNops() const {return m_bIgnoreNops;}
     inline void setDefaultValue(double dValue) {
         m_defaultValue.setValue(dValue);
     }
-
     inline double defaultValue() const {
         return m_defaultValue.getValue();
     }

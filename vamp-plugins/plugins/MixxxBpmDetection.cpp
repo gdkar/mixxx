@@ -12,32 +12,17 @@ MixxxBpmDetection::MixxxBpmDetection(float inputSampleRate):
     m_fPhase=0;
 }
 
-MixxxBpmDetection::~MixxxBpmDetection() {
-}
+MixxxBpmDetection::~MixxxBpmDetection() {}
 
-string MixxxBpmDetection::getIdentifier() const {
-    return "mixxxbpmdetection";
-}
-
-string MixxxBpmDetection::getName() const {
-    return "SoundTouch BPM Detector (Legacy)";
-}
-
-string MixxxBpmDetection::getDescription() const {
-    // Return something helpful here!
-    return "Port of Mixxx BPM Analyser";
-}
-
-string MixxxBpmDetection::getMaker() const {
-    return "Olli Parviainen";
-}
-
+string MixxxBpmDetection::getIdentifier() const {return "mixxxbpmdetection";}
+string MixxxBpmDetection::getName() const {return "SoundTouch BPM Detector (Legacy)";}
+string MixxxBpmDetection::getDescription() const {return "Port of Mixxx BPM Analyser";}
+string MixxxBpmDetection::getMaker() const {return "Olli Parviainen";}
 int MixxxBpmDetection::getPluginVersion() const {
     // Increment this each time you release a version that behaves
     // differently from the previous one
     return 1;
 }
-
 string MixxxBpmDetection::getCopyright() const {
     // This function is not ideally named.  It does not necessarily
     // need to say who made the plugin -- getMaker does that -- but it
@@ -47,28 +32,11 @@ string MixxxBpmDetection::getCopyright() const {
 }
 
 MixxxBpmDetection::InputDomain
-MixxxBpmDetection::getInputDomain() const {
-    return TimeDomain;
-}
-
-size_t MixxxBpmDetection::getPreferredBlockSize() const {
-    return 4096; // 0 means "I can handle any block size"
-}
-
-size_t MixxxBpmDetection::getPreferredStepSize() const {
-    return 0; // 0 means "anything sensible"; in practice this
-    // means the same as the block size for TimeDomain
-    // plugins, or half of it for FrequencyDomain plugins
-}
-
-size_t MixxxBpmDetection::getMinChannelCount() const {
-    return 1;
-}
-
-size_t MixxxBpmDetection::getMaxChannelCount() const {
-    return 1;
-}
-
+MixxxBpmDetection::getInputDomain() const {return TimeDomain;}
+size_t MixxxBpmDetection::getPreferredBlockSize() const {return 4096; }
+size_t MixxxBpmDetection::getPreferredStepSize() const {return 0; }
+size_t MixxxBpmDetection::getMinChannelCount() const {return 1;}
+size_t MixxxBpmDetection::getMaxChannelCount() const {return 1;}
 MixxxBpmDetection::ParameterList MixxxBpmDetection::getParameterDescriptors() const {
     ParameterList list;
 
@@ -197,44 +165,34 @@ MixxxBpmDetection::OutputList MixxxBpmDetection::getOutputDescriptors() const {
 
     return list;
 }
-
 bool MixxxBpmDetection::initialise(size_t channels, size_t stepSize, size_t blockSize) {
-    if (channels < getMinChannelCount() ||
-            channels > getMaxChannelCount()) return false;
-
+    if (channels < getMinChannelCount() || channels > getMaxChannelCount()) return false;
     m_pDetector = new soundtouch::BPMDetect(channels, m_iSampleRate);
     m_iBlockSize = blockSize;
     return true;
 }
-
 void MixxxBpmDetection::reset() {
     m_fNumCycles = 0;
     // Clear buffers, reset stored values, etc
 }
-
 MixxxBpmDetection::FeatureSet MixxxBpmDetection::process(const float *const *inputBuffers, Vamp::RealTime timestamp) {
-    if(m_pDetector != NULL) {
-        m_pDetector->inputSamples(inputBuffers[0], m_iBlockSize);
-    }
+    if(m_pDetector != NULL) {m_pDetector->inputSamples(inputBuffers[0], m_iBlockSize);}
     m_fNumCycles++;
     return FeatureSet();
 }
-
 MixxxBpmDetection::FeatureSet MixxxBpmDetection::getRemainingFeatures() {
     FeatureSet returnfs;
     if(m_pDetector != NULL) {
         float bpm = m_pDetector->getBpm();
         if(bpm != 0) {
             // Shift it by 2's until it is in the desired range
-            float newbpm = correctBPM(bpm, m_fMinBpm, m_fMaxBpm,
-                                      m_bAllowAboveRange);
+            float newbpm = correctBPM(bpm, m_fMinBpm, m_fMaxBpm,m_bAllowAboveRange);
             float beatlen = (60.0 * m_iSampleRate / newbpm);
             float beatpos = m_fPhase * beatlen;
             while (beatpos<m_iBlockSize*m_fNumCycles){
                 Feature f;
                 f.hasTimestamp = true;
-                f.timestamp = Vamp::RealTime::frame2RealTime
-                        (beatpos, m_iSampleRate);
+                f.timestamp = Vamp::RealTime::frame2RealTime (beatpos, m_iSampleRate);
                 f.label = "Beat";
                 returnfs[0].push_back(f);
                 beatpos += beatlen;
@@ -244,16 +202,13 @@ MixxxBpmDetection::FeatureSet MixxxBpmDetection::getRemainingFeatures() {
     }
     return returnfs;
 }
-
 float MixxxBpmDetection::correctBPM(float BPM, float min, float max, bool aboveRange) {
     //qDebug() << "BPM range is" << min << "to" << max;
     //if ( BPM == 0 ) return BPM;
-
     if (!aboveRange) {
         if( BPM*2 < max ) BPM *= 2;
         while ( BPM > max ) BPM /= 2;
     }
     while ( BPM < min ) BPM *= 2;
-
     return BPM;
 }

@@ -34,19 +34,14 @@ class ConstantQ {
 public:
     void process( const double* FFTRe, const double* FFTIm,
                   double* CQRe, double* CQIm );
-
     ConstantQ( CQConfig Config );
     ~ConstantQ();
-
     double* process( const double* FFTData );
-
     void sparsekernel();
-
     double hamming(int len, int n) {
 	double out = 0.54 - 0.46*cos(2*PI*n/len);
 	return(out);
     }
-	
     int getnumwin() { return m_numWin;}
     double getQ() { return m_dQ;}
     int getK() {return m_uK ;}
@@ -56,7 +51,6 @@ public:
 private:
     void initialise( CQConfig Config );
     void deInitialise();
-	
     double* m_CQdata;
     unsigned int m_FS;
     double m_FMin;
@@ -68,14 +62,12 @@ private:
     unsigned int m_BPO;
     unsigned int m_FFTLength;
     unsigned int m_uK;
-
     struct SparseKernel {
         std::vector<unsigned> is;
         std::vector<unsigned> js;
         std::vector<double> imag;
         std::vector<double> real;
     };
-
     SparseKernel *m_sparseKernel;
 };
 

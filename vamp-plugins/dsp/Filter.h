@@ -26,26 +26,19 @@ struct FilterConfig{
     double* BCoeffs;
 };
 
-class Filter  
-{
+class Filter  {
 public:
     Filter( FilterConfig Config );
     virtual ~Filter();
-
     void reset();
-
     void process( double *src, double *dst, unsigned int length );
-	
 
 private:
     void initialise( FilterConfig Config );
     void deInitialise();
-
     unsigned int m_ord;
-
     double* m_inBuffer;
     double* m_outBuffer;
-
     double* m_ACoeffs;
     double* m_BCoeffs;
 };

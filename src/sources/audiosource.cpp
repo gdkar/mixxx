@@ -11,37 +11,28 @@ AudioSource::AudioSource(QUrl url)
           m_frameCount(kFrameCountDefault),
           m_bitrate(kBitrateDefault) {
 }
-
 void AudioSource::setChannelCount(SINT channelCount) {
     DEBUG_ASSERT(isValidChannelCount(channelCount));
     m_channelCount = channelCount;
 }
-
 void AudioSource::setFrameRate(SINT frameRate) {
     DEBUG_ASSERT(isValidFrameRate(frameRate));
     m_frameRate = frameRate;
 }
-
 void AudioSource::setFrameCount(SINT frameCount) {
     DEBUG_ASSERT(isValidFrameCount(frameCount));
     m_frameCount = frameCount;
 }
-
 void AudioSource::setBitrate(SINT bitrate) {
     DEBUG_ASSERT(isValidBitrate(bitrate));
     m_bitrate = bitrate;
 }
-
 SINT AudioSource::getSampleBufferSize(
         SINT numberOfFrames,
         bool readStereoSamples) const {
-    if (readStereoSamples) {
-        return numberOfFrames * kChannelCountStereo;
-    } else {
-        return frames2samples(numberOfFrames);
-    }
+    if (readStereoSamples) {return numberOfFrames * kChannelCountStereo;}
+    else {return frames2samples(numberOfFrames);}
 }
-
 SINT AudioSource::readSampleFramesStereo(
         SINT numberOfFrames,
         CSAMPLE* sampleBuffer,

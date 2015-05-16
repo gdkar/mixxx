@@ -125,9 +125,6 @@ class ControlObject : public QObject {
     // Returns the parameterized value of the object. Thread safe, non-blocking.
     virtual double getParameterForValue(double value) const;
 
-    // Returns the parameterized value of the object. Thread safe, non-blocking.
-    virtual double getParameterForMidiValue(double midiValue) const;
-
     // Sets the control parameterized value to v. Thread safe, non-blocking.
     virtual void setParameter(double v);
 
@@ -147,12 +144,6 @@ class ControlObject : public QObject {
   signals:
     void valueChanged(double);
     void valueChangedFromEngine(double);
-
-  public:
-    // DEPRECATED: Called to set the control value from the controller
-    // subsystem.
-    virtual void setValueFromMidi(MidiOpCode o, double v);
-    virtual double getMidiParameter() const;
 
   protected:
     // Key of the object

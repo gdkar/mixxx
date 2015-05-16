@@ -4,16 +4,26 @@
 #include <QtDebug>
 
 template<class T>
-class Singleton{
-public:
+class Singleton {
+  public:
     static T* create() {
-        return s_singleton->m_instance;
+        if (!m_instance) {
+            m_instance = new T();
+        }
+        return m_instance;
     }
 
     static T* instance() {
-        return s_singleton->m_instance;
+        if (m_instance == NULL) {
+            qWarning() << "Singleton class has not been created yet, returning NULL";
+        }
+        return m_instance;
     }
+
     static void destroy() {
+        if (m_instance) {
+            delete m_instance;
+        }
     }
 
   protected:
@@ -24,8 +34,10 @@ public:
     // hide copy constructor and assign operator
     Singleton(const Singleton&) {}
     const Singleton& operator= (const Singleton&) {}
-    T*                   m_instance;
-    static Singleton<T>* s_singleton;
+
+    static T* m_instance;
 };
-template<class T> Singleton<T>* Singleton<T>::s_singleton= new Singleton<T>();
+
+template<class T> T* Singleton<T>::m_instance = NULL;
+
 #endif // SINGLETON_H
