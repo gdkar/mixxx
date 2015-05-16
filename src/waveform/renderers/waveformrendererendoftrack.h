@@ -5,7 +5,7 @@
 #include <QTime>
 //#include <QLinearGradient>
 
-#include "util.h"
+#include "util/util.h"
 #include "waveformrendererabstract.h"
 #include "skin/skincontext.h"
 #include "waveform/waveformwidgetfactory.h"

@@ -6,7 +6,7 @@
 
 #include "engine/enginebuffer.h"
 #include "engine/bpmcontrol.h"
-#include "visualplayposition.h"
+#include "waveform/visualplayposition.h"
 #include "engine/enginechannel.h"
 #include "engine/enginemaster.h"
 #include "controlobjectslave.h"
@@ -21,8 +21,8 @@ const int filterLength = 5;
 const int kLocalBpmSpan = 4;
 
 BpmControl::BpmControl(QString group,
-                       ConfigObject<ConfigValue>* _config) :
-        EngineControl(group, _config),
+                       ConfigObject<ConfigValue>* _config,QObject*pParent) :
+        EngineControl(group, _config,pParent),
         m_dPreviousSample(0),
         m_dSyncTargetBeatDistance(0.0),
         m_dSyncInstantaneousBpm(0.0),
@@ -849,43 +849,4 @@ void BpmControl::resetSyncAdjustment() {
     m_resetSyncAdjustment = true;
 }
 
-void BpmControl::collectFeatures(GroupFeatureState* pGroupFeatures) const {
-    double fileBpm = m_pFileBpm->get();
-    if (fileBpm > 0) {
-        pGroupFeatures->has_file_bpm = true;
-        pGroupFeatures->file_bpm = fileBpm;
-    }
 
-    double bpm = m_pEngineBpm->get();
-    if (bpm > 0) {
-        pGroupFeatures->has_bpm = true;
-        pGroupFeatures->bpm = bpm;
-    }
-
-    // Without a beatgrid we don't know any beat details.
-    if (!m_pBeats) {
-        return;
-    }
-
-    // Get the current position of this deck.
-    double dThisPosition = getCurrentSample();
-    double dThisPrevBeat = m_pPrevBeat->get();
-    double dThisNextBeat = m_pNextBeat->get();
-    double dThisBeatLength;
-    double dThisBeatFraction;
-    if (getBeatContextNoLookup(dThisPosition,
-                       dThisPrevBeat, dThisNextBeat,
-                       &dThisBeatLength, &dThisBeatFraction)) {
-        pGroupFeatures->has_prev_beat = true;
-        pGroupFeatures->prev_beat = dThisPrevBeat;
-
-        pGroupFeatures->has_next_beat = true;
-        pGroupFeatures->next_beat = dThisNextBeat;
-
-        pGroupFeatures->has_beat_length = true;
-        pGroupFeatures->beat_length = dThisBeatLength;
-
-        pGroupFeatures->has_beat_fraction = true;
-        pGroupFeatures->beat_fraction = dThisBeatFraction;
-    }
-}

@@ -1,6 +1,6 @@
 #include <QtDebug>
 
-#include "visualplayposition.h"
+#include "waveform/visualplayposition.h"
 #include "controlobjectslave.h"
 #include "controlobject.h"
 #include "util/math.h"

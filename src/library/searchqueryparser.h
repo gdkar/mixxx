@@ -5,7 +5,7 @@
 #include <QString>
 #include <QtSql>
 
-#include "util.h"
+#include "util/util.h"
 #include "trackinfoobject.h"
 #include "library/searchquery.h"
 

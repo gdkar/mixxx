@@ -491,6 +491,7 @@ class MixxxCore(Feature):
 
                    "configobject.cpp",
                    "control/control.cpp",
+                   "control/atom.cpp",
                    "control/controlbehavior.cpp",
                    "control/controlmodel.cpp",
                    "controlobject.cpp",
@@ -612,8 +613,8 @@ class MixxxCore(Feature):
                    "engine/clockcontrol.cpp",
                    "engine/readaheadmanager.cpp",
                    "engine/enginetalkoverducking.cpp",
-                   "cachingreader.cpp",
-                   "cachingreaderworker.cpp",
+                   "engine/cachingreader.cpp",
+                   "engine/cachingreaderworker.cpp",
 
                    "analyserrg.cpp",
                    "analyserqueue.cpp",
@@ -876,7 +877,7 @@ class MixxxCore(Feature):
                    "sampleutil.cpp",
                    "samplebuffer.cpp",
                    "singularsamplebuffer.cpp",
-                   "circularsamplebuffer.cpp",
+#                   "circularsamplebuffer.cpp",
 
                    "trackinfoobject.cpp",
                    "track/beatgrid.cpp",
@@ -887,11 +888,10 @@ class MixxxCore(Feature):
                    "track/keyfactory.cpp",
                    "track/keyutils.cpp",
 
-                   "baseplayer.cpp",
-                   "basetrackplayer.cpp",
-                   "deck.cpp",
-                   "sampler.cpp",
-                   "previewdeck.cpp",
+                   "trackplayer.cpp",
+#                   "deck.cpp",
+#                   "sampler.cpp",
+#                   "previewdeck.cpp",
                    "playermanager.cpp",
                    "samplerbank.cpp",
                    "sounddevice.cpp",
@@ -900,7 +900,7 @@ class MixxxCore(Feature):
                    "soundmanagerutil.cpp",
                    "dlgprefrecord.cpp",
                    "playerinfo.cpp",
-                   "visualplayposition.cpp",
+                   "waveform/visualplayposition.cpp",
 
                    "encoder/encoder.cpp",
                    "encoder/encodermp3.cpp",

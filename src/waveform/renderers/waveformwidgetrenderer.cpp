@@ -5,7 +5,7 @@
 #include "widget/wwidget.h"
 #include "controlobject.h"
 #include "controlobjectthread.h"
-#include "visualplayposition.h"
+#include "waveform/visualplayposition.h"
 #include "util/math.h"
 #include "util/performancetimer.h"
 

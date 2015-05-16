@@ -21,7 +21,7 @@ class EngineMicrophone : public EngineChannel, public AudioDestination {
     Q_OBJECT
   public:
     EngineMicrophone(const ChannelHandleAndGroup& handle_group,
-                     EffectsManager* pEffectsManager);
+                     EffectsManager* pEffectsManager,QObject*pParent=0);
     virtual ~EngineMicrophone();
 
     bool isActive();

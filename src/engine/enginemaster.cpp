@@ -51,8 +51,10 @@ EngineMaster::EngineMaster(ConfigObject<ConfigValue>* _config,
                            const char* group,
                            EffectsManager* pEffectsManager,
                            bool bEnableSidechain,
-                           bool bRampingGain)
-        : m_pEngineEffectsManager(pEffectsManager ? pEffectsManager->getEngineEffectsManager() : NULL),
+                           bool bRampingGain,
+                           QObject *pParent)
+        : QObject(pParent),
+        m_pEngineEffectsManager(pEffectsManager ? pEffectsManager->getEngineEffectsManager() : NULL),
           m_bRampingGain(bRampingGain),
           m_masterGainOld(0.0),
           m_headphoneMasterGainOld(0.0),
@@ -67,7 +69,6 @@ EngineMaster::EngineMaster(ConfigObject<ConfigValue>* _config,
     m_bBusOutputConnected[EngineChannel::RIGHT] = false;
     m_pWorkerScheduler = new EngineWorkerScheduler(this);
     m_pWorkerScheduler->start(QThread::HighPriority);
-
     if (pEffectsManager) {
         pEffectsManager->registerChannel(m_masterHandle);
         pEffectsManager->registerChannel(m_headphoneHandle);
@@ -75,7 +76,6 @@ EngineMaster::EngineMaster(ConfigObject<ConfigValue>* _config,
         pEffectsManager->registerChannel(m_busCenterHandle);
         pEffectsManager->registerChannel(m_busRightHandle);
     }
-
     // Master sample rate
     m_pMasterSampleRate = new ControlObject(ConfigKey(group, "samplerate"), true, true);
     m_pMasterSampleRate->set(44100.);
@@ -113,10 +113,10 @@ EngineMaster::EngineMaster(ConfigObject<ConfigValue>* _config,
                                       ConfigKey(group, "gain"));
 
     // VU meter:
-    m_pVumeter = new EngineVuMeter(group);
+    m_pVumeter = new EngineVuMeter(group,this);
 
-    m_pMasterDelay = new EngineDelay(group, ConfigKey(group, "delay"));
-    m_pHeadDelay = new EngineDelay(group, ConfigKey(group, "headDelay"));
+    m_pMasterDelay = new EngineDelay(group, ConfigKey(group, "delay"),this);
+    m_pHeadDelay = new EngineDelay(group, ConfigKey(group, "headDelay"),this);
 
     // Headphone volume
     m_pHeadGain = new ControlAudioTaperPot(ConfigKey(group, "headGain"), -14, 14, 0.5);
@@ -481,7 +481,6 @@ void EngineMaster::process(const int iBufferSize) {
             // Well, this is delayed by one buffer (it's dependent on the
             // output). Oh well.
             if (m_pVumeter != NULL) {
-                m_pVumeter->collectFeatures(&masterFeatures);
             }
             m_pEngineEffectsManager->process(m_masterHandle.handle(), m_pMaster,
                                              iBufferSize, iSampleRate,

@@ -7,7 +7,7 @@
 #include "controlobject.h"
 #include "configobject.h"
 #include "controlpushbutton.h"
-#include "cachingreader.h"
+#include "engine/cachingreader.h"
 #include "engine/loopingcontrol.h"
 #include "engine/bpmcontrol.h"
 #include "engine/enginecontrol.h"
@@ -38,8 +38,8 @@ QList<double> LoopingControl::getBeatSizes() {
 }
 
 LoopingControl::LoopingControl(QString group,
-                               ConfigObject<ConfigValue>* _config)
-        : EngineControl(group, _config) {
+                               ConfigObject<ConfigValue>* _config, QObject*pParent)
+        : EngineControl(group, _config,pParent) {
     m_bLoopingEnabled = false;
     m_bLoopRollActive = false;
     m_iLoopStartSample = kNoTrigger;

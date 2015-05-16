@@ -18,7 +18,7 @@
 #include <QtDebug>
 
 #include "engine/enginebuffer.h"
-#include "cachingreader.h"
+#include "engine/cachingreader.h"
 #include "sampleutil.h"
 
 #include "controlpushbutton.h"
@@ -40,7 +40,7 @@
 #include "engine/keycontrol.h"
 #include "engine/sync/synccontrol.h"
 #include "engine/quantizecontrol.h"
-#include "visualplayposition.h"
+#include "waveform/visualplayposition.h"
 #include "engine/cuecontrol.h"
 #include "engine/clockcontrol.h"
 #include "engine/enginemaster.h"
@@ -63,8 +63,9 @@ const double kLinearScalerElipsis = 1.00058; // 2^(0.01/12): changes < 1 cent al
 const int kSamplesPerFrame = 2; // Engine buffer uses Stereo frames only
 
 EngineBuffer::EngineBuffer(QString group, ConfigObject<ConfigValue>* _config,
-                           EngineChannel* pChannel, EngineMaster* pMixingEngine)
-        : m_group(group),
+                           EngineChannel* pChannel, EngineMaster* pMixingEngine, QObject*pParent)
+        : EngineObject(pParent),
+          m_group(group),
           m_pConfig(_config),
           m_pLoopingControl(NULL),
           m_pSyncControl(NULL),
@@ -1394,14 +1395,3 @@ void EngineBuffer::setScalerForTest(EngineBufferScale* pScaleVinyl,
     m_bScalerOverride = true;
 }
 
-void EngineBuffer::collectFeatures(GroupFeatureState* pGroupFeatures) const {
-    pGroupFeatures->has_current_position = true;
-    pGroupFeatures->current_position = m_filepos_play;
-
-    if (m_pBpmControl != NULL) {
-        m_pBpmControl->collectFeatures(pGroupFeatures);
-    }
-    if (m_pKeyControl != NULL) {
-        m_pKeyControl->collectFeatures(pGroupFeatures);
-    }
-}

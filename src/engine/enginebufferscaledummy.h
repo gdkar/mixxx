@@ -27,7 +27,7 @@ class ReadAheadManager;
 
 class EngineBufferScaleDummy : public EngineBufferScale {
   public:
-    EngineBufferScaleDummy(ReadAheadManager* pReadAheadManager);
+    EngineBufferScaleDummy(ReadAheadManager* pReadAheadManager, QObject*pParent=0);
     virtual ~EngineBufferScaleDummy();
 
     /** Called from EngineBuffer when seeking, to ensure the buffers are flushed */

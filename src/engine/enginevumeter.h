@@ -34,12 +34,11 @@ class ControlObjectSlave;
 class EngineVuMeter : public EngineObject {
     Q_OBJECT
   public:
-    EngineVuMeter(QString group);
+    EngineVuMeter(QString group, QObject*pParent);
     virtual ~EngineVuMeter();
 
     virtual void process(CSAMPLE* pInOut, const int iBufferSize);
 
-    virtual void collectFeatures(GroupFeatureState* pGroupFeatures) const;
 
     void reset();
 

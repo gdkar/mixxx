@@ -2,7 +2,7 @@
 #define WAVEFORMRENDERERRGB_H
 
 #include "waveformrenderersignalbase.h"
-#include "util.h"
+#include "util/util.h"
 
 class WaveformRendererRGB : public WaveformRendererSignalBase {
   public:

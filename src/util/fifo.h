@@ -9,7 +9,7 @@
 #include "util/pa_ringbuffer.h"
 #include "util/reference.h"
 #include "util/math.h"
-#include "util.h"
+#include "util/util.h"
 
 template <class DataType>
 class FIFO {

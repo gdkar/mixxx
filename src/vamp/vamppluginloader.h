@@ -15,7 +15,7 @@
 #include <vamp-hostsdk/vamp-hostsdk.h>
 #include <string>
 
-#include "util.h"
+#include "util/util.h"
 
 using Vamp::Plugin;
 using Vamp::PluginHostAdapter;

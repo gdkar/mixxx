@@ -3,7 +3,7 @@
 
 #include <QColor>
 
-#include "util.h"
+#include "util/util.h"
 #include "waveform/renderers/waveformrendererabstract.h"
 #include "skin/skincontext.h"
 

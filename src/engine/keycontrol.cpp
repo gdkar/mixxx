@@ -13,8 +13,8 @@ static const double kLockOriginalKey = 0;
 static const double kLockCurrentKey = 1;
 
 KeyControl::KeyControl(QString group,
-                       ConfigObject<ConfigValue>* pConfig)
-        : EngineControl(group, pConfig) {
+                       ConfigObject<ConfigValue>* pConfig,QObject*pParent)
+        : EngineControl(group, pConfig,pParent) {
     m_pitchRateInfo.pitchRatio = 1.0;
     m_pitchRateInfo.tempoRatio = 1.0;
     m_pitchRateInfo.pitchTweakRatio = 1.0;
@@ -384,18 +384,4 @@ bool KeyControl::syncKey(EngineBuffer* pOtherEngineBuffer) {
     return true;
 }
 
-void KeyControl::collectFeatures(GroupFeatureState* pGroupFeatures) const {
-    mixxx::track::io::key::ChromaticKey fileKey =
-            KeyUtils::keyFromNumericValue(m_pFileKey->get());
-    if (fileKey != mixxx::track::io::key::INVALID) {
-        pGroupFeatures->has_file_key = true;
-        pGroupFeatures->file_key = fileKey;
-    }
 
-    mixxx::track::io::key::ChromaticKey key =
-            KeyUtils::keyFromNumericValue(m_pEngineKey->get());
-    if (key != mixxx::track::io::key::INVALID) {
-        pGroupFeatures->has_key = true;
-        pGroupFeatures->key = key;
-    }
-}

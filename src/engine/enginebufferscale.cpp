@@ -20,8 +20,9 @@
 #include "util/defs.h"
 #include "sampleutil.h"
 
-EngineBufferScale::EngineBufferScale(ReadAheadManager *pRAMAN)
-        : m_pReadAheadManager(pRAMAN),
+EngineBufferScale::EngineBufferScale(ReadAheadManager *pRAMAN, QObject*pParent)
+        : QObject(pParent),
+          m_pReadAheadManager(pRAMAN),
           m_dSampleRate(44100),
           m_dBaseRate(1.0),
           m_bSpeedAffectsPitch(false),

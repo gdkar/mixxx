@@ -13,7 +13,6 @@
 // and the gain and phase shift at some sample frequencies
 // You may also use the app fiview for analysis
 #define IIR_ANALYSIS 0
-
 enum IIRPass {
     IIR_LP,
     IIR_BP,
@@ -21,15 +20,14 @@ enum IIRPass {
     IIR_LPMO,
     IIR_HPMO,
 };
-
 // length of the 3rd argument to fid_design_coef
 #define FIDSPEC_LENGTH 40
-
 template<unsigned int SIZE, enum IIRPass PASS>
 class EngineFilterIIR : public EngineObjectConstIn {
   public:
-    EngineFilterIIR()
-            : m_doRamping(false),
+    EngineFilterIIR( QObject*pParent=0)
+            : EngineObjectConstIn(pParent),
+              m_doRamping(false),
               m_doStart(false),
               m_startFromDry(false) {
         memset(m_coef, 0, sizeof(m_coef));

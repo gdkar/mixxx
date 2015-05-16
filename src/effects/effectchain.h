@@ -6,7 +6,7 @@
 #include <QList>
 #include <QDomDocument>
 
-#include "util.h"
+#include "util/util.h"
 #include "effects/effect.h"
 #include "engine/channelhandle.h"
 

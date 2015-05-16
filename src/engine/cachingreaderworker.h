@@ -68,7 +68,7 @@ class CachingReaderWorker : public EngineWorker {
     // Construct a CachingReader with the given group.
     CachingReaderWorker(QString group,
             FIFO<ChunkReadRequest>* pChunkReadRequestFIFO,
-            FIFO<ReaderStatusUpdate>* pReaderStatusFIFO);
+            FIFO<ReaderStatusUpdate>* pReaderStatusFIFO, QObject*pParent=0);
     virtual ~CachingReaderWorker();
 
     // Request to load a new track. wake() must be called afterwards.

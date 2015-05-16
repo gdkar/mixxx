@@ -6,7 +6,7 @@
 #include <QPaintEvent>
 #include <QPainter>
 
-#include "util.h"
+#include "util/util.h"
 #include "waveformrendererabstract.h"
 #include "skin/skincontext.h"
 

@@ -67,7 +67,5 @@ void NetworkTimeouts::replyFinished() {
 
 void NetworkTimeouts::timerEvent(QTimerEvent* e) {
     QNetworkReply* reply = m_timers.key(e->timerId());
-    if (reply) {
-      reply->abort();
-    }
+    if (reply) {reply->abort();}
 }

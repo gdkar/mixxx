@@ -12,10 +12,10 @@
 #include "engine/effects/engineeffectsmanager.h"
 #include "controlaudiotaperpot.h"
 
-EngineAux::EngineAux(const ChannelHandleAndGroup& handle_group, EffectsManager* pEffectsManager)
-        : EngineChannel(handle_group, EngineChannel::CENTER),
+EngineAux::EngineAux(const ChannelHandleAndGroup& handle_group, EffectsManager* pEffectsManager, QObject*pParent)
+        : EngineChannel(handle_group, EngineChannel::CENTER,pParent),
           m_pEngineEffectsManager(pEffectsManager ? pEffectsManager->getEngineEffectsManager() : NULL),
-          m_vuMeter(getGroup()),
+          m_vuMeter(getGroup(),this),
           m_pEnabled(new ControlObject(ConfigKey(getGroup(), "enabled"))),
           m_pPregain(new ControlAudioTaperPot(ConfigKey(getGroup(), "pregain"), -12, 12, 0.5)),
           m_sampleBuffer(NULL),
@@ -90,7 +90,6 @@ void EngineAux::process(CSAMPLE* pOut, const int iBufferSize) {
         GroupFeatureState features;
         // This is out of date by a callback but some effects will want the RMS
         // volume.
-        m_vuMeter.collectFeatures(&features);
         // Process effects enabled for this channel
         m_pEngineEffectsManager->process(getHandle(), pOut, iBufferSize,
                                          m_pSampleRate->get(), features);

@@ -9,7 +9,7 @@
 #include "engine/effects/engineeffect.h"
 #include "engine/effects/engineeffectparameter.h"
 #include "engine/enginefilterbiquad1.h"
-#include "util.h"
+#include "util/util.h"
 #include "util/types.h"
 #include "util/defs.h"
 #include "sampleutil.h"

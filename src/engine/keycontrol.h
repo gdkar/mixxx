@@ -24,7 +24,7 @@ class KeyControl : public EngineControl {
         bool keylock;
     };
 
-    KeyControl(QString group, ConfigObject<ConfigValue>* pConfig);
+    KeyControl(QString group, ConfigObject<ConfigValue>* pConfig, QObject*pParent=0);
     virtual ~KeyControl();
 
     // Returns a struct, with the results of the last pitch and tempo calculations
@@ -32,7 +32,6 @@ class KeyControl : public EngineControl {
 
     double getKey();
 
-    void collectFeatures(GroupFeatureState* pGroupFeatures) const;
 
   private slots:
     void slotSetEngineKey(double);

@@ -57,7 +57,7 @@ class EngineMaster : public QObject, public AudioSource {
                  const char* pGroup,
                  EffectsManager* pEffectsManager,
                  bool bEnableSidechain,
-                 bool bRampingGain);
+                 bool bRampingGain, QObject*pParent);
     virtual ~EngineMaster();
 
     // Get access to the sample buffers. None of these are thread safe. Only to

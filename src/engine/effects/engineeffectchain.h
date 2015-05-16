@@ -5,7 +5,7 @@
 #include <QList>
 #include <QLinkedList>
 
-#include "util.h"
+#include "util/util.h"
 #include "util/types.h"
 #include "engine/channelhandle.h"
 #include "engine/effects/message.h"

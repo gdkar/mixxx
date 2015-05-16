@@ -25,22 +25,16 @@ class NetworkAccessManager : public QNetworkAccessManager {
                                  QIODevice* outgoingData);
 };
   
-  
 class NetworkTimeouts : public QObject {
     Q_OBJECT
-  
   public:
     NetworkTimeouts(int timeout_msec, QObject* parent = 0);
-  
     void addReply(QNetworkReply* reply);
     void setTimeout(int msec) { m_timeout_msec = msec; }
-  
   protected:
     void timerEvent(QTimerEvent* e);
-  
   private slots:
     void replyFinished();
-  
   private:
     int m_timeout_msec;
     QMap<QNetworkReply*, int> m_timers;

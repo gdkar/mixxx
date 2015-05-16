@@ -30,7 +30,12 @@ class EngineVuMeter;
 class ControlPushButton;
 
 class EngineChannel : public EngineObject {
-    Q_OBJECT
+    Q_OBJECT;
+    Q_PROPERTY(QString group READ getGroup CONSTANT);
+    Q_PROPERTY(bool master READ master WRITE setMaster NOTIFY masterChanged);
+    Q_PROPERTY(bool pfl READ pfl WRITE setPfl NOTIFY pflChanged);
+    Q_PROPERTY(ChannelOrientation orientation READ orientation WRITE setOrientation NOTIFY orientationChanged);
+    Q_ENUMS(ChannelOrientation);
   public:
     enum ChannelOrientation {
         LEFT = 0,
@@ -39,11 +44,12 @@ class EngineChannel : public EngineObject {
     };
 
     EngineChannel(const ChannelHandleAndGroup& handle_group,
-                  ChannelOrientation defaultOrientation = CENTER);
+                  ChannelOrientation defaultOrientation = CENTER, QObject  *pParent=0);
     virtual ~EngineChannel();
 
     virtual ChannelOrientation getOrientation() const;
-
+    virtual ChannelOrientation orientation() const{return getOrientation();}
+    virtual void setOrientation(ChannelOrientation o);
     inline const ChannelHandle& getHandle() const {
         return m_group.handle();
     }
@@ -55,8 +61,10 @@ class EngineChannel : public EngineObject {
     virtual bool isActive() = 0;
     void setPfl(bool enabled);
     virtual bool isPflEnabled() const;
+    virtual bool pfl() const{return isPflEnabled();}
     void setMaster(bool enabled);
     virtual bool isMasterEnabled() const;
+    virtual bool master() const{return isMasterEnabled();};
     void setTalkover(bool enabled);
     virtual bool isTalkoverEnabled() const;
 
@@ -67,7 +75,10 @@ class EngineChannel : public EngineObject {
     virtual EngineBuffer* getEngineBuffer() {
         return NULL;
     }
-
+  signals:
+    void pflChanged(bool);
+    void masterChanged(bool);
+    void orientationChanged(ChannelOrientation);
   private slots:
     void slotOrientationLeft(double v);
     void slotOrientationRight(double v);
@@ -83,5 +94,6 @@ class EngineChannel : public EngineObject {
     ControlPushButton* m_pOrientationCenter;
     ControlPushButton* m_pTalkover;
 };
-
+Q_DECLARE_METATYPE(EngineChannel::ChannelOrientation);
+Q_DECLARE_TYPEINFO(EngineChannel::ChannelOrientation,Q_PRIMITIVE_TYPE);
 #endif

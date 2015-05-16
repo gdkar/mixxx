@@ -125,7 +125,7 @@ void Controller::receive(const QByteArray data) {
             continue;
         }
         function.append(".incomingData");
-        QScriptValue incomingData = m_pEngine->resolveFunction(function, true);
+        QJSValue incomingData = m_pEngine->resolveFunction(function, true);
         if (!m_pEngine->execute(incomingData, data)) {
             qWarning() << "Controller: Invalid script function" << function;
         }

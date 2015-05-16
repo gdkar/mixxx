@@ -10,7 +10,7 @@
 
 #include "util/types.h"
 #include "util/math.h"
-#include "cachingreader.h"
+#include "engine/cachingreader.h"
 
 class LoopingControl;
 class RateControl;
@@ -86,8 +86,7 @@ class ReadAheadManager {
         }
 
         double length() const {
-            return fabs(virtualPlaypositionEndNonInclusive -
-                       virtualPlaypositionStart);
+            return fabs(virtualPlaypositionEndNonInclusive - virtualPlaypositionStart);
         }
 
         // Moves the start position forward or backward (depending on

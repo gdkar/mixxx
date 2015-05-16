@@ -11,10 +11,10 @@
 #include "trackinfoobject.h"
 
 class ControlObject;
-class Deck;
-class Sampler;
-class PreviewDeck;
-class BaseTrackPlayer;
+//class Deck;
+//class Sampler;
+//class PreviewDeck;
+class TrackPlayer;
 
 class Library;
 class EngineMaster;
@@ -26,24 +26,24 @@ class TrackCollection;
 // For mocking PlayerManager.
 class PlayerManagerInterface {
   public:
-    // Get a BaseTrackPlayer (i.e. a Deck or a Sampler) by its group
-    virtual BaseTrackPlayer* getPlayer(QString group) const = 0;
+    // Get a TrackPlayer (i.e. a Deck or a Sampler) by its group
+    virtual TrackPlayer* getPlayer(QString group) const = 0;
 
     // Get the deck by its deck number. Decks are numbered starting with 1.
-    virtual Deck* getDeck(unsigned int player) const = 0;
+    virtual TrackPlayer* getDeck(unsigned int player) const = 0;
 
     // Returns the number of decks.
     virtual unsigned int numberOfDecks() const = 0;
 
     // Get the preview deck by its deck number. Preview decks are numbered
     // starting with 1.
-    virtual PreviewDeck* getPreviewDeck(unsigned int libPreviewPlayer) const = 0;
+    virtual TrackPlayer* getPreviewDeck(unsigned int libPreviewPlayer) const = 0;
 
     // Returns the number of preview decks.
     virtual unsigned int numberOfPreviewDecks() const = 0;
 
     // Get the sampler by its number. Samplers are numbered starting with 1.
-    virtual Sampler* getSampler(unsigned int sampler) const = 0;
+    virtual TrackPlayer* getSampler(unsigned int sampler) const = 0;
 
     // Returns the number of sampler decks.
     virtual unsigned int numberOfSamplers() const = 0;
@@ -99,16 +99,16 @@ class PlayerManager : public QObject, public PlayerManagerInterface {
         return numPreviewDecks();
     }
 
-    // Get a BaseTrackPlayer (i.e. a Deck or a Sampler) by its group
-    BaseTrackPlayer* getPlayer(QString group) const;
+    // Get a TrackPlayer (i.e. a Deck or a Sampler) by its group
+    TrackPlayer* getPlayer(QString group) const;
 
     // Get the deck by its deck number. Decks are numbered starting with 1.
-    Deck* getDeck(unsigned int player) const;
+    TrackPlayer* getDeck(unsigned int player) const;
 
-    PreviewDeck* getPreviewDeck(unsigned int libPreviewPlayer) const;
+    TrackPlayer * getPreviewDeck(unsigned int libPreviewPlayer) const;
 
     // Get the sampler by its number. Samplers are numbered starting with 1.
-    Sampler* getSampler(unsigned int sampler) const;
+    TrackPlayer * getSampler(unsigned int sampler) const;
 
     // Binds signals between PlayerManager and Library. Does not store a pointer
     // to the Library.
@@ -180,10 +180,10 @@ class PlayerManager : public QObject, public PlayerManagerInterface {
     ControlObject* m_pCONumSamplers;
     ControlObject* m_pCONumPreviewDecks;
 
-    QList<Deck*> m_decks;
-    QList<Sampler*> m_samplers;
-    QList<PreviewDeck*> m_preview_decks;
-    QMap<QString, BaseTrackPlayer*> m_players;
+    QList<TrackPlayer*> m_decks;
+    QList<TrackPlayer*> m_samplers;
+    QList<TrackPlayer*> m_preview_decks;
+    QMap<QString, TrackPlayer*> m_players;
 };
 
 #endif // PLAYERMANAGER_H

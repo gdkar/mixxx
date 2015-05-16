@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QVariant>
 
-#include "util.h"
+#include "util/util.h"
 #include "effects/effectmanifestparameter.h"
 
 class Effect;

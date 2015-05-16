@@ -3,7 +3,7 @@
 
 #include <QMap>
 
-#include "util.h"
+#include "util/util.h"
 #include "util/defs.h"
 #include "util/types.h"
 #include "engine/effects/engineeffect.h"

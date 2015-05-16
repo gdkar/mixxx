@@ -6,7 +6,7 @@
 #include <vector>
 #include <QLineF>
 
-#include "util.h"
+#include "util/util.h"
 
 class WaveformRendererFilteredSignal : public WaveformRendererSignalBase {
   public:

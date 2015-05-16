@@ -6,7 +6,7 @@
 #include <QSqlDatabase>
 
 #include "library/dao/dao.h"
-#include "util.h"
+#include "util/util.h"
 
 #define PLAYLIST_TABLE "Playlists"
 #define PLAYLIST_TRACKS_TABLE "PlaylistTracks"

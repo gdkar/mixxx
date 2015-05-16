@@ -11,7 +11,7 @@
 #include "configobject.h"
 #include "controlpotmeter.h"
 #include "controlpushbutton.h"
-#include "util.h"
+#include "util/util.h"
 #include "util/fifo.h"
 #include "effects/effect.h"
 #include "effects/effectsbackend.h"

@@ -10,6 +10,11 @@
 
 #include <QEvent>
 #include <QtScript>
+#include <QtQml>
+#include <QtQuick>
+#include <QJSEngine>
+#include <QJSValue>
+#include <QJSValueIterator>
 #include <QMessageBox>
 #include <QFileSystemWatcher>
 
@@ -29,9 +34,9 @@ class ControllerEngineConnection {
   public:
     ConfigKey key;
     QString id;
-    QScriptValue function;
+    QJSValue          function;
     ControllerEngine *ce;
-    QScriptValue context;
+    QJSValue          context;
 };
 
 class ControllerEngineConnectionScriptValue : public QObject {
@@ -79,7 +84,7 @@ class ControllerEngine : public QObject {
     }
 
     /** Resolve a function name to a QScriptValue. */
-    QScriptValue resolveFunction(QString function, bool useCache) const;
+    QJSValue resolveFunction(QString function, bool useCache) const;
     /** Look up registered script function prefixes */
     QList<QString>& getScriptFunctionPrefixes() { return m_scriptFunctionPrefixes; };
     /** Disconnect a ControllerEngineConnection */
@@ -94,12 +99,12 @@ class ControllerEngine : public QObject {
     Q_INVOKABLE void reset(QString group, QString name);
     Q_INVOKABLE double getDefaultValue(QString group, QString name);
     Q_INVOKABLE double getDefaultParameter(QString group, QString name);
-    Q_INVOKABLE QScriptValue connectControl(QString group, QString name,
-                                    QScriptValue function, bool disconnect = false);
+    Q_INVOKABLE QJSValue connectControl(QString group, QString name,
+                                    QJSValue function, bool disconnect = false);
     // Called indirectly by the objects returned by connectControl
     Q_INVOKABLE void trigger(QString group, QString name);
     Q_INVOKABLE void log(QString message);
-    Q_INVOKABLE int beginTimer(int interval, QScriptValue scriptCode, bool oneShot = false);
+    Q_INVOKABLE int beginTimer(int interval, QJSValue scriptCode, bool oneShot = false);
     Q_INVOKABLE void stopTimer(int timerId);
     Q_INVOKABLE void scratchEnable(int deck, int intervalsPerRev, double rpm,
                                    double alpha, double beta, bool ramp = true);
@@ -121,13 +126,13 @@ class ControllerEngine : public QObject {
     // Execute a particular function
     bool execute(QString function);
     // Execute a particular function with a list of arguments
-    bool execute(QString function, QScriptValueList args);
-    bool execute(QScriptValue function, QScriptValueList args);
+    bool execute(QString function, QJSValueList args);
+    bool execute(QJSValue function, QJSValueList args);
     // Execute a particular function with a data string (e.g. a device ID)
     bool execute(QString function, QString data);
     // Execute a particular function with a list of arguments
     bool execute(QString function, const QByteArray data);
-    bool execute(QScriptValue function, const QByteArray data);
+    bool execute(QJSValue function, const QByteArray data);
     // Execute a particular function with a data buffer
     //TODO: redo this one
     //bool execute(QString function, const QByteArray data);
@@ -147,8 +152,8 @@ class ControllerEngine : public QObject {
   private:
     bool evaluate(QString scriptName, QList<QString> scriptPaths);
     bool internalExecute(QString scriptCode);
-    bool internalExecute(QScriptValue thisObject, QString scriptCode);
-    bool internalExecute(QScriptValue thisObject, QScriptValue functionObject);
+    bool internalExecute(QJSValue thisObject, QString scriptCode);
+    bool internalExecute(QJSValue thisObject, QJSValue functionObject);
     void initializeScriptEngine();
 
     void scriptErrorDialog(QString detailedError);
@@ -156,9 +161,9 @@ class ControllerEngine : public QObject {
     // Stops and removes all timers (for shutdown).
     void stopAllTimers();
 
-    void callFunctionOnObjects(QList<QString>, QString, QScriptValueList args = QScriptValueList());
+    void callFunctionOnObjects(QList<QString>, QString, QJSValueList args = QJSValueList());
     bool checkException();
-    QScriptEngine *m_pEngine;
+    QJSEngine *m_pEngine;
 
     ControlObjectThread* getControlObjectThread(QString group, QString name);
 
@@ -176,8 +181,8 @@ class ControllerEngine : public QObject {
     QMap<QString,QStringList> m_scriptErrors;
     QHash<ConfigKey, ControlObjectThread*> m_controlCache;
     struct TimerInfo {
-        QScriptValue callback;
-        QScriptValue context;
+        QJSValue callback;
+        QJSValue context;
         bool oneShot;
     };
     QHash<int, TimerInfo> m_timers;
@@ -191,7 +196,7 @@ class ControllerEngine : public QObject {
     QVarLengthArray<bool> m_ramp, m_brakeActive;
     QVarLengthArray<AlphaBetaFilter*> m_scratchFilters;
     QHash<int, int> m_scratchTimers;
-    mutable QHash<QString, QScriptValue> m_scriptValueCache;
+    mutable QHash<QString, QJSValue > m_scriptValueCache;
     // Filesystem watcher for script auto-reload
     QFileSystemWatcher m_scriptWatcher;
     QList<QString> m_lastScriptPaths;

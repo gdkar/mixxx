@@ -6,7 +6,7 @@
 #include <QList>
 #include <QSignalMapper>
 
-#include "util.h"
+#include "util/util.h"
 #include "effects/effect.h"
 #include "effects/effectslot.h"
 #include "effects/effectchain.h"

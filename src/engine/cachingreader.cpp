@@ -4,7 +4,7 @@
 #include "controlobject.h"
 #include "controlobjectthread.h"
 
-#include "cachingreader.h"
+#include "engine/cachingreader.h"
 #include "trackinfoobject.h"
 #include "sampleutil.h"
 #include "util/counter.h"
@@ -17,8 +17,9 @@
 const int CachingReader::maximumChunksInMemory = 80;
 
 CachingReader::CachingReader(QString group,
-                             ConfigObject<ConfigValue>* config)
-        : m_pConfig(config),
+                             ConfigObject<ConfigValue>* config, QObject*pParent)
+        : QObject(pParent),
+        m_pConfig(config),
           m_chunkReadRequestFIFO(1024),
           m_readerStatusFIFO(1024),
           m_readerStatus(INVALID),

@@ -4,7 +4,7 @@
 #include "controlobject.h"
 #include "controlobjectthread.h"
 
-#include "cachingreaderworker.h"
+#include "engine/cachingreaderworker.h"
 #include "trackinfoobject.h"
 #include "soundsourceproxy.h"
 #include "util/compatibility.h"
@@ -27,8 +27,9 @@ const SINT CachingReaderWorker::kSamplesPerChunk = kFramesPerChunk * kChunkChann
 
 CachingReaderWorker::CachingReaderWorker(QString group,
         FIFO<ChunkReadRequest>* pChunkReadRequestFIFO,
-        FIFO<ReaderStatusUpdate>* pReaderStatusFIFO)
-        : m_group(group),
+        FIFO<ReaderStatusUpdate>* pReaderStatusFIFO, QObject *pParent)
+        : EngineWorker(pParent),
+          m_group(group),
           m_tag(QString("CachingReaderWorker %1").arg(m_group)),
           m_pChunkReadRequestFIFO(pChunkReadRequestFIFO),
           m_pReaderStatusFIFO(pReaderStatusFIFO),

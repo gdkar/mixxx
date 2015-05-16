@@ -5,8 +5,8 @@
 #include "sampleutil.h"
 
 
-EngineBufferScaleDummy::EngineBufferScaleDummy(ReadAheadManager* pReadAheadManager)
-    : EngineBufferScale(pReadAheadManager)
+EngineBufferScaleDummy::EngineBufferScaleDummy(ReadAheadManager* pReadAheadManager, QObject*pParent)
+    : EngineBufferScale(pReadAheadManager,pParent)
 {m_samplesRead = 0.0;}
 
 EngineBufferScaleDummy::~EngineBufferScaleDummy()

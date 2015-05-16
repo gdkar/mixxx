@@ -29,7 +29,7 @@
 #include "configobject.h"
 #include "rotary.h"
 #include "control/controlvalue.h"
-#include "cachingreader.h"
+#include "engine/cachingreader.h"
 
 //for the writer
 #ifdef __SCALER_DEBUG__
@@ -117,7 +117,7 @@ class EngineBuffer : public EngineObject {
     };
 
     EngineBuffer(QString _group, ConfigObject<ConfigValue>* _config,
-                 EngineChannel* pChannel, EngineMaster* pMixingEngine);
+                 EngineChannel* pChannel, EngineMaster* pMixingEngine, QObject*pParent=0);
     virtual ~EngineBuffer();
 
     void bindWorkers(EngineWorkerScheduler* pWorkerScheduler);
@@ -148,7 +148,6 @@ class EngineBuffer : public EngineObject {
     double getVisualPlayPos();
     double getTrackSamples();
 
-    void collectFeatures(GroupFeatureState* pGroupFeatures) const;
 
     // For dependency injection of readers.
     //void setReader(CachingReader* pReader);

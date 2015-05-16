@@ -17,7 +17,7 @@ static const double kStartupHiFreq = 2484;
 template<class LPF>
 class LVMixEQEffectGroupState {
   public:
-    LVMixEQEffectGroupState()
+    LVMixEQEffectGroupState(QObject *pParent=0)
         : m_oldLow(1.0),
           m_oldMid(1.0),
           m_oldHigh(1.0),
@@ -31,8 +31,8 @@ class LVMixEQEffectGroupState {
 
         m_low1 = new LPF(kStartupSamplerate, kStartupLoFreq);
         m_low2 = new LPF(kStartupSamplerate, kStartupHiFreq);
-        m_delay2 = new EngineFilterDelay<kMaxDelay>();
-        m_delay3 = new EngineFilterDelay<kMaxDelay>();
+        m_delay2 = new EngineFilterDelay<kMaxDelay>(pParent);
+        m_delay3 = new EngineFilterDelay<kMaxDelay>(pParent);
         setFilters(kStartupSamplerate, kStartupLoFreq, kStartupHiFreq);
     }
 

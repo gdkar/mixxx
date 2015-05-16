@@ -29,7 +29,8 @@
 #include "analyserqueue.h"
 #include "controlpotmeter.h"
 #include "controlobjectslave.h"
-#include "deck.h"
+#include "trackplayer.h"
+//#include "deck.h"
 #include "defs_urls.h"
 #include "dlgabout.h"
 #include "dlgpreferences.h"
@@ -153,7 +154,7 @@ MixxxMainWindow::MixxxMainWindow(QApplication* pApp, const CmdlineArgs& args)
     m_pEffectsManager = new EffectsManager(this, m_pConfig);
 
     // Starting the master (mixing of the channels and effects):
-    m_pEngine = new EngineMaster(m_pConfig, "[Master]", m_pEffectsManager, true, true);
+    m_pEngine = new EngineMaster(m_pConfig, "[Master]", m_pEffectsManager, true, true, 0);
 
     // Create effect backends. We do this after creating EngineMaster to allow
     // effect backends to refer to controls that are produced by the engine.
@@ -186,8 +187,7 @@ MixxxMainWindow::MixxxMainWindow(QApplication* pApp, const CmdlineArgs& args)
         }
         ChannelHandleAndGroup channelGroup =
                 m_pEngine->registerChannelGroup(group);
-        EngineMicrophone* pMicrophone =
-                new EngineMicrophone(channelGroup, m_pEffectsManager);
+        EngineMicrophone* pMicrophone = new EngineMicrophone(channelGroup, m_pEffectsManager, m_pEngine);
 
         // What should channelbase be?
         AudioInput micInput = AudioInput(AudioPath::MICROPHONE, 0, 0, i);
@@ -209,7 +209,7 @@ MixxxMainWindow::MixxxMainWindow(QApplication* pApp, const CmdlineArgs& args)
     for (int i = 0; i < kAuxiliaryCount; ++i) {
         QString group = QString("[Auxiliary%1]").arg(i + 1);
         ChannelHandleAndGroup channelGroup = m_pEngine->registerChannelGroup(group);
-        EngineAux* pAux = new EngineAux(channelGroup, m_pEffectsManager);
+        EngineAux* pAux = new EngineAux(channelGroup, m_pEffectsManager, m_pEngine);
 
         // What should channelbase be?
         AudioInput auxInput = AudioInput(AudioPath::AUXILIARY, 0, 0, i);
@@ -217,16 +217,13 @@ MixxxMainWindow::MixxxMainWindow(QApplication* pApp, const CmdlineArgs& args)
         m_pSoundManager->registerInput(auxInput, pAux);
         m_pNumAuxiliaries->set(m_pNumAuxiliaries->get() + 1);
 
-        m_pAuxiliaryPassthrough.push_back(
-                new ControlObjectSlave(group, "passthrough"));
-        ControlObjectSlave* auxiliary_passthrough =
-                m_pAuxiliaryPassthrough.back();
+        m_pAuxiliaryPassthrough.push_back(new ControlObjectSlave(group, "passthrough"));
+        ControlObjectSlave* auxiliary_passthrough = m_pAuxiliaryPassthrough.back();
 
         // These non-vinyl passthrough COs have their index offset by the max
         // number of vinyl inputs.
         m_AuxiliaryMapper->setMapping(auxiliary_passthrough, i);
-        auxiliary_passthrough->connectValueChanged(m_AuxiliaryMapper,
-                                                   SLOT(map()));
+        auxiliary_passthrough->connectValueChanged(m_AuxiliaryMapper,SLOT(map()));
     }
 
     // Do not write meta data back to ID3 when meta data has changed
@@ -259,6 +256,7 @@ MixxxMainWindow::MixxxMainWindow(QApplication* pApp, const CmdlineArgs& args)
     // Create the player manager.
     m_pPlayerManager = new PlayerManager(m_pConfig, m_pSoundManager,
                                          m_pEffectsManager, m_pEngine);
+    m_pEngine->setParent(m_pPlayerManager);
     m_pPlayerManager->addConfiguredDecks();
     m_pPlayerManager->addSampler();
     m_pPlayerManager->addSampler();

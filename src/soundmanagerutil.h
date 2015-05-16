@@ -104,27 +104,16 @@ class AudioOutput : public AudioPath {
     AudioOutput(AudioPathType type = INVALID, unsigned char channelBase = 0,
                 unsigned char channels = 0,
                 unsigned char index = 0);
+    AudioOutput(const AudioOutput& out, const CSAMPLE* pBuffer);
     virtual ~AudioOutput();
     QDomElement toXML(QDomElement *element) const;
     static AudioOutput fromXML(const QDomElement &xml);
     static QList<AudioPathType> getSupportedTypes();
+    inline const CSAMPLE* getBuffer() const { return m_pBuffer; }
   protected:
     void setType(AudioPathType type);
+    const CSAMPLE*  m_pBuffer;
 };
-
-// This class is required to add the buffer, without changing the hash used as ID
-class AudioOutputBuffer : public AudioOutput {
-  public:
-    AudioOutputBuffer(const AudioOutput& out, const CSAMPLE* pBuffer)
-           : AudioOutput(out),
-             m_pBuffer(pBuffer) {
-
-    };
-    inline const CSAMPLE* getBuffer() const { return m_pBuffer; }
-  private:
-    const CSAMPLE* m_pBuffer;
-};
-
 /**
  * @class AudioInput
  * @extends AudioPath
@@ -135,27 +124,18 @@ class AudioInput : public AudioPath {
   public:
     AudioInput(AudioPathType type = INVALID, unsigned char channelBase = 0,
                unsigned char channels = 0, unsigned char index = 0);
+    AudioInput(const AudioInput&in, CSAMPLE *pBuffer);
     virtual ~AudioInput();
     QDomElement toXML(QDomElement *element) const;
     static AudioInput fromXML(const QDomElement &xml);
     static QList<AudioPathType> getSupportedTypes();
+    inline CSAMPLE* getBuffer() const { return m_pBuffer; }
   protected:
+    CSAMPLE* m_pBuffer;
     void setType(AudioPathType type);
 };
 
-// This class is required to add the buffer, without changing the hash used as
-// ID
-class AudioInputBuffer : public AudioInput {
-  public:
-    AudioInputBuffer(const AudioInput& id, CSAMPLE* pBuffer)
-            : AudioInput(id),
-              m_pBuffer(pBuffer) {
 
-    }
-    inline CSAMPLE* getBuffer() const { return m_pBuffer; }
-  private:
-    CSAMPLE* m_pBuffer;
-};
 
 
 class AudioSource {

@@ -46,10 +46,8 @@ class SampleUtil {
     // Allocated a buffer of CSAMPLE's with length size. Ensures that the buffer
     // is 16-byte aligned for SSE enhancement.
     static CSAMPLE* alloc(int size);
-
     // Frees a 16-byte aligned buffer allocated by SampleUtil::alloc()
     static void free(CSAMPLE* pBuffer);
-
     // Sets every sample in pBuffer to zero
     inline
     static void clear(CSAMPLE* pBuffer, int iNumSamples) {
@@ -58,14 +56,12 @@ class SampleUtil {
         memset(pBuffer, 0, sizeof(*pBuffer) * iNumSamples);
         //fill(pBuffer, CSAMPLE_ZERO, iNumSamples);
     }
-
     // Sets every sample in pBuffer to value
     inline
     static void fill(CSAMPLE* pBuffer, CSAMPLE value,
             int iNumSamples) {
         std::fill(pBuffer, pBuffer + iNumSamples, value);
     }
-
     // Copies every sample from pSrc to pDest
     inline
     static void copy(CSAMPLE* _RESTRICT pDest, const CSAMPLE* _RESTRICT pSrc,
@@ -99,27 +95,16 @@ class SampleUtil {
             memcpy(pDest, pSrc, iNumSamples * sizeof(CSAMPLE));
         }
     }
-
     // Limits a CSAMPLE value to the valid range [-CSAMPLE_PEAK, CSAMPLE_PEAK]
-    inline static CSAMPLE clampSample(CSAMPLE in) {
-        return CSAMPLE_clamp(in);
-    }
-
+    inline static CSAMPLE clampSample(CSAMPLE in) {return CSAMPLE_clamp(in);}
     // Limits a CSAMPLE_GAIN value to the valid range [CSAMPLE_GAIN_MIN, CSAMPLE_GAIN_MAX]
-    inline static CSAMPLE clampGain(CSAMPLE_GAIN in) {
-        return CSAMPLE_GAIN_clamp(in);
-    }
-
+    inline static CSAMPLE clampGain(CSAMPLE_GAIN in) {return CSAMPLE_GAIN_clamp(in);}
     // Multiply every sample in pBuffer by gain
-    static void applyGain(CSAMPLE* pBuffer, CSAMPLE gain,
-            int iNumSamples);
-
+    static void applyGain(CSAMPLE* pBuffer, CSAMPLE gain,int iNumSamples);
     // Copy pSrc to pDest and multiply each sample by a factor of gain.
     // For optimum performance use the in-place function applyGain()
     // if pDest == pSrc!
-    static void copyWithGain(CSAMPLE* pDest, const CSAMPLE* pSrc,
-            CSAMPLE_GAIN gain, int iNumSamples);
-
+    static void copyWithGain(CSAMPLE* pDest, const CSAMPLE* pSrc,CSAMPLE_GAIN gain, int iNumSamples);
     // Apply a different gain to every other sample.
     static void applyAlternatingGain(CSAMPLE* pBuffer, CSAMPLE_GAIN gain1,
             CSAMPLE_GAIN gain2, int iNumSamples);

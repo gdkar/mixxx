@@ -9,7 +9,7 @@
 #include <QMutexLocker>
 #include <vector>
 
-#include "util.h"
+#include "util/util.h"
 #include "util/compatibility.h"
 
 enum FilterIndex { Low = 0, Mid = 1, High = 2, FilterCount = 3};

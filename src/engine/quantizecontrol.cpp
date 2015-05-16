@@ -7,14 +7,14 @@
 #include "controlobject.h"
 #include "configobject.h"
 #include "controlpushbutton.h"
-#include "cachingreader.h"
+#include "engine/cachingreader.h"
 #include "engine/quantizecontrol.h"
 #include "engine/enginecontrol.h"
 #include "util/assert.h"
 
 QuantizeControl::QuantizeControl(QString group,
-                                 ConfigObject<ConfigValue>* pConfig)
-        : EngineControl(group, pConfig) {
+                                 ConfigObject<ConfigValue>* pConfig,QObject*pParent)
+        : EngineControl(group, pConfig,pParent) {
     // Turn quantize OFF by default. See Bug #898213
     m_pCOQuantizeEnabled = new ControlPushButton(ConfigKey(group, "quantize"));
     m_pCOQuantizeEnabled->setButtonMode(ControlPushButton::TOGGLE);

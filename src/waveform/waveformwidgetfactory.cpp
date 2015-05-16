@@ -31,6 +31,7 @@
 
 ///////////////////////////////////////////
 
+
 WaveformWidgetAbstractHandle::WaveformWidgetAbstractHandle()
     : m_active(true),
       m_type(WaveformWidgetType::Count_WaveformwidgetType) {

@@ -85,7 +85,7 @@ class CueControl : public EngineControl {
     Q_OBJECT
   public:
     CueControl(QString group,
-               ConfigObject<ConfigValue>* _config);
+               ConfigObject<ConfigValue>* _config,QObject*pParent=0);
     virtual ~CueControl();
 
     virtual void hintReader(HintVector* pHintList);

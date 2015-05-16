@@ -40,7 +40,7 @@ class ReadAheadManager;
 class EngineBufferScale : public QObject {
     Q_OBJECT
   public:
-    EngineBufferScale(ReadAheadManager *pRAMAN=0);
+    EngineBufferScale(ReadAheadManager *pRAMAN=0, QObject*pParent=0);
     virtual ~EngineBufferScale();
 
     // Sets the scaling parameters.

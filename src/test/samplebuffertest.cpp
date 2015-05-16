@@ -1,11 +1,11 @@
-#include "circularsamplebuffer.h"
+#include "singularsamplebuffer.h"
 #include "test/mixxxtest.h"
 
 #include <gmock/gmock.h>
 
 #include <QtDebug>
 
-class CircularSampleBufferTest: public MixxxTest {
+/*class CircularSampleBufferTest: public MixxxTest {
 public:
     CircularSampleBufferTest()
         : m_writeValue(CSAMPLE_ZERO),
@@ -170,4 +170,4 @@ TEST_F(CircularSampleBufferTest, reset) {
     SINT readCount = readHeadAndVerify(&sampleBuffer, 10);
     EXPECT_EQ(readCount, 0);
     EXPECT_TRUE(sampleBuffer.isEmpty());
-}
+}*/

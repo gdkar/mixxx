@@ -46,7 +46,7 @@ class StatsManager : public QThread, public Singleton<StatsManager> {
     void updateStats() {
         m_statsPipeCondition.wakeAll();
     }
-
+    
   signals:
     void statUpdated(const Stat& stat);
 
@@ -73,6 +73,5 @@ class StatsManager : public QThread, public Singleton<StatsManager> {
 
     friend class StatsPipe;
 };
-
 
 #endif /* STATSMANAGER_H */

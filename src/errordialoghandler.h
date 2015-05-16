@@ -25,7 +25,7 @@
 #include <QString>
 #include <QList>
 
-#include "util.h"
+#include "util/util.h"
 
 /**
   * Class used to allow all threads to display message boxes on error conditions

@@ -20,7 +20,7 @@
 #include "sampleutil.h"
 #include "util/math.h"
 
-EngineVuMeter::EngineVuMeter(QString group) {
+EngineVuMeter::EngineVuMeter(QString group, QObject*pParent) :EngineObject(pParent){
     // The VUmeter widget is controlled via a controlpotmeter, which means
     // that it should react on the setValue(int) signal.
     m_ctrlVuMeter = new ControlPotmeter(ConfigKey(group, "VuMeter"), 0., 1.);
@@ -95,10 +95,7 @@ void EngineVuMeter::process(CSAMPLE* pIn, const int iBufferSize) {
     }
 }
 
-void EngineVuMeter::collectFeatures(GroupFeatureState* pGroupFeatures) const {
-    pGroupFeatures->rms_volume_sum = (m_fRMSvolumeL + m_fRMSvolumeR) / 2.0;
-    pGroupFeatures->has_rms_volume_sum = true;
-}
+
 
 void EngineVuMeter::doSmooth(CSAMPLE &currentVolume, CSAMPLE newVolume)
 {

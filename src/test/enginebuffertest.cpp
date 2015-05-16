@@ -5,7 +5,7 @@
 #include <QtDebug>
 #include <QTest>
 
-#include "basetrackplayer.h"
+#include "trackplayer.h"
 #include "configobject.h"
 #include "controlobject.h"
 #include "test/mockedenginebackendtest.h"

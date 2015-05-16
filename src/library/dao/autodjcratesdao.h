@@ -6,7 +6,7 @@
 #include "configobject.h"
 #include "trackinfoobject.h"
 #include "library/dao/dao.h"
-#include "util.h"
+#include "util/util.h"
 
 class QSqlDatabase;
 class TrackDAO;

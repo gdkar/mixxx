@@ -10,7 +10,7 @@
 #include "controlpotmeter.h"
 #include "controllinpotmeter.h"
 #include "playermanager.h"
-#include "basetrackplayer.h"
+#include "trackplayer.h"
 
 using ::testing::_;
 using ::testing::Return;

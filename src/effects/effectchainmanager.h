@@ -6,7 +6,7 @@
 #include <QHash>
 
 #include "configobject.h"
-#include "util.h"
+#include "util/util.h"
 #include "effects/effectchain.h"
 #include "effects/effectrack.h"
 #include "engine/channelhandle.h"

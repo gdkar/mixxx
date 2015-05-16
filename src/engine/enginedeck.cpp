@@ -30,8 +30,8 @@ EngineDeck::EngineDeck(const ChannelHandleAndGroup& handle_group,
                        ConfigObject<ConfigValue>* pConfig,
                        EngineMaster* pMixingEngine,
                        EffectsManager* pEffectsManager,
-                       EngineChannel::ChannelOrientation defaultOrientation)
-        : EngineChannel(handle_group, defaultOrientation),
+                       EngineChannel::ChannelOrientation defaultOrientation, QObject*pParent)
+        : EngineChannel(handle_group, defaultOrientation,pParent),
           m_pConfig(pConfig),
           m_pEngineEffectsManager(pEffectsManager ? pEffectsManager->getEngineEffectsManager() : NULL),
           m_pPassing(new ControlPushButton(ConfigKey(getGroup(), "passthrough"))),
@@ -55,9 +55,9 @@ EngineDeck::EngineDeck(const ChannelHandleAndGroup& handle_group,
     m_pSampleRate = new ControlObjectSlave("[Master]", "samplerate");
 
     // Set up additional engines
-    m_pPregain = new EnginePregain(getGroup());
-    m_pVUMeter = new EngineVuMeter(getGroup());
-    m_pBuffer = new EngineBuffer(getGroup(), pConfig, this, pMixingEngine);
+    m_pPregain = new EnginePregain(getGroup(), this);
+    m_pVUMeter = new EngineVuMeter(getGroup(), this);
+    m_pBuffer = new EngineBuffer(getGroup(), pConfig, this, pMixingEngine,this);
 }
 
 EngineDeck::~EngineDeck() {
@@ -88,7 +88,6 @@ void EngineDeck::process(CSAMPLE* pOut, const int iBufferSize) {
 
         // Process the raw audio
         m_pBuffer->process(pOut, iBufferSize);
-        m_pBuffer->collectFeatures(&features);
         m_pPregain->setSpeed(m_pBuffer->getSpeed());
         m_bPassthroughWasActive = false;
     }
@@ -99,7 +98,6 @@ void EngineDeck::process(CSAMPLE* pOut, const int iBufferSize) {
     if (m_pEngineEffectsManager != NULL) {
         // This is out of date by a callback but some effects will want the RMS
         // volume.
-        m_pVUMeter->collectFeatures(&features);
         m_pEngineEffectsManager->process(
                 getHandle(), pOut, iBufferSize,
                 static_cast<unsigned int>(m_pSampleRate->get()), features);

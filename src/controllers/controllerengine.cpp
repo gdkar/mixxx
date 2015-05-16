@@ -66,7 +66,7 @@ ControllerEngine::~ControllerEngine() {
     // Delete the script engine, first clearing the pointer so that
     // other threads will not get the dead pointer after we delete it.
     if (m_pEngine != NULL) {
-        QScriptEngine *engine = m_pEngine;
+        QJSEngine *engine = m_pEngine;
         m_pEngine = NULL;
         engine->deleteLater();
     }
@@ -78,25 +78,25 @@ Input:   -
 Output:  -
 -------- ------------------------------------------------------ */
 void ControllerEngine::callFunctionOnObjects(QList<QString> scriptFunctionPrefixes,
-                                             QString function, QScriptValueList args) {
-    const QScriptValue global = m_pEngine->globalObject();
+                                             QString function, QJSValueList args) {
+    const QJSValue global = m_pEngine->globalObject();
 
     foreach (QString prefixName, scriptFunctionPrefixes) {
-        QScriptValue prefix = global.property(prefixName);
-        if (!prefix.isValid() || !prefix.isObject()) {
+        QJSValue  prefix = global.property(prefixName);
+        if (prefix.isError() ||prefix.isUndefined()|| !prefix.isObject()) {
             qWarning() << "ControllerEngine: No" << prefixName << "object in script";
             continue;
         }
 
-        QScriptValue init = prefix.property(function);
-        if (!init.isValid() || !init.isFunction()) {
+        QJSValue  init = prefix.property(function);
+        if (init.isUndefined() || !init.isCallable()) {
             qWarning() << "ControllerEngine:" << prefixName << "has no" << function << " method";
             continue;
         }
         if (m_bDebug) {
             qDebug() << "ControllerEngine: Executing" << prefixName << "." << function;
         }
-        init.call(prefix, args);
+        init.callWithInstance(prefix, args);
     }
 }
 
@@ -106,22 +106,22 @@ Purpose: Resolves a function name to a QScriptValue including
 Input:   -
 Output:  -
 -------- ------------------------------------------------------ */
-QScriptValue ControllerEngine::resolveFunction(QString function, bool useCache) const {
+QJSValue ControllerEngine::resolveFunction(QString function, bool useCache) const {
     if (useCache && m_scriptValueCache.contains(function)) {
         return m_scriptValueCache.value(function);
     }
 
-    QScriptValue object = m_pEngine->globalObject();
+    QJSValue object = m_pEngine->globalObject();
     QStringList parts = function.split(".");
 
     for (int i = 0; i < parts.size(); i++) {
         object = object.property(parts.at(i));
-        if (!object.isValid())
-            return QScriptValue();
+        if (object.isUndefined())
+            return QJSValue ();
     }
 
-    if (!object.isFunction()) {
-        return QScriptValue();
+    if (!object.isCallable()) {
+        return QJSValue ();
     }
     m_scriptValueCache[function] = object;
     return object;
@@ -186,10 +186,10 @@ bool ControllerEngine::isReady() {
 
 void ControllerEngine::initializeScriptEngine() {
     // Create the Script Engine
-    m_pEngine = new QScriptEngine(this);
+    m_pEngine = new QJSEngine (this);
 
     // Make this ControllerEngine instance available to scripts as 'engine'.
-    QScriptValue engineGlobalObject = m_pEngine->globalObject();
+    QJSValue engineGlobalObject = m_pEngine->globalObject();
     engineGlobalObject.setProperty("engine", m_pEngine->newQObject(this));
 
     if (m_pController) {
@@ -202,8 +202,8 @@ void ControllerEngine::initializeScriptEngine() {
         engineGlobalObject.setProperty("midi", m_pEngine->newQObject(m_pController));
     }
 
-    m_pBaClass = new ByteArrayClass(m_pEngine);
-    engineGlobalObject.setProperty("ByteArray", m_pBaClass->constructor());
+//    m_pBaClass = new ByteArrayClass(m_pEngine);
+//    engineGlobalObject.setProperty("ByteArray", m_pBaClass->constructor());
 }
 
 /* -------- ------------------------------------------------------
@@ -214,8 +214,7 @@ void ControllerEngine::initializeScriptEngine() {
 void ControllerEngine::loadScriptFiles(QList<QString> scriptPaths,
                                        const QList<ControllerPreset::ScriptFileInfo>& scripts) {
     // Set the Debug flag
-    if (m_pController)
-        m_bDebug = m_pController->debugging();
+    if (m_pController) m_bDebug = m_pController->debugging();
 
     qDebug() << "ControllerEngine: Loading & evaluating all script code";
 
@@ -250,7 +249,7 @@ void ControllerEngine::scriptHasChanged(QString scriptFilename) {
     // Delete the script engine, first clearing the pointer so that
     // other threads will not get the dead pointer after we delete it.
     if (m_pEngine != NULL) {
-        QScriptEngine *engine = m_pEngine;
+        QJSEngine *engine = m_pEngine;
         m_pEngine = NULL;
         engine->deleteLater();
     }
@@ -275,9 +274,9 @@ void ControllerEngine::initializeScripts(const QList<ControllerPreset::ScriptFil
         m_scriptFunctionPrefixes.append(script.functionPrefix);
     }
 
-    QScriptValueList args;
-    args << QScriptValue(m_pController->getName());
-    args << QScriptValue(m_bDebug);
+    QJSValueList args;
+    args << QJSValue (m_pController->getName());
+    args << QJSValue (m_bDebug);
 
     // Call the init method for all the prefixes.
     callFunctionOnObjects(m_scriptFunctionPrefixes, "init", args);
@@ -307,17 +306,12 @@ bool ControllerEngine::execute(QString function) {
     if (m_pEngine == NULL)
         return false;
 
-    QScriptValue scriptFunction = m_pEngine->evaluate(function);
+    QJSValue scriptFunction = m_pEngine->evaluate(function);
 
-    if (checkException())
+    if (!scriptFunction.isError() && !scriptFunction.isCallable())
         return false;
 
-    if (!scriptFunction.isFunction())
-        return false;
-
-    scriptFunction.call(QScriptValue());
-    if (checkException())
-        return false;
+    scriptFunction.callWithInstance(QJSValue(),QJSValueList());
 
     return true;
 }
@@ -328,7 +322,7 @@ Purpose: Evaluate & run script code
 Input:   'this' object if applicable, Code string
 Output:  false if an exception
 -------- ------------------------------------------------------ */
-bool ControllerEngine::internalExecute(QScriptValue thisObject,
+bool ControllerEngine::internalExecute(QJSValue thisObject,
                                        QString scriptCode) {
     // A special version of safeExecute since we're evaluating strings, not actual functions
     //  (execute() would print an error that it's not a function every time a timer fires.)
@@ -336,30 +330,7 @@ bool ControllerEngine::internalExecute(QScriptValue thisObject,
         return false;
 
     // Check syntax
-    QScriptSyntaxCheckResult result = m_pEngine->checkSyntax(scriptCode);
-    QString error = "";
-    switch (result.state()) {
-        case (QScriptSyntaxCheckResult::Valid): break;
-        case (QScriptSyntaxCheckResult::Intermediate):
-            error = "Incomplete code";
-            break;
-        case (QScriptSyntaxCheckResult::Error):
-            error = "Syntax error";
-            break;
-    }
-    if (error!="") {
-        error = QString("%1: %2 at line %3, column %4 of script code:\n%5\n")
-                .arg(error,
-                     result.errorMessage(),
-                     QString::number(result.errorLineNumber()),
-                     QString::number(result.errorColumnNumber()),
-                     scriptCode);
-
-        scriptErrorDialog(error);
-        return false;
-    }
-
-    QScriptValue scriptFunction = m_pEngine->evaluate(scriptCode);
+    QJSValue scriptFunction = m_pEngine->evaluate(scriptCode);
 
     if (checkException()) {
         qDebug() << "Exception";
@@ -374,18 +345,18 @@ Purpose: Evaluate & run script code
 Input:   'this' object if applicable, Code string
 Output:  false if an exception
 -------- ------------------------------------------------------ */
-bool ControllerEngine::internalExecute(QScriptValue thisObject, QScriptValue functionObject) {
+bool ControllerEngine::internalExecute(QJSValue thisObject, QJSValue functionObject) {
     if(m_pEngine == NULL)
         return false;
 
     // If it's not a function, we're done.
-    if (!functionObject.isFunction()) {
+    if (!functionObject.isCallable()) {
         return false;
     }
 
     // If it does happen to be a function, call it.
-    functionObject.call(thisObject);
-    if (checkException()) {
+    QJSValue ret = functionObject.callWithInstance(thisObject,QJSValueList());
+    if (ret.isError()) {
         qDebug() << "Exception";
         return false;
     }
@@ -398,13 +369,13 @@ bool ControllerEngine::internalExecute(QScriptValue thisObject, QScriptValue fun
    Input:   Function name, argument list
    Output:  false if an invalid function or an exception
    -------- ------------------------------------------------------ */
-bool ControllerEngine::execute(QString function, QScriptValueList args) {
+bool ControllerEngine::execute(QString function, QJSValueList args) {
     if(m_pEngine == NULL) {
         qDebug() << "ControllerEngine::execute: No script engine exists!";
         return false;
     }
 
-    QScriptValue scriptFunction = m_pEngine->evaluate(function);
+    QJSValue scriptFunction = m_pEngine->evaluate(function);
 
     if (checkException())
         return false;
@@ -417,25 +388,23 @@ bool ControllerEngine::execute(QString function, QScriptValueList args) {
    Input:   Function name, argument list
    Output:  false if an invalid function or an exception
    -------- ------------------------------------------------------ */
-bool ControllerEngine::execute(QScriptValue functionObject, QScriptValueList args) {
+bool ControllerEngine::execute(QJSValue functionObject, QJSValueList args) {
 
     if(m_pEngine == NULL) {
         qDebug() << "ControllerEngine::execute: No script engine exists!";
         return false;
     }
 
-    if (!functionObject.isFunction()) {
+    if (!functionObject.isCallable()) {
         qDebug() << "Not a function";
         return false;
     }
-    QScriptValue rc = functionObject.call(m_pEngine->globalObject(), args);
-    if (!rc.isValid()) {
+    QJSValue rc = functionObject.call( args);
+    if (rc.isError()) {
         qDebug() << "QScriptValue is not a function or ...";
         return false;
     }
 
-    if (checkException())
-        return false;
     return true;
 }
 /**-------- ------------------------------------------------------
@@ -449,20 +418,20 @@ bool ControllerEngine::execute(QString function, QString data) {
         return false;
     }
 
-    QScriptValue scriptFunction = m_pEngine->evaluate(function);
+    QJSValue scriptFunction = m_pEngine->evaluate(function);
 
-    if (checkException()) {
+    if (scriptFunction.isError()) {
         qDebug() << "ControllerEngine::execute: Exception";
         return false;
     }
 
-    if (!scriptFunction.isFunction()) {
+    if (!scriptFunction.isCallable()) {
         qDebug() << "ControllerEngine::execute: Not a function";
         return false;
     }
 
-    QScriptValueList args;
-    args << QScriptValue(data);
+    QJSValueList args;
+    args << QJSValue(data);
 
     return execute(scriptFunction, args);
 }
@@ -477,14 +446,11 @@ bool ControllerEngine::execute(QString function, const QByteArray data) {
         return false;
     }
 
-    if (!m_pEngine->canEvaluate(function)) {
-        qWarning() << "ControllerEngine: ?Syntax error in function" << function;
-        return false;
-    }
 
-    QScriptValue scriptFunction = m_pEngine->evaluate(function);
 
-    if (checkException())
+    QJSValue scriptFunction = m_pEngine->evaluate(function);
+
+    if (scriptFunction.isError())
         return false;
 
     return execute(scriptFunction, data);
@@ -495,19 +461,20 @@ bool ControllerEngine::execute(QString function, const QByteArray data) {
    Input:   Function name, ponter to data buffer, length of buffer
    Output:  false if an invalid function or an exception
    -------- ------------------------------------------------------ */
-bool ControllerEngine::execute(QScriptValue function, const QByteArray data) {
+bool ControllerEngine::execute(QJSValue function, const QByteArray data) {
     if (m_pEngine == NULL) {
         return false;
     }
 
     if (checkException())
         return false;
-    if (!function.isFunction())
+    if (!function.isCallable())
         return false;
 
-    QScriptValueList args;
-    args << QScriptValue(m_pBaClass->newInstance(data));
-    args << QScriptValue(data.size());
+    QJSValueList args;
+//    args << QJSValue (m_pBaClass->newInstance(data));
+    args << m_pEngine->toScriptValue(data);
+    args << QJSValue (data.size());
 
     return execute(function, args);
 }
@@ -522,7 +489,7 @@ bool ControllerEngine::checkException() {
         return false;
     }
 
-    if (m_pEngine->hasUncaughtException()) {
+/*    if (m_pEngine->hasUncaughtException()) {
         QScriptValue exception = m_pEngine->uncaughtException();
         QString errorMessage = exception.toString();
         int line = m_pEngine->uncaughtExceptionLineNumber();
@@ -545,7 +512,7 @@ bool ControllerEngine::checkException() {
         scriptErrorDialog(m_bDebug ? QString("%1\nBacktrace:\n%2")
                           .arg(errorText, backtrace.join("\n")) : errorText);
         return true;
-    }
+    }*/
     return false;
 }
 
@@ -782,20 +749,20 @@ void ControllerEngine::trigger(QString group, QString name) {
                 script function name, true if you want to disconnect
    Output:  true if successful
    -------- ------------------------------------------------------ */
-QScriptValue ControllerEngine::connectControl(QString group, QString name,
-                                              QScriptValue callback, bool disconnect) {
+QJSValue ControllerEngine::connectControl(QString group, QString name,
+                                              QJSValue callback, bool disconnect) {
     ConfigKey key(group, name);
     ControlObjectThread* cot = getControlObjectThread(group, name);
-    QScriptValue function;
+    QJSValue function;
 
     if (cot == NULL) {
         qWarning() << "ControllerEngine: script connecting [" << group << "," << name
                    << "], which is non-existent. ignoring.";
-        return QScriptValue();
+        return QJSValue ();
     }
 
     if (m_pEngine == NULL) {
-        return QScriptValue(false);
+        return QJSValue (false);
     }
 
     if (callback.isString()) {
@@ -806,13 +773,13 @@ QScriptValue ControllerEngine::connectControl(QString group, QString name,
 
         if (disconnect) {
             disconnectControl(cb);
-            return QScriptValue(true);
+            return QJSValue (true);
         }
 
         function = m_pEngine->evaluate(callback.toString());
-        if (checkException() || !function.isFunction()) {
+        if (checkException() || !function.isCallable()) {
             qWarning() << "Could not evaluate callback function:" << callback.toString();
-            return QScriptValue(false);
+            return QJSValue (false);
         } else if (m_connectedControls.contains(key, cb)) {
             // Do not allow multiple connections to named functions
 
@@ -822,10 +789,9 @@ QScriptValue ControllerEngine::connectControl(QString group, QString name,
 
             ControllerEngineConnection conn = i.value();
             return m_pEngine->newQObject(
-                new ControllerEngineConnectionScriptValue(conn),
-                QScriptEngine::ScriptOwnership);
+                new ControllerEngineConnectionScriptValue(conn));
         }
-    } else if (callback.isFunction()) {
+    } else if (callback.isCallable()) {
         function = callback;
     } else if (callback.isQObject()) {
         // Assume a ControllerEngineConnection
@@ -839,10 +805,10 @@ QScriptValue ControllerEngine::connectControl(QString group, QString name,
         }
     } else {
         qWarning() << "Invalid callback";
-        return QScriptValue(false);
+        return QJSValue(false);
     }
 
-    if (function.isFunction()) {
+    if (function.isCallable()) {
         qDebug() << "Connection:" << group << name;
         connect(cot, SIGNAL(valueChanged(double)),
                 this, SLOT(slotValueChanged(double)),
@@ -856,14 +822,10 @@ QScriptValue ControllerEngine::connectControl(QString group, QString name,
         conn.ce = this;
         conn.function = function;
 
-        QScriptContext *ctxt = m_pEngine->currentContext();
         // Our current context is a function call to engine.connectControl. We
         // want to grab the 'this' from the caller's context, so we walk up the
         // stack.
-        if (ctxt) {
-            ctxt = ctxt->parentContext();
-            conn.context = ctxt ? ctxt->thisObject() : QScriptValue();
-        }
+            conn.context = QJSValue();
 
         if (callback.isString()) {
             conn.id = callback.toString();
@@ -874,11 +836,10 @@ QScriptValue ControllerEngine::connectControl(QString group, QString name,
 
         m_connectedControls.insert(key, conn);
         return m_pEngine->newQObject(
-            new ControllerEngineConnectionScriptValue(conn),
-            QScriptEngine::ScriptOwnership);
+            new ControllerEngineConnectionScriptValue(conn));
     }
 
-    return QScriptValue(false);
+    return QJSValue(false);
 }
 
 /* -------- ------------------------------------------------------
@@ -941,12 +902,12 @@ void ControllerEngine::slotValueChanged(double value) {
 
         for (int i = 0; i < conns.size(); ++i) {
             ControllerEngineConnection conn = conns.at(i);
-            QScriptValueList args;
+            QJSValueList args;
 
-            args << QScriptValue(value);
-            args << QScriptValue(key.group);
-            args << QScriptValue(key.item);
-            QScriptValue result = conn.function.call(conn.context, args);
+            args << QJSValue(value);
+            args << QJSValue(key.group);
+            args << QJSValue(key.item);
+            QJSValue result = conn.function.callWithInstance(conn.context, args);
             if (result.isError()) {
                 qWarning()<< "ControllerEngine: Call to callback" << conn.id
                           << "resulted in an error:" << result.toString();
@@ -1017,7 +978,7 @@ bool ControllerEngine::evaluate(QString scriptName, QList<QString> scriptPaths) 
     input.close();
 
     // Check syntax
-    QScriptSyntaxCheckResult result = m_pEngine->checkSyntax(scriptCode);
+/*    QScriptSyntaxCheckResult result = m_pEngine->checkSyntax(scriptCode);
     QString error="";
     switch (result.state()) {
         case (QScriptSyntaxCheckResult::Valid): break;
@@ -1027,8 +988,8 @@ bool ControllerEngine::evaluate(QString scriptName, QList<QString> scriptPaths) 
         case (QScriptSyntaxCheckResult::Error):
             error = "Syntax error";
             break;
-    }
-    if (error != "") {
+    }*/
+/*    if (error != "") {
         error = QString("%1 at line %2, column %3 in file %4: %5")
                     .arg(error,
                          QString::number(result.errorLineNumber()),
@@ -1047,13 +1008,13 @@ bool ControllerEngine::evaluate(QString scriptName, QList<QString> scriptPaths) 
             ErrorDialogHandler::instance()->requestErrorDialog(props);
         }
         return false;
-    }
+    }*/
 
     // Evaluate the code
-    QScriptValue scriptFunction = m_pEngine->evaluate(scriptCode, filename);
+    QJSValue scriptFunction = m_pEngine->evaluate(scriptCode, filename);
 
     // Record errors
-    if (checkException()) {
+    if (scriptFunction.isError()) {
         return false;
     }
 
@@ -1078,9 +1039,9 @@ const QStringList ControllerEngine::getErrors(QString filename) {
                 whether it should fire just once
    Output:  The timer's ID, 0 if starting it failed
    -------- ------------------------------------------------------ */
-int ControllerEngine::beginTimer(int interval, QScriptValue timerCallback,
+int ControllerEngine::beginTimer(int interval, QJSValue  timerCallback,
                                  bool oneShot) {
-    if (!timerCallback.isFunction() && !timerCallback.isString()) {
+    if (!timerCallback.isCallable() && !timerCallback.isString()) {
         qWarning() << "Invalid timer callback provided to beginTimer."
                    << "Valid callbacks are strings and functions.";
         return 0;
@@ -1098,8 +1059,7 @@ int ControllerEngine::beginTimer(int interval, QScriptValue timerCallback,
     int timerId = startTimer(interval);
     TimerInfo info;
     info.callback = timerCallback;
-    QScriptContext *ctxt = m_pEngine->currentContext();
-    info.context = ctxt ? ctxt->thisObject() : QScriptValue();
+    info.context =  QJSValue();
     info.oneShot = oneShot;
     m_timers[timerId] = info;
     if (timerId == 0) {
@@ -1165,7 +1125,7 @@ void ControllerEngine::timerEvent(QTimerEvent *event) {
 
     if (timerTarget.callback.isString()) {
         internalExecute(timerTarget.context, timerTarget.callback.toString());
-    } else if (timerTarget.callback.isFunction()) {
+    } else if (timerTarget.callback.isCallable()) {
         internalExecute(timerTarget.context, timerTarget.callback);
     }
 }

@@ -12,7 +12,7 @@
 #include "trackinfoobject.h"
 #include "control/controlvalue.h"
 #include "engine/effects/groupfeaturestate.h"
-#include "cachingreader.h"
+#include "engine/cachingreader.h"
 
 class EngineMaster;
 class EngineBuffer;
@@ -35,8 +35,7 @@ const double kNoTrigger = -1;
 class EngineControl : public QObject {
     Q_OBJECT
   public:
-    EngineControl(QString group,
-                  ConfigObject<ConfigValue>* _config);
+    EngineControl(QString group, ConfigObject<ConfigValue>* _config,QObject*pParent);
     virtual ~EngineControl();
 
     // Called by EngineBuffer::process every latency period. See the above
@@ -72,11 +71,6 @@ class EngineControl : public QObject {
     double getTotalSamples() const;
     bool atEndPosition() const;
     QString getGroup() const;
-
-    // Called to collect player features for effects processing.
-    virtual void collectFeatureState(GroupFeatureState* pGroupFeatures) const {
-        Q_UNUSED(pGroupFeatures);
-    }
 
     // Called whenever a seek occurs to allow the EngineControl to respond.
     virtual void notifySeek(double dNewPlaypo);

@@ -21,8 +21,9 @@
 #include "controlpushbutton.h"
 
 EngineChannel::EngineChannel(const ChannelHandleAndGroup& handle_group,
-                             EngineChannel::ChannelOrientation defaultOrientation)
-        : m_group(handle_group) {
+                             EngineChannel::ChannelOrientation defaultOrientation, QObject*pParent)
+        : EngineObject(pParent),
+          m_group(handle_group) {
     m_pPFL = new ControlPushButton(ConfigKey(getGroup(), "pfl"));
     m_pPFL->setButtonMode(ControlPushButton::TOGGLE);
     m_pMaster = new ControlPushButton(ConfigKey(getGroup(), "master"));
@@ -77,22 +78,24 @@ void EngineChannel::setTalkover(bool enabled) {
 bool EngineChannel::isTalkoverEnabled() const {
     return m_pTalkover->toBool();
 }
-
+void EngineChannel::setOrientation(ChannelOrientation o){
+  m_pOrientation->set(o);
+}
 void EngineChannel::slotOrientationLeft(double v) {
     if (v > 0) {
-        m_pOrientation->set(LEFT);
+        setOrientation(LEFT);
     }
 }
 
 void EngineChannel::slotOrientationRight(double v) {
     if (v > 0) {
-        m_pOrientation->set(RIGHT);
+        setOrientation(RIGHT);
     }
 }
 
 void EngineChannel::slotOrientationCenter(double v) {
     if (v > 0) {
-        m_pOrientation->set(CENTER);
+        setOrientation(CENTER);
     }
 }
 

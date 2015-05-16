@@ -40,8 +40,7 @@ DlgDeveloperTools::DlgDeveloperTools(QWidget* pParent,
 
     StatsManager* pManager = StatsManager::instance();
     if (pManager) {
-        connect(pManager, SIGNAL(statUpdated(const Stat&)),
-                &m_statModel, SLOT(statUpdated(const Stat&)));
+        connect(pManager, SIGNAL(statUpdated(const Stat&)),&m_statModel, SLOT(statUpdated(const Stat&)));
         pManager->emitAllStats();
     }
 

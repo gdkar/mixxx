@@ -6,7 +6,7 @@
 
 #include <QMap>
 
-#include "util.h"
+#include "util/util.h"
 #include "util/types.h"
 #include "util/defs.h"
 #include "effects/effectprocessor.h"

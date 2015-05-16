@@ -326,7 +326,7 @@ Result SoundManager::setupDevices() {
             isInput = true;
             // TODO(bkgood) look into allocating this with the frames per
             // buffer value from SMConfig
-            AudioInputBuffer aib(in, SampleUtil::alloc(MAX_BUFFER_LEN));
+            AudioInput aib(in, SampleUtil::alloc(MAX_BUFFER_LEN));
             err = device->addInput(aib) != SOUNDDEVICE_ERROR_OK ? ERR : OK;
             if (err != OK) {
                 delete [] aib.getBuffer();
@@ -353,7 +353,7 @@ Result SoundManager::setupDevices() {
                 continue;
             }
 
-            AudioOutputBuffer aob(out, pBuffer);
+            AudioOutput aob(out, pBuffer);
             err = device->addOutput(aob) != SOUNDDEVICE_ERROR_OK ? ERR : OK;
             if (err != OK) goto closeAndError;
             if (out.getType() == AudioOutput::MASTER) {
@@ -483,11 +483,11 @@ void SoundManager::onDeviceOutputCallback(const unsigned int iFramesPerBuffer) {
     m_pMaster->process(iFramesPerBuffer*2);
 }
 
-void SoundManager::pushInputBuffers(const QList<AudioInputBuffer>& inputs,
+void SoundManager::pushInputBuffers(const QList<AudioInput>& inputs,
                                     const unsigned int iFramesPerBuffer) {
-   for (QList<AudioInputBuffer>::ConstIterator i = inputs.begin(),
+   for (QList<AudioInput>::ConstIterator i = inputs.begin(),
                  e = inputs.end(); i != e; ++i) {
-        const AudioInputBuffer& in = *i;
+        const AudioInput& in = *i;
         CSAMPLE* pInputBuffer = in.getBuffer();
         for (QHash<AudioInput, AudioDestination*>::const_iterator it =
                 m_registeredDestinations.find(in);

@@ -30,7 +30,7 @@
 #include "sounddevice.h"
 #include "soundmanagerutil.h"
 #include "controlobject.h"
-#include "visualplayposition.h"
+#include "waveform/visualplayposition.h"
 #include "util/timer.h"
 #include "util/trace.h"
 #include "vinylcontrol/defs_vinylcontrol.h"
@@ -94,18 +94,15 @@ SoundDevicePortAudio::~SoundDevicePortAudio() {
 Result SoundDevicePortAudio::open(bool isClkRefDevice, int syncBuffers) {
     qDebug() << "SoundDevicePortAudio::open()" << getInternalName();
     PaError err;
-
     if (m_audioOutputs.empty() && m_audioInputs.empty()) {
         m_lastError = QString::fromAscii("No inputs or outputs in SDPA::open() "
             "(THIS IS A BUG, this should be filtered by SM::setupDevices)");
         return ERR;
     }
-
     memset(&m_outputParams, 0, sizeof(m_outputParams));
     memset(&m_inputParams, 0, sizeof(m_inputParams));
     PaStreamParameters* pOutputParams = &m_outputParams;
     PaStreamParameters* pInputParams = &m_inputParams;
-
     // Look at how many audio outputs we have,
     // so we can figure out how many output channels we need to open.
     if (m_audioOutputs.empty()) {
@@ -121,7 +118,6 @@ Result SoundDevicePortAudio::open(bool isClkRefDevice, int syncBuffers) {
             }
         }
     }
-
     // Look at how many audio inputs we have,
     // so we can figure out how many input channels we need to open.
     if (m_audioInputs.empty()) {
@@ -137,7 +133,6 @@ Result SoundDevicePortAudio::open(bool isClkRefDevice, int syncBuffers) {
             }
         }
     }
-
     // Workaround for Bug #900364. The PortAudio ALSA hostapi opens the minimum
     // number of device channels supported by the device regardless of our
     // channel request. It has no way of notifying us when it does this. The
@@ -149,22 +144,17 @@ Result SoundDevicePortAudio::open(bool isClkRefDevice, int syncBuffers) {
     if (m_deviceInfo->hostApi == paALSA) {
         // Only engage workaround if the device has enough input and output
         // channels.
-        if (m_deviceInfo->maxInputChannels >= 2 &&
-                m_inputParams.channelCount == 1) {
+        if (m_deviceInfo->maxInputChannels >= 2 && m_inputParams.channelCount == 1) {
             m_inputParams.channelCount = 2;
         }
-        if (m_deviceInfo->maxOutputChannels >= 2 &&
-                m_outputParams.channelCount == 1) {
+        if (m_deviceInfo->maxOutputChannels >= 2 && m_outputParams.channelCount == 1) {
             m_outputParams.channelCount = 2;
         }
     }
-
-
     // Sample rate
     if (m_dSampleRate <= 0) {
         m_dSampleRate = 44100.0;
     }
-
     // Get latency in milleseconds
     qDebug() << "framesPerBuffer:" << m_framesPerBuffer;
     double bufferMSec = m_framesPerBuffer / m_dSampleRate * 1000;
@@ -177,10 +167,7 @@ Result SoundDevicePortAudio::open(bool isClkRefDevice, int syncBuffers) {
     // paFramesPerBufferUnspecified in non-blocking mode because the latency
     // comes from the JACK daemon. (PA should give an error or something though,
     // but it doesn't.)
-    if (m_deviceInfo->hostApi == paJACK) {
-        m_framesPerBuffer = paFramesPerBufferUnspecified;
-    }
-
+    if (m_deviceInfo->hostApi == paJACK) {m_framesPerBuffer = paFramesPerBufferUnspecified;}
     //Fill out the rest of the info.
     m_outputParams.device = m_devId;
     m_outputParams.sampleFormat = paFloat32;
@@ -221,12 +208,10 @@ Result SoundDevicePortAudio::open(bool isClkRefDevice, int syncBuffers) {
         // this can be used on a second device when it id driven by the Clock reference device clock
         callback = paV19Callback;
         if (m_outputParams.channelCount) {
-            m_outputFifo = new FIFO<CSAMPLE>(
-                    m_outputParams.channelCount * m_framesPerBuffer);
+            m_outputFifo = new FIFO<CSAMPLE>(m_outputParams.channelCount * m_framesPerBuffer);
         }
         if (m_inputParams.channelCount) {
-            m_inputFifo = new FIFO<CSAMPLE>(
-                    m_inputParams.channelCount * m_framesPerBuffer);
+            m_inputFifo = new FIFO<CSAMPLE>(m_inputParams.channelCount * m_framesPerBuffer);
         }
     } else if (m_syncBuffers == 0) {
         if (m_outputParams.channelCount) {
@@ -267,12 +252,9 @@ Result SoundDevicePortAudio::open(bool isClkRefDevice, int syncBuffers) {
        qDebug() << "Dynamically loaded PortAudio library";
 
     EnableAlsaRT enableRealtime = (EnableAlsaRT) portaudio.resolve("PaAlsa_EnableRealtimeScheduling");
-    if (enableRealtime) {
-        enableRealtime(pStream, 1);
-    }
+    if (enableRealtime) {enableRealtime(pStream, 1);}
     portaudio.unload();
 #endif
-
     // Start stream
     err = Pa_StartStream(pStream);
     if (err != paNoError) {
@@ -286,13 +268,11 @@ Result SoundDevicePortAudio::open(bool isClkRefDevice, int syncBuffers) {
     } else {
         qDebug() << "PortAudio: Started stream successfully";
     }
-
     // Get the actual details of the stream & update Mixxx's data
     const PaStreamInfo* streamDetails = Pa_GetStreamInfo(pStream);
     m_dSampleRate = streamDetails->sampleRate;
     double currentLatencyMSec = streamDetails->outputLatency * 1000;
     qDebug() << "   Actual sample rate: " << m_dSampleRate << "Hz, latency:" << currentLatencyMSec << "ms";
-
     if (isClkRefDevice) {
         // Update the samplerate and latency ControlObjects, which allow the
         // waveform view to properly correct for the latency.

@@ -9,7 +9,7 @@
 #include <QSqlDatabase>
 
 #include "library/dao/dao.h"
-#include "util.h"
+#include "util/util.h"
 
 #define CRATE_TABLE "crates"
 #define CRATE_TRACKS_TABLE "crate_tracks"

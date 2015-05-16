@@ -5,7 +5,7 @@
 #include <QSharedPointer>
 #include <QString>
 
-#include "util.h"
+#include "util/util.h"
 #include "controlobject.h"
 #include "controlpushbutton.h"
 #include "effects/effect.h"

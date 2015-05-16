@@ -298,6 +298,12 @@ AudioOutput::AudioOutput(AudioPathType type,
         m_index = 0;
     }
 }
+AudioOutput::AudioOutput(const AudioOutput& out, const CSAMPLE* pBuffer)
+  : AudioPath(out.m_channelGroup.getChannelBase(),out.m_channelGroup.getChannelCount())
+  , m_pBuffer(pBuffer){ 
+    setType(out.getType());
+  if(isIndexed(getType()))m_index=out.getIndex();
+  }
 
 AudioOutput::~AudioOutput() {
 
@@ -376,9 +382,13 @@ AudioInput::AudioInput(AudioPathType type,
         m_index = 0;
     }
 }
-
+AudioInput::AudioInput(const AudioInput &in, CSAMPLE *pBuffer)
+  : AudioPath(in.m_channelGroup.getChannelBase(),in.m_channelGroup.getChannelCount())
+  , m_pBuffer(pBuffer){
+  setType(in.getType());
+  if(isIndexed(getType()))m_index=in.getIndex();
+  }
 AudioInput::~AudioInput() {
-
 }
 
 /**

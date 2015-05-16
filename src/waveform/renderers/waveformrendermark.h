@@ -3,7 +3,7 @@
 
 #include "waveform/renderers/waveformrendererabstract.h"
 #include "waveformmarkset.h"
-#include "util.h"
+#include "util/util.h"
 #include "skin/skincontext.h"
 
 class WaveformRenderMark : public WaveformRendererAbstract {

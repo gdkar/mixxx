@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "configobject.h"
-#include "util.h"
+#include "util/util.h"
 
 #include "waveformrendererabstract.h"
 #include "waveformmarkrange.h"

@@ -18,8 +18,8 @@ using RubberBand::RubberBandStretcher;
 static size_t kRubberBandBlockSize = 128;
 
 EngineBufferScaleRubberBand::EngineBufferScaleRubberBand(
-    ReadAheadManager* pReadAheadManager)
-        : EngineBufferScale(pReadAheadManager),
+    ReadAheadManager* pReadAheadManager, QObject*pParent)
+        : EngineBufferScale(pReadAheadManager,pParent),
           m_bBackwards(false),
           m_buffer_back(SampleUtil::alloc(MAX_BUFFER_LEN)),
           m_pRubberBand(NULL){
