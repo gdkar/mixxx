@@ -655,6 +655,7 @@ class MixxxCore(Feature):
                    "upgrade.cpp",
 
                    "sources/soundsourceplugin.cpp",
+                   "sources/soundsourcepluginlibrary.cpp",
                    "sources/soundsource.cpp",
                    "sources/audiosource.cpp",
 

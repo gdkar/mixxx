@@ -20,12 +20,10 @@ VinylControlControl::VinylControlControl(QString group, ConfigObject<ConfigValue
     } else {
         m_pControlVinylSpeedType->set(MIXXX_VINYL_SPEED_33_NUM);
     }
-
     m_pControlVinylSeek = new ControlObject(ConfigKey(group, "vinylcontrol_seek"));
     connect(m_pControlVinylSeek, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlVinylSeek(double)),
             Qt::DirectConnection);
-
     m_pControlVinylRate = new ControlObject(ConfigKey(group, "vinylcontrol_rate"));
     m_pControlVinylScratching = new ControlPushButton(ConfigKey(group, "vinylcontrol_scratching"));
     m_pControlVinylScratching->set(0);
@@ -45,7 +43,6 @@ VinylControlControl::VinylControlControl(QString group, ConfigObject<ConfigValue
     m_pControlVinylSignalEnabled = new ControlPushButton(ConfigKey(group, "vinylcontrol_signal_enabled"));
     m_pControlVinylSignalEnabled->set(1);
     m_pControlVinylSignalEnabled->setButtonMode(ControlPushButton::TOGGLE);
-
     m_pPlayEnabled = new ControlObjectSlave(group, "play", this);
 }
 
@@ -61,16 +58,11 @@ VinylControlControl::~VinylControlControl() {
     delete m_pControlVinylSpeedType;
     delete m_pControlVinylStatus;
 }
-
-void VinylControlControl::trackLoaded(TrackPointer pTrack) {
-    m_pCurrentTrack = pTrack;
-}
-
+void VinylControlControl::trackLoaded(TrackPointer pTrack) {m_pCurrentTrack = pTrack;}
 void VinylControlControl::trackUnloaded(TrackPointer pTrack) {
     Q_UNUSED(pTrack);
     m_pCurrentTrack.clear();
 }
-
 void VinylControlControl::notifySeekQueued() {
     // m_bRequested is set and unset in a single execution path,
     // so there are no issues with signals/slots causing timing
@@ -84,14 +76,10 @@ void VinylControlControl::notifySeekQueued() {
 
 void VinylControlControl::slotControlVinylSeek(double fractionalPos) {
     // Prevent NaN's from sneaking into the engine.
-    if (isnan(fractionalPos)) {
-        return;
-    }
+    if (isnan(fractionalPos)) {return;}
 
     // Do nothing if no track is loaded.
-    if (!m_pCurrentTrack) {
-        return;
-    }
+    if (!m_pCurrentTrack) {return;}
 
 
     double total_samples = getTotalSamples();

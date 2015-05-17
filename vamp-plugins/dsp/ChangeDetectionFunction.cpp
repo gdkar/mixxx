@@ -22,67 +22,99 @@
 
 
 ChangeDetectionFunction::ChangeDetectionFunction(ChangeDFConfig config) :
-	m_dFilterSigma(0.0), m_iFilterWidth(0) {setFilterWidth(config.smoothingWidth);}
+	m_dFilterSigma(0.0), m_iFilterWidth(0)
+{
+	setFilterWidth(config.smoothingWidth);
+}
 
-ChangeDetectionFunction::~ChangeDetectionFunction(){}
+ChangeDetectionFunction::~ChangeDetectionFunction()
+{
+}
 
-void ChangeDetectionFunction::setFilterWidth(const int iWidth){
+void ChangeDetectionFunction::setFilterWidth(const int iWidth)
+{
 	m_iFilterWidth = iWidth*2+1;
 	
 	// it is assumed that the gaussian is 0 outside of +/- FWHM
 	// => filter width = 2*FWHM = 2*2.3548*sigma
 	m_dFilterSigma = double(m_iFilterWidth) / double(2*2.3548);
 	m_vaGaussian.resize(m_iFilterWidth);
+	
 	double dScale = 1.0 / (m_dFilterSigma*sqrt(2*PI));
-	for (int x = -(m_iFilterWidth-1)/2; x <= (m_iFilterWidth-1)/2; x++){
+	
+	for (int x = -(m_iFilterWidth-1)/2; x <= (m_iFilterWidth-1)/2; x++)
+	{
 		double w = dScale * std::exp ( -(x*x)/(2*m_dFilterSigma*m_dFilterSigma) );
 		m_vaGaussian[x + (m_iFilterWidth-1)/2] = w;
 	}
+	
 #ifdef DEBUG_CHANGE_DETECTION_FUNCTION
 	std::cerr << "Filter sigma: " << m_dFilterSigma << std::endl;
 	std::cerr << "Filter width: " << m_iFilterWidth << std::endl;
 #endif
 }
-ChangeDistance ChangeDetectionFunction::process(const TCSGram& rTCSGram){
+
+
+ChangeDistance ChangeDetectionFunction::process(const TCSGram& rTCSGram)
+{
 	ChangeDistance retVal;
 	retVal.resize(rTCSGram.getSize(), 0.0);
+	
 	TCSGram smoothedTCSGram;
-	for (int iPosition = 0; iPosition < rTCSGram.getSize(); iPosition++){
+
+	for (int iPosition = 0; iPosition < rTCSGram.getSize(); iPosition++)
+	{
 		int iSkipLower = 0;
+	
 		int iLowerPos = iPosition - (m_iFilterWidth-1)/2;
 		int iUpperPos = iPosition + (m_iFilterWidth-1)/2;
-		if (iLowerPos < 0){
+	
+		if (iLowerPos < 0)
+		{
 			iSkipLower = -iLowerPos;
 			iLowerPos = 0;
 		}
-		if (iUpperPos >= rTCSGram.getSize()){
+	
+		if (iUpperPos >= rTCSGram.getSize())
+		{
 			int iMaxIndex = rTCSGram.getSize() - 1;
 			iUpperPos = iMaxIndex;
 		}
+	
 		TCSVector smoothedVector;
+
 		// for every bin of the vector, calculate the smoothed value
-		for (int iPC = 0; iPC < 6; iPC++){	
+		for (int iPC = 0; iPC < 6; iPC++)
+		{	
 			size_t j = 0;
 			double dSmoothedValue = 0.0;
 			TCSVector rCV;
-			for (int i = iLowerPos; i <= iUpperPos; i++){
+		
+			for (int i = iLowerPos; i <= iUpperPos; i++)
+			{
 				rTCSGram.getTCSVector(i, rCV);
 				dSmoothedValue += m_vaGaussian[iSkipLower + j++] * rCV[iPC];
 			}
 
 			smoothedVector[iPC] = dSmoothedValue;
 		}
+		
 		smoothedTCSGram.addTCSVector(smoothedVector);
 	}
-	for (int iPosition = 0; iPosition < rTCSGram.getSize(); iPosition++){
+
+	for (int iPosition = 0; iPosition < rTCSGram.getSize(); iPosition++)
+	{
 		/*
 			TODO: calculate a confidence measure for the current estimation
 			if the current estimate is not confident enough, look further into the future/the past
 			e.g., High frequency content, zero crossing rate, spectral flatness
 		*/
+		
 		TCSVector nextTCS;
 		TCSVector previousTCS;
+		
 		int iWindow = 1;
+
 		// while (previousTCS.magnitude() < 0.1 && (iPosition-iWindow) > 0)
 		{
 			smoothedTCSGram.getTCSVector(iPosition-iWindow, previousTCS);
@@ -97,12 +129,16 @@ ChangeDistance ChangeDetectionFunction::process(const TCSGram& rTCSGram){
 			smoothedTCSGram.getTCSVector(iPosition+iWindow, nextTCS);
 			iWindow++;
 		}
+
 		double distance = 0.0;
 		// Euclidean distance
-		for (size_t j = 0; j < 6; j++){
+		for (size_t j = 0; j < 6; j++)
+		{
 			distance += std::pow(nextTCS[j] - previousTCS[j], 2.0);
 		}
+	
 		retVal[iPosition] = std::pow(distance, 0.5);
 	}
+
 	return retVal;
 }

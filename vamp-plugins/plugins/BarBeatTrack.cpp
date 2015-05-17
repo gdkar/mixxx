@@ -49,7 +49,9 @@ using std::endl;
  #endif
 
 float BarBeatTracker::m_stepSecs = 0.01161; // 512 samples at 44100
-class BarBeatTrackerData{
+
+class BarBeatTrackerData
+{
 public:
     BarBeatTrackerData(float rate, const DFConfig &config) : dfConfig(config) {
 	df = new DetectionFunction(config);
@@ -69,35 +71,70 @@ public:
         downBeat->resetAudioBuffer();
         origin = Vamp::RealTime::zeroTime;
     }
+
     DFConfig dfConfig;
     DetectionFunction *df;
     DownBeat *downBeat;
     vector<double> dfOutput;
     Vamp::RealTime origin;
 };
+    
+
 BarBeatTracker::BarBeatTracker(float inputSampleRate) :
     Vamp::Plugin(inputSampleRate),
     m_d(0),
     m_bpb(4)
-{}
-BarBeatTracker::~BarBeatTracker(){delete m_d;}
+{
+}
+
+BarBeatTracker::~BarBeatTracker()
+{
+    delete m_d;
+}
+
 string
-BarBeatTracker::getIdentifier() const{return "qm-barbeattracker";}
+BarBeatTracker::getIdentifier() const
+{
+    return "qm-barbeattracker";
+}
+
 string
-BarBeatTracker::getName() const{return "Bar and Beat Tracker";}
+BarBeatTracker::getName() const
+{
+    return "Bar and Beat Tracker";
+}
+
 string
-BarBeatTracker::getDescription() const{return "Estimate bar and beat locations";}
+BarBeatTracker::getDescription() const
+{
+    return "Estimate bar and beat locations";
+}
+
 string
-BarBeatTracker::getMaker() const{return "Queen Mary, University of London";}
+BarBeatTracker::getMaker() const
+{
+    return "Queen Mary, University of London";
+}
+
 int
-BarBeatTracker::getPluginVersion() const{return 2;}
+BarBeatTracker::getPluginVersion() const
+{
+    return 2;
+}
+
 string
 BarBeatTracker::getCopyright() const
-{return "Plugin by Matthew Davies, Christian Landone and Chris Cannam.  Copyright (c) 2006-2009 QMUL - All Rights Reserved";}
+{
+    return "Plugin by Matthew Davies, Christian Landone and Chris Cannam.  Copyright (c) 2006-2009 QMUL - All Rights Reserved";
+}
+
 BarBeatTracker::ParameterList
-BarBeatTracker::getParameterDescriptors() const{
+BarBeatTracker::getParameterDescriptors() const
+{
     ParameterList list;
+
     ParameterDescriptor desc;
+
     desc.identifier = "bpb";
     desc.name = "Beats per Bar";
     desc.description = "The number of beats in each bar";
@@ -112,34 +149,45 @@ BarBeatTracker::getParameterDescriptors() const{
 }
 
 float
-BarBeatTracker::getParameter(std::string name) const{
+BarBeatTracker::getParameter(std::string name) const
+{
     if (name == "bpb") return m_bpb;
     return 0.0;
 }
+
 void
-BarBeatTracker::setParameter(std::string name, float value){if (name == "bpb") m_bpb = lrintf(value);}
+BarBeatTracker::setParameter(std::string name, float value)
+{
+    if (name == "bpb") m_bpb = lrintf(value);
+}
+
 bool
-BarBeatTracker::initialise(size_t channels, size_t stepSize, size_t blockSize){
+BarBeatTracker::initialise(size_t channels, size_t stepSize, size_t blockSize)
+{
     if (m_d) {
 	delete m_d;
 	m_d = 0;
     }
+
     if (channels < getMinChannelCount() ||
 	channels > getMaxChannelCount()) {
         std::cerr << "BarBeatTracker::initialise: Unsupported channel count: "
                   << channels << std::endl;
         return false;
     }
+
     if (stepSize != getPreferredStepSize()) {
         std::cerr << "ERROR: BarBeatTracker::initialise: Unsupported step size for this sample rate: "
                   << stepSize << " (wanted " << (getPreferredStepSize()) << ")" << std::endl;
         return false;
     }
+
     if (blockSize != getPreferredBlockSize()) {
         std::cerr << "WARNING: BarBeatTracker::initialise: Sub-optimal block size for this sample rate: "
                   << blockSize << " (wanted " << getPreferredBlockSize() << ")" << std::endl;
 //        return false;
     }
+
     DFConfig dfConfig;
     dfConfig.DFType = DF_COMPLEXSD;
     dfConfig.stepSize = stepSize;
@@ -148,14 +196,21 @@ BarBeatTracker::initialise(size_t channels, size_t stepSize, size_t blockSize){
     dfConfig.adaptiveWhitening = false;
     dfConfig.whiteningRelaxCoeff = -1;
     dfConfig.whiteningFloor = -1;
+    
     m_d = new BarBeatTrackerData(m_inputSampleRate, dfConfig);
     m_d->downBeat->setBeatsPerBar(m_bpb);
     return true;
 }
+
 void
-BarBeatTracker::reset(){if (m_d) m_d->reset();}
+BarBeatTracker::reset()
+{
+    if (m_d) m_d->reset();
+}
+
 size_t
-BarBeatTracker::getPreferredStepSize() const{
+BarBeatTracker::getPreferredStepSize() const
+{
     size_t step = size_t(m_inputSampleRate * m_stepSecs + 0.0001);
     if (step < 1) step = 1;
 //    std::cerr << "BarBeatTracker::getPreferredStepSize: input sample rate is " << m_inputSampleRate << ", step size is " << step << std::endl;

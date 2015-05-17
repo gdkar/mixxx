@@ -12,11 +12,8 @@
 #include "control/controlpotmeter.h"
 #include "util/math.h"
 #include "util/time.h"
-
 SoftTakeoverCtrl::SoftTakeoverCtrl() {
-
 }
-
 SoftTakeoverCtrl::~SoftTakeoverCtrl() {
     QHashIterator<ControlObject*, SoftTakeover*> i(m_softTakeoverHash);
     while (i.hasNext()) {
@@ -24,34 +21,24 @@ SoftTakeoverCtrl::~SoftTakeoverCtrl() {
         delete i.value();
     }
 }
-
 void SoftTakeoverCtrl::enable(ControlObject* control) {
     ControlPotmeter* cpo = dynamic_cast<ControlPotmeter*>(control);
     if (cpo == NULL) {
         // softtakecover works only for continuous ControlPotmeter based COs
         return;
     }
-
     // Initialize times
     if (!m_softTakeoverHash.contains(control)) {
         m_softTakeoverHash.insert(control, new SoftTakeover());
     }
 }
-
 void SoftTakeoverCtrl::disable(ControlObject* control) {
-    if (control == NULL) {
-        return;
-    }
+    if (control == NULL) {return;}
     SoftTakeover* pSt = m_softTakeoverHash.take(control);
-    if (pSt) {
-        delete pSt;
-    }
+    if (pSt) {delete pSt;}
 }
-
 bool SoftTakeoverCtrl::ignore(ControlObject* control, double newParameter) {
-    if (control == NULL) {
-        return false;
-    }
+    if (control == NULL) {return false;}
     bool ignore = false;
     SoftTakeover* pSt = m_softTakeoverHash.value(control);
     if (pSt) {
@@ -112,7 +99,4 @@ bool SoftTakeover::ignore(ControlObject* control, double newParameter) {
 
     return ignore;
 }
-
-void SoftTakeover::ignoreNext() {
-    m_time = 0;
-}
+void SoftTakeover::ignoreNext() {m_time = 0;}

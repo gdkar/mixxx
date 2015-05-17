@@ -1,7 +1,7 @@
 #ifndef MIXXX_SOUNDSOURCEFFMPEG_H
 #define MIXXX_SOUNDSOURCEFFMPEG_H
 
-#include "sources/soundsource.h"
+#include "sources/soundsourceprovider.h"
 
 #include <encoder/encoderffmpegresample.h>
 
@@ -25,39 +25,55 @@
 #include <libavutil/opt.h>
 
 #include <QVector>
+
 namespace Mixxx {
+
 struct ffmpegLocationObject {
     SINT pos;
     SINT pts;
     SINT startFrame;
 };
+
 struct ffmpegCacheObject {
     SINT startFrame;
     SINT length;
     quint8 *bytes;
 };
+
 class SoundSourceFFmpeg : public SoundSource {
 public:
-    static QList<QString> supportedFileExtensions();
+    static QStringList supportedFileExtensions();
+
     explicit SoundSourceFFmpeg(QUrl url);
-    virtual ~SoundSourceFFmpeg();
-    virtual void close() Q_DECL_OVERRIDE /*override*/;
-    virtual SINT seekSampleFrame(SINT frameIndex) Q_DECL_OVERRIDE /*override*/;
-    virtual SINT readSampleFrames(SINT numberOfFrames, CSAMPLE* sampleBuffer) Q_DECL_OVERRIDE/*override*/;
+    ~SoundSourceFFmpeg();
+
+    void close() /*override*/;
+
+    SINT seekSampleFrame(SINT frameIndex) /*override*/;
+
+    SINT readSampleFrames(SINT numberOfFrames, CSAMPLE* sampleBuffer) /*override*/;
+
 private:
-    virtual Result tryOpen(const AudioSourceConfig& audioSrcCfg) Q_DECL_OVERRIDE /*override*/;
+    Result tryOpen(const AudioSourceConfig& audioSrcCfg) /*override*/;
+
     bool readFramesToCache(unsigned int count, SINT offset);
     bool getBytesFromCache(char *buffer, SINT offset, SINT size);
     SINT getSizeofCache();
     void clearCache();
+
     unsigned int read(unsigned long size, SAMPLE*);
+
     AVFormatContext *m_pFormatCtx;
     int m_iAudioStream;
     AVCodecContext *m_pCodecCtx;
     AVCodec *m_pCodec;
+
     EncoderFfmpegResample *m_pResample;
+
     SINT m_currentMixxxFrameIndex;
+
     bool m_bIsSeeked;
+
     SINT m_lCacheFramePos;
     SINT m_lCacheStartFrame;
     SINT m_lCacheEndFrame;
@@ -66,6 +82,21 @@ private:
     QVector<struct ffmpegLocationObject  *> m_SJumpPoints;
     SINT m_lLastStoredPos;
     SINT m_lStoredSeekPoint;
+};
+
+class SoundSourceProviderFFmpeg: public SoundSourceProvider {
+public:
+    QString getName() const /*override*/ {
+        return "FFmpeg";
+    }
+
+    QStringList getSupportedFileTypes() const /*override*/ {
+        return SoundSourceFFmpeg::supportedFileExtensions();
+    }
+
+    SoundSourcePointer newSoundSource(const QUrl& url)  /*override*/ {
+        return SoundSourcePointer(new SoundSourceFFmpeg(url));
+    }
 };
 
 } // namespace Mixxx

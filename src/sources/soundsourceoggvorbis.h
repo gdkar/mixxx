@@ -1,7 +1,7 @@
 #ifndef MIXXX_SOUNDSOURCEOGGVORBIS_H
 #define MIXXX_SOUNDSOURCEOGGVORBIS_H
 
-#include "sources/soundsource.h"
+#include "sources/soundsourceprovider.h"
 
 #define OV_EXCLUDE_STATIC_CALLBACKS
 #include <vorbis/vorbisfile.h>
@@ -10,8 +10,6 @@ namespace Mixxx {
 
 class SoundSourceOggVorbis: public SoundSource {
 public:
-    static QList<QString> supportedFileExtensions();
-
     explicit SoundSourceOggVorbis(QUrl url);
     ~SoundSourceOggVorbis();
 
@@ -25,6 +23,8 @@ public:
             CSAMPLE* sampleBuffer, SINT sampleBufferSize) /*override*/;
 
 private:
+    QString getName() const /*override*/;
+
     Result tryOpen(const AudioSourceConfig& audioSrcCfg) /*override*/;
 
     SINT readSampleFrames(SINT numberOfFrames,
@@ -34,6 +34,17 @@ private:
     OggVorbis_File m_vf;
 
     SINT m_curFrameIndex;
+};
+
+class SoundSourceProviderOggVorbis: public SoundSourceProvider {
+public:
+    QString getName() const /*override*/;
+
+    QStringList getSupportedFileTypes() const /*override*/;
+
+    SoundSourcePointer newSoundSource(const QUrl& url)  /*override*/ {
+        return SoundSourcePointer(new SoundSourceOggVorbis(url));
+    }
 };
 
 } // namespace Mixxx

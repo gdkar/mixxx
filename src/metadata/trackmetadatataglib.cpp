@@ -197,12 +197,14 @@ bool readAudioProperties(TrackMetadata* pTrackMetadata,
         return false;
     }
     if (!pTrackMetadata) {
-        // implicitly succesful
+        // implicitly successful
         return true;
     }
     const TagLib::AudioProperties* pAudioProperties =
             file.audioProperties();
     if (!pAudioProperties) {
+        qWarning() << "Failed to read audio properties from file"
+                << file.name();
         return false;
     }
     readAudioProperties(pTrackMetadata, *pAudioProperties);
@@ -1064,9 +1066,11 @@ Result readTrackMetadataAndCoverArtFromFile(TrackMetadata* pTrackMetadata, QImag
                 }
             }
         }
+    } else {
+        qWarning() << "Unsupported file type" << fileType;
     }
 
-    qWarning() << "File" << fileName << "does not contain any supported tags that could be read!";
+    qWarning() << "Failed to read track metadata from file" << fileName;
     return ERR;
 }
 

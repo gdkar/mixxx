@@ -58,12 +58,12 @@
 #endif
 
 #include "trackinfoobject.h"
-
+#include "trackplayer.h"
 const double kLinearScalerElipsis = 1.00058; // 2^(0.01/12): changes < 1 cent allows a linear scaler
 const int kSamplesPerFrame = 2; // Engine buffer uses Stereo frames only
 
 EngineBuffer::EngineBuffer(QString group, ConfigObject<ConfigValue>* _config,
-                           EngineChannel* pChannel, EngineMaster* pMixingEngine, QObject*pParent)
+                           EngineChannel* pChannel, EngineMaster* pMixingEngine, TrackPlayer *pParent)
         : EngineObject(pParent),
           m_group(group),
           m_pConfig(_config),

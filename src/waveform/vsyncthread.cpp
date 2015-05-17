@@ -40,19 +40,12 @@ VSyncThread::~VSyncThread() {
     wait();
     //delete m_glw;
 }
-
-void VSyncThread::stop() {
-    m_bDoRendering = false;
-}
-
-
+void VSyncThread::stop() {m_bDoRendering = false;}
 void VSyncThread::run() {
     Counter droppedFrames("VsyncThread real time error");
     QThread::currentThread()->setObjectName("VSyncThread");
-
     m_usWaitToSwap = m_usSyncIntervalTime;
     m_timer.start();
-
     while (m_bDoRendering) {
         if (m_vSyncMode == ST_FREE) {
             // for benchmark only!
@@ -84,9 +77,9 @@ void VSyncThread::run() {
             // qDebug() << "ST_TIMER                      " << usLast << usRest;
             int usRemainingForSwap = m_usWaitToSwap - (int)m_timer.elapsed() / 1000;
             // waiting for interval by sleep
-            if (usRemainingForSwap > 100) {
+            if (usRemainingForSwap > 250) {
                 Event::start("VsyncThread usleep for VSync");
-                usleep(usRemainingForSwap-100);
+                usleep(usRemainingForSwap-250);
                 Event::end("VsyncThread usleep for VSync");
             }
             Event::start("VsyncThread vsync swap");
@@ -108,14 +101,11 @@ void VSyncThread::run() {
             m_usWaitToSwap = m_usSyncIntervalTime +
                     ((m_usWaitToSwap - usLastSwapTime) % m_usSyncIntervalTime);
         }
-
         // Qt timers are not that useful in our case, because they
         // are handled with priority without respecting the callback
         m_pGuiTick->process();
     }
 }
-
-
 // static
 void VSyncThread::swapGl(QGLWidget* glw, int index) {
     Q_UNUSED(index);
@@ -134,16 +124,11 @@ void VSyncThread::swapGl(QGLWidget* glw, int index) {
 #endif // QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
 #endif
 }
-
-int VSyncThread::elapsed() {
-    return (int)m_timer.elapsed() / 1000;
-}
-
+int VSyncThread::elapsed() {return (int)m_timer.elapsed() / 1000;}
 void VSyncThread::setUsSyncIntervalTime(int syncTime) {
     m_usSyncIntervalTime = syncTime;
     m_vSyncPerRendering = round(m_displayFrameRate * m_usSyncIntervalTime / 1000);
 }
-
 void VSyncThread::setVSyncType(int type) {
     if (type >= (int)VSyncThread::ST_COUNT) {
         type = VSyncThread::ST_TIMER;
@@ -152,7 +137,6 @@ void VSyncThread::setVSyncType(int type) {
     m_droppedFrames = 0;
     m_vSyncTypeChanged = true;
 }
-
 int VSyncThread::usToNextSync() {
     int usRest = m_usWaitToSwap - ((int)m_timer.elapsed() / 1000);
     // int math is fine here, because we do not expect times > 4.2 s
@@ -162,27 +146,20 @@ int VSyncThread::usToNextSync() {
     }
     return usRest;
 }
-
 int VSyncThread::usFromTimerToNextSync(PerformanceTimer* timer) {
     int usDifference = (int)m_timer.difference(timer) / 1000;
     // int math is fine here, because we do not expect times > 4.2 s
     return usDifference + m_usWaitToSwap;
 }
-
-int VSyncThread::droppedFrames() {
-    return m_droppedFrames;
-}
-
+int VSyncThread::droppedFrames() {return m_droppedFrames;}
 void VSyncThread::vsyncSlotFinished() {
     m_semaVsyncSlot.release();
 }
-
 void VSyncThread::getAvailableVSyncTypes(QList<QPair<int, QString > >* pList) {
     for (int i = (int)VSyncThread::ST_TIMER; i < (int)VSyncThread::ST_COUNT; i++) {
         //if (isAvailable(type))  // TODO
         {
             enum VSyncMode mode = (enum VSyncMode)i;
-
             QString name;
             switch (mode) {
             case VSyncThread::ST_TIMER:

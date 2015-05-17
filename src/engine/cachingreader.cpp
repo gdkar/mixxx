@@ -15,7 +15,6 @@
 // For 80 chunks we need 5242880 (0x500000) bytes (5 MiB) of Memory
 //static
 const int CachingReader::maximumChunksInMemory = 80;
-
 CachingReader::CachingReader(QString group,
                              ConfigObject<ConfigValue>* config, QObject*pParent)
         : QObject(pParent),
@@ -27,11 +26,8 @@ CachingReader::CachingReader(QString group,
           m_lruChunk(NULL),
           m_sampleBuffer(CachingReaderWorker::kSamplesPerChunk * maximumChunksInMemory),
           m_iTrackNumFramesCallbackSafe(0) {
-
     m_allocatedChunks.reserve(m_sampleBuffer.size());
-
     CSAMPLE* bufferStart = m_sampleBuffer.data();
-
     // Divide up the allocated raw memory buffer into total_chunks
     // chunks. Initialize each chunk to hold nothing and add it to the free
     // list.
@@ -43,17 +39,13 @@ CachingReader::CachingReader(QString group,
         c->next_lru = NULL;
         c->prev_lru = NULL;
         c->state = Chunk::FREE;
-
         m_chunks.push_back(c);
         m_freeChunks.push_back(c);
-
         bufferStart += CachingReaderWorker::kSamplesPerChunk;
     }
-
     m_pWorker = new CachingReaderWorker(group,
             &m_chunkReadRequestFIFO,
             &m_readerStatusFIFO);
-
     // Forward signals from worker
     connect(m_pWorker, SIGNAL(trackLoading()),
             this, SIGNAL(trackLoading()),
@@ -67,10 +59,7 @@ CachingReader::CachingReader(QString group,
 
     m_pWorker->start(QThread::HighPriority);
 }
-
-
 CachingReader::~CachingReader() {
-
     m_pWorker->quitWait();
     delete m_pWorker;
     m_freeChunks.clear();
@@ -78,72 +67,45 @@ CachingReader::~CachingReader() {
     m_lruChunk = m_mruChunk = NULL;
     qDeleteAll(m_chunks);
 }
-
 // static
 Chunk* CachingReader::removeFromLRUList(Chunk* chunk, Chunk* head) {
     if (chunk == NULL) {
         qDebug() << "ERROR: NULL chunk argument to removeFromLRUList";
         return NULL;
     }
-
     // Remove chunk from the doubly-linked list.
     Chunk* next = chunk->next_lru;
     Chunk* prev = chunk->prev_lru;
-
-    if (next) {
-        next->prev_lru = prev;
-    }
-
-    if (prev) {
-        prev->next_lru = next;
-    }
-
+    if (next) {next->prev_lru = prev;}
+    if (prev) {prev->next_lru = next;}
     chunk->next_lru = NULL;
     chunk->prev_lru = NULL;
-
-    if (chunk == head)
-        return next;
-
+    if (chunk == head)return next;
     return head;
 }
-
 // static
 Chunk* CachingReader::insertIntoLRUList(Chunk* chunk, Chunk* head) {
     if (chunk == NULL) {
         qDebug() << "ERROR: NULL chunk argument to insertIntoLRUList";
         return NULL;
     }
-
     // Chunk is the new head of the list, so connect the head as the next from
     // chunk.
     chunk->next_lru = head;
     chunk->prev_lru = NULL;
-
     // If there are any elements in the list, point their prev pointer back at
     // chunk since it is the new head
-    if (head) {
-        head->prev_lru = chunk;
-    }
-
+    if (head) {head->prev_lru = chunk;}
     // Chunk is the new head
     return chunk;
 }
-
-
 void CachingReader::freeChunk(Chunk* pChunk) {
     int removed = m_allocatedChunks.remove(pChunk->chunk_number);
-
     // We'll tolerate not being in allocatedChunks because sometime you free a
     // chunk right after you allocated it.
-    if (removed > 1) {
-        qDebug() << "ERROR: freeChunk free'd a chunk that was multiply-allocated.";
-    }
-
+    if (removed > 1) {qDebug() << "ERROR: freeChunk free'd a chunk that was multiply-allocated.";}
     // If this is the LRU chunk then set its previous LRU chunk to the LRU
-    if (m_lruChunk == pChunk) {
-        m_lruChunk = pChunk->prev_lru;
-    }
-
+    if (m_lruChunk == pChunk) {m_lruChunk = pChunk->prev_lru;}
     m_mruChunk = removeFromLRUList(pChunk, m_mruChunk);
     pChunk->state = Chunk::FREE;
     pChunk->chunk_number = -1;
@@ -411,16 +373,12 @@ int CachingReader::read(int sample, int num_samples, CSAMPLE* buffer) {
         // It is completely possible that chunk_remaining_samples is less than
         // zero. If the caller is trying to read from beyond the end of the
         // file, then this can happen. We should tolerate it.
-        if (chunk_remaining_frames < 0) {
-            chunk_remaining_frames = 0;
-        }
+        if (chunk_remaining_frames < 0) {chunk_remaining_frames = 0;}
         const int frames_to_read = math_clamp(frames_remaining, 0, chunk_remaining_frames);
 
         // If we did not decide to read any samples from this chunk then that
         // means we have exhausted all the samples in the song.
-        if (frames_to_read == 0) {
-            break;
-        }
+        if (frames_to_read == 0) {break;}
 
         // samples_to_read should be non-negative and even
         if (frames_to_read < 0) {

@@ -188,7 +188,7 @@ public:
         } else {return skipSampleFrames(numberOfFrames);}
     }
 protected:
-    explicit AudioSource(QUrl url);
+    explicit AudioSource(const QUrl& url);
 
     inline static bool isValidChannelCount(SINT channelCount) {
         return kChannelCountZero < channelCount;

@@ -24,19 +24,26 @@ struct FiltFiltConfig{
     double* BCoeffs;
 };
 
-class FiltFilt  {
+class FiltFilt  
+{
 public:
     FiltFilt( FiltFiltConfig Config );
     virtual ~FiltFilt();
+
     void reset();
     void process( double* src, double* dst, unsigned int length );
+
 private:
     void initialise( FiltFiltConfig Config );
     void deInitialise();
+
     unsigned int m_ord;
+
     Filter* m_filter;
+
     double* m_filtScratchIn;
     double* m_filtScratchOut;
+
     FilterConfig m_filterConfig;
 };
 

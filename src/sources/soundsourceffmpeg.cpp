@@ -7,8 +7,8 @@
 
 namespace Mixxx {
 
-QList<QString> SoundSourceFFmpeg::supportedFileExtensions() {
-    QList<QString> list;
+QStringList SoundSourceFFmpeg::supportedFileExtensions() {
+    QStringList list;
     AVInputFormat *l_SInputFmt  = NULL;
     while ((l_SInputFmt = av_iformat_next(l_SInputFmt))) {
         if (l_SInputFmt->name == NULL) {break;}
@@ -47,48 +47,36 @@ SoundSourceFFmpeg::SoundSourceFFmpeg(QUrl url)
       m_lLastStoredPos(0),
       m_lStoredSeekPoint(-1) {
 }
-
-SoundSourceFFmpeg::~SoundSourceFFmpeg() {
-    close();
-}
-
+SoundSourceFFmpeg::~SoundSourceFFmpeg() {close();}
 Result SoundSourceFFmpeg::tryOpen(const AudioSourceConfig& /*audioSrcCfg*/) {
     unsigned int i;
     AVDictionary *l_iFormatOpts = NULL;
-
     const QByteArray qBAFilename(getLocalFileNameBytes());
     qDebug() << "New SoundSourceFFmpeg :" << qBAFilename;
-
     DEBUG_ASSERT(!m_pFormatCtx);
     m_pFormatCtx = avformat_alloc_context();
-
 #if LIBAVCODEC_VERSION_INT < 3622144
     m_pFormatCtx->max_analyze_duration = 999999999;
 #endif
-
     // Open file and make m_pFormatCtx
     if (avformat_open_input(&m_pFormatCtx, qBAFilename.constData(), NULL,
                             &l_iFormatOpts)!=0) {
         qDebug() << "av_open_input_file: cannot open" << qBAFilename;
         return ERR;
     }
-
 #if LIBAVCODEC_VERSION_INT > 3544932
     av_dict_free(&l_iFormatOpts);
 #endif
-
     // Retrieve stream information
     if (avformat_find_stream_info(m_pFormatCtx, NULL)<0) {
         qDebug() << "av_find_stream_info: cannot open" << qBAFilename;
         return ERR;
     }
-
     //debug only (Enable if needed)
     //av_dump_format(m_pFormatCtx, 0, qBAFilename.constData(), false);
 
     // Find the first audio stream
     m_iAudioStream=-1;
-
     for (i=0; i<m_pFormatCtx->nb_streams; i++)
         if (m_pFormatCtx->streams[i]->codec->codec_type==AVMEDIA_TYPE_AUDIO) {
             m_iAudioStream=i;
@@ -99,7 +87,6 @@ Result SoundSourceFFmpeg::tryOpen(const AudioSourceConfig& /*audioSrcCfg*/) {
                  << qBAFilename;
         return ERR;
     }
-
     // Get a pointer to the codec context for the audio stream
     m_pCodecCtx=m_pFormatCtx->streams[m_iAudioStream]->codec;
 
@@ -478,26 +465,19 @@ SINT SoundSourceFFmpeg::seekSampleFrame(SINT frameIndex) {
                 }
             }
         }
-
         if (frameIndex == 0) {
             readFramesToCache((AUDIOSOURCEFFMPEG_CACHESIZE - 50), -1);
         } else {
             readFramesToCache((AUDIOSOURCEFFMPEG_CACHESIZE / 2), frameIndex);
         }
     }
-
-
     if (m_lCacheEndFrame <= frameIndex) {
         readFramesToCache(100, frameIndex);
     }
-
     m_currentMixxxFrameIndex = frameIndex;
-
     m_bIsSeeked = true;
-
     return frameIndex;
 }
-
 SINT SoundSourceFFmpeg::readSampleFrames(SINT numberOfFrames,CSAMPLE* sampleBuffer) {
     if (m_SCache.size() == 0) {
         // Make sure we allways start at begining and cache have some

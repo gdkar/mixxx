@@ -25,7 +25,7 @@
 #include "engine/enginechannel.h"
 
 #include "soundmanagerutil.h"
-
+class TrackPlayer
 class EngineBuffer;
 class EnginePregain;
 class EngineBuffer;
@@ -40,7 +40,7 @@ class EngineDeck : public EngineChannel, public AudioDestination {
   public:
     EngineDeck(const ChannelHandleAndGroup& handle_group, ConfigObject<ConfigValue>* pConfig,
                EngineMaster* pMixingEngine, EffectsManager* pEffectsManager,
-               EngineChannel::ChannelOrientation defaultOrientation = CENTER,QObject*pParent=0);
+               EngineChannel::ChannelOrientation defaultOrientation = CENTER,TrackPlayer*pParent=0);
     virtual ~EngineDeck();
 
     virtual void process(CSAMPLE* pOutput, const int iBufferSize);

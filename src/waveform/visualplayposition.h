@@ -27,7 +27,6 @@ class VSyncThread;
 // GPU: ---------|----------------------------------- |--|-------------------------------
 //               ^Render Waveform sample X            |  ^VSync (New waveform is displayed
 //                by use usFromTimerToNextSync        ^swap Buffer
-
 class VisualPlayPositionData {
   public:
     PerformanceTimer m_referenceTime;
@@ -37,33 +36,23 @@ class VisualPlayPositionData {
     double m_positionStep;
     double m_pSlipPosition;
 };
-
-
 class VisualPlayPosition : public QObject {
     Q_OBJECT
   public:
     VisualPlayPosition(const QString& m_key);
     virtual ~VisualPlayPosition();
-
     // WARNING: Not thread safe. This function must be called only from the
     // engine thread.
     void set(double playPos, double rate, double positionStep, double pSlipPosition);
     double getAtNextVSync(VSyncThread* vsyncThread);
     void getPlaySlipAt(int usFromNow, double* playPosition, double* slipPosition);
     double getEnginePlayPos();
-
-    // WARNING: Not thread safe. This function must only be called from the main
-    // thread.
     static QSharedPointer<VisualPlayPosition> getVisualPlayPosition(QString group);
-
     // This is called by SoundDevicePortAudio just after the callback starts.
     static void setTimeInfo(const PaStreamCallbackTimeInfo *timeInfo);
-
     void setInvalid() { m_valid = false; };
-
   private slots:
     void slotAudioBufferSizeChanged(double size);
-
   private:
     ControlValueAtomic<VisualPlayPositionData> m_data;
     ControlObjectSlave* m_audioBufferSize;
@@ -71,7 +60,6 @@ class VisualPlayPosition : public QObject {
     bool m_valid;
     QString m_key;
     bool m_invalidTimeInfoWarned;
-
     static QMap<QString, QWeakPointer<VisualPlayPosition> > m_listVisualPlayPosition;
     // Time info from the Sound device, updated just after audio callback is called
     static PaStreamCallbackTimeInfo m_timeInfo;

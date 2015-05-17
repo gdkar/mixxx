@@ -14,57 +14,110 @@
 */
 
 #include "FiltFilt.h"
-#include <cstring>
+
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
 FiltFilt::FiltFilt( FiltFiltConfig Config )
-    : m_filtScratchIn(0)
-    , m_filtScratchOut(0)
-    , m_ord(0){initialise( Config );}
+{
+    m_filtScratchIn = NULL;
+    m_filtScratchOut = NULL;
+    m_ord = 0;
+	
+    initialise( Config );
+}
 
-FiltFilt::~FiltFilt(){deInitialise();}
+FiltFilt::~FiltFilt()
+{
+    deInitialise();
+}
 
-void FiltFilt::initialise( FiltFiltConfig Config ){
+void FiltFilt::initialise( FiltFiltConfig Config )
+{
     m_ord = Config.ord;
     m_filterConfig.ord = Config.ord;
     m_filterConfig.ACoeffs = Config.ACoeffs;
     m_filterConfig.BCoeffs = Config.BCoeffs;
+	
     m_filter = new Filter( m_filterConfig );
 }
-void FiltFilt::deInitialise(){delete m_filter;}
-void FiltFilt::process(double *src, double *dst, unsigned int length){	
+
+void FiltFilt::deInitialise()
+{
+    delete m_filter;
+}
+
+
+void FiltFilt::process(double *src, double *dst, unsigned int length)
+{	
     unsigned int i;
+
     if (length == 0) return;
+
     unsigned int nFilt = m_ord + 1;
     unsigned int nFact = 3 * ( nFilt - 1);
     unsigned int nExt	= length + 2 * nFact;
+
     m_filtScratchIn = new double[ nExt ];
     m_filtScratchOut = new double[ nExt ];
-    std::memset(m_filtScratchIn,0,nExt*sizeof(m_filtScratchIn[0]));
-    std::memset(m_filtScratchOut,0,nExt*sizeof(m_filtScratchOut[0]));
+
+	
+    for( i = 0; i< nExt; i++ ) 
+    {
+	m_filtScratchIn[ i ] = 0.0;
+	m_filtScratchOut[ i ] = 0.0;
+    }
+
     // Edge transients reflection
     double sample0 = 2 * src[ 0 ];
     double sampleN = 2 * src[ length - 1 ];
+
     unsigned int index = 0;
-    for( i = nFact; i > 0; i-- ){m_filtScratchIn[ index++ ] = sample0 - src[ i ];}
+    for( i = nFact; i > 0; i-- )
+    {
+	m_filtScratchIn[ index++ ] = sample0 - src[ i ];
+    }
     index = 0;
-    for( i = 0; i < nFact; i++ ){m_filtScratchIn[ (nExt - nFact) + index++ ] = sampleN - src[ (length - 2) - i ];}
+    for( i = 0; i < nFact; i++ )
+    {
+	m_filtScratchIn[ (nExt - nFact) + index++ ] = sampleN - src[ (length - 2) - i ];
+    }
+
     index = 0;
-    for( i = 0; i < length; i++ ){m_filtScratchIn[ i + nFact ] = src[ i ];}
+    for( i = 0; i < length; i++ )
+    {
+	m_filtScratchIn[ i + nFact ] = src[ i ];
+    }
+	
     ////////////////////////////////
     // Do  0Ph filtering
     m_filter->process( m_filtScratchIn, m_filtScratchOut, nExt);
+	
     // reverse the series for FILTFILT 
-    for ( i = 0; i < nExt; i++){ m_filtScratchIn[ i ] = m_filtScratchOut[ nExt - i - 1];}
+    for ( i = 0; i < nExt; i++)
+    { 
+	m_filtScratchIn[ i ] = m_filtScratchOut[ nExt - i - 1];
+    }
+
     // do FILTER again 
     m_filter->process( m_filtScratchIn, m_filtScratchOut, nExt);
+	
     // reverse the series back 
-    for ( i = 0; i < nExt; i++){m_filtScratchIn[ i ] = m_filtScratchOut[ nExt - i - 1 ];}
-    for ( i = 0;i < nExt; i++){m_filtScratchOut[ i ] = m_filtScratchIn[ i ];}
+    for ( i = 0; i < nExt; i++)
+    {
+	m_filtScratchIn[ i ] = m_filtScratchOut[ nExt - i - 1 ];
+    }
+    for ( i = 0;i < nExt; i++)
+    {
+	m_filtScratchOut[ i ] = m_filtScratchIn[ i ];
+    }
+
     index = 0;
-    for( i = 0; i < length; i++ ){dst[ index++ ] = m_filtScratchOut[ i + nFact ];}	
+    for( i = 0; i < length; i++ )
+    {
+	dst[ index++ ] = m_filtScratchOut[ i + nFact ];
+    }	
 
     delete [] m_filtScratchIn;
     delete [] m_filtScratchOut;

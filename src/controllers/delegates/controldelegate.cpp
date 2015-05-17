@@ -62,15 +62,9 @@ QString ControlDelegate::displayText(const QVariant& value,
 void ControlDelegate::setEditorData(QWidget* editor,
                                     const QModelIndex& index) const {
     ConfigKey key = qVariantValue<ConfigKey>(index.data(Qt::EditRole));
-
     QLineEdit* pLineEdit = dynamic_cast<QLineEdit*>(editor);
-    if (pLineEdit == NULL) {
-        return;
-    }
-
-    if (key.group.isEmpty() && key.item.isEmpty()) {
-        return;
-    }
+    if (pLineEdit == NULL) {return;}
+    if (key.group.isEmpty() && key.item.isEmpty()) {return;}
 
     pLineEdit->setText(key.group + "," + key.item);
 }

@@ -45,18 +45,12 @@ int ReadAheadManager::getNextSamples(double dRate, CSAMPLE* buffer,
     //qDebug() << "start" << start_sample << requested_samples;
     int samples_needed = requested_samples;
     CSAMPLE* base_buffer = buffer;
-
     // A loop will only limit the amount we can read in one shot.
-
-    const double loop_trigger = m_pLoopingControl->nextTrigger(
-            dRate, m_iCurrentPosition, 0, 0);
+    const double loop_trigger = m_pLoopingControl->nextTrigger(dRate, m_iCurrentPosition, 0, 0);
     bool loop_active = loop_trigger != kNoTrigger;
     int preloop_samples = 0;
-
     if (loop_active) {
-        int samples_available = in_reverse ?
-                m_iCurrentPosition - loop_trigger :
-                loop_trigger - m_iCurrentPosition;
+        int samples_available = in_reverse ?m_iCurrentPosition - loop_trigger :loop_trigger - m_iCurrentPosition;
         if (samples_available < 0) {
             samples_needed = 0;
         } else {
@@ -64,24 +58,16 @@ int ReadAheadManager::getNextSamples(double dRate, CSAMPLE* buffer,
             samples_needed = math_clamp(samples_needed, 0, samples_available);
         }
     }
-
-    if (in_reverse) {
-        start_sample = m_iCurrentPosition - samples_needed;
-    }
-
+    if (in_reverse) {start_sample = m_iCurrentPosition - samples_needed;}
     // Sanity checks.
     if (samples_needed < 0) {
         qDebug() << "Need negative samples in ReadAheadManager::getNextSamples. Ignoring read";
         return 0;
     }
-
-    int samples_read = m_pReader->read(start_sample, samples_needed,
-                                       base_buffer);
-
+    int samples_read = m_pReader->read(start_sample, samples_needed,base_buffer);
     if (samples_read != samples_needed) {
         qDebug() << "didn't get what we wanted" << samples_read << samples_needed;
     }
-
     // Increment or decrement current read-ahead position
     if (in_reverse) {
         addReadLogEntry(m_iCurrentPosition, m_iCurrentPosition - samples_read);
@@ -90,47 +76,31 @@ int ReadAheadManager::getNextSamples(double dRate, CSAMPLE* buffer,
         addReadLogEntry(m_iCurrentPosition, m_iCurrentPosition + samples_read);
         m_iCurrentPosition += samples_read;
     }
-
     // Activate on this trigger if necessary
     if (loop_active) {
         // LoopingControl makes the decision about whether we should loop or
         // not.
-        const double loop_target = m_pLoopingControl->
-                process(dRate, m_iCurrentPosition, 0, 0);
-
+        const double loop_target = m_pLoopingControl->process(dRate, m_iCurrentPosition, 0, 0);
         if (loop_target != kNoTrigger) {
             m_iCurrentPosition = loop_target;
-
-            int loop_read_position = m_iCurrentPosition +
-                    (in_reverse ? preloop_samples : -preloop_samples);
-
-            int looping_samples_read = m_pReader->read(
-                    loop_read_position, samples_read, m_pCrossFadeBuffer);
-
+            int loop_read_position = m_iCurrentPosition +(in_reverse ? preloop_samples : -preloop_samples);
+            int looping_samples_read = m_pReader->read(loop_read_position, samples_read, m_pCrossFadeBuffer);
             if (looping_samples_read != samples_read) {
                 qDebug() << "ERROR: Couldn't get all needed samples for crossfade.";
             }
-
             // do crossfade from the current buffer into the new loop beginning
             if (samples_read != 0) { // avoid division by zero
                 SampleUtil::linearCrossfadeBuffers(base_buffer, base_buffer, m_pCrossFadeBuffer, samples_read);
             }
         }
     }
-
     // Reverse the samples in-place
-    if (in_reverse) {
-        SampleUtil::reverse(base_buffer, samples_read);
-    }
+    if (in_reverse) {SampleUtil::reverse(base_buffer, samples_read);}
 
     //qDebug() << "read" << m_iCurrentPosition << samples_read;
     return samples_read;
 }
-
-void ReadAheadManager::addRateControl(RateControl* pRateControl) {
-    m_pRateControl = pRateControl;
-}
-
+void ReadAheadManager::addRateControl(RateControl* pRateControl) {m_pRateControl = pRateControl;}
 // Not thread-save, call from engine thread only
 void ReadAheadManager::notifySeek(int iSeekPosition) {
     m_iCurrentPosition = iSeekPosition;
@@ -211,10 +181,8 @@ int ReadAheadManager::getEffectiveVirtualPlaypositionFromLog(double currentVirtu
                 m_pRateControl->notifySeek(entry.virtualPlaypositionStart);
             }
         }
-
         double consumed = entry.consume(numConsumedSamples);
         numConsumedSamples -= consumed;
-
         // Advance our idea of the current virtual playposition to this
         // ReadLogEntry's start position.
         virtualPlayposition = entry.virtualPlaypositionStart;
@@ -228,14 +196,10 @@ int ReadAheadManager::getEffectiveVirtualPlaypositionFromLog(double currentVirtu
     int result = 0;
     if (direction) {
         result = static_cast<int>(floor(virtualPlayposition));
-        if (!even(result)) {
-            result--;
-        }
+        if (!even(result)) {result--;}
     } else {
         result = static_cast<int>(ceil(virtualPlayposition));
-        if (!even(result)) {
-            result++;
-        }
+        if (!even(result)) {result++;}
     }
     return result;
 }

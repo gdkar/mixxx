@@ -1041,12 +1041,10 @@ void TrackInfoObject::setBpmLock(bool bpmLock) {
         setDirty(true);
     }
 }
-
 bool TrackInfoObject::hasBpmLock() const {
     QMutexLocker lock(&m_qMutex);
     return m_bBpmLock;
 }
-
 void TrackInfoObject::setCoverInfo(const CoverInfo& info) {
     QMutexLocker lock(&m_qMutex);
     if (info != m_coverArt.info) {
@@ -1057,12 +1055,10 @@ void TrackInfoObject::setCoverInfo(const CoverInfo& info) {
         emit(coverArtUpdated());
     }
 }
-
 CoverInfo TrackInfoObject::getCoverInfo() const {
     QMutexLocker lock(&m_qMutex);
     return m_coverArt.info;
 }
-
 void TrackInfoObject::setCoverArt(const CoverArt& cover) {
     QMutexLocker lock(&m_qMutex);
     if (cover != m_coverArt) {
@@ -1072,7 +1068,6 @@ void TrackInfoObject::setCoverArt(const CoverArt& cover) {
         emit(coverArtUpdated());
     }
 }
-
 CoverArt TrackInfoObject::getCoverArt() const {
     QMutexLocker lock(&m_qMutex);
     return m_coverArt;

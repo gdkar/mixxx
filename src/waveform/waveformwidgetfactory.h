@@ -101,41 +101,28 @@ class WaveformWidgetFactory : public QObject, public Singleton<WaveformWidgetFac
     void startVSync(MixxxMainWindow* mixxxApp);
     void setVSyncType(int vsType);
     int getVSyncType();
-
     void notifyZoomChange(WWaveformViewer *viewer);
-
     WaveformWidgetType::Type autoChooseWidgetType() const;
-
   signals:
     void waveformUpdateTick();
     void waveformMeasured(float frameRate, int droppedFrames);
-
   protected:
     WaveformWidgetFactory();
     virtual ~WaveformWidgetFactory();
-
     friend class Singleton<WaveformWidgetFactory>;
-
   private slots:
     void render();
     void swap();
-
   private:
     void evaluateWidgets();
     WaveformWidgetAbstract* createWaveformWidget(WaveformWidgetType::Type type, WWaveformViewer* viewer);
     int findIndexOf(WWaveformViewer* viewer) const;
-
     //All type of available widgets
-
     QVector<WaveformWidgetAbstractHandle> m_waveformWidgetHandles;
-
     //Currently in use widgets/visual/node
     QVector<WaveformWidgetHolder> m_waveformWidgetHolders;
-
     WaveformWidgetType::Type m_type;
-
     ConfigObject<ConfigValue>* m_config;
-
     bool m_skipRender;
     int m_frameRate;
     int m_endOfTrackWarningTime;
@@ -143,13 +130,10 @@ class WaveformWidgetFactory : public QObject, public Singleton<WaveformWidgetFac
     bool m_zoomSync;
     double m_visualGain[FilterCount];
     bool m_overviewNormalized;
-
     bool m_openGLAvailable;
     QString m_openGLVersion;
     bool m_openGLShaderAvailable;
-
     VSyncThread* m_vsyncThread;
-
     //Debug
     QTime m_time;
     float m_frameCnt;

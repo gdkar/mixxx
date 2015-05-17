@@ -7,22 +7,15 @@
 #include <QPair>
 
 #if defined(__APPLE__)
-
 #elif defined(__WINDOWS__)
-
 #else
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
     #include <qx11info_x11.h>
 #endif // QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
 #endif
-
 #include "util/performancetimer.h"
-
-
 #if defined(__APPLE__)
-
 #elif defined(__WINDOWS__)
-
 #else
     #include <GL/glx.h>
     #include "GL/glxext.h"
@@ -30,7 +23,6 @@
     #undef Bool
     #undef Unsorted
 #endif
-
 class QGLWidget;
 class GuiTick;
 class MixxxMainWindow;
@@ -46,12 +38,9 @@ class VSyncThread : public QThread {
         ST_FREE,
         ST_COUNT // Dummy Type at last, counting possible types
     };
-
     static void swapGl(QGLWidget* glw, int index);
-
     explicit VSyncThread(MixxxMainWindow* mixxMainWindow);
     virtual ~VSyncThread();
-
     virtual void run();
     virtual void stop();
 

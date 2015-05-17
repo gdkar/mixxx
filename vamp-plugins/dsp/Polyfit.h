@@ -128,7 +128,8 @@ double TPolyFit::PolyFit2 (const vector<double> &x,
         std::cerr << "ERROR: PolyFit called with x and y of unequal size" << std::endl;
         return 0;
     }
-    for(i = 0; i < npoints; ++i){
+    for(i = 0; i < npoints; ++i)
+    {
 	//      { setup x matrix }
 	xi = x[i];
 	xmatr[i][0] = 1.0;	   //     { first column }
@@ -136,7 +137,8 @@ double TPolyFit::PolyFit2 (const vector<double> &x,
 	    xmatr[i][j] = xmatr [i][j - 1] * xi;
     }
     Square (xmatr, y, a, g, npoints, nterms);
-    if(!GaussJordan (a, g, coefs))return -1;
+    if(!GaussJordan (a, g, coefs))
+	return -1;
     sum_y = 0.0;
     sum_y2 = 0.0;
     srs = 0.0;

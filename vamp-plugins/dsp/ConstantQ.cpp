@@ -16,7 +16,6 @@
 #include "FFT.h"
 
 #include <iostream>
-#include <cstring>
 
 #ifdef NOT_DEFINED
 // see note in CQprecalc
@@ -48,6 +47,7 @@ static bool push_precalculated(int uk, int fftlength,
     return false;
 }
 #endif
+
 //---------------------------------------------------------------------------
 // nextpow2 returns the smallest integer n such that 2^n >= x.
 static double nextpow2(double x) {
@@ -55,35 +55,53 @@ static double nextpow2(double x) {
     return(y);
 }
 
-static inline double squaredModule(const double & xx, const double & yy) {return xx*xx + yy*yy;}
+static double squaredModule(const double & xx, const double & yy) {
+    return xx*xx + yy*yy;
+}
 
 //----------------------------------------------------------------------------
 
 ConstantQ::ConstantQ( CQConfig Config ) :
-    m_sparseKernel(0){initialise( Config );}
+    m_sparseKernel(0)
+{
+    initialise( Config );
+}
 
-ConstantQ::~ConstantQ(){deInitialise();}
+ConstantQ::~ConstantQ()
+{
+    deInitialise();
+}
 
 //----------------------------------------------------------------------------
-void ConstantQ::sparsekernel(){
+void ConstantQ::sparsekernel()
+{
 //    std::cerr << "ConstantQ: initialising sparse kernel, uK = " << m_uK << ", FFTLength = " << m_FFTLength << "...";
 
     SparseKernel *sk = new SparseKernel();
+
 #ifdef NOT_DEFINED
-    if (push_precalculated(m_uK, m_FFTLength, sk->is, sk->js, sk->real, sk->imag)) {
+    if (push_precalculated(m_uK, m_FFTLength,
+                           sk->is, sk->js, sk->real, sk->imag)) {
 //        std::cerr << "using precalculated kernel" << std::endl;
         m_sparseKernel = sk;
         return;
     }
 #endif
+
     //generates spectral kernel matrix (upside down?)
     // initialise temporal kernel with zeros, twice length to deal w. complex numbers
+
     double* hammingWindowRe = new double [ m_FFTLength ];
     double* hammingWindowIm = new double [ m_FFTLength ];
     double* transfHammingWindowRe = new double [ m_FFTLength ];
     double* transfHammingWindowIm = new double [ m_FFTLength ];
-    std::memset(&hammingWindowRe[0],0,m_FFTLength*sizeof(double)); 
-    std::memset(&hammingWindowIm[0],0,m_FFTLength*sizeof(double)); 
+
+    for (unsigned u=0; u < m_FFTLength; u++) 
+    {
+	hammingWindowRe[u] = 0;
+	hammingWindowIm[u] = 0;
+    }
+
     // Here, fftleng*2 is a guess of the number of sparse cells in the matrix
     // The matrix K x fftlength but the non-zero cells are an antialiased
     // square root function. So mostly is a line, with some grey point.
@@ -96,14 +114,24 @@ void ConstantQ::sparsekernel(){
     //calculate the spectral kernel then threshold it to make it sparse and 
     //add it to the sparse kernels matrix
     double squareThreshold = m_CQThresh * m_CQThresh;
+
     FFT m_FFT(m_FFTLength);
-    for (unsigned k = m_uK; k--; ) {
-        std::memset(&hammingWindowRe[0],0,m_FFTLength*sizeof(double));
-        std::memset(&hammingWindowIm[0],0,m_FFTLength*sizeof(double));
+	
+    for (unsigned k = m_uK; k--; ) 
+    {
+        for (unsigned u=0; u < m_FFTLength; u++) 
+        {
+            hammingWindowRe[u] = 0;
+            hammingWindowIm[u] = 0;
+        }
+        
 	// Computing a hamming window
 	const unsigned hammingLength = (int) ceil( m_dQ * m_FS / ( m_FMin * pow(2,((double)(k))/(double)m_BPO)));
+
         unsigned origin = m_FFTLength/2 - hammingLength/2;
-	for (unsigned i=0; i<hammingLength; i++) {
+
+	for (unsigned i=0; i<hammingLength; i++) 
+	{
 	    const double angle = 2*PI*m_dQ*i/hammingLength;
 	    const double real = cos(angle);
 	    const double imag = sin(angle);
@@ -111,6 +139,7 @@ void ConstantQ::sparsekernel(){
 	    hammingWindowRe[ origin + i ] = absol*real;
 	    hammingWindowIm[ origin + i ] = absol*imag;
 	}
+
         for (unsigned i = 0; i < m_FFTLength/2; ++i) {
             double temp = hammingWindowRe[i];
             hammingWindowRe[i] = hammingWindowRe[i + m_FFTLength/2];
@@ -119,9 +148,13 @@ void ConstantQ::sparsekernel(){
             hammingWindowIm[i] = hammingWindowIm[i + m_FFTLength/2];
             hammingWindowIm[i + m_FFTLength/2] = temp;
         }
+    
 	//do fft of hammingWindow
 	m_FFT.process( 0, hammingWindowRe, hammingWindowIm, transfHammingWindowRe, transfHammingWindowIm );
-	for (unsigned j=0; j<( m_FFTLength ); j++) {
+
+		
+	for (unsigned j=0; j<( m_FFTLength ); j++) 
+	{
 	    // perform thresholding
 	    const double squaredBin = squaredModule( transfHammingWindowRe[ j ], transfHammingWindowIm[ j ]);
 	    if (squaredBin <= squareThreshold) continue;
@@ -136,10 +169,12 @@ void ConstantQ::sparsekernel(){
 	}
 
     }
+
     delete [] hammingWindowRe;
     delete [] hammingWindowIm;
     delete [] transfHammingWindowRe;
     delete [] transfHammingWindowIm;
+
 /*
     using std::cout;
     using std::endl;
@@ -212,13 +247,17 @@ void ConstantQ::sparsekernel(){
 }
 
 //-----------------------------------------------------------------------------
-double* ConstantQ::process( const double* fftdata ){
+double* ConstantQ::process( const double* fftdata )
+{
     if (!m_sparseKernel) {
         std::cerr << "ERROR: ConstantQ::process: Sparse kernel has not been initialised" << std::endl;
         return m_CQdata;
     }
+
     SparseKernel *sk = m_sparseKernel;
-    for (unsigned row=0; row<2*m_uK; row++) {
+
+    for (unsigned row=0; row<2*m_uK; row++) 
+    {
 	m_CQdata[ row ] = 0;
 	m_CQdata[ row+1 ] = 0;
     }
@@ -227,7 +266,9 @@ double* ConstantQ::process( const double* fftdata ){
     const double   *real   = &(sk->real[0]);
     const double   *imag   = &(sk->imag[0]);
     const unsigned int sparseCells = sk->real.size();
-    for (unsigned i = 0; i<sparseCells; i++){
+	
+    for (unsigned i = 0; i<sparseCells; i++)
+    {
 	const unsigned row = cqbin[i];
 	const unsigned col = fftbin[i];
 	const double & r1  = real[i];
@@ -238,48 +279,65 @@ double* ConstantQ::process( const double* fftdata ){
 	m_CQdata[ 2*row  ] += (r1*r2 - i1*i2);
 	m_CQdata[ 2*row+1] += (r1*i2 + i1*r2);
     }
+
     return m_CQdata;
 }
-void ConstantQ::initialise( CQConfig Config ){
+
+
+void ConstantQ::initialise( CQConfig Config )
+{
     m_FS = Config.FS;
     m_FMin = Config.min;		// min freq
     m_FMax = Config.max;		// max freq
     m_BPO = Config.BPO;		// bins per octave
     m_CQThresh = Config.CQThresh;// ConstantQ threshold for kernel generation
+
     m_dQ = 1/(pow(2,(1/(double)m_BPO))-1);	// Work out Q value for Filter bank
     m_uK = (unsigned int) ceil(m_BPO * log(m_FMax/m_FMin)/log(2.0));	// No. of constant Q bins
+
 //    std::cerr << "ConstantQ::initialise: rate = " << m_FS << ", fmin = " << m_FMin << ", fmax = " << m_FMax << ", bpo = " << m_BPO << ", K = " << m_uK << ", Q = " << m_dQ << std::endl;
+
     // work out length of fft required for this constant Q Filter bank
     m_FFTLength = (int) pow(2, nextpow2(ceil( m_dQ*m_FS/m_FMin )));
+
     m_hop = m_FFTLength/8; // <------ hop size is window length divided by 32
+
 //    std::cerr << "ConstantQ::initialise: -> fft length = " << m_FFTLength << ", hop = " << m_hop << std::endl;
 
     // allocate memory for cqdata
     m_CQdata = new double [2*m_uK];
 }
 
-void ConstantQ::deInitialise(){
+void ConstantQ::deInitialise()
+{
     delete [] m_CQdata;
     delete m_sparseKernel;
 }
 
 void ConstantQ::process(const double *FFTRe, const double* FFTIm,
-                        double *CQRe, double *CQIm){
+                        double *CQRe, double *CQIm)
+{
     if (!m_sparseKernel) {
         std::cerr << "ERROR: ConstantQ::process: Sparse kernel has not been initialised" << std::endl;
         return;
     }
+
     SparseKernel *sk = m_sparseKernel;
-    for (unsigned row=0; row<m_uK; row++) {
+
+    for (unsigned row=0; row<m_uK; row++) 
+    {
 	CQRe[ row ] = 0;
 	CQIm[ row ] = 0;
     }
+
     const unsigned *fftbin = &(sk->is[0]);
     const unsigned *cqbin  = &(sk->js[0]);
     const double   *real   = &(sk->real[0]);
     const double   *imag   = &(sk->imag[0]);
     const unsigned int sparseCells = sk->real.size();
-    for (unsigned i = 0; i<sparseCells; i++){
+	
+    for (unsigned i = 0; i<sparseCells; i++)
+    {
 	const unsigned row = cqbin[i];
 	const unsigned col = fftbin[i];
 	const double & r1  = real[i];

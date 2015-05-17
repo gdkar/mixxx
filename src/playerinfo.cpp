@@ -40,17 +40,12 @@ PlayerInfo::~PlayerInfo() {
 
 // static
 PlayerInfo& PlayerInfo::instance() {
-    if (!m_pPlayerInfo) {
-        m_pPlayerInfo = new PlayerInfo();
-    }
+    if (!m_pPlayerInfo) {m_pPlayerInfo = new PlayerInfo();}
     return *m_pPlayerInfo;
 }
 
 // static
-void PlayerInfo::destroy() {
-    delete m_pPlayerInfo;
-}
-
+void PlayerInfo::destroy() {delete m_pPlayerInfo;}
 TrackPointer PlayerInfo::getTrackInfo(const QString& group) {
     QMutexLocker locker(&m_mutex);
     return m_loadedTrackMap.value(group);
@@ -63,12 +58,9 @@ void PlayerInfo::setTrackInfo(const QString& group, const TrackPointer& track) {
         pOld = m_loadedTrackMap.value(group);
         m_loadedTrackMap.insert(group, track);
     }
-    if (pOld) {
-        emit(trackUnloaded(group, pOld));
-    }
+    if (pOld) {emit(trackUnloaded(group, pOld));}
     emit(trackLoaded(group, track));
 }
-
 bool PlayerInfo::isTrackLoaded(const TrackPointer& pTrack) const {
     QMutexLocker locker(&m_mutex);
     QMapIterator<QString, TrackPointer> it(m_loadedTrackMap);
@@ -86,7 +78,6 @@ QMap<QString, TrackPointer> PlayerInfo::getLoadedTracks() {
     QMap<QString, TrackPointer> ret = m_loadedTrackMap;
     return ret;
 }
-
 bool PlayerInfo::isFileLoaded(const QString& track_location) const {
     QMutexLocker locker(&m_mutex);
     QMapIterator<QString, TrackPointer> it(m_loadedTrackMap);

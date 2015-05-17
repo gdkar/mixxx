@@ -18,7 +18,6 @@ class EngineMaster;
 class EngineBuffer;
 
 const double kNoTrigger = -1;
-
 /**
  * EngineControl is an abstract base class for objects which implement
  * functionality pertaining to EngineBuffer. An EngineControl is meant to be a
@@ -89,16 +88,13 @@ class EngineControl : public QObject {
     ConfigObject<ConfigValue>* getConfig();
     EngineMaster* getEngineMaster();
     EngineBuffer* getEngineBuffer();
-
     QString m_group;
     ConfigObject<ConfigValue>* m_pConfig;
-
   private:
     struct SampleOfTrack {
         double current;
         double total;
     };
-
     ControlValueAtomic<SampleOfTrack> m_sampleOfTrack;
     EngineMaster* m_pEngineMaster;
     EngineBuffer* m_pEngineBuffer;

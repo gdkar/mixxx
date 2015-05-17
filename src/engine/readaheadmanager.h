@@ -44,24 +44,15 @@ class ReadAheadManager {
     // which samples to return.
     void addLoopingControl();
     void addRateControl(RateControl* pRateControl);
-
     // Get the current read-ahead position in samples.
-    virtual inline int getPlaypos() const {
-        return m_iCurrentPosition;
-    }
-
+    virtual inline int getPlaypos() const {return m_iCurrentPosition;}
     virtual void notifySeek(int iSeekPosition);
-
     // hintReader allows the ReadAheadManager to provide hints to the reader to
     // indicate that the given portion of a song is about to be read.
     virtual void hintReader(double dRate, HintVector* hintList);
-
     virtual int getEffectiveVirtualPlaypositionFromLog(double currentVirtualPlayposition,
                                                        double numConsumedSamples);
-
-    virtual void setReader(CachingReader* pReader) {
-        m_pReader = pReader;
-    }
+    virtual void setReader(CachingReader* pReader) {m_pReader = pReader;}
 
   private:
     // An entry in the read log indicates the virtual playposition the read
@@ -69,14 +60,12 @@ class ReadAheadManager {
     struct ReadLogEntry {
         double virtualPlaypositionStart;
         double virtualPlaypositionEndNonInclusive;
-
         ReadLogEntry(double virtualPlaypositionStart,
                      double virtualPlaypositionEndNonInclusive) {
             this->virtualPlaypositionStart = virtualPlaypositionStart;
             this->virtualPlaypositionEndNonInclusive =
                     virtualPlaypositionEndNonInclusive;
         }
-
         bool direction() const {
             // NOTE(rryan): We try to avoid 0-length ReadLogEntry's when
             // possible but they have happened in the past. We treat 0-length
@@ -84,10 +73,7 @@ class ReadAheadManager {
             // being interpreted as a seek in the common case.
             return virtualPlaypositionStart <= virtualPlaypositionEndNonInclusive;
         }
-
-        double length() const {
-            return fabs(virtualPlaypositionEndNonInclusive - virtualPlaypositionStart);
-        }
+        double length() const {return fabs(virtualPlaypositionEndNonInclusive - virtualPlaypositionStart);}
 
         // Moves the start position forward or backward (depending on
         // direction()) by numSamples. Returns the total number of samples

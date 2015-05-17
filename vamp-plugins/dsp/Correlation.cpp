@@ -29,13 +29,28 @@ Correlation::~Correlation()
 
 }
 
-void Correlation::doAutoUnBiased(double *src, double *dst, unsigned int length){
+void Correlation::doAutoUnBiased(double *src, double *dst, unsigned int length)
+{
+    double tmp = 0.0;
     double outVal = 0.0;
+
     unsigned int i,j;
-    for( i = 0; i <  length; i++){
-        double acc = 0;
-	for( j = i; j < length; j++) {acc += src[ j-i ] * src[ j ]; }
-	outVal = acc / ( length - i );
-        dst[ i ] = outVal<=0?EPS:outVal;
+
+    for( i = 0; i <  length; i++)
+    {
+	for( j = i; j < length; j++)
+	{
+	    tmp += src[ j-i ] * src[ j ]; 
+	}
+
+
+	outVal = tmp / ( length - i );
+
+	if( outVal <= 0 )
+	    dst[ i ] = EPS;
+	else
+	    dst[ i ] = outVal;
+
+	tmp = 0.0;
     }
 }

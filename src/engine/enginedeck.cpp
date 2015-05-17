@@ -23,14 +23,14 @@
 #include "engine/enginepregain.h"
 #include "engine/enginevumeter.h"
 #include "engine/enginefilterbessel4.h"
-
+#include "trackplayer.h"
 #include "sampleutil.h"
 
 EngineDeck::EngineDeck(const ChannelHandleAndGroup& handle_group,
                        ConfigObject<ConfigValue>* pConfig,
                        EngineMaster* pMixingEngine,
                        EffectsManager* pEffectsManager,
-                       EngineChannel::ChannelOrientation defaultOrientation, QObject*pParent)
+                       EngineChannel::ChannelOrientation defaultOrientation, TrackPlayer*pParent)
         : EngineChannel(handle_group, defaultOrientation,pParent),
           m_pConfig(pConfig),
           m_pEngineEffectsManager(pEffectsManager ? pEffectsManager->getEngineEffectsManager() : NULL),

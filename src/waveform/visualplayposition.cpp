@@ -16,16 +16,12 @@ VisualPlayPosition::VisualPlayPosition(const QString& key)
           m_key(key),
           m_invalidTimeInfoWarned(false) {
     m_audioBufferSize = new ControlObjectSlave("[Master]", "audio_buffer_size");
-    m_audioBufferSize->connectValueChanged(
-            this, SLOT(slotAudioBufferSizeChanged(double)));
     m_dAudioBufferSize = m_audioBufferSize->get();
 }
-
 VisualPlayPosition::~VisualPlayPosition() {
     m_listVisualPlayPosition.remove(m_key);
     delete m_audioBufferSize;
 }
-
 void VisualPlayPosition::set(double playPos, double rate,
                              double positionStep, double pSlipPosition) {
     VisualPlayPositionData data;
@@ -36,7 +32,6 @@ void VisualPlayPosition::set(double playPos, double rate,
     data.m_rate = rate;
     data.m_positionStep = positionStep;
     data.m_pSlipPosition = pSlipPosition;
-
     if (data.m_callbackEntrytoDac < 0 || data.m_callbackEntrytoDac > m_dAudioBufferSize * 1000) {
         // m_timeInfo Invalid, Audio API broken
         if (!m_invalidTimeInfoWarned) {
@@ -59,7 +54,6 @@ double VisualPlayPosition::getAtNextVSync(VSyncThread* vsyncThread) {
     //static double testPos = 0;
     //testPos += 0.000017759; //0.000016608; //  1.46257e-05;
     //return testPos;
-
     if (m_valid) {
         VisualPlayPositionData data = m_data.getValue();
         int usRefToVSync = vsyncThread->usFromTimerToNextSync(&data.m_referenceTime);
@@ -96,15 +90,9 @@ double VisualPlayPosition::getEnginePlayPos() {
     if (m_valid) {
         VisualPlayPositionData data = m_data.getValue();
         return data.m_enginePlayPos;
-    } else {
-        return -1;
-    }
+    } else {return -1;}
 }
-
-void VisualPlayPosition::slotAudioBufferSizeChanged(double size) {
-    m_dAudioBufferSize = size;
-}
-
+void VisualPlayPosition::slotAudioBufferSizeChanged(double size) {m_dAudioBufferSize = size;}
 //static
 QSharedPointer<VisualPlayPosition> VisualPlayPosition::getVisualPlayPosition(QString group) {
     QSharedPointer<VisualPlayPosition> vpp = m_listVisualPlayPosition.value(group);
@@ -114,7 +102,6 @@ QSharedPointer<VisualPlayPosition> VisualPlayPosition::getVisualPlayPosition(QSt
     }
     return vpp;
 }
-
 //static
 void VisualPlayPosition::setTimeInfo(const PaStreamCallbackTimeInfo* timeInfo) {
     // the timeInfo is valid only just NOW, so measure the time from NOW for

@@ -15,21 +15,17 @@
 #define MY_EXPORT
 #endif
 
-namespace Mixxx {
 
-class SoundSourceMPG123: public SoundSourcePlugin {
+class SoundSourceMPG123: public Mixxx::SoundSourcePlugin {
 public:
-    static QList<QString> supportedFileExtensions();
-
     explicit SoundSourceMPG123(QUrl url);
-    ~SoundSourceMPG123();
+    virtual ~SoundSourceMPG123();
 
     void close() /*override*/;
 
     SINT seekSampleFrame(SINT frameIndex) /*override*/;
 
-    SINT readSampleFrames(SINT numberOfFrames,
-            CSAMPLE* sampleBuffer) /*override*/;
+    SINT readSampleFrames(SINT numberOfFrames,CSAMPLE* sampleBuffer) /*override*/;
 
 private:
     Result tryOpen(const AudioSourceConfig& config) /*override*/;
@@ -39,12 +35,16 @@ private:
     SINT m_curFrameIndex;
 };
 
-} // namespace Mixxx
+class SoundSourceProviderMPG123: public Mixxx::SoundSourceProvider{
+  public:
+    QString getName() const;
+    QStringList getSupportedFileTypes() const;
+    Mixxx::SoundSourcePointer newSoundSource(const QUrl &url){
+      return Mixxx::SoundSourcePointer(new SoundSourceMPG123(url));
+    }
 
-extern "C" MY_EXPORT const char* getMixxxVersion();
-extern "C" MY_EXPORT int getSoundSourceAPIVersion();
-extern "C" MY_EXPORT Mixxx::SoundSource* getSoundSource(QString fileName);
-extern "C" MY_EXPORT char** supportedFileExtensions();
-extern "C" MY_EXPORT void freeFileExtensions(char** fileExtensions);
+};
+extern "C" MIXXXX_SOUNDSOURCEPLUGINAPI_EXPORT
+Mixxx::SoundSourceProviderPointer Mixxx_SoundSourcePluginAPI_getSoundSourceProvider();
 
 #endif // MIXXX_SOUNDSOURCEMPG123_H

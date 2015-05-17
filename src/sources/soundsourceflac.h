@@ -1,7 +1,7 @@
 #ifndef MIXXX_SOUNDSOURCEFLAC_H
 #define MIXXX_SOUNDSOURCEFLAC_H
 
-#include "sources/soundsource.h"
+#include "sources/soundsourceprovider.h"
 
 #include "singularsamplebuffer.h"
 
@@ -13,8 +13,6 @@ namespace Mixxx {
 
 class SoundSourceFLAC: public SoundSource {
 public:
-    static QList<QString> supportedFileExtensions();
-
     explicit SoundSourceFLAC(QUrl url);
     ~SoundSourceFLAC();
 
@@ -64,6 +62,17 @@ private:
     SingularSampleBuffer m_sampleBuffer;
 
     SINT m_curFrameIndex;
+};
+
+class SoundSourceProviderFLAC: public SoundSourceProvider {
+public:
+    QString getName() const /*override*/;
+
+    QStringList getSupportedFileTypes() const /*override*/;
+
+    SoundSourcePointer newSoundSource(const QUrl& url)  /*override*/ {
+        return SoundSourcePointer(new SoundSourceFLAC(url));
+    }
 };
 
 } // namespace Mixxx

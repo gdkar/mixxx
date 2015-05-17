@@ -33,6 +33,7 @@ public:
      */
     Decimator( unsigned int inLength, unsigned int decFactor );
     virtual ~Decimator();
+
     int getFactor() const { return m_decFactor; }
     static int getHighestSupportedFactor() { return 8; }
 
@@ -42,14 +43,19 @@ private:
     void initialise( unsigned int inLength, unsigned int decFactor );
     void doAntiAlias( const double* src, double* dst, unsigned int length );
     void doAntiAlias( const float* src, double* dst, unsigned int length );
+
     unsigned int m_inputLength;
     unsigned int m_outputLength;
     unsigned int m_decFactor;
+
     double Input;
     double Output ;
+
     double o1,o2,o3,o4,o5,o6,o7;
+
     double a[ 9 ];
     double b[ 9 ];
+	
     double* decBuffer;
 };
 

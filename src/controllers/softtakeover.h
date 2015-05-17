@@ -15,12 +15,9 @@ class ControlObject;
 
 // 3/128 units away from the current is enough to catch fast non-sequential moves
 //  but not cause an audibly noticeable jump.
-
-
 class SoftTakeover {
   public:
     static const double kDefaultTakeoverThreshold;
-
     SoftTakeover();
     bool ignore(ControlObject* control, double newParameter);
     void ignoreNext();
@@ -32,17 +29,14 @@ class SoftTakeover {
     // the benefits of soft-takeover for slower movements.  Setting this too
     // high will defeat the purpose of soft-takeover.
     static const uint SUBSEQUENT_VALUE_OVERRIDE_TIME_MILLIS = 50;
-
     uint m_time;
     double m_prevParameter;
     double m_dThreshold;
 };
-
 class SoftTakeoverCtrl {
   public:
     SoftTakeoverCtrl();
     ~SoftTakeoverCtrl();
-
     // Enable soft-takeover for the given Control.
     // This does nothing on a control that already has soft-takeover enabled.
     void enable(ControlObject* control);
@@ -54,5 +48,4 @@ class SoftTakeoverCtrl {
   private:
     QHash<ControlObject*, SoftTakeover*> m_softTakeoverHash;
 };
-
 #endif

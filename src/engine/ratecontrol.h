@@ -48,7 +48,6 @@ public:
                          int iSamplesPerBuffer, bool* pReportScratching,
                          bool* pReportReverse);
     double getRawRate() const;
-
     // Set rate change when temp rate button is pressed
     static void setTemp(double v);
     // Set rate change when temp rate small button is pressed
@@ -77,12 +76,10 @@ public:
     void slotControlFastBack(double);
     virtual void trackLoaded(TrackPointer pTrack);
     virtual void trackUnloaded(TrackPointer pTrack);
-
   private:
     double getJogFactor() const;
     double getWheelFactor() const;
     SyncMode getSyncMode() const;
-
     /** Set rate change of the temporary pitch rate */
     void setRateTemp(double v);
     /** Add a value to the temporary pitch rate */
@@ -93,10 +90,8 @@ public:
     void resetRateTemp(void);
     /** Get the 'Raw' Temp Rate */
     double getTempRate(void);
-
     /** Values used when temp and perm rate buttons are pressed */
     static double m_dTemp, m_dTempSmall, m_dPerm, m_dPermSmall;
-
     ControlPushButton *buttonRateTempDown, *buttonRateTempDownSmall,
         *buttonRateTempUp, *buttonRateTempUpSmall;
     ControlPushButton *buttonRatePermDown, *buttonRatePermDownSmall,
@@ -108,7 +103,6 @@ public:
     ControlPushButton* m_pReverseRollButton;
     ControlObject* m_pBackButton;
     ControlObject* m_pForwardButton;
-
     ControlTTRotary* m_pWheel;
     ControlObject* m_pScratch2;
     PositionScratchController* m_pScratchController;
@@ -120,17 +114,12 @@ public:
     ControlObject* m_pVCMode;
     ControlObject* m_pScratch2Scratching;
     Rotary* m_pJogFilter;
-
     ControlObject* m_pSampleRate;
-
     TrackPointer m_pTrack;
-
     // For Master Sync
     BpmControl* m_pBpmControl;
-
     ControlObjectSlave* m_pSyncMode;
     ControlObjectSlave* m_pSlipEnabled;
-
     // Enumerations which hold the state of the pitchbend buttons.
     // These enumerations can be used like a bitmask.
     enum RATERAMP_DIRECTION {
@@ -139,7 +128,6 @@ public:
         RATERAMP_UP = 2,    // Up button is being held
         RATERAMP_BOTH = 3   // Both buttons are being held down
     };
-
     // Rate ramping mode:
     //  RATERAMP_STEP: pitch takes a temporary step up/down a certain amount.
     //  RATERAMP_LINEAR: pitch moves up/down in a progresively linear fashion.
@@ -147,7 +135,6 @@ public:
         RATERAMP_STEP = 0,
         RATERAMP_LINEAR = 1
     };
-
     // This defines how the rate returns to normal. Currently unused.
     // Rate ramp back mode:
     //  RATERAMP_RAMPBACK_NONE: returns back to normal all at once.
@@ -158,7 +145,6 @@ public:
         RATERAMP_RAMPBACK_SPEED,
         RATERAMP_RAMPBACK_PERIOD
     };
-
     // The current rate ramping direction. Only holds the last button pressed.
     int m_ePbCurrent;
     //  The rate ramping buttons which are currently being pressed.
