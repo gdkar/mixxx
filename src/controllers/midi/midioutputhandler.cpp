@@ -10,7 +10,7 @@
 
 #include "controllers/midi/midioutputhandler.h"
 #include "controllers/midi/midicontroller.h"
-#include "controlobject.h"
+#include "control/controlobject.h"
 
 MidiOutputHandler::MidiOutputHandler(MidiController* controller,
                                      const MidiOutputMapping& mapping)

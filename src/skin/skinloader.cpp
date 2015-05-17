@@ -108,7 +108,7 @@ QString SkinLoader::getSkinPath() {
 }
 
 QWidget* SkinLoader::loadDefaultSkin(QWidget* pParent,
-                                     MixxxKeyboard* pKeyboard,
+                                     EventFilter* pEvtFilt,
                                      PlayerManager* pPlayerManager,
                                      ControllerManager* pControllerManager,
                                      Library* pLibrary,
@@ -121,7 +121,7 @@ QWidget* SkinLoader::loadDefaultSkin(QWidget* pParent,
         return NULL;
     }
 
-    LegacySkinParser legacy(m_pConfig, pKeyboard, pPlayerManager,
+    LegacySkinParser legacy(m_pConfig, pEvtFilt, pPlayerManager,
                             pControllerManager, pLibrary, pVCMan,
                             pEffectsManager);
     return legacy.parseSkin(skinPath, pParent);

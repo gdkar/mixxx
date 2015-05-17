@@ -22,12 +22,3 @@ EngineObject::EngineObject(QObject*pParent) :QObject(pParent){
 
 EngineObject::~EngineObject() {
 }
-
-EngineObjectConstIn::EngineObjectConstIn(QObject*pParent):QObject(pParent) {
-}
-
-EngineObjectConstIn::~EngineObjectConstIn() {
-}
-
-
-

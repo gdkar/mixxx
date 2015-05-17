@@ -20,6 +20,7 @@
 
 #include "engine/engineobject.h"
 #include "engine/channelhandle.h"
+#include "control/atom.h"
 #include "configobject.h"
 
 class ControlObject;
@@ -86,6 +87,11 @@ class EngineChannel : public EngineObject {
 
   private:
     const ChannelHandleAndGroup m_group;
+    CVPtr              m_master;
+    CVPtr              m_pfl;
+    CVPtr              m_orientation;
+    CVPtr              m_passthrough;
+    CVPtr              m_talkover;
     ControlPushButton* m_pMaster;
     ControlPushButton* m_pPFL;
     ControlPushButton* m_pOrientation;

@@ -33,6 +33,7 @@ class Library;
 class LibraryScanner;
 class ControllerManager;
 class MixxxKeyboard;
+class EventFilter;
 class PlayerManager;
 class RecordingManager;
 class ShoutcastManager;
@@ -211,7 +212,7 @@ class MixxxMainWindow : public QMainWindow {
 
     VinylControlManager* m_pVCManager;
 
-    MixxxKeyboard* m_pKeyboard;
+    MixxxKeyboard* m_pEvtFilt;
     // Library scanner object
     LibraryScanner* m_pLibraryScanner;
     // The library management object

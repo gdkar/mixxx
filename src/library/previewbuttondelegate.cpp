@@ -6,7 +6,7 @@
 #include "playerinfo.h"
 #include "playermanager.h"
 #include "trackinfoobject.h"
-#include "controlobjectslave.h"
+#include "control/controlobjectslave.h"
 
 PreviewButtonDelegate::PreviewButtonDelegate(QObject *parent, int column)
         : QStyledItemDelegate(parent),

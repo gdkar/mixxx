@@ -7,10 +7,11 @@
 #include "util/assert.h"
 
 template<unsigned int SIZE>
-class EngineFilterDelay : public EngineObjectConstIn {
+class EngineFilterDelay : public EngineObject{
   public:
     EngineFilterDelay( QObject*pParent=0)
-            : EngineObjectConstIn(pParent),m_delaySamples(0),
+            : EngineObject(pParent)
+              ,m_delaySamples(0),
               m_oldDelaySamples(0),
               m_delayPos(0),
               m_doRamping(false),

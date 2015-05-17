@@ -21,7 +21,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
-    <widget class="QTabWidget" name="controllerTabs">
+    <widget class="QTabWidget" name="control/controllerTabs">
      <property name="currentIndex">
       <number>0</number>
      </property>

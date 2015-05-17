@@ -8,7 +8,7 @@
 #include "engine/enginemaster.h"
 #include "engine/enginechannel.h"
 #include "sampleutil.h"
-#include "controlobjectslave.h"
+#include "control/controlobjectslave.h"
 
 #include "test/mixxxtest.h"
 

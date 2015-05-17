@@ -5,7 +5,7 @@
 
 #include "mixxxtest.h"
 #include "engine/cachingreader.h"
-#include "controlobject.h"
+#include "control/controlobject.h"
 #include "engine/loopingcontrol.h"
 #include "engine/readaheadmanager.h"
 #include "sampleutil.h"

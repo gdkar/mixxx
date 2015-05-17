@@ -8,7 +8,7 @@
 #include <QList>
 
 #include "configobject.h"
-#include "controlobjectthread.h"
+#include "control/controlobjectthread.h"
 #include "trackinfoobject.h"
 #include "control/controlvalue.h"
 #include "engine/effects/groupfeaturestate.h"

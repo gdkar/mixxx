@@ -6,8 +6,8 @@
 #include "controllers/midi/midicontroller.h"
 #include "controllers/midi/midicontrollerpreset.h"
 #include "controllers/midi/midimessage.h"
-#include "controlpushbutton.h"
-#include "controlpotmeter.h"
+#include "control/controlpushbutton.h"
+#include "control/controlpotmeter.h"
 
 class MockMidiController : public MidiController {
   public:

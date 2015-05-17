@@ -6,7 +6,7 @@
 #include <QScopedPointer>
 #include <QByteArray>
 
-#include "controlobjectslave.h"
+#include "control/controlobjectslave.h"
 
 class WBaseWidget;
 class ValueTransformer;

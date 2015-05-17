@@ -27,7 +27,7 @@
 #include "engine/sync/syncable.h"
 #include "trackinfoobject.h"
 #include "configobject.h"
-#include "rotary.h"
+#include "control/rotary.h"
 #include "control/controlvalue.h"
 #include "engine/cachingreader.h"
 
@@ -257,55 +257,40 @@ class EngineBuffer : public EngineObject {
     KeyControl* m_pKeyControl;
     ClockControl* m_pClockControl;
     CueControl* m_pCueControl;
-
     QList<EngineControl*> m_engineControls;
-
     // The read ahead manager for EngineBufferScale's that need to read ahead
     ReadAheadManager* m_pReadAheadManager;
-
     // The reader used to read audio files
     CachingReader* m_pReader;
-
     // List of hints to provide to the CachingReader
     HintVector m_hintList;
-
     // The current sample to play in the file.
     double m_filepos_play;
-
     // The previous callback's speed. Used to check if the scaler parameters
     // need updating.
     double m_speed_old;
-
     // True if the previous callback was scratching.
     bool m_scratching_old;
-
     // True if the previous callback was reverse.
     bool m_reverse_old;
-
     // The previous callback's pitch. Used to check if the scaler parameters
     // need updating.
     double m_pitch_old;
-
     // The previous callback's baserate. Used to check if the scaler parameters
     // need updating.
     double m_baserate_old;
-
     // Copy of rate_exchange, used to check if rate needs to be updated
     double m_rate_old;
-
     // Copy of length of file
     int m_trackSamplesOld;
-
     // Copy of file sample rate
     int m_trackSampleRateOld;
-
     // Mutex controlling weather the process function is in pause mode. This happens
     // during seek and loading of a new track
     QMutex m_pause;
     // Used in update of playpos slider
     int m_iSamplesCalculated;
     int m_iUiSlowTick;
-
     // The location where the track would have been had slip not been engaged
     double m_dSlipPosition;
     // Saved value of rate for slip mode
@@ -387,7 +372,6 @@ class EngineBuffer : public EngineObject {
     // Records the sample rate so we can detect when it changes. Initialized to
     // 0 to guarantee we see a change on the first callback.
     int m_iSampleRate;
-
     TrackPointer m_pCurrentTrack;
 #ifdef __SCALER_DEBUG__
     QFile df;
@@ -395,7 +379,6 @@ class EngineBuffer : public EngineObject {
 #endif
     CSAMPLE* m_pDitherBuffer;
     unsigned int m_iDitherBufferReadIndex;
-
     // Certain operations like seeks and engine changes need to be crossfaded
     // to eliminate clicks and pops.
     CSAMPLE* m_pCrossfadeBuffer;

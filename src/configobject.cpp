@@ -262,7 +262,7 @@ template <class ValueType> bool ConfigObject<ValueType>::Parse()
                     QTextStream(&line) >> key;
                     QString val = line.right(line.length() - key.length()); // finds the value string
                     val = val.trimmed();
-                    //qDebug() << "control:" << key << "value:" << val;
+                    //qDebug() << "control/control:" << key << "value:" << val;
                     ConfigKey k(groupStr, key);
                     ValueType m(val);
                     set(k, m);
@@ -397,7 +397,7 @@ template <class ValueType> ConfigObject<ValueType>::ConfigObject(QDomNode node) 
         QDomNode ctrl = node.firstChild();
 
         while (!ctrl.isNull()) {
-            if(ctrl.nodeName() == "control") {
+            if(ctrl.nodeName() == "control/control") {
                 QString group = XmlParse::selectNodeQString(ctrl, "group");
                 QString key = XmlParse::selectNodeQString(ctrl, "key");
                 ConfigKey k(group, key);

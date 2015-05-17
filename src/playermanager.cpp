@@ -4,11 +4,11 @@
 
 #include "playermanager.h"
 
-#include "controlobject.h"
+#include "control/controlobject.h"
 #include "trackinfoobject.h"
 #include "trackplayer.h"
-#include "analyserqueue.h"
-#include "controlobject.h"
+#include "analysis/analyserqueue.h"
+#include "control/controlobject.h"
 #include "samplerbank.h"
 #include "library/library.h"
 #include "library/trackcollection.h"
@@ -364,8 +364,8 @@ void PlayerManager::addPreviewDeckInner() {
     EngineChannel::ChannelOrientation orientation = EngineChannel::CENTER;
     TrackPlayer* pPreviewDeck = new TrackPlayer(m_pConfig,group, m_pEngine,this);
     pPreviewDeck->setProperty("orientation",orientation);
-    pPreviewDeck->setProperty("pfl",false);
-    pPreviewDeck->setProperty("master",true);
+    pPreviewDeck->setProperty("pfl",   true);
+    pPreviewDeck->setProperty("master",false);
 
     if (m_pAnalyserQueue) {
         connect(pPreviewDeck, SIGNAL(newTrackLoaded(TrackPointer)),

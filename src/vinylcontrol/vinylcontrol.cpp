@@ -1,7 +1,7 @@
 #include "vinylcontrol/vinylcontrol.h"
-#include "controlobjectthread.h"
-#include "controlobjectslave.h"
-#include "controlobject.h"
+#include "control/controlobjectthread.h"
+#include "control/controlobjectslave.h"
+#include "control/controlobject.h"
 
 VinylControl::VinylControl(ConfigObject<ConfigValue> * pConfig, QString group)
         : m_pConfig(pConfig),

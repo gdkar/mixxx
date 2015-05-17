@@ -1,8 +1,8 @@
 #include <QtDebug>
 #include <QFileInfo>
 
-#include "controlobject.h"
-#include "controlobjectthread.h"
+#include "control/controlobject.h"
+#include "control/controlobjectthread.h"
 
 #include "engine/cachingreaderworker.h"
 #include "trackinfoobject.h"

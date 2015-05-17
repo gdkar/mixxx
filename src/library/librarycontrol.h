@@ -3,14 +3,14 @@
 
 #include <QObject>
 
-#include "controlobjectthread.h"
+#include "control/controlobjectthread.h"
 
 class ControlObject;
 class ControlPushButton;
 class Library;
 class WLibrary;
 class WLibrarySidebar;
-class MixxxKeyboard;
+class EventFilter;
 
 class LoadToGroupController : public QObject {
     Q_OBJECT
@@ -37,7 +37,7 @@ class LibraryControl : public QObject {
     LibraryControl(Library* pLibrary);
     virtual ~LibraryControl();
 
-    void bindWidget(WLibrary* pLibrary, MixxxKeyboard* pKeyboard);
+    void bindWidget(WLibrary* pLibrary, EventFilter* pEvtFilt);
     void bindSidebarWidget(WLibrarySidebar* pLibrarySidebar);
 
   private slots:

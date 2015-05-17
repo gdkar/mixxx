@@ -17,17 +17,30 @@
 
 #include "engine/enginechannel.h"
 
-#include "controlobject.h"
-#include "controlpushbutton.h"
+#include "control/controlobject.h"
+#include "control/controlpushbutton.h"
 
 EngineChannel::EngineChannel(const ChannelHandleAndGroup& handle_group,
                              EngineChannel::ChannelOrientation defaultOrientation, QObject*pParent)
-        : EngineObject(pParent),
-          m_group(handle_group) {
+        : EngineObject(pParent)
+        , m_master(new CVAtom("master",this))
+        , m_pfl(new CVAtom("pfl",this))
+        , m_orientation(new CVAtom("orientation",this))
+        , m_passthrough(new CVAtom("passthrough",this))
+        , m_talkover(new CVAtom("talkover",this))
+        , m_group(handle_group) {
+
+    pParent->setProperty("master",QVariant::fromValue(m_master.data()));
+    pParent->setProperty("pfl",QVariant::fromValue(m_pfl.data()));
+    pParent->setProperty("orientation",QVariant::fromValue(m_orientation.data()));
+    pParent->setProperty("passthrough",QVariant::fromValue(m_passthrough.data()));
+    pParent->setProperty("talkover",QVariant::fromValue(m_talkover.data()));
+
     m_pPFL = new ControlPushButton(ConfigKey(getGroup(), "pfl"));
     m_pPFL->setButtonMode(ControlPushButton::TOGGLE);
     m_pMaster = new ControlPushButton(ConfigKey(getGroup(), "master"));
     m_pMaster->setButtonMode(ControlPushButton::TOGGLE);
+    m_pMaster->set(1);
     m_pOrientation = new ControlPushButton(ConfigKey(getGroup(), "orientation"));
     m_pOrientation->setButtonMode(ControlPushButton::TOGGLE);
     m_pOrientation->setStates(3);
@@ -56,30 +69,31 @@ EngineChannel::~EngineChannel() {
 }
 
 void EngineChannel::setPfl(bool enabled) {
-    m_pPFL->set(enabled ? 1.0 : 0.0);
+    m_pfl->setValue(enabled ? 1.0 : 0.0);
 }
 
 bool EngineChannel::isPflEnabled() const {
-    return m_pPFL->toBool();
+    return !!m_pfl->getValue();
 }
 
 void EngineChannel::setMaster(bool enabled) {
-    m_pMaster->set(enabled ? 1.0 : 0.0);
+    m_master->setValue(enabled ? 1.0 : 0.0);
 }
 
 bool EngineChannel::isMasterEnabled() const {
-    return m_pMaster->toBool();
+    return !!(m_master->getValue());
 }
 
 void EngineChannel::setTalkover(bool enabled) {
-    m_pTalkover->set(enabled ? 1.0 : 0.0);
+    
+    m_talkover->setValue(enabled ? 1.0 : 0.0);
 }
 
 bool EngineChannel::isTalkoverEnabled() const {
-    return m_pTalkover->toBool();
+    return m_talkover->getValue()>0;
 }
 void EngineChannel::setOrientation(ChannelOrientation o){
-  m_pOrientation->set(o);
+  m_orientation->setValue(o);
 }
 void EngineChannel::slotOrientationLeft(double v) {
     if (v > 0) {
@@ -100,7 +114,7 @@ void EngineChannel::slotOrientationCenter(double v) {
 }
 
 EngineChannel::ChannelOrientation EngineChannel::getOrientation() const {
-    double dOrientation = m_pOrientation->get();
+    double dOrientation = m_orientation->getValue();
     if (dOrientation == LEFT) {
         return LEFT;
     } else if (dOrientation == CENTER) {

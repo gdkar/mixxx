@@ -2,7 +2,7 @@
 #include <QtDebug>
 
 #include "util/xml.h"
-#include "errordialoghandler.h"
+#include "preferences/errordialoghandler.h"
 
 int XmlParse::selectNodeInt(const QDomNode& nodeHeader, const QString& sNode) {
     return selectNode(nodeHeader, sNode).toElement().text().toInt();

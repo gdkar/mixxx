@@ -579,27 +579,27 @@ win32-g++ {
 SOURCES += $$BASE_DIR/lib/replaygain/replaygain_analysis.c
 
 FORMS += \
-$$BASE_DIR/src/dlgaboutdlg.ui \
-$$BASE_DIR/src/dlgautodj.ui \
-$$BASE_DIR/src/dlgmidilearning.ui \
-$$BASE_DIR/src/dlgprefcontrolsdlg.ui \
-$$BASE_DIR/src/dlgprefcrossfaderdlg.ui \
-$$BASE_DIR/src/dlgprefeqdlg.ui \
-$$BASE_DIR/src/dlgpreferencesdlg.ui \
-$$BASE_DIR/src/dlgprefmidibindingsdlg.ui \
-$$BASE_DIR/src/dlgprefnomididlg.ui \
-$$BASE_DIR/src/dlgprefplaylistdlg.ui \
-$$BASE_DIR/src/dlgprefrecorddlg.ui \
-$$BASE_DIR/src/dlgprefsounddlg.ui \
-$$BASE_DIR/src/dlgprefvinyldlg.ui \
-$$BASE_DIR/src/dlgprepare.ui \
-$$BASE_DIR/src/dlgtrackinfo.ui \
+$$BASE_DIR/src/preferences/dlgaboutdlg.ui \
+$$BASE_DIR/src/preferences/dlgautodj.ui \
+$$BASE_DIR/src/preferences/dlgmidilearning.ui \
+$$BASE_DIR/src/preferences/dlgprefcontrolsdlg.ui \
+$$BASE_DIR/src/preferences/dlgprefcrossfaderdlg.ui \
+$$BASE_DIR/src/preferences/dlgprefeqdlg.ui \
+$$BASE_DIR/src/preferences/dlgpreferencesdlg.ui \
+$$BASE_DIR/src/preferences/dlgprefmidibindingsdlg.ui \
+$$BASE_DIR/src/preferences/dlgprefnomididlg.ui \
+$$BASE_DIR/src/preferences/dlgprefplaylistdlg.ui \
+$$BASE_DIR/src/preferences/dlgprefrecorddlg.ui \
+$$BASE_DIR/src/preferences/dlgprefsounddlg.ui \
+$$BASE_DIR/src/preferences/dlgprefvinyldlg.ui \
+$$BASE_DIR/src/preferences/dlgprepare.ui \
+$$BASE_DIR/src/preferences/dlgtrackinfo.ui \
 $$BASE_DIR/src/script/scriptstudio.ui
 
 
 RESOURCES += $$BASE_DIR/src/../res/mixxx.qrc
 
-FORMS += $$BASE_DIR/src/dlgprefrecorddlg.ui
+FORMS += $$BASE_DIR/src/preferences/dlgprefrecorddlg.ui
 !win32:unix {
     !macx {
         DEFINES += __LINUX__ \

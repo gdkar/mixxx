@@ -7,7 +7,7 @@
 
 #include "configobject.h"
 
-class MixxxKeyboard;
+class EventFilter;
 class PlayerManager;
 class ControllerManager;
 class Library;
@@ -20,7 +20,7 @@ class SkinLoader {
     virtual ~SkinLoader();
 
     QWidget* loadDefaultSkin(QWidget* pParent,
-                             MixxxKeyboard* pKeyboard,
+                             EventFilter* pEvtFilt,
                              PlayerManager* pPlayerManager,
                              ControllerManager* pControllerManager,
                              Library* pLibrary,

@@ -4,7 +4,7 @@
 #include <QScopedPointer>
 
 #include "mixxxtest.h"
-#include "controlobject.h"
+#include "control/controlobject.h"
 #include "util/math.h"
 
 class AudioTaperPotTest : public MixxxTest {

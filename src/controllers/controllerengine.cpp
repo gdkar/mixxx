@@ -9,9 +9,9 @@
 #include "controllers/controllerengine.h"
 
 #include "controllers/controller.h"
-#include "controlobject.h"
-#include "controlobjectthread.h"
-#include "errordialoghandler.h"
+#include "control/controlobject.h"
+#include "control/controlobjectthread.h"
+#include "preferences/errordialoghandler.h"
 #include "playermanager.h"
 // to tell the msvs compiler about `isnan`
 #include "util/math.h"
@@ -196,7 +196,7 @@ void ControllerEngine::initializeScriptEngine() {
         qDebug() << "Controller in script engine is:" << m_pController->getName();
 
         // Make the Controller instance available to scripts
-        engineGlobalObject.setProperty("controller", m_pEngine->newQObject(m_pController));
+        engineGlobalObject.setProperty("control/controller", m_pEngine->newQObject(m_pController));
 
         // ...under the legacy name as well
         engineGlobalObject.setProperty("midi", m_pEngine->newQObject(m_pController));

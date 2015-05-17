@@ -31,7 +31,7 @@ class MixxxLibraryFeature;
 class PlaylistFeature;
 class CrateFeature;
 class LibraryControl;
-class MixxxKeyboard;
+class EventFilter;
 class PlayerManagerInterface;
 
 class Library : public QObject {
@@ -44,7 +44,7 @@ public:
     virtual ~Library();
 
     void bindWidget(WLibrary* libraryWidget,
-                    MixxxKeyboard* pKeyboard);
+                    EventFilter* pEvtFilt);
     void bindSidebarWidget(WLibrarySidebar* sidebarWidget);
 
     void addFeature(LibraryFeature* feature);

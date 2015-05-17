@@ -11,7 +11,7 @@
 #include <QtDebug>
 
 #include "configobject.h"
-#include "controlobject.h"
+#include "control/controlobject.h"
 #include "engine/bpmcontrol.h"
 #include "engine/sync/synccontrol.h"
 #include "test/mockedenginebackendtest.h"

@@ -5,7 +5,7 @@
 
 #include "waveform/waveform.h"
 #include "waveform/waveformwidgetfactory.h"
-#include "controlobjectthread.h"
+#include "control/controlobjectthread.h"
 
 GLSLWaveformRendererSignal::GLSLWaveformRendererSignal(WaveformWidgetRenderer* waveformWidgetRenderer,
                                                        bool rgbShader)

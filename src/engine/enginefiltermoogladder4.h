@@ -36,7 +36,7 @@ enum MoogMode {
 };
 
 template<enum MoogMode MODE>
-class EngineFilterMoogLadderBase : public EngineObjectConstIn {
+class EngineFilterMoogLadderBase : public EngineObject{
 
   private:
     struct Buffer {
@@ -50,7 +50,7 @@ class EngineFilterMoogLadderBase : public EngineObjectConstIn {
 
   public:
     EngineFilterMoogLadderBase(unsigned int sampleRate, float cutoff, float resonance, QObject*pParent=0)
-      :EngineObjectConstIn(pParent) {
+      :EngineObject(pParent) {
         setParameter(sampleRate, cutoff, resonance);
         initBuffers();
     }

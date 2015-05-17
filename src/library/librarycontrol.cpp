@@ -6,8 +6,8 @@
 #include <QModelIndexList>
 #include <QtDebug>
 
-#include "controlobject.h"
-#include "controlpushbutton.h"
+#include "control/controlobject.h"
+#include "control/controlpushbutton.h"
 #include "playermanager.h"
 #include "widget/wlibrary.h"
 #include "widget/wlibrarysidebar.h"
@@ -197,8 +197,8 @@ void LibraryControl::bindSidebarWidget(WLibrarySidebar* pSidebarWidget) {
             this, SLOT(sidebarWidgetDeleted()));
 }
 
-void LibraryControl::bindWidget(WLibrary* pLibraryWidget, MixxxKeyboard* pKeyboard) {
-    Q_UNUSED(pKeyboard);
+void LibraryControl::bindWidget(WLibrary* pLibraryWidget, EventFilter* pEvtFilt) {
+    Q_UNUSED(pEvtFilt);
     if (m_pLibraryWidget != NULL) {
         disconnect(m_pLibraryWidget, 0, this, 0);
     }

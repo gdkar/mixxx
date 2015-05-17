@@ -19,11 +19,11 @@
 #include <QList>
 #include <QPair>
 
-#include "controlpushbutton.h"
+#include "control/controlpushbutton.h"
 #include "configobject.h"
-#include "controlaudiotaperpot.h"
-#include "controlpotmeter.h"
-#include "controlaudiotaperpot.h"
+#include "control/controlaudiotaperpot.h"
+#include "control/controlpotmeter.h"
+#include "control/controlaudiotaperpot.h"
 #include "engine/enginebuffer.h"
 #include "engine/enginemaster.h"
 #include "engine/engineworkerscheduler.h"

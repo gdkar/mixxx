@@ -4,9 +4,9 @@
 
 #include <QtDebug>
 
-#include "controlobject.h"
+#include "control/controlobject.h"
 #include "configobject.h"
-#include "controlpushbutton.h"
+#include "control/controlpushbutton.h"
 #include "engine/cachingreader.h"
 #include "engine/quantizecontrol.h"
 #include "engine/enginecontrol.h"

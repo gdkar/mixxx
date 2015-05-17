@@ -7,7 +7,7 @@
 
 #include "trackplayer.h"
 #include "configobject.h"
-#include "controlobject.h"
+#include "control/controlobject.h"
 #include "test/mockedenginebackendtest.h"
 #include "test/mixxxtest.h"
 #include "test/signalpathtest.h"

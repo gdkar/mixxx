@@ -17,7 +17,7 @@
 #include "library/trackcollection.h"
 #include "widget/wlibrarytextbrowser.h"
 #include "widget/wlibrary.h"
-#include "mixxxkeyboard.h"
+#include "util/eventfilter.h"
 #include "util/sandbox.h"
 
 const QString kQuickLinksSeparator = "-+-";
@@ -195,7 +195,7 @@ TreeItemModel* BrowseFeature::getChildModel() {
 }
 
 void BrowseFeature::bindWidget(WLibrary* libraryWidget,
-                               MixxxKeyboard* keyboard) {
+                               EventFilter* keyboard) {
     Q_UNUSED(keyboard);
     WLibraryTextBrowser* edit = new WLibraryTextBrowser(libraryWidget);
     edit->setHtml(getRootViewHtml());

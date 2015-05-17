@@ -58,7 +58,7 @@ ControllerPresetPointer ControllerPresetFileHandler::loadPreset(const QString& p
 ControllerPresetPointer ControllerPresetFileHandler::load(const QString path,
                                                           const QString deviceName) {
     qDebug() << "Loading controller preset from" << path;
-    ControllerPresetPointer pPreset = load(XmlParse::openXMLFile(path, "controller"),
+    ControllerPresetPointer pPreset = load(XmlParse::openXMLFile(path, "control/controller"),
                                            deviceName);
     if (pPreset) {
         pPreset->setFilePath(path);
@@ -103,7 +103,7 @@ QDomElement ControllerPresetFileHandler::getControllerNode(const QDomElement& ro
     // TODO(XXX): Controllers can have multiple <controller> blocks. We should
     // expose this to the user and let them pick them as alternate "versions" of
     // a preset.
-    return root.firstChildElement("controller");
+    return root.firstChildElement("control/controller");
 }
 
 void ControllerPresetFileHandler::addScriptFilesToPreset(
@@ -193,7 +193,7 @@ QDomDocument ControllerPresetFileHandler::buildRootWithScripts(const ControllerP
         addTextTag(doc, info, "wiki", preset.wikilink());
     }
 
-    QDomElement controller = doc.createElement("controller");
+    QDomElement controller = doc.createElement("control/controller");
     // Strip off the serial number
     controller.setAttribute("id", rootDeviceName(deviceName));
     rootNode.appendChild(controller);

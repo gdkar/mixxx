@@ -12,7 +12,7 @@
 #include "library/playlisttablemodel.h"
 #include "library/trackcollection.h"
 #include "library/treeitem.h"
-#include "mixxxkeyboard.h"
+#include "util/eventfilter.h"
 #include "widget/wlibrary.h"
 #include "widget/wlibrarytextbrowser.h"
 #include "util/assert.h"
@@ -509,7 +509,7 @@ TreeItemModel* BasePlaylistFeature::getChildModel() {
 }
 
 void BasePlaylistFeature::bindWidget(WLibrary* libraryWidget,
-                                     MixxxKeyboard* keyboard) {
+                                     EventFilter* keyboard) {
     Q_UNUSED(keyboard);
     WLibraryTextBrowser* edit = new WLibraryTextBrowser(libraryWidget);
     edit->setHtml(getRootViewHtml());

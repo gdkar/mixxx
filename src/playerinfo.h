@@ -22,7 +22,7 @@
 #include <QMap>
 #include <QTimerEvent>
 
-#include "controlobjectthread.h"
+#include "control/controlobjectthread.h"
 #include "trackinfoobject.h"
 
 class PlayerInfo : public QObject {

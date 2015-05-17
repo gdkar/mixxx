@@ -4,9 +4,9 @@
  * @date April 15, 2011
  */
 
-#include "controlobject.h"
-#include "controlobjectslave.h"
-#include "controlobjectthread.h"
+#include "control/controlobject.h"
+#include "control/controlobjectslave.h"
+#include "control/controlobjectthread.h"
 #include "playermanager.h"
 #include "soundmanager.h"
 #include "util/timer.h"
