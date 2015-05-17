@@ -17,8 +17,8 @@
 #include "soundsourceproxy.h"
 #include "widget/wlibrary.h"
 #include "util/dnd.h"
-#include "dlghidden.h"
-#include "dlgmissing.h"
+#include "preferences/dlghidden.h"
+#include "preferences/dlgmissing.h"
 
 MixxxLibraryFeature::MixxxLibraryFeature(Library* pLibrary,
                                          TrackCollection* pTrackCollection,
@@ -123,15 +123,15 @@ MixxxLibraryFeature::~MixxxLibraryFeature() {
 }
 
 void MixxxLibraryFeature::bindWidget(WLibrary* pLibraryWidget,
-                                     MixxxKeyboard* pKeyboard) {
+                                     EventFilter* pEvtFilt) {
     m_pHiddenView = new DlgHidden(pLibraryWidget, m_pConfig, m_pLibrary,
-                                  m_pTrackCollection, pKeyboard);
+                                  m_pTrackCollection, pEvtFilt);
     pLibraryWidget->registerView(kHiddenTitle, m_pHiddenView);
     connect(m_pHiddenView, SIGNAL(trackSelected(TrackPointer)),
             this, SIGNAL(trackSelected(TrackPointer)));
 
     m_pMissingView = new DlgMissing(pLibraryWidget, m_pConfig, m_pLibrary,
-                                    m_pTrackCollection, pKeyboard);
+                                    m_pTrackCollection, pEvtFilt);
     pLibraryWidget->registerView(kMissingTitle, m_pMissingView);
     connect(m_pMissingView, SIGNAL(trackSelected(TrackPointer)),
             this, SIGNAL(trackSelected(TrackPointer)));

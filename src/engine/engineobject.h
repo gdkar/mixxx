@@ -28,36 +28,36 @@
   */
 
 class EngineObject : public QObject {
+    int recursion_trap = 0;
     Q_OBJECT
   public:
     EngineObject( QObject *pParent);
     virtual ~EngineObject();
-    virtual void process(CSAMPLE* pInOut,
-                         const int iBufferSize) = 0;
-    virtual void process(const CSAMPLE* pIn, CSAMPLE* pOut,
-                         const int iBufferSize) {
+    virtual void process(CSAMPLE* pInOut, const int iBufferSize) {
+      if(recursion_trap){
+        qDebug() << "WARNING: Engine object failed to override either process function\n"
+                    "bailing out\n";
+        return ; 
+      }
+      recursion_trap ++;
+      CSAMPLE *buffer = new CSAMPLE[iBufferSize*2];
+      memmove(buffer,pInOut,2*iBufferSize*sizeof(CSAMPLE));
+      process(buffer,pInOut,iBufferSize);
+      recursion_trap --;
+    }
+    virtual void process(const CSAMPLE* pIn, CSAMPLE* pOut, const int iBufferSize) {
+      if(recursion_trap){
+        qDebug() << "WARNING: Engine object failed to override either process function\n"
+                    "bailing out\n";
+        return ; 
+      }
+      recursion_trap++;
       memmove(pOut,pIn,iBufferSize*2*sizeof(CSAMPLE));
       process(pOut,iBufferSize);
+      recursion_trap--;
     };
 
     // Sub-classes re-implement and populate GroupFeatureState with the features
     // they extract.
 };
-
-class EngineObjectConstIn : public QObject {
-    Q_OBJECT
-  public:
-    EngineObjectConstIn(QObject *pParent);
-    virtual ~EngineObjectConstIn();
-    virtual void process(CSAMPLE* pInOut,
-                         const int iBufferSize) {
-      CSAMPLE *buffer = new CSAMPLE[iBufferSize*2];
-      memmove(buffer,pInOut,2*iBufferSize*sizeof(CSAMPLE));
-      process(buffer,pInOut,iBufferSize);
-    }
-    virtual void process(const CSAMPLE* pIn ,CSAMPLE* pOut,
-                         const int iBufferSize) = 0;
-
-};
-
 #endif

@@ -28,7 +28,7 @@
 #include "engine/enginemaster.h"
 #include "engine/enginebuffer.h"
 #include "soundmanagerutil.h"
-#include "controlobject.h"
+#include "control/controlobject.h"
 #include "vinylcontrol/defs_vinylcontrol.h"
 #include "sampleutil.h"
 #include "util/cmdlineargs.h"

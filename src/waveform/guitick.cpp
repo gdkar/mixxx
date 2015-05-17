@@ -1,7 +1,7 @@
 #include <QTimer>
 
 #include "guitick.h"
-#include "controlobject.h"
+#include "control/controlobject.h"
 
 
 // static

@@ -5,9 +5,9 @@
 
 #include "engine/cuecontrol.h"
 
-#include "controlobject.h"
-#include "controlpushbutton.h"
-#include "controlindicator.h"
+#include "control/controlobject.h"
+#include "control/controlpushbutton.h"
+#include "control/controlindicator.h"
 #include "trackinfoobject.h"
 #include "library/dao/cue.h"
 #include "engine/cachingreader.h"

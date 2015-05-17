@@ -17,11 +17,11 @@
 #include <QtDebug>
 
 #include "engine/enginepregain.h"
-#include "controlaudiotaperpot.h"
-#include "controlpotmeter.h"
-#include "controlpushbutton.h"
+#include "control/controlaudiotaperpot.h"
+#include "control/controlpotmeter.h"
+#include "control/controlpushbutton.h"
 #include "configobject.h"
-#include "controlobject.h"
+#include "control/controlobject.h"
 #include "util/math.h"
 #include "sampleutil.h"
 

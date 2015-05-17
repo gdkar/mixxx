@@ -10,7 +10,7 @@
 #include "sampleutil.h"
 #include "effects/effectsmanager.h"
 #include "engine/effects/engineeffectsmanager.h"
-#include "controlaudiotaperpot.h"
+#include "control/controlaudiotaperpot.h"
 
 EngineAux::EngineAux(const ChannelHandleAndGroup& handle_group, EffectsManager* pEffectsManager, QObject*pParent)
         : EngineChannel(handle_group, EngineChannel::CENTER,pParent),

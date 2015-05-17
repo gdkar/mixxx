@@ -37,7 +37,7 @@ PresetInfo::PresetInfo(const QString preset_path)
     forumlink = "";
     wikilink = "";
 
-    QDomElement root = XmlParse::openXMLFile(path, "controller");
+    QDomElement root = XmlParse::openXMLFile(path, "control/controller");
     if (root.isNull()) {
         qDebug() << "ERROR parsing" << path;
         return;

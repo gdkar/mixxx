@@ -6,9 +6,9 @@
 #include <QScopedPointer>
 
 #include "mixxxtest.h"
-#include "controlobject.h"
-#include "controlpushbutton.h"
-#include "controlobjectslave.h"
+#include "control/controlobject.h"
+#include "control/controlpushbutton.h"
+#include "control/controlobjectslave.h"
 
 class WWidgetStackTest : public MixxxTest {
   public:

@@ -3,7 +3,7 @@
 #include <QDir>
 
 #include "trackinfoobject.h"
-#include "analyserwaveform.h"
+#include "analysis/analyserwaveform.h"
 #include "test/mixxxtest.h"
 
 #define BIGBUF_SIZE (1024 * 1024)  //Megabyte

@@ -5,7 +5,7 @@
 #include "util/types.h"
 #include "util/defs.h"
 #include "configobject.h"
-#include "controlobject.h"
+#include "control/controlobject.h"
 #include "sampleutil.h"
 #include "soundmanagerutil.h"
 #include "engine/enginemicrophone.h"

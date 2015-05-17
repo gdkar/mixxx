@@ -26,16 +26,16 @@
 
 #include "mixxx.h"
 
-#include "analyserqueue.h"
-#include "controlpotmeter.h"
-#include "controlobjectslave.h"
+#include "analysis/analyserqueue.h"
+#include "control/controlpotmeter.h"
+#include "control/controlobjectslave.h"
 #include "trackplayer.h"
 //#include "deck.h"
 #include "defs_urls.h"
-#include "dlgabout.h"
-#include "dlgpreferences.h"
-#include "dlgprefeq.h"
-#include "dlgdevelopertools.h"
+#include "preferences/dlgabout.h"
+#include "preferences/dlgpreferences.h"
+#include "preferences/dlgprefeq.h"
+#include "preferences/dlgdevelopertools.h"
 #include "engine/enginemaster.h"
 #include "engine/enginemicrophone.h"
 #include "effects/effectsmanager.h"
@@ -47,7 +47,7 @@
 #include "library/scanner/libraryscanner.h"
 #include "library/librarytablemodel.h"
 #include "controllers/controllermanager.h"
-#include "mixxxkeyboard.h"
+#include "controllers/kbd/mixxxkeyboard.h"
 #include "playermanager.h"
 #include "recording/defs_recording.h"
 #include "recording/recordingmanager.h"
@@ -69,7 +69,7 @@
 #include "util/timer.h"
 #include "util/time.h"
 #include "util/version.h"
-#include "controlpushbutton.h"
+#include "control/controlpushbutton.h"
 #include "util/compatibility.h"
 #include "util/sandbox.h"
 #include "playerinfo.h"
@@ -84,7 +84,7 @@
 #endif
 
 #ifdef __MODPLUG__
-#include "dlgprefmodplug.h"
+#include "preferences/dlgprefmodplug.h"
 #endif
 
 // static
@@ -360,7 +360,7 @@ MixxxMainWindow::MixxxMainWindow(QApplication* pApp, const CmdlineArgs& args)
 
     // Load skin to a QWidget that we set as the central widget. Assignment
     // intentional in next line.
-    if (!(m_pWidgetParent = m_pSkinLoader->loadDefaultSkin(this, m_pKeyboard,
+    if (!(m_pWidgetParent = m_pSkinLoader->loadDefaultSkin(this, m_pEvtFilt,
                                                            m_pPlayerManager,
                                                            m_pControllerManager,
                                                            m_pLibrary,
@@ -580,7 +580,7 @@ MixxxMainWindow::~MixxxMainWindow() {
 
     if (leakedControls.size() > 0) {
         qDebug() << "WARNING: The following" << leakedControls.size()
-                 << "controls were leaked:";
+                 << "control/controls were leaked:";
         foreach (QSharedPointer<ControlDoublePrivate> pCDP, leakedControls) {
             if (pCDP.isNull()) {
                 continue;
@@ -620,7 +620,7 @@ MixxxMainWindow::~MixxxMainWindow() {
     ControlDoublePrivate::setUserConfig(NULL);
     delete m_pConfig;
 
-    delete m_pKeyboard;
+    delete m_pEvtFilt;
     delete m_pKbdConfig;
     delete m_pKbdConfigEmpty;
 
@@ -815,7 +815,7 @@ void MixxxMainWindow::initializeKeyboard() {
     // Workaround for today: MixxxKeyboard calls delete
     bool keyboardShortcutsEnabled = m_pConfig->getValueString(
         ConfigKey("[Keyboard]", "Enabled")) == "1";
-    m_pKeyboard = new MixxxKeyboard(keyboardShortcutsEnabled ? m_pKbdConfig : m_pKbdConfigEmpty);
+    m_pEvtFilt = new MixxxKeyboard(keyboardShortcutsEnabled ? m_pKbdConfig : m_pKbdConfigEmpty);
 }
 
 void toggleVisibility(ConfigKey key, bool enable) {
@@ -1696,11 +1696,11 @@ void MixxxMainWindow::slotFileQuit()
 void MixxxMainWindow::slotOptionsKeyboard(bool toggle) {
     if (toggle) {
         //qDebug() << "Enable keyboard shortcuts/mappings";
-        m_pKeyboard->setKeyboardConfig(m_pKbdConfig);
+        m_pEvtFilt->setKeyboardConfig(m_pKbdConfig);
         m_pConfig->set(ConfigKey("[Keyboard]","Enabled"), ConfigValue(1));
     } else {
         //qDebug() << "Disable keyboard shortcuts/mappings";
-        m_pKeyboard->setKeyboardConfig(m_pKbdConfigEmpty);
+        m_pEvtFilt->setKeyboardConfig(m_pKbdConfigEmpty);
         m_pConfig->set(ConfigKey("[Keyboard]","Enabled"), ConfigValue(0));
     }
 }
@@ -2066,7 +2066,7 @@ void MixxxMainWindow::rebootMixxxView() {
     // Load skin to a QWidget that we set as the central widget. Assignment
     // intentional in next line.
     if (!(m_pWidgetParent = m_pSkinLoader->loadDefaultSkin(this,
-                                                           m_pKeyboard,
+                                                           m_pEvtFilt,
                                                            m_pPlayerManager,
                                                            m_pControllerManager,
                                                            m_pLibrary,

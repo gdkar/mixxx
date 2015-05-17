@@ -7,10 +7,10 @@
 #include "library/analysisfeature.h"
 #include "library/librarytablemodel.h"
 #include "library/trackcollection.h"
-#include "dlganalysis.h"
+#include "preferences/dlganalysis.h"
 #include "widget/wlibrary.h"
-#include "mixxxkeyboard.h"
-#include "analyserqueue.h"
+#include "util/eventfilter.h"
+#include "analysis/analyserqueue.h"
 #include "soundsourceproxy.h"
 #include "util/dnd.h"
 #include "util/debug.h"
@@ -59,7 +59,7 @@ QIcon AnalysisFeature::getIcon() {
 }
 
 void AnalysisFeature::bindWidget(WLibrary* libraryWidget,
-                                 MixxxKeyboard* keyboard) {
+                                 EventFilter* keyboard) {
     m_pAnalysisView = new DlgAnalysis(libraryWidget,
                                       m_pConfig,
                                       m_pTrackCollection);

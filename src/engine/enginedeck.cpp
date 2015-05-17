@@ -15,7 +15,7 @@
 *                                                                         *
 ***************************************************************************/
 
-#include "controlpushbutton.h"
+#include "control/controlpushbutton.h"
 #include "effects/effectsmanager.h"
 #include "engine/effects/engineeffectsmanager.h"
 #include "engine/enginebuffer.h"
@@ -38,9 +38,7 @@ EngineDeck::EngineDeck(const ChannelHandleAndGroup& handle_group,
           // Need a +1 here because the CircularBuffer only allows its size-1
           // items to be held at once (it keeps a blank spot open persistently)
           m_sampleBuffer(NULL) {
-    if (pEffectsManager != NULL) {
-        pEffectsManager->registerChannel(handle_group);
-    }
+    if (pEffectsManager != NULL) {pEffectsManager->registerChannel(handle_group);}
 
     // Set up passthrough utilities and fields
     m_pPassing->setButtonMode(ControlPushButton::POWERWINDOW);
@@ -57,7 +55,7 @@ EngineDeck::EngineDeck(const ChannelHandleAndGroup& handle_group,
     // Set up additional engines
     m_pPregain = new EnginePregain(getGroup(), this);
     m_pVUMeter = new EngineVuMeter(getGroup(), this);
-    m_pBuffer = new EngineBuffer(getGroup(), pConfig, this, pMixingEngine,this);
+    m_pBuffer = new EngineBuffer(getGroup(), pConfig, this, pMixingEngine,pParent);
 }
 
 EngineDeck::~EngineDeck() {
@@ -105,23 +103,12 @@ void EngineDeck::process(CSAMPLE* pOut, const int iBufferSize) {
     // Update VU meter
     m_pVUMeter->process(pOut, iBufferSize);
 }
-
-void EngineDeck::postProcess(const int iBufferSize) {
-    m_pBuffer->postProcess(iBufferSize);
-}
-
-EngineBuffer* EngineDeck::getEngineBuffer() {
-    return m_pBuffer;
-}
-
+void EngineDeck::postProcess(const int iBufferSize) {m_pBuffer->postProcess(iBufferSize);}
+EngineBuffer* EngineDeck::getEngineBuffer() {return m_pBuffer;}
 bool EngineDeck::isActive() {
-    if (m_bPassthroughWasActive && !m_bPassthroughIsActive) {
-        return true;
-    }
-
+    if (m_bPassthroughWasActive && !m_bPassthroughIsActive) {return true;}
     return (m_pBuffer->isTrackLoaded() || isPassthroughActive());
 }
-
 void EngineDeck::receiveBuffer(AudioInput input, const CSAMPLE* pBuffer, unsigned int nFrames) {
     Q_UNUSED(input);
     Q_UNUSED(nFrames);
@@ -129,9 +116,7 @@ void EngineDeck::receiveBuffer(AudioInput input, const CSAMPLE* pBuffer, unsigne
     if (!m_bPassthroughIsActive) {
         m_sampleBuffer = NULL;
         return;
-    } else {
-        m_sampleBuffer = pBuffer;
-    }
+    } else {m_sampleBuffer = pBuffer;}
 }
 
 void EngineDeck::onInputConfigured(AudioInput input) {

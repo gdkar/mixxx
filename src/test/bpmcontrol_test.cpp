@@ -4,9 +4,9 @@
 #include <QScopedPointer>
 
 #include "mixxxtest.h"
-#include "controlobject.h"
-#include "controlpushbutton.h"
-#include "controlobjectthread.h"
+#include "control/controlobject.h"
+#include "control/controlpushbutton.h"
+#include "control/controlobjectthread.h"
 #include "engine/bpmcontrol.h"
 #include "track/beats.h"
 #include "track/beatfactory.h"

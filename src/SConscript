@@ -448,7 +448,7 @@ if build.platform_is_osx and 'bundle' in COMMAND_LINE_TARGETS:
 if build.platform_is_windows:
         base_dist_dir = '#' + dist_dir
         skins = env.Install(os.path.join(base_dist_dir, "skins"), skin_files)
-        controllermappings = env.Install(os.path.join(base_dist_dir, "controllers"), controllermappings_files)
+        controllermappings = env.Install(os.path.join(base_dist_dir, "control/controllers"), controllermappings_files)
         fonts = env.Install(os.path.join(base_dist_dir, "fonts"), font_files)
         translations = env.Install(os.path.join(base_dist_dir, "translations"), translation_files)
         keyboardmappings = env.Install(os.path.join(base_dist_dir, "keyboard"), keyboardmappings_files)

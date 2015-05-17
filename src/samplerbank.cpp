@@ -4,7 +4,7 @@
 #include "trackplayer.h"
 #include "samplerbank.h"
 #include "trackinfoobject.h"
-#include "controlpushbutton.h"
+#include "control/controlpushbutton.h"
 #include "playermanager.h"
 #include "util/assert.h"
 

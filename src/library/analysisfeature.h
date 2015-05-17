@@ -15,7 +15,7 @@
 #include "library/libraryfeature.h"
 #include "configobject.h"
 #include "treeitemmodel.h"
-#include "dlganalysis.h"
+#include "preferences/dlganalysis.h"
 
 class AnalyserQueue;
 class TrackCollection;
@@ -34,7 +34,7 @@ class AnalysisFeature : public LibraryFeature {
     bool dropAccept(QList<QUrl> urls, QObject* pSource);
     bool dragMoveAccept(QUrl url);
     void bindWidget(WLibrary* libraryWidget,
-                    MixxxKeyboard* keyboard);
+                    EventFilter* keyboard);
 
     TreeItemModel* getChildModel();
     void refreshLibraryModels();

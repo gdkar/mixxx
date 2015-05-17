@@ -33,7 +33,7 @@
 #include "widget/wlibrary.h"
 #include "widget/wlibrarysidebar.h"
 
-#include "mixxxkeyboard.h"
+#include "util/eventfilter.h"
 
 // This is is the name which we use to register the WTrackTableView with the
 // WLibrary
@@ -166,10 +166,10 @@ void Library::bindSidebarWidget(WLibrarySidebar* pSidebarWidget) {
 }
 
 void Library::bindWidget(WLibrary* pLibraryWidget,
-                         MixxxKeyboard* pKeyboard) {
+                         EventFilter* pEvtFilt) {
     WTrackTableView* pTrackTableView =
             new WTrackTableView(pLibraryWidget, m_pConfig, m_pTrackCollection);
-    pTrackTableView->installEventFilter(pKeyboard);
+    pTrackTableView->installEventFilter(pEvtFilt);
     connect(this, SIGNAL(showTrackModel(QAbstractItemModel*)),
             pTrackTableView, SLOT(loadTrackModel(QAbstractItemModel*)));
     connect(pTrackTableView, SIGNAL(loadTrack(TrackPointer)),
@@ -194,12 +194,12 @@ void Library::bindWidget(WLibrary* pLibraryWidget,
     connect(this, SIGNAL(searchCleared()),
             pTrackTableView, SLOT(onSearchCleared()));
 
-    m_pLibraryControl->bindWidget(pLibraryWidget, pKeyboard);
+    m_pLibraryControl->bindWidget(pLibraryWidget, pEvtFilt);
 
     QListIterator<LibraryFeature*> feature_it(m_features);
     while(feature_it.hasNext()) {
         LibraryFeature* feature = feature_it.next();
-        feature->bindWidget(pLibraryWidget, pKeyboard);
+        feature->bindWidget(pLibraryWidget, pEvtFilt);
     }
 
     // Set the current font and row height on all the WTrackTableViews that were

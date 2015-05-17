@@ -28,7 +28,7 @@
 
 #include "trackinfoobject.h"
 
-#include "controlobject.h"
+#include "control/controlobject.h"
 #include "soundsourceproxy.h"
 #include "metadata/trackmetadata.h"
 #include "util/xml.h"

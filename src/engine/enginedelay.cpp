@@ -15,8 +15,8 @@
 ***************************************************************************/
 
 #include "enginedelay.h"
-#include "controlpotmeter.h"
-#include "controlobjectslave.h"
+#include "control/controlpotmeter.h"
+#include "control/controlobjectslave.h"
 #include "sampleutil.h"
 #include "util/assert.h"
 

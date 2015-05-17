@@ -15,7 +15,7 @@
 
 class WBaseWidget;
 class Library;
-class MixxxKeyboard;
+class EventFilter;
 class PlayerManager;
 class EffectsManager;
 class ControllerManager;
@@ -27,7 +27,7 @@ class LegacySkinParser : public QObject, public SkinParser {
     Q_OBJECT
   public:
     LegacySkinParser(ConfigObject<ConfigValue>* pConfig,
-                     MixxxKeyboard* pKeyboard, PlayerManager* pPlayerManager,
+                     EventFilter* pEvtFilt, PlayerManager* pPlayerManager,
                      ControllerManager* pControllerManager,
                      Library* pLibrary, VinylControlManager* pVCMan,
                      EffectsManager* pEffectsManager);
@@ -124,7 +124,7 @@ class LegacySkinParser : public QObject, public SkinParser {
                                          bool* created);
 
     ConfigObject<ConfigValue>* m_pConfig;
-    MixxxKeyboard* m_pKeyboard;
+    EventFilter* m_pEvtFilt;
     PlayerManager* m_pPlayerManager;
     ControllerManager* m_pControllerManager;
     Library* m_pLibrary;

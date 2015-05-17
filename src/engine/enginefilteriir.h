@@ -23,10 +23,10 @@ enum IIRPass {
 // length of the 3rd argument to fid_design_coef
 #define FIDSPEC_LENGTH 40
 template<unsigned int SIZE, enum IIRPass PASS>
-class EngineFilterIIR : public EngineObjectConstIn {
+class EngineFilterIIR : public EngineObject{
   public:
     EngineFilterIIR( QObject*pParent=0)
-            : EngineObjectConstIn(pParent),
+            : EngineObject(pParent),
               m_doRamping(false),
               m_doStart(false),
               m_startFromDry(false) {

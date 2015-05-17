@@ -9,7 +9,7 @@
 #include <QDateTime>
 
 #include "controllers/softtakeover.h"
-#include "controlpotmeter.h"
+#include "control/controlpotmeter.h"
 #include "util/math.h"
 #include "util/time.h"
 

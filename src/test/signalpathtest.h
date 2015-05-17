@@ -10,7 +10,7 @@
 #include "util/types.h"
 #include "util/defs.h"
 #include "configobject.h"
-#include "controlobject.h"
+#include "control/controlobject.h"
 #include "deck.h"
 #include "effects/effectsmanager.h"
 #include "engine/enginebuffer.h"

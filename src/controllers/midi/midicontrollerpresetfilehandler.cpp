@@ -31,7 +31,7 @@ ControllerPresetPointer MidiControllerPresetFileHandler::load(const QDomElement 
     parsePresetInfo(root, preset);
     addScriptFilesToPreset(controller, preset);
 
-    QDomElement control = controller.firstChildElement("controls").firstChildElement("control");
+    QDomElement control = controller.firstChildElement("control/controls").firstChildElement("control/control");
 
     // Iterate through each <control> block in the XML
     while (!control.isNull()) {
@@ -102,7 +102,7 @@ ControllerPresetPointer MidiControllerPresetFileHandler::load(const QDomElement 
         // Use insertMulti because we support multiple inputs mappings for the
         // same input MidiKey.
         preset->inputMappings.insertMulti(mapping.key.key, mapping);
-        control = control.nextSiblingElement("control");
+        control = control.nextSiblingElement("control/control");
     }
 
     qDebug() << "MidiControllerPresetFileHandler: Input mapping parsing complete.";
@@ -202,8 +202,8 @@ bool MidiControllerPresetFileHandler::save(const MidiControllerPreset& preset,
 
 void MidiControllerPresetFileHandler::addControlsToDocument(const MidiControllerPreset& preset,
                                                             QDomDocument* doc) const {
-    QDomElement controller = doc->documentElement().firstChildElement("controller");
-    QDomElement controls = doc->createElement("controls");
+    QDomElement controller = doc->documentElement().firstChildElement("control/controller");
+    QDomElement controls = doc->createElement("control/controls");
 
     // Iterate over all of the command/control pairs in the input mapping
     QHashIterator<uint16_t, MidiInputMapping> it(preset.inputMappings);
@@ -247,7 +247,7 @@ QDomElement MidiControllerPresetFileHandler::makeTextElement(QDomDocument* doc,
 
 QDomElement MidiControllerPresetFileHandler::inputMappingToXML(
         QDomDocument* doc, const MidiInputMapping& mapping) const {
-    QDomElement controlNode = doc->createElement("control");
+    QDomElement controlNode = doc->createElement("control/control");
 
     controlNode.appendChild(makeTextElement(doc, "group", mapping.control.group));
     controlNode.appendChild(makeTextElement(doc, "key", mapping.control.item));

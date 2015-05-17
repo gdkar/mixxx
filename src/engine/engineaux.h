@@ -5,8 +5,8 @@
 #ifndef ENGINEAUX_H
 #define ENGINEAUX_H
 
-#include "controlobjectslave.h"
-#include "controlpushbutton.h"
+#include "control/controlobjectslave.h"
+#include "control/controlpushbutton.h"
 #include "engine/enginechannel.h"
 #include "engine/enginevumeter.h"
 #include "soundmanagerutil.h"

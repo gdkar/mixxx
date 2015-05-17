@@ -24,9 +24,9 @@
 
 #include "vinylcontrol/vinylcontrolxwax.h"
 #include "util/timer.h"
-#include "controlobjectthread.h"
-#include "controlobjectslave.h"
-#include "controlobject.h"
+#include "control/controlobjectthread.h"
+#include "control/controlobjectslave.h"
+#include "control/controlobject.h"
 #include "util/math.h"
 #include "util/defs.h"
 

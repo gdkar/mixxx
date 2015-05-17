@@ -3,8 +3,8 @@
 #include <QTime>
 
 #include "widget/wnumberpos.h"
-#include "controlobject.h"
-#include "controlobjectthread.h"
+#include "control/controlobject.h"
+#include "control/controlobjectthread.h"
 #include "util/math.h"
 #include "util/time.h"
 

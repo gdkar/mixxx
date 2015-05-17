@@ -15,7 +15,7 @@
 #include "library/dao/trackdao.h"
 
 class WLibrary;
-class MixxxKeyboard;
+class EventFilter;
 class PlaylistTableModel;
 class TrackCollection;
 class TreeItem;
@@ -32,7 +32,7 @@ class BasePlaylistFeature : public LibraryFeature {
     TreeItemModel* getChildModel();
 
     void bindWidget(WLibrary* libraryWidget,
-                    MixxxKeyboard* keyboard);
+                    EventFilter* keyboard);
 
   signals:
     void showPage(const QUrl& page);

@@ -13,10 +13,10 @@
 #include <QtDebug>
 #include <QtGlobal>
 
-#include "controlobject.h"
-#include "controlobjectslave.h"
+#include "control/controlobject.h"
+#include "control/controlobjectslave.h"
 
-#include "mixxxkeyboard.h"
+#include "util/eventfilter.h"
 #include "playermanager.h"
 #include "trackplayer.h"
 #include "library/library.h"
@@ -125,14 +125,14 @@ ControlObject* LegacySkinParser::controlFromConfigNode(QDomElement element,
 }
 
 LegacySkinParser::LegacySkinParser(ConfigObject<ConfigValue>* pConfig,
-                                   MixxxKeyboard* pKeyboard,
+                                   EventFilter* pEvtFilt,
                                    PlayerManager* pPlayerManager,
                                    ControllerManager* pControllerManager,
                                    Library* pLibrary,
                                    VinylControlManager* pVCMan,
                                    EffectsManager* pEffectsManager)
         : m_pConfig(pConfig),
-          m_pKeyboard(pKeyboard),
+          m_pEvtFilt(pEvtFilt),
           m_pPlayerManager(pPlayerManager),
           m_pControllerManager(pControllerManager),
           m_pLibrary(pLibrary),
@@ -812,7 +812,7 @@ QWidget* LegacySkinParser::parseStandardWidget(QDomElement element,
     }
     commonWidgetSetup(element, pWidget);
     pWidget->setup(element, *m_pContext);
-    pWidget->installEventFilter(m_pKeyboard);
+    pWidget->installEventFilter(m_pEvtFilt);
     pWidget->installEventFilter(
             m_pControllerManager->getControllerLearningEventFilter());
     pWidget->Init();
@@ -834,7 +834,7 @@ void LegacySkinParser::setupLabelWidget(QDomElement element, WLabel* pLabel) {
     // effect which breaks color scheme support.
     pLabel->setup(element, *m_pContext);
     commonWidgetSetup(element, pLabel);
-    pLabel->installEventFilter(m_pKeyboard);
+    pLabel->installEventFilter(m_pEvtFilt);
     pLabel->installEventFilter(
             m_pControllerManager->getControllerLearningEventFilter());
     pLabel->Init();
@@ -867,7 +867,7 @@ QWidget* LegacySkinParser::parseOverview(QDomElement node) {
 
     commonWidgetSetup(node, overviewWidget);
     overviewWidget->setup(node, *m_pContext);
-    overviewWidget->installEventFilter(m_pKeyboard);
+    overviewWidget->installEventFilter(m_pEvtFilt);
     overviewWidget->installEventFilter(m_pControllerManager->getControllerLearningEventFilter());
     overviewWidget->Init();
 
@@ -904,7 +904,7 @@ QWidget* LegacySkinParser::parseVisual(QDomElement node) {
     //qDebug() << "::parseVisual: parent" << m_pParent << m_pParent->size();
     //qDebug() << "::parseVisual: viewer" << viewer << viewer->size();
 
-    viewer->installEventFilter(m_pKeyboard);
+    viewer->installEventFilter(m_pEvtFilt);
     viewer->installEventFilter(m_pControllerManager->getControllerLearningEventFilter());
     commonWidgetSetup(node, viewer);
     viewer->Init();
@@ -1081,7 +1081,7 @@ QWidget* LegacySkinParser::parseSpinny(QDomElement node) {
     }
 
     spinny->setup(node, *m_pContext);
-    spinny->installEventFilter(m_pKeyboard);
+    spinny->installEventFilter(m_pEvtFilt);
     spinny->installEventFilter(m_pControllerManager->getControllerLearningEventFilter());
     spinny->Init();
     return spinny;
@@ -1192,14 +1192,14 @@ void LegacySkinParser::parseSingletonDefinition(QDomElement node) {
 
 QWidget* LegacySkinParser::parseLibrary(QDomElement node) {
     WLibrary* pLibraryWidget = new WLibrary(m_pParent);
-    pLibraryWidget->installEventFilter(m_pKeyboard);
+    pLibraryWidget->installEventFilter(m_pEvtFilt);
     pLibraryWidget->installEventFilter(m_pControllerManager->getControllerLearningEventFilter());
 
     // Connect Library search signals to the WLibrary
     connect(m_pLibrary, SIGNAL(search(const QString&)),
             pLibraryWidget, SLOT(search(const QString&)));
 
-    m_pLibrary->bindWidget(pLibraryWidget, m_pKeyboard);
+    m_pLibrary->bindWidget(pLibraryWidget, m_pEvtFilt);
 
     // This must come after the bindWidget or we will not style any of the
     // LibraryView's because they have not been added yet.
@@ -1210,7 +1210,7 @@ QWidget* LegacySkinParser::parseLibrary(QDomElement node) {
 
 QWidget* LegacySkinParser::parseLibrarySidebar(QDomElement node) {
     WLibrarySidebar* pLibrarySidebar = new WLibrarySidebar(m_pParent);
-    pLibrarySidebar->installEventFilter(m_pKeyboard);
+    pLibrarySidebar->installEventFilter(m_pEvtFilt);
     pLibrarySidebar->installEventFilter(m_pControllerManager->getControllerLearningEventFilter());
     m_pLibrary->bindSidebarWidget(pLibrarySidebar);
     commonWidgetSetup(node, pLibrarySidebar, false);
@@ -1523,7 +1523,7 @@ QWidget* LegacySkinParser::parseEffectPushButton(QDomElement element) {
     WEffectPushButton* pWidget = new WEffectPushButton(m_pParent, m_pEffectsManager);
     commonWidgetSetup(element, pWidget);
     pWidget->setup(element, *m_pContext);
-    pWidget->installEventFilter(m_pKeyboard);
+    pWidget->installEventFilter(m_pEvtFilt);
     pWidget->installEventFilter(
             m_pControllerManager->getControllerLearningEventFilter());
     pWidget->Init();
@@ -1954,7 +1954,7 @@ void LegacySkinParser::setupConnections(QDomNode node, WBaseWidget* pWidget) {
                 ConfigKey configKey = ConfigKey::parseCommaSeparated(key);
 
                 // do not add Shortcut string for feedback connections
-                QString shortcut = m_pKeyboard->getKeyboardConfig()->getValueString(configKey);
+                QString shortcut = m_pEvtFilt->getKeyboardConfig()->getValueString(configKey);
                 addShortcutToToolTip(pWidget, shortcut, QString(""));
 
                 const WSliderComposed* pSlider;
@@ -1966,12 +1966,12 @@ void LegacySkinParser::setupConnections(QDomNode node, WBaseWidget* pWidget) {
 
                     subkey = configKey;
                     subkey.item += "_activate";
-                    shortcut = m_pKeyboard->getKeyboardConfig()->getValueString(subkey);
+                    shortcut = m_pEvtFilt->getKeyboardConfig()->getValueString(subkey);
                     addShortcutToToolTip(pWidget, shortcut, tr("activate"));
 
                     subkey = configKey;
                     subkey.item += "_toggle";
-                    shortcut = m_pKeyboard->getKeyboardConfig()->getValueString(subkey);
+                    shortcut = m_pEvtFilt->getKeyboardConfig()->getValueString(subkey);
                     addShortcutToToolTip(pWidget, shortcut, tr("toggle"));
                 } else if ((pSlider = qobject_cast<const WSliderComposed*>(pWidget->toQWidget()))) {
                     // check for "_up", "_down", "_up_small", "_down_small"
@@ -1981,42 +1981,42 @@ void LegacySkinParser::setupConnections(QDomNode node, WBaseWidget* pWidget) {
                     if (pSlider->isHorizontal()) {
                         subkey = configKey;
                         subkey.item += "_up";
-                        shortcut = m_pKeyboard->getKeyboardConfig()->getValueString(subkey);
+                        shortcut = m_pEvtFilt->getKeyboardConfig()->getValueString(subkey);
                         addShortcutToToolTip(pWidget, shortcut, tr("right"));
 
                         subkey = configKey;
                         subkey.item += "_down";
-                        shortcut = m_pKeyboard->getKeyboardConfig()->getValueString(subkey);
+                        shortcut = m_pEvtFilt->getKeyboardConfig()->getValueString(subkey);
                         addShortcutToToolTip(pWidget, shortcut, tr("left"));
 
                         subkey = configKey;
                         subkey.item += "_up_small";
-                        shortcut = m_pKeyboard->getKeyboardConfig()->getValueString(subkey);
+                        shortcut = m_pEvtFilt->getKeyboardConfig()->getValueString(subkey);
                         addShortcutToToolTip(pWidget, shortcut, tr("right small"));
 
                         subkey = configKey;
                         subkey.item += "_down_small";
-                        shortcut = m_pKeyboard->getKeyboardConfig()->getValueString(subkey);
+                        shortcut = m_pEvtFilt->getKeyboardConfig()->getValueString(subkey);
                         addShortcutToToolTip(pWidget, shortcut, tr("left small"));
                     } else {
                         subkey = configKey;
                         subkey.item += "_up";
-                        shortcut = m_pKeyboard->getKeyboardConfig()->getValueString(subkey);
+                        shortcut = m_pEvtFilt->getKeyboardConfig()->getValueString(subkey);
                         addShortcutToToolTip(pWidget, shortcut, tr("up"));
 
                         subkey = configKey;
                         subkey.item += "_down";
-                        shortcut = m_pKeyboard->getKeyboardConfig()->getValueString(subkey);
+                        shortcut = m_pEvtFilt->getKeyboardConfig()->getValueString(subkey);
                         addShortcutToToolTip(pWidget, shortcut, tr("down"));
 
                         subkey = configKey;
                         subkey.item += "_up_small";
-                        shortcut = m_pKeyboard->getKeyboardConfig()->getValueString(subkey);
+                        shortcut = m_pEvtFilt->getKeyboardConfig()->getValueString(subkey);
                         addShortcutToToolTip(pWidget, shortcut, tr("up small"));
 
                         subkey = configKey;
                         subkey.item += "_down_small";
-                        shortcut = m_pKeyboard->getKeyboardConfig()->getValueString(subkey);
+                        shortcut = m_pEvtFilt->getKeyboardConfig()->getValueString(subkey);
                         addShortcutToToolTip(pWidget, shortcut, tr("down small"));
                     }
                 }
