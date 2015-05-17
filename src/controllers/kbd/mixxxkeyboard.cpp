@@ -27,7 +27,7 @@
 
 
 MixxxKeyboard::MixxxKeyboard(ConfigObject<ConfigValueKbd>* pKbdConfigObject,
-  const char* name,                            QObject* parent,,
+  const char* name,                            QObject* parent)
         : EventFilter(parent),
           m_pKbdConfigObject(NULL) {
     setObjectName(name);
