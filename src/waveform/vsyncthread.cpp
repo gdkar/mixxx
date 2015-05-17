@@ -86,19 +86,16 @@ void VSyncThread::run() {
             // waiting for interval by sleep
             if (usRemainingForSwap > 100) {
                 Event::start("VsyncThread usleep for VSync");
-                usleep(usRemainingForSwap);
+                usleep(usRemainingForSwap-100);
                 Event::end("VsyncThread usleep for VSync");
             }
-
             Event::start("VsyncThread vsync swap");
             // swaps the new waveform to front in case of gl-wf
             emit(vsyncSwap());
-
             // wait until swap occurred. It might be delayed due to driver vSync
             // settings.
             m_semaVsyncSlot.acquire();
             Event::end("VsyncThread vsync swap");
-
             // <- Assume we are VSynced here ->
             int usLastSwapTime = (int)m_timer.restart() / 1000;
             if (usRemainingForSwap < 0) {

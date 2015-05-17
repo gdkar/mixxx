@@ -23,18 +23,15 @@ class ControllerPreset {
   public:
     ControllerPreset() {}
     virtual ~ControllerPreset() {}
-
     struct ScriptFileInfo {
         ScriptFileInfo()
                 : builtin(false) {
 
         }
-
         QString name;
         QString functionPrefix;
         bool builtin;
     };
-
     /** addScriptFile(QString,QString)
      * Adds an entry to the list of script file names & associated list of function prefixes
      * @param filename Name of the XML file to add
@@ -48,27 +45,11 @@ class ControllerPreset {
         info.builtin = builtin;
         scripts.append(info);
     }
-
-    inline void setDeviceId(const QString id) {
-        m_deviceId = id;
-    }
-
-    inline QString deviceId() const {
-        return m_deviceId;
-    }
-
-    inline void setFilePath(const QString filePath) {
-        m_filePath = filePath;
-    }
-
-    inline QString filePath() const {
-        return m_filePath;
-    }
-
-    inline void setName(const QString name) {
-        m_name = name;
-    }
-
+    inline void setDeviceId(const QString id) {m_deviceId = id;}
+    inline QString deviceId() const {return m_deviceId;}
+    inline void setFilePath(const QString filePath) {m_filePath = filePath;}
+    inline QString filePath() const {return m_filePath;}
+    inline void setName(const QString name) {m_name = name;}
     inline QString name() const {
         return m_name;
     }

@@ -7,7 +7,6 @@
 */
 
 #include "controllers/midi/midienumerator.h"
-
 MidiEnumerator::MidiEnumerator() : ControllerEnumerator() {
 }
 

@@ -17,6 +17,7 @@
 #include "control/controlobjectslave.h"
 
 #include "util/eventfilter.h"
+#include "controllers/kbd/mixxxkeyboard.h"
 #include "playermanager.h"
 #include "trackplayer.h"
 #include "library/library.h"
@@ -125,7 +126,7 @@ ControlObject* LegacySkinParser::controlFromConfigNode(QDomElement element,
 }
 
 LegacySkinParser::LegacySkinParser(ConfigObject<ConfigValue>* pConfig,
-                                   EventFilter* pEvtFilt,
+                                   MixxxKeyboard* pEvtFilt,
                                    PlayerManager* pPlayerManager,
                                    ControllerManager* pControllerManager,
                                    Library* pLibrary,

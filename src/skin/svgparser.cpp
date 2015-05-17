@@ -7,10 +7,8 @@
 SvgParser::SvgParser(const SkinContext& parent)
         : m_context(parent) {
 }
-
 SvgParser::~SvgParser() {
 }
-
 QDomNode SvgParser::parseSvgFile(const QString& svgFileName) const {
     m_currentFile = svgFileName;
     QFile file(svgFileName);
@@ -26,44 +24,32 @@ QDomNode SvgParser::parseSvgFile(const QString& svgFileName) const {
     }
     return svgNode;
 }
-
-QDomNode SvgParser::parseSvgTree(const QDomNode& svgSkinNode,
-                                 const QString& sourcePath) const {
+QDomNode SvgParser::parseSvgTree(const QDomNode& svgSkinNode,const QString& sourcePath) const {
     m_currentFile = sourcePath;
     // clone svg to don't alter xml input
     QDomNode svgNode = svgSkinNode.cloneNode(true);
     scanTree(&svgNode);
     return svgNode;
 }
-
 void SvgParser::scanTree(QDomNode* node) const {
     parseElement(node);
     QDomNodeList children = node->childNodes();
     for (uint i = 0; i < children.length(); ++i) {
         QDomNode child = children.at(i);
-        if (child.isElement()) {
-            scanTree(&child);
-        }
+        if (child.isElement()) {scanTree(&child);}
     }
 }
-
 void SvgParser::parseElement(QDomNode* node) const {
     QDomElement element = node->toElement();
-
     parseAttributes(*node);
-
     if (element.tagName() == "text") {
         if (element.hasAttribute("value")) {
             QString expression = element.attribute("value");
             QString result = evaluateTemplateExpression(
                 expression, node->lineNumber()).toString();
-
             if (!result.isNull()) {
                 QDomNodeList children = node->childNodes();
-                for (uint i = 0; i < children.length(); ++i) {
-                    node->removeChild(children.at(i));
-                }
-
+                for (uint i = 0; i < children.length(); ++i) {node->removeChild(children.at(i));}
                 QDomNode newChild = node->ownerDocument().createTextNode(result);
                 node->appendChild(newChild);
             }

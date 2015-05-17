@@ -12,41 +12,51 @@
 #include "controllers/controllerenumerator.h"
 #include "controllers/controllerpreset.h"
 #include "controllers/controllerpresetinfo.h"
-
+#include <qatomic.h>
+#include <qsharedpointer.h>
 //Forward declaration(s)
 class Controller;
 class ControllerLearningEventFilter;
-
+class ControllerEnumLinker;
 // Function to sort controllers by name
 bool controllerCompare(Controller *a,Controller *b);
 
 /** Manages enumeration/operation/deletion of hardware controllers. */
 class ControllerManager : public QObject {
+    struct EnumLink {
+      QAtomicPointer<EnumLink>  next;
+      ControllerEnumerator     *data;
+    };
+    static QAtomicPointer<EnumLink>  enum_head;
     Q_OBJECT
   public:
     ControllerManager(ConfigObject<ConfigValue> * pConfig);
     virtual ~ControllerManager();
-
     QList<Controller*> getControllers() const;
     QList<Controller*> getControllerList(bool outputDevices=true, bool inputDevices=true);
     ControllerLearningEventFilter* getControllerLearningEventFilter() const;
     PresetInfoEnumerator* getMainThreadPresetEnumerator();
-
     // Prevent other parts of Mixxx from having to manually connect to our slots
     void setUpDevices() { emit(requestSetUpDevices()); };
     void savePresets(bool onlyActive=false) { emit(requestSave(onlyActive)); };
-
     static QList<QString> getPresetPaths(ConfigObject<ConfigValue>* pConfig);
-
     // If pathOrFilename is an absolute path, returns it. If it is a relative
     // path and it is contained within any of the directories in presetPaths,
     // returns the path to the first file in the path that exists.
     static QString getAbsolutePath(const QString& pathOrFilename,
                                    const QStringList& presetPaths);
-
     bool importScript(const QString& scriptPath, QString* newScriptFileName);
     static bool checksumFile(const QString& filename, quint16* pChecksum);
-
+    static bool appendEnumerator(ControllerEnumerator* e){
+        EnumLink  * lnk = new EnumLink;
+        lnk->data = e;
+        EnumLink* lnk_head = enum_head.load();
+        do{
+            lnk_head = enum_head.load();
+            lnk->next.store(lnk_head);
+        }while(!enum_head.testAndSetRelaxed(lnk_head,lnk));
+        return true;
+    }
   signals:
     void devicesChanged();
     void requestSetUpDevices();
@@ -79,7 +89,6 @@ class ControllerManager : public QObject {
     static QString presetFilenameFromName(QString name) {
         return name.replace(" ", "_").replace("/", "_").replace("\\", "_");
     }
-
   private:
     ConfigObject<ConfigValue> *m_pConfig;
     ControllerLearningEventFilter* m_pControllerLearningEventFilter;
@@ -89,6 +98,7 @@ class ControllerManager : public QObject {
     QList<Controller*> m_controllers;
     QThread* m_pThread;
     PresetInfoEnumerator* m_pMainThreadPresetEnumerator;
+    friend class ControllerEnumLinker;
 };
 
 #endif  // CONTROLLERMANAGER_H

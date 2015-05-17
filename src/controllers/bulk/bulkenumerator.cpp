@@ -10,6 +10,9 @@
 #include "controllers/bulk/bulkcontroller.h"
 #include "controllers/bulk/bulkenumerator.h"
 #include "controllers/bulk/bulksupported.h"
+#include "controllers/controller_enum_init.h"
+ControllerEnumerator *bulk_enumerator_ctor(){ qDebug() << "initializing BulkEnumerator\n"; return new BulkEnumerator();}
+ControllerEnumLinker  bulk_enumerator_linker(&bulk_enumerator_ctor);
 
 BulkEnumerator::BulkEnumerator()
         : ControllerEnumerator(),

@@ -905,7 +905,8 @@ class MixxxCore(Feature):
                    "encoder/encoder.cpp",
                    "encoder/encodermp3.cpp",
                    "encoder/encodervorbis.cpp",
-
+                    
+                   "util/eventfilter.cpp",
                    "util/pa_ringbuffer.c",
                    "util/statsmanager.cpp",
                    "util/stat.cpp",

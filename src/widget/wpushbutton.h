@@ -31,7 +31,7 @@
 #include "widget/wpixmapstore.h"
 #include "control/controlpushbutton.h"
 #include "skin/skincontext.h"
-#include "control/controlwidgetconnection.h"
+#include "widget/controlwidgetconnection.h"
 #include "util/math.h"
 
 class WPushButton : public WWidget {

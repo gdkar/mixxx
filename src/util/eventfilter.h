@@ -10,6 +10,6 @@ class EventFilter : public QObject {
   Q_OBJECT
   public:
     explicit EventFilter(QObject *pParent=0):QObject(pParent){}
-    virtual bool filterEvent(QObject * /* o */, QEvent * /* e */) = 0;
+    virtual bool eventFilter(QObject * /* o */, QEvent * /* e */) = 0;
 };
 #endif

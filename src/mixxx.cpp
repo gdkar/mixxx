@@ -48,6 +48,7 @@
 #include "library/librarytablemodel.h"
 #include "controllers/controllermanager.h"
 #include "controllers/kbd/mixxxkeyboard.h"
+#include "controllers/kbd/mixxxkeyboard.h"
 #include "playermanager.h"
 #include "recording/defs_recording.h"
 #include "recording/recordingmanager.h"

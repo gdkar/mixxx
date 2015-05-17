@@ -10,6 +10,9 @@
 #include "controllers/hid/hidcontroller.h"
 #include "controllers/hid/hidenumerator.h"
 #include "controllers/hid/hidblacklist.h"
+#include "controllers/controller_enum_init.h"
+ControllerEnumerator *hid_enumerator_ctor(){return new HidEnumerator();}
+ControllerEnumLinker  hid_enumerator_linker(&hid_enumerator_ctor);
 
 HidEnumerator::HidEnumerator() : ControllerEnumerator() {
 }

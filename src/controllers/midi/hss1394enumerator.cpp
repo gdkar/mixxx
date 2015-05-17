@@ -8,6 +8,10 @@
 
 #include "controllers/midi/hss1394controller.h"
 #include "controllers/midi/hss1394enumerator.h"
+#include "controllers/controller_enum_init.h"
+#include "controllers/controller_enum_init.h"
+ControllerEnumerator *hsss1394_enumerator_ctor(){return new Hss1394Enumerator();}
+ControllerEnumLinker  hss1394_enumerator_linker(&hss1394_enumerator_ctor);
 
 Hss1394Enumerator::Hss1394Enumerator() : MidiEnumerator() {
 }

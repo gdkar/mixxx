@@ -11,12 +11,10 @@ class Tooltips : public QObject {
     Tooltips();
     virtual ~Tooltips();
     QString tooltipForId(QString id) const;
-
   private:
     void addStandardTooltips();
     QString tooltipSeparator() const;
     QList<QString>& add(QString id);
-
     QHash<QString, QStringList> m_tooltips;
 };
 

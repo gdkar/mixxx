@@ -53,43 +53,31 @@ class ControllerEngineConnectionScriptValue : public QObject {
     }
     QString readId() const { return this->conn.id; }
     Q_INVOKABLE void disconnect();
-
   private:
    ControllerEngineConnection conn;
 };
-
 /* comparison function for ControllerEngineConnection */
 inline bool operator==(const ControllerEngineConnection &c1, const ControllerEngineConnection &c2) {
     return c1.id == c2.id && c1.key.group == c2.key.group && c1.key.item == c2.key.item;
 }
-
 class ControllerEngine : public QObject {
     Q_OBJECT
   public:
     ControllerEngine(Controller* controller);
     virtual ~ControllerEngine();
-
     bool isReady();
     // Check whether a source file that was evaluated()'d has errors.
     bool hasErrors(QString filename);
     // Get the errors for a source file that was evaluated()'d
     const QStringList getErrors(QString filename);
-
-    void setDebug(bool bDebug) {
-        m_bDebug = bDebug;
-    }
-
-    void setPopups(bool bPopups) {
-        m_bPopups = bPopups;
-    }
-
+    void setDebug(bool bDebug) {m_bDebug = bDebug;}
+    void setPopups(bool bPopups) {m_bPopups = bPopups;}
     /** Resolve a function name to a QScriptValue. */
     QJSValue resolveFunction(QString function, bool useCache) const;
     /** Look up registered script function prefixes */
     QList<QString>& getScriptFunctionPrefixes() { return m_scriptFunctionPrefixes; };
     /** Disconnect a ControllerEngineConnection */
     void disconnectControl(const ControllerEngineConnection conn);
-
   protected:
     Q_INVOKABLE double getValue(QString group, QString name);
     Q_INVOKABLE void setValue(QString group, QString name, double newValue);
@@ -114,7 +102,6 @@ class ControllerEngine : public QObject {
     Q_INVOKABLE void softTakeover(QString group, QString name, bool set);
     Q_INVOKABLE void brake(int deck, bool activate, double factor=0.9, double rate=1.0);
     Q_INVOKABLE void spinback(int deck, bool activate, double factor=1.8, double rate=-10.0);
-
     // Handler for timers that scripts set.
     virtual void timerEvent(QTimerEvent *event);
 
@@ -122,7 +109,6 @@ class ControllerEngine : public QObject {
     void slotValueChanged(double value);
     // Evaluate a script file
     bool evaluate(QString filepath);
-
     // Execute a particular function
     bool execute(QString function);
     // Execute a particular function with a list of arguments

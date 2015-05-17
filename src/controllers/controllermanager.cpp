@@ -13,7 +13,7 @@
 #include "controllers/controllerlearningeventfilter.h"
 #include "util/cmdlineargs.h"
 
-#include "controllers/midi/portmidienumerator.h"
+/*#include "controllers/midi/portmidienumerator.h"
 #ifdef __HSS1394__
 #include "controllers/midi/hss1394enumerator.h"
 #endif
@@ -24,7 +24,7 @@
 
 #ifdef __BULK__
 #include "controllers/bulk/bulkenumerator.h"
-#endif
+#endif*/
 
 // http://developer.qt.nokia.com/wiki/Threads_Events_QObjects
 
@@ -36,9 +36,7 @@ const int kPollIntervalMillis = 5;
 #else
 const int kPollIntervalMillis = 1;
 #endif
-
-QString firstAvailableFilename(QSet<QString>& filenames,
-                               const QString originalFilename) {
+QString firstAvailableFilename(QSet<QString>& filenames, const QString originalFilename) {
     QString filename = originalFilename;
     int i = 1;
     while (filenames.contains(filename)) {
@@ -48,10 +46,10 @@ QString firstAvailableFilename(QSet<QString>& filenames,
     filenames.insert(filename);
     return filename;
 }
+bool controllerCompare(Controller *a,Controller *b) {return a->getName() < b->getName();}
 
-bool controllerCompare(Controller *a,Controller *b) {
-    return a->getName() < b->getName();
-}
+
+QAtomicPointer<ControllerManager::EnumLink> ControllerManager::enum_head = 0;
 
 ControllerManager::ControllerManager(ConfigObject<ConfigValue>* pConfig)
         : QObject(),
@@ -80,7 +78,7 @@ ControllerManager::ControllerManager(ConfigObject<ConfigValue>* pConfig)
     m_pMainThreadPresetEnumerator = new PresetInfoEnumerator(m_pConfig);
 
     // Instantiate all enumerators
-    m_enumerators.append(new PortMidiEnumerator());
+/*    m_enumerators.append(new PortMidiEnumerator());
 #ifdef __HSS1394__
     m_enumerators.append(new Hss1394Enumerator());
 #endif
@@ -89,22 +87,20 @@ ControllerManager::ControllerManager(ConfigObject<ConfigValue>* pConfig)
 #endif
 #ifdef __HID__
     m_enumerators.append(new HidEnumerator());
-#endif
+#endif*/
 
     m_pollTimer.setInterval(kPollIntervalMillis);
+    m_pollTimer.setTimerType(Qt::PreciseTimer);
     connect(&m_pollTimer, SIGNAL(timeout()),
             this, SLOT(pollDevices()));
 
     m_pThread = new QThread;
     m_pThread->setObjectName("Controller");
-
     // Moves all children (including the poll timer) to m_pThread
     moveToThread(m_pThread);
-
     // Controller processing needs to be prioritized since it can affect the
     // audio directly, like when scratching
     m_pThread->start(QThread::HighPriority);
-
     connect(this, SIGNAL(requestSetUpDevices()),
             this, SLOT(slotSetUpDevices()));
     connect(this, SIGNAL(requestShutdown()),
@@ -112,7 +108,6 @@ ControllerManager::ControllerManager(ConfigObject<ConfigValue>* pConfig)
     connect(this, SIGNAL(requestSave(bool)),
             this, SLOT(slotSavePresets(bool)));
 }
-
 ControllerManager::~ControllerManager() {
     emit(requestShutdown());
     m_pThread->wait();
@@ -120,14 +115,11 @@ ControllerManager::~ControllerManager() {
     delete m_pControllerLearningEventFilter;
     delete m_pMainThreadPresetEnumerator;
 }
-
 ControllerLearningEventFilter* ControllerManager::getControllerLearningEventFilter() const {
     return m_pControllerLearningEventFilter;
 }
-
 void ControllerManager::slotShutdown() {
     stopPolling();
-
     // Clear m_enumerators before deleting the enumerators to prevent other code
     // paths from accessing them.
     QMutexLocker locker(&m_mutex);
@@ -136,9 +128,7 @@ void ControllerManager::slotShutdown() {
     locker.unlock();
 
     // Delete enumerators and they'll delete their Devices
-    foreach (ControllerEnumerator* pEnumerator, enumerators) {
-        delete pEnumerator;
-    }
+    foreach (ControllerEnumerator* pEnumerator, enumerators) {delete pEnumerator;}
 
     // Stop the processor after the enumerators since the engines live in it
     m_pThread->quit();
@@ -146,6 +136,14 @@ void ControllerManager::slotShutdown() {
 
 void ControllerManager::updateControllerList() {
     QMutexLocker locker(&m_mutex);
+    EnumLink *lnk = 0;
+    lnk = enum_head.fetchAndStoreRelaxed(lnk);
+    while(lnk){
+      m_enumerators.push_back(lnk->data);
+      EnumLink *nxt = lnk->next;
+      delete lnk;
+      lnk = nxt;
+    }
     if (m_enumerators.isEmpty()) {
         qWarning() << "updateControllerList called but no enumerators have been added!";
         return;

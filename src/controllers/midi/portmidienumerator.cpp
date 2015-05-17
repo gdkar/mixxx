@@ -9,9 +9,11 @@
 #include <QRegExp>
 
 #include "controllers/midi/portmidienumerator.h"
-
 #include "controllers/midi/portmidicontroller.h"
 #include "util/cmdlineargs.h"
+#include "controllers/controller_enum_init.h"
+ControllerEnumerator *portmidi_enumerator_ctor(){qDebug() << "Initializing PortMidiEnumerator\n"; return new PortMidiEnumerator();}
+ControllerEnumLinker  portmidi_enumerator_linker(&portmidi_enumerator_ctor);
 
 bool shouldBlacklistDevice(const PmDeviceInfo* device) {
     QString deviceName = device->name;

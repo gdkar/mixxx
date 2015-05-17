@@ -7,7 +7,7 @@
 
 #include "configobject.h"
 
-class EventFilter;
+class MixxxKeyboard;
 class PlayerManager;
 class ControllerManager;
 class Library;
@@ -18,24 +18,20 @@ class SkinLoader {
   public:
     SkinLoader(ConfigObject<ConfigValue>* pConfig);
     virtual ~SkinLoader();
-
     QWidget* loadDefaultSkin(QWidget* pParent,
-                             EventFilter* pEvtFilt,
+                             MixxxKeyboard* pEvtFilt,
                              PlayerManager* pPlayerManager,
                              ControllerManager* pControllerManager,
                              Library* pLibrary,
                              VinylControlManager* pVCMan,
                              EffectsManager* pEffectsManager);
-
     QString getSkinPath();
     QList<QDir> getSkinSearchPaths();
-
   private:
     QString getConfiguredSkinPath();
     QString getDefaultSkinName() const;
     QString getDefaultSkinPath();
     QString pickResizableSkin(QString oldSkin);
-
     ConfigObject<ConfigValue>* m_pConfig;
 };
 

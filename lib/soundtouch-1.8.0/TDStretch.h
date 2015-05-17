@@ -240,23 +240,6 @@ public:
     }
 };
 
-
-
-// Implementation-specific class declarations:
-
-#ifdef SOUNDTOUCH_ALLOW_MMX
-    /// Class that implements MMX optimized routines for 16bit integer samples type.
-    class TDStretchMMX : public TDStretch
-    {
-    protected:
-        double calcCrossCorr(const short *mixingPos, const short *compare, double &norm) const;
-        double calcCrossCorrAccumulate(const short *mixingPos, const short *compare, double &norm) const;
-        virtual void overlapStereo(short *output, const short *input) const;
-        virtual void clearCrossCorrState();
-    };
-#endif /// SOUNDTOUCH_ALLOW_MMX
-
-
 #ifdef SOUNDTOUCH_ALLOW_SSE
     /// Class that implements SSE optimized routines for floating point samples type.
     class TDStretchSSE : public TDStretch
