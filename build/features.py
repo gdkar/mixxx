@@ -181,6 +181,38 @@ class Mad(Feature):
     def sources(self, build):
         return ['sources/soundsourcemp3.cpp']
 
+class Mpg123(Feature):
+    def description(self):
+        return "mpg123 mpeg 1 audio layers 1/2/3 Decoder"
+
+    def default(self, build):
+        return 0
+
+    def enabled(self, build):
+        build.flags['mpg123'] = util.get_flags(build.env, 'mpg123',
+                                            self.default(build))
+        if int(build.flags['mpg123']):
+            return True
+        return False
+
+    def add_options(self, build, vars):
+        vars.Add('mpg123', 'Set to 1 to enable mpg123 mpeg1 audio layer 1/2/3 decoder support.',
+                 self.default(build))
+
+    def configure(self, build, conf):
+        if not self.enabled(build):
+            return
+        if not conf.CheckLib(['libmpg123', 'mpg123']):
+            raise Exception(
+                'Did not find libmpg123.a, libmpg123.lib, or the libmpg123 development header files - exiting!')
+        if not conf.CheckLib(['libid3tag', 'id3tag', 'libid3tag-release']):
+            raise Exception(
+                'Did not find libid3tag.a, libid3tag.lib, or the libid3tag development header files - exiting!')
+        build.env.Append(CPPDEFINES='__MPG123__')
+
+    def sources(self, build):
+        return []
+
 
 class CoreAudio(Feature):
 
