@@ -39,10 +39,14 @@
 
 class EngineBufferScale : public QObject {
     Q_OBJECT
+    Q_PROPERTY(double tempoRatio READ tempoRatio WRITE setTempoRatio NOTIFY tempoRatioChanged);
+    Q_PROPERTY(double pitchRatio READ pitchRatio WRITE setPitchRatio NOTIFY pitchRatioChanged);
+    Q_PROPERTY(bool   speedAffectsPitch READ speedAffectsPitch WRITE setSpeedAffectsPitch NOTIFY
+        speedAffectsPitchChanged );
+
   public:
     EngineBufferScale();
     virtual ~EngineBufferScale();
-
     // Sets the scaling parameters.
     // * The base rate (ratio of track sample rate to output sample rate).
     // * The tempoRatio describes the tempo change in fraction of
@@ -59,24 +63,49 @@ class EngineBufferScale : public QObject {
     virtual void setScaleParameters(double base_rate,
                                     double* pTempoRatio,
                                     double* pPitchRatio) {
-        m_dBaseRate = base_rate;
+        m_dBaseRate   = base_rate;
+        bool tempo_changed = m_dTempoRatio!=*pTempoRatio;
+        bool pitch_changed = m_dPitchRatio!=*pPitchRatio;
         m_dTempoRatio = *pTempoRatio;
         m_dPitchRatio = *pPitchRatio;
+        if(tempo_changed) emit tempoRatioChanged(m_dTempoRatio);
+        if(pitch_changed) emit pitchRatioChanged(m_dPitchRatio);
     }
-
     // Set the desired output sample rate.
-    virtual void setSampleRate(int iSampleRate) {
-        m_iSampleRate = iSampleRate;
-    }
-
+  public slots: virtual void setSampleRate(int iSampleRate) {m_iSampleRate = iSampleRate;}
     /** Get new playpos after call to scale() */
-    double getSamplesRead();
+    virtual double getSamplesRead();
     /** Called from EngineBuffer when seeking, to ensure the buffers are flushed */
     virtual void clear() = 0;
     /** Scale buffer */
     virtual CSAMPLE* getScaled(unsigned long buf_size) = 0;
-
+  signals:
+    void tempoRatioChanged(double);
+    void pitchRatioChanged(double);
+    void speedAffectsPitchChanged(bool);
   protected:
+    Q_INVOKABLE virtual double tempoRatio() const{return m_dTempoRatio;}
+    Q_INVOKABLE virtual void setTempoRatio(double newRatio){
+      if(tempoRatio()!=newRatio){
+        m_dTempoRatio = newRatio;
+        emit tempoRatioChanged(newRatio);
+      }
+    }
+    Q_INVOKABLE virtual double pitchRatio() const{return m_dPitchRatio;}
+    Q_INVOKABLE virtual void setPitchRatio(double newRatio){
+      if(pitchRatio()!=newRatio){
+        m_dPitchRatio = newRatio;
+        emit pitchRatioChanged(newRatio);
+      }
+    }
+    Q_INVOKABLE virtual bool   speedAffectsPitch() const{return m_bSpeedAffectsPitch;}
+    Q_INVOKABLE virtual void   setSpeedAffectsPitch(bool val){
+      if(val!=speedAffectsPitch()){
+        m_bSpeedAffectsPitch = val;
+        emit speedAffectsPitchChanged(val);
+      }
+    }
+  
     int m_iSampleRate;
     double m_dBaseRate;
     bool m_bSpeedAffectsPitch;
