@@ -64,66 +64,17 @@ typedef quint64 uint64;
 #define NOISE_FLOOR .00000000000005 /* -266 dB */
 
 /* //////////////////////////////////////////////////////////////////////// */
-
-typedef unsigned int uint;
-typedef unsigned long ulong;
-
-/* prototype that takes a sample and yields a sample */
-typedef CSAMPLE (*clip_func_t) (CSAMPLE);
-
-/* flavours for sample store functions run() and run_adding() */
-typedef void (*yield_func_t) (CSAMPLE *, uint, CSAMPLE, CSAMPLE);
-
-inline void
-adding_func (CSAMPLE * s, uint i, CSAMPLE x, CSAMPLE gain)
-{
-	s[i] += gain * x;
-}
-
-#ifndef max
-
-template <class X, class Y>
-X min (X x, Y y)
-{
-	return x < y ? x : (X) y;
-}
-
-template <class X, class Y>
-X max (X x, Y y)
-{
-	return x > y ? x : (X) y;
-}
-
-#endif /* ! max */
-
 template <class T>
-T clamp (T value, T lower, T upper)
+inline T clamp (T value, T lower, T upper)
 {
-	if (value < lower) return lower;
-	if (value > upper) return upper;
-	return value;
+  const T b0 = ( value < lower ) ? lower : value;
+  return ( b0 > upper ) ? upper : b0;
 }
 
 static inline float
 frandom()
 {
 	return (float) rand() / (float) RAND_MAX;
-}
-
-/* NB: also true if 0  */
-inline bool
-is_denormal (float & f)
-{
-	int32 i = *((int32 *) &f);
-	return ((i & 0x7f800000) == 0);
-}
-
-/* not used, check validity before using */
-inline bool
-is_denormal (double & f)
-{
-	int64 i = *((int64 *) &f);
-	return ((i & 0x7fe0000000000000ll) == 0);
 }
 
 /* lovely algorithm from
@@ -145,16 +96,10 @@ next_power_of_2 (uint n)
 }
 
 inline double
-db2lin (double db)
-{
-	return pow(10, db*.05);
-}
+db2lin (double db){return pow(10, db*.05);}
 
 inline double
-lin2db (double lin)
-{
-	return 20*log10(lin);
-}
+lin2db (double lin){return 20*log10(lin);}
 
 /* //////////////////////////////////////////////////////////////////////// */
 

@@ -47,13 +47,14 @@
 #ifndef _REVERB_H_
 #define _REVERB_H_
 
-#include <stdio.h>
-
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cmath>
 #include "basics.h"
 #include "dsp/Delay.h"
 #include "dsp/OnePole.h"
 #include "dsp/Sine.h"
-#include "dsp/util.h"
 
 /* both reverbs use this */
 class Lattice
