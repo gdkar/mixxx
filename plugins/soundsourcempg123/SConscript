@@ -15,8 +15,6 @@ mpg123_sources = [
     "sources/soundsource.cpp",
     "sources/soundsourceplugin.cpp",
     "sources/audiosource.cpp",
-    "samplebuffer.cpp",
-    "singularsamplebuffer.cpp",
     "sampleutil.cpp",
     "metadata/trackmetadata.cpp",
     "metadata/trackmetadatataglib.cpp"

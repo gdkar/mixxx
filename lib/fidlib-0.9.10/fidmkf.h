@@ -660,7 +660,6 @@ z2fidfilter(double gain, int cbm) {
    ff->len= 1;
    ff->val[0]= gain;
    ff= FFNEXT(ff);
-
    // Output as much as possible as 2x2 IIR/FIR filters
    for (a= 0; a <= n_pol-2 && a <= n_zer-2; a += 2) {
       // Look for a pair of values for an IIR

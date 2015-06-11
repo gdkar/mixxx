@@ -110,7 +110,7 @@ void PlayerInfo::timerEvent(QTimerEvent* pTimerEvent) {
 void PlayerInfo::updateCurrentPlayingDeck() {
     QMutexLocker locker(&m_mutex);
 
-    double maxVolume = 0;
+    CSAMPLE_GAIN maxVolume = 0;
     int maxDeck = -1;
 
     for (int i = 0; i < (int)PlayerManager::numDecks(); ++i) {
@@ -124,17 +124,17 @@ void PlayerInfo::updateCurrentPlayingDeck() {
             continue;
         }
 
-        double fvol = pDc->m_volume.get();
+        CSAMPLE_GAIN fvol = pDc->m_volume.get();
         if (fvol == 0.0) {
             continue;
         }
 
-        double xfl, xfr;
+        CSAMPLE_GAIN xfl, xfr;
         EngineXfader::getXfadeGains(m_pCOxfader->get(), 1.0, 0.0, false, false,
-                                    &xfl, &xfr);
+                                    xfl, xfr);
 
         int orient = pDc->m_orientation.get();
-        double xfvol;
+        CSAMPLE_GAIN  xfvol;
         if (orient == EngineChannel::LEFT) {
             xfvol = xfl;
         } else if (orient == EngineChannel::RIGHT) {
@@ -143,7 +143,7 @@ void PlayerInfo::updateCurrentPlayingDeck() {
             xfvol = 1.0;
         }
 
-        double dvol = fvol * xfvol;
+        CSAMPLE_GAIN  dvol = fvol * xfvol;
         if (dvol > maxVolume) {
             maxDeck = i;
             maxVolume = dvol;

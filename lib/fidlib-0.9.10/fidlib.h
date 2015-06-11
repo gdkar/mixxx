@@ -36,12 +36,12 @@ typedef double (FidFunc)(void*, double);
 //
 //	Prototypes
 //
-#ifdef MIXXX
+#ifdef __cplusplus 
 extern "C" {
 #endif
 
 extern void fid_set_error_handler(void(*rout)(char *));
-extern char *fid_version();
+extern const  char *fid_version();
 extern double fid_response_pha(FidFilter *filt, double freq, double *phase);
 extern double fid_response(FidFilter *filt, double freq);
 extern int fid_calc_delay(FidFilter *filt);
@@ -71,7 +71,7 @@ extern void fid_run_zapbuf(void *buf);
 extern void fid_run_freebuf(void *runbuf);
 extern void fid_run_free(void *run);
 
-#ifdef MIXXX
+#ifdef __cplusplus
 }
 #endif
 #endif

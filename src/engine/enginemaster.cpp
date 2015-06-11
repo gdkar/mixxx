@@ -393,12 +393,12 @@ void EngineMaster::process(const int iBufferSize) {
     }
 
     // Calculate the crossfader gains for left and right side of the crossfader
-    double c1_gain, c2_gain;
+    CSAMPLE_GAIN c1_gain, c2_gain;
     EngineXfader::getXfadeGains(m_pCrossfader->get(), m_pXFaderCurve->get(),
                                 m_pXFaderCalibration->get(),
                                 m_pXFaderMode->get() == MIXXX_XFADER_CONSTPWR,
                                 m_pXFaderReverse->toBool(),
-                                &c1_gain, &c2_gain);
+                                c1_gain, c2_gain);
 
     // All other channels should be adjusted by ducking gain.
     // The talkover channels are mixed in later
