@@ -274,6 +274,7 @@ Result SoundDevicePortAudio::open(bool isClkRefDevice, int syncBuffers) {
 #endif
 
     // Start stream
+    m_bSetThreadPriority = false;
     err = Pa_StartStream(pStream);
     if (err != paNoError) {
         qWarning() << "PortAudio: Start stream error:" << Pa_GetErrorText(err);
@@ -329,6 +330,7 @@ Result SoundDevicePortAudio::close() {
 
         //Stop the stream.
         err = Pa_StopStream(pStream);
+        m_bSetThreadPriority = false;
         //PaError err = Pa_AbortStream(m_pStream); //Trying Pa_AbortStream instead, because StopStream seems to wait
                                                    //until all the buffers have been flushed, which can take a
                                                    //few (annoying) seconds when you're doing soundcard input.
@@ -762,6 +764,7 @@ int SoundDevicePortAudio::callbackProcessClkRef(const unsigned int framesPerBuff
     // in Linux userland, for example, this will have no effect.
     if (!m_bSetThreadPriority) {
         QThread::currentThread()->setPriority(QThread::TimeCriticalPriority);
+        QThread::currentThread()->setObjectName("SoundDevicePortAudio");
         m_bSetThreadPriority = true;
 
         // This disables the denormals calculations, to avoid a
