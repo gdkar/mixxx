@@ -228,11 +228,9 @@
 
 #ifndef RF_COMBINED
 #ifndef RF_CMDLIST
-#ifndef RF_JIT
 
 #define RF_CMDLIST
 
-#endif
 #endif
 #endif
 
@@ -504,14 +502,10 @@ evaluate(double *rv, double *coef, int n_coef, double *in) {
 //
 
 void 
-fid_set_error_handler(void (*rout)(char*)) {
-   error_handler= rout;
-}
+fid_set_error_handler(void (*rout)(char*)) {error_handler= rout;}
 
-char *
-fid_version() {
-   return VERSION;
-}
+const char *
+fid_version() {return VERSION;}
 
 
 //
@@ -546,15 +540,12 @@ fid_response_pha(FidFilter *filt, double freq, double *phase) {
 	 error("Unknown filter type %d in fid_response_pha()", filt->typ);
       filt= FFNEXT(filt);
    }
-
    cdiv(top, bot);
-
    if (phase) {
       double pha= atan2(top[1], top[0]) / (2 * M_PI);
       if (pha < 0) pha += 1.0;
       *phase= pha;
    }
-
    return hypot(top[1], top[0]);
 }
 
@@ -577,8 +568,8 @@ fid_response(FidFilter *filt, double freq) {
    top[1]= 0;
    bot[0]= 1;
    bot[1]= 0;
-   zz[0]= cos(theta);
-   zz[1]= sin(theta);
+   zz[0] = cos(theta);
+   zz[1] = sin(theta);
    
    while (filt->len) {
       double resp[2];
@@ -628,13 +619,13 @@ fid_calc_delay(FidFilter *filt) {
    f2= fid_run_newbuf(run);
    
    tot= fabs(dostep(f1, 1.0));
-   tot100= fabs(dostep(f2, 1.0));
+   tot100  = fabs(dostep(f2, 1.0));
    tot100 += fabs(dostep(f2, 0.0));
    tot100 += fabs(dostep(f2, 0.0));
    tot100 += fabs(dostep(f2, 0.0));
    
    for (cnt= 1; cnt < 0x1000000; cnt++) {
-      tot += fabs(dostep(f1, 0.0));
+      tot    += fabs(dostep(f1, 0.0));
       tot100 += fabs(dostep(f2, 0.0));
       tot100 += fabs(dostep(f2, 0.0));
       tot100 += fabs(dostep(f2, 0.0));
@@ -2295,10 +2286,6 @@ fid_parse(double rate, char **pp, FidFilter **ffp) {
 
 #ifdef RF_CMDLIST
 #include "fidrf_cmdlist.h"
-#endif
-
-#ifdef RF_JIT
-#include "fidrf_jit.h"
 #endif
 
 

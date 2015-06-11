@@ -13,19 +13,14 @@
 
 namespace Mixxx {
 
-class SoundSourceMpg123: public SoundSource {
+class SoundSourceMpg123: public SoundSourcePlugin {
 public:
-    explicit SoundSourceMpg123(QUrl url);
-    ~SoundSourceMpg123();
-    void close() override;
+    explicit SoundSourceMpg123(const QUrl &url);
+    virtual ~SoundSourceMpg123();
+    virtual void close() override;
     SINT seekSampleFrame(SINT frameIndex) override;
     SINT readSampleFrames(SINT numberOfFrames,
             CSAMPLE* sampleBuffer) override;
-    SINT readSampleFramesStereo(SINT numberOfFrames,
-            CSAMPLE* sampleBuffer, SINT sampleBufferSize) override;
-    SINT readSampleFrames(SINT numberOfFrames,
-            CSAMPLE* sampleBuffer, SINT sampleBufferSize,
-            bool readStereoSamples);
 private:
     Result tryOpen(const AudioSourceConfig& audioSrcCfg) override;
     static ssize_t io_read ( void *vptr, void *buf, size_t size   );
@@ -47,7 +42,9 @@ public:
     SoundSourcePointer newSoundSource(const QUrl& url) override {
         return SoundSourcePointer(new SoundSourceMpg123(url));
     }
+    static void deleter(void *ptr){}
 };
 } // namespace Mixxx
-
+extern "C" MIXXX_SOUNDSOURCEPLUGINAPI_EXPORT
+Mixxx::SoundSourceProviderPointer Mixxx_SoundSourcePluginAPI_geSoundSourceProvider();
 #endif // MIXXX_SOUNDSOURCEMP3_H

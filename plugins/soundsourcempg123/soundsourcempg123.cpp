@@ -26,8 +26,8 @@ namespace Mixxx {
   self->m_fileData.clear();
 }
 
-SoundSourceMpg123::SoundSourceMpg123(QUrl url)
-        : SoundSource(url, "mp3"),
+SoundSourceMpg123::SoundSourceMpg123(const QUrl &url)
+        : SoundSourcePlugin(url, "mp3"),
           m_h(nullptr){
   mpg123_init ();
   m_h = mpg123_new ( NULL, NULL );
@@ -48,7 +48,7 @@ Result SoundSourceMpg123::tryOpen(const AudioSourceConfig& /*audioSrcCfg*/) {
         qWarning() << "Failed to open file:" << l_file.fileName();
         return ERR;
     }
-    // Get a pointer to the file using memory mapped IO
+    // Get a pointer to the file data
     m_fileData = l_file.readAll();
     qDebug() << "Read " << m_fileData.size() << " bytes from " << getLocalFileName();
     l_file.close();
@@ -58,7 +58,6 @@ Result SoundSourceMpg123::tryOpen(const AudioSourceConfig& /*audioSrcCfg*/) {
     m_nch = 2;
     m_enc = MPG123_ENC_FLOAT_32;
     mpg123_format ( m_h, m_rate, m_nch, m_enc );
-
     // Initialize the AudioSource
     setChannelCount(m_nch);
     setFrameRate (m_rate);
@@ -70,8 +69,6 @@ Result SoundSourceMpg123::tryOpen(const AudioSourceConfig& /*audioSrcCfg*/) {
 void SoundSourceMpg123::close() {
     mpg123_close ( m_h );
     m_fileData.clear();
-    if(m_file.isOpen())
-      m_file.close();
 }
 
 SINT SoundSourceMpg123::seekSampleFrame(SINT frameIndex) {
@@ -79,29 +76,11 @@ SINT SoundSourceMpg123::seekSampleFrame(SINT frameIndex) {
 }
 
 SINT SoundSourceMpg123::readSampleFrames(
-        SINT numberOfFrames, CSAMPLE* sampleBuffer) {
-    return readSampleFrames(numberOfFrames,
-            sampleBuffer, frames2samples(numberOfFrames),
-            false);
-}
-
-SINT SoundSourceMpg123::readSampleFramesStereo(
-        SINT numberOfFrames, CSAMPLE* sampleBuffer,
-        SINT sampleBufferSize) {
-    return readSampleFrames(numberOfFrames,
-            sampleBuffer, sampleBufferSize,
-            true);
-}
-
-SINT SoundSourceMpg123::readSampleFrames(
-        SINT numberOfFrames, CSAMPLE* sampleBuffer,
-        SINT sampleBufferSize, bool readStereoSamples) {
-    Q_UNUSED(sampleBufferSize);
+        SINT numberOfFrames, CSAMPLE* sampleBuffer){
     const SINT numberOfFramesTotal = numberOfFrames;
-
     uint8_t* pSampleBuffer = reinterpret_cast<uint8_t*>(sampleBuffer);
     SINT numberOfFramesRemaining = numberOfFramesTotal;
-    SINT numberOfBytesRemaining = math_min<SINT>(numberOfFramesTotal *getChannelCount(),sampleBufferSize)*sizeof(float);
+    SINT numberOfBytesRemaining = numberOfFramesTotal *getChannelCount()*sizeof(float);
     size_t done;
     int ret = 0;
     do{
@@ -126,3 +105,12 @@ QStringList SoundSourceProviderMpg123::getSupportedFileExtensions() const {
 }
 
 } // namespace Mixxx
+
+extern "C" MIXXX_SOUNDSOURCEPLUGINAPI_EXPORT
+Mixxx::SoundSourceProviderPointer Mixxx_SoundSourcePluginAPI_getSoundSourceProvider(){
+  static Mixxx::SoundSourceProviderMpg123 singleton;
+  return Mixxx::SoundSourceProviderPointer (
+      &singleton
+    , &Mixxx::SoundSourceProviderMpg123::deleter
+    );
+}

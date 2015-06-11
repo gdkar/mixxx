@@ -18,9 +18,13 @@
 #ifndef ENGINEFILTER_H
 #define ENGINEFILTER_H
 
-#define MIXXX
 #include "engine/engineobject.h"
 #include <fidlib.h>
+#include <qsharedpointer.h>
+#include <cstdlib>
+#include <cstring>
+#include <cstddef>
+#include <cstdint>
 #include "util/types.h"
 
 #define PREDEF_HP 1
@@ -36,26 +40,48 @@ class EngineFilter : public EngineObject {
     void process(CSAMPLE* pInOut, const int iBufferSize);
 
   protected:
-    double iir;
-    double fir;
-    double tmp;
 #define FILTER_BUF_SIZE 16
-    double buf1[FILTER_BUF_SIZE];
-    double buf2[FILTER_BUF_SIZE];
+    CSAMPLE  buf1[FILTER_BUF_SIZE];
+    CSAMPLE  buf2[FILTER_BUF_SIZE];
 
   private:
-    double (*processSample)(void *buf, const double sample);
-
-    FidFilter *ff;
-    FidFunc *funcp;
-    FidRun *run;
+    struct FidData {
+      QSharedPointer<FidFilter> filterp;
+      FidFunc*                  funcp;
+      FidRun*                   runp;
+      void*                     bufp;
+      FidData() = default;
+      FidData(const char *conf)
+        : filterp(fid_design(conf,44100, -1., -1., 1.0, nullptr),std::free)
+        , funcp(nullptr)
+        , runp (nullptr)
+        , bufp (nullptr){
+          runp = fid_run_new ( filterp.data(), &funcp );
+          bufp = fid_run_newbuf ( runp );
+        }
+      FidData ( FidData &other )
+        : filterp(other.filterp)
+        , funcp  (other.funcp  )
+        , runp   (other.runp)
+        , bufp   (other.bufp)
+      {}
+      FidData ( FidData *other )
+        : filterp(other->filterp)
+        , funcp  (other->funcp  )
+        , runp   (other->runp)
+        , bufp   (fid_run_newbuf(other->runp))
+      {}
+     ~FidData(){if(bufp){fid_run_freebuf(bufp);bufp=nullptr;}}
+    };
     void *fbuf1;
     void *fbuf2;
+    CSAMPLE  (*processSample)(void *buf, const CSAMPLE sample);
+    static CSAMPLE processSampleDynamic(void *buf, const CSAMPLE sample);
+    static CSAMPLE processSampleHp     (void *buf, const CSAMPLE sample);
+    static CSAMPLE processSampleBp     (void *buf, const CSAMPLE sample);
+    static CSAMPLE processSampleLp     (void *buf, const CSAMPLE sample);
+
 };
 
-double processSampleDynamic(void *buf, const double sample);
-double processSampleHp(void *buf, const double sample);
-double processSampleBp(void *buf, const double sample);
-double processSampleLp(void *buf, const double sample);
 
 #endif

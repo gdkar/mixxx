@@ -55,9 +55,7 @@ DlgPrefCrossfader::DlgPrefCrossfader(QWidget * parent, ConfigObject<ConfigValue>
     connect(radioButtonConstantPower, SIGNAL(clicked(bool)), this, SLOT(slotUpdate()));
 }
 
-DlgPrefCrossfader::~DlgPrefCrossfader() {
-    delete m_pxfScene;
-}
+DlgPrefCrossfader::~DlgPrefCrossfader() {delete m_pxfScene;}
 
 /** Loads the config keys and sets the widgets in the dialog to match */
 void DlgPrefCrossfader::loadSettings() {
@@ -65,9 +63,7 @@ void DlgPrefCrossfader::loadSettings() {
     double sliderTransform = config->getValueString(ConfigKey(kConfigKey, "xFaderCurve")).toDouble();
     double sliderVal = SliderXFader->maximum() / MIXXX_XFADER_STEEPNESS_COEFF * (sliderTransform - 1.);
     SliderXFader->setValue((int)sliderVal);
-
     m_xFaderMode = config->getValueString(ConfigKey(kConfigKey, "xFaderMode")).toInt();
-
     if (m_xFaderMode == MIXXX_XFADER_CONSTPWR) {
         radioButtonConstantPower->setChecked(true);
         //SliderXFader->setEnabled(true);
@@ -75,10 +71,8 @@ void DlgPrefCrossfader::loadSettings() {
         radioButtonAdditive->setChecked(true);
         //SliderXFader->setEnabled(false);
     }
-
     m_xFaderReverse = config->getValueString(ConfigKey(kConfigKey, "xFaderReverse")).toInt() == 1;
     checkBoxReverse->setChecked(m_xFaderReverse);
-
     slotUpdateXFader();
     slotApply();
 }
@@ -158,16 +152,15 @@ void DlgPrefCrossfader::drawXfaderDisplay()
     QPoint pointTotal, point1, point2;
     QPoint pointTotalPrev, point1Prev, point2Prev;
     for (int i = 0; i < sizeX; i++) {
-        double xfadeStep = 2. / (double)sizeX;
-
-        double gain1, gain2;
-        EngineXfader::getXfadeGains((-1. + (xfadeStep * (double) i)),
+        CSAMPLE xfadeStep = 2. / (CSAMPLE)sizeX;
+        CSAMPLE gain1, gain2;
+        EngineXfader::getXfadeGains((-1. + (xfadeStep * (CSAMPLE) i)),
                                     m_transform, m_cal,
                                     (m_xFaderMode == MIXXX_XFADER_CONSTPWR),
                                     checkBoxReverse->isChecked(),
-                                    &gain1, &gain2);
+                                    gain1, gain2);
 
-        double sum = gain1 + gain2;
+        CSAMPLE sum = gain1 + gain2;
         //scale for graph
         gain1 *= 0.80;
         gain2 *= 0.80;
@@ -185,7 +178,6 @@ void DlgPrefCrossfader::drawXfaderDisplay()
             point1Prev = point1;
             point2Prev = point2;
         }
-
         if(pointTotal != point1)
             m_pxfScene->addLine(QLineF(point1, point1Prev), graphLinePen);
         if(pointTotal != point2)
