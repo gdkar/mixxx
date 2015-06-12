@@ -23,8 +23,6 @@
 #include "controlpushbutton.h"
 #include "engine/engineobject.h"
 #include "engine/enginechannel.h"
-#include "util/circularbuffer.h"
-
 #include "soundmanagerutil.h"
 
 class EngineBuffer;
@@ -37,7 +35,7 @@ class EngineEffectsManager;
 class ControlPushButton;
 
 class EngineDeck : public EngineChannel, public AudioDestination {
-    Q_OBJECT
+    Q_OBJECT;
   public:
     EngineDeck(const ChannelHandleAndGroup& handle_group, ConfigObject<ConfigValue>* pConfig,
                EngineMaster* pMixingEngine, EffectsManager* pEffectsManager,
