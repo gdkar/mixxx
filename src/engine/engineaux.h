@@ -5,6 +5,7 @@
 #ifndef ENGINEAUX_H
 #define ENGINEAUX_H
 
+#include "controlaudiotaperpot.h"
 #include "controlobjectslave.h"
 #include "controlpushbutton.h"
 #include "engine/enginechannel.h"
@@ -23,35 +24,28 @@ class EngineAux : public EngineChannel, public AudioDestination {
   public:
     EngineAux(const ChannelHandleAndGroup& handle_group, EffectsManager* pEffectsManager);
     virtual ~EngineAux();
-
     bool isActive();
-
     // Called by EngineMaster whenever is requesting a new buffer of audio.
     virtual void process(CSAMPLE* pOutput, const int iBufferSize);
     virtual void postProcess(const int iBufferSize) { Q_UNUSED(iBufferSize) }
-
     // This is called by SoundManager whenever there are new samples from the
     // configured input to be processed. This is run in the callback thread of
     // the soundcard this AudioDestination was registered for! Beware, in the
     // case of multiple soundcards, this method is not re-entrant but it may be
     // concurrent with EngineMaster processing.
-    virtual void receiveBuffer(AudioInput input, const CSAMPLE* pBuffer,
-                               unsigned int nFrames);
-
+    virtual void receiveBuffer(AudioInput input, const CSAMPLE* pBuffer,unsigned int nFrames);
     // Called by SoundManager whenever the aux input is connected to a
     // soundcard input.
     virtual void onInputConfigured(AudioInput input);
-
     // Called by SoundManager whenever the aux input is disconnected from
     // a soundcard input.
     virtual void onInputUnconfigured(AudioInput input);
-
   private:
     EngineEffectsManager* m_pEngineEffectsManager;
     EngineVuMeter m_vuMeter;
-    ControlObject* m_pEnabled;
-    ControlAudioTaperPot* m_pPregain;
-    ControlObjectSlave* m_pSampleRate;
+    ControlObject m_pEnabled;
+    ControlAudioTaperPot m_pPregain;
+    ControlObjectSlave m_pSampleRate;
     const CSAMPLE* volatile m_sampleBuffer;
     bool m_wasActive;
 };

@@ -1730,13 +1730,11 @@ convolve(double *dst, int n_dst, double *src, int n_src) {
 
    return len;
 }
-
 //
 //	Generate a combined filter -- merge all the IIR/FIR
 //	sub-filters into a single IIR/FIR pair, and make sure the IIR
 //	first coefficient is 1.0.
 //
-
 FidFilter *
 fid_flatten(FidFilter *filt) {
    int m_fir= 1;	// Maximum values
@@ -1747,19 +1745,14 @@ fid_flatten(FidFilter *filt) {
    double *fir, *iir;
    double adj;
    int a;
-
    // Find the size of the output filter
    ff= filt;
    while (ff->len) {
-      if (ff->typ == 'I')
-	 m_iir += ff->len-1;
-      else if (ff->typ == 'F')
-	 m_fir += ff->len-1;
-      else 
-	 error("fid_flatten doesn't know about type %d", ff->typ);
+      if (ff->typ == 'I') m_iir += ff->len-1;
+      else if (ff->typ == 'F') m_fir += ff->len-1;
+      else error("fid_flatten doesn't know about type %d", ff->typ);
       ff= FFNEXT(ff);
    }
-   
    // Setup the output array
    rv= FFALLOC(2, m_iir + m_fir);
    rv->typ= 'I';
@@ -1769,43 +1762,33 @@ fid_flatten(FidFilter *filt) {
    ff->typ= 'F';
    ff->len= m_fir;
    fir= ff->val;
-
    iir[0]= 1.0; n_iir= 1;
    fir[0]= 1.0; n_fir= 1;
-
    // Do the convolution
    ff= filt;
    while (ff->len) {
-      if (ff->typ == 'I') 
-	 n_iir= convolve(iir, n_iir, ff->val, ff->len);
-      else 
-	 n_fir= convolve(fir, n_fir, ff->val, ff->len);
+      if (ff->typ == 'I')  n_iir= convolve(iir, n_iir, ff->val, ff->len);
+      else  n_fir= convolve(fir, n_fir, ff->val, ff->len);
       ff= FFNEXT(ff);
    }
-
    // Sanity check
    if (n_iir != m_iir ||
        n_fir != m_fir) 
       error("Internal error in fid_combine() -- array under/overflow");
-
    // Fix iir[0]
    adj= 1.0/iir[0];
    for (a= 0; a<n_iir; a++) iir[a] *= adj;
    for (a= 0; a<n_fir; a++) fir[a] *= adj;
-
    return rv;
 }
-
 //
 //	Parse a filter-spec and freq0/freq1 arguments.  Returns a
 //	strdup'd error string on error, or else 0.
 //
-
 static char *
 parse_spec(Spec *sp) {
    double *arg;
    int a;
-
    arg= sp->argarr;
    sp->n_arg= 0;
    sp->order= 0;
@@ -1814,110 +1797,98 @@ parse_spec(Spec *sp) {
    sp->adj= 0;
    sp->minlen= -1;
    sp->n_freq= 0;
-   
    for (a= 0; 1; a++) {
       char *fmt= filter[a].fmt;
       char *p= sp->spec;
       char ch, *q;
-
       if (!fmt) return strdupf("Spec-string \"%s\" matches no known format", sp->spec);
-
       while (*p && (ch= *fmt++)) {
-	 if (ch != '#') {
-	    if (ch == *p++) continue;
-	    p= 0; break;
-	 }
-
-	 if (isalpha(*p)) { p= 0; break; }
-
-	 // Handling a format character
-	 switch (ch= *fmt++) {
-	  default:
-	     return strdupf("Internal error: Unknown format #%c in format: %s", 
-			    fmt[-1], filter[a].fmt);
-	  case 'o':
-	  case 'O':
-	     sp->order= (int)strtol(p, &q, 10);
-	     if (p == q) {
-		if (ch == 'O') goto bad;
-		sp->order= 1;
-	     }
-	     if (sp->order <= 0) 
-		return strdupf("Bad order %d in spec-string \"%s\"", sp->order, sp->spec);
-	     p= q; break;
-	  case 'V':
-	     sp->n_arg++; 
-	     *arg++= strtod(p, &q);
-	     if (p == q) goto bad; 
-	     p= q; break;
-	  case 'F':
-	     sp->minlen= p-1-sp->spec;
-	     sp->n_freq= 1;
-	     sp->adj= (p[0] == '=');
-	     if (sp->adj) p++;
-	     sp->f0= strtod(p, &q);
-	     sp->f1= 0;
-	     if (p == q) goto bad; 
-	     p= q; break;
-	  case 'R':
-	     sp->minlen= p-1-sp->spec;
-	     sp->n_freq= 2;
-	     sp->adj= (p[0] == '=');
-	     if (sp->adj) p++;
-	     sp->f0= strtod(p, &q);
-	     if (p == q) goto bad; 
-	     p= q;
-	     if (*p++ != '-') goto bad;
-	     sp->f1= strtod(p, &q);
-	     if (p == q) goto bad; 
-	     if (sp->f0 > sp->f1) 
-		return strdupf("Backwards frequency range in spec-string \"%s\"", sp->spec);
-	     p= q; break;
-	 }
+        if (ch != '#') {
+            if (ch == *p++) continue;
+            p= 0; break;
+        }
+        if (isalpha(*p)) { p= 0; break; }
+        // Handling a format character
+        switch (ch= *fmt++) {
+          default:
+            return strdupf("Internal error: Unknown format #%c in format: %s", 
+                fmt[-1], filter[a].fmt);
+          case 'o':
+          case 'O':
+            sp->order= (int)strtol(p, &q, 10);
+            if (p == q) {
+              if (ch == 'O') goto bad;
+              sp->order= 1;
+            }
+            if (sp->order <= 0) 
+          return strdupf("Bad order %d in spec-string \"%s\"", sp->order, sp->spec);
+            p= q; break;
+          case 'V':
+            sp->n_arg++; 
+            *arg++= strtod(p, &q);
+            if (p == q) goto bad; 
+            p = q; break;
+          case 'F':
+            sp->minlen= p-1-sp->spec;
+            sp->n_freq= 1;
+            sp->adj= (p[0] == '=');
+            if (sp->adj) p++;
+            sp->f0= strtod(p, &q);
+            sp->f1= 0;
+            if (p == q) goto bad; 
+            p = q; break;
+          case 'R':
+            sp->minlen= p-1-sp->spec;
+            sp->n_freq= 2;
+            sp->adj= (p[0] == '=');
+            if (sp->adj) p++;
+            sp->f0= strtod(p, &q);
+            if (p == q) goto bad; 
+            p= q;
+            if (*p++ != '-') goto bad;
+            sp->f1= strtod(p, &q);
+            if (p == q) goto bad; 
+            if (sp->f0 > sp->f1) 
+          return strdupf("Backwards frequency range in spec-string \"%s\"", sp->spec);
+            p= q; break;
+            }
+          }
+          if (p == 0) continue;
+          if (fmt[0] == '/' && fmt[1] == '#' && fmt[2] == 'F') {
+            sp->minlen= p-sp->spec;
+            sp->n_freq= 1;
+            if (sp->in_f0 < 0.0) 
+              return strdupf("Frequency omitted from filter-spec, and no default provided");
+            sp->f0= sp->in_f0;
+            sp->f1= 0;
+            sp->adj= sp->in_adj;
+            fmt += 3;
+          } else if (fmt[0] == '/' && fmt[1] == '#' && fmt[2] == 'R') {
+            sp->minlen= p-sp->spec;
+            sp->n_freq= 2;
+            if (sp->in_f0 < 0.0 || sp->in_f1 < 0.0)
+                return strdupf("Frequency omitted from filter-spec, and no default provided");
+            sp->f0= sp->in_f0;
+            sp->f1= sp->in_f1;
+            sp->adj= sp->in_adj;
+            fmt += 3;
       }
-
-      if (p == 0) continue;
-
-      if (fmt[0] == '/' && fmt[1] == '#' && fmt[2] == 'F') {
-	 sp->minlen= p-sp->spec;
-	 sp->n_freq= 1;
-	 if (sp->in_f0 < 0.0) 
-	    return strdupf("Frequency omitted from filter-spec, and no default provided");
-	 sp->f0= sp->in_f0;
-	 sp->f1= 0;
-	 sp->adj= sp->in_adj;
-	 fmt += 3;
-      } else if (fmt[0] == '/' && fmt[1] == '#' && fmt[2] == 'R') {
-	 sp->minlen= p-sp->spec;
-	 sp->n_freq= 2;
-	 if (sp->in_f0 < 0.0 || sp->in_f1 < 0.0)
-	    return strdupf("Frequency omitted from filter-spec, and no default provided");
-	 sp->f0= sp->in_f0;
-	 sp->f1= sp->in_f1;
-	 sp->adj= sp->in_adj;
-	 fmt += 3;
-      }
-
       // Check for trailing unmatched format characters
       if (*fmt) {
       bad:
-	 return strdupf("Bad match of spec-string \"%s\" to format \"%s\"", 
+    return strdupf("Bad match of spec-string \"%s\" to format \"%s\"", 
 			sp->spec, filter[a].fmt);
       }
       if (sp->n_arg > MAXARG) 
-	 return strdupf("Internal error -- maximum arguments exceeded");
-      
+    return strdupf("Internal error -- maximum arguments exceeded");
       // Set the minlen to the whole string if unset
       if (sp->minlen < 0) sp->minlen= p-sp->spec;
-      
       // Save values, return
       sp->fi= a;
       return 0;
    }
    return 0;
 }
-   
-
 //
 //	Parse a filter-spec and freq0/freq1 arguments and rewrite them
 //	to give an all-in-one filter spec and/or a minimum spec plus
@@ -1927,7 +1898,6 @@ parse_spec(Spec *sp) {
 //	If either of spec1p or spec2p is 0, then that particular
 //	spec-string is not generated.
 //
-
 void 
 fid_rewrite_spec(const char *spec, double freq0, double freq1, int adj,
 		 char **spec1p, 
@@ -1940,15 +1910,14 @@ fid_rewrite_spec(const char *spec, double freq0, double freq1, int adj,
    sp.in_adj= adj;
    err= parse_spec(&sp);
    if (err) error("%s", err);
-
    if (spec1p) {
       char buf[128];
       int len;
       char *rv;
       switch (sp.n_freq) {
-       case 1: sprintf(buf, "/%s%.15g", sp.adj ? "=" : "", sp.f0); break;
-       case 2: sprintf(buf, "/%s%.15g-%.15g", sp.adj ? "=" : "", sp.f0, sp.f1); break;
-       default: buf[0]= 0;
+        case 1: sprintf(buf, "/%s%.15g", sp.adj ? "=" : "", sp.f0); break;
+        case 2: sprintf(buf, "/%s%.15g-%.15g", sp.adj ? "=" : "", sp.f0, sp.f1); break;
+        default: buf[0]= 0;
       }
       len= strlen(buf);
       rv= (char*)Alloc(sp.minlen + len + 1);
@@ -1956,7 +1925,6 @@ fid_rewrite_spec(const char *spec, double freq0, double freq1, int adj,
       strcpy(rv+sp.minlen, buf);
       *spec1p= rv;
    }
-
    if (spec2p) {
       char *rv= (char*)Alloc(sp.minlen + 1);
       memcpy(rv, spec, sp.minlen);
@@ -1966,7 +1934,6 @@ fid_rewrite_spec(const char *spec, double freq0, double freq1, int adj,
       *adjp= sp.adj;
    }
 }
-
 //
 //	Create a FidFilter from the given double array.  The double[]
 //	should contain one or more sections, each starting with the
@@ -1982,39 +1949,31 @@ fid_rewrite_spec(const char *spec, double freq0, double freq1, int adj,
 //	instances can be created simply by allocating the memory and
 //	filling them in (see fidlib.h).  
 //
-
 FidFilter *
 fid_cv_array(double *arr) {
    double *dp;
    FidFilter *ff, *rv;
    int n_head= 0;
    int n_val= 0;
-
    // Scan through for sizes
    for (dp= arr; *dp; ) {
       int len, typ;
-
       typ= (int)(*dp++);
       if (typ != 'F' && typ != 'I') 
 	 error("Bad type in array passed to fid_cv_array: %g", dp[-1]);
-
       len= (int)(*dp++);
       if (len < 1)
 	 error("Bad length in array passed to fid_cv_array: %g", dp[-1]);
-
       n_head++;
       n_val += len;
       dp += len;
    }
-
    rv= ff= (FidFilter*)Alloc(FFCSIZE(n_head, n_val));
-
    // Scan through to fill in FidFilter
    for (dp= arr; *dp; ) {
       int len, typ;
       typ= (int)(*dp++);
       len= (int)(*dp++);
-
       ff->typ= typ;
       ff->cbm= ~0;
       ff->len= len;
@@ -2022,12 +1981,9 @@ fid_cv_array(double *arr) {
       dp += len;
       ff= FFNEXT(ff);
    }
-
    // Final element already zero'd thanks to allocation
-
    return rv;
 }
-
 //
 //	Create a single filter from the given list of filters in
 //	order.  If 'freeme' is set, then all the listed filters are
@@ -2035,7 +1991,6 @@ fid_cv_array(double *arr) {
 //	newly allocated resultant filter is returned, which should be
 //	released with free() when finished with.
 //      
-
 FidFilter *
 fid_cat(int freeme, ...) {
    va_list ap;
@@ -2043,19 +1998,15 @@ fid_cat(int freeme, ...) {
    int len= 0;
    int cnt;
    char *dst;
-
    // Find the memory required to store the combined filter
    va_start(ap, freeme);
    while ((ff0= va_arg(ap, FidFilter*))) {
-      for (ff= ff0; ff->typ; ff= FFNEXT(ff))
-	 ;
+      for (ff= ff0; ff->typ; ff= FFNEXT(ff));
       len += ((char*)ff) - ((char*)ff0);
    }
    va_end(ap);
-
    rv= (FidFilter*)Alloc(FFCSIZE(0,0) + len);
    dst= (char*)rv;
-
    va_start(ap, freeme);
    while ((ff0= va_arg(ap, FidFilter*))) {
       for (ff= ff0; ff->typ; ff= FFNEXT(ff))
@@ -2066,7 +2017,6 @@ fid_cat(int freeme, ...) {
       if (freeme) free(ff0);
    }
    va_end(ap);
-
    // Final element already zero'd
    return rv;
 }
@@ -2079,7 +2029,6 @@ fid_cat(int freeme, ...) {
 static void 
 skipWS(char **pp) {
    char *p= *pp;
-
    while (*p) {
       if (isspace(*p)) { p++; continue; }
       if (*p == '#') {
@@ -2098,29 +2047,24 @@ static int
 grabWord(char **pp, char *buf, int buflen) {
    char *p, *q;
    int len; 
-   
    skipWS(pp);
    p= *pp;
    if (!*p) return 0;
-
    q= p;
    if (*q == ',' || *q == ';' || *q == ')' || *q == ']' || *q == '}') {
       q++;
    } else {
       while (*q && *q != '#' && !isspace(*q) && 
 	     (*q != ',' && *q != ';' && *q != ')' && *q != ']' && *q != '}'))
-	 q++;
+    q++;
    }
    len= q-p;
    if (len >= buflen) return 0;
-   
    memcpy(buf, p, len);
    buf[len]= 0;
-   
    *pp= q;
    return 1;
 }
-
 //
 //	Parse an entire filter specification, perhaps consisting of
 //	several FIR, IIR and predefined filters.  Stops at the first
@@ -2149,7 +2093,6 @@ fid_parse(double rate, char **pp, FidFilter **ffp) {
    int typ= -1;		// First time through
    double val;
    char dmy;
-
 #define ERR(ptr, msg) { *pp= ptr; *ffp= 0; return msg; }
 #define INCBUF { tmp= (char*)realloc(rv, (rvend-rv) * 2); if (!tmp) error("Out of memory"); \
  rvend= (rvend-rv) * 2 + tmp; rvp= (rvp-rv) + tmp; \
@@ -2199,9 +2142,7 @@ fid_parse(double rate, char **pp, FidFilter **ffp) {
 	 double f0, f1;
 	 char *err;
 	 int len;
-
 	 if (typ != 'F') ERR(rew, strdupf("Predefined filters cannot be used with '/'"));
-
 	 // Parse the filter-spec
 	 memset(&sp, 0, sizeof(sp));
 	 sp.spec= buf;
@@ -2209,7 +2150,6 @@ fid_parse(double rate, char **pp, FidFilter **ffp) {
 	 if ((err= parse_spec(&sp))) ERR(rew, err);
 	 f0= sp.f0;
 	 f1= sp.f1;
-	 
 	 // Adjust frequencies to range 0-0.5, and check them
 	 f0 /= rate;
 	 if (f0 > 0.5) ERR(rew, strdupf("Frequency of %gHz out of range with "
@@ -2217,10 +2157,8 @@ fid_parse(double rate, char **pp, FidFilter **ffp) {
 	 f1 /= rate;
 	 if (f1 > 0.5) ERR(rew, strdupf("Frequency of %gHz out of range with "
 					"sampling rate of %gHz", f1*rate, rate));
-	 
 	 // Okay we now have a successful spec-match to filter[sp.fi], and sp.n_arg
 	 // args are now in sp.argarr[]
-	 
 	 // Generate the filter
 	 if (!sp.adj)
 	    ff= filter[sp.fi].rout(rate, f0, f1, sp.order, sp.n_arg, sp.argarr);
@@ -2228,7 +2166,6 @@ fid_parse(double rate, char **pp, FidFilter **ffp) {
 	    ff= auto_adjust_dual(&sp, rate, f0, f1);
 	 else 
 	    ff= auto_adjust_single(&sp, rate, f0);
-
 	 // Append it to our FidFilter to return
 	 for (ff1= ff; ff1->typ; ff1= FFNEXT(ff1)) ;
 	 len= ((char*)ff1-(char*)ff);
@@ -2238,7 +2175,6 @@ fid_parse(double rate, char **pp, FidFilter **ffp) {
 	 typ= 0;
 	 continue;
       }
-
       // Must be a list of coefficients
       curr= (FidFilter*)rvp;
       rvp += xtra;
@@ -2248,7 +2184,6 @@ fid_parse(double rate, char **pp, FidFilter **ffp) {
       curr->len= 1;
       *(double*)rvp= val;
       rvp += sizeof(double);
-
       // See how many more coefficients we can pick up
       while (1) {
 	 rew= p;
@@ -2268,25 +2203,17 @@ fid_parse(double rate, char **pp, FidFilter **ffp) {
       typ= 0;
       continue;
    }
-
 #undef INCBUF
 #undef ERR
-
    return strdupf("Internal error, shouldn't reach here");
 }
-
-
 //
 //	Filter-running code
 //
-
 #ifdef RF_COMBINED
 #include "fidrf_combined.h"
 #endif
-
 #ifdef RF_CMDLIST
 #include "fidrf_cmdlist.h"
 #endif
-
-
 // END //
