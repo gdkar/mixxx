@@ -40,22 +40,16 @@ filter_step(void *rb, double val) {
    Run *rr= ((RunBuf*)rb)->run;
    double *buf= ((RunBuf*)rb)->buf;
    int a;
-
    // Shift the whole internal array up one
    memmove(buf+1, buf, (rr->n_buf-1)*sizeof(buf[0]));
-   
    // Do IIR
    for (a= 1; a<rr->n_iir; a++) val -= rr->iir[a] * buf[a];
    buf[0]= val;
-
    // Do FIR
    val= 0;
    for (a= 0; a<rr->n_fir; a++) val += rr->fir[a] * buf[a];
-
    return val;
 }
-
-
 //
 //	Create an instance of a filter, ready to run.  This returns a
 //	void* handle, and a function to call to execute the filter.
@@ -70,28 +64,23 @@ void *
 fid_run_new(FidFilter *filt, double (**funcpp)(void *,double)) {
    Run *rr= ALLOC(Run);
    FidFilter *ff;
-
+   do{
    rr->magic= 0x64966325;
    rr->filt= fid_flatten(filt);
-
    ff= rr->filt;
-   if (ff->typ != 'I') goto bad;
+   if (ff->typ != 'I') break;
    rr->n_iir= ff->len;
    rr->iir= ff->val;	
    ff= FFNEXT(ff);
-   if (ff->typ != 'F') goto bad;
+   if (ff->typ != 'F') break;
    rr->n_fir= ff->len;
    rr->fir= ff->val;
    ff= FFNEXT(ff);
-   if (ff->len) goto bad;
-   
+   if (ff->len) break;
    rr->n_buf= rr->n_fir > rr->n_iir ? rr->n_fir : rr->n_iir;
-   
    *funcpp= filter_step;
-   
    return rr;
-   
- bad:
+   }while(0);
    error("Internal error: fid_run_new() expecting IIR+FIR in flattened filter");
    return 0;
 }
@@ -104,14 +93,10 @@ void *
 fid_run_newbuf(void *run) {
    Run *rr= run;
    RunBuf *rb;
-
-   if (rr->magic != 0x64966325)
-      error("Bad handle passed to fid_run_newbuf()");
-   
+   if (rr->magic != 0x64966325) error("Bad handle passed to fid_run_newbuf()");
    rb= Alloc(sizeof(RunBuf) + rr->n_buf * sizeof(double));
    rb->run= run;
    // rb->buf[] already zerod
-
    return rb;
 }
 
@@ -131,9 +116,7 @@ fid_run_zapbuf(void *buf) {
 //
 
 void 
-fid_run_freebuf(void *runbuf) {
-   free(runbuf);
-}
+fid_run_freebuf(void *runbuf) {free(runbuf);}
 
 //
 //	Delete the filter

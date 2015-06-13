@@ -19,16 +19,17 @@
 #define ENGINECHANNEL_H
 
 #include "engine/engineobject.h"
+#include "controlpushbutton.h"
+#include "controlobjectslave.h"
+#include "controlobject.h"
 #include "engine/channelhandle.h"
 #include "configobject.h"
-
 class ControlObject;
 class EngineBuffer;
 class EnginePregain;
 class EngineFilterBlock;
 class EngineVuMeter;
 class ControlPushButton;
-
 class EngineChannel : public EngineObject {
     Q_OBJECT
   public:
@@ -37,21 +38,12 @@ class EngineChannel : public EngineObject {
         CENTER,
         RIGHT,
     };
-
     EngineChannel(const ChannelHandleAndGroup& handle_group,
                   ChannelOrientation defaultOrientation = CENTER);
     virtual ~EngineChannel();
-
     virtual ChannelOrientation getOrientation() const;
-
-    inline const ChannelHandle& getHandle() const {
-        return m_group.handle();
-    }
-
-    virtual const QString& getGroup() const {
-        return m_group.name();
-    }
-
+    inline const ChannelHandle& getHandle() const {return m_group.handle();}
+    virtual const QString& getGroup() const {return m_group.name();}
     virtual bool isActive() = 0;
     void setPfl(bool enabled);
     virtual bool isPflEnabled() const;
@@ -59,29 +51,22 @@ class EngineChannel : public EngineObject {
     virtual bool isMasterEnabled() const;
     void setTalkover(bool enabled);
     virtual bool isTalkoverEnabled() const;
-
     virtual void process(CSAMPLE* pOut, const int iBufferSize) = 0;
     virtual void postProcess(const int iBuffersize) = 0;
-
     // TODO(XXX) This hack needs to be removed.
-    virtual EngineBuffer* getEngineBuffer() {
-        return NULL;
-    }
-
+    virtual EngineBuffer* getEngineBuffer() {return nullptr;}
   private slots:
     void slotOrientationLeft(double v);
     void slotOrientationRight(double v);
     void slotOrientationCenter(double v);
-
   private:
     const ChannelHandleAndGroup m_group;
-    ControlPushButton* m_pMaster;
-    ControlPushButton* m_pPFL;
-    ControlPushButton* m_pOrientation;
-    ControlPushButton* m_pOrientationLeft;
-    ControlPushButton* m_pOrientationRight;
-    ControlPushButton* m_pOrientationCenter;
-    ControlPushButton* m_pTalkover;
+    ControlPushButton m_pMaster;
+    ControlPushButton m_pPFL;
+    ControlPushButton m_pOrientation;
+    ControlPushButton m_pOrientationLeft;
+    ControlPushButton m_pOrientationRight;
+    ControlPushButton m_pOrientationCenter;
+    ControlPushButton m_pTalkover;
 };
-
 #endif
