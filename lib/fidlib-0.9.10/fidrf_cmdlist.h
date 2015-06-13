@@ -16,22 +16,18 @@
 //	advantage from flattening the filter list.  This code is also
 //	portable (unlike the JIT option).
 //
-
 typedef struct Run {
    int magic;		// Magic: 0x64966325
    int buf_size;	// Length of working buffer required in doubles	
    double *coef;	// Coefficient list
    char *cmd;		// Command list
 } Run;
-
 typedef struct RunBuf {
    double *coef;
    char *cmd;
    int mov_cnt;		// Number of bytes to memmove
    double buf[0];
 } RunBuf;
-
-
 //
 //	Filter processing routine.  This is designed to avoid too many
 //	branches, and references are very localized in the code,
@@ -70,9 +66,7 @@ typedef struct RunBuf {
 //	filters.  These have to be handled with a list of 7,6,5
 //	commands, plus a 13 command.
 //
-
 typedef unsigned char uchar;
-
 static double 
 filter_step(void *fbuf, double iir) {
    double *coef= ((RunBuf*)fbuf)->coef;
@@ -82,11 +76,9 @@ filter_step(void *fbuf, double iir) {
    double fir= 0;
    double tmp= buf[0];
    int cnt;
-
    // Using a memmove first is faster on gcc -O6 / ix86 than moving
    // the values whilst working through the buffers.
    memmove(buf, buf+1, ((RunBuf*)fbuf)->mov_cnt);
-
 #define IIR \
        iir -= *coef++ * tmp; \
        tmp= *buf++;
@@ -116,7 +108,6 @@ filter_step(void *fbuf, double iir) {
        fir= 0
 #define GAIN \
        iir *= *coef++
-
    while ((ch= *cmd++)) switch (ch) {
     case 1:
        IIR; break;
@@ -175,7 +166,6 @@ filter_step(void *fbuf, double iir) {
     case 22:
        GAIN; break;
    }
-
 #undef IIR
 #undef FIR
 #undef BOTH
@@ -183,11 +173,8 @@ filter_step(void *fbuf, double iir) {
 #undef ENDFIR
 #undef ENDBOTH
 #undef GAIN
-
    return iir;
 }
-
-
 //
 //	Create an instance of a filter, ready to run.  This returns a
 //	void* handle, and a function to call to execute the filter.
@@ -222,17 +209,13 @@ fid_run_new(FidFilter *filt, double (**funcpp)(void *,double)) {
    int cmd_cnt, cmd_max;
    int filt_cnt= 0;
    Run *rr;
-
-   for (ff= filt; ff->len; ff= FFNEXT(ff))
-      filt_cnt += ff->len;
-
+   for (ff= filt; ff->len; ff= FFNEXT(ff)) filt_cnt += ff->len;
    // Allocate worst-case sizes for temporary arrays
    coef_tmp= ALLOC_ARR(coef_max= filt_cnt + 1, double);
    cmd_tmp= (uchar*)ALLOC_ARR(cmd_max= filt_cnt + 4, char);
    dp= coef_tmp;
    cp= cmd_tmp;
    prev= 0;
-
    // Generate command and coefficient lists
    while (filt->len) {
       int n_iir = 0, n_fir = 0, cnt = 0;
@@ -433,41 +416,32 @@ fid_run_initbuf(void *run, void *buf) {
    Run *rr= (Run*)run;
    RunBuf *rb= (RunBuf*)buf;
    int siz;
-
-   if (rr->magic != 0x64966325)
-      error("Bad handle passed to fid_run_initbuf()");
-   
+   if (rr->magic != 0x64966325) error("Bad handle passed to fid_run_initbuf()");
    siz= rr->buf_size ? rr->buf_size : 1;   // Minimum one element to avoid problems
    rb->coef= rr->coef;
    rb->cmd= rr->cmd;
    rb->mov_cnt= (siz-1) * sizeof(double);
    memset(rb->buf, 0, rb->mov_cnt + sizeof(double));
 }
-
 //
 //	Reinitialise an instance of the filter, allowing it to start
 //	afresh.  It assumes that the buffer was correctly initialised
 //	previously, either through a call to fid_run_newbuf() or
 //	fid_run_initbuf().
 //
-
 void 
 fid_run_zapbuf(void *buf) {
    RunBuf *rb= (RunBuf*)buf;
    memset(rb->buf, 0, rb->mov_cnt + sizeof(double));
 }   
-   
-
 //
 //	Delete an instance
 //
-
 void 
 fid_run_freebuf(void *runbuf) {free(runbuf);}
 //
 //	Delete the filter
 //
-
 void 
 fid_run_free(void *run) {free(run);}
 // END //
