@@ -2,7 +2,7 @@
 #include <QtDebug>
 
 #include "engine/enginebuffer.h"
-#include "cachingreader.h"
+#include "engine/cachingreader.h"
 #include "sampleutil.h"
 
 #include "controlpushbutton.h"

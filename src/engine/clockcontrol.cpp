@@ -2,7 +2,7 @@
 
 #include "controlobject.h"
 #include "configobject.h"
-#include "cachingreader.h"
+#include "engine/cachingreader.h"
 #include "engine/enginecontrol.h"
 #include "controlobjectslave.h"
 

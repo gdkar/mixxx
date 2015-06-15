@@ -4,7 +4,7 @@
 #include "controlobject.h"
 #include "controlobjectthread.h"
 
-#include "cachingreader.h"
+#include "engine/cachingreader.h"
 #include "trackinfoobject.h"
 #include "sampleutil.h"
 #include "util/counter.h"

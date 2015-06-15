@@ -10,7 +10,7 @@
 
 #include "util/types.h"
 #include "util/math.h"
-#include "cachingreader.h"
+#include "engine/cachingreader.h"
 
 class LoopingControl;
 class RateControl;
