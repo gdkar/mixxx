@@ -29,7 +29,7 @@
 #include "configobject.h"
 #include "rotary.h"
 #include "control/controlvalue.h"
-#include "cachingreader.h"
+#include "engine/cachingreader.h"
 
 //for the writer
 #ifdef __SCALER_DEBUG__

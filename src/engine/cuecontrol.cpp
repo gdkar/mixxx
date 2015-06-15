@@ -10,7 +10,7 @@
 #include "controlindicator.h"
 #include "trackinfoobject.h"
 #include "library/dao/cue.h"
-#include "cachingreader.h"
+#include "engine/cachingreader.h"
 #include "vinylcontrol/defs_vinylcontrol.h"
 
 static const double CUE_MODE_MIXXX = 0.0;
