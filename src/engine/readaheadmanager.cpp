@@ -7,7 +7,7 @@
 #include "util/defs.h"
 #include "engine/loopingcontrol.h"
 #include "engine/ratecontrol.h"
-#include "cachingreader.h"
+#include "engine/cachingreader.h"
 
 ReadAheadManager::ReadAheadManager()
         : m_pLoopingControl(NULL),

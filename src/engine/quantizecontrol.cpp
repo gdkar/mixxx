@@ -7,7 +7,7 @@
 #include "controlobject.h"
 #include "configobject.h"
 #include "controlpushbutton.h"
-#include "cachingreader.h"
+#include "engine/cachingreader.h"
 #include "engine/quantizecontrol.h"
 #include "engine/enginecontrol.h"
 #include "util/assert.h"
