@@ -30,7 +30,7 @@ EngineDeck::EngineDeck(const ChannelHandleAndGroup& handle_group,
                        EngineMaster* pMixingEngine,
                        EffectsManager* pEffectsManager,
                        EngineChannel::ChannelOrientation defaultOrientation)
-        : EngineChannel(handle_group, defaultOrientation),
+        : EngineChannel(handle_group, defaultOrientation, qobject_cast<QObject*>(pMixingEngine)),
           m_pConfig(pConfig),
           m_pEngineEffectsManager(pEffectsManager ? pEffectsManager->getEngineEffectsManager() : nullptr),
           m_pPassing(ConfigKey(getGroup(), "passthrough")),
@@ -48,9 +48,9 @@ EngineDeck::EngineDeck(const ChannelHandleAndGroup& handle_group,
             this, SLOT(slotPassingToggle(double)),
             Qt::DirectConnection);
     // Set up additional engines
-    m_pPregain = new EnginePregain(getGroup());
-    m_pVUMeter = new EngineVuMeter(getGroup());
-    m_pBuffer = new EngineBuffer(getGroup(), pConfig, this, pMixingEngine);
+    m_pPregain = new EnginePregain(getGroup(),this);
+    m_pVUMeter = new EngineVuMeter(getGroup(),this);
+    m_pBuffer = new EngineBuffer(getGroup(), pConfig, pMixingEngine, this);
 }
 EngineDeck::~EngineDeck() {
 
@@ -97,7 +97,9 @@ void EngineDeck::process(CSAMPLE* pOut, const int iBufferSize) {
     m_pVUMeter->process(pOut, iBufferSize);
 }
 void EngineDeck::postProcess(const int iBufferSize) {m_pBuffer->postProcess(iBufferSize);}
+
 EngineBuffer* EngineDeck::getEngineBuffer() {return m_pBuffer;}
+
 bool EngineDeck::isActive() {
     if (m_bPassthroughWasActive && !m_bPassthroughIsActive) {return true;}
     return (m_pBuffer->isTrackLoaded() || isPassthroughActive());
@@ -130,7 +132,5 @@ void EngineDeck::onInputUnconfigured(AudioInput input) {
     }
     m_sampleBuffer = NULL;
 }
-
 bool EngineDeck::isPassthroughActive() const {return (m_bPassthroughIsActive && m_sampleBuffer);}
-
 void EngineDeck::slotPassingToggle(double v) {m_bPassthroughIsActive = v > 0;}

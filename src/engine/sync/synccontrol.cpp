@@ -17,8 +17,8 @@ const double SyncControl::kBpmHalve = 0.5;
 const double SyncControl::kBpmDouble = 2.0;
 
 SyncControl::SyncControl(const QString& group, ConfigObject<ConfigValue>* pConfig,
-                         EngineChannel* pChannel, SyncableListener* pEngineSync)
-        : EngineControl(group, pConfig),
+                         EngineChannel* pChannel, SyncableListener* pEngineSync, QObject *pParent)
+        : EngineControl(group, pConfig,pParent),
           m_sGroup(group),
           m_pChannel(pChannel),
           m_pEngineSync(pEngineSync),

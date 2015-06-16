@@ -36,7 +36,7 @@ enum MoogMode {
 };
 
 template<enum MoogMode MODE>
-class EngineFilterMoogLadderBase : public EngineObjectConstIn {
+class EngineFilterMoogLadderBase : public EngineObject  {
 
   private:
     struct Buffer {

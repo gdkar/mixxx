@@ -42,16 +42,11 @@ class SampleBuffer {
         other.m_size = 0;
     }
     virtual ~SampleBuffer();
-
     SampleBuffer& operator=(SampleBuffer&& other) {
         swap(other);
         return *this;
     }
-
-    SINT size() const {
-        return m_size;
-    }
-
+    SINT size() const {return m_size;}
     CSAMPLE* data(SINT offset = 0) {
         DEBUG_ASSERT(0 <= offset);
         // >=: allow access to one element behind allocated memory
@@ -64,14 +59,8 @@ class SampleBuffer {
         DEBUG_ASSERT(m_size >= offset);
         return m_data + offset;
     }
-
-    CSAMPLE& operator[](SINT index) {
-        return *data(index);
-    }
-    const CSAMPLE& operator[](SINT index) const {
-        return *data(index);
-    }
-
+    CSAMPLE& operator[](SINT index) {return *data(index);}
+    const CSAMPLE& operator[](SINT index) const {return *data(index);}
     // Exchanges the members of two buffers in conformance with the
     // implementation of all STL containers. Required for exception
     // safe programming and as a workaround for the missing resize
@@ -80,13 +69,10 @@ class SampleBuffer {
         std::swap(m_data, other.m_data);
         std::swap(m_size, other.m_size);
     }
-
     // Fills the whole buffer with zeroes
     void clear();
-
     // Fills the whole buffer with the same value
     void fill(CSAMPLE value);
-
     class ReadableChunk {
       public:
         ReadableChunk(const SampleBuffer& buffer, SINT offset, SINT length)
@@ -100,12 +86,8 @@ class SampleBuffer {
             DEBUG_ASSERT(m_size >= offset);
             return m_data + offset;
         }
-        SINT size() const {
-            return m_size;
-        }
-        const CSAMPLE& operator[](SINT index) const {
-            return *data(index);
-        }
+        SINT size() const {return m_size;}
+        const CSAMPLE& operator[](SINT index) const {return *data(index);}
       private:
         const CSAMPLE* m_data;
         SINT m_size;
@@ -124,30 +106,20 @@ class SampleBuffer {
             DEBUG_ASSERT(m_size >= offset);
             return m_data + offset;
         }
-        SINT size() const {
-            return m_size;
-        }
-        CSAMPLE& operator[](SINT index) const {
-            return *data(index);
-        }
+        SINT size() const {return m_size;}
+        CSAMPLE& operator[](SINT index) const {return *data(index);}
       private:
         CSAMPLE* m_data;
         SINT m_size;
     };
-
   private:
     CSAMPLE* m_data;
     SINT m_size;
 };
-
 namespace std {
-
 // Template specialization of std::swap for SampleBuffer.
 template<>
-inline void swap(SampleBuffer& lhs, SampleBuffer& rhs) {
-    lhs.swap(rhs);
-}
-
+inline void swap(SampleBuffer& lhs, SampleBuffer& rhs) {lhs.swap(rhs);}
 }  // namespace std
 
 #endif // SAMPLEBUFFER_H

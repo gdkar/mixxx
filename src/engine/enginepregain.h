@@ -4,17 +4,16 @@
 #include "engine/engineobject.h"
 #include "controlobject.h"
 #include "util/performancetimer.h"
-
-class ControlAudioTaperPot;
-class ControlPotmeter;
-class ControlObject;
+#include "controlaudiotaperpot.h"
+#include "controlobject.h"
+#include "controlpotmeter.h"
 
 // The pregain control alters the volume of the track based on several inputs,
 // including user pregain adjustment, ReplayGain value, and vinyl-like
 // adjustments in volume relative to playback speed.
 class EnginePregain : public EngineObject {
   public:
-    EnginePregain(QString group);
+    EnginePregain(const QString &group, QObject *pParent=nullptr);
     virtual ~EnginePregain();
     void setSpeed(CSAMPLE_GAIN speed);
     // If the user is scratching and the record reverses direction, the volume
@@ -29,10 +28,10 @@ class EnginePregain : public EngineObject {
     CSAMPLE_GAIN m_fOldSpeed;
     bool m_scratching;
     float m_fPrevGain;
-    ControlAudioTaperPot* m_pPotmeterPregain;
-    ControlObject* m_pTotalGain;
-    ControlObject* m_pCOReplayGain;
-    ControlObject* m_pPassthroughEnabled;
+    ControlAudioTaperPot m_pPotmeterPregain;
+    ControlObject m_pTotalGain;
+    ControlObject m_pCOReplayGain;
+    ControlObject m_pPassthroughEnabled;
     static ControlPotmeter* s_pReplayGainBoost;
     static ControlPotmeter* s_pDefaultBoost;
     static ControlObject* s_pEnableReplayGain;

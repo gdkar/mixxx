@@ -27,16 +27,13 @@ class EngineSync : public BaseSyncableListener {
   public:
     explicit EngineSync(ConfigObject<ConfigValue>* pConfig);
     virtual ~EngineSync();
-
     // Used by Syncables to tell EngineSync it wants to be enabled in a
     // specific mode. If the state change is accepted, EngineSync calls
     // Syncable::notifySyncModeChanged.
     void requestSyncMode(Syncable* pSyncable, SyncMode state);
-
     // Used by Syncables to tell EngineSync it wants to be enabled in any mode
     // (master/follower).
     void requestEnableSync(Syncable* pSyncable, bool enabled);
-
     // Syncables notify EngineSync directly about various events. EngineSync
     // does not have a say in whether these succeed or not, they are simply
     // notifications.
@@ -46,18 +43,14 @@ class EngineSync : public BaseSyncableListener {
     void notifyPlaying(Syncable* pSyncable, bool playing);
     void notifyScratching(Syncable* pSyncable, bool scratching);
     void notifyTrackLoaded(Syncable* pSyncable, double suggested_bpm);
-
     // Used to pick a sync target for non-master-sync mode.
     EngineChannel* pickNonSyncSyncTarget(EngineChannel* pDontPick) const;
-
   private:
     // Activate a specific syncable as master.
     void activateMaster(Syncable* pSyncable);
-
     // Activate a specific channel as Follower. Sets the syncable's bpm and
     // beat_distance to match the master.
     void activateFollower(Syncable* pSyncable);
-
     // Unsets all sync state on a Syncable.
     void deactivateSync(Syncable* pSyncable);
 };

@@ -38,8 +38,8 @@ QList<double> LoopingControl::getBeatSizes() {
 }
 
 LoopingControl::LoopingControl(QString group,
-                               ConfigObject<ConfigValue>* _config)
-        : EngineControl(group, _config) {
+                               ConfigObject<ConfigValue>* _config, QObject *pParent)
+        : EngineControl(group, _config,pParent) {
     m_bLoopingEnabled = false;
     m_bLoopRollActive = false;
     m_iLoopStartSample = kNoTrigger;
@@ -556,20 +556,13 @@ void LoopingControl::slotLoopStartPos(double pos) {
 }
 
 void LoopingControl::slotLoopEndPos(double pos) {
-    if (!m_pTrack) {
-        return;
-    }
-
+    if (!m_pTrack) {return;}
     int newpos = pos;
-    if (newpos != -1 && !even(newpos)) {
-        newpos--;
-    }
-
+    if (newpos != -1 && !even(newpos)) {newpos--;}
     if (m_iLoopEndSample == newpos) {
         //nothing to do
         return;
     }
-
     // Reject if the loop-in is not set, or if the new position is before the
     // start point (but not -1).
     if (m_iLoopStartSample == -1 ||
@@ -577,24 +570,16 @@ void LoopingControl::slotLoopEndPos(double pos) {
         m_pCOLoopEndPosition->set(m_iLoopEndSample);
         return;
     }
-
     clearActiveBeatLoop();
-
-    if (pos == -1.0) {
-        setLoopingEnabled(false);
-    }
+    if (pos == -1.0) {setLoopingEnabled(false);}
     m_iLoopEndSample = newpos;
     m_pCOLoopEndPosition->set(newpos);
 }
-
-void LoopingControl::notifySeek(double dNewPlaypos) {
+void LoopingControl::onSeek(double dNewPlaypos) {
     if (m_bLoopingEnabled) {
-        if (dNewPlaypos < m_iLoopStartSample || dNewPlaypos > m_iLoopEndSample) {
-            setLoopingEnabled(false);
-        }
+        if (dNewPlaypos < m_iLoopStartSample || dNewPlaypos > m_iLoopEndSample) {setLoopingEnabled(false);}
     }
 }
-
 void LoopingControl::setLoopingEnabled(bool enabled) {
     m_bLoopingEnabled = enabled;
     m_pCOLoopEnabled->set(enabled);

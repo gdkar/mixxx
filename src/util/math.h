@@ -4,7 +4,9 @@
 // Causes MSVC to define M_PI and friends.
 // http://msdn.microsoft.com/en-us/library/4hwaceh6.aspx
 #define _USE_MATH_DEFINES
-#include <cmath>
+#include <ctgmath>
+#include <limits>
+#include <cfloat>
 #include <algorithm>
 
 #include "util/assert.h"
@@ -42,16 +44,25 @@ inline bool even(T value) {
 // Ask VC++ to emit an intrinsic for fabs instead of calling std::fabs.
 #pragma intrinsic(fabs)
 #else
-// for isnan() and isinf() everywhere else use the cmath version. We define
-// these as macros to prevent clashing with c++11 built-ins in the global
-// namespace. If you say "using std::isnan;" then this will fail to build with
-// std=c++11. See https://bugs.webkit.org/show_bug.cgi?id=59249 for some
-// relevant discussion.
-#define isnan std::isnan
-#define isinf std::isinf
+#define isnan(x) std::isnan(x)
+#define isinf(x) std::isinf(x)
 #endif
 
-inline int roundUpToPowerOf2(int v) {
+
+
+template<typename T>
+constexpr T roundUpToPowerOf2(T x)
+{
+  x--;
+  x|=x>>1;
+  x|=x>>2;
+  x|=x>>4;
+  x|=(sizeof(T)>1)?x>>8:0;
+  x|=(sizeof(T)>2)?x>>16:0;
+  x|=(sizeof(T)>4)?x>>32:0;
+  return x+1;
+}
+/*inline int roundUpToPowerOf2(int v) {
     int power = 1;
     while (power < v && power > 0) {
         power *= 2;
@@ -62,15 +73,7 @@ inline int roundUpToPowerOf2(int v) {
         return -1;
     }
     return power;
-}
-
-// MSVS 2013 (_MSC_VER 1800) introduced C99 support.
-#if defined(__WINDOWS__) &&  _MSC_VER < 1800
-inline int round(double x) {
-    return x < 0.0 ? ceil(x - 0.5) : floor(x + 0.5);
-}
-#endif
-
+}*/
 template <typename T>
 inline const T ratio2db(const T a) {
     return log10(a) * 20;

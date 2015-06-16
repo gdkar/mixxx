@@ -30,7 +30,7 @@
 
 #ifndef MIXXX_UTIL_MEMORY_H
 #define MIXXX_UTIL_MEMORY_H
-
+#define COMPILER_SUPPORTS_MAKE_UNIQUE
 // If user hasn't specified COMPILER_SUPPORTS_MAKE_UNIQUE then try to figure out
 // based on compiler version if std::make_unique is provided.
 #if defined(COMPILER_SUPPORTS_MAKE_UNIQUE)
@@ -58,7 +58,7 @@
    #endif
 #endif
 
-#if COMPILER_SUPPORTS_MAKE_UNIQUE
+#if defined(COMPILER_SUPPORTS_MAKE_UNIQUE)
 
 // If the compiler supports std::make_unique, then pull in <memory> to get it.
 #include <memory>

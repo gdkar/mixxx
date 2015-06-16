@@ -21,8 +21,8 @@ const int filterLength = 5;
 const int kLocalBpmSpan = 4;
 
 BpmControl::BpmControl(QString group,
-                       ConfigObject<ConfigValue>* _config) :
-        EngineControl(group, _config),
+                       ConfigObject<ConfigValue>* _config, QObject *pParent) :
+        EngineControl(group, _config, pParent),
         m_dPreviousSample(0),
         m_dSyncTargetBeatDistance(0.0),
         m_dSyncInstantaneousBpm(0.0),

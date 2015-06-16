@@ -18,6 +18,10 @@
 #define ENGINEDELAY_H
 
 #include "engine/engineobject.h"
+#include "sampleutil.h"
+#include "controlobject.h"
+#include "controlpotmeter.h"
+#include "controlobjectslave.h"
 #include "configobject.h"
 
 class ControlPotmeter;
@@ -26,20 +30,17 @@ class ControlObjectSlave;
 class EngineDelay : public EngineObject {
     Q_OBJECT
   public:
-    EngineDelay(const char* group, ConfigKey delayControl);
+    EngineDelay(const char* group, ConfigKey delayControl, QObject *pParent=nullptr);
     virtual ~EngineDelay();
-
     void process(CSAMPLE* pInOut, const int iBufferSize);
-
   public slots:
-    void slotDelayChanged();
-
+    void onDelayChanged();
   private:
-    ControlPotmeter* m_pDelayPot;
-    ControlObjectSlave* m_pSampleRate;
-    CSAMPLE* m_pDelayBuffer;
+  std::unique_ptr<CSAMPLE[]> m_pDelayBuffer;
     int m_iDelayPos;
     int m_iDelay;
+    ControlPotmeter         m_pDelayPot;
+    ControlObjectSlave      m_pSampleRate;
 };
 
 #endif

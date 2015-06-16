@@ -2,14 +2,14 @@
 
 #include "controlobject.h"
 
-Sampler::Sampler(QObject* pParent,
-                 ConfigObject<ConfigValue>* pConfig,
+Sampler::Sampler(ConfigObject<ConfigValue>* pConfig,
                  EngineMaster* pMixingEngine,
                  EffectsManager* pEffectsManager,
                  EngineChannel::ChannelOrientation defaultOrientation,
-                 QString group) :
-        BaseTrackPlayerImpl(pParent, pConfig, pMixingEngine, pEffectsManager,
-                            defaultOrientation, group, true, false) {
+                 const QString &group,
+                 QObject *pParent=nullptr) :
+        BaseTrackPlayerImpl(pConfig, pMixingEngine, pEffectsManager,
+                            defaultOrientation, group, true, false,pParent) {
 }
 
 Sampler::~Sampler() {

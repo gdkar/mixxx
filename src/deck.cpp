@@ -1,13 +1,13 @@
 #include "deck.h"
 
-Deck::Deck(QObject* pParent,
-           ConfigObject<ConfigValue>* pConfig,
+Deck::Deck(ConfigObject<ConfigValue>* pConfig,
            EngineMaster* pMixingEngine,
            EffectsManager* pEffectsManager,
            EngineChannel::ChannelOrientation defaultOrientation,
-           QString group) :
-        BaseTrackPlayerImpl(pParent, pConfig, pMixingEngine, pEffectsManager,
-                            defaultOrientation, group, true, false) {
+           const QString &group,
+           QObject *pParent) :
+        BaseTrackPlayerImpl(pConfig, pMixingEngine, pEffectsManager,
+                            defaultOrientation, group, true, false,pParent) {
 }
 
 Deck::~Deck() {

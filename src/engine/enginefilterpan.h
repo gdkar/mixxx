@@ -9,7 +9,7 @@
 static const int numChannels = 2;
 
 template<unsigned int SIZE>
-class EngineFilterPan : public EngineObjectConstIn {
+class EngineFilterPan : public EngineObject  {
   public:
     EngineFilterPan()
             : m_leftDelayFrames(0),

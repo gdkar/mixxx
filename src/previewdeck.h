@@ -6,12 +6,12 @@
 class PreviewDeck : public BaseTrackPlayerImpl {
     Q_OBJECT
   public:
-    PreviewDeck(QObject* pParent,
-                ConfigObject<ConfigValue> *pConfig,
+    PreviewDeck(ConfigObject<ConfigValue> *pConfig,
                 EngineMaster* pMixingEngine,
                 EffectsManager* pEffectsManager,
                 EngineChannel::ChannelOrientation defaultOrientation,
-                QString group);
+                const QString &group,
+                QObject *pParent=nullptr);
     virtual ~PreviewDeck();
 };
 

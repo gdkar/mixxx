@@ -218,5 +218,5 @@ double AutoPanEffect::computeLawCoefficient(double position) {
     // position is a result of sin() so betwwen -1 and 1
     // full left/right => 1 + 1 / sqrt(abs(1 or -1) + 1) = 1,707106781
     // center => 1 + 1 / sqrt(abs(0) + 1) = 2
-    return 1 + 1 / sqrt(abs(position) + 1);
+    return 1 + 1 / sqrt(std::abs(position) + 1);
 }

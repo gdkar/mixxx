@@ -35,10 +35,8 @@ const double kNoTrigger = -1;
 class EngineControl : public QObject {
     Q_OBJECT
   public:
-    EngineControl(QString group,
-                  ConfigObject<ConfigValue>* _config);
+    EngineControl(QString group, ConfigObject<ConfigValue>* _config, QObject *pParent=nullptr);
     virtual ~EngineControl();
-
     // Called by EngineBuffer::process every latency period. See the above
     // comments for information about guarantees that hold during this call. An
     // EngineControl can perform any upkeep operations that are necessary during
@@ -64,7 +62,6 @@ class EngineControl : public QObject {
     // indicate that the given portion of a song is a potential imminent seek
     // target.
     virtual void hintReader(HintVector* pHintList);
-
     virtual void setEngineMaster(EngineMaster* pEngineMaster);
     void setEngineBuffer(EngineBuffer* pEngineBuffer);
     virtual void setCurrentSample(const double dCurrentSample, const double dTotalSamples);
@@ -72,33 +69,26 @@ class EngineControl : public QObject {
     double getTotalSamples() const;
     bool atEndPosition() const;
     QString getGroup() const;
-
     // Called to collect player features for effects processing.
     virtual void collectFeatureState(GroupFeatureState* pGroupFeatures) const {
         Q_UNUSED(pGroupFeatures);
     }
-
     // Called whenever a seek occurs to allow the EngineControl to respond.
-    virtual void notifySeek(double dNewPlaypo);
-
   public slots:
+    virtual void onSeek(double dNewPlaypo);
     virtual void trackLoaded(TrackPointer pTrack);
     virtual void trackUnloaded(TrackPointer pTrack);
-
   protected:
     void seek(double fractionalPosition);
     void seekAbs(double sample);
     // Seek to an exact sample and don't allow quantizing adjustment.
     void seekExact(double sample);
     EngineBuffer* pickSyncTarget();
-
     ConfigObject<ConfigValue>* getConfig();
     EngineMaster* getEngineMaster();
     EngineBuffer* getEngineBuffer();
-
     QString m_group;
     ConfigObject<ConfigValue>* m_pConfig;
-
   private:
     struct SampleOfTrack {
         double current;

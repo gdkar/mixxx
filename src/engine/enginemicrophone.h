@@ -8,8 +8,9 @@
 #include "controlpushbutton.h"
 #include "engine/enginechannel.h"
 #include "engine/enginevumeter.h"
-#include "util/circularbuffer.h"
-
+#include "controlobject.h"
+#include "controlpushbutton.h"
+#include "controlaudiotaperpot.h"
 #include "soundmanagerutil.h"
 
 class EffectsManager;
@@ -22,7 +23,7 @@ class EngineMicrophone : public EngineChannel, public AudioDestination {
     Q_OBJECT
   public:
     EngineMicrophone(const ChannelHandleAndGroup& handle_group,
-                     EffectsManager* pEffectsManager);
+                     EffectsManager* pEffectsManager, QObject *pParent=nullptr);
     virtual ~EngineMicrophone();
 
     bool isActive();
@@ -53,9 +54,9 @@ class EngineMicrophone : public EngineChannel, public AudioDestination {
   private:
     EngineEffectsManager* m_pEngineEffectsManager;
     EngineVuMeter m_vuMeter;
-    ControlObject* m_pEnabled;
-    ControlAudioTaperPot* m_pPregain;
-    ControlObjectSlave* m_pSampleRate;
+    ControlObject m_pEnabled;
+    ControlAudioTaperPot m_pPregain;
+    ControlObjectSlave m_pSampleRate;
     const CSAMPLE* volatile m_sampleBuffer;
 
     bool m_wasActive;

@@ -1616,13 +1616,13 @@ fid_design_coef(double *coef, int n_coef, const char *spec, double rate,
 
    while (ff->typ) {
       if (ff->typ == 'F' && ff->len == 1) {
-	 gain *= ff->val[0];
-	 ff= FFNEXT(ff);
-	 continue;
+        gain *= ff->val[0];
+        ff= FFNEXT(ff);
+        continue;
       }
 
       if (ff->typ != 'I' && ff->typ != 'F')
-	 error("fid_design_coef can't handle FidFilter type: %c", ff->typ);
+        error("fid_design_coef can't handle FidFilter type: %c", ff->typ);
 
       // Initialise to safe defaults
       iir= fir= &const_one;
@@ -1631,52 +1631,46 @@ fid_design_coef(double *coef, int n_coef, const char *spec, double rate,
 
       // See if we have an IIR filter
       if (ff->typ == 'I') {
-	 iir= ff->val;
-	 n_iir= ff->len;
-	 iir_cbm= ff->cbm;
-	 iir_adj= 1.0 / ff->val[0];
-	 ff= FFNEXT(ff);
-	 gain *= iir_adj;
+        iir= ff->val;
+        n_iir= ff->len;
+        iir_cbm= ff->cbm;
+        iir_adj= 1.0 / ff->val[0];
+        ff= FFNEXT(ff);
+        gain *= iir_adj;
       }
 
       // See if we have an FIR filter
       if (ff->typ == 'F') {
-	 fir= ff->val;
-	 n_fir= ff->len;
-	 fir_cbm= ff->cbm;
-	 ff= FFNEXT(ff);
+        fir= ff->val;
+        n_fir= ff->len;
+        fir_cbm= ff->cbm;
+        ff= FFNEXT(ff);
       }
-
       // Dump out all non-const coefficients in reverse order
       len= n_fir > n_iir ? n_fir : n_iir;
       for (a= len-1; a>=0; a--) {
 	 // Output IIR if present and non-const
-	 if (a < n_iir && a>0 && 
-	     !(iir_cbm & (1<<(a<15?a:15)))) {
-	    if (cnt++ < n_coef) *coef++= iir_adj * iir[a];
-	 }
-
+        if (a < n_iir && a>0 && 
+            !(iir_cbm & (1<<(a<15?a:15)))) {
+            if (cnt++ < n_coef) *coef++= iir_adj * iir[a];
+        }
 	 // Output FIR if present and non-const
-	 if (a < n_fir && 
-	     !(fir_cbm & (1<<(a<15?a:15)))) {
-	    if (cnt++ < n_coef) *coef++= fir[a];
-	 }
+        if (a < n_fir && 
+            !(fir_cbm & (1<<(a<15?a:15)))) {
+            if (cnt++ < n_coef) *coef++= fir[a];
+        }
       }
-   }
-
+  }
    if (cnt != n_coef)
       error("fid_design_coef called with the wrong number of coefficients.\n"
 	    "  Given %d, expecting %d: (\"%s\",%g,%g,%g,%d)",
 	    n_coef, cnt, spec, rate, freq0, freq1, adj);
-   
    free(filt);
    return gain;
 }
-   
 //
 //	List all the known filters to the given file handle
 //
-
 void 
 fid_list_filters(FILE *out) {
    int a;
@@ -1689,17 +1683,14 @@ fid_list_filters(FILE *out) {
       fprintf(out, "%s\n", buf);
    }
 }
-
 //
 //	List all the known filters to the given buffer; the buffer is
 //	NUL-terminated; returns 1 okay, 0 not enough space
 //
-
 int 
 fid_list_filters_buf(char *buf, char *bufend) {
    int a, cnt;
    char tmp[4096];
-
    for (a= 0; filter[a].fmt; a++) {
       expand_spec(tmp, tmp+sizeof(tmp), filter[a].fmt);
       buf += (cnt= snprintf(buf, bufend-buf, "%s\n    ", tmp));

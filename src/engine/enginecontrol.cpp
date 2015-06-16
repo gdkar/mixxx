@@ -8,8 +8,9 @@
 #include "playermanager.h"
 
 EngineControl::EngineControl(QString group,
-                             ConfigObject<ConfigValue>* _config)
-        : m_group(group),
+                             ConfigObject<ConfigValue>* _config, QObject *pParent)
+        : QObject(pParent),
+          m_group(group),
           m_pConfig(_config),
           m_pEngineMaster(NULL),
           m_pEngineBuffer(NULL),
@@ -112,7 +113,7 @@ void EngineControl::seek(double sample) {
     }
 }
 
-void EngineControl::notifySeek(double dNewPlaypos) {
+void EngineControl::onSeek(double dNewPlaypos) {
     Q_UNUSED(dNewPlaypos);
 }
 

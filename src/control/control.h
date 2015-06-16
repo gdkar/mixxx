@@ -152,16 +152,12 @@ class ControlDoublePrivate : public QObject {
     int m_trackType;
     int m_trackFlags;
     bool m_confirmRequired;
-
     // The control value.
     ControlValueAtomic<double> m_value;
     // The default control value.
     ControlValueAtomic<double> m_defaultValue;
-
     QSharedPointer<ControlNumericBehavior> m_pBehavior;
-
     ControlObject* m_pCreatorCO;
-
     // Hack to implement persistent controls. This is a pointer to the current
     // user configuration object (if one exists). In general, we do not want the
     // user configuration to be a singleton -- objects that need access to it
@@ -169,13 +165,11 @@ class ControlDoublePrivate : public QObject {
     // pervasive that updating every control creation to include the
     // configuration object would be arduous.
     static ConfigObject<ConfigValue>* s_pUserConfig;
-
     // Hash of ControlDoublePrivate instantiations.
     static QHash<ConfigKey, QWeakPointer<ControlDoublePrivate> > s_qCOHash;
     // Hash of aliases between ConfigKeys. Solely used for looking up the first
     // alias associated with a key.
     static QHash<ConfigKey, ConfigKey> s_qCOAliasHash;
-
     // Mutex guarding access to s_qCOHash and s_qCOAliasHash.
     static QMutex s_qCOHashMutex;
 };
