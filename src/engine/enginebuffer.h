@@ -117,7 +117,8 @@ class EngineBuffer : public EngineObject {
     };
 
     EngineBuffer(QString _group, ConfigObject<ConfigValue>* _config,
-                 EngineChannel* pChannel, EngineMaster* pMixingEngine);
+                  EngineMaster* pMixingEngine,
+                  EngineChannel* pChannel);
     virtual ~EngineBuffer();
 
     void bindWorkers(EngineWorkerScheduler* pWorkerScheduler);
@@ -196,7 +197,7 @@ class EngineBuffer : public EngineObject {
     void trackLoaded(TrackPointer pTrack);
     void trackLoadFailed(TrackPointer pTrack, QString reason);
     void trackUnloaded(TrackPointer pTrack);
-
+    void seeked(double);
   private slots:
     void slotTrackLoading();
     void slotTrackLoaded(TrackPointer pTrack,

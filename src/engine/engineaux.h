@@ -10,7 +10,6 @@
 #include "controlpushbutton.h"
 #include "engine/enginechannel.h"
 #include "engine/enginevumeter.h"
-#include "util/circularbuffer.h"
 #include "soundmanagerutil.h"
 
 class EffectsManager;
@@ -22,7 +21,7 @@ class ControlAudioTaperPot;
 class EngineAux : public EngineChannel, public AudioDestination {
     Q_OBJECT
   public:
-    EngineAux(const ChannelHandleAndGroup& handle_group, EffectsManager* pEffectsManager);
+    EngineAux(const ChannelHandleAndGroup& handle_group, EffectsManager* pEffectsManager, QObject *pParent=nullptr);
     virtual ~EngineAux();
     bool isActive();
     // Called by EngineMaster whenever is requesting a new buffer of audio.

@@ -95,10 +95,10 @@ EngineMaster::EngineMaster(ConfigObject<ConfigValue>* _config,
                                       ConfigKey(group, "gain"));
 
     // VU meter:
-    m_pVumeter = new EngineVuMeter(group);
+    m_pVumeter = new EngineVuMeter(group,this);
 
-    m_pMasterDelay = new EngineDelay(group, ConfigKey(group, "delay"));
-    m_pHeadDelay = new EngineDelay(group, ConfigKey(group, "headDelay"));
+    m_pMasterDelay = new EngineDelay(group, ConfigKey(group, "delay"),this);
+    m_pHeadDelay = new EngineDelay(group, ConfigKey(group, "headDelay"),this);
 
     // Headphone volume
     m_pHeadGain = new ControlAudioTaperPot(ConfigKey(group, "headGain"), -14, 14, 0.5);

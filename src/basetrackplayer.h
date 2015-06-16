@@ -27,7 +27,7 @@ class BaseTrackPlayer : public BasePlayer {
         RESET_PITCH_AND_SPEED,
     };
 
-    BaseTrackPlayer(QObject* pParent, const QString& group);
+    BaseTrackPlayer(const QString &group, QObject* pParent=nullptr);
     virtual ~BaseTrackPlayer() {}
 
     virtual TrackPointer getLoadedTrack() const = 0;
@@ -45,14 +45,13 @@ class BaseTrackPlayer : public BasePlayer {
 class BaseTrackPlayerImpl : public BaseTrackPlayer {
     Q_OBJECT
   public:
-    BaseTrackPlayerImpl(QObject* pParent,
-                        ConfigObject<ConfigValue>* pConfig,
+    BaseTrackPlayerImpl(ConfigObject<ConfigValue>* pConfig,
                         EngineMaster* pMixingEngine,
                         EffectsManager* pEffectsManager,
                         EngineChannel::ChannelOrientation defaultOrientation,
-                        QString group,
+                        const QString &group,
                         bool defaultMaster,
-                        bool defaultHeadphones);
+                        bool defaultHeadphones, QObject *pParent=nullptr);
     virtual ~BaseTrackPlayerImpl();
 
     TrackPointer getLoadedTrack() const;

@@ -31,8 +31,8 @@ const double RateControl::kPausedJogMultiplier = 18.0;
 enum RateControl::RATERAMP_MODE RateControl::m_eRateRampMode = RateControl::RATERAMP_STEP;
 
 RateControl::RateControl(QString group,
-                         ConfigObject<ConfigValue>* _config)
-    : EngineControl(group, _config),
+                         ConfigObject<ConfigValue>* _config, QObject *pParent)
+    : EngineControl(group, _config, pParent),
       m_pBpmControl(NULL),
       m_ePbCurrent(0),
       m_ePbPressed(0),
@@ -41,8 +41,7 @@ RateControl::RateControl(QString group,
       m_dRateTemp(0.0),
       m_eRampBackMode(RATERAMP_RAMPBACK_NONE),
       m_dRateTempRampbackChange(0.0) {
-    m_pScratchController = new PositionScratchController(group);
-
+    m_pScratchController = new PositionScratchController(group,pParent);
     m_pRateDir = new ControlObject(ConfigKey(group, "rate_dir"));
     m_pRateRange = new ControlObject(ConfigKey(group, "rateRange"));
     // Allow rate slider to go out of bounds so that master sync rate
@@ -647,21 +646,8 @@ void RateControl::setRateTemp(double v)
     }
 }
 
-void RateControl::addRateTemp(double v)
-{
-    setRateTemp(m_dRateTemp + v);
-}
+void RateControl::addRateTemp(double v){setRateTemp(m_dRateTemp + v);}
 
-void RateControl::subRateTemp(double v)
-{
-    setRateTemp(m_dRateTemp - v);
-}
+void RateControl::subRateTemp(double v){setRateTemp(m_dRateTemp - v);}
 
-void RateControl::resetRateTemp(void)
-{
-    setRateTemp(0.0);
-}
-
-void RateControl::notifySeek(double playPos) {
-    m_pScratchController->notifySeek(playPos);
-}
+void RateControl::resetRateTemp(void){setRateTemp(0.0);}

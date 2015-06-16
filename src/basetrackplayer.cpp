@@ -15,19 +15,18 @@
 #include "util/sandbox.h"
 #include "effects/effectsmanager.h"
 
-BaseTrackPlayer::BaseTrackPlayer(QObject* pParent, const QString& group)
-        : BasePlayer(pParent, group) {
+BaseTrackPlayer::BaseTrackPlayer(const QString &group, QObject* pParent)
+        : BasePlayer(group, pParent) {
 }
 
-BaseTrackPlayerImpl::BaseTrackPlayerImpl(QObject* pParent,
-                                         ConfigObject<ConfigValue>* pConfig,
+BaseTrackPlayerImpl::BaseTrackPlayerImpl(ConfigObject<ConfigValue>* pConfig,
                                          EngineMaster* pMixingEngine,
                                          EffectsManager* pEffectsManager,
                                          EngineChannel::ChannelOrientation defaultOrientation,
-                                         QString group,
+                                         const QString &group,
                                          bool defaultMaster,
-                                         bool defaultHeadphones)
-        : BaseTrackPlayer(pParent, group),
+                                         bool defaultHeadphones, QObject *pParent)
+        : BaseTrackPlayer(group, pParent),
           m_pConfig(pConfig),
           m_pLoadedTrack(),
           m_pLowFilter(NULL),

@@ -9,8 +9,9 @@
 #include "engine/ratecontrol.h"
 #include "engine/cachingreader.h"
 
-ReadAheadManager::ReadAheadManager()
-        : m_pLoopingControl(NULL),
+ReadAheadManager::ReadAheadManager(QObject *pParent)
+        : QObject(pParent),
+        m_pLoopingControl(NULL),
           m_pRateControl(NULL),
           m_iCurrentPosition(0),
           m_pReader(NULL),
@@ -19,23 +20,23 @@ ReadAheadManager::ReadAheadManager()
 }
 
 ReadAheadManager::ReadAheadManager(CachingReader* pReader, 
-                                   LoopingControl* pLoopingControl) 
-        : m_pLoopingControl(pLoopingControl),
+                                   LoopingControl* pLoopingControl, QObject *pParent) 
+        : QObject(pParent),
+          m_pLoopingControl(pLoopingControl),
           m_pRateControl(NULL),
           m_iCurrentPosition(0),
           m_pReader(pReader),
           m_pCrossFadeBuffer(SampleUtil::alloc(MAX_BUFFER_LEN)) {
     DEBUG_ASSERT(m_pLoopingControl != NULL);
     DEBUG_ASSERT(m_pReader != NULL);
+    connect(pParent,SIGNAL(seeked(double)),this,SLOT(onSeek(double)),Qt::DirectConnection);
+    connect(pParent,SIGNAL(seeked(double)),m_pLoopingControl,SLOT(onSeek(double));
+
     SampleUtil::clear(m_pCrossFadeBuffer, MAX_BUFFER_LEN);
 }
 
-ReadAheadManager::~ReadAheadManager() {
-    SampleUtil::free(m_pCrossFadeBuffer);
-}
-
-int ReadAheadManager::getNextSamples(double dRate, CSAMPLE* buffer,
-                                     int requested_samples) {
+ReadAheadManager::~ReadAheadManager() {SampleUtil::free(m_pCrossFadeBuffer);}
+int ReadAheadManager::getNextSamples(double dRate, CSAMPLE* buffer,int requested_samples) {
     if (!even(requested_samples)) {
         qDebug() << "ERROR: Non-even requested_samples to ReadAheadManager::getNextSamples";
         requested_samples--;
@@ -64,11 +65,7 @@ int ReadAheadManager::getNextSamples(double dRate, CSAMPLE* buffer,
             samples_needed = math_clamp(samples_needed, 0, samples_available);
         }
     }
-
-    if (in_reverse) {
-        start_sample = m_iCurrentPosition - samples_needed;
-    }
-
+    if (in_reverse) {start_sample = m_iCurrentPosition - samples_needed;}
     // Sanity checks.
     if (samples_needed < 0) {
         qDebug() << "Need negative samples in ReadAheadManager::getNextSamples. Ignoring read";
@@ -127,15 +124,11 @@ int ReadAheadManager::getNextSamples(double dRate, CSAMPLE* buffer,
     return samples_read;
 }
 
-void ReadAheadManager::addRateControl(RateControl* pRateControl) {
-    m_pRateControl = pRateControl;
-}
-
+void ReadAheadManager::addRateControl(RateControl* pRateControl) {m_pRateControl = pRateControl;}
 // Not thread-save, call from engine thread only
-void ReadAheadManager::notifySeek(int iSeekPosition) {
-    m_iCurrentPosition = iSeekPosition;
+void ReadAheadManager::onSeek(double dSeekPos) {
+    m_iCurrentPosition = static_cast<int>(dSeekPos);
     m_readAheadLog.clear();
-
     // TODO(XXX) notifySeek on the engine controls. EngineBuffer currently does
     // a fine job of this so it isn't really necessary but eventually I think
     // RAMAN should do this job. rryan 11/2011
@@ -186,10 +179,7 @@ void ReadAheadManager::addReadLogEntry(double virtualPlaypositionStart,
 // Not thread-save, call from engine thread only
 int ReadAheadManager::getEffectiveVirtualPlaypositionFromLog(double currentVirtualPlayposition,
                                                              double numConsumedSamples) {
-    if (numConsumedSamples == 0) {
-        return currentVirtualPlayposition;
-    }
-
+    if (numConsumedSamples == 0) {return currentVirtualPlayposition;}
     if (m_readAheadLog.size() == 0) {
         // No log entries to read from.
         qDebug() << this << "No read ahead log entries to read from. Case not currently handled.";
@@ -203,7 +193,6 @@ int ReadAheadManager::getEffectiveVirtualPlaypositionFromLog(double currentVirtu
     while (m_readAheadLog.size() > 0 && numConsumedSamples > 0) {
         ReadLogEntry& entry = m_readAheadLog.first();
         direction = entry.direction();
-
         // Notify EngineControls that we have taken a seek.
         if (shouldNotifySeek) {
             m_pLoopingControl->notifySeek(entry.virtualPlaypositionStart);
@@ -211,14 +200,11 @@ int ReadAheadManager::getEffectiveVirtualPlaypositionFromLog(double currentVirtu
                 m_pRateControl->notifySeek(entry.virtualPlaypositionStart);
             }
         }
-
         double consumed = entry.consume(numConsumedSamples);
         numConsumedSamples -= consumed;
-
         // Advance our idea of the current virtual playposition to this
         // ReadLogEntry's start position.
         virtualPlayposition = entry.virtualPlaypositionStart;
-
         if (entry.length() == 0) {
             // This entry is empty now.
             m_readAheadLog.removeFirst();

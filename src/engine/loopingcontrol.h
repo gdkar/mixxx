@@ -26,7 +26,7 @@ class LoopingControl : public EngineControl {
   public:
     static QList<double> getBeatSizes();
 
-    LoopingControl(QString group, ConfigObject<ConfigValue>* _config);
+    LoopingControl(QString group, ConfigObject<ConfigValue>* _config, QObject *pParent=nullptr);
     virtual ~LoopingControl();
 
     // process() updates the internal state of the LoopingControl to reflect the
@@ -55,9 +55,9 @@ class LoopingControl : public EngineControl {
     // sample, if set.
     virtual void hintReader(HintVector* pHintList);
 
-    virtual void notifySeek(double dNewPlaypos);
 
   public slots:
+    virtual void onSeek(double dNewPlaypos);
     void slotLoopIn(double);
     void slotLoopOut(double);
     void slotLoopExit(double);
