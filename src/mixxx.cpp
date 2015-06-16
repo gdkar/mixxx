@@ -29,7 +29,7 @@
 #include "analyserqueue.h"
 #include "controlpotmeter.h"
 #include "controlobjectslave.h"
-#include "deck.h"
+#include "basetrackplayer.h"
 #include "defs_urls.h"
 #include "dlgabout.h"
 #include "dlgpreferences.h"

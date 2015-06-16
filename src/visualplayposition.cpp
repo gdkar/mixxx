@@ -7,7 +7,7 @@
 #include "waveform/vsyncthread.h"
 
 //static
-QMap<QString, QWeakPointer<VisualPlayPosition> > VisualPlayPosition::m_listVisualPlayPosition;
+QMap<QString, std::weak_ptr<VisualPlayPosition> > VisualPlayPosition::m_listVisualPlayPosition;
 PaStreamCallbackTimeInfo VisualPlayPosition::m_timeInfo = { 0.0, 0.0, 0.0 };
 PerformanceTimer VisualPlayPosition::m_timeInfoTime;
 
@@ -106,10 +106,10 @@ void VisualPlayPosition::slotAudioBufferSizeChanged(double size) {
 }
 
 //static
-QSharedPointer<VisualPlayPosition> VisualPlayPosition::getVisualPlayPosition(QString group) {
-    QSharedPointer<VisualPlayPosition> vpp = m_listVisualPlayPosition.value(group);
+std::shared_ptr<VisualPlayPosition> VisualPlayPosition::getVisualPlayPosition(QString group) {
+  std::shared_ptr<VisualPlayPosition> vpp = m_listVisualPlayPosition.value(group);
     if (vpp.isNull()) {
-        vpp = QSharedPointer<VisualPlayPosition>(new VisualPlayPosition(group));
+        vpp = std::shared_ptr<VisualPlayPosition>(new VisualPlayPosition(group));
         m_listVisualPlayPosition.insert(group, vpp);
     }
     return vpp;

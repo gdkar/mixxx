@@ -11,9 +11,6 @@
 #include "trackinfoobject.h"
 
 class ControlObject;
-class Deck;
-class Sampler;
-class PreviewDeck;
 class BaseTrackPlayer;
 
 class Library;
@@ -30,20 +27,20 @@ class PlayerManagerInterface {
     virtual BaseTrackPlayer* getPlayer(QString group) const = 0;
 
     // Get the deck by its deck number. Decks are numbered starting with 1.
-    virtual Deck* getDeck(unsigned int player) const = 0;
+    virtual BaseTrackPlayer* getDeck(unsigned int player) const = 0;
 
     // Returns the number of decks.
     virtual unsigned int numberOfDecks() const = 0;
 
     // Get the preview deck by its deck number. Preview decks are numbered
     // starting with 1.
-    virtual PreviewDeck* getPreviewDeck(unsigned int libPreviewPlayer) const = 0;
+    virtual BaseTrackPlayer* getPreviewDeck(unsigned int libPreviewPlayer) const = 0;
 
     // Returns the number of preview decks.
     virtual unsigned int numberOfPreviewDecks() const = 0;
 
     // Get the sampler by its number. Samplers are numbered starting with 1.
-    virtual Sampler* getSampler(unsigned int sampler) const = 0;
+    virtual BaseTrackPlayer* getSampler(unsigned int sampler) const = 0;
 
     // Returns the number of sampler decks.
     virtual unsigned int numberOfSamplers() const = 0;
@@ -103,12 +100,12 @@ class PlayerManager : public QObject, public PlayerManagerInterface {
     BaseTrackPlayer* getPlayer(QString group) const;
 
     // Get the deck by its deck number. Decks are numbered starting with 1.
-    Deck* getDeck(unsigned int player) const;
+    BaseTrackPlayer* getDeck(unsigned int player) const;
 
-    PreviewDeck* getPreviewDeck(unsigned int libPreviewPlayer) const;
+    BaseTrackPlayer * getPreviewDeck(unsigned int libPreviewPlayer) const;
 
     // Get the sampler by its number. Samplers are numbered starting with 1.
-    Sampler* getSampler(unsigned int sampler) const;
+    BaseTrackPlayer* getSampler(unsigned int sampler) const;
 
     // Binds signals between PlayerManager and Library. Does not store a pointer
     // to the Library.
@@ -180,9 +177,9 @@ class PlayerManager : public QObject, public PlayerManagerInterface {
     ControlObject* m_pCONumSamplers;
     ControlObject* m_pCONumPreviewDecks;
 
-    QList<Deck*> m_decks;
-    QList<Sampler*> m_samplers;
-    QList<PreviewDeck*> m_preview_decks;
+    QList<BaseTrackPlayer*> m_decks;
+    QList<BaseTrackPlayer*> m_samplers;
+    QList<BaseTrackPlayer*> m_preview_decks;
     QMap<QString, BaseTrackPlayer*> m_players;
 };
 

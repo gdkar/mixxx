@@ -404,7 +404,7 @@ class EngineBuffer : public EngineObject {
     bool m_bCrossfadeReady;
     int m_iLastBufferSize;
 
-    QSharedPointer<VisualPlayPosition> m_visualPlayPos;
+    std::shared_ptr<VisualPlayPosition> m_visualPlayPos;
 };
 
 #endif

@@ -62,8 +62,8 @@ class RateIIFilter {
     double m_last_rate;
 };
 
-PositionScratchController::PositionScratchController(const QString &group, QObject *pParent)
-    : QObject(pParent),
+PositionScratchController::PositionScratchController(const QString &group,ConfigObject<ConfigValue>*_config, QObject *pParent)
+    : EngineControl(group,_config,pParent),
       m_group(group),
       m_bScratching(false),
       m_bEnableInertia(false),
@@ -73,10 +73,11 @@ PositionScratchController::PositionScratchController(const QString &group, QObje
       m_dStartScratchPosition(0),
       m_dRate(0),
       m_dMoveDelay(0),
-      m_dMouseSampeTime(0) {
+      m_dMouseSampleTime(0) {
     connect(pParent,SIGNAL(seeked(double)),this,SLOT(onSeek(double)),Qt::DirectConnection);
     m_pScratchEnable = new ControlObject(ConfigKey(group, "scratch_position_enable"));
     m_pScratchPosition = new ControlObject(ConfigKey(group, "scratch_position"));
+    m_pPlaying = ControlObject::getControl(ConfigKey(group,"playing"));
     m_pMasterSampleRate = ControlObject::getControl(ConfigKey("[Master]", "samplerate"));
     m_pVelocityController = new VelocityController();
     m_pRateIIFilter = new RateIIFilter;
@@ -93,46 +94,44 @@ PositionScratchController::~PositionScratchController() {
 //volatile double _d = -0.15;
 //volatile double _f = 0.5;
 
-void PositionScratchController::process(double currentSample, double releaseRate,
-        int iBufferSize, double baserate) {
-    bool scratchEnable = m_pScratchEnable->get() != 0;
+double PositionScratchController::process(const double dRate, const double currentSample,
+    const double dTotalSamples, const int iBufferSize){
+//    double currentSample, double releaseRate,
+//        int iBufferSize, double baserate) {
+        const double releaseRate = m_pPlaying->toBool()?1.0:0.0;
 
+    bool scratchEnable = m_pScratchEnable->get() != 0;
     if (!m_bScratching && !scratchEnable) {
         // We were not previously in scratch mode are still not in scratch
         // mode. Do nothing
-        return;
+        return kNoTrigger;
     }
-
     // The latency or time difference between process calls.
     const double dt = static_cast<double>(iBufferSize)
             / m_pMasterSampleRate->get() / 2;
-
     // Sample Mouse with fixed timing intervals to iron out significant jitters
     // that are added on the way from mouse to engine thread
     // Normaly the Mouse is sampled every 8 ms so with this 16 ms window we
     // have 0 ... 3 samples. The remaining jitter is ironed by the following IIR
     // lowpass filter
-    const double m_dMouseSampeIntervall = 0.016;
-    const int callsPerDt = ceil(m_dMouseSampeIntervall/dt);
+    const double m_dMouseSampleInterval = 0.016;
+    const int callsPerDt = ceil(m_dMouseSampleInterval/dt);
     double scratchPosition = 0;
-    m_dMouseSampeTime += dt;
-    if (m_dMouseSampeTime >= m_dMouseSampeIntervall || !m_bScratching) {
+    m_dMouseSampleTime += dt;
+    if (m_dMouseSampleTime >= m_dMouseSampleInterval || !m_bScratching) {
         scratchPosition = m_pScratchPosition->get();
-        m_dMouseSampeTime = 0;
+        m_dMouseSampleTime = 0;
     }
 
     // Tweak PD controller for different latencies
     double p = 0.3;
     double d = p/-2;
     double f = 0.4;
-    if (dt > m_dMouseSampeIntervall * 2) {
-        f = 1;
-    }
+    if (dt > m_dMouseSampleInterval * 2) {f = 1;}
     m_pVelocityController->setPD(p, d);
     m_pRateIIFilter->setFactor(f);
     //m_pVelocityController->setPID(_p, _i, _d);
     //m_pMouseRateIIFilter->setFactor(_f);
-
     if (m_bScratching) {
         if (m_bEnableInertia) {
             // If we got here then we're not scratching and we're in inertia
@@ -141,16 +140,12 @@ void PositionScratchController::process(double currentSample, double releaseRate
 
             // If we're playing, then do not decay rate below 1. If we're not playing,
             // then we want to decay all the way down to below 0.01
-            double decayThreshold = fabs(releaseRate);
-            if (decayThreshold < MIN_SEEK_SPEED) {
-                decayThreshold = MIN_SEEK_SPEED;
-            }
-
+            double decayThreshold = std::abs(releaseRate);
+            if (decayThreshold < MIN_SEEK_SPEED) {decayThreshold = MIN_SEEK_SPEED;}
             // Max velocity we would like to stop in a given time period.
             const double kMaxVelocity = 100;
             // Seconds to stop a throw at the max velocity.
             const double kTimeToStop = 1.0;
-
             // We calculate the exponential decay constant based on the above
             // constants. Roughly we backsolve what the decay should be if we want to
             // stop a throw of max velocity kMaxVelocity in kTimeToStop seconds. Here is
@@ -159,9 +154,7 @@ void PositionScratchController::process(double currentSample, double releaseRate
             // # callbacks = kTimeToStop / dt
             // alpha = (decayThreshold / kMaxVelocity) ^ (dt / kTimeToStop)
             const double kExponentialDecay = pow(decayThreshold / kMaxVelocity, dt / kTimeToStop);
-
             m_dRate *= kExponentialDecay;
-
             // If the rate has decayed below the threshold, or scratching is
             // re-enabled then leave inertia mode.
             if (fabs(m_dRate) < decayThreshold || scratchEnable) {
@@ -174,24 +167,17 @@ void PositionScratchController::process(double currentSample, double releaseRate
             // have been caught by the 'enable' case below, but just to make
             // sure.
             m_bEnableInertia = false;
-
             // Measure the total distance traveled since last frame and add
             // it to the running total. This is required to scratch within loop
             // boundaries. And normalize to one buffer
-            m_dPositionDeltaSum += (currentSample - m_dLastPlaypos) /
-                    (iBufferSize * baserate);
-
+            m_dPositionDeltaSum += (currentSample - m_dLastPlaypos) / (iBufferSize * dRate);
             // Continue with the last rate if we do not have a new
             // Mouse position
-            if (m_dMouseSampeTime ==  0) {
-
+            if (m_dMouseSampleTime ==  0) {
                 // Set the scratch target to the current set position
                 // and normalize to one buffer
-                double targetDelta = (scratchPosition - m_dStartScratchPosition) /
-                        (iBufferSize * baserate);
-
+                double targetDelta = (scratchPosition - m_dStartScratchPosition) / (iBufferSize * dRate);
                 bool calcRate = true;
-
                 if (m_dTargetDelta == targetDelta) {
                     // we get here, if the next mouse position is delayed
                     // the mouse is stopped or moves slow. Since we don't know the case
@@ -217,11 +203,10 @@ void PositionScratchController::process(double currentSample, double releaseRate
                     m_dMoveDelay = 0;
                     m_dTargetDelta = targetDelta;
                 }
-
                 if (calcRate) {
                     double ctrlError = m_pRateIIFilter->filter(targetDelta - m_dPositionDeltaSum);
                     m_dRate = m_pVelocityController->observation(ctrlError);
-                    m_dRate /= ceil(m_dMouseSampeIntervall/dt);
+                    m_dRate /= ceil(m_dMouseSampleInterval/dt);
                     // Note: The following SoundTouch changes the also rate by a ramp
                     // This looks like average of the new and the old rate independent
                     // from dt. Ramping is disabled when direction changes or rate = 0;
@@ -242,7 +227,6 @@ void PositionScratchController::process(double currentSample, double releaseRate
             // The rate threshold above which disabling position scratching will enable
             // an 'inertia' mode.
             const double kThrowThreshold = 2.5;
-
             if (fabs(m_dRate) > kThrowThreshold) {
                 m_bEnableInertia = true;
             } else {
@@ -265,17 +249,13 @@ void PositionScratchController::process(double currentSample, double releaseRate
             //qDebug() << "scratchEnable()" << currentSample;
     }
     m_dLastPlaypos = currentSample;
+    return kNoTrigger;
 }
-
 bool PositionScratchController::isEnabled() {
     // return true only if m_dRate is valid.
     return m_bScratching;
 }
-
-double PositionScratchController::getRate() {
-    return m_dRate;
-}
-
+double PositionScratchController::getRate() {return m_dRate;}
 void PositionScratchController::onSeek(double currentSample) {
     // scratching continues after seek due to calculating the relative distance traveled
     // in m_dPositionDeltaSum
