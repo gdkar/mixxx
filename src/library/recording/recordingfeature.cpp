@@ -8,7 +8,7 @@
 #include "library/library.h"
 #include "library/trackcollection.h"
 #include "widget/wlibrary.h"
-#include "mixxxkeyboard.h"
+
 
 const QString RecordingFeature::m_sRecordingViewName = QString("Recording");
 
@@ -39,7 +39,7 @@ TreeItemModel* RecordingFeature::getChildModel() {
     return &m_childModel;
 }
 void RecordingFeature::bindWidget(WLibrary* pLibraryWidget,
-                                  MixxxKeyboard *keyboard) {
+                                  QObject *keyboard) {
     //The view will be deleted by LibraryWidget
     DlgRecording* pRecordingView = new DlgRecording(pLibraryWidget,
                                                     m_pConfig,

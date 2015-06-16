@@ -46,7 +46,7 @@ class AutoDJFeature : public LibraryFeature {
     bool dragMoveAccept(QUrl url);
 
     void bindWidget(WLibrary* libraryWidget,
-                    MixxxKeyboard* keyboard);
+                    QObject* keyboard);
 
     TreeItemModel* getChildModel();
 

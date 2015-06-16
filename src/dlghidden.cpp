@@ -7,7 +7,7 @@
 
 DlgHidden::DlgHidden(QWidget* parent, ConfigObject<ConfigValue>* pConfig,
                      Library* pLibrary, TrackCollection* pTrackCollection,
-                     MixxxKeyboard* pKeyboard)
+                     QObject* pKeyboard)
          : QWidget(parent),
            Ui::DlgHidden(),
            m_pTrackTableView(

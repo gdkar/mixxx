@@ -7,7 +7,6 @@
 #include "library/proxytrackmodel.h"
 #include "library/library.h"
 #include "library/trackcollection.h"
-#include "mixxxkeyboard.h"
 #include "recording/recordingmanager.h"
 #include "trackinfoobject.h"
 #include "ui_dlgrecording.h"
@@ -22,7 +21,7 @@ class DlgRecording : public QWidget, public Ui::DlgRecording, public virtual Lib
   public:
     DlgRecording(QWidget *parent, ConfigObject<ConfigValue>* pConfig,
                  Library* pLibrary, TrackCollection* pTrackCollection,
-                 RecordingManager* pRecManager, MixxxKeyboard* pKeyboard);
+                 RecordingManager* pRecManager, QObject* pKeyboard);
     virtual ~DlgRecording();
 
     virtual void onSearch(const QString& text);

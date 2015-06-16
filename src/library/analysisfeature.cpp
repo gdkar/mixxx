@@ -9,7 +9,7 @@
 #include "library/trackcollection.h"
 #include "dlganalysis.h"
 #include "widget/wlibrary.h"
-#include "mixxxkeyboard.h"
+
 #include "analyserqueue.h"
 #include "soundsourceproxy.h"
 #include "util/dnd.h"
@@ -59,7 +59,7 @@ QIcon AnalysisFeature::getIcon() {
 }
 
 void AnalysisFeature::bindWidget(WLibrary* libraryWidget,
-                                 MixxxKeyboard* keyboard) {
+                                 QObject* keyboard) {
     m_pAnalysisView = new DlgAnalysis(libraryWidget,
                                       m_pConfig,
                                       m_pTrackCollection);
