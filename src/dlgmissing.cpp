@@ -6,7 +6,7 @@
 
 DlgMissing::DlgMissing(QWidget* parent, ConfigObject<ConfigValue>* pConfig,
                        Library* pLibrary,
-                       TrackCollection* pTrackCollection, MixxxKeyboard* pKeyboard)
+                       TrackCollection* pTrackCollection, QObject* pKeyboard)
          : QWidget(parent),
            Ui::DlgMissing(),
            m_pTrackTableView(
