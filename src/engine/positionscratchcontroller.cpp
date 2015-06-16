@@ -77,7 +77,7 @@ PositionScratchController::PositionScratchController(const QString &group,Config
     connect(pParent,SIGNAL(seeked(double)),this,SLOT(onSeek(double)),Qt::DirectConnection);
     m_pScratchEnable = new ControlObject(ConfigKey(group, "scratch_position_enable"));
     m_pScratchPosition = new ControlObject(ConfigKey(group, "scratch_position"));
-    m_pPlaying = ControlObject::getControl(ConfigKey(group,"playing"));
+    m_pPlaying = ControlObject::getControl(ConfigKey(group,"play"));
     m_pMasterSampleRate = ControlObject::getControl(ConfigKey("[Master]", "samplerate"));
     m_pVelocityController = new VelocityController();
     m_pRateIIFilter = new RateIIFilter;

@@ -111,8 +111,7 @@ EngineBuffer::EngineBuffer(QString group, ConfigObject<ConfigValue>* _config,
     connect(m_pReader, SIGNAL(trackLoading()),
             this, SLOT(slotTrackLoading()),
             Qt::DirectConnection);
-    connect(m_pReader, SIGNAL(trackLoaded(TrackPointer, int, int)),
-            this, SLOT(slotTrackLoaded(TrackPointer, int, int)),
+    connect(m_pReader, SIGNAL(trackLoaded(TrackPointer, int, int)),this, SLOT(slotTrackLoaded(TrackPointer, int, int)),
             Qt::DirectConnection);
     connect(m_pReader, SIGNAL(trackLoadFailed(TrackPointer, QString)),
             this, SLOT(slotTrackLoadFailed(TrackPointer, QString)),
@@ -553,9 +552,7 @@ void EngineBuffer::ejectTrack() {
     doSeekFractional(0.0, SEEK_EXACT);
     m_pause.unlock();
 
-    if (pTrack) {
-        emit(trackUnloaded(pTrack));
-    }
+    if (pTrack) {emit(trackUnloaded(pTrack));}
 }
 
 void EngineBuffer::slotPassthroughChanged(double enabled) {
@@ -1298,23 +1295,15 @@ void EngineBuffer::addControl(EngineControl* pControl) {
     // Connect to signals from EngineControl here...
     m_engineControls.push_back(pControl);
     pControl->setEngineBuffer(this);
-    connect(this, SIGNAL(trackLoaded(TrackPointer)),
-            pControl, SLOT(trackLoaded(TrackPointer)),
-            Qt::DirectConnection);
-    connect(this, SIGNAL(trackUnloaded(TrackPointer)),
-            pControl, SLOT(trackUnloaded(TrackPointer)),
-            Qt::DirectConnection);
+    connect(this, SIGNAL(trackLoaded(TrackPointer)),pControl, SLOT(trackLoaded(TrackPointer)),Qt::DirectConnection);
+    connect(this, SIGNAL(trackUnloaded(TrackPointer)),pControl, SLOT(trackUnloaded(TrackPointer)),Qt::DirectConnection);
 }
 
-void EngineBuffer::bindWorkers(EngineWorkerScheduler* pWorkerScheduler) {
-    m_pReader->setScheduler(pWorkerScheduler);
-}
-
+void EngineBuffer::bindWorkers(EngineWorkerScheduler* pWorkerScheduler) {m_pReader->setScheduler(pWorkerScheduler);}
 bool EngineBuffer::isTrackLoaded() {
     if (m_pCurrentTrack) {return true;}
     return false;
 }
-
 void EngineBuffer::slotEjectTrack(double v) {
     if (v > 0) {
         // Don't allow rejections while playing a track. We don't need to lock to
@@ -1325,7 +1314,6 @@ void EngineBuffer::slotEjectTrack(double v) {
 }
 double EngineBuffer::getVisualPlayPos() {return m_visualPlayPos->getEnginePlayPos();}
 double EngineBuffer::getTrackSamples() {return m_pTrackSamples->get();}
-/*
 void EngineBuffer::setReader(CachingReader* pReader) {
     disconnect(m_pReader, 0, this, 0);
     delete m_pReader;
@@ -1341,7 +1329,6 @@ void EngineBuffer::setReader(CachingReader* pReader) {
             this, SLOT(slotTrackLoadFailed(TrackPointer, QString)),
             Qt::DirectConnection);
 }
-*/
 
 void EngineBuffer::setScalerForTest(EngineBufferScale* pScaleVinyl,
                                     EngineBufferScale* pScaleKeylock) {

@@ -44,9 +44,7 @@ EngineDeck::EngineDeck(const ChannelHandleAndGroup& handle_group,
     m_bPassthroughIsActive = false;
     m_bPassthroughWasActive = false;
     // Set up passthrough toggle button
-    connect(&m_pPassing, SIGNAL(valueChanged(double)),
-            this, SLOT(slotPassingToggle(double)),
-            Qt::DirectConnection);
+    connect(&m_pPassing, SIGNAL(valueChanged(double)),this, SLOT(slotPassingToggle(double)),Qt::DirectConnection);
     // Set up additional engines
     m_pPregain = new EnginePregain(getGroup(),this);
     m_pVUMeter = new EngineVuMeter(getGroup(),this);
@@ -97,9 +95,7 @@ void EngineDeck::process(CSAMPLE* pOut, const int iBufferSize) {
     m_pVUMeter->process(pOut, iBufferSize);
 }
 void EngineDeck::postProcess(const int iBufferSize) {m_pBuffer->postProcess(iBufferSize);}
-
 EngineBuffer* EngineDeck::getEngineBuffer() {return m_pBuffer;}
-
 bool EngineDeck::isActive() {
     if (m_bPassthroughWasActive && !m_bPassthroughIsActive) {return true;}
     return (m_pBuffer->isTrackLoaded() || isPassthroughActive());
@@ -123,7 +119,6 @@ void EngineDeck::onInputConfigured(AudioInput input) {
     }
     m_sampleBuffer =  NULL;
 }
-
 void EngineDeck::onInputUnconfigured(AudioInput input) {
     if (input.getType() != AudioPath::VINYLCONTROL) {
         // This is an error!

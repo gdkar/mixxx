@@ -53,24 +53,18 @@ PlayerManager::PlayerManager(ConfigObject<ConfigValue>* pConfig,
     connect(m_pCONumPreviewDecks, SIGNAL(valueChangedFromEngine(double)),
             this, SLOT(slotNumPreviewDecksControlChanged(double)),
             Qt::DirectConnection);
-
     // This is parented to the PlayerManager so does not need to be deleted
     SamplerBank* pSamplerBank = new SamplerBank(this);
     Q_UNUSED(pSamplerBank);
-
     // Redundant
     m_pCONumDecks->set(0);
     m_pCONumSamplers->set(0);
     m_pCONumPreviewDecks->set(0);
-
     // register the engine's outputs
-    m_pSoundManager->registerOutput(AudioOutput(AudioOutput::MASTER),
-                                    m_pEngine);
-    m_pSoundManager->registerOutput(AudioOutput(AudioOutput::HEADPHONES),
-                                    m_pEngine);
+    m_pSoundManager->registerOutput(AudioOutput(AudioOutput::MASTER),m_pEngine);
+    m_pSoundManager->registerOutput(AudioOutput(AudioOutput::HEADPHONES),m_pEngine);
     for (int o = EngineChannel::LEFT; o <= EngineChannel::RIGHT; o++) {
-        m_pSoundManager->registerOutput(AudioOutput(AudioOutput::BUS, 0, 0, o),
-                                        m_pEngine);
+        m_pSoundManager->registerOutput(AudioOutput(AudioOutput::BUS, 0, 0, o),m_pEngine);
     }
 }
 
@@ -271,52 +265,34 @@ void PlayerManager::addConfiguredDecks() {
 void PlayerManager::addDeckInner() {
     // Do not lock m_mutex here.
     QString group = groupForDeck(m_decks.count());
-    DEBUG_ASSERT_AND_HANDLE(!m_players.contains(group)) {
-        return;
-    }
-
+    DEBUG_ASSERT_AND_HANDLE(!m_players.contains(group)) {return;}
     int number = m_decks.count() + 1;
-
     EngineChannel::ChannelOrientation orientation = EngineChannel::LEFT;
     if (number % 2 == 0) {
         orientation = EngineChannel::RIGHT;
     }
-
     BaseTrackPlayer* pDeck = new BaseTrackPlayer(m_pConfig, m_pEngine, m_pEffectsManager,
                            orientation, group, true,false, this);
     if (m_pAnalyserQueue) {
-        connect(pDeck, SIGNAL(newTrackLoaded(TrackPointer)),
-                m_pAnalyserQueue, SLOT(slotAnalyseTrack(TrackPointer)));
+        connect(pDeck, SIGNAL(newTrackLoaded(TrackPointer)),m_pAnalyserQueue, SLOT(slotAnalyseTrack(TrackPointer)));
     }
-
     m_players[group] = pDeck;
     m_decks.append(pDeck);
-
     // Register the deck output with SoundManager (deck is 0-indexed to SoundManager)
-    m_pSoundManager->registerOutput(
-        AudioOutput(AudioOutput::DECK, 0, 0, number - 1), m_pEngine);
-
+    m_pSoundManager->registerOutput(AudioOutput(AudioOutput::DECK, 0, 0, number - 1), m_pEngine);
     // Register vinyl input signal with deck for passthrough support.
     EngineDeck* pEngineDeck = pDeck->getEngineDeck();
-    m_pSoundManager->registerInput(
-        AudioInput(AudioInput::VINYLCONTROL, 0, 0, number - 1), pEngineDeck);
-
+    m_pSoundManager->registerInput(AudioInput(AudioInput::VINYLCONTROL, 0, 0, number - 1), pEngineDeck);
     // Setup equalizer rack for this deck.
     EqualizerRackPointer pEqRack = m_pEffectsManager->getEqualizerRack(0);
-    if (pEqRack) {
-        pEqRack->addEffectChainSlotForGroup(group);
-    }
-
+    if (pEqRack) {pEqRack->addEffectChainSlotForGroup(group);}
     // BaseTrackPlayer needs to delay until we have setup the equalizer rack for
     // this deck to fetch the legacy EQ controls.
     // TODO(rryan): Find a way to remove this cruft.
     pDeck->setupEqControls();
-
     // Setup quick effect rack for this deck.
     QuickEffectRackPointer pQuickEffectRack = m_pEffectsManager->getQuickEffectRack(0);
-    if (pQuickEffectRack) {
-        pQuickEffectRack->addEffectChainSlotForGroup(group);
-    }
+    if (pQuickEffectRack) {pQuickEffectRack->addEffectChainSlotForGroup(group);}
 }
 
 void PlayerManager::addSampler() {
@@ -356,13 +332,9 @@ void PlayerManager::addPreviewDeck() {
 void PlayerManager::addPreviewDeckInner() {
     // Do not lock m_mutex here.
     QString group = groupForPreviewDeck(m_preview_decks.count());
-    DEBUG_ASSERT_AND_HANDLE(!m_players.contains(group)) {
-        return;
-    }
-
+    DEBUG_ASSERT_AND_HANDLE(!m_players.contains(group)) {return;}
     // All preview decks are in the center
     EngineChannel::ChannelOrientation orientation = EngineChannel::CENTER;
-
     BaseTrackPlayer* pPreviewDeck = new BaseTrackPlayer(m_pConfig, m_pEngine,
                                                 m_pEffectsManager, orientation,
                                                 group,false,true,this);
@@ -370,29 +342,23 @@ void PlayerManager::addPreviewDeckInner() {
         connect(pPreviewDeck, SIGNAL(newTrackLoaded(TrackPointer)),
                 m_pAnalyserQueue, SLOT(slotAnalyseTrack(TrackPointer)));
     }
-
     m_players[group] = pPreviewDeck;
     m_preview_decks.append(pPreviewDeck);
 }
-
 BaseTrackPlayer* PlayerManager::getPlayer(QString group) const {
     QMutexLocker locker(&m_mutex);
-    if (m_players.contains(group)) {
-        return m_players[group];
-    }
+    if (m_players.contains(group)) {return m_players[group];}
     return NULL;
 }
 
 BaseTrackPlayer* PlayerManager::getDeck(unsigned int deck) const {
     QMutexLocker locker(&m_mutex);
     if (deck < 1 || deck > numDecks()) {
-        qWarning() << "Warning PlayerManager::getDeck() called with invalid index: "
-                   << deck;
+        qWarning() << "Warning PlayerManager::getDeck() called with invalid index: " << deck;
         return NULL;
     }
     return m_decks[deck - 1];
 }
-
 BaseTrackPlayer* PlayerManager::getPreviewDeck(unsigned int libPreviewPlayer) const {
     QMutexLocker locker(&m_mutex);
     if (libPreviewPlayer < 1 || libPreviewPlayer > numPreviewDecks()) {
@@ -402,7 +368,6 @@ BaseTrackPlayer* PlayerManager::getPreviewDeck(unsigned int libPreviewPlayer) co
     }
     return m_preview_decks[libPreviewPlayer - 1];
 }
-
 BaseTrackPlayer* PlayerManager::getSampler(unsigned int sampler) const {
     QMutexLocker locker(&m_mutex);
     if (sampler < 1 || sampler > numSamplers()) {
@@ -422,33 +387,26 @@ void PlayerManager::slotLoadTrackToPlayer(TrackPointer pTrack, QString group, bo
     // Do not lock mutex in this method unless it is changed to access
     // PlayerManager state.
     BaseTrackPlayer* pPlayer = getPlayer(group);
-
     if (pPlayer == NULL) {
         qWarning() << "Invalid group argument " << group << " to slotLoadTrackToPlayer.";
         return;
     }
-
     pPlayer->slotLoadTrack(pTrack, play);
 }
-
 void PlayerManager::slotLoadToPlayer(QString location, QString group) {
     // The library will get the track and then signal back to us to load the
     // track via slotLoadTrackToPlayer.
     emit(loadLocationToPlayer(location, group));
 }
-
 void PlayerManager::slotLoadToDeck(QString location, int deck) {
     slotLoadToPlayer(location, groupForDeck(deck-1));
 }
-
 void PlayerManager::slotLoadToPreviewDeck(QString location, int previewDeck) {
     slotLoadToPlayer(location, groupForPreviewDeck(previewDeck-1));
 }
-
 void PlayerManager::slotLoadToSampler(QString location, int sampler) {
     slotLoadToPlayer(location, groupForSampler(sampler-1));
 }
-
 void PlayerManager::slotLoadTrackIntoNextAvailableDeck(TrackPointer pTrack) {
     QMutexLocker locker(&m_mutex);
     QList<BaseTrackPlayer*>::iterator it = m_decks.begin();
@@ -464,7 +422,6 @@ void PlayerManager::slotLoadTrackIntoNextAvailableDeck(TrackPointer pTrack) {
         ++it;
     }
 }
-
 void PlayerManager::slotLoadTrackIntoNextAvailableSampler(TrackPointer pTrack) {
     QMutexLocker locker(&m_mutex);
     QList<BaseTrackPlayer*>::iterator it = m_samplers.begin();

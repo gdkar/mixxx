@@ -126,7 +126,6 @@ void BaseTrackPlayer::slotLoadTrack(TrackPointer track, bool bPlay) {
         // We don't have access.
         return;
     }
-
     //Disconnect the old track's signals.
     if (m_pLoadedTrack) {
         // Save the loops that are currently set in a loop cue. If no loop cue is
@@ -140,9 +139,7 @@ void BaseTrackPlayer::slotLoadTrack(TrackPointer track, bool bPlay) {
             QListIterator<Cue*> it(cuePoints);
             while (it.hasNext()) {
                 Cue* pCue = it.next();
-                if (pCue->getType() == Cue::LOOP) {
-                    pLoopCue = pCue;
-                }
+                if (pCue->getType() == Cue::LOOP) {pLoopCue = pCue;}
             }
             if (!pLoopCue) {
                 pLoopCue = m_pLoadedTrack->addCue();
@@ -151,7 +148,6 @@ void BaseTrackPlayer::slotLoadTrack(TrackPointer track, bool bPlay) {
             pLoopCue->setPosition(loopStart);
             pLoopCue->setLength(loopEnd - loopStart);
         }
-
         // WARNING: Never. Ever. call bare disconnect() on an object. Mixxx
         // relies on signals and slots to get tons of things done. Don't
         // randomly disconnect things.
@@ -159,31 +155,22 @@ void BaseTrackPlayer::slotLoadTrack(TrackPointer track, bool bPlay) {
         disconnect(m_pLoadedTrack.data(), 0, m_pBPM, 0);
         disconnect(m_pLoadedTrack.data(), 0, this, 0);
         disconnect(m_pLoadedTrack.data(), 0, m_pKey, 0);
-
         m_pReplayGain->slotSet(0);
 
         // Causes the track's data to be saved back to the library database.
         emit(unloadingTrack(m_pLoadedTrack));
     }
-
     m_pLoadedTrack = track;
     if (m_pLoadedTrack) {
         // Listen for updates to the file's BPM
-        connect(m_pLoadedTrack.data(), SIGNAL(bpmUpdated(double)),
-                m_pBPM, SLOT(slotSet(double)));
-
-        connect(m_pLoadedTrack.data(), SIGNAL(keyUpdated(double)),
-                m_pKey, SLOT(slotSet(double)));
-
+        connect(m_pLoadedTrack.data(), SIGNAL(bpmUpdated(double)),m_pBPM, SLOT(slotSet(double)));
+        connect(m_pLoadedTrack.data(), SIGNAL(keyUpdated(double)),m_pKey, SLOT(slotSet(double)));
         // Listen for updates to the file's Replay Gain
-        connect(m_pLoadedTrack.data(), SIGNAL(ReplayGainUpdated(double)),
-                this, SLOT(slotSetReplayGain(double)));
+        connect(m_pLoadedTrack.data(), SIGNAL(ReplayGainUpdated(double)),this, SLOT(slotSetReplayGain(double)));
     }
-
     // Request a new track from the reader
     emit(loadTrack(track, bPlay));
 }
-
 void BaseTrackPlayer::slotLoadFailed(TrackPointer track, QString reason) {
     // This slot can be delayed until a new  track is already loaded
     // We must not unload the track here

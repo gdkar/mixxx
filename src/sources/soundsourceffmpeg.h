@@ -33,7 +33,6 @@ struct ffmpegLocationObject {
     SINT pts;
     SINT startFrame;
 };
-
 struct ffmpegCacheObject {
     SINT startFrame;
     SINT length;
@@ -43,35 +42,27 @@ struct ffmpegCacheObject {
 class SoundSourceFFmpeg : public SoundSource {
 public:
     explicit SoundSourceFFmpeg(QUrl url);
-    ~SoundSourceFFmpeg();
-
-    void close() override;
-
-    SINT seekSampleFrame(SINT frameIndex) override;
-
-    SINT readSampleFrames(SINT numberOfFrames, CSAMPLE* sampleBuffer) override;
-
+    virtual ~SoundSourceFFmpeg();
+    virtual void close() override;
+    virtual SINT seekSampleFrame(SINT frameIndex) override;
+    virtual SINT readSampleFrames(SINT numberOfFrames, CSAMPLE* sampleBuffer) override;
 private:
-    Result tryOpen(const AudioSourceConfig& audioSrcCfg) override;
-
+    virtual Result tryOpen(const AudioSourceConfig& audioSrcCfg) override;
     bool readFramesToCache(unsigned int count, SINT offset);
     bool getBytesFromCache(char *buffer, SINT offset, SINT size);
     SINT getSizeofCache();
     void clearCache();
-
     unsigned int read(unsigned long size, SAMPLE*);
 
     AVFormatContext *m_pFormatCtx;
     int m_iAudioStream;
-    AVCodecContext *m_pCodecCtx;
-    AVCodec *m_pCodec;
+    AVCodecContext  *m_pCodecCtx;
+    AVCodec         *m_pCodec;
 
     EncoderFfmpegResample *m_pResample;
 
     SINT m_currentMixxxFrameIndex;
-
     bool m_bIsSeeked;
-
     SINT m_lCacheFramePos;
     SINT m_lCacheStartFrame;
     SINT m_lCacheEndFrame;
@@ -84,17 +75,12 @@ private:
 
 class SoundSourceProviderFFmpeg: public SoundSourceProvider {
 public:
-    QString getName() const override {
-        return "FFmpeg";
-    }
-
-    QStringList getSupportedFileExtensions() const override;
-
-    SoundSourcePointer newSoundSource(const QUrl& url) override {
+    virtual QString getName() const override {return "FFmpeg";}
+    virtual QStringList getSupportedFileExtensions() const override;
+    virtual SoundSourcePointer newSoundSource(const QUrl& url) override {
         return SoundSourcePointer(new SoundSourceFFmpeg(url));
     }
 };
-
 } // namespace Mixxx
 
 #endif // MIXXX_SOUNDSOURCEFFMPEG_H

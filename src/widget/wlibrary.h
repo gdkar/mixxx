@@ -35,12 +35,9 @@ class WLibrary : public QStackedWidget, public WBaseWidget {
     // view is the specified view, or if the name does not specify any
     // registered view.
     void switchToView(const QString& name);
-
     void search(const QString&);
-
   protected:
     bool event(QEvent* pEvent);
-
   private:
     QMutex m_mutex;
     QMap<QString, QWidget*> m_viewMap;

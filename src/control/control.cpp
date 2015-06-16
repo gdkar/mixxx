@@ -190,24 +190,19 @@ void ControlDoublePrivate::setAndConfirm(double value, QObject* pSender) {
 }
 
 void ControlDoublePrivate::setInner(double value, QObject* pSender) {
-    if (m_bIgnoreNops && get() == value) {
-        return;
-    }
+    if (get() == value) {return;}
     m_value.setValue(value);
     emit(valueChanged(value, pSender));
-
     if (m_bTrack) {
         Stat::track(m_trackKey, static_cast<Stat::StatType>(m_trackType),
                     static_cast<Stat::ComputeFlags>(m_trackFlags), value);
     }
 }
-
 void ControlDoublePrivate::setBehavior(ControlNumericBehavior* pBehavior) {
     // This marks the old mpBehavior for deletion. It is deleted once it is not
     // used in any other function
     m_pBehavior = QSharedPointer<ControlNumericBehavior>(pBehavior);
 }
-
 void ControlDoublePrivate::setParameter(double dParam, QObject* pSender) {
     QSharedPointer<ControlNumericBehavior> pBehavior = m_pBehavior;
     if (pBehavior.isNull()) {
@@ -216,27 +211,19 @@ void ControlDoublePrivate::setParameter(double dParam, QObject* pSender) {
         set(pBehavior->parameterToValue(dParam), pSender);
     }
 }
-
 double ControlDoublePrivate::getParameter() const {
     return getParameterForValue(get());
 }
-
 double ControlDoublePrivate::getParameterForValue(double value) const {
     QSharedPointer<ControlNumericBehavior> pBehavior = m_pBehavior;
-    if (!pBehavior.isNull()) {
-        value = pBehavior->valueToParameter(value);
-    }
+    if (!pBehavior.isNull()) {value = pBehavior->valueToParameter(value);}
     return value;
 }
-
 double ControlDoublePrivate::getParameterForMidiValue(double midiValue) const {
     QSharedPointer<ControlNumericBehavior> pBehavior = m_pBehavior;
-    if (!pBehavior.isNull()) {
-        return pBehavior->midiValueToParameter(midiValue);
-    }
+    if (!pBehavior.isNull()) {return pBehavior->midiValueToParameter(midiValue);}
     return midiValue;
 }
-
 void ControlDoublePrivate::setMidiParameter(MidiOpCode opcode, double dParam) {
     QSharedPointer<ControlNumericBehavior> pBehavior = m_pBehavior;
     if (!pBehavior.isNull()) {
@@ -245,20 +232,15 @@ void ControlDoublePrivate::setMidiParameter(MidiOpCode opcode, double dParam) {
         set(dParam, NULL);
     }
 }
-
 double ControlDoublePrivate::getMidiParameter() const {
     QSharedPointer<ControlNumericBehavior> pBehavior = m_pBehavior;
     double value = get();
-    if (!pBehavior.isNull()) {
-        value = pBehavior->valueToMidiParameter(value);
-    }
+    if (!pBehavior.isNull()) {value = pBehavior->valueToMidiParameter(value);}
     return value;
 }
-
 bool ControlDoublePrivate::connectValueChangeRequest(const QObject* receiver,
         const char* method, Qt::ConnectionType type) {
     // confirmation is only required if connect was successful
-    m_confirmRequired = connect(this, SIGNAL(valueChangeRequest(double)),
-                receiver, method, type);
+    m_confirmRequired = connect(this, SIGNAL(valueChangeRequest(double)),receiver, method, type);
     return m_confirmRequired;
 }

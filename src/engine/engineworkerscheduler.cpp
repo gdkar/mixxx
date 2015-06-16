@@ -8,14 +8,15 @@
 #include "util/event.h"
 
 EngineWorkerScheduler::EngineWorkerScheduler(QObject* pParent)
-        : QThread(pParent)
-        , m_scheduleFIFO(MAX_ENGINE_WORKERS){
+        : m_bWakeScheduler(false),
+          m_scheduleFIFO(MAX_ENGINE_WORKERS),
+          m_bQuit(false) {
     Q_UNUSED(pParent);
 }
 
 EngineWorkerScheduler::~EngineWorkerScheduler() {
-    m_bQuit.store(true);
-    m_waitSemaphore.release();
+    m_bQuit = true;
+    m_waitCondition.wakeAll();
     wait();
 }
 
@@ -25,7 +26,7 @@ void EngineWorkerScheduler::workerReady(EngineWorker* pWorker) {
         // in this slot. Write the address of the variable pWorker, since it is
         // a 1-element array.
         m_scheduleFIFO.write(&pWorker, 1);
-        m_bWakeScheduler.store(true);
+        m_bWakeScheduler = true;
     }
 }
 
@@ -33,15 +34,24 @@ void EngineWorkerScheduler::runWorkers() {
     // Wake the scheduler if we have written a worker-ready message to the
     // scheduler. There is no race condition in accessing this boolean because
     // both workerReady and runWorkers are called from the callback thread.
-    if (m_bWakeScheduler.exchange(false)) {m_waitSemaphore.release();}
+    if (m_bWakeScheduler) {
+        m_bWakeScheduler = false;
+        m_waitCondition.wakeAll();
+    }
 }
 
 void EngineWorkerScheduler::run() {
-    while (!m_bQuit.load()) {
+    while (!m_bQuit) {
         Event::start("EngineWorkerScheduler");
         EngineWorker* pWorker = NULL;
-        while (m_scheduleFIFO.read(&pWorker, 1) == 1) {if (pWorker) {pWorker->run();delete pWorker;}}
+        while (m_scheduleFIFO.read(&pWorker, 1) == 1) {
+            if (pWorker) {
+                pWorker->wake();
+            }
+        }
         Event::end("EngineWorkerScheduler");
-        m_waitSemaphore.acquire(); // unlock mutex and wait
+        m_mutex.lock();
+        m_waitCondition.wait(&m_mutex); // unlock mutex and wait
+        m_mutex.unlock();
     }
 }

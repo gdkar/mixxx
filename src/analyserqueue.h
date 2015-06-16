@@ -66,9 +66,7 @@ class AnalyserQueue : public QThread {
 
     bool m_exit;
     QAtomicInt m_aiCheckPriorities;
-
     SampleBuffer m_sampleBuffer;
-
     // The processing queue and associated mutex
     QQueue<TrackPointer> m_tioq;
     QMutex m_qm;
