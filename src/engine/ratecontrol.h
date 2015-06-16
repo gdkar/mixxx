@@ -31,7 +31,7 @@ class PositionScratchController;
 class RateControl : public EngineControl {
     Q_OBJECT
 public:
-    RateControl(QString group, ConfigObject<ConfigValue>* _config);
+    RateControl(QString group, ConfigObject<ConfigValue>* _config, QObject *pParent=nullptr);
     virtual ~RateControl();
 
     void setBpmControl(BpmControl* bpmcontrol);
@@ -61,7 +61,6 @@ public:
     static void setRateRamp(bool);
     // Set Rate Ramp Sensitivity
     static void setRateRampSensitivity(int);
-    virtual void notifySeek(double dNewPlaypos);
 
   public slots:
     void slotReverseRollActivate(double);

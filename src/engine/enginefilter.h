@@ -36,9 +36,7 @@ class EngineFilter : public EngineObject {
   public:
     EngineFilter(char* conf, int predefinedType = 0);
     virtual ~EngineFilter();
-
     void process(CSAMPLE* pInOut, const int iBufferSize);
-
   protected:
 #define FILTER_BUF_SIZE 16
     CSAMPLE  buf1[FILTER_BUF_SIZE];

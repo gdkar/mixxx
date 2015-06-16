@@ -17,9 +17,8 @@ class SyncControl;
 
 class BpmControl : public EngineControl {
     Q_OBJECT
-
   public:
-    BpmControl(QString group, ConfigObject<ConfigValue>* _config);
+    BpmControl(QString group, ConfigObject<ConfigValue>* _config, QObject *pParent=nullptr);
     virtual ~BpmControl();
 
     double getBpm() const;

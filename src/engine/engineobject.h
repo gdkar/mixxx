@@ -19,37 +19,44 @@
 #define ENGINEOBJECT_H
 
 #include <QObject>
-
+#include <cstring>
+#include <string.h>
+#include <memory>
 #include "util/types.h"
 #include "engine/effects/groupfeaturestate.h"
-
 /**
   *@author Tue and Ken Haste Andersen
   */
 
 class EngineObject : public QObject {
     Q_OBJECT
+    int recursion_depth = 0;
   public:
-    EngineObject();
+    EngineObject( QObject *pParent = nullptr);
     virtual ~EngineObject();
-    virtual void process(CSAMPLE* pInOut,
-                         const int iBufferSize) = 0;
-
+    virtual void process(CSAMPLE* pInOut, const int iBufferSize)
+    {
+      RELEASE_ASSERT(recursion_depth<2);
+      recursion_depth++;
+      auto tmp = std::make_unique<CSAMPLE[]>(iBufferSize);
+      memmove(tmp.get(),pInOut,iBufferSize*sizeof(CSAMPLE));
+      process(tmp.get(),pInOut, iBufferSize);
+      recursion_depth--;
+    };
+    virtual void process(const CSAMPLE* pIn, CSAMPLE* pOut, const int iBufferSize)
+    {
+      RELEASE_ASSERT(recursion_depth<2);
+      recursion_depth++;
+      if(pOut!=pIn){
+        memmove(pOut,pIn,sizeof(CSAMPLE)*iBufferSize);
+      }
+      process(pOut,iBufferSize);
+      recursion_depth--;
+    };
     // Sub-classes re-implement and populate GroupFeatureState with the features
     // they extract.
     virtual void collectFeatures(GroupFeatureState* pGroupFeatures) const {
         Q_UNUSED(pGroupFeatures);
     }
 };
-
-class EngineObjectConstIn : public QObject {
-    Q_OBJECT
-  public:
-    EngineObjectConstIn();
-    virtual ~EngineObjectConstIn();
-
-    virtual void process(const CSAMPLE* pIn, CSAMPLE* pOut,
-                         const int iBufferSize) = 0;
-};
-
 #endif

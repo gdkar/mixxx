@@ -14,18 +14,21 @@ ControlPotmeter* EnginePregain::s_pReplayGainBoost = NULL;
 ControlPotmeter* EnginePregain::s_pDefaultBoost = NULL;
 ControlObject* EnginePregain::s_pEnableReplayGain = NULL;
 
-EnginePregain::EnginePregain(QString group)
-        : m_fSpeed(1.0),
+/*----------------------------------------------------------------
+   A pregaincontrol is ... a pregain.
+   ----------------------------------------------------------------*/
+EnginePregain::EnginePregain(const QString &group, QObject *pParent)
+        : EngineObject(pParent),
+          m_fSpeed(0),
           m_fOldSpeed(1.0),
           m_scratching(false),
           m_fPrevGain(1.0),
+          m_pPotmeterPregain(ConfigKey(group,"pregain"),-12,12,0.5),
+          m_pTotalGain(ConfigKey(group,"total_gain")),
+          m_pCOReplayGain(ConfigKey(group,"replaygain")),
+          m_pPassthroughEnabled(ConfigKey(group,"passthrough")),
           m_bSmoothFade(false) {
-    m_pPotmeterPregain = new ControlAudioTaperPot(ConfigKey(group, "pregain"), -12, 12, 0.5);
     //Replay Gain things
-    m_pCOReplayGain = new ControlObject(ConfigKey(group, "replaygain"));
-    m_pTotalGain = new ControlObject(ConfigKey(group, "total_gain"));
-    m_pPassthroughEnabled = ControlObject::getControl(ConfigKey(group, "passthrough"));
-
     if (s_pReplayGainBoost == NULL) {
         s_pReplayGainBoost = new ControlAudioTaperPot(ConfigKey("[ReplayGain]", "ReplayGainBoost"), -12, 12, 0.5);
         s_pDefaultBoost = new ControlAudioTaperPot(ConfigKey("[ReplayGain]", "DefaultBoost"), -12, 12, 0.5);
@@ -34,16 +37,12 @@ EnginePregain::EnginePregain(QString group)
 }
 
 EnginePregain::~EnginePregain() {
-    delete m_pPotmeterPregain;
-    delete m_pCOReplayGain;
-    delete m_pTotalGain;
-
-    delete s_pEnableReplayGain;
-    s_pEnableReplayGain = NULL;
-    delete s_pReplayGainBoost;
-    s_pReplayGainBoost = NULL;
-    delete s_pDefaultBoost;
-    s_pDefaultBoost = NULL;
+//    delete s_pEnableReplayGain;
+//    s_pEnableReplayGain = NULL;
+//    delete s_pReplayGainBoost;
+//    s_pReplayGainBoost = NULL;
+//    delete s_pDefaultBoost;
+ //   s_pDefaultBoost = NULL;
 }
 
 void EnginePregain::setSpeed(CSAMPLE_GAIN  speed) {
@@ -56,9 +55,9 @@ void EnginePregain::setScratching(bool scratching) {
 }
 
 void EnginePregain::process(CSAMPLE* pInOut, const int iBufferSize) {
-    const CSAMPLE_GAIN fReplayGain = m_pCOReplayGain->get();
+    const CSAMPLE_GAIN fReplayGain = m_pCOReplayGain.get();
           CSAMPLE_GAIN fReplayGainCorrection;
-    if (!s_pEnableReplayGain->toBool() || m_pPassthroughEnabled->toBool()) {
+    if (!s_pEnableReplayGain->toBool() || m_pPassthroughEnabled.toBool()) {
         // Override replaygain value if passing through
         // TODO(XXX): consider a good default.
         // Do we expect an replaygain leveled input or
@@ -106,10 +105,10 @@ void EnginePregain::process(CSAMPLE* pInOut, const int iBufferSize) {
     // Clamp gain to within [0, 10.0] to prevent insane gains. This can happen
     // (some corrupt files get really high replay gain values).
     // 10 allows a maximum replay Gain Boost * calculated replay gain of ~2
-    CSAMPLE_GAIN  totalGain = static_cast<CSAMPLE_GAIN>(m_pPotmeterPregain->get() *
+    CSAMPLE_GAIN  totalGain = static_cast<CSAMPLE_GAIN>(m_pPotmeterPregain.get() *
             math_clamp(fReplayGainCorrection, 0.0f, 10.0f));
 
-    m_pTotalGain->set(totalGain);
+    m_pTotalGain.set(totalGain);
 
     // Vinylsoundemu:
     // As the speed approaches zero, hearing small bursts of sound at full volume

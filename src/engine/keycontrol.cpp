@@ -13,8 +13,8 @@ static const double kLockOriginalKey = 0;
 static const double kLockCurrentKey = 1;
 
 KeyControl::KeyControl(QString group,
-                       ConfigObject<ConfigValue>* pConfig)
-        : EngineControl(group, pConfig) {
+                       ConfigObject<ConfigValue>* pConfig, QObject *pParent)
+        : EngineControl(group, pConfig, pParent) {
     m_pitchRateInfo.pitchRatio = 1.0;
     m_pitchRateInfo.tempoRatio = 1.0;
     m_pitchRateInfo.pitchTweakRatio = 1.0;
@@ -166,20 +166,16 @@ void KeyControl::updateRate() {
 
     // If rate is not 1.0 then we have to try and calculate the octave change
     // caused by it.
-
     if(m_pVCEnabled && m_pVCEnabled->toBool()) {
         m_pitchRateInfo.tempoRatio = m_pVCRate->get();
     } else {
         m_pitchRateInfo.tempoRatio = 1.0 + m_pRateDir->get() * m_pRateRange->get() * m_pRateSlider->get();
     }
-
     if (m_pitchRateInfo.tempoRatio == 0) {
         // no transport, no pitch
         // so we can skip pitch calculation
         return;
     }
-
-
     // |-----------------------|-----------------|
     //   SpeedSliderPitchRatio   pitchTweakRatio
     //

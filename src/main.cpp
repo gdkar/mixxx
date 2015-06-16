@@ -48,14 +48,10 @@ extern "C" {
 #ifdef Q_OS_LINUX
 #include <X11/Xlib.h>
 #endif
-
 QStringList plugin_paths; //yes this is global. sometimes global is good.
-
 //void qInitImages_mixxx();
-
 QFile Logfile; // global logfile variable
 QMutex mutexLogfile;
-
 /* Debug message handler which outputs to both a logfile and a
  * and prepends the thread the message came from too.
  */
@@ -164,36 +160,28 @@ void MessageHandler(QtMsgType type,
         }
         break;
     }
-    if (Logfile.isOpen()) {
-        Logfile.flush();
-    }
+    if (Logfile.isOpen()) {Logfile.flush();}
 }
 
 int main(int argc, char * argv[])
 {
-    Console console;
-
 #ifdef Q_OS_LINUX
     XInitThreads();
 #endif
-
     // Check if an instance of Mixxx is already running
     // See http://qt.nokia.com/products/appdev/add-on-products/catalog/4/Utilities/qtsingleapplication
 
     // These need to be set early on (not sure how early) in order to trigger
     // logic in the OS X appstore support patch from QTBUG-16549.
     QCoreApplication::setOrganizationDomain("mixxx.org");
-
     // Setting the organization name results in a QDesktopStorage::DataLocation
     // of "$HOME/Library/Application Support/Mixxx/Mixxx" on OS X. Leave the
     // organization name blank.
     //QCoreApplication::setOrganizationName("Mixxx");
-
     QCoreApplication::setApplicationName("Mixxx");
     QString mixxxVersion = Version::version();
     QByteArray mixxxVersionBA = mixxxVersion.toLocal8Bit();
     QCoreApplication::setApplicationVersion(mixxxVersion);
-
     // Construct a list of strings based on the command line arguments
     CmdlineArgs& args = CmdlineArgs::Instance();
     if (!args.Parse(argc, argv)) {
@@ -260,7 +248,6 @@ int main(int argc, char * argv[])
     //      * ErrorDialogHandler::errorDialog()
     QThread::currentThread()->setObjectName("Main");
     MixxxApplication a(argc, argv);
-
     // Support utf-8 for all translation strings. Not supported in Qt 5.
     // TODO(rryan): Is this needed when we switch to qt5? Some sources claim it
     // isn't.
@@ -272,10 +259,8 @@ int main(int argc, char * argv[])
      av_register_all();
      avcodec_register_all();
 #endif
-
      //Enumerate and load SoundSource plugins
      SoundSourceProxy::loadPlugins();
-
     // Check if one of the command line arguments is "--no-visuals"
 //    bool bVisuals = true;
 //    for (int i=0; i<argc; ++i)
@@ -299,14 +284,10 @@ int main(int argc, char * argv[])
          QApplication::setLibraryPaths(QStringList(dir.absolutePath()));
      }
 #endif
-
     MixxxMainWindow* mixxx = new MixxxMainWindow(&a, args);
-
     //a.setMainWidget(mixxx);
     QObject::connect(&a, SIGNAL(lastWindowClosed()), &a, SLOT(quit()));
-
     int result = -1;
-
     if (!(ErrorDialogHandler::instance()->checkError())) {
         qDebug() << "Displaying mixxx";
         mixxx->show();
@@ -314,11 +295,8 @@ int main(int argc, char * argv[])
         qDebug() << "Running Mixxx";
         result = a.exec();
     }
-
     delete mixxx;
-
     qDebug() << "Mixxx shutdown complete with code" << result;
-
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
     qInstallMsgHandler(NULL);  // Reset to default.
 #else
@@ -329,9 +307,7 @@ int main(int argc, char * argv[])
     //    or mixxx.log will get clobbered!
     { // scope
         QMutexLocker locker(&mutexLogfile);
-        if(Logfile.isOpen()) {
-            Logfile.close();
-        }
+        if(Logfile.isOpen()) {Logfile.close();}
     }
 
     //delete plugin_paths;

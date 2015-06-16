@@ -24,12 +24,12 @@
 #include "controlobject.h"
 #include "engine/channelhandle.h"
 #include "configobject.h"
-class ControlObject;
+#include "controlobject.h"
+#include "controlpushbutton.h"
+#include "controlpotmeter.h"
 class EngineBuffer;
 class EnginePregain;
-class EngineFilterBlock;
 class EngineVuMeter;
-class ControlPushButton;
 class EngineChannel : public EngineObject {
     Q_OBJECT
   public:
@@ -39,7 +39,7 @@ class EngineChannel : public EngineObject {
         RIGHT,
     };
     EngineChannel(const ChannelHandleAndGroup& handle_group,
-                  ChannelOrientation defaultOrientation = CENTER);
+                  ChannelOrientation defaultOrientation = CENTER, QObject *pParent=nullptr);
     virtual ~EngineChannel();
     virtual ChannelOrientation getOrientation() const;
     inline const ChannelHandle& getHandle() const {return m_group.handle();}

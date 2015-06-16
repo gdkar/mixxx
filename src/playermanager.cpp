@@ -284,8 +284,8 @@ void PlayerManager::addDeckInner() {
         orientation = EngineChannel::RIGHT;
     }
 
-    Deck* pDeck = new Deck(this, m_pConfig, m_pEngine, m_pEffectsManager,
-                           orientation, group);
+    Deck* pDeck = new Deck(m_pConfig, m_pEngine, m_pEffectsManager,
+                           orientation, group, this);
     if (m_pAnalyserQueue) {
         connect(pDeck, SIGNAL(newTrackLoaded(TrackPointer)),
                 m_pAnalyserQueue, SLOT(slotAnalyseTrack(TrackPointer)));
@@ -338,8 +338,8 @@ void PlayerManager::addSamplerInner() {
     // All samplers are in the center
     EngineChannel::ChannelOrientation orientation = EngineChannel::CENTER;
 
-    Sampler* pSampler = new Sampler(this, m_pConfig, m_pEngine,
-                                    m_pEffectsManager, orientation, group);
+    Sampler* pSampler = new Sampler(m_pConfig, m_pEngine,
+                                    m_pEffectsManager, orientation, group,this);
     if (m_pAnalyserQueue) {
         connect(pSampler, SIGNAL(newTrackLoaded(TrackPointer)),
                 m_pAnalyserQueue, SLOT(slotAnalyseTrack(TrackPointer)));
@@ -365,9 +365,9 @@ void PlayerManager::addPreviewDeckInner() {
     // All preview decks are in the center
     EngineChannel::ChannelOrientation orientation = EngineChannel::CENTER;
 
-    PreviewDeck* pPreviewDeck = new PreviewDeck(this, m_pConfig, m_pEngine,
+    PreviewDeck* pPreviewDeck = new PreviewDeck(m_pConfig, m_pEngine,
                                                 m_pEffectsManager, orientation,
-                                                group);
+                                                group,this);
     if (m_pAnalyserQueue) {
         connect(pPreviewDeck, SIGNAL(newTrackLoaded(TrackPointer)),
                 m_pAnalyserQueue, SLOT(slotAnalyseTrack(TrackPointer)));

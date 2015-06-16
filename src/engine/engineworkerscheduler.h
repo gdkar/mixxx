@@ -2,7 +2,9 @@
 #define ENGINEWORKERSCHEDULER_H
 
 #include <QMutex>
+#include <atomic>
 #include <QThreadPool>
+#include <QSemaphore>
 #include <QWaitCondition>
 
 #include "util/fifo.h"
@@ -18,22 +20,17 @@ class EngineWorkerScheduler : public QThread {
   public:
     EngineWorkerScheduler(QObject* pParent=NULL);
     virtual ~EngineWorkerScheduler();
-
     void runWorkers();
     void workerReady(EngineWorker* worker);
-
   protected:
     void run();
-
   private:
     // Indicates whether workerReady has been called since the last time
     // runWorkers was run. This should only be touched from the engine callback.
-    bool m_bWakeScheduler;
-
-    FIFO<EngineWorker*> m_scheduleFIFO;
-    QWaitCondition m_waitCondition;
-    QMutex m_mutex;
-    volatile bool m_bQuit;
+    std::atomic<bool>     m_bWakeScheduler{false};
+    std::atomic<bool>     m_bQuit{true};
+    FIFO<EngineWorker*>   m_scheduleFIFO;
+    QSemaphore            m_waitSemaphore{0};
 };
 
 #endif /* ENGINEWORKERSCHEDULER_H */

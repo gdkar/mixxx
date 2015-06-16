@@ -6,12 +6,12 @@
 class Sampler : public BaseTrackPlayerImpl {
     Q_OBJECT
     public:
-    Sampler(QObject* pParent,
-            ConfigObject<ConfigValue> *pConfig,
+    Sampler(ConfigObject<ConfigValue> *pConfig,
             EngineMaster* pMixingEngine,
             EffectsManager* pEffectsManager,
             EngineChannel::ChannelOrientation defaultOrientation,
-            QString group);
+            const QString &group,
+            QObject *pParent=nullptr);
     virtual ~Sampler();
 };
 

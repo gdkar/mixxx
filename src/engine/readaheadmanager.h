@@ -25,33 +25,25 @@ class CachingReader;
 // seeks or the current play position is invalidated somehow, the Engine must
 // call notifySeek to inform the ReadAheadManager to reset itself to the seek
 // point.
-class ReadAheadManager {
+class ReadAheadManager : public QObject{
+  Q_OBJECT;
   public:
-    explicit ReadAheadManager(); // Only for testing: ReadAheadManagerMock
-    explicit ReadAheadManager(CachingReader* reader,
-                              LoopingControl* pLoopingControl);
+    explicit ReadAheadManager(QObject *pParent=nullptr); // Only for testing: ReadAheadManagerMock
+    explicit ReadAheadManager(CachingReader* reader,LoopingControl* pLoopingControl, QObject *pParent=nullptr);
     virtual ~ReadAheadManager();
-
     // Call this method to fill buffer with requested_samples out of the
     // lookahead buffer. Provide rate as dRate so that the manager knows the
     // direction the audio is progressing in. Returns the total number of
     // samples read into buffer. Note that it is very common that the total
     // samples read is less than the requested number of samples.
     virtual int getNextSamples(double dRate, CSAMPLE* buffer, int requested_samples);
-
-
     // Used to add a new EngineControls that ReadAheadManager will use to decide
     // which samples to return.
     void addLoopingControl();
     void addRateControl(RateControl* pRateControl);
-
     // Get the current read-ahead position in samples.
-    virtual inline int getPlaypos() const {
-        return m_iCurrentPosition;
-    }
-
-    virtual void notifySeek(int iSeekPosition);
-
+    virtual inline int getPlaypos() const {return m_iCurrentPosition;}
+    virtual void onSeek(int iSeekPosition);
     // hintReader allows the ReadAheadManager to provide hints to the reader to
     // indicate that the given portion of a song is about to be read.
     virtual void hintReader(double dRate, HintVector* hintList);
@@ -62,7 +54,8 @@ class ReadAheadManager {
     virtual void setReader(CachingReader* pReader) {
         m_pReader = pReader;
     }
-
+  public slots:
+    void onSeek(double dNewPlaypos);
   private:
     // An entry in the read log indicates the virtual playposition the read
     // began at and the virtual playposition it ended at.

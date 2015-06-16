@@ -62,8 +62,9 @@ class RateIIFilter {
     double m_last_rate;
 };
 
-PositionScratchController::PositionScratchController(QString group)
-    : m_group(group),
+PositionScratchController::PositionScratchController(const QString &group, QObject *pParent)
+    : QObject(pParent),
+      m_group(group),
       m_bScratching(false),
       m_bEnableInertia(false),
       m_dLastPlaypos(0),
@@ -73,6 +74,7 @@ PositionScratchController::PositionScratchController(QString group)
       m_dRate(0),
       m_dMoveDelay(0),
       m_dMouseSampeTime(0) {
+    connect(pParent,SIGNAL(seeked(double)),this,SLOT(onSeek(double)),Qt::DirectConnection);
     m_pScratchEnable = new ControlObject(ConfigKey(group, "scratch_position_enable"));
     m_pScratchPosition = new ControlObject(ConfigKey(group, "scratch_position"));
     m_pMasterSampleRate = ControlObject::getControl(ConfigKey("[Master]", "samplerate"));
@@ -274,7 +276,7 @@ double PositionScratchController::getRate() {
     return m_dRate;
 }
 
-void PositionScratchController::notifySeek(double currentSample) {
+void PositionScratchController::onSeek(double currentSample) {
     // scratching continues after seek due to calculating the relative distance traveled
     // in m_dPositionDeltaSum
     m_dLastPlaypos = currentSample;

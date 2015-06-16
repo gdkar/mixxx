@@ -23,12 +23,12 @@
 #include "controlpushbutton.h"
 #include "engine/engineobject.h"
 #include "engine/enginechannel.h"
+#include "engine/enginemaster.h"
 #include "soundmanagerutil.h"
 
 class EngineBuffer;
 class EnginePregain;
 class EngineBuffer;
-class EngineMaster;
 class EngineVuMeter;
 class EffectsManager;
 class EngineEffectsManager;

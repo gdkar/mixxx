@@ -47,8 +47,9 @@ const double kLinearScalerElipsis = 1.00058; // 2^(0.01/12): changes < 1 cent al
 const int kSamplesPerFrame = 2; // Engine buffer uses Stereo frames only
 
 EngineBuffer::EngineBuffer(QString group, ConfigObject<ConfigValue>* _config,
-                           EngineChannel* pChannel, EngineMaster* pMixingEngine)
-        : m_group(group),
+                           EngineMaster* pMixingEngine,EngineChannel* pChannel)
+        : EngineObject(qobject_cast<QObject *>(pChannel)),
+          m_group(group),
           m_pConfig(_config),
           m_pLoopingControl(NULL),
           m_pSyncControl(NULL),
@@ -203,10 +204,10 @@ EngineBuffer::EngineBuffer(QString group, ConfigObject<ConfigValue>* _config,
     // Quantization Controller for enabling and disabling the
     // quantization (alignment) of loop in/out positions and (hot)cues with
     // beats.
-    QuantizeControl* quantize_control = new QuantizeControl(group, _config);
+    QuantizeControl* quantize_control = new QuantizeControl(group, _config, this);
 
     // Create the Loop Controller
-    m_pLoopingControl = new LoopingControl(group, _config);
+    m_pLoopingControl = new LoopingControl(group, _config, this);
     addControl(m_pLoopingControl);
 
     addControl(quantize_control);
@@ -214,20 +215,20 @@ EngineBuffer::EngineBuffer(QString group, ConfigObject<ConfigValue>* _config,
 
     m_pEngineSync = pMixingEngine->getEngineSync();
 
-    m_pSyncControl = new SyncControl(group, _config, pChannel, m_pEngineSync);
+    m_pSyncControl = new SyncControl(group, _config, pChannel, m_pEngineSync,this);
     addControl(m_pSyncControl);
 
 #ifdef __VINYLCONTROL__
-    m_pVinylControlControl = new VinylControlControl(group, _config);
+    m_pVinylControlControl = new VinylControlControl(group, _config,this);
     addControl(m_pVinylControlControl);
 #endif
 
-    m_pRateControl = new RateControl(group, _config);
+    m_pRateControl = new RateControl(group, _config,this);
     // Add the Rate Controller
     addControl(m_pRateControl);
 
     // Create the BPM Controller
-    m_pBpmControl = new BpmControl(group, _config);
+    m_pBpmControl = new BpmControl(group, _config,this);
     addControl(m_pBpmControl);
 
     // TODO(rryan) remove this dependence?
@@ -238,19 +239,18 @@ EngineBuffer::EngineBuffer(QString group, ConfigObject<ConfigValue>* _config,
     m_fwdButton = ControlObject::getControl(ConfigKey(group, "fwd"));
     m_backButton = ControlObject::getControl(ConfigKey(group, "back"));
 
-    m_pKeyControl = new KeyControl(group, _config);
+    m_pKeyControl = new KeyControl(group, _config,this);
     addControl(m_pKeyControl);
 
     // Create the clock controller
-    m_pClockControl = new ClockControl(group, _config);
+    m_pClockControl = new ClockControl(group, _config,this);
     addControl(m_pClockControl);
 
     // Create the cue controller
-    m_pCueControl = new CueControl(group, _config);
+    m_pCueControl = new CueControl(group, _config,this);
     addControl(m_pCueControl);
 
-    m_pReadAheadManager = new ReadAheadManager(m_pReader,
-                                               m_pLoopingControl);
+    m_pReadAheadManager = new ReadAheadManager(m_pReader,m_pLoopingControl,this);
     m_pReadAheadManager->addRateControl(m_pRateControl);
 
     // Construct scaling objects
@@ -433,7 +433,8 @@ void EngineBuffer::readToCrossfadeBuffer(const int iBufferSize) {
     SampleUtil::copy(m_pCrossfadeBuffer, fadeout, iBufferSize);
 
     // Restore the original position that was lost due to getScaled() above
-    m_pReadAheadManager->notifySeek(m_filepos_play);
+    emit(seeked(m_filepos_play));
+//    m_pReadAheadManager->notifySeek(m_filepos_play);
 
     m_bCrossfadeReady = true;
 }
@@ -450,7 +451,7 @@ void EngineBuffer::setNewPlaypos(double newpos) {
         // (calls notifySeek())
         readToCrossfadeBuffer(m_iLastBufferSize);
     } else {
-        m_pReadAheadManager->notifySeek(m_filepos_play);
+        emit seeked(m_filepos_play);
     }
     m_pScale->clear();
 
@@ -458,12 +459,6 @@ void EngineBuffer::setNewPlaypos(double newpos) {
     m_iSamplesCalculated = 1000000;
 
     // Must hold the engineLock while using m_engineControls
-    for (QList<EngineControl*>::iterator it = m_engineControls.begin();
-         it != m_engineControls.end(); ++it) {
-        EngineControl *pControl = *it;
-        pControl->notifySeek(m_filepos_play);
-    }
-
     verifyPlay(); // verify or update play button and indicator
 }
 
@@ -532,8 +527,7 @@ void EngineBuffer::slotTrackLoaded(TrackPointer pTrack,
 }
 
 // WARNING: Always called from the EngineWorker thread pool
-void EngineBuffer::slotTrackLoadFailed(TrackPointer pTrack,
-                                       QString reason) {
+void EngineBuffer::slotTrackLoadFailed(TrackPointer pTrack,QString reason) {
     m_iTrackLoading = 0;
     ejectTrack();
     emit(trackLoadFailed(pTrack, reason));
@@ -1317,9 +1311,7 @@ void EngineBuffer::bindWorkers(EngineWorkerScheduler* pWorkerScheduler) {
 }
 
 bool EngineBuffer::isTrackLoaded() {
-    if (m_pCurrentTrack) {
-        return true;
-    }
+    if (m_pCurrentTrack) {return true;}
     return false;
 }
 
@@ -1327,21 +1319,12 @@ void EngineBuffer::slotEjectTrack(double v) {
     if (v > 0) {
         // Don't allow rejections while playing a track. We don't need to lock to
         // call ControlObject::get() so this is fine.
-        if (m_playButton->get() > 0) {
-            return;
-        }
+        if (m_playButton->get() > 0) {return;}
         ejectTrack();
     }
 }
-
-double EngineBuffer::getVisualPlayPos() {
-    return m_visualPlayPos->getEnginePlayPos();
-}
-
-double EngineBuffer::getTrackSamples() {
-    return m_pTrackSamples->get();
-}
-
+double EngineBuffer::getVisualPlayPos() {return m_visualPlayPos->getEnginePlayPos();}
+double EngineBuffer::getTrackSamples() {return m_pTrackSamples->get();}
 /*
 void EngineBuffer::setReader(CachingReader* pReader) {
     disconnect(m_pReader, 0, this, 0);

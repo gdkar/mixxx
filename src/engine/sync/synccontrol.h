@@ -21,7 +21,7 @@ class SyncControl : public EngineControl, public Syncable {
     static const double kBpmHalve;
     static const double kBpmDouble;
     SyncControl(const QString& group, ConfigObject<ConfigValue>* pConfig,
-                EngineChannel* pChannel, SyncableListener* pEngineSync);
+                EngineChannel* pChannel, SyncableListener* pEngineSync, QObject *pParent=nullptr);
     virtual ~SyncControl();
 
     const QString& getGroup() const { return m_sGroup; }

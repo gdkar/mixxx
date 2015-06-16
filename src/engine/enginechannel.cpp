@@ -21,8 +21,9 @@
 #include "controlpushbutton.h"
 
 EngineChannel::EngineChannel(const ChannelHandleAndGroup& handle_group,
-                             EngineChannel::ChannelOrientation defaultOrientation)
-        : m_group(handle_group),
+                             EngineChannel::ChannelOrientation defaultOrientation, QObject*pParent)
+        : EngineObject(pParent),
+          m_group(handle_group),
     m_pPFL (ConfigKey(getGroup(), "pfl")),
     m_pMaster (ConfigKey(getGroup(), "master")),
     m_pOrientation (ConfigKey(getGroup(), "orientation")),

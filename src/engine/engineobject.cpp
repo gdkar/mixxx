@@ -15,19 +15,10 @@
 *                                                                         *
 ***************************************************************************/
 
-#include "engineobject.h"
-
-EngineObject::EngineObject() {
+#include "engine/engineobject.h"
+#include "engine/enginemaster.h"
+EngineObject::EngineObject(QObject *pParent):QObject(pParent) {
 }
 
 EngineObject::~EngineObject() {
 }
-
-EngineObjectConstIn::EngineObjectConstIn() {
-}
-
-EngineObjectConstIn::~EngineObjectConstIn() {
-}
-
-
-

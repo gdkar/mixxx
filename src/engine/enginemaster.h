@@ -31,7 +31,6 @@
 
 class EngineWorkerScheduler;
 class EngineBuffer;
-class EngineChannel;
 class EngineDeck;
 class EngineFlanger;
 class EngineVuMeter;

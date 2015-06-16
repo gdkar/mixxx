@@ -18,7 +18,8 @@ class PositionScratchController : public QObject {
                  int iBufferSize, double baserate);
     bool isEnabled();
     double getRate();
-    void notifySeek(double currentSample);
+  public slots:
+    void onSeek(double currentSample);
 
   private:
     const QString m_group;

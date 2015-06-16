@@ -21,5 +21,4 @@ class ChannelMixer {
         CSAMPLE* pOutput,
         unsigned int iBufferSize);
 };
-
 #endif /* CHANNELMIXER_H */

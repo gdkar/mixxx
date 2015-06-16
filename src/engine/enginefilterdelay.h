@@ -7,7 +7,7 @@
 #include "util/assert.h"
 
 template<unsigned int SIZE>
-class EngineFilterDelay : public EngineObjectConstIn {
+class EngineFilterDelay : public EngineObject  {
   public:
     EngineFilterDelay()
             : m_delaySamples(0),

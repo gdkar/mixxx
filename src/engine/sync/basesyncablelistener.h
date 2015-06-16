@@ -19,19 +19,15 @@ class BaseSyncableListener : public SyncableListener {
 
     // Only for testing. Do not use.
     Syncable* getSyncableForGroup(const QString& group);
-    Syncable* getMasterSyncable() {
-        return m_pMasterSyncable;
-    }
+    Syncable* getMasterSyncable() {return m_pMasterSyncable;}
 
     // Used by Syncables to tell EngineSync it wants to be enabled in a
     // specific mode. If the state change is accepted, EngineSync calls
     // Syncable::notifySyncModeChanged.
     virtual void requestSyncMode(Syncable* pSyncable, SyncMode state) = 0;
-
     // Used by Syncables to tell EngineSync it wants to be enabled in any mode
     // (master/follower).
     virtual void requestEnableSync(Syncable* pSyncable, bool enabled) = 0;
-
     // Syncables notify EngineSync directly about various events. EngineSync
     // does not have a say in whether these succeed or not, they are simply
     // notifications.
@@ -40,7 +36,6 @@ class BaseSyncableListener : public SyncableListener {
     virtual void notifyBeatDistanceChanged(Syncable* pSyncable, double beatDistance) = 0;
     virtual void notifyPlaying(Syncable* pSyncable, bool playing) = 0;
     virtual void notifyTrackLoaded(Syncable* pSyncable, double suggested_bpm) = 0;
-
   protected:
     // Choices about master selection can hinge on if any decks have sync
     // mode enabled.  This utility method returns true if it finds a deck

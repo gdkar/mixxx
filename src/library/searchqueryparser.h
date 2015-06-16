@@ -4,6 +4,7 @@
 #include <QRegExp>
 #include <QString>
 #include <QtSql>
+#include <memory>
 
 #include "util.h"
 #include "trackinfoobject.h"
