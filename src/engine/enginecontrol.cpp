@@ -7,7 +7,7 @@
 #include "engine/sync/enginesync.h"
 #include "playermanager.h"
 
-EngineControl::EngineControl(QString group,
+EngineControl::EngineControl(const QString &group,
                              ConfigObject<ConfigValue>* _config, QObject *pParent)
         : QObject(pParent),
           m_group(group),
