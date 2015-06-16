@@ -116,9 +116,7 @@ void ReadAheadManager::addRateControl(RateControl* pRateControl) {m_pRateControl
 void ReadAheadManager::onSeek(double dSeekPos) {
     m_iCurrentPosition = static_cast<int>(dSeekPos);
     m_readAheadLog.clear();
-
 }
-
 void ReadAheadManager::hintReader(double dRate, HintVector* pHintList) {
     bool in_reverse = dRate < 0;
     Hint current_position;

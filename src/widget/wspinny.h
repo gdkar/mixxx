@@ -1,7 +1,7 @@
 
 #ifndef _WSPINNY_H
 #define _WSPINNY_H
-
+#include <memory>
 #include <QGLWidget>
 #include <QShowEvent>
 #include <QHideEvent>

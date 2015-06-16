@@ -30,12 +30,10 @@ class TreeItem {
     int row() const;
     /** returns the parent **/
     TreeItem *parent();
-
     /** for dynamic resizing models **/
     bool insertChildren(QList<TreeItem*> &data, int position, int count);
     /** Removes <count> children from the child list starting at index <position> **/
     bool removeChildren(int position, int count);
-
     /** sets data **/
     bool setData(const QVariant &data, const QVariant &data_path);
     /** simple name of the playlist **/
@@ -48,25 +46,16 @@ class TreeItem {
     bool isFolder() const;
     /* Returns the Library feature object to which an item belongs to */
     LibraryFeature* getFeature();
-
-    void setBold(bool bold) {
-        m_bold = bold;
-    }
-    bool isBold() const {
-        return m_bold;
-    }
-
-
+    void setBold(bool bold) {m_bold = bold;}
+    bool isBold() const {return m_bold;}
     void setIcon(const QIcon& icon);
     QIcon getIcon();
-
   private:
     QList<TreeItem*> m_childItems;
     QString m_dataPath;
     QString m_data;
     LibraryFeature* m_feature;
     bool m_bold;
-
     TreeItem *m_parentItem;
     QIcon m_icon;
 };

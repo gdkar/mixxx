@@ -29,40 +29,23 @@ void ControlDelegate::paint(QPainter* painter,
                             const QModelIndex& index) const {
     // Custom logic for MIDI. If we are enabled for script then say so.
     if (m_iMidiOptionsColumn != -1) {
-        QModelIndex optionsColumn = index.sibling(index.row(),
-                                                  m_iMidiOptionsColumn);
+        QModelIndex optionsColumn = index.sibling(index.row(),m_iMidiOptionsColumn);
         MidiOptions options = qVariantValue<MidiOptions>(optionsColumn.data());
         m_bIsIndexScript = options.script;
     }
-
     QStyledItemDelegate::paint(painter, option, index);
 }
-
-QString ControlDelegate::displayText(const QVariant& value,
-                                     const QLocale& locale) const {
+QString ControlDelegate::displayText(const QVariant& value,const QLocale& locale) const {
     Q_UNUSED(locale);
     ConfigKey key = qVariantValue<ConfigKey>(value);
-
-    if (key.group.isEmpty() && key.item.isEmpty()) {
-        return tr("No control chosen.");
-    }
-
-    if (m_bIsIndexScript) {
-        return tr("Script: %1(%2)").arg(key.item, key.group);
-    }
-
+    if (key.group.isEmpty() && key.item.isEmpty()) {return tr("No control chosen.");}
+    if (m_bIsIndexScript) {return tr("Script: %1(%2)").arg(key.item, key.group);}
     QString description = m_pPicker->descriptionForConfigKey(key);
-    if (!description.isEmpty()) {
-        return description;
-    }
-
+    if (!description.isEmpty()) {return description;}
     return key.group + "," + key.item;
 }
-
-void ControlDelegate::setEditorData(QWidget* editor,
-                                    const QModelIndex& index) const {
+void ControlDelegate::setEditorData(QWidget* editor,const QModelIndex& index) const {
     ConfigKey key = qVariantValue<ConfigKey>(index.data(Qt::EditRole));
-
     QLineEdit* pLineEdit = dynamic_cast<QLineEdit*>(editor);
     if (pLineEdit == NULL) {
         return;

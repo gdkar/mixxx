@@ -43,17 +43,12 @@ class ReadAheadManager : public QObject{
     void addRateControl(RateControl* pRateControl);
     // Get the current read-ahead position in samples.
     virtual inline int getPlaypos() const {return m_iCurrentPosition;}
-    virtual void onSeek(int iSeekPosition);
     // hintReader allows the ReadAheadManager to provide hints to the reader to
     // indicate that the given portion of a song is about to be read.
     virtual void hintReader(double dRate, HintVector* hintList);
-
     virtual int getEffectiveVirtualPlaypositionFromLog(double currentVirtualPlayposition,
                                                        double numConsumedSamples);
-
-    virtual void setReader(CachingReader* pReader) {
-        m_pReader = pReader;
-    }
+    virtual void setReader(CachingReader* pReader) {m_pReader = pReader;}
   public slots:
     void onSeek(double dNewPlaypos);
   private:
@@ -63,13 +58,10 @@ class ReadAheadManager : public QObject{
         double virtualPlaypositionStart;
         double virtualPlaypositionEndNonInclusive;
 
-        ReadLogEntry(double virtualPlaypositionStart,
-                     double virtualPlaypositionEndNonInclusive) {
+        ReadLogEntry(double virtualPlaypositionStart,double virtualPlaypositionEndNonInclusive) {
             this->virtualPlaypositionStart = virtualPlaypositionStart;
-            this->virtualPlaypositionEndNonInclusive =
-                    virtualPlaypositionEndNonInclusive;
+            this->virtualPlaypositionEndNonInclusive = virtualPlaypositionEndNonInclusive;
         }
-
         bool direction() const {
             // NOTE(rryan): We try to avoid 0-length ReadLogEntry's when
             // possible but they have happened in the past. We treat 0-length
@@ -77,10 +69,8 @@ class ReadAheadManager : public QObject{
             // being interpreted as a seek in the common case.
             return virtualPlaypositionStart <= virtualPlaypositionEndNonInclusive;
         }
-
         double length() const {
-            return fabs(virtualPlaypositionEndNonInclusive -
-                       virtualPlaypositionStart);
+            return fabs(virtualPlaypositionEndNonInclusive -virtualPlaypositionStart);
         }
 
         // Moves the start position forward or backward (depending on
@@ -105,12 +95,9 @@ class ReadAheadManager : public QObject{
             return false;
         }
     };
-
     // virtualPlaypositionEnd is the first sample in the direction that was read
     // that was NOT read as part of this log entry. This is to simplify the
-    void addReadLogEntry(double virtualPlaypositionStart,
-                         double virtualPlaypositionEndNonInclusive);
-
+    void addReadLogEntry(double virtualPlaypositionStart,double virtualPlaypositionEndNonInclusive);
     LoopingControl* m_pLoopingControl;
     RateControl* m_pRateControl;
     QLinkedList<ReadLogEntry> m_readAheadLog;

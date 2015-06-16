@@ -5,7 +5,7 @@
 #include <QTime>
 #include <QVector>
 #include <QtDebug>
-
+#include <memory>
 #include "trackinfoobject.h"
 #include "util.h"
 #include "waveform/renderers/waveformrendererabstract.h"
