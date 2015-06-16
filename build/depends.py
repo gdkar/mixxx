@@ -915,9 +915,6 @@ class MixxxCore(Feature):
 
                    "baseplayer.cpp",
                    "basetrackplayer.cpp",
-                   "deck.cpp",
-                   "sampler.cpp",
-                   "previewdeck.cpp",
                    "playermanager.cpp",
                    "samplerbank.cpp",
                    "sounddevice.cpp",

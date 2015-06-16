@@ -23,7 +23,7 @@ class CachingReader;
 // consumed. The getNextSamples() method encapsulates the logic of determining
 // whether to take a loop or jump into a single method. Whenever the Engine
 // seeks or the current play position is invalidated somehow, the Engine must
-// call notifySeek to inform the ReadAheadManager to reset itself to the seek
+// call onSeek to inform the ReadAheadManager to reset itself to the seek
 // point.
 class ReadAheadManager : public QObject{
   Q_OBJECT;
