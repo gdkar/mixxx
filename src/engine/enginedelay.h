@@ -34,7 +34,7 @@ class EngineDelay : public EngineObject {
     virtual ~EngineDelay();
     void process(CSAMPLE* pInOut, const int iBufferSize);
   public slots:
-    void onDelayChanged();
+    void onDelayChanged(double);
   private:
   std::unique_ptr<CSAMPLE[]> m_pDelayBuffer;
     int m_iDelayPos;

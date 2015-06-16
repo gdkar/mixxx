@@ -38,7 +38,7 @@ EngineDelay::EngineDelay(const char* group, ConfigKey delayControl, QObject *pPa
     m_pSampleRate.connectValueChanged(SLOT(onDelayChanged()), Qt::DirectConnection);
 }
 EngineDelay::~EngineDelay() {}
-void EngineDelay::onDelayChanged() {
+void EngineDelay::onDelayChanged(double ) {
     double newDelay = m_pDelayPot.get();
     double sampleRate = m_pSampleRate.get();
     m_iDelay = (int)(sampleRate * newDelay / 1000);

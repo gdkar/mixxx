@@ -53,7 +53,7 @@ class VisualPlayPosition : public QObject {
     double getEnginePlayPos();
     // WARNING: Not thread safe. This function must only be called from the main
     // thread.
-    static std::shared_ptr<VisualPlayPosition> getVisualPlayPosition(QString group);
+    static QSharedPointer<VisualPlayPosition> getVisualPlayPosition(QString group);
     // This is called by SoundDevicePortAudio just after the callback starts.
     static void setTimeInfo(const PaStreamCallbackTimeInfo *timeInfo);
     void setInvalid() { m_valid = false; };
@@ -66,7 +66,7 @@ class VisualPlayPosition : public QObject {
     bool m_valid;
     QString m_key;
     bool m_invalidTimeInfoWarned;
-    static QMap<QString, std::weak_ptr<VisualPlayPosition> > m_listVisualPlayPosition;
+    static QMap<QString, QWeakPointer<VisualPlayPosition> > m_listVisualPlayPosition;
     // Time info from the Sound device, updated just after audio callback is called
     static PaStreamCallbackTimeInfo m_timeInfo;
     // Time stamp for m_timeInfo in main CPU time

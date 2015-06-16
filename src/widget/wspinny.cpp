@@ -228,7 +228,7 @@ void WSpinny::setup(QDomNode node, const SkinContext& context) {
 }
 
 void WSpinny::maybeUpdate() {
-    if (!m_pVisualPlayPos.isNull()) {
+    if (!!m_pVisualPlayPos) {
         m_pVisualPlayPos->getPlaySlipAt(0,
                                         &m_dAngleCurrentPlaypos,
                                         &m_dGhostAngleCurrentPlaypos);
