@@ -29,7 +29,37 @@ struct FidFilter {
 #define FFALLOC(n_head,n_val) (FidFilter*)Alloc(FFCSIZE(n_head, n_val))
 
 // These are so you can use easier names to refer to running filters
-typedef void FidRun;
+//typedef void FidRun;
+//
+#ifndef RF_COMBINED
+#ifndef RF_CMDLIST
+#define RF_CMDLIST
+#endif
+#endif
+#ifdef RF_COMBINED
+#define HAVE_STRUCT_RUN 1
+typedef struct Run {
+   int magic;		// Magic: 0x64966325
+   double *fir;         // FIR parameters
+   int n_fir;           // Number of FIR parameters
+   double *iir;         // IIR parameters
+   int n_iir;           // Number of IIR parameters
+   int n_buf;           // Number of entries in buffer
+   FidFilter *filt;	// Combined filter
+} Run;
+#elif defined RF_CMDLIST
+#define HAVE_STRUCT_RUN 1
+typedef struct Run {
+   int magic;		// Magic: 0x64966325
+   int buf_size;	// Length of working buffer required in doubles	
+   double *coef;	// Coefficient list
+   char *cmd;		// Command list
+} Run;
+#else
+#define HAVE_STRUCT_RUN 1
+typedef void Run
+#endif
+typedef Run FidRun;
 typedef double (FidFunc)(void*, double);
 
 
@@ -63,13 +93,13 @@ extern char *fid_parse(double rate, char **pp, FidFilter **ffp);
 //	Filter running prototypes
 //
 
-extern void *fid_run_new(FidFilter *filt, double(**funcpp)(void *, double));
-extern void *fid_run_newbuf(void *run);
-extern int fid_run_bufsize(void *run);
-extern void fid_run_initbuf(void *run, void *buf);
+extern Run *fid_run_new(FidFilter *filt, double(**funcpp)(void *, double));
+extern void *fid_run_newbuf(Run *run);
+extern int fid_run_bufsize(Run  *run);
+extern void fid_run_initbuf(Run *run, void *buf);
 extern void fid_run_zapbuf(void *buf);
 extern void fid_run_freebuf(void *runbuf);
-extern void fid_run_free(void *run);
+extern void fid_run_free(Run *run);
 
 #ifdef __cplusplus
 }

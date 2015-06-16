@@ -43,12 +43,12 @@ EngineFilter::EngineFilter(char * conf, int predefinedType)
         break;
     default:
         processSample = &EngineFilter::processSampleDynamic;
-        fbuf1 = new FidData(conf);
-        fbuf2 = new FidData(reinterpret_cast<FidData*>(fbuf1));
+        FidData *data = new FidData(conf);
+        fbuf1 = data;
+        fbuf2 = new FidData(*data);
     }
     int i;
-    for(i=0; i < FILTER_BUF_SIZE; i++)
-        buf1[i] = buf2[i] = 0;
+    for(i=0; i < FILTER_BUF_SIZE; i++) buf1[i] = buf2[i] = 0;
 }
 
 EngineFilter::~EngineFilter()
@@ -56,12 +56,9 @@ EngineFilter::~EngineFilter()
     if(processSample == &EngineFilter::processSampleDynamic) //if we used fidlib
     {
         FidData *data = reinterpret_cast<FidData*>(fbuf1);
-        fid_run_free(data->runp);
-        data->runp = nullptr;
         delete data;
         fbuf1 = nullptr;
         data = reinterpret_cast<FidData*>(fbuf2);
-        data->runp = nullptr;
         delete data;
         fbuf2 = nullptr;
     }
