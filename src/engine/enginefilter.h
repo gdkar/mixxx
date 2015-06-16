@@ -46,9 +46,10 @@ class EngineFilter : public EngineObject {
 
   private:
     struct FidData {
+      static void fid_run_deleter(FidRun *run){fid_run_free(run);}
       QSharedPointer<FidFilter> filterp;
       FidFunc*                  funcp;
-      FidRun*                   runp;
+      QSharedPointer<FidRun>    runp;
       void*                     bufp;
       FidData() = default;
       FidData(const char *conf)
@@ -56,20 +57,20 @@ class EngineFilter : public EngineObject {
         , funcp(nullptr)
         , runp (nullptr)
         , bufp (nullptr){
-          runp = fid_run_new ( filterp.data(), &funcp );
-          bufp = fid_run_newbuf ( runp );
+          runp.reset(fid_run_new ( filterp.data(), &funcp ), &FidData::fid_run_deleter);
+          bufp = fid_run_newbuf ( runp.data() );
         }
-      FidData ( FidData &other )
+      FidData ( FidData &&other)
+        : filterp(other.filterp)
+        , funcp  (other.funcp  )
+        , runp   (other.runp   )
+        , bufp   (other.bufp   )
+      {}
+      FidData ( const FidData &other )
         : filterp(other.filterp)
         , funcp  (other.funcp  )
         , runp   (other.runp)
-        , bufp   (other.bufp)
-      {}
-      FidData ( FidData *other )
-        : filterp(other->filterp)
-        , funcp  (other->funcp  )
-        , runp   (other->runp)
-        , bufp   (fid_run_newbuf(other->runp))
+        , bufp   (fid_run_newbuf(other.runp.data()))
       {}
      ~FidData(){if(bufp){fid_run_freebuf(bufp);bufp=nullptr;}}
     };

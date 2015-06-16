@@ -20,6 +20,7 @@
 #ifndef FIDCOMBINED_H
 #define FIDCOMBINED_H
 
+#ifndef HAVE_STRUCT_RUN
 typedef struct Run {
    int magic;		// Magic: 0x64966325
    double *fir;         // FIR parameters
@@ -29,7 +30,7 @@ typedef struct Run {
    int n_buf;           // Number of entries in buffer
    FidFilter *filt;	// Combined filter
 } Run;
-
+#endif
 typedef struct RunBuf {
    Run *run;
    double buf[0];
@@ -60,7 +61,7 @@ filter_step(void *rb, double val) {
 //	The returned handle must be released using fid_run_free().
 //
 
-void *
+Run*
 fid_run_new(FidFilter *filt, double (**funcpp)(void *,double)) {
    Run *rr= ALLOC(Run);
    FidFilter *ff;
@@ -90,8 +91,7 @@ fid_run_new(FidFilter *filt, double (**funcpp)(void *,double)) {
 //
 
 void *
-fid_run_newbuf(void *run) {
-   Run *rr= run;
+fid_run_newbuf(Run *rr) {
    RunBuf *rb;
    if (rr->magic != 0x64966325) error("Bad handle passed to fid_run_newbuf()");
    rb= Alloc(sizeof(RunBuf) + rr->n_buf * sizeof(double));
@@ -123,8 +123,7 @@ fid_run_freebuf(void *runbuf) {free(runbuf);}
 //
 
 void 
-fid_run_free(void *run) {
-   Run *rr= run;
+fid_run_free(Run  *rr) {
    free(rr->filt);
    free(rr);
 }

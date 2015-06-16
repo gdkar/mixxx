@@ -16,12 +16,14 @@
 //	advantage from flattening the filter list.  This code is also
 //	portable (unlike the JIT option).
 //
+#ifndef HAVE_STRUCT_RUN
 typedef struct Run {
    int magic;		// Magic: 0x64966325
    int buf_size;	// Length of working buffer required in doubles	
    double *coef;	// Coefficient list
    char *cmd;		// Command list
 } Run;
+#endif
 typedef struct RunBuf {
    double *coef;
    char *cmd;
@@ -195,7 +197,7 @@ filter_step(void *fbuf, double iir) {
 //	The returned handle must be released using fid_run_free().
 //
 
-void *
+Run *
 fid_run_new(FidFilter *filt, double (**funcpp)(void *,double)) {
    int buf_size= 0;
    uchar *cp, prev;
@@ -368,8 +370,7 @@ fid_run_new(FidFilter *filt, double (**funcpp)(void *,double)) {
 //
 
 void *
-fid_run_newbuf(void *run) {
-   Run *rr= (Run*)run;
+fid_run_newbuf(Run  *rr) {
    RunBuf *rb;
    int siz;
 
@@ -391,8 +392,7 @@ fid_run_newbuf(void *run) {
 //
 
 int 
-fid_run_bufsize(void *run) {
-   Run *rr= (Run*)run;
+fid_run_bufsize(Run *rr) {
    int siz;
 
    if (rr->magic != 0x64966325)
@@ -412,8 +412,7 @@ fid_run_bufsize(void *run) {
 //
 
 void 
-fid_run_initbuf(void *run, void *buf) {
-   Run *rr= (Run*)run;
+fid_run_initbuf(Run  *rr, void *buf) {
    RunBuf *rb= (RunBuf*)buf;
    int siz;
    if (rr->magic != 0x64966325) error("Bad handle passed to fid_run_initbuf()");
@@ -443,5 +442,5 @@ fid_run_freebuf(void *runbuf) {free(runbuf);}
 //	Delete the filter
 //
 void 
-fid_run_free(void *run) {free(run);}
+fid_run_free(Run *run) {free(run);}
 // END //
