@@ -50,40 +50,19 @@ class ControlObject : public QObject {
         return getControl(key, warn);
     }
 
-    QString name() const {
-        return m_pControl ?  m_pControl->name() : QString();
-    }
-
-    void setName(const QString& name) {
-        if (m_pControl) {
-            m_pControl->setName(name);
-        }
-    }
-
-    const QString description() const {
-        return m_pControl ?  m_pControl->description() : QString();
-    }
-
+    QString name() const {return m_pControl ?  m_pControl->name() : QString();}
+    void setName(const QString& name) {if (m_pControl) {m_pControl->setName(name);}}
+    const QString description() const {return m_pControl ?  m_pControl->description() : QString();}
     void setDescription(const QString& description) {
-        if (m_pControl) {
-            m_pControl->setDescription(description);
-        }
+        if (m_pControl) {m_pControl->setDescription(description);}
     }
 
     // Return the key of the object
-    inline ConfigKey getKey() const {
-        return m_key;
-    }
-
+    inline ConfigKey getKey() const {return m_key;}
     // Returns the value of the ControlObject
-    inline double get() const {
-        return m_pControl ? m_pControl->get() : 0.0;
-    }
-
+    inline double get() const {return m_pControl ? m_pControl->get() : 0.0;}
     // Returns the bool interpretation of the ControlObject
-    inline bool toBool() const {
-        return get() > 0.0;
-    }
+    inline bool toBool() const {return get() > 0.0;}
 
     // Instantly returns the value of the ControlObject
     static double get(const ConfigKey& key);

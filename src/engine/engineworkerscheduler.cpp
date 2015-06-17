@@ -26,7 +26,7 @@ void EngineWorkerScheduler::workerReady(EngineWorker* pWorker) {
         // in this slot. Write the address of the variable pWorker, since it is
         // a 1-element array.
         m_scheduleFIFO.write(&pWorker, 1);
-        m_bWakeScheduler = true;
+        m_waitCondition.wakeAll();
     }
 }
 
@@ -45,9 +45,7 @@ void EngineWorkerScheduler::run() {
         Event::start("EngineWorkerScheduler");
         EngineWorker* pWorker = NULL;
         while (m_scheduleFIFO.read(&pWorker, 1) == 1) {
-            if (pWorker) {
-                pWorker->wake();
-            }
+            if (pWorker) {pWorker->wake();}
         }
         Event::end("EngineWorkerScheduler");
         m_mutex.lock();

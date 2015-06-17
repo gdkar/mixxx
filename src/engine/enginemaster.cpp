@@ -118,7 +118,7 @@ EngineMaster::EngineMaster(ConfigObject<ConfigValue>* _config,
     m_pHeadSplitEnabled->setButtonMode(ControlPushButton::TOGGLE);
     m_pHeadSplitEnabled->set(0.0);
 
-    m_pTalkoverDucking = new EngineTalkoverDucking(_config, group);
+    m_pTalkoverDucking = new EngineTalkoverDucking(group,_config, this);
 
     // Allocate buffers
     m_pHead = SampleUtil::alloc(MAX_BUFFER_LEN);
@@ -389,7 +389,7 @@ void EngineMaster::process(const int iBufferSize) {
     // Clear talkover compressor for the next round of gain calculation.
     m_pTalkoverDucking->clearKeys();
     if (m_pTalkoverDucking->getMode() != EngineTalkoverDucking::OFF) {
-        m_pTalkoverDucking->processKey(m_pTalkover, iBufferSize);
+        m_pTalkoverDucking->process(m_pTalkover, iBufferSize);
     }
 
     // Calculate the crossfader gains for left and right side of the crossfader
