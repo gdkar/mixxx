@@ -21,9 +21,7 @@ class ControlDoublePrivate : public QObject {
     // Used to implement control persistence. All controls that are marked
     // "persist in user config" get and set their value on creation/deletion
     // using this ConfigObject.
-    static void setUserConfig(ConfigObject<ConfigValue>* pConfig) {
-        s_pUserConfig = pConfig;
-    }
+    static void setUserConfig(ConfigObject<ConfigValue>* pConfig) {s_pUserConfig = pConfig;}
 
     // Adds a ConfigKey for 'alias' to the control for 'key'. Can be used for
     // supporting a legacy / deprecated control. The 'key' control must exist
@@ -37,40 +35,22 @@ class ControlDoublePrivate : public QObject {
             const ConfigKey& key, bool warn = true,
             ControlObject* pCreatorCO = NULL, bool bIgnoreNops = true, bool bTrack = false,
             bool bPersist = false);
-
     // Adds all ControlDoublePrivate that currently exist to pControlList
     static void getControls(QList<QSharedPointer<ControlDoublePrivate> >* pControlsList);
-
     static QHash<ConfigKey, ConfigKey> getControlAliases();
-
-    const QString& name() const {
-        return m_name;
-    }
-
-    void setName(const QString& name) {
-        m_name = name;
-    }
-
-    const QString& description() const {
-        return m_description;
-    }
-
-    void setDescription(const QString& description) {
-        m_description = description;
-    }
-
+    const QString& name() const {return m_name;}
+    void setName(const QString& name) {m_name = name;}
+    const QString& description() const {return m_description;}
+    void setDescription(const QString& description) {m_description = description;}
     // Sets the control value.
     void set(double value, QObject* pSender);
     // directly sets the control value. Must be used from and only from the
     // ValueChangeRequest slot.
     void setAndConfirm(double value, QObject* pSender);
     // Gets the control value.
-    inline double get() const {
-        return m_value.getValue();
-    }
+    inline double get() const {return m_value.getValue();}
     // Resets the control value to its default.
     void reset();
-
     // Set the behavior to be used when setting values and translating between
     // parameter and value space. Returns the previously set behavior (if any).
     // The caller must not delete the behavior at any time. The memory is managed
@@ -84,31 +64,13 @@ class ControlDoublePrivate : public QObject {
 
     void setMidiParameter(MidiOpCode opcode, double dParam);
     double getMidiParameter() const;
-
-    inline bool ignoreNops() const {
-        return m_bIgnoreNops;
-    }
-
-    inline void setDefaultValue(double dValue) {
-        m_defaultValue.setValue(dValue);
-    }
-
-    inline double defaultValue() const {
-        return m_defaultValue.getValue();
-    }
-
-    inline ControlObject* getCreatorCO() const {
-        return m_pCreatorCO;
-    }
-
-    inline void removeCreatorCO() {
-        m_pCreatorCO = NULL;
-    }
-
-    inline ConfigKey getKey() {
-        return m_key;
-    }
-
+    inline bool ignoreNops() const {return m_bIgnoreNops;}
+    inline void setDefaultValue(double dValue) {m_defaultValue.setValue(dValue);}
+    inline double defaultValue() const {return m_defaultValue.getValue();}
+    inline ControlObject* getCreatorCO() const {return m_pCreatorCO;}
+    inline void setCreatorCO(ControlObject *co) {if(co) m_pCreatorCO = co;}
+    inline void removeCreatorCO() {m_pCreatorCO = NULL;}
+    inline ConfigKey getKey() {return m_key;}
     // Connects a slot to the ValueChange request for CO validation. All change
     // requests issued by set are routed though the connected slot. This can
     // decide with its own thread safe solution if the requested value can be

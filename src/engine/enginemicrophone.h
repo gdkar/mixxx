@@ -57,7 +57,7 @@ class EngineMicrophone : public EngineChannel, public AudioDestination {
     ControlObject m_pEnabled;
     ControlAudioTaperPot m_pPregain;
     ControlObjectSlave m_pSampleRate;
-    const CSAMPLE* volatile m_sampleBuffer;
+    const CSAMPLE* m_sampleBuffer;
 
     bool m_wasActive;
 };

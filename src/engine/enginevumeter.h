@@ -18,7 +18,8 @@
 #define ENGINEVUMETER_H
 
 #include "engine/engineobject.h"
-
+#include "controlpotmeter.h"
+#include "controlobjectslave.h"
 // Rate at which the vumeter is updated (using a sample rate of 44100 Hz):
 #define VU_UPDATE_RATE 30 // in 1/s, fits to display frame rate
 #define PEAK_DURATION 500 // in ms
@@ -46,19 +47,19 @@ class EngineVuMeter : public EngineObject {
   private:
     void doSmooth(CSAMPLE &currentVolume, CSAMPLE newVolume);
 
-    ControlPotmeter* m_ctrlVuMeter;
-    ControlPotmeter* m_ctrlVuMeterL;
-    ControlPotmeter* m_ctrlVuMeterR;
+    ControlPotmeter m_ctrlVuMeter;
+    ControlPotmeter m_ctrlVuMeterL;
+    ControlPotmeter m_ctrlVuMeterR;
     CSAMPLE m_fRMSvolumeL;
     CSAMPLE m_fRMSvolumeSumL;
     CSAMPLE m_fRMSvolumeR;
     CSAMPLE m_fRMSvolumeSumR;
     int m_iSamplesCalculated;
 
-    ControlPotmeter* m_ctrlPeakIndicator;
+    ControlPotmeter m_ctrlPeakIndicator;
     int m_peakDuration;
 
-    ControlObjectSlave* m_pSampleRate;
+    ControlObjectSlave m_pSampleRate;
 };
 
 #endif

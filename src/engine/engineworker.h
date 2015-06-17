@@ -19,16 +19,14 @@ class EngineWorkerScheduler;
 class EngineWorker : public QThread {
     Q_OBJECT
   public:
-    EngineWorker();
+    EngineWorker(QObject *pParent=nullptr);
     virtual ~EngineWorker();
 
     virtual void run();
 
     void setScheduler(EngineWorkerScheduler* pScheduler);
     bool workReady();
-    void wake() {
-        m_semaRun.release();
-    }
+    void wake() {m_semaRun.release();}
 
   protected:
     QSemaphore m_semaRun;

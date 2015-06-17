@@ -109,25 +109,19 @@ QSharedPointer<ControlDoublePrivate> ControlDoublePrivate::getControl(
         }
         return QSharedPointer<ControlDoublePrivate>();
     }
-
     QMutexLocker locker(&s_qCOHashMutex);
     QSharedPointer<ControlDoublePrivate> pControl;
     QHash<ConfigKey, QWeakPointer<ControlDoublePrivate> >::const_iterator it = s_qCOHash.find(key);
-
     if (it != s_qCOHash.end()) {
         if (pCreatorCO) {
             if (warn) {
                 qDebug() << "ControlObject" << key.group << key.item << "already created";
             }
-        } else {
-            pControl = it.value();
-        }
+        } else {pControl = it.value();}
     }
-
     locker.unlock();
-
-    if (pControl == NULL) {
-        if (pCreatorCO) {
+    if (pControl.isNull()) {
+//        if (pCreatorCO) {
             pControl = QSharedPointer<ControlDoublePrivate>(
                     new ControlDoublePrivate(key, pCreatorCO, bIgnoreNops,
                                              bTrack, bPersist));
@@ -135,10 +129,14 @@ QSharedPointer<ControlDoublePrivate> ControlDoublePrivate::getControl(
             //qDebug() << "ControlDoublePrivate::s_qCOHash.insert(" << key.group << "," << key.item << ")";
             s_qCOHash.insert(key, pControl);
             locker.unlock();
-        } else if (warn) {
-            qWarning() << "ControlDoublePrivate::getControl returning NULL for ("
-                       << key.group << "," << key.item << ")";
-        }
+///        } else if (warn) {
+//            qWarning() << "ControlDoublePrivate::getControl returning NULL for ("
+//                       << key.group << "," << key.item << ")";
+//        }
+    }else{
+      if(!pControl->getCreatorCO() && pCreatorCO){
+        pControl->setCreatorCO(pCreatorCO);
+      }
     }
     return pControl;
 }
@@ -157,13 +155,11 @@ void ControlDoublePrivate::getControls(
     }
     s_qCOHashMutex.unlock();
 }
-
 // static
 QHash<ConfigKey, ConfigKey> ControlDoublePrivate::getControlAliases() {
     QMutexLocker locker(&s_qCOHashMutex);
     return s_qCOAliasHash;
 }
-
 void ControlDoublePrivate::reset() {
     double defaultValue = m_defaultValue.getValue();
     // NOTE: pSender = NULL is important. The originator of this action does
@@ -171,24 +167,15 @@ void ControlDoublePrivate::reset() {
     // general valueChanged() signal even though we know the originator.
     set(defaultValue, NULL);
 }
-
 void ControlDoublePrivate::set(double value, QObject* pSender) {
     // If the behavior says to ignore the set, ignore it.
     QSharedPointer<ControlNumericBehavior> pBehavior = m_pBehavior;
-    if (!pBehavior.isNull() && !pBehavior->setFilter(&value)) {
-        return;
-    }
+    if (!pBehavior.isNull() && !pBehavior->setFilter(&value)) {return;}
     if (m_confirmRequired) {
         emit(valueChangeRequest(value));
-    } else {
-        setInner(value, pSender);
-    }
+    } else {setInner(value, pSender);}
 }
-
-void ControlDoublePrivate::setAndConfirm(double value, QObject* pSender) {
-    setInner(value, pSender);
-}
-
+void ControlDoublePrivate::setAndConfirm(double value, QObject* pSender) {setInner(value, pSender);}
 void ControlDoublePrivate::setInner(double value, QObject* pSender) {
     if (get() == value) {return;}
     m_value.setValue(value);
@@ -228,9 +215,7 @@ void ControlDoublePrivate::setMidiParameter(MidiOpCode opcode, double dParam) {
     QSharedPointer<ControlNumericBehavior> pBehavior = m_pBehavior;
     if (!pBehavior.isNull()) {
         pBehavior->setValueFromMidiParameter(opcode, dParam, this);
-    } else {
-        set(dParam, NULL);
-    }
+    } else {set(dParam, NULL);}
 }
 double ControlDoublePrivate::getMidiParameter() const {
     QSharedPointer<ControlNumericBehavior> pBehavior = m_pBehavior;
