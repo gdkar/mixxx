@@ -28,28 +28,22 @@
 ControlObject::ControlObject() {
 }
 
-ControlObject::ControlObject(ConfigKey key, bool bIgnoreNops, bool bTrack,
-                             bool bPersist) {
+ControlObject::ControlObject(ConfigKey key, bool bIgnoreNops, bool bTrack,bool bPersist) {
     initialize(key, bIgnoreNops, bTrack, bPersist);
 }
 
 ControlObject::~ControlObject() {
-    if (m_pControl) {
-        m_pControl->removeCreatorCO();
-    }
+    if (m_pControl) {m_pControl->removeCreatorCO();}
 }
 
-void ControlObject::initialize(ConfigKey key, bool bIgnoreNops, bool bTrack,
-                               bool bPersist) {
+void ControlObject::initialize(ConfigKey key, bool bIgnoreNops, bool bTrack,bool bPersist) {
     m_key = key;
-
     // Don't bother looking up the control if key is NULL. Prevents log spew.
     if (!m_key.isNull()) {
         m_pControl = ControlDoublePrivate::getControl(m_key, true, this,
                                                       bIgnoreNops, bTrack,
                                                       bPersist);
     }
-
     // getControl can fail and return a NULL control even with the create flag.
     if (m_pControl) {
         connect(m_pControl.data(), SIGNAL(valueChanged(double, QObject*)),
@@ -67,21 +61,15 @@ void ControlObject::privateValueChanged(double dValue, QObject* pSender) {
         emit(valueChangedFromEngine(dValue));
     }
 }
-
 // static
 ControlObject* ControlObject::getControl(const ConfigKey& key, bool warn) {
     //qDebug() << "ControlObject::getControl for (" << key.group << "," << key.item << ")";
     QSharedPointer<ControlDoublePrivate> pCDP = ControlDoublePrivate::getControl(key, warn);
-    if (pCDP) {
-        return pCDP->getCreatorCO();
-    }
+    if (pCDP) {return pCDP->getCreatorCO();}
     return NULL;
 }
-
 void ControlObject::setValueFromMidi(MidiOpCode o, double v) {
-    if (m_pControl) {
-        m_pControl->setMidiParameter(o, v);
-    }
+    if (m_pControl) {m_pControl->setMidiParameter(o, v);}
 }
 
 double ControlObject::getMidiParameter() const {

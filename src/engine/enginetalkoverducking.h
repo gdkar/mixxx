@@ -5,7 +5,7 @@
 class ConfigValue;
 class ControlObjectSlave;
 
-class EngineTalkoverDucking : public QObject, public EngineSideChainCompressor {
+class EngineTalkoverDucking :  public EngineSideChainCompressor {
   Q_OBJECT
   public:
     enum TalkoverDuckSetting {
@@ -13,19 +13,20 @@ class EngineTalkoverDucking : public QObject, public EngineSideChainCompressor {
         AUTO,
         MANUAL,
     };
-    EngineTalkoverDucking(ConfigObject<ConfigValue>* pConfig, const QString&group, QObject *pParent=nullptr);
+    EngineTalkoverDucking(const QString &group, ConfigObject<ConfigValue>* pConfig,  QObject *pParent=nullptr);
     virtual ~EngineTalkoverDucking();
     TalkoverDuckSetting getMode() const {
         return static_cast<TalkoverDuckSetting>(int(m_pTalkoverDucking->get()));
     }
     CSAMPLE getGain(int numFrames);
   public slots:
+    const QString &group()const{return m_group;}
     void slotSampleRateChanged(double);
     void slotDuckStrengthChanged(double);
     void slotDuckModeChanged(double);
   private:
+    const QString m_group;
     ConfigObject<ConfigValue>* m_pConfig;
-    QString m_group;
     ControlObjectSlave* m_pMasterSampleRate;
     ControlPotmeter* m_pDuckStrength;
     ControlPushButton* m_pTalkoverDucking;

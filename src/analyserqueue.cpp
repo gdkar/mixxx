@@ -282,15 +282,11 @@ void AnalyserQueue::run() {
     m_progressInfo.track_progress = 0;
     m_progressInfo.queue_size = 0;
     m_progressInfo.sema.release(); // Initalise with one
-
     while (!m_exit) {
         TrackPointer nextTrack = dequeueNextBlocking();
-
         // It's important to check for m_exit here in case we decided to exit
         // while blocking for a new track.
-        if (m_exit)
-            return;
-
+        if (m_exit) return;
         // If the track is NULL, try to get the next one.
         // Could happen if the track was queued but then deleted.
         // Or if dequeueNextBlocking is unblocked by exit == true
@@ -303,9 +299,7 @@ void AnalyserQueue::run() {
             }
             continue;
         }
-
         Trace trace("AnalyserQueue analyzing track");
-
         // Get the audio
         SoundSourceProxy soundSourceProxy(nextTrack);
         Mixxx::AudioSourceConfig audioSrcCfg;
@@ -324,11 +318,9 @@ void AnalyserQueue::run() {
                 processTrack = true;
             }
         }
-
         m_qm.lock();
         m_queue_size = m_tioq.size();
         m_qm.unlock();
-
         if (processTrack) {
             emitUpdateProgress(nextTrack, 0);
             bool completed = doAnalysis(nextTrack, pAudioSource);
