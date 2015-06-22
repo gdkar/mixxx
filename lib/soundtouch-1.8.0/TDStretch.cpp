@@ -63,7 +63,7 @@ using namespace soundtouch;
  *****************************************************************************/
 
 // Table for the hierarchical mixing position seeking algorithm
-static const short _scanOffsets[5][24]={
+static const short _scanOffsets[4][24]={
     { 124,  186,  248,  310,  372,  434,  496,  558,  620,  682,  744, 806,
       868,  930,  992, 1054, 1116, 1178, 1240, 1302, 1364, 1426, 1488,   0},
     {-100,  -75,  -50,  -25,   25,   50,   75,  100,    0,    0,    0,   0,
@@ -71,9 +71,7 @@ static const short _scanOffsets[5][24]={
     { -20,  -15,  -10,   -5,    5,   10,   15,   20,    0,    0,    0,   0,
         0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,   0},
     {  -4,   -3,   -2,   -1,    1,    2,    3,    4,    0,    0,    0,   0,
-        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,   0},
-    { 121,  114,   97,  114,   98,  105,  108,   32,  104,   99,  117,  111,
-      116,  100,  110,  117,  111,  115,    0,    0,    0,    0,    0,   0}};
+        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,   0}};
 
 /*****************************************************************************
  *
@@ -84,7 +82,7 @@ static const short _scanOffsets[5][24]={
 
 TDStretch::TDStretch() : FIFOProcessor(&outputBuffer)
 {
-    bQuickSeek = false;
+    bQuickSeek = true;
     channels = 2;
 
     pMidBuffer = NULL;
@@ -106,10 +104,7 @@ TDStretch::TDStretch() : FIFOProcessor(&outputBuffer)
 
 
 
-TDStretch::~TDStretch()
-{
-    delete[] pMidBufferUnaligned;
-}
+TDStretch::~TDStretch(){delete[] pMidBufferUnaligned;}
 
 
 
@@ -122,8 +117,7 @@ TDStretch::~TDStretch()
 //      position (default = 28 ms)
 // 'overlapMS' = overlapping length (default = 12 ms)
 
-void TDStretch::setParameters(int aSampleRate, int aSequenceMS, 
-                              int aSeekWindowMS, int aOverlapMS)
+void TDStretch::setParameters(int aSampleRate, int aSequenceMS, int aSeekWindowMS, int aOverlapMS)
 {
     // accept only positive parameter values - if zero or negative, use old values instead
     if (aSampleRate > 0)   this->sampleRate = aSampleRate;
@@ -922,7 +916,6 @@ double TDStretch::calcCrossCorrAccumulate(const float *mixingPos, const float *c
     {
         norm -= mixingPos[-i] * mixingPos[-i];
     }
-
     // Same routine for stereo and mono. For Stereo, unroll by factor of 2.
     // For mono it's same routine yet unrollsd by factor of 4.
     for (i = 0; i < channels * overlapLength; i += 4) 
@@ -932,14 +925,12 @@ double TDStretch::calcCrossCorrAccumulate(const float *mixingPos, const float *c
                 mixingPos[i + 2] * compare[i + 2] +
                 mixingPos[i + 3] * compare[i + 3];
     }
-
     // update normalizer with last samples of this round
     for (int j = 0; j < channels; j ++)
     {
         i --;
         norm += mixingPos[i] * mixingPos[i];
     }
-
     return corr / sqrt((norm < 1e-9 ? 1.0 : norm));
 }
 
