@@ -173,33 +173,24 @@ public:
     /// This function automatically chooses a correct feature set depending on if the CPU
     /// supports MMX/SSE/etc extensions.
     static TDStretch *newInstance();
-    
     /// Returns the output buffer object
     FIFOSamplePipe *getOutput() { return &outputBuffer; };
-
     /// Returns the input buffer object
     FIFOSamplePipe *getInput() { return &inputBuffer; };
-
     /// Sets new target tempo. Normal tempo = 'SCALE', smaller values represent slower 
     /// tempo, larger faster tempo.
     void setTempo(float newTempo);
-
     /// Returns nonzero if there aren't any samples available for outputting.
     virtual void clear();
-
     /// Clears the input buffer
     void clearInput();
-
     /// Sets the number of channels, 1 = mono, 2 = stereo
     void setChannels(int numChannels);
-
     /// Enables/disables the quick position seeking algorithm. Zero to disable, 
     /// nonzero to enable
     void enableQuickSeek(bool enable);
-
     /// Returns nonzero if the quick seeking algorithm is enabled.
     bool isQuickSeekEnabled() const;
-
     /// Sets routine control parameters. These control are certain time constants
     /// defining how the sound is stretched to the desired duration.
     //
@@ -257,7 +248,6 @@ public:
 #endif /// SOUNDTOUCH_ALLOW_MMX
 
 
-#ifdef SOUNDTOUCH_ALLOW_SSE
     /// Class that implements SSE optimized routines for floating point samples type.
     class TDStretchSSE : public TDStretch
     {
@@ -265,8 +255,5 @@ public:
         double calcCrossCorr(const float *mixingPos, const float *compare, double &norm) const;
         double calcCrossCorrAccumulate(const float *mixingPos, const float *compare, double &norm) const;
     };
-
-#endif /// SOUNDTOUCH_ALLOW_SSE
-
 }
 #endif  /// TDStretch_H

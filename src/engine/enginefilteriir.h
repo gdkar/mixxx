@@ -2,7 +2,11 @@
 #define ENGINEFILTERIIR_H
 
 #include <string.h>
-
+#include <xmmintrin.h>
+#include <pmmintrin.h>
+#include <smmintrin.h>
+#include <immintrin.h>
+#include <x86intrin.h>
 #include "engine/engineobject.h"
 #include "sampleutil.h"
 #include <fidlib.h>
@@ -22,9 +26,20 @@ enum IIRPass {
 };
 
 
-class EngineFilterIIRBase : public EngineObjectConstIn {
+class EngineFilterIIRBase : public EngineObject{
+  Q_OBJECT
+    using v4sf = __m128;
+    ssize_t   m_fir_len;
+    ssize_t   m_iir_len;
+    v4sf     *m_fir_coef;
+    v4sf     *m_iir_coef;
+    v4sf     *m_history;
   public:
+    EngineFilterIIRBase(QObject *pParent = nullptr);
+    EngineFilterIIRBase(float *fir_coef, ssize_t fir_len,float *iir_coef, ssize_t iir_len, QObject *pParent=nullptr);
+    virtual ~EngineFilterIIRBase(){ delete[] m_fir_coef;delete[] m_iir_coef;delete[] m_history;}
     virtual void assumeSettled() = 0;
+    virtual void process( const CSAMPLE *pIn, CSAMPLE *pOut, const int iBufferSize );
 };
 
 
@@ -34,8 +49,9 @@ class EngineFilterIIRBase : public EngineObjectConstIn {
 template<unsigned int SIZE, enum IIRPass PASS>
 class EngineFilterIIR : public EngineFilterIIRBase {
   public:
-    EngineFilterIIR()
-            : m_doRamping(false),
+    EngineFilterIIR(QObject *pParent = nullptr)
+            : EngineFilterIIRBase(pParent),
+              m_doRamping(false),
               m_doStart(false),
               m_startFromDry(false) {
         memset(m_coef, 0, sizeof(m_coef));
@@ -46,11 +62,7 @@ class EngineFilterIIR : public EngineFilterIIRBase {
 
     // this can be called continuously for Filters that have own ramping
     // or need no fade when disabling
-    void pauseFilter() {
-        if (!m_doStart) {
-            pauseFilterInner();
-        }
-    }
+    void pauseFilter() {if (!m_doStart) {pauseFilterInner();}}
 
     // this is can be used instead off a final process() call before pause
     // It fades to dry or 0 according to the m_startFromDry parameter
