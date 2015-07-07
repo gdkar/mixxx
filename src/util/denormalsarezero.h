@@ -10,7 +10,7 @@
 // But we take the risk, since if it crashes, it will crash immediately after
 // start. Effected users can switch to a legacy i386 build.
 // See: https://software.intel.com/en-us/articles/x87-and-sse-floating-point-assists-in-ia-32-flush-to-zero-ftz-and-denormals-are-zero-daz
-
+#include "util/sse_mathfun.h"
 #ifdef __SSE__
 
 #include <xmmintrin.h>
