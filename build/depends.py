@@ -194,7 +194,7 @@ class Qt(Dependence):
         qt_modules = [
             'QtCore', 'QtGui', 'QtOpenGL', 'QtXml', 'QtSvg',
             'QtSql', 'QtScript', 'QtXmlPatterns', 'QtNetwork',
-            'QtTest', 'QtScriptTools'
+            'QtTest', 'QtScriptTools','QtQml','QtQuick',
         ]
         if qt5:
             qt_modules.extend(['QtWidgets', 'QtConcurrent'])
@@ -285,6 +285,8 @@ class Qt(Dependence):
             }
             qt5_module_defines = {
                 'QtScript'   : ['QT_SCRIPT_LIB'],
+                'QtQuick'   : ['QT_QUICK_LIB'],
+                'QtQML'   : ['QT_QML_LIB'],
                 'QtSvg'      : ['QT_SVG_LIB'],
                 'QtSql'      : ['QT_SQL_LIB'],
                 'QtXml'      : ['QT_XML_LIB'],
