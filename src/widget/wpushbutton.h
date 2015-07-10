@@ -37,7 +37,7 @@
 class WPushButton : public WWidget {
     Q_OBJECT
   public:
-    WPushButton(QWidget* pParent = NULL);
+    WPushButton(QWidget* pParent = nullptr);
     // Used by WPushButtonTest.
     WPushButton(QWidget* pParent, ControlPushButton::ButtonMode leftButtonMode,
                 ControlPushButton::ButtonMode rightButtonMode);

@@ -31,7 +31,7 @@ BrowseFeature::BrowseFeature(QObject* parent,
           m_browseModel(this, pTrackCollection, pRecordingManager),
           m_proxyModel(&m_browseModel),
           m_pTrackCollection(pTrackCollection),
-          m_pLastRightClickedItem(NULL) {
+          m_pLastRightClickedItem(nullptr) {
     connect(this, SIGNAL(requestAddDir(QString)),
             parent, SLOT(slotRequestAddDir(QString)));
 
@@ -251,7 +251,7 @@ void BrowseFeature::onRightClickChild(const QPoint& globalPos, QModelIndex index
         return;
     }
 
-    QMenu menu(NULL);
+    QMenu menu(nullptr);
     if (item->parent()->dataPath().toString() == QUICK_LINK_NODE) {
         menu.addAction(m_pRemoveQuickLinkAction);
         menu.exec(globalPos);

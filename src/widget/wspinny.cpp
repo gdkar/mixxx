@@ -24,21 +24,21 @@ WSpinny::WSpinny(QWidget* parent, const QString& group,
           WBaseWidget(this),
           m_group(group),
           m_pConfig(pConfig),
-          m_pBgImage(NULL),
-          m_pMaskImage(NULL),
-          m_pFgImage(NULL),
-          m_pGhostImage(NULL),
-          m_pPlay(NULL),
-          m_pPlayPos(NULL),
-          m_pVisualPlayPos(NULL),
-          m_pTrackSamples(NULL),
-          m_pTrackSampleRate(NULL),
-          m_pScratchToggle(NULL),
-          m_pScratchPos(NULL),
-          m_pVinylControlSpeedType(NULL),
-          m_pVinylControlEnabled(NULL),
-          m_pSignalEnabled(NULL),
-          m_pSlipEnabled(NULL),
+          m_pBgImage(nullptr),
+          m_pMaskImage(nullptr),
+          m_pFgImage(nullptr),
+          m_pGhostImage(nullptr),
+          m_pPlay(nullptr),
+          m_pPlayPos(nullptr),
+          m_pVisualPlayPos(nullptr),
+          m_pTrackSamples(nullptr),
+          m_pTrackSampleRate(nullptr),
+          m_pScratchToggle(nullptr),
+          m_pScratchPos(nullptr),
+          m_pVinylControlSpeedType(nullptr),
+          m_pVinylControlEnabled(nullptr),
+          m_pSignalEnabled(nullptr),
+          m_pSlipEnabled(nullptr),
           m_bShowCover(true),
           m_dInitialPos(0.),
           m_iVinylInput(-1),
@@ -70,7 +70,7 @@ WSpinny::WSpinny(QWidget* parent, const QString& group,
              << "Sharing:" << context()->isSharing();
 
     CoverArtCache* pCache = CoverArtCache::instance();
-    if (pCache != NULL) {
+    if (pCache != nullptr) {
         connect(pCache, SIGNAL(coverFound(const QObject*, const int,
                                           const CoverInfo&, QPixmap, bool)),
                 this, SLOT(slotCoverFound(const QObject*, const int,
@@ -274,7 +274,7 @@ void WSpinny::slotTrackCoverArtUpdated() {
         m_lastRequestedCover = m_loadedTrack->getCoverInfo();
         m_lastRequestedCover.trackLocation = m_loadedTrack->getLocation();
         CoverArtCache* pCache = CoverArtCache::instance();
-        if (pCache != NULL) {
+        if (pCache != nullptr) {
             // TODO(rryan): Don't use track id.
             pCache->requestCover(m_lastRequestedCover, this, m_loadedTrack->getId());
         }
@@ -489,7 +489,7 @@ void WSpinny::updateVinylControlSpeed(double rpm) {
 
 void WSpinny::updateVinylControlSignalEnabled(double enabled) {
 #ifdef __VINYLCONTROL__
-    if (m_pVCManager == NULL) {
+    if (m_pVCManager == nullptr) {
         return;
     }
     m_bSignalActive = enabled;

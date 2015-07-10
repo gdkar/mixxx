@@ -171,12 +171,12 @@ void TrackCollection::installSorting(QSqlDatabase &db) {
     if (v.isValid() && strcmp(v.typeName(), "sqlite3*") == 0) {
         // v.data() returns a pointer to the handle
         sqlite3* handle = *static_cast<sqlite3**>(v.data());
-        if (handle != 0) { // check that it is not NULL
+        if (handle != 0) { // check that it is not nullptr
             int result = sqlite3_create_collation(
                     handle,
                     "localeAwareCompare",
                     SQLITE_UTF16,
-                    NULL,
+                    nullptr,
                     sqliteLocaleAwareCompare);
             if (result != SQLITE_OK)
             qWarning() << "Could not add string collation function: " << result;
@@ -186,9 +186,9 @@ void TrackCollection::installSorting(QSqlDatabase &db) {
                     "like",
                     2,
                     SQLITE_ANY,
-                    NULL,
+                    nullptr,
                     sqliteLike,
-                    NULL, NULL);
+                    nullptr, nullptr);
             if (result != SQLITE_OK)
             qWarning() << "Could not add like 2 function: " << result;
 
@@ -197,9 +197,9 @@ void TrackCollection::installSorting(QSqlDatabase &db) {
                     "like",
                     3,
                     SQLITE_UTF8, // No conversion, Data is stored as UTF8
-                    NULL,
+                    nullptr,
                     sqliteLike,
-                    NULL, NULL);
+                    nullptr, nullptr);
             if (result != SQLITE_OK)
             qWarning() << "Could not add like 3 function: " << result;
         } else {

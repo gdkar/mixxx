@@ -111,7 +111,7 @@ class ControlObject : public QObject {
     virtual void setParameter(double v);
 
     // Sets the control parameterized value to v. Thread safe, non-blocking.
-    virtual void setParameterFrom(double v, QObject* pSender = NULL);
+    virtual void setParameterFrom(double v, QObject* pSender = nullptr);
 
     // Connects a Qt slot to a signal that is delivered when a new value change
     // request arrives for this control.

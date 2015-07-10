@@ -38,7 +38,7 @@ ControlObjectThread::ControlObjectThread(const ConfigKey& key, QObject* pParent)
 
 void ControlObjectThread::initialize(const ConfigKey& key) {
     m_key = key;
-    // Don't bother looking up the control if key is NULL. Prevents log spew.
+    // Don't bother looking up the control if key is nullptr. Prevents log spew.
     if (!key.isNull()) {
         m_pControl = ControlDoublePrivate::getControl(key);
     }

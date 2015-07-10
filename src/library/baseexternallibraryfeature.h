@@ -23,7 +23,7 @@ class BaseExternalLibraryFeature : public LibraryFeature {
     // Must be implemented by external Libraries copied to Mixxx DB
     virtual BaseSqlTableModel* getPlaylistModelForPlaylist(QString playlist) {
         Q_UNUSED(playlist);
-        return NULL;
+        return nullptr;
     }
     // Must be implemented by external Libraries not copied to Mixxx DB
     virtual void appendTrackIdsFromRightClickIndex(QList<int>* trackIds, QString* pPlaylist);

@@ -60,7 +60,7 @@ const unsigned kBitsPerSampleDefault = 0;
 SoundSourceFLAC::SoundSourceFLAC(QUrl url)
         : SoundSource(url, "flac"),
           m_file(getLocalFileName()),
-          m_decoder(NULL),
+          m_decoder(nullptr),
           m_minBlocksize(0),
           m_maxBlocksize(0),
           m_minFramesize(0),
@@ -82,7 +82,7 @@ Result SoundSourceFLAC::tryOpen(const AudioSourceConfig& /*audioSrcCfg*/) {
     }
 
     m_decoder = FLAC__stream_decoder_new();
-    if (m_decoder == NULL) {
+    if (m_decoder == nullptr) {
         qWarning() << "Failed to create FLAC decoder!";
         return ERR;
     }
@@ -110,7 +110,7 @@ void SoundSourceFLAC::close() {
     if (m_decoder) {
         FLAC__stream_decoder_finish(m_decoder);
         FLAC__stream_decoder_delete(m_decoder); // frees memory
-        m_decoder = NULL;
+        m_decoder = nullptr;
     }
 
     m_file.close();

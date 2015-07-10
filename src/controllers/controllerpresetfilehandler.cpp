@@ -38,7 +38,7 @@ ControllerPresetPointer ControllerPresetFileHandler::loadPreset(const QString& p
     // defines include the dot.
     QString extension = "." + scriptPathInfo.completeSuffix();
 
-    ControllerPresetFileHandler* pHandler = NULL;
+    ControllerPresetFileHandler* pHandler = nullptr;
     if (scriptPath.endsWith(MIDI_PRESET_EXTENSION, Qt::CaseInsensitive)) {
         pHandler = new MidiControllerPresetFileHandler();
     } else if (scriptPath.endsWith(HID_PRESET_EXTENSION, Qt::CaseInsensitive) ||
@@ -46,7 +46,7 @@ ControllerPresetPointer ControllerPresetFileHandler::loadPreset(const QString& p
         pHandler = new HidControllerPresetFileHandler();
     }
 
-    if (pHandler == NULL) {
+    if (pHandler == nullptr) {
         qDebug() << "Preset" << scriptPath << "has an unrecognized extension.";
         return ControllerPresetPointer();
     }

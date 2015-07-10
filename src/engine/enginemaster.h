@@ -135,10 +135,10 @@ class EngineMaster : public QObject, public AudioSource {
 
     struct ChannelInfo {
         ChannelInfo(int index)
-                : m_pChannel(NULL),
-                  m_pBuffer(NULL),
-                  m_pVolumeControl(NULL),
-                  m_pMuteControl(NULL),
+                : m_pChannel(nullptr),
+                  m_pBuffer(nullptr),
+                  m_pVolumeControl(nullptr),
+                  m_pMuteControl(nullptr),
                   m_index(index) {
         }
         ChannelHandle m_handle;

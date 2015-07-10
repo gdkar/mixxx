@@ -66,7 +66,7 @@ void ErrorDialogProperties::addButton(QMessageBox::StandardButton button) {
 // ----------------------------------------------------
 // ---------- ErrorDialogHandler begins here ----------
 
-ErrorDialogHandler* ErrorDialogHandler::s_pInstance = NULL;
+ErrorDialogHandler* ErrorDialogHandler::s_pInstance = nullptr;
 
 ErrorDialogHandler::ErrorDialogHandler()
         : m_signalMapper(this) {
@@ -79,7 +79,7 @@ ErrorDialogHandler::ErrorDialogHandler()
 }
 
 ErrorDialogHandler::~ErrorDialogHandler() {
-    s_pInstance = NULL;
+    s_pInstance = nullptr;
 }
 
 ErrorDialogProperties* ErrorDialogHandler::newDialogProperties() {
@@ -186,7 +186,7 @@ void ErrorDialogHandler::errorDialog(ErrorDialogProperties* pProps) {
         if (QCoreApplication::instance()) {
             QCoreApplication::instance()->exit(-1);
         } else {
-            qDebug() << "QCoreApplication::instance() is NULL! Abruptly quitting...";
+            qDebug() << "QCoreApplication::instance() is nullptr! Abruptly quitting...";
             if (props->m_type==DLG_FATAL) {
                 abort();
             } else {

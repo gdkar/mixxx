@@ -34,7 +34,7 @@ EngineMaster::EngineMaster(ConfigObject<ConfigValue>* _config,
                            EffectsManager* pEffectsManager,
                            bool bEnableSidechain,
                            bool bRampingGain)
-        : m_pEngineEffectsManager(pEffectsManager ? pEffectsManager->getEngineEffectsManager() : NULL),
+        : m_pEngineEffectsManager(pEffectsManager ? pEffectsManager->getEngineEffectsManager() : nullptr),
           m_bRampingGain(bRampingGain),
           m_masterGainOld(0.0),
           m_headphoneMasterGainOld(0.0),
@@ -135,7 +135,7 @@ EngineMaster::EngineMaster(ConfigObject<ConfigValue>* _config,
     }
 
     // Starts a thread for recording and shoutcast
-    m_pSideChain = bEnableSidechain ? new EngineSideChain(_config) : NULL;
+    m_pSideChain = bEnableSidechain ? new EngineSideChain(_config) : nullptr;
 
     // X-Fader Setup
     m_pXFaderMode = new ControlPushButton(
@@ -238,7 +238,7 @@ void EngineMaster::processChannels(int iBufferSize) {
     EngineChannel* pMasterChannel = m_pMasterSync->getMaster();
     // Reserve the first place for the master channel which
     // should be processed first
-    m_activeChannels.append(NULL);
+    m_activeChannels.append(nullptr);
     int activeChannelsStartIndex = 1; // Nothing at 0 yet
     for (int i = 0; i < m_channels.size(); ++i) {
         ChannelInfo* pChannelInfo = m_channels[i];
@@ -461,7 +461,7 @@ void EngineMaster::process(const int iBufferSize) {
             GroupFeatureState masterFeatures;
             // Well, this is delayed by one buffer (it's dependent on the
             // output). Oh well.
-            if (m_pVumeter != NULL) {
+            if (m_pVumeter != nullptr) {
                 m_pVumeter->collectFeatures(&masterFeatures);
             }
             m_pEngineEffectsManager->process(m_masterHandle.handle(), m_pMaster,
@@ -495,7 +495,7 @@ void EngineMaster::process(const int iBufferSize) {
         // Submit master samples to the side chain to do shoutcasting, recording,
         // etc. (cpu intensive non-realtime tasks)
         CSAMPLE* pSidechain = m_pMaster;
-        if (m_pSideChain != NULL) {
+        if (m_pSideChain != nullptr) {
             if (m_pMasterTalkoverMix->toBool()) {
                 // Add Talkover to Sidechain output, re-use the talkover buffer
                 SampleUtil::addWithGain(m_pTalkover,
@@ -508,7 +508,7 @@ void EngineMaster::process(const int iBufferSize) {
 
         // Update VU meter (it does not return anything). Needs to be here so that
         // master balance and talkover is reflected in the VU meter.
-        if (m_pVumeter != NULL) {
+        if (m_pVumeter != nullptr) {
             m_pVumeter->process(pSidechain, iBufferSize);
         }
 
@@ -607,7 +607,7 @@ void EngineMaster::addChannel(EngineChannel* pChannel) {
     m_activeTalkoverChannels.reserve(m_channels.size());
 
     EngineBuffer* pBuffer = pChannelInfo->m_pChannel->getEngineBuffer();
-    if (pBuffer != NULL) {
+    if (pBuffer != nullptr) {
         pBuffer->bindWorkers(m_pWorkerScheduler);
     }
 }
@@ -619,7 +619,7 @@ EngineChannel* EngineMaster::getChannel(const QString& group) {
             return pChannelInfo->m_pChannel;
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 const CSAMPLE* EngineMaster::getDeckBuffer(unsigned int i) const {
@@ -629,7 +629,7 @@ const CSAMPLE* EngineMaster::getDeckBuffer(unsigned int i) const {
 const CSAMPLE* EngineMaster::getOutputBusBuffer(unsigned int i) const {
     if (i <= EngineChannel::RIGHT)
         return m_pOutputBusBuffers[i];
-    return NULL;
+    return nullptr;
 }
 
 const CSAMPLE* EngineMaster::getChannelBuffer(QString group) const {
@@ -639,7 +639,7 @@ const CSAMPLE* EngineMaster::getChannelBuffer(QString group) const {
             return pChannelInfo->m_pBuffer;
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 const CSAMPLE* EngineMaster::buffer(AudioOutput output) const {
@@ -657,7 +657,7 @@ const CSAMPLE* EngineMaster::buffer(AudioOutput output) const {
         return getDeckBuffer(output.getIndex());
         break;
     default:
-        return NULL;
+        return nullptr;
     }
 }
 

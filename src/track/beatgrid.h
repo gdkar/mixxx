@@ -19,9 +19,9 @@ class BeatGrid : public QObject, public virtual Beats {
   public:
     // Construct a BeatGrid. If a more accurate sample rate is known, provide it
     // in the iSampleRate parameter -- otherwise pass 0. If pByteArray is
-    // non-NULL, the BeatGrid will be deserialized from the byte array.
+    // non-nullptr, the BeatGrid will be deserialized from the byte array.
     BeatGrid(TrackInfoObject* pTrack, int iSampleRate,
-             const QByteArray* pByteArray=NULL);
+             const QByteArray* pByteArray=nullptr);
     virtual ~BeatGrid();
 
     // Initializes the BeatGrid to have a BPM of dBpm and the first beat offset

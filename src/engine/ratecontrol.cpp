@@ -33,7 +33,7 @@ enum RateControl::RATERAMP_MODE RateControl::m_eRateRampMode = RateControl::RATE
 RateControl::RateControl(QString group,
                          ConfigObject<ConfigValue>* _config, QObject *pParent)
     : EngineControl(group, _config, pParent),
-      m_pBpmControl(NULL),
+      m_pBpmControl(nullptr),
       m_ePbCurrent(0),
       m_ePbPressed(0),
       m_bTempStarted(false),
@@ -484,7 +484,7 @@ double RateControl::calculateSpeed(double baserate, double speed, bool paused,
             // If master sync is on, respond to it -- but vinyl and scratch mode always override.
             if (getSyncMode() == SYNC_FOLLOWER && !paused &&
                     !bVinylControlEnabled && !useScratch2Value) {
-                if (m_pBpmControl == NULL) {
+                if (m_pBpmControl == nullptr) {
                     qDebug() << "ERROR: calculateRate m_pBpmControl is null during master sync";
                     return 1.0;
                 }

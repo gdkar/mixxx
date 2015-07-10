@@ -32,7 +32,7 @@ class MixxxKeyboard : public QObject {
     Q_OBJECT
   public:
     MixxxKeyboard(ConfigObject<ConfigValueKbd> *pKbdConfigObject,
-                  QObject *parent=NULL, const char* name=NULL);
+                  QObject *parent=nullptr, const char* name=nullptr);
     virtual ~MixxxKeyboard();
 
     bool eventFilter(QObject *obj, QEvent *e);

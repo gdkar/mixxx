@@ -14,7 +14,7 @@
 namespace Mixxx {
 
 // Read both track metadata and cover art of supported file types.
-// Both parameters are optional and might be NULL.
+// Both parameters are optional and might be nullptr.
 Result readTrackMetadataAndCoverArtFromFile(TrackMetadata* pTrackMetadata, QImage* pCoverArt, QString fileName);
 
 // Write track metadata into the file with the given name

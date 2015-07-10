@@ -26,7 +26,7 @@ class WWidgetStackTest : public MixxxTest {
                 new ControlPushButton(ConfigKey(m_pGroup, "next")));
         m_pCurPageControl.reset(
                 new ControlObject(ConfigKey(m_pGroup, "page")));
-        m_pStack.reset(new WWidgetStack(NULL, m_pNextControl.data(),
+        m_pStack.reset(new WWidgetStack(nullptr, m_pNextControl.data(),
                                         m_pPrevControl.data(),
                                         m_pCurPageControl.data()));
 
@@ -110,7 +110,7 @@ TEST_F(WWidgetStackTest, MaintainPageControlValue) {
             new ControlObject(ConfigKey(m_pGroup,
                                         "MaintainPageControlValue-page")));
     QScopedPointer<WWidgetStack> stack(
-            new WWidgetStack(NULL, m_pNextControl.data(),
+            new WWidgetStack(nullptr, m_pNextControl.data(),
                              m_pPrevControl.data(),
                              m_pCurPageControl.data()));
 
@@ -122,7 +122,7 @@ TEST_F(WWidgetStackTest, MaintainPageControlValue) {
     m_pPage0Control->set(0);
 
     stack->addWidgetWithControl(&page0, m_pPage0Control.data(), -1);
-    stack->addWidgetWithControl(&page1, NULL, -1);
+    stack->addWidgetWithControl(&page1, nullptr, -1);
     stack->Init();
 
     // The off state above is overridden by the default value of curpagecontrol,

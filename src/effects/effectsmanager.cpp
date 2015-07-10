@@ -16,8 +16,8 @@ EffectsManager::EffectsManager(QObject* pParent, ConfigObject<ConfigValue>* pCon
         : QObject(pParent),
           m_pEffectChainManager(new EffectChainManager(pConfig, this)),
           m_nextRequestId(0),
-          m_pLoEqFreq(NULL),
-          m_pHiEqFreq(NULL),
+          m_pLoEqFreq(nullptr),
+          m_pHiEqFreq(nullptr),
           m_underDestruction(false) {
     qRegisterMetaType<EffectChain::InsertionType>("EffectChain::InsertionType");
     QPair<EffectsRequestPipe*, EffectsResponsePipe*> requestPipes =
@@ -156,7 +156,7 @@ QPair<EffectManifest, EffectsBackend*> EffectsManager::getEffectManifestAndBacke
         }
     }
 
-    EffectsBackend* pBackend = NULL;
+    EffectsBackend* pBackend = nullptr;
     return qMakePair(EffectManifest(), pBackend);
 }
 

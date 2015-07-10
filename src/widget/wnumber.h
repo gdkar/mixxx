@@ -26,7 +26,7 @@
 class WNumber : public WLabel  {
     Q_OBJECT
   public:
-    WNumber(QWidget* pParent = NULL);
+    WNumber(QWidget* pParent = nullptr);
     virtual ~WNumber();
 
     virtual void setup(QDomNode node, const SkinContext& context);

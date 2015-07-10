@@ -30,7 +30,7 @@
 class WKnob : public WDisplay {
    Q_OBJECT
   public:
-    WKnob(QWidget* pParent=NULL);
+    WKnob(QWidget* pParent=nullptr);
     virtual ~WKnob();
 
   protected:

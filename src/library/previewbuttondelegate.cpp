@@ -10,8 +10,8 @@
 
 PreviewButtonDelegate::PreviewButtonDelegate(QObject *parent, int column)
         : QStyledItemDelegate(parent),
-          m_pTableView(NULL),
-          m_pButton(NULL),
+          m_pTableView(nullptr),
+          m_pButton(nullptr),
           m_isOneCellInEditMode(false),
           m_column(column) {
     m_pPreviewDeckPlay = new ControlObjectSlave(

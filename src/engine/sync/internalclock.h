@@ -24,7 +24,7 @@ class InternalClock : public QObject, public Clock, public Syncable {
         return m_group;
     }
     EngineChannel* getChannel() const {
-        return NULL;
+        return nullptr;
     }
 
     void notifySyncModeChanged(SyncMode mode);

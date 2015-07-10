@@ -63,7 +63,7 @@ bool TreeItemModel::setData(const QModelIndex &a_rIndex,
                             const QVariant &a_rValue, int a_iRole) {
     // Get the item referred to by this index.
     TreeItem *pItem = static_cast<TreeItem*>(a_rIndex.internalPointer());
-    if (pItem == NULL) {
+    if (pItem == nullptr) {
         return false;
     }
 
@@ -104,7 +104,7 @@ QModelIndex TreeItemModel::index(int row, int column, const QModelIndex &parent)
     if (!hasIndex(row, column, parent))
         return QModelIndex();
 
-    TreeItem *parentItem = NULL;
+    TreeItem *parentItem = nullptr;
 
     if (!parent.isValid())
         parentItem = m_pRootItem;
@@ -135,7 +135,7 @@ int TreeItemModel::rowCount(const QModelIndex &parent) const {
     if (parent.column() > 0)
         return 0;
 
-    TreeItem *parentItem = NULL;
+    TreeItem *parentItem = nullptr;
     //qDebug() << "parent data: " << parent.data();
     if (!parent.isValid()) {
         parentItem = m_pRootItem;

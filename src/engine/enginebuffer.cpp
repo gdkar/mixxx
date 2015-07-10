@@ -51,14 +51,14 @@ EngineBuffer::EngineBuffer(QString group, ConfigObject<ConfigValue>* _config,
         : EngineObject(qobject_cast<QObject *>(pChannel)),
           m_group(group),
           m_pConfig(_config),
-          m_pLoopingControl(NULL),
-          m_pSyncControl(NULL),
-          m_pVinylControlControl(NULL),
-          m_pRateControl(NULL),
-          m_pBpmControl(NULL),
-          m_pKeyControl(NULL),
-          m_pReadAheadManager(NULL),
-          m_pReader(NULL),
+          m_pLoopingControl(nullptr),
+          m_pSyncControl(nullptr),
+          m_pVinylControlControl(nullptr),
+          m_pRateControl(nullptr),
+          m_pBpmControl(nullptr),
+          m_pKeyControl(nullptr),
+          m_pReadAheadManager(nullptr),
+          m_pReader(nullptr),
           m_filepos_play(0.),
           m_speed_old(0),
           m_scratching_old(false),
@@ -74,9 +74,9 @@ EngineBuffer::EngineBuffer(QString group, ConfigObject<ConfigValue>* _config,
           m_dSlipRate(1.0),
           m_slipEnabled(0),
           m_bSlipEnabledProcessing(false),
-          m_pRepeat(NULL),
-          m_startButton(NULL),
-          m_endButton(NULL),
+          m_pRepeat(nullptr),
+          m_startButton(nullptr),
+          m_endButton(nullptr),
           m_bScalerOverride(false),
           m_iSeekQueued(NO_SEEK),
           m_iEnableSyncQueued(SYNC_REQUEST_NONE),
@@ -1345,10 +1345,10 @@ void EngineBuffer::collectFeatures(GroupFeatureState* pGroupFeatures) const {
     pGroupFeatures->has_current_position = true;
     pGroupFeatures->current_position = m_filepos_play;
 
-    if (m_pBpmControl != NULL) {
+    if (m_pBpmControl != nullptr) {
         m_pBpmControl->collectFeatures(pGroupFeatures);
     }
-    if (m_pKeyControl != NULL) {
+    if (m_pKeyControl != nullptr) {
         m_pKeyControl->collectFeatures(pGroupFeatures);
     }
 }

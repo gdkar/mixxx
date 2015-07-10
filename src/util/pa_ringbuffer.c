@@ -124,7 +124,7 @@ ring_buffer_size_t PaUtil_GetRingBufferWriteRegions( PaUtilRingBuffer *rbuf, rin
     {
         *dataPtr1 = &rbuf->buffer[index*rbuf->elementSizeBytes];
         *sizePtr1 = elementCount;
-        *dataPtr2 = NULL;
+        *dataPtr2 = nullptr;
         *sizePtr2 = 0;
     }
 
@@ -174,7 +174,7 @@ ring_buffer_size_t PaUtil_GetRingBufferReadRegions( PaUtilRingBuffer *rbuf, ring
     {
         *dataPtr1 = &rbuf->buffer[index*rbuf->elementSizeBytes];
         *sizePtr1 = elementCount;
-        *dataPtr2 = NULL;
+        *dataPtr2 = nullptr;
         *sizePtr2 = 0;
     }
 

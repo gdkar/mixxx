@@ -46,7 +46,7 @@ Result SoundSourceCoreAudio::tryOpen(const AudioSourceConfig& audioSrcCfg) {
     CFStringRef urlStr = CFStringCreateWithCharacters(0,
             reinterpret_cast<const UniChar *>(fileName.unicode()),
             fileName.size());
-    CFURLRef urlRef = CFURLCreateWithFileSystemPath(NULL, urlStr,
+    CFURLRef urlRef = CFURLCreateWithFileSystemPath(nullptr, urlStr,
             kCFURLPOSIXPathStyle, false);
     err = ExtAudioFileOpenURL(urlRef, &m_audioFile);
     CFRelease(urlStr);

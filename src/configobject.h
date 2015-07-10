@@ -100,7 +100,7 @@ class ConfigValueKbd : public ConfigValue {
 
 template <class ValueType> class ConfigOption {
   public:
-    ConfigOption() { val = NULL; key = NULL;};
+    ConfigOption() { val = nullptr; key = nullptr;};
     ConfigOption(ConfigKey* _key, ValueType* _val) { key = _key ; val = _val; };
     virtual ~ConfigOption() {
         delete key;

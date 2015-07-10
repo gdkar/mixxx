@@ -7,7 +7,7 @@
 WEffectPushButton::WEffectPushButton(QWidget* pParent, EffectsManager* pEffectsManager)
         : WPushButton(pParent),
           m_pEffectsManager(pEffectsManager),
-          m_pButtonMenu(NULL) {
+          m_pButtonMenu(nullptr) {
 }
 
 WEffectPushButton::~WEffectPushButton() {
@@ -21,7 +21,7 @@ void WEffectPushButton::setup(QDomNode node, const SkinContext& context) {
     connect(m_pButtonMenu, SIGNAL(triggered(QAction*)),
             this, SLOT(slotActionChosen(QAction*)));
 
-    // EffectWidgetUtils propagates NULLs so this is all safe.
+    // EffectWidgetUtils propagates nullptrs so this is all safe.
     EffectRackPointer pRack = EffectWidgetUtils::getEffectRackFromNode(
             node, context, m_pEffectsManager);
     EffectChainSlotPointer pChainSlot = EffectWidgetUtils::getEffectChainSlotFromNode(

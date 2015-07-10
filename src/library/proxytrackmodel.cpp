@@ -88,7 +88,7 @@ void ProxyTrackModel::moveTrack(const QModelIndex& sourceIndex,
 }
 
 QAbstractItemDelegate* ProxyTrackModel::delegateForColumn(const int i, QObject* pParent) {
-    return m_pTrackModel ? m_pTrackModel->delegateForColumn(i, pParent) : NULL;
+    return m_pTrackModel ? m_pTrackModel->delegateForColumn(i, pParent) : nullptr;
 }
 
 TrackModel::CapabilitiesFlags ProxyTrackModel::getCapabilities() const {
@@ -100,7 +100,7 @@ bool ProxyTrackModel::filterAcceptsRow(int sourceRow,
     if (!m_bHandleSearches)
         return QSortFilterProxyModel::filterAcceptsRow(sourceRow, sourceParent);
 
-    if (m_pTrackModel == NULL) {
+    if (m_pTrackModel == nullptr) {
         return false;
     }
 
@@ -126,14 +126,14 @@ bool ProxyTrackModel::filterAcceptsRow(int sourceRow,
 }
 
 QString ProxyTrackModel::getModelSetting(QString name) {
-    if (m_pTrackModel == NULL) {
+    if (m_pTrackModel == nullptr) {
         return QString();
     }
     return m_pTrackModel->getModelSetting(name);
 }
 
 bool ProxyTrackModel::setModelSetting(QString name, QVariant value) {
-    if (m_pTrackModel == NULL) {
+    if (m_pTrackModel == nullptr) {
         return false;
     }
     return m_pTrackModel->setModelSetting(name, value);

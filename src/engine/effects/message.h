@@ -46,9 +46,9 @@ struct EffectsRequest {
               maximum(0.0),
               default_value(0.0),
               value(0.0) {
-        pTargetRack = NULL;
-        pTargetChain = NULL;
-        pTargetEffect = NULL;
+        pTargetRack = nullptr;
+        pTargetChain = nullptr;
+        pTargetEffect = nullptr;
 #define CLEAR_STRUCT(x) memset(&x, 0, sizeof(x));
         CLEAR_STRUCT(AddEffectRack);
         CLEAR_STRUCT(RemoveEffectRack);

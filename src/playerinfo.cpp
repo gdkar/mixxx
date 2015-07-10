@@ -24,7 +24,7 @@
 #include "playermanager.h"
 
 static const int kPlayingDeckUpdateIntervalMillis = 2000;
-static PlayerInfo* m_pPlayerInfo = NULL;
+static PlayerInfo* m_pPlayerInfo = nullptr;
 
 PlayerInfo::PlayerInfo()
         : m_pCOxfader(new ControlObjectThread("[Master]","crossfader")),

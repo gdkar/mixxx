@@ -34,7 +34,7 @@ class FakeMaster {
 class FakeDeck : public BaseTrackPlayer {
   public:
     FakeDeck(const QString& group)
-            : BaseTrackPlayer(NULL, group),
+            : BaseTrackPlayer(nullptr, group),
               playposition(ConfigKey(group, "playposition"), 0.0, 1.0, true),
               play(ConfigKey(group, "play")),
               repeat(ConfigKey(group, "repeat")) {
@@ -169,7 +169,7 @@ class AutoDJProcessorTest : public LibraryTest {
         EXPECT_CALL(*pPlayerManager, getPlayer(QString("[Channel4]"))).Times(1);
 
         pProcessor.reset(new MockAutoDJProcessor(
-                NULL, config(), pPlayerManager.data(),
+                nullptr, config(), pPlayerManager.data(),
                 m_iAutoDJPlaylistId, collection()));
     }
 
@@ -200,7 +200,7 @@ TEST_F(AutoDJProcessorTest, TransitionTimeLoadedFromConfig) {
     EXPECT_CALL(*pPlayerManager, getPlayer(QString("[Channel3]"))).Times(1);
     EXPECT_CALL(*pPlayerManager, getPlayer(QString("[Channel4]"))).Times(1);
     pProcessor.reset(new MockAutoDJProcessor(
-            NULL, config(), pPlayerManager.data(),
+            nullptr, config(), pPlayerManager.data(),
             m_iAutoDJPlaylistId, collection()));
     EXPECT_EQ(25, pProcessor->getTransitionTime());
 }

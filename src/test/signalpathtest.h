@@ -52,7 +52,7 @@ class SignalPathTest : public MixxxTest {
   protected:
     virtual void SetUp() {
         m_pNumDecks = new ControlObject(ConfigKey("[Master]", "num_decks"));
-        m_pEffectsManager = new EffectsManager(NULL, config());
+        m_pEffectsManager = new EffectsManager(nullptr, config());
         m_pEngineMaster = new TestEngineMaster(m_pConfig.data(), "[Master]",
                                                m_pEffectsManager, false, false);
 
@@ -68,7 +68,7 @@ class SignalPathTest : public MixxxTest {
                 m_pEngineMaster->registerChannelGroup(m_sGroup3),
                 m_pConfig.data(), m_pEngineMaster, m_pEffectsManager,
                 EngineChannel::CENTER);
-        m_pPreview1 = new PreviewDeck(NULL, m_pConfig.data(),
+        m_pPreview1 = new PreviewDeck(nullptr, m_pConfig.data(),
                                      m_pEngineMaster, m_pEffectsManager,
                                      EngineChannel::CENTER, m_sPreviewGroup);
         ControlObject::getControl(ConfigKey(m_sPreviewGroup, "file_bpm"))->set(2.0);
@@ -174,10 +174,10 @@ class SignalPathTest : public MixxxTest {
     }
 
     virtual void TearDown() {
-        m_pChannel1 = NULL;
-        m_pChannel2 = NULL;
-        m_pChannel3 = NULL;
-        m_pEngineSync = NULL;
+        m_pChannel1 = nullptr;
+        m_pChannel2 = nullptr;
+        m_pChannel3 = nullptr;
+        m_pEngineSync = nullptr;
 
         // Deletes all EngineChannels added to it.
         delete m_pEngineMaster;

@@ -41,7 +41,7 @@ class EngineChannelMock : public EngineChannel {
 class EngineMasterTest : public MixxxTest {
   protected:
     virtual void SetUp() {
-        m_pMaster = new EngineMaster(config(), "[Master]", NULL, false, false);
+        m_pMaster = new EngineMaster(config(), "[Master]", nullptr, false, false);
         m_pMasterEnabled = new ControlObjectSlave(ConfigKey("[Master]", "enabled"));
         m_pMasterEnabled->set(1);
     }

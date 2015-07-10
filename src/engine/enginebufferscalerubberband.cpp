@@ -21,7 +21,7 @@ EngineBufferScaleRubberBand::EngineBufferScaleRubberBand(
     ReadAheadManager* pReadAheadManager)
         : m_bBackwards(false),
           m_buffer_back(SampleUtil::alloc(MAX_BUFFER_LEN)),
-          m_pRubberBand(NULL),
+          m_pRubberBand(nullptr),
           m_pReadAheadManager(pReadAheadManager) {
     qDebug() << "RubberBand version" << RUBBERBAND_VERSION;
 
@@ -39,14 +39,14 @@ EngineBufferScaleRubberBand::~EngineBufferScaleRubberBand() {
 
     if (m_pRubberBand) {
         delete m_pRubberBand;
-        m_pRubberBand = NULL;
+        m_pRubberBand = nullptr;
     }
 }
 
 void EngineBufferScaleRubberBand::initializeRubberBand(int iSampleRate) {
     if (m_pRubberBand) {
         delete m_pRubberBand;
-        m_pRubberBand = NULL;
+        m_pRubberBand = nullptr;
     }
     m_pRubberBand = new RubberBandStretcher(
         iSampleRate, 2,

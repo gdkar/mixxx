@@ -19,7 +19,7 @@
 
 class TestEffectBackend : public EffectsBackend {
   public:
-    TestEffectBackend() : EffectsBackend(NULL, "TestBackend") {
+    TestEffectBackend() : EffectsBackend(nullptr, "TestBackend") {
     }
 
     // Expose as public
@@ -54,8 +54,8 @@ class MockEffectInstantiator : public EffectInstantiator {
 
 class BaseEffectTest : public MixxxTest {
   protected:
-    BaseEffectTest() : m_pTestBackend(NULL),
-                       m_pEffectsManager(new EffectsManager(NULL, config())) {
+    BaseEffectTest() : m_pTestBackend(nullptr),
+                       m_pEffectsManager(new EffectsManager(nullptr, config())) {
     }
 
     void registerTestBackend() {

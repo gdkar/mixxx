@@ -14,7 +14,7 @@ Effect::Effect(EffectsManager* pEffectsManager,
           m_pEffectsManager(pEffectsManager),
           m_manifest(manifest),
           m_pInstantiator(pInstantiator),
-          m_pEngineEffect(NULL),
+          m_pEngineEffect(nullptr),
           m_bAddedToEngine(false),
           m_bEnabled(true) {
     foreach (const EffectManifestParameter& parameter, m_manifest.parameters()) {
@@ -34,7 +34,7 @@ Effect::~Effect() {
     m_parametersById.clear();
     for (int i = 0; i < m_parameters.size(); ++i) {
         EffectParameter* pParameter = m_parameters.at(i);
-        m_parameters[i] = NULL;
+        m_parameters[i] = nullptr;
         delete pParameter;
     }
 }
@@ -64,7 +64,7 @@ void Effect::removeFromEngine(EngineEffectChain* pChain, int iIndex) {
     request->RemoveEffectFromChain.pEffect = m_pEngineEffect;
     request->RemoveEffectFromChain.iIndex = iIndex;
     m_pEffectsManager->writeRequest(request);
-    m_pEngineEffect = NULL;
+    m_pEngineEffect = nullptr;
 }
 
 void Effect::updateEngineState() {
@@ -129,8 +129,8 @@ unsigned int Effect::numButtonParameters() const {
 }
 
 EffectParameter* Effect::getParameterById(const QString& id) const {
-    EffectParameter* pParameter = m_parametersById.value(id, NULL);
-    if (pParameter == NULL) {
+    EffectParameter* pParameter = m_parametersById.value(id, nullptr);
+    if (pParameter == nullptr) {
         qWarning() << debugString() << "getParameterById"
                    << "WARNING: parameter for id does not exist:" << id;
     }
@@ -151,7 +151,7 @@ bool Effect::isKnobParameter(EffectParameter* parameter) {
 EffectParameter* Effect::getFilteredParameterForSlot(ParameterFilterFnc filterFnc,
                                                      unsigned int slotNumber) {
     // It's normal to ask for a parameter that doesn't exist. Callers must check
-    // for NULL.
+    // for nullptr.
     unsigned int num = 0;
     foreach(EffectParameter* parameter, m_parameters) {
         if (parameter->manifest().showInParameterSlot() && filterFnc(parameter)) {
@@ -161,7 +161,7 @@ EffectParameter* Effect::getFilteredParameterForSlot(ParameterFilterFnc filterFn
             ++num;
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 EffectParameter* Effect::getKnobParameterForSlot(unsigned int slotNumber) {

@@ -31,14 +31,14 @@ EngineEffect::~EngineEffect() {
     m_parametersById.clear();
     for (int i = 0; i < m_parameters.size(); ++i) {
         EngineEffectParameter* pParameter = m_parameters.at(i);
-        m_parameters[i] = NULL;
+        m_parameters[i] = nullptr;
         delete pParameter;
     }
 }
 
 bool EngineEffect::processEffectsRequest(const EffectsRequest& message,
                                          EffectsResponsePipe* pResponsePipe) {
-    EngineEffectParameter* pParameter = NULL;
+    EngineEffectParameter* pParameter = nullptr;
     EffectsResponse response(message);
 
     switch (message.type) {
@@ -68,7 +68,7 @@ bool EngineEffect::processEffectsRequest(const EffectsRequest& message,
                          << "value" << message.value;
             }
             pParameter = m_parameters.value(
-                message.SetParameterParameters.iParameter, NULL);
+                message.SetParameterParameters.iParameter, nullptr);
             if (pParameter) {
                 pParameter->setMinimum(message.minimum);
                 pParameter->setMaximum(message.maximum);

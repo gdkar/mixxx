@@ -59,7 +59,7 @@ void DeckAttributes::slotTrackUnloaded(TrackPointer pTrack) {
 }
 
 TrackPointer DeckAttributes::getLoadedTrack() const {
-    return m_pPlayer != NULL ? m_pPlayer->getLoadedTrack() : TrackPointer();
+    return m_pPlayer != nullptr ? m_pPlayer->getLoadedTrack() : TrackPointer();
 }
 
 AutoDJProcessor::AutoDJProcessor(QObject* pParent,
@@ -70,7 +70,7 @@ AutoDJProcessor::AutoDJProcessor(QObject* pParent,
         : QObject(pParent),
           m_pConfig(pConfig),
           m_pPlayerManager(pPlayerManager),
-          m_pAutoDJTableModel(NULL),
+          m_pAutoDJTableModel(nullptr),
           m_eState(ADJ_DISABLED),
           m_iTransitionTime(kTransitionPreferenceDefault),
           m_nextTransitionTime(kTransitionPreferenceDefault) {
@@ -105,7 +105,7 @@ AutoDJProcessor::AutoDJProcessor(QObject* pParent,
         QString group = PlayerManager::groupForDeck(i);
         BaseTrackPlayer* pPlayer = pPlayerManager->getPlayer(group);
         // Shouldn't be possible.
-        if (pPlayer == NULL) {
+        if (pPlayer == nullptr) {
             qWarning() << "PROGRAMMING ERROR deck does not exist" << i;
             continue;
         }
@@ -254,7 +254,7 @@ AutoDJProcessor::AutoDJError AutoDJProcessor::toggleAutoDJ(bool enable) {
         // TODO: This is a total bandaid for making Auto DJ work with decks 3
         // and 4.  We should design a nicer way to handle this.
         for (int i = 2; i < m_decks.length(); ++i) {
-            if (m_decks[i] != NULL && m_decks[i]->isPlaying()) {
+            if (m_decks[i] != nullptr && m_decks[i]->isPlaying()) {
                 return ADJ_DECKS_3_4_PLAYING;
             }
         }
@@ -688,7 +688,7 @@ void AutoDJProcessor::playerPlayChanged(DeckAttributes* pAttributes, bool playin
 
 void AutoDJProcessor::calculateTransition(DeckAttributes* pFromDeck,
                                           DeckAttributes* pToDeck) {
-    if (pFromDeck == NULL) {
+    if (pFromDeck == nullptr) {
         return;
     }
 
@@ -829,7 +829,7 @@ void AutoDJProcessor::setTransitionTime(int time) {
 
 DeckAttributes* AutoDJProcessor::getOtherDeck(DeckAttributes* pThisDeck,
                                               bool playing) {
-    DeckAttributes* pOtherDeck = NULL;
+    DeckAttributes* pOtherDeck = nullptr;
     if (pThisDeck->isLeft()) {
         // find first right deck
         foreach(DeckAttributes* pDeck, m_decks) {

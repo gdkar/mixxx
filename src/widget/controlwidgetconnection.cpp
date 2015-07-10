@@ -12,7 +12,7 @@ ControlWidgetConnection::ControlWidgetConnection(WBaseWidget* pBaseWidget,
         : m_pWidget(pBaseWidget),
           m_pControl(pControl),
           m_pValueTransformer(pTransformer) {
-    // If m_pControl is NULL then the creator of ControlWidgetConnection has
+    // If m_pControl is nullptr then the creator of ControlWidgetConnection has
     // screwed up badly. Assert in development mode. In release mode the
     // connection will be defunct.
     DEBUG_ASSERT_AND_HANDLE(!m_pControl.isNull()) {
@@ -25,7 +25,7 @@ ControlWidgetConnection::~ControlWidgetConnection() {
 }
 
 void ControlWidgetConnection::setControlParameter(double parameter) {
-    if (m_pValueTransformer != NULL) {
+    if (m_pValueTransformer != nullptr) {
         parameter = m_pValueTransformer->transformInverse(parameter);
     }
     m_pControl->setParameter(parameter);
@@ -33,7 +33,7 @@ void ControlWidgetConnection::setControlParameter(double parameter) {
 
 double ControlWidgetConnection::getControlParameter() const {
     double parameter = m_pControl->getParameter();
-    if (m_pValueTransformer != NULL) {
+    if (m_pValueTransformer != nullptr) {
         parameter = m_pValueTransformer->transform(parameter);
     }
     return parameter;
@@ -41,7 +41,7 @@ double ControlWidgetConnection::getControlParameter() const {
 
 double ControlWidgetConnection::getControlParameterForValue(double value) const {
     double parameter = m_pControl->getParameterForValue(value);
-    if (m_pValueTransformer != NULL) {
+    if (m_pValueTransformer != nullptr) {
         parameter = m_pValueTransformer->transform(parameter);
     }
     return parameter;

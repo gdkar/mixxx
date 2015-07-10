@@ -50,16 +50,16 @@ class ScopedTimer {
   public:
     ScopedTimer(const char* key, int i,
                 Stat::ComputeFlags compute = kDefaultComputeFlags)
-            : m_pTimer(NULL),
+            : m_pTimer(nullptr),
               m_cancel(false) {
         if (CmdlineArgs::Instance().getDeveloper()) {
             initialize(QString(key), QString::number(i), compute);
         }
     }
 
-    ScopedTimer(const char* key, const char *arg = NULL,
+    ScopedTimer(const char* key, const char *arg = nullptr,
                 Stat::ComputeFlags compute = kDefaultComputeFlags)
-            : m_pTimer(NULL),
+            : m_pTimer(nullptr),
               m_cancel(false) {
         if (CmdlineArgs::Instance().getDeveloper()) {
             initialize(QString(key), arg ? QString(arg) : QString(), compute);
@@ -68,7 +68,7 @@ class ScopedTimer {
 
     ScopedTimer(const char* key, const QString& arg,
                 Stat::ComputeFlags compute = kDefaultComputeFlags)
-            : m_pTimer(NULL),
+            : m_pTimer(nullptr),
               m_cancel(false) {
         if (CmdlineArgs::Instance().getDeveloper()) {
             initialize(QString(key), arg, compute);

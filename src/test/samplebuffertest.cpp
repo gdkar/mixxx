@@ -70,13 +70,13 @@ TEST_F(CircularSampleBufferTest, emptyWithoutCapacity) {
 
     const SampleBuffer::WritableChunk writableChunk(
             sampleBuffer.writeToTail(10));
-    EXPECT_EQ(writableChunk.data(), static_cast<CSAMPLE*>(NULL));
+    EXPECT_EQ(writableChunk.data(), static_cast<CSAMPLE*>(nullptr));
     EXPECT_EQ(writableChunk.size(), 0);
     EXPECT_TRUE(sampleBuffer.isEmpty());
 
     const SampleBuffer::ReadableChunk readableChunk(
             sampleBuffer.readFromHead(10));
-    EXPECT_EQ(readableChunk.data(), static_cast<const CSAMPLE*>(NULL));
+    EXPECT_EQ(readableChunk.data(), static_cast<const CSAMPLE*>(nullptr));
     EXPECT_EQ(readableChunk.size(), 0);
     EXPECT_TRUE(sampleBuffer.isEmpty());
 }

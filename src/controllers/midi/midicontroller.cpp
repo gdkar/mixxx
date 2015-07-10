@@ -276,7 +276,7 @@ void MidiController::processInputMapping(const MidiInputMapping& mapping,
 
     if (mapping.options.script) {
         ControllerEngine* pEngine = getEngine();
-        if (pEngine == NULL) {
+        if (pEngine == nullptr) {
             return;
         }
 
@@ -293,7 +293,7 @@ void MidiController::processInputMapping(const MidiInputMapping& mapping,
 
     // Only pass values on to valid ControlObjects.
     ControlObject* pCO = ControlObject::getControl(mapping.control);
-    if (pCO == NULL) {
+    if (pCO == nullptr) {
         return;
     }
 
@@ -536,7 +536,7 @@ void MidiController::processInputMapping(const MidiInputMapping& mapping,
     // Custom script handler
     if (mapping.options.script) {
         ControllerEngine* pEngine = getEngine();
-        if (pEngine == NULL) {
+        if (pEngine == nullptr) {
             return;
         }
         QJSValue function = pEngine->resolveFunction(mapping.control.item, true);

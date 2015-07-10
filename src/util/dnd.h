@@ -145,7 +145,7 @@ class DragAndDropHelper {
     static QDrag* dragUrls(const QList<QUrl>& locationUrls,
                            QWidget* pDragSource, QString sourceIdentifier) {
         if (locationUrls.isEmpty()) {
-            return NULL;
+            return nullptr;
         }
 
         QMimeData* mimeData = new QMimeData();

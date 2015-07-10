@@ -29,11 +29,11 @@ const int kScratchTimerMs = 1;
 const double kAlphaBetaDt = kScratchTimerMs / 1000.0;
 
 ControllerEngine::ControllerEngine(Controller* controller)
-        : m_pEngine(NULL),
+        : m_pEngine(nullptr),
           m_pController(controller),
           m_bDebug(false),
           m_bPopups(false),
-          m_pBaClass(NULL) {
+          m_pBaClass(nullptr) {
     // Handle error dialog buttons
     qRegisterMetaType<QMessageBox::StandardButton>("QMessageBox::StandardButton");
 
@@ -60,14 +60,14 @@ ControllerEngine::~ControllerEngine() {
     // Clean up
     for (int i = 0; i < kDecks; ++i) {
         delete m_scratchFilters[i];
-        m_scratchFilters[i] = NULL;
+        m_scratchFilters[i] = nullptr;
     }
 
     // Delete the script engine, first clearing the pointer so that
     // other threads will not get the dead pointer after we delete it.
-    if (m_pEngine != NULL) {
+    if (m_pEngine != nullptr) {
         QJSEngine *engine = m_pEngine;
-        m_pEngine = NULL;
+        m_pEngine = nullptr;
         engine->deleteLater();
     }
 }
@@ -156,7 +156,7 @@ void ControllerEngine::gracefulShutdown() {
         QString group = PlayerManager::groupForDeck(i.value() - 1);
         ControlObjectThread* pScratch2Enable =
                 getControlObjectThread(group, "scratch2_enable");
-        if (pScratch2Enable != NULL) {
+        if (pScratch2Enable != nullptr) {
             pScratch2Enable->slotSet(0);
         }
     }
@@ -176,11 +176,11 @@ void ControllerEngine::gracefulShutdown() {
     }
 
     delete m_pBaClass;
-    m_pBaClass = NULL;
+    m_pBaClass = nullptr;
 }
 
 bool ControllerEngine::isReady() {
-    bool ret = m_pEngine != NULL;
+    bool ret = m_pEngine != nullptr;
     return ret;
 }
 
@@ -243,9 +243,9 @@ void ControllerEngine::scriptHasChanged(QString scriptFilename) {
     gracefulShutdown();
     // Delete the script engine, first clearing the pointer so that
     // other threads will not get the dead pointer after we delete it.
-    if (m_pEngine != NULL) {
+    if (m_pEngine != nullptr) {
         QJSEngine *engine = m_pEngine;
-        m_pEngine = NULL;
+        m_pEngine = nullptr;
         engine->deleteLater();
     }
     initializeScriptEngine();
@@ -295,7 +295,7 @@ bool ControllerEngine::evaluate(QString filepath) {
    Output:  false if an invalid function or an exception
    -------- ------------------------------------------------------ */
 bool ControllerEngine::execute(QString function) {
-    if (m_pEngine == NULL)
+    if (m_pEngine == nullptr)
         return false;
     QJSValue scriptFunction = m_pEngine->evaluate(function);
     if (scriptFunction.isError() || scriptFunction.isUndefined())
@@ -318,7 +318,7 @@ bool ControllerEngine::internalExecute(QJSValue thisObject,
                                        QString scriptCode) {
     // A special version of safeExecute since we're evaluating strings, not actual functions
     //  (execute() would print an error that it's not a function every time a timer fires.)
-    if (m_pEngine == NULL)
+    if (m_pEngine == nullptr)
         return false;
     // Check syntax
 
@@ -335,7 +335,7 @@ Input:   'this' object if applicable, Code string
 Output:  false if an exception
 -------- ------------------------------------------------------ */
 bool ControllerEngine::internalExecute(QJSValue thisObject, QJSValue functionObject) {
-    if(m_pEngine == NULL)
+    if(m_pEngine == nullptr)
         return false;
     // If it's not a function, we're done.
     if (!functionObject.isCallable()) {
@@ -357,7 +357,7 @@ bool ControllerEngine::internalExecute(QJSValue thisObject, QJSValue functionObj
    Output:  false if an invalid function or an exception
    -------- ------------------------------------------------------ */
 bool ControllerEngine::execute(QString function, QJSValueList args) {
-    if(m_pEngine == NULL) {
+    if(m_pEngine == nullptr) {
         qDebug() << "ControllerEngine::execute: No script engine exists!";
         return false;
     }
@@ -451,7 +451,7 @@ bool ControllerEngine::execute(QJSValue function, const QByteArray data) {
    Output:  true if there was an exception
    -------- ------------------------------------------------------ */
 bool ControllerEngine::checkException() {
-    if(m_pEngine == NULL) {
+    if(m_pEngine == nullptr) {
         return false;
     }
 
@@ -532,15 +532,15 @@ void ControllerEngine::errorDialogButton(QString key, QMessageBox::StandardButto
 }
 ControlObjectThread* ControllerEngine::getControlObjectThread(QString group, QString name) {
     ConfigKey key = ConfigKey(group, name);
-    ControlObjectThread* cot = m_controlCache.value(key, NULL);
-    if (cot == NULL) {
+    ControlObjectThread* cot = m_controlCache.value(key, nullptr);
+    if (cot == nullptr) {
         // create COT
         cot = new ControlObjectThread(key, this);
         if (cot->valid()) {
             m_controlCache.insert(key, cot);
         } else {
             delete cot;
-            cot = NULL;
+            cot = nullptr;
         }
     }
     return cot;
@@ -552,7 +552,7 @@ ControlObjectThread* ControllerEngine::getControlObjectThread(QString group, QSt
    -------- ------------------------------------------------------ */
 double ControllerEngine::getValue(QString group, QString name) {
     ControlObjectThread* cot = getControlObjectThread(group, name);
-    if (cot == NULL) {
+    if (cot == nullptr) {
         qWarning() << "ControllerEngine: Unknown control" << group << name << ", returning 0.0";
         return 0.0;
     }
@@ -571,7 +571,7 @@ void ControllerEngine::setValue(QString group, QString name, double newValue) {
         return;
     }
     ControlObjectThread* cot = getControlObjectThread(group, name);
-    if (cot != NULL) {
+    if (cot != nullptr) {
         ControlObject* pControl = ControlObject::getControl(cot->getKey());
         if (pControl && !m_st.ignore(pControl, cot->getParameterForValue(newValue))) {
             cot->slotSet(newValue);
@@ -585,7 +585,7 @@ void ControllerEngine::setValue(QString group, QString name, double newValue) {
    -------- ------------------------------------------------------ */
 double ControllerEngine::getParameter(QString group, QString name) {
     ControlObjectThread* cot = getControlObjectThread(group, name);
-    if (cot == NULL) {
+    if (cot == nullptr) {
         qWarning() << "ControllerEngine: Unknown control" << group << name << ", returning 0.0";
         return 0.0;
     }
@@ -605,7 +605,7 @@ void ControllerEngine::setParameter(QString group, QString name, double newParam
     }
     ControlObjectThread* cot = getControlObjectThread(group, name);
     // TODO(XXX): support soft takeover.
-    if (cot != NULL) {
+    if (cot != nullptr) {
         cot->setParameter(newParameter);
     }
 }
@@ -621,7 +621,7 @@ double ControllerEngine::getParameterForValue(QString group, QString name, doubl
         return 0.0;
     }
     ControlObjectThread* cot = getControlObjectThread(group, name);
-    if (cot == NULL) {
+    if (cot == nullptr) {
         qWarning() << "ControllerEngine: Unknown control" << group << name << ", returning 0.0";
         return 0.0;
     }
@@ -635,7 +635,7 @@ double ControllerEngine::getParameterForValue(QString group, QString name, doubl
    -------- ------------------------------------------------------ */
 void ControllerEngine::reset(QString group, QString name) {
     ControlObjectThread* cot = getControlObjectThread(group, name);
-    if (cot != NULL) {
+    if (cot != nullptr) {
         cot->reset();
     }
 }
@@ -648,7 +648,7 @@ void ControllerEngine::reset(QString group, QString name) {
 double ControllerEngine::getDefaultValue(QString group, QString name) {
     ControlObjectThread* cot = getControlObjectThread(group, name);
 
-    if (cot == NULL) {
+    if (cot == nullptr) {
         qWarning() << "ControllerEngine: Unknown control" << group << name << ", returning 0.0";
         return 0.0;
     }
@@ -663,7 +663,7 @@ double ControllerEngine::getDefaultValue(QString group, QString name) {
    -------- ------------------------------------------------------ */
 double ControllerEngine::getDefaultParameter(QString group, QString name) {
     ControlObjectThread* cot = getControlObjectThread(group, name);
-    if (cot == NULL) {
+    if (cot == nullptr) {
         qWarning() << "ControllerEngine: Unknown control" << group << name << ", returning 0.0";
         return 0.0;
     }
@@ -686,7 +686,7 @@ void ControllerEngine::log(QString message) {
    -------- ------------------------------------------------------ */
 void ControllerEngine::trigger(QString group, QString name) {
     ControlObjectThread* cot = getControlObjectThread(group, name);
-    if (cot != NULL) {
+    if (cot != nullptr) {
         cot->emitValueChanged();
     }
 }
@@ -703,13 +703,13 @@ QJSValue ControllerEngine::connectControl(QString group, QString name,
     ControlObjectThread* cot = getControlObjectThread(group, name);
     QJSValue function;
 
-    if (cot == NULL) {
+    if (cot == nullptr) {
         qWarning() << "ControllerEngine: script connecting [" << group << "," << name
                    << "], which is non-existent. ignoring.";
         return QJSValue();
     }
 
-    if (m_pEngine == NULL) {
+    if (m_pEngine == nullptr) {
         return QJSValue(false);
     }
 
@@ -791,7 +791,7 @@ QJSValue ControllerEngine::connectControl(QString group, QString name,
 void ControllerEngine::disconnectControl(const ControllerEngineConnection conn) {
     ControlObjectThread* cot = getControlObjectThread(conn.key.group, conn.key.item);
 
-    if (m_pEngine == NULL) {
+    if (m_pEngine == nullptr) {
         return;
     }
 
@@ -819,8 +819,8 @@ void ControllerEngineConnectionScriptValue::disconnect() {
    -------- ------------------------------------------------------ */
 void ControllerEngine::slotValueChanged(double value) {
     ControlObjectThread* senderCOT = dynamic_cast<ControlObjectThread*>(sender());
-    if (senderCOT == NULL) {
-        qWarning() << "ControllerEngine::slotValueChanged() Shouldn't happen -- sender == NULL";
+    if (senderCOT == nullptr) {
+        qWarning() << "ControllerEngine::slotValueChanged() Shouldn't happen -- sender == nullptr";
         return;
     }
 
@@ -864,7 +864,7 @@ void ControllerEngine::slotValueChanged(double value) {
    Output:  false if the script file has errors or doesn't exist
    -------- ------------------------------------------------------ */
 bool ControllerEngine::evaluate(QString scriptName, QList<QString> scriptPaths) {
-    if (m_pEngine == NULL) {
+    if (m_pEngine == nullptr) {
         return false;
     }
 
@@ -1039,15 +1039,15 @@ void ControllerEngine::timerEvent(QTimerEvent *event) {
 double ControllerEngine::getDeckRate(const QString& group) {
     double rate = 0.0;
     ControlObjectThread* pRate = getControlObjectThread(group, "rate");
-    if (pRate != NULL) {
+    if (pRate != nullptr) {
         rate = pRate->get();
     }
     ControlObjectThread* pRateDir = getControlObjectThread(group, "rate_dir");
-    if (pRateDir != NULL) {
+    if (pRateDir != nullptr) {
         rate *= pRateDir->get();
     }
     ControlObjectThread* pRateRange = getControlObjectThread(group, "rateRange");
-    if (pRateRange != NULL) {
+    if (pRateRange != nullptr) {
         rate *= pRateRange->get();
     }
 
@@ -1056,7 +1056,7 @@ double ControllerEngine::getDeckRate(const QString& group) {
 
     // See if we're in reverse play
     ControlObjectThread* pReverse = getControlObjectThread(group, "reverse");
-    if (pReverse != NULL && pReverse->get() == 1) {
+    if (pReverse != nullptr && pReverse->get() == 1) {
         rate = -rate;
     }
     return rate;
@@ -1065,7 +1065,7 @@ double ControllerEngine::getDeckRate(const QString& group) {
 bool ControllerEngine::isDeckPlaying(const QString& group) {
     ControlObjectThread* pPlay = getControlObjectThread(group, "play");
 
-    if (pPlay == NULL) {
+    if (pPlay == nullptr) {
       QString error = QString("Could not getControlObjectThread()");
       scriptErrorDialog(error);
       return false;
@@ -1121,11 +1121,11 @@ void ControllerEngine::scratchEnable(int deck, int intervalsPerRev, double rpm,
     // If ramping is desired, figure out the deck's current speed
     if (ramp) {
         // See if the deck is already being scratched
-        if (pScratch2Enable != NULL && pScratch2Enable->get() == 1) {
+        if (pScratch2Enable != nullptr && pScratch2Enable->get() == 1) {
             // If so, set the filter's initial velocity to the scratch speed
             ControlObjectThread* pScratch2 =
                     getControlObjectThread(group, "scratch2");
-            if (pScratch2 != NULL) {
+            if (pScratch2 != nullptr) {
                 initVelocity = pScratch2->get();
             }
         } else if (isDeckPlaying(group)) {
@@ -1150,7 +1150,7 @@ void ControllerEngine::scratchEnable(int deck, int intervalsPerRev, double rpm,
     m_scratchTimers[timerId] = deck;
 
     // Set scratch2_enable
-    if (pScratch2Enable != NULL) {
+    if (pScratch2Enable != nullptr) {
         pScratch2Enable->slotSet(1);
     }
 }
@@ -1201,7 +1201,7 @@ void ControllerEngine::scratchProcess(int timerId) {
 
     // Actually do the scratching
     ControlObjectThread* pScratch2 = getControlObjectThread(group, "scratch2");
-    if (pScratch2 == NULL) {
+    if (pScratch2 == nullptr) {
         return; // abort and maybe it'll work on the next pass
     }
     pScratch2->slotSet(newRate);
@@ -1223,7 +1223,7 @@ void ControllerEngine::scratchProcess(int timerId) {
             // If in brake mode, set scratch2 rate to 0 and turn off the play button.
             pScratch2->slotSet(0.0);
             ControlObjectThread* pPlay = getControlObjectThread(group, "play");
-            if (pPlay != NULL) {
+            if (pPlay != nullptr) {
                 pPlay->slotSet(0.0);
             }
         }
@@ -1231,7 +1231,7 @@ void ControllerEngine::scratchProcess(int timerId) {
         // Clear scratch2_enable to end scratching.
         ControlObjectThread* pScratch2Enable =
                 getControlObjectThread(group, "scratch2_enable");
-        if (pScratch2Enable == NULL) {
+        if (pScratch2Enable == nullptr) {
             return; // abort and maybe it'll work on the next pass
         }
         pScratch2Enable->slotSet(0);
@@ -1260,7 +1260,7 @@ void ControllerEngine::scratchDisable(int deck, bool ramp) {
     if (!ramp) {
         // Clear scratch2_enable
         ControlObjectThread* pScratch2Enable = getControlObjectThread(group, "scratch2_enable");
-        if (pScratch2Enable != NULL) {
+        if (pScratch2Enable != nullptr) {
             pScratch2Enable->slotSet(0);
         }
         // Can't return here because we need scratchProcess to stop the timer.
@@ -1333,7 +1333,7 @@ void ControllerEngine::brake(int deck, bool activate, double factor, double rate
 
     // enable/disable scratch2 mode
     ControlObjectThread* pScratch2Enable = getControlObjectThread(group, "scratch2_enable");
-    if (pScratch2Enable != NULL) {
+    if (pScratch2Enable != nullptr) {
         pScratch2Enable->slotSet(activate ? 1 : 0);
     }
 
@@ -1350,13 +1350,13 @@ void ControllerEngine::brake(int deck, bool activate, double factor, double rate
         m_scratchTimers[timerId] = deck;
 
         ControlObjectThread* pScratch2 = getControlObjectThread(group, "scratch2");
-        if (pScratch2 != NULL) {
+        if (pScratch2 != nullptr) {
             pScratch2->slotSet(rate);
         }
 
         // setup the filter using the default values of alpha and beta
         AlphaBetaFilter* filter = m_scratchFilters[deck];
-        if (filter != NULL) {
+        if (filter != nullptr) {
             filter->init(kAlphaBetaDt, rate);
         }
 

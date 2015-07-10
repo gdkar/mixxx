@@ -63,7 +63,7 @@ void EngineDeck::process(CSAMPLE* pOut, const int iBufferSize) {
     if (isPassthroughActive() && sampleBuffer) {
         SampleUtil::copy(pOut, sampleBuffer, iBufferSize);
         m_bPassthroughWasActive = true;
-        m_sampleBuffer = NULL;
+        m_sampleBuffer = nullptr;
         m_pPregain->setSpeed(1);
         m_pPregain->setScratching(false);
     } else {
@@ -83,7 +83,7 @@ void EngineDeck::process(CSAMPLE* pOut, const int iBufferSize) {
     // Apply pregain
     m_pPregain->process(pOut, iBufferSize);
     // Process effects enabled for this channel
-    if (m_pEngineEffectsManager != NULL) {
+    if (m_pEngineEffectsManager != nullptr) {
         // This is out of date by a callback but some effects will want the RMS
         // volume.
         m_pVUMeter->collectFeatures(&features);
@@ -105,7 +105,7 @@ void EngineDeck::receiveBuffer(AudioInput input, const CSAMPLE* pBuffer, unsigne
     Q_UNUSED(nFrames);
     // Skip receiving audio input if passthrough is not active
     if (!m_bPassthroughIsActive) {
-        m_sampleBuffer = NULL;
+        m_sampleBuffer = nullptr;
         return;
     } else {
         m_sampleBuffer = pBuffer;
@@ -117,7 +117,7 @@ void EngineDeck::onInputConfigured(AudioInput input) {
         qDebug() << "WARNING: EngineDeck connected to AudioInput for a non-vinylcontrol type!";
         return;
     }
-    m_sampleBuffer =  NULL;
+    m_sampleBuffer =  nullptr;
 }
 void EngineDeck::onInputUnconfigured(AudioInput input) {
     if (input.getType() != AudioPath::VINYLCONTROL) {
@@ -125,7 +125,7 @@ void EngineDeck::onInputUnconfigured(AudioInput input) {
         qDebug() << "WARNING: EngineDeck connected to AudioInput for a non-vinylcontrol type!";
         return;
     }
-    m_sampleBuffer = NULL;
+    m_sampleBuffer = nullptr;
 }
 bool EngineDeck::isPassthroughActive() const {return (m_bPassthroughIsActive && m_sampleBuffer);}
 void EngineDeck::slotPassingToggle(double v) {m_bPassthroughIsActive = v > 0;}

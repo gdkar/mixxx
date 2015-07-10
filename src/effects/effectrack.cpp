@@ -14,7 +14,7 @@ EffectRack::EffectRack(EffectsManager* pEffectsManager,
           m_group(group),
           m_controlNumEffectChainSlots(ConfigKey(m_group, "num_effectunits")),
           m_controlClearRack(ConfigKey(m_group, "clear")),
-          m_pEngineEffectRack(NULL) {
+          m_pEngineEffectRack(nullptr) {
     connect(&m_controlClearRack, SIGNAL(valueChanged(double)),
             this, SLOT(slotClearRack(double)));
     m_controlNumEffectChainSlots.connectValueChangeRequest(
@@ -65,7 +65,7 @@ void EffectRack::removeFromEngine() {
     pRequest->type = EffectsRequest::REMOVE_EFFECT_RACK;
     pRequest->RemoveEffectRack.pRack = m_pEngineEffectRack;
     m_pEffectsManager->writeRequest(pRequest);
-    m_pEngineEffectRack = NULL;
+    m_pEngineEffectRack = nullptr;
 }
 
 void EffectRack::registerChannel(const ChannelHandleAndGroup& handle_group) {

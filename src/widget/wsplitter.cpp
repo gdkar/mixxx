@@ -43,7 +43,7 @@ void WSplitter::setup(QDomNode node, const SkinContext& context) {
                 + QString::number(this->count());
     }
     // found some value for splitsizes?
-    if (sizesJoined != NULL) {
+    if (sizesJoined != nullptr) {
         QStringList sizesSplit = sizesJoined.split(",");
         QList<int> sizesList;
         ok = false;

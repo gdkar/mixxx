@@ -48,7 +48,7 @@ class EffectProcessor {
 template <typename T>
 class PerChannelEffectProcessor : public EffectProcessor {
     struct ChannelStateHolder {
-        ChannelStateHolder() : state(NULL) { }
+        ChannelStateHolder() : state(nullptr) { }
         T* state;
     };
   public:
@@ -93,7 +93,7 @@ class PerChannelEffectProcessor : public EffectProcessor {
   private:
     inline T* getOrCreateChannelState(const ChannelHandle& handle) {
         ChannelStateHolder& holder = m_channelState[handle];
-        if (holder.state == NULL) {
+        if (holder.state == nullptr) {
             holder.state = new T();
         }
         return holder.state;

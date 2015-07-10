@@ -28,7 +28,7 @@ WCoverArt::WCoverArt(QWidget* parent,
     setAcceptDrops(!m_group.isEmpty());
 
     CoverArtCache* pCache = CoverArtCache::instance();
-    if (pCache != NULL) {
+    if (pCache != nullptr) {
         connect(pCache, SIGNAL(coverFound(const QObject*, const int,
                                           const CoverInfo&, QPixmap, bool)),
                 this, SLOT(slotCoverFound(const QObject*, const int,
@@ -143,7 +143,7 @@ void WCoverArt::slotTrackCoverArtUpdated() {
         m_lastRequestedCover = m_loadedTrack->getCoverInfo();
         m_lastRequestedCover.trackLocation = m_loadedTrack->getLocation();
         CoverArtCache* pCache = CoverArtCache::instance();
-        if (pCache != NULL) {
+        if (pCache != nullptr) {
             // TODO(rryan): Don't use track id.
             pCache->requestCover(m_lastRequestedCover, this, m_loadedTrack->getId());
         }

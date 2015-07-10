@@ -27,11 +27,11 @@ DlgPrefController::DlgPrefController(QWidget* parent, Controller* controller,
           m_pConfig(pConfig),
           m_pControllerManager(controllerManager),
           m_pController(controller),
-          m_pDlgControllerLearning(NULL),
-          m_pInputTableModel(NULL),
-          m_pInputProxyModel(NULL),
-          m_pOutputTableModel(NULL),
-          m_pOutputProxyModel(NULL),
+          m_pDlgControllerLearning(nullptr),
+          m_pInputTableModel(nullptr),
+          m_pInputProxyModel(nullptr),
+          m_pOutputTableModel(nullptr),
+          m_pOutputProxyModel(nullptr),
           m_bDirty(false) {
     m_ui.setupUi(this);
 
@@ -157,7 +157,7 @@ void DlgPrefController::showLearningWizard() {
 void DlgPrefController::midiInputMappingsLearned(const MidiInputMappings& mappings) {
     // This is just a shortcut since doing a round-trip from Learning ->
     // Controller -> slotPresetLoaded -> setPreset is too heavyweight.
-    if (m_pInputTableModel != NULL) {
+    if (m_pInputTableModel != nullptr) {
         m_pInputTableModel->addMappings(mappings);
     }
 }
@@ -288,11 +288,11 @@ void DlgPrefController::slotUpdate() {
 }
 
 void DlgPrefController::slotCancel() {
-    if (m_pInputTableModel != NULL) {
+    if (m_pInputTableModel != nullptr) {
         m_pInputTableModel->cancel();
     }
 
-    if (m_pOutputTableModel != NULL) {
+    if (m_pOutputTableModel != nullptr) {
         m_pOutputTableModel->cancel();
     }
 }
@@ -300,11 +300,11 @@ void DlgPrefController::slotCancel() {
 void DlgPrefController::slotApply() {
     if (m_bDirty) {
         // Apply the presets and load the resulting preset.
-        if (m_pInputTableModel != NULL) {
+        if (m_pInputTableModel != nullptr) {
             m_pInputTableModel->apply();
         }
 
-        if (m_pOutputTableModel != NULL) {
+        if (m_pOutputTableModel != nullptr) {
             m_pOutputTableModel->apply();
         }
 
@@ -459,7 +459,7 @@ void DlgPrefController::slotPresetLoaded(ControllerPresetPointer preset) {
     for (int i = 0; i < pInputModel->columnCount(); ++i) {
         QAbstractItemDelegate* pDelegate = pInputModel->delegateForColumn(
             i, m_ui.m_pInputMappingTableView);
-        if (pDelegate != NULL) {
+        if (pDelegate != nullptr) {
             qDebug() << "Setting input delegate for column" << i << pDelegate;
             m_ui.m_pInputMappingTableView->setItemDelegateForColumn(i, pDelegate);
         }
@@ -483,7 +483,7 @@ void DlgPrefController::slotPresetLoaded(ControllerPresetPointer preset) {
     for (int i = 0; i < pOutputModel->columnCount(); ++i) {
         QAbstractItemDelegate* pDelegate = pOutputModel->delegateForColumn(
             i, m_ui.m_pOutputMappingTableView);
-        if (pDelegate != NULL) {
+        if (pDelegate != nullptr) {
             qDebug() << "Setting output delegate for column" << i << pDelegate;
             m_ui.m_pOutputMappingTableView->setItemDelegateForColumn(i, pDelegate);
         }

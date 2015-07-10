@@ -177,7 +177,7 @@ void DlgPrefSoundItem::loadPath(const SoundManagerConfig &config) {
  */
 void DlgPrefSoundItem::writePath(SoundManagerConfig *config) const {
     SoundDevice *device = getDevice();
-    if (device == NULL) {
+    if (device == nullptr) {
         return;
     } // otherwise, this will have a valid audiopath
 
@@ -225,12 +225,12 @@ void DlgPrefSoundItem::reload() {
 
 /**
  * Gets the currently selected SoundDevice
- * @returns pointer to SoundDevice, or NULL if the "None" option is selected.
+ * @returns pointer to SoundDevice, or nullptr if the "None" option is selected.
  */
 SoundDevice* DlgPrefSoundItem::getDevice() const {
     QString selection = deviceComboBox->itemData(deviceComboBox->currentIndex()).toString();
     if (selection == "None") {
-        return NULL;
+        return nullptr;
     }
     foreach (SoundDevice *device, m_devices) {
         if (selection == device->getInternalName()) {
@@ -239,7 +239,7 @@ SoundDevice* DlgPrefSoundItem::getDevice() const {
     }
     // looks like something became invalid ???
     deviceComboBox->setCurrentIndex(0); // set it to none
-    return NULL;
+    return nullptr;
 }
 
 /**

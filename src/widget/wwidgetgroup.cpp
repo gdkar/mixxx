@@ -13,7 +13,7 @@
 WWidgetGroup::WWidgetGroup(QWidget* pParent)
         : QFrame(pParent),
           WBaseWidget(this),
-          m_pPixmapBack(NULL) {
+          m_pPixmapBack(nullptr) {
     setObjectName("WidgetGroup");
 }
 
@@ -89,7 +89,7 @@ void WWidgetGroup::setup(QDomNode node, const SkinContext& context) {
                             context.selectScaleMode(backPathNode, Paintable::TILE));
     }
 
-    QLayout* pLayout = NULL;
+    QLayout* pLayout = nullptr;
     if (context.hasNode(node, "Layout")) {
         QString layout = context.selectString(node, "Layout");
         if (layout == "vertical") {
@@ -103,7 +103,7 @@ void WWidgetGroup::setup(QDomNode node, const SkinContext& context) {
         }
 
         // Set common layout parameters.
-        if (pLayout != NULL) {
+        if (pLayout != nullptr) {
             pLayout->setSpacing(0);
             pLayout->setContentsMargins(0, 0, 0, 0);
             pLayout->setAlignment(Qt::AlignCenter);

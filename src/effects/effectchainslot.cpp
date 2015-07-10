@@ -139,8 +139,8 @@ void EffectChainSlot::slotChainInsertionTypeChanged(EffectChain::InsertionType t
 
 void EffectChainSlot::slotChainChannelStatusChanged(const QString& group,
                                                     bool enabled) {
-    ChannelInfo* pInfo = m_channelInfoByName.value(group, NULL);
-    if (pInfo != NULL && pInfo->pEnabled != NULL) {
+    ChannelInfo* pInfo = m_channelInfoByName.value(group, nullptr);
+    if (pInfo != nullptr && pInfo->pEnabled != nullptr) {
         pInfo->pEnabled->set(enabled);
         emit(updated());
     }
@@ -399,8 +399,8 @@ void EffectChainSlot::slotControlChainPrevPreset(double v) {
 
 void EffectChainSlot::slotChannelStatusChanged(const QString& group) {
     if (m_pEffectChain) {
-        ChannelInfo* pChannelInfo = m_channelInfoByName.value(group, NULL);
-        if (pChannelInfo != NULL && pChannelInfo->pEnabled != NULL) {
+        ChannelInfo* pChannelInfo = m_channelInfoByName.value(group, nullptr);
+        if (pChannelInfo != nullptr && pChannelInfo->pEnabled != nullptr) {
             bool bEnable = pChannelInfo->pEnabled->toBool();
             if (bEnable) {
                 m_pEffectChain->enableForChannel(pChannelInfo->handle_group);

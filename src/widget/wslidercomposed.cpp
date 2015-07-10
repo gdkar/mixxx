@@ -32,8 +32,8 @@ WSliderComposed::WSliderComposed(QWidget * parent)
       m_dHandleLength(0.0),
       m_dSliderLength(0.0),
       m_bHorizontal(false),
-      m_pSlider(NULL),
-      m_pHandle(NULL) {
+      m_pSlider(nullptr),
+      m_pHandle(nullptr) {
 }
 
 WSliderComposed::~WSliderComposed() {

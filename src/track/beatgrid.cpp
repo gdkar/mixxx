@@ -42,12 +42,12 @@ BeatGrid::BeatGrid(TrackInfoObject* pTrack, int iSampleRate,
           m_iSampleRate(iSampleRate > 0 ? iSampleRate :
                         pTrack->getSampleRate()),
           m_dBeatLength(0.0) {
-    if (pTrack != NULL) {
+    if (pTrack != nullptr) {
         // BeatGrid should live in the same thread as the track it is associated
         // with.
         moveToThread(pTrack->thread());
     }
-    if (pByteArray != NULL) {
+    if (pByteArray != nullptr) {
         readByteArray(pByteArray);
     }
 }
@@ -248,13 +248,13 @@ bool BeatGrid::findPrevNextBeats(double dSamples,
 BeatIterator* BeatGrid::findBeats(double startSample, double stopSample) const {
     QMutexLocker locker(&m_mutex);
     if (!isValid() || startSample > stopSample) {
-        return NULL;
+        return nullptr;
     }
     // qDebug() << "BeatGrid::findBeats startSample" << startSample << "stopSample"
     //          << stopSample << "beatlength" << m_dBeatLength << "BPM" << bpm();
     double curBeat = findNextBeat(startSample);
     if (curBeat == -1.0) {
-        return NULL;
+        return nullptr;
     }
     return new BeatGridIterator(m_dBeatLength, curBeat, stopSample);
 }

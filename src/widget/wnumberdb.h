@@ -10,7 +10,7 @@
 class WNumberDb : public WNumber {
     Q_OBJECT
   public:
-    WNumberDb(QWidget* pParent = NULL);
+    WNumberDb(QWidget* pParent = nullptr);
     virtual ~WNumberDb();
 
   public slots:

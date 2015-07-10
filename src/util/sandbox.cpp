@@ -21,7 +21,7 @@ const bool sDebug = false;
 
 QMutex Sandbox::s_mutex(QMutex::Recursive);
 bool Sandbox::s_bInSandbox = false;
-ConfigObject<ConfigValue>* Sandbox::s_pSandboxPermissions = NULL;
+ConfigObject<ConfigValue>* Sandbox::s_pSandboxPermissions = nullptr;
 QHash<QString, SecurityTokenWeakPointer> Sandbox::s_activeTokens;
 
 // static
@@ -57,7 +57,7 @@ void Sandbox::initialize(const QString& permissionsFile) {
 void Sandbox::shutdown() {
     QMutexLocker locker(&s_mutex);
     ConfigObject<ConfigValue>* pSandboxPermissions = s_pSandboxPermissions;
-    s_pSandboxPermissions = NULL;
+    s_pSandboxPermissions = nullptr;
     if (pSandboxPermissions) {
         pSandboxPermissions->Save();
         delete pSandboxPermissions;
@@ -88,7 +88,7 @@ bool Sandbox::askForAccess(const QString& canonicalPath) {
             .arg(info.fileName());
 
     QMessageBox::question(
-        NULL, title,
+        nullptr, title,
         QObject::tr(
             "Due to Mac Sandboxing, we need your permission to access this file:"
             "\n\n%1\n\n"
@@ -103,9 +103,9 @@ bool Sandbox::askForAccess(const QString& canonicalPath) {
     QFileInfo resultInfo;
     while (true) {
         if (info.isFile()) {
-            result = QFileDialog::getOpenFileName(NULL, title, canonicalPath);
+            result = QFileDialog::getOpenFileName(nullptr, title, canonicalPath);
         } else if (info.isDir()) {
-            result = QFileDialog::getExistingDirectory(NULL, title, canonicalPath);
+            result = QFileDialog::getExistingDirectory(nullptr, title, canonicalPath);
         }
 
         if (result.isNull()) {
@@ -127,7 +127,7 @@ bool Sandbox::askForAccess(const QString& canonicalPath) {
             qDebug() << "User selected the wrong file.";
         }
         QMessageBox::question(
-            NULL, title,
+            nullptr, title,
             QObject::tr("You selected the wrong file. To grant Mixxx access, "
                         "please select the file '%1'. If you do not want to "
                         "continue, press Cancel.").arg(info.fileName()));
@@ -152,7 +152,7 @@ bool Sandbox::createSecurityToken(const QString& canonicalPath,
         return false;
     }
     QMutexLocker locker(&s_mutex);
-    if (s_pSandboxPermissions == NULL) {
+    if (s_pSandboxPermissions == nullptr) {
         return false;
     }
 
@@ -162,7 +162,7 @@ bool Sandbox::createSecurityToken(const QString& canonicalPath,
             kCFAllocatorDefault, QStringToCFString(canonicalPath),
             kCFURLPOSIXPathStyle, isDirectory);
     if (url) {
-        CFErrorRef error = NULL;
+        CFErrorRef error = nullptr;
         CFDataRef bookmark = CFURLCreateBookmarkData(
                 kCFAllocatorDefault, url,
                 kCFURLBookmarkCreationWithSecurityScope, nil, nil, &error);
@@ -181,7 +181,7 @@ bool Sandbox::createSecurityToken(const QString& canonicalPath,
         } else {
             if (sDebug) {
                 qDebug() << "Failed to create security-scoped bookmark for" << canonicalPath;
-                if (error != NULL) {
+                if (error != nullptr) {
                     qDebug() << "Error:" << CFStringToQString(CFErrorCopyDescription(error));
                 }
             }
@@ -208,7 +208,7 @@ SecurityTokenPointer Sandbox::openSecurityToken(const QFileInfo& file, bool crea
     }
 
     QMutexLocker locker(&s_mutex);
-    if (s_pSandboxPermissions == NULL) {
+    if (s_pSandboxPermissions == nullptr) {
         return SecurityTokenPointer();
     }
 
@@ -272,7 +272,7 @@ SecurityTokenPointer Sandbox::openSecurityToken(const QDir& dir, bool create) {
     }
 
     QMutexLocker locker(&s_mutex);
-    if (s_pSandboxPermissions == NULL) {
+    if (s_pSandboxPermissions == nullptr) {
         return SecurityTokenPointer();
     }
 
@@ -330,19 +330,19 @@ SecurityTokenPointer Sandbox::openTokenFromBookmark(const QString& canonicalPath
                 kCFAllocatorDefault, reinterpret_cast<const UInt8*>(bookmarkBA.constData()),
                 bookmarkBA.length());
         Boolean stale;
-        CFErrorRef error = NULL;
+        CFErrorRef error = nullptr;
         CFURLRef url = CFURLCreateByResolvingBookmarkData(
                 kCFAllocatorDefault, bookmarkData,
-                kCFURLBookmarkResolutionWithSecurityScope, NULL, NULL,
+                kCFURLBookmarkResolutionWithSecurityScope, nullptr, nullptr,
                 &stale, &error);
-        if (error != NULL) {
+        if (error != nullptr) {
             if (sDebug) {
                 qDebug() << "Error creating URL from bookmark data:"
                          << CFStringToQString(CFErrorCopyDescription(error));
             }
         }
         CFRelease(bookmarkData);
-        if (url != NULL) {
+        if (url != nullptr) {
             if (!CFURLStartAccessingSecurityScopedResource(url)) {
                 if (sDebug) {
                     qDebug() << "CFURLStartAccessingSecurityScopedResource failed for"

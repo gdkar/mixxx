@@ -122,7 +122,7 @@ QIcon CrateFeature::getIcon() {
 
 int CrateFeature::crateIdFromIndex(QModelIndex index) {
     TreeItem* item = static_cast<TreeItem*>(index.internalPointer());
-    if (item == NULL) {
+    if (item == nullptr) {
         return -1;
     }
 
@@ -208,7 +208,7 @@ void CrateFeature::activateChild(const QModelIndex& index) {
 
 void CrateFeature::onRightClick(const QPoint& globalPos) {
     m_lastRightClickedIndex = QModelIndex();
-    QMenu menu(NULL);
+    QMenu menu(nullptr);
     menu.addAction(m_pCreateCrateAction);
     menu.exec(globalPos);
 }
@@ -233,7 +233,7 @@ void CrateFeature::onRightClickChild(const QPoint& globalPos, QModelIndex index)
 
     m_pLockCrateAction->setText(locked ? tr("Unlock") : tr("Lock"));
 
-    QMenu menu(NULL);
+    QMenu menu(nullptr);
     menu.addAction(m_pCreateCrateAction);
     menu.addSeparator();
     menu.addAction(m_pRenameCrateAction);
@@ -258,7 +258,7 @@ void CrateFeature::slotCreateCrate() {
 
     while (!validNameGiven) {
         bool ok = false;
-        name = QInputDialog::getText(NULL,
+        name = QInputDialog::getText(nullptr,
                                      tr("Create New Crate"),
                                      tr("Enter name for new crate:"),
                                      QLineEdit::Normal, tr("New Crate"),
@@ -270,11 +270,11 @@ void CrateFeature::slotCreateCrate() {
         int existingId = m_crateDao.getCrateIdByName(name);
 
         if (existingId != -1) {
-            QMessageBox::warning(NULL,
+            QMessageBox::warning(nullptr,
                                  tr("Creating Crate Failed"),
                                  tr("A crate by that name already exists."));
         } else if (name.isEmpty()) {
-            QMessageBox::warning(NULL,
+            QMessageBox::warning(nullptr,
                                  tr("Creating Crate Failed"),
                                  tr("A crate cannot have a blank name."));
         } else {
@@ -287,7 +287,7 @@ void CrateFeature::slotCreateCrate() {
         emit(showTrackModel(&m_crateTableModel));
     } else {
         qDebug() << "Error creating crate with name " << name;
-        QMessageBox::warning(NULL,
+        QMessageBox::warning(nullptr,
                              tr("Creating Crate Failed"),
                              tr("An unknown error occurred while creating crate: ")
                              + name);
@@ -333,7 +333,7 @@ void CrateFeature::slotRenameCrate() {
 
     while (!validNameGiven) {
         bool ok = false;
-        newName = QInputDialog::getText(NULL,
+        newName = QInputDialog::getText(nullptr,
                                         tr("Rename Crate"),
                                         tr("Enter new name for crate:"),
                                         QLineEdit::Normal,
@@ -347,11 +347,11 @@ void CrateFeature::slotRenameCrate() {
         int existingId = m_crateDao.getCrateIdByName(newName);
 
         if (existingId != -1) {
-            QMessageBox::warning(NULL,
+            QMessageBox::warning(nullptr,
                                 tr("Renaming Crate Failed"),
                                 tr("A crate by that name already exists."));
         } else if (newName.isEmpty()) {
-            QMessageBox::warning(NULL,
+            QMessageBox::warning(nullptr,
                                 tr("Renaming Crate Failed"),
                                 tr("A crate cannot have a blank name."));
         } else {
@@ -375,7 +375,7 @@ void CrateFeature::slotDuplicateCrate() {
     bool validNameGiven = false;
     while (!validNameGiven) {
         bool ok = false;
-        name = QInputDialog::getText(NULL,
+        name = QInputDialog::getText(nullptr,
                                      tr("Duplicate Crate"),
                                      tr("Enter name for new crate:"),
                                      QLineEdit::Normal,
@@ -389,11 +389,11 @@ void CrateFeature::slotDuplicateCrate() {
 
         int existingId = m_crateDao.getCrateIdByName(name);
         if (existingId != -1) {
-            QMessageBox::warning(NULL,
+            QMessageBox::warning(nullptr,
                                 tr("Renaming Crate Failed"),
                                 tr("A crate by that name already exists."));
         } else if (name.isEmpty()) {
-            QMessageBox::warning(NULL,
+            QMessageBox::warning(nullptr,
                                 tr("Renaming Crate Failed"),
                                 tr("A crate cannot have a blank name."));
         } else {
@@ -408,7 +408,7 @@ void CrateFeature::slotDuplicateCrate() {
         emit(showTrackModel(&m_crateTableModel));
     } else {
         qDebug() << "Error creating crate with name " << name;
-        QMessageBox::warning(NULL,
+        QMessageBox::warning(nullptr,
                              tr("Creating Crate Failed"),
                              tr("An unknown error occurred while creating crate: ")
                              + name);
@@ -542,7 +542,7 @@ void CrateFeature::slotImportPlaylist() {
             QDesktopServices::storageLocation(QDesktopServices::MusicLocation));
 
     QString playlist_file = QFileDialog::getOpenFileName(
-        NULL,
+        nullptr,
         tr("Import Playlist"),
         lastCrateDirectory,
         tr("Playlist Files (*.m3u *.m3u8 *.pls *.csv)"));
@@ -559,7 +559,7 @@ void CrateFeature::slotImportPlaylist() {
     // folder. We don't need access to this file on a regular basis so we do not
     // register a security bookmark.
 
-    Parser* playlist_parser = NULL;
+    Parser* playlist_parser = nullptr;
 
     if (playlist_file.endsWith(".m3u", Qt::CaseInsensitive) ||
         playlist_file.endsWith(".m3u8", Qt::CaseInsensitive)) {
@@ -603,7 +603,7 @@ void CrateFeature::slotExportPlaylist() {
             QDesktopServices::storageLocation(QDesktopServices::MusicLocation));
 
     QString file_location = QFileDialog::getSaveFileName(
-        NULL,
+        nullptr,
         tr("Export Crate"),
         lastCrateDirectory,
         tr("M3U Playlist (*.m3u);;M3U8 Playlist (*.m3u8);;PLS Playlist (*.pls);;Text CSV (*.csv);;Readable Text (*.txt)"));

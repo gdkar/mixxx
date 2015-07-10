@@ -59,7 +59,7 @@ void DlgPrefEffects::clear() {
 void DlgPrefEffects::slotEffectSelected(QListWidgetItem* pCurrent,
                                         QListWidgetItem* pPrevious) {
     Q_UNUSED(pPrevious);
-    if (pCurrent == NULL) {
+    if (pCurrent == nullptr) {
         return;
     }
     QString effectId = pCurrent->data(Qt::UserRole).toString();
@@ -71,7 +71,7 @@ void DlgPrefEffects::slotEffectSelected(QListWidgetItem* pCurrent,
     effectAuthor->setText(manifest.author());
     effectDescription->setText(manifest.description());
     effectVersion->setText(manifest.version());
-    if (manifestAndBackend.second != NULL) {
+    if (manifestAndBackend.second != nullptr) {
         effectType->setText(manifestAndBackend.second->getName());
     } else {
         effectType->clear();

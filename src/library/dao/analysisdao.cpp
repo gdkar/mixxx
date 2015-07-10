@@ -112,7 +112,7 @@ QList<AnalysisDao::AnalysisInfo> AnalysisDao::loadAnalysesFromQuery(const int tr
 }
 
 bool AnalysisDao::saveAnalysis(AnalysisDao::AnalysisInfo* info) {
-    if (!m_db.isOpen() || info == NULL) {
+    if (!m_db.isOpen() || info == nullptr) {
         return false;
     }
 

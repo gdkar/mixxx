@@ -96,7 +96,7 @@ class WTrackTableView : public WLibraryTableView {
     // when dragging.
     void mouseMoveEvent(QMouseEvent *pEvent);
 
-    // Returns the current TrackModel, or returns NULL if none is set.
+    // Returns the current TrackModel, or returns nullptr if none is set.
     TrackModel* getTrackModel();
     bool modelHasCapabilities(TrackModel::CapabilitiesFlags capability);
 

@@ -86,7 +86,7 @@ void WLibraryTableView::saveVScrollBarPosState() {
 void WLibraryTableView::moveSelection(int delta) {
     QAbstractItemModel* pModel = model();
 
-    if (pModel == NULL) {
+    if (pModel == nullptr) {
         return;
     }
 

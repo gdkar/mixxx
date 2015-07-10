@@ -8,7 +8,7 @@
 #include "widget/wskincolor.h"
 
 WaveformMark::WaveformMark()
-    : m_pointControl(NULL) {
+    : m_pointControl(nullptr) {
 }
 
 WaveformMark::~WaveformMark() {

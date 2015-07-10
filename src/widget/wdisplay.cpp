@@ -28,7 +28,7 @@
 WDisplay::WDisplay(QWidget * parent)
         : WWidget(parent),
           m_iCurrentPixmap(0),
-          m_pPixmapBack(NULL),
+          m_pPixmapBack(nullptr),
           m_bDisabledLoaded(false) {
     setPositions(0);
 }
@@ -83,7 +83,7 @@ void WDisplay::setPositions(int iNoPos) {
         iNoPos = 0;
     }
 
-    // QVector inserts NULLs for the new pixmaps.
+    // QVector inserts nullptrs for the new pixmaps.
     m_pixmaps.resize(iNoPos);
     m_disabledPixmaps.resize(iNoPos);
 }

@@ -4,7 +4,7 @@ namespace Mixxx {
 
 SoundSourceSndFile::SoundSourceSndFile(QUrl url)
         : SoundSource(url),
-          m_pSndFile(NULL) {
+          m_pSndFile(nullptr) {
 }
 
 SoundSourceSndFile::~SoundSourceSndFile() {
@@ -47,7 +47,7 @@ void SoundSourceSndFile::close() {
     if (m_pSndFile) {
         const int closeResult = sf_close(m_pSndFile);
         if (0 == closeResult) {
-            m_pSndFile = NULL;
+            m_pSndFile = nullptr;
         } else {
             qWarning() << "Failed to close file:" << closeResult
                     << sf_strerror(m_pSndFile)
