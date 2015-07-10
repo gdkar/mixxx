@@ -12,8 +12,8 @@ EngineControl::EngineControl(const QString &group,
         : QObject(pParent),
           m_group(group),
           m_pConfig(_config),
-          m_pEngineMaster(NULL),
-          m_pEngineBuffer(NULL),
+          m_pEngineMaster(nullptr),
+          m_pEngineBuffer(nullptr),
           m_numDecks(ConfigKey("[Master]", "num_decks")) {
     setCurrentSample(0.0, 0.0);
 }
@@ -120,17 +120,17 @@ void EngineControl::onSeek(double dNewPlaypos) {
 EngineBuffer* EngineControl::pickSyncTarget() {
     EngineMaster* pMaster = getEngineMaster();
     if (!pMaster) {
-        return NULL;
+        return nullptr;
     }
 
     EngineSync* pEngineSync = pMaster->getEngineSync();
-    if (pEngineSync == NULL) {
-        return NULL;
+    if (pEngineSync == nullptr) {
+        return nullptr;
     }
 
     // TODO(rryan): Remove. This is a linear search over groups in
     // EngineMaster. We should pass the EngineChannel into EngineControl.
     EngineChannel* pThisChannel = pMaster->getChannel(getGroup());
     EngineChannel* pChannel = pEngineSync->pickNonSyncSyncTarget(pThisChannel);
-    return pChannel ? pChannel->getEngineBuffer() : NULL;
+    return pChannel ? pChannel->getEngineBuffer() : nullptr;
 }

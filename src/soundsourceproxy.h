@@ -47,14 +47,14 @@ public:
     // Only for  backward compatibility.
     // Should be removed when no longer needed.
     Result parseTrackMetadata(Mixxx::TrackMetadata* pTrackMetadata) {
-        return parseTrackMetadataAndCoverArt(pTrackMetadata, NULL);
+        return parseTrackMetadataAndCoverArt(pTrackMetadata, nullptr);
     }
 
     // Only for  backward compatibility.
     // Should be removed when no longer needed.
     QImage parseCoverArt() const {
         QImage coverArt;
-        const Result result = parseTrackMetadataAndCoverArt(NULL, &coverArt);
+        const Result result = parseTrackMetadataAndCoverArt(nullptr, &coverArt);
         return (result == OK) ? coverArt : QImage();
     }
 

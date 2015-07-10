@@ -28,7 +28,7 @@ class StatModel : public QAbstractTableModel {
         NUM_STAT_COLUMNS
     };
 
-    StatModel(QObject* pParent=NULL);
+    StatModel(QObject* pParent=nullptr);
     virtual ~StatModel();
 
   public slots:

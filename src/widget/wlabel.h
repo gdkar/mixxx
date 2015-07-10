@@ -27,7 +27,7 @@
 class WLabel : public QLabel, public WBaseWidget {
     Q_OBJECT
   public:
-    WLabel(QWidget* pParent=NULL);
+    WLabel(QWidget* pParent=nullptr);
     virtual ~WLabel();
 
     virtual void setup(QDomNode node, const SkinContext& context);

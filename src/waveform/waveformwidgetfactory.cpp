@@ -39,9 +39,9 @@ WaveformWidgetAbstractHandle::WaveformWidgetAbstractHandle()
 ///////////////////////////////////////////
 
 WaveformWidgetHolder::WaveformWidgetHolder()
-    : m_waveformWidget(NULL),
-      m_waveformViewer(NULL),
-      m_skinContextCache(NULL, QString()) {
+    : m_waveformWidget(nullptr),
+      m_waveformViewer(nullptr),
+      m_skinContextCache(nullptr, QString()) {
 }
 
 WaveformWidgetHolder::WaveformWidgetHolder(WaveformWidgetAbstract* waveformWidget,
@@ -67,7 +67,7 @@ WaveformWidgetFactory::WaveformWidgetFactory() :
         m_overviewNormalized(false),
         m_openGLAvailable(false),
         m_openGLShaderAvailable(false),
-        m_vsyncThread(NULL),
+        m_vsyncThread(nullptr),
         m_frameCnt(0),
         m_actualFrameRate(0),
         m_vSyncType(0) {
@@ -212,7 +212,7 @@ if (!m_config) {return false;
 void WaveformWidgetFactory::destroyWidgets() {
     for (int i = 0; i < m_waveformWidgetHolders.size(); i++) {
         WaveformWidgetAbstract* pWidget = m_waveformWidgetHolders[i].m_waveformWidget;;
-        m_waveformWidgetHolders[i].m_waveformWidget = NULL;
+        m_waveformWidgetHolders[i].m_waveformWidget = nullptr;
         delete pWidget;
     }
     m_waveformWidgetHolders.clear();
@@ -388,7 +388,7 @@ void WaveformWidgetFactory::setOverviewNormalized(bool normalize) {
 
 void WaveformWidgetFactory::notifyZoomChange(WWaveformViewer* viewer) {
     WaveformWidgetAbstract* pWaveformWidget = viewer->getWaveformWidget();
-    if (pWaveformWidget != NULL && isZoomSync()) {
+    if (pWaveformWidget != nullptr && isZoomSync()) {
         //qDebug() << "WaveformWidgetFactory::notifyZoomChange";
         int refZoom = pWaveformWidget->getZoomFactor();
 
@@ -601,7 +601,7 @@ void WaveformWidgetFactory::evaluateWidgets() {
 
 WaveformWidgetAbstract* WaveformWidgetFactory::createWaveformWidget(
         WaveformWidgetType::Type type, WWaveformViewer* viewer) {
-    WaveformWidgetAbstract* widget = NULL;
+    WaveformWidgetAbstract* widget = nullptr;
     if (viewer) {
         if (CmdlineArgs::Instance().getSafeMode()) {type = WaveformWidgetType::EmptyWaveform;}
         switch(type) {
@@ -653,7 +653,7 @@ WaveformWidgetAbstract* WaveformWidgetFactory::createWaveformWidget(
             if (!widget->isValid()) {
                 qWarning() << "failed to init EmptyWaveformWidget";
                 delete widget;
-                widget = NULL;
+                widget = nullptr;
             }
         }
     }

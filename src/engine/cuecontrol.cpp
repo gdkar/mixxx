@@ -147,9 +147,9 @@ void CueControl::createControls() {
 }
 
 void CueControl::attachCue(Cue* pCue, int hotCue) {
-    HotcueControl* pControl = m_hotcueControl.value(hotCue, NULL);
-    if (pControl == NULL) {return;}
-    if (pControl->getCue() != NULL) {detachCue(pControl->getHotcueNumber());}
+    HotcueControl* pControl = m_hotcueControl.value(hotCue, nullptr);
+    if (pControl == nullptr) {return;}
+    if (pControl->getCue() != nullptr) {detachCue(pControl->getHotcueNumber());}
     connect(pCue, SIGNAL(updated()),this, SLOT(cueUpdated()),Qt::DirectConnection);
     pControl->getPosition()->set(pCue->getPosition());
     pControl->getEnabled()->set(pCue->getPosition() == -1 ? 0.0 : 1.0);
@@ -160,14 +160,14 @@ void CueControl::attachCue(Cue* pCue, int hotCue) {
 }
 
 void CueControl::detachCue(int hotCue) {
-    HotcueControl* pControl = m_hotcueControl.value(hotCue, NULL);
-    if (pControl == NULL) {return;}
+    HotcueControl* pControl = m_hotcueControl.value(hotCue, nullptr);
+    if (pControl == nullptr) {return;}
     Cue* pCue = pControl->getCue();
     if (!pCue) return;
     disconnect(pCue, 0, this, 0);
     // clear pCue first because we have a null check for valid data else where
     // in the code
-    pControl->setCue(NULL);
+    pControl->setCue(nullptr);
     pControl->getPosition()->set(-1); // invalidate position for hintReader()
     pControl->getEnabled()->set(0);
 }
@@ -178,7 +178,7 @@ void CueControl::trackLoaded(TrackPointer pTrack) {
     if (!pTrack) {return;}
     m_pLoadedTrack = pTrack;
     connect(pTrack.data(), SIGNAL(cuesUpdated()),this, SLOT(trackCuesUpdated()),Qt::DirectConnection);
-    Cue* loadCue = NULL;
+    Cue* loadCue = nullptr;
     const QList<Cue*>& cuePoints = pTrack->getCuePoints();
     QListIterator<Cue*> it(cuePoints);
     while (it.hasNext()) {
@@ -193,7 +193,7 @@ void CueControl::trackLoaded(TrackPointer pTrack) {
     // If cue recall is ON in the prefs, then we're supposed to seek to the cue
     // point on song load. Note that [Controls],cueRecall == 0 corresponds to "ON", not OFF.
     bool cueRecall = (getConfig()->getValueString(ConfigKey("[Controls]","CueRecall"), "0").toInt() == 0);
-    if (loadCue != NULL) {
+    if (loadCue != nullptr) {
         m_pCuePoint->set(loadCue->getPosition());
         if (cueRecall) {loadCuePoint = loadCue->getPosition();}
     } else {
@@ -223,7 +223,7 @@ void CueControl::trackUnloaded(TrackPointer pTrack) {
     // Store the cue point in a load cue.
     double cuePoint = m_pCuePoint->get();
     if (cuePoint != -1 && cuePoint != 0.0) {
-        Cue* loadCue = NULL;
+        Cue* loadCue = nullptr;
         const QList<Cue*>& cuePoints = pTrack->getCuePoints();
         QListIterator<Cue*> it(cuePoints);
         while (it.hasNext()) {
@@ -267,10 +267,10 @@ void CueControl::trackCuesUpdated() {
 
         int hotcue = pCue->getHotCue();
         if (hotcue != -1) {
-            HotcueControl* pControl = m_hotcueControl.value(hotcue, NULL);
+            HotcueControl* pControl = m_hotcueControl.value(hotcue, nullptr);
 
             // Cue's hotcue doesn't have a hotcue control.
-            if (pControl == NULL) {
+            if (pControl == nullptr) {
                 continue;
             }
 
@@ -278,7 +278,7 @@ void CueControl::trackCuesUpdated() {
             // If the old hotcue is different than this one.
             if (pOldCue != pCue) {
                 // If the old hotcue exists, detach it
-                if (pOldCue != NULL)
+                if (pOldCue != nullptr)
                     detachCue(hotcue);
                 attachCue(pCue, hotcue);
             } else {
@@ -850,7 +850,7 @@ HotcueControl::HotcueControl(QString group, int i, QObject *pParent)
         : QObject(pParent),
           m_group(group),
           m_iHotcueNumber(i),
-          m_pCue(NULL),
+          m_pCue(nullptr),
           m_hotcuePosition(keyForControl(i,"position")),
           m_hotcueEnabled(keyForControl(i,"enabled")),
           m_hotcueSet(keyForControl(i,"set")),

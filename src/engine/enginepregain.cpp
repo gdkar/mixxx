@@ -10,9 +10,9 @@
 #include "util/math.h"
 #include "sampleutil.h"
 
-ControlPotmeter* EnginePregain::s_pReplayGainBoost = NULL;
-ControlPotmeter* EnginePregain::s_pDefaultBoost = NULL;
-ControlObject* EnginePregain::s_pEnableReplayGain = NULL;
+ControlPotmeter* EnginePregain::s_pReplayGainBoost = nullptr;
+ControlPotmeter* EnginePregain::s_pDefaultBoost = nullptr;
+ControlObject* EnginePregain::s_pEnableReplayGain = nullptr;
 
 /*----------------------------------------------------------------
    A pregaincontrol is ... a pregain.
@@ -29,7 +29,7 @@ EnginePregain::EnginePregain(const QString &group, QObject *pParent)
           m_pPassthroughEnabled(ConfigKey(group,"passthrough")),
           m_bSmoothFade(false) {
     //Replay Gain things
-    if (s_pReplayGainBoost == NULL) {
+    if (s_pReplayGainBoost == nullptr) {
         s_pReplayGainBoost = new ControlAudioTaperPot(ConfigKey("[ReplayGain]", "ReplayGainBoost"), -12, 12, 0.5);
         s_pDefaultBoost = new ControlAudioTaperPot(ConfigKey("[ReplayGain]", "DefaultBoost"), -12, 12, 0.5);
         s_pEnableReplayGain = new ControlObject(ConfigKey("[ReplayGain]", "ReplayGainEnabled"));
@@ -38,11 +38,11 @@ EnginePregain::EnginePregain(const QString &group, QObject *pParent)
 
 EnginePregain::~EnginePregain() {
 //    delete s_pEnableReplayGain;
-//    s_pEnableReplayGain = NULL;
+//    s_pEnableReplayGain = nullptr;
 //    delete s_pReplayGainBoost;
-//    s_pReplayGainBoost = NULL;
+//    s_pReplayGainBoost = nullptr;
 //    delete s_pDefaultBoost;
- //   s_pDefaultBoost = NULL;
+ //   s_pDefaultBoost = nullptr;
 }
 
 void EnginePregain::setSpeed(CSAMPLE_GAIN  speed) {

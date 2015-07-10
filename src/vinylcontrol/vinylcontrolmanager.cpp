@@ -24,7 +24,7 @@ VinylControlManager::VinylControlManager(QObject* pParent,
           m_pConfig(pConfig),
           m_pProcessor(new VinylControlProcessor(this, pConfig)),
           m_iTimerId(-1),
-          m_pNumDecks(NULL),
+          m_pNumDecks(nullptr),
           m_iNumConfiguredDecks(0) {
     // Register every possible VC input with SoundManager to route to the
     // VinylControlProcessor.
@@ -140,7 +140,7 @@ void VinylControlManager::removeSignalQualityListener(VinylSignalQualityListener
 
 void VinylControlManager::updateSignalQualityListeners() {
     FIFO<VinylSignalQualityReport>* signalQualityFifo = m_pProcessor->getSignalQualityFifo();
-    if (signalQualityFifo == NULL) {
+    if (signalQualityFifo == nullptr) {
         return;
     }
 

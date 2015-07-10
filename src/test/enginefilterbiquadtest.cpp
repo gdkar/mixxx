@@ -11,7 +11,7 @@ TEST_F(EngineFilterBiquadTest, fidlibInputRespectsLocale) {
     char spec[FIDSPEC_LENGTH];
 
     format_fidspec(spec, sizeof(spec), "%.10f", 1.22);
-    ASSERT_DOUBLE_EQ(1.22, strtod(spec, NULL));
+    ASSERT_DOUBLE_EQ(1.22, strtod(spec, nullptr));
 }
 
 TEST_F(EngineFilterBiquadTest, fidspecLengthIsLongEnough) {

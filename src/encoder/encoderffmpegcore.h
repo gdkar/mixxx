@@ -53,10 +53,10 @@ class EncoderCallback;
 class EncoderFfmpegCore : public Encoder {
 public:
 #if LIBAVCODEC_VERSION_INT > 3544932
-    EncoderFfmpegCore(EncoderCallback* pCallback=NULL,
+    EncoderFfmpegCore(EncoderCallback* pCallback=nullptr,
                       AVCodecID codec = AV_CODEC_ID_MP2);
 #else
-    EncoderFfmpegCore(EncoderCallback* pCallback=NULL,
+    EncoderFfmpegCore(EncoderCallback* pCallback=nullptr,
                       CodecID codec = CODEC_ID_MP2);
 #endif
     ~EncoderFfmpegCore();

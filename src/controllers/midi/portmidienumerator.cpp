@@ -174,8 +174,8 @@ QList<Controller*> PortMidiEnumerator::queryDevices() {
 
     m_devices.clear();
 
-    const PmDeviceInfo* inputDeviceInfo = NULL;
-    const PmDeviceInfo* outputDeviceInfo = NULL;
+    const PmDeviceInfo* inputDeviceInfo = nullptr;
+    const PmDeviceInfo* outputDeviceInfo = nullptr;
     int inputDevIndex = -1;
     int outputDevIndex = -1;
     QMap<int, QString> unassignedOutputDevices;
@@ -207,7 +207,7 @@ QList<Controller*> PortMidiEnumerator::queryDevices() {
             inputDevIndex = i;
 
             //Reset our output device variables before we look for one incase we find none.
-            outputDeviceInfo = NULL;
+            outputDeviceInfo = nullptr;
             outputDevIndex = -1;
 
             //Search for a corresponding output device
@@ -230,8 +230,8 @@ QList<Controller*> PortMidiEnumerator::queryDevices() {
             }
 
             // So at this point, we either have an input-only MIDI device
-            // (outputDeviceInfo == NULL) or we've found a matching output MIDI
-            // device (outputDeviceInfo != NULL).
+            // (outputDeviceInfo == nullptr) or we've found a matching output MIDI
+            // device (outputDeviceInfo != nullptr).
 
             //.... so create our (aggregate) MIDI device!
             PortMidiController *currentDevice = new PortMidiController(

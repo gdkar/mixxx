@@ -14,17 +14,14 @@
 
 AnalyserWaveform::AnalyserWaveform(ConfigObject<ConfigValue>* pConfig) :
         m_skipProcessing(false),
-        m_waveformData(NULL),
-        m_waveformSummaryData(NULL),
+        m_waveformData(nullptr),
+        m_waveformSummaryData(nullptr),
         m_stride(0, 0),
         m_currentStride(0),
-        m_currentSummaryStride(0) {
+        m_currentSummaryStride(0),
+        m_filter{0,0,0},
+        m_timer(){
     qDebug() << "AnalyserWaveform::AnalyserWaveform()";
-
-    m_filter[0] = 0;
-    m_filter[1] = 0;
-    m_filter[2] = 0;
-
     static int i = 0;
     m_database = QSqlDatabase::addDatabase("QSQLITE", "WAVEFORM_ANALYSIS" + QString::number(i++));
     if (!m_database.isOpen()) {
@@ -32,15 +29,12 @@ AnalyserWaveform::AnalyserWaveform(ConfigObject<ConfigValue>* pConfig) :
         m_database.setDatabaseName(QDir(pConfig->getSettingsPath()).filePath("mixxxdb.sqlite"));
         m_database.setUserName("mixxx");
         m_database.setPassword("mixxx");
-
         //Open the database connection in this thread.
         if (!m_database.open()) {
             qDebug() << "Failed to open database from analyser thread."
                      << m_database.lastError();
         }
     }
-
-    m_timer = new QTime();
     m_analysisDao = new AnalysisDao(m_database, pConfig);
 }
 
@@ -48,14 +42,13 @@ AnalyserWaveform::~AnalyserWaveform() {
     qDebug() << "AnalyserWaveform::~AnalyserWaveform()";
     destroyFilters();
     m_database.close();
-    delete m_timer;
     delete m_analysisDao;
 }
 
 bool AnalyserWaveform::initialise(TrackPointer tio, int sampleRate, int totalSamples) {
     m_skipProcessing = false;
 
-    m_timer->start();
+    m_timer.start();
 
     if (totalSamples == 0) {
         qWarning() << "AnalyserWaveform::initialise - no waveform/waveform summary";
@@ -222,14 +215,14 @@ void AnalyserWaveform::process(const CSAMPLE* buffer, const int bufferLength) {
         // m_stride.m_filteredData[Left][High] += m_buffers[High][i + 1]*m_buffers[High][i + 1];
 
         // Record the max across this stride.
-        storeIfGreater(&m_stride.m_overallData[Left], cover[Left]);
-        storeIfGreater(&m_stride.m_overallData[Right], cover[Right]);
-        storeIfGreater(&m_stride.m_filteredData[Left][Low], clow[Left]);
-        storeIfGreater(&m_stride.m_filteredData[Right][Low], clow[Right]);
-        storeIfGreater(&m_stride.m_filteredData[Left][Mid], cmid[Left]);
-        storeIfGreater(&m_stride.m_filteredData[Right][Mid], cmid[Right]);
-        storeIfGreater(&m_stride.m_filteredData[Left][High], chigh[Left]);
-        storeIfGreater(&m_stride.m_filteredData[Right][High], chigh[Right]);
+        storeIfGreater(m_stride.m_overallData[Left], cover[Left]);
+        storeIfGreater(m_stride.m_overallData[Right], cover[Right]);
+        storeIfGreater(m_stride.m_filteredData[Left][Low], clow[Left]);
+        storeIfGreater(m_stride.m_filteredData[Right][Low], clow[Right]);
+        storeIfGreater(m_stride.m_filteredData[Left][Mid], cmid[Left]);
+        storeIfGreater(m_stride.m_filteredData[Right][Mid], cmid[Right]);
+        storeIfGreater(m_stride.m_filteredData[Left][High], chigh[Left]);
+        storeIfGreater(m_stride.m_filteredData[Right][High], chigh[Right]);
 
         m_stride.m_position++;
 
@@ -278,13 +271,13 @@ void AnalyserWaveform::cleanup(TrackPointer tio) {
     tio->setWaveform(ConstWaveformPointer());
     // Since clear() could delete the waveform, clear our pointer to the
     // waveform's vector data first.
-    m_waveformData = NULL;
+    m_waveformData = nullptr;
     m_waveform.clear();
 
     tio->setWaveformSummary(ConstWaveformPointer());
     // Since clear() could delete the waveform, clear our pointer to the
     // waveform's vector data first.
-    m_waveformSummaryData = NULL;
+    m_waveformSummaryData = nullptr;
     m_waveformSummary.clear();
 }
 
@@ -300,7 +293,7 @@ void AnalyserWaveform::finalise(TrackPointer tio) {
         m_waveform->setDescription(WaveformFactory::currentWaveformDescription());
         // Since clear() could delete the waveform, clear our pointer to the
         // waveform's vector data first.
-        m_waveformData = NULL;
+        m_waveformData = nullptr;
         m_waveform.clear();
     }
 
@@ -311,7 +304,7 @@ void AnalyserWaveform::finalise(TrackPointer tio) {
         m_waveformSummary->setDescription(WaveformFactory::currentWaveformSummaryDescription());
         // Since clear() could delete the waveform, clear our pointer to the
         // waveform's vector data first.
-        m_waveformSummaryData = NULL;
+        m_waveformSummaryData = nullptr;
         m_waveformSummary.clear();
     }
 
@@ -320,11 +313,9 @@ void AnalyserWaveform::finalise(TrackPointer tio) {
 #endif
 
     qDebug() << "Waveform generation for track" << tio->getId() << "done"
-             << m_timer->elapsed()/1000.0 << "s";
+             << m_timer.elapsed()/1000.0 << "s";
 }
 
-void AnalyserWaveform::storeIfGreater(float* pDest, float source) {
-    if (*pDest < source) {
-        *pDest = source;
-    }
+void AnalyserWaveform::storeIfGreater(float & dest, float source) {
+  dest = (dest<source)?source:dest;
 }

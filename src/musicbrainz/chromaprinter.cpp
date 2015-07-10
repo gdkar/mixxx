@@ -68,12 +68,12 @@ namespace
             return QString();
         }
 
-        void* fprint = NULL;
+        void* fprint = nullptr;
         int size = 0;
         int ret = chromaprint_get_raw_fingerprint(ctx, &fprint, &size);
         QByteArray fingerprint;
         if (ret == 1) {
-            void* encoded = NULL;
+            void* encoded = nullptr;
             int encoded_size = 0;
             chromaprint_encode_fingerprint(fprint, size,
                                            CHROMAPRINT_ALGORITHM_DEFAULT,

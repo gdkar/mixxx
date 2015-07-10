@@ -112,7 +112,7 @@ int QtWaveformRendererFilteredSignal::buildPolygon() {
     }
 
     const WaveformData* data = waveform->data();
-    if (data == NULL) {
+    if (data == nullptr) {
         return 0;
     }
 
@@ -139,7 +139,7 @@ int QtWaveformRendererFilteredSignal::buildPolygon() {
             (double)m_waveformRenderer->getWidth();
 
     float lowGain(1.0), midGain(1.0), highGain(1.0);
-    getGains(NULL, &lowGain, &midGain, &highGain);
+    getGains(nullptr, &lowGain, &midGain, &highGain);
 
     //NOTE(vrince) Please help me find a better name for "channelSeparation"
     //this variable stand for merged channel ... 1 = merged & 2 = separated
@@ -282,7 +282,7 @@ void QtWaveformRendererFilteredSignal::draw(QPainter* painter, QPaintEvent* /*ev
 
     //visual gain
     float allGain(1.0);
-    getGains(&allGain, NULL, NULL, NULL);
+    getGains(&allGain, nullptr, nullptr, nullptr);
 
     double heightGain = allGain * (double)m_waveformRenderer->getHeight()/255.0;
     if (m_alignment == Qt::AlignTop) {

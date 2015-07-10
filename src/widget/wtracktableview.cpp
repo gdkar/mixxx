@@ -33,7 +33,7 @@ WTrackTableView::WTrackTableView(QWidget * parent,
                                       WTRACKTABLEVIEW_VSCROLLBARPOS_KEY)),
           m_pConfig(pConfig),
           m_pTrackCollection(pTrackCollection),
-          m_DlgTagFetcher(NULL),
+          m_DlgTagFetcher(nullptr),
           m_sorting(sorting),
           m_iCoverSourceColumn(-1),
           m_iCoverTypeColumn(-1),
@@ -43,9 +43,9 @@ WTrackTableView::WTrackTableView(QWidget * parent,
           m_lastUserActionNanos(0),
           m_selectionChangedSinceLastGuiTick(true),
           m_loadCachedOnly(false) {
-    // Give a NULL parent because otherwise it inherits our style which can make
+    // Give a nullptr parent because otherwise it inherits our style which can make
     // it unreadable. Bug #673411
-    m_pTrackInfo = new DlgTrackInfo(NULL, m_DlgTagFetcher);
+    m_pTrackInfo = new DlgTrackInfo(nullptr, m_DlgTagFetcher);
     connect(m_pTrackInfo, SIGNAL(next()),
             this, SLOT(slotNextTrackInfo()));
     connect(m_pTrackInfo, SIGNAL(previous()),
@@ -300,7 +300,7 @@ void WTrackTableView::loadTrackModel(QAbstractItemModel *model) {
         // We need to delete the old delegates, since the docs say the view will
         // not take ownership of them.
         QAbstractItemDelegate* old_delegate = itemDelegateForColumn(i);
-        // If delegate is NULL, it will unset the delegate for the column
+        // If delegate is nullptr, it will unset the delegate for the column
         setItemDelegateForColumn(i, delegate);
         delete old_delegate;
 
@@ -311,7 +311,7 @@ void WTrackTableView::loadTrackModel(QAbstractItemModel *model) {
         }
         /* If Mixxx starts the first time or the header states have been cleared
          * due to database schema evolution we gonna hide all columns that may
-         * contain a potential large number of NULL values.  This will hide the
+         * contain a potential large number of nullptr values.  This will hide the
          * key colum by default unless the user brings it to front
          */
         if (trackModel->isColumnHiddenByDefault(i) &&
@@ -623,7 +623,7 @@ void WTrackTableView::showTrackInfo(QModelIndex index) {
     }
 
     TrackPointer pTrack = trackModel->getTrack(index);
-    m_pTrackInfo->loadTrack(pTrack); // NULL is fine.
+    m_pTrackInfo->loadTrack(pTrack); // nullptr is fine.
     currentTrackInfoIndex = index;
 
     m_pTrackInfo->show();
@@ -659,7 +659,7 @@ void WTrackTableView::showDlgTagFetcher(QModelIndex index) {
     }
 
     TrackPointer pTrack = trackModel->getTrack(index);
-    // NULL is fine
+    // nullptr is fine
     m_DlgTagFetcher.loadTrack(pTrack);
     currentTrackInfoIndex = index;
     m_DlgTagFetcher.show();
@@ -809,7 +809,7 @@ void WTrackTableView::contextMenuEvent(QContextMenuEvent* event) {
         m_pBPMMenu->addAction(m_pBpmUnlockAction);
         m_pBPMMenu->addSeparator();
         if (oneSongSelected) {
-            if (trackModel == NULL) {
+            if (trackModel == nullptr) {
                 return;
             }
             int column = trackModel->fieldIndex("bpm_lock");
@@ -859,7 +859,7 @@ void WTrackTableView::contextMenuEvent(QContextMenuEvent* event) {
     //end of BPM section of menu
 
     if (modelHasCapabilities(TrackModel::TRACKMODELCAPS_CLEAR_BEATS)) {
-        if (trackModel == NULL) {
+        if (trackModel == nullptr) {
             return;
         }
         bool allowClear = true;
@@ -1308,7 +1308,7 @@ void WTrackTableView::slotReloadTrackMetadata() {
 
     TrackModel* trackModel = getTrackModel();
 
-    if (trackModel == NULL) {
+    if (trackModel == nullptr) {
         return;
     }
 
@@ -1325,7 +1325,7 @@ void WTrackTableView::slotResetPlayed() {
     QModelIndexList indices = selectionModel()->selectedRows();
     TrackModel* trackModel = getTrackModel();
 
-    if (trackModel == NULL) {
+    if (trackModel == nullptr) {
         return;
     }
 
@@ -1363,7 +1363,7 @@ void WTrackTableView::addSelectionToPlaylist(int iPlaylistId) {
 
        do {
            bool ok = false;
-           name = QInputDialog::getText(NULL,
+           name = QInputDialog::getText(nullptr,
                                         tr("Create New Playlist"),
                                         tr("Enter name for new playlist:"),
                                         QLineEdit::Normal,
@@ -1372,11 +1372,11 @@ void WTrackTableView::addSelectionToPlaylist(int iPlaylistId) {
            if (!ok)
                return;
            if (playlistDao.getPlaylistIdFromName(name) != -1) {
-               QMessageBox::warning(NULL,
+               QMessageBox::warning(nullptr,
                                     tr("Playlist Creation Failed"),
                                     tr("A playlist by that name already exists."));
            } else if (name.isEmpty()) {
-               QMessageBox::warning(NULL,
+               QMessageBox::warning(nullptr,
                                     tr("Playlist Creation Failed"),
                                     tr("A playlist cannot have a blank name."));
            } else {
@@ -1385,7 +1385,7 @@ void WTrackTableView::addSelectionToPlaylist(int iPlaylistId) {
        } while (!validNameGiven);
        iPlaylistId = playlistDao.createPlaylist(name);//-1 is changed to the new playlist ID return from the DAO
        if (iPlaylistId == -1) {
-           QMessageBox::warning(NULL,
+           QMessageBox::warning(nullptr,
                                 tr("Playlist Creation Failed"),
                                 tr("An unknown error occurred while creating playlist: ")
                                  +name);
@@ -1424,7 +1424,7 @@ void WTrackTableView::addSelectionToCrate(int iCrateId) {
         bool validNameGiven = false;
         do {
             bool ok = false;
-            name = QInputDialog::getText(NULL,
+            name = QInputDialog::getText(nullptr,
                                          tr("Create New Crate"),
                                          tr("Enter name for new crate:"),
                                          QLineEdit::Normal, tr("New Crate"),
@@ -1433,12 +1433,12 @@ void WTrackTableView::addSelectionToCrate(int iCrateId) {
                 return;
             int existingId = crateDao.getCrateIdByName(name);
             if (existingId != -1) {
-                QMessageBox::warning(NULL,
+                QMessageBox::warning(nullptr,
                                      tr("Creating Crate Failed"),
                                      tr("A crate by that name already exists."));
             }
             else if (name.isEmpty()) {
-                QMessageBox::warning(NULL,
+                QMessageBox::warning(nullptr,
                                      tr("Creating Crate Failed"),
                                      tr("A crate cannot have a blank name."));
             }
@@ -1449,7 +1449,7 @@ void WTrackTableView::addSelectionToCrate(int iCrateId) {
         iCrateId = crateDao.createCrate(name);// -1 is changed to the new crate ID returned by the DAO
         if (iCrateId == -1) {
             qDebug() << "Error creating crate with name " << name;
-            QMessageBox::warning(NULL,
+            QMessageBox::warning(nullptr,
                                  tr("Creating Crate Failed"),
                                  tr("An unknown error occurred while creating crate: ")
                                  + name);
@@ -1466,7 +1466,7 @@ void WTrackTableView::doSortByColumn(int headerSection) {
     TrackModel* trackModel = getTrackModel();
     QAbstractItemModel* itemModel = model();
 
-    if (trackModel == NULL || itemModel == NULL || m_sorting == false)
+    if (trackModel == nullptr || itemModel == nullptr || m_sorting == false)
         return;
 
     // Save the selection
@@ -1535,7 +1535,7 @@ void WTrackTableView::slotUnlockBpm() {
 
 void WTrackTableView::slotScaleBpm(int scale) {
     TrackModel* trackModel = getTrackModel();
-    if (trackModel == NULL) {
+    if (trackModel == nullptr) {
         return;
     }
 
@@ -1555,7 +1555,7 @@ void WTrackTableView::slotScaleBpm(int scale) {
         TrackPointer track = trackModel->getTrack(index);
         if (!track->hasBpmLock()) { //bpm is not locked
             BeatsPointer beats = track->getBeats();
-            if (beats != NULL) {
+            if (beats != nullptr) {
                 beats->scale(scalingFactor);
             } else {
                 continue;
@@ -1566,7 +1566,7 @@ void WTrackTableView::slotScaleBpm(int scale) {
 
 void WTrackTableView::lockBpm(bool lock) {
     TrackModel* trackModel = getTrackModel();
-    if (trackModel == NULL) {
+    if (trackModel == nullptr) {
         return;
     }
 
@@ -1581,7 +1581,7 @@ void WTrackTableView::lockBpm(bool lock) {
 
 void WTrackTableView::slotClearBeats() {
     TrackModel* trackModel = getTrackModel();
-    if (trackModel == NULL) {
+    if (trackModel == nullptr) {
         return;
     }
 
@@ -1598,7 +1598,7 @@ void WTrackTableView::slotClearBeats() {
 
 void WTrackTableView::slotCoverArtSelected(const CoverArt& art) {
     TrackModel* trackModel = getTrackModel();
-    if (trackModel == NULL) {
+    if (trackModel == nullptr) {
         return;
     }
     QModelIndexList selection = selectionModel()->selectedRows();
@@ -1612,7 +1612,7 @@ void WTrackTableView::slotCoverArtSelected(const CoverArt& art) {
 
 void WTrackTableView::slotReloadCoverArt() {
     TrackModel* trackModel = getTrackModel();
-    if (trackModel == NULL) {
+    if (trackModel == nullptr) {
         return;
     }
     QList<TrackPointer> selectedTracks;

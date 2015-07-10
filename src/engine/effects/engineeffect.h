@@ -28,7 +28,7 @@ class EngineEffect : public EffectsRequestHandler {
     }
 
     EngineEffectParameter* getParameterById(const QString& id) {
-        return m_parametersById.value(id, NULL);
+        return m_parametersById.value(id, nullptr);
     }
 
     bool processEffectsRequest(

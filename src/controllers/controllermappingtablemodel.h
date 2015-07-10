@@ -39,7 +39,7 @@ class ControllerMappingTableModel : public QAbstractTableModel,
     // Removes the provided mappings.
     virtual void removeMappings(QModelIndexList indices) = 0;
 
-    // Returns a delegate for the provided column or NULL if the column does not
+    // Returns a delegate for the provided column or nullptr if the column does not
     // need a delegate.
     virtual QAbstractItemDelegate* delegateForColumn(int column,
                                                      QWidget* pParent) = 0;

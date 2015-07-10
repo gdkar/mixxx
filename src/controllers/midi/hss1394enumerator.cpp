@@ -33,7 +33,7 @@ QList<Controller*> Hss1394Enumerator::queryDevices() {
     for(hss1394::uint i=0; i<40; i++) {
         TNodeInfo tNodeInfo;
         bool bInstalled;
-        if (Node::Instance()->GetNodeInfo(tNodeInfo, i, NULL, &bInstalled)) {
+        if (Node::Instance()->GetNodeInfo(tNodeInfo, i, nullptr, &bInstalled)) {
             QString message = QString("Node %1 (%2): Name = <%3>, GUID = %4 %5, FW[%6]")
                     .arg(QString::number(i),
                          (bInstalled)?"installed":"not installed",

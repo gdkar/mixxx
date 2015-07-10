@@ -11,10 +11,10 @@
 
 ReadAheadManager::ReadAheadManager(QObject *pParent)
         : QObject(pParent),
-        m_pLoopingControl(NULL),
-          m_pRateControl(NULL),
+        m_pLoopingControl(nullptr),
+          m_pRateControl(nullptr),
           m_iCurrentPosition(0),
-          m_pReader(NULL),
+          m_pReader(nullptr),
           m_pCrossFadeBuffer(SampleUtil::alloc(MAX_BUFFER_LEN)) {
     // For testing only: ReadAheadManagerMock
 }
@@ -23,12 +23,12 @@ ReadAheadManager::ReadAheadManager(CachingReader* pReader,
                                    LoopingControl* pLoopingControl, QObject *pParent) 
         : QObject(pParent),
           m_pLoopingControl(pLoopingControl),
-          m_pRateControl(NULL),
+          m_pRateControl(nullptr),
           m_iCurrentPosition(0),
           m_pReader(pReader),
           m_pCrossFadeBuffer(SampleUtil::alloc(MAX_BUFFER_LEN)) {
-    DEBUG_ASSERT(m_pLoopingControl != NULL);
-    DEBUG_ASSERT(m_pReader != NULL);
+    DEBUG_ASSERT(m_pLoopingControl != nullptr);
+    DEBUG_ASSERT(m_pReader != nullptr);
     connect(pParent,SIGNAL(seeked(double)),this,SLOT(onSeek(double)),Qt::DirectConnection);
     connect(pParent,SIGNAL(seeked(double)),m_pLoopingControl,SLOT(onSeek(double)));
 

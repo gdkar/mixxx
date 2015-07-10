@@ -27,8 +27,8 @@ CoverArtDelegate::CoverArtDelegate(QObject *parent)
                                           QPixmap, bool)));
     }
 
-    TrackModel* pTrackModel = NULL;
-    QTableView* pTableView = NULL;
+    TrackModel* pTrackModel = nullptr;
+    QTableView* pTableView = nullptr;
     if (QTableView *tableView = qobject_cast<QTableView*>(parent)) {
         pTableView = tableView;
         pTrackModel = dynamic_cast<TrackModel*>(pTableView->model());
@@ -91,7 +91,7 @@ void CoverArtDelegate::paint(QPainter *painter,
     }
 
     CoverArtCache* pCache = CoverArtCache::instance();
-    if (pCache == NULL || m_iIdColumn == -1 || m_iCoverSourceColumn == -1 ||
+    if (pCache == nullptr || m_iIdColumn == -1 || m_iCoverSourceColumn == -1 ||
             m_iCoverTypeColumn == -1 || m_iCoverLocationColumn == -1 ||
             m_iCoverHashColumn == -1) {
         return;

@@ -39,7 +39,7 @@ typedef struct Chunk {
 typedef struct ChunkReadRequest {
     Chunk* chunk;
 
-    ChunkReadRequest() { chunk = NULL; }
+    ChunkReadRequest() { chunk = nullptr; }
 } ChunkReadRequest;
 
 enum ReaderStatus {
@@ -58,7 +58,7 @@ typedef struct ReaderStatusUpdate {
     int trackFrameCount;
     ReaderStatusUpdate()
         : status(INVALID)
-        , chunk(NULL)
+        , chunk(nullptr)
         , trackFrameCount(0) {
     }
 } ReaderStatusUpdate;

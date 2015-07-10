@@ -16,7 +16,7 @@ ControllerOutputMappingTableModel::~ControllerOutputMappingTableModel() {
 }
 
 void ControllerOutputMappingTableModel::apply() {
-    if (m_pMidiPreset != NULL) {
+    if (m_pMidiPreset != nullptr) {
         // Clear existing output mappings and insert all the output mappings in
         // the table into the preset.
         m_pMidiPreset->outputMappings.clear();
@@ -31,7 +31,7 @@ void ControllerOutputMappingTableModel::apply() {
 void ControllerOutputMappingTableModel::onPresetLoaded() {
     clear();
 
-    if (m_pMidiPreset != NULL) {
+    if (m_pMidiPreset != nullptr) {
         // TODO(rryan): Tooltips
         setHeaderData(MIDI_COLUMN_CHANNEL, Qt::Horizontal, tr("Channel"));
         setHeaderData(MIDI_COLUMN_OPCODE, Qt::Horizontal, tr("Opcode"));
@@ -52,7 +52,7 @@ void ControllerOutputMappingTableModel::onPresetLoaded() {
 }
 
 void ControllerOutputMappingTableModel::clear() {
-    if (m_pMidiPreset != NULL) {
+    if (m_pMidiPreset != nullptr) {
         if (!m_midiOutputMappings.isEmpty()) {
             beginRemoveRows(QModelIndex(), 0, m_midiOutputMappings.size() - 1);
             m_midiOutputMappings.clear();
@@ -62,7 +62,7 @@ void ControllerOutputMappingTableModel::clear() {
 }
 
 void ControllerOutputMappingTableModel::addEmptyMapping() {
-    if (m_pMidiPreset != NULL) {
+    if (m_pMidiPreset != nullptr) {
         beginInsertRows(QModelIndex(), m_midiOutputMappings.size(),
                         m_midiOutputMappings.size());
         m_midiOutputMappings.append(MidiOutputMapping());
@@ -94,7 +94,7 @@ void ControllerOutputMappingTableModel::removeMappings(QModelIndexList indices) 
 
 QAbstractItemDelegate* ControllerOutputMappingTableModel::delegateForColumn(
         int column, QWidget* pParent) {
-    if (m_pMidiPreset != NULL) {
+    if (m_pMidiPreset != nullptr) {
         switch (column) {
             case MIDI_COLUMN_CHANNEL:
                 return new MidiChannelDelegate(pParent);
@@ -108,14 +108,14 @@ QAbstractItemDelegate* ControllerOutputMappingTableModel::delegateForColumn(
                 return new ControlDelegate(this);
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 int ControllerOutputMappingTableModel::rowCount(const QModelIndex& parent) const {
     if (parent.isValid()) {
         return 0;
     }
-    if (m_pMidiPreset != NULL) {
+    if (m_pMidiPreset != nullptr) {
         return m_midiOutputMappings.size();
     }
     return 0;
@@ -127,7 +127,7 @@ int ControllerOutputMappingTableModel::columnCount(const QModelIndex& parent) co
     }
     // Control and description
     const int kBaseColumns = 2;
-    if (m_pMidiPreset != NULL) {
+    if (m_pMidiPreset != nullptr) {
         // Channel, Opcode, Control, On, Off, Min, Max
         return kBaseColumns + 7;
     }
@@ -146,7 +146,7 @@ QVariant ControllerOutputMappingTableModel::data(const QModelIndex& index,
     int row = index.row();
     int column = index.column();
 
-    if (m_pMidiPreset != NULL) {
+    if (m_pMidiPreset != nullptr) {
         if (row < 0 || row >= m_midiOutputMappings.size()) {
             return QVariant();
         }
@@ -193,7 +193,7 @@ bool ControllerOutputMappingTableModel::setData(const QModelIndex& index,
     int row = index.row();
     int column = index.column();
 
-    if (m_pMidiPreset != NULL) {
+    if (m_pMidiPreset != nullptr) {
         if (row < 0 || row >= m_midiOutputMappings.size()) {
             return false;
         }

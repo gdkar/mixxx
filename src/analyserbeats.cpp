@@ -19,7 +19,7 @@
 
 AnalyserBeats::AnalyserBeats(ConfigObject<ConfigValue>* pConfig)
         : m_pConfig(pConfig),
-          m_pVamp(NULL),
+          m_pVamp(nullptr),
           m_bPreferencesReanalyzeOldBpm(false),
           m_bPreferencesFixedTempo(true),
           m_bPreferencesOffsetCorrection(false),
@@ -93,7 +93,7 @@ bool AnalyserBeats::initialise(TrackPointer tio, int sampleRate, int totalSample
                                        m_bPreferencesFastAnalysis);
         if (!bShouldAnalyze) {
             delete m_pVamp;
-            m_pVamp = NULL;
+            m_pVamp = nullptr;
         }
     }
 
@@ -178,23 +178,23 @@ bool AnalyserBeats::loadStored(TrackPointer tio) const {
 }
 
 void AnalyserBeats::process(const CSAMPLE *pIn, const int iLen) {
-    if (m_pVamp == NULL)
+    if (m_pVamp == nullptr)
         return;
     bool success = m_pVamp->Process(pIn, iLen);
     if (!success) {
         delete m_pVamp;
-        m_pVamp = NULL;
+        m_pVamp = nullptr;
     }
 }
 
 void AnalyserBeats::cleanup(TrackPointer tio) {
     Q_UNUSED(tio);
     delete m_pVamp;
-    m_pVamp = NULL;
+    m_pVamp = nullptr;
 }
 
 void AnalyserBeats::finalise(TrackPointer tio) {
-    if (m_pVamp == NULL) {
+    if (m_pVamp == nullptr) {
         return;
     }
 
@@ -205,7 +205,7 @@ void AnalyserBeats::finalise(TrackPointer tio) {
 
     QVector<double> beats = m_pVamp->GetInitFramesVector();
     delete m_pVamp;
-    m_pVamp = NULL;
+    m_pVamp = nullptr;
 
     if (beats.isEmpty()) {
         qDebug() << "Could not detect beat positions from Vamp.";

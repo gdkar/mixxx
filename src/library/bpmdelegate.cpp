@@ -75,9 +75,9 @@ void BPMDelegate::paint(QPainter* painter,const QStyleOptionViewItem &option,
     QStyleOptionViewItemV4 opt = option;
     initStyleOption(&opt, index);
 
-    if (m_pTableView != NULL) {
+    if (m_pTableView != nullptr) {
         QStyle* style = m_pTableView->style();
-        if (style != NULL) {
+        if (style != nullptr) {
             style->drawControl(QStyle::CE_ItemViewItem, &opt, painter,
                                m_pCheckBox);
         }

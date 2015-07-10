@@ -16,7 +16,7 @@ class KeyFactory;
 
 class Keys {
   public:
-    explicit Keys(const QByteArray* pByteArray=NULL);
+    explicit Keys(const QByteArray* pByteArray=nullptr);
     Keys(const Keys& other);
     virtual ~Keys();
 

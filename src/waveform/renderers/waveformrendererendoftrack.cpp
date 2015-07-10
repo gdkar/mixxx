@@ -16,11 +16,11 @@
 WaveformRendererEndOfTrack::WaveformRendererEndOfTrack(
         WaveformWidgetRenderer* waveformWidgetRenderer)
     : WaveformRendererAbstract(waveformWidgetRenderer),
-      m_pEndOfTrackControl(NULL),
+      m_pEndOfTrackControl(nullptr),
       m_endOfTrackEnabled(false),
-      m_pTrackSampleRate(NULL),
-      m_pPlayControl(NULL),
-      m_pLoopControl(NULL),
+      m_pTrackSampleRate(nullptr),
+      m_pPlayControl(nullptr),
+      m_pLoopControl(nullptr),
       m_color(200, 25, 20),
       m_remainingTimeTriggerSeconds(30),
       m_blinkingPeriodMillis(1000) {

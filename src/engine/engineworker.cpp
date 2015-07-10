@@ -6,7 +6,7 @@
 
 EngineWorker::EngineWorker(QObject*pParent)
     : QThread(pParent),
-    m_pScheduler(NULL) {
+    m_pScheduler(nullptr) {
 
 }
 

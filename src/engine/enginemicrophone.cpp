@@ -15,14 +15,14 @@
 EngineMicrophone::EngineMicrophone(const ChannelHandleAndGroup& handle_group,
                                    EffectsManager* pEffectsManager, QObject *pParent)
         : EngineChannel(handle_group, EngineChannel::CENTER,pParent),
-          m_pEngineEffectsManager(pEffectsManager ? pEffectsManager->getEngineEffectsManager() : NULL),
+          m_pEngineEffectsManager(pEffectsManager ? pEffectsManager->getEngineEffectsManager() : nullptr),
           m_vuMeter(getGroup()),
           m_pEnabled(ConfigKey(getGroup(), "enabled")),
           m_pPregain(ConfigKey(getGroup(), "pregain"), -12, 12, 0.5),
           m_pSampleRate("[Master]","samplerate"),
-          m_sampleBuffer(NULL),
+          m_sampleBuffer(nullptr),
           m_wasActive(false) {
-    if (pEffectsManager != NULL) {
+    if (pEffectsManager != nullptr) {
         pEffectsManager->registerChannel(handle_group);
     }
     setMaster(false); // Use "talkover" button to enable microphones
@@ -49,7 +49,7 @@ void EngineMicrophone::onInputConfigured(AudioInput input) {
         qWarning() << "EngineMicrophone connected to AudioInput for a non-Microphone type!";
         return;
     }
-    m_sampleBuffer = NULL;
+    m_sampleBuffer = nullptr;
     m_pEnabled.set(1.0);
 }
 
@@ -59,7 +59,7 @@ void EngineMicrophone::onInputUnconfigured(AudioInput input) {
         qWarning() << "EngineMicrophone connected to AudioInput for a non-Microphone type!";
         return;
     }
-    m_sampleBuffer = NULL;
+    m_sampleBuffer = nullptr;
     m_pEnabled.set(0.0);
 }
 
@@ -80,9 +80,9 @@ void EngineMicrophone::process(CSAMPLE* pOut, const int iBufferSize) {
     } else {
         SampleUtil::clear(pOut, iBufferSize);
     }
-    m_sampleBuffer = NULL;
+    m_sampleBuffer = nullptr;
 
-    if (m_pEngineEffectsManager != NULL) {
+    if (m_pEngineEffectsManager != nullptr) {
         // Process effects enabled for this channel
         GroupFeatureState features;
         // This is out of date by a callback but some effects will want the RMS

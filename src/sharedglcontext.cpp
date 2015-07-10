@@ -5,7 +5,7 @@
 
 #include "sharedglcontext.h"
 
-const QGLWidget* SharedGLContext::s_pSharedGLWidget = NULL;
+const QGLWidget* SharedGLContext::s_pSharedGLWidget = nullptr;
 
 // static
 void SharedGLContext::setWidget(const QGLWidget* pWidget) {

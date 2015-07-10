@@ -29,7 +29,7 @@ class EncoderCallback;
 
 class EncoderVorbis : public Encoder {
   public:
-    EncoderVorbis(EncoderCallback* pCallback=NULL);
+    EncoderVorbis(EncoderCallback* pCallback=nullptr);
     virtual ~EncoderVorbis();
 
     int initEncoder(int bitrate, int samplerate);

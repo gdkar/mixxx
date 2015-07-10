@@ -11,7 +11,7 @@
 class WLibraryTextBrowser : public QTextBrowser, public LibraryView {
     Q_OBJECT
   public:
-    WLibraryTextBrowser(QWidget* parent = NULL);
+    WLibraryTextBrowser(QWidget* parent = nullptr);
     virtual ~WLibraryTextBrowser();
 
     virtual void onShow() {}

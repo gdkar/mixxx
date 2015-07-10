@@ -47,7 +47,7 @@ void HidReader::run() {
 }
 
 QString safeDecodeWideString(wchar_t* pStr, size_t max_length) {
-    if (pStr == NULL) {
+    if (pStr == nullptr) {
         return QString();
     }
     // pStr is untrusted since it might be non-null terminated.
@@ -62,7 +62,7 @@ QString safeDecodeWideString(wchar_t* pStr, size_t max_length) {
 }
 
 HidController::HidController(const hid_device_info deviceInfo)
-        : m_pHidDevice(NULL) {
+        : m_pHidDevice(nullptr) {
     // Copy required variables from deviceInfo, which will be freed after
     // this class is initialized by caller.
     hid_vendor_id = deviceInfo.vendor_id;
@@ -84,8 +84,8 @@ HidController::HidController(const hid_device_info deviceInfo)
     strncpy(hid_path, deviceInfo.path, PATH_MAX);
     hid_path[PATH_MAX] = 0;
 
-    hid_serial_raw = NULL;
-    if (deviceInfo.serial_number != NULL) {
+    hid_serial_raw = nullptr;
+    if (deviceInfo.serial_number != nullptr) {
         size_t serial_max_length = 512;
         hid_serial_raw = new wchar_t[serial_max_length+1];
         wcsncpy(hid_serial_raw, deviceInfo.serial_number, serial_max_length);
@@ -119,7 +119,7 @@ HidController::HidController(const hid_device_info deviceInfo)
     // All HID devices are full-duplex
     setInputDevice(true);
     setOutputDevice(true);
-    m_pReader = NULL;
+    m_pReader = nullptr;
 }
 
 HidController::~HidController() {
@@ -235,7 +235,7 @@ int HidController::open() {
     m_pHidDevice = hid_open_path(hid_path);
 
     // If that fails, try to open device with vendor/product/serial #
-    if (m_pHidDevice == NULL) {
+    if (m_pHidDevice == nullptr) {
         if (debugging())
             qDebug() << "Failed. Trying to open with make, model & serial no:"
                 << hid_vendor_id << hid_product_id << hid_serial;
@@ -244,15 +244,15 @@ int HidController::open() {
 
     // If it does fail, try without serial number WARNING: This will only open
     // one of multiple identical devices
-    if (m_pHidDevice == NULL) {
+    if (m_pHidDevice == nullptr) {
         qWarning() << "Unable to open specific HID device" << getName()
                    << "Trying now with just make and model."
                    << "(This may only open the first of multiple identical devices.)";
-        m_pHidDevice = hid_open(hid_vendor_id, hid_product_id, NULL);
+        m_pHidDevice = hid_open(hid_vendor_id, hid_product_id, nullptr);
     }
 
     // If that fails, we give up!
-    if (m_pHidDevice == NULL) {
+    if (m_pHidDevice == nullptr) {
         qWarning()  << "Unable to open HID device" << getName();
         return -1;
     }
@@ -260,7 +260,7 @@ int HidController::open() {
     setOpen(true);
     startEngine();
 
-    if (m_pReader != NULL) {
+    if (m_pReader != nullptr) {
         qWarning() << "HidReader already present for" << getName();
     } else {
         m_pReader = new HidReader(m_pHidDevice);
@@ -286,7 +286,7 @@ int HidController::close() {
     qDebug() << "Shutting down HID device" << getName();
 
     // Stop the reading thread
-    if (m_pReader == NULL) {
+    if (m_pReader == nullptr) {
         qWarning() << "HidReader not present for" << getName()
                    << "yet the device is open!";
     } else {
@@ -297,7 +297,7 @@ int HidController::close() {
         if (debugging()) qDebug() << "  Waiting on reader to finish";
         m_pReader->wait();
         delete m_pReader;
-        m_pReader = NULL;
+        m_pReader = nullptr;
     }
 
     // Stop controller engine here to ensure it's done before the device is closed

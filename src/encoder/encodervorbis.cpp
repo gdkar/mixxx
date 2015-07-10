@@ -39,9 +39,9 @@ EncoderVorbis::EncoderVorbis(EncoderCallback* pCallback)
         : m_bStreamInitialized(false),
           m_header_write(false),
           m_pCallback(pCallback),
-          m_metaDataTitle(NULL),
-          m_metaDataArtist(NULL),
-          m_metaDataAlbum(NULL){
+          m_metaDataTitle(nullptr),
+          m_metaDataArtist(nullptr),
+          m_metaDataAlbum(nullptr){
     m_vdsp.pcm_returned = 0;
     m_vdsp.preextrapolate = 0;
     m_vdsp.eofflag = 0;
@@ -55,7 +55,7 @@ EncoderVorbis::EncoderVorbis(EncoderCallback* pCallback)
     m_vdsp.time_bits = 0;
     m_vdsp.floor_bits = 0;
     m_vdsp.res_bits = 0;
-    m_vdsp.backend_state = NULL;
+    m_vdsp.backend_state = nullptr;
 
     m_vinfo.version = 0;
     m_vinfo.channels = 0;
@@ -64,12 +64,12 @@ EncoderVorbis::EncoderVorbis(EncoderCallback* pCallback)
     m_vinfo.bitrate_nominal = 0;
     m_vinfo.bitrate_lower = 0;
     m_vinfo.bitrate_window = 0;
-    m_vinfo.codec_setup = NULL;
+    m_vinfo.codec_setup = nullptr;
 
-    m_vcomment.user_comments = NULL;
-    m_vcomment.comment_lengths = NULL;
+    m_vcomment.user_comments = nullptr;
+    m_vcomment.comment_lengths = nullptr;
     m_vcomment.comments = 0;
-    m_vcomment.vendor = NULL;
+    m_vcomment.vendor = nullptr;
 }
 
 EncoderVorbis::~EncoderVorbis() {
@@ -187,13 +187,13 @@ void EncoderVorbis::initStream() {
     // add comment
     vorbis_comment_init(&m_vcomment);
     vorbis_comment_add_tag(&m_vcomment, "ENCODER", "mixxx/libvorbis");
-    if (m_metaDataArtist != NULL) {
+    if (m_metaDataArtist != nullptr) {
         vorbis_comment_add_tag(&m_vcomment, "ARTIST", m_metaDataArtist);
     }
-    if (m_metaDataTitle != NULL) {
+    if (m_metaDataTitle != nullptr) {
         vorbis_comment_add_tag(&m_vcomment, "TITLE", m_metaDataTitle);
     }
-    if (m_metaDataAlbum != NULL) {
+    if (m_metaDataAlbum != nullptr) {
         vorbis_comment_add_tag(&m_vcomment, "ALBUM", m_metaDataAlbum);
     }
 

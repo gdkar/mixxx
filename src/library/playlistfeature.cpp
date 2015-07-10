@@ -47,7 +47,7 @@ void PlaylistFeature::onRightClick(const QPoint& globalPos) {
     m_lastRightClickedIndex = QModelIndex();
 
     //Create the right-click menu
-    QMenu menu(NULL);
+    QMenu menu(nullptr);
     menu.addAction(m_pCreatePlaylistAction);
     menu.exec(globalPos);
 }
@@ -64,7 +64,7 @@ void PlaylistFeature::onRightClickChild(const QPoint& globalPos, QModelIndex ind
     m_pLockPlaylistAction->setText(locked ? tr("Unlock") : tr("Lock"));
 
     //Create the right-click menu
-    QMenu menu(NULL);
+    QMenu menu(nullptr);
     menu.addAction(m_pCreatePlaylistAction);
     menu.addSeparator();
     menu.addAction(m_pAddToAutoDJAction);

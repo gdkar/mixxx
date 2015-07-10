@@ -61,7 +61,7 @@ public:
     }
 
     virtual void correctImageColors(QImage* i) {
-        if (i == NULL || i->isNull()) {
+        if (i == nullptr || i->isNull()) {
             return;
         }
 
@@ -118,7 +118,7 @@ public:
         for (int y = 0; y < i->height(); y++) {
             QRgb *line = (QRgb*)i->scanLine(y); // cast the returned pointer to QRgb*
 
-            if (line == NULL) {
+            if (line == nullptr) {
                 // Image is invalid.
                 continue;
             }

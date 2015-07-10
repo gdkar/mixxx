@@ -28,7 +28,7 @@ namespace Mixxx {
 SoundSourcePluginLibrary::SoundSourcePluginLibrary(const QString& libFilePath)
     : m_library(libFilePath),
       m_apiVersion(0),
-      m_getSoundSourceProviderFunc(NULL) {
+      m_getSoundSourceProviderFunc(nullptr) {
 }
 
 SoundSourcePluginLibrary::~SoundSourcePluginLibrary() {

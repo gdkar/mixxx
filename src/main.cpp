@@ -298,9 +298,9 @@ int main(int argc, char * argv[])
     delete mixxx;
     qDebug() << "Mixxx shutdown complete with code" << result;
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-    qInstallMsgHandler(NULL);  // Reset to default.
+    qInstallMsgHandler(nullptr);  // Reset to default.
 #else
-    qInstallMessageHandler(NULL);  // Reset to default.
+    qInstallMessageHandler(nullptr);  // Reset to default.
 #endif
 
     // Don't make any more output after this

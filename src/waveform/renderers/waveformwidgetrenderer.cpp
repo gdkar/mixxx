@@ -27,18 +27,18 @@ WaveformWidgetRenderer::WaveformWidgetRenderer(const char* group)
       m_audioSamplePerPixel(1.0),
 
       // Really create some to manage those;
-      m_visualPlayPosition(NULL),
+      m_visualPlayPosition(nullptr),
       m_playPos(-1),
       m_playPosVSample(0),
-      m_pRateControlObject(NULL),
+      m_pRateControlObject(nullptr),
       m_rate(0.0),
-      m_pRateRangeControlObject(NULL),
+      m_pRateRangeControlObject(nullptr),
       m_rateRange(0.0),
-      m_pRateDirControlObject(NULL),
+      m_pRateDirControlObject(nullptr),
       m_rateDir(0.0),
-      m_pGainControlObject(NULL),
+      m_pGainControlObject(nullptr),
       m_gain(1.0),
-      m_pTrackSamplesControlObject(NULL),
+      m_pTrackSamplesControlObject(nullptr),
       m_trackSamples(0.0) {
 
     //qDebug() << "WaveformWidgetRenderer";

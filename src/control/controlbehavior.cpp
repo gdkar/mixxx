@@ -27,7 +27,7 @@ void ControlNumericBehavior::setValueFromMidiParameter(MidiOpCode o, double dPar
                                                        ControlDoublePrivate* pControl) {
     Q_UNUSED(o);
     double dNorm = midiValueToParameter(dParam);
-    pControl->set(parameterToValue(dNorm), NULL);
+    pControl->set(parameterToValue(dNorm), nullptr);
 }
 
 ControlPotmeterBehavior::ControlPotmeterBehavior(double dMinValue, double dMaxValue,
@@ -243,7 +243,7 @@ void ControlAudioTaperPotBehavior::setValueFromMidiParameter(MidiOpCode o, doubl
                                                            ControlDoublePrivate* pControl) {
     Q_UNUSED(o);
     double dParam = midiValueToParameter(dMidiParam);
-    pControl->set(parameterToValue(dParam), NULL);
+    pControl->set(parameterToValue(dParam), nullptr);
 }
 
 
@@ -291,12 +291,12 @@ void ControlPushButtonBehavior::setValueFromMidiParameter(
         if (pressed) {
             // Toggle on press
             double value = pControl->get();
-            pControl->set(!value, NULL);
+            pControl->set(!value, nullptr);
             m_pushTimer.setSingleShot(true);
             m_pushTimer.start(kPowerWindowTimeMillis);
         } else if (!m_pushTimer.isActive()) {
             // Disable after releasing a long press
-            pControl->set(0., NULL);
+            pControl->set(0., nullptr);
         }
     } else if (m_buttonMode == TOGGLE || m_buttonMode == LONGPRESSLATCHING) {
         // This block makes push-buttons act as toggle buttons.
@@ -308,7 +308,7 @@ void ControlPushButtonBehavior::setValueFromMidiParameter(
                 // the same control from different devices.
                 double value = pControl->get();
                 value = (int)(value + 1.) % m_iNumStates;
-                pControl->set(value, NULL);
+                pControl->set(value, nullptr);
                 if (m_buttonMode == LONGPRESSLATCHING) {
                     m_pushTimer.setSingleShot(true);
                     m_pushTimer.start(kLongPressLatchingTimeMillis);
@@ -319,15 +319,15 @@ void ControlPushButtonBehavior::setValueFromMidiParameter(
                         m_pushTimer.isActive() && value >= 1.) {
                     // revert toggle if button is released too early
                     value = (int)(value - 1.) % m_iNumStates;
-                    pControl->set(value, NULL);
+                    pControl->set(value, nullptr);
                 }
             }
         }
     } else { // Not a toggle button (trigger only when button pushed)
         if (pressed) {
-            pControl->set(1., NULL);
+            pControl->set(1., nullptr);
         } else {
-            pControl->set(0., NULL);
+            pControl->set(0., nullptr);
         }
     }
 }

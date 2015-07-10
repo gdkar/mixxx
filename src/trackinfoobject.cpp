@@ -144,7 +144,7 @@ TrackInfoObject::~TrackInfoObject() {
 
 // static
 void TrackInfoObject::onTrackReferenceExpired(TrackInfoObject* pTrack) {
-    DEBUG_ASSERT_AND_HANDLE(pTrack != NULL) {
+    DEBUG_ASSERT_AND_HANDLE(pTrack != nullptr) {
         return;
     }
     // qDebug() << "TrackInfoObject::onTrackReferenceExpired"
@@ -257,8 +257,8 @@ void TrackInfoObject::parse(bool parseCoverArt) {
         Mixxx::TrackMetadata trackMetadata;
         QImage coverArt;
         // If parsing of the cover art image should be omitted the
-        // 2nd output parameter must be set to NULL.
-        QImage* pCoverArt = parseCoverArt ? &coverArt : NULL;
+        // 2nd output parameter must be set to nullptr.
+        QImage* pCoverArt = parseCoverArt ? &coverArt : nullptr;
         if (proxy.parseTrackMetadataAndCoverArt(&trackMetadata, pCoverArt) == OK) {
             // If Artist, Title and Type fields are not blank, modify them.
             // Otherwise, keep their current values.
@@ -431,7 +431,7 @@ void TrackInfoObject::setBeats(BeatsPointer pBeats) {
     // This whole method is not so great. The fact that Beats is an ABC is
     // limiting with respect to QObject and signals/slots.
 
-    QObject* pObject = NULL;
+    QObject* pObject = nullptr;
     if (m_pBeats) {
         pObject = dynamic_cast<QObject*>(m_pBeats.data());
         if (pObject) {

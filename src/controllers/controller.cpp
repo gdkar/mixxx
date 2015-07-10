@@ -15,7 +15,7 @@
 
 Controller::Controller()
         : QObject(),
-          m_pEngine(NULL),
+          m_pEngine(nullptr),
           m_bIsOutputDevice(false),
           m_bIsInputDevice(false),
           m_bIsOpen(false),
@@ -37,7 +37,7 @@ void Controller::startEngine()
     if (debugging()) {
         qDebug() << "  Starting engine";
     }
-    if (m_pEngine != NULL) {
+    if (m_pEngine != nullptr) {
         qWarning() << "Controller: Engine already exists! Restarting:";
         stopEngine();
     }
@@ -48,13 +48,13 @@ void Controller::stopEngine() {
     if (debugging()) {
         qDebug() << "  Shutting down engine";
     }
-    if (m_pEngine == NULL) {
+    if (m_pEngine == nullptr) {
         qWarning() << "Controller::stopEngine(): No engine exists!";
         return;
     }
     m_pEngine->gracefulShutdown();
     delete m_pEngine;
-    m_pEngine = NULL;
+    m_pEngine = nullptr;
 }
 
 void Controller::applyPreset(QList<QString> scriptPaths) {
@@ -63,7 +63,7 @@ void Controller::applyPreset(QList<QString> scriptPaths) {
     const ControllerPreset* pPreset = preset();
 
     // Load the script code into the engine
-    if (m_pEngine == NULL) {
+    if (m_pEngine == nullptr) {
         qWarning() << "Controller::applyPreset(): No engine exists!";
         return;
     }
@@ -100,7 +100,7 @@ void Controller::send(QList<int> data, unsigned int length) {
 }
 
 void Controller::receive(const QByteArray data) {
-    if (m_pEngine == NULL) {
+    if (m_pEngine == nullptr) {
         //qWarning() << "Controller::receive called with no active engine!";
         // Don't complain, since this will always show after closing a device as
         //  queued signals flush out

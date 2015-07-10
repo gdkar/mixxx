@@ -26,12 +26,12 @@ SamplerBank::~SamplerBank() {
 }
 
 void SamplerBank::slotSaveSamplerBank(double v) {
-    if (v == 0.0 || m_pPlayerManager == NULL) {
+    if (v == 0.0 || m_pPlayerManager == nullptr) {
         return;
     }
     QString filefilter = tr("Mixxx Sampler Banks (*.xml)");
     QString samplerBankPath = QFileDialog::getSaveFileName(
-            NULL, tr("Save Sampler Bank"),
+            nullptr, tr("Save Sampler Bank"),
             QString(),
             tr("Mixxx Sampler Banks (*.xml)"),
             &filefilter);
@@ -55,7 +55,7 @@ void SamplerBank::slotSaveSamplerBank(double v) {
 
     QFile file(samplerBankPath);
     if (!file.open(QIODevice::WriteOnly)) {
-        QMessageBox::warning(NULL,
+        QMessageBox::warning(nullptr,
                              tr("Error Saving Sampler Bank"),
                              tr("Could not write the sampler bank to '%1'.")
                              .arg(samplerBankPath));
@@ -69,7 +69,7 @@ void SamplerBank::slotSaveSamplerBank(double v) {
 
     for (unsigned int i = 0; i < m_pPlayerManager->numSamplers(); ++i) {
         BaseTrackPlayer * pSampler = m_pPlayerManager->getSampler(i + 1);
-        if (pSampler == NULL) {
+        if (pSampler == nullptr) {
             continue;
         }
         QDomElement samplerNode = doc.createElement(QString("sampler"));
@@ -91,12 +91,12 @@ void SamplerBank::slotSaveSamplerBank(double v) {
 }
 
 void SamplerBank::slotLoadSamplerBank(double v) {
-    if (v == 0.0 || m_pPlayerManager == NULL) {
+    if (v == 0.0 || m_pPlayerManager == nullptr) {
         return;
     }
 
     QString samplerBankPath = QFileDialog::getOpenFileName(
-            NULL,
+            nullptr,
             tr("Load Sampler Bank"),
             QString(),
             tr("Mixxx Sampler Banks (*.xml)"));
@@ -111,7 +111,7 @@ void SamplerBank::slotLoadSamplerBank(double v) {
 
     QFile file(samplerBankPath);
     if (!file.open(QIODevice::ReadOnly)) {
-        QMessageBox::warning(NULL,
+        QMessageBox::warning(nullptr,
                              tr("Error Reading Sampler Bank"),
                              tr("Could not open the sampler bank file '%1'.")
                              .arg(samplerBankPath));
@@ -121,7 +121,7 @@ void SamplerBank::slotLoadSamplerBank(double v) {
     QDomDocument doc;
 
     if (!doc.setContent(file.readAll())) {
-        QMessageBox::warning(NULL,
+        QMessageBox::warning(nullptr,
                              tr("Error Reading Sampler Bank"),
                              tr("Could not read the sampler bank file '%1'.")
                              .arg(samplerBankPath));
@@ -130,7 +130,7 @@ void SamplerBank::slotLoadSamplerBank(double v) {
 
     QDomElement root = doc.documentElement();
     if(root.tagName() != "samplerbank") {
-        QMessageBox::warning(NULL,
+        QMessageBox::warning(nullptr,
                              tr("Error Reading Sampler Bank"),
                              tr("Could not read the sampler bank file '%1'.")
                              .arg(samplerBankPath));

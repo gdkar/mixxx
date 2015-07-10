@@ -110,7 +110,7 @@ VampAnalyser::VampAnalyser()
       m_rate(0),
       m_iOutput(0),
       m_pluginbuf(new CSAMPLE*[2]),
-      m_plugin(NULL),
+      m_plugin(nullptr),
       m_bDoNotAnalyseMoreSamples(false),
       m_FastAnalysisEnabled(false),
       m_iMaxSamplesToAnalyse(0) {
@@ -136,9 +136,9 @@ bool VampAnalyser::Init(const QString pluginlibrary, const QString pluginid,
         return false;
     }
 
-    if (m_plugin != NULL) {
+    if (m_plugin != nullptr) {
         delete m_plugin;
-        m_plugin = NULL;
+        m_plugin = nullptr;
         qDebug() << "VampAnalyser: kill plugin";
     }
 
@@ -223,8 +223,8 @@ bool VampAnalyser::Process(const CSAMPLE *pIn, const int iLen) {
         return false;
     }
 
-    if (m_pluginbuf[0] == NULL || m_pluginbuf[1] == NULL) {
-        qDebug() << "VampAnalyser: Buffer points to NULL";
+    if (m_pluginbuf[0] == nullptr || m_pluginbuf[1] == nullptr) {
+        qDebug() << "VampAnalyser: Buffer points to nullptr";
         return false;
     }
 
@@ -319,7 +319,7 @@ bool VampAnalyser::End() {
     for (int i = 0; i < 2; i++) {
         if (m_pluginbuf[i]) {
             delete [] m_pluginbuf[i];
-            m_pluginbuf[i] = NULL;
+            m_pluginbuf[i] = nullptr;
         }
     }
     return true;

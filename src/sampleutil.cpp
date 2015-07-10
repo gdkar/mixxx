@@ -57,8 +57,8 @@ CSAMPLE* SampleUtil::alloc(int size) {
         const size_t alignment = 16;
         const size_t unaligned_size = sizeof(CSAMPLE[size]) + alignment;
         void* pUnaligned = std::malloc(unaligned_size);
-        if (pUnaligned == NULL) {
-            return NULL;
+        if (pUnaligned == nullptr) {
+            return nullptr;
         }
         // Shift
         void* pAligned = (void*)(((size_t)pUnaligned & ~(alignment - 1)) + alignment);
@@ -78,7 +78,7 @@ CSAMPLE* SampleUtil::alloc(int size) {
 void SampleUtil::free(CSAMPLE* pBuffer) {
     // See SampleUtil::alloc() for details
     if (useAlignedAlloc()) {
-        if (pBuffer == NULL) {
+        if (pBuffer == nullptr) {
             return;
         }
 #ifdef _MSC_VER

@@ -385,7 +385,7 @@ bool ControllerManager::checksumFile(const QString& filename,
     qint64 fileSize = file.size();
     const char* pFile = reinterpret_cast<char*>(file.map(0, fileSize));
 
-    if (pFile == NULL) {
+    if (pFile == nullptr) {
         file.close();
         return false;
     }

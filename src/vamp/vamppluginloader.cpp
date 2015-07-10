@@ -13,7 +13,7 @@
 using Vamp::Plugin;
 using Vamp::PluginHostAdapter;
 
-VampPluginLoader* VampPluginLoader::s_instance = NULL;
+VampPluginLoader* VampPluginLoader::s_instance = nullptr;
 QMutex VampPluginLoader::s_mutex;
 
 VampPluginLoader::VampPluginLoader() {

@@ -148,7 +148,7 @@ public:
 
     inline SINT skipSampleFrames(
             SINT numberOfFrames) {
-        return readSampleFrames(numberOfFrames, static_cast<CSAMPLE*>(NULL));
+        return readSampleFrames(numberOfFrames, static_cast<CSAMPLE*>(nullptr));
     }
 
     inline SINT readSampleFrames(

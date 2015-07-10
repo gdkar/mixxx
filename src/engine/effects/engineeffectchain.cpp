@@ -36,7 +36,7 @@ bool EngineEffectChain::addEffect(EngineEffect* pEffect, int iIndex) {
     }
 
     while (iIndex >= m_effects.size()) {
-        m_effects.append(NULL);
+        m_effects.append(nullptr);
     }
     m_effects.replace(iIndex, pEffect);
     return true;
@@ -59,7 +59,7 @@ bool EngineEffectChain::removeEffect(EngineEffect* pEffect, int iIndex) {
         return false;
     }
 
-    m_effects.replace(iIndex, NULL);
+    m_effects.replace(iIndex, nullptr);
     return true;
 }
 
@@ -182,7 +182,7 @@ void EngineEffectChain::process(const ChannelHandle& handle,
             // Fully wet, no ramp, insert optimization. No temporary buffer needed.
             for (int i = 0; i < m_effects.size(); ++i) {
                 EngineEffect* pEffect = m_effects[i];
-                if (pEffect == NULL || !pEffect->enabled()) {
+                if (pEffect == nullptr || !pEffect->enabled()) {
                     continue;
                 }
                 pEffect->process(handle, pInOut, pInOut,
@@ -199,7 +199,7 @@ void EngineEffectChain::process(const ChannelHandle& handle,
             bool anyProcessed = false;
             for (int i = 0; i < m_effects.size(); ++i) {
                 EngineEffect* pEffect = m_effects[i];
-                if (pEffect == NULL || !pEffect->enabled()) {
+                if (pEffect == nullptr || !pEffect->enabled()) {
                     continue;
                 }
                 const CSAMPLE* pIntermediateInput = (i == 0) ? pInOut : m_pBuffer;
@@ -227,7 +227,7 @@ void EngineEffectChain::process(const ChannelHandle& handle,
         bool anyProcessed = false;
         for (int i = 0; i < m_effects.size(); ++i) {
             EngineEffect* pEffect = m_effects[i];
-            if (pEffect == NULL || !pEffect->enabled()) {
+            if (pEffect == nullptr || !pEffect->enabled()) {
                 continue;
             }
             const CSAMPLE* pIntermediateInput = (i == 0) ? pInOut : m_pBuffer;

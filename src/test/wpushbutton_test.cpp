@@ -32,13 +32,13 @@ TEST_F(WPushButtonTest, QuickPressNoLatchTest) {
         new ControlPushButton(ConfigKey("[Test]", "push")));
     pPushControl->setButtonMode(ControlPushButton::LONGPRESSLATCHING);
 
-    m_pButton.reset(new WPushButton(NULL, ControlPushButton::LONGPRESSLATCHING,
+    m_pButton.reset(new WPushButton(nullptr, ControlPushButton::LONGPRESSLATCHING,
                                     ControlPushButton::PUSH));
     m_pButton->setStates(2);
     m_pButton->addLeftConnection(
         new ControlParameterWidgetConnection(
             m_pButton.data(),
-            new ControlObjectSlave(pPushControl->getKey()), NULL,
+            new ControlObjectSlave(pPushControl->getKey()), nullptr,
             ControlParameterWidgetConnection::DIR_FROM_AND_TO_WIDGET,
             ControlParameterWidgetConnection::EMIT_ON_PRESS_AND_RELEASE));
 
@@ -57,13 +57,13 @@ TEST_F(WPushButtonTest, LongPressLatchTest) {
         new ControlPushButton(ConfigKey("[Test]", "push")));
     pPushControl->setButtonMode(ControlPushButton::LONGPRESSLATCHING);
 
-    m_pButton.reset(new WPushButton(NULL, ControlPushButton::LONGPRESSLATCHING,
+    m_pButton.reset(new WPushButton(nullptr, ControlPushButton::LONGPRESSLATCHING,
                                     ControlPushButton::PUSH));
     m_pButton->setStates(2);
     m_pButton->addLeftConnection(
         new ControlParameterWidgetConnection(
             m_pButton.data(),
-            new ControlObjectSlave(pPushControl->getKey()), NULL,
+            new ControlObjectSlave(pPushControl->getKey()), nullptr,
             ControlParameterWidgetConnection::DIR_FROM_AND_TO_WIDGET,
             ControlParameterWidgetConnection::EMIT_ON_PRESS_AND_RELEASE));
 

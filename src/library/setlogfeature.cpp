@@ -66,7 +66,7 @@ void SetlogFeature::onRightClick(const QPoint& globalPos) {
     m_lastRightClickedIndex = QModelIndex();
 
     // Create the right-click menu
-    // QMenu menu(NULL);
+    // QMenu menu(nullptr);
     // menu.addAction(m_pCreatePlaylistAction);
     // TODO(DASCHUER) add something like disable logging
     // menu.exec(globalPos);
@@ -88,7 +88,7 @@ void SetlogFeature::onRightClickChild(const QPoint& globalPos, QModelIndex index
 
 
     //Create the right-click menu
-    QMenu menu(NULL);
+    QMenu menu(nullptr);
     //menu.addAction(m_pCreatePlaylistAction);
     //menu.addSeparator();
     menu.addAction(m_pAddToAutoDJAction);

@@ -48,9 +48,9 @@ void LegacyLibraryImporter::import() {
         return;
     }
 
-    QString* errorMsg = NULL;
-    int* errorLine = NULL;
-    int* errorColumn = NULL;
+    QString* errorMsg = nullptr;
+    int* errorLine = nullptr;
+    int* errorColumn = nullptr;
 
     qDebug() << "Starting upgrade from 1.7 library...";
 

@@ -382,13 +382,13 @@ void DlgPreferences::slotButtonPressed(QAbstractButton* pButton) {
     switch (role) {
         case QDialogButtonBox::ResetRole:
             // Only reset to defaults on the current page.
-            if (pCurrentPage != NULL) {
+            if (pCurrentPage != nullptr) {
                 pCurrentPage->slotResetToDefaults();
             }
             break;
         case QDialogButtonBox::ApplyRole:
             // Only apply settings on the current page.
-            if (pCurrentPage != NULL) {
+            if (pCurrentPage != nullptr) {
                 pCurrentPage->slotApply();
             }
             break;
@@ -435,12 +435,12 @@ void DlgPreferences::addPageWidget(DlgPreferencePage* pWidget) {
 DlgPreferencePage* DlgPreferences::currentPage() {
     QObject* pObject = pagesWidget->currentWidget();
     for (int i = 0; i < 2; ++i) {
-        if (pObject == NULL) {
-            return NULL;
+        if (pObject == nullptr) {
+            return nullptr;
         }
         QObjectList children = pObject->children();
         if (children.isEmpty()) {
-            return NULL;
+            return nullptr;
         }
         pObject = children[0];
     }

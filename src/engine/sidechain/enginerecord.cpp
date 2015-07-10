@@ -39,8 +39,8 @@ const int kMetaDataLifeTimeout = 16;
 
 EngineRecord::EngineRecord(ConfigObject<ConfigValue>* _config)
         : m_pConfig(_config),
-          m_pEncoder(NULL),
-          m_pSndfile(NULL),
+          m_pEncoder(nullptr),
+          m_pSndfile(nullptr),
           m_frames(0),
           m_recordedDuration(0),
           m_iMetaDataLife(0),
@@ -81,7 +81,7 @@ void EngineRecord::updateFromPreferences() {
     // Delete m_pEncoder if it has been initialized (with maybe) different bitrate.
     if (m_pEncoder) {
         delete m_pEncoder;
-        m_pEncoder = NULL;
+        m_pEncoder = nullptr;
     }
 
     if (m_encoding == ENCODING_MP3) {
@@ -95,7 +95,7 @@ void EngineRecord::updateFromPreferences() {
         if(m_pEncoder->initEncoder(Encoder::convertToBitrate(m_MP3quality.toInt()),
                                    m_sampleRate) < 0) {
             delete m_pEncoder;
-            m_pEncoder = NULL;
+            m_pEncoder = nullptr;
 #ifdef __FFMPEGFILE__
             qDebug() << "MP3 recording is not supported. FFMPEG mp3 could not be initialized";
 #else
@@ -113,7 +113,7 @@ void EngineRecord::updateFromPreferences() {
         if (m_pEncoder->initEncoder(Encoder::convertToBitrate(m_OGGquality.toInt()),
                                    m_sampleRate) < 0) {
             delete m_pEncoder;
-            m_pEncoder = NULL;
+            m_pEncoder = nullptr;
 #ifdef __FFMPEGFILE__
             qDebug() << "OGG recording is not supported. FFMPEG OGG/Vorbis could not be initialized";
 #else
@@ -121,7 +121,7 @@ void EngineRecord::updateFromPreferences() {
 #endif
         }
     }
-    // If we use WAVE OR AIFF the encoder will be NULL at all times.
+    // If we use WAVE OR AIFF the encoder will be nullptr at all times.
 }
 
 bool EngineRecord::metaDataHasChanged()
@@ -193,7 +193,7 @@ void EngineRecord::process(const CSAMPLE* pBuffer, const int iBufferSize) {
     } else if (recordingStatus == RECORD_ON) {
         // If recording is enabled process audio to compressed or uncompressed data.
         if (m_encoding == ENCODING_WAVE || m_encoding == ENCODING_AIFF) {
-            if (m_pSndfile != NULL) {
+            if (m_pSndfile != nullptr) {
                 sf_write_float(m_pSndfile, pBuffer, iBufferSize);
                 emit(bytesRecorded(iBufferSize * 2));
             }
@@ -278,7 +278,7 @@ void EngineRecord::write(unsigned char *header, unsigned char *body,
 bool EngineRecord::fileOpen() {
     // Both encoder and file must be initialized.
     if (m_encoding == ENCODING_WAVE || m_encoding == ENCODING_AIFF) {
-        return (m_pSndfile != NULL);
+        return (m_pSndfile != nullptr);
     } else {
         return (m_file.handle() != -1);
     }
@@ -305,7 +305,7 @@ bool EngineRecord::openFile() {
         m_pSndfile = sf_open(m_fileName.toLocal8Bit().constData(), SFM_WRITE, &m_sfInfo);
 #endif
         if (m_pSndfile) {
-            sf_command(m_pSndfile, SFC_SET_NORM_FLOAT, NULL, SF_TRUE);
+            sf_command(m_pSndfile, SFC_SET_NORM_FLOAT, nullptr, SF_TRUE);
             // Set meta data
             int ret;
 
@@ -388,16 +388,16 @@ bool EngineRecord::openCueFile() {
 
 void EngineRecord::closeFile() {
     if (m_encoding == ENCODING_WAVE || m_encoding == ENCODING_AIFF) {
-        if (m_pSndfile != NULL) {
+        if (m_pSndfile != nullptr) {
             sf_close(m_pSndfile);
-            m_pSndfile = NULL;
+            m_pSndfile = nullptr;
         }
     } else if (m_file.handle() != -1) {
         // Close QFile and encoder, if open.
         if (m_pEncoder) {
             m_pEncoder->flush();
             delete m_pEncoder;
-            m_pEncoder = NULL;
+            m_pEncoder = nullptr;
         }
         m_file.close();
     }

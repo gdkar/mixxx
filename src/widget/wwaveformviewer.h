@@ -46,7 +46,7 @@ protected:
 private slots:
     void onZoomChange(double zoom);
     void slotWidgetDead() {
-        m_waveformWidget = NULL;
+        m_waveformWidget = nullptr;
     }
 
 private:

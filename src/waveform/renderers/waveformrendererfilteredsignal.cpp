@@ -45,7 +45,7 @@ void WaveformRendererFilteredSignal::draw(QPainter* painter,
     }
 
     const WaveformData* data = waveform->data();
-    if (data == NULL) {
+    if (data == nullptr) {
         return;
     }
 

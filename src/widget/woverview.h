@@ -33,7 +33,7 @@ class Waveform;
 class WOverview : public WWidget {
     Q_OBJECT
   public:
-    WOverview(const char* pGroup, ConfigObject<ConfigValue>* pConfig, QWidget* parent=NULL);
+    WOverview(const char* pGroup, ConfigObject<ConfigValue>* pConfig, QWidget* parent=nullptr);
     virtual ~WOverview();
 
     void setup(QDomNode node, const SkinContext& context);

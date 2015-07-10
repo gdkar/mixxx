@@ -45,7 +45,7 @@ LoopingControl::LoopingControl(QString group,
     m_iLoopStartSample = kNoTrigger;
     m_iLoopEndSample = kNoTrigger;
     m_iCurrentSample = 0.;
-    m_pActiveBeatLoop = NULL;
+    m_pActiveBeatLoop = nullptr;
 
     //Create loop-in, loop-out, loop-exit, and reloop/exit ControlObjects
     m_pLoopInButton = new ControlPushButton(ConfigKey(group, "loop_in"));
@@ -248,7 +248,7 @@ void LoopingControl::slotLoopHalve(double v) {
     if (v > 0.0) {
         // If a beatloop is active then halve should deactive the current
         // beatloop and activate the previous one.
-        if (m_pActiveBeatLoop != NULL) {
+        if (m_pActiveBeatLoop != nullptr) {
             int active_index = m_beatLoops.indexOf(m_pActiveBeatLoop);
             if (active_index - 1 >= 0) {
                 if (m_bLoopingEnabled) {
@@ -280,7 +280,7 @@ void LoopingControl::slotLoopDouble(double v) {
     if (v > 0.0) {
         // If a beatloop is active then double should deactive the current
         // beatloop and activate the next one.
-        if (m_pActiveBeatLoop != NULL) {
+        if (m_pActiveBeatLoop != nullptr) {
             int active_index = m_beatLoops.indexOf(m_pActiveBeatLoop);
             if (active_index + 1 < m_beatLoops.size()) {
                 if (m_bLoopingEnabled) {
@@ -583,7 +583,7 @@ void LoopingControl::onSeek(double dNewPlaypos) {
 void LoopingControl::setLoopingEnabled(bool enabled) {
     m_bLoopingEnabled = enabled;
     m_pCOLoopEnabled->set(enabled);
-    if (m_pActiveBeatLoop != NULL) {
+    if (m_pActiveBeatLoop != nullptr) {
         if (enabled) {
             m_pActiveBeatLoop->activate();
         } else {
@@ -661,9 +661,9 @@ void LoopingControl::slotBeatLoopDeactivateRoll(BeatLoopingControl* pBeatLoopCon
 }
 
 void LoopingControl::clearActiveBeatLoop() {
-    if (m_pActiveBeatLoop != NULL) {
+    if (m_pActiveBeatLoop != nullptr) {
         m_pActiveBeatLoop->deactivate();
-        m_pActiveBeatLoop = NULL;
+        m_pActiveBeatLoop = nullptr;
     }
 }
 
@@ -809,7 +809,7 @@ void LoopingControl::slotBeatJump(double beats) {
     double dPosition = getCurrentSample();
     double dBeatLength;
     if (BpmControl::getBeatContext(m_pBeats, dPosition,
-                                   NULL, NULL, &dBeatLength, NULL)) {
+                                   nullptr, nullptr, &dBeatLength, nullptr)) {
         seekAbs(dPosition + beats * dBeatLength);
     }
 }
@@ -825,7 +825,7 @@ void LoopingControl::slotLoopMove(double beats) {
     double dPosition = getCurrentSample();
     double dBeatLength;
     if (BpmControl::getBeatContext(m_pBeats, dPosition,
-                                   NULL, NULL, &dBeatLength, NULL)) {
+                                   nullptr, nullptr, &dBeatLength, nullptr)) {
         int old_loop_in = m_iLoopStartSample;
         int old_loop_out = m_iLoopEndSample;
         int new_loop_in = old_loop_in + (beats * dBeatLength);

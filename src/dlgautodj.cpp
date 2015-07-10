@@ -18,7 +18,7 @@ DlgAutoDJ::DlgAutoDJ(QWidget* parent,
           // no sorting
           m_pTrackTableView(new WTrackTableView(this, pConfig,
                                                 pTrackCollection, false)),
-          m_pAutoDJTableModel(NULL) {
+          m_pAutoDJTableModel(nullptr) {
     setupUi(this);
 
     m_pTrackTableView->installEventFilter(pKeyboard);
@@ -136,7 +136,7 @@ void DlgAutoDJ::toggleAutoDJButton(bool enable) {
     switch (error) {
         case AutoDJProcessor::ADJ_BOTH_DECKS_PLAYING:
             QMessageBox::warning(
-                    NULL, tr("Auto-DJ"),
+                    nullptr, tr("Auto-DJ"),
                     tr("One deck must be stopped to enable Auto-DJ mode."),
                     QMessageBox::Ok);
             // Make sure the button becomes unpushed.
@@ -144,7 +144,7 @@ void DlgAutoDJ::toggleAutoDJButton(bool enable) {
             break;
         case AutoDJProcessor::ADJ_DECKS_3_4_PLAYING:
             QMessageBox::warning(
-                    NULL, tr("Auto-DJ"),
+                    nullptr, tr("Auto-DJ"),
                     tr("Decks 3 and 4 must be stopped to enable Auto-DJ mode."),
                     QMessageBox::Ok);
             pushButtonAutoDJ->setChecked(false);

@@ -16,7 +16,7 @@ EngineEffectsManager::~EngineEffectsManager() {
 }
 
 void EngineEffectsManager::onCallbackStart() {
-    EffectsRequest* request = NULL;
+    EffectsRequest* request = nullptr;
     while (m_pResponsePipe->readMessages(&request, 1) > 0) {
         EffectsResponse response(*request);
         bool processed = false;

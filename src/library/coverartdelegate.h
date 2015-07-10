@@ -12,7 +12,7 @@
 class CoverArtDelegate : public QStyledItemDelegate {
     Q_OBJECT
   public:
-    explicit CoverArtDelegate(QObject* parent = NULL);
+    explicit CoverArtDelegate(QObject* parent = nullptr);
     virtual ~CoverArtDelegate();
 
     void paint(QPainter *painter,

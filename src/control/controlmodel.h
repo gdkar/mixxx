@@ -27,7 +27,7 @@ class ControlModel : public QAbstractTableModel {
         NUM_CONTROL_COLUMNS
     };
 
-    ControlModel(QObject* pParent=NULL);
+    ControlModel(QObject* pParent=nullptr);
     virtual ~ControlModel();
 
     void addControl(const ConfigKey& control, const QString& title,

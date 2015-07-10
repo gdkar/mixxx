@@ -104,7 +104,7 @@ class TrackDAO : public QObject, public virtual DAO {
     TrackDAO(QSqlDatabase& database, CueDAO& cueDao,
              PlaylistDAO& playlistDao, CrateDAO& crateDao,
              AnalysisDao& analysisDao, LibraryHashDAO& libraryHashDao,
-             ConfigObject<ConfigValue>* pConfig = NULL);
+             ConfigObject<ConfigValue>* pConfig = nullptr);
     virtual ~TrackDAO();
 
     void finish();
@@ -135,7 +135,7 @@ class TrackDAO : public QObject, public virtual DAO {
     // is true, searches the track and its directory for cover art via
     // asynchronous request to CoverArtCache. If adding or fetching the track
     // fails, returns a transient TrackPointer for trackLocation. If
-    // pAlreadyInLibrary is non-NULL, sets it to whether trackLocation was
+    // pAlreadyInLibrary is non-nullptr, sets it to whether trackLocation was
     // already in the database.
     TrackPointer getOrAddTrack(const QString& trackLocation,
                                bool processCoverArt,

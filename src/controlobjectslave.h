@@ -16,10 +16,10 @@
 class ControlObjectSlave : public QObject {
     Q_OBJECT
   public:
-    ControlObjectSlave(QObject* pParent = NULL);
-    ControlObjectSlave(const QString& g, const QString& i, QObject* pParent = NULL);
-    ControlObjectSlave(const char* g, const char* i, QObject* pParent = NULL);
-    ControlObjectSlave(const ConfigKey& key, QObject* pParent = NULL);
+    ControlObjectSlave(QObject* pParent = nullptr);
+    ControlObjectSlave(const QString& g, const QString& i, QObject* pParent = nullptr);
+    ControlObjectSlave(const char* g, const char* i, QObject* pParent = nullptr);
+    ControlObjectSlave(const ConfigKey& key, QObject* pParent = nullptr);
     virtual ~ControlObjectSlave();
 
     void initialize(const ConfigKey& key);
@@ -38,7 +38,7 @@ class ControlObjectSlave : public QObject {
         emit(valueChanged(get()));
     }
 
-    inline bool valid() const { return m_pControl != NULL; }
+    inline bool valid() const { return m_pControl != nullptr; }
 
     // Returns the value of the object. Thread safe, non-blocking.
     inline double get() const {
@@ -83,7 +83,7 @@ class ControlObjectSlave : public QObject {
             // NOTE(rryan): This is important. The originator of this action does
             // not know the resulting value so it makes sense that we should emit a
             // general valueChanged() signal even though the change originated from
-            // us. For this reason, we provide NULL here so that the change is
+            // us. For this reason, we provide nullptr here so that the change is
             // broadcast as valueChanged() and not valueChangedByThis().
             m_pControl->reset();
         }

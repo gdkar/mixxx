@@ -19,12 +19,12 @@
 #include "encoder/encoderffmpegresample.h"
 
 EncoderFfmpegResample::EncoderFfmpegResample(AVCodecContext *codecCtx) {
-    m_pSwrCtx = NULL;
+    m_pSwrCtx = nullptr;
     m_pCodecCtx = codecCtx;
 }
 
 EncoderFfmpegResample::~EncoderFfmpegResample() {
-    if (m_pSwrCtx != NULL) {
+    if (m_pSwrCtx != nullptr) {
 #ifndef __FFMPEGOLDAPI__
 
 #ifdef __LIBAVRESAMPLE__
@@ -65,8 +65,8 @@ int EncoderFfmpegResample::open(enum AVSampleFormat inSampleFmt,
     // GOOD thing is now this can handle allmost everything..
     // What should be tested is 44800 Hz downsample and 22100 Hz up sample.
     if ((inSampleFmt != outSampleFmt || m_pCodecCtx->sample_rate != 44100 ||
-            m_pCodecCtx->channel_layout != AV_CH_LAYOUT_STEREO) && m_pSwrCtx == NULL) {
-        if (m_pSwrCtx != NULL) {
+            m_pCodecCtx->channel_layout != AV_CH_LAYOUT_STEREO) && m_pSwrCtx == nullptr) {
+        if (m_pSwrCtx != nullptr) {
             qDebug() << "Freeing Resample context";
 
 // __FFMPEGOLDAPI__ Is what is used in FFMPEG < 0.10 and libav < 0.8.3. NO
@@ -82,7 +82,7 @@ int EncoderFfmpegResample::open(enum AVSampleFormat inSampleFmt,
 #else
             audio_resample_close(m_pSwrCtx);
 #endif // __FFMPEGOLDAPI__
-            m_pSwrCtx = NULL;
+            m_pSwrCtx = nullptr;
         }
 
 
@@ -131,7 +131,7 @@ int EncoderFfmpegResample::open(enum AVSampleFormat inSampleFmt,
 #else
         if (swr_init(m_pSwrCtx) < 0) {
 #endif // __LIBAVRESAMPLE__
-            m_pSwrCtx = NULL;
+            m_pSwrCtx = nullptr;
             qDebug() << "ERROR!! Conventor not created: " <<
                      m_pCodecCtx->sample_rate <<
                      "Hz " << av_get_sample_fmt_name(inSampleFmt) << " " <<
@@ -179,7 +179,7 @@ unsigned int EncoderFfmpegResample::reSample(AVFrame *inframe, quint8 **outbuffe
 // Left here for reason!
 // Sometime in time we will need this!
 #else
-        qint64 l_lInReadBytes = av_samples_get_buffer_size(NULL, m_pCodecCtx->channels,
+        qint64 l_lInReadBytes = av_samples_get_buffer_size(nullptr, m_pCodecCtx->channels,
                                  inframe->nb_samples,
                                  m_pCodecCtx->sample_fmt, 1);
 #endif // __FFMPEGOLDAPI__
@@ -212,7 +212,7 @@ unsigned int EncoderFfmpegResample::reSample(AVFrame *inframe, quint8 **outbuffe
                                            m_pCodecCtx->sample_rate,
                                            AV_ROUND_UP);
 
-        int l_iOutBytes =  av_samples_get_buffer_size(NULL, 2,
+        int l_iOutBytes =  av_samples_get_buffer_size(nullptr, 2,
                            l_iOutSamples,
                            m_pOutSampleFmt, 1);
 
@@ -243,7 +243,7 @@ unsigned int EncoderFfmpegResample::reSample(AVFrame *inframe, quint8 **outbuffe
                              (const quint8 **)l_pIn, inframe->nb_samples);
 #endif // __LIBAVRESAMPLE__
 
-        l_iOutBytes = av_samples_get_buffer_size(NULL, 2, l_iLen, m_pOutSampleFmt, 1);
+        l_iOutBytes = av_samples_get_buffer_size(nullptr, 2, l_iLen, m_pOutSampleFmt, 1);
 
 #else
         l_iLen = audio_resample(m_pSwrCtx,
@@ -257,8 +257,8 @@ unsigned int EncoderFfmpegResample::reSample(AVFrame *inframe, quint8 **outbuffe
         }
         return l_iOutBytes;
     } else {
-        quint8 *l_ptrBuf = NULL;
-        qint64 l_lInReadBytes = av_samples_get_buffer_size(NULL, m_pCodecCtx->channels,
+        quint8 *l_ptrBuf = nullptr;
+        qint64 l_lInReadBytes = av_samples_get_buffer_size(nullptr, m_pCodecCtx->channels,
                                  inframe->nb_samples,
                                  m_pCodecCtx->sample_fmt, 1);
 

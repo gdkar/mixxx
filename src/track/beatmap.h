@@ -27,7 +27,7 @@ class BeatMap : public QObject, public Beats {
     // zero then the track's sample rate will be used. If a byte array is
     // provided then the BeatMap will be deserialized from the byte array.
     BeatMap(TrackPointer pTrack, int iSampleRate,
-            const QByteArray* pByteArray=NULL);
+            const QByteArray* pByteArray=nullptr);
     // Construct a BeatMap. iSampleRate may be provided if a more accurate
     // sample rate is known than the one associated with the Track. If it is
     // zero then the track's sample rate will be used. A list of beat locations

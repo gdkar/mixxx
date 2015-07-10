@@ -74,13 +74,13 @@ class PlayerManager : public QObject, public PlayerManagerInterface {
         return numDecks();
     }
 
-    // Returns true if the group is a deck group. If index is non-NULL,
+    // Returns true if the group is a deck group. If index is non-nullptr,
     // populates it with the deck number (1-indexed).
-    static bool isDeckGroup(const QString& group, int* number=NULL);
+    static bool isDeckGroup(const QString& group, int* number=nullptr);
 
-    // Returns true if the group is a preview deck group. If index is non-NULL,
+    // Returns true if the group is a preview deck group. If index is non-nullptr,
     // populates it with the deck number (1-indexed).
-    static bool isPreviewDeckGroup(const QString& group, int* number=NULL);
+    static bool isPreviewDeckGroup(const QString& group, int* number=nullptr);
 
     // Return the number of samplers. Thread-safe.
     static unsigned int numSamplers();

@@ -92,24 +92,24 @@ const int MixxxMainWindow::kMicrophoneCount = 4;
 const int MixxxMainWindow::kAuxiliaryCount = 4;
 
 MixxxMainWindow::MixxxMainWindow(QApplication* pApp, const CmdlineArgs& args)
-        : m_pWidgetParent(NULL),
-          m_pSoundManager(NULL),
-          m_pRecordingManager(NULL),
+        : m_pWidgetParent(nullptr),
+          m_pSoundManager(nullptr),
+          m_pRecordingManager(nullptr),
 #ifdef __SHOUTCAST__
-          m_pShoutcastManager(NULL),
+          m_pShoutcastManager(nullptr),
 #endif
-          m_pControllerManager(NULL),
-          m_pDeveloperToolsDlg(NULL),
+          m_pControllerManager(nullptr),
+          m_pDeveloperToolsDlg(nullptr),
 #ifdef __VINYLCONTROL__
-          m_pShowVinylControl(NULL),
+          m_pShowVinylControl(nullptr),
 #endif
-          m_pShowSamplers(NULL),
-          m_pShowMicrophone(NULL),
-          m_pShowPreviewDeck(NULL),
-          m_pShowEffects(NULL),
-          m_pShowCoverArt(NULL),
+          m_pShowSamplers(nullptr),
+          m_pShowMicrophone(nullptr),
+          m_pShowPreviewDeck(nullptr),
+          m_pShowEffects(nullptr),
+          m_pShowCoverArt(nullptr),
 
-          m_pPrefDlg(NULL),
+          m_pPrefDlg(nullptr),
           m_runtime_timer("MixxxMainWindow::runtime"),
           m_cmdLineArgs(args),
           m_iNumConfiguredDecks(0) {
@@ -253,7 +253,7 @@ MixxxMainWindow::MixxxMainWindow(QApplication* pApp, const CmdlineArgs& args)
 #ifdef __VINYLCONTROL__
     m_pVCManager = new VinylControlManager(this, m_pConfig, m_pSoundManager);
 #else
-    m_pVCManager = NULL;
+    m_pVCManager = nullptr;
 #endif
 
     // Create the player manager.
@@ -619,7 +619,7 @@ MixxxMainWindow::~MixxxMainWindow() {
     qDebug() << "delete config " << qTime.elapsed();
     Sandbox::shutdown();
 
-    ControlDoublePrivate::setUserConfig(NULL);
+    ControlDoublePrivate::setUserConfig(nullptr);
     delete m_pConfig;
 
     delete m_pKeyboard;
@@ -856,8 +856,8 @@ void MixxxMainWindow::slotViewMaximizeLibrary(bool enable) {
 
 void setVisibilityOptionState(QAction* pAction, ConfigKey key) {
     ControlObject* pVisibilityControl = ControlObject::getControl(key);
-    pAction->setEnabled(pVisibilityControl != NULL);
-    pAction->setChecked(pVisibilityControl != NULL ? pVisibilityControl->get() > 0.0 : false);
+    pAction->setEnabled(pVisibilityControl != nullptr);
+    pAction->setChecked(pVisibilityControl != nullptr ? pVisibilityControl->get() > 0.0 : false);
 }
 
 void MixxxMainWindow::updateCheckedMenuAction(QAction* menuAction, ConfigKey key) {
@@ -1725,7 +1725,7 @@ void MixxxMainWindow::slotDeveloperReloadSkin(bool toggle) {
 
 void MixxxMainWindow::slotDeveloperTools() {
     if (m_pDeveloperTools->isChecked()) {
-        if (m_pDeveloperToolsDlg == NULL) {
+        if (m_pDeveloperToolsDlg == nullptr) {
             m_pDeveloperToolsDlg = new DlgDeveloperTools(this, m_pConfig);
             connect(m_pDeveloperToolsDlg, SIGNAL(destroyed()),
                     this, SLOT(slotDeveloperToolsClosed()));
@@ -1744,7 +1744,7 @@ void MixxxMainWindow::slotDeveloperTools() {
 }
 
 void MixxxMainWindow::slotDeveloperToolsClosed() {
-    m_pDeveloperToolsDlg = NULL;
+    m_pDeveloperToolsDlg = nullptr;
 }
 
 void MixxxMainWindow::slotDeveloperStatsExperiment() {
@@ -2055,24 +2055,24 @@ void MixxxMainWindow::rebootMixxxView() {
     //See onNewSkinLoaded()
 #ifdef __VINYLCONTROL__
     delete m_pShowVinylControl;
-    m_pShowVinylControl = NULL;
+    m_pShowVinylControl = nullptr;
 #endif
     delete m_pShowSamplers;
     delete m_pShowMicrophone;
     delete m_pShowPreviewDeck;
     delete m_pShowEffects;
     delete m_pShowCoverArt;
-    m_pShowSamplers = NULL;
-    m_pShowMicrophone = NULL;
-    m_pShowPreviewDeck = NULL;
-    m_pShowEffects = NULL;
-    m_pShowCoverArt = NULL;
+    m_pShowSamplers = nullptr;
+    m_pShowMicrophone = nullptr;
+    m_pShowPreviewDeck = nullptr;
+    m_pShowEffects = nullptr;
+    m_pShowCoverArt = nullptr;
 
     if (m_pWidgetParent) {
         m_pWidgetParent->hide();
         WaveformWidgetFactory::instance()->destroyWidgets();
         delete m_pWidgetParent;
-        m_pWidgetParent = NULL;
+        m_pWidgetParent = nullptr;
     }
 
     // Workaround for changing skins while fullscreen, just go out of fullscreen
@@ -2095,7 +2095,7 @@ void MixxxMainWindow::rebootMixxxView() {
         QMessageBox::critical(this,
                               tr("Error in skin file"),
                               tr("The selected skin cannot be loaded."));
-        // m_pWidgetParent is NULL, we can't continue.
+        // m_pWidgetParent is nullptr, we can't continue.
         return;
     }
 
@@ -2132,7 +2132,7 @@ bool MixxxMainWindow::eventFilter(QObject* obj, QEvent* event)
         if (m_toolTipsCfg == 2) {
             // ON (only in Library)
             WBaseWidget* pWidget = dynamic_cast<WBaseWidget*>(obj);
-            return pWidget != NULL;
+            return pWidget != nullptr;
         } else if (m_toolTipsCfg == 1) {
             // ON
             return false;

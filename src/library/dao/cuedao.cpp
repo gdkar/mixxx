@@ -81,12 +81,12 @@ QList<Cue*> CueDAO::getCuesForTrack(const int trackId) const {
         const int idColumn = query.record().indexOf("id");
         const int hotcueIdColumn = query.record().indexOf("hotcue");
         while (query.next()) {
-            Cue* cue = NULL;
+            Cue* cue = nullptr;
             int cueId = query.value(idColumn).toInt();
             if (m_cues.contains(cueId)) {
                 cue = m_cues[cueId];
             }
-            if (cue == NULL) {
+            if (cue == nullptr) {
                 cue = cueFromRow(query);
             }
             int hotcueId = query.value(hotcueIdColumn).toInt();
@@ -97,7 +97,7 @@ QList<Cue*> CueDAO::getCuesForTrack(const int trackId) const {
                 }
                 dupe_hotcues[hotcueId] = qMakePair(cueId, cue);
             }
-            if (cue != NULL) {
+            if (cue != nullptr) {
                 cues.push_back(cue);
             }
         }

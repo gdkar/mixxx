@@ -155,7 +155,7 @@ TrackPointer AnalyserQueue::dequeueNextBlocking() {
     if (pLoadTrack) {
         qDebug() << "Analyzing" << pLoadTrack->getTitle() << pLoadTrack->getLocation();
     }
-    // pTrack might be NULL, up to the caller to check.
+    // pTrack might be nullptr, up to the caller to check.
     return pLoadTrack;
 }
 
@@ -287,7 +287,7 @@ void AnalyserQueue::run() {
         // It's important to check for m_exit here in case we decided to exit
         // while blocking for a new track.
         if (m_exit) return;
-        // If the track is NULL, try to get the next one.
+        // If the track is nullptr, try to get the next one.
         // Could happen if the track was queued but then deleted.
         // Or if dequeueNextBlocking is unblocked by exit == true
         if (!nextTrack) {
