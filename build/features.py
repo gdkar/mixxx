@@ -854,6 +854,109 @@ class Opus(Feature):
     def sources(self, build):
         return ['sources/soundsourceopus.cpp']
 
+class LAVF(Feature):
+    def description(self):
+        return "FFMPEG/LibAV decoder plugin"
+
+    def enabled(self, build):
+        build.flags['lavf'] = util.get_flags(build.env, 'lavf', 0)
+        if int(build.flags['lavf']):
+            return True
+        return False
+
+    def add_options(self, build, vars):
+        vars.Add('lavf', 'Set to 1 to enable FFMPEG/Libav decoder plugin \
+                           (supported FFMPEG 0.11-2.0 and Libav 0.8.x-9.x)', 0)
+
+    def configure(self, build, conf):
+        if not self.enabled(build):
+            return
+
+        # Supported version are FFMPEG 0.11-2.0 and Libav 0.8.x-9.x
+        # FFMPEG is multimedia library that can be found http://ffmpeg.org/
+        # Libav is fork of FFMPEG that is used mainly in Debian and Ubuntu
+        # that can be found http://libav.org
+        if build.platform_is_linux or build.platform_is_osx \
+                or build.platform_is_bsd:
+            # Check for libavcodec, libavformat
+            # I just randomly picked version numbers lower than mine for this
+            if not conf.CheckForPKG('libavcodec', '53.35.0'):
+                raise Exception('Missing libavcodec or it\'s too old! It can'
+                                'be separated from main package so check your'
+                                'operating system packages.')
+            if not conf.CheckForPKG('libavformat', '53.21.0'):
+                raise Exception('Missing libavformat  or it\'s too old!'
+                                'It can be separated from main package so'
+                                'check your operating system packages.')
+
+            # Needed to build new FFMPEG
+            build.env.Append(CCFLAGS='-D__STDC_CONSTANT_MACROS')
+            build.env.Append(CCFLAGS='-D__STDC_LIMIT_MACROS')
+            build.env.Append(CCFLAGS='-D__STDC_FORMAT_MACROS')
+
+            # Grabs the libs and cflags for ffmpeg
+            build.env.ParseConfig('pkg-config libavcodec --silence-errors --cflags --libs')
+            build.env.ParseConfig('pkg-config libavformat --silence-errors --cflags --libs')
+            build.env.ParseConfig('pkg-config libavutil --silence-errors --cflags --libs')
+
+            # What are libavresample and libswresample??
+            # Libav forked from FFMPEG in version 0.10 and there wasn't any
+            # separated library for resampling audio. There we resample API
+            # (actually two and they are both a big mess). API is now marked as
+            # depricated but both are  still available in current version
+            # FFMPEG up to version 1.2 or Libav up to version 9
+            # In some point developers FFMPEG decided to make libswresample
+            # (Software Resample). Libav people also noticed API problem and
+            # created libavresample. After that libavresample were imported in
+            # FFMPEG and it's API/ABI compatible with LibAV.
+            # If you have FFMPEG version 0.10 or Libav version 0.8.x your
+            # resampling is done through inner API
+            # FFMPEG 0.11 Have libswresample but ain't libavresample
+            # FFMPEG 1.0 and above have libswresample and libavresample
+            # Libav after 0.8.x and between 9 have some libavresample
+            # Libav 9 have libavresample have libavresample
+            # Most Linux systems have separated packages for libswresample/
+            # libavresample so you can have them installed or not in you
+            # system most use libavresample.
+            # Ubuntu/Debian only have Libav 0.8.x available (There is PPA for
+            # libav 9)
+            # Fedora uses newest FFMPEG 1.x/2.x (With compability libs)
+            # openSUSE uses newest FFMPEG 1.x/2.x (With compability libs)
+            # Mac OS X does have FFMPEG available (with libswresample) from
+            # macports or homebrew
+            # Microsoft Windows can download FFMPEG or Libav resample libraries
+
+
+            if conf.CheckForPKG('libswresample', '0.0.1'):
+                build.env.ParseConfig('pkg-config libswresample --silence-errors --cflags --libs')
+                build.env.Append(CPPDEFINES='__FFMPEGFILE__')
+                build.env.Append(CPPDEFINES='__LIBSWRESAMPLE__')
+                self.status = "Enabled -- with libswresample"
+        else:
+            # aptitude install libavcodec-dev libavformat-dev liba52-0.7.4-dev
+            # libdts-dev
+            # Append some stuff to CFLAGS in Windows also
+            build.env.Append(CCFLAGS='-D__STDC_CONSTANT_MACROS')
+            build.env.Append(CCFLAGS='-D__STDC_LIMIT_MACROS')
+            build.env.Append(CCFLAGS='-D__STDC_FORMAT_MACROS')
+
+            build.env.Append(LIBS='avcodec')
+            build.env.Append(LIBS='avformat')
+            build.env.Append(LIBS='avutil')
+            build.env.Append(LIBS='swresample')
+            # build.env.Append(LIBS = 'dl')
+            build.env.Append(LIBS='m')
+            build.env.Append(CPPDEFINES='__FFMPEGFILE__')
+
+        # Add new path for ffmpeg header files.
+        # Non-crosscompiled builds need this too, don't they?
+        if build.crosscompile and build.platform_is_windows \
+                and build.toolchain_is_gnu:
+            build.env.Append(CPPPATH=os.path.join(build.crosscompile_root,
+                                                  'include', 'lavf'))
+    def sources(self, build):
+        pass
+
 
 class FFMPEG(Feature):
     def description(self):
