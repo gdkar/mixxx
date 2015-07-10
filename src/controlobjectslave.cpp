@@ -6,7 +6,7 @@
 
 ControlObjectSlave::ControlObjectSlave(QObject* pParent)
         : QObject(pParent),
-          m_pControl(NULL) {
+          m_pControl(nullptr) {
 }
 
 ControlObjectSlave::ControlObjectSlave(const QString& g, const QString& i, QObject* pParent)
@@ -26,7 +26,7 @@ ControlObjectSlave::ControlObjectSlave(const ConfigKey& key, QObject* pParent)
 
 void ControlObjectSlave::initialize(const ConfigKey& key) {
     m_key = key;
-    // Don't bother looking up the control if key is NULL. Prevents log spew.
+    // Don't bother looking up the control if key is nullptr. Prevents log spew.
     if (!key.isNull()) {
         m_pControl = ControlDoublePrivate::getControl(key);
     }
@@ -56,6 +56,6 @@ bool ControlObjectSlave::connectValueChanged(const QObject* receiver,
 // connect to parent object
 bool ControlObjectSlave::connectValueChanged(
         const char* method, Qt::ConnectionType type) {
-    DEBUG_ASSERT(parent() != NULL);
+    DEBUG_ASSERT(parent() != nullptr);
     return connectValueChanged(parent(), method, type);
 }

@@ -6,13 +6,13 @@
 #include "analyserrg.h"
 #include "util/math.h"
 
-AnalyserGain::AnalyserGain(ConfigObject<ConfigValue> *_config) {
-    m_pConfigReplayGain = _config;
-    m_bStepControl = false;
-    m_pLeftTempBuffer = NULL;
-    m_pRightTempBuffer = NULL;
-    m_iBufferSize = 0;
-    m_pReplayGain = new ReplayGain();
+AnalyserGain::AnalyserGain(ConfigObject<ConfigValue> *_config) :
+  m_pConfigReplayGain(_config)
+, m_bStepControl(false)
+, m_bLeftTempBuffer(nullptr)
+, m_bRightTempBuffer(nullptr)
+, m_iBufferSize(0)
+, m_pReplayGain(new ReplayGain()){
 }
 
 AnalyserGain::~AnalyserGain() {
@@ -46,7 +46,6 @@ void AnalyserGain::cleanup(TrackPointer tio) {
 void AnalyserGain::process(const CSAMPLE *pIn, const int iLen) {
     if(!m_bStepControl)
         return;
-
     int halfLength = static_cast<int>(iLen / 2);
     if (halfLength > m_iBufferSize) {
         delete [] m_pLeftTempBuffer;

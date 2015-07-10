@@ -38,13 +38,13 @@ ControlObject::~ControlObject() {
 
 void ControlObject::initialize(ConfigKey key, bool bIgnoreNops, bool bTrack,bool bPersist) {
     m_key = key;
-    // Don't bother looking up the control if key is NULL. Prevents log spew.
+    // Don't bother looking up the control if key is nullptr. Prevents log spew.
     if (!m_key.isNull()) {
         m_pControl = ControlDoublePrivate::getControl(m_key, true, this,
                                                       bIgnoreNops, bTrack,
                                                       bPersist);
     }
-    // getControl can fail and return a NULL control even with the create flag.
+    // getControl can fail and return a nullptr control even with the create flag.
     if (m_pControl) {
         connect(m_pControl.data(), SIGNAL(valueChanged(double, QObject*)),
                 this, SLOT(privateValueChanged(double, QObject*)),
@@ -66,7 +66,7 @@ ControlObject* ControlObject::getControl(const ConfigKey& key, bool warn) {
     //qDebug() << "ControlObject::getControl for (" << key.group << "," << key.item << ")";
     QSharedPointer<ControlDoublePrivate> pCDP = ControlDoublePrivate::getControl(key, warn);
     if (pCDP) {return pCDP->getCreatorCO();}
-    return NULL;
+    return nullptr;
 }
 void ControlObject::setValueFromMidi(MidiOpCode o, double v) {
     if (m_pControl) {m_pControl->setMidiParameter(o, v);}
@@ -110,7 +110,7 @@ void ControlObject::setParameterFrom(double v, QObject* pSender) {
 void ControlObject::set(const ConfigKey& key, const double& value) {
     QSharedPointer<ControlDoublePrivate> pCop = ControlDoublePrivate::getControl(key);
     if (pCop) {
-        pCop->set(value, NULL);
+        pCop->set(value, nullptr);
     }
 }
 

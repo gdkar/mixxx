@@ -29,11 +29,11 @@ class ControlDoublePrivate : public QObject {
     static void insertAlias(const ConfigKey& alias, const ConfigKey& key);
 
     // Gets the ControlDoublePrivate matching the given ConfigKey. If pCreatorCO
-    // is non-NULL, allocates a new ControlDoublePrivate for the ConfigKey if
+    // is non-nullptr, allocates a new ControlDoublePrivate for the ConfigKey if
     // one does not exist.
     static QSharedPointer<ControlDoublePrivate> getControl(
             const ConfigKey& key, bool warn = true,
-            ControlObject* pCreatorCO = NULL, bool bIgnoreNops = true, bool bTrack = false,
+            ControlObject* pCreatorCO = nullptr, bool bIgnoreNops = true, bool bTrack = false,
             bool bPersist = false);
     // Adds all ControlDoublePrivate that currently exist to pControlList
     static void getControls(QList<QSharedPointer<ControlDoublePrivate> >* pControlsList);
@@ -69,7 +69,7 @@ class ControlDoublePrivate : public QObject {
     inline double defaultValue() const {return m_defaultValue.getValue();}
     inline ControlObject* getCreatorCO() const {return m_pCreatorCO;}
     inline void setCreatorCO(ControlObject *co) {if(co) m_pCreatorCO = co;}
-    inline void removeCreatorCO() {m_pCreatorCO = NULL;}
+    inline void removeCreatorCO() {m_pCreatorCO = nullptr;}
     inline ConfigKey getKey() {return m_key;}
     // Connects a slot to the ValueChange request for CO validation. All change
     // requests issued by set are routed though the connected slot. This can
@@ -82,7 +82,7 @@ class ControlDoublePrivate : public QObject {
 
   signals:
     // Emitted when the ControlDoublePrivate value changes. pSender is a
-    // pointer to the setter of the value (potentially NULL).
+    // pointer to the setter of the value (potentially nullptr).
     void valueChanged(double value, QObject* pSender);
     void valueChangeRequest(double value);
 

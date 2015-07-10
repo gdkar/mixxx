@@ -26,7 +26,7 @@ class QObject;
 class LibraryFeature : public QObject {
   Q_OBJECT
   public:
-    LibraryFeature(QObject* parent = NULL);
+    LibraryFeature(QObject* parent = nullptr);
     virtual ~LibraryFeature();
     virtual QVariant title() = 0;
     virtual QIcon getIcon() = 0;

@@ -88,7 +88,7 @@ void BaseExternalLibraryFeature::slotImportAsMixxxPlaylist() {
     } else {
         // Do not change strings here without also changing strings in
         // src/library/baseplaylistfeature.cpp
-        QMessageBox::warning(NULL,
+        QMessageBox::warning(nullptr,
                              tr("Playlist Creation Failed"),
                              tr("An unknown error occurred while creating playlist: ")
                              + playlist);

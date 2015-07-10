@@ -43,7 +43,7 @@ void EngineWorkerScheduler::runWorkers() {
 void EngineWorkerScheduler::run() {
     while (!m_bQuit) {
         Event::start("EngineWorkerScheduler");
-        EngineWorker* pWorker = NULL;
+        EngineWorker* pWorker = nullptr;
         while (m_scheduleFIFO.read(&pWorker, 1) == 1) {
             if (pWorker) {pWorker->wake();}
         }

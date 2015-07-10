@@ -18,7 +18,7 @@ class SkinContext;
 class WWidgetGroup : public QFrame, public WBaseWidget {
     Q_OBJECT
   public:
-    WWidgetGroup(QWidget* pParent=NULL);
+    WWidgetGroup(QWidget* pParent=nullptr);
     virtual ~WWidgetGroup();
 
     // QLayouts are not stylable using Qt style sheets. These properties let us

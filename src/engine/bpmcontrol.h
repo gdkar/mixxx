@@ -52,7 +52,7 @@ class BpmControl : public EngineControl {
     // Calculates contextual information about beats: the previous beat, the
     // next beat, the current beat length, and the beat ratio (how far dPosition
     // lies within the current beat). Returns false if a previous or next beat
-    // does not exist. NULL arguments are safe and ignored.
+    // does not exist. nullptr arguments are safe and ignored.
     static bool getBeatContext(const BeatsPointer& pBeats,
                                const double dPosition,
                                double* dpPrevBeat,

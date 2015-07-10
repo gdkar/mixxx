@@ -25,12 +25,12 @@ class ControlObjectTest : public testing::Test {
         if(co1) {
             qDebug() << "Deleting " << co1;
             delete co1;
-            co1 = NULL;
+            co1 = nullptr;
         }
         if(co2) {
             qDebug() << "Deleting " << co2;
             delete co2;
-            co2 = NULL;
+            co2 = nullptr;
         }
     }
 
@@ -50,8 +50,8 @@ TEST_F(ControlObjectTest, getControl) {
     EXPECT_EQ(ControlObject::getControl(ck1), co1);
     EXPECT_EQ(ControlObject::getControl(ck2), co2);
     delete co2;
-    co2 = NULL;
-    EXPECT_EQ(ControlObject::getControl(ck2), (ControlObject*)NULL);
+    co2 = nullptr;
+    EXPECT_EQ(ControlObject::getControl(ck2), (ControlObject*)nullptr);
 }
 
 TEST_F(ControlObjectTest, aliasRetrieval) {

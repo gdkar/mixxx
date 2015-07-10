@@ -104,7 +104,7 @@ void EffectParameterSlot::clear() {
     //qDebug() << debugString() << "clear";
     if (m_pEffectParameter) {
         m_pEffectParameter->disconnect(this);
-        m_pEffectParameter = NULL;
+        m_pEffectParameter = nullptr;
     }
 
     m_pControlLoaded->setAndConfirm(0.0);
@@ -151,7 +151,7 @@ void EffectParameterSlot::slotLinkInverseChanged(double v) {
 
 void EffectParameterSlot::onChainSuperParameterChanged(double parameter, bool force) {
     m_dChainParameter = parameter;
-    if (m_pEffectParameter != NULL) {
+    if (m_pEffectParameter != nullptr) {
         // Intermediate cast to integer is needed for VC++.
         EffectManifestParameter::LinkType type =
                 static_cast<EffectManifestParameter::LinkType>(
@@ -227,11 +227,11 @@ void EffectParameterSlot::onChainSuperParameterChanged(double parameter, bool fo
 
         //qDebug() << "onChainParameterChanged" << parameter;
         if (force) {
-            m_pControlValue->setParameterFrom(parameter, NULL);
+            m_pControlValue->setParameterFrom(parameter, nullptr);
             // This ensures that softtakover is in sync for following updates
             m_pSoftTakeover->ignore(m_pControlValue, parameter);
         } else if (!m_pSoftTakeover->ignore(m_pControlValue, parameter)) {
-            m_pControlValue->setParameterFrom(parameter, NULL);
+            m_pControlValue->setParameterFrom(parameter, nullptr);
         }
     }
 }

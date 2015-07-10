@@ -123,12 +123,12 @@ class CachingReader : public QObject {
     FIFO<ReaderStatusUpdate> m_readerStatusFIFO;
 
     // Looks for the provided chunk number in the index of in-memory chunks and
-    // returns it if it is present. If not, returns NULL. If it is present then
+    // returns it if it is present. If not, returns nullptr. If it is present then
     // freshenChunk is called on the chunk to make it the MRU chunk.
     Chunk* lookupChunkAndFreshen(int chunk_number);
 
     // Looks for the provided chunk number in the index of in-memory chunks and
-    // returns it if it is present. If not, returns NULL.
+    // returns it if it is present. If not, returns nullptr.
     Chunk* lookupChunk(int chunk_number);
 
     // Moves the provided chunk to the MRU position.
@@ -140,7 +140,7 @@ class CachingReader : public QObject {
     // Returns all allocated chunks to the free list
     void freeAllChunks();
 
-    // Gets a chunk from the free list. Returns NULL if none available.
+    // Gets a chunk from the free list. Returns nullptr if none available.
     Chunk* allocateChunk(int chunk);
 
     // Gets a chunk from the free list, frees the LRU Chunk if none available.

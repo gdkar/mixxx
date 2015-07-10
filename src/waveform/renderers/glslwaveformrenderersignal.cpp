@@ -14,11 +14,11 @@ GLSLWaveformRendererSignal::GLSLWaveformRendererSignal(WaveformWidgetRenderer* w
           m_textureId(0),
           m_loadedWaveform(0),
           m_frameBuffersValid(false),
-          m_framebuffer(NULL),
+          m_framebuffer(nullptr),
           m_bDumpPng(false),
           m_shadersValid(false),
           m_rgbShader(rgbShader),
-          m_frameShaderProgram(NULL) {
+          m_frameShaderProgram(nullptr) {
 }
 
 GLSLWaveformRendererSignal::~GLSLWaveformRendererSignal() {
@@ -86,7 +86,7 @@ bool GLSLWaveformRendererSignal::loadTexture() {
     TrackPointer trackInfo = m_waveformRenderer->getTrackInfo();
     ConstWaveformPointer waveform;
     int dataSize = 0;
-    const WaveformData* data = NULL;
+    const WaveformData* data = nullptr;
 
     if (trackInfo) {
         waveform = trackInfo->getWaveform();
@@ -117,7 +117,7 @@ bool GLSLWaveformRendererSignal::loadTexture() {
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
-    if (waveform != NULL && data != NULL) {
+    if (waveform != nullptr && data != nullptr) {
         // Waveform ensures that getTextureSize is a multiple of
         // getTextureStride so there is no rounding here.
         int textureWidth = waveform->getTextureStride();
@@ -245,7 +245,7 @@ void GLSLWaveformRendererSignal::draw(QPainter* painter, QPaintEvent* /*event*/)
     }
 
     const WaveformData* data = waveform->data();
-    if (data == NULL) {
+    if (data == nullptr) {
         return;
     }
 

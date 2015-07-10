@@ -20,7 +20,7 @@ VinylControlProcessor::VinylControlProcessor(QObject* pParent, ConfigObject<Conf
           m_pToggle(new ControlPushButton(ConfigKey(VINYL_PREF_KEY, "Toggle"))),
           m_pWorkBuffer(SampleUtil::alloc(MAX_BUFFER_LEN)),
           m_processorsLock(QMutex::Recursive),
-          m_processors(kMaximumVinylControlInputs, NULL),
+          m_processors(kMaximumVinylControlInputs, nullptr),
           m_signalQualityFifo(SIGNAL_QUALITY_FIFO_SIZE),
           m_bReportSignalQuality(false),
           m_bQuit(false),
@@ -48,11 +48,11 @@ VinylControlProcessor::~VinylControlProcessor() {
         QMutexLocker locker(&m_processorsLock);
         for (int i = 0; i < kMaximumVinylControlInputs; ++i) {
             VinylControl* pProcessor = m_processors.at(i);
-            m_processors[i] = NULL;
+            m_processors[i] = nullptr;
             delete pProcessor;
 
             delete m_samplePipes[i];
-            m_samplePipes[i] = NULL;
+            m_samplePipes[i] = nullptr;
         }
     }
 
@@ -140,7 +140,7 @@ void VinylControlProcessor::reloadConfig() {
         QMutexLocker locker(&m_processorsLock);
         VinylControl* pCurrent = m_processors[i];
 
-        if (pCurrent == NULL) {
+        if (pCurrent == nullptr) {
             continue;
         }
 
@@ -193,14 +193,14 @@ void VinylControlProcessor::onInputUnconfigured(AudioInput input) {
 
     QMutexLocker locker(&m_processorsLock);
     VinylControl* pVC = m_processors.at(index);
-    m_processors.replace(index, NULL);
+    m_processors.replace(index, nullptr);
     locker.unlock();
     // Delete outside of the critical section to avoid deadlocks.
     delete pVC;
 }
 
 bool VinylControlProcessor::deckConfigured(int index) const {
-    return m_processors[index] != NULL;
+    return m_processors[index] != nullptr;
 }
 
 void VinylControlProcessor::receiveBuffer(AudioInput input,
@@ -221,7 +221,7 @@ void VinylControlProcessor::receiveBuffer(AudioInput input,
 
     FIFO<CSAMPLE>* pSamplePipe = m_samplePipes[vcIndex];
 
-    if (pSamplePipe == NULL) {
+    if (pSamplePipe == nullptr) {
         // Should not be possible.
         return;
     }

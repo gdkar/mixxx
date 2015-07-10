@@ -109,7 +109,7 @@ TrackPointer BrowseTableModel::getTrack(const QModelIndex& index) const {
         return TrackPointer();
     }
     return m_pTrackCollection->getTrackDAO()
-            .getOrAddTrack(track_location, true, NULL);
+            .getOrAddTrack(track_location, true, nullptr);
 }
 
 QString BrowseTableModel::getTrackLocation(const QModelIndex& index) const {
@@ -186,7 +186,7 @@ void BrowseTableModel::removeTracks(QStringList trackLocations) {
 
     // Ask user if s/he is sure
     if (QMessageBox::question(
-        NULL, tr("Mixxx Library"),
+        nullptr, tr("Mixxx Library"),
         tr("Warning: This will permanently delete the following files:")
         + "\n" + trackLocations.join("\n") + "\n" +
         tr("Are you sure you want to delete these files from your computer?"),
@@ -435,5 +435,5 @@ QAbstractItemDelegate* BrowseTableModel::delegateForColumn(const int i, QObject*
     if (PlayerManager::numPreviewDecks() > 0 && i == COLUMN_PREVIEW) {
         return new PreviewButtonDelegate(pParent, i);
     }
-    return NULL;
+    return nullptr;
 }

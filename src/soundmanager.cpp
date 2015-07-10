@@ -45,7 +45,7 @@ SoundManager::SoundManager(ConfigObject<ConfigValue> *pConfig,
           m_paInitialized(false),
           m_jackSampleRate(-1),
 #endif
-          m_pErrorDevice(NULL) {
+          m_pErrorDevice(nullptr) {
 
 #ifdef __PORTAUDIO__
     qDebug() << "PortAudio version:" << Pa_GetVersion()
@@ -140,7 +140,7 @@ void SoundManager::closeDevices() {
         dev_it.next()->close();
     }
 
-    m_pErrorDevice = NULL;
+    m_pErrorDevice = nullptr;
 
     // TODO(rryan): Should we do this before SoundDevice::close()? No! Because
     // then the callback may be running when we call
@@ -168,7 +168,7 @@ void SoundManager::closeDevices() {
 
     while (!m_inputBuffers.isEmpty()) {
         CSAMPLE* pBuffer = m_inputBuffers.takeLast();
-        if (pBuffer != NULL) {
+        if (pBuffer != nullptr) {
             SampleUtil::free(pBuffer);
         }
     }
@@ -281,8 +281,8 @@ Result SoundManager::setupDevices() {
     // it was. Clearing it causes the engine to stop being processed which
     // results in a stuttering noise (sometimes a loud buzz noise at low
     // latencies) when changing devices.
-    //m_pClkRefDevice = NULL;
-    m_pErrorDevice = NULL;
+    //m_pClkRefDevice = nullptr;
+    m_pErrorDevice = nullptr;
     int devicesAttempted = 0;
     int devicesOpened = 0;
     int outputDevicesOpened = 0;
@@ -312,7 +312,7 @@ Result SoundManager::setupDevices() {
 
     // Instead of clearing m_pClkRefDevice and then assigning it directly,
     // compute the new one then atomically hand off below.
-    SoundDevice* pNewMasterClockRef = NULL;
+    SoundDevice* pNewMasterClockRef = nullptr;
 
     // pair is isInput, isOutput
     QHash<SoundDevice*, QPair<bool, bool> > toOpen;
@@ -348,7 +348,7 @@ Result SoundManager::setupDevices() {
             // following keeps us from asking for a channel buffer EngineMaster
             // doesn't have -- bkgood
             const CSAMPLE* pBuffer = m_registeredSources.value(out)->buffer(out);
-            if (pBuffer == NULL) {
+            if (pBuffer == nullptr) {
                 qDebug() << "AudioSource returned null for" << out.getString();
                 continue;
             }
@@ -386,7 +386,7 @@ Result SoundManager::setupDevices() {
         ++devicesAttempted;
         m_pErrorDevice = device;
         // If we have not yet set a clock source then we use the first
-        if (pNewMasterClockRef == NULL) {
+        if (pNewMasterClockRef == nullptr) {
             pNewMasterClockRef = device;
             qWarning() << "Output sound device clock reference not set! Using"
                        << device->getDisplayName();
@@ -429,7 +429,7 @@ Result SoundManager::setupDevices() {
         emit(devicesSetup());
         return OK;
     }
-    m_pErrorDevice = NULL;
+    m_pErrorDevice = nullptr;
     return ERR;
 closeAndError:
     closeDevices();

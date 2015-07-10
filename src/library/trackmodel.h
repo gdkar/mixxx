@@ -101,7 +101,7 @@ class TrackModel {
     virtual QAbstractItemDelegate* delegateForColumn(const int i, QObject* pParent) {
         Q_UNUSED(i);
         Q_UNUSED(pParent);
-        return NULL;
+        return nullptr;
     }
     virtual TrackModel::CapabilitiesFlags getCapabilities() const {
         return TRACKMODELCAPS_NONE;

@@ -11,7 +11,7 @@
 
 class Trace {
   public:
-    Trace(const char* tag, const char* arg=NULL,
+    Trace(const char* tag, const char* arg=nullptr,
           bool writeToStdout=false, bool time=true)
             : m_writeToStdout(writeToStdout),
               m_time(time) {

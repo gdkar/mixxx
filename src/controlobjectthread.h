@@ -26,9 +26,9 @@
 class ControlObjectThread : public QObject {
     Q_OBJECT
   public:
-    ControlObjectThread(const QString& g, const QString& i, QObject* pParent=NULL);
-    ControlObjectThread(const char* g, const char* i, QObject* pParent=NULL);
-    ControlObjectThread(const ConfigKey& key, QObject* pParent=NULL);
+    ControlObjectThread(const QString& g, const QString& i, QObject* pParent=nullptr);
+    ControlObjectThread(const char* g, const char* i, QObject* pParent=nullptr);
+    ControlObjectThread(const ConfigKey& key, QObject* pParent=nullptr);
     virtual ~ControlObjectThread();
 
     void initialize(const ConfigKey& key);
@@ -47,7 +47,7 @@ class ControlObjectThread : public QObject {
     }
 
     inline ConfigKey getKey() const { return m_key; }
-    inline bool valid() const { return m_pControl != NULL; }
+    inline bool valid() const { return m_pControl != nullptr; }
 
     // Returns the value of the object. Thread safe, non-blocking.
     inline double get() {
@@ -94,7 +94,7 @@ class ControlObjectThread : public QObject {
             // NOTE(rryan): This is important. The originator of this action does
             // not know the resulting value so it makes sense that we should emit a
             // general valueChanged() signal even though the change originated from
-            // us. For this reason, we provide NULL here so that the change is
+            // us. For this reason, we provide nullptr here so that the change is
             // broadcast as valueChanged() and not valueChangedByThis().
             m_pControl->reset();
         }

@@ -17,7 +17,7 @@ const int kMaxInterval = static_cast<int>(1000.0 * (60.0 / kMinBPM));
 DlgTrackInfo::DlgTrackInfo(QWidget* parent,
                            DlgTagFetcher& DlgTagFetcher)
             : QDialog(parent),
-              m_pLoadedTrack(NULL),
+              m_pLoadedTrack(nullptr),
               m_pTapFilter(new TapFilter(this, kFilterLength, kMaxInterval)),
               m_dLastBpm(-1.),
               m_DlgTagFetcher(DlgTagFetcher),
@@ -77,7 +77,7 @@ void DlgTrackInfo::init() {
             this, SLOT(slotOpenInFileBrowser()));
 
     CoverArtCache* pCache = CoverArtCache::instance();
-    if (pCache != NULL) {
+    if (pCache != nullptr) {
         connect(pCache, SIGNAL(coverFound(const QObject*, const int, const CoverInfo&, QPixmap, bool)),
                 this, SLOT(slotCoverFound(const QObject*, const int, const CoverInfo&, QPixmap, bool)));
     }
@@ -174,7 +174,7 @@ void DlgTrackInfo::populateFields(TrackPointer pTrack) {
     m_loadedCoverInfo.trackLocation = pTrack->getLocation();
     m_pWCoverArtLabel->setCoverArt(pTrack, m_loadedCoverInfo, QPixmap());
     CoverArtCache* pCache = CoverArtCache::instance();
-    if (pCache != NULL) {
+    if (pCache != nullptr) {
         pCache->requestCover(m_loadedCoverInfo, this, reference);
     }
 }
@@ -231,7 +231,7 @@ void DlgTrackInfo::slotCoverArtSelected(const CoverArt& art) {
         m_loadedCoverInfo.trackLocation = m_pLoadedTrack->getLocation();
     }
     CoverArtCache* pCache = CoverArtCache::instance();
-    if (pCache != NULL) {
+    if (pCache != nullptr) {
         pCache->requestCover(m_loadedCoverInfo, this, reference);
     }
 }
@@ -357,8 +357,8 @@ void DlgTrackInfo::saveTrack() {
             continue;
 
         int oldRow = rowItem->data(Qt::DisplayRole).toInt();
-        Cue* pCue = m_cueMap.value(oldRow, NULL);
-        if (pCue == NULL) {
+        Cue* pCue = m_cueMap.value(oldRow, nullptr);
+        if (pCue == nullptr) {
             continue;
         }
 

@@ -11,7 +11,7 @@ using mixxx::track::io::key::ChromaticKey_IsValid;
 
 AnalyserKey::AnalyserKey(ConfigObject<ConfigValue>* pConfig)
         : m_pConfig(pConfig),
-          m_pVamp(NULL),
+          m_pVamp(nullptr),
           m_iSampleRate(0),
           m_iTotalSamples(0),
           m_bPreferencesKeyDetectionEnabled(true),
@@ -62,7 +62,7 @@ bool AnalyserKey::initialise(TrackPointer tio, int sampleRate, int totalSamples)
             m_bPreferencesFastAnalysisEnabled);
         if (!bShouldAnalyze) {
             delete m_pVamp;
-            m_pVamp = NULL;
+            m_pVamp = nullptr;
         }
     }
 
@@ -123,23 +123,23 @@ bool AnalyserKey::loadStored(TrackPointer tio) const {
 }
 
 void AnalyserKey::process(const CSAMPLE *pIn, const int iLen) {
-    if (m_pVamp == NULL)
+    if (m_pVamp == nullptr)
         return;
     bool success = m_pVamp->Process(pIn, iLen);
     if (!success) {
         delete m_pVamp;
-        m_pVamp = NULL;
+        m_pVamp = nullptr;
     }
 }
 
 void AnalyserKey::cleanup(TrackPointer tio) {
     Q_UNUSED(tio);
     delete m_pVamp;
-    m_pVamp = NULL;
+    m_pVamp = nullptr;
 }
 
 void AnalyserKey::finalise(TrackPointer tio) {
-    if (m_pVamp == NULL) {
+    if (m_pVamp == nullptr) {
         return;
     }
 
@@ -149,7 +149,7 @@ void AnalyserKey::finalise(TrackPointer tio) {
     QVector<double> frames = m_pVamp->GetInitFramesVector();
     QVector<double> keys = m_pVamp->GetLastValuesVector();
     delete m_pVamp;
-    m_pVamp = NULL;
+    m_pVamp = nullptr;
 
     if (frames.size() == 0 || frames.size() != keys.size()) {
         qWarning() << "AnalyserKey: Key sequence and list of times do not match.";

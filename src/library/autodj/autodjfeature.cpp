@@ -36,8 +36,8 @@ AutoDJFeature::AutoDJFeature(Library* pLibrary,
           m_crateDao(pTrackCollection->getCrateDAO()),
           m_playlistDao(pTrackCollection->getPlaylistDAO()),
           m_iAutoDJPlaylistId(-1),
-          m_pAutoDJProcessor(NULL),
-          m_pAutoDJView(NULL)
+          m_pAutoDJProcessor(nullptr),
+          m_pAutoDJView(nullptr)
 #ifdef __AUTODJCRATES__
           , m_autoDjCratesDao(pTrackCollection->getDatabase(),
                               pTrackCollection->getTrackDAO(),
@@ -368,14 +368,14 @@ void AutoDJFeature::onRightClickChild(const QPoint& globalPos,
     if (crateName.length() > 0) {
         // A crate was right-clicked.
         // Bring up the context menu.
-        QMenu menu(NULL);
+        QMenu menu(nullptr);
         menu.addAction(m_pRemoveCrateFromAutoDj);
         menu.exec(globalPos);
     } else {
         // The "Crates" tree-item was right-clicked.
         // Bring up the context menu.
-        QMenu menu(NULL);
-        QMenu crateMenu(NULL);
+        QMenu menu(nullptr);
+        QMenu crateMenu(nullptr);
         crateMenu.setTitle(tr("Add Crate as Track Source"));
         QMap<QString,int> crateMap;
         m_crateDao.getAutoDjCrates(false, &crateMap);

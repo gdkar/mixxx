@@ -29,11 +29,11 @@ DlgPrefRecord::DlgPrefRecord(QWidget* parent, ConfigObject<ConfigValue>* pConfig
         : DlgPreferencePage(parent),
           m_pConfig(pConfig),
           m_bConfirmOverwrite(false),
-          m_pRadioOgg(NULL),
-          m_pRadioMp3(NULL),
-          m_pRadioAiff(NULL),
-          m_pRadioFlac(NULL),
-          m_pRadioWav(NULL) {
+          m_pRadioOgg(nullptr),
+          m_pRadioMp3(nullptr),
+          m_pRadioAiff(nullptr),
+          m_pRadioFlac(nullptr),
+          m_pRadioWav(nullptr) {
     setupUi(this);
 
     // See RECORD_* #defines in defs_recording.h

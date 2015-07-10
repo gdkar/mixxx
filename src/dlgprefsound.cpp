@@ -204,7 +204,7 @@ void DlgPrefSound::slotApply() {
         QString deviceName(tr("a device"));
         QString detailedError(tr("An unknown error occurred"));
         SoundDevice *device = m_pSoundManager->getErrorDevice();
-        if (device != NULL) {
+        if (device != nullptr) {
             deviceName = tr("sound device \"%1\"").arg(device->getDisplayName());
             detailedError = device->getError();
         }
@@ -216,7 +216,7 @@ void DlgPrefSound::slotApply() {
             error = tr("Error opening %1\n%2").arg(deviceName, detailedError);
             break;
         }
-        QMessageBox::warning(NULL, tr("Configuration error"), error);
+        QMessageBox::warning(nullptr, tr("Configuration error"), error);
     }
     m_settingsModified = false;
     loadSettings(); // in case SM decided to change anything it didn't like

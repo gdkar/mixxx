@@ -28,7 +28,7 @@ class EncoderCallback;
 
 class EncoderMp3 : public Encoder {
   public:
-    EncoderMp3(EncoderCallback* callback=NULL);
+    EncoderMp3(EncoderCallback* callback=nullptr);
     virtual ~EncoderMp3();
 
     int initEncoder(int bitrate, int samplerate);

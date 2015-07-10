@@ -95,9 +95,9 @@ int Hss1394Controller::open() {
     using namespace hss1394;
 
     m_pChannel = Node::Instance()->OpenChannel(m_iDeviceIndex);
-    if (m_pChannel == NULL) {
+    if (m_pChannel == nullptr) {
         qDebug() << "HSS1394 device" << getName() << "could not be opened";
-        m_pChannelListener = NULL;
+        m_pChannelListener = nullptr;
         return -1;
     }
 
@@ -110,8 +110,8 @@ int Hss1394Controller::open() {
     if (!m_pChannel->InstallChannelListener(m_pChannelListener)) {
         qDebug() << "HSS1394 channel listener could not be installed for device" << getName();
         delete m_pChannelListener;
-        m_pChannelListener = NULL;
-        m_pChannel = NULL;
+        m_pChannelListener = nullptr;
+        m_pChannel = nullptr;
     }
 
     // TODO(XXX): Should be done in script, not in Mixxx
@@ -154,9 +154,9 @@ int Hss1394Controller::close() {
         qDebug() << "HSS1394 device" << getName() << "could not be released";
         return -1;
     }
-    if (m_pChannelListener != NULL) {
+    if (m_pChannelListener != nullptr) {
         delete m_pChannelListener;
-        m_pChannelListener = NULL;
+        m_pChannelListener = nullptr;
     }
 
     setOpen(false);

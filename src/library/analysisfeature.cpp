@@ -23,10 +23,10 @@ AnalysisFeature::AnalysisFeature(QObject* parent,
         LibraryFeature(parent),
         m_pConfig(pConfig),
         m_pTrackCollection(pTrackCollection),
-        m_pAnalyserQueue(NULL),
+        m_pAnalyserQueue(nullptr),
         m_iOldBpmEnabled(0),
         m_analysisTitleName(tr("Analyze")),
-        m_pAnalysisView(NULL) {
+        m_pAnalysisView(nullptr) {
     setTitleDefault();
 }
 
@@ -83,7 +83,7 @@ void AnalysisFeature::bindWidget(WLibrary* libraryWidget,
     m_pAnalysisView->installEventFilter(keyboard);
 
     // Let the DlgAnalysis know whether or not analysis is active.
-    bool bAnalysisActive = m_pAnalyserQueue != NULL;
+    bool bAnalysisActive = m_pAnalyserQueue != nullptr;
     emit(analysisActive(bAnalysisActive));
 
     libraryWidget->registerView(m_sAnalysisViewName, m_pAnalysisView);
@@ -109,7 +109,7 @@ void AnalysisFeature::activate() {
 }
 
 void AnalysisFeature::analyzeTracks(QList<int> trackIds) {
-    if (m_pAnalyserQueue == NULL) {
+    if (m_pAnalyserQueue == nullptr) {
         // Save the old BPM detection prefs setting (on or off)
         m_iOldBpmEnabled = m_pConfig->getValueString(ConfigKey("[BPM]","BPMDetectionEnabled")).toInt();
         // Force BPM detection to be on.
@@ -153,7 +153,7 @@ void AnalysisFeature::slotProgressUpdate(int num_left) {
 
 void AnalysisFeature::stopAnalysis() {
     //qDebug() << this << "stopAnalysis()";
-    if (m_pAnalyserQueue != NULL) {
+    if (m_pAnalyserQueue != nullptr) {
         m_pAnalyserQueue->stop();
     }
 }
@@ -161,10 +161,10 @@ void AnalysisFeature::stopAnalysis() {
 void AnalysisFeature::cleanupAnalyser() {
     setTitleDefault();
     emit(analysisActive(false));
-    if (m_pAnalyserQueue != NULL) {
+    if (m_pAnalyserQueue != nullptr) {
         m_pAnalyserQueue->stop();
         m_pAnalyserQueue->deleteLater();
-        m_pAnalyserQueue = NULL;
+        m_pAnalyserQueue = nullptr;
         // Restore old BPM detection setting for preferences...
         m_pConfig->set(ConfigKey("[BPM]","BPMDetectionEnabled"), ConfigValue(m_iOldBpmEnabled));
     }

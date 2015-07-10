@@ -25,7 +25,7 @@ DlgControllerLearning::DlgControllerLearning(QWidget * parent,
                                              Controller* controller)
         : QDialog(parent),
           m_pController(controller),
-          m_pMidiController(NULL),
+          m_pMidiController(nullptr),
           m_controlPickerMenu(this),
           m_messagesLearned(false) {
     qRegisterMetaType<MidiInputMappings>("MidiInputMappings");

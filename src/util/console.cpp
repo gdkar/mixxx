@@ -34,12 +34,12 @@ Console::Console() {
         fd = _open_osfhandle((long) GetStdHandle(STD_OUTPUT_HANDLE), 0);
         fp = _fdopen(fd, "w");
         *stdout = *fp;
-        setvbuf(stdout, NULL, _IONBF, 0);
+        setvbuf(stdout, nullptr, _IONBF, 0);
 
         fd = _open_osfhandle((long) GetStdHandle(STD_ERROR_HANDLE), 0);
         fp = _fdopen(fd, "w");
         *stderr = *fp;
-        setvbuf(stderr, NULL, _IONBF, 0);
+        setvbuf(stderr, nullptr, _IONBF, 0);
 
         // Save current code page
         m_oldCodePage = GetConsoleOutputCP();

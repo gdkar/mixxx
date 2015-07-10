@@ -26,7 +26,7 @@ class CoverArtCacheTest : public MixxxTest, public CoverArtCache {
         info.trackLocation = trackLocation;
 
         CoverArtCache::FutureResult res;
-        res = CoverArtCache::loadCover(info, NULL, 1234, 0, false);
+        res = CoverArtCache::loadCover(info, nullptr, 1234, 0, false);
         EXPECT_EQ(1234, res.requestReference);
         EXPECT_QSTRING_EQ(QString(), res.cover.info.coverLocation);
         EXPECT_QSTRING_EQ(info.hash, res.cover.info.hash);
@@ -51,7 +51,7 @@ class CoverArtCacheTest : public MixxxTest, public CoverArtCache {
         info.hash = 4321; // fake cover hash
 
         CoverArtCache::FutureResult res;
-        res = CoverArtCache::loadCover(info, NULL, 1234, 0, false);
+        res = CoverArtCache::loadCover(info, nullptr, 1234, 0, false);
         EXPECT_EQ(1234, res.requestReference);
         EXPECT_QSTRING_EQ(info.coverLocation, res.cover.info.coverLocation);
         EXPECT_QSTRING_EQ(info.hash, res.cover.info.hash);

@@ -47,7 +47,7 @@ void EngineEffectRack::process(const ChannelHandle& handle,
                                const unsigned int sampleRate,
                                const GroupFeatureState& groupFeatures) {
     foreach (EngineEffectChain* pChain, m_chains) {
-        if (pChain != NULL) {
+        if (pChain != nullptr) {
             pChain->process(handle, pInOut, numSamples, sampleRate, groupFeatures);
         }
     }
@@ -70,7 +70,7 @@ bool EngineEffectRack::addEffectChain(EngineEffectChain* pChain, int iIndex) {
         return false;
     }
     while (iIndex >= m_chains.size()) {
-        m_chains.append(NULL);
+        m_chains.append(nullptr);
     }
     m_chains.replace(iIndex, pChain);
     return true;
@@ -94,6 +94,6 @@ bool EngineEffectRack::removeEffectChain(EngineEffectChain* pChain, int iIndex) 
         return false;
     }
 
-    m_chains.replace(iIndex, NULL);
+    m_chains.replace(iIndex, nullptr);
     return true;
 }

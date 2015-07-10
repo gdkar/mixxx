@@ -189,7 +189,7 @@ bool PresetInfoEnumerator::hasPresetInfo(const QString path) {
 
 PresetInfo PresetInfoEnumerator::getPresetInfo(const QString path) {
     // Lookup and return controller script preset info by script path
-    // Return NULL if path is not found.
+    // Return nullptr if path is not found.
     foreach (QString extension, presetsByExtension.keys()) {
         QMap<QString, PresetInfo> presets = presetsByExtension[extension];
         if (presets.contains(path))

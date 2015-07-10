@@ -25,7 +25,7 @@ class EncoderFfmpegCore;
 
 class EncoderFfmpegMp3 : public EncoderFfmpegCore {
 public:
-    EncoderFfmpegMp3(EncoderCallback* pCallback=NULL);
+    EncoderFfmpegMp3(EncoderCallback* pCallback=nullptr);
 };
 
 #endif

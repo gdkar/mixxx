@@ -788,7 +788,7 @@ void ControlPickerMenu::addPlayerControl(QString control, QString controlTitle,
     QMenu* controlMenu = new QMenu(controlTitle, pMenu);
     pMenu->addMenu(controlMenu);
 
-    QMenu* resetControlMenu = NULL;
+    QMenu* resetControlMenu = nullptr;
     QString resetControl = QString("%1_set_default").arg(control);
     if (addReset) {
         QString resetHelpText = QString("%1 (%2)").arg(controlTitle, m_resetStr);
@@ -867,7 +867,7 @@ void ControlPickerMenu::addMicrophoneAndAuxControl(QString control,
     QMenu* controlMenu = new QMenu(controlTitle, pMenu);
     pMenu->addMenu(controlMenu);
 
-    QMenu* resetControlMenu = NULL;
+    QMenu* resetControlMenu = nullptr;
     QString resetControl = QString("%1_set_default").arg(control);
     if (addReset) {
         QString resetHelpText = QString("%1 (%2)").arg(controlTitle, m_resetStr);
@@ -977,7 +977,7 @@ void ControlPickerMenu::addPreviewDeckControl(QString control,
 }
 
 QMenu* ControlPickerMenu::addSubmenu(QString title, QMenu* pParent) {
-    if (pParent == NULL) {
+    if (pParent == nullptr) {
         pParent = this;
     }
     QMenu* subMenu = new QMenu(title, pParent);

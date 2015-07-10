@@ -151,7 +151,7 @@ void CachingReaderWorker::loadTrack(const TrackPointer& pTrack) {
     emit(trackLoading());
     ReaderStatusUpdate status;
     status.status = TRACK_NOT_LOADED;
-    status.chunk = NULL;
+    status.chunk = nullptr;
     status.trackFrameCount = 0;
     QString filename = pTrack->getLocation();
     if (filename.isEmpty() || !pTrack->exists()) {

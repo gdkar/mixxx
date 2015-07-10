@@ -40,7 +40,7 @@ class CoverArtCache : public QObject, public Singleton<CoverArtCache> {
     void requestGuessCover(TrackPointer pTrack);
 
     struct FutureResult {
-        FutureResult() : pRequestor(NULL),
+        FutureResult() : pRequestor(nullptr),
                          requestReference(0),
                          desiredWidth(0),
                          signalWhenDone(false) {

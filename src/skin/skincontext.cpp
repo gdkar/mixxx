@@ -136,7 +136,7 @@ int SkinContext::selectInt(const QDomNode& node,
                            bool* pOk) const {
     bool ok = false;
     int conv = nodeToString(selectElement(node, nodeName)).toInt(&ok);
-    if (pOk != NULL) {
+    if (pOk != nullptr) {
         *pOk = ok;
     }
     return ok ? conv : 0;
@@ -296,7 +296,7 @@ const QSharedPointer<QScriptEngine> SkinContext::getScriptEngine() const {
 }
 
 void SkinContext::enableDebugger(bool state) const {
-    if (CmdlineArgs::Instance().getDeveloper() && m_pConfig != NULL &&
+    if (CmdlineArgs::Instance().getDeveloper() && m_pConfig != nullptr &&
             m_pConfig->getValueString(ConfigKey("[ScriptDebugger]", "Enabled")) == "1") {
         if (state) {
             m_pScriptDebugger->attachTo(m_pScriptEngine.data());

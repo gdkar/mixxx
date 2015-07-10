@@ -21,6 +21,6 @@ int HexSpinBox::valueFromText(const QString& text) const {
 
 QValidator::State HexSpinBox::validate(QString& input, int& pos) const {
     const QRegExp regExp("^0(x|X)[0-9A-Fa-f]+");
-    QRegExpValidator validator(regExp, NULL);
+    QRegExpValidator validator(regExp, nullptr);
     return validator.validate(input, pos);
 }

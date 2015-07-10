@@ -402,7 +402,7 @@ double BpmControl::calcSyncedRate(double userTweak) {
     // If we are not quantized, or there are no beats, or we're master,
     // or we're in reverse, just return the rate as-is.
     if (!m_pQuantize->get() || getSyncMode() == SYNC_MASTER ||
-            m_pBeats == NULL || m_pReverseButton->get()) {
+            m_pBeats == nullptr || m_pReverseButton->get()) {
         m_resetSyncAdjustment = true;
         return rate + userTweak;
     }
@@ -548,11 +548,11 @@ bool BpmControl::getBeatContext(const BeatsPointer& pBeats,
         return false;
     }
 
-    if (dpPrevBeat != NULL) {
+    if (dpPrevBeat != nullptr) {
         *dpPrevBeat = dPrevBeat;
     }
 
-    if (dpNextBeat != NULL) {
+    if (dpNextBeat != nullptr) {
         *dpNextBeat = dNextBeat;
     }
 
@@ -572,11 +572,11 @@ bool BpmControl::getBeatContextNoLookup(
     }
 
     double dBeatLength = dNextBeat - dPrevBeat;
-    if (dpBeatLength != NULL) {
+    if (dpBeatLength != nullptr) {
         *dpBeatLength = dBeatLength;
     }
 
-    if (dpBeatPercentage != NULL) {
+    if (dpBeatPercentage != nullptr) {
         *dpBeatPercentage = dBeatLength == 0.0 ? 0.0 :
                 (dPosition - dPrevBeat) / dBeatLength;
         // Because findNext and findPrev have an epsilon built in, sometimes
@@ -608,13 +608,13 @@ double BpmControl::getPhaseOffset(double dThisPosition) {
         // this so this call isn't necessary.
         if (!getBeatContext(m_pBeats, dThisPosition,
                             &dThisPrevBeat, &dThisNextBeat,
-                            &dThisBeatLength, NULL)) {
+                            &dThisBeatLength, nullptr)) {
             return 0;
         }
     } else {
         if (!getBeatContextNoLookup(dThisPosition,
                                     dThisPrevBeat, dThisNextBeat,
-                                    &dThisBeatLength, NULL)) {
+                                    &dThisBeatLength, nullptr)) {
             return 0;
         }
     }
@@ -626,7 +626,7 @@ double BpmControl::getPhaseOffset(double dThisPosition) {
     } else {
         // If not, we have to figure it out
         EngineBuffer* pOtherEngineBuffer = pickSyncTarget();
-        if (pOtherEngineBuffer == NULL) {
+        if (pOtherEngineBuffer == nullptr) {
             return 0;
         }
 
@@ -644,7 +644,7 @@ double BpmControl::getPhaseOffset(double dThisPosition) {
         double dOtherPosition = dOtherLength * dOtherEnginePlayPos;
 
         if (!BpmControl::getBeatContext(otherBeats, dOtherPosition,
-                                        NULL, NULL, NULL, &dOtherBeatFraction)) {
+                                        nullptr, nullptr, nullptr, &dOtherBeatFraction)) {
             return 0.0;
         }
     }

@@ -55,7 +55,7 @@ TEST_F(SoundSourceProxyTest, readArtist) {
     SoundSourceProxy proxy(
             QDir::currentPath().append("/src/test/id3-test-data/artist.mp3"));
     Mixxx::TrackMetadata trackMetadata;
-    EXPECT_EQ(OK, proxy.parseTrackMetadataAndCoverArt(&trackMetadata, NULL));
+    EXPECT_EQ(OK, proxy.parseTrackMetadataAndCoverArt(&trackMetadata, nullptr));
     EXPECT_EQ("Test Artist", trackMetadata.getArtist());
 }
 
@@ -63,7 +63,7 @@ TEST_F(SoundSourceProxyTest, TOAL_TPE2) {
     SoundSourceProxy proxy(
         QDir::currentPath().append("/src/test/id3-test-data/TOAL_TPE2.mp3"));
     Mixxx::TrackMetadata trackMetadata;
-    EXPECT_EQ(OK, proxy.parseTrackMetadataAndCoverArt(&trackMetadata, NULL));
+    EXPECT_EQ(OK, proxy.parseTrackMetadataAndCoverArt(&trackMetadata, nullptr));
     EXPECT_EQ("TITLE2", trackMetadata.getArtist());
     EXPECT_EQ("ARTIST", trackMetadata.getAlbum());
     EXPECT_EQ("TITLE", trackMetadata.getAlbumArtist());

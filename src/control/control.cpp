@@ -7,7 +7,7 @@
 #include "util/timer.h"
 
 // Static member variable definition
-ConfigObject<ConfigValue>* ControlDoublePrivate::s_pUserConfig = NULL;
+ConfigObject<ConfigValue>* ControlDoublePrivate::s_pUserConfig = nullptr;
 QHash<ConfigKey, QWeakPointer<ControlDoublePrivate> > ControlDoublePrivate::s_qCOHash;
 QHash<ConfigKey, ConfigKey> ControlDoublePrivate::s_qCOAliasHash;
 QMutex ControlDoublePrivate::s_qCOHashMutex;
@@ -45,7 +45,7 @@ void ControlDoublePrivate::initialize() {
     double value = 0;
     if (m_bPersistInConfiguration) {
         ConfigObject<ConfigValue>* pConfig = ControlDoublePrivate::s_pUserConfig;
-        if (pConfig != NULL) {
+        if (pConfig != nullptr) {
             // Assume toDouble() returns 0 if conversion fails.
             value = pConfig->getValueString(m_key).toDouble();
         }
@@ -71,7 +71,7 @@ ControlDoublePrivate::~ControlDoublePrivate() {
 
     if (m_bPersistInConfiguration) {
         ConfigObject<ConfigValue>* pConfig = ControlDoublePrivate::s_pUserConfig;
-        if (pConfig != NULL) {
+        if (pConfig != nullptr) {
             pConfig->set(m_key, QString::number(get()));
         }
     }
@@ -104,7 +104,7 @@ QSharedPointer<ControlDoublePrivate> ControlDoublePrivate::getControl(
         bool bIgnoreNops, bool bTrack, bool bPersist) {
     if (key.isNull()) {
         if (warn) {
-            qWarning() << "ControlDoublePrivate::getControl returning NULL"
+            qWarning() << "ControlDoublePrivate::getControl returning nullptr"
                        << "for empty ConfigKey.";
         }
         return QSharedPointer<ControlDoublePrivate>();
@@ -130,7 +130,7 @@ QSharedPointer<ControlDoublePrivate> ControlDoublePrivate::getControl(
             s_qCOHash.insert(key, pControl);
             locker.unlock();
 ///        } else if (warn) {
-//            qWarning() << "ControlDoublePrivate::getControl returning NULL for ("
+//            qWarning() << "ControlDoublePrivate::getControl returning nullptr for ("
 //                       << key.group << "," << key.item << ")";
 //        }
     }else{
@@ -162,10 +162,10 @@ QHash<ConfigKey, ConfigKey> ControlDoublePrivate::getControlAliases() {
 }
 void ControlDoublePrivate::reset() {
     double defaultValue = m_defaultValue.getValue();
-    // NOTE: pSender = NULL is important. The originator of this action does
+    // NOTE: pSender = nullptr is important. The originator of this action does
     // not know the resulting value so it makes sense that we should emit a
     // general valueChanged() signal even though we know the originator.
-    set(defaultValue, NULL);
+    set(defaultValue, nullptr);
 }
 void ControlDoublePrivate::set(double value, QObject* pSender) {
     // If the behavior says to ignore the set, ignore it.
@@ -215,7 +215,7 @@ void ControlDoublePrivate::setMidiParameter(MidiOpCode opcode, double dParam) {
     QSharedPointer<ControlNumericBehavior> pBehavior = m_pBehavior;
     if (!pBehavior.isNull()) {
         pBehavior->setValueFromMidiParameter(opcode, dParam, this);
-    } else {set(dParam, NULL);}
+    } else {set(dParam, nullptr);}
 }
 double ControlDoublePrivate::getMidiParameter() const {
     QSharedPointer<ControlNumericBehavior> pBehavior = m_pBehavior;

@@ -27,7 +27,7 @@ class ControllerOutputMappingTableModel : public ControllerMappingTableModel {
     // Removes the provided output mappings.
     void removeMappings(QModelIndexList mappings);
 
-    // Returns a delegate for the provided column or NULL if the column does not
+    // Returns a delegate for the provided column or nullptr if the column does not
     // need a delegate.
     QAbstractItemDelegate* delegateForColumn(int column, QWidget* pParent);
 

@@ -17,7 +17,7 @@ EffectChain::EffectChain(EffectsManager* pEffectsManager, const QString& id,
           m_name(""),
           m_insertionType(EffectChain::INSERT),
           m_dMix(0),
-          m_pEngineEffectChain(NULL),
+          m_pEngineEffectChain(nullptr),
           m_bAddedToEngine(false) {
 }
 
@@ -65,7 +65,7 @@ void EffectChain::removeFromEngine(EngineEffectRack* pRack, int iIndex) {
     m_pEffectsManager->writeRequest(pRequest);
     m_bAddedToEngine = false;
 
-    m_pEngineEffectChain = NULL;
+    m_pEngineEffectChain = nullptr;
 }
 
 void EffectChain::updateEngineState() {

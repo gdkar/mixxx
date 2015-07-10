@@ -161,7 +161,7 @@ void WTrackTableViewHeader::setModel(QAbstractItemModel* model) {
 
         /* If Mixxx starts the first time or the header states have been cleared
          * due to database schema evolution we gonna hide all columns that may
-         * contain a potential large number of NULL values.  Here we uncheck
+         * contain a potential large number of nullptr values.  Here we uncheck
          * item in the context menu that are hidden by defualt (e.g., key
          * column)
          */

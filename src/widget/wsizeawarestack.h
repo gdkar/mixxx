@@ -11,7 +11,7 @@ class SizeAwareLayout;
 class WSizeAwareStack : public QWidget, public WBaseWidget {
     Q_OBJECT
   public:
-    WSizeAwareStack(QWidget* pParent = NULL);
+    WSizeAwareStack(QWidget* pParent = nullptr);
     virtual ~WSizeAwareStack();
 
     int addWidget(QWidget* pWidget);

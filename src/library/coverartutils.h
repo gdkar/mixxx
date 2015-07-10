@@ -174,7 +174,7 @@ class CoverArtUtils {
     // Selects an appropriate cover file from provided list of image files.
     static CoverArt selectCoverArtForTrack(TrackInfoObject* pTrack,
                                            const QLinkedList<QFileInfo>& covers) {
-        if (pTrack == NULL || covers.isEmpty()) {
+        if (pTrack == nullptr || covers.isEmpty()) {
             CoverArt art;
             art.info.source = CoverInfo::GUESSED;
             return art;
@@ -198,7 +198,7 @@ class CoverArtUtils {
         }
 
         PreferredCoverType bestType = NONE;
-        const QFileInfo* bestInfo = NULL;
+        const QFileInfo* bestInfo = nullptr;
 
         // If there is a single image then we use it unconditionally. Otherwise
         // we use the priority order described in PreferredCoverType. Notably,
@@ -249,7 +249,7 @@ class CoverArtUtils {
             }
         }
 
-        if (bestInfo != NULL) {
+        if (bestInfo != nullptr) {
             art.image = QImage(bestInfo->filePath());
             if (!art.image.isNull()) {
                 art.info.source = CoverInfo::GUESSED;

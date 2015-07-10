@@ -118,7 +118,7 @@ QWidget* SkinLoader::loadDefaultSkin(QWidget* pParent,
 
     // If we don't have a skin path then fail.
     if (skinPath.isEmpty()) {
-        return NULL;
+        return nullptr;
     }
 
     LegacySkinParser legacy(m_pConfig, pKeyboard, pPlayerManager,

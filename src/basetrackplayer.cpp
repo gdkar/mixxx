@@ -25,14 +25,14 @@ BaseTrackPlayer::BaseTrackPlayer(ConfigObject<ConfigValue>* pConfig,
         : BasePlayer(group, pParent),
           m_pConfig(pConfig),
           m_pLoadedTrack(),
-          m_pLowFilter(NULL),
-          m_pMidFilter(NULL),
-          m_pHighFilter(NULL),
-          m_pLowFilterKill(NULL),
-          m_pMidFilterKill(NULL),
-          m_pHighFilterKill(NULL),
-          m_pSpeed(NULL),
-          m_pPitchAdjust(NULL),
+          m_pLowFilter(nullptr),
+          m_pMidFilter(nullptr),
+          m_pHighFilter(nullptr),
+          m_pLowFilterKill(nullptr),
+          m_pMidFilterKill(nullptr),
+          m_pHighFilterKill(nullptr),
+          m_pSpeed(nullptr),
+          m_pPitchAdjust(nullptr),
           m_replaygainPending(false) {
     ChannelHandleAndGroup channelGroup =
             pMixingEngine->registerChannelGroup(group);
@@ -121,7 +121,7 @@ BaseTrackPlayer::~BaseTrackPlayer() {
 
 void BaseTrackPlayer::slotLoadTrack(TrackPointer track, bool bPlay) {
     // Before loading the track, ensure we have access. This uses lazy
-    // evaluation to make sure track isn't NULL before we dereference it.
+    // evaluation to make sure track isn't nullptr before we dereference it.
     if (!track.isNull() && !Sandbox::askForAccess(track->getCanonicalLocation())) {
         // We don't have access.
         return;
@@ -134,7 +134,7 @@ void BaseTrackPlayer::slotLoadTrack(TrackPointer track, bool bPlay) {
         int loopEnd = m_pLoopOutPoint->get();
         if (loopStart != -1 && loopEnd != -1 &&
             even(loopStart) && even(loopEnd) && loopStart <= loopEnd) {
-            Cue* pLoopCue = NULL;
+            Cue* pLoopCue = nullptr;
             QList<Cue*> cuePoints = m_pLoadedTrack->getCuePoints();
             QListIterator<Cue*> it(cuePoints);
             while (it.hasNext()) {
@@ -174,14 +174,14 @@ void BaseTrackPlayer::slotLoadTrack(TrackPointer track, bool bPlay) {
 void BaseTrackPlayer::slotLoadFailed(TrackPointer track, QString reason) {
     // This slot can be delayed until a new  track is already loaded
     // We must not unload the track here
-    if (track != NULL) {
+    if (track != nullptr) {
         qDebug() << "Failed to load track" << track->getLocation() << reason;
         emit(loadTrackFailed(track));
     } else {
-        qDebug() << "Failed to load track (NULL track object)" << reason;
+        qDebug() << "Failed to load track (nullptr track object)" << reason;
     }
     // Alert user.
-    QMessageBox::warning(NULL, tr("Couldn't load track."), reason);
+    QMessageBox::warning(nullptr, tr("Couldn't load track."), reason);
 }
 
 void BaseTrackPlayer::slotUnloadTrack(TrackPointer) {
@@ -251,22 +251,22 @@ void BaseTrackPlayer::slotFinishLoading(TrackPointer pTrackInfoObject)
         }
     }
     if(m_pConfig->getValueString(ConfigKey("[Mixer Profile]", "EqAutoReset"), 0).toInt()) {
-        if (m_pLowFilter != NULL) {
+        if (m_pLowFilter != nullptr) {
             m_pLowFilter->set(1.0);
         }
-        if (m_pMidFilter != NULL) {
+        if (m_pMidFilter != nullptr) {
             m_pMidFilter->set(1.0);
         }
-        if (m_pHighFilter != NULL) {
+        if (m_pHighFilter != nullptr) {
             m_pHighFilter->set(1.0);
         }
-        if (m_pLowFilterKill != NULL) {
+        if (m_pLowFilterKill != nullptr) {
             m_pLowFilterKill->set(0.0);
         }
-        if (m_pMidFilterKill != NULL) {
+        if (m_pMidFilterKill != nullptr) {
             m_pMidFilterKill->set(0.0);
         }
-        if (m_pHighFilterKill != NULL) {
+        if (m_pHighFilterKill != nullptr) {
             m_pHighFilterKill->set(0.0);
         }
         m_pPreGain->set(1.0);
@@ -277,12 +277,12 @@ void BaseTrackPlayer::slotFinishLoading(TrackPointer pTrackInfoObject)
     switch (reset) {
       case RESET_PITCH_AND_SPEED:
         // Note: speed may affect pitch
-        if (m_pSpeed != NULL) {
+        if (m_pSpeed != nullptr) {
             m_pSpeed->set(0.0);
         }
         // Fallthrough intended
       case RESET_PITCH:
-        if (m_pPitchAdjust != NULL) {
+        if (m_pPitchAdjust != nullptr) {
             m_pPitchAdjust->set(0.0);
         }
     }

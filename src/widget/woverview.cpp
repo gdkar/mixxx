@@ -35,7 +35,7 @@
 
 WOverview::WOverview(const char *pGroup, ConfigObject<ConfigValue>* pConfig, QWidget* parent) :
         WWidget(parent),
-        m_pWaveformSourceImage(NULL),
+        m_pWaveformSourceImage(nullptr),
         m_actualCompletion(0),
         m_pixmapDone(false),
         m_waveformPeak(-1.0),
@@ -200,7 +200,7 @@ void WOverview::slotLoadNewTrack(TrackPointer pTrack) {
 
     if (m_pWaveformSourceImage) {
         delete m_pWaveformSourceImage;
-        m_pWaveformSourceImage = NULL;
+        m_pWaveformSourceImage = nullptr;
     }
 
     m_dAnalyserProgress = -1;
@@ -233,7 +233,7 @@ void WOverview::slotUnloadTrack(TrackPointer pTrack) {
     // it may happen that this call is a delayed call
     // of a track that was already replaced
     //qDebug() << "WOverview::slotUnloadTrack(TrackPointer pTrack)";
-    if (pTrack != NULL && pTrack == m_pCurrentTrack) {
+    if (pTrack != nullptr && pTrack == m_pCurrentTrack) {
         disconnect(m_pCurrentTrack.data(), SIGNAL(waveformSummaryUpdated()),
                    this, SLOT(slotWaveformSummaryUpdated()));
         disconnect(m_pCurrentTrack.data(), SIGNAL(analyserProgress(int)),

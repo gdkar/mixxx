@@ -7,7 +7,7 @@
 
 ControlDelegate::ControlDelegate(QObject* pParent)
         : QStyledItemDelegate(pParent),
-          m_pPicker(new ControlPickerMenu(NULL)),
+          m_pPicker(new ControlPickerMenu(nullptr)),
           m_iMidiOptionsColumn(-1),
           m_bIsIndexScript(false) {
 }
@@ -47,7 +47,7 @@ QString ControlDelegate::displayText(const QVariant& value,const QLocale& locale
 void ControlDelegate::setEditorData(QWidget* editor,const QModelIndex& index) const {
     ConfigKey key = qVariantValue<ConfigKey>(index.data(Qt::EditRole));
     QLineEdit* pLineEdit = dynamic_cast<QLineEdit*>(editor);
-    if (pLineEdit == NULL) {
+    if (pLineEdit == nullptr) {
         return;
     }
 
@@ -62,7 +62,7 @@ void ControlDelegate::setModelData(QWidget* editor,
                                    QAbstractItemModel* model,
                                    const QModelIndex& index) const {
     QLineEdit* pLineEdit = qobject_cast<QLineEdit*>(editor);
-    if (pLineEdit == NULL) {
+    if (pLineEdit == nullptr) {
         return;
     }
 

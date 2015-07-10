@@ -30,7 +30,7 @@
 class WDisplay : public WWidget {
    Q_OBJECT
   public:
-    WDisplay(QWidget *parent=NULL);
+    WDisplay(QWidget *parent=nullptr);
     virtual ~WDisplay();
 
     void setup(QDomNode node, const SkinContext& context);

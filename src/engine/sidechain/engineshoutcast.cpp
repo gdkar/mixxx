@@ -41,17 +41,17 @@
 #define TIMEOUT 10
 
 EngineShoutcast::EngineShoutcast(ConfigObject<ConfigValue>* _config)
-        : m_pTextCodec(NULL),
+        : m_pTextCodec(nullptr),
           m_pMetaData(),
-          m_pShout(NULL),
-          m_pShoutMetaData(NULL),
+          m_pShout(nullptr),
+          m_pShoutMetaData(nullptr),
           m_iMetaDataLife(0),
           m_iShoutStatus(0),
           m_iShoutFailures(0),
           m_pConfig(_config),
-          m_encoder(NULL),
-          m_pShoutcastNeedUpdateFromPrefs(NULL),
-          m_pUpdateShoutcastFromPrefs(NULL),
+          m_encoder(nullptr),
+          m_pShoutcastNeedUpdateFromPrefs(nullptr),
+          m_pUpdateShoutcastFromPrefs(nullptr),
           m_pMasterSamplerate(new ControlObjectSlave("[Master]", "samplerate")),
           m_pShoutcastStatus(new ControlObject(ConfigKey(SHOUTCAST_PREF_KEY, "status"))),
           m_bQuit(false),
@@ -119,7 +119,7 @@ bool EngineShoutcast::serverDisconnect() {
     if (m_encoder) {
         m_encoder->flush();
         delete m_encoder;
-        m_encoder = NULL;
+        m_encoder = nullptr;
     }
 
     m_pShoutcastStatus->set(SHOUTCAST_DISCONNECTED);
@@ -349,7 +349,7 @@ void EngineShoutcast::updateFromPreferences() {
     if (m_encoder) {
         // delete m_encoder if it has been initalized (with maybe) different bitrate
         delete m_encoder;
-        m_encoder = NULL;
+        m_encoder = nullptr;
     }
 
     if (m_format_is_mp3) {
@@ -366,7 +366,7 @@ void EngineShoutcast::updateFromPreferences() {
         //init m_encoder itself will display a message box
         qDebug() << "**** Encoder init failed";
         delete m_encoder;
-        m_encoder = NULL;
+        m_encoder = nullptr;
     }
 }
 
@@ -390,10 +390,10 @@ bool EngineShoutcast::serverConnect() {
 
     /*Check if m_encoder is initalized
      * Encoder is initalized in updateFromPreferences which is called always before serverConnect()
-     * If m_encoder is NULL, then we propably want to use MP3 streaming, however, lame could not be found
+     * If m_encoder is nullptr, then we propably want to use MP3 streaming, however, lame could not be found
      * It does not make sense to connect
      */
-    if (m_encoder == NULL) {
+    if (m_encoder == nullptr) {
         m_pConfig->set(ConfigKey(SHOUTCAST_PREF_KEY,"enabled"),ConfigValue("0"));
         m_pShoutcastStatus->set(SHOUTCAST_DISCONNECTED);
         return false;
@@ -606,7 +606,7 @@ void EngineShoutcast::updateMetaData() {
     // If we use either MP3 streaming or OGG streaming with dynamic update of
     // metadata being enabled, we want dynamic metadata changes
     if (!m_custom_metadata && (m_format_is_mp3 || m_ogg_dynamic_update)) {
-        if (m_pMetaData != NULL) {
+        if (m_pMetaData != nullptr) {
 
             QString artist = m_pMetaData->getArtist();
             QString title = m_pMetaData->getTitle();

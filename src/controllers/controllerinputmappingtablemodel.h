@@ -36,7 +36,7 @@ class ControllerInputMappingTableModel : public ControllerMappingTableModel {
     // a polymorphic mapping structure.
     void addMappings(const MidiInputMappings& mappings);
 
-    // Returns a delegate for the provided column or NULL if the column does not
+    // Returns a delegate for the provided column or nullptr if the column does not
     // need a delegate.
     QAbstractItemDelegate* delegateForColumn(int column, QWidget* pParent);
 

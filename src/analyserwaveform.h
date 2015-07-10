@@ -153,7 +153,7 @@ class AnalyserWaveform : public Analyser {
 
     void createFilters(int sampleRate);
     void destroyFilters();
-    void storeIfGreater(float* pDest, float source);
+    void storeIfGreater(float& dest, float source);
 
   private:
     bool m_skipProcessing;
@@ -171,7 +171,7 @@ class AnalyserWaveform : public Analyser {
     EngineFilterIIRBase* m_filter[FilterCount];
     std::vector<float> m_buffers[FilterCount];
 
-    QTime* m_timer;
+    QTimer m_timer;
     QSqlDatabase m_database;
     AnalysisDao* m_analysisDao;
 

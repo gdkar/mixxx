@@ -20,7 +20,7 @@
 
 TagFetcher::TagFetcher(QObject* parent)
           : QObject(parent),
-            m_pFingerprintWatcher(NULL),
+            m_pFingerprintWatcher(nullptr),
             m_AcoustidClient(this),
             m_MusicbrainzClient(this) {
     connect(&m_AcoustidClient, SIGNAL(finished(int,QString)),
@@ -34,7 +34,7 @@ TagFetcher::TagFetcher(QObject* parent)
 }
 
 QString TagFetcher::getFingerprint(const TrackPointer tio) {
-    return ChromaPrinter(NULL).getFingerprint(tio);
+    return ChromaPrinter(nullptr).getFingerprint(tio);
 }
 
 void TagFetcher::startFetch(const TrackPointer track) {
@@ -61,7 +61,7 @@ void TagFetcher::cancel() {
         m_pFingerprintWatcher->cancel();
 
         delete m_pFingerprintWatcher;
-        m_pFingerprintWatcher = NULL;
+        m_pFingerprintWatcher = nullptr;
     }
 
     m_AcoustidClient.cancelAll();

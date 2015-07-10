@@ -14,7 +14,7 @@
 
 WaveformRenderBeat::WaveformRenderBeat(WaveformWidgetRenderer* waveformWidgetRenderer)
         : WaveformRendererAbstract(waveformWidgetRenderer),
-          m_pBeatActive(NULL) {
+          m_pBeatActive(nullptr) {
     m_beats.resize(128);
 }
 

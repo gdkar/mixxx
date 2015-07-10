@@ -18,8 +18,8 @@ PortMidiController::PortMidiController(const PmDeviceInfo* inputDeviceInfo,
           m_pOutputDeviceInfo(outputDeviceInfo),
           m_iInputDeviceIndex(inputDeviceIndex),
           m_iOutputDeviceIndex(outputDeviceIndex),
-          m_pInputStream(NULL),
-          m_pOutputStream(NULL),
+          m_pInputStream(nullptr),
+          m_pOutputStream(nullptr),
           m_cReceiveMsg_index(0),
           m_bInSysex(false) {
     for (unsigned int k = 0; k < MIXXX_PORTMIDI_BUFFER_LEN; ++k) {
@@ -73,10 +73,10 @@ int PortMidiController::open() {
 
             err = Pm_OpenInput(&m_pInputStream,
                                m_iInputDeviceIndex,
-                               NULL, //No drive hacks
+                               nullptr, //No drive hacks
                                MIXXX_PORTMIDI_BUFFER_LEN,
-                               NULL,
-                               NULL);
+                               nullptr,
+                               nullptr);
 
             if (err != pmNoError) {
                 qDebug() << "PortMidi error:" << Pm_GetErrorText(err);
@@ -94,10 +94,10 @@ int PortMidiController::open() {
 
             err = Pm_OpenOutput(&m_pOutputStream,
                                 m_iOutputDeviceIndex,
-                                NULL, // No driver hacks
+                                nullptr, // No driver hacks
                                 0,      // No buffering
-                                NULL, // Use PortTime for timing
-                                NULL, // No time info
+                                nullptr, // Use PortTime for timing
+                                nullptr, // No time info
                                 0);   // No latency compensation.
 
             if (err != pmNoError) {
@@ -125,7 +125,7 @@ int PortMidiController::close() {
 
     if (m_pInputStream) {
         PmError err = Pm_Close(m_pInputStream);
-        m_pInputStream = NULL;
+        m_pInputStream = nullptr;
         if (err != pmNoError) {
             qDebug() << "PortMidi error:" << Pm_GetErrorText(err);
             result = -1;
@@ -134,7 +134,7 @@ int PortMidiController::close() {
 
     if (m_pOutputStream) {
         PmError err = Pm_Close(m_pOutputStream);
-        m_pOutputStream = NULL;
+        m_pOutputStream = nullptr;
         if (err != pmNoError) {
             qDebug() << "PortMidi error:" << Pm_GetErrorText(err);
             result = -1;

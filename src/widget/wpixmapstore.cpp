@@ -339,7 +339,7 @@ PaintablePointer WPixmapStore::getPaintable(PixmapSource source,
 
 // static
 QPixmap* WPixmapStore::getPixmapNoCache(const QString& fileName) {
-    QPixmap* pPixmap = NULL;
+    QPixmap* pPixmap = nullptr;
     if (m_loader) {
         QImage* img = m_loader->getImage(fileName);
 #if QT_VERSION >= 0x040700

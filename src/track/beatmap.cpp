@@ -63,7 +63,7 @@ BeatMap::BeatMap(TrackPointer pTrack, int iSampleRate,
         : QObject(),
           m_mutex(QMutex::Recursive) {
     initialize(pTrack, iSampleRate);
-    if (pByteArray != NULL) {
+    if (pByteArray != nullptr) {
         readByteArray(pByteArray);
     }
 }
@@ -367,7 +367,7 @@ BeatIterator* BeatMap::findBeats(double startSample, double stopSample) const {
     //startSample and stopSample are sample offsets, converting them to
     //frames
     if (!isValid() || startSample > stopSample) {
-        return NULL;
+        return nullptr;
     }
 
     Beat startBeat, stopBeat;
@@ -383,7 +383,7 @@ BeatIterator* BeatMap::findBeats(double startSample, double stopSample) const {
                         stopBeat, BeatLessThan);
 
     if (curBeat >= lastBeat) {
-        return NULL;
+        return nullptr;
     }
     return new BeatMapIterator(curBeat, lastBeat);
 }

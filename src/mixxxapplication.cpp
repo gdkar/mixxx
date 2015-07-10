@@ -14,9 +14,9 @@ extern void qt_translateRawTouchEvent(QWidget *window,
 MixxxApplication::MixxxApplication(int& argc, char** argv)
         : QApplication(argc, argv),
           m_fakeMouseSourcePointId(0),
-          m_fakeMouseWidget(NULL),
+          m_fakeMouseWidget(nullptr),
           m_activeTouchButton(Qt::NoButton),
-          m_pTouchShift(NULL) {
+          m_pTouchShift(nullptr) {
 }
 
 MixxxApplication::~MixxxApplication() {
@@ -34,7 +34,7 @@ bool MixxxApplication::notify(QObject* target, QEvent* event) {
         QList<QTouchEvent::TouchPoint> touchPoints = touchEvent->touchPoints();
         QEvent::Type eventType = QEvent::None;
         Qt::MouseButtons buttons = Qt::NoButton;
-        QWidget* fakeMouseWidget = NULL;
+        QWidget* fakeMouseWidget = nullptr;
         bool baseReturn;
 
         //qDebug() << "&" << touchEvent->type() << target;
@@ -80,7 +80,7 @@ bool MixxxApplication::notify(QObject* target, QEvent* event) {
                 eventType = QEvent::MouseButtonRelease;
                 m_fakeMouseSourcePointId = touchPoints.first().id();
                 fakeMouseWidget = m_fakeMouseWidget;
-                m_fakeMouseWidget = NULL;
+                m_fakeMouseWidget = nullptr;
                 break;
             }
             return QApplication::notify(target, event);
@@ -121,13 +121,13 @@ bool MixxxApplication::notify(QObject* target, QEvent* event) {
             // QApplication still tracks the Touch point and prevent touch to other widgets
             // So we need to fake the Touch release event as well to clean up
             // QApplicationPrivate::widgetForTouchPointId and QApplicationPrivate::appCurrentTouchPoints;
-            m_fakeMouseWidget = NULL; // Disable MouseButtonRelease fake
+            m_fakeMouseWidget = nullptr; // Disable MouseButtonRelease fake
             QList<QTouchEvent::TouchPoint> touchPoints;
             QTouchEvent::TouchPoint tp;
             tp.setId(m_fakeMouseSourcePointId);
             tp.setState(Qt::TouchPointReleased);
             touchPoints.append(tp);
-            qt_translateRawTouchEvent(NULL, QTouchEvent::TouchScreen, touchPoints);
+            qt_translateRawTouchEvent(nullptr, QTouchEvent::TouchScreen, touchPoints);
         }
         return ret;
     }

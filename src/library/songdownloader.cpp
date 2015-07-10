@@ -11,9 +11,9 @@
 
 SongDownloader::SongDownloader(QObject* parent)
     : QObject(parent),
-      m_pDownloadedFile(NULL),
-      m_pReply(NULL),
-      m_pRequest(NULL) {
+      m_pDownloadedFile(nullptr),
+      m_pReply(nullptr),
+      m_pRequest(nullptr) {
     qDebug() << "SongDownloader constructed";
 
     m_pNetwork = new QNetworkAccessManager();
@@ -25,9 +25,9 @@ SongDownloader::~SongDownloader() {
     delete m_pNetwork;
 
     delete m_pDownloadedFile;
-    m_pDownloadedFile = NULL;
+    m_pDownloadedFile = nullptr;
     delete m_pRequest;
-    m_pRequest = NULL;
+    m_pRequest = nullptr;
 }
 
 bool SongDownloader::downloadSongFromURL(QUrl& url) {
@@ -115,9 +115,9 @@ void SongDownloader::slotDownloadFinished() {
     filenameWithoutTmp.chop(QString(TEMP_EXTENSION).length());
     m_pDownloadedFile->rename(filenameWithoutTmp);
     delete m_pDownloadedFile;
-    m_pDownloadedFile = NULL;
+    m_pDownloadedFile = nullptr;
     delete m_pRequest;
-    m_pRequest = NULL;
+    m_pRequest = nullptr;
 
     if (m_downloadQueue.count() > 0) {
         downloadFromQueue();

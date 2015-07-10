@@ -179,7 +179,7 @@ StatsPipe* StatsManager::getStatsPipeForThread() {
 
 bool StatsManager::maybeWriteReport(const StatReport& report) {
     StatsPipe* pStatsPipe = getStatsPipeForThread();
-    if (pStatsPipe == NULL) {
+    if (pStatsPipe == nullptr) {
         return false;
     }
     bool success = pStatsPipe->write(&report, 1) == 1;

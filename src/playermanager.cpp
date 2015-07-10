@@ -30,7 +30,7 @@ PlayerManager::PlayerManager(ConfigObject<ConfigValue>* pConfig,
         m_pEngine(pEngine),
         // NOTE(XXX) LegacySkinParser relies on these controls being COs and
         // not COTMs listening to a CO.
-        m_pAnalyserQueue(NULL),
+        m_pAnalyserQueue(nullptr),
         m_pCONumDecks(new ControlObject(ConfigKey("[Master]", "num_decks"), true, true)),
         m_pCONumSamplers(new ControlObject(ConfigKey("[Master]", "num_samplers"), true, true)),
         m_pCONumPreviewDecks(new ControlObject(ConfigKey("[Master]", "num_preview_decks"), true, true)) {
@@ -122,12 +122,12 @@ void PlayerManager::bindToLibrary(Library* pLibrary) {
 unsigned int PlayerManager::numDecks() {
     // We do this to cache the control once it is created so callers don't incur
     // a hashtable lookup every time they call this.
-    static ControlObjectSlave* pNumCO = NULL;
-    if (pNumCO == NULL) {
+    static ControlObjectSlave* pNumCO = nullptr;
+    if (pNumCO == nullptr) {
         pNumCO = new ControlObjectSlave(ConfigKey("[Master]", "num_decks"));
         if (!pNumCO->valid()) {
             delete pNumCO;
-            pNumCO = NULL;
+            pNumCO = nullptr;
         }
     }
     return pNumCO ? pNumCO->get() : 0;
@@ -144,7 +144,7 @@ bool PlayerManager::isDeckGroup(const QString& group, int* number) {
     if (!ok || deckNum <= 0) {
         return false;
     }
-    if (number != NULL) {
+    if (number != nullptr) {
         *number = deckNum;
     }
     return true;
@@ -161,7 +161,7 @@ bool PlayerManager::isPreviewDeckGroup(const QString& group, int* number) {
     if (!ok || deckNum <= 0) {
         return false;
     }
-    if (number != NULL) {
+    if (number != nullptr) {
         *number = deckNum;
     }
     return true;
@@ -171,12 +171,12 @@ bool PlayerManager::isPreviewDeckGroup(const QString& group, int* number) {
 unsigned int PlayerManager::numSamplers() {
     // We do this to cache the control once it is created so callers don't incur
     // a hashtable lookup every time they call this.
-    static ControlObjectSlave* pNumCO = NULL;
-    if (pNumCO == NULL) {
+    static ControlObjectSlave* pNumCO = nullptr;
+    if (pNumCO == nullptr) {
         pNumCO = new ControlObjectSlave(ConfigKey("[Master]", "num_samplers"));
         if (!pNumCO->valid()) {
             delete pNumCO;
-            pNumCO = NULL;
+            pNumCO = nullptr;
         }
     }
     return pNumCO ? pNumCO->get() : 0;
@@ -186,13 +186,13 @@ unsigned int PlayerManager::numSamplers() {
 unsigned int PlayerManager::numPreviewDecks() {
     // We do this to cache the control once it is created so callers don't incur
     // a hashtable lookup every time they call this.
-    static ControlObjectSlave* pNumCO = NULL;
-    if (pNumCO == NULL) {
+    static ControlObjectSlave* pNumCO = nullptr;
+    if (pNumCO == nullptr) {
         pNumCO = new ControlObjectSlave(
                 ConfigKey("[Master]", "num_preview_decks"));
         if (!pNumCO->valid()) {
             delete pNumCO;
-            pNumCO = NULL;
+            pNumCO = nullptr;
         }
     }
     return pNumCO ? pNumCO->get() : 0;
@@ -348,14 +348,14 @@ void PlayerManager::addPreviewDeckInner() {
 BaseTrackPlayer* PlayerManager::getPlayer(QString group) const {
     QMutexLocker locker(&m_mutex);
     if (m_players.contains(group)) {return m_players[group];}
-    return NULL;
+    return nullptr;
 }
 
 BaseTrackPlayer* PlayerManager::getDeck(unsigned int deck) const {
     QMutexLocker locker(&m_mutex);
     if (deck < 1 || deck > numDecks()) {
         qWarning() << "Warning PlayerManager::getDeck() called with invalid index: " << deck;
-        return NULL;
+        return nullptr;
     }
     return m_decks[deck - 1];
 }
@@ -364,7 +364,7 @@ BaseTrackPlayer* PlayerManager::getPreviewDeck(unsigned int libPreviewPlayer) co
     if (libPreviewPlayer < 1 || libPreviewPlayer > numPreviewDecks()) {
         qWarning() << "Warning PlayerManager::getPreviewDeck() called with invalid index: "
                    << libPreviewPlayer;
-        return NULL;
+        return nullptr;
     }
     return m_preview_decks[libPreviewPlayer - 1];
 }
@@ -373,7 +373,7 @@ BaseTrackPlayer* PlayerManager::getSampler(unsigned int sampler) const {
     if (sampler < 1 || sampler > numSamplers()) {
         qWarning() << "Warning PlayerManager::getSampler() called with invalid index: "
                    << sampler;
-        return NULL;
+        return nullptr;
     }
     return m_samplers[sampler - 1];
 }
@@ -387,7 +387,7 @@ void PlayerManager::slotLoadTrackToPlayer(TrackPointer pTrack, QString group, bo
     // Do not lock mutex in this method unless it is changed to access
     // PlayerManager state.
     BaseTrackPlayer* pPlayer = getPlayer(group);
-    if (pPlayer == NULL) {
+    if (pPlayer == nullptr) {
         qWarning() << "Invalid group argument " << group << " to slotLoadTrackToPlayer.";
         return;
     }

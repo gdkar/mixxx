@@ -57,9 +57,9 @@ void StarEditor::renderHelper(QPainter* painter,
     painter->save();
     painter->setClipRect(option.rect);
 
-    if (pTableView != NULL) {
+    if (pTableView != nullptr) {
         QStyle* style = pTableView->style();
-        if (style != NULL) {
+        if (style != nullptr) {
             style->drawControl(QStyle::CE_ItemViewItem, &option, painter,
                                pTableView);
         }

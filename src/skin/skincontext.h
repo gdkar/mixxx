@@ -56,7 +56,7 @@ class SkinContext {
     QString selectString(const QDomNode& node, const QString& nodeName) const;
     float selectFloat(const QDomNode& node, const QString& nodeName) const;
     double selectDouble(const QDomNode& node, const QString& nodeName) const;
-    int selectInt(const QDomNode& node, const QString& nodeName, bool* pOk=NULL) const;
+    int selectInt(const QDomNode& node, const QString& nodeName, bool* pOk=nullptr) const;
     bool selectBool(const QDomNode& node, const QString& nodeName, bool defaultValue) const;
     bool hasNodeSelectString(const QDomNode& node, const QString& nodeName, QString *value) const;
     bool hasNodeSelectBool(const QDomNode& node, const QString& nodeName, bool *value) const;

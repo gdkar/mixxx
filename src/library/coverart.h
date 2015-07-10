@@ -32,7 +32,7 @@ struct CoverInfo {
                   type(NONE),
                   coverLocation(QString()),
                   trackLocation(QString()),
-                  // This default value is fine: qChecksum(NULL, 0) is 0.
+                  // This default value is fine: qChecksum(nullptr, 0) is 0.
                   hash(0) {}
 
     bool operator==(const CoverInfo& other) const {

@@ -33,7 +33,7 @@ class EngineSyncTest : public MockedEngineBackendTest {
             ASSERT_EQ(1,
                       ControlObject::getControl(ConfigKey(m_sInternalClockGroup,
                                                           "sync_master"))->get());
-            ASSERT_EQ(NULL, m_pEngineSync->getMaster());
+            ASSERT_EQ(nullptr, m_pEngineSync->getMaster());
             ASSERT_EQ(m_sInternalClockGroup, getMasterGroup());
         } else {
             if (group == m_sGroup1) {
@@ -67,14 +67,14 @@ class EngineSyncTest : public MockedEngineBackendTest {
     }
 
     void assertNoMaster() {
-        ASSERT_EQ(NULL, m_pEngineSync->getMaster());
-        ASSERT_EQ(NULL, m_pEngineSync->getMasterSyncable());
+        ASSERT_EQ(nullptr, m_pEngineSync->getMaster());
+        ASSERT_EQ(nullptr, m_pEngineSync->getMasterSyncable());
     }
 };
 
 TEST_F(EngineSyncTest, ControlObjectsExist) {
     // This isn't exhaustive, but certain COs have a habit of not being set up properly.
-    ASSERT_TRUE(ControlObject::getControl(ConfigKey(m_sGroup1, "file_bpm")) != NULL);
+    ASSERT_TRUE(ControlObject::getControl(ConfigKey(m_sGroup1, "file_bpm")) != nullptr);
 }
 
 TEST_F(EngineSyncTest, SetMasterSuccess) {
@@ -861,8 +861,8 @@ TEST_F(EngineSyncTest, SyncToNonSyncDeck) {
     EXPECT_EQ(0, ControlObject::getControl(ConfigKey(m_sInternalClockGroup, "sync_master"))->get());
     EXPECT_FLOAT_EQ(100.0,
                     ControlObject::getControl(ConfigKey(m_sInternalClockGroup, "bpm"))->get());
-    EXPECT_EQ(NULL, m_pEngineSync->getMaster());
-    EXPECT_EQ(NULL, m_pEngineSync->getMasterSyncable());
+    EXPECT_EQ(nullptr, m_pEngineSync->getMaster());
+    EXPECT_EQ(nullptr, m_pEngineSync->getMasterSyncable());
     EXPECT_EQ(SYNC_NONE, ControlObject::getControl(ConfigKey(m_sGroup1, "sync_mode"))->get());
     EXPECT_EQ(0, ControlObject::getControl(ConfigKey(m_sGroup1, "sync_enabled"))->get());
     EXPECT_EQ(0, ControlObject::getControl(ConfigKey(m_sGroup1, "sync_master"))->get());
@@ -884,8 +884,8 @@ TEST_F(EngineSyncTest, SyncToNonSyncDeck) {
     EXPECT_EQ(0, ControlObject::getControl(ConfigKey(m_sInternalClockGroup, "sync_master"))->get());
     EXPECT_FLOAT_EQ(100.0,
                     ControlObject::getControl(ConfigKey(m_sInternalClockGroup, "bpm"))->get());
-    EXPECT_EQ(NULL, m_pEngineSync->getMaster());
-    EXPECT_EQ(NULL, m_pEngineSync->getMasterSyncable());
+    EXPECT_EQ(nullptr, m_pEngineSync->getMaster());
+    EXPECT_EQ(nullptr, m_pEngineSync->getMasterSyncable());
     EXPECT_EQ(SYNC_NONE, ControlObject::getControl(ConfigKey(m_sGroup2, "sync_mode"))->get());
     EXPECT_EQ(0, ControlObject::getControl(ConfigKey(m_sGroup2, "sync_enabled"))->get());
     EXPECT_EQ(0, ControlObject::getControl(ConfigKey(m_sGroup2, "sync_master"))->get());

@@ -15,7 +15,7 @@
 class WKnobComposed : public WWidget {
     Q_OBJECT
   public:
-    WKnobComposed(QWidget* pParent=NULL);
+    WKnobComposed(QWidget* pParent=nullptr);
     virtual ~WKnobComposed();
 
     void setup(QDomNode node, const SkinContext& context);
