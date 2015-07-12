@@ -27,7 +27,7 @@ using std::vector;
 //!!! Question: how far is this actually sample rate dependent?  I
 // think it does produce plausible results for e.g. 48000 as well as
 // 44100, but surely the fixed window sizes and comb filtering will
-// make it prefer double or half time when run at e.g. 96000?
+// make it prefer float or half time when run at e.g. 96000?
 
 class TempoTrackV2  
 {
@@ -44,31 +44,25 @@ public:
     ~TempoTrackV2();
 
     // Returned beat periods are given in df increment units; tempi in bpm
-    void calculateBeatPeriod(const vector<double> &df,
-                             vector<double> &beatPeriod,
-                             vector<double> &tempi);
+    void calculateBeatPeriod(const vector<float> &df,vector<float> &beatPeriod,vector<float> &tempi);
 
     // Returned beat positions are given in df increment units
-    void calculateBeats(const vector<double> &df,
-                        const vector<double> &beatPeriod,
-                        vector<double> &beats);
+    void calculateBeats(const vector<float> &df,const vector<float> &beatPeriod,vector<float> &beats);
 
 private:
     typedef vector<int> i_vec_t;
     typedef vector<vector<int> > i_mat_t;
-    typedef vector<double> d_vec_t;
-    typedef vector<vector<double> > d_mat_t;
+    typedef vector<float> d_vec_t;
+    typedef vector<vector<float> > d_mat_t;
 
     float m_rate;
     size_t m_increment;
-
     void adapt_thresh(d_vec_t &df);
-    double mean_array(const d_vec_t &dfin, int start, int end);
+    float mean_array(const d_vec_t &dfin, int start, int end);
     void filter_df(d_vec_t &df);
     void get_rcf(const d_vec_t &dfframe, const d_vec_t &wv, d_vec_t &rcf);
-    void viterbi_decode(const d_mat_t &rcfmat, const d_vec_t &wv,
-                        d_vec_t &bp, d_vec_t &tempi);
-    double get_max_val(const d_vec_t &df);
+    void viterbi_decode(const d_mat_t &rcfmat, const d_vec_t &wv, d_vec_t &bp, d_vec_t &tempi);
+    float get_max_val(const d_vec_t &df);
     int get_max_ind(const d_vec_t &df);
     void normalise_vec(d_vec_t &df);
 };

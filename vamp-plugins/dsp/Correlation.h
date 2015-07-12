@@ -21,7 +21,7 @@
 class Correlation  
 {
 public:
-    void doAutoUnBiased( double* src, double* dst, unsigned int length );
+    void doAutoUnBiased( float* src, float* dst, unsigned int length );
     Correlation();
     virtual ~Correlation();
 

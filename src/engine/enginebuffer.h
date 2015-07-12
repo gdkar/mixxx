@@ -118,7 +118,7 @@ class EngineBuffer : public EngineObject {
 
     EngineBuffer(QString _group, ConfigObject<ConfigValue>* _config,
                   EngineMaster* pMixingEngine,
-                  EngineChannel* pChannel);
+                  EngineChannel* pParent);
     virtual ~EngineBuffer();
     void bindWorkers(EngineWorkerScheduler* pWorkerScheduler);
     // Return the current rate (not thread-safe)

@@ -5,8 +5,9 @@
 
 #include "engine/engineobject.h"
 #include "sampleutil.h"
+#define MIXXX
 #include <fidlib.h>
-#include "util/sse_mathfun.h"
+
 // set to 1 to print some analysis data using qDebug()
 // It prints the resulting delay after 50 % of impulse have passed
 // and the gain and phase shift at some sample frequencies
@@ -23,9 +24,8 @@ enum IIRPass {
 
 
 class EngineFilterIIRBase : public EngineObject{
-  Q_OBJECT
   public:
-    EngineFilterIIRBase(QObject *parent=nullptr);
+    EngineFilterIIRBase(QObject*pParent=nullptr);
     virtual void assumeSettled() = 0;
 };
 
@@ -36,8 +36,9 @@ class EngineFilterIIRBase : public EngineObject{
 template<unsigned int SIZE, enum IIRPass PASS>
 class EngineFilterIIR : public EngineFilterIIRBase {
   public:
-    EngineFilterIIR()
-            : m_doRamping(false),
+    EngineFilterIIR(QObject *pParent=nullptr)
+            : EngineFilterIIRBase(pParent),
+              m_doRamping(false),
               m_doStart(false),
               m_startFromDry(false) {
         memset(m_coef, 0, sizeof(m_coef));

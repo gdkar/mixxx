@@ -24,9 +24,9 @@
 PhaseVocoder::PhaseVocoder(unsigned int n) :
     m_n(n)
 {
-    m_fft = new FFTReal(m_n);
-    m_realOut = new double[m_n];
-    m_imagOut = new double[m_n];
+    m_fft = new FFT(m_n);
+    m_realOut = new float[m_n];
+    m_imagOut = new float[m_n];
 }
 
 PhaseVocoder::~PhaseVocoder()
@@ -36,37 +36,34 @@ PhaseVocoder::~PhaseVocoder()
     delete m_fft;
 }
 
-void PhaseVocoder::FFTShift(unsigned int size, double *src)
+void PhaseVocoder::FFTShift(unsigned int size, float *src)
 {
     const int hs = size/2;
     for (int i = 0; i < hs; ++i) {
-        double tmp = src[i];
+        float tmp = src[i];
         src[i] = src[i + hs];
         src[i + hs] = tmp;
     }
 }
-
-void PhaseVocoder::process(double *src, double *mag, double *theta)
+void PhaseVocoder::process(float *src, float *mag, float *theta)
 {
     FFTShift( m_n, src);
-	
-    m_fft->process(0, src, m_realOut, m_imagOut);
-
+    m_fft->process(0, src,nullptr, m_realOut, m_imagOut);
     getMagnitude( m_n/2, mag, m_realOut, m_imagOut);
     getPhase( m_n/2, theta, m_realOut, m_imagOut);
 }
 
-void PhaseVocoder::getMagnitude(unsigned int size, double *mag, double *real, double *imag)
+void PhaseVocoder::getMagnitude(unsigned int size, float *mag, float *real, float *imag)
 {	
     unsigned int j;
 
     for( j = 0; j < size; j++)
     {
-	mag[ j ] = sqrt( real[ j ] * real[ j ] + imag[ j ] * imag[ j ]);
+	mag[ j ] = hypotf( real[ j ], imag[ j ] );
     }
 }
 
-void PhaseVocoder::getPhase(unsigned int size, double *theta, double *real, double *imag)
+void PhaseVocoder::getPhase(unsigned int size, float *theta, float *real, float *imag)
 {
     unsigned int k;
 
@@ -74,6 +71,6 @@ void PhaseVocoder::getPhase(unsigned int size, double *theta, double *real, doub
     //Watch out for quadrant mapping  !!!
     for( k = 0; k < size; k++)
     {
-	theta[ k ] = atan2( -imag[ k ], real[ k ]);
+	theta[ k ] = atan2f( -imag[ k ], real[ k ]);
     }	
 }

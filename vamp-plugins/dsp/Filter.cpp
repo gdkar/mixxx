@@ -14,7 +14,7 @@
 */
 
 #include "Filter.h"
-
+#include <cstring>
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -22,8 +22,8 @@
 Filter::Filter( FilterConfig Config )
 {
     m_ord = 0;
-    m_outBuffer = NULL;
-    m_inBuffer = NULL;
+    m_outBuffer = nullptr;
+    m_inBuffer = nullptr;
 
     initialise( Config );
 }
@@ -38,44 +38,30 @@ void Filter::initialise( FilterConfig Config )
     m_ord = Config.ord;
     m_ACoeffs = Config.ACoeffs;
     m_BCoeffs = Config.BCoeffs;
-
-    m_inBuffer = new double[ m_ord + 1 ];
-    m_outBuffer = new double[ m_ord + 1 ];
+    m_inBuffer = std::make_unique<float[]>( m_ord + 1 );
+    m_outBuffer = std::make_unique<float[]>( m_ord + 1 );
 
     reset();
 }
 
-void Filter::deInitialise()
-{
-    delete[] m_inBuffer;
-    delete[] m_outBuffer;
-}
-
+void Filter::deInitialise(){}
 void Filter::reset()
 {
-    for( unsigned int i = 0; i < m_ord+1; i++ ){ m_inBuffer[ i ] = 0.0; }
-    for(unsigned int  i = 0; i < m_ord+1; i++ ){ m_outBuffer[ i ] = 0.0; }
+    std::memset(&m_inBuffer[0],0,(m_ord+1) *sizeof(m_inBuffer[0]));
+    std::memset(&m_outBuffer[0],0,(m_ord+1) *sizeof(m_outBuffer[0]));
 }
 
-void Filter::process( double *src, double *dst, unsigned int length )
-{
+void Filter::process( float *src, float *dst, unsigned int length ){
     unsigned int SP,i,j;
-
-    double xin,xout;
-
-    for (SP=0;SP<length;SP++)
-    {
+    float xin,xout;
+    for (SP=0;SP<length;SP++){
         xin=src[SP];
         /* move buffer */
         for ( i = 0; i < m_ord; i++) {m_inBuffer[ m_ord - i ]=m_inBuffer[ m_ord - i - 1 ];}
         m_inBuffer[0]=xin;
-
         xout=0.0;
-        for (j=0;j< m_ord + 1; j++)
-	    xout = xout + m_BCoeffs[ j ] * m_inBuffer[ j ];
-        for (j = 0; j < m_ord; j++)
-	    xout= xout - m_ACoeffs[ j + 1 ] * m_outBuffer[ j ];
-
+        for (j=0;j< m_ord + 1; j++) xout = xout + m_BCoeffs[ j ] * m_inBuffer[ j ];
+        for (j = 0; j < m_ord; j++) xout= xout - m_ACoeffs[ j + 1 ] * m_outBuffer[ j ];
         dst[ SP ] = xout;
         for ( i = 0; i < m_ord - 1; i++ ) { m_outBuffer[ m_ord - i - 1 ] = m_outBuffer[ m_ord - i - 2 ];}
         m_outBuffer[0]=xout;

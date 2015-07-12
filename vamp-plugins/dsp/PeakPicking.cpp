@@ -53,8 +53,8 @@ void PeakPicking::initialise( PPickParams Config )
 	
     m_DFSmoothing = new DFProcess( m_DFProcessingParams );
 
-    m_workBuffer = new double[ m_DFLength ];
-    memset( m_workBuffer, 0, sizeof(double)*m_DFLength);
+    m_workBuffer = new float[ m_DFLength ];
+    memset( m_workBuffer, 0, sizeof(float)*m_DFLength);
 }
 
 void PeakPicking::deInitialise()
@@ -64,11 +64,11 @@ void PeakPicking::deInitialise()
     m_workBuffer = NULL;
 }
 
-void PeakPicking::process( double* src, unsigned int len, vector<int> &onsets )
+void PeakPicking::process( float* src, unsigned int len, vector<int> &onsets )
 {
     if (len < 4) return;
 
-    vector <double> m_maxima;	
+    vector <float> m_maxima;	
 
     // Signal conditioning 
     m_DFSmoothing->process( src, m_workBuffer );
@@ -86,18 +86,18 @@ void PeakPicking::process( double* src, unsigned int len, vector<int> &onsets )
     }
 }
 
-int PeakPicking::quadEval( vector<double> &src, vector<int> &idx )
+int PeakPicking::quadEval( vector<float> &src, vector<int> &idx )
 {
     unsigned int maxLength;
 
     vector <int> m_maxIndex;
     vector <int> m_onsetPosition;
 	
-    vector <double> m_maxFit;
-    vector <double> m_poly;
-    vector <double> m_err;
+    vector <float> m_maxFit;
+    vector <float> m_poly;
+    vector <float> m_err;
 
-    double p;
+    float p;
 
     m_poly.push_back(0);
     m_poly.push_back(0);
@@ -105,7 +105,7 @@ int PeakPicking::quadEval( vector<double> &src, vector<int> &idx )
 
     for(  int t = -2; t < 3; t++)
     {
-	m_err.push_back( (double)t );
+	m_err.push_back( (float)t );
     }
     for( unsigned int i = 2; i < src.size() - 2; i++)
     {
@@ -118,7 +118,7 @@ int PeakPicking::quadEval( vector<double> &src, vector<int> &idx )
 
     maxLength = m_maxIndex.size();
 
-    double selMax = 0;
+    float selMax = 0;
 
     for( unsigned int j = 0; j < maxLength ; j++)
     {
@@ -130,9 +130,9 @@ int PeakPicking::quadEval( vector<double> &src, vector<int> &idx )
 
 	p = TPolyFit::PolyFit2( m_err, m_maxFit, m_poly);
 
-	double f = m_poly[0];
-	double g = m_poly[1];
-	double h = m_poly[2];
+	float f = m_poly[0];
+	float g = m_poly[1];
+	float h = m_poly[2];
 
 	int kk = m_poly.size();
 

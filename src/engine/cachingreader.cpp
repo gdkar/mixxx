@@ -17,8 +17,9 @@
 const int CachingReader::maximumChunksInMemory = 80;
 
 CachingReader::CachingReader(QString group,
-                             ConfigObject<ConfigValue>* config)
-        : m_pConfig(config),
+                             ConfigObject<ConfigValue>* config,QObject *pParent)
+        : QObject(pParent),
+          m_pConfig(config),
           m_chunkReadRequestFIFO(1024),
           m_readerStatusFIFO(1024),
           m_readerStatus(INVALID),
@@ -37,7 +38,8 @@ CachingReader::CachingReader(QString group,
     for (int i = 0; i < maximumChunksInMemory; ++i) {
         Chunk* c = new Chunk;
         c->chunk_number = -1;
-        c->frameCount = 0;
+        c->frameCountRead = 0;
+        c->frameCountTotal = 0;
         c->stereoSamples = bufferStart;
         c->next_lru = nullptr;
         c->prev_lru = nullptr;
@@ -146,7 +148,8 @@ void CachingReader::freeChunk(Chunk* pChunk) {
     m_mruChunk = removeFromLRUList(pChunk, m_mruChunk);
     pChunk->state = Chunk::FREE;
     pChunk->chunk_number = -1;
-    pChunk->frameCount = 0;
+    pChunk->frameCountRead = 0;
+    pChunk->frameCountTotal = 0;
     m_freeChunks.push_back(pChunk);
 }
 
@@ -167,7 +170,8 @@ void CachingReader::freeAllChunks() {
         if (pChunk->state != Chunk::FREE) {
             pChunk->state = Chunk::FREE;
             pChunk->chunk_number = -1;
-            pChunk->frameCount = 0;
+            pChunk->frameCountRead = 0;
+            pChunk->frameCountTotal = 0;
             pChunk->next_lru = nullptr;
             pChunk->prev_lru = nullptr;
             m_freeChunks.append(pChunk);
@@ -381,7 +385,7 @@ int CachingReader::read(int sample, int num_samples, CSAMPLE* buffer) {
 
         int chunk_start_frame = CachingReaderWorker::frameForChunk(chunk_num);
         const int chunk_frame_offset = current_frame - chunk_start_frame;
-        int chunk_remaining_frames = current->frameCount - chunk_frame_offset;
+        int chunk_remaining_frames = current->frameCountTotal - chunk_frame_offset;
 
         // More sanity checks
         if (current_frame < chunk_start_frame) {

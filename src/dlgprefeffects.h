@@ -20,8 +20,7 @@ class DlgPrefEffects : public DlgPreferencePage, public Ui::DlgPrefEffectsDlg {
     void slotResetToDefaults();
 
   private slots:
-    void slotEffectSelected(QListWidgetItem* pCurrent,
-                            QListWidgetItem* pPrevious);
+    void slotEffectSelected(QListWidgetItem* pCurrent,QListWidgetItem* pPrevious);
 
   private:
     void addEffectToList(const QString& id);

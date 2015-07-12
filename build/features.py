@@ -410,6 +410,9 @@ class Vamp(Feature):
             build.env.Append(CPPDEFINES='HAVE_FFTW3')
             build.env.ParseConfig(
                 'pkg-config fftw3 --silence-errors --cflags --libs')
+            build.env.Append(CPPDEFINES='HAVE_FFTW3')
+            build.env.ParseConfig(
+                'pkg-config fftw3f --silence-errors --cflags --libs')
 
     def sources(self, build):
         sources = ['vamp/vampanalyser.cpp',

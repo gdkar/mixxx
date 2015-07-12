@@ -44,8 +44,7 @@ class EffectsBackend : public QObject {
         registerEffect(
                 EffectProcessorImpl::getId(),
                 EffectProcessorImpl::getManifest(),
-                EffectInstantiatorPointer(
-                            new EffectProcessorInstantiator<EffectProcessorImpl>()));
+                EffectInstantiatorPointer(new EffectProcessorInstantiator<EffectProcessorImpl>()));
     }
 
   private:
@@ -53,5 +52,4 @@ class EffectsBackend : public QObject {
     QMap<QString, QPair<EffectManifest, EffectInstantiatorPointer> > m_registeredEffects;
     QList<QString> m_effectIds;
 };
-
 #endif /* EFFECTSBACKEND_H */

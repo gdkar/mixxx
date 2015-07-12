@@ -10,7 +10,7 @@
 #include "controlpotmeter.h"
 #include "controllinpotmeter.h"
 #include "playermanager.h"
-#include "basetrackplayer.h"
+#include "trackplayer.h"
 
 using ::testing::_;
 using ::testing::Return;
@@ -31,10 +31,10 @@ class FakeMaster {
     ControlPushButton crossfaderReverse;
 };
 
-class FakeDeck : public BaseTrackPlayer {
+class FakeDeck : public TrackPlayer {
   public:
     FakeDeck(const QString& group)
-            : BaseTrackPlayer(nullptr, group),
+            : TrackPlayer(nullptr, group),
               playposition(ConfigKey(group, "playposition"), 0.0, 1.0, true),
               play(ConfigKey(group, "play")),
               repeat(ConfigKey(group, "repeat")) {
@@ -93,7 +93,7 @@ class MockPlayerManager : public PlayerManagerInterface {
     virtual ~MockPlayerManager() {
     }
 
-    MOCK_CONST_METHOD1(getPlayer, BaseTrackPlayer*(QString));
+    MOCK_CONST_METHOD1(getPlayer, TrackPlayer*(QString));
     MOCK_CONST_METHOD1(getDeck, Deck*(unsigned int));
     MOCK_CONST_METHOD1(getPreviewDeck, PreviewDeck*(unsigned int));
     MOCK_CONST_METHOD1(getSampler, Sampler*(unsigned int));

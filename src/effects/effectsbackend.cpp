@@ -53,9 +53,6 @@ EffectPointer EffectsBackend::instantiateEffect(EffectsManager* pEffectsManager,
         qWarning() << "WARNING: Effect" << effectId << "is not registered.";
         return EffectPointer();
     }
-    QPair<EffectManifest, EffectInstantiatorPointer>& effectInfo =
-            m_registeredEffects[effectId];
-
-    return EffectPointer(new Effect(pEffectsManager,
-                                    effectInfo.first, effectInfo.second));
+    QPair<EffectManifest, EffectInstantiatorPointer>& effectInfo = m_registeredEffects[effectId];
+    return EffectPointer(new Effect(pEffectsManager,effectInfo.first, effectInfo.second));
 }

@@ -71,7 +71,6 @@ class WBaseWidget {
     void setControlParameterLeftUp(double v);
     void setControlParameterRightDown(double v);
     void setControlParameterRightUp(double v);
-
     // Tooltip handling. We support "debug tooltips" which are basically a way
     // to expose debug information about widgets via the tooltip. To enable
     // this, when widgets should call updateTooltip before they are about to
@@ -83,13 +82,10 @@ class WBaseWidget {
     ControlParameterWidgetConnection* m_pDisplayConnection;
     QList<ControlParameterWidgetConnection*> m_leftConnections;
     QList<ControlParameterWidgetConnection*> m_rightConnections;
-
     QList<ControlWidgetPropertyConnection*> m_propertyConnections;
-
   private:
     QWidget* m_pWidget;
     QString m_baseTooltip;
-
     friend class ControlParameterWidgetConnection;
 };
 

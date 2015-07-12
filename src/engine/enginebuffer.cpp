@@ -47,8 +47,8 @@ const double kLinearScalerElipsis = 1.00058; // 2^(0.01/12): changes < 1 cent al
 const int kSamplesPerFrame = 2; // Engine buffer uses Stereo frames only
 
 EngineBuffer::EngineBuffer(QString group, ConfigObject<ConfigValue>* _config,
-                           EngineMaster* pMixingEngine,EngineChannel* pChannel)
-        : EngineObject(qobject_cast<QObject *>(pChannel)),
+                           EngineMaster* pMixingEngine,EngineChannel* pParent)
+        : EngineObject(qobject_cast<QObject *>(pParent)),
           m_group(group),
           m_pConfig(_config),
           m_pLoopingControl(nullptr),
@@ -214,7 +214,7 @@ EngineBuffer::EngineBuffer(QString group, ConfigObject<ConfigValue>* _config,
 
     m_pEngineSync = pMixingEngine->getEngineSync();
 
-    m_pSyncControl = new SyncControl(group, _config, pChannel, m_pEngineSync,this);
+    m_pSyncControl = new SyncControl(group, _config, pParent, m_pEngineSync,this);
     addControl(m_pSyncControl);
 
 #ifdef __VINYLCONTROL__

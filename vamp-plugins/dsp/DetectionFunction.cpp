@@ -51,27 +51,27 @@ void DetectionFunction::initialise( DFConfig Config )
     if (m_whitenRelaxCoeff < 0) m_whitenRelaxCoeff = 0.9997;
     if (m_whitenFloor < 0) m_whitenFloor = 0.01;
 
-    m_magHistory = new double[ m_halfLength ];
-    memset(m_magHistory,0, m_halfLength*sizeof(double));
+    m_magHistory = new float[ m_halfLength ];
+    memset(m_magHistory,0, m_halfLength*sizeof(float));
 		
-    m_phaseHistory = new double[ m_halfLength ];
-    memset(m_phaseHistory,0, m_halfLength*sizeof(double));
+    m_phaseHistory = new float[ m_halfLength ];
+    memset(m_phaseHistory,0, m_halfLength*sizeof(float));
 
-    m_phaseHistoryOld = new double[ m_halfLength ];
-    memset(m_phaseHistoryOld,0, m_halfLength*sizeof(double));
+    m_phaseHistoryOld = new float[ m_halfLength ];
+    memset(m_phaseHistoryOld,0, m_halfLength*sizeof(float));
 
-    m_magPeaks = new double[ m_halfLength ];
-    memset(m_magPeaks,0, m_halfLength*sizeof(double));
+    m_magPeaks = new float[ m_halfLength ];
+    memset(m_magPeaks,0, m_halfLength*sizeof(float));
 
-    // See note in process(const double *) below
+    // See note in process(const float *) below
     int actualLength = MathUtilities::previousPowerOfTwo(m_dataLength);
     m_phaseVoc = new PhaseVocoder(actualLength);
 
-    m_DFWindowedFrame = new double[ m_dataLength ];
-    m_magnitude = new double[ m_halfLength ];
-    m_thetaAngle = new double[ m_halfLength ];
+    m_DFWindowedFrame = new float[ m_dataLength ];
+    m_magnitude = new float[ m_halfLength ];
+    m_thetaAngle = new float[ m_halfLength ];
 
-    m_window = new Window<double>(HanningWindow, m_dataLength);
+    m_window = new Window<float>(HanningWindow, m_dataLength);
 }
 
 void DetectionFunction::deInitialise()
@@ -90,7 +90,7 @@ void DetectionFunction::deInitialise()
     delete m_window;
 }
 
-double DetectionFunction::process( const double *TDomain )
+float DetectionFunction::process( const float *TDomain )
 {
     m_window->cut( TDomain, m_DFWindowedFrame );
 
@@ -118,7 +118,7 @@ double DetectionFunction::process( const double *TDomain )
     return runDF();
 }
 
-double DetectionFunction::process( const double *magnitudes, const double *phases )
+float DetectionFunction::process( const float *magnitudes, const float *phases )
 {
     for (size_t i = 0; i < m_halfLength; ++i) {
         m_magnitude[i] = magnitudes[i];
@@ -133,7 +133,7 @@ double DetectionFunction::process( const double *magnitudes, const double *phase
 void DetectionFunction::whiten()
 {
     for (unsigned int i = 0; i < m_halfLength; ++i) {
-        double m = m_magnitude[i];
+        float m = m_magnitude[i];
         if (m < m_magPeaks[i]) {
             m = m + (m_magPeaks[i] - m) * m_whitenRelaxCoeff;
         }
@@ -143,9 +143,9 @@ void DetectionFunction::whiten()
     }
 }
 
-double DetectionFunction::runDF()
+float DetectionFunction::runDF()
 {
-    double retVal = 0;
+    float retVal = 0;
 
     switch( m_DFType )
     {
@@ -173,10 +173,10 @@ double DetectionFunction::runDF()
     return retVal;
 }
 
-double DetectionFunction::HFC(unsigned int length, double *src)
+float DetectionFunction::HFC(unsigned int length, float *src)
 {
     unsigned int i;
-    double val = 0;
+    float val = 0;
 
     for( i = 0; i < length; i++)
     {
@@ -185,12 +185,12 @@ double DetectionFunction::HFC(unsigned int length, double *src)
     return val;
 }
 
-double DetectionFunction::specDiff(unsigned int length, double *src)
+float DetectionFunction::specDiff(unsigned int length, float *src)
 {
     unsigned int i;
-    double val = 0.0;
-    double temp = 0.0;
-    double diff = 0.0;
+    float val = 0.0;
+    float temp = 0.0;
+    float diff = 0.0;
 
     for( i = 0; i < length; i++)
     {
@@ -209,14 +209,14 @@ double DetectionFunction::specDiff(unsigned int length, double *src)
 }
 
 
-double DetectionFunction::phaseDev(unsigned int length, double *srcPhase)
+float DetectionFunction::phaseDev(unsigned int length, float *srcPhase)
 {
     unsigned int i;
-    double tmpPhase = 0;
-    double tmpVal = 0;
-    double val = 0;
+    float tmpPhase = 0;
+    float tmpVal = 0;
+    float val = 0;
 
-    double dev = 0;
+    float dev = 0;
 
     for( i = 0; i < length; i++)
     {
@@ -243,15 +243,15 @@ double DetectionFunction::phaseDev(unsigned int length, double *srcPhase)
 }
 
 
-double DetectionFunction::complexSD(unsigned int length, double *srcMagnitude, double *srcPhase)
+float DetectionFunction::complexSD(unsigned int length, float *srcMagnitude, float *srcPhase)
 {
     unsigned int i;
-    double val = 0;
-    double tmpPhase = 0;
-    double tmpReal = 0;
-    double tmpImag = 0;
+    float val = 0;
+    float tmpPhase = 0;
+    float tmpReal = 0;
+    float tmpImag = 0;
    
-    double dev = 0;
+    float dev = 0;
     ComplexData meas = ComplexData( 0, 0 );
     ComplexData j = ComplexData( 0, 1 );
 
@@ -275,13 +275,13 @@ double DetectionFunction::complexSD(unsigned int length, double *srcMagnitude, d
     return val;
 }
 
-double DetectionFunction::broadband(unsigned int length, double *src)
+float DetectionFunction::broadband(unsigned int length, float *src)
 {
-    double val = 0;
+    float val = 0;
     for (unsigned int i = 0; i < length; ++i) {
-        double sqrmag = src[i] * src[i];
+        float sqrmag = src[i] * src[i];
         if (m_magHistory[i] > 0.0) {
-            double diff = 10.0 * log10(sqrmag / m_magHistory[i]);
+            float diff = 10.0 * log10(sqrmag / m_magHistory[i]);
             if (diff > m_dbRise) val = val + 1;
         }
         m_magHistory[i] = sqrmag;
@@ -289,7 +289,7 @@ double DetectionFunction::broadband(unsigned int length, double *src)
     return val;
 }        
 
-double* DetectionFunction::getSpectrumMagnitude()
+float* DetectionFunction::getSpectrumMagnitude()
 {
     return m_magnitude;
 }

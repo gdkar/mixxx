@@ -16,14 +16,13 @@
 #ifndef FILTER_H
 #define FILTER_H
 
-#ifndef NULL
-#define NULL 0
-#endif
+#include <memory>
+
 
 struct FilterConfig{
     unsigned int ord;
-    double* ACoeffs;
-    double* BCoeffs;
+    float* ACoeffs;
+    float* BCoeffs;
 };
 
 class Filter  
@@ -34,7 +33,7 @@ public:
 
     void reset();
 
-    void process( double *src, double *dst, unsigned int length );
+    void process( float *src, float *dst, unsigned int length );
 	
 
 private:
@@ -43,11 +42,11 @@ private:
 
     unsigned int m_ord;
 
-    double* m_inBuffer;
-    double* m_outBuffer;
+    std::unique_ptr<float[]> m_inBuffer;
+    std::unique_ptr<float[]> m_outBuffer;
 
-    double* m_ACoeffs;
-    double* m_BCoeffs;
+    float* m_ACoeffs;
+    float* m_BCoeffs;
 };
 
 #endif

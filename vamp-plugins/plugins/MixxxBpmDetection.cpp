@@ -254,6 +254,5 @@ float MixxxBpmDetection::correctBPM(float BPM, float min, float max, bool aboveR
         while ( BPM > max ) BPM /= 2;
     }
     while ( BPM < min ) BPM *= 2;
-
     return BPM;
 }

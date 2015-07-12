@@ -18,7 +18,7 @@
 
 #include "mixxxkeyboard.h"
 #include "playermanager.h"
-#include "basetrackplayer.h"
+#include "trackplayer.h"
 #include "library/library.h"
 #include "util/xml.h"
 #include "controllers/controllerlearningeventfilter.h"
@@ -259,7 +259,7 @@ SkinManifest LegacySkinParser::getSkinManifest(QDomElement skinDocument) {
     QDomNode attributes_node = manifest_node.namedItem("attributes");
     if (!attributes_node.isNull() && attributes_node.isElement()) {
         QDomNodeList attribute_nodes = attributes_node.toElement().elementsByTagName("attribute");
-        for (int i = 0; i < attribute_nodes.count(); ++i) {
+        for (unsigned int i = 0; i < attribute_nodes.length(); ++i) {
             QDomNode attribute_node = attribute_nodes.item(i);
             if (attribute_node.isElement()) {
                 QDomElement attribute_element = attribute_node.toElement();
@@ -845,7 +845,7 @@ QWidget* LegacySkinParser::parseOverview(QDomElement node) {
 
     const char* pSafeChannelStr = safeChannelString(channelStr);
 
-    BaseTrackPlayer* pPlayer = m_pPlayerManager->getPlayer(channelStr);
+    TrackPlayer* pPlayer = m_pPlayerManager->getPlayer(channelStr);
 
     if (pPlayer == nullptr)
         return nullptr;
@@ -889,7 +889,7 @@ QWidget* LegacySkinParser::parseOverview(QDomElement node) {
 
 QWidget* LegacySkinParser::parseVisual(QDomElement node) {
     QString channelStr = lookupNodeGroup(node);
-    BaseTrackPlayer* pPlayer = m_pPlayerManager->getPlayer(channelStr);
+    TrackPlayer* pPlayer = m_pPlayerManager->getPlayer(channelStr);
 
     const char* pSafeChannelStr = safeChannelString(channelStr);
 
@@ -928,7 +928,7 @@ QWidget* LegacySkinParser::parseText(QDomElement node) {
     QString channelStr = lookupNodeGroup(node);
     const char* pSafeChannelStr = safeChannelString(channelStr);
 
-    BaseTrackPlayer* pPlayer = m_pPlayerManager->getPlayer(channelStr);
+    TrackPlayer* pPlayer = m_pPlayerManager->getPlayer(channelStr);
 
     if (!pPlayer)
         return nullptr;
@@ -955,7 +955,7 @@ QWidget* LegacySkinParser::parseTrackProperty(QDomElement node) {
     QString channelStr = lookupNodeGroup(node);
     const char* pSafeChannelStr = safeChannelString(channelStr);
 
-    BaseTrackPlayer* pPlayer = m_pPlayerManager->getPlayer(channelStr);
+    TrackPlayer* pPlayer = m_pPlayerManager->getPlayer(channelStr);
 
     if (!pPlayer)
         return nullptr;
@@ -982,7 +982,7 @@ QWidget* LegacySkinParser::parseStarRating(QDomElement node) {
     QString channelStr = lookupNodeGroup(node);
     const char* pSafeChannelStr = safeChannelString(channelStr);
 
-    BaseTrackPlayer* pPlayer = m_pPlayerManager->getPlayer(channelStr);
+    TrackPlayer* pPlayer = m_pPlayerManager->getPlayer(channelStr);
 
     if (!pPlayer)
         return nullptr;
@@ -1070,7 +1070,7 @@ QWidget* LegacySkinParser::parseSpinny(QDomElement node) {
     connect(spinny, SIGNAL(trackDropped(QString, QString)),
             m_pPlayerManager, SLOT(slotLoadToPlayer(QString, QString)));
 
-    BaseTrackPlayer* pPlayer = m_pPlayerManager->getPlayer(channelStr);
+    TrackPlayer* pPlayer = m_pPlayerManager->getPlayer(channelStr);
     if (pPlayer != nullptr) {
         connect(pPlayer, SIGNAL(newTrackLoaded(TrackPointer)),
                 spinny, SLOT(slotLoadTrack(TrackPointer)));
@@ -1107,7 +1107,7 @@ QWidget* LegacySkinParser::parseSearchBox(QDomElement node) {
 
 QWidget* LegacySkinParser::parseCoverArt(QDomElement node) {
     QString channel = lookupNodeGroup(node);
-    BaseTrackPlayer* pPlayer = m_pPlayerManager->getPlayer(channel);
+    TrackPlayer* pPlayer = m_pPlayerManager->getPlayer(channel);
 
     WCoverArt* pCoverArt = new WCoverArt(m_pParent, m_pConfig, channel);
     commonWidgetSetup(node, pCoverArt);

@@ -56,7 +56,6 @@ if int(build.flags['vamp']):
         mixxxminimal_sources.extend(path % sdk_src_path for path in
                                     ['%s/PluginAdapter.cpp',
                                      '%s/RealTime.cpp'])
-
     for depend in mixxxminimal_depends:
         depend = depend()
         # Hack to get rid of EngineBufferScaleST since the SoundTouch dependence
@@ -77,8 +76,7 @@ if int(build.flags['vamp']):
         #env["LINKFLAGS"].append("/DEFAULTLIB:LIBCMT.lib")
         #env["LINKFLAGS"].append("/DEFAULTLIB:LIBCPMT.lib")
         mixxxminimal_bin = env.SharedLibrary('libmixxxminimal', mixxxminimal_sources)
-    else:
-    	mixxxminimal_bin = env.SharedLibrary('mixxxminimal', mixxxminimal_sources)
+    else: mixxxminimal_bin = env.SharedLibrary('mixxxminimal', mixxxminimal_sources)
     #Pass this library object file back to the SConscript above us.
     Return("mixxxminimal_bin")
 else:

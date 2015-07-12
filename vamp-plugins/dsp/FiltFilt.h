@@ -1,4 +1,3 @@
-/* -*- c-basic-offset: 4 indent-tabs-mode: nil -*-  vi:set ts=8 sts=4 sw=4: */
 
 /*
     QM DSP Library
@@ -20,8 +19,8 @@
 
 struct FiltFiltConfig{
     unsigned int ord;
-    double* ACoeffs;
-    double* BCoeffs;
+    float* ACoeffs;
+    float* BCoeffs;
 };
 
 class FiltFilt  
@@ -31,19 +30,14 @@ public:
     virtual ~FiltFilt();
 
     void reset();
-    void process( double* src, double* dst, unsigned int length );
-
+    void process( float* src, float* dst, unsigned int length );
 private:
     void initialise( FiltFiltConfig Config );
     void deInitialise();
-
     unsigned int m_ord;
-
     Filter* m_filter;
-
-    double* m_filtScratchIn;
-    double* m_filtScratchOut;
-
+    float* m_filtScratchIn;
+    float* m_filtScratchOut;
     FilterConfig m_filterConfig;
 };
 

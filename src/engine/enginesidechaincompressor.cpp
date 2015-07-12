@@ -5,7 +5,8 @@
 #include "engine/enginesidechaincompressor.h"
 
 EngineSideChainCompressor::EngineSideChainCompressor(const QString&group,QObject *pParent)
-        : m_compressRatioDb(0.0),
+        : EngineObject(pParent),
+          m_compressRatioDb(0.0),
           m_bAboveThreshold(false),
           m_threshold(1.0),
           m_strength(0.0),

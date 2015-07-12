@@ -31,87 +31,31 @@ class EffectManifest {
         //qDebug() << debugString() << "deleted";
     }
 
-    virtual const QString& id() const {
-        return m_id;
-    }
-    virtual void setId(const QString& id) {
-        m_id = id;
-    }
-
-    virtual const QString& name() const {
-        return m_name;
-    }
-    virtual void setName(const QString& name) {
-        m_name = name;
-    }
-
-    virtual const QString& author() const {
-        return m_author;
-    }
-    virtual void setAuthor(const QString& author) {
-        m_author = author;
-    }
-
-    virtual const QString& version() const {
-        return m_version;
-    }
-    virtual void setVersion(const QString& version) {
-        m_version = version;
-    }
-
-    virtual const QString& description() const {
-        return m_description;
-    }
-
-    virtual const bool& isMixingEQ() const {
-        return m_isMixingEQ;
-    }
-
-    virtual void setIsMixingEQ(const bool value) {
-        m_isMixingEQ = value;
-    }
-
-    virtual const bool& isMasterEQ() const {
-        return m_isMasterEQ;
-    }
-
-    virtual void setIsMasterEQ(const bool value) {
-        m_isMasterEQ = value;
-    }
-
-    virtual const bool& isForFilterKnob() const {
-        return m_isForFilterKnob;
-    }
-
-    virtual void setIsForFilterKnob(const bool value) {
-        m_isForFilterKnob = value;
-    }
-
-    virtual void setDescription(const QString& description) {
-        m_description = description;
-    }
-
-    virtual const QList<EffectManifestParameter>& parameters() const {
-        return m_parameters;
-    }
-
+    virtual const QString& id() const {return m_id;}
+    virtual void setId(const QString& id) {m_id = id;}
+    virtual const QString& name() const {return m_name;}
+    virtual void setName(const QString& name) {m_name = name;}
+    virtual const QString& author() const {return m_author;}
+    virtual void setAuthor(const QString& author) {m_author = author;}
+    virtual const QString& version() const {return m_version;}
+    virtual void setVersion(const QString& version) {m_version = version;}
+    virtual const QString& description() const {return m_description;}
+    virtual const bool& isMixingEQ() const {return m_isMixingEQ;}
+    virtual void setIsMixingEQ(const bool value) {m_isMixingEQ = value;}
+    virtual const bool& isMasterEQ() const {return m_isMasterEQ;}
+    virtual void setIsMasterEQ(const bool value) {m_isMasterEQ = value;}
+    virtual const bool& isForFilterKnob() const {return m_isForFilterKnob;}
+    virtual void setIsForFilterKnob(const bool value) {m_isForFilterKnob = value;}
+    virtual void setDescription(const QString& description) {m_description = description;}
+    virtual const QList<EffectManifestParameter>& parameters() const {return m_parameters;}
     virtual EffectManifestParameter* addParameter() {
         m_parameters.append(EffectManifestParameter());
         return &m_parameters.last();
     }
-
-    virtual bool effectRampsFromDry() const {
-        return m_effectRampsFromDry;
-    }
-    virtual void setEffectRampsFromDry(bool effectFadesFromDry) {
-        m_effectRampsFromDry = effectFadesFromDry;
-    }
-
+    virtual bool effectRampsFromDry() const {return m_effectRampsFromDry;}
+    virtual void setEffectRampsFromDry(bool effectFadesFromDry) {m_effectRampsFromDry = effectFadesFromDry;}
   private:
-    QString debugString() const {
-        return QString("EffectManifest(%1)").arg(m_id);
-    }
-
+    QString debugString() const {return QString("EffectManifest(%1)").arg(m_id);}
     QString m_id;
     QString m_name;
     QString m_author;
