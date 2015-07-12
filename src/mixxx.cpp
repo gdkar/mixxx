@@ -16,11 +16,13 @@
 ***************************************************************************/
 
 #include <QtDebug>
+#include <QGLWidget>
 #include <QTranslator>
 #include <QMenu>
 #include <QMenuBar>
 #include <QFileDialog>
 #include <QDesktopWidget>
+#include <QWindow>
 #include <QDesktopServices>
 #include <QUrl>
 
@@ -29,7 +31,7 @@
 #include "analyserqueue.h"
 #include "controlpotmeter.h"
 #include "controlobjectslave.h"
-#include "basetrackplayer.h"
+#include "trackplayer.h"
 #include "defs_urls.h"
 #include "dlgabout.h"
 #include "dlgpreferences.h"
@@ -40,6 +42,7 @@
 #include "effects/effectsmanager.h"
 #include "effects/native/nativebackend.h"
 #include "engine/engineaux.h"
+#include "sharedglcontext.h"
 #include "library/coverartcache.h"
 #include "library/library.h"
 #include "library/library_preferences.h"
@@ -62,7 +65,6 @@
 #include "widget/wwaveformviewer.h"
 #include "widget/wwidget.h"
 #include "widget/wspinny.h"
-#include "sharedglcontext.h"
 #include "util/debug.h"
 #include "util/statsmanager.h"
 #include "util/timer.h"
@@ -359,7 +361,6 @@ MixxxMainWindow::MixxxMainWindow(QApplication* pApp, const CmdlineArgs& args)
     QGLWidget* pContextWidget = new QGLWidget(this);
     pContextWidget->hide();
     SharedGLContext::setWidget(pContextWidget);
-
     // Load skin to a QWidget that we set as the central widget. Assignment
     // intentional in next line.
     if (!(m_pWidgetParent = m_pSkinLoader->loadDefaultSkin(this, m_pKeyboard,
@@ -379,10 +380,8 @@ MixxxMainWindow::MixxxMainWindow(QApplication* pApp, const CmdlineArgs& args)
         // corrupted. See bug 521509 -- bkgood ?? -- vrince
         setCentralWidget(m_pWidgetParent);
     }
-
     //move the app in the center of the primary screen
     slotToCenterOfPrimaryScreen();
-
     // Check direct rendering and warn user if they don't have it
     checkDirectRendering();
 
@@ -390,7 +389,6 @@ MixxxMainWindow::MixxxMainWindow(QApplication* pApp, const CmdlineArgs& args)
     //This allows us to turn off tooltips.
     pApp->installEventFilter(this); // The eventfilter is located in this
                                     // Mixxx class as a callback.
-
     // If we were told to start in fullscreen mode on the command-line or if
     // user chose always starts in fullscreen mode, then turn on fullscreen
     // mode.
@@ -400,11 +398,9 @@ MixxxMainWindow::MixxxMainWindow(QApplication* pApp, const CmdlineArgs& args)
         slotViewFullScreen(true);
     }
     emit(newSkinLoaded());
-
     // Wait until all other ControlObjects are set up before initializing
     // controllers
     m_pControllerManager->setUpDevices();
-
     // Scan the library for new files and directories
     bool rescan = m_pConfig->getValueString(
         ConfigKey("[Library]","RescanOnStartup")).toInt();

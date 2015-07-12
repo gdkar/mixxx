@@ -29,19 +29,14 @@ WWaveformViewer::WWaveformViewer(const char *group, ConfigObject<ConfigValue>* p
     m_pZoom = new ControlObjectSlave(group, "waveform_zoom");
     m_pZoom->connectValueChanged(this, SLOT(onZoomChange(double)));
 
-    m_pScratchPositionEnable = new ControlObjectSlave(
-            group, "scratch_position_enable");
-    m_pScratchPosition = new ControlObjectSlave(
-            group, "scratch_position");
-    m_pWheel = new ControlObjectSlave(
-            group, "wheel");
-
+    m_pScratchPositionEnable = new ControlObjectSlave(group, "scratch_position_enable");
+    m_pScratchPosition = new ControlObjectSlave(group, "scratch_position");
+    m_pWheel = new ControlObjectSlave(group, "wheel");
     setAttribute(Qt::WA_OpaquePaintEvent);
 }
 
 WWaveformViewer::~WWaveformViewer() {
     //qDebug() << "~WWaveformViewer";
-
     delete m_pZoom;
     delete m_pScratchPositionEnable;
     delete m_pScratchPosition;
@@ -50,15 +45,11 @@ WWaveformViewer::~WWaveformViewer() {
 
 void WWaveformViewer::setup(QDomNode node, const SkinContext& context) {
     Q_UNUSED(context);
-    if (m_waveformWidget) {
-        m_waveformWidget->setup(node, context);
-    }
+    if (m_waveformWidget) {m_waveformWidget->setup(node, context);}
 }
 
 void WWaveformViewer::resizeEvent(QResizeEvent* /*event*/) {
-    if (m_waveformWidget) {
-        m_waveformWidget->resize(width(), height());
-    }
+    if (m_waveformWidget) {m_waveformWidget->resize(width(), height());}
 }
 
 void WWaveformViewer::mousePressEvent(QMouseEvent* event) {
@@ -189,9 +180,7 @@ void WWaveformViewer::onZoomChange(double zoom) {
 
 void WWaveformViewer::setZoom(int zoom) {
     //qDebug() << "WaveformWidgetRenderer::setZoom" << zoom;
-    if (m_waveformWidget) {
-        m_waveformWidget->setZoom(zoom);
-    }
+    if (m_waveformWidget) {m_waveformWidget->setZoom(zoom);}
 
     // If multiple waveform widgets for the same group are created then it's
     // possible that this setZoom() is coming from another waveform with the
@@ -208,13 +197,11 @@ void WWaveformViewer::setZoom(int zoom) {
 void WWaveformViewer::setWaveformWidget(WaveformWidgetAbstract* waveformWidget) {
     if (m_waveformWidget) {
         QWidget* pWidget = m_waveformWidget->getWidget();
-        disconnect(pWidget, SIGNAL(destroyed()),
-                   this, SLOT(slotWidgetDead()));
+        disconnect(pWidget, SIGNAL(destroyed()),this, SLOT(slotWidgetDead()));
     }
     m_waveformWidget = waveformWidget;
     if (m_waveformWidget) {
         QWidget* pWidget = m_waveformWidget->getWidget();
-        connect(pWidget, SIGNAL(destroyed()),
-                this, SLOT(slotWidgetDead()));
+        connect(pWidget, SIGNAL(destroyed()),this, SLOT(slotWidgetDead()));
     }
 }

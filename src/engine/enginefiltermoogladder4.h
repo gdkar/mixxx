@@ -36,7 +36,7 @@ enum MoogMode {
 };
 
 template<enum MoogMode MODE>
-class EngineFilterMoogLadderBase : public EngineObject  {
+class EngineFilterMoogLadderBase : public EngineObject{
 
   private:
     struct Buffer {
@@ -49,7 +49,7 @@ class EngineFilterMoogLadderBase : public EngineObject  {
     };
 
   public:
-    EngineFilterMoogLadderBase(unsigned int sampleRate, float cutoff, float resonance) {
+    EngineFilterMoogLadderBase(unsigned int sampleRate, float cutoff, float resonance,QObject*pParent=nullptr):EngineObject(pParent) {
         setParameter(sampleRate, cutoff, resonance);
         initBuffers();
     }
@@ -221,14 +221,14 @@ class EngineFilterMoogLadderBase : public EngineObject  {
 class EngineFilterMoogLadder4Low : public EngineFilterMoogLadderBase<LP_OVERS> {
     Q_OBJECT
   public:
-    EngineFilterMoogLadder4Low(int sampleRate, double freqCorner1, double resonance);
+    EngineFilterMoogLadder4Low(int sampleRate, double freqCorner1, double resonance,QObject*pParent);
 };
 
 
 class EngineFilterMoogLadder4High : public EngineFilterMoogLadderBase<HP_OVERS> {
     Q_OBJECT
   public:
-    EngineFilterMoogLadder4High(int sampleRate, double freqCorner1, double resonance);
+    EngineFilterMoogLadder4High(int sampleRate, double freqCorner1, double resonance,QObject*pParent);
 };
 
 #endif // ENGINEFILTERMOOGLADDER4_H

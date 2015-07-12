@@ -2,7 +2,9 @@
 #ifndef _WSPINNY_H
 #define _WSPINNY_H
 #include <memory>
-#include <QGLWidget>
+#include <QOpenGLWidget>
+#include <QOpenGLContext>
+#include <QOpenGLFunctions>
 #include <QShowEvent>
 #include <QHideEvent>
 #include <QEvent>
@@ -18,7 +20,7 @@ class ControlObjectThread;
 class VisualPlayPosition;
 class VinylControlManager;
 
-class WSpinny : public QGLWidget, public WBaseWidget, public VinylSignalQualityListener {
+class WSpinny : public QOpenGLWidget, public WBaseWidget, public VinylSignalQualityListener,protected QOpenGLFunctions {
     Q_OBJECT
   public:
     WSpinny(QWidget* parent, const QString& group,
@@ -45,7 +47,7 @@ class WSpinny : public QGLWidget, public WBaseWidget, public VinylSignalQualityL
     void slotCoverFound(const QObject* pRequestor, int requestReference,
                         const CoverInfo& info, QPixmap pixmap, bool fromCache);
     void slotTrackCoverArtUpdated();
-
+    virtual void initializeGL(){initializeOpenGLFunctions();}
 
   signals:
     void trackDropped(QString filename, QString group);

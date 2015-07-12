@@ -118,7 +118,6 @@ void Bessel4LVMixEQEffect::processChannel(const ChannelHandle& handle,
                                           const GroupFeatureState& groupFeatures) {
     Q_UNUSED(handle);
     Q_UNUSED(groupFeatures);
-
     double fLow;
     double fMid;
     double fHigh;
@@ -145,7 +144,6 @@ void Bessel4LVMixEQEffect::processChannel(const ChannelHandle& handle,
         }
     }
 
-    pState->processChannel(pInput, pOutput, numSamples, sampleRate,
-                           fLow, fMid, fHigh,
+    pState->processChannel(pInput, pOutput, numSamples, sampleRate,fLow, fMid, fHigh,
                            m_pLoFreqCorner->get(), m_pHiFreqCorner->get());
 }

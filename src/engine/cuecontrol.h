@@ -16,27 +16,22 @@
 #include "trackinfoobject.h"
 
 #define NUM_HOT_CUES 37
-
 class Cue;
-
 class HotcueControl : public QObject {
     Q_OBJECT
   public:
     HotcueControl(QString group, int hotcueNumber, QObject *pParent = nullptr);
     virtual ~HotcueControl();
-
     inline int getHotcueNumber() { return m_iHotcueNumber; }
     inline Cue* getCue() { return m_pCue; }
     inline void setCue(Cue* pCue) { m_pCue = pCue; }
     inline ControlObject* getPosition() { return &m_hotcuePosition; }
     inline ControlObject* getEnabled() { return &m_hotcueEnabled; }
-
     // Used for caching the preview state of this hotcue control.
     inline bool isPreviewing() { return m_bPreviewing; }
     inline void setPreviewing(bool bPreviewing) { m_bPreviewing = bPreviewing; }
     inline int getPreviewingPosition() { return m_iPreviewingPosition; }
     inline void setPreviewingPosition(int iPosition) { m_iPreviewingPosition = iPosition; }
-
 
   signals:
     void hotcueSet(double v);

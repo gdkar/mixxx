@@ -18,77 +18,71 @@
 #include <algorithm>
 #include <iostream>
 #include <cmath>
+#include <math.h>
 
-
-double MathUtilities::mod(double x, double y)
+float MathUtilities::mod(float x, float y)
 {
-    double a = floor( x / y );
-
-    double b = x - ( y * a );
-    return b;
+    return x - ( y * floorf(x/y) );
 }
 
-double MathUtilities::princarg(double ang)
+float MathUtilities::princarg(float ang)
 {
-    double ValOut;
+    float ValOut;
 
-    ValOut = mod( ang + M_PI, -2 * M_PI ) + M_PI;
+    ValOut = fmodf( ang + (float)M_PI, -(float)(2 * M_PI) ) + (float)M_PI;
 
     return ValOut;
 }
 
-void MathUtilities::getAlphaNorm(const double *data, unsigned int len, unsigned int alpha, double* ANorm)
+void MathUtilities::getAlphaNorm(const float *data, unsigned int len, unsigned int alpha, float* ANorm)
 {
     unsigned int i;
-    double temp = 0.0;
-    double a=0.0;
+    float temp = 0.0;
+    float a=0.0;
 	
     for( i = 0; i < len; i++)
     {
 	temp = data[ i ];
 		
-	a  += ::pow( fabs(temp), double(alpha) );
+	a  += ::powf( fabs(temp), float(alpha) );
     }
-    a /= ( double )len;
-    a = ::pow( a, ( 1.0 / (double) alpha ) );
+    a /= ( float )len;
+    a = ::powf( a, ( 1.0f / (float) alpha ) );
 
     *ANorm = a;
 }
 
-double MathUtilities::getAlphaNorm( const std::vector <double> &data, unsigned int alpha )
+float MathUtilities::getAlphaNorm( const std::vector <float> &data, unsigned int alpha )
 {
     unsigned int i;
     unsigned int len = data.size();
-    double temp = 0.0;
-    double a=0.0;
-	
+    float temp = 0.0;
+    float a=0.0;
     for( i = 0; i < len; i++)
     {
 	temp = data[ i ];
-		
-	a  += ::pow( fabs(temp), double(alpha) );
+	a  += ::powf( fabs(temp), float(alpha) );
     }
-    a /= ( double )len;
-    a = ::pow( a, ( 1.0 / (double) alpha ) );
-
+    a /= ( float )len;
+    a = ::powf( a, ( 1.0f / (float) alpha ) );
     return a;
 }
 
-double MathUtilities::round(double x)
+float MathUtilities::round(float x)
 {
-    double val = (double)floor(x + 0.5);
+    float val = (float)floorf(x + 0.5);
   
     return val;
 }
 
-double MathUtilities::median(const double *src, unsigned int len)
+float MathUtilities::median(const float *src, unsigned int len)
 {
     unsigned int i, j;
-    double tmp = 0.0;
-    double tempMedian;
-    double medianVal;
+    float tmp = 0.0;
+    float tempMedian;
+    float medianVal;
  
-    double* scratch = new double[ len ];//Vector < double > sortedX = Vector < double > ( size );
+    float* scratch = new float[ len ];//Vector < float > sortedX = Vector < float > ( size );
 
     for ( i = 0; i < len; i++ )
     {
@@ -116,200 +110,144 @@ double MathUtilities::median(const double *src, unsigned int len)
     }
     else
     {
-	middle = ( int )floor( len / 2.0 );
+	middle = ( int )floorf( len / 2.0 );
 	tempMedian = scratch[middle];
     }
-
     medianVal = tempMedian;
-
     delete [] scratch;
     return medianVal;
 }
 
-double MathUtilities::sum(const double *src, unsigned int len)
+float MathUtilities::sum(const float *src, unsigned int len)
 {
     unsigned int i ;
-    double retVal =0.0;
+    float retVal =0.0;
 
-    for(  i = 0; i < len; i++)
-    {
-	retVal += src[ i ];
-    }
+    for(  i = 0; i < len; i++) retVal += src[ i ];
 
     return retVal;
 }
 
-double MathUtilities::mean(const double *src, unsigned int len)
+float MathUtilities::mean(const float *src, unsigned int len)
 {
-    double retVal =0.0;
-
-    double s = sum( src, len );
-	
-    retVal =  s  / (double)len;
-
+    float retVal =0.0;
+    float s = sum( src, len );
+    retVal =  s  / (float)len;
     return retVal;
 }
 
-double MathUtilities::mean(const std::vector<double> &src,
+float MathUtilities::mean(const std::vector<float> &src,
                            unsigned int start,
                            unsigned int count)
 {
-    double sum = 0.;
-	
+    float sum = 0.;
     for (int i = 0; i < count; ++i)
-    {
         sum += src[start + i];
-    }
-
     return sum / count;
 }
 
-void MathUtilities::getFrameMinMax(const double *data, unsigned int len, double *min, double *max)
+void MathUtilities::getFrameMinMax(const float *data, unsigned int len, float *min, float *max)
 {
     unsigned int i;
-    double temp = 0.0;
-    double a=0.0;
-
     if (len == 0) {
         *min = *max = 0;
         return;
     }
-	
-    *min = data[0];
-    *max = data[0];
-
+    float _min = data[0];
+    float _max = data[0];
     for( i = 0; i < len; i++)
     {
-	temp = data[ i ];
-
-	if( temp < *min )
-	{
-	    *min =  temp ;
-	}
-	if( temp > *max )
-	{
-	    *max =  temp ;
-	}
-		
+        const float temp = data[i];
+        _min = std::min(temp,_min);
+        _max = std::max(temp,_max);
     }
+    *min = _min;
+    *max = _max;
 }
 
-int MathUtilities::getMax( double* pData, unsigned int Length, double* pMax )
+int MathUtilities::getMax( float* pData, unsigned int Length, float* pMax )
 {
 	unsigned int index = 0;
 	unsigned int i;
-	double temp = 0.0;
 	
-	double max = pData[0];
-
-	for( i = 0; i < Length; i++)
-	{
-		temp = pData[ i ];
-
-		if( temp > max )
-		{
-			max =  temp ;
-			index = i;
-		}
-		
+	auto max = pData[0];
+	for( i = 0; i < Length; i++){
+		const auto temp = pData[ i ];
+                index = (temp>max)?i:index;
+                max   = (temp>max)?temp:max;
    	}
-
 	if (pMax) *pMax = max;
-
-
 	return index;
 }
 
-int MathUtilities::getMax( const std::vector<double> & data, double* pMax )
+int MathUtilities::getMax( const std::vector<float> & data, float* pMax )
 {
 	unsigned int index = 0;
 	unsigned int i;
-	double temp = 0.0;
-	
-	double max = data[0];
-
-	for( i = 0; i < data.size(); i++)
-	{
-		temp = data[ i ];
-
-		if( temp > max )
-		{
-			max =  temp ;
-			index = i;
-		}
+	float max = data[0];
+	for( i = 0; i < data.size(); i++){
+		const auto temp = data[ i ];
+                index = (temp>max)?i:index;
+                max   = (temp>max)?temp:max;
 		
    	}
-
 	if (pMax) *pMax = max;
-
-
 	return index;
 }
 
-void MathUtilities::circShift( double* pData, int length, int shift)
+void MathUtilities::circShift( float* pData, int length, int shift)
 {
 	shift = shift % length;
-	double temp;
 	int i,n;
-
-	for( i = 0; i < shift; i++)
-	{
-		temp=*(pData + length - 1);
-
-		for( n = length-2; n >= 0; n--)
-		{
+	for( i = 0; i < shift; i++){
+		auto temp=*(pData + length - 1);
+		for( n = length-2; n >= 0; n--){
 			*(pData+n+1)=*(pData+n);
 		}
-
-        *pData = temp;
-    }
+                *pData = temp;
+        }
 }
 
-int MathUtilities::compareInt (const void * a, const void * b)
-{
+int MathUtilities::compareInt (const void * a, const void * b){
   return ( *(int*)a - *(int*)b );
 }
 
-void MathUtilities::normalise(double *data, int length, NormaliseType type)
+void MathUtilities::normalise(float *data, int length, NormaliseType type)
 {
     switch (type) {
-
     case NormaliseNone: return;
-
-    case NormaliseUnitSum:
-    {
-        double sum = 0.0;
+    case NormaliseUnitSum:{
+        auto sum = 0.0f;
         for (int i = 0; i < length; ++i) {
             sum += data[i];
         }
-        if (sum != 0.0) {
+        if (sum != 0.0f) {
+            sum = 1.f/sum;
             for (int i = 0; i < length; ++i) {
-                data[i] /= sum;
+                data[i] *= sum;
             }
         }
     }
     break;
-
-    case NormaliseUnitMax:
-    {
-        double max = 0.0;
+    case NormaliseUnitMax:{
+        auto max = 0.f;
         for (int i = 0; i < length; ++i) {
-            if (fabs(data[i]) > max) {
+            if (fabsf(data[i]) > max) {
                 max = fabs(data[i]);
             }
         }
-        if (max != 0.0) {
+        if (max != 0.f) {
+            max=1.f/max;
             for (int i = 0; i < length; ++i) {
-                data[i] /= max;
+                data[i] *= max;
             }
         }
     }
     break;
-
     }
 }
 
-void MathUtilities::normalise(std::vector<double> &data, NormaliseType type)
+void MathUtilities::normalise(std::vector<float> &data, NormaliseType type)
 {
     switch (type) {
 
@@ -317,7 +255,7 @@ void MathUtilities::normalise(std::vector<double> &data, NormaliseType type)
 
     case NormaliseUnitSum:
     {
-        double sum = 0.0;
+        float sum = 0.0;
         for (int i = 0; i < data.size(); ++i) sum += data[i];
         if (sum != 0.0) {
             for (int i = 0; i < data.size(); ++i) data[i] /= sum;
@@ -327,7 +265,7 @@ void MathUtilities::normalise(std::vector<double> &data, NormaliseType type)
 
     case NormaliseUnitMax:
     {
-        double max = 0.0;
+        float max = 0.0;
         for (int i = 0; i < data.size(); ++i) {
             if (fabs(data[i]) > max) max = fabs(data[i]);
         }
@@ -340,21 +278,17 @@ void MathUtilities::normalise(std::vector<double> &data, NormaliseType type)
     }
 }
 
-void MathUtilities::adaptiveThreshold(std::vector<double> &data)
+void MathUtilities::adaptiveThreshold(std::vector<float> &data)
 {
     int sz = int(data.size());
     if (sz == 0) return;
-
-    std::vector<double> smoothed(sz);
-	
+    std::vector<float> smoothed(sz);
     int p_pre = 8;
     int p_post = 7;
-
     for (int i = 0; i < sz; ++i) {
 
         int first = std::max(0,      i - p_pre);
         int last  = std::min(sz - 1, i + p_post);
-
         smoothed[i] = mean(data, first, last - first + 1);
     }
 
@@ -363,39 +297,19 @@ void MathUtilities::adaptiveThreshold(std::vector<double> &data)
         if (data[i] < 0.0) data[i] = 0.0;
     }
 }
-
 bool
-MathUtilities::isPowerOfTwo(int x)
-{
-    if (x < 2) return false;
-    if (x & (x-1)) return false;
-    return true;
-}
-
+MathUtilities::isPowerOfTwo(int x){return ((x)&&!(x&(x-1)));}
 int
 MathUtilities::nextPowerOfTwo(int x)
 {
-    if (isPowerOfTwo(x)) return x;
-    int n = 1;
-    while (x) { x >>= 1; n <<= 1; }
-    return n;
+    x--;x|=x>>1;x|=x>>2;x|=x>>4;x|=x>>8;x|=x>>16;return x+1;
 }
-
 int
-MathUtilities::previousPowerOfTwo(int x)
-{
-    if (isPowerOfTwo(x)) return x;
-    int n = 1;
-    x >>= 1;
-    while (x) { x >>= 1; n <<= 1; }
-    return n;
-}
-
+MathUtilities::previousPowerOfTwo(int x){return isPowerOfTwo(x)?x:(nextPowerOfTwo(x)>>1);}
 int
-MathUtilities::nearestPowerOfTwo(int x)
-{
+MathUtilities::nearestPowerOfTwo(int x){
     if (isPowerOfTwo(x)) return x;
-    int n0 = previousPowerOfTwo(x), n1 = nearestPowerOfTwo(x);
+    int n0 = previousPowerOfTwo(x), n1 = nextPowerOfTwo(x);
     if (x - n0 < n1 - x) return n0;
     else return n1;
 }

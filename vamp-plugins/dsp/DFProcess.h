@@ -22,11 +22,11 @@
 struct DFProcConfig{
     unsigned int length; 
     unsigned int LPOrd; 
-    double *LPACoeffs; 
-    double *LPBCoeffs; 
+    float *LPACoeffs; 
+    float *LPBCoeffs; 
     unsigned int winPre;
     unsigned int winPost; 
-    double AlphaNormParam;
+    float AlphaNormParam;
     bool isMedianPositive;
 };
 
@@ -36,14 +36,14 @@ public:
     DFProcess( DFProcConfig Config );
     virtual ~DFProcess();
 
-    void process( double* src, double* dst );
+    void process( float* src, float* dst );
 
 	
 private:
     void initialise( DFProcConfig Config );
     void deInitialise();
-    void removeDCNormalize( double *src, double*dst );
-    void medianFilter( double* src, double* dst );
+    void removeDCNormalize( float *src, float*dst );
+    void medianFilter( float* src, float* dst );
 
     int m_length;
     int m_FFOrd;
@@ -51,13 +51,13 @@ private:
     int m_winPre;
     int m_winPost;
 
-    double m_alphaNormParam;
+    float m_alphaNormParam;
 
-    double* filtSrc;
-    double* filtDst;
+    float* filtSrc;
+    float* filtDst;
 
-    double* m_filtScratchIn;
-    double* m_filtScratchOut;
+    float* m_filtScratchIn;
+    float* m_filtScratchOut;
 
     FiltFiltConfig m_FilterConfigParams;
 

@@ -76,7 +76,6 @@ bool WWidget::event(QEvent* e) {
                 DEBUG_ASSERT(false);
                 break;
             }
-
             const QTouchEvent::TouchPoint &touchPoint =
                     touchEvent->touchPoints().first();
             QMouseEvent mouseEvent(eventType,

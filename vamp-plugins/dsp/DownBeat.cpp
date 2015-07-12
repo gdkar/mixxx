@@ -37,22 +37,18 @@ DownBeat::DownBeat(float originalSampleRate,
     m_bufsiz(0),
     m_buffill(0),
     m_beatframesize(0),
-    m_beatframe(0)
-{
+    m_beatframe(0){
     // beat frame size is next power of two up from 1.3 seconds at the
     // downsampled rate (happens to produce 4096 for 44100 or 48000 at
     // 16x decimation, which is our expected normal situation)
-    m_beatframesize = MathUtilities::nextPowerOfTwo
-        (int((m_rate / decimationFactor) * 1.3));
+    m_beatframesize = MathUtilities::nextPowerOfTwo (int((m_rate / decimationFactor) * 1.3));
 //    std::cerr << "rate = " << m_rate << ", bfs = " << m_beatframesize << std::endl;
-    m_beatframe = new double[m_beatframesize];
-    m_fftRealOut = new double[m_beatframesize];
-    m_fftImagOut = new double[m_beatframesize];
-    m_fft = new FFTReal(m_beatframesize);
+    m_beatframe = new float[m_beatframesize];
+    m_fftRealOut = new float[m_beatframesize];
+    m_fftImagOut = new float[m_beatframesize];
+    m_fft = new FFT(m_beatframesize);
 }
-
-DownBeat::~DownBeat()
-{
+DownBeat::~DownBeat(){
     delete m_decimator1;
     delete m_decimator2;
     if (m_buffer) free(m_buffer);
@@ -180,7 +176,7 @@ DownBeat::findDownBeats(const float *audio,
 
 //        float rms = 0;
         for (size_t j = 0; j < beatlen && j < m_beatframesize; ++j) {
-            double mul = 0.5 * (1.0 - cos(TWO_PI * (double(j) / double(beatlen))));
+            float mul = 0.5 * (1.0 - cos(TWO_PI * (float(j) / float(beatlen))));
             m_beatframe[j] = audio[beatstart + j] * mul;
 //            rms += m_beatframe[j] * m_beatframe[j];
         }
@@ -193,13 +189,12 @@ DownBeat::findDownBeats(const float *audio,
 
         // Now FFT beat frame
         
-        m_fft->process(false, m_beatframe, m_fftRealOut, m_fftImagOut);
+        m_fft->process(false, m_beatframe, nullptr,m_fftRealOut, m_fftImagOut);
         
         // Calculate magnitudes
 
         for (size_t j = 0; j < m_beatframesize/2; ++j) {
-            newspec[j] = sqrt(m_fftRealOut[j] * m_fftRealOut[j] +
-                              m_fftImagOut[j] * m_fftImagOut[j]);
+            newspec[j] = hypotf(m_fftRealOut[j], m_fftImagOut[j] );
         }
 
         // Preserve peaks by applying adaptive threshold
@@ -219,18 +214,11 @@ DownBeat::findDownBeats(const float *audio,
             oldspec[j] = newspec[j];
         }
     }
-
     // We now have all spectral difference measures in specdiff
-
     int timesig = m_bpb;
     if (timesig == 0) timesig = 4;
-
     d_vec_t dbcand(timesig); // downbeat candidates
-
-    for (int beat = 0; beat < timesig; ++beat) {
-        dbcand[beat] = 0;
-    }
-
+    for (int beat = 0; beat < timesig; ++beat) {dbcand[beat] = 0;}
    // look for beat transition which leads to greatest spectral change
    for (int beat = 0; beat < timesig; ++beat) {
        int count = 0;
@@ -252,7 +240,7 @@ DownBeat::findDownBeats(const float *audio,
     }
 }
 
-double
+float
 DownBeat::measureSpecDiff(d_vec_t oldspec, d_vec_t newspec)
 {
     // JENSEN-SHANNON DIVERGENCE BETWEEN SPECTRAL FRAMES
@@ -261,11 +249,11 @@ DownBeat::measureSpecDiff(d_vec_t oldspec, d_vec_t newspec)
     if (SPECSIZE > oldspec.size()/4) {
         SPECSIZE = oldspec.size()/4;
     }
-    double SD = 0.;
-    double sd1 = 0.;
+    float SD = 0.;
+    float sd1 = 0.;
 
-    double sumnew = 0.;
-    double sumold = 0.;
+    float sumnew = 0.;
+    float sumold = 0.;
   
     for (unsigned int i = 0;i < SPECSIZE;i++)
     {
@@ -275,12 +263,12 @@ DownBeat::measureSpecDiff(d_vec_t oldspec, d_vec_t newspec)
         sumnew+=newspec[i];
         sumold+=oldspec[i];
     } 
-    
+    auto sumnewinv = 1.f/sumnew;
+    auto sumoldinv = 1.f/sumold;
     for (unsigned int i = 0;i < SPECSIZE;i++)
     {
-        newspec[i] /= (sumnew);
-        oldspec[i] /= (sumold);
-        
+        newspec[i] *= (sumnewinv);
+        oldspec[i] *= (sumoldinv);
         // IF ANY SPECTRAL VALUES ARE 0 (SHOULDN'T BE ANY!) SET THEM TO 1
         if (newspec[i] == 0)
         {
@@ -293,16 +281,13 @@ DownBeat::measureSpecDiff(d_vec_t oldspec, d_vec_t newspec)
         }
         
         // JENSEN-SHANNON CALCULATION
-        sd1 = 0.5*oldspec[i] + 0.5*newspec[i];	
-        SD = SD + (-sd1*log(sd1)) + (0.5*(oldspec[i]*log(oldspec[i]))) + (0.5*(newspec[i]*log(newspec[i])));
+        sd1 = 0.5f*oldspec[i] + 0.5f*newspec[i];	
+        SD = SD + (-sd1*logf(sd1)) + (0.5f*(oldspec[i]*logf(oldspec[i]))) + (0.5f*(newspec[i]*logf(newspec[i])));
     }
-    
     return SD;
 }
-
 void
-DownBeat::getBeatSD(vector<double> &beatsd) const
-{
+DownBeat::getBeatSD(vector<float> &beatsd) const{
     for (int i = 0; i < (int)m_beatsd.size(); ++i) beatsd.push_back(m_beatsd[i]);
 }
 

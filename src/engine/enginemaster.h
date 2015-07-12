@@ -58,36 +58,18 @@ class EngineMaster : public QObject, public AudioSource {
                  bool bEnableSidechain,
                  bool bRampingGain);
     virtual ~EngineMaster();
-
     // Get access to the sample buffers. None of these are thread safe. Only to
     // be called by SoundManager.
     const CSAMPLE* buffer(AudioOutput output) const;
-
-    inline const QString& getMasterGroup() const {
-        return m_masterHandle.name();
-    }
-
-    inline const QString& getHeadphoneGroup() const {
-        return m_headphoneHandle.name();
-    }
-
-    inline const QString& getBusLeftGroup() const {
-        return m_busLeftHandle.name();
-    }
-
-    inline const QString& getBusCenterGroup() const {
-        return m_busCenterHandle.name();
-    }
-
-    inline const QString& getBusRightGroup() const {
-        return m_busRightHandle.name();
-    }
-
+    inline const QString& getMasterGroup() const {return m_masterHandle.name();}
+    inline const QString& getHeadphoneGroup() const {return m_headphoneHandle.name();}
+    inline const QString& getBusLeftGroup() const {return m_busLeftHandle.name();}
+    inline const QString& getBusCenterGroup() const {return m_busCenterHandle.name();}
+    inline const QString& getBusRightGroup() const {return m_busRightHandle.name();}
     ChannelHandleAndGroup registerChannelGroup(const QString& group) {
         return ChannelHandleAndGroup(
                 m_channelHandleFactory.getOrCreateHandle(group), group);
     }
-
     // WARNING: These methods are called by the main thread. They should only
     // touch the volatile bool connected indicators (see below). However, when
     // these methods are called the callback is guaranteed to be inactive
@@ -95,9 +77,7 @@ class EngineMaster : public QObject, public AudioSource {
     // in the future.
     virtual void onOutputConnected(AudioOutput output);
     virtual void onOutputDisconnected(AudioOutput output);
-
     void process(const int iBufferSize);
-
     // Add an EngineChannel to the mixing engine. This is not thread safe --
     // only call it before the engine has started mixing.
     void addChannel(EngineChannel* pChannel);

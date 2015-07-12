@@ -40,38 +40,24 @@ class EffectParameter : public QObject {
 
     EffectManifestParameter::LinkType getDefaultLinkType() const;
     double getNeutralPointOnScale() const;
-
     double getValue() const;
-
     void setValue(double value);
-
     double getDefault() const;
     void setDefault(double defaultValue);
-
     double getMinimum() const;
     void setMinimum(double minimum);
-
     double getMaximum() const;
     void setMaximum(double maximum);
-
     EffectManifestParameter::ControlHint getControlHint() const;
-
     void updateEngineState();
-
   signals:
     void valueChanged(double value);
-
   private:
-    QString debugString() const {
-        return QString("EffectParameter(%1)").arg(m_parameter.name());
-    }
-
-    static bool clampValue(double* pValue,
-                           const double& minimum, const double& maximum);
+    QString debugString() const {return QString("EffectParameter(%1)").arg(m_parameter.name());}
+    static bool clampValue(double* pValue,const double& minimum, const double& maximum);
     bool clampValue();
     bool clampDefault();
     bool clampRanges();
-
     Effect* m_pEffect;
     EffectsManager* m_pEffectsManager;
     int m_iParameterNumber;

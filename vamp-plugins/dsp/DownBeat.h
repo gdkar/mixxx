@@ -26,7 +26,7 @@
 
 using std::vector;
 
-class FFTReal;
+class FFT;
 
 /**
  * This class takes an input audio signal and a sequence of beat
@@ -74,7 +74,7 @@ public:
      */
     void findDownBeats(const float *audio, // downsampled
                        size_t audioLength, // after downsampling
-                       const vector<double> &beats,
+                       const vector<float> &beats,
                        vector<int> &downbeats);
 
     /**
@@ -86,7 +86,7 @@ public:
      * difference between region prior to the beat's nominal position
      * and the region following it.
      */
-    void getBeatSD(vector<double> &beatsd) const;
+    void getBeatSD(vector<float> &beatsd) const;
     
     /**
      * For your downsampling convenience: call this function
@@ -112,11 +112,11 @@ public:
 private:
     typedef vector<int> i_vec_t;
     typedef vector<vector<int> > i_mat_t;
-    typedef vector<double> d_vec_t;
-    typedef vector<vector<double> > d_mat_t;
+    typedef vector<float> d_vec_t;
+    typedef vector<vector<float> > d_mat_t;
 
     void makeDecimators();
-    double measureSpecDiff(d_vec_t oldspec, d_vec_t newspec);
+    float measureSpecDiff(d_vec_t oldspec, d_vec_t newspec);
 
     int m_bpb;
     float m_rate;
@@ -129,10 +129,10 @@ private:
     size_t m_bufsiz;
     size_t m_buffill;
     size_t m_beatframesize;
-    double *m_beatframe;
-    FFTReal *m_fft;
-    double *m_fftRealOut;
-    double *m_fftImagOut;
+    float *m_beatframe;
+    FFT*m_fft;
+    float *m_fftRealOut;
+    float *m_fftImagOut;
     d_vec_t m_beatsd;
 };
 

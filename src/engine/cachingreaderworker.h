@@ -65,12 +65,11 @@ typedef struct ReaderStatusUpdate {
 
 class CachingReaderWorker : public EngineWorker {
     Q_OBJECT
-
   public:
     // Construct a CachingReader with the given group.
-    CachingReaderWorker(QString group,
+    CachingReaderWorker(const QString &group,
             FIFO<ChunkReadRequest>* pChunkReadRequestFIFO,
-            FIFO<ReaderStatusUpdate>* pReaderStatusFIFO, QObject *pParent=nullptr);
+            FIFO<ReaderStatusUpdate>* pReaderStatusFIFO,QObject *pParent=nullptr);
     virtual ~CachingReaderWorker();
 
     // Request to load a new track. wake() must be called afterwards.

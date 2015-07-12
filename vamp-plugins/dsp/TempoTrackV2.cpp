@@ -43,10 +43,10 @@ TempoTrackV2::filter_df(d_vec_t &df)
     b[1] = 0.4131;
     b[2] = 0.2066;
     
-    double inp1 = 0.;
-    double inp2 = 0.;
-    double out1 = 0.;
-    double out2 = 0.;
+    float inp1 = 0.;
+    float inp2 = 0.;
+    float out1 = 0.;
+    float out2 = 0.;
 
 
     // forwards filtering
@@ -93,9 +93,9 @@ TempoTrackV2::filter_df(d_vec_t &df)
 
 
 void
-TempoTrackV2::calculateBeatPeriod(const vector<double> &df,
-                                  vector<double> &beat_period,
-                                  vector<double> &tempi)
+TempoTrackV2::calculateBeatPeriod(const vector<float> &df,
+                                  vector<float> &beat_period,
+                                  vector<float> &tempi)
 {
     // to follow matlab.. split into 512 sample frames with a 128 hop size
     // calculate the acf,
@@ -104,13 +104,13 @@ TempoTrackV2::calculateBeatPeriod(const vector<double> &df,
     // and get best path
 
     unsigned int wv_len = 128;
-    double rayparam = 43.;
+    float rayparam = 43.;
 
     // make rayleigh weighting curve
     d_vec_t wv(wv_len);
     for (unsigned int i=0; i<wv.size(); i++)
     {
-        wv[i] = (static_cast<double> (i) / pow(rayparam,2.)) * exp((-1.*pow(-static_cast<double> (i),2.)) / (2.*pow(rayparam,2.)));
+        wv[i] = (static_cast<float> (i) / pow(rayparam,2.)) * exp((-1.*pow(-static_cast<float> (i),2.)) / (2.*pow(rayparam,2.)));
     }
 
     // beat tracking frame size (roughly 6 seconds) and hop (1.5 seconds)
@@ -165,15 +165,15 @@ TempoTrackV2::get_rcf(const d_vec_t &dfframe_in, const d_vec_t &wv, d_vec_t &rcf
     
     for (unsigned int lag=0; lag<dfframe.size(); lag++)
     {
-        double sum = 0.;
-        double tmp = 0.;
+        float sum = 0.;
+        float tmp = 0.;
 
         for (unsigned int n=0; n<(dfframe.size()-lag); n++)
         {
             tmp = dfframe[n] * dfframe[n+lag];    
             sum += tmp;
         }
-        acf[lag] = static_cast<double> (sum/ (dfframe.size()-lag));
+        acf[lag] = static_cast<float> (sum/ (dfframe.size()-lag));
     }
 
     // now apply comb filtering
@@ -193,7 +193,7 @@ TempoTrackV2::get_rcf(const d_vec_t &dfframe_in, const d_vec_t &wv, d_vec_t &rcf
     // apply adaptive threshold to rcf
     MathUtilities::adaptiveThreshold(rcf);
   
-    double rcfsum =0.;
+    float rcfsum =0.;
     for (unsigned int i=0; i<rcf.size(); i++)
     {
         rcf[i] += EPS ;
@@ -226,13 +226,13 @@ TempoTrackV2::viterbi_decode(const d_mat_t &rcfmat, const d_vec_t &wv, d_vec_t &
     
     // variance of Gaussians in transition matrix
     // formed of Gaussians on diagonal - implies slow tempo change
-    double sigma = 8.;
+    float sigma = 8.;
     // don't want really short beat periods, or really long ones
     for (unsigned int i=20;i <wv.size()-20; i++)
     {
         for (unsigned int j=20; j<wv.size()-20; j++)
         {	
-            double mu = static_cast<double>(i);
+            float mu = static_cast<float>(i);
             tmat[i][j] = exp( (-1.*pow((j-mu),2.)) / (2.*pow(sigma,2.)) );
         }
     }
@@ -267,7 +267,7 @@ TempoTrackV2::viterbi_decode(const d_mat_t &rcfmat, const d_vec_t &wv, d_vec_t &
         psi[0][j] = 0;
     }
     
-    double deltasum = 0.;
+    float deltasum = 0.;
     for (unsigned int i=0; i<Q; i++)
     {
         deltasum += delta[0][i];
@@ -297,7 +297,7 @@ TempoTrackV2::viterbi_decode(const d_mat_t &rcfmat, const d_vec_t &wv, d_vec_t &
         }
 
         // normalise current delta column
-        double deltasum = 0.;
+        float deltasum = 0.;
         for (unsigned int i=0; i<Q; i++)
         {
             deltasum += delta[t][i];
@@ -351,10 +351,10 @@ TempoTrackV2::viterbi_decode(const d_mat_t &rcfmat, const d_vec_t &wv, d_vec_t &
     }
 }
 
-double
+float
 TempoTrackV2::get_max_val(const d_vec_t &df)
 {
-    double maxval = 0.;
+    float maxval = 0.;
     for (unsigned int i=0; i<df.size(); i++)
     {
         if (maxval < df[i])
@@ -369,7 +369,7 @@ TempoTrackV2::get_max_val(const d_vec_t &df)
 int
 TempoTrackV2::get_max_ind(const d_vec_t &df)
 {
-    double maxval = 0.;
+    float maxval = 0.;
     int ind = 0;
     for (unsigned int i=0; i<df.size(); i++)
     {
@@ -386,7 +386,7 @@ TempoTrackV2::get_max_ind(const d_vec_t &df)
 void
 TempoTrackV2::normalise_vec(d_vec_t &df)
 {
-    double sum = 0.;
+    float sum = 0.;
     for (unsigned int i=0; i<df.size(); i++)
     {
         sum += df[i];
@@ -399,9 +399,9 @@ TempoTrackV2::normalise_vec(d_vec_t &df)
 }
 
 void
-TempoTrackV2::calculateBeats(const vector<double> &df,
-                             const vector<double> &beat_period,
-                             vector<double> &beats)
+TempoTrackV2::calculateBeats(const vector<float> &df,
+                             const vector<float> &beat_period,
+                             vector<float> &beats)
 {
     if (df.empty() || beat_period.empty()) return;
 
@@ -415,8 +415,8 @@ TempoTrackV2::calculateBeats(const vector<double> &df,
         backlink[i] = -1;
     }
 
-    double tightness = 4.;
-    double alpha = 0.9;
+    float tightness = 4.;
+    float alpha = 0.9;
 
     // main loop
     for (unsigned int i=0; i<localscore.size(); i++)
@@ -430,7 +430,7 @@ TempoTrackV2::calculateBeats(const vector<double> &df,
 
         for (unsigned int j=0;j<txwt.size();j++)
         {
-            double mu = static_cast<double> (beat_period[i]);
+            float mu = static_cast<float> (beat_period[i]);
             txwt[j] = exp( -0.5*pow(tightness * log((MathUtilities::round(2*mu)-j)/mu),2));
 
             // IF IN THE ALLOWED RANGE, THEN LOOK AT CUMSCORE[I+PRANGE_MIN+J
@@ -444,7 +444,7 @@ TempoTrackV2::calculateBeats(const vector<double> &df,
         }
 
         // find max value and index of maximum value
-        double vv = get_max_val(scorecands);
+        float vv = get_max_val(scorecands);
         int xx = get_max_ind(scorecands);
 
         cumscore[i] = alpha*vv + (1.-alpha)*localscore[i];
@@ -481,7 +481,7 @@ TempoTrackV2::calculateBeats(const vector<double> &df,
     // REVERSE SEQUENCE OF IBEATS AND STORE AS BEATS
     for (unsigned int i=0; i<ibeats.size(); i++)
     { 
-        beats.push_back( static_cast<double>(ibeats[ibeats.size()-i-1]) );
+        beats.push_back( static_cast<float>(ibeats[ibeats.size()-i-1]) );
     }
 }
 

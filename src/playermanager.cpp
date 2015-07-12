@@ -6,7 +6,7 @@
 
 #include "controlobject.h"
 #include "trackinfoobject.h"
-#include "basetrackplayer.h"
+#include "trackplayer.h"
 #include "analyserqueue.h"
 #include "controlobject.h"
 #include "samplerbank.h"
@@ -22,7 +22,8 @@
 PlayerManager::PlayerManager(ConfigObject<ConfigValue>* pConfig,
                              SoundManager* pSoundManager,
                              EffectsManager* pEffectsManager,
-                             EngineMaster* pEngine) :
+                             EngineMaster* pEngine, QObject *pParent) :
+        QObject(pParent),
         m_mutex(QMutex::Recursive),
         m_pConfig(pConfig),
         m_pSoundManager(pSoundManager),
@@ -75,15 +76,11 @@ PlayerManager::~PlayerManager() {
     m_players.clear();
     m_decks.clear();
     m_samplers.clear();
-
     delete m_pCONumSamplers;
     delete m_pCONumDecks;
     delete m_pCONumPreviewDecks;
-    if (m_pAnalyserQueue) {
-        delete m_pAnalyserQueue;
-    }
+    if (m_pAnalyserQueue) {delete m_pAnalyserQueue;}
 }
-
 void PlayerManager::bindToLibrary(Library* pLibrary) {
     QMutexLocker locker(&m_mutex);
     connect(pLibrary, SIGNAL(loadTrackToPlayer(TrackPointer, QString, bool)),
@@ -98,21 +95,21 @@ void PlayerManager::bindToLibrary(Library* pLibrary) {
 
     // Connect the player to the analyser queue so that loaded tracks are
     // analysed.
-    foreach(BaseTrackPlayer* pDeck, m_decks) {
+    foreach(TrackPlayer* pDeck, m_decks) {
         connect(pDeck, SIGNAL(newTrackLoaded(TrackPointer)),
                 m_pAnalyserQueue, SLOT(slotAnalyseTrack(TrackPointer)));
     }
 
     // Connect the player to the analyser queue so that loaded tracks are
     // analysed.
-    foreach(BaseTrackPlayer* pSampler, m_samplers) {
+    foreach(TrackPlayer* pSampler, m_samplers) {
         connect(pSampler, SIGNAL(newTrackLoaded(TrackPointer)),
                 m_pAnalyserQueue, SLOT(slotAnalyseTrack(TrackPointer)));
     }
 
     // Connect the player to the analyser queue so that loaded tracks are
     // analysed.
-    foreach(BaseTrackPlayer* pPreviewDeck, m_preview_decks) {
+    foreach(TrackPlayer* pPreviewDeck, m_preview_decks) {
         connect(pPreviewDeck, SIGNAL(newTrackLoaded(TrackPointer)),
                 m_pAnalyserQueue, SLOT(slotAnalyseTrack(TrackPointer)));
     }
@@ -152,21 +149,13 @@ bool PlayerManager::isDeckGroup(const QString& group, int* number) {
 
 // static
 bool PlayerManager::isPreviewDeckGroup(const QString& group, int* number) {
-    if (!group.startsWith("[PreviewDeck")) {
-        return false;
-    }
-
+    if (!group.startsWith("[PreviewDeck")) {return false;}
     bool ok = false;
     int deckNum = group.mid(12,group.lastIndexOf("]")-12).toInt(&ok);
-    if (!ok || deckNum <= 0) {
-        return false;
-    }
-    if (number != nullptr) {
-        *number = deckNum;
-    }
+    if (!ok || deckNum <= 0) {return false;}
+    if (number != nullptr) {*number = deckNum;}
     return true;
 }
-
 // static
 unsigned int PlayerManager::numSamplers() {
     // We do this to cache the control once it is created so callers don't incur
@@ -271,7 +260,7 @@ void PlayerManager::addDeckInner() {
     if (number % 2 == 0) {
         orientation = EngineChannel::RIGHT;
     }
-    BaseTrackPlayer* pDeck = new BaseTrackPlayer(m_pConfig, m_pEngine, m_pEffectsManager,
+    TrackPlayer* pDeck = new TrackPlayer(m_pConfig, m_pEngine, m_pEffectsManager,
                            orientation, group, true,false, this);
     if (m_pAnalyserQueue) {
         connect(pDeck, SIGNAL(newTrackLoaded(TrackPointer)),m_pAnalyserQueue, SLOT(slotAnalyseTrack(TrackPointer)));
@@ -286,7 +275,7 @@ void PlayerManager::addDeckInner() {
     // Setup equalizer rack for this deck.
     EqualizerRackPointer pEqRack = m_pEffectsManager->getEqualizerRack(0);
     if (pEqRack) {pEqRack->addEffectChainSlotForGroup(group);}
-    // BaseTrackPlayer needs to delay until we have setup the equalizer rack for
+    // TrackPlayer needs to delay until we have setup the equalizer rack for
     // this deck to fetch the legacy EQ controls.
     // TODO(rryan): Find a way to remove this cruft.
     pDeck->setupEqControls();
@@ -312,7 +301,7 @@ void PlayerManager::addSamplerInner() {
     // All samplers are in the center
     EngineChannel::ChannelOrientation orientation = EngineChannel::CENTER;
 
-    BaseTrackPlayer* pSampler = new BaseTrackPlayer(m_pConfig, m_pEngine,
+    TrackPlayer* pSampler = new TrackPlayer(m_pConfig, m_pEngine,
                                     m_pEffectsManager, orientation, group,true,false,this);
     if (m_pAnalyserQueue) {
         connect(pSampler, SIGNAL(newTrackLoaded(TrackPointer)),
@@ -335,7 +324,7 @@ void PlayerManager::addPreviewDeckInner() {
     DEBUG_ASSERT_AND_HANDLE(!m_players.contains(group)) {return;}
     // All preview decks are in the center
     EngineChannel::ChannelOrientation orientation = EngineChannel::CENTER;
-    BaseTrackPlayer* pPreviewDeck = new BaseTrackPlayer(m_pConfig, m_pEngine,
+    TrackPlayer* pPreviewDeck = new TrackPlayer(m_pConfig, m_pEngine,
                                                 m_pEffectsManager, orientation,
                                                 group,false,true,this);
     if (m_pAnalyserQueue) {
@@ -345,13 +334,13 @@ void PlayerManager::addPreviewDeckInner() {
     m_players[group] = pPreviewDeck;
     m_preview_decks.append(pPreviewDeck);
 }
-BaseTrackPlayer* PlayerManager::getPlayer(QString group) const {
+TrackPlayer* PlayerManager::getPlayer(QString group) const {
     QMutexLocker locker(&m_mutex);
     if (m_players.contains(group)) {return m_players[group];}
     return nullptr;
 }
 
-BaseTrackPlayer* PlayerManager::getDeck(unsigned int deck) const {
+TrackPlayer* PlayerManager::getDeck(unsigned int deck) const {
     QMutexLocker locker(&m_mutex);
     if (deck < 1 || deck > numDecks()) {
         qWarning() << "Warning PlayerManager::getDeck() called with invalid index: " << deck;
@@ -359,7 +348,7 @@ BaseTrackPlayer* PlayerManager::getDeck(unsigned int deck) const {
     }
     return m_decks[deck - 1];
 }
-BaseTrackPlayer* PlayerManager::getPreviewDeck(unsigned int libPreviewPlayer) const {
+TrackPlayer* PlayerManager::getPreviewDeck(unsigned int libPreviewPlayer) const {
     QMutexLocker locker(&m_mutex);
     if (libPreviewPlayer < 1 || libPreviewPlayer > numPreviewDecks()) {
         qWarning() << "Warning PlayerManager::getPreviewDeck() called with invalid index: "
@@ -368,7 +357,7 @@ BaseTrackPlayer* PlayerManager::getPreviewDeck(unsigned int libPreviewPlayer) co
     }
     return m_preview_decks[libPreviewPlayer - 1];
 }
-BaseTrackPlayer* PlayerManager::getSampler(unsigned int sampler) const {
+TrackPlayer* PlayerManager::getSampler(unsigned int sampler) const {
     QMutexLocker locker(&m_mutex);
     if (sampler < 1 || sampler > numSamplers()) {
         qWarning() << "Warning PlayerManager::getSampler() called with invalid index: "
@@ -386,7 +375,7 @@ bool PlayerManager::hasVinylInput(int inputnum) const {
 void PlayerManager::slotLoadTrackToPlayer(TrackPointer pTrack, QString group, bool play) {
     // Do not lock mutex in this method unless it is changed to access
     // PlayerManager state.
-    BaseTrackPlayer* pPlayer = getPlayer(group);
+    TrackPlayer* pPlayer = getPlayer(group);
     if (pPlayer == nullptr) {
         qWarning() << "Invalid group argument " << group << " to slotLoadTrackToPlayer.";
         return;
@@ -409,9 +398,9 @@ void PlayerManager::slotLoadToSampler(QString location, int sampler) {
 }
 void PlayerManager::slotLoadTrackIntoNextAvailableDeck(TrackPointer pTrack) {
     QMutexLocker locker(&m_mutex);
-    QList<BaseTrackPlayer*>::iterator it = m_decks.begin();
+    QList<TrackPlayer*>::iterator it = m_decks.begin();
     while (it != m_decks.end()) {
-        BaseTrackPlayer* pDeck = *it;
+        TrackPlayer* pDeck = *it;
         ControlObject* playControl =
                 ControlObject::getControl(ConfigKey(pDeck->getGroup(), "play"));
         if (playControl && playControl->get() != 1.) {
@@ -424,9 +413,9 @@ void PlayerManager::slotLoadTrackIntoNextAvailableDeck(TrackPointer pTrack) {
 }
 void PlayerManager::slotLoadTrackIntoNextAvailableSampler(TrackPointer pTrack) {
     QMutexLocker locker(&m_mutex);
-    QList<BaseTrackPlayer*>::iterator it = m_samplers.begin();
+    QList<TrackPlayer*>::iterator it = m_samplers.begin();
     while (it != m_samplers.end()) {
-        BaseTrackPlayer* pSampler = *it;
+        TrackPlayer* pSampler = *it;
         ControlObject* playControl =
                 ControlObject::getControl(ConfigKey(pSampler->getGroup(), "play"));
         if (playControl && playControl->get() != 1.) {

@@ -128,26 +128,8 @@
 //	Not A Lawyer".
 //
 
-#ifndef FIDMK_H
-#define FIDMK_H
-
-#ifndef T_MSVC
- #ifdef HUGE_VAL
-  #define INF HUGE_VAL
- #else
-  #define INF (1.0/0.0)
- #endif
-#endif
-
-//Hacks for crappy linker error in MSVC... - Albert
-#ifdef T_MSVC
- #undef HUGE_VAL
- #define HUGE_VAL 1.797693134862315E+308
- #define INF HUGE_VAL
-#endif
-
-#define TWOPI (2*M_PI)
-
+#pragma
+#define TWOPI ((float)(2*M_PI))
 
 //
 //	Complex square root: aa= aa^0.5
@@ -774,6 +756,3 @@ prop_integral(double freq) {
    zertyp[0]= 1;
    zer[0]= -TWOPI * freq;
 }
-// END //
-#endif
-

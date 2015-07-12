@@ -34,7 +34,7 @@
 class EngineFilter : public EngineObject {
     Q_OBJECT
   public:
-    EngineFilter(char* conf, int predefinedType = 0);
+    EngineFilter(char* conf, int predefinedType = 0, QObject *pParent=nullptr);
     virtual ~EngineFilter();
     void process(CSAMPLE* pInOut, const int iBufferSize);
   protected:
@@ -79,8 +79,5 @@ class EngineFilter : public EngineObject {
     static CSAMPLE processSampleHp     (void *buf, const CSAMPLE sample);
     static CSAMPLE processSampleBp     (void *buf, const CSAMPLE sample);
     static CSAMPLE processSampleLp     (void *buf, const CSAMPLE sample);
-
 };
-
-
 #endif

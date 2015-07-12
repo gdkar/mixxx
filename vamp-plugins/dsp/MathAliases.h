@@ -20,7 +20,7 @@
 #include <complex>
 
 using namespace std;
-typedef complex<double> ComplexData;
+typedef complex<float> ComplexData;
 
 
 #ifndef PI

@@ -1,8 +1,8 @@
+#pragma once
+
 //
 //	fidlib include file
 //
-#ifndef FIDLIB_H
-#define FIDLIB_H
 typedef struct FidFilter FidFilter;
 struct FidFilter {
    short typ;		// Type of filter element 'I' IIR, 'F' FIR, or 0 for end of list
@@ -33,7 +33,7 @@ struct FidFilter {
 //
 #ifndef RF_COMBINED
 #ifndef RF_CMDLIST
-#define RF_CMDLIST
+#define RF_COMBINED
 #endif
 #endif
 #ifdef RF_COMBINED
@@ -103,5 +103,4 @@ extern void fid_run_free(Run *run);
 
 #ifdef __cplusplus
 }
-#endif
 #endif

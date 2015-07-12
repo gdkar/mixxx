@@ -28,26 +28,26 @@
 class MathUtilities  
 {
 public:	
-    static double round( double x );
+    static float round( float x );
 
-    static void	  getFrameMinMax( const double* data, unsigned int len,  double* min, double* max );
+    static void	  getFrameMinMax( const float* data, unsigned int len,  float* min, float* max );
 
-    static double mean( const double* src, unsigned int len );
-    static double mean( const std::vector<double> &data,
+    static float mean( const float* src, unsigned int len );
+    static float mean( const std::vector<float> &data,
                         unsigned int start, unsigned int count );
-    static double sum( const double* src, unsigned int len );
-    static double median( const double* src, unsigned int len );
+    static float sum( const float* src, unsigned int len );
+    static float median( const float* src, unsigned int len );
 
-    static double princarg( double ang );
-    static double mod( double x, double y);
+    static float princarg( float ang );
+    static float mod( float x, float y);
 
-    static void	  getAlphaNorm(const double *data, unsigned int len, unsigned int alpha, double* ANorm);
-    static double getAlphaNorm(const std::vector <double> &data, unsigned int alpha );
+    static void	  getAlphaNorm(const float *data, unsigned int len, unsigned int alpha, float* ANorm);
+    static float getAlphaNorm(const std::vector <float> &data, unsigned int alpha );
 
-    static void   circShift( double* data, int length, int shift);
+    static void   circShift( float* data, int length, int shift);
 
-    static int	  getMax( double* data, unsigned int length, double* max = 0 );
-    static int	  getMax( const std::vector<double> &data, double* max = 0 );
+    static int	  getMax( float* data, unsigned int length, float* max = 0 );
+    static int	  getMax( const std::vector<float> &data, float* max = 0 );
     static int    compareInt(const void * a, const void * b);
 
     enum NormaliseType {
@@ -56,14 +56,14 @@ public:
         NormaliseUnitMax
     };
 
-    static void   normalise(double *data, int length,
+    static void   normalise(float *data, int length,
                             NormaliseType n = NormaliseUnitMax);
 
-    static void   normalise(std::vector<double> &data,
+    static void   normalise(std::vector<float> &data,
                             NormaliseType n = NormaliseUnitMax);
 
     // moving mean threshholding:
-    static void adaptiveThreshold(std::vector<double> &data);
+    static void adaptiveThreshold(std::vector<float> &data);
 
     static bool isPowerOfTwo(int x);
     static int nextPowerOfTwo(int x); // e.g. 1300 -> 2048, 2048 -> 2048

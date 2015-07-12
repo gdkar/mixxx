@@ -167,7 +167,9 @@ int main(int argc, char * argv[])
 {
 #ifdef Q_OS_LINUX
     XInitThreads();
+    QCoreApplication::setAttribute(Qt::AA_X11InitThreads);
 #endif
+
     // Check if an instance of Mixxx is already running
     // See http://qt.nokia.com/products/appdev/add-on-products/catalog/4/Utilities/qtsingleapplication
 
@@ -182,6 +184,7 @@ int main(int argc, char * argv[])
     QString mixxxVersion = Version::version();
     QByteArray mixxxVersionBA = mixxxVersion.toLocal8Bit();
     QCoreApplication::setApplicationVersion(mixxxVersion);
+    QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
     // Construct a list of strings based on the command line arguments
     CmdlineArgs& args = CmdlineArgs::Instance();
     if (!args.Parse(argc, argv)) {
