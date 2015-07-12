@@ -25,17 +25,14 @@ VampPluginLoader::~VampPluginLoader() {
 
 VampPluginLoader* VampPluginLoader::getInstance() {
     QMutexLocker lock(&s_mutex);
-    if (!s_instance) {
-        s_instance = new VampPluginLoader();
-    }
+    if (!s_instance) {s_instance = new VampPluginLoader();}
     return s_instance;
 }
 
 PluginLoader::PluginKey VampPluginLoader::composePluginKey(
     std::string libraryName, std::string identifier) {
     QMutexLocker lock(&s_mutex);
-    PluginLoader::PluginKey key = m_pVampPluginLoader->composePluginKey(
-        libraryName, identifier);
+    PluginLoader::PluginKey key = m_pVampPluginLoader->composePluginKey(libraryName, identifier);
     return key;
 }
 
@@ -54,8 +51,7 @@ Vamp::Plugin* VampPluginLoader::loadPlugin(
     Vamp::HostExt::PluginLoader::PluginKey key,
     float inputSampleRate, int adapterFlags) {
     QMutexLocker lock(&s_mutex);
-    return m_pVampPluginLoader->loadPlugin(
-        key, inputSampleRate, adapterFlags);
+    return m_pVampPluginLoader->loadPlugin(key, inputSampleRate, adapterFlags);
 }
 
 

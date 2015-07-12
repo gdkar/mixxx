@@ -70,9 +70,9 @@ MoogLadder4FilterGroupState::MoogLadder4FilterGroupState()
           m_samplerate(kStartupSamplerate) {
     m_pBuf = SampleUtil::alloc(MAX_BUFFER_LEN);
     m_pLowFilter = new EngineFilterMoogLadder4Low(
-            kStartupSamplerate, m_loFreq * kStartupSamplerate, m_resonance);
+            kStartupSamplerate, m_loFreq * kStartupSamplerate, m_resonance,nullptr);
     m_pHighFilter = new EngineFilterMoogLadder4High(
-            kStartupSamplerate, m_hiFreq * kStartupSamplerate, m_resonance);
+            kStartupSamplerate, m_hiFreq * kStartupSamplerate, m_resonance,nullptr);
 }
 
 MoogLadder4FilterGroupState::~MoogLadder4FilterGroupState() {
@@ -166,7 +166,6 @@ void MoogLadder4FilterEffect::processChannel(
             SampleUtil::copy(pOutput, pInput, numSamples);
         }
     }
-
     pState->m_loFreq = lpf;
     pState->m_resonance = resonance;
     pState->m_hiFreq = hpf;

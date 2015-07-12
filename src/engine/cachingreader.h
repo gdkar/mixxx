@@ -72,7 +72,7 @@ class CachingReader : public QObject {
   public:
     // Construct a CachingReader with the given group.
     CachingReader(QString group,
-                  ConfigObject<ConfigValue>* _config);
+                  ConfigObject<ConfigValue>* _config, QObject *pParent=nullptr);
     virtual ~CachingReader();
 
     virtual void process();

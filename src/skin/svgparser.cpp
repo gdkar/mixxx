@@ -39,7 +39,7 @@ QDomNode SvgParser::parseSvgTree(const QDomNode& svgSkinNode,
 void SvgParser::scanTree(QDomNode* node) const {
     parseElement(node);
     QDomNodeList children = node->childNodes();
-    for (int i = 0; i < children.count(); ++i) {
+    for (uint i = 0; i < children.length(); ++i) {
         QDomNode child = children.at(i);
         if (child.isElement()) {
             scanTree(&child);
@@ -60,7 +60,7 @@ void SvgParser::parseElement(QDomNode* node) const {
 
             if (!result.isNull()) {
                 QDomNodeList children = node->childNodes();
-                for (int i = 0; i < children.count(); ++i) {
+                for (uint i = 0; i < children.length(); ++i) {
                     node->removeChild(children.at(i));
                 }
 
@@ -132,7 +132,8 @@ void SvgParser::parseAttributes(const QDomNode& node) const {
     // expr-attribute_name="var_name";
     QRegExp nameRx("^expr-([^=\\s]+)$");
     // TODO (jclaveau) : move this pattern definition to the script extension?
-    for (int i = 0; i < attributes.count(); i++) {
+    for (uint i=0; i < attributes.length(); i++) {
+
         QDomAttr attribute = attributes.item(i).toAttr();
         QString attributeValue = attribute.value();
         QString attributeName = attribute.name();

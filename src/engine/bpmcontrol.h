@@ -20,7 +20,6 @@ class BpmControl : public EngineControl {
   public:
     BpmControl(QString group, ConfigObject<ConfigValue>* _config, QObject *pParent=nullptr);
     virtual ~BpmControl();
-
     double getBpm() const;
     double getLocalBpm() const { return m_pLocalBpm ? m_pLocalBpm->get() : 0.0; }
     // When in master sync mode, ratecontrol calls calcSyncedRate to figure out

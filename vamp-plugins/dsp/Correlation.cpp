@@ -29,10 +29,10 @@ Correlation::~Correlation()
 
 }
 
-void Correlation::doAutoUnBiased(double *src, double *dst, unsigned int length)
+void Correlation::doAutoUnBiased(float *src, float *dst, unsigned int length)
 {
-    double tmp = 0.0;
-    double outVal = 0.0;
+    float tmp = 0.0;
+    float outVal = 0.0;
 
     unsigned int i,j;
 

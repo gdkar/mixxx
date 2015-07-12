@@ -18,7 +18,6 @@
 class Decimator  
 {
 public:
-    void process( const double* src, double* dst );
     void process( const float* src, float* dst );
 
     /**
@@ -41,22 +40,21 @@ private:
     void resetFilter();
     void deInitialise();
     void initialise( unsigned int inLength, unsigned int decFactor );
-    void doAntiAlias( const double* src, double* dst, unsigned int length );
-    void doAntiAlias( const float* src, double* dst, unsigned int length );
+    void doAntiAlias( const float* src, float* dst, unsigned int length );
 
     unsigned int m_inputLength;
     unsigned int m_outputLength;
     unsigned int m_decFactor;
 
-    double Input;
-    double Output ;
+    float Input;
+    float Output ;
 
-    double o1,o2,o3,o4,o5,o6,o7;
+    float o1,o2,o3,o4,o5,o6,o7;
 
-    double a[ 9 ];
-    double b[ 9 ];
+    float a[ 9 ];
+    float b[ 9 ];
 	
-    double* decBuffer;
+    float* decBuffer;
 };
 
 #endif // 

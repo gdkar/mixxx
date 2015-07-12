@@ -32,7 +32,7 @@ class EngineObject : public QObject {
     Q_OBJECT
     int recursion_depth = 0;
   public:
-    EngineObject( QObject *pParent = nullptr);
+    EngineObject( QObject *pParent );
     virtual ~EngineObject();
     virtual void process(CSAMPLE* pInOut, const int iBufferSize)
     {
@@ -55,8 +55,6 @@ class EngineObject : public QObject {
     };
     // Sub-classes re-implement and populate GroupFeatureState with the features
     // they extract.
-    virtual void collectFeatures(GroupFeatureState* pGroupFeatures) const {
-        Q_UNUSED(pGroupFeatures);
-    }
+    virtual void collectFeatures(GroupFeatureState* pGroupFeatures) const {Q_UNUSED(pGroupFeatures);}
 };
 #endif

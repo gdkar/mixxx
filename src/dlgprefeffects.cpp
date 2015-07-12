@@ -1,5 +1,4 @@
 #include "dlgprefeffects.h"
-
 #include "effects/effectsmanager.h"
 
 DlgPrefEffects::DlgPrefEffects(QWidget* pParent,

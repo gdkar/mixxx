@@ -22,10 +22,10 @@
 #include <algorithm>
 #include <iostream>
 
-class ChromaVector : public std::valarray<double>
+class ChromaVector : public std::valarray<float>
 {
 public:
-	ChromaVector(size_t uSize = 12) : std::valarray<double>()
+	ChromaVector(size_t uSize = 12) : std::valarray<float>()
 	{ resize(uSize, 0.0f); }
 	
 	virtual ~ChromaVector() {};
@@ -43,7 +43,7 @@ public:
 	void normalizeL1()
 	{
 		// normalize the chroma vector (L1 norm)
-		double dSum = 0.0;
+		float dSum = 0.0;
 	
 		for (size_t i = 0; i < 12; (dSum += std::abs((*this)[i++]))) ;
 		for (size_t i = 0; i < 12; dSum > 0.0000001?((*this)[i] /= dSum):(*this)[i]=0.0, i++) ;
@@ -58,10 +58,10 @@ public:
 	
 };
 
-class TCSVector : public std::valarray<double>
+class TCSVector : public std::valarray<float>
 {
 public:
-	TCSVector() : std::valarray<double>()
+	TCSVector() : std::valarray<float>()
 	{ resize(6, 0.0f); }
 	
 	virtual ~TCSVector() {};
@@ -76,9 +76,9 @@ public:
 		std::cout << std::endl;
 	}
 	
-	double magnitude() const
+	float magnitude() const
 	{
-		double dMag = 0.0;
+		float dMag = 0.0;
 		
 		for (size_t i = 0; i < 6; i++)
 		{
@@ -99,7 +99,7 @@ public:
 	virtual ~TonalEstimator();
 	TCSVector transform2TCS(const ChromaVector& rVector);
 protected:
-	std::valarray< std::valarray<double> > m_Basis;
+	std::valarray< std::valarray<float> > m_Basis;
 };
 
 #endif // _TONALESTIMATOR_

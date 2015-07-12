@@ -3,7 +3,6 @@
 
 #include "configobject.h"
 #include "trackinfoobject.h"
-#include "baseplayer.h"
 #include "engine/enginechannel.h"
 #include "engine/enginedeck.h"
 
@@ -15,31 +14,29 @@ class ControlObjectSlave;
 class AnalyserQueue;
 class EffectsManager;
 
-class BaseTrackPlayer : public BasePlayer {
-    Q_OBJECT
+class TrackPlayer : public QObject {
+    Q_OBJECT;
+    Q_PROPERTY(QString group READ getGroup CONSTANT);
   public:
     enum TrackLoadReset {
         RESET_NONE,
         RESET_PITCH,
         RESET_PITCH_AND_SPEED,
     };
-    BaseTrackPlayer(ConfigObject<ConfigValue>* pConfig,
+    TrackPlayer(ConfigObject<ConfigValue>* pConfig,
                         EngineMaster* pMixingEngine,
                         EffectsManager* pEffectsManager,
                         EngineChannel::ChannelOrientation defaultOrientation,
                         const QString &group,
                         bool defaultMaster,
                         bool defaultHeadphones, QObject *pParent=nullptr);
-    virtual ~BaseTrackPlayer();
-
+    virtual ~TrackPlayer();
     virtual TrackPointer getLoadedTrack() const;
-
     // TODO(XXX): Only exposed to let the passthrough AudioInput get
     // connected. Delete me when EngineMaster supports AudioInput assigning.
     EngineDeck* getEngineDeck() const;
-
     void setupEqControls();
-
+    const QString &getGroup(){return m_group;}
   public slots:
     virtual void slotLoadTrack(TrackPointer track, bool bPlay=false);
     virtual void slotFinishLoading(TrackPointer pTrackInfoObject);
@@ -52,7 +49,8 @@ class BaseTrackPlayer : public BasePlayer {
     void loadTrackFailed(TrackPointer pTrack);
     void newTrackLoaded(TrackPointer pTrack);
     void unloadingTrack(TrackPointer pTrack);
-  private:
+  protected:
+    const QString m_group;
     ConfigObject<ConfigValue>* m_pConfig;
     TrackPointer m_pLoadedTrack;
 

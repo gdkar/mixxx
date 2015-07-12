@@ -48,10 +48,8 @@ using std::endl;
     void *alloca (size_t);
  #endif
 
-float BarBeatTracker::m_stepSecs = 0.01161; // 512 samples at 44100
-
-class BarBeatTrackerData
-{
+float BarBeatTracker::m_stepSecs = (512.f/44100.f); // 512 samples at 44100
+class BarBeatTrackerData{
 public:
     BarBeatTrackerData(float rate, const DFConfig &config) : dfConfig(config) {
 	df = new DetectionFunction(config);
@@ -75,7 +73,7 @@ public:
     DFConfig dfConfig;
     DetectionFunction *df;
     DownBeat *downBeat;
-    vector<double> dfOutput;
+    vector<float> dfOutput;
     Vamp::RealTime origin;
 };
     
@@ -86,18 +84,9 @@ BarBeatTracker::BarBeatTracker(float inputSampleRate) :
     m_bpb(4)
 {
 }
-
-BarBeatTracker::~BarBeatTracker()
-{
-    delete m_d;
-}
-
+BarBeatTracker::~BarBeatTracker(){delete m_d;}
 string
-BarBeatTracker::getIdentifier() const
-{
-    return "qm-barbeattracker";
-}
-
+BarBeatTracker::getIdentifier() const{return "qm-barbeattracker";}
 string
 BarBeatTracker::getName() const
 {
@@ -149,21 +138,17 @@ BarBeatTracker::getParameterDescriptors() const
 }
 
 float
-BarBeatTracker::getParameter(std::string name) const
-{
+BarBeatTracker::getParameter(std::string name) const{
     if (name == "bpb") return m_bpb;
     return 0.0;
 }
 
 void
-BarBeatTracker::setParameter(std::string name, float value)
-{
+BarBeatTracker::setParameter(std::string name, float value){
     if (name == "bpb") m_bpb = lrintf(value);
 }
-
 bool
-BarBeatTracker::initialise(size_t channels, size_t stepSize, size_t blockSize)
-{
+BarBeatTracker::initialise(size_t channels, size_t stepSize, size_t blockSize){
     if (m_d) {
 	delete m_d;
 	m_d = 0;
@@ -294,26 +279,22 @@ BarBeatTracker::process(const float *const *inputBuffers,
 
     // We use time domain input, because DownBeat requires it -- so we
     // use the time-domain version of DetectionFunction::process which
-    // does its own FFT.  It requires doubles as input, so we need to
+    // does its own FFT.  It requires floats as input, so we need to
     // make a temporary copy
 
     // We only support a single input channel
 
     const int fl = m_d->dfConfig.frameLength;
 #ifndef __GNUC__
-    double *dfinput = (double *)alloca(fl * sizeof(double));
+    float *dfinput = (float *)alloca(fl * sizeof(float));
 #else
-    double dfinput[fl];
+    float dfinput[fl];
 #endif
     for (int i = 0; i < fl; ++i) dfinput[i] = inputBuffers[0][i];
-
-    double output = m_d->df->process(dfinput);
-
+    float output = m_d->df->process(dfinput);
     if (m_d->dfOutput.empty()) m_d->origin = timestamp;
-
 //    std::cerr << "df[" << m_d->dfOutput.size() << "] is " << output << std::endl;
     m_d->dfOutput.push_back(output);
-
     // Downsample and store the incoming audio block.
     // We have an overlap on the incoming audio stream (step size is
     // half block size) -- this function is configured to take only a
@@ -322,29 +303,23 @@ BarBeatTracker::process(const float *const *inputBuffers,
     // samples completely for the purposes of barline detection
     // (hopefully not a problem)
     m_d->downBeat->pushAudioBlock(inputBuffers[0]);
-
     return FeatureSet();
 }
-
 BarBeatTracker::FeatureSet
-BarBeatTracker::getRemainingFeatures()
-{
+BarBeatTracker::getRemainingFeatures(){
     if (!m_d) {
 	cerr << "ERROR: BarBeatTracker::getRemainingFeatures: "
 	     << "BarBeatTracker has not been initialised"
 	     << endl;
 	return FeatureSet();
     }
-
     return barBeatTrack();
 }
-
 BarBeatTracker::FeatureSet
-BarBeatTracker::barBeatTrack()
-{
-    vector<double> df;
-    vector<double> beatPeriod;
-    vector<double> tempi;
+BarBeatTracker::barBeatTrack(){
+    vector<float> df;
+    vector<float> beatPeriod;
+    vector<float> tempi;
 
     for (size_t i = 2; i < m_d->dfOutput.size(); ++i) { // discard first two elts
         df.push_back(m_d->dfOutput[i]);
@@ -355,7 +330,7 @@ BarBeatTracker::barBeatTrack()
     TempoTrackV2 tt(m_inputSampleRate, m_d->dfConfig.stepSize);
     tt.calculateBeatPeriod(df, beatPeriod, tempi);
 
-    vector<double> beats;
+    vector<float> beats;
     tt.calculateBeats(df, beatPeriod, beats);
 
     vector<int> downbeats;
@@ -363,7 +338,7 @@ BarBeatTracker::barBeatTrack()
     const float *downsampled = m_d->downBeat->getBufferedAudio(downLength);
     m_d->downBeat->findDownBeats(downsampled, downLength, beats, downbeats);
 
-    vector<double> beatsd;
+    vector<float> beatsd;
     m_d->downBeat->getBeatSD(beatsd);
 
 //    std::cerr << "BarBeatTracker: found downbeats at: ";

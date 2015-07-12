@@ -291,7 +291,7 @@ TonalChangeDetect::OutputList TonalChangeDetect::getOutputDescriptors() const
     d.hasKnownExtents = false;
     d.isQuantized = false;
     d.sampleType = OutputDescriptor::VariableSampleRate;
-    double dStepSecs = double(getPreferredStepSize()) / m_inputSampleRate;
+    float dStepSecs = float(getPreferredStepSize()) / m_inputSampleRate;
     d.sampleRate = 1.0f / dStepSecs;
 	
     OutputDescriptor changes;
@@ -326,13 +326,13 @@ TonalChangeDetect::process(const float *const *inputBuffers,
 
     if (!m_haveOrigin) m_origin = timestamp;
 
-    // convert float* to double*
-    double *tempBuffer = new double[m_block];
+    // convert float* to float*
+    float *tempBuffer = new float[m_block];
     for (size_t i = 0; i < m_block; ++i) {
         tempBuffer[i] = inputBuffers[0][i];
     }
 
-    double *output = m_chromagram->process(tempBuffer);
+    float *output = m_chromagram->process(tempBuffer);
     delete[] tempBuffer;
 
     for (size_t i = 0; i < 12; i++)
@@ -404,7 +404,7 @@ TonalChangeDetect::FeatureSet TonalChangeDetect::getRemainingFeatures()
     }
 	
     ChangeDFConfig dfc;
-    dfc.smoothingWidth = double(m_iSmoothingWidth);
+    dfc.smoothingWidth = float(m_iSmoothingWidth);
     ChangeDetectionFunction df(dfc);
     ChangeDistance d = df.process(m_TCSGram);
 	
@@ -412,9 +412,9 @@ TonalChangeDetect::FeatureSet TonalChangeDetect::getRemainingFeatures()
 	
     for (int i = 0; i < d.size(); i++)
     {
-        double dCurrent = d[i];
-        double dPrevious = d[i > 0 ? i - 1 : i];
-        double dNext = d[i < d.size()-1 ? i + 1 : i];
+        float dCurrent = d[i];
+        float dPrevious = d[i > 0 ? i - 1 : i];
+        float dNext = d[i < d.size()-1 ? i + 1 : i];
 		
         Feature feature;
         feature.label = "";

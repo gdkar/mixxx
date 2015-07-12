@@ -19,8 +19,9 @@
 #include <QtDebug>
 
 
-EngineFilter::EngineFilter(char * conf, int predefinedType)
-        : fbuf1(nullptr)
+EngineFilter::EngineFilter(char * conf, int predefinedType, QObject *pParent)
+        : EngineObject(pParent)
+        , fbuf1(nullptr)
         , fbuf2(nullptr)
         , processSample(nullptr)
 {

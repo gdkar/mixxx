@@ -42,15 +42,11 @@ class WWidget : public QWidget, public WBaseWidget {
   public:
     WWidget(QWidget *parent=0, Qt::WindowFlags flags=0);
     virtual ~WWidget();
-
     Q_PROPERTY(double value READ getControlParameterDisplay);
-
   protected:
     bool touchIsRightButton();
     bool event(QEvent* e);
-
     enum Qt::MouseButton m_activeTouchButton;
-
   private:
     ControlObjectSlave* m_pTouchShift;
 };

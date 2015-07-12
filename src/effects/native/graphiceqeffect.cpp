@@ -92,12 +92,12 @@ GraphicEQEffectGroupState::GraphicEQEffectGroupState() {
     m_centerFrequencies[7] = 9828;
 
     // Initialize the filters with default parameters
-    m_low = new EngineFilterBiquad1LowShelving(44100, m_centerFrequencies[0], Q);
-    m_high = new EngineFilterBiquad1HighShelving(44100, m_centerFrequencies[7], Q);
+    m_low = new EngineFilterBiquad1LowShelving(44100, m_centerFrequencies[0], Q); //XXX FIXME: should pass non-null parent
+    m_high = new EngineFilterBiquad1HighShelving(44100, m_centerFrequencies[7], Q); // XXX FIXME should pass non-null parent
     for (int i = 1; i < 7; i++) {
         m_bands.append(new EngineFilterBiquad1Peaking(44100,
                                                       m_centerFrequencies[i],
-                                                      Q));
+                                                      Q));// XXX FIXME: should pass non-null parent
     }
 }
 
