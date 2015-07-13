@@ -15,7 +15,6 @@ class FontUtils {
             qWarning() << "Failed to add font:" << path;
             return false;
         }
-
         // In developer mode, spit out all the families / styles / sizes
         // supported by the new font.
         if (CmdlineArgs::Instance().getDeveloper()) {
@@ -37,7 +36,6 @@ class FontUtils {
         }
         return true;
     }
-
   private:
     FontUtils() {}
 };

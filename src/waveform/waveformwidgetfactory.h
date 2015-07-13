@@ -105,37 +105,27 @@ class WaveformWidgetFactory : public QObject, public Singleton<WaveformWidgetFac
     void notifyZoomChange(WWaveformViewer *viewer);
 
     WaveformWidgetType::Type autoChooseWidgetType() const;
-
+    virtual ~WaveformWidgetFactory();
   signals:
     void waveformUpdateTick();
     void waveformMeasured(float frameRate, int droppedFrames);
 
   protected:
     WaveformWidgetFactory();
-    virtual ~WaveformWidgetFactory();
-
     friend class Singleton<WaveformWidgetFactory>;
-
   private slots:
     void render();
     void swap();
-
   private:
     void evaluateWidgets();
     WaveformWidgetAbstract* createWaveformWidget(WaveformWidgetType::Type type, WWaveformViewer* viewer);
     int findIndexOf(WWaveformViewer* viewer) const;
-
     //All type of available widgets
-
     QVector<WaveformWidgetAbstractHandle> m_waveformWidgetHandles;
-
     //Currently in use widgets/visual/node
     QVector<WaveformWidgetHolder> m_waveformWidgetHolders;
-
     WaveformWidgetType::Type m_type;
-
     ConfigObject<ConfigValue>* m_config;
-
     bool m_skipRender;
     int m_frameRate;
     int m_endOfTrackWarningTime;

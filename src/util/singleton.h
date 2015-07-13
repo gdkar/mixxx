@@ -2,42 +2,21 @@
 #define SINGLETON_H
 
 #include <QtDebug>
-
+#include <memory>
 template<class T>
 class Singleton {
   public:
-    static T* create() {
-        if (!m_instance) {
-            m_instance = new T();
-        }
-        return m_instance;
-    }
-
+    static T* create() {return instance();}
     static T* instance() {
-        if (m_instance == nullptr) {
-            qWarning() << "Singleton class has not been created yet, returning nullptr";
-        }
-        return m_instance;
+      static std::unique_ptr<T> l_instance{new T()};
+        return l_instance.get();
     }
-
-    static void destroy() {
-        if (m_instance) {
-            delete m_instance;
-        }
-    }
-
+    static void destroy() {}
+    Singleton(const Singleton&)=delete;
+    const Singleton&operator =(const Singleton&)=delete;
+    Singleton&operator =(Singleton&&)=delete;
+    virtual ~Singleton() {}
   protected:
     Singleton() {}
-    virtual ~Singleton() {}
-
-  private:
-    // hide copy constructor and assign operator
-    Singleton(const Singleton&) {}
-    const Singleton& operator= (const Singleton&) {}
-
-    static T* m_instance;
 };
-
-template<class T> T* Singleton<T>::m_instance = nullptr;
-
 #endif // SINGLETON_H

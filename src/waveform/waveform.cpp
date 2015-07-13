@@ -42,21 +42,20 @@ Waveform::Waveform(int audioSampleRate, int audioSamples,
         if (maxVisualSamples == -1) {
             // Waveform
             if (desiredVisualSampleRate < audioSampleRate) {
-                m_visualSampleRate =
-                        static_cast<double>(desiredVisualSampleRate);
+                m_visualSampleRate = static_cast<double>(desiredVisualSampleRate);
             } else {
                 m_visualSampleRate = static_cast<double>(audioSampleRate);
             }
         } else {
             // Waveform Summary (Overview)
             if (audioSamples > maxVisualSamples) {
-                m_visualSampleRate = (double)maxVisualSamples *
-                        (double)audioSampleRate / (double)audioSamples;
+                m_visualSampleRate = static_cast<double>(maxVisualSamples) *
+                        static_cast<double>(audioSampleRate) / static_cast<double>(audioSamples);
             } else {
                 m_visualSampleRate = audioSampleRate;
             }
         }
-        m_audioVisualRatio = (double)audioSampleRate / (double)m_visualSampleRate;
+        m_audioVisualRatio = static_cast<double>(audioSampleRate) / static_cast<double>(m_visualSampleRate);
         numberOfVisualSamples = (audioSamples / m_audioVisualRatio) + 1;
         numberOfVisualSamples += numberOfVisualSamples%2;
     }
@@ -127,18 +126,13 @@ QByteArray Waveform::toByteArray() const {
 }
 
 void Waveform::readByteArray(const QByteArray& data) {
-    if (data.isNull()) {
-        return;
-    }
-
+    if (data.isNull()) {return;}
     io::Waveform waveform;
-
     if (!waveform.ParseFromArray(data.constData(), data.size())) {
         qDebug() << "ERROR: Could not parse Waveform from QByteArray of size "
                  << data.size();
         return;
     }
-
     if (!waveform.has_visual_sample_rate() ||
         !waveform.has_audio_visual_ratio() ||
         !waveform.has_signal_all() ||
@@ -149,19 +143,15 @@ void Waveform::readByteArray(const QByteArray& data) {
         qDebug() << "ERROR: Waveform proto is missing key data. Skipping.";
         return;
     }
-
     const io::Waveform::Signal& all = waveform.signal_all();
     const io::Waveform::Signal& low = waveform.signal_filtered().low();
     const io::Waveform::Signal& mid = waveform.signal_filtered().mid();
     const io::Waveform::Signal& high = waveform.signal_filtered().high();
-
     qDebug() << "Reading waveform from byte array:"
              << "allSignalSize" << all.value_size()
              << "visualSampleRate" << waveform.visual_sample_rate()
              << "audioVisualRatio" << waveform.audio_visual_ratio();
-
     resize(all.value_size());
-
     int dataSize = getDataSize();
     if (all.value_size() != dataSize) {
         qDebug() << "ERROR: Couldn't resize Waveform to" << all.value_size()
@@ -169,7 +159,6 @@ void Waveform::readByteArray(const QByteArray& data) {
         resize(0);
         return;
     }
-
     m_visualSampleRate = waveform.visual_sample_rate();
     m_audioVisualRatio = waveform.audio_visual_ratio();
     if (low.value_size() != dataSize ||
@@ -177,7 +166,6 @@ void Waveform::readByteArray(const QByteArray& data) {
         high.value_size() != dataSize) {
         qDebug() << "WARNING: Filtered data size does not match all-signal size.";
     }
-
     // TODO(XXX) If non-RMS, convert but since we only save RMS today we can add
     // this later.
     bool low_valid = low.units() == io::Waveform::RMS;
@@ -195,21 +183,18 @@ void Waveform::readByteArray(const QByteArray& data) {
     m_completion = dataSize;
     m_bDirty = false;
 }
-
 void Waveform::resize(int size) {
     m_dataSize = size;
     m_textureStride = computeTextureStride(size);
     m_data.resize(m_textureStride * m_textureStride);
     m_bDirty = true;
 }
-
 void Waveform::assign(int size, int value) {
     m_dataSize = size;
     m_textureStride = computeTextureStride(size);
     m_data.assign(m_textureStride * m_textureStride, value);
     m_bDirty = true;
 }
-
 void Waveform::dump() const {
     qDebug() << "Waveform" << this
              << "size("+QString::number(getDataSize())+")"

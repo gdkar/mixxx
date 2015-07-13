@@ -55,9 +55,7 @@ void CachingReaderWorker::processChunkReadRequest(
         update->status = CHUNK_READ_INVALID;
         return;
     }
-
-    const SINT chunkFrameIndex =
-            frameForChunk(chunk_number);
+    const SINT chunkFrameIndex = frameForChunk(chunk_number);
     if (!m_pAudioSource->isValidFrameIndex(chunkFrameIndex)) {
         // Frame index out of range
         qWarning() << "Invalid chunk seek position"
@@ -70,9 +68,7 @@ void CachingReaderWorker::processChunkReadRequest(
         update->status = CHUNK_READ_EOF;
         return;
     }
-
-    const SINT seekFrameIndex =
-            m_pAudioSource->seekSampleFrame(chunkFrameIndex);
+    const SINT seekFrameIndex = m_pAudioSource->seekSampleFrame(chunkFrameIndex);
     if (seekFrameIndex != chunkFrameIndex) {
         // Failed to seek to the requested index. The file might
         // be corrupt and decoding should be aborted.
@@ -81,11 +77,8 @@ void CachingReaderWorker::processChunkReadRequest(
         update->status = CHUNK_READ_INVALID;
         return;
     }
-
-    const SINT framesRemaining =
-            m_pAudioSource->getMaxFrameIndex() - seekFrameIndex;
-    const SINT framesToRead =
-            math_min(kFramesPerChunk, framesRemaining);
+    const SINT framesRemaining = m_pAudioSource->getMaxFrameIndex() - seekFrameIndex;
+    const SINT framesToRead    = math_min(kFramesPerChunk, framesRemaining);
     if (0 >= framesToRead) {
         // No more data available for reading
         update->status = CHUNK_READ_EOF;
@@ -93,8 +86,7 @@ void CachingReaderWorker::processChunkReadRequest(
     }
 
     const SINT framesRead =
-            m_pAudioSource->readSampleFramesStereo(
-                    framesToRead, request->chunk->stereoSamples, kSamplesPerChunk);
+            m_pAudioSource->readSampleFramesStereo(framesToRead, request->chunk->stereoSamples, kSamplesPerChunk);
     DEBUG_ASSERT(framesRead <= framesToRead);
     update->chunk->frameCountRead = framesRead;
     update->chunk->frameCountTotal = framesToRead;
@@ -123,13 +115,11 @@ void CachingReaderWorker::newTrack(TrackPointer pTrack) {
 void CachingReaderWorker::run() {
     unsigned static id = 0; //the id of this thread, for debugging purposes
     QThread::currentThread()->setObjectName(QString("CachingReaderWorker %1").arg(++id));
-
     TrackPointer pLoadTrack;
     ChunkReadRequest request;
     ReaderStatusUpdate status;
-
     Event::start(m_tag);
-    while (!load_atomic(m_stop)) {
+    while (!m_stop.load()) {
         if (m_newTrack) {
             m_newTrackMutex.lock();
             pLoadTrack = m_newTrack;
@@ -147,7 +137,6 @@ void CachingReaderWorker::run() {
         }
     }
 }
-
 namespace
 {
     Mixxx::AudioSourcePointer openAudioSourceForReading(const TrackPointer& pTrack, const Mixxx::AudioSourceConfig& audioSrcCfg) {
@@ -161,27 +150,22 @@ namespace
         return pAudioSource;
     }
 }
-
 void CachingReaderWorker::loadTrack(const TrackPointer& pTrack) {
     //qDebug() << m_group << "CachingReaderWorker::loadTrack() lock acquired for load.";
 
     // Emit that a new track is loading, stops the current track
     emit(trackLoading());
-
     ReaderStatusUpdate status;
     status.status = TRACK_NOT_LOADED;
     status.chunk = nullptr;
     status.trackFrameCount = 0;
-
     QString filename = pTrack->getLocation();
-
     if (filename.isEmpty() || !pTrack->exists()) {
         // Must unlock before emitting to avoid deadlock
         qDebug() << m_group << "CachingReaderWorker::loadTrack() load failed for\""
                  << filename << "\", unlocked reader lock";
         m_pReaderStatusFIFO->writeBlocking(&status, 1);
-        emit(trackLoadFailed(
-            pTrack, QString("The file '%1' could not be found.").arg(filename)));
+        emit(trackLoadFailed(pTrack, QString("The file '%1' could not be found.").arg(filename)));
         return;
     }
 
@@ -193,15 +177,12 @@ void CachingReaderWorker::loadTrack(const TrackPointer& pTrack) {
         qDebug() << m_group << "CachingReaderWorker::loadTrack() load failed for\""
                  << filename << "\", file invalid, unlocked reader lock";
         m_pReaderStatusFIFO->writeBlocking(&status, 1);
-        emit(trackLoadFailed(
-            pTrack, QString("The file '%1' could not be loaded.").arg(filename)));
+        emit(trackLoadFailed(pTrack, QString("The file '%1' could not be loaded.").arg(filename)));
         return;
     }
-
     status.trackFrameCount = m_pAudioSource->getFrameCount();
     status.status = TRACK_LOADED;
     m_pReaderStatusFIFO->writeBlocking(&status, 1);
-
     // Clear the chunks to read list.
     ChunkReadRequest request;
     while (m_pChunkReadRequestFIFO->read(&request, 1) == 1) {
@@ -210,15 +191,12 @@ void CachingReaderWorker::loadTrack(const TrackPointer& pTrack) {
         status.chunk = request.chunk;
         m_pReaderStatusFIFO->writeBlocking(&status, 1);
     }
-
     // Emit that the track is loaded.
-    const SINT sampleCount =
-            m_pAudioSource->getFrameCount() * kChunkChannels;
+    const SINT sampleCount = m_pAudioSource->getFrameCount() * kChunkChannels;
     emit(trackLoaded(pTrack, m_pAudioSource->getFrameRate(), sampleCount));
 }
-
 void CachingReaderWorker::quitWait() {
-    m_stop = 1;
+    m_stop.store(1);
     m_semaRun.release();
     wait();
 }

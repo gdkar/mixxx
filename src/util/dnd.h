@@ -162,22 +162,14 @@ class DragAndDropHelper {
 
     static bool addFileToList(const QString& file, QList<QFileInfo>* files) {
         QFileInfo fileInfo(file);
-
         // Since the user just dropped these files into Mixxx we have permission
         // to touch the file. Create a security token to keep this permission
         // across reboots.
         Sandbox::createSecurityToken(fileInfo);
-
-        if (!fileInfo.exists()) {
-            return false;
-        }
-
+        if (!fileInfo.exists()) {return false;}
         // Filter out invalid URLs (eg. files that aren't supported audio
         // filetypes, etc.)
-        if (!SoundSourceProxy::isFileSupported(fileInfo)) {
-            return false;
-        }
-
+        if (!SoundSourceProxy::isFileSupported(fileInfo)) {return false;}
         files->append(fileInfo);
         return true;
     }

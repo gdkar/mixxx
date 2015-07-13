@@ -51,7 +51,6 @@ EngineDeck::EngineDeck(const ChannelHandleAndGroup& handle_group,
     m_pBuffer = new EngineBuffer(getGroup(), pConfig, pMixingEngine, this);
 }
 EngineDeck::~EngineDeck() {
-
     delete m_pBuffer;
     delete m_pPregain;
     delete m_pVUMeter;
@@ -107,9 +106,7 @@ void EngineDeck::receiveBuffer(AudioInput input, const CSAMPLE* pBuffer, unsigne
     if (!m_bPassthroughIsActive) {
         m_sampleBuffer = nullptr;
         return;
-    } else {
-        m_sampleBuffer = pBuffer;
-    }
+    } else {m_sampleBuffer = pBuffer;}
 }
 void EngineDeck::onInputConfigured(AudioInput input) {
     if (input.getType() != AudioPath::VINYLCONTROL) {

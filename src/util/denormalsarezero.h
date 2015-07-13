@@ -14,17 +14,27 @@
 #ifdef __SSE__
 
 #include <xmmintrin.h>
-
+#include <smmintrin.h>
+#include <immintrin.h>
+#include <x86intrin.h>
 /* Additional bits in the MXCSR.  */
+#ifndef _MM_DENORMALS_ZERO_MASK
 #define _MM_DENORMALS_ZERO_MASK     0x0040
+#endif
+#ifndef _MM_DENORMALS_ZERO_ON
 #define _MM_DENORMALS_ZERO_ON       0x0040
+#endif
+#ifndef _MM_DENORMALS_ZERO_OFF
 #define _MM_DENORMALS_ZERO_OFF      0x0000
-
+#endif
+#ifndef _MM_SET_DENORMALS_ZERO_MODE
 #define _MM_SET_DENORMALS_ZERO_MODE(mode) \
   _mm_setcsr ((_mm_getcsr () & ~_MM_DENORMALS_ZERO_MASK) | (mode))
+#endif
+#ifndef _MM_GET_DENORMALS_ZERO_MODE
 #define _MM_GET_DENORMALS_ZERO_MODE() \
   (_mm_getcsr() & _MM_DENORMALS_ZERO_MASK)
-
+#endif
 #else
 
 // this section is active on armhf builds, where DAZ is default

@@ -5,7 +5,7 @@
 #include <QObject>
 #include <QString>
 #include <QThread>
-#include <QAtomicInt>
+#include <atomic>
 #include <QtDebug>
 #include <QMutex>
 #include <QWaitCondition>
@@ -26,7 +26,6 @@ class StatsPipe : public FIFO<StatReport> {
   private:
     StatsManager* m_pManager;
 };
-
 class StatsManager : public QThread, public Singleton<StatsManager> {
     Q_OBJECT
   public:
@@ -37,16 +36,9 @@ class StatsManager : public QThread, public Singleton<StatsManager> {
     bool maybeWriteReport(const StatReport& report);
 
     static bool s_bStatsManagerEnabled;
-
     // Tell the StatsManager to emit statUpdated for every stat that exists.
-    void emitAllStats() {
-        m_emitAllStats = 1;
-    }
-
-    void updateStats() {
-        m_statsPipeCondition.wakeAll();
-    }
-
+    void emitAllStats() {m_emitAllStats = 1;}
+    void updateStats() {m_statsPipeCondition.wakeAll();}
   signals:
     void statUpdated(const Stat& stat);
 
@@ -58,9 +50,8 @@ class StatsManager : public QThread, public Singleton<StatsManager> {
     StatsPipe* getStatsPipeForThread();
     void onStatsPipeDestroyed(StatsPipe* pPipe);
     void writeTimeline(const QString& filename);
-
-    QAtomicInt m_emitAllStats;
-    QAtomicInt m_quit;
+    std::atomic<bool> m_emitAllStats;
+    std::atomic<bool> m_quit;
     QMap<QString, Stat> m_stats;
     QMap<QString, Stat> m_baseStats;
     QMap<QString, Stat> m_experimentStats;
@@ -70,7 +61,6 @@ class StatsManager : public QThread, public Singleton<StatsManager> {
     QMutex m_statsPipeLock;
     QList<StatsPipe*> m_statsPipes;
     QThreadStorage<StatsPipe*> m_threadStatsPipes;
-
     friend class StatsPipe;
 };
 

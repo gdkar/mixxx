@@ -29,22 +29,20 @@ extern "C" {
 #endif
 
 #include <libavcodec/avcodec.h>
+#include <libavfilter/avfilter.h>
+#include <libavfilter/buffersrc.h>
+#include <libavfilter/buffersink.h>
 #include <libavformat/avformat.h>
+#include <errno.h>
 
-#ifndef __FFMPEGOLDAPI__
+// libswresample is strictly better than libavresample
+// honstly i'm only up for fixing one of these at the moment, so it's
+// gonna be the one that works better, is more up to date, has better
+// support, and isn't produced by a bunch of jackasses.
 
-// Thank you macports not providing libavresample for FFMPEG!
-#ifdef __LIBAVRESAMPLE__
-#include <libavresample/avresample.h>
-#else
 #include <libswresample/swresample.h>
-#endif
 
 #include <libavutil/avutil.h>
-#include <libavutil/opt.h>
-#endif
-
-// Compability
 #include <libavutil/mathematics.h>
 #include <libavutil/opt.h>
 
@@ -54,29 +52,27 @@ class EncoderFfmpegResample {
 public:
     EncoderFfmpegResample(AVCodecContext *codecCtx);
     ~EncoderFfmpegResample();
-    int open(enum AVSampleFormat inSampleFmt, enum AVSampleFormat outSampleFmt);
-
-    unsigned int reSample(AVFrame *inframe, quint8 **outbuffer);
-
+    int open(
+        int64_t inLayout
+        enum AVSampleFormat inSampleFmt, 
+        int inRate,
+        int64_t outLayout,
+        enum AVSampleFormat outSampleFmt,
+        int outRate);
+    int reSample(AVFrame *inframe, AVFrame *outframe);
 private:
-    AVCodecContext *m_pCodecCtx;
-    enum AVSampleFormat m_pOutSampleFmt;
-    enum AVSampleFormat m_pInSampleFmt;
+    AVCodecContext *m_pCodecCtx             = nullptr;
+    int64_t             m_inLayout          = AV_CH_LAYOUT_STEREO;
+    enum AVSampleFormat m_inSampleFmt       = AV_SAMPLE_FMT_S16;
+    int                 m_inRate            = 44100;
+    int64_t             m_outLayout         = AV_CH_LAYOUT_STEREO;
+    enum AVSampleFormat m_outSampleFmt      = AV_SAMPLE_FMT_FLT;
+    int                 m_outRate           = 44100;
 
-#ifndef __FFMPEGOLDAPI__
+// Please choose to use libswresample
+// see comment above
+    SwrContext         *m_pSwrCtx           = nullptr;
 
-// Please choose to use libavresample.. people
-// Compile it now.. but because macports doesn't
-// Support both.. damn!
-#ifdef __LIBAVRESAMPLE__
-    AVAudioResampleContext *m_pSwrCtx;
-#else
-    SwrContext *m_pSwrCtx;
-#endif
-
-#else
-    ReSampleContext *m_pSwrCtx;
-#endif
 
 };
 

@@ -52,7 +52,7 @@ class CoverArtCache : public QObject, public Singleton<CoverArtCache> {
         int desiredWidth;
         bool signalWhenDone;
     };
-
+    virtual ~CoverArtCache();
   public slots:
     // Called when loadCover is complete in the main thread.
     void coverLoaded();
@@ -63,7 +63,6 @@ class CoverArtCache : public QObject, public Singleton<CoverArtCache> {
 
   protected:
     CoverArtCache();
-    virtual ~CoverArtCache();
     friend class Singleton<CoverArtCache>;
 
     // Load cover from path indicated in coverInfo. WARNING: This is run in a

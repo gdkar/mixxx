@@ -40,10 +40,8 @@ class StatModel : public QAbstractTableModel {
     int rowCount(const QModelIndex& parent = QModelIndex()) const;
     int columnCount(const QModelIndex& parent = QModelIndex()) const;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
-    bool setHeaderData(int section, Qt::Orientation orientation,
-                       const QVariant& value, int role = Qt::EditRole);
-    QVariant headerData(int section, Qt::Orientation orientation,
-                        int role = Qt::DisplayRole) const;
+    bool setHeaderData(int section, Qt::Orientation orientation,const QVariant& value, int role = Qt::EditRole);
+    QVariant headerData(int section, Qt::Orientation orientation,int role = Qt::DisplayRole) const;
 
   private:
     QVector<QHash<int, QVariant> > m_headerInfo;

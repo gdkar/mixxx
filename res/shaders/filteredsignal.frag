@@ -1,4 +1,6 @@
-#version 120
+#version 150
+
+in vec2 v_texcoord;
 
 uniform vec2 framebufferSize;
 uniform vec4 axesColor;
@@ -28,15 +30,15 @@ vec4 getWaveformData(float index) {
 }
 
 void main(void) {
-    vec2 uv = gl_TexCoord[0].st;
+//    vec2 uv = TexCoord[0].st;
     vec4 pixel = gl_FragCoord;
 
-    float new_currentIndex = floor(firstVisualIndex + uv.x *
+    float new_currentIndex = floor(firstVisualIndex + v_texcoord.x *
                                    (lastVisualIndex - firstVisualIndex)) * 2;
 
     // Texture coordinates put (0,0) at the bottom left, so show the right
     // channel if we are in the bottom half.
-    if (uv.y < 0.5) {
+    if (v_texcoord.y < 0.5) {
         new_currentIndex += 1;
     }
 
@@ -65,7 +67,7 @@ void main(void) {
       // Represents the [-1, 1] distance of this pixel. Subtracting this from
       // the signal data in new_currentData, we can tell if a signal band should
       // show in this pixel if the component is > 0.
-      float ourDistance = abs((uv.y - 0.5) * 2.0);
+      float ourDistance = abs((v_texcoord.y - 0.5) * 2.0);
 
       vec4 signalDistance = new_currentData - ourDistance;
       lowShowing = signalDistance.x >= 0.0;
@@ -124,8 +126,8 @@ void main(void) {
     }
 
     /*
-    vec4 distanceToRigthSignal = 0.5 - uv.y - 0.5 *texture2D(signalTexture,vec2(uv.x,0.25));
-    vec4 distanceToLeftSignal = uv.y - 0.5 * texture2D(signalTexture,vec2(uv.x,0.75)) - 0.5;
+    vec4 distanceToRigthSignal = 0.5 - v_texcoord.y - 0.5 *texture2D(signalTexture,vec2(v_texcoord.x,0.25));
+    vec4 distanceToLeftSignal = v_texcoord.y - 0.5 * texture2D(signalTexture,vec2(v_texcoord.x,0.75)) - 0.5;
 
     if (distanceToRigthSignal.x < 0.0 && distanceToLeftSignal.x < 0.0)
         outputColor += lowColor;
@@ -140,7 +142,7 @@ void main(void) {
     return;
 
     /*
-    uv.y = 0.25;
+    vec2 uv = vec2(v_texcoord.x,0.25);
     vec4 signalRigth = texture2D(signalTexture,uv);
 
 

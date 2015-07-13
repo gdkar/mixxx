@@ -21,20 +21,12 @@ RGBWaveformWidget::RGBWaveformWidget(const char* group, QWidget* parent)
     addRenderer<WaveformRendererRGB>();
     addRenderer<WaveformRenderBeat>();
     addRenderer<WaveformRenderMark>();
-
     setAttribute(Qt::WA_NoSystemBackground);
     setAttribute(Qt::WA_OpaquePaintEvent);
-
     m_initSuccess = init();
 }
-
-RGBWaveformWidget::~RGBWaveformWidget() {
-}
-
-void RGBWaveformWidget::castToQWidget() {
-    m_widget = static_cast<QWidget*>(this);
-}
-
+RGBWaveformWidget::~RGBWaveformWidget() {}
+void RGBWaveformWidget::castToQWidget() {m_widget = static_cast<QWidget*>(this);}
 void RGBWaveformWidget::paintEvent(QPaintEvent* event) {
     QPainter painter(this);
     draw(&painter,event);
