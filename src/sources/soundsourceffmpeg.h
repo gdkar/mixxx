@@ -28,17 +28,6 @@
 
 namespace Mixxx {
 
-struct ffmpegLocationObject {
-    SINT pos;
-    SINT pts;
-    SINT startFrame;
-};
-struct ffmpegCacheObject {
-    SINT startFrame;
-    SINT length;
-    quint8 *bytes;
-};
-
 class SoundSourceFFmpeg : public SoundSource {
 public:
     explicit SoundSourceFFmpeg(QUrl url);
@@ -48,29 +37,22 @@ public:
     virtual SINT readSampleFrames(SINT numberOfFrames, CSAMPLE* sampleBuffer) override;
 private:
     virtual Result tryOpen(const AudioSourceConfig& audioSrcCfg) override;
-    bool readFramesToCache(unsigned int count, SINT offset);
-    bool getBytesFromCache(char *buffer, SINT offset, SINT size);
-    SINT getSizeofCache();
+    bool readFramesToCache(SINT offset);
     void clearCache();
     unsigned int read(unsigned long size, SAMPLE*);
 
-    AVFormatContext *m_pFormatCtx;
-    int m_iAudioStream;
-    AVCodecContext  *m_pCodecCtx;
-    AVCodec         *m_pCodec;
+    AVFormatContext *m_pFormatCtx = nullptr;
+    int m_iAudioStream            = -1;
+    AVCodecContext  *m_pCodecCtx  = nullptr;
+    AVCodec         *m_pCodec     = nullptr;
 
-    EncoderFfmpegResample *m_pResample;
+    EncoderFfmpegResample *m_pResample = nullptr;
 
-    SINT m_currentMixxxFrameIndex;
-    bool m_bIsSeeked;
-    SINT m_lCacheFramePos;
-    SINT m_lCacheStartFrame;
-    SINT m_lCacheEndFrame;
-    SINT m_lCacheLastPos;
-    QVector<struct ffmpegCacheObject  *> m_SCache;
-    QVector<struct ffmpegLocationObject  *> m_SJumpPoints;
-    SINT m_lLastStoredPos;
-    SINT m_lStoredSeekPoint;
+    SINT m_currentMixxxFrameIndex      = 0;
+    bool m_bIsSeeked                   = false;
+    SINT m_lCacheStartFrame            =  0;
+    SINT m_lCacheEndFrame              =  0;
+    QVector<AVFrame *> m_SCache;
 };
 
 class SoundSourceProviderFFmpeg: public SoundSourceProvider {

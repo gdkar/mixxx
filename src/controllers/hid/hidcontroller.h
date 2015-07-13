@@ -10,7 +10,7 @@
 
 #include <hidapi.h>
 
-#include <QAtomicInt>
+#include <atomic>
 
 #include "controllers/controller.h"
 #include "controllers/hid/hidcontrollerpreset.h"
@@ -34,7 +34,7 @@ class HidReader : public QThread {
 
   private:
     hid_device* m_pHidDevice;
-    QAtomicInt m_stop;
+    std::atomic<int> m_stop;
 };
 
 class HidController : public Controller {

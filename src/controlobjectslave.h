@@ -92,7 +92,7 @@ class ControlObjectSlave : public QObject {
   signals:
     // This signal must not connected by connect(). Use connectValueChanged()
     // instead. It will connect to the base ControlDoublePrivate as well.
-    void valueChanged(double);
+    void valueChanged(double,QObject *obj=nullptr);
 
   protected slots:
     // Receives the value from the master control and re-emits either

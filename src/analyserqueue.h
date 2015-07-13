@@ -14,6 +14,7 @@
 #include <QSemaphore>
 
 #include <vector>
+#include <atomic>
 
 class TrackCollection;
 
@@ -65,7 +66,7 @@ class AnalyserQueue : public QThread {
     void emitUpdateProgress(TrackPointer tio, int progress);
 
     bool m_exit;
-    QAtomicInt m_aiCheckPriorities;
+    std::atomic<int> m_aiCheckPriorities;
     SampleBuffer m_sampleBuffer;
     // The processing queue and associated mutex
     QQueue<TrackPointer> m_tioq;

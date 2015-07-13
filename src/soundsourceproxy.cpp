@@ -1,6 +1,6 @@
 #include "soundsourceproxy.h"
 
-#ifdef __MAD__
+#ifdef __MPG123__
 #include "sources/soundsourcemp3.h"
 #endif
 #include "sources/soundsourceoggvorbis.h"

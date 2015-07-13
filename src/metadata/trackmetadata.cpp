@@ -193,14 +193,5 @@ QString TrackMetadata::reformatYear(QString year) {
     // just trim and simplify whitespaces
     return year.simplified();
 }
-
-TrackMetadata::TrackMetadata() :
-        m_channels(0),
-        m_sampleRate(0),
-        m_bitrate(0),
-        m_duration(0),
-        m_bpm(kBpmUndefined),
-        m_replayGain(kReplayGainUndefined) {
-}
-
+TrackMetadata::TrackMetadata() {}
 } //namespace Mixxx

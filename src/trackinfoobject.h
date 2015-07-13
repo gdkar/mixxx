@@ -18,7 +18,7 @@
 #ifndef TRACKINFOOBJECT_H
 #define TRACKINFOOBJECT_H
 
-#include <QAtomicInt>
+#include <atomic>
 #include <QDateTime>
 #include <QDomNode>
 #include <QFileInfo>
@@ -74,25 +74,23 @@ class TrackInfoObject : public QObject {
     void setDuration(int);
     // Returns the duration as a string: H:MM:SS
     QString getDurationStr() const;
-
     // Accessors for various stats of the file on disk. These are auto-populated
     // when the TIO is constructed, or when setLocation() is called.
-
-    Q_PROPERTY(QString artist READ getArtist WRITE setArtist)
-    Q_PROPERTY(QString title READ getTitle WRITE setTitle)
-    Q_PROPERTY(QString album READ getAlbum WRITE setAlbum)
-    Q_PROPERTY(QString albumArtist READ getAlbumArtist WRITE setAlbumArtist)
-    Q_PROPERTY(QString genre READ getGenre WRITE setGenre)
-    Q_PROPERTY(QString composer READ getComposer WRITE setComposer)
-    Q_PROPERTY(QString grouping READ getGrouping WRITE setGrouping)
-    Q_PROPERTY(QString year READ getYear WRITE setYear)
-    Q_PROPERTY(QString track_number READ getTrackNumber WRITE setTrackNumber)
-    Q_PROPERTY(int times_played READ getTimesPlayed)
-    Q_PROPERTY(QString comment READ getComment WRITE setComment)
-    Q_PROPERTY(double bpm READ getBpm WRITE setBpm)
+    Q_PROPERTY(QString artist READ getArtist WRITE setArtist NOTIFY changed)
+    Q_PROPERTY(QString title READ getTitle WRITE setTitle NOTIFY changed)
+    Q_PROPERTY(QString album READ getAlbum WRITE setAlbum NOTIFY changed)
+    Q_PROPERTY(QString albumArtist READ getAlbumArtist WRITE setAlbumArtist NOTIFY changed)
+    Q_PROPERTY(QString genre READ getGenre WRITE setGenre NOTIFY changed)
+    Q_PROPERTY(QString composer READ getComposer WRITE setComposer NOTIFY changed)
+    Q_PROPERTY(QString grouping READ getGrouping WRITE setGrouping NOTIFY changed)
+    Q_PROPERTY(QString year READ getYear WRITE setYear NOTIFY changed)
+    Q_PROPERTY(QString track_number READ getTrackNumber WRITE setTrackNumber NOTIFY changed)
+    Q_PROPERTY(int times_played READ getTimesPlayed NOTIFY changed)
+    Q_PROPERTY(QString comment READ getComment WRITE setComment NOTIFY changed)
+    Q_PROPERTY(double bpm READ getBpm WRITE setBpm NOTIFY changed)
     Q_PROPERTY(QString bpmFormatted READ getBpmStr STORED false)
-    Q_PROPERTY(QString key READ getKeyText WRITE setKeyText)
-    Q_PROPERTY(int duration READ getDuration WRITE setDuration)
+    Q_PROPERTY(QString key READ getKeyText WRITE setKeyText NOTIFY changed)
+    Q_PROPERTY(int duration READ getDuration WRITE setDuration NOTIFY changed)
     Q_PROPERTY(QString durationFormatted READ getDurationStr STORED false)
 
 
@@ -408,7 +406,7 @@ class TrackInfoObject : public QObject {
     ConstWaveformPointer m_waveform;
     ConstWaveformPointer m_waveformSummary;
 
-    QAtomicInt m_analyserProgress; // in 0.1%
+    std::atomic<int> m_analyserProgress; // in 0.1%
 
     CoverArt m_coverArt;
 

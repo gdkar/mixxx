@@ -20,7 +20,8 @@
 
 #include <QObject>
 #include <cstring>
-#include <string.h>
+#include <cstring>
+#include <atomic>
 #include <memory>
 #include "util/types.h"
 #include "engine/effects/groupfeaturestate.h"
@@ -39,7 +40,7 @@ class EngineObject : public QObject {
       RELEASE_ASSERT(recursion_depth<2);
       recursion_depth++;
       auto tmp = std::make_unique<CSAMPLE[]>(iBufferSize);
-      memmove(tmp.get(),pInOut,iBufferSize*sizeof(CSAMPLE));
+      std::memmove(tmp.get(),pInOut,iBufferSize*sizeof(CSAMPLE));
       process(tmp.get(),pInOut, iBufferSize);
       recursion_depth--;
     };
@@ -48,7 +49,7 @@ class EngineObject : public QObject {
       RELEASE_ASSERT(recursion_depth<2);
       recursion_depth++;
       if(pOut!=pIn){
-        memmove(pOut,pIn,sizeof(CSAMPLE)*iBufferSize);
+        std::memmove(pOut,pIn,sizeof(CSAMPLE)*iBufferSize);
       }
       process(pOut,iBufferSize);
       recursion_depth--;

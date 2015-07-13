@@ -11,21 +11,16 @@
 #include "skin/imgcolor.h"
 #include "skin/imginvert.h"
 
-void ColorSchemeParser::setupLegacyColorSchemes(QDomElement docElem,
-                                                ConfigObject<ConfigValue>* pConfig) {
+void ColorSchemeParser::setupLegacyColorSchemes(QDomElement docElem,ConfigObject<ConfigValue>* pConfig) {
     QDomNode colsch = docElem.namedItem("Schemes");
-
     if (!colsch.isNull() && colsch.isElement()) {
         QString schname = pConfig->getValueString(ConfigKey("[Config]","Scheme"));
         QDomNode sch = colsch.firstChild();
-
         bool found = false;
-
         if (schname.isEmpty()) {
             // If no scheme stored, accept the first one in the file
             found = true;
         }
-
         while (!sch.isNull() && !found) {
             QString thisname = XmlParse::selectNodeQString(sch, "Name");
             if (thisname == schname) {
@@ -34,7 +29,6 @@ void ColorSchemeParser::setupLegacyColorSchemes(QDomElement docElem,
                 sch = sch.nextSibling();
             }
         }
-
         if (found) {
             QSharedPointer<ImgSource> imsrc =
                     QSharedPointer<ImgSource>(parseFilters(sch.namedItem("Filters")));
@@ -54,16 +48,10 @@ void ColorSchemeParser::setupLegacyColorSchemes(QDomElement docElem,
 }
 
 ImgSource* ColorSchemeParser::parseFilters(QDomNode filt) {
-
     // TODO: Move this code into ImgSource
-    if (!filt.hasChildNodes()) {
-        return 0;
-    }
-
+    if (!filt.hasChildNodes()) {return 0;}
     ImgSource * ret = new ImgLoader();
-
     QDomNode f = filt.firstChild();
-
     while (!f.isNull()) {
         QString name = f.nodeName().toLower();
         if (name == "invert") {
@@ -103,13 +91,11 @@ ImgSource* ColorSchemeParser::parseFilters(QDomNode filt) {
             if (!f.namedItem("SFact").isNull()) { sfact = XmlParse::selectNodeFloat(f, "SFact"); }
             if (!f.namedItem("VFact").isNull()) { vfact = XmlParse::selectNodeFloat(f, "VFact"); }
 
-            ret = new ImgHSVTweak(ret, hmin, hmax, smin, smax, vmin, vmax, hfact, hconst,
-                                  sfact, sconst, vfact, vconst);
+            ret = new ImgHSVTweak(ret, hmin, hmax, smin, smax, vmin, vmax, hfact, hconst,sfact, sconst, vfact, vconst);
         } else {
             qDebug() << "Unkown image filter:" << name;
         }
         f = f.nextSibling();
     }
-
     return ret;
 }

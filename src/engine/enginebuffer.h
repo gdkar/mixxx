@@ -19,7 +19,8 @@
 #define ENGINEBUFFER_H
 
 #include <QMutex>
-#include <QAtomicInt>
+#include <atomic>
+#include <memory>
 #include <gtest/gtest_prod.h>
 
 #include "util/types.h"
@@ -270,7 +271,7 @@ class EngineBuffer : public EngineObject {
     // Saved value of rate for slip mode
     double m_dSlipRate;
     // m_slipEnabled is a boolean accessed from multiple threads, so we use an atomic int.
-    QAtomicInt m_slipEnabled;
+    std::atomic<bool> m_slipEnabled;
     // m_bSlipEnabledProcessing is only used by the engine processing thread.
     bool m_bSlipEnabledProcessing;
 
@@ -326,16 +327,16 @@ class EngineBuffer : public EngineObject {
     bool m_bScalerChanged;
     // Indicates that dependency injection has taken place.
     bool m_bScalerOverride;
-    QAtomicInt m_iSeekQueued;
-    QAtomicInt m_iEnableSyncQueued;
-    QAtomicInt m_iSyncModeQueued;
+    std::atomic<int> m_iSeekQueued;
+    std::atomic<int> m_iEnableSyncQueued;
+    std::atomic<int> m_iSyncModeQueued;
     ControlValueAtomic<double> m_queuedPosition;
     // Holds the last sample value of the previous buffer. This is used when ramping to
     // zero in case of an immediate stop of the playback
     float m_fLastSampleValue[2];
     // Is true if the previous buffer was silent due to pausing
     bool m_bLastBufferPaused;
-    QAtomicInt m_iTrackLoading;
+    std::atomic<bool> m_iTrackLoading;
     bool m_bPlayAfterLoading;
     float m_fRampValue;
     int m_iRampState;

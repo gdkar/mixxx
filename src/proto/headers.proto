@@ -3,9 +3,7 @@
 // because those break across library schema changes.
 
 package mixxx.library;
-
 option optimize_for = LITE_RUNTIME;
-
 message HeaderViewState {
   message HeaderState {
     optional bool hidden = 1;
