@@ -169,9 +169,7 @@ namespace {
         QString titleWithFileType;
         if (fileName.count('-') == 1) {
             const QString artist(fileName.section('-', 0, 0).trimmed());
-            if (!artist.isEmpty()) {
-                trackMetadata.setArtist(artist);
-            }
+            if (!artist.isEmpty()) {trackMetadata.setArtist(artist);}
             titleWithFileType = fileName.section('-', 1, 1).trimmed();
         } else {
             titleWithFileType = fileName.trimmed();
@@ -202,20 +200,14 @@ void TrackInfoObject::setMetadata(const Mixxx::TrackMetadata& trackMetadata) {
     setDuration(trackMetadata.getDuration());
     setBitrate(trackMetadata.getBitrate());
 
-    if (trackMetadata.isReplayGainValid()) {
-        setReplayGain(trackMetadata.getReplayGain());
-    }
+    if (trackMetadata.isReplayGainValid()) {setReplayGain(trackMetadata.getReplayGain());}
 
     // Need to set BPM after sample rate since beat grid creation depends on
     // knowing the sample rate. Bug #1020438.
-    if (trackMetadata.isBpmValid()) {
-        setBpm(trackMetadata.getBpm());
-    }
+    if (trackMetadata.isBpmValid()) {setBpm(trackMetadata.getBpm());}
 
     const QString key(trackMetadata.getKey());
-    if (!key.isEmpty()) {
-        setKeyText(key, mixxx::track::io::key::FILE_METADATA);
-    }
+    if (!key.isEmpty()) {setKeyText(key, mixxx::track::io::key::FILE_METADATA);}
 }
 
 void TrackInfoObject::getMetadata(Mixxx::TrackMetadata* pTrackMetadata) {
@@ -318,6 +310,8 @@ void TrackInfoObject::setLocation(const QString& location) {
         m_fileInfo = newFileInfo;
         m_bLocationChanged = true;
         setDirty(true);
+        lock.unlock();
+        emit changed(this);
     }
 }
 
@@ -374,6 +368,7 @@ void TrackInfoObject::setReplayGain(float f) {
     }
     lock.unlock();
     emit(ReplayGainUpdated(f));
+    emit(changed(this));
 }
 
 double TrackInfoObject::getBpm() const {
@@ -418,6 +413,7 @@ void TrackInfoObject::setBpm(double f) {
     // Tell the GUI to update the bpm label...
     //qDebug() << "TrackInfoObject signaling BPM update to" << f;
     emit(bpmUpdated(f));
+    emit changed(this);
 }
 
 QString TrackInfoObject::getBpmStr() const
@@ -499,7 +495,11 @@ QDateTime TrackInfoObject::getDateAdded() const {
 
 void TrackInfoObject::setDateAdded(const QDateTime& dateAdded) {
     QMutexLocker lock(&m_qMutex);
-    m_dateAdded = dateAdded;
+    if(m_dateAdded!=m_dateAdded){
+        m_dateAdded = dateAdded;
+        lock.unlock();
+        emit changed(this);
+    }
 }
 
 QDateTime TrackInfoObject::getFileModifiedTime() const {
@@ -536,6 +536,8 @@ void TrackInfoObject::setTitle(const QString& s) {
     if (m_sTitle != title) {
         m_sTitle = title;
         setDirty(true);
+        lock.unlock();
+        emit changed(this);
     }
 }
 
@@ -550,6 +552,9 @@ void TrackInfoObject::setArtist(const QString& s) {
     if (m_sArtist != artist) {
         m_sArtist = artist;
         setDirty(true);
+        lock.unlock();
+        emit changed(this);
+
     }
 }
 
@@ -592,6 +597,9 @@ void TrackInfoObject::setYear(const QString& s) {
     if (m_sYear != year) {
         m_sYear = year;
         setDirty(true);
+        lock.unlock();
+        emit changed(this);
+
     }
 }
 
@@ -634,6 +642,9 @@ void TrackInfoObject::setGrouping(const QString& s) {
     if (m_sGrouping != grouping) {
         m_sGrouping = grouping;
         setDirty(true);
+        lock.unlock();
+        emit changed(this);
+
     }
 }
 
@@ -679,10 +690,15 @@ void TrackInfoObject::setPlayedAndUpdatePlaycount(bool bPlayed) {
     if (bPlayed) {
         ++m_iTimesPlayed;
         setDirty(true);
+        lock.unlock();
+        emit changed(this);
     }
     else if (m_bPlayed && !bPlayed) {
         m_iTimesPlayed = math_max(0, m_iTimesPlayed - 1);
         setDirty(true);
+        lock.unlock();
+        emit changed(this);
+
     }
     m_bPlayed = bPlayed;
 }
@@ -692,6 +708,8 @@ void TrackInfoObject::setPlayed(bool bPlayed) {
     if (bPlayed != m_bPlayed) {
         m_bPlayed = bPlayed;
         setDirty(true);
+        lock.unlock();
+        emit changed(this);
     }
 }
 
@@ -718,6 +736,8 @@ void TrackInfoObject::setType(const QString& s) {
     if (s != m_sType) {
         m_sType = s;
         setDirty(true);
+        lock.unlock();
+        emit changed(this);
     }
 }
 
@@ -726,6 +746,8 @@ void TrackInfoObject::setSampleRate(int iSampleRate) {
     if (m_iSampleRate != iSampleRate) {
         m_iSampleRate = iSampleRate;
         setDirty(true);
+        lock.unlock();
+        emit changed(this);
     }
 }
 
@@ -739,6 +761,8 @@ void TrackInfoObject::setChannels(int iChannels) {
     if (m_iChannels != iChannels) {
         m_iChannels = iChannels;
         setDirty(true);
+        lock.unlock();
+        emit changed(this);
     }
 }
 
@@ -766,6 +790,8 @@ void TrackInfoObject::setBitrate(int i) {
     if (m_iBitrate != i) {
         m_iBitrate = i;
         setDirty(true);
+        lock.unlock();
+        emit changed(this);
     }
 }
 
@@ -831,16 +857,14 @@ void TrackInfoObject::setWaveformSummary(ConstWaveformPointer pWaveform) {
 }
 
 void TrackInfoObject::setAnalyserProgress(int progress) {
-    // progress in 0 .. 1000. QAtomicInt so no need for lock.
-    if (progress != load_atomic(m_analyserProgress)) {
+    // progress in 0 .. 1000. 
+    if (progress != atomic_load(&m_analyserProgress)) {
         m_analyserProgress = progress;
         emit(analyserProgress(progress));
     }
 }
-
 int TrackInfoObject::getAnalyserProgress() const {
-    // QAtomicInt so no need for lock.
-    return load_atomic(m_analyserProgress);
+    return atomic_load(&m_analyserProgress);
 }
 
 void TrackInfoObject::setCuePoint(float cue) {
@@ -865,8 +889,7 @@ Cue* TrackInfoObject::addCue() {
     //qDebug() << "TrackInfoObject::addCue()";
     QMutexLocker lock(&m_qMutex);
     Cue* cue = new Cue(m_iId);
-    connect(cue, SIGNAL(updated()),
-            this, SLOT(slotCueUpdated()));
+    connect(cue, SIGNAL(updated()),this, SLOT(slotCueUpdated()));
     m_cuePoints.push_back(cue);
     setDirty(true);
     lock.unlock();
@@ -901,8 +924,7 @@ void TrackInfoObject::setCuePoints(QList<Cue*> cuePoints) {
     it = QListIterator<Cue*>(m_cuePoints);
     while (it.hasNext()) {
         Cue* cue = it.next();
-        connect(cue, SIGNAL(updated()),
-                this, SLOT(slotCueUpdated()));
+        connect(cue, SIGNAL(updated()),this, SLOT(slotCueUpdated()));
     }
     setDirty(true);
     lock.unlock();
@@ -952,6 +974,8 @@ void TrackInfoObject::setRating (int rating) {
     if (rating != m_Rating) {
         m_Rating = rating;
         setDirty(true);
+        lock.unlock();
+        emit changed(this);
     }
 }
 
@@ -973,14 +997,11 @@ const Keys& TrackInfoObject::getKeys() const {
 
 mixxx::track::io::key::ChromaticKey TrackInfoObject::getKey() const {
     QMutexLocker lock(&m_qMutex);
-    if (!m_keys.isValid()) {
-        return mixxx::track::io::key::INVALID;
-    }
+    if (!m_keys.isValid()) {return mixxx::track::io::key::INVALID;}
     return m_keys.getGlobalKey();
 }
 
-void TrackInfoObject::setKey(mixxx::track::io::key::ChromaticKey key,
-                             mixxx::track::io::key::Source source) {
+void TrackInfoObject::setKey(mixxx::track::io::key::ChromaticKey key,mixxx::track::io::key::Source source) {
     QMutexLocker lock(&m_qMutex);
     bool dirty = false;
     if (key == mixxx::track::io::key::INVALID) {
@@ -1042,6 +1063,8 @@ void TrackInfoObject::setBpmLock(bool bpmLock) {
     if (bpmLock != m_bBpmLock) {
         m_bBpmLock = bpmLock;
         setDirty(true);
+        lock.unlock();
+        emit changed(this);
     }
 }
 

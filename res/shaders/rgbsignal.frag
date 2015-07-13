@@ -1,4 +1,6 @@
-#version 120
+#version 150
+
+in vec2 v_texcoord;
 
 uniform vec2 framebufferSize;
 uniform vec4 axesColor;
@@ -28,17 +30,13 @@ vec4 getWaveformData(float index) {
 }
 
 void main(void) {
-    vec2 uv = gl_TexCoord[0].st;
+    vec2 uv = v_texcoord;
     vec4 pixel = gl_FragCoord;
-
-    float new_currentIndex = floor(firstVisualIndex + uv.x *
-                                   (lastVisualIndex - firstVisualIndex)) * 2;
+    float new_currentIndex = floor(firstVisualIndex + uv.x * (lastVisualIndex - firstVisualIndex)) * 2;
 
     // Texture coordinates put (0,0) at the bottom left, so show the right
     // channel if we are in the bottom half.
-    if (uv.y < 0.5) {
-        new_currentIndex += 1;
-    }
+    if (uv.y < 0.5) {new_currentIndex += 1;}
 
     vec4 outputColor = vec4(0.0, 0.0, 0.0, 0.0);
     bool showing = false;

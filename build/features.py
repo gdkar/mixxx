@@ -946,6 +946,8 @@ class LAVF(Feature):
             build.env.Append(LIBS='avcodec')
             build.env.Append(LIBS='avformat')
             build.env.Append(LIBS='avutil')
+            build.env.Append(LIBS='avdevice')
+            build.env.Append(LIBS='avfilter')
             build.env.Append(LIBS='swresample')
             # build.env.Append(LIBS = 'dl')
             build.env.Append(LIBS='m')

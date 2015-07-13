@@ -23,24 +23,13 @@ class FIFO {
         }
         m_data = new DataType[size];
         memset(m_data, 0, sizeof(DataType) * size);
-        PaUtil_InitializeRingBuffer(
-                &m_ringBuffer, sizeof(DataType), size, m_data);
+        PaUtil_InitializeRingBuffer(&m_ringBuffer, sizeof(DataType), size, m_data);
     }
-    virtual ~FIFO() {
-        delete [] m_data;
-    }
-    int readAvailable() const {
-        return PaUtil_GetRingBufferReadAvailable(&m_ringBuffer);
-    }
-    int writeAvailable() const {
-        return PaUtil_GetRingBufferWriteAvailable(&m_ringBuffer);
-    }
-    int read(DataType* pData, int count) {
-        return PaUtil_ReadRingBuffer(&m_ringBuffer, pData, count);
-    }
-    int write(const DataType* pData, int count) {
-        return PaUtil_WriteRingBuffer(&m_ringBuffer, pData, count);
-    }
+    virtual ~FIFO() {delete [] m_data;}
+    int readAvailable() const {return PaUtil_GetRingBufferReadAvailable(&m_ringBuffer);}
+    int writeAvailable() const {return PaUtil_GetRingBufferWriteAvailable(&m_ringBuffer);}
+    int read(DataType* pData, int count) {return PaUtil_ReadRingBuffer(&m_ringBuffer, pData, count);}
+    int write(const DataType* pData, int count) {return PaUtil_WriteRingBuffer(&m_ringBuffer, pData, count);}
     void writeBlocking(const DataType* pData, int count) {
         int written = 0;
         while (written != count) {
@@ -50,23 +39,19 @@ class FIFO {
         }
     }
     int aquireWriteRegions(int count,
-            DataType** dataPtr1, ring_buffer_size_t* sizePtr1,
-            DataType** dataPtr2, ring_buffer_size_t* sizePtr2) {
+            DataType** dataPtr1, long* sizePtr1,
+            DataType** dataPtr2, long* sizePtr2) {
         return PaUtil_GetRingBufferWriteRegions(&m_ringBuffer, count,
                 (void**)dataPtr1, sizePtr1, (void**)dataPtr2, sizePtr2);
     }
-    int releaseWriteRegions(int count) {
-        return PaUtil_AdvanceRingBufferWriteIndex(&m_ringBuffer, count);
-    }
+    int releaseWriteRegions(int count) {return PaUtil_AdvanceRingBufferWriteIndex(&m_ringBuffer, count);}
     int aquireReadRegions(int count,
-            DataType** dataPtr1, ring_buffer_size_t* sizePtr1,
-            DataType** dataPtr2, ring_buffer_size_t* sizePtr2) {
+            DataType** dataPtr1, long* sizePtr1,
+            DataType** dataPtr2, long* sizePtr2) {
         return PaUtil_GetRingBufferReadRegions(&m_ringBuffer, count,
                 (void**)dataPtr1, sizePtr1, (void**)dataPtr2, sizePtr2);
     }
-    int releaseReadRegions(int count) {
-        return PaUtil_AdvanceRingBufferReadIndex(&m_ringBuffer, count);
-    }
+    int releaseReadRegions(int count) {return PaUtil_AdvanceRingBufferReadIndex(&m_ringBuffer, count);}
   private:
     DataType* m_data;
     PaUtilRingBuffer m_ringBuffer;
@@ -89,45 +74,31 @@ class MessagePipe {
               m_pTwoWayMessagePipeReference(pTwoWayMessagePipeReference),
               m_bSerializeWrites(serialize_writes) {
     }
-
     // Returns the number of ReceiverMessageType messages waiting to be read by
     // the receiver. Non-blocking.
-    inline int messageCount() const {
-        return m_sender_messages.readAvailable();
-    }
-
+    inline int messageCount() const {return m_sender_messages.readAvailable();}
     // Read a ReceiverMessageType written by the receiver addressed to the
     // sender. Non-blocking.
-    inline int readMessages(ReceiverMessageType* messages, int count) {
-        return m_sender_messages.read(messages, count);
-    }
-
+    inline int readMessages(ReceiverMessageType* messages, int count) {return m_sender_messages.read(messages, count);}
     // Writes up to 'count' messages from the 'message' array to the receiver
     // and returns the number of successfully written messages. If
     // serializeWrites is active, this method is blocking.
     inline int writeMessages(const SenderMessageType* messages, int count) {
-        if (m_bSerializeWrites) {
-            m_serializationMutex.lock();
-        }
+        if (m_bSerializeWrites) {m_serializationMutex.lock();}
         int result = m_receiver_messages.write(messages, count);
-        if (m_bSerializeWrites) {
-            m_serializationMutex.unlock();
-        }
+        if (m_bSerializeWrites) {m_serializationMutex.unlock();}
         return result;
     }
-
   private:
     QMutex m_serializationMutex;
     FIFO<SenderMessageType>& m_receiver_messages;
     FIFO<ReceiverMessageType>& m_sender_messages;
     QScopedPointer<BaseReferenceHolder> m_pTwoWayMessagePipeReference;
     bool m_bSerializeWrites;
-
 #define COMMA ,
     DISALLOW_COPY_AND_ASSIGN(MessagePipe<SenderMessageType COMMA ReceiverMessageType>);
 #undef COMMA
 };
-
 // TwoWayMessagePipe is a bare-bones wrapper around the above FIFO class that
 // facilitates non-blocking two-way communication. To keep terminology clear,
 // there are two sides to the message pipe, the sender side and the receiver
@@ -154,9 +125,8 @@ class TwoWayMessagePipe {
                      bool serialize_sender_writes,
                      bool serialize_receiver_writes) {
         QSharedPointer<TwoWayMessagePipe<SenderMessageType, ReceiverMessageType> > pipe(
-            new TwoWayMessagePipe<SenderMessageType, ReceiverMessageType>(
-                sender_fifo_size, receiver_fifo_size));
-
+            new TwoWayMessagePipe<SenderMessageType, ReceiverMessageType>(sender_fifo_size, receiver_fifo_size)
+            );
         return QPair<MessagePipe<SenderMessageType, ReceiverMessageType>*,
                      MessagePipe<ReceiverMessageType, SenderMessageType>*>(
                          new MessagePipe<SenderMessageType, ReceiverMessageType>(
@@ -168,23 +138,20 @@ class TwoWayMessagePipe {
                              new ReferenceHolder<TwoWayMessagePipe<SenderMessageType, ReceiverMessageType> >(pipe),
                              serialize_receiver_writes));
     }
-
+    TwoWayMessagePipe &operator=(TwoWayMessagePipe&&other) = default;
+    TwoWayMessagePipe(TwoWayMessagePipe &&other) = default;
   private:
     TwoWayMessagePipe(int sender_fifo_size, int receiver_fifo_size)
             : m_receiver_messages(receiver_fifo_size),
               m_sender_messages(sender_fifo_size) {
     }
-
     // Messages waiting to be delivered to the receiver.
     FIFO<SenderMessageType> m_receiver_messages;
     // Messages waiting to be delivered to the sender.
     FIFO<ReceiverMessageType> m_sender_messages;
-
     // This #define is because the macro gets confused by the template
     // parameters.
-#define COMMA ,
-    DISALLOW_COPY_AND_ASSIGN(TwoWayMessagePipe<SenderMessageType COMMA ReceiverMessageType>);
-#undef COMMA
+    TwoWayMessagePipe(const TwoWayMessagePipe<SenderMessageType,ReceiverMessageType>&other) = delete;
+    TwoWayMessagePipe &operator = (const TwoWayMessagePipe &other) = delete;
 };
-
 #endif /* FIFO_H */

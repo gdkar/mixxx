@@ -142,7 +142,6 @@ class AudioInput : public AudioPath {
   protected:
     void setType(AudioPathType type);
 };
-
 // This class is required to add the buffer, without changing the hash used as
 // ID
 class AudioInputBuffer : public AudioInput {
@@ -156,12 +155,9 @@ class AudioInputBuffer : public AudioInput {
   private:
     CSAMPLE* m_pBuffer;
 };
-
-
 class AudioSource {
 public:
     virtual const CSAMPLE* buffer(AudioOutput output) const = 0;
-
     // This is called by SoundManager whenever an output is connected for this
     // source. When this is called it is guaranteed that no callback is
     // active.
@@ -171,13 +167,12 @@ public:
     // active.
     virtual void onOutputDisconnected(AudioOutput output) { Q_UNUSED(output); };
 };
-
 class AudioDestination {
 public:
     // This is called by SoundManager whenever there are new samples from the
     // configured input to be processed. This is run in the clock reference
     // callback thread
-    virtual void receiveBuffer(AudioInput input, const CSAMPLE* pBuffer,unsigned int iNumFrames) = 0;
+    virtual void receiveBuffer(AudioInput input, const CSAMPLE* pBuffer, unsigned int iNumFrames) = 0;
     // This is called by SoundManager whenever an input is configured for this
     // destination. When this is called it is guaranteed that no callback is
     // active.
@@ -187,9 +182,7 @@ public:
     // active.
     virtual void onInputUnconfigured(AudioInput input) { Q_UNUSED(input); };
 };
-
 typedef AudioPath::AudioPathType AudioPathType;
-
 // globals for QHash
 unsigned int qHash(const ChannelGroup &group);
 unsigned int qHash(const AudioOutput &output);

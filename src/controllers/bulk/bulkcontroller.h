@@ -8,7 +8,7 @@
 #ifndef BULKCONTROLLER_H
 #define BULKCONTROLLER_H
 
-#include <QAtomicInt>
+#include <atomic>
 
 #include "controllers/controller.h"
 #include "controllers/hid/hidcontrollerpreset.h"
@@ -34,7 +34,7 @@ class BulkReader : public QThread {
 
   private:
     libusb_device_handle* m_phandle;
-    QAtomicInt m_stop;
+    std::atomic<int> m_stop;
     unsigned char m_in_epaddr;
 };
 

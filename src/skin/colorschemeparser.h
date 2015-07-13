@@ -13,5 +13,4 @@ class ColorSchemeParser {
     ColorSchemeParser() { }
     ~ColorSchemeParser() { }
 };
-
 #endif /* COLORSCHEMEPARSER_H */

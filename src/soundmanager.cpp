@@ -37,8 +37,7 @@
 typedef PaError (*SetJackClientName)(const char *name);
 #endif
 
-SoundManager::SoundManager(ConfigObject<ConfigValue> *pConfig,
-                           EngineMaster *pMaster)
+SoundManager::SoundManager(ConfigObject<ConfigValue> *pConfig,EngineMaster *pMaster)
         : m_pMaster(pMaster),
           m_pConfig(pConfig),
 #ifdef __PORTAUDIO__
@@ -51,32 +50,24 @@ SoundManager::SoundManager(ConfigObject<ConfigValue> *pConfig,
     qDebug() << "PortAudio version:" << Pa_GetVersion()
              << "text:" << Pa_GetVersionText();
 #endif
-
     // TODO(xxx) some of these ControlObject are not needed by soundmanager, or are unused here.
     // It is possible to take them out?
     m_pControlObjectSoundStatusCO = new ControlObject(ConfigKey("[SoundManager]", "status"));
     m_pControlObjectSoundStatusCO->set(SOUNDMANAGER_DISCONNECTED);
     m_pControlObjectVinylControlGainCO = new ControlObject(ConfigKey(VINYL_PREF_KEY, "gain"));
-
     //Hack because PortAudio samplerate enumeration is slow as hell on Linux (ALSA dmix sucks, so we can't blame PortAudio)
     m_samplerates.push_back(44100);
     m_samplerates.push_back(48000);
     m_samplerates.push_back(96000);
-
     queryDevices(); // initializes PortAudio so SMConfig:loadDefaults can do
                     // its thing if it needs to
-
-    if (!m_config.readFromDisk()) {
-        m_config.loadDefaults(this, SoundManagerConfig::ALL);
-    }
+    if (!m_config.readFromDisk()) {m_config.loadDefaults(this, SoundManagerConfig::ALL);}
     checkConfig();
     m_config.writeToDisk(); // in case anything changed by applying defaults
 }
-
 SoundManager::~SoundManager() {
     //Clean up devices.
     clearDeviceList();
-
 #ifdef __PORTAUDIO__
     if (m_paInitialized) {
         Pa_Terminate();
@@ -85,7 +76,6 @@ SoundManager::~SoundManager() {
 #endif
     // vinyl control proxies and input buffers are freed in closeDevices, called
     // by clearDeviceList -- bkgood
-
     delete m_pControlObjectSoundStatusCO;
     delete m_pControlObjectVinylControlGainCO;
 }
@@ -93,16 +83,13 @@ SoundManager::~SoundManager() {
 QList<SoundDevice*> SoundManager::getDeviceList(
     QString filterAPI, bool bOutputDevices, bool bInputDevices) {
     //qDebug() << "SoundManager::getDeviceList";
-
     if (filterAPI == "None") {
         QList<SoundDevice*> emptyList;
         return emptyList;
     }
-
     // Create a list of sound devices filtered to match given API and
     // input/output.
     QList<SoundDevice*> filteredDeviceList;
-
     foreach (SoundDevice* device, m_devices) {
         // Skip devices that don't match the API, don't have input channels when
         // we want input devices, or don't have output channels when we want
@@ -133,15 +120,10 @@ QList<QString> SoundManager::getHostAPIList() const {
 void SoundManager::closeDevices() {
     //qDebug() << "SoundManager::closeDevices()";
     QListIterator<SoundDevice*> dev_it(m_devices);
-
     // NOTE(rryan): As of 2009 (?) it has been safe to close() a SoundDevice
     // while callbacks are active.
-    while (dev_it.hasNext()) {
-        dev_it.next()->close();
-    }
-
+    while (dev_it.hasNext()) {dev_it.next()->close();}
     m_pErrorDevice = nullptr;
-
     // TODO(rryan): Should we do this before SoundDevice::close()? No! Because
     // then the callback may be running when we call
     // onInputDisconnected/onOutputDisconnected.
@@ -168,28 +150,22 @@ void SoundManager::closeDevices() {
 
     while (!m_inputBuffers.isEmpty()) {
         CSAMPLE* pBuffer = m_inputBuffers.takeLast();
-        if (pBuffer != nullptr) {
-            SampleUtil::free(pBuffer);
-        }
+        if (pBuffer != nullptr) {SampleUtil::free(pBuffer);}
     }
     m_inputBuffers.clear();
-
     // Indicate to the rest of Mixxx that sound is disconnected.
     m_pControlObjectSoundStatusCO->set(SOUNDMANAGER_DISCONNECTED);
 }
 
 void SoundManager::clearDeviceList() {
     //qDebug() << "SoundManager::clearDeviceList()";
-
     // Close the devices first.
     closeDevices();
-
     // Empty out the list of devices we currently have.
     while (!m_devices.empty()) {
         SoundDevice* dev = m_devices.takeLast();
         delete dev;
     }
-
 #ifdef __PORTAUDIO__
     if (m_paInitialized) {
         Pa_Terminate();
@@ -233,18 +209,15 @@ void SoundManager::queryDevices() {
         m_paInitialized = false;
         return;
     }
-
     int iNumDevices = Pa_GetDeviceCount();
     if (iNumDevices < 0) {
         qDebug() << "ERROR: Pa_CountDevices returned" << iNumDevices;
         return;
     }
-
     const PaDeviceInfo* deviceInfo;
     for (int i = 0; i < iNumDevices; i++) {
         deviceInfo = Pa_GetDeviceInfo(i);
-        if (!deviceInfo)
-            continue;
+        if (!deviceInfo) continue;
         /* deviceInfo fields for quick reference:
             int     structVersion
             const char *    name
@@ -417,12 +390,9 @@ Result SoundManager::setupDevices() {
     } else {
         qDebug() << "No output devices opened, no clock reference device set";
     }
-
     qDebug() << outputDevicesOpened << "output sound devices opened";
     qDebug() << inputDevicesOpened << "input  sound devices opened";
-
-    m_pControlObjectSoundStatusCO->set(
-        outputDevicesOpened > 0 ? SOUNDMANAGER_CONNECTED : SOUNDMANAGER_DISCONNECTED);
+    m_pControlObjectSoundStatusCO->set(outputDevicesOpened > 0 ? SOUNDMANAGER_CONNECTED : SOUNDMANAGER_DISCONNECTED);
 
     // returns OK if we were able to open all the devices the user wanted
     if (devicesAttempted == devicesOpened) {
@@ -436,28 +406,19 @@ closeAndError:
     return err;
 }
 
-SoundDevice* SoundManager::getErrorDevice() const {
-    return m_pErrorDevice;
-}
-
-SoundManagerConfig SoundManager::getConfig() const {
-    return m_config;
-}
+SoundDevice* SoundManager::getErrorDevice() const {return m_pErrorDevice;}
+SoundManagerConfig SoundManager::getConfig() const {return m_config;}
 
 Result SoundManager::setConfig(SoundManagerConfig config) {
     Result err = OK;
     m_config = config;
     checkConfig();
-
     // certain parts of mixxx rely on this being here, for the time being, just
     // letting those be -- bkgood
     // Do this first so vinyl control gets the right samplerate -- Owen W.
     m_pConfig->set(ConfigKey("[Soundcard]","Samplerate"), ConfigValue(m_config.getSampleRate()));
-
     err = setupDevices();
-    if (err == OK) {
-        m_config.writeToDisk();
-    }
+    if (err == OK) {m_config.writeToDisk();}
     return err;
 }
 
@@ -496,28 +457,20 @@ void SoundManager::pushInputBuffers(const QList<AudioInputBuffer>& inputs,
         }
     }
 }
-
 void SoundManager::writeProcess() {
     QListIterator<SoundDevice*> dev_it(m_devices);
     while (dev_it.hasNext()) {
         SoundDevice* device = dev_it.next();
-        if (device) {
-            device->writeProcess();
-        }
+        if (device) {device->writeProcess();}
     }
 }
-
 void SoundManager::readProcess() {
     QListIterator<SoundDevice*> dev_it(m_devices);
     while (dev_it.hasNext()) {
         SoundDevice* device = dev_it.next();
-        if (device) {
-            device->readProcess();
-        }
+        if (device) {device->readProcess();}
     }
 }
-
-
 void SoundManager::registerOutput(AudioOutput output, AudioSource *src) {
     if (m_registeredSources.contains(output)) {
         qDebug() << "WARNING: AudioOutput already registered!";
@@ -525,27 +478,17 @@ void SoundManager::registerOutput(AudioOutput output, AudioSource *src) {
     m_registeredSources.insert(output, src);
     emit(outputRegistered(output, src));
 }
-
 void SoundManager::registerInput(AudioInput input, AudioDestination *dest) {
     if (m_registeredDestinations.contains(input)) {
         // note that this can be totally ok if we just want a certain
         // AudioInput to be going to a different AudioDest -bkgood
         qDebug() << "WARNING: AudioInput already registered!";
     }
-
     m_registeredDestinations.insertMulti(input, dest);
-
     emit(inputRegistered(input, dest));
 }
-
-QList<AudioOutput> SoundManager::registeredOutputs() const {
-    return m_registeredSources.keys();
-}
-
-QList<AudioInput> SoundManager::registeredInputs() const {
-    return m_registeredDestinations.keys();
-}
-
+QList<AudioOutput> SoundManager::registeredOutputs() const {return m_registeredSources.keys();}
+QList<AudioInput> SoundManager::registeredInputs() const {return m_registeredDestinations.keys();}
 void SoundManager::setJACKName() const {
 #ifdef __PORTAUDIO__
 #ifdef Q_OS_LINUX
@@ -557,22 +500,14 @@ void SoundManager::setJACKName() const {
                 portaudio.resolve("PaJack_SetClientName")));
         if (func) {
             if (!func("Mixxx")) qDebug() << "JACK client name set";
-        } else {
-            qWarning() << "failed to resolve JACK name method";
-        }
-    } else {
-        qWarning() << "failed to load portaudio for JACK rename";
-    }
+        } else {qWarning() << "failed to resolve JACK name method";}
+    } else {qWarning() << "failed to load portaudio for JACK rename";}
 #endif
 #endif
 }
-
 void SoundManager::setConfiguredDeckCount(int count) {
     m_config.setDeckCount(count);
     checkConfig();
     m_config.writeToDisk();
 }
-
-int SoundManager::getConfiguredDeckCount() const {
-    return m_config.getDeckCount();
-}
+int SoundManager::getConfiguredDeckCount() const {return m_config.getDeckCount();}

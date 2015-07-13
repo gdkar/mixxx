@@ -128,9 +128,13 @@
 //	Not A Lawyer".
 //
 
-#pragma
-#define TWOPI ((float)(2*M_PI))
+#pragma once
+#include <math.h>
+#include <float.h>
+#include <limits.h>
+#include <tgmath.h>
 
+#define TWOPI ((float)(2*M_PI))
 //
 //	Complex square root: aa= aa^0.5
 //
@@ -355,7 +359,7 @@ lowpass(double freq) {
    // Add zeros
    n_zer= n_pol;
    for (a= 0; a<n_zer; a++) {
-      zer[a]= -INF;
+      zer[a]= -INFINITY;
       zertyp[a]= 1;
    }
 }
@@ -436,7 +440,7 @@ bandpass(double freq1, double freq2) {
    n_zer= n_pol; 
    for (a= 0; a<n_zer; a++) {
       zertyp[a]= 1;
-      zer[a]= (a<n_zer/2) ? 0.0 : -INF;
+      zer[a]= (a<n_zer/2) ? 0.0 : -INFINITY;
    }
 }
 //
@@ -505,7 +509,7 @@ s2z_bilinear() {
    for (a= 0; a<n_pol; ) {
       // Calculate (2 + val) / (2 - val)
       if (poltyp[a] == 1) {
-        if (pol[a] == -INF)  pol[a]= -1.0;
+        if (pol[a] == -INFINITY)  pol[a]= -1.0;
         else                 pol[a]= (2 + pol[a]) / (2 - pol[a]);
         a++;
       } else {
@@ -521,7 +525,7 @@ s2z_bilinear() {
     for (a= 0; a<n_zer; ) {
       // Calculate (2 + val) / (2 - val)
       if (zertyp[a] == 1) {
-        if (zer[a] == -INF) zer[a]= -1.0;
+        if (zer[a] == -INFINITY) zer[a]= -1.0;
         else                zer[a]= (2 + zer[a]) / (2 - zer[a]);
         a++;
       } else {
@@ -546,7 +550,7 @@ s2z_matchedZ() {
    for (a= 0; a<n_pol; ) {
       // Calculate cexp(val)
       if (poltyp[a] == 1) {
-        if (pol[a] == -INF) pol[a]= 0.0;
+        if (pol[a] == -INFINITY) pol[a]= 0.0;
         else                pol[a]= exp(pol[a]);
         a++;
       } else {
@@ -557,7 +561,7 @@ s2z_matchedZ() {
    for (a= 0; a<n_zer; ) {
       // Calculate cexp(val)
       if (zertyp[a] == 1) {
-        if (zer[a] == -INF) zer[a]= 0.0;
+        if (zer[a] == -INFINITY) zer[a]= 0.0;
         else                zer[a]= exp(zer[a]);
         a++;
       } else {

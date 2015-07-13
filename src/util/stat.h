@@ -24,27 +24,17 @@ class Stat {
 
     static QString statTypeToString(StatType type) {
         switch (type) {
-            case UNSPECIFIED:
-                return "UNSPECIFIED";
-            case COUNTER:
-                return "COUNTER";
-            case DURATION_MSEC:
-                return "DURATION_MSEC";
-            case DURATION_NANOSEC:
-                return "DURATION_NANOSEC";
-            case DURATION_SEC:
-                return "DURATION_SEC";
-            case EVENT:
-                return "EVENT";
-            case EVENT_START:
-                return "START";
-            case EVENT_END:
-                return "END";
-            default:
-                return "UNKNOWN";
+            case UNSPECIFIED:     return "UNSPECIFIED";
+            case COUNTER:         return "COUNTER";
+            case DURATION_MSEC:   return "DURATION_MSEC";
+            case DURATION_NANOSEC:return "DURATION_NANOSEC";
+            case DURATION_SEC:    return "DURATION_SEC";
+            case EVENT:           return "EVENT";
+            case EVENT_START:     return "START";
+            case EVENT_END:       return "END";
+            default:              return "UNKNOWN";
         }
     }
-
     enum ComputeTypes {
         NONE            = 0x0000,
         // O(1) in time and space.
@@ -85,27 +75,18 @@ class Stat {
         }
         return Experiment::OFF;
     }
-
     static ComputeFlags experimentFlags(ComputeFlags flags) {
         switch (Experiment::mode()) {
-            case Experiment::EXPERIMENT:
-                return flags | STATS_EXPERIMENT;
-            case Experiment::BASE:
-                return flags | STATS_BASE;
+            case Experiment::EXPERIMENT:  return flags | STATS_EXPERIMENT;
+            case Experiment::BASE:        return flags | STATS_BASE;
             default:
-            case Experiment::OFF:
-                return flags;
+            case Experiment::OFF:         return flags;
         }
     }
-
     explicit Stat();
     void processReport(const StatReport& report);
     QString valueUnits() const;
-
-    double variance() const {
-        return m_report_count > 1 ? m_variance_sk / (m_report_count - 1) : 0.0;
-    }
-
+    double variance() const {return m_report_count > 1 ? m_variance_sk / (m_report_count - 1) : 0.0;}
     QString m_tag;
     StatType m_type;
     ComputeFlags m_compute;

@@ -41,8 +41,7 @@
 
 // Constructor
 #if LIBAVCODEC_VERSION_INT > 3544932
-EncoderFfmpegCore::EncoderFfmpegCore(EncoderCallback* pCallback,
-                                     AVCodecID codec)
+EncoderFfmpegCore::EncoderFfmpegCore(EncoderCallback* pCallback,AVCodecID codec)
 #else
 EncoderFfmpegCore::EncoderFfmpegCore(EncoderCallback* pCallback, CodecID codec)
 #endif

@@ -1,7 +1,5 @@
 package mixxx.track.io;
-
 option optimize_for = LITE_RUNTIME;
-
 message Waveform {
   enum Units {
     RMS = 0;

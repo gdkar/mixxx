@@ -4,11 +4,10 @@
 #include <QMutex>
 #include <QByteArray>
 #include <QString>
-#include <QAtomicInt>
 #include <QSharedPointer>
 #include <QMutexLocker>
 #include <vector>
-
+#include <atomic>
 #include "util.h"
 #include "util/compatibility.h"
 
@@ -27,107 +26,71 @@ union WaveformData {
     WaveformData() {}
     WaveformData(int i) { m_i = i;}
 };
-
+Q_DECLARE_METATYPE(WaveformData);
+Q_DECLARE_TYPEINFO(WaveformData,Q_PRIMITIVE_TYPE);
 class Waveform {
   public:
     explicit Waveform(const QByteArray pData = QByteArray());
-    Waveform(int audioSampleRate, int audioSamples,
-             int desiredVisualSampleRate, int maxVisualSamples);
+    Waveform(int audioSampleRate, int audioSamples, int desiredVisualSampleRate, int maxVisualSamples);
 
     virtual ~Waveform();
-
     int getId() const {
-        QMutexLocker locker(&m_mutex);
-        return m_id;
+      return m_id.load();
     }
-
     void setId(int id) {
-        QMutexLocker locker(&m_mutex);
-        m_id = id;
+        m_id.exchange(id);
     }
-
     QString getVersion() const {
-        QMutexLocker locker(&m_mutex);
-        return m_version;
+        QString ret(m_version);
+        return ret;
     }
-
     void setVersion(QString version) {
-        QMutexLocker locker(&m_mutex);
-        m_version = version;
+        qSwap(m_version,version);
     }
-
     QString getDescription() const {
-        QMutexLocker locker(&m_mutex);
-        return m_description;
+        QString ret(m_description);
+        return ret;
     }
-
     void setDescription(QString description) {
-        QMutexLocker locker(&m_mutex);
-        m_description = description;
+        qSwap(m_description,description);
     }
-
     QByteArray toByteArray() const;
-
     // We do not lock the mutex since m_dataSize and m_visualSampleRate are not
     // changed after the constructor runs.
-    bool isValid() const {
-        return getDataSize() > 0 && getVisualSampleRate() > 0;
-    }
-
-    bool isDirty() const {
-        return m_bDirty;
-    }
-
+    bool isValid() const {return getDataSize() > 0 && getVisualSampleRate() > 0;}
+    bool isDirty() const {return m_bDirty;}
     // AnalysisDAO needs to be able to set the waveform as clean so we mark this
     // as const and m_bDirty mutable.
-    void setDirty(bool bDirty) const {
-        m_bDirty = bDirty;
-    }
-
+    void setDirty(bool bDirty) const {m_bDirty = bDirty;}
     // We do not lock the mutex since m_audioVisualRatio is not changed after
     // the constructor runs.
-    double getAudioVisualRatio() const {
-        return m_audioVisualRatio;
-    }
-
+    double getAudioVisualRatio() const {return m_audioVisualRatio;}
     // Atomically lookup the completion of the waveform. Represents the number
     // of data elements that have been processed out of dataSize.
-    int getCompletion() const {
-        return load_atomic(m_completion);
-    }
-    void setCompletion(int completion) {
-        m_completion = completion;
-    }
-
+    int getCompletion() const {return m_completion.load();}
+    void setCompletion(int completion) {m_completion = completion;}
     // We do not lock the mutex since m_textureStride is not changed after
     // the constructor runs.
     inline int getTextureStride() const { return m_textureStride; }
-
     // We do not lock the mutex since m_data is not resized after the
     // constructor runs.
     inline int getTextureSize() const { return m_data.size(); }
-
     // Atomically get the number of data elements in this Waveform. We do not
     // lock the mutex since m_dataSize is not changed after the constructor
     // runs.
     inline int getDataSize() const { return m_dataSize; }
-
     inline const WaveformData& get(int i) const { return m_data[i];}
     inline unsigned char getLow(int i) const { return m_data[i].filtered.low;}
     inline unsigned char getMid(int i) const { return m_data[i].filtered.mid;}
     inline unsigned char getHigh(int i) const { return m_data[i].filtered.high;}
     inline unsigned char getAll(int i) const { return m_data[i].filtered.all;}
-
     // We do not lock the mutex since m_data is not resized after the
     // constructor runs.
     WaveformData* data() { return &m_data[0];}
-
     // We do not lock the mutex since m_data is not resized after the
     // constructor runs.
     const WaveformData* data() const { return &m_data[0];}
-
     void dump() const;
-
   private:
     void readByteArray(const QByteArray& data);
     void resize(int size);
@@ -139,14 +102,12 @@ class Waveform {
     inline unsigned char& high(int i) { return m_data[i].filtered.high;}
     inline unsigned char& all(int i) { return m_data[i].filtered.all;}
     double getVisualSampleRate() const { return m_visualSampleRate; }
-
     // If stored in the database, the ID of the waveform.
-    int m_id;
+    std::atomic<int> m_id;
     // AnalysisDAO needs to be able to set the waveform as clean.
     mutable bool m_bDirty;
     QString m_version;
     QString m_description;
-
     // The size of the waveform data stored in m_data. Not allowed to change
     // after the constructor runs.
     int m_dataSize;
@@ -162,17 +123,13 @@ class Waveform {
     double m_visualSampleRate;
     // Not allowed to change after the constructor runs.
     double m_audioVisualRatio;
-
     // We create an NxN texture out of m_data's buffer in the GLSL renderer. The
     // stride is N. Not allowed to change after the constructor runs.
     int m_textureStride;
-
     // For performance, completion is shared as a QAtomicInt and does not lock
     // the mutex. The completion of the waveform calculation.
-    QAtomicInt m_completion;
-
+    std::atomic<int> m_completion;
     mutable QMutex m_mutex;
-
     DISALLOW_COPY_AND_ASSIGN(Waveform);
 };
 

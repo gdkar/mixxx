@@ -21,33 +21,21 @@ Stat::Stat()
 
 QString Stat::valueUnits() const {
     switch (m_type) {
-        case DURATION_MSEC:
-            return "ms";
-        case DURATION_NANOSEC:
-            return "ns";
-        case DURATION_SEC:
-            return "s";
+        case DURATION_MSEC:     return "ms";
+        case DURATION_NANOSEC:  return "ns";
+        case DURATION_SEC:      return "s";
         case EVENT:
         case EVENT_START:
         case EVENT_END:
         case UNSPECIFIED:
-        default:
-            return "";
+        default:                return "";
     }
 }
-
 void Stat::processReport(const StatReport& report) {
     m_report_count++;
-    if (m_compute & (Stat::SUM | Stat::AVERAGE)) {
-        m_sum += report.value;
-    }
-    if (m_compute & Stat::MAX && report.value > m_max) {
-        m_max = report.value;
-    }
-    if (m_compute & Stat::MIN && report.value < m_min) {
-        m_min = report.value;
-    }
-
+    if (m_compute & (Stat::SUM | Stat::AVERAGE)) {m_sum += report.value;}
+    if (m_compute & Stat::MAX && report.value > m_max) {m_max = report.value;}
+    if (m_compute & Stat::MIN && report.value < m_min) {m_min = report.value;}
     // Method comes from Knuth, see:
     // http://www.johndcook.com/standard_deviation.html
     if (m_compute & Stat::SAMPLE_VARIANCE) {
@@ -64,64 +52,40 @@ void Stat::processReport(const StatReport& report) {
     if (m_compute & Stat::HISTOGRAM) {
         m_histogram[report.value] += 1.0;
     }
-
     if (m_compute & Stat::VALUES) {
         m_values.push_back(report.value);
     }
 }
-
 QDebug operator<<(QDebug dbg, const Stat &stat) {
     QStringList stats;
-    if (stat.m_compute & Stat::COUNT) {
-        stats << "count=" + QString::number(stat.m_report_count);
-    }
-
-    if (stat.m_compute & Stat::SUM) {
-        stats << "sum=" + QString::number(stat.m_sum) + stat.valueUnits();
-    }
-
+    if (stat.m_compute & Stat::COUNT) {stats << "count=" + QString::number(stat.m_report_count);}
+    if (stat.m_compute & Stat::SUM) {stats << "sum=" + QString::number(stat.m_sum) + stat.valueUnits();}
     if (stat.m_compute & Stat::AVERAGE) {
         QString value = "average=";
-        if (stat.m_report_count > 0) {
-            value += QString::number(stat.m_sum / stat.m_report_count) + stat.valueUnits();
-        } else {
-            value += "XXX";
-        }
+        if (stat.m_report_count > 0) {value += QString::number(stat.m_sum / stat.m_report_count) + stat.valueUnits();
+        } else {value += "XXX";}
         stats << value;
     }
-
     if (stat.m_compute & Stat::MIN) {
         QString value = "min=";
-        if (stat.m_report_count > 0) {
-            value += QString::number(stat.m_min) + stat.valueUnits();
-        } else {
-            value += "XXX";
-        }
+        if (stat.m_report_count > 0) {value += QString::number(stat.m_min) + stat.valueUnits();
+        } else {value += "XXX";}
         stats << value;
     }
-
     if (stat.m_compute & Stat::MAX) {
         QString value = "max=";
-        if (stat.m_report_count > 0) {
-            value += QString::number(stat.m_max) + stat.valueUnits();
-        } else {
-            value += "XXX";
-        }
+        if (stat.m_report_count > 0) {value += QString::number(stat.m_max) + stat.valueUnits();
+        } else {value += "XXX";}
         stats << value;
     }
-
     if (stat.m_compute & Stat::SAMPLE_VARIANCE) {
         double variance = stat.variance();
         stats << "variance=" + QString::number(variance) + stat.valueUnits() + "^2";
-        if (variance >= 0.0) {
-            stats << "stddev=" + QString::number(sqrt(variance)) + stat.valueUnits();
-        }
+        if (variance >= 0.0) {stats << "stddev=" + QString::number(sqrt(variance)) + stat.valueUnits();}
     }
-
     if (stat.m_compute & Stat::SAMPLE_MEDIAN) {
         // TODO(rryan): implement
     }
-
     if (stat.m_compute & Stat::HISTOGRAM) {
         QStringList histogram;
         for (QMap<double, double>::const_iterator it = stat.m_histogram.begin();
