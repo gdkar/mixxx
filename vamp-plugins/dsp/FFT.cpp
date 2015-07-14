@@ -5,6 +5,8 @@
 
     Centre for Digital Music, Queen Mary, University of London.
     This file is based on Don Cross's public domain FFT implementation.
+
+    2015/7/14: replaced entirely with a thin wrapper around fftwf --gdkar
 */
 #include "FFT.h"
 #include "MathUtilities.h"

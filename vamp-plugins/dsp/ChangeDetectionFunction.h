@@ -22,14 +22,8 @@
 
 #include <valarray>
 using std::valarray;
-
 typedef	valarray<float> ChangeDistance;
-
-struct ChangeDFConfig
-{
-	int smoothingWidth;
-};
-
+struct ChangeDFConfig{int smoothingWidth;};
 class ChangeDetectionFunction
 {
 public:

@@ -50,20 +50,13 @@ class ControlObjectThread : public QObject {
     inline bool valid() const { return m_pControl != nullptr; }
 
     // Returns the value of the object. Thread safe, non-blocking.
-    inline double get() {
-        return m_pControl ? m_pControl->get() : 0.0;
-    }
-
+    inline double get() {if(m_pControl)return m_pControl->get(); else return  0.0;}
     // Returns the normalized parameter of the object. Thread safe, non-blocking.
-    inline double getParameter() const {
-        return m_pControl ? m_pControl->getParameter() : 0.0;
-    }
+    inline double getParameter() const {if( m_pControl)return  m_pControl->getParameter(); else return 0.0;}
 
     // Set the normalized parameter of the object. Thread safe, non-blocking.
     inline void setParameter(double p) {
-        if (m_pControl) {
-            m_pControl->setParameter(p, this);
-        }
+        if (m_pControl) {m_pControl->setParameter(p, this);}
     }
 
     inline double getParameterForValue(double value) const {
@@ -77,17 +70,10 @@ class ControlObjectThread : public QObject {
 
   public slots:
     // Set the control to a new value. Non-blocking.
-    inline void slotSet(double v) {
-        set(v);
-    }
+    inline void slotSet(double v) {set(v);}
 
     // Sets the control value to v. Thread safe, non-blocking.
-    inline void set(double v) {
-        if (m_pControl) {
-            m_pControl->set(v, this);
-        }
-    }
-
+    inline void set(double v) {if (m_pControl) {m_pControl->set(v, this);}}
     // Resets the control to its default value. Thread safe, non-blocking.
     inline void reset() {
         if (m_pControl) {
@@ -99,13 +85,11 @@ class ControlObjectThread : public QObject {
             m_pControl->reset();
         }
     }
-
   signals:
     void valueChanged(double);
     // This means that the control value has changed as a result of a mutation
     // (set/add/sub/reset) originating from this object.
     void valueChangedByThis(double);
-
   protected slots:
     // Receives the value from the master control and re-emits either
     // valueChanged(double) or valueChangedByThis(double) based on pSetter.
@@ -113,11 +97,8 @@ class ControlObjectThread : public QObject {
         if (pSetter != this) {
             // This is base implementation of this function without scaling
             emit(valueChanged(v));
-        } else {
-            emit(valueChangedByThis(v));
-        }
+        } else {emit(valueChangedByThis(v));}
     }
-
   protected:
     ConfigKey m_key;
     // Pointer to connected control.

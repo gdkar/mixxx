@@ -11,10 +11,8 @@
     License, or (at your option) any later version.  See the file
     COPYING included with this distribution for more information.
 */
-
 #ifndef _BAR_BEAT_TRACK_PLUGIN_H_
 #define _BAR_BEAT_TRACK_PLUGIN_H_
-
 #include <vamp-sdk/Plugin.h>
 class BarBeatTrackerData;
 class BarBeatTracker : public Vamp::Plugin{
@@ -44,6 +42,4 @@ protected:
     int m_bpb;
     FeatureSet barBeatTrack();
 };
-
-
 #endif

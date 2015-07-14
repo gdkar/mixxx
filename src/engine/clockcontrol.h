@@ -14,8 +14,7 @@ class ClockControl: public EngineControl {
   public:
     ClockControl(QString group,ConfigObject<ConfigValue>* pConfig, QObject *pParent=nullptr);
     virtual ~ClockControl();
-    double process(const double dRate, const double currentSample,
-                   const double totalSamples, const int iBufferSize);
+    double process(const double dRate, const double currentSample,const double totalSamples, const int iBufferSize);
   public slots:
     virtual void trackLoaded(TrackPointer pTrack);
     virtual void trackUnloaded(TrackPointer pTrack);
@@ -26,5 +25,4 @@ class ClockControl: public EngineControl {
     TrackPointer m_pTrack;
     BeatsPointer m_pBeats;
 };
-
 #endif /* CLOCKCONTROL_H */

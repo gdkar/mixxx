@@ -38,11 +38,7 @@ class ConfigKey {
     ConfigKey(const QString& g, const QString& i);
     ConfigKey(const char* g, const char* i);
     static ConfigKey parseCommaSeparated(QString key);
-
-    inline bool isNull() const {
-        return group.isNull() && item.isNull();
-    }
-
+    inline bool isNull() const {return group.isNull() && item.isNull();}
     QString group, item;
 };
 Q_DECLARE_METATYPE(ConfigKey);
@@ -51,23 +47,14 @@ Q_DECLARE_METATYPE(ConfigKey);
 inline bool operator==(const ConfigKey& c1, const ConfigKey& c2) {
     return c1.group == c2.group && c1.item == c2.item;
 }
-
 // stream operator function for trivial qDebug()ing of ConfigKeys
 inline QDebug operator<<(QDebug stream, const ConfigKey& c1) {
     stream << c1.group << "," << c1.item;
     return stream;
 }
-
 // QHash hash function for ConfigKey objects.
-inline uint qHash(const ConfigKey& key) {
-    return qHash(key.group) ^ qHash(key.item);
-}
-
-inline uint qHash(const QKeySequence& key) {
-    return qHash(key.toString());
-}
-
-
+inline uint qHash(const ConfigKey& key) {return qHash(key.group) ^ qHash(key.item);}
+inline uint qHash(const QKeySequence& key) {return qHash(key.toString());}
 // The value corresponding to a key. The basic value is a string, but can be
 // subclassed to more specific needs.
 class ConfigValue {
@@ -79,11 +66,9 @@ class ConfigValue {
         reportFatalErrorAndQuit("ConfigValue from QDomNode not implemented here");
     }
     void valCopy(const ConfigValue& _value);
-
     QString value;
     friend bool operator==(const ConfigValue& s1, const ConfigValue& s2);
 };
-
 class ConfigValueKbd : public ConfigValue {
   public:
     ConfigValueKbd();
@@ -94,10 +79,8 @@ class ConfigValueKbd : public ConfigValue {
     }
     void valCopy(const ConfigValueKbd& v);
     friend bool operator==(const ConfigValueKbd& s1, const ConfigValueKbd& s2);
-
     QKeySequence m_qKey;
 };
-
 template <class ValueType> class ConfigOption {
   public:
     ConfigOption() { val = nullptr; key = nullptr;};
@@ -134,15 +117,12 @@ template <class ValueType> class ConfigObject {
     // Returns the resource path -- the path where controller presets, skins,
     // library schema, keyboard mappings, and more are stored.
     QString getResourcePath() const;
-
     // Returns the settings path -- the path where user data (config file,
     // library SQLite database, etc.) is stored.
     QString getSettingsPath() const;
-
   protected:
     QList<ConfigOption<ValueType>*> m_list;
     QString m_filename;
-
     // Loads and parses the configuration file. Returns false if the file could
     // not be opened; otherwise true.
     bool Parse();

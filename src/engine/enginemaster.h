@@ -101,18 +101,13 @@ class EngineMaster : public QObject, public AudioSource {
     EngineSync* getEngineSync() const{
         return m_pMasterSync;
     }
-
     // These are really only exposed for tests to use.
     const CSAMPLE* getMasterBuffer() const;
     const CSAMPLE* getHeadphoneBuffer() const;
     const CSAMPLE* getOutputBusBuffer(unsigned int i) const;
     const CSAMPLE* getDeckBuffer(unsigned int i) const;
     const CSAMPLE* getChannelBuffer(QString name) const;
-
-    EngineSideChain* getSideChain() const {
-        return m_pSideChain;
-    }
-
+    EngineSideChain* getSideChain() const {return m_pSideChain;}
     struct ChannelInfo {
         ChannelInfo(int index)
                 : m_pChannel(nullptr),
@@ -165,7 +160,6 @@ class EngineMaster : public QObject, public AudioSource {
                   m_dCenterGain(1.0),
                   m_dRightGain(1.0) {
         }
-
         inline double getGain(ChannelInfo* pChannelInfo) const {
             const double channelVolume = pChannelInfo->m_pVolumeControl->get();
             const double orientationGain = EngineMaster::gainForOrientation(

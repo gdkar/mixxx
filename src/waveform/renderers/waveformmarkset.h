@@ -1,7 +1,7 @@
 #ifndef WAVEFORMMARKSET_H
 #define WAVEFORMMARKSET_H
 
-#include <QVector>
+#include <QList>
 
 #include "waveformmark.h"
 #include "skin/skincontext.h"
@@ -25,7 +25,7 @@ class WaveformMarkSet {
 
   private:
     WaveformMark m_defaultMark;
-    QVector<WaveformMark> m_marks;
+    QList<WaveformMark> m_marks;
     DISALLOW_COPY_AND_ASSIGN(WaveformMarkSet);
 };
 

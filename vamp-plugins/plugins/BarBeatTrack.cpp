@@ -76,54 +76,32 @@ public:
     vector<float> dfOutput;
     Vamp::RealTime origin;
 };
-    
-
 BarBeatTracker::BarBeatTracker(float inputSampleRate) :
     Vamp::Plugin(inputSampleRate),
     m_d(0),
     m_bpb(4)
-{
-}
+{}
 BarBeatTracker::~BarBeatTracker(){delete m_d;}
 string
 BarBeatTracker::getIdentifier() const{return "qm-barbeattracker";}
 string
-BarBeatTracker::getName() const
-{
-    return "Bar and Beat Tracker";
-}
-
+BarBeatTracker::getName() const{return "Bar and Beat Tracker";}
 string
-BarBeatTracker::getDescription() const
-{
-    return "Estimate bar and beat locations";
-}
-
+BarBeatTracker::getDescription() const{return "Estimate bar and beat locations";}
 string
-BarBeatTracker::getMaker() const
-{
-    return "Queen Mary, University of London";
-}
-
+BarBeatTracker::getMaker() const{return "Queen Mary, University of London";}
 int
-BarBeatTracker::getPluginVersion() const
-{
-    return 2;
-}
-
+BarBeatTracker::getPluginVersion() const{return 2;}
 string
 BarBeatTracker::getCopyright() const
 {
     return "Plugin by Matthew Davies, Christian Landone and Chris Cannam.  Copyright (c) 2006-2009 QMUL - All Rights Reserved";
 }
-
 BarBeatTracker::ParameterList
 BarBeatTracker::getParameterDescriptors() const
 {
     ParameterList list;
-
     ParameterDescriptor desc;
-
     desc.identifier = "bpb";
     desc.name = "Beats per Bar";
     desc.description = "The number of beats in each bar";
@@ -320,38 +298,28 @@ BarBeatTracker::barBeatTrack(){
     vector<float> df;
     vector<float> beatPeriod;
     vector<float> tempi;
-
     for (size_t i = 2; i < m_d->dfOutput.size(); ++i) { // discard first two elts
         df.push_back(m_d->dfOutput[i]);
         beatPeriod.push_back(0.0);
     }
     if (df.empty()) return FeatureSet();
-
     TempoTrackV2 tt(m_inputSampleRate, m_d->dfConfig.stepSize);
     tt.calculateBeatPeriod(df, beatPeriod, tempi);
-
     vector<float> beats;
     tt.calculateBeats(df, beatPeriod, beats);
-
     vector<int> downbeats;
     size_t downLength = 0;
     const float *downsampled = m_d->downBeat->getBufferedAudio(downLength);
     m_d->downBeat->findDownBeats(downsampled, downLength, beats, downbeats);
-
     vector<float> beatsd;
     m_d->downBeat->getBeatSD(beatsd);
-
 //    std::cerr << "BarBeatTracker: found downbeats at: ";
 //    for (int i = 0; i < downbeats.size(); ++i) std::cerr << downbeats[i] << " " << std::endl;
-                                 
     FeatureSet returnFeatures;
-
     char label[20];
-
     int dbi = 0;
     int beat = 0;
     int bar = 0;
-
     if (!downbeats.empty()) {
         // get the right number for the first beat; this will be
         // incremented before use (at top of the following loop)
@@ -359,44 +327,32 @@ BarBeatTracker::barBeatTrack(){
         beat = m_bpb - firstDown - 1;
         if (beat == m_bpb) beat = 0;
     }
-
     for (size_t i = 0; i < beats.size(); ++i) {
-
 	size_t frame = beats[i] * m_d->dfConfig.stepSize;
-
         if (dbi < downbeats.size() && i == downbeats[dbi]) {
             beat = 0;
             ++bar;
             ++dbi;
-        } else {
-            ++beat;
-        }
-
+        } else {++beat;}
         // outputs are:
         //
         // 0 -> beats
         // 1 -> bars
         // 2 -> beat counter function
-        
 	Feature feature;
 	feature.hasTimestamp = true;
-	feature.timestamp = m_d->origin + Vamp::RealTime::frame2RealTime
-	    (frame, lrintf(m_inputSampleRate));
-
+	feature.timestamp = m_d->origin + Vamp::RealTime::frame2RealTime(frame, lrintf(m_inputSampleRate));
         sprintf(label, "%d", beat + 1);
         feature.label = label;
 	returnFeatures[0].push_back(feature); // labelled beats
-
         feature.values.push_back(beat + 1);
         returnFeatures[2].push_back(feature); // beat function
-
         if (i > 0 && i <= beatsd.size()) {
             feature.values.clear();
             feature.values.push_back(beatsd[i-1]);
             feature.label = "";
             returnFeatures[3].push_back(feature); // beat spectral difference
         }
-
         if (beat == 0) {
             feature.values.clear();
             sprintf(label, "%d", bar);
@@ -404,7 +360,6 @@ BarBeatTracker::barBeatTrack(){
             returnFeatures[1].push_back(feature); // bars
         }
     }
-
     return returnFeatures;
 }
 
