@@ -6,7 +6,7 @@
 #include <QWidget>
 #include <QPixmap>
 
-#include "dlgcoverartfullsize.h"
+#include "dialogs/dlgcoverartfullsize.h"
 #include "widget/wcoverartmenu.h"
 
 class WCoverArtLabel : public QLabel {

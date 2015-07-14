@@ -61,7 +61,7 @@ available_features = [features.Mad,
                       features.PerfTools,
                       features.AsmLib,
                       features.IPod,
-                      features.FFMPEG,
+#                      features.FFMPEG,
                       features.LAVF,
                       ]
 

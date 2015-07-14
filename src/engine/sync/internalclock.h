@@ -20,13 +20,8 @@ class InternalClock : public QObject, public Clock, public Syncable {
     InternalClock(const char* pGroup, SyncableListener* pEngineSync);
     virtual ~InternalClock();
 
-    const QString& getGroup() const {
-        return m_group;
-    }
-    EngineChannel* getChannel() const {
-        return nullptr;
-    }
-
+    const QString& getGroup() const {return m_group;}
+    EngineChannel* getChannel() const {return nullptr;}
     void notifySyncModeChanged(SyncMode mode);
     void notifyOnlyPlayingSyncable();
     void requestSyncPhase();
@@ -36,9 +31,7 @@ class InternalClock : public QObject, public Clock, public Syncable {
 
     // The clock is always "playing" in a sense but this specifically refers to
     // decks so always return false.
-    bool isPlaying() const {
-        return false;
-    }
+    bool isPlaying() const {return false;}
 
     double getBeatDistance() const;
     void setMasterBeatDistance(double beatDistance);
