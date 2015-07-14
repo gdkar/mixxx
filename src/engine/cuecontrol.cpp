@@ -333,39 +333,24 @@ void CueControl::hotcueSet(double v) {
 void CueControl::hotcueGoto(double v) {
     HotcueControl *pControl = qobject_cast<HotcueControl*>(sender());
     if (!v)return;
-
     QMutexLocker lock(&m_mutex);
-    if (!m_pLoadedTrack) {
-        return;
-    }
-
+    if (!m_pLoadedTrack) {return;}
     Cue* pCue = pControl->getCue();
-
     // Need to unlock before emitting any signals to prevent deadlock.
     lock.unlock();
-
     if (pCue) {
         int position = pCue->getPosition();
-        if (position != -1) {
-            seekAbs(position);
-        }
+        if (position != -1) {seekAbs(position);}
     }
 }
-
 void CueControl::hotcueGotoAndStop(double v) {
     HotcueControl *pControl = qobject_cast<HotcueControl*>(sender());
-    if (!v)
-        return;
-
+    if (!v)return;
     QMutexLocker lock(&m_mutex);
-    if (!m_pLoadedTrack)
-        return;
-
+    if (!m_pLoadedTrack)return;
     Cue* pCue = pControl->getCue();
-
     // Need to unlock before emitting any signals to prevent deadlock.
     lock.unlock();
-
     if (pCue) {
         int position = pCue->getPosition();
         if (position != -1) {
@@ -374,22 +359,14 @@ void CueControl::hotcueGotoAndStop(double v) {
         }
     }
 }
-
 void CueControl::hotcueGotoAndPlay( double v) {
     HotcueControl *pControl = qobject_cast<HotcueControl*>(sender());
-    if (!v)
-        return;
-
+    if (!v) return;
     QMutexLocker lock(&m_mutex);
-    if (!m_pLoadedTrack) {
-        return;
-    }
-
+    if (!m_pLoadedTrack) {return;}
     Cue* pCue = pControl->getCue();
-
     // Need to unlock before emitting any signals to prevent deadlock.
     lock.unlock();
-
     if (pCue) {
         int position = pCue->getPosition();
         if (position != -1) {
@@ -614,7 +591,6 @@ void CueControl::cueCDJ(double v) {
             cueSet(v);
             // Just in case.
             m_bPreviewing = false;
-
             // If quantize is enabled, jump to the cue point since it's not
             // necessarily where we currently are
             if (m_pQuantizeEnabled->get() > 0.0) {
@@ -629,7 +605,6 @@ void CueControl::cueCDJ(double v) {
 
         // Need to unlock before emitting any signals to prevent deadlock.
         lock.unlock();
-
         seekAbs(m_pCuePoint->get());
     }
     // indicator may flash because the delayed adoption of seekAbs
@@ -662,16 +637,13 @@ void CueControl::cueDenon(double v) {
 
             // Need to unlock before emitting any signals to prevent deadlock.
             lock.unlock();
-
             seekAbs(m_pCuePoint->get());
         }
     } else if (m_bPreviewing) {
         m_bPreviewing = false;
         m_pPlayButton->set(0.0);
-
         // Need to unlock before emitting any signals to prevent deadlock.
         lock.unlock();
-
         seekAbs(m_pCuePoint->get());
     }
 }
@@ -688,15 +660,11 @@ void CueControl::cueDefault(double v) {
         cueCDJ(v);
     }
 }
-
 void CueControl::pause(double v) {
     QMutexLocker lock(&m_mutex);
     //qDebug() << "CueControl::pause()" << v;
-    if (v != 0.0) {
-        m_pPlayButton->set(0.0);
-    }
+    if (v != 0.0) {m_pPlayButton->set(0.0);}
 }
-
 void CueControl::playStutter(double v) {
     QMutexLocker lock(&m_mutex);
     //qDebug() << "playStutter" << v;
@@ -708,11 +676,9 @@ void CueControl::playStutter(double v) {
         }
     }
 }
-
 double CueControl::updateIndicatorsAndModifyPlay(double play, bool playPossible) {
     QMutexLocker lock(&m_mutex);
     double cueMode = m_pCueMode->get();
-
     if ((cueMode == CUE_MODE_DENON || cueMode == CUE_MODE_NUMARK) &&
             play > 0.0 &&
             playPossible &&
@@ -721,7 +687,6 @@ double CueControl::updateIndicatorsAndModifyPlay(double play, bool playPossible)
         // if not previewing
         cueSet(1.0);
     }
-
     // when previewing, "play" was set by cue button, a following toggle request
     // (play = 0.0) is used for latching play.
     bool previewing = false;
@@ -735,7 +700,6 @@ double CueControl::updateIndicatorsAndModifyPlay(double play, bool playPossible)
             previewing = true;
         }
     }
-
     if (!playPossible) {
         // play not possible
         play = 0.0;
@@ -782,10 +746,8 @@ double CueControl::updateIndicatorsAndModifyPlay(double play, bool playPossible)
         }
     }
     m_pPlayStutter->set(play);
-
     return play;
 }
-
 void CueControl::updateIndicators() {
     // No need for mutex lock because we are only touching COs.
     double cueMode = m_pCueMode->get();

@@ -96,20 +96,20 @@ CONFIG(debug) { # gdbmacros is required for inspecting Qt datatypes using gdb wi
     }
 }
 
-HEADERS += $$UI_DIR/ui_dlgaboutdlg.h \
-    $$UI_DIR/ui_dlgmidilearning.h \
-    $$UI_DIR/ui_dlgprefcontrolsdlg.h \
-    $$UI_DIR/ui_dlgprefcrossfaderdlg.h \
-    $$UI_DIR/ui_dlgprefeqdlg.h \
-    $$UI_DIR/ui_dlgpreferencesdlg.h \
-    $$UI_DIR/ui_dlgprefmidibindingsdlg.h \
-    $$UI_DIR/ui_dlgprefplaylistdlg.h \
-    $$UI_DIR/ui_dlgtagfetcher.h \
-    $$UI_DIR/ui_dlgprefrecorddlg.h \
-    $$UI_DIR/ui_dlgprefsounddlg.h \
-    $$UI_DIR/ui_dlgprefvinyldlg.h \
-    $$UI_DIR/ui_dlgprefnovinyldlg.h \
-    $$UI_DIR/ui_dlgprefnomididlg.h
+HEADERS += $$UI_DIR/dialogs/ui_dlgaboutdlg.h \
+    $$UI_DIR/dialogs/ui_dlgmidilearning.h \
+    $$UI_DIR/dialogs/ui_dlgprefcontrolsdlg.h \
+    $$UI_DIR/dialogs/ui_dlgprefcrossfaderdlg.h \
+    $$UI_DIR/dialogs/ui_dlgprefeqdlg.h \
+    $$UI_DIR/dialogs/ui_dlgpreferencesdlg.h \
+    $$UI_DIR/dialogs/ui_dlgprefmidibindingsdlg.h \
+    $$UI_DIR/dialogs/ui_dlgprefplaylistdlg.h \
+    $$UI_DIR/dialogs/ui_dlgtagfetcher.h \
+    $$UI_DIR/dialogs/ui_dlgprefrecorddlg.h \
+    $$UI_DIR/dialogs/ui_dlgprefsounddlg.h \
+    $$UI_DIR/dialogs/ui_dlgprefvinyldlg.h \
+    $$UI_DIR/dialogs/ui_dlgprefnovinyldlg.h \
+    $$UI_DIR/dialogs/ui_dlgprefnomididlg.h
 
 INCLUDEPATH += src \
     lib/replaygain \
@@ -154,21 +154,21 @@ $$BASE_DIR/src/defs_audiofiles.h \
 $$BASE_DIR/src/defs.h \
 $$BASE_DIR/src/defs_urls.h \
 $$BASE_DIR/src/defs_version.h \
-$$BASE_DIR/src/dlgabout.h \
-$$BASE_DIR/src/dlgautodj.h \
-$$BASE_DIR/src/dlgmidilearning.h \
-$$BASE_DIR/src/dlgprefcontrols.h \
-$$BASE_DIR/src/dlgprefcrossfader.h \
-$$BASE_DIR/src/dlgprefeq.h \
-$$BASE_DIR/src/dlgpreferences.h \
-$$BASE_DIR/src/dlgprefmidibindings.h \
-$$BASE_DIR/src/dlgprefnomidi.h \
-$$BASE_DIR/src/dlgprefplaylist.h \
-$$BASE_DIR/src/dlgprefrecord.h \
-$$BASE_DIR/src/dlgprefsound.h \
-$$BASE_DIR/src/dlgprefvinyl.h \
-$$BASE_DIR/src/dlgprepare.h \
-$$BASE_DIR/src/dlgtrackinfo.h \
+$$BASE_DIR/src/dialogs/dlgabout.h \
+$$BASE_DIR/src/dialogs/dlgautodj.h \
+$$BASE_DIR/src/dialogs/dlgmidilearning.h \
+$$BASE_DIR/src/dialogs/dlgprefcontrols.h \
+$$BASE_DIR/src/dialogs/dlgprefcrossfader.h \
+$$BASE_DIR/src/dialogs/dlgprefeq.h \
+$$BASE_DIR/src/dialogs/dlgpreferences.h \
+$$BASE_DIR/src/dialogs/dlgprefmidibindings.h \
+$$BASE_DIR/src/dialogs/dlgprefnomidi.h \
+$$BASE_DIR/src/dialogs/dlgprefplaylist.h \
+$$BASE_DIR/src/dialogs/dlgprefrecord.h \
+$$BASE_DIR/src/dialogs/dlgprefsound.h \
+$$BASE_DIR/src/dialogs/dlgprefvinyl.h \
+$$BASE_DIR/src/dialogs/dlgprepare.h \
+$$BASE_DIR/src/dialogs/dlgtrackinfo.h \
 $$BASE_DIR/src/encoder.h \
 $$BASE_DIR/src/engine/bpmcontrol.h \
 $$BASE_DIR/src/engine/cuecontrol.h \
@@ -370,21 +370,21 @@ $$BASE_DIR/src/controlpotmeter.cpp \
 $$BASE_DIR/src/controlpushbutton.cpp \
 $$BASE_DIR/src/controlttrotary.cpp \
 $$BASE_DIR/src/controlvaluedelegate.cpp \
-$$BASE_DIR/src/dlgabout.cpp \
-$$BASE_DIR/src/dlgautodj.cpp \
-$$BASE_DIR/src/dlgmidilearning.cpp \
-$$BASE_DIR/src/dlgprefcontrols.cpp \
-$$BASE_DIR/src/dlgprefcrossfader.cpp \
-$$BASE_DIR/src/dlgprefeq.cpp \
-$$BASE_DIR/src/dlgpreferences.cpp \
-$$BASE_DIR/src/dlgprefmidibindings.cpp \
-$$BASE_DIR/src/dlgprefnomidi.cpp \
-$$BASE_DIR/src/dlgprefplaylist.cpp \
-$$BASE_DIR/src/dlgprefrecord.cpp \
-$$BASE_DIR/src/dlgprefsound.cpp \
-$$BASE_DIR/src/dlgprefvinyl.cpp \
-$$BASE_DIR/src/dlgprepare.cpp \
-$$BASE_DIR/src/dlgtrackinfo.cpp \
+$$BASE_DIR/src/dialogs/dlgabout.cpp \
+$$BASE_DIR/src/dialogs/dlgautodj.cpp \
+$$BASE_DIR/src/dialogs/dlgmidilearning.cpp \
+$$BASE_DIR/src/dialogs/dlgprefcontrols.cpp \
+$$BASE_DIR/src/dialogs/dlgprefcrossfader.cpp \
+$$BASE_DIR/src/dialogs/dlgprefeq.cpp \
+$$BASE_DIR/src/dialogs/dlgpreferences.cpp \
+$$BASE_DIR/src/dialogs/dlgprefmidibindings.cpp \
+$$BASE_DIR/src/dialogs/dlgprefnomidi.cpp \
+$$BASE_DIR/src/dialogs/dlgprefplaylist.cpp \
+$$BASE_DIR/src/dialogs/dlgprefrecord.cpp \
+$$BASE_DIR/src/dialogs/dlgprefsound.cpp \
+$$BASE_DIR/src/dialogs/dlgprefvinyl.cpp \
+$$BASE_DIR/src/dialogs/dlgprepare.cpp \
+$$BASE_DIR/src/dialogs/dlgtrackinfo.cpp \
 $$BASE_DIR/src/encoder.cpp \
 $$BASE_DIR/src/engine/bpmcontrol.cpp \
 $$BASE_DIR/src/engine/cuecontrol.cpp \
@@ -579,27 +579,27 @@ win32-g++ {
 SOURCES += $$BASE_DIR/lib/replaygain/replaygain_analysis.c
 
 FORMS += \
-$$BASE_DIR/src/dlgaboutdlg.ui \
-$$BASE_DIR/src/dlgautodj.ui \
-$$BASE_DIR/src/dlgmidilearning.ui \
-$$BASE_DIR/src/dlgprefcontrolsdlg.ui \
-$$BASE_DIR/src/dlgprefcrossfaderdlg.ui \
-$$BASE_DIR/src/dlgprefeqdlg.ui \
-$$BASE_DIR/src/dlgpreferencesdlg.ui \
-$$BASE_DIR/src/dlgprefmidibindingsdlg.ui \
-$$BASE_DIR/src/dlgprefnomididlg.ui \
-$$BASE_DIR/src/dlgprefplaylistdlg.ui \
-$$BASE_DIR/src/dlgprefrecorddlg.ui \
-$$BASE_DIR/src/dlgprefsounddlg.ui \
-$$BASE_DIR/src/dlgprefvinyldlg.ui \
-$$BASE_DIR/src/dlgprepare.ui \
-$$BASE_DIR/src/dlgtrackinfo.ui \
+$$BASE_DIR/src/dialogs/dlgaboutdlg.ui \
+$$BASE_DIR/src/dialogs/dlgautodj.ui \
+$$BASE_DIR/src/dialogs/dlgmidilearning.ui \
+$$BASE_DIR/src/dialogs/dlgprefcontrolsdlg.ui \
+$$BASE_DIR/src/dialogs/dlgprefcrossfaderdlg.ui \
+$$BASE_DIR/src/dialogs/dlgprefeqdlg.ui \
+$$BASE_DIR/src/dialogs/dlgpreferencesdlg.ui \
+$$BASE_DIR/src/dialogs/dlgprefmidibindingsdlg.ui \
+$$BASE_DIR/src/dialogs/dlgprefnomididlg.ui \
+$$BASE_DIR/src/dialogs/dlgprefplaylistdlg.ui \
+$$BASE_DIR/src/dialogs/dlgprefrecorddlg.ui \
+$$BASE_DIR/src/dialogs/dlgprefsounddlg.ui \
+$$BASE_DIR/src/dialogs/dlgprefvinyldlg.ui \
+$$BASE_DIR/src/dialogs/dlgprepare.ui \
+$$BASE_DIR/src/dialogs/dlgtrackinfo.ui \
 $$BASE_DIR/src/script/scriptstudio.ui
 
 
 RESOURCES += $$BASE_DIR/src/../res/mixxx.qrc
 
-FORMS += $$BASE_DIR/src/dlgprefrecorddlg.ui
+FORMS += $$BASE_DIR/src/dialogs/dlgprefrecorddlg.ui
 !win32:unix {
     !macx {
         DEFINES += __LINUX__ \
@@ -742,15 +742,15 @@ CONFIG(vinylcontrol) {
     -D__NO_INTTYPES__
 CONFIG(shoutcast) {
     DEFINES += __SHOUTCAST__
-    HEADERS += $$BASE_DIR/src/dlgprefshoutcast.h \
+    HEADERS += $$BASE_DIR/src/dialogs/dlgprefshoutcast.h \
         $$BASE_DIR/src/encodervorbis.h \
         $$BASE_DIR/src/engine/engineshoutcast.h
-    SOURCES += $$BASE_DIR/src/dlgprefshoutcast.cpp \
+    SOURCES += $$BASE_DIR/src/dialogs/dlgprefshoutcast.cpp \
         $$BASE_DIR/src/encodervorbis.cpp \
         $$BASE_DIR/src/engine/engineshoutcast.cpp
     LIBS += shout \
         vorbisenc
-    FORMS += $$BASE_DIR/src/dlgprefshoutcastdlg.ui
+    FORMS += $$BASE_DIR/src/dialogs/dlgprefshoutcastdlg.ui
 }
 
 # CONFIG(record) {
@@ -758,12 +758,12 @@ CONFIG(shoutcast) {
 #    HEADERS += $$BASE_DIR/src/recording/defs_recording.h \
 #        $$BASE_DIR/src/recording/enginerecord.h \
 #        $$BASE_DIR/src/recording/writeaudiofile.h \
-#        $$BASE_DIR/src/dlgprefrecord.h
+#        $$BASE_DIR/src/dialogs/dlgprefrecord.h
 #    SOURCES += $$BASE_DIR/src/recording/enginerecord.cpp \
 #        $$BASE_DIR/src/recording/writeaudiofile.cpp \
-#        $$BASE_DIR/src/dlgprefrecord.cpp
+#        $$BASE_DIR/src/dialogs/dlgprefrecord.cpp
 #    LIBS +=
-#    FORMS += $$BASE_DIR/src/dlgprefrecorddlg.ui
+#    FORMS += $$BASE_DIR/src/dialogs/dlgprefrecorddlg.ui
 #}
 
 CONFIG(ffmpeg) {

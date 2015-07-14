@@ -5,12 +5,10 @@
 #include "BPMDetect.h"
 
 using std::string;
-
 class MixxxBpmDetection : public Vamp::Plugin {
   public:
     MixxxBpmDetection(float inputSampleRate);
     virtual ~MixxxBpmDetection();
-
     string getIdentifier() const;
     string getName() const;
     string getDescription() const;

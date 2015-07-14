@@ -15,29 +15,16 @@ MixxxBpmDetection::MixxxBpmDetection(float inputSampleRate):
 MixxxBpmDetection::~MixxxBpmDetection() {
 }
 
-string MixxxBpmDetection::getIdentifier() const {
-    return "mixxxbpmdetection";
-}
-
-string MixxxBpmDetection::getName() const {
-    return "SoundTouch BPM Detector (Legacy)";
-}
-
-string MixxxBpmDetection::getDescription() const {
-    // Return something helpful here!
-    return "Port of Mixxx BPM Analyser";
-}
-
-string MixxxBpmDetection::getMaker() const {
-    return "Olli Parviainen";
-}
-
+string MixxxBpmDetection::getIdentifier() const {return "mixxxbpmdetection";}
+string MixxxBpmDetection::getName() const {return "SoundTouch BPM Detector (Legacy)";}
+// Return something helpful here!
+string MixxxBpmDetection::getDescription() const {return "Port of Mixxx BPM Analyser";}
+string MixxxBpmDetection::getMaker() const {return "Olli Parviainen";}
 int MixxxBpmDetection::getPluginVersion() const {
     // Increment this each time you release a version that behaves
     // differently from the previous one
     return 1;
 }
-
 string MixxxBpmDetection::getCopyright() const {
     // This function is not ideally named.  It does not necessarily
     // need to say who made the plugin -- getMaker does that -- but it
@@ -45,33 +32,18 @@ string MixxxBpmDetection::getCopyright() const {
     // example, "Copyright (year). All Rights Reserved", or "GPL"
     return "LGPL v2.1";
 }
-
 MixxxBpmDetection::InputDomain
-MixxxBpmDetection::getInputDomain() const {
-    return TimeDomain;
-}
-
-size_t MixxxBpmDetection::getPreferredBlockSize() const {
-    return 4096; // 0 means "I can handle any block size"
-}
-
+MixxxBpmDetection::getInputDomain() const {return TimeDomain;}
+size_t MixxxBpmDetection::getPreferredBlockSize() const {return 4096; }
 size_t MixxxBpmDetection::getPreferredStepSize() const {
     return 0; // 0 means "anything sensible"; in practice this
     // means the same as the block size for TimeDomain
     // plugins, or half of it for FrequencyDomain plugins
 }
-
-size_t MixxxBpmDetection::getMinChannelCount() const {
-    return 1;
-}
-
-size_t MixxxBpmDetection::getMaxChannelCount() const {
-    return 1;
-}
-
+size_t MixxxBpmDetection::getMinChannelCount() const {return 1;}
+size_t MixxxBpmDetection::getMaxChannelCount() const {return 1;}
 MixxxBpmDetection::ParameterList MixxxBpmDetection::getParameterDescriptors() const {
     ParameterList list;
-
     // If the plugin has no adjustable parameters, return an empty
     // list here (and there's no need to provide implementations of
     // getParameter and setParameter in that case either).
@@ -131,53 +103,26 @@ MixxxBpmDetection::ParameterList MixxxBpmDetection::getParameterDescriptors() co
 }
 
 float MixxxBpmDetection::getParameter(string identifier) const {
-    if (identifier == "minbpm") {
-        return m_fMinBpm; // return the ACTUAL current value of your parameter here!
-    }
-    if (identifier == "maxbpm") {
-        return m_fMaxBpm;
-    }
-    if (identifier == "bpmaboverange") {
-        return m_bAllowAboveRange ? 1.0 : 0.0;
-    }
-
-    if (identifier == "phase") {
-        return m_fPhase;
-    }
+    if (identifier == "minbpm") {return m_fMinBpm; }
+    if (identifier == "maxbpm") {return m_fMaxBpm;}
+    if (identifier == "bpmaboverange") {return m_bAllowAboveRange ? 1.0 : 0.0;}
+    if (identifier == "phase") {return m_fPhase;}
     return 0;
 }
-
 void MixxxBpmDetection::setParameter(string identifier, float value) {
-    if (identifier == "minbpm") {
-        m_fMinBpm = value; // return the ACTUAL current value of your parameter here!
-    }
-    if (identifier == "maxbpm") {
-        m_fMaxBpm = value;
-    }
-    if (identifier == "bpmaboverange") {
-        m_bAllowAboveRange = (value > 0.5);
-    }
-    if (identifier == "phase") {
-        m_fPhase = value;
-    }
+    if (identifier == "minbpm") {m_fMinBpm = value; }
+    if (identifier == "maxbpm") {m_fMaxBpm = value;}
+    if (identifier == "bpmaboverange") {m_bAllowAboveRange = (value > 0.5);}
+    if (identifier == "phase") {m_fPhase = value;}
 }
-
 MixxxBpmDetection::ProgramList MixxxBpmDetection::getPrograms() const {
     ProgramList list;
-
     // If you have no programs, return an empty list (or simply don't
     // implement this function or getCurrentProgram/selectProgram)
-
     return list;
 }
-
-string MixxxBpmDetection::getCurrentProgram() const {
-    return ""; // no programs
-}
-
-void MixxxBpmDetection::selectProgram(string name) {
-}
-
+string MixxxBpmDetection::getCurrentProgram() const {return "";}
+void MixxxBpmDetection::selectProgram(string name) {}
 MixxxBpmDetection::OutputList MixxxBpmDetection::getOutputDescriptors() const {
     OutputList list;
 
@@ -199,9 +144,7 @@ MixxxBpmDetection::OutputList MixxxBpmDetection::getOutputDescriptors() const {
 }
 
 bool MixxxBpmDetection::initialise(size_t channels, size_t stepSize, size_t blockSize) {
-    if (channels < getMinChannelCount() ||
-            channels > getMaxChannelCount()) return false;
-
+    if (channels < getMinChannelCount() ||channels > getMaxChannelCount()) return false;
     m_pDetector = new soundtouch::BPMDetect(channels, m_iSampleRate);
     m_iBlockSize = blockSize;
     return true;
@@ -211,11 +154,8 @@ void MixxxBpmDetection::reset() {
     m_fNumCycles = 0;
     // Clear buffers, reset stored values, etc
 }
-
 MixxxBpmDetection::FeatureSet MixxxBpmDetection::process(const float *const *inputBuffers, Vamp::RealTime timestamp) {
-    if(m_pDetector != NULL) {
-        m_pDetector->inputSamples(inputBuffers[0], m_iBlockSize);
-    }
+    if(m_pDetector) {m_pDetector->inputSamples(inputBuffers[0], m_iBlockSize);}
     m_fNumCycles++;
     return FeatureSet();
 }
@@ -233,8 +173,7 @@ MixxxBpmDetection::FeatureSet MixxxBpmDetection::getRemainingFeatures() {
             while (beatpos<m_iBlockSize*m_fNumCycles){
                 Feature f;
                 f.hasTimestamp = true;
-                f.timestamp = Vamp::RealTime::frame2RealTime
-                        (beatpos, m_iSampleRate);
+                f.timestamp = Vamp::RealTime::frame2RealTime(beatpos, m_iSampleRate);
                 f.label = "Beat";
                 returnfs[0].push_back(f);
                 beatpos += beatlen;
@@ -248,7 +187,6 @@ MixxxBpmDetection::FeatureSet MixxxBpmDetection::getRemainingFeatures() {
 float MixxxBpmDetection::correctBPM(float BPM, float min, float max, bool aboveRange) {
     //qDebug() << "BPM range is" << min << "to" << max;
     //if ( BPM == 0 ) return BPM;
-
     if (!aboveRange) {
         if( BPM*2 < max ) BPM *= 2;
         while ( BPM > max ) BPM /= 2;

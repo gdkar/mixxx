@@ -24,42 +24,29 @@
 #include <queue>
 #include <vector>
 #include <valarray>
-
 class TonalChangeDetect : public Vamp::Plugin {
   public:
     TonalChangeDetect(float fInputSampleRate);
     virtual ~TonalChangeDetect();
-
     bool initialise(size_t channels, size_t stepSize, size_t blockSize);
     void reset();
-
     InputDomain getInputDomain() const { return TimeDomain; }
-
     std::string getIdentifier() const;
     std::string getName() const;
     std::string getDescription() const;
     std::string getMaker() const;
     int getPluginVersion() const;
     std::string getCopyright() const;
-
     ParameterList getParameterDescriptors() const;
     float getParameter(std::string) const;
     void setParameter(std::string, float);
-
-
     size_t getPreferredStepSize() const;
     size_t getPreferredBlockSize() const;
-
     OutputList getOutputDescriptors() const;
-
-    FeatureSet process(const float *const *inputBuffers,
-                       Vamp::RealTime timestamp);
-
+    FeatureSet process(const float *const *inputBuffers,Vamp::RealTime timestamp);
     FeatureSet getRemainingFeatures();
-
   private:
     void setupConfig();
-
     ChromaConfig m_config;
     Chromagram *m_chromagram;
     TonalEstimator m_TonalEstimator;

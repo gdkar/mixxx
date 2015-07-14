@@ -21,7 +21,6 @@ const int cRingSize = 8;
 // NOTE(rryan): Wrapping max with parentheses avoids conflict with the max macro
 // defined in windows.h.
 const int cReaderSlotCnt = (std::numeric_limits<int>::max)();
-
 // A single instance of a value of type T along with an atomic integer which
 // tracks the current number of readers or writers of the slot. The value
 // m_readerSlots starts at cReaderSlotCnt and counts down to 0. If the value is
@@ -36,17 +35,13 @@ class ControlRingValue {
         : m_value(T()),
           m_readerSlots(cReaderSlotCnt) {
     }
-
     bool tryGet(T* value) const {
         // Read while consuming one readerSlot
         bool hasSlot = (m_readerSlots.fetchAndAddAcquire(-1) > 0);
-        if (hasSlot) {
-            *value = m_value;
-        }
+        if (hasSlot) {*value = m_value;}
         (void)m_readerSlots.fetchAndAddRelease(1);
         return hasSlot;
     }
-
     bool trySet(const T& value) {
         // try to lock this element entirely for reading
         if (m_readerSlots.testAndSetAcquire(cReaderSlotCnt, 0)) {
@@ -56,12 +51,10 @@ class ControlRingValue {
         }
         return false;
    }
-
   private:
     T m_value;
     mutable QAtomicInt m_readerSlots;
 };
-
 // shared pointer based implementation for all Types sizeof(T) > sizeof(void*)
 
 // An implementation of ControlValueAtomicBase for non-atomic types T. Uses a
@@ -74,7 +67,6 @@ class ControlRingValue {
 // relies on wait-free allocation of ( at least a small number of ) items of size
 // sizeof(T), but honestly if we can't guarantee that we're all kinds of fucked
 // anyway. reads are always consistent and wait-free if t::operator delete is.
-
 
 template<typename T, bool ATOMIC = false>
 class ControlValueAtomicBase {
@@ -104,11 +96,9 @@ class ControlValueAtomicBase {
   }
   protected:
     ControlValueAtomicBase(){}
-
   private:
     std::shared_ptr<T>   m_data;
 };
-
 // Specialized template for types that are deemed to be atomic on the target
 // architecture. Instead of using a read/write ring to guarantee atomicity,
 // direct assignment/read of an aligned member variable is used.

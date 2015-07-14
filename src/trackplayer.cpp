@@ -151,7 +151,7 @@ void TrackPlayer::slotLoadTrack(TrackPointer track, bool bPlay) {
         disconnect(m_pLoadedTrack.data(), 0, m_pBPM, 0);
         disconnect(m_pLoadedTrack.data(), 0, this, 0);
         disconnect(m_pLoadedTrack.data(), 0, m_pKey, 0);
-        m_pReplayGain->slotSet(0);
+        m_pReplayGain->set(0);
 
         // Causes the track's data to be saved back to the library database.
         emit(unloadingTrack(m_pLoadedTrack));
@@ -159,8 +159,8 @@ void TrackPlayer::slotLoadTrack(TrackPointer track, bool bPlay) {
     m_pLoadedTrack = track;
     if (m_pLoadedTrack) {
         // Listen for updates to the file's BPM
-        connect(m_pLoadedTrack.data(), SIGNAL(bpmUpdated(double)),m_pBPM, SLOT(slotSet(double)));
-        connect(m_pLoadedTrack.data(), SIGNAL(keyUpdated(double)),m_pKey, SLOT(slotSet(double)));
+        connect(m_pLoadedTrack.data(), SIGNAL(bpmUpdated(double)),m_pBPM, SLOT(set(double)));
+        connect(m_pLoadedTrack.data(), SIGNAL(keyUpdated(double)),m_pKey, SLOT(set(double)));
         // Listen for updates to the file's Replay Gain
         connect(m_pLoadedTrack.data(), SIGNAL(ReplayGainUpdated(double)),this, SLOT(slotSetReplayGain(double)));
     }
@@ -196,11 +196,11 @@ void TrackPlayer::slotUnloadTrack(TrackPointer) {
     }
     m_replaygainPending = false;
     m_pDuration->set(0);
-    m_pBPM->slotSet(0);
-    m_pKey->slotSet(0);
-    m_pReplayGain->slotSet(0);
-    m_pLoopInPoint->slotSet(-1);
-    m_pLoopOutPoint->slotSet(-1);
+    m_pBPM->set(0);
+    m_pKey->set(0);
+    m_pReplayGain->set(0);
+    m_pLoopInPoint->set(-1);
+    m_pLoopOutPoint->set(-1);
     m_pLoadedTrack.clear();
 
     // Update the PlayerInfo class that is used in EngineShoutcast to replace
@@ -220,17 +220,17 @@ void TrackPlayer::slotFinishLoading(TrackPointer pTrackInfoObject)
 
     // Update the BPM and duration values that are stored in ControlObjects
     m_pDuration->set(m_pLoadedTrack->getDuration());
-    m_pBPM->slotSet(m_pLoadedTrack->getBpm());
-    m_pKey->slotSet(m_pLoadedTrack->getKey());
-    m_pReplayGain->slotSet(m_pLoadedTrack->getReplayGain());
+    m_pBPM->set(m_pLoadedTrack->getBpm());
+    m_pKey->set(m_pLoadedTrack->getKey());
+    m_pReplayGain->set(m_pLoadedTrack->getReplayGain());
 
     // Update the PlayerInfo class that is used in EngineShoutcast to replace
     // the metadata of a stream
     PlayerInfo::instance().setTrackInfo(getGroup(), m_pLoadedTrack);
 
     // Reset the loop points.
-    m_pLoopInPoint->slotSet(-1);
-    m_pLoopOutPoint->slotSet(-1);
+    m_pLoopInPoint->set(-1);
+    m_pLoopOutPoint->set(-1);
 
     const QList<Cue*> trackCues = pTrackInfoObject->getCuePoints();
     QListIterator<Cue*> it(trackCues);
@@ -240,8 +240,8 @@ void TrackPlayer::slotFinishLoading(TrackPointer pTrackInfoObject)
             int loopStart = pCue->getPosition();
             int loopEnd = loopStart + pCue->getLength();
             if (loopStart != -1 && loopEnd != -1 && even(loopStart) && even(loopEnd)) {
-                m_pLoopInPoint->slotSet(loopStart);
-                m_pLoopOutPoint->slotSet(loopEnd);
+                m_pLoopInPoint->set(loopStart);
+                m_pLoopOutPoint->set(loopEnd);
                 break;
             }
         }
@@ -293,7 +293,7 @@ void TrackPlayer::slotSetReplayGain(double replayGain) {
     // Do not change replay gain when track is playing because
     // this may lead to an unexpected volume change
     if (m_pPlay->get() == 0.0) {
-        m_pReplayGain->slotSet(replayGain);
+        m_pReplayGain->set(replayGain);
     } else {
         m_replaygainPending = true;
     }
@@ -301,7 +301,7 @@ void TrackPlayer::slotSetReplayGain(double replayGain) {
 
 void TrackPlayer::slotPlayToggled(double v) {
     if (!v && m_replaygainPending) {
-        m_pReplayGain->slotSet(m_pLoadedTrack->getReplayGain());
+        m_pReplayGain->set(m_pLoadedTrack->getReplayGain());
         m_replaygainPending = false;
     }
 }

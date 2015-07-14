@@ -22,6 +22,7 @@ class WaveformWidgetRenderer {
   public:
     static const int s_waveformMinZoom;
     static const int s_waveformMaxZoom;
+
   public:
     explicit WaveformWidgetRenderer(const char* group);
     virtual ~WaveformWidgetRenderer();
@@ -60,6 +61,7 @@ class WaveformWidgetRenderer {
     inline double transformPositionInRendererWorld(double position) const {
         return m_trackPixelCount * (position - m_firstDisplayedPosition);
     }
+
     double getPlayPos() const { return m_playPos;}
     double getPlayPosVSample() const { return m_playPosVSample;}
     double getZoomFactor() const { return m_zoomFactor;}
@@ -67,9 +69,9 @@ class WaveformWidgetRenderer {
     double getGain() const { return m_gain;}
     int getTrackSamples() const { return m_trackSamples;}
 
-    virtual void resize(int width, int height);
-    virtual int getHeight() const { return m_height;}
-    virtual int getWidth() const { return m_width;}
+    void resize(int width, int height);
+    int getHeight() const { return m_height;}
+    int getWidth() const { return m_width;}
     const WaveformSignalColors* getWaveformSignalColors() const { return &m_colors; };
 
     template< class T_Renderer>
@@ -78,7 +80,9 @@ class WaveformWidgetRenderer {
         m_rendererStack.push_back(renderer);
         return renderer;
     }
+
     void setTrack(TrackPointer track);
+
   protected:
     const char* m_group;
     TrackPointer m_pTrack;

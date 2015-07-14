@@ -33,10 +33,10 @@
 #include "controlobjectslave.h"
 #include "trackplayer.h"
 #include "defs_urls.h"
-#include "dlgabout.h"
-#include "dlgpreferences.h"
-#include "dlgprefeq.h"
-#include "dlgdevelopertools.h"
+#include "dialogs/dlgabout.h"
+#include "dialogs/dlgpreferences.h"
+#include "dialogs/dlgprefeq.h"
+#include "dialogs/dlgdevelopertools.h"
 #include "engine/enginemaster.h"
 #include "engine/enginemicrophone.h"
 #include "effects/effectsmanager.h"
@@ -85,7 +85,7 @@
 #endif
 
 #ifdef __MODPLUG__
-#include "dlgprefmodplug.h"
+#include "dialogs/dlgprefmodplug.h"
 #endif
 
 // static
