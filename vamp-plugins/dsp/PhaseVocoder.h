@@ -17,26 +17,20 @@
 #define PHASEVOCODER_H
 
 class FFT;
-
 class PhaseVocoder  
 {
 public:
     PhaseVocoder( unsigned int size );
     virtual ~PhaseVocoder();
-
     void process( float* src, float* mag, float* theta);
-
 protected:
     void getPhase(unsigned int size, float *theta, float *real, float *imag);
 //    void coreFFT( unsigned int NumSamples, float *RealIn, float* ImagIn, float *RealOut, float *ImagOut);
     void getMagnitude( unsigned int size, float* mag, float* real, float* imag);
     void FFTShift( unsigned int size, float* src);
-
     unsigned int m_n;
     FFT*m_fft;
     float *m_imagOut;
     float *m_realOut;
-
 };
-
 #endif

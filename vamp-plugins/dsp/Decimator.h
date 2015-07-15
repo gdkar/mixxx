@@ -19,7 +19,6 @@ class Decimator
 {
 public:
     void process( const float* src, float* dst );
-
     /**
      * Construct a Decimator to operate on input blocks of length
      * inLength, with decimation factor decFactor.  inLength should be
@@ -32,28 +31,21 @@ public:
      */
     Decimator( unsigned int inLength, unsigned int decFactor );
     virtual ~Decimator();
-
     int getFactor() const { return m_decFactor; }
     static int getHighestSupportedFactor() { return 8; }
-
 private:
     void resetFilter();
     void deInitialise();
     void initialise( unsigned int inLength, unsigned int decFactor );
     void doAntiAlias( const float* src, float* dst, unsigned int length );
-
     unsigned int m_inputLength;
     unsigned int m_outputLength;
     unsigned int m_decFactor;
-
     float Input;
     float Output ;
-
     float o1,o2,o3,o4,o5,o6,o7;
-
     float a[ 9 ];
     float b[ 9 ];
-	
     float* decBuffer;
 };
 

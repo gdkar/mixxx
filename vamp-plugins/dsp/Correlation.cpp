@@ -14,7 +14,9 @@
 */
 
 #include "Correlation.h"
-
+#include <algorithm>
+#include <cmath>
+#include <numeric>
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -31,26 +33,13 @@ Correlation::~Correlation()
 
 void Correlation::doAutoUnBiased(float *src, float *dst, unsigned int length)
 {
-    float tmp = 0.0;
-    float outVal = 0.0;
-
     unsigned int i,j;
-
-    for( i = 0; i <  length; i++)
-    {
-	for( j = i; j < length; j++)
-	{
+    for( i = 0; i <  length; i++){
+        auto tmp = 0.f;
+	for( j = i; j < length; j++){
 	    tmp += src[ j-i ] * src[ j ]; 
 	}
-
-
-	outVal = tmp / ( length - i );
-
-	if( outVal <= 0 )
-	    dst[ i ] = EPS;
-	else
-	    dst[ i ] = outVal;
-
-	tmp = 0.0;
+	auto outVal = tmp / ( length - i );
+        dst[ i ] = std::max((decltype(outVal))EPS,outVal);
     }
 }

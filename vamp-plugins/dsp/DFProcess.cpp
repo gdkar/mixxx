@@ -18,29 +18,18 @@
 
 #include <algorithm>
 #include <cstring>
-
+#include <cmath>
+#include <alloca.h>
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
 DFProcess::DFProcess( DFProcConfig Config )
-{
-    filtSrc = NULL;
-    filtDst = NULL;	
-    m_filtScratchIn = NULL;
-    m_filtScratchOut = NULL;
-
-    m_FFOrd = 0;
-
-    initialise( Config );
-}
-
-DFProcess::~DFProcess()
-{
-    deInitialise();
-}
-
-void DFProcess::initialise( DFProcConfig Config )
+    : filtSrc(nullptr),
+      filtDst(nullptr),
+      m_filtScratchIn(nullptr),
+      m_filtScratchOut(nullptr),
+      m_FFOrd(0)
 {
     m_length = Config.length;
     m_winPre = Config.winPre;
@@ -51,7 +40,6 @@ void DFProcess::initialise( DFProcConfig Config )
 
     filtSrc = new float[ m_length ];
     filtDst = new float[ m_length ];
-
 	
     //Low Pass Smoothing Filter Config
     m_FilterConfigParams.ord = Config.LPOrd;
@@ -61,128 +49,64 @@ void DFProcess::initialise( DFProcConfig Config )
     m_FiltFilt = new FiltFilt( m_FilterConfigParams );	
 }
 
-void DFProcess::deInitialise()
+DFProcess::~DFProcess()
 {
     delete [] filtSrc;
-
     delete [] filtDst;
-
     delete [] m_filtScratchIn;
-
     delete [] m_filtScratchOut;
-
     delete m_FiltFilt;
 }
-
 void DFProcess::process(float *src, float* dst)
 {
     if (m_length == 0) return;
-
     removeDCNormalize( src, filtSrc );
-
     m_FiltFilt->process( filtSrc, filtDst, m_length );
-
     medianFilter( filtDst, dst );
 }
-
-
 void DFProcess::medianFilter(float *src, float *dst)
 {
     int i,k,j,l;
     int index = 0;
-
     float val = 0;
-
-    float* y = new float[ m_winPost + m_winPre + 1];
+    auto y = (float*)alloca(sizeof(float)*(m_winPost+m_winPre+1));
+    auto scratch = (float*)alloca(sizeof(float)*(m_winPost+m_winPre+1));
     memset( y, 0, sizeof( float ) * ( m_winPost + m_winPre + 1) );
-
-    float* scratch = new float[ m_length ];
-
-    for( i = 0; i < m_winPre; i++)
-    {
+    for( i = 0; i < m_winPre; i++,index++){
         if (index >= m_length) break;
-
 	k = i + m_winPost + 1;
-
-	for( j = 0; j < k; j++)
-	{
-	    y[ j ] = src[ j ];
-	}
+	for( j = 0; j < k; j++){y[ j ] = src[ j ];}
 	scratch[ index ] = MathUtilities::median( y, k );
-	index++;
     }
-
-    for(  i = 0; i + m_winPost + m_winPre < m_length; i ++)
-    {
+    for(  i = 0; i + m_winPost + m_winPre < m_length; i ++){
         if (index >= m_length) break;
-
-			 
-	l = 0;
-	for(  j  = i; j < ( i + m_winPost + m_winPre + 1); j++)
-	{
+	for(l=0,  j  = i; j < ( i + m_winPost + m_winPre + 1); j++,l++){
 	    y[ l ] = src[ j ];
-	    l++;
 	}
-
 	scratch[ index++ ] = MathUtilities::median( y, (m_winPost + m_winPre + 1 ));
     }
-
     for( i = std::max( m_length - m_winPost, 1); i < m_length; i++)
     {
         if (index >= m_length) break;
-
 	k = std::max( i - m_winPre, 1);
-
-	l = 0;
-	for( j = k; j < m_length; j++)
-	{
+	for(l=0, j = k; j < m_length; j++,l++){
 	    y[ l ] = src[ j ];
-
-	    l++;
 	}
-		
 	scratch[ index++ ] = MathUtilities::median( y, l); 
     }
-
-
-    for( i = 0; i < m_length; i++ )
-    {
-	val = src[ i ] - scratch[ i ];// - 0.033;
-		
-	if( m_isMedianPositive )
-	{
-	    if( val > 0 )
-	    {
-		dst[ i ]  = val;
-	    }
-	    else
-	    {
-		dst[ i ]  = 0;
-	    }
-	}
-	else
-	{
-	    dst[ i ]  = val;
-	}
+    for( i = 0; i < m_length; i++ ){
+	val = src[ i ] - scratch[ i ];
+	if( m_isMedianPositive ){dst[i]=std::max(val,0.f);}
+	else{dst[ i ]  = val;}
     }
-	
-    delete [] y;
-    delete [] scratch;
 }
-
-
 void DFProcess::removeDCNormalize( float *src, float*dst )
 {
     float DFmax = 0;
     float DFMin = 0;
     float DFAlphaNorm = 0;
-
     MathUtilities::getFrameMinMax( src, m_length, &DFMin, &DFmax );
-
     MathUtilities::getAlphaNorm( src, m_length, m_alphaNormParam, &DFAlphaNorm );
-
-    for( unsigned int i = 0; i< m_length; i++)
-    {
-	dst[ i ] = ( src[ i ] - DFMin ) / DFAlphaNorm; 
-    }
+    DFAlphaNorm = 1.f/DFAlphaNorm;
+    for( unsigned int i = 0; i< m_length; i++){dst[ i ] = ( src[ i ] - DFMin ) * DFAlphaNorm; }
 }

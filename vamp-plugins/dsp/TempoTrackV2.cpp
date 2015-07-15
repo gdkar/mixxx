@@ -16,13 +16,14 @@
 #include "TempoTrackV2.h"
 
 #include <cmath>
+#include <cstring>
+#include <cfloat>
 #include <cstdlib>
 #include <iostream>
 
 
 #include "MathUtilities.h"
 
-#define   EPS 0.0000008 // just some arbitrary small number
 
 TempoTrackV2::TempoTrackV2(float rate, size_t increment) :
     m_rate(rate), m_increment(increment) { }
@@ -34,7 +35,6 @@ TempoTrackV2::filter_df(d_vec_t &df)
     d_vec_t a(3);
     d_vec_t b(3);
     d_vec_t	lp_df(df.size());
-
     //equivalent in matlab to [b,a] = butter(2,0.4);
     a[0] = 1.0000;
     a[1] = -0.3695;
@@ -47,8 +47,6 @@ TempoTrackV2::filter_df(d_vec_t &df)
     float inp2 = 0.;
     float out1 = 0.;
     float out2 = 0.;
-
-
     // forwards filtering
     for (unsigned int i = 0;i < df.size();i++)
     {
@@ -58,19 +56,13 @@ TempoTrackV2::filter_df(d_vec_t &df)
         out2 = out1;
         out1 = lp_df[i];
     }
-
     // copy forwards filtering to df...
     // but, time-reversed, ready for backwards filtering
     for (unsigned int i = 0;i < df.size();i++)
     {
         df[i] = lp_df[df.size()-i-1];
     }
-
-    for (unsigned int i = 0;i < df.size();i++)
-    {
-        lp_df[i] = 0.;    
-    }
-
+    std::memset(&lp_df[0],0,df.size()*sizeof(lp_df[0]));
     inp1 = 0.; inp2 = 0.;
     out1 = 0.; out2 = 0.;
 
@@ -83,7 +75,6 @@ TempoTrackV2::filter_df(d_vec_t &df)
         out2 = out1;
         out1 = lp_df[i];
     }
-
   // write the re-reversed (i.e. forward) version back to df
     for (unsigned int i = 0;i < df.size();i++)
     {
@@ -112,15 +103,12 @@ TempoTrackV2::calculateBeatPeriod(const vector<float> &df,
     {
         wv[i] = (static_cast<float> (i) / pow(rayparam,2.)) * exp((-1.*pow(-static_cast<float> (i),2.)) / (2.*pow(rayparam,2.)));
     }
-
     // beat tracking frame size (roughly 6 seconds) and hop (1.5 seconds)
     unsigned int winlen = 512;
     unsigned int step = 128;
-
     // matrix to store output of comb filter bank, increment column of matrix at each frame
     d_mat_t rcfmat;
     int col_counter = -1;
-
     // main loop for beat period calculation
     for (unsigned int i=0; i+winlen<df.size(); i+=step)
     {
@@ -141,12 +129,9 @@ TempoTrackV2::calculateBeatPeriod(const vector<float> &df,
             rcfmat[col_counter].push_back( rcf[j] );
         }
     }
-  
     // now call viterbi decoding function
     viterbi_decode(rcfmat,wv,beat_period,tempi);
 }
-
-
 void
 TempoTrackV2::get_rcf(const d_vec_t &dfframe_in, const d_vec_t &wv, d_vec_t &rcf)
 {
@@ -155,55 +140,44 @@ TempoTrackV2::get_rcf(const d_vec_t &dfframe_in, const d_vec_t &wv, d_vec_t &rcf
     // just hard code for now... don't really need separate functions to do this
 
     // make acf
-
     d_vec_t dfframe(dfframe_in);
-
     MathUtilities::adaptiveThreshold(dfframe);
-
     d_vec_t acf(dfframe.size());
-
-    
     for (unsigned int lag=0; lag<dfframe.size(); lag++)
     {
-        float sum = 0.;
-        float tmp = 0.;
-
+        auto sum = 0.f;
         for (unsigned int n=0; n<(dfframe.size()-lag); n++)
         {
-            tmp = dfframe[n] * dfframe[n+lag];    
+            const auto tmp = dfframe[n] * dfframe[n+lag];    
             sum += tmp;
         }
         acf[lag] = static_cast<float> (sum/ (dfframe.size()-lag));
     }
-
     // now apply comb filtering
-    int numelem = 4;
-	
-    for (unsigned int i = 2;i < rcf.size();i++) // max beat period
+    auto  numelem = 4;
+    for (unsigned int i = 1;i < rcf.size()-1;i++) // max beat period
     {
-        for (int a = 1;a <= numelem;a++) // number of comb elements
+        for (int a = 0;a < numelem;a++) // number of comb elements
         {
-            for (int b = 1-a;b <= a-1;b++) // general state using normalisation of comb elements
+            for (int b = -a;b <= a;b++) // general state using normalisation of comb elements
             {
-                rcf[i-1] += ( acf[(a*i+b)-1]*wv[i-1] ) / (2.*a-1.);	// calculate value for comb filter row
+                rcf[i] += ( acf[(a*i+b+i)]*wv[i] ) / (2.f*a+1.f);	// calculate value for comb filter row
             }
         }
     }
-  
     // apply adaptive threshold to rcf
     MathUtilities::adaptiveThreshold(rcf);
-  
-    float rcfsum =0.;
+    auto rcfsum =0.f;
     for (unsigned int i=0; i<rcf.size(); i++)
     {
-        rcf[i] += EPS ;
+        rcf[i] += FLT_EPSILON;
         rcfsum += rcf[i];
     }
-
     // normalise rcf to sum to unity
+    const auto inv = 1.f/(rcfsum+FLT_EPSILON);
     for (unsigned int i=0; i<rcf.size(); i++)
     {
-        rcf[i] /= (rcfsum + EPS);
+        rcf[i] *=inv;
     }
 }
 
@@ -274,7 +248,7 @@ TempoTrackV2::viterbi_decode(const d_mat_t &rcfmat, const d_vec_t &wv, d_vec_t &
     }      
     for (unsigned int i=0; i<Q; i++)
     {
-        delta[0][i] /= (deltasum + EPS);
+        delta[0][i] /= (deltasum + FLT_EPSILON);
     }      
 
 
@@ -288,11 +262,8 @@ TempoTrackV2::viterbi_decode(const d_mat_t &rcfmat, const d_vec_t &wv, d_vec_t &
             {
                 tmp_vec[i] = delta[t-1][i] * tmat[j][i];
             }      
-   
             delta[t][j] = get_max_val(tmp_vec);    
-
             psi[t][j] = get_max_ind(tmp_vec);
- 
             delta[t][j] *= rcfmat[t][j];
         }
 
@@ -304,7 +275,7 @@ TempoTrackV2::viterbi_decode(const d_mat_t &rcfmat, const d_vec_t &wv, d_vec_t &
         }      
         for (unsigned int i=0; i<Q; i++)
         {
-            delta[t][i] /= (deltasum + EPS);
+            delta[t][i] /= (deltasum + FLT_EPSILON);
         }      
     }
 
@@ -394,7 +365,7 @@ TempoTrackV2::normalise_vec(d_vec_t &df)
     
     for (unsigned int i=0; i<df.size(); i++)
     {
-        df[i]/= (sum + EPS);
+        df[i]/= (sum + FLT_EPSILON);
     }
 }
 
@@ -404,30 +375,24 @@ TempoTrackV2::calculateBeats(const vector<float> &df,
                              vector<float> &beats)
 {
     if (df.empty() || beat_period.empty()) return;
-
     d_vec_t cumscore(df.size()); // store cumulative score
     i_vec_t backlink(df.size()); // backlink (stores best beat locations at each time instant)
     d_vec_t localscore(df.size()); // localscore, for now this is the same as the detection function
-
     for (unsigned int i=0; i<df.size(); i++)
     {
         localscore[i] = df[i];
         backlink[i] = -1;
     }
-
     float tightness = 4.;
     float alpha = 0.9;
-
     // main loop
     for (unsigned int i=0; i<localscore.size(); i++)
     {
         int prange_min = -2*beat_period[i];
         int prange_max = MathUtilities::round(-0.5*beat_period[i]);
-
         // transition range
         d_vec_t txwt (prange_max - prange_min + 1);
         d_vec_t scorecands (txwt.size());
-
         for (unsigned int j=0;j<txwt.size();j++)
         {
             float mu = static_cast<float> (beat_period[i]);
@@ -442,29 +407,21 @@ TempoTrackV2::calculateBeats(const vector<float> &df,
                 scorecands[j] = txwt[j] * cumscore[cscore_ind];
             }
         }
-
         // find max value and index of maximum value
-        float vv = get_max_val(scorecands);
-        int xx = get_max_ind(scorecands);
-
-        cumscore[i] = alpha*vv + (1.-alpha)*localscore[i];
+        float vv;
+        auto xx = MathUtilities::getMax(scorecands, &vv);
+        cumscore[i] = alpha*vv + (1.f-alpha)*localscore[i];
         backlink[i] = i+prange_min+xx;
-
-//        std::cerr << "backlink[" << i << "] <= " << backlink[i] << std::endl;
     }
-
     // STARTING POINT, I.E. LAST BEAT.. PICK A STRONG POINT IN cumscore VECTOR
     d_vec_t tmp_vec;
     for (unsigned int i=cumscore.size() - beat_period[beat_period.size()-1] ; i<cumscore.size(); i++)
     {
         tmp_vec.push_back(cumscore[i]);
     }  
-
     int startpoint = get_max_ind(tmp_vec) + cumscore.size() - beat_period[beat_period.size()-1] ;
-
     // can happen if no results obtained earlier (e.g. input too short)
     if (startpoint >= backlink.size()) startpoint = backlink.size()-1;
-
     // USE BACKLINK TO GET EACH NEW BEAT (TOWARDS THE BEGINNING OF THE FILE)
     //  BACKTRACKING FROM THE END TO THE BEGINNING.. MAKING SURE NOT TO GO BEFORE SAMPLE 0
     i_vec_t ibeats;
@@ -477,7 +434,6 @@ TempoTrackV2::calculateBeats(const vector<float> &df,
         if (backlink[b] == b) break; // shouldn't happen... haha
         ibeats.push_back(backlink[b]);
     }
-  
     // REVERSE SEQUENCE OF IBEATS AND STORE AS BEATS
     for (unsigned int i=0; i<ibeats.size(); i++)
     { 

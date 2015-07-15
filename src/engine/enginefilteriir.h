@@ -61,10 +61,10 @@ class EngineFilterIIR : public EngineFilterIIRBase {
     void processAndPauseFilter(const CSAMPLE* pIn, CSAMPLE* pOutput,
                        const int iBufferSize) {
         process(pIn, pOutput, iBufferSize);
-        SampleUtil::copy2WithRampingGain(pOutput,
-                pOutput, 1.0, 0,  // fade out filtered
-                pIn, 0, m_startFromDry ? 1.0 : 0,  // fade in dry if requested
-                iBufferSize);
+        const CSAMPLE*src[] = {pOutput,pIn};
+        CSAMPLE_GAIN  gain_start[] = {1.0f,0.0f};
+        CSAMPLE_GAIN  gain_end[]   = {0.f,m_startFromDry?1.f:0.f};
+        SampleUtil::copyWithRampingGain(pOutput,src,gain_start,gain_end,2,iBufferSize);
         pauseFilterInner();
     }
 

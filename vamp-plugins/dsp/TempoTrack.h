@@ -17,9 +17,10 @@
 #define TEMPOTRACK_H
 
 
-#include <stdio.h>
+#include <cstdio>
 #include <vector>
-
+#include <memory>
+#include <utility>
 #include "DFProcess.h"
 #include "Correlation.h"
 #include "Framer.h"
@@ -27,13 +28,13 @@
 
 
 using std::vector;
-
+using std::unique_ptr;
+using std::make_unique;
 struct WinThresh
 {
     unsigned int pre;
     unsigned int  post;
 };
-
 struct TTParams
 {
     unsigned int winLength; //Analysis window length
@@ -44,17 +45,12 @@ struct TTParams
     float* LPBCoeffs; //low pass Filter num coefficients
     WinThresh WinT;//window size in frames for adaptive thresholding [pre post]:
 };
-
-
 class TempoTrack  
 {
 public:
     TempoTrack( TTParams Params );
     virtual ~TempoTrack();
-
     vector<int> process( vector <float> DF, vector <float> *tempoReturn = 0);
-
-	
 private:
     void initialise( TTParams Params );
     void deInitialise();
@@ -75,23 +71,23 @@ private:
     float		 m_DFWVNnorm;
     vector<int>	 m_beats; // Vector of detected beats
     float m_lockedTempo;
-    float* m_tempoScratch;
-    float* m_smoothRCF; // Smoothed Output of Comb Filterbank (m_tempoScratch)
+    unique_ptr<float[]>m_tempoScratch;
+    unique_ptr<float[]> m_smoothRCF; // Smoothed Output of Comb Filterbank (m_tempoScratch)
     // Processing Buffers 
-    float* m_rawDFFrame; // Original Detection Function Analysis Frame
-    float* m_smoothDFFrame; // Smoothed Detection Function Analysis Frame
-    float* m_frameACF; // AutoCorrelation of Smoothed Detection Function 
+    unique_ptr<float[]> m_rawDFFrame; // Original Detection Function Analysis Frame
+    unique_ptr<float[]> m_smoothDFFrame; // Smoothed Detection Function Analysis Frame
+    unique_ptr<float[]> m_frameACF; // AutoCorrelation of Smoothed Detection Function 
     //Low Pass Coefficients for DF Smoothing
     float* m_ACoeffs;
     float* m_BCoeffs;
     // Objetcs/operators declaration
     Framer m_DFFramer;
-    DFProcess* m_DFConditioning;
+    DFProcess m_DFConditioning;
     Correlation m_correlator;
     // Config structure for DFProcess
     DFProcConfig m_DFPParams;
 	// also want to smooth m_tempoScratch 
-    DFProcess* m_RCFConditioning;
+    DFProcess m_RCFConditioning;
     // Config structure for RCFProcess
     DFProcConfig m_RCFPParams;
 

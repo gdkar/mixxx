@@ -16,6 +16,8 @@
 #include "MathUtilities.h"
 
 #include <algorithm>
+#include <numeric>
+#include <utility>
 #include <iostream>
 #include <cmath>
 #include <math.h>
@@ -28,190 +30,88 @@ float MathUtilities::mod(float x, float y)
 float MathUtilities::princarg(float ang)
 {
     float ValOut;
-
     ValOut = fmodf( ang + (float)M_PI, -(float)(2 * M_PI) ) + (float)M_PI;
-
     return ValOut;
 }
 
 void MathUtilities::getAlphaNorm(const float *data, unsigned int len, unsigned int alpha, float* ANorm)
 {
-    unsigned int i;
-    float temp = 0.0;
     float a=0.0;
-	
-    for( i = 0; i < len; i++)
+    for(auto  i = 0; i < len; i++)
     {
-	temp = data[ i ];
-		
+	const auto temp = data[ i ];
 	a  += ::powf( fabs(temp), float(alpha) );
     }
     a /= ( float )len;
     a = ::powf( a, ( 1.0f / (float) alpha ) );
-
     *ANorm = a;
 }
-
 float MathUtilities::getAlphaNorm( const std::vector <float> &data, unsigned int alpha )
 {
-    unsigned int i;
-    unsigned int len = data.size();
-    float temp = 0.0;
+    auto len = data.size();
     float a=0.0;
-    for( i = 0; i < len; i++)
+    for(auto  i = 0; i < len; i++)
     {
-	temp = data[ i ];
+	auto temp = data[ i ];
 	a  += ::powf( fabs(temp), float(alpha) );
     }
     a /= ( float )len;
     a = ::powf( a, ( 1.0f / (float) alpha ) );
     return a;
 }
-
 float MathUtilities::round(float x)
 {
     float val = (float)floorf(x + 0.5);
-  
     return val;
 }
 
 float MathUtilities::median(const float *src, unsigned int len)
 {
-    unsigned int i, j;
-    float tmp = 0.0;
-    float tempMedian;
-    float medianVal;
- 
-    float* scratch = new float[ len ];//Vector < float > sortedX = Vector < float > ( size );
-
-    for ( i = 0; i < len; i++ )
-    {
-	scratch[i] = src[i];
-    }
-
-    for ( i = 0; i < len - 1; i++ )
-    {
-	for ( j = 0; j < len - 1 - i; j++ )
-	{
-	    if ( scratch[j + 1] < scratch[j] )
-	    {
-		// compare the two neighbors
-		tmp = scratch[j]; // swap a[j] and a[j+1]
-		scratch[j] = scratch[j + 1];
-		scratch[j + 1] = tmp;
-	    }
-	}
-    }
+    std::vector<float> scratch(len);
+    for (auto i = 0; i < len; i++ ){scratch[i] = src[i];}
+    std::sort(scratch.begin(),scratch.end());
     int middle;
-    if ( len % 2 == 0 )
-    {
+    if ( len % 2 == 0 ){
 	middle = len / 2;
-	tempMedian = ( scratch[middle] + scratch[middle - 1] ) / 2;
+	return ( scratch[middle] + scratch[middle - 1] ) *0.5f;
+    }else{
+	middle = len>>1;
+	return  scratch[middle];
     }
-    else
-    {
-	middle = ( int )floorf( len / 2.0 );
-	tempMedian = scratch[middle];
-    }
-    medianVal = tempMedian;
-    delete [] scratch;
-    return medianVal;
 }
-
-float MathUtilities::sum(const float *src, unsigned int len)
-{
-    unsigned int i ;
-    float retVal =0.0;
-
-    for(  i = 0; i < len; i++) retVal += src[ i ];
-
-    return retVal;
-}
-
-float MathUtilities::mean(const float *src, unsigned int len)
-{
-    float retVal =0.0;
-    float s = sum( src, len );
-    retVal =  s  / (float)len;
-    return retVal;
-}
-
+float MathUtilities::sum(const float *src, unsigned int len){return std::accumulate(src,src+len,0.f);}
+float MathUtilities::mean(const float *src, unsigned int len){return std::accumulate(src,src+len,0.f)*(1.f/len);}
 float MathUtilities::mean(const std::vector<float> &src,
                            unsigned int start,
                            unsigned int count)
 {
-    float sum = 0.;
-    for (int i = 0; i < count; ++i)
-        sum += src[start + i];
-    return sum / count;
+    return std::accumulate(src.begin()+start,src.begin()+start+count,0.f)*(1.f/count);
 }
-
 void MathUtilities::getFrameMinMax(const float *data, unsigned int len, float *min, float *max)
 {
-    unsigned int i;
-    if (len == 0) {
-        *min = *max = 0;
-        return;
-    }
-    float _min = data[0];
-    float _max = data[0];
-    for( i = 0; i < len; i++)
-    {
-        const float temp = data[i];
-        _min = std::min(temp,_min);
-        _max = std::max(temp,_max);
-    }
-    *min = _min;
-    *max = _max;
+    auto pair = std::minmax_element(data,data+len);
+    *min = *pair.first;
+    *max = *pair.second;
 }
 
 int MathUtilities::getMax( float* pData, unsigned int Length, float* pMax )
 {
-	unsigned int index = 0;
-	unsigned int i;
-	
-	auto max = pData[0];
-	for( i = 0; i < Length; i++){
-		const auto temp = pData[ i ];
-                index = (temp>max)?i:index;
-                max   = (temp>max)?temp:max;
-   	}
-	if (pMax) *pMax = max;
-	return index;
+        auto it = std::max_element(pData,pData+Length);
+        if(pMax)*pMax=*it;
+        return it-pData;
 }
-
 int MathUtilities::getMax( const std::vector<float> & data, float* pMax )
 {
-	unsigned int index = 0;
-	unsigned int i;
-	float max = data[0];
-	for( i = 0; i < data.size(); i++){
-		const auto temp = data[ i ];
-                index = (temp>max)?i:index;
-                max   = (temp>max)?temp:max;
-		
-   	}
-	if (pMax) *pMax = max;
-	return index;
+        auto it = std::max_element(data.begin(),data.end());
+        if(pMax)*pMax=*it;
+        return std::distance(data.begin(),it);
 }
 
 void MathUtilities::circShift( float* pData, int length, int shift)
 {
-	shift = shift % length;
-	int i,n;
-	for( i = 0; i < shift; i++){
-		auto temp=*(pData + length - 1);
-		for( n = length-2; n >= 0; n--){
-			*(pData+n+1)=*(pData+n);
-		}
-                *pData = temp;
-        }
+        std::rotate(pData,pData+(shift%length),pData+length);
 }
-
-int MathUtilities::compareInt (const void * a, const void * b){
-  return ( *(int*)a - *(int*)b );
-}
-
+int MathUtilities::compareInt (const void * a, const void * b){return ( *(int*)a - *(int*)b );}
 void MathUtilities::normalise(float *data, int length, NormaliseType type)
 {
     switch (type) {
@@ -246,7 +146,6 @@ void MathUtilities::normalise(float *data, int length, NormaliseType type)
     break;
     }
 }
-
 void MathUtilities::normalise(std::vector<float> &data, NormaliseType type)
 {
     switch (type) {

@@ -58,31 +58,22 @@ DownBeat::~DownBeat(){
     delete[] m_fftImagOut;
     delete m_fft;
 }
-
 void
-DownBeat::setBeatsPerBar(int bpb)
-{
-    m_bpb = bpb;
-}
-
+DownBeat::setBeatsPerBar(int bpb){m_bpb = bpb;}
 void
 DownBeat::makeDecimators()
 {
 //    std::cerr << "m_factor = " << m_factor << std::endl;
     if (m_factor < 2) return;
-    size_t highest = Decimator::getHighestSupportedFactor();
+    auto  highest = Decimator::getHighestSupportedFactor();
     if (m_factor <= highest) {
         m_decimator1 = new Decimator(m_increment, m_factor);
-//        std::cerr << "DownBeat: decimator 1 factor " << m_factor << ", size " << m_increment << std::endl;
         return;
     }
     m_decimator1 = new Decimator(m_increment, highest);
-//    std::cerr << "DownBeat: decimator 1 factor " << highest << ", size " << m_increment << std::endl;
     m_decimator2 = new Decimator(m_increment / highest, m_factor / highest);
-//    std::cerr << "DownBeat: decimator 2 factor " << m_factor / highest << ", size " << m_increment / highest << std::endl;
     m_decbuf = new float[m_increment / highest];
 }
-
 void
 DownBeat::pushAudioBlock(const float *audio)
 {
@@ -90,17 +81,13 @@ DownBeat::pushAudioBlock(const float *audio)
         if (m_bufsiz == 0) m_bufsiz = m_increment * 16;
         else m_bufsiz = m_bufsiz * 2;
         if (!m_buffer) {
-            m_buffer = (float *)malloc(m_bufsiz * sizeof(float));
+            m_buffer = (decltype(m_buffer))malloc(m_bufsiz * sizeof(float));
         } else {
-//            std::cerr << "DownBeat::pushAudioBlock: realloc m_buffer to " << m_bufsiz << std::endl;
-            m_buffer = (float *)realloc(m_buffer, m_bufsiz * sizeof(float));
+            m_buffer = (decltype(m_buffer))realloc(m_buffer, m_bufsiz * sizeof(float));
         }
     }
     if (!m_decimator1 && m_factor > 1) makeDecimators();
-//    float rmsin = 0, rmsout = 0;
-//    for (int i = 0; i < m_increment; ++i) {
-//        rmsin += audio[i] * audio[i];
-//    }
+
     if (m_decimator2) {
         m_decimator1->process(audio, m_decbuf);
         m_decimator2->process(m_decbuf, m_buffer + m_buffill);
@@ -112,23 +99,15 @@ DownBeat::pushAudioBlock(const float *audio)
             (m_buffer + m_buffill)[i] = audio[i];
         }
     }
-//    for (int i = 0; i < m_increment / m_factor; ++i) {
-//        rmsout += m_buffer[m_buffill + i] * m_buffer[m_buffill + i];
-//    }
-//    std::cerr << "pushAudioBlock: rms in " << sqrt(rmsin) << ", out " << sqrt(rmsout) << std::endl;
     m_buffill += m_increment / m_factor;
 }
-    
 const float *
-DownBeat::getBufferedAudio(size_t &length) const
-{
+DownBeat::getBufferedAudio(size_t &length) const{
     length = m_buffill;
     return m_buffer;
 }
-
 void
-DownBeat::resetAudioBuffer()
-{
+DownBeat::resetAudioBuffer(){
     if (m_buffer) free(m_buffer);
     m_buffer = 0;
     m_buffill = 0;
@@ -151,68 +130,39 @@ DownBeat::findDownBeats(const float *audio,
 
     d_vec_t newspec(m_beatframesize / 2); // magnitude spectrum of current beat
     d_vec_t oldspec(m_beatframesize / 2); // magnitude spectrum of previous beat
-
     m_beatsd.clear();
-
     if (audioLength == 0) return;
-
     for (size_t i = 0; i + 1 < beats.size(); ++i) {
-
         // Copy the extents of the current beat from downsampled array
         // into beat frame buffer
-
-        size_t beatstart = (beats[i] * m_increment) / m_factor;
-        size_t beatend = (beats[i+1] * m_increment) / m_factor;
-        if (beatend >= audioLength) beatend = audioLength - 1;
-        if (beatend < beatstart) beatend = beatstart;
-        size_t beatlen = beatend - beatstart;
-
+        auto beatstart = (size_t)((beats[i] * m_increment) / m_factor);
+        auto  beatend = (size_t)((beats[i+1] * m_increment) / m_factor);
+        beatend = std::max(std::min(beatend,audioLength-1),beatstart);
+        auto beatlen = beatend - beatstart;
         // Also apply a Hanning window to the beat frame buffer, sized
         // to the beat extents rather than the frame size.  (Because
         // the size varies, it's easier to do this by hand than use
         // our Window abstraction.)
 
-//        std::cerr << "beatlen = " << beatlen << std::endl;
-
-//        float rms = 0;
         for (size_t j = 0; j < beatlen && j < m_beatframesize; ++j) {
-            float mul = 0.5 * (1.0 - cos(TWO_PI * (float(j) / float(beatlen))));
+            auto mul = 0.5f * (1.0f - std::cos(((float)TWO_PI * (float(j) / float(beatlen)))));
             m_beatframe[j] = audio[beatstart + j] * mul;
-//            rms += m_beatframe[j] * m_beatframe[j];
         }
-//        rms = sqrt(rms);
-//        std::cerr << "beat " << i << ": audio rms " << rms << std::endl;
-
-        for (size_t j = beatlen; j < m_beatframesize; ++j) {
-            m_beatframe[j] = 0.0;
-        }
-
+        for (size_t j = beatlen; j < m_beatframesize; ++j) {m_beatframe[j] = 0.0;}
         // Now FFT beat frame
-        
         m_fft->process(false, m_beatframe, nullptr,m_fftRealOut, m_fftImagOut);
-        
         // Calculate magnitudes
-
         for (size_t j = 0; j < m_beatframesize/2; ++j) {
             newspec[j] = hypotf(m_fftRealOut[j], m_fftImagOut[j] );
         }
-
         // Preserve peaks by applying adaptive threshold
-
         MathUtilities::adaptiveThreshold(newspec);
-
         // Calculate JS divergence between new and old spectral frames
-
         if (i > 0) { // otherwise we have no previous frame
             m_beatsd.push_back(measureSpecDiff(oldspec, newspec));
-//            std::cerr << "specdiff: " << m_beatsd[m_beatsd.size()-1] << std::endl;
         }
-
         // Copy newspec across to old
-
-        for (size_t j = 0; j < m_beatframesize/2; ++j) {
-            oldspec[j] = newspec[j];
-        }
+        for (size_t j = 0; j < m_beatframesize/2; ++j) {oldspec[j] = newspec[j];}
     }
     // We now have all spectral difference measures in specdiff
     int timesig = m_bpb;
@@ -228,38 +178,26 @@ DownBeat::findDownBeats(const float *audio,
            ++count;
        }
        if (count > 0) dbcand[beat] /= count;
-//        std::cerr << "dbcand[" << beat << "] = " << dbcand[beat] << std::endl;
    }
-
     // first downbeat is beat at index of maximum value of dbcand
     int dbind = MathUtilities::getMax(dbcand);
-
     // remaining downbeats are at timesig intervals from the first
-    for (int i = dbind; i < (int)beats.size(); i += timesig) {
-        downbeats.push_back(i);
-    }
+    for (int i = dbind; i < (int)beats.size(); i += timesig) {downbeats.push_back(i);}
 }
-
 float
 DownBeat::measureSpecDiff(d_vec_t oldspec, d_vec_t newspec)
 {
     // JENSEN-SHANNON DIVERGENCE BETWEEN SPECTRAL FRAMES
-
     unsigned int SPECSIZE = 512;   // ONLY LOOK AT FIRST 512 SAMPLES OF SPECTRUM. 
-    if (SPECSIZE > oldspec.size()/4) {
-        SPECSIZE = oldspec.size()/4;
-    }
+    if (SPECSIZE > oldspec.size()/4) {SPECSIZE = oldspec.size()/4;}
     float SD = 0.;
     float sd1 = 0.;
-
     float sumnew = 0.;
     float sumold = 0.;
-  
     for (unsigned int i = 0;i < SPECSIZE;i++)
     {
         newspec[i] +=EPS;
         oldspec[i] +=EPS;
-        
         sumnew+=newspec[i];
         sumold+=oldspec[i];
     } 
@@ -269,17 +207,6 @@ DownBeat::measureSpecDiff(d_vec_t oldspec, d_vec_t newspec)
     {
         newspec[i] *= (sumnewinv);
         oldspec[i] *= (sumoldinv);
-        // IF ANY SPECTRAL VALUES ARE 0 (SHOULDN'T BE ANY!) SET THEM TO 1
-        if (newspec[i] == 0)
-        {
-            newspec[i] = 1.;
-        }
-        
-        if (oldspec[i] == 0)
-        {
-            oldspec[i] = 1.;
-        }
-        
         // JENSEN-SHANNON CALCULATION
         sd1 = 0.5f*oldspec[i] + 0.5f*newspec[i];	
         SD = SD + (-sd1*logf(sd1)) + (0.5f*(oldspec[i]*logf(oldspec[i]))) + (0.5f*(newspec[i]*logf(newspec[i])));

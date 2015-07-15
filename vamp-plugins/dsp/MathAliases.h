@@ -23,14 +23,11 @@ using namespace std;
 typedef complex<float> ComplexData;
 
 
-#ifndef PI
-#define PI (3.14159265358979232846)
-#endif
+#define TWO_PI 		(2. * M_PI)
 
-#define TWO_PI 		(2. * PI)
-
+#ifndef EPS
 #define EPS 2.2204e-016
-
+#endif
 /* aliases to math.h functions */
 #define EXP				exp
 #define COS				cos

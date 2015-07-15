@@ -19,6 +19,7 @@
 #include <vector>
 #include <valarray>
 #include <utility>
+#include <algorithm>
 
 #include "TonalEstimator.h"
 

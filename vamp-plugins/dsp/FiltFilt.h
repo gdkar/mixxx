@@ -16,19 +16,16 @@
 #define FILTFILT_H
 
 #include "Filter.h"
-
 struct FiltFiltConfig{
     unsigned int ord;
     float* ACoeffs;
     float* BCoeffs;
 };
-
 class FiltFilt  
 {
 public:
     FiltFilt( FiltFiltConfig Config );
     virtual ~FiltFilt();
-
     void reset();
     void process( float* src, float* dst, unsigned int length );
 private:

@@ -31,48 +31,27 @@ using std::endl;
  *recommends the following check for source files that use the alloca()
  *function
  */
-#ifdef HAVE_ALLOCA_H
-    # include <alloca.h>
-    #elif defined __GNUC__
-    # define alloca __builtin_alloca
-    #elif defined _AIX
-    # define alloca __alloca
-    #elif defined _MSC_VER
-    # include <malloc.h>
-    # define alloca _alloca
-    #else
-    # include <stddef.h>
-    # ifdef  __cplusplus
-    extern "C"
-    # endif
-    void *alloca (size_t);
- #endif
+#include <alloca.h>
 
 float BarBeatTracker::m_stepSecs = (512.f/44100.f); // 512 samples at 44100
 class BarBeatTrackerData{
 public:
     BarBeatTrackerData(float rate, const DFConfig &config) : dfConfig(config) {
-	df = new DetectionFunction(config);
-        // decimation factor aims at resampling to c. 3KHz; must be power of 2
+	df =std::make_unique<DetectionFunction>(config);
         int factor = MathUtilities::nextPowerOfTwo(rate / 3000);
-//        std::cerr << "BarBeatTrackerData: factor = " << factor << std::endl;
-        downBeat = new DownBeat(rate, factor, config.stepSize);
+        downBeat = std::make_unique<DownBeat>(rate, factor, config.stepSize);
     }
     ~BarBeatTrackerData() {
-	delete df;
-        delete downBeat;
     }
     void reset() {
-	delete df;
-	df = new DetectionFunction(dfConfig);
+	df = std::make_unique<DetectionFunction>(dfConfig);
 	dfOutput.clear();
         downBeat->resetAudioBuffer();
         origin = Vamp::RealTime::zeroTime;
     }
-
     DFConfig dfConfig;
-    DetectionFunction *df;
-    DownBeat *downBeat;
+    std::unique_ptr<DetectionFunction> df;
+    std::unique_ptr<DownBeat> downBeat;
     vector<float> dfOutput;
     Vamp::RealTime origin;
 };
@@ -131,26 +110,20 @@ BarBeatTracker::initialise(size_t channels, size_t stepSize, size_t blockSize){
 	delete m_d;
 	m_d = 0;
     }
-
-    if (channels < getMinChannelCount() ||
-	channels > getMaxChannelCount()) {
+    if (channels < getMinChannelCount() || channels > getMaxChannelCount()) {
         std::cerr << "BarBeatTracker::initialise: Unsupported channel count: "
                   << channels << std::endl;
         return false;
     }
-
     if (stepSize != getPreferredStepSize()) {
         std::cerr << "ERROR: BarBeatTracker::initialise: Unsupported step size for this sample rate: "
                   << stepSize << " (wanted " << (getPreferredStepSize()) << ")" << std::endl;
         return false;
     }
-
     if (blockSize != getPreferredBlockSize()) {
         std::cerr << "WARNING: BarBeatTracker::initialise: Sub-optimal block size for this sample rate: "
                   << blockSize << " (wanted " << getPreferredBlockSize() << ")" << std::endl;
-//        return false;
     }
-
     DFConfig dfConfig;
     dfConfig.DFType = DF_COMPLEXSD;
     dfConfig.stepSize = stepSize;
@@ -176,7 +149,6 @@ BarBeatTracker::getPreferredStepSize() const
 {
     size_t step = size_t(m_inputSampleRate * m_stepSecs + 0.0001);
     if (step < 1) step = 1;
-//    std::cerr << "BarBeatTracker::getPreferredStepSize: input sample rate is " << m_inputSampleRate << ", step size is " << step << std::endl;
     return step;
 }
 
@@ -184,7 +156,6 @@ size_t
 BarBeatTracker::getPreferredBlockSize() const
 {
     size_t theoretical = getPreferredStepSize() * 2;
-
     // I think this is not necessarily going to be a power of two, and
     // the host might have a problem with that, but I'm not sure we
     // can do much about it here
@@ -362,4 +333,3 @@ BarBeatTracker::barBeatTrack(){
     }
     return returnFeatures;
 }
-

@@ -30,21 +30,14 @@ class Filter
 public:
     Filter( FilterConfig Config );
     virtual ~Filter();
-
     void reset();
-
     void process( float *src, float *dst, unsigned int length );
-	
-
 private:
     void initialise( FilterConfig Config );
     void deInitialise();
-
     unsigned int m_ord;
-
     std::unique_ptr<float[]> m_inBuffer;
     std::unique_ptr<float[]> m_outBuffer;
-
     float* m_ACoeffs;
     float* m_BCoeffs;
 };

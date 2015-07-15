@@ -12,8 +12,8 @@
 
 #include "analyser.h"
 #include "configobject.h"
-#include "vamp/vampanalyser.h"
-
+//#include "vamp/vampanalyser.h"
+class VampAnalyser;
 class AnalyserBeats: public Analyser {
   public:
     AnalyserBeats(ConfigObject<ConfigValue>* pConfig);
