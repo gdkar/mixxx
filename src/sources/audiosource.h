@@ -2,19 +2,13 @@
 #define MIXXX_AUDIOSOURCE_H
 
 #include "urlresource.h"
-
 #include "samplebuffer.h"
-
 #include "util/assert.h"
 #include "util/defs.h" // Result
-
 #include <QSharedPointer>
-
 namespace Mixxx {
-
 // forward declaration(s)
 struct AudioSourceConfig;
-
 // Common interface and base class for audio sources.
 //
 // Both the number of channels and the frame rate must
@@ -35,33 +29,18 @@ class AudioSource: public UrlResource {
 public:
     static const SINT kChannelCountMono = 1;
     static const SINT kChannelCountStereo = 2;
-
     // Returns the number of channels. The number of channels
     // must be constant over time.
-    inline SINT getChannelCount() const {
-        return m_channelCount;
-    }
-
+    inline SINT getChannelCount() const {return m_channelCount;}
     // Returns the number of frames per second. This equals
     // the number samples for each channel per second, which
     // must be uniform among all channels. The frame rate
     // must be constant over time.
-    inline SINT getFrameRate() const {
-        return m_frameRate;
-    }
-
-    inline bool isValid() const {
-        return hasChannelCount() && hasFrameRate();
-    }
-
+    inline SINT getFrameRate() const {return m_frameRate;}
+    inline bool isValid() const {return hasChannelCount() && hasFrameRate();}
     // Returns the total number of frames.
-    inline SINT getFrameCount() const {
-        return m_frameCount;
-    }
-
-    inline bool isEmpty() const {
-        return kFrameCountZero >= getFrameCount();
-    }
+    inline SINT getFrameCount() const {return m_frameCount;}
+    inline bool isEmpty() const {return kFrameCountZero >= getFrameCount();}
 
     // The actual duration in seconds.
     // Well defined only for valid files!

@@ -69,7 +69,6 @@ class EngineDeck : public EngineChannel, public AudioDestination {
     EngineVuMeter* m_pVUMeter;
     EngineEffectsManager* m_pEngineEffectsManager;
     ControlObjectSlave m_pSampleRate;
-
     // Begin vinyl passthrough fields
     ControlPushButton m_pPassing;
     const CSAMPLE* volatile m_sampleBuffer;

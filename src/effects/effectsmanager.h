@@ -31,36 +31,23 @@ class EffectsManager : public QObject {
 
     EffectsManager(QObject* pParent, ConfigObject<ConfigValue>* pConfig);
     virtual ~EffectsManager();
-
-    EngineEffectsManager* getEngineEffectsManager() {
-        return m_pEngineEffectsManager;
-    }
-
-    EffectChainManager* getEffectChainManager() {
-        return m_pEffectChainManager;
-    }
-
+    EngineEffectsManager* getEngineEffectsManager() {return m_pEngineEffectsManager;}
+    EffectChainManager* getEffectChainManager() {return m_pEffectChainManager;}
     // Add an effect backend to be managed by EffectsManager. EffectsManager
     // takes ownership of the backend, and will delete it when EffectsManager is
     // being deleted. Not thread safe -- use only from the GUI thread.
     void addEffectsBackend(EffectsBackend* pEffectsBackend);
     void registerChannel(const ChannelHandleAndGroup& handle_group);
     const QSet<ChannelHandleAndGroup>& registeredChannels() const;
-
     StandardEffectRackPointer addStandardEffectRack();
     StandardEffectRackPointer getStandardEffectRack(int rack);
-
     EqualizerRackPointer addEqualizerRack();
     EqualizerRackPointer getEqualizerRack(int rack);
-
     QuickEffectRackPointer addQuickEffectRack();
     QuickEffectRackPointer getQuickEffectRack(int rack);
-
     EffectRackPointer getEffectRack(const QString& group);
-
     QString getNextEffectId(const QString& effectId);
     QString getPrevEffectId(const QString& effectId);
-
     const QList<QString> getAvailableEffects() const;
     // Each entry of the set is a pair containing the effect id and its name
     const QList<QPair<QString, QString> > getEffectNamesFiltered(EffectManifestFilterFnc filter) const;

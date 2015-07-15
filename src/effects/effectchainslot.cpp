@@ -410,7 +410,4 @@ void EffectChainSlot::slotChannelStatusChanged(const QString& group) {
         }
     }
 }
-
-unsigned int EffectChainSlot::getChainSlotNumber() const {
-    return m_iChainSlotNumber;
-}
+unsigned int EffectChainSlot::getChainSlotNumber() const {return m_iChainSlotNumber;}

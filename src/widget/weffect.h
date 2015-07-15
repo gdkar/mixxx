@@ -14,16 +14,12 @@ class WEffect : public WLabel {
   public:
     WEffect(QWidget* pParent, EffectsManager* pEffectsManager);
     virtual ~WEffect();
-
     void setup(QDomNode node, const SkinContext& context);
-
   private slots:
     void effectUpdated();
-
   private:
     // Set the EffectSlot that should be monitored by this WEffect.
     void setEffectSlot(EffectSlotPointer pEffectSlot);
-
     EffectsManager* m_pEffectsManager;
     EffectSlotPointer m_pEffectSlot;
 };
