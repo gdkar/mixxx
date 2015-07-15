@@ -428,8 +428,6 @@ void SampleUtil::copyMultiToStereo(CSAMPLE* _RESTRICT pDest, const CSAMPLE* _RES
         pDest[i * 2 + 1] = pSrc[i * numChannels + 1];
     }
 }
-
-
 // static
 void SampleUtil::reverse(CSAMPLE* pBuffer, int iNumSamples) {
     for (int j = 0; j < iNumSamples / 4; ++j) {
@@ -450,13 +448,11 @@ void SampleUtil::copyNWithGain(CSAMPLE * pDest,
   pDest = assume_aligned(pDest);
   auto pSrc0 = assume_aligned(pSrc[0]);
   auto pSrc1 = assume_aligned(pSrc[1]);
-  auto pSrc2 = assume_aligned(pSrc[2]);
-  auto pSrc3 = assume_aligned(pSrc[3]);
   const auto gain0_ps = _mm_set1_ps(gain[0]);
   const auto gain1_ps = _mm_set1_ps(gain[1]);
-  const auto gain2_ps = _mm_set1_ps(gain[2]);
-  const auto gain3_ps = _mm_set1_ps(gain[3]);
   switch(count){
+  case 0:
+    std::memset(pDest,0,iBufferSize*sizeof(float));
   case 1:
     for(auto i = 0; i+3<iBufferSize; i+=4){
       *(v4sf*)(pDest+i) = _mm_mul_ps(gain0_ps,*(v4sf*)(pSrc0+i));
@@ -466,23 +462,6 @@ void SampleUtil::copyNWithGain(CSAMPLE * pDest,
     for(auto i = 0; i+3<iBufferSize; i+=4){
       *(v4sf*)(pDest+i) = _mm_add_ps(_mm_mul_ps(gain0_ps,*(v4sf*)(pSrc0+i)),
                                      _mm_mul_ps(gain1_ps,*(v4sf*)(pSrc1+i)));
-    }
-    break;
-  case 3:
-    for(auto i = 0; i+3<iBufferSize; i+=4){
-      *(v4sf*)(pDest+i) = _mm_add_ps(
-                            _mm_add_ps(_mm_mul_ps(gain0_ps,*(v4sf*)(pSrc0+i)),
-                                       _mm_mul_ps(gain1_ps,*(v4sf*)(pSrc1+i))),
-                            _mm_mul_ps(gain2_ps,*(v4sf*)(pSrc2+i)));
-    }
-    break;
-  case 4:
-    for(auto i = 0; i+3<iBufferSize; i+=4){
-      *(v4sf*)(pDest+i) = _mm_add_ps(
-                            _mm_add_ps(_mm_mul_ps(gain0_ps,*(v4sf*)(pSrc0+i)),
-                                       _mm_mul_ps(gain1_ps,*(v4sf*)(pSrc1+i))),
-                            _mm_add_ps(_mm_mul_ps(gain2_ps,*(v4sf*)(pSrc2+i)),
-                                       _mm_mul_ps(gain3_ps,*(v4sf*)(pSrc3+i))));
     }
     break;
   default:
@@ -497,13 +476,11 @@ void SampleUtil::copyNWithGainAdding(CSAMPLE * pDest,
   pDest = assume_aligned(pDest);
   auto pSrc0 = assume_aligned(pSrc[0]);
   auto pSrc1 = assume_aligned(pSrc[1]);
-  auto pSrc2 = assume_aligned(pSrc[2]);
-  auto pSrc3 = assume_aligned(pSrc[3]);
   const auto gain0_ps = _mm_set1_ps(gain[0]);
   const auto gain1_ps = _mm_set1_ps(gain[1]);
-  const auto gain2_ps = _mm_set1_ps(gain[2]);
-  const auto gain3_ps = _mm_set1_ps(gain[3]);
   switch(count){
+  case 0:
+    break;
   case 1:
     for(auto i = 0; i+3<iBufferSize; i+=4){
       *(v4sf*)(pDest+i) = _mm_add_ps(_mm_mul_ps(gain0_ps,*(v4sf*)(pSrc0+i)),*(v4sf*)(pDest+i));
@@ -515,32 +492,14 @@ void SampleUtil::copyNWithGainAdding(CSAMPLE * pDest,
                                      _mm_mul_ps(gain1_ps,*(v4sf*)(pSrc1+i))),*(v4sf*)(pDest+i));
     }
     break;
-  case 3:
-    for(auto i = 0; i+3<iBufferSize; i+=4){
-      *(v4sf*)(pDest+i) = _mm_add_ps(_mm_add_ps(
-                            _mm_add_ps(_mm_mul_ps(gain0_ps,*(v4sf*)(pSrc0+i)),
-                                       _mm_mul_ps(gain1_ps,*(v4sf*)(pSrc1+i))),
-                            _mm_mul_ps(gain2_ps,*(v4sf*)(pSrc2+i))),*(v4sf*)(pDest+i));
-    }
-    break;
-  case 4:
-    for(auto i = 0; i+3<iBufferSize; i+=4){
-      *(v4sf*)(pDest+i) = _mm_add_ps(_mm_add_ps(
-                            _mm_add_ps(_mm_mul_ps(gain0_ps,*(v4sf*)(pSrc0+i)),
-                                       _mm_mul_ps(gain1_ps,*(v4sf*)(pSrc1+i))),
-                            _mm_add_ps(_mm_mul_ps(gain2_ps,*(v4sf*)(pSrc2+i)),
-                                       _mm_mul_ps(gain3_ps,*(v4sf*)(pSrc3+i)))),
-                            *(v4sf*)(pDest+i));
-    }
-    break;
   default:
     qDebug() << "WARNING: invalid channel count received in copyWithGain. this should never happen.";
   }
 }
 void SampleUtil::copyWithGain(CSAMPLE *pDest, const CSAMPLE **pSrc,const CSAMPLE_GAIN *Gain,
     const int N, const int iBufferSize){
-  const CSAMPLE *src[4];
-  CSAMPLE_GAIN gain[4];
+  const CSAMPLE *src[2];
+  CSAMPLE_GAIN gain[2];
   bool first_round = true;
   int j = 0;
   for(int i = 0; i < N;i++){
@@ -548,11 +507,11 @@ void SampleUtil::copyWithGain(CSAMPLE *pDest, const CSAMPLE **pSrc,const CSAMPLE
       src[j]  = pSrc[i];
       gain[j] = Gain[i];
       j++;
-      if(j==4){
+      if(j==2){
         if(first_round){
-          copyNWithGain(pDest,&src[0],&gain[0],4,iBufferSize);
+          copyNWithGain(pDest,&src[0],&gain[0],2,iBufferSize);
         }else{
-          copyNWithGainAdding(pDest,&src[0],&gain[0],4,iBufferSize);
+          copyNWithGainAdding(pDest,&src[0],&gain[0],2,iBufferSize);
         }
         first_round=false;
         j          =0;
@@ -569,29 +528,23 @@ void SampleUtil::copyWithGain(CSAMPLE *pDest, const CSAMPLE **pSrc,const CSAMPLE
   }
 }
 void SampleUtil::copyNWithRampingGain(CSAMPLE * pDest,
-    const CSAMPLE *pSrc[4], const CSAMPLE_GAIN gain_start[4],const CSAMPLE_GAIN gain_end[4],
+    const CSAMPLE **pSrc, const CSAMPLE_GAIN *gain_start,const CSAMPLE_GAIN *gain_end,
     const int count,
     const int iBufferSize)
 {
   pDest = assume_aligned(pDest);
   auto pSrc0 = assume_aligned(pSrc[0]);
   auto pSrc1 = assume_aligned(pSrc[1]);
-  auto pSrc2 = assume_aligned(pSrc[2]);
-  auto pSrc3 = assume_aligned(pSrc[3]);
   const auto bufsz_inv = 1.f/iBufferSize;
   const auto inc0 = (gain_end[0]-gain_start[0])*bufsz_inv;
   const auto inc1 = (gain_end[1]-gain_start[1])*bufsz_inv;
-  const auto inc2 = (gain_end[2]-gain_start[2])*bufsz_inv;
-  const auto inc3 = (gain_end[3]-gain_start[3])*bufsz_inv;
   const auto inc0_ps = _mm_set1_ps(inc0);
   const auto inc1_ps = _mm_set1_ps(inc1);
-  const auto inc2_ps = _mm_set1_ps(inc2);
-  const auto inc3_ps = _mm_set1_ps(inc3);
   auto gain0_ps = _mm_set_ps(gain_start[0],gain_start[0],gain_start[0]+inc0,gain_start[0]+inc0);
   auto gain1_ps = _mm_set_ps(gain_start[1],gain_start[1],gain_start[1]+inc1,gain_start[1]+inc1);
-  auto gain2_ps = _mm_set_ps(gain_start[2],gain_start[2],gain_start[2]+inc2,gain_start[2]+inc2);
-  auto gain3_ps = _mm_set_ps(gain_start[3],gain_start[3],gain_start[3]+inc3,gain_start[3]+inc3);
   switch(count){
+  case 0:
+    std::memset(pDest,0,iBufferSize*sizeof(CSAMPLE));
   case 1:
     for(auto i = 0; i+3<iBufferSize; i+=4){
       *(v4sf*)(pDest+i) = _mm_mul_ps(gain0_ps,*(v4sf*)(pSrc0+i));
@@ -606,30 +559,6 @@ void SampleUtil::copyNWithRampingGain(CSAMPLE * pDest,
       gain1_ps += inc1_ps;
     }
     break;
-  case 3:
-    for(auto i = 0; i+3<iBufferSize; i+=4){
-      *(v4sf*)(pDest+i) = _mm_add_ps(
-                            _mm_add_ps(_mm_mul_ps(gain0_ps,*(v4sf*)(pSrc0+i)),
-                                       _mm_mul_ps(gain1_ps,*(v4sf*)(pSrc1+i))),
-                            _mm_mul_ps(gain2_ps,*(v4sf*)(pSrc2+i)));
-      gain0_ps += inc0_ps;
-      gain1_ps += inc1_ps;
-      gain2_ps += inc2_ps;
-    }
-    break;
-  case 4:
-    for(auto i = 0; i+3<iBufferSize; i+=4){
-      *(v4sf*)(pDest+i) = _mm_add_ps(
-                            _mm_add_ps(_mm_mul_ps(gain0_ps,*(v4sf*)(pSrc0+i)),
-                                       _mm_mul_ps(gain1_ps,*(v4sf*)(pSrc1+i))),
-                            _mm_add_ps(_mm_mul_ps(gain2_ps,*(v4sf*)(pSrc2+i)),
-                                       _mm_mul_ps(gain3_ps,*(v4sf*)(pSrc3+i))));
-      gain0_ps += inc0_ps;
-      gain1_ps += inc1_ps;
-      gain2_ps += inc2_ps;
-      gain3_ps += inc3_ps;
-    }
-    break;
   default:
     qDebug() << "WARNING: invalid channel count received in copyWithGain. this should never happen.";
   }
@@ -642,22 +571,15 @@ void SampleUtil::copyNWithRampingGainAdding(CSAMPLE * pDest,
   pDest = assume_aligned(pDest);
   auto pSrc0 = assume_aligned(pSrc[0]);
   auto pSrc1 = assume_aligned(pSrc[1]);
-  auto pSrc2 = assume_aligned(pSrc[2]);
-  auto pSrc3 = assume_aligned(pSrc[3]);
   const auto bufsz_inv = 1.f/iBufferSize;
   const auto inc0 = (gain_end[0]-gain_start[0])*bufsz_inv;
   const auto inc1 = (gain_end[1]-gain_start[1])*bufsz_inv;
-  const auto inc2 = (gain_end[2]-gain_start[2])*bufsz_inv;
-  const auto inc3 = (gain_end[3]-gain_start[3])*bufsz_inv;
   const auto inc0_ps = _mm_set1_ps(inc0);
   const auto inc1_ps = _mm_set1_ps(inc1);
-  const auto inc2_ps = _mm_set1_ps(inc2);
-  const auto inc3_ps = _mm_set1_ps(inc3);
   auto gain0_ps = _mm_set_ps(gain_start[0],gain_start[0],gain_start[0]+inc0,gain_start[0]+inc0);
   auto gain1_ps = _mm_set_ps(gain_start[1],gain_start[1],gain_start[1]+inc1,gain_start[1]+inc1);
-  auto gain2_ps = _mm_set_ps(gain_start[2],gain_start[2],gain_start[2]+inc2,gain_start[2]+inc2);
-  auto gain3_ps = _mm_set_ps(gain_start[3],gain_start[3],gain_start[3]+inc3,gain_start[3]+inc3);
   switch(count){
+  case 0:break;
   case 1:
     for(auto i = 0; i+3<iBufferSize; i+=4){
       *(v4sf*)(pDest+i) += _mm_mul_ps(gain0_ps,*(v4sf*)(pSrc0+i));
@@ -672,39 +594,15 @@ void SampleUtil::copyNWithRampingGainAdding(CSAMPLE * pDest,
       gain1_ps += inc1_ps;
     }
     break;
-  case 3:
-    for(auto i = 0; i+3<iBufferSize; i+=4){
-      *(v4sf*)(pDest+i) += _mm_add_ps(
-                            _mm_add_ps(_mm_mul_ps(gain0_ps,*(v4sf*)(pSrc0+i)),
-                                       _mm_mul_ps(gain1_ps,*(v4sf*)(pSrc1+i))),
-                            _mm_mul_ps(gain2_ps,*(v4sf*)(pSrc2+i)));
-      gain0_ps += inc0_ps;
-      gain1_ps += inc1_ps;
-      gain2_ps += inc2_ps;
-    }
-    break;
-  case 4:
-    for(auto i = 0; i+3<iBufferSize; i+=4){
-      *(v4sf*)(pDest+i) += _mm_add_ps(
-                            _mm_add_ps(_mm_mul_ps(gain0_ps,*(v4sf*)(pSrc0+i)),
-                                       _mm_mul_ps(gain1_ps,*(v4sf*)(pSrc1+i))),
-                            _mm_add_ps(_mm_mul_ps(gain2_ps,*(v4sf*)(pSrc2+i)),
-                                       _mm_mul_ps(gain3_ps,*(v4sf*)(pSrc3+i))));
-      gain0_ps += inc0_ps;
-      gain1_ps += inc1_ps;
-      gain2_ps += inc2_ps;
-      gain3_ps += inc3_ps;
-    }
-    break;
   default:
     qDebug() << "WARNING: invalid channel count received in copyWithGain. this should never happen.";
   }
 }
 void SampleUtil::copyWithRampingGain(CSAMPLE *pDest, const CSAMPLE **pSrc,const CSAMPLE_GAIN *GainStart,const CSAMPLE_GAIN *GainEnd,
     const int N, const int iBufferSize){
-  const CSAMPLE *src[4];
-  CSAMPLE_GAIN gain_start[4];
-  CSAMPLE_GAIN gain_end[4];
+  const CSAMPLE *src[2];
+  CSAMPLE_GAIN gain_start[2];
+  CSAMPLE_GAIN gain_end[2];
   bool first_round     = true;
   bool actually_ramping = false;
   int j = 0;
@@ -715,18 +613,18 @@ void SampleUtil::copyWithRampingGain(CSAMPLE *pDest, const CSAMPLE **pSrc,const 
       gain_end[j]   = GainEnd[i];
       if(gain_end[j]!=gain_start[j]) actually_ramping=true;
       j++;
-      if(j==4){
+      if(j==2){
         if(!actually_ramping){
           if(first_round){
-            copyNWithGain(pDest,src,gain_start,4,iBufferSize);
+            copyNWithGain(pDest,src,gain_start,2,iBufferSize);
           }else{
-            copyNWithGainAdding(pDest,src,gain_start,4,iBufferSize);
+            copyNWithGainAdding(pDest,src,gain_start,2,iBufferSize);
           }
         }else{
           if(first_round){
-            copyNWithRampingGain(pDest,src,gain_start,gain_end,4,iBufferSize);
+            copyNWithRampingGain(pDest,src,gain_start,gain_end,2,iBufferSize);
           }else{
-            copyNWithRampingGainAdding(pDest,src,gain_start,gain_end,4,iBufferSize);
+            copyNWithRampingGainAdding(pDest,src,gain_start,gain_end,2,iBufferSize);
           }
         }
         first_round=false;

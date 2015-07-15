@@ -21,23 +21,18 @@ class EffectParameter : public QObject {
     EffectParameter(Effect* pEffect, EffectsManager* pEffectsManager,
                     int iParameterNumber, const EffectManifestParameter& parameter);
     virtual ~EffectParameter();
-
     void addToEngine();
     void removeFromEngine();
-
     ///////////////////////////////////////////////////////////////////////////
     // Parameter Information
     ///////////////////////////////////////////////////////////////////////////
-
     const EffectManifestParameter& manifest() const;
     const QString id() const;
     const QString name() const;
     const QString description() const;
-
     ///////////////////////////////////////////////////////////////////////////
     // Value Settings
     ///////////////////////////////////////////////////////////////////////////
-
     EffectManifestParameter::LinkType getDefaultLinkType() const;
     double getNeutralPointOnScale() const;
     double getValue() const;
@@ -67,7 +62,6 @@ class EffectParameter : public QObject {
     double m_default;
     double m_value;
     bool m_bAddedToEngine;
-
     DISALLOW_COPY_AND_ASSIGN(EffectParameter);
 };
 

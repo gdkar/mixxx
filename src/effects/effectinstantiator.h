@@ -14,7 +14,6 @@ class EffectInstantiator {
     virtual EffectProcessor* instantiate(EngineEffect* pEngineEffect,const EffectManifest& manifest) = 0;
 };
 typedef QSharedPointer<EffectInstantiator> EffectInstantiatorPointer;
-
 template <typename T>
 class EffectProcessorInstantiator : public EffectInstantiator {
   public:

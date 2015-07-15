@@ -67,8 +67,7 @@ class EngineMaster : public QObject, public AudioSource {
     inline const QString& getBusCenterGroup() const {return m_busCenterHandle.name();}
     inline const QString& getBusRightGroup() const {return m_busRightHandle.name();}
     ChannelHandleAndGroup registerChannelGroup(const QString& group) {
-        return ChannelHandleAndGroup(
-                m_channelHandleFactory.getOrCreateHandle(group), group);
+        return ChannelHandleAndGroup(m_channelHandleFactory.getOrCreateHandle(group), group);
     }
     // WARNING: These methods are called by the main thread. They should only
     // touch the volatile bool connected indicators (see below). However, when
@@ -96,11 +95,8 @@ class EngineMaster : public QObject, public AudioSource {
                 return centerGain;
         }
     }
-
     // Provide access to the master sync so enginebuffers can know what their rate controller is.
-    EngineSync* getEngineSync() const{
-        return m_pMasterSync;
-    }
+    EngineSync* getEngineSync() const{return m_pMasterSync;}
     // These are really only exposed for tests to use.
     const CSAMPLE* getMasterBuffer() const;
     const CSAMPLE* getHeadphoneBuffer() const;
@@ -123,12 +119,10 @@ class EngineMaster : public QObject, public AudioSource {
         ControlPushButton* m_pMuteControl;
         int m_index;
     };
-
     struct GainCache {
         CSAMPLE m_gain;
         bool m_fadeout;
     };
-
     class GainCalculator {
       public:
         virtual double getGain(ChannelInfo* pChannelInfo) const = 0;
@@ -167,7 +161,6 @@ class EngineMaster : public QObject, public AudioSource {
                     m_dLeftGain, m_dCenterGain, m_dRightGain);
             return m_dVolume * channelVolume * orientationGain;
         }
-
         inline void setGains(double dVolume, double leftGain,
                 double centerGain, double rightGain) {
             m_dVolume = dVolume;
@@ -175,7 +168,6 @@ class EngineMaster : public QObject, public AudioSource {
             m_dCenterGain = centerGain;
             m_dRightGain = rightGain;
         }
-
       private:
         double m_dVolume;
         double m_dLeftGain;
@@ -224,26 +216,21 @@ class EngineMaster : public QObject, public AudioSource {
         long double m_buffer[(CAPACITY * sizeof(T) + sizeof(long double) - 1) /
                              sizeof(long double)];
     };
-
   protected:
     // The master buffer is protected so it can be accessed by test subclasses.
     CSAMPLE* m_pMaster;
-
   private:
     void mixChannels(unsigned int channelBitvector, unsigned int maxChannels,
                      CSAMPLE* pOutput, unsigned int iBufferSize, GainCalculator* pGainCalculator);
-
     // Processes active channels. The master sync channel (if any) is processed
     // first and all others are processed after. Populates m_activeChannels,
     // m_activeBusChannels, m_activeHeadphoneChannels, and
     // m_activeTalkoverChannels with each channel that is active for the
     // respective output.
     void processChannels(int iBufferSize);
-
     ChannelHandleFactory m_channelHandleFactory;
     EngineEffectsManager* m_pEngineEffectsManager;
     bool m_bRampingGain;
-
     // List of channels added to the engine.
     QVarLengthArray<ChannelInfo*, kPreallocatedChannels> m_channels;
 

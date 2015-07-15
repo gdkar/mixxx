@@ -39,14 +39,8 @@ class EffectRack : public QObject {
     void registerChannel(const ChannelHandleAndGroup& handle_group);
     int numEffectChainSlots() const;
     EffectChainSlotPointer getEffectChainSlot(int i);
-
-    unsigned int getRackNumber() const {
-        return m_iRackNumber;
-    }
-
-    const QString& getGroup() const {
-        return m_group;
-    }
+    unsigned int getRackNumber() const {return m_iRackNumber;}
+    const QString& getGroup() const {return m_group;}
 
   public slots:
     void slotClearRack(double v);

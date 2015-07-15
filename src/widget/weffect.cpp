@@ -1,5 +1,6 @@
 #include <QtDebug>
-
+#include <QJsonDocument>
+#include <QJsonValue>
 #include "widget/weffect.h"
 
 #include "effects/effectsmanager.h"
@@ -17,12 +18,9 @@ WEffect::~WEffect() {
 void WEffect::setup(QDomNode node, const SkinContext& context) {
     WLabel::setup(node, context);
     // EffectWidgetUtils propagates nullptrs so this is all safe.
-    EffectRackPointer pRack = EffectWidgetUtils::getEffectRackFromNode(
-            node, context, m_pEffectsManager);
-    EffectChainSlotPointer pChainSlot = EffectWidgetUtils::getEffectChainSlotFromNode(
-            node, context, pRack);
-    EffectSlotPointer pEffectSlot = EffectWidgetUtils::getEffectSlotFromNode(
-            node, context, pChainSlot);
+    EffectRackPointer pRack = EffectWidgetUtils::getEffectRackFromNode(node, context, m_pEffectsManager);
+    EffectChainSlotPointer pChainSlot = EffectWidgetUtils::getEffectChainSlotFromNode(node, context, pRack);
+    EffectSlotPointer pEffectSlot = EffectWidgetUtils::getEffectSlotFromNode(node, context, pChainSlot);
     if (pEffectSlot) {
         setEffectSlot(pEffectSlot);
     } else {
@@ -30,16 +28,13 @@ void WEffect::setup(QDomNode node, const SkinContext& context) {
                 << "EffectName node could not attach to effect slot.";
     }
 }
-
 void WEffect::setEffectSlot(EffectSlotPointer pEffectSlot) {
     if (pEffectSlot) {
         m_pEffectSlot = pEffectSlot;
-        connect(pEffectSlot.data(), SIGNAL(updated()),
-                this, SLOT(effectUpdated()));
+        connect(pEffectSlot.data(), SIGNAL(updated()), this, SLOT(effectUpdated()));
         effectUpdated();
     }
 }
-
 void WEffect::effectUpdated() {
     QString name;
     QString description;
