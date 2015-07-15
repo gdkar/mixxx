@@ -224,7 +224,7 @@ CSAMPLE* EngineBufferScaleLinear::do_scale(CSAMPLE* buf,
     for (int j = 0; j < buf_size / 2; ++j) {
         frames += (j * 2 * rate_diff / buf_size) + rate_old;
     }
-    frames = abs(frames);
+    frames = std::abs(frames);
 
     int unscaled_frames_needed = floor(frames);
 

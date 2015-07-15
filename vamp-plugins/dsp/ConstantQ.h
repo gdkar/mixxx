@@ -27,36 +27,27 @@ struct CQConfig{
     unsigned int BPO;  // bins per octave
     float CQThresh;   // threshold
 };
-
 class ConstantQ {
-	
 //public functions incl. sparsekernel so can keep out of loop in main
 public:
     void process( const float* FFTRe, const float* FFTIm,
                   float* CQRe, float* CQIm );
-
     ConstantQ( CQConfig Config );
     ~ConstantQ();
-
     float* process( const float* FFTData );
-
     void sparsekernel();
-
     float hamming(int len, int n) {
-	float out = 0.54 - 0.46*cos(2*PI*n/len);
+	float out = 0.54f - 0.46f*cos((float)(2*M_PI)*n/len);
 	return(out);
     }
-	
     int getnumwin() { return m_numWin;}
     float getQ() { return m_dQ;}
     int getK() {return m_uK ;}
     int getfftlength() { return m_FFTLength;}
     int gethop() { return m_hop;}
-
 private:
     void initialise( CQConfig Config );
     void deInitialise();
-	
     float* m_CQdata;
     unsigned int m_FS;
     float m_FMin;

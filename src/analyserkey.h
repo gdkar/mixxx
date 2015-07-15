@@ -7,8 +7,8 @@
 #include "analyser.h"
 #include "configobject.h"
 #include "trackinfoobject.h"
-#include "vamp/vampanalyser.h"
-
+//#include "vamp/vampanalyser.h"
+class VampAnalyser;
 class AnalyserKey : public Analyser {
   public:
     AnalyserKey(ConfigObject<ConfigValue>* pConfig);

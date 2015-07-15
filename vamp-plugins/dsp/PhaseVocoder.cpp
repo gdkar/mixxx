@@ -56,7 +56,6 @@ void PhaseVocoder::process(float *src, float *mag, float *theta)
 void PhaseVocoder::getMagnitude(unsigned int size, float *mag, float *real, float *imag)
 {	
     unsigned int j;
-
     for( j = 0; j < size; j++)
     {
 	mag[ j ] = hypotf( real[ j ], imag[ j ] );
@@ -66,7 +65,6 @@ void PhaseVocoder::getMagnitude(unsigned int size, float *mag, float *real, floa
 void PhaseVocoder::getPhase(unsigned int size, float *theta, float *real, float *imag)
 {
     unsigned int k;
-
     // Phase Angle "matlab" style 
     //Watch out for quadrant mapping  !!!
     for( k = 0; k < size; k++)
