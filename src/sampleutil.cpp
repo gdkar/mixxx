@@ -28,7 +28,6 @@ static inline bool useAlignedAlloc() {
     return (sizeof(long double) == 8 && sizeof(CSAMPLE*) <= 8 &&
             sizeof(CSAMPLE*) == sizeof(size_t));
 }
-
 // static
 CSAMPLE* SampleUtil::alloc(int size) {
     // To speed up vectorization we align our sample buffers to 16-byte (128
