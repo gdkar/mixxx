@@ -19,13 +19,8 @@ class EffectProcessor {
         DISABLING = 0x02,
         ENABLING = 0x03
     };
-
-
     virtual ~EffectProcessor() { }
-
-    virtual void initialize(
-            const QSet<ChannelHandleAndGroup>& registeredChannels) = 0;
-
+    virtual void initialize(const QSet<ChannelHandleAndGroup>& registeredChannels) = 0;
     // Take a buffer of numSamples samples of audio from a channel, provided as
     // pInput, process the buffer according to Effect-specific logic, and output
     // it to the buffer pOutput. If pInput is equal to pOutput, then the
@@ -42,7 +37,6 @@ class EffectProcessor {
                          const enum EnableState enableState,
                          const GroupFeatureState& groupFeatures) = 0;
 };
-
 // Helper class for automatically fetching channel state parameters upon receipt
 // of a channel-specific process call.
 template <typename T>
@@ -52,25 +46,20 @@ class PerChannelEffectProcessor : public EffectProcessor {
         T* state;
     };
   public:
-    PerChannelEffectProcessor() {
-    }
+    PerChannelEffectProcessor() {}
     virtual ~PerChannelEffectProcessor() {
-        for (typename ChannelHandleMap<ChannelStateHolder>::iterator it =
-                     m_channelState.begin();
-             it != m_channelState.end(); ++it) {
-            T* pState = it->state;
-            delete pState;
-        }
-        m_channelState.clear();
+      for(auto &it : m_channelState){
+        T* pState = it.state;
+        delete pState;
+      }
+      m_channelState.clear();
     }
-
     virtual void initialize(
             const QSet<ChannelHandleAndGroup>& registeredChannels) {
         foreach (const ChannelHandleAndGroup& channel, registeredChannels) {
             getOrCreateChannelState(channel.handle());
         }
     }
-
     virtual void process(const ChannelHandle& handle,
                          const CSAMPLE* pInput, CSAMPLE* pOutput,
                          const unsigned int numSamples,
@@ -78,10 +67,8 @@ class PerChannelEffectProcessor : public EffectProcessor {
                          const EffectProcessor::EnableState enableState,
                          const GroupFeatureState& groupFeatures) {
         T* pState = getOrCreateChannelState(handle);
-        processChannel(handle, pState, pInput, pOutput, numSamples, sampleRate,
-                       enableState, groupFeatures);
+        processChannel(handle, pState, pInput, pOutput, numSamples, sampleRate,enableState, groupFeatures);
     }
-
     virtual void processChannel(const ChannelHandle& handle,
                                 T* channelState,
                                 const CSAMPLE* pInput, CSAMPLE* pOutput,
@@ -93,12 +80,9 @@ class PerChannelEffectProcessor : public EffectProcessor {
   private:
     inline T* getOrCreateChannelState(const ChannelHandle& handle) {
         ChannelStateHolder& holder = m_channelState[handle];
-        if (holder.state == nullptr) {
-            holder.state = new T();
-        }
+        if (!holder.state ) {holder.state = new T();}
         return holder.state;
     }
-
     ChannelHandleMap<ChannelStateHolder> m_channelState;
 };
 

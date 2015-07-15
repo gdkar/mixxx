@@ -22,35 +22,26 @@ class ControlAudioTaperPot;
 class EngineMicrophone : public EngineChannel, public AudioDestination {
     Q_OBJECT
   public:
-    EngineMicrophone(const ChannelHandleAndGroup& handle_group,
-                     EffectsManager* pEffectsManager, QObject *pParent=nullptr);
+    EngineMicrophone(const ChannelHandleAndGroup& handle_group,EffectsManager* pEffectsManager, QObject *pParent=nullptr);
     virtual ~EngineMicrophone();
-
     bool isActive();
-
     // Called by EngineMaster whenever is requesting a new buffer of audio.
     virtual void process(CSAMPLE* pOutput, const int iBufferSize);
     virtual void postProcess(const int iBufferSize) { Q_UNUSED(iBufferSize) }
-
     // This is called by SoundManager whenever there are new samples from the
     // configured input to be processed. This is run in the callback thread of
     // the soundcard this AudioDestination was registered for! Beware, in the
     // case of multiple soundcards, this method is not re-entrant but it may be
     // concurrent with EngineMaster processing.
-    virtual void receiveBuffer(AudioInput input, const CSAMPLE* pBuffer,
-                               unsigned int iNumSamples);
-
+    virtual void receiveBuffer(AudioInput input, const CSAMPLE* pBuffer,unsigned int iNumSamples);
     // Called by SoundManager whenever the microphone input is connected to a
     // soundcard input.
     virtual void onInputConfigured(AudioInput input);
-
     // Called by SoundManager whenever the microphone input is disconnected from
     // a soundcard input.
     virtual void onInputUnconfigured(AudioInput input);
-
     bool isSolo();
     double getSoloDamping();
-
   private:
     EngineEffectsManager* m_pEngineEffectsManager;
     EngineVuMeter m_vuMeter;
@@ -58,7 +49,6 @@ class EngineMicrophone : public EngineChannel, public AudioDestination {
     ControlAudioTaperPot m_pPregain;
     ControlObjectSlave m_pSampleRate;
     const CSAMPLE* m_sampleBuffer;
-
     bool m_wasActive;
 };
 

@@ -30,7 +30,6 @@ class EffectManifest {
     virtual ~EffectManifest() {
         //qDebug() << debugString() << "deleted";
     }
-
     virtual const QString& id() const {return m_id;}
     virtual void setId(const QString& id) {m_id = id;}
     virtual const QString& name() const {return m_name;}
@@ -69,5 +68,4 @@ class EffectManifest {
     QList<EffectManifestParameter> m_parameters;
     bool m_effectRampsFromDry;
 };
-
 #endif /* EFFECTMANIFEST_H */

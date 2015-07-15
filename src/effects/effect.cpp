@@ -43,9 +43,7 @@ void Effect::addToEngine(EngineEffectChain* pChain, int iIndex) {
     if (m_pEngineEffect) {
         return;
     }
-    m_pEngineEffect = new EngineEffect(m_manifest,
-            m_pEffectsManager->registeredChannels(),
-            m_pInstantiator);
+    m_pEngineEffect = new EngineEffect(m_manifest, m_pEffectsManager->registeredChannels(),m_pInstantiator);
     EffectsRequest* request = new EffectsRequest();
     request->type = EffectsRequest::ADD_EFFECT_TO_CHAIN;
     request->pTargetChain = pChain;
@@ -53,11 +51,8 @@ void Effect::addToEngine(EngineEffectChain* pChain, int iIndex) {
     request->AddEffectToChain.iIndex = iIndex;
     m_pEffectsManager->writeRequest(request);
 }
-
 void Effect::removeFromEngine(EngineEffectChain* pChain, int iIndex) {
-    if (!m_pEngineEffect) {
-        return;
-    }
+    if (!m_pEngineEffect) {return;}
     EffectsRequest* request = new EffectsRequest();
     request->type = EffectsRequest::REMOVE_EFFECT_FROM_CHAIN;
     request->pTargetChain = pChain;
@@ -68,23 +63,13 @@ void Effect::removeFromEngine(EngineEffectChain* pChain, int iIndex) {
 }
 
 void Effect::updateEngineState() {
-    if (!m_pEngineEffect) {
-        return;
-    }
+    if (!m_pEngineEffect) {return;}
     sendParameterUpdate();
-    foreach (EffectParameter* pParameter, m_parameters) {
-        pParameter->updateEngineState();
-    }
+    foreach (EffectParameter* pParameter, m_parameters) {pParameter->updateEngineState();}
 }
-
-EngineEffect* Effect::getEngineEffect() {
-    return m_pEngineEffect;
-}
-
-const EffectManifest& Effect::getManifest() const {
-    return m_manifest;
-}
-
+EngineEffect* Effect::getEngineEffect() {return m_pEngineEffect;}
+const EffectManifest& Effect::getManifest() const {return m_manifest;}
+const QJsonValue &Effect::getJsonManifest()const{return m_json_manifest;}
 void Effect::setEnabled(bool enabled) {
     if (enabled != m_bEnabled) {
         m_bEnabled = enabled;
@@ -92,22 +77,15 @@ void Effect::setEnabled(bool enabled) {
         emit(enabledChanged(m_bEnabled));
     }
 }
-
-bool Effect::enabled() const {
-    return m_bEnabled;
-}
-
+bool Effect::enabled() const {return m_bEnabled;}
 void Effect::sendParameterUpdate() {
-    if (!m_pEngineEffect) {
-        return;
-    }
+    if (!m_pEngineEffect) {return;}
     EffectsRequest* pRequest = new EffectsRequest();
     pRequest->type = EffectsRequest::SET_EFFECT_PARAMETERS;
     pRequest->pTargetEffect = m_pEngineEffect;
     pRequest->SetEffectParameters.enabled = m_bEnabled;
     m_pEffectsManager->writeRequest(pRequest);
 }
-
 unsigned int Effect::numKnobParameters() const {
     unsigned int num = 0;
     foreach(const EffectParameter* parameter, m_parameters) {
@@ -127,7 +105,6 @@ unsigned int Effect::numButtonParameters() const {
     }
     return num;
 }
-
 EffectParameter* Effect::getParameterById(const QString& id) const {
     EffectParameter* pParameter = m_parametersById.value(id, nullptr);
     if (pParameter == nullptr) {
@@ -136,20 +113,13 @@ EffectParameter* Effect::getParameterById(const QString& id) const {
     }
     return pParameter;
 }
-
 // static
 bool Effect::isButtonParameter(EffectParameter* parameter) {
-    return  parameter->manifest().controlHint() ==
-            EffectManifestParameter::CONTROL_TOGGLE_STEPPING;
+    return  parameter->manifest().controlHint() == EffectManifestParameter::CONTROL_TOGGLE_STEPPING;
 }
-
 // static
-bool Effect::isKnobParameter(EffectParameter* parameter) {
-    return !isButtonParameter(parameter);
-}
-
-EffectParameter* Effect::getFilteredParameterForSlot(ParameterFilterFnc filterFnc,
-                                                     unsigned int slotNumber) {
+bool Effect::isKnobParameter(EffectParameter* parameter) {return !isButtonParameter(parameter);}
+EffectParameter* Effect::getFilteredParameterForSlot(ParameterFilterFnc filterFnc,unsigned int slotNumber) {
     // It's normal to ask for a parameter that doesn't exist. Callers must check
     // for nullptr.
     unsigned int num = 0;
@@ -163,24 +133,19 @@ EffectParameter* Effect::getFilteredParameterForSlot(ParameterFilterFnc filterFn
     }
     return nullptr;
 }
-
 EffectParameter* Effect::getKnobParameterForSlot(unsigned int slotNumber) {
     return getFilteredParameterForSlot(isKnobParameter, slotNumber);
 }
-
 EffectParameter* Effect::getButtonParameterForSlot(unsigned int slotNumber) {
     return getFilteredParameterForSlot(isButtonParameter, slotNumber);
 }
-
 QDomElement Effect::toXML(QDomDocument* doc) const {
     QDomElement element = doc->createElement("Effect");
     XmlParse::addElement(*doc, element, "Id", m_manifest.id());
     XmlParse::addElement(*doc, element, "Version", m_manifest.version());
-
     QDomElement parameters = doc->createElement("Parameters");
     foreach (EffectParameter* pParameter, m_parameters) {
-        const EffectManifestParameter& parameterManifest =
-                pParameter->manifest();
+        const EffectManifestParameter& parameterManifest = pParameter->manifest();
         QDomElement parameter = doc->createElement("Parameter");
         XmlParse::addElement(*doc, parameter, "Id", parameterManifest.id());
         // TODO(rryan): Do smarter QVariant formatting?
@@ -189,10 +154,8 @@ QDomElement Effect::toXML(QDomDocument* doc) const {
         parameters.appendChild(parameter);
     }
     element.appendChild(parameters);
-
     return element;
 }
-
 // static
 EffectPointer Effect::fromXML(EffectsManager* pEffectsManager,
                               const QDomElement& element) {

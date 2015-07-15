@@ -38,7 +38,6 @@ NativeBackend::NativeBackend(QObject* pParent)
 #endif
     registerEffect<PhaserEffect>();
 }
-
 NativeBackend::~NativeBackend() {
     //qDebug() << debugString() << "destroyed";
 }

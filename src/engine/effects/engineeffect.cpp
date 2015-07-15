@@ -11,22 +11,17 @@ EngineEffect::EngineEffect(const EffectManifest& manifest,
     const QList<EffectManifestParameter>& parameters = m_manifest.parameters();
     for (int i = 0; i < parameters.size(); ++i) {
         const EffectManifestParameter& parameter = parameters.at(i);
-        EngineEffectParameter* pParameter =
-                new EngineEffectParameter(parameter);
+        EngineEffectParameter* pParameter =new EngineEffectParameter(parameter);
         m_parameters[i] = pParameter;
         m_parametersById[parameter.id()] = pParameter;
     }
-
     // Creating the processor must come last.
     m_pProcessor = pInstantiator->instantiate(this, manifest);
     m_pProcessor->initialize(registeredChannels);
     m_effectRampsFromDry = manifest.effectRampsFromDry();
 }
-
 EngineEffect::~EngineEffect() {
-    if (kEffectDebugOutput) {
-        qDebug() << debugString() << "destroyed";
-    }
+    if (kEffectDebugOutput) {qDebug() << debugString() << "destroyed";}
     delete m_pProcessor;
     m_parametersById.clear();
     for (int i = 0; i < m_parameters.size(); ++i) {
@@ -35,12 +30,9 @@ EngineEffect::~EngineEffect() {
         delete pParameter;
     }
 }
-
-bool EngineEffect::processEffectsRequest(const EffectsRequest& message,
-                                         EffectsResponsePipe* pResponsePipe) {
+bool EngineEffect::processEffectsRequest(const EffectsRequest& message,EffectsResponsePipe* pResponsePipe) {
     EngineEffectParameter* pParameter = nullptr;
     EffectsResponse response(message);
-
     switch (message.type) {
         case EffectsRequest::SET_EFFECT_PARAMETERS:
             if (kEffectDebugOutput) {

@@ -19,14 +19,10 @@ class EffectsManager;
 class EffectChainManager : public QObject {
     Q_OBJECT
   public:
-    EffectChainManager(ConfigObject<ConfigValue>* pConfig,
-                       EffectsManager* pEffectsManager);
+    EffectChainManager(ConfigObject<ConfigValue>* pConfig,EffectsManager* pEffectsManager);
     virtual ~EffectChainManager();
-
     void registerChannel(const ChannelHandleAndGroup& handle_group);
-    const QSet<ChannelHandleAndGroup>& registeredChannels() const {
-        return m_registeredChannels;
-    }
+    const QSet<ChannelHandleAndGroup>& registeredChannels() const {return m_registeredChannels;}
 
     StandardEffectRackPointer addStandardEffectRack();
     StandardEffectRackPointer getStandardEffectRack(int rack);
@@ -53,9 +49,7 @@ class EffectChainManager : public QObject {
     bool loadEffectChains();
 
   private:
-    QString debugString() const {
-        return "EffectChainManager";
-    }
+    QString debugString() const {return "EffectChainManager";}
 
     ConfigObject<ConfigValue>* m_pConfig;
     EffectsManager* m_pEffectsManager;

@@ -21,24 +21,16 @@ class EffectsBackend : public QObject {
   public:
     EffectsBackend(QObject* pParent, QString name);
     virtual ~EffectsBackend();
-
     virtual const QString getName() const;
-
     // returns a list sorted like it should be displayed in the GUI 
     virtual const QList<QString>& getEffectIds() const;
     virtual EffectManifest getManifest(const QString& effectId) const;
     virtual bool canInstantiateEffect(const QString& effectId) const;
-    virtual EffectPointer instantiateEffect(
-            EffectsManager* pEffectsManager, const QString& effectId);
-
+    virtual EffectPointer instantiateEffect(EffectsManager* pEffectsManager, const QString& effectId);
   signals:
     void effectRegistered();
-
   protected:
-    void registerEffect(const QString& id,
-                        const EffectManifest& manifest,
-                        EffectInstantiatorPointer pInstantiator);
-
+    void registerEffect(const QString& id,const EffectManifest& manifest,EffectInstantiatorPointer pInstantiator);
     template <typename EffectProcessorImpl>
     void registerEffect() {
         registerEffect(
@@ -46,7 +38,6 @@ class EffectsBackend : public QObject {
                 EffectProcessorImpl::getManifest(),
                 EffectInstantiatorPointer(new EffectProcessorInstantiator<EffectProcessorImpl>()));
     }
-
   private:
     QString m_name;
     QMap<QString, QPair<EffectManifest, EffectInstantiatorPointer> > m_registeredEffects;
