@@ -34,30 +34,27 @@ class BeatTrackerData
 {
 public:
     BeatTrackerData(const DFConfig &config) : dfConfig(config) {
-	df = new DetectionFunction(config);
+	df = std::make_unique<DetectionFunction>(config);
     }
-    ~BeatTrackerData() {delete df;}
+    ~BeatTrackerData() {}
     void reset() {
-	delete df;
-	df = new DetectionFunction(dfConfig);
+	df = std::make_unique<DetectionFunction>(dfConfig);
 	dfOutput.clear();
         origin = Vamp::RealTime::zeroTime;
     }
     DFConfig dfConfig;
-    DetectionFunction *df;
+    std::unique_ptr<DetectionFunction>df;
     vector<float> dfOutput;
     Vamp::RealTime origin;
 };
 BeatTracker::BeatTracker(float inputSampleRate) :
     Vamp::Plugin(inputSampleRate),
-    m_d(0),
+    m_d(nullptr),
     m_method(METHOD_NEW),
     //m_dfType(DF_COMPLEXSD),
 	m_dfType(DF_SPECDIFF),
     m_whiten(false)
-{
-}
-
+{}
 BeatTracker::~BeatTracker(){delete m_d;}
 string
 BeatTracker::getIdentifier() const{return "qm-tempotracker";}
@@ -128,11 +125,11 @@ BeatTracker::getParameter(std::string name) const
 {
     if (name == "dftype") {
         switch (m_dfType) {
-        case DF_HFC: return 0;
-        case DF_SPECDIFF: return 1;
-        case DF_PHASEDEV: return 2;
-        default: case DF_COMPLEXSD: return 3;
-        case DF_BROADBAND: return 4;
+        case DF_HFC:                    return 0;
+        case DF_SPECDIFF:               return 1;
+        case DF_PHASEDEV:               return 2;
+        default: case DF_COMPLEXSD:     return 3;
+        case DF_BROADBAND:              return 4;
         }
     } else if (name == "method") { return m_method;
     } else if (name == "whiten") { return m_whiten ? 1.0 : 0.0;
@@ -154,8 +151,7 @@ BeatTracker::setParameter(std::string name, float value)
     } else if (name == "whiten") { m_whiten = (value > 0.5);}
 }
 bool
-BeatTracker::initialise(size_t channels, size_t stepSize, size_t blockSize)
-{
+BeatTracker::initialise(size_t channels, size_t stepSize, size_t blockSize){
     if (m_d) {
 	delete m_d;
 	m_d = 0;
@@ -174,7 +170,6 @@ BeatTracker::initialise(size_t channels, size_t stepSize, size_t blockSize)
     if (blockSize != getPreferredBlockSize()) {
         std::cerr << "WARNING: BeatTracker::initialise: Sub-optimal block size for this sample rate: "
                   << blockSize << " (wanted " << getPreferredBlockSize() << ")" << std::endl;
-//        return false;
     }
     DFConfig dfConfig;
     dfConfig.DFType = m_dfType;
@@ -184,7 +179,6 @@ BeatTracker::initialise(size_t channels, size_t stepSize, size_t blockSize)
     dfConfig.adaptiveWhitening = m_whiten;
     dfConfig.whiteningRelaxCoeff = -1;
     dfConfig.whiteningFloor = -1;
-
     m_d = new BeatTrackerData(dfConfig);
     return true;
 }
@@ -194,8 +188,7 @@ BeatTracker::reset(){if (m_d) m_d->reset();}
 size_t
 BeatTracker::getPreferredStepSize() const
 {
-    size_t step = size_t(m_inputSampleRate * m_stepSecs + 0.0001);
-//    std::cerr << "BeatTracker::getPreferredStepSize: input sample rate is " << m_inputSampleRate << ", step size is " << step << std::endl;
+    size_t step = size_t(m_inputSampleRate * m_stepSecs + 0.0001f);
     return step;
 }
 
@@ -203,13 +196,11 @@ size_t
 BeatTracker::getPreferredBlockSize() const
 {
     size_t theoretical = getPreferredStepSize() * 2;
-
     // I think this is not necessarily going to be a power of two, and
     // the host might have a problem with that, but I'm not sure we
     // can do much about it here
     return theoretical;
 }
-
 BeatTracker::OutputList
 BeatTracker::getOutputDescriptors() const{
     OutputList list;
@@ -265,17 +256,14 @@ BeatTracker::process(const float *const *inputBuffers,
 	return FeatureSet();
     }
     size_t len = m_d->dfConfig.frameLength / 2;
-    float *magnitudes = new float[len];
-    float *phases = new float[len];
+    auto magnitudes = (float*)alloca(sizeof(float)*len);
+    auto phases = (float*)alloca(sizeof(float)*len);
     // We only support a single input channel
     for (size_t i = 0; i < len; ++i) {
-        magnitudes[i] = hypotf(inputBuffers[0][i*2+0],
-                               inputBuffers[0][i*2+1]);
+        magnitudes[i] = hypotf(inputBuffers[0][i*2+0], inputBuffers[0][i*2+1]);
 	phases[i] = atan2f(-inputBuffers[0][i*2+1], inputBuffers[0][i*2]);
     }
     float output = m_d->df->process(magnitudes, phases);
-    delete[] magnitudes;
-    delete[] phases;
     if (m_d->dfOutput.empty()) m_d->origin = timestamp;
     m_d->dfOutput.push_back(output);
     FeatureSet returnFeatures;
@@ -294,15 +282,14 @@ BeatTracker::getRemainingFeatures()
 	     << endl;
 	return FeatureSet();
     }
-
     if (m_method == METHOD_OLD) return beatTrackOld();
     else return beatTrackNew();
 }
 BeatTracker::FeatureSet
 BeatTracker::beatTrackOld()
 {
-    float aCoeffs[] = { 1.0000, -0.5949, 0.2348 };
-    float bCoeffs[] = { 0.1600,  0.3200, 0.1600 };
+    float aCoeffs[] = { 1.0000f, -0.5949f, 0.2348f };
+    float bCoeffs[] = { 0.1600f,  0.3200f, 0.1600f };
     TTParams ttParams;
     ttParams.winLength = 512;
     ttParams.lagLength = 128;

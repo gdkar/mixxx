@@ -14,96 +14,58 @@
 */
 
 #include "Framer.h"
-#include <math.h>
+#include <cmath>
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-Framer::Framer()
-{
-    m_dataFrame = NULL;
-    m_strideFrame = NULL;
-}
-
+Framer::Framer():
+    m_dataFrame(nullptr)
+   ,m_strideFrame(nullptr)
+{}
 Framer::~Framer()
 {
-    if( m_dataFrame != NULL )
-	delete [] m_dataFrame;
-
-    if( m_strideFrame != NULL )
-	delete [] m_strideFrame;
 }
-
 void Framer::configure( unsigned int frameLength, unsigned int hop )
 {
     m_frameLength = frameLength;
     m_stepSize = hop;
-
     resetCounters();
-
-    if( m_dataFrame != NULL )
-    {
-	delete [] m_dataFrame;	
-	m_dataFrame = NULL;
-    }
-    m_dataFrame = new float[ m_frameLength ];
-
-    if( m_strideFrame != NULL )
-    {
-	delete [] m_strideFrame;	
-	m_strideFrame = NULL;
-    }
-    m_strideFrame = new float[ m_stepSize ];
+    m_dataFrame = std::make_unique<float[]>(m_frameLength);
+    m_strideFrame = std::make_unique<float[]>(m_stepSize);
 }
-
-void Framer::getFrame(float *dst)
-{
-
-    if( (m_ulSrcIndex + ( m_frameLength) ) < m_ulSampleLen )
-    {
-	for( unsigned int u = 0; u < m_frameLength; u++)
+void Framer::getFrame(float *dst){
+    if( (m_ulSrcIndex + ( m_frameLength) ) < m_ulSampleLen ){
+	for( auto u = 0; u < m_frameLength; u++,m_ulSrcIndex++)
 	{
-	    dst[ u ] = m_srcBuffer[ m_ulSrcIndex++ ]; 
+	    dst[ u ] = m_srcBuffer[ m_ulSrcIndex ]; 
 	}	
 	m_ulSrcIndex -= ( m_frameLength - m_stepSize );
-    }
-    else
-    {
-	unsigned int rem = (m_ulSampleLen - m_ulSrcIndex );
-	unsigned int zero = m_frameLength - rem;
-
-	for( unsigned int u = 0; u < rem; u++ )
+    }else{
+	auto rem = (m_ulSampleLen - m_ulSrcIndex );
+	auto zero = m_frameLength - rem;
+	for( auto u = 0; u < rem; u++,m_ulSrcIndex++ )
 	{
-	    dst[ u ] = m_srcBuffer[ m_ulSrcIndex++ ];
+	    dst[ u ] = m_srcBuffer[ m_ulSrcIndex ];
 	}
-		
-	for( unsigned int u = 0; u < zero; u++ )
+	for( auto u = 0; u < zero; u++ )
 	{
 	    dst[ rem + u ] = 0;
 	}
-
 	m_ulSrcIndex -= (( rem - m_stepSize ) );
     }
-
     m_framesRead++;
 }
-
 void Framer::resetCounters()
 {
     m_framesRead = 0;
     m_ulSrcIndex = 0;
 }
-
-unsigned int Framer::getMaxNoFrames()
-{
-    return m_maxFrames;
-}
-
+unsigned int Framer::getMaxNoFrames(){return m_maxFrames;}
 void Framer::setSource(float *src, unsigned int length)
 {
     m_srcBuffer = src;
     m_ulSampleLen = length;
-
-    m_maxFrames = (unsigned int)ceil( (float)m_ulSampleLen/(float)m_stepSize ) ;
+    m_maxFrames = (unsigned int)std::ceil( (float)m_ulSampleLen/(float)m_stepSize ) ;
 }

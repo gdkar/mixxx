@@ -183,30 +183,29 @@ void LinkwitzRiley8EQEffect::processChannel(const ChannelHandle& handle,
 
     if (fMid != pState->old_mid ||
             fHigh != pState->old_high) {
-        SampleUtil::copy2WithRampingGain(pState->m_pHighBuf,
-                pState->m_pHighBuf, pState->old_high, fHigh,
-                pState->m_pLowBuf, pState->old_mid, fMid,
-                numSamples);
+    const CSAMPLE *src[] = {pState->m_pHighBuf,pState->m_pLowBuf};
+        CSAMPLE_GAIN   gain_beg[] = {(float)pState->old_high,(float)pState->old_mid};
+        CSAMPLE_GAIN   gain_end[] = {(float)fHigh,(float)fMid};
+        SampleUtil::copyWithRampingGain(pState->m_pHighBuf,src,gain_beg,gain_end,2,numSamples);
     } else {
-        SampleUtil::copy2WithGain(pState->m_pHighBuf,
-                pState->m_pHighBuf, fHigh,
-                pState->m_pLowBuf, fMid,
-                numSamples);
+    const CSAMPLE *src[] = {pState->m_pHighBuf,pState->m_pLowBuf};
+        CSAMPLE_GAIN gain[] = {(float)fHigh,(float)fMid};
+        SampleUtil::copyWithGain(pState->m_pHighBuf,
+            src,gain,2,numSamples);
     }
 
     pState->m_high1->process(pState->m_pHighBuf, pState->m_pBandBuf, numSamples); // HighPass + BandPass second run
     pState->m_low1->process(pState->m_pLowBuf, pState->m_pLowBuf, numSamples); // LowPass second run
 
     if (fLow != pState->old_low) {
-        SampleUtil::copy2WithRampingGain(pOutput,
-                pState->m_pLowBuf, pState->old_low, fLow,
-                pState->m_pBandBuf, 1, 1,
-                numSamples);
+    const CSAMPLE *src[] = {pState->m_pLowBuf,pState->m_pBandBuf};
+        CSAMPLE_GAIN   gain_beg[] = {(float)pState->old_low,1.f};
+        CSAMPLE_GAIN   gain_end[] = {(float)fLow,1.f};
+        SampleUtil::copyWithRampingGain(pOutput,src,gain_beg,gain_end,2,numSamples);
     } else {
-        SampleUtil::copy2WithGain(pOutput,
-                pState->m_pLowBuf, fLow,
-                pState->m_pBandBuf, 1,
-                numSamples);
+const CSAMPLE *src[] = {pState->m_pLowBuf,pState->m_pBandBuf};
+        CSAMPLE_GAIN   gain[] = {(float)fLow,1.f};
+        SampleUtil::copyWithGain(pOutput,src,gain,2,numSamples);
     }
 
     if (enableState == EffectProcessor::DISABLING) {

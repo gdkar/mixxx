@@ -11,13 +11,10 @@
     License, or (at your option) any later version.  See the file
     COPYING included with this distribution for more information.
 */
-
-#ifndef _BEAT_TRACK_PLUGIN_H_
-#define _BEAT_TRACK_PLUGIN_H_
+#pragma once
 #include <vamp-sdk/Plugin.h>
 class BeatTrackerData;
-class BeatTracker : public Vamp::Plugin
-{
+class BeatTracker : public Vamp::Plugin{
 public:
     BeatTracker(float inputSampleRate);
     virtual ~BeatTracker();
@@ -47,4 +44,3 @@ protected:
     FeatureSet beatTrackOld();
     FeatureSet beatTrackNew();
 };
-#endif

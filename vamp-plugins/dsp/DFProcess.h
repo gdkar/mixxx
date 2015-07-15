@@ -33,36 +33,23 @@ struct DFProcConfig{
 class DFProcess  
 {
 public:
-    DFProcess( DFProcConfig Config );
+    DFProcess( DFProcConfig Config = DFProcConfig());
     virtual ~DFProcess();
-
     void process( float* src, float* dst );
-
-	
 private:
-    void initialise( DFProcConfig Config );
-    void deInitialise();
     void removeDCNormalize( float *src, float*dst );
     void medianFilter( float* src, float* dst );
-
     int m_length;
     int m_FFOrd;
-
     int m_winPre;
     int m_winPost;
-
     float m_alphaNormParam;
-
     float* filtSrc;
     float* filtDst;
-
     float* m_filtScratchIn;
     float* m_filtScratchOut;
-
     FiltFiltConfig m_FilterConfigParams;
-
     FiltFilt* m_FiltFilt;
-
     bool m_isMedianPositive;
 };
 

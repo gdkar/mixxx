@@ -12,10 +12,7 @@
     License, or (at your option) any later version.  See the file
     COPYING included with this distribution for more information.
 */
-
-#ifndef KLDIVERGENCE_H
-#define KLDIVERGENCE_H
-
+#pragma once
 #include <vector>
 
 using std::vector;
@@ -49,6 +46,4 @@ public:
                                 const vector<float> &d2,
                                 bool symmetrised);
 };
-
-#endif
 

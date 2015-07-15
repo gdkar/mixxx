@@ -5,7 +5,7 @@
 #include "track/key_preferences.h"
 #include "proto/keys.pb.h"
 #include "track/keyfactory.h"
-
+#include "vamp/vampanalyser.h"
 using mixxx::track::io::key::ChromaticKey;
 using mixxx::track::io::key::ChromaticKey_IsValid;
 

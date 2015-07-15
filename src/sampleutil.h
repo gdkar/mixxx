@@ -5,7 +5,8 @@
 #define SAMPLEUTIL_H
 
 #include "util/types.h"
-
+#include "util/sse_mathfun.h"
+#include <cstring>
 #include <algorithm>
 #include <cstring> // memset
 
@@ -245,7 +246,57 @@ class SampleUtil {
 
     // Include auto-generated methods (e.g. copyXWithGain, copyXWithRampingGain,
     // etc.)
-#include "sampleutil_autogen.h"
+    template<typename T>
+    static constexpr T assume_aligned(T addr){return (T)__builtin_assume_aligned(addr,16);}
+    static void copyNWithGain(CSAMPLE*,const CSAMPLE**,const CSAMPLE_GAIN*,const int,const int);
+    static void copyNWithGainAdding(CSAMPLE*,const CSAMPLE**,const CSAMPLE_GAIN*,const int,const int);
+    static void copyNWithRampingGain(CSAMPLE*,const CSAMPLE**,const CSAMPLE_GAIN*,const CSAMPLE_GAIN*,const int,const int);
+    static void copyNWithRampingGainAdding(CSAMPLE*,const CSAMPLE**,const CSAMPLE_GAIN*,const CSAMPLE_GAIN*,const int,const int);
+    static void copyWithGain(CSAMPLE*,const CSAMPLE**,const CSAMPLE_GAIN*,const int, const int);
+    static void copyWithRampingGain(CSAMPLE*,const CSAMPLE**,const CSAMPLE_GAIN*,const CSAMPLE_GAIN*,const int, const int);
+static inline void copy2WithGain(CSAMPLE *pDest, const CSAMPLE *pSrc0,const CSAMPLE_GAIN gain0,const CSAMPLE*pSrc1,const CSAMPLE_GAIN gain1,
+    const int iBufferSize){
+  const CSAMPLE *src[] = {pSrc0,pSrc1};
+  CSAMPLE_GAIN   gain[] = {gain0,gain1};
+  copyWithGain(pDest,src,gain,2,iBufferSize);
+
+}
+static inline void copy3WithGain(CSAMPLE *pDest, const CSAMPLE *pSrc0,const CSAMPLE_GAIN gain0,const CSAMPLE*pSrc1,const CSAMPLE_GAIN gain1,const CSAMPLE *pSrc2,const CSAMPLE_GAIN gain2,
+    const int iBufferSize){
+  const CSAMPLE *src[] = {pSrc0,pSrc1,pSrc2};
+  CSAMPLE_GAIN   gain[] = {gain0,gain1,gain2};
+  copyWithGain(pDest,src,gain,3,iBufferSize);
+}
+static inline void copy4WithGain(CSAMPLE *pDest, const CSAMPLE *pSrc0,const CSAMPLE_GAIN gain0,const CSAMPLE*pSrc1,const CSAMPLE_GAIN gain1,const CSAMPLE *pSrc2,const CSAMPLE_GAIN gain2,const CSAMPLE*pSrc3,const CSAMPLE_GAIN gain3,
+    const int iBufferSize){
+  const CSAMPLE *src[] = {pSrc0,pSrc1,pSrc2,pSrc3};
+  CSAMPLE_GAIN   gain[] = {gain0,gain1,gain2,gain3};
+  copyWithGain(pDest,src,gain,4,iBufferSize);
+}
+static inline void copy2WithRampingGain(CSAMPLE *pDest, const CSAMPLE *pSrc0,const CSAMPLE_GAIN gain0_beg,const CSAMPLE_GAIN gain0_end,const CSAMPLE*pSrc1,const CSAMPLE_GAIN gain1_beg,const CSAMPLE_GAIN gain1_end,
+    const int iBufferSize){
+  const CSAMPLE *src[] = {pSrc0,pSrc1};
+  CSAMPLE_GAIN   gain_beg[] = {gain0_beg,gain1_beg};
+  CSAMPLE_GAIN   gain_end[] = {gain0_end,gain1_end};
+  copyWithRampingGain(pDest,src,gain_beg,gain_end,2,iBufferSize);
+}
+static inline void copy3WithRampingGain(CSAMPLE *pDest, const CSAMPLE *pSrc0,const CSAMPLE_GAIN gain0_beg,const CSAMPLE_GAIN gain0_end,const CSAMPLE*pSrc1,const CSAMPLE_GAIN gain1_beg,const CSAMPLE_GAIN gain1_end,
+ const CSAMPLE*pSrc2,const CSAMPLE_GAIN gain2_beg,const CSAMPLE_GAIN gain2_end,
+    const int iBufferSize){
+  const CSAMPLE *src[] = {pSrc0,pSrc1,pSrc2};
+  CSAMPLE_GAIN   gain_beg[] = {gain0_beg,gain1_beg,gain2_beg};
+  CSAMPLE_GAIN   gain_end[] = {gain0_end,gain1_end,gain2_end};
+  copyWithRampingGain(pDest,src,gain_beg,gain_end,3,iBufferSize);
+}
+static inline void copy4WithRampingGain(CSAMPLE *pDest, const CSAMPLE *pSrc0,const CSAMPLE_GAIN gain0_beg,const CSAMPLE_GAIN gain0_end,const CSAMPLE*pSrc1,const CSAMPLE_GAIN gain1_beg,const CSAMPLE_GAIN gain1_end,
+ const CSAMPLE*pSrc2,const CSAMPLE_GAIN gain2_beg,const CSAMPLE_GAIN gain2_end,
+ const CSAMPLE*pSrc3,const CSAMPLE_GAIN gain3_beg,const CSAMPLE_GAIN gain3_end,
+    const int iBufferSize){
+  const CSAMPLE *src[] = {pSrc0,pSrc1,pSrc2,pSrc3};
+  CSAMPLE_GAIN   gain_beg[] = {gain0_beg,gain1_beg,gain2_beg,gain3_beg};
+  CSAMPLE_GAIN   gain_end[] = {gain0_end,gain1_end,gain2_end,gain3_end};
+  copyWithRampingGain(pDest,src,gain_beg,gain_end,4,iBufferSize);
+}
 };
 
 #endif /* SAMPLEUTIL_H */

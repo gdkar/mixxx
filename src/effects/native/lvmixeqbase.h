@@ -100,15 +100,12 @@ class LVMixEQEffectGroupState {
         //    pOutput[i] = pState->m_pLowBuf[i];
         //    pOutput[i + 1] = pState->m_pBandBuf[i];
         //}
-
-        if (fLow == m_oldLow &&
-                fMid == m_oldMid &&
-                fHigh == m_oldHigh) {
-            SampleUtil::copy3WithGain(pOutput,
-                    m_pLowBuf, fLow,
-                    m_pBandBuf, fMid,
-                    m_pHighBuf, fHigh,
-                    numSamples);
+        const CSAMPLE*src[] = {m_pLowBuf,m_pBandBuf,m_pHighBuf};
+        CSAMPLE_GAIN  gain_start[] = {(CSAMPLE_GAIN)m_oldLow,(CSAMPLE_GAIN)m_oldMid,(CSAMPLE_GAIN)m_oldHigh};
+        CSAMPLE_GAIN  gain_end[]   = {(CSAMPLE_GAIN)fLow,(CSAMPLE_GAIN)fMid,(CSAMPLE_GAIN)fHigh};
+        if (fLow == m_oldLow && fMid == m_oldMid && fHigh == m_oldHigh) {
+            SampleUtil::copyWithGain(pOutput,
+                src,gain_start,3,numSamples);
         } else {
             int copySamples = 0;
             int rampingSamples = numSamples;
@@ -135,19 +132,15 @@ class LVMixEQEffectGroupState {
                 m_rampHoldOff -= copySamples;
                 rampingSamples = numSamples - copySamples;
 
-                SampleUtil::copy3WithGain(pOutput,
-                        m_pLowBuf, m_oldLow,
-                        m_pBandBuf, m_oldMid,
-                        m_pHighBuf, m_oldHigh,
-                        copySamples);
+                SampleUtil::copyWithGain(pOutput,
+                    src,gain_start,3,copySamples);
             }
-
             if (rampingSamples) {
-                SampleUtil::copy3WithRampingGain(&pOutput[copySamples],
-                        &m_pLowBuf[copySamples], m_oldLow, fLow,
-                        &m_pBandBuf[copySamples], m_oldMid, fMid,
-                        &m_pHighBuf[copySamples], m_oldHigh, fHigh,
-                        rampingSamples);
+              src[0] += copySamples;
+              src[1] += copySamples;
+              src[2] += copySamples;
+                SampleUtil::copyWithRampingGain(&pOutput[copySamples],
+                        src,gain_start,gain_end,3,rampingSamples);
 
                 m_oldLow = fLow;
                 m_oldMid = fMid;

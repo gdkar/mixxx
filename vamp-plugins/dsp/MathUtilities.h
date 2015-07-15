@@ -46,8 +46,8 @@ public:
 
     static void   circShift( float* data, int length, int shift);
 
-    static int	  getMax( float* data, unsigned int length, float* max = 0 );
-    static int	  getMax( const std::vector<float> &data, float* max = 0 );
+    static int	  getMax( float* data, unsigned int length, float* max = nullptr );
+    static int	  getMax( const std::vector<float> &data, float* max = nullptr );
     static int    compareInt(const void * a, const void * b);
 
     enum NormaliseType {

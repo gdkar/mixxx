@@ -16,7 +16,7 @@
 #include "analyserbeats.h"
 #include "track/beatutils.h"
 #include "track/beat_preferences.h"
-
+#include "vamp/vampanalyser.h"
 AnalyserBeats::AnalyserBeats(ConfigObject<ConfigValue>* pConfig)
         : m_pConfig(pConfig),
           m_pVamp(nullptr),

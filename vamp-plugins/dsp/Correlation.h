@@ -13,10 +13,8 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef CORRELATION_H
-#define CORRELATION_H
-
-#define  EPS  2.2204e-016
+#pragma once
+#define  EPS  ((float)2.2204e-016)
 
 class Correlation  
 {
@@ -26,5 +24,3 @@ public:
     virtual ~Correlation();
 
 };
-
-#endif // 
