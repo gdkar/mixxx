@@ -15,7 +15,6 @@
 #include "BarBeatTrack.h"
 
 #include "../dsp/DetectionFunction.h"
-#include "../dsp/PeakPicking.h"
 #include "../dsp/TempoTrackV2.h"
 #include "../dsp/DownBeat.h"
 #include "../dsp/MathUtilities.h"

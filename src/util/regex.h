@@ -15,7 +15,6 @@ class RegexUtils {
         // Turn the list into a "\\.(jpg|gif|etc)$" style regex string
         return QString("\\.(%1)$").arg(extensions.join("|"));
     }
-
   private:
     RegexUtils() {}
 };

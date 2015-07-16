@@ -26,7 +26,7 @@ typedef complex<float> ComplexData;
 #define TWO_PI 		(2. * M_PI)
 
 #ifndef EPS
-#define EPS 2.2204e-016
+#define EPS ((float)2.2204e-016)
 #endif
 /* aliases to math.h functions */
 #define EXP				exp

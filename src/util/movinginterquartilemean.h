@@ -16,7 +16,6 @@ class MovingInterquartileMean {
     // Constructs an empty MovingTruncatedIQM.
     MovingInterquartileMean(const unsigned int listLength);
     virtual ~MovingInterquartileMean();
-
     // Inserts value to the list and returns the new truncated mean.
     double insert(double value);
     // Empty the list.
@@ -27,7 +26,6 @@ class MovingInterquartileMean {
     int size() const;
     // Returns the maximum size of the input list.
     int listMaxSize() const;
-
   private:
     double m_dMean;
     int m_iListMaxSize;
@@ -36,7 +34,6 @@ class MovingInterquartileMean {
     // The queue keeps pointers to doubles in the list ordered
     // by the order they were received.
     QQueue<QLinkedList<double>::iterator> m_queue;
-
     // sum() checks this to know if it has to recalculate the mean.
     bool m_bChanged;
 };

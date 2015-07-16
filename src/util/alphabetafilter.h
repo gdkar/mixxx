@@ -46,31 +46,19 @@ class AlphaBetaFilter {
     // Because the values come from a digital controller, the values for dx are
     // discrete rather than smooth.
     void observation(double dx) {
-        if (!m_initialized) {
-            return;
-        }
-
+        if (!m_initialized) {return;}
         double predicted_x = m_x + m_v * m_dt;
         double predicted_v = m_v;
         double residual_x = dx - predicted_x;
-
         m_x = predicted_x + residual_x * m_alpha;
         m_v = predicted_v + residual_x * m_beta / m_dt;
-
         // relative to previous
         m_x -= dx;
     }
-
     // Get the velocity after filtering.
-    double predictedVelocity() const {
-        return m_v;
-    }
-
+    double predictedVelocity() const {return m_v;}
     // Get the position after filtering.
-    double predictedPosition() const {
-        return m_x;
-    }
-
+    double predictedPosition() const {return m_x;}
   private:
     // Whether init() has been called.
     bool m_initialized;

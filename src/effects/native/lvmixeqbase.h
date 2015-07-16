@@ -100,18 +100,12 @@ class LVMixEQEffectGroupState {
         //    pOutput[i] = pState->m_pLowBuf[i];
         //    pOutput[i + 1] = pState->m_pBandBuf[i];
         //}
-        const CSAMPLE*src[] = {m_pLowBuf,m_pBandBuf,m_pHighBuf};
-        CSAMPLE_GAIN  gain_start[] = {(CSAMPLE_GAIN)m_oldLow,(CSAMPLE_GAIN)m_oldMid,(CSAMPLE_GAIN)m_oldHigh};
-        CSAMPLE_GAIN  gain_end[]   = {(CSAMPLE_GAIN)fLow,(CSAMPLE_GAIN)fMid,(CSAMPLE_GAIN)fHigh};
         if (fLow == m_oldLow && fMid == m_oldMid && fHigh == m_oldHigh) {
-            SampleUtil::copyWithGain(pOutput,
-                src,gain_start,3,numSamples);
+            SampleUtil::copy3WithGain(pOutput,m_pLowBuf,m_oldLow,m_pBandBuf,m_oldMid,m_pHighBuf,m_oldHigh,numSamples);
         } else {
             int copySamples = 0;
             int rampingSamples = numSamples;
-            if ((fLow && !m_oldLow) ||
-                    (fMid && !m_oldMid) ||
-                    (fHigh && !m_oldHigh)) {
+            if ((fLow && !m_oldLow) ||(fMid && !m_oldMid) || (fHigh && !m_oldHigh)) {
                 // we have just switched at least one filter on
                 // Hold off ramping for the group delay
                 if (m_rampHoldOff == kRampDone) {
@@ -121,9 +115,7 @@ class LVMixEQEffectGroupState {
                     // ensure that we have at least 128 samples for ramping
                     // (the smallest buffer, that suits for de-clicking)
                     int rampingSamples = numSamples - (m_rampHoldOff % numSamples);
-                    if (rampingSamples < 128) {
-                        m_rampHoldOff += rampingSamples;
-                    }
+                    if (rampingSamples < 128) {m_rampHoldOff += rampingSamples;}
                 }
 
                 // ramping is done in one of the following calls if
@@ -131,17 +123,14 @@ class LVMixEQEffectGroupState {
                 copySamples = math_min<int>(m_rampHoldOff, numSamples);
                 m_rampHoldOff -= copySamples;
                 rampingSamples = numSamples - copySamples;
-
-                SampleUtil::copyWithGain(pOutput,
-                    src,gain_start,3,copySamples);
+                SampleUtil::copy3WithGain(pOutput,m_pLowBuf,m_oldLow,m_pBandBuf,m_oldMid,m_pHighBuf,m_oldHigh,copySamples);
             }
             if (rampingSamples) {
-              src[0] += copySamples;
-              src[1] += copySamples;
-              src[2] += copySamples;
-                SampleUtil::copyWithRampingGain(&pOutput[copySamples],
-                        src,gain_start,gain_end,3,rampingSamples);
-
+                SampleUtil::copy3WithRampingGain(&pOutput[copySamples],
+                    m_pLowBuf+copySamples,m_oldLow,fLow,
+                    m_pBandBuf+copySamples,m_oldMid,fMid,
+                    m_pHighBuf+copySamples,m_oldHigh,fHigh,
+                    rampingSamples);
                 m_oldLow = fLow;
                 m_oldMid = fMid;
                 m_oldHigh = fHigh;

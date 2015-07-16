@@ -2,10 +2,11 @@
 // Created 10/5/2009 by RJ Ryan (rryan@mit.edu)
 
 #include <cstdlib>
+#include <cstring>
 
 #include "sampleutil.h"
+#include "util/sse_mathfun.h"
 #include "util/math.h"
-
 #ifdef __WINDOWS__
 #include <QtGlobal>
 typedef qint64 int64_t;
@@ -227,7 +228,7 @@ void SampleUtil::add3WithGain(CSAMPLE* pDest, const CSAMPLE* _RESTRICT pSrc1,
 
 // static
 void SampleUtil::copyWithGain(CSAMPLE* _RESTRICT pDest, const CSAMPLE* _RESTRICT pSrc,
-        CSAMPLE_GAIN gain, int iNumSamples) {
+        const CSAMPLE_GAIN gain, int iNumSamples) {
     if (gain == CSAMPLE_GAIN_ONE) {
         copy(pDest, pSrc, iNumSamples);
         return;
@@ -249,7 +250,7 @@ void SampleUtil::copyWithGain(CSAMPLE* _RESTRICT pDest, const CSAMPLE* _RESTRICT
 
 // static
 void SampleUtil::copyWithRampingGain(CSAMPLE* _RESTRICT pDest, const CSAMPLE* _RESTRICT pSrc,
-        CSAMPLE_GAIN old_gain, CSAMPLE_GAIN new_gain, int iNumSamples) {
+        const CSAMPLE_GAIN old_gain, CSAMPLE_GAIN new_gain, int iNumSamples) {
     if (old_gain == CSAMPLE_GAIN_ONE && new_gain == CSAMPLE_GAIN_ONE) {
         copy(pDest, pSrc, iNumSamples);
         return;
@@ -443,4 +444,223 @@ void SampleUtil::reverse(CSAMPLE* pBuffer, int iNumSamples) {
         pBuffer[endpos] = temp2;
     }
 }
+void SampleUtil::copy1WithGain(
+    CSAMPLE *pDest,
+    const CSAMPLE*pSrc0,
+    const CSAMPLE_GAIN gain0,
+    int iBufferSize)
+{
+  pSrc0 = (decltype(pSrc0))__builtin_assume_aligned(pSrc0,16);
+  pDest = (decltype(pDest))__builtin_assume_aligned(pDest,16);
+  if(!gain0){
+    std::memset(pDest,0,sizeof(CSAMPLE)*iBufferSize);
+  }else{
+    ssize_t i = 0;
+    const v4sf gain0_ps = _mm_set1_ps(gain0);
+    while(i+15<iBufferSize){
+      *(v4sf*)(pDest+i)    = _mm_mul_ps(gain0_ps,*(v4sf*)(pSrc0+i));
+      i+=4;
+      *(v4sf*)(pDest+i)    = _mm_mul_ps(gain0_ps,*(v4sf*)(pSrc0+i));
+      i+=4;
+      *(v4sf*)(pDest+i)    = _mm_mul_ps(gain0_ps,*(v4sf*)(pSrc0+i));
+      i+=4;
+      *(v4sf*)(pDest+i)    = _mm_mul_ps(gain0_ps,*(v4sf*)(pSrc0+i));
+      i+=4;
+    }
+    while(i+7<iBufferSize){
+      *(v4sf*)(pDest+i)    = _mm_mul_ps(gain0_ps,*(v4sf*)(pSrc0+i));
+      i+=4;
+      *(v4sf*)(pDest+i)    = _mm_mul_ps(gain0_ps,*(v4sf*)(pSrc0+i));
+      i+=4;
+    }
+    while(i+3<iBufferSize){
+      *(v4sf*)(pDest+i)    = _mm_mul_ps(gain0_ps,*(v4sf*)(pSrc0+i));
+      i+=4;
+    }
+  }
+}
+void SampleUtil::copy1WithRampingGain(
+    CSAMPLE *pDest,
+    const CSAMPLE*pSrc0,
+    const CSAMPLE_GAIN gain0in,
+    const CSAMPLE_GAIN gain0out,
+    int iBufferSize)
+{
+  pSrc0 = (decltype(pSrc0))__builtin_assume_aligned(pSrc0,16);
+  pDest = (decltype(pDest))__builtin_assume_aligned(pDest,16);
+  if(!(gain0out||gain0in)){
+    std::memset(pDest,0,sizeof(CSAMPLE)*iBufferSize);
+  }else{
+    ssize_t i = 0;
+    const auto gain0delta = gain0out-gain0in;
+    const auto gain0inc   = gain0delta/(iBufferSize);
+    v4sf gain0_ps = _mm_set_ps(gain0in,gain0in,gain0in+gain0inc,gain0in+gain0inc);
+    const v4sf gain0inc_ps = _mm_set1_ps(gain0inc);
+    while(i+15<iBufferSize){
+      *(v4sf*)(pDest+i)    = _mm_mul_ps(gain0_ps,*(v4sf*)(pSrc0+i));
+      gain0_ps = _mm_add_ps(gain0_ps,gain0inc_ps);
+      i+=4;
+      *(v4sf*)(pDest+i)    = _mm_mul_ps(gain0_ps,*(v4sf*)(pSrc0+i));
+      gain0_ps = _mm_add_ps(gain0_ps,gain0inc_ps);
+      i+=4;
+      *(v4sf*)(pDest+i)    = _mm_mul_ps(gain0_ps,*(v4sf*)(pSrc0+i));
+      gain0_ps = _mm_add_ps(gain0_ps,gain0inc_ps);
+      i+=4;
+      *(v4sf*)(pDest+i)    = _mm_mul_ps(gain0_ps,*(v4sf*)(pSrc0+i));
+      gain0_ps = _mm_add_ps(gain0_ps,gain0inc_ps);
+      i+=4;
+    }
+    while(i+7<iBufferSize){
+      *(v4sf*)(pDest+i)    = _mm_mul_ps(gain0_ps,*(v4sf*)(pSrc0+i));
+      gain0_ps = _mm_add_ps(gain0_ps,gain0inc_ps);
+      i+=4;
+      *(v4sf*)(pDest+i)    = _mm_mul_ps(gain0_ps,*(v4sf*)(pSrc0+i));
+      gain0_ps = _mm_add_ps(gain0_ps,gain0inc_ps);
+      i+=4;
+    }
+    while(i+3<iBufferSize){
+      *(v4sf*)(pDest+i)    = _mm_mul_ps(gain0_ps,*(v4sf*)(pSrc0+i));
+      gain0_ps = _mm_add_ps(gain0_ps,gain0inc_ps);
+      i+=4;
+    }
+  }
+}
+void SampleUtil::copy1WithRampingGainAdding(
+    CSAMPLE *pDest,
+    const CSAMPLE*pSrc0,
+    const CSAMPLE_GAIN gain0in,
+    const CSAMPLE_GAIN gain0out,
+    int iBufferSize)
+{
+  pSrc0 = (decltype(pSrc0))__builtin_assume_aligned(pSrc0,16);
+  pDest = (decltype(pDest))__builtin_assume_aligned(pDest,16);
+  if(gain0in||gain0out){
+    ssize_t i = 0;
+    const auto gain0delta = gain0out-gain0in;
+    const auto gain0inc   = gain0delta/(iBufferSize);
+    v4sf gain0_ps = _mm_set_ps(gain0in,gain0in,gain0in+gain0inc,gain0in+gain0inc);
+    const v4sf gain0inc_ps = _mm_set1_ps(gain0inc);
+    while(i+15<iBufferSize){
+      *(v4sf*)(pDest+i)    += _mm_mul_ps(gain0_ps,*(v4sf*)(pSrc0+i));
+      gain0_ps = _mm_add_ps(gain0_ps,gain0inc_ps);
+      i+=4;
+      *(v4sf*)(pDest+i)    += _mm_mul_ps(gain0_ps,*(v4sf*)(pSrc0+i));
+      gain0_ps = _mm_add_ps(gain0_ps,gain0inc_ps);
+      i+=4;
+      *(v4sf*)(pDest+i)    += _mm_mul_ps(gain0_ps,*(v4sf*)(pSrc0+i));
+      gain0_ps = _mm_add_ps(gain0_ps,gain0inc_ps);
+      i+=4;
+      *(v4sf*)(pDest+i)    += _mm_mul_ps(gain0_ps,*(v4sf*)(pSrc0+i));
+      gain0_ps = _mm_add_ps(gain0_ps,gain0inc_ps);
+      i+=4;
+    }
+    while(i+7<iBufferSize){
+      *(v4sf*)(pDest+i)    += _mm_mul_ps(gain0_ps,*(v4sf*)(pSrc0+i));
+      gain0_ps = _mm_add_ps(gain0_ps,gain0inc_ps);
+      i+=4;
+      *(v4sf*)(pDest+i)    += _mm_mul_ps(gain0_ps,*(v4sf*)(pSrc0+i));
+      gain0_ps = _mm_add_ps(gain0_ps,gain0inc_ps);
+      i+=4;
+    }
+    while(i+3<iBufferSize){
+      *(v4sf*)(pDest+i)    += _mm_mul_ps(gain0_ps,*(v4sf*)(pSrc0+i));
+      gain0_ps = _mm_add_ps(gain0_ps,gain0inc_ps);
+      i+=4;
+    }
+  }
+}
+void SampleUtil::copy1WithGainAdding(
+    CSAMPLE *pDest,
+    const CSAMPLE*pSrc0,
+    const CSAMPLE_GAIN gain0,
+    int iBufferSize)
+{
+  pSrc0 = (decltype(pSrc0))__builtin_assume_aligned(pSrc0,16);
+  pDest = (decltype(pDest))__builtin_assume_aligned(pDest,16);
+  if(gain0){
+    ssize_t i = 0;
+    const v4sf gain0_ps = _mm_set1_ps(gain0);
+    while(i+15<iBufferSize){
+      *(v4sf*)(pDest+i)   += _mm_mul_ps(gain0_ps,*(v4sf*)(pSrc0+i));
+      i+=4;
+      *(v4sf*)(pDest+i)   += _mm_mul_ps(gain0_ps,*(v4sf*)(pSrc0+i));
+      i+=4;
+      *(v4sf*)(pDest+i)   += _mm_mul_ps(gain0_ps,*(v4sf*)(pSrc0+i));
+      i+=4;
+      *(v4sf*)(pDest+i)   += _mm_mul_ps(gain0_ps,*(v4sf*)(pSrc0+i));
+      i+=4;
 
+    }
+    while(i+7<iBufferSize){
+      *(v4sf*)(pDest+i)   += _mm_mul_ps(gain0_ps,*(v4sf*)(pSrc0+i));
+      i+=4;
+      *(v4sf*)(pDest+i)   += _mm_mul_ps(gain0_ps,*(v4sf*)(pSrc0+i));
+      i+=4;
+    }
+    while(i+3<iBufferSize){
+      *(v4sf*)(pDest+i)    += _mm_mul_ps(gain0_ps,*(v4sf*)(pSrc0+i));
+      i+=4;
+    }
+  }
+}
+/* static */
+void SampleUtil::copy2WithGain(CSAMPLE *pDest,
+    const CSAMPLE*pSrc0,const CSAMPLE_GAIN gain0,
+    const CSAMPLE*pSrc1,const CSAMPLE_GAIN gain1,
+    const int iBufferSize)
+{
+  copy1WithGain(pDest,pSrc0,gain0,iBufferSize);
+  copy1WithGainAdding(pDest,pSrc1,gain1,iBufferSize);
+}
+void SampleUtil::copy3WithGain(CSAMPLE *pDest,
+    const CSAMPLE*pSrc0,const CSAMPLE_GAIN gain0,
+    const CSAMPLE*pSrc1,const CSAMPLE_GAIN gain1,
+    const CSAMPLE*pSrc2,const CSAMPLE_GAIN gain2,
+    const int iBufferSize)
+{
+  copy1WithGain(pDest,pSrc0,gain0,iBufferSize);
+  copy1WithGainAdding(pDest,pSrc1,gain1,iBufferSize);
+  copy1WithGainAdding(pDest,pSrc2,gain2,iBufferSize);
+}
+void SampleUtil::copy4WithGain(CSAMPLE *pDest,
+    const CSAMPLE*pSrc0,const CSAMPLE_GAIN gain0,
+    const CSAMPLE*pSrc1,const CSAMPLE_GAIN gain1,
+    const CSAMPLE*pSrc2,const CSAMPLE_GAIN gain2,
+    const CSAMPLE*pSrc3,const CSAMPLE_GAIN gain3,
+    const int iBufferSize)
+{
+  copy1WithGain(pDest,pSrc0,gain0,iBufferSize);
+  copy1WithGainAdding(pDest,pSrc1,gain1,iBufferSize);
+  copy1WithGainAdding(pDest,pSrc2,gain2,iBufferSize);
+  copy1WithGainAdding(pDest,pSrc3,gain3,iBufferSize);
+}
+void SampleUtil::copy2WithRampingGain(CSAMPLE *pDest,
+    const CSAMPLE *pSrc0, const CSAMPLE_GAIN gain0in,const CSAMPLE_GAIN gain0out,
+    const CSAMPLE *pSrc1, const CSAMPLE_GAIN gain1in,const CSAMPLE_GAIN gain1out,
+    const int iBufferSize)
+{
+  copy1WithRampingGain(pDest,pSrc0,gain0in,gain0out,iBufferSize);
+  copy1WithRampingGainAdding(pDest,pSrc1,gain1in,gain1out,iBufferSize);
+}
+void SampleUtil::copy3WithRampingGain(CSAMPLE *pDest,
+    const CSAMPLE *pSrc0, const CSAMPLE_GAIN gain0in,const CSAMPLE_GAIN gain0out,
+    const CSAMPLE *pSrc1, const CSAMPLE_GAIN gain1in,const CSAMPLE_GAIN gain1out,
+    const CSAMPLE *pSrc2, const CSAMPLE_GAIN gain2in,const CSAMPLE_GAIN gain2out,
+    const int iBufferSize)
+{
+  copy1WithRampingGain(pDest,pSrc0,gain0in,gain0out,iBufferSize);
+  copy1WithRampingGainAdding(pDest,pSrc1,gain1in,gain1out,iBufferSize);
+  copy1WithRampingGainAdding(pDest,pSrc2,gain2in,gain2out,iBufferSize);
+}
+void SampleUtil::copy4WithRampingGain(CSAMPLE *pDest,
+    const CSAMPLE *pSrc0, const CSAMPLE_GAIN gain0in,const CSAMPLE_GAIN gain0out,
+    const CSAMPLE *pSrc1, const CSAMPLE_GAIN gain1in,const CSAMPLE_GAIN gain1out,
+    const CSAMPLE *pSrc2, const CSAMPLE_GAIN gain2in,const CSAMPLE_GAIN gain2out,
+    const CSAMPLE *pSrc3, const CSAMPLE_GAIN gain3in,const CSAMPLE_GAIN gain3out,
+    const int iBufferSize)
+{
+  copy1WithRampingGain(pDest,pSrc0,gain0in,gain0out,iBufferSize);
+  copy1WithRampingGainAdding(pDest,pSrc1,gain1in,gain1out,iBufferSize);
+  copy1WithRampingGainAdding(pDest,pSrc2,gain2in,gain2out,iBufferSize);
+  copy1WithRampingGainAdding(pDest,pSrc3,gain3in,gain3out,iBufferSize);
+}
