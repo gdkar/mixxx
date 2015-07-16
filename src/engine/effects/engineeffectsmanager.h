@@ -38,9 +38,7 @@ class EngineEffectsManager : public EffectsRequestHandler {
         EffectsResponsePipe* pResponsePipe);
 
   private:
-    QString debugString() const {
-        return QString("EngineEffectsManager");
-    }
+    QString debugString() const {return QString("EngineEffectsManager");}
 
     bool addEffectRack(EngineEffectRack* pRack);
     bool removeEffectRack(EngineEffectRack* pRack);
@@ -50,6 +48,5 @@ class EngineEffectsManager : public EffectsRequestHandler {
     QList<EngineEffectChain*> m_chains;
     QList<EngineEffect*> m_effects;
 };
-
 
 #endif /* ENGINEEFFECTSMANAGER_H */

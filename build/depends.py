@@ -496,7 +496,12 @@ class QtScriptByteArray(Dependence):
         return ['#lib/qtscript-bytearray/bytearrayclass.cpp',
                 '#lib/qtscript-bytearray/bytearrayprototype.cpp']
 
-
+class Eigen(Dependence):
+    def configure(self,build,conf):
+        build.env.Append(CPPPATH='#lib/eigen/Eigen')
+        build.env.Append(CPPPATH='#lib/eigen')
+    def source(self,build):
+        pass
 class Reverb(Dependence):
     def configure(self, build, conf):
         build.env.Append(CPPPATH='#lib/reverb')
@@ -580,7 +585,6 @@ class MixxxCore(Feature):
                    "effects/native/nativebackend.cpp",
                    "effects/native/bitcrushereffect.cpp",
                    "effects/native/linkwitzriley8eqeffect.cpp",
-                   "effects/native/linkwitzriley4eqeffect.cpp",
                    "effects/native/bessel4lvmixeqeffect.cpp",
                    "effects/native/bessel8lvmixeqeffect.cpp",
                    "effects/native/graphiceqeffect.cpp",
@@ -628,7 +632,7 @@ class MixxxCore(Feature):
                    "engine/enginemicrophone.cpp",
                    "engine/enginedeck.cpp",
                    "engine/engineaux.cpp",
-                   "engine/channelmixer_manual.cpp",
+                   "engine/channelmixer.cpp",
 
                    "engine/enginecontrol.cpp",
                    "engine/ratecontrol.cpp",
@@ -931,7 +935,6 @@ class MixxxCore(Feature):
                    "encoder/encodervorbis.cpp",
 
                    "util/pa_ringbuffer.c",
-                   "util/sleepableqthread.cpp",
                    "util/statsmanager.cpp",
                    "util/stat.cpp",
                    "util/statmodel.cpp",
@@ -1206,7 +1209,7 @@ class MixxxCore(Feature):
         return [SoundTouch, ReplayGain, PortAudio, PortMIDI, Qt, TestHeaders,
                 FidLib, SndFile, FLAC, OggVorbis, OpenGL, TagLib, ProtoBuf,
                 Chromaprint, RubberBand, SecurityFramework, CoreServices,
-                QtScriptByteArray, Reverb]
+                QtScriptByteArray, Reverb,Eigen]
 
     def post_dependency_check_configure(self, build, conf):
         """Sets up additional things in the Environment that must happen

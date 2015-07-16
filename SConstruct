@@ -92,7 +92,7 @@ soundsource_plugins = SConscript(
 
 #Build Vamp minimal plugins
 #VariantDir("vamp-plugins", "src", duplicate=0)
-mixxxminimal_depends = [ depends.SoundTouch ]
+mixxxminimal_depends = [ depends.SoundTouch,depends.Eigen ]
 mixxxminimal_plugins = SConscript(
     File('vamp-plugins/SConscript'),
     variant_dir=Dir(build.build_dir + "/vamp-plugins"),

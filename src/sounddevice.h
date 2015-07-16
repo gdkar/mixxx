@@ -48,9 +48,7 @@ class SoundDevice {
     inline const QString& getDisplayName() const {
         return m_strDisplayName;
     }
-    inline const QString& getHostAPI() const {
-        return m_hostAPI;
-    }
+    inline const QString& getHostAPI() const {return m_hostAPI;}
     void setHostAPI(QString api);
     void setSampleRate(double sampleRate);
     void setFramesPerBuffer(unsigned int framesPerBuffer);

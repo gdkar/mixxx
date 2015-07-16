@@ -58,16 +58,11 @@ class EngineFilterIIR : public EngineFilterIIRBase {
     // this is can be used instead off a final process() call before pause
     // It fades to dry or 0 according to the m_startFromDry parameter
     // it is an alternative for using pauseFillter() calls
-    void processAndPauseFilter(const CSAMPLE* pIn, CSAMPLE* pOutput,
-                       const int iBufferSize) {
+    void processAndPauseFilter(const CSAMPLE* pIn, CSAMPLE* pOutput,const int iBufferSize) {
         process(pIn, pOutput, iBufferSize);
-        const CSAMPLE*src[] = {pOutput,pIn};
-        CSAMPLE_GAIN  gain_start[] = {1.0f,0.0f};
-        CSAMPLE_GAIN  gain_end[]   = {0.f,m_startFromDry?1.f:0.f};
-        SampleUtil::copyWithRampingGain(pOutput,src,gain_start,gain_end,2,iBufferSize);
+        SampleUtil::copy2WithRampingGain(pOutput,pOutput,1.f,0.f,pIn,0.f,m_startFromDry?1.f:0.f,iBufferSize);
         pauseFilterInner();
     }
-
     void initBuffers() {
         // Copy the current buffers into the old buffers
         memcpy(m_oldBuf1, m_buf1, sizeof(m_buf1));
@@ -85,15 +80,12 @@ class EngineFilterIIR : public EngineFilterIIRBase {
         if (strlen(spec) < sizeof(spec_d)) {
             // Copy to dynamic-ish memory to prevent fidlib API breakage.
             strcpy(spec_d, spec);
-
             // Copy the old coefficients into m_oldCoef
             memcpy(m_oldCoef, m_coef, sizeof(m_coef));
-
             m_coef[0] = fid_design_coef(m_coef + 1, SIZE,
                     spec_d, sampleRate, freq0, freq1, adj);
 
             initBuffers();
-
 #if(IIR_ANALYSIS)
             char* desc;
             FidFilter* filt = fid_design(spec_d, sampleRate, freq0, freq1, adj, &desc);

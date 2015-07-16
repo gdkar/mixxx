@@ -245,7 +245,49 @@ class SampleUtil {
 
     // Include auto-generated methods (e.g. copyXWithGain, copyXWithRampingGain,
     // etc.)
-#include "sampleutil_autogen.h"
+    static void copy1WithGain(CSAMPLE *pDest,
+        const CSAMPLE*pSrc0,const CSAMPLE_GAIN gain0,
+        const int iBufferSize);
+    static void copy1WithGainAdding(CSAMPLE *pDest,
+        const CSAMPLE*pSrc0,const CSAMPLE_GAIN gain0,
+        const int iBufferSize);
+    static void copy1WithRampingGain(CSAMPLE *pDest,
+        const CSAMPLE*pSrc0,const CSAMPLE_GAIN gain0in,const CSAMPLE_GAIN gain0out,
+        const int iBufferSize);
+    static void copy1WithRampingGainAdding(CSAMPLE *pDest,
+        const CSAMPLE*pSrc0,const CSAMPLE_GAIN gain0in,const CSAMPLE_GAIN gain0out,
+        const int iBufferSize);
+    static void copy2WithGain(CSAMPLE *pDest,
+        const CSAMPLE*,const CSAMPLE_GAIN ,
+        const CSAMPLE*,const CSAMPLE_GAIN ,
+        const int iBufferSize);
+    static void copy2WithRampingGain(CSAMPLE *pDest,
+        const CSAMPLE*,const CSAMPLE_GAIN ,const CSAMPLE_GAIN ,
+        const CSAMPLE*,const CSAMPLE_GAIN ,const CSAMPLE_GAIN ,
+        const int iBufferSize);
+    static void copy3WithGain(CSAMPLE *pDest,
+        const CSAMPLE*,const CSAMPLE_GAIN ,
+        const CSAMPLE*,const CSAMPLE_GAIN ,
+        const CSAMPLE*,const CSAMPLE_GAIN ,
+        const int iBufferSize);
+    static void copy3WithRampingGain(CSAMPLE *pDest,
+        const CSAMPLE*,const CSAMPLE_GAIN ,const CSAMPLE_GAIN ,
+        const CSAMPLE*,const CSAMPLE_GAIN ,const CSAMPLE_GAIN ,
+        const CSAMPLE*,const CSAMPLE_GAIN ,const CSAMPLE_GAIN ,
+        const int iBufferSize);
+    static void copy4WithGain(CSAMPLE *pDest,
+        const CSAMPLE*,const CSAMPLE_GAIN ,
+        const CSAMPLE*,const CSAMPLE_GAIN ,
+        const CSAMPLE*,const CSAMPLE_GAIN ,
+        const CSAMPLE*,const CSAMPLE_GAIN ,
+        const int iBufferSize);
+    static void copy4WithRampingGain(CSAMPLE *pDest,
+        const CSAMPLE*,const CSAMPLE_GAIN ,const CSAMPLE_GAIN ,
+        const CSAMPLE*,const CSAMPLE_GAIN ,const CSAMPLE_GAIN ,
+        const CSAMPLE*,const CSAMPLE_GAIN ,const CSAMPLE_GAIN ,
+        const CSAMPLE*,const CSAMPLE_GAIN ,const CSAMPLE_GAIN ,
+        const int iBufferSize);
+//#include "sampleutil_autogen.h"
 };
 
 #endif /* SAMPLEUTIL_H */

@@ -15,34 +15,24 @@ class Trace {
           bool writeToStdout=false, bool time=true)
             : m_writeToStdout(writeToStdout),
               m_time(time) {
-        if (writeToStdout || CmdlineArgs::Instance().getDeveloper()) {
-            initialize(tag, arg);
-        }
+        if (writeToStdout || CmdlineArgs::Instance().getDeveloper()) {initialize(tag, arg);}
     }
-
     Trace(const char* tag, int arg,
           bool writeToStdout=false, bool time=true)
             : m_writeToStdout(writeToStdout),
               m_time(time) {
-        if (writeToStdout || CmdlineArgs::Instance().getDeveloper()) {
-            initialize(tag, QString::number(arg));
-        }
+        if (writeToStdout || CmdlineArgs::Instance().getDeveloper()) {initialize(tag, QString::number(arg));}
     }
-
     Trace(const char* tag, const QString& arg,
           bool writeToStdout=false, bool time=true)
             : m_writeToStdout(writeToStdout),
               m_time(time) {
-        if (writeToStdout || CmdlineArgs::Instance().getDeveloper()) {
-            initialize(tag, arg);
-        }
+        if (writeToStdout || CmdlineArgs::Instance().getDeveloper()) {initialize(tag, arg);}
     }
-
     virtual ~Trace() {
         // Proxy for whether initialize was called.
         if (!m_tag.isEmpty()) {
             Event::end(m_tag);
-
             qint64 elapsed = m_time ? m_timer.elapsed() : 0;
             if (m_writeToStdout) {
                 if (m_time) {
@@ -66,7 +56,6 @@ class Trace {
             }
         }
     }
-
   private:
     void initialize(const QString& key, const QString& arg) {
         if (arg.isEmpty()) {
@@ -74,20 +63,13 @@ class Trace {
         } else {
             m_tag = key.arg(arg);
         }
-
         Event::start(m_tag);
-        if (m_time) {
-            m_timer.start();
-        }
-        if (m_writeToStdout) {
-            qDebug() << "START [" << m_tag << "]";
-        }
+        if (m_time) {m_timer.start();}
+        if (m_writeToStdout) {qDebug() << "START [" << m_tag << "]";}
     }
-
     QString m_tag;
     const bool m_writeToStdout, m_time;
     PerformanceTimer m_timer;
-
 };
 
 class DebugTrace : public Trace {
@@ -95,8 +77,7 @@ class DebugTrace : public Trace {
     DebugTrace(const char* tag, bool time=true)
             : Trace(tag, "", CmdlineArgs::Instance().getDeveloper(), time) {
     }
-    virtual ~DebugTrace() {
-    }
+    virtual ~DebugTrace() {}
 };
 
 #endif /* TRACE_H */

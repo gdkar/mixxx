@@ -15,7 +15,6 @@
 #include "BeatTrack.h"
 
 #include "../dsp/DetectionFunction.h"
-#include "../dsp/PeakPicking.h"
 #include "../dsp/TempoTrack.h"
 #include "../dsp/TempoTrackV2.h"
 #include "../dsp/GetKeyMode.h"

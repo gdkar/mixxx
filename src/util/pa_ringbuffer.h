@@ -171,7 +171,6 @@ long PaUtil_ReadRingBuffer( PaUtilRingBuffer *rbuf, void *data, long elementCoun
 long PaUtil_GetRingBufferWriteRegions( PaUtilRingBuffer *rbuf, long elementCount,
                                        void **dataPtr1, long *sizePtr1,
                                        void **dataPtr2, long *sizePtr2 );
-
 /** Advance the write index to the next location to be written.
 
  @param rbuf The ring buffer.
@@ -181,7 +180,6 @@ long PaUtil_GetRingBufferWriteRegions( PaUtilRingBuffer *rbuf, long elementCount
  @return The new position.
 */
 long PaUtil_AdvanceRingBufferWriteIndex( PaUtilRingBuffer *rbuf, long elementCount );
-
 /** Get address of region(s) from which we can read data.
 
  @param rbuf The ring buffer.
@@ -205,7 +203,6 @@ long PaUtil_AdvanceRingBufferWriteIndex( PaUtilRingBuffer *rbuf, long elementCou
 long PaUtil_GetRingBufferReadRegions( PaUtilRingBuffer *rbuf, long elementCount,
                                       void **dataPtr1, long *sizePtr1,
                                       void **dataPtr2, long *sizePtr2 );
-
 /** Advance the read index to the next location to be read.
 
  @param rbuf The ring buffer.
@@ -215,7 +212,6 @@ long PaUtil_GetRingBufferReadRegions( PaUtilRingBuffer *rbuf, long elementCount,
  @return The new position.
 */
 long PaUtil_AdvanceRingBufferReadIndex( PaUtilRingBuffer *rbuf, long elementCount );
-
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
