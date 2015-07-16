@@ -57,7 +57,6 @@
 #include <math.h>
 #include <string.h>
 
-#include "util/pa_memorybarrier.h"
 #include "util/pa_ringbuffer.h"
 
 /***************************************************************************

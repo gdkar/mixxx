@@ -8,13 +8,11 @@ int XmlParse::selectNodeInt(const QDomNode& nodeHeader, const QString& sNode) {
     return selectNode(nodeHeader, sNode).toElement().text().toInt();
 }
 
-float XmlParse::selectNodeFloat(const QDomNode& nodeHeader,
-                                const QString& sNode) {
+float XmlParse::selectNodeFloat(const QDomNode& nodeHeader,const QString& sNode) {
     return selectNode(nodeHeader, sNode).toElement().text().toFloat();
 }
 
-QDomNode XmlParse::selectNode(const QDomNode& nodeHeader,
-                              const QString& sNode) {
+QDomNode XmlParse::selectNode(const QDomNode& nodeHeader,const QString& sNode) {
     QDomNode node = nodeHeader.firstChild();
     while (!node.isNull()) {
         if (node.nodeName() == sNode)
@@ -24,8 +22,7 @@ QDomNode XmlParse::selectNode(const QDomNode& nodeHeader,
     return node;
 }
 
-QDomElement XmlParse::selectElement(const QDomNode& nodeHeader,
-                                    const QString& sNode) {
+QDomElement XmlParse::selectElement(const QDomNode& nodeHeader,const QString& sNode) {
     QDomNode node = nodeHeader.firstChild();
     while (!node.isNull()) {
         if (node.nodeName() == sNode) {
@@ -40,11 +37,9 @@ QDomElement XmlParse::selectElement(const QDomNode& nodeHeader,
     return QDomElement();
 }
 
-QString XmlParse::selectNodeQString(const QDomNode& nodeHeader,
-                                    const QString& sNode) {
+QString XmlParse::selectNodeQString(const QDomNode& nodeHeader,const QString& sNode) {
     QDomNode node = selectNode(nodeHeader, sNode);
-    if (!node.isNull())
-        return node.toElement().text();
+    if (!node.isNull())return node.toElement().text();
     return QString("");
 }
 
@@ -58,13 +53,9 @@ QDomElement XmlParse::openXMLFile(const QString& path, const QString& name) {
     QString error;
     int line, col;
     if (!doc.setContent(&file, &error, &line, &col)) {
-        QString errorString = QString("%1 at line %2, column %3")
-                                .arg(error).arg(line).arg(col);
-
-        QString errorLog = QString("Error parsing XML file %1: %2")
-                            .arg(file.fileName(), errorString);
+        QString errorString = QString("%1 at line %2, column %3").arg(error).arg(line).arg(col);
+        QString errorLog = QString("Error parsing XML file %1: %2").arg(file.fileName(), errorString);
         qWarning() << errorLog;
-
         // Set up error dialog
         ErrorDialogProperties* props = ErrorDialogHandler::instance()->newDialogProperties();
         props->setType(DLG_WARNING);
@@ -73,20 +64,14 @@ QDomElement XmlParse::openXMLFile(const QString& path, const QString& name) {
         props->setInfoText(errorString);
         props->setModal(false); // Don't block the GUI
 
-        // Display it
         ErrorDialogHandler* dialogHandler = ErrorDialogHandler::instance();
-        if (dialogHandler) {
-            dialogHandler->requestErrorDialog(props);
-        }
-
+        if (dialogHandler) {dialogHandler->requestErrorDialog(props);}
         file.close();
         return QDomElement();
     }
-
     file.close();
     return doc.documentElement();
 }
-
 QDomElement XmlParse::addElement(QDomDocument& doc,
                                  QDomElement& header,
                                  const QString& sElementName,

@@ -12,13 +12,10 @@ class TapFilter : public QObject {
   public:
     TapFilter(QObject *pParent, int filterLength, int maxInterval);
     virtual ~TapFilter();
-
   public slots:
     void tap();
-
   signals:
     void tapped(double averageLength, int numSamples);
-
   private:
     QTime m_timer;
     MovingInterquartileMean m_mean;

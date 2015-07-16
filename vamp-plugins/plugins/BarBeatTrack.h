@@ -13,6 +13,9 @@
 */
 #pragma once
 #include <vamp-sdk/Plugin.h>
+#include <memory>
+#include <utility>
+#include <algorithm>
 class BarBeatTrackerData;
 class BarBeatTracker : public Vamp::Plugin{
 public:

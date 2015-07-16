@@ -8,7 +8,6 @@ class BaseReferenceHolder {
     BaseReferenceHolder() { }
     virtual ~BaseReferenceHolder() { }
 };
-
 template <class T>
 class ReferenceHolder : public BaseReferenceHolder {
   public:
@@ -16,7 +15,6 @@ class ReferenceHolder : public BaseReferenceHolder {
             : m_reference(reference) {
     }
     virtual ~ReferenceHolder() {}
-
   private:
     QSharedPointer<T> m_reference;
 };

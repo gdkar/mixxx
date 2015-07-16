@@ -20,12 +20,12 @@ class FontUtils {
         if (CmdlineArgs::Instance().getDeveloper()) {
             QFontDatabase database;
             QStringList families = QFontDatabase::applicationFontFamilies(result);
-            foreach (const QString& family, families) {
+            for(const auto & family: families) {
                 QStringList styles = database.styles(family);
-                foreach (const QString& style, styles) {
+                for(auto & style: styles) {
                     QList<int> pointSizes = database.pointSizes(family, style);
                     QStringList pointSizesStr;
-                    foreach (int point, pointSizes) {
+                    for(auto point: pointSizes) {
                         pointSizesStr.append(QString::number(point));
                     }
                     qDebug() << "FONT LOADED family:" << family
