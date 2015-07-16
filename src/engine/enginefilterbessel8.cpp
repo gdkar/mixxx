@@ -10,7 +10,7 @@ EngineFilterBessel8Low::EngineFilterBessel8Low(int sampleRate,
 void EngineFilterBessel8Low::setFrequencyCorners(int sampleRate,
                                                  double freqCorner1) {
     // Copy the old coefficients into m_oldCoef
-    setCoefs("LpBe8", sampleRate, freqCorner1);
+    setCoefs(8,sampleRate,"LpBe8", freqCorner1);
 }
 
 
@@ -61,7 +61,7 @@ int EngineFilterBessel8Low::setFrequencyCornersForIntDelay(
         quantizedRatio = delayRatioTable[iDelay];
     }
 
-    setCoefs("LpBe8", 1, quantizedRatio);
+    setCoefs(8,1,"LpBe8", quantizedRatio);
     return iDelay;
 }
 
@@ -74,7 +74,7 @@ EngineFilterBessel8Band::EngineFilterBessel8Band(int sampleRate,
 void EngineFilterBessel8Band::setFrequencyCorners(int sampleRate,
                                                   double freqCorner1,
                                                   double freqCorner2) {
-    setCoefs("BpBe8", sampleRate, freqCorner1, freqCorner2);
+    setCoefs(16,sampleRate,"BpBe8", freqCorner1, freqCorner2);
 }
 
 
@@ -85,5 +85,5 @@ EngineFilterBessel8High::EngineFilterBessel8High(int sampleRate,
 
 void EngineFilterBessel8High::setFrequencyCorners(int sampleRate,
                                                   double freqCorner1) {
-    setCoefs("HpBe8", sampleRate, freqCorner1);
+    setCoefs(8,sampleRate,"HpBe8", freqCorner1);
 }

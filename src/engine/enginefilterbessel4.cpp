@@ -10,7 +10,7 @@ EngineFilterBessel4Low::EngineFilterBessel4Low(int sampleRate,
 void EngineFilterBessel4Low::setFrequencyCorners(int sampleRate,
                                                  double freqCorner1) {
     // Copy the old coefficients into m_oldCoef
-    setCoefs("LpBe4", sampleRate, freqCorner1);
+    setCoefs(4,sampleRate,"LpBe4", freqCorner1);
 }
 
 int EngineFilterBessel4Low::setFrequencyCornersForIntDelay(
@@ -53,7 +53,7 @@ int EngineFilterBessel4Low::setFrequencyCornersForIntDelay(
         quantizedRatio = delayRatioTable[iDelay];
     }
 
-    setCoefs("LpBe4", 1, quantizedRatio);
+    setCoefs(4,1,"LpBe4", quantizedRatio);
     return iDelay;
 }
 
@@ -66,7 +66,7 @@ EngineFilterBessel4Band::EngineFilterBessel4Band(int sampleRate,
 void EngineFilterBessel4Band::setFrequencyCorners(int sampleRate,
                                                   double freqCorner1,
                                                   double freqCorner2) {
-    setCoefs("BpBe4", sampleRate, freqCorner1, freqCorner2);
+    setCoefs(8,sampleRate,"BpBe4", freqCorner1, freqCorner2);
 }
 
 
@@ -77,5 +77,5 @@ EngineFilterBessel4High::EngineFilterBessel4High(int sampleRate,
 
 void EngineFilterBessel4High::setFrequencyCorners(int sampleRate,
                                                   double freqCorner1) {
-    setCoefs("HpBe4", sampleRate, freqCorner1);
+    setCoefs(4,sampleRate,"HpBe4", freqCorner1);
 }
