@@ -14,7 +14,7 @@
 */
 
 #include "PeakPicking.h"
-#include "Polyfit.h"
+#include "Polyfit2.h"
 
 #include <iostream>
 #include <cstring>
@@ -97,8 +97,6 @@ int PeakPicking::quadEval( vector<float> &src, vector<int> &idx )
     vector <float> m_poly;
     vector <float> m_err;
 
-    float p;
-
     m_poly.push_back(0);
     m_poly.push_back(0);
     m_poly.push_back(0);
@@ -128,7 +126,7 @@ int PeakPicking::quadEval( vector<float> &src, vector<int> &idx )
 	    m_maxFit.push_back(selMax);			
 	}
 
-	p = TPolyFit::PolyFit2( m_err, m_maxFit, m_poly);
+	TPolyFit::PolyFit2<float>( m_err, m_maxFit, m_poly);
 
 	float f = m_poly[0];
 	float g = m_poly[1];
