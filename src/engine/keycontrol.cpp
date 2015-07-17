@@ -9,7 +9,7 @@
 #include "engine/enginebuffer.h"
 #include "track/keyutils.h"
 
-static const double kLockOriginalKey = 0;
+//static const double kLockOriginalKey = 0;
 static const double kLockCurrentKey = 1;
 
 KeyControl::KeyControl(QString group,
@@ -90,6 +90,7 @@ KeyControl::KeyControl(QString group,
             Qt::DirectConnection);
 
     m_pRateDir = ControlObject::getControl(ConfigKey(group, "rate_dir"));
+    ck
     connect(m_pRateDir, SIGNAL(valueChanged(double)),
             this, SLOT(slotRateChanged()),
             Qt::DirectConnection);

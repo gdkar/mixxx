@@ -39,10 +39,8 @@ class DlgPrefLibrary : public DlgPreferencePage, public Ui::DlgPrefLibraryDlg  {
         ADD_TRACK_BOTTOM, // Add track to Auto-DJ Queue (bottom).
         ADD_TRACK_TOP     // Add track to Auto-DJ Queue (top).
     };
-
     DlgPrefLibrary(QWidget *parent, ConfigObject<ConfigValue> *config,Library *pLibrary);
     virtual ~DlgPrefLibrary();
-
   public slots:
     // Common preference page slots.
     void slotUpdate();
@@ -51,13 +49,11 @@ class DlgPrefLibrary : public DlgPreferencePage, public Ui::DlgPrefLibraryDlg  {
     void slotResetToDefaults();
     void slotApply();
     void slotCancel();
-
     // Dialog to browse for music file directory
     void slotAddDir();
     void slotRemoveDir();
     void slotRelocateDir();
     void slotExtraPlugins();
-
   signals:
     void apply();
     void scanLibrary();
@@ -66,15 +62,12 @@ class DlgPrefLibrary : public DlgPreferencePage, public Ui::DlgPrefLibraryDlg  {
     void requestRelocateDir(QString currentDir, QString newDir);
     void setTrackTableFont(const QFont& font);
     void setTrackTableRowHeight(int rowHeight);
-
   private slots:
     void slotRowHeightValueChanged(int);
     void slotSelectFont();
-
   private:
     void initialiseDirList();
     void setLibraryFont(const QFont& font);
-
     QStandardItemModel m_dirListModel;
     ConfigObject<ConfigValue>* m_pconfig;
     Library* m_pLibrary;
@@ -82,5 +75,4 @@ class DlgPrefLibrary : public DlgPreferencePage, public Ui::DlgPrefLibraryDlg  {
     QFont m_originalTrackTableFont;
     int m_iOriginalTrackTableRowHeight;
 };
-
 #endif

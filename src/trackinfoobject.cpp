@@ -837,25 +837,16 @@ QString TrackInfoObject::getURL() {
     QMutexLocker lock(&m_qMutex);
     return m_sURL;
 }
-
-ConstWaveformPointer TrackInfoObject::getWaveform() {
-    return m_waveform;
-}
-
+ConstWaveformPointer TrackInfoObject::getWaveform() {return m_waveform;}
 void TrackInfoObject::setWaveform(ConstWaveformPointer pWaveform) {
     m_waveform = pWaveform;
     emit(waveformUpdated());
 }
-
-ConstWaveformPointer TrackInfoObject::getWaveformSummary() const {
-    return m_waveformSummary;
-}
-
+ConstWaveformPointer TrackInfoObject::getWaveformSummary() const {return m_waveformSummary;}
 void TrackInfoObject::setWaveformSummary(ConstWaveformPointer pWaveform) {
     m_waveformSummary = pWaveform;
     emit(waveformSummaryUpdated());
 }
-
 void TrackInfoObject::setAnalyserProgress(int progress) {
     // progress in 0 .. 1000. 
     if (progress != atomic_load(&m_analyserProgress)) {
@@ -863,10 +854,7 @@ void TrackInfoObject::setAnalyserProgress(int progress) {
         emit(analyserProgress(progress));
     }
 }
-int TrackInfoObject::getAnalyserProgress() const {
-    return atomic_load(&m_analyserProgress);
-}
-
+int TrackInfoObject::getAnalyserProgress() const {return m_analyserProgress.load();}
 void TrackInfoObject::setCuePoint(float cue) {
     QMutexLocker lock(&m_qMutex);
     if (m_fCuePoint != cue) {
@@ -874,17 +862,14 @@ void TrackInfoObject::setCuePoint(float cue) {
         setDirty(true);
     }
 }
-
 float TrackInfoObject::getCuePoint() {
     QMutexLocker lock(&m_qMutex);
     return m_fCuePoint;
 }
-
 void TrackInfoObject::slotCueUpdated() {
     setDirty(true);
     emit(cuesUpdated());
 }
-
 Cue* TrackInfoObject::addCue() {
     //qDebug() << "TrackInfoObject::addCue()";
     QMutexLocker lock(&m_qMutex);
@@ -896,7 +881,6 @@ Cue* TrackInfoObject::addCue() {
     emit(cuesUpdated());
     return cue;
 }
-
 void TrackInfoObject::removeCue(Cue* cue) {
     QMutexLocker lock(&m_qMutex);
     disconnect(cue, 0, this, 0);
@@ -906,12 +890,10 @@ void TrackInfoObject::removeCue(Cue* cue) {
     lock.unlock();
     emit(cuesUpdated());
 }
-
 const QList<Cue*>& TrackInfoObject::getCuePoints() {
     QMutexLocker lock(&m_qMutex);
     return m_cuePoints;
 }
-
 void TrackInfoObject::setCuePoints(QList<Cue*> cuePoints) {
     //qDebug() << "setCuePoints" << cuePoints.length();
     QMutexLocker lock(&m_qMutex);
@@ -930,55 +912,22 @@ void TrackInfoObject::setCuePoints(QList<Cue*> cuePoints) {
     lock.unlock();
     emit(cuesUpdated());
 }
-
 void TrackInfoObject::setDirty(bool bDirty) {
-
-    QMutexLocker lock(&m_qMutex);
-    bool change = m_bDirty != bDirty;
-    m_bDirty = bDirty;
-    lock.unlock();
-    // qDebug() << "Track" << m_iId << getInfo() << (change? "changed" : "unchanged")
-    //          << "set" << (bDirty ? "dirty" : "clean");
-    if (change) {
-        if (m_bDirty) {
-            emit(dirty(this));
-        } else {
-            emit(clean(this));
-        }
+    if(m_bDirty.exchange(bDirty)!=bDirty){
+      if(bDirty) emit(dirty(this));
+      else       emit(clean(this));
+      emit(changed(this));
     }
-    // Emit a changed signal regardless if this attempted to set us dirty.
-    if (bDirty) {
-        emit(changed(this));
-    }
-
-    //qDebug() << QString("TrackInfoObject %1 %2 set to %3").arg(QString::number(m_iId), m_fileInfo.absoluteFilePath(), m_bDirty ? "dirty" : "clean");
 }
-
-bool TrackInfoObject::isDirty() {
-    QMutexLocker lock(&m_qMutex);
-    return m_bDirty;
-}
-
-bool TrackInfoObject::locationChanged() {
-    QMutexLocker lock(&m_qMutex);
-    return m_bLocationChanged;
-}
-
-int TrackInfoObject::getRating() const {
-    QMutexLocker lock(&m_qMutex);
-    return m_Rating;
-}
-
+bool TrackInfoObject::isDirty() {        return m_bDirty.load();}
+bool TrackInfoObject::locationChanged() {return m_bLocationChanged.load();}
+int TrackInfoObject::getRating() const { return m_Rating.load();}
 void TrackInfoObject::setRating (int rating) {
-    QMutexLocker lock(&m_qMutex);
-    if (rating != m_Rating) {
-        m_Rating = rating;
+    if(m_Rating.exchange(rating)!=rating){
         setDirty(true);
-        lock.unlock();
         emit changed(this);
     }
 }
-
 void TrackInfoObject::setKeys(Keys keys) {
     QMutexLocker lock(&m_qMutex);
     setDirty(true);
@@ -989,18 +938,15 @@ void TrackInfoObject::setKeys(Keys keys) {
     emit(keyUpdated(KeyUtils::keyToNumericValue(newKey)));
     emit(keysUpdated());
 }
-
 const Keys& TrackInfoObject::getKeys() const {
     QMutexLocker lock(&m_qMutex);
     return m_keys;
 }
-
 mixxx::track::io::key::ChromaticKey TrackInfoObject::getKey() const {
     QMutexLocker lock(&m_qMutex);
     if (!m_keys.isValid()) {return mixxx::track::io::key::INVALID;}
     return m_keys.getGlobalKey();
 }
-
 void TrackInfoObject::setKey(mixxx::track::io::key::ChromaticKey key,mixxx::track::io::key::Source source) {
     QMutexLocker lock(&m_qMutex);
     bool dirty = false;
@@ -1010,24 +956,16 @@ void TrackInfoObject::setKey(mixxx::track::io::key::ChromaticKey key,mixxx::trac
     } else if (m_keys.getGlobalKey() != key) {
         m_keys = KeyFactory::makeBasicKeys(key, source);
     }
-
-    if (dirty) {
-        setDirty(true);
-    }
-
+    if (dirty) {setDirty(true);}
     // Might be INVALID. We don't care.
     mixxx::track::io::key::ChromaticKey newKey = m_keys.getGlobalKey();
     lock.unlock();
     emit(keyUpdated(KeyUtils::keyToNumericValue(newKey)));
     emit(keysUpdated());
 }
-
-void TrackInfoObject::setKeyText(QString key,
-                                 mixxx::track::io::key::Source source) {
+void TrackInfoObject::setKeyText(QString key,mixxx::track::io::key::Source source) {
     QMutexLocker lock(&m_qMutex);
-
     Keys newKeys = KeyFactory::makeBasicKeysFromText(key, source);
-
     // We treat this as dirtying if it is parsed to a different key or if we
     // fail to parse the key, if the text value is different from the current
     // text value.
@@ -1044,35 +982,21 @@ void TrackInfoObject::setKeyText(QString key,
         emit(keysUpdated());
     }
 }
-
 QString TrackInfoObject::getKeyText() const {
     QMutexLocker lock(&m_qMutex);
-
     mixxx::track::io::key::ChromaticKey key = m_keys.getGlobalKey();
-    if (key != mixxx::track::io::key::INVALID) {
-        return KeyUtils::keyToString(key);
-    }
-
+    if (key != mixxx::track::io::key::INVALID) {return KeyUtils::keyToString(key);}
     // Fall back on text global name.
     QString keyText = m_keys.getGlobalKeyText();
     return keyText;
 }
-
 void TrackInfoObject::setBpmLock(bool bpmLock) {
-    QMutexLocker lock(&m_qMutex);
-    if (bpmLock != m_bBpmLock) {
-        m_bBpmLock = bpmLock;
+    if(m_bBpmLock.exchange(bpmLock)!=bpmLock){
         setDirty(true);
-        lock.unlock();
         emit changed(this);
     }
 }
-
-bool TrackInfoObject::hasBpmLock() const {
-    QMutexLocker lock(&m_qMutex);
-    return m_bBpmLock;
-}
-
+bool TrackInfoObject::hasBpmLock() const {return m_bBpmLock.load();}
 void TrackInfoObject::setCoverInfo(const CoverInfo& info) {
     QMutexLocker lock(&m_qMutex);
     if (info != m_coverArt.info) {
@@ -1083,12 +1007,10 @@ void TrackInfoObject::setCoverInfo(const CoverInfo& info) {
         emit(coverArtUpdated());
     }
 }
-
 CoverInfo TrackInfoObject::getCoverInfo() const {
     QMutexLocker lock(&m_qMutex);
     return m_coverArt.info;
 }
-
 void TrackInfoObject::setCoverArt(const CoverArt& cover) {
     QMutexLocker lock(&m_qMutex);
     if (cover != m_coverArt) {
@@ -1098,7 +1020,6 @@ void TrackInfoObject::setCoverArt(const CoverArt& cover) {
         emit(coverArtUpdated());
     }
 }
-
 CoverArt TrackInfoObject::getCoverArt() const {
     QMutexLocker lock(&m_qMutex);
     return m_coverArt;

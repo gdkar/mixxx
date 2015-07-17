@@ -33,8 +33,8 @@ EngineDeck::EngineDeck(const ChannelHandleAndGroup& handle_group,
         : EngineChannel(handle_group, defaultOrientation, qobject_cast<QObject*>(pMixingEngine)),
           m_pConfig(pConfig),
           m_pEngineEffectsManager(pEffectsManager ? pEffectsManager->getEngineEffectsManager() : nullptr),
-          m_pPassing(ConfigKey(getGroup(), "passthrough")),
           m_pSampleRate("[Master]","samplerate"),
+          m_pPassing(ConfigKey(getGroup(), "passthrough")),
           // Need a +1 here because the CircularBuffer only allows its size-1
           // items to be held at once (it keeps a blank spot open persistently)
           m_sampleBuffer(nullptr) {

@@ -24,7 +24,6 @@ class TrackModel {
               m_eDefaultSortOrder(Qt::AscendingOrder) {
     }
     virtual ~TrackModel() {}
-
     // These enums are the bits in a bitvector. Any individual column cannot
     // have a value other than 0, 1, 2, 4, or 8!
     enum Capabilities {
@@ -48,21 +47,16 @@ class TrackModel {
         TRACKMODELCAPS_PURGE             = 0x10000
     };
     typedef int CapabilitiesFlags; /** Enables us to do ORing */
-
     // Deserialize and return the track at the given QModelIndex in this result
     // set.
     virtual TrackPointer getTrack(const QModelIndex& index) const = 0;
-
     // Gets the on-disk location of the track at the given location.
     virtual QString getTrackLocation(const QModelIndex& index) const = 0;
-
     // Gets the track ID of the track at the given QModelIndex
     virtual int getTrackId(const QModelIndex& index) const = 0;
-
     // Gets the row of the track in the current result set. Returns -1 if the
     // track ID is not present in the result set.
     virtual const QLinkedList<int> getTrackRows(int trackId) const = 0;
-
     bool isTrackModel() { return true;}
     virtual void search(const QString& searchText, const QString& extraFilter=QString()) = 0;
     virtual const QString currentSearch() const = 0;
@@ -72,26 +66,16 @@ class TrackModel {
     virtual bool isColumnHiddenByDefault(int column) = 0;
     virtual const QList<int>& showableColumns() const { return m_emptyColumns; }
     virtual const QList<int>& searchColumns() const { return m_emptyColumns; }
-
-    virtual void removeTracks(const QModelIndexList& indices) {
-        Q_UNUSED(indices);
-    }
-    virtual void hideTracks(const QModelIndexList& indices) {
-        Q_UNUSED(indices);
-    }
-    virtual void unhideTracks(const QModelIndexList& indices) {
-        Q_UNUSED(indices);
-    }
-    virtual void purgeTracks(const QModelIndexList& indices) {
-        Q_UNUSED(indices);
-    }
+    virtual void removeTracks(const QModelIndexList& indices) {Q_UNUSED(indices);}
+    virtual void hideTracks(const QModelIndexList& indices) {Q_UNUSED(indices);}
+    virtual void unhideTracks(const QModelIndexList& indices) {Q_UNUSED(indices);}
+    virtual void purgeTracks(const QModelIndexList& indices) {Q_UNUSED(indices);}
     virtual int addTracks(const QModelIndex& index, const QList<QString>& locations) {
         Q_UNUSED(index);
         Q_UNUSED(locations);
         return 0;
     }
-    virtual void moveTrack(const QModelIndex& sourceIndex,
-                           const QModelIndex& destIndex) {
+    virtual void moveTrack(const QModelIndex& sourceIndex,const QModelIndex& destIndex) {
         Q_UNUSED(sourceIndex);
         Q_UNUSED(destIndex);
     }
@@ -117,33 +101,21 @@ class TrackModel {
         QString key = m_settingsNamespace + "." + name;
         return settings.setValue(key, value);
     }
-
-    virtual int defaultSortColumn() const {
-        return m_iDefaultSortColumn;
-    }
-
-    virtual Qt::SortOrder defaultSortOrder() const {
-        return m_eDefaultSortOrder;
-    }
-
+    virtual int defaultSortColumn() const {return m_iDefaultSortColumn;}
+    virtual Qt::SortOrder defaultSortOrder() const {return m_eDefaultSortOrder;}
     virtual void setDefaultSort(int sortColumn, Qt::SortOrder sortOrder) {
         m_iDefaultSortColumn = sortColumn;
         m_eDefaultSortOrder = sortOrder;
     }
-
     virtual bool isColumnSortable(int column) {
         Q_UNUSED(column);
         return true;
     }
-
     virtual int fieldIndex(const QString& fieldName) const {
         Q_UNUSED(fieldName);
         return -1;
     }
-
-    virtual void select() {
-    }
-
+    virtual void select() {}
   private:
     QSqlDatabase m_db;
     QString m_settingsNamespace;
@@ -151,5 +123,4 @@ class TrackModel {
     int m_iDefaultSortColumn;
     Qt::SortOrder m_eDefaultSortOrder;
 };
-
 #endif

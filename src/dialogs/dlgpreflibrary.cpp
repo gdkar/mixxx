@@ -40,7 +40,6 @@ DlgPrefLibrary::DlgPrefLibrary(QWidget * parent,
     setupUi(this);
     slotUpdate();
     checkbox_ID3_sync->setVisible(false);
-
     connect(this, SIGNAL(requestAddDir(QString)),
             m_pLibrary, SLOT(slotRequestAddDir(QString)));
     connect(this, SIGNAL(requestRemoveDir(QString, Library::RemovalType)),
@@ -56,67 +55,44 @@ DlgPrefLibrary::DlgPrefLibrary(QWidget * parent,
     //connect(pushButtonM4A, SIGNAL(clicked()), this, SLOT(slotM4ACheck()));
     connect(pushButtonExtraPlugins, SIGNAL(clicked()),
             this, SLOT(slotExtraPlugins()));
-
     // plugins are loaded in src/main.cpp way early in boot so this is safe
     // here, doesn't need done at every slotUpdate
     QStringList plugins(SoundSourceProxy::getSupportedFileExtensionsByPlugins());
-    if (plugins.length() > 0) {
-        pluginsLabel->setText(plugins.join(", "));
-    }
-
+    if (plugins.length() > 0) {pluginsLabel->setText(plugins.join(", "));}
     // Set default direction as stored in config file
     int rowHeight = m_pLibrary->getTrackTableRowHeight();
     spinBoxRowHeight->setValue(rowHeight);
-    connect(spinBoxRowHeight, SIGNAL(valueChanged(int)),
-            this, SLOT(slotRowHeightValueChanged(int)));
-
-    connect(libraryFontButton, SIGNAL(clicked()),
-            this, SLOT(slotSelectFont()));
-    connect(this, SIGNAL(setTrackTableFont(QFont)),
-            m_pLibrary, SLOT(slotSetTrackTableFont(QFont)));
-    connect(this, SIGNAL(setTrackTableRowHeight(int)),
-            m_pLibrary, SLOT(slotSetTrackTableRowHeight(int)));
+    connect(spinBoxRowHeight, SIGNAL(valueChanged(int)), this, SLOT(slotRowHeightValueChanged(int)));
+    connect(libraryFontButton, SIGNAL(clicked()),        this, SLOT(slotSelectFont()));
+    connect(this, SIGNAL(setTrackTableFont(QFont)),      m_pLibrary, SLOT(slotSetTrackTableFont(QFont)));
+    connect(this, SIGNAL(setTrackTableRowHeight(int)),   m_pLibrary, SLOT(slotSetTrackTableRowHeight(int)));
 }
-
-DlgPrefLibrary::~DlgPrefLibrary() {
-}
-
-void DlgPrefLibrary::slotShow() {
-    m_baddedDirectory = false;
-}
-
+DlgPrefLibrary::~DlgPrefLibrary() {}
+void DlgPrefLibrary::slotShow() {m_baddedDirectory = false;}
 void DlgPrefLibrary::slotHide() {
-    if (!m_baddedDirectory) {
-        return;
-    }
-
+    if (!m_baddedDirectory) {return;}
     QMessageBox msgBox;
     msgBox.setIcon(QMessageBox::Warning);
     msgBox.setWindowTitle(tr("Music Directory Added"));
     msgBox.setText(tr("You added one or more music directories. The tracks in "
                       "these directories won't be available until you rescan "
                       "your library. Would you like to rescan now?"));
-    QPushButton* scanButton = msgBox.addButton(
-        tr("Scan"), QMessageBox::AcceptRole);
+    QPushButton* scanButton = msgBox.addButton(tr("Scan"), QMessageBox::AcceptRole);
     msgBox.addButton(QMessageBox::Cancel);
     msgBox.setDefaultButton(scanButton);
     msgBox.exec();
-
     if (msgBox.clickedButton() == scanButton) {
         emit(scanLibrary());
         return;
     }
 }
-
 void DlgPrefLibrary::initialiseDirList() {
     // save which index was selected
     const QString selected = dirList->currentIndex().data().toString();
     // clear and fill model
     m_dirListModel.clear();
     QStringList dirs = m_pLibrary->getDirs();
-    foreach (QString dir, dirs) {
-        m_dirListModel.appendRow(new QStandardItem(dir));
-    }
+    for(auto & dir: dirs) {m_dirListModel.appendRow(new QStandardItem(dir));}
     dirList->setModel(&m_dirListModel);
     dirList->setCurrentIndex(m_dirListModel.index(0, 0));
     // reselect index if it still exists
@@ -128,11 +104,7 @@ void DlgPrefLibrary::initialiseDirList() {
         }
     }
 }
-
-void DlgPrefLibrary::slotExtraPlugins() {
-    QDesktopServices::openUrl(QUrl(MIXXX_ADDONS_URL));
-}
-
+void DlgPrefLibrary::slotExtraPlugins() {QDesktopServices::openUrl(QUrl(MIXXX_ADDONS_URL));}
 void DlgPrefLibrary::slotResetToDefaults() {
     checkBox_library_scan->setChecked(false);
     checkbox_ID3_sync->setChecked(false);
@@ -147,7 +119,6 @@ void DlgPrefLibrary::slotResetToDefaults() {
     spinBoxRowHeight->setValue(Library::kDefaultRowHeightPx);
     setLibraryFont(QApplication::font());
 }
-
 void DlgPrefLibrary::slotUpdate() {
     initialiseDirList();
     checkBox_library_scan->setChecked((bool)m_pconfig->getValueString(
@@ -165,8 +136,7 @@ void DlgPrefLibrary::slotUpdate() {
     checkBox_show_traktor->setChecked((bool)m_pconfig->getValueString(
             ConfigKey("[Library]","ShowTraktorLibrary"),"1").toInt());
 
-    switch (m_pconfig->getValueString(ConfigKey("[Library]","TrackLoadAction"),
-                                      QString::number(LOAD_TRACK_DECK)).toInt()) {
+    switch (m_pconfig->getValueString(ConfigKey("[Library]","TrackLoadAction"),QString::number(LOAD_TRACK_DECK)).toInt()) {
     case ADD_TRACK_BOTTOM:
             radioButton_dbclick_bottom->setChecked(true);
             break;
@@ -177,19 +147,16 @@ void DlgPrefLibrary::slotUpdate() {
             radioButton_dbclick_deck->setChecked(true);
             break;
     }
-
     m_originalTrackTableFont = m_pLibrary->getTrackTableFont();
     m_iOriginalTrackTableRowHeight = m_pLibrary->getTrackTableRowHeight();
     spinBoxRowHeight->setValue(m_iOriginalTrackTableRowHeight);
     setLibraryFont(m_originalTrackTableFont);
 }
-
 void DlgPrefLibrary::slotCancel() {
     // Undo any changes in the library font or row height.
     emit(setTrackTableRowHeight(m_iOriginalTrackTableRowHeight));
     emit(setTrackTableFont(m_originalTrackTableFont));
 }
-
 void DlgPrefLibrary::slotAddDir() {
     QString fd = QFileDialog::getExistingDirectory(
         this, tr("Choose a music directory"),
@@ -200,15 +167,12 @@ void DlgPrefLibrary::slotAddDir() {
         m_baddedDirectory = true;
     }
 }
-
 void DlgPrefLibrary::slotRemoveDir() {
     QModelIndex index = dirList->currentIndex();
     QString fd = index.data().toString();
     QMessageBox removeMsgBox;
-
     removeMsgBox.setIcon(QMessageBox::Warning);
     removeMsgBox.setWindowTitle(tr("Confirm Directory Removal"));
-
     removeMsgBox.setText(tr(
         "Mixxx will no longer watch this directory for new tracks. "
         "What would you like to do with the tracks from this directory and "
@@ -235,15 +199,10 @@ void DlgPrefLibrary::slotRemoveDir() {
         tr("Leave Tracks Unchanged"), QMessageBox::AcceptRole);
     removeMsgBox.setDefaultButton(cancelButton);
     removeMsgBox.exec();
-
-    if (removeMsgBox.clickedButton() == cancelButton) {
-        return;
-    }
-
+    if (removeMsgBox.clickedButton() == cancelButton) {return;}
     bool deleteAll = removeMsgBox.clickedButton() == deleteAllButton;
     bool hideAll = removeMsgBox.clickedButton() == hideAllButton;
     bool leaveUnchanged = removeMsgBox.clickedButton() == leaveUnchangedButton;
-
     Library::RemovalType removalType = Library::LeaveTracksUnchanged;
     if (leaveUnchanged) {
         removalType = Library::LeaveTracksUnchanged;
@@ -252,15 +211,12 @@ void DlgPrefLibrary::slotRemoveDir() {
     } else if (hideAll) {
         removalType = Library::HideTracks;
     }
-
     emit(requestRemoveDir(fd, removalType));
     slotUpdate();
 }
-
 void DlgPrefLibrary::slotRelocateDir() {
     QModelIndex index = dirList->currentIndex();
     QString currentFd = index.data().toString();
-
     // If the selected directory exists, use it. If not, go up one directory (if
     // that directory exists). If neither exist, use the default music
     // directory.
@@ -269,19 +225,14 @@ void DlgPrefLibrary::slotRelocateDir() {
     if (!dir.exists() && dir.cdUp()) {
         startDir = dir.absolutePath();
     } else if (!dir.exists()) {
-        startDir = QDesktopServices::storageLocation(
-            QDesktopServices::MusicLocation);
+        startDir = QDesktopServices::storageLocation(QDesktopServices::MusicLocation);
     }
-
-    QString fd = QFileDialog::getExistingDirectory(
-        this, tr("Relink music directory to new location"), startDir);
-
-    if (!fd.isEmpty()) {
+    QString fd = QFileDialog::getExistingDirectory(this, tr("Relink music directory to new location"), startDir);
+    if (!fd.isEmpty() && fd!=currentFd) {
         emit(requestRelocateDir(currentFd, fd));
         slotUpdate();
     }
 }
-
 void DlgPrefLibrary::slotApply() {
     m_pconfig->set(ConfigKey("[Library]","RescanOnStartup"),
                 ConfigValue((int)checkBox_library_scan->isChecked()));
@@ -305,21 +256,15 @@ void DlgPrefLibrary::slotApply() {
     } else {
             dbclick_status = LOAD_TRACK_DECK;
     }
-    m_pconfig->set(ConfigKey("[Library]","TrackLoadAction"),
-                ConfigValue(dbclick_status));
-
+    m_pconfig->set(ConfigKey("[Library]","TrackLoadAction"),ConfigValue(dbclick_status));
     QFont font = m_pLibrary->getTrackTableFont();
     if (m_originalTrackTableFont != font) {
-        m_pconfig->set(ConfigKey("[Library]", "Font"),
-                       ConfigValue(font.toString()));
+        m_pconfig->set(ConfigKey("[Library]", "Font"),ConfigValue(font.toString()));
     }
-
     int rowHeight = spinBoxRowHeight->value();
     if (m_iOriginalTrackTableRowHeight != rowHeight) {
-        m_pconfig->set(ConfigKey("[Library]","RowHeight"),
-                       ConfigValue(rowHeight));
+        m_pconfig->set(ConfigKey("[Library]","RowHeight"),ConfigValue(rowHeight));
     }
-
     // TODO(rryan): Don't save here.
     m_pconfig->Save();
 }
@@ -327,27 +272,18 @@ void DlgPrefLibrary::slotApply() {
 void DlgPrefLibrary::slotRowHeightValueChanged(int height) {
     emit(setTrackTableRowHeight(height));
 }
-
 void DlgPrefLibrary::setLibraryFont(const QFont& font) {
-    libraryFont->setText(QString("%1 %2 %3pt").arg(
-        font.family(), font.styleName(), QString::number(font.pointSizeF())));
+    libraryFont->setText(QString("%1 %2 %3pt").arg(font.family(), font.styleName(), QString::number(font.pointSizeF())));
     emit(setTrackTableFont(font));
-
     // Don't let the row height exceed the library height.
     QFontMetrics metrics(font);
     int fontHeight = metrics.height();
-    if (fontHeight > spinBoxRowHeight->value()) {
-        spinBoxRowHeight->setValue(fontHeight);
-    }
+    if (fontHeight > spinBoxRowHeight->value()) {spinBoxRowHeight->setValue(fontHeight);}
     spinBoxRowHeight->setMinimum(fontHeight);
 }
-
 void DlgPrefLibrary::slotSelectFont() {
     // False if the user cancels font selection.
     bool ok = false;
-    QFont font = QFontDialog::getFont(&ok, m_pLibrary->getTrackTableFont(),
-                                      this, tr("Select Library Font"));
-    if (ok) {
-        setLibraryFont(font);
-    }
+    QFont font = QFontDialog::getFont(&ok, m_pLibrary->getTrackTableFont(),this, tr("Select Library Font"));
+    if (ok) {setLibraryFont(font);}
 }

@@ -7,17 +7,12 @@
 void ColumnCache::setColumns(const QStringList& columns) {
     m_columnsByIndex.clear();
     m_columnsByIndex.append(columns);
-
     m_columnIndexByName.clear();
     for (int i = 0; i < columns.size(); ++i) {
         QString column = columns[i];
         m_columnIndexByName[column] = i;
     }
-
-    for (int i = 0; i < NUM_COLUMNS; ++i) {
-        m_columnIndexByEnum[i] = -1;
-    }
-
+    for (int i = 0; i < NUM_COLUMNS; ++i) {m_columnIndexByEnum[i] = -1;}
     m_columnIndexByEnum[COLUMN_LIBRARYTABLE_ID] = fieldIndex(LIBRARYTABLE_ID);
     m_columnIndexByEnum[COLUMN_LIBRARYTABLE_ARTIST] = fieldIndex(LIBRARYTABLE_ARTIST);
     m_columnIndexByEnum[COLUMN_LIBRARYTABLE_TITLE] = fieldIndex(LIBRARYTABLE_TITLE);
@@ -55,9 +50,7 @@ void ColumnCache::setColumns(const QStringList& columns) {
     m_columnIndexByEnum[COLUMN_LIBRARYTABLE_COVERART_TYPE] = fieldIndex(LIBRARYTABLE_COVERART_TYPE);
     m_columnIndexByEnum[COLUMN_LIBRARYTABLE_COVERART_LOCATION] = fieldIndex(LIBRARYTABLE_COVERART_LOCATION);
     m_columnIndexByEnum[COLUMN_LIBRARYTABLE_COVERART_HASH] = fieldIndex(LIBRARYTABLE_COVERART_HASH);
-
     m_columnIndexByEnum[COLUMN_TRACKLOCATIONSTABLE_FSDELETED] = fieldIndex(TRACKLOCATIONSTABLE_FSDELETED);
-
     m_columnIndexByEnum[COLUMN_PLAYLISTTRACKSTABLE_TRACKID] = fieldIndex(PLAYLISTTRACKSTABLE_TRACKID);
     m_columnIndexByEnum[COLUMN_PLAYLISTTRACKSTABLE_POSITION] = fieldIndex(PLAYLISTTRACKSTABLE_POSITION);
     m_columnIndexByEnum[COLUMN_PLAYLISTTRACKSTABLE_PLAYLISTID] = fieldIndex(PLAYLISTTRACKSTABLE_PLAYLISTID);
@@ -65,10 +58,8 @@ void ColumnCache::setColumns(const QStringList& columns) {
     m_columnIndexByEnum[COLUMN_PLAYLISTTRACKSTABLE_ARTIST] = fieldIndex(PLAYLISTTRACKSTABLE_ARTIST);
     m_columnIndexByEnum[COLUMN_PLAYLISTTRACKSTABLE_TITLE] = fieldIndex(PLAYLISTTRACKSTABLE_TITLE);
     m_columnIndexByEnum[COLUMN_PLAYLISTTRACKSTABLE_DATETIMEADDED] = fieldIndex(PLAYLISTTRACKSTABLE_DATETIMEADDED);
-
     m_columnIndexByEnum[COLUMN_CRATETRACKSTABLE_TRACKID] = fieldIndex(CRATETRACKSTABLE_TRACKID);
     m_columnIndexByEnum[COLUMN_CRATETRACKSTABLE_CRATEID] = fieldIndex(CRATETRACKSTABLE_CRATEID);
-
     const QString sortInt("cast(%1 as integer)");
     const QString sortNoCase("lower(%1)");
     m_columnSortByIndex.clear();
@@ -85,7 +76,6 @@ void ColumnCache::setColumns(const QStringList& columns) {
     m_columnSortByIndex.insert(m_columnIndexByEnum[COLUMN_LIBRARYTABLE_FILETYPE], sortNoCase);
     m_columnSortByIndex.insert(m_columnIndexByEnum[COLUMN_LIBRARYTABLE_LOCATION], sortNoCase);
     m_columnSortByIndex.insert(m_columnIndexByEnum[COLUMN_LIBRARYTABLE_COMMENT], sortNoCase);
-
     m_columnSortByIndex.insert(m_columnIndexByEnum[COLUMN_PLAYLISTTRACKSTABLE_LOCATION], sortNoCase);
     m_columnSortByIndex.insert(m_columnIndexByEnum[COLUMN_PLAYLISTTRACKSTABLE_ARTIST], sortNoCase);
     m_columnSortByIndex.insert(m_columnIndexByEnum[COLUMN_PLAYLISTTRACKSTABLE_TITLE], sortNoCase);

@@ -7,7 +7,8 @@
 #include "library/dao/trackdao.h"
 
 QVariant getTrackValueForColumn(const TrackPointer& pTrack, const QString& column) {
-    if (column == LIBRARYTABLE_ARTIST) {
+    return pTrack->property(column.toLocal8Bit().constData());
+/*    if (column == LIBRARYTABLE_ARTIST) {
         return pTrack->getArtist();
     } else if (column == LIBRARYTABLE_TITLE) {
         return pTrack->getTitle();
@@ -53,7 +54,7 @@ QVariant getTrackValueForColumn(const TrackPointer& pTrack, const QString& colum
         return pTrack->hasBpmLock();
     }
 
-    return QVariant();
+    return QVariant();*/
 }
 
 //static

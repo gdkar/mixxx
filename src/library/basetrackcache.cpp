@@ -39,7 +39,6 @@ BaseTrackCache::BaseTrackCache(TrackCollection* pTrackCollection,
                     << "comment"
                     << "title"
                     << "genre";
-
     // Convert all the search column names to their field indexes because we use
     // them a bunch.
     m_searchColumnIndices.resize(m_searchColumns.size());
@@ -47,94 +46,51 @@ BaseTrackCache::BaseTrackCache(TrackCollection* pTrackCollection,
         m_searchColumnIndices[i] = m_columnCache.fieldIndex(m_searchColumns[i]);
     }
 }
-
-BaseTrackCache::~BaseTrackCache() {
-    delete m_pQueryParser;
-}
-
-int BaseTrackCache::columnCount() const {
-    return m_columnCount;
-}
-
+BaseTrackCache::~BaseTrackCache() {}
+int BaseTrackCache::columnCount() const {return m_columnCount;}
 int BaseTrackCache::fieldIndex(ColumnCache::Column column) const {
     return m_columnCache.fieldIndex(column);
 }
-
 int BaseTrackCache::fieldIndex(const QString& columnName) const {
     return m_columnCache.fieldIndex(columnName);
 }
-
 QString BaseTrackCache::columnNameForFieldIndex(int index) const {
     return m_columnCache.columnNameForFieldIndex(index);
 }
-
 QString BaseTrackCache::columnSortForFieldIndex(int index) const {
     return m_columnCache.columnSortForFieldIndex(index);
 }
-
 void BaseTrackCache::slotTracksAdded(QSet<int> trackIds) {
-    if (sDebug) {
-        qDebug() << this << "slotTracksAdded" << trackIds.size();
-    }
+    if (sDebug) {qDebug() << this << "slotTracksAdded" << trackIds.size();}
     updateTracksInIndex(trackIds);
 }
-
 void BaseTrackCache::slotDbTrackAdded(TrackPointer pTrack) {
-    if (sDebug) {
-        qDebug() << this << "slotDbTrackAdded";
-    }
+    if (sDebug) {qDebug() << this << "slotDbTrackAdded";}
     updateIndexWithTrackpointer(pTrack);
 }
-
 void BaseTrackCache::slotTracksRemoved(QSet<int> trackIds) {
-    if (sDebug) {
-        qDebug() << this << "slotTracksRemoved" << trackIds.size();
-    }
-    foreach (int trackId, trackIds) {
-        m_trackInfo.remove(trackId);
-    }
+    if (sDebug) {qDebug() << this << "slotTracksRemoved" << trackIds.size();}
+    for(int trackId: trackIds) {m_trackInfo.remove(trackId);}
 }
-
 void BaseTrackCache::slotTrackDirty(int trackId) {
-    if (sDebug) {
-        qDebug() << this << "slotTrackDirty" << trackId;
-    }
+    if (sDebug) {qDebug() << this << "slotTrackDirty" << trackId;}
     m_dirtyTracks.insert(trackId);
 }
-
 void BaseTrackCache::slotTrackChanged(int trackId) {
-    if (sDebug) {
-        qDebug() << this << "slotTrackChanged" << trackId;
-    }
+    if (sDebug) {qDebug() << this << "slotTrackChanged" << trackId;}
     QSet<int> trackIds;
     trackIds.insert(trackId);
     emit(tracksChanged(trackIds));
 }
-
 void BaseTrackCache::slotTrackClean(int trackId) {
-    if (sDebug) {
-        qDebug() << this << "slotTrackClean" << trackId;
-    }
+    if (sDebug) {qDebug() << this << "slotTrackClean" << trackId;}
     m_dirtyTracks.remove(trackId);
     updateTrackInIndex(trackId);
 }
-
-bool BaseTrackCache::isCached(int trackId) const {
-    return m_trackInfo.contains(trackId);
-}
-
-void BaseTrackCache::ensureCached(int trackId) {
-    updateTrackInIndex(trackId);
-}
-
-void BaseTrackCache::ensureCached(QSet<int> trackIds) {
-    updateTracksInIndex(trackIds);
-}
-
-void BaseTrackCache::setSearchColumns(const QStringList& columns) {
-    m_searchColumns = columns;
-}
-
+bool BaseTrackCache::isCached(int trackId) const {return m_trackInfo.contains(trackId);}
+void BaseTrackCache::ensureCached(int trackId) {updateTrackInIndex(trackId);}
+void BaseTrackCache::ensureCached(QSet<int> trackIds) {updateTracksInIndex(trackIds);}
+void BaseTrackCache::setSearchColumns(const QStringList& columns) {m_searchColumns = columns;}
 TrackPointer BaseTrackCache::lookupCachedTrack(int trackId) const {
     // Only get the track from the TrackDAO if it's in the cache and marked as
     // dirty.
@@ -145,39 +101,24 @@ TrackPointer BaseTrackCache::lookupCachedTrack(int trackId) const {
 }
 
 bool BaseTrackCache::updateIndexWithTrackpointer(TrackPointer pTrack) {
-    if (sDebug) {
-        qDebug() << "updateIndexWithTrackpointer:" << pTrack->getFilename();
-    }
-
-    if (pTrack.isNull()) {
-        return false;
-    }
-
+    if (sDebug) {qDebug() << "updateIndexWithTrackpointer:" << pTrack->getFilename();}
+    if (pTrack.isNull()) {return false;}
     int numColumns = columnCount();
-
     int id = pTrack->getId();
-
     if (id > 0) {
         // m_trackInfo[id] will insert a QVector<QVariant> into the
         // m_trackInfo HashTable with the key "id"
         QVector<QVariant>& record = m_trackInfo[id];
         // prealocate memory for all columns at once
         record.resize(numColumns);
-        for (int i = 0; i < numColumns; ++i) {
-            getTrackValueForColumn(pTrack, i, record[i]);
-        }
+        for (int i = 0; i < numColumns; ++i) {getTrackValueForColumn(pTrack, i, record[i]);}
     }
     return true;
 }
-
 bool BaseTrackCache::updateIndexWithQuery(const QString& queryString) {
     QTime timer;
     timer.start();
-
-    if (sDebug) {
-        qDebug() << "updateIndexWithQuery issuing query:" << queryString;
-    }
-
+    if (sDebug) {qDebug() << "updateIndexWithQuery issuing query:" << queryString;}
     QSqlQuery query(m_database);
     // This causes a memory savings since QSqlCachedResult (what QtSQLite uses)
     // won't allocate a giant in-memory table that we won't use at all.
@@ -208,24 +149,16 @@ bool BaseTrackCache::updateIndexWithQuery(const QString& queryString) {
     qDebug() << this << "updateIndexWithQuery took" << timer.elapsed() << "ms";
     return true;
 }
-
 void BaseTrackCache::buildIndex() {
-    if (sDebug) {
-        qDebug() << this << "buildIndex()";
-    }
-
+    if (sDebug) {qDebug() << this << "buildIndex()";}
     QString queryString = QString("SELECT %1 FROM %2")
             .arg(m_columnsJoined, m_tableName);
 
-    if (sDebug) {
-        qDebug() << this << "buildIndex query:" << queryString;
-    }
-
+    if (sDebug) {qDebug() << this << "buildIndex query:" << queryString;}
     // TODO(rryan) for very large tables, it probably makes more sense to NOT
     // clear the table, and keep track of what IDs we see, then delete the ones
     // we don't see.
     m_trackInfo.clear();
-
     if (!updateIndexWithQuery(queryString)) {
         qDebug() << "buildIndex failed!";
     }
@@ -240,22 +173,16 @@ void BaseTrackCache::updateTrackInIndex(int trackId) {
 }
 
 void BaseTrackCache::updateTracksInIndex(QSet<int> trackIds) {
-    if (trackIds.size() == 0) {
-        return;
-    }
-
+    if (trackIds.size() == 0) {return;}
     QStringList idStrings;
-    foreach (int trackId, trackIds) {
+    for(int trackId: trackIds) {
         idStrings << QVariant(trackId).toString();
     }
 
     QString queryString = QString("SELECT %1 FROM %2 WHERE %3 in (%4)")
             .arg(m_columnsJoined, m_tableName, m_idColumn, idStrings.join(","));
 
-    if (sDebug) {
-        qDebug() << this << "updateTracksInIndex update query:" << queryString;
-    }
-
+    if (sDebug) {qDebug() << this << "updateTracksInIndex update query:" << queryString;}
     if (!updateIndexWithQuery(queryString)) {
         qDebug() << "updateTracksInIndex failed!";
         return;
@@ -266,10 +193,7 @@ void BaseTrackCache::updateTracksInIndex(QSet<int> trackIds) {
 void BaseTrackCache::getTrackValueForColumn(TrackPointer pTrack,
                                             int column,
                                             QVariant& trackValue) const {
-    if (!pTrack || column < 0) {
-        return;
-    }
-
+    if (!pTrack || column < 0) {return;}
     // TODO(XXX) Qt properties could really help here.
     // TODO(rryan) this is all TrackDAO specific. What about iTunes/RB/etc.?
     if (fieldIndex(ColumnCache::COLUMN_LIBRARYTABLE_ARTIST) == column) {
@@ -329,20 +253,14 @@ void BaseTrackCache::getTrackValueForColumn(TrackPointer pTrack,
         trackValue.setValue(static_cast<int>(pTrack->getCoverInfo().type));
     }
 }
-
 QVariant BaseTrackCache::data(int trackId, int column) const {
     QVariant result;
-
     if (!m_bIndexBuilt) {
         qDebug() << this << "ERROR index is not built for" << m_tableName;
         return result;
     }
-
     TrackPointer pTrack = lookupCachedTrack(trackId);
-    if (pTrack) {
-        getTrackValueForColumn(pTrack, column, result);
-    }
-
+    if (pTrack) {getTrackValueForColumn(pTrack, column, result);}
     // If the track lookup failed (could happen for track properties we dont
     // keep track of in Track, like playlist position) look up the value in
     // the track info cache.
@@ -351,8 +269,7 @@ QVariant BaseTrackCache::data(int trackId, int column) const {
     // metadata. Currently the upper-levels will not delegate row-specific
     // columns to this method, but there should still be a check here I think.
     if (!result.isValid()) {
-        QHash<int, QVector<QVariant> >::const_iterator it =
-                m_trackInfo.find(trackId);
+        QHash<int, QVector<QVariant> >::const_iterator it = m_trackInfo.find(trackId);
         if (it != m_trackInfo.end()) {
             const QVector<QVariant>& fields = it.value();
             result = fields.value(column, result);
@@ -360,7 +277,6 @@ QVariant BaseTrackCache::data(int trackId, int column) const {
     }
     return result;
 }
-
 void BaseTrackCache::filterAndSort(const QSet<int>& trackIds,
                                    QString searchQuery,
                                    QString extraFilter,

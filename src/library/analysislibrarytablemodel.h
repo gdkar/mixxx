@@ -8,10 +8,8 @@ class AnalysisLibraryTableModel : public LibraryTableModel
 {
     Q_OBJECT
   public:
-    AnalysisLibraryTableModel(QObject* parent,
-                             TrackCollection* pTrackCollection);
+    AnalysisLibraryTableModel(QObject* parent,TrackCollection* pTrackCollection);
     virtual ~AnalysisLibraryTableModel();
-
   public slots:
     void showRecentSongs();
     void showAllSongs();

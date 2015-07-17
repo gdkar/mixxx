@@ -121,7 +121,6 @@ class NumericFilterNode : public QueryNode {
 class DurationFilterNode : public NumericFilterNode {
   public:
     DurationFilterNode(const QStringList& sqlColumns, const QString& argument);
-
   private:
     double parse(const QString& arg, bool* ok) override;
 };
@@ -129,14 +128,11 @@ class DurationFilterNode : public NumericFilterNode {
 class KeyFilterNode : public QueryNode {
   public:
     KeyFilterNode(mixxx::track::io::key::ChromaticKey key, bool fuzzy);
-
     bool match(const TrackPointer& pTrack) const override;
     QString toSql() const override;
-
   private:
     QList<mixxx::track::io::key::ChromaticKey> m_matchKeys;
 };
-
 class SqlNode : public QueryNode {
   public:
     explicit SqlNode(const QString& sqlExpression)
@@ -145,18 +141,13 @@ class SqlNode : public QueryNode {
             // composite node.
             : m_sql(sqlExpression) {
     }
-
     bool match(const TrackPointer& pTrack) const override {
         // We are usually embedded in an AND node so if we don't match
         // everything then we block everything.
         Q_UNUSED(pTrack);
         return true;
     }
-
-    QString toSql() const override {
-        return m_sql;
-    }
-
+    QString toSql() const override {return m_sql;}
   private:
     QString m_sql;
 };

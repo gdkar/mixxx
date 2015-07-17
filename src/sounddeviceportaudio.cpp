@@ -545,7 +545,6 @@ int SoundDevicePortAudio::callbackProcessDrift(const unsigned int framesPerBuffe
     //
     // I the tests it turns out that it only happens in the opposite direction, so
     // 3 chunks are just fine.
-
     if (m_inputParams.channelCount) {
         int inChunkSize = framesPerBuffer * m_inputParams.channelCount;
         int readAvailable = m_inputFifo->readAvailable();
@@ -589,11 +588,9 @@ int SoundDevicePortAudio::callbackProcessDrift(const unsigned int framesPerBuffe
             //qDebug() << "callbackProcessDrift write:" << (float) readAvailable / inChunkSize << "Buffer full";
         }
     }
-
     if (m_outputParams.channelCount) {
         int outChunkSize = framesPerBuffer * m_outputParams.channelCount;
         int readAvailable = m_outputFifo->readAvailable();
-
         if (readAvailable > outChunkSize * (kDriftReserve + 1)) {
             m_outputFifo->read(out, outChunkSize);
             if (m_outputDrift) {
@@ -613,8 +610,7 @@ int SoundDevicePortAudio::callbackProcessDrift(const unsigned int framesPerBuffe
                 // Risk of underflow, duplicate one frame
                 m_outputFifo->read(out, outChunkSize - m_outputParams.channelCount);
                 SampleUtil::copy(&out[outChunkSize - m_outputParams.channelCount],
-                       &out[outChunkSize - (2 * m_outputParams.channelCount)],
-                        m_outputParams.channelCount);
+                       &out[outChunkSize - (2 * m_outputParams.channelCount)],m_outputParams.channelCount);
                 //qDebug() << "callbackProcessDrift read:" << (float)readAvailable / outChunkSize << "Save";
             } else {
                 m_outputFifo->read(out, outChunkSize);
@@ -622,11 +618,9 @@ int SoundDevicePortAudio::callbackProcessDrift(const unsigned int framesPerBuffe
                 //qDebug() << "callbackProcessDrift read:" << (float)readAvailable / outChunkSize << "Jitter Save";
             }
         } else if (readAvailable) {
-            m_outputFifo->read(out,
-                    readAvailable);
+            m_outputFifo->read(out,readAvailable);
             // underflow
-            SampleUtil::clear(&out[readAvailable],
-                    outChunkSize - readAvailable);
+            SampleUtil::clear(&out[readAvailable],outChunkSize - readAvailable);
             m_underflowHappend ++;
             //qDebug() << "callbackProcessDrift read:" << (float)readAvailable / outChunkSize << "Underflow";
         } else {
@@ -670,11 +664,9 @@ int SoundDevicePortAudio::callbackProcess(const unsigned int framesPerBuffer,
         if (readAvailable >= outChunkSize) {
             m_outputFifo->read(out, outChunkSize);
         } else if (readAvailable) {
-            m_outputFifo->read(out,
-                    readAvailable);
+            m_outputFifo->read(out, readAvailable);
             // underflow
-            SampleUtil::clear(&out[readAvailable],
-                    outChunkSize - readAvailable);
+            SampleUtil::clear(&out[readAvailable], outChunkSize - readAvailable);
             m_underflowHappend ++;
             //qDebug() << "callbackProcess read:" << "Underflow";
         } else {

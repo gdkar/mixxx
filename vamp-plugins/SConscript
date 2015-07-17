@@ -28,7 +28,7 @@ mixxxminimal_sources = [
 	"dsp/GetKeyMode.cpp",
 	"dsp/TempoTrackV2.cpp",
 	"dsp/DetectionFunction.cpp",
-	"dsp/KLDivergence.cpp",
+#	"dsp/KLDivergence.cpp",
 	"dsp/TonalEstimator.cpp",
 	"dsp/DFProcess.cpp",
 	"dsp/MathUtilities.cpp",

@@ -1,5 +1,4 @@
-/**
- * @file soundmanagerutil.h
+ /* @file soundmanagerutil.h
  * @author Bill Good <bkgood at gmail dot com>
  * @date 20100611
  */
@@ -41,7 +40,6 @@ private:
     unsigned char m_channelBase; // base (first) channel used on device
     unsigned char m_channels; // number of channels used (s/b 2 in most cases)
 };
-
 /**
  * @class AudioPath
  * @brief Describes a path for audio to take.
@@ -77,15 +75,12 @@ public:
     static AudioPathType getTypeFromString(QString string);
     static bool isIndexed(AudioPathType type);
     static AudioPathType getTypeFromInt(int typeInt);
-
     // Returns the minimum number of channels needed on a sound device for an
     // AudioPathType.
     static unsigned char minChannelsForType(AudioPathType type);
-
     // Returns the maximum number of channels needed on a sound device for an
     // AudioPathType.
     static unsigned char maxChannelsForType(AudioPathType type);
-
 protected:
     virtual void setType(AudioPathType type) = 0;
     AudioPathType m_type;
@@ -102,8 +97,7 @@ protected:
 class AudioOutput : public AudioPath {
   public:
     AudioOutput(AudioPathType type = INVALID, unsigned char channelBase = 0,
-                unsigned char channels = 0,
-                unsigned char index = 0);
+                unsigned char channels = 0,unsigned char index = 0);
     virtual ~AudioOutput();
     QDomElement toXML(QDomElement *element) const;
     static AudioOutput fromXML(const QDomElement &xml);
@@ -111,7 +105,6 @@ class AudioOutput : public AudioPath {
   protected:
     void setType(AudioPathType type);
 };
-
 // This class is required to add the buffer, without changing the hash used as ID
 class AudioOutputBuffer : public AudioOutput {
   public:
@@ -124,7 +117,6 @@ class AudioOutputBuffer : public AudioOutput {
   private:
     const CSAMPLE* m_pBuffer;
 };
-
 /**
  * @class AudioInput
  * @extends AudioPath

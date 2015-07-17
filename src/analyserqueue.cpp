@@ -49,12 +49,10 @@ AnalyserQueue::AnalyserQueue(TrackCollection* pTrackCollection)
     connect(this, SIGNAL(updateProgress()),
             this, SLOT(slotUpdateProgress()));
 }
-
 AnalyserQueue::~AnalyserQueue() {
     stop();
     m_progressInfo.sema.release();
     wait(); //Wait until thread has actually stopped before proceeding.
-
     QListIterator<Analyser*> it(m_aq);
     while (it.hasNext()) {
         Analyser* an = it.next();
@@ -63,15 +61,10 @@ AnalyserQueue::~AnalyserQueue() {
     }
     //qDebug() << "AnalyserQueue::~AnalyserQueue()";
 }
-
-void AnalyserQueue::addAnalyser(Analyser* an) {
-    m_aq.push_back(an);
-}
-
+void AnalyserQueue::addAnalyser(Analyser* an) {m_aq.push_back(an);}
 // This is called from the AnalyserQueue thread
 bool AnalyserQueue::isLoadedTrackWaiting(TrackPointer tio) {
     QMutexLocker queueLocker(&m_qm);
-
     const PlayerInfo& info = PlayerInfo::instance();
     TrackPointer pTrack;
     bool trackWaiting = false;
@@ -82,9 +75,7 @@ bool AnalyserQueue::isLoadedTrackWaiting(TrackPointer tio) {
             it.remove();
             continue;
         }
-        if (!trackWaiting) {
-            trackWaiting = info.isTrackLoaded(pTrack);
-        }
+        if (!trackWaiting) {trackWaiting = info.isTrackLoaded(pTrack);}
         // try to load waveforms for all new tracks first
         // and remove them from queue if already analysed
         // This avoids waiting for a running analysis for those tracks.
@@ -94,23 +85,15 @@ bool AnalyserQueue::isLoadedTrackWaiting(TrackPointer tio) {
             QListIterator<Analyser*> ita(m_aq);
             bool processTrack = false;
             while (ita.hasNext()) {
-                if (!ita.next()->loadStored(pTrack)) {
-                    processTrack = true;
-                }
+                if (!ita.next()->loadStored(pTrack)) {processTrack = true;}
             }
             if (!processTrack) {
                 emitUpdateProgress(pTrack, 1000);
                 it.remove();
-            } else {
-                emitUpdateProgress(pTrack, 0);
-            }
-        } else if (progress == 1000) {
-            it.remove();
-        }
+            } else {emitUpdateProgress(pTrack, 0);}
+        } else if (progress == 1000) {it.remove();}
     }
-    if (info.isTrackLoaded(tio)) {
-        return false;
-    }
+    if (info.isTrackLoaded(tio)) {return false;}
     return trackWaiting;
 }
 
