@@ -22,9 +22,7 @@ class ImportFilesTask : public ScannerTask {
                     const QLinkedList<QFileInfo>& possibleCovers,
                     SecurityTokenPointer pToken);
     virtual ~ImportFilesTask() {}
-
     virtual void run();
-
   private:
     const QString m_dirPath;
     const bool m_prevHashExists;

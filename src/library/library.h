@@ -42,47 +42,28 @@ public:
             PlayerManagerInterface* pPlayerManager,
             RecordingManager* pRecordingManager);
     virtual ~Library();
-
-    void bindWidget(WLibrary* libraryWidget,
-                    QObject* pKeyboard);
+    void bindWidget(WLibrary* libraryWidget,QObject* pKeyboard);
     void bindSidebarWidget(WLibrarySidebar* sidebarWidget);
-
     void addFeature(LibraryFeature* feature);
     QStringList getDirs();
-
     // TODO(rryan) Transitionary only -- the only reason this is here is so the
     // waveform widgets can signal to a player to load a track. This can be
     // fixed by moving the waveform renderers inside player and connecting the
     // signals directly.
-    TrackCollection* getTrackCollection() {
-        return m_pTrackCollection;
-    }
-
-    inline int getTrackTableRowHeight() const {
-        return m_iTrackTableRowHeight;
-    }
-
-    inline const QFont& getTrackTableFont() const {
-        return m_trackTableFont;
-    }
-
+    TrackCollection* getTrackCollection() {return m_pTrackCollection;}
+    inline int getTrackTableRowHeight() const {return m_iTrackTableRowHeight;}
+    inline const QFont& getTrackTableFont() const {return m_trackTableFont;}
     //static Library* buildDefaultLibrary();
-
     enum RemovalType {
         LeaveTracksUnchanged = 0,
         HideTracks,
         PurgeTracks
     };
-
     static const int kDefaultRowHeightPx;
-
   public slots:
     void slotShowTrackModel(QAbstractItemModel* model);
-    void slotSwitchToView(const QString& view);
-    void slotLoadTrack(TrackPointer pTrack);
-    void slotLoadTrackToPlayer(TrackPointer pTrack, QString group, bool play);
+//    void slotLoadTrackToPlayer(TrackPointer pTrack, QString group, bool play);
     void slotLoadLocationToPlayer(QString location, QString group);
-    void slotRestoreSearch(const QString& text);
     void slotRefreshLibraryModels();
     void slotCreatePlaylist();
     void slotCreateCrate();
@@ -92,7 +73,6 @@ public:
     void onSkinLoadFinished();
     void slotSetTrackTableFont(const QFont& font);
     void slotSetTrackTableRowHeight(int rowHeight);
-
   signals:
     void showTrackModel(QAbstractItemModel* model);
     void switchToView(const QString& view);

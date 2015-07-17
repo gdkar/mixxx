@@ -154,7 +154,6 @@ bool CueDAO::saveCue(Cue* cue) {
         query.bindValue(":length", cue->getLength());
         query.bindValue(":hotcue", cue->getHotCue());
         query.bindValue(":label", cue->getLabel());
-
         if (query.exec()) {
             int id = query.lastInsertId().toInt();
             cue->setId(id);
@@ -202,9 +201,7 @@ bool CueDAO::deleteCue(Cue* cue) {
         } else {
             LOG_FAILED_QUERY(query);
         }
-    } else {
-        return true;
-    }
+    } else {return true;}
     return false;
 }
 
@@ -213,14 +210,10 @@ void CueDAO::saveTrackCues(const int trackId, TrackInfoObject* pTrack) {
     // TODO(XXX) transaction, but people who are already in a transaction call
     // this.
     QTime time;
-
     const QList<Cue*>& cueList = pTrack->getCuePoints();
-
     // qDebug() << "CueDAO::saveTrackCues old size:" << oldCueList.size()
     //          << "new size:" << cueList.size();
-
     QString list = "";
-
     time.start();
     // For each id still in the TIO, save or delete it.
     QListIterator<Cue*> cueIt(cueList);
@@ -238,28 +231,20 @@ void CueDAO::saveTrackCues(const int trackId, TrackInfoObject* pTrack) {
         // Update or save cue
         if (cue->isDirty()) {
             saveCue(cue);
-
             // Since this cue didn't have an id until now, add it to the list of
             // cues not to delete.
-            if (newCue)
-                list.append(QString("%1,").arg(cue->getId()));
+            if (newCue) list.append(QString("%1,").arg(cue->getId()));
         }
     }
     //qDebug() << "Saving cues took " << time.elapsed() << "ms";
     time.start();
-
     // Strip the last ,
-    if (list.count() > 0)
-        list.truncate(list.count()-1);
-
+    if (list.count() > 0) list.truncate(list.count()-1);
     // Delete cues that are no longer on the track.
     QSqlQuery query(m_database);
     query.prepare(QString("DELETE FROM cues where track_id=:track_id and not id in (%1)")
                   .arg(list));
     query.bindValue(":track_id", trackId);
-
-    if (!query.exec()) {
-        LOG_FAILED_QUERY(query) << "Delete cues failed.";
-    }
+    if (!query.exec()) {LOG_FAILED_QUERY(query) << "Delete cues failed.";}
     //qDebug() << "Deleting cues took " << time.elapsed() << "ms";
 }

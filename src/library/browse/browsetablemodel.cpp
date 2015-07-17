@@ -423,12 +423,8 @@ void BrowseTableModel::trackLoaded(QString group, TrackPointer pTrack) {
         }
     }
 }
-
 bool BrowseTableModel::isColumnSortable(int column) {
-    if (COLUMN_PREVIEW == column) {
-        return false;
-    }
-    return true;
+    return (COLUMN_PREVIEW != column);
 }
 
 QAbstractItemDelegate* BrowseTableModel::delegateForColumn(const int i, QObject* pParent) {

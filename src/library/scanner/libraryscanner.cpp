@@ -62,9 +62,7 @@ LibraryScanner::LibraryScanner(QWidget* pParentWidget, TrackCollection* collecti
 
     // Listen to signals from our public methods (invoked by other threads) and
     // connect them to our slots to run the command on the scanner thread.
-    connect(this, SIGNAL(startScan()),
-            this, SLOT(slotStartScan()));
-
+    connect(this, SIGNAL(startScan()),this, SLOT(slotStartScan()));
     // Force the GUI thread's TrackInfoObject cache to be cleared when a library
     // scan is finished, because we might have modified the database directly
     // when we detected moved files, and the TIOs corresponding to the moved
@@ -321,8 +319,7 @@ void LibraryScanner::slotFinishScan() {
         transaction.commit();
 
         qDebug() << "Detecting cover art for unscanned files.";
-        m_trackDao.detectCoverArtForUnknownTracks(
-            m_scannerGlobal->shouldCancelPointer(), &coverArtTracksChanged);
+        m_trackDao.detectCoverArtForUnknownTracks(m_scannerGlobal->shouldCancelRef(), &coverArtTracksChanged);
 
         // Update BaseTrackCache via signals connected to the main TrackDAO.
         emit(tracksMoved(tracksMovedSetOld, tracksMovedSetNew));
@@ -408,9 +405,7 @@ void LibraryScanner::directoryHashedAndScanned(const QString& directoryPath,
 
     // For statistics tracking -- if we hashed a directory then we scanned it
     // (it was changed or new).
-    if (m_scannerGlobal) {
-        m_scannerGlobal->directoryScanned();
-    }
+    if (m_scannerGlobal) {m_scannerGlobal->directoryScanned();}
 
     if (newDirectory) {
         m_libraryHashDao.saveDirectoryHash(directoryPath, hash);
@@ -432,18 +427,14 @@ void LibraryScanner::directoryUnchanged(const QString& directoryPath) {
 void LibraryScanner::trackExists(const QString& trackPath) {
     //qDebug() << "LibraryScanner::trackExists" << trackPath;
     ScopedTimer timer("LibraryScanner::trackExists");
-    if (m_scannerGlobal) {
-        m_scannerGlobal->addVerifiedTrack(trackPath);
-    }
+    if (m_scannerGlobal) {m_scannerGlobal->addVerifiedTrack(trackPath);}
 }
 
 void LibraryScanner::addNewTrack(TrackPointer pTrack) {
     //qDebug() << "LibraryScanner::addNewTrack" << pTrack;
     ScopedTimer timer("LibraryScanner::addNewTrack");
     // For statistics tracking.
-    if (m_scannerGlobal) {
-        m_scannerGlobal->trackAdded();
-    }
+    if (m_scannerGlobal) {m_scannerGlobal->trackAdded();}
     if (m_trackDao.addTracksAdd(pTrack.data(), false)) {
         // Successfully added. Signal the main instance of TrackDAO,
         // that there is a new track in the database.

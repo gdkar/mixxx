@@ -22,7 +22,6 @@ class FolderTreeModel : public TreeItemModel {
     virtual ~FolderTreeModel();
     virtual bool hasChildren(const QModelIndex& parent = QModelIndex()) const;
     bool directoryHasChildren(const QString& path) const;
-
   private:
     // Used for memoizing the results of directoryHasChildren
     mutable QHash<QString, bool> m_directoryCache;

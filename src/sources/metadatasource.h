@@ -15,14 +15,10 @@ public:
     // is should be the most common use case. Both parameters are
     // output parameters and might be nullptr if their result is not
     // needed.
-    virtual Result parseTrackMetadataAndCoverArt(
-            TrackMetadata* pTrackMetadata,
-            QImage* pCoverArt) const = 0;
-
+    virtual Result parseTrackMetadataAndCoverArt(TrackMetadata* pTrackMetadata,QImage* pCoverArt) const = 0;
 protected:
     virtual ~MetadataSource() {}
 };
-
 } //namespace Mixxx
 
 #endif // MIXXX_METADATASOURCE_H

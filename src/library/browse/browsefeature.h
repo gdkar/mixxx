@@ -32,15 +32,10 @@ class BrowseFeature : public LibraryFeature {
                   TrackCollection* pTrackCollection,
                   RecordingManager* pRec);
     virtual ~BrowseFeature();
-
     QVariant title();
     QIcon getIcon();
-
-    void bindWidget(WLibrary* libraryWidget,
-                    QObject* keyboard);
-
+    void bindWidget(WLibrary* libraryWidget,QObject* keyboard);
     TreeItemModel* getChildModel();
-
   public slots:
     void slotAddQuickLink();
     void slotRemoveQuickLink();
@@ -51,12 +46,10 @@ class BrowseFeature : public LibraryFeature {
     void onLazyChildExpandation(const QModelIndex& index);
     void slotLibraryScanStarted();
     void slotLibraryScanFinished();
-
   signals:
     void setRootIndex(const QModelIndex&);
     void requestAddDir(QString);
     void scanLibrary();
-
   private:
     QString getRootViewHtml() const;
     QString extractNameFromPath(QString spath);
@@ -76,5 +69,4 @@ class BrowseFeature : public LibraryFeature {
     TreeItem* m_pQuickLinkItem;
     QStringList m_quickLinkList;
 };
-
 #endif // BROWSEFEATURE_H

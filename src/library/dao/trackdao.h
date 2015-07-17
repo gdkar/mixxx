@@ -104,7 +104,7 @@ class TrackDAO : public QObject, public virtual DAO {
     TrackDAO(QSqlDatabase& database, CueDAO& cueDao,
              PlaylistDAO& playlistDao, CrateDAO& crateDao,
              AnalysisDao& analysisDao, LibraryHashDAO& libraryHashDao,
-             ConfigObject<ConfigValue>* pConfig = nullptr);
+             ConfigObject<ConfigValue>* pConfig = NULL);
     virtual ~TrackDAO();
 
     void finish();
@@ -135,7 +135,7 @@ class TrackDAO : public QObject, public virtual DAO {
     // is true, searches the track and its directory for cover art via
     // asynchronous request to CoverArtCache. If adding or fetching the track
     // fails, returns a transient TrackPointer for trackLocation. If
-    // pAlreadyInLibrary is non-nullptr, sets it to whether trackLocation was
+    // pAlreadyInLibrary is non-NULL, sets it to whether trackLocation was
     // already in the database.
     TrackPointer getOrAddTrack(const QString& trackLocation,
                                bool processCoverArt,
@@ -152,9 +152,7 @@ class TrackDAO : public QObject, public virtual DAO {
     void markTrackLocationsAsDeleted(const QString& directory);
     void detectMovedFiles(QSet<int>* tracksMovedSetNew, QSet<int>* tracksMovedSetOld);
     void verifyRemainingTracks();
-    void detectCoverArtForUnknownTracks(volatile const bool* pCancel,
-                                        QSet<int>* pTracksChanged);
-
+    void detectCoverArtForUnknownTracks(std::atomic<bool> &rCancel,QSet<int>* pTracksChanged);
   signals:
     void trackDirty(int trackId) const;
     void trackClean(int trackId);
@@ -165,42 +163,34 @@ class TrackDAO : public QObject, public virtual DAO {
     void progressVerifyTracksOutside(QString path);
     void progressCoverArt(QString file);
     void forceModelUpdate();
-
   public slots:
     // The public interface to the TrackDAO requires a TrackPointer so that we
     // have a guarantee that the track will not be deleted while we are working
     // on it. However, private parts of TrackDAO can use the raw saveTrack(TIO*)
     // call.
     void saveTrack(TrackPointer pTrack);
-
     // Clears the cached TrackInfoObjects, which can be useful when the
     // underlying database tables change (eg. during a library rescan,
     // we might detect that a track has been moved and modify the update
     // the tables directly.)
     void clearCache();
-
     void databaseTrackAdded(TrackPointer pTrack);
     void databaseTracksMoved(QSet<int> tracksMovedSetOld, QSet<int> tracksMovedSetNew);
     void databaseTracksChanged(QSet<int> tracksChanged);
-
   private slots:
     void slotTrackDirty(TrackInfoObject* pTrack);
     void slotTrackChanged(TrackInfoObject* pTrack);
     void slotTrackClean(TrackInfoObject* pTrack);
     void slotTrackReferenceExpired(TrackInfoObject* pTrack);
-
   private:
     void saveTrack(TrackInfoObject* pTrack);
     void updateTrack(TrackInfoObject* pTrack);
     void addTrack(TrackInfoObject* pTrack, bool unremove);
     TrackPointer getTrackFromDB(const int id) const;
     QString absoluteFilePath(QString location);
-
     void bindTrackToTrackLocationsInsert(TrackInfoObject* pTrack);
     void bindTrackToLibraryInsert(TrackInfoObject* pTrack, int trackLocationId);
-
     void writeMetadataToFile(TrackInfoObject* pTrack);
-
     QSqlDatabase& m_database;
     CueDAO& m_cueDao;
     PlaylistDAO& m_playlistDao;
@@ -220,7 +210,6 @@ class TrackDAO : public QObject, public virtual DAO {
     // results from BaseTrackCache before the newly expired TrackPointer has
     // been saved to the database.
     mutable QCache<int, TrackCacheItem> m_recentTracksCache;
-
     QSqlQuery* m_pQueryTrackLocationInsert;
     QSqlQuery* m_pQueryTrackLocationSelect;
     QSqlQuery* m_pQueryLibraryInsert;
@@ -230,9 +219,7 @@ class TrackDAO : public QObject, public virtual DAO {
     int m_trackLocationIdColumn;
     int m_queryLibraryIdColumn;
     int m_queryLibraryMixxxDeletedColumn;
-
     QSet<int> m_tracksAddedSet;
-
     DISALLOW_COPY_AND_ASSIGN(TrackDAO);
 };
 

@@ -22,7 +22,7 @@ class WLibrarySidebar;
 class WLibrary;
 class QObject;
 
-// pure virtual (abstract) class to provide an interface for libraryfeatures
+// abstract class to provide an interface for libraryfeatures
 class LibraryFeature : public QObject {
   Q_OBJECT
   public:
@@ -30,14 +30,12 @@ class LibraryFeature : public QObject {
     virtual ~LibraryFeature();
     virtual QVariant title() = 0;
     virtual QIcon getIcon() = 0;
-
     virtual bool dropAccept(QList<QUrl> urls, QObject* pSource) {
         Q_UNUSED(urls);
         Q_UNUSED(pSource);
         return false;
     }
-    virtual bool dropAcceptChild(const QModelIndex& index,
-                                 QList<QUrl> urls, QObject* pSource) {
+    virtual bool dropAcceptChild(const QModelIndex& index,QList<QUrl> urls, QObject* pSource) {
         Q_UNUSED(index);
         Q_UNUSED(urls);
         Q_UNUSED(pSource);
@@ -52,23 +50,16 @@ class LibraryFeature : public QObject {
         Q_UNUSED(url);
         return false;
     }
-
     // Reimplement this to register custom views with the library widget.
-    virtual void bindWidget(WLibrary* /* libraryWidget */,
-                            QObject* /* keyboard */) {}
+    virtual void bindWidget(WLibrary* /* libraryWidget */, QObject* /* keyboard */) {}
     virtual TreeItemModel* getChildModel() = 0;
-
   public slots:
     // called when you single click on the root item
     virtual void activate() = 0;
     // called when you single click on a child item, e.g., a concrete playlist or crate
-    virtual void activateChild(const QModelIndex& index) {
-        Q_UNUSED(index);
-    }
+    virtual void activateChild(const QModelIndex& index) {Q_UNUSED(index);}
     // called when you right click on the root item
-    virtual void onRightClick(const QPoint& globalPos) {
-        Q_UNUSED(globalPos);
-    }
+    virtual void onRightClick(const QPoint& globalPos) {Q_UNUSED(globalPos);}
     // called when you right click on a child item, e.g., a concrete playlist or crate
     virtual void onRightClickChild(const QPoint& globalPos, QModelIndex index) {
         Q_UNUSED(globalPos);
@@ -76,9 +67,7 @@ class LibraryFeature : public QObject {
     }
     // Only implement this, if using incremental or lazy childmodels, see BrowseFeature.
     // This method is executed whenever you **double** click child items
-    virtual void onLazyChildExpandation(const QModelIndex& index) {
-        Q_UNUSED(index);
-    }
+    virtual void onLazyChildExpandation(const QModelIndex& index) {Q_UNUSED(index);}
   signals:
     void showTrackModel(QAbstractItemModel* model);
     void switchToView(const QString& view);

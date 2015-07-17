@@ -19,7 +19,6 @@ class CueDAO : public DAO {
     CueDAO(QSqlDatabase& database);
     virtual ~CueDAO();
     void setDatabase(QSqlDatabase& database) { m_database = database; }
-
     void initialize();
     int cueCount();
     int numCuesForTrack(const int trackId);
@@ -33,9 +32,7 @@ class CueDAO : public DAO {
     void saveTrackCues(const int trackId, TrackInfoObject*);
   private:
     Cue* cueFromRow(const QSqlQuery& query) const;
-
     QSqlDatabase& m_database;
     mutable QMap<int, Cue*> m_cues;
 };
-
 #endif /* CUEDAO_H */

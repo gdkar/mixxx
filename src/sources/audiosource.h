@@ -190,33 +190,16 @@ public:
 
 protected:
     explicit AudioSource(const QUrl& url);
-
-    inline static bool isValidChannelCount(SINT channelCount) {
-        return kChannelCountZero < channelCount;
-    }
-    inline bool hasChannelCount() const {
-        return isValidChannelCount(getChannelCount());
-    }
+    inline static bool isValidChannelCount(SINT channelCount) {return kChannelCountZero < channelCount;}
+    inline bool hasChannelCount() const {return isValidChannelCount(getChannelCount());}
     void setChannelCount(SINT channelCount);
-
-    inline static bool isValidFrameRate(SINT frameRate) {
-        return kFrameRateZero < frameRate;
-    }
-    inline bool hasFrameRate() const {
-        return isValidFrameRate(getFrameRate());
-    }
+    inline static bool isValidFrameRate(SINT frameRate) {return kFrameRateZero < frameRate;}
+    inline bool hasFrameRate() const {return isValidFrameRate(getFrameRate());}
     void setFrameRate(SINT frameRate);
-
-    inline static bool isValidFrameCount(SINT frameCount) {
-        return kFrameCountZero <= frameCount;
-    }
+    inline static bool isValidFrameCount(SINT frameCount) {return kFrameCountZero <= frameCount;}
     void setFrameCount(SINT frameCount);
-
     void setBitrate(SINT bitrate);
-
-    SINT getSampleBufferSize(
-            SINT numberOfFrames,
-            bool readStereoSamples = false) const;
+    SINT getSampleBufferSize(SINT numberOfFrames,bool readStereoSamples = false) const;
 
 private:
     friend struct AudioSourceConfig;
@@ -249,13 +232,10 @@ struct AudioSourceConfig {
         : channelCountHint(AudioSource::kChannelCountDefault),
           frameRateHint(AudioSource::kFrameRateDefault){
     }
-
     SINT channelCountHint;
     SINT frameRateHint;
 };
-
 typedef QSharedPointer<AudioSource> AudioSourcePointer;
-
 } // namespace Mixxx
 
 #endif // MIXXX_AUDIOSOURCE_H

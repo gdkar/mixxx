@@ -3,9 +3,5 @@
 
 #ifndef DAO_H
 #define DAO_H
-
-class DAO {
-    virtual void initialize() = 0;
-};
-
+class DAO {virtual void initialize() = 0;};
 #endif /* DAO_H */
