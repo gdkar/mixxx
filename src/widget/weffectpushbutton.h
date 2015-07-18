@@ -16,20 +16,15 @@ class WEffectPushButton : public WPushButton {
   public:
     WEffectPushButton(QWidget* pParent, EffectsManager* pEffectsManager);
     virtual ~WEffectPushButton();
-
     virtual void setup(QDomNode node, const SkinContext& context);
-
   public slots:
     virtual void onConnectedControlChanged(double dParameter, double dValue);
-
   protected:
     virtual void mousePressEvent(QMouseEvent* e);
     virtual void mouseReleaseEvent(QMouseEvent* e);
-
   private slots:
     void parameterUpdated();
     void slotActionChosen(QAction* action);
-
   private:
     EffectsManager* m_pEffectsManager;
     EffectParameterSlotBasePointer m_pEffectParameterSlot;

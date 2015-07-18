@@ -29,6 +29,7 @@ ControlObject::ControlObject() {
 }
 ControlObject::ControlObject(ConfigKey key, QObject*pParent)
   :QObject(pParent){
+  setParent(pParent);
   initialize(key,true,false,false);  
 }
 ControlObject::ControlObject(ConfigKey key, bool bIgnoreNops, bool bTrack,bool bPersist,QObject *pParent)

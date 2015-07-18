@@ -145,17 +145,17 @@ void WOverview::slotWaveformSummaryUpdated() {
         if (drawNextPixmapPart()) {update();}
     }
 }
-void WOverview::slotAnalyserProgress(int progress) {
+void WOverview::slotAnalyserProgress(float progress) {
     if (!m_pCurrentTrack) {return;}
-    double analyserProgress = progress / 1000.0;
-    bool finalizing = progress == 999;
+    double analyserProgress = progress / m_pCurrentTrack->getDuration();
+    bool finalizing = progress  >0.9f;
     bool updateNeeded = drawNextPixmapPart();
     // progress 0 .. 1000
-    if (updateNeeded || (m_dAnalyserProgress != analyserProgress)) {
+//    if (updateNeeded || (m_dAnalyserProgress != analyserProgress)) {
         m_dAnalyserProgress = analyserProgress;
         m_bAnalyserFinalizing = finalizing;
         update();
-    }
+//    }
 }
 
 void WOverview::slotLoadNewTrack(TrackPointer pTrack) {

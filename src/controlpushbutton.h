@@ -35,30 +35,20 @@ class ControlPushButton : public ControlObject {
          LONGPRESSLATCHING,
          TRIGGER,
     };
-
     static QString buttonModeToString(int mode) {
         switch(mode) {
-            case ControlPushButton::PUSH:
-                return "PUSH";
-            case ControlPushButton::TOGGLE:
-                return "TOGGLE";
-            case ControlPushButton::POWERWINDOW:
-                return "POWERWINDOW";
-            case ControlPushButton::LONGPRESSLATCHING:
-                return "LONGPRESSLATCHING";
-            case ControlPushButton::TRIGGER:
-                return "TRIGGER";
-            default:
-                return "UNKNOWN";
+            case ControlPushButton::PUSH:             return "PUSH";
+            case ControlPushButton::TOGGLE:           return "TOGGLE";
+            case ControlPushButton::POWERWINDOW:      return "POWERWINDOW";
+            case ControlPushButton::LONGPRESSLATCHING:return "LONGPRESSLATCHING";
+            case ControlPushButton::TRIGGER:          return "TRIGGER";
+            default:                                  return "UNKNOWN";
         }
     }
     ControlPushButton(ConfigKey key, QObject *pParent);
     ControlPushButton(ConfigKey key, bool bPersist=false,QObject*pParent=nullptr);
     virtual ~ControlPushButton();
-
-    inline ButtonMode getButtonMode() const {
-        return m_buttonMode;
-    }
+    virtual ButtonMode getButtonMode() const {return m_buttonMode;}
     virtual void setButtonMode(enum ButtonMode mode);
     virtual void setStates(int num_states);
   private:

@@ -249,7 +249,16 @@ EngineBuffer::~EngineBuffer() {
     //close the writer
     df.close();
 #endif
-
+    delete m_pTrackSamples;
+    delete m_pTrackSampleRate;
+    delete m_playButton;
+    delete m_playStartButton;
+    delete m_stopStartButton;
+    delete m_stopButton;
+    delete m_fwdButton;
+    delete m_backButton;
+    delete m_pSlipButton;
+    delete m_playposSlider;
     SampleUtil::free(m_pDitherBuffer);
     SampleUtil::free(m_pCrossfadeBuffer);
 

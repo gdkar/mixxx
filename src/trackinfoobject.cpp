@@ -693,24 +693,21 @@ QString TrackInfoObject::getURL() {
 ConstWaveformPointer TrackInfoObject::getWaveform() {return m_waveform;}
 void TrackInfoObject::setWaveform(ConstWaveformPointer pWaveform) {
     ConstWaveformPointer oldPtr(pWaveform);
-    qSwap(m_waveform,oldPtr);
-    if(oldPtr!=pWaveform){
-      emit(waveformUpdated());
-    }
+    m_waveform.swap(oldPtr);
+    if(oldPtr!=pWaveform){emit(waveformUpdated());}
 }
 ConstWaveformPointer TrackInfoObject::getWaveformSummary() const {return m_waveformSummary;}
 void TrackInfoObject::setWaveformSummary(ConstWaveformPointer pWaveform) {
-  ConstWaveformPointer oldPtr(pWaveform);
-  qSwap(m_waveformSummary,oldPtr);
-    if(oldPtr!=pWaveform){
-      emit(waveformSummaryUpdated());
-    }
+  m_waveformSummary = pWaaveform;
+  emit(waveformSummaryUpdated());
 }
 void TrackInfoObject::setAnalyserProgress(float progress) {
     // progress in 0 .. 1000. 
-    if (m_analyserProgress.exchange(progress)!=progress) {
+    auto oldProgress = progress;
+    oldProgress=m_analyserProgress.exchange(oldProgress);
+//    if(oldProgress!=progress) {
         emit(analyserProgress(progress));
-    }
+//    }
 }
 float TrackInfoObject::getAnalyserProgress() const {return m_analyserProgress.load();}
 void TrackInfoObject::setCuePoint(float cue) {
@@ -757,7 +754,7 @@ void TrackInfoObject::setCuePoints(QList<QSharedPointer<Cue> > cuePoints) {
       disconnect(cue.data(),0,this,0);
     }
     for(auto &cue : m_cuePoints){
-      connect(cue,&Cue::updated,this,&TrackInfoObject::slotCueUpdated,
+      connect(cue.data(),&Cue::updated,this,&TrackInfoObject::slotCueUpdated,
           static_cast<Qt::ConnectionType>(Qt::UniqueConnection|Qt::QueuedConnection));
     }
     m_cuePoints.swap(cuePoints);

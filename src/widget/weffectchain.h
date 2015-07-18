@@ -16,16 +16,12 @@ class WEffectChain : public WLabel {
   public:
     WEffectChain(QWidget* pParent, EffectsManager* pEffectsManager);
     virtual ~WEffectChain();
-
     void setup(QDomNode node, const SkinContext& context);
-
   private slots:
     void chainUpdated();
-
   private:
     // Set the EffectChain that should be monitored by this WEffectChain
     void setEffectChainSlot(EffectChainSlotPointer pEffectChainSlot);
-
     EffectsManager* m_pEffectsManager;
     EffectChainSlotPointer m_pEffectChainSlot;
 };

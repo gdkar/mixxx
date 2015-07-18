@@ -258,11 +258,9 @@ void DlgPrefSound::addPath(AudioOutput output) {
     DlgPrefSoundItem *toInsert;
     AudioPathType type = output.getType();
     if (AudioPath::isIndexed(type)) {
-        toInsert = new DlgPrefSoundItem(outputTab, type,
-            m_outputDevices, false, output.getIndex());
+        toInsert = new DlgPrefSoundItem(outputTab, type,m_outputDevices, false, output.getIndex());
     } else {
-        toInsert = new DlgPrefSoundItem(outputTab, type,
-            m_outputDevices, false);
+        toInsert = new DlgPrefSoundItem(outputTab, type,m_outputDevices, false);
     }
     connect(this, SIGNAL(refreshOutputDevices(const QList<SoundDevice*>&)),
             toInsert, SLOT(refreshDevices(const QList<SoundDevice*>&)));

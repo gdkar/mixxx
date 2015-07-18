@@ -274,7 +274,7 @@ void AnalyserQueue::run() {
                 emitUpdateProgress(nextTrack, 0);
             } else {
                 // 100% - FINALIZE_PERCENT finished
-                emitUpdateProgress(nextTrack,nextTrack->getDuration()  - FINALIZE_PROMILLE);
+                emitUpdateProgress(nextTrack,nextTrack->getDuration()  - 1);
                 // This takes around 3 sec on a Atom Netbook
                 for(auto &an : m_aq)an->finalize(nextTrack);
                 emit(trackDone(nextTrack));
@@ -298,11 +298,9 @@ void AnalyserQueue::emitUpdateProgress(TrackPointer tio, double  progress) {
         // The following tries will success if the previous signal was processed in the GUI Thread
         // This prevent the AnalysisQueue from filling up the GUI Thread event Queue
         // 100 % is emitted in any case
-        if (progress < tio->getDuration() - FINALIZE_PROMILLE && progress > 0) {
+        if (progress < tio->getDuration() - 1 && progress > 0) {
             // Signals during processing are not required in any case
-            if (!m_progressInfo.sema.tryAcquire()) {
-               return;
-            }
+            if (!m_progressInfo.sema.tryAcquire()) {return;}
         } else {m_progressInfo.sema.acquire();}
         m_progressInfo.current_track = tio;
         m_progressInfo.track_progress = progress;
@@ -312,13 +310,9 @@ void AnalyserQueue::emitUpdateProgress(TrackPointer tio, double  progress) {
 }
 //slot
 void AnalyserQueue::slotUpdateProgress() {
-    if (m_progressInfo.current_track) {
-        m_progressInfo.current_track->setAnalyserProgress(m_progressInfo.track_progress.load());
-    }
+    if (m_progressInfo.current_track) {m_progressInfo.current_track->setAnalyserProgress(m_progressInfo.track_progress.load());}
     emit(trackProgress(m_progressInfo.track_progress.load()));
-    if (m_progressInfo.track_progress.load()>=m_progressInfo.current_track->getDuration()) {
-        emit(trackFinished(m_progressInfo.queue_size));
-    }
+    if (m_progressInfo.track_progress.load()>=m_progressInfo.current_track->getDuration()) {emit(trackFinished(m_progressInfo.queue_size));}
     m_progressInfo.sema.release();
 }
 //slot
