@@ -2,9 +2,7 @@
 #define MIXXXAPPLICATION_H
 
 #include <QApplication>
-
 class ControlObjectThread;
-
 class MixxxApplication : public QApplication {
     Q_OBJECT
   public:

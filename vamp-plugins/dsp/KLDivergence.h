@@ -25,25 +25,19 @@ class KLDivergence
 public:
     KLDivergence() { }
     ~KLDivergence() { }
-
     /**
      * Calculate a symmetrised Kullback-Leibler divergence of Gaussian
      * models based on mean and variance vectors.  All input vectors
      * must be of equal size.
      */
-    float distanceGaussian(const vector<float> &means1,
-                            const vector<float> &variances1,
-                            const vector<float> &means2,
-                            const vector<float> &variances2);
-
+    float distanceGaussian(const vector<float> &means1,const vector<float> &variances1,
+                            const vector<float> &means2,const vector<float> &variances2);
     /**
      * Calculate a Kullback-Leibler divergence of two probability
      * distributions.  Input vectors must be of equal size.  If
      * symmetrised is true, the result will be the symmetrised
      * distance (equal to KL(d1, d2) + KL(d2, d1)).
      */
-    float distanceDistribution(const vector<float> &d1,
-                                const vector<float> &d2,
-                                bool symmetrised);
+    float distanceDistribution(const vector<float> &d1,const vector<float> &d2,bool symmetrised);
 };
 

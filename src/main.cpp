@@ -55,12 +55,7 @@ QMutex mutexLogfile;
 /* Debug message handler which outputs to both a logfile and a
  * and prepends the thread the message came from too.
  */
-void MessageHandler(QtMsgType type,
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-                    const char* input) {
-#else
-                    const QMessageLogContext&, const QString& input) {
-#endif
+void MessageHandler(QtMsgType type,const QMessageLogContext&, const QString& input) {
 
     // It's possible to deadlock if any method in this function can
     // qDebug/qWarning/etc. Writing to a closed QFile, for example, produces a
@@ -74,11 +69,7 @@ void MessageHandler(QtMsgType type,
     } else {
         ba = "[?]: ";
     }
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-    ba += input;
-#else
     ba += input.toLocal8Bit();
-#endif
     ba += "\n";
 
     if (!Logfile.isOpen()) {
@@ -239,13 +230,7 @@ int main(int argc, char * argv[])
         fputs("\n\n(For more information, see http://mixxx.org/wiki/doku.php/command_line_options)\n",stdout);
         return(0);
     }
-
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-    qInstallMsgHandler(MessageHandler);
-#else
     qInstallMessageHandler(MessageHandler);
-#endif
-
     // Other things depend on this name to enforce thread exclusivity,
     //  so if you change it here, change it also in:
     //      * ErrorDialogHandler::errorDialog()
@@ -254,10 +239,6 @@ int main(int argc, char * argv[])
     // Support utf-8 for all translation strings. Not supported in Qt 5.
     // TODO(rryan): Is this needed when we switch to qt5? Some sources claim it
     // isn't.
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-    QTextCodec::setCodecForTr(QTextCodec::codecForName("UTF-8"));
-#endif
-
 #ifdef __FFMPEGFILE__
      av_register_all();
      avcodec_register_all();
@@ -269,7 +250,6 @@ int main(int argc, char * argv[])
 //    for (int i=0; i<argc; ++i)
 //        if(QString("--no-visuals")==argv[i])
 //            bVisuals = false;
-
 
 #ifdef __APPLE__
      QDir dir(QApplication::applicationDirPath());
@@ -294,25 +274,18 @@ int main(int argc, char * argv[])
     if (!(ErrorDialogHandler::instance()->checkError())) {
         qDebug() << "Displaying mixxx";
         mixxx->show();
-
         qDebug() << "Running Mixxx";
         result = a.exec();
     }
     delete mixxx;
     qDebug() << "Mixxx shutdown complete with code" << result;
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-    qInstallMsgHandler(nullptr);  // Reset to default.
-#else
     qInstallMessageHandler(nullptr);  // Reset to default.
-#endif
-
     // Don't make any more output after this
     //    or mixxx.log will get clobbered!
     { // scope
         QMutexLocker locker(&mutexLogfile);
         if(Logfile.isOpen()) {Logfile.close();}
     }
-
     //delete plugin_paths;
     return result;
 }

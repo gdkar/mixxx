@@ -140,87 +140,65 @@ namespace soundtouch
 /// - This parameter value is not constant but may change depending on 
 ///   tempo/pitch/rate/samplerate settings.
 #define SETTING_NOMINAL_OUTPUT_SEQUENCE		7
-
+class RateTransposer;
+class TDStretch;
 class SoundTouch : public FIFOProcessor
 {
-private:
     /// Rate transposer class instance
-    class RateTransposer *pRateTransposer;
-
+    RateTransposer *pRateTransposer;
     /// Time-stretch class instance
-    class TDStretch *pTDStretch;
-
+    TDStretch *pTDStretch;
     /// Virtual pitch parameter. Effective rate & tempo are calculated from these parameters.
     float virtualRate;
-
     /// Virtual pitch parameter. Effective rate & tempo are calculated from these parameters.
     float virtualTempo;
-
     /// Virtual pitch parameter. Effective rate & tempo are calculated from these parameters.
     float virtualPitch;
-
     /// Flag: Has sample rate been set?
     bool  bSrateSet;
-
     /// Calculates effective rate & tempo valuescfrom 'virtualRate', 'virtualTempo' and 
     /// 'virtualPitch' parameters.
     void calcEffectiveRateAndTempo();
-
 protected :
     /// Number of channels
     uint  channels;
-
     /// Effective 'rate' value calculated from 'virtualRate', 'virtualTempo' and 'virtualPitch'
     float rate;
-
     /// Effective 'tempo' value calculated from 'virtualRate', 'virtualTempo' and 'virtualPitch'
     float tempo;
-
 public:
-    SoundTouch();
+    SoundTouch(int channels = 2);
     virtual ~SoundTouch();
-
     /// Get SoundTouch library version string
     static const char *getVersionString();
-
     /// Get SoundTouch library version Id
     static uint getVersionId();
-
     /// Sets new rate control value. Normal rate = 1.0, smaller values
     /// represent slower rate, larger faster rates.
     void setRate(float newRate);
-
     /// Sets new tempo control value. Normal tempo = 1.0, smaller values
     /// represent slower tempo, larger faster tempo.
     void setTempo(float newTempo);
-
     /// Sets new rate control value as a difference in percents compared
     /// to the original rate (-50 .. +100 %)
     void setRateChange(float newRate);
-
     /// Sets new tempo control value as a difference in percents compared
     /// to the original tempo (-50 .. +100 %)
     void setTempoChange(float newTempo);
-
     /// Sets new pitch control value. Original pitch = 1.0, smaller values
     /// represent lower pitches, larger values higher pitch.
     void setPitch(float newPitch);
-
     /// Sets pitch change in octaves compared to the original pitch  
     /// (-1.00 .. +1.00)
     void setPitchOctaves(float newPitch);
-
     /// Sets pitch change in semi-tones compared to the original pitch
     /// (-12 .. +12)
     void setPitchSemiTones(int newPitch);
     void setPitchSemiTones(float newPitch);
-
     /// Sets the number of channels, 1 = mono, 2 = stereo
     void setChannels(uint numChannels);
-
     /// Sets sample rate.
     void setSampleRate(uint srate);
-
     /// Flushes the last samples from the processing pipeline to the output.
     /// Clears also the internal processing buffers.
     //
@@ -229,7 +207,6 @@ public:
     /// of the sound stream, and thus it's not recommended to call this function
     /// in the middle of a sound stream.
     void flush();
-
     /// Adds 'size' pcs of samples from the 'samples' memory position into
     /// the input of the object. Notice that sample rate _has_to_ be set before
     /// calling this function, otherwise throws a runtime_error exception.
@@ -239,11 +216,9 @@ public:
                                                     ///< that in case of stereo-sound a single sample
                                                     ///< contains data for both channels.
             );
-
     /// Clears all the samples in the object's output and internal processing
     /// buffers.
     virtual void clear();
-
     /// Changes a setting controlling the processing system behaviour. See the
     /// 'SETTING_...' defines for available setting ID's.
     /// 
@@ -251,18 +226,14 @@ public:
     bool setSetting(int settingId,   ///< Setting ID number. see SETTING_... defines.
                     int value        ///< New setting value.
                     );
-
     /// Reads a setting controlling the processing system behaviour. See the
     /// 'SETTING_...' defines for available setting ID's.
     ///
     /// \return the setting value.
     int getSetting(int settingId    ///< Setting ID number, see SETTING_... defines.
                    ) const;
-
     /// Returns number of samples currently unprocessed.
     virtual uint numUnprocessedSamples() const;
-
-
     /// Other handy functions that are implemented in the ancestor classes (see
     /// classes 'FIFOProcessor' and 'FIFOSamplePipe')
     ///

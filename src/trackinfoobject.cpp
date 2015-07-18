@@ -704,7 +704,7 @@ QString TrackInfoObject::getURL() {
 }
 ConstWaveformPointer TrackInfoObject::getWaveform() {return m_waveform;}
 void TrackInfoObject::setWaveform(ConstWaveformPointer pWaveform) {
-    if(atomic_exchange(m_waveform,pWaveform)!=pWaveform){
+    if(atomic_exchange(&m_waveform,pWaveform)!=pWaveform){
       emit(waveformUpdated());
     }
 }

@@ -100,17 +100,14 @@ BPMDetect::BPMDetect(int numChannels, int aSampleRate)
     windowStart = (60 * sampleRate) / (decimateBy * MAX_BPM);
     assert(windowLen > windowStart);
     // allocate new working objects
-    xcorr = new float[windowLen];
-    std::memset(xcorr, 0, windowLen * sizeof(float));
+    xcorr = new CSAMPLE[windowLen];
+    std::memset(xcorr, 0, windowLen * sizeof(CSAMPLE));
     // allocate processing buffer
     buffer = new FIFOSampleBuffer();
     // we do processing in mono mode
     buffer->setChannels(1);
     buffer->clear();
 }
-
-
-
 BPMDetect::~BPMDetect()
 {
     delete[] xcorr;
@@ -166,22 +163,13 @@ int BPMDetect::decimate(CSAMPLE *dest, const CSAMPLE *src, int numsamples)
     }
     return outcount;
 }
-
-
-
 // Calculates autocorrelation function of the sample history buffer
-void BPMDetect::updateXCorr(int process_samples)
-{
-    int offs;
-    CSAMPLE *pBuffer;
+void BPMDetect::updateXCorr(int process_samples){
     assert(buffer->size() >= (uint)(process_samples + windowLen));
-    pBuffer = buffer->begin();
-    for (offs = windowStart; offs < windowLen; offs ++) 
-    {
-        CSAMPLE sum;
-        int i;
-        sum = 0;
-        for (i = 0; i < process_samples; i ++) {
+    auto pBuffer = buffer->begin();
+    for (auto offs = windowStart; offs < windowLen; offs ++) {
+        auto sum = (CSAMPLE)0;
+        for (auto i = 0; i < process_samples; i ++) {
             sum += pBuffer[i] * pBuffer[i + offs];    // scaling the sub-result shouldn't be necessary
         }
 //        xcorr[offs] *= xcorr_decay;   // decay 'xcorr' here with suitable coefficients 
@@ -190,29 +178,25 @@ void BPMDetect::updateXCorr(int process_samples)
                                         // The 'xcorr_decay' should be a value that's smaller than but 
                                         // close to one, and should also depend on 'process_samples' value.
 
-        xcorr[offs] += (float)sum;
+        xcorr[offs] += (CSAMPLE)sum;
     }
 }
 // Calculates envelope of the sample data
 void BPMDetect::calcEnvelope(CSAMPLE *samples, int numsamples) {
-    const static double decay = 0.7f;               // decay constant for smoothing the envelope
-    const static double norm = (1 - decay);
-
-    int i;
-    CSAMPLE out;
-    CSAMPLE val;
-    for (i = 0; i < numsamples; i ++) {
+    const static CSAMPLE decay = 0.7f;               // decay constant for smoothing the envelope
+    const static CSAMPLE norm = (1 - decay);
+    for (auto i = 0; i < numsamples; i ++) {
         // calc average RMS volume
         RMSVolumeAccu *= avgdecay;
-        val = (float)fabs((float)samples[i]);
+        auto val = std::abs((CSAMPLE)samples[i]);
         RMSVolumeAccu += val * val;
         // cut amplitudes that are below cutoff ~2 times RMS volume
         // (we're interested in peak values, not the silent moments)
-        if (val < 0.5 * sqrt(RMSVolumeAccu * avgnorm)){val = 0;}
+        if (val < 0.5f * std::sqrt(RMSVolumeAccu * avgnorm)){val = 0;}
         // smooth amplitude envelope
         envelopeAccu *= decay;
         envelopeAccu += val;
-        out = (CSAMPLE)(envelopeAccu * norm);
+        auto out = (CSAMPLE)(envelopeAccu * norm);
         samples[i] = (CSAMPLE)out;
     }
 }
@@ -220,11 +204,9 @@ void BPMDetect::inputSamples(const CSAMPLE *samples, int size){
     CSAMPLE decimated[DECIMATED_BLOCK_SAMPLES];
     // iterate so that max INPUT_BLOCK_SAMPLES processed per iteration
     while (size > 0){
-        int block;
-        int decSamples;
-        block = (size > INPUT_BLOCK_SAMPLES) ? INPUT_BLOCK_SAMPLES : size;
+        auto block = (size > INPUT_BLOCK_SAMPLES) ? INPUT_BLOCK_SAMPLES : size;
         // decimate. note that converts to mono at the same time
-        decSamples = decimate(decimated, samples, block);
+        auto decSamples = decimate(decimated, samples, block);
         samples += block * channels;
         size -= block;
         // envelope new samples and add them to buffer
@@ -244,23 +226,23 @@ void BPMDetect::inputSamples(const CSAMPLE *samples, int size){
     }
 }
 void BPMDetect::removeBias(){
-    float minval = 1e12f;   // arbitrary large number
+    CSAMPLE minval = 1e12f;   // arbitrary large number
     for (auto i = windowStart; i < windowLen; i ++){
         if (xcorr[i] < minval) {minval = xcorr[i];}
     }
     for (auto i = windowStart; i < windowLen; i ++){xcorr[i] -= minval;}
 }
 float BPMDetect::getBpm(){
-    double peakPos;
-    double coeff;
+    float peakPos;
+    float coeff;
     PeakFinder peakFinder;
-    coeff = 60.0 * ((double)sampleRate / (double)decimateBy);
+    coeff = 60.0f * ((CSAMPLE)sampleRate / (CSAMPLE)decimateBy);
     // remove bias from xcorr data
     removeBias();
     // find peak position
     peakPos = peakFinder.detectPeak(xcorr, windowStart, windowLen);
     assert(decimateBy != 0);
-    if (peakPos < 1e-9) return 0.0; // detection failed.
+    if (peakPos < 1e-9f) return 0.0f; // detection failed.
     // calculate BPM
-    return (float) (coeff / peakPos);
+    return (CSAMPLE) (coeff / peakPos);
 }

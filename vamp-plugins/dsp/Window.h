@@ -85,19 +85,19 @@ void Window<T>::encache()
 	}
 	break;
     case HammingWindow:
-	for (i = 0; i < n; ++i) {mult[i] = mult[i] * (0.54 - 0.46 * cos(2 * M_PI * i / n));}
+	for (i = 0; i < n; ++i) {mult[i] = mult[i] * (0.54 - 0.46 * std::cos(2 * M_PI * i / n));}
 	break;
     case HanningWindow:
-	for (i = 0; i < n; ++i) {mult[i] = mult[i] * (0.50 - 0.50 * cos(2 * M_PI * i / n));}
+	for (i = 0; i < n; ++i) {mult[i] = mult[i] * (0.50 - 0.50 * std::cos(2 * M_PI * i / n));}
 	break;
     case BlackmanWindow:
-	for (i = 0; i < n; ++i) {mult[i] = mult[i] * (0.42 - 0.50 * cos(2 * M_PI * i / n) + 0.08 * cos(4 * M_PI * i / n));}
+	for (i = 0; i < n; ++i) {mult[i] = mult[i] * (0.42 - 0.50 * std::cos(2 * M_PI * i / n) + 0.08 * std::cos(4 * M_PI * i / n));}
 	break;
     case GaussianWindow:
-	for (i = 0; i < n; ++i) {mult[i] = mult[i] * exp((-1.0 / (n*n)) * ((T(2*i) - n) * (T(2*i) - n)));}
+	for (i = 0; i < n; ++i) {mult[i] = mult[i] * std::exp((-1.0 / (n*n)) * ((T(2*i) - n) * (T(2*i) - n)));}
 	break;
     case ParzenWindow:
-	for (i = 0; i < n; ++i) {mult[i] = mult[i] * (1.0 - fabs((T(2*i) - n) / T(n + 1)));}
+	for (i = 0; i < n; ++i) {mult[i] = mult[i] * (1.0 - std::abs((T(2*i) - n) / T(n + 1)));}
 	break;
     }
     m_cache = mult;

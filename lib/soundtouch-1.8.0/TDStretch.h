@@ -44,7 +44,8 @@
 #ifndef TDStretch_H
 #define TDStretch_H
 
-#include <stddef.h>
+#include <cstddef>
+#include <memory>
 #include "STTypes.h"
 #include "RateTransposer.h"
 #include "FIFOSamplePipe.h"
@@ -110,73 +111,61 @@ namespace soundtouch
 class TDStretch : public FIFOProcessor
 {
 protected:
-    int channels;
-    int sampleReq;
-    float tempo;
+    int channels                    = 2;
+    int sampleReq                   = 0;
+    float tempo                     = 1.f;
 
-    CSAMPLE *pMidBuffer;
-    CSAMPLE *pMidBufferUnaligned;
-    int overlapLength;
-    int seekLength;
-    int seekWindowLength;
+    std::unique_ptr<CSAMPLE[]> pMidBuffer;
+    int overlapLength               = 0;
+    int seekLength                  = 0;
+    int seekWindowLength            = 0;
     int overlapDividerBits;
     int slopingDivider;
-    float nominalSkip;
-    float skipFract;
-    FIFOSampleBuffer outputBuffer;
+    float nominalSkip               = 0.f;
+    float skipFract                 = 0.f;
     FIFOSampleBuffer inputBuffer;
-    bool bQuickSeek;
+    FIFOSampleBuffer outputBuffer;
+    bool bQuickSeek                 = true;;
 
-    int sampleRate;
-    int sequenceMs;
-    int seekWindowMs;
-    int overlapMs;
-    bool bAutoSeqSetting;
-    bool bAutoSeekSetting;
-
-    void acceptNewOverlapLength(int newOverlapLength);
-
+    int sampleRate                  = 44100;
+    int sequenceMs                  = 0;
+    int seekWindowMs                = 0;
+    int overlapMs                   = 0;
+    bool bAutoSeqSetting            = true;
+    bool bAutoSeekSetting           = true;
+    virtual void calculateOverlapLength(int overlapMs);
+    virtual void acceptNewOverlapLength(int newOverlapLength);
     virtual void clearCrossCorrState();
-    void calculateOverlapLength(int overlapMs);
-
     virtual float calcCrossCorr(const CSAMPLE *mixingPos, const CSAMPLE *compare, float &norm) const;
     virtual float calcCrossCorrAccumulate(const CSAMPLE *mixingPos, const CSAMPLE *compare, float &norm) const;
-
     virtual int seekBestOverlapPositionFull(const CSAMPLE *refPos);
     virtual int seekBestOverlapPositionQuick(const CSAMPLE *refPos);
     virtual int seekBestOverlapPosition(const CSAMPLE *refPos);
-
     virtual void overlapStereo(CSAMPLE *output, const CSAMPLE *input) const;
     virtual void overlapMono(CSAMPLE *output, const CSAMPLE *input) const;
     virtual void overlapMulti(CSAMPLE *output, const CSAMPLE *input) const;
-
     void clearMidBuffer();
     void overlap(CSAMPLE *output, const CSAMPLE *input, uint ovlPos) const;
-
     void calcSeqParameters();
-
     /// Changes the tempo of the given sound samples.
     /// Returns amount of samples returned in the "output" buffer.
     /// The maximum amount of samples that can be returned at a time is set by
     /// the 'set_returnBuffer_size' function.
     void processSamples();
-    
 public:
     TDStretch();
     virtual ~TDStretch();
-
     /// Operator 'new' is overloaded so that it automatically creates a suitable instance 
     /// depending on if we've a MMX/SSE/etc-capable CPU available or not.
     static void *operator new(size_t s);
-
     /// Use this function instead of "new" operator to create a new instance of this class. 
     /// This function automatically chooses a correct feature set depending on if the CPU
     /// supports MMX/SSE/etc extensions.
     static TDStretch *newInstance();
     /// Returns the output buffer object
-    FIFOSamplePipe *getOutput() { return &outputBuffer; };
+    FIFOSamplePipe &getOutput() { return outputBuffer; };
     /// Returns the input buffer object
-    FIFOSamplePipe *getInput() { return &inputBuffer; };
+    FIFOSamplePipe &getInput() { return inputBuffer; };
     /// Sets new target tempo. Normal tempo = 'SCALE', smaller values represent slower 
     /// tempo, larger faster tempo.
     virtual void setTempo(float newTempo);
@@ -207,7 +196,7 @@ public:
     /// Get routine control parameters, see setParameters() function.
     /// Any of the parameters to this function can be NULL, in such case corresponding parameter
     /// value isn't returned.
-    void getParameters(int *pSampleRate, int *pSequenceMs, int *pSeekWindowMs, int *pOverlapMs) const;
+    void getParameters(int &pSampleRate, int &pSequenceMs, int &pSeekWindowMs, int &pOverlapMs) const;
     /// Adds 'numsamples' pcs of samples from the 'samples' memory position into
     /// the input of the object.
     virtual void putSamples(
