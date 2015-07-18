@@ -142,7 +142,7 @@ MixxxMainWindow::MixxxMainWindow(QApplication* pApp, const CmdlineArgs& args)
     // Create the Effects subsystem.
     m_pEffectsManager = new EffectsManager(this, m_pConfig);
     // Starting the master (mixing of the channels and effects):
-    m_pEngine = new EngineMaster(m_pConfig, "[Master]", m_pEffectsManager, true, true, this);
+    m_pEngine = new EngineMaster(m_pConfig, "[Master]", m_pEffectsManager, true, true);
     // Create effect backends. We do this after creating EngineMaster to allow
     // effect backends to refer to controls that are produced by the engine.
     NativeBackend* pNativeBackend = new NativeBackend(m_pEffectsManager);

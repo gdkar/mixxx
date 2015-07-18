@@ -218,8 +218,8 @@ class TrackInfoObject : public QObject {
     void setWaveform(ConstWaveformPointer pWaveform);
     ConstWaveformPointer getWaveformSummary() const;
     void setWaveformSummary(ConstWaveformPointer pWaveform);
-    void setAnalyserProgress(int progress);
-    int getAnalyserProgress() const;
+    void setAnalyserProgress(float progress);
+    float getAnalyserProgress() const;
     /** Save the cue point (in samples... I think) */
     void setCuePoint(float cue);
     // Get saved the cue point

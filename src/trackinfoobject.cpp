@@ -589,15 +589,15 @@ void TrackInfoObject::setTimesPlayed(int t) {
 void TrackInfoObject::incTimesPlayed() {setPlayedAndUpdatePlaycount(true);}
 bool TrackInfoObject::getPlayed() const {return m_bPlayed.load();}
 void TrackInfoObject::setPlayedAndUpdatePlaycount(bool bPlayed) {
-  bool changed = m_bPlayed.exchange(bPlayed)!=bPlayed;
+  bool _changed = m_bPlayed.exchange(bPlayed)!=bPlayed;
     if (bPlayed) {
         m_iTimesPlayed++;
-        changed=true;
+        _changed=true;
     }
-    else if (changed) {
+    else if (_changed) {
         m_iTimesPlayed--;
     }
-    if(changed){
+    if(_changed){
       setDirty(true);
       emit changed(this);
     }
@@ -614,14 +614,14 @@ QString TrackInfoObject::getComment() const {
 }
 void TrackInfoObject::setComment(const QString& s) {
     QString sComment(s);
-    qSwap(sComment,m_sComment)
+    qSwap(sComment,m_sComment);
     if (s != sComment) {
         setDirty(true);
         emit changed(this);
     }
 }
 QString TrackInfoObject::getType() const {
-    auto sType = m_sType
+    auto sType = m_sType;
     return sType;
 }
 void TrackInfoObject::setType(const QString& s) {
@@ -638,29 +638,17 @@ void TrackInfoObject::setSampleRate(int iSampleRate) {
         emit changed(this);
     }
 }
-int TrackInfoObject::getSampleRate() const {
-    return m_iSampleRate.load();
-}
+int TrackInfoObject::getSampleRate() const {return m_iSampleRate.load();}
 void TrackInfoObject::setChannels(int iChannels) {
     if (m_iChannels.exchange(iChannels) != iChannels) {
         setDirty(true);
         emit changed(this);
     }
 }
-int TrackInfoObject::getChannels() const {
-    return m_iChannels.load();
-}
-
-int TrackInfoObject::getLength() const {
-    return getFileInfo().size();
-}
-
-int TrackInfoObject::getBitrate() const {
-    return m_iBitrate.load();
-}
-QString TrackInfoObject::getBitrateStr() const {
-    return QString("%1").arg(getBitrate());
-}
+int TrackInfoObject::getChannels() const {return m_iChannels.load();}
+int TrackInfoObject::getLength() const {return getFileInfo().size();}
+int TrackInfoObject::getBitrate() const {return m_iBitrate.load();}
+QString TrackInfoObject::getBitrateStr() const {return QString("%1").arg(getBitrate());}
 void TrackInfoObject::setBitrate(int i) {
     if (m_iBitrate.exchange(i) != i) {
         setDirty(true);
@@ -704,13 +692,17 @@ QString TrackInfoObject::getURL() {
 }
 ConstWaveformPointer TrackInfoObject::getWaveform() {return m_waveform;}
 void TrackInfoObject::setWaveform(ConstWaveformPointer pWaveform) {
-    if(atomic_exchange(&m_waveform,pWaveform)!=pWaveform){
+    ConstWaveformPointer oldPtr(pWaveform);
+    qSwap(m_waveform,oldPtr);
+    if(oldPtr!=pWaveform){
       emit(waveformUpdated());
     }
 }
 ConstWaveformPointer TrackInfoObject::getWaveformSummary() const {return m_waveformSummary;}
 void TrackInfoObject::setWaveformSummary(ConstWaveformPointer pWaveform) {
-    if(atomic_exchange(m_waveformSummary, pWaveform)!=pWaveform){
+  ConstWaveformPointer oldPtr(pWaveform);
+  qSwap(m_waveformSummary,oldPtr);
+    if(oldPtr!=pWaveform){
       emit(waveformSummaryUpdated());
     }
 }
