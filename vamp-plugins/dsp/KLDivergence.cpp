@@ -26,38 +26,25 @@ float KLDivergence::distanceGaussian(const vector<float> &m1,
 
     float d = -2.0 * sz;
     float small = 1e-20;
-
     for (int k = 0; k < sz; ++k) {
-
         float kv1 = v1[k] + small;
         float kv2 = v2[k] + small;
         float km = (m1[k] - m2[k]) + small;
-
         d += kv1 / kv2 + kv2 / kv1;
         d += km * (1.0 / kv1 + 1.0 / kv2) * km;
     }
-
-    d /= 2.0;
-
+    d *= 0.5;
     return d;
 }
-
 float KLDivergence::distanceDistribution(const vector<float> &d1,
                                           const vector<float> &d2,
                                           bool symmetrised)
 {
     int sz = d1.size();
-
     float d = 0;
-    float small = 1e-20;
-    
-    for (int i = 0; i < sz; ++i) {
-        d += d1[i] * log10((d1[i] + small) / (d2[i] + small));
-    }
-
-    if (symmetrised) {
-        d += distanceDistribution(d2, d1, false);
-    }
+    float small = 1e-20f;
+    for (int i = 0; i < sz; ++i) {d += d1[i] * log10((d1[i] + small) / (d2[i] + small));}
+    if (symmetrised) {d += distanceDistribution(d2, d1, false);}
 
     return d;
 }

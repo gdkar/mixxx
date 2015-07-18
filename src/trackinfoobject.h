@@ -69,7 +69,7 @@ class TrackInfoObject : public QObject {
     // Returns the duration in seconds
     float getDuration() const;
     // Set duration in seconds
-    void setDuration(int);
+    void setDuration(float);
     // Returns the duration as a string: H:MM:SS
     QString getDurationStr() const;
     // Accessors for various stats of the file on disk. These are auto-populated

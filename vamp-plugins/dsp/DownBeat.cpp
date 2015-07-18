@@ -19,7 +19,6 @@
 #include "MathUtilities.h"
 #include "KLDivergence.h"
 #include "FFT.h"
-
 #include <iostream>
 #include <cstdlib>
 
