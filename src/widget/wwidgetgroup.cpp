@@ -32,63 +32,43 @@ void WWidgetGroup::setLayoutSpacing(int spacing) {
         return;
     }
     QLayout* pLayout = layout();
-    if (pLayout) {
-        pLayout->setSpacing(spacing);
-    }
+    if (pLayout) {pLayout->setSpacing(spacing);}
 }
-
 QRect WWidgetGroup::layoutContentsMargins() const {
     QLayout* pLayout = layout();
-    QMargins margins = pLayout ? pLayout->contentsMargins() :
-            contentsMargins();
-    return QRect(margins.left(), margins.top(),
-                 margins.right(), margins.bottom());
+    QMargins margins = pLayout ? pLayout->contentsMargins() :contentsMargins();
+    return QRect(margins.left(), margins.top(),margins.right(), margins.bottom());
 }
-
 void WWidgetGroup::setLayoutContentsMargins(QRect rectMargins) {
     // qDebug() << "WWidgetGroup::setLayoutContentsMargins" << rectMargins.x()
     //          << rectMargins.y() << rectMargins.width() << rectMargins.height();
-
     if (rectMargins.x() < 0 || rectMargins.y() < 0 ||
             rectMargins.width() < 0 || rectMargins.height() < 0) {
-        qDebug() << "WWidgetGroup: Invalid ContentsMargins rectangle:"
-                 << rectMargins;
+        qDebug() << "WWidgetGroup: Invalid ContentsMargins rectangle:" << rectMargins;
         return;
     }
-
-    setContentsMargins(rectMargins.x(), rectMargins.y(),
-                       rectMargins.width(), rectMargins.height());
+    setContentsMargins(rectMargins.x(), rectMargins.y(),rectMargins.width(), rectMargins.height());
     QLayout* pLayout = layout();
     if (pLayout) {
-        pLayout->setContentsMargins(rectMargins.x(), rectMargins.y(),
-                                    rectMargins.width(), rectMargins.height());
+        pLayout->setContentsMargins(rectMargins.x(), rectMargins.y(),rectMargins.width(), rectMargins.height());
     }
 }
-
 Qt::Alignment WWidgetGroup::layoutAlignment() const {
     QLayout* pLayout = layout();
     return pLayout ? pLayout->alignment() : Qt::Alignment();
 }
-
 void WWidgetGroup::setLayoutAlignment(int alignment) {
     //qDebug() << "WWidgetGroup::setLayoutAlignment" << alignment;
-
     QLayout* pLayout = layout();
-    if (pLayout) {
-        pLayout->setAlignment(static_cast<Qt::Alignment>(alignment));
-    }
+    if (pLayout) {pLayout->setAlignment(static_cast<Qt::Alignment>(alignment));}
 }
-
 void WWidgetGroup::setup(QDomNode node, const SkinContext& context) {
     setContentsMargins(0, 0, 0, 0);
-
     // Set background pixmap if available
     if (context.hasNode(node, "BackPath")) {
         QDomElement backPathNode = context.selectElement(node, "BackPath");
-        setPixmapBackground(context.getPixmapSource(backPathNode),
-                            context.selectScaleMode(backPathNode, Paintable::TILE));
+        setPixmapBackground(context.getPixmapSource(backPathNode),context.selectScaleMode(backPathNode, Paintable::TILE));
     }
-
     QLayout* pLayout = nullptr;
     if (context.hasNode(node, "Layout")) {
         QString layout = context.selectString(node, "Layout");
@@ -101,7 +81,6 @@ void WWidgetGroup::setup(QDomNode node, const SkinContext& context) {
             pStackedLayout->setStackingMode(QStackedLayout::StackAll);
             pLayout = pStackedLayout;
         }
-
         // Set common layout parameters.
         if (pLayout != nullptr) {
             pLayout->setSpacing(0);
@@ -109,7 +88,6 @@ void WWidgetGroup::setup(QDomNode node, const SkinContext& context) {
             pLayout->setAlignment(Qt::AlignCenter);
         }
     }
-
     if (pLayout && context.hasNode(node, "SizeConstraint")) {
         QMap<QString, QLayout::SizeConstraint> constraints;
         constraints["SetDefaultConstraint"] = QLayout::SetDefaultConstraint;
@@ -126,30 +104,21 @@ void WWidgetGroup::setup(QDomNode node, const SkinContext& context) {
             qDebug() << "Could not parse SizeConstraint:" << sizeConstraintStr;
         }
     }
-
-    if (pLayout) {
-        setLayout(pLayout);
-    }
+    if (pLayout) {setLayout(pLayout);}
 }
-
 void WWidgetGroup::setPixmapBackground(PixmapSource source, Paintable::DrawMode mode) {
     // Load background pixmap
     m_pPixmapBack = WPixmapStore::getPaintable(source, mode);
-    if (!m_pPixmapBack) {
-        qDebug() << "WWidgetGroup: Error loading background pixmap:" << source.getPath();
-    }
+    if (!m_pPixmapBack) {qDebug() << "WWidgetGroup: Error loading background pixmap:" << source.getPath();}
 }
 
 void WWidgetGroup::addWidget(QWidget* pChild) {
     QLayout* pLayout = layout();
-    if (pLayout && pChild) {
-        pLayout->addWidget(pChild);
-    }
+    if (pLayout && pChild) {pLayout->addWidget(pChild);}
 }
 
 void WWidgetGroup::paintEvent(QPaintEvent* pe) {
     QFrame::paintEvent(pe);
-
     if (m_pPixmapBack) {
         QStylePainter p(this);
         m_pPixmapBack->draw(rect(), &p);
@@ -162,9 +131,7 @@ void WWidgetGroup::resizeEvent(QResizeEvent* re) {
 }
 
 bool WWidgetGroup::event(QEvent* pEvent) {
-    if (pEvent->type() == QEvent::ToolTip) {
-        updateTooltip();
-    }
+    if (pEvent->type() == QEvent::ToolTip) {updateTooltip();}
     return QFrame::event(pEvent);
 }
 
