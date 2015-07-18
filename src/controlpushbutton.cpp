@@ -25,6 +25,7 @@ ControlPushButton::ControlPushButton(ConfigKey key, QObject *pParent)
   :ControlObject(key,true,false,false,pParent)
   ,m_buttonMode(PUSH)
   ,m_iNoStates(2){
+    setParent(pParent);
     if (m_pControl) {
         m_pControl->setBehavior(
                 new ControlPushButtonBehavior(

@@ -37,8 +37,8 @@ class ControlObject : public QObject {
     // bIgnoreNops: Don't emit a signal if the CO is set to its current value.
     // bTrack: Record statistics about this control.
     // bPersist: Store value on exit, load on startup.
-    ControlObject(ConfigKey key,QObject*pParent);
-    ControlObject(ConfigKey key,
+    explicit ControlObject(ConfigKey key,QObject*pParent);
+    explicit ControlObject(ConfigKey key,
                   bool bIgnoreNops=true, bool bTrack=false,
                   bool bPersist=false,
                   QObject*pParent=nullptr);

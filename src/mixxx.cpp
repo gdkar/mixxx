@@ -1842,14 +1842,14 @@ void MixxxMainWindow::slotNumDecksChanged(double dNumDecks) {
         m_pOptionsVinylControl[i]->setVisible(true);
         m_pVinylControlEnabled.push_back(
                 new ControlObjectSlave(PlayerManager::groupForDeck(i),
-                                        "vinylcontrol_enabled"));
+                                        "vinylcontrol_enabled",this));
         ControlObjectSlave* vc_enabled = m_pVinylControlEnabled.back();
         m_VCControlMapper->setMapping(vc_enabled, i);
         vc_enabled->connectValueChanged(m_VCControlMapper, SLOT(map()));
 
         m_pPassthroughEnabled.push_back(
                 new ControlObjectSlave(PlayerManager::groupForDeck(i),
-                                        "passthrough"));
+                                        "passthrough",this));
         ControlObjectSlave* passthrough_enabled = m_pPassthroughEnabled.back();
         m_PassthroughMapper->setMapping(passthrough_enabled, i);
         passthrough_enabled->connectValueChanged(m_PassthroughMapper,

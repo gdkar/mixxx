@@ -6,13 +6,9 @@ WSplitter::WSplitter(QWidget* pParent, ConfigObject<ConfigValue> *pConfig)
         : QSplitter(pParent),
           WBaseWidget(this),
           m_pConfig(pConfig) {
-    connect(this, SIGNAL(splitterMoved(int,int)),
-            this, SLOT(slotSplitterMoved()));
+    connect(this, SIGNAL(splitterMoved(int,int)),this, SLOT(slotSplitterMoved()));
 }
-
-WSplitter::~WSplitter() {
-}
-
+WSplitter::~WSplitter() {}
 void WSplitter::setup(QDomNode node, const SkinContext& context) {
     // Load split sizes
     QString sizesJoined;
@@ -20,9 +16,7 @@ void WSplitter::setup(QDomNode node, const SkinContext& context) {
     bool ok = false;
     // Try to load last values stored in mixxx.cfg
     if (context.hasNode(node, "SplitSizesConfigKey")) {
-        m_configKey = ConfigKey::parseCommaSeparated(
-                    context.selectString(node, "SplitSizesConfigKey"));
-
+        m_configKey = ConfigKey::parseCommaSeparated(context.selectString(node, "SplitSizesConfigKey"));
         if (m_pConfig->exists(m_configKey)) {
             sizesJoined = m_pConfig->getValueString(m_configKey);
             msg = "Reading .cfg file: '"
@@ -47,21 +41,16 @@ void WSplitter::setup(QDomNode node, const SkinContext& context) {
         QStringList sizesSplit = sizesJoined.split(",");
         QList<int> sizesList;
         ok = false;
-        foreach (const QString& sizeStr, sizesSplit) {
+        for (const auto& sizeStr: sizesSplit) {
             sizesList.push_back(sizeStr.toInt(&ok));
-            if (!ok) {
-                break;
-            }
+            if (!ok) {break;}
         }
         if (sizesList.length() != this->count()) {
             SKIN_WARNING(node, context) << msg;
             ok = false;
         }
-        if (ok) {
-            this->setSizes(sizesList);
-        }
+        if (ok) {this->setSizes(sizesList);}
     }
-
     // Default orientation is horizontal.
     if (context.hasNode(node, "Orientation")) {
         QString layout = context.selectString(node, "Orientation");
@@ -72,21 +61,15 @@ void WSplitter::setup(QDomNode node, const SkinContext& context) {
         }
     }
 }
-
 void WSplitter::slotSplitterMoved() {
     if (!m_configKey.group.isEmpty() && !m_configKey.item.isEmpty()) {
         QStringList sizeStrList;
-        foreach (const int& sizeInt, sizes()) {
-            sizeStrList.push_back(QString::number(sizeInt));
-        }
+        for(const auto& sizeInt: sizes()) {sizeStrList.push_back(QString::number(sizeInt));}
         QString sizesStr = sizeStrList.join(",");
         m_pConfig->set(m_configKey, ConfigValue(sizesStr));
     }
 }
-
 bool WSplitter::event(QEvent* pEvent) {
-    if (pEvent->type() == QEvent::ToolTip) {
-        updateTooltip();
-    }
+    if (pEvent->type() == QEvent::ToolTip) {updateTooltip();}
     return QSplitter::event(pEvent);
 }

@@ -21,12 +21,8 @@ void WEffect::setup(QDomNode node, const SkinContext& context) {
     EffectRackPointer pRack = EffectWidgetUtils::getEffectRackFromNode(node, context, m_pEffectsManager);
     EffectChainSlotPointer pChainSlot = EffectWidgetUtils::getEffectChainSlotFromNode(node, context, pRack);
     EffectSlotPointer pEffectSlot = EffectWidgetUtils::getEffectSlotFromNode(node, context, pChainSlot);
-    if (pEffectSlot) {
-        setEffectSlot(pEffectSlot);
-    } else {
-        SKIN_WARNING(node, context)
-                << "EffectName node could not attach to effect slot.";
-    }
+    if (pEffectSlot) {setEffectSlot(pEffectSlot);}
+    else {SKIN_WARNING(node, context) << "EffectName node could not attach to effect slot.";}
 }
 void WEffect::setEffectSlot(EffectSlotPointer pEffectSlot) {
     if (pEffectSlot) {

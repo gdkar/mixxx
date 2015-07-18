@@ -84,5 +84,4 @@ class ControlPotmeter : public ControlObject {
     bool m_bAllowOutOfBounds;
     PotmeterControls m_controls;
 };
-
 #endif
