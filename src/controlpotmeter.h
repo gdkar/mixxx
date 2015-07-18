@@ -31,17 +31,10 @@ class ControlObjectThread;
 class PotmeterControls : public QObject {
     Q_OBJECT
   public:
-    PotmeterControls(const ConfigKey& key);
+    PotmeterControls(const ConfigKey& key,QObject*pParent=nullptr);
     virtual ~PotmeterControls();
-
-    void setStepCount(int count) {
-        m_stepCount = count;
-    }
-
-    void setSmallStepCount(int count) {
-        m_smallStepCount = count;
-    }
-
+    virtual void setStepCount(int count) {m_stepCount = count;}
+    virtual void setSmallStepCount(int count) {m_smallStepCount = count;}
   public slots:
     // Increases the value.
     void incValue(double);
@@ -63,8 +56,7 @@ class PotmeterControls : public QObject {
     void toggleValue(double);
     // Toggles the value between -1.0 and 0.0.
     void toggleMinusValue(double);
-
-  private:
+  protected:
     ControlObjectThread* m_pControl;
     int m_stepCount;
     double m_smallStepCount;
@@ -73,23 +65,21 @@ class PotmeterControls : public QObject {
 class ControlPotmeter : public ControlObject {
     Q_OBJECT
   public:
+    ControlPotmeter(ConfigKey key, QObject *pParent);
     ControlPotmeter(ConfigKey key, double dMinValue = 0.0, double dMaxValue = 1.0,
                     bool allowOutOfBounds = false,
                     bool bIgnoreNops = true,
                     bool bTrack = false,
-                    bool bPersist = false);
+                    bool bPersist = false,
+                    QObject *pParent=nullptr);
     virtual ~ControlPotmeter();
-
     // Sets the step count of the associated PushButtons.
-    void setStepCount(int count);
-
+    virtual void setStepCount(int count);
     // Sets the small step count of the associated PushButtons.
-    void setSmallStepCount(int count);
-
+    virtual void setSmallStepCount(int count);
     // Sets the minimum and maximum allowed value. The control value is reset
     // when calling this method
-    void setRange(double dMinValue, double dMaxValue, bool allowOutOfBounds);
-
+    virtual void setRange(double dMinValue, double dMaxValue, bool allowOutOfBounds);
   protected:
     bool m_bAllowOutOfBounds;
     PotmeterControls m_controls;

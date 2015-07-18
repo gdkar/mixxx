@@ -1,7 +1,7 @@
 #include <QtDebug>
 #include <QVector>
 
-#include "analyserkey.h"
+#include "an_queue/analyserkey.h"
 #include "track/key_preferences.h"
 #include "proto/keys.pb.h"
 #include "track/keyfactory.h"
@@ -23,7 +23,7 @@ AnalyserKey::~AnalyserKey() {
     delete m_pVamp;
 }
 
-bool AnalyserKey::initialise(TrackPointer tio, int sampleRate, int totalSamples) {
+bool AnalyserKey::initialize(TrackPointer tio, int sampleRate, int totalSamples) {
     if (totalSamples == 0) {
         return false;
     }
@@ -138,7 +138,7 @@ void AnalyserKey::cleanup(TrackPointer tio) {
     m_pVamp = nullptr;
 }
 
-void AnalyserKey::finalise(TrackPointer tio) {
+void AnalyserKey::finalize(TrackPointer tio) {
     if (m_pVamp == nullptr) {
         return;
     }

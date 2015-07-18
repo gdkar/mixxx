@@ -28,17 +28,21 @@
 
 class ControlObject : public QObject {
     Q_OBJECT
+    Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged STORED false);
+    Q_PROPERTY(QString description READ description WRITE setDescription NOTIFY descriptionChanged STORED false);
+    Q_PROPERTY(double value READ get WRITE set RESET reset NOTIFY valueChanged STORED false);
+    Q_PROPERTY(double defaultValue READ defaultValue WRITE setDefaultValue NOTIFY defaultValueChanged STORED false);
   public:
     ControlObject();
-
     // bIgnoreNops: Don't emit a signal if the CO is set to its current value.
     // bTrack: Record statistics about this control.
     // bPersist: Store value on exit, load on startup.
+    ControlObject(ConfigKey key,QObject*pParent);
     ControlObject(ConfigKey key,
                   bool bIgnoreNops=true, bool bTrack=false,
-                  bool bPersist=false);
+                  bool bPersist=false,
+                  QObject*pParent=nullptr);
     virtual ~ControlObject();
-
     // Returns a pointer to the ControlObject matching the given ConfigKey
     static ControlObject* getControl(const ConfigKey& key, bool warn = true);
     static inline ControlObject* getControl(const QString& group, const QString& item, bool warn = true) {
@@ -49,55 +53,39 @@ class ControlObject : public QObject {
         ConfigKey key(group, item);
         return getControl(key, warn);
     }
-
-    QString name() const {return m_pControl ?  m_pControl->name() : QString();}
-    void setName(const QString& name) {if (m_pControl) {m_pControl->setName(name);}}
-    const QString description() const {return m_pControl ?  m_pControl->description() : QString();}
-    void setDescription(const QString& description) {
+    virtual QString name() const {return m_pControl ?  m_pControl->name() : QString();}
+    virtual void setName(const QString& name) {if (m_pControl) {m_pControl->setName(name);}}
+    virtual const QString description() const {return m_pControl ?  m_pControl->description() : QString();}
+    virtual void setDescription(const QString& description) {
         if (m_pControl) {m_pControl->setDescription(description);}
     }
-
     // Return the key of the object
-    inline ConfigKey getKey() const {return m_key;}
+    Q_INVOKABLE virtual  ConfigKey getKey() const {return m_key;}
     // Returns the value of the ControlObject
-    inline double get() const {return m_pControl ? m_pControl->get() : 0.0;}
+    Q_INVOKABLE virtual double get() const {return m_pControl ? m_pControl->get() : 0.0;}
     // Returns the bool interpretation of the ControlObject
-    inline bool toBool() const {return get() > 0.0;}
-
+    virtual  bool toBool() const {return get() > 0.0;}
+    virtual  operator bool()const{return get()>0.0;}
     // Instantly returns the value of the ControlObject
     static double get(const ConfigKey& key);
-
     // Sets the ControlObject value. May require confirmation by owner.
-    inline void set(double value) {
-        if (m_pControl) {
-            m_pControl->set(value, this);
-        }
+    Q_INVOKABLE virtual void set(double value) {
+        if (m_pControl && get()!=value){m_pControl->set(value, this);}
     }
     // Sets the ControlObject value and confirms it.
-    inline void setAndConfirm(double value) {
-        if (m_pControl) {
-            m_pControl->setAndConfirm(value, this);
-        }
+    Q_INVOKABLE virtual void setAndConfirm(double value) {
+        if (m_pControl) {m_pControl->setAndConfirm(value, this);}
     }
     // Instantly sets the value of the ControlObject
     static void set(const ConfigKey& key, const double& value);
-
     // Sets the default value
-    inline void reset() {
-        if (m_pControl) {
-            m_pControl->reset();
-        }
-    }
+    Q_INVOKABLE virtual void reset() {if (m_pControl) {m_pControl->reset();}}
 
-    inline void setDefaultValue(double dValue) {
-        if (m_pControl) {
-            m_pControl->setDefaultValue(dValue);
-        }
+    Q_INVOKABLE virtual void setDefaultValue(double dValue) {
+        if (m_pControl && defaultValue()!=dValue) {m_pControl->setDefaultValue(dValue);
+        emit defaultValueChanged(dValue);}
     }
-    inline double defaultValue() const {
-        return m_pControl ? m_pControl->defaultValue() : 0.0;
-    }
-
+    Q_INVOKABLE virtual double defaultValue() const {return m_pControl ? m_pControl->defaultValue() : 0.0;}
     // Returns the parameterized value of the object. Thread safe, non-blocking.
     virtual double getParameter() const;
 
@@ -126,27 +114,23 @@ class ControlObject : public QObject {
   signals:
     void valueChanged(double);
     void valueChangedFromEngine(double);
-
+    void defaultValueChanged(double);
+    void nameChanged(const QString &);
+    void descriptionChanged(const QString &);
   public:
     // DEPRECATED: Called to set the control value from the controller
     // subsystem.
     virtual void setValueFromMidi(MidiOpCode o, double v);
     virtual double getMidiParameter() const;
-
   protected:
     // Key of the object
     ConfigKey m_key;
     QSharedPointer<ControlDoublePrivate> m_pControl;
-
   private slots:
     void privateValueChanged(double value, QObject* pSetter);
-
   private:
-    void initialize(ConfigKey key, bool bIgnoreNops, bool bTrack,
-                    bool bPersist);
-    inline bool ignoreNops() const {
-        return m_pControl ? m_pControl->ignoreNops() : true;
-    }
+    virtual void initialize(ConfigKey key, bool bIgnoreNops, bool bTrack,bool bPersist);
+    virtual bool ignoreNops() const {return m_pControl ? m_pControl->ignoreNops() : true;}
 };
 
 #endif

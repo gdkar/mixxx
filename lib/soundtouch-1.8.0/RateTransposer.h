@@ -42,9 +42,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef RateTransposer_H
-#define RateTransposer_H
-
+#pragma once
 #include <stddef.h>
 #include "AAFilter.h"
 #include "FIFOSamplePipe.h"
@@ -64,41 +62,25 @@ public:
         CUBIC,
         SHANNON
     };
-
 protected:
     virtual void resetRegisters() = 0;
-
-    virtual int transposeMono(SAMPLETYPE *dest, 
-                        const SAMPLETYPE *src, 
-                        int &srcSamples)  = 0;
-    virtual int transposeStereo(SAMPLETYPE *dest, 
-                        const SAMPLETYPE *src, 
-                        int &srcSamples) = 0;
-    virtual int transposeMulti(SAMPLETYPE *dest, 
-                        const SAMPLETYPE *src, 
-                        int &srcSamples) = 0;
-
+    virtual int transposeMono(CSAMPLE *dest, const CSAMPLE *src, int &srcSamples)  = 0;
+    virtual int transposeStereo(CSAMPLE *dest, const CSAMPLE *src, int &srcSamples) = 0;
+    virtual int transposeMulti(CSAMPLE *dest, const CSAMPLE *src, int &srcSamples) = 0;
     static ALGORITHM algorithm;
-
 public:
     float rate;
     int numChannels;
-
     TransposerBase();
     virtual ~TransposerBase();
-
     virtual int transpose(FIFOSampleBuffer &dest, FIFOSampleBuffer &src);
     virtual void setRate(float newRate);
     virtual void setChannels(int channels);
-
     // static factory function
     static TransposerBase *newInstance();
-
     // static function to set interpolation algorithm
     static void setAlgorithm(ALGORITHM a);
 };
-
-
 /// A common linear samplerate transposer class.
 ///
 class RateTransposer : public FIFOProcessor
@@ -107,31 +89,22 @@ protected:
     /// Anti-alias filter object
     AAFilter *pAAFilter;
     TransposerBase *pTransposer;
-
     /// Buffer for collecting samples to feed the anti-alias filter between
     /// two batches
     FIFOSampleBuffer inputBuffer;
-
     /// Buffer for keeping samples between transposing & anti-alias filter
     FIFOSampleBuffer midBuffer;
-
     /// Output sample buffer
     FIFOSampleBuffer outputBuffer;
-
     bool bUseAAFilter;
-
-
     /// Transposes sample rate by applying anti-alias filter to prevent folding. 
     /// Returns amount of samples returned in the "dest" buffer.
     /// The maximum amount of samples that can be returned at a time is set by
     /// the 'set_returnBuffer_size' function.
-    void processSamples(const SAMPLETYPE *src, 
-                        uint numSamples);
-
+    void processSamples(const CSAMPLE *src, uint size);
 public:
     RateTransposer();
     virtual ~RateTransposer();
-
     /// Operator 'new' is overloaded so that it automatically creates a suitable instance 
     /// depending on if we're to use integer or floating point arithmetics.
 //    static void *operator new(size_t s);
@@ -143,37 +116,25 @@ public:
 
     /// Returns the output buffer object
     FIFOSamplePipe *getOutput() { return &outputBuffer; };
-
     /// Returns the store buffer object
 //    FIFOSamplePipe *getStore() { return &storeBuffer; };
-
     /// Return anti-alias filter object
     AAFilter *getAAFilter();
-
     /// Enables/disables the anti-alias filter. Zero to disable, nonzero to enable
     void enableAAFilter(bool newMode);
-
     /// Returns nonzero if anti-alias filter is enabled.
     bool isAAFilterEnabled() const;
-
     /// Sets new target rate. Normal rate = 1.0, smaller values represent slower 
     /// rate, larger faster rates.
     virtual void setRate(float newRate);
-
     /// Sets the number of channels, 1 = mono, 2 = stereo
     void setChannels(int channels);
-
-    /// Adds 'numSamples' pcs of samples from the 'samples' memory position into
+    /// Adds 'size' pcs of samples from the 'samples' memory position into
     /// the input of the object.
-    void putSamples(const SAMPLETYPE *samples, uint numSamples);
-
+    void putSamples(const CSAMPLE *samples, uint size);
     /// Clears all the samples in the object
     void clear();
-
     /// Returns nonzero if there aren't any samples available for outputting.
-    int isEmpty() const;
+    bool empty() const;
 };
-
 }
-
-#endif

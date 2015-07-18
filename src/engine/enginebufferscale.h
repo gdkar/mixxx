@@ -21,7 +21,7 @@
 #include <QObject>
 
 #include "util/types.h"
-
+#include "engine/readaheadmanager.h"
 // MAX_SEEK_SPEED needs to be good and high to allow room for the very high
 //  instantaneous velocities of advanced scratching (Uzi) and spin-backs.
 //  (Yes, I can actually spin the SCS.1d faster than 15x nominal.
@@ -45,7 +45,7 @@ class EngineBufferScale : public QObject {
         speedAffectsPitchChanged );
 
   public:
-    EngineBufferScale();
+    EngineBufferScale(ReadAheadManager *pRAMAN,QObject*pParent=nullptr);
     virtual ~EngineBufferScale();
     // Sets the scaling parameters.
     // * The base rate (ratio of track sample rate to output sample rate).
@@ -78,7 +78,7 @@ class EngineBufferScale : public QObject {
     /** Called from EngineBuffer when seeking, to ensure the buffers are flushed */
     virtual void clear() = 0;
     /** Scale buffer */
-    virtual CSAMPLE* getScaled(unsigned long buf_size) = 0;
+    virtual CSAMPLE* getScaled(ssize_t buf_size) = 0;
   signals:
     void tempoRatioChanged(double);
     void pitchRatioChanged(double);
@@ -105,7 +105,7 @@ class EngineBufferScale : public QObject {
         emit speedAffectsPitchChanged(val);
       }
     }
-  
+    ReadAheadManager *m_pReadAheadManager;  
     int m_iSampleRate;
     double m_dBaseRate;
     bool m_bSpeedAffectsPitch;

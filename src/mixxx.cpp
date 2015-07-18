@@ -28,7 +28,7 @@
 
 #include "mixxx.h"
 
-#include "analyserqueue.h"
+#include "an_queue/analyserqueue.h"
 #include "controlpotmeter.h"
 #include "controlobjectslave.h"
 #include "trackplayer.h"

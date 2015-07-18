@@ -18,39 +18,32 @@ using RubberBand::RubberBandStretcher;
 static size_t kRubberBandBlockSize = 256;
 
 EngineBufferScaleRubberBand::EngineBufferScaleRubberBand(
-    ReadAheadManager* pReadAheadManager)
-        : m_bBackwards(false),
+    ReadAheadManager* pReadAheadManager,QObject*pParent)
+        : EngineBufferScale(pReadAheadManager,pParent),
+          m_bBackwards(false),
           m_buffer_back(SampleUtil::alloc(MAX_BUFFER_LEN)),
-          m_pRubberBand(nullptr),
-          m_pReadAheadManager(pReadAheadManager) {
+          m_pRubberBand(nullptr){
     qDebug() << "RubberBand version" << RUBBERBAND_VERSION;
-
     m_retrieve_buffer[0] = SampleUtil::alloc(MAX_BUFFER_LEN);
     m_retrieve_buffer[1] = SampleUtil::alloc(MAX_BUFFER_LEN);
-
     // m_iSampleRate defaults to 44100.
     initializeRubberBand(m_iSampleRate);
 }
-
 EngineBufferScaleRubberBand::~EngineBufferScaleRubberBand() {
     SampleUtil::free(m_buffer_back);
     SampleUtil::free(m_retrieve_buffer[0]);
     SampleUtil::free(m_retrieve_buffer[1]);
-
     if (m_pRubberBand) {
         delete m_pRubberBand;
         m_pRubberBand = nullptr;
     }
 }
-
 void EngineBufferScaleRubberBand::initializeRubberBand(int iSampleRate) {
     if (m_pRubberBand) {
         delete m_pRubberBand;
         m_pRubberBand = nullptr;
     }
-    m_pRubberBand = new RubberBandStretcher(
-        iSampleRate, 2,
-        RubberBandStretcher::OptionProcessRealTime);
+    m_pRubberBand = new RubberBandStretcher(iSampleRate, 2,RubberBandStretcher::OptionProcessRealTime);
     m_pRubberBand->setMaxProcessSize(kRubberBandBlockSize);
     // Setting the time ratio to a very high value will cause RubberBand
     // to preallocate buffers large enough to (almost certainly)
@@ -58,10 +51,7 @@ void EngineBufferScaleRubberBand::initializeRubberBand(int iSampleRate) {
     m_pRubberBand->setTimeRatio(2.0);
     m_pRubberBand->setTimeRatio(1.0);
 }
-
-void EngineBufferScaleRubberBand::setScaleParameters(double base_rate,
-                                                     double* pTempoRatio,
-                                                     double* pPitchRatio) {
+void EngineBufferScaleRubberBand::setScaleParameters(double base_rate,double* pTempoRatio,double* pPitchRatio) {
     // Negative speed means we are going backwards. pitch does not affect
     // the playback direction.
     m_bBackwards = *pTempoRatio < 0;
@@ -157,7 +147,7 @@ void EngineBufferScaleRubberBand::deinterleaveAndProcess(
 }
 
 
-CSAMPLE* EngineBufferScaleRubberBand::getScaled(unsigned long buf_size) {
+CSAMPLE* EngineBufferScaleRubberBand::getScaled(ssize_t buf_size) {
     // qDebug() << "EngineBufferScaleRubberBand::getScaled" << buf_size
     //          << "m_dSpeedAdjust" << m_dSpeedAdjust;
     m_samplesRead = 0.0;
@@ -169,10 +159,10 @@ CSAMPLE* EngineBufferScaleRubberBand::getScaled(unsigned long buf_size) {
     }
 
     const int iNumChannels = 2;
-    unsigned long total_received_frames = 0;
-    unsigned long total_read_frames = 0;
+    ssize_t total_received_frames = 0;
+    ssize_t total_read_frames = 0;
 
-    unsigned long remaining_frames = buf_size/iNumChannels;
+    ssize_t remaining_frames = buf_size/iNumChannels;
     CSAMPLE* read = m_buffer;
     bool last_read_failed = false;
     bool break_out_after_retrieve_and_reset_rubberband = false;
@@ -181,8 +171,7 @@ CSAMPLE* EngineBufferScaleRubberBand::getScaled(unsigned long buf_size) {
         // enough calls to retrieveAndDeinterleave because CachingReader returns
         // zeros for reads that are not in cache. So it's safe to loop here
         // without any checks for failure in retrieveAndDeinterleave.
-        unsigned long received_frames = retrieveAndDeinterleave(
-                read, remaining_frames);
+        ssize_t received_frames = retrieveAndDeinterleave(read, remaining_frames);
         remaining_frames -= received_frames;
         total_received_frames += received_frames;
         read += received_frames * iNumChannels;

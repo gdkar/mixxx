@@ -1,7 +1,6 @@
 // cue.cpp
 // Created 10/26/2009 by RJ Ryan (rryan@mit.edu)
 
-#include <QMutexLocker>
 #include <QtDebug>
 
 #include "library/dao/cue.h"

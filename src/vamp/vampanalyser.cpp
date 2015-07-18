@@ -183,7 +183,7 @@ bool VampAnalyser::Init(const QString pluginlibrary, const QString pluginid,
     qDebug() << "Vampanalyser BlockSize: " << m_iBlockSize;
     if (m_iBlockSize == 0) {
         // A plugin that can handle any block size may return 0. The final block
-        // size will be set in the initialise() call. Since 0 means it is
+        // size will be set in the initialize() call. Since 0 means it is
         // accepting any size, 1024 should be good
         m_iBlockSize = 1024;
         qDebug() << "Vampanalyser: setting m_iBlockSize to 1024";
@@ -197,13 +197,13 @@ bool VampAnalyser::Init(const QString pluginlibrary, const QString pluginid,
         // block size if the plugin is accepting input in the time domain. If
         // the plugin is accepting input in the frequency domain, the host may
         // use any step size. The final step size will be set in the
-        // initialise() call.
+        // initialize() call.
         m_iStepSize = m_iBlockSize;
         qDebug() << "Vampanalyser: setting m_iStepSize to" << m_iStepSize;
     }
 
     if (!m_plugin->initialise(2, m_iStepSize, m_iBlockSize)) {
-        qDebug() << "VampAnalyser: Cannot initialise plugin";
+        qDebug() << "VampAnalyser: Cannot initialize plugin";
         return false;
     }
     // Here we are using m_iBlockSize: it cannot be 0

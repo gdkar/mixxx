@@ -76,61 +76,45 @@ class BPMDetect
 protected:
     /// Auto-correlation accumulator bins.
     float *xcorr;
-    
     /// Amplitude envelope sliding average approximation level accumulator
     double envelopeAccu;
-
     /// RMS volume sliding average approximation level accumulator
     double RMSVolumeAccu;
-
     /// Sample average counter.
     int decimateCount;
-
     /// Sample average accumulator for FIFO-like decimation.
-    soundtouch::LONG_SAMPLETYPE decimateSum;
-
+    CSAMPLE decimateSum;
     /// Decimate sound by this coefficient to reach approx. 500 Hz.
     int decimateBy;
-
     /// Auto-correlation window length
     int windowLen;
-
     /// Number of channels (1 = mono, 2 = stereo)
     int channels;
-
     /// sample rate
     int sampleRate;
-
     /// Beginning of auto-correlation window: Autocorrelation isn't being updated for
     /// the first these many correlation bins.
     int windowStart;
- 
     /// FIFO-buffer for decimated processing samples.
-    soundtouch::FIFOSampleBuffer *buffer;
-
+    FIFOSampleBuffer *buffer;
     /// Updates auto-correlation function for given number of decimated samples that 
     /// are read from the internal 'buffer' pipe (samples aren't removed from the pipe 
     /// though).
     void updateXCorr(int process_samples      /// How many samples are processed.
                      );
-
     /// Decimates samples to approx. 500 Hz.
-    ///
     /// \return Number of output samples.
-    int decimate(soundtouch::SAMPLETYPE *dest,      ///< Destination buffer
-                 const soundtouch::SAMPLETYPE *src, ///< Source sample buffer
+    int decimate(CSAMPLE *dest,      ///< Destination buffer
+                 const CSAMPLE *src, ///< Source sample buffer
                  int numsamples                     ///< Number of source samples.
                  );
-
     /// Calculates amplitude envelope for the buffer of samples.
     /// Result is output to 'samples'.
-    void calcEnvelope(soundtouch::SAMPLETYPE *samples,  ///< Pointer to input/output data buffer
+    void calcEnvelope(CSAMPLE *samples,  ///< Pointer to input/output data buffer
                       int numsamples                    ///< Number of samples in buffer
                       );
-
     /// remove constant bias from xcorr data
     void removeBias();
-
 public:
     /// Constructor.
     BPMDetect(int numChannels,  ///< Number of channels in sample data.
@@ -146,11 +130,9 @@ public:
     /// function. 
     /// 
     /// Notice that data in 'samples' array can be disrupted in processing.
-    void inputSamples(const soundtouch::SAMPLETYPE *samples,    ///< Pointer to input/working data buffer
-                      int numSamples                            ///< Number of samples in buffer
+    void inputSamples(const CSAMPLE *samples,    ///< Pointer to input/working data buffer
+                      int size                            ///< Number of samples in buffer
                       );
-
-
     /// Analyzes the results and returns the BPM rate. Use this function to read result
     /// after whole song data has been input to the class by consecutive calls of
     /// 'inputSamples' function.
@@ -158,7 +140,5 @@ public:
     /// \return Beats-per-minute rate, or zero if detection failed.
     float getBpm();
 };
-
 }
-
 #endif // _BPMDetect_H_

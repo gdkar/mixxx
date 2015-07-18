@@ -117,11 +117,10 @@ void LegacyLibraryImporter::import() {
                 // Import the track's saved cue point if it is non-zero.
                 float fCuePoint = trackInfo17.getCuePoint();
                 if (fCuePoint != 0.0f) {
-                    Cue* pCue = trackInfo17.addCue();
+                    auto  pCue = trackInfo17.addCue();
                     pCue->setType(Cue::CUE);
                     pCue->setPosition(fCuePoint);
                 }
-
                 // Provide a no-op deleter b/c this Track is on the stack.
                 TrackPointer pTrack(&trackInfo17, &doNothing);
                 m_trackDao.saveTrack(pTrack);

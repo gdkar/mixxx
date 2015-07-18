@@ -133,9 +133,9 @@ namespace soundtouch
 
     #ifdef SOUNDTOUCH_INTEGER_SAMPLES
         // 16bit integer sample type
-        typedef short SAMPLETYPE;
+        typedef short CSAMPLE;
         // data type for sample accumulation: Use 32bit integer to prevent overflows
-        typedef long  LONG_SAMPLETYPE;
+        typedef long  LONG_CSAMPLE;
 
         #ifdef SOUNDTOUCH_FLOAT_SAMPLES
             // check that only one sample type is defined
@@ -148,21 +148,16 @@ namespace soundtouch
         #endif
 
     #else
-
         // floating point samples
-        typedef float  SAMPLETYPE;
+        typedef float CSAMPLE;
         // data type for sample accumulation: Use double to utilize full precision.
-        typedef double LONG_SAMPLETYPE;
-
+        typedef float LONG_CSAMPLE;
         #ifdef SOUNDTOUCH_ALLOW_X86_OPTIMIZATIONS
             // Allow SSE optimizations
             #define SOUNDTOUCH_ALLOW_SSE       1
         #endif
-
     #endif  // SOUNDTOUCH_INTEGER_SAMPLES
-
 };
-
 // define ST_NO_EXCEPTION_HANDLING switch to disable throwing std exceptions:
 // #define ST_NO_EXCEPTION_HANDLING    1
 #ifdef ST_NO_EXCEPTION_HANDLING
@@ -174,11 +169,9 @@ namespace soundtouch
     #include <stdexcept>
     #define ST_THROW_RT_ERROR(x)    {throw std::runtime_error(x);}
 #endif
-
 // When this #define is active, eliminates a clicking sound when the "rate" or "pitch" 
 // parameter setting crosses from value <1 to >=1 or vice versa during processing. 
 // Default is off as such crossover is untypical case and involves a slight sound 
 // quality compromise.
 //#define SOUNDTOUCH_PREVENT_CLICK_AT_RATE_CROSSOVER   1
-
 #endif

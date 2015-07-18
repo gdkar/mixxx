@@ -10,7 +10,7 @@ class ControlLinPotmeter : public ControlPotmeter {
     ControlLinPotmeter(ConfigKey key,
             double dMinValue = 0.0, double dMaxValue = 1.0,
             double dStep = 0, double dSmallStep = 0,
-            bool allowOutOfBounds = false);
+            bool allowOutOfBounds = false,QObject*pParent=nullptr);
 };
 
 #endif // CONTROLLINPOTMETER_H

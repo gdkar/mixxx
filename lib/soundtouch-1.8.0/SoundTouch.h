@@ -230,12 +230,12 @@ public:
     /// in the middle of a sound stream.
     void flush();
 
-    /// Adds 'numSamples' pcs of samples from the 'samples' memory position into
+    /// Adds 'size' pcs of samples from the 'samples' memory position into
     /// the input of the object. Notice that sample rate _has_to_ be set before
     /// calling this function, otherwise throws a runtime_error exception.
     virtual void putSamples(
-            const SAMPLETYPE *samples,  ///< Pointer to sample buffer.
-            uint numSamples                         ///< Number of samples in buffer. Notice
+            const CSAMPLE *samples,  ///< Pointer to sample buffer.
+            uint size                         ///< Number of samples in buffer. Notice
                                                     ///< that in case of stereo-sound a single sample
                                                     ///< contains data for both channels.
             );
@@ -267,9 +267,9 @@ public:
     /// classes 'FIFOProcessor' and 'FIFOSamplePipe')
     ///
     /// - receiveSamples() : Use this function to receive 'ready' processed samples from SoundTouch.
-    /// - numSamples()     : Get number of 'ready' samples that can be received with 
+    /// - size()     : Get number of 'ready' samples that can be received with 
     ///                      function 'receiveSamples()'
-    /// - isEmpty()        : Returns nonzero if there aren't any 'ready' samples.
+    /// - empty()        : Returns nonzero if there aren't any 'ready' samples.
     /// - clear()          : Clears all samples from ready/processing buffers.
 };
 

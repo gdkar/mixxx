@@ -21,20 +21,12 @@ SoftwareWaveformWidget::SoftwareWaveformWidget(const char* group, QWidget* paren
     addRenderer<WaveformRendererFilteredSignal>();
     addRenderer<WaveformRenderBeat>();
     addRenderer<WaveformRenderMark>();
-
     setAttribute(Qt::WA_NoSystemBackground);
     setAttribute(Qt::WA_OpaquePaintEvent);
-
     m_initSuccess = init();
 }
-
-SoftwareWaveformWidget::~SoftwareWaveformWidget() {
-}
-
-void SoftwareWaveformWidget::castToQWidget() {
-    m_widget = static_cast<QWidget*>(this);
-}
-
+SoftwareWaveformWidget::~SoftwareWaveformWidget() {}
+void SoftwareWaveformWidget::castToQWidget() {m_widget = static_cast<QWidget*>(this);}
 void SoftwareWaveformWidget::paintEvent(QPaintEvent* event) {
     QPainter painter(this);
     draw(&painter, event);

@@ -10,16 +10,10 @@ Tooltips::~Tooltips() {
 QString Tooltips::tooltipForId(QString id) const {
     // We always add a separator at the end.
     QString joined = m_tooltips.value(id, QStringList()).join(tooltipSeparator());
-    if (joined.length() > 0) {
-        joined += tooltipSeparator();
-    }
+    if (joined.length() > 0) {joined += tooltipSeparator();}
     return joined;
 }
-
-QString Tooltips::tooltipSeparator() const {
-    return "\n";
-}
-
+QString Tooltips::tooltipSeparator() const {return "\n";}
 QList<QString>& Tooltips::add(QString id) {
     return m_tooltips[id];
 }

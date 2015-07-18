@@ -40,9 +40,8 @@ class SoundTouch;
 class EngineBufferScaleST : public EngineBufferScale {
     Q_OBJECT
   public:
-    EngineBufferScaleST(ReadAheadManager* pReadAheadManager);
+    EngineBufferScaleST(ReadAheadManager* pReadAheadManager,QObject*pParent=nullptr);
     virtual ~EngineBufferScaleST();
-
     virtual void setScaleParameters(double base_rate,
                                     double* pTempoRatio,
                                     double* pPitchRatio);
@@ -50,7 +49,7 @@ class EngineBufferScaleST : public EngineBufferScale {
     virtual void setSampleRate(int iSampleRate);
 
     // Scale buffer.
-    CSAMPLE* getScaled(unsigned long buf_size);
+    CSAMPLE* getScaled(ssize_t buf_size);
 
     // Flush buffer.
     void clear();
@@ -58,15 +57,10 @@ class EngineBufferScaleST : public EngineBufferScale {
   private:
     // Holds the playback direction.
     bool m_bBackwards;
-
     // Temporary buffer for reading from the RAMAN.
     CSAMPLE* buffer_back;
-
     // SoundTouch time/pitch scaling lib
     soundtouch::SoundTouch* m_pSoundTouch;
-
-    // The read-ahead manager that we use to fetch samples
-    ReadAheadManager* m_pReadAheadManager;
 };
 
 #endif

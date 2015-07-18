@@ -177,12 +177,13 @@ void ControlDoublePrivate::set(double value, QObject* pSender) {
 }
 void ControlDoublePrivate::setAndConfirm(double value, QObject* pSender) {setInner(value, pSender);}
 void ControlDoublePrivate::setInner(double value, QObject* pSender) {
-    if (get() == value) {return;}
-    m_value.setValue(value);
-    emit(valueChanged(value, pSender));
-    if (m_bTrack) {
-        Stat::track(m_trackKey, static_cast<Stat::StatType>(m_trackType),
-                    static_cast<Stat::ComputeFlags>(m_trackFlags), value);
+    if (get() != value) {
+      m_value.setValue(value);
+      emit(valueChanged(value, pSender));
+      if (m_bTrack) {
+          Stat::track(m_trackKey, static_cast<Stat::StatType>(m_trackType),
+                      static_cast<Stat::ComputeFlags>(m_trackFlags), value);
+      }
     }
 }
 void ControlDoublePrivate::setBehavior(ControlNumericBehavior* pBehavior) {
@@ -198,9 +199,7 @@ void ControlDoublePrivate::setParameter(double dParam, QObject* pSender) {
         set(pBehavior->parameterToValue(dParam), pSender);
     }
 }
-double ControlDoublePrivate::getParameter() const {
-    return getParameterForValue(get());
-}
+double ControlDoublePrivate::getParameter() const {return getParameterForValue(get());}
 double ControlDoublePrivate::getParameterForValue(double value) const {
     QSharedPointer<ControlNumericBehavior> pBehavior = m_pBehavior;
     if (!pBehavior.isNull()) {value = pBehavior->valueToParameter(value);}

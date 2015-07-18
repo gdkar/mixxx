@@ -150,39 +150,25 @@ static const Float_t  BButter [9] [3] = {
     { 0.95856916599601, -1.91713833199203, 0.95856916599601 },
     { 0.94597685600279, -1.89195371200558, 0.94597685600279 }
 };
-
 ReplayGain::ReplayGain() :
         num_channels(1),
         freqindex(0) {
 }
+ReplayGain::~ReplayGain() {}
+bool ReplayGain::initialize(long samplefreq, size_t channels) {
 
-ReplayGain::~ReplayGain() {
-}
-
-bool ReplayGain::initialise(long samplefreq, size_t channels) {
-
-    if (channels < 1 || channels > 2) {
-        return false;
-    }
-
-
+    if (channels < 1 || channels > 2) {return false;}
     bool ok = ResetSampleFrequency(samplefreq);
-    if (!ok) {
-        return false;
-    }
-
+    if (!ok) {return false;}
     linpre       = linprebuf + MAX_ORDER;
     rinpre       = rinprebuf + MAX_ORDER;
     lstep        = lstepbuf  + MAX_ORDER;
     rstep        = rstepbuf  + MAX_ORDER;
     lout         = loutbuf   + MAX_ORDER;
     rout         = routbuf   + MAX_ORDER;
-
     num_channels  = channels;
     return true;
 }
-
-
 bool ReplayGain::process(const float* left_samples, const float* right_samples, size_t blockSize) {
     const float*  curleft = NULL;
     const float*  curright = NULL;
@@ -190,19 +176,14 @@ bool ReplayGain::process(const float* left_samples, const float* right_samples, 
     long            cursamples;
     long            cursamplepos;
     int             i;
-
-    if ( blockSize == 0 )
-        return true;
-
+    if ( blockSize == 0 ) return true;
     cursamplepos = 0;
     batchsamples = blockSize;
-
     switch ( num_channels) {
-    case  1: right_samples = left_samples;
-    case  2: break;
-    default: return false;
+      case  1: right_samples = left_samples;
+      case  2: break;
+      default: return false;
     }
-
     if (blockSize < MAX_ORDER) {
         memcpy ( linprebuf + MAX_ORDER, left_samples , blockSize * sizeof(float) );
         memcpy ( rinprebuf + MAX_ORDER, right_samples, blockSize * sizeof(float) );
@@ -211,7 +192,6 @@ bool ReplayGain::process(const float* left_samples, const float* right_samples, 
         memcpy ( linprebuf + MAX_ORDER, left_samples,  MAX_ORDER   * sizeof(float) );
         memcpy ( rinprebuf + MAX_ORDER, right_samples, MAX_ORDER   * sizeof(float) );
     }
-
     while ( batchsamples > 0 ) {
         cursamples = batchsamples > (long)(sampleWindow-totsamp)  ?  (long)(sampleWindow - totsamp)  :  batchsamples;
         if ( cursamplepos < MAX_ORDER ) {
@@ -224,7 +204,6 @@ bool ReplayGain::process(const float* left_samples, const float* right_samples, 
             curleft  = left_samples  + cursamplepos;
             curright = right_samples + cursamplepos;
         }
-
         filterYule( curleft , lstep + totsamp, cursamples );
         filterYule( curright, rstep + totsamp, cursamples );
 
@@ -235,7 +214,6 @@ bool ReplayGain::process(const float* left_samples, const float* right_samples, 
             lsum += lout [totsamp+i] * lout [totsamp+i];
             rsum += rout [totsamp+i] * rout [totsamp+i];
         }
-
         batchsamples -= cursamples;
         cursamplepos += cursamples;
         totsamp      += cursamples;
@@ -267,28 +245,18 @@ bool ReplayGain::process(const float* left_samples, const float* right_samples, 
     }
     return true;
 }
-
-float ReplayGain::end()
-{
+float ReplayGain::end(){
     float  retval;
     unsigned int    i;
-
     retval = analyzeResult( A, sizeof(A)/sizeof(*A) );
-
-    for ( i = 0; i < (int)(sizeof(A)/sizeof(*A)); i++ ) {
-        A[i]  = 0;
-    }
-
+    memset(A,0,sizeof(A));
     for ( i = 0; i < MAX_ORDER; i++ )
         linprebuf[i] = lstepbuf[i] = loutbuf[i] = rinprebuf[i] = rstepbuf[i] = routbuf[i] = 0.f;
-
     totsamp = 0;
     lsum    = rsum = 0.;
     return retval;
 }
-
 //private functions
-
 void
 ReplayGain::filterYule (const float* input, float* output, size_t nSamples) {
     const float* a = AYule[freqindex];
@@ -296,13 +264,10 @@ ReplayGain::filterYule (const float* input, float* output, size_t nSamples) {
     for (size_t i = 0; i < nSamples; i++) {
         // TODO(XXX) Add back 1e-10 hack for denormal range?
         double y = input[i] * b[0];
-        for (size_t k = 1; k <= YULE_ORDER; k++) {
-            y += input[i - k] * b[k] - output[i-k] * a[k];
-        }
+        for (size_t k = 1; k <= YULE_ORDER; k++) {y += input[i - k] * b[k] - output[i-k] * a[k];}
         output[i] = (Float_t)y;
     }
 }
-
 void
 ReplayGain::filterButter(const float* input, float* output, size_t nSamples) {
     const float* a = AButter[freqindex];
@@ -310,8 +275,7 @@ ReplayGain::filterButter(const float* input, float* output, size_t nSamples) {
     for (size_t i = 0; i < nSamples; i++) {
         // TODO(XXX) Add back 1e-10 hack for denormal range?
         double y = input[i] * b[0];
-        for (size_t k = 1; k <= BUTTER_ORDER; k++) {
-            y += input[i - k] * b[k] - output[i-k] * a[k];
+        for (size_t k = 1; k <= BUTTER_ORDER; k++) {y += input[i - k] * b[k] - output[i-k] * a[k];
         }
         output[i] = (Float_t)y;
     }
@@ -356,19 +320,13 @@ ReplayGain::analyzeResult ( unsigned int* Array, size_t len ){
     Uint32_t  elems;
     Int32_t   upper;
     size_t    i;
-
     elems = 0;
     // TODO(XXX) possible overflow?
-    for ( i = 0; i < len; i++ )
-        elems += Array[i];
-    if ( elems == 0 )
-        return GAIN_NOT_ENOUGH_SAMPLES;
-
+    for ( i = 0; i < len; i++ ) elems += Array[i];
+    if ( elems == 0 ) return GAIN_NOT_ENOUGH_SAMPLES;
     upper = (Int32_t) ceil (elems * (1. - RMS_PERCENTILE));
     for ( i = len; i-- > 0; ) {
-        if ( (upper -= Array[i]) <= 0 )
-            break;
+        if ( (upper -= Array[i]) <= 0 ) break;
     }
-
     return (float) ((float)PINK_REF - (float)i / (float)STEPS_per_dB);
 }

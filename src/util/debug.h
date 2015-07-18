@@ -4,7 +4,7 @@
 #include <QtDebug>
 #include <QString>
 
-#include "errordialoghandler.h"
+#include "dialogs/errordialoghandler.h"
 
 template <typename T>
 QString toDebugString(const T& object) {

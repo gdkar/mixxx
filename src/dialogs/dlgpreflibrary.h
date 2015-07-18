@@ -66,7 +66,7 @@ class DlgPrefLibrary : public DlgPreferencePage, public Ui::DlgPrefLibraryDlg  {
     void slotRowHeightValueChanged(int);
     void slotSelectFont();
   private:
-    void initialiseDirList();
+    void initializeDirList();
     void setLibraryFont(const QFont& font);
     QStandardItemModel m_dirListModel;
     ConfigObject<ConfigValue>* m_pconfig;

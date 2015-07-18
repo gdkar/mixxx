@@ -55,44 +55,27 @@ class WOverview : public WWidget {
     void resizeEvent(QResizeEvent *);
     virtual void dragEnterEvent(QDragEnterEvent* event);
     virtual void dropEvent(QDropEvent* event);
-
-    ConstWaveformPointer getWaveform() const {
-        return m_pWaveform;
-    }
-
+    ConstWaveformPointer getWaveform() const {return m_pWaveform;}
     QImage* m_pWaveformSourceImage;
     QImage m_waveformImageScaled;
-
     WaveformSignalColors m_signalColors;
-
     // Hold the last visual sample processed to generate the pixmap
     int m_actualCompletion;
-
     bool m_pixmapDone;
     float m_waveformPeak;
-
     int m_diffGain;
-
   private slots:
     void onEndOfTrackChange(double v);
-
     void onMarkChanged(double v);
     void onMarkRangeChange(double v);
-
     void slotWaveformSummaryUpdated();
     void slotAnalyserProgress(int progress);
-
   private:
     // Append the waveform overview pixmap according to available data in waveform
     virtual bool drawNextPixmapPart() = 0;
     void paintText(const QString &text, QPainter *painter);
-    inline int valueToPosition(double value) const {
-        return static_cast<int>(m_a * value - m_b);
-    }
-    inline double positionToValue(int position) const {
-        return (static_cast<double>(position) + m_b) / m_a;
-    }
-
+    inline int valueToPosition(double value) const {return static_cast<int>(m_a * value - m_b);}
+    inline double positionToValue(int position) const {return (static_cast<double>(position) + m_b) / m_a;}
     const QString m_group;
     ConfigObject<ConfigValue>* m_pConfig;
     ControlObjectThread* m_endOfTrackControl;

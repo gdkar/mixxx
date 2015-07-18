@@ -13,7 +13,7 @@
 #include "trackinfoobject.h"
 #include "track/beatmap.h"
 #include "track/beatfactory.h"
-#include "analyserbeats.h"
+#include "an_queue/analyserbeats.h"
 #include "track/beatutils.h"
 #include "track/beat_preferences.h"
 #include "vamp/vampanalyser.h"
@@ -33,7 +33,7 @@ AnalyserBeats::AnalyserBeats(ConfigObject<ConfigValue>* pConfig)
 AnalyserBeats::~AnalyserBeats() {
 }
 
-bool AnalyserBeats::initialise(TrackPointer tio, int sampleRate, int totalSamples) {
+bool AnalyserBeats::initialize(TrackPointer tio, int sampleRate, int totalSamples) {
     if (totalSamples == 0) {
         return false;
     }
@@ -132,7 +132,7 @@ bool AnalyserBeats::loadStored(TrackPointer tio) const {
         ConfigKey(VAMP_CONFIG_KEY, VAMP_ANALYSER_BEAT_PLUGIN_ID));
 
     // At first start config for QM and Vamp does not exist --> set default
-    // TODO(XXX): This is no longer present in initialise. Remove?
+    // TODO(XXX): This is no longer present in initialize. Remove?
     if (library.isEmpty() || library.isNull())
         library = "libmixxxminimal";
     if (pluginID.isEmpty() || pluginID.isNull())
@@ -193,25 +193,20 @@ void AnalyserBeats::cleanup(TrackPointer tio) {
     m_pVamp = nullptr;
 }
 
-void AnalyserBeats::finalise(TrackPointer tio) {
-    if (m_pVamp == nullptr) {
-        return;
-    }
+void AnalyserBeats::finalize(TrackPointer tio) {
+    if (m_pVamp == nullptr) {return;}
 
     // Call End() here, because the number of total samples may have been
     // estimated incorrectly.
     bool success = m_pVamp->End();
     qDebug() << "Beat Calculation" << (success ? "complete" : "failed");
-
     QVector<double> beats = m_pVamp->GetInitFramesVector();
     delete m_pVamp;
     m_pVamp = nullptr;
-
     if (beats.isEmpty()) {
         qDebug() << "Could not detect beat positions from Vamp.";
         return;
     }
-
     QHash<QString, QString> extraVersionInfo = getExtraVersionInfo(
         m_pluginId, m_bPreferencesFastAnalysis);
     BeatsPointer pBeats = BeatFactory::makePreferredBeats(
@@ -219,23 +214,19 @@ void AnalyserBeats::finalise(TrackPointer tio) {
         m_bPreferencesFixedTempo, m_bPreferencesOffsetCorrection,
         m_iSampleRate, m_iTotalSamples,
         m_iMinBpm, m_iMaxBpm);
-
     BeatsPointer pCurrentBeats = tio->getBeats();
-
     // If the track has no beats object then set our newly generated one
     // regardless of beat lock.
     if (!pCurrentBeats) {
         tio->setBeats(pBeats);
         return;
     }
-
     // If the track received the beat lock while we were analyzing it then we
     // abort setting it.
     if (tio->hasBpmLock()) {
         qDebug() << "Track was BPM-locked as we were analysing it. Aborting analysis.";
         return;
     }
-
     // If the user prefers to replace old beatgrids with newly generated ones or
     // the old beatgrid has 0-bpm then we replace it.
     bool zeroCurrentBpm = pCurrentBeats->getBpm() == 0.0;

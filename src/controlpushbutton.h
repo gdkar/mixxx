@@ -52,16 +52,15 @@ class ControlPushButton : public ControlObject {
                 return "UNKNOWN";
         }
     }
-
-    ControlPushButton(ConfigKey key, bool bPersist=false);
+    ControlPushButton(ConfigKey key, QObject *pParent);
+    ControlPushButton(ConfigKey key, bool bPersist=false,QObject*pParent=nullptr);
     virtual ~ControlPushButton();
 
     inline ButtonMode getButtonMode() const {
         return m_buttonMode;
     }
-    void setButtonMode(enum ButtonMode mode);
-    void setStates(int num_states);
-
+    virtual void setButtonMode(enum ButtonMode mode);
+    virtual void setStates(int num_states);
   private:
     enum ButtonMode m_buttonMode;
     int m_iNoStates;

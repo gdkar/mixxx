@@ -14,15 +14,11 @@ class WSplitter : public QSplitter, public WBaseWidget {
   public:
     WSplitter(QWidget* pParent, ConfigObject<ConfigValue> *pConfig);
     virtual ~WSplitter();
-
     void setup(QDomNode node, const SkinContext& context);
-
   protected:
     bool event(QEvent* pEvent);
-
   private slots:
     void slotSplitterMoved();
-
   private:
     ConfigObject<ConfigValue>* m_pConfig;
     ConfigKey m_configKey;

@@ -6,7 +6,7 @@
 
 #include "controlobject.h"
 #include "trackinfoobject.h"
-#include "analyserqueue.h"
+#include "an_queue/analyserqueue.h"
 #include "controlobject.h"
 #include "samplerbank.h"
 #include "library/library.h"
@@ -33,7 +33,6 @@ PlayerManager::PlayerManager(ConfigObject<ConfigValue>* pConfig,
         m_pCONumDecks(new ControlObject(ConfigKey("[Master]", "num_decks"), true, true)),
         m_pCONumSamplers(new ControlObject(ConfigKey("[Master]", "num_samplers"), true, true)),
         m_pCONumPreviewDecks(new ControlObject(ConfigKey("[Master]", "num_preview_decks"), true, true)) {
-
     connect(m_pCONumDecks, SIGNAL(valueChanged(double)),
             this, SLOT(slotNumDecksControlChanged(double)),
             Qt::DirectConnection);
@@ -52,27 +51,20 @@ PlayerManager::PlayerManager(ConfigObject<ConfigValue>* pConfig,
     connect(m_pCONumPreviewDecks, SIGNAL(valueChangedFromEngine(double)),
             this, SLOT(slotNumPreviewDecksControlChanged(double)),
             Qt::DirectConnection);
-
     // This is parented to the PlayerManager so does not need to be deleted
     SamplerBank* pSamplerBank = new SamplerBank(this);
     Q_UNUSED(pSamplerBank);
-
     // Redundant
     m_pCONumDecks->set(0);
     m_pCONumSamplers->set(0);
     m_pCONumPreviewDecks->set(0);
-
     // register the engine's outputs
-    m_pSoundManager->registerOutput(AudioOutput(AudioOutput::MASTER),
-                                    m_pEngine);
-    m_pSoundManager->registerOutput(AudioOutput(AudioOutput::HEADPHONES),
-                                    m_pEngine);
+    m_pSoundManager->registerOutput(AudioOutput(AudioOutput::MASTER),m_pEngine);
+    m_pSoundManager->registerOutput(AudioOutput(AudioOutput::HEADPHONES),m_pEngine);
     for (int o = EngineChannel::LEFT; o <= EngineChannel::RIGHT; o++) {
-        m_pSoundManager->registerOutput(AudioOutput(AudioOutput::BUS, 0, 0, o),
-                                        m_pEngine);
+        m_pSoundManager->registerOutput(AudioOutput(AudioOutput::BUS, 0, 0, o),m_pEngine);
     }
 }
-
 PlayerManager::~PlayerManager() {
     QMutexLocker locker(&m_mutex);
     // No need to delete anything because they are all parented to us and will
@@ -84,11 +76,8 @@ PlayerManager::~PlayerManager() {
     delete m_pCONumSamplers;
     delete m_pCONumDecks;
     delete m_pCONumPreviewDecks;
-    if (m_pAnalyserQueue) {
-        delete m_pAnalyserQueue;
-    }
+    if (m_pAnalyserQueue) {delete m_pAnalyserQueue;}
 }
-
 void PlayerManager::bindToLibrary(Library* pLibrary) {
     QMutexLocker locker(&m_mutex);
     connect(pLibrary, SIGNAL(loadTrackToPlayer(TrackPointer, QString, bool)),
@@ -137,24 +126,15 @@ unsigned int PlayerManager::numDecks() {
     }
     return pNumCO ? pNumCO->get() : 0;
 }
-
 // static
 bool PlayerManager::isDeckGroup(const QString& group, int* number) {
-    if (!group.startsWith("[Channel")) {
-        return false;
-    }
-
+    if (!group.startsWith("[Channel")) {return false;}
     bool ok = false;
     int deckNum = group.mid(8,group.lastIndexOf("]")-8).toInt(&ok);
-    if (!ok || deckNum <= 0) {
-        return false;
-    }
-    if (number != nullptr) {
-        *number = deckNum;
-    }
+    if (!ok || deckNum <= 0) {return false;}
+    if (number != nullptr) {*number = deckNum;}
     return true;
 }
-
 // static
 bool PlayerManager::isPreviewDeckGroup(const QString& group, int* number) {
     if (!group.startsWith("[PreviewDeck")) {return false;}

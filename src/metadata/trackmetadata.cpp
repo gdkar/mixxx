@@ -15,12 +15,8 @@ namespace Mixxx {
 /*static*/ const int TrackMetadata::kCalendarYearInvalid = 0;
 
 double TrackMetadata::parseBpm(const QString& sBpm, bool* pValid) {
-    if (pValid) {
-        *pValid = false;
-    }
-    if (sBpm.trimmed().isEmpty()) {
-        return kBpmUndefined;
-    }
+    if (pValid) {*pValid = false;}
+    if (sBpm.trimmed().isEmpty()) {return kBpmUndefined;}
     bool bpmValid = false;
     double bpm = sBpm.toDouble(&bpmValid);
     if (bpmValid) {
@@ -43,7 +39,6 @@ double TrackMetadata::parseBpm(const QString& sBpm, bool* pValid) {
     } else {qDebug() << "Failed to parse BPM:" << sBpm;}
     return kBpmUndefined;
 }
-
 QString TrackMetadata::formatBpm(double bpm) {
     if (TrackMetadata::isBpmValid(bpm)) {return QString::number(bpm);}
     else {return QString();}
@@ -53,10 +48,8 @@ QString TrackMetadata::formatBpm(int bpm) {
     else {return QString();}
 }
 namespace {
-
 const QString kReplayGainUnit("dB");
 const QString kReplayGainSuffix(" " + kReplayGainUnit);
-
 } // anonymous namespace
 
 double TrackMetadata::parseReplayGain(QString sReplayGain, bool* pValid) {
@@ -113,11 +106,8 @@ int TrackMetadata::parseCalendarYear(QString year, bool* pValid) {
         const int calendarYear = calendarYearSection.toInt(&calendarYearValid);
         if (calendarYearValid) {calendarYearValid = 0 < calendarYear;}
         if (pValid) {*pValid = calendarYearValid;}
-        if (calendarYearValid) {
-            return calendarYear;
-        } else {
-            return kCalendarYearInvalid;
-        }
+        if (calendarYearValid) {return calendarYear;}
+        else {return kCalendarYearInvalid;}
     }
 }
 
