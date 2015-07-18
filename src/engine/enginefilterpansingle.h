@@ -61,5 +61,4 @@ class EngineFilterPanSingle {
     CSAMPLE m_buf[SIZE * numChannels];
     bool m_doStart;
 };
-
 #endif // ENGINEFILTERPAN_H

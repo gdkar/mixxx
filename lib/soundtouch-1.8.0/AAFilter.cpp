@@ -40,40 +40,18 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <memory.h>
-#include <assert.h>
-#include <math.h>
-#include <stdlib.h>
+#include <memory>
+#include <cassert>
+#include <cmath>
+#include <cstdlib>
 #include "AAFilter.h"
 #include "FIRFilter.h"
 
 using namespace soundtouch;
-
-#define PI        3.141592655357989
-#define TWOPI    (2 * PI)
-
+static const double TWOPI = 2*M_PI;
 // define this to save AA filter coefficients to a file
 // #define _DEBUG_SAVE_AAFILTER_COEFFICIENTS   1
-
-#ifdef _DEBUG_SAVE_AAFILTER_COEFFICIENTS
-    #include <stdio.h>
-
-    static void _DEBUG_SAVE_AAFIR_COEFFS(SAMPLETYPE *coeffs, int len)
-    {
-        FILE *fptr = fopen("aa_filter_coeffs.txt", "wt");
-        if (fptr == NULL) return;
-
-        for (int i = 0; i < len; i ++)
-        {
-            double temp = coeffs[i];
-            fprintf(fptr, "%lf\n", temp);
-        }
-        fclose(fptr);
-    }
-
-#else
-    #define _DEBUG_SAVE_AAFIR_COEFFS(x, y)
-#endif
+#define _DEBUG_SAVE_AAFIR_COEFFS(x, y)
 
 
 /*****************************************************************************
@@ -83,14 +61,12 @@ using namespace soundtouch;
  *****************************************************************************/
 
 AAFilter::AAFilter(uint len)
+  : pFIR(FIRFilter::newInstance())
+  , cutoffFreq(0.5)
+  , length(len)
 {
-    pFIR = FIRFilter::newInstance();
-    cutoffFreq = 0.5;
-    setLength(len);
+  calculateCoeffs();
 }
-
-
-
 AAFilter::~AAFilter()
 {
     delete pFIR;
@@ -101,22 +77,15 @@ AAFilter::~AAFilter()
 // Sets new anti-alias filter cut-off edge frequency, scaled to
 // sampling frequency (nyquist frequency = 0.5).
 // The filter will cut frequencies higher than the given frequency.
-void AAFilter::setCutoffFreq(double newCutoffFreq)
-{
+void AAFilter::setCutoffFreq(double newCutoffFreq){
     cutoffFreq = newCutoffFreq;
     calculateCoeffs();
 }
-
-
-
 // Sets number of FIR filter taps
-void AAFilter::setLength(uint newLength)
-{
+void AAFilter::setLength(uint newLength){
     length = newLength;
     calculateCoeffs();
 }
-
-
 
 // Calculates coefficients for a low-pass FIR filter using Hamming window
 void AAFilter::calculateCoeffs()
@@ -126,17 +95,17 @@ void AAFilter::calculateCoeffs()
     double wc;
     double scaleCoeff, sum;
     double *work;
-    SAMPLETYPE *coeffs;
+    CSAMPLE *coeffs;
 
     assert(length >= 2);
     assert(length % 4 == 0);
     assert(cutoffFreq >= 0);
     assert(cutoffFreq <= 0.5);
 
-    work = new double[length];
-    coeffs = new SAMPLETYPE[length];
+    work =   new double[length];
+    coeffs = new CSAMPLE[length];
 
-    wc = 2.0 * PI * cutoffFreq;
+    wc = TWOPI * cutoffFreq;
     tempCoeff = TWOPI / (double)length;
 
     sum = 0;
@@ -183,7 +152,7 @@ void AAFilter::calculateCoeffs()
         // ensure no overfloods
         assert(temp >= -32768 && temp <= 32767);
 //#endif
-        coeffs[i] = (SAMPLETYPE)temp;
+        coeffs[i] = (CSAMPLE)temp;
     }
 
     // Set coefficients. Use divide factor 14 => divide result by 2^14 = 16384
@@ -199,9 +168,9 @@ void AAFilter::calculateCoeffs()
 // Applies the filter to the given sequence of samples. 
 // Note : The amount of outputted samples is by value of 'filter length' 
 // smaller than the amount of input samples.
-uint AAFilter::evaluate(SAMPLETYPE *dest, const SAMPLETYPE *src, uint numSamples, uint numChannels) const
+uint AAFilter::evaluate(CSAMPLE *dest, const CSAMPLE *src, uint size, uint numChannels) const
 {
-    return pFIR->evaluate(dest, src, numSamples, numChannels);
+    return pFIR->evaluate(dest, src, size, numChannels);
 }
 
 
@@ -211,17 +180,17 @@ uint AAFilter::evaluate(SAMPLETYPE *dest, const SAMPLETYPE *src, uint numSamples
 /// smaller than the amount of input samples.
 uint AAFilter::evaluate(FIFOSampleBuffer &dest, FIFOSampleBuffer &src) const
 {
-    SAMPLETYPE *pdest;
-    const SAMPLETYPE *psrc;
+    CSAMPLE *pdest;
+    const CSAMPLE *psrc;
     uint numSrcSamples;
     uint result;
     int numChannels = src.getChannels();
 
     assert(numChannels == dest.getChannels());
 
-    numSrcSamples = src.numSamples();
-    psrc = src.ptrBegin();
-    pdest = dest.ptrEnd(numSrcSamples);
+    numSrcSamples = src.size();
+    psrc = src.begin();
+    pdest = dest.end(numSrcSamples);
     result = pFIR->evaluate(pdest, psrc, numSrcSamples, numChannels);
     src.receiveSamples(result);
     dest.putSamples(result);

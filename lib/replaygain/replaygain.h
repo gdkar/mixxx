@@ -69,7 +69,7 @@ class ReplayGain {
     ReplayGain ();
     virtual ~ReplayGain();
 
-    bool initialise(long samplefreq, size_t channels);
+    bool initialize(long samplefreq, size_t channels);
     bool process(const float* left_samples, const float* right_samples, size_t blockSize);
     float end();
 

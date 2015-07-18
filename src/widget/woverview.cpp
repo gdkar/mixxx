@@ -50,96 +50,74 @@ WOverview::WOverview(const char *pGroup, ConfigObject<ConfigValue>* pConfig, QWi
         m_dAnalyserProgress(-1.0),
         m_bAnalyserFinalizing(false),
         m_trackLoaded(false) {
-    m_endOfTrackControl = new ControlObjectThread(
-            m_group, "end_of_track");
-    connect(m_endOfTrackControl, SIGNAL(valueChanged(double)),
-             this, SLOT(onEndOfTrackChange(double)));
+    m_endOfTrackControl = new ControlObjectThread(m_group, "end_of_track");
+    connect(m_endOfTrackControl, SIGNAL(valueChanged(double)),this, SLOT(onEndOfTrackChange(double)));
     m_trackSamplesControl = new ControlObjectThread(m_group, "track_samples");
     m_playControl = new ControlObjectThread(m_group, "play");
     setAcceptDrops(true);
 }
-
 WOverview::~WOverview() {
     delete m_endOfTrackControl;
     delete m_trackSamplesControl;
     delete m_playControl;
-    if (m_pWaveformSourceImage) {
-        delete m_pWaveformSourceImage;
-    }
+    if (m_pWaveformSourceImage) {delete m_pWaveformSourceImage;}
 }
-
 void WOverview::setup(QDomNode node, const SkinContext& context) {
     m_signalColors.setup(node, context);
-
     m_qColorBackground = m_signalColors.getBgColor();
-
     // Clear the background pixmap, if it exists.
     m_backgroundPixmap = QPixmap();
     m_backgroundPixmapPath = context.selectString(node, "BgPixmap");
     if (m_backgroundPixmapPath != "") {
         m_backgroundPixmap = QPixmap(context.getSkinPath(m_backgroundPixmapPath));
     }
-
     m_endOfTrackColor = QColor(200, 25, 20);
     const QString endOfTrackColorName = context.selectString(node, "EndOfTrackColor");
     if (!endOfTrackColorName.isNull()) {
         m_endOfTrackColor.setNamedColor(endOfTrackColorName);
         m_endOfTrackColor = WSkinColor::getCorrectColor(m_endOfTrackColor);
     }
-
     QPalette palette; //Qt4 update according to http://doc.trolltech.com/4.4/qwidget-qt3.html#setBackgroundColor (this could probably be cleaner maybe?)
     palette.setColor(this->backgroundRole(), m_qColorBackground);
     setPalette(palette);
-
     //setup hotcues and cue and loop(s)
     m_marks.setup(m_group, node, context, m_signalColors);
-
     for (int i = 0; i < m_marks.size(); ++i) {
         WaveformMark& mark = m_marks[i];
         if (mark.m_pointControl) {
-            connect(mark.m_pointControl, SIGNAL(valueChanged(double)),
-                    this, SLOT(onMarkChanged(double)));
+            connect(mark.m_pointControl, SIGNAL(valueChanged(double)),this, SLOT(onMarkChanged(double)));
         }
     }
-
     QDomNode child = node.firstChild();
     while (!child.isNull()) {
         if (child.nodeName() == "MarkRange") {
             m_markRanges.push_back(WaveformMarkRange());
             WaveformMarkRange& markRange = m_markRanges.back();
             markRange.setup(m_group, child, context, m_signalColors);
-
             if (markRange.m_markEnabledControl) {
-                connect(markRange.m_markEnabledControl, SIGNAL(valueChanged(double)),
-                        this, SLOT(onMarkRangeChange(double)));
+                connect(markRange.m_markEnabledControl, SIGNAL(valueChanged(double)),this, SLOT(onMarkRangeChange(double)));
             }
             if (markRange.m_markStartPointControl) {
-                connect(markRange.m_markStartPointControl, SIGNAL(valueChanged(double)),
-                        this, SLOT(onMarkRangeChange(double)));
+                connect(markRange.m_markStartPointControl, SIGNAL(valueChanged(double)),this, SLOT(onMarkRangeChange(double)));
             }
             if (markRange.m_markEndPointControl) {
-                connect(markRange.m_markEndPointControl, SIGNAL(valueChanged(double)),
-                        this, SLOT(onMarkRangeChange(double)));
+                connect(markRange.m_markEndPointControl, SIGNAL(valueChanged(double)),this, SLOT(onMarkRangeChange(double)));
             }
         }
         child = child.nextSibling();
     }
-
     //qDebug() << "WOverview : m_marks" << m_marks.size();
     //qDebug() << "WOverview : m_markRanges" << m_markRanges.size();
     if (!m_connections.isEmpty()) {
         ControlParameterWidgetConnection* defaultConnection = m_connections.at(0);
         if (defaultConnection) {
-            if (defaultConnection->getEmitOption() &
-                    ControlParameterWidgetConnection::EMIT_DEFAULT) {
+            if (defaultConnection->getEmitOption() & ControlParameterWidgetConnection::EMIT_DEFAULT) {
                 // ON_PRESS means here value change on mouse move during press
-                defaultConnection->setEmitOption(
-                        ControlParameterWidgetConnection::EMIT_ON_RELEASE);
+                defaultConnection->setEmitOption(ControlParameterWidgetConnection::EMIT_ON_RELEASE);
             }
         }
     }
 }
-
 void WOverview::onConnectedControlChanged(double dParameter, double dValue) {
     Q_UNUSED(dValue);
     if (!m_bDrag) {
@@ -159,27 +137,18 @@ void WOverview::onConnectedControlChanged(double dParameter, double dValue) {
 void WOverview::slotWaveformSummaryUpdated() {
     //qDebug() << "WOverview::slotWaveformSummaryUpdated()";
     TrackPointer pTrack(m_pCurrentTrack);
-    if (!pTrack) {
-        return;
-    }
+    if (!pTrack) {return;}
     m_pWaveform = pTrack->getWaveformSummary();
     // If the waveform is already complete, just draw it.
     if (m_pWaveform && m_pWaveform->getCompletion() == m_pWaveform->getDataSize()) {
         m_actualCompletion = 0;
-        if (drawNextPixmapPart()) {
-            update();
-        }
+        if (drawNextPixmapPart()) {update();}
     }
 }
-
 void WOverview::slotAnalyserProgress(int progress) {
-    if (!m_pCurrentTrack) {
-        return;
-    }
-
+    if (!m_pCurrentTrack) {return;}
     double analyserProgress = progress / 1000.0;
     bool finalizing = progress == 999;
-
     bool updateNeeded = drawNextPixmapPart();
     // progress 0 .. 1000
     if (updateNeeded || (m_dAnalyserProgress != analyserProgress)) {
@@ -192,17 +161,13 @@ void WOverview::slotAnalyserProgress(int progress) {
 void WOverview::slotLoadNewTrack(TrackPointer pTrack) {
     // qDebug() << "WOverview::slotLoadNewTrack(TrackPointer pTrack)";
     if (m_pCurrentTrack) {
-        disconnect(m_pCurrentTrack.data(), SIGNAL(waveformSummaryUpdated()),
-                   this, SLOT(slotWaveformSummaryUpdated()));
-        disconnect(m_pCurrentTrack.data(), SIGNAL(analyserProgress(int)),
-                   this, SLOT(slotAnalyzerProgress(int)));
+        disconnect(m_pCurrentTrack.data(), SIGNAL(waveformSummaryUpdated()),this, SLOT(slotWaveformSummaryUpdated()));
+        disconnect(m_pCurrentTrack.data(), SIGNAL(analyserProgress(int)),this, SLOT(slotAnalyzerProgress(int)));
     }
-
     if (m_pWaveformSourceImage) {
         delete m_pWaveformSourceImage;
         m_pWaveformSourceImage = nullptr;
     }
-
     m_dAnalyserProgress = -1;
     m_actualCompletion = 0;
     m_waveformPeak = -1.0;
@@ -213,32 +178,24 @@ void WOverview::slotLoadNewTrack(TrackPointer pTrack) {
         m_pCurrentTrack = pTrack;
         m_pWaveform = pTrack->getWaveformSummary();
 
-        connect(pTrack.data(), SIGNAL(waveformSummaryUpdated()),
-                this, SLOT(slotWaveformSummaryUpdated()));
-        connect(pTrack.data(), SIGNAL(analyserProgress(int)),
-                this, SLOT(slotAnalyserProgress(int)));
-
+        connect(pTrack.data(), SIGNAL(waveformSummaryUpdated()),this, SLOT(slotWaveformSummaryUpdated()));
+        connect(pTrack.data(), SIGNAL(analyserProgress(int)),this, SLOT(slotAnalyserProgress(int)));
         slotAnalyserProgress(pTrack->getAnalyserProgress());
     }
 }
-
 void WOverview::slotTrackLoaded(TrackPointer pTrack) {
     if (m_pCurrentTrack == pTrack) {
         m_trackLoaded = true;
         update();
     }
 }
-
 void WOverview::slotUnloadTrack(TrackPointer pTrack) {
     // it may happen that this call is a delayed call
     // of a track that was already replaced
     //qDebug() << "WOverview::slotUnloadTrack(TrackPointer pTrack)";
     if (pTrack != nullptr && pTrack == m_pCurrentTrack) {
-        disconnect(m_pCurrentTrack.data(), SIGNAL(waveformSummaryUpdated()),
-                   this, SLOT(slotWaveformSummaryUpdated()));
-        disconnect(m_pCurrentTrack.data(), SIGNAL(analyserProgress(int)),
-                   this, SLOT(slotAnalyserProgress(int)));
-
+        disconnect(m_pCurrentTrack.data(), SIGNAL(waveformSummaryUpdated()),this, SLOT(slotWaveformSummaryUpdated()));
+        disconnect(m_pCurrentTrack.data(), SIGNAL(analyserProgress(int)),this, SLOT(slotAnalyserProgress(int)));
         m_pCurrentTrack.clear();
         m_pWaveform.clear();
         m_actualCompletion = 0;
@@ -270,7 +227,6 @@ void WOverview::mouseMoveEvent(QMouseEvent* e) {
     //qDebug() << "WOverview::mouseMoveEvent" << e->pos() << m_iPos;
     update();
 }
-
 void WOverview::mouseReleaseEvent(QMouseEvent* e) {
     mouseMoveEvent(e);
     double dValue = positionToValue(m_iPos);
@@ -291,10 +247,7 @@ void WOverview::paintEvent(QPaintEvent *) {
 
     QPainter painter(this);
     // Fill with transparent pixels
-    if (!m_backgroundPixmap.isNull()) {
-        painter.drawPixmap(rect(), m_backgroundPixmap);
-    }
-
+    if (!m_backgroundPixmap.isNull()) {painter.drawPixmap(rect(), m_backgroundPixmap);}
     //Display viewer contour if end of track
     if (m_endOfTrack) {
         painter.setOpacity(0.8);
@@ -306,14 +259,12 @@ void WOverview::paintEvent(QPaintEvent *) {
         painter.drawRect(rect().adjusted(1,1,-2,-2));
         painter.setOpacity(1);
     }
-
     //Draw waveform pixmap
     WaveformWidgetFactory* widgetFactory = WaveformWidgetFactory::instance();
     if (m_pWaveform) {
         // Draw Axis
         painter.setPen(QPen(m_signalColors.getAxesColor(), 1));
         painter.drawLine(0, height()/2, width(), height()/2);
-
         if (m_pWaveformSourceImage) {
             int diffGain;
             bool normalize = widgetFactory->isOverviewNormalized();
@@ -323,7 +274,6 @@ void WOverview::paintEvent(QPaintEvent *) {
                 const double visualGain = widgetFactory->getVisualGain(WaveformWidgetFactory::All);
                 diffGain = 255.0 - 255.0 / visualGain;
             }
-
             if (m_diffGain != diffGain || m_waveformImageScaled.isNull()) {
                 QRect sourceRect(0, diffGain, m_pWaveformSourceImage->width(),
                     m_pWaveformSourceImage->height() - 2 * diffGain);
@@ -360,28 +310,18 @@ void WOverview::paintEvent(QPaintEvent *) {
     if (trackSamples > 0) {
         const float offset = 1.0f;
         const float gain = (float)(width()-2) / trackSamples;
-
         // Draw range (loop)
         for (unsigned int i = 0; i < m_markRanges.size(); ++i) {
             WaveformMarkRange& currentMarkRange = m_markRanges[i];
-
             // If the mark range is not active we should not draw it.
-            if (!currentMarkRange.active()) {
-                continue;
-            }
-
+            if (!currentMarkRange.active()) {continue;}
             // Active mark ranges by definition have starts/ends that are not
             // disabled.
             const double startValue = currentMarkRange.start();
             const double endValue = currentMarkRange.end();
-
             const float startPosition = offset + startValue * gain;
             const float endPosition = offset + endValue * gain;
-
-            if (startPosition < 0.0 && endPosition < 0.0) {
-                continue;
-            }
-
+            if (startPosition < 0.0 && endPosition < 0.0) {continue;}
             if (currentMarkRange.enabled()) {
                 painter.setOpacity(0.4);
                 painter.setPen(currentMarkRange.m_activeColor);
@@ -391,24 +331,17 @@ void WOverview::paintEvent(QPaintEvent *) {
                 painter.setPen(currentMarkRange.m_disabledColor);
                 painter.setBrush(currentMarkRange.m_disabledColor);
             }
-
             //let top and bottom of the rect out of the widget
-            painter.drawRect(QRectF(QPointF(startPosition, -2.0),
-                                    QPointF(endPosition,height() + 1.0)));
+            painter.drawRect(QRectF(QPointF(startPosition, -2.0),QPointF(endPosition,height() + 1.0)));
         }
-
         //Draw markers (Cue & hotcues)
         QPen shadowPen(QBrush(m_qColorBackground), 2.5);
-
         QFont markerFont = painter.font();
         markerFont.setPixelSize(10);
-
         QFont shadowFont = painter.font();
         shadowFont.setWeight(99);
         shadowFont.setPixelSize(10);
-
         painter.setOpacity(0.9);
-
         for (int i = 0; i < m_marks.size(); ++i) {
             WaveformMark& currentMark = m_marks[i];
             if (currentMark.m_pointControl && currentMark.m_pointControl->get() >= 0.0) {
@@ -477,15 +410,12 @@ void WOverview::paintText(const QString &text, QPainter *painter) {
     if (textWidth > width()) {
         qreal pointSize = font.pointSizeF();
         pointSize = pointSize * (width() - 5) / textWidth;
-        if (pointSize < 6) {
-            pointSize = 6;
-        }
+        if (pointSize < 6) {pointSize = 6;}
         font.setPointSizeF(pointSize);
         painter->setFont(font);
     }
     painter->drawText(10, 12, text);
 }
-
 void WOverview::resizeEvent(QResizeEvent *) {
     // Play-position potmeters range from 0 to 1 but they allow out-of-range
     // sets. This is to give VC access to the pre-roll area.
@@ -504,22 +434,16 @@ void WOverview::resizeEvent(QResizeEvent *) {
     m_waveformImageScaled = QImage();
     m_diffGain = 0;
 }
-
 void WOverview::dragEnterEvent(QDragEnterEvent* event) {
     if (DragAndDropHelper::allowLoadToPlayer(m_group,
                                              m_playControl->get() > 0.0,
                                              m_pConfig) &&
-            DragAndDropHelper::dragEnterAccept(*event->mimeData(), m_group,
-                                               true, false)) {
+            DragAndDropHelper::dragEnterAccept(*event->mimeData(), m_group,true, false)) {
         event->acceptProposedAction();
-    } else {
-        event->ignore();
-    }
+    } else {event->ignore();}
 }
-
 void WOverview::dropEvent(QDropEvent* event) {
-    if (DragAndDropHelper::allowLoadToPlayer(m_group, m_playControl->get() > 0.0,
-                                             m_pConfig)) {
+    if (DragAndDropHelper::allowLoadToPlayer(m_group, m_playControl->get() > 0.0,m_pConfig)) {
         QList<QFileInfo> files = DragAndDropHelper::dropEventFiles(
                 *event->mimeData(), m_group, true, false);
         if (!files.isEmpty()) {

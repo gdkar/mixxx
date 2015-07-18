@@ -11,10 +11,8 @@ class TrackCollection;
 class WAnalysisLibraryTableView : public WTrackTableView
 {
     public:
-        WAnalysisLibraryTableView(QWidget* parent, ConfigObject<ConfigValue>* pConfig,
-                                 TrackCollection* pTrackCollection);
+        WAnalysisLibraryTableView(QWidget* parent, ConfigObject<ConfigValue>* pConfig,TrackCollection* pTrackCollection);
         ~WAnalysisLibraryTableView();
-
         virtual void onSearchStarting();
         virtual void onSearchCleared();
         virtual void onSearch(const QString& text);

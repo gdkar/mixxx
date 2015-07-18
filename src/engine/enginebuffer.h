@@ -295,17 +295,14 @@ class EngineBuffer : public EngineObject {
     ControlObjectSlave* m_pSampleRate;
     ControlObjectSlave* m_pKeylockEngine;
     ControlPushButton* m_pKeylock;
-    QScopedPointer<ControlObjectSlave> m_pPassthroughEnabled;
+    std::unique_ptr<ControlObjectSlave> m_pPassthroughEnabled;
 
     ControlPushButton* m_pEject;
-
     // Whether or not to repeat the track when at the end
     ControlPushButton* m_pRepeat;
-
     // Fwd and back controls, start and end of track control
     ControlPushButton* m_startButton;
     ControlPushButton* m_endButton;
-
     // Object used to perform waveform scaling (sample rate conversion).  These
     // three pointers may be reassigned depending on configuration and tests.
     EngineBufferScale* m_pScale;
@@ -316,8 +313,7 @@ class EngineBuffer : public EngineObject {
     EngineBufferScale* m_pScaleVinyl;
     // The keylock engine is configurable, so it could flip flop between
     // ScaleST and ScaleRB during a single callback.
-    EngineBufferScale* volatile m_pScaleKeylock;
-
+    EngineBufferScale* m_pScaleKeylock;
     // Object used for vinyl-style interpolation scaling of the audio
     EngineBufferScaleLinear* m_pScaleLinear;
     // Objects used for pitch-indep time stretch (key lock) scaling of the audio
@@ -333,7 +329,7 @@ class EngineBuffer : public EngineObject {
     ControlValueAtomic<double> m_queuedPosition;
     // Holds the last sample value of the previous buffer. This is used when ramping to
     // zero in case of an immediate stop of the playback
-    float m_fLastSampleValue[2];
+    CSAMPLE m_fLastSampleValue[2];
     // Is true if the previous buffer was silent due to pausing
     bool m_bLastBufferPaused;
     std::atomic<bool> m_iTrackLoading;

@@ -154,22 +154,17 @@ RateControl::RateControl(QString group,
     // Enable by default, because it was always scratching before introducing
     // this control.
     m_pScratch2Scratching->set(1.0);
-
-
-    m_pJog = new ControlObject(ConfigKey(group, "jog"));
+    m_pJog = new ControlObject(ConfigKey(group, "jog"),this);
     m_pJogFilter = new Rotary();
     // FIXME: This should be dependent on sample rate/block size or something
     m_pJogFilter->setFilterLength(25);
-
     // Update Internal Settings
     // Set Pitchbend Mode
     m_eRateRampMode = (RateControl::RATERAMP_MODE)
             getConfig()->getValueString(ConfigKey("[Controls]","RateRamp")).toInt();
 
     // Set the Sensitivity
-    m_iRateRampSensitivity =
-            getConfig()->getValueString(ConfigKey("[Controls]","RateRampSensitivity")).toInt();
-
+    m_iRateRampSensitivity = getConfig()->getValueString(ConfigKey("[Controls]","RateRampSensitivity")).toInt();
     m_pSyncMode = new ControlObjectSlave(group, "sync_mode", this);
 }
 

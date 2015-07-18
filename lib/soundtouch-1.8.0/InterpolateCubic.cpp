@@ -62,8 +62,8 @@ void InterpolateCubic::resetRegisters()
 
 /// Transpose mono audio. Returns number of produced output samples, and 
 /// updates "srcSamples" to amount of consumed source samples
-int InterpolateCubic::transposeMono(SAMPLETYPE *pdest, 
-                    const SAMPLETYPE *psrc, 
+int InterpolateCubic::transposeMono(CSAMPLE *pdest, 
+                    const CSAMPLE *psrc, 
                     int &srcSamples)
 {
     int i;
@@ -89,7 +89,7 @@ int InterpolateCubic::transposeMono(SAMPLETYPE *pdest,
 
         out = y0 * psrc[0] + y1 * psrc[1] + y2 * psrc[2] + y3 * psrc[3];
 
-        pdest[i] = (SAMPLETYPE)out;
+        pdest[i] = (CSAMPLE)out;
         i ++;
 
         // update position fraction
@@ -107,8 +107,8 @@ int InterpolateCubic::transposeMono(SAMPLETYPE *pdest,
 
 /// Transpose stereo audio. Returns number of produced output samples, and 
 /// updates "srcSamples" to amount of consumed source samples
-int InterpolateCubic::transposeStereo(SAMPLETYPE *pdest, 
-                    const SAMPLETYPE *psrc, 
+int InterpolateCubic::transposeStereo(CSAMPLE *pdest, 
+                    const CSAMPLE *psrc, 
                     int &srcSamples)
 {
     int i;
@@ -135,8 +135,8 @@ int InterpolateCubic::transposeStereo(SAMPLETYPE *pdest,
         out0 = y0 * psrc[0] + y1 * psrc[2] + y2 * psrc[4] + y3 * psrc[6];
         out1 = y0 * psrc[1] + y1 * psrc[3] + y2 * psrc[5] + y3 * psrc[7];
 
-        pdest[2*i]   = (SAMPLETYPE)out0;
-        pdest[2*i+1] = (SAMPLETYPE)out1;
+        pdest[2*i]   = (CSAMPLE)out0;
+        pdest[2*i+1] = (CSAMPLE)out1;
         i ++;
 
         // update position fraction
@@ -154,8 +154,8 @@ int InterpolateCubic::transposeStereo(SAMPLETYPE *pdest,
 
 /// Transpose multi-channel audio. Returns number of produced output samples, and 
 /// updates "srcSamples" to amount of consumed source samples
-int InterpolateCubic::transposeMulti(SAMPLETYPE *pdest, 
-                    const SAMPLETYPE *psrc, 
+int InterpolateCubic::transposeMulti(CSAMPLE *pdest, 
+                    const CSAMPLE *psrc, 
                     int &srcSamples)
 {
     int i;
@@ -182,7 +182,7 @@ int InterpolateCubic::transposeMulti(SAMPLETYPE *pdest,
         {
             float out;
             out = y0 * psrc[c] + y1 * psrc[c + numChannels] + y2 * psrc[c + 2 * numChannels] + y3 * psrc[c + 3 * numChannels];
-            pdest[0] = (SAMPLETYPE)out;
+            pdest[0] = (CSAMPLE)out;
             pdest ++;
         }
         i ++;

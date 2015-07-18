@@ -88,9 +88,7 @@ KeyControl::KeyControl(QString group,
     connect(m_pRateRange, SIGNAL(valueChangedFromEngine(double)),
             this, SLOT(slotRateChanged()),
             Qt::DirectConnection);
-
     m_pRateDir = ControlObject::getControl(ConfigKey(group, "rate_dir"));
-    ck
     connect(m_pRateDir, SIGNAL(valueChanged(double)),
             this, SLOT(slotRateChanged()),
             Qt::DirectConnection);

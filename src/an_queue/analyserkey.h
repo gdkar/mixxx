@@ -4,7 +4,7 @@
 #include <QHash>
 #include <QString>
 
-#include "analyser.h"
+#include "an_queue/analyser.h"
 #include "configobject.h"
 #include "trackinfoobject.h"
 //#include "vamp/vampanalyser.h"
@@ -14,11 +14,11 @@ class AnalyserKey : public Analyser {
     AnalyserKey(ConfigObject<ConfigValue>* pConfig);
     virtual ~AnalyserKey();
 
-    bool initialise(TrackPointer tio, int sampleRate, int totalSamples);
-    bool loadStored(TrackPointer tio) const;
-    void process(const CSAMPLE *pIn, const int iLen);
-    void finalise(TrackPointer tio);
-    void cleanup(TrackPointer tio);
+    virtual bool initialize(TrackPointer tio, int sampleRate, int totalSamples) override;
+    virtual bool loadStored(TrackPointer tio) const override;
+    virtual void process(const CSAMPLE *pIn, const int iLen) override;
+    virtual void finalize(TrackPointer tio) override;
+    virtual void cleanup(TrackPointer tio) override;
 
   private:
     static QHash<QString, QString> getExtraVersionInfo(

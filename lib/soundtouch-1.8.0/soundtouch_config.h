@@ -11,5 +11,4 @@
 
 // Use Float as Sample type. The Mixxx engine uses float samples.
 #define SOUNDTOUCH_FLOAT_SAMPLES 1
-
 #endif /* SOUNDTOUCH_CONFIG_H */

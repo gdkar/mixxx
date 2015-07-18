@@ -65,13 +65,11 @@ using namespace soundtouch;
 // implementation of SSE optimized functions of class 'TDStretchSSE'
 //
 //////////////////////////////////////////////////////////////////////////////
-
 #include "TDStretch.h"
 #include <xmmintrin.h>
-#include <math.h>
-
+#include <cmath>
 // Calculates cross correlation of two buffers
-double TDStretchSSE::calcCrossCorr(const float *pV1, const float *pV2, double &norm) const
+float TDStretchSSE::calcCrossCorr(const float *pV1, const float *pV2, float &norm) const
 {
     int i;
     const float *pVec1;
@@ -100,10 +98,8 @@ double TDStretchSSE::calcCrossCorr(const float *pV1, const float *pV2, double &n
     // performance hit.
     #define _MM_LOAD    _mm_loadu_ps
 #endif 
-
     // ensure overlapLength is divisible by 8
     assert((overlapLength % 8) == 0);
-
     // Calculates the cross-correlation value between 'pV1' and 'pV2' vectors
     // Note: pV2 _must_ be aligned to 16-bit boundary, pV1 need not.
     pVec1 = (const float*)pV1;
@@ -142,47 +138,14 @@ double TDStretchSSE::calcCrossCorr(const float *pV1, const float *pV2, double &n
     // return value = vSum[0] + vSum[1] + vSum[2] + vSum[3]
     float *pvNorm = (float*)&vNorm;
     norm = (pvNorm[0] + pvNorm[1] + pvNorm[2] + pvNorm[3]);
-
     float *pvSum = (float*)&vSum;
-    return (double)(pvSum[0] + pvSum[1] + pvSum[2] + pvSum[3]) / sqrt(norm < 1e-9 ? 1.0 : norm);
+    return (float)(pvSum[0] + pvSum[1] + pvSum[2] + pvSum[3]) * _mm_rsqrt_ss(_mm_set_ss(norm < 1e-9 ? 1.0 : norm))[0];
 
-    /* This is approximately corresponding routine in C-language yet without normalization:
-    double corr, norm;
-    uint i;
-
-    // Calculates the cross-correlation value between 'pV1' and 'pV2' vectors
-    corr = norm = 0.0;
-    for (i = 0; i < channels * overlapLength / 16; i ++) 
-    {
-        corr += pV1[0] * pV2[0] +
-                pV1[1] * pV2[1] +
-                pV1[2] * pV2[2] +
-                pV1[3] * pV2[3] +
-                pV1[4] * pV2[4] +
-                pV1[5] * pV2[5] +
-                pV1[6] * pV2[6] +
-                pV1[7] * pV2[7] +
-                pV1[8] * pV2[8] +
-                pV1[9] * pV2[9] +
-                pV1[10] * pV2[10] +
-                pV1[11] * pV2[11] +
-                pV1[12] * pV2[12] +
-                pV1[13] * pV2[13] +
-                pV1[14] * pV2[14] +
-                pV1[15] * pV2[15];
-
-    for (j = 0; j < 15; j ++) norm += pV1[j] * pV1[j];
-
-        pV1 += 16;
-        pV2 += 16;
-    }
-    return corr / sqrt(norm);
-    */
 }
 
 
 
-double TDStretchSSE::calcCrossCorrAccumulate(const float *pV1, const float *pV2, double &norm) const
+float TDStretchSSE::calcCrossCorrAccumulate(const float *pV1, const float *pV2, float &norm) const
 {
     // call usual calcCrossCorr function because SSE does not show big benefit of 
     // accumulating "norm" value, and also the "norm" rolling algorithm would get 
@@ -239,24 +202,17 @@ void FIRFilterSSE::setCoefficients(const float *coeffs, uint newLength, uint uRe
     }
 }
 
-
-
 // SSE-optimized version of the filter routine for stereo sound
-uint FIRFilterSSE::evaluateFilterStereo(float *dest, const float *source, uint numSamples) const
-{
-    int count = (int)((numSamples - length) & (uint)-2);
+uint FIRFilterSSE::evaluateFilterStereo(float *dest, const float *source, uint size) const{
+    int count = (int)((size - length) & (uint)-2);
     int j;
-
     assert(count % 2 == 0);
-
     if (count < 2) return 0;
-
     assert(source != NULL);
     assert(dest != NULL);
     assert((length % 8) == 0);
     assert(filterCoeffsAlign != NULL);
     assert(((ulongptr)filterCoeffsAlign) % 16 == 0);
-
     // filter is evaluated for two stereo samples with each iteration, thus use of 'j += 2'
     for (j = 0; j < count; j += 2)
     {
@@ -313,58 +269,6 @@ uint FIRFilterSSE::evaluateFilterStereo(float *dest, const float *source, uint n
     //    boundary, a faster '_mm_store_ps' instruction could be used.
 
     return (uint)count;
-
-    /* original routine in C-language. please notice the C-version has differently 
-       organized coefficients though.
-    double suml1, suml2;
-    double sumr1, sumr2;
-    uint i, j;
-
-    for (j = 0; j < count; j += 2)
-    {
-        const float *ptr;
-        const float *pFil;
-
-        suml1 = sumr1 = 0.0;
-        suml2 = sumr2 = 0.0;
-        ptr = src;
-        pFil = filterCoeffs;
-        for (i = 0; i < lengthLocal; i ++) 
-        {
-            // unroll loop for efficiency.
-
-            suml1 += ptr[0] * pFil[0] + 
-                     ptr[2] * pFil[2] +
-                     ptr[4] * pFil[4] +
-                     ptr[6] * pFil[6];
-
-            sumr1 += ptr[1] * pFil[1] + 
-                     ptr[3] * pFil[3] +
-                     ptr[5] * pFil[5] +
-                     ptr[7] * pFil[7];
-
-            suml2 += ptr[8] * pFil[0] + 
-                     ptr[10] * pFil[2] +
-                     ptr[12] * pFil[4] +
-                     ptr[14] * pFil[6];
-
-            sumr2 += ptr[9] * pFil[1] + 
-                     ptr[11] * pFil[3] +
-                     ptr[13] * pFil[5] +
-                     ptr[15] * pFil[7];
-
-            ptr += 16;
-            pFil += 8;
-        }
-        dest[0] = (float)suml1;
-        dest[1] = (float)sumr1;
-        dest[2] = (float)suml2;
-        dest[3] = (float)sumr2;
-
-        src += 4;
-        dest += 4;
-    }
-    */
 }
 
 #endif  // SOUNDTOUCH_ALLOW_SSE

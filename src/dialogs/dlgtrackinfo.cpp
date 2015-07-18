@@ -235,12 +235,8 @@ void DlgTrackInfo::slotCoverArtSelected(const CoverArt& art) {
         pCache->requestCover(m_loadedCoverInfo, this, reference);
     }
 }
-
 void DlgTrackInfo::slotOpenInFileBrowser() {
-    if (m_pLoadedTrack.isNull()) {
-        return;
-    }
-
+    if (m_pLoadedTrack.isNull()) {return;}
     QDir dir;
     QStringList splittedPath = m_pLoadedTrack->getDirectory().split("/");
     do {
@@ -252,55 +248,38 @@ void DlgTrackInfo::slotOpenInFileBrowser() {
     // so it is essential that in the worst case it try opening
     // a valid directory, in this case, 'QDir::home()'.
     // Otherwise nothing would happen...
-    if (!dir.exists()) {
-        // it ensures a valid dir for any OS (Windows)
-        dir = QDir::home();
-    }
+    // it ensures a valid dir for any OS (Windows)
+    if (!dir.exists()) {dir = QDir::home();}
     QDesktopServices::openUrl(QUrl::fromLocalFile(dir.absolutePath()));
 }
-
 void DlgTrackInfo::populateCues(TrackPointer pTrack) {
     int sampleRate = pTrack->getSampleRate();
 
-    QList<Cue*> listPoints;
-    const QList<Cue*>& cuePoints = pTrack->getCuePoints();
-    QListIterator<Cue*> it(cuePoints);
-    while (it.hasNext()) {
-        Cue* pCue = it.next();
-        if (pCue->getType() == Cue::CUE || pCue->getType() == Cue::LOAD) {
-            listPoints.push_back(pCue);
-        }
+    auto &cuePoints = pTrack->getCuePoints();
+    auto  listPoints = QList<QSharedPointer<Cue> >{};
+    for (auto &pCue : cuePoints) {
+      if (pCue && (pCue->getType() == Cue::CUE || pCue->getType() == Cue::LOAD)) {
+          listPoints.push_back(pCue);
+      }
     }
-    it = QListIterator<Cue*>(listPoints);
     cueTable->setSortingEnabled(false);
     int row = 0;
-
-    while (it.hasNext()) {
-        Cue* pCue = it.next();
-
+    for(auto &pCue : listPoints){
+      if(!pCue) continue;
         QString rowStr = QString("%1").arg(row);
-
         // All hotcues are stored in Cue's as 0-indexed, but the GUI presents
         // them to the user as 1-indexex. Add 1 here. rryan 9/2010
         int iHotcue = pCue->getHotCue() + 1;
         QString hotcue = "";
-        if (iHotcue != -1) {
-            hotcue = QString("%1").arg(iHotcue);
-        }
-
+        if (iHotcue != -1) {hotcue = QString("%1").arg(iHotcue);}
         int position = pCue->getPosition();
         double totalSeconds;
-        if (position == -1)
-            continue;
-        else {
-            totalSeconds = float(position) / float(sampleRate) / 2.0;
-        }
-
+        if (position == -1) continue;
+        else {totalSeconds = float(position) / float(sampleRate) / 2.0;}
         int fraction = 100*(totalSeconds - floor(totalSeconds));
         int seconds = int(totalSeconds) % 60;
         int mins = int(totalSeconds) / 60;
         //int hours = mins / 60; //Not going to worry about this for now. :)
-
         //Construct a nicely formatted duration string now.
         QString duration = QString("%1:%2.%3").arg(
             QString::number(mins),
@@ -310,7 +289,6 @@ void DlgTrackInfo::populateCues(TrackPointer pTrack) {
         QTableWidgetItem* durationItem = new QTableWidgetItem(duration);
         // Make the duration read only
         durationItem->setFlags(Qt::NoItemFlags);
-
         m_cueMap[row] = pCue;
         cueTable->insertRow(row);
         cueTable->setItem(row, 0, new QTableWidgetItem(rowStr));
@@ -322,15 +300,11 @@ void DlgTrackInfo::populateCues(TrackPointer pTrack) {
     cueTable->setSortingEnabled(true);
     cueTable->horizontalHeader()->setStretchLastSection(true);
 }
-
 void DlgTrackInfo::saveTrack() {
-    if (!m_pLoadedTrack)
-        return;
-
+    if (!m_pLoadedTrack) return;
     // First, disconnect the track changed signal. Otherwise we signal ourselves
     // and repopulate all these fields.
-    disconnect(m_pLoadedTrack.data(), SIGNAL(changed(TrackInfoObject*)),
-               this, SLOT(updateTrackMetadata()));
+    disconnect(m_pLoadedTrack.data(), SIGNAL(changed(TrackInfoObject*)), this, SLOT(updateTrackMetadata()));
 
     m_pLoadedTrack->setTitle(txtTrackName->text());
     m_pLoadedTrack->setArtist(txtArtist->text());
@@ -352,64 +326,42 @@ void DlgTrackInfo::saveTrack() {
         QTableWidgetItem* rowItem = cueTable->item(row, 0);
         QTableWidgetItem* hotcueItem = cueTable->item(row, 2);
         QTableWidgetItem* labelItem = cueTable->item(row, 3);
-
-        if (!rowItem || !hotcueItem || !labelItem)
-            continue;
-
+        if (!rowItem || !hotcueItem || !labelItem)continue;
         int oldRow = rowItem->data(Qt::DisplayRole).toInt();
-        Cue* pCue = m_cueMap.value(oldRow, nullptr);
-        if (pCue == nullptr) {
-            continue;
-        }
-
+        auto pCue = QSharedPointer<Cue>(m_cueMap.value(oldRow, QSharedPointer<Cue>{}));
+        if (pCue == nullptr) {continue;}
         updatedRows.insert(oldRow);
-
         QVariant vHotcue = hotcueItem->data(Qt::DisplayRole);
         if (vHotcue.canConvert<int>()) {
             int iTableHotcue = vHotcue.toInt();
             // The GUI shows hotcues as 1-indexed, but they are actually
             // 0-indexed, so subtract 1
             pCue->setHotCue(iTableHotcue-1);
-        } else {
-            pCue->setHotCue(-1);
-        }
-
+        } else {pCue->setHotCue(-1);}
         QString label = labelItem->data(Qt::DisplayRole).toString();
         pCue->setLabel(label);
     }
-
-    QMutableHashIterator<int,Cue*> it(m_cueMap);
+    QMutableHashIterator<int,QWeakPointer<Cue> > it(m_cueMap);
     // Everything that was not processed above was removed.
     while (it.hasNext()) {
         it.next();
-        int oldRow = it.key();
+        auto oldRow = it.key();
 
         // If cue's old row is not in updatedRows then it must have been
         // deleted.
-        if (updatedRows.contains(oldRow)) {
-            continue;
-        }
-        Cue* pCue = it.value();
+        if (updatedRows.contains(oldRow)) {continue;}
+        auto pCue = QSharedPointer<Cue>(it.value());
         it.remove();
         qDebug() << "Deleting cue" << pCue->getId() << pCue->getHotCue();
         m_pLoadedTrack->removeCue(pCue);
     }
-
     m_pLoadedTrack->setCoverInfo(m_loadedCoverInfo);
-
     // Reconnect changed signals now.
-    connect(m_pLoadedTrack.data(), SIGNAL(changed(TrackInfoObject*)),
-            this, SLOT(updateTrackMetadata()));
+    connect(m_pLoadedTrack.data(), SIGNAL(changed(TrackInfoObject*)),this, SLOT(updateTrackMetadata()));
 }
-
 void DlgTrackInfo::unloadTrack(bool save) {
-    if (!m_pLoadedTrack)
-        return;
-
-    if (save) {
-        saveTrack();
-    }
-
+    if (!m_pLoadedTrack) return;
+    if (save) {saveTrack();}
     clear();
     disconnect(this, SLOT(updateTrackMetadata()));
     m_pLoadedTrack.clear();

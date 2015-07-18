@@ -28,7 +28,7 @@
 #include "controlobjectslave.h"
 #include "encoder/encodercallback.h"
 #include "engine/sidechain/sidechainworker.h"
-#include "errordialoghandler.h"
+#include "dialogs/errordialoghandler.h"
 #include "trackinfoobject.h"
 
 #define SHOUTCAST_DISCONNECTED 0

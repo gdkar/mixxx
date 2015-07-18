@@ -50,9 +50,9 @@ using namespace soundtouch;
 
 
 PeakFinder::PeakFinder()
-{
-    minPos = maxPos = 0;
-}
+  :minPos(0),
+   maxPos(0)
+{}
 
 
 // Finds real 'top' of a peak hump from neighnourhood of the given 'peakpos'.

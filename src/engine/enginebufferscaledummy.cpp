@@ -5,9 +5,8 @@
 #include "sampleutil.h"
 
 
-EngineBufferScaleDummy::EngineBufferScaleDummy(ReadAheadManager* pReadAheadManager)
-    : EngineBufferScale(),
-      m_pReadAheadManager(pReadAheadManager)
+EngineBufferScaleDummy::EngineBufferScaleDummy(ReadAheadManager* pReadAheadManager,QObject*pParent)
+    : EngineBufferScale(pReadAheadManager,pParent)
 {
     m_samplesRead = 0.0;
 }
@@ -22,7 +21,7 @@ void EngineBufferScaleDummy::clear()
 }
 
 
-CSAMPLE* EngineBufferScaleDummy::getScaled(unsigned long buf_size) {
+CSAMPLE* EngineBufferScaleDummy::getScaled(ssize_t buf_size) {
     m_samplesRead = 0.0;
     double rate = m_dBaseRate * m_dTempoRatio;
     if (rate == 0.0) {

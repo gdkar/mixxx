@@ -3,8 +3,9 @@
 ControlLinPotmeter::ControlLinPotmeter(ConfigKey key,
                                        double dMinValue, double dMaxValue,
                                        double dStep, double dSmallStep,
-                                       bool allowOutOfBounds)
-        : ControlPotmeter(key, dMinValue, dMaxValue, allowOutOfBounds) {
+                                       bool allowOutOfBounds,
+                                       QObject*pParent)
+        : ControlPotmeter(key, dMinValue, dMaxValue, allowOutOfBounds,pParent) {
     if (m_pControl) {
         m_pControl->setBehavior(
             new ControlLinPotmeterBehavior(dMinValue, dMaxValue, allowOutOfBounds));

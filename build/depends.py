@@ -405,7 +405,6 @@ class SoundTouch(Dependence):
                 '#lib/%s/FIRFilter.cpp' % self.SOUNDTOUCH_PATH,
                 '#lib/%s/InterpolateCubic.cpp' % self.SOUNDTOUCH_PATH,
                 '#lib/%s/InterpolateLinear.cpp' % self.SOUNDTOUCH_PATH,
-                '#lib/%s/InterpolateShannon.cpp' % self.SOUNDTOUCH_PATH,
                 '#lib/%s/PeakFinder.cpp' % self.SOUNDTOUCH_PATH,
                 '#lib/%s/RateTransposer.cpp' % self.SOUNDTOUCH_PATH,
                 '#lib/%s/SoundTouch.cpp' % self.SOUNDTOUCH_PATH,
@@ -415,7 +414,6 @@ class SoundTouch(Dependence):
                 # when it is not being built for an architecture that supports
                 # them.
                 '#lib/%s/cpu_detect_x86.cpp' % self.SOUNDTOUCH_PATH,
-                '#lib/%s/mmx_optimized.cpp' % self.SOUNDTOUCH_PATH,
                 '#lib/%s/sse_optimized.cpp' % self.SOUNDTOUCH_PATH]
 
     def configure(self, build, conf, env=None):
@@ -648,10 +646,10 @@ class MixxxCore(Feature):
                    "engine/cachingreader.cpp",
                    "engine/cachingreaderworker.cpp",
 
-                   "analyserrg.cpp",
-                   "analyserqueue.cpp",
-                   "analyserwaveform.cpp",
-                   "analyserkey.cpp",
+                   "an_queue/analyserrg.cpp",
+                   "an_queue/analyserqueue.cpp",
+                   "an_queue/analyserwaveform.cpp",
+                   "an_queue/analyserkey.cpp",
 
                    "controllers/controller.cpp",
                    "controllers/controllerengine.cpp",
@@ -681,7 +679,7 @@ class MixxxCore(Feature):
                    "main.cpp",
                    "mixxx.cpp",
                    "mixxxapplication.cpp",
-                   "errordialoghandler.cpp",
+                   "dialogs/errordialoghandler.cpp",
                    "upgrade.cpp",
 
                    "sources/soundsourceproviderregistry.cpp",

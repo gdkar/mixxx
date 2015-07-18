@@ -26,7 +26,6 @@ WLibraryTableView::WLibraryTableView(QWidget* parent,
     //Enable selection by rows and extended selection (ctrl/shift click)
     setSelectionBehavior(QAbstractItemView::SelectRows);
     setSelectionMode(QAbstractItemView::ExtendedSelection);
-
     setWordWrap(false);
     setShowGrid(false);
     setCornerButtonEnabled(false);
@@ -37,24 +36,17 @@ WLibraryTableView::WLibraryTableView(QWidget* parent,
     //Work around a Qt bug that lets you make your columns so wide you
     //can't reach the divider to make them small again.
     setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
-
     verticalHeader()->hide();
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     setAlternatingRowColors(true);
-
     loadVScrollBarPosState();
-
-    connect(verticalScrollBar(), SIGNAL(valueChanged(int)),
-            this, SIGNAL(scrollValueChanged(int)));
-
+    connect(verticalScrollBar(), SIGNAL(valueChanged(int)),this, SIGNAL(scrollValueChanged(int)));
     setTabKeyNavigation(false);
 }
-
 WLibraryTableView::~WLibraryTableView() {
     qDebug() << "~WLibraryTableView";
     saveVScrollBarPosState();
 }
-
 void WLibraryTableView::loadVScrollBarPosState() {
     // TODO(rryan) I'm not sure I understand the value in saving the v-scrollbar
     // position across restarts of Mixxx. Now that we have different views for
@@ -69,57 +61,41 @@ void WLibraryTableView::restoreVScrollBarPos() {
     updateGeometries();
     verticalScrollBar()->setValue(m_iSavedVScrollBarPos);
 }
-
 void WLibraryTableView::saveVScrollBarPos() {
     //Save the scrollbar's position so we can return here after
     //a search is cleared.
     m_iSavedVScrollBarPos = verticalScrollBar()->value();
 }
-
-
 void WLibraryTableView::saveVScrollBarPosState() {
     //Save the vertical scrollbar position.
     int scrollbarPosition = verticalScrollBar()->value();
     m_pConfig->set(m_vScrollBarPosKey, ConfigValue(scrollbarPosition));
 }
-
 void WLibraryTableView::moveSelection(int delta) {
     QAbstractItemModel* pModel = model();
-
-    if (pModel == nullptr) {
-        return;
-    }
-
+    if (pModel == nullptr) {return;}
     while(delta != 0) {
         // TODO(rryan) what happens if there is nothing selected?
         QModelIndex current = currentIndex();
         if(delta > 0) {
             // i is positive, so we want to move the highlight down
             int row = current.row();
-            if (row + 1 < pModel->rowCount())
-                selectRow(row + 1);
-
+            if (row + 1 < pModel->rowCount()) selectRow(row + 1);
             delta--;
         } else {
             // i is negative, so we want to move the highlight up
             int row = current.row();
-            if (row - 1 >= 0)
-                selectRow(row - 1);
-
+            if (row - 1 >= 0)selectRow(row - 1);
             delta++;
         }
     }
 }
-
 void WLibraryTableView::setTrackTableFont(const QFont& font) {
     setFont(font);
     setTrackTableRowHeight(verticalHeader()->defaultSectionSize());
 }
-
 void WLibraryTableView::setTrackTableRowHeight(int rowHeight) {
     QFontMetrics metrics(font());
     int fontHeightPx = metrics.height();
-    verticalHeader()->setDefaultSectionSize(math_max(
-            rowHeight, fontHeightPx));
+    verticalHeader()->setDefaultSectionSize(math_max(rowHeight, fontHeightPx));
 }
-

@@ -21,7 +21,7 @@
 
 #include "encoder/encodermp3.h"
 #include "encoder/encodercallback.h"
-#include "errordialoghandler.h"
+#include "dialogs/errordialoghandler.h"
 
 EncoderMp3::EncoderMp3(EncoderCallback* pCallback)
   : m_lameFlags(nullptr),

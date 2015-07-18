@@ -44,8 +44,8 @@ public:
     inline int getBitrate() const {return m_bitrate;}
     inline void setBitrate(int bitrate) {m_bitrate = bitrate;}
     // #seconds
-    inline int getDuration() const {return m_duration;}
-    inline void setDuration(int duration) {m_duration = duration;}
+    inline double getDuration() const {return m_duration;}
+    inline void setDuration(double duration) {m_duration = duration;}
     // beats / minute
     static const double kBpmUndefined;
     static const double kBpmMin; // lower bound (exclusive)
@@ -98,10 +98,10 @@ private:
     // The following members need to be initialized
     // explicitly in the constructor! Otherwise their
     // value is undefined.
-    int m_channels = 0;
-    int m_sampleRate = 0;
-    int m_bitrate = 0;
-    int m_duration = 0;
+    int   m_channels = 0;
+    int   m_sampleRate = 0;
+    int   m_bitrate = 0;
+    double m_duration = 0;
     double m_bpm = kBpmUndefined;
     double m_replayGain = kReplayGainUndefined;
 };

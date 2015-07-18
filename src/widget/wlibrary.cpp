@@ -19,9 +19,7 @@ WLibrary::~WLibrary() {
 
 bool WLibrary::registerView(QString name, QWidget* view) {
     QMutexLocker lock(&m_mutex);
-    if (m_viewMap.contains(name)) {
-        return false;
-    }
+    if (m_viewMap.contains(name)) {return false;}
     if (dynamic_cast<LibraryView*>(view) == nullptr) {
         qDebug() << "WARNING: Attempted to register a view with WLibrary "
                  << "that does not implement the LibraryView interface. "
@@ -52,7 +50,6 @@ void WLibrary::switchToView(const QString& name) {
         }
     }
 }
-
 void WLibrary::search(const QString& name) {
     QMutexLocker lock(&m_mutex);
     QWidget* current = currentWidget();
@@ -65,14 +62,9 @@ void WLibrary::search(const QString& name) {
     lock.unlock();
     view->onSearch(name);
 }
-
-LibraryView* WLibrary::getActiveView() const {
-    return dynamic_cast<LibraryView*>(currentWidget());
-}
+LibraryView* WLibrary::getActiveView() const {return dynamic_cast<LibraryView*>(currentWidget());}
 
 bool WLibrary::event(QEvent* pEvent) {
-    if (pEvent->type() == QEvent::ToolTip) {
-        updateTooltip();
-    }
+    if (pEvent->type() == QEvent::ToolTip) {updateTooltip();}
     return QStackedWidget::event(pEvent);
 }

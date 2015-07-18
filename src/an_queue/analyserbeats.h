@@ -10,7 +10,7 @@
 
 #include <QHash>
 
-#include "analyser.h"
+#include "an_queue/analyser.h"
 #include "configobject.h"
 //#include "vamp/vampanalyser.h"
 class VampAnalyser;
@@ -18,11 +18,11 @@ class AnalyserBeats: public Analyser {
   public:
     AnalyserBeats(ConfigObject<ConfigValue>* pConfig);
     virtual ~AnalyserBeats();
-    bool initialise(TrackPointer tio, int sampleRate, int totalSamples);
+    bool initialize(TrackPointer tio, int sampleRate, int totalSamples);
     bool loadStored(TrackPointer tio) const;
     void process(const CSAMPLE *pIn, const int iLen);
     void cleanup(TrackPointer tio);
-    void finalise(TrackPointer tio);
+    void finalize(TrackPointer tio);
 
   private:
     static QHash<QString, QString> getExtraVersionInfo(

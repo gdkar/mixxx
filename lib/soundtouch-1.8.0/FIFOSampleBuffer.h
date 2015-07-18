@@ -60,55 +60,38 @@ class FIFOSampleBuffer : public FIFOSamplePipe
 {
 private:
     /// Sample buffer.
-    SAMPLETYPE *buffer;
-
-    // Raw unaligned buffer memory. 'buffer' is made aligned by pointing it to first
-    // 16-byte aligned location of this buffer
-    SAMPLETYPE *bufferUnaligned;
-
+    CSAMPLE *buffer;
     /// Sample buffer size in bytes
     uint sizeInBytes;
-
     /// How many samples are currently in buffer.
     uint samplesInBuffer;
-
     /// Channels, 1=mono, 2=stereo.
     uint channels;
-
     /// Current position pointer to the buffer. This pointer is increased when samples are 
     /// removed from the pipe so that it's necessary to actually rewind buffer (move data)
     /// only new data when is put to the pipe.
     uint bufferPos;
-
     /// Rewind the buffer by moving data from position pointed by 'bufferPos' to real 
     /// beginning of the buffer.
-    void rewind();
-
+    virtual void rewind();
     /// Ensures that the buffer has capacity for at least this many samples.
-    void ensureCapacity(uint capacityRequirement);
-
     /// Returns current capacity.
     uint getCapacity() const;
-
 public:
-
     /// Constructor
     FIFOSampleBuffer(int numChannels = 2     ///< Number of channels, 1=mono, 2=stereo.
                                               ///< Default is stereo.
                      );
-
     /// destructor
-    ~FIFOSampleBuffer();
-
+    virtual ~FIFOSampleBuffer();
     /// Returns a pointer to the beginning of the output samples. 
     /// This function is provided for accessing the output samples directly. 
     /// Please be careful for not to corrupt the book-keeping!
     ///
     /// When using this function to output samples, also remember to 'remove' the
     /// output samples from the buffer by calling the 
-    /// 'receiveSamples(numSamples)' function
-    virtual SAMPLETYPE *ptrBegin();
-
+    /// 'receiveSamples(size)' function
+    virtual CSAMPLE *begin();
     /// Returns a pointer to the end of the used part of the sample buffer (i.e. 
     /// where the new samples are to be inserted). This function may be used for 
     /// inserting new samples into the sample buffer directly. Please be careful
@@ -116,67 +99,53 @@ public:
     ///
     /// When using this function as means for inserting new samples, also remember 
     /// to increase the sample count afterwards, by calling  the 
-    /// 'putSamples(numSamples)' function.
-    SAMPLETYPE *ptrEnd(
-                uint slackCapacity   ///< How much free capacity (in samples) there _at least_ 
+    /// 'putSamples(size)' function.
+    virtual CSAMPLE *end(uint slackCapacity = 0  ///< How much free capacity (in samples) there _at least_ 
                                      ///< should be so that the caller can succesfully insert the 
                                      ///< desired samples to the buffer. If necessary, the function 
                                      ///< grows the buffer size to comply with this requirement.
                 );
-
-    /// Adds 'numSamples' pcs of samples from the 'samples' memory position to
+    /// Adds 'size' pcs of samples from the 'samples' memory position to
     /// the sample buffer.
-    virtual void putSamples(const SAMPLETYPE *samples,  ///< Pointer to samples.
-                            uint numSamples                         ///< Number of samples to insert.
+    virtual void putSamples(const CSAMPLE *samples,  ///< Pointer to samples.
+                            uint size                         ///< Number of samples to insert.
                             );
-
     /// Adjusts the book-keeping to increase number of samples in the buffer without 
     /// copying any actual samples.
     ///
     /// This function is used to update the number of samples in the sample buffer
-    /// when accessing the buffer directly with 'ptrEnd' function. Please be 
+    /// when accessing the buffer directly with 'end' function. Please be 
     /// careful though!
-    virtual void putSamples(uint numSamples   ///< Number of samples been inserted.
+    virtual void putSamples(uint size   ///< Number of samples been inserted.
                             );
-
     /// Output samples from beginning of the sample buffer. Copies requested samples to 
     /// output buffer and removes them from the sample buffer. If there are less than 
     /// 'numsample' samples in the buffer, returns all that available.
     ///
     /// \return Number of samples returned.
-    virtual uint receiveSamples(SAMPLETYPE *output, ///< Buffer where to copy output samples.
+    virtual uint receiveSamples(CSAMPLE *output, ///< Buffer where to copy output samples.
                                 uint maxSamples                 ///< How many samples to receive at max.
                                 );
-
     /// Adjusts book-keeping so that given number of samples are removed from beginning of the 
     /// sample buffer without copying them anywhere. 
     ///
     /// Used to reduce the number of samples in the buffer when accessing the sample buffer directly
-    /// with 'ptrBegin' function.
-    virtual uint receiveSamples(uint maxSamples   ///< Remove this many samples from the beginning of pipe.
-                                );
-
+    /// with 'begin' function.
+    virtual uint receiveSamples(uint maxSamples);   ///< Remove this many samples from the beginning of pipe.
     /// Returns number of samples currently available.
-    virtual uint numSamples() const;
-
+    virtual uint size() const;
     /// Sets number of channels, 1 = mono, 2 = stereo.
-    void setChannels(int numChannels);
-
+    virtual void setChannels(int numChannels);
     /// Get number of channels
-    int getChannels() 
-    {
-        return channels;
-    }
-
+    virtual int getChannels() {return channels;}
     /// Returns nonzero if there aren't any samples available for outputting.
-    virtual int isEmpty() const;
-
+    virtual bool empty() const;
     /// Clears all the samples.
     virtual void clear();
-
     /// allow trimming (downwards) amount of samples in pipeline.
     /// Returns adjusted amount of samples
-    uint adjustAmountOfSamples(uint numSamples);
+    virtual uint resize(uint size);
+    virtual void reserve(uint capacityRequirement);
 };
 
 }

@@ -30,7 +30,7 @@
 #include <QtDebug>
 
 #include "encoder/encodercallback.h"
-#include "errordialoghandler.h"
+#include "dialogs/errordialoghandler.h"
 
 
 //

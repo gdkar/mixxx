@@ -13,10 +13,7 @@
 class TreeItem {
   public:
     TreeItem(); //creates an invisible root item for the tree
-    TreeItem(const QString &data,
-             const QString &data_path,
-             LibraryFeature* feature,
-             TreeItem* parent);
+    TreeItem(const QString &data, const QString &data_path, LibraryFeature* feature, TreeItem* parent);
     ~TreeItem();
     /** appends a child item to this object **/
     void appendChild(TreeItem *child);
@@ -59,5 +56,4 @@ class TreeItem {
     TreeItem *m_parentItem;
     QIcon m_icon;
 };
-
 #endif

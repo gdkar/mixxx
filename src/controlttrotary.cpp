@@ -20,10 +20,9 @@
    Purpose: Creates a new rotary encoder
    Input:   key
    -------- ------------------------------------------------------ */
-ControlTTRotary::ControlTTRotary(ConfigKey key) : ControlObject(key) {
+ControlTTRotary::ControlTTRotary(ConfigKey key,QObject*pParent) : ControlObject(key,true,false,false,pParent) {
     if (m_pControl) {
-        m_pControl->setBehavior(
-                new ControlTTRotaryBehavior());
+        m_pControl->setBehavior(new ControlTTRotaryBehavior());
     }
 }
 

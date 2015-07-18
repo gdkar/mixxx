@@ -1,5 +1,5 @@
 /***************************************************************************
-                          errordialoghandler.h  -  description
+                          dialogs/errordialoghandler.h  -  description
                              -------------------
     begin                : Fri Feb 20 2009
     copyright            : (C) 2009 by Sean M. Pappalardo

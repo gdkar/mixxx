@@ -164,8 +164,7 @@ bool readAudioProperties(TrackMetadata* pTrackMetadata,const TagLib::File& file)
         // implicitly successful
         return true;
     }
-    const TagLib::AudioProperties* pAudioProperties =
-            file.audioProperties();
+    const TagLib::AudioProperties* pAudioProperties = file.audioProperties();
     if (!pAudioProperties) {
         qWarning() << "Failed to read audio properties from file"
                 << file.name();
@@ -174,7 +173,6 @@ bool readAudioProperties(TrackMetadata* pTrackMetadata,const TagLib::File& file)
     readAudioProperties(pTrackMetadata, *pAudioProperties);
     return true;
 }
-
 void readTrackMetadataFromTag(TrackMetadata* pTrackMetadata, const TagLib::Tag& tag) {
     if (!pTrackMetadata) {
         return; // nothing to do
@@ -184,7 +182,6 @@ void readTrackMetadataFromTag(TrackMetadata* pTrackMetadata, const TagLib::Tag& 
     pTrackMetadata->setAlbum(toQString(tag.album()));
     pTrackMetadata->setComment(toQString(tag.comment()));
     pTrackMetadata->setGenre(toQString(tag.genre()));
-
     int iYear = tag.year();
     if (iYear > 0) {pTrackMetadata->setYear(QString::number(iYear));}
     int iTrack = tag.track();
@@ -194,12 +191,10 @@ void readTrackMetadataFromTag(TrackMetadata* pTrackMetadata, const TagLib::Tag& 
 inline const TagLib::MP4::ItemListMap& getItemListMap(const TagLib::MP4::Tag& tag) {
     return const_cast<TagLib::MP4::Tag&>(tag).itemListMap();
 }
-
 void readCoverArtFromID3v2Tag(QImage* pCoverArt, const TagLib::ID3v2::Tag& tag) {
     if (!pCoverArt) {
         return; // nothing to do
     }
-
     TagLib::ID3v2::FrameList covertArtFrame = tag.frameListMap()["APIC"];
     if (!covertArtFrame.isEmpty()) {
         TagLib::ID3v2::AttachedPictureFrame* picframe = static_cast<TagLib::ID3v2::AttachedPictureFrame*>(covertArtFrame.front());

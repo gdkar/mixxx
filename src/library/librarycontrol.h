@@ -17,14 +17,11 @@ class LoadToGroupController : public QObject {
   public:
     LoadToGroupController(QObject* pParent, const QString& group);
     virtual ~LoadToGroupController();
-
   signals:
     void loadToGroup(QString group, bool);
-
   public slots:
     void slotLoadToGroup(double v);
     void slotLoadToGroupAndPlay(double v);
-
   private:
     QString m_group;
     ControlObject* m_pLoadControl;
@@ -36,10 +33,8 @@ class LibraryControl : public QObject {
   public:
     LibraryControl(Library* pLibrary);
     virtual ~LibraryControl();
-
     void bindWidget(WLibrary* pLibrary, QObject* pKeyboard);
     void bindSidebarWidget(WLibrarySidebar* pLibrarySidebar);
-
   private slots:
     void libraryWidgetDeleted();
     void sidebarWidgetDeleted();
@@ -54,19 +49,15 @@ class LibraryControl : public QObject {
     void slotLoadSelectedIntoFirstStopped(double v);
     void slotAutoDjAddTop(double v);
     void slotAutoDjAddBottom(double v);
-
     void maybeCreateGroupController(const QString& group);
     void slotNumDecksChanged(double v);
     void slotNumSamplersChanged(double v);
     void slotNumPreviewDecksChanged(double v);
-
     void slotFontSize(double v);
     void slotIncrementFontSize(double v);
     void slotDecrementFontSize(double v);
-
   private:
     Library* m_pLibrary;
-
     ControlObject* m_pSelectNextTrack;
     ControlObject* m_pSelectPrevTrack;
     ControlObject* m_pSelectTrack;

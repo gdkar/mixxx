@@ -39,7 +39,7 @@ QDomNode SvgParser::parseSvgTree(const QDomNode& svgSkinNode,
 void SvgParser::scanTree(QDomNode* node) const {
     parseElement(node);
     QDomNodeList children = node->childNodes();
-    for (uint i = 0; i < children.length(); ++i) {
+    for (auto i = 0; i < children.length(); ++i) {
         QDomNode child = children.at(i);
         if (child.isElement()) {
             scanTree(&child);
@@ -57,13 +57,11 @@ void SvgParser::parseElement(QDomNode* node) const {
             QString expression = element.attribute("value");
             QString result = evaluateTemplateExpression(
                 expression, node->lineNumber()).toString();
-
             if (!result.isNull()) {
                 QDomNodeList children = node->childNodes();
-                for (uint i = 0; i < children.length(); ++i) {
+                for (auto i = 0; i < children.length(); ++i) {
                     node->removeChild(children.at(i));
                 }
-
                 QDomNode newChild = node->ownerDocument().createTextNode(result);
                 node->appendChild(newChild);
             }
@@ -132,12 +130,10 @@ void SvgParser::parseAttributes(const QDomNode& node) const {
     // expr-attribute_name="var_name";
     QRegExp nameRx("^expr-([^=\\s]+)$");
     // TODO (jclaveau) : move this pattern definition to the script extension?
-    for (uint i=0; i < attributes.length(); i++) {
-
+    for (auto i=0; i < attributes.length(); i++) {
         QDomAttr attribute = attributes.item(i).toAttr();
         QString attributeValue = attribute.value();
         QString attributeName = attribute.name();
-
         // searching variable attributes :
         // expr-attribute_name="variable_name|expression"
         if (nameRx.indexIn(attributeName) != -1) {
@@ -148,7 +144,6 @@ void SvgParser::parseAttributes(const QDomNode& node) const {
             }
             continue;
         }
-
         if (!hookRx.isEmpty()) {
             // searching hooks in the attribute value
             int pos = 0;
@@ -156,17 +151,14 @@ void SvgParser::parseAttributes(const QDomNode& node) const {
                 QStringList captured = hookRx.capturedTexts();
                 QString match = hookRx.cap(0);
                 QString tmp = "svg.templateHooks." + match;
-                QString replacement = evaluateTemplateExpression(
-                    tmp, node.lineNumber()).toString();
+                QString replacement = evaluateTemplateExpression(tmp, node.lineNumber()).toString();
                 attributeValue.replace(pos, match.length(), replacement);
                 pos += replacement.length();
             }
         }
-
         attribute.setValue(attributeValue);
     }
 }
-
 QByteArray SvgParser::saveToQByteArray(const QDomNode& svgNode) const {
     // TODO (jclaveau) : a way to look the svg after the parsing would be nice!
     QByteArray out;
@@ -175,15 +167,10 @@ QByteArray SvgParser::saveToQByteArray(const QDomNode& svgNode) const {
     svgNode.cloneNode().save(textStream, 2);
     return out;
 }
-
-QScriptValue SvgParser::evaluateTemplateExpression(const QString& expression,
-                                                   int lineNumber) const {
-    QScriptValue out = m_context.evaluateScript(
-        expression, m_currentFile, lineNumber);
+QScriptValue SvgParser::evaluateTemplateExpression(const QString& expression,int lineNumber) const {
+    QScriptValue out = m_context.evaluateScript(expression, m_currentFile, lineNumber);
     if (m_context.getScriptEngine()->hasUncaughtException()) {
         // return an empty string as replacement for the in-attribute expression
         return QScriptValue();
-    } else {
-        return out;
-    }
+    } else {return out;}
 }

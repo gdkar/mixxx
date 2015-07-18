@@ -5,9 +5,7 @@
 
 #include "engine/engineobject.h"
 #include "util/assert.h"
-
 static const int numChannels = 2;
-
 template<unsigned int SIZE>
 class EngineFilterPan : public EngineObject  {
   public:
@@ -20,7 +18,6 @@ class EngineFilterPan : public EngineObject  {
         // Set the current buffers to 0
         memset(m_buf, 0, sizeof(m_buf));
     }
-
     virtual ~EngineFilterPan() {};
     void pauseFilter() {
         // Set the current buffers to 0
@@ -56,7 +53,6 @@ class EngineFilterPan : public EngineObject  {
                 m_buf[m_delayFrame * 2] = pIn[i * 2];
                 m_buf[m_delayFrame * 2 + 1] = pIn[i * 2 + 1];
                 m_delayFrame = (m_delayFrame + 1) % SIZE;
-
                 // Take delayed sample from delay buffer and copy it to dest buffer:
                 pOutput[i * 2] = m_buf[(delayLeftSourceFrame % SIZE)* 2];
                 pOutput[i * 2 + 1] = m_buf[(delayRightSourceFrame % SIZE) * 2 + 1];
@@ -103,7 +99,6 @@ class EngineFilterPan : public EngineObject  {
         }
         m_doStart = false;
     }
-
   protected:
     int m_leftDelayFrames;
     int m_oldLeftDelayFrames;

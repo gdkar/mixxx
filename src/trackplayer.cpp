@@ -11,7 +11,7 @@
 #include "engine/enginemaster.h"
 #include "track/beatgrid.h"
 #include "waveform/renderers/waveformwidgetrenderer.h"
-#include "analyserqueue.h"
+#include "an_queue/analyserqueue.h"
 #include "util/sandbox.h"
 #include "effects/effectsmanager.h"
 
@@ -130,14 +130,12 @@ void TrackPlayer::slotLoadTrack(TrackPointer track, bool bPlay) {
         int loopEnd = m_pLoopOutPoint->get();
         if (loopStart != -1 && loopEnd != -1 &&
             even(loopStart) && even(loopEnd) && loopStart <= loopEnd) {
-            Cue* pLoopCue = nullptr;
-            QList<Cue*> cuePoints = m_pLoadedTrack->getCuePoints();
-            QListIterator<Cue*> it(cuePoints);
-            while (it.hasNext()) {
-                Cue* pCue = it.next();
-                if (pCue->getType() == Cue::LOOP) {pLoopCue = pCue;}
+            auto pLoopCue = QSharedPointer<Cue>{};
+            auto  cuePoints = m_pLoadedTrack->getCuePoints();
+            for(auto &pCue : cuePoints){
+              if(pCue->getType()==Cue::LOOP){pLoopCue = pCue;}
             }
-            if (!pLoopCue) {
+            if (pLoopCue.isNull()) {
                 pLoopCue = m_pLoadedTrack->addCue();
                 pLoopCue->setType(Cue::LOOP);
             }
@@ -152,7 +150,6 @@ void TrackPlayer::slotLoadTrack(TrackPointer track, bool bPlay) {
         disconnect(m_pLoadedTrack.data(), 0, this, 0);
         disconnect(m_pLoadedTrack.data(), 0, m_pKey, 0);
         m_pReplayGain->set(0);
-
         // Causes the track's data to be saved back to the library database.
         emit(unloadingTrack(m_pLoadedTrack));
     }
@@ -232,10 +229,8 @@ void TrackPlayer::slotFinishLoading(TrackPointer pTrackInfoObject)
     m_pLoopInPoint->set(-1);
     m_pLoopOutPoint->set(-1);
 
-    const QList<Cue*> trackCues = pTrackInfoObject->getCuePoints();
-    QListIterator<Cue*> it(trackCues);
-    while (it.hasNext()) {
-        Cue* pCue = it.next();
+    const auto  trackCues = pTrackInfoObject->getCuePoints();
+    for(auto &pCue : trackCues){
         if (pCue->getType() == Cue::LOOP) {
             int loopStart = pCue->getPosition();
             int loopEnd = loopStart + pCue->getLength();

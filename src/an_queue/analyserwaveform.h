@@ -7,7 +7,7 @@
 #include <limits>
 
 #include "configobject.h"
-#include "analyser.h"
+#include "an_queue/analyser.h"
 #include "waveform/waveform.h"
 #include "util/math.h"
 
@@ -141,16 +141,15 @@ class AnalyserWaveform : public Analyser {
     AnalyserWaveform(ConfigObject<ConfigValue>* pConfig);
     virtual ~AnalyserWaveform();
 
-    bool initialise(TrackPointer tio, int sampleRate, int totalSamples);
-    bool loadStored(TrackPointer tio) const;
-    void process(const CSAMPLE *buffer, const int bufferLength);
-    void cleanup(TrackPointer tio);
-    void finalise(TrackPointer tio);
+    virtual bool initialize(TrackPointer tio, int sampleRate, int totalSamples) override;
+    virtual bool loadStored(TrackPointer tio) const override;
+    virtual void process(const CSAMPLE *buffer, const int bufferLength) override;
+    virtual void cleanup(TrackPointer tio) override;
+    virtual void finalize(TrackPointer tio) override;
 
   private:
     void storeCurentStridePower();
     void resetCurrentStride();
-
     void createFilters(int sampleRate);
     void destroyFilters();
     void storeIfGreater(float& dest, float source);

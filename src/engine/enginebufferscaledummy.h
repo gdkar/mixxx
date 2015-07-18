@@ -27,16 +27,13 @@ class ReadAheadManager;
 
 class EngineBufferScaleDummy : public EngineBufferScale {
   public:
-    EngineBufferScaleDummy(ReadAheadManager* pReadAheadManager);
+    EngineBufferScaleDummy(ReadAheadManager* pReadAheadManager,QObject*pParent=nullptr);
     virtual ~EngineBufferScaleDummy();
 
     /** Called from EngineBuffer when seeking, to ensure the buffers are flushed */
     void clear();
     /** Scale buffer */
-    CSAMPLE* getScaled(unsigned long buf_size);
-
-  private:
-    ReadAheadManager* m_pReadAheadManager;
+    CSAMPLE* getScaled(ssize_t buf_size);
 };
 
 #endif

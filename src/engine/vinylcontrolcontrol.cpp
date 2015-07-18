@@ -124,23 +124,16 @@ void VinylControlControl::slotControlVinylSeek(double fractionalPos) {
         double shortest_distance = 0;
         int nearest_playpos = -1;
 
-        QList<Cue*> cuePoints = m_pCurrentTrack->getCuePoints();
-        QListIterator<Cue*> it(cuePoints);
-        while (it.hasNext()) {
-            Cue* pCue = it.next();
-            if (pCue->getType() != Cue::CUE || pCue->getHotCue() == -1) {
-                continue;
-            }
-
-            int cue_position = pCue->getPosition();
+        auto cuePoints = m_pCurrentTrack->getCuePoints();
+        for(auto &pCue : cuePoints){
+          auto cue_position = pCue->getPosition();
+            if (pCue->getType() != Cue::CUE || pCue->getHotCue() == -1) {continue;}
             //pick cues closest to new_playpos
-            if ((nearest_playpos == -1) ||
-                (fabs(new_playpos - cue_position) < shortest_distance)) {
+            if ((nearest_playpos == -1) || (fabs(new_playpos - cue_position) < shortest_distance)) {
                 nearest_playpos = cue_position;
                 shortest_distance = fabs(new_playpos - cue_position);
             }
         }
-
         if (nearest_playpos == -1) {
             if (new_playpos >= 0) {
                 //never found an appropriate cue, so don't seek?

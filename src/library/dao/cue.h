@@ -5,7 +5,6 @@
 #define CUE_H
 
 #include <QObject>
-#include <QMutex>
 #include <atomic>
 class CueDAO;
 class TrackInfoObject;
@@ -52,7 +51,6 @@ class Cue : public QObject {
     std::atomic<int> m_iLength;
     std::atomic<int> m_iHotCue;
     QString m_label;
-    QMutex m_mutex;
     friend class TrackInfoObject;
     friend class CueDAO;
 };

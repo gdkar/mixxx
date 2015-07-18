@@ -23,8 +23,9 @@ class HotcueControl : public QObject {
     HotcueControl(QString group, int hotcueNumber, QObject *pParent = nullptr);
     virtual ~HotcueControl();
     inline int getHotcueNumber() { return m_iHotcueNumber; }
-    inline Cue* getCue() { return m_pCue; }
-    inline void setCue(Cue* pCue) { m_pCue = pCue; }
+    inline QSharedPointer<Cue>  getCue() { return m_pCue; }
+    inline void setCue(QSharedPointer<Cue> pCue) { m_pCue = pCue; }
+    inline void clearCue(){m_pCue.clear();}
     inline ControlObject* getPosition() { return &m_hotcuePosition; }
     inline ControlObject* getEnabled() { return &m_hotcueEnabled; }
     // Used for caching the preview state of this hotcue control.
@@ -32,7 +33,6 @@ class HotcueControl : public QObject {
     inline void setPreviewing(bool bPreviewing) { m_bPreviewing = bPreviewing; }
     inline int getPreviewingPosition() { return m_iPreviewingPosition; }
     inline void setPreviewingPosition(int iPosition) { m_iPreviewingPosition = iPosition; }
-
   signals:
     void hotcueSet(double v);
     void hotcueGoto(double v);
@@ -43,14 +43,12 @@ class HotcueControl : public QObject {
     void hotcueClear(double v);
     void hotcuePositionChanged(double newPosition);
     void hotcuePlay(double v);
-
   private:
     ConfigKey keyForControl(int hotcue, QString name);
 
     QString m_group;
     int m_iHotcueNumber;
-    Cue* m_pCue;
-
+    QSharedPointer<Cue> m_pCue;
     // Hotcue state controls
     ControlObject m_hotcuePosition;
     ControlObject m_hotcueEnabled;
@@ -62,27 +60,22 @@ class HotcueControl : public QObject {
     ControlObject m_hotcueActivate;
     ControlObject m_hotcueActivatePreview;
     ControlObject m_hotcueClear;
-
     bool m_bPreviewing;
-    int m_iPreviewingPosition;
+    int  m_iPreviewingPosition;
 };
-
 class CueControl : public EngineControl {
     Q_OBJECT
   public:
     CueControl(QString group,ConfigObject<ConfigValue>* _config, QObject *pParent=nullptr);
     virtual ~CueControl();
-
     virtual void hintReader(HintVector* pHintList);
     double updateIndicatorsAndModifyPlay(double play, bool playPossible);
     void updateIndicators();
     bool isTrackAtCue();
     bool getPlayFlashingAtPause();
-
   public slots:
     void trackLoaded(TrackPointer pTrack);
     void trackUnloaded(TrackPointer pTrack);
-
   private slots:
     void cueUpdated();
     void trackCuesUpdated();
@@ -109,7 +102,7 @@ class CueControl : public EngineControl {
   private:
     // These methods are not thread safe, only call them when the lock is held.
     void createControls();
-    void attachCue(Cue* pCue, int hotcueNumber);
+    void attachCue(QSharedPointer<Cue> pCue, int hotcueNumber);
     void detachCue(int hotcueNumber);
     void saveCuePoint(double cuePoint);
 

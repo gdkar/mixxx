@@ -21,36 +21,27 @@ class WWaveformViewer : public WWidget {
   public:
     WWaveformViewer(const char *group, ConfigObject<ConfigValue>* pConfig, QWidget *parent=0);
     virtual ~WWaveformViewer();
-
     const char* getGroup() const { return m_pGroup;}
     void setup(QDomNode node, const SkinContext& context);
-
     void dragEnterEvent(QDragEnterEvent *event);
     void dropEvent(QDropEvent *event);
-
     void mousePressEvent(QMouseEvent *);
     void mouseMoveEvent(QMouseEvent *);
     void mouseReleaseEvent(QMouseEvent *);
-
 signals:
     void trackDropped(QString filename, QString group);
-
 public slots:
     void onTrackLoaded(TrackPointer track);
     void onTrackUnloaded(TrackPointer track);
 protected:
     virtual void resizeEvent(QResizeEvent *event);
     virtual void wheelEvent(QWheelEvent *event);
-
 private slots:
     void onZoomChange(double zoom);
     void slotWidgetDead() {m_waveformWidget = nullptr;}
-
 private:
     void setWaveformWidget(WaveformWidgetAbstract* waveformWidget);
-    WaveformWidgetAbstract* getWaveformWidget() {
-        return m_waveformWidget;
-    }
+    WaveformWidgetAbstract* getWaveformWidget() {return m_waveformWidget;}
     //direct access to let factory sync/set default zoom
     void setZoom(int zoom);
 private:

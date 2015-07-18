@@ -52,9 +52,9 @@ SoundManager::SoundManager(ConfigObject<ConfigValue> *pConfig,EngineMaster *pMas
 #endif
     // TODO(xxx) some of these ControlObject are not needed by soundmanager, or are unused here.
     // It is possible to take them out?
-    m_pControlObjectSoundStatusCO = new ControlObject(ConfigKey("[SoundManager]", "status"));
+    m_pControlObjectSoundStatusCO = new ControlObject(ConfigKey("[SoundManager]", "status"),this);
     m_pControlObjectSoundStatusCO->set(SOUNDMANAGER_DISCONNECTED);
-    m_pControlObjectVinylControlGainCO = new ControlObject(ConfigKey(VINYL_PREF_KEY, "gain"));
+    m_pControlObjectVinylControlGainCO = new ControlObject(ConfigKey(VINYL_PREF_KEY, "gain"),this);
     //Hack because PortAudio samplerate enumeration is slow as hell on Linux (ALSA dmix sucks, so we can't blame PortAudio)
     m_samplerates.push_back(44100);
     m_samplerates.push_back(48000);
@@ -76,10 +76,7 @@ SoundManager::~SoundManager() {
 #endif
     // vinyl control proxies and input buffers are freed in closeDevices, called
     // by clearDeviceList -- bkgood
-    delete m_pControlObjectSoundStatusCO;
-    delete m_pControlObjectVinylControlGainCO;
 }
-
 QList<SoundDevice*> SoundManager::getDeviceList(
     QString filterAPI, bool bOutputDevices, bool bInputDevices) {
     //qDebug() << "SoundManager::getDeviceList";

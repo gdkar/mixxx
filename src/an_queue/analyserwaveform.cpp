@@ -3,7 +3,7 @@
 #include <QTime>
 #include <QtDebug>
 
-#include "analyserwaveform.h"
+#include "an_queue/analyserwaveform.h"
 #include "engine/engineobject.h"
 #include "engine/enginefilterbessel4.h"
 #include "library/trackcollection.h"
@@ -44,13 +44,13 @@ AnalyserWaveform::~AnalyserWaveform() {
     delete m_analysisDao;
 }
 
-bool AnalyserWaveform::initialise(TrackPointer tio, int sampleRate, int totalSamples) {
+bool AnalyserWaveform::initialize(TrackPointer tio, int sampleRate, int totalSamples) {
     m_skipProcessing = false;
 
     m_timer.start();
 
     if (totalSamples == 0) {
-        qWarning() << "AnalyserWaveform::initialise - no waveform/waveform summary";
+        qWarning() << "AnalyserWaveform::initialize - no waveform/waveform summary";
         return false;
     }
 
@@ -280,7 +280,7 @@ void AnalyserWaveform::cleanup(TrackPointer tio) {
     m_waveformSummary.clear();
 }
 
-void AnalyserWaveform::finalise(TrackPointer tio) {
+void AnalyserWaveform::finalize(TrackPointer tio) {
     if (m_skipProcessing) {
         return;
     }

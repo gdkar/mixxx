@@ -7,22 +7,19 @@
 #include "util/math.h"
 #include "util/assert.h"
 
-EngineBufferScaleLinear::EngineBufferScaleLinear(ReadAheadManager *pReadAheadManager)
-    : EngineBufferScale(),
+EngineBufferScaleLinear::EngineBufferScaleLinear(ReadAheadManager *pReadAheadManager,QObject*pParent)
+    : EngineBufferScale(pReadAheadManager,pParent),
       m_bBackwards(false),
       m_bClear(false),
       m_dRate(1.0),
       m_dOldRate(1.0),
-      m_pReadAheadManager(pReadAheadManager),
       m_dCurrentFrame(0.0),
       m_dNextFrame(0.0)
 {
     for (int i=0; i<2; i++)
         m_floorSampleOld[i] = 0.0f;
-
     m_bufferInt = new CSAMPLE[kiLinearScaleReadAheadLength];
     m_bufferIntSize = 0;
-
     /*df.setFileName("mixxx-debug-scaler.csv");
     df.open(QIODevice::WriteOnly | QIODevice::Text);
     writer.setDevice(&df);
@@ -40,14 +37,11 @@ void EngineBufferScaleLinear::setScaleParameters(double base_rate,
                                                  double* pTempoRatio,
                                                  double* pPitchRatio) {
     Q_UNUSED(pPitchRatio);
-
     m_dOldRate = m_dRate;
     m_dRate = base_rate * *pTempoRatio;
-
     // Determine playback direction
     m_bBackwards = m_dRate < 0.0;
 }
-
 void EngineBufferScaleLinear::clear() {
     m_bClear = true;
     // Clear out buffer and saved sample data
@@ -56,7 +50,6 @@ void EngineBufferScaleLinear::clear() {
     m_floorSampleOld[0] = 0;
     m_floorSampleOld[1] = 0;
 }
-
 // laurent de soras - punked from musicdsp.org (mad props)
 inline float hermite4(float frac_pos, float xm1, float x0, float x1, float x2)
 {
@@ -67,10 +60,9 @@ inline float hermite4(float frac_pos, float xm1, float x0, float x1, float x2)
     const float b_neg = w + a;
     return ((((a * frac_pos) - b_neg) * frac_pos + c) * frac_pos + x0);
 }
-
 /** Determine if we're changing directions (scratching) and then perform
     a stretch */
-CSAMPLE* EngineBufferScaleLinear::getScaled(unsigned long buf_size) {
+CSAMPLE* EngineBufferScaleLinear::getScaled(ssize_t buf_size) {
     if (m_bClear) {
         m_dOldRate = m_dRate;  // If cleared, don't interpolate rate.
         m_bClear = false;
@@ -78,21 +70,15 @@ CSAMPLE* EngineBufferScaleLinear::getScaled(unsigned long buf_size) {
     float rate_add_old = m_dOldRate;  //Smoothly interpolate to new playback rate
     float rate_add_new = m_dRate;
     int samples_read = 0;
-
     // Guard against buf_size == 0
-    if (static_cast<int>(buf_size) == 0) {
-        return m_buffer;
-    }
-
+    if (static_cast<int>(buf_size) == 0) {return m_buffer;}
     if (rate_add_new * rate_add_old < 0) {
         //calculate half buffer going one way, and half buffer going
         //the other way.
-
         //first half: rate goes from old rate to zero
         m_dOldRate = rate_add_old;
         m_dRate = 0.0;
         m_buffer = do_scale(m_buffer, buf_size / 2, &samples_read);
-
         // reset prev sample so we can now read in the other direction (may not
         // be necessary?)
         int iCurSample = static_cast<int>(ceil(m_dCurrentFrame)) * 2;
@@ -101,7 +87,6 @@ CSAMPLE* EngineBufferScaleLinear::getScaled(unsigned long buf_size) {
             m_floorSampleOld[0] = m_bufferInt[iNextSample];
             m_floorSampleOld[1] = m_bufferInt[iNextSample + 1];
         }
-
         // if the buffer has extra samples, do a read so RAMAN ends up back where
         // it should be
         int extra_samples = m_bufferIntSize - iCurSample - 2;
@@ -135,8 +120,7 @@ CSAMPLE* EngineBufferScaleLinear::getScaled(unsigned long buf_size) {
 }
 
 /** Stretch a specified buffer worth of audio using linear interpolation */
-CSAMPLE* EngineBufferScaleLinear::do_scale(CSAMPLE* buf,
-                                           int buf_size, int* samples_read) {
+CSAMPLE* EngineBufferScaleLinear::do_scale(CSAMPLE* buf,int buf_size, int* samples_read) {
     const float rate_old = m_dOldRate;
     const float rate_new = m_dRate;
     const float rate_diff = rate_new - rate_old;

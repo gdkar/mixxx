@@ -27,5 +27,4 @@ class LibraryHashDAO : public DAO {
   private:
     QSqlDatabase& m_database;
 };
-
 #endif //LIBRARYHASHDAO_H
