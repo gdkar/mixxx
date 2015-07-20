@@ -2,6 +2,7 @@
 #define SYNCCONTROL_H
 
 #include <QScopedPointer>
+#include <memory>
 #include <gtest/gtest_prod.h>
 
 #include "engine/enginecontrol.h"

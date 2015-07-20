@@ -1,10 +1,7 @@
-#ifndef SYNCABLE_H
-#define SYNCABLE_H
-
+_Pragma("once")
 #include <QString>
 
 class EngineChannel;
-
 enum SyncMode {
     SYNC_INVALID = -1,
     SYNC_NONE = 0,
@@ -83,5 +80,3 @@ class SyncableListener {
     // the syncable to the existing master bpm.
     virtual void notifyTrackLoaded(Syncable* pSyncable, double suggested_bpm) = 0;
 };
-
-#endif /* SYNCABLE_H */

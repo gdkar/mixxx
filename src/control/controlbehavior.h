@@ -3,7 +3,6 @@
 
 #include <QTimer>
 
-#include "controllers/midi/midimessage.h"
 
 class ControlDoublePrivate;
 
@@ -16,25 +15,18 @@ class ControlNumericBehavior {
     virtual bool setFilter(double* dValue);
 
     virtual double valueToParameter(double dValue);
-    virtual double midiValueToParameter(double midiValue);
     virtual double parameterToValue(double dParam);
-    virtual double valueToMidiParameter(double dValue);
-    virtual void setValueFromMidiParameter(MidiOpCode o, double dParam,
-                                           ControlDoublePrivate* pControl);
+    virtual void setValueFromParameter(double dParam,ControlDoublePrivate* pControl);
 };
 
 class ControlPotmeterBehavior : public ControlNumericBehavior {
   public:
-    ControlPotmeterBehavior(double dMinValue, double dMaxValue,
-                            bool allowOutOfBounds);
+    ControlPotmeterBehavior(double dMinValue, double dMaxValue,bool allowOutOfBounds);
     virtual ~ControlPotmeterBehavior();
 
     virtual bool setFilter(double* dValue);
     virtual double valueToParameter(double dValue);
-    virtual double midiValueToParameter(double midiValue);
     virtual double parameterToValue(double dParam);
-    virtual double valueToMidiParameter(double dValue);
-
   protected:
     double m_dMinValue;
     double m_dMaxValue;
@@ -64,16 +56,12 @@ class ControlLinPotmeterBehavior : public ControlPotmeterBehavior {
 
 class ControlAudioTaperPotBehavior : public ControlPotmeterBehavior {
   public:
-    ControlAudioTaperPotBehavior(double minDB, double maxDB,
-                                 double neutralParameter);
+    ControlAudioTaperPotBehavior(double minDB, double maxDB,double neutralParameter);
     virtual ~ControlAudioTaperPotBehavior();
 
     virtual double valueToParameter(double dValue);
     virtual double parameterToValue(double dParam);
-    virtual double midiValueToParameter(double midiValue);
-    virtual double valueToMidiParameter(double dValue);
-    virtual void setValueFromMidiParameter(MidiOpCode o, double dParam,
-                                           ControlDoublePrivate* pControl);
+    virtual void setValueFromParameter(double dParam,ControlDoublePrivate* pControl);
 
   protected:
     // a knob position between 0 and 1 where the gain is 1 (0dB)
@@ -112,7 +100,7 @@ class ControlPushButtonBehavior : public ControlNumericBehavior {
     };
 
     ControlPushButtonBehavior(ButtonMode buttonMode, int iNumStates);
-    virtual void setValueFromMidiParameter(MidiOpCode o, double dParam,
+    virtual void setValueFromParameter(double dParam,
                                            ControlDoublePrivate* pControl);
 
   private:

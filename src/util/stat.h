@@ -1,8 +1,7 @@
-#ifndef STAT_H
-#define STAT_H
-
+_Pragma("once")
 #include <QMap>
 #include <QVector>
+#include <QLinkedList>
 #include <QString>
 
 #include "util/experiment.h"
@@ -66,7 +65,6 @@ class Stat {
         STATS_BASE        = 0x1000,
     };
     typedef int ComputeFlags;
-
     static Experiment::Mode modeFromFlags(ComputeFlags flags) {
         if (flags & Stat::STATS_EXPERIMENT) {
             return Experiment::EXPERIMENT;
@@ -90,7 +88,7 @@ class Stat {
     QString m_tag;
     StatType m_type;
     ComputeFlags m_compute;
-    QVector<double> m_values;
+    QLinkedList<double> m_values;
     double m_report_count;
     double m_sum;
     double m_min;
@@ -98,21 +96,13 @@ class Stat {
     double m_variance_mk;
     double m_variance_sk;
     QMap<double, double> m_histogram;
-
-    static bool track(const QString& tag,
-                      Stat::StatType type,
-                      Stat::ComputeFlags compute,
-                      double value);
+    static bool track(const QString& tag,Stat::StatType type,Stat::ComputeFlags compute,double value);
 };
-
 QDebug operator<<(QDebug dbg, const Stat &stat);
-
 struct StatReport {
-    char* tag;
-    qint64 time;
+    QString tag;
+    qint64  time;
     Stat::StatType type;
     Stat::ComputeFlags compute;
     double value;
 };
-
-#endif /* STAT_H */

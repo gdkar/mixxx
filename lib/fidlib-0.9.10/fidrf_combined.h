@@ -17,9 +17,7 @@
 //	that the code is easy to understand.
 //
 
-#ifndef FIDCOMBINED_H
-#define FIDCOMBINED_H
-
+_Pragma("once")
 #ifndef HAVE_STRUCT_RUN
 typedef struct Run {
    int magic;		// Magic: 0x64966325
@@ -35,7 +33,6 @@ typedef struct RunBuf {
    Run *run;
    double buf[0];
 } RunBuf;
-
 static double 
 filter_step(void *rb, double val) {
    Run *rr= ((RunBuf*)rb)->run;
@@ -60,36 +57,33 @@ filter_step(void *rb, double val) {
 //
 //	The returned handle must be released using fid_run_free().
 //
-
 Run*
 fid_run_new(FidFilter *filt, double (**funcpp)(void *,double)) {
    Run *rr= ALLOC(Run);
    FidFilter *ff;
    do{
-   rr->magic= 0x64966325;
-   rr->filt= fid_flatten(filt);
-   ff= rr->filt;
-   if (ff->typ != 'I') break;
-   rr->n_iir= ff->len;
-   rr->iir= ff->val;	
-   ff= FFNEXT(ff);
-   if (ff->typ != 'F') break;
-   rr->n_fir= ff->len;
-   rr->fir= ff->val;
-   ff= FFNEXT(ff);
-   if (ff->len) break;
-   rr->n_buf= rr->n_fir > rr->n_iir ? rr->n_fir : rr->n_iir;
-   *funcpp= filter_step;
-   return rr;
+      rr->magic= 0x64966325;
+      rr->filt= fid_flatten(filt);
+      ff= rr->filt;
+      if (ff->typ != 'I') break;
+      rr->n_iir= ff->len;
+      rr->iir= ff->val;	
+      ff= FFNEXT(ff);
+      if (ff->typ != 'F') break;
+      rr->n_fir= ff->len;
+      rr->fir= ff->val;
+      ff= FFNEXT(ff);
+      if (ff->len) break;
+      rr->n_buf= rr->n_fir > rr->n_iir ? rr->n_fir : rr->n_iir;
+      *funcpp= filter_step;
+      return rr;
    }while(0);
    error("Internal error: fid_run_new() expecting IIR+FIR in flattened filter");
-   return 0;
+   return NULL;
 }
-
 //
 //	Create a new instance of the given filter
 //
-
 void *
 fid_run_newbuf(Run *rr) {
    RunBuf *rb;
@@ -99,35 +93,26 @@ fid_run_newbuf(Run *rr) {
    // rb->buf[] already zerod
    return rb;
 }
-
 //
 //	Reinitialise an instance ready to start afresh
 //
-
 void
 fid_run_zapbuf(void *buf) {
    RunBuf *rb;
    Run *rr= rb->run;
    memset(rb->buf, 0, rr->n_buf * sizeof(double));
 }
-
 //
 //	Delete an instance
 //
-
 void 
 fid_run_freebuf(void *runbuf) {free(runbuf);}
-
 //
 //	Delete the filter
 //
-
 void 
 fid_run_free(Run  *rr) {
    free(rr->filt);
    free(rr);
 }
-
 // END //
-#endif
-

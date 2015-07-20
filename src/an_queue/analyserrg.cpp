@@ -6,10 +6,10 @@
 #include "an_queue/analyserrg.h"
 #include "util/math.h"
 
-AnalyserGain::AnalyserGain(ConfigObject<ConfigValue> *_config) :
-  m_pReplayGain(new ReplayGain())
+AnalyserGain::AnalyserGain(ConfigObject<ConfigValue> *_config) 
+: m_bStepControl(false)
 , m_pConfigReplayGain(_config)
-, m_bStepControl(false)
+, m_pReplayGain(new ReplayGain())
 , m_pLeftTempBuffer(nullptr)
 , m_pRightTempBuffer(nullptr)
 , m_iBufferSize(0){

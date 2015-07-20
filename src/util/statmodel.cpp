@@ -41,8 +41,7 @@ int StatModel::columnCount(const QModelIndex& parent) const {
     if (parent.isValid()) {return 0;}
     return NUM_STAT_COLUMNS;
 }
-QVariant StatModel::data(const QModelIndex& index,
-                            int role) const {
+QVariant StatModel::data(const QModelIndex& index, int role) const {
     if (!index.isValid() || (role != Qt::DisplayRole && role != Qt::EditRole)) {return QVariant();}
     int row = index.row();
     int column = index.column();
@@ -58,7 +57,7 @@ QVariant StatModel::data(const QModelIndex& index,
         case STAT_COLUMN_MAX:     return std::numeric_limits<double>::min() == stat.m_max ? QVariant("XXX") : QVariant(stat.m_max);
         case STAT_COLUMN_MEAN:    return stat.m_report_count > 0 ? QVariant(stat.m_sum / stat.m_report_count) : QVariant("XXX");
         case STAT_COLUMN_VARIANCE:return stat.variance();
-        case STAT_COLUMN_STDDEV:  return sqrt(stat.variance());
+        case STAT_COLUMN_STDDEV:  return std::sqrt(stat.variance());
         case STAT_COLUMN_UNITS:   return stat.valueUnits();
     }
     return QVariant();
@@ -78,10 +77,7 @@ bool StatModel::setHeaderData(int section,
     emit(headerDataChanged(orientation, section, section));
     return true;
 }
-
-QVariant StatModel::headerData(int section,
-                               Qt::Orientation orientation,
-                               int role) const {
+QVariant StatModel::headerData(int section,Qt::Orientation orientation,int role) const {
     if (role == Qt::DisplayRole && orientation == Qt::Horizontal) {
         QVariant headerValue = m_headerInfo.value(section).value(role);
         if (!headerValue.isValid()) {

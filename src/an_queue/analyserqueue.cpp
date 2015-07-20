@@ -46,8 +46,7 @@ AnalyserQueue::AnalyserQueue(TrackCollection* pTrackCollection)
           m_qwait(),
           m_queue_size(0) {
     Q_UNUSED(pTrackCollection);
-    connect(this, SIGNAL(updateProgress()),
-            this, SLOT(slotUpdateProgress()));
+    connect(this, SIGNAL(updateProgress()), this, SLOT(slotUpdateProgress()));
 }
 AnalyserQueue::~AnalyserQueue() {
     stop();
@@ -180,6 +179,7 @@ bool AnalyserQueue::doAnalysis(TrackPointer tio, Mixxx::AudioSourcePointer pAudi
         const double frameProgress = double(frameIndex) / double(pAudioSource->getFrameRate());
 //        int progressPromille = frameProgress * (1000 - FINALIZE_PROMILLE);
         if (m_progressInfo.track_progress != frameProgress) {
+          m_progressInfo.track_progress.store(frameProgress);
             if (progressUpdateInhibitTimer.elapsed() > 60) {
                 // Inhibit Updates for 60 milliseconds
                 emitUpdateProgress(tio, frameProgress);
@@ -223,8 +223,8 @@ void AnalyserQueue::run() {
     if (m_aq.size() == 0) return;
     m_progressInfo.current_track = TrackPointer();
     m_progressInfo.track_progress.store(0);
-    m_progressInfo.queue_size = 0;
-    m_progressInfo.sema.release(); // Initalise with one
+    m_progressInfo.queue_size.store(0);
+//    m_progressInfo.sema.release(); // Initalise with one
     while (!m_exit) {
         TrackPointer nextTrack = dequeueNextBlocking();
         // It's important to check for m_exit here in case we decided to exit
@@ -252,7 +252,6 @@ void AnalyserQueue::run() {
             qWarning() << "Failed to open file for analyzing:" << nextTrack->getLocation();
             continue;
         }
-
         QListIterator<Analyser*> it(m_aq);
         bool processTrack = false;
         while (it.hasNext()) {
@@ -294,17 +293,17 @@ void AnalyserQueue::run() {
 // This is called from the AnalyserQueue thread
 void AnalyserQueue::emitUpdateProgress(TrackPointer tio, double  progress) {
     if (!m_exit) {
-        // First tryAcqire will have always success because sema is initialized with on
+        // First tryAcqire will have always success because sema is initialized with one
         // The following tries will success if the previous signal was processed in the GUI Thread
         // This prevent the AnalysisQueue from filling up the GUI Thread event Queue
         // 100 % is emitted in any case
-        if (progress < tio->getDuration() - 1 && progress > 0) {
+//        if (progress < tio->getDuration() - 1 && progress > 0) {
             // Signals during processing are not required in any case
-            if (!m_progressInfo.sema.tryAcquire()) {return;}
-        } else {m_progressInfo.sema.acquire();}
+//            if (!m_progressInfo.sema.tryAcquire()) {return;}
+//        }// else {m_progressInfo.sema.acquire();}
         m_progressInfo.current_track = tio;
-        m_progressInfo.track_progress = progress;
-        m_progressInfo.queue_size = m_queue_size;
+        m_progressInfo.track_progress.store(progress);
+        m_progressInfo.queue_size.store(m_queue_size);
         emit(updateProgress());
     }
 }
@@ -312,7 +311,7 @@ void AnalyserQueue::emitUpdateProgress(TrackPointer tio, double  progress) {
 void AnalyserQueue::slotUpdateProgress() {
     if (m_progressInfo.current_track) {m_progressInfo.current_track->setAnalyserProgress(m_progressInfo.track_progress.load());}
     emit(trackProgress(m_progressInfo.track_progress.load()));
-    if (m_progressInfo.track_progress.load()>=m_progressInfo.current_track->getDuration()) {emit(trackFinished(m_progressInfo.queue_size));}
+    if (m_progressInfo.track_progress.load()>=m_progressInfo.current_track->getDuration()-1) {emit(trackFinished(m_progressInfo.queue_size.load()));}
     m_progressInfo.sema.release();
 }
 //slot
@@ -331,9 +330,8 @@ void AnalyserQueue::queueAnalyseTrack(TrackPointer tio) {
     m_qm.unlock();
 }
 // static
-AnalyserQueue* AnalyserQueue::createDefaultAnalyserQueue(
-        ConfigObject<ConfigValue>* pConfig, TrackCollection* pTrackCollection) {
-    AnalyserQueue* ret = new AnalyserQueue(pTrackCollection);
+AnalyserQueue* AnalyserQueue::createDefaultAnalyserQueue(ConfigObject<ConfigValue>* pConfig, TrackCollection* pTrackCollection) {
+    auto ret = new AnalyserQueue(pTrackCollection);
     ret->addAnalyser(new AnalyserWaveform(pConfig));
     ret->addAnalyser(new AnalyserGain(pConfig));
     VampAnalyser::initializePluginPaths();
@@ -343,9 +341,8 @@ AnalyserQueue* AnalyserQueue::createDefaultAnalyserQueue(
     return ret;
 }
 // static
-AnalyserQueue* AnalyserQueue::createAnalysisFeatureAnalyserQueue(
-        ConfigObject<ConfigValue>* pConfig, TrackCollection* pTrackCollection) {
-    AnalyserQueue* ret = new AnalyserQueue(pTrackCollection);
+AnalyserQueue* AnalyserQueue::createAnalysisFeatureAnalyserQueue(ConfigObject<ConfigValue>* pConfig, TrackCollection* pTrackCollection) {
+    auto ret = new AnalyserQueue(pTrackCollection);
     ret->addAnalyser(new AnalyserGain(pConfig));
     VampAnalyser::initializePluginPaths();
     ret->addAnalyser(new AnalyserBeats(pConfig));

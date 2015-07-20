@@ -1,6 +1,4 @@
-#ifndef CACHINGREADERWORKER_H
-#define CACHINGREADERWORKER_H
-
+_Pragma("once")
 #include <QtDebug>
 #include <QMutex>
 #include <QSemaphore>
@@ -13,32 +11,30 @@
 #include "sources/audiosource.h"
 #include "util/fifo.h"
 
-
 // forward declaration(s)
 class AudioSourceProxy;
 
 // A Chunk is a section of audio that is being cached. The chunk_number can be
 // used to figure out the sample number of the first sample in data by using
 // sampleForChunk()
-typedef struct Chunk {
-    int chunk_number    = -1;;
-    int frameCountRead  = 0;
-    int frameCountTotal = 0;
+struct Chunk {
+    SINT chunk_number    = -1;;
+    SINT frameCountRead  = 0;
+    SINT frameCountTotal = 0;
     CSAMPLE* stereoSamples = nullptr;
-    Chunk* prev_lru = nullptr;
-    Chunk* next_lru = nullptr;
+    Chunk* prev_lru        = nullptr;
+    Chunk* next_lru        = nullptr;
     enum State {
         FREE,
         ALLOCATED,
         READ_IN_PROGRESS,
         READ
     };
-    State state;
-} Chunk;
-typedef struct ChunkReadRequest {
+    State state = FREE;
+} ;
+struct ChunkReadRequest {
     Chunk* chunk = nullptr;
-    ChunkReadRequest() { chunk = nullptr; }
-} ChunkReadRequest;
+};
 enum ReaderStatus {
     INVALID,
     TRACK_NOT_LOADED,
@@ -48,11 +44,11 @@ enum ReaderStatus {
     CHUNK_READ_EOF,
     CHUNK_READ_INVALID
 };
-typedef struct ReaderStatusUpdate {
-    ReaderStatus status = INVALID;
-    Chunk* chunk = nullptr;
-    int trackFrameCount = 0;
-} ReaderStatusUpdate;
+struct ReaderStatusUpdate {
+    ReaderStatus status   = INVALID;
+    Chunk* chunk          = nullptr;
+    SINT trackFrameCount   = 0;
+};
 class CachingReaderWorker : public EngineWorker {
     Q_OBJECT
   public:
@@ -61,7 +57,6 @@ class CachingReaderWorker : public EngineWorker {
             FIFO<ChunkReadRequest>* pChunkReadRequestFIFO,
             FIFO<ReaderStatusUpdate>* pReaderStatusFIFO,QObject *pParent=nullptr);
     virtual ~CachingReaderWorker();
-
     // Request to load a new track. wake() must be called afterwards.
     virtual void newTrack(TrackPointer pTrack);
     // Run upkeep operations like loading tracks and reading from file. Run by a
@@ -73,13 +68,12 @@ class CachingReaderWorker : public EngineWorker {
     static const SINT kChunkChannels;
     static const SINT kFramesPerChunk;
     static const SINT kSamplesPerChunk; // = kFramesPerChunk * kChunkChannels
-
     // Given a chunk number, return the start sample number for the chunk.
     static SINT frameForChunk(SINT chunk_number) {return chunk_number * kFramesPerChunk;}
   signals:
     // Emitted once a new track is loaded and ready to be read from.
     void trackLoading();
-    void trackLoaded(TrackPointer pTrack, int iSampleRate, int iNumSamples);
+    void trackLoaded(TrackPointer pTrack, SINT iSampleRate, SINT iNumSamples);
     void trackLoadFailed(TrackPointer pTrack, QString reason);
   private:
     QString m_group;
@@ -99,8 +93,5 @@ class CachingReaderWorker : public EngineWorker {
     void processChunkReadRequest(ChunkReadRequest* request,ReaderStatusUpdate* update);
     // The current audio source of the track loaded
     Mixxx::AudioSourcePointer m_pAudioSource;
-    std::atomic<int> m_stop;
+    std::atomic<bool> m_stop;
 };
-
-
-#endif /* CACHINGREADERWORKER_H */

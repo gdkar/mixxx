@@ -65,13 +65,6 @@ ControlObject* ControlObject::getControl(const ConfigKey& key, bool warn) {
     if (pCDP) {return pCDP->getCreatorCO();}
     return nullptr;
 }
-void ControlObject::setValueFromMidi(MidiOpCode o, double v) {
-    if (m_pControl) {m_pControl->setMidiParameter(o, v);}
-}
-
-double ControlObject::getMidiParameter() const {
-    return m_pControl ? m_pControl->getMidiParameter() : 0.0;
-}
 // static
 double ControlObject::get(const ConfigKey& key) {
     QSharedPointer<ControlDoublePrivate> pCop = ControlDoublePrivate::getControl(key);
@@ -83,9 +76,6 @@ double ControlObject::getParameter() const {
 double ControlObject::getParameterForValue(double value) const {
     return m_pControl ? m_pControl->getParameterForValue(value) : 0.0;
 }
-double ControlObject::getParameterForMidiValue(double midiValue) const {
-    return m_pControl ? m_pControl->getParameterForMidiValue(midiValue) : 0.0;
-}
 void ControlObject::setParameter(double v) {
     if (m_pControl) {m_pControl->setParameter(v, this);}
 }
@@ -95,17 +85,13 @@ void ControlObject::setParameterFrom(double v, QObject* pSender) {
 // static
 void ControlObject::set(const ConfigKey& key, const double& value) {
     QSharedPointer<ControlDoublePrivate> pCop = ControlDoublePrivate::getControl(key);
-    if (pCop) {
-        pCop->set(value, nullptr);
-    }
+    if (pCop) {pCop->set(value, nullptr);}
 }
 
 bool ControlObject::connectValueChangeRequest(const QObject* receiver,
                                               const char* method,
                                               Qt::ConnectionType type) {
     bool ret = false;
-    if (m_pControl) {
-        ret = m_pControl->connectValueChangeRequest(receiver, method, type);
-    }
+    if (m_pControl) {ret = m_pControl->connectValueChangeRequest(receiver, method, type);}
     return ret;
 }

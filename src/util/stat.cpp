@@ -38,7 +38,7 @@ void Stat::processReport(const StatReport& report) {
     if (m_compute & Stat::MIN && report.value < m_min) {m_min = report.value;}
     // Method comes from Knuth, see:
     // http://www.johndcook.com/standard_deviation.html
-    if (m_compute & Stat::SAMPLE_VARIANCE) {
+    if (m_compute & (Stat::SAMPLE_VARIANCE|Stat::HISTOGRAM)) {
         if (m_report_count == 0.0) {
             m_variance_mk = report.value;
             m_variance_sk = 0.0;
@@ -48,13 +48,8 @@ void Stat::processReport(const StatReport& report) {
             m_variance_sk += (report.value - variance_mk_prev) * (report.value - m_variance_mk);
         }
     }
-
-    if (m_compute & Stat::HISTOGRAM) {
-        m_histogram[report.value] += 1.0;
-    }
-    if (m_compute & Stat::VALUES) {
-        m_values.push_back(report.value);
-    }
+    if (m_compute & (Stat::SAMPLE_MEDIAN|Stat::HISTOGRAM)) {m_histogram[report.value] += 1.0;}
+    if (m_compute & Stat::VALUES) {m_values.push_back(report.value);}
 }
 QDebug operator<<(QDebug dbg, const Stat &stat) {
     QStringList stats;
@@ -84,36 +79,52 @@ QDebug operator<<(QDebug dbg, const Stat &stat) {
         if (variance >= 0.0) {stats << "stddev=" + QString::number(sqrt(variance)) + stat.valueUnits();}
     }
     if (stat.m_compute & Stat::SAMPLE_MEDIAN) {
-        // TODO(rryan): implement
-    }
-    if (stat.m_compute & Stat::HISTOGRAM) {
-        QStringList histogram;
-        for (QMap<double, double>::const_iterator it = stat.m_histogram.begin();
-             it != stat.m_histogram.end(); ++it) {
-            histogram << QString::number(it.key()) + stat.valueUnits() + ":" +
-                    QString::number(it.value());
+        const auto half = stat.m_report_count/2;
+        auto count = (decltype(stat.m_report_count))0 ;
+        double median = 0;
+        for(auto v =   stat.m_histogram.constBegin();v!=stat.m_histogram.constEnd();v++){
+          count += v.value();
+          if(count >= half){
+            median = v.key();
+            break;
+          }
         }
+        stats << "median="+QString::number(median)+stat.valueUnits();
+    }
+    if (stat.m_compute & Stat::HISTOGRAM && stat.m_report_count) {
+        QStringList histogram;
+        auto stddev = std::sqrt(stat.variance());
+        auto bin_size = 2 * stddev/256;
+        auto bin_start = -std::numeric_limits<double>::infinity();
+        auto bin_stop  = bin_start+bin_size;
+        auto bin_accu = 0.0;
+        for (auto it = stat.m_histogram.constBegin(); it != stat.m_histogram.constEnd(); ++it) {
+            if(it.key() >= bin_stop){
+              if(bin_accu){
+                histogram << QString("[%1-%2]: %3]")
+                  .arg(QString::number(bin_start)+stat.valueUnits())
+                  .arg(QString::number(bin_stop)+stat.valueUnits())
+                  .arg(QString::number(bin_accu));
+                bin_start = bin_stop;
+                bin_accu  = 0;
+              }
+              bin_stop += bin_size;
+            }else{bin_accu += it.value();}
+        }
+        histogram << QString("[%1-%2]: %3]")
+                .arg(QString::number(bin_start)+stat.valueUnits())
+                .arg(QString::number(std::numeric_limits<double>::infinity())+stat.valueUnits())
+                .arg(QString::number(bin_accu));
         stats << "histogram=" + histogram.join(",");
     }
-
     dbg.nospace() << "Stat(" << stat.m_tag << "," << stats.join(",") << ")";
     return dbg.maybeSpace();
 }
 
 // static
-bool Stat::track(const QString& tag,
-                 Stat::StatType type,
-                 Stat::ComputeFlags compute,
-                 double value) {
-    if (!StatsManager::s_bStatsManagerEnabled) {
-        return false;
-    }
-    StatReport report;
-    report.tag = strdup(tag.toAscii().constData());
-    report.type = type;
-    report.compute = compute;
-    report.time = Time::elapsed();
-    report.value = value;
+bool Stat::track(const QString &tag,Stat::StatType type,Stat::ComputeFlags compute,double value) {
+    if (!StatsManager::s_bStatsManagerEnabled) {return false;}
+    StatReport report{QString(tag),Time::elapsed(),type,compute,value};
     StatsManager* pManager = StatsManager::instance();
     return pManager && pManager->maybeWriteReport(report);
 }

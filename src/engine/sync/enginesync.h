@@ -16,13 +16,10 @@
 *                                                                         *
 ***************************************************************************/
 
-#ifndef ENGINESYNC_H
-#define ENGINESYNC_H
-
+_Pragma("once")
 #include "configobject.h"
 #include "engine/sync/syncable.h"
 #include "engine/sync/basesyncablelistener.h"
-
 class EngineSync : public BaseSyncableListener {
   public:
     explicit EngineSync(ConfigObject<ConfigValue>* pConfig);
@@ -54,5 +51,3 @@ class EngineSync : public BaseSyncableListener {
     // Unsets all sync state on a Syncable.
     void deactivateSync(Syncable* pSyncable);
 };
-
-#endif

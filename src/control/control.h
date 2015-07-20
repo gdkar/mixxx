@@ -22,12 +22,10 @@ class ControlDoublePrivate : public QObject {
     // "persist in user config" get and set their value on creation/deletion
     // using this ConfigObject.
     static void setUserConfig(ConfigObject<ConfigValue>* pConfig) {s_pUserConfig = pConfig;}
-
     // Adds a ConfigKey for 'alias' to the control for 'key'. Can be used for
     // supporting a legacy / deprecated control. The 'key' control must exist
     // for this to work.
     static void insertAlias(const ConfigKey& alias, const ConfigKey& key);
-
     // Gets the ControlDoublePrivate matching the given ConfigKey. If pCreatorCO
     // is non-nullptr, allocates a new ControlDoublePrivate for the ConfigKey if
     // one does not exist.
@@ -56,14 +54,9 @@ class ControlDoublePrivate : public QObject {
     // The caller must not delete the behavior at any time. The memory is managed
     // by this function.
     void setBehavior(ControlNumericBehavior* pBehavior);
-
     void setParameter(double dParam, QObject* pSender);
     double getParameter() const;
     double getParameterForValue(double value) const;
-    double getParameterForMidiValue(double midiValue) const;
-
-    void setMidiParameter(MidiOpCode opcode, double dParam);
-    double getMidiParameter() const;
     inline bool ignoreNops() const {return m_bIgnoreNops;}
     inline void setDefaultValue(double dValue) {m_defaultValue.setValue(dValue);}
     inline double defaultValue() const {return m_defaultValue.getValue();}
@@ -77,37 +70,27 @@ class ControlDoublePrivate : public QObject {
     // confirmed by setAndConfirm() or not. Note: Once connected, the CO value
     // itself is ONLY set by setAndConfirm() typically called in the connected
     // slot.
-    bool connectValueChangeRequest(const QObject* receiver,
-                                   const char* method, Qt::ConnectionType type);
-
+    bool connectValueChangeRequest(const QObject* receiver,const char* method, Qt::ConnectionType type);
   signals:
     // Emitted when the ControlDoublePrivate value changes. pSender is a
     // pointer to the setter of the value (potentially nullptr).
     void valueChanged(double value, QObject* pSender);
     void valueChangeRequest(double value);
-
   private:
-    ControlDoublePrivate(ConfigKey key, ControlObject* pCreatorCO,
-                         bool bIgnoreNops, bool bTrack, bool bPersist);
+    ControlDoublePrivate(ConfigKey key, ControlObject* pCreatorCO,bool bIgnoreNops, bool bTrack, bool bPersist);
     void initialize();
     void setInner(double value, QObject* pSender);
-
     ConfigKey m_key;
-
     // Whether the control should persist in the Mixxx user configuration. The
     // value is loaded from configuration when the control is created and
     // written to the configuration when the control is deleted.
     bool m_bPersistInConfiguration;
-
     // User-visible, i18n name for what the control is.
     QString m_name;
-
     // User-visible, i18n descripton for what the control does.
     QString m_description;
-
     // Whether to ignore sets which would have no effect.
     bool m_bIgnoreNops;
-
     // Whether to track value changes with the stats framework.
     bool m_bTrack;
     QString m_trackKey;
@@ -135,6 +118,4 @@ class ControlDoublePrivate : public QObject {
     // Mutex guarding access to s_qCOHash and s_qCOAliasHash.
     static QMutex s_qCOHashMutex;
 };
-
-
 #endif /* CONTROL_H */

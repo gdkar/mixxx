@@ -67,9 +67,9 @@ class TrackInfoObject : public QObject {
     // artist and title information from the filename.
     void parse(bool parseCoverArt);
     // Returns the duration in seconds
-    float getDuration() const;
+    double getDuration() const;
     // Set duration in seconds
-    void setDuration(float);
+    void setDuration(double);
     // Returns the duration as a string: H:MM:SS
     QString getDurationStr() const;
     // Accessors for various stats of the file on disk. These are auto-populated
@@ -88,7 +88,9 @@ class TrackInfoObject : public QObject {
     Q_PROPERTY(double bpm READ getBpm WRITE setBpm NOTIFY changed)
     Q_PROPERTY(QString bpmFormatted READ getBpmStr STORED false)
     Q_PROPERTY(QString key READ getKeyText WRITE setKeyText NOTIFY changed)
-    Q_PROPERTY(float duration READ getDuration WRITE setDuration NOTIFY changed)
+    Q_PROPERTY(double duration READ getDuration WRITE setDuration NOTIFY changed)
+    Q_PROPERTY(double cuePoint READ getCuePoint WRITE setCuePoint NOTIFY changed)
+    Q_PROPERTY(double analyserProgress READ getAnalyserProgress WRITE setAnalyserProgress NOTIFY analyserProgress);
     Q_PROPERTY(QString durationFormatted READ getDurationStr STORED false)
     // Returns absolute path to the file, including the filename.
     QString getLocation() const;
@@ -218,12 +220,12 @@ class TrackInfoObject : public QObject {
     void setWaveform(ConstWaveformPointer pWaveform);
     ConstWaveformPointer getWaveformSummary() const;
     void setWaveformSummary(ConstWaveformPointer pWaveform);
-    void setAnalyserProgress(float progress);
-    float getAnalyserProgress() const;
+    void setAnalyserProgress(double progress);
+    double getAnalyserProgress() const;
     /** Save the cue point (in samples... I think) */
-    void setCuePoint(float cue);
+    void setCuePoint(double cue);
     // Get saved the cue point
-    float getCuePoint();
+    double getCuePoint();
     // Calls for managing the track's cue points
     QSharedPointer<Cue> addCue();
     void removeCue(QSharedPointer<Cue> &cue);
@@ -262,7 +264,7 @@ class TrackInfoObject : public QObject {
     void waveformUpdated();
     void waveformSummaryUpdated();
     void coverArtUpdated();
-    void analyserProgress(int progress);
+    void analyserProgress(double progress);
     void bpmUpdated(double bpm);
     void beatsUpdated();
     void keyUpdated(double key);
@@ -323,7 +325,7 @@ class TrackInfoObject : public QObject {
     // URL (used in promo track)
     QString m_sURL;
     // Duration of track in seconds
-    std::atomic<float> m_fDuration;
+    std::atomic<double> m_fDuration;
     // Sample rate
     std::atomic<int> m_iSampleRate;
     // Number of channels
@@ -343,7 +345,7 @@ class TrackInfoObject : public QObject {
     // Id. Unique ID of track
     std::atomic<int> m_iId;
     // Cue point in samples or something
-    std::atomic<float> m_fCuePoint;
+    std::atomic<double> m_fCuePoint;
     // Date the track was added to the library
     QDateTime m_dateAdded;
     Keys m_keys;
@@ -358,7 +360,7 @@ class TrackInfoObject : public QObject {
     //Visual waveform data
     ConstWaveformPointer m_waveform;
     ConstWaveformPointer m_waveformSummary;
-    std::atomic<float> m_analyserProgress; // in 0.1%
+    std::atomic<double> m_analyserProgress; // in 0.1%
     CoverArt m_coverArt;
     friend class TrackDAO;
     friend class AutoDJProcessorTest;

@@ -45,7 +45,7 @@ class AnalyserQueue : public QThread {
     struct progress_info {
         TrackPointer current_track;
         std::atomic<double> track_progress; // in 0.1 %
-        int queue_size;
+        std::atomic<int> queue_size;
         QSemaphore sema;
     };
     void addAnalyser(Analyser* an);

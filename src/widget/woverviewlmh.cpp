@@ -18,9 +18,9 @@ bool WOverviewLMH::drawNextPixmapPart() {
     ScopedTimer t("WOverviewLMH::drawNextPixmapPart");
     //qDebug() << "WOverview::drawNextPixmapPart() - m_waveform" << m_waveform;
     int currentCompletion;
-    ConstWaveformPointer pWaveform = getWaveform();
+    auto pWaveform = getWaveform();
     if (!pWaveform) {return false;}
-    const int dataSize = pWaveform->getDataSize();
+    const auto dataSize = pWaveform->getDataSize();
     if (dataSize == 0) {return false;}
     if (!m_pWaveformSourceImage) {
         // Waveform pixmap twice the height of the viewport to be scalable
@@ -36,14 +36,11 @@ bool WOverviewLMH::drawNextPixmapPart() {
     int visiblePixelIncrement = completionIncrement * width() / dataSize;
     if (completionIncrement < 2 || visiblePixelIncrement == 0) {return false;}
     const int nextCompletion = m_actualCompletion + completionIncrement;
-
     //qDebug() << "WOverview::drawNextPixmapPart() - nextCompletion:"
     //         << nextCompletion
     //         << "m_actualCompletion:" << m_actualCompletion
     //         << "waveformCompletion:" << waveformCompletion
     //         << "completionIncrement:" << completionIncrement;
-
-
     QPainter painter(m_pWaveformSourceImage);
     painter.translate(0.0,(double)m_pWaveformSourceImage->height()/2.0);
 
@@ -95,6 +92,5 @@ bool WOverviewLMH::drawNextPixmapPart() {
         m_pixmapDone = true;
         //qDebug() << "m_waveformPeakRatio" << m_waveformPeak;
     }
-
     return true;
 }

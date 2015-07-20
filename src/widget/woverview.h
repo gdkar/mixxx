@@ -35,18 +35,14 @@ class WOverview : public WWidget {
   public:
     WOverview(const char* pGroup, ConfigObject<ConfigValue>* pConfig, QWidget* parent=nullptr);
     virtual ~WOverview();
-
     void setup(QDomNode node, const SkinContext& context);
-
   public slots:
     void onConnectedControlChanged(double dParameter, double dValue);
     void slotLoadNewTrack(TrackPointer pTrack);
     void slotTrackLoaded(TrackPointer pTrack);
     void slotUnloadTrack(TrackPointer pTrack);
-
   signals:
     void trackDropped(QString filename, QString group);
-
   protected:
     void mouseMoveEvent(QMouseEvent *e);
     void mouseReleaseEvent(QMouseEvent *e);
@@ -69,7 +65,7 @@ class WOverview : public WWidget {
     void onMarkChanged(double v);
     void onMarkRangeChange(double v);
     void slotWaveformSummaryUpdated();
-    void slotAnalyserProgress(float progress);
+    void slotAnalyserProgress(double progress);
   private:
     // Append the waveform overview pixmap according to available data in waveform
     virtual bool drawNextPixmapPart() = 0;
@@ -82,28 +78,22 @@ class WOverview : public WWidget {
     double m_endOfTrack;
     ControlObjectThread* m_trackSamplesControl;
     ControlObjectThread* m_playControl;
-
     // Current active track
     TrackPointer m_pCurrentTrack;
     ConstWaveformPointer m_pWaveform;
-
     // True if slider is dragged. Only used when m_bEventWhileDrag is false
     bool m_bDrag;
     // Internal storage of slider position in pixels
     int m_iPos;
-
     QPixmap m_backgroundPixmap;
     QString m_backgroundPixmapPath;
     QColor m_qColorBackground;
     QColor m_endOfTrackColor;
-
     WaveformMarkSet m_marks;
     std::vector<WaveformMarkRange> m_markRanges;
-
     // Coefficient value-position linear transposition
     double m_a;
     double m_b;
-
     double m_dAnalyserProgress;
     bool m_bAnalyserFinalizing;
     bool m_trackLoaded;

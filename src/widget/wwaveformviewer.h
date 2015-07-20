@@ -58,5 +58,4 @@ private:
     WaveformWidgetAbstract* m_waveformWidget;
     friend class WaveformWidgetFactory;
 };
-
 #endif

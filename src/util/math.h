@@ -14,11 +14,9 @@
 // If we don't do this then we get the C90 fabs from the global namespace which
 // is only defined for double.
 using std::fabs;
-
 #define math_max std::max
 #define math_min std::min
 #define math_max3(a, b, c) math_max(math_max((a), (b)), (c))
-
 // Restrict value to the range [min, max]. Undefined behavior if min > max.
 template <typename T>
 inline T math_clamp(T value, T min, T max) {
@@ -27,7 +25,6 @@ inline T math_clamp(T value, T min, T max) {
     DEBUG_ASSERT(min <= max);
     return math_max(min, math_min(max, value));
 }
-
 // NOTE(rryan): It is an error to call even() on a floating point number. Do not
 // hack this to support floating point values! The programmer should be required
 // to manually convert so they are aware of the conversion.

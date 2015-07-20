@@ -80,7 +80,7 @@ TrackInfoObject::TrackInfoObject(const QDomNode &nodeHeader)
     m_sArtist = XmlParse::selectNodeQString(nodeHeader, "Artist");
     m_sType = XmlParse::selectNodeQString(nodeHeader, "Type");
     m_sComment = XmlParse::selectNodeQString(nodeHeader, "Comment");
-    m_fDuration = XmlParse::selectNodeQString(nodeHeader, "Duration").toFloat();
+    m_fDuration = XmlParse::selectNodeQString(nodeHeader, "Duration").toDouble();
     m_iSampleRate = XmlParse::selectNodeQString(nodeHeader, "SampleRate").toInt();
     m_iChannels = XmlParse::selectNodeQString(nodeHeader, "Channels").toInt();
     m_iBitrate = XmlParse::selectNodeQString(nodeHeader, "Bitrate").toInt();
@@ -93,7 +93,7 @@ TrackInfoObject::TrackInfoObject(const QDomNode &nodeHeader)
     // ignore those. Tracks will get a new ID from the database.
     //m_iId = XmlParse::selectNodeQString(nodeHeader, "Id").toInt();
     m_iId = -1;
-    m_fCuePoint = XmlParse::selectNodeQString(nodeHeader, "CuePoint").toFloat();
+    m_fCuePoint = XmlParse::selectNodeQString(nodeHeader, "CuePoint").toDouble();
     m_bPlayed = false;
     m_bDeleteOnReferenceExpiration = false;
     m_bDirty = false;
@@ -457,8 +457,8 @@ QDateTime TrackInfoObject::getFileModifiedTime() const {return getFileInfo().las
 QDateTime TrackInfoObject::getFileCreationTime() const {
     return getFileInfo().created();
 }
-float TrackInfoObject::getDuration()  const {return m_fDuration.load();}
-void TrackInfoObject::setDuration(float i) {
+double TrackInfoObject::getDuration()  const {return m_fDuration.load();}
+void TrackInfoObject::setDuration(double i) {
     if (m_fDuration.exchange(i) != i) {setDirty(true);emit changed(this);}
 }
 QString TrackInfoObject::getTitle() const {
@@ -698,25 +698,25 @@ void TrackInfoObject::setWaveform(ConstWaveformPointer pWaveform) {
 }
 ConstWaveformPointer TrackInfoObject::getWaveformSummary() const {return m_waveformSummary;}
 void TrackInfoObject::setWaveformSummary(ConstWaveformPointer pWaveform) {
-  m_waveformSummary = pWaaveform;
+  m_waveformSummary = pWaveform;
   emit(waveformSummaryUpdated());
 }
-void TrackInfoObject::setAnalyserProgress(float progress) {
+void TrackInfoObject::setAnalyserProgress(double progress) {
     // progress in 0 .. 1000. 
     auto oldProgress = progress;
     oldProgress=m_analyserProgress.exchange(oldProgress);
-//    if(oldProgress!=progress) {
-        emit(analyserProgress(progress));
-//    }
+    if(oldProgress!=progress) {
+      emit(analyserProgress(progress));
+    }
 }
-float TrackInfoObject::getAnalyserProgress() const {return m_analyserProgress.load();}
-void TrackInfoObject::setCuePoint(float cue) {
+double TrackInfoObject::getAnalyserProgress() const {return m_analyserProgress.load();}
+void TrackInfoObject::setCuePoint(double cue) {
     if (m_fCuePoint.exchange(cue) != cue) {
         setDirty(true);
         emit(changed(this));
     }
 }
-float TrackInfoObject::getCuePoint() {return m_fCuePoint.load();}
+double TrackInfoObject::getCuePoint() {return m_fCuePoint.load();}
 void TrackInfoObject::slotCueUpdated() {
     setDirty(true);
     emit(cuesUpdated());

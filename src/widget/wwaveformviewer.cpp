@@ -25,11 +25,11 @@ WWaveformViewer::WWaveformViewer(const char *group, ConfigObject<ConfigValue>* p
           m_bBending(false),
           m_waveformWidget(nullptr) {
     setAcceptDrops(true);
-    m_pZoom = new ControlObjectSlave(group, "waveform_zoom");
+    m_pZoom = new ControlObjectSlave(group, "waveform_zoom",this);
     m_pZoom->connectValueChanged(this, SLOT(onZoomChange(double)));
-    m_pScratchPositionEnable = new ControlObjectSlave(group, "scratch_position_enable");
-    m_pScratchPosition = new ControlObjectSlave(group, "scratch_position");
-    m_pWheel = new ControlObjectSlave(group, "wheel");
+    m_pScratchPositionEnable = new ControlObjectSlave(group, "scratch_position_enable",this);
+    m_pScratchPosition = new ControlObjectSlave(group, "scratch_position",this);
+    m_pWheel = new ControlObjectSlave(group, "wheel",this);
     setAttribute(Qt::WA_OpaquePaintEvent);
 }
 WWaveformViewer::~WWaveformViewer() {
@@ -40,7 +40,6 @@ WWaveformViewer::~WWaveformViewer() {
     delete m_pWheel;
 }
 void WWaveformViewer::setup(QDomNode node, const SkinContext& context) {
-    Q_UNUSED(context);
     if (m_waveformWidget) {m_waveformWidget->setup(node, context);}
 }
 void WWaveformViewer::resizeEvent(QResizeEvent* /*event*/) {

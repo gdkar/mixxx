@@ -9,9 +9,10 @@
 #include <QtDebug>
 #include <QMutex>
 #include <QWaitCondition>
+#include <QSemaphore>
 #include <QThreadStorage>
 #include <QList>
-
+#include <QLinkedList>
 #include "util/fifo.h"
 #include "util/singleton.h"
 #include "util/stat.h"
@@ -31,20 +32,16 @@ class StatsManager : public QThread, public Singleton<StatsManager> {
   public:
     explicit StatsManager();
     virtual ~StatsManager();
-
     // Returns true if write succeeds.
     bool maybeWriteReport(const StatReport& report);
-
     static bool s_bStatsManagerEnabled;
     // Tell the StatsManager to emit statUpdated for every stat that exists.
     void emitAllStats() {m_emitAllStats = 1;}
     void updateStats() {m_statsPipeCondition.wakeAll();}
   signals:
     void statUpdated(const Stat& stat);
-
   protected:
     virtual void run();
-
   private:
     void processIncomingStatReports();
     StatsPipe* getStatsPipeForThread();
@@ -59,10 +56,9 @@ class StatsManager : public QThread, public Singleton<StatsManager> {
 
     QWaitCondition m_statsPipeCondition;
     QMutex m_statsPipeLock;
+    QSemaphore m_statsSema;
     QList<StatsPipe*> m_statsPipes;
     QThreadStorage<StatsPipe*> m_threadStatsPipes;
     friend class StatsPipe;
 };
-
-
 #endif /* STATSMANAGER_H */

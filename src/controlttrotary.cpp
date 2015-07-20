@@ -21,9 +21,7 @@
    Input:   key
    -------- ------------------------------------------------------ */
 ControlTTRotary::ControlTTRotary(ConfigKey key,QObject*pParent) : ControlObject(key,true,false,false,pParent) {
-    if (m_pControl) {
-        m_pControl->setBehavior(new ControlTTRotaryBehavior());
-    }
+    if (m_pControl) {m_pControl->setBehavior(new ControlTTRotaryBehavior());}
 }
 
 

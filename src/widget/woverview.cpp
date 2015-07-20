@@ -50,10 +50,10 @@ WOverview::WOverview(const char *pGroup, ConfigObject<ConfigValue>* pConfig, QWi
         m_dAnalyserProgress(-1.0),
         m_bAnalyserFinalizing(false),
         m_trackLoaded(false) {
-    m_endOfTrackControl = new ControlObjectThread(m_group, "end_of_track");
+    m_endOfTrackControl = new ControlObjectThread(m_group, "end_of_track",this);
     connect(m_endOfTrackControl, SIGNAL(valueChanged(double)),this, SLOT(onEndOfTrackChange(double)));
-    m_trackSamplesControl = new ControlObjectThread(m_group, "track_samples");
-    m_playControl = new ControlObjectThread(m_group, "play");
+    m_trackSamplesControl = new ControlObjectThread(m_group, "track_samples",this);
+    m_playControl = new ControlObjectThread(m_group, "play",this);
     setAcceptDrops(true);
 }
 WOverview::~WOverview() {
@@ -84,11 +84,9 @@ void WOverview::setup(QDomNode node, const SkinContext& context) {
     m_marks.setup(m_group, node, context, m_signalColors);
     for (int i = 0; i < m_marks.size(); ++i) {
         WaveformMark& mark = m_marks[i];
-        if (mark.m_pointControl) {
-            connect(mark.m_pointControl, SIGNAL(valueChanged(double)),this, SLOT(onMarkChanged(double)));
-        }
+        if (mark.m_pointControl) {connect(mark.m_pointControl, SIGNAL(valueChanged(double)),this, SLOT(onMarkChanged(double)));}
     }
-    QDomNode child = node.firstChild();
+    auto child = node.firstChild();
     while (!child.isNull()) {
         if (child.nodeName() == "MarkRange") {
             m_markRanges.push_back(WaveformMarkRange());
@@ -124,7 +122,6 @@ void WOverview::onConnectedControlChanged(double dParameter, double dValue) {
         // Calculate handle position. Clamp the value within 0-1 because that's
         // all we represent with this widget.
         dParameter = math_clamp(dParameter, 0.0, 1.0);
-
         int iPos = valueToPosition(dParameter);
         if (iPos != m_iPos) {
             m_iPos = iPos;
@@ -133,7 +130,6 @@ void WOverview::onConnectedControlChanged(double dParameter, double dValue) {
         }
     }
 }
-
 void WOverview::slotWaveformSummaryUpdated() {
     //qDebug() << "WOverview::slotWaveformSummaryUpdated()";
     TrackPointer pTrack(m_pCurrentTrack);
@@ -142,27 +138,28 @@ void WOverview::slotWaveformSummaryUpdated() {
     // If the waveform is already complete, just draw it.
     if (m_pWaveform && m_pWaveform->getCompletion() == m_pWaveform->getDataSize()) {
         m_actualCompletion = 0;
-        if (drawNextPixmapPart()) {update();}
+        drawNextPixmapPart();
+        update();
+//        if (drawNextPixmapPart()) {update();}
     }
 }
-void WOverview::slotAnalyserProgress(float progress) {
+void WOverview::slotAnalyserProgress(double progress) {
     if (!m_pCurrentTrack) {return;}
-    double analyserProgress = progress / m_pCurrentTrack->getDuration();
-    bool finalizing = progress  >0.9f;
-    bool updateNeeded = drawNextPixmapPart();
+    auto analyserProgress = progress / m_pCurrentTrack->getDuration();
+    auto finalizing = progress  >0.9;
+    auto updateNeeded = drawNextPixmapPart();
     // progress 0 .. 1000
-//    if (updateNeeded || (m_dAnalyserProgress != analyserProgress)) {
-        m_dAnalyserProgress = analyserProgress;
-        m_bAnalyserFinalizing = finalizing;
-        update();
-//    }
+    if (updateNeeded || (m_dAnalyserProgress != analyserProgress)) {
+      m_dAnalyserProgress = analyserProgress;
+      m_bAnalyserFinalizing = finalizing;
+      update();
+    }
 }
-
 void WOverview::slotLoadNewTrack(TrackPointer pTrack) {
     // qDebug() << "WOverview::slotLoadNewTrack(TrackPointer pTrack)";
     if (m_pCurrentTrack) {
-        disconnect(m_pCurrentTrack.data(), SIGNAL(waveformSummaryUpdated()),this, SLOT(slotWaveformSummaryUpdated()));
-        disconnect(m_pCurrentTrack.data(), SIGNAL(analyserProgress(int)),this, SLOT(slotAnalyzerProgress(int)));
+        disconnect(m_pCurrentTrack.data(), &TrackInfoObject::waveformSummaryUpdated,this, &WOverview::slotWaveformSummaryUpdated);
+        disconnect(m_pCurrentTrack.data(), &TrackInfoObject::analyserProgress,this, &WOverview::slotAnalyserProgress);
     }
     if (m_pWaveformSourceImage) {
         delete m_pWaveformSourceImage;
@@ -173,13 +170,11 @@ void WOverview::slotLoadNewTrack(TrackPointer pTrack) {
     m_waveformPeak = -1.0;
     m_pixmapDone = false;
     m_trackLoaded = false;
-
     if (pTrack) {
         m_pCurrentTrack = pTrack;
         m_pWaveform = pTrack->getWaveformSummary();
-
-        connect(pTrack.data(), SIGNAL(waveformSummaryUpdated()),this, SLOT(slotWaveformSummaryUpdated()));
-        connect(pTrack.data(), SIGNAL(analyserProgress(int)),this, SLOT(slotAnalyserProgress(int)));
+        connect(pTrack.data(), &TrackInfoObject::waveformSummaryUpdated,this, &WOverview::slotWaveformSummaryUpdated);
+        connect(pTrack.data(), &TrackInfoObject::analyserProgress,this, &WOverview::slotAnalyserProgress);
         slotAnalyserProgress(pTrack->getAnalyserProgress());
     }
 }
@@ -211,17 +206,14 @@ void WOverview::onEndOfTrackChange(double v) {
     m_endOfTrack = v > 0.5;
     update();
 }
-
 void WOverview::onMarkChanged(double /*v*/) {
     //qDebug() << "WOverview::onMarkChanged()" << v;
     update();
 }
-
 void WOverview::onMarkRangeChange(double /*v*/) {
     //qDebug() << "WOverview::onMarkRangeChange()" << v;
     update();
 }
-
 void WOverview::mouseMoveEvent(QMouseEvent* e) {
     m_iPos = math_clamp(e->x(), 0, width() - 1);
     //qDebug() << "WOverview::mouseMoveEvent" << e->pos() << m_iPos;
@@ -231,20 +223,16 @@ void WOverview::mouseReleaseEvent(QMouseEvent* e) {
     mouseMoveEvent(e);
     double dValue = positionToValue(m_iPos);
     //qDebug() << "WOverview::mouseReleaseEvent" << e->pos() << m_iPos << ">>" << dValue;
-
     setControlParameterUp(dValue);
     m_bDrag = false;
 }
-
 void WOverview::mousePressEvent(QMouseEvent* e) {
     //qDebug() << "WOverview::mousePressEvent" << e->pos();
     mouseMoveEvent(e);
     m_bDrag = true;
 }
-
 void WOverview::paintEvent(QPaintEvent *) {
     ScopedTimer t("WOverview::paintEvent");
-
     QPainter painter(this);
     // Fill with transparent pixels
     if (!m_backgroundPixmap.isNull()) {painter.drawPixmap(rect(), m_backgroundPixmap);}
@@ -284,14 +272,11 @@ void WOverview::paintEvent(QPaintEvent *) {
 
             painter.drawImage(rect(), m_waveformImageScaled);
         }
-
         if (m_dAnalyserProgress != 1.0) {
             // Paint analyzer Progress
             painter.setPen(QPen(m_signalColors.getAxesColor(), 3));
-            painter.drawLine(m_dAnalyserProgress * width(), height()/2,
-                             width(), height()/2);
+            painter.drawLine(m_dAnalyserProgress * width(), height()/2,width(), height()/2);
         }
-
         if (m_dAnalyserProgress <= 0.5) { // remove text after progress by wf is recognizable
             if (m_trackLoaded) {
                 //: Text on waveform overview when file is cached from source
@@ -421,16 +406,13 @@ void WOverview::resizeEvent(QResizeEvent *) {
     // sets. This is to give VC access to the pre-roll area.
     const double kMaxPlayposRange = 1.0;
     const double kMinPlayposRange = 0.0;
-
     // Values of zero and one in normalized space.
     const double zero = (0.0 - kMinPlayposRange) / (kMaxPlayposRange - kMinPlayposRange);
     const double one = (1.0 - kMinPlayposRange) / (kMaxPlayposRange - kMinPlayposRange);
-
     // These coeficients convert between widget space and normalized value
     // space.
     m_a = (width() - 1) / (one - zero);
     m_b = zero * m_a;
-
     m_waveformImageScaled = QImage();
     m_diffGain = 0;
 }
@@ -444,8 +426,7 @@ void WOverview::dragEnterEvent(QDragEnterEvent* event) {
 }
 void WOverview::dropEvent(QDropEvent* event) {
     if (DragAndDropHelper::allowLoadToPlayer(m_group, m_playControl->get() > 0.0,m_pConfig)) {
-        QList<QFileInfo> files = DragAndDropHelper::dropEventFiles(
-                *event->mimeData(), m_group, true, false);
+        auto files = DragAndDropHelper::dropEventFiles(*event->mimeData(), m_group, true, false);
         if (!files.isEmpty()) {
             event->accept();
             emit(trackDropped(files.at(0).absoluteFilePath(), m_group));

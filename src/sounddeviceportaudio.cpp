@@ -208,7 +208,6 @@ Result SoundDevicePortAudio::open(bool isClkRefDevice, int syncBuffers) {
             m_inputFifo = new FIFO<CSAMPLE>(m_inputParams.channelCount * m_framesPerBuffer * 2);
         }
     }
-
     PaStream *pStream;
     // Try open device using iChannelMax
     err = Pa_OpenStream(&pStream,
@@ -224,18 +223,15 @@ Result SoundDevicePortAudio::open(bool isClkRefDevice, int syncBuffers) {
         qWarning() << "Error opening stream:" << Pa_GetErrorText(err);
         m_lastError = QString::fromUtf8(Pa_GetErrorText(err));
         return ERR;
-    } else {
-        qDebug() << "Opened PortAudio stream successfully... starting";
-    }
+    } else {qDebug() << "Opened PortAudio stream successfully... starting";}
 #ifdef __LINUX__
     //Attempt to dynamically load and resolve stuff in the PortAudio library
     //in order to enable RT priority with ALSA.
-    QLibrary portaudio("libportaudio.so.2");
+    QLibrary portaudio ("libportaudio.so.2");
     if (!portaudio.load()) qWarning() << "Failed to dynamically load PortAudio library";
     else qDebug() << "Dynamically loaded PortAudio library";
-    EnableAlsaRT enableRealtime = (EnableAlsaRT) portaudio.resolve("PaAlsa_EnableRealtimeScheduling");
+    auto enableRealtime = (EnableAlsaRT) portaudio.resolve("PaAlsa_EnableRealtimeScheduling");
     if (enableRealtime) {enableRealtime(pStream, 1);}
-    portaudio.unload();
 #endif
     // Start stream
     err = Pa_StartStream(pStream);

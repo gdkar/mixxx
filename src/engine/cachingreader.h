@@ -1,9 +1,7 @@
 // cachingreader.h
 // Created 7/9/2009 by RJ Ryan (rryan@mit.edu)
 
-#ifndef CACHINGREADER_H
-#define CACHINGREADER_H
-
+_Pragma("once")
 #include <QtDebug>
 #include <QList>
 #include <QVector>
@@ -23,10 +21,10 @@
 // the reader work thread.
 typedef struct Hint {
     // The sample to ensure is present in memory.
-    int sample;
+    SINT sample;
     // If a range of samples should be present, use length to indicate that the
     // range (sample, sample+length) should be present in memory.
-    int length;
+    SINT length;
     // Currently unused -- but in the future could be used to prioritize certain
     // hints over others. A priority of 1 is the highest priority and should be
     // used for samples that will be read imminently. Hints for samples that
@@ -68,108 +66,76 @@ typedef QVarLengthArray<Hint, 512> HintVector;
 // allocateChunkExpireLRU).
 class CachingReader : public QObject {
     Q_OBJECT
-
   public:
     // Construct a CachingReader with the given group.
-    CachingReader(QString group,
-                  ConfigObject<ConfigValue>* _config, QObject *pParent=nullptr);
+    CachingReader(QString group, ConfigObject<ConfigValue>* _config, QObject *pParent=nullptr);
     virtual ~CachingReader();
-
     virtual void process();
-
     // Read num_samples from the SoundSource starting with sample into
     // buffer. Returns the total number of samples actually written to buffer.
-    virtual int read(int sample, int num_samples, CSAMPLE* buffer);
-
+    virtual SINT read(SINT sample, SINT num_samples, CSAMPLE* buffer);
     // Issue a list of hints, but check whether any of the hints request a chunk
     // that is not in the cache. If any hints do request a chunk not in cache,
     // then wake the reader so that it can process them. Must only be called
     // from the engine callback.
-    virtual void hintAndMaybeWake(const HintVector& hintList);
+    virtual void hintAndMaybeWake(HintVector& hintList);
 
     // Request that the CachingReader load a new track. These requests are
     // processed in the work thread, so the reader must be woken up via wake()
     // for this to take effect.
     virtual void newTrack(TrackPointer pTrack);
-
-    void setScheduler(EngineWorkerScheduler* pScheduler) {
-        m_pWorker->setScheduler(pScheduler);
-    }
-
-    const static int maximumChunksInMemory;
-
+    void setScheduler(EngineWorkerScheduler* pScheduler) {m_pWorker->setScheduler(pScheduler);}
+    const static SINT maximumChunksInMemory;
   signals:
     // Emitted once a new track is loaded and ready to be read from.
     void trackLoading();
-    void trackLoaded(TrackPointer pTrack, int iSampleRate, int iNumSamples);
+    void trackLoaded(TrackPointer pTrack, SINT iSampleRate, SINT iNumSamples);
     void trackLoadFailed(TrackPointer pTrack, QString reason);
-
   private:
     // Removes a chunk from the LRU list
     static Chunk* removeFromLRUList(Chunk* chunk, Chunk* head);
     // Inserts a chunk into the LRU list
     static Chunk* insertIntoLRUList(Chunk* chunk, Chunk* head);
-
     // Given a sample number, return the chunk number corresponding to it.
-    inline static int chunkForFrame(int frame_number) {
+    inline static SINT chunkForFrame(SINT frame_number) {
         return frame_number / CachingReaderWorker::kFramesPerChunk;
     }
-
     const ConfigObject<ConfigValue>* m_pConfig;
-
     // Thread-safe FIFOs for communication between the engine callback and
     // reader thread.
     FIFO<ChunkReadRequest> m_chunkReadRequestFIFO;
     FIFO<ReaderStatusUpdate> m_readerStatusFIFO;
-
     // Looks for the provided chunk number in the index of in-memory chunks and
     // returns it if it is present. If not, returns nullptr. If it is present then
     // freshenChunk is called on the chunk to make it the MRU chunk.
-    Chunk* lookupChunkAndFreshen(int chunk_number);
-
+    Chunk* lookupChunkAndFreshen(SINT chunk_number);
     // Looks for the provided chunk number in the index of in-memory chunks and
     // returns it if it is present. If not, returns nullptr.
-    Chunk* lookupChunk(int chunk_number);
-
+    Chunk* lookupChunk(SINT chunk_number);
     // Moves the provided chunk to the MRU position.
     void freshenChunk(Chunk* pChunk);
-
     // Returns a Chunk to the free list
     void freeChunk(Chunk* pChunk);
-
     // Returns all allocated chunks to the free list
     void freeAllChunks();
-
     // Gets a chunk from the free list. Returns nullptr if none available.
-    Chunk* allocateChunk(int chunk);
-
+    Chunk* allocateChunk(SINT chunk);
     // Gets a chunk from the free list, frees the LRU Chunk if none available.
-    Chunk* allocateChunkExpireLRU(int chunk);
-
+    Chunk* allocateChunkExpireLRU(SINT chunk);
     ReaderStatus m_readerStatus;
-
     // Keeps track of all Chunks we've allocated.
     QVector<Chunk*> m_chunks;
-
     // List of free chunks. Linked list so that we have constant time insertions
     // and deletions. Iteration is not necessary.
     QLinkedList<Chunk*> m_freeChunks;
-
     // Keeps track of what Chunks we've allocated and indexes them based on what
     // chunk number they are allocated to.
-    QHash<int, Chunk*> m_allocatedChunks;
-
+    QHash<SINT , Chunk*> m_allocatedChunks;
     // The linked list of recently-used chunks.
     Chunk* m_mruChunk;
     Chunk* m_lruChunk;
-
     // The raw memory buffer which is divided up into chunks.
     SampleBuffer m_sampleBuffer;
-
-    int m_iTrackNumFramesCallbackSafe;
-
+    SINT m_iTrackNumFramesCallbackSafe;
     CachingReaderWorker* m_pWorker;
 };
-
-
-#endif /* CACHINGREADER_H */
