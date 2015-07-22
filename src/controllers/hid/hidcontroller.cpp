@@ -45,11 +45,8 @@ void HidReader::run() {
     }
     delete [] data;
 }
-
 QString safeDecodeWideString(wchar_t* pStr, size_t max_length) {
-    if (pStr == nullptr) {
-        return QString();
-    }
+    if (pStr == nullptr) {return QString();}
     // pStr is untrusted since it might be non-null terminated.
     wchar_t* tmp = new wchar_t[max_length+1];
     // wcsnlen is not available on all platforms, so just make a temporary
@@ -60,7 +57,6 @@ QString safeDecodeWideString(wchar_t* pStr, size_t max_length) {
     delete [] tmp;
     return result;
 }
-
 HidController::HidController(const hid_device_info deviceInfo)
         : m_pHidDevice(nullptr) {
     // Copy required variables from deviceInfo, which will be freed after
@@ -91,23 +87,18 @@ HidController::HidController(const hid_device_info deviceInfo)
         wcsncpy(hid_serial_raw, deviceInfo.serial_number, serial_max_length);
         hid_serial_raw[serial_max_length] = 0;
     }
-
     hid_serial = safeDecodeWideString(deviceInfo.serial_number, 512);
     hid_manufacturer = safeDecodeWideString(deviceInfo.manufacturer_string, 512);
     hid_product = safeDecodeWideString(deviceInfo.product_string, 512);
-
     guessDeviceCategory();
-
     // Set the Unique Identifier to the serial_number
     m_sUID = hid_serial;
-
     //Note: We include the last 4 digits of the serial number and the
     // interface number to allow the user (and Mixxx!) to keep track of
     // which is which
     if (hid_interface_number < 0) {
         setDeviceName(
-            QString("%1 %2").arg(hid_product)
-            .arg(hid_serial.right(4)));
+            QString("%1 %2").arg(hid_product).arg(hid_serial.right(4)));
     } else {
         setDeviceName(
             QString("%1 %2_%3").arg(hid_product)
@@ -115,46 +106,30 @@ HidController::HidController(const hid_device_info deviceInfo)
             .arg(QString::number(hid_interface_number)));
         m_sUID.append(QString::number(hid_interface_number));
     }
-
     // All HID devices are full-duplex
     setInputDevice(true);
     setOutputDevice(true);
     m_pReader = nullptr;
 }
-
 HidController::~HidController() {
     close();
     delete [] hid_path;
     delete [] hid_serial_raw;
 }
-
-QString HidController::presetExtension() {
-    return HID_PRESET_EXTENSION;
-}
-
-void HidController::visit(const MidiControllerPreset* preset) {
-    Q_UNUSED(preset);
-    // TODO(XXX): throw a hissy fit.
-    qDebug() << "ERROR: Attempting to load a MidiControllerPreset to an HidController!";
-}
-
+QString HidController::presetExtension() {return HID_PRESET_EXTENSION;}
 void HidController::visit(const HidControllerPreset* preset) {
     m_preset = *preset;
     // Emit presetLoaded with a clone of the preset.
     emit(presetLoaded(getPreset()));
 }
-
 bool HidController::savePreset(const QString fileName) const {
     HidControllerPresetFileHandler handler;
     return handler.save(m_preset, getName(), fileName);
 }
-
 bool HidController::matchPreset(const PresetInfo& preset) {
-    const QList< QHash<QString,QString> > products = preset.getProducts();
-    QHash <QString, QString> product;
-    foreach (product, products) {
-        if (matchProductInfo(product))
-            return true;
+    auto products = preset.getProducts();
+    for(auto product: products) {
+        if (matchProductInfo(product)) return true;
     }
     return false;
 }

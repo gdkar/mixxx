@@ -12,7 +12,6 @@
 
 #include "controllers/controller.h"
 #include "controllers/defs_controllers.h"
-
 Controller::Controller()
         : QObject(),
           m_pEngine(nullptr),
@@ -31,23 +30,16 @@ Controller::~Controller() {
     // Don't close the device here. Sub-classes should close the device in their
     // destructors.
 }
-
-void Controller::startEngine()
-{
-    if (debugging()) {
-        qDebug() << "  Starting engine";
-    }
+void Controller::startEngine(){
+    if (debugging()) {qDebug() << "  Starting engine";}
     if (m_pEngine != nullptr) {
         qWarning() << "Controller: Engine already exists! Restarting:";
         stopEngine();
     }
     m_pEngine = new ControllerEngine(this);
 }
-
 void Controller::stopEngine() {
-    if (debugging()) {
-        qDebug() << "  Shutting down engine";
-    }
+    if (debugging()) {qDebug() << "  Shutting down engine";}
     if (m_pEngine == nullptr) {
         qWarning() << "Controller::stopEngine(): No engine exists!";
         return;
@@ -56,49 +48,37 @@ void Controller::stopEngine() {
     delete m_pEngine;
     m_pEngine = nullptr;
 }
-
+void Controller::accept(ControllerVisitor *visitor){if(visitor){visitor->visit(this);}}
 void Controller::applyPreset(QList<QString> scriptPaths) {
     qDebug() << "Applying controller preset...";
-
     const ControllerPreset* pPreset = preset();
-
     // Load the script code into the engine
     if (m_pEngine == nullptr) {
         qWarning() << "Controller::applyPreset(): No engine exists!";
         return;
     }
-
     if (pPreset->scripts.isEmpty()) {
         qWarning() << "No script functions available! Did the XML file(s) load successfully? See above for any errors.";
         return;
     }
-
     m_pEngine->loadScriptFiles(scriptPaths, pPreset->scripts);
     m_pEngine->initializeScripts(pPreset->scripts);
 }
-
 void Controller::startLearning() {
     qDebug() << m_sDeviceName << "started learning";
     m_bLearning = true;
 }
-
 void Controller::stopLearning() {
     //qDebug() << m_sDeviceName << "stopped learning.";
     m_bLearning = false;
-
 }
-
 void Controller::send(QList<int> data, unsigned int length) {
     // If you change this implementation, also change it in HidController (That
     // function is required due to HID devices having report IDs)
-
     QByteArray msg(length, 0);
-    for (unsigned int i = 0; i < length; ++i) {
-        msg[i] = data.at(i);
-    }
+    for (unsigned int i = 0; i < length; ++i) {msg[i] = data.at(i);}
     send(msg);
 }
-
 void Controller::receive(const QByteArray data) {
     if (m_pEngine == nullptr) {
         //qWarning() << "Controller::receive called with no active engine!";
@@ -106,7 +86,6 @@ void Controller::receive(const QByteArray data) {
         //  queued signals flush out
         return;
     }
-
     int length = data.size();
     if (debugging()) {
         // Formatted packet display
@@ -122,12 +101,12 @@ void Controller::receive(const QByteArray data) {
         qDebug() << message;
     }
 
-    foreach (QString function, m_pEngine->getScriptFunctionPrefixes()) {
+    for(auto &function: m_pEngine->getScriptFunctionPrefixes()) {
         if (function == "") {
             continue;
         }
         function.append(".incomingData");
-        QJSValue incomingData = m_pEngine->resolveFunction(function, true);
+        auto incomingData = m_pEngine->resolveFunction(function, true);
         if (!m_pEngine->execute(incomingData, data)) {
             qWarning() << "Controller: Invalid script function" << function;
         }

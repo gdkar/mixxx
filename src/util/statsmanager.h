@@ -1,6 +1,4 @@
-#ifndef STATSMANAGER_H
-#define STATSMANAGER_H
-
+_Pragma("once")
 #include <QMap>
 #include <QObject>
 #include <QString>
@@ -9,7 +7,10 @@
 #include <QtDebug>
 #include <QMutex>
 #include <QWaitCondition>
+#include <QSemaphore>
 #include <QThreadStorage>
+#include <QSharedPointer>
+#include <QLinkedList>
 #include <QList>
 
 #include "util/fifo.h"
@@ -31,38 +32,30 @@ class StatsManager : public QThread, public Singleton<StatsManager> {
   public:
     explicit StatsManager();
     virtual ~StatsManager();
-
     // Returns true if write succeeds.
     bool maybeWriteReport(const StatReport& report);
-
     static bool s_bStatsManagerEnabled;
     // Tell the StatsManager to emit statUpdated for every stat that exists.
     void emitAllStats() {m_emitAllStats = 1;}
-    void updateStats() {m_statsPipeCondition.wakeAll();}
+    void updateStats() {m_statsSem.release();}
   signals:
     void statUpdated(const Stat& stat);
-
   protected:
     virtual void run();
-
   private:
     void processIncomingStatReports();
-    StatsPipe* getStatsPipeForThread();
+    QSharedPointer<StatsPipe> getStatsPipeForThread();
     void onStatsPipeDestroyed(StatsPipe* pPipe);
     void writeTimeline(const QString& filename);
-    std::atomic<bool> m_emitAllStats;
-    std::atomic<bool> m_quit;
-    QMap<QString, Stat> m_stats;
-    QMap<QString, Stat> m_baseStats;
-    QMap<QString, Stat> m_experimentStats;
-    QList<Event> m_events;
-
-    QWaitCondition m_statsPipeCondition;
+    std::atomic<bool>                          m_emitAllStats;
+    std::atomic<bool>                          m_quit;
+    QMap<QString, Stat>                        m_stats;
+    QMap<QString, Stat>                        m_baseStats;
+    QMap<QString, Stat>                        m_experimentStats;
+    QList<Event>                               m_events;
+    QSemaphore                                 m_statsSem;
     QMutex m_statsPipeLock;
-    QList<StatsPipe*> m_statsPipes;
-    QThreadStorage<StatsPipe*> m_threadStatsPipes;
+    QLinkedList<QWeakPointer<StatsPipe > >     m_statsPipes;
+    QThreadStorage<QSharedPointer<StatsPipe> > m_threadStatsPipes;
     friend class StatsPipe;
 };
-
-
-#endif /* STATSMANAGER_H */

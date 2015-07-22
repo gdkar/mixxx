@@ -21,7 +21,7 @@
 #include <QMimeData>
 
 #include "controlobject.h"
-#include "controlobjectthread.h"
+#include "controlobjectslave.h"
 #include "woverview.h"
 #include "wskincolor.h"
 #include "widget/controlwidgetconnection.h"
@@ -50,10 +50,10 @@ WOverview::WOverview(const char *pGroup, ConfigObject<ConfigValue>* pConfig, QWi
         m_dAnalyserProgress(-1.0),
         m_bAnalyserFinalizing(false),
         m_trackLoaded(false) {
-    m_endOfTrackControl = new ControlObjectThread(m_group, "end_of_track");
-    connect(m_endOfTrackControl, SIGNAL(valueChanged(double)),this, SLOT(onEndOfTrackChange(double)));
-    m_trackSamplesControl = new ControlObjectThread(m_group, "track_samples");
-    m_playControl = new ControlObjectThread(m_group, "play");
+    m_endOfTrackControl = new ControlObjectSlave(m_group, "end_of_track",this);
+    connect(m_endOfTrackControl, &ControlObjectSlave::valueChanged,this, &WOverview::onEndOfTrackChange);
+    m_trackSamplesControl = new ControlObjectSlave(m_group, "track_samples",this);
+    m_playControl = new ControlObjectSlave(m_group, "play",this);
     setAcceptDrops(true);
 }
 WOverview::~WOverview() {
@@ -85,7 +85,7 @@ void WOverview::setup(QDomNode node, const SkinContext& context) {
     for (int i = 0; i < m_marks.size(); ++i) {
         WaveformMark& mark = m_marks[i];
         if (mark.m_pointControl) {
-            connect(mark.m_pointControl, SIGNAL(valueChanged(double)),this, SLOT(onMarkChanged(double)));
+            connect(mark.m_pointControl, &ControlObjectSlave::valueChanged,this, &WOverview::onMarkChanged);
         }
     }
     QDomNode child = node.firstChild();
@@ -95,13 +95,13 @@ void WOverview::setup(QDomNode node, const SkinContext& context) {
             WaveformMarkRange& markRange = m_markRanges.back();
             markRange.setup(m_group, child, context, m_signalColors);
             if (markRange.m_markEnabledControl) {
-                connect(markRange.m_markEnabledControl, SIGNAL(valueChanged(double)),this, SLOT(onMarkRangeChange(double)));
+                connect(markRange.m_markEnabledControl, &ControlObjectSlave::valueChanged,this, &WOverview::onMarkRangeChange);
             }
             if (markRange.m_markStartPointControl) {
-                connect(markRange.m_markStartPointControl, SIGNAL(valueChanged(double)),this, SLOT(onMarkRangeChange(double)));
+                connect(markRange.m_markStartPointControl, &ControlObjectSlave::valueChanged,this, &WOverview::onMarkRangeChange);
             }
             if (markRange.m_markEndPointControl) {
-                connect(markRange.m_markEndPointControl, SIGNAL(valueChanged(double)),this, SLOT(onMarkRangeChange(double)));
+                connect(markRange.m_markEndPointControl, &ControlObjectSlave::valueChanged,this, &WOverview::onMarkRangeChange);
             }
         }
         child = child.nextSibling();
@@ -145,7 +145,7 @@ void WOverview::slotWaveformSummaryUpdated() {
         if (drawNextPixmapPart()) {update();}
     }
 }
-void WOverview::slotAnalyserProgress(float progress) {
+void WOverview::slotAnalyserProgress(double progress) {
     if (!m_pCurrentTrack) {return;}
     double analyserProgress = progress / m_pCurrentTrack->getDuration();
     bool finalizing = progress  >0.9f;
@@ -161,8 +161,8 @@ void WOverview::slotAnalyserProgress(float progress) {
 void WOverview::slotLoadNewTrack(TrackPointer pTrack) {
     // qDebug() << "WOverview::slotLoadNewTrack(TrackPointer pTrack)";
     if (m_pCurrentTrack) {
-        disconnect(m_pCurrentTrack.data(), SIGNAL(waveformSummaryUpdated()),this, SLOT(slotWaveformSummaryUpdated()));
-        disconnect(m_pCurrentTrack.data(), SIGNAL(analyserProgress(int)),this, SLOT(slotAnalyzerProgress(int)));
+        disconnect(m_pCurrentTrack.data(), &TrackInfoObject::waveformSummaryUpdated,this, &WOverview::slotWaveformSummaryUpdated);
+        disconnect(m_pCurrentTrack.data(), &TrackInfoObject::analyserProgress,this, &WOverview::slotAnalyserProgress);
     }
     if (m_pWaveformSourceImage) {
         delete m_pWaveformSourceImage;
@@ -178,8 +178,8 @@ void WOverview::slotLoadNewTrack(TrackPointer pTrack) {
         m_pCurrentTrack = pTrack;
         m_pWaveform = pTrack->getWaveformSummary();
 
-        connect(pTrack.data(), SIGNAL(waveformSummaryUpdated()),this, SLOT(slotWaveformSummaryUpdated()));
-        connect(pTrack.data(), SIGNAL(analyserProgress(int)),this, SLOT(slotAnalyserProgress(int)));
+        connect(pTrack.data(), &TrackInfoObject::waveformSummaryUpdated,this, &WOverview::slotWaveformSummaryUpdated);
+        connect(pTrack.data(), &TrackInfoObject::analyserProgress,this, &WOverview::slotAnalyserProgress);
         slotAnalyserProgress(pTrack->getAnalyserProgress());
     }
 }
@@ -194,8 +194,8 @@ void WOverview::slotUnloadTrack(TrackPointer pTrack) {
     // of a track that was already replaced
     //qDebug() << "WOverview::slotUnloadTrack(TrackPointer pTrack)";
     if (pTrack != nullptr && pTrack == m_pCurrentTrack) {
-        disconnect(m_pCurrentTrack.data(), SIGNAL(waveformSummaryUpdated()),this, SLOT(slotWaveformSummaryUpdated()));
-        disconnect(m_pCurrentTrack.data(), SIGNAL(analyserProgress(int)),this, SLOT(slotAnalyserProgress(int)));
+        disconnect(m_pCurrentTrack.data(), &TrackInfoObject::waveformSummaryUpdated,this, &WOverview::slotWaveformSummaryUpdated);
+        disconnect(m_pCurrentTrack.data(), &TrackInfoObject::analyserProgress,this, &WOverview::slotAnalyserProgress);
         m_pCurrentTrack.clear();
         m_pWaveform.clear();
         m_actualCompletion = 0;
@@ -205,23 +205,19 @@ void WOverview::slotUnloadTrack(TrackPointer pTrack) {
         update();
     }
 }
-
-void WOverview::onEndOfTrackChange(double v) {
+void WOverview::onEndOfTrackChange(double v,QObject*) {
     //qDebug() << "WOverview::onEndOfTrackChange()" << v;
     m_endOfTrack = v > 0.5;
     update();
 }
-
-void WOverview::onMarkChanged(double /*v*/) {
+void WOverview::onMarkChanged(double /*v*/,QObject*) {
     //qDebug() << "WOverview::onMarkChanged()" << v;
     update();
 }
-
-void WOverview::onMarkRangeChange(double /*v*/) {
+void WOverview::onMarkRangeChange(double /*v*/,QObject*) {
     //qDebug() << "WOverview::onMarkRangeChange()" << v;
     update();
 }
-
 void WOverview::mouseMoveEvent(QMouseEvent* e) {
     m_iPos = math_clamp(e->x(), 0, width() - 1);
     //qDebug() << "WOverview::mouseMoveEvent" << e->pos() << m_iPos;
@@ -231,20 +227,16 @@ void WOverview::mouseReleaseEvent(QMouseEvent* e) {
     mouseMoveEvent(e);
     double dValue = positionToValue(m_iPos);
     //qDebug() << "WOverview::mouseReleaseEvent" << e->pos() << m_iPos << ">>" << dValue;
-
     setControlParameterUp(dValue);
     m_bDrag = false;
 }
-
 void WOverview::mousePressEvent(QMouseEvent* e) {
     //qDebug() << "WOverview::mousePressEvent" << e->pos();
     mouseMoveEvent(e);
     m_bDrag = true;
 }
-
 void WOverview::paintEvent(QPaintEvent *) {
     ScopedTimer t("WOverview::paintEvent");
-
     QPainter painter(this);
     // Fill with transparent pixels
     if (!m_backgroundPixmap.isNull()) {painter.drawPixmap(rect(), m_backgroundPixmap);}
@@ -284,14 +276,12 @@ void WOverview::paintEvent(QPaintEvent *) {
 
             painter.drawImage(rect(), m_waveformImageScaled);
         }
-
         if (m_dAnalyserProgress != 1.0) {
             // Paint analyzer Progress
             painter.setPen(QPen(m_signalColors.getAxesColor(), 3));
             painter.drawLine(m_dAnalyserProgress * width(), height()/2,
                              width(), height()/2);
         }
-
         if (m_dAnalyserProgress <= 0.5) { // remove text after progress by wf is recognizable
             if (m_trackLoaded) {
                 //: Text on waveform overview when file is cached from source
@@ -305,7 +295,6 @@ void WOverview::paintEvent(QPaintEvent *) {
             paintText(tr("Finalizing .."), &painter);
         }
     }
-
     double trackSamples = m_trackSamplesControl->get();
     if (trackSamples > 0) {
         const float offset = 1.0f;
@@ -421,16 +410,13 @@ void WOverview::resizeEvent(QResizeEvent *) {
     // sets. This is to give VC access to the pre-roll area.
     const double kMaxPlayposRange = 1.0;
     const double kMinPlayposRange = 0.0;
-
     // Values of zero and one in normalized space.
     const double zero = (0.0 - kMinPlayposRange) / (kMaxPlayposRange - kMinPlayposRange);
     const double one = (1.0 - kMinPlayposRange) / (kMaxPlayposRange - kMinPlayposRange);
-
     // These coeficients convert between widget space and normalized value
     // space.
     m_a = (width() - 1) / (one - zero);
     m_b = zero * m_a;
-
     m_waveformImageScaled = QImage();
     m_diffGain = 0;
 }

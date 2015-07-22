@@ -9,9 +9,7 @@
 // Copyright: See COPYING file that comes with this distribution
 //
 //
-#ifndef WOVERVIEW_H
-#define WOVERVIEW_H
-
+_Pragma("once")
 #include <QPaintEvent>
 #include <QMouseEvent>
 #include <QPixmap>
@@ -43,10 +41,8 @@ class WOverview : public WWidget {
     void slotLoadNewTrack(TrackPointer pTrack);
     void slotTrackLoaded(TrackPointer pTrack);
     void slotUnloadTrack(TrackPointer pTrack);
-
   signals:
     void trackDropped(QString filename, QString group);
-
   protected:
     void mouseMoveEvent(QMouseEvent *e);
     void mouseReleaseEvent(QMouseEvent *e);
@@ -65,11 +61,11 @@ class WOverview : public WWidget {
     float m_waveformPeak;
     int m_diffGain;
   private slots:
-    void onEndOfTrackChange(double v);
-    void onMarkChanged(double v);
-    void onMarkRangeChange(double v);
+    void onEndOfTrackChange(double v,QObject*o=nullptr);
+    void onMarkChanged(double v,QObject*o=nullptr);
+    void onMarkRangeChange(double v,QObject*o=nullptr);
     void slotWaveformSummaryUpdated();
-    void slotAnalyserProgress(float progress);
+    void slotAnalyserProgress(double progress);
   private:
     // Append the waveform overview pixmap according to available data in waveform
     virtual bool drawNextPixmapPart() = 0;
@@ -78,10 +74,10 @@ class WOverview : public WWidget {
     inline double positionToValue(int position) const {return (static_cast<double>(position) + m_b) / m_a;}
     const QString m_group;
     ConfigObject<ConfigValue>* m_pConfig;
-    ControlObjectThread* m_endOfTrackControl;
+    ControlObjectSlave* m_endOfTrackControl;
     double m_endOfTrack;
-    ControlObjectThread* m_trackSamplesControl;
-    ControlObjectThread* m_playControl;
+    ControlObjectSlave* m_trackSamplesControl;
+    ControlObjectSlave* m_playControl;
 
     // Current active track
     TrackPointer m_pCurrentTrack;
@@ -108,5 +104,3 @@ class WOverview : public WWidget {
     bool m_bAnalyserFinalizing;
     bool m_trackLoaded;
 };
-
-#endif

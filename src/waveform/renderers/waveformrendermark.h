@@ -1,6 +1,4 @@
-#ifndef WAVEFORMRENDERMARK_H
-#define WAVEFORMRENDERMARK_H
-
+_Pragma("once")
 #include "waveform/renderers/waveformrendererabstract.h"
 #include "waveformmarkset.h"
 #include "util.h"
@@ -19,5 +17,3 @@ class WaveformRenderMark : public WaveformRendererAbstract {
     WaveformMarkSet m_marks;
     DISALLOW_COPY_AND_ASSIGN(WaveformRenderMark);
 };
-
-#endif

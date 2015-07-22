@@ -1,6 +1,4 @@
-#ifndef WAVEFORMMARKSET_H
-#define WAVEFORMMARKSET_H
-
+_Pragma("once")
 #include <QList>
 
 #include "waveformmark.h"
@@ -28,5 +26,3 @@ class WaveformMarkSet {
     QList<WaveformMark> m_marks;
     DISALLOW_COPY_AND_ASSIGN(WaveformMarkSet);
 };
-
-#endif // WAVEFORMMARKSET_H

@@ -5,9 +5,7 @@
 * @brief The controller mapping learning wizard
 *
 */
-#ifndef DLGCONTROLLERLEARNING_H
-#define DLGCONTROLLERLEARNING_H
-
+_Pragma("once")
 #include <QDialog>
 #include <QList>
 #include <QString>
@@ -24,71 +22,51 @@
 #include "controllers/controller.h"
 #include "controllers/controllervisitor.h"
 #include "configobject.h"
-
 class ControllerPreset;
-
 //#define CONTROLLERLESSTESTING
-
-class DlgControllerLearning : public QDialog,
-                              public ControllerVisitor,
-                              public Ui::DlgControllerLearning {
+class DlgControllerLearning : public QDialog, public ControllerVisitor, public Ui::DlgControllerLearning {
     Q_OBJECT
-
   public:
     DlgControllerLearning(QWidget *parent, Controller *controller);
     virtual ~DlgControllerLearning();
-
-    void visit(MidiController* pController);
-    void visit(HidController* pController);
-    void visit(BulkController* pController);
-
+    virtual void visit(Controller* pController);
   signals:
     void learnTemporaryInputMappings(const MidiInputMappings& mappings);
     void clearTemporaryInputMappings();
     void commitTemporaryInputMappings();
-
     // Used to notify DlgPrefController that we have learned some new input
     // mappings.
     void inputMappingsLearned(const MidiInputMappings& mappings);
-
     void startLearning();
     void stopLearning();
     void listenForClicks();
     void stopListeningForClicks();
-
   public slots:
     // Triggered when the user picks a control from the menu.
-    void controlPicked(ConfigKey control);
+    virtual void controlPicked(ConfigKey control);
     // Triggered when user clicks a control from the GUI
-    void controlClicked(ControlObject* pControl);
-    void comboboxIndexChanged(int index);
-
-    void slotMessageReceived(unsigned char status,
-                             unsigned char control,
-                             unsigned char value);
-
-    void slotCancelLearn();
-    void slotChooseControlPressed();
-    void slotTimerExpired();
-    void slotFirstMessageTimeout();
-    void slotRetry();
-    void slotStartLearningPressed();
-    void slotMidiOptionsChanged();
-
+    virtual void controlClicked(ControlObject* pControl);
+    virtual void comboboxIndexChanged(int index);
+    virtual void slotMessageReceived(unsigned char status, unsigned char control, unsigned char value);
+    virtual void slotCancelLearn();
+    virtual void slotChooseControlPressed();
+    virtual void slotTimerExpired();
+    virtual void slotFirstMessageTimeout();
+    virtual void slotRetry();
+    virtual void slotStartLearningPressed();
+    virtual void slotMidiOptionsChanged();
   private slots:
-    void showControlMenu();
+    virtual void showControlMenu();
 #ifdef CONTROLLERLESSTESTING
     void DEBUGFakeMidiMessage();
     void DEBUGFakeMidiMessage2();
 #endif
-
   private:
-    void loadControl(const ConfigKey& key, QString title, QString description);
-    void startListening();
-    void commitMapping();
-    void resetWizard(bool keepCurrentControl = false);
+    virtual void loadControl(const ConfigKey& key, QString title, QString description);
+    virtual void startListening();
+    virtual void commitMapping();
+    virtual void resetWizard(bool keepCurrentControl = false);
     void populateComboBox();
-
     Controller* m_pController;
     MidiController* m_pMidiController;
     ControlPickerMenu m_controlPickerMenu;
@@ -99,5 +77,3 @@ class DlgControllerLearning : public QDialog,
     QList<QPair<MidiKey, unsigned char> > m_messages;
     MidiInputMappings m_mappings;
 };
-
-#endif

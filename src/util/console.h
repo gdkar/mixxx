@@ -1,7 +1,4 @@
-
-#ifndef CONSOLE_H_
-#define CONSOLE_H_
-
+_Pragma("once");
 class Console {
   public:
     Console();
@@ -13,5 +10,3 @@ class Console {
     bool m_shouldResetCodePage;
 #endif
 };
-
-#endif /* CONSOLE_H_ */

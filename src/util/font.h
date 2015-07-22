@@ -1,6 +1,4 @@
-#ifndef FONT_H
-#define FONT_H
-
+_Pragma("once")
 #include <QFontDatabase>
 #include <QString>
 #include <QtDebug>
@@ -19,12 +17,12 @@ class FontUtils {
         // supported by the new font.
         if (CmdlineArgs::Instance().getDeveloper()) {
             QFontDatabase database;
-            QStringList families = QFontDatabase::applicationFontFamilies(result);
+            auto families = QFontDatabase::applicationFontFamilies(result);
             for(const auto & family: families) {
-                QStringList styles = database.styles(family);
+                auto styles = database.styles(family);
                 for(auto & style: styles) {
-                    QList<int> pointSizes = database.pointSizes(family, style);
-                    QStringList pointSizesStr;
+                    auto pointSizes = database.pointSizes(family, style);
+                    auto pointSizesStr = QStringList{};
                     for(auto point: pointSizes) {
                         pointSizesStr.append(QString::number(point));
                     }
@@ -36,8 +34,5 @@ class FontUtils {
         }
         return true;
     }
-  private:
-    FontUtils() {}
+  private: FontUtils() {}
 };
-
-#endif /* FONT_H */

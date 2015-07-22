@@ -30,21 +30,16 @@ class ControllerLearningEventFilter : public QObject {
   public:
     ControllerLearningEventFilter(QObject* pParent = nullptr);
     virtual ~ControllerLearningEventFilter();
-
     virtual bool eventFilter(QObject* pObject, QEvent* pEvent);
-
-    void addWidgetClickInfo(QWidget* pWidget, Qt::MouseButton buttonState,
+    virtual void addWidgetClickInfo(QWidget* pWidget, Qt::MouseButton buttonState,
                             ControlObject* pControl,
                             ControlParameterWidgetConnection::EmitOption emitOption);
-
   public slots:
-    void startListening();
-    void stopListening();
-
+    virtual void startListening();
+    virtual void stopListening();
   signals:
     void controlClicked(ControlObject* pControl);
-
-  private:
+  protected:
     QHash<QWidget*, ControlInfo> m_widgetControlInfo;
     bool m_bListening;
 };

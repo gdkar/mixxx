@@ -1,22 +1,12 @@
-#ifndef MIDICHANNELDELEGATE_H
-#define MIDICHANNELDELEGATE_H
-
+_Pragma("once")
 #include <QStyledItemDelegate>
 
 class MidiChannelDelegate : public QStyledItemDelegate {
   public:
     MidiChannelDelegate(QObject* pParent);
     virtual ~MidiChannelDelegate();
-
-    QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option,
-                          const QModelIndex& index) const;
-
+    QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option,const QModelIndex& index) const;
     QString displayText(const QVariant& value, const QLocale& locale) const;
-
     void setEditorData(QWidget* editor, const QModelIndex& index) const;
-
-    void setModelData(QWidget* editor, QAbstractItemModel* model,
-                      const QModelIndex& index) const;
+    void setModelData(QWidget* editor, QAbstractItemModel* model,const QModelIndex& index) const;
 };
-
-#endif /* MIDICHANNELDELEGATE_H */

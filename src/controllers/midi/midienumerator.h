@@ -8,9 +8,7 @@
 *   must be inherited by a class that implements it on some API.
 */
 
-#ifndef MIDIENUMERATOR_H
-#define MIDIENUMERATOR_H
-
+_Pragma("once")
 #include "controllers/controllerenumerator.h"
 #include "controllers/midi/midicontroller.h"
 
@@ -19,8 +17,5 @@ class MidiEnumerator : public ControllerEnumerator {
   public:
     MidiEnumerator();
     virtual ~MidiEnumerator();
-
     virtual QList<Controller*> queryDevices() = 0;
 };
-
-#endif

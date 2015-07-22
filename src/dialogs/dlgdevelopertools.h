@@ -14,18 +14,17 @@
 class DlgDeveloperTools : public QDialog, public Ui::DlgDeveloperTools {
     Q_OBJECT
   public:
-    DlgDeveloperTools(QWidget* pParent,
-                      ConfigObject<ConfigValue>* pConfig);
+    DlgDeveloperTools(QWidget* pParent, ConfigObject<ConfigValue>* pConfig);
     virtual ~DlgDeveloperTools();
 
   protected:
     void timerEvent(QTimerEvent* pTimerEvent);
 
   private slots:
-    void slotControlSearch(const QString& search);
-    void slotControlSearchClear();
-    void slotLogSearch();
-    void slotControlDump();
+    void onControlSearch(const QString& search);
+    void onControlSearchClear();
+    void onLogSearch();
+    void onControlDump();
 
   private:
     ControlModel m_controlModel;

@@ -17,31 +17,13 @@
 #include "controllers/controllerpreset.h"
 #include "controllers/controllerpresetvisitor.h"
 #include "controllers/midi/midimessage.h"
-
 class MidiControllerPreset : public ControllerPreset {
   public:
     MidiControllerPreset() {}
     virtual ~MidiControllerPreset() {}
-
-    virtual void accept(ControllerPresetVisitor* visitor) {
-        if (visitor) {
-            visitor->visit(this);
-        }
-    }
-
-    virtual void accept(ConstControllerPresetVisitor* visitor) const {
-        if (visitor) {
-            visitor->visit(this);
-        }
-    }
-
-    virtual bool isMappable() const {
-        return true;
-    }
-
+    virtual bool isMappable() const {return true;}
     // MIDI input and output mappings.
     QHash<uint16_t, MidiInputMapping> inputMappings;
     QHash<ConfigKey, MidiOutputMapping> outputMappings;
 };
-
 #endif

@@ -658,6 +658,7 @@ class MixxxCore(Feature):
                    "controllers/controllermanager.cpp",
                    "controllers/controllerpresetfilehandler.cpp",
                    "controllers/controllerpresetinfo.cpp",
+                   "controllers/controllerpreset.cpp",
                    "controllers/controlpickermenu.cpp",
                    "controllers/controllermappingtablemodel.cpp",
                    "controllers/controllerinputmappingtablemodel.cpp",
@@ -932,7 +933,6 @@ class MixxxCore(Feature):
                    "encoder/encodermp3.cpp",
                    "encoder/encodervorbis.cpp",
 
-                   "util/pa_ringbuffer.c",
                    "util/statsmanager.cpp",
                    "util/stat.cpp",
                    "util/statmodel.cpp",

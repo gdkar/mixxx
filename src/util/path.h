@@ -1,6 +1,4 @@
-#ifndef PATH_H
-#define PATH_H
-
+_Pragma("once")
 #ifndef PATH_MAX
 #ifndef MAX_PATH
 // http://msdn.microsoft.com/en-us/library/windows/desktop/aa365247%28v=vs.85%29.aspx
@@ -11,5 +9,3 @@ enum {
     PATH_MAX = MAX_PATH
 };
 #endif
-
-#endif /* PATH_H */

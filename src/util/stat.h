@@ -66,13 +66,9 @@ class Stat {
         STATS_BASE        = 0x1000,
     };
     typedef int ComputeFlags;
-
     static Experiment::Mode modeFromFlags(ComputeFlags flags) {
-        if (flags & Stat::STATS_EXPERIMENT) {
-            return Experiment::EXPERIMENT;
-        } else if (flags & Stat::STATS_BASE) {
-            return Experiment::BASE;
-        }
+        if (flags & Stat::STATS_EXPERIMENT) {return Experiment::EXPERIMENT;}
+        else if (flags & Stat::STATS_BASE) {return Experiment::BASE;}
         return Experiment::OFF;
     }
     static ComputeFlags experimentFlags(ComputeFlags flags) {
@@ -98,15 +94,9 @@ class Stat {
     double m_variance_mk;
     double m_variance_sk;
     QMap<double, double> m_histogram;
-
-    static bool track(const QString& tag,
-                      Stat::StatType type,
-                      Stat::ComputeFlags compute,
-                      double value);
+    static bool track(const QString& tag,Stat::StatType type,Stat::ComputeFlags compute,double value);
 };
-
 QDebug operator<<(QDebug dbg, const Stat &stat);
-
 struct StatReport {
     char* tag;
     qint64 time;

@@ -1,6 +1,4 @@
-#ifndef TRACE_H
-#define TRACE_H
-
+_Pragma("once")
 #include <QString>
 #include <QtDebug>
 
@@ -36,11 +34,8 @@ class Trace {
             qint64 elapsed = m_time ? m_timer.elapsed() : 0;
             if (m_writeToStdout) {
                 if (m_time) {
-                    qDebug() << "END [" << m_tag << "]"
-                             << QString("elapsed: %1ns").arg(elapsed);
-                } else {
-                    qDebug() << "END [" << m_tag << "]";
-                }
+                    qDebug() << "END [" << m_tag << "]" << QString("elapsed: %1ns").arg(elapsed);
+                } else {qDebug() << "END [" << m_tag << "]";}
             }
             if (m_time) {
                 // NOTE(rryan) do we need to do this string append? We could add
@@ -58,11 +53,8 @@ class Trace {
     }
   private:
     void initialize(const QString& key, const QString& arg) {
-        if (arg.isEmpty()) {
-            m_tag = key;
-        } else {
-            m_tag = key.arg(arg);
-        }
+        if (arg.isEmpty()) {m_tag = key;}
+        else {m_tag = key.arg(arg);}
         Event::start(m_tag);
         if (m_time) {m_timer.start();}
         if (m_writeToStdout) {qDebug() << "START [" << m_tag << "]";}
@@ -79,5 +71,3 @@ class DebugTrace : public Trace {
     }
     virtual ~DebugTrace() {}
 };
-
-#endif /* TRACE_H */

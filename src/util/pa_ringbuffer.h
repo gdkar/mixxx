@@ -1,5 +1,4 @@
-#ifndef PA_RINGBUFFER_H
-#define PA_RINGBUFFER_H
+_Pragma("once")
 /*
  * $Id: pa_ringbuffer.h 1734 2011-08-18 11:19:36Z rossb $
  * Portable Audio I/O Library
@@ -48,6 +47,11 @@
  * license above.
  */
 
+/*
+ * Wholely re-written (twice. first using C11 std_atomic.h atomics,
+ * and then again in straight C++11 by gabriel d. karpman, c. 2015/7/19
+ */
+
 /** @file
  @ingroup common_src
  @brief Single-reader single-writer lock-free ring buffer
@@ -70,149 +74,103 @@
 
 
 
-#ifdef __cplusplus
-extern "C"
-{
-#else/* __cplusplus */
-#include <stdatomic.h>
-#endif
-typedef struct PaUtilRingBuffer
-{
+#include <atomic>
+#include <memory>
+#include <algorithm>
+#include <utility>
+#include "util/math.h"
+template<class T>
+class PaUtilRingBuffer{
+  public:
     long         bufferSize; /**< Number of elements in FIFO. Power of 2. Set by PaUtil_InitRingBuffer. */
-    _Atomic(long) writeIndex; /**< Index of next writable element. Set by PaUtil_AdvanceRingBufferWriteIndex. */
-    _Atomic(long) readIndex;  /**< Index of next readable element. Set by PaUtil_AdvanceRingBufferReadIndex. */
+    std::atomic<long> writeIndex; /**< Index of next writable element. Set by PaUtil_AdvanceRingBufferWriteIndex. */
+    std::atomic<long> readIndex;  /**< Index of next readable element. Set by PaUtil_AdvanceRingBufferReadIndex. */
     long         bigMask;    /**< Used for wrapping indices with extra bit to distinguish full/empty. */
     long         smallMask;  /**< Used for fitting indices to buffer. */
-    long         elementSizeBytes; /**< Number of bytes per element. */
-    char  *buffer;    /**< Pointer to the buffer containing the actual data. */
-}PaUtilRingBuffer;
-
-/** Initialize Ring Buffer to empty state ready to have elements written to it.
-
- @param rbuf The ring buffer.
-
- @param elementSizeBytes The size of a single data element in bytes.
-
- @param elementCount The number of elements in the buffer (must be a power of 2).
-
- @param dataPtr A pointer to a previously allocated area where the data
- will be maintained.  It must be elementCount*elementSizeBytes long.
-
- @return -1 if elementCount is not a power of 2, otherwise 0.
-*/
-long PaUtil_InitializeRingBuffer( PaUtilRingBuffer *rbuf, long elementSizeBytes, long elementCount, void *dataPtr );
-
-/** Reset buffer to empty. Should only be called when buffer is NOT being read or written.
-
- @param rbuf The ring buffer.
-*/
-void PaUtil_FlushRingBuffer( PaUtilRingBuffer *rbuf );
-
-/** Retrieve the number of elements available in the ring buffer for writing.
-
- @param rbuf The ring buffer.
-
- @return The number of elements available for writing.
-*/
-long PaUtil_GetRingBufferWriteAvailable( const PaUtilRingBuffer *rbuf );
-
-/** Retrieve the number of elements available in the ring buffer for reading.
-
- @param rbuf The ring buffer.
-
- @return The number of elements available for reading.
-*/
-long PaUtil_GetRingBufferReadAvailable( const PaUtilRingBuffer *rbuf );
-
-/** Write data to the ring buffer.
-
- @param rbuf The ring buffer.
-
- @param data The address of new data to write to the buffer.
-
- @param elementCount The number of elements to be written.
-
- @return The number of elements written.
-*/
-long PaUtil_WriteRingBuffer( PaUtilRingBuffer *rbuf, const void *data, long elementCount );
-
-/** Read data from the ring buffer.
-
- @param rbuf The ring buffer.
-
- @param data The address where the data should be stored.
-
- @param elementCount The number of elements to be read.
-
- @return The number of elements read.
-*/
-long PaUtil_ReadRingBuffer( PaUtilRingBuffer *rbuf, void *data, long elementCount );
-
-/** Get address of region(s) to which we can write data.
-
- @param rbuf The ring buffer.
-
- @param elementCount The number of elements desired.
-
- @param dataPtr1 The address where the first (or only) region pointer will be
- stored.
-
- @param sizePtr1 The address where the first (or only) region length will be
- stored.
-
- @param dataPtr2 The address where the second region pointer will be stored if
- the first region is too small to satisfy elementCount.
-
- @param sizePtr2 The address where the second region length will be stored if
- the first region is too small to satisfy elementCount.
-
- @return The room available to be written or elementCount, whichever is smaller.
-*/
-long PaUtil_GetRingBufferWriteRegions( PaUtilRingBuffer *rbuf, long elementCount,
-                                       void **dataPtr1, long *sizePtr1,
-                                       void **dataPtr2, long *sizePtr2 );
-/** Advance the write index to the next location to be written.
-
- @param rbuf The ring buffer.
-
- @param elementCount The number of elements to advance.
-
- @return The new position.
-*/
-long PaUtil_AdvanceRingBufferWriteIndex( PaUtilRingBuffer *rbuf, long elementCount );
-/** Get address of region(s) from which we can read data.
-
- @param rbuf The ring buffer.
-
- @param elementCount The number of elements desired.
-
- @param dataPtr1 The address where the first (or only) region pointer will be
- stored.
-
- @param sizePtr1 The address where the first (or only) region length will be
- stored.
-
- @param dataPtr2 The address where the second region pointer will be stored if
- the first region is too small to satisfy elementCount.
-
- @param sizePtr2 The address where the second region length will be stored if
- the first region is too small to satisfy elementCount.
-
- @return The number of elements available for reading.
-*/
-long PaUtil_GetRingBufferReadRegions( PaUtilRingBuffer *rbuf, long elementCount,
-                                      void **dataPtr1, long *sizePtr1,
-                                      void **dataPtr2, long *sizePtr2 );
-/** Advance the read index to the next location to be read.
-
- @param rbuf The ring buffer.
-
- @param elementCount The number of elements to advance.
-
- @return The new position.
-*/
-long PaUtil_AdvanceRingBufferReadIndex( PaUtilRingBuffer *rbuf, long elementCount );
-#ifdef __cplusplus
-}
-#endif /* __cplusplus */
-#endif /* PA_RINGBUFFER_H */
+    std::unique_ptr<T[]> buffer;
+    explicit PaUtilRingBuffer(long buffer_size):
+      bufferSize(roundUpToPowerOf2(buffer_size)),
+      writeIndex(0),
+      readIndex(0),
+      bigMask((bufferSize*2)-1),
+      smallMask(bufferSize-1),
+      buffer(std::make_unique<T[]>(bufferSize)){
+    }
+    virtual ~PaUtilRingBuffer(){}
+    long GetReadAvailable()const{return ( (writeIndex.load() - readIndex.load())) & bigMask ;}
+    long GetWriteAvailable()const{return bufferSize - GetReadAvailable();}
+    void Flush(){
+      writeIndex.store(0);
+      readIndex.store(0);
+    }
+    long GetWriteRegions(long elementCount, T **pData0, long *pSize0,T **pData1,long *pSize1){
+      auto widx = writeIndex.load();
+      auto ridx = readIndex.load();
+      auto available = bufferSize -((widx-ridx)&bigMask);
+      if(elementCount>available){elementCount=available;}
+      auto index = widx & smallMask;
+      if(index+elementCount > bufferSize){
+        auto firstHalf = bufferSize - index;
+        *pData0 = (&buffer[index]);
+        *pSize0 = firstHalf;
+        *pData1 = (&buffer[0]);
+        *pSize1 = elementCount-firstHalf;
+      }else{
+        *pData0 = (&buffer[index]);
+        *pSize0 = elementCount;
+        *pData1 = nullptr;
+        *pSize1 = 0;
+      }
+      return elementCount;
+    }
+    long AdvanceWriteIndex(long elementCount){
+      return (writeIndex.fetch_add(elementCount)+elementCount)&bigMask;
+    }
+    long GetReadRegions(long elementCount, T**pData0,long *pSize0,T**pData1, long *pSize1){
+      auto widx = writeIndex.load();
+      auto ridx = readIndex.load();
+      auto available = (widx-ridx)&bigMask;
+      if(elementCount>available)elementCount=available;
+      auto index = ridx&smallMask;
+      if(index+elementCount>bufferSize){
+        long firstHalf = bufferSize-index;
+        *pData0 = (&buffer[index]);
+        *pSize0 = firstHalf;
+        *pData1 = (&buffer[0]);
+        *pSize1 = elementCount-firstHalf;
+      }else{
+        *pData0 = (&buffer[index]);
+        *pSize0 = elementCount;
+        *pData1 = nullptr;
+        *pSize1 = 0;
+      }
+      return elementCount;
+    }
+    long AdvanceReadIndex(long elementCount){
+      return (readIndex.fetch_add(elementCount)+elementCount)&bigMask;
+    }
+    long Write(const T *data, long elementCount){
+      long size1, size2;
+      T *data1,*data2;
+      auto numWritten = GetWriteRegions(elementCount,&data1,&size1,&data2,&size2);
+      if(size2>0){
+        std::move(data,data+size1,data1);
+        data += size1;
+        std::move(data,data+size2,data2);
+      }else{std::move(data,data+size1,data1);}
+      AdvanceWriteIndex(numWritten);
+      return numWritten;
+    }
+    long Read(T *data, long elementCount){
+      auto size1 = long{},size2 = long{};
+      T *data1,*data2;
+      auto numRead = GetReadRegions(elementCount,&data1,&size1,&data2,&size2);
+      if(size2>0){
+        std::move(data1,data1+size1,data);
+        data += size1;
+        std::move(data2,data2+size1,data);
+      }else{std::move(data1,data1+size1,data);}
+      AdvanceReadIndex(numRead);
+      return numRead;
+    }
+};

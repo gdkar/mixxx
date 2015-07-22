@@ -24,7 +24,7 @@
 
 // Forward declaration(s)
 class Controller;
-class ControlObjectThread;
+class ControlObjectSlave;
 class ControllerEngine;
 
 // ControllerEngineConnection class for closure-compatible engine.connectControl
@@ -73,14 +73,8 @@ class ControllerEngine : public QObject {
     // Get the errors for a source file that was evaluated()'d
     const QStringList getErrors(QString filename);
 
-    void setDebug(bool bDebug) {
-        m_bDebug = bDebug;
-    }
-
-    void setPopups(bool bPopups) {
-        m_bPopups = bPopups;
-    }
-
+    void setDebug(bool bDebug) {m_bDebug = bDebug;}
+    void setPopups(bool bPopups) {m_bPopups = bPopups;}
     /** Resolve a function name to a QScriptValue. */
     QJSValue resolveFunction(QString function, bool useCache) const;
     /** Look up registered script function prefixes */
@@ -88,9 +82,7 @@ class ControllerEngine : public QObject {
     /** Disconnect a ControllerEngineConnection */
     void disconnectControl(const ControllerEngineConnection conn);
     template<typename T>
-    QJSValue toScriptValue(T &var){
-      return m_pEngine->toScriptValue(var);
-    }
+    QJSValue toScriptValue(T &var){return m_pEngine->toScriptValue(var);}
   protected:
     Q_INVOKABLE double getValue(QString group, QString name);
     Q_INVOKABLE void setValue(QString group, QString name, double newValue);
@@ -165,7 +157,7 @@ class ControllerEngine : public QObject {
     bool checkException();
     QJSEngine *m_pEngine;
 
-    ControlObjectThread* getControlObjectThread(QString group, QString name);
+    ControlObjectSlave* getControlObjectSlave(QString group, QString name);
 
     // Scratching functions & variables
     void scratchProcess(int timerId);
@@ -179,7 +171,7 @@ class ControllerEngine : public QObject {
     QMultiHash<ConfigKey, ControllerEngineConnection> m_connectedControls;
     QList<QString> m_scriptFunctionPrefixes;
     QMap<QString,QStringList> m_scriptErrors;
-    QHash<ConfigKey, ControlObjectThread*> m_controlCache;
+    QHash<ConfigKey, ControlObjectSlave*> m_controlCache;
     struct TimerInfo {
         QJSValue callback;
         QJSValue context;

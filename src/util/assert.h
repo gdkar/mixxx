@@ -1,6 +1,4 @@
-#ifndef ASSERT_H
-#define ASSERT_H
-
+_Pragma("once")
 #include <QtDebug>
 
 inline void mixxx_noop(void) {}
@@ -50,5 +48,3 @@ inline void mixxx_release_assert(const char* assertion, const char* file, int li
 #endif
 
 #define DEBUG_ASSERT_AND_HANDLE(cond) if ((!(cond)) && mixxx_maybe_debug_assert_return_true(#cond, __FILE__, __LINE__))
-
-#endif /* ASSERT_H */

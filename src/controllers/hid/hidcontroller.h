@@ -21,50 +21,30 @@ class HidReader : public QThread {
   public:
     HidReader(hid_device* device);
     virtual ~HidReader();
-
-    void stop() {
-        m_stop = 1;
-    }
-
+    void stop() {m_stop = 1;}
   signals:
     void incomingData(QByteArray data);
-
   protected:
     void run();
-
   private:
     hid_device* m_pHidDevice;
     std::atomic<int> m_stop;
 };
-
 class HidController : public Controller {
     Q_OBJECT
   public:
+    using Controller::visit;
     HidController(const hid_device_info deviceInfo);
     virtual ~HidController();
-
     virtual QString presetExtension();
-
     virtual ControllerPresetPointer getPreset() const {
         HidControllerPreset* pClone = new HidControllerPreset();
         *pClone = m_preset;
         return ControllerPresetPointer(pClone);
     }
-
     virtual bool savePreset(const QString fileName) const;
-
-    virtual void visit(const MidiControllerPreset* preset);
     virtual void visit(const HidControllerPreset* preset);
-
-    virtual void accept(ControllerVisitor* visitor) {
-        if (visitor) {
-            visitor->visit(this);
-        }
-    }
-
-    virtual bool isMappable() const {
-        return m_preset.isMappable();
-    }
+    virtual bool isMappable() const {return m_preset.isMappable();}
 
     virtual bool matchPreset(const PresetInfo& preset);
     virtual bool matchProductInfo(QHash <QString,QString >);

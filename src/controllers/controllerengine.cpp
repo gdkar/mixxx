@@ -154,8 +154,8 @@ void ControllerEngine::gracefulShutdown() {
         qDebug() << "Aborting scratching on deck" << i.value();
         // Clear scratch2_enable. PlayerManager::groupForDeck is 0-indexed.
         QString group = PlayerManager::groupForDeck(i.value() - 1);
-        ControlObjectThread* pScratch2Enable =
-                getControlObjectThread(group, "scratch2_enable");
+        ControlObjectSlave* pScratch2Enable =
+                getControlObjectSlave(group, "scratch2_enable");
         if (pScratch2Enable != nullptr) {
             pScratch2Enable->set(0);
         }
@@ -170,7 +170,7 @@ void ControllerEngine::gracefulShutdown() {
     QList<ConfigKey>::iterator end = keys.end();
     while (it != end) {
         ConfigKey key = *it;
-        ControlObjectThread* cot = m_controlCache.take(key);
+        ControlObjectSlave* cot = m_controlCache.take(key);
         delete cot;
         ++it;
     }
@@ -530,12 +530,12 @@ void ControllerEngine::errorDialogButton(QString key, QMessageBox::StandardButto
                SLOT(errorDialogButton(QString, QMessageBox::StandardButton)));
     if (button == QMessageBox::Retry) {emit(resetController());}
 }
-ControlObjectThread* ControllerEngine::getControlObjectThread(QString group, QString name) {
+ControlObjectSlave* ControllerEngine::getControlObjectSlave(QString group, QString name) {
     ConfigKey key = ConfigKey(group, name);
-    ControlObjectThread* cot = m_controlCache.value(key, nullptr);
+    ControlObjectSlave* cot = m_controlCache.value(key, nullptr);
     if (cot == nullptr) {
         // create COT
-        cot = new ControlObjectThread(key, this);
+        cot = new ControlObjectSlave(key, this);
         if (cot->valid()) {
             m_controlCache.insert(key, cot);
         } else {
@@ -551,7 +551,7 @@ ControlObjectThread* ControllerEngine::getControlObjectThread(QString group, QSt
    Output:  The value
    -------- ------------------------------------------------------ */
 double ControllerEngine::getValue(QString group, QString name) {
-    ControlObjectThread* cot = getControlObjectThread(group, name);
+    ControlObjectSlave* cot = getControlObjectSlave(group, name);
     if (cot == nullptr) {
         qWarning() << "ControllerEngine: Unknown control" << group << name << ", returning 0.0";
         return 0.0;
@@ -570,7 +570,7 @@ void ControllerEngine::setValue(QString group, QString name, double newValue) {
                  << "] to NotANumber, ignoring.";
         return;
     }
-    ControlObjectThread* cot = getControlObjectThread(group, name);
+    ControlObjectSlave* cot = getControlObjectSlave(group, name);
     if (cot != nullptr) {
         ControlObject* pControl = ControlObject::getControl(cot->getKey());
         if (pControl && !m_st.ignore(pControl, cot->getParameterForValue(newValue))) {
@@ -584,7 +584,7 @@ void ControllerEngine::setValue(QString group, QString name, double newValue) {
    Output:  The value
    -------- ------------------------------------------------------ */
 double ControllerEngine::getParameter(QString group, QString name) {
-    ControlObjectThread* cot = getControlObjectThread(group, name);
+    ControlObjectSlave* cot = getControlObjectSlave(group, name);
     if (cot == nullptr) {
         qWarning() << "ControllerEngine: Unknown control" << group << name << ", returning 0.0";
         return 0.0;
@@ -603,7 +603,7 @@ void ControllerEngine::setParameter(QString group, QString name, double newParam
                  << "] to NotANumber, ignoring.";
         return;
     }
-    ControlObjectThread* cot = getControlObjectThread(group, name);
+    ControlObjectSlave* cot = getControlObjectSlave(group, name);
     // TODO(XXX): support soft takeover.
     if (cot != nullptr) {
         cot->setParameter(newParameter);
@@ -620,7 +620,7 @@ double ControllerEngine::getParameterForValue(QString group, QString name, doubl
                  << "] to NotANumber, ignoring.";
         return 0.0;
     }
-    ControlObjectThread* cot = getControlObjectThread(group, name);
+    ControlObjectSlave* cot = getControlObjectSlave(group, name);
     if (cot == nullptr) {
         qWarning() << "ControllerEngine: Unknown control" << group << name << ", returning 0.0";
         return 0.0;
@@ -634,7 +634,7 @@ double ControllerEngine::getParameterForValue(QString group, QString name, doubl
    Output:  -
    -------- ------------------------------------------------------ */
 void ControllerEngine::reset(QString group, QString name) {
-    ControlObjectThread* cot = getControlObjectThread(group, name);
+    ControlObjectSlave* cot = getControlObjectSlave(group, name);
     if (cot != nullptr) {
         cot->reset();
     }
@@ -646,7 +646,7 @@ void ControllerEngine::reset(QString group, QString name) {
    Output:  -
    -------- ------------------------------------------------------ */
 double ControllerEngine::getDefaultValue(QString group, QString name) {
-    ControlObjectThread* cot = getControlObjectThread(group, name);
+    ControlObjectSlave* cot = getControlObjectSlave(group, name);
 
     if (cot == nullptr) {
         qWarning() << "ControllerEngine: Unknown control" << group << name << ", returning 0.0";
@@ -662,7 +662,7 @@ double ControllerEngine::getDefaultValue(QString group, QString name) {
    Output:  -
    -------- ------------------------------------------------------ */
 double ControllerEngine::getDefaultParameter(QString group, QString name) {
-    ControlObjectThread* cot = getControlObjectThread(group, name);
+    ControlObjectSlave* cot = getControlObjectSlave(group, name);
     if (cot == nullptr) {
         qWarning() << "ControllerEngine: Unknown control" << group << name << ", returning 0.0";
         return 0.0;
@@ -685,7 +685,7 @@ void ControllerEngine::log(QString message) {
    Output:  -
    -------- ------------------------------------------------------ */
 void ControllerEngine::trigger(QString group, QString name) {
-    ControlObjectThread* cot = getControlObjectThread(group, name);
+    ControlObjectSlave* cot = getControlObjectSlave(group, name);
     if (cot != nullptr) {
         cot->emitValueChanged();
     }
@@ -700,7 +700,7 @@ void ControllerEngine::trigger(QString group, QString name) {
 QJSValue ControllerEngine::connectControl(QString group, QString name,
                                               QJSValue callback, bool disconnect) {
     ConfigKey key(group, name);
-    ControlObjectThread* cot = getControlObjectThread(group, name);
+    ControlObjectSlave* cot = getControlObjectSlave(group, name);
     QJSValue function;
 
     if (cot == nullptr) {
@@ -789,7 +789,7 @@ QJSValue ControllerEngine::connectControl(QString group, QString name,
    Output:  true if successful
    -------- ------------------------------------------------------ */
 void ControllerEngine::disconnectControl(const ControllerEngineConnection conn) {
-    ControlObjectThread* cot = getControlObjectThread(conn.key.group, conn.key.item);
+    ControlObjectSlave* cot = getControlObjectSlave(conn.key.group, conn.key.item);
 
     if (m_pEngine == nullptr) {
         return;
@@ -818,7 +818,7 @@ void ControllerEngineConnectionScriptValue::disconnect() {
    fires off the appropriate script function.
    -------- ------------------------------------------------------ */
 void ControllerEngine::slotValueChanged(double value) {
-    ControlObjectThread* senderCOT = dynamic_cast<ControlObjectThread*>(sender());
+    ControlObjectSlave* senderCOT = dynamic_cast<ControlObjectSlave*>(sender());
     if (senderCOT == nullptr) {
         qWarning() << "ControllerEngine::slotValueChanged() Shouldn't happen -- sender == nullptr";
         return;
@@ -1038,15 +1038,15 @@ void ControllerEngine::timerEvent(QTimerEvent *event) {
 
 double ControllerEngine::getDeckRate(const QString& group) {
     double rate = 0.0;
-    ControlObjectThread* pRate = getControlObjectThread(group, "rate");
+    ControlObjectSlave* pRate = getControlObjectSlave(group, "rate");
     if (pRate != nullptr) {
         rate = pRate->get();
     }
-    ControlObjectThread* pRateDir = getControlObjectThread(group, "rate_dir");
+    ControlObjectSlave* pRateDir = getControlObjectSlave(group, "rate_dir");
     if (pRateDir != nullptr) {
         rate *= pRateDir->get();
     }
-    ControlObjectThread* pRateRange = getControlObjectThread(group, "rateRange");
+    ControlObjectSlave* pRateRange = getControlObjectSlave(group, "rateRange");
     if (pRateRange != nullptr) {
         rate *= pRateRange->get();
     }
@@ -1055,7 +1055,7 @@ double ControllerEngine::getDeckRate(const QString& group) {
     rate += 1.0;
 
     // See if we're in reverse play
-    ControlObjectThread* pReverse = getControlObjectThread(group, "reverse");
+    ControlObjectSlave* pReverse = getControlObjectSlave(group, "reverse");
     if (pReverse != nullptr && pReverse->get() == 1) {
         rate = -rate;
     }
@@ -1063,10 +1063,10 @@ double ControllerEngine::getDeckRate(const QString& group) {
 }
 
 bool ControllerEngine::isDeckPlaying(const QString& group) {
-    ControlObjectThread* pPlay = getControlObjectThread(group, "play");
+    ControlObjectSlave* pPlay = getControlObjectSlave(group, "play");
 
     if (pPlay == nullptr) {
-      QString error = QString("Could not getControlObjectThread()");
+      QString error = QString("Could not getControlObjectSlave()");
       scriptErrorDialog(error);
       return false;
     }
@@ -1115,16 +1115,16 @@ void ControllerEngine::scratchEnable(int deck, int intervalsPerRev, double rpm,
     // Ramp velocity, default to stopped.
     double initVelocity = 0.0;
 
-    ControlObjectThread* pScratch2Enable =
-            getControlObjectThread(group, "scratch2_enable");
+    ControlObjectSlave* pScratch2Enable =
+            getControlObjectSlave(group, "scratch2_enable");
 
     // If ramping is desired, figure out the deck's current speed
     if (ramp) {
         // See if the deck is already being scratched
         if (pScratch2Enable != nullptr && pScratch2Enable->get() == 1) {
             // If so, set the filter's initial velocity to the scratch speed
-            ControlObjectThread* pScratch2 =
-                    getControlObjectThread(group, "scratch2");
+            ControlObjectSlave* pScratch2 =
+                    getControlObjectSlave(group, "scratch2");
             if (pScratch2 != nullptr) {
                 initVelocity = pScratch2->get();
             }
@@ -1192,7 +1192,7 @@ void ControllerEngine::scratchProcess(int timerId) {
     }
     const double newRate = filter->predictedVelocity();
     // Actually do the scratching
-    ControlObjectThread* pScratch2 = getControlObjectThread(group, "scratch2");
+    ControlObjectSlave* pScratch2 = getControlObjectSlave(group, "scratch2");
     if (pScratch2 == nullptr) {
         return; // abort and maybe it'll work on the next pass
     }
@@ -1211,12 +1211,12 @@ void ControllerEngine::scratchProcess(int timerId) {
         if (m_brakeActive[deck]) {
             // If in brake mode, set scratch2 rate to 0 and turn off the play button.
             pScratch2->set(0.0);
-            ControlObjectThread* pPlay = getControlObjectThread(group, "play");
+            ControlObjectSlave* pPlay = getControlObjectSlave(group, "play");
             if (pPlay != nullptr) {pPlay->set(0.0);}
         }
         // Clear scratch2_enable to end scratching.
-        ControlObjectThread* pScratch2Enable =
-                getControlObjectThread(group, "scratch2_enable");
+        ControlObjectSlave* pScratch2Enable =
+                getControlObjectSlave(group, "scratch2_enable");
         if (pScratch2Enable == nullptr) {
             return; // abort and maybe it'll work on the next pass
         }
@@ -1241,7 +1241,7 @@ void ControllerEngine::scratchDisable(int deck, bool ramp) {
     // If no ramping is desired, disable scratching immediately
     if (!ramp) {
         // Clear scratch2_enable
-        ControlObjectThread* pScratch2Enable = getControlObjectThread(group, "scratch2_enable");
+        ControlObjectSlave* pScratch2Enable = getControlObjectSlave(group, "scratch2_enable");
         if (pScratch2Enable != nullptr) {pScratch2Enable->set(0);}
         // Can't return here because we need scratchProcess to stop the timer.
         // So it's still actually ramping, we just won't hear or see it.
@@ -1310,7 +1310,7 @@ void ControllerEngine::brake(int deck, bool activate, double factor, double rate
     killTimer(timerId);
     m_scratchTimers.remove(timerId);
     // enable/disable scratch2 mode
-    ControlObjectThread* pScratch2Enable = getControlObjectThread(group, "scratch2_enable");
+    ControlObjectSlave* pScratch2Enable = getControlObjectSlave(group, "scratch2_enable");
     if (pScratch2Enable != nullptr) {
         pScratch2Enable->set(activate ? 1 : 0);
     }
@@ -1323,7 +1323,7 @@ void ControllerEngine::brake(int deck, bool activate, double factor, double rate
         // setup timer and set scratch2
         int timerId = startTimer(kScratchTimerMs);
         m_scratchTimers[timerId] = deck;
-        ControlObjectThread* pScratch2 = getControlObjectThread(group, "scratch2");
+        ControlObjectSlave* pScratch2 = getControlObjectSlave(group, "scratch2");
         if (pScratch2 != nullptr) {pScratch2->set(rate);}
         // setup the filter using the default values of alpha and beta
         AlphaBetaFilter* filter = m_scratchFilters[deck];

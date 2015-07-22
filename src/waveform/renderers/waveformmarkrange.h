@@ -1,11 +1,9 @@
-#ifndef WAVEFORMMARKRANGE_H
-#define WAVEFORMMARKRANGE_H
-
+_Pragma("once")
 #include <QImage>
 
 #include "skin/skincontext.h"
 
-class ControlObjectThread;
+class ControlObjectSlave;
 class QDomNode;
 class WaveformSignalColors;
 
@@ -32,9 +30,9 @@ class WaveformMarkRange {
   private:
     void generateImage(int weidth, int height);
 
-    ControlObjectThread* m_markStartPointControl;
-    ControlObjectThread* m_markEndPointControl;
-    ControlObjectThread* m_markEnabledControl;
+    ControlObjectSlave* m_markStartPointControl;
+    ControlObjectSlave* m_markEndPointControl;
+    ControlObjectSlave* m_markEnabledControl;
 
     QColor m_activeColor;
     QColor m_disabledColor;
@@ -45,5 +43,3 @@ class WaveformMarkRange {
     friend class WaveformRenderMarkRange;
     friend class WOverview;
 };
-
-#endif // WAVEFORMMARKRANGE_H

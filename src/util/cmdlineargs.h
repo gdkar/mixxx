@@ -1,6 +1,4 @@
-#ifndef CMDLINEARGS_H
-#define CMDLINEARGS_H
-
+_Pragma("once")
 #include <QList>
 #include <QString>
 #include <QDir>
@@ -66,13 +64,10 @@ class CmdlineArgs {
     bool getTimelineEnabled() const { return !m_timelinePath.isEmpty(); }
     const QString& getLocale() const { return m_locale; }
     const QString& getSettingsPath() const { return m_settingsPath; }
-    void setSettingsPath(const QString& newSettingsPath) { 
-        m_settingsPath = newSettingsPath; 
-    }
+    void setSettingsPath(const QString& newSettingsPath) { m_settingsPath = newSettingsPath; }
     const QString& getResourcePath() const { return m_resourcePath; }
     const QString& getPluginPath() const { return m_pluginPath; }
     const QString& getTimelinePath() const { return m_timelinePath; }
-
   private:
     CmdlineArgs() :
         m_startInFullscreen(false), // Initialize vars
@@ -90,7 +85,6 @@ class CmdlineArgs {
 #endif
     }
     ~CmdlineArgs() { };
-
     QList<QString> m_musicFiles;    // List of files to load into players at startup
     bool m_startInFullscreen;       // Start in fullscreen mode
     bool m_midiDebug;
@@ -103,5 +97,3 @@ class CmdlineArgs {
     QString m_pluginPath;
     QString m_timelinePath;
 };
-
-#endif /* CMDLINEARGS_H */

@@ -5,7 +5,6 @@
 
 StatModel::StatModel(QObject* pParent)
         : QAbstractTableModel(pParent) {
-
     setHeaderData(STAT_COLUMN_NAME, Qt::Horizontal, tr("Name"));
     setHeaderData(STAT_COLUMN_COUNT, Qt::Horizontal, tr("Count"));
     setHeaderData(STAT_COLUMN_TYPE, Qt::Horizontal, tr("Type"));
@@ -19,12 +18,12 @@ StatModel::StatModel(QObject* pParent)
 }
 StatModel::~StatModel() {}
 void StatModel::statUpdated(const Stat& stat) {
-    QHash<QString, int>::const_iterator it = m_statNameToRow.find(stat.m_tag);
-    if (it != m_statNameToRow.end()) {
-        int row = it.value();
+    auto it = m_statNameToRow.constFind(stat.m_tag);
+    if (it != m_statNameToRow.constEnd()) {
+        auto row = it.value();
         m_stats[row] = stat;
-        QModelIndex left = index(row, 0);
-        QModelIndex right = index(row, columnCount() - 1);
+        auto  left = index(row, 0);
+        auto  right = index(row, columnCount() - 1);
         emit(dataChanged(left, right));
     } else {
         beginInsertRows(QModelIndex(), m_stats.size(),m_stats.size());
@@ -41,14 +40,13 @@ int StatModel::columnCount(const QModelIndex& parent) const {
     if (parent.isValid()) {return 0;}
     return NUM_STAT_COLUMNS;
 }
-QVariant StatModel::data(const QModelIndex& index,
-                            int role) const {
+QVariant StatModel::data(const QModelIndex& index, int role) const {
     if (!index.isValid() || (role != Qt::DisplayRole && role != Qt::EditRole)) {return QVariant();}
-    int row = index.row();
-    int column = index.column();
+    auto row = index.row();
+    auto column = index.column();
     if (row < 0 || row >= m_stats.size()) {return QVariant();}
-    const Stat& stat = m_stats.at(row);
-    QString value;
+    const auto& stat = m_stats.at(row);
+    auto value = QString{};
     switch (column) {
         case STAT_COLUMN_NAME:    return stat.m_tag;
         case STAT_COLUMN_TYPE:    return stat.m_type;
@@ -63,11 +61,9 @@ QVariant StatModel::data(const QModelIndex& index,
     }
     return QVariant();
 }
-bool StatModel::setHeaderData(int section,
-                              Qt::Orientation orientation,
-                              const QVariant& value,
-                              int role) {
-    int numColumns = columnCount();
+bool StatModel::setHeaderData(int section,Qt::Orientation orientation,
+                              const QVariant& value,int role) {
+    auto numColumns = columnCount();
     if (section < 0 || section >= numColumns) {return false;}
     if (orientation != Qt::Horizontal) {
         // We only care about horizontal headers.
@@ -78,12 +74,9 @@ bool StatModel::setHeaderData(int section,
     emit(headerDataChanged(orientation, section, section));
     return true;
 }
-
-QVariant StatModel::headerData(int section,
-                               Qt::Orientation orientation,
-                               int role) const {
+QVariant StatModel::headerData(int section,Qt::Orientation orientation,int role) const {
     if (role == Qt::DisplayRole && orientation == Qt::Horizontal) {
-        QVariant headerValue = m_headerInfo.value(section).value(role);
+        auto headerValue = m_headerInfo.value(section).value(role);
         if (!headerValue.isValid()) {
             // Try EditRole if DisplayRole wasn't present
             headerValue = m_headerInfo.value(section).value(Qt::EditRole);

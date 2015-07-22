@@ -1,6 +1,4 @@
-#ifndef STATMODEL_H
-#define STATMODEL_H
-
+_Pragma("once")
 #include <QAbstractTableModel>
 #include <QVariant>
 #include <QVector>
@@ -27,13 +25,10 @@ class StatModel : public QAbstractTableModel {
         STAT_COLUMN_STDDEV,
         NUM_STAT_COLUMNS
     };
-
     StatModel(QObject* pParent=nullptr);
     virtual ~StatModel();
-
   public slots:
     void statUpdated(const Stat& stat);
-
     ////////////////////////////////////////////////////////////////////////////
     // QAbstractItemModel methods
     ////////////////////////////////////////////////////////////////////////////
@@ -42,11 +37,8 @@ class StatModel : public QAbstractTableModel {
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
     bool setHeaderData(int section, Qt::Orientation orientation,const QVariant& value, int role = Qt::EditRole);
     QVariant headerData(int section, Qt::Orientation orientation,int role = Qt::DisplayRole) const;
-
   private:
     QVector<QHash<int, QVariant> > m_headerInfo;
     QList<Stat> m_stats;
     QHash<QString, int> m_statNameToRow;
 };
-
-#endif /* STATMODEL_H */

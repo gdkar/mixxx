@@ -5,9 +5,7 @@
 * @brief Configuration dialog for a DJ controller
 */
 
-#ifndef DLGPREFCONTROLLER_H_
-#define DLGPREFCONTROLLER_H_
-
+_Pragma("once")
 #include <QHash>
 #include <QSortFilterProxyModel>
 
@@ -31,7 +29,6 @@ class DlgPrefController : public DlgPreferencePage {
                       ControllerManager* controllerManager,
                       ConfigObject<ConfigValue> *pConfig);
     virtual ~DlgPrefController();
-
   public slots:
     // Called when we should apply / save our changes.
     void slotApply();
@@ -47,7 +44,6 @@ class DlgPrefController : public DlgPreferencePage {
     void slotDirty();
     // Reload the mappings in the dropdown dialog
     void enumeratePresets();
-
   signals:
     void controllerEnabled(DlgPrefController*, bool);
     void openController(Controller* pController);
@@ -56,28 +52,22 @@ class DlgPrefController : public DlgPreferencePage {
     void loadPreset(Controller* pController, ControllerPresetPointer pPreset);
     void mappingStarted();
     void mappingEnded();
-
   private slots:
     void slotPresetLoaded(ControllerPresetPointer preset);
-
     // Input mappings
     void addInputMapping();
     void showLearningWizard();
     void removeInputMappings();
     void clearAllInputMappings();
-
     // Output mappings
     void addOutputMapping();
     void removeOutputMappings();
     void clearAllOutputMappings();
-
     // Scripts
     void addScript();
     void removeScript();
     void openScript();
-
     void midiInputMappingsLearned(const MidiInputMappings& mappings);
-
   private:
     QString presetShortName(const ControllerPresetPointer pPreset) const;
     QString presetName(const ControllerPresetPointer pPreset) const;
@@ -87,10 +77,8 @@ class DlgPrefController : public DlgPreferencePage {
     QString presetWikiLink(const ControllerPresetPointer pPreset) const;
     void savePreset(QString path);
     void initTableView(QTableView* pTable);
-
     void enableDevice();
     void disableDevice();
-
     Ui::DlgPrefControllerDlg m_ui;
     ConfigObject<ConfigValue>* m_pConfig;
     ControllerManager* m_pControllerManager;
@@ -103,5 +91,3 @@ class DlgPrefController : public DlgPreferencePage {
     QSortFilterProxyModel* m_pOutputProxyModel;
     bool m_bDirty;
 };
-
-#endif /*DLGPREFCONTROLLER_H_*/

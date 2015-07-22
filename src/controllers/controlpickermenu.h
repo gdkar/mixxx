@@ -1,6 +1,4 @@
-#ifndef CONTROLPICKERMENU_H
-#define CONTROLPICKERMENU_H
-
+_Pragma("once")
 #include <QMenu>
 #include <QObject>
 #include <QSignalMapper>
@@ -58,7 +56,6 @@ class ControlPickerMenu : public QMenu {
     void addPrefixedControl(QString group, QString control, QString title,
                             QString menuDescription, QString descriptionPrefix,
                             QMenu* pMenu, bool addReset=false);
-
     void addAvailableControl(ConfigKey key, QString title, QString description);
 
     QString m_effectMasterOutputStr;
@@ -74,11 +71,8 @@ class ControlPickerMenu : public QMenu {
     QString m_effectStr;
     QString m_parameterStr;
     QString m_libraryStr;
-
     QSignalMapper m_actionMapper;
     QList<ConfigKey> m_controlsAvailable;
     QHash<ConfigKey, QString> m_descriptionsByKey;
     QHash<ConfigKey, QString> m_titlesByKey;
 };
-
-#endif /* CONTROLPICKERMENU_H */

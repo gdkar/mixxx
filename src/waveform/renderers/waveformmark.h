@@ -1,6 +1,4 @@
-#ifndef WAVEFORMMARK_H
-#define WAVEFORMMARK_H
-
+_Pragma("once")
 #include <QString>
 #include <QImage>
 #include <QColor>
@@ -8,7 +6,7 @@
 #include "configobject.h"
 #include "skin/skincontext.h"
 
-class ControlObjectThread;
+class ControlObjectSlave;
 class QDomNode;
 class WaveformSignalColors;
 
@@ -22,7 +20,7 @@ class WaveformMark {
     void setKeyAndIndex(const ConfigKey& key, int i);
 
   private:
-    ControlObjectThread* m_pointControl;
+    ControlObjectSlave* m_pointControl;
 
     QColor m_color;
     QColor m_textColor;
@@ -35,5 +33,3 @@ class WaveformMark {
     friend class WaveformRenderMark;
     friend class WOverview;
 };
-
-#endif // WAVEFORMMARK_H

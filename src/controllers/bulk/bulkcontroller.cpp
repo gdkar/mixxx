@@ -78,40 +78,23 @@ BulkController::BulkController(libusb_context* context,
 {
     vendor_id = desc->idVendor;
     product_id = desc->idProduct;
-
     manufacturer = get_string(handle, desc->iManufacturer);
     product = get_string(handle, desc->iProduct);
     m_sUID = get_string(handle, desc->iSerialNumber);
-
     setDeviceCategory(tr("USB Controller"));
-
     setDeviceName(QString("%1 %2").arg(product).arg(m_sUID));
-
     setInputDevice(true);
     setOutputDevice(true);
     m_pReader = nullptr;
 }
 
-BulkController::~BulkController() {
-    close();
-}
-
-QString BulkController::presetExtension() {
-    return BULK_PRESET_EXTENSION;
-}
-
-void BulkController::visit(const MidiControllerPreset* preset) {
-    Q_UNUSED(preset);
-    // TODO(XXX): throw a hissy fit.
-    qDebug() << "ERROR: Attempting to load a MidiControllerPreset to an HidController!";
-}
-
+BulkController::~BulkController() {close();}
+QString BulkController::presetExtension() {return BULK_PRESET_EXTENSION;}
 void BulkController::visit(const HidControllerPreset* preset) {
     m_preset = *preset;
     // Emit presetLoaded with a clone of the preset.
     emit(presetLoaded(getPreset()));
 }
-
 bool BulkController::savePreset(const QString fileName) const {
     HidControllerPresetFileHandler handler;
     return handler.save(m_preset, getName(), fileName);

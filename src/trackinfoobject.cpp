@@ -80,12 +80,12 @@ TrackInfoObject::TrackInfoObject(const QDomNode &nodeHeader)
     m_sArtist = XmlParse::selectNodeQString(nodeHeader, "Artist");
     m_sType = XmlParse::selectNodeQString(nodeHeader, "Type");
     m_sComment = XmlParse::selectNodeQString(nodeHeader, "Comment");
-    m_fDuration = XmlParse::selectNodeQString(nodeHeader, "Duration").toFloat();
+    m_fDuration = XmlParse::selectNodeQString(nodeHeader, "Duration").toDouble();
     m_iSampleRate = XmlParse::selectNodeQString(nodeHeader, "SampleRate").toInt();
     m_iChannels = XmlParse::selectNodeQString(nodeHeader, "Channels").toInt();
     m_iBitrate = XmlParse::selectNodeQString(nodeHeader, "Bitrate").toInt();
     m_iTimesPlayed = XmlParse::selectNodeQString(nodeHeader, "TimesPlayed").toInt();
-    m_fReplayGain = XmlParse::selectNodeQString(nodeHeader, "replaygain").toFloat();
+    m_fReplayGain = XmlParse::selectNodeQString(nodeHeader, "replaygain").toDouble();
     m_bHeaderParsed = false;
     m_bBpmLock = false;
     m_Rating = 0;
@@ -93,7 +93,7 @@ TrackInfoObject::TrackInfoObject(const QDomNode &nodeHeader)
     // ignore those. Tracks will get a new ID from the database.
     //m_iId = XmlParse::selectNodeQString(nodeHeader, "Id").toInt();
     m_iId = -1;
-    m_fCuePoint = XmlParse::selectNodeQString(nodeHeader, "CuePoint").toFloat();
+    m_fCuePoint = XmlParse::selectNodeQString(nodeHeader, "CuePoint").toDouble();
     m_bPlayed = false;
     m_bDeleteOnReferenceExpiration = false;
     m_bDirty = false;
@@ -332,10 +332,10 @@ bool TrackInfoObject::exists() const {
     return QFile::exists(getFileInfo().absoluteFilePath());
 }
 
-float TrackInfoObject::getReplayGain() const {
+double TrackInfoObject::getReplayGain() const {
     return m_fReplayGain.load();
 }
-void TrackInfoObject::setReplayGain(float f) {
+void TrackInfoObject::setReplayGain(double f) {
     //qDebug() << "Reported ReplayGain value: " << m_fReplayGain;
     if (m_fReplayGain.exchange(f) != f) {
         setDirty(true);
@@ -425,22 +425,19 @@ void TrackInfoObject::slotBeatsUpdated() {
     emit(beatsUpdated());
 }
 bool TrackInfoObject::getHeaderParsed()  const{
-    QMutexLocker lock(&m_qMutex);
-    return m_bHeaderParsed;
+    return m_bHeaderParsed.load();
 }
 void TrackInfoObject::setHeaderParsed(bool parsed){
-    QMutexLocker lock(&m_qMutex);
-    if (m_bHeaderParsed != parsed) {
-        m_bHeaderParsed = parsed;
+    if (m_bHeaderParsed.exchange(parsed) != parsed) {
         setDirty(true);
+        emit(changed(this));
     }
 }
 QString TrackInfoObject::getInfo()  const{
-    QString sArtist(m_sArtist);
-    QString sTitle(m_sTitle);
-    QString artist = sArtist.trimmed() == "" ? "" : sArtist + ", ";
-    QString sInfo = artist + sTitle;
-    return sInfo;
+    auto sArtist = QString(m_sArtist);
+    auto sTitle = QString(m_sTitle);
+    auto artist = sArtist.trimmed() == "" ? "" : sArtist + ", ";
+    return  artist + sTitle;
 }
 QDateTime TrackInfoObject::getDateAdded() const {
     QDateTime dateAdded(m_dateAdded);
@@ -449,16 +446,12 @@ QDateTime TrackInfoObject::getDateAdded() const {
 void TrackInfoObject::setDateAdded(const QDateTime& dateAdded) {
     QDateTime oldDateAdded(dateAdded);
     qSwap(m_dateAdded,oldDateAdded);
-    if(oldDateAdded!=m_dateAdded){
-        emit changed(this);
-    }
+    if(oldDateAdded!=dateAdded){emit changed(this);}
 }
 QDateTime TrackInfoObject::getFileModifiedTime() const {return getFileInfo().lastModified();}
-QDateTime TrackInfoObject::getFileCreationTime() const {
-    return getFileInfo().created();
-}
-float TrackInfoObject::getDuration()  const {return m_fDuration.load();}
-void TrackInfoObject::setDuration(float i) {
+QDateTime TrackInfoObject::getFileCreationTime() const {return getFileInfo().created();}
+double TrackInfoObject::getDuration()  const {return m_fDuration.load();}
+void TrackInfoObject::setDuration(double i) {
     if (m_fDuration.exchange(i) != i) {setDirty(true);emit changed(this);}
 }
 QString TrackInfoObject::getTitle() const {
@@ -698,10 +691,10 @@ void TrackInfoObject::setWaveform(ConstWaveformPointer pWaveform) {
 }
 ConstWaveformPointer TrackInfoObject::getWaveformSummary() const {return m_waveformSummary;}
 void TrackInfoObject::setWaveformSummary(ConstWaveformPointer pWaveform) {
-  m_waveformSummary = pWaaveform;
+  m_waveformSummary = pWaveform;
   emit(waveformSummaryUpdated());
 }
-void TrackInfoObject::setAnalyserProgress(float progress) {
+void TrackInfoObject::setAnalyserProgress(double progress) {
     // progress in 0 .. 1000. 
     auto oldProgress = progress;
     oldProgress=m_analyserProgress.exchange(oldProgress);
@@ -709,14 +702,14 @@ void TrackInfoObject::setAnalyserProgress(float progress) {
         emit(analyserProgress(progress));
 //    }
 }
-float TrackInfoObject::getAnalyserProgress() const {return m_analyserProgress.load();}
-void TrackInfoObject::setCuePoint(float cue) {
+double TrackInfoObject::getAnalyserProgress() const {return m_analyserProgress.load();}
+void TrackInfoObject::setCuePoint(double cue) {
     if (m_fCuePoint.exchange(cue) != cue) {
         setDirty(true);
         emit(changed(this));
     }
 }
-float TrackInfoObject::getCuePoint() {return m_fCuePoint.load();}
+double TrackInfoObject::getCuePoint() {return m_fCuePoint.load();}
 void TrackInfoObject::slotCueUpdated() {
     setDirty(true);
     emit(cuesUpdated());

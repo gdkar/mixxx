@@ -1,19 +1,10 @@
-#ifndef CONTROLLERPRESETVISITOR_H
-#define CONTROLLERPRESETVISITOR_H
-
-class MidiControllerPreset;
-class HidControllerPreset;
-
+_Pragma("once")
+class ControllerPreset;
 class ControllerPresetVisitor {
   public:
-    virtual void visit(MidiControllerPreset* preset) = 0;
-    virtual void visit(HidControllerPreset* preset) = 0;
+    virtual void visit(ControllerPreset* ){};
 };
-
 class ConstControllerPresetVisitor {
   public:
-    virtual void visit(const MidiControllerPreset* preset) = 0;
-    virtual void visit(const HidControllerPreset* preset) = 0;
+    virtual void visit(const ControllerPreset* ){};
 };
-
-#endif /* CONTROLLERPRESETVISITOR_H */

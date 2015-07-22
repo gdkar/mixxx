@@ -14,9 +14,7 @@
  *
  */
 
-#ifndef PORTMIDICONTROLLER_H
-#define PORTMIDICONTROLLER_H
-
+_Pragma("once")
 #include <portmidi.h>
 #include "controllers/midi/midicontroller.h"
 
@@ -32,22 +30,16 @@ class PortMidiController : public MidiController {
                        int inputDeviceIndex,
                        int outputDeviceIndex);
     virtual ~PortMidiController();
-
   private slots:
     virtual int open();
     virtual int close();
     virtual bool poll();
-
   private:
     void sendWord(unsigned int word);
     // The sysex data must already contain the start byte 0xf0 and the end byte
     // 0xf.7
     void send(QByteArray data);
-
-    virtual bool isPolling() const {
-        return true;
-    }
-
+    virtual bool isPolling() const {return true;}
     const PmDeviceInfo* m_pInputDeviceInfo;
     const PmDeviceInfo* m_pOutputDeviceInfo;
     int m_iInputDeviceIndex;
@@ -55,11 +47,8 @@ class PortMidiController : public MidiController {
     PortMidiStream *m_pInputStream;
     PortMidiStream *m_pOutputStream;
     PmEvent m_midiBuffer[MIXXX_PORTMIDI_BUFFER_LEN];
-
     // Storage for SysEx messages
     unsigned char m_cReceiveMsg[1024];
     int m_cReceiveMsg_index;
     bool m_bInSysex;
 };
-
-#endif

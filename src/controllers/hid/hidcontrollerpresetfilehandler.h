@@ -1,6 +1,4 @@
-#ifndef HIDCONTROLLERPRESETFILEHANDLER_H
-#define HIDCONTROLLERPRESETFILEHANDLER_H
-
+_Pragma("once")
 #include "controllers/hid/hidcontrollerpreset.h"
 #include "controllers/controllerpresetfilehandler.h"
 
@@ -8,13 +6,7 @@ class HidControllerPresetFileHandler : public ControllerPresetFileHandler {
   public:
     HidControllerPresetFileHandler() {};
     virtual ~HidControllerPresetFileHandler() {};
-
-    bool save(const HidControllerPreset& preset,
-              const QString deviceName, const QString fileName) const;
-
+    bool save(const HidControllerPreset& preset,const QString deviceName, const QString fileName) const;
   private:
-    virtual ControllerPresetPointer load(const QDomElement root,
-                                         const QString deviceName);
+    virtual ControllerPresetPointer load(const QDomElement root,const QString deviceName);
 };
-
-#endif /* HIDCONTROLLERPRESETFILEHANDLER_H */

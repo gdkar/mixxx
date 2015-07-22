@@ -16,7 +16,7 @@ class MidiControllerPresetFileHandler : public ControllerPresetFileHandler {
     MidiControllerPresetFileHandler() {};
     virtual ~MidiControllerPresetFileHandler() {};
 
-    bool save(const MidiControllerPreset& preset,
+    virtual bool save(const MidiControllerPreset& preset,
               const QString deviceName, const QString fileName) const;
 
   private:
@@ -28,12 +28,8 @@ class MidiControllerPresetFileHandler : public ControllerPresetFileHandler {
     QDomElement makeTextElement(QDomDocument* doc,
                                 const QString& elementName,
                                 const QString& text) const;
-
-    QDomElement inputMappingToXML(QDomDocument* doc,
-                                  const MidiInputMapping& mapping) const;
-
-    QDomElement outputMappingToXML(QDomDocument* doc,
-                                   const MidiOutputMapping& mapping) const;
+    QDomElement inputMappingToXML(QDomDocument* doc,const MidiInputMapping& mapping) const;
+    QDomElement outputMappingToXML(QDomDocument* doc,const MidiOutputMapping& mapping) const;
 };
 
 #endif

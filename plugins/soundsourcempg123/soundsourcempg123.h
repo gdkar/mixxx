@@ -1,9 +1,7 @@
-#ifndef MIXXX_SOUNDSOURCEMPG123_H
-#define MIXXX_SOUNDSOURCEMPG123_H
-
+_Pragma("once")
 #include "sources/soundsourceprovider.h"
 #include "sources/soundsourceplugin.h"
-
+#include "sources/soundsourcepluginapi.h"
 #include <mpg123.h>
 
 #include <QFile>
@@ -47,4 +45,3 @@ public:
 } // namespace Mixxx
 extern "C" MIXXX_SOUNDSOURCEPLUGINAPI_EXPORT
 Mixxx::SoundSourceProviderPointer Mixxx_SoundSourcePluginAPI_geSoundSourceProvider();
-#endif // MIXXX_SOUNDSOURCEMP3_H

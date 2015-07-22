@@ -34,11 +34,9 @@ DlgPrefController::DlgPrefController(QWidget* parent, Controller* controller,
           m_pOutputProxyModel(nullptr),
           m_bDirty(false) {
     m_ui.setupUi(this);
-
     initTableView(m_ui.m_pInputMappingTableView);
     initTableView(m_ui.m_pOutputMappingTableView);
     initTableView(m_ui.m_pScriptsTableWidget);
-
     connect(m_pController, SIGNAL(presetLoaded(ControllerPresetPointer)),
             this, SLOT(slotPresetLoaded(ControllerPresetPointer)));
     // TODO(rryan): Eh, this really isn't thread safe but it's the way it's been
@@ -48,7 +46,6 @@ DlgPrefController::DlgPrefController(QWidget* parent, Controller* controller,
     // really don't like concurrent access.
     ControllerPresetPointer pPreset = m_pController->getPreset();
     slotPresetLoaded(pPreset);
-
     m_ui.labelDeviceName->setText(m_pController->getName());
     QString category = m_pController->getCategory();
     if (!category.isEmpty()) {

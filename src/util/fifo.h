@@ -5,59 +5,65 @@
 #include <QMutex>
 #include <QScopedPointer>
 #include <QSharedPointer>
-
+#include <QSemaphore>
 #include "util/pa_ringbuffer.h"
 #include "util/reference.h"
 #include "util/math.h"
 #include "util.h"
 
 template <class DataType>
-class FIFO {
+class FIFO : public PaUtilRingBuffer<DataType>{
+  QSemaphore  m_spaceAvailable;
   public:
-    explicit FIFO(int size)
-            : m_data(nullptr) {
-        size = roundUpToPowerOf2(size);
-        // If we can't represent the next higher power of 2 then bail.
-        if (size < 0) {
-            return;
-        }
-        m_data = new DataType[size];
-        memset(m_data, 0, sizeof(DataType) * size);
-        PaUtil_InitializeRingBuffer(&m_ringBuffer, sizeof(DataType), size, m_data);
-    }
-    virtual ~FIFO() {delete [] m_data;}
-    int readAvailable() const {return PaUtil_GetRingBufferReadAvailable(&m_ringBuffer);}
-    int writeAvailable() const {return PaUtil_GetRingBufferWriteAvailable(&m_ringBuffer);}
-    int read(DataType* pData, int count) {return PaUtil_ReadRingBuffer(&m_ringBuffer, pData, count);}
-    int write(const DataType* pData, int count) {return PaUtil_WriteRingBuffer(&m_ringBuffer, pData, count);}
+    using PaUtilRingBuffer<DataType>::GetReadAvailable;
+    using PaUtilRingBuffer<DataType>::GetWriteAvailable;
+    using PaUtilRingBuffer<DataType>::GetReadRegions;
+    using PaUtilRingBuffer<DataType>::GetWriteRegions;
+    using PaUtilRingBuffer<DataType>::AdvanceReadIndex;
+    using PaUtilRingBuffer<DataType>::AdvanceWriteIndex;
+    using PaUtilRingBuffer<DataType>::Write;
+    using PaUtilRingBuffer<DataType>::Read;
+    explicit FIFO(long size):
+      PaUtilRingBuffer<DataType>(size),
+      m_spaceAvailable(size){}
+    int readAvailable() const {return GetReadAvailable();}
+    int writeAvailable() const {return GetWriteAvailable();}
+    int read(DataType* pData, int count) {auto n =  Read(pData, count);m_spaceAvailable.release(n);return n;}
+    int write(const DataType* pData, int count) {auto n = Write(pData, count);m_spaceAvailable.tryAcquire(n);return n;}
     void writeBlocking(const DataType* pData, int count) {
-        int written = 0;
+        auto written = 0;
+        if(count) m_spaceAvailable.acquire(1);
+        else return;
         while (written != count) {
-            int i = write(pData, count);
-            pData += i;
-            written += i;
+            auto n = Write(pData, count);
+            pData += n;
+            written += n;
+            if(((written<count) && n>0)||(written==count && n>1))
+              m_spaceAvailable.acquire((written<count)?n:(n-1));
         }
     }
     int aquireWriteRegions(int count,
             DataType** dataPtr1, long* sizePtr1,
             DataType** dataPtr2, long* sizePtr2) {
-        return PaUtil_GetRingBufferWriteRegions(&m_ringBuffer, count,
-                (void**)dataPtr1, sizePtr1, (void**)dataPtr2, sizePtr2);
+        return GetWriteRegions(count,
+                dataPtr1, sizePtr1, dataPtr2, sizePtr2);
     }
-    int releaseWriteRegions(int count) {return PaUtil_AdvanceRingBufferWriteIndex(&m_ringBuffer, count);}
+    int releaseWriteRegions(int count) {auto n =  AdvanceWriteIndex(count);
+    m_spaceAvailable.tryAcquire(count);
+    return n;}
     int aquireReadRegions(int count,
             DataType** dataPtr1, long* sizePtr1,
             DataType** dataPtr2, long* sizePtr2) {
-        return PaUtil_GetRingBufferReadRegions(&m_ringBuffer, count,
-                (void**)dataPtr1, sizePtr1, (void**)dataPtr2, sizePtr2);
+        return GetReadRegions(count,dataPtr1, sizePtr1, dataPtr2, sizePtr2);
     }
-    int releaseReadRegions(int count) {return PaUtil_AdvanceRingBufferReadIndex(&m_ringBuffer, count);}
+    int releaseReadRegions(int count) {
+      auto n = AdvanceReadIndex(count);
+      m_spaceAvailable.release(count);
+      return n;
+    }
   private:
-    DataType* m_data;
-    PaUtilRingBuffer m_ringBuffer;
     DISALLOW_COPY_AND_ASSIGN(FIFO<DataType>);
 };
-
 // MessagePipe represents one side of a TwoWayMessagePipe. The direction of the
 // pipe is with respect to the owner so sender and receiver are
 // perspective-dependent. If serializeWrites is true then calls to writeMessages

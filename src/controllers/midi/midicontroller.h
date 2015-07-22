@@ -10,9 +10,7 @@
 *   Note that the subclass' destructor should call close() at a minimum.
 */
 
-#ifndef MIDICONTROLLER_H
-#define MIDICONTROLLER_H
-
+_Pragma("once")
 #include "controllers/controller.h"
 #include "controllers/midi/midicontrollerpreset.h"
 #include "controllers/midi/midicontrollerpresetfilehandler.h"
@@ -33,28 +31,15 @@ class MidiController : public Controller {
         *pClone = m_preset;
         return ControllerPresetPointer(pClone);
     }
-
     virtual bool savePreset(const QString fileName) const;
-
+    using Controller::visit;
     virtual void visit(const MidiControllerPreset* preset);
-    virtual void visit(const HidControllerPreset* preset);
-
-    virtual void accept(ControllerVisitor* visitor) {
-        if (visitor) {
-            visitor->visit(this);
-        }
-    }
-
-    virtual bool isMappable() const {
-        return m_preset.isMappable();
-    }
-
+    virtual void accept(ControllerVisitor* visitor) {if (visitor) {visitor->visit(this);}}
+    virtual bool isMappable() const {return m_preset.isMappable();}
     virtual bool matchPreset(const PresetInfo& preset);
-
   signals:
     void messageReceived(unsigned char status, unsigned char control,
                          unsigned char value);
-
   protected:
     Q_INVOKABLE void sendShortMsg(unsigned char status, unsigned char byte1, unsigned char byte2);
     // Alias for send()
@@ -107,5 +92,3 @@ class MidiController : public Controller {
     friend class MidiOutputHandler;
     friend class MidiControllerTest;
 };
-
-#endif

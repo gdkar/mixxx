@@ -25,12 +25,12 @@ class AnalyserGain : public Analyser {
     void finalize(TrackPointer tio) override;
 
   private:
-    bool m_bStepControl;
-    ConfigObject<ConfigValue> *m_pConfigReplayGain;
-    CSAMPLE* m_pLeftTempBuffer;
-    CSAMPLE* m_pRightTempBuffer;
-    ReplayGain *m_pReplayGain;
-    int m_iBufferSize;
+    bool m_bStepControl = false;
+    ConfigObject<ConfigValue> *m_pConfigReplayGain = nullptr;
+    CSAMPLE* m_pLeftTempBuffer = nullptr;
+    CSAMPLE* m_pRightTempBuffer = nullptr;
+    ReplayGain *m_pReplayGain = nullptr;
+    int m_iBufferSize = 0;
 };
 
 #endif /* ANALYSERRG_H_ */

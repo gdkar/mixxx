@@ -8,19 +8,6 @@ class HidControllerPreset : public ControllerPreset {
   public:
     HidControllerPreset() {}
     virtual ~HidControllerPreset() {}
-
-    virtual void accept(ControllerPresetVisitor* visitor) {
-        if (visitor) {
-            visitor->visit(this);
-        }
-    }
-
-    virtual void accept(ConstControllerPresetVisitor* visitor) const {
-        if (visitor) {
-            visitor->visit(this);
-        }
-    }
-
     virtual bool isMappable() const {
         return false;
     }

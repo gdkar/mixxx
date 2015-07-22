@@ -1,29 +1,21 @@
 #include <QtDebug>
 #include <QLineEdit>
 #include <QStringList>
-
 #include "controllers/delegates/controldelegate.h"
 #include "controllers/midi/midimessage.h"
-
 ControlDelegate::ControlDelegate(QObject* pParent)
         : QStyledItemDelegate(pParent),
           m_pPicker(new ControlPickerMenu(nullptr)),
           m_iMidiOptionsColumn(-1),
           m_bIsIndexScript(false) {
 }
-
-ControlDelegate::~ControlDelegate() {
-}
-
-QWidget* ControlDelegate::createEditor(QWidget* parent,
-                                       const QStyleOptionViewItem& option,
-                                       const QModelIndex& index) const {
+ControlDelegate::~ControlDelegate() {}
+QWidget* ControlDelegate::createEditor(QWidget* parent,const QStyleOptionViewItem& option,const QModelIndex& index) const {
     Q_UNUSED(option);
     Q_UNUSED(index);
     QLineEdit* pLineEdit = new QLineEdit(parent);
     return pLineEdit;
 }
-
 void ControlDelegate::paint(QPainter* painter,
                             const QStyleOptionViewItem& option,
                             const QModelIndex& index) const {
@@ -47,28 +39,15 @@ QString ControlDelegate::displayText(const QVariant& value,const QLocale& locale
 void ControlDelegate::setEditorData(QWidget* editor,const QModelIndex& index) const {
     ConfigKey key = qVariantValue<ConfigKey>(index.data(Qt::EditRole));
     QLineEdit* pLineEdit = dynamic_cast<QLineEdit*>(editor);
-    if (pLineEdit == nullptr) {
-        return;
-    }
-
-    if (key.group.isEmpty() && key.item.isEmpty()) {
-        return;
-    }
-
+    if (!pLineEdit ) {return;}
+    if (key.group.isEmpty() && key.item.isEmpty()) {return;}
     pLineEdit->setText(key.group + "," + key.item);
 }
-
-void ControlDelegate::setModelData(QWidget* editor,
-                                   QAbstractItemModel* model,
-                                   const QModelIndex& index) const {
+void ControlDelegate::setModelData(QWidget* editor,QAbstractItemModel* model,const QModelIndex& index) const {
     QLineEdit* pLineEdit = qobject_cast<QLineEdit*>(editor);
-    if (pLineEdit == nullptr) {
-        return;
-    }
-
+    if (!pLineEdit ) {return;}
     QStringList keyStrs = pLineEdit->text().split(",");
     if (keyStrs.size() == 2) {
-        model->setData(index, qVariantFromValue(
-            ConfigKey(keyStrs.at(0), keyStrs.at(1))), Qt::EditRole);
+        model->setData(index, qVariantFromValue(ConfigKey(keyStrs.at(0), keyStrs.at(1))), Qt::EditRole);
     }
 }

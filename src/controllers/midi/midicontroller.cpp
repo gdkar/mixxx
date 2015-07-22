@@ -40,12 +40,6 @@ int MidiController::close() {
     return 0;
 }
 
-void MidiController::visit(const HidControllerPreset* preset) {
-    Q_UNUSED(preset);
-    qWarning() << "ERROR: Attempting to load an HidControllerPreset to a MidiController!";
-    // TODO(XXX): throw a hissy fit.
-}
-
 bool MidiController::matchPreset(const PresetInfo& preset) {
     // Product info mapping not implemented for MIDI devices yet
     Q_UNUSED(preset);

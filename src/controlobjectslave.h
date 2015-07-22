@@ -24,25 +24,22 @@ class ControlObjectSlave : public QObject {
 
     void initialize(const ConfigKey& key);
 
-    const ConfigKey& getKey() const {
-        return m_key;
-    }
+    const ConfigKey& getKey() const {return m_key;}
 
     bool connectValueChanged(const QObject* receiver,
             const char* method, Qt::ConnectionType type = Qt::AutoConnection);
-    bool connectValueChanged(
-            const char* method, Qt::ConnectionType type = Qt::AutoConnection);
+    bool connectValueChanged(const char* method, Qt::ConnectionType type = Qt::AutoConnection);
 
     // Called from update();
     inline void emitValueChanged() {
         emit(valueChanged(get()));
     }
-
-    inline bool valid() const { return m_pControl != nullptr; }
+    inline bool valid() const { return !!m_pControl;}
 
     // Returns the value of the object. Thread safe, non-blocking.
     inline double get() const {
-        return m_pControl ? m_pControl->get() : 0.0;
+        if(m_pControl) return m_pControl->get();
+        else return 0.0;
     }
 
     // Returns the bool interpretation of the value
@@ -52,30 +49,29 @@ class ControlObjectSlave : public QObject {
 
     // Returns the parameterized value of the object. Thread safe, non-blocking.
     inline double getParameter() const {
-        return m_pControl ? m_pControl->getParameter() : 0.0;
+        if(m_pControl) return m_pControl->getParameter();
+        else return 0.0;
     }
-
+    inline double getDefault() const{
+        if(m_pControl)return m_pControl->defaultValue();
+        else return 0.0;
+    }
     // Returns the parameterized value of the object. Thread safe, non-blocking.
     inline double getParameterForValue(double value) const {
-        return m_pControl ? m_pControl->getParameterForValue(value) : 0.0;
+        if(m_pControl) return m_pControl->getParameterForValue(value);
+        else return 0.0;
     }
 
   public slots:
     // Set the control to a new value. Non-blocking.
-    inline void slotSet(double v) {
-        set(v);
-    }
+    inline void slotSet(double v) {set(v);}
     // Sets the control value to v. Thread safe, non-blocking.
     void set(double v) {
-        if (m_pControl) {
-            m_pControl->set(v, this);
-        }
+        if (m_pControl) {m_pControl->set(v, this);}
     }
     // Sets the control parameterized value to v. Thread safe, non-blocking.
     void setParameter(double v) {
-        if (m_pControl) {
-            m_pControl->setParameter(v, this);
-        }
+        if (m_pControl) {m_pControl->setParameter(v, this);}
     }
     // Resets the control to its default value. Thread safe, non-blocking.
     void reset() {
@@ -88,22 +84,19 @@ class ControlObjectSlave : public QObject {
             m_pControl->reset();
         }
     }
-
   signals:
     // This signal must not connected by connect(). Use connectValueChanged()
     // instead. It will connect to the base ControlDoublePrivate as well.
     void valueChanged(double,QObject *obj=nullptr);
-
   protected slots:
     // Receives the value from the master control and re-emits either
     // valueChanged(double) or valueChangedByThis(double) based on pSetter.
-    inline void slotValueChanged(double v, QObject* pSetter) {
+    inline void onValueChanged(double v, QObject* pSetter = nullptr) {
         if (pSetter != this) {
             // This is base implementation of this function without scaling
             emit(valueChanged(v));
         }
     }
-
   protected:
     ConfigKey m_key;
     // Pointer to connected control.
