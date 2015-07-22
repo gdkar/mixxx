@@ -2,7 +2,7 @@
 #include "trackinfoobject.h"
 #include "waveform/waveform.h"
 #include "waveformwidgetrenderer.h"
-#include "controlobjectthread.h"
+#include "controlobjectslave.h"
 #include "waveform/waveformwidgetfactory.h"
 #include "util/math.h"
 

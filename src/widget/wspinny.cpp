@@ -5,7 +5,7 @@
 #include <QStylePainter>
 
 #include "controlobject.h"
-#include "controlobjectthread.h"
+#include "controlobjectslave.h"
 #include "library/coverartcache.h"
 #include "util/dnd.h"
 #include "util/math.h"
@@ -171,28 +171,28 @@ void WSpinny::setup(QDomNode node, const SkinContext& context) {
     m_qImage.fill(qRgba(0,0,0,0));
 #endif
 
-    m_pPlay = new ControlObjectThread(
+    m_pPlay = new ControlObjectSlave(
             m_group, "play");
-    m_pPlayPos = new ControlObjectThread(
+    m_pPlayPos = new ControlObjectSlave(
             m_group, "playposition");
     m_pVisualPlayPos = VisualPlayPosition::getVisualPlayPosition(m_group);
-    m_pTrackSamples = new ControlObjectThread(
+    m_pTrackSamples = new ControlObjectSlave(
             m_group, "track_samples");
-    m_pTrackSampleRate = new ControlObjectThread(
+    m_pTrackSampleRate = new ControlObjectSlave(
             m_group, "track_samplerate");
 
-    m_pScratchToggle = new ControlObjectThread(
+    m_pScratchToggle = new ControlObjectSlave(
             m_group, "scratch_position_enable");
-    m_pScratchPos = new ControlObjectThread(
+    m_pScratchPos = new ControlObjectSlave(
             m_group, "scratch_position");
 
-    m_pSlipEnabled = new ControlObjectThread(
+    m_pSlipEnabled = new ControlObjectSlave(
             m_group, "slip_enabled");
     connect(m_pSlipEnabled, SIGNAL(valueChanged(double)),
             this, SLOT(updateSlipEnabled(double)));
 
 #ifdef __VINYLCONTROL__
-    m_pVinylControlSpeedType = new ControlObjectThread(
+    m_pVinylControlSpeedType = new ControlObjectSlave(
             m_group, "vinylcontrol_speed_type");
     if (m_pVinylControlSpeedType)
     {
@@ -200,12 +200,12 @@ void WSpinny::setup(QDomNode node, const SkinContext& context) {
         this->updateVinylControlSpeed(m_pVinylControlSpeedType->get());
     }
 
-    m_pVinylControlEnabled = new ControlObjectThread(
+    m_pVinylControlEnabled = new ControlObjectSlave(
             m_group, "vinylcontrol_enabled");
     connect(m_pVinylControlEnabled, SIGNAL(valueChanged(double)),
             this, SLOT(updateVinylControlEnabled(double)));
 
-    m_pSignalEnabled = new ControlObjectThread(
+    m_pSignalEnabled = new ControlObjectSlave(
             m_group, "vinylcontrol_signal_enabled");
     connect(m_pSignalEnabled, SIGNAL(valueChanged(double)),
             this, SLOT(updateVinylControlSignalEnabled(double)));

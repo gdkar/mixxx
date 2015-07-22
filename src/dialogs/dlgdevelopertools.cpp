@@ -6,25 +6,32 @@
 #include "util/statsmanager.h"
 
 
-DlgDeveloperTools::DlgDeveloperTools(QWidget* pParent,ConfigObject<ConfigValue>* pConfig)
+DlgDeveloperTools::DlgDeveloperTools(QWidget* pParent,
+                                     ConfigObject<ConfigValue>* pConfig)
         : QDialog(pParent) {
     Q_UNUSED(pConfig);
     setupUi(this);
-    auto controlsList = QList<QSharedPointer<ControlDoublePrivate> >{};
-    ControlDoublePrivate::getControls(&controlsList);
-    auto controlAliases = ControlDoublePrivate::getControlAliases();
 
-    for (auto it = controlsList.constBegin(); it != controlsList.constEnd(); ++it) {
-        auto pControl = *it;
+    QList<QSharedPointer<ControlDoublePrivate> > controlsList;
+    ControlDoublePrivate::getControls(&controlsList);
+    QHash<ConfigKey, ConfigKey> controlAliases =
+            ControlDoublePrivate::getControlAliases();
+
+    for (QList<QSharedPointer<ControlDoublePrivate> >::const_iterator it = controlsList.begin();
+            it != controlsList.end(); ++it) {
+        const QSharedPointer<ControlDoublePrivate>& pControl = *it;
         if (pControl) {
-            m_controlModel.addControl(pControl->getKey(), pControl->name(),pControl->description());
-            auto aliasKey = controlAliases[pControl->getKey()];
+            m_controlModel.addControl(pControl->getKey(), pControl->name(),
+                                      pControl->description());
+
+            ConfigKey aliasKey = controlAliases[pControl->getKey()];
             if (!aliasKey.isNull()) {
                 m_controlModel.addControl(aliasKey, pControl->name(),
                                           "Alias for " + pControl->getKey().group + pControl->getKey().item);
             }
         }
     }
+
     m_controlProxyModel.setSourceModel(&m_controlModel);
     m_controlProxyModel.setFilterCaseSensitivity(Qt::CaseInsensitive);
     m_controlProxyModel.setFilterKeyColumn(ControlModel::CONTROL_COLUMN_FILTER);
@@ -32,73 +39,115 @@ DlgDeveloperTools::DlgDeveloperTools(QWidget* pParent,ConfigObject<ConfigValue>*
     controlsTable->hideColumn(ControlModel::CONTROL_COLUMN_TITLE);
     controlsTable->hideColumn(ControlModel::CONTROL_COLUMN_DESCRIPTION);
     controlsTable->hideColumn(ControlModel::CONTROL_COLUMN_FILTER);
-    auto pManager = StatsManager::instance();
+
+    StatsManager* pManager = StatsManager::instance();
     if (pManager) {
-        connect(pManager, SIGNAL(statUpdated(const Stat&)),&m_statModel, SLOT(statUpdated(const Stat&)));
+        connect(pManager, SIGNAL(statUpdated(const Stat&)),
+                &m_statModel, SLOT(statUpdated(const Stat&)));
         pManager->emitAllStats();
     }
+
     m_statProxyModel.setSourceModel(&m_statModel);
     statsTable->setModel(&m_statProxyModel);
-    auto logFileName = QDir(CmdlineArgs::Instance().getSettingsPath()).filePath("mixxx.log");
+
+    QString logFileName = QDir(CmdlineArgs::Instance().getSettingsPath()).filePath("mixxx.log");
     m_logFile.setFileName(logFileName);
     if (!m_logFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
         qDebug() << "ERROR: Could not open log file";
     }
+
     // Connect search box signals to the library
-    connect(controlSearch, SIGNAL(search(const QString&)),this, SLOT(onControlSearch(const QString&)));
-    connect(controlSearch, SIGNAL(searchCleared()),this, SLOT(onControlSearchClear()));
-    connect(controlDump, SIGNAL(clicked()),this, SLOT(onControlDump()));
+    connect(controlSearch, SIGNAL(search(const QString&)),
+            this, SLOT(slotControlSearch(const QString&)));
+    connect(controlSearch, SIGNAL(searchCleared()),
+            this, SLOT(slotControlSearchClear()));
+    connect(controlDump, SIGNAL(clicked()),
+            this, SLOT(slotControlDump()));
+
     // Set up the log search box
-    connect(logSearch, SIGNAL(returnPressed()),this, SLOT(onLogSearch()));
-    connect(logSearchButton, SIGNAL(clicked()),this, SLOT(onLogSearch()));
+    connect(logSearch, SIGNAL(returnPressed()),
+            this, SLOT(slotLogSearch()));
+    connect(logSearchButton, SIGNAL(clicked()),
+            this, SLOT(slotLogSearch()));
+
     m_logCursor = logTextView->textCursor();
+
     // Update at 2FPS.
-    startTimer(250,Qt::PreciseTimer);
+    startTimer(500);
+
     // Delete this dialog when its closed. We don't want any persistence.
     setAttribute(Qt::WA_DeleteOnClose);
 }
 
-DlgDeveloperTools::~DlgDeveloperTools() {}
+DlgDeveloperTools::~DlgDeveloperTools() {
+}
 
 void DlgDeveloperTools::timerEvent(QTimerEvent* pEvent) {
     Q_UNUSED(pEvent);
     if (m_logFile.isOpen()) {
-        auto newLines = QStringList{};
+        QStringList newLines;
+
         while (true) {
-            auto line = m_logFile.readLine();
-            if (line.isEmpty()) {break;}
+            QByteArray line = m_logFile.readLine();
+            if (line.isEmpty()) {
+                break;
+            }
             newLines.append(QString::fromLocal8Bit(line));
         }
-        if (!newLines.isEmpty()) {logTextView->append(newLines.join(""));}
+
+        if (!newLines.isEmpty()) {
+            logTextView->append(newLines.join(""));
+        }
     }
+
     // To save on CPU, only update the models when they are visible.
     if (toolTabWidget->currentWidget() == controlsTab) {
         //m_controlModel.updateDirtyRows();
         controlsTable->update();
     } else if (toolTabWidget->currentWidget() == statsTab) {
-        auto pManager = StatsManager::instance();
-        if (pManager) {pManager->updateStats();}
+        StatsManager* pManager = StatsManager::instance();
+        if (pManager) {
+            pManager->updateStats();
+        }
     }
 }
-void DlgDeveloperTools::onControlSearch(const QString& search) {m_controlProxyModel.setFilterFixedString(search);}
-void DlgDeveloperTools::onControlSearchClear() {m_controlProxyModel.setFilterFixedString(QString());}
-void DlgDeveloperTools::onControlDump() {
-    auto timestamp = QDateTime::currentDateTime().toString("yyyy-MM-dd_hh'h'mm'm'ss's'");
-    auto dumpFileName = CmdlineArgs::Instance().getSettingsPath() + "/co_dump_" + timestamp + ".csv";
-    QFile dumpFile{dumpFileName};
+
+void DlgDeveloperTools::slotControlSearch(const QString& search) {
+    m_controlProxyModel.setFilterFixedString(search);
+}
+
+void DlgDeveloperTools::slotControlSearchClear() {
+    m_controlProxyModel.setFilterFixedString(QString());
+}
+
+void DlgDeveloperTools::slotControlDump() {
+
+    QString timestamp = QDateTime::currentDateTime()
+            .toString("yyyy-MM-dd_hh'h'mm'm'ss's'");
+    QString dumpFileName = CmdlineArgs::Instance().getSettingsPath() +
+            "/co_dump_" + timestamp + ".csv";
+    QFile dumpFile;
+    dumpFile.setFileName(dumpFileName);
     dumpFile.open(QIODevice::WriteOnly | QIODevice::Text);
-    auto controlsList = QList<QSharedPointer<ControlDoublePrivate> >{};
+
+    QList<QSharedPointer<ControlDoublePrivate> > controlsList;
     ControlDoublePrivate::getControls(&controlsList);
-    for (auto it = controlsList.constBegin();it != controlsList.constEnd(); ++it) {
-        auto pControl = *it;
+    for (QList<QSharedPointer<ControlDoublePrivate> >::const_iterator it = controlsList.begin();
+            it != controlsList.end(); ++it) {
+        const QSharedPointer<ControlDoublePrivate>& pControl = *it;
         if (pControl) {
-            auto line = pControl->getKey().group + "," +pControl->getKey().item + "," +QString::number(pControl->get()) + "\n";
+            QString line = pControl->getKey().group + "," +
+                           pControl->getKey().item + "," +
+                           QString::number(pControl->get()) + "\n";
             dumpFile.write(line.toLocal8Bit());
         }
     }
 }
-void DlgDeveloperTools::onLogSearch() {
-    auto textToFind = logSearch->text();
+
+void DlgDeveloperTools::slotLogSearch() {
+    QString textToFind = logSearch->text();
     m_logCursor = logTextView->document()->find(textToFind, m_logCursor);
     logTextView->setTextCursor(m_logCursor);
 }
+
+
