@@ -1,12 +1,12 @@
 #include "controlindicator.h"
-#include "controlobjectthread.h"
+#include "controlobjectslave.h"
 
 ControlIndicator::ControlIndicator(ConfigKey key,QObject*pParent)
         : ControlObject(key, pParent),
           m_blinkValue(OFF),
           m_nextSwitchTime(0.0) {
-    m_pCOTGuiTickTime = new ControlObjectThread("[Master]", "guiTickTime",this); // Tick time in audio buffer resolution
-    m_pCOTGuiTick50ms = new ControlObjectThread("[Master]", "guiTick50ms",this);
+    m_pCOTGuiTickTime = new ControlObjectSlave("[Master]", "guiTickTime",this); // Tick time in audio buffer resolution
+    m_pCOTGuiTick50ms = new ControlObjectSlave("[Master]", "guiTick50ms",this);
     connect(m_pCOTGuiTick50ms, SIGNAL(valueChanged(double)),this, SLOT(slotGuiTick50ms(double)));
     connect(this, SIGNAL(blinkValueChanged()),this, SLOT(slotBlinkValueChanged()));
 }

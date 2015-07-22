@@ -3,7 +3,7 @@
 
 #include "controlobject.h"
 
-class ControlObjectThread;
+class ControlObjectSlave;
 
 class ControlIndicator : public ControlObject {
     Q_OBJECT
@@ -30,8 +30,8 @@ class ControlIndicator : public ControlObject {
     void set(double value) { ControlObject::set(value); };
     enum BlinkValue m_blinkValue;
     double m_nextSwitchTime;
-    ControlObjectThread* m_pCOTGuiTickTime;
-    ControlObjectThread* m_pCOTGuiTick50ms;
+    ControlObjectSlave* m_pCOTGuiTickTime;
+    ControlObjectSlave* m_pCOTGuiTick50ms;
 };
 
 #endif // CONTROLINDICATOR_H

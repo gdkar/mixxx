@@ -55,9 +55,9 @@ TrackPlayer::TrackPlayer(ConfigObject<ConfigValue>* pConfig,
             this, SLOT(slotUnloadTrack(TrackPointer)));
 
     // Get loop point control objects
-    m_pLoopInPoint = new ControlObjectThread(
+    m_pLoopInPoint = new ControlObjectSlave(
             getGroup(),"loop_start_position");
-    m_pLoopOutPoint = new ControlObjectThread(
+    m_pLoopOutPoint = new ControlObjectSlave(
             getGroup(),"loop_end_position");
 
     // Duration of the current song, we create this one because nothing else does.
@@ -78,10 +78,10 @@ TrackPlayer::TrackPlayer(ConfigObject<ConfigValue>* pConfig,
 
     m_pPreGain = new ControlObjectSlave(ConfigKey(group, "pregain"));
     //BPM of the current song
-    m_pBPM = new ControlObjectThread(group, "file_bpm");
-    m_pKey = new ControlObjectThread(group, "file_key");
-    m_pReplayGain = new ControlObjectThread(group, "replaygain");
-    m_pPlay = new ControlObjectThread(group, "play");
+    m_pBPM = new ControlObjectSlave(group, "file_bpm");
+    m_pKey = new ControlObjectSlave(group, "file_key");
+    m_pReplayGain = new ControlObjectSlave(group, "replaygain");
+    m_pPlay = new ControlObjectSlave(group, "play");
     connect(m_pPlay, SIGNAL(valueChanged(double)),
             this, SLOT(slotPlayToggled(double)));
 }

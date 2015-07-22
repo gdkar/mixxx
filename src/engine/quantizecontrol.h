@@ -11,7 +11,7 @@
 
 class ControlObject;
 class ControlPushButton;
-class ControlObjectThread;
+class ControlObjectSlave;
 
 class QuantizeControl : public EngineControl {
     Q_OBJECT

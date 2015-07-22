@@ -18,7 +18,7 @@
 
 #include "playerinfo.h"
 #include "controlobject.h"
-#include "controlobjectthread.h"
+#include "controlobjectslave.h"
 #include "engine/enginechannel.h"
 #include "engine/enginexfader.h"
 #include "playermanager.h"
@@ -27,7 +27,7 @@ static const int kPlayingDeckUpdateIntervalMillis = 2000;
 static PlayerInfo* m_pPlayerInfo = nullptr;
 
 PlayerInfo::PlayerInfo()
-        : m_pCOxfader(new ControlObjectThread("[Master]","crossfader")),
+        : m_pCOxfader(new ControlObjectSlave("[Master]","crossfader")),
           m_currentlyPlayingDeck(-1) {
     startTimer(kPlayingDeckUpdateIntervalMillis);
 }

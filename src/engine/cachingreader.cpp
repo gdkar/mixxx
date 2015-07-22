@@ -2,7 +2,7 @@
 #include <QFileInfo>
 
 #include "controlobject.h"
-#include "controlobjectthread.h"
+#include "controlobjectslave.h"
 
 #include "cachingreader.h"
 #include "trackinfoobject.h"

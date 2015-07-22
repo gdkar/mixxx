@@ -24,7 +24,7 @@
 
 #include "vinylcontrol/vinylcontrolxwax.h"
 #include "util/timer.h"
-#include "controlobjectthread.h"
+#include "controlobjectslave.h"
 #include "controlobjectslave.h"
 #include "controlobject.h"
 #include "util/math.h"
@@ -427,7 +427,7 @@ void VinylControlXwax::analyzeSamples(CSAMPLE* pSamples, size_t nFrames) {
             } else if (m_bTrackSelectMode) {
                 //qDebug() << "discontinuing select mode, selecting track";
                 if (m_pControlTrackLoader == nullptr)
-                    m_pControlTrackLoader = new ControlObjectThread(m_group,"LoadSelectedTrack");
+                    m_pControlTrackLoader = new ControlObjectSlave(m_group,"LoadSelectedTrack");
 
                 if (!m_pControlTrackLoader) {
                     qDebug() << "ERROR: couldn't get track loading object?";
@@ -714,7 +714,7 @@ void VinylControlXwax::doTrackSelection(bool valid_pos, double pitch, double pos
     if (m_pControlTrackSelector == nullptr) {
         //this isn't done in the constructor because this object
         //doesn't seem to be created yet
-        m_pControlTrackSelector = new ControlObjectThread("[Playlist]","SelectTrackKnob");
+        m_pControlTrackSelector = new ControlObjectSlave("[Playlist]","SelectTrackKnob");
         if (m_pControlTrackSelector == nullptr) {
             qDebug() << "Warning: Track Selector control object nullptr";
             return;

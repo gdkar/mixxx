@@ -7,7 +7,7 @@
 
 #include "configobject.h"
 #include "controlobject.h"
-#include "controlobjectthread.h"
+#include "controlobjectslave.h"
 #include "recording/defs_recording.h"
 
 //
@@ -65,7 +65,7 @@ class RecordingManager : public QObject
 
   private:
     QString formatDateTimeForFilename(QDateTime dateTime) const;
-    ControlObjectThread* m_recReady;
+    ControlObjectSlave* m_recReady;
     ControlObject* m_recReadyCO;
     ControlPushButton* m_pToggleRecording;
 

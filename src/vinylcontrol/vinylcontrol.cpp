@@ -1,5 +1,5 @@
 #include "vinylcontrol/vinylcontrol.h"
-#include "controlobjectthread.h"
+#include "controlobjectslave.h"
 #include "controlobjectslave.h"
 #include "controlobject.h"
 
@@ -11,32 +11,32 @@ VinylControl::VinylControl(ConfigObject<ConfigValue> * pConfig, QString group)
           m_dVinylPosition(0.0),
           m_fTimecodeQuality(0.0f) {
     // Get Control objects
-    m_pVinylControlInputGain = new ControlObjectThread(VINYL_PREF_KEY, "gain");
+    m_pVinylControlInputGain = new ControlObjectSlave(VINYL_PREF_KEY, "gain");
 
     bool gainOk = false;
     double gain = m_pConfig->getValueString(ConfigKey(VINYL_PREF_KEY, "gain"))
             .toDouble(&gainOk);
     m_pVinylControlInputGain->set(gainOk ? gain : 1.0);
 
-    playPos             = new ControlObjectThread(group, "playposition");    // Range: 0 to 1.0
-    trackSamples        = new ControlObjectThread(group, "track_samples");
-    trackSampleRate     = new ControlObjectThread(group, "track_samplerate");
-    vinylSeek           = new ControlObjectThread(group, "vinylcontrol_seek");
+    playPos             = new ControlObjectSlave(group, "playposition");    // Range: 0 to 1.0
+    trackSamples        = new ControlObjectSlave(group, "track_samples");
+    trackSampleRate     = new ControlObjectSlave(group, "track_samplerate");
+    vinylSeek           = new ControlObjectSlave(group, "vinylcontrol_seek");
     m_pVCRate = new ControlObjectSlave(group, "vinylcontrol_rate");
     m_pRateSlider = new ControlObjectSlave(group, "rate");
-    playButton          = new ControlObjectThread(group, "play");
-    duration            = new ControlObjectThread(group, "duration");
-    mode                = new ControlObjectThread(group, "vinylcontrol_mode");
-    enabled             = new ControlObjectThread(group, "vinylcontrol_enabled");
-    wantenabled         = new ControlObjectThread(group, "vinylcontrol_wantenabled");
-    cueing              = new ControlObjectThread(group, "vinylcontrol_cueing");
-    scratching          = new ControlObjectThread(group, "vinylcontrol_scratching");
-    rateRange           = new ControlObjectThread(group, "rateRange");
-    vinylStatus         = new ControlObjectThread(group, "vinylcontrol_status");
-    rateDir             = new ControlObjectThread(group, "rate_dir");
-    loopEnabled         = new ControlObjectThread(group, "loop_enabled");
-    signalenabled       = new ControlObjectThread(group, "vinylcontrol_signal_enabled");
-    reverseButton       = new ControlObjectThread(group, "reverse");
+    playButton          = new ControlObjectSlave(group, "play");
+    duration            = new ControlObjectSlave(group, "duration");
+    mode                = new ControlObjectSlave(group, "vinylcontrol_mode");
+    enabled             = new ControlObjectSlave(group, "vinylcontrol_enabled");
+    wantenabled         = new ControlObjectSlave(group, "vinylcontrol_wantenabled");
+    cueing              = new ControlObjectSlave(group, "vinylcontrol_cueing");
+    scratching          = new ControlObjectSlave(group, "vinylcontrol_scratching");
+    rateRange           = new ControlObjectSlave(group, "rateRange");
+    vinylStatus         = new ControlObjectSlave(group, "vinylcontrol_status");
+    rateDir             = new ControlObjectSlave(group, "rate_dir");
+    loopEnabled         = new ControlObjectSlave(group, "loop_enabled");
+    signalenabled       = new ControlObjectSlave(group, "vinylcontrol_signal_enabled");
+    reverseButton       = new ControlObjectSlave(group, "reverse");
 
     //Enabled or not -- load from saved value in case vinyl control is restarting
     m_bIsEnabled = wantenabled->get() > 0.0;

@@ -2,7 +2,7 @@
 #define MIXXXAPPLICATION_H
 
 #include <QApplication>
-class ControlObjectThread;
+class ControlObjectSlave;
 class MixxxApplication : public QApplication {
     Q_OBJECT
   public:
@@ -16,6 +16,6 @@ class MixxxApplication : public QApplication {
     int m_fakeMouseSourcePointId;
     QWidget* m_fakeMouseWidget;
     enum Qt::MouseButton m_activeTouchButton;
-    ControlObjectThread* m_pTouchShift;
+    ControlObjectSlave* m_pTouchShift;
 };
 #endif // MIXXXAPPLICATION_H
