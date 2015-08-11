@@ -771,7 +771,7 @@ void EngineBuffer::process(CSAMPLE* pOutput, const int iBufferSize) {
 
         // TODO(owen): Maybe change this so that rubberband doesn't disable
         // keylock on scratch. (just check m_pScaleKeylock == m_pScaleST)
-        if (is_scratching || fabs(speed) > 1.9) {
+        if (is_scratching ) {
             // Scratching and high speeds with always disables keylock
             // because Soundtouch sounds terrible in these conditions.  Rubberband
             // sounds better, but still has some problems (it may reallocate in

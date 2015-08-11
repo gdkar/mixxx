@@ -3,7 +3,11 @@
 
 #include <limits>
 
+#include <atomic>
+#include <memory>
 #include <QAtomicInt>
+#include <QAtomicInteger>
+#include <QSharedPointer>
 #include <QObject>
 
 #include "util/compatibility.h"
@@ -17,7 +21,6 @@ const int cRingSize = 8;
 // NOTE(rryan): Wrapping max with parentheses avoids conflict with the max macro
 // defined in windows.h.
 const int cReaderSlotCnt = (std::numeric_limits<int>::max)();
-
 // A single instance of a value of type T along with an atomic integer which
 // tracks the current number of readers or writers of the slot. The value
 // m_readerSlots starts at cReaderSlotCnt and counts down to 0. If the value is
@@ -32,17 +35,13 @@ class ControlRingValue {
         : m_value(T()),
           m_readerSlots(cReaderSlotCnt) {
     }
-
     bool tryGet(T* value) const {
         // Read while consuming one readerSlot
         bool hasSlot = (m_readerSlots.fetchAndAddAcquire(-1) > 0);
-        if (hasSlot) {
-            *value = m_value;
-        }
+        if (hasSlot) {*value = m_value;}
         (void)m_readerSlots.fetchAndAddRelease(1);
         return hasSlot;
     }
-
     bool trySet(const T& value) {
         // try to lock this element entirely for reading
         if (m_readerSlots.testAndSetAcquire(cReaderSlotCnt, 0)) {
@@ -52,103 +51,100 @@ class ControlRingValue {
         }
         return false;
    }
-
   private:
     T m_value;
     mutable QAtomicInt m_readerSlots;
 };
-
-// Ring buffer based implementation for all Types sizeof(T) > sizeof(void*)
+// shared pointer based implementation for all Types sizeof(T) > sizeof(void*)
 
 // An implementation of ControlValueAtomicBase for non-atomic types T. Uses a
-// ring-buffer of ControlRingValues and a read pointer and write pointer to
-// provide getValue()/setValue() methods which *sacrifice perfect consistency*
-// for the benefit of wait-free read/write access to a value.
+// QSharedPointer<T> to reference the most recent value, and takes a reference
+// ( i.e., a QSharedPointer<T> ) on reading --- thus avoiding attempting to 
+// custom re-implement atomic / wait-free reference counting --- given that the
+// QSharedPointer implementation, there, will be wait-free if the primitives we
+// were using --- above --- are.
+//
+// relies on wait-free allocation of ( at least a small number of ) items of size
+// sizeof(T), but honestly if we can't guarantee that we're all kinds of fucked
+// anyway. reads are always consistent and wait-free if t::operator delete is.
+
 template<typename T, bool ATOMIC = false>
 class ControlValueAtomicBase {
   public:
     inline T getValue() const {
-        T value = T();
-        unsigned int index = static_cast<unsigned int>(load_atomic(m_readIndex)) % (cRingSize);
-        while (m_ring[index].tryGet(&value) == false) {
-            // We are here if
-            // 1) there are more then cReaderSlotCnt reader (get) reading the same value or
-            // 2) the formerly current value is locked by a writer
-            // Case 1 does not happen because we have enough (0x7fffffff) reader slots.
-            // Case 2 happens when the a reader is delayed after reading the
-            // m_currentIndex and in the mean while a reader locks the formaly current value
-            // because it has written cRingSize times. Reading the less recent value will fix
-            // it because it is now actualy the current value.
-            index = (index - 1) % (cRingSize);
-        }
+        T value;
+        auto data = std::shared_ptr<T>(m_data);
+        if(data) value = *data;
         return value;
     }
-
     inline void setValue(const T& value) {
-        // Test if we can read atomic
-        // This test is const and will be mad only at compile time
-        unsigned int index;
-        do {
-            index = (unsigned int)m_writeIndex.fetchAndAddAcquire(1)
-                    % (cRingSize);
-            // This will be repeated if the value is locked
-            // 1) by an other writer writing at the same time or
-            // 2) a delayed reader is still blocking the formerly current value
-            // In both cases writing to the next value will fix it.
-        } while (!m_ring[index].trySet(value));
-        m_readIndex = (int)index;
-    }
-
+        /* requires T to have a copy assignment operator, but whatever */
+        auto  data = std::make_shared<T>(value);
+        /* atomically replace the shared pointer contents accessible by
+         * new readers. current readers will have a reference to the old
+         * value, so we can't reclaim it until they all drop their 
+         * QSharedPointer<T>'s, at which point the value will be deleted
+         * automatically. */
+        m_data.swap(data);
+  }
+  inline void swap(T &other){
+    auto data = std::make_shared<T>();
+    *data = other;
+    m_data.swap(data);
+    if(data) other = *data;
+    else     other = T();
+  }
   protected:
-    ControlValueAtomicBase()
-        : m_readIndex(0),
-          m_writeIndex(1) {
-        // NOTE(rryan): Wrapping max with parentheses avoids conflict with the
-        // max macro defined in windows.h.
-        DEBUG_ASSERT(((std::numeric_limits<unsigned int>::max)() % cRingSize) == (cRingSize - 1));
-    }
-
+    ControlValueAtomicBase(){}
   private:
-    // In worst case, each reader can consume a reader slot from a different ring element.
-    // In this case there is still one ring element available for writing.
-    ControlRingValue<T> m_ring[cRingSize];
-    QAtomicInt m_readIndex;
-    QAtomicInt m_writeIndex;
+    std::shared_ptr<T>   m_data;
 };
-
 // Specialized template for types that are deemed to be atomic on the target
 // architecture. Instead of using a read/write ring to guarantee atomicity,
 // direct assignment/read of an aligned member variable is used.
-template<typename T>
-class ControlValueAtomicBase<T, true> {
-  public:
-    inline T getValue() const {
-        return m_value;
-    }
-
-    inline void setValue(const T& value) {
-        m_value = value;
-    }
-
-  protected:
-    ControlValueAtomicBase()
-            : m_value(T()) {
-    }
-
-  private:
-#if defined(__GNUC__)
-    T m_value __attribute__ ((aligned(sizeof(void*))));
-#elif defined(_MSC_VER)
-#ifdef _WIN64
-    T __declspec(align(8)) m_value;
-#else
-    T __declspec(align(4)) m_value;
-#endif
-#else
-    T m_value;
-#endif
+namespace{
+  template<unsigned int size>
+  struct numberForSize{
+  };
+  template<>
+  struct numberForSize<1>{typedef unsigned char type;};
+  template<>
+  struct numberForSize<2>{typedef unsigned short type;};
+  template<>
+  struct numberForSize<4>{typedef unsigned int type;};
+  template<>
+  struct numberForSize<8>{typedef unsigned long type;};
+  template<>
+  struct numberForSize<16>{typedef long double type;};
 };
-
+template<typename T>
+class ControlValueAtomicBase<T, true>{
+  typedef typename numberForSize<sizeof(T)>::type type;
+  public:
+    ControlValueAtomicBase()
+             {setValue(T());}
+    inline T getValue() const {
+        type as_type = m_data.load(); 
+        const T * type_ptr = reinterpret_cast<T*>(&as_type );
+        return *type_ptr;
+    }
+    inline void setValue(const T& value) {
+        type new_val;
+        const type *type_ptr = reinterpret_cast<const type *>(&value);
+        new_val=*type_ptr;
+        m_data.store(new_val);
+    }
+    inline void swap(T & value){
+        type new_val;
+        const type *type_ptr = reinterpret_cast<const type *>(&value);
+        new_val = *type_ptr;
+        new_val = m_data.fetchAndStoreOrdered(new_val);
+        const T *t_ptr = reinterpret_cast<T*>(&new_val);
+        value = *t_ptr;
+    }
+  private:
+    std::atomic < type > m_data;
+};
 // ControlValueAtomic is a wrapper around ControlValueAtomicBase which uses the
 // sizeof(T) to determine which underlying implementation of
 // ControlValueAtomicBase to use. For types where sizeof(T) <= sizeof(void*),
@@ -156,12 +152,18 @@ class ControlValueAtomicBase<T, true> {
 // atomic on the architecture is used.
 template<typename T>
 class ControlValueAtomic
-    : public ControlValueAtomicBase<T, sizeof(T) <= sizeof(void*)> {
-  public:
-
+      :  public ControlValueAtomicBase<T, sizeof(T) <= sizeof(long double)> {
+    public:
     ControlValueAtomic()
-        : ControlValueAtomicBase<T, sizeof(T) <= sizeof(void*)>() {
+        : ControlValueAtomicBase<T, sizeof(T) <= sizeof(long double )> (){
     }
 };
-
+template<typename T>
+inline void swap(ControlValueAtomic<T> &lhs, T&rhs){
+  lhs.swap(rhs);
+}
+template<typename T>
+inline void swap(T &lhs, ControlValueAtomic<T>&rhs){
+  lhs.swap(rhs);
+}
 #endif /* CONTROLVALUE_H */

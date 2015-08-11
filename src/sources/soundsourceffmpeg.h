@@ -1,56 +1,35 @@
-#ifndef MIXXX_SOUNDSOURCEFFMPEG_H
-#define MIXXX_SOUNDSOURCEFFMPEG_H
-
+_Pragma("once")
 #include "sources/soundsourceprovider.h"
 
 #include <encoder/encoderffmpegresample.h>
 
 // Needed to ensure that macros in <stdint.h> get defined.
-#ifndef __STDC_CONSTANT_MACROS
-#if __cplusplus < 201103L
-#define __STDC_CONSTANT_MACROS
-#endif
-#endif
 
+#include <cstdint>
+#include <vector>
+#include <atomic>
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
-
-#ifndef __FFMPEGOLDAPI__
 #include <libavutil/avutil.h>
-#include <libavutil/opt.h>
-#endif
+//#include <libavutil/opt.h>
+//#include <libavutil/mathematics.h>
 
-// Compability
-#include <libavutil/mathematics.h>
-#include <libavutil/opt.h>
-
-#include <QVector>
 
 namespace Mixxx {
 
-struct ffmpegLocationObject {
-    SINT pos;
-    SINT pts;
-    SINT startFrame;
-};
-
-struct ffmpegCacheObject {
-    SINT startFrame;
-    SINT length;
-    quint8 *bytes;
-};
-
+struct AVFormatContext;
+struct AVCodecContext;
+struct AVCodec;
+struct AVStream;
+struct SwrContext;
 class SoundSourceFFmpeg : public SoundSource {
   public:
     explicit SoundSourceFFmpeg(QUrl url);
-    ~SoundSourceFFmpeg();
+    virtual ~SoundSourceFFmpeg();
 
     void close() override;
-
-    SINT seekSampleFrame(SINT frameIndex) override;
-
-    SINT readSampleFrames(SINT numberOfFrames, CSAMPLE* sampleBuffer) override;
-
+    virtual SINT seekSampleFrame(SINT frameIndex) override;
+    virtual SINT readSampleFrames(SINT numberOfFrames, CSAMPLE* sampleBuffer) override;
   private:
     Result tryOpen(const AudioSourceConfig& audioSrcCfg) override;
 
@@ -59,44 +38,24 @@ class SoundSourceFFmpeg : public SoundSource {
     SINT getSizeofCache();
     void clearCache();
 
-    unsigned int read(unsigned long size, SAMPLE*);
-
-    AVFormatContext *m_pFormatCtx;
-    int m_iAudioStream;
-    AVCodecContext *m_pCodecCtx;
-    AVCodec *m_pCodec;
-
-    EncoderFfmpegResample *m_pResample;
-
-    SINT m_currentMixxxFrameIndex;
-
-    bool m_bIsSeeked;
-
-    SINT m_lCacheFramePos;
-    SINT m_lCacheStartFrame;
-    SINT m_lCacheEndFrame;
-    SINT m_lCacheLastPos;
-    QVector<struct ffmpegCacheObject  *> m_SCache;
-    QVector<struct ffmpegLocationObject  *> m_SJumpPoints;
-    SINT m_lLastStoredPos;
-    SINT m_lStoreCount;
-    SINT m_lStoredSeekPoint;
-    struct ffmpegLocationObject *m_SStoredJumpPoint;
+    AVFormatContext *m_fmt_ctx    = nullptr;
+    AVStream        *m_stream     = nullptr;
+    int              m_stream_idx = -1;
+    AVCodecContext  *m_codec_ctx  = nullptr;
+    AVCodec         *m_codec      = nullptr;
+    SwrContext      *m_swr        = nullptr;
+    vector<AVPacket> m_packets{0};
+    AVPacket         m_cur_pkt;
+    SINT             m_cur_pkt_idx= 0;
+    SINT             m_cur_pts    = 0;
+    AVFrame         *m_cur_frame;
 };
-
 class SoundSourceProviderFFmpeg: public SoundSourceProvider {
   public:
-    QString getName() const override {
-        return "FFmpeg";
-    }
-
+    QString getName() const override {return "FFmpeg";}
     QStringList getSupportedFileExtensions() const override;
-
     SoundSourcePointer newSoundSource(const QUrl& url) override {
         return SoundSourcePointer(new SoundSourceFFmpeg(url));
     }
 };
-
 } // namespace Mixxx
-
-#endif // MIXXX_SOUNDSOURCEFFMPEG_H
