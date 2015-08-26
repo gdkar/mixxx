@@ -44,7 +44,7 @@ class SoundSourceFFmpeg : public SoundSource {
     AVCodecContext  *m_codec_ctx  = nullptr;
     AVCodec         *m_codec      = nullptr;
     SwrContext      *m_swr        = nullptr;
-    vector<AVPacket> m_packets{0};
+    std::vector<AVPacket> m_packets{0};
     AVPacket         m_cur_pkt;
     SINT             m_cur_pkt_idx= 0;
     SINT             m_cur_pts    = 0;
