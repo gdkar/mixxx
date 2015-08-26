@@ -117,6 +117,7 @@ Result SoundSourceFFmpeg::tryOpen(const AudioSourceConfig& /*audioSrcCfg*/) {
       }else{av_free_packet(&pkt);}
     }while(ret>=0);
     avformat_close_input(&m_fmt_ctx);
+    m_fmt_ctx=nullptr;
     return OK;
 }
 
@@ -172,28 +173,29 @@ SINT SoundSourceFFmpeg::seekSampleFrame(SINT frameIndex) {
 }
 
 SINT SoundSourceFFmpeg::readSampleFrames(SINT numberOfFrames,CSAMPLE* sampleBuffer) {
-    
-
-    
-    if (m_SCache.size() == 0) {
-        // Make sure we allways start at begining and cache have some
-        // material that we can consume.
-        seekSampleFrame(0);
-        m_bIsSeeked = false;
-    }
-
-    getBytesFromCache(sampleBuffer, m_currentMixxxFrameIndex, numberOfFrames);
-
-    //  As this is also Hack
-    // If we don't seek like we don't on analyzer.. keep
-    // place in mind..
-    if (m_bIsSeeked == false) {
-        m_currentMixxxFrameIndex += numberOfFrames;
-    }
-
-    m_bIsSeeked = false;
-
-    return numberOfFrames;
+    auto numberLeft = numberOfFrames;
+    do{
+      if(m_cur_frame){
+        auto offset = static_cast<SINT>((m_cur_pts - m_cur_frame->pts)*1e-6*static_cast<double>(getFrameRate()));
+        auto avail  = m_cur_frame->nb_samples - offset;
+        auto chunk  = math_min(avail,numberLeft);
+        std::memmove(sampleBuffer,m_cur_frame->extended_data[0] + sizeof(CSAMPLE)*getChannelCount()*offset,
+            sizeof(CSAMPLE)*getChannelCount()*chunk);
+        sampleBuffer += getChannelCount()*chunk;
+        numberLeft   -= chunk;
+        m_cur_pts += static_cast<SINT>(chunk * 1e6 / static_cast<double>(getFrameRate()));
+        if(chunk >= avail){av_frame_free(&m_cur_frame);}
+        continue;
+      }else{
+        if(m_cur_pkt.size <= 0){
+          m_cur_pkt_idx++;
+          if(m_cur_pkt_idx >= m_packets.size()) break;
+          m_cur_pkt = m_packets[m_cur_pkt_idx];
+        }
+        auto got_frame = 0;
+      }
+    }while(numberLeft);
+    return numberOfFrames - numberLeft;
 }
 
 } // namespace Mixxx
