@@ -27,18 +27,14 @@ class SkinLoader {
                              Library* pLibrary,
                              VinylControlManager* pVCMan,
                              EffectsManager* pEffectsManager);
-
     LaunchImage* loadLaunchImage(QWidget* pParent);
-
     QString getSkinPath();
     QList<QDir> getSkinSearchPaths();
-
   private:
     QString getConfiguredSkinPath();
     QString getDefaultSkinName() const;
     QString getDefaultSkinPath();
     QString pickResizableSkin(QString oldSkin);
-
     ConfigObject<ConfigValue>* m_pConfig;
 };
 

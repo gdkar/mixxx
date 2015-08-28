@@ -13,7 +13,6 @@
 #include "library/playlisttablemodel.h"
 #include "library/trackcollection.h"
 #include "library/treeitem.h"
-#include "mixxxkeyboard.h"
 #include "widget/wlibrary.h"
 #include "widget/wlibrarytextbrowser.h"
 #include "util/assert.h"
@@ -513,9 +512,7 @@ TreeItemModel* BasePlaylistFeature::getChildModel() {
     return &m_childModel;
 }
 
-void BasePlaylistFeature::bindWidget(WLibrary* libraryWidget,
-                                     MixxxKeyboard* keyboard) {
-    Q_UNUSED(keyboard);
+void BasePlaylistFeature::bindWidget(WLibrary* libraryWidget,QObject* ) {
     WLibraryTextBrowser* edit = new WLibraryTextBrowser(libraryWidget);
     edit->setHtml(getRootViewHtml());
     edit->setOpenLinks(false);

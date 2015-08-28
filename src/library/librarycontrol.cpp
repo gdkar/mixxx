@@ -197,7 +197,7 @@ void LibraryControl::bindSidebarWidget(WLibrarySidebar* pSidebarWidget) {
             this, SLOT(sidebarWidgetDeleted()));
 }
 
-void LibraryControl::bindWidget(WLibrary* pLibraryWidget, MixxxKeyboard* pKeyboard) {
+void LibraryControl::bindWidget(WLibrary* pLibraryWidget, QObject * pKeyboard) {
     Q_UNUSED(pKeyboard);
     if (m_pLibraryWidget != NULL) {
         disconnect(m_pLibraryWidget, 0, this, 0);

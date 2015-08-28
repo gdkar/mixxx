@@ -23,8 +23,7 @@ public:
     QVariant title();
     QIcon getIcon();
 
-    virtual void bindWidget(WLibrary* libraryWidget,
-                            MixxxKeyboard* keyboard);
+    virtual void bindWidget(WLibrary* libraryWidget,QObject* keyboard);
 
   public slots:
     void onRightClick(const QPoint& globalPos);

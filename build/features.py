@@ -43,6 +43,38 @@ class HSS1394(Feature):
         return ['controllers/midi/hss1394controller.cpp',
                 'controllers/midi/hss1394enumerator.cpp']
 
+class Mpg123(Feature):
+    def description(self):
+        return "mpg123 mpeg 1 audio layers 1/2/3 Decoder"
+
+    def default(self, build):
+        return 0
+
+    def enabled(self, build):
+        build.flags['mpg123'] = util.get_flags(build.env, 'mpg123',
+                                            self.default(build))
+        if int(build.flags['mpg123']):
+            return True
+        return False
+
+    def add_options(self, build, vars):
+        vars.Add('mpg123', 'Set to 1 to enable mpg123 mpeg1 audio layer 1/2/3 decoder support.',
+                 self.default(build))
+
+    def configure(self, build, conf):
+        if not self.enabled(build):
+            return
+        if not conf.CheckLib(['libmpg123', 'mpg123']):
+            raise Exception(
+                'Did not find libmpg123.a, libmpg123.lib, or the libmpg123 development header files - exiting!')
+        if not conf.CheckLib(['libid3tag', 'id3tag', 'libid3tag-release']):
+            raise Exception(
+                'Did not find libid3tag.a, libid3tag.lib, or the libid3tag development header files - exiting!')
+        build.env.Append(CPPDEFINES='__MPG123__')
+    def sources(self, build):
+        return ['sources/soundsourcemp3.cpp']
+
+
 
 class HID(Feature):
     HIDAPI_INTERNAL_PATH = '#lib/hidapi-0.8.0-pre'
@@ -845,8 +877,7 @@ class FFMPEG(Feature):
         # FFmpeg is multimedia library that can be found http://ffmpeg.org/
         # Avconv is fork of FFmpeg that is used mainly in Debian and Ubuntu
         # that can be found http://libav.org
-        if build.platform_is_linux or build.platform_is_osx \
-                or build.platform_is_bsd:
+        if build.platform_is_linux or build.platform_is_osx or build.platform_is_bsd:
             # Check for libavcodec, libavformat
             # I just randomly picked version numbers lower than mine for this
             if not conf.CheckForPKG('libavcodec', '53.35.0'):
@@ -864,16 +895,14 @@ class FFMPEG(Feature):
             build.env.Append(CCFLAGS='-D__STDC_FORMAT_MACROS')
 
             # Grabs the libs and cflags for FFmpeg
-            build.env.ParseConfig('pkg-config libavcodec --silence-errors \
-                                  --cflags --libs')
-            build.env.ParseConfig('pkg-config libavformat --silence-errors \
-                                   --cflags --libs')
-            build.env.ParseConfig('pkg-config libavutil --silence-errors \
-                                   --cflags --libs')
+            build.env.ParseConfig('pkg-config libavcodec --silence-errors --cflags --libs')
+            build.env.ParseConfig('pkg-config libavformat --silence-errors --cflags --libs')
+            build.env.ParseConfig('pkg-config libavutil --silence-errors  --cflags --libs')
+            build.env.ParseConfig('pkg-config libswresample --silence-errors  --cflags --libs')
+            build.env.ParseConfig('pkg-config libavdevice --silence-errors  --cflags --libs')
 
             build.env.Append(CPPDEFINES='__FFMPEGFILE__')
             self.status = "Enabled"
-
         else:
             # aptitude install libavcodec-dev libavformat-dev liba52-0.7.4-dev
             # libdts-dev
@@ -901,10 +930,8 @@ class FFMPEG(Feature):
 
         # Add new path for FFmpeg header files.
         # Non-crosscompiled builds need this too, don't they?
-        if build.crosscompile and build.platform_is_windows \
-                and build.toolchain_is_gnu:
-            build.env.Append(CPPPATH=os.path.join(build.crosscompile_root,
-                                                  'include', 'ffmpeg'))
+        if build.crosscompile and build.platform_is_windows and build.toolchain_is_gnu:
+            build.env.Append(CPPPATH=os.path.join(build.crosscompile_root, 'include', 'ffmpeg'))
 
     def sources(self, build):
         return ['sources/soundsourceffmpeg.cpp',

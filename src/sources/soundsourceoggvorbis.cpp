@@ -13,7 +13,6 @@ const int kCurrentBitstreamLink = -1; // retrieve ... for the current bitstream
 const int kEntireBitstreamLink  = -1; // retrieve ... for the entire physical bitstream
 
 } // anonymous namespace
-
 SoundSourceOggVorbis::SoundSourceOggVorbis(QUrl url)
         : SoundSource(url, "ogg"),
           m_curFrameIndex(0) {
@@ -157,16 +156,13 @@ SINT SoundSourceOggVorbis::readSampleFrames(
             break; // abort
         }
     }
-
     DEBUG_ASSERT(isValidFrameIndex(m_curFrameIndex));
     DEBUG_ASSERT(numberOfFramesTotal >= numberOfFramesRemaining);
     return numberOfFramesTotal - numberOfFramesRemaining;
 }
-
 QString SoundSourceProviderOggVorbis::getName() const {
     return "Xiph.org OggVorbis";
 }
-
 QStringList SoundSourceProviderOggVorbis::getSupportedFileExtensions() const {
     QStringList supportedFileExtensions;
     supportedFileExtensions.append("ogg");

@@ -19,7 +19,7 @@ class ControlNumericBehavior {
     virtual double midiValueToParameter(double midiValue);
     virtual double parameterToValue(double dParam);
     virtual double valueToMidiParameter(double dValue);
-    virtual void setValueFromMidiParameter(MidiOpCode o, double dParam,
+    virtual void setValueFromMidiParameter(double dParam,
                                            ControlDoublePrivate* pControl);
 };
 
@@ -72,7 +72,7 @@ class ControlAudioTaperPotBehavior : public ControlPotmeterBehavior {
     virtual double parameterToValue(double dParam);
     virtual double midiValueToParameter(double midiValue);
     virtual double valueToMidiParameter(double dValue);
-    virtual void setValueFromMidiParameter(MidiOpCode o, double dParam,
+    virtual void setValueFromMidiParameter(double dParam,
                                            ControlDoublePrivate* pControl);
 
   protected:
@@ -112,7 +112,7 @@ class ControlPushButtonBehavior : public ControlNumericBehavior {
     };
 
     ControlPushButtonBehavior(ButtonMode buttonMode, int iNumStates);
-    virtual void setValueFromMidiParameter(MidiOpCode o, double dParam,
+    virtual void setValueFromMidiParameter(double dParam,
                                            ControlDoublePrivate* pControl);
 
   private:

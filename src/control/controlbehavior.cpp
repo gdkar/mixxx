@@ -23,23 +23,18 @@ double ControlNumericBehavior::valueToMidiParameter(double dValue) {
     return dValue;
 }
 
-void ControlNumericBehavior::setValueFromMidiParameter(MidiOpCode o, double dParam,
-                                                       ControlDoublePrivate* pControl) {
-    Q_UNUSED(o);
-    double dNorm = midiValueToParameter(dParam);
-    pControl->set(parameterToValue(dNorm), NULL);
+void ControlNumericBehavior::setValueFromMidiParameter(double dParam,ControlDoublePrivate* pControl) {
+    pControl->set(parameterToValue(dParam), nullptr);
 }
 
-ControlPotmeterBehavior::ControlPotmeterBehavior(double dMinValue, double dMaxValue,
-                                                 bool allowOutOfBounds)
+ControlPotmeterBehavior::ControlPotmeterBehavior(double dMinValue, double dMaxValue,bool allowOutOfBounds)
         : m_dMinValue(dMinValue),
           m_dMaxValue(dMaxValue),
           m_dValueRange(m_dMaxValue - m_dMinValue),
           m_bAllowOutOfBounds(allowOutOfBounds) {
 }
 
-ControlPotmeterBehavior::~ControlPotmeterBehavior() {
-}
+ControlPotmeterBehavior::~ControlPotmeterBehavior() {}
 
 bool ControlPotmeterBehavior::setFilter(double* dValue) {
     if (!m_bAllowOutOfBounds) {
@@ -88,9 +83,7 @@ double ControlPotmeterBehavior::valueToMidiParameter(double dValue) {
     double dNorm = valueToParameter(dValue);
     if (dNorm > 0.5) {
         return (dNorm * 126) + 1;
-    } else {
-        return dNorm * 128.0;
-    }
+    } else {return dNorm * 128.0;}
 }
 
 #define maxPosition 1.0
@@ -239,11 +232,8 @@ double ControlAudioTaperPotBehavior::valueToMidiParameter(double dValue) {
     return dMidiParam;
 }
 
-void ControlAudioTaperPotBehavior::setValueFromMidiParameter(MidiOpCode o, double dMidiParam,
-                                                           ControlDoublePrivate* pControl) {
-    Q_UNUSED(o);
-    double dParam = midiValueToParameter(dMidiParam);
-    pControl->set(parameterToValue(dParam), NULL);
+void ControlAudioTaperPotBehavior::setValueFromMidiParameter(double dMidiParam,ControlDoublePrivate* pControl) {
+    pControl->set(parameterToValue(dMidiParam), nullptr);
 }
 
 
@@ -271,21 +261,19 @@ ControlPushButtonBehavior::ControlPushButtonBehavior(ButtonMode buttonMode,
           m_iNumStates(iNumStates) {
 }
 
-void ControlPushButtonBehavior::setValueFromMidiParameter(
-        MidiOpCode o, double dParam, ControlDoublePrivate* pControl) {
+void ControlPushButtonBehavior::setValueFromMidiParameter(double dParam, ControlDoublePrivate* pControl) {
     // Calculate pressed State of the midi Button
     // Some controller like the RMX2 are sending always MIDI_NOTE_ON
     // with a changed dParam 127 for pressed an 0 for released.
     // Other controller like the VMS4 are using MIDI_NOTE_ON
     // And MIDI_NOTE_OFF and a velocity value like a piano keyboard
     bool pressed = true;
-    if (o == MIDI_NOTE_OFF || dParam == 0) {
+    if (dParam == 0) {
         // MIDI_NOTE_ON + 0 should be interpreted a released according to
         // http://de.wikipedia.org/wiki/Musical_Instrument_Digital_Interface
         // looking for MIDI_NOTE_ON doesn't seem to work...
         pressed = false;
     }
-
     // This block makes push-buttons act as power window buttons.
     if (m_buttonMode == POWERWINDOW && m_iNumStates == 2) {
         if (pressed) {
@@ -324,10 +312,7 @@ void ControlPushButtonBehavior::setValueFromMidiParameter(
             }
         }
     } else { // Not a toggle button (trigger only when button pushed)
-        if (pressed) {
-            pControl->set(1., NULL);
-        } else {
-            pControl->set(0., NULL);
-        }
+        if (pressed) {pControl->set(1., NULL);}
+        else {pControl->set(0., NULL);}
     }
 }

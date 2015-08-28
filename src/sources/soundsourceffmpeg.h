@@ -8,20 +8,20 @@ _Pragma("once")
 #include <cstdint>
 #include <vector>
 #include <atomic>
+extern "C"{
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
+#include <libavcodec/avcodec.h>
+#include <libswresample/swresample.h>
+#include <libavdevice/avdevice.h>
 #include <libavutil/avutil.h>
+};
 //#include <libavutil/opt.h>
 //#include <libavutil/mathematics.h>
 
 
 namespace Mixxx {
 
-struct AVFormatContext;
-struct AVCodecContext;
-struct AVCodec;
-struct AVStream;
-struct SwrContext;
 class SoundSourceFFmpeg : public SoundSource {
   public:
     explicit SoundSourceFFmpeg(QUrl url);
@@ -33,22 +33,19 @@ class SoundSourceFFmpeg : public SoundSource {
   private:
     Result tryOpen(const AudioSourceConfig& audioSrcCfg) override;
 
-    bool readFramesToCache(unsigned int count, SINT offset);
-    bool getBytesFromCache(CSAMPLE* buffer, SINT offset, SINT size);
-    SINT getSizeofCache();
-    void clearCache();
-
-    AVFormatContext *m_fmt_ctx    = nullptr;
-    AVStream        *m_stream     = nullptr;
-    int              m_stream_idx = -1;
-    AVCodecContext  *m_codec_ctx  = nullptr;
-    AVCodec         *m_codec      = nullptr;
-    SwrContext      *m_swr        = nullptr;
-    std::vector<AVPacket> m_packets{0};
-    AVPacket         m_cur_pkt;
-    SINT             m_cur_pkt_idx= 0;
-    SINT             m_cur_pts    = 0;
-    AVFrame         *m_cur_frame;
+    bool getNextFrame( );
+    AVFormatContext      *m_fmt_ctx    = nullptr;
+    AVCodecContext       *m_dec_ctx    = nullptr;
+    AVCodec              *m_dec        = nullptr;
+    AVStream             *m_stream     = nullptr;
+    int                   m_stream_idx = -1;
+    AVRational            m_stream_tb  { 0, 1 };
+    SwrContext           *m_swr        = nullptr;
+    AVFrame              *m_frame  = nullptr;
+    AVPacket              m_packet;
+    AVPacket              m_packet_free;
+    SINT                  m_offset_base = 0;
+    SINT                  m_offset_cur  = 0;
 };
 class SoundSourceProviderFFmpeg: public SoundSourceProvider {
   public:

@@ -22,7 +22,7 @@ class DlgAutoDJ : public QWidget, public Ui::DlgAutoDJ, public LibraryView {
     DlgAutoDJ(QWidget* parent, ConfigObject<ConfigValue>* pConfig,
               Library* pLibrary,
               AutoDJProcessor* pProcessor, TrackCollection* pTrackCollection,
-              MixxxKeyboard* pKeyboard);
+              QObject * pKeyboard);
     virtual ~DlgAutoDJ();
 
     void onShow();

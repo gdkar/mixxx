@@ -212,9 +212,7 @@ void ControlDoublePrivate::setParameter(double dParam, QObject* pSender) {
     QSharedPointer<ControlNumericBehavior> pBehavior = m_pBehavior;
     if (pBehavior.isNull()) {
         set(dParam, pSender);
-    } else {
-        set(pBehavior->parameterToValue(dParam), pSender);
-    }
+    } else {pBehavior->setValueFromMidiParameter(dParam,this);}
 }
 
 double ControlDoublePrivate::getParameter() const {
@@ -240,10 +238,8 @@ double ControlDoublePrivate::getParameterForMidiValue(double midiValue) const {
 void ControlDoublePrivate::setMidiParameter(MidiOpCode opcode, double dParam) {
     QSharedPointer<ControlNumericBehavior> pBehavior = m_pBehavior;
     if (!pBehavior.isNull()) {
-        pBehavior->setValueFromMidiParameter(opcode, dParam, this);
-    } else {
-        set(dParam, NULL);
-    }
+        pBehavior->setValueFromMidiParameter(dParam, this);
+    } else {set(dParam, NULL);}
 }
 
 double ControlDoublePrivate::getMidiParameter() const {

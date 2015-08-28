@@ -11,6 +11,18 @@ soundsourcem4a = SConscript(
     duplicate=0, exports=['build'])
 plugins.extend(soundsourcem4a)
 
+soundsourcempg123 = SConscript(
+    File('soundsourcempg123/SConscript'),
+    variant_dir=Dir(build.build_dir + "/mpg123"),
+    duplicate=0, exports=['build'])
+plugins.extend(soundsourcempg123)
+
+#soundsourcelavf = SConscript(
+#    File('soundsourcelavf/SConscript'),
+#    variant_dir=Dir(build.build_dir + "/lavf"),
+#    duplicate=0, exports=['build'])
+#plugins.extend(soundsourcelavf)
+
 soundsourcewv = SConscript(
     File('soundsourcewv/SConscript'),
     variant_dir=Dir(build.build_dir + "/wv"),
