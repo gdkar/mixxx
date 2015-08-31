@@ -5,10 +5,10 @@
 #include <ostream>
 #include <utility>
 
+#include <QDebug>
 #include <QString>
 #include <QVariant>
 #include <QtDebug>
-
 #include "util/assert.h"
 
 
@@ -91,13 +91,9 @@ public:
         return lhs.m_value >= rhs.m_value;
     }
 
-    friend std::ostream& operator<<(std::ostream& os, const DbId& dbId) {
-        return os << dbId.m_value;
-    }
+    friend std::ostream& operator<< (std::ostream& os, const DbId& dbId);
 
-    friend QDebug& operator<<(QDebug& qDebug, const DbId& dbId) {
-        return qDebug << dbId.m_value;
-    }
+    friend QDebug& operator<< (QDebug& qd, const DbId& dbId) ;
 
     friend uint qHash(const DbId& dbId) {
         return qHash(dbId.m_value);

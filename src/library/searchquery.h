@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <utility>
-
+#include <memory>
 #include <QList>
 #include <QSqlDatabase>
 #include <QRegExp>

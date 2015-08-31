@@ -18,7 +18,6 @@
 #include "dlgautodj.h"
 #include "library/treeitem.h"
 #include "widget/wlibrary.h"
-#include "mixxxkeyboard.h"
 #include "soundsourceproxy.h"
 #include "util/dnd.h"
 
@@ -105,8 +104,7 @@ QIcon AutoDJFeature::getIcon() {
     return QIcon(":/images/library/ic_library_autodj.png");
 }
 
-void AutoDJFeature::bindWidget(WLibrary* libraryWidget,
-                               MixxxKeyboard* keyboard) {
+void AutoDJFeature::bindWidget(WLibrary* libraryWidget,QObject* keyboard) {
     m_pAutoDJView = new DlgAutoDJ(libraryWidget,
                                   m_pConfig,
                                   m_pLibrary,

@@ -1,10 +1,11 @@
 #ifndef SEARCHQUERYPARSER_H
 #define SEARCHQUERYPARSER_H
 
+#include <memory>
+#include <utility>
 #include <QRegExp>
 #include <QString>
 #include <QtSql>
-
 #include "util.h"
 #include "trackinfoobject.h"
 #include "library/searchquery.h"

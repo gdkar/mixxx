@@ -31,7 +31,6 @@ class MixxxLibraryFeature;
 class PlaylistFeature;
 class CrateFeature;
 class LibraryControl;
-class MixxxKeyboard;
 class PlayerManagerInterface;
 
 class Library : public QObject {
@@ -43,8 +42,7 @@ public:
             RecordingManager* pRecordingManager);
     virtual ~Library();
 
-    void bindWidget(WLibrary* libraryWidget,
-                    MixxxKeyboard* pKeyboard);
+    void bindWidget(WLibrary* libraryWidget,QObject* pKeyboard);
     void bindSidebarWidget(WLibrarySidebar* sidebarWidget);
 
     void addFeature(LibraryFeature* feature);

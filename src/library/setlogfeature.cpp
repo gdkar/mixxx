@@ -53,8 +53,7 @@ QIcon SetlogFeature::getIcon() {
     return QIcon(":/images/library/ic_library_history.png");
 }
 
-void SetlogFeature::bindWidget(WLibrary* libraryWidget,
-                               MixxxKeyboard* keyboard) {
+void SetlogFeature::bindWidget(WLibrary* libraryWidget,QObject* keyboard) {
     BasePlaylistFeature::bindWidget(libraryWidget,
                                     keyboard);
     connect(&PlayerInfo::instance(), SIGNAL(currentPlayingTrackChanged(TrackPointer)),

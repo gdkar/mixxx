@@ -101,8 +101,13 @@ class EngineControl : public QObject {
 
   private:
     struct SampleOfTrack {
-        double current;
-        double total;
+      union{
+        long double aligned;
+        struct{
+          double current;
+          double total;
+        };
+      };
     };
 
     ControlValueAtomic<SampleOfTrack> m_sampleOfTrack;

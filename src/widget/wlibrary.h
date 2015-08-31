@@ -13,7 +13,6 @@
 #include "library/libraryview.h"
 #include "widget/wbasewidget.h"
 
-class MixxxKeyboard;
 
 class WLibrary : public QStackedWidget, public WBaseWidget {
     Q_OBJECT
