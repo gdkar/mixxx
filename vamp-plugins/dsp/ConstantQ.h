@@ -17,14 +17,15 @@
 #define CONSTANTQ_H
 
 #include <vector>
+#include <memory>
 #include "MathAliases.h"
 #include "MathUtilities.h"
 
 struct CQConfig{
-    unsigned int FS;   // samplerate
+    size_t FS;   // samplerate
     double min;        // minimum frequency
     double max;        // maximum frequency
-    unsigned int BPO;  // bins per octave
+    size_t BPO;  // bins per octave
     double CQThresh;   // threshold
 };
 
@@ -36,7 +37,7 @@ public:
                   double* CQRe, double* CQIm );
 
     ConstantQ( CQConfig Config );
-    ~ConstantQ();
+    virtual ~ConstantQ();
 
     double* process( const double* FFTData );
 
@@ -47,35 +48,34 @@ public:
 	return(out);
     }
 	
-    int getnumwin() { return m_numWin;}
+    size_t getnumwin() { return m_numWin;}
     double getQ() { return m_dQ;}
-    int getK() {return m_uK ;}
-    int getfftlength() { return m_FFTLength;}
-    int gethop() { return m_hop;}
+    size_t getK() {return m_uK ;}
+    size_t getfftlength() { return m_FFTLength;}
+    size_t gethop() { return m_hop;}
 
 private:
     void initialise( CQConfig Config );
     void deInitialise();
 	
     double* m_CQdata;
-    unsigned int m_FS;
+    size_t m_FS;
     double m_FMin;
     double m_FMax;
     double m_dQ;
     double m_CQThresh;
-    unsigned int m_numWin;
-    unsigned int m_hop;
-    unsigned int m_BPO;
-    unsigned int m_FFTLength;
-    unsigned int m_uK;
+    size_t m_numWin;
+    size_t m_hop;
+    size_t m_BPO;
+    size_t m_FFTLength;
+    size_t m_uK;
 
     struct SparseKernel {
-        std::vector<unsigned> is;
-        std::vector<unsigned> js;
+        std::vector<size_t> is;
+        std::vector<size_t> js;
         std::vector<double> imag;
         std::vector<double> real;
     };
-
     SparseKernel *m_sparseKernel;
 };
 

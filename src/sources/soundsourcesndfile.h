@@ -1,6 +1,7 @@
 #ifndef MIXXX_SOUNDSOURCESNDFILE_H
 #define MIXXX_SOUNDSOURCESNDFILE_H
 
+#if 0
 #include "sources/soundsourceprovider.h"
 
 #ifdef Q_OS_WIN
@@ -43,5 +44,5 @@ public:
 };
 
 } // namespace Mixxx
-
+#endif
 #endif // MIXXX_SOUNDSOURCESNDFILE_H

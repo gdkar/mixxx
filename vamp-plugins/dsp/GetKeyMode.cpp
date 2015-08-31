@@ -33,8 +33,7 @@ static double MinProfile[36] =
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-GetKeyMode::GetKeyMode( int sampleRate, float tuningFrequency,
-			double hpcpAverage, double medianAverage ) :
+GetKeyMode::GetKeyMode( int sampleRate, float tuningFrequency, double hpcpAverage, double medianAverage ) :
     m_hpcpAverage( hpcpAverage ),
     m_medianAverage( medianAverage ),
     m_ChrPointer(0),
@@ -52,21 +51,19 @@ GetKeyMode::GetKeyMode( int sampleRate, float tuningFrequency,
         
     // Chromagram configuration parameters
     m_ChromaConfig.normalise = MathUtilities::NormaliseUnitMax;
-    m_ChromaConfig.FS = lrint(sampleRate/(double)m_DecimationFactor);
+    m_ChromaConfig.FS        = lrint(sampleRate/(double)m_DecimationFactor);
     if (m_ChromaConfig.FS < 1) m_ChromaConfig.FS = 1;
 
     // Set C (= MIDI #12) as our base :
     // This implies that key = 1 => Cmaj, key = 12 => Bmaj, key = 13 => Cmin, etc.
-    m_ChromaConfig.min = Pitch::getFrequencyForPitch
-        (48, 0, tuningFrequency);
-    m_ChromaConfig.max = Pitch::getFrequencyForPitch
-        (96, 0, tuningFrequency);
+    m_ChromaConfig.min = Pitch::getFrequencyForPitch (48, 0, tuningFrequency);
+    m_ChromaConfig.max = Pitch::getFrequencyForPitch (96, 0, tuningFrequency);
 
     m_ChromaConfig.BPO = 36;
     m_ChromaConfig.CQThresh = 0.0054;
 
     // Chromagram inst.
-    m_Chroma = new Chromagram( m_ChromaConfig );
+    m_Chroma = std::make_unique<Chromagram>( m_ChromaConfig );
 
     // Get calculated parameters from chroma object
     m_ChromaFrameSize = m_Chroma->getFrameSize();
@@ -78,7 +75,7 @@ GetKeyMode::GetKeyMode( int sampleRate, float tuningFrequency,
 
     // Chromagram average and estimated key median filter lengths
     m_ChromaBuffersize = (int)ceil( m_hpcpAverage * m_ChromaConfig.FS/m_ChromaFrameSize );
-    m_MedianWinsize = (int)ceil( m_medianAverage * m_ChromaConfig.FS/m_ChromaFrameSize );
+    m_MedianWinsize =    (int)ceil( m_medianAverage * m_ChromaConfig.FS/m_ChromaFrameSize );
     
     // Reset counters
     m_bufferindex = 0;
@@ -89,7 +86,7 @@ GetKeyMode::GetKeyMode( int sampleRate, float tuningFrequency,
     m_DecimatedBuffer = new double[m_ChromaFrameSize];
     
     m_ChromaBuffer = new double[m_BPO * m_ChromaBuffersize];
-    memset( m_ChromaBuffer, 0, sizeof(double) * m_BPO * m_ChromaBuffersize);
+    std::fill ( &m_ChromaBuffer[0],&m_ChromaBuffer[m_BPO * m_ChromaBuffersize], 0 );
     
     m_MeanHPCP = new double[m_BPO];
     
@@ -98,12 +95,12 @@ GetKeyMode::GetKeyMode( int sampleRate, float tuningFrequency,
     m_Keys  = new double[2*m_BPO];
     
     m_MedianFilterBuffer = new int[ m_MedianWinsize ];
-    memset( m_MedianFilterBuffer, 0, sizeof(int)*m_MedianWinsize);
+    std::fill ( &m_MedianFilterBuffer[0],&m_MedianFilterBuffer[m_MedianWinsize],0 );
     
     m_SortedBuffer = new int[ m_MedianWinsize ];
-    memset( m_SortedBuffer, 0, sizeof(int)*m_MedianWinsize);	
+    std::fill ( &m_SortedBuffer[0],&m_SortedBuffer[m_MedianWinsize],0);
     
-    m_Decimator = new Decimator
+    m_Decimator = std::make_unique< Decimator>
         ( m_ChromaFrameSize*m_DecimationFactor, m_DecimationFactor );
 
     m_keyStrengths = new double[24];
@@ -112,8 +109,6 @@ GetKeyMode::GetKeyMode( int sampleRate, float tuningFrequency,
 GetKeyMode::~GetKeyMode()
 {
 
-    delete m_Chroma;
-    delete m_Decimator;
     
     delete [] m_DecimatedBuffer;
     delete [] m_ChromaBuffer;
@@ -127,7 +122,7 @@ GetKeyMode::~GetKeyMode()
     delete[] m_keyStrengths;
 }
 
-double GetKeyMode::krumCorr(double *pData1, double *pData2, unsigned int length)
+double GetKeyMode::krumCorr(double *pData1, double *pData2, size_t length)
 {
     double retVal= 0.0;
     
@@ -139,7 +134,7 @@ double GetKeyMode::krumCorr(double *pData1, double *pData2, unsigned int length)
     double sum1 = 0;
     double sum2 = 0;
     
-    for( unsigned int i = 0; i <length; i++ )
+    for( size_t i = 0; i <length; i++ )
     {
         num += ( pData1[i] - mX ) * ( pData2[i] - mY );
 
@@ -162,14 +157,10 @@ int GetKeyMode::process(double *PCMData)
 {
     int key;
 
-    unsigned int j,k;
-
+    size_t j,k;
     //////////////////////////////////////////////
     m_Decimator->process( PCMData, m_DecimatedBuffer);
-
     m_ChrPointer = m_Chroma->process( m_DecimatedBuffer );		
-
-	
     // Move bins such that the centre of the base note is in the
     // middle of its three bins :
     // Added 21.11.07 by Chris Sutton based on debugging with Katy
@@ -207,11 +198,8 @@ int GetKeyMode::process(double *PCMData)
         {
             mnVal += m_ChromaBuffer[ k + (j*m_BPO) ];
         }
-
-        m_MeanHPCP[k] = mnVal/(double)m_ChromaBufferFilling;
+        m_MeanHPCP[k] = mnVal/m_ChromaBufferFilling;
     }
-
-
     for( k = 0; k < m_BPO; k++ )
     {
         m_MajCorr[k] = krumCorr( m_MeanHPCP, MajProfile, m_BPO );
@@ -233,8 +221,8 @@ int GetKeyMode::process(double *PCMData)
 
     for( k = 0; k < m_BPO*2; k++ )
     {
-        int idx = k / (m_BPO/12);
-        int rem = k % (m_BPO/12);
+        auto idx = k / (m_BPO/12);
+        auto rem = k % (m_BPO/12);
         if (rem == 0 || m_Keys[k] > m_keyStrengths[idx]) {
             m_keyStrengths[idx] = m_Keys[k];
         }
@@ -267,29 +255,22 @@ int GetKeyMode::process(double *PCMData)
     //Median filtering
 
     // track Median buffer initial filling
-    if( m_MedianBufferFilling++ >= m_MedianWinsize)
-        m_MedianBufferFilling = m_MedianWinsize;
+    m_MedianBufferFilling = std::min ( m_MedianWinSize, m_MedianBufferFilling+1);
 		
     //shift median buffer
     for( k = 1; k < m_MedianWinsize; k++ )
     {
         m_MedianFilterBuffer[ k - 1 ] = m_MedianFilterBuffer[ k ];
     }
-
     //write new key value into median buffer
     m_MedianFilterBuffer[ m_MedianWinsize - 1 ] = key;
-
-
     //Copy median into sorting buffer, reversed
-    unsigned int ijx = 0;
-    for( k = 0; k < m_MedianWinsize; k++ )
-    {
+    size_t ijx = 0;
+    for( k = 0; k < m_MedianWinsize; k++ ){
         m_SortedBuffer[k] = m_MedianFilterBuffer[m_MedianWinsize-1-ijx];
         ijx++;
     }
-
-    qsort(m_SortedBuffer, m_MedianBufferFilling, sizeof(unsigned int),
-          MathUtilities::compareInt);
+    std::sort ( &m_SortedBuffer[0],&m_SortedBuffer[m_MedianBufferFilling]);
 /*
   std::cout << "sorted: ";
   for (int ii = 0; ii < m_MedianBufferFilling; ++ii) {
@@ -297,23 +278,12 @@ int GetKeyMode::process(double *PCMData)
   }
   std::cout << std::endl;
 */
-    int sortlength = m_MedianBufferFilling;
-    int midpoint = (int)ceil((double)sortlength/2);
-
+    auto sortlength = m_MedianBufferFilling;
+    auto midpoint = static_cast<off_t>(ceil(static_cast<sortlength>/2));
 //  std::cout << "midpoint = " << midpoint << endl;
-
-    if( midpoint <= 0 )
-        midpoint = 1;
-
+    if( midpoint <= 0 ) midpoint = 1;
     key = m_SortedBuffer[midpoint-1];
-
 // std::cout << "returning key = " << key << endl;
-
     return key;
 }
-
-
-bool GetKeyMode::isModeMinor( int key )
-{ 
-    return (key > 12);
-}
+bool GetKeyMode::isModeMinor( int key ) { return (key > 12);}

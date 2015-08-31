@@ -129,7 +129,6 @@ class OggVorbis(Dependence):
         return ['sources/soundsourceoggvorbis.cpp']
 
 class SndFile(Dependence):
-
     def configure(self, build, conf):
         # if not conf.CheckLibWithHeader(['sndfile', 'libsndfile', 'libsndfile-1'], 'sndfile.h', 'C'):
         # TODO: check for debug version on Windows when one is available
@@ -1210,7 +1209,7 @@ class MixxxCore(Feature):
 
     def depends(self, build):
         return [SoundTouch, ReplayGain, PortAudio, PortMIDI, Qt, TestHeaders,
-                FidLib, SndFile, FLAC, OggVorbis, OpenGL, TagLib, ProtoBuf,
+                FidLib, FLAC, OggVorbis, OpenGL, TagLib, ProtoBuf, SndFile,
                 Chromaprint, RubberBand, SecurityFramework, CoreServices,
                 QtScriptByteArray, Reverb]
 

@@ -153,9 +153,8 @@ KeyDetector::initialise(size_t channels, size_t stepSize, size_t blockSize)
     if (channels < getMinChannelCount() ||
 	channels > getMaxChannelCount()) return false;
 
-    m_getKeyMode = new GetKeyMode(int(m_inputSampleRate + 0.1),
-                                  m_tuningFrequency,
-                                  m_length, m_length);
+    auto sampleRate = std::min<int> ( 96000, std::max<int> ( 8000, m_inputSampleRate ) );
+    m_getKeyMode = new GetKeyMode(sampleRate, m_tuningFrequency, m_length, m_length);
 
     m_stepSize = m_getKeyMode->getHopSize();
     m_blockSize = m_getKeyMode->getBlockSize();
@@ -182,7 +181,8 @@ KeyDetector::reset()
 {
     if (m_getKeyMode) {
         delete m_getKeyMode;
-        m_getKeyMode = new GetKeyMode(int(m_inputSampleRate + 0.1),
+        auto sampleRate = std::min<int> ( 96000, std::max<int> ( 8000, m_inputSampleRate ) );
+        m_getKeyMode = new GetKeyMode(sampleRate,
                                       m_tuningFrequency,
                                       m_length, m_length);
     }
@@ -352,11 +352,15 @@ KeyDetector::getRemainingFeatures()
 size_t
 KeyDetector::getPreferredStepSize() const
 {
-    if (!m_stepSize) {
-        GetKeyMode gkm(int(m_inputSampleRate + 0.1),
-                       m_tuningFrequency, m_length, m_length);
-        m_stepSize = gkm.getHopSize();
-        m_blockSize = gkm.getBlockSize();
+    if ( !m_stepSize ){
+        auto sampleRate = std::min<int> ( 96000, std::max<int> ( 8000, m_inputSampleRate ) );
+        auto blockSize  = static_cast<int> ( 2e-3 * sampleRate );
+        blockSize--;
+        blockSize|=blockSize>>1;blockSize|=blockSize>>2;blockSize|=blockSize>>4;
+        blockSize|=blockSize>>8;blockSize|=blockSize>>16;
+        blockSize++;
+        m_stepSize  = blockSize;
+        m_blockSize = blockSize;
     }
     return m_stepSize;
 }
@@ -364,14 +368,17 @@ KeyDetector::getPreferredStepSize() const
 size_t
 KeyDetector::getPreferredBlockSize() const
 {
-    if (!m_blockSize) {
-        GetKeyMode gkm(int(m_inputSampleRate + 0.1),
-                       m_tuningFrequency, m_length, m_length);
-        m_stepSize = gkm.getHopSize();
-        m_blockSize = gkm.getBlockSize();
+    if ( !m_blockSize ){
+        auto sampleRate = std::min<int> ( 96000, std::max<int> ( 8000, m_inputSampleRate ) );
+        auto blockSize  = static_cast<int> ( 2e-3 * sampleRate );
+        blockSize--;
+        blockSize|=blockSize>>1;blockSize|=blockSize>>2;blockSize|=blockSize>>4;
+        blockSize|=blockSize>>8;blockSize|=blockSize>>16;
+        blockSize++;
+        m_stepSize  = blockSize;
+        m_blockSize = blockSize;
     }
-    return m_blockSize;
-}
+    return m_blockSize;}
 
 std::string
 KeyDetector::getKeyName(int index, bool minor, bool includeMajMin) const

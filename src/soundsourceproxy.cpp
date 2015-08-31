@@ -193,11 +193,13 @@ void SoundSourceProxy::closeAudioSource() {
 // static
 void SoundSourceProxy::loadPlugins() {
     // Initialize built-in file types (last provider wins)
+#if 0
 #ifdef __SNDFILE__
     // libsndfile is just a fallback and will be overwritten by
     // specialized providers!
     s_soundSourceProviders.registerProvider(Mixxx::SoundSourceProviderPointer(
             new Mixxx::SoundSourceProviderSndFile));
+#endif
 #endif
     s_soundSourceProviders.registerProvider(Mixxx::SoundSourceProviderPointer(
             new Mixxx::SoundSourceProviderFLAC));

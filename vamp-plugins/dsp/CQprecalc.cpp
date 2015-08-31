@@ -7,7 +7,7 @@
 
 #include <vector>
 using std::vector;
-static unsigned int sk_i_76_16384[5818] = {
+static size_t sk_i_76_16384[5818] = {
     1301, 1302, 1303, 1304, 1305, 1306, 1307, 1308, 
     1309, 1310, 1311, 1312, 1313, 1314, 1315, 1316, 
     1317, 1318, 1319, 1320, 1321, 1322, 1323, 1324, 
@@ -737,7 +737,7 @@ static unsigned int sk_i_76_16384[5818] = {
     23, 24, 19, 20, 21, 22, 18, 19, 
     20, 21
 };
-static unsigned int sk_j_76_16384[5818] = {
+static size_t sk_j_76_16384[5818] = {
     75, 75, 75, 75, 75, 75, 75, 75, 
     75, 75, 75, 75, 75, 75, 75, 75, 
     75, 75, 75, 75, 75, 75, 75, 75, 
@@ -7289,7 +7289,7 @@ static double sk_imag_76_16384[5818] = {
     -6.015162065217372746120123167e-06, -1.71418848289032934705672373e-05, 
     -1.313154270639261426490470436e-05, -2.077650618608197017055409447e-06
 };
-static void push_76_16384(vector<unsigned int> &is, vector<unsigned int> &js, vector<double> &real, vector<double> &imag)
+static void push_76_16384(vector<size_t > &is, vector<size_t> &js, vector<double> &real, vector<double> &imag)
 {
     is.reserve(5818);
     js.reserve(5818);
@@ -7302,7 +7302,7 @@ static void push_76_16384(vector<unsigned int> &is, vector<unsigned int> &js, ve
         imag.push_back(sk_imag_76_16384[i]);
     }
 }
-static unsigned int sk_i_144_4096[5514] = {
+static size_t sk_i_144_4096[5514] = {
     1460, 1461, 1462, 1463, 1464, 1465, 1466, 1467, 
     1468, 1469, 1470, 1471, 1472, 1473, 1474, 1475, 
     1476, 1477, 1478, 1479, 1480, 1481, 1482, 1483, 
@@ -7994,7 +7994,7 @@ static unsigned int sk_i_144_4096[5514] = {
     100, 101, 102, 94, 95, 96, 97, 98, 
     99, 100
 };
-static unsigned int sk_j_144_4096[5514] = {
+static size_t sk_j_144_4096[5514] = {
     143, 143, 143, 143, 143, 143, 143, 143, 
     143, 143, 143, 143, 143, 143, 143, 143, 
     143, 143, 143, 143, 143, 143, 143, 143, 
@@ -14204,7 +14204,7 @@ static double sk_imag_144_4096[5514] = {
     0.0001284332347275661144123115598, 0.0001113490506780185517647988047, 
     5.903971082771604638470344661e-05, 1.513580302365292566148507331e-05
 };
-static void push_144_4096(vector<unsigned int> &is, vector<unsigned int> &js, vector<double> &real, vector<double> &imag)
+static void push_144_4096(vector<size_t> &is, vector<size_t> &js, vector<double> &real, vector<double> &imag)
 {
     is.reserve(5514);
     js.reserve(5514);
@@ -14217,7 +14217,7 @@ static void push_144_4096(vector<unsigned int> &is, vector<unsigned int> &js, ve
         imag.push_back(sk_imag_144_4096[i]);
     }
 }
-static unsigned int sk_i_65_2048[16779] = {
+static size_t sk_i_65_2048[16779] = {
     59, 60, 61, 62, 63, 64, 65, 66, 
     67, 68, 69, 70, 71, 72, 73, 74, 
     75, 76, 77, 78, 79, 80, 81, 82, 
@@ -16317,7 +16317,7 @@ static unsigned int sk_i_65_2048[16779] = {
     14, 15, 16, 11, 12, 13, 14, 10, 
     11, 12, 13
 };
-static unsigned int sk_j_65_2048[16779] = {
+static size_t sk_j_65_2048[16779] = {
     64, 64, 64, 64, 64, 64, 64, 64, 
     64, 64, 64, 64, 64, 64, 64, 64, 
     64, 64, 64, 64, 64, 64, 64, 64, 
@@ -35201,7 +35201,7 @@ static double sk_imag_65_2048[16779] = {
     2.941036399668936192428742027e-05, 2.980686894347843947958125177e-05, 
     5.155515102046551195085280495e-06
 };
-static void push_65_2048(vector<unsigned int> &is, vector<unsigned int> &js, vector<double> &real, vector<double> &imag)
+static void push_65_2048(vector<size_t > &is, vector<size_t > &js, vector<double> &real, vector<double> &imag)
 {
     is.reserve(16779);
     js.reserve(16779);
@@ -35214,7 +35214,7 @@ static void push_65_2048(vector<unsigned int> &is, vector<unsigned int> &js, vec
         imag.push_back(sk_imag_65_2048[i]);
     }
 }
-static unsigned int sk_i_84_65536[11688] = {
+static size_t sk_i_84_65536[11688] = {
     2602, 2603, 2604, 2605, 2606, 2607, 2608, 2609, 
     2610, 2611, 2612, 2613, 2614, 2615, 2616, 2617, 
     2618, 2619, 2620, 2621, 2622, 2623, 2624, 2625, 
@@ -36677,7 +36677,7 @@ static unsigned int sk_i_84_65536[11688] = {
     27, 28, 29, 30, 23, 24, 25, 26, 
     27, 28, 22, 23, 24, 25, 26, 27
 };
-static unsigned int sk_j_84_65536[11688] = {
+static size_t sk_j_84_65536[11688] = {
     83, 83, 83, 83, 83, 83, 83, 83, 
     83, 83, 83, 83, 83, 83, 83, 83, 
     83, 83, 83, 83, 83, 83, 83, 83, 
@@ -49832,7 +49832,7 @@ static double sk_imag_84_65536[11688] = {
     -4.326701123113231743709354571e-06, -3.704727434869093990451932238e-06, 
     -1.31864263245586871123088326e-06, -5.90742303951375254115853451e-08
 };
-static void push_84_65536(vector<unsigned int> &is, vector<unsigned int> &js, vector<double> &real, vector<double> &imag)
+static void push_84_65536(vector<size_t> &is, vector<size_t> &js, vector<double> &real, vector<double> &imag)
 {
     is.reserve(11688);
     js.reserve(11688);

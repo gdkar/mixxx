@@ -1,5 +1,5 @@
 #include "sources/soundsourcesndfile.h"
-
+#if 0
 namespace Mixxx {
 
 SoundSourceSndFile::SoundSourceSndFile(QUrl url)
@@ -95,5 +95,5 @@ QStringList SoundSourceProviderSndFile::getSupportedFileExtensions() const {
     supportedFileExtensions.append("flac");
     return supportedFileExtensions;
 }
-
 } // namespace Mixxx
+#endif

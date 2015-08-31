@@ -16,25 +16,26 @@
 #ifndef CHROMAGRAM_H
 #define CHROMAGRAM_H
 
+#include <memory>
+#include <utility>
 #include "FFT.h"
 #include "Window.h"
 #include "ConstantQ.h"
 
 struct ChromaConfig{
-    unsigned int FS;
+    size_t FS;
     double min;
     double max;
-    unsigned int BPO;
+    size_t BPO;
     double CQThresh;
     MathUtilities::NormaliseType normalise;
 };
 
 class Chromagram 
 {
-
 public:	
     Chromagram( ChromaConfig Config );
-    ~Chromagram();
+    virtual ~Chromagram();
 	
     double* process( const double *data ); // time domain
     double* process( const double *real, const double *imag ); // frequency domain
@@ -44,37 +45,37 @@ public:
     double kabs( double real, double imag );
 	
     // Results
-    unsigned int getK() { return m_uK;}
-    unsigned int getFrameSize() { return m_frameSize; }
-    unsigned int getHopSize()   { return m_hopSize; }
+    size_t getK()         { return m_uK;}
+    size_t getFrameSize() { return m_frameSize; }
+    size_t getHopSize()   { return m_hopSize; }
 
 private:
     int initialise( ChromaConfig Config );
     int deInitialise();
 
-    Window<double> *m_window;
-    double *m_windowbuf;
+    Window<double> *m_window    = nullptr;
+    double         *m_windowbuf = nullptr;
 	
-    double* m_chromadata;
-    double m_FMin;
-    double m_FMax;
-    unsigned int m_BPO;
-    unsigned int m_uK;
+    double* m_chromadata= nullptr;
+    double       m_FMin = 0;
+    double       m_FMax = 0;
+    size_t       m_BPO  = 0;
+    size_t       m_uK   = 0;
 
     MathUtilities::NormaliseType m_normalise;
 
-    unsigned int m_frameSize;
-    unsigned int m_hopSize;
+    size_t       m_frameSize = 0;
+    size_t       m_hopSize   = 0;
 
-    FFTReal* m_FFT;
-    ConstantQ* m_ConstantQ;
+    std::unique_ptr<FFTReal>   m_FFT;
+    std::unique_ptr<ConstantQ> m_ConstantQ;
 
-    double* m_FFTRe;
-    double* m_FFTIm;
-    double* m_CQRe;
-    double* m_CQIm;
+    double* m_FFTRe    = nullptr;
+    double* m_FFTIm    = nullptr;
+    double* m_CQRe     = nullptr;
+    double* m_CQIm     = nullptr;
 
-    bool m_skGenerated;
+    bool m_skGenerated = false;
 };
 
 #endif
