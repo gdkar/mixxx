@@ -33,14 +33,12 @@ class VampAnalyser {
     QVector<QString> GetLabelsVector();
     QVector<double> GetFirstValuesVector();
     QVector<double> GetLastValuesVector();
-
     // Initialize the VAMP_PATH environment variable to point to the default
     // places that Mixxx VAMP plugins are deployed on installation. If a
     // VAMP_PATH environment variable is already set by the user, then this
     // method appends to that.
     static void initializePluginPaths();
     void SelectOutput(const int outputnumber);
-
   private:
     Vamp::HostExt::PluginLoader::PluginKey m_key;
     int m_iSampleCount, m_iOUT, m_iRemainingSamples,

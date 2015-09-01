@@ -78,16 +78,12 @@ void EngineMicrophone::receiveBuffer(AudioInput input, const CSAMPLE* pBuffer,
 void EngineMicrophone::process(CSAMPLE* pOut, const int iBufferSize) {
     // If configured read into the output buffer.
     // Otherwise, skip the appropriate number of samples to throw them away.
-    const CSAMPLE* sampleBuffer = m_sampleBuffer; // save pointer on stack
-    double pregain =  m_pPregain->get();
-    if (sampleBuffer) {
-        SampleUtil::copyWithGain(pOut, sampleBuffer, pregain, iBufferSize);
-    } else {
-        SampleUtil::clear(pOut, iBufferSize);
-    }
-    m_sampleBuffer = NULL;
-
-    if (m_pEngineEffectsManager != NULL) {
+    const auto sampleBuffer = m_sampleBuffer; // save pointer on stack
+    auto pregain =  m_pPregain->get();
+    if (sampleBuffer) {SampleUtil::copyWithGain(pOut, sampleBuffer, pregain, iBufferSize);}
+    else {SampleUtil::clear(pOut, iBufferSize);}
+    m_sampleBuffer = nullptr;
+    if (m_pEngineEffectsManager != nullptr) {
         // Process effects enabled for this channel
         GroupFeatureState features;
         // This is out of date by a callback but some effects will want the RMS

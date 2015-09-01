@@ -108,7 +108,8 @@ void ConstantQ::sparsekernel(){
     //add it to the sparse kernels matrix
     auto squareThreshold = m_CQThresh * m_CQThresh;
     FFT m_FFT(m_FFTLength);
-    for (auto  k = m_uK; k--; ) {
+    for (auto  k = m_uK; k--; )
+    {
         for (auto u=decltype(m_FFTLength){0}; u < m_FFTLength; u++) 
         {
             hammingWindowRe[u] = 0;
@@ -126,14 +127,15 @@ void ConstantQ::sparsekernel(){
 	    hammingWindowRe[ origin + i ] = absol*real;
 	    hammingWindowIm[ origin + i ] = absol*imag;
 	}
-        
-        for (auto i = decltype(m_FFTLength){0}; i < m_FFTLength/2; ++i) {
+        for (auto i = decltype(m_FFTLength){0}; i < m_FFTLength/2; ++i)
+        {
             std::swap ( hammingWindowRe[i],hammingWindowRe[i+m_FFTLength/2]);
             std::swap ( hammingWindowIm[i],hammingWindowIm[i+m_FFTLength/2]);
         }
 	//do fft of hammingWindow
-	m_FFT.process( false, hammingWindowRe, hammingWindowIm, transfHammingWindowRe, transfHammingWindowIm );
-	for (auto j=decltype(m_FFTLength){0}; j<( m_FFTLength ); j++) {
+	m_FFT.process( false, &hammingWindowRe[0], &hammingWindowIm[0], &transfHammingWindowRe[0], &transfHammingWindowIm[0] );
+	for (auto j=decltype(m_FFTLength){0}; j<( m_FFTLength ); j++)
+        {
 	    // perform thresholding
 	    const auto squaredBin = squaredModule( transfHammingWindowRe[ j ], transfHammingWindowIm[ j ]);
 	    if (squaredBin <= squareThreshold) continue;
@@ -219,7 +221,8 @@ void ConstantQ::sparsekernel(){
 //-----------------------------------------------------------------------------
 double* ConstantQ::process( const double* fftdata )
 {
-    if (!m_sparseKernel) {
+    if (!m_sparseKernel)
+    {
         std::cerr << "ERROR: ConstantQ::process: Sparse kernel has not been initialised" << std::endl;
         return m_CQdata;
     }
@@ -249,7 +252,8 @@ double* ConstantQ::process( const double* fftdata )
     }
     return m_CQdata;
 }
-void ConstantQ::initialise( CQConfig Config ){
+void ConstantQ::initialise( CQConfig Config )
+{
     m_FS = Config.FS;
     m_FMin = Config.min;		// min freq
     m_FMax = Config.max;		// max freq
@@ -275,10 +279,10 @@ void ConstantQ::deInitialise()
     delete m_sparseKernel;
 }
 
-void ConstantQ::process(const double *FFTRe, const double* FFTIm,
-                        double *CQRe, double *CQIm)
+void ConstantQ::process(const double *FFTRe, const double* FFTIm, double *CQRe, double *CQIm)
 {
-    if (!m_sparseKernel) {
+    if (!m_sparseKernel)
+    {
         std::cerr << "ERROR: ConstantQ::process: Sparse kernel has not been initialised" << std::endl;
         return;
     }

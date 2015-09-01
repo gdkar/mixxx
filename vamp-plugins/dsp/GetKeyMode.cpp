@@ -7,10 +7,10 @@
 #include "GetKeyMode.h"
 #include "MathUtilities.h"
 #include "Pitch.h"
-#include <math.h>
 #include <cmath>
 #include <iostream>
-
+#include <algorithm>
+#include <cmath>
 #include <cstring>
 #include <cstdlib>
 
@@ -215,7 +215,8 @@ int GetKeyMode::process(double *PCMData)
         m_Keys[k+m_BPO] = m_MinCorr[k];
     }
 
-    for (k = 0; k < 24; ++k) {
+    for (k = 0; k < 24; ++k) 
+    {
         m_keyStrengths[k] = 0;
     }
 
@@ -223,7 +224,8 @@ int GetKeyMode::process(double *PCMData)
     {
         auto idx = k / (m_BPO/12);
         auto rem = k % (m_BPO/12);
-        if (rem == 0 || m_Keys[k] > m_keyStrengths[idx]) {
+        if (rem == 0 || m_Keys[k] > m_keyStrengths[idx])
+        {
             m_keyStrengths[idx] = m_Keys[k];
         }
 
@@ -248,14 +250,10 @@ int GetKeyMode::process(double *PCMData)
     double dummy;
     // '1 +' because we number keys 1-24, not 0-23.
     key = 1 + (int)ceil( (double)MathUtilities::getMax( m_Keys, 2* m_BPO, &dummy )/3 );
-
 //    std::cout << "key pre-sorting: " << key << std::endl;
-
-
     //Median filtering
-
     // track Median buffer initial filling
-    m_MedianBufferFilling = std::min ( m_MedianWinSize, m_MedianBufferFilling+1);
+    m_MedianBufferFilling = std::min ( m_MedianWinsize, m_MedianBufferFilling+1);
 		
     //shift median buffer
     for( k = 1; k < m_MedianWinsize; k++ )
@@ -266,7 +264,8 @@ int GetKeyMode::process(double *PCMData)
     m_MedianFilterBuffer[ m_MedianWinsize - 1 ] = key;
     //Copy median into sorting buffer, reversed
     size_t ijx = 0;
-    for( k = 0; k < m_MedianWinsize; k++ ){
+    for( k = 0; k < m_MedianWinsize; k++ )
+    {
         m_SortedBuffer[k] = m_MedianFilterBuffer[m_MedianWinsize-1-ijx];
         ijx++;
     }
@@ -279,7 +278,7 @@ int GetKeyMode::process(double *PCMData)
   std::cout << std::endl;
 */
     auto sortlength = m_MedianBufferFilling;
-    auto midpoint = static_cast<off_t>(ceil(static_cast<sortlength>/2));
+    auto midpoint = static_cast<off_t>(ceil(static_cast<double>(sortlength)/2));
 //  std::cout << "midpoint = " << midpoint << endl;
     if( midpoint <= 0 ) midpoint = 1;
     key = m_SortedBuffer[midpoint-1];

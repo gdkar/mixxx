@@ -352,7 +352,8 @@ KeyDetector::getRemainingFeatures()
 size_t
 KeyDetector::getPreferredStepSize() const
 {
-    if ( !m_stepSize ){
+    if ( !m_stepSize )
+    {
         auto sampleRate = std::min<int> ( 96000, std::max<int> ( 8000, m_inputSampleRate ) );
         auto blockSize  = static_cast<int> ( 2e-3 * sampleRate );
         blockSize--;
@@ -368,7 +369,8 @@ KeyDetector::getPreferredStepSize() const
 size_t
 KeyDetector::getPreferredBlockSize() const
 {
-    if ( !m_blockSize ){
+    if ( !m_blockSize )
+    {
         auto sampleRate = std::min<int> ( 96000, std::max<int> ( 8000, m_inputSampleRate ) );
         auto blockSize  = static_cast<int> ( 2e-3 * sampleRate );
         blockSize--;
@@ -385,30 +387,21 @@ KeyDetector::getKeyName(int index, bool minor, bool includeMajMin) const
 {
     // Keys are numbered with 1 => C, 12 => B
     // This is based on chromagram base set to a C in qm-dsp's GetKeyMode.cpp
-
     static const char *namesMajor[] = {
         "C", "Db", "D", "Eb",
         "E", "F", "F# / Gb", "G",
         "Ab", "A", "Bb", "B"
     };
-
     static const char *namesMinor[] = {
         "C", "C#", "D", "Eb / D#",
         "E", "F", "F#", "G",
         "G#", "A", "Bb", "B"
     };
-
-    if (index < 1 || index > 12) {
-        return "(unknown)";
-    }
-
+    if (index < 1 || index > 12) {return "(unknown)";}
     std::string base;
-
     if (minor) base = namesMinor[index - 1];
     else base = namesMajor[index - 1];
-
     if (!includeMajMin) return base;
-
     if (minor) return base + " minor";
     else return base + " major";
 }

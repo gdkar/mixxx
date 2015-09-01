@@ -41,25 +41,13 @@
 
 static const int kDriftReserve = 1; // Buffer for drift correction 1 full, 1 for r/w, 1 empty
 static const int kFifoSize = 2 * kDriftReserve + 1; // Buffer for drift correction 1 full, 1 for r/w, 1 empty
-
 // static
-volatile int SoundDevicePortAudio::m_underflowHappend = 0;
-
+std::atomic<int> SoundDevicePortAudio::m_underflowHappend{0};
 SoundDevicePortAudio::SoundDevicePortAudio(ConfigObject<ConfigValue> *config, SoundManager *sm,
                                            const PaDeviceInfo *deviceInfo, unsigned int devIndex)
         : SoundDevice(config, sm),
-          m_pStream(NULL),
           m_devId(devIndex),
-          m_deviceInfo(deviceInfo),
-          m_outputFifo(NULL),
-          m_inputFifo(NULL),
-          m_outputDrift(false),
-          m_inputDrift(false),
-          m_bSetThreadPriority(false),
-          m_underflowUpdateCount(0),
-          m_nsInAudioCb(0),
-          m_framesSinceAudioLatencyUsageUpdate(0),
-          m_syncBuffers(2) {
+          m_deviceInfo(deviceInfo){
     // Setting parent class members:
     m_hostAPI = Pa_GetHostApiInfo(deviceInfo->hostApi)->name;
     m_dSampleRate = deviceInfo->defaultSampleRate;
@@ -68,76 +56,57 @@ SoundDevicePortAudio::SoundDevicePortAudio(ConfigObject<ConfigValue> *config, So
     m_iNumInputChannels = m_deviceInfo->maxInputChannels;
     m_iNumOutputChannels = m_deviceInfo->maxOutputChannels;
 
-    m_pMasterAudioLatencyOverloadCount = new ControlObjectSlave("[Master]", "audio_latency_overload_count");
-    m_pMasterAudioLatencyUsage = new ControlObjectSlave("[Master]", "audio_latency_usage");
-    m_pMasterAudioLatencyOverload  = new ControlObjectSlave("[Master]", "audio_latency_overload");
-
+    m_pMasterAudioLatencyOverloadCount = std::make_unique<ControlObjectSlave>("[Master]", "audio_latency_overload_count");
+    m_pMasterAudioLatencyUsage = std::make_unique<ControlObjectSlave>("[Master]", "audio_latency_usage");
+    m_pMasterAudioLatencyOverload  = std::make_unique<ControlObjectSlave>("[Master]", "audio_latency_overload");
     m_inputParams.device = 0;
     m_inputParams.channelCount = 0;
     m_inputParams.sampleFormat = 0;
     m_inputParams.suggestedLatency = 0.0;
-    m_inputParams.hostApiSpecificStreamInfo = NULL;
+    m_inputParams.hostApiSpecificStreamInfo = nullptr;
 
     m_outputParams.device = 0;
     m_outputParams.channelCount = 0;
     m_outputParams.sampleFormat = 0;
     m_outputParams.suggestedLatency = 0.0;
-    m_outputParams.hostApiSpecificStreamInfo = NULL;
+    m_outputParams.hostApiSpecificStreamInfo = nullptr;
 }
-
-SoundDevicePortAudio::~SoundDevicePortAudio() {
-    delete m_pMasterAudioLatencyOverloadCount;
-    delete m_pMasterAudioLatencyUsage;
-    delete m_pMasterAudioLatencyOverload;
-}
-
 Result SoundDevicePortAudio::open(bool isClkRefDevice, int syncBuffers) {
     qDebug() << "SoundDevicePortAudio::open()" << getInternalName();
     PaError err;
-
     if (m_audioOutputs.empty() && m_audioInputs.empty()) {
         m_lastError = QString::fromAscii("No inputs or outputs in SDPA::open() "
             "(THIS IS A BUG, this should be filtered by SM::setupDevices)");
         return ERR;
     }
-
-    memset(&m_outputParams, 0, sizeof(m_outputParams));
-    memset(&m_inputParams, 0, sizeof(m_inputParams));
-    PaStreamParameters* pOutputParams = &m_outputParams;
-    PaStreamParameters* pInputParams = &m_inputParams;
-
+    std::memset(&m_outputParams, 0, sizeof(m_outputParams));
+    std::memset(&m_inputParams, 0, sizeof(m_inputParams));
+    auto pOutputParams = &m_outputParams;
+    auto pInputParams = &m_inputParams;
     // Look at how many audio outputs we have,
     // so we can figure out how many output channels we need to open.
     if (m_audioOutputs.empty()) {
         m_outputParams.channelCount = 0;
-        pOutputParams = NULL;
+        pOutputParams = nullptr;
     } else {
-        foreach (AudioOutput out, m_audioOutputs) {
-            ChannelGroup channelGroup = out.getChannelGroup();
-            int highChannel = channelGroup.getChannelBase()
-                    + channelGroup.getChannelCount();
-            if (m_outputParams.channelCount <= highChannel) {
-                m_outputParams.channelCount = highChannel;
-            }
+        for(auto &out: m_audioOutputs) {
+            auto channelGroup = out.getChannelGroup();
+            auto highChannel = channelGroup.getChannelBase() + channelGroup.getChannelCount();
+            if (m_outputParams.channelCount <= highChannel) {m_outputParams.channelCount = highChannel;}
         }
     }
-
     // Look at how many audio inputs we have,
     // so we can figure out how many input channels we need to open.
     if (m_audioInputs.empty()) {
         m_inputParams.channelCount = 0;
-        pInputParams = NULL;
+        pInputParams = nullptr;
     } else {
-        foreach (AudioInput in, m_audioInputs) {
-            ChannelGroup channelGroup = in.getChannelGroup();
-            int highChannel = channelGroup.getChannelBase()
-                + channelGroup.getChannelCount();
-            if (m_inputParams.channelCount <= highChannel) {
-                m_inputParams.channelCount = highChannel;
-            }
+        for(auto &in: m_audioInputs) {
+            auto channelGroup = in.getChannelGroup();
+            auto highChannel = channelGroup.getChannelBase() + channelGroup.getChannelCount();
+            if (m_inputParams.channelCount <= highChannel) {m_inputParams.channelCount = highChannel;}
         }
     }
-
     // Workaround for Bug #900364. The PortAudio ALSA hostapi opens the minimum
     // number of device channels supported by the device regardless of our
     // channel request. It has no way of notifying us when it does this. The
@@ -149,55 +118,35 @@ Result SoundDevicePortAudio::open(bool isClkRefDevice, int syncBuffers) {
     if (m_deviceInfo->hostApi == paALSA) {
         // Only engage workaround if the device has enough input and output
         // channels.
-        if (m_deviceInfo->maxInputChannels >= 2 &&
-                m_inputParams.channelCount == 1) {
-            m_inputParams.channelCount = 2;
-        }
-        if (m_deviceInfo->maxOutputChannels >= 2 &&
-                m_outputParams.channelCount == 1) {
-            m_outputParams.channelCount = 2;
-        }
+        if (m_deviceInfo->maxInputChannels >= 2 && m_inputParams.channelCount == 1) {m_inputParams.channelCount = 2;}
+        if (m_deviceInfo->maxOutputChannels >= 2 && m_outputParams.channelCount == 1) {m_outputParams.channelCount = 2;}
     }
-
-
     // Sample rate
-    if (m_dSampleRate <= 0) {
-        m_dSampleRate = 44100.0;
-    }
-
+    if (m_dSampleRate <= 0) {m_dSampleRate = 44100.0;}
     // Get latency in milleseconds
     qDebug() << "framesPerBuffer:" << m_framesPerBuffer;
-    double bufferMSec = m_framesPerBuffer / m_dSampleRate * 1000;
+    auto bufferMSec = m_framesPerBuffer / m_dSampleRate * 1000;
     qDebug() << "Requested sample rate: " << m_dSampleRate << "Hz, latency:" << bufferMSec << "ms";
-
-    qDebug() << "Output channels:" << m_outputParams.channelCount << "| Input channels:"
-        << m_inputParams.channelCount;
-
+    qDebug() << "Output channels:" << m_outputParams.channelCount << "| Input channels:" << m_inputParams.channelCount;
     // PortAudio's JACK backend also only properly supports
     // paFramesPerBufferUnspecified in non-blocking mode because the latency
     // comes from the JACK daemon. (PA should give an error or something though,
     // but it doesn't.)
-    if (m_deviceInfo->hostApi == paJACK) {
-        m_framesPerBuffer = paFramesPerBufferUnspecified;
-    }
-
+    if (m_deviceInfo->hostApi == paJACK) {m_framesPerBuffer = paFramesPerBufferUnspecified;}
     //Fill out the rest of the info.
     m_outputParams.device = m_devId;
     m_outputParams.sampleFormat = paFloat32;
     m_outputParams.suggestedLatency = bufferMSec / 1000.0;
-    m_outputParams.hostApiSpecificStreamInfo = NULL;
+    m_outputParams.hostApiSpecificStreamInfo = nullptr;
 
     m_inputParams.device  = m_devId;
     m_inputParams.sampleFormat  = paFloat32;
     m_inputParams.suggestedLatency = bufferMSec / 1000.0;
-    m_inputParams.hostApiSpecificStreamInfo = NULL;
-
+    m_inputParams.hostApiSpecificStreamInfo = nullptr;
     qDebug() << "Opening stream with id" << m_devId;
-
     m_syncBuffers = syncBuffers;
-
     //Create the callback function pointer.
-    PaStreamCallback* callback = NULL;
+    PaStreamCallback* callback = nullptr;
     if (isClkRefDevice) {
         callback = paV19CallbackClkRef;
     } else if (m_syncBuffers == 2) {
@@ -221,12 +170,10 @@ Result SoundDevicePortAudio::open(bool isClkRefDevice, int syncBuffers) {
         // this can be used on a second device when it id driven by the Clock reference device clock
         callback = paV19Callback;
         if (m_outputParams.channelCount) {
-            m_outputFifo = new FIFO<CSAMPLE>(
-                    m_outputParams.channelCount * m_framesPerBuffer);
+            m_outputFifo = new FIFO<CSAMPLE>(m_outputParams.channelCount * m_framesPerBuffer);
         }
         if (m_inputParams.channelCount) {
-            m_inputFifo = new FIFO<CSAMPLE>(
-                    m_inputParams.channelCount * m_framesPerBuffer);
+            m_inputFifo = new FIFO<CSAMPLE>(m_inputParams.channelCount * m_framesPerBuffer);
         }
     } else if (m_syncBuffers == 0) {
         if (m_outputParams.channelCount) {
@@ -236,8 +183,7 @@ Result SoundDevicePortAudio::open(bool isClkRefDevice, int syncBuffers) {
             m_inputFifo = new FIFO<CSAMPLE>(m_inputParams.channelCount * m_framesPerBuffer * 2);
         }
     }
-
-    PaStream *pStream;
+    PaStream *pStream = nullptr;
     // Try open device using iChannelMax
     err = Pa_OpenStream(&pStream,
                         pInputParams,
@@ -246,75 +192,53 @@ Result SoundDevicePortAudio::open(bool isClkRefDevice, int syncBuffers) {
                         m_framesPerBuffer,
                         paClipOff, // Stream flags
                         callback,
-                        (void*) this); // pointer passed to the callback function
-
+                        static_cast<void*>( this )); // pointer passed to the callback function
     if (err != paNoError) {
         qWarning() << "Error opening stream:" << Pa_GetErrorText(err);
         m_lastError = QString::fromUtf8(Pa_GetErrorText(err));
         return ERR;
-    } else {
-        qDebug() << "Opened PortAudio stream successfully... starting";
-    }
-
-
+    } else {qDebug() << "Opened PortAudio stream successfully... starting";}
 #ifdef __LINUX__
     //Attempt to dynamically load and resolve stuff in the PortAudio library
     //in order to enable RT priority with ALSA.
     QLibrary portaudio("libportaudio.so.2");
-    if (!portaudio.load())
-       qWarning() << "Failed to dynamically load PortAudio library";
-    else
-       qDebug() << "Dynamically loaded PortAudio library";
-
-    EnableAlsaRT enableRealtime = (EnableAlsaRT) portaudio.resolve("PaAlsa_EnableRealtimeScheduling");
-    if (enableRealtime) {
-        enableRealtime(pStream, 1);
-    }
+    if (!portaudio.load()) qWarning() << "Failed to dynamically load PortAudio library";
+    else                   qDebug() << "Dynamically loaded PortAudio library";
+    auto enableRealtime = reinterpret_cast<EnableAlsaRT>(portaudio.resolve("PaAlsa_EnableRealtimeScheduling"));
+    if (enableRealtime) {enableRealtime(pStream, 1);}
     portaudio.unload();
 #endif
-
     // Start stream
     err = Pa_StartStream(pStream);
     if (err != paNoError) {
         qWarning() << "PortAudio: Start stream error:" << Pa_GetErrorText(err);
         m_lastError = QString::fromUtf8(Pa_GetErrorText(err));
         err = Pa_CloseStream(pStream);
-        if (err != paNoError) {
-            qWarning() << "PortAudio: Close stream error:" << Pa_GetErrorText(err) << getInternalName();
-        }
+        if (err != paNoError) {qWarning() << "PortAudio: Close stream error:" << Pa_GetErrorText(err) << getInternalName();}
         return ERR;
-    } else {
-        qDebug() << "PortAudio: Started stream successfully";
-    }
-
+    } else {qDebug() << "PortAudio: Started stream successfully";}
     // Get the actual details of the stream & update Mixxx's data
-    const PaStreamInfo* streamDetails = Pa_GetStreamInfo(pStream);
+    const auto streamDetails = Pa_GetStreamInfo(pStream);
     m_dSampleRate = streamDetails->sampleRate;
-    double currentLatencyMSec = streamDetails->outputLatency * 1000;
+    auto currentLatencyMSec = streamDetails->outputLatency * 1000;
     qDebug() << "   Actual sample rate: " << m_dSampleRate << "Hz, latency:" << currentLatencyMSec << "ms";
-
     if (isClkRefDevice) {
         // Update the samplerate and latency ControlObjects, which allow the
         // waveform view to properly correct for the latency.
         ControlObject::set(ConfigKey("[Master]", "latency"), currentLatencyMSec);
         ControlObject::set(ConfigKey("[Master]", "samplerate"), m_dSampleRate);
         ControlObject::set(ConfigKey("[Master]", "audio_buffer_size"), bufferMSec);
-
-        if (m_pMasterAudioLatencyOverloadCount) {
-            m_pMasterAudioLatencyOverloadCount->set(0);
-        }
+        if (m_pMasterAudioLatencyOverloadCount) {m_pMasterAudioLatencyOverloadCount->set(0);}
     }
-    m_pStream = pStream;
+    m_pStream.store(pStream);
     return OK;
 }
-
 Result SoundDevicePortAudio::close() {
     //qDebug() << "SoundDevicePortAudio::close()" << getInternalName();
-    PaStream* pStream = m_pStream;
-    m_pStream = NULL;
+    auto pStream = m_pStream.exchange(nullptr);
     if (pStream) {
         // Make sure the stream is not stopped before we try stopping it.
-        PaError err = Pa_IsStreamStopped(pStream);
+        auto err = Pa_IsStreamStopped(pStream);
         // 1 means the stream is stopped. 0 means active.
         if (err == 1) {
             //qDebug() << "PortAudio: Stream already stopped, but no error.";
@@ -322,11 +246,9 @@ Result SoundDevicePortAudio::close() {
         }
         // Real PaErrors are always negative.
         if (err < 0) {
-            qWarning() << "PortAudio: Stream already stopped:"
-                       << Pa_GetErrorText(err) << getInternalName();
+            qWarning() << "PortAudio: Stream already stopped:" << Pa_GetErrorText(err) << getInternalName();
             return ERR;
         }
-
         //Stop the stream.
         err = Pa_StopStream(pStream);
         //PaError err = Pa_AbortStream(m_pStream); //Trying Pa_AbortStream instead, because StopStream seems to wait
@@ -336,63 +258,49 @@ Result SoundDevicePortAudio::close() {
                                                    //BIG FAT WARNING: Pa_AbortStream() will kill threads while they're
                                                    //waiting on a mutex, which will leave the mutex in an screwy
                                                    //state. Don't use it!
-
         if (err != paNoError) {
             qWarning() << "PortAudio: Stop stream error:" << Pa_GetErrorText(err) << getInternalName();
             return ERR;
         }
-
         // Close stream
         err = Pa_CloseStream(pStream);
         if (err != paNoError) {
             qWarning() << "PortAudio: Close stream error:" << Pa_GetErrorText(err) << getInternalName();
             return ERR;
         }
-
-        if (m_outputFifo) {
-            delete m_outputFifo;
-        }
-        if (m_inputFifo) {
-            delete m_inputFifo;
-        }
+        if (m_outputFifo) { delete m_outputFifo;}
+        if (m_inputFifo) {  delete m_inputFifo;}
     }
-
-    m_outputFifo = NULL;
-    m_inputFifo = NULL;
+    m_outputFifo = nullptr;
+    m_inputFifo = nullptr;
     m_bSetThreadPriority = false;
-
     return OK;
 }
-
-QString SoundDevicePortAudio::getError() const {
-    return m_lastError;
-}
-
+QString SoundDevicePortAudio::getError() const {return m_lastError;}
 void SoundDevicePortAudio::readProcess() {
-    PaStream* pStream = m_pStream;
+    auto  pStream = m_pStream.load();
     if (pStream && m_inputParams.channelCount && m_inputFifo) {
-        int inChunkSize = m_framesPerBuffer * m_inputParams.channelCount;
+        auto inChunkSize = m_framesPerBuffer * m_inputParams.channelCount;
         if (m_syncBuffers == 0) {
             // Polling mode
-            signed int readAvailable = Pa_GetStreamReadAvailable(pStream) * m_inputParams.channelCount;
-            int writeAvailable = m_inputFifo->writeAvailable();
-            int copyCount = qMin(writeAvailable, readAvailable);
+            auto readAvailable  = Pa_GetStreamReadAvailable(pStream) * m_inputParams.channelCount;
+            auto writeAvailable = static_cast<decltype(readAvailable)>(m_inputFifo->writeAvailable());
+            auto copyCount = qMin(writeAvailable, readAvailable);
             if (copyCount > 0) {
                 CSAMPLE* dataPtr1;
                 ring_buffer_size_t size1;
                 CSAMPLE* dataPtr2;
                 ring_buffer_size_t size2;
-                (void)m_inputFifo->aquireWriteRegions(copyCount,
-                        &dataPtr1, &size1, &dataPtr2, &size2);
+                (void)m_inputFifo->aquireWriteRegions(copyCount,&dataPtr1, &size1, &dataPtr2, &size2);
                 // Fetch fresh samples and write to the the input buffer
-                PaError err = Pa_ReadStream(pStream, dataPtr1, size1 / m_inputParams.channelCount);
-                CSAMPLE* lastFrame = &dataPtr1[size1 - m_inputParams.channelCount];
+                auto err = Pa_ReadStream(pStream, dataPtr1, size1 / m_inputParams.channelCount);
+                auto lastFrame = &dataPtr1[size1 - m_inputParams.channelCount];
                 if (err == paInputOverflowed) {
                     //qDebug() << "SoundDevicePortAudio::readProcess() Pa_ReadStream paInputOverflowed" << getInternalName();
                     m_underflowHappend = 1;
                 }
                 if (size2 > 0) {
-                    PaError err = Pa_ReadStream(pStream, dataPtr2, size2 / m_inputParams.channelCount);
+                    auto rr = Pa_ReadStream(pStream, dataPtr2, size2 / m_inputParams.channelCount);
                     lastFrame = &dataPtr2[size2 - m_inputParams.channelCount];
                     if (err == paInputOverflowed) {
                         //qDebug() << "SoundDevicePortAudio::readProcess() Pa_ReadStream paInputOverflowed" << getInternalName();
@@ -400,46 +308,37 @@ void SoundDevicePortAudio::readProcess() {
                     }
                 }
                 m_inputFifo->releaseWriteRegions(copyCount);
-
                 if (readAvailable > writeAvailable + inChunkSize / 2) {
                     // we are not able to consume all frames
                     if (m_inputDrift) {
                         // Skip one frame
                         //qDebug() << "SoundDevicePortAudio::readProcess() skip one frame"
                         //        << (float)writeAvailable / inChunkSize << (float)readAvailable / inChunkSize;
-                        PaError err = Pa_ReadStream(pStream, dataPtr1, 1);
+                        auto err = Pa_ReadStream(pStream, dataPtr1, 1);
                         if (err == paInputOverflowed) {
                             //qDebug()
                             //        << "SoundDevicePortAudio::readProcess() Pa_ReadStream paInputOverflowed"
                             //        << getInternalName();
                             m_underflowHappend = 1;
                         }
-                    } else {
-                        m_inputDrift = true;
-                    }
+                    } else {m_inputDrift = true;}
                 } else if (readAvailable < inChunkSize / 2) {
                     // We should read at least inChunkSize
                     if (m_inputDrift) {
                         // duplicate one frame
                         //qDebug() << "SoundDevicePortAudio::readProcess() duplicate one frame"
                         //        << (float)writeAvailable / inChunkSize << (float)readAvailable / inChunkSize;
-                        (void)m_inputFifo->aquireWriteRegions(m_inputParams.channelCount,
-                                &dataPtr1, &size1, &dataPtr2, &size2);
+                        (void)m_inputFifo->aquireWriteRegions(m_inputParams.channelCount,&dataPtr1, &size1, &dataPtr2, &size2);
                         if (size1) {
                             SampleUtil::copy(dataPtr1, lastFrame, size1);
                             m_inputFifo->releaseWriteRegions(size1);
                         }
-                    } else {
-                        m_inputDrift = true;
-                    }
-                } else {
-                    m_inputDrift = false;
-                }
+                    } else {m_inputDrift = true;}
+                } else {m_inputDrift = false;}
             }
         }
-
-        int readAvailable = m_inputFifo->readAvailable();
-        int readCount = inChunkSize;
+        auto readAvailable = m_inputFifo->readAvailable();
+        auto readCount = inChunkSize;
         if (inChunkSize > readAvailable) {
             readCount = readAvailable;
             m_underflowHappend = 1;
@@ -453,13 +352,9 @@ void SoundDevicePortAudio::readProcess() {
             // We use size1 and size2, so we can ignore the return value
             (void)m_inputFifo->aquireReadRegions(readCount, &dataPtr1, &size1, &dataPtr2, &size2);
             // Fetch fresh samples and write to the the output buffer
-            composeInputBuffer(dataPtr1,
-                    size1 / m_inputParams.channelCount, 0,
-                    m_inputParams.channelCount);
+            composeInputBuffer(dataPtr1,size1 / m_inputParams.channelCount, 0,m_inputParams.channelCount);
             if (size2 > 0) {
-                composeInputBuffer(dataPtr2,
-                        size2 / m_inputParams.channelCount, size1 / m_inputParams.channelCount,
-                        m_inputParams.channelCount);
+                composeInputBuffer(dataPtr2,size2 / m_inputParams.channelCount, size1 / m_inputParams.channelCount,m_inputParams.channelCount);
             }
             m_inputFifo->releaseReadRegions(readCount);
         }
@@ -467,18 +362,15 @@ void SoundDevicePortAudio::readProcess() {
             // Fill remaining buffers with zeros
             clearInputBuffer(inChunkSize - readCount, readCount);
         }
-
         m_pSoundManager->pushInputBuffers(m_audioInputs, m_framesPerBuffer);
     }
 }
-
 void SoundDevicePortAudio::writeProcess() {
-    PaStream* pStream = m_pStream;
-
+    auto pStream = m_pStream.load();
     if (pStream && m_outputParams.channelCount && m_outputFifo) {
-        int outChunkSize = m_framesPerBuffer * m_outputParams.channelCount;
-        int writeAvailable = m_outputFifo->writeAvailable();
-        int writeCount = outChunkSize;
+        auto outChunkSize = m_framesPerBuffer * m_outputParams.channelCount;
+        auto writeAvailable = m_outputFifo->writeAvailable();
+        auto writeCount = outChunkSize;
         if (outChunkSize > writeAvailable) {
             writeCount = writeAvailable;
             m_underflowHappend = 1;
@@ -500,20 +392,18 @@ void SoundDevicePortAudio::writeProcess() {
             }
             m_outputFifo->releaseWriteRegions(writeCount);
         }
-
         if (m_syncBuffers == 0) {
             // Polling
-            signed int writeAvailable = Pa_GetStreamWriteAvailable(pStream) * m_outputParams.channelCount;
-            int readAvailable = m_outputFifo->readAvailable();
-            int copyCount = qMin(readAvailable, writeAvailable);
+            auto writeAvailable = Pa_GetStreamWriteAvailable(pStream) * m_outputParams.channelCount;
+            auto readAvailable = static_cast<decltype(writeAvailable)>(m_outputFifo->readAvailable());
+            auto copyCount = qMin(readAvailable, writeAvailable);
             //qDebug() << "SoundDevicePortAudio::writeProcess()" << toRead << writeAvailable;
             if (copyCount > 0) {
                 CSAMPLE* dataPtr1;
                 ring_buffer_size_t size1;
                 CSAMPLE* dataPtr2;
                 ring_buffer_size_t size2;
-                m_outputFifo->aquireReadRegions(copyCount,
-                        &dataPtr1, &size1, &dataPtr2, &size2);
+                m_outputFifo->aquireReadRegions(copyCount,&dataPtr1, &size1, &dataPtr2, &size2);
                 if (writeAvailable == outChunkSize * 2) {
                     // Underflow
                     //qDebug() << "SoundDevicePortAudio::writeProcess() Buffer empty";
@@ -533,22 +423,15 @@ void SoundDevicePortAudio::writeProcess() {
                             //qDebug() << "SoundDevicePortAudio::writeProcess() Pa_ReadStream paOutputUnderflowed";
                             m_underflowHappend = 1;
                         }
-                    } else {
-                        //qDebug() << "SoundDevicePortAudio::writeProcess() OK" << (float)writeAvailable / outChunkSize << (float)readAvailable / outChunkSize;
-                        m_outputDrift = true;
-                    }
+                    } else {m_outputDrift = true;}
                 } else if (writeAvailable < outChunkSize / 2) {
                     // We are not able to store all new frames
                     if (m_outputDrift) {
                         //qDebug() << "SoundDevicePortAudio::writeProcess() skip one frame"
                         //        << (float)writeAvailable / outChunkSize << (float)readAvailable / outChunkSize;
                         ++copyCount;
-                    } else {
-                        m_outputDrift = true;
-                    }
-                } else {
-                    m_outputDrift = false;
-                }
+                    } else {m_outputDrift = true;}
+                } else {m_outputDrift = false;}
                 PaError err = Pa_WriteStream(pStream, dataPtr1, size1 / m_outputParams.channelCount);
                 if (err == paOutputUnderflowed) {
                     //qDebug() << "SoundDevicePortAudio::writeProcess() Pa_ReadStream paOutputUnderflowed" << getInternalName();
@@ -566,18 +449,13 @@ void SoundDevicePortAudio::writeProcess() {
         }
     }
 }
-
 int SoundDevicePortAudio::callbackProcessDrift(const unsigned int framesPerBuffer,
                                           CSAMPLE *out, const CSAMPLE *in,
                                           const PaStreamCallbackTimeInfo *timeInfo,
                                           PaStreamCallbackFlags statusFlags) {
     Q_UNUSED(timeInfo);
     Trace trace("SoundDevicePortAudio::callbackProcessDrift %1", getInternalName());
-
-    if (statusFlags & (paOutputUnderflow | paInputOverflow)) {
-        m_underflowHappend = 1;
-    }
-
+    if (statusFlags & (paOutputUnderflow | paInputOverflow)) {m_underflowHappend = 1;}
     // Since we are on the non Clock reference device and may have an independent
     // Crystal clock, a drift correction is required
     //
@@ -601,11 +479,10 @@ int SoundDevicePortAudio::callbackProcessDrift(const unsigned int framesPerBuffe
     //
     // I the tests it turns out that it only happens in the opposite direction, so
     // 3 chunks are just fine.
-
     if (m_inputParams.channelCount) {
-        int inChunkSize = framesPerBuffer * m_inputParams.channelCount;
-        int readAvailable = m_inputFifo->readAvailable();
-        int writeAvailable = m_inputFifo->writeAvailable();
+        auto inChunkSize = framesPerBuffer * m_inputParams.channelCount;
+        auto readAvailable = m_inputFifo->readAvailable();
+        auto writeAvailable = m_inputFifo->writeAvailable();
         if (readAvailable < inChunkSize * kDriftReserve) {
             // risk of an underflow, duplicate one frame
             m_inputFifo->write(in, inChunkSize);
@@ -645,11 +522,9 @@ int SoundDevicePortAudio::callbackProcessDrift(const unsigned int framesPerBuffe
             //qDebug() << "callbackProcessDrift write:" << (float) readAvailable / inChunkSize << "Buffer full";
         }
     }
-
     if (m_outputParams.channelCount) {
-        int outChunkSize = framesPerBuffer * m_outputParams.channelCount;
-        int readAvailable = m_outputFifo->readAvailable();
-
+        auto outChunkSize = framesPerBuffer * m_outputParams.channelCount;
+        auto readAvailable = m_outputFifo->readAvailable();
         if (readAvailable > outChunkSize * (kDriftReserve + 1)) {
             m_outputFifo->read(out, outChunkSize);
             if (m_outputDrift) {
@@ -678,11 +553,9 @@ int SoundDevicePortAudio::callbackProcessDrift(const unsigned int framesPerBuffe
                 //qDebug() << "callbackProcessDrift read:" << (float)readAvailable / outChunkSize << "Jitter Save";
             }
         } else if (readAvailable) {
-            m_outputFifo->read(out,
-                    readAvailable);
+            m_outputFifo->read(out,readAvailable);
             // underflow
-            SampleUtil::clear(&out[readAvailable],
-                    outChunkSize - readAvailable);
+            SampleUtil::clear(&out[readAvailable],outChunkSize - readAvailable);
             m_underflowHappend = 1;
             //qDebug() << "callbackProcessDrift read:" << (float)readAvailable / outChunkSize << "Underflow";
         } else {
@@ -694,23 +567,20 @@ int SoundDevicePortAudio::callbackProcessDrift(const unsigned int framesPerBuffe
      }
     return paContinue;
 }
-
 int SoundDevicePortAudio::callbackProcess(const unsigned int framesPerBuffer,
                                           CSAMPLE *out, const CSAMPLE *in,
                                           const PaStreamCallbackTimeInfo *timeInfo,
                                           PaStreamCallbackFlags statusFlags) {
     Q_UNUSED(timeInfo);
     Trace trace("SoundDevicePortAudio::callbackProcess %1", getInternalName());
-
     if (statusFlags & (paOutputUnderflow | paInputOverflow)) {
         m_underflowHappend = 1;
         //qDebug() << "callbackProcess read:" << "Underflow";
 
     }
-
     if (m_inputParams.channelCount) {
-        int inChunkSize = framesPerBuffer * m_inputParams.channelCount;
-        int writeAvailable = m_inputFifo->writeAvailable();
+        auto inChunkSize = framesPerBuffer * m_inputParams.channelCount;
+        auto writeAvailable = m_inputFifo->writeAvailable();
         if (writeAvailable >= inChunkSize) {
             m_inputFifo->write(in, inChunkSize - m_inputParams.channelCount);
         } else if (writeAvailable) {
@@ -724,18 +594,15 @@ int SoundDevicePortAudio::callbackProcess(const unsigned int framesPerBuffer,
             //qDebug() << "callbackProcess write:" << "Buffer full";
         }
     }
-
     if (m_outputParams.channelCount) {
-        int outChunkSize = framesPerBuffer * m_outputParams.channelCount;
-        int readAvailable = m_outputFifo->readAvailable();
+        auto outChunkSize = framesPerBuffer * m_outputParams.channelCount;
+        auto readAvailable = m_outputFifo->readAvailable();
         if (readAvailable >= outChunkSize) {
             m_outputFifo->read(out, outChunkSize);
         } else if (readAvailable) {
-            m_outputFifo->read(out,
-                    readAvailable);
+            m_outputFifo->read(out,readAvailable);
             // underflow
-            SampleUtil::clear(&out[readAvailable],
-                    outChunkSize - readAvailable);
+            SampleUtil::clear(&out[readAvailable],outChunkSize - readAvailable);
             m_underflowHappend = 1;
             //qDebug() << "callbackProcess read:" << "Underflow";
         } else {
@@ -747,74 +614,51 @@ int SoundDevicePortAudio::callbackProcess(const unsigned int framesPerBuffer,
      }
     return paContinue;
 }
-
 int SoundDevicePortAudio::callbackProcessClkRef(const unsigned int framesPerBuffer,
                                                 CSAMPLE *out, const CSAMPLE *in,
                                                 const PaStreamCallbackTimeInfo *timeInfo,
                                                 PaStreamCallbackFlags statusFlags) {
     PerformanceTimer timer;
     timer.start();
-
     Trace trace("SoundDevicePortAudio::callbackProcessClkRef %1", getInternalName());
-
     //qDebug() << "SoundDevicePortAudio::callbackProcess:" << getInternalName();
     // Turn on TimeCritical priority for the callback thread. If we are running
     // in Linux userland, for example, this will have no effect.
-    if (!m_bSetThreadPriority) {
+    if (!m_bSetThreadPriority || QThread::currentThread()->priority()!=QThread::TimeCriticalPriority) {
         QThread::currentThread()->setPriority(QThread::TimeCriticalPriority);
         m_bSetThreadPriority = true;
-
         // This disables the denormals calculations, to avoid a
         // performance penalty of ~20
         // https://bugs.launchpad.net/mixxx/+bug/1404401
 #ifdef __SSE__
-        if (!_MM_GET_DENORMALS_ZERO_MODE()) {
-            qDebug() << "SSE: Enabling denormals to zero mode";
-            _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
-        } else {
-             qDebug() << "SSE: Denormals to zero mode already enabled";
-        }
-
-        if (!_MM_GET_FLUSH_ZERO_MODE()) {
-            qDebug() << "SSE: Enabling flush to zero mode";
-            _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
-        } else {
-             qDebug() << "SSE: Flush to zero mode already enabled";
-        }
+        if (!_MM_GET_DENORMALS_ZERO_MODE()) { qDebug() << "SSE: Enabling denormals to zero mode";
+             _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
+        } else {qDebug() << "SSE: Denormals to zero mode already enabled";}
+        if (!_MM_GET_FLUSH_ZERO_MODE()) {qDebug() << "SSE: Enabling flush to zero mode";
+             _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+        } else {qDebug() << "SSE: Flush to zero mode already enabled";}
 #endif
     }
-
     VisualPlayPosition::setTimeInfo(timeInfo);
-
-    if (statusFlags & (paOutputUnderflow | paInputOverflow)) {
-        m_underflowHappend = true;
-    }
-
+    if (statusFlags & (paOutputUnderflow | paInputOverflow)) {m_underflowHappend = true;}
     if (m_underflowUpdateCount == 0) {
         if (m_underflowHappend) {
             m_pMasterAudioLatencyOverload->set(1.0);
-            m_pMasterAudioLatencyOverloadCount->set(
-                    m_pMasterAudioLatencyOverloadCount->get() + 1);
+            m_pMasterAudioLatencyOverloadCount->set(m_pMasterAudioLatencyOverloadCount->get() + 1);
             m_underflowUpdateCount = CPU_OVERLOAD_DURATION * m_dSampleRate / framesPerBuffer / 1000;
             m_underflowHappend = 0; // reseting her is not thread save,
                                     // but that is OK, because we count only
                                     // 1 underflow each 500 ms
-        } else {
-            m_pMasterAudioLatencyOverload->set(0.0);
-        }
-    } else {
-        --m_underflowUpdateCount;
-    }
-
+        } else {m_pMasterAudioLatencyOverload->set(0.0);}
+    } else {--m_underflowUpdateCount;}
     m_framesSinceAudioLatencyUsageUpdate += framesPerBuffer;
     if (m_framesSinceAudioLatencyUsageUpdate > (m_dSampleRate / CPU_USAGE_UPDATE_RATE)) {
-        double secInAudioCb = (double)m_nsInAudioCb / 1000000000.0;
+        auto secInAudioCb = (double)m_nsInAudioCb / 1000000000.0;
         m_pMasterAudioLatencyUsage->set(secInAudioCb / (m_framesSinceAudioLatencyUsageUpdate / m_dSampleRate));
         m_nsInAudioCb = 0;
         m_framesSinceAudioLatencyUsageUpdate = 0;
         //qDebug() << m_pMasterAudioLatencyUsage << m_pMasterAudioLatencyUsage->get();
     }
-
     //Note: Input is processed first so that any ControlObject changes made in
     //      response to input are processed as soon as possible (that is, when
     //      m_pSoundManager->requestBuffer() is called below.)
@@ -822,37 +666,27 @@ int SoundDevicePortAudio::callbackProcessClkRef(const unsigned int framesPerBuff
     // Send audio from the soundcard's input off to the SoundManager...
     if (in) {
         ScopedTimer t("SoundDevicePortAudio::callbackProcess input %1", getInternalName());
-        composeInputBuffer(in, framesPerBuffer, 0,
-                           m_inputParams.channelCount);
+        composeInputBuffer(in, framesPerBuffer, 0,m_inputParams.channelCount);
         m_pSoundManager->pushInputBuffers(m_audioInputs, m_framesPerBuffer);
     }
-
     m_pSoundManager->readProcess();
-
     {
         ScopedTimer t("SoundDevicePortAudio::callbackProcess prepare %1", getInternalName());
         m_pSoundManager->onDeviceOutputCallback(framesPerBuffer);
     }
-
     if (out) {
         ScopedTimer t("SoundDevicePortAudio::callbackProcess output %1", getInternalName());
-
         if (m_outputParams.channelCount <= 0) {
             qWarning() << "SoundDevicePortAudio::callbackProcess m_outputParams channel count is zero or less:" << m_outputParams.channelCount;
             // Bail out.
             return paContinue;
         }
-
-        composeOutputBuffer(out, framesPerBuffer, 0, static_cast<unsigned int>(
-                m_outputParams.channelCount));
+        composeOutputBuffer(out, framesPerBuffer, 0, static_cast<unsigned int>(m_outputParams.channelCount));
     }
-
     m_pSoundManager->writeProcess();
-
     m_nsInAudioCb += timer.elapsed();
     return paContinue;
 }
-
 int paV19Callback(const void *inputBuffer, void *outputBuffer,
                   unsigned long framesPerBuffer,
                   const PaStreamCallbackTimeInfo *timeInfo,
@@ -861,7 +695,6 @@ int paV19Callback(const void *inputBuffer, void *outputBuffer,
     return ((SoundDevicePortAudio*)soundDevice)->callbackProcess((unsigned int)framesPerBuffer,
             (CSAMPLE*)outputBuffer, (const CSAMPLE*)inputBuffer, timeInfo, statusFlags);
 }
-
 int paV19CallbackDrift(const void *inputBuffer, void *outputBuffer,
                   unsigned long framesPerBuffer,
                   const PaStreamCallbackTimeInfo *timeInfo,

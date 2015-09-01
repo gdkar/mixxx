@@ -16,18 +16,14 @@ VisualPlayPosition::VisualPlayPosition(const QString& key)
           m_key(key),
           m_invalidTimeInfoWarned(false) {
     m_audioBufferSize = new ControlObjectSlave("[Master]", "audio_buffer_size");
-    m_audioBufferSize->connectValueChanged(
-            this, SLOT(slotAudioBufferSizeChanged(double)));
+    m_audioBufferSize->setParent(this);
+    m_audioBufferSize->connectValueChanged(this, SLOT(slotAudioBufferSizeChanged(double)));
     m_dAudioBufferSize = m_audioBufferSize->get();
 }
 
-VisualPlayPosition::~VisualPlayPosition() {
-    m_listVisualPlayPosition.remove(m_key);
-    delete m_audioBufferSize;
-}
+VisualPlayPosition::~VisualPlayPosition() {m_listVisualPlayPosition.remove(m_key);}
 
-void VisualPlayPosition::set(double playPos, double rate,
-                             double positionStep, double pSlipPosition) {
+void VisualPlayPosition::set(double playPos, double rate, double positionStep, double pSlipPosition) {
     VisualPlayPositionData data;
     data.m_referenceTime = m_timeInfoTime;
     // Time from reference time to Buffer at DAC in µs
@@ -49,7 +45,6 @@ void VisualPlayPosition::set(double playPos, double rate,
         // Assume we are in time
         data.m_callbackEntrytoDac = m_dAudioBufferSize * 1000;
     }
-
     // Atomic write
     m_data.setValue(data);
     m_valid = true;
@@ -74,12 +69,10 @@ double VisualPlayPosition::getAtNextVSync(VSyncThread* vsyncThread) {
     }
     return -1;
 }
-
 void VisualPlayPosition::getPlaySlipAt(int usFromNow, double* playPosition, double* slipPosition) {
     //static double testPos = 0;
     //testPos += 0.000017759; //0.000016608; //  1.46257e-05;
     //return testPos;
-
     if (m_valid) {
         VisualPlayPositionData data = m_data.getValue();
         int usElapsed = data.m_referenceTime.elapsed() / 1000;
@@ -91,30 +84,24 @@ void VisualPlayPosition::getPlaySlipAt(int usFromNow, double* playPosition, doub
         *slipPosition = data.m_pSlipPosition;
     }
 }
-
 double VisualPlayPosition::getEnginePlayPos() {
     if (m_valid) {
         VisualPlayPositionData data = m_data.getValue();
         return data.m_enginePlayPos;
-    } else {
-        return -1;
-    }
+    } else {return -1;}
 }
 
-void VisualPlayPosition::slotAudioBufferSizeChanged(double size) {
-    m_dAudioBufferSize = size;
-}
+void VisualPlayPosition::slotAudioBufferSizeChanged(double size) {m_dAudioBufferSize = size;}
 
 //static
 QSharedPointer<VisualPlayPosition> VisualPlayPosition::getVisualPlayPosition(QString group) {
-    QSharedPointer<VisualPlayPosition> vpp = m_listVisualPlayPosition.value(group);
+    auto vpp = m_listVisualPlayPosition.value(group).toStrongRef();
     if (vpp.isNull()) {
-        vpp = QSharedPointer<VisualPlayPosition>(new VisualPlayPosition(group));
+        vpp = QSharedPointer<VisualPlayPosition>::create(group);
         m_listVisualPlayPosition.insert(group, vpp);
     }
     return vpp;
 }
-
 //static
 void VisualPlayPosition::setTimeInfo(const PaStreamCallbackTimeInfo* timeInfo) {
     // the timeInfo is valid only just NOW, so measure the time from NOW for

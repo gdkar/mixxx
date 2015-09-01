@@ -16,7 +16,6 @@
 #include <iostream>
 #include <cmath>
 #include <memory>
-#include <unique_ptr>
 #include "MathUtilities.h"
 #include "Chromagram.h"
 #include "ConstantQ.h"
@@ -77,7 +76,6 @@ Chromagram::~Chromagram()
 int Chromagram::deInitialise()
 {
     delete[] m_windowbuf;
-    delete m_window;
 
     delete [] m_chromadata;
 

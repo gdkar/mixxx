@@ -19,16 +19,15 @@
 #define SOUNDDEVICEPORTAUDIO_H
 
 #include <portaudio.h>
-
 #include <QString>
-
+#include <atomic>
+#include <memory>
 #include "sounddevice.h"
-
+#include "controlobjectslave.h"
 #define CPU_USAGE_UPDATE_RATE 30 // in 1/s, fits to display frame rate
 #define CPU_OVERLOAD_DURATION 500 // in ms
 
 class SoundManager;
-class ControlObjectSlave;
 
 /** Dynamically resolved function which allows us to enable a realtime-priority callback
     thread from ALSA/PortAudio. This must be dynamically resolved because PortAudio can't
@@ -40,14 +39,12 @@ class SoundDevicePortAudio : public SoundDevice {
     SoundDevicePortAudio(ConfigObject<ConfigValue> *config,
                          SoundManager *sm, const PaDeviceInfo *deviceInfo,
                          unsigned int devIndex);
-    virtual ~SoundDevicePortAudio();
-
+    virtual ~SoundDevicePortAudio() = default;
     virtual Result open(bool isClkRefDevice, int syncBuffers);
     virtual Result close();
     virtual void readProcess();
     virtual void writeProcess();
     virtual QString getError() const;
-
     // This callback function gets called everytime the sound device runs out of
     // samples (ie. when it needs more sound to play)
     int callbackProcess(const unsigned int framesPerBuffer,
@@ -64,43 +61,40 @@ class SoundDevicePortAudio : public SoundDevice {
                         CSAMPLE *output, const CSAMPLE* in,
                         const PaStreamCallbackTimeInfo *timeInfo,
                         PaStreamCallbackFlags statusFlags);
-
     virtual unsigned int getDefaultSampleRate() const {
-        return m_deviceInfo ? static_cast<unsigned int>(
-            m_deviceInfo->defaultSampleRate) : 44100;
+        return m_deviceInfo ? static_cast<unsigned int>(m_deviceInfo->defaultSampleRate) : 44100;
     }
-
   private:
     // PortAudio stream for this device.
-    PaStream* volatile m_pStream;
+    std::atomic<PaStream*> m_pStream{nullptr};
     // PortAudio device index for this device.
-    PaDeviceIndex m_devId;
+    PaDeviceIndex m_devId = 0;
     // Struct containing information about this device. Don't free() it, it
     // belongs to PortAudio.
-    const PaDeviceInfo* m_deviceInfo;
+    const PaDeviceInfo* m_deviceInfo = nullptr;
     // Description of the output stream going to the soundcard.
-    PaStreamParameters m_outputParams;
+    PaStreamParameters m_outputParams {0 };
     // Description of the input stream coming from the soundcard.
     PaStreamParameters m_inputParams;
-    FIFO<CSAMPLE>* m_outputFifo;
-    FIFO<CSAMPLE>* m_inputFifo;
-    bool m_outputDrift;
-    bool m_inputDrift;
-
+    FIFO<CSAMPLE>* m_outputFifo = nullptr;
+    FIFO<CSAMPLE>* m_inputFifo  = nullptr;
+    bool m_outputDrift = false;
+    bool m_inputDrift  = false;
     // A string describing the last PortAudio error to occur.
     QString m_lastError;
     // Whether we have set the thread priority to realtime or not.
-    bool m_bSetThreadPriority;
-    ControlObjectSlave* m_pMasterAudioLatencyOverloadCount;
-    ControlObjectSlave* m_pMasterAudioLatencyUsage;
-    ControlObjectSlave* m_pMasterAudioLatencyOverload;
-    int m_underflowUpdateCount;
-    static volatile int m_underflowHappend;
-    qint64 m_nsInAudioCb;
-    int m_framesSinceAudioLatencyUsageUpdate;
-    int m_syncBuffers;
+    bool m_bSetThreadPriority = false;
+    std::unique_ptr<ControlObjectSlave> m_pMasterAudioLatencyOverloadCount {nullptr};
+    std::unique_ptr<ControlObjectSlave> m_pMasterAudioLatencyUsage         {nullptr};
+    std::unique_ptr<ControlObjectSlave> m_pMasterAudioLatencyOverload      {nullptr};
+    int m_underflowUpdateCount = 0;
+    std::atomic<int> m_underflowCount {0};
+    std::atomic<int> m_overflowCount  {0};
+    static std::atomic<int> m_underflowHappend;
+    qint64 m_nsInAudioCb = 0;
+    int m_framesSinceAudioLatencyUsageUpdate = 0;
+    int m_syncBuffers = 2;
 };
-
 // Wrapper function to call SoundDevicePortAudio::callbackProcess. Used by
 // PortAudio, which knows nothing about C++.
 int paV19Callback(const void* inputBuffer, void* outputBuffer,
@@ -108,17 +102,14 @@ int paV19Callback(const void* inputBuffer, void* outputBuffer,
                   const PaStreamCallbackTimeInfo* timeInfo,
                   PaStreamCallbackFlags statusFlags,
                   void* soundDevice);
-
 int paV19CallbackDrift(const void* inputBuffer, void* outputBuffer,
                   unsigned long framesPerBuffer,
                   const PaStreamCallbackTimeInfo* timeInfo,
                   PaStreamCallbackFlags statusFlags,
                   void* soundDevice);
-
 int paV19CallbackClkRef(const void* inputBuffer, void* outputBuffer,
                   unsigned long framesPerBuffer,
                   const PaStreamCallbackTimeInfo* timeInfo,
                   PaStreamCallbackFlags statusFlags,
-                  void* soundDevice);
-
+                  void *soundDevice);
 #endif

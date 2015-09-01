@@ -270,28 +270,21 @@ void AnalyserWaveform::process(const CSAMPLE* buffer, const int bufferLength) {
 }
 
 void AnalyserWaveform::cleanup(TrackPointer tio) {
-    Q_UNUSED(tio);
-    if (m_skipProcessing) {
-        return;
-    }
-
+    if (m_skipProcessing) {return;}
     tio->setWaveform(ConstWaveformPointer());
     // Since clear() could delete the waveform, clear our pointer to the
     // waveform's vector data first.
-    m_waveformData = NULL;
+    m_waveformData = nullptr;
     m_waveform.clear();
-
     tio->setWaveformSummary(ConstWaveformPointer());
     // Since clear() could delete the waveform, clear our pointer to the
     // waveform's vector data first.
-    m_waveformSummaryData = NULL;
+    m_waveformSummaryData = nullptr;
     m_waveformSummary.clear();
 }
 
 void AnalyserWaveform::finalise(TrackPointer tio) {
-    if (m_skipProcessing) {
-        return;
-    }
+    if (m_skipProcessing) {return;}
 
     // Force completion to waveform size
     if (m_waveform) {
@@ -300,10 +293,9 @@ void AnalyserWaveform::finalise(TrackPointer tio) {
         m_waveform->setDescription(WaveformFactory::currentWaveformDescription());
         // Since clear() could delete the waveform, clear our pointer to the
         // waveform's vector data first.
-        m_waveformData = NULL;
+        m_waveformData = nullptr;
         m_waveform.clear();
     }
-
     // Force completion to waveform size
     if (m_waveformSummary) {
         m_waveformSummary->setCompletion(m_waveformSummary->getDataSize());
@@ -311,20 +303,14 @@ void AnalyserWaveform::finalise(TrackPointer tio) {
         m_waveformSummary->setDescription(WaveformFactory::currentWaveformSummaryDescription());
         // Since clear() could delete the waveform, clear our pointer to the
         // waveform's vector data first.
-        m_waveformSummaryData = NULL;
+        m_waveformSummaryData = nullptr;
         m_waveformSummary.clear();
     }
-
 #ifdef TEST_HEAT_MAP
     test_heatMap->save("heatMap.png");
 #endif
-
-    qDebug() << "Waveform generation for track" << tio->getId() << "done"
-             << m_timer->elapsed()/1000.0 << "s";
 }
 
 void AnalyserWaveform::storeIfGreater(float* pDest, float source) {
-    if (*pDest < source) {
-        *pDest = source;
-    }
+    if (*pDest < source) {*pDest = source;}
 }

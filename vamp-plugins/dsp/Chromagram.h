@@ -53,7 +53,7 @@ private:
     int initialise( ChromaConfig Config );
     int deInitialise();
 
-    Window<double> *m_window    = nullptr;
+    std::unique_ptr<Window<double> >m_window    = nullptr;
     double         *m_windowbuf = nullptr;
 	
     double* m_chromadata= nullptr;

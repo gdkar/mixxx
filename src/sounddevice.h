@@ -20,7 +20,8 @@
 
 #include <QString>
 #include <QList>
-
+#include <memory>
+#include <atomic>
 #include "soundmanager.h"
 #include "util/defs.h"
 
@@ -36,21 +37,13 @@ enum SoundDeviceError {
     SOUNDDEVICE_ERROR_EXCESSIVE_OUTPUT_CHANNEL,
     SOUNDDEVICE_ERROR_EXCESSIVE_INPUT_CHANNEL,
 };
-
 class SoundDevice {
   public:
     SoundDevice(ConfigObject<ConfigValue> *config, SoundManager* sm);
-    virtual ~SoundDevice();
-
-    inline const QString& getInternalName() const {
-        return m_strInternalName;
-    }
-    inline const QString& getDisplayName() const {
-        return m_strDisplayName;
-    }
-    inline const QString& getHostAPI() const {
-        return m_hostAPI;
-    }
+    virtual ~SoundDevice() = default;
+    inline const QString& getInternalName() const {return m_strInternalName;}
+    inline const QString& getDisplayName() const {return m_strDisplayName;}
+    inline const QString& getHostAPI() const {return m_hostAPI;}
     void setHostAPI(QString api);
     void setSampleRate(double sampleRate);
     void setFramesPerBuffer(unsigned int framesPerBuffer);
@@ -64,32 +57,23 @@ class SoundDevice {
     int getNumInputChannels() const;
     SoundDeviceError addOutput(const AudioOutputBuffer& out);
     SoundDeviceError addInput(const AudioInputBuffer& in);
-    const QList<AudioInputBuffer>& inputs() const {
-        return m_audioInputs;
-    }
-    const QList<AudioOutputBuffer>& outputs() const {
-        return m_audioOutputs;
-    }
-
+    const QList<AudioInputBuffer>& inputs() const {return m_audioInputs;}
+    const QList<AudioOutputBuffer>& outputs() const {return m_audioOutputs;}
     void clearOutputs();
     void clearInputs();
     bool operator==(const SoundDevice &other) const;
     bool operator==(const QString &other) const;
-
   protected:
     void composeOutputBuffer(CSAMPLE* outputBuffer,
                              const unsigned int iFramesPerBuffer,
                              const unsigned int readOffset,
                              const unsigned int iFrameSize);
-
     void composeInputBuffer(const CSAMPLE* inputBuffer,
                             const unsigned int framesToPush,
                             const unsigned int framesWriteOffset,
                             const unsigned int iFrameSize);
-
     void clearInputBuffer(const unsigned int framesToPush,
                           const unsigned int framesWriteOffset);
-
     ConfigObject<ConfigValue> *m_pConfig;
     // Pointer to the SoundManager object which we'll request audio from.
     SoundManager* m_pSoundManager;
@@ -109,5 +93,4 @@ class SoundDevice {
     QList<AudioOutputBuffer> m_audioOutputs;
     QList<AudioInputBuffer> m_audioInputs;
 };
-
 #endif

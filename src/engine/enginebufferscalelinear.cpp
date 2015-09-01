@@ -95,9 +95,9 @@ CSAMPLE* EngineBufferScaleLinear::getScaled(unsigned long buf_size) {
 
         // reset prev sample so we can now read in the other direction (may not
         // be necessary?)
-        int iCurSample = static_cast<int>(ceil(m_dCurrentFrame)) * 2;
+        int iCurSample = static_cast<int>(std::ceil(m_dCurrentFrame)) * 2;
         if (iCurSample + 1 < m_bufferIntSize) {
-            int iNextSample = static_cast<int>(ceil(m_dNextFrame)) * 2;
+            int iNextSample = static_cast<int>(std::ceil(m_dNextFrame)) * 2;
             m_floorSampleOld[0] = m_bufferInt[iNextSample];
             m_floorSampleOld[1] = m_bufferInt[iNextSample + 1];
         }
@@ -116,8 +116,8 @@ CSAMPLE* EngineBufferScaleLinear::getScaled(unsigned long buf_size) {
         // force a buffer read:
         m_bufferIntSize=0;
         // make sure the indexes stay correct for interpolation
-        m_dCurrentFrame = 0 - m_dCurrentFrame + floor(m_dCurrentFrame);
-        m_dNextFrame = 1.0 - (m_dNextFrame - floor(m_dNextFrame));
+        m_dCurrentFrame = 0 - m_dCurrentFrame + std::floor(m_dCurrentFrame);
+        m_dNextFrame = 1.0 - (m_dNextFrame - std::floor(m_dNextFrame));
 
         // second half: rate goes from zero to new rate
         m_dOldRate = 0.0;
@@ -165,7 +165,7 @@ CSAMPLE* EngineBufferScaleLinear::do_scale(CSAMPLE* buf,
         CSAMPLE* write_buf = buf;
 
         // Use up what's left of the internal buffer.
-        int iNextSample = static_cast<int>(ceil(m_dNextFrame)) * 2;
+        int iNextSample = static_cast<int>(std::ceil(m_dNextFrame)) * 2;
         int readSize = math_min<int>(m_bufferIntSize - iNextSample, samples_needed);
         if (readSize > 0) {
             SampleUtil::copy(write_buf, &m_bufferInt[iNextSample], readSize);
@@ -224,14 +224,14 @@ CSAMPLE* EngineBufferScaleLinear::do_scale(CSAMPLE* buf,
     for (int j = 0; j < buf_size / 2; ++j) {
         frames += (j * 2 * rate_diff / buf_size) + rate_old;
     }
-    frames = abs(frames);
+    frames = std::abs(frames);
 
-    int unscaled_frames_needed = floor(frames);
+    int unscaled_frames_needed = std::floor(frames);
 
     // If the current position fraction plus the future position fraction
     // loops over 1.0, we need to round up
-    if (m_dNextFrame - floor(m_dNextFrame) +
-            frames - floor(frames) > 1.0) {
+    if (m_dNextFrame - std::floor(m_dNextFrame) +
+            frames - std::floor(frames) > 1.0) {
         unscaled_frames_needed++;
     }
 
@@ -262,13 +262,11 @@ CSAMPLE* EngineBufferScaleLinear::do_scale(CSAMPLE* buf,
 
         // The first bounds check (< m_bufferIntSize) is probably not needed.
 
-        if (static_cast<int>(floor(m_dCurrentFrame)) * 2 + 1 < m_bufferIntSize
+        if (static_cast<int>(std::floor(m_dCurrentFrame)) * 2 + 1 < m_bufferIntSize
                 && m_dCurrentFrame >= 0.0) {
             // take floor_sample form the buffer of the previous run
-            floor_sample[0] = m_bufferInt[static_cast<int>(
-                    floor(m_dCurrentFrame)) * 2];
-            floor_sample[1] = m_bufferInt[static_cast<int>(
-                    floor(m_dCurrentFrame)) * 2 + 1];
+            floor_sample[0] = m_bufferInt[static_cast<int>(std::floor(m_dCurrentFrame)) * 2];
+            floor_sample[1] = m_bufferInt[static_cast<int>(std::floor(m_dCurrentFrame)) * 2 + 1];
         } else {
             // we have advanced to a new buffer in the previous run,
             // bud the floor still points to the old buffer
@@ -278,7 +276,7 @@ CSAMPLE* EngineBufferScaleLinear::do_scale(CSAMPLE* buf,
         }
 
         // if we don't have the ceil_sample in buffer, load some more
-        while (static_cast<int>(ceil(m_dCurrentFrame)) * 2 + 1 >=
+        while (static_cast<int>(std::ceil(m_dCurrentFrame)) * 2 + 1 >=
                m_bufferIntSize) {
             int old_bufsize = m_bufferIntSize;
             if (unscaled_samples_needed == 0) {
@@ -312,45 +310,30 @@ CSAMPLE* EngineBufferScaleLinear::do_scale(CSAMPLE* buf,
 
         // Now that the buffer is up to date, we can get the value of the sample
         // at the floor of our position.
-        if (static_cast<int>(floor(m_dCurrentFrame)) * 2 >= 0.0) {
+        if (static_cast<int>(std::floor(m_dCurrentFrame)) * 2 >= 0) {
             // the previous position is in the new buffer
-            floor_sample[0] = m_bufferInt[static_cast<int>(
-                    floor(m_dCurrentFrame)) * 2];
-            floor_sample[1] = m_bufferInt[static_cast<int>(
-                    floor(m_dCurrentFrame)) * 2 + 1];
+            floor_sample[0] = m_bufferInt[static_cast<int>(std::floor(m_dCurrentFrame)) * 2];
+            floor_sample[1] = m_bufferInt[static_cast<int>(std::floor(m_dCurrentFrame)) * 2 + 1];
         }
 
-        ceil_sample[0] = m_bufferInt[static_cast<int>(
-                ceil(m_dCurrentFrame)) * 2];
-        ceil_sample[1] = m_bufferInt[static_cast<int>(
-                ceil(m_dCurrentFrame)) * 2 + 1];
-
+        ceil_sample[0] = m_bufferInt[static_cast<int>(std::ceil(m_dCurrentFrame)) * 2];
+        ceil_sample[1] = m_bufferInt[static_cast<int>(std::ceil(m_dCurrentFrame)) * 2 + 1];
         // For the current index, what percentage is it
         // between the previous and the next?
-        CSAMPLE frac = m_dCurrentFrame - floor(m_dCurrentFrame);
-
+        CSAMPLE frac = m_dCurrentFrame - std::floor(m_dCurrentFrame);
         // Perform linear interpolation
-        buf[i] = static_cast<float>(floor_sample[0]) +
-                 frac * (static_cast<float>(ceil_sample[0]) -
-                 static_cast<float>(floor_sample[0]));
-        buf[i + 1] = static_cast<float>(floor_sample[1]) +
-                     frac * (static_cast<float>(ceil_sample[1]) -
-                     static_cast<float>(floor_sample[1]));
-
+        buf[i] = static_cast<float>(floor_sample[0]) + frac * (static_cast<float>(ceil_sample[0]) - static_cast<float>(floor_sample[0]));
+        buf[i + 1] = static_cast<float>(floor_sample[1]) + frac * (static_cast<float>(ceil_sample[1]) - static_cast<float>(floor_sample[1]));
         m_floorSampleOld[0] = floor_sample[0];
         m_floorSampleOld[1] = floor_sample[1];
-
         // Smooth any changes in the playback rate over one buf_size
         // samples. This prevents the change from being discontinuous and helps
         // improve sound quality.
-        const double rate_add = fabs((i * rate_diff / buf_size) + rate_old);
-
+        const auto rate_add = std::abs((i * rate_diff / buf_size) + rate_old);
         // increment the index for the next loop
         m_dNextFrame = m_dCurrentFrame + rate_add;
         i += 2 ;
     }
-
     SampleUtil::clear(&buf[i], buf_size - i);
-
     return buf;
 }
