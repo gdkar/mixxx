@@ -38,48 +38,26 @@ public:
 
     // Returns the number of channels. The number of channels
     // must be constant over time.
-    inline SINT getChannelCount() const {
-        return m_channelCount;
-    }
-
+    inline SINT getChannelCount() const { return m_channelCount;}
     // Returns the number of frames per second. This equals
     // the number samples for each channel per second, which
     // must be uniform among all channels. The frame rate
     // must be constant over time.
-    inline SINT getFrameRate() const {
-        return m_frameRate;
-    }
-
-    inline bool isValid() const {
-        return hasChannelCount() && hasFrameRate();
-    }
-
+    inline SINT getFrameRate() const    { return m_frameRate;}
+    inline bool isValid() const         { return hasChannelCount() && hasFrameRate(); }
     // Returns the total number of frames.
-    inline SINT getFrameCount() const {
-        return m_frameCount;
-    }
-
-    inline bool isEmpty() const {
-        return kFrameCountZero >= getFrameCount();
-    }
-
+    inline SINT getFrameCount() const   { return m_frameCount; }
+    inline bool isEmpty() const         { return kFrameCountZero >= getFrameCount(); }
     // The actual duration in seconds.
     // Well defined only for valid files!
-    inline bool hasDuration() const {
-        return isValid();
-    }
-    inline SINT getDuration() const {
-        DEBUG_ASSERT(hasDuration()); // prevents division by zero
+    inline bool hasDuration() const     { return isValid() && (getFrameCount() > 0); }
+    inline double getDuration() const {
+        DEBUG_ASSERT(getFrameRate());
         return getFrameCount() / getFrameRate();
     }
-
     // The bitrate is measured in kbit/s (kbps).
-    inline static bool isValidBitrate(SINT bitrate) {
-        return kBitrateZero < bitrate;
-    }
-    inline bool hasBitrate() const {
-        return isValidBitrate(m_bitrate);
-    }
+    inline static bool isValidBitrate(SINT bitrate) { return kBitrateZero < bitrate; }
+    inline bool hasBitrate() const                  { return isValidBitrate(m_bitrate); }
     // Setting the bitrate is optional when opening a file.
     // The bitrate is not needed for decoding, it is only used
     // for informational purposes.
@@ -87,14 +65,12 @@ public:
         DEBUG_ASSERT(hasBitrate()); // prevents reading an invalid bitrate
         return m_bitrate;
     }
-
     // Conversion: #frames -> #samples
     template<typename T>
     inline T frames2samples(T frameCount) const {
         DEBUG_ASSERT(hasChannelCount());
         return frameCount * getChannelCount();
     }
-
     // Conversion: #samples -> #frames
     template<typename T>
     inline T samples2frames(T sampleCount) const {
@@ -102,25 +78,16 @@ public:
         DEBUG_ASSERT(0 == (sampleCount % getChannelCount()));
         return sampleCount / getChannelCount();
     }
-
     // Index of the first sample frame.
-    inline static SINT getMinFrameIndex() {
-        return kFrameIndexMin;
-    }
-
+    inline static SINT getMinFrameIndex()         { return kFrameIndexMin; }
     // Index of the sample frame following the last
     // sample frame.
-    inline SINT getMaxFrameIndex() const {
-        return getMinFrameIndex() + getFrameCount();
-    }
-
+    inline SINT getMaxFrameIndex() const          { return getMinFrameIndex() + getFrameCount(); }
     // The sample frame index is valid in the range
     // [getMinFrameIndex(), getMaxFrameIndex()].
     inline bool isValidFrameIndex(SINT frameIndex) const {
-        return (getMinFrameIndex() <= frameIndex) &&
-                (getMaxFrameIndex() >= frameIndex);
+        return (getMinFrameIndex() <= frameIndex) && (getMaxFrameIndex() >= frameIndex);
     }
-
     // Adjusts the current frame seek index:
     // - Precondition: isValidFrameIndex(frameIndex) == true
     //   - Index of first frame: frameIndex = 0
@@ -129,7 +96,6 @@ public:
     // Returns the actual current frame index which may differ from the
     // requested index if the source does not support accurate seeking.
     virtual SINT seekSampleFrame(SINT frameIndex) = 0;
-
     // Fills the buffer with samples from each channel starting
     // at the current frame seek position.
     //
@@ -142,18 +108,11 @@ public:
     // might be lower than the requested number of frames when the end
     // of the audio stream has been reached. The current frame seek
     // position is moved forward towards the next unread frame.
-    virtual SINT readSampleFrames(
-            SINT numberOfFrames,
-            CSAMPLE* sampleBuffer) = 0;
-
-    inline SINT skipSampleFrames(
-            SINT numberOfFrames) {
-        return readSampleFrames(numberOfFrames, static_cast<CSAMPLE*>(NULL));
+    virtual SINT readSampleFrames( SINT numberOfFrames, CSAMPLE* sampleBuffer) = 0;
+    inline SINT skipSampleFrames( SINT numberOfFrames) {
+        return readSampleFrames(numberOfFrames, static_cast<CSAMPLE*>(nullptr));
     }
-
-    inline SINT readSampleFrames(
-            SINT numberOfFrames,
-            SampleBuffer* pSampleBuffer) {
+    inline SINT readSampleFrames( SINT numberOfFrames, SampleBuffer* pSampleBuffer) {
         if (pSampleBuffer) {
             DEBUG_ASSERT(frames2samples(numberOfFrames) <= pSampleBuffer->size());
             return readSampleFrames(numberOfFrames, pSampleBuffer->data());
@@ -193,61 +152,32 @@ public:
     // They may also have reduced space requirements on sampleBuffer,
     // i.e. only the minimum size is required for an in-place
     // transformation without temporary allocations.
-    virtual SINT readSampleFramesStereo(
-            SINT numberOfFrames,
-            CSAMPLE* sampleBuffer,
-            SINT sampleBufferSize);
-
-    inline SINT readSampleFramesStereo(
-            SINT numberOfFrames,
-            SampleBuffer* pSampleBuffer) {
+    virtual SINT readSampleFramesStereo( SINT numberOfFrames, CSAMPLE* sampleBuffer, SINT sampleBufferSize);
+    inline SINT readSampleFramesStereo( SINT numberOfFrames, SampleBuffer* pSampleBuffer) {
         if (pSampleBuffer) {
-            return readSampleFramesStereo(numberOfFrames,
-                    pSampleBuffer->data(), pSampleBuffer->size());
-        } else {
-            return skipSampleFrames(numberOfFrames);
-        }
+            return readSampleFramesStereo(numberOfFrames, pSampleBuffer->data(), pSampleBuffer->size());
+        } else { return skipSampleFrames(numberOfFrames); }
     }
-
     // Utility function to clamp the frame index interval
     // [*pMinFrameIndexOfInterval, *pMaxFrameIndexOfInterval)
     // to valid frame indexes. The lower bound is inclusive and
     // the upper bound is exclusive!
     static void clampFrameInterval(
-            SINT* pMinFrameIndexOfInterval,
-            SINT* pMaxFrameIndexOfInterval,
+            SINT &pMinFrameIndexOfInterval,
+            SINT &pMaxFrameIndexOfInterval,
             SINT maxFrameIndexOfAudioSource);
-
 protected:
     explicit AudioSource(const QUrl& url);
-
-    inline static bool isValidChannelCount(SINT channelCount) {
-        return kChannelCountZero < channelCount;
-    }
-    inline bool hasChannelCount() const {
-        return isValidChannelCount(getChannelCount());
-    }
-    void setChannelCount(SINT channelCount);
-
-    inline static bool isValidFrameRate(SINT frameRate) {
-        return kFrameRateZero < frameRate;
-    }
-    inline bool hasFrameRate() const {
-        return isValidFrameRate(getFrameRate());
-    }
-    void setFrameRate(SINT frameRate);
-
-    inline static bool isValidFrameCount(SINT frameCount) {
-        return kFrameCountZero <= frameCount;
-    }
-    void setFrameCount(SINT frameCount);
-
-    void setBitrate(SINT bitrate);
-
-    SINT getSampleBufferSize(
-            SINT numberOfFrames,
-            bool readStereoSamples = false) const;
-
+    inline static bool isValidChannelCount(SINT channelCount) { return kChannelCountZero < channelCount;}
+    inline bool hasChannelCount() const { return isValidChannelCount(getChannelCount()); }
+    virtual void setChannelCount(SINT channelCount);
+    inline static bool isValidFrameRate(SINT frameRate) { return kFrameRateZero < frameRate; }
+    inline bool hasFrameRate() const { return isValidFrameRate(getFrameRate()); }
+    virtual void setFrameRate(SINT frameRate);
+    inline static bool isValidFrameCount(SINT frameCount) { return kFrameCountZero <= frameCount; }
+    virtual void setFrameCount(SINT frameCount);
+    virtual void setBitrate(SINT bitrate);
+    SINT getSampleBufferSize( SINT numberOfFrames, bool readStereoSamples = false) const;
 private:
     friend struct AudioSourceConfig;
 
@@ -275,13 +205,8 @@ private:
 
 // Parameters for configuring audio sources
 struct AudioSourceConfig {
-    AudioSourceConfig()
-        : channelCountHint(AudioSource::kChannelCountDefault),
-          frameRateHint(AudioSource::kFrameRateDefault){
-    }
-
-    SINT channelCountHint;
-    SINT frameRateHint;
+    SINT channelCountHint = AudioSource::kChannelCountDefault;
+    SINT frameRateHint    = AudioSource::kFrameRateDefault;
 };
 
 typedef QSharedPointer<AudioSource> AudioSourcePointer;

@@ -12,12 +12,9 @@ namespace Mixxx {
 // Factory interface for SoundSources
 class SoundSourceProvider {
 public:
-    virtual ~SoundSourceProvider() {}
-
+    virtual ~SoundSourceProvider() = default;
     virtual QString getName() const = 0;
-
     virtual QStringList getSupportedFileExtensions() const = 0;
-
     virtual SoundSourcePointer newSoundSource(const QUrl& url) = 0;
 };
 

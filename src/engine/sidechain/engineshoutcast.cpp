@@ -63,27 +63,20 @@ EngineShoutcast::EngineShoutcast(ConfigObject<ConfigValue>* _config)
           m_protocol_is_icecast2(false),
           m_protocol_is_shoutcast(false),
           m_ogg_dynamic_update(false) {
-
 #ifndef __WINDOWS__
     // Ignore SIGPIPE signals that we get when the remote streaming server
     // disconnects.
     signal(SIGPIPE, SIG_IGN);
 #endif
-
     m_pShoutcastStatus->set(SHOUTCAST_DISCONNECTED);
-    m_pShoutcastNeedUpdateFromPrefs = new ControlObject(
-            ConfigKey(SHOUTCAST_PREF_KEY,"update_from_prefs"));
-    m_pUpdateShoutcastFromPrefs = new ControlObjectSlave(
-            m_pShoutcastNeedUpdateFromPrefs->getKey());
-
+    m_pShoutcastNeedUpdateFromPrefs = new ControlObject( ConfigKey(SHOUTCAST_PREF_KEY,"update_from_prefs"));
+    m_pUpdateShoutcastFromPrefs = new ControlObjectSlave( m_pShoutcastNeedUpdateFromPrefs->getKey());
     // Initialize libshout
     shout_init();
-
     if (!(m_pShout = shout_new())) {
         errorDialog(tr("Mixxx encountered a problem"), tr("Could not allocate shout_t"));
         return;
     }
-
     if (!(m_pShoutMetaData = shout_metadata_new())) {
         errorDialog(tr("Mixxx encountered a problem"), tr("Could not allocate shout_metadata_t"));
         return;
@@ -93,44 +86,35 @@ EngineShoutcast::EngineShoutcast(ConfigObject<ConfigValue>* _config)
         return;
     }
 }
-
 EngineShoutcast::~EngineShoutcast() {
     if (m_encoder) {
         m_encoder->flush();
         delete m_encoder;
     }
-
     delete m_pUpdateShoutcastFromPrefs;
     delete m_pShoutcastNeedUpdateFromPrefs;
     delete m_pShoutcastStatus;
     delete m_pMasterSamplerate;
-
-    if (m_pShoutMetaData) {
-        shout_metadata_free(m_pShoutMetaData);
-    }
+    if (m_pShoutMetaData) { shout_metadata_free(m_pShoutMetaData); }
     if (m_pShout) {
         shout_close(m_pShout);
         shout_free(m_pShout);
     }
     shout_shutdown();
 }
-
 bool EngineShoutcast::serverDisconnect() {
     if (m_encoder) {
         m_encoder->flush();
         delete m_encoder;
-        m_encoder = NULL;
+        m_encoder = nullptr;
     }
-
     m_pShoutcastStatus->set(SHOUTCAST_DISCONNECTED);
-
     if (m_pShout) {
         shout_close(m_pShout);
         return true;
     }
     return false; //if no connection has been established, nothing can be disconnected
 }
-
 bool EngineShoutcast::isConnected() {
     if (m_pShout) {
         m_iShoutStatus = shout_get_connected(m_pShout);
@@ -139,19 +123,13 @@ bool EngineShoutcast::isConnected() {
     }
     return false;
 }
-
 QByteArray EngineShoutcast::encodeString(const QString& string) {
-    if (m_pTextCodec) {
-        return m_pTextCodec->fromUnicode(string);
-    }
+    if (m_pTextCodec) { return m_pTextCodec->fromUnicode(string); }
     return string.toLatin1();
 }
-
 void EngineShoutcast::updateFromPreferences() {
     qDebug() << "EngineShoutcast: updating from preferences";
-
     m_pUpdateShoutcastFromPrefs->set(0.0);
-
     m_format_is_mp3 = false;
     m_format_is_ov = false;
     m_protocol_is_icecast1 = false;

@@ -5,20 +5,19 @@
 namespace Mixxx {
 
 void AudioSource::clampFrameInterval(
-        SINT* pMinFrameIndexOfInterval,
-        SINT* pMaxFrameIndexOfInterval,
+        SINT& pMinFrameIndexOfInterval,
+        SINT& pMaxFrameIndexOfInterval,
         SINT maxFrameIndexOfAudioSource) {
-    if (*pMinFrameIndexOfInterval < getMinFrameIndex()) {
-        *pMinFrameIndexOfInterval = getMinFrameIndex();
+    if (pMinFrameIndexOfInterval < getMinFrameIndex()) {
+        pMinFrameIndexOfInterval = getMinFrameIndex();
     }
-    if (*pMaxFrameIndexOfInterval > maxFrameIndexOfAudioSource) {
-        *pMaxFrameIndexOfInterval = maxFrameIndexOfAudioSource;
+    if (pMaxFrameIndexOfInterval > maxFrameIndexOfAudioSource) {
+        pMaxFrameIndexOfInterval = maxFrameIndexOfAudioSource;
     }
-    if (*pMaxFrameIndexOfInterval < *pMinFrameIndexOfInterval) {
-        *pMaxFrameIndexOfInterval = *pMinFrameIndexOfInterval;
+    if (pMaxFrameIndexOfInterval < pMinFrameIndexOfInterval) {
+        pMaxFrameIndexOfInterval = pMinFrameIndexOfInterval;
     }
 }
-
 AudioSource::AudioSource(const QUrl& url)
         : UrlResource(url),
           m_channelCount(kChannelCountDefault),
@@ -26,27 +25,22 @@ AudioSource::AudioSource(const QUrl& url)
           m_frameCount(kFrameCountDefault),
           m_bitrate(kBitrateDefault) {
 }
-
 void AudioSource::setChannelCount(SINT channelCount) {
     DEBUG_ASSERT(isValidChannelCount(channelCount));
     m_channelCount = channelCount;
 }
-
 void AudioSource::setFrameRate(SINT frameRate) {
     DEBUG_ASSERT(isValidFrameRate(frameRate));
     m_frameRate = frameRate;
 }
-
 void AudioSource::setFrameCount(SINT frameCount) {
     DEBUG_ASSERT(isValidFrameCount(frameCount));
     m_frameCount = frameCount;
 }
-
 void AudioSource::setBitrate(SINT bitrate) {
     DEBUG_ASSERT(isValidBitrate(bitrate));
     m_bitrate = bitrate;
 }
-
 SINT AudioSource::getSampleBufferSize(
         SINT numberOfFrames,
         bool readStereoSamples) const {
@@ -56,13 +50,8 @@ SINT AudioSource::getSampleBufferSize(
         return frames2samples(numberOfFrames);
     }
 }
-
-SINT AudioSource::readSampleFramesStereo(
-        SINT numberOfFrames,
-        CSAMPLE* sampleBuffer,
-        SINT sampleBufferSize) {
+SINT AudioSource::readSampleFramesStereo( SINT numberOfFrames, CSAMPLE* sampleBuffer, SINT sampleBufferSize) {
     DEBUG_ASSERT(getSampleBufferSize(numberOfFrames, true) <= sampleBufferSize);
-
     switch (getChannelCount()) {
         case 1: // mono channel
         {
@@ -80,10 +69,8 @@ SINT AudioSource::readSampleFramesStereo(
             const SINT numberOfSamplesToRead = frames2samples(numberOfFrames);
             if (numberOfSamplesToRead <= sampleBufferSize) {
                 // efficient in-place transformation
-                const SINT readFrameCount = readSampleFrames(
-                        numberOfFrames, sampleBuffer);
-                SampleUtil::copyMultiToStereo(sampleBuffer, sampleBuffer,
-                        readFrameCount, getChannelCount());
+                const SINT readFrameCount = readSampleFrames( numberOfFrames, sampleBuffer);
+                SampleUtil::copyMultiToStereo(sampleBuffer, sampleBuffer, readFrameCount, getChannelCount());
                 return readFrameCount;
             } else {
                 // inefficient transformation through a temporary buffer
@@ -93,10 +80,8 @@ SINT AudioSource::readSampleFramesStereo(
                         << "The size of the provided sample buffer is"
                         << sampleBufferSize;
                 SampleBuffer tempBuffer(numberOfSamplesToRead);
-                const SINT readFrameCount = readSampleFrames(
-                        numberOfFrames, tempBuffer.data());
-                SampleUtil::copyMultiToStereo(sampleBuffer, tempBuffer.data(),
-                        readFrameCount, getChannelCount());
+                const SINT readFrameCount = readSampleFrames( numberOfFrames, tempBuffer.data());
+                SampleUtil::copyMultiToStereo(sampleBuffer, tempBuffer.data(),readFrameCount, getChannelCount());
                 return readFrameCount;
             }
         }

@@ -19,8 +19,5 @@ public:
     using DbId::DbId;
 #endif
 };
-
 Q_DECLARE_METATYPE(TrackId)
-
-
 #endif // TRACKID_H

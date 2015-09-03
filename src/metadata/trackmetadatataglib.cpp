@@ -54,7 +54,7 @@ inline bool hasID3v2Tag(TagLib::MPEG::File& file) {
 #if TAGLIB_HAS_TAG_CHECK
     return file.hasID3v2Tag();
 #else
-    return NULL != file.ID3v2Tag();
+    return nullptr != file.ID3v2Tag();
 #endif
 }
 
@@ -62,7 +62,7 @@ inline bool hasAPETag(TagLib::MPEG::File& file) {
 #if TAGLIB_HAS_TAG_CHECK
     return file.hasAPETag();
 #else
-    return NULL != file.APETag();
+    return nullptr != file.APETag();
 #endif
 }
 
@@ -70,7 +70,7 @@ inline bool hasID3v2Tag(TagLib::FLAC::File& file) {
 #if TAGLIB_HAS_TAG_CHECK
     return file.hasID3v2Tag();
 #else
-    return NULL != file.ID3v2Tag();
+    return nullptr != file.ID3v2Tag();
 #endif
 }
 
@@ -78,7 +78,7 @@ inline bool hasXiphComment(TagLib::FLAC::File& file) {
 #if TAGLIB_HAS_TAG_CHECK
     return file.hasXiphComment();
 #else
-    return NULL != file.xiphComment();
+    return nullptr != file.xiphComment();
 #endif
 }
 
@@ -86,7 +86,7 @@ inline bool hasAPETag(TagLib::WavPack::File& file) {
 #if TAGLIB_HAS_TAG_CHECK
     return file.hasAPETag();
 #else
-    return NULL != file.APETag();
+    return nullptr != file.APETag();
 #endif
 }
 
@@ -114,7 +114,7 @@ const QString ID3V2_TYER_FORMAT("yyyy");
 // is always four characters long."
 const QString ID3V2_TDAT_FORMAT("ddMM");
 
-// Taglib strings can be NULL and using it could cause some segfaults,
+// Taglib strings can be nullptr and using it could cause some segfaults,
 // so in this case it will return a QString()
 inline QString toQString(const TagLib::String& tString) {
     if (tString.isNull()) {
@@ -140,7 +140,7 @@ inline QString toQString(const TagLib::ID3v2::Frame& frame) {
 
 // Returns the first frame of an ID3v2 tag as a string.
 inline QString toQStringFirst(const TagLib::ID3v2::FrameList& frameList) {
-    if (frameList.isEmpty() || (NULL == frameList.front())) {
+    if (frameList.isEmpty() || (nullptr == frameList.front())) {
         return QString();
     } else {
         return toQString(*frameList.front());
@@ -896,14 +896,14 @@ Result readTrackMetadataAndCoverArtFromFile(TrackMetadata* pTrackMetadata, QImag
         TagLib::MPEG::File file(fileName.toLocal8Bit().constData());
         if (readAudioProperties(pTrackMetadata, file)) {
             const TagLib::ID3v2::Tag* pID3v2Tag =
-                    hasID3v2Tag(file) ? file.ID3v2Tag() : NULL;
+                    hasID3v2Tag(file) ? file.ID3v2Tag() : nullptr;
             if (pID3v2Tag) {
                 readTrackMetadataFromID3v2Tag(pTrackMetadata, *pID3v2Tag);
                 readCoverArtFromID3v2Tag(pCoverArt, *pID3v2Tag);
                 return OK;
             } else {
                 const TagLib::APE::Tag* pAPETag =
-                        hasAPETag(file) ? file.APETag() : NULL;
+                        hasAPETag(file) ? file.APETag() : nullptr;
                 if (pAPETag) {
                     readTrackMetadataFromAPETag(pTrackMetadata, *pAPETag);
                     readCoverArtFromAPETag(pCoverArt, *pAPETag);
@@ -951,14 +951,14 @@ Result readTrackMetadataAndCoverArtFromFile(TrackMetadata* pTrackMetadata, QImag
         }
         if (readAudioProperties(pTrackMetadata, file)) {
             const TagLib::Ogg::XiphComment* pXiphComment =
-                    hasXiphComment(file) ? file.xiphComment() : NULL;
+                    hasXiphComment(file) ? file.xiphComment() : nullptr;
             if (pXiphComment) {
                 readTrackMetadataFromXiphComment(pTrackMetadata, *pXiphComment);
                 readCoverArtFromXiphComment(pCoverArt, *pXiphComment);
                 return OK;
             } else {
                 const TagLib::ID3v2::Tag* pID3v2Tag =
-                        hasID3v2Tag(file) ? file.ID3v2Tag() : NULL;
+                        hasID3v2Tag(file) ? file.ID3v2Tag() : nullptr;
                 if (pID3v2Tag) {
                     readTrackMetadataFromID3v2Tag(pTrackMetadata, *pID3v2Tag);
                     readCoverArtFromID3v2Tag(pCoverArt, *pID3v2Tag);
@@ -1013,7 +1013,7 @@ Result readTrackMetadataAndCoverArtFromFile(TrackMetadata* pTrackMetadata, QImag
         TagLib::WavPack::File file(fileName.toLocal8Bit().constData());
         if (readAudioProperties(pTrackMetadata, file)) {
             const TagLib::APE::Tag* pAPETag =
-                    hasAPETag(file) ? file.APETag() : NULL;
+                    hasAPETag(file) ? file.APETag() : nullptr;
             if (pAPETag) {
                 readTrackMetadataFromAPETag(pTrackMetadata, *pAPETag);
                 readCoverArtFromAPETag(pCoverArt, *pAPETag);
@@ -1032,7 +1032,7 @@ Result readTrackMetadataAndCoverArtFromFile(TrackMetadata* pTrackMetadata, QImag
         if (readAudioProperties(pTrackMetadata, file)) {
 #if TAGLIB_HAS_WAV_ID3V2TAG
             const TagLib::ID3v2::Tag* pID3v2Tag =
-                    file.hasID3v2Tag() ? file.ID3v2Tag() : NULL;
+                    file.hasID3v2Tag() ? file.ID3v2Tag() : nullptr;
 #else
             const TagLib::ID3v2::Tag* pID3v2Tag = file.tag();
 #endif

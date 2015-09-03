@@ -165,22 +165,15 @@ void AutoPanEffect::processChannel(const ChannelHandle& handle, PanGroupState* p
     float u = (0.5f - smoothing) / 2.0f;
     
     gs.frac.setRampingThreshold(kPositionRampingThreshold);
-    
     double sinusoid = 0;
-    
     for (unsigned int i = 0; i + 1 < numSamples; i += 2) {
-        
         CSAMPLE periodFraction = CSAMPLE(gs.time) / period;
-        
         // current quarter in the trigonometric circle
-        float quarter = floorf(periodFraction * 4.0f);
-        
+        float quarter = std::floor(periodFraction * 4.0f);
         // part of the period fraction being a step (not in the slope)
-        CSAMPLE stepsFractionPart = floorf((quarter + 1.0f) / 2.0f) * smoothing;
-        
+        CSAMPLE stepsFractionPart = std::floor((quarter + 1.0f) / 2.0f) * smoothing;
         // float inInterval = fmod( periodFraction, (period / 2.0) );
         float inStepInterval = fmod(periodFraction, 0.5f);
-        
         CSAMPLE angleFraction;
         if (inStepInterval > u && inStepInterval < (u + smoothing)) {
             // at full left or full right
@@ -189,7 +182,6 @@ void AutoPanEffect::processChannel(const ChannelHandle& handle, PanGroupState* p
             // in the slope (linear function)
             angleFraction = (periodFraction - stepsFractionPart) * a;
         }
-        
         // transforms the angleFraction into a sinusoid.
         // The width parameter modulates the two limits. if width values 0.5,
         // the limits will be 0.25 and 0.75. If it's 0, it will be 0.5 and 0.5
@@ -197,20 +189,15 @@ void AutoPanEffect::processChannel(const ChannelHandle& handle, PanGroupState* p
         // will be 0 and 1 (full left and full right).
         sinusoid = sin(M_PI * 2.0f * angleFraction) * width;
         gs.frac.setWithRampingApplied((sinusoid + 1.0f) / 2.0f);
-
         // apply the delay
         gs.delay->process(&pInput[i], &pOutput[i],
                 -0.005 * math_clamp(((gs.frac * 2.0) - 1.0f), -1.0, 1.0) * sampleRate);
-
         double lawCoef = computeLawCoefficient(sinusoid);
         pOutput[i] *= gs.frac * lawCoef;
         pOutput[i+1] *= (1.0f - gs.frac) * lawCoef;
-        
         // The time shouldn't be paused if the position has not its
         // expected value due to ramping
-        if (!timePaused || gs.frac.ramped) {
-            gs.time++;
-        }
+        if (!timePaused || gs.frac.ramped) {gs.time++;}
     }
 }
 
@@ -218,5 +205,5 @@ double AutoPanEffect::computeLawCoefficient(double position) {
     // position is a result of sin() so betwwen -1 and 1
     // full left/right => 1 + 1 / sqrt(abs(1 or -1) + 1) = 1,707106781
     // center => 1 + 1 / sqrt(abs(0) + 1) = 2
-    return 1 + 1 / sqrt(abs(position) + 1);
+    return 1 + 1 / std::sqrt(std::abs(position) + 1);
 }

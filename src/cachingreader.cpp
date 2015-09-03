@@ -372,7 +372,7 @@ void CachingReader::hintAndMaybeWake(const HintVector& hintList) {
 
         SINT minReadableFrameIndex = hintFrame;
         SINT maxReadableFrameIndex = hintFrame + hintFrameCount;
-        Mixxx::AudioSource::clampFrameInterval(&minReadableFrameIndex, &maxReadableFrameIndex, m_maxReadableFrameIndex);
+        Mixxx::AudioSource::clampFrameInterval(minReadableFrameIndex, maxReadableFrameIndex, m_maxReadableFrameIndex);
         if (minReadableFrameIndex >= maxReadableFrameIndex) {
             // skip empty frame interval silently
             continue;

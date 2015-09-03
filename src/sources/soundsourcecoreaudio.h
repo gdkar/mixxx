@@ -23,18 +23,12 @@ namespace Mixxx {
 class SoundSourceCoreAudio : public Mixxx::SoundSource {
 public:
     explicit SoundSourceCoreAudio(QUrl url);
-    ~SoundSourceCoreAudio();
-
+    virtual ~SoundSourceCoreAudio();
     void close() override;
-
     SINT seekSampleFrame(SINT frameIndex) override;
-
-    SINT readSampleFrames(SINT numberOfFrames,
-            CSAMPLE* sampleBuffer) override;
-
+    SINT readSampleFrames(SINT numberOfFrames, CSAMPLE* sampleBuffer) override;
 private:
     Result tryOpen(const AudioSourceConfig& audioSrcCfg) override;
-
     bool m_bFileIsMp3;
     ExtAudioFileRef m_audioFile;
     CAStreamBasicDescription m_inputFormat;

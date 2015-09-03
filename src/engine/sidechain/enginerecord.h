@@ -42,10 +42,8 @@ class EngineRecord : public QObject, public EncoderCallback, public SideChainWor
   public:
     EngineRecord(ConfigObject<ConfigValue>* _config);
     virtual ~EngineRecord();
-
     void process(const CSAMPLE* pBuffer, const int iBufferSize);
     void shutdown() {}
-
     // writes compressed audio to file 
     void write(unsigned char *header, unsigned char *body, int headerLen, int bodyLen);
     // creates or opens an audio file
@@ -56,23 +54,18 @@ class EngineRecord : public QObject, public EncoderCallback, public SideChainWor
     bool fileOpen();
     bool openCueFile();
     void closeCueFile();
-
   signals:
     // emitted to notify RecordingManager
     void bytesRecorded(int);
     void isRecording(bool);
     void durationRecorded(QString);
-
   private:
     int getActiveTracks();
-
     // Check if the metadata has changed since the previous check. We also check
     // when was the last check performed to avoid using too much CPU and as well
     // to avoid changing the metadata during scratches.
     bool metaDataHasChanged();
-
     void writeCueLine();
-
     ConfigObject<ConfigValue>* m_pConfig;
     Encoder* m_pEncoder;
     QByteArray m_OGGquality;

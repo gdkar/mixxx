@@ -11,7 +11,6 @@
 #include <QtDebug>
 #include "util/assert.h"
 
-
 // Base class for ID values of objects that are stored in the database.
 //
 // Implicit conversion from/to the native value type has been disabled
@@ -31,12 +30,12 @@ protected:
     // if we ever gonna need to change it from 'int' to 'long'
     // or any other type.
     typedef int value_type;
-
 public:
     DbId()
         : m_value(kInvalidValue) {
         DEBUG_ASSERT(!isValid());
     }
+/*    virtual ~DbId() = default;*/
     explicit DbId(value_type value)
         : m_value(value) {
         DEBUG_ASSERT(isValid() || (kInvalidValue == m_value));
@@ -44,76 +43,45 @@ public:
     explicit DbId(QVariant variant)
         : DbId(valueOf(std::move(variant))) {
     }
-
-    bool isValid() const {
-        return isValidValue(m_value);
-    }
-
+    bool isValid() const {return isValidValue(m_value);}
     // This function is needed for backward compatibility and
     // should only be used within legacy code. It can be deleted
     // after all integer IDs have been replaced by their type-safe
     // counterparts.
-    int toInt() const {
-        return m_value;
-    }
-
+    int toInt() const {return m_value;}
     // This function should be used for value binding in DB queries
     // with bindValue().
-    QVariant toVariant() const {
-        return QVariant(m_value);
-    }
-
-    QString toString() const {
-        return QString::number(m_value);
-    }
-
+    QVariant toVariant() const {return QVariant(m_value);}
+    QString toString() const {return QString::number(m_value);}
     friend bool operator==(const DbId& lhs, const DbId& rhs) {
         return lhs.m_value == rhs.m_value;
     }
-
     friend bool operator!=(const DbId& lhs, const DbId& rhs) {
         return lhs.m_value != rhs.m_value;
     }
-
     friend bool operator<(const DbId& lhs, const DbId& rhs) {
         return lhs.m_value < rhs.m_value;
     }
-
     friend bool operator>(const DbId& lhs, const DbId& rhs) {
         return lhs.m_value > rhs.m_value;
     }
-
     friend bool operator<=(const DbId& lhs, const DbId& rhs) {
         return lhs.m_value <= rhs.m_value;
     }
-
     friend bool operator>=(const DbId& lhs, const DbId& rhs) {
         return lhs.m_value >= rhs.m_value;
     }
-
     friend std::ostream& operator<< (std::ostream& os, const DbId& dbId);
-
     friend QDebug& operator<< (QDebug& qd, const DbId& dbId) ;
-
-    friend uint qHash(const DbId& dbId) {
-        return qHash(dbId.m_value);
-    }
-
+    friend uint qHash(const DbId& dbId) {return qHash(dbId.m_value);}
 private:
     static const value_type kInvalidValue = -1;
-
     static const QVariant::Type kVariantType;
-
-    static bool isValidValue(value_type value) {
-        return 0 <= value;
-    }
-
+    static bool isValidValue(value_type value) {return 0 <= value;}
     static value_type valueOf(QVariant /*pass-by-value*/ variant);
-
     value_type m_value;
 };
-
 Q_DECLARE_METATYPE(DbId)
-
+Q_DECLARE_TYPEINFO(DbId,Q_PRIMITIVE_TYPE);
 
 #endif // DBID_H

@@ -30,15 +30,11 @@ Result SoundSource::open(const AudioSourceConfig& audioSrcCfg) {
         close();
         throw;
     }
-    if (OK != result) {
-        close();
-    }
+    if (OK != result) { close(); }
     return result;
 }
 
-Result SoundSource::parseTrackMetadataAndCoverArt(
-        TrackMetadata* pTrackMetadata,
-        QImage* pCoverArt) const {
+Result SoundSource::parseTrackMetadataAndCoverArt( TrackMetadata* pTrackMetadata, QImage* pCoverArt) const {
     return readTrackMetadataAndCoverArtFromFile(pTrackMetadata, pCoverArt, getLocalFileName());
 }
 

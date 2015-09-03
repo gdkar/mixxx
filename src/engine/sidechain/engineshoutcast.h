@@ -49,19 +49,13 @@ class EngineShoutcast : public QObject, public EncoderCallback, public SideChain
   public:
     EngineShoutcast(ConfigObject<ConfigValue>* _config);
     virtual ~EngineShoutcast();
-
     // This is called by the Engine implementation for each sample. Encode and
     // send the stream, as well as check for metadata changes.
     void process(const CSAMPLE* pBuffer, const int iBufferSize);
-
-    void shutdown() {
-        m_bQuit = true;
-    }
-
+    void shutdown() { m_bQuit = true; }
     // Called by the encoder in method 'encodebuffer()' to flush the stream to
     // the server.
-    void write(unsigned char *header, unsigned char *body,
-               int headerLen, int bodyLen);
+    void write(unsigned char *header, unsigned char *body, int headerLen, int bodyLen);
     /** connects to server **/
     bool serverConnect();
     bool serverDisconnect();
