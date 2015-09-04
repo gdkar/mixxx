@@ -31,7 +31,7 @@ namespace {
     // can starve the CPU of its resources, resulting in xruns. A block size
     // of 4096 frames per block seems to do fine.
     const SINT kAnalysisChannels        = Mixxx::AudioSource::kChannelCountStereo;
-    const SINT kAnalysisFrameRate       = 44100;
+    const SINT kAnalysisFrameRate       = 0;
     const SINT kAnalysisFramesPerBlock  = 4096;
     const SINT kAnalysisSamplesPerBlock = kAnalysisFramesPerBlock * kAnalysisChannels;
 } // anonymous namespace
@@ -165,7 +165,7 @@ bool AnalyserQueue::doAnalysis(TrackPointer tio, Mixxx::AudioSourcePointer pAudi
             << framesRead;
         }
         frameIndex += framesRead;
-        if ( frameIndex < 0 || frameIndex >= pAudioSource->getMaxFrameIndex ( ) )
+        if ( frameIndex < 0 || frameIndex > pAudioSource->getMaxFrameIndex ( ) )
         {
           qDebug() 
             << __FUNCTION__ 

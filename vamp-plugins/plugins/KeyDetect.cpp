@@ -20,7 +20,7 @@ using std::vector;
 using std::endl;
 
 #include <cmath>
-
+#include <algorithm>
 
 // Order for circle-of-5ths plotting
 static int conversion[24] =
@@ -118,12 +118,8 @@ KeyDetector::getParameterDescriptors() const
 float
 KeyDetector::getParameter(std::string param) const
 {
-    if (param == "tuning") {
-        return m_tuningFrequency;
-    }
-    if (param == "length") {
-        return m_length;
-    }
+    if (param == "tuning") { return m_tuningFrequency; }
+    if (param == "length") { return m_length; }
     std::cerr << "WARNING: KeyDetector::getParameter: unknown parameter \""
               << param << "\"" << std::endl;
     return 0.0;
@@ -149,16 +145,10 @@ KeyDetector::initialise(size_t channels, size_t stepSize, size_t blockSize)
         delete m_getKeyMode;
         m_getKeyMode = 0;
     }
-
-    if (channels < getMinChannelCount() ||
-	channels > getMaxChannelCount()) return false;
-
-    auto sampleRate = std::min<int> ( 96000, std::max<int> ( 8000, m_inputSampleRate ) );
-    m_getKeyMode = new GetKeyMode(sampleRate, m_tuningFrequency, m_length, m_length);
-
+    if (channels < getMinChannelCount() || channels > getMaxChannelCount()) return false;
+    m_getKeyMode = new GetKeyMode(m_inputSampleRate, m_tuningFrequency, m_length, m_length);
     m_stepSize = m_getKeyMode->getHopSize();
     m_blockSize = m_getKeyMode->getBlockSize();
-
     if (stepSize != m_stepSize || blockSize != m_blockSize) {
         std::cerr << "KeyDetector::initialise: ERROR: step/block sizes "
                   << stepSize << "/" << blockSize << " differ from required "
@@ -167,46 +157,29 @@ KeyDetector::initialise(size_t channels, size_t stepSize, size_t blockSize)
         m_getKeyMode = 0;
         return false;
     }
-
     m_inputFrame = new double[m_blockSize];
-
     m_prevKey = -1;
     m_first = true;
-
     return true;
 }
-
 void
 KeyDetector::reset()
 {
     if (m_getKeyMode) {
         delete m_getKeyMode;
-        auto sampleRate = std::min<int> ( 96000, std::max<int> ( 8000, m_inputSampleRate ) );
-        m_getKeyMode = new GetKeyMode(sampleRate,
-                                      m_tuningFrequency,
-                                      m_length, m_length);
+        m_getKeyMode = new GetKeyMode(m_inputSampleRate, m_tuningFrequency, m_length, m_length);
     }
-
-    if (m_inputFrame) {
-        for( unsigned int i = 0; i < m_blockSize; i++ ) {
-            m_inputFrame[ i ] = 0.0;
-        }
-    }
-
+    if (m_inputFrame) { std::fill_n ( m_inputFrame, m_blockSize, 0.0 ); }
     m_prevKey = -1;
     m_first = true;
 }
-
-
 KeyDetector::OutputList
 KeyDetector::getOutputDescriptors() const
 {
     OutputList list;
-
     float osr = 0.0f;
     if (m_stepSize == 0) (void)getPreferredStepSize();
     osr = m_inputSampleRate / m_stepSize;
-
     OutputDescriptor d;
     d.identifier = "tonic";
     d.name = "Tonic Pitch";
@@ -264,40 +237,27 @@ KeyDetector::getOutputDescriptors() const
     d.sampleType = OutputDescriptor::OneSamplePerStep;
     for (int i = 0; i < 24; ++i) {
         if (i == 12) d.binNames.push_back(" ");
-        int idx = conversion[i];
-        std::string label = getKeyName(idx > 12 ? idx-12 : idx, 
-                                       i >= 12,
-                                       true);
+        auto idx = static_cast<int>(conversion[i]);
+        auto label = getKeyName(idx > 12 ? idx-12 : idx, i >= 12, true);
         d.binNames.push_back(label);
     }
     list.push_back(d);
-
     return list;
 }
 
 KeyDetector::FeatureSet
-KeyDetector::process(const float *const *inputBuffers,
-                     Vamp::RealTime now)
+KeyDetector::process(const float *const *inputBuffers, Vamp::RealTime now)
 {
-    if (m_stepSize == 0) {
-	return FeatureSet();
-    }
-
+    if (m_stepSize == 0) { return FeatureSet(); }
     FeatureSet returnFeatures;
-
-    for ( unsigned int i = 0 ; i < m_blockSize; i++ ) {
-        m_inputFrame[i] = (double)inputBuffers[0][i];
-    }
-
+    for ( unsigned int i = 0 ; i < m_blockSize; i++ ) { m_inputFrame[i] = (double)inputBuffers[0][i]; }
 //    int key = (m_getKeyMode->process(m_inputFrame) % 24);
-    int key = m_getKeyMode->process(m_inputFrame);
-    bool minor = m_getKeyMode->isModeMinor(key);
-    int tonic = key;
+    auto key = m_getKeyMode->process(m_inputFrame);
+    auto minor = m_getKeyMode->isModeMinor(key);
+    auto tonic = key;
     if (tonic > 12) tonic -= 12;
-
-    int prevTonic = m_prevKey;
+    auto prevTonic = m_prevKey;
     if (prevTonic > 12) prevTonic -= 12;
-
     if (m_first || (tonic != prevTonic)) {
         Feature feature;
         feature.hasTimestamp = true;
@@ -325,23 +285,19 @@ KeyDetector::process(const float *const *inputBuffers,
         feature.label = getKeyName(tonic, minor, true);
         returnFeatures[2].push_back(feature); // key
     }
-
     m_prevKey = key;
     m_first = false;
-
     Feature ksf;
     ksf.values.reserve(25);
-    double *keystrengths = m_getKeyMode->getKeyStrengths();
+    auto keystrengths = m_getKeyMode->getKeyStrengths();
     for (int i = 0; i < 24; ++i) {
         if (i == 12) ksf.values.push_back(-1);
         ksf.values.push_back(keystrengths[conversion[i]-1]);
     }
     ksf.hasTimestamp = false;
     returnFeatures[3].push_back(ksf);
-
     return returnFeatures;
 }
-
 KeyDetector::FeatureSet
 KeyDetector::getRemainingFeatures()
 {
@@ -354,14 +310,10 @@ KeyDetector::getPreferredStepSize() const
 {
     if ( !m_stepSize )
     {
-        auto sampleRate = std::min<int> ( 96000, std::max<int> ( 8000, m_inputSampleRate ) );
-        auto blockSize  = static_cast<int> ( 2e-3 * sampleRate );
-        blockSize--;
-        blockSize|=blockSize>>1;blockSize|=blockSize>>2;blockSize|=blockSize>>4;
-        blockSize|=blockSize>>8;blockSize|=blockSize>>16;
-        blockSize++;
-        m_stepSize  = blockSize;
-        m_blockSize = blockSize;
+        GetKeyMode gkm(m_inputSampleRate, m_tuningFrequency, m_length, m_length);
+
+        m_stepSize  = gkm.getBlockSize();
+        m_blockSize = gkm.getBlockSize();
     }
     return m_stepSize;
 }
@@ -371,14 +323,10 @@ KeyDetector::getPreferredBlockSize() const
 {
     if ( !m_blockSize )
     {
-        auto sampleRate = std::min<int> ( 96000, std::max<int> ( 8000, m_inputSampleRate ) );
-        auto blockSize  = static_cast<int> ( 2e-3 * sampleRate );
-        blockSize--;
-        blockSize|=blockSize>>1;blockSize|=blockSize>>2;blockSize|=blockSize>>4;
-        blockSize|=blockSize>>8;blockSize|=blockSize>>16;
-        blockSize++;
-        m_stepSize  = blockSize;
-        m_blockSize = blockSize;
+        GetKeyMode gkm(m_inputSampleRate, m_tuningFrequency, m_length, m_length);
+
+        m_stepSize  = gkm.getBlockSize();
+        m_blockSize = gkm.getBlockSize();
     }
     return m_blockSize;}
 

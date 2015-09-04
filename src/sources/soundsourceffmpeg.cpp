@@ -19,11 +19,9 @@ QStringList SoundSourceProviderFFmpeg::getSupportedFileExtensions() const {
         else if (!strcmp(l_SInputFmt->name, "aac")) {list.append("aac");}
         else if (!strcmp(l_SInputFmt->name, "opus") || !strcmp(l_SInputFmt->name, "libopus")) {list.append("opus");}
         else if (!strcmp(l_SInputFmt->name, "wma")  ||  !strcmp(l_SInputFmt->name, "xwma")) {list.append("wma");}
-        else {
-          auto names = QString(l_SInputFmt->name).split(".");
-          for ( auto &name : names ) {
-            if ( ! list.contains ( name ) ) list.append ( name );
-          }
+        auto names = QString(l_SInputFmt->name).split(".");
+        for ( auto &name : names ) {
+          if ( ! list.contains ( name ) ) list.append ( name );
         }
     }
     return list;
@@ -109,6 +107,7 @@ Result SoundSourceFFmpeg::tryOpen(const AudioSourceConfig& config) {
       setFrameRate ( config.frameRateHint );
     }
     m_output_tb = AVRational{1,static_cast<int>(getFrameRate())};
+    setFrameCount ( av_rescale_q( m_format_ctx->duration, m_stream_tb, m_output_tb ) );
     if(!(m_swr = swr_alloc ( )))
     {
       qDebug() << __FUNCTION__ << "cannot allocate swr context for" << filename << av_err2str(AVERROR(ENOMEM));
@@ -166,8 +165,8 @@ Result SoundSourceFFmpeg::tryOpen(const AudioSourceConfig& config) {
     }
     setFrameCount ( av_rescale_q ( m_pkt_array.back().pts + m_pkt_array.back().duration - m_first_pts, m_stream_tb, m_output_tb ) );
     qDebug() << __FUNCTION__ << ": frameRate = " << getFrameRate()
-                         << ", channelCount = " << getChannelCount()
-                         << ", frameCount = " << getFrameCount();
+                             << ", channelCount = " << getChannelCount()
+                             << ", frameCount = " << getFrameCount();
     decode_next_frame ();
     return OK;
 }
@@ -223,7 +222,7 @@ SINT SoundSourceFFmpeg::seekSampleFrame(SINT frameIndex) {
     while ( hindex > lindex + 1)
     {
       auto dist   = m_pkt_array.at(hindex).pts - m_pkt_array.at(lindex).pts;
-      auto frac   = (frame_pts - m_pkt_array.at(lindex).pts)/static_cast<double>(dist);
+      auto frac   = (frame_pts - ( m_pkt_array.at(lindex).pts - m_first_pts ) )/static_cast<double>(dist);
       auto mindex = static_cast<decltype(hindex)>( std::floor ( frac * (hindex-lindex) ) ) + lindex;
       if ( mindex >= hindex ) mindex = hindex - 1;
       if ( mindex <= lindex ) mindex = lindex + 1;
@@ -242,8 +241,6 @@ SINT SoundSourceFFmpeg::seekSampleFrame(SINT frameIndex) {
 
     m_packet = m_pkt_array.at ( m_pkt_index );
     avcodec_flush_buffers ( m_codec_ctx );
-    decode_next_frame();
-    swr_convert_frame(m_swr, m_frame, nullptr);
     first_sample = av_rescale_q ( m_frame->pts - m_first_pts, m_stream_tb, m_output_tb );
     m_offset = frameIndex - first_sample;
     return     frameIndex;
@@ -258,7 +255,9 @@ bool SoundSourceFFmpeg::decode_next_frame(){
       m_pkt_index++;
       if ( m_pkt_index >= m_pkt_array.size() )
       {
-        m_pkt_index = m_pkt_array.size();
+        av_init_packet ( &m_packet );
+        m_packet.data = nullptr;
+        m_packet.size = 0;
         return false;
       }
       else
