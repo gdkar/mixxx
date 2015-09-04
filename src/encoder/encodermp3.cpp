@@ -24,11 +24,11 @@
 #include "errordialoghandler.h"
 
 EncoderMp3::EncoderMp3(EncoderCallback* pCallback)
-  : m_lameFlags(NULL),
-    m_metaDataTitle(NULL),
-    m_metaDataArtist(NULL),
-    m_metaDataAlbum(NULL),
-    m_bufferOut(NULL),
+  : m_lameFlags(nullptr),
+    m_metaDataTitle(nullptr),
+    m_metaDataArtist(nullptr),
+    m_metaDataAlbum(nullptr),
+    m_bufferOut(nullptr),
     m_bufferOutSize(0),
     /*
      * @ Author: Tobias Rafreider
@@ -48,9 +48,9 @@ EncoderMp3::EncoderMp3(EncoderCallback* pCallback)
      */
     m_bufferInSize(0),
     m_pCallback(pCallback),
-    m_library(NULL) {
-    m_bufferIn[0] = NULL;
-    m_bufferIn[1] = NULL;
+    m_library(nullptr) {
+    m_bufferIn[0] = nullptr;
+    m_bufferIn[1] = nullptr;
 
     //These are the function pointers for lame
     lame_init =  0;
@@ -96,7 +96,7 @@ EncoderMp3::EncoderMp3(EncoderCallback* pCallback)
             qWarning() << "Failed to load " << libname << ", " << m_library->errorString();
         }
         delete m_library;
-        m_library = NULL;
+        m_library = nullptr;
     }
 
     if (!m_library || !m_library->isLoaded()) {
@@ -143,7 +143,7 @@ EncoderMp3::EncoderMp3(EncoderCallback* pCallback)
 
 
       /*
-     * Check if all function pointers are not NULL
+     * Check if all function pointers are not nullptr
      * Otherwise, the lame_enc.dll, libmp3lame.so or libmp3lame.mylib do not comply with the official header lame.h
      * Indicates a modified lame version
      *
@@ -167,7 +167,7 @@ EncoderMp3::EncoderMp3(EncoderCallback* pCallback)
        !id3tag_set_artist ||
        !id3tag_set_album) {
         m_library->unload();
-        m_library = NULL;
+        m_library = nullptr;
         //print qDebugs to detect which function pointers are null
         qDebug() << "lame_init: " << lame_init;
         qDebug() << "lame_set_num_channels: " << lame_set_num_channels;
@@ -201,19 +201,19 @@ EncoderMp3::EncoderMp3(EncoderCallback* pCallback)
 
 // Destructor
 EncoderMp3::~EncoderMp3() {
-    if (m_library != NULL && m_library->isLoaded()) {
+    if (m_library != nullptr && m_library->isLoaded()) {
         flush();
         lame_close(m_lameFlags);
         m_library->unload(); //unload dll, so, ...
         qDebug() << "Unloaded libmp3lame ";
-        m_library = NULL;
+        m_library = nullptr;
     }
     //free requested buffers
-    if (m_bufferIn[0] != NULL)
+    if (m_bufferIn[0] != nullptr)
         delete m_bufferIn[0];
-    if (m_bufferIn[1] != NULL)
+    if (m_bufferIn[1] != nullptr)
         delete m_bufferIn[1];
-    if (m_bufferOut != NULL)
+    if (m_bufferOut != nullptr)
         delete m_bufferOut;
 
     lame_init =  0;
@@ -244,7 +244,7 @@ int EncoderMp3::bufferOutGrow(int size) {
         return 0;
 
     m_bufferOut = (unsigned char *)realloc(m_bufferOut, size);
-    if (m_bufferOut == NULL)
+    if (m_bufferOut == nullptr)
         return -1;
 
     m_bufferOutSize = size;
@@ -261,7 +261,7 @@ int EncoderMp3::bufferInGrow(int size) {
 
     m_bufferIn[0] = (float *)realloc(m_bufferIn[0], size * sizeof(float));
     m_bufferIn[1] = (float *)realloc(m_bufferIn[1], size * sizeof(float));
-    if ((m_bufferIn[0] == NULL) || (m_bufferIn[1] == NULL))
+    if ((m_bufferIn[0] == nullptr) || (m_bufferIn[1] == nullptr))
         return -1;
 
     m_bufferInSize = size;
@@ -271,7 +271,7 @@ int EncoderMp3::bufferInGrow(int size) {
 //Using this method requires to call method 'write()' or 'sendPackages()'
 //depending on which context you use the class (shoutcast or recording to HDD)
 void EncoderMp3::flush() {
-    if (m_library == NULL || !m_library->isLoaded())
+    if (m_library == nullptr || !m_library->isLoaded())
         return;
     int rc = 0;
     /**Flush also writes ID3 tags **/
@@ -280,11 +280,11 @@ void EncoderMp3::flush() {
         return;
     }
     //end encoded audio to shoutcast or file
-    m_pCallback->write(NULL, m_bufferOut, 0, rc);
+    m_pCallback->write(nullptr, m_bufferOut, 0, rc);
 }
 
 void EncoderMp3::encodeBuffer(const CSAMPLE *samples, const int size) {
-    if (m_library == NULL || !m_library->isLoaded())
+    if (m_library == nullptr || !m_library->isLoaded())
         return;
     int outsize = 0;
     int rc = 0;
@@ -307,7 +307,7 @@ void EncoderMp3::encodeBuffer(const CSAMPLE *samples, const int size) {
         return;
     }
     //write encoded audio to shoutcast stream or file
-    m_pCallback->write(NULL, m_bufferOut, 0, rc);
+    m_pCallback->write(nullptr, m_bufferOut, 0, rc);
 }
 
 void EncoderMp3::initStream() {
@@ -320,7 +320,7 @@ void EncoderMp3::initStream() {
 }
 
 int EncoderMp3::initEncoder(int bitrate, int samplerate) {
-    if (m_library == NULL || !m_library->isLoaded())
+    if (m_library == nullptr || !m_library->isLoaded())
         return -1;
 
     unsigned long samplerate_in = samplerate;
@@ -329,7 +329,7 @@ int EncoderMp3::initEncoder(int bitrate, int samplerate) {
 
     m_lameFlags = lame_init();
 
-    if (m_lameFlags == NULL) {
+    if (m_lameFlags == nullptr) {
         qDebug() << "Unable to initialize MP3";
         return -1;
     }
@@ -342,7 +342,7 @@ int EncoderMp3::initEncoder(int bitrate, int samplerate) {
     lame_set_quality(m_lameFlags, 2);
     lame_set_bWriteVbrTag(m_lameFlags, 0);
 
-    //ID3 Tag if fiels are not NULL
+    //ID3 Tag if fiels are not nullptr
     id3tag_init(m_lameFlags);
     if (m_metaDataTitle)
         id3tag_set_title(m_lameFlags, m_metaDataTitle);

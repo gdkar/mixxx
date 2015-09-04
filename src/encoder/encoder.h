@@ -21,9 +21,8 @@
 
 class Encoder {
   public:
-    Encoder();
-    virtual ~Encoder();
-
+    Encoder() = default;
+    virtual ~Encoder() = default;
     virtual int initEncoder(int bitrate, int samplerate) = 0;
     // encodes the provided buffer of audio.
     virtual void encodeBuffer(const CSAMPLE *samples, const int size) = 0;

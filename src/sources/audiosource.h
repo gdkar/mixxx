@@ -116,9 +116,7 @@ public:
         if (pSampleBuffer) {
             DEBUG_ASSERT(frames2samples(numberOfFrames) <= pSampleBuffer->size());
             return readSampleFrames(numberOfFrames, pSampleBuffer->data());
-        } else {
-            return skipSampleFrames(numberOfFrames);
-        }
+        } else { return skipSampleFrames(numberOfFrames); }
     }
 
     // Specialized function for explicitly reading stereo (= 2 channels)
@@ -154,9 +152,8 @@ public:
     // transformation without temporary allocations.
     virtual SINT readSampleFramesStereo( SINT numberOfFrames, CSAMPLE* sampleBuffer, SINT sampleBufferSize);
     inline SINT readSampleFramesStereo( SINT numberOfFrames, SampleBuffer* pSampleBuffer) {
-        if (pSampleBuffer) {
-            return readSampleFramesStereo(numberOfFrames, pSampleBuffer->data(), pSampleBuffer->size());
-        } else { return skipSampleFrames(numberOfFrames); }
+        if (pSampleBuffer) { return readSampleFramesStereo(numberOfFrames, pSampleBuffer->data(), pSampleBuffer->size()); }
+        else { return skipSampleFrames(numberOfFrames); }
     }
     // Utility function to clamp the frame index interval
     // [*pMinFrameIndexOfInterval, *pMaxFrameIndexOfInterval)

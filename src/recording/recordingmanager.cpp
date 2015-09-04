@@ -23,76 +23,55 @@ RecordingManager::RecordingManager(ConfigObject<ConfigValue>* pConfig, EngineMas
           m_iNumberSplits(0),
           m_durationRecorded("") {
     m_pToggleRecording = new ControlPushButton(ConfigKey(RECORDING_PREF_KEY, "toggle_recording"));
-    connect(m_pToggleRecording, SIGNAL(valueChanged(double)),
-            this, SLOT(slotToggleRecording(double)));
+    connect(m_pToggleRecording, SIGNAL(valueChanged(double)), this, SLOT(slotToggleRecording(double)));
     m_recReadyCO = new ControlObject(ConfigKey(RECORDING_PREF_KEY, "status"));
     m_recReady = new ControlObjectThread(m_recReadyCO->getKey());
-
     m_split_size = getFileSplitSize();
-
-
     // Register EngineRecord with the engine sidechain.
     EngineSideChain* pSidechain = pEngine->getSideChain();
     if (pSidechain) {
         EngineRecord* pEngineRecord = new EngineRecord(m_pConfig);
-        connect(pEngineRecord, SIGNAL(isRecording(bool)),
-                this, SLOT(slotIsRecording(bool)));
-        connect(pEngineRecord, SIGNAL(bytesRecorded(int)),
-                this, SLOT(slotBytesRecorded(int)));
-        connect(pEngineRecord, SIGNAL(durationRecorded(QString)),
-                this, SLOT(slotDurationRecorded(QString)));
+        connect(pEngineRecord, SIGNAL(isRecording(bool)), this, SLOT(slotIsRecording(bool)));
+        connect(pEngineRecord, SIGNAL(bytesRecorded(int)), this, SLOT(slotBytesRecorded(int)));
+        connect(pEngineRecord, SIGNAL(durationRecorded(QString)), this, SLOT(slotDurationRecorded(QString)));
         pSidechain->addSideChainWorker(pEngineRecord);
     }
 }
-
 RecordingManager::~RecordingManager()
 {
     qDebug() << "Delete RecordingManager";
-
     delete m_recReady;
     delete m_recReadyCO;
     delete m_pToggleRecording;
 }
-
 QString RecordingManager::formatDateTimeForFilename(QDateTime dateTime) const {
     // Use a format based on ISO 8601. Windows does not support colons in
     // filenames so we can't use them anywhere.
     QString formatted = dateTime.toString("yyyy-MM-dd_hh'h'mm'm'ss's'");
     return formatted;
 }
-
 void RecordingManager::slotSetRecording(bool recording) {
-    if (recording && !isRecordingActive()) {
-        startRecording();
-    } else if (!recording && isRecordingActive()) {
-        stopRecording();
-    }
+    if (recording && !isRecordingActive()) { startRecording();}
+    else if (!recording && isRecordingActive()) { stopRecording();}
 }
-
 void RecordingManager::slotToggleRecording(double v) {
     if (v > 0) {
-        if (isRecordingActive()) {
-            stopRecording();
-        } else {
-            startRecording();
-        }
+        if (isRecordingActive()) { stopRecording();}
+        else {startRecording();}
     }
 }
-
 void RecordingManager::startRecording(bool generateFileName) {
     m_iNumberOfBytesRecorded = 0;
     m_split_size = getFileSplitSize();
     qDebug() << "Split size is:" << m_split_size;
     QString encodingType = m_pConfig->getValueString(
             ConfigKey(RECORDING_PREF_KEY, "Encoding"));
-
     if(generateFileName) {
         m_iNumberSplits = 1;
         // Append file extension.
         QString date_time_str = formatDateTimeForFilename(QDateTime::currentDateTime());
         m_recordingFile = QString("%1.%2")
                 .arg(date_time_str, encodingType.toLower());
-
         // Storing the absolutePath of the recording file without file extension.
         m_recording_base_file = getRecordingDir();
         m_recording_base_file.append("/").append(date_time_str);
@@ -112,7 +91,6 @@ void RecordingManager::startRecording(bool generateFileName) {
     }
     m_recReady->slotSet(RECORD_READY);
 }
-
 void RecordingManager::stopRecording()
 {
     qDebug() << "Recording stopped";
@@ -121,7 +99,6 @@ void RecordingManager::stopRecording()
     m_recordingLocation = "";
     m_iNumberOfBytesRecorded = 0;
 }
-
 void RecordingManager::setRecordingDir() {
     QDir recordDir(m_pConfig->getValueString(
         ConfigKey(RECORDING_PREF_KEY, "Directory")));
@@ -137,13 +114,11 @@ void RecordingManager::setRecordingDir() {
     m_recordingDir = recordDir.absolutePath();
     qDebug() << "Recordings folder set to" << m_recordingDir;
 }
-
 QString& RecordingManager::getRecordingDir() {
     // Update current recording dir from preferences.
     setRecordingDir();
     return m_recordingDir;
 }
-
 // Only called when recording is active.
 void RecordingManager::slotDurationRecorded(QString durationStr)
 {
@@ -153,7 +128,6 @@ void RecordingManager::slotDurationRecorded(QString durationStr)
         emit(durationRecorded(m_durationRecorded));
     }
 }
-
 // Only called when recording is active.
 void RecordingManager::slotBytesRecorded(int bytes)
 {
@@ -168,28 +142,16 @@ void RecordingManager::slotBytesRecorded(int bytes)
     }
     emit(bytesRecorded(m_iNumberOfBytesRecorded));
 }
-
 void RecordingManager::slotIsRecording(bool isRecordingActive)
 {
     //qDebug() << "SlotIsRecording " << isRecording;
-
     // Notify the GUI controls, see dlgrecording.cpp.
     m_bRecording = isRecordingActive;
     emit(isRecording(isRecordingActive));
 }
-
-bool RecordingManager::isRecordingActive() {
-    return m_bRecording;
-}
-
-QString& RecordingManager::getRecordingFile() {
-    return m_recordingFile;
-}
-
-QString& RecordingManager::getRecordingLocation() {
-    return m_recordingLocation;
-}
-
+bool RecordingManager::isRecordingActive() { return m_bRecording; }
+QString& RecordingManager::getRecordingFile() { return m_recordingFile;}
+QString& RecordingManager::getRecordingLocation() { return m_recordingLocation; }
 long RecordingManager::getFileSplitSize()
 {
      QString fileSizeStr = m_pConfig->getValueString(ConfigKey(RECORDING_PREF_KEY, "FileSize"));

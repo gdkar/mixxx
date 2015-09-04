@@ -15,13 +15,6 @@
  ***************************************************************************/
 
 #include "encoder/encoder.h"
-
-Encoder::Encoder() {
-}
-
-Encoder::~Encoder() {
-}
-
 int Encoder::convertToBitrate(int quality) {
     switch(quality)
     {

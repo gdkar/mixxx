@@ -39,9 +39,9 @@ EncoderVorbis::EncoderVorbis(EncoderCallback* pCallback)
         : m_bStreamInitialized(false),
           m_header_write(false),
           m_pCallback(pCallback),
-          m_metaDataTitle(NULL),
-          m_metaDataArtist(NULL),
-          m_metaDataAlbum(NULL){
+          m_metaDataTitle(nullptr),
+          m_metaDataArtist(nullptr),
+          m_metaDataAlbum(nullptr){
     m_vdsp.pcm_returned = 0;
     m_vdsp.preextrapolate = 0;
     m_vdsp.eofflag = 0;
@@ -55,7 +55,7 @@ EncoderVorbis::EncoderVorbis(EncoderCallback* pCallback)
     m_vdsp.time_bits = 0;
     m_vdsp.floor_bits = 0;
     m_vdsp.res_bits = 0;
-    m_vdsp.backend_state = NULL;
+    m_vdsp.backend_state = nullptr;
 
     m_vinfo.version = 0;
     m_vinfo.channels = 0;
@@ -64,12 +64,12 @@ EncoderVorbis::EncoderVorbis(EncoderCallback* pCallback)
     m_vinfo.bitrate_nominal = 0;
     m_vinfo.bitrate_lower = 0;
     m_vinfo.bitrate_window = 0;
-    m_vinfo.codec_setup = NULL;
+    m_vinfo.codec_setup = nullptr;
 
-    m_vcomment.user_comments = NULL;
-    m_vcomment.comment_lengths = NULL;
+    m_vcomment.user_comments = nullptr;
+    m_vcomment.comment_lengths = nullptr;
     m_vcomment.comments = 0;
-    m_vcomment.vendor = NULL;
+    m_vcomment.vendor = nullptr;
 }
 
 EncoderVorbis::~EncoderVorbis() {
@@ -96,15 +96,12 @@ int EncoderVorbis::getSerial()
 {
     static int prevSerial = 0;
     int serial = rand();
-    while (prevSerial == serial)
-        serial = rand();
+    while (prevSerial == serial) serial = rand();
     prevSerial = serial;
     qDebug() << "RETURNING SERIAL " << serial;
     return serial;
 }
-
 void EncoderVorbis::writePage() {
-
     /*
      * Vorbis streams begin with three headers; the initial header (with
      * most of the codec setup parameters) which is mandated by the Ogg
@@ -114,14 +111,12 @@ void EncoderVorbis::writePage() {
      * libvorbis handles the additional Ogg bitstream constraints
          */
 
-
     //Write header only once after stream has been initalized
     int result;
     if (m_header_write) {
         while (true) {
             result = ogg_stream_flush(&m_oggs, &m_oggpage);
-            if (result == 0)
-                break;
+            if (result == 0) break;
             m_pCallback->write(m_oggpage.header, m_oggpage.body, m_oggpage.header_len, m_oggpage.body_len);
         }
         m_header_write = false;
@@ -137,12 +132,9 @@ void EncoderVorbis::writePage() {
             bool eos = false;
             while (!eos) {
                 int result = ogg_stream_pageout(&m_oggs, &m_oggpage);
-                if (result == 0)
-                    break;
-                m_pCallback->write(m_oggpage.header, m_oggpage.body,
-                                   m_oggpage.header_len, m_oggpage.body_len);
-                if (ogg_page_eos(&m_oggpage))
-                    eos = true;
+                if (result == 0) break;
+                m_pCallback->write(m_oggpage.header, m_oggpage.body, m_oggpage.header_len, m_oggpage.body_len);
+                if (ogg_page_eos(&m_oggpage)) eos = true;
             }
         }
     }
@@ -179,24 +171,15 @@ void EncoderVorbis::initStream() {
     // set up analysis state and auxiliary encoding storage
     vorbis_analysis_init(&m_vdsp, &m_vinfo);
     vorbis_block_init(&m_vdsp, &m_vblock);
-
     // set up packet-to-stream encoder; attach a random serial number
     srand(time(0));
     ogg_stream_init(&m_oggs, getSerial());
-
     // add comment
     vorbis_comment_init(&m_vcomment);
     vorbis_comment_add_tag(&m_vcomment, "ENCODER", "mixxx/libvorbis");
-    if (m_metaDataArtist != NULL) {
-        vorbis_comment_add_tag(&m_vcomment, "ARTIST", m_metaDataArtist);
-    }
-    if (m_metaDataTitle != NULL) {
-        vorbis_comment_add_tag(&m_vcomment, "TITLE", m_metaDataTitle);
-    }
-    if (m_metaDataAlbum != NULL) {
-        vorbis_comment_add_tag(&m_vcomment, "ALBUM", m_metaDataAlbum);
-    }
-
+    if (m_metaDataArtist != nullptr) { vorbis_comment_add_tag(&m_vcomment, "ARTIST", m_metaDataArtist);}
+    if (m_metaDataTitle != nullptr) { vorbis_comment_add_tag(&m_vcomment, "TITLE", m_metaDataTitle);}
+    if (m_metaDataAlbum != nullptr) { vorbis_comment_add_tag(&m_vcomment, "ALBUM", m_metaDataAlbum);}
     // set up the vorbis headers
     ogg_packet headerInit;
     ogg_packet headerComment;
@@ -205,23 +188,16 @@ void EncoderVorbis::initStream() {
     ogg_stream_packetin(&m_oggs, &headerInit);
     ogg_stream_packetin(&m_oggs, &headerComment);
     ogg_stream_packetin(&m_oggs, &headerCode);
-
     // The encoder is now inialized. The encode method will start streaming by
     // sending the header first.
     m_header_write = true;
     m_bStreamInitialized = true;
 }
-
 int EncoderVorbis::initEncoder(int bitrate, int samplerate) {
     vorbis_info_init(&m_vinfo);
-
     // initialize VBR quality based mode
     int ret = vorbis_encode_init(&m_vinfo, 2, samplerate, -1, bitrate*1000, -1);
-
-    if (ret == 0) {
-        initStream();
-    } else {
-        ret = -1;
-    };
+    if (ret == 0) { initStream();}
+    else { ret = -1;};
     return ret;
 }

@@ -40,11 +40,9 @@ extern "C" {
 class EncoderFfmpegResample {
   public:
     EncoderFfmpegResample(AVCodecContext *codecCtx);
-    ~EncoderFfmpegResample();
+    virtual ~EncoderFfmpegResample();
     int openMixxx(enum AVSampleFormat inSampleFmt, enum AVSampleFormat outSampleFmt);
-
     unsigned int reSampleMixxx(AVFrame *inframe, quint8 **outbuffer);
-
   private:
     AVCodecContext *m_pCodecCtx;
     enum AVSampleFormat m_pOutSampleFmt;

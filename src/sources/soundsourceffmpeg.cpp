@@ -4,12 +4,7 @@ extern "C"{
 #include <libswresample/swresample.h>
 };
 
-#define AUDIOSOURCEFFMPEG_CACHESIZE 1000
-#define AUDIOSOURCEFFMPEG_MIXXXFRAME_TO_BYTEOFFSET (sizeof(CSAMPLE) * getChannelCount())
-#define AUDIOSOURCEFFMPEG_FILL_FROM_CURRENTPOS -1
-
 namespace Mixxx {
-
 QStringList SoundSourceProviderFFmpeg::getSupportedFileExtensions() const {
     auto list = QStringList{};
     auto l_SInputFmt = static_cast<AVInputFormat *>(0);
@@ -33,23 +28,16 @@ QStringList SoundSourceProviderFFmpeg::getSupportedFileExtensions() const {
     }
     return list;
 }
-
 SoundSourceFFmpeg::SoundSourceFFmpeg(QUrl url)
     : SoundSource(url),
-      m_format_ctx(avformat_alloc_context())
-{}
-
-SoundSourceFFmpeg::~SoundSourceFFmpeg() {
-    close();
-}
-
+      m_format_ctx(avformat_alloc_context()) {}
+SoundSourceFFmpeg::~SoundSourceFFmpeg() { close(); }
 Result SoundSourceFFmpeg::tryOpen(const AudioSourceConfig& config) {
     av_register_all();
     auto l_format_opts = (AVDictionary *)nullptr;
     const auto filename = getLocalFileNameBytes();
     auto ret = 0;
     qDebug() << __FUNCTION__  << "(" << filename << ")";
-    
     // Open file and make m_pFormatCtx
     if (( ret = avformat_open_input(&m_format_ctx, filename.constData(), nullptr,&l_format_opts))<0) {
         qDebug() << __FUNCTION__ << "cannot open" << filename << av_err2str ( ret );
@@ -63,7 +51,7 @@ Result SoundSourceFFmpeg::tryOpen(const AudioSourceConfig& config) {
     }
     //debug only (Enable if needed)
     av_dump_format(m_format_ctx, 0, filename.constData(), false);
-    for ( auto i = 0; i < m_format_ctx->nb_streams; i++)
+    for ( unsigned i = 0; i < m_format_ctx->nb_streams; i++)
     {
       m_format_ctx->streams[i]->discard = AVDISCARD_ALL;
     }
@@ -107,14 +95,20 @@ Result SoundSourceFFmpeg::tryOpen(const AudioSourceConfig& config) {
     }
     av_dict_free(&l_format_opts);
     m_stream_tb = m_stream->time_base;
-    m_stream_tb_d = av_q2d ( m_stream_tb);
     m_codec_tb  = m_codec_ctx->time_base;
-    m_codec_tb_d = av_q2d ( m_codec_tb );
     if ( config.channelCountHint <= 0 )
       setChannelCount( m_codec_ctx->channels );
     else
       setChannelCount( config.channelCountHint );
-    setFrameRate ( m_codec_ctx->sample_rate );
+    if ( config.frameRateHint < 8000 )
+    {
+      setFrameRate ( m_codec_ctx->sample_rate );
+    }
+    else
+    {
+      setFrameRate ( config.frameRateHint );
+    }
+    m_output_tb = AVRational{1,static_cast<int>(getFrameRate())};
     if(!(m_swr = swr_alloc ( )))
     {
       qDebug() << __FUNCTION__ << "cannot allocate swr context for" << filename << av_err2str(AVERROR(ENOMEM));
@@ -170,11 +164,11 @@ Result SoundSourceFFmpeg::tryOpen(const AudioSourceConfig& config) {
     {
       m_packet = m_pkt_array.at(m_pkt_index);
     }
-    setFrameCount ( static_cast<SINT> ( (m_pkt_array.back().pts + m_pkt_array.back().duration) * ( m_stream_tb_d * getFrameRate () ) ) );
+    setFrameCount ( av_rescale_q ( m_pkt_array.back().pts + m_pkt_array.back().duration - m_first_pts, m_stream_tb, m_output_tb ) );
     qDebug() << __FUNCTION__ << ": frameRate = " << getFrameRate()
                          << ", channelCount = " << getChannelCount()
                          << ", frameCount = " << getFrameCount();
-    m_frame->pts = AV_NOPTS_VALUE;
+    decode_next_frame ();
     return OK;
 }
 void SoundSourceFFmpeg::close() {
@@ -192,50 +186,50 @@ void SoundSourceFFmpeg::close() {
     m_stream       = nullptr;
     m_stream_index = -1;
     m_codec        = nullptr;
-    m_pts          = AV_NOPTS_VALUE;
-    m_first_pts    = AV_NOPTS_VALUE;
+    m_first_pts    = 0;
 }
-
 SINT SoundSourceFFmpeg::seekSampleFrame(SINT frameIndex) {
     DEBUG_ASSERT(isValidFrameIndex(frameIndex));
-    if ( m_frame->pts == AV_NOPTS_VALUE && !decode_next_frame ( ) )
-      return static_cast<int64_t> ( m_pts * m_stream_tb_d * getFrameRate ( ) );
-    auto first_sample = static_cast<int64_t>(m_frame->pts * ( m_stream_tb_d *  getFrameRate ( ) ) );
-    auto frame_pts = static_cast<int64_t>( frameIndex / ( m_stream_tb_d * getFrameRate() ) );
-    if ( frame_pts >= m_frame->pts && frame_pts < m_frame->pts + static_cast<int64_t>(m_frame->nb_samples / ( m_stream_tb_d * getFrameRate() )  ))
+    if ( m_frame->pts == AV_NOPTS_VALUE && !decode_next_frame ( ) ) return -1;
+    auto first_sample = av_rescale_q ( m_frame->pts-m_first_pts, m_stream_tb, m_output_tb );
+    auto frame_pts    = av_rescale_q ( frameIndex, m_output_tb,m_stream_tb);
+    if ( frameIndex >= first_sample 
+      && frameIndex  < first_sample + m_frame->nb_samples )
     {
-      m_pts = static_cast<int64_t>(frameIndex / ( m_stream_tb_d * getFrameRate() ) );
-      return static_cast<int64_t> ( m_pts * m_stream_tb_d * getFrameRate ( ) );
+      m_offset = frameIndex - first_sample;
+      return     frameIndex;
     }
-    if ( frame_pts <= m_pkt_array.front().pts )
+    if ( frame_pts < ( m_pkt_array.front().pts - m_first_pts ) )
     {
       m_pkt_index =  0;
       m_packet    =  m_pkt_array.at(m_pkt_index); 
-      m_pts       =  m_packet.pts;
-      m_offset    =  0;
       decode_next_frame ( );
-      return static_cast<int64_t> ( m_frame->pts * ( m_stream_tb_d * getFrameRate ( ) ) ) + m_offset;;
+      first_sample = av_rescale_q ( m_frame->pts - m_first_pts, m_stream_tb, m_output_tb );
+      m_offset = 0;
+      return first_sample;
     }
-    if ( frame_pts >= m_pkt_array.back().pts )
+    if ( frame_pts >= ( m_pkt_array.back().pts - m_first_pts ) )
     {
       m_pkt_index  = m_pkt_array.size() - 1;
       m_packet     = m_pkt_array.at ( m_pkt_index );
       decode_next_frame ( );
-      m_offset     = frameIndex - static_cast<int64_t>(m_frame->pts * m_stream_tb_d * getFrameRate() );
-      m_offset = std::max<int64_t>(0,std::min<int64_t>(m_frame->nb_samples-1,m_offset));
-      return static_cast<int64_t> ( m_frame->pts * m_stream_tb_d * getFrameRate ( ) ) + m_offset;;
+      first_sample = av_rescale_q ( m_frame->pts - m_first_pts, m_stream_tb, m_output_tb );
+      m_offset     = frameIndex - first_sample;
+      return frameIndex;
     }
     auto hindex = m_pkt_array.size() - 1;
     auto lindex = decltype(hindex){0};
-    while ( hindex > lindex )
+    m_pkt_index = -1;
+    while ( hindex > lindex + 1)
     {
       auto dist   = m_pkt_array.at(hindex).pts - m_pkt_array.at(lindex).pts;
       auto frac   = (frame_pts - m_pkt_array.at(lindex).pts)/static_cast<double>(dist);
-      auto mindex = static_cast<decltype(hindex)>( frac * (hindex-lindex) ) + lindex;
-      if ( mindex == lindex ) mindex++;
-      if ( m_pkt_array.at(mindex).pts > frame_pts) 
+      auto mindex = static_cast<decltype(hindex)>( std::floor ( frac * (hindex-lindex) ) ) + lindex;
+      if ( mindex >= hindex ) mindex = hindex - 1;
+      if ( mindex <= lindex ) mindex = lindex + 1;
+      if ( m_pkt_array.at(mindex).pts - m_first_pts > frame_pts) 
         hindex = mindex;
-      else if ( m_pkt_array.at(mindex).pts + m_pkt_array.at(mindex).duration <= frame_pts )
+      else if ( m_pkt_array.at(mindex + 1).pts - m_first_pts <= frame_pts )
         lindex = mindex;
       else
       {
@@ -243,20 +237,17 @@ SINT SoundSourceFFmpeg::seekSampleFrame(SINT frameIndex) {
         break;
       }
     }
-    if ( hindex == lindex ) m_pkt_index = lindex;
-    if ( m_pkt_index >= m_pkt_array.size ( ) )
-      m_pkt_index = m_pkt_array.size() - 1;
-    m_packet = m_pkt_array.at ( m_pkt_index );
-    if ( swr_is_initialized ( m_swr ) )
-    {
-      auto delay = swr_get_delay ( m_swr, getFrameRate ( ) );
-      if ( delay > 0 ) swr_drop_output ( m_swr, delay);
-    }
-    decode_next_frame ( );
-    m_offset = static_cast<int64_t>((frame_pts - m_frame->pts ) * m_stream_tb_d * getFrameRate () );
-    return static_cast<int64_t>(m_frame->pts * ( m_stream_tb_d * getFrameRate() ) ) + m_offset;;
-}
+    if ( m_pkt_index < 0 ) m_pkt_index = lindex;
+    else if ( m_pkt_index >= m_pkt_array.size ( ) ) m_pkt_index = m_pkt_array.size() - 1;
 
+    m_packet = m_pkt_array.at ( m_pkt_index );
+    avcodec_flush_buffers ( m_codec_ctx );
+    decode_next_frame();
+    swr_convert_frame(m_swr, m_frame, nullptr);
+    first_sample = av_rescale_q ( m_frame->pts - m_first_pts, m_stream_tb, m_output_tb );
+    m_offset = frameIndex - first_sample;
+    return     frameIndex;
+}
 bool SoundSourceFFmpeg::decode_next_frame(){
   auto ret = 0;
   auto decoding_errors = 0;
@@ -267,6 +258,7 @@ bool SoundSourceFFmpeg::decode_next_frame(){
       m_pkt_index++;
       if ( m_pkt_index >= m_pkt_array.size() )
       {
+        m_pkt_index = m_pkt_array.size();
         return false;
       }
       else
@@ -277,17 +269,14 @@ bool SoundSourceFFmpeg::decode_next_frame(){
     else
     {
       auto got_frame = int{0};
-      if ( m_orig_frame )
-        av_frame_unref ( m_orig_frame );
-      else if(!(m_orig_frame=av_frame_alloc ( ) ) ) 
-        return false;
+      av_frame_unref ( m_orig_frame );
       ret = avcodec_decode_audio4 ( m_codec_ctx, m_orig_frame, &got_frame, &m_packet );
       if ( ret < 0 )
       {
         qDebug() << __FUNCTION__ << "error decoding packet" << m_pkt_index << "for" << getLocalFileName() << av_err2str ( ret );
-        av_init_packet ( &m_packet );
         m_packet.size = 0;
         m_packet.data = nullptr;
+        av_init_packet ( &m_packet );
         decoding_errors++;
         if ( decoding_errors > 8 )
         {
@@ -297,7 +286,7 @@ bool SoundSourceFFmpeg::decode_next_frame(){
       }
       else
       {
-        if ( ret == 0 )
+        if ( ret == 0 || ret > m_packet.size )
         {
           ret = m_packet.size;
         }
@@ -305,10 +294,8 @@ bool SoundSourceFFmpeg::decode_next_frame(){
         m_packet.data += ret;
         if ( got_frame )
         {
-          if ( m_orig_frame->pts == AV_NOPTS_VALUE )
-            m_orig_frame->pts = av_frame_get_best_effort_timestamp ( m_orig_frame );
-          if ( m_frame ) av_frame_unref ( m_frame );
-          else if ( !( m_frame = av_frame_alloc ( ) ) ) return false;
+          m_orig_frame->pts = av_frame_get_best_effort_timestamp ( m_orig_frame );
+          av_frame_unref ( m_frame );
           m_frame->format         = AV_SAMPLE_FMT_FLT;
           m_frame->channel_layout = av_get_default_channel_layout ( getChannelCount() );
           m_frame->sample_rate    = getFrameRate();
@@ -320,13 +307,11 @@ bool SoundSourceFFmpeg::decode_next_frame(){
               qDebug() << __FUNCTION__ << "error initializing SwrContext" << av_err2str ( ret );
             }
           }
-          auto delay = swr_get_delay ( m_swr, getFrameRate() );
-          {
-            m_frame->pts     = m_orig_frame->pts - static_cast<int64_t>(delay / ( m_stream_tb_d * getFrameRate() ) );
-            m_frame->pkt_pts = m_orig_frame->pkt_pts;
-            m_frame->pkt_dts = m_orig_frame->pkt_dts;
-          }
-          if ( ( ret = swr_convert_frame ( m_swr, m_frame, m_orig_frame ) ) < 0 )
+          auto delay = swr_get_delay ( m_swr, getFrameRate ( ) );
+          m_frame->pts     = m_orig_frame->pts - av_rescale_q ( delay, m_output_tb, m_stream_tb ) ;
+          m_frame->pkt_pts = m_orig_frame->pkt_pts;
+          m_frame->pkt_dts = m_orig_frame->pkt_dts;
+          if ( (   ret = swr_convert_frame ( m_swr, m_frame, m_orig_frame ) ) < 0 )
           {
             if ( ( ret = swr_config_frame ( m_swr, m_frame, m_orig_frame ) ) < 0 
               || ( ret = swr_convert_frame( m_swr, m_frame, m_orig_frame ) ) < 0 )
@@ -342,20 +327,22 @@ bool SoundSourceFFmpeg::decode_next_frame(){
   }
   return false;
 }
-
 SINT SoundSourceFFmpeg::readSampleFrames(SINT numberOfFrames,CSAMPLE* sampleBuffer) {
     auto number_done   = decltype(numberOfFrames){0};
     uint8_t *dst[] = {reinterpret_cast<uint8_t*>(sampleBuffer)};
     while ( number_done < numberOfFrames)
     {
-      if ( m_frame->nb_samples == 0 || m_offset >= m_frame->nb_samples )
+      if ( m_offset >= m_frame->nb_samples )
       {
         m_offset -= m_frame->nb_samples;
         if ( !decode_next_frame() ) break;
       }
       else
       {
-        auto this_chunk = std::min<int64_t>(m_frame->nb_samples - m_offset, numberOfFrames - number_done );
+        auto available_here = m_frame->nb_samples - m_offset;
+        auto needed_here    = numberOfFrames - number_done;
+        auto this_chunk     = std::min<SINT>(available_here, needed_here);
+        if ( this_chunk <= 0 ) break;
         if ( sampleBuffer )
         {
           av_samples_copy (
@@ -368,9 +355,8 @@ SINT SoundSourceFFmpeg::readSampleFrames(SINT numberOfFrames,CSAMPLE* sampleBuff
               AV_SAMPLE_FMT_FLT
               );
         }
-        number_done = this_chunk;
-        m_offset   += this_chunk;
-        m_pts += static_cast<int64_t>(this_chunk / ( m_stream_tb_d * getFrameRate()) );
+        number_done += this_chunk;
+        m_offset    += this_chunk;
       }
     }
     return number_done;

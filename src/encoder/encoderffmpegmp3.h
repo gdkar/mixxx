@@ -18,14 +18,10 @@
 
 #ifndef ENCODERFFMPEGMP3_H
 #define ENCODERFFMPEGMP3_H
-
 #include "encoderffmpegcore.h"
-
-class EncoderFfmpegCore;
-
 class EncoderFfmpegMp3 : public EncoderFfmpegCore {
 public:
-    EncoderFfmpegMp3(EncoderCallback* pCallback=NULL);
+    EncoderFfmpegMp3(EncoderCallback* pCallback=nullptr);
 };
 
 #endif

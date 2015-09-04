@@ -8,15 +8,9 @@ void AudioSource::clampFrameInterval(
         SINT& pMinFrameIndexOfInterval,
         SINT& pMaxFrameIndexOfInterval,
         SINT maxFrameIndexOfAudioSource) {
-    if (pMinFrameIndexOfInterval < getMinFrameIndex()) {
-        pMinFrameIndexOfInterval = getMinFrameIndex();
-    }
-    if (pMaxFrameIndexOfInterval > maxFrameIndexOfAudioSource) {
-        pMaxFrameIndexOfInterval = maxFrameIndexOfAudioSource;
-    }
-    if (pMaxFrameIndexOfInterval < pMinFrameIndexOfInterval) {
-        pMaxFrameIndexOfInterval = pMinFrameIndexOfInterval;
-    }
+    if (pMinFrameIndexOfInterval < getMinFrameIndex()) { pMinFrameIndexOfInterval = getMinFrameIndex(); }
+    if (pMaxFrameIndexOfInterval > maxFrameIndexOfAudioSource) { pMaxFrameIndexOfInterval = maxFrameIndexOfAudioSource; }
+    if (pMaxFrameIndexOfInterval < pMinFrameIndexOfInterval) { pMaxFrameIndexOfInterval = pMinFrameIndexOfInterval; }
 }
 AudioSource::AudioSource(const QUrl& url)
         : UrlResource(url),
@@ -41,22 +35,16 @@ void AudioSource::setBitrate(SINT bitrate) {
     DEBUG_ASSERT(isValidBitrate(bitrate));
     m_bitrate = bitrate;
 }
-SINT AudioSource::getSampleBufferSize(
-        SINT numberOfFrames,
-        bool readStereoSamples) const {
-    if (readStereoSamples) {
-        return numberOfFrames * kChannelCountStereo;
-    } else {
-        return frames2samples(numberOfFrames);
-    }
+SINT AudioSource::getSampleBufferSize( SINT numberOfFrames, bool readStereoSamples) const {
+    if (readStereoSamples) { return numberOfFrames * kChannelCountStereo;}
+    else { return frames2samples(numberOfFrames); }
 }
 SINT AudioSource::readSampleFramesStereo( SINT numberOfFrames, CSAMPLE* sampleBuffer, SINT sampleBufferSize) {
     DEBUG_ASSERT(getSampleBufferSize(numberOfFrames, true) <= sampleBufferSize);
     switch (getChannelCount()) {
         case 1: // mono channel
         {
-            const SINT readFrameCount = readSampleFrames(
-                    numberOfFrames, sampleBuffer);
+            const SINT readFrameCount = readSampleFrames( numberOfFrames, sampleBuffer);
             SampleUtil::doubleMonoToDualMono(sampleBuffer, readFrameCount);
             return readFrameCount;
         }

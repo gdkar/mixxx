@@ -25,7 +25,6 @@ class SoundSourceFFmpeg : public SoundSource {
   public:
     explicit SoundSourceFFmpeg(QUrl url);
     virtual ~SoundSourceFFmpeg();
-
     virtual void close() override;
     virtual SINT seekSampleFrame(SINT frameIndex) override;
     virtual SINT readSampleFrames(SINT numberOfFrames, CSAMPLE* sampleBuffer) override;
@@ -39,17 +38,15 @@ class SoundSourceFFmpeg : public SoundSource {
     AVCodec               *m_codec        = nullptr;
     AVPacket               m_packet;
     std::vector<AVPacket>  m_pkt_array{0};
-    size_t                  m_pkt_index    = 0;
+    int64_t                m_pkt_index    = 0;
     AVFrame               *m_orig_frame   = nullptr;
     AVFrame               *m_frame        = nullptr;
     SwrContext            *m_swr          = nullptr;
     AVRational             m_stream_tb    = { 0, 1 };
-    double                 m_stream_tb_d  = 0.0;
     AVRational             m_codec_tb     = { 0, 1 };
-    double                 m_codec_tb_d  = 0.0;
-    int64_t                m_pts          = AV_NOPTS_VALUE;
+    AVRational             m_output_tb    = { 0, 1 };
     int64_t                m_offset       = 0;
-    int64_t                m_first_pts    = AV_NOPTS_VALUE;
+    int64_t                m_first_pts    = 0;
 };
 class SoundSourceProviderFFmpeg: public SoundSourceProvider {
   public:

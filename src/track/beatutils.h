@@ -8,29 +8,20 @@
 
 class BeatUtils {
   public:
+    BeatUtils ( ) = delete;
     static void printBeatStatistics(const QVector<double>& beats, int SampleRate);
-
-    static double constrainBpm(double bpm, const int min_bpm,
-                               const int max_bpm, bool aboveRange) {
+    static double constrainBpm(double bpm, const int min_bpm, const int max_bpm, bool aboveRange) {
         if (bpm <= 0.0 || min_bpm < 0 || max_bpm < 0 ||
             min_bpm >= max_bpm ||
             (bpm >= min_bpm && bpm <= max_bpm)) {
             return bpm;
         }
-
         if (!aboveRange) {
-            while (bpm > max_bpm) {
-                bpm /= 2.0;
-            }
+            while (bpm > max_bpm) {bpm /= 2.0;}
         }
-        while (bpm < min_bpm) {
-            bpm *= 2.0;
-        }
-
+        while (bpm < min_bpm) { bpm *= 2.0;}
         return bpm;
     }
-
-
     /*
      * This method detects the BPM given a set of beat positions.
      * We compute the average local BPM of by considering 8 beats
@@ -38,18 +29,14 @@ class BeatUtils {
      * from which the statistical median is computed. This value provides
      * a pretty good guess of the global BPM value.
      */
-    static double calculateBpm(const QVector<double>& beats, int SampleRate,
-                               int min_bpm, int max_bpm);
-    static double findFirstCorrectBeat(const QVector<double> rawBeats,
-                                       const int SampleRate, const double global_bpm);
-
+    static double calculateBpm(const QVector<double>& beats, int SampleRate, int min_bpm, int max_bpm);
+    static double findFirstCorrectBeat(const QVector<double> rawBeats, const int SampleRate, const double global_bpm);
     /* This implement a method to find the best offset so that
      * the grid generated from bpm is close enough to the one we get from vamp.
      */
     static double calculateOffset(
         const QVector<double> beats1, const double bpm1,
         const QVector<double> beats2, const int SampleRate);
-
     // By default Vamp does not assume a 4/4 signature. This is basically a good
     // property of Vamp, however, it leads to inaccurate beat grids if a 4/4
     // signature is given.  What is the problem? Almost all modern dance music
@@ -60,7 +47,6 @@ class BeatUtils {
         bool enableOffsetCorrection,
         const QVector<double> rawbeats, const int sampleRate,
         const int totalSamples, const double globalBpm);
-
   private:
     static double computeSampleMedian(QList<double> sortedItems);
     static double computeFilteredWeightedAverage(

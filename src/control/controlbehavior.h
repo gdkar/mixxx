@@ -10,71 +10,54 @@ class ControlDoublePrivate;
 class ControlNumericBehavior {
   public:
     virtual ~ControlNumericBehavior() { };
-
     // Returns true if the set should occur. Mutates dValue if the value should
     // be changed.
     virtual bool setFilter(double* dValue);
-
     virtual double valueToParameter(double dValue);
     virtual double midiValueToParameter(double midiValue);
     virtual double parameterToValue(double dParam);
     virtual double valueToMidiParameter(double dValue);
-    virtual void setValueFromMidiParameter(MidiOpCode o, double dParam,
-                                           ControlDoublePrivate* pControl);
+    virtual void setValueFromMidiParameter(MidiOpCode o, double dParam, ControlDoublePrivate* pControl);
 };
-
 class ControlPotmeterBehavior : public ControlNumericBehavior {
   public:
-    ControlPotmeterBehavior(double dMinValue, double dMaxValue,
-                            bool allowOutOfBounds);
+    ControlPotmeterBehavior(double dMinValue, double dMaxValue, bool allowOutOfBounds);
     virtual ~ControlPotmeterBehavior();
-
     virtual bool setFilter(double* dValue);
     virtual double valueToParameter(double dValue);
     virtual double midiValueToParameter(double midiValue);
     virtual double parameterToValue(double dParam);
     virtual double valueToMidiParameter(double dValue);
-
   protected:
     double m_dMinValue;
     double m_dMaxValue;
     double m_dValueRange;
     bool m_bAllowOutOfBounds;
 };
-
 class ControlLogPotmeterBehavior : public ControlPotmeterBehavior {
   public:
     ControlLogPotmeterBehavior(double dMinValue, double dMaxValue, double minDB);
     virtual ~ControlLogPotmeterBehavior();
-
     virtual double valueToParameter(double dValue);
     virtual double parameterToValue(double dParam);
-
   protected:
     double m_minDB;
     double m_minOffset;
 };
-
 class ControlLinPotmeterBehavior : public ControlPotmeterBehavior {
   public:
-    ControlLinPotmeterBehavior(double dMinValue, double dMaxValue,
-                               bool allowOutOfBounds);
+    ControlLinPotmeterBehavior(double dMinValue, double dMaxValue, bool allowOutOfBounds);
     virtual ~ControlLinPotmeterBehavior();
 };
-
 class ControlAudioTaperPotBehavior : public ControlPotmeterBehavior {
   public:
-    ControlAudioTaperPotBehavior(double minDB, double maxDB,
-                                 double neutralParameter);
+    ControlAudioTaperPotBehavior(double minDB, double maxDB, double neutralParameter);
     virtual ~ControlAudioTaperPotBehavior();
-
     virtual double valueToParameter(double dValue);
     virtual double parameterToValue(double dParam);
     virtual double midiValueToParameter(double midiValue);
     virtual double valueToMidiParameter(double dValue);
-    virtual void setValueFromMidiParameter(MidiOpCode o, double dParam,
-                                           ControlDoublePrivate* pControl);
-
+    virtual void setValueFromMidiParameter(MidiOpCode o, double dParam, ControlDoublePrivate* pControl);
   protected:
     // a knob position between 0 and 1 where the gain is 1 (0dB)
     double m_neutralParameter;
@@ -90,18 +73,15 @@ class ControlAudioTaperPotBehavior : public ControlPotmeterBehavior {
     // and is allways < 1
     double m_midiCorrection;
 };
-
 class ControlTTRotaryBehavior : public ControlNumericBehavior {
   public:
     virtual double valueToParameter(double dValue);
     virtual double parameterToValue(double dParam);
 };
-
 class ControlPushButtonBehavior : public ControlNumericBehavior {
   public:
     static const int kPowerWindowTimeMillis;
     static const int kLongPressLatchingTimeMillis;
-
     // TODO(XXX) Duplicated from ControlPushButton. It's complicated and
     // annoying to share them so I just copied them.
     enum ButtonMode {
@@ -110,11 +90,8 @@ class ControlPushButtonBehavior : public ControlNumericBehavior {
          POWERWINDOW,
          LONGPRESSLATCHING,
     };
-
     ControlPushButtonBehavior(ButtonMode buttonMode, int iNumStates);
-    virtual void setValueFromMidiParameter(MidiOpCode o, double dParam,
-                                           ControlDoublePrivate* pControl);
-
+    virtual void setValueFromMidiParameter(MidiOpCode o, double dParam, ControlDoublePrivate* pControl);
   private:
     ButtonMode m_buttonMode;
     int m_iNumStates;

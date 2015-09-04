@@ -11,15 +11,11 @@ namespace Mixxx {
 // Registry for SoundSourceProviders
 class SoundSourceProviderRegistry {
 public:
-    SoundSourceProviderPointer registerProvider(
-            const SoundSourceProviderPointer& pProvider);
-    SoundSourceProviderPointer registerPluginLibrary(
-            const SoundSourcePluginLibraryPointer& pPluginLibrary);
-
+    SoundSourceProviderPointer registerProvider( const SoundSourceProviderPointer& pProvider);
+    SoundSourceProviderPointer registerPluginLibrary( const SoundSourcePluginLibraryPointer& pPluginLibrary);
     // Completes the registration by building the corresponding
     // regular expressions for file names.
     void finishRegistration();
-
     SoundSourceProviderPointer getProviderForFileExtension(
             const QString& fileExtension) const {
         return m_entries.value(fileExtension).pProvider;

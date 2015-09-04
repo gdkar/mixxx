@@ -14,8 +14,7 @@ void deleteSoundSource(SoundSource* pSoundSource) {
 
 } // anonymous namespace
 
-SoundSourcePointer exportSoundSourcePlugin(
-        SoundSourcePlugin* pSoundSourcePlugin) {
+SoundSourcePointer exportSoundSourcePlugin(SoundSourcePlugin* pSoundSourcePlugin) {
     return SoundSourcePointer(pSoundSourcePlugin, deleteSoundSource);
 }
 

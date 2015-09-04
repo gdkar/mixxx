@@ -30,8 +30,6 @@ class RecordingManager : public QObject
   public:
     RecordingManager(ConfigObject<ConfigValue>* pConfig, EngineMaster* pEngine);
     virtual ~RecordingManager();
-
-
     // This will try to start recording. If successful, slotIsRecording will be
     // called and a signal isRecording will be emitted.
     // Parameter semantic: If true, the method computes the filename based on
@@ -47,30 +45,24 @@ class RecordingManager : public QObject
     // Returns the currently recording file
     QString& getRecordingFile();
     QString& getRecordingLocation();
-
   signals:
     // Emits the cumulative number of bytes currently recorded.
     void bytesRecorded(long);
     void isRecording(bool);
     void durationRecorded(QString);
-
   public slots:
     void slotIsRecording(bool);
     void slotBytesRecorded(int);
     void slotDurationRecorded(QString);
-
   private slots:
     void slotSetRecording(bool recording);
     void slotToggleRecording(double v);
-
   private:
     QString formatDateTimeForFilename(QDateTime dateTime) const;
     ControlObjectThread* m_recReady;
     ControlObject* m_recReadyCO;
     ControlPushButton* m_pToggleRecording;
-
     long getFileSplitSize();
-
     ConfigObject<ConfigValue>* m_pConfig;
     QString m_recordingDir;
     // the base file
@@ -79,7 +71,6 @@ class RecordingManager : public QObject
     QString m_recordingFile;
     // Absolute file
     QString m_recordingLocation;
-
     bool m_bRecording;
     // will be a very large number
     quint64 m_iNumberOfBytesRecorded;
@@ -87,5 +78,4 @@ class RecordingManager : public QObject
     int m_iNumberSplits;
     QString m_durationRecorded;
 };
-
 #endif // RECORDINGMANAGER_H
