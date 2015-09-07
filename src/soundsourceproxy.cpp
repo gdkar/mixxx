@@ -1,28 +1,8 @@
 #include "soundsourceproxy.h"
-
-#ifdef __MAD__
-#include "sources/soundsourcemp3.h"
-#endif
-#include "sources/soundsourceoggvorbis.h"
-#ifdef __OPUS__
-#include "sources/soundsourceopus.h"
-#endif
-#ifdef __COREAUDIO__
-#include "sources/soundsourcecoreaudio.h"
-#endif
-#ifdef __SNDFILE__
-#include "sources/soundsourcesndfile.h"
-#endif
 #ifdef __FFMPEGFILE__
 #include "sources/soundsourceffmpeg.h"
 #endif
-#ifdef __MODPLUG__
-#include "sources/soundsourcemodplug.h"
-#endif
-#include "sources/soundsourceflac.h"
-
 #include "util/cmdlineargs.h"
-
 #include <QApplication>
 #include <QDesktopServices>
 
@@ -38,45 +18,30 @@ const QStringList SOUND_SOURCE_PLUGIN_FILENAME_PATTERN("libsoundsource*");
 // No filtering of plugin file names on other systems, e.g. Windows
 const QStringList SOUND_SOURCE_PLUGIN_FILENAME_PATTERN; // empty
 #endif
-
-SecurityTokenPointer openSecurityToken(QString qFilename,
-        SecurityTokenPointer pToken) {
+SecurityTokenPointer openSecurityToken(QString qFilename, SecurityTokenPointer pToken) {
     if (pToken.isNull()) {
         // Open a security token for the file if we are in a sandbox.
         QFileInfo info(qFilename);
         return Sandbox::openSecurityToken(info, true);
-    } else {
-        return pToken;
-    }
+    } else { return pToken; }
 }
-
 QList<QDir> getSoundSourcePluginDirectories() {
     QList<QDir> pluginDirs;
-
     const QString& pluginPath = CmdlineArgs::Instance().getPluginPath();
     if (!pluginPath.isEmpty()) {
         qDebug() << "Adding plugin path from commandline arg:" << pluginPath;
         pluginDirs << QDir(pluginPath);
     }
-
-    const QString dataLocation = QDesktopServices::storageLocation(
-            QDesktopServices::DataLocation);
+    const QString dataLocation = QDesktopServices::storageLocation(QDesktopServices::DataLocation);
     const QString applicationPath = QCoreApplication::applicationDirPath();
-
 #ifdef __LINUX__
     // TODO(rryan): Why can't we use applicationDirPath() and assume it's in the
     // 'bin' folder of $PREFIX, so we just traverse
     // ../lib/mixxx/plugins/soundsource.
     QDir libPluginDir(UNIX_LIB_PATH);
-    if (libPluginDir.cd("plugins") && libPluginDir.cd("soundsource")) {
-        pluginDirs << libPluginDir;
-    }
-
+    if (libPluginDir.cd("plugins") && libPluginDir.cd("soundsource")) { pluginDirs << libPluginDir;}
     QDir dataPluginDir(dataLocation);
-    if (dataPluginDir.cd("plugins") && dataPluginDir.cd("soundsource")) {
-        pluginDirs << dataPluginDir;
-    }
-
+    if (dataPluginDir.cd("plugins") && dataPluginDir.cd("soundsource")) { pluginDirs << dataPluginDir;}
     // For people who build from source.
     QDir developer32Root(applicationPath);
     if (developer32Root.cd("lin32_build") && developer32Root.cd("plugins")) { pluginDirs << developer32Root.absolutePath(); }
@@ -107,18 +72,17 @@ QList<QDir> getSoundSourcePluginDirectories() {
 SoundSourceProxy::SoundSourceProxy(QString qFilename,
         SecurityTokenPointer pToken)
         : m_pSecurityToken(openSecurityToken(qFilename, pToken))
-                , m_pSoundSource(initialize(qFilename)) {
+        , m_pSoundSource(initialize(qFilename)) {
 }
 //Other constructor
 SoundSourceProxy::SoundSourceProxy(TrackPointer pTrack)
         : m_pTrack(pTrack)
-                , m_pSecurityToken(
-                openSecurityToken(pTrack->getLocation(),
-                        pTrack->getSecurityToken()))
-                        , m_pSoundSource(initialize(pTrack->getLocation())) {
+        , m_pSecurityToken(
+            openSecurityToken(pTrack->getLocation(),
+            pTrack->getSecurityToken()))
+        , m_pSoundSource(initialize(pTrack->getLocation())) {
                           
 }
-
 Mixxx::AudioSourcePointer SoundSourceProxy::openAudioSource(const Mixxx::AudioSourceConfig& audioSrcCfg) {
     if (m_pAudioSource) {
         qDebug() << "AudioSource is already open";
@@ -146,12 +110,8 @@ Mixxx::AudioSourcePointer SoundSourceProxy::openAudioSource(const Mixxx::AudioSo
     if (m_pTrack) {
         m_pTrack->setChannels(m_pSoundSource->getChannelCount());
         m_pTrack->setSampleRate(m_pSoundSource->getFrameRate());
-        if (m_pSoundSource->hasDuration()) {
-            m_pTrack->setDuration(m_pSoundSource->getDuration());
-        }
-        if (m_pSoundSource->hasBitrate()) {
-            m_pTrack->setBitrate(m_pSoundSource->getBitrate());
-        }
+        if (m_pSoundSource->hasDuration()) { m_pTrack->setDuration(m_pSoundSource->getDuration()); }
+        if (m_pSoundSource->hasBitrate()) { m_pTrack->setBitrate(m_pSoundSource->getBitrate());}
     }
     m_pAudioSource = m_pSoundSource;
     return m_pAudioSource;
@@ -163,7 +123,6 @@ void SoundSourceProxy::closeAudioSource() {
         m_pAudioSource.clear();
     }
 }
-
 // static
 void SoundSourceProxy::loadPlugins() {
     // Initialize built-in file types (last provider wins)
@@ -171,28 +130,6 @@ void SoundSourceProxy::loadPlugins() {
     // FFmpeg currently overrides all other built-in providers
     // if enabled
     s_soundSourceProviders.registerProvider(Mixxx::SoundSourceProviderPointer(new Mixxx::SoundSourceProviderFFmpeg));
-#endif
-#if 0
-#ifdef __SNDFILE__
-    // libsndfile is just a fallback and will be overwritten by
-    // specialized providers!
-    s_soundSourceProviders.registerProvider(Mixxx::SoundSourceProviderPointer(
-            new Mixxx::SoundSourceProviderSndFile));
-#endif
-#endif
-    s_soundSourceProviders.registerProvider(Mixxx::SoundSourceProviderPointer(new Mixxx::SoundSourceProviderFLAC));
-    s_soundSourceProviders.registerProvider(Mixxx::SoundSourceProviderPointer(new Mixxx::SoundSourceProviderOggVorbis));
-#ifdef __OPUS__
-    s_soundSourceProviders.registerProvider(Mixxx::SoundSourceProviderPointer(new Mixxx::SoundSourceProviderOpus));
-#endif
-#ifdef __MAD__
-    s_soundSourceProviders.registerProvider(Mixxx::SoundSourceProviderPointer(new Mixxx::SoundSourceProviderMp3));
-#endif
-#ifdef __MODPLUG__
-    s_soundSourceProviders.registerProvider(Mixxx::SoundSourceProviderPointer(new Mixxx::SoundSourceProviderModPlug));
-#endif
-#ifdef __COREAUDIO__
-    s_soundSourceProviders.registerProvider(Mixxx::SoundSourceProviderPointer(new Mixxx::SoundSourceProviderCoreAudio));
 #endif
     // Scan for and initialize all plugins.
     // Loaded plugins will replace any built-in providers
@@ -254,14 +191,14 @@ bool SoundSourceProxy::isFileExtensionSupported(const QString& fileExtension)
 Mixxx::SoundSourcePointer SoundSourceProxy::initialize( const QString& qFilename ) {
     const QUrl url(QUrl::fromLocalFile(qFilename));
     const QString fileExtension(Mixxx::SoundSource::getFileExtensionFromUrl(url));
-    if (fileExtension.isEmpty()) {
-        qWarning() << "Unknown file type:" << qFilename;
-        return Mixxx::SoundSourcePointer();
-    }
+    if (fileExtension.isEmpty()) { qWarning() << "Unknown file type:" << qFilename; }
     auto pSoundSourceProvider =  s_soundSourceProviders.getProviderForFileExtension(fileExtension);
-    if (pSoundSourceProvider) { return pSoundSourceProvider->newSoundSource(url); }
-    else {
-        qWarning() << "Unsupported file type" << qFilename;
-        return Mixxx::SoundSourcePointer();
+    if (pSoundSourceProvider ) if ( auto ptr = pSoundSourceProvider->newSoundSource(url) ) return ptr;
+    auto providers = s_soundSourceProviders.getProviderList();
+    for ( auto & provider : providers )
+    {
+      if(provider != pSoundSourceProvider ) if ( auto ptr = provider->newSoundSource(url) ) return ptr;
     }
+    qWarning() << "Unsupported file type" << qFilename;
+    return Mixxx::SoundSourcePointer();
 }

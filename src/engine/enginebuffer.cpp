@@ -86,9 +86,9 @@ EngineBuffer::EngineBuffer(QString group, ConfigObject<ConfigValue>* _config,
           m_fRampValue(0.0),
           m_iRampState(ENGINE_RAMP_NONE),
           m_iSampleRate(0),
-          m_pDitherBuffer(SampleUtil::alloc(MAX_BUFFER_LEN)),
+          m_pDitherBuffer(new CSAMPLE[MAX_BUFFER_LEN]),
           m_iDitherBufferReadIndex(0),
-          m_pCrossfadeBuffer(SampleUtil::alloc(MAX_BUFFER_LEN)),
+          m_pCrossfadeBuffer(new CSAMPLE[MAX_BUFFER_LEN]),
           m_bCrossfadeReady(false),
           m_iLastBufferSize(0) {
 
@@ -99,24 +99,15 @@ EngineBuffer::EngineBuffer(QString group, ConfigObject<ConfigValue>* _config,
     for (unsigned int i = 0; i < MAX_BUFFER_LEN; ++i) {
         m_pDitherBuffer[i] = (static_cast<CSAMPLE>(rand() % RAND_MAX) / RAND_MAX - 0.5) / SAMPLE_MAX;
     }
-
     // zero out crossfade buffer
-    SampleUtil::clear(m_pCrossfadeBuffer, MAX_BUFFER_LEN);
-
+    std::fill_n(m_pCrossfadeBuffer,MAX_BUFFER_LEN,0);
     m_fLastSampleValue[0] = 0;
     m_fLastSampleValue[1] = 0;
 
     m_pReader = new CachingReader(group, _config);
-    connect(m_pReader, SIGNAL(trackLoading()),
-            this, SLOT(slotTrackLoading()),
-            Qt::DirectConnection);
-    connect(m_pReader, SIGNAL(trackLoaded(TrackPointer, int, int)),
-            this, SLOT(slotTrackLoaded(TrackPointer, int, int)),
-            Qt::DirectConnection);
-    connect(m_pReader, SIGNAL(trackLoadFailed(TrackPointer, QString)),
-            this, SLOT(slotTrackLoadFailed(TrackPointer, QString)),
-            Qt::DirectConnection);
-
+    connect(m_pReader, SIGNAL(trackLoading()),this, SLOT(slotTrackLoading()),Qt::DirectConnection);
+    connect(m_pReader, SIGNAL(trackLoaded(TrackPointer, int, int)),this, SLOT(slotTrackLoaded(TrackPointer, int, int)),Qt::DirectConnection);
+    connect(m_pReader, SIGNAL(trackLoadFailed(TrackPointer, QString)),this, SLOT(slotTrackLoadFailed(TrackPointer, QString)),Qt::DirectConnection);
     // Play button
     m_playButton = new ControlPushButton(ConfigKey(m_group, "play"));
     m_playButton->setButtonMode(ControlPushButton::TOGGLE);
@@ -316,9 +307,8 @@ EngineBuffer::~EngineBuffer() {
     delete m_pKeylock;
     delete m_pEject;
 
-    SampleUtil::free(m_pDitherBuffer);
-    SampleUtil::free(m_pCrossfadeBuffer);
-
+    delete[] m_pDitherBuffer;
+    delete[] m_pCrossfadeBuffer;
     qDeleteAll(m_engineControls);
 }
 
@@ -428,12 +418,10 @@ void EngineBuffer::requestSyncMode(SyncMode mode) {
 }
 
 void EngineBuffer::readToCrossfadeBuffer(const int iBufferSize) {
-    CSAMPLE* fadeout = m_pScale->getScaled(iBufferSize);
-    SampleUtil::copy(m_pCrossfadeBuffer, fadeout, iBufferSize);
-
+    auto  fadeout = m_pScale->getScaled(iBufferSize);
+    std::copy_n(fadeout,iBufferSize,m_pCrossfadeBuffer);
     // Restore the original position that was lost due to getScaled() above
     m_pReadAheadManager->notifySeek(m_filepos_play);
-
     m_bCrossfadeReady = true;
 }
 
@@ -969,7 +957,7 @@ void EngineBuffer::process(CSAMPLE* pOutput, const int iBufferSize) {
             //         << " bufferlen " << iBufferSize;
 
             // Copy scaled audio into pOutput
-            SampleUtil::copy(pOutput, output, iBufferSize);
+            std::copy_n(output,iBufferSize,pOutput);
 
             if (m_bScalerOverride) {
                 // If testing, we don't have a real log so we fake the position.
@@ -981,42 +969,25 @@ void EngineBuffer::process(CSAMPLE* pOutput, const int iBufferSize) {
                         m_pReadAheadManager->getEffectiveVirtualPlaypositionFromLog(
                                 static_cast<int>(m_filepos_play), samplesRead);
             }
-        } else {
-            SampleUtil::clear(pOutput, iBufferSize);
-        }
-
-        if (m_bCrossfadeReady) {
-            SampleUtil::linearCrossfadeBuffers(
-                    pOutput, m_pCrossfadeBuffer, pOutput, iBufferSize);
-        }
-
-        QListIterator<EngineControl*> it(m_engineControls);
-        while (it.hasNext()) {
-            EngineControl* pControl = it.next();
+        } else {std::fill_n(pOutput,iBufferSize,0);}
+        if (m_bCrossfadeReady) { SampleUtil::linearCrossfadeBuffers(pOutput, m_pCrossfadeBuffer, pOutput, iBufferSize);}
+        for ( auto pControl : m_engineControls ){
             pControl->setCurrentSample(m_filepos_play, m_trackSamplesOld);
             pControl->process(rate, m_filepos_play, m_trackSamplesOld, iBufferSize);
         }
-
         m_scratching_old = is_scratching;
-
         // Handle repeat mode
         at_start = m_filepos_play <= 0;
         at_end = m_filepos_play >= m_trackSamplesOld;
-
         bool repeat_enabled = m_pRepeat->get() != 0.0;
-
         bool end_of_track = //(at_start && backwards) ||
             (at_end && !backwards);
-
         // If playbutton is pressed, check if we are at start or end of track
-        if ((m_playButton->get() || (m_fwdButton->get() || m_backButton->get()))
-                && end_of_track) {
+        if ((m_playButton->get() || (m_fwdButton->get() || m_backButton->get())) && end_of_track) {
             if (repeat_enabled) {
                 double fractionalPos = at_start ? 1.0 : 0;
                 doSeekFractional(fractionalPos, SEEK_STANDARD);
-            } else {
-                m_playButton->set(0.);
-            }
+            } else {m_playButton->set(0.);}
         }
 
         // release the pauselock

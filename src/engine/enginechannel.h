@@ -38,8 +38,7 @@ class EngineChannel : public EngineObject {
         RIGHT,
     };
 
-    EngineChannel(const ChannelHandleAndGroup& handle_group,
-                  ChannelOrientation defaultOrientation = CENTER);
+    EngineChannel(const ChannelHandleAndGroup& handle_group, ChannelOrientation defaultOrientation = CENTER);
     virtual ~EngineChannel();
 
     virtual ChannelOrientation getOrientation() const;

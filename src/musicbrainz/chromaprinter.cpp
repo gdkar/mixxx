@@ -48,16 +48,10 @@ namespace
 
         std::vector<SAMPLE> fingerprintSamples(readFrames * kFingerprintChannels);
         // Convert floating-point to integer
-        SampleUtil::convertFloat32ToS16(
-                &fingerprintSamples[0],
-                sampleBuffer.data(),
-                fingerprintSamples.size());
-
+        std::copy_n(sampleBuffer.data(),,fingerprintSamples.size(),&fingerprintSamples[0])
         qDebug("reading file took: %d ms" , timerReadingFile.elapsed());
-
         ChromaprintContext* ctx = chromaprint_new(CHROMAPRINT_ALGORITHM_DEFAULT);
         chromaprint_start(ctx, pAudioSource->getFrameRate(), kFingerprintChannels);
-
         QTime timerGeneratingFingerprint;
         timerGeneratingFingerprint.start();
         int success = chromaprint_feed(ctx, &fingerprintSamples[0], fingerprintSamples.size());

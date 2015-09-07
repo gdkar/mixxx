@@ -384,8 +384,7 @@ void SoundDevicePortAudio::writeProcess() {
             // We use size1 and size2, so we can ignore the return value
             (void)m_outputFifo->aquireWriteRegions(writeCount, &dataPtr1, &size1, &dataPtr2, &size2);
             // Fetch fresh samples and write to the the output buffer
-            composeOutputBuffer(dataPtr1, size1 / m_outputParams.channelCount, 0,
-                    static_cast<unsigned int>(m_outputParams.channelCount));
+            composeOutputBuffer(dataPtr1, size1 / m_outputParams.channelCount, 0, static_cast<unsigned int>(m_outputParams.channelCount));
             if (size2 > 0) {
                 composeOutputBuffer(dataPtr2, size2 / m_outputParams.channelCount, size1 / m_outputParams.channelCount,
                         static_cast<unsigned int>(m_outputParams.channelCount));
@@ -662,7 +661,6 @@ int SoundDevicePortAudio::callbackProcessClkRef(const unsigned int framesPerBuff
     //Note: Input is processed first so that any ControlObject changes made in
     //      response to input are processed as soon as possible (that is, when
     //      m_pSoundManager->requestBuffer() is called below.)
-
     // Send audio from the soundcard's input off to the SoundManager...
     if (in) {
         ScopedTimer t("SoundDevicePortAudio::callbackProcess input %1", getInternalName());

@@ -94,19 +94,14 @@ Result SoundSourceFFmpeg::tryOpen(const AudioSourceConfig& config) {
     av_dict_free(&l_format_opts);
     m_stream_tb = m_stream->time_base;
     m_codec_tb  = m_codec_ctx->time_base;
-    if ( config.channelCountHint <= 0 )
-      setChannelCount( m_codec_ctx->channels );
-    else
-      setChannelCount( config.channelCountHint );
-    if ( config.frameRateHint < 8000 )
-    {
-      setFrameRate ( m_codec_ctx->sample_rate );
-    }
-    else
-    {
-      setFrameRate ( config.frameRateHint );
-    }
+
+    if ( config.channelCountHint <= 0 ) setChannelCount( m_codec_ctx->channels );
+    else                                setChannelCount( config.channelCountHint );
+    if ( config.frameRateHint < 8000 )  setFrameRate ( m_codec_ctx->sample_rate );
+    else                                setFrameRate ( config.frameRateHint );
+
     m_output_tb = AVRational{1,static_cast<int>(getFrameRate())};
+
     setFrameCount ( av_rescale_q( m_format_ctx->duration, m_stream_tb, m_output_tb ) );
     if(!(m_swr = swr_alloc ( )))
     {
@@ -217,30 +212,57 @@ SINT SoundSourceFFmpeg::seekSampleFrame(SINT frameIndex) {
       return frameIndex;
     }
     auto hindex = m_pkt_array.size() - 1;
+    auto hpts   = m_pkt_array.at(hindex).pts - m_first_pts;
     auto lindex = decltype(hindex){0};
+    auto lpts   = m_pkt_array.at(lindex).pts - m_first_pts;
+    auto bail   = false;
     m_pkt_index = -1;
     while ( hindex > lindex + 1)
     {
-      auto dist   = m_pkt_array.at(hindex).pts - m_pkt_array.at(lindex).pts;
-      auto frac   = (frame_pts - ( m_pkt_array.at(lindex).pts - m_first_pts ) )/static_cast<double>(dist);
-      auto mindex = static_cast<decltype(hindex)>( std::floor ( frac * (hindex-lindex) ) ) + lindex;
+      auto pts_dist   = m_pkt_array.at(hindex).pts - m_pkt_array.at(lindex).pts;
+      auto idx_dist   = hindex - lindex;
+      auto target_dist= frame_pts - ( lpts );
+      auto mindex = lindex + (( target_dist * idx_dist ) / pts_dist);
       if ( mindex >= hindex ) mindex = hindex - 1;
-      if ( mindex <= lindex ) mindex = lindex + 1;
-      if ( m_pkt_array.at(mindex).pts - m_first_pts > frame_pts) 
-        hindex = mindex;
-      else if ( m_pkt_array.at(mindex + 1).pts - m_first_pts <= frame_pts )
-        lindex = mindex;
+      if ( mindex <= lindex )
+      {
+        if ( bail )
+        {
+          mindex = ( idx_dist / 2 ) + lindex;
+        }
+        else
+        {
+          mindex = lindex + 1;
+          bail = true;
+        }
+      }
       else
       {
-        m_pkt_index = mindex;
-        break;
+        bail = false;
+      }
+      auto mpts = m_pkt_array.at(mindex  ).pts - m_first_pts;
+      auto npts = m_pkt_array.at(mindex+1).pts - m_first_pts;
+      if ( mpts > frame_pts )
+      {
+        hindex = mindex;
+        lpts   = mpts;
+      }
+      else if ( npts <= frame_pts )
+      {
+        lindex = mindex + 1;
+        lpts   = npts;
+      }
+      else
+      {
+        lindex = mindex;
+        lpts   = mpts;
+        hindex = mindex + 1;
+        hpts   = npts;
       }
     }
-    if ( m_pkt_index < 0 ) m_pkt_index = lindex;
-    else if ( m_pkt_index >= m_pkt_array.size ( ) ) m_pkt_index = m_pkt_array.size() - 1;
-
-    m_packet = m_pkt_array.at ( m_pkt_index );
-    avcodec_flush_buffers ( m_codec_ctx );
+    m_pkt_index = lindex;
+    m_packet    = m_pkt_array.at(m_pkt_index);
+    decode_next_frame ();
     first_sample = av_rescale_q ( m_frame->pts - m_first_pts, m_stream_tb, m_output_tb );
     m_offset = frameIndex - first_sample;
     return     frameIndex;
@@ -255,6 +277,7 @@ bool SoundSourceFFmpeg::decode_next_frame(){
       m_pkt_index++;
       if ( m_pkt_index >= m_pkt_array.size() )
       {
+        m_pkt_index = m_pkt_array.size();
         av_init_packet ( &m_packet );
         m_packet.data = nullptr;
         m_packet.size = 0;
@@ -267,7 +290,7 @@ bool SoundSourceFFmpeg::decode_next_frame(){
     }
     else
     {
-      auto got_frame = int{0};
+      auto got_frame = 0;
       av_frame_unref ( m_orig_frame );
       ret = avcodec_decode_audio4 ( m_codec_ctx, m_orig_frame, &got_frame, &m_packet );
       if ( ret < 0 )
@@ -293,6 +316,13 @@ bool SoundSourceFFmpeg::decode_next_frame(){
         m_packet.data += ret;
         if ( got_frame )
         {
+          if ( !m_orig_frame->sample_rate    )
+            m_orig_frame->sample_rate = m_codec_ctx->sample_rate;
+          if ( !m_orig_frame->channel_layout )
+            m_orig_frame->channel_layout = m_codec_ctx->channel_layout;
+          if ( !m_orig_frame->channels )
+            m_orig_frame->channels = m_codec_ctx->channels;
+
           m_orig_frame->pts = av_frame_get_best_effort_timestamp ( m_orig_frame );
           av_frame_unref ( m_frame );
           m_frame->format         = AV_SAMPLE_FMT_FLT;

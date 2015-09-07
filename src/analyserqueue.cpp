@@ -23,7 +23,7 @@
 // 0 for no progress during finalize
 // 1 to display the text "finalizing"
 // 100 for 10% step after finalize
-#define FINALIZE_PROMILLE 1
+#define FINALIZE_PROMILLE (1.0e-3)
 
 namespace {
     // Analysis is done in blocks.
@@ -82,19 +82,16 @@ bool AnalyserQueue::isLoadedTrackWaiting(TrackPointer analysingTrack) {
         if (progress < 0) {
             // Load stored analysis
             auto processTrack = false;
-            for ( auto ita : m_aq )
-            {
-              if ( !ita->loadStored(pTrack) ){processTrack = true;}
-            }
+            for ( auto ita : m_aq ) if ( !ita->loadStored(pTrack) ){processTrack = true;}
             if (!processTrack) {
                 it.remove();
                 progress100List.append(pTrack);
             } else { progress0List.append(pTrack);}
-        } else if (progress == 1000) { it.remove(); }
+        } else if (progress == 1.0) { it.remove(); }
     }
     m_qm.unlock();
     // update progress after unlock to avoid a deadlock
-    for(auto pTrack: progress100List) { emitUpdateProgress(pTrack, 1000); }
+    for(auto pTrack: progress100List) { emitUpdateProgress(pTrack, 1.0); }
     for(auto pTrack: progress0List) { emitUpdateProgress(pTrack, 0); }
     if (info.isTrackLoaded(analysingTrack)) { return false; }
     return trackWaiting;
@@ -202,7 +199,7 @@ bool AnalyserQueue::doAnalysis(TrackPointer tio, Mixxx::AudioSourcePointer pAudi
         // because the finalise functions will take also some time
         //fp div here prevents insane signed overflow
         const auto frameProgress = std::min<double>(double(frameIndex) / double(pAudioSource->getMaxFrameIndex()),1.0);
-        int progressPromille = frameProgress * (1000 - FINALIZE_PROMILLE);
+        int progressPromille = frameProgress * (1.0 - FINALIZE_PROMILLE);
         if (m_progressInfo.track_progress != progressPromille) {
             if (progressUpdateInhibitTimer.elapsed() > 60) {
                 // Inhibit Updates for 60 milliseconds
@@ -296,14 +293,14 @@ void AnalyserQueue::run() {
                 emitUpdateProgress(nextTrack, 0);
             } else {
                 // 100% - FINALIZE_PERCENT finished
-                emitUpdateProgress(nextTrack, 1000 - FINALIZE_PROMILLE);
+                emitUpdateProgress(nextTrack, 1.0 - FINALIZE_PROMILLE);
                 // This takes around 3 sec on a Atom Netbook
                 for(auto itf : m_aq ) itf->finalise(nextTrack);
                 emit(trackDone(nextTrack));
-                emitUpdateProgress(nextTrack, 1000); // 100%
+                emitUpdateProgress(nextTrack, 1.0); // 100%
             }
         } else {
-            emitUpdateProgress(nextTrack, 1000); // 100%
+            emitUpdateProgress(nextTrack, 1.0); // 100%
             qDebug() << "Skipping track analysis because no analyzer initialized.";
         }
         emptyCheck();
@@ -317,13 +314,13 @@ void AnalyserQueue::emptyCheck() {
     if (m_queue_size == 0) { emit(queueEmpty()); }
 }
 // This is called from the AnalyserQueue thread
-void AnalyserQueue::emitUpdateProgress(TrackPointer tio, int progress) {
+void AnalyserQueue::emitUpdateProgress(TrackPointer tio, double progress) {
     if (!m_exit) {
         // First tryAcqire will have always success because sema is initialized with on
         // The following tries will success if the previous signal was processed in the GUI Thread
         // This prevent the AnalysisQueue from filling up the GUI Thread event Queue
         // 100 % is emitted in any case
-        if (progress < 1000 - FINALIZE_PROMILLE && progress > 0) {
+        if (progress < 1.0 - FINALIZE_PROMILLE && progress > 0) {
             // Signals during processing are not required in any case
             if (!m_progressInfo.sema.tryAcquire()) { return; }
         } else { m_progressInfo.sema.acquire(); }
@@ -339,8 +336,8 @@ void AnalyserQueue::slotUpdateProgress() {
         m_progressInfo.current_track->setAnalyserProgress( m_progressInfo.track_progress );
         m_progressInfo.current_track.clear();
     }
-    emit(trackProgress(m_progressInfo.track_progress / 10));
-    if (m_progressInfo.track_progress == 1000) { emit(trackFinished(m_progressInfo.queue_size)); }
+    emit(trackProgress(m_progressInfo.track_progress ));
+    if (m_progressInfo.track_progress == 1) { emit(trackFinished(m_progressInfo.queue_size)); }
     m_progressInfo.sema.release();
 }
 

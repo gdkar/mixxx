@@ -41,11 +41,11 @@ class EngineFilterDelay : public EngineObjectConstIn {
             int delaySourcePos = (m_delayPos + SIZE - m_delaySamples) % SIZE;
 
             DEBUG_ASSERT_AND_HANDLE(delaySourcePos >= 0) {
-                SampleUtil::copy(pOutput, pIn, iBufferSize);
+              std::copy_n(pIn,iBufferSize,pOutput);
                 return;
             }
             DEBUG_ASSERT_AND_HANDLE(delaySourcePos <= static_cast<int>(SIZE)) {
-                SampleUtil::copy(pOutput, pIn, iBufferSize);
+                std::copy_n(pIn,iBufferSize,pOutput);
                 return;
             }
 
@@ -63,25 +63,23 @@ class EngineFilterDelay : public EngineObjectConstIn {
             int oldDelaySourcePos = (m_delayPos + SIZE - m_oldDelaySamples) % SIZE;
 
             DEBUG_ASSERT_AND_HANDLE(delaySourcePos >= 0) {
-                SampleUtil::copy(pOutput, pIn, iBufferSize);
+                std::copy_n(pIn,iBufferSize,pOutput);
                 return;
             }
             DEBUG_ASSERT_AND_HANDLE(delaySourcePos <= static_cast<int>(SIZE)) {
-                SampleUtil::copy(pOutput, pIn, iBufferSize);
+                std::copy_n(pIn,iBufferSize,pOutput);
                 return;
             }
             DEBUG_ASSERT_AND_HANDLE(oldDelaySourcePos >= 0) {
-                SampleUtil::copy(pOutput, pIn, iBufferSize);
+                std::copy_n(pIn,iBufferSize,pOutput);
                 return;
             }
             DEBUG_ASSERT_AND_HANDLE(oldDelaySourcePos <= static_cast<int>(SIZE)) {
-                SampleUtil::copy(pOutput, pIn, iBufferSize);
+                std::copy_n(pIn,iBufferSize,pOutput);
                 return;
             }
-
             double cross_mix = 0.0;
             double cross_inc = 2 / static_cast<double>(iBufferSize);
-
             for (int i = 0; i < iBufferSize; ++i) {
                 // put sample into delay buffer:
                 m_buf[m_delayPos] = pIn[i];

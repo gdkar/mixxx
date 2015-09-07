@@ -111,7 +111,7 @@ class Mad(Feature):
         build.env.Append(CPPDEFINES='__MAD__')
 
     def sources(self, build):
-        return ['sources/soundsourcemp3.cpp']
+        return []
 
 
 class CoreAudio(Feature):
@@ -131,8 +131,7 @@ class CoreAudio(Feature):
         build.env.AppendUnique(FRAMEWORKS=['AudioToolbox', 'CoreFoundation'])
         build.env.Append(CPPDEFINES='__COREAUDIO__')
     def sources(self, build):
-        return ['sources/soundsourcecoreaudio.cpp',
-                '#lib/apple/CAStreamBasicDescription.cpp']
+        return ['#lib/apple/CAStreamBasicDescription.cpp']
 class MediaFoundation(Feature):
     FLAG = 'mediafoundation'
     def description(self): return "Media Foundation AAC Decoder Plugin"
@@ -270,8 +269,8 @@ class ModPlug(Feature):
         if not have_modplug_h: raise Exception('Could not find libmodplug development headers.')
         if not have_modplug: raise Exception('Could not find libmodplug shared library.')
     def sources(self, build):
-        depends.Qt.uic(build)('dlgprefmodplugdlg.ui')
-        return ['sources/soundsourcemodplug.cpp', 'dlgprefmodplug.cpp']
+#        depends.Qt.uic(build)('dlgprefmodplugdlg.ui')
+        return []
 class FAAD(Feature):
     def description(self): return "FAAD AAC audio file decoder plugin"
     def enabled(self, build):
@@ -526,7 +525,7 @@ class Opus(Feature):
         build.env.Append(CPPDEFINES='__OPUS__')
         if build.platform_is_linux or build.platform_is_bsd:
             build.env.ParseConfig('pkg-config opusfile opus --silence-errors --cflags --libs')
-    def sources(self, build): return ['sources/soundsourceopus.cpp']
+    def sources(self, build): return []
 class FFMPEG(Feature):
     def description(self): return "FFmpeg/Avconv support"
     def enabled(self, build):

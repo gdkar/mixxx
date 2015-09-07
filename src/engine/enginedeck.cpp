@@ -24,8 +24,6 @@
 #include "engine/enginevumeter.h"
 #include "engine/enginefilterbessel4.h"
 
-#include "sampleutil.h"
-
 EngineDeck::EngineDeck(const ChannelHandleAndGroup& handle_group,
                        ConfigObject<ConfigValue>* pConfig,
                        EngineMaster* pMixingEngine,
@@ -74,7 +72,7 @@ void EngineDeck::process(CSAMPLE* pOut, const int iBufferSize) {
     // Feed the incoming audio through if passthrough is active
     const CSAMPLE* sampleBuffer = m_sampleBuffer; // save pointer on stack
     if (isPassthroughActive() && sampleBuffer) {
-        SampleUtil::copy(pOut, sampleBuffer, iBufferSize);
+      std::copy_n(sampleBuffer,iBufferSize,pOut);
         m_bPassthroughWasActive = true;
         m_sampleBuffer = NULL;
         m_pPregain->setSpeed(1);
@@ -82,11 +80,10 @@ void EngineDeck::process(CSAMPLE* pOut, const int iBufferSize) {
     } else {
         // If passthrough is no longer enabled, zero out the buffer
         if (m_bPassthroughWasActive) {
-            SampleUtil::clear(pOut, iBufferSize);
+          std::fill_n(pOut,iBufferSize,0);
             m_bPassthroughWasActive = false;
             return;
         }
-
         // Process the raw audio
         m_pBuffer->process(pOut, iBufferSize);
         m_pBuffer->collectFeatures(&features);

@@ -258,16 +258,17 @@ void EngineMaster::processChannels(int iBufferSize) {
       if(activeChannel && activeChannel->m_pChannel)activeChannel->m_pChannel->postProcess(iBufferSize);
     }
 }
+
 void EngineMaster::process(const int iBufferSize) {
-    static bool haveSetName = false;
-    if (!haveSetName) {
-        QThread::currentThread()->setObjectName("Engine");
-        haveSetName = true;
-    }
+    QThread::currentThread()->setObjectName("Engine");
     Trace t("EngineMaster::process");
+
     auto masterEnabled = m_pMasterEnabled->get();
+
     auto headphoneEnabled = m_pHeadphoneEnabled->get();
+
     auto iSampleRate = static_cast<int>(m_pMasterSampleRate->get());
+
     if (m_pEngineEffectsManager) {m_pEngineEffectsManager->onCallbackStart();}
     // Update internal master sync rate.
     m_pMasterSync->onCallbackStart(iSampleRate, iBufferSize);
@@ -299,7 +300,6 @@ void EngineMaster::process(const int iBufferSize) {
                 &m_channelHeadphoneGainCache,
                 m_pHead, iBufferSize);
     }
-
     // Mix all the talkover enabled channels together.
     if (m_bRampingGain) {
         ChannelMixer::mixChannelsRamping(
@@ -479,23 +479,18 @@ void EngineMaster::addChannel(EngineChannel* pChannel) {
 }
 EngineChannel* EngineMaster::getChannel(const QString& group) {
     for ( auto &pChannelInfo : m_channels ){
-      if ( pChannelInfo && pChannelInfo->m_pChannel->getGroup() == group )
-        return pChannelInfo->m_pChannel;
-    }
+      if ( pChannelInfo && pChannelInfo->m_pChannel->getGroup() == group ) return pChannelInfo->m_pChannel; }
     return nullptr;
 }
 const CSAMPLE* EngineMaster::getDeckBuffer(unsigned int i) const {
     return getChannelBuffer(PlayerManager::groupForDeck(i));
 }
 const CSAMPLE* EngineMaster::getOutputBusBuffer(unsigned int i) const {
-    if (i <= EngineChannel::RIGHT) return m_pOutputBusBuffers[i];
-    return nullptr;
+    if (i <= EngineChannel::RIGHT) return m_pOutputBusBuffers[i]; else return nullptr;
 }
 const CSAMPLE* EngineMaster::getChannelBuffer(QString group) const {
-    for ( const auto &pChannelInfo : m_channels ){
-      if ( pChannelInfo->m_pChannel->getGroup() == group )
-        return pChannelInfo->m_pBuffer;
-    }
+    for ( const auto &pChannelInfo : m_channels )
+    {if ( pChannelInfo->m_pChannel->getGroup() == group ) return pChannelInfo->m_pBuffer; }
     return nullptr;
 }
 const CSAMPLE* EngineMaster::buffer(AudioOutput output) const {

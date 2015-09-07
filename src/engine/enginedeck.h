@@ -42,37 +42,27 @@ class EngineDeck : public EngineChannel, public AudioDestination {
                EngineMaster* pMixingEngine, EffectsManager* pEffectsManager,
                EngineChannel::ChannelOrientation defaultOrientation = CENTER);
     virtual ~EngineDeck();
-
     virtual void process(CSAMPLE* pOutput, const int iBufferSize);
     virtual void postProcess(const int iBufferSize);
-
     // TODO(XXX) This hack needs to be removed.
     virtual EngineBuffer* getEngineBuffer();
-
     virtual bool isActive();
-
     // This is called by SoundManager whenever there are new samples from the
     // configured input to be processed. This is run in the callback thread of
     // the soundcard this AudioDestination was registered for! Beware, in the
     // case of multiple soundcards, this method is not re-entrant but it may be
     // concurrent with EngineMaster processing.
-    virtual void receiveBuffer(AudioInput input, const CSAMPLE* pBuffer,
-                               unsigned int nFrames);
-
+    virtual void receiveBuffer(AudioInput input, const CSAMPLE* pBuffer, unsigned int nFrames);
     // Called by SoundManager whenever the passthrough input is connected to a
     // soundcard input.
     virtual void onInputConfigured(AudioInput input);
-
     // Called by SoundManager whenever the passthrough input is disconnected
     // from a soundcard input.
     virtual void onInputUnconfigured(AudioInput input);
-
     // Return whether or not passthrough is active
     bool isPassthroughActive() const;
-
   public slots:
     void slotPassingToggle(double v);
-
   private:
     ConfigObject<ConfigValue>* m_pConfig;
     EngineBuffer* m_pBuffer;
@@ -80,12 +70,10 @@ class EngineDeck : public EngineChannel, public AudioDestination {
     EngineVuMeter* m_pVUMeter;
     EngineEffectsManager* m_pEngineEffectsManager;
     ControlObjectSlave* m_pSampleRate;
-
     // Begin vinyl passthrough fields
     ControlPushButton* m_pPassing;
     const CSAMPLE* volatile m_sampleBuffer;
     bool m_bPassthroughIsActive;
     bool m_bPassthroughWasActive;
 };
-
 #endif

@@ -53,49 +53,15 @@ EngineChannel::~EngineChannel() {
     delete m_pOrientationCenter;
     delete m_pTalkover;
 }
-
-void EngineChannel::setPfl(bool enabled) {
-    m_pPFL->set(enabled ? 1.0 : 0.0);
-}
-
-bool EngineChannel::isPflEnabled() const {
-    return m_pPFL->toBool();
-}
-
-void EngineChannel::setMaster(bool enabled) {
-    m_pMaster->set(enabled ? 1.0 : 0.0);
-}
-
-bool EngineChannel::isMasterEnabled() const {
-    return m_pMaster->toBool();
-}
-
-void EngineChannel::setTalkover(bool enabled) {
-    m_pTalkover->set(enabled ? 1.0 : 0.0);
-}
-
-bool EngineChannel::isTalkoverEnabled() const {
-    return m_pTalkover->toBool();
-}
-
-void EngineChannel::slotOrientationLeft(double v) {
-    if (v > 0) {
-        m_pOrientation->set(LEFT);
-    }
-}
-
-void EngineChannel::slotOrientationRight(double v) {
-    if (v > 0) {
-        m_pOrientation->set(RIGHT);
-    }
-}
-
-void EngineChannel::slotOrientationCenter(double v) {
-    if (v > 0) {
-        m_pOrientation->set(CENTER);
-    }
-}
-
+void EngineChannel::setPfl(bool enabled) { m_pPFL->set(enabled ? 1.0 : 0.0); }
+bool EngineChannel::isPflEnabled() const { return m_pPFL->toBool(); }
+void EngineChannel::setMaster(bool enabled) { m_pMaster->set(enabled ? 1.0 : 0.0); }
+bool EngineChannel::isMasterEnabled() const { return m_pMaster->toBool();  }
+void EngineChannel::setTalkover(bool enabled) { m_pTalkover->set(enabled ? 1.0 : 0.0); }
+bool EngineChannel::isTalkoverEnabled() const { return m_pTalkover->toBool(); }
+void EngineChannel::slotOrientationLeft(double v) { if (v > 0) { m_pOrientation->set(LEFT); } }
+void EngineChannel::slotOrientationRight(double v) { if (v > 0) { m_pOrientation->set(RIGHT); } }
+void EngineChannel::slotOrientationCenter(double v) { if (v > 0) { m_pOrientation->set(CENTER); } }
 EngineChannel::ChannelOrientation EngineChannel::getOrientation() const {
     double dOrientation = m_pOrientation->get();
     if (dOrientation == LEFT) {

@@ -172,18 +172,17 @@ void WOverview::slotWaveformSummaryUpdated() {
     }
 }
 
-void WOverview::slotAnalyserProgress(int progress) {
+void WOverview::slotAnalyserProgress(double progress) {
     if (!m_pCurrentTrack) {
         return;
     }
 
-    double analyserProgress = progress / 1000.0;
-    bool finalizing = progress == 999;
-
+    double analyserProgress = progress;
+    bool finalizing = progress >= 0.998;
     bool updateNeeded = drawNextPixmapPart();
     // progress 0 .. 1000
     if (updateNeeded || (m_dAnalyserProgress != analyserProgress)) {
-        m_dAnalyserProgress = analyserProgress;
+        m_dAnalyserProgress   = analyserProgress;
         m_bAnalyserFinalizing = finalizing;
         update();
     }
@@ -194,8 +193,8 @@ void WOverview::slotLoadNewTrack(TrackPointer pTrack) {
     if (m_pCurrentTrack) {
         disconnect(m_pCurrentTrack.data(), SIGNAL(waveformSummaryUpdated()),
                    this, SLOT(slotWaveformSummaryUpdated()));
-        disconnect(m_pCurrentTrack.data(), SIGNAL(analyserProgress(int)),
-                   this, SLOT(slotAnalyzerProgress(int)));
+        disconnect(m_pCurrentTrack.data(), SIGNAL(analyserProgress(double)),
+                   this, SLOT(slotAnalyzerProgress(double)));
     }
 
     if (m_pWaveformSourceImage) {
@@ -208,16 +207,11 @@ void WOverview::slotLoadNewTrack(TrackPointer pTrack) {
     m_waveformPeak = -1.0;
     m_pixmapDone = false;
     m_trackLoaded = false;
-
     if (pTrack) {
         m_pCurrentTrack = pTrack;
         m_pWaveform = pTrack->getWaveformSummary();
-
-        connect(pTrack.data(), SIGNAL(waveformSummaryUpdated()),
-                this, SLOT(slotWaveformSummaryUpdated()));
-        connect(pTrack.data(), SIGNAL(analyserProgress(int)),
-                this, SLOT(slotAnalyserProgress(int)));
-
+        connect(pTrack.data(), SIGNAL(waveformSummaryUpdated()), this, SLOT(slotWaveformSummaryUpdated()));
+        connect(pTrack.data(), SIGNAL(analyserProgress(double)), this, SLOT(slotAnalyserProgress(double)));
         slotAnalyserProgress(pTrack->getAnalyserProgress());
     }
 }
@@ -234,10 +228,8 @@ void WOverview::slotUnloadTrack(TrackPointer pTrack) {
     // of a track that was already replaced
     //qDebug() << "WOverview::slotUnloadTrack(TrackPointer pTrack)";
     if (pTrack != NULL && pTrack == m_pCurrentTrack) {
-        disconnect(m_pCurrentTrack.data(), SIGNAL(waveformSummaryUpdated()),
-                   this, SLOT(slotWaveformSummaryUpdated()));
-        disconnect(m_pCurrentTrack.data(), SIGNAL(analyserProgress(int)),
-                   this, SLOT(slotAnalyserProgress(int)));
+        disconnect(m_pCurrentTrack.data(), SIGNAL(waveformSummaryUpdated()), this, SLOT(slotWaveformSummaryUpdated()));
+        disconnect(m_pCurrentTrack.data(), SIGNAL(analyserProgress(double)), this, SLOT(slotAnalyserProgress(double)));
 
         m_pCurrentTrack.clear();
         m_pWaveform.clear();

@@ -59,36 +59,17 @@ class EngineMaster : public QObject, public AudioSource {
                  bool bEnableSidechain,
                  bool bRampingGain);
     virtual ~EngineMaster();
-
     // Get access to the sample buffers. None of these are thread safe. Only to
     // be called by SoundManager.
     const CSAMPLE* buffer(AudioOutput output) const;
-
-    inline const QString& getMasterGroup() const {
-        return m_masterHandle.name();
-    }
-
-    inline const QString& getHeadphoneGroup() const {
-        return m_headphoneHandle.name();
-    }
-
-    inline const QString& getBusLeftGroup() const {
-        return m_busLeftHandle.name();
-    }
-
-    inline const QString& getBusCenterGroup() const {
-        return m_busCenterHandle.name();
-    }
-
-    inline const QString& getBusRightGroup() const {
-        return m_busRightHandle.name();
-    }
-
+    inline const QString& getMasterGroup() const { return m_masterHandle.name(); }
+    inline const QString& getHeadphoneGroup() const { return m_headphoneHandle.name(); }
+    inline const QString& getBusLeftGroup() const { return m_busLeftHandle.name(); }
+    inline const QString& getBusCenterGroup() const { return m_busCenterHandle.name(); }
+    inline const QString& getBusRightGroup() const { return m_busRightHandle.name(); }
     ChannelHandleAndGroup registerChannelGroup(const QString& group) {
-        return ChannelHandleAndGroup(
-                m_channelHandleFactory.getOrCreateHandle(group), group);
+        return ChannelHandleAndGroup( m_channelHandleFactory.getOrCreateHandle(group), group);
     }
-
     // WARNING: These methods are called by the main thread. They should only
     // touch the volatile bool connected indicators (see below). However, when
     // these methods are called the callback is guaranteed to be inactive
@@ -96,9 +77,7 @@ class EngineMaster : public QObject, public AudioSource {
     // in the future.
     virtual void onOutputConnected(AudioOutput output);
     virtual void onOutputDisconnected(AudioOutput output);
-
     void process(const int iBufferSize);
-
     // Add an EngineChannel to the mixing engine. This is not thread safe --
     // only call it before the engine has started mixing.
     void addChannel(EngineChannel* pChannel);
@@ -108,21 +87,14 @@ class EngineMaster : public QObject, public AudioSource {
                                             double centerGain,
                                             double rightGain) {
         switch (orientation) {
-            case EngineChannel::LEFT:
-                return leftGain;
-            case EngineChannel::RIGHT:
-                return rightGain;
+            case EngineChannel::LEFT: return leftGain;
+            case EngineChannel::RIGHT: return rightGain;
             case EngineChannel::CENTER:
-            default:
-                return centerGain;
+            default: return centerGain;
         }
     }
-
     // Provide access to the master sync so enginebuffers can know what their rate controller is.
-    EngineSync* getEngineSync() const{
-        return m_pMasterSync;
-    }
-
+    EngineSync* getEngineSync() const{ return m_pMasterSync; }
     // These are really only exposed for tests to use.
     const CSAMPLE* getMasterBuffer() const;
     const CSAMPLE* getHeadphoneBuffer() const;
@@ -130,10 +102,7 @@ class EngineMaster : public QObject, public AudioSource {
     const CSAMPLE* getDeckBuffer(unsigned int i) const;
     const CSAMPLE* getChannelBuffer(QString name) const;
 
-    EngineSideChain* getSideChain() const {
-        return m_pSideChain;
-    }
-
+    EngineSideChain* getSideChain() const { return m_pSideChain; }
     struct ChannelInfo {
         ChannelInfo(int index)
                 : m_pChannel(NULL),
@@ -142,19 +111,18 @@ class EngineMaster : public QObject, public AudioSource {
                   m_pMuteControl(NULL),
                   m_index(index) {
         }
+        ChannelInfo() = default;
         ChannelHandle m_handle;
-        EngineChannel* m_pChannel;
-        CSAMPLE* m_pBuffer;
-        ControlObject* m_pVolumeControl;
-        ControlPushButton* m_pMuteControl;
-        int m_index;
+        EngineChannel* m_pChannel = nullptr;
+        CSAMPLE* m_pBuffer = nullptr;
+        ControlObject* m_pVolumeControl = nullptr;
+        ControlPushButton* m_pMuteControl = nullptr;
+        int m_index = -1;
     };
-
     struct GainCache {
-        CSAMPLE m_gain;
-        bool m_fadeout;
+        CSAMPLE m_gain = 0;
+        bool m_fadeout = false;
     };
-
     class GainCalculator {
       public:
         virtual double getGain(ChannelInfo* pChannelInfo) const = 0;
@@ -186,7 +154,6 @@ class EngineMaster : public QObject, public AudioSource {
                   m_dCenterGain(1.0),
                   m_dRightGain(1.0) {
         }
-
         inline double getGain(ChannelInfo* pChannelInfo) const {
             const double channelVolume = pChannelInfo->m_pVolumeControl->get();
             const double orientationGain = EngineMaster::gainForOrientation(
@@ -194,7 +161,6 @@ class EngineMaster : public QObject, public AudioSource {
                     m_dLeftGain, m_dCenterGain, m_dRightGain);
             return m_dVolume * channelVolume * orientationGain;
         }
-
         inline void setGains(double dVolume, double leftGain,
                 double centerGain, double rightGain) {
             m_dVolume = dVolume;
@@ -202,7 +168,6 @@ class EngineMaster : public QObject, public AudioSource {
             m_dCenterGain = centerGain;
             m_dRightGain = rightGain;
         }
-
       private:
         double m_dVolume;
         double m_dLeftGain;
@@ -214,83 +179,58 @@ class EngineMaster : public QObject, public AudioSource {
       public:
         inline FastVector() : m_size(0), m_data((T*)((void *)m_buffer)) {};
         inline ~FastVector() {
-            if (QTypeInfo<T>::isComplex) {
-                for (int i = 0; i < m_size; ++i) {
-                    m_data[i].~T();
-                }
-            }
+            if (QTypeInfo<T>::isComplex) { for (int i = 0; i < m_size; ++i) { m_data[i].~T(); } }
         }
         inline void append(const T& t) {
-            if (QTypeInfo<T>::isComplex) {
-                new (&m_data[m_size++]) T(t);
-            } else {
-                m_data[m_size++] = t;
-            }
+            if (QTypeInfo<T>::isComplex) { new (&m_data[m_size++]) T(t);}
+            else { m_data[m_size++] = t; }
         };
-        inline const T& operator[](unsigned int i) const {
-            return m_data[i];
-        }
-        inline T& operator[](unsigned int i) {
-            return m_data[i];
-        }
-        inline const T& at(unsigned int i) const {
-            return m_data[i];
-        }
+        inline const T& operator[](unsigned int i) const { return m_data[i]; }
+        inline T& operator[](unsigned int i) {return m_data[i]; }
+        inline const T& at(unsigned int i) const { return m_data[i]; }
         inline void replace(unsigned int i, const T& t) {
             T copy(t);
             m_data[i] = copy;
         }
-        inline int size () const {
-            return m_size;
-        }
+        inline int size () const { return m_size; }
       private:
         int m_size;
         T* const m_data;
         // Using a long double buffer guarantees the alignment for any type
         // but avoids the constructor call T();
-        long double m_buffer[(CAPACITY * sizeof(T) + sizeof(long double) - 1) /
-                             sizeof(long double)];
+        long double m_buffer[(CAPACITY * sizeof(T) + sizeof(long double) - 1) / sizeof(long double)];
     };
-
   protected:
     // The master buffer is protected so it can be accessed by test subclasses.
     CSAMPLE* m_pMaster;
-
   private:
     void mixChannels(unsigned int channelBitvector, unsigned int maxChannels,
                      CSAMPLE* pOutput, unsigned int iBufferSize, GainCalculator* pGainCalculator);
-
     // Processes active channels. The master sync channel (if any) is processed
     // first and all others are processed after. Populates m_activeChannels,
     // m_activeBusChannels, m_activeHeadphoneChannels, and
     // m_activeTalkoverChannels with each channel that is active for the
     // respective output.
     void processChannels(int iBufferSize);
-
     ChannelHandleFactory m_channelHandleFactory;
     EngineEffectsManager* m_pEngineEffectsManager;
     bool m_bRampingGain;
-
     // List of channels added to the engine.
     QVarLengthArray<ChannelInfo*, kPreallocatedChannels> m_channels;
-
     // The previous gain of each channel for each mixing output (master,
     // headphone, talkover).
     QVarLengthArray<GainCache, kPreallocatedChannels> m_channelMasterGainCache;
     QVarLengthArray<GainCache, kPreallocatedChannels> m_channelHeadphoneGainCache;
     QVarLengthArray<GainCache, kPreallocatedChannels> m_channelTalkoverGainCache;
-
     // Pre-allocated buffers for performing channel mixing in the callback.
     QVarLengthArray<ChannelInfo*, kPreallocatedChannels> m_activeChannels;
     QVarLengthArray<ChannelInfo*, kPreallocatedChannels> m_activeBusChannels[3];
     QVarLengthArray<ChannelInfo*, kPreallocatedChannels> m_activeHeadphoneChannels;
     QVarLengthArray<ChannelInfo*, kPreallocatedChannels> m_activeTalkoverChannels;
-
     // Mixing buffers for each output.
     CSAMPLE* m_pOutputBusBuffers[3];
     CSAMPLE* m_pHead;
     CSAMPLE* m_pTalkover;
-
     EngineWorkerScheduler* m_pWorkerScheduler;
     EngineSync* m_pMasterSync;
 
@@ -332,7 +272,6 @@ class EngineMaster : public QObject, public AudioSource {
     const ChannelHandleAndGroup m_busLeftHandle;
     const ChannelHandleAndGroup m_busCenterHandle;
     const ChannelHandleAndGroup m_busRightHandle;
-
     // Produce the Master Mixxx, not Required if connected to left
     // and right Bus and no recording and broadcast active
     ControlObject* m_pMasterEnabled;
@@ -340,8 +279,6 @@ class EngineMaster : public QObject, public AudioSource {
     ControlObject* m_pMasterMonoMixdown;
     ControlObject* m_pMasterTalkoverMix;
     ControlObject* m_pHeadphoneEnabled;
-
-    volatile bool m_bBusOutputConnected[3];
+    bool m_bBusOutputConnected[3];
 };
-
 #endif

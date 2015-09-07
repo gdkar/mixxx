@@ -83,10 +83,6 @@
 #include "vinylcontrol/vinylcontrolmanager.h"
 #endif
 
-#ifdef __MODPLUG__
-#include "dlgprefmodplug.h"
-#endif
-
 // static
 const int MixxxMainWindow::kMicrophoneCount = 4;
 // static
@@ -309,14 +305,6 @@ void MixxxMainWindow::initalize(QApplication* pApp, const CmdlineArgs& args) {
 
     m_pNumDecks = new ControlObjectSlave(ConfigKey("[Master]", "num_decks"));
     m_pNumDecks->connectValueChanged(this, SLOT(slotNumDecksChanged(double)));
-
-#ifdef __MODPLUG__
-    // restore the configuration for the modplug library before trying to load a module
-    DlgPrefModplug* pModplugPrefs = new DlgPrefModplug(0, m_pConfig);
-    pModplugPrefs->loadSettings();
-    pModplugPrefs->applySettings();
-    delete pModplugPrefs; // not needed anymore
-#endif
 
     CoverArtCache::create();
 

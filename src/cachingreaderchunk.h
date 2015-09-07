@@ -1,7 +1,9 @@
 #ifndef CACHINGREADERCHUNK_H
 #define CACHINGREADERCHUNK_H
-
 #include "sources/audiosource.h"
+#include <atomic>
+#include <utility>
+#include <algorithm>
 
 // A Chunk is a memory-resident section of audio that has been cached.
 // Each chunk holds a fixed number kFrames of frames with samples for
@@ -20,102 +22,66 @@ public:
     static const SINT kChannels;
     static const SINT kFrames;
     static const SINT kSamples;
-
     // Returns the corresponding chunk index for a frame index
     inline static SINT indexForFrame(SINT frameIndex) {
         DEBUG_ASSERT(Mixxx::AudioSource::getMinFrameIndex() <= frameIndex);
         const SINT chunkIndex = frameIndex / kFrames;
         return chunkIndex;
     }
-
     // Returns the corresponding chunk index for a frame index
     inline static SINT frameForIndex(SINT chunkIndex) {
         DEBUG_ASSERT(0 <= chunkIndex);
         return chunkIndex * kFrames;
     }
-
     // Converts frames to samples
-    inline static SINT frames2samples(SINT frames) {
-        return frames * kChannels;
-    }
+    inline static SINT frames2samples(SINT frames) { return frames * kChannels; }
     // Converts samples to frames
     inline static SINT samples2frames(SINT samples) {
         DEBUG_ASSERT(0 == (samples % kChannels));
         return samples / kChannels;
     }
-
     // Disable copy and move constructors
     CachingReaderChunk(const CachingReaderChunk&) = delete;
     CachingReaderChunk(CachingReaderChunk&&) = delete;
-
-    SINT getIndex() const {
-        return m_index;
-    }
-
-    bool isValid() const {
-        return 0 <= getIndex();
-    }
-
-    SINT getFrameCount() const {
-        return m_frameCount;
-    }
-
+    virtual SINT getIndex() const { return m_index; }
+    virtual bool isValid() const { return 0 <= getIndex(); }
+    virtual SINT getFrameCount() const { return m_frameCount; }
     // Check if the audio source has sample data available
     // for this chunk.
-    bool isReadable(
-            const Mixxx::AudioSourcePointer& pAudioSource,
-            SINT maxReadableFrameIndex) const;
-
+    virtual bool isReadable( const Mixxx::AudioSourcePointer& pAudioSource, SINT maxReadableFrameIndex) const;
     // Read sample frames from the audio source and return the
     // number of frames that have been read. The in/out parameter
     // pMaxReadableFrameIndex is adjusted if reading fails.
-    SINT readSampleFrames(
-            const Mixxx::AudioSourcePointer& pAudioSource,
-            SINT* pMaxReadableFrameIndex);
-
+    virtual SINT readSampleFrames( const Mixxx::AudioSourcePointer& pAudioSource, SINT* pMaxReadableFrameIndex);
     // Copy sampleCount samples starting at sampleOffset from
     // the chunk's internal buffer into sampleBuffer.
-    void copySamples(
-            CSAMPLE* sampleBuffer,
-            SINT sampleOffset,
-            SINT sampleCount) const;
-
+    void copySamples( CSAMPLE* sampleBuffer, SINT sampleOffset, SINT sampleCount) const;
 protected:
     explicit CachingReaderChunk(CSAMPLE* sampleBuffer);
-    virtual ~CachingReaderChunk();
-
-    void init(SINT index);
-
+    virtual ~CachingReaderChunk() = default;
+    virtual void init(SINT index);
 private:
-    volatile SINT m_index;
-
+    std::atomic<SINT> m_index { 0 };
     // The worker thread will fill the sample buffer and
     // set the frame count.
-    CSAMPLE* const m_sampleBuffer;
-    volatile SINT m_frameCount;
+    CSAMPLE* const m_sampleBuffer = nullptr;
+    std::atomic<SINT> m_frameCount { 0 };
 };
-
 // This derived class is only accessible for the cache as the owner,
 // but not the worker thread. The state READ_PENDING indicates that
 // the worker thread is in control.
 class CachingReaderChunkForOwner: public CachingReaderChunk {
 public:
     explicit CachingReaderChunkForOwner(CSAMPLE* sampleBuffer);
-    virtual ~CachingReaderChunkForOwner();
-
-    void init(SINT index);
-    void free();
-
+    virtual ~CachingReaderChunkForOwner() = default;
+    virtual void init(SINT index);
+    virtual void free();
     enum State {
         FREE,
         READY,
         READ_PENDING
     };
-
-    State getState() const {
-        return m_state;
-    }
-
+    virtual State getState() const { return m_state; }
     // The state is controlled by the cache as the owner of each chunk!
     void giveToWorker() {
         DEBUG_ASSERT(READY == m_state);
@@ -125,27 +91,19 @@ public:
         DEBUG_ASSERT(READ_PENDING == m_state);
         m_state = READY;
     }
-
     // Inserts a chunk into the double-linked list before the
     // given chunk. If the list is currently empty simply pass
     // pBefore = nullptr. Please note that if pBefore points to
     // the head of the current list this chunk becomes the new
     // head of the list.
-    void insertIntoListBefore(
-            CachingReaderChunkForOwner* pBefore);
+    void insertIntoListBefore( CachingReaderChunkForOwner* pBefore);
     // Removes a chunk from the double-linked list and optionally
     // adjusts head/tail pointers. Pass ppHead/ppTail = nullptr if
     // you prefer to adjust those pointers manually.
-    void removeFromList(
-            CachingReaderChunkForOwner** ppHead,
-            CachingReaderChunkForOwner** ppTail);
-
+    void removeFromList( CachingReaderChunkForOwner** ppHead, CachingReaderChunkForOwner** ppTail);
 private:
-    State m_state;
-
-    CachingReaderChunkForOwner* m_pPrev; // previous item in double-linked list
-    CachingReaderChunkForOwner* m_pNext; // next item in double-linked list
+    State m_state = FREE;
+    CachingReaderChunkForOwner* m_pPrev = nullptr; // previous item in double-linked list
+    CachingReaderChunkForOwner* m_pNext = nullptr; // next item in double-linked list
 };
-
-
 #endif // CACHINGREADERCHUNK_H

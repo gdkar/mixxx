@@ -18,6 +18,7 @@
 #ifndef TRACKINFOOBJECT_H
 #define TRACKINFOOBJECT_H
 
+#include <atomic>
 #include <QAtomicInt>
 #include <QDateTime>
 #include <QDomNode>
@@ -48,7 +49,6 @@ typedef QWeakPointer<TrackInfoObject> TrackWeakPointer;
 namespace Mixxx {
     class TrackMetadata;
 }
-
 class TrackInfoObject : public QObject {
     Q_OBJECT
   public:
@@ -65,21 +65,17 @@ class TrackInfoObject : public QObject {
     // Creates a new track given information from the xml file.
     TrackInfoObject(const QDomNode &);
     virtual ~TrackInfoObject();
-
     // Parse file metadata. If no file metadata is present, attempts to extract
     // artist and title information from the filename.
     void parse(bool parseCoverArt);
-
     // Returns the duration in seconds
-    int getDuration() const;
+    double getDuration() const;
     // Set duration in seconds
-    void setDuration(int);
+    void setDuration(double);
     // Returns the duration as a string: H:MM:SS
     QString getDurationStr() const;
-
     // Accessors for various stats of the file on disk. These are auto-populated
     // when the TIO is constructed, or when setLocation() is called.
-
     Q_PROPERTY(QString artist READ getArtist WRITE setArtist)
     Q_PROPERTY(QString title READ getTitle WRITE setTitle)
     Q_PROPERTY(QString album READ getAlbum WRITE setAlbum)
@@ -94,16 +90,13 @@ class TrackInfoObject : public QObject {
     Q_PROPERTY(double bpm READ getBpm WRITE setBpm)
     Q_PROPERTY(QString bpmFormatted READ getBpmStr STORED false)
     Q_PROPERTY(QString key READ getKeyText WRITE setKeyText)
-    Q_PROPERTY(int duration READ getDuration WRITE setDuration)
+    Q_PROPERTY(double duration READ getDuration WRITE setDuration)
     Q_PROPERTY(QString durationFormatted READ getDurationStr STORED false)
-
-
     // Returns absolute path to the file, including the filename.
     QString getLocation() const;
     QString getCanonicalLocation() const;
     QFileInfo getFileInfo() const;
     SecurityTokenPointer getSecurityToken();
-
     // Returns the absolute path to the directory containing the file
     QString getDirectory() const;
     // Returns the filename of the file.
@@ -113,11 +106,10 @@ class TrackInfoObject : public QObject {
     // Returns whether the file exists on disk or not. Updated as of the time
     // the TrackInfoObject is created, or when setLocation() is called.
     bool exists() const;
-
     // Returns ReplayGain
-    float getReplayGain() const;
+    double getReplayGain() const;
     // Set ReplayGain
-    void setReplayGain(float);
+    void setReplayGain(double);
     // Returns BPM
     double getBpm() const;
     // Set BPM
@@ -154,18 +146,14 @@ class TrackInfoObject : public QObject {
     int getChannels() const;
     // Output a formatted string with all the info
     QString getInfo() const;
-
     QDateTime getDateAdded() const;
     void setDateAdded(const QDateTime& dateAdded);
-
     // Returns file modified datetime. Limited by the accuracy of what Qt
     // QFileInfo gives us.
     QDateTime getFileModifiedTime() const;
-
     // Returns file creation datetime. Limited by the accuracy of what Qt
     // QFileInfo gives us.
     QDateTime getFileCreationTime() const;
-
     // Getter/Setter methods for metadata
     // Return title
     QString getTitle() const;
@@ -215,86 +203,64 @@ class TrackInfoObject : public QObject {
     void setPlayedAndUpdatePlaycount(bool);
     // Set played status without affecting the playcount
     void setPlayed(bool bPlayed);
-
     TrackId getId() const;
-
     // Returns rating
     int getRating() const;
     // Sets rating
     void setRating(int);
-
     // Get URL for track
-    QString getURL();
+    QString getURL() const;
     // Set URL for track
     void setURL(const QString& url);
-
-    ConstWaveformPointer getWaveform();
+    ConstWaveformPointer getWaveform() const;
     void setWaveform(ConstWaveformPointer pWaveform);
-
     ConstWaveformPointer getWaveformSummary() const;
     void setWaveformSummary(ConstWaveformPointer pWaveform);
-
-    void setAnalyserProgress(int progress);
-    int getAnalyserProgress() const;
-
+    void setAnalyserProgress(double progress);
+    double getAnalyserProgress() const;
     /** Save the cue point (in samples... I think) */
-    void setCuePoint(float cue);
+    void setCuePoint(double cue);
     // Get saved the cue point
-    float getCuePoint();
-
+    double getCuePoint() const;
     // Calls for managing the track's cue points
     Cue* addCue();
     void removeCue(Cue* cue);
     const QList<Cue*>& getCuePoints();
     void setCuePoints(QList<Cue*> cuePoints);
-
     bool isDirty();
-
     // Returns true if the track location has changed
     bool locationChanged();
-
     // Set the track's full file path
     void setLocation(const QString& location);
-
     // Get the track's Beats list
     BeatsPointer getBeats() const;
-
     // Set the track's Beats
     void setBeats(BeatsPointer beats);
-
     void setKeys(Keys keys);
     const Keys& getKeys() const;
     double getNumericKey() const;
     mixxx::track::io::key::ChromaticKey getKey() const;
     QString getKeyText() const;
-    void setKey(mixxx::track::io::key::ChromaticKey key,
-                mixxx::track::io::key::Source source);
-    void setKeyText(QString key,
-                    mixxx::track::io::key::Source source=mixxx::track::io::key::USER);
-
+    void setKey(mixxx::track::io::key::ChromaticKey key, mixxx::track::io::key::Source source);
+    void setKeyText(QString key, mixxx::track::io::key::Source source=mixxx::track::io::key::USER);
     void setCoverInfo(const CoverInfo& cover);
     CoverInfo getCoverInfo() const;
-
     void setCoverArt(const CoverArt& cover);
     CoverArt getCoverArt() const;
-
     // Called when the shared pointer reference count for a library TrackPointer
     // drops to zero.
+  public slots:
     static void onTrackReferenceExpired(TrackInfoObject* pTrack);
-
     // Set whether the track should delete itself when its reference count drops
     // to zero. This happens during shutdown when TrackDAO has already been
     // destroyed.
     void setDeleteOnReferenceExpiration(bool deleteOnReferenceExpiration);
-
-  public slots:
     void slotCueUpdated();
-
   signals:
     void waveformUpdated();
     void waveformSummaryUpdated();
     void coverArtUpdated();
-    void analyserProgress(int progress);
+    void analyserProgress(double progress);
     void bpmUpdated(double bpm);
     void beatsUpdated();
     void keyUpdated(double key);
@@ -305,41 +271,30 @@ class TrackInfoObject : public QObject {
     void dirty(TrackInfoObject* pTrack);
     void clean(TrackInfoObject* pTrack);
     void referenceExpired(TrackInfoObject* pTrack);
-
   private slots:
     void slotBeatsUpdated();
-
   private:
     // Common initialization function between all TIO constructors.
     void initialize(bool parseHeader, bool parseCoverArt);
-
     void setMetadata(const Mixxx::TrackMetadata& trackMetadata);
     void getMetadata(Mixxx::TrackMetadata* pTrackMetadata);
-
     // Set whether the TIO is dirty not. This should never be called except by
     // TIO local methods or the TrackDAO.
     void setDirty(bool bDirty);
-
     // Set a unique identifier for the track. Only used by services like
     // TrackDAO
     void setId(TrackId id);
-
     // Whether the track should delete itself when its reference count drops to
     // zero. Used for cleaning up after shutdown.
-    volatile bool m_bDeleteOnReferenceExpiration;
-
+    std::atomic<bool> m_bDeleteOnReferenceExpiration{false};
     // Flag that indicates whether or not the TIO has changed. This is used by
     // TrackDAO to determine whether or not to write the Track back.
-    bool m_bDirty;
-
+    std::atomic<bool> m_bDirty{false};
     // Special flag for telling if the track location was changed.
-    bool m_bLocationChanged;
-
+    std::atomic<bool> m_bLocationChanged{false};
     // The file
     QFileInfo m_fileInfo;
-
     SecurityTokenPointer m_pSecurityToken;
-
     // Metadata
     // Album
     QString m_sAlbum;
@@ -359,8 +314,6 @@ class TrackInfoObject : public QObject {
     QString m_sYear;
     // Track Number
     QString m_sTrackNumber;
-
-
     // File type
     QString m_sType;
     // User comment
@@ -368,52 +321,43 @@ class TrackInfoObject : public QObject {
     // URL (used in promo track)
     QString m_sURL;
     // Duration of track in seconds
-    int m_iDuration;
+    std::atomic<double> m_dDuration{0};
     // Sample rate
-    int m_iSampleRate;
+    std::atomic<int> m_iSampleRate{0};
     // Number of channels
-    int m_iChannels;
+    std::atomic<int> m_iChannels{0};
     // Track rating
-    int m_Rating;
+    std::atomic<int> m_Rating{0};
     // Bitrate, number of kilobits per second of audio in the track
-    int m_iBitrate;
+    std::atomic<int> m_iBitrate{0};
     // Number of times the track has been played
-    int m_iTimesPlayed;
+    std::atomic<int> m_iTimesPlayed{0};
     // Replay Gain volume
-    float m_fReplayGain;
+    std::atomic<double>  m_dReplayGain{0};
     // Has this track been played this sessions?
-    bool m_bPlayed;
+    std::atomic<bool> m_bPlayed{false};
     // True if header was parsed
-    bool m_bHeaderParsed;
+    std::atomic<bool> m_bHeaderParsed{false};
     // Id. Unique ID of track
     TrackId m_id;
     // Cue point in samples or something
-    float m_fCuePoint;
+    std::atomic<double> m_dCuePoint{0.0};
     // Date the track was added to the library
     QDateTime m_dateAdded;
-
     Keys m_keys;
-
     // BPM lock
-    bool m_bBpmLock;
-
+    std::atomic<bool> m_bBpmLock{false};
     // The list of cue points for the track
     QList<Cue*> m_cuePoints;
-
     // Mutex protecting access to object
-    mutable QMutex m_qMutex;
-
+    mutable QMutex m_qMutex{QMutex::Recursive};
     // Storage for the track's beats
-    BeatsPointer m_pBeats;
-
+    BeatsPointer m_pBeats{nullptr};
     //Visual waveform data
-    ConstWaveformPointer m_waveform;
-    ConstWaveformPointer m_waveformSummary;
-
-    QAtomicInt m_analyserProgress; // in 0.1%
-
+    ConstWaveformPointer m_waveform{nullptr};
+    ConstWaveformPointer m_waveformSummary{nullptr};
+    std::atomic<double>  m_analyserProgress{-1}; // in 0.1%
     CoverArt m_coverArt;
-
     friend class TrackDAO;
     friend class AutoDJProcessorTest;
 };

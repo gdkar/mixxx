@@ -76,12 +76,8 @@ SoundDeviceError SoundDevice::addInput(const AudioInputBuffer &in) {
     return SOUNDDEVICE_ERROR_OK;
 }
 void SoundDevice::clearInputs() {m_audioInputs.clear();}
-bool SoundDevice::operator==(const SoundDevice &other) const {
-    return getInternalName() == other.getInternalName();
-}
-bool SoundDevice::operator==(const QString &other) const {
-    return getInternalName() == other;
-}
+bool SoundDevice::operator==(const SoundDevice &other) const { return getInternalName() == other.getInternalName(); }
+bool SoundDevice::operator==(const QString &other) const { return getInternalName() == other; }
 void SoundDevice::composeOutputBuffer(CSAMPLE* outputBuffer,
                                       const unsigned int framesToCompose,
                                       const unsigned int framesReadOffset,
@@ -89,11 +85,9 @@ void SoundDevice::composeOutputBuffer(CSAMPLE* outputBuffer,
     //qDebug() << "SoundDevice::composeOutputBuffer()"
     //         << device->getInternalName()
     //         << framesToCompose << iFrameSize;
-
     // Interlace Audio data onto portaudio buffer.  We iterate through the
     // source list to find out what goes in the buffer data is interlaced in
     // the order of the list
-
     if (iFrameSize == 2 && m_audioOutputs.size() == 1 &&
             m_audioOutputs.at(0).getChannelGroup().getChannelCount() == 2) {
         // Special case for one stereo device only
@@ -107,7 +101,6 @@ void SoundDevice::composeOutputBuffer(CSAMPLE* outputBuffer,
             const auto outChans = out.getChannelGroup();
             const auto iChannelCount = outChans.getChannelCount();
             const auto iChannelBase = outChans.getChannelBase();
-
             const auto pAudioOutputBuffer =&out.getBuffer()[framesReadOffset*2];
             // advanced to offset; pAudioOutputBuffer is always stereo
             if (iChannelCount == 1) {
@@ -130,7 +123,6 @@ void SoundDevice::composeOutputBuffer(CSAMPLE* outputBuffer,
                     for (auto iChannel = 0; iChannel < iChannelCount; ++iChannel) {
                         outputBuffer[iFrameBase + iChannelBase + iChannel] =
                                 SampleUtil::clampSample(pAudioOutputBuffer[iLocalFrameBase + iChannel]);
-
                         // Input audio pass-through (useful for debugging)
                         //if (in)
                         //    output[iFrameBase + src.channelBase + iChannel] =
@@ -164,8 +156,8 @@ void SoundDevice::composeInputBuffer(const CSAMPLE* inputBuffer,
         }
     } else if (iFrameSize == 2 && m_audioInputs.size() == 1 && m_audioInputs.at(0).getChannelGroup().getChannelCount() == 2) {
         // One stereo device only
-        const AudioInputBuffer& in = m_audioInputs.at(0);
-        CSAMPLE* pInputBuffer = in.getBuffer(); // Always Stereo
+        const auto& in = m_audioInputs.at(0);
+        auto pInputBuffer = in.getBuffer(); // Always Stereo
         pInputBuffer = &pInputBuffer[framesWriteOffset * 2];
         SampleUtil::copy(pInputBuffer, inputBuffer, framesToPush * 2);
     } else {
@@ -179,8 +171,8 @@ void SoundDevice::composeInputBuffer(const CSAMPLE* inputBuffer,
             for (unsigned int iFrameNo = 0; iFrameNo < framesToPush; ++iFrameNo) {
                 // iFrameBase is the "base sample" in a frame (ie. the first
                 // sample in a frame)
-                unsigned int iFrameBase = iFrameNo * iFrameSize;
-                unsigned int iLocalFrameBase = iFrameNo * 2;
+                auto iFrameBase = iFrameNo * iFrameSize;
+                auto iLocalFrameBase = iFrameNo * 2;
                 if (iChannelCount == 1) {
                     pInputBuffer[iLocalFrameBase]     = inputBuffer[iFrameBase + iChannelBase];
                     pInputBuffer[iLocalFrameBase + 1] = inputBuffer[iFrameBase + iChannelBase];
@@ -192,7 +184,6 @@ void SoundDevice::composeInputBuffer(const CSAMPLE* inputBuffer,
         }
     }
 }
-
 void SoundDevice::clearInputBuffer(const unsigned int framesToPush,const unsigned int framesWriteOffset) {
     for ( auto &in : m_audioInputs ){
       auto pInputBuffer = in.getBuffer();

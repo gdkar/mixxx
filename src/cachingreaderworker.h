@@ -6,6 +6,7 @@
 #include <QSemaphore>
 #include <QThread>
 #include <QString>
+#include <atomic>
 
 #include "cachingreaderchunk.h"
 #include "trackinfoobject.h"
@@ -53,61 +54,45 @@ typedef struct ReaderStatusUpdate {
 
 class CachingReaderWorker : public EngineWorker {
     Q_OBJECT
-
   public:
     // Construct a CachingReader with the given group.
     CachingReaderWorker(QString group,
             FIFO<CachingReaderChunkReadRequest>* pChunkReadRequestFIFO,
             FIFO<ReaderStatusUpdate>* pReaderStatusFIFO);
     virtual ~CachingReaderWorker();
-
     // Request to load a new track. wake() must be called afterwards.
     virtual void newTrack(TrackPointer pTrack);
-
     // Run upkeep operations like loading tracks and reading from file. Run by a
     // thread pool via the EngineWorkerScheduler.
     virtual void run();
-
     void quitWait();
-
   signals:
     // Emitted once a new track is loaded and ready to be read from.
     void trackLoading();
     void trackLoaded(TrackPointer pTrack, int iSampleRate, int iNumSamples);
     void trackLoadFailed(TrackPointer pTrack, QString reason);
-
   private:
     QString m_group;
     QString m_tag;
-
     // Thread-safe FIFOs for communication between the engine callback and
     // reader thread.
     FIFO<CachingReaderChunkReadRequest>* m_pChunkReadRequestFIFO;
     FIFO<ReaderStatusUpdate>* m_pReaderStatusFIFO;
-
     // Queue of Tracks to load, and the corresponding lock. Must acquire the
     // lock to touch.
     QMutex m_newTrackMutex;
     TrackPointer m_newTrack;
-
     // Internal method to load a track. Emits trackLoaded when finished.
     void loadTrack(const TrackPointer& pTrack);
-
-    ReaderStatusUpdate processReadRequest(
-            const CachingReaderChunkReadRequest& request);
-
+    ReaderStatusUpdate processReadRequest( const CachingReaderChunkReadRequest& request);
     // The current audio source of the track loaded
     Mixxx::AudioSourcePointer m_pAudioSource;
-
     // The maximum readable frame index of the AudioSource. Might
     // be adjusted when decoding errors occur to prevent reading
     // the same chunk(s) over and over again.
     // This frame index references the frame that follows the
     // last frame with readable sample data.
     SINT m_maxReadableFrameIndex;
-
-    QAtomicInt m_stop;
+    std::atomic<bool> m_stop;
 };
-
-
 #endif /* CACHINGREADERWORKER_H */

@@ -199,8 +199,7 @@ void PlayerManager::addDeckInner() {
     if (number % 2 == 0) {orientation = EngineChannel::RIGHT;}
     auto pDeck = new Deck(this, m_pConfig, m_pEngine, m_pEffectsManager,orientation, group);
     if (m_pAnalyserQueue) {
-        connect(pDeck, SIGNAL(newTrackLoaded(TrackPointer)),
-                m_pAnalyserQueue, SLOT(slotAnalyseTrack(TrackPointer)));
+        connect(pDeck, SIGNAL(newTrackLoaded(TrackPointer)),m_pAnalyserQueue, SLOT(slotAnalyseTrack(TrackPointer)));
     }
     m_players[group] = pDeck;
     m_decks.append(pDeck);
@@ -309,15 +308,9 @@ void PlayerManager::slotLoadToPlayer(QString location, QString group) {
     // track via slotLoadTrackToPlayer.
     emit(loadLocationToPlayer(location, group));
 }
-void PlayerManager::slotLoadToDeck(QString location, int deck) {
-    slotLoadToPlayer(location, groupForDeck(deck-1));
-}
-void PlayerManager::slotLoadToPreviewDeck(QString location, int previewDeck) {
-    slotLoadToPlayer(location, groupForPreviewDeck(previewDeck-1));
-}
-void PlayerManager::slotLoadToSampler(QString location, int sampler) {
-    slotLoadToPlayer(location, groupForSampler(sampler-1));
-}
+void PlayerManager::slotLoadToDeck(QString location, int deck) { slotLoadToPlayer(location, groupForDeck(deck-1)); }
+void PlayerManager::slotLoadToPreviewDeck(QString location, int previewDeck) { slotLoadToPlayer(location, groupForPreviewDeck(previewDeck-1)); }
+void PlayerManager::slotLoadToSampler(QString location, int sampler) { slotLoadToPlayer(location, groupForSampler(sampler-1)); }
 void PlayerManager::slotLoadTrackIntoNextAvailableDeck(TrackPointer pTrack) {
     QMutexLocker locker(&m_mutex);
     for(auto & pDeck : m_decks ){

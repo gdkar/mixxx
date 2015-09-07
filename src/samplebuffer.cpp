@@ -1,21 +1,7 @@
 #include "samplebuffer.h"
-
-#include "sampleutil.h"
-
 SampleBuffer::SampleBuffer(SINT size)
-        : m_data(SampleUtil::alloc(size)),
-          m_size(m_data ? size : 0) {
-}
-
-SampleBuffer::~SampleBuffer() {
-    SampleUtil::free(m_data);
-}
-
-void SampleBuffer::clear() {
-    SampleUtil::clear(data(), size());
-}
-
+        : m_data(std::make_unique<CSAMPLE[]>(size)),
+          m_size(m_data ? size : 0) {}
+void SampleBuffer::clear() { std::fill(data(),data()+size(),0); }
 // Fills the whole buffer with the same value
-void SampleBuffer::fill(CSAMPLE value) {
-    SampleUtil::fill(data(), value, size());
-}
+void SampleBuffer::fill(CSAMPLE value) { std::fill(data(),data()+size(),value); }

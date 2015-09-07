@@ -36,7 +36,7 @@ class AnalyserQueue : public QThread {
     void slotUpdateProgress();
 
   signals:
-    void trackProgress(int progress);
+    void trackProgress(double  progress);
     void trackDone(TrackPointer track);
     void trackFinished(int size);
     // Signals from AnalyserQueue Thread:
@@ -50,7 +50,7 @@ class AnalyserQueue : public QThread {
 
     struct progress_info {
         TrackPointer current_track;
-        int track_progress; // in 0.1 %
+        double track_progress; // in 0.1 %
         int queue_size;
         QSemaphore sema;
     };
@@ -62,7 +62,7 @@ class AnalyserQueue : public QThread {
     bool isLoadedTrackWaiting(TrackPointer analysingTrack);
     TrackPointer dequeueNextBlocking();
     bool doAnalysis(TrackPointer tio, Mixxx::AudioSourcePointer pAudioSource);
-    void emitUpdateProgress(TrackPointer tio, int progress);
+    void emitUpdateProgress(TrackPointer tio, double progress);
     void emptyCheck();
 
     bool m_exit;

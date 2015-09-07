@@ -126,7 +126,7 @@ class OggVorbis(Dependence):
                     'Did not find libvorbisenc.a, libvorbisenc.lib, or the libvorbisenc development headers.')
 
     def sources(self, build):
-        return ['sources/soundsourceoggvorbis.cpp']
+        return []
 
 class SndFile(Dependence):
     def configure(self, build, conf):
@@ -138,7 +138,7 @@ class SndFile(Dependence):
         build.env.Append(CPPDEFINES='__SNDFILE__')
 
     def sources(self, build):
-        return ['sources/soundsourcesndfile.cpp']
+        return []
 
 
 class FLAC(Dependence):
@@ -148,12 +148,10 @@ class FLAC(Dependence):
         libs = ['libFLAC', 'FLAC']
         if not conf.CheckLib(libs):
             raise Exception('Did not find libFLAC development libraries')
-
         if build.platform_is_windows and build.static_dependencies:
             build.env.Append(CPPDEFINES='FLAC__NO_DLL')
-
     def sources(self, build):
-        return ['sources/soundsourceflac.cpp',]
+        return []
 
 
 class Qt(Dependence):
@@ -904,7 +902,6 @@ class MixxxCore(Feature):
 
                    "sampleutil.cpp",
                    "samplebuffer.cpp",
-                   "singularsamplebuffer.cpp",
 
                    "trackinfoobject.cpp",
                    "track/beatgrid.cpp",
