@@ -1,5 +1,5 @@
 #include "controllers/controlpickermenu.h"
-
+#include "controlobject.h"
 #include "vinylcontrol/defs_vinylcontrol.h"
 #include "playermanager.h"
 #include "engine/cuecontrol.h"

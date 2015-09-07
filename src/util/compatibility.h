@@ -30,5 +30,4 @@ inline QLocale inputLocale() {
             QLocale(QLocale::English);
 #endif
 }
-
 #endif /* COMPATABILITY_H */

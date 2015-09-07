@@ -23,7 +23,6 @@
 #include <atomic>
 #include <memory>
 #include "sounddevice.h"
-#include "controlobjectslave.h"
 #define CPU_USAGE_UPDATE_RATE 30 // in 1/s, fits to display frame rate
 #define CPU_OVERLOAD_DURATION 500 // in ms
 
@@ -84,9 +83,9 @@ class SoundDevicePortAudio : public SoundDevice {
     QString m_lastError;
     // Whether we have set the thread priority to realtime or not.
     bool m_bSetThreadPriority = false;
-    std::unique_ptr<ControlObjectSlave> m_pMasterAudioLatencyOverloadCount {nullptr};
-    std::unique_ptr<ControlObjectSlave> m_pMasterAudioLatencyUsage         {nullptr};
-    std::unique_ptr<ControlObjectSlave> m_pMasterAudioLatencyOverload      {nullptr};
+    std::unique_ptr<ControlObjectSlave> m_pMasterAudioLatencyOverloadCount;
+    std::unique_ptr<ControlObjectSlave> m_pMasterAudioLatencyUsage        ;
+    std::unique_ptr<ControlObjectSlave> m_pMasterAudioLatencyOverload     ;
     int m_underflowUpdateCount = 0;
     std::atomic<int> m_underflowCount {0};
     std::atomic<int> m_overflowCount  {0};

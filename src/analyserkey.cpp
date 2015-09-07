@@ -11,9 +11,6 @@ using mixxx::track::io::key::ChromaticKey_IsValid;
 
 AnalyserKey::AnalyserKey(ConfigObject<ConfigValue>* pConfig)
         : m_pConfig(pConfig),
-          m_pVamp(NULL),
-          m_iSampleRate(0),
-          m_iTotalSamples(0),
           m_bPreferencesKeyDetectionEnabled(true),
           m_bPreferencesFastAnalysisEnabled(false),
           m_bPreferencesReanalyzeEnabled(false) {
@@ -29,11 +26,11 @@ bool AnalyserKey::initialise(TrackPointer tio, int sampleRate, int totalSamples)
     }
     m_bPreferencesFastAnalysisEnabled = static_cast<bool>(
         m_pConfig->getValueString(ConfigKey(KEY_CONFIG_KEY, KEY_FAST_ANALYSIS)).toInt());
-    QString library = m_pConfig->getValueString(
+    auto library = m_pConfig->getValueString(
         ConfigKey(VAMP_CONFIG_KEY, VAMP_ANALYSER_KEY_LIBRARY),
         // TODO(rryan) this default really doesn't belong here.
         "libmixxxminimal");
-    QString pluginID = m_pConfig->getValueString(
+    auto pluginID = m_pConfig->getValueString(
         ConfigKey(VAMP_CONFIG_KEY, VAMP_ANALYSER_KEY_PLUGIN_ID),
         // TODO(rryan) this default really doesn't belong here.
         VAMP_ANALYSER_KEY_DEFAULT_PLUGIN_ID);
@@ -41,12 +38,10 @@ bool AnalyserKey::initialise(TrackPointer tio, int sampleRate, int totalSamples)
     m_iSampleRate = sampleRate;
     m_iTotalSamples = totalSamples;
     // if we can't load a stored track reanalyze it
-    bool bShouldAnalyze = !loadStored(tio);
+    auto bShouldAnalyze = !loadStored(tio);
     if (bShouldAnalyze) {
         m_pVamp = new VampAnalyser();
-        bShouldAnalyze = m_pVamp->Init(
-            library, m_pluginId, sampleRate, totalSamples,
-            m_bPreferencesFastAnalysisEnabled);
+        bShouldAnalyze = m_pVamp->Init(library, m_pluginId, sampleRate, totalSamples,m_bPreferencesFastAnalysisEnabled);
         if (!bShouldAnalyze) {
             delete m_pVamp;
             m_pVamp = nullptr;
@@ -56,26 +51,22 @@ bool AnalyserKey::initialise(TrackPointer tio, int sampleRate, int totalSamples)
     else {qDebug() << "Key calculation will not start.";}
     return bShouldAnalyze;
 }
-
 bool AnalyserKey::loadStored(TrackPointer tio) const {
-    bool bPreferencesFastAnalysisEnabled = static_cast<bool>(
+    auto bPreferencesFastAnalysisEnabled = static_cast<bool>(
         m_pConfig->getValueString(ConfigKey(KEY_CONFIG_KEY, KEY_FAST_ANALYSIS)).toInt());
-    QString library = m_pConfig->getValueString(ConfigKey(VAMP_CONFIG_KEY, VAMP_ANALYSER_KEY_LIBRARY));
-    QString pluginID = m_pConfig->getValueString(ConfigKey(VAMP_CONFIG_KEY, VAMP_ANALYSER_KEY_PLUGIN_ID));
+    auto library = m_pConfig->getValueString(ConfigKey(VAMP_CONFIG_KEY, VAMP_ANALYSER_KEY_LIBRARY));
+    auto pluginID = m_pConfig->getValueString(ConfigKey(VAMP_CONFIG_KEY, VAMP_ANALYSER_KEY_PLUGIN_ID));
     // TODO(rryan): This belongs elsewhere.
     if (library.isEmpty() || library.isNull())   library = "libmixxxminimal";
     // TODO(rryan): This belongs elsewhere.
     if (pluginID.isEmpty() || pluginID.isNull()) pluginID = VAMP_ANALYSER_KEY_DEFAULT_PLUGIN_ID;
-
-    const Keys& keys = tio->getKeys();
+    const auto& keys = tio->getKeys();
     if (keys.isValid()) {
-        QString version = keys.getVersion();
-        QString subVersion = keys.getSubVersion();
-
+        auto version = keys.getVersion();
+        auto subVersion = keys.getSubVersion();
         auto extraVersionInfo = getExtraVersionInfo(pluginID, bPreferencesFastAnalysisEnabled);
-        QString newVersion = KeyFactory::getPreferredVersion();
-        QString newSubVersion = KeyFactory::getPreferredSubVersion(extraVersionInfo);
-
+        auto newVersion = KeyFactory::getPreferredVersion();
+        auto newSubVersion = KeyFactory::getPreferredSubVersion(extraVersionInfo);
         if (version == newVersion && subVersion == newSubVersion) {
             // If the version and settings have not changed then if the world is
             // sane, re-analyzing will do nothing.
@@ -94,10 +85,9 @@ bool AnalyserKey::loadStored(TrackPointer tio) const {
         return false;
     }
 }
-
 void AnalyserKey::process(const CSAMPLE *pIn, const int iLen) {
     if (m_pVamp == nullptr) return;
-    bool success = m_pVamp->Process(pIn, iLen);
+    auto success = m_pVamp->Process(pIn, iLen);
     if (!success) {
         delete m_pVamp;
         m_pVamp = nullptr;
@@ -107,13 +97,12 @@ void AnalyserKey::cleanup(TrackPointer ) {
     delete m_pVamp;
     m_pVamp = nullptr;
 }
-
 void AnalyserKey::finalise(TrackPointer tio) {
     if (m_pVamp == nullptr) { return;}
     auto success = m_pVamp->End();
     qDebug() << "Key Detection" << (success ? "complete" : "failed");
-    QVector<double> frames = m_pVamp->GetInitFramesVector();
-    QVector<double> keys = m_pVamp->GetLastValuesVector();
+    auto frames = m_pVamp->GetInitFramesVector();
+    auto keys = m_pVamp->GetLastValuesVector();
     delete m_pVamp;
     m_pVamp = nullptr;
     if (frames.size() == 0 || frames.size() != keys.size()) {
@@ -129,7 +118,7 @@ void AnalyserKey::finalise(TrackPointer tio) {
         }
     }
     auto extraVersionInfo = getExtraVersionInfo(m_pluginId, m_bPreferencesFastAnalysisEnabled);
-    Keys track_keys = KeyFactory::makePreferredKeys(key_changes, extraVersionInfo,m_iSampleRate, m_iTotalSamples);
+    auto track_keys = KeyFactory::makePreferredKeys(key_changes, extraVersionInfo,m_iSampleRate, m_iTotalSamples);
     tio->setKeys(track_keys);
 }
 // static

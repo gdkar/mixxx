@@ -23,7 +23,6 @@
 
 #include "ui_dlgprefeqdlg.h"
 #include "configobject.h"
-#include "controlobjectslave.h"
 #include "preferences/dlgpreferencepage.h"
 #include "effects/effectsmanager.h"
 #include "effects/effectrack.h"
@@ -31,6 +30,7 @@
 /**
   *@author John Sully
   */
+class ControlObjectSlave;
 class DlgPrefEQ : public DlgPreferencePage, public Ui::DlgPrefEQDlg  {
     Q_OBJECT
   public:
@@ -78,8 +78,8 @@ class DlgPrefEQ : public DlgPreferencePage, public Ui::DlgPrefEQDlg  {
     void setUpMasterEQ();
     void applySelections();
 
-    ControlObjectSlave m_COLoFreq;
-    ControlObjectSlave m_COHiFreq;
+    ControlObjectSlave* m_COLoFreq;
+    ControlObjectSlave* m_COHiFreq;
     ConfigObject<ConfigValue>* m_pConfig;
     double m_lowEqFreq, m_highEqFreq;
 

@@ -5,7 +5,7 @@
 #include "util/timer.h"
 
 ImportFilesTask::ImportFilesTask(LibraryScanner* pScanner,
-                                 const ScannerGlobalPointer scannerGlobal,
+                                 ScannerGlobalPointer scannerGlobal,
                                  const QString& dirPath,
                                  const bool prevHashExists,
                                  const int newHash,
@@ -18,17 +18,15 @@ ImportFilesTask::ImportFilesTask(LibraryScanner* pScanner,
           m_possibleCovers(possibleCovers),
           m_pToken(pToken) {
 }
-
 void ImportFilesTask::run() {
     ScopedTimer timer("ImportFilesTask::run");
-    foreach (const QFileInfo& file, m_filesToImport) {
+    for(auto & file: m_filesToImport) {
         // If a flag was raised telling us to cancel the library scan then stop.
         if (m_scannerGlobal->shouldCancel()) {
             setSuccess(false);
             return;
         }
-
-        QString filePath = file.filePath();
+        auto filePath = file.filePath();
         //qDebug() << "ImportFilesTask::run" << filePath;
 
         // If the file does not exist in the database then add it. If it
@@ -46,19 +44,13 @@ void ImportFilesTask::run() {
             // without checking if we have cover art that is USER_SELECTED. If
             // this changes in the future you MUST check that the cover art is
             // not USER_SELECTED first.
-            TrackPointer pTrack = TrackPointer(
-                new TrackInfoObject(filePath, m_pToken, true, true));
-
+            auto pTrack = TrackPointer( new TrackInfoObject(filePath, m_pToken, true, true));
             // If cover art is not found in the track metadata, populate from
             // possibleCovers.
             if (pTrack->getCoverArt().image.isNull()) {
-                CoverArt art = CoverArtUtils::selectCoverArtForTrack(
-                    pTrack.data(), m_possibleCovers);
-                if (!art.image.isNull()) {
-                    pTrack->setCoverArt(art);
-                }
+                CoverArt art = CoverArtUtils::selectCoverArtForTrack( pTrack.data(), m_possibleCovers);
+                if (!art.image.isNull()) { pTrack->setCoverArt(art); }
             }
-
             emit(addNewTrack(pTrack));
         }
     }

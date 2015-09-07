@@ -3,7 +3,9 @@
 #include "effects/effectsmanager.h"
 #include "effects/effectchainmanager.h"
 #include "engine/effects/engineeffectrack.h"
-
+#include "control/control.h"
+#include "controlobjectslave.h"
+#include "controlobject.h"
 EffectRack::EffectRack(EffectsManager* pEffectsManager,
                        EffectChainManager* pEffectChainManager,
                        const unsigned int iRackNumber,
@@ -12,13 +14,11 @@ EffectRack::EffectRack(EffectsManager* pEffectsManager,
           m_pEffectChainManager(pEffectChainManager),
           m_iRackNumber(iRackNumber),
           m_group(group),
-          m_controlNumEffectChainSlots(ConfigKey(m_group, "num_effectunits")),
-          m_controlClearRack(ConfigKey(m_group, "clear")),
-          m_pEngineEffectRack(NULL) {
-    connect(&m_controlClearRack, SIGNAL(valueChanged(double)),
-            this, SLOT(slotClearRack(double)));
-    m_controlNumEffectChainSlots.connectValueChangeRequest(
-            this, SLOT(slotNumEffectChainSlots(double)));
+          m_controlNumEffectChainSlots(new ControlObject(ConfigKey(m_group, "num_effectunits"))),
+          m_controlClearRack(new ControlObject(ConfigKey(m_group, "clear"))),
+          m_pEngineEffectRack(nullptr) {
+    connect(m_controlClearRack, SIGNAL(valueChanged(double)),this, SLOT(slotClearRack(double)));
+    m_controlNumEffectChainSlots->connectValueChangeRequest(this, SLOT(slotNumEffectChainSlots(double)));
     addToEngine();
 }
 
@@ -56,16 +56,14 @@ void EffectRack::removeFromEngine() {
     for (int i = 0; i < m_effectChainSlots.size(); ++i) {
         EffectChainSlotPointer pSlot = m_effectChainSlots[i];
         EffectChainPointer pChain = pSlot->getEffectChain();
-        if (pChain) {
-            pChain->removeFromEngine(m_pEngineEffectRack, i);
-        }
+        if (pChain) {pChain->removeFromEngine(m_pEngineEffectRack, i);}
     }
 
     EffectsRequest* pRequest = new EffectsRequest();
     pRequest->type = EffectsRequest::REMOVE_EFFECT_RACK;
     pRequest->RemoveEffectRack.pRack = m_pEngineEffectRack;
     m_pEffectsManager->writeRequest(pRequest);
-    m_pEngineEffectRack = NULL;
+    m_pEngineEffectRack = nullptr;
 }
 
 void EffectRack::registerChannel(const ChannelHandleAndGroup& handle_group) {
@@ -102,8 +100,8 @@ int EffectRack::numEffectChainSlots() const {
 
 void EffectRack::addEffectChainSlotInternal(EffectChainSlotPointer pChainSlot) {
     m_effectChainSlots.append(pChainSlot);
-    m_controlNumEffectChainSlots.setAndConfirm(
-        m_controlNumEffectChainSlots.get() + 1);
+    m_controlNumEffectChainSlots->setAndConfirm(
+        m_controlNumEffectChainSlots->get() + 1);
 }
 
 EffectChainSlotPointer EffectRack::getEffectChainSlot(int i) {

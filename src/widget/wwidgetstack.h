@@ -6,11 +6,9 @@
 #include <QSignalMapper>
 #include <QStackedWidget>
 #include <QEvent>
-
-#include "controlobject.h"
-#include "controlobjectthread.h"
 #include "widget/wbasewidget.h"
-
+class ControlObjectSlave;
+class ControlObject;
 class WidgetStackControlListener : public QObject {
     Q_OBJECT
   public:
@@ -32,7 +30,7 @@ class WidgetStackControlListener : public QObject {
     void slotValueChanged(double v);
 
   private:
-    ControlObjectThread m_control;
+    ControlObjectSlave* m_control;
     const int m_index;
 };
 
@@ -59,8 +57,7 @@ class WWidgetStack : public QStackedWidget, public WBaseWidget {
     // Adds a page to the stack.  If this page is hidden, the the page with the
     // 0-based index given by on_hide_select will be shown.  If this value is
     // -1, the next page on the stack will be shown.
-    void addWidgetWithControl(QWidget* pWidget, ControlObject* pControl,
-                              int on_hide_select);
+    void addWidgetWithControl(QWidget* pWidget, ControlObject* pControl,int on_hide_select);
 
   protected:
     bool event(QEvent* pEvent);
@@ -79,9 +76,9 @@ class WWidgetStack : public QStackedWidget, public WBaseWidget {
   private:
     QSignalMapper m_showMapper;
     QSignalMapper m_hideMapper;
-    ControlObjectThread m_nextControl;
-    ControlObjectThread m_prevControl;
-    ControlObjectThread m_currentPageControl;
+    ControlObjectSlave* m_nextControl;
+    ControlObjectSlave* m_prevControl;
+    ControlObjectSlave* m_currentPageControl;
 
     // Optional map that defines which page to select if a page gets a hide
     // signal.

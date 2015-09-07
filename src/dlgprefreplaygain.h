@@ -4,10 +4,9 @@
 #include <QWidget>
 
 #include "ui_dlgprefreplaygaindlg.h"
-#include "configobject.h"
-#include "controlobjectslave.h"
 #include "preferences/dlgpreferencepage.h"
-
+#include "configobject.h"
+class ControlObjectSlave;
 class DlgPrefReplayGain: public DlgPreferencePage,
                          public Ui::DlgPrefReplayGainDlg {
     Q_OBJECT
@@ -37,9 +36,9 @@ class DlgPrefReplayGain: public DlgPreferencePage,
     // Pointer to config object
     ConfigObject<ConfigValue>* config;
 
-    ControlObjectSlave m_replayGainBoost;
-    ControlObjectSlave m_defaultBoost;
-    ControlObjectSlave m_enabled;
+    ControlObjectSlave* m_replayGainBoost;
+    ControlObjectSlave* m_defaultBoost;
+    ControlObjectSlave* m_enabled;
 };
 
 #endif /* DLGPREFREPLAYGAIN_H_ */

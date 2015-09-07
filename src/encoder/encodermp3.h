@@ -118,5 +118,4 @@ class EncoderMp3 : public Encoder {
     QLibrary* m_library;
     QFile m_mp3file;
 };
-
 #endif

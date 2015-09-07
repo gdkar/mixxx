@@ -19,17 +19,12 @@
 // somewhere else (I hear clicks when I change the period of flanger for example).
 class RampedSample {
   public:
-    
     inline RampedSample()
         : ramped(false),
           maxDifference(1.0f),
           initialized(false) {}
-    
     virtual ~RampedSample(){};
-    
-    inline void setRampingThreshold(const float newMaxDifference) {
-        maxDifference = newMaxDifference;
-    }
+    inline void setRampingThreshold(const float newMaxDifference) {maxDifference = newMaxDifference;}
     
     inline void setWithRampingApplied(const float newValue) {
         if (!initialized) {
@@ -46,22 +41,15 @@ class RampedSample {
             }
         }
     }
-    
-    inline operator float() {
-        return currentValue;
-    }
-    
+    inline operator float() {return currentValue;}
     bool ramped;
-    
   private:
     float maxDifference;
     float currentValue;
     bool initialized;
 };
-
 static const int panMaxDelay = 3300; // allows a 30 Hz filter at 97346;
 // static const int panMaxDelay = 50000; // high for debug;
-
 struct PanGroupState {
     PanGroupState() {
         time = 0;
@@ -78,15 +66,12 @@ struct PanGroupState {
     CSAMPLE* m_pDelayBuf;
     double m_dPreviousPeriod;
 };
-
 class AutoPanEffect : public PerChannelEffectProcessor<PanGroupState> {
   public:
     AutoPanEffect(EngineEffect* pEffect, const EffectManifest& manifest);
     virtual ~AutoPanEffect();
-
     static QString getId();
     static EffectManifest getManifest();
-
     // See effectprocessor.h
     void processChannel(const ChannelHandle& handle,
                       PanGroupState* pState,
@@ -95,20 +80,13 @@ class AutoPanEffect : public PerChannelEffectProcessor<PanGroupState> {
                       const unsigned int sampleRate,
                       const EffectProcessor::EnableState enableState,
                       const GroupFeatureState& groupFeatures);
-
     double computeLawCoefficient(double position);
-    
   private:
-    
-    QString debugString() const {
-        return getId();
-    }
-
+    QString debugString() const {return getId();}
     EngineEffectParameter* m_pSmoothingParameter;
     EngineEffectParameter* m_pPeriodUnitParameter;
     EngineEffectParameter* m_pPeriodParameter;
     EngineEffectParameter* m_pWidthParameter;
-    
     DISALLOW_COPY_AND_ASSIGN(AutoPanEffect);
 };
 

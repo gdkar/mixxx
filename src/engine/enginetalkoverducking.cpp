@@ -1,4 +1,6 @@
 #include "controlobjectslave.h"
+#include "controlpushbutton.h"
+#include "controlpotmeter.h"
 #include "engine/enginetalkoverducking.h"
 
 #define DUCK_THRESHOLD 0.1
@@ -77,3 +79,7 @@ CSAMPLE EngineTalkoverDucking::getGain(int numFrames) {
     qWarning() << "Invalid ducking mode, returning 1.0";
     return 1.0;
 }
+EngineTalkoverDucking::TalkoverDuckSetting EngineTalkoverDucking::getMode() const {
+    return static_cast<TalkoverDuckSetting>(int(m_pTalkoverDucking->get()));
+}
+

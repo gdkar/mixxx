@@ -17,7 +17,5 @@ public:
     virtual QStringList getSupportedFileExtensions() const = 0;
     virtual SoundSourcePointer newSoundSource(const QUrl& url) = 0;
 };
-
 } // namespace Mixxx
-
 #endif // MIXXX_SOUNDSOURCEPROVIDER_H

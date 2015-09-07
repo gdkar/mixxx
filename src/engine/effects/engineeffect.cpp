@@ -8,52 +8,42 @@ EngineEffect::EngineEffect(const EffectManifest& manifest,
         : m_manifest(manifest),
           m_enableState(EffectProcessor::ENABLING),
           m_parameters(manifest.parameters().size()) {
-    const QList<EffectManifestParameter>& parameters = m_manifest.parameters();
+    auto &parameters = m_manifest.parameters();
     for (int i = 0; i < parameters.size(); ++i) {
         const EffectManifestParameter& parameter = parameters.at(i);
-        EngineEffectParameter* pParameter =
-                new EngineEffectParameter(parameter);
+        EngineEffectParameter* pParameter = new EngineEffectParameter(parameter);
         m_parameters[i] = pParameter;
         m_parametersById[parameter.id()] = pParameter;
     }
-
     // Creating the processor must come last.
     m_pProcessor = pInstantiator->instantiate(this, manifest);
     m_pProcessor->initialize(registeredChannels);
     m_effectRampsFromDry = manifest.effectRampsFromDry();
 }
-
 EngineEffect::~EngineEffect() {
-    if (kEffectDebugOutput) {
-        qDebug() << debugString() << "destroyed";
-    }
+    if (kEffectDebugOutput) { qDebug() << debugString() << "destroyed";}
     delete m_pProcessor;
     m_parametersById.clear();
     for (int i = 0; i < m_parameters.size(); ++i) {
         EngineEffectParameter* pParameter = m_parameters.at(i);
-        m_parameters[i] = NULL;
+        m_parameters[i] = nullptr;
         delete pParameter;
     }
 }
-
-bool EngineEffect::processEffectsRequest(const EffectsRequest& message,
-                                         EffectsResponsePipe* pResponsePipe) {
-    EngineEffectParameter* pParameter = NULL;
-    EffectsResponse response(message);
-
+bool EngineEffect::processEffectsRequest(const EffectsRequest& message, EffectsResponsePipe* pResponsePipe) {
+    EngineEffectParameter* pParameter = nullptr;
+    auto response = EffectsResponse (message);
     switch (message.type) {
         case EffectsRequest::SET_EFFECT_PARAMETERS:
             if (kEffectDebugOutput) {
                 qDebug() << debugString() << "SET_EFFECT_PARAMETERS"
                          << "enabled" << message.SetEffectParameters.enabled;
             }
-
             if (m_enableState != EffectProcessor::DISABLED && !message.SetEffectParameters.enabled) {
                 m_enableState = EffectProcessor::DISABLING;
             } else if (m_enableState == EffectProcessor::DISABLED && message.SetEffectParameters.enabled) {
                 m_enableState = EffectProcessor::ENABLING;
             }
-
             response.success = true;
             pResponsePipe->writeMessages(&response, 1);
             return true;
@@ -67,8 +57,7 @@ bool EngineEffect::processEffectsRequest(const EffectsRequest& message,
                          << "default_value" << message.default_value
                          << "value" << message.value;
             }
-            pParameter = m_parameters.value(
-                message.SetParameterParameters.iParameter, NULL);
+            pParameter = m_parameters.value( message.SetParameterParameters.iParameter, nullptr);
             if (pParameter) {
                 pParameter->setMinimum(message.minimum);
                 pParameter->setMaximum(message.maximum);
@@ -81,27 +70,23 @@ bool EngineEffect::processEffectsRequest(const EffectsRequest& message,
             }
             pResponsePipe->writeMessages(&response, 1);
             return true;
-        default:
-            break;
+        default: break;
     }
     return false;
 }
-
 void EngineEffect::process(const ChannelHandle& handle,
                            const CSAMPLE* pInput, CSAMPLE* pOutput,
                            const unsigned int numSamples,
                            const unsigned int sampleRate,
                            const EffectProcessor::EnableState enableState,
                            const GroupFeatureState& groupFeatures) {
-    EffectProcessor::EnableState effectiveEnableState = m_enableState;
+    auto effectiveEnableState = m_enableState;
     if (enableState == EffectProcessor::DISABLING) {
         effectiveEnableState = EffectProcessor::DISABLING;
     } else if (enableState == EffectProcessor::ENABLING) {
         effectiveEnableState = EffectProcessor::ENABLING;
     }
-
-    m_pProcessor->process(handle, pInput, pOutput, numSamples, sampleRate,
-            effectiveEnableState, groupFeatures);
+    m_pProcessor->process(handle, pInput, pOutput, numSamples, sampleRate, effectiveEnableState, groupFeatures);
     if (!m_effectRampsFromDry) {
         // the effect does not fade, so we care for it
         if (effectiveEnableState == EffectProcessor::DISABLING) {

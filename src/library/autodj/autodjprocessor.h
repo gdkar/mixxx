@@ -10,7 +10,6 @@
 #include "configobject.h"
 #include "library/playlisttablemodel.h"
 #include "engine/enginechannel.h"
-#include "controlobjectslave.h"
 
 class ControlPushButton;
 class TrackCollection;
@@ -24,45 +23,16 @@ class DeckAttributes : public QObject {
                    BaseTrackPlayer* pPlayer,
                    EngineChannel::ChannelOrientation orientation);
     virtual ~DeckAttributes();
-
-    bool isLeft() const {
-        return m_orientation == EngineChannel::LEFT;
-    }
-
-    bool isRight() const {
-        return m_orientation == EngineChannel::RIGHT;
-    }
-
-    bool isPlaying() const {
-        return m_play.toBool();
-    }
-
-    void stop() {
-        m_play.set(0.0);
-    }
-
-    void play() {
-        m_play.set(1.0);
-    }
-
-    double playPosition() const {
-        return m_playPos.get();
-    }
-
-    void setPlayPosition(double playpos) {
-        m_playPos.set(playpos);
-    }
-
-    bool isRepeat() const {
-        return m_repeat.toBool();
-    }
-
-    void setRepeat(bool enabled) {
-        m_repeat.set(enabled ? 1.0 : 0.0);
-    }
-
+    bool isLeft() const;
+    bool isRight() const;
+    bool isPlaying() const;
+    void stop();
+    void play();
+    double playPosition() const;
+    void setPlayPosition(double playpos);
+    bool isRepeat() const;
+    void setRepeat(bool enabled);
     TrackPointer getLoadedTrack() const;
-
   signals:
     void playChanged(DeckAttributes* deck, bool playing);
     void playPositionChanged(DeckAttributes* deck, double playPosition);
@@ -85,12 +55,11 @@ class DeckAttributes : public QObject {
 
   private:
     EngineChannel::ChannelOrientation m_orientation;
-    ControlObjectSlave m_playPos;
-    ControlObjectSlave m_play;
-    ControlObjectSlave m_repeat;
+    ControlObjectSlave* m_playPos;
+    ControlObjectSlave* m_play;
+    ControlObjectSlave* m_repeat;
     BaseTrackPlayer* m_pPlayer;
 };
-
 class AutoDJProcessor : public QObject {
     Q_OBJECT
   public:
@@ -111,61 +80,39 @@ class AutoDJProcessor : public QObject {
         ADJ_DECKS_3_4_PLAYING,
         ADJ_NOT_TWO_DECKS
     };
-
+    Q_ENUMS(AutoDJState);
+    Q_ENUMS(AutoDJError);
     AutoDJProcessor(QObject* pParent,
                     ConfigObject<ConfigValue>* pConfig,
                     PlayerManagerInterface* pPlayerManager,
                     int iAutoDJPlaylistId,
                     TrackCollection* pCollection);
     virtual ~AutoDJProcessor();
-
-    AutoDJState getState() const {
-        return m_eState;
-    }
-
-    int getTransitionTime() const {
-        return m_iTransitionTime;
-    }
-
-    PlaylistTableModel* getTableModel() const {
-        return m_pAutoDJTableModel;
-    }
-
+    int getState() const;
+    int getTransitionTime() const;
+    PlaylistTableModel* getTableModel() const;
   public slots:
-    void setTransitionTime(int seconds);
-
-    AutoDJError shufflePlaylist(const QModelIndexList& selectedIndices);
-    AutoDJError skipNext();
-    AutoDJError fadeNow();
-    AutoDJError toggleAutoDJ(bool enable);
-
-    // The following virtual signal wrappers are used for testing
-    virtual void emitLoadTrackToPlayer(TrackPointer pTrack, QString group,
-                                   bool play) {
-        emit(loadTrackToPlayer(pTrack, group, play));
-    }
-    virtual void emitAutoDJStateChanged(AutoDJProcessor::AutoDJState state) {
-        emit(autoDJStateChanged(state));
-    }
-
+    virtual void setTransitionTime(int seconds);
+    virtual AutoDJError shufflePlaylist(const QModelIndexList& selectedIndices);
+    virtual AutoDJError skipNext();
+    virtual AutoDJError fadeNow();
+    virtual AutoDJError toggleAutoDJ(bool enable);
   signals:
-    void loadTrackToPlayer(TrackPointer pTrack, QString group,
-                                   bool play);
-    void autoDJStateChanged(AutoDJProcessor::AutoDJState state);
+    void loadTrackToPlayer(TrackPointer pTrack, QString group,bool play);
+    void autoDJStateChanged(int state);
     void transitionTimeChanged(int time);
     void randomTrackRequested(int tracksToAdd);
-
   private slots:
-    void playerPositionChanged(DeckAttributes* pDeck, double position);
-    void playerPlayChanged(DeckAttributes* pDeck, bool playing);
-    void playerTrackLoaded(DeckAttributes* pDeck, TrackPointer pTrack);
-    void playerTrackLoadFailed(DeckAttributes* pDeck, TrackPointer pTrack);
-    void playerTrackUnloaded(DeckAttributes* pDeck, TrackPointer pTrack);
+    virtual void playerPositionChanged(DeckAttributes* pDeck, double position);
+    virtual void playerPlayChanged(DeckAttributes* pDeck, bool playing);
+    virtual void playerTrackLoaded(DeckAttributes* pDeck, TrackPointer pTrack);
+    virtual void playerTrackLoadFailed(DeckAttributes* pDeck, TrackPointer pTrack);
+    virtual void playerTrackUnloaded(DeckAttributes* pDeck, TrackPointer pTrack);
 
-    void controlEnable(double value);
-    void controlFadeNow(double value);
-    void controlShuffle(double value);
-    void controlSkipNext(double value);
+    virtual void controlEnable(double value);
+    virtual void controlFadeNow(double value);
+    virtual void controlShuffle(double value);
+    virtual void controlSkipNext(double value);
 
   private:
     // Gets or sets the crossfader position while normalizing it so that -1 is
@@ -177,10 +124,8 @@ class AutoDJProcessor : public QObject {
 
     TrackPointer getNextTrackFromQueue();
     bool loadNextTrackFromQueue(const DeckAttributes& pDeck, bool play = false);
-    void calculateTransition(DeckAttributes* pFromDeck,
-                             DeckAttributes* pToDeck);
-    DeckAttributes* getOtherDeck(DeckAttributes* pFromDeck,
-                                 bool playing = false);
+    void calculateTransition(DeckAttributes* pFromDeck,DeckAttributes* pToDeck);
+    DeckAttributes* getOtherDeck(DeckAttributes* pFromDeck,bool playing = false);
 
     // Removes the track loaded to the player group from the top of the AutoDJ
     // queue if it is present.

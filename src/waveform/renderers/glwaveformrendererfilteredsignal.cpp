@@ -2,7 +2,6 @@
 #include "trackinfoobject.h"
 #include "waveform/waveform.h"
 #include "waveformwidgetrenderer.h"
-#include "controlobjectthread.h"
 #include "waveform/waveformwidgetfactory.h"
 #include "util/math.h"
 
@@ -25,27 +24,14 @@ void GLWaveformRendererFilteredSignal::onSetup(const QDomNode& /*node*/) {
 }
 
 void GLWaveformRendererFilteredSignal::draw(QPainter* painter, QPaintEvent* /*event*/) {
-
-    TrackPointer pTrack = m_waveformRenderer->getTrackInfo();
-    if (!pTrack) {
-        return;
-    }
-
-    ConstWaveformPointer waveform = pTrack->getWaveform();
-    if (waveform.isNull()) {
-        return;
-    }
-
+    auto pTrack = m_waveformRenderer->getTrackInfo();
+    if (!pTrack) {return;}
+    auto waveform = pTrack->getWaveform();
+    if (waveform.isNull()) {return;}
     const int dataSize = waveform->getDataSize();
-    if (dataSize <= 1) {
-        return;
-    }
-
-    const WaveformData* data = waveform->data();
-    if (data == NULL) {
-        return;
-    }
-
+    if (dataSize <= 1) {return;}
+    const auto data = waveform->data();
+    if (data == NULL) {return;}
     double firstVisualIndex = m_waveformRenderer->getFirstDisplayedPosition() * dataSize;
     double lastVisualIndex = m_waveformRenderer->getLastDisplayedPosition() * dataSize;
 

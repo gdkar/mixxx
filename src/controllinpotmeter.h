@@ -1,8 +1,6 @@
 #ifndef CONTROLLINPOTMETER_H
 #define CONTROLLINPOTMETER_H
-
 #include "controlpotmeter.h"
-
 class ControlLinPotmeter : public ControlPotmeter {
     Q_OBJECT
   public:

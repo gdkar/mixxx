@@ -3,12 +3,8 @@
 
 static const double kMinCorner = 0.0003; // 13 Hz @ 44100
 static const double kMaxCorner = 0.5; // 22050 Hz @ 44100
-
 // static
-QString FilterEffect::getId() {
-    return "org.mixxx.effects.filter";
-}
-
+QString FilterEffect::getId() {return "org.mixxx.effects.filter";}
 // static
 EffectManifest FilterEffect::getManifest() {
     EffectManifest manifest;
@@ -21,7 +17,6 @@ EffectManifest FilterEffect::getManifest() {
                                         "frequencies to pass through."));
     manifest.setEffectRampsFromDry(true);
     manifest.setIsForFilterKnob(true);
-
     EffectManifestParameter* lpf = manifest.addParameter();
     lpf->setId("lpf");
     lpf->setName(QObject::tr("LPF"));
@@ -84,11 +79,7 @@ FilterEffect::FilterEffect(EngineEffect* pEffect,
           m_pHPF(pEffect->getParameterById("hpf")) {
     Q_UNUSED(manifest);
 }
-
-FilterEffect::~FilterEffect() {
-    //qDebug() << debugString() << "destroyed";
-}
-
+FilterEffect::~FilterEffect() {}
 void FilterEffect::processChannel(const ChannelHandle& handle,
                                   FilterGroupState* pState,
                                   const CSAMPLE* pInput, CSAMPLE* pOutput,
@@ -99,11 +90,9 @@ void FilterEffect::processChannel(const ChannelHandle& handle,
     Q_UNUSED(handle);
     Q_UNUSED(groupFeatures);
     Q_UNUSED(sampleRate);
-
     double hpf;
     double lpf;
     double q = m_pQ->value();
-
     if (enableState == EffectProcessor::DISABLING) {
         // Ramp to dry, when disabling, this will ramp from dry when enabling as well
         hpf = kMinCorner;
@@ -112,7 +101,6 @@ void FilterEffect::processChannel(const ChannelHandle& handle,
         hpf = m_pHPF->value();
         lpf = m_pLPF->value();
     }
-
     if ((pState->m_loFreq != lpf) ||
             (pState->m_q != q) ||
             (pState->m_hiFreq != hpf)) {
@@ -142,34 +130,26 @@ void FilterEffect::processChannel(const ChannelHandle& handle,
         pHpfOutput = pOutput;
         pLpfInput = pHpfOutput;
     }
-
     if (hpf > kMinCorner) {
         // hpf enabled, fade-in is handled in the filter when starting from pause
         pState->m_pHighFilter->process(pInput, pHpfOutput, numSamples);
     } else if (pState->m_hiFreq > kMinCorner) {
             // hpf disabling
-            pState->m_pHighFilter->processAndPauseFilter(pInput,
-                    pHpfOutput, numSamples);
+            pState->m_pHighFilter->processAndPauseFilter(pInput,pHpfOutput, numSamples);
     } else {
         // paused LP uses input directly
         pLpfInput = pInput;
     }
-
     if (lpf < kMaxCorner) {
         // lpf enabled, fade-in is handled in the filter when starting from pause
         pState->m_pLowFilter->process(pLpfInput, pOutput, numSamples);
     } else if (pState->m_loFreq < kMaxCorner) {
         // hpf disabling
-        pState->m_pLowFilter->processAndPauseFilter(pLpfInput,
-                pOutput, numSamples);
+        pState->m_pLowFilter->processAndPauseFilter(pLpfInput,pOutput, numSamples);
     } else if (pLpfInput == pInput) {
         // Both disabled
-        if (pOutput != pInput) {
-            // We need to copy pInput pOutput
-            SampleUtil::copy(pOutput, pInput, numSamples);
-        }
+        if (pOutput != pInput) {SampleUtil::copy(pOutput, pInput, numSamples);}
     }
-
     pState->m_loFreq = lpf;
     pState->m_q = q;
     pState->m_hiFreq = hpf;

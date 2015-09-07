@@ -7,8 +7,6 @@
 #include <QObject>
 #include <QList>
 
-#include "configobject.h"
-#include "controlobjectthread.h"
 #include "trackinfoobject.h"
 #include "control/controlvalue.h"
 #include "engine/effects/groupfeaturestate.h"
@@ -16,7 +14,7 @@
 
 class EngineMaster;
 class EngineBuffer;
-
+class ControlObjectSlave;
 const double kNoTrigger = -1;
 
 /**
@@ -97,7 +95,7 @@ class EngineControl : public QObject {
     EngineBuffer* getEngineBuffer();
 
     QString m_group;
-    ConfigObject<ConfigValue>* m_pConfig;
+    ConfigObject<ConfigValue>* m_pConfig = nullptr;
 
   private:
     struct SampleOfTrack {
@@ -109,11 +107,10 @@ class EngineControl : public QObject {
         };
       };
     };
-
     ControlValueAtomic<SampleOfTrack> m_sampleOfTrack;
-    EngineMaster* m_pEngineMaster;
-    EngineBuffer* m_pEngineBuffer;
-    ControlObjectThread m_numDecks;
+    EngineMaster* m_pEngineMaster = nullptr;
+    EngineBuffer* m_pEngineBuffer = nullptr;
+    ControlObjectSlave* m_numDecks = nullptr;
 };
 
 #endif /* ENGINECONTROL_H */

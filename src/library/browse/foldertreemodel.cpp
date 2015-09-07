@@ -38,26 +38,18 @@ bool FolderTreeModel::hasChildren(const QModelIndex& parent) const {
      * However, for, buid-in items such as 'Quick Links' there exist
      * child items at init time
      */
-    if(item->dataPath().toString() == QUICK_LINK_NODE)
-        return true;
+    if(item->dataPath().toString() == QUICK_LINK_NODE) return true;
     //Can only happen on Windows
-    if(item->dataPath().toString() == DEVICE_NODE)
-        return true;
-
+    if(item->dataPath().toString() == DEVICE_NODE) return true;
     // In all other cases the dataPath() points to a folder
-    QString folder = item->dataPath().toString();
+    auto folder = item->dataPath().toString();
     return directoryHasChildren(folder);
 }
-
 bool FolderTreeModel::directoryHasChildren(const QString& path) const {
-    QHash<QString, bool>::const_iterator it = m_directoryCache.find(path);
-    if (it != m_directoryCache.end()) {
-        return it.value();
-    }
-
+    auto it = m_directoryCache.constFind(path);
+    if (it != m_directoryCache.cend()) { return it.value();}
     // Acquire a security token for the path.
     MDir dir(path);
-
     /*
      *  The following code is too expensive, general and SLOW since
      *  QDIR::EntryInfoList returns a full QFileInfolist
@@ -70,13 +62,10 @@ bool FolderTreeModel::directoryHasChildren(const QString& path) const {
      *  We can benefit from low-level filesystem APIs, i.e.,
      *  Windows API or SystemCalls
      */
-
     bool has_children = false;
-
 #if defined (__WINDOWS__)
     QString folder = path;
     folder.replace("/","\\");
-
     //quick subfolder test
     SHFILEINFOW sfi;
     SHGetFileInfo((LPCWSTR) folder.constData(), NULL, &sfi, sizeof(sfi), SHGFI_ATTRIBUTES);
@@ -84,36 +73,31 @@ bool FolderTreeModel::directoryHasChildren(const QString& path) const {
 #else
     // For OS X and Linux
     // http://stackoverflow.com/questions/2579948/checking-if-subfolders-exist-linux
-
     std::string dot("."), dotdot("..");
-    QByteArray ba = path.toLocal8Bit();
-    DIR *directory = opendir(ba);
-    int unknown_count = 0;
-    int total_count = 0;
-    if (directory != NULL) {
+    auto ba = path.toLocal8Bit();
+    auto directory = opendir(ba);
+    auto unknown_count = 0;
+    auto total_count = 0;
+    if (directory) {
         struct dirent *entry;
-        while (!has_children && ((entry = readdir(directory)) != NULL)) {
+        while (!has_children && ((entry = readdir(directory)))) {
             if (entry->d_name != dot && entry->d_name != dotdot) {
                 total_count++;
-                if (entry->d_type == DT_UNKNOWN) {
-                    unknown_count++;
-                }
+                if (entry->d_type == DT_UNKNOWN) { unknown_count++; }
                 has_children = (entry->d_type == DT_DIR || entry->d_type == DT_LNK);
             }
         }
         closedir(directory);
     }
-
     // If all files are of type DH_UNKNOWN then do a costlier analysis to
     // determine if the directory has subdirectories. This affects folders on
     // filesystems that do not fully implement readdir such as JFS.
-    if (directory == NULL || (unknown_count == total_count && total_count > 0)) {
+    if (!directory|| (unknown_count == total_count && total_count > 0)) {
         QDir dir(path);
-        QFileInfoList all = dir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
+        auto  all = dir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
         has_children = all.count() > 0;
     }
 #endif
-
     // Cache and return the result
     m_directoryCache[path] = has_children;
     return has_children;

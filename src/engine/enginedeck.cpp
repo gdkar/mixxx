@@ -16,6 +16,7 @@
 ***************************************************************************/
 
 #include "controlpushbutton.h"
+#include "controlobjectslave.h"
 #include "effects/effectsmanager.h"
 #include "engine/effects/engineeffectsmanager.h"
 #include "engine/enginebuffer.h"

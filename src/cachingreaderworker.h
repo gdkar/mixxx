@@ -40,7 +40,7 @@ typedef struct ReaderStatusUpdate {
     ReaderStatusUpdate()
         : status(INVALID)
         , chunk(nullptr)
-        , maxReadableFrameIndex(Mixxx::AudioSource::getMinFrameIndex()) {
+        , maxReadableFrameIndex(0) {
     }
     ReaderStatusUpdate(
             ReaderStatus statusArg,
@@ -76,12 +76,12 @@ class CachingReaderWorker : public EngineWorker {
     QString m_tag;
     // Thread-safe FIFOs for communication between the engine callback and
     // reader thread.
-    FIFO<CachingReaderChunkReadRequest>* m_pChunkReadRequestFIFO;
-    FIFO<ReaderStatusUpdate>* m_pReaderStatusFIFO;
+    FIFO<CachingReaderChunkReadRequest>* m_pChunkReadRequestFIFO = nullptr;
+    FIFO<ReaderStatusUpdate>* m_pReaderStatusFIFO = nullptr;
     // Queue of Tracks to load, and the corresponding lock. Must acquire the
     // lock to touch.
     QMutex m_newTrackMutex;
-    TrackPointer m_newTrack;
+    TrackPointer m_newTrack{nullptr};
     // Internal method to load a track. Emits trackLoaded when finished.
     void loadTrack(const TrackPointer& pTrack);
     ReaderStatusUpdate processReadRequest( const CachingReaderChunkReadRequest& request);
@@ -92,7 +92,7 @@ class CachingReaderWorker : public EngineWorker {
     // the same chunk(s) over and over again.
     // This frame index references the frame that follows the
     // last frame with readable sample data.
-    SINT m_maxReadableFrameIndex;
-    std::atomic<bool> m_stop;
+    SINT m_maxReadableFrameIndex = -1;
+    std::atomic<bool> m_stop{false};
 };
 #endif /* CACHINGREADERWORKER_H */

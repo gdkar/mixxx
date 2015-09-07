@@ -19,8 +19,6 @@
 #define ENGINEDECK_H
 
 #include "configobject.h"
-#include "controlobjectslave.h"
-#include "controlpushbutton.h"
 #include "engine/engineobject.h"
 #include "engine/enginechannel.h"
 
@@ -34,7 +32,7 @@ class EngineVuMeter;
 class EffectsManager;
 class EngineEffectsManager;
 class ControlPushButton;
-
+class ControlObjectSlave;
 class EngineDeck : public EngineChannel, public AudioDestination {
     Q_OBJECT
   public:
@@ -64,16 +62,16 @@ class EngineDeck : public EngineChannel, public AudioDestination {
   public slots:
     void slotPassingToggle(double v);
   private:
-    ConfigObject<ConfigValue>* m_pConfig;
-    EngineBuffer* m_pBuffer;
-    EnginePregain* m_pPregain;
-    EngineVuMeter* m_pVUMeter;
-    EngineEffectsManager* m_pEngineEffectsManager;
-    ControlObjectSlave* m_pSampleRate;
+    ConfigObject<ConfigValue>* m_pConfig = nullptr;
+    EngineBuffer* m_pBuffer   = nullptr;
+    EnginePregain* m_pPregain = nullptr;
+    EngineVuMeter* m_pVUMeter = nullptr;
+    EngineEffectsManager* m_pEngineEffectsManager = nullptr;
+    ControlObjectSlave* m_pSampleRate = nullptr;
     // Begin vinyl passthrough fields
-    ControlPushButton* m_pPassing;
-    const CSAMPLE* volatile m_sampleBuffer;
-    bool m_bPassthroughIsActive;
-    bool m_bPassthroughWasActive;
+    ControlPushButton* m_pPassing = nullptr;
+    const CSAMPLE* volatile m_sampleBuffer = nullptr;
+    bool m_bPassthroughIsActive = false;
+    bool m_bPassthroughWasActive = false;
 };
 #endif

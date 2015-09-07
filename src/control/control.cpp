@@ -62,7 +62,8 @@ void ControlDoublePrivate::initialize() {
                     m_value.getValue());
     }
 }
-
+/* static */ void
+ControlDoublePrivate::setUserConfig(ConfigObject<ConfigValue>* pConfig){s_pUserConfig = pConfig;}
 ControlDoublePrivate::~ControlDoublePrivate() {
     s_qCOHashMutex.lock();
     //qDebug() << "ControlDoublePrivate::s_qCOHash.remove(" << m_key.group << "," << m_key.item << ")";
@@ -113,24 +114,15 @@ QSharedPointer<ControlDoublePrivate> ControlDoublePrivate::getControl(
     QMutexLocker locker(&s_qCOHashMutex);
     QSharedPointer<ControlDoublePrivate> pControl;
     QHash<ConfigKey, QWeakPointer<ControlDoublePrivate> >::const_iterator it = s_qCOHash.find(key);
-
     if (it != s_qCOHash.end()) {
         if (pCreatorCO) {
-            if (warn) {
-                qDebug() << "ControlObject" << key.group << key.item << "already created";
-            }
-        } else {
-            pControl = it.value();
-        }
+            if (warn) {qDebug() << "ControlObject" << key.group << key.item << "already created";}
+        } else {pControl = it.value();}
     }
-
     locker.unlock();
-
-    if (pControl == NULL) {
+    if (pControl == nullptr) {
         if (pCreatorCO) {
-            pControl = QSharedPointer<ControlDoublePrivate>(
-                    new ControlDoublePrivate(key, pCreatorCO, bIgnoreNops,
-                                             bTrack, bPersist));
+            pControl = QSharedPointer<ControlDoublePrivate>(new ControlDoublePrivate(key, pCreatorCO, bIgnoreNops,bTrack, bPersist));
             locker.relock();
             //qDebug() << "ControlDoublePrivate::s_qCOHash.insert(" << key.group << "," << key.item << ")";
             s_qCOHash.insert(key, pControl);
@@ -142,123 +134,70 @@ QSharedPointer<ControlDoublePrivate> ControlDoublePrivate::getControl(
     }
     return pControl;
 }
-
+QString ControlDoublePrivate::name() const {return m_name;}
+void ControlDoublePrivate::setName(const QString &s){m_name = s;}
+QString ControlDoublePrivate::description() const { return m_description;}
+void ControlDoublePrivate::setDescription(const QString &s){m_description = s;}
+double ControlDoublePrivate::get()const{return m_value.getValue();}
+bool ControlDoublePrivate::ignoreNops() const{return m_bIgnoreNops;}
+void ControlDoublePrivate::setDefaultValue(double dValue){m_defaultValue.setValue(dValue);}
+double ControlDoublePrivate::defaultValue()const{return m_defaultValue.getValue();}
+ControlObject *ControlDoublePrivate::getCreatorCO() const{ return m_pCreatorCO;}
+void ControlDoublePrivate::removeCreatorCO(){m_pCreatorCO = nullptr;}
+ConfigKey ControlDoublePrivate::getKey() const{return m_key;}
 // static
-void ControlDoublePrivate::getControls(
-        QList<QSharedPointer<ControlDoublePrivate> >* pControlList) {
+void ControlDoublePrivate::getControls( QList<QSharedPointer<ControlDoublePrivate> >* pControlList) {
     s_qCOHashMutex.lock();
     pControlList->clear();
-    for (QHash<ConfigKey, QWeakPointer<ControlDoublePrivate> >::const_iterator it = s_qCOHash.begin();
-             it != s_qCOHash.end(); ++it) {
-        QSharedPointer<ControlDoublePrivate> pControl = it.value();
-        if (!pControl.isNull()) {
-            pControlList->push_back(pControl);
-        }
+    for ( auto it = s_qCOHash.cbegin(),end=s_qCOHash.cend();it!=end;++it){
+      auto pControl = it.value().toStrongRef();
+      if ( pControl ) pControlList->push_back(pControl);
     }
     s_qCOHashMutex.unlock();
 }
-
 // static
 QHash<ConfigKey, ConfigKey> ControlDoublePrivate::getControlAliases() {
     QMutexLocker locker(&s_qCOHashMutex);
     return s_qCOAliasHash;
 }
-
 void ControlDoublePrivate::reset() {
-    double defaultValue = m_defaultValue.getValue();
     // NOTE: pSender = NULL is important. The originator of this action does
     // not know the resulting value so it makes sense that we should emit a
     // general valueChanged() signal even though we know the originator.
-    set(defaultValue, NULL);
+    set(m_defaultValue.getValue(), nullptr);
 }
-
 void ControlDoublePrivate::set(double value, QObject* pSender) {
     // If the behavior says to ignore the set, ignore it.
-    QSharedPointer<ControlNumericBehavior> pBehavior = m_pBehavior;
-    if (!pBehavior.isNull() && !pBehavior->setFilter(&value)) {
-        return;
-    }
-    if (m_confirmRequired) {
-        emit(valueChangeRequest(value));
-    } else {
-        setInner(value, pSender);
-    }
+    auto pBehavior = m_pBehavior;
+    if (!pBehavior.isNull() && !pBehavior->setFilter(&value)) {return;}
+    if (m_confirmRequired) { emit(valueChangeRequest(value));}
+    else { setInner(value, pSender);}
 }
-
-void ControlDoublePrivate::setAndConfirm(double value, QObject* pSender) {
-    setInner(value, pSender);
-}
-
+void ControlDoublePrivate::setAndConfirm(double value, QObject* pSender) { setInner(value, pSender); }
 void ControlDoublePrivate::setInner(double value, QObject* pSender) {
-    if (m_bIgnoreNops && get() == value) {
-        return;
-    }
+    if (get() == value) { return; }
     m_value.setValue(value);
     emit(valueChanged(value, pSender));
-
-    if (m_bTrack) {
-        Stat::track(m_trackKey, static_cast<Stat::StatType>(m_trackType),
-                    static_cast<Stat::ComputeFlags>(m_trackFlags), value);
-    }
+    if (m_bTrack) {Stat::track(m_trackKey, static_cast<Stat::StatType>(m_trackType), static_cast<Stat::ComputeFlags>(m_trackFlags), value);}
 }
-
 void ControlDoublePrivate::setBehavior(ControlNumericBehavior* pBehavior) {
     // This marks the old mpBehavior for deletion. It is deleted once it is not
     // used in any other function
     m_pBehavior = QSharedPointer<ControlNumericBehavior>(pBehavior);
 }
-
 void ControlDoublePrivate::setParameter(double dParam, QObject* pSender) {
-    QSharedPointer<ControlNumericBehavior> pBehavior = m_pBehavior;
-    if (pBehavior.isNull()) {
-        set(dParam, pSender);
-    } else {
-        set(pBehavior->parameterToValue(dParam), pSender);
-    }
+    auto pBehavior = m_pBehavior;
+    if (pBehavior.isNull()) { set(dParam, pSender);}
+    else { pBehavior->setValueFromParameter(dParam,this);}
 }
-
-double ControlDoublePrivate::getParameter() const {
-    return getParameterForValue(get());
-}
-
+double ControlDoublePrivate::getParameter() const {return getParameterForValue(get()); }
 double ControlDoublePrivate::getParameterForValue(double value) const {
-    QSharedPointer<ControlNumericBehavior> pBehavior = m_pBehavior;
-    if (!pBehavior.isNull()) {
-        value = pBehavior->valueToParameter(value);
-    }
+    auto pBehavior = m_pBehavior;
+    if (!pBehavior.isNull()) {value = pBehavior->valueToParameter(value);}
     return value;
 }
-
-double ControlDoublePrivate::getParameterForMidiValue(double midiValue) const {
-    QSharedPointer<ControlNumericBehavior> pBehavior = m_pBehavior;
-    if (!pBehavior.isNull()) {
-        return pBehavior->midiValueToParameter(midiValue);
-    }
-    return midiValue;
-}
-
-void ControlDoublePrivate::setMidiParameter(MidiOpCode opcode, double dParam) {
-    QSharedPointer<ControlNumericBehavior> pBehavior = m_pBehavior;
-    if (!pBehavior.isNull()) {
-        pBehavior->setValueFromMidiParameter(opcode, dParam, this);
-    } else {
-        set(dParam, NULL);
-    }
-}
-
-double ControlDoublePrivate::getMidiParameter() const {
-    QSharedPointer<ControlNumericBehavior> pBehavior = m_pBehavior;
-    double value = get();
-    if (!pBehavior.isNull()) {
-        value = pBehavior->valueToMidiParameter(value);
-    }
-    return value;
-}
-
-bool ControlDoublePrivate::connectValueChangeRequest(const QObject* receiver,
-        const char* method, Qt::ConnectionType type) {
+bool ControlDoublePrivate::connectValueChangeRequest(const QObject* receiver, const char* method, Qt::ConnectionType type) {
     // confirmation is only required if connect was successful
-    m_confirmRequired = connect(this, SIGNAL(valueChangeRequest(double)),
-                receiver, method, type);
+    m_confirmRequired = connect(this, SIGNAL(valueChangeRequest(double)), receiver, method, type);
     return m_confirmRequired;
 }

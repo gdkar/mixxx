@@ -6,8 +6,6 @@
 #include <QString>
 
 #include "configobject.h"
-#include "controlobject.h"
-#include "controlobjectthread.h"
 #include "recording/defs_recording.h"
 
 //
@@ -23,7 +21,8 @@
 
 class EngineMaster;
 class ControlPushButton;
-
+class ControlObjectSlave;
+class ControlObject;
 class RecordingManager : public QObject
 {
     Q_OBJECT
@@ -59,7 +58,7 @@ class RecordingManager : public QObject
     void slotToggleRecording(double v);
   private:
     QString formatDateTimeForFilename(QDateTime dateTime) const;
-    ControlObjectThread* m_recReady;
+    ControlObjectSlave* m_recReady;
     ControlObject* m_recReadyCO;
     ControlPushButton* m_pToggleRecording;
     long getFileSplitSize();

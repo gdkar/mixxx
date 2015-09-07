@@ -17,28 +17,22 @@
 class BaseSqlTableModel : public QAbstractTableModel, public TrackModel {
     Q_OBJECT
   public:
-    BaseSqlTableModel(QObject* pParent,
-                      TrackCollection* pTrackCollection,
-                      const char* settingsNamespace);
+    BaseSqlTableModel(QObject* pParent, TrackCollection* pTrackCollection, const char* settingsNamespace);
     virtual ~BaseSqlTableModel();
-
     ///////////////////////////////////////////////////////////////////////////
     //  Functions that have to/can be reimplemented
     ///////////////////////////////////////////////////////////////////////////
     //  This class also has protected variables that should be used in children
     //  m_database, m_pTrackCollection, m_trackDAO
-
     virtual bool isColumnInternal(int column) = 0;
     virtual bool isColumnHiddenByDefault(int column);
     virtual TrackModel::CapabilitiesFlags getCapabilities() const = 0;
-
     // functions that can be implemented
     // function to reimplement for external libraries
     virtual TrackPointer getTrack(const QModelIndex& index) const;
     // calls readWriteFlags() by default, reimplement this if the child calls
     // should be readOnly
     virtual Qt::ItemFlags flags(const QModelIndex &index) const;
-
     ////////////////////////////////////////////////////////////////////////////
     // Other public methods
     ////////////////////////////////////////////////////////////////////////////
@@ -53,54 +47,40 @@ class BaseSqlTableModel : public QAbstractTableModel, public TrackModel {
     const QString currentSearch() const;
     void setSort(int column, Qt::SortOrder order);
     void hideTracks(const QModelIndexList& indices);
-
     int fieldIndex(ColumnCache::Column column) const;
     int fieldIndex(const QString& fieldName) const;
-
     QString getTrackLocation(const QModelIndex& index) const;
     QAbstractItemDelegate* delegateForColumn(const int i, QObject* pParent);
-
     // Methods reimplemented from QAbstractItemModel
     void sort(int column, Qt::SortOrder order);
     int rowCount(const QModelIndex& parent=QModelIndex()) const;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
     bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole);
     int columnCount(const QModelIndex& parent = QModelIndex()) const;
-    bool setHeaderData(int section, Qt::Orientation orientation,
-                       const QVariant &value, int role = Qt::DisplayRole);
-    QVariant headerData(int section, Qt::Orientation orientation,
-                        int role=Qt::DisplayRole) const;
+    bool setHeaderData(int section, Qt::Orientation orientation, const QVariant &value, int role = Qt::DisplayRole);
+    QVariant headerData(int section, Qt::Orientation orientation, int role=Qt::DisplayRole) const;
     virtual QMimeData* mimeData(const QModelIndexList &indexes) const;
-
   public slots:
     void select();
-
   protected:
     // Returns the row of trackId in this result set. If trackId is not present,
     // returns -1.
     const QLinkedList<int> getTrackRows(TrackId trackId) const;
-    void setTable(const QString& tableName, const QString& trackIdColumn,
-                  const QStringList& tableColumns,
-                  QSharedPointer<BaseTrackCache> trackSource);
+    void setTable(const QString& tableName, const QString& trackIdColumn, const QStringList& tableColumns, QSharedPointer<BaseTrackCache> trackSource);
     void initHeaderData();
-
     // Use this if you want a model that is read-only.
     Qt::ItemFlags readOnlyFlags(const QModelIndex &index) const;
     // Use this if you want a model that can be changed
     Qt::ItemFlags readWriteFlags(const QModelIndex &index) const;
-
     TrackCollection* m_pTrackCollection;
     TrackDAO& m_trackDAO;
     QSqlDatabase m_database;
-
     QString m_previewDeckGroup;
     TrackId m_previewDeckTrackId;
-
   private slots:
     virtual void tracksChanged(QSet<TrackId> trackIds);
     virtual void trackLoaded(QString group, TrackPointer pTrack);
     void refreshCell(int row, int column);
-
   private:
     // A simple helper function for initializing header title and width.  Note
     // that the ideal width of a column is based on the width of its data,
@@ -139,9 +119,7 @@ class BaseSqlTableModel : public QAbstractTableModel, public TrackModel {
         int m_column;
         Qt::SortOrder m_order;
     };
-
     QVector<RowInfo> m_rowInfo;
-
     QString m_tableName;
     QString m_idColumn;
     QSharedPointer<BaseTrackCache> m_trackSource;

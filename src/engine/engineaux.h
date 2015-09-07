@@ -5,8 +5,6 @@
 #ifndef ENGINEAUX_H
 #define ENGINEAUX_H
 
-#include "controlobjectslave.h"
-#include "controlpushbutton.h"
 #include "engine/enginechannel.h"
 #include "engine/enginevumeter.h"
 #include "soundmanagerutil.h"
@@ -14,7 +12,7 @@
 class EffectsManager;
 class EngineEffectsManager;
 class ControlAudioTaperPot;
-
+class ControlObjectSlave;
 // EngineAux is an EngineChannel that implements a mixing source whose
 // samples are fed directly from the SoundManager
 class EngineAux : public EngineChannel, public AudioDestination {
@@ -42,13 +40,13 @@ class EngineAux : public EngineChannel, public AudioDestination {
     // a soundcard input.
     virtual void onInputUnconfigured(AudioInput input);
   private:
-    EngineEffectsManager* m_pEngineEffectsManager;
+    EngineEffectsManager* m_pEngineEffectsManager = nullptr;
     EngineVuMeter m_vuMeter;
-    ControlObject* m_pEnabled;
-    ControlAudioTaperPot* m_pPregain;
-    ControlObjectSlave* m_pSampleRate;
-    const CSAMPLE* volatile m_sampleBuffer;
-    bool m_wasActive;
+    ControlObject* m_pEnabled = nullptr;
+    ControlAudioTaperPot* m_pPregain = nullptr;
+    ControlObjectSlave* m_pSampleRate = nullptr;
+    const CSAMPLE* volatile m_sampleBuffer = nullptr;
+    bool m_wasActive = false;
 };
 
 #endif // ENGINEAUX_H

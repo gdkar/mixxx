@@ -50,21 +50,14 @@ class LibraryScanner : public QThread {
     FRIEND_TEST(LibraryScannerTest, ScannerRoundtrip);
     Q_OBJECT
   public:
-    LibraryScanner(QWidget* pParent,
-                   TrackCollection* collection,
-                   ConfigObject<ConfigValue>* pConfig);
+    LibraryScanner(QWidget* pParent, TrackCollection* collection, ConfigObject<ConfigValue>* pConfig);
     virtual ~LibraryScanner();
-
     // Call from any thread to start a scan. Does nothing if a scan is already
     // in progress.
     void scan();
-
-
-
   public slots:
     // Call from any thread to cancel the scan.
     void slotCancel();
-
   signals:
     void scanStarted();
     void scanFinished();
@@ -74,29 +67,22 @@ class LibraryScanner : public QThread {
     void trackAdded(TrackPointer pTrack);
     void tracksMoved(QSet<TrackId> oldTrackIds, QSet<TrackId> newTrackIds);
     void tracksChanged(QSet<TrackId> changedTrackIds);
-
     // Emitted by scan() to invoke slotStartScan in the scanner thread's event
     // loop.
     void startScan();
-
   protected:
     void run();
-
   public slots:
     void queueTask(ScannerTask* pTask);
-
   private slots:
     void slotStartScan();
     void slotFinishScan();
-
     // ScannerTask signal handlers.
     void slotTaskDone(bool success);
-    void slotDirectoryHashedAndScanned(const QString& directoryPath,
-                                   bool newDirectory, int hash);
+    void slotDirectoryHashedAndScanned(const QString& directoryPath, bool newDirectory, int hash);
     void slotDirectoryUnchanged(const QString& directoryPath);
     void slotTrackExists(const QString& trackPath);
     void slotAddNewTrack(TrackPointer pTrack);
-
   private:
     enum ScannerState {
         IDLE,
@@ -118,20 +104,14 @@ class LibraryScanner : public QThread {
     // every state can change to CANCELING
     // CANCELING -> IDLE
     bool changeScannerState(LibraryScanner::ScannerState newState);
-
-    void cleanUpScan(const QStringList& verifiedTracks,
-            const QStringList& verifiedDirectories);
-
+    void cleanUpScan(const QStringList& verifiedTracks, const QStringList& verifiedDirectories);
     // The library trackcollection. Do not touch this from the library scanner
     // thread.
-    TrackCollection* m_pCollection;
-
+    TrackCollection* m_pCollection = nullptr;
     // The library scanner thread's database connection.
     QSqlDatabase m_database;
-
     // The pool of threads used for worker tasks.
     QThreadPool m_pool;
-
     // The library scanner thread's DAOs.
     LibraryHashDAO m_libraryHashDao;
     CueDAO m_cueDao;
@@ -140,16 +120,14 @@ class LibraryScanner : public QThread {
     DirectoryDAO m_directoryDao;
     AnalysisDao m_analysisDao;
     TrackDAO m_trackDao;
-
     // Global scanner state for scan currently in progress.
     ScannerGlobalPointer m_scannerGlobal;
-
     // The Semaphore guards the state transitions queued to the
     // Qt even Queue in the way, that you cannot start a
     // new scan while the old one is canceled
     QSemaphore m_stateSema;
     // this is accessed main and LibraryScanner thread
-    volatile ScannerState m_state;
+    std::atomic<ScannerState> m_state{IDLE};
 };
 
 #endif

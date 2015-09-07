@@ -4,26 +4,15 @@ Tooltips::Tooltips() {
     addStandardTooltips();
 }
 
-Tooltips::~Tooltips() {
-}
-
+Tooltips::~Tooltips() {}
 QString Tooltips::tooltipForId(QString id) const {
     // We always add a separator at the end.
-    QString joined = m_tooltips.value(id, QStringList()).join(tooltipSeparator());
-    if (joined.length() > 0) {
-        joined += tooltipSeparator();
-    }
+    auto joined = m_tooltips.value(id, QStringList()).join(tooltipSeparator());
+    if (joined.length() > 0) { joined += tooltipSeparator(); }
     return joined;
 }
-
-QString Tooltips::tooltipSeparator() const {
-    return "\n";
-}
-
-QList<QString>& Tooltips::add(QString id) {
-    return m_tooltips[id];
-}
-
+QString Tooltips::tooltipSeparator() const { return "\n"; }
+QList<QString>& Tooltips::add(QString id) { return m_tooltips[id]; }
 void Tooltips::addStandardTooltips() {
     QString dropTracksHere = tr("Drop tracks from library, external file manager, or other decks/samplers here.");
     QString resetToDefault = tr("Reset to default value.");

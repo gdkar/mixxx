@@ -11,13 +11,10 @@ EffectButtonParameterSlot::EffectButtonParameterSlot(const QString& group,
         : EffectParameterSlotBase(group,
                                   iParameterSlotNumber) {
     QString itemPrefix = formatItemPrefix(iParameterSlotNumber);
-    m_pControlLoaded = new ControlObject(
-            ConfigKey(m_group, itemPrefix + QString("_loaded")));
-    m_pControlValue = new ControlPushButton(
-            ConfigKey(m_group, itemPrefix));
+    m_pControlLoaded = new ControlObject(ConfigKey(m_group, itemPrefix + QString("_loaded")));
+    m_pControlValue = new ControlPushButton(ConfigKey(m_group, itemPrefix));
     m_pControlValue->setButtonMode(ControlPushButton::POWERWINDOW);
-    m_pControlType = new ControlObject(
-            ConfigKey(m_group, itemPrefix + QString("_type")));
+    m_pControlType = new ControlObject(ConfigKey(m_group, itemPrefix + QString("_type")));
 
     connect(m_pControlValue, SIGNAL(valueChanged(double)),
             this, SLOT(slotValueChanged(double)));

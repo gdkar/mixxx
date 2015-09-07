@@ -12,7 +12,7 @@ ControlWidgetConnection::ControlWidgetConnection(WBaseWidget* pBaseWidget,
         : m_pWidget(pBaseWidget),
           m_pControl(pControl),
           m_pValueTransformer(pTransformer) {
-    // If m_pControl is NULL then the creator of ControlWidgetConnection has
+    // If m_pControl is nullptr then the creator of ControlWidgetConnection has
     // screwed up badly. Assert in development mode. In release mode the
     // connection will be defunct.
     DEBUG_ASSERT_AND_HANDLE(!m_pControl.isNull()) {
@@ -23,17 +23,48 @@ ControlWidgetConnection::ControlWidgetConnection(WBaseWidget* pBaseWidget,
 
 ControlWidgetConnection::~ControlWidgetConnection() {
 }
-
+const ConfigKey& ControlWidgetConnection::getKey()const{return m_pControl->getKey();}
 void ControlWidgetConnection::setControlParameter(double parameter) {
-    if (m_pValueTransformer != NULL) {
-        parameter = m_pValueTransformer->transformInverse(parameter);
-    }
+    if (m_pValueTransformer ) {parameter = m_pValueTransformer->transformInverse(parameter);}
     m_pControl->setParameter(parameter);
 }
-
+int ControlParameterWidgetConnection::getDirectionOption()const{return m_directionOption;}
+int ControlParameterWidgetConnection::getEmitOption()const{return m_emitOption;}
+void ControlParameterWidgetConnection::setDirectionOption(
+    enum ControlParameterWidgetConnection::DirectionOption v)
+{
+  m_directionOption = v;
+}
+void ControlParameterWidgetConnection::setEmitOption(
+    enum ControlParameterWidgetConnection::EmitOption v )
+{
+  m_emitOption = v;
+}
+/* static */
+QString ControlParameterWidgetConnection::emitOptionToString(
+    ControlParameterWidgetConnection::EmitOption option)
+{
+        switch (option & EMIT_ON_PRESS_AND_RELEASE) {
+            case EMIT_NEVER:                return "NEVER";
+            case EMIT_ON_PRESS:             return "PRESS";
+            case EMIT_ON_RELEASE:           return "RELEASE";
+            case EMIT_ON_PRESS_AND_RELEASE: return "PRESS_AND_RELEASE";
+            default:                        return "UNKNOWN";
+        }
+}
+/*static*/ QString ControlParameterWidgetConnection::directionOptionToString(
+    ControlParameterWidgetConnection::DirectionOption option) {
+    switch (option & DIR_FROM_AND_TO_WIDGET) {
+        case DIR_NON:                   return "NON";
+        case DIR_FROM_WIDGET:           return "FROM_WIDGET";
+        case DIR_TO_WIDGET:             return "TO_WIDGET";
+        case DIR_FROM_AND_TO_WIDGET:    return "FROM_AND_TO_WIDGET";
+        default:                        return "UNKNOWN";
+    }
+}
 double ControlWidgetConnection::getControlParameter() const {
     double parameter = m_pControl->getParameter();
-    if (m_pValueTransformer != NULL) {
+    if (m_pValueTransformer ) {
         parameter = m_pValueTransformer->transform(parameter);
     }
     return parameter;
@@ -41,7 +72,7 @@ double ControlWidgetConnection::getControlParameter() const {
 
 double ControlWidgetConnection::getControlParameterForValue(double value) const {
     double parameter = m_pControl->getParameterForValue(value);
-    if (m_pValueTransformer != NULL) {
+    if (m_pValueTransformer ) {
         parameter = m_pValueTransformer->transform(parameter);
     }
     return parameter;

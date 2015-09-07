@@ -7,17 +7,12 @@
 void ColumnCache::setColumns(const QStringList& columns) {
     m_columnsByIndex.clear();
     m_columnsByIndex.append(columns);
-
     m_columnIndexByName.clear();
     for (int i = 0; i < columns.size(); ++i) {
         QString column = columns[i];
         m_columnIndexByName[column] = i;
     }
-
-    for (int i = 0; i < NUM_COLUMNS; ++i) {
-        m_columnIndexByEnum[i] = -1;
-    }
-
+    for (int i = 0; i < NUM_COLUMNS; ++i) { m_columnIndexByEnum[i] = -1; }
     m_columnIndexByEnum[COLUMN_LIBRARYTABLE_ID] = fieldIndex(LIBRARYTABLE_ID);
     m_columnIndexByEnum[COLUMN_LIBRARYTABLE_ARTIST] = fieldIndex(LIBRARYTABLE_ARTIST);
     m_columnIndexByEnum[COLUMN_LIBRARYTABLE_TITLE] = fieldIndex(LIBRARYTABLE_TITLE);

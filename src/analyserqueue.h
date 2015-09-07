@@ -14,27 +14,19 @@
 #include <QSemaphore>
 
 #include <vector>
-
 class TrackCollection;
-
 class AnalyserQueue : public QThread {
     Q_OBJECT
-
   public:
     AnalyserQueue(TrackCollection* pTrackCollection);
     virtual ~AnalyserQueue();
     void stop();
     void queueAnalyseTrack(TrackPointer tio);
-
-    static AnalyserQueue* createDefaultAnalyserQueue(
-            ConfigObject<ConfigValue>* pConfig, TrackCollection* pTrackCollection);
-    static AnalyserQueue* createAnalysisFeatureAnalyserQueue(
-            ConfigObject<ConfigValue>* pConfig, TrackCollection* pTrackCollection);
-
+    static AnalyserQueue* createDefaultAnalyserQueue(ConfigObject<ConfigValue>* pConfig, TrackCollection* pTrackCollection);
+    static AnalyserQueue* createAnalysisFeatureAnalyserQueue(ConfigObject<ConfigValue>* pConfig, TrackCollection* pTrackCollection);
   public slots:
     void slotAnalyseTrack(TrackPointer tio);
     void slotUpdateProgress();
-
   signals:
     void trackProgress(double  progress);
     void trackDone(TrackPointer track);
@@ -42,34 +34,25 @@ class AnalyserQueue : public QThread {
     // Signals from AnalyserQueue Thread:
     void queueEmpty();
     void updateProgress();
-
   protected:
     void run();
-
   private:
-
     struct progress_info {
-        TrackPointer current_track;
-        double track_progress; // in 0.1 %
-        int queue_size;
-        QSemaphore sema;
+        TrackPointer current_track{nullptr};
+        double track_progress{0}; 
+        int queue_size = 0;
+        QSemaphore sema{0};
     };
-
     void addAnalyser(Analyser* an);
-
     QList<Analyser*> m_aq;
-
     bool isLoadedTrackWaiting(TrackPointer analysingTrack);
     TrackPointer dequeueNextBlocking();
     bool doAnalysis(TrackPointer tio, Mixxx::AudioSourcePointer pAudioSource);
     void emitUpdateProgress(TrackPointer tio, double progress);
     void emptyCheck();
-
     bool m_exit;
     QAtomicInt m_aiCheckPriorities;
-
     SampleBuffer m_sampleBuffer;
-
     // The processing queue and associated mutex
     QQueue<TrackPointer> m_tioq;
     QMutex m_qm;

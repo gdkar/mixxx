@@ -10,12 +10,12 @@
 #include "effects/effectsmanager.h"
 #include "engine/effects/engineeffectsmanager.h"
 #include "controlaudiotaperpot.h"
-
+#include "controlobjectslave.h"
 
 EngineMicrophone::EngineMicrophone(const ChannelHandleAndGroup& handle_group,
                                    EffectsManager* pEffectsManager)
         : EngineChannel(handle_group, EngineChannel::CENTER),
-          m_pEngineEffectsManager(pEffectsManager ? pEffectsManager->getEngineEffectsManager() : NULL),
+          m_pEngineEffectsManager(pEffectsManager ? pEffectsManager->getEngineEffectsManager() : nullptr),
           m_vuMeter(getGroup()),
           m_pEnabled(new ControlObject(ConfigKey(getGroup(), "enabled"))),
           m_pPregain(new ControlAudioTaperPot(ConfigKey(getGroup(), "pregain"), -12, 12, 0.5)),
@@ -27,12 +27,11 @@ EngineMicrophone::EngineMicrophone(const ChannelHandleAndGroup& handle_group,
 
     setMaster(false); // Use "talkover" button to enable microphones
 
-    m_pSampleRate = new ControlObjectSlave("[Master]", "samplerate");
+    m_pSampleRate = new ControlObjectSlave("[Master]", "samplerate",this);
 }
 
 EngineMicrophone::~EngineMicrophone() {
     qDebug() << "~EngineMicrophone()";
-    delete m_pSampleRate;
     delete m_pEnabled;
     delete m_pPregain;
 }
@@ -68,10 +67,7 @@ void EngineMicrophone::onInputUnconfigured(AudioInput input) {
     m_pEnabled->set(0.0);
 }
 
-void EngineMicrophone::receiveBuffer(AudioInput input, const CSAMPLE* pBuffer,
-                                     unsigned int nFrames) {
-    Q_UNUSED(input);
-    Q_UNUSED(nFrames);
+void EngineMicrophone::receiveBuffer(AudioInput /*input*/, const CSAMPLE* pBuffer,unsigned int /*nFrames*/) {
     m_sampleBuffer = pBuffer;
 }
 
@@ -83,14 +79,13 @@ void EngineMicrophone::process(CSAMPLE* pOut, const int iBufferSize) {
     if (sampleBuffer) {SampleUtil::copyWithGain(pOut, sampleBuffer, pregain, iBufferSize);}
     else {SampleUtil::clear(pOut, iBufferSize);}
     m_sampleBuffer = nullptr;
-    if (m_pEngineEffectsManager != nullptr) {
+    if (m_pEngineEffectsManager) {
         // Process effects enabled for this channel
         GroupFeatureState features;
         // This is out of date by a callback but some effects will want the RMS
         // volume.
         m_vuMeter.collectFeatures(&features);
-        m_pEngineEffectsManager->process(getHandle(), pOut, iBufferSize,
-                                         m_pSampleRate->get(), features);
+        m_pEngineEffectsManager->process(getHandle(), pOut, iBufferSize,m_pSampleRate->get(), features);
     }
     // Update VU meter
     m_vuMeter.process(pOut, iBufferSize);

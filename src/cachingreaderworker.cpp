@@ -3,7 +3,7 @@
 #include <QMutexLocker>
 
 #include "controlobject.h"
-#include "controlobjectthread.h"
+#include "controlobjectslave.h"
 
 #include "cachingreaderworker.h"
 #include "soundsourceproxy.h"
@@ -19,7 +19,7 @@ CachingReaderWorker::CachingReaderWorker(
           m_tag(QString("CachingReaderWorker %1").arg(m_group)),
           m_pChunkReadRequestFIFO(pChunkReadRequestFIFO),
           m_pReaderStatusFIFO(pReaderStatusFIFO),
-          m_maxReadableFrameIndex(Mixxx::AudioSource::getMinFrameIndex()),
+          m_maxReadableFrameIndex(0),
           m_stop{false} {}
 CachingReaderWorker::~CachingReaderWorker() {}
 ReaderStatusUpdate CachingReaderWorker::processReadRequest(const CachingReaderChunkReadRequest& request) {
@@ -97,7 +97,7 @@ void CachingReaderWorker::loadTrack(const TrackPointer& pTrack) {
     emit(trackLoading());
     auto status = ReaderStatusUpdate{};
     status.status = TRACK_NOT_LOADED;
-    QString filename = pTrack->getLocation();
+    auto filename = pTrack->getLocation();
     if (filename.isEmpty() || !pTrack->exists()) {
         // Must unlock before emitting to avoid deadlock
         qDebug() << m_group << "CachingReaderWorker::loadTrack() load failed for\"" << filename << "\", unlocked reader lock";
@@ -108,7 +108,7 @@ void CachingReaderWorker::loadTrack(const TrackPointer& pTrack) {
     auto audioSrcCfg = Mixxx::AudioSourceConfig { CachingReaderChunk::kChannels,-1};
     m_pAudioSource = openAudioSourceForReading(pTrack, audioSrcCfg);
     if (m_pAudioSource.isNull()) {
-        m_maxReadableFrameIndex = Mixxx::AudioSource::getMinFrameIndex();
+        m_maxReadableFrameIndex = 0;
         // Must unlock before emitting to avoid deadlock
         qDebug() << m_group << "CachingReaderWorker::loadTrack() load failed for\"" << filename << "\", file invalid, unlocked reader lock";
         m_pReaderStatusFIFO->writeBlocking(&status, 1);

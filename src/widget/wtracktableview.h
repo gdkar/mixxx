@@ -5,7 +5,6 @@
 #include <QSortFilterProxyModel>
 
 #include "configobject.h"
-#include "controlobjectslave.h"
 #include "trackinfoobject.h"
 #include "library/libraryview.h"
 #include "library/trackmodel.h" // Can't forward declare enums
@@ -13,7 +12,7 @@
 #include "widget/wlibrarytableview.h"
 #include "dlgtagfetcher.h"
 
-class ControlObjectThread;
+class ControlObjectSlave;
 class DlgTrackInfo;
 class TrackCollection;
 class WCoverArtMenu;
@@ -110,9 +109,9 @@ class WTrackTableView : public WLibraryTableView {
     QModelIndex currentTrackInfoIndex;
 
 
-    ControlObjectThread* m_pNumSamplers;
-    ControlObjectThread* m_pNumDecks;
-    ControlObjectThread* m_pNumPreviewDecks;
+    ControlObjectSlave* m_pNumSamplers;
+    ControlObjectSlave* m_pNumDecks;
+    ControlObjectSlave* m_pNumPreviewDecks;
 
     // Context menu machinery
     QMenu *m_pMenu, *m_pPlaylistMenu, *m_pCrateMenu, *m_pSamplerMenu, *m_pBPMMenu;

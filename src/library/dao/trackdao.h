@@ -148,11 +148,9 @@ class TrackDAO : public QObject, public virtual DAO {
     void invalidateTrackLocationsInLibrary();
     void markUnverifiedTracksAsDeleted();
     void markTrackLocationsAsDeleted(const QString& directory);
-    bool detectMovedFiles(QSet<TrackId>* pTracksMovedSetOld,
-            QSet<TrackId>* pTracksMovedSetNew, volatile const bool* pCancel);
-    bool verifyRemainingTracks(volatile const bool* pCancel);
-    void detectCoverArtForUnknownTracks(volatile const bool* pCancel,
-                                        QSet<TrackId>* pTracksChanged);
+    bool detectMovedFiles(QSet<TrackId>* pTracksMovedSetOld, QSet<TrackId>* pTracksMovedSetNew, std::atomic<bool>* pCancel);
+    bool verifyRemainingTracks(std::atomic<bool>* pCancel);
+    void detectCoverArtForUnknownTracks(std::atomic<bool>* pCancel, QSet<TrackId>* pTracksChanged);
 
   signals:
     void trackDirty(TrackId trackId) const;

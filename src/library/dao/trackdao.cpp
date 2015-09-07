@@ -1625,7 +1625,7 @@ void TrackDAO::markTrackLocationsAsDeleted(const QString& directory) {
 // moved instead of being deleted outright, and so we can salvage your
 // existing metadata that you have in your DB (like cue points, etc.).
 bool TrackDAO::detectMovedFiles(QSet<TrackId>* pTracksMovedSetOld,
-        QSet<TrackId>* pTracksMovedSetNew, volatile const bool* pCancel) {
+        QSet<TrackId>* pTracksMovedSetNew, std::atomic<bool>* pCancel) {
     // This function should not start a transaction on it's own!
     // When it's called from libraryscanner.cpp, there already is a transaction
     // started!
@@ -1636,36 +1636,26 @@ bool TrackDAO::detectMovedFiles(QSet<TrackId>* pTracksMovedSetOld,
     // rather use duration then filesize as an indicator of changes. The filesize
     // can change by adding more ID3v2 tags
     int duration = -1;
-
     query.prepare("SELECT track_locations.id, filename, duration FROM track_locations "
                   "INNER JOIN library ON track_locations.id=library.location "
                   "WHERE fs_deleted=1");
-
-    if (!query.exec()) {
-        LOG_FAILED_QUERY(query);
-    }
-
+    if (!query.exec()) { LOG_FAILED_QUERY(query); }
     query2.prepare("SELECT track_locations.id FROM track_locations "
                    "INNER JOIN library ON track_locations.id=library.location "
                    "WHERE fs_deleted=0 AND "
                    "filename=:filename AND "
                    "duration=:duration");
-
     QSqlRecord queryRecord = query.record();
     const int idColumn = queryRecord.indexOf("id");
     const int filenameColumn = queryRecord.indexOf("filename");
     const int durationColumn = queryRecord.indexOf("duration");
-
     // For each track that's been "deleted" on disk...
     while (query.next()) {
-        if (*pCancel) {
-            return false;
-        }
+        if (pCancel->load()) { return false; }
         DbId newTrackLocationId;
         DbId oldTrackLocationId(query.value(idColumn));
         filename = query.value(filenameColumn).toString();
         duration = query.value(durationColumn).toInt();
-
         query2.bindValue(":filename", filename);
         query2.bindValue(":duration", duration);
         if (!query2.exec()) {
@@ -1673,19 +1663,12 @@ bool TrackDAO::detectMovedFiles(QSet<TrackId>* pTracksMovedSetOld,
             LOG_FAILED_QUERY(query2);
         }
         // WTF duplicate tracks?
-        if (query2.size() > 1) {
-            LOG_FAILED_QUERY(query2) << "Result size was greater than 1.";
-        }
-
+        if (query2.size() > 1) { LOG_FAILED_QUERY(query2) << "Result size was greater than 1."; }
         const int query2idColumn = query2.record().indexOf("id");
-        while (query2.next()) {
-            newTrackLocationId = DbId(query2.value(query2idColumn));
-        }
-
+        while (query2.next()) { newTrackLocationId = DbId(query2.value(query2idColumn)); }
         //If we found a moved track...
         if (newTrackLocationId.isValid()) {
             qDebug() << "Found moved track!" << filename;
-
             // Remove old row from track_locations table
             query3.prepare("DELETE FROM track_locations WHERE id=:id");
             query3.bindValue(":id", oldTrackLocationId.toVariant());
@@ -1693,7 +1676,6 @@ bool TrackDAO::detectMovedFiles(QSet<TrackId>* pTracksMovedSetOld,
                 // Should not happen!
                 LOG_FAILED_QUERY(query3);
             }
-
             // The library scanner will have added a new row to the Library
             // table which corresponds to the track in the new location. We need
             // to remove that so we don't end up with two rows in the library
@@ -1804,7 +1786,7 @@ void TrackDAO::writeMetadataToFile(TrackInfoObject* pTrack) {
     }
 }
 
-bool TrackDAO::verifyRemainingTracks(volatile const bool* pCancel) {
+bool TrackDAO::verifyRemainingTracks(std::atomic< bool>* pCancel) {
     // This function is called from the LibraryScanner Thread, which also has a
     // transaction running, so we do NOT NEED to use one here
     QSqlQuery query(m_database);
@@ -1833,13 +1815,9 @@ bool TrackDAO::verifyRemainingTracks(volatile const bool* pCancel) {
         trackLocation = query.value(locationColumn).toString();
         query2.bindValue(":fs_deleted", QFile::exists(trackLocation) ? 0 : 1);
         query2.bindValue(":location", trackLocation);
-        if (!query2.exec()) {
-            LOG_FAILED_QUERY(query2);
-        }
+        if (!query2.exec()) { LOG_FAILED_QUERY(query2); }
         emit(progressVerifyTracksOutside(trackLocation));
-        if (*pCancel) {
-            return false;
-        }
+        if (pCancel->load()) { return false;}
     }
     return true;
 }
@@ -1858,7 +1836,7 @@ struct TrackWithoutCover {
     QString trackAlbum;
 };
 
-void TrackDAO::detectCoverArtForUnknownTracks(volatile const bool* pCancel,
+void TrackDAO::detectCoverArtForUnknownTracks(std::atomic<bool>* pCancel,
                                               QSet<TrackId>* pTracksChanged) {
     // WARNING TO ANYONE TOUCHING THIS IN THE FUTURE
     // The library contains user selected cover art. There is nothing worse than
@@ -1881,31 +1859,22 @@ void TrackDAO::detectCoverArtForUnknownTracks(volatile const bool* pCancel,
                   // CoverInfo::Source 0 is UNKNOWN
                   "WHERE coverart_source is NULL or coverart_source = 0 "
                   "ORDER BY track_locations.directory");
-
     QList<TrackWithoutCover> tracksWithoutCover;
-
     if (!query.exec()) {
-        LOG_FAILED_QUERY(query)
-                << "failed looking for tracks with unknown cover art";
+        LOG_FAILED_QUERY(query) << "failed looking for tracks with unknown cover art";
         return;
     }
-
     // We quickly iterate through the results to prevent blocking the database
     // for other operations. Bug #1399981.
     while (query.next()) {
-        if (*pCancel) {
-            return;
-        }
-
+        if (pCancel->load()) { return; }
         TrackWithoutCover track;
         track.trackId = TrackId(query.value(0));
         track.trackLocation = query.value(1).toString();
         // TODO(rryan) use QFileInfo path instead? symlinks? relative?
         track.directoryPath = query.value(2).toString();
         track.trackAlbum = query.value(3).toString();
-
-        CoverInfo::Source source = static_cast<CoverInfo::Source>(
-            query.value(4).toInt());
+        CoverInfo::Source source = static_cast<CoverInfo::Source>( query.value(4).toInt());
         if (source == CoverInfo::USER_SELECTED) {
             qWarning() << "PROGRAMMING ERROR! detectCoverArtForUnknownTracks"
                        << "got a USER_SELECTED track. Skipping.";
@@ -1913,7 +1882,6 @@ void TrackDAO::detectCoverArtForUnknownTracks(volatile const bool* pCancel,
         }
         tracksWithoutCover.append(track);
     }
-
     QSqlQuery updateQuery(m_database);
     updateQuery.prepare(
         "UPDATE library SET "
@@ -1922,69 +1890,46 @@ void TrackDAO::detectCoverArtForUnknownTracks(volatile const bool* pCancel,
         "  coverart_hash=:coverart_hash,"
         "  coverart_location=:coverart_location "
         "WHERE id=:track_id");
-
-
-    QRegExp coverArtFilenames(CoverArtUtils::supportedCoverArtExtensionsRegex(),
-                              Qt::CaseInsensitive);
+    QRegExp coverArtFilenames(CoverArtUtils::supportedCoverArtExtensionsRegex(), Qt::CaseInsensitive);
     QString currentDirectoryPath;
     MDir currentDirectory;
     QLinkedList<QFileInfo> possibleCovers;
-
-    foreach (const TrackWithoutCover& track, tracksWithoutCover) {
-        if (*pCancel) {
-            return;
-        }
-
+    for(auto & track: tracksWithoutCover) {
+        if (pCancel->load()) {return;}
         //qDebug() << "Searching for cover art for" << trackLocation;
         emit(progressCoverArt(track.trackLocation));
-
         QFileInfo trackInfo(track.trackLocation);
         if (!trackInfo.exists()) {
             //qDebug() << trackLocation << "does not exist";
             continue;
         }
-
-        QImage image(parseCoverArt(trackInfo));
+        auto image=parseCoverArt(trackInfo);
         if (!image.isNull()) {
-            updateQuery.bindValue(":coverart_type",
-                                  static_cast<int>(CoverInfo::METADATA));
-            updateQuery.bindValue(":coverart_source",
-                                  static_cast<int>(CoverInfo::GUESSED));
-            updateQuery.bindValue(":coverart_hash",
-                                  CoverArtUtils::calculateHash(image));
+            updateQuery.bindValue(":coverart_type", static_cast<int>(CoverInfo::METADATA));
+            updateQuery.bindValue(":coverart_source", static_cast<int>(CoverInfo::GUESSED));
+            updateQuery.bindValue(":coverart_hash", CoverArtUtils::calculateHash(image));
             updateQuery.bindValue(":coverart_location", "");
             updateQuery.bindValue(":track_id", track.trackId.toVariant());
             if (!updateQuery.exec()) {
                 LOG_FAILED_QUERY(updateQuery) << "failed to write metadata cover";
-            } else {
-                pTracksChanged->insert(track.trackId);
-            }
+            } else { pTracksChanged->insert(track.trackId); }
             continue;
         }
-
         if (track.directoryPath != currentDirectoryPath) {
             possibleCovers.clear();
             currentDirectoryPath = track.directoryPath;
             currentDirectory = MDir(currentDirectoryPath);
-            possibleCovers = CoverArtUtils::findPossibleCoversInFolder(
-                currentDirectoryPath);
+            possibleCovers = CoverArtUtils::findPossibleCoversInFolder( currentDirectoryPath);
         }
-
-        CoverArt art = CoverArtUtils::selectCoverArtForTrack(
-            trackInfo.baseName(), track.trackAlbum, possibleCovers);
-
-        updateQuery.bindValue(":coverart_type",
-                              static_cast<int>(art.info.type));
-        updateQuery.bindValue(":coverart_source",
-                              static_cast<int>(art.info.source));
+        auto art = CoverArtUtils::selectCoverArtForTrack( trackInfo.baseName(), track.trackAlbum, possibleCovers);
+        updateQuery.bindValue(":coverart_type", static_cast<int>(art.info.type));
+        updateQuery.bindValue(":coverart_source", static_cast<int>(art.info.source));
         updateQuery.bindValue(":coverart_hash", art.info.hash);
         updateQuery.bindValue(":coverart_location", art.info.coverLocation);
         updateQuery.bindValue(":track_id", track.trackId.toVariant());
         if (!updateQuery.exec()) {
             LOG_FAILED_QUERY(updateQuery) << "failed to write file or none cover";
-        } else {
-            pTracksChanged->insert(track.trackId);
-        }
+        } else { pTracksChanged->insert(track.trackId); }
     }
 }
 

@@ -517,7 +517,6 @@ class MixxxCore(Feature):
                    "control/controlmodel.cpp",
                    "controlobject.cpp",
                    "controlobjectslave.cpp",
-                   "controlobjectthread.cpp",
                    "controlaudiotaperpot.cpp",
                    "controlpotmeter.cpp",
                    "controllinpotmeter.cpp",
@@ -681,6 +680,7 @@ class MixxxCore(Feature):
                    "sources/soundsourcepluginlibrary.cpp",
                    "sources/soundsource.cpp",
                    "sources/audiosource.cpp",
+                   "sources/urlresource.cpp",
 
                    "metadata/trackmetadata.cpp",
                    "metadata/trackmetadatataglib.cpp",

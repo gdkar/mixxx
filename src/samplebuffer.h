@@ -109,10 +109,10 @@ class SampleBuffer {
       std::unique_ptr<CSAMPLE[]> m_data;
       SINT m_size {0};
 };
-namespace std {
+/*namespace std {
 // Template specialization of std::swap for SampleBuffer.
 template<>
-void swap(SampleBuffer& lhs, SampleBuffer& rhs) noexcept { lhs.swap(rhs); }
+void swap(SampleBuffer& lhs, SampleBuffer& rhs) { lhs.swap(rhs); }
 }  // namespace std
-
+*/
 #endif // SAMPLEBUFFER_H

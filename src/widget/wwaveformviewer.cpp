@@ -74,13 +74,13 @@ void WWaveformViewer::mousePressEvent(QMouseEvent* event) {
         m_bScratching = true;
         double audioSamplePerPixel = m_waveformWidget->getAudioSamplePerPixel();
         double targetPosition = -1.0 * event->pos().x() * audioSamplePerPixel * 2;
-        m_pScratchPosition->slotSet(targetPosition);
-        m_pScratchPositionEnable->slotSet(1.0);
+        m_pScratchPosition->set(targetPosition);
+        m_pScratchPositionEnable->set(1.0);
     } else if (event->button() == Qt::RightButton) {
         // If we are scratching then disable and reset because the two shouldn't
         // be used at once.
         if (m_bScratching) {
-            m_pScratchPositionEnable->slotSet(0.0);
+            m_pScratchPositionEnable->set(0.0);
             m_bScratching = false;
         }
         m_pWheel->setParameter(0.5);
@@ -98,7 +98,7 @@ void WWaveformViewer::mouseMoveEvent(QMouseEvent* event) {
         double audioSamplePerPixel = m_waveformWidget->getAudioSamplePerPixel();
         double targetPosition = -1.0 * event->pos().x() * audioSamplePerPixel * 2;
         //qDebug() << "Target:" << targetPosition;
-        m_pScratchPosition->slotSet(targetPosition);
+        m_pScratchPosition->set(targetPosition);
     } else if (m_bBending) {
         QPoint diff = event->pos() - m_mouseAnchor;
         // Start at the middle of [0.0, 1.0], and emit values based on how far
@@ -117,7 +117,7 @@ void WWaveformViewer::mouseMoveEvent(QMouseEvent* event) {
 
 void WWaveformViewer::mouseReleaseEvent(QMouseEvent* /*event*/) {
     if (m_bScratching) {
-        m_pScratchPositionEnable->slotSet(0.0);
+        m_pScratchPositionEnable->set(0.0);
         m_bScratching = false;
     }
     if (m_bBending) {

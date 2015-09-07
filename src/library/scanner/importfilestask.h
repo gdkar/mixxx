@@ -14,7 +14,7 @@ class ImportFilesTask : public ScannerTask {
     Q_OBJECT
   public:
     ImportFilesTask(LibraryScanner* pScanner,
-                    const ScannerGlobalPointer scannerGlobal,
+                    ScannerGlobalPointer scannerGlobal,
                     const QString& dirPath,
                     const bool prevHashExists,
                     const int newHash,
@@ -22,9 +22,7 @@ class ImportFilesTask : public ScannerTask {
                     const QLinkedList<QFileInfo>& possibleCovers,
                     SecurityTokenPointer pToken);
     virtual ~ImportFilesTask() {}
-
     virtual void run();
-
   private:
     const QString m_dirPath;
     const bool m_prevHashExists;

@@ -19,44 +19,29 @@ class EffectsManager;
 class EffectChainManager : public QObject {
     Q_OBJECT
   public:
-    EffectChainManager(ConfigObject<ConfigValue>* pConfig,
-                       EffectsManager* pEffectsManager);
+    EffectChainManager(ConfigObject<ConfigValue>* pConfig,EffectsManager* pEffectsManager);
     virtual ~EffectChainManager();
-
     void registerChannel(const ChannelHandleAndGroup& handle_group);
-    const QSet<ChannelHandleAndGroup>& registeredChannels() const {
-        return m_registeredChannels;
-    }
-
+    const QSet<ChannelHandleAndGroup>& registeredChannels() const {return m_registeredChannels;}
     StandardEffectRackPointer addStandardEffectRack();
     StandardEffectRackPointer getStandardEffectRack(int rack);
-
     EqualizerRackPointer addEqualizerRack();
     EqualizerRackPointer getEqualizerRack(int rack);
-
     QuickEffectRackPointer addQuickEffectRack();
     QuickEffectRackPointer getQuickEffectRack(int rack);
-
     EffectRackPointer getEffectRack(const QString& group);
-
     void addEffectChain(EffectChainPointer pEffectChain);
     void removeEffectChain(EffectChainPointer pEffectChain);
-
     // To support cycling through effect chains, there is a global ordering of
     // chains. These methods allow you to get the next or previous chain given
     // your current chain.
     // TODO(rryan): Prevent double-loading of a chain into a slot?
     EffectChainPointer getNextEffectChain(EffectChainPointer pEffectChain);
     EffectChainPointer getPrevEffectChain(EffectChainPointer pEffectChain);
-
     bool saveEffectChains();
     bool loadEffectChains();
-
   private:
-    QString debugString() const {
-        return "EffectChainManager";
-    }
-
+    QString debugString() const {return "EffectChainManager";}
     ConfigObject<ConfigValue>* m_pConfig;
     EffectsManager* m_pEffectsManager;
     QList<StandardEffectRackPointer> m_standardEffectRacks;

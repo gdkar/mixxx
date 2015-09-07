@@ -3,7 +3,6 @@
 
 #include <gtest/gtest_prod.h>
 
-#include "controlobject.h"
 #include "engine/enginecontrol.h"
 #include "engine/sync/syncable.h"
 #include "util/tapfilter.h"
@@ -23,7 +22,7 @@ class BpmControl : public EngineControl {
     virtual ~BpmControl();
 
     double getBpm() const;
-    double getLocalBpm() const { return m_pLocalBpm ? m_pLocalBpm->get() : 0.0; }
+    double getLocalBpm() const; 
     // When in master sync mode, ratecontrol calls calcSyncedRate to figure out
     // how fast the track should play back.  The returned rate is usually just
     // the correct pitch to match bpms.  The usertweak argument represents
@@ -35,7 +34,7 @@ class BpmControl : public EngineControl {
     // Get the phase offset from the specified position.
     double getPhaseOffset(double reference_position);
     double getBeatDistance(double dThisPosition) const;
-    double getPreviousSample() const { return m_dPreviousSample; }
+    double getPreviousSample() const;
 
     void setCurrentSample(const double dCurrentSample, const double dTotalSamples);
     double process(const double dRate,
@@ -99,14 +98,10 @@ class BpmControl : public EngineControl {
     void slotBeatsTranslateMatchAlignment(double);
 
   private:
-    SyncMode getSyncMode() const {
-        return syncModeFromDouble(m_pSyncMode->get());
-    }
+    SyncMode getSyncMode() const; 
     bool syncTempo();
     double calcSyncAdjustment(double my_percentage, bool userTweakingSync);
-
     friend class SyncControl;
-
     // ControlObjects that come from EngineBuffer
     ControlObjectSlave* m_pPlayButton;
     ControlObjectSlave* m_pReverseButton;

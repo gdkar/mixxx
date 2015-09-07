@@ -1,6 +1,6 @@
 #include "effects/native/bessel8lvmixeqeffect.h"
 #include "util/math.h"
-
+#include "controlobjectslave.h"
 // static
 QString Bessel8LVMixEQEffect::getId() {
     return "org.mixxx.effects.bessel8lvmixeq";

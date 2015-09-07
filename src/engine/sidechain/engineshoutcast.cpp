@@ -30,6 +30,8 @@
 
 #include "engine/sidechain/engineshoutcast.h"
 #include "configobject.h"
+#include "controlobject.h"
+#include "controlobjectslave.h"
 #include "playerinfo.h"
 #include "encoder/encoder.h"
 #include "encoder/encodermp3.h"

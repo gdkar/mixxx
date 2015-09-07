@@ -148,7 +148,8 @@ BpmControl::~BpmControl() {
     delete m_pAdjustBeatsFaster;
     delete m_pAdjustBeatsSlower;
 }
-
+double BpmControl::getLocalBpm()const{return m_pLocalBpm?m_pLocalBpm->get():0.0;}
+double BpmControl::getPreviousSample()const{return m_dPreviousSample;}
 double BpmControl::getBpm() const {
     return m_pEngineBpm->get();
 }
@@ -889,3 +890,4 @@ void BpmControl::collectFeatures(GroupFeatureState* pGroupFeatures) const {
         pGroupFeatures->beat_fraction = dThisBeatFraction;
     }
 }
+SyncMode BpmControl::getSyncMode()const{return syncModeFromDouble(m_pSyncMode->get());}

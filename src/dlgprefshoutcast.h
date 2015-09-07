@@ -23,7 +23,6 @@
 #include <QWidget>
 
 #include "ui_dlgprefshoutcastdlg.h"
-#include "controlobject.h"
 #include "configobject.h"
 #include "shoutcast/defs_shoutcast.h"
 #include "preferences/dlgpreferencepage.h"
@@ -32,7 +31,7 @@
   *@author John Sully
   */
 
-class ControlObjectThread;
+class ControlObjectSlave;
 
 class DlgPrefShoutcast : public DlgPreferencePage, public Ui::DlgPrefShoutcastDlg  {
     Q_OBJECT
@@ -52,7 +51,7 @@ class DlgPrefShoutcast : public DlgPreferencePage, public Ui::DlgPrefShoutcastDl
   private:
     ConfigObject<ConfigValue>* m_pConfig;
     // If set to 1, EngineShoutcast will update it's settings.
-    ControlObjectThread* m_pUpdateShoutcastFromPrefs;
+    ControlObjectSlave* m_pUpdateShoutcastFromPrefs;
 };
 
 #endif

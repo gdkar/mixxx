@@ -3,7 +3,7 @@
 #include "engine/positionscratchcontroller.h"
 #include "engine/enginebufferscale.h" // for MIN_SEEK_SPEED
 #include "util/math.h"
-
+#include "controlobject.h"
 class VelocityController {
   public:
     VelocityController()

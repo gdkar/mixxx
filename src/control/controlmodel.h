@@ -10,9 +10,7 @@
 #include <QString>
 
 #include "configobject.h"
-#include "controlobject.h"
-#include "controlobjectslave.h"
-
+class ControlObjectSlave;
 class ControlModel : public QAbstractTableModel {
     Q_OBJECT
   public:

@@ -410,7 +410,15 @@ void EffectChainSlot::slotChannelStatusChanged(const QString& group) {
         }
     }
 }
-
+EffectChainSlot::ChannelInfo::ChannelInfo(const ChannelHandleAndGroup& hg, ControlObject *pe)
+  : handle_group(hg)
+  , pEnabled(pe)
+{
+}
+EffectChainSlot::ChannelInfo::~ChannelInfo()
+{
+  delete pEnabled;
+}
 unsigned int EffectChainSlot::getChainSlotNumber() const {
     return m_iChainSlotNumber;
 }

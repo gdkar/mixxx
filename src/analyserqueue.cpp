@@ -35,7 +35,6 @@ namespace {
     const SINT kAnalysisFramesPerBlock  = 4096;
     const SINT kAnalysisSamplesPerBlock = kAnalysisFramesPerBlock * kAnalysisChannels;
 } // anonymous namespace
-
 AnalyserQueue::AnalyserQueue(TrackCollection* /*pTrackCollection*/)
         : m_aq(),
           m_exit(false),
@@ -47,7 +46,6 @@ AnalyserQueue::AnalyserQueue(TrackCollection* /*pTrackCollection*/)
           m_queue_size(0) {
     connect(this, SIGNAL(updateProgress()), this, SLOT(slotUpdateProgress()));
 }
-
 AnalyserQueue::~AnalyserQueue() {
     stop();
     m_progressInfo.sema.release();
@@ -56,9 +54,7 @@ AnalyserQueue::~AnalyserQueue() {
     m_aq.clear();
     //qDebug() << "AnalyserQueue::~AnalyserQueue()";
 }
-
 void AnalyserQueue::addAnalyser(Analyser* an) { m_aq.push_back(an); }
-
 // This is called from the AnalyserQueue thread
 bool AnalyserQueue::isLoadedTrackWaiting(TrackPointer analysingTrack) {
     auto &info = PlayerInfo::instance();

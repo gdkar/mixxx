@@ -3,7 +3,9 @@
 #include "vinylcontrol/vinylcontrol.h"
 #include "library/dao/cue.h"
 #include "util/math.h"
-
+#include "controlobjectslave.h"
+#include "controlobject.h"
+#include "controlpushbutton.h"
 VinylControlControl::VinylControlControl(QString group, ConfigObject<ConfigValue>* pConfig)
         : EngineControl(group, pConfig),
           m_bSeekRequested(false) {
@@ -84,28 +86,18 @@ void VinylControlControl::notifySeekQueued() {
 
 void VinylControlControl::slotControlVinylSeek(double fractionalPos) {
     // Prevent NaN's from sneaking into the engine.
-    if (isnan(fractionalPos)) {
-        return;
-    }
-
+    if (isnan(fractionalPos)) {return;}
     // Do nothing if no track is loaded.
-    if (!m_pCurrentTrack) {
-        return;
-    }
-
-
+    if (!m_pCurrentTrack) {return;}
     double total_samples = getTotalSamples();
     double new_playpos = round(fractionalPos * total_samples);
-
     if (m_pControlVinylEnabled->get() > 0.0 && m_pControlVinylMode->get() == MIXXX_VCMODE_RELATIVE) {
         int cuemode = (int)m_pControlVinylCueing->get();
-
         //if in preroll, always seek
         if (new_playpos < 0) {
             seekExact(new_playpos);
             return;
         }
-
         switch (cuemode) {
         case MIXXX_RELATIVE_CUE_OFF:
             return; // If off, do nothing.
@@ -120,19 +112,14 @@ void VinylControlControl::slotControlVinylSeek(double fractionalPos) {
             qWarning() << "Invalid vinyl cue setting";
             return;
         }
-
         double shortest_distance = 0;
         int nearest_playpos = -1;
-
-        QList<Cue*> cuePoints = m_pCurrentTrack->getCuePoints();
+        auto cuePoints = m_pCurrentTrack->getCuePoints();
         QListIterator<Cue*> it(cuePoints);
         while (it.hasNext()) {
-            Cue* pCue = it.next();
-            if (pCue->getType() != Cue::CUE || pCue->getHotCue() == -1) {
-                continue;
-            }
-
-            int cue_position = pCue->getPosition();
+            auto pCue = it.next();
+            if (pCue->getType() != Cue::CUE || pCue->getHotCue() == -1) {continue;}
+            auto cue_position = pCue->getPosition();
             //pick cues closest to new_playpos
             if ((nearest_playpos == -1) ||
                 (fabs(new_playpos - cue_position) < shortest_distance)) {

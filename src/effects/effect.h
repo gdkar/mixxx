@@ -25,50 +25,31 @@ class Effect : public QObject {
     Q_OBJECT
   public:
     typedef bool (*ParameterFilterFnc)(EffectParameter*);
-
-    Effect(EffectsManager* pEffectsManager,
-           const EffectManifest& manifest,
-           EffectInstantiatorPointer pInstantiator);
+    Effect(EffectsManager* pEffectsManager, const EffectManifest& manifest, EffectInstantiatorPointer pInstantiator);
     virtual ~Effect();
-
     const EffectManifest& getManifest() const;
-
     unsigned int numKnobParameters() const;
     unsigned int numButtonParameters() const;
-
     static bool isButtonParameter(EffectParameter* parameter);
     static bool isKnobParameter(EffectParameter* parameter);
-
     EffectParameter* getFilteredParameterForSlot(ParameterFilterFnc filterFnc, unsigned int slotNumber);
     EffectParameter* getKnobParameterForSlot(unsigned int slotNumber);
     EffectParameter* getButtonParameterForSlot(unsigned int slotNumber);
-
     EffectParameter* getParameterById(const QString& id) const;
     EffectParameter* getButtonParameterById(const QString& id) const;
-
     void setEnabled(bool enabled);
     bool enabled() const;
-
     EngineEffect* getEngineEffect();
-
     void addToEngine(EngineEffectChain* pChain, int iIndex);
     void removeFromEngine(EngineEffectChain* pChain, int iIndex);
     void updateEngineState();
-
     QDomElement toXML(QDomDocument* doc) const;
-    static EffectPointer fromXML(EffectsManager* pEffectsManager,
-                                 const QDomElement& element);
-
+    static EffectPointer fromXML(EffectsManager* pEffectsManager, const QDomElement& element);
   signals:
     void enabledChanged(bool enabled);
-
   private:
-    QString debugString() const {
-        return QString("Effect(%1)").arg(m_manifest.name());
-    }
-
+    QString debugString() const { return QString("Effect(%1)").arg(m_manifest.name()); }
     void sendParameterUpdate();
-
     EffectsManager* m_pEffectsManager;
     EffectManifest m_manifest;
     EffectInstantiatorPointer m_pInstantiator;

@@ -11,15 +11,12 @@ EngineEffectsManager::EngineEffectsManager(EffectsResponsePipe* pResponsePipe)
     m_chains.reserve(256);
     m_effects.reserve(256);
 }
-
-EngineEffectsManager::~EngineEffectsManager() {
-}
-
+EngineEffectsManager::~EngineEffectsManager() {}
 void EngineEffectsManager::onCallbackStart() {
-    EffectsRequest* request = NULL;
+    EffectsRequest* request = nullptr;
     while (m_pResponsePipe->readMessages(&request, 1) > 0) {
-        EffectsResponse response(*request);
-        bool processed = false;
+        auto response = EffectsResponse (*request);
+        auto processed = false;
         switch (request->type) {
             case EffectsRequest::ADD_EFFECT_RACK:
             case EffectsRequest::REMOVE_EFFECT_RACK:
@@ -38,9 +35,7 @@ void EngineEffectsManager::onCallbackStart() {
                     response.success = false;
                     response.status = EffectsResponse::NO_SUCH_RACK;
                 } else {
-                    processed = request->pTargetRack->processEffectsRequest(
-                        *request, m_pResponsePipe.data());
-
+                    processed = request->pTargetRack->processEffectsRequest( *request, m_pResponsePipe.data());
                     if (processed) {
                         // When an effect-chain becomes active (part of a rack), keep
                         // it in our master list so that we can respond to
@@ -107,9 +102,7 @@ void EngineEffectsManager::onCallbackStart() {
                     response.success = false;
                     response.status = EffectsResponse::NO_SUCH_EFFECT;
                 } else {
-                    processed = request->pTargetEffect
-                            ->processEffectsRequest(*request, m_pResponsePipe.data());
-
+                    processed = request->pTargetEffect ->processEffectsRequest(*request, m_pResponsePipe.data());
                     if (!processed) {
                         // If we got here, the message was not handled for an
                         // unknown reason.
@@ -123,59 +116,39 @@ void EngineEffectsManager::onCallbackStart() {
                 response.status = EffectsResponse::UNHANDLED_MESSAGE_TYPE;
                 break;
         }
-
-        if (!processed) {
-            m_pResponsePipe->writeMessages(&response, 1);
-        }
+        if (!processed) {m_pResponsePipe->writeMessages(&response, 1);}
     }
 }
-
 void EngineEffectsManager::process(const ChannelHandle& handle,
                                    CSAMPLE* pInOut,
                                    const unsigned int numSamples,
                                    const unsigned int sampleRate,
                                    const GroupFeatureState& groupFeatures) {
-    foreach (EngineEffectRack* pRack, m_racks) {
-        pRack->process(handle, pInOut, numSamples, sampleRate, groupFeatures);
-    }
+    for(auto pRack: m_racks) { pRack->process(handle, pInOut, numSamples, sampleRate, groupFeatures); }
 }
-
 bool EngineEffectsManager::addEffectRack(EngineEffectRack* pRack) {
     if (m_racks.contains(pRack)) {
         if (kEffectDebugOutput) {
-            qDebug() << debugString() << "WARNING: EffectRack already added to EngineEffectsManager:"
-                     << pRack->number();
+            qDebug() << debugString() << "WARNING: EffectRack already added to EngineEffectsManager:" << pRack->number();
         }
         return false;
     }
     m_racks.append(pRack);
     return true;
 }
-
-bool EngineEffectsManager::removeEffectRack(EngineEffectRack* pRack) {
-    return m_racks.removeAll(pRack) > 0;
-}
-
-bool EngineEffectsManager::processEffectsRequest(const EffectsRequest& message,
-                                                 EffectsResponsePipe* pResponsePipe) {
-    EffectsResponse response(message);
+bool EngineEffectsManager::removeEffectRack(EngineEffectRack* pRack) { return m_racks.removeAll(pRack) > 0; }
+bool EngineEffectsManager::processEffectsRequest(const EffectsRequest& message, EffectsResponsePipe* pResponsePipe) {
+    auto response = EffectsResponse (message);
     switch (message.type) {
         case EffectsRequest::ADD_EFFECT_RACK:
-            if (kEffectDebugOutput) {
-                qDebug() << debugString() << "ADD_EFFECT_RACK"
-                         << message.AddEffectRack.pRack;
-            }
+            if (kEffectDebugOutput) {qDebug() << debugString() << "ADD_EFFECT_RACK" << message.AddEffectRack.pRack;}
             response.success = addEffectRack(message.AddEffectRack.pRack);
             break;
         case EffectsRequest::REMOVE_EFFECT_RACK:
-            if (kEffectDebugOutput) {
-                qDebug() << debugString() << "REMOVE_EFFECT_RACK"
-                         << message.RemoveEffectRack.pRack;
-            }
+            if (kEffectDebugOutput) {qDebug() << debugString() << "REMOVE_EFFECT_RACK" << message.RemoveEffectRack.pRack;}
             response.success = removeEffectRack(message.RemoveEffectRack.pRack);
             break;
-        default:
-            return false;
+        default: return false;
     }
     pResponsePipe->writeMessages(&response, 1);
     return true;

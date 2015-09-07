@@ -51,6 +51,7 @@
 #include "controllers/controllermanager.h"
 #include "skin/skinloader.h"
 #include "library/library.h"
+#include "controlpushbutton.h"
 
 DlgPreferences::DlgPreferences(MixxxMainWindow * mixxx, SkinLoader* pSkinLoader,
                                SoundManager * soundman, PlayerManager* pPlayerManager,
@@ -59,21 +60,16 @@ DlgPreferences::DlgPreferences(MixxxMainWindow * mixxx, SkinLoader* pSkinLoader,
                                ConfigObject<ConfigValue>* pConfig, Library *pLibrary)
         : m_pConfig(pConfig),
           m_pageSizeHint(QSize(0, 0)),
-          m_preferencesUpdated(ConfigKey("[Preferences]", "updated"), false) {
+          m_preferencesUpdated(new ControlPushButton(ConfigKey("[Preferences]", "updated"), false)) {
     setupUi(this);
-#if QT_VERSION >= 0x040400 //setHeaderHidden is a qt4.4 addition so having it in the .ui file breaks the build on OpenBSD4.4 (FIXME: revisit this when OpenBSD4.5 comes out?)
+    m_preferencesUpdated->setParent(this);
     contentsTreeWidget->setHeaderHidden(true);
-#endif
-
-    connect(buttonBox, SIGNAL(clicked(QAbstractButton*)),
-            this, SLOT(slotButtonPressed(QAbstractButton*)));
+    connect(buttonBox, SIGNAL(clicked(QAbstractButton*)),this, SLOT(slotButtonPressed(QAbstractButton*)));
 
 
     createIcons();
 
-    while (pagesWidget->count() > 0) {
-        pagesWidget->removeWidget(pagesWidget->currentWidget());
-    }
+    while (pagesWidget->count() > 0) {pagesWidget->removeWidget(pagesWidget->currentWidget());}
 
     // Construct widgets for use in tabs.
 
@@ -321,7 +317,7 @@ void DlgPreferences::onHide() {
 
     // Notify other parts of Mixxx that the preferences window just saved and so
     // preferences are likely changed.
-    m_preferencesUpdated.set(1);
+    m_preferencesUpdated->set(1);
 }
 
 void DlgPreferences::onShow() {

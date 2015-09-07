@@ -5,9 +5,7 @@
 
 class Counter {
   public:
-    Counter(const QString& tag)
-    : m_tag(tag) {
-    }
+    Counter(const QString& tag): m_tag(tag) {}
     void increment(int by=1) {
         Stat::ComputeFlags flags = Stat::experimentFlags(
             Stat::COUNT | Stat::SUM | Stat::AVERAGE |
@@ -15,7 +13,7 @@ class Counter {
         Stat::track(m_tag, Stat::COUNTER, flags, by);
     }
     Counter& operator+=(int by) {
-        this->increment(by);
+        increment(by);
         return *this;
     }
     inline Counter operator++(int) { // postfix
@@ -26,5 +24,4 @@ class Counter {
   private:
     QString m_tag;
 };
-
 #endif /* COUNTER_H */

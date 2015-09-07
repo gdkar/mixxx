@@ -9,18 +9,15 @@ static const char* kInternalClockGroup = "[InternalClock]";
 BaseSyncableListener::BaseSyncableListener(ConfigObject<ConfigValue>* pConfig)
         : m_pConfig(pConfig),
           m_pInternalClock(new InternalClock(kInternalClockGroup, this)),
-          m_pMasterSyncable(NULL) {
+          m_pMasterSyncable(nullptr) {
     qRegisterMetaType<SyncMode>("SyncMode");
     m_pInternalClock->setMasterBpm(124.0);
 }
-
 BaseSyncableListener::~BaseSyncableListener() {
     // We use the slider value because that is never set to 0.0.
-    m_pConfig->set(ConfigKey("[InternalClock]", "bpm"), ConfigValue(
-        m_pInternalClock->getBpm()));
+    m_pConfig->set(ConfigKey("[InternalClock]", "bpm"), ConfigValue(m_pInternalClock->getBpm()));
     delete m_pInternalClock;
 }
-
 void BaseSyncableListener::addSyncableDeck(Syncable* pSyncable) {
     if (m_syncables.contains(pSyncable)) {
         qDebug() << "BaseSyncableListener: already has" << pSyncable;
@@ -28,28 +25,19 @@ void BaseSyncableListener::addSyncableDeck(Syncable* pSyncable) {
     }
     m_syncables.append(pSyncable);
 }
-
 void BaseSyncableListener::onCallbackStart(int sampleRate, int bufferSize) {
     m_pInternalClock->onCallbackStart(sampleRate, bufferSize);
 }
-
 void BaseSyncableListener::onCallbackEnd(int sampleRate, int bufferSize) {
     m_pInternalClock->onCallbackEnd(sampleRate, bufferSize);
 }
-
-EngineChannel* BaseSyncableListener::getMaster() const {
-    return m_pMasterSyncable ? m_pMasterSyncable->getChannel() : NULL;
-}
-
+EngineChannel* BaseSyncableListener::getMaster() const {return m_pMasterSyncable ? m_pMasterSyncable->getChannel() : nullptr;}
 Syncable* BaseSyncableListener::getSyncableForGroup(const QString& group) {
-    foreach (Syncable* pSyncable, m_syncables) {
-        if (pSyncable->getGroup() == group) {
-            return pSyncable;
-        }
+    for(auto  pSyncable: m_syncables) {
+        if (pSyncable->getGroup() == group) {return pSyncable;}
     }
-    return NULL;
+    return nullptr;
 }
-
 bool BaseSyncableListener::syncDeckExists() const {
     foreach (const Syncable* pSyncable, m_syncables) {
         if (pSyncable->getSyncMode() != SYNC_NONE && pSyncable->getBaseBpm() > 0) {

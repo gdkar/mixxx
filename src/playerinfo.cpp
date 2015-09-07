@@ -18,7 +18,6 @@
 
 #include "playerinfo.h"
 #include "controlobject.h"
-#include "controlobjectthread.h"
 #include "engine/enginechannel.h"
 #include "engine/enginexfader.h"
 #include "playermanager.h"
@@ -26,14 +25,13 @@
 static const int kPlayingDeckUpdateIntervalMillis = 2000;
 static PlayerInfo* m_pPlayerInfo = nullptr;
 PlayerInfo::PlayerInfo()
-        : m_pCOxfader(new ControlObjectThread("[Master]","crossfader")),
+        : m_pCOxfader(new ControlObjectSlave("[Master]","crossfader",this)),
           m_currentlyPlayingDeck(-1) {
     startTimer(kPlayingDeckUpdateIntervalMillis);
 }
 PlayerInfo::~PlayerInfo() {
     m_loadedTrackMap.clear();
     clearControlCache();
-    delete m_pCOxfader;
 }
 // static
 PlayerInfo& PlayerInfo::instance() {
@@ -131,6 +129,19 @@ PlayerInfo::DeckControls* PlayerInfo::getDeckControls(int i) {
         m_deckControlList.append(new DeckControls(group));
     }
     return m_deckControlList[i];
+}
+PlayerInfo::DeckControls::DeckControls(QString &group)
+  :m_play(new ControlObjectSlave(group,"play"))
+  ,m_pregain(new ControlObjectSlave(group,"pregain"))
+  ,m_volume(new ControlObjectSlave(group,"volume"))
+  ,m_orientation(new ControlObjectSlave(group,"orientation"))
+{}
+PlayerInfo::DeckControls::~DeckControls()
+{
+  delete m_play;
+  delete m_pregain;
+  delete m_volume;
+  delete m_orientation;
 }
 void PlayerInfo::clearControlCache() {
     for (int i = 0; i < m_deckControlList.count(); ++i) {

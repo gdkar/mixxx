@@ -6,7 +6,6 @@
 
 #include "ui_dlgautodj.h"
 #include "configobject.h"
-#include "trackinfoobject.h"
 #include "library/libraryview.h"
 #include "library/library.h"
 #include "library/trackcollection.h"
@@ -37,7 +36,7 @@ class DlgAutoDJ : public QWidget, public Ui::DlgAutoDJ, public LibraryView {
     void toggleAutoDJButton(bool enable);
     void transitionTimeChanged(int time);
     void transitionSliderChanged(int value);
-    void autoDJStateChanged(AutoDJProcessor::AutoDJState state);
+    void autoDJStateChanged(int state);
     void setTrackTableFont(const QFont& font);
     void setTrackTableRowHeight(int rowHeight);
 
@@ -48,9 +47,9 @@ class DlgAutoDJ : public QWidget, public Ui::DlgAutoDJ, public LibraryView {
     void trackSelected(TrackPointer pTrack);
 
   private:
-    AutoDJProcessor* m_pAutoDJProcessor;
-    WTrackTableView* m_pTrackTableView;
-    PlaylistTableModel* m_pAutoDJTableModel;
+    AutoDJProcessor* m_pAutoDJProcessor = nullptr;
+    WTrackTableView* m_pTrackTableView = nullptr;
+    PlaylistTableModel* m_pAutoDJTableModel = nullptr;
 };
 
 #endif //DLGAUTODJ_H

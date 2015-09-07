@@ -25,8 +25,7 @@ EngineFilter::EngineFilter(char * conf, int predefinedType)
           tmp(0),
           ff(NULL),
           funcp(NULL),
-          run(NULL)
-{
+          run(NULL){
     switch(predefinedType)
     {
     case PREDEF_BP:
@@ -53,10 +52,8 @@ EngineFilter::EngineFilter(char * conf, int predefinedType)
         processSample = funcp;
     }
     int i;
-    for(i=0; i < FILTER_BUF_SIZE; i++)
-        buf1[i] = buf2[i] = 0;
+    for(i=0; i < FILTER_BUF_SIZE; i++) buf1[i] = buf2[i] = 0;
 }
-
 EngineFilter::~EngineFilter()
 {
     if(processSample == funcp) //if we used fidlib

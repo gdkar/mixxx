@@ -31,11 +31,7 @@ Rotary::Rotary()
     for (int i=0; i<m_iFilterLength; ++i)
         m_pFilter[i] = 0.;
 }
-
-Rotary::~Rotary()
-{
-    delete [] m_pFilter;
-}
+Rotary::~Rotary() { delete [] m_pFilter; }
 
 /* Note: There's probably a bug in this function (or this class) somewhere.
    The filter function seems to be the cause of the "drifting" bug in the Hercules stuff.
@@ -53,24 +49,15 @@ double Rotary::filter(double dValue)
     m_iFilterPos = (m_iFilterPos+1)%m_iFilterLength;
 
     double dMagnitude = 0.;
-    for (int i=0; i<m_iFilterLength; i++)
-    {
-        dMagnitude += m_pFilter[i];
-    }
+    for (int i=0; i<m_iFilterLength; i++) { dMagnitude += m_pFilter[i]; }
     dMagnitude /= (double)m_iFilterLength;
     //qDebug() << "filter in " << dValue << ", out " << dMagnitude;
-
     m_dLastValue = dMagnitude;
-
     return dMagnitude;
 }
-
 double Rotary::fillBuffer(double dValue)
 {
-    for (int i=0; i<m_iFilterLength; ++i)
-    {
-        m_pFilter[i] = dValue/m_dCalibration;
-    }
+    for (int i=0; i<m_iFilterLength; ++i) { m_pFilter[i] = dValue/m_dCalibration; }
     return dValue/m_dCalibration;
 }
 
@@ -79,44 +66,24 @@ void Rotary::calibrate(double dValue)
     m_dCalibration += dValue;
     m_iCalibrationCount += 1;
 }
-
 void Rotary::calibrateStart()
 {
     // Reset calibration data
     m_dCalibration = 0.;
     m_iCalibrationCount = 0;
 }
-
 double Rotary::calibrateEnd()
 {
     m_dCalibration /= (double)m_iCalibrationCount;
-
     qDebug() << "Calibration " << m_dCalibration << ", count " << m_iCalibrationCount;
-
     return m_dCalibration;
 }
-
-void Rotary::setCalibration(double c)
-{
-    m_dCalibration = c;
-}
-
-double Rotary::getCalibration()
-{
-    return m_dCalibration;
-}
-
+void Rotary::setCalibration(double c) { m_dCalibration = c; }
+double Rotary::getCalibration() { return m_dCalibration; }
 void Rotary::setFilterLength(int i)
 {
-    if (i>kiRotaryFilterMaxLen)
-        m_iFilterLength = kiRotaryFilterMaxLen;
-    else if (i<1)
-        m_iFilterLength = 1;
-    else
-        m_iFilterLength = i;
+    if (i>kiRotaryFilterMaxLen) m_iFilterLength = kiRotaryFilterMaxLen;
+    else if (i<1) m_iFilterLength = 1;
+    else m_iFilterLength = i;
 }
-
-int Rotary::getFilterLength()
-{
-    return  m_iFilterLength;
-}
+int Rotary::getFilterLength() { return  m_iFilterLength; }

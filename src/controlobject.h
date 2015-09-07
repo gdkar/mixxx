@@ -30,109 +30,50 @@ class ControlObject : public QObject {
     Q_OBJECT
   public:
     ControlObject();
-
     // bIgnoreNops: Don't emit a signal if the CO is set to its current value.
     // bTrack: Record statistics about this control.
     // bPersist: Store value on exit, load on startup.
-    ControlObject(ConfigKey key,
-                  bool bIgnoreNops=true, bool bTrack=false,
-                  bool bPersist=false);
+    ControlObject(ConfigKey key,bool bIgnoreNops=true, bool bTrack=false, bool bPersist=false);
     virtual ~ControlObject();
-
     // Returns a pointer to the ControlObject matching the given ConfigKey
     static ControlObject* getControl(const ConfigKey& key, bool warn = true);
-    static inline ControlObject* getControl(const QString& group, const QString& item, bool warn = true) {
-        ConfigKey key(group, item);
-        return getControl(key, warn);
-    }
-    static inline ControlObject* getControl(const char* group, const char* item, bool warn = true) {
-        ConfigKey key(group, item);
-        return getControl(key, warn);
-    }
-
-    QString name() const {
-        return m_pControl ?  m_pControl->name() : QString();
-    }
-
-    void setName(const QString& name) {
-        if (m_pControl) {
-            m_pControl->setName(name);
-        }
-    }
-
-    const QString description() const {
-        return m_pControl ?  m_pControl->description() : QString();
-    }
-
-    void setDescription(const QString& description) {
-        if (m_pControl) {
-            m_pControl->setDescription(description);
-        }
-    }
-
+    static ControlObject* getControl(const QString& group, const QString& item, bool warn = true);
+    static ControlObject* getControl(const char* group, const char* item, bool warn = true);
+    QString name() const;
+    void setName(const QString& name);
+    QString description() const;
+    void setDescription(const QString& description);
     // Return the key of the object
-    inline ConfigKey getKey() const {
-        return m_key;
-    }
-
+    ConfigKey getKey() const;
     // Returns the value of the ControlObject
-    inline double get() const {
-        return m_pControl ? m_pControl->get() : 0.0;
-    }
-
+    virtual double get() const;
     // Returns the bool interpretation of the ControlObject
-    inline bool toBool() const {
-        return get() > 0.0;
-    }
-
+    virtual bool toBool() const;
     // Instantly returns the value of the ControlObject
     static double get(const ConfigKey& key);
-
     // Sets the ControlObject value. May require confirmation by owner.
-    inline void set(double value) {
-        if (m_pControl) {
-            m_pControl->set(value, this);
-        }
-    }
+    virtual void set(double value);
     // Sets the ControlObject value and confirms it.
-    inline void setAndConfirm(double value) {
-        if (m_pControl) {
-            m_pControl->setAndConfirm(value, this);
-        }
-    }
+    virtual void setAndConfirm(double value);
     // Instantly sets the value of the ControlObject
     static void set(const ConfigKey& key, const double& value);
-
     // Sets the default value
-    inline void reset() {
-        if (m_pControl) {
-            m_pControl->reset();
-        }
-    }
-
-    inline void setDefaultValue(double dValue) {
-        if (m_pControl) {
-            m_pControl->setDefaultValue(dValue);
-        }
-    }
-    inline double defaultValue() const {
-        return m_pControl ? m_pControl->defaultValue() : 0.0;
-    }
-
+    virtual void reset();
+    virtual void setDefaultValue(double dValue);
+    virtual double defaultValue() const;
+    virtual operator bool()const;
+    virtual bool operator!() const;
     // Returns the parameterized value of the object. Thread safe, non-blocking.
     virtual double getParameter() const;
 
     // Returns the parameterized value of the object. Thread safe, non-blocking.
     virtual double getParameterForValue(double value) const;
 
-    // Returns the parameterized value of the object. Thread safe, non-blocking.
-    virtual double getParameterForMidiValue(double midiValue) const;
-
     // Sets the control parameterized value to v. Thread safe, non-blocking.
     virtual void setParameter(double v);
 
     // Sets the control parameterized value to v. Thread safe, non-blocking.
-    virtual void setParameterFrom(double v, QObject* pSender = NULL);
+    virtual void setParameterFrom(double v, QObject* pSender = nullptr);
 
     // Connects a Qt slot to a signal that is delivered when a new value change
     // request arrives for this control.
@@ -141,33 +82,18 @@ class ControlObject : public QObject {
     // You need to use Qt::DirectConnection for the engine objects, since the
     // audio thread has no Qt event queue. But be a ware of race conditions in this case.
     // ref: http://qt-project.org/doc/qt-4.8/qt.html#ConnectionType-enum
-    bool connectValueChangeRequest(const QObject* receiver,
-                                   const char* method, Qt::ConnectionType type = Qt::AutoConnection);
-
+    bool connectValueChangeRequest(const QObject* receiver, const char* method, Qt::ConnectionType type = Qt::AutoConnection);
   signals:
     void valueChanged(double);
     void valueChangedFromEngine(double);
-
-  public:
-    // DEPRECATED: Called to set the control value from the controller
-    // subsystem.
-    virtual void setValueFromMidi(MidiOpCode o, double v);
-    virtual double getMidiParameter() const;
-
   protected:
     // Key of the object
     ConfigKey m_key;
     QSharedPointer<ControlDoublePrivate> m_pControl;
-
   private slots:
-    void privateValueChanged(double value, QObject* pSetter);
-
+    virtual void privateValueChanged(double value, QObject* pSetter);
   private:
-    void initialize(ConfigKey key, bool bIgnoreNops, bool bTrack,
-                    bool bPersist);
-    inline bool ignoreNops() const {
-        return m_pControl ? m_pControl->ignoreNops() : true;
-    }
+    virtual void initialize(ConfigKey key, bool bIgnoreNops, bool bTrack, bool bPersist);
+    bool ignoreNops() const;
 };
-
 #endif

@@ -27,12 +27,10 @@ MixxxLibraryFeature::MixxxLibraryFeature(Library* pLibrary,
           kMissingTitle(tr("Missing Tracks")),
           kHiddenTitle(tr("Hidden Tracks")),
           m_pLibrary(pLibrary),
-          m_pMissingView(NULL),
-          m_pHiddenView(NULL),
           m_trackDao(pTrackCollection->getTrackDAO()),
           m_pConfig(pConfig),
           m_pTrackCollection(pTrackCollection) {
-    QStringList columns;
+    auto columns = QStringList{};
     columns << "library." + LIBRARYTABLE_ID
             << "library." + LIBRARYTABLE_PLAYED
             << "library." + LIBRARYTABLE_TIMESPLAYED
@@ -63,31 +61,21 @@ MixxxLibraryFeature::MixxxLibraryFeature(Library* pLibrary,
             << "library." + LIBRARYTABLE_COVERART_TYPE
             << "library." + LIBRARYTABLE_COVERART_LOCATION
             << "library." + LIBRARYTABLE_COVERART_HASH;
-
-    QSqlQuery query(pTrackCollection->getDatabase());
-    QString tableName = "library_cache_view";
-    QString queryString = QString(
+    auto query = QSqlQuery(pTrackCollection->getDatabase());
+    auto tableName = QString("library_cache_view");
+    auto queryString = QString(
         "CREATE TEMPORARY VIEW IF NOT EXISTS %1 AS "
         "SELECT %2 FROM library "
         "INNER JOIN track_locations ON library.location = track_locations.id")
             .arg(tableName, columns.join(","));
     query.prepare(queryString);
-    if (!query.exec()) {
-        LOG_FAILED_QUERY(query);
-    }
-
+    if (!query.exec()) { LOG_FAILED_QUERY(query); }
     // Strip out library. and track_locations.
-    for (QStringList::iterator it = columns.begin();
-         it != columns.end(); ++it) {
-        if (it->startsWith("library.")) {
-            *it = it->replace("library.", "");
-        } else if (it->startsWith("track_locations.")) {
-            *it = it->replace("track_locations.", "");
-        }
+    for (auto it = columns.begin(); it != columns.end(); ++it) {
+        if (it->startsWith("library.")) { *it = it->replace("library.", "");}
+        else if (it->startsWith("track_locations.")) { *it = it->replace("track_locations.", ""); }
     }
-
-    BaseTrackCache* pBaseTrackCache = new BaseTrackCache(
-            pTrackCollection, tableName, LIBRARYTABLE_ID, columns, true);
+    BaseTrackCache* pBaseTrackCache = new BaseTrackCache( pTrackCollection, tableName, LIBRARYTABLE_ID, columns, true);
     connect(&m_trackDao, SIGNAL(trackDirty(TrackId)),
             pBaseTrackCache, SLOT(slotTrackDirty(TrackId)));
     connect(&m_trackDao, SIGNAL(trackClean(TrackId)),
@@ -100,91 +88,50 @@ MixxxLibraryFeature::MixxxLibraryFeature(Library* pLibrary,
             pBaseTrackCache, SLOT(slotTracksRemoved(QSet<TrackId>)));
     connect(&m_trackDao, SIGNAL(dbTrackAdded(TrackPointer)),
             pBaseTrackCache, SLOT(slotDbTrackAdded(TrackPointer)));
-
     m_pBaseTrackCache = QSharedPointer<BaseTrackCache>(pBaseTrackCache);
     pTrackCollection->setTrackSource(m_pBaseTrackCache);
-
     // These rely on the 'default' track source being present.
     m_pLibraryTableModel = new LibraryTableModel(this, pTrackCollection, "mixxx.db.model.library");
-
-    TreeItem* pRootItem = new TreeItem();
-    TreeItem* pmissingChildItem = new TreeItem(kMissingTitle, kMissingTitle,
-                                               this, pRootItem);
-    TreeItem* phiddenChildItem = new TreeItem(kHiddenTitle, kHiddenTitle,
-                                              this, pRootItem);
+    auto pRootItem = new TreeItem();
+    auto pmissingChildItem = new TreeItem(kMissingTitle, kMissingTitle,this,pRootItem);
+    auto phiddenChildItem = new TreeItem(kHiddenTitle, kHiddenTitle, this, pRootItem);
     pRootItem->appendChild(pmissingChildItem);
     pRootItem->appendChild(phiddenChildItem);
-
     m_childModel.setRootItem(pRootItem);
 }
-
-MixxxLibraryFeature::~MixxxLibraryFeature() {
-    delete m_pLibraryTableModel;
-}
-
+MixxxLibraryFeature::~MixxxLibraryFeature() { delete m_pLibraryTableModel;}
 void MixxxLibraryFeature::bindWidget(WLibrary* pLibraryWidget,QObject* pKeyboard) {
-    m_pHiddenView = new DlgHidden(pLibraryWidget, m_pConfig, m_pLibrary,
-                                  m_pTrackCollection, pKeyboard);
+    m_pHiddenView = new DlgHidden(pLibraryWidget, m_pConfig, m_pLibrary, m_pTrackCollection, pKeyboard);
     pLibraryWidget->registerView(kHiddenTitle, m_pHiddenView);
-    connect(m_pHiddenView, SIGNAL(trackSelected(TrackPointer)),
-            this, SIGNAL(trackSelected(TrackPointer)));
-
-    m_pMissingView = new DlgMissing(pLibraryWidget, m_pConfig, m_pLibrary,
-                                    m_pTrackCollection, pKeyboard);
+    connect(m_pHiddenView, SIGNAL(trackSelected(TrackPointer)), this, SIGNAL(trackSelected(TrackPointer)));
+    m_pMissingView = new DlgMissing(pLibraryWidget, m_pConfig, m_pLibrary, m_pTrackCollection, pKeyboard);
     pLibraryWidget->registerView(kMissingTitle, m_pMissingView);
-    connect(m_pMissingView, SIGNAL(trackSelected(TrackPointer)),
-            this, SIGNAL(trackSelected(TrackPointer)));
+    connect(m_pMissingView, SIGNAL(trackSelected(TrackPointer)), this, SIGNAL(trackSelected(TrackPointer)));
 }
-
-QVariant MixxxLibraryFeature::title() {
-    return tr("Library");
-}
-
-QIcon MixxxLibraryFeature::getIcon() {
-    return QIcon(":/images/library/ic_library_library.png");
-}
-
-TreeItemModel* MixxxLibraryFeature::getChildModel() {
-    return &m_childModel;
-}
-
+QVariant MixxxLibraryFeature::title() { return tr("Library"); }
+QIcon MixxxLibraryFeature::getIcon() { return QIcon(":/images/library/ic_library_library.png"); }
+TreeItemModel* MixxxLibraryFeature::getChildModel() { return &m_childModel; }
 void MixxxLibraryFeature::refreshLibraryModels() {
-    if (m_pLibraryTableModel) {
-        m_pLibraryTableModel->select();
-    }
-    if (m_pMissingView) {
-        m_pMissingView->onShow();
-    }
-    if (m_pHiddenView) {
-        m_pHiddenView->onShow();
-    }
+    if (m_pLibraryTableModel) { m_pLibraryTableModel->select(); }
+    if (m_pMissingView) { m_pMissingView->onShow(); }
+    if (m_pHiddenView) { m_pHiddenView->onShow(); }
 }
-
 void MixxxLibraryFeature::activate() {
     qDebug() << "MixxxLibraryFeature::activate()";
     emit(showTrackModel(m_pLibraryTableModel));
     emit(enableCoverArtDisplay(true));
 }
-
 void MixxxLibraryFeature::activateChild(const QModelIndex& index) {
-    QString itemName = index.data().toString();
-    emit(switchToView(itemName));
+    emit(switchToView(index.data().toString()));
     emit(enableCoverArtDisplay(true));
 }
-
 bool MixxxLibraryFeature::dropAccept(QList<QUrl> urls, QObject* pSource) {
-    if (pSource) {
-        return false;
-    } else {
-        QList<QFileInfo> files = DragAndDropHelper::supportedTracksFromUrls(urls, false, true);
-
+    if (pSource) { return false;}
+    else {
+        auto files = DragAndDropHelper::supportedTracksFromUrls(urls, false, true);
         // Adds track, does not insert duplicates, handles unremoving logic.
-        QList<TrackId> trackIds = m_trackDao.addTracks(files, true);
+        auto trackIds = m_trackDao.addTracks(files, true);
         return trackIds.size() > 0;
     }
 }
-
-bool MixxxLibraryFeature::dragMoveAccept(QUrl url) {
-    return SoundSourceProxy::isUrlSupported(url) ||
-            Parser::isPlaylistFilenameSupported(url.toLocalFile());
-}
+bool MixxxLibraryFeature::dragMoveAccept(QUrl url) { return SoundSourceProxy::isUrlSupported(url) || Parser::isPlaylistFilenameSupported(url.toLocalFile()); }

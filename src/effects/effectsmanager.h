@@ -9,8 +9,6 @@
 #include <QPair>
 
 #include "configobject.h"
-#include "controlpotmeter.h"
-#include "controlpushbutton.h"
 #include "util.h"
 #include "util/fifo.h"
 #include "effects/effect.h"
@@ -22,6 +20,7 @@
 #include "engine/channelhandle.h"
 #include "engine/effects/message.h"
 
+class ControlPotmeter;
 class EngineEffectsManager;
 
 class EffectsManager : public QObject {

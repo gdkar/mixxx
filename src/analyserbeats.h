@@ -25,20 +25,17 @@ class AnalyserBeats: public Analyser {
     void finalise(TrackPointer tio);
 
   private:
-    static QHash<QString, QString> getExtraVersionInfo(
-        QString pluginId, bool bPreferencesFastAnalysis);
+    static QHash<QString, QString> getExtraVersionInfo(QString pluginId, bool bPreferencesFastAnalysis);
     QVector<double> correctedBeats(QVector<double> rawbeats);
-
-    ConfigObject<ConfigValue>* m_pConfig;
-    VampAnalyser* m_pVamp;
+    ConfigObject<ConfigValue>* m_pConfig = nullptr;
+    VampAnalyser* m_pVamp = nullptr;
     QString m_pluginId;
-    bool m_bPreferencesReanalyzeOldBpm;
-    bool m_bPreferencesFixedTempo;
-    bool m_bPreferencesOffsetCorrection;
-    bool m_bPreferencesFastAnalysis;
-
-    int m_iSampleRate, m_iTotalSamples;
-    int m_iMinBpm, m_iMaxBpm;
+    bool m_bPreferencesReanalyzeOldBpm = false;
+    bool m_bPreferencesFixedTempo = false;
+    bool m_bPreferencesOffsetCorrection = false;
+    bool m_bPreferencesFastAnalysis = false;
+    int m_iSampleRate = -1, m_iTotalSamples = -1;
+    int m_iMinBpm, m_iMaxBpm = -1;
 };
 
 #endif /* ANALYSERVAMPTEST_H_ */

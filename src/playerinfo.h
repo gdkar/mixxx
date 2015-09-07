@@ -21,9 +21,8 @@
 #include <QMutex>
 #include <QMap>
 #include <QTimerEvent>
-#include "controlobjectthread.h"
 #include "trackinfoobject.h"
-
+class ControlObjectSlave;
 class PlayerInfo : public QObject {
     Q_OBJECT
   public:
@@ -43,17 +42,12 @@ class PlayerInfo : public QObject {
   private:
     class DeckControls {
         public:
-            DeckControls(QString& group)
-                    : m_play(group, "play"),
-                      m_pregain(group, "pregain"),
-                      m_volume(group, "volume"),
-                      m_orientation(group, "orientation") {
-            }
-
-            ControlObjectThread m_play;
-            ControlObjectThread m_pregain;
-            ControlObjectThread m_volume;
-            ControlObjectThread m_orientation;
+            DeckControls(QString& group);
+            virtual ~DeckControls();
+            ControlObjectSlave* m_play;
+            ControlObjectSlave* m_pregain;
+            ControlObjectSlave* m_volume;
+            ControlObjectSlave* m_orientation;
     };
     void clearControlCache();
     void timerEvent(QTimerEvent* pTimerEvent);
@@ -63,7 +57,7 @@ class PlayerInfo : public QObject {
     PlayerInfo();
     virtual ~PlayerInfo();
     mutable QMutex m_mutex;
-    ControlObjectThread* m_pCOxfader;
+    ControlObjectSlave* m_pCOxfader;
     // QMap is faster than QHash for small count of elements < 50
     QMap<QString, TrackPointer> m_loadedTrackMap;
     int m_currentlyPlayingDeck;

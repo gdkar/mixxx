@@ -24,7 +24,7 @@ public:
     static const SINT kSamples;
     // Returns the corresponding chunk index for a frame index
     inline static SINT indexForFrame(SINT frameIndex) {
-        DEBUG_ASSERT(Mixxx::AudioSource::getMinFrameIndex() <= frameIndex);
+        DEBUG_ASSERT(0 <= frameIndex);
         const SINT chunkIndex = frameIndex / kFrames;
         return chunkIndex;
     }

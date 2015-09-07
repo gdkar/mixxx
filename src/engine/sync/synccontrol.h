@@ -13,32 +13,26 @@ class RateControl;
 class ControlObject;
 class ControlObjectSlave;
 class ControlPushButton;
-
 class SyncControl : public EngineControl, public Syncable {
     Q_OBJECT
   public:
     static const double kBpmUnity;
     static const double kBpmHalve;
     static const double kBpmDouble;
-    SyncControl(const QString& group, ConfigObject<ConfigValue>* pConfig,
-                EngineChannel* pChannel, SyncableListener* pEngineSync);
+    SyncControl(const QString& group, ConfigObject<ConfigValue>* pConfig,EngineChannel* pChannel, SyncableListener* pEngineSync);
     virtual ~SyncControl();
-
     const QString& getGroup() const { return m_sGroup; }
     EngineChannel* getChannel() const { return m_pChannel; }
     double getBpm() const;
-
     SyncMode getSyncMode() const;
     void notifySyncModeChanged(SyncMode mode);
     void notifyOnlyPlayingSyncable();
     void requestSyncPhase();
     bool isPlaying() const;
-
     double getBeatDistance() const;
     void setBeatDistance(double beatDistance);
     double getBaseBpm() const;
     void setLocalBpm(double local_bpm);
-
     // Must never result in a call to
     // SyncableListener::notifyBeatDistanceChanged or signal loops could occur.
     void setMasterBeatDistance(double beatDistance);
@@ -47,45 +41,33 @@ class SyncControl : public EngineControl, public Syncable {
     // SyncableListener::notifyBpmChanged or signal loops could occur.
     void setMasterBpm(double bpm);
     void setMasterParams(double beatDistance, double baseBpm, double bpm);
-
     // Must never result in a call to
     // SyncableListener::notifyInstantaneousBpmChanged or signal loops could
     // occur.
     void setInstantaneousBpm(double bpm);
-
     void setEngineControls(RateControl* pRateControl, BpmControl* pBpmControl);
-
     void reportTrackPosition(double fractionalPlaypos);
     void reportPlayerSpeed(double speed, bool scratching);
-
   public slots:
     virtual void trackLoaded(TrackPointer pTrack);
     virtual void trackUnloaded(TrackPointer pTrack);
-
   private slots:
     // Fired by changes in play.
     void slotControlPlay(double v);
-
     // Fired by changes in vinyl control status.
     void slotVinylControlChanged(double v);
-
     // Fired when passthrough mode is enabled or disabled.
     void slotPassthroughChanged(double v);
-
     // Fired when a track is ejected.
     void slotEjectPushed(double v);
-
     // Fired by changes in rate, rate_dir, rateRange.
     void slotRateChanged();
-
     // Fired by changes in file_bpm.
     void slotFileBpmChanged();
-
     // Change request handlers for sync properties.
     void slotSyncModeChangeRequest(double state);
     void slotSyncEnabledChangeRequest(double enabled);
     void slotSyncMasterEnabledChangeRequest(double state);
-
   private:
     FRIEND_TEST(SyncControlTest, TestDetermineBpmMultiplier);
     // Sometimes it's best to match bpms based on half or double the target
@@ -94,7 +76,6 @@ class SyncControl : public EngineControl, public Syncable {
     // should match against.
     double determineBpmMultiplier(double myBpm, double targetBpm) const;
     void updateTargetBeatDistance();
-
     QString m_sGroup;
     // The only reason we have this pointer is an optimzation so that the
     // EngineSync can ask us what our EngineChannel is. EngineMaster in turn
@@ -104,7 +85,6 @@ class SyncControl : public EngineControl, public Syncable {
     BpmControl* m_pBpmControl;
     RateControl* m_pRateControl;
     bool m_bOldScratching;
-
     // When syncing, sometimes it's better to match half or double the
     // master bpm.
     FRIEND_TEST(EngineSyncTest, HalfDoubleBpmTest);

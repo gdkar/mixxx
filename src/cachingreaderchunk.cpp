@@ -1,10 +1,8 @@
 #include <QtDebug>
 
 #include "cachingreaderchunk.h"
-
 #include "sampleutil.h"
 #include "util/math.h"
-
 
 const SINT CachingReaderChunk::kInvalidIndex = -1;
 
@@ -31,7 +29,7 @@ void CachingReaderChunk::init(SINT index) {
     m_frameCount.store(0);
 }
 bool CachingReaderChunk::isReadable( const Mixxx::AudioSourcePointer& pAudioSource, SINT maxReadableFrameIndex) const {
-    DEBUG_ASSERT(Mixxx::AudioSource::getMinFrameIndex() <= maxReadableFrameIndex);
+    DEBUG_ASSERT(0 <= maxReadableFrameIndex);
     if (!isValid() || pAudioSource.isNull()) {return false; }
     const SINT frameIndex = frameForIndex(getIndex());
     const SINT maxFrameIndex = math_min( maxReadableFrameIndex, pAudioSource->getMaxFrameIndex());

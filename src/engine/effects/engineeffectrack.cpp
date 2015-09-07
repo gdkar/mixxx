@@ -7,14 +7,9 @@ EngineEffectRack::EngineEffectRack(int iRackNumber)
     // Try to prevent memory allocation.
     m_chains.reserve(256);
 }
-
-EngineEffectRack::~EngineEffectRack() {
-    //qDebug() << "EngineEffectRack::~EngineEffectRack()" << this;
-}
-
-bool EngineEffectRack::processEffectsRequest(const EffectsRequest& message,
-                                             EffectsResponsePipe* pResponsePipe) {
-    EffectsResponse response(message);
+EngineEffectRack::~EngineEffectRack() {}
+bool EngineEffectRack::processEffectsRequest(const EffectsRequest& message,EffectsResponsePipe* pResponsePipe) {
+    auto response = EffectsResponse (message);
     switch (message.type) {
         case EffectsRequest::ADD_CHAIN_TO_RACK:
             if (kEffectDebugOutput) {
@@ -40,19 +35,15 @@ bool EngineEffectRack::processEffectsRequest(const EffectsRequest& message,
     pResponsePipe->writeMessages(&response, 1);
     return true;
 }
-
 void EngineEffectRack::process(const ChannelHandle& handle,
                                CSAMPLE* pInOut,
                                const unsigned int numSamples,
                                const unsigned int sampleRate,
                                const GroupFeatureState& groupFeatures) {
-    foreach (EngineEffectChain* pChain, m_chains) {
-        if (pChain != NULL) {
-            pChain->process(handle, pInOut, numSamples, sampleRate, groupFeatures);
-        }
+    for(auto pChain: m_chains) {
+        if (pChain ) { pChain->process(handle, pInOut, numSamples, sampleRate, groupFeatures);}
     }
 }
-
 bool EngineEffectRack::addEffectChain(EngineEffectChain* pChain, int iIndex) {
     if (iIndex < 0) {
         if (kEffectDebugOutput) {
@@ -69,13 +60,10 @@ bool EngineEffectRack::addEffectChain(EngineEffectChain* pChain, int iIndex) {
         }
         return false;
     }
-    while (iIndex >= m_chains.size()) {
-        m_chains.append(NULL);
-    }
+    while (iIndex >= m_chains.size()) { m_chains.append(nullptr);}
     m_chains.replace(iIndex, pChain);
     return true;
 }
-
 bool EngineEffectRack::removeEffectChain(EngineEffectChain* pChain, int iIndex) {
     if (iIndex < 0) {
         if (kEffectDebugOutput) {
@@ -85,7 +73,6 @@ bool EngineEffectRack::removeEffectChain(EngineEffectChain* pChain, int iIndex) 
         }
         return false;
     }
-
     if (m_chains.at(iIndex) != pChain) {
         qDebug() << debugString()
                  << "WARNING: REMOVE_CHAIN_FROM_RACK consistency error"
@@ -93,7 +80,6 @@ bool EngineEffectRack::removeEffectChain(EngineEffectChain* pChain, int iIndex) 
                  << pChain;
         return false;
     }
-
-    m_chains.replace(iIndex, NULL);
+    m_chains.replace(iIndex, nullptr);
     return true;
 }

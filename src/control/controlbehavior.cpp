@@ -2,144 +2,61 @@
 #include "control/control.h"
 #include "util/math.h"
 
-bool ControlNumericBehavior::setFilter(double* dValue) {
-    Q_UNUSED(dValue);
-    return true;
+bool ControlNumericBehavior::setFilter(double* /*dValue*/) { return true; }
+double ControlNumericBehavior::valueToParameter(double dValue) { return dValue; }
+double ControlNumericBehavior::parameterToValue(double dParam) { return dParam; }
+void ControlNumericBehavior::setValueFromParameter(double dParam, ControlDoublePrivate* pControl) {
+    pControl->set(parameterToValue(dParam), nullptr);
 }
-
-double ControlNumericBehavior::valueToParameter(double dValue) {
-    return dValue;
-}
-
-double ControlNumericBehavior::midiValueToParameter(double midiValue) {
-    return midiValue;
-}
-
-double ControlNumericBehavior::parameterToValue(double dParam) {
-    return dParam;
-}
-
-double ControlNumericBehavior::valueToMidiParameter(double dValue) {
-    return dValue;
-}
-
-void ControlNumericBehavior::setValueFromMidiParameter(MidiOpCode o, double dParam,
-                                                       ControlDoublePrivate* pControl) {
-    Q_UNUSED(o);
-    double dNorm = midiValueToParameter(dParam);
-    pControl->set(parameterToValue(dNorm), NULL);
-}
-
-ControlPotmeterBehavior::ControlPotmeterBehavior(double dMinValue, double dMaxValue,
-                                                 bool allowOutOfBounds)
+ControlPotmeterBehavior::ControlPotmeterBehavior(double dMinValue, double dMaxValue,bool allowOutOfBounds)
         : m_dMinValue(dMinValue),
           m_dMaxValue(dMaxValue),
           m_dValueRange(m_dMaxValue - m_dMinValue),
           m_bAllowOutOfBounds(allowOutOfBounds) {
 }
-
-ControlPotmeterBehavior::~ControlPotmeterBehavior() {
-}
-
+ControlPotmeterBehavior::~ControlPotmeterBehavior() {}
 bool ControlPotmeterBehavior::setFilter(double* dValue) {
     if (!m_bAllowOutOfBounds) {
-        if (*dValue > m_dMaxValue) {
-            *dValue = m_dMaxValue;
-        } else if (*dValue < m_dMinValue) {
-            *dValue = m_dMinValue;
-        }
+        if (*dValue > m_dMaxValue) { *dValue = m_dMaxValue;}
+        else if (*dValue < m_dMinValue) { *dValue = m_dMinValue;}
     }
     return true;
 }
-
 double ControlPotmeterBehavior::valueToParameter(double dValue) {
-    if (m_dValueRange == 0.0) {
-        return 0;
-    }
-    if (dValue > m_dMaxValue) {
-        dValue = m_dMaxValue;
-    } else if (dValue < m_dMinValue) {
-        dValue = m_dMinValue;
-    }
+    if (m_dValueRange == 0.0)      { return 0; }
+    if (dValue > m_dMaxValue)      { dValue = m_dMaxValue; }
+    else if (dValue < m_dMinValue) { dValue = m_dMinValue; }
     return (dValue - m_dMinValue) / m_dValueRange;
 }
-
-double ControlPotmeterBehavior::midiValueToParameter(double midiValue) {
-    double parameter;
-    if (midiValue > 64) {
-        parameter = (midiValue - 1) / 126.0;
-    } else {
-        // Hack for 0.5 at 64
-        parameter = midiValue / 128.0;
-    }
-    return parameter;
-}
-
-double ControlPotmeterBehavior::parameterToValue(double dParam) {
-    return m_dMinValue + (dParam * m_dValueRange);
-}
-
-double ControlPotmeterBehavior::valueToMidiParameter(double dValue) {
-    // 7-bit MIDI has 128 values [0, 127]. This means there is no such thing as
-    // center. The industry convention is that 64 is center. We fake things a
-    // little bit here to make that the case. This function is linear from [0,
-    // 127.0/128.0] with slope 128 and then cuts off at 127 from 127.0/128.0 to
-    // 1.0.  from 0 to 64 with slope 128 and from 64 to 127 with slope 126.
-    double dNorm = valueToParameter(dValue);
-    if (dNorm > 0.5) {
-        return (dNorm * 126) + 1;
-    } else {
-        return dNorm * 128.0;
-    }
-}
-
+double ControlPotmeterBehavior::parameterToValue(double dParam) { return m_dMinValue + (dParam * m_dValueRange); }
 #define maxPosition 1.0
 #define minPosition 0.0
 #define middlePosition ((maxPosition - minPosition) / 2.0)
 #define positionrange (maxPosition - minPosition)
-
 ControlLogPotmeterBehavior::ControlLogPotmeterBehavior(double dMinValue, double dMaxValue, double minDB)
         : ControlPotmeterBehavior(dMinValue, dMaxValue, false) {
-    if (minDB >= 0) {
-        qWarning() << "ControlLogPotmeterBehavior::ControlLogPotmeterBehavior() minDB must be negative";
-        m_minDB = -1;
-    } else {
-        m_minDB = minDB;
-    }
+    if (minDB >= 0) { m_minDB = -1; }
+    else            { m_minDB = minDB; }
     m_minOffset = db2ratio(m_minDB);
 }
-
-ControlLogPotmeterBehavior::~ControlLogPotmeterBehavior() {
-}
-
+ControlLogPotmeterBehavior::~ControlLogPotmeterBehavior() {}
 double ControlLogPotmeterBehavior::valueToParameter(double dValue) {
-    if (m_dValueRange == 0.0) {
-        return 0;
-    }
-    if (dValue > m_dMaxValue) {
-        dValue = m_dMaxValue;
-    } else if (dValue < m_dMinValue) {
-        dValue = m_dMinValue;
-    }
+    if (m_dValueRange == 0.0)      { return 0; }
+    if (dValue > m_dMaxValue)      { dValue = m_dMaxValue;}
+    else if (dValue < m_dMinValue) { dValue = m_dMinValue; }
     double linPrameter = (dValue - m_dMinValue) / m_dValueRange;
     double dbParamter = ratio2db(linPrameter + m_minOffset * (1 - linPrameter));
     return 1 - (dbParamter / m_minDB);
 }
-
 double ControlLogPotmeterBehavior::parameterToValue(double dParam) {
     double dbParamter = (1 - dParam) * m_minDB;
     double linPrameter = (db2ratio(dbParamter) - m_minOffset) / (1 - m_minOffset);
     return m_dMinValue + (linPrameter * m_dValueRange);
 }
-
-ControlLinPotmeterBehavior::ControlLinPotmeterBehavior(double dMinValue, double dMaxValue,
-                                                       bool allowOutOfBounds)
+ControlLinPotmeterBehavior::ControlLinPotmeterBehavior(double dMinValue, double dMaxValue, bool allowOutOfBounds)
         : ControlPotmeterBehavior(dMinValue, dMaxValue, allowOutOfBounds) {
 }
-
-ControlLinPotmeterBehavior::~ControlLinPotmeterBehavior() {
-}
-
+ControlLinPotmeterBehavior::~ControlLinPotmeterBehavior() {}
 ControlAudioTaperPotBehavior::ControlAudioTaperPotBehavior(
                              double minDB, double maxDB,
                              double neutralParameter)
@@ -150,10 +67,7 @@ ControlAudioTaperPotBehavior::ControlAudioTaperPotBehavior(
           m_offset(db2ratio(m_minDB)) {
     m_midiCorrection = ceil(m_neutralParameter * 127) - (m_neutralParameter * 127);
 }
-
-ControlAudioTaperPotBehavior::~ControlAudioTaperPotBehavior() {
-}
-
+ControlAudioTaperPotBehavior::~ControlAudioTaperPotBehavior() {}
 double ControlAudioTaperPotBehavior::valueToParameter(double dValue) {
     double dParam = 1.0;
     if (dValue <= 0.0) {
@@ -221,82 +135,40 @@ double ControlAudioTaperPotBehavior::midiValueToParameter(double midiValue) {
     }
     return dParam;
 }
-
-double ControlAudioTaperPotBehavior::valueToMidiParameter(double dValue) {
-    // 7-bit MIDI has 128 values [0, 127]. This means there is no such thing as
-    // center. The industry convention is that 64 is center.
-    // We fake things a little bit here to hit the m_neutralParameter
-    // always on a full Midi integer
-    double dParam = valueToParameter(dValue);
-    double dMidiParam = dParam * 127.0;
-    if (m_neutralParameter && m_neutralParameter != 1.0) {
-        if (dParam < m_neutralParameter) {
-            dMidiParam += m_midiCorrection * dParam / m_neutralParameter;
-        } else {
-            dMidiParam += m_midiCorrection * (1 - dParam) / m_neutralParameter;
-        }
-    }
-    return dMidiParam;
-}
-
-void ControlAudioTaperPotBehavior::setValueFromMidiParameter(MidiOpCode o, double dMidiParam,
-                                                           ControlDoublePrivate* pControl) {
-    Q_UNUSED(o);
-    double dParam = midiValueToParameter(dMidiParam);
-    pControl->set(parameterToValue(dParam), NULL);
-}
-
-
-double ControlTTRotaryBehavior::valueToParameter(double dValue) {
-    return (dValue * 200.0 + 64) / 127.0;
-}
-
+void ControlAudioTaperPotBehavior::setValueFromParameter(double dParam,ControlDoublePrivate* pControl) { pControl->set(parameterToValue(dParam), nullptr); }
+double ControlTTRotaryBehavior::valueToParameter(double dValue) { return (dValue * 200.0 + 64) / 127.0; }
 double ControlTTRotaryBehavior::parameterToValue(double dParam) {
     dParam *= 128.0;
     // Non-linear scaling
     double temp = ((dParam - 64.0) * (dParam - 64.0)) / 64.0;
-    if (dParam - 64 < 0) {
-        temp = -temp;
-    }
+    if (dParam - 64 < 0) {temp = -temp;}
     return temp;
 }
-
 // static
 const int ControlPushButtonBehavior::kPowerWindowTimeMillis = 300;
 const int ControlPushButtonBehavior::kLongPressLatchingTimeMillis = 300;
-
-ControlPushButtonBehavior::ControlPushButtonBehavior(ButtonMode buttonMode,
-                                                     int iNumStates)
+ControlPushButtonBehavior::ControlPushButtonBehavior(ButtonMode buttonMode, int iNumStates)
         : m_buttonMode(buttonMode),
           m_iNumStates(iNumStates) {
 }
-
-void ControlPushButtonBehavior::setValueFromMidiParameter(
-        MidiOpCode o, double dParam, ControlDoublePrivate* pControl) {
+void ControlPushButtonBehavior::setValueFromParameter(double dParam, ControlDoublePrivate* pControl) {
     // Calculate pressed State of the midi Button
     // Some controller like the RMX2 are sending always MIDI_NOTE_ON
     // with a changed dParam 127 for pressed an 0 for released.
     // Other controller like the VMS4 are using MIDI_NOTE_ON
     // And MIDI_NOTE_OFF and a velocity value like a piano keyboard
-    bool pressed = true;
-    if (o == MIDI_NOTE_OFF || dParam == 0) {
-        // MIDI_NOTE_ON + 0 should be interpreted a released according to
-        // http://de.wikipedia.org/wiki/Musical_Instrument_Digital_Interface
-        // looking for MIDI_NOTE_ON doesn't seem to work...
-        pressed = false;
-    }
-
+    auto pressed = !!dParam;
     // This block makes push-buttons act as power window buttons.
     if (m_buttonMode == POWERWINDOW && m_iNumStates == 2) {
         if (pressed) {
             // Toggle on press
             double value = pControl->get();
-            pControl->set(!value, NULL);
+            pControl->set(!value, nullptr);
             m_pushTimer.setSingleShot(true);
             m_pushTimer.start(kPowerWindowTimeMillis);
         } else if (!m_pushTimer.isActive()) {
             // Disable after releasing a long press
-            pControl->set(0., NULL);
+            pControl->set(0., nullptr);
         }
     } else if (m_buttonMode == TOGGLE || m_buttonMode == LONGPRESSLATCHING) {
         // This block makes push-buttons act as toggle buttons.
@@ -308,7 +180,7 @@ void ControlPushButtonBehavior::setValueFromMidiParameter(
                 // the same control from different devices.
                 double value = pControl->get();
                 value = (int)(value + 1.) % m_iNumStates;
-                pControl->set(value, NULL);
+                pControl->set(value, nullptr);
                 if (m_buttonMode == LONGPRESSLATCHING) {
                     m_pushTimer.setSingleShot(true);
                     m_pushTimer.start(kLongPressLatchingTimeMillis);
@@ -319,15 +191,12 @@ void ControlPushButtonBehavior::setValueFromMidiParameter(
                         m_pushTimer.isActive() && value >= 1.) {
                     // revert toggle if button is released too early
                     value = (int)(value - 1.) % m_iNumStates;
-                    pControl->set(value, NULL);
+                    pControl->set(value, nullptr);
                 }
             }
         }
     } else { // Not a toggle button (trigger only when button pushed)
-        if (pressed) {
-            pControl->set(1., NULL);
-        } else {
-            pControl->set(0., NULL);
-        }
+        if (pressed) { pControl->set(1., nullptr);}
+        else         { pControl->set(0., nullptr); }
     }
 }

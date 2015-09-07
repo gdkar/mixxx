@@ -58,7 +58,6 @@ SoundManager::SoundManager(ConfigObject<ConfigValue> *pConfig, EngineMaster *pMa
     m_samplerates.push_back(96000);
     queryDevices(); // initializes PortAudio so SMConfig:loadDefaults can do
                     // its thing if it needs to
-
     if (!m_config.readFromDisk()) { m_config.loadDefaults(this, SoundManagerConfig::ALL); }
     checkConfig();
     m_config.writeToDisk(); // in case anything changed by applying defaults
@@ -77,9 +76,7 @@ SoundManager::~SoundManager() {
     delete m_pControlObjectSoundStatusCO;
     delete m_pControlObjectVinylControlGainCO;
 }
-
-QList<SoundDevice*> SoundManager::getDeviceList(
-    QString filterAPI, bool bOutputDevices, bool bInputDevices) {
+QList<SoundDevice*> SoundManager::getDeviceList(QString filterAPI, bool bOutputDevices, bool bInputDevices) {
     //qDebug() << "SoundManager::getDeviceList";
     if (filterAPI == "None") { return QList<SoundDevice*>{}; }
     // Create a list of sound devices filtered to match given API and
@@ -131,9 +128,7 @@ void SoundManager::closeDevices() {
             }
         }
     }
-    while (!m_inputBuffers.isEmpty()) {
-       if(auto  pBuffer = m_inputBuffers.takeLast()) SampleUtil::free(pBuffer);
-    }
+    while (!m_inputBuffers.isEmpty()) { if(auto  pBuffer = m_inputBuffers.takeLast()) SampleUtil::free(pBuffer); }
     // Indicate to the rest of Mixxx that sound is disconnected.
     m_pControlObjectSoundStatusCO->set(SOUNDMANAGER_DISCONNECTED);
 }
@@ -166,7 +161,6 @@ QList<unsigned int> SoundManager::getSampleRates() const { return getSampleRates
 void SoundManager::queryDevices() {
     //qDebug() << "SoundManager::queryDevices()";
     clearDeviceList();
-
 #ifdef __PORTAUDIO__
     PaError err = paNoError;
     if (!m_paInitialized) {
@@ -181,14 +175,13 @@ void SoundManager::queryDevices() {
         m_paInitialized = false;
         return;
     }
-    int iNumDevices = Pa_GetDeviceCount();
+    auto iNumDevices = Pa_GetDeviceCount();
     if (iNumDevices < 0) {
         qDebug() << "ERROR: Pa_CountDevices returned" << iNumDevices;
         return;
     }
-    const PaDeviceInfo* deviceInfo;
-    for (int i = 0; i < iNumDevices; i++) {
-        deviceInfo = Pa_GetDeviceInfo(i);
+    for (auto  i = 0; i < iNumDevices; i++) {
+        auto deviceInfo = Pa_GetDeviceInfo(i);
         if (!deviceInfo) continue;
         /* deviceInfo fields for quick reference:
             int     structVersion
@@ -212,7 +205,6 @@ void SoundManager::queryDevices() {
     // now tell the prefs that we updated the device list -- bkgood
     emit(devicesUpdated());
 }
-
 Result SoundManager::setupDevices() {
     // NOTE(rryan): Big warning: This function is concurrent with calls to
     // pushBuffer and onDeviceOutputCallback until closeDevices() below.
@@ -292,15 +284,12 @@ Result SoundManager::setupDevices() {
             err = device->addOutput(aob) != SOUNDDEVICE_ERROR_OK ? ERR : OK;
             if (err != OK) goto closeAndError;
             if (out.getType() == AudioOutput::MASTER) { pNewMasterClockRef = device;}
-            else if ((out.getType() == AudioOutput::DECK ||
-                        out.getType() == AudioOutput::BUS)
-                    && !pNewMasterClockRef) {
+            else if ((out.getType() == AudioOutput::DECK || out.getType() == AudioOutput::BUS) && !pNewMasterClockRef) {
                 pNewMasterClockRef = device;
             }
             // Check if any AudioSource is registered for this AudioOutput and
             // call the onOutputConnected method.
-            for (auto it = m_registeredSources.constFind(out);
-                 it != m_registeredSources.cend() && it.key() == out; ++it) {
+            for (auto it = m_registeredSources.constFind(out); it != m_registeredSources.cend() && it.key() == out; ++it) {
                 it.value()->onOutputConnected(out);
             }
         }
@@ -335,8 +324,7 @@ Result SoundManager::setupDevices() {
         }
     }
     if (pNewMasterClockRef) {
-        qDebug() << "Using" << pNewMasterClockRef->getDisplayName()
-                 << "as output sound device clock reference";
+        qDebug() << "Using" << pNewMasterClockRef->getDisplayName() << "as output sound device clock reference";
     } else { qDebug() << "No output devices opened, no clock reference device set"; }
     qDebug() << outputDevicesOpened << "output sound devices opened";
     qDebug() << inputDevicesOpened << "input  sound devices opened";
@@ -415,17 +403,11 @@ void SoundManager::setJACKName() const {
     typedef PaError (*SetJackClientName)(const char *name);
     QLibrary portaudio("libportaudio.so.2");
     if (portaudio.load()) {
-        SetJackClientName func(
-            reinterpret_cast<SetJackClientName>(
-                portaudio.resolve("PaJack_SetClientName")));
+        SetJackClientName func( reinterpret_cast<SetJackClientName>( portaudio.resolve("PaJack_SetClientName")));
         if (func) {
             if (!func("Mixxx")) qDebug() << "JACK client name set";
-        } else {
-            qWarning() << "failed to resolve JACK name method";
-        }
-    } else {
-        qWarning() << "failed to load portaudio for JACK rename";
-    }
+        } else {qWarning() << "failed to resolve JACK name method";}
+    } else { qWarning() << "failed to load portaudio for JACK rename"; }
 #endif
 #endif
 }

@@ -44,13 +44,8 @@ class EffectChainSlot : public QObject {
 
     // Unload the loaded EffectChain.
     void clear();
-
     unsigned int getChainSlotNumber() const;
-
-    const QString& getGroup() const {
-        return m_group;
-    }
-
+    const QString& getGroup() const {return m_group;}
   signals:
     // Indicates that the effect pEffect has been loaded into slotNumber of
     // EffectChainSlot chainNumber. pEffect may be an invalid pointer, which
@@ -119,16 +114,11 @@ class EffectChainSlot : public QObject {
     void slotChannelStatusChanged(const QString& group);
 
   private:
-    QString debugString() const {
-        return QString("EffectChainSlot(%1)").arg(m_group);
-    }
-
+    QString debugString() const {return QString("EffectChainSlot(%1)").arg(m_group);}
     const unsigned int m_iChainSlotNumber;
     const QString m_group;
     EffectRack* m_pEffectRack;
-
     EffectChainPointer m_pEffectChain;
-
     ControlPushButton* m_pControlClear;
     ControlObject* m_pControlNumEffects;
     ControlObject* m_pControlNumEffectSlots;
@@ -143,22 +133,14 @@ class EffectChainSlot : public QObject {
 
     struct ChannelInfo {
         // Takes ownership of pEnabled.
-        ChannelInfo(const ChannelHandleAndGroup& handle_group, ControlObject* pEnabled)
-                : handle_group(handle_group),
-                  pEnabled(pEnabled) {
-
-        }
-        ~ChannelInfo() {
-            delete pEnabled;
-        }
+        ChannelInfo(const ChannelHandleAndGroup& handle_group, ControlObject* pEnabled);
+        ~ChannelInfo();
         ChannelHandleAndGroup handle_group;
-        ControlObject* pEnabled;
+        ControlObject* pEnabled = nullptr;
     };
     QMap<QString, ChannelInfo*> m_channelInfoByName;
-
     QList<EffectSlotPointer> m_slots;
     QSignalMapper m_channelStatusMapper;
-
     DISALLOW_COPY_AND_ASSIGN(EffectChainSlot);
 };
 

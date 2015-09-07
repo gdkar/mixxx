@@ -21,7 +21,7 @@
 #include <QMimeData>
 
 #include "controlobject.h"
-#include "controlobjectthread.h"
+#include "controlobjectslave.h"
 #include "woverview.h"
 #include "wskincolor.h"
 #include "widget/controlwidgetconnection.h"
@@ -50,12 +50,10 @@ WOverview::WOverview(const char *pGroup, ConfigObject<ConfigValue>* pConfig, QWi
         m_dAnalyserProgress(-1.0),
         m_bAnalyserFinalizing(false),
         m_trackLoaded(false) {
-    m_endOfTrackControl = new ControlObjectThread(
-            m_group, "end_of_track");
-    connect(m_endOfTrackControl, SIGNAL(valueChanged(double)),
-             this, SLOT(onEndOfTrackChange(double)));
-    m_trackSamplesControl = new ControlObjectThread(m_group, "track_samples");
-    m_playControl = new ControlObjectThread(m_group, "play");
+    m_endOfTrackControl = new ControlObjectSlave(m_group, "end_of_track",this);
+    connect(m_endOfTrackControl, SIGNAL(valueChanged(double)),this, SLOT(onEndOfTrackChange(double)));
+    m_trackSamplesControl = new ControlObjectSlave(m_group, "track_samples",this);
+    m_playControl = new ControlObjectSlave(m_group, "play",this);
     setAcceptDrops(true);
 }
 

@@ -38,15 +38,12 @@ class BaseTrackCache : public QObject {
                    const QStringList& columns,
                    bool isCaching);
     virtual ~BaseTrackCache();
-
     // Rebuild the BaseTrackCache index from the SQL table. This can be
     // expensive on large tables.
     virtual void buildIndex();
-
     ////////////////////////////////////////////////////////////////////////////
     // Data access methods
     ////////////////////////////////////////////////////////////////////////////
-
     virtual QVariant data(TrackId trackId, int column) const;
     virtual int columnCount() const;
     virtual int fieldIndex(const QString& column) const;
@@ -63,10 +60,8 @@ class BaseTrackCache : public QObject {
     virtual void ensureCached(TrackId trackId);
     virtual void ensureCached(QSet<TrackId> trackIds);
     virtual void setSearchColumns(const QStringList& columns);
-
   signals:
     void tracksChanged(QSet<TrackId> trackIds);
-
   private slots:
     void slotTracksAdded(QSet<TrackId> trackId);
     void slotTracksRemoved(QSet<TrackId> trackId);
@@ -74,56 +69,36 @@ class BaseTrackCache : public QObject {
     void slotTrackClean(TrackId trackId);
     void slotTrackChanged(TrackId trackId);
     void slotDbTrackAdded(TrackPointer pTrack);
-
   private:
     TrackPointer lookupCachedTrack(TrackId trackId) const;
     bool updateIndexWithQuery(const QString& query);
     bool updateIndexWithTrackpointer(TrackPointer pTrack);
     void updateTrackInIndex(TrackId trackId);
     void updateTracksInIndex(QSet<TrackId> trackIds);
-    void getTrackValueForColumn(TrackPointer pTrack, int column,
-                                QVariant& trackValue) const;
-
-    std::unique_ptr<QueryNode> parseQuery(QString query, QString extraFilter,
-                          QStringList idStrings) const;
-    int findSortInsertionPoint(TrackPointer pTrack,
-                               const int sortColumn,
-                               const Qt::SortOrder sortOrder,
-                               const QVector<TrackId> trackIds) const;
-    int compareColumnValues(int sortColumn, Qt::SortOrder sortOrder,
-                            QVariant val1, QVariant val2) const;
-    bool trackMatches(const TrackPointer& pTrack,
-                      const QRegExp& matcher) const;
-    bool trackMatchesNumeric(const TrackPointer& pTrack,
-                             const QStringList& numberMatchers) const;
-    bool trackMatchesNamedString(const TrackPointer& pTrack,
-                             const QStringList& numberMatchers) const;
+    void getTrackValueForColumn(TrackPointer pTrack, int column, QVariant& trackValue) const;
+    std::unique_ptr<QueryNode> parseQuery(QString query, QString extraFilter, QStringList idStrings) const;
+    int findSortInsertionPoint(TrackPointer pTrack, const int sortColumn, const Qt::SortOrder sortOrder, const QVector<TrackId> trackIds) const;
+    int compareColumnValues(int sortColumn, Qt::SortOrder sortOrder, QVariant val1, QVariant val2) const;
+    bool trackMatches(const TrackPointer& pTrack, const QRegExp& matcher) const;
+    bool trackMatchesNumeric(const TrackPointer& pTrack, const QStringList& numberMatchers) const;
+    bool trackMatchesNamedString(const TrackPointer& pTrack,const QStringList& numberMatchers) const;
     bool evaluateNumeric(const int value, const QString& expression) const;
-
     const QString m_tableName;
     const QString m_idColumn;
     const int m_columnCount;
     const QString m_columnsJoined;
-
     ColumnCache m_columnCache;
-
     QStringList m_searchColumns;
     QVector<int> m_searchColumnIndices;
-
     // Temporary storage for filterAndSort()
-
     QVector<TrackId> m_trackOrder;
-
     QSet<TrackId> m_dirtyTracks;
-
-    bool m_bIndexBuilt;
-    bool m_bIsCaching;
+    bool m_bIndexBuilt = false;
+    bool m_bIsCaching  = false;
     QHash<TrackId, QVector<QVariant> > m_trackInfo;
     TrackDAO& m_trackDAO;
     QSqlDatabase m_database;
-    SearchQueryParser* m_pQueryParser;
-
+    SearchQueryParser* m_pQueryParser = nullptr;
     DISALLOW_COPY_AND_ASSIGN(BaseTrackCache);
 };
-
 #endif // BASETRACKCACHE_H

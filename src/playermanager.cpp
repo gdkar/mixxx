@@ -52,9 +52,7 @@ PlayerManager::PlayerManager(ConfigObject<ConfigValue>* pConfig,
     // register the engine's outputs
     m_pSoundManager->registerOutput(AudioOutput(AudioOutput::MASTER),m_pEngine);
     m_pSoundManager->registerOutput(AudioOutput(AudioOutput::HEADPHONES),m_pEngine);
-    for (int o = EngineChannel::LEFT; o <= EngineChannel::RIGHT; o++) {
-        m_pSoundManager->registerOutput(AudioOutput(AudioOutput::BUS, 0, 0, o),m_pEngine);
-    }
+    for (int o = EngineChannel::LEFT; o <= EngineChannel::RIGHT; o++) { m_pSoundManager->registerOutput(AudioOutput(AudioOutput::BUS, 0, 0, o),m_pEngine); }
 }
 PlayerManager::~PlayerManager() {
     QMutexLocker locker(&m_mutex);
@@ -70,28 +68,19 @@ PlayerManager::~PlayerManager() {
 }
 void PlayerManager::bindToLibrary(Library* pLibrary) {
     QMutexLocker locker(&m_mutex);
-    connect(pLibrary, SIGNAL(loadTrackToPlayer(TrackPointer, QString, bool)),
-            this, SLOT(slotLoadTrackToPlayer(TrackPointer, QString, bool)));
-    connect(pLibrary, SIGNAL(loadTrack(TrackPointer)),
-            this, SLOT(slotLoadTrackIntoNextAvailableDeck(TrackPointer)));
-    connect(this, SIGNAL(loadLocationToPlayer(QString, QString)),
-            pLibrary, SLOT(slotLoadLocationToPlayer(QString, QString)));
+    connect(pLibrary, SIGNAL(loadTrackToPlayer(TrackPointer, QString, bool)), this, SLOT(slotLoadTrackToPlayer(TrackPointer, QString, bool)));
+    connect(pLibrary, SIGNAL(loadTrack(TrackPointer)), this, SLOT(slotLoadTrackIntoNextAvailableDeck(TrackPointer)));
+    connect(this, SIGNAL(loadLocationToPlayer(QString, QString)), pLibrary, SLOT(slotLoadLocationToPlayer(QString, QString)));
     m_pAnalyserQueue = AnalyserQueue::createDefaultAnalyserQueue(m_pConfig,pLibrary->getTrackCollection());
     // Connect the player to the analyser queue so that loaded tracks are
     // analysed.
-    for(auto pDeck: m_decks) {
-        connect(pDeck, SIGNAL(newTrackLoaded(TrackPointer)),m_pAnalyserQueue, SLOT(slotAnalyseTrack(TrackPointer)));
-    }
+    for(auto pDeck: m_decks) { connect(pDeck, SIGNAL(newTrackLoaded(TrackPointer)),m_pAnalyserQueue, SLOT(slotAnalyseTrack(TrackPointer))); }
     // Connect the player to the analyser queue so that loaded tracks are
     // analysed.
-    for(auto pSampler: m_samplers) {
-        connect(pSampler, SIGNAL(newTrackLoaded(TrackPointer)),m_pAnalyserQueue, SLOT(slotAnalyseTrack(TrackPointer)));
-    }
+    for(auto pSampler: m_samplers) { connect(pSampler, SIGNAL(newTrackLoaded(TrackPointer)),m_pAnalyserQueue, SLOT(slotAnalyseTrack(TrackPointer))); }
     // Connect the player to the analyser queue so that loaded tracks are
     // analysed.
-    for(auto pPreviewDeck: m_preview_decks) {
-        connect(pPreviewDeck, SIGNAL(newTrackLoaded(TrackPointer)),m_pAnalyserQueue, SLOT(slotAnalyseTrack(TrackPointer)));
-    }
+    for(auto pPreviewDeck: m_preview_decks) { connect(pPreviewDeck, SIGNAL(newTrackLoaded(TrackPointer)),m_pAnalyserQueue, SLOT(slotAnalyseTrack(TrackPointer))); }
 }
 // static
 unsigned int PlayerManager::numDecks() {
@@ -137,7 +126,7 @@ unsigned int PlayerManager::numSamplers() {
 unsigned int PlayerManager::numPreviewDecks() {
     // We do this to cache the control once it is created so callers don't incur
     // a hashtable lookup every time they call this.
-    static ControlObjectSlave* pNumCO = new ControlObjectSlave(ConfigKey("[Master]","num_preview_decks"));
+    static auto  pNumCO = new ControlObjectSlave(ConfigKey("[Master]","num_preview_decks"));
     if (pNumCO && !pNumCO->valid()) {
         delete pNumCO;
         pNumCO = nullptr;
@@ -198,9 +187,7 @@ void PlayerManager::addDeckInner() {
     EngineChannel::ChannelOrientation orientation = EngineChannel::LEFT;
     if (number % 2 == 0) {orientation = EngineChannel::RIGHT;}
     auto pDeck = new Deck(this, m_pConfig, m_pEngine, m_pEffectsManager,orientation, group);
-    if (m_pAnalyserQueue) {
-        connect(pDeck, SIGNAL(newTrackLoaded(TrackPointer)),m_pAnalyserQueue, SLOT(slotAnalyseTrack(TrackPointer)));
-    }
+    if (m_pAnalyserQueue) { connect(pDeck, SIGNAL(newTrackLoaded(TrackPointer)),m_pAnalyserQueue, SLOT(slotAnalyseTrack(TrackPointer))); }
     m_players[group] = pDeck;
     m_decks.append(pDeck);
     // Register the deck output with SoundManager (deck is 0-indexed to SoundManager)
@@ -231,10 +218,7 @@ void PlayerManager::addSamplerInner() {
     // All samplers are in the center
     auto orientation = EngineChannel::CENTER;
     auto  pSampler = new Sampler(this, m_pConfig, m_pEngine,m_pEffectsManager, orientation, group);
-    if (m_pAnalyserQueue) {
-        connect(pSampler, SIGNAL(newTrackLoaded(TrackPointer)),
-                m_pAnalyserQueue, SLOT(slotAnalyseTrack(TrackPointer)));
-    }
+    if (m_pAnalyserQueue) { connect(pSampler, SIGNAL(newTrackLoaded(TrackPointer)), m_pAnalyserQueue, SLOT(slotAnalyseTrack(TrackPointer))); }
     m_players[group] = pSampler;
     m_samplers.append(pSampler);
 }
@@ -251,8 +235,7 @@ void PlayerManager::addPreviewDeckInner() {
     auto orientation = EngineChannel::CENTER;
     auto  pPreviewDeck = new PreviewDeck(this, m_pConfig, m_pEngine,m_pEffectsManager, orientation,group);
     if (m_pAnalyserQueue) {
-        connect(pPreviewDeck, SIGNAL(newTrackLoaded(TrackPointer)),
-                m_pAnalyserQueue, SLOT(slotAnalyseTrack(TrackPointer)));
+        connect(pPreviewDeck, SIGNAL(newTrackLoaded(TrackPointer)), m_pAnalyserQueue, SLOT(slotAnalyseTrack(TrackPointer)));
     }
     m_players[group] = pPreviewDeck;
     m_preview_decks.append(pPreviewDeck);
@@ -265,8 +248,7 @@ BaseTrackPlayer* PlayerManager::getPlayer(QString group) const {
 Deck* PlayerManager::getDeck(unsigned int deck) const {
     QMutexLocker locker(&m_mutex);
     if (deck < 1 || deck > numDecks()) {
-        qWarning() << "Warning PlayerManager::getDeck() called with invalid index: "
-                   << deck;
+        qWarning() << "Warning PlayerManager::getDeck() called with invalid index: " << deck;
         return nullptr;
     }
     return m_decks[deck - 1];
@@ -274,8 +256,7 @@ Deck* PlayerManager::getDeck(unsigned int deck) const {
 PreviewDeck* PlayerManager::getPreviewDeck(unsigned int libPreviewPlayer) const {
     QMutexLocker locker(&m_mutex);
     if (libPreviewPlayer < 1 || libPreviewPlayer > numPreviewDecks()) {
-        qWarning() << "Warning PlayerManager::getPreviewDeck() called with invalid index: "
-                   << libPreviewPlayer;
+        qWarning() << "Warning PlayerManager::getPreviewDeck() called with invalid index: " << libPreviewPlayer;
         return nullptr;
     }
     return m_preview_decks[libPreviewPlayer - 1];
@@ -283,8 +264,7 @@ PreviewDeck* PlayerManager::getPreviewDeck(unsigned int libPreviewPlayer) const 
 Sampler* PlayerManager::getSampler(unsigned int sampler) const {
     QMutexLocker locker(&m_mutex);
     if (sampler < 1 || sampler > numSamplers()) {
-        qWarning() << "Warning PlayerManager::getSampler() called with invalid index: "
-                   << sampler;
+        qWarning() << "Warning PlayerManager::getSampler() called with invalid index: " << sampler;
         return nullptr;
     }
     return m_samplers[sampler - 1];

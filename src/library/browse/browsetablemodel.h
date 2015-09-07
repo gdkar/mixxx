@@ -46,7 +46,6 @@ class BrowseTableModel : public QStandardItemModel, public virtual TrackModel {
     //reimplemented from TrackModel class
     virtual TrackPointer getTrack(const QModelIndex& index) const;
     virtual TrackModel::CapabilitiesFlags getCapabilities() const;
-
     QString getTrackLocation(const QModelIndex& index) const;
     TrackId getTrackId(const QModelIndex& index) const;
     const QLinkedList<int> getTrackRows(TrackId trackId) const;
@@ -65,15 +64,12 @@ class BrowseTableModel : public QStandardItemModel, public virtual TrackModel {
     bool setData(const QModelIndex& index, const QVariant& value, int role=Qt::EditRole);
     QAbstractItemDelegate* delegateForColumn(const int i, QObject* pParent);
     virtual bool isColumnSortable(int column);
-
   public slots:
     void slotClear(BrowseTableModel*);
     void slotInsert(const QList< QList<QStandardItem*> >&, BrowseTableModel*);
     void trackLoaded(QString group, TrackPointer pTrack);
-
   private:
     void removeTracks(QStringList trackLocations);
-
     void addSearchColumn(int index);
     bool isTrackInUse(const QString& file) const;
     QList<int> m_searchColumns;

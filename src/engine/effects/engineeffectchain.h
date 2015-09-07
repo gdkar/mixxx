@@ -18,56 +18,35 @@ class EngineEffectChain : public EffectsRequestHandler {
   public:
     EngineEffectChain(const QString& id);
     virtual ~EngineEffectChain();
-
-    bool processEffectsRequest(
-        const EffectsRequest& message,
-        EffectsResponsePipe* pResponsePipe);
-
+    bool processEffectsRequest( const EffectsRequest& message, EffectsResponsePipe* pResponsePipe);
     void process(const ChannelHandle& handle,
                  CSAMPLE* pInOut,
                  const unsigned int numSamples,
                  const unsigned int sampleRate,
                  const GroupFeatureState& groupFeatures);
-
-    const QString& id() const {
-        return m_id;
-    }
-
+    const QString& id() const { return m_id; }
     bool enabledForChannel(const ChannelHandle& handle) const;
-
   private:
     struct ChannelStatus {
-        ChannelStatus()
-                : old_gain(0),
-                  enable_state(EffectProcessor::DISABLED) {
-        }
-        CSAMPLE old_gain;
-        EffectProcessor::EnableState enable_state;
+        CSAMPLE old_gain = 0;
+        EffectProcessor::EnableState enable_state = EffectProcessor::DISABLED;
     };
-
-    QString debugString() const {
-        return QString("EngineEffectChain(%1)").arg(m_id);
-    }
-
+    QString debugString() const { return QString("EngineEffectChain(%1)").arg(m_id); }
     bool updateParameters(const EffectsRequest& message);
     bool addEffect(EngineEffect* pEffect, int iIndex);
     bool removeEffect(EngineEffect* pEffect, int iIndex);
     bool enableForChannel(const ChannelHandle& handle);
     bool disableForChannel(const ChannelHandle& handle);
-
     // Gets or creates a ChannelStatus entry in m_channelStatus for the provided
     // handle.
     ChannelStatus& getChannelStatus(const ChannelHandle& handle);
-
     QString m_id;
     EffectProcessor::EnableState m_enableState;
     EffectChain::InsertionType m_insertionType;
-    CSAMPLE m_dMix;
+    CSAMPLE m_dMix = 0;
     QList<EngineEffect*> m_effects;
-    CSAMPLE* m_pBuffer;
+    CSAMPLE* m_pBuffer = nullptr;
     ChannelHandleMap<ChannelStatus> m_channelStatus;
-
     DISALLOW_COPY_AND_ASSIGN(EngineEffectChain);
 };
-
 #endif /* ENGINEEFFECTCHAIN_H */

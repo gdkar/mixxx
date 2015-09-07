@@ -31,8 +31,7 @@ class Rotary
 {
 public:
     Rotary();
-    ~Rotary();
-
+    virtual ~Rotary();
     /** Start calibration measurement */
     void calibrateStart();
     /** End calibration measurement */

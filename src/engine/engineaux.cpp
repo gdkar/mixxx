@@ -7,11 +7,12 @@
 #include "engine/engineaux.h"
 
 #include "configobject.h"
+#include "controlpushbutton.h"
 #include "sampleutil.h"
 #include "effects/effectsmanager.h"
 #include "engine/effects/engineeffectsmanager.h"
 #include "controlaudiotaperpot.h"
-
+#include "controlobjectslave.h"
 EngineAux::EngineAux(const ChannelHandleAndGroup& handle_group, EffectsManager* pEffectsManager)
         : EngineChannel(handle_group, EngineChannel::CENTER),
           m_pEngineEffectsManager(pEffectsManager ? pEffectsManager->getEngineEffectsManager() : nullptr),
@@ -60,13 +61,11 @@ void EngineAux::onInputUnconfigured(AudioInput input) {
     m_pEnabled->set(0.0);
 }
 void EngineAux::receiveBuffer(AudioInput input, const CSAMPLE* pBuffer,unsigned int nFrames) {
-    Q_UNUSED(input);
-    Q_UNUSED(nFrames);
     m_sampleBuffer = pBuffer;
 }
 void EngineAux::process(CSAMPLE* pOut, const int iBufferSize) {
-    const CSAMPLE* sampleBuffer = m_sampleBuffer; // save pointer on stack
-    double pregain =  m_pPregain->get();
+    auto sampleBuffer = m_sampleBuffer; // save pointer on stack
+    auto pregain =  m_pPregain->get();
     if (sampleBuffer) {
         SampleUtil::copyWithGain(pOut, sampleBuffer, pregain, iBufferSize);
         m_sampleBuffer = nullptr;

@@ -2,12 +2,10 @@
 #define VINYLCONTROLCONTROL_H
 
 #include "engine/enginecontrol.h"
-#include "trackinfoobject.h"
 #include "configobject.h"
-#include "controlobject.h"
-#include "controlobjectslave.h"
-#include "controlpushbutton.h"
-
+class ControlPushButton;
+class ControlObject;
+class ControlObjectSlave;
 class VinylControlControl : public EngineControl {
     Q_OBJECT
   public:

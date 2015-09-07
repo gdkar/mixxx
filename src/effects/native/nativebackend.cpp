@@ -16,8 +16,7 @@
 #include "effects/native/autopaneffect.h"
 #include "effects/native/phasereffect.h"
 
-NativeBackend::NativeBackend(QObject* pParent)
-        : EffectsBackend(pParent, tr("Native")) {
+NativeBackend::NativeBackend(QObject* pParent) : EffectsBackend(pParent, tr("Native")) {
     // Keep this list in a reasonable order 
     // Mixing EQs
     registerEffect<Bessel4LVMixEQEffect>();
@@ -38,7 +37,4 @@ NativeBackend::NativeBackend(QObject* pParent)
 #endif
     registerEffect<PhaserEffect>();
 }
-
-NativeBackend::~NativeBackend() {
-    //qDebug() << debugString() << "destroyed";
-}
+NativeBackend::~NativeBackend() {}

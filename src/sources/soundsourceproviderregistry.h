@@ -24,10 +24,7 @@ public:
     }
     QList<SoundSourceProviderPointer> getProviderList () const {
       auto list = QList<SoundSourceProviderPointer>{};
-      for ( auto &entry : m_entries.values() )
-      {
-        list.append ( entry.pProvider );
-      }
+      for ( auto &entry : m_entries.values() ) { list.append ( entry.pProvider );}
       return list;
     }
     QStringList getSupportedFileExtensions() const { return m_entries.keys(); }
@@ -43,7 +40,5 @@ private:
     FileExtension2Entry m_entries;
     QRegExp m_supportedFileNameRegex;
 };
-
 } // namespace Mixxx
-
 #endif // MIXXX_SOUNDSOURCEPROVIDERREGISTRY_H

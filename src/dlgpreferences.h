@@ -25,9 +25,9 @@
 
 #include "ui_dlgpreferencesdlg.h"
 #include "configobject.h"
-#include "controlpushbutton.h"
 #include "preferences/dlgpreferencepage.h"
 
+class ControlPushButton;
 class MixxxMainWindow;
 class SoundManager;
 class DlgPrefSound;
@@ -135,7 +135,7 @@ class DlgPreferences : public QDialog, public Ui::DlgPreferencesDlg {
 
     QSize m_pageSizeHint;
 
-    ControlPushButton m_preferencesUpdated;
+    ControlPushButton* m_preferencesUpdated;
 };
 
 #endif

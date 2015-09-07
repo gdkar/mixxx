@@ -9,6 +9,7 @@
 #include "engine/effects/engineeffectchain.h"
 #include "util/assert.h"
 
+#include "controlpotmeter.h"
 const char* kEqualizerRackName = "[EqualizerChain]";
 const char* kQuickEffectRackName = "[QuickEffectChain]";
 

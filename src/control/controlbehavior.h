@@ -16,8 +16,7 @@ class ControlNumericBehavior {
     virtual double valueToParameter(double dValue);
     virtual double midiValueToParameter(double midiValue);
     virtual double parameterToValue(double dParam);
-    virtual double valueToMidiParameter(double dValue);
-    virtual void setValueFromMidiParameter(MidiOpCode o, double dParam, ControlDoublePrivate* pControl);
+    virtual void setValueFromParameter(double dParam, ControlDoublePrivate* pControl);
 };
 class ControlPotmeterBehavior : public ControlNumericBehavior {
   public:
@@ -27,7 +26,6 @@ class ControlPotmeterBehavior : public ControlNumericBehavior {
     virtual double valueToParameter(double dValue);
     virtual double midiValueToParameter(double midiValue);
     virtual double parameterToValue(double dParam);
-    virtual double valueToMidiParameter(double dValue);
   protected:
     double m_dMinValue;
     double m_dMaxValue;
@@ -56,8 +54,7 @@ class ControlAudioTaperPotBehavior : public ControlPotmeterBehavior {
     virtual double valueToParameter(double dValue);
     virtual double parameterToValue(double dParam);
     virtual double midiValueToParameter(double midiValue);
-    virtual double valueToMidiParameter(double dValue);
-    virtual void setValueFromMidiParameter(MidiOpCode o, double dParam, ControlDoublePrivate* pControl);
+    virtual void setValueFromParameter(double dParam, ControlDoublePrivate* pControl);
   protected:
     // a knob position between 0 and 1 where the gain is 1 (0dB)
     double m_neutralParameter;
@@ -91,11 +88,10 @@ class ControlPushButtonBehavior : public ControlNumericBehavior {
          LONGPRESSLATCHING,
     };
     ControlPushButtonBehavior(ButtonMode buttonMode, int iNumStates);
-    virtual void setValueFromMidiParameter(MidiOpCode o, double dParam, ControlDoublePrivate* pControl);
+    virtual void setValueFromParameter(double dParam, ControlDoublePrivate* pControl);
   private:
     ButtonMode m_buttonMode;
     int m_iNumStates;
     QTimer m_pushTimer;
 };
-
 #endif /* CONTROLBEHAVIOR_H */

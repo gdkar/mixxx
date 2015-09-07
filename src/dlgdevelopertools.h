@@ -7,15 +7,13 @@
 
 #include "ui_dlgdevelopertoolsdlg.h"
 #include "configobject.h"
-#include "controlobject.h"
 #include "control/controlmodel.h"
 #include "util/statmodel.h"
 
 class DlgDeveloperTools : public QDialog, public Ui::DlgDeveloperTools {
     Q_OBJECT
   public:
-    DlgDeveloperTools(QWidget* pParent,
-                      ConfigObject<ConfigValue>* pConfig);
+    DlgDeveloperTools(QWidget* pParent,ConfigObject<ConfigValue>* pConfig);
     virtual ~DlgDeveloperTools();
 
   protected:

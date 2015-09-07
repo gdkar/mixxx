@@ -6,7 +6,6 @@
 #include <QString>
 
 #include "util.h"
-#include "controlobject.h"
 #include "effects/effect.h"
 #include "effects/effectparameterslotbase.h"
 class ControlObject;

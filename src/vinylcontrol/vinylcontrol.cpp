@@ -1,5 +1,4 @@
 #include "vinylcontrol/vinylcontrol.h"
-#include "controlobjectthread.h"
 #include "controlobjectslave.h"
 #include "controlobject.h"
 
@@ -11,32 +10,32 @@ VinylControl::VinylControl(ConfigObject<ConfigValue> * pConfig, QString group)
           m_dVinylPosition(0.0),
           m_fTimecodeQuality(0.0f) {
     // Get Control objects
-    m_pVinylControlInputGain = new ControlObjectThread(VINYL_PREF_KEY, "gain");
+    m_pVinylControlInputGain = new ControlObjectSlave(VINYL_PREF_KEY, "gain",this);
 
     bool gainOk = false;
     double gain = m_pConfig->getValueString(ConfigKey(VINYL_PREF_KEY, "gain"))
             .toDouble(&gainOk);
     m_pVinylControlInputGain->set(gainOk ? gain : 1.0);
 
-    playPos             = new ControlObjectThread(group, "playposition");    // Range: 0 to 1.0
-    trackSamples        = new ControlObjectThread(group, "track_samples");
-    trackSampleRate     = new ControlObjectThread(group, "track_samplerate");
-    vinylSeek           = new ControlObjectThread(group, "vinylcontrol_seek");
-    m_pVCRate = new ControlObjectSlave(group, "vinylcontrol_rate");
-    m_pRateSlider = new ControlObjectSlave(group, "rate");
-    playButton          = new ControlObjectThread(group, "play");
-    duration            = new ControlObjectThread(group, "duration");
-    mode                = new ControlObjectThread(group, "vinylcontrol_mode");
-    enabled             = new ControlObjectThread(group, "vinylcontrol_enabled");
-    wantenabled         = new ControlObjectThread(group, "vinylcontrol_wantenabled");
-    cueing              = new ControlObjectThread(group, "vinylcontrol_cueing");
-    scratching          = new ControlObjectThread(group, "vinylcontrol_scratching");
-    rateRange           = new ControlObjectThread(group, "rateRange");
-    vinylStatus         = new ControlObjectThread(group, "vinylcontrol_status");
-    rateDir             = new ControlObjectThread(group, "rate_dir");
-    loopEnabled         = new ControlObjectThread(group, "loop_enabled");
-    signalenabled       = new ControlObjectThread(group, "vinylcontrol_signal_enabled");
-    reverseButton       = new ControlObjectThread(group, "reverse");
+    playPos             = new ControlObjectSlave(group, "playposition",this);    // Range: 0 to 1.0
+    trackSamples        = new ControlObjectSlave(group, "track_samples",this);
+    trackSampleRate     = new ControlObjectSlave(group, "track_samplerate",this);
+    vinylSeek           = new ControlObjectSlave(group, "vinylcontrol_seek",this);
+    m_pVCRate = new ControlObjectSlave(group, "vinylcontrol_rate",this);
+    m_pRateSlider = new ControlObjectSlave(group, "rate",this);
+    playButton          = new ControlObjectSlave(group, "play",this);
+    duration            = new ControlObjectSlave(group, "duration",this);
+    mode                = new ControlObjectSlave(group, "vinylcontrol_mode",this);
+    enabled             = new ControlObjectSlave(group, "vinylcontrol_enabled",this);
+    wantenabled         = new ControlObjectSlave(group, "vinylcontrol_wantenabled",this);
+    cueing              = new ControlObjectSlave(group, "vinylcontrol_cueing",this);
+    scratching          = new ControlObjectSlave(group, "vinylcontrol_scratching",this);
+    rateRange           = new ControlObjectSlave(group, "rateRange",this);
+    vinylStatus         = new ControlObjectSlave(group, "vinylcontrol_status",this);
+    rateDir             = new ControlObjectSlave(group, "rate_dir",this);
+    loopEnabled         = new ControlObjectSlave(group, "loop_enabled",this);
+    signalenabled       = new ControlObjectSlave(group, "vinylcontrol_signal_enabled",this);
+    reverseButton       = new ControlObjectSlave(group, "reverse",this);
 
     //Enabled or not -- load from saved value in case vinyl control is restarting
     m_bIsEnabled = wantenabled->get() > 0.0;
@@ -57,22 +56,22 @@ void VinylControl::toggleVinylControl(bool enable) {
         m_pConfig->set(ConfigKey(m_group,"vinylcontrol_enabled"), ConfigValue((int)enable));
     }
 
-    enabled->slotSet(enable);
+    enabled->set(enable);
 
     // Reset the scratch control to make sure we don't get stuck moving forwards or backwards.
     // actually that might be a good thing
     //if (!enable)
-    //    controlScratch->slotSet(0.0);
+    //    controlScratch->set(0.0);
 }
 
 VinylControl::~VinylControl() {
     bool wasEnabled = m_bIsEnabled;
-    enabled->slotSet(false);
-    vinylStatus->slotSet(VINYL_STATUS_DISABLED);
+    enabled->set(false);
+    vinylStatus->set(VINYL_STATUS_DISABLED);
     if (wasEnabled) {
         //if vinyl control is just restarting, indicate that it should
         //be enabled
-        wantenabled->slotSet(true);
+        wantenabled->set(true);
     }
 
     delete reverseButton;

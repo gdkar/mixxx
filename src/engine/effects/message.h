@@ -143,34 +143,27 @@ struct EffectsResponse {
         NO_SUCH_EFFECT,
         NO_SUCH_PARAMETER,
         INVALID_REQUEST,
-
         // Must come last.
         NUM_STATUS_CODES
     };
-
     EffectsResponse()
             : request_id(-1),
               success(false),
               status(NUM_STATUS_CODES) {
     }
-
     EffectsResponse(const EffectsRequest& request, bool succeeded=false)
             : request_id(request.request_id),
               success(succeeded),
               status(NUM_STATUS_CODES) {
     }
-
     qint64 request_id;
     bool success;
     StatusCode status;
 };
-
 // For communicating from the main thread to the EngineEffectsManager.
 typedef MessagePipe<EffectsRequest*, EffectsResponse> EffectsRequestPipe;
-
 // For communicating from the EngineEffectsManager to the main thread.
 typedef MessagePipe<EffectsResponse, EffectsRequest*> EffectsResponsePipe;
-
 class EffectsRequestHandler {
   public:
     virtual bool processEffectsRequest(

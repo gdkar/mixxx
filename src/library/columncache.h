@@ -65,47 +65,28 @@ class ColumnCache {
         // NUM_COLUMNS should always be the last item.
         NUM_COLUMNS
     };
-
     ColumnCache() { }
-    ColumnCache(const QStringList& columns) {
-        setColumns(columns);
-    }
-
+    ColumnCache(const QStringList& columns) { setColumns(columns); }
     void setColumns(const QStringList& columns);
-
     inline int fieldIndex(Column column) const {
-        if (column < 0 || column >= NUM_COLUMNS) {
-            return -1;
-        }
+        if (column < 0 || column >= NUM_COLUMNS) { return -1; }
         return m_columnIndexByEnum[column];
     }
-
-    inline int fieldIndex(const QString& columnName) const {
-        return m_columnIndexByName.value(columnName, -1);
-    }
-
-    inline QString columnName(Column column) const {
-        return columnNameForFieldIndex(fieldIndex(column));
-    }
-
+    inline int fieldIndex(const QString& columnName) const { return m_columnIndexByName.value(columnName, -1); }
+    inline QString columnName(Column column) const { return columnNameForFieldIndex(fieldIndex(column)); }
     inline QString columnNameForFieldIndex(int index) const {
-        if (index < 0 || index >= m_columnsByIndex.size()) {
-            return QString();
-        }
+        if (index < 0 || index >= m_columnsByIndex.size()) { return QString(); }
         return m_columnsByIndex.at(index);
     }
-
     inline QString columnSortForFieldIndex(int index) const {
         // Check if there is a special sort clause
         QString format = m_columnSortByIndex.value(index, "%1");
         return format.arg(columnNameForFieldIndex(index));
     }
-
     QStringList m_columnsByIndex;
     QMap<int, QString> m_columnSortByIndex;
     QMap<QString, int> m_columnIndexByName;
     // A mapping from column enum to logical index.
     int m_columnIndexByEnum[NUM_COLUMNS];
 };
-
 #endif /* COLUMNCACHE_H */

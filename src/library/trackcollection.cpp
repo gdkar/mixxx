@@ -28,27 +28,19 @@ TrackCollection::TrackCollection(ConfigObject<ConfigValue>* pConfig)
           m_trackDao(m_db, m_cueDao, m_playlistDao, m_crateDao,
                      m_analysisDao, m_libraryHashDao, pConfig) {
     qDebug() << "Available QtSQL drivers:" << QSqlDatabase::drivers();
-
     m_db.setHostName("localhost");
     m_db.setDatabaseName(QDir(pConfig->getSettingsPath()).filePath("mixxxdb.sqlite"));
     m_db.setUserName("mixxx");
     m_db.setPassword("mixxx");
-    bool ok = m_db.open();
+    auto ok = m_db.open();
     qDebug() << "DB status:" << m_db.databaseName() << "=" << ok;
-    if (m_db.lastError().isValid()) {
-        qDebug() << "Error loading database:" << m_db.lastError();
-    }
+    if (m_db.lastError().isValid()) { qDebug() << "Error loading database:" << m_db.lastError(); }
     // Check for tables and create them if missing
-    if (!checkForTables()) {
-        // TODO(XXX) something a little more elegant
-        exit(-1);
-    }
+    if (!checkForTables()) { exit(-1); }
 }
-
 TrackCollection::~TrackCollection() {
     qDebug() << "~TrackCollection()";
     m_trackDao.finish();
-
     if (m_db.isOpen()) {
         // There should never be an outstanding transaction when this code is
         // called. If there is, it means we probably aren't committing a
@@ -63,7 +55,6 @@ TrackCollection::~TrackCollection() {
                 << "There is a logic error somewhere.";
     }
 }
-
 bool TrackCollection::checkForTables() {
     if (!m_db.open()) {
         QMessageBox::critical(0, tr("Cannot open database"),
@@ -74,11 +65,9 @@ bool TrackCollection::checkForTables() {
                                 "Click OK to exit."), QMessageBox::Ok);
         return false;
     }
-
 #ifdef __SQLITE3__
     installSorting(m_db);
 #endif
-
     // The schema XML is baked into the binary via Qt resources.
     QString schemaFilename(":/schema.xml");
     QString okToExit = tr("Click OK to exit.");
@@ -88,9 +77,7 @@ bool TrackCollection::checkForTables() {
             .arg(QString::number(kRequiredSchemaVersion));
     QString helpEmail = tr("For help with database issues contact:") + "\n" +
                            "mixxx-devel@lists.sourceforge.net";
-
-    SchemaManager::Result result = SchemaManager::upgradeToSchemaVersion(
-            schemaFilename, m_db, kRequiredSchemaVersion);
+    SchemaManager::Result result = SchemaManager::upgradeToSchemaVersion( schemaFilename, m_db, kRequiredSchemaVersion);
     switch (result) {
         case SchemaManager::RESULT_BACKWARDS_INCOMPATIBLE:
             QMessageBox::warning(
@@ -131,56 +118,32 @@ bool TrackCollection::checkForTables() {
     m_libraryHashDao.initialize();
     return true;
 }
-
-QSqlDatabase& TrackCollection::getDatabase() {
-    return m_db;
-}
-
-CrateDAO& TrackCollection::getCrateDAO() {
-    return m_crateDao;
-}
-
-TrackDAO& TrackCollection::getTrackDAO() {
-    return m_trackDao;
-}
-
-PlaylistDAO& TrackCollection::getPlaylistDAO() {
-    return m_playlistDao;
-}
-
-DirectoryDAO& TrackCollection::getDirectoryDAO() {
-    return m_directoryDao;
-}
-
-QSharedPointer<BaseTrackCache> TrackCollection::getTrackSource() {
-    return m_defaultTrackSource;
-}
-
+QSqlDatabase& TrackCollection::getDatabase() {return m_db; }
+CrateDAO& TrackCollection::getCrateDAO() { return m_crateDao; }
+TrackDAO& TrackCollection::getTrackDAO() { return m_trackDao; }
+PlaylistDAO& TrackCollection::getPlaylistDAO() { return m_playlistDao; }
+DirectoryDAO& TrackCollection::getDirectoryDAO() { return m_directoryDao; }
+QSharedPointer<BaseTrackCache> TrackCollection::getTrackSource() { return m_defaultTrackSource; }
 void TrackCollection::setTrackSource(QSharedPointer<BaseTrackCache> trackSource) {
-    DEBUG_ASSERT_AND_HANDLE(m_defaultTrackSource.isNull()) {
-        return;
-    }
+    DEBUG_ASSERT_AND_HANDLE(m_defaultTrackSource.isNull()) { return; }
     m_defaultTrackSource = trackSource;
 }
-
 #ifdef __SQLITE3__
 // from public domain code
 // http://www.archivum.info/qt-interest@trolltech.com/2008-12/00584/Re-%28Qt-interest%29-Qt-Sqlite-UserDefinedFunction.html
 void TrackCollection::installSorting(QSqlDatabase &db) {
-    QVariant v = db.driver()->handle();
+    auto v = db.driver()->handle();
     if (v.isValid() && strcmp(v.typeName(), "sqlite3*") == 0) {
         // v.data() returns a pointer to the handle
-        sqlite3* handle = *static_cast<sqlite3**>(v.data());
+        auto  handle = *static_cast<sqlite3**>(v.data());
         if (handle != 0) { // check that it is not NULL
             int result = sqlite3_create_collation(
                     handle,
                     "localeAwareCompare",
                     SQLITE_UTF16,
-                    NULL,
+                    nullptr,
                     sqliteLocaleAwareCompare);
-            if (result != SQLITE_OK)
-            qWarning() << "Could not add string collation function: " << result;
-
+            if (result != SQLITE_OK) qWarning() << "Could not add string collation function: " << result;
             result = sqlite3_create_function(
                     handle,
                     "like",
@@ -188,28 +151,20 @@ void TrackCollection::installSorting(QSqlDatabase &db) {
                     SQLITE_ANY,
                     NULL,
                     sqliteLike,
-                    NULL, NULL);
-            if (result != SQLITE_OK)
-            qWarning() << "Could not add like 2 function: " << result;
-
+                    nullptr, nullptr);
+            if (result != SQLITE_OK) qWarning() << "Could not add like 2 function: " << result;
             result = sqlite3_create_function(
                     handle,
                     "like",
                     3,
                     SQLITE_UTF8, // No conversion, Data is stored as UTF8
-                    NULL,
+                    nullptr,
                     sqliteLike,
-                    NULL, NULL);
-            if (result != SQLITE_OK)
-            qWarning() << "Could not add like 3 function: " << result;
-        } else {
-            qWarning() << "Could not get sqlite handle";
-        }
-    } else {
-        qWarning() << "handle variant returned typename " << v.typeName();
-    }
+                    nullptr, nullptr);
+            if (result != SQLITE_OK) qWarning() << "Could not add like 3 function: " << result;
+        } else { qWarning() << "Could not get sqlite handle"; }
+    } else { qWarning() << "handle variant returned typename " << v.typeName(); }
 }
-
 // The collating function callback is invoked with a copy of the pArg
 // application data pointer and with two strings in the encoding specified
 // by the eTextRep argument.
@@ -217,70 +172,43 @@ void TrackCollection::installSorting(QSqlDatabase &db) {
 // or positive if the first string is less than, equal to, or greater
 // than the second, respectively.
 //static
-int TrackCollection::sqliteLocaleAwareCompare(void* pArg,
-                                              int len1, const void* data1,
-                                              int len2, const void* data2) {
-    Q_UNUSED(pArg);
+int TrackCollection::sqliteLocaleAwareCompare(void* /*pArg*/, int len1, const void* data1, int len2, const void* data2) {
     // Construct a QString without copy
-    QString string1 = QString::fromRawData(reinterpret_cast<const QChar*>(data1),
-                                           len1 / sizeof(QChar));
-    QString string2 = QString::fromRawData(reinterpret_cast<const QChar*>(data2),
-                                           len2 / sizeof(QChar));
+    QString string1 = QString::fromRawData(reinterpret_cast<const QChar*>(data1), len1 / sizeof(QChar));
+    QString string2 = QString::fromRawData(reinterpret_cast<const QChar*>(data2), len2 / sizeof(QChar));
     return QString::localeAwareCompare(string1, string2);
 }
-
 // This implements the like() SQL function. This is used by the LIKE operator.
 // The SQL statement 'A LIKE B' is implemented as 'like(B, A)', and if there is
 // an escape character, say E, it is implemented as 'like(B, A, E)'
 //static
-void TrackCollection::sqliteLike(sqlite3_context *context,
-                                int aArgc,
-                                sqlite3_value **aArgv) {
-    DEBUG_ASSERT_AND_HANDLE(aArgc == 2 || aArgc == 3) {
-        return;
-    }
-
-    const char* b = reinterpret_cast<const char*>(
-            sqlite3_value_text(aArgv[0]));
-    const char* a = reinterpret_cast<const char*>(
-            sqlite3_value_text(aArgv[1]));
-
-    if (!a || !b) {
-        return;
-    }
-
-    QString stringB = QString::fromUtf8(b); // Like String
-    QString stringA = QString::fromUtf8(a);
-
+void TrackCollection::sqliteLike(sqlite3_context *context, int aArgc, sqlite3_value **aArgv) {
+    DEBUG_ASSERT_AND_HANDLE(aArgc == 2 || aArgc == 3) { return; }
+    auto b = reinterpret_cast<const char*>( sqlite3_value_text(aArgv[0]));
+    auto a = reinterpret_cast<const char*>( sqlite3_value_text(aArgv[1]));
+    if (!a || !b) { return; }
+    auto stringB = QString::fromUtf8(b); // Like String
+    auto stringA = QString::fromUtf8(a);
     QChar esc = '\0'; // Escape
     if (aArgc == 3) {
-        const char* e = reinterpret_cast<const char*>(
-                sqlite3_value_text(aArgv[2]));
+        const char* e = reinterpret_cast<const char*>( sqlite3_value_text(aArgv[2]));
         if(e) {
             QString stringE = QString::fromUtf8(e);
-            if (!stringE.isEmpty()) {
-                esc = stringE.data()[0];
-            }
+            if (!stringE.isEmpty()) { esc = stringE.data()[0]; }
         }
     }
-
-    int ret = likeCompareLatinLow(&stringB, &stringA, esc);
+    auto ret = likeCompareLatinLow(&stringB, &stringA, esc);
     sqlite3_result_int64(context, ret);
     return;
 }
 
 //static
 void TrackCollection::makeLatinLow(QChar* c, int count) {
-    for (int i = 0; i < count; ++i) {
-        if (c[i].decompositionTag() != QChar::NoDecomposition) {
-            c[i] = c[i].decomposition()[0];
-        }
-        if (c[i].isUpper()) {
-            c[i] = c[i].toLower();
-        }
+    for (auto i = 0; i < count; ++i) {
+        if (c[i].decompositionTag() != QChar::NoDecomposition) { c[i] = c[i].decomposition()[0]; }
+        if (c[i].isUpper()) { c[i] = c[i].toLower(); }
     }
 }
-
 //static
 int TrackCollection::likeCompareLatinLow(
         QString* pattern,
@@ -291,7 +219,6 @@ int TrackCollection::likeCompareLatinLow(
     //qDebug() << *pattern << *string;
     return likeCompareInner(pattern->data(), pattern->length(), string->data(), string->length(), esc);
 }
-
 // Compare two strings for equality where the first string is
 // a "LIKE" expression. Return true (1) if they are the same and
 // false (0) if they are different.
@@ -304,14 +231,11 @@ int TrackCollection::likeCompareInner(
   int stringSize,
   const QChar esc // The escape character
 ) {
-    static const QChar MATCH_ONE = QChar('_');
-    static const QChar MATCH_ALL = QChar('%');
-
-    int iPattern = 0; // Current index in pattern
-    int iString = 0; // Current index in string
-
-    bool prevEscape = false; // True if the previous character was uEsc
-
+    static auto MATCH_ONE = QChar('_');
+    static auto MATCH_ALL = QChar('%');
+    auto iPattern = 0; // Current index in pattern
+    auto iString = 0; // Current index in string
+    auto prevEscape = false; // True if the previous character was uEsc
     while (iPattern < patternSize) {
         // Read (and consume) the next character from the input pattern.
         QChar uPattern = pattern[iPattern++];
@@ -320,65 +244,41 @@ int TrackCollection::likeCompareInner(
         // 2. uPattern is an unescaped match-one character "_",
         // 3. uPattern is an unescaped escape character, or
         // 4. uPattern is to be handled as an ordinary character
-
         if (!prevEscape && uPattern == MATCH_ALL) {
             // Case 1.
             QChar c;
-
             // Skip any MATCH_ALL or MATCH_ONE characters that follow a
             // MATCH_ALL. For each MATCH_ONE, skip one character in the
             // test string.
-
-            if (iPattern >= patternSize) {
-                // Tailing %
-                return 1;
-            }
-
+            if (iPattern >= patternSize) { return 1; }
             while ((c = pattern[iPattern]) == MATCH_ALL || c == MATCH_ONE) {
                 if (c == MATCH_ONE) {
-                    if (++iString == stringSize) {
-                        return 0;
-                    }
+                    if (++iString == stringSize) { return 0; }
                 }
-                if (++iPattern == patternSize) {
-                    // Two or more tailing %
-                    return 1;
-                }
+                if (++iPattern == patternSize) { return 1; }
             }
-
             while (iString < stringSize) {
                 if (likeCompareInner(&pattern[iPattern], patternSize - iPattern,
-                                &string[iString], stringSize - iString, esc)) {
-                    return 1;
-                }
+                                &string[iString], stringSize - iString, esc)) { return 1; }
                 iString++;
             }
             return 0;
         } else if (!prevEscape && uPattern == MATCH_ONE) {
             // Case 2.
-            if (++iString == stringSize) {
-                return 0;
-            }
+            if (++iString == stringSize) { return 0;}
         } else if (!prevEscape && uPattern == esc) {
             // Case 3.
             prevEscape = 1;
         } else {
             // Case 4.
-            if (iString == stringSize) {
-                return 0;
-            }
-            QChar uString = string[iString++];
-            if (uString != uPattern) {
-                return 0;
-            }
+            if (iString == stringSize) { return 0; }
+            auto  uString = string[iString++];
+            if (uString != uPattern) { return 0; }
             prevEscape = false;
         }
     }
     return iString == stringSize;
 }
-
-
-
 /*
 static int
 likeCompare(nsAString::const_iterator aPatternItr,

@@ -4,9 +4,8 @@
 #include <QObject>
 #include <QEvent>
 
-#include "controlobject.h"
 #include "widget/controlwidgetconnection.h"
-
+class ControlObject;
 struct ControlInfo {
     ControlInfo()
             : clickControl(NULL),

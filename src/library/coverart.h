@@ -27,14 +27,7 @@ struct CoverInfo {
         // Cover is located in a standalone image file.
         FILE = 2
     };
-
-    CoverInfo() : source(UNKNOWN),
-                  type(NONE),
-                  coverLocation(QString()),
-                  trackLocation(QString()),
-                  // This default value is fine: qChecksum(NULL, 0) is 0.
-                  hash(0) {}
-
+    CoverInfo() = default; 
     bool operator==(const CoverInfo& other) const {
         return other.source == source &&
                 other.type == type &&
@@ -42,34 +35,25 @@ struct CoverInfo {
                 other.trackLocation == trackLocation &&
                 other.hash == hash;
     }
-    bool operator!=(const CoverInfo& other) const {
-        return !(*this == other);
-    }
-
-    Source source;
-    Type type;
-    QString coverLocation;
-    QString trackLocation;
-    quint16 hash;
+    bool operator!=(const CoverInfo& other) const { return !(*this == other); }
+    Source source = UNKNOWN;
+    Type type = NONE;
+    QString coverLocation{};
+    QString trackLocation{};
+    quint16 hash{0};
 };
-
 struct CoverArt {
-    CoverArt() {}
-
+    CoverArt() = default;
     bool operator==(const CoverArt& other) const {
         // Only count image in the equality if both are non-null.
         return other.info == info &&
                 (other.image.isNull() || image.isNull() ||
                  other.image == image);
     }
-    bool operator!=(const CoverArt& other) const {
-        return !(*this == other);
-    }
-
+    bool operator!=(const CoverArt& other) const { return !(*this == other); }
     CoverInfo info;
     QImage image;
 };
-
 QDebug operator<<(QDebug dbg, const CoverInfo& info);
 QDebug operator<<(QDebug dbg, const CoverArt& art);
 

@@ -4,8 +4,6 @@
 #ifndef ENGINEMICROPHONE_H
 #define ENGINEMICROPHONE_H
 
-#include "controlobjectslave.h"
-#include "controlpushbutton.h"
 #include "engine/enginechannel.h"
 #include "engine/enginevumeter.h"
 
@@ -14,7 +12,7 @@
 class EffectsManager;
 class EngineEffectsManager;
 class ControlAudioTaperPot;
-
+class ControlObjectSlave;
 // EngineMicrophone is an EngineChannel that implements a mixing source whose
 // samples are fed directly from the SoundManager
 class EngineMicrophone : public EngineChannel, public AudioDestination {

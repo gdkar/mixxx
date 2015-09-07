@@ -7,7 +7,7 @@
 #include "widget/wknobcomposed.h"
 #include "widget/wslidercomposed.h"
 #include "controllers/controllerlearningeventfilter.h"
-
+#include "controlobject.h"
 ControllerLearningEventFilter::ControllerLearningEventFilter(QObject* pParent)
         : QObject(pParent),
           m_bListening(false) {

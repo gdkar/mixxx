@@ -9,13 +9,13 @@
 
 #include "engine/enginecontrol.h"
 #include "configobject.h"
-#include "controlobjectslave.h"
 #include "trackinfoobject.h"
 
 #define NUM_HOT_CUES 37
 
 class ControlObject;
 class ControlPushButton;
+class ControlObjectSlave;
 class Cue;
 class ControlIndicator;
 

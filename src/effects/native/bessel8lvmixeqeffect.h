@@ -5,7 +5,7 @@
 
 #include <QMap>
 
-#include "controlobjectslave.h"
+
 #include "effects/effect.h"
 #include "effects/effectprocessor.h"
 #include "engine/effects/engineeffect.h"
@@ -16,7 +16,7 @@
 #include "util/types.h"
 #include "util/defs.h"
 #include "sampleutil.h"
-
+class ControlObjectSlave;
 
 class Bessel8LVMixEQEffectGroupState :
         public LVMixEQEffectGroupState<EngineFilterBessel8Low> {

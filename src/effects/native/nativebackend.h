@@ -6,13 +6,10 @@
 class NativeBackend : public EffectsBackend {
     Q_OBJECT
   public:
-    NativeBackend(QObject* pParent=NULL);
+    NativeBackend(QObject* pParent=nullptr);
     virtual ~NativeBackend();
-
   private:
-    QString debugString() const {
-        return "NativeBackend";
-    }
+    QString debugString() const {return "NativeBackend";}
 };
 
 #endif /* NATIVEBACKEND_H */

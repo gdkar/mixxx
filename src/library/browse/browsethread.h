@@ -12,7 +12,7 @@
 #include <QList>
 #include <QSharedPointer>
 #include <QWeakPointer>
-
+#include <atomic>
 #include "util/file.h"
 
 // This class is a singleton and represents a thread
@@ -34,26 +34,19 @@ class BrowseThread : public QThread {
     void executePopulation(const MDir& path, BrowseTableModel* client);
     void run();
     static BrowseThreadPointer getInstanceRef();
-
   signals:
     void rowsAppended(const QList< QList<QStandardItem*> >&, BrowseTableModel*);
     void clearModel(BrowseTableModel*);
-
   private:
     BrowseThread(QObject *parent = 0);
-
     void populateModel();
-
     QMutex m_mutex;
     QWaitCondition m_locationUpdated;
-    volatile bool m_bStopThread;
-
+    std::atomic<bool> m_bStopThread;
     // You must hold m_path_mutex to touch m_path or m_model_observer
     QMutex m_path_mutex;
     MDir m_path;
     BrowseTableModel* m_model_observer;
-
     static QWeakPointer<BrowseThread> m_weakInstanceRef;
 };
-
 #endif // BROWSETHREAD_H

@@ -4,8 +4,7 @@
 #include <QObject>
 #include <QString>
 
-#include "controlobject.h"
-
+class ControlObject;
 class VelocityController;
 class RateIIFilter;
 

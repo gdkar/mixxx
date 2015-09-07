@@ -12,9 +12,7 @@
  7 - Mixxx 1.13.0 New SoundSource/AudioSource API
  8 - Mixxx 1.13.0 New SoundSource Plugin API
  */
-
 #include <QtGlobal>
-
 // Q_OS_WIN from <QtGlobal> should be defined when compiling on any
 // Windows platform
 #ifdef Q_OS_WIN
@@ -22,27 +20,18 @@
 #else
 #define MIXXX_SOUNDSOURCEPLUGINAPI_EXPORT
 #endif
-
 #include "sources/soundsourceprovider.h"
-
 // Function types and names of the public SoundSource plugin API
-
 namespace Mixxx {
-
 // extern "C" MIXXX_SOUNDSOURCEPLUGINAPI_EXPORT const char* Mixxx_getVersion()
-
 // extern "C" MIXXX_SOUNDSOURCEPLUGINAPI_EXPORT int Mixxx_SoundSourcePluginAPI_getVersion()
 typedef int (*SoundSourcePluginAPI_getVersionFunc)();
 const char * const SoundSourcePluginAPI_getVersionFuncName = "Mixxx_SoundSourcePluginAPI_getVersion";
-
 // extern "C" MIXXX_SOUNDSOURCEPLUGINAPI_EXPORT SoundSourceProvider* Mixxx_SoundSourcePluginAPI_createSoundSourceProvider()
 typedef SoundSourceProvider* (*SoundSourcePluginAPI_createSoundSourceProviderFunc)();
 const char* const SoundSourcePluginAPI_createSoundSourceProviderFuncName = "Mixxx_SoundSourcePluginAPI_createSoundSourceProvider";
-
 // extern "C" MIXXX_SOUNDSOURCEPLUGINAPI_EXPORT void Mixxx_SoundSourcePluginAPI_destroySoundSourceProvider(Mixxx::SoundSourceProvider*)
 typedef void (*SoundSourcePluginAPI_destroySoundSourceProviderFunc)(SoundSourceProvider*);
 const char* const SoundSourcePluginAPI_destroySoundSourceProviderFuncName = "Mixxx_SoundSourcePluginAPI_destroySoundSourceProvider";
-
 } // Mixxx
-
 #endif // MIXXX_SOUNDSOURCEPLUGINAPI_H

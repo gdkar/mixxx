@@ -334,7 +334,7 @@ void TrackInfoObject::setBeats(BeatsPointer pBeats) {
     emit(bpmUpdated(bpm));
     emit(beatsUpdated());
 }
-BeatsPointer TrackInfoObject::getBeats() const  return m_pBeats; }
+BeatsPointer TrackInfoObject::getBeats() const  {return m_pBeats; }
 void TrackInfoObject::slotBeatsUpdated() {
     setDirty(true);
     auto bpm = m_pBeats->getBpm();
@@ -432,7 +432,7 @@ void TrackInfoObject::setTrackNumber(const QString& s) {
 }
 int TrackInfoObject::getTimesPlayed() const { return m_iTimesPlayed.load(); }
 void TrackInfoObject::setTimesPlayed(int t) { if (t != m_iTimesPlayed.exchange(t)) { setDirty(true); } }
-void TrackInfoObject::incTimesPlayed() { setPlayedAndUpdatePlaycount(true) ;
+void TrackInfoObject::incTimesPlayed() { setPlayedAndUpdatePlaycount(true) ;}
 bool TrackInfoObject::getPlayed() const { return m_bPlayed.load(); }
 void TrackInfoObject::setPlayedAndUpdatePlaycount(bool bPlayed) {
     QMutexLocker lock(&m_qMutex);
@@ -441,17 +441,12 @@ void TrackInfoObject::setPlayedAndUpdatePlaycount(bool bPlayed) {
         setDirty(true);
     }
     else if (m_bPlayed && !bPlayed) {
-        if (m_iTimesPlayed.fetch_add(-1) <= 0 )
-        {
-          m_iTimesPlayed.store(0);
-        }
+        if (m_iTimesPlayed.fetch_add(-1) <= 0 ) m_iTimesPlayed.store(0);
         setDirty(true);
     }
     m_bPlayed.store(bPlayed);
 }
-void TrackInfoObject::setPlayed(bool bPlayed) {
-    if ( bPlayed!=m_bPlayed.exchange(bPlayed)){ setDirty(true); }
-}
+void TrackInfoObject::setPlayed(bool bPlayed) { if ( bPlayed!=m_bPlayed.exchange(bPlayed)){ setDirty(true); } }
 QString TrackInfoObject::getComment() const { return m_sComment; }
 void TrackInfoObject::setComment(const QString& s) {
     auto ret = s;
@@ -464,13 +459,9 @@ void TrackInfoObject::setType(const QString& s) {
     m_sType.swap(ret);
     if (s != ret) { setDirty(true); }
 }
-void TrackInfoObject::setSampleRate(int iSampleRate) {
-    if (m_iSampleRate.exchange(iSampleRate) != iSampleRate) { setDirty(true); }
-}
+void TrackInfoObject::setSampleRate(int iSampleRate) { if (m_iSampleRate.exchange(iSampleRate) != iSampleRate) { setDirty(true); } }
 int TrackInfoObject::getSampleRate() const { return m_iSampleRate.load(); }
-void TrackInfoObject::setChannels(int iChannels) {
-    if (m_iChannels.exchange(iChannels) != iChannels) { setDirty(true); }
-}
+void TrackInfoObject::setChannels(int iChannels) { if (m_iChannels.exchange(iChannels) != iChannels) { setDirty(true); } }
 int TrackInfoObject::getChannels() const { return m_iChannels.load(); }
 int TrackInfoObject::getLength() const { return getFileInfo().size(); }
 int TrackInfoObject::getBitrate() const { return m_iBitrate.load(); }
@@ -552,7 +543,7 @@ void TrackInfoObject::removeCue(Cue* cue) {
     lock.unlock();
     emit(cuesUpdated());
 }
-const QList<Cue*>& TrackInfoObject::getCuePoints() const { return m_cuePoints; }
+const QList<Cue*>& TrackInfoObject::getCuePoints() { return m_cuePoints; }
 void TrackInfoObject::setCuePoints(QList<Cue*> cuePoints) {
     //qDebug() << "setCuePoints" << cuePoints.length();
     auto curr_points = m_cuePoints;
@@ -573,8 +564,8 @@ void TrackInfoObject::setDirty(bool bDirty) {
     if (bDirty) { emit(changed(this)); }
     //qDebug() << QString("TrackInfoObject %1 %2 set to %3").arg(QString::number(m_id), m_fileInfo.absoluteFilePath(), m_bDirty ? "dirty" : "clean");
 }
-bool TrackInfoObject::isDirty() const { return m_bDirty.load(); }
-bool TrackInfoObject::locationChanged() const { return m_bLocationChanged.load(); }
+bool TrackInfoObject::isDirty() { return m_bDirty.load(); }
+bool TrackInfoObject::locationChanged() { return m_bLocationChanged.load(); }
 int TrackInfoObject::getRating() const { return m_Rating.load(); }
 void TrackInfoObject::setRating (int rating) { if (rating != m_Rating.exchange(rating)) { setDirty(true); } }
 void TrackInfoObject::setKeys(Keys keys) {

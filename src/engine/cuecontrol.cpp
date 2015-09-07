@@ -6,6 +6,7 @@
 #include "engine/cuecontrol.h"
 
 #include "controlobject.h"
+#include "controlobjectslave.h"
 #include "controlpushbutton.h"
 #include "controlindicator.h"
 #include "trackinfoobject.h"
@@ -94,8 +95,8 @@ CueControl::CueControl(QString group,
     m_pCueIndicator = new ControlIndicator(ConfigKey(group, "cue_indicator"));
     m_pPlayIndicator = new ControlIndicator(ConfigKey(group, "play_indicator"));
 
-    m_pVinylControlEnabled = new ControlObjectSlave(group, "vinylcontrol_enabled");
-    m_pVinylControlMode = new ControlObjectSlave(group, "vinylcontrol_mode");
+    m_pVinylControlEnabled = new ControlObjectSlave(group, "vinylcontrol_enabled",this);
+    m_pVinylControlMode = new ControlObjectSlave(group, "vinylcontrol_mode",this);
 }
 
 CueControl::~CueControl() {

@@ -36,8 +36,7 @@ AnalyserBeats::~AnalyserBeats() {
 bool AnalyserBeats::initialise(TrackPointer tio, int sampleRate, int totalSamples) {
     if (totalSamples == 0) {return false;}
     auto bPreferencesBeatDetectionEnabled = static_cast<bool>(
-        m_pConfig->getValueString(
-            ConfigKey(BPM_CONFIG_KEY, BPM_DETECTION_ENABLED)).toInt());
+        m_pConfig->getValueString( ConfigKey(BPM_CONFIG_KEY, BPM_DETECTION_ENABLED)).toInt());
     if (!bPreferencesBeatDetectionEnabled) {
         qDebug() << "Beat calculation is deactivated";
         return false;
@@ -57,24 +56,20 @@ bool AnalyserBeats::initialise(TrackPointer tio, int sampleRate, int totalSample
         m_iMaxBpm = m_pConfig->getValueString(ConfigKey(BPM_CONFIG_KEY, BPM_RANGE_END)).toInt();
     }
     m_bPreferencesFixedTempo = static_cast<bool>(
-        m_pConfig->getValueString(
-            ConfigKey(BPM_CONFIG_KEY, BPM_FIXED_TEMPO_ASSUMPTION)).toInt());
+        m_pConfig->getValueString(ConfigKey(BPM_CONFIG_KEY, BPM_FIXED_TEMPO_ASSUMPTION)).toInt());
     m_bPreferencesOffsetCorrection = static_cast<bool>(
-        m_pConfig->getValueString(
-            ConfigKey(BPM_CONFIG_KEY, BPM_FIXED_TEMPO_OFFSET_CORRECTION)).toInt());
+        m_pConfig->getValueString(ConfigKey(BPM_CONFIG_KEY, BPM_FIXED_TEMPO_OFFSET_CORRECTION)).toInt());
     m_bPreferencesReanalyzeOldBpm = static_cast<bool>(
-        m_pConfig->getValueString(
-            ConfigKey(BPM_CONFIG_KEY, BPM_REANALYZE_WHEN_SETTINGS_CHANGE)).toInt());
+        m_pConfig->getValueString(ConfigKey(BPM_CONFIG_KEY, BPM_REANALYZE_WHEN_SETTINGS_CHANGE)).toInt());
     m_bPreferencesFastAnalysis = static_cast<bool>(
-        m_pConfig->getValueString(
-            ConfigKey(BPM_CONFIG_KEY, BPM_FAST_ANALYSIS_ENABLED)).toInt());
-    QString library = m_pConfig->getValueString ( ConfigKey(VAMP_CONFIG_KEY, VAMP_ANALYSER_BEAT_LIBRARY));
-    QString pluginID = m_pConfig->getValueString( ConfigKey(VAMP_CONFIG_KEY, VAMP_ANALYSER_BEAT_PLUGIN_ID));
+        m_pConfig->getValueString(ConfigKey(BPM_CONFIG_KEY, BPM_FAST_ANALYSIS_ENABLED)).toInt());
+    auto library = m_pConfig->getValueString ( ConfigKey(VAMP_CONFIG_KEY, VAMP_ANALYSER_BEAT_LIBRARY));
+    auto pluginID = m_pConfig->getValueString( ConfigKey(VAMP_CONFIG_KEY, VAMP_ANALYSER_BEAT_PLUGIN_ID));
     m_pluginId = pluginID;
     m_iSampleRate = sampleRate;
     m_iTotalSamples = totalSamples;
     // if we can load a stored track don't reanalyze it
-    bool bShouldAnalyze = !loadStored(tio);
+    auto bShouldAnalyze = !loadStored(tio);
     if (bShouldAnalyze) {
         m_pVamp = new VampAnalyser();
         bShouldAnalyze = m_pVamp->Init(library, pluginID, m_iSampleRate, totalSamples,m_bPreferencesFastAnalysis);
@@ -91,8 +86,7 @@ bool AnalyserBeats::initialise(TrackPointer tio, int sampleRate, int totalSample
 bool AnalyserBeats::loadStored(TrackPointer tio) const {
     int iMinBpm;
     int iMaxBpm;
-    bool allow_above = static_cast<bool>(m_pConfig->getValueString(
-        ConfigKey(BPM_CONFIG_KEY, BPM_ABOVE_RANGE_ENABLED)).toInt());
+    auto allow_above = static_cast<bool>(m_pConfig->getValueString(ConfigKey(BPM_CONFIG_KEY, BPM_ABOVE_RANGE_ENABLED)).toInt());
     if (allow_above) {
         iMinBpm = 0;
         iMaxBpm = 9999;
@@ -100,14 +94,13 @@ bool AnalyserBeats::loadStored(TrackPointer tio) const {
         iMinBpm = m_pConfig->getValueString(ConfigKey(BPM_CONFIG_KEY, BPM_RANGE_START)).toInt();
         iMaxBpm = m_pConfig->getValueString(ConfigKey(BPM_CONFIG_KEY, BPM_RANGE_END)).toInt();
     }
-    bool bpmLock = tio->hasBpmLock();
+    auto bpmLock = tio->hasBpmLock();
     if (bpmLock) {
         qDebug() << "Track is BpmLocked: Beat calculation will not start";
         return true;
     }
     auto library = m_pConfig->getValueString ( ConfigKey(VAMP_CONFIG_KEY, VAMP_ANALYSER_BEAT_LIBRARY));
     auto pluginID = m_pConfig->getValueString( ConfigKey(VAMP_CONFIG_KEY, VAMP_ANALYSER_BEAT_PLUGIN_ID));
-
     // At first start config for QM and Vamp does not exist --> set default
     // TODO(XXX): This is no longer present in initialise. Remove?
     if (library.isEmpty() || library.isNull())   library = "libmixxxminimal";
@@ -116,8 +109,8 @@ bool AnalyserBeats::loadStored(TrackPointer tio) const {
     // analyze this track or not.
     auto pBeats = tio->getBeats();
     if (pBeats) {
-        QString version = pBeats->getVersion();
-        QString subVersion = pBeats->getSubVersion();
+        auto version = pBeats->getVersion();
+        auto subVersion = pBeats->getSubVersion();
         auto extraVersionInfo = getExtraVersionInfo( pluginID, m_bPreferencesFastAnalysis);
         auto newVersion = BeatFactory::getPreferredVersion(m_bPreferencesOffsetCorrection);
         auto newSubVersion = BeatFactory::getPreferredSubVersion(m_bPreferencesFixedTempo, m_bPreferencesOffsetCorrection,
@@ -195,21 +188,19 @@ void AnalyserBeats::finalise(TrackPointer tio) {
     bool zeroCurrentBpm = pCurrentBeats->getBpm() == 0.0;
     if (m_bPreferencesReanalyzeOldBpm || zeroCurrentBpm) {
         if (zeroCurrentBpm) {
-            qDebug() << "Replacing 0-BPM beatgrid with a" << pBeats->getBpm()
-                     << "beatgrid.";
+            qDebug() << "Replacing 0-BPM beatgrid with a" << pBeats->getBpm() << "beatgrid.";
         }
         tio->setBeats(pBeats);
         return;
     }
     // If we got here then the user doesn't want to replace the beatgrid but
     // since the first beat is zero we'll apply the offset we just detected.
-    double currentFirstBeat = pCurrentBeats->findNextBeat(0);
-    double newFirstBeat = pBeats->findNextBeat(0);
+    auto currentFirstBeat = pCurrentBeats->findNextBeat(0);
+    auto  newFirstBeat = pBeats->findNextBeat(0);
     if (currentFirstBeat == 0.0 && newFirstBeat > 0) {pCurrentBeats->translate(newFirstBeat);}
 }
 // static
-QHash<QString, QString> AnalyserBeats::getExtraVersionInfo(
-    QString pluginId, bool bPreferencesFastAnalysis) {
+QHash<QString, QString> AnalyserBeats::getExtraVersionInfo(QString pluginId, bool bPreferencesFastAnalysis) {
     QHash<QString, QString> extraVersionInfo;
     extraVersionInfo["vamp_plugin_id"] = pluginId;
     if (bPreferencesFastAnalysis) {extraVersionInfo["fast_analysis"] = "1";}

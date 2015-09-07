@@ -3,7 +3,6 @@
 
 #include <QMap>
 
-#include "controlobjectslave.h"
 #include "effects/effect.h"
 #include "effects/effectprocessor.h"
 #include "engine/effects/engineeffect.h"
@@ -14,7 +13,7 @@
 #include "util/types.h"
 #include "util/defs.h"
 #include "lvmixeqbase.h"
-
+class ControlObjectSlave;
 class Bessel4LVMixEQEffectGroupState :
         public LVMixEQEffectGroupState<EngineFilterBessel4Low> {
 };

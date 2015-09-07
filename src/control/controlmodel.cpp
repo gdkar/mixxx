@@ -1,5 +1,5 @@
 #include "control/controlmodel.h"
-
+#include "controlobjectslave.h"
 ControlModel::ControlModel(QObject* pParent)
         : QAbstractTableModel(pParent) {
 

@@ -17,9 +17,7 @@ class EngineEffectsManager : public EffectsRequestHandler {
   public:
     EngineEffectsManager(EffectsResponsePipe* pResponsePipe);
     virtual ~EngineEffectsManager();
-
     void onCallbackStart();
-
     // Take a buffer of numSamples samples of audio from a channel, provided as
     // pInput, and apply each EffectChain enabled for this channel to it,
     // putting the resulting output in pOutput. If pInput is equal to pOutput,
@@ -32,24 +30,14 @@ class EngineEffectsManager : public EffectsRequestHandler {
                          const unsigned int numSamples,
                          const unsigned int sampleRate,
                          const GroupFeatureState& groupFeatures);
-
-    bool processEffectsRequest(
-        const EffectsRequest& message,
-        EffectsResponsePipe* pResponsePipe);
-
+    bool processEffectsRequest( const EffectsRequest& message, EffectsResponsePipe* pResponsePipe);
   private:
-    QString debugString() const {
-        return QString("EngineEffectsManager");
-    }
-
+    QString debugString() const { return QString("EngineEffectsManager"); }
     bool addEffectRack(EngineEffectRack* pRack);
     bool removeEffectRack(EngineEffectRack* pRack);
-
     QScopedPointer<EffectsResponsePipe> m_pResponsePipe;
     QList<EngineEffectRack*> m_racks;
     QList<EngineEffectChain*> m_chains;
     QList<EngineEffect*> m_effects;
 };
-
-
 #endif /* ENGINEEFFECTSMANAGER_H */

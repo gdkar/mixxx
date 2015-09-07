@@ -41,8 +41,8 @@ const int kFrequencyLowerLimit = 16;
 DlgPrefEQ::DlgPrefEQ(QWidget* pParent, EffectsManager* pEffectsManager,
                      ConfigObject<ConfigValue>* pConfig)
         : DlgPreferencePage(pParent),
-          m_COLoFreq(kConfigKey, "LoEQFrequency"),
-          m_COHiFreq(kConfigKey, "HiEQFrequency"),
+          m_COLoFreq(new ControlObjectSlave(kConfigKey, "LoEQFrequency",this)),
+          m_COHiFreq(new ControlObjectSlave(kConfigKey, "HiEQFrequency",this)),
           m_pConfig(pConfig),
           m_lowEqFreq(0.0),
           m_highEqFreq(0.0),
@@ -53,7 +53,6 @@ DlgPrefEQ::DlgPrefEQ(QWidget* pParent, EffectsManager* pEffectsManager,
           m_bEqAutoReset(false) {
     m_pEQEffectRack = m_pEffectsManager->getEqualizerRack(0);
     m_pQuickEffectRack = m_pEffectsManager->getQuickEffectRack(0);
-
     setupUi(this);
     // Connection
     connect(SliderHiEQ, SIGNAL(valueChanged(int)), this, SLOT(slotUpdateHiEQ()));
@@ -66,21 +65,16 @@ DlgPrefEQ::DlgPrefEQ(QWidget* pParent, EffectsManager* pEffectsManager,
 
     connect(CheckBoxEqAutoReset, SIGNAL(stateChanged(int)), this, SLOT(slotUpdateEqAutoReset(int)));
     connect(CheckBoxBypass, SIGNAL(stateChanged(int)), this, SLOT(slotBypass(int)));
+    connect(CheckBoxEqOnly, SIGNAL(stateChanged(int)),this, SLOT(slotPopulateDeckEffectSelectors()));
 
-    connect(CheckBoxEqOnly, SIGNAL(stateChanged(int)),
-            this, SLOT(slotPopulateDeckEffectSelectors()));
-
-    connect(CheckBoxSingleEqEffect, SIGNAL(stateChanged(int)),
-            this, SLOT(slotSingleEqChecked(int)));
+    connect(CheckBoxSingleEqEffect, SIGNAL(stateChanged(int)),this, SLOT(slotSingleEqChecked(int)));
 
     // Add drop down lists for current decks and connect num_decks control
     // to slotNumDecksChanged
     m_pNumDecks = new ControlObjectSlave("[Master]", "num_decks", this);
     m_pNumDecks->connectValueChanged(SLOT(slotNumDecksChanged(double)));
     slotNumDecksChanged(m_pNumDecks->get());
-
     setUpMasterEQ();
-
     loadSettings();
     slotUpdate();
     slotApply();
@@ -101,29 +95,18 @@ void DlgPrefEQ::slotNumDecksChanged(double numDecks) {
     int oldDecks = m_deckEqEffectSelectors.size();
     while (m_deckEqEffectSelectors.size() < static_cast<int>(numDecks)) {
         int deckNo = m_deckEqEffectSelectors.size() + 1;
-
-        QLabel* label = new QLabel(QObject::tr("Deck %1 EQ Effect").
-                             arg(deckNo), this);
-
-        QString group = PlayerManager::groupForDeck(
-                m_deckEqEffectSelectors.size());
-
-        m_filterWaveformEnableCOs.append(
-                new ControlObject(ConfigKey(group, "filterWaveformEnable")));
+        auto label = new QLabel(QObject::tr("Deck %1 EQ Effect").arg(deckNo), this);
+        auto group = PlayerManager::groupForDeck(m_deckEqEffectSelectors.size());
+        m_filterWaveformEnableCOs.append(new ControlObject(ConfigKey(group, "filterWaveformEnable")));
         m_filterWaveformEffectLoaded.append(false);
-
         // Create the drop down list for EQs
-        QComboBox* eqComboBox = new QComboBox(this);
+        auto eqComboBox = new QComboBox(this);
         m_deckEqEffectSelectors.append(eqComboBox);
-        connect(eqComboBox, SIGNAL(currentIndexChanged(int)),
-                this, SLOT(slotEqEffectChangedOnDeck(int)));
-
+        connect(eqComboBox, SIGNAL(currentIndexChanged(int)),this, SLOT(slotEqEffectChangedOnDeck(int)));
         // Create the drop down list for EQs
-        QComboBox* quickEffectComboBox = new QComboBox(this);
+        auto quickEffectComboBox = new QComboBox(this);
         m_deckQuickEffectSelectors.append(quickEffectComboBox);
-        connect(quickEffectComboBox, SIGNAL(currentIndexChanged(int)),
-                this, SLOT(slotQuickEffectChangedOnDeck(int)));
-
+        connect(quickEffectComboBox, SIGNAL(currentIndexChanged(int)),this, SLOT(slotQuickEffectChangedOnDeck(int)));
         if (deckNo == 1) {
             m_firstSelectorLabel = label;
             if (CheckBoxEqOnly->isChecked()) {
@@ -564,8 +547,8 @@ int DlgPrefEQ::getSliderPosition(double eqFreq, int minValue, int maxValue) {
 }
 
 void DlgPrefEQ::slotApply() {
-    m_COLoFreq.set(m_lowEqFreq);
-    m_COHiFreq.set(m_highEqFreq);
+    m_COLoFreq->set(m_lowEqFreq);
+    m_COHiFreq->set(m_highEqFreq);
     m_pConfig->set(ConfigKey(kConfigKey,"EqAutoReset"),
             ConfigValue(m_bEqAutoReset ? 1 : 0));
     applySelections();

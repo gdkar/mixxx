@@ -20,6 +20,7 @@
 #include "dlgprefcrossfader.h"
 #include "engine/enginefilterbessel4.h"
 #include "controlobject.h"
+#include "controlobjectslave.h"
 #include "engine/enginexfader.h"
 
 #define kConfigKey "[Mixer Profile]"
@@ -31,11 +32,11 @@ DlgPrefCrossfader::DlgPrefCrossfader(QWidget * parent, ConfigObject<ConfigValue>
           m_xFaderMode(MIXXX_XFADER_ADDITIVE),
           m_transform(0.0),
           m_cal(0.0),
-          m_COTMode(kConfigKey, "xFaderMode"),
-          m_COTCurve(kConfigKey, "xFaderCurve"),
-          m_COTCalibration(kConfigKey, "xFaderCalibration"),
-          m_COTReverse(kConfigKey, "xFaderReverse"),
-          m_COTCrossfader("[Master]", "crossfader"),
+          m_COTMode(new ControlObjectSlave(kConfigKey, "xFaderMode",this)),
+          m_COTCurve(new ControlObjectSlave(kConfigKey, "xFaderCurve",this)),
+          m_COTCalibration(new ControlObjectSlave(kConfigKey, "xFaderCalibration",this)),
+          m_COTReverse(new ControlObjectSlave(kConfigKey, "xFaderReverse",this)),
+          m_COTCrossfader(new ControlObjectSlave("[Master]", "crossfader",this)),
           m_xFaderReverse(false) {
     setupUi(this);
 
@@ -96,13 +97,13 @@ void DlgPrefCrossfader::slotResetToDefaults() {
 
 /** Apply and save any changes made in the dialog */
 void DlgPrefCrossfader::slotApply() {
-    m_COTMode.slotSet(m_xFaderMode);
-    m_COTCurve.slotSet(m_transform);
-    m_COTCalibration.slotSet(m_cal);
+    m_COTMode->set(m_xFaderMode);
+    m_COTCurve->set(m_transform);
+    m_COTCalibration->set(m_cal);
     if (checkBoxReverse->isChecked() != m_xFaderReverse) {
-        m_COTReverse.slotSet(checkBoxReverse->isChecked());
-        double position = m_COTCrossfader.get();
-        m_COTCrossfader.slotSet(0.0 - position);
+        m_COTReverse->set(checkBoxReverse->isChecked());
+        double position = m_COTCrossfader->get();
+        m_COTCrossfader->set(0.0 - position);
         m_xFaderReverse = checkBoxReverse->isChecked();
     }
     slotUpdateXFader();

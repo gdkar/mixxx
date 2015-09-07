@@ -3,7 +3,6 @@
 
 #include <QMap>
 
-#include "controlobjectslave.h"
 #include "effects/effect.h"
 #include "effects/effectprocessor.h"
 #include "engine/effects/engineeffect.h"
@@ -13,14 +12,11 @@
 #include "util/types.h"
 #include "util/defs.h"
 #include "sampleutil.h"
-
 class GraphicEQEffectGroupState {
   public:
     GraphicEQEffectGroupState();
     virtual ~GraphicEQEffectGroupState();
-
     void setFilters(int sampleRate);
-
     EngineFilterBiquad1LowShelving* m_low;
     QList<EngineFilterBiquad1Peaking*> m_bands;
     EngineFilterBiquad1HighShelving* m_high;
@@ -30,15 +26,12 @@ class GraphicEQEffectGroupState {
     double m_oldHigh;
     float m_centerFrequencies[8];
 };
-
 class GraphicEQEffect : public PerChannelEffectProcessor<GraphicEQEffectGroupState> {
   public:
     GraphicEQEffect(EngineEffect* pEffect, const EffectManifest& manifest);
     virtual ~GraphicEQEffect();
-
     static QString getId();
     static EffectManifest getManifest();
-
     // See effectprocessor.h
     void processChannel(const ChannelHandle& handle,
                         GraphicEQEffectGroupState* pState,
@@ -47,17 +40,12 @@ class GraphicEQEffect : public PerChannelEffectProcessor<GraphicEQEffectGroupSta
                         const unsigned int sampleRate,
                         const EffectProcessor::EnableState enableState,
                         const GroupFeatureState& groupFeatureState);
-
   private:
-    QString debugString() const {
-        return getId();
-    }
-
+    QString debugString() const {return getId();}
     EngineEffectParameter* m_pPotLow;
     QList<EngineEffectParameter*> m_pPotMid;
     EngineEffectParameter* m_pPotHigh;
     unsigned int m_oldSampleRate;
-
     DISALLOW_COPY_AND_ASSIGN(GraphicEQEffect);
 };
 
