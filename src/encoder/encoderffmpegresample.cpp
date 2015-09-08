@@ -56,12 +56,10 @@ unsigned int EncoderFfmpegResample::reSampleMixxx(AVFrame *inframe, quint8 **out
     qint64 l_lInReadBytes = av_samples_get_buffer_size(NULL, m_pCodecCtx->channels,
                             inframe->nb_samples,
                             m_pCodecCtx->sample_fmt, 1);
-
     // Force stereo
     qint64 l_lOutReadBytes = av_samples_get_buffer_size(NULL, m_pCodecCtx->channels,
                              inframe->nb_samples,
                              m_pOutSampleFmt, 1);
-
     if (m_pCodecCtx->channels == 1) {
         l_ptrDataSrc1 = inframe->data[0];
         l_ptrDataSrc2 = inframe->data[0];
@@ -75,18 +73,12 @@ unsigned int EncoderFfmpegResample::reSampleMixxx(AVFrame *inframe, quint8 **out
         qDebug() << "EncoderFfmpegResample::reSample: nb_samples is zero";
         return 0;
     }
-
-    if (l_lInReadBytes < 0) {
-        return 0;
-    }
+    if (l_lInReadBytes < 0) {return 0;}
     l_ptrBuf = (quint8 *)av_malloc(l_lOutReadBytes);
-
     switch (m_pCodecCtx->sample_fmt) {
-#if LIBAVCODEC_VERSION_INT >= 3482368
     case AV_SAMPLE_FMT_FLTP: {
         if (m_pCodecCtx->channels > 1) {
-            SampleUtil::interleaveBuffer((CSAMPLE *)l_ptrBuf, (CSAMPLE *)l_ptrDataSrc1,
-                                         (CSAMPLE *)l_ptrDataSrc2, l_lOutReadBytes / 8);
+            SampleUtil::interleaveBuffer((CSAMPLE *)l_ptrBuf, (CSAMPLE *)l_ptrDataSrc1,(CSAMPLE *)l_ptrDataSrc2, l_lOutReadBytes / 8);
         } else {
             memcpy(l_ptrBuf, l_ptrDataSrc1, l_lInReadBytes);
         }
@@ -113,7 +105,6 @@ unsigned int EncoderFfmpegResample::reSampleMixxx(AVFrame *inframe, quint8 **out
         l_bSupported = true;
     }
     break;
-#endif
     case AV_SAMPLE_FMT_FLT: {
         memcpy(l_ptrBuf, l_ptrDataSrc1, l_lInReadBytes);
         outbuffer[0] = l_ptrBuf;
@@ -132,20 +123,14 @@ unsigned int EncoderFfmpegResample::reSampleMixxx(AVFrame *inframe, quint8 **out
     case AV_SAMPLE_FMT_S32:
     case AV_SAMPLE_FMT_DBL:
     case AV_SAMPLE_FMT_U8P:
-#if LIBAVCODEC_VERSION_INT >= 3482368
     case AV_SAMPLE_FMT_S32P:
     case AV_SAMPLE_FMT_DBLP:
-#endif
     case AV_SAMPLE_FMT_NB:
     default:
         qDebug() << "Unsupported sample format:" << av_get_sample_fmt_name(m_pCodecCtx->sample_fmt);
         break;
     }
-
-    if (l_bSupported == true) {
-        return l_lOutReadBytes;
-    }
-
+    if (l_bSupported == true) {return l_lOutReadBytes;}
     // If conversion is unsupported still return silence to prevent crash
     memset(l_ptrBuf, 0x00, l_lOutReadBytes);
     outbuffer[0] = l_ptrBuf;

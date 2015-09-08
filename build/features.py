@@ -791,5 +791,5 @@ class LocaleCompare(Feature):
     def configure(self, build, conf):
         if not self.enabled(build): return
         if int(util.get_flags(build.env, 'qt_sqlite_plugin', 0)): raise Exception('WARNING: localecompare is not compatible with the Qt SQLite plugin')
-        if not conf.CheckLib(['sqlite3']):                        raise Exception('Missing libsqlite3 -- exiting!')
+        if not conf.CheckLib(['sqlite3','libsqlite3']):                        raise Exception('Missing libsqlite3 -- exiting!')
         build.env.Append(CPPDEFINES='__SQLITE3__')

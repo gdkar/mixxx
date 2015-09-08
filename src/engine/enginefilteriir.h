@@ -7,7 +7,7 @@
 #include "sampleutil.h"
 #define MIXXX
 #include <fidlib.h>
-
+#include <algorithm>
 // set to 1 to print some analysis data using qDebug()
 // It prints the resulting delay after 50 % of impulse have passed
 // and the gain and phase shift at some sample frequencies
@@ -76,49 +76,17 @@ class EngineFilterIIR : public EngineFilterIIRBase {
         m_doRamping = true;
     }
 
-    void setCoefs(const char* spec, double sampleRate,
-            double freq0, double freq1 = 0, int adj = 0) {
-
+    void setCoefs(const char* spec, double sampleRate,double freq0, double freq1 = 0, int adj = 0) {
         char spec_d[FIDSPEC_LENGTH];
         if (strlen(spec) < sizeof(spec_d)) {
             // Copy to dynamic-ish memory to prevent fidlib API breakage.
             strcpy(spec_d, spec);
-
             // Copy the old coefficients into m_oldCoef
-            memcpy(m_oldCoef, m_coef, sizeof(m_coef));
-
-            m_coef[0] = fid_design_coef(m_coef + 1, SIZE,
-                    spec_d, sampleRate, freq0, freq1, adj);
-
+            std::copy_n(m_coef,SIZE+1, m_oldCoef);
+            double coef[SIZE+1];
+            coef[0] = fid_design_coef(coef + 1, SIZE,spec_d, sampleRate, freq0, freq1, adj);
+            std::copy_n(coef,SIZE+1,m_coef);
             initBuffers();
-
-#if(IIR_ANALYSIS)
-            char* desc;
-            FidFilter* filt = fid_design(spec_d, sampleRate, freq0, freq1, adj, &desc);
-            int delay = fid_calc_delay(filt);
-            qDebug() << QString().fromAscii(desc) << "delay:" << delay;
-            double resp0, phase0;
-            resp0 = fid_response_pha(filt, freq0 / sampleRate, &phase0);
-            qDebug() << "freq0:" << freq0 << resp0 << phase0;
-            if (freq1) {
-                double resp1, phase1;
-                resp1 = fid_response_pha(filt, freq1 / sampleRate, &phase1);
-                qDebug() << "freq1:" << freq1 << resp1 << phase1;
-            }
-            double resp2, phase2;
-            resp2 = fid_response_pha(filt, freq0 / sampleRate / 2, &phase2);
-            qDebug() << "freq2:" << freq0 / 2 << resp2 << phase0;
-            double resp3, phase3;
-            resp3 = fid_response_pha(filt, freq0 / sampleRate * 2, &phase3);
-            qDebug() << "freq3:" << freq0 * 2 << resp3 << phase0;
-            double resp4, phase4;
-            resp4 = fid_response_pha(filt, freq0 / sampleRate / 2.2, &phase4);
-            qDebug() << "freq4:" << freq0 / 2.2 << resp2 << phase0;
-            double resp5, phase5;
-            resp5 = fid_response_pha(filt, freq0 / sampleRate * 2.2, &phase5);
-            qDebug() << "freq5:" << freq0 * 2.2 << resp3 << phase0;
-            free(filt);
-#endif
         }
     }
 
@@ -134,69 +102,27 @@ class EngineFilterIIR : public EngineFilterIIRBase {
             strcpy(spec2_d, spec2);
 
             // Copy the old coefficients into m_oldCoef
-            memcpy(m_oldCoef, m_coef, sizeof(m_coef));
-            m_coef[0] = fid_design_coef(m_coef + 1, n_coef1,
-                    spec1, sampleRate, freq01, freq11, adj1) *
-                        fid_design_coef(m_coef + 1 + n_coef1, SIZE - n_coef1,
-                    spec2, sampleRate, freq02, freq12, adj2);
-
+            std::copy_n(m_coef,SIZE+1,m_oldCoef);
+            double coef[SIZE+1];
+            coef[0] = fid_design_coef(coef + 1, n_coef1, spec1, sampleRate, freq01, freq11, adj1)
+                    * fid_design_coef(coef + 1 + n_coef1, SIZE - n_coef1,spec2, sampleRate, freq02, freq12, adj2);
+            std::copy_n(coef,SIZE+1,m_coef);
             initBuffers();
-
-#if(IIR_ANALYSIS)
-            char* desc1;
-            char* desc2;
-            FidFilter* filt1 = fid_design(spec1, sampleRate, freq01, freq11, adj1, &desc1);
-            FidFilter* filt2 = fid_design(spec2, sampleRate, freq02, freq12, adj2, &desc2);
-            FidFilter* filt = fid_cat(1, filt1, filt2, NULL);
-            int delay = fid_calc_delay(filt);
-            qDebug() << QString().fromAscii(desc1) << "X" << QString().fromAscii(desc2) << "delay:" << delay;
-            double resp0, phase0;
-            resp0 = fid_response_pha(filt, freq01 / sampleRate, &phase0);
-            qDebug() << "freq01:" << freq01 << resp0 << phase0;
-            resp0 = fid_response_pha(filt, freq01 / sampleRate, &phase0);
-            qDebug() << "freq02:" << freq02 << resp0 << phase0;
-            if (freq11) {
-                double resp1, phase1;
-                resp1 = fid_response_pha(filt, freq11 / sampleRate, &phase1);
-                qDebug() << "freq1:" << freq11 << resp1 << phase1;
-            }
-            if (freq12) {
-                double resp1, phase1;
-                resp1 = fid_response_pha(filt, freq12 / sampleRate, &phase1);
-                qDebug() << "freq1:" << freq12 << resp1 << phase1;
-            }
-            double resp2, phase2;
-            resp2 = fid_response_pha(filt, freq01 / sampleRate / 2, &phase2);
-            qDebug() << "freq2:" << freq01 / 2 << resp2 << phase0;
-            double resp3, phase3;
-            resp3 = fid_response_pha(filt, freq01 / sampleRate * 2, &phase3);
-            qDebug() << "freq3:" << freq01 * 2 << resp3 << phase0;
-            double resp4, phase4;
-            resp4 = fid_response_pha(filt, freq01 / sampleRate / 2.2, &phase4);
-            qDebug() << "freq4:" << freq01 / 2.2 << resp2 << phase0;
-            double resp5, phase5;
-            resp5 = fid_response_pha(filt, freq01 / sampleRate * 2.2, &phase5);
-            qDebug() << "freq5:" << freq01 * 2.2 << resp3 << phase0;
-            free(filt);
-#endif
         }
     }
-
     virtual void assumeSettled() {
         m_doRamping = false;
         m_doStart = false;
     }
-
-    virtual void process(const CSAMPLE* pIn, CSAMPLE* pOutput,
-                         const int iBufferSize) {
+    virtual void process(const CSAMPLE* pIn, CSAMPLE* pOutput, const int iBufferSize) {
         if (!m_doRamping) {
             for (int i = 0; i < iBufferSize; i += 2) {
                 pOutput[i] = processSample(m_coef, m_buf1, pIn[i]);
                 pOutput[i+1] = processSample(m_coef, m_buf2, pIn[i + 1]);
             }
         } else {
-            double cross_mix = 0.0;
-            double cross_inc = 4.0 / static_cast<double>(iBufferSize);
+            CSAMPLE cross_mix = 0.0;
+            CSAMPLE cross_inc = 4.0 / static_cast<CSAMPLE>(iBufferSize);
             for (int i = 0; i < iBufferSize; i += 2) {
                 // Do a linear cross fade between the output of the old
                 // Filter and the new filter.
@@ -209,8 +135,8 @@ class EngineFilterIIR : public EngineFilterIIRBase {
                 // of the new filter but it turns out that this produces
                 // a gain drop due to the filter delay which is more
                 // conspicuous than the settling noise.
-                double old1;
-                double old2;
+                CSAMPLE old1;
+                CSAMPLE old2;
                 if (!m_doStart) {
                     // Process old filter, but only if we do not do a fresh start
                     old1 = processSample(m_oldCoef, m_oldBuf1, pIn[i]);
@@ -224,17 +150,15 @@ class EngineFilterIIR : public EngineFilterIIRBase {
                         old2 = 0;
                     }
                 }
-                double new1 = processSample(m_coef, m_buf1, pIn[i]);
-                double new2 = processSample(m_coef, m_buf2, pIn[i + 1]);
+                CSAMPLE new1 = processSample(m_coef, m_buf1, pIn[i]);
+                CSAMPLE new2 = processSample(m_coef, m_buf2, pIn[i + 1]);
 
                 if (i < iBufferSize / 2) {
                     pOutput[i] = old1;
                     pOutput[i + 1] = old2;
                 } else {
-                    pOutput[i] = new1 * cross_mix +
-                                 old1 * (1.0 - cross_mix);
-                    pOutput[i + 1] = new2  * cross_mix +
-                                     old2 * (1.0 - cross_mix);
+                    pOutput[i] = new1 * cross_mix + old1 * (1.0 - cross_mix);
+                    pOutput[i + 1] = new2  * cross_mix + old2 * (1.0 - cross_mix);
                     cross_mix += cross_inc;
                 }
             }
@@ -242,9 +166,8 @@ class EngineFilterIIR : public EngineFilterIIRBase {
             m_doStart = false;
         }
     }
-
   protected:
-    inline double processSample(double* coef, double* buf, double val);
+    inline CSAMPLE processSample(CSAMPLE* coef, CSAMPLE* buf, CSAMPLE val);
     inline void pauseFilterInner() {
         // Set the current buffers to 0
         memset(m_buf1, 0, sizeof(m_buf1));
@@ -252,20 +175,17 @@ class EngineFilterIIR : public EngineFilterIIRBase {
         m_doRamping = true;
         m_doStart = true;
     }
-    double m_coef[SIZE + 1];
+    CSAMPLE m_coef[SIZE + 1];
     // Old coefficients needed for ramping
-    double m_oldCoef[SIZE + 1];
-
+    CSAMPLE m_oldCoef[SIZE + 1];
     // Channel 1 state
-    double m_buf1[SIZE];
+    CSAMPLE m_buf1[SIZE];
     // Old channel 1 buffer needed for ramping
-    double m_oldBuf1[SIZE];
-
+    CSAMPLE m_oldBuf1[SIZE];
     // Channel 2 state
-    double m_buf2[SIZE];
+    CSAMPLE m_buf2[SIZE];
     // Old channel 2 buffer needed for ramping
-    double m_oldBuf2[SIZE];
-
+    CSAMPLE m_oldBuf2[SIZE];
     // Flag set to true if ramping needs to be done
     bool m_doRamping;
     // Flag set to true if old filter is invalid
@@ -275,10 +195,8 @@ class EngineFilterIIR : public EngineFilterIIRBase {
 };
 
 template<>
-inline double EngineFilterIIR<2, IIR_LP>::processSample(double* coef,
-                                                        double* buf,
-                                                        double val) {
-    double tmp, fir, iir;
+inline CSAMPLE EngineFilterIIR<2, IIR_LP>::processSample(CSAMPLE* coef,CSAMPLE* buf,CSAMPLE val) {
+    CSAMPLE tmp, fir, iir;
     tmp = buf[0]; buf[0] = buf[1];
     iir = val * coef[0];
     iir -= coef[1] * tmp; fir = tmp;
@@ -289,8 +207,8 @@ inline double EngineFilterIIR<2, IIR_LP>::processSample(double* coef,
 }
 
 template<>
-inline double EngineFilterIIR<2, IIR_BP>::processSample(double* coef,double* buf,double val) {
-    double tmp, fir, iir;
+inline CSAMPLE EngineFilterIIR<2, IIR_BP>::processSample(CSAMPLE* coef,CSAMPLE* buf,CSAMPLE val) {
+    CSAMPLE tmp, fir, iir;
     tmp = buf[0]; buf[0] = buf[1];
     iir = val * coef[0];
     iir -= coef[1] * tmp; fir = -tmp;
@@ -300,8 +218,8 @@ inline double EngineFilterIIR<2, IIR_BP>::processSample(double* coef,double* buf
     return val;
 }
 template<>
-inline double EngineFilterIIR<2, IIR_HP>::processSample(double* coef,double* buf,double val) {
-    double tmp, fir, iir;
+inline CSAMPLE EngineFilterIIR<2, IIR_HP>::processSample(CSAMPLE* coef,CSAMPLE* buf,CSAMPLE val) {
+    CSAMPLE tmp, fir, iir;
     tmp = buf[0]; buf[0] = buf[1];
     iir = val * coef[0];
     iir -= coef[1] * tmp; fir = tmp;
@@ -311,8 +229,8 @@ inline double EngineFilterIIR<2, IIR_HP>::processSample(double* coef,double* buf
     return val;
 }
 template<>
-inline double EngineFilterIIR<4, IIR_LP>::processSample(double* coef,double* buf,double val) {
-    double tmp, fir, iir;
+inline CSAMPLE EngineFilterIIR<4, IIR_LP>::processSample(CSAMPLE* coef,CSAMPLE* buf,CSAMPLE val) {
+    CSAMPLE tmp, fir, iir;
     tmp = buf[0]; buf[0] = buf[1]; buf[1] = buf[2]; buf[2] = buf[3];
     iir = val * coef[0];
     iir -= coef[1] * tmp; fir = tmp;
@@ -327,8 +245,8 @@ inline double EngineFilterIIR<4, IIR_LP>::processSample(double* coef,double* buf
     return val;
 }
 template<>
-inline double EngineFilterIIR<8, IIR_BP>::processSample(double* coef,double* buf,double val) {
-    double tmp, fir, iir;
+inline CSAMPLE EngineFilterIIR<8, IIR_BP>::processSample(CSAMPLE* coef,CSAMPLE* buf,CSAMPLE val) {
+    CSAMPLE tmp, fir, iir;
     tmp = buf[0]; buf[0] = buf[1]; buf[1] = buf[2]; buf[2] = buf[3];
     buf[3] = buf[4]; buf[4] = buf[5]; buf[5] = buf[6]; buf[6] = buf[7];
     iir = val * coef[0];
@@ -355,8 +273,8 @@ inline double EngineFilterIIR<8, IIR_BP>::processSample(double* coef,double* buf
 }
 
 template<>
-inline double EngineFilterIIR<4, IIR_HP>::processSample(double* coef,double* buf,double val) {
-    double tmp, fir, iir;
+inline CSAMPLE EngineFilterIIR<4, IIR_HP>::processSample(CSAMPLE* coef,CSAMPLE* buf,CSAMPLE val) {
+    CSAMPLE tmp, fir, iir;
     tmp = buf[0]; buf[0] = buf[1]; buf[1] = buf[2]; buf[2] = buf[3];
     iir= val * coef[0];
     iir -= coef[1] * tmp; fir = tmp;
@@ -371,8 +289,8 @@ inline double EngineFilterIIR<4, IIR_HP>::processSample(double* coef,double* buf
     return val;
 }
 template<>
-inline double EngineFilterIIR<8, IIR_LP>::processSample(double* coef,double* buf,double val) {
-    double tmp, fir, iir;
+inline CSAMPLE EngineFilterIIR<8, IIR_LP>::processSample(CSAMPLE* coef,CSAMPLE* buf,CSAMPLE val) {
+    CSAMPLE tmp, fir, iir;
     tmp = buf[0]; buf[0] = buf[1]; buf[1] = buf[2]; buf[2] = buf[3];
     buf[3] = buf[4]; buf[4] = buf[5]; buf[5] = buf[6]; buf[6] = buf[7];
     iir = val * coef[0];
@@ -398,8 +316,8 @@ inline double EngineFilterIIR<8, IIR_LP>::processSample(double* coef,double* buf
     return val;
 }
 template<>
-inline double EngineFilterIIR<16, IIR_BP>::processSample(double* coef,double* buf,double val) {
-    double tmp, fir, iir;
+inline CSAMPLE EngineFilterIIR<16, IIR_BP>::processSample(CSAMPLE* coef,CSAMPLE* buf,CSAMPLE val) {
+    CSAMPLE tmp, fir, iir;
     tmp = buf[0]; buf[0] = buf[1]; buf[1] = buf[2]; buf[2] = buf[3];
     buf[3] = buf[4]; buf[4] = buf[5]; buf[5] = buf[6]; buf[6] = buf[7];
     buf[7] = buf[8]; buf[8] = buf[9]; buf[9] = buf[10]; buf[10] = buf[11];
@@ -447,8 +365,8 @@ inline double EngineFilterIIR<16, IIR_BP>::processSample(double* coef,double* bu
     return val;
 }
 template<>
-inline double EngineFilterIIR<8, IIR_HP>::processSample(double* coef,double* buf,double val) {
-    double tmp, fir, iir;
+inline CSAMPLE EngineFilterIIR<8, IIR_HP>::processSample(CSAMPLE* coef,CSAMPLE* buf,CSAMPLE val) {
+    CSAMPLE tmp, fir, iir;
     tmp = buf[0]; buf[0] = buf[1]; buf[1] = buf[2]; buf[2] = buf[3];
     buf[3] = buf[4]; buf[4] = buf[5]; buf[5] = buf[6]; buf[6] = buf[7];
     iir = val * coef[0];
@@ -476,8 +394,8 @@ inline double EngineFilterIIR<8, IIR_HP>::processSample(double* coef,double* buf
 
 // IIR_LP and IIR_HP use the same processSample routine
 template<>
-inline double EngineFilterIIR<5, IIR_BP>::processSample(double* coef,double* buf,double val) {
-    double tmp, fir, iir;
+inline CSAMPLE EngineFilterIIR<5, IIR_BP>::processSample(CSAMPLE* coef,CSAMPLE* buf,CSAMPLE val) {
+    CSAMPLE tmp, fir, iir;
     tmp = buf[0]; buf[0] = buf[1];
     iir = val * coef[0];
     iir -= coef[1] * tmp; fir = coef[2] * tmp;
@@ -487,8 +405,8 @@ inline double EngineFilterIIR<5, IIR_BP>::processSample(double* coef,double* buf
     return val;
 }
 template<>
-inline double EngineFilterIIR<4, IIR_LPMO>::processSample(double* coef,double* buf,double val) {
-   double tmp, fir, iir;
+inline CSAMPLE EngineFilterIIR<4, IIR_LPMO>::processSample(CSAMPLE* coef,CSAMPLE* buf,CSAMPLE val) {
+   CSAMPLE tmp, fir, iir;
    tmp= buf[0]; buf[0] = buf[1]; buf[1] = buf[2]; buf[2] = buf[3];
    iir= val * coef[0];
    iir -= coef[1]*tmp; fir= tmp;
@@ -509,8 +427,8 @@ inline double EngineFilterIIR<4, IIR_LPMO>::processSample(double* coef,double* b
    return val;
 }
 template<>
-inline double EngineFilterIIR<4, IIR_HPMO>::processSample(double* coef,double* buf,double val) {
-   double tmp, fir, iir;
+inline CSAMPLE EngineFilterIIR<4, IIR_HPMO>::processSample(CSAMPLE* coef,CSAMPLE* buf,CSAMPLE val) {
+   CSAMPLE tmp, fir, iir;
    tmp= buf[0]; buf[0] = buf[1]; buf[1] = buf[2]; buf[2] = buf[3];
    iir= val * coef[0];
    iir -= coef[1]*tmp; fir= -tmp;

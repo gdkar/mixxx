@@ -277,9 +277,7 @@ Paintable::DrawMode SkinContext::selectScaleMode(
  * All the methods below exist to access some of the scriptEngine features
  * from the svgParser.
  */
-QScriptValue SkinContext::evaluateScript(const QString& expression,
-                                         const QString& filename,
-                                         int lineNumber) {
+QScriptValue SkinContext::evaluateScript(const QString& expression,const QString& filename,int lineNumber) {
     return m_pScriptEngine->evaluate(expression, filename, lineNumber);
 }
 

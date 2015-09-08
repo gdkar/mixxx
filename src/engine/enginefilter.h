@@ -21,6 +21,7 @@
 #define MIXXX
 #include "engine/engineobject.h"
 #include <fidlib.h>
+#include <algorithm>
 #include "util/types.h"
 
 #define PREDEF_HP 1
@@ -30,27 +31,27 @@
 class EngineFilter : public EngineObject {
     Q_OBJECT
   public:
+  struct FidData {
+      FidFunc *funcp = nullptr;
+      void    *runp  = nullptr;
+    };
     EngineFilter(char* conf, int predefinedType = 0);
     virtual ~EngineFilter();
     void process(CSAMPLE* pInOut, const int iBufferSize);
   protected:
-    double iir;
-    double fir;
-    double tmp;
 #define FILTER_BUF_SIZE 16
-    double buf1[FILTER_BUF_SIZE];
-    double buf2[FILTER_BUF_SIZE];
+    CSAMPLE buf1[FILTER_BUF_SIZE];
+    CSAMPLE buf2[FILTER_BUF_SIZE];
   private:
-    double (*processSample)(void *buf, const double sample);
-    FidFilter *ff;
-    FidFunc *funcp;
-    FidRun *run;
-    void *fbuf1;
-    void *fbuf2;
+    CSAMPLE (*processSample)(void *buf, const CSAMPLE sample);
+    FidFilter *ff  = nullptr;
+    FidFunc *funcp = nullptr;
+    FidRun *run = nullptr;
+    void *fbuf1 = nullptr;
+    void *fbuf2 = nullptr;
 };
-double processSampleDynamic(void *buf, const double sample);
-double processSampleHp(void *buf, const double sample);
-double processSampleBp(void *buf, const double sample);
-double processSampleLp(void *buf, const double sample);
-
+CSAMPLE processSampleDynamic(void *buf, const CSAMPLE  sample);
+CSAMPLE processSampleHp(void *buf, const CSAMPLE  sample);
+CSAMPLE processSampleBp(void *buf, const CSAMPLE  sample);
+CSAMPLE processSampleLp(void *buf, const CSAMPLE  sample);
 #endif

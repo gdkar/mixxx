@@ -7,6 +7,7 @@
 #include "encoder/encoderffmpegcore.h"
 
 #include <cstdlib>
+#include <algorithm>
 #include <ctime>
 #include <cstring>
 #include <QtDebug>
@@ -20,43 +21,18 @@
 //
 // Constructor
 namespace{
-QString ff_make_error_string(int err)
-{
-  char str[256];
-  av_strerror(err,str,sizeof(str));
-  return QString{str};
-}
+  QString ff_make_error_string(int err)
+  {
+    char str[256];
+    av_strerror(err,str,sizeof(str));
+    return QString{str};
+  }
 };
 EncoderFfmpegCore::EncoderFfmpegCore(EncoderCallback* pCallback, AVCodecID codec)
+   : m_pCallback(pCallback),
+     m_SCcodecId(codec)
 {
-    m_bStreamInitialized = false;
-    m_pCallback = pCallback;
-    m_strMetaDataTitle = nullptr;
-    m_strMetaDataArtist = nullptr;
-    m_strMetaDataAlbum = nullptr;
-    m_pMetaData = TrackPointer(nullptr);
-
-    m_pEncodeFormatCtx = nullptr;
-    m_pEncoderAudioStream = nullptr;
-    m_pEncoderAudioCodec = nullptr;
-    m_pEncoderFormat = nullptr;
-
-
-    m_pSamples = nullptr;
-    m_pFltSamples = nullptr;
-    m_iAudioInputFrameSize = -1;
-
-    memset(m_SBuffer, 0x00, (65355 * 2));
-    m_lBufferSize = 0;
-    m_iAudioCpyLen = 0;
-    m_iFltAudioCpyLen = 0;
-
-    m_SCcodecId = codec;
     m_lBitrate = 128000;
-    m_lDts = 0;
-    m_lPts = 0;
-    m_lRecordedBytes = 0;
-
 }
 // Destructor  //call flush before any encoder gets deleted
 EncoderFfmpegCore::~EncoderFfmpegCore() {
@@ -76,14 +52,12 @@ EncoderFfmpegCore::~EncoderFfmpegCore() {
     if (m_pStream != nullptr) { avcodec_close(m_pStream->codec);}
     if (m_pEncodeFormatCtx != nullptr) { av_free(m_pEncodeFormatCtx); }
     // Close buffer
-    delete m_pResample;
+    swr_free(&m_swr);
 }
 //call sendPackages() or write() after 'flush()' as outlined in engineshoutcast.cpp
-void EncoderFfmpegCore::flush() {
-}
+void EncoderFfmpegCore::flush() {}
 //  Get new random serial number
 //  -> returns random number
-
 int EncoderFfmpegCore::getSerial() {
     int l_iSerial = 0;
     return l_iSerial;
@@ -98,11 +72,6 @@ void EncoderFfmpegCore::encodeBuffer(const CSAMPLE *samples, const int size) {
     long j = 0;
     unsigned int l_iBufPos = 0;
     unsigned int l_iPos = 0;
-    // TODO(XXX): Get rid of repeated malloc here!
-    float *l_fNormalizedSamples = (float *)malloc(size * sizeof(float));
-    // We use normalized floats in the engine [-1.0, 1.0] and FFMPEG expects
-    // samples in the range [-1.0, 1.0] so no conversion is required.
-    for (j = 0; j < size; j++) { l_fNormalizedSamples[j] = samples[j]; }
     // In MP3 this writes Header same In ogg
     // They are written once front of the encoded stuff
     if (m_bStreamInitialized == false) {
@@ -115,7 +84,7 @@ void EncoderFfmpegCore::encodeBuffer(const CSAMPLE *samples, const int size) {
         }
         l_iBufferLen = avio_close_dyn_buf(m_pEncodeFormatCtx->pb, (uint8_t**)(&l_strBuffer));
         m_pCallback->write(nullptr, l_strBuffer, 0, l_iBufferLen);
-        av_free(l_strBuffer);
+        av_freep(&l_strBuffer);
     }
     while (l_iLeft > (m_iFltAudioCpyLen / 4)) {
         memset(m_pFltSamples, 0x00, m_iFltAudioCpyLen);
@@ -125,7 +94,7 @@ void EncoderFfmpegCore::encodeBuffer(const CSAMPLE *samples, const int size) {
                 m_lBufferSize--;
                 m_lRecordedBytes++;
             } else {
-                m_pFltSamples[j] = l_fNormalizedSamples[l_iPos++];
+                m_pFltSamples[j] = samples[l_iPos++];
                 l_iLeft--;
                 m_lRecordedBytes++;
             }
@@ -143,17 +112,15 @@ void EncoderFfmpegCore::encodeBuffer(const CSAMPLE *samples, const int size) {
         // Write it to buffer (FILE) and then close buffer for waiting
         // Next encoded buffe to come or we stop encode
         if (! writeAudioFrame(m_pEncodeFormatCtx, m_pEncoderAudioStream)) {
-            l_iBufferLen = avio_close_dyn_buf(m_pEncodeFormatCtx->pb,
-                                              (uint8_t**)(&l_strBuffer));
+            l_iBufferLen = avio_close_dyn_buf(m_pEncodeFormatCtx->pb,(uint8_t**)(&l_strBuffer));
             m_pCallback->write(nullptr, l_strBuffer, 0, l_iBufferLen);
-            av_free(l_strBuffer);
+            av_freep(&l_strBuffer);
         }
     }
     // Keep things clean
     std::memset(m_SBuffer, 0x00, 65535);
-    for (j = 0; j < l_iLeft; j++) { m_SBuffer[ j ] = l_fNormalizedSamples[ l_iPos++ ]; }
+    for (j = 0; j < l_iLeft; j++) { m_SBuffer[ j ] = samples[ l_iPos++ ]; }
     m_lBufferSize = l_iLeft;
-    free(l_fNormalizedSamples);
 }
 
 // Originally called from engineshoutcast.cpp to update metadata information
@@ -215,7 +182,6 @@ int EncoderFfmpegCore::writeAudioFrame(AVFormatContext *formatctx, AVStream *str
     AVFrame *l_SFrame = av_frame_alloc();
     int l_iGotPacket;
     int l_iRet;
-    uint8_t *l_iOut = nullptr;
     av_init_packet(&l_SPacket);
     l_SPacket.size = 0;
     l_SPacket.data = nullptr;
@@ -223,60 +189,62 @@ int EncoderFfmpegCore::writeAudioFrame(AVFormatContext *formatctx, AVStream *str
     m_lDts = round(((double)m_lRecordedBytes / (double)44100 / (double)2. * (double)m_pEncoderAudioStream->time_base.den));
     m_lPts = m_lDts;
     l_SCodecCtx = stream->codec;
-    l_SFrame->nb_samples = m_iAudioInputFrameSize;
+    l_SFrame->nb_samples     = m_iAudioInputFrameSize;
     // Mixxx uses float (32 bit) samples..
-    l_SFrame->format = AV_SAMPLE_FMT_FLT;
+    l_SFrame->format         = l_SCodecCtx->sample_fmt;
     l_SFrame->channel_layout = l_SCodecCtx->channel_layout;
-    l_iRet = avcodec_fill_audio_frame(l_SFrame,
-                                      l_SCodecCtx->channels,
-                                      AV_SAMPLE_FMT_FLT,
-                                      (const uint8_t *)m_pFltSamples,
-                                      m_iFltAudioCpyLen,
-                                      1);
+    l_SFrame->sample_rate    = l_SCodecCtx->sample_rate;
+    l_iRet = av_frame_get_buffer ( l_SFrame, 16 );
     if (l_iRet != 0) {
         qDebug() << "Can't fill FFMPEG frame: error " << l_iRet << "String '" <<
-                 ff_make_error_string(l_iRet) << "'" <<
-                 m_iFltAudioCpyLen;
+                 ff_make_error_string(l_iRet) << "'" << "fltAudioCpyLen = " <<  m_iFltAudioCpyLen;
         qDebug() << "Can't refill 1st FFMPEG frame!";
+        av_frame_free(&l_SFrame);
         return -1;
     }
     // If we have something else than AV_SAMPLE_FMT_FLT we have to convert it
     // to something that fits..
-    if (l_SCodecCtx->sample_fmt != AV_SAMPLE_FMT_FLT) {
-        m_pResample->reSampleMixxx(l_SFrame, &l_iOut);
-        // After we have turned our samples to destination
-        // Format we must re-alloc l_SFrame.. it easier like this..
-        // FFMPEG 2.2 3561060 anb beyond
-        av_frame_unref(&l_SFrame);
-        l_SFrame->nb_samples = m_iAudioInputFrameSize;
-        l_SFrame->format = l_SCodecCtx->sample_fmt;
-        l_SFrame->channel_layout = m_pEncoderAudioStream->codec->channel_layout;
-        l_iRet = avcodec_fill_audio_frame(l_SFrame, l_SCodecCtx->channels,
-                                          l_SCodecCtx->sample_fmt,
-                                          l_iOut,
-                                          m_iAudioCpyLen,
-                                          1);
-        free(l_iOut);
-        l_iOut = nullptr;
-        if (l_iRet != 0) {
-            qDebug() << "Can't refill FFMPEG frame: error " << l_iRet << "String '" <<
-                     ff_make_error_string(l_iRet) << "'" <<  m_iAudioCpyLen <<
-                     " " <<  av_samples_get_buffer_size(
-                         nullptr, 2,
-                         m_iAudioInputFrameSize,
-                         m_pEncoderAudioStream->codec->sample_fmt,
-                         1) << " " << m_pOutSize;
-            qDebug() << "Can't refill 2nd FFMPEG frame!";
-            return -1;
-        }
+    {
+      auto src =  (uint8_t*)m_pFltSamples;
+      l_iRet = swr_convert(m_swr,l_SFrame->extended_data,l_SFrame->nb_samples, const_cast<const uint8_t**>(&src), m_iFltAudioCpyLen);
+    }
+    // After we have turned our samples to destination
+    // Format we must re-alloc l_SFrame.. it easier like this..
+    // FFMPEG 2.2 3561060 anb beyond
+/*    av_frame_unref(l_SFrame);
+    l_SFrame->nb_samples     = m_iAudioInputFrameSize;
+    l_SFrame->format         = l_SCodecCtx->sample_fmt;
+    l_SFrame->channel_layout = m_pEncoderAudioStream->codec->channel_layout;
+    l_iRet = av_frame_get_buffer ( l_SFrame, 16 );
+    free(l_iOut);
+    l_iOut = nullptr;*/
+    if (l_iRet < 0) {
+        qDebug() << "Can't refill FFMPEG frame: error " << l_iRet << "String '" <<
+                  ff_make_error_string(l_iRet) << "'" <<  m_iAudioCpyLen <<
+                  " " <<  av_samples_get_buffer_size(
+                      nullptr, 2,
+                      m_iAudioInputFrameSize,
+                      m_pEncoderAudioStream->codec->sample_fmt,
+                      1) ;
+        qDebug() << "Can't refill 2nd FFMPEG frame!"  ;
+        av_frame_free(&l_SFrame);
+        return -1;
+    }
+    else
+    {
+      l_SFrame->nb_samples = l_iRet;
     }
     //qDebug() << "!!" << l_iRet;
     l_iRet = avcodec_encode_audio2(l_SCodecCtx, &l_SPacket, l_SFrame, &l_iGotPacket);
     if (l_iRet < 0) {
-        qDebug() << "Error encoding audio frame";
+        qDebug() << "Error encoding audio frame" << ff_make_error_string(l_iRet);
+        av_frame_free(&l_SFrame);
         return -1;
     }
-    if (!l_iGotPacket) {return 0;}
+    if (!l_iGotPacket) {
+      av_frame_free(&l_SFrame);
+      return 0;
+    }
     l_SPacket.stream_index = stream->index;
     // Let's calculate DTS/PTS and give it to FFMPEG..
     // THEN codecs like OGG/Voris works ok!!
@@ -284,8 +252,8 @@ int EncoderFfmpegCore::writeAudioFrame(AVFormatContext *formatctx, AVStream *str
     l_SPacket.pts = m_lDts;
     // Write the compressed frame to the media file. */
     l_iRet = av_interleaved_write_frame(formatctx, &l_SPacket);
-    if (l_iRet != 0) {
-        qDebug() << "Error while writing audio frame";
+    if (l_iRet < 0) {
+        qDebug() << "Error while writing audio frame" << ff_make_error_string(l_iRet);
         return -1;
     }
     av_free_packet(&l_SPacket);
@@ -321,16 +289,13 @@ void EncoderFfmpegCore::openAudio(AVCodec *codec, AVStream *stream) {
     }
 }
 // Add an output stream.
-AVStream *EncoderFfmpegCore::addStream(AVFormatContext *formatctx,
-                                       AVCodec **codec, enum AVCodecID codec_id) {
+AVStream *EncoderFfmpegCore::addStream(AVFormatContext *formatctx, AVCodec **codec, enum AVCodecID codec_id) {
     AVCodecContext *l_SCodecCtx = nullptr;
     AVStream *l_SStream = nullptr;
     // find the encoder
     *codec = avcodec_find_encoder(codec_id);
     if (!(*codec)) {
-#ifdef avcodec_get_name
         fprintf(stderr, "Could not find encoder for '%s'\n", avcodec_get_name(codec_id));
-#endif
         return nullptr;
     }
     l_SStream = avformat_new_stream(formatctx, *codec);
@@ -340,7 +305,17 @@ AVStream *EncoderFfmpegCore::addStream(AVFormatContext *formatctx,
     }
     l_SStream->id = formatctx->nb_streams-1;
     l_SCodecCtx = l_SStream->codec;
-    m_pResample = new EncoderFfmpegResample(l_SCodecCtx);
+    m_swr = swr_alloc_set_opts(m_swr,
+      av_get_default_channel_layout(2),
+      m_pEncoderAudioCodec->sample_fmts[0],
+      44100,
+      av_get_default_channel_layout(2),
+      AV_SAMPLE_FMT_FLT,
+      44100,
+      0,
+      nullptr
+      );
+    swr_init(m_swr);
     switch ((*codec)->type) {
     case AVMEDIA_TYPE_AUDIO:
         l_SStream->id = 1;
@@ -348,12 +323,10 @@ AVStream *EncoderFfmpegCore::addStream(AVFormatContext *formatctx,
         l_SCodecCtx->bit_rate    = m_lBitrate;
         l_SCodecCtx->sample_rate = 44100;
         l_SCodecCtx->channels    = 2;
-        m_pResample->openMixxx(AV_SAMPLE_FMT_FLT, l_SCodecCtx->sample_fmt);
         break;
     default: break;
     }
     // Some formats want stream headers to be separate.
-    if (formatctx->oformat->flags & AVFMT_GLOBALHEADER)
-        l_SCodecCtx->flags |= CODEC_FLAG_GLOBAL_HEADER;
+    if (formatctx->oformat->flags & AVFMT_GLOBALHEADER) l_SCodecCtx->flags |= CODEC_FLAG_GLOBAL_HEADER;
     return l_SStream;
 }

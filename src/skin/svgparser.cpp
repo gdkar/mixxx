@@ -51,19 +51,13 @@ void SvgParser::parseElement(QDomNode* node) const {
     QDomElement element = node->toElement();
 
     parseAttributes(*node);
-
     if (element.tagName() == "text") {
         if (element.hasAttribute("value")) {
             QString expression = element.attribute("value");
-            QString result = evaluateTemplateExpression(
-                expression, node->lineNumber()).toString();
-
+            QString result = evaluateTemplateExpression(expression, node->lineNumber()).toString();
             if (!result.isNull()) {
                 QDomNodeList children = node->childNodes();
-                for (int i = 0; i < children.count(); ++i) {
-                    node->removeChild(children.at(i));
-                }
-
+                for (int i = 0; i < children.count(); ++i) {node->removeChild(children.at(i));}
                 QDomNode newChild = node->ownerDocument().createTextNode(result);
                 node->appendChild(newChild);
             }
@@ -73,8 +67,7 @@ void SvgParser::parseElement(QDomNode* node) const {
         QString value;
         if (element.hasAttribute("expression")) {
             QString expression = element.attribute("expression");
-            value = evaluateTemplateExpression(
-                expression, node->lineNumber()).toString();
+            value = evaluateTemplateExpression(expression, node->lineNumber()).toString();
         } else if (element.hasAttribute("name")) {
             /* TODO (jclaveau) : Getting the variable from the context or the
              * script engine have the same result here (in the skin context two)
@@ -106,13 +99,11 @@ void SvgParser::parseElement(QDomNode* node) const {
                 qDebug() << "ERROR: Failed to open script file";
             }
             QTextStream in(&scriptFile);
-            QScriptValue result = m_context.evaluateScript(in.readAll(),
-                                                           scriptPath);
+            QScriptValue result = m_context.evaluateScript(in.readAll(),scriptPath);
         }
         // Evaluates the content of the script element
         // QString expression = m_context.nodeToString(*node);
-        QScriptValue result = m_context.evaluateScript(
-            element.text(), m_currentFile, node->lineNumber());
+        QScriptValue result = m_context.evaluateScript(element.text(), m_currentFile, node->lineNumber());
     }
 }
 
@@ -140,8 +131,7 @@ void SvgParser::parseAttributes(const QDomNode& node) const {
         // searching variable attributes :
         // expr-attribute_name="variable_name|expression"
         if (nameRx.indexIn(attributeName) != -1) {
-            QString varValue = evaluateTemplateExpression(
-                attributeValue, node.lineNumber()).toString();
+            QString varValue = evaluateTemplateExpression(attributeValue, node.lineNumber()).toString();
             if (varValue.length()) {
                 element.setAttribute(nameRx.cap(1), varValue);
             }
@@ -155,8 +145,7 @@ void SvgParser::parseAttributes(const QDomNode& node) const {
                 QStringList captured = hookRx.capturedTexts();
                 QString match = hookRx.cap(0);
                 QString tmp = "svg.templateHooks." + match;
-                QString replacement = evaluateTemplateExpression(
-                    tmp, node.lineNumber()).toString();
+                QString replacement = evaluateTemplateExpression(tmp, node.lineNumber()).toString();
                 attributeValue.replace(pos, match.length(), replacement);
                 pos += replacement.length();
             }
@@ -175,10 +164,8 @@ QByteArray SvgParser::saveToQByteArray(const QDomNode& svgNode) const {
     return out;
 }
 
-QScriptValue SvgParser::evaluateTemplateExpression(const QString& expression,
-                                                   int lineNumber) const {
-    QScriptValue out = m_context.evaluateScript(
-        expression, m_currentFile, lineNumber);
+QScriptValue SvgParser::evaluateTemplateExpression(const QString& expression,int lineNumber) const {
+    QScriptValue out = m_context.evaluateScript(expression, m_currentFile, lineNumber);
     if (m_context.getScriptEngine()->hasUncaughtException()) {
         // return an empty string as replacement for the in-attribute expression
         return QScriptValue();

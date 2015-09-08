@@ -24,6 +24,6 @@ DbId::value_type DbId::valueOf(QVariant /*pass-by-value*/ variant) {
 std::ostream& operator<< ( std::ostream &os, const DbId& dbId){
   return ( os << dbId.m_value );
 }
-QDebug&       operator<< ( QDebug& qdebug, const DbId& dbId){
-  return qdebug << dbId;
+QDebug&       operator<< ( QDebug& q, const DbId& dbId){
+  return q<< dbId.m_value;
 }

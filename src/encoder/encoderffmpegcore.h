@@ -31,10 +31,7 @@ extern "C" {
 #include <libavutil/samplefmt.h>
 
 #include <libavutil/avutil.h>
-#include <libavutil/log.h>
-// Compability
-#include <libavutil/mathematics.h>
-#include <libavutil/opt.h>
+#include <libswresample/swresample.h>
 }
 
 #include <QByteArray>
@@ -66,34 +63,34 @@ private:
     void closeAudio(AVStream *st);
     void openAudio(AVCodec *codec, AVStream *st);
     AVStream *addStream(AVFormatContext *oc, AVCodec **codec, enum AVCodecID codec_id);
-    bool m_bStreamInitialized;
-    EncoderCallback* m_pCallback;
+    bool m_bStreamInitialized = false;
+    EncoderCallback* m_pCallback = nullptr;
     TrackPointer m_pMetaData;
-    char *m_strMetaDataTitle;
-    char *m_strMetaDataArtist;
-    char *m_strMetaDataAlbum;
+    char *m_strMetaDataTitle = nullptr;
+    char *m_strMetaDataArtist = nullptr;
+    char *m_strMetaDataAlbum = nullptr;
     QFile m_pFile;
     QByteArray m_strReadByteArray;
     CSAMPLE m_SBuffer[65535];
     unsigned long m_lBufferSize;
-    AVFormatContext *m_pEncodeFormatCtx;
-    AVStream *m_pEncoderAudioStream;
-    AVCodec *m_pEncoderAudioCodec;
-    AVOutputFormat *m_pEncoderFormat;
-    uint8_t *m_pSamples;
-    float *m_pFltSamples;
-    int m_iAudioInputFrameSize;
-    unsigned int m_iFltAudioCpyLen;
-    unsigned int m_iAudioCpyLen;
+    AVFormatContext *m_pEncodeFormatCtx = nullptr;
+    AVStream *m_pEncoderAudioStream = nullptr;
+    AVCodec *m_pEncoderAudioCodec = nullptr;
+    AVOutputFormat *m_pEncoderFormat = nullptr;
+    uint8_t *m_pSamples = nullptr;
+    float *m_pFltSamples = nullptr;
+    int m_iAudioInputFrameSize = 0;
+    unsigned int m_iFltAudioCpyLen = 0;
+    unsigned int m_iAudioCpyLen = 0;
 
-    uint32_t m_lBitrate;
-    uint32_t m_lSampleRate;
-    uint64_t m_lRecordedBytes;
-    uint64_t m_lDts;
-    uint64_t m_lPts;
+    int32_t m_lBitrate = 0;
+    int32_t m_lSampleRate = 0;
+    int64_t m_lRecordedBytes = 0;
+    int64_t m_lDts = 0;
+    int64_t m_lPts = 0;
     enum AVCodecID m_SCcodecId;
-    EncoderFfmpegResample *m_pResample;
-    AVStream *m_pStream;
+    SwrContext *m_swr = nullptr;
+    AVStream *m_pStream = nullptr;
 };
 
 #endif

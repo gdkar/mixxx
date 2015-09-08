@@ -240,6 +240,16 @@ SINT SoundSourceFFmpeg::seekSampleFrame(SINT frameIndex) {
     m_pkt_index = lindex;
     if ( m_pkt_index > 0 ) m_pkt_index--;
     m_packet    = m_pkt_array.at(m_pkt_index);
+    avcodec_flush_buffers(m_codec_ctx);
+    if ( swr_is_initialized(m_swr))
+    {
+      av_frame_unref(m_frame);
+      m_frame->format         = AV_SAMPLE_FMT_FLT;
+      m_frame->channel_layout = av_get_default_channel_layout ( getChannelCount() );
+      m_frame->sample_rate    = getFrameRate();
+      m_frame->nb_samples     = 0;
+      swr_convert_frame(m_swr,m_frame,nullptr);
+    }
     decode_next_frame ();
     first_sample = av_rescale_q ( m_frame->pts - m_first_pts, m_stream_tb, m_output_tb );
     m_offset = frameIndex - first_sample;
@@ -294,12 +304,9 @@ bool SoundSourceFFmpeg::decode_next_frame(){
         m_packet.data += ret;
         if ( got_frame )
         {
-          if ( !m_orig_frame->sample_rate    )
-            m_orig_frame->sample_rate = m_codec_ctx->sample_rate;
-          if ( !m_orig_frame->channel_layout )
-            m_orig_frame->channel_layout = m_codec_ctx->channel_layout;
-          if ( !m_orig_frame->channels )
-            m_orig_frame->channels = m_codec_ctx->channels;
+          if ( !m_orig_frame->sample_rate    ) m_orig_frame->sample_rate = m_codec_ctx->sample_rate;
+          if ( !m_orig_frame->channel_layout ) m_orig_frame->channel_layout = m_codec_ctx->channel_layout;
+          if ( !m_orig_frame->channels )       m_orig_frame->channels = m_codec_ctx->channels;
 
           m_orig_frame->pts = av_frame_get_best_effort_timestamp ( m_orig_frame );
           av_frame_unref ( m_frame );
