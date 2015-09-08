@@ -1,12 +1,7 @@
-#ifndef SHOUTCASTMANAGER_H
-#define SHOUTCASTMANAGER_H
-
+_Pragma("once")
 #include <QObject>
-
 #include "configobject.h"
-
 class EngineMaster;
-
 class ShoutcastManager : public QObject {
     Q_OBJECT
   public:
@@ -14,13 +9,12 @@ class ShoutcastManager : public QObject {
     virtual ~ShoutcastManager();
     // Returns true if the Shoutcast connection is enabled. Note this only
     // indicates whether the connection is enabled, not whether it is connected.
-    bool isEnabled();
+    virtual bool isEnabled();
   public slots:
     // Set whether or not the Shoutcast connection is enabled.
-    void setEnabled(bool enabled);
+    virtual void setEnabled(bool enabled);
   signals:
-    void shoutcastEnabled(bool);
+    virtual void shoutcastEnabled(bool);
   private:
-    ConfigObject<ConfigValue>* m_pConfig;
+    ConfigObject<ConfigValue>* m_pConfig = nullptr;
 };
-#endif /* SHOUTCASTMANAGER_H */

@@ -153,28 +153,19 @@ void WOverview::onConnectedControlChanged(double dParameter, double dValue) {
         }
     }
 }
-
 void WOverview::slotWaveformSummaryUpdated() {
     //qDebug() << "WOverview::slotWaveformSummaryUpdated()";
     TrackPointer pTrack(m_pCurrentTrack);
-    if (!pTrack) {
-        return;
-    }
+    if (!pTrack) {return;}
     m_pWaveform = pTrack->getWaveformSummary();
     // If the waveform is already complete, just draw it.
     if (m_pWaveform && m_pWaveform->getCompletion() == m_pWaveform->getDataSize()) {
         m_actualCompletion = 0;
-        if (drawNextPixmapPart()) {
-            update();
-        }
+        if (drawNextPixmapPart()) {update();}
     }
 }
-
 void WOverview::slotAnalyserProgress(double progress) {
-    if (!m_pCurrentTrack) {
-        return;
-    }
-
+    if (!m_pCurrentTrack) {return;}
     double analyserProgress = progress;
     bool finalizing = progress >= 0.998;
     bool updateNeeded = drawNextPixmapPart();
@@ -185,14 +176,11 @@ void WOverview::slotAnalyserProgress(double progress) {
         update();
     }
 }
-
 void WOverview::slotLoadNewTrack(TrackPointer pTrack) {
     // qDebug() << "WOverview::slotLoadNewTrack(TrackPointer pTrack)";
     if (m_pCurrentTrack) {
-        disconnect(m_pCurrentTrack.data(), SIGNAL(waveformSummaryUpdated()),
-                   this, SLOT(slotWaveformSummaryUpdated()));
-        disconnect(m_pCurrentTrack.data(), SIGNAL(analyserProgress(double)),
-                   this, SLOT(slotAnalyzerProgress(double)));
+        disconnect(m_pCurrentTrack.data(), SIGNAL(waveformSummaryUpdated()),this, SLOT(slotWaveformSummaryUpdated()));
+        disconnect(m_pCurrentTrack.data(), SIGNAL(analyserProgress(double)),this, SLOT(slotAnalyzerProgress(double)));
     }
 
     if (m_pWaveformSourceImage) {
@@ -345,33 +333,22 @@ void WOverview::paintEvent(QPaintEvent *) {
             paintText(tr("Finalizing .."), &painter);
         }
     }
-
-    double trackSamples = m_trackSamplesControl->get();
+    auto trackSamples = m_trackSamplesControl->get();
     if (trackSamples > 0) {
         const float offset = 1.0f;
         const float gain = (float)(width()-2) / trackSamples;
-
         // Draw range (loop)
         for (unsigned int i = 0; i < m_markRanges.size(); ++i) {
-            WaveformMarkRange& currentMarkRange = m_markRanges[i];
-
+            auto & currentMarkRange = m_markRanges[i];
             // If the mark range is not active we should not draw it.
-            if (!currentMarkRange.active()) {
-                continue;
-            }
-
+            if (!currentMarkRange.active()) {continue;}
             // Active mark ranges by definition have starts/ends that are not
             // disabled.
             const double startValue = currentMarkRange.start();
             const double endValue = currentMarkRange.end();
-
             const float startPosition = offset + startValue * gain;
             const float endPosition = offset + endValue * gain;
-
-            if (startPosition < 0.0 && endPosition < 0.0) {
-                continue;
-            }
-
+            if (startPosition < 0.0 && endPosition < 0.0) {continue;}
             if (currentMarkRange.enabled()) {
                 painter.setOpacity(0.4);
                 painter.setPen(currentMarkRange.m_activeColor);
@@ -383,17 +360,13 @@ void WOverview::paintEvent(QPaintEvent *) {
             }
 
             //let top and bottom of the rect out of the widget
-            painter.drawRect(QRectF(QPointF(startPosition, -2.0),
-                                    QPointF(endPosition,height() + 1.0)));
+            painter.drawRect(QRectF(QPointF(startPosition, -2.0),QPointF(endPosition,height() + 1.0)));
         }
-
         //Draw markers (Cue & hotcues)
         QPen shadowPen(QBrush(m_qColorBackground), 2.5);
-
-        QFont markerFont = painter.font();
+        auto markerFont = painter.font();
         markerFont.setPixelSize(10);
-
-        QFont shadowFont = painter.font();
+        auto shadowFont = painter.font();
         shadowFont.setWeight(99);
         shadowFont.setPixelSize(10);
 
@@ -457,12 +430,12 @@ void WOverview::paintEvent(QPaintEvent *) {
 }
 
 void WOverview::paintText(const QString &text, QPainter *painter) {
-    QColor lowColor = m_signalColors.getLowColor();
+    auto lowColor = m_signalColors.getLowColor();
     lowColor.setAlphaF(0.5);
-    QPen lowColorPen(QBrush(lowColor), 1.25, Qt::SolidLine, Qt::RoundCap);
+    auto lowColorPen = QPen(QBrush(lowColor), 1.25, Qt::SolidLine, Qt::RoundCap);
     painter->setPen(lowColorPen);
-    QFont font = painter->font();
-    QFontMetrics fm(font);
+    auto font = painter->font();
+    auto fm = QFontMetrics(font);
     int textWidth = fm.width(text);
     if (textWidth > width()) {
         qreal pointSize = font.pointSizeF();
@@ -479,12 +452,12 @@ void WOverview::paintText(const QString &text, QPainter *painter) {
 void WOverview::resizeEvent(QResizeEvent *) {
     // Play-position potmeters range from 0 to 1 but they allow out-of-range
     // sets. This is to give VC access to the pre-roll area.
-    const double kMaxPlayposRange = 1.0;
-    const double kMinPlayposRange = 0.0;
+    const auto kMaxPlayposRange = 1.0;
+    const auto  kMinPlayposRange = 0.0;
 
     // Values of zero and one in normalized space.
-    const double zero = (0.0 - kMinPlayposRange) / (kMaxPlayposRange - kMinPlayposRange);
-    const double one = (1.0 - kMinPlayposRange) / (kMaxPlayposRange - kMinPlayposRange);
+    const auto zero = (0.0 - kMinPlayposRange) / (kMaxPlayposRange - kMinPlayposRange);
+    const auto one  = (1.0 - kMinPlayposRange) / (kMaxPlayposRange - kMinPlayposRange);
 
     // These coeficients convert between widget space and normalized value
     // space.
@@ -494,24 +467,15 @@ void WOverview::resizeEvent(QResizeEvent *) {
     m_waveformImageScaled = QImage();
     m_diffGain = 0;
 }
-
 void WOverview::dragEnterEvent(QDragEnterEvent* event) {
-    if (DragAndDropHelper::allowLoadToPlayer(m_group,
-                                             m_playControl->get() > 0.0,
-                                             m_pConfig) &&
-            DragAndDropHelper::dragEnterAccept(*event->mimeData(), m_group,
-                                               true, false)) {
+    if (DragAndDropHelper::allowLoadToPlayer(m_group,m_playControl->get() > 0.0,m_pConfig) &&
+            DragAndDropHelper::dragEnterAccept(*event->mimeData(), m_group,true, false)) {
         event->acceptProposedAction();
-    } else {
-        event->ignore();
-    }
+    } else {event->ignore();}
 }
-
 void WOverview::dropEvent(QDropEvent* event) {
-    if (DragAndDropHelper::allowLoadToPlayer(m_group, m_playControl->get() > 0.0,
-                                             m_pConfig)) {
-        QList<QFileInfo> files = DragAndDropHelper::dropEventFiles(
-                *event->mimeData(), m_group, true, false);
+    if (DragAndDropHelper::allowLoadToPlayer(m_group, m_playControl->get() > 0.0,m_pConfig)) {
+        auto files = DragAndDropHelper::dropEventFiles(*event->mimeData(), m_group, true, false);
         if (!files.isEmpty()) {
             event->accept();
             emit(trackDropped(files.at(0).absoluteFilePath(), m_group));

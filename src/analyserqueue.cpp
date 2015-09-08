@@ -195,7 +195,7 @@ bool AnalyserQueue::doAnalysis(TrackPointer tio, Mixxx::AudioSourcePointer pAudi
         // because the finalise functions will take also some time
         //fp div here prevents insane signed overflow
         const auto frameProgress = std::min<double>(double(frameIndex) / double(pAudioSource->getMaxFrameIndex()),1.0);
-        int progressPromille = frameProgress * (1.0 - FINALIZE_PROMILLE);
+        auto progressPromille = frameProgress * (1.0 - FINALIZE_PROMILLE);
         if (m_progressInfo.track_progress != progressPromille) {
             if (progressUpdateInhibitTimer.elapsed() > 60) {
                 // Inhibit Updates for 60 milliseconds
@@ -226,7 +226,6 @@ bool AnalyserQueue::doAnalysis(TrackPointer tio, Mixxx::AudioSourcePointer pAudi
     } while (!dieflag && (frameIndex < pAudioSource->getMaxFrameIndex()));
     return !cancelled; //don't return !dieflag or we might reanalyze over and over
 }
-
 void AnalyserQueue::stop() {
     m_exit = true;
     m_qm.lock();

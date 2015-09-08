@@ -99,9 +99,7 @@ Result SoundSourceFFmpeg::tryOpen(const AudioSourceConfig& config) {
     else                                setChannelCount( config.channelCountHint );
     if ( config.frameRateHint < 8000 )  setFrameRate ( m_codec_ctx->sample_rate );
     else                                setFrameRate ( config.frameRateHint );
-
     m_output_tb = AVRational{1,static_cast<int>(getFrameRate())};
-
     setFrameCount ( av_rescale_q( m_format_ctx->duration, m_stream_tb, m_output_tb ) );
     if(!(m_swr = swr_alloc ( )))
     {
@@ -124,14 +122,9 @@ Result SoundSourceFFmpeg::tryOpen(const AudioSourceConfig& config) {
       ret = av_read_frame ( m_format_ctx, & m_packet );
       if ( ret < 0 || m_packet.stream_index != m_stream_index )
       {
-        if ( m_packet.stream_index != m_stream_index )
-        {
-          discarded ++;
-        }
+        if ( m_packet.stream_index != m_stream_index ) discarded ++;
         else if ( ret != AVERROR_EOF )
-        {
           qDebug() << __FUNCTION__ << filename << "av_read_packet returned error" << av_err2str(ret);
-        }
         av_free_packet(&m_packet);
       }
       else
@@ -141,23 +134,11 @@ Result SoundSourceFFmpeg::tryOpen(const AudioSourceConfig& config) {
         av_init_packet ( &m_packet );
       }
     }while ( ret >= 0 );
-    if ( discarded )
-    {
-      qDebug() << __FUNCTION__ << "discarded" << discarded << "packets from other streams when demuxing" << filename;
-    }
-    if ( m_stream->start_time != AV_NOPTS_VALUE )
-    {
-      m_first_pts = m_stream->start_time;
-    }
-    else if ( m_pkt_array.size() )
-    {
-      m_first_pts = m_pkt_array.front().pts;
-    }
+    if ( discarded ) qDebug() << __FUNCTION__ << "discarded" << discarded << "packets from other streams when demuxing" << filename;
+    if ( m_stream->start_time != AV_NOPTS_VALUE ) m_first_pts = m_stream->start_time;
+    else if ( m_pkt_array.size() ) m_first_pts = m_pkt_array.front().pts;
     m_pkt_index = 0;
-    if ( m_pkt_index < m_pkt_array.size() )
-    {
-      m_packet = m_pkt_array.at(m_pkt_index);
-    }
+    if ( m_pkt_index < m_pkt_array.size() ) m_packet = m_pkt_array.at(m_pkt_index);
     setFrameCount ( av_rescale_q ( m_pkt_array.back().pts + m_pkt_array.back().duration - m_first_pts, m_stream_tb, m_output_tb ) );
     qDebug() << __FUNCTION__ << ": frameRate = " << getFrameRate()
                              << ", channelCount = " << getChannelCount()
@@ -187,8 +168,7 @@ SINT SoundSourceFFmpeg::seekSampleFrame(SINT frameIndex) {
     if ( m_frame->pts == AV_NOPTS_VALUE && !decode_next_frame ( ) ) return -1;
     auto first_sample = av_rescale_q ( m_frame->pts-m_first_pts, m_stream_tb, m_output_tb );
     auto frame_pts    = av_rescale_q ( frameIndex, m_output_tb,m_stream_tb);
-    if ( frameIndex >= first_sample 
-      && frameIndex  < first_sample + m_frame->nb_samples )
+    if ( frameIndex >= first_sample && frameIndex  < first_sample + m_frame->nb_samples )
     {
       m_offset = frameIndex - first_sample;
       return     frameIndex;
@@ -204,7 +184,7 @@ SINT SoundSourceFFmpeg::seekSampleFrame(SINT frameIndex) {
     }
     if ( frame_pts >= ( m_pkt_array.back().pts - m_first_pts ) )
     {
-      m_pkt_index  = m_pkt_array.size() - 1;
+      m_pkt_index  = m_pkt_array.size() - 2;
       m_packet     = m_pkt_array.at ( m_pkt_index );
       decode_next_frame ( );
       first_sample = av_rescale_q ( m_frame->pts - m_first_pts, m_stream_tb, m_output_tb );
@@ -226,10 +206,7 @@ SINT SoundSourceFFmpeg::seekSampleFrame(SINT frameIndex) {
       if ( mindex >= hindex ) mindex = hindex - 1;
       if ( mindex <= lindex )
       {
-        if ( bail )
-        {
-          mindex = ( idx_dist / 2 ) + lindex;
-        }
+        if ( bail ) mindex = ( idx_dist / 2 ) + lindex;
         else
         {
           mindex = lindex + 1;
@@ -261,6 +238,7 @@ SINT SoundSourceFFmpeg::seekSampleFrame(SINT frameIndex) {
       }
     }
     m_pkt_index = lindex;
+    if ( m_pkt_index > 0 ) m_pkt_index--;
     m_packet    = m_pkt_array.at(m_pkt_index);
     decode_next_frame ();
     first_sample = av_rescale_q ( m_frame->pts - m_first_pts, m_stream_tb, m_output_tb );

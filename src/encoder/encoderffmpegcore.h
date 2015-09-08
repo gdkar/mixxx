@@ -30,10 +30,8 @@ extern "C" {
 #include <libavutil/mathematics.h>
 #include <libavutil/samplefmt.h>
 
-#ifndef __FFMPEGOLDAPI__
 #include <libavutil/avutil.h>
-#endif
-
+#include <libavutil/log.h>
 // Compability
 #include <libavutil/mathematics.h>
 #include <libavutil/opt.h>
