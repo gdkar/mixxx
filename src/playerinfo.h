@@ -23,6 +23,16 @@
 #include <QTimerEvent>
 #include "trackinfoobject.h"
 class ControlObjectSlave;
+class DeckControls : public QObject{
+  Q_OBJECT
+    public:
+        DeckControls(QString& group, QObject *pParent = nullptr);
+        virtual ~DeckControls();
+        ControlObjectSlave* m_play;
+        ControlObjectSlave* m_pregain;
+        ControlObjectSlave* m_volume;
+        ControlObjectSlave* m_orientation;
+};
 class PlayerInfo : public QObject {
     Q_OBJECT
   public:
@@ -40,15 +50,7 @@ class PlayerInfo : public QObject {
     void trackLoaded(QString group, TrackPointer pTrack);
     void trackUnloaded(QString group, TrackPointer pTrack);
   private:
-    class DeckControls {
-        public:
-            DeckControls(QString& group);
-            virtual ~DeckControls();
-            ControlObjectSlave* m_play;
-            ControlObjectSlave* m_pregain;
-            ControlObjectSlave* m_volume;
-            ControlObjectSlave* m_orientation;
-    };
+
     void clearControlCache();
     void timerEvent(QTimerEvent* pTimerEvent);
     void updateCurrentPlayingDeck();

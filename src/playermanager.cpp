@@ -3,7 +3,7 @@
 #include <QMutexLocker>
 
 #include "playermanager.h"
-
+#include "controlobjectslave.h"
 #include "controlobject.h"
 #include "trackinfoobject.h"
 #include "deck.h"

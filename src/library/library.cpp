@@ -80,7 +80,7 @@ Library::Library(QObject* parent, ConfigObject<ConfigValue>* pConfig,
     addFeature(m_pAnalysisFeature);
     //iTunes and Rhythmbox should be last until we no longer have an obnoxious
     //messagebox popup when you select them. (This forces you to reach for your
-    //mouse or keyboard if you're using MIDI control and you scroll through them...)
+    //mouse or keyboard if you're using control and you scroll through them...)
     if (RhythmboxFeature::isSupported() &&
         pConfig->getValueString(ConfigKey("[Library]","ShowRhythmboxLibrary"),"1").toInt()) {
         addFeature(new RhythmboxFeature(this, m_pTrackCollection));

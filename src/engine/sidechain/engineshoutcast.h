@@ -26,7 +26,7 @@
 #include "encoder/encodercallback.h"
 #include "engine/sidechain/sidechainworker.h"
 #include "errordialoghandler.h"
-
+#include "trackinfoobject.h"
 #define SHOUTCAST_DISCONNECTED 0
 #define SHOUTCAST_CONNECTING 1
 #define SHOUTCAST_CONNECTED 2

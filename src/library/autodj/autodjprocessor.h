@@ -12,6 +12,7 @@
 #include "engine/enginechannel.h"
 
 class ControlPushButton;
+class ControlObjectSlave;
 class TrackCollection;
 class PlayerManagerInterface;
 class BaseTrackPlayer;

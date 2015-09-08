@@ -32,15 +32,11 @@ ControlPushButton::ControlPushButton(ConfigKey key, bool bPersist)
                         m_iNoStates));
     }
 }
-
-ControlPushButton::~ControlPushButton() {
-}
-
+ControlPushButton::~ControlPushButton() = default;
 // Tell this PushButton how to act on rising and falling edges
 void ControlPushButton::setButtonMode(enum ButtonMode mode) {
     //qDebug() << "Setting " << m_Key.group << m_Key.item << "as toggle";
     m_buttonMode = mode;
-
     if (m_pControl) {
         m_pControl->setBehavior(
                 new ControlPushButtonBehavior(

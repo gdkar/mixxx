@@ -5,7 +5,7 @@
 #include <QModelIndex>
 #include <QModelIndexList>
 #include <QtDebug>
-
+#include "controlobjectslave.h"
 #include "controlobject.h"
 #include "controlpushbutton.h"
 #include "playermanager.h"

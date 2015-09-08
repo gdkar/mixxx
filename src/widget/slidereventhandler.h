@@ -104,7 +104,7 @@ class SliderEventHandler {
     }
 
     void wheelEvent(T* pWidget, QWheelEvent* e) {
-        // For legacy (MIDI) reasons this is tuned to 127.
+        // For legacy reasons this is tuned to 127.
         double wheelAdjustment = ((QWheelEvent *)e)->delta() / (120.0 * 127.0);
         double newParameter = pWidget->getControlParameter() + wheelAdjustment;
 

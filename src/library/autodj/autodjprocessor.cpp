@@ -53,7 +53,7 @@ bool DeckAttributes::isRepeat()const
 }
 void DeckAttributes::setRepeat(bool b)
 {
-  m_repeat->set(enabled ? 1.0:0.0);
+  m_repeat->set(b? 1.0:0.0);
 }
 int AutoDJProcessor::getState()const{return m_eState;}
 int AutoDJProcessor::getTransitionTime()const{return m_iTransitionTime;}
@@ -225,7 +225,7 @@ AutoDJProcessor::AutoDJError AutoDJProcessor::fadeNow() {
     return ADJ_OK;
 }
 
-AutoDJError AutoDJProcessor::skipNext() {
+AutoDJProcessor::AutoDJError AutoDJProcessor::skipNext() {
     if (m_eState == ADJ_DISABLED) {return ADJ_IS_INACTIVE;}
     // Auto-DJ needs at least two decks
     DEBUG_ASSERT_AND_HANDLE(m_decks.length() > 1) {return ADJ_NOT_TWO_DECKS;}

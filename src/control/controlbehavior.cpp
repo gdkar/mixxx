@@ -65,26 +65,21 @@ ControlAudioTaperPotBehavior::ControlAudioTaperPotBehavior(
           m_minDB(minDB),
           m_maxDB(maxDB),
           m_offset(db2ratio(m_minDB)) {
-    m_midiCorrection = ceil(m_neutralParameter * 127) - (m_neutralParameter * 127);
 }
 ControlAudioTaperPotBehavior::~ControlAudioTaperPotBehavior() {}
 double ControlAudioTaperPotBehavior::valueToParameter(double dValue) {
     double dParam = 1.0;
-    if (dValue <= 0.0) {
-        return 0;
-    } else if (dValue < 1.0) {
+    if (dValue <= 0.0) {return 0;}
+    else if (dValue < 1.0) {
         // db + linear overlay to reach
         // m_minDB = 0
         // 0 dB = m_neutralParameter
         double overlay = m_offset * (1 - dValue);
         if (m_minDB) {
             dParam = (ratio2db(dValue + overlay) - m_minDB) / m_minDB * m_neutralParameter * -1;
-        } else {
-            dParam = dValue * m_neutralParameter;
-        }
-    } else if (dValue == 1.0) {
-        dParam = m_neutralParameter;
-    } else if (dValue < m_dMaxValue) {
+        } else {dParam = dValue * m_neutralParameter;}
+    } else if (dValue == 1.0) {dParam = m_neutralParameter;}
+    else if (dValue < m_dMaxValue) {
         // m_maxDB = 1
         // 0 dB = m_neutralParameter
         dParam = (ratio2db(dValue) / m_maxDB * (1 - m_neutralParameter)) + m_neutralParameter;
@@ -94,46 +89,24 @@ double ControlAudioTaperPotBehavior::valueToParameter(double dValue) {
 }
 
 double ControlAudioTaperPotBehavior::parameterToValue(double dParam) {
-    double dValue = 1;
-    if (dParam <= 0.0) {
-        dValue = 0;
-    } else if (dParam < m_neutralParameter) {
+    auto dValue = 1.0;
+    if (dParam <= 0.0) {dValue = 0;}
+    else if (dParam < m_neutralParameter) {
         // db + linear overlay to reach
         // m_minDB = 0
         // 0 dB = m_neutralParameter;
         if (m_minDB) {
             double db = (dParam * m_minDB / (m_neutralParameter * -1)) + m_minDB;
             dValue = (db2ratio(db) - m_offset) / (1 - m_offset) ;
-        } else {
-            dValue = dParam / m_neutralParameter;
-        }
-    } else if (dParam == m_neutralParameter) {
-        dValue = 1.0;
-    } else if (dParam <= 1.0) {
+        } else {dValue = dParam / m_neutralParameter;}
+    } else if (dParam == m_neutralParameter) {dValue = 1.0;}
+    else if (dParam <= 1.0) {
         // m_maxDB = 1
         // 0 dB = m_neutralParame;
         dValue = db2ratio((dParam - m_neutralParameter) * m_maxDB / (1 - m_neutralParameter));
     }
     //qDebug() << "ControlAudioTaperPotBehavior::parameterToValue" << "dValue =" << dValue << "dParam =" << dParam;
     return dValue;
-}
-
-double ControlAudioTaperPotBehavior::midiValueToParameter(double midiValue) {
-    double dParam;
-    if (m_neutralParameter && m_neutralParameter != 1.0) {
-        double neutralTest = (midiValue - m_midiCorrection) / 127.0;
-        if (neutralTest < m_neutralParameter) {
-            dParam = midiValue /
-                    (127.0 + m_midiCorrection / m_neutralParameter);
-        } else {
-            // m_midicorrection is allways < 1, so NaN check required
-            dParam = (midiValue - m_midiCorrection / m_neutralParameter) /
-                    (127.0 - m_midiCorrection / m_neutralParameter);
-        }
-    } else {
-        dParam = midiValue / 127.0;
-    }
-    return dParam;
 }
 void ControlAudioTaperPotBehavior::setValueFromParameter(double dParam,ControlDoublePrivate* pControl) { pControl->set(parameterToValue(dParam), nullptr); }
 double ControlTTRotaryBehavior::valueToParameter(double dValue) { return (dValue * 200.0 + 64) / 127.0; }
@@ -152,11 +125,6 @@ ControlPushButtonBehavior::ControlPushButtonBehavior(ButtonMode buttonMode, int 
           m_iNumStates(iNumStates) {
 }
 void ControlPushButtonBehavior::setValueFromParameter(double dParam, ControlDoublePrivate* pControl) {
-    // Calculate pressed State of the midi Button
-    // Some controller like the RMX2 are sending always MIDI_NOTE_ON
-    // with a changed dParam 127 for pressed an 0 for released.
-    // Other controller like the VMS4 are using MIDI_NOTE_ON
-    // And MIDI_NOTE_OFF and a velocity value like a piano keyboard
     auto pressed = !!dParam;
     // This block makes push-buttons act as power window buttons.
     if (m_buttonMode == POWERWINDOW && m_iNumStates == 2) {
@@ -166,10 +134,7 @@ void ControlPushButtonBehavior::setValueFromParameter(double dParam, ControlDoub
             pControl->set(!value, nullptr);
             m_pushTimer.setSingleShot(true);
             m_pushTimer.start(kPowerWindowTimeMillis);
-        } else if (!m_pushTimer.isActive()) {
-            // Disable after releasing a long press
-            pControl->set(0., nullptr);
-        }
+        } else if (!m_pushTimer.isActive()) {pControl->set(0., nullptr);}
     } else if (m_buttonMode == TOGGLE || m_buttonMode == LONGPRESSLATCHING) {
         // This block makes push-buttons act as toggle buttons.
         if (m_iNumStates > 1) { // multistate button
@@ -187,8 +152,7 @@ void ControlPushButtonBehavior::setValueFromParameter(double dParam, ControlDoub
                 }
             } else {
                 double value = pControl->get();
-                if (m_buttonMode == LONGPRESSLATCHING &&
-                        m_pushTimer.isActive() && value >= 1.) {
+                if (m_buttonMode == LONGPRESSLATCHING && m_pushTimer.isActive() && value >= 1.) {
                     // revert toggle if button is released too early
                     value = (int)(value - 1.) % m_iNumStates;
                     pControl->set(value, nullptr);

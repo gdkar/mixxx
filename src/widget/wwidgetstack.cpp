@@ -9,27 +9,21 @@ WidgetStackControlListener::WidgetStackControlListener(QObject* pParent,
         : QObject(pParent),
           m_control(new ControlObjectSlave(pControl ? pControl->getKey() : ConfigKey(),this)),
           m_index(index) {
-    connect(&m_control, SIGNAL(valueChanged(double)),this, SLOT(slotValueChanged(double)));
+    connect(m_control, SIGNAL(valueChanged(double)),this, SLOT(slotValueChanged(double)));
 }
 
 WidgetStackControlListener::~WidgetStackControlListener() {}
 
 void WidgetStackControlListener::slotValueChanged(double v) {
-    if (v > 0.0) {
-        emit(switchToWidget());
-    } else {
-        emit(hideWidget());
-    }
+    if (v > 0.0) {emit(switchToWidget());}
+    else {emit(hideWidget());}
 }
 
 void WidgetStackControlListener::onCurrentWidgetChanged(int index) {
-    if (index == m_index && m_control->get() == 0.0) {
-        m_control->set(1.0);
-    } else if (index != m_index && m_control->get() != 0.0) {
-        m_control->set(0.0);
-    }
+    if (index == m_index && m_control->get() == 0.0) {m_control->set(1.0);}
+    else if (index != m_index && m_control->get() != 0.0) {m_control->set(0.0);}
 }
-
+void WidgetStackControlListener::setControl(double v){m_control->set(v);}
 WWidgetStack::WWidgetStack(QWidget* pParent,
                            ControlObject* pNextControl,
                            ControlObject* pPrevControl,
@@ -45,8 +39,8 @@ WWidgetStack::WWidgetStack(QWidget* pParent,
     connect(m_nextControl, SIGNAL(valueChanged(double)),this, SLOT(onNextControlChanged(double)));
     connect(m_prevControl, SIGNAL(valueChanged(double)),this, SLOT(onPrevControlChanged(double)));
     connect(m_currentPageControl, SIGNAL(valueChanged(double)),this, SLOT(onCurrentPageControlChanged(double)));
-    connect(m_showMapper, SIGNAL(mapped(int)),this, SLOT(showIndex(int)));
-    connect(m_hideMapper, SIGNAL(mapped(int)),this, SLOT(hideIndex(int)));
+    connect(&m_showMapper, SIGNAL(mapped(int)),this, SLOT(showIndex(int)));
+    connect(&m_hideMapper, SIGNAL(mapped(int)),this, SLOT(hideIndex(int)));
 }
 // override
 void WWidgetStack::Init() {
@@ -54,13 +48,12 @@ void WWidgetStack::Init() {
     connect(this, SIGNAL(currentChanged(int)),this, SLOT(onCurrentPageChanged(int)));
 }
 WWidgetStack::~WWidgetStack() {}
-
 QSize WWidgetStack::sizeHint() const {
-    QWidget* pWidget = currentWidget();
+    auto pWidget = currentWidget();
     return pWidget ? pWidget->sizeHint() : QSize();
 }
 QSize WWidgetStack::minimumSizeHint() const {
-    QWidget* pWidget = currentWidget();
+    auto pWidget = currentWidget();
     return pWidget ? pWidget->minimumSizeHint() : QSize();
 }
 void WWidgetStack::showIndex(int index) {
@@ -71,10 +64,9 @@ void WWidgetStack::showIndex(int index) {
 void WWidgetStack::hideIndex(int index) {
     if (!isVisible()) {return;}
     if (currentIndex() == index) {
-        QMap<int, int>::const_iterator it = m_hideMap.find(index);
-        if (it != m_hideMap.end()) {
-            setCurrentIndex(*it);
-        } else {
+        auto  it = m_hideMap.constFind(index);
+        if (it != m_hideMap.cend()) {setCurrentIndex(*it);}
+        else {
             // TODO: This default behavior is a little odd, is it really what
             // we want?  Or should we save the previously-selected page and then
             // switch to that.
@@ -115,30 +107,22 @@ void WWidgetStack::onCurrentPageControlChanged(double v) {
 void WWidgetStack::addWidgetWithControl(QWidget* pWidget, ControlObject* pControl,int on_hide_select) {
     int index = addWidget(pWidget);
     if (pControl) {
-        WidgetStackControlListener* pListener = new WidgetStackControlListener(
-            this, pControl, index);
+        auto pListener = new WidgetStackControlListener( this, pControl, index);
         m_showMapper.setMapping(pListener, index);
         m_hideMapper.setMapping(pListener, index);
         m_listeners[index] = pListener;
-        if (pControl->get() > 0) {
-            setCurrentIndex(count()-1);
-        }
+        if (pControl->get() > 0) { setCurrentIndex(count()-1); }
         pListener->onCurrentWidgetChanged(currentIndex());
-        connect(pListener, SIGNAL(switchToWidget()),m_showMapper, SLOT(map()));
-        connect(pListener, SIGNAL(hideWidget()),m_hideMapper, SLOT(map()));
+        connect(pListener, SIGNAL(switchToWidget()),&m_showMapper, SLOT(map()));
+        connect(pListener, SIGNAL(hideWidget()),&m_hideMapper, SLOT(map()));
         connect(this, SIGNAL(currentChanged(int)),pListener, SLOT(onCurrentWidgetChanged(int)));
     }
-    if (m_currentPageControl->get() == index) {
         // The value in the current page control overrides whatever initial
         // values the individual page triggers may have.
-        setCurrentIndex(index);
-    }
+    if (m_currentPageControl->get() == index) {setCurrentIndex(index);}
     if (on_hide_select != -1) {m_hideMap[index] = on_hide_select;}
 }
-
 bool WWidgetStack::event(QEvent* pEvent) {
-    if (pEvent->type() == QEvent::ToolTip) {
-        updateTooltip();
-    }
+    if (pEvent->type() == QEvent::ToolTip) {updateTooltip();}
     return QFrame::event(pEvent);
 }

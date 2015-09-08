@@ -75,7 +75,7 @@ BpmControl::BpmControl(QString group,
             Qt::DirectConnection);
 
     // Pick a wide range (1 to 200) and allow out of bounds sets. This lets you
-    // map a soft-takeover MIDI knob to the BPM. This also creates bpm_up and
+    // map a soft-takeover knob to the BPM. This also creates bpm_up and
     // bpm_down controls.
     // bpm_up / bpm_down steps by 1
     // bpm_up_small / bpm_down_small steps by 0.1

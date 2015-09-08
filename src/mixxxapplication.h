@@ -11,17 +11,12 @@ class MixxxApplication : public QApplication {
   public:
     MixxxApplication(int& argc, char** argv);
     virtual ~MixxxApplication();
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-    virtual bool notify(QObject*, QEvent*);
-#endif
-
   private:
     bool touchIsRightButton();
-
-    int m_fakeMouseSourcePointId;
-    QWidget* m_fakeMouseWidget;
-    enum Qt::MouseButton m_activeTouchButton;
-    ControlObjectSlave* m_pTouchShift;
+    int m_fakeMouseSourcePointId = 0;
+    QWidget* m_fakeMouseWidget = nullptr;
+    enum Qt::MouseButton m_activeTouchButton = Qt::NoButton;
+    ControlObjectSlave* m_pTouchShift = nullptr;
 
 };
 

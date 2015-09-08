@@ -243,35 +243,25 @@ void ControlValueDelegate::setEditorData(QWidget* editor,
     comboBox->setCurrentIndex(comboBox->findText(value));
 }
 
-void ControlValueDelegate::setModelData(QWidget* editor, QAbstractItemModel* model,
-                                        const QModelIndex& index) const {
+void ControlValueDelegate::setModelData(QWidget* editor, QAbstractItemModel* model,const QModelIndex& index) const {
     QString midiType = 0;
     QComboBox *comboBox = static_cast<QComboBox*>(editor);
     //comboBox->interpretText();
-
     //Get the text from the combobox and shoot it into the data model.
     QString text = comboBox->currentText();
-
     model->setData(index, text, Qt::EditRole);
 }
-
-void ControlValueDelegate::updateEditorGeometry(QWidget* editor,
-                                                const QStyleOptionViewItem& option,
-                                                const QModelIndex& /* index */) const {
+void ControlValueDelegate::updateEditorGeometry(QWidget* editor,const QStyleOptionViewItem& option,const QModelIndex& /* index */) const {
     editor->setGeometry(option.rect);
 }
-
 /** Verify that the currently selected ControlValue is valid for some given controlGroup.
     When the controlGroup is changed in the neighbouring column, the existing ControlValue
     might not be valid any more, so we need to clear it if that's the case.
     @param controlGroup The group that has just been selected and should be verified against.
     @param index The model index of the ControlValue.
 */
-bool ControlValueDelegate::verifyControlValueValidity(QString controlGroup,
-                                                      QAbstractItemModel* model,
-                                                      const QModelIndex& index) {
+bool ControlValueDelegate::verifyControlValueValidity(QString controlGroup,QAbstractItemModel* model,const QModelIndex& index) {
     QString value = index.data().value<QString>();
-
     if (controlGroup == CONTROLGROUP_CHANNEL1_STRING ||
         controlGroup == CONTROLGROUP_CHANNEL2_STRING ||
         controlGroup == CONTROLGROUP_SAMPLER1_STRING ||

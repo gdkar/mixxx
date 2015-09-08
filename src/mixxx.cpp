@@ -152,25 +152,16 @@ void MixxxMainWindow::initalize(QApplication* pApp, const CmdlineArgs& args) {
     qRegisterMetaType<TrackId>("TrackId");
     qRegisterMetaType<QSet<TrackId>>("QSet<TrackId>");
     qRegisterMetaType<TrackPointer>("TrackPointer");
-
     ScopedTimer t("MixxxMainWindow::MixxxMainWindow");
     m_runtime_timer.start();
     Time::start();
-
     Sandbox::initialize(QDir(m_pConfig->getSettingsPath()).filePath("sandbox.cfg"));
-
     // Only record stats in developer mode.
-    if (m_cmdLineArgs.getDeveloper()) {
-        StatsManager::create();
-    }
-
+    if (m_cmdLineArgs.getDeveloper()) {StatsManager::create();}
     QString resourcePath = m_pConfig->getResourcePath();
     initializeTranslations(pApp);
-
     initializeFonts(); // takes a long time
-
     launchProgress(2);
-
     // Set the visibility of tooltips, default "1" = ON
     m_toolTipsCfg = m_pConfig->getValueString(ConfigKey("[Controls]", "Tooltips"), "1").toInt();
 
@@ -179,146 +170,101 @@ void MixxxMainWindow::initalize(QApplication* pApp, const CmdlineArgs& args) {
 
     setAttribute(Qt::WA_AcceptTouchEvents);
     m_pTouchShift = new ControlPushButton(ConfigKey("[Controls]", "touch_shift"));
-
     // Create the Effects subsystem.
     m_pEffectsManager = new EffectsManager(this, m_pConfig);
-
     // Starting the master (mixing of the channels and effects):
     m_pEngine = new EngineMaster(m_pConfig, "[Master]", m_pEffectsManager, true, true);
-
     // Create effect backends. We do this after creating EngineMaster to allow
     // effect backends to refer to controls that are produced by the engine.
     NativeBackend* pNativeBackend = new NativeBackend(m_pEffectsManager);
     m_pEffectsManager->addEffectsBackend(pNativeBackend);
-
     // Sets up the default EffectChains and EffectRacks (long)
     m_pEffectsManager->setupDefaults();
-
     launchProgress(8);
-
     m_pRecordingManager = new RecordingManager(m_pConfig, m_pEngine);
 #ifdef __SHOUTCAST__
     m_pShoutcastManager = new ShoutcastManager(m_pConfig, m_pEngine);
 #endif
-
     // Initialize player device
     // while this is created here, setupDevices needs to be called sometime
     // after the players are added to the engine (as is done currently) -- bkgood
     // (long)
     m_pSoundManager = new SoundManager(m_pConfig, m_pEngine);
-
     launchProgress(11);
     // TODO(rryan): Fold microphone and aux creation into a manager
     // (e.g. PlayerManager, though they aren't players).
-
-    ControlObject* pNumMicrophones = new ControlObject(ConfigKey("[Master]", "num_microphones"));
+    auto pNumMicrophones = new ControlObject(ConfigKey("[Master]", "num_microphones"));
     pNumMicrophones->setParent(this);
-
     for (int i = 0; i < kMicrophoneCount; ++i) {
         QString group("[Microphone]");
-        if (i > 0) {
-            group = QString("[Microphone%1]").arg(i + 1);
-        }
-        ChannelHandleAndGroup channelGroup =
-                m_pEngine->registerChannelGroup(group);
-        EngineMicrophone* pMicrophone =
-                new EngineMicrophone(channelGroup, m_pEffectsManager);
-
+        if (i > 0) { group = QString("[Microphone%1]").arg(i + 1);}
+        auto channelGroup = m_pEngine->registerChannelGroup(group);
+        auto pMicrophone = new EngineMicrophone(channelGroup, m_pEffectsManager);
         // What should channelbase be?
-        AudioInput micInput = AudioInput(AudioPath::MICROPHONE, 0, 0, i);
+        auto micInput = AudioInput(AudioPath::MICROPHONE, 0, 0, i);
         m_pEngine->addChannel(pMicrophone);
         m_pSoundManager->registerInput(micInput, pMicrophone);
         pNumMicrophones->set(pNumMicrophones->get() + 1);
     }
-
     m_pNumAuxiliaries = new ControlObject(ConfigKey("[Master]", "num_auxiliaries"));
-
     m_PassthroughMapper = new QSignalMapper(this);
-    connect(m_PassthroughMapper, SIGNAL(mapped(int)),
-            this, SLOT(slotControlPassthrough(int)));
-
+    connect(m_PassthroughMapper, SIGNAL(mapped(int)),this, SLOT(slotControlPassthrough(int)));
     m_AuxiliaryMapper = new QSignalMapper(this);
-    connect(m_AuxiliaryMapper, SIGNAL(mapped(int)),
-            this, SLOT(slotControlAuxiliary(int)));
-
+    connect(m_AuxiliaryMapper, SIGNAL(mapped(int)),this, SLOT(slotControlAuxiliary(int)));
     for (int i = 0; i < kAuxiliaryCount; ++i) {
-        QString group = QString("[Auxiliary%1]").arg(i + 1);
-        ChannelHandleAndGroup channelGroup = m_pEngine->registerChannelGroup(group);
-        EngineAux* pAux = new EngineAux(channelGroup, m_pEffectsManager);
-
+        auto group = QString("[Auxiliary%1]").arg(i + 1);
+        auto channelGroup = m_pEngine->registerChannelGroup(group);
+        auto pAux = new EngineAux(channelGroup, m_pEffectsManager);
         // What should channelbase be?
-        AudioInput auxInput = AudioInput(AudioPath::AUXILIARY, 0, 0, i);
+        auto auxInput = AudioInput(AudioPath::AUXILIARY, 0, 0, i);
         m_pEngine->addChannel(pAux);
         m_pSoundManager->registerInput(auxInput, pAux);
         m_pNumAuxiliaries->set(m_pNumAuxiliaries->get() + 1);
-
-        m_pAuxiliaryPassthrough.push_back(
-                new ControlObjectSlave(group, "passthrough"));
-        ControlObjectSlave* auxiliary_passthrough =
-                m_pAuxiliaryPassthrough.back();
-
+        m_pAuxiliaryPassthrough.push_back(new ControlObjectSlave(group, "passthrough"));
+        auto auxiliary_passthrough =m_pAuxiliaryPassthrough.back();
         // These non-vinyl passthrough COs have their index offset by the max
         // number of vinyl inputs.
         m_AuxiliaryMapper->setMapping(auxiliary_passthrough, i);
-        auxiliary_passthrough->connectValueChanged(m_AuxiliaryMapper,
-                                                   SLOT(map()));
+        auxiliary_passthrough->connectValueChanged(m_AuxiliaryMapper,SLOT(map()));
     }
-
     // Do not write meta data back to ID3 when meta data has changed
     // Because multiple TrackDao objects can exists for a particular track
     // writing meta data may ruin your MP3 file if done simultaneously.
     // see Bug #728197
     // For safety reasons, we deactivate this feature.
     m_pConfig->set(ConfigKey("[Library]","WriteAudioTags"), ConfigValue(0));
-
     // library dies in seemingly unrelated qtsql error about not having a
     // sqlite driver if this path doesn't exist. Normally config->Save()
     // above would make it but if it doesn't get run for whatever reason
     // we get hosed -- bkgood
-    if (!QDir(args.getSettingsPath()).exists()) {
-        QDir().mkpath(args.getSettingsPath());
-    }
-
+    if (!QDir(args.getSettingsPath()).exists()) {QDir().mkpath(args.getSettingsPath());}
     m_pGuiTick = new GuiTick();
-
 #ifdef __VINYLCONTROL__
     m_pVCManager = new VinylControlManager(this, m_pConfig, m_pSoundManager);
 #else
-    m_pVCManager = NULL;
+    m_pVCManager = nullptr;
 #endif
-
     // Create the player manager. (long)
-    m_pPlayerManager = new PlayerManager(m_pConfig, m_pSoundManager,
-                                         m_pEffectsManager, m_pEngine);
+    m_pPlayerManager = new PlayerManager(m_pConfig, m_pSoundManager,m_pEffectsManager, m_pEngine);
     m_pPlayerManager->addConfiguredDecks();
     m_pPlayerManager->addSampler();
     m_pPlayerManager->addSampler();
     m_pPlayerManager->addSampler();
     m_pPlayerManager->addSampler();
     m_pPlayerManager->addPreviewDeck();
-
     launchProgress(30);
-
 #ifdef __VINYLCONTROL__
     m_pVCManager->init();
 #endif
-
     m_pNumDecks = new ControlObjectSlave(ConfigKey("[Master]", "num_decks"));
     m_pNumDecks->connectValueChanged(this, SLOT(slotNumDecksChanged(double)));
-
     CoverArtCache::create();
-
     // (long)
-    m_pLibrary = new Library(this, m_pConfig,
-                             m_pPlayerManager,
-                             m_pRecordingManager);
+    m_pLibrary = new Library(this, m_pConfig,m_pPlayerManager,m_pRecordingManager);
     m_pPlayerManager->bindToLibrary(m_pLibrary);
-
     launchProgress(35);
-
     // Get Music dir
     bool hasChanged_MusicDir = false;
-
     QStringList dirs = m_pLibrary->getDirs();
     if (dirs.size() < 1) {
         // TODO(XXX) this needs to be smarter, we can't distinguish between an empty
@@ -337,67 +283,46 @@ void MixxxMainWindow::initalize(QApplication* pApp, const CmdlineArgs& args) {
             hasChanged_MusicDir = true;
         }
     }
-
     // Call inits to invoke all other construction parts
-
     // Intialize default BPM system values
-    if (m_pConfig->getValueString(ConfigKey("[BPM]", "BPMRangeStart"))
-            .length() < 1) {
+    if (m_pConfig->getValueString(ConfigKey("[BPM]", "BPMRangeStart")).length() < 1) {
         m_pConfig->set(ConfigKey("[BPM]", "BPMRangeStart"),ConfigValue(65));
     }
-
-    if (m_pConfig->getValueString(ConfigKey("[BPM]", "BPMRangeEnd"))
-            .length() < 1) {
+    if (m_pConfig->getValueString(ConfigKey("[BPM]", "BPMRangeEnd")).length() < 1) {
         m_pConfig->set(ConfigKey("[BPM]", "BPMRangeEnd"),ConfigValue(135));
     }
-
-    if (m_pConfig->getValueString(ConfigKey("[BPM]", "AnalyzeEntireSong"))
-            .length() < 1) {
+    if (m_pConfig->getValueString(ConfigKey("[BPM]", "AnalyzeEntireSong")).length() < 1) {
         m_pConfig->set(ConfigKey("[BPM]", "AnalyzeEntireSong"),ConfigValue(1));
     }
-
     // Initialize controller sub-system,
     // but do not set up controllers until the end of the application startup
     // (long)
     qDebug() << "Creating ControllerManager";
     m_pControllerManager = new ControllerManager(m_pConfig);
-
     launchProgress(47);
-
     WaveformWidgetFactory::create(); // takes a long time
     WaveformWidgetFactory::instance()->startVSync(this);
     WaveformWidgetFactory::instance()->setConfig(m_pConfig);
-
     launchProgress(52);
-
-    connect(this, SIGNAL(newSkinLoaded()),
-            this, SLOT(onNewSkinLoaded()));
-    connect(this, SIGNAL(newSkinLoaded()),
-            m_pLibrary, SLOT(onSkinLoadFinished()));
-
+    connect(this, SIGNAL(newSkinLoaded()),this, SLOT(onNewSkinLoaded()));
+    connect(this, SIGNAL(newSkinLoaded()),m_pLibrary, SLOT(onSkinLoadFinished()));
     // Initialize preference dialog
     m_pPrefDlg = new DlgPreferences(this, m_pSkinLoader, m_pSoundManager, m_pPlayerManager,
                                     m_pControllerManager, m_pVCManager, m_pEffectsManager,
                                     m_pConfig, m_pLibrary);
     m_pPrefDlg->setWindowIcon(QIcon(":/images/ic_mixxx_window.png"));
     m_pPrefDlg->setHidden(true);
-
     launchProgress(60);
-
     initializeKeyboard();
     initActions();
     populateMenuBar(); // already inited in the constructor
-
     // Before creating the first skin we need to create a QGLWidget so that all
     // the QGLWidget's we create can use it as a shared QGLContext.
     QGLWidget* pContextWidget = new QGLWidget(this);
     pContextWidget->hide();
     SharedGLContext::setWidget(pContextWidget);
-
     launchProgress(63);
-
     QWidget* oldWidget = m_pWidgetParent;
-
     // Load skin to a QWidget that we set as the central widget. Assignment
     // intentional in next line.
     if (!(m_pWidgetParent = m_pSkinLoader->loadDefaultSkin(this, m_pKeyboard,
@@ -406,71 +331,46 @@ void MixxxMainWindow::initalize(QApplication* pApp, const CmdlineArgs& args) {
                                                            m_pLibrary,
                                                            m_pVCManager,
                                                            m_pEffectsManager))) {
-        reportCriticalErrorAndQuit(
-                "default skin cannot be loaded see <b>mixxx</b> trace for more information.");
-
+        reportCriticalErrorAndQuit("default skin cannot be loaded see <b>mixxx</b> trace for more information.");
         m_pWidgetParent = oldWidget;
         //TODO (XXX) add dialog to warn user and launch skin choice page
     }
-
     // Fake a 100 % progress here.
     // At a later place it will newer shown up, since it is
     // immediately replaced by the real widget.
     launchProgress(100);
-
     // Check direct rendering and warn user if they don't have it
     checkDirectRendering();
-
     // Install an event filter to catch certain QT events, such as tooltips.
     // This allows us to turn off tooltips.
     pApp->installEventFilter(this); // The eventfilter is located in this
                                     // Mixxx class as a callback.
-
     // If we were told to start in fullscreen mode on the command-line or if
     // user chose always starts in fullscreen mode, then turn on fullscreen
     // mode.
-    bool fullscreenPref = m_pConfig->getValueString(
-            ConfigKey("[Config]", "StartInFullscreen"), "0").toInt();
-    if (args.getStartInFullscreen() || fullscreenPref) {
-        slotViewFullScreen(true);
-    }
+    bool fullscreenPref = m_pConfig->getValueString(ConfigKey("[Config]", "StartInFullscreen"), "0").toInt();
+    if (args.getStartInFullscreen() || fullscreenPref) {slotViewFullScreen(true);}
     emit(newSkinLoaded());
-
     // Wait until all other ControlObjects are set up before initializing
     // controllers
     m_pControllerManager->setUpDevices();
-
     // Scan the library for new files and directories
-    bool rescan = m_pConfig->getValueString(
-            ConfigKey("[Library]","RescanOnStartup")).toInt();
+    bool rescan = m_pConfig->getValueString(ConfigKey("[Library]","RescanOnStartup")).toInt();
     // rescan the library if we get a new plugin
     QSet<QString> prev_plugins = QSet<QString>::fromList(
-            m_pConfig->getValueString(
-                    ConfigKey("[Library]", "SupportedFileExtensions")).split(
-                    ",", QString::SkipEmptyParts));
-    QSet<QString> curr_plugins = QSet<QString>::fromList(
-        SoundSourceProxy::getSupportedFileExtensions());
+            m_pConfig->getValueString(ConfigKey("[Library]", "SupportedFileExtensions")).split(",", QString::SkipEmptyParts));
+    QSet<QString> curr_plugins = QSet<QString>::fromList(SoundSourceProxy::getSupportedFileExtensions());
     rescan = rescan || (prev_plugins != curr_plugins);
     m_pConfig->set(ConfigKey("[Library]", "SupportedFileExtensions"),
             QStringList(SoundSourceProxy::getSupportedFileExtensions()).join(","));
-
     // Scan the library directory. Initialize this after the skinloader has
     // loaded a skin, see Bug #1047435
-    m_pLibraryScanner = new LibraryScanner(this,
-                                           m_pLibrary->getTrackCollection(),
-                                           m_pConfig);
-    connect(m_pLibraryScanner, SIGNAL(scanFinished()),
-            this, SLOT(slotEnableRescanLibraryAction()));
-
+    m_pLibraryScanner = new LibraryScanner(this,m_pLibrary->getTrackCollection(),m_pConfig);
+    connect(m_pLibraryScanner, SIGNAL(scanFinished()),this, SLOT(slotEnableRescanLibraryAction()));
     // Refresh the library models when the library (re)scan is finished.
-    connect(m_pLibraryScanner, SIGNAL(scanFinished()),
-            m_pLibrary, SLOT(slotRefreshLibraryModels()));
-
-    if (rescan || hasChanged_MusicDir || m_pUpgrader->rescanLibrary()) {
-        m_pLibraryScanner->scan();
-    }
+    connect(m_pLibraryScanner, SIGNAL(scanFinished()),m_pLibrary, SLOT(slotRefreshLibraryModels()));
+    if (rescan || hasChanged_MusicDir || m_pUpgrader->rescanLibrary()) {m_pLibraryScanner->scan();}
     slotNumDecksChanged(m_pNumDecks->get());
-
     // Try open player device If that fails, the preference panel is opened.
     int setupDevices = m_pSoundManager->setupDevices();
     unsigned int numDevices = m_pSoundManager->getConfig().getOutputs().count();
@@ -480,42 +380,31 @@ void MixxxMainWindow::initalize(QApplication* pApp, const CmdlineArgs& args) {
         // Exit when we press the Exit button in the noSoundDlg dialog
         // only call it if setupDevices != OK
         if (setupDevices != OK) {
-            if (noSoundDlg() != 0) {
-                exit(0);
-            }
+            if (noSoundDlg() != 0) {exit(0);}
         } else if (numDevices == 0) {
             bool continueClicked = false;
             int noOutput = noOutputDlg(&continueClicked);
             if (continueClicked) break;
-            if (noOutput != 0) {
-                exit(0);
-            }
+            if (noOutput != 0) {exit(0);}
         }
         setupDevices = m_pSoundManager->setupDevices();
         numDevices = m_pSoundManager->getConfig().getOutputs().count();
     }
-
     // Load tracks in args.qlMusicFiles (command line arguments) into player
     // 1 and 2:
     const QList<QString>& musicFiles = args.getMusicFiles();
-    for (int i = 0; i < (int)m_pPlayerManager->numDecks()
-            && i < musicFiles.count(); ++i) {
+    for (int i = 0; i < (int)m_pPlayerManager->numDecks()&& i < musicFiles.count(); ++i) {
         if (SoundSourceProxy::isFileNameSupported(musicFiles.at(i))) {
             m_pPlayerManager->slotLoadToDeck(musicFiles.at(i), i+1);
         }
     }
-
-    connect(&PlayerInfo::instance(),
-            SIGNAL(currentPlayingTrackChanged(TrackPointer)),
-            this, SLOT(slotUpdateWindowTitle(TrackPointer)));
-
+    connect(&PlayerInfo::instance(),SIGNAL(currentPlayingTrackChanged(TrackPointer)),this, SLOT(slotUpdateWindowTitle(TrackPointer)));
     // this has to be after the OpenGL widgets are created or depending on a
     // million different variables the first waveform may be horribly
     // corrupted. See bug 521509 -- bkgood ?? -- vrince
     setCentralWidget(m_pWidgetParent);
     // The old central widget is automatically disposed.
 }
-
 void MixxxMainWindow::finalize() {
     // TODO(rryan): Get rid of QTime here.
     QTime qTime;
@@ -1234,7 +1123,7 @@ void MixxxMainWindow::initActions()
             this, SLOT(slotOptionsKeyboard(bool)));
 
     QString preferencesTitle = tr("&Preferences");
-    QString preferencesText = tr("Change Mixxx settings (e.g. playback, MIDI, controls)");
+    QString preferencesText = tr("Change Mixxx settings (e.g. playback, controls)");
     m_pOptionsPreferences = new QAction(preferencesTitle, this);
 #ifdef __APPLE__
     m_pOptionsPreferences->setShortcut(

@@ -23,13 +23,16 @@
 #ifdef __LINUX__
 #include <QLibrary>
 #endif
-
+#include <memory>
+#include <utility>
+#include <algorithm>
 #include "sounddeviceportaudio.h"
 
 #include "soundmanager.h"
 #include "sounddevice.h"
 #include "soundmanagerutil.h"
 #include "controlobject.h"
+#include "controlobjectslave.h"
 #include "visualplayposition.h"
 #include "util/timer.h"
 #include "util/trace.h"
@@ -147,9 +150,8 @@ Result SoundDevicePortAudio::open(bool isClkRefDevice, int syncBuffers) {
     m_syncBuffers = syncBuffers;
     //Create the callback function pointer.
     PaStreamCallback* callback = nullptr;
-    if (isClkRefDevice) {
-        callback = paV19CallbackClkRef;
-    } else if (m_syncBuffers == 2) {
+    if (isClkRefDevice) {callback = paV19CallbackClkRef;}
+    else if (m_syncBuffers == 2) {
         callback = paV19CallbackDrift;
         // to avoid overflows when one callback overtakes the other or
         // when there is a clock drift compared to the clock reference device
@@ -169,19 +171,11 @@ Result SoundDevicePortAudio::open(bool isClkRefDevice, int syncBuffers) {
     } else if (m_syncBuffers == 1) {
         // this can be used on a second device when it id driven by the Clock reference device clock
         callback = paV19Callback;
-        if (m_outputParams.channelCount) {
-            m_outputFifo = new FIFO<CSAMPLE>(m_outputParams.channelCount * m_framesPerBuffer);
-        }
-        if (m_inputParams.channelCount) {
-            m_inputFifo = new FIFO<CSAMPLE>(m_inputParams.channelCount * m_framesPerBuffer);
-        }
+        if (m_outputParams.channelCount) {m_outputFifo = new FIFO<CSAMPLE>(m_outputParams.channelCount * m_framesPerBuffer);}
+        if (m_inputParams.channelCount) {m_inputFifo = new FIFO<CSAMPLE>(m_inputParams.channelCount * m_framesPerBuffer);}
     } else if (m_syncBuffers == 0) {
-        if (m_outputParams.channelCount) {
-            m_outputFifo = new FIFO<CSAMPLE>(m_outputParams.channelCount * m_framesPerBuffer * 2);
-        }
-        if (m_inputParams.channelCount) {
-            m_inputFifo = new FIFO<CSAMPLE>(m_inputParams.channelCount * m_framesPerBuffer * 2);
-        }
+        if (m_outputParams.channelCount) {m_outputFifo = new FIFO<CSAMPLE>(m_outputParams.channelCount * m_framesPerBuffer * 2);}
+        if (m_inputParams.channelCount) {m_inputFifo = new FIFO<CSAMPLE>(m_inputParams.channelCount * m_framesPerBuffer * 2);}
     }
     PaStream *pStream = nullptr;
     // Try open device using iChannelMax

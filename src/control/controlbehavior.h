@@ -2,11 +2,7 @@
 #define CONTROLBEHAVIOR_H
 
 #include <QTimer>
-
-#include "controllers/midi/midimessage.h"
-
 class ControlDoublePrivate;
-
 class ControlNumericBehavior {
   public:
     virtual ~ControlNumericBehavior() { };
@@ -14,7 +10,6 @@ class ControlNumericBehavior {
     // be changed.
     virtual bool setFilter(double* dValue);
     virtual double valueToParameter(double dValue);
-    virtual double midiValueToParameter(double midiValue);
     virtual double parameterToValue(double dParam);
     virtual void setValueFromParameter(double dParam, ControlDoublePrivate* pControl);
 };
@@ -24,7 +19,6 @@ class ControlPotmeterBehavior : public ControlNumericBehavior {
     virtual ~ControlPotmeterBehavior();
     virtual bool setFilter(double* dValue);
     virtual double valueToParameter(double dValue);
-    virtual double midiValueToParameter(double midiValue);
     virtual double parameterToValue(double dParam);
   protected:
     double m_dMinValue;
@@ -53,7 +47,6 @@ class ControlAudioTaperPotBehavior : public ControlPotmeterBehavior {
     virtual ~ControlAudioTaperPotBehavior();
     virtual double valueToParameter(double dValue);
     virtual double parameterToValue(double dParam);
-    virtual double midiValueToParameter(double midiValue);
     virtual void setValueFromParameter(double dParam, ControlDoublePrivate* pControl);
   protected:
     // a knob position between 0 and 1 where the gain is 1 (0dB)
@@ -65,10 +58,6 @@ class ControlAudioTaperPotBehavior : public ControlPotmeterBehavior {
     double m_maxDB;
     // offset at knob position 0 (Parameter = 0) to reach -Infinity
     double m_offset;
-    // ensures that the neutral position on a integer midi value
-    // This value is subtracted from the Midi value at neutral position
-    // and is allways < 1
-    double m_midiCorrection;
 };
 class ControlTTRotaryBehavior : public ControlNumericBehavior {
   public:

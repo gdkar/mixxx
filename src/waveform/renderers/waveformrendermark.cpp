@@ -5,6 +5,7 @@
 #include "waveform/renderers/waveformrendermark.h"
 
 #include "controlobjectslave.h"
+#include "controlobject.h"
 #include "trackinfoobject.h"
 #include "waveform/renderers/waveformwidgetrenderer.h"
 #include "waveform/waveform.h"

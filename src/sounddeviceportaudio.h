@@ -33,6 +33,9 @@ class SoundManager;
     tell us if ALSA is compiled into it or not. */
 typedef int (*EnableAlsaRT)(PaStream* s, int enable);
 
+class ControlObject;
+class ControlObjectSlave;
+
 class SoundDevicePortAudio : public SoundDevice {
   public:
     SoundDevicePortAudio(ConfigObject<ConfigValue> *config,

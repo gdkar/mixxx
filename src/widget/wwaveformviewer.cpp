@@ -102,7 +102,7 @@ void WWaveformViewer::mouseMoveEvent(QMouseEvent* event) {
     } else if (m_bBending) {
         QPoint diff = event->pos() - m_mouseAnchor;
         // Start at the middle of [0.0, 1.0], and emit values based on how far
-        // the mouse has traveled horizontally. Note, for legacy (MIDI) reasons,
+        // the mouse has traveled horizontally. Note, for legacy reasons,
         // this is tuned to 127.
         // NOTE(rryan): This is basically a direct connection to the "wheel"
         // control since we manually connect it in LegacySkinParser regardless

@@ -128,13 +128,8 @@ class DlgPreferences : public QDialog, public Ui::DlgPreferencesDlg {
     QTreeWidgetItem* m_pVinylControlButton;
     QTreeWidgetItem* m_pShoutcastButton;
     QTreeWidgetItem* m_pReplayGainButton;
-#ifdef __MODPLUG__
-    QTreeWidgetItem* m_pModplugButton;
-#endif
     QTreeWidgetItem* m_pControllerTreeItem;
-
     QSize m_pageSizeHint;
-
     ControlPushButton* m_preferencesUpdated;
 };
 

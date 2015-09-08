@@ -17,7 +17,7 @@ class EngineSync;
 class InternalClock : public QObject, public Clock, public Syncable {
     Q_OBJECT
   public:
-    InternalClock(const char* pGroup, SyncableListener* pEngineSync);
+    InternalClock(const char* pGroup, SyncableListener* pEngineSync, QObject *pParent=nullptr);
     virtual ~InternalClock();
 
     const QString& getGroup() const {

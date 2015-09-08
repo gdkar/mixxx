@@ -23,7 +23,6 @@
 #include <QMutex>
 
 #include "configobject.h"
-#include "controllers/midi/midimessage.h"
 #include "control/control.h"
 
 class ControlObject : public QObject {

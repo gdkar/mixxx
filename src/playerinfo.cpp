@@ -18,6 +18,7 @@
 
 #include "playerinfo.h"
 #include "controlobject.h"
+#include "controlobjectslave.h"
 #include "engine/enginechannel.h"
 #include "engine/enginexfader.h"
 #include "playermanager.h"
@@ -56,10 +57,9 @@ void PlayerInfo::setTrackInfo(const QString& group, const TrackPointer& track) {
 }
 bool PlayerInfo::isTrackLoaded(const TrackPointer& pTrack) const {
     QMutexLocker locker(&m_mutex);
-    for ( auto ptr : m_loadedTrackMap )
-    {
-      if ( ptr == pTrack ) return true;
-    }
+    for ( auto ptr : m_loadedTrackMap ) 
+      if ( ptr == pTrack ) 
+        return true;
     return false;
 }
 QMap<QString, TrackPointer> PlayerInfo::getLoadedTracks() {
@@ -70,9 +70,7 @@ QMap<QString, TrackPointer> PlayerInfo::getLoadedTracks() {
 bool PlayerInfo::isFileLoaded(const QString& track_location) const {
     QMutexLocker locker(&m_mutex);
     for(auto pTrack : m_loadedTrackMap ) {
-        if (pTrack && pTrack->getLocation() == track_location ) {
-          return true;
-        }
+        if (pTrack && pTrack->getLocation() == track_location ) {return true;}
     }
     return false;
 }
@@ -85,14 +83,14 @@ void PlayerInfo::updateCurrentPlayingDeck() {
     double maxVolume = 0;
     int maxDeck = -1;
     for (int i = 0; i < (int)PlayerManager::numDecks(); ++i) {
-        DeckControls* pDc = getDeckControls(i);
-        if (pDc->m_play.get() == 0.0) { continue; }
-        if (pDc->m_pregain.get() <= 0.5) { continue; }
-        auto fvol = pDc->m_volume.get();
+        auto pDc = getDeckControls(i);
+        if (pDc->m_play->get() == 0.0) { continue; }
+        if (pDc->m_pregain->get() <= 0.5) { continue; }
+        auto fvol = pDc->m_volume->get();
         if (fvol == 0.0) { continue;}
         double xfl, xfr;
         EngineXfader::getXfadeGains(m_pCOxfader->get(), 1.0, 0.0, false, false, &xfl, &xfr);
-        int orient = pDc->m_orientation.get();
+        int orient = pDc->m_orientation->get();
         double xfvol;
         if (orient == EngineChannel::LEFT) {
             xfvol = xfl;
@@ -123,29 +121,22 @@ TrackPointer PlayerInfo::getCurrentPlayingTrack() {
     if (deck >= 0) {return getTrackInfo(PlayerManager::groupForDeck(deck));}
     return TrackPointer();
 }
-PlayerInfo::DeckControls* PlayerInfo::getDeckControls(int i) {
+DeckControls* PlayerInfo::getDeckControls(int i) {
     if (m_deckControlList.count() == i) {
         QString group = PlayerManager::groupForDeck(i);
-        m_deckControlList.append(new DeckControls(group));
+        m_deckControlList.append(new DeckControls(group,this));
     }
     return m_deckControlList[i];
 }
-PlayerInfo::DeckControls::DeckControls(QString &group)
-  :m_play(new ControlObjectSlave(group,"play"))
-  ,m_pregain(new ControlObjectSlave(group,"pregain"))
-  ,m_volume(new ControlObjectSlave(group,"volume"))
-  ,m_orientation(new ControlObjectSlave(group,"orientation"))
+DeckControls::DeckControls(QString &group, QObject *pParent)
+  : QObject(pParent)
+  ,m_play(new ControlObjectSlave(ConfigKey{group,"play"},this))
+  ,m_pregain(new ControlObjectSlave(ConfigKey{group,"pregain"},this))
+  ,m_volume(new ControlObjectSlave(ConfigKey{group,"volume"},this))
+  ,m_orientation(new ControlObjectSlave(ConfigKey{group,"orientation"},this))
 {}
-PlayerInfo::DeckControls::~DeckControls()
-{
-  delete m_play;
-  delete m_pregain;
-  delete m_volume;
-  delete m_orientation;
-}
+DeckControls::~DeckControls() = default;
 void PlayerInfo::clearControlCache() {
-    for (int i = 0; i < m_deckControlList.count(); ++i) {
-        delete m_deckControlList[i];
-    }
+    for (int i = 0; i < m_deckControlList.count(); ++i) {delete m_deckControlList[i];}
     m_deckControlList.clear();
 }

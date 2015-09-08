@@ -64,7 +64,7 @@ class ControlParameterWidgetConnection : public ControlWidgetConnection {
     void Init();
     QString toDebugString() const;
     virtual int getDirectionOption() const;
-    virtual int getEmitOption() const { return m_emitOption; };
+    virtual int getEmitOption() const ;
     virtual void setDirectionOption(enum DirectionOption v);
     virtual void setEmitOption(enum EmitOption v);
     void resetControl();

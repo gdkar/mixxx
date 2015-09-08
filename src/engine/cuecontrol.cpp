@@ -567,7 +567,7 @@ void CueControl::hotcuePositionChanged(HotcueControl* pControl, double newPositi
             detachCue(pControl->getHotcueNumber());
         } else if (newPosition > 0 && newPosition < m_pTrackSamples->get()) {
             int position = newPosition;
-            // People writing from MIDI land, elsewhere might be careless.
+            // People writing from controller land, elsewhere might be careless.
             if (position % 2 != 0) {
                 position--;
             }

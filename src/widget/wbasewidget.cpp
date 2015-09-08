@@ -26,6 +26,29 @@ WBaseWidget::~WBaseWidget() {
         delete m_propertyConnections.takeLast();
     }
 }
+QWidget *WBaseWidget::toQWidget()
+{
+  return m_pWidget;
+}
+void WBaseWidget::appendBaseTooltip(const QString& tooltip) {
+    m_baseTooltip.append(tooltip);
+    m_pWidget->setToolTip(m_baseTooltip);
+}
+
+void WBaseWidget::prependBaseTooltip(const QString& tooltip) {
+    m_baseTooltip.prepend(tooltip);
+    m_pWidget->setToolTip(m_baseTooltip);
+}
+
+void WBaseWidget::setBaseTooltip(const QString& tooltip) {
+    m_baseTooltip = tooltip;
+    m_pWidget->setToolTip(tooltip);
+}
+
+QString WBaseWidget::baseTooltip() const {
+    return m_baseTooltip;
+}
+void WBaseWidget::onConnectedControlChanged(double dParameter, double dValue) {}
 
 void WBaseWidget::Init() {
     if (m_pDisplayConnection) {

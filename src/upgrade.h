@@ -17,12 +17,11 @@
 
 #ifndef UPGRADE_H
 #define UPGRADE_H
-
 class Upgrade
 {
     public:
         Upgrade();
-        ~Upgrade();
+        virtual ~Upgrade();
         ConfigObject<ConfigValue>* versionUpgrade(const QString& settingsPath);
         static QString mixxx17HomePath();
         bool isFirstRun() { return m_bFirstRun; };
@@ -31,9 +30,8 @@ class Upgrade
     private:
         bool askReanalyzeBeats();
         bool askReScanLibrary();
-        bool m_bFirstRun;
-        bool m_bUpgraded;
-        bool m_bRescanLibrary;
+        bool m_bFirstRun      = false;
+        bool m_bUpgraded      = false;
+        bool m_bRescanLibrary = false;
 };
-
 #endif
