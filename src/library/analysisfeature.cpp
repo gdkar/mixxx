@@ -7,7 +7,7 @@
 #include "library/analysisfeature.h"
 #include "library/librarytablemodel.h"
 #include "library/trackcollection.h"
-#include "dlganalysis.h"
+#include "preferences/dlganalysis.h"
 #include "widget/wlibrary.h"
 #include "anqueue/analyserqueue.h"
 #include "soundsourceproxy.h"

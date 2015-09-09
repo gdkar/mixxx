@@ -15,7 +15,7 @@
 #include "library/libraryfeature.h"
 #include "configobject.h"
 #include "treeitemmodel.h"
-#include "dlganalysis.h"
+#include "preferences/dlganalysis.h"
 
 class AnalyserQueue;
 class TrackCollection;
