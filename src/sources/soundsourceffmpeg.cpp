@@ -26,6 +26,21 @@ QStringList SoundSourceProviderFFmpeg::getSupportedFileExtensions() const {
     }
     return list;
 }
+/*static*/ bool SoundSourceFFmpeg::isFileSupported(QString path)
+{
+  auto format_ctx = avformat_alloc_context();
+  auto ret = true;
+  if ( ( auto err = avformat_open_input(&format_ctx, path().toLocal8Bit().constData(), nullptr, nullptr ) ) < 0 )
+  {
+    ret = false;
+  }
+  else if ( (err =  avformat_find_stream_info(format_ctx,nullptr ) ) < 0 )
+  {
+    ret = false;
+  }
+  avformat_close_input(&format_ctx);
+  return ret;
+}
 SoundSourceFFmpeg::SoundSourceFFmpeg(QUrl url)
     : SoundSource(url),
       m_format_ctx(avformat_alloc_context()) {}
@@ -177,6 +192,7 @@ SINT SoundSourceFFmpeg::seekSampleFrame(SINT frameIndex) {
     {
       m_pkt_index =  0;
       m_packet    =  m_pkt_array.at(m_pkt_index); 
+      avcodec_flush_buffers(m_codec_ctx);
       decode_next_frame ( );
       first_sample = av_rescale_q ( m_frame->pts - m_first_pts, m_stream_tb, m_output_tb );
       m_offset = 0;
@@ -186,6 +202,7 @@ SINT SoundSourceFFmpeg::seekSampleFrame(SINT frameIndex) {
     {
       m_pkt_index  = m_pkt_array.size() - 2;
       m_packet     = m_pkt_array.at ( m_pkt_index );
+      avcodec_flush_buffers(m_codec_ctx);
       decode_next_frame ( );
       first_sample = av_rescale_q ( m_frame->pts - m_first_pts, m_stream_tb, m_output_tb );
       m_offset     = frameIndex - first_sample;
@@ -239,17 +256,9 @@ SINT SoundSourceFFmpeg::seekSampleFrame(SINT frameIndex) {
     }
     m_pkt_index = lindex;
     if ( m_pkt_index > 0 ) m_pkt_index--;
+    if ( m_pkt_index > 0 ) m_pkt_index--;
     m_packet    = m_pkt_array.at(m_pkt_index);
     avcodec_flush_buffers(m_codec_ctx);
-    if ( swr_is_initialized(m_swr))
-    {
-      av_frame_unref(m_frame);
-      m_frame->format         = AV_SAMPLE_FMT_FLT;
-      m_frame->channel_layout = av_get_default_channel_layout ( getChannelCount() );
-      m_frame->sample_rate    = getFrameRate();
-      m_frame->nb_samples     = 0;
-      swr_convert_frame(m_swr,m_frame,nullptr);
-    }
     decode_next_frame ();
     first_sample = av_rescale_q ( m_frame->pts - m_first_pts, m_stream_tb, m_output_tb );
     m_offset = frameIndex - first_sample;

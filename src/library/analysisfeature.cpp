@@ -9,7 +9,7 @@
 #include "library/trackcollection.h"
 #include "dlganalysis.h"
 #include "widget/wlibrary.h"
-#include "analyserqueue.h"
+#include "anqueue/analyserqueue.h"
 #include "soundsourceproxy.h"
 #include "util/dnd.h"
 #include "util/debug.h"

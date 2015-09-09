@@ -26,7 +26,7 @@
 
 #include "mixxx.h"
 
-#include "analyserqueue.h"
+#include "anqueue/analyserqueue.h"
 #include "controlpotmeter.h"
 #include "controlobjectslave.h"
 #include "deck.h"

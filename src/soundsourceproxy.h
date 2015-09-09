@@ -24,12 +24,10 @@ public:
 
     explicit SoundSourceProxy(QString qFilename, SecurityTokenPointer pToken = SecurityTokenPointer());
     explicit SoundSourceProxy(TrackPointer pTrack);
-
     QString getType() const {
         if (m_pSoundSource) { return m_pSoundSource->getType();}
         else { return QString(); }
     }
-
     Result parseTrackMetadataAndCoverArt( Mixxx::TrackMetadata* pTrackMetadata, QImage* pCoverArt) const override {
         if (m_pSoundSource) {
             return m_pSoundSource->parseTrackMetadataAndCoverArt( pTrackMetadata, pCoverArt);

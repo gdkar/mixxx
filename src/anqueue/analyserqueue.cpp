@@ -256,7 +256,7 @@ void AnalyserQueue::run() {
         }
         Trace trace("AnalyserQueue analyzing track");
         // Get the audio
-        auto soundSourceProxy = SoundSourceProxy{nextTrack};
+        auto soundSourceProxy= SoundSourceProxy{nextTrack};
         auto audioSrcCfg = Mixxx::AudioSourceConfig{ kAnalysisChannels, kAnalysisFrameRate};
         auto pAudioSource = soundSourceProxy.openAudioSource(audioSrcCfg);
         if (!pAudioSource) {

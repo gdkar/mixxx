@@ -9,7 +9,7 @@
 #include "deck.h"
 #include "sampler.h"
 #include "previewdeck.h"
-#include "analyserqueue.h"
+#include "anqueue/analyserqueue.h"
 #include "controlobject.h"
 #include "samplerbank.h"
 #include "library/library.h"

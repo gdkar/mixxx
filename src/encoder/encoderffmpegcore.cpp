@@ -179,7 +179,6 @@ int EncoderFfmpegCore::initEncoder(int bitrate, int samplerate) {
 int EncoderFfmpegCore::writeAudioFrame(AVFormatContext *formatctx, AVStream *stream) {
     AVCodecContext *l_SCodecCtx = nullptr;;
     AVPacket l_SPacket;
-    AVFrame *l_SFrame = av_frame_alloc();
     int l_iGotPacket;
     int l_iRet;
     av_init_packet(&l_SPacket);
@@ -189,15 +188,18 @@ int EncoderFfmpegCore::writeAudioFrame(AVFormatContext *formatctx, AVStream *str
     m_lDts = round(((double)m_lRecordedBytes / (double)44100 / (double)2. * (double)m_pEncoderAudioStream->time_base.den));
     m_lPts = m_lDts;
     l_SCodecCtx = stream->codec;
-    l_SFrame->nb_samples     = m_iAudioInputFrameSize;
     // Mixxx uses float (32 bit) samples..
+    auto l_SFrame = av_frame_alloc();
+    av_frame_unref(l_SFrame);
+    l_SFrame->nb_samples     = m_iAudioInputFrameSize;
     l_SFrame->format         = l_SCodecCtx->sample_fmt;
     l_SFrame->channel_layout = l_SCodecCtx->channel_layout;
+    l_SFrame->channels       = l_SCodecCtx->channels;
     l_SFrame->sample_rate    = l_SCodecCtx->sample_rate;
-    l_iRet = av_frame_get_buffer ( l_SFrame, 16 );
+    l_iRet = av_frame_get_buffer ( l_SFrame, 0 );
     if (l_iRet != 0) {
-        qDebug() << "Can't fill FFMPEG frame: error " << l_iRet << "String '" <<
-                 ff_make_error_string(l_iRet) << "'" << "fltAudioCpyLen = " <<  m_iFltAudioCpyLen;
+        qDebug() << "Can't fill FFMPEG frame: error " <<
+                 ff_make_error_string(l_iRet) << " " << "m_iAudioInputFrameSize= " <<  m_iAudioInputFrameSize;
         qDebug() << "Can't refill 1st FFMPEG frame!";
         av_frame_free(&l_SFrame);
         return -1;
@@ -323,6 +325,7 @@ AVStream *EncoderFfmpegCore::addStream(AVFormatContext *formatctx, AVCodec **cod
         l_SCodecCtx->bit_rate    = m_lBitrate;
         l_SCodecCtx->sample_rate = 44100;
         l_SCodecCtx->channels    = 2;
+        l_SCodecCtx->channel_layout = av_get_default_channel_layout(2);
         break;
     default: break;
     }
