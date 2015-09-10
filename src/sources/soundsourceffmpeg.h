@@ -47,7 +47,6 @@ class SoundSourceFFmpeg : public SoundSource {
     AVRational             m_output_tb    = { 0, 1 };
     int64_t                m_offset       = 0;
     int64_t                m_first_pts    = 0;
-    static bool isFileSupported(QString url);
 };
 class SoundSourceProviderFFmpeg: public SoundSourceProvider {
   public:

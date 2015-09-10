@@ -26,21 +26,6 @@ QStringList SoundSourceProviderFFmpeg::getSupportedFileExtensions() const {
     }
     return list;
 }
-/*static*/ bool SoundSourceFFmpeg::isFileSupported(QString path)
-{
-  auto format_ctx = avformat_alloc_context();
-  auto ret = true;
-  if ( ( auto err = avformat_open_input(&format_ctx, path().toLocal8Bit().constData(), nullptr, nullptr ) ) < 0 )
-  {
-    ret = false;
-  }
-  else if ( (err =  avformat_find_stream_info(format_ctx,nullptr ) ) < 0 )
-  {
-    ret = false;
-  }
-  avformat_close_input(&format_ctx);
-  return ret;
-}
 SoundSourceFFmpeg::SoundSourceFFmpeg(QUrl url)
     : SoundSource(url),
       m_format_ctx(avformat_alloc_context()) {}

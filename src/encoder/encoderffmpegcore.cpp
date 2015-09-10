@@ -135,41 +135,20 @@ void EncoderFfmpegCore::updateMetaData(char* artist, char* title, char* album) {
     m_strMetaDataAlbum = album;
 }
 int EncoderFfmpegCore::initEncoder(int bitrate, int samplerate) {
-#ifndef avformat_alloc_output_context2
-    qDebug() << "EncoderFfmpegCore::initEncoder: Old Style initialization";
-    m_pEncodeFormatCtx = avformat_alloc_context();
-#endif
     m_lBitrate = bitrate * 1000;
     m_lSampleRate = samplerate;
     if (m_SCcodecId == AV_CODEC_ID_MP3) {
         qDebug() << "EncoderFfmpegCore::initEncoder: Codec MP3";
-#ifdef avformat_alloc_output_context2
         avformat_alloc_output_context2(&m_pEncodeFormatCtx, nullptr, nullptr, "output.mp3");
-#else
-        m_pEncoderFormat = av_guess_format(nullptr, "output.mp3", nullptr);
-#endif // avformat_alloc_output_context2
     } else if (m_SCcodecId == AV_CODEC_ID_AAC) {
         qDebug() << "EncoderFfmpegCore::initEncoder: Codec M4A";
-#ifdef avformat_alloc_output_context2
         avformat_alloc_output_context2(&m_pEncodeFormatCtx, nullptr, nullptr, "output.m4a");
-#else
-        m_pEncoderFormat = av_guess_format(nullptr, "output.m4a", nullptr);
-#endif // avformat_alloc_output_context2
     } else {
         qDebug() << "EncoderFfmpegCore::initEncoder: Codec OGG/Vorbis";
-#ifdef avformat_alloc_output_context2
         avformat_alloc_output_context2(&m_pEncodeFormatCtx, nullptr, nullptr, "output.ogg");
         m_pEncodeFormatCtx->oformat->audio_codec=AV_CODEC_ID_VORBIS;
-#else
-        m_pEncoderFormat = av_guess_format(nullptr, "output.ogg", nullptr);
-        m_pEncoderFormat->audio_codec=AV_CODEC_ID_VORBIS;
-#endif // avformat_alloc_output_context2
     }
-#ifdef avformat_alloc_output_context2
     m_pEncoderFormat = m_pEncodeFormatCtx->oformat;
-#else
-    m_pEncodeFormatCtx->oformat = m_pEncoderFormat;
-#endif // avformat_alloc_output_context2
     m_pEncoderAudioStream = addStream(m_pEncodeFormatCtx, &m_pEncoderAudioCodec,m_pEncoderFormat->audio_codec);
     openAudio(m_pEncoderAudioCodec, m_pEncoderAudioStream);
     // qDebug() << "jepusti";
@@ -190,7 +169,6 @@ int EncoderFfmpegCore::writeAudioFrame(AVFormatContext *formatctx, AVStream *str
     l_SCodecCtx = stream->codec;
     // Mixxx uses float (32 bit) samples..
     auto l_SFrame = av_frame_alloc();
-    av_frame_unref(l_SFrame);
     l_SFrame->nb_samples     = m_iAudioInputFrameSize;
     l_SFrame->format         = l_SCodecCtx->sample_fmt;
     l_SFrame->channel_layout = l_SCodecCtx->channel_layout;
@@ -200,7 +178,6 @@ int EncoderFfmpegCore::writeAudioFrame(AVFormatContext *formatctx, AVStream *str
     if (l_iRet != 0) {
         qDebug() << "Can't fill FFMPEG frame: error " <<
                  ff_make_error_string(l_iRet) << " " << "m_iAudioInputFrameSize= " <<  m_iAudioInputFrameSize;
-        qDebug() << "Can't refill 1st FFMPEG frame!";
         av_frame_free(&l_SFrame);
         return -1;
     }
@@ -208,7 +185,7 @@ int EncoderFfmpegCore::writeAudioFrame(AVFormatContext *formatctx, AVStream *str
     // to something that fits..
     {
       auto src =  (uint8_t*)m_pFltSamples;
-      l_iRet = swr_convert(m_swr,l_SFrame->extended_data,l_SFrame->nb_samples, const_cast<const uint8_t**>(&src), m_iFltAudioCpyLen);
+      l_iRet = swr_convert(m_swr,l_SFrame->data,l_SFrame->nb_samples, const_cast<const uint8_t**>(&src), m_iFltAudioCpyLen);
     }
     // After we have turned our samples to destination
     // Format we must re-alloc l_SFrame.. it easier like this..
@@ -277,7 +254,7 @@ void EncoderFfmpegCore::openAudio(AVCodec *codec, AVStream *stream) {
         qDebug() << "Could not open audio codec!";
         return;
     }
-    if (l_SCodecCtx->codec->capabilities & CODEC_CAP_VARIABLE_FRAME_SIZE) {m_iAudioInputFrameSize = 10000;}
+    if (l_SCodecCtx->codec->capabilities & CODEC_CAP_VARIABLE_FRAME_SIZE) {m_iAudioInputFrameSize = 4096;}
     else { m_iAudioInputFrameSize = l_SCodecCtx->frame_size;}
     m_iAudioCpyLen = m_iAudioInputFrameSize * av_get_bytes_per_sample(stream->codec->sample_fmt) * stream->codec->channels;
     m_iFltAudioCpyLen = av_samples_get_buffer_size(nullptr, 2, m_iAudioInputFrameSize, AV_SAMPLE_FMT_FLT,1);

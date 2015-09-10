@@ -19,7 +19,7 @@
 #include "widget/wlibrarytextbrowser.h"
 #include "widget/wlibrary.h"
 #include "treeitem.h"
-#include "sources/soundsourceproxy.h"
+#include "soundsourceproxy.h"
 #include "util/dnd.h"
 #include "util/time.h"
 
