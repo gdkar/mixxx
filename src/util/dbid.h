@@ -1,9 +1,5 @@
-#ifndef DBID_H
-#define DBID_H
-
-
+_Pragma("once")
 #include <ostream>
-#include <utility>
 
 #include <QDebug>
 #include <QString>
@@ -31,28 +27,20 @@ protected:
     // or any other type.
     typedef int value_type;
 public:
-    DbId()
-        : m_value(kInvalidValue) {
-        DEBUG_ASSERT(!isValid());
-    }
-/*    virtual ~DbId() = default;*/
-    explicit DbId(value_type value)
-        : m_value(value) {
-        DEBUG_ASSERT(isValid() || (kInvalidValue == m_value));
-    }
-    explicit DbId(QVariant variant)
-        : DbId(valueOf(std::move(variant))) {
-    }
-    bool isValid() const {return isValidValue(m_value);}
+    DbId() = default;
+    explicit constexpr DbId(int value):m_value(value){};
+    explicit DbId(QVariant variant);
+    constexpr bool isValid() const{return isValidValue(m_value);};
     // This function is needed for backward compatibility and
     // should only be used within legacy code. It can be deleted
     // after all integer IDs have been replaced by their type-safe
     // counterparts.
-    int toInt() const {return m_value;}
+    constexpr int toInt() const{return m_value;}
+    constexpr operator int()const{return m_value;}
     // This function should be used for value binding in DB queries
     // with bindValue().
-    QVariant toVariant() const {return QVariant(m_value);}
-    QString toString() const {return QString::number(m_value);}
+    QVariant toVariant() const;
+    QString toString() const;
     friend bool operator==(const DbId& lhs, const DbId& rhs) {
         return lhs.m_value == rhs.m_value;
     }
@@ -73,15 +61,13 @@ public:
     }
     friend std::ostream& operator<< (std::ostream& os, const DbId& dbId);
     friend QDebug& operator<< (QDebug& qd, const DbId& dbId) ;
-    friend uint qHash(const DbId& dbId) {return qHash(dbId.m_value);}
+    friend uint qHash(const DbId& dbId);
 private:
-    static const value_type kInvalidValue = -1;
+    static const int kInvalidValue = -1;
     static const QVariant::Type kVariantType;
-    static bool isValidValue(value_type value) {return 0 <= value;}
-    static value_type valueOf(QVariant /*pass-by-value*/ variant);
-    value_type m_value;
+    static constexpr bool isValidValue(int value){return value>=0;};
+    static int valueOf(QVariant /*pass-by-value*/ variant);
+    int m_value = kInvalidValue;
 };
 Q_DECLARE_METATYPE(DbId)
 Q_DECLARE_TYPEINFO(DbId,Q_PRIMITIVE_TYPE);
-
-#endif // DBID_H

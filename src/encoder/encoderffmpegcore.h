@@ -16,24 +16,12 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef ENCODERFFMPEGCORE_H
-#define ENCODERFFMPEGCORE_H
-
-#include <encoder/encoderffmpegresample.h>
-
-extern "C" {
-#include <libavutil/opt.h>
-#include <libavcodec/avcodec.h>
-#include <libavformat/avformat.h>
-#include <libavutil/audioconvert.h>
-#include <libavutil/common.h>
-#include <libavutil/mathematics.h>
-#include <libavutil/samplefmt.h>
-
-#include <libavutil/avutil.h>
-#include <libswresample/swresample.h>
+_Pragma("once")
+#include "sources/ffmpeg_util.h"
+extern "C"{
+  #include "libavformat/avio.h"
+  #include "libavutil/audio_fifo.h"
 }
-
 #include <QByteArray>
 #include <QBuffer>
 
@@ -59,8 +47,8 @@ private:
     int getSerial();
     bool metaDataHasChanged();
     //Call this method in conjunction with shoutcast streaming
-    int writeAudioFrame(AVFormatContext *oc, AVStream *st);
-    void closeAudio(AVStream *st);
+    int writeAudioFrames(bool);
+    void closeAudio();
     void openAudio(AVCodec *codec, AVStream *st);
     AVStream *addStream(AVFormatContext *oc, AVCodec **codec, enum AVCodecID codec_id);
     bool m_bStreamInitialized = false;
@@ -71,17 +59,14 @@ private:
     char *m_strMetaDataAlbum = nullptr;
     QFile m_pFile;
     QByteArray m_strReadByteArray;
-    CSAMPLE m_SBuffer[65535];
-    unsigned long m_lBufferSize;
-    AVFormatContext *m_pEncodeFormatCtx = nullptr;
+    SwrContext *m_pSwr = nullptr;
+    AVAudioFifo     *m_pAudioFifo = nullptr;
+    AVFormatContext *m_pEncoderFormatCtx = nullptr;
     AVStream *m_pEncoderAudioStream = nullptr;
     AVCodec *m_pEncoderAudioCodec = nullptr;
+    AVCodecContext *m_pEncoderCodecCtx = nullptr;
     AVOutputFormat *m_pEncoderFormat = nullptr;
-    uint8_t *m_pSamples = nullptr;
-    float *m_pFltSamples = nullptr;
     int m_iAudioInputFrameSize = 0;
-    unsigned int m_iFltAudioCpyLen = 0;
-    unsigned int m_iAudioCpyLen = 0;
 
     int32_t m_lBitrate = 0;
     int32_t m_lSampleRate = 0;
@@ -89,8 +74,5 @@ private:
     int64_t m_lDts = 0;
     int64_t m_lPts = 0;
     enum AVCodecID m_SCcodecId;
-    SwrContext *m_swr = nullptr;
     AVStream *m_pStream = nullptr;
 };
-
-#endif

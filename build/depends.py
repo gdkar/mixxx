@@ -54,26 +54,86 @@ class PortMIDI(Dependence):
     def sources(self, build):
         return ['controllers/midi/portmidienumerator.cpp', 'controllers/midi/portmidicontroller.cpp']
 
-
-class OpenGL(Dependence):
-
+class FFMPEG(Dependence):
+    def description(self): return "FFmpeg/Avconv support"
     def configure(self, build, conf):
-        if build.platform_is_osx:
-            build.env.AppendUnique(FRAMEWORKS='OpenGL')
+        # Supported version are FFmpeg 0.11-2.x and Avconv 0.8.x-11.x
+        # FFmpeg is multimedia library that can be found http://ffmpeg.org/
+        # Avconv is fork of FFmpeg that is used mainly in Debian and Ubuntu
+        # that can be found http://libav.org
+        if build.platform_is_linux or build.platform_is_osx or build.platform_is_bsd:
+            # Check for libavcodec, libavformat
+            # I just randomly picked version numbers lower than mine for this
+            if not conf.CheckForPKG('libavcodec', '53.35.0'):
+                raise Exception('Missing libavcodec or it\'s too old! It can'
+                                'be separated from main package so check your'
+                                'operating system packages.')
+            if not conf.CheckForPKG('libavformat', '53.21.0'):
+                raise Exception('Missing libavformat  or it\'s too old!'
+                                'It can be separated from main package so'
+                                'check your operating system packages.')
 
+            # Needed to build new FFmpeg
+            build.env.Append(CCFLAGS='-D__STDC_CONSTANT_MACROS')
+            build.env.Append(CCFLAGS='-D__STDC_LIMIT_MACROS')
+            build.env.Append(CCFLAGS='-D__STDC_FORMAT_MACROS')
+            # Grabs the libs and cflags for FFmpeg
+            build.env.ParseConfig('pkg-config libavcodec --silence-errors --cflags --libs')
+            build.env.ParseConfig('pkg-config libavformat --silence-errors --cflags --libs')
+            build.env.ParseConfig('pkg-config libavutil --silence-errors --cflags --libs')
+            build.env.ParseConfig('pkg-config libswresample --silence-errors --cflags --libs')
+            build.env.ParseConfig('pkg-config libavfilter --silence-errors --cflags --libs')
+            build.env.ParseConfig('pkg-config libavdevice --silence-errors --cflags --libs')
+            build.env.Append(CPPDEFINES='__FFMPEGFILE__')
+            self.status = "Enabled"
+        else:
+            # aptitude install libavcodec-dev libavformat-dev liba52-0.7.4-dev
+            # libdts-dev
+            # Append some stuff to CFLAGS in Windows also
+            build.env.Append(CCFLAGS='-D__STDC_CONSTANT_MACROS')
+            build.env.Append(CCFLAGS='-D__STDC_LIMIT_MACROS')
+            build.env.Append(CCFLAGS='-D__STDC_FORMAT_MACROS')
+
+            build.env.Append(LIBS='avcodec')
+            build.env.Append(LIBS='avformat')
+            build.env.Append(LIBS='avutil')
+            build.env.Append(LIBS='z')
+            build.env.Append(LIBS='swresample')
+            # build.env.Append(LIBS = 'a52')
+            # build.env.Append(LIBS = 'dts')
+            build.env.Append(LIBS='gsm')
+            # build.env.Append(LIBS = 'dc1394_control')
+            # build.env.Append(LIBS = 'dl')
+            build.env.Append(LIBS='vorbisenc')
+            # build.env.Append(LIBS = 'raw1394')
+            build.env.Append(LIBS='vorbis')
+            build.env.Append(LIBS='m')
+            build.env.Append(LIBS='ogg')
+            build.env.Append(CPPDEFINES='__FFMPEGFILE__')
+
+        # Add new path for FFmpeg header files.
+        # Non-crosscompiled builds need this too, don't they?
+        if build.crosscompile and build.platform_is_windows and build.toolchain_is_gnu:
+            build.env.Append(CPPPATH=os.path.join(build.crosscompile_root,'include', 'ffmpeg'))
+    def sources(self, build):
+        return ['sources/soundsourceffmpeg.cpp',
+                'sources/ffmpeg_util.cpp',
+                'encoder/encoderffmpegcore.cpp',
+                'encoder/encoderffmpegmp3.cpp',
+                'encoder/encoderffmpegvorbis.cpp']
+class OpenGL(Dependence):
+    def configure(self, build, conf):
+        if build.platform_is_osx: build.env.AppendUnique(FRAMEWORKS='OpenGL')
         # Check for OpenGL (it's messy to do it for all three platforms).
         if (not conf.CheckLib('GL') and
                 not conf.CheckLib('opengl32') and
                 not conf.CheckCHeader('OpenGL/gl.h') and
                 not conf.CheckCHeader('GL/gl.h')):
             raise Exception('Did not find OpenGL development files')
-
         if (not conf.CheckLib('GLU') and
                 not conf.CheckLib('glu32') and
                 not conf.CheckCHeader('OpenGL/glu.h')):
             raise Exception('Did not find GLU development files')
-
-
 class SecurityFramework(Dependence):
     """The iOS/OS X security framework is used to implement sandboxing."""
     def configure(self, build, conf):
@@ -139,21 +199,6 @@ class SndFile(Dependence):
 
     def sources(self, build):
         return []
-
-
-class FLAC(Dependence):
-    def configure(self, build, conf):
-        if not conf.CheckHeader('FLAC/stream_decoder.h'):
-            raise Exception('Did not find libFLAC development headers')
-        libs = ['libFLAC', 'FLAC']
-        if not conf.CheckLib(libs):
-            raise Exception('Did not find libFLAC development libraries')
-        if build.platform_is_windows and build.static_dependencies:
-            build.env.Append(CPPDEFINES='FLAC__NO_DLL')
-    def sources(self, build):
-        return []
-
-
 class Qt(Dependence):
 
     DEFAULT_QT5DIRS64 = {'linux': '/usr/lib/x86_64-linux-gnu/qt5',
@@ -193,25 +238,27 @@ class Qt(Dependence):
     @staticmethod
     def enabled_imageformats(build):
         qt_imageformats = [
-            'qgif', 'qico', 'qjpeg',  'qmng', 'qtga', 'qtiff', 'qsvg'
-        ]
-        qt_imageformats.extend(['qdds', 'qicns', 'qjp2', 'qwbmp', 'qwebp'])
+            'qgif',
+            'qico',
+            'qjpeg',
+            'qmng',
+            'qtga',
+            'qtiff',
+            'qsvg',
+            'qdds',
+            'qicns',
+            'qjp2',
+            'qwbmp',
+            'qwebp']
         return qt_imageformats
-
-    def satisfy(self):
-        pass
-
+    def satisfy(self): pass
     def configure(self, build, conf):
         qt_modules = Qt.enabled_modules(build)
-
         # Emit various Qt defines
         build.env.Append(CPPDEFINES=['QT_SHARED','QT_TABLET_SUPPORT'])
         build.env.Append(CPPDEFINES='QT_DISABLE_DEPRECATED_BEFORE')
-
         # Set qt_sqlite_plugin flag if we should package the Qt SQLite plugin.
-        build.flags['qt_sqlite_plugin'] = util.get_flags(
-            build.env, 'qt_sqlite_plugin', 0)
-
+        build.flags['qt_sqlite_plugin'] = util.get_flags(build.env, 'qt_sqlite_plugin', 0)
         # Enable Qt include paths
         if build.platform_is_linux:
             if  not conf.CheckForPKG('Qt5Core', '5.0'): raise Exception('Qt >= 5.0 not found')
@@ -220,79 +267,52 @@ class Qt(Dependence):
                 # Note that -reduce-relocations is enabled by default in Qt5.
                 # So we must build the code with position independent code
             build.env.Append(CCFLAGS='-fPIE')
-
         elif build.platform_is_bsd:
             build.env.Append(LIBS=qt_modules)
-            include_paths = ['$QTDIR/include/%s' % module
-                             for module in qt_modules]
+            include_paths = ['$QTDIR/include/%s' % module for module in qt_modules]
             build.env.Append(CPPPATH=include_paths)
         elif build.platform_is_osx:
             qtdir = build.env['QTDIR']
-            build.env.Append(
-                LINKFLAGS=' '.join('-framework %s' % m for m in qt_modules)
-            )
+            build.env.Append(LINKFLAGS=' '.join('-framework %s' % m for m in qt_modules))
             framework_path = Qt.find_framework_path(qtdir)
             if not framework_path:
-                raise Exception(
-                    'Could not find frameworks in Qt directory: %s' % qtdir)
+                raise Exception('Could not find frameworks in Qt directory: %s' % qtdir)
             # Necessary for raw includes of headers like #include <qobject.h>
-            build.env.Append(CPPPATH=[os.path.join(framework_path, '%s.framework' % m, 'Headers')
-                                      for m in qt_modules])
+            build.env.Append(CPPPATH=[os.path.join(framework_path, '%s.framework' % m, 'Headers')for m in qt_modules])
             # Framework path needs to be altered for CCFLAGS as well since a
             # header include of QtCore/QObject.h looks for a QtCore.framework on
             # the search path and a QObject.h in QtCore.framework/Headers.
             build.env.Append(CCFLAGS=['-F%s' % os.path.join(framework_path)])
             build.env.Append(LINKFLAGS=['-F%s' % os.path.join(framework_path)])
-
             qt5_module_defines = {
-                'QtScript'   : ['QT_SCRIPT_LIB'],
-                'QtSvg'      : ['QT_SVG_LIB'],
-                'QtSql'      : ['QT_SQL_LIB'],
-                'QtXml'      : ['QT_XML_LIB'],
-                'QtOpenGL'   : ['QT_OPENGL_LIB'],
-                'QtGui'      : ['QT_GUI_LIB'],
-                'QtNetwork'  : ['QT_NETWORK_LIB'],
-                'QtCore'     : ['QT_CORE_LIB'],
-                'QtWidgets'  : ['QT_WIDGETS_LIB'],
+                'QtScript'    : ['QT_SCRIPT_LIB'],
+                'QtSvg'       : ['QT_SVG_LIB'],
+                'QtSql'       : ['QT_SQL_LIB'],
+                'QtXml'       : ['QT_XML_LIB'],
+                'QtOpenGL'    : ['QT_OPENGL_LIB'],
+                'QtGui'       : ['QT_GUI_LIB'],
+                'QtNetwork'   : ['QT_NETWORK_LIB'],
+                'QtCore'      : ['QT_CORE_LIB'],
+                'QtWidgets'   : ['QT_WIDGETS_LIB'],
+                'QtQml'       : ['QT_QML_LIB'],
+                'QtQuick'     : ['QT_QUICK_LIB'],
+                'QtMultimedia': ['QT_MULTIMEDIA_LIB'],
+                'QtConcurrent': ['QT_CONCURRENT_LIB'],
             }
             module_defines = qt5_module_defines
             for module in qt_modules:
                 build.env.AppendUnique(CPPDEFINES=module_defines.get(module, []))
-
             build.env["QT5_MOCCPPPATH"] = build.env["CPPPATH"]
         elif build.platform_is_windows:
             # This automatically converts QtCore to QtCore[45][d] where
             # appropriate.
             build.env.EnableQt5Modules(qt_modules,debug=build.build_is_debug)
-
-            # if build.static_dependencies:
-                # # Pulled from qt-4.8.2-source\mkspecs\win32-msvc2010\qmake.conf
-                # # QtCore
-                # build.env.Append(LIBS = 'kernel32')
-                # build.env.Append(LIBS = 'user32') # QtGui, QtOpenGL, libHSS1394
-                # build.env.Append(LIBS = 'shell32')
-                # build.env.Append(LIBS = 'uuid')
-                # build.env.Append(LIBS = 'ole32') # QtGui,
-                # build.env.Append(LIBS = 'advapi32') # QtGui, portaudio, portmidi
-                # build.env.Append(LIBS = 'ws2_32')   # QtGui, QtNetwork, libshout
-                # # QtGui
-                # build.env.Append(LIBS = 'gdi32') #QtOpenGL
-                # build.env.Append(LIBS = 'comdlg32')
-                # build.env.Append(LIBS = 'oleaut32')
-                # build.env.Append(LIBS = 'imm32')
-                # build.env.Append(LIBS = 'winmm')
-                # build.env.Append(LIBS = 'winspool')
-                # # QtOpenGL
-                # build.env.Append(LIBS = 'glu32')
-                # build.env.Append(LIBS = 'opengl32')
-
         # Set the rpath for linux/bsd/osx.
         # This is not supported on OS X before the 10.5 SDK.
         using_104_sdk = (str(build.env["CCFLAGS"]).find("10.4") >= 0)
         compiling_on_104 = False
         if build.platform_is_osx:
-            compiling_on_104 = (
-                os.popen('sw_vers').readlines()[1].find('10.4') >= 0)
+            compiling_on_104 = (os.popen('sw_vers').readlines()[1].find('10.4') >= 0)
         if not build.platform_is_windows and not (using_104_sdk or compiling_on_104):
             qtdir = build.env['QTDIR']
             # TODO(XXX) should we use find_framework_path here or keep lib
@@ -301,52 +321,26 @@ class Qt(Dependence):
             if os.path.isdir(framework_path):
                 build.env.Append(LINKFLAGS="-Wl,-rpath," + framework_path)
                 build.env.Append(LINKFLAGS="-L" + framework_path)
-
         # Mixxx requires C++11 support. Windows enables C++11 features by
         # default but Clang/GCC require a flag.
-        if not build.platform_is_windows:
-            build.env.Append(CXXFLAGS='-std=gnu++14')
-
-
+        if not build.platform_is_windows: build.env.Append(CXXFLAGS='-std=gnu++14')
 class TestHeaders(Dependence):
-    def configure(self, build, conf):
-        build.env.Append(CPPPATH="#lib/gtest-1.7.0/include")
-
+    def configure(self, build, conf):build.env.Append(CPPPATH="#lib/gtest-1.7.0/include")
 class FidLib(Dependence):
-
     def sources(self, build):
         symbol = None
         if build.platform_is_windows:
-            if build.toolchain_is_msvs:
-                symbol = 'T_MSVC'
-            elif build.crosscompile:
-                # Not sure why, but fidlib won't build with mingw32msvc and
-                # T_MINGW
-                symbol = 'T_LINUX'
-            elif build.toolchain_is_gnu:
-                symbol = 'T_MINGW'
-        else:
-            symbol = 'T_LINUX'
-
-        return [build.env.StaticObject('#lib/fidlib-0.9.10/fidlib.c',
-                                       CPPDEFINES=symbol)]
-
-    def configure(self, build, conf):
-        build.env.Append(CPPPATH='#lib/fidlib-0.9.10/')
-
-
+            if build.toolchain_is_msvs:  symbol = 'T_MSVC'
+            elif build.crosscompile:     symbol = 'T_LINUX'
+            elif build.toolchain_is_gnu: symbol = 'T_MINGW'
+        else:                            symbol = 'T_LINUX'
+        return [build.env.StaticObject('#lib/fidlib-0.9.10/fidlib.c',CPPDEFINES=symbol)]
+    def configure(self, build, conf):build.env.Append(CPPPATH='#lib/fidlib-0.9.10/')
 class ReplayGain(Dependence):
-
-    def sources(self, build):
-        return ["#lib/replaygain/replaygain.cpp"]
-
-    def configure(self, build, conf):
-        build.env.Append(CPPPATH="#lib/replaygain")
-
-
+    def sources(self, build): return ["#lib/replaygain/replaygain.cpp"]
+    def configure(self, build, conf): build.env.Append(CPPPATH="#lib/replaygain")
 class SoundTouch(Dependence):
     SOUNDTOUCH_PATH = 'soundtouch-1.8.0'
-
     def sources(self, build):
         return ['engine/enginebufferscalest.cpp',
                 '#lib/%s/AAFilter.cpp' % self.SOUNDTOUCH_PATH,
@@ -367,102 +361,61 @@ class SoundTouch(Dependence):
                 '#lib/%s/cpu_detect_x86.cpp' % self.SOUNDTOUCH_PATH,
                 '#lib/%s/mmx_optimized.cpp' % self.SOUNDTOUCH_PATH,
                 '#lib/%s/sse_optimized.cpp' % self.SOUNDTOUCH_PATH]
-
     def configure(self, build, conf, env=None):
-        if env is None:
-            env = build.env
+        if env is None: env = build.env
         env.Append(CPPPATH=['#lib/%s' % self.SOUNDTOUCH_PATH])
-
         # Prevents circular import.
         from features import Optimize
-
         # If we do not want optimizations then disable them.
-        optimize = (build.flags['optimize'] if 'optimize' in build.flags
-                    else Optimize.get_optimization_level())
-        if optimize == Optimize.LEVEL_OFF:
-            env.Append(CPPDEFINES='SOUNDTOUCH_DISABLE_X86_OPTIMIZATIONS')
-
-
+        optimize = (build.flags['optimize'] if 'optimize' in build.flags else Optimize.get_optimization_level())
+        if optimize == Optimize.LEVEL_OFF: env.Append(CPPDEFINES='SOUNDTOUCH_DISABLE_X86_OPTIMIZATIONS')
 class RubberBand(Dependence):
     def sources(self, build):
         sources = ['engine/enginebufferscalerubberband.cpp', ]
         return sources
-
     def configure(self, build, conf, env=None):
-        if env is None:
-            env = build.env
+        if env is None: env = build.env
         if not conf.CheckLib(['rubberband', 'librubberband']):
-            raise Exception(
-                "Could not find librubberband or its development headers.")
-
-
+            raise Exception( "Could not find librubberband or its development headers.")
 class TagLib(Dependence):
     def configure(self, build, conf):
         libs = ['tag']
         if not conf.CheckLib(libs):
-            raise Exception(
-                "Could not find libtag or its development headers.")
-
+            raise Exception("Could not find libtag or its development headers.")
         # Karmic seems to have an issue with mp4tag.h where they don't include
         # the files correctly. Adding this folder ot the include path should fix
         # it, though might cause issues. This is safe to remove once we
         # deprecate Karmic support. rryan 2/2011
         build.env.Append(CPPPATH='/usr/include/taglib/')
-
         if build.platform_is_windows and build.static_dependencies:
             build.env.Append(CPPDEFINES='TAGLIB_STATIC')
-
-
 class Chromaprint(Dependence):
     def configure(self, build, conf):
         if not conf.CheckLib(['chromaprint', 'libchromaprint', 'chromaprint_p', 'libchromaprint_p']):
-            raise Exception(
-                "Could not find libchromaprint or its development headers.")
+            raise Exception("Could not find libchromaprint or its development headers.")
         if build.platform_is_windows and build.static_dependencies:
             build.env.Append(CPPDEFINES='CHROMAPRINT_NODLL')
-
             # On Windows, we link chromaprint with FFTW3.
             if not conf.CheckLib(['fftw', 'libfftw', 'fftw3', 'libfftw3']):
-                raise Exception(
-                    "Could not find fftw3 or its development headers.")
-
-
+                raise Exception("Could not find fftw3 or its development headers.")
 class ProtoBuf(Dependence):
     def configure(self, build, conf):
         libs = ['libprotobuf-lite', 'protobuf-lite', 'libprotobuf', 'protobuf']
         if build.platform_is_windows:
-            if not build.static_dependencies:
-                build.env.Append(CPPDEFINES='PROTOBUF_USE_DLLS')
+            if not build.static_dependencies:build.env.Append(CPPDEFINES='PROTOBUF_USE_DLLS')
         if not conf.CheckLib(libs):
-            raise Exception(
-                "Could not find libprotobuf or its development headers.")
-
-
+            raise Exception("Could not find libprotobuf or its development headers.")
 class QtScriptByteArray(Dependence):
-    def configure(self, build, conf):
-        build.env.Append(CPPPATH='#lib/qtscript-bytearray')
-
+    def configure(self, build, conf):build.env.Append(CPPPATH='#lib/qtscript-bytearray')
     def sources(self, build):
         return ['#lib/qtscript-bytearray/bytearrayclass.cpp',
                 '#lib/qtscript-bytearray/bytearrayprototype.cpp']
-
-
 class Reverb(Dependence):
-    def configure(self, build, conf):
-        build.env.Append(CPPPATH='#lib/reverb')
-
-    def sources(self, build):
-        return ['#lib/reverb/Reverb.cc']
-
-
+    def configure(self, build, conf):build.env.Append(CPPPATH='#lib/reverb')
+    def sources(self, build): return ['#lib/reverb/Reverb.cc']
 class MixxxCore(Feature):
-
-    def description(self):
-        return "Mixxx Core Features"
-
-    def enabled(self, build):
-        return True
-
+    def description(self): return "Mixxx Core Features"
+    def enabled(self, build): return True
     def sources(self, build):
         sources = ["mixxxkeyboard.cpp",
 
@@ -627,7 +580,7 @@ class MixxxCore(Feature):
                    "main.cpp",
                    "mixxx.cpp",
                    "mixxxapplication.cpp",
-                   "errordialoghandler.cpp",
+                   "preferences/errordialoghandler.cpp",
                    "upgrade.cpp",
 
                    "sources/soundsourceproviderregistry.cpp",
@@ -696,7 +649,6 @@ class MixxxCore(Feature):
                    "musicbrainz/chromaprinter.cpp",
                    "musicbrainz/musicbrainzclient.cpp",
 
-                   "rotary.cpp",
                    "widget/wtracktableview.cpp",
                    "widget/wtracktableviewheader.cpp",
                    "widget/wlibrarysidebar.cpp",
@@ -867,11 +819,7 @@ class MixxxCore(Feature):
                    "track/keyfactory.cpp",
                    "track/keyutils.cpp",
 
-                   "baseplayer.cpp",
-                   "basetrackplayer.cpp",
-                   "deck.cpp",
-                   "sampler.cpp",
-                   "previewdeck.cpp",
+                   "player.cpp",
                    "playermanager.cpp",
                    "samplerbank.cpp",
                    "sounddevice.cpp",
@@ -883,8 +831,6 @@ class MixxxCore(Feature):
                    "visualplayposition.cpp",
 
                    "encoder/encoder.cpp",
-                   "encoder/encodermp3.cpp",
-                   "encoder/encodervorbis.cpp",
 
                    "util/pa_ringbuffer.c",
                    "util/sleepableqthread.cpp",
@@ -897,7 +843,6 @@ class MixxxCore(Feature):
                    "util/threadcputimer.cpp",
                    "util/version.cpp",
                    "util/rlimit.cpp",
-                   "util/valuetransformer.cpp",
                    "util/sandbox.cpp",
                    "util/file.cpp",
                    "util/mac.cpp",
@@ -958,101 +903,78 @@ class MixxxCore(Feature):
             'preferences/dlgtrackinfo.ui',
         ]
         map(Qt.uic(build), ui_files)
-
         if build.platform_is_windows:
             # Add Windows resource file with icons and such
             # force manifest file creation, apparently not necessary for all
             # people but necessary for this committers handicapped windows
             # installation -- bkgood
-            if build.toolchain_is_msvs:
-                build.env.Append(LINKFLAGS="/MANIFEST")
+            if build.toolchain_is_msvs: build.env.Append(LINKFLAGS="/MANIFEST")
         elif build.platform_is_osx:
             # Need extra room for code signing (App Store)
             build.env.Append(LINKFLAGS="-Wl,-headerpad,ffff")
             build.env.Append(LINKFLAGS="-Wl,-headerpad_max_install_names")
-
         return sources
-
     def configure(self, build, conf):
         # Evaluate this define. There are a lot of different things around the
         # codebase that use different defines. (AMD64, x86_64, x86, i386, i686,
         # EM64T). We need to unify them together.
         if not build.machine == 'alpha':
             build.env.Append(CPPDEFINES=build.machine)
-
         # TODO(rryan): Quick hack to get the build number in title bar. Clean up
         # later.
         if int(SCons.ARGUMENTS.get('build_number_in_title_bar', 0)):
             build.env.Append(CPPDEFINES='MIXXX_BUILD_NUMBER_IN_TITLE_BAR')
-
         if build.build_is_debug:
             build.env.Append(CPPDEFINES='MIXXX_BUILD_DEBUG')
-        elif build.build_is_release:
+        elif build.build_is_release: 
             build.env.Append(CPPDEFINES='MIXXX_BUILD_RELEASE')
-
             # In a release build we want to disable all Q_ASSERTs in Qt headers
             # that we include. We can't define QT_NO_DEBUG because that would
             # mean turning off QDebug output. qt_noop() is what Qt defines
             # Q_ASSERT to be when QT_NO_DEBUG is defined.
             build.env.Append(CPPDEFINES="'Q_ASSERT(x)=qt_noop()'")
-
         if int(SCons.ARGUMENTS.get('debug_assertions_fatal', 0)):
             build.env.Append(CPPDEFINES='MIXXX_DEBUG_ASSERTIONS_FATAL')
-
         if build.toolchain_is_gnu:
             # Default GNU Options
             build.env.Append(CCFLAGS='-pipe')
             build.env.Append(CCFLAGS='-Wall')
             build.env.Append(CCFLAGS='-Wextra')
-
             # Always generate debugging info.
             build.env.Append(CCFLAGS='-g')
         elif build.toolchain_is_msvs:
             # Validate the specified winlib directory exists
-            mixxx_lib_path = SCons.ARGUMENTS.get(
-                'winlib', '..\\..\\..\\mixxx-win32lib-msvc100-release')
+            mixxx_lib_path = SCons.ARGUMENTS.get('winlib', '..\\..\\..\\mixxx-win32lib-msvc100-release')
             if not os.path.exists(mixxx_lib_path):
                 print mixxx_lib_path
                 raise Exception("Winlib path does not exist! Please specify your winlib directory"
                                 "path by running 'scons winlib=[path]'")
                 Script.Exit(1)
-
             # Set include and library paths to work with this
-            build.env.Append(CPPPATH=[mixxx_lib_path,
-                                      os.path.join(mixxx_lib_path, 'include')])
+            build.env.Append(CPPPATH=[mixxx_lib_path, os.path.join(mixxx_lib_path, 'include')])
             build.env.Append(LIBPATH=[mixxx_lib_path, os.path.join(mixxx_lib_path, 'lib')])
-
             # Find executables (e.g. protoc) in the winlib path
             build.env.AppendENVPath('PATH', mixxx_lib_path)
             build.env.AppendENVPath('PATH', os.path.join(mixxx_lib_path, 'bin'))
-
             # Valid values of /MACHINE are: {ARM|EBC|X64|X86}
             # http://msdn.microsoft.com/en-us/library/5wy54dk2.aspx
             if build.architecture_is_x86:
-                if build.machine_is_64bit:
-                    build.env.Append(LINKFLAGS='/MACHINE:X64')
-                else:
-                    build.env.Append(LINKFLAGS='/MACHINE:X86')
-            elif build.architecture_is_arm:
-                build.env.Append(LINKFLAGS='/MACHINE:ARM')
-            else:
-                raise Exception('Invalid machine type for Windows build.')
-
+                if build.machine_is_64bit: build.env.Append(LINKFLAGS='/MACHINE:X64')
+                else:                      build.env.Append(LINKFLAGS='/MACHINE:X86')
+            elif build.architecture_is_arm:build.env.Append(LINKFLAGS='/MACHINE:ARM')
+            else: raise Exception('Invalid machine type for Windows build.')
             # Ugh, MSVC-only hack :( see
             # http://www.qtforum.org/article/17883/problem-using-qstring-
             # fromstdwstring.html
             build.env.Append(CXXFLAGS='/Zc:wchar_t-')
-
             # Build with multiple processes. TODO(XXX) make this configurable.
             # http://msdn.microsoft.com/en-us/library/bb385193.aspx
             build.env.Append(CCFLAGS='/MP')
-
             # Generate debugging information for compilation units and
             # executables linked regardless of whether we are creating a debug
             # build. Having PDB files for our releases is helpful for debugging.
             build.env.Append(LINKFLAGS='/DEBUG')
             build.env.Append(CCFLAGS='/Zi')
-
             if build.build_is_debug:
                 # Important: We always build Mixxx with the Multi-Threaded DLL
                 # runtime because Mixxx loads DLLs at runtime. Since this is a
@@ -1062,7 +984,6 @@ class MixxxCore(Feature):
                 # Important: We always build Mixxx with the Multi-Threaded DLL
                 # runtime because Mixxx loads DLLs at runtime.
                 build.env.Append(CCFLAGS='/MD')
-
         if build.platform_is_windows:
             build.env.Append(CPPDEFINES='__WINDOWS__')
             # Restrict ATL to XP-compatible SDK functions.
@@ -1121,50 +1042,37 @@ class MixxxCore(Feature):
         # Define for things that would like to special case UNIX (Linux or BSD)
         if build.platform_is_bsd or build.platform_is_linux:
             build.env.Append(CPPDEFINES='__UNIX__')
-
         # Add the src/ directory to the include path
         build.env.Append(CPPPATH=['.'])
-
         # Set up flags for config/track listing files
         # SETTINGS_PATH not needed for windows and MacOSX because we now use QDesktopServices::storageLocation(QDesktopServices::DataLocation)
-        if build.platform_is_linux or \
-                build.platform_is_bsd:
+        if build.platform_is_linux or build.platform_is_bsd:
             mixxx_files = [
                 # TODO(XXX) Trailing slash not needed anymore as we switches from String::append
                 # to QDir::filePath elsewhere in the code. This is candidate for removal.
                 ('SETTINGS_PATH', '.mixxx/'),
                 ('SETTINGS_FILE', 'mixxx.cfg')]
         elif build.platform_is_osx:
-            mixxx_files = [
-                ('SETTINGS_FILE', 'mixxx.cfg')]
+            mixxx_files = [ ('SETTINGS_FILE', 'mixxx.cfg')]
         elif build.platform_is_windows:
-            mixxx_files = [
-                ('SETTINGS_FILE', 'mixxx.cfg')]
-
+            mixxx_files = [ ('SETTINGS_FILE', 'mixxx.cfg')]
         # Escape the filenames so they don't end up getting screwed up in the
         # shell.
         mixxx_files = [(k, r'\"%s\"' % v) for k, v in mixxx_files]
         build.env.Append(CPPDEFINES=mixxx_files)
-
         # Say where to find resources on Unix. TODO(XXX) replace this with a
         # RESOURCE_PATH that covers Win and OSX too:
         if build.platform_is_linux or build.platform_is_bsd:
             prefix = SCons.ARGUMENTS.get('prefix', '/usr/local')
-            share_path = os.path.join (prefix, build.env.get(
-                'SHAREDIR', default='share'), 'mixxx')
-            build.env.Append(
-                CPPDEFINES=('UNIX_SHARE_PATH', r'\"%s\"' % share_path))
-            lib_path = os.path.join(prefix, build.env.get(
-                'LIBDIR', default='lib'), 'mixxx')
-            build.env.Append(
-                CPPDEFINES=('UNIX_LIB_PATH', r'\"%s\"' % lib_path))
-
+            share_path = os.path.join (prefix, build.env.get('SHAREDIR', default='share'), 'mixxx')
+            build.env.Append(CPPDEFINES=('UNIX_SHARE_PATH', r'\"%s\"' % share_path))
+            lib_path = os.path.join(prefix, build.env.get('LIBDIR', default='lib'), 'mixxx')
+            build.env.Append(CPPDEFINES=('UNIX_LIB_PATH', r'\"%s\"' % lib_path))
     def depends(self, build):
         return [SoundTouch, ReplayGain, PortAudio, PortMIDI, Qt, TestHeaders,
-                FidLib, FLAC, OggVorbis, OpenGL, TagLib, ProtoBuf, SndFile,
+                FidLib, OggVorbis, OpenGL, TagLib, ProtoBuf, SndFile,FFMPEG,
                 Chromaprint, RubberBand, SecurityFramework, CoreServices,
                 QtScriptByteArray, Reverb]
-
     def post_dependency_check_configure(self, build, conf):
         """Sets up additional things in the Environment that must happen
         after the Configure checks run."""

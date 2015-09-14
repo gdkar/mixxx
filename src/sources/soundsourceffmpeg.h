@@ -5,12 +5,7 @@ _Pragma("once")
 #ifndef __STDC_CONSTANT_MACROS
 #define __STDC_CONSTANT_MACROS
 #endif
-extern "C"{
-#include <libavcodec/avcodec.h>
-#include <libavformat/avformat.h>
-#include <libavutil/avutil.h>
-#include <libswresample/swresample.h>
-};
+#include "sources/ffmpeg_util.h"
 
 #include <cstdint>
 #include <vector>

@@ -9,9 +9,7 @@
 // Copyright: See COPYING file that comes with this distribution
 //
 //
-#ifndef WOVERVIEW_H
-#define WOVERVIEW_H
-
+_Pragma("once")
 #include <QPaintEvent>
 #include <QMouseEvent>
 #include <QPixmap>
@@ -33,20 +31,16 @@ class Waveform;
 class WOverview : public WWidget {
     Q_OBJECT
   public:
-    WOverview(const char* pGroup, ConfigObject<ConfigValue>* pConfig, QWidget* parent=NULL);
+    WOverview(const char* pGroup, ConfigObject<ConfigValue>* pConfig, QWidget* parent=nullptr);
     virtual ~WOverview();
-
     void setup(QDomNode node, const SkinContext& context);
-
   public slots:
     void onConnectedControlChanged(double dParameter, double dValue);
     void slotLoadNewTrack(TrackPointer pTrack);
     void slotTrackLoaded(TrackPointer pTrack);
     void slotUnloadTrack(TrackPointer pTrack);
-
   signals:
     void trackDropped(QString filename, QString group);
-
   protected:
     void mouseMoveEvent(QMouseEvent *e);
     void mouseReleaseEvent(QMouseEvent *e);
@@ -55,24 +49,15 @@ class WOverview : public WWidget {
     void resizeEvent(QResizeEvent *);
     virtual void dragEnterEvent(QDragEnterEvent* event);
     virtual void dropEvent(QDropEvent* event);
-
-    ConstWaveformPointer getWaveform() const {
-        return m_pWaveform;
-    }
-
+    ConstWaveformPointer getWaveform() const;
     QImage* m_pWaveformSourceImage;
     QImage m_waveformImageScaled;
-
     WaveformSignalColors m_signalColors;
-
     // Hold the last visual sample processed to generate the pixmap
     int m_actualCompletion;
-
     bool m_pixmapDone;
     float m_waveformPeak;
-
     int m_diffGain;
-
   private slots:
     void onEndOfTrackChange(double v);
 
@@ -86,44 +71,31 @@ class WOverview : public WWidget {
     // Append the waveform overview pixmap according to available data in waveform
     virtual bool drawNextPixmapPart() = 0;
     void paintText(const QString &text, QPainter *painter);
-    inline int valueToPosition(double value) const {
-        return static_cast<int>(m_a * value - m_b);
-    }
-    inline double positionToValue(int position) const {
-        return (static_cast<double>(position) + m_b) / m_a;
-    }
-
+    int valueToPosition(double value) const;
+    double positionToValue(int position) const;
     const QString m_group;
-    ConfigObject<ConfigValue>* m_pConfig;
-    ControlObjectSlave* m_endOfTrackControl;
-    double m_endOfTrack;
-    ControlObjectSlave* m_trackSamplesControl;
-    ControlObjectSlave* m_playControl;
-
+    ConfigObject<ConfigValue>* m_pConfig = nullptr;
+    ControlObjectSlave* m_endOfTrackControl = nullptr;
+    double m_endOfTrack = 0.0;
+    ControlObjectSlave* m_trackSamplesControl = nullptr;
+    ControlObjectSlave* m_playControl = nullptr;
     // Current active track
     TrackPointer m_pCurrentTrack;
     ConstWaveformPointer m_pWaveform;
-
     // True if slider is dragged. Only used when m_bEventWhileDrag is false
-    bool m_bDrag;
+    bool m_bDrag = false;
     // Internal storage of slider position in pixels
-    int m_iPos;
-
+    int m_iPos = 0;
     QPixmap m_backgroundPixmap;
     QString m_backgroundPixmapPath;
     QColor m_qColorBackground;
     QColor m_endOfTrackColor;
-
     WaveformMarkSet m_marks;
     std::vector<WaveformMarkRange> m_markRanges;
-
     // Coefficient value-position linear transposition
-    double m_a;
-    double m_b;
-
-    double m_dAnalyserProgress;
-    bool m_bAnalyserFinalizing;
-    bool m_trackLoaded;
+    double m_a = 0;
+    double m_b = 0;
+    double m_dAnalyserProgress = 0;
+    bool m_bAnalyserFinalizing = false;
+    bool m_trackLoaded         = false;
 };
-
-#endif

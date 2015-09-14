@@ -28,10 +28,8 @@
  */
 
 
-#ifndef REPLAYGAIN_H_
-#define REPLAYGAIN_H_
-
-#include <stddef.h>
+_Pragma("once")
+#include <cstddef>
 
 #define GAIN_NOT_ENOUGH_SAMPLES  -24601
 
@@ -106,5 +104,3 @@ class ReplayGain {
     /*static Uint32_t  B [12000];*/
 #endif
 };
-
-#endif /* REPLAYGAIN_H_ */

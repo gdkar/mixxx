@@ -1,14 +1,12 @@
-#ifndef COLUMNCACHE_H
-#define COLUMNCACHE_H
-
+_Pragma("once")
 #include <QMap>
 #include <QStringList>
-
+#include <QObject>
 // Caches the index of frequently used columns and provides a lookup-table of
 // column name to index.
-class ColumnCache {
+class ColumnCache : public QObject{
+  Q_OBJECT
   public:
-
     enum Column {
         COLUMN_LIBRARYTABLE_INVALID = -1,
         COLUMN_LIBRARYTABLE_ID = 0,
@@ -65,22 +63,23 @@ class ColumnCache {
         // NUM_COLUMNS should always be the last item.
         NUM_COLUMNS
     };
-    ColumnCache() { }
+    Q_ENUM(Column);
+    ColumnCache(QObject *pParent=nullptr);
     ColumnCache(const QStringList& columns) { setColumns(columns); }
     void setColumns(const QStringList& columns);
-    inline int fieldIndex(Column column) const {
+    int fieldIndex(Column column) const {
         if (column < 0 || column >= NUM_COLUMNS) { return -1; }
         return m_columnIndexByEnum[column];
     }
-    inline int fieldIndex(const QString& columnName) const { return m_columnIndexByName.value(columnName, -1); }
-    inline QString columnName(Column column) const { return columnNameForFieldIndex(fieldIndex(column)); }
-    inline QString columnNameForFieldIndex(int index) const {
+    int fieldIndex(const QString& columnName) const { return m_columnIndexByName.value(columnName, -1); }
+    QString columnName(Column column) const { return columnNameForFieldIndex(fieldIndex(column)); }
+    QString columnNameForFieldIndex(int index) const {
         if (index < 0 || index >= m_columnsByIndex.size()) { return QString(); }
         return m_columnsByIndex.at(index);
     }
-    inline QString columnSortForFieldIndex(int index) const {
+    QString columnSortForFieldIndex(int index) const {
         // Check if there is a special sort clause
-        QString format = m_columnSortByIndex.value(index, "%1");
+        auto format = m_columnSortByIndex.value(index, "%1");
         return format.arg(columnNameForFieldIndex(index));
     }
     QStringList m_columnsByIndex;
@@ -89,4 +88,3 @@ class ColumnCache {
     // A mapping from column enum to logical index.
     int m_columnIndexByEnum[NUM_COLUMNS];
 };
-#endif /* COLUMNCACHE_H */

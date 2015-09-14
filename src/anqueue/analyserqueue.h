@@ -29,7 +29,6 @@ class AnalyserQueue : public QThread {
     void slotUpdateProgress();
   signals:
     void trackProgress(double  progress);
-    void trackDone(TrackPointer track);
     void trackFinished(int size);
     // Signals from AnalyserQueue Thread:
     void queueEmpty();

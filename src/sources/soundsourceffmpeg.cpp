@@ -1,8 +1,4 @@
-
 #include "sources/soundsourceffmpeg.h"
-extern "C"{
-#include <libswresample/swresample.h>
-};
 
 namespace Mixxx {
 QStringList SoundSourceProviderFFmpeg::getSupportedFileExtensions() const {
@@ -38,13 +34,13 @@ Result SoundSourceFFmpeg::tryOpen(const AudioSourceConfig& config) {
     qDebug() << __FUNCTION__  << "(" << filename << ")";
     // Open file and make m_pFormatCtx
     if (( ret = avformat_open_input(&m_format_ctx, filename.constData(), nullptr,&l_format_opts))<0) {
-        qDebug() << __FUNCTION__ << "cannot open" << filename << av_err2str ( ret );
+        qDebug() << __FUNCTION__ << "cannot open" << filename << ff_make_error_string ( ret );
         return ERR;
     }
     av_dict_free(&l_format_opts);
     // Retrieve stream information
     if ( ( ret = avformat_find_stream_info(m_format_ctx, nullptr)) < 0) {
-        qDebug() << __FUNCTION__ << "cannot open" << filename << av_err2str ( ret );
+        qDebug() << __FUNCTION__ << "cannot open" << filename << ff_make_error_string ( ret );
         return ERR;
     }
     //debug only (Enable if needed)
@@ -61,7 +57,7 @@ Result SoundSourceFFmpeg::tryOpen(const AudioSourceConfig& config) {
             &m_codec,
             0))<0)
     {
-      qDebug() << __FUNCTION__ << "cannot find audio stream in" << filename << av_err2str ( m_stream_index );
+      qDebug() << __FUNCTION__ << "cannot find audio stream in" << filename << ff_make_error_string ( m_stream_index );
       return ERR;
     }
     m_stream          = m_format_ctx->streams[m_stream_index];
@@ -78,23 +74,35 @@ Result SoundSourceFFmpeg::tryOpen(const AudioSourceConfig& config) {
     }
     if ( ( ret = avcodec_copy_context ( m_codec_ctx, m_stream->codec ) ) < 0 )
     {
-      qDebug() << __FUNCTION__ << "cannot copy avcodec context for " << filename << " with codec " << m_codec->long_name << av_err2str(ret);
+      qDebug() << __FUNCTION__ << "cannot copy avcodec context for " << filename << " with codec " << m_codec->long_name << ff_make_error_string(ret);
       return ERR;
     };
     if((ret=av_dict_set(&l_format_opts,"refcounted_frames","1",0))<0)
     {
-      qDebug() << __FUNCTION__ << "failed to set refcounted frames for " << filename << " with codec " << m_codec->long_name << av_err2str ( ret );
+      qDebug() << __FUNCTION__ << "failed to set refcounted frames for " << filename << " with codec " << m_codec->long_name << ff_make_error_string ( ret );
       return ERR;
     }
 
     if((ret = avcodec_open2(m_codec_ctx, m_codec,&l_format_opts))<0){
-      qDebug() << __FUNCTION__ << "cannot open codec for" << filename << av_err2str ( ret );
+      qDebug() << __FUNCTION__ << "cannot open codec for" << filename << ff_make_error_string ( ret );
       return ERR;
     }
     av_dict_free(&l_format_opts);
     m_stream_tb = m_stream->time_base;
     m_codec_tb  = m_codec_ctx->time_base;
-
+    if ( !m_codec_ctx->channel_layout )
+    {
+      m_codec_ctx->channel_layout = av_get_default_channel_layout(m_codec_ctx->channels);
+    }
+    else if ( !m_codec_ctx->channels )
+    {
+      m_codec_ctx->channels = av_get_channel_layout_nb_channels ( m_codec_ctx->channel_layout );
+    }
+    if ( !m_codec_ctx->channel_layout || !m_codec_ctx->channels )
+    {
+      m_codec_ctx->channels = 2;
+      m_codec_ctx->channel_layout = av_get_default_channel_layout(m_codec_ctx->channels);
+    }
     if ( config.channelCountHint <= 0 ) setChannelCount( m_codec_ctx->channels );
     else                                setChannelCount( config.channelCountHint );
     if ( config.frameRateHint < 8000 )  setFrameRate ( m_codec_ctx->sample_rate );
@@ -103,11 +111,11 @@ Result SoundSourceFFmpeg::tryOpen(const AudioSourceConfig& config) {
     setFrameCount ( av_rescale_q( m_format_ctx->duration, m_stream_tb, m_output_tb ) );
     if(!(m_swr = swr_alloc ( )))
     {
-      qDebug() << __FUNCTION__ << "cannot allocate swr context for" << filename << av_err2str(AVERROR(ENOMEM));
+      qDebug() << __FUNCTION__ << "cannot allocate swr context for" << filename << ff_make_error_string(AVERROR(ENOMEM));
       return ERR;
     }
     if(!(m_orig_frame = av_frame_alloc () ) || !(m_frame = av_frame_alloc() ) ){
-      qDebug() << __FUNCTION__ << "cannot allocate AVFrames for " << filename << av_err2str(AVERROR(ENOMEM));
+      qDebug() << __FUNCTION__ << "cannot allocate AVFrames for " << filename << ff_make_error_string(AVERROR(ENOMEM));
       return ERR;
     }
     m_frame->channel_layout = av_get_default_channel_layout ( getChannelCount() );
@@ -117,6 +125,7 @@ Result SoundSourceFFmpeg::tryOpen(const AudioSourceConfig& config) {
     m_packet.size = 0;
     m_packet.data = nullptr;
     auto discarded = size_t{0};
+    auto total_size= size_t{0};
     do
     {
       ret = av_read_frame ( m_format_ctx, & m_packet );
@@ -124,13 +133,14 @@ Result SoundSourceFFmpeg::tryOpen(const AudioSourceConfig& config) {
       {
         if ( m_packet.stream_index != m_stream_index ) discarded ++;
         else if ( ret != AVERROR_EOF )
-          qDebug() << __FUNCTION__ << filename << "av_read_packet returned error" << av_err2str(ret);
+          qDebug() << __FUNCTION__ << filename << "av_read_packet returned error" << ff_make_error_string(ret);
         av_free_packet(&m_packet);
       }
       else
       {
         av_dup_packet ( &m_packet );
         m_pkt_array.push_back ( m_packet );
+        total_size += m_packet.size;
         av_init_packet ( &m_packet );
       }
     }while ( ret >= 0 );
@@ -140,9 +150,12 @@ Result SoundSourceFFmpeg::tryOpen(const AudioSourceConfig& config) {
     m_pkt_index = 0;
     if ( m_pkt_index < m_pkt_array.size() ) m_packet = m_pkt_array.at(m_pkt_index);
     setFrameCount ( av_rescale_q ( m_pkt_array.back().pts + m_pkt_array.back().duration - m_first_pts, m_stream_tb, m_output_tb ) );
-    qDebug() << __FUNCTION__ << ": frameRate = " << getFrameRate()
-                             << ", channelCount = " << getChannelCount()
-                             << ", frameCount = " << getFrameCount();
+    qDebug() << __FUNCTION__ << ": demuxing results for " << filename << "\n" 
+                             << "  frameRate = " << getFrameRate() << "\n" 
+                             << ", channelCount = " << getChannelCount() << "\n"
+                             << ", frameCount = " << getFrameCount() << "\n"
+                             << ", total packets = " << m_pkt_array.size() << "\n"
+                             << ", total demuxed size = " << total_size << " ( bytes )\n";
     decode_next_frame ();
     return OK;
 }
@@ -156,6 +169,7 @@ void SoundSourceFFmpeg::close() {
     avcodec_close(m_codec_ctx);
     avcodec_free_context ( &m_codec_ctx );
     avformat_close_input(&m_format_ctx);
+    avformat_free_context(m_format_ctx);
     av_frame_free(&m_orig_frame);
     av_frame_free(&m_frame     );
     m_stream       = nullptr;
@@ -277,7 +291,7 @@ bool SoundSourceFFmpeg::decode_next_frame(){
       ret = avcodec_decode_audio4 ( m_codec_ctx, m_orig_frame, &got_frame, &m_packet );
       if ( ret < 0 )
       {
-        qDebug() << __FUNCTION__ << "error decoding packet" << m_pkt_index << "for" << getLocalFileName() << av_err2str ( ret );
+        qDebug() << __FUNCTION__ << "error decoding packet" << m_pkt_index << "for" << getLocalFileName() << ff_make_error_string ( ret );
         m_packet.size = 0;
         m_packet.data = nullptr;
         av_init_packet ( &m_packet );
@@ -298,9 +312,9 @@ bool SoundSourceFFmpeg::decode_next_frame(){
         m_packet.data += ret;
         if ( got_frame )
         {
-          if ( !m_orig_frame->sample_rate    ) m_orig_frame->sample_rate = m_codec_ctx->sample_rate;
+          if ( !m_orig_frame->sample_rate    ) m_orig_frame->sample_rate    = m_codec_ctx->sample_rate;
           if ( !m_orig_frame->channel_layout ) m_orig_frame->channel_layout = m_codec_ctx->channel_layout;
-          if ( !m_orig_frame->channels )       m_orig_frame->channels = m_codec_ctx->channels;
+          if ( !m_orig_frame->channels )       m_orig_frame->channels       = m_codec_ctx->channels;
 
           m_orig_frame->pts = av_frame_get_best_effort_timestamp ( m_orig_frame );
           av_frame_unref ( m_frame );
@@ -312,7 +326,7 @@ bool SoundSourceFFmpeg::decode_next_frame(){
             if ( (ret = swr_config_frame ( m_swr, m_frame, m_orig_frame ) ) < 0 
               || (ret = swr_init ( m_swr ) ) < 0 )
             {
-              qDebug() << __FUNCTION__ << "error initializing SwrContext" << av_err2str ( ret );
+              qDebug() << __FUNCTION__ << "error initializing SwrContext" << ff_make_error_string ( ret );
             }
           }
           auto delay = swr_get_delay ( m_swr, getFrameRate ( ) );
@@ -324,7 +338,7 @@ bool SoundSourceFFmpeg::decode_next_frame(){
             if ( ( ret = swr_config_frame ( m_swr, m_frame, m_orig_frame ) ) < 0 
               || ( ret = swr_convert_frame( m_swr, m_frame, m_orig_frame ) ) < 0 )
             {
-              qDebug() << __FUNCTION__ << "error converting frame for" << getLocalFileName()<< av_err2str(ret);
+              qDebug() << __FUNCTION__ << "error converting frame for" << getLocalFileName()<< ff_make_error_string(ret);
               continue;
             }
           }

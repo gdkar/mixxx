@@ -1,6 +1,4 @@
-#ifndef CONTROLWIDGETCONNECTION_H
-#define CONTROLWIDGETCONNECTION_H
-
+_Pragma("once")
 #include <QObject>
 #include <QMetaType>
 #include <QMetaEnum>
@@ -11,20 +9,18 @@
 #include "configobject.h"
 class ControlObjectSlave;
 class WBaseWidget;
-class ValueTransformer;
-
 class ControlWidgetConnection : public QObject {
     Q_OBJECT
   public:
     // Takes ownership of pControl and pTransformer.
-    ControlWidgetConnection(WBaseWidget* pBaseWidget,
-                            ControlObjectSlave* pControl,
-                            ValueTransformer* pTransformer);
+    ControlWidgetConnection(WBaseWidget* pBaseWidget,ControlObjectSlave* pControl);
     virtual ~ControlWidgetConnection();
     double getControlParameter() const;
     double getControlParameterForValue(double value) const;
     const ConfigKey& getKey() const; 
     virtual QString toDebugString() const = 0;
+    bool invert()const;
+    void setInvert(bool);
   protected slots:
     virtual void slotControlValueChanged(double v) = 0;
   protected:
@@ -32,7 +28,7 @@ class ControlWidgetConnection : public QObject {
     WBaseWidget* m_pWidget;
     QScopedPointer<ControlObjectSlave> m_pControl;
   private:
-    QScopedPointer<ValueTransformer> m_pValueTransformer;
+    bool m_bInvert = false;
 };
 class ControlParameterWidgetConnection : public ControlWidgetConnection {
     Q_OBJECT
@@ -52,14 +48,11 @@ class ControlParameterWidgetConnection : public ControlWidgetConnection {
         DIR_FROM_AND_TO_WIDGET   = 0x03,
         DIR_DEFAULT              = 0x04
     };
-    Q_ENUMS(EmitOption);
-    Q_ENUMS(DirectionOption);
+    Q_ENUM(EmitOption);
+    Q_ENUM(DirectionOption);
     static QString directionOptionToString(DirectionOption option);
-    ControlParameterWidgetConnection(WBaseWidget* pBaseWidget,
-                                     ControlObjectSlave* pControl,
-                                     ValueTransformer* pTransformer,
-                                     DirectionOption directionOption,
-                                     EmitOption emitOption);
+    ControlParameterWidgetConnection(WBaseWidget* pBaseWidget,ControlObjectSlave* pControl, 
+                                     DirectionOption directionOption,EmitOption emitOption);
     virtual ~ControlParameterWidgetConnection();
     void Init();
     QString toDebugString() const;
@@ -80,10 +73,7 @@ class ControlParameterWidgetConnection : public ControlWidgetConnection {
 class ControlWidgetPropertyConnection : public ControlWidgetConnection {
     Q_OBJECT
   public:
-    ControlWidgetPropertyConnection(WBaseWidget* pBaseWidget,
-                                    ControlObjectSlave* pControl,
-                                    ValueTransformer* pTransformer,
-                                    const QString& property);
+    ControlWidgetPropertyConnection(WBaseWidget* pBaseWidget,ControlObjectSlave* pControl, const QString& property);
     virtual ~ControlWidgetPropertyConnection();
     QString toDebugString() const;
   private slots:
@@ -91,4 +81,3 @@ class ControlWidgetPropertyConnection : public ControlWidgetConnection {
   private:
     QByteArray m_propertyName;
 };
-#endif /* CONTROLWIDGETCONNECTION_H */

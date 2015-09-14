@@ -8,56 +8,38 @@
 using mixxx::track::io::key::KeyMap;
 
 // static
-Keys KeyFactory::loadKeysFromByteArray(const QString& keysVersion,
-                                       const QString& keysSubVersion,
-                                       QByteArray* keysSerialized) {
+Keys KeyFactory::loadKeysFromByteArray(const QString& keysVersion,const QString& keysSubVersion,QByteArray* keysSerialized) {
     if (keysVersion == KEY_MAP_VERSION) {
         Keys keys(keysSerialized);
         keys.setSubVersion(keysSubVersion);
         qDebug() << "Successfully deserialized KeyMap";
         return keys;
     }
-
     return Keys();
 }
-
 // static
-Keys KeyFactory::makeBasicKeys(mixxx::track::io::key::ChromaticKey global_key,
-                               mixxx::track::io::key::Source source) {
+Keys KeyFactory::makeBasicKeys(ChromaticKey global_key,Source source) {
     KeyMap key_map;
     key_map.set_global_key(global_key);
     key_map.set_source(source);
     return Keys(key_map);
 }
-
 // static
-Keys KeyFactory::makeBasicKeysFromText(const QString& global_key_text,
-                                       mixxx::track::io::key::Source source) {
+Keys KeyFactory::makeBasicKeysFromText(const QString& global_key_text,Source source) {
     KeyMap key_map;
     key_map.set_source(source);
-    mixxx::track::io::key::ChromaticKey global_key = KeyUtils::guessKeyFromText(
-        global_key_text);
-    if (global_key != mixxx::track::io::key::INVALID) {
-        key_map.set_global_key(global_key);
-    } else {
-        // If we couldn't understand the key, save it as text.
-        key_map.set_global_key_text(global_key_text.toStdString());
-    }
+    ChromaticKey global_key = KeyUtils::guessKeyFromText(global_key_text);
+    if (global_key != mixxx::track::io::key::INVALID) {key_map.set_global_key(global_key);}
+    else {key_map.set_global_key_text(global_key_text.toStdString());}
     return Keys(key_map);
 }
-
 // static
-QString KeyFactory::getPreferredVersion() {
-    return KEY_MAP_VERSION;
-}
-
+QString KeyFactory::getPreferredVersion() {return KEY_MAP_VERSION;}
 // static
-QString KeyFactory::getPreferredSubVersion(
-        const QHash<QString, QString>& extraVersionInfo) {
+QString KeyFactory::getPreferredSubVersion(const QHash<QString, QString>& extraVersionInfo) {
     const char* kSubVersionKeyValueSeparator = "=";
     const char* kSubVersionFragmentSeparator = "|";
     QStringList fragments;
-
     QHashIterator<QString, QString> it(extraVersionInfo);
     while (it.hasNext()) {
         it.next();
@@ -69,31 +51,24 @@ QString KeyFactory::getPreferredSubVersion(
                      << it.key() << ":" << it.value() << "Skipping.";
             continue;
         }
-        fragments << QString("%1%2%3").arg(
-            it.key(), kSubVersionKeyValueSeparator, it.value());
+        fragments << QString("%1%2%3").arg(it.key(), kSubVersionKeyValueSeparator, it.value());
     }
-
     qSort(fragments);
     return (fragments.size() > 0) ? fragments.join(kSubVersionFragmentSeparator) : "";
 }
-
 // static
 Keys KeyFactory::makePreferredKeys(
         const KeyChangeList& key_changes,
         const QHash<QString, QString>& extraVersionInfo,
         const int iSampleRate, const int iTotalSamples) {
     Q_UNUSED(iSampleRate);
-
-    const QString version = getPreferredVersion();
-    const QString subVersion = getPreferredSubVersion(extraVersionInfo);
-
+    const auto version = getPreferredVersion();
+    const auto subVersion = getPreferredSubVersion(extraVersionInfo);
     if (version == KEY_MAP_VERSION) {
         KeyMap key_map;
-        for (KeyChangeList::const_iterator it = key_changes.begin();
-             it != key_changes.end(); ++it) {
+        for (auto it = key_changes.cbegin();it != key_changes.cend(); ++it) {
             // Key position is in frames. Do not accept fractional frames.
             double frame = floor(it->second);
-
             KeyMap::KeyChange* pChange = key_map.add_key_change();
             pChange->set_key(it->first);
             pChange->set_frame_position(frame);
@@ -104,7 +79,6 @@ Keys KeyFactory::makePreferredKeys(
         keys.setSubVersion(subVersion);
         return keys;
     }
-
     qDebug() << "ERROR: Could not determine what type of keys to create.";
     return Keys();
 }

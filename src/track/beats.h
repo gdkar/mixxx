@@ -10,15 +10,15 @@ typedef QSharedPointer<Beats> BeatsPointer;
 class BeatIterator {
   public:
     virtual ~BeatIterator() = default;
-    virtual bool hasNext() const = 0;
-    virtual double next() = 0;
+    virtual bool hasNext() const {return false;};
+    virtual double next() {return -1;};
 };
 // Beats is a pure abstract base class for BPM and beat management classes. It
 // provides a specification of all methods a beat-manager class must provide, as
 // well as a capability model for representing optional features.
 class Beats {
   public:
-    Beats() { }
+    Beats() = default;
     virtual ~Beats() = default;
     enum Capabilities {
         BEATSCAP_NONE          = 0x0000,
@@ -77,7 +77,7 @@ class Beats {
     // startPosition and endPosition. BeatIterator must be iterated while
     // holding a strong references to the Beats object to ensure that the Beats
     // object is not deleted. Caller takes ownership of the returned BeatIterator;
-    virtual BeatIterator* findBeats(double startSample, double stopSample) const = 0;
+    virtual BeatIterator findBeats(double startSample, double stopSample) const = 0;
     // Return whether or not a sample lies between startPosition and endPosition
     virtual bool hasBeatInRange(double startSample, double stopSample) const = 0;
     // Return the average BPM over the entire track if the BPM is

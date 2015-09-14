@@ -26,17 +26,14 @@
 
 class DlgAutoDJ;
 class Library;
-class PlayerManagerInterface;
+class PlayerManager;
 class TrackCollection;
 class AutoDJProcessor;
 
 class AutoDJFeature : public LibraryFeature {
     Q_OBJECT
   public:
-    AutoDJFeature(Library* pLibrary,
-                  ConfigObject<ConfigValue>* pConfig,
-                  PlayerManagerInterface* pPlayerManager,
-                  TrackCollection* pTrackCollection);
+    AutoDJFeature(Library* pLibrary,ConfigObject<ConfigValue>* pConfig,PlayerManager* pPlayerManager,TrackCollection* pTrackCollection);
     virtual ~AutoDJFeature();
 
     QVariant title();

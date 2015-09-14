@@ -58,41 +58,25 @@ void WaveformRenderBeat::draw(QPainter* painter, QPaintEvent* /*event*/) {
     //          << "firstDisplayedPosition" << firstDisplayedPosition
     //          << "lastDisplayedPosition" << lastDisplayedPosition;
 
-    QScopedPointer<BeatIterator> it(trackBeats->findBeats(
-        firstDisplayedPosition * trackSamples, lastDisplayedPosition * trackSamples));
-
+    auto it = trackBeats->findBeats(firstDisplayedPosition * trackSamples, lastDisplayedPosition * trackSamples);
     // if no beat do not waste time saving/restoring painter
-    if (!it || !it->hasNext()) {
-        return;
-    }
-
+    if (!it.hasNext()) {return;}
     painter->save();
     painter->setRenderHint(QPainter::Antialiasing);
-
     QPen beatPen(m_beatColor);
     beatPen.setWidthF(1);
     painter->setPen(beatPen);
-
     const float rendererHeight = m_waveformRenderer->getHeight();
-
     int beatCount = 0;
-
-    while (it->hasNext()) {
-        int beatPosition = it->next();
+    while (it.hasNext()) {
+        int beatPosition = it.next();
         double xBeatPoint = m_waveformRenderer->transformSampleIndexInRendererWorld(beatPosition);
-
         xBeatPoint = qRound(xBeatPoint);
-        
         // If we don't have enough space, double the size.
-        if (beatCount >= m_beats.size()) {
-            m_beats.resize(m_beats.size() * 2);
-        }
-
+        if (beatCount >= m_beats.size()) {m_beats.resize(m_beats.size() * 2);}
         m_beats[beatCount++].setLine(xBeatPoint, 0.0f, xBeatPoint, rendererHeight);
     }
-
     // Make sure to use constData to prevent detaches!
     painter->drawLines(m_beats.constData(), beatCount);
-
     painter->restore();
 }

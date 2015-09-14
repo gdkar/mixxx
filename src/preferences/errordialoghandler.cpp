@@ -21,7 +21,7 @@
 #include <QThread>
 #include <QtDebug>
 
-#include "errordialoghandler.h"
+#include "preferences/errordialoghandler.h"
 #include "util/assert.h"
 
 ErrorDialogProperties::ErrorDialogProperties()

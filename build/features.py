@@ -94,90 +94,6 @@ class Bulk(Feature):
         if not int(build.flags['hid']):
             sources.append('controllers/hid/hidcontrollerpresetfilehandler.cpp')
         return sources
-class Mad(Feature):
-    def description(self): return "MAD MP3 Decoder"
-    def default(self, build): return 0 if build.platform_is_osx else 1
-    def enabled(self, build):
-        build.flags['mad'] = util.get_flags(build.env, 'mad',self.default(build))
-        if int(build.flags['mad']): return True
-        return False
-    def add_options(self, build, vars): vars.Add('mad', 'Set to 1 to enable MAD MP3 decoder support.', self.default(build))
-    def configure(self, build, conf):
-        if not self.enabled(build): return
-        if not conf.CheckLib(['libmad', 'mad']):
-            raise Exception('Did not find libmad.a, libmad.lib, or the libmad development header files - exiting!')
-        if not conf.CheckLib(['libid3tag', 'id3tag', 'libid3tag-release']):
-            raise Exception('Did not find libid3tag.a, libid3tag.lib, or the libid3tag development header files - exiting!')
-        build.env.Append(CPPDEFINES='__MAD__')
-
-    def sources(self, build):
-        return []
-
-
-class CoreAudio(Feature):
-    def description(self): return "CoreAudio MP3/AAC Decoder"
-    def default(self, build):
-        return 1 if build.platform_is_osx else 0
-    def enabled(self, build):
-        build.flags['coreaudio'] = util.get_flags( build.env, 'coreaudio', self.default(build))
-        if int(build.flags['coreaudio']): return True
-        return False
-    def add_options(self, build, vars):
-        vars.Add('coreaudio', 'Set to 1 to enable CoreAudio MP3/AAC decoder support.',self.default(build))
-    def configure(self, build, conf):
-        if not self.enabled(build): return
-        if not build.platform_is_osx: raise Exception('CoreAudio is only supported on OS X!')
-        build.env.Append(CPPPATH='#lib/apple/')
-        build.env.AppendUnique(FRAMEWORKS=['AudioToolbox', 'CoreFoundation'])
-        build.env.Append(CPPDEFINES='__COREAUDIO__')
-    def sources(self, build):
-        return ['#lib/apple/CAStreamBasicDescription.cpp']
-class MediaFoundation(Feature):
-    FLAG = 'mediafoundation'
-    def description(self): return "Media Foundation AAC Decoder Plugin"
-    def enabled(self, build):
-        build.flags[self.FLAG] = util.get_flags(build.env, self.FLAG, 0)
-        if int(build.flags[self.FLAG]): return True
-        return False
-    def add_options(self, build, vars):
-        if build.platform_is_windows: vars.Add( self.FLAG, "Set to 1 to enable the Media Foundation AAC decoder plugin (Windows Vista with KB2117917 or Windows 7 required)", 0)
-    def configure(self, build, conf):
-        if not self.enabled(build): return
-        if not build.platform_is_windows: raise Exception("Media Foundation is only supported on Windows!")
-        if not conf.CheckLib('Ole32'):    raise Exception('Did not find Ole32.lib - exiting!')
-        if not conf.CheckLib(['Mfuuid']): raise Exception('Did not find Mfuuid.lib - exiting!')
-        if not conf.CheckLib(['Mfplat']): raise Exception('Did not find Mfplat.lib - exiting!')
-        if not conf.CheckLib(['Mfreadwrite']):  # Only available on Windows 7 and up, or properly updated Vista
-            raise Exception('Did not find Mfreadwrite.lib - exiting!')
-        build.env.Append(CPPDEFINES='__MEDIAFOUNDATION__')
-class IPod(Feature):
-    def description(self): return "NOT-WORKING iPod Support"
-    def enabled(self, build):
-        build.flags['ipod'] = util.get_flags(build.env, 'ipod', 0)
-        if int(build.flags['ipod']): return True
-        return False
-    def add_options(self, build, vars): vars.Add('ipod', 'Set to 1 to enable iPod support through libgpod', 0)
-    def configure(self, build, conf):
-        if not self.enabled(build): return
-        build.env.Append(CPPDEFINES='__IPOD__')
-        if build.platform_is_windows:
-            build.env.Append(LIBS='gpod')
-            # You must check v-this-v directory out from
-            # http://publicsvn.songbirdnest.com/vendor-
-            # binaries/trunk/windows-i686-msvc8/libgpod/
-            build.env.Append( LIBPATH='../../../windows-i686-msvc8/libgpod/release/lib')
-            # Following building the following must be added to the dist folder in order for mixxx to run with ipod support on Windows
-            # \windows-i686-msvc8\libgpod\release\lib\libgpod.dll
-            # \windows-i686-msvc8\glib\release\bin\libgobject-2.0-0.dll
-            # \windows-i686-msvc8\glib\release\bin\libglib-2.0-0.dll
-            # \windows-i686-msvc8\libiconv\release\bin\iconv.dll
-            # \windows-i686-msvc8\gettext\release\binintl.dll
-        if build.platform_is_linux or build.platform_is_osx:
-            # env.Append(LIBS = 'libgpod-1.0')
-            # env.Append(LIBS = 'glib-2.0')
-            build.env.ParseConfig( 'pkg-config libgpod-1.0 --silence-errors --cflags --libs')
-            build.env.ParseConfig( 'pkg-config glib-2.0 --silence-errors --cflags --libs')
-    def sources(self, build): return ['wipodtracksmodel.cpp']
 class VinylControl(Feature):
     def description(self): return "Vinyl Control"
     def enabled(self, build):
@@ -254,54 +170,6 @@ class Vamp(Feature):
                             '%s/PluginWrapper.cpp',
                             '%s/RealTime.cpp'])
         return sources
-class ModPlug(Feature):
-    def description(self): return "Modplug module decoder plugin"
-    def enabled(self, build):
-        build.flags['modplug'] = util.get_flags(build.env, 'modplug', 0)
-        if int(build.flags['modplug']): return True
-        return False
-    def add_options(self, build, vars): vars.Add('modplug', 'Set to 1 to enable libmodplug based module tracker support.', 0)
-    def configure(self, build, conf):
-        if not self.enabled(build): return
-        build.env.Append(CPPDEFINES='__MODPLUG__')
-        have_modplug_h = conf.CheckHeader('libmodplug/modplug.h')
-        have_modplug = conf.CheckLib(['modplug', 'libmodplug'], autoadd=True)
-        if not have_modplug_h: raise Exception('Could not find libmodplug development headers.')
-        if not have_modplug: raise Exception('Could not find libmodplug shared library.')
-    def sources(self, build):
-#        depends.Qt.uic(build)('dlgprefmodplugdlg.ui')
-        return []
-class FAAD(Feature):
-    def description(self): return "FAAD AAC audio file decoder plugin"
-    def enabled(self, build):
-        build.flags['faad'] = util.get_flags(build.env, 'faad', 0)
-        if int(build.flags['faad']): return True
-        return False
-    def add_options(self, build, vars):
-        vars.Add('faad','Set to 1 to enable building the FAAD AAC decoder plugin.', 0)
-    def configure(self, build, conf):
-        if not self.enabled(build):return
-        have_mp4v2_h = conf.CheckHeader('mp4v2/mp4v2.h')
-        have_mp4v2 = conf.CheckLib(['mp4v2', 'libmp4v2'], autoadd=False)
-        have_mp4_h = conf.CheckHeader('mp4.h')
-        have_mp4 = conf.CheckLib('mp4', autoadd=False)
-        # Either mp4 or mp4v2 works
-        have_mp4 = (have_mp4v2_h or have_mp4_h) and (have_mp4v2 or have_mp4)
-        if not have_mp4: raise Exception('Could not find libmp4, libmp4v2 or the libmp4v2 development headers.')
-        have_faad = conf.CheckLib(['faad', 'libfaad'], autoadd=False)
-        if not have_faad: raise Exception('Could not find libfaad or the libfaad development headers.')
-class WavPack(Feature):
-    def description(self):return "WavPack audio file support plugin"
-    def enabled(self, build):
-        build.flags['wv'] = util.get_flags(build.env, 'wv', 0)
-        if int(build.flags['wv']):return True
-        return False
-    def add_options(self, build, vars):
-        vars.Add('wv','Set to 1 to enable building the WavPack support plugin.', 0)
-    def configure(self, build, conf):
-        if not self.enabled(build): return
-        have_wv = conf.CheckLib(['wavpack', 'wv'], autoadd=False)
-        if not have_wv: raise Exception('Could not find libwavpack, libwv or its development headers.')
 class ColorDiagnostics(Feature):
     def description(self):
         return "Color Diagnostics"
@@ -314,19 +182,6 @@ class ColorDiagnostics(Feature):
         if not self.enabled(build): return
         if not build.compiler_is_clang: raise Exception('Color diagnostics are only available using clang.')
         build.env.Append(CCFLAGS='-fcolor-diagnostics')
-class AddressSanitizer(Feature):
-    def description(self): return "Address Sanitizer"
-    def enabled(self, build):
-        build.flags['asan'] = util.get_flags(build.env, 'asan', 0)
-        return bool(int(build.flags['asan']))
-    def add_options(self, build, vars):
-        vars.Add("asan", "Set to 1 to enable linking against the Clang AddressSanitizer.", 0)
-    def configure(self, build, conf):
-        if not self.enabled(build): return
-        if not build.compiler_is_clang: raise Exception('Address Sanitizer is only available using clang.')
-        # -fno-omit-frame-pointer gets much better stack traces in asan output.
-        build.env.Append(CCFLAGS="-fsanitize=address -fno-omit-frame-pointer")
-        build.env.Append(LINKFLAGS="-fsanitize=address -fno-omit-frame-pointer")
 class PerfTools(Feature):
     def description(self): return "Google PerfTools"
     def enabled(self, build):
@@ -341,33 +196,6 @@ class PerfTools(Feature):
         if not self.enabled(build): return
         build.env.Append(LIBS="tcmalloc")
         if int(build.flags['perftools_profiler']):build.env.Append(LIBS="profiler")
-class AsmLib(Feature):
-    def description(self): return "Agner Fog\'s ASMLIB"
-    def enabled(self, build):
-        if build.build_is_debug: return False
-        build.flags['asmlib'] = util.get_flags(build.env, 'asmlib', 0)
-        if int(build.flags['asmlib']): return True
-        return False
-    def add_options(self, build, vars):
-        vars.Add('asmlib', 'Set to 1 to enable linking against Agner Fog\'s hand-optimized asmlib, found at http://www.agner.org/optimize/', 0)
-    def configure(self, build, conf):
-        if build.build_is_debug: 
-            self.status = "Disabled (due to debug build)"
-            return
-        if not self.enabled(build): return
-        build.env.Append(LIBPATH='#/../asmlib')
-        if build.platform_is_linux:
-            #Use ASMLIB's functions instead of the compiler's
-            build.env.Append(CCFLAGS='-fno-builtin')
-            build.env.Prepend(LIBS='":libaelf%so.a"' % build.bitwidth)
-        elif build.platform_is_osx:
-            #Use ASMLIB's functions instead of the compiler's
-            build.env.Append(CCFLAGS='-fno-builtin')
-            build.env.Prepend(LIBS='":libamac%so.a"' % build.bitwidth)
-        elif build.platform_is_windows:
-            #Use ASMLIB's functions instead of the compiler's
-            build.env.Append(CCFLAGS='/Oi-')
-            build.env.Prepend(LIBS='libacof%so' % build.bitwidth)
 class QDebug(Feature):
     def description(self): return "Debugging message output"
     def enabled(self, build):
@@ -491,120 +319,6 @@ class Shoutcast(Feature):
         return ['preferences/dlgprefshoutcast.cpp',
                 'shoutcast/shoutcastmanager.cpp',
                 'engine/sidechain/engineshoutcast.cpp']
-
-
-class Opus(Feature):
-    def description(self):
-        return "Opus (RFC 6716) support"
-
-    def enabled(self, build):
-        # Default Opus to on but only throw an error if it was explicitly
-        # requested.
-        if 'opus' in build.flags:
-            return int(build.flags['opus']) > 0
-        build.flags['opus'] = util.get_flags(build.env, 'opus', 1)
-        if int(build.flags['opus']): return True
-        return False
-    def add_options(self, build, vars):
-        vars.Add('opus', 'Set to 1 to enable Opus (RFC 6716) support \
-                           (supported are Opus 1.0 and above and Opusfile 0.2 and above)', 1)
-    def configure(self, build, conf):
-        if not self.enabled(build): return
-        # Only block the configure if opus was explicitly requested.
-        explicit = 'opus' in SCons.ARGUMENTS
-        # Support for Opus (RFC 6716)
-        # More info http://http://www.opus-codec.org/
-        if not conf.CheckLib(['opus', 'libopus']):
-            if explicit: raise Exception('Could not find libopus.')
-            else: build.flags['opus'] = 0
-            return
-        if not conf.CheckLib(['opusfile', 'libopusfile']):
-            if explicit: raise Exception('Could not find libopusfile.')
-            else: build.flags['opus'] = 0
-            return
-        build.env.Append(CPPDEFINES='__OPUS__')
-        if build.platform_is_linux or build.platform_is_bsd:
-            build.env.ParseConfig('pkg-config opusfile opus --silence-errors --cflags --libs')
-    def sources(self, build): return []
-class FFMPEG(Feature):
-    def description(self): return "FFmpeg/Avconv support"
-    def enabled(self, build):
-        build.flags['ffmpeg'] = util.get_flags(build.env, 'ffmpeg', 0)
-        if int(build.flags['ffmpeg']):
-            return True
-        return False
-    def add_options(self, build, vars):
-        vars.Add('ffmpeg', 'Set to 1 to enable FFmpeg/Avconv support supported FFmpeg 0.11-2.x and Avconv 0.8.x-11.x)', 0)
-    def configure(self, build, conf):
-        if not self.enabled(build): return
-        # Supported version are FFmpeg 0.11-2.x and Avconv 0.8.x-11.x
-        # FFmpeg is multimedia library that can be found http://ffmpeg.org/
-        # Avconv is fork of FFmpeg that is used mainly in Debian and Ubuntu
-        # that can be found http://libav.org
-        if build.platform_is_linux or build.platform_is_osx or build.platform_is_bsd:
-            # Check for libavcodec, libavformat
-            # I just randomly picked version numbers lower than mine for this
-            if not conf.CheckForPKG('libavcodec', '53.35.0'):
-                raise Exception('Missing libavcodec or it\'s too old! It can'
-                                'be separated from main package so check your'
-                                'operating system packages.')
-            if not conf.CheckForPKG('libavformat', '53.21.0'):
-                raise Exception('Missing libavformat  or it\'s too old!'
-                                'It can be separated from main package so'
-                                'check your operating system packages.')
-
-            # Needed to build new FFmpeg
-            build.env.Append(CCFLAGS='-D__STDC_CONSTANT_MACROS')
-            build.env.Append(CCFLAGS='-D__STDC_LIMIT_MACROS')
-            build.env.Append(CCFLAGS='-D__STDC_FORMAT_MACROS')
-
-            # Grabs the libs and cflags for FFmpeg
-            build.env.ParseConfig('pkg-config libavcodec --silence-errors --cflags --libs')
-            build.env.ParseConfig('pkg-config libavformat --silence-errors --cflags --libs')
-            build.env.ParseConfig('pkg-config libavutil --silence-errors --cflags --libs')
-            build.env.ParseConfig('pkg-config libswresample --silence-errors --cflags --libs')
-            build.env.ParseConfig('pkg-config libavfilter --silence-errors --cflags --libs')
-            build.env.ParseConfig('pkg-config libavdevice --silence-errors --cflags --libs')
-
-            build.env.Append(CPPDEFINES='__FFMPEGFILE__')
-            self.status = "Enabled"
-
-        else:
-            # aptitude install libavcodec-dev libavformat-dev liba52-0.7.4-dev
-            # libdts-dev
-            # Append some stuff to CFLAGS in Windows also
-            build.env.Append(CCFLAGS='-D__STDC_CONSTANT_MACROS')
-            build.env.Append(CCFLAGS='-D__STDC_LIMIT_MACROS')
-            build.env.Append(CCFLAGS='-D__STDC_FORMAT_MACROS')
-
-            build.env.Append(LIBS='avcodec')
-            build.env.Append(LIBS='avformat')
-            build.env.Append(LIBS='avutil')
-            build.env.Append(LIBS='z')
-            build.env.Append(LIBS='swresample')
-            # build.env.Append(LIBS = 'a52')
-            # build.env.Append(LIBS = 'dts')
-            build.env.Append(LIBS='gsm')
-            # build.env.Append(LIBS = 'dc1394_control')
-            # build.env.Append(LIBS = 'dl')
-            build.env.Append(LIBS='vorbisenc')
-            # build.env.Append(LIBS = 'raw1394')
-            build.env.Append(LIBS='vorbis')
-            build.env.Append(LIBS='m')
-            build.env.Append(LIBS='ogg')
-            build.env.Append(CPPDEFINES='__FFMPEGFILE__')
-
-        # Add new path for FFmpeg header files.
-        # Non-crosscompiled builds need this too, don't they?
-        if build.crosscompile and build.platform_is_windows and build.toolchain_is_gnu:
-            build.env.Append(CPPPATH=os.path.join(build.crosscompile_root,'include', 'ffmpeg'))
-    def sources(self, build):
-        return ['sources/soundsourceffmpeg.cpp',
-                'encoder/encoderffmpegresample.cpp',
-                'encoder/encoderffmpegcore.cpp',
-                'encoder/encoderffmpegmp3.cpp',
-                'encoder/encoderffmpegvorbis.cpp']
-
 class Optimize(Feature):
     LEVEL_OFF = 'off'
     LEVEL_PORTABLE = 'portable'
@@ -779,17 +493,3 @@ class MacAppStoreException(Feature):
     def configure(self, build, conf):
         if not self.enabled(build): return
         build.env.Append(CPPDEFINES='__MACAPPSTORE__')
-class LocaleCompare(Feature):
-    def description(self): return "Locale Aware Compare for SQLite"
-    def default(self, build): return 1 if build.platform_is_linux else 0
-    def enabled(self, build):
-        build.flags['localecompare'] = util.get_flags(build.env, 'localecompare',self.default(build))
-        if int(build.flags['localecompare']): return True
-        return False
-    def add_options(self, build, vars):
-        vars.Add('localecompare','Set to 1 to enable Locale Aware Compare support for SQLite.',self.default(build))
-    def configure(self, build, conf):
-        if not self.enabled(build): return
-        if int(util.get_flags(build.env, 'qt_sqlite_plugin', 0)): raise Exception('WARNING: localecompare is not compatible with the Qt SQLite plugin')
-        if not conf.CheckLib(['sqlite3','libsqlite3']):                        raise Exception('Missing libsqlite3 -- exiting!')
-        build.env.Append(CPPDEFINES='__SQLITE3__')

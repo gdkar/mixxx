@@ -117,7 +117,6 @@ BeatsPointer BeatFactory::makePreferredBeats(
         return BeatsPointer();
     }
 }
-
 void BeatFactory::deleteBeats(Beats* pBeats) {
     // BeatGrid/BeatMap objects have no parent and live in the same thread as
     // their associated TIO. QObject::deleteLater does not have the desired

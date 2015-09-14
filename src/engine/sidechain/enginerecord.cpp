@@ -30,7 +30,7 @@
 #include "encoder/encodervorbis.h"
 #endif
 
-#include "errordialoghandler.h"
+#include "preferences/errordialoghandler.h"
 #include "playerinfo.h"
 #include "recording/defs_recording.h"
 #include "util/event.h"
@@ -243,13 +243,11 @@ void EngineRecord::writeCueLine() {
                     .arg((double)cueFrame, 2, 'f', 0, '0').toLatin1());
 }
 // Encoder calls this method to write compressed audio
-void EngineRecord::write(unsigned char *header, unsigned char *body,
-                         int headerLen, int bodyLen) {
-    if (!fileOpen()) {return;}
-    if (headerLen > 0) {m_dataStream.writeRawData((const char*) header, headerLen);}
-    // Always write body
-    m_dataStream.writeRawData((const char*) body, bodyLen);
-    emit(bytesRecorded((headerLen+bodyLen)));
+int EngineRecord::write(unsigned char *data,int length) {
+    if (!fileOpen()) {return EINVAL;}
+    if (length> 0) {m_dataStream.writeRawData((const char*) data, length);}
+    emit(bytesRecorded((length)));
+    return length;
 }
 bool EngineRecord::fileOpen() {
     // Both encoder and file must be initialized.

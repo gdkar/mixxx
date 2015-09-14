@@ -29,7 +29,8 @@
 #include "anqueue/analyserqueue.h"
 #include "controlpotmeter.h"
 #include "controlobjectslave.h"
-#include "deck.h"
+#include "control/control.h"
+#include "player.h"
 #include "defs_urls.h"
 #include "preferences/dlgabout.h"
 #include "preferences/dlgpreferences.h"
@@ -234,7 +235,7 @@ void MixxxMainWindow::initalize(QApplication* pApp, const CmdlineArgs& args) {
     // For safety reasons, we deactivate this feature.
     m_pConfig->set(ConfigKey("[Library]","WriteAudioTags"), ConfigValue(0));
     // library dies in seemingly unrelated qtsql error about not having a
-    // sqlite driver if this path doesn't exist. Normally config->Save()
+    // sql if this path doesn't exist. Normally config->Save()
     // above would make it but if it doesn't get run for whatever reason
     // we get hosed -- bkgood
     if (!QDir(args.getSettingsPath()).exists()) {QDir().mkpath(args.getSettingsPath());}

@@ -28,32 +28,25 @@ Import('mixxxminimal_plugins')
 
 env = build.env
 flags = build.flags
-
 #Tell SCons to build Mixxx
 #=========================
 if build.platform_is_windows:
         dist_dir = 'dist%s' % build.bitwidth
         # Populate the stuff that changes in the .rc file
         fo = open(File('#src/mixxx.rc.include').abspath, "w")
-
         str_list = []
         str_list.append('#define VER_FILEVERSION             ')
         # Remove anything after ~ or - in the version number and replace the dots with commas
         str_list.append(mixxx_version.partition('~')[0].partition('-')[0].replace('.',','))
-        if vcs_revision:
-            str_list.append(','+str(vcs_revision))
+        if vcs_revision: str_list.append(','+str(vcs_revision))
         str_list.append('\n')
-
         str_list.append('#define VER_PRODUCTVERSION          ')
         str_list.append(mixxx_version.partition('~')[0].partition('-')[0].replace('.',','))
-        if vcs_revision:
-            str_list.append(','+str(vcs_revision))
+        if vcs_revision: str_list.append(','+str(vcs_revision))
         str_list.append('\n')
-
         import datetime
         now = datetime.datetime.now()
         str_list.append('#define CUR_YEAR                    "'+str(now.year)+'"\n\n')
-
         if build.build_is_debug:
             str_list.append('#define DEBUG                       1\n')
         if 'pre' in mixxx_version.lower():
@@ -61,7 +54,6 @@ if build.platform_is_windows:
 
         fo.write(''.join(str_list))
         fo.close()
-
         mixxx_bin = env.Program('mixxx',
                             [sources, env.RES('#src/mixxx.rc')],
                             LINKCOM = [env['LINKCOM'], 'mt.exe -nologo -manifest ${TARGET}.manifest -outputresource:$TARGET;1'])
@@ -71,9 +63,7 @@ elif build.platform_is_osx:
         # must match the bundle name or else we SIGILL at startup (not sure
         # why).
         mixxx_bin = env.Program('Mixxx', sources)
-else:
-        mixxx_bin = env.Program('mixxx', sources)
-
+else:   mixxx_bin = env.Program('mixxx', sources)
 test_bin = None
 def build_tests():
         global test_bin
@@ -81,18 +71,13 @@ def build_tests():
         test_env = env.Clone()
         test_env.Append(CPPPATH="#lib/gtest-1.7.0/include")
         test_env.Append(CPPPATH="#lib/gmock-1.7.0/include")
-        test_files = [test_env.StaticObject(filename) \
-                              if filename !='main.cpp' else filename
-                      for filename in test_files]
+        test_files = [test_env.StaticObject(filename) if filename !='main.cpp' else filename for filename in test_files]
         mixxx_sources = [filename for filename in sources if filename != 'main.cpp']
         test_sources = (test_files + mixxx_sources)
-
         env.Append(LIBPATH="#lib/gtest-1.7.0/lib")
         env.Append(LIBS = 'gtest')
-
         env.Append(LIBPATH="#lib/gmock-1.7.0/lib")
         env.Append(LIBS = 'gmock')
-
         if build.platform_is_windows:
                 # TODO(rryan): Build Mixxx core as a shared object and link it
                 # into mixxx and mixxx-test. We could build both in different
@@ -103,57 +88,40 @@ def build_tests():
                 test_bin = env.Program(
                         'mixxx-test', [test_sources, env.RES('#src/mixxx.rc')],
                         LINKCOM = [env['LINKCOM'], 'mt.exe -nologo -manifest ${TARGET}.manifest -outputresource:$TARGET;1'])
-        else:
-                test_bin = env.Program(target='mixxx-test', source=test_sources)
-
+        else:   test_bin = env.Program(target='mixxx-test', source=test_sources)
         env.Alias('mixxx-test', test_bin)
-
-        if not build.platform_is_windows:
-                Command("../", test_bin, Copy("$TARGET", "$SOURCE"))
-
+        if not build.platform_is_windows: Command("../", test_bin, Copy("$TARGET", "$SOURCE"))
 def run_tests():
         ret = Execute("./mixxx-test")
         if ret != 0:
                 print "WARNING: Not all tests pass. See mixxx-test output."
                 Exit(ret)
-
 if int(build.flags['test']):
         print "Building tests."
         build_tests()
-
 if 'test' in BUILD_TARGETS:
         print "Running tests."
         run_tests()
-
 def construct_version(build, mixxx_version, branch_name, vcs_revision):
-        if branch_name.startswith('release-'):
-                branch_name = branch_name.replace('release-', '')
-
+        if branch_name.startswith('release-'): branch_name = branch_name.replace('release-', '')
         # Include build type in the filename.
         build_type = 'release' if build.build_is_release else 'debug'
-
         # New, simpler logic: mixxx version, branch name, git revision,
         # release/build. Example: mixxx-1.12.0-master-gitXXXX-release
-        return "%s-%s-%s%s-%s" % (mixxx_version, branch_name, vcs_name,
-                                  vcs_revision, build_type)
+        return "%s-%s-%s%s-%s" % (mixxx_version, branch_name, vcs_name, vcs_revision, build_type)
 
-def ubuntu_construct_version(build, mixxx_version, branch_name, vcs_revision,
-                             ubuntu_version):
+def ubuntu_construct_version(build, mixxx_version, branch_name, vcs_revision, ubuntu_version):
         # Underscores are not ok in version names, dashes are fine though.
-        if branch_name:
-                branch_name = branch_name.replace('_', '-')
+        if branch_name: branch_name = branch_name.replace('_', '-')
         # In release mode, we only use the version and ubuntu_version
-        if build.build_is_release:
-                return "%s-%s" % (mixxx_version, ubuntu_version)
-        elif branch_name.startswith('release-'):
-                return "%s-%s%s" % (mixxx_version, vcs_name, vcs_revision)
+        if build.build_is_release: return "%s-%s" % (mixxx_version, ubuntu_version)
+        elif branch_name.startswith('release-'): return "%s-%s%s" % (mixxx_version, vcs_name, vcs_revision)
         # In a debug build, we must include the Mixxx version since it is the
         # base "upstream" version in the Debian version number. Also include the
         # branch name and VCS version so we know where the build came from.
         # See: https://www.debian.org/doc/debian-policy/ch-controlfields.html#s-f-Version
         # e.g. 1.12.0-alpha~master-gitXXXX~ppa1~trusty1
-        return "%s~%s-%s%s-%s" % (mixxx_version, branch_name, vcs_name,
-                                  vcs_revision, ubuntu_version)
+        return "%s~%s-%s%s-%s" % (mixxx_version, branch_name, vcs_name, vcs_revision, ubuntu_version)
 
 #Set up the install target
 #=========================
@@ -168,55 +136,38 @@ def ubuntu_construct_version(build, mixxx_version, branch_name, vcs_revision,
 
 #Mixxx binary
 binary_files = [mixxx_bin];
-if test_bin is not None:
-        binary_files.append(test_bin)
-
+if test_bin is not None: binary_files.append(test_bin)
 #Soundsource plugins
 soundsource_plugin_files = soundsource_plugins
-
 #VAMP beat tracking and key detection plugin
 libmixxxminimal_vamp_plugin = mixxxminimal_plugins
-
 #Skins
 skin_files = Glob('#res/skins/*')
-
 #Controller mappings
 controllermappings_files = Glob('#res/controllers/*')
-
 # Translation files
 translation_files = Glob('#res/translations/*.qm')
-
 # Font files
 font_files = Glob('#res/fonts/*')
-
 #Keyboard mapping(s)
 keyboardmappings_files = Glob('#res/keyboard/*')
-
 #Promo tracks
 promotracks_files = Glob('#res/promo/*')
-
 #Documentation
 docs_files = Glob('#./LICENSE')
 docs_files += Glob('#./README')
 docs_files += Glob('#./Mixxx-Manual.pdf')
-
 #.desktop file for KDE/GNOME menu
 dotdesktop_files = Glob('#res/linux/mixxx.desktop')
-
 #.appdata.xml file for KDE/GNOME AppStream iniative
 dotappstream_files = Glob('#res/linux/mixxx.appdata.xml')
-
 #udev rule file for HID controllers
 hidudev_files = Glob('#res/linux/mixxx-usb-hid.rules')
-
 #Icon file for menu entry
 icon_files = Glob('#res/images/mixxx-icon.png')
-
 #Images for preferences dialog
 image_files = Glob('#res/images/preferences/*')  # These are compiled in to the "mixxx" binary through mixxx.qrc
-
 #Windows DLLs
-
 # TODO: Use reference to SharedLibrary for libsndfile and others, glob only gets
 # all files on 2+ builds after a clean.
 if build.toolchain_is_msvs:
@@ -231,12 +182,9 @@ elif build.crosscompile and build.platform_is_osx:
         # Glob appropriate dylib files. We have 4 different library types,
         # x86_64, x86, powerpc, powerpc64
         dylib_files = Glob('#/../../mixxx-osx-%s-crossmingw' % build.machine)
-else:
-        dll_files = list() # dll_files += on the next line required dll_files to exist
-
+else:   dll_files = list() # dll_files += on the next line required dll_files to exist
 qt_modules = depends.Qt.enabled_modules(build)
 qt5 = depends.Qt.qt5_enabled(build)
-
 if qt5:
         suffix = 'd.dll' if build.build_is_debug else '.dll'
         qt_modules = ['$QTDIR/lib/' + module.replace('Qt', 'Qt5') + suffix
@@ -246,11 +194,9 @@ else:
         suffix = 'd4.dll' if build.build_is_debug else '4.dll'
         qt_modules = ['$QTDIR/lib/' + module + suffix for module in qt_modules]
         dll_files.extend(qt_modules)
-
 # Qt imageformats plugin
 imgfmtdll_files = []
 qt_imagesformats = depends.Qt.enabled_imageformats(build)
-
 if qt5:
         suffix = 'd.dll' if build.build_is_debug else '.dll'
         qt_imagesformats = ['$QTDIR/plugins/imageformats/' + module + suffix for module in qt_imagesformats]
@@ -259,17 +205,7 @@ else:
         suffix = 'd4.dll' if build.build_is_debug else '4.dll'
         qt_imagesformats = ['$QTDIR/plugins/imageformats/' + module + suffix for module in qt_imagesformats]
         imgfmtdll_files.extend(qt_imagesformats)
-
 sqldll_files = []
-if int(flags.get('qt_sqlite_plugin', 0)):
-        if qt5:
-                # TODO(rryan): Add the SQLite DLL For Qt5.
-                pass
-        else:
-                suffix = 'd4.dll' if build.build_is_debug else '4.dll'
-                # Qt SQLite plugin
-                sqldll_files = ['$QTDIR/plugins/sqldrivers/qsqlite' + suffix]
-
 if build.platform_is_linux or build.platform_is_bsd:
         flags['prefix'] = ARGUMENTS.get('prefix', '/usr/local')
         if not os.path.exists(flags['prefix']):
@@ -282,23 +218,14 @@ if build.platform_is_linux or build.platform_is_bsd:
                 #the compiled-in strings using /usr as the prefix. That's why we have install_root and flags['prefix'].
                 install_root = ARGUMENTS.get('install_root', flags['prefix'])
                 print "Install root: " + install_root
-                unix_share_path = os.path.join(install_root,
-                    env.get('SHAREDIR', default='share'))
-                unix_bin_path = os.path.join(install_root,
-                    env.get('BINDIR', default='bin'))
-                unix_lib_path = os.path.join(install_root,
-                    env.get('LIBDIR', default='lib'))
-
+                unix_share_path = os.path.join(install_root,env.get('SHAREDIR', default='share'))
+                unix_bin_path = os.path.join(install_root,env.get('BINDIR', default='bin'))
+                unix_lib_path = os.path.join(install_root,env.get('LIBDIR', default='lib'))
                 binary = env.Install(unix_bin_path, binary_files)
                 skins = env.Install(os.path.join(unix_share_path, 'mixxx', 'skins'), skin_files)
                 fonts = env.Install(os.path.join(unix_share_path, 'mixxx', 'fonts'), font_files)
-                vamp_plugin =  env.Install(
-                        os.path.join(unix_lib_path, 'mixxx', 'plugins', 'vamp'),
-                        libmixxxminimal_vamp_plugin)
-
-                soundsource_plugins = env.Install(
-                        os.path.join(unix_lib_path, 'mixxx', 'plugins', 'soundsource'),
-                        soundsource_plugin_files)
+                vamp_plugin =  env.Install(os.path.join(unix_lib_path, 'mixxx', 'plugins', 'vamp'),libmixxxminimal_vamp_plugin)
+                soundsource_plugins = env.Install(os.path.join(unix_lib_path, 'mixxx', 'plugins', 'soundsource'),soundsource_plugin_files)
                 controllermappings = env.Install(os.path.join(unix_share_path, 'mixxx', 'controllers'), controllermappings_files)
                 translations = env.Install(os.path.join(unix_share_path, 'mixxx', 'translations'), translation_files)
                 keyboardmappings = env.Install(os.path.join(unix_share_path, 'mixxx', 'keyboard'), keyboardmappings_files)
@@ -350,17 +277,9 @@ if build.platform_is_osx and 'bundle' in COMMAND_LINE_TARGETS:
         # this is a BIG HACK to support Qt's plugins (since Qt *requires* that
         # it's plugins be in specific subdirectories, which OS X doesn't really
         # play nice with)
-
-        # NOTE(rryan): Only include the SQLite plugin if we are building Qt in
-        # sqlite_plugin mode.
-        sql_dylibs = []
-        if int(flags.get('qt_sqlite_plugin', 0)):
-                sql_dylibs = ["libqsqlite.dylib"]
-
         qt_plugins = (
                 [("iconengines", e) for e in ["libqsvgicon.dylib"]] +
                 [("imageformats", e) for e in ["libqgif.dylib", "libqjpeg.dylib", "libqsvg.dylib"]] +
-                [("sqldrivers", e) for e in sql_dylibs] +
                 [("accessible", e) for e in ["libqtaccessiblewidgets.dylib"]])
         #Left out libqmng and libqtiff to save space.
 
@@ -395,13 +314,9 @@ if build.platform_is_osx and 'bundle' in COMMAND_LINE_TARGETS:
                               "/Network/Library/Frameworks",
                               "/usr/lib"]
         mixxx_osxlib_path = SCons.ARGUMENTS.get('osxlib', None)
-        if mixxx_osxlib_path:
-                otool_local_paths = [mixxx_osxlib_path,] + otool_local_paths
-
+        if mixxx_osxlib_path:otool_local_paths = [mixxx_osxlib_path,] + otool_local_paths
         qtplugindir = SCons.ARGUMENTS.get('qtplugindir', None)
-        if not qtplugindir:
-                #qtplugindir = '/Developer/Applications/Qt/'
-                qtplugindir = qtdir
+        if not qtplugindir: qtplugindir = qtdir
         sources = [mixxx_bin,
                    '#res/osx/application.icns',
                    Dir('#res/skins/'),
@@ -499,11 +414,6 @@ if build.platform_is_windows:
         if imgfmtdll_files:
                 imageformats_dll = env.Install(os.path.join(base_dist_dir, "imageformats"), imgfmtdll_files)
                 env.Alias('mixxx', imageformats_dll)
-
-        # QSQLite DLL
-        if sqldll_files:
-                sql_dlls = env.Install(os.path.join(base_dist_dir, "sqldrivers"), sqldll_files)
-                env.Alias('mixxx', sql_dlls)
 
 def win32_find_program_via_registry(program_name):
     # Windows registry access to find where program is installed
@@ -605,17 +515,13 @@ def BuildRelease(target, source, env):
                  '64bit': buildwin64}
             print "Using command: " + command
             subprocess.check_call(command)
-    else:
-        print "Aborted building installer"
-
+    else:   print("Aborted building installer")
 # Do release things
 versionbld = Builder(action = BuildRelease, suffix = '.foo', src_suffix = '.bar')
 env.Append(BUILDERS = {'BuildRelease' : versionbld})
-
 if 'makerelease' in COMMAND_LINE_TARGETS:
         makerelease = env.BuildRelease('', binary_files)
         env.Alias('makerelease', makerelease)
-
 def ubuntu_append_changelog(debian_dir,
                             package_name, package_version,
                             description,
@@ -632,16 +538,13 @@ def ubuntu_append_changelog(debian_dir,
                 "",
                 ]
         lines = []
-        with open(os.path.join(debian_dir, 'changelog'), 'r') as changelog:
-                lines = list(changelog)
+        with open(os.path.join(debian_dir, 'changelog'), 'r') as changelog: lines = list(changelog)
         with open(os.path.join(debian_dir, 'changelog'), 'w') as changelog:
                 changelog.writelines(["%s\n" % x for x in new_entry])
                 changelog.writelines(lines)
-
 def ubuntu_cleanup():
         os.system('rm -rf ubuntu')
         os.mkdir('ubuntu')
-
 # Build the Ubuntu package
 def BuildUbuntuPackage(target, source, env):
         global mixxx_version

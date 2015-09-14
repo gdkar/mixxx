@@ -15,11 +15,8 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef TRACKINFOOBJECT_H
-#define TRACKINFOOBJECT_H
-
+_Pragma("once")
 #include <atomic>
-#include <QAtomicInt>
 #include <QDateTime>
 #include <QDomNode>
 #include <QFileInfo>
@@ -53,15 +50,9 @@ class TrackInfoObject : public QObject {
     Q_OBJECT
   public:
     // Initialize a new track with the filename.
-    TrackInfoObject(const QString& file="",
-                    SecurityTokenPointer pToken=SecurityTokenPointer(),
-                    bool parseHeader=true,
-                    bool parseCoverArt=false);
+    TrackInfoObject(const QString& file="",SecurityTokenPointer pToken=SecurityTokenPointer(),bool parseHeader=true,bool parseCoverArt=false);
     // Initialize track with a QFileInfo class
-    TrackInfoObject(const QFileInfo& fileInfo,
-                    SecurityTokenPointer pToken=SecurityTokenPointer(),
-                    bool parseHeader=true,
-                    bool parseCoverArt=false);
+    TrackInfoObject(const QFileInfo& fileInfo,SecurityTokenPointer pToken=SecurityTokenPointer(),bool parseHeader=true,bool parseCoverArt=false);
     // Creates a new track given information from the xml file.
     TrackInfoObject(const QDomNode &);
     virtual ~TrackInfoObject();
@@ -76,22 +67,27 @@ class TrackInfoObject : public QObject {
     QString getDurationStr() const;
     // Accessors for various stats of the file on disk. These are auto-populated
     // when the TIO is constructed, or when setLocation() is called.
-    Q_PROPERTY(QString artist READ getArtist WRITE setArtist)
-    Q_PROPERTY(QString title READ getTitle WRITE setTitle)
-    Q_PROPERTY(QString album READ getAlbum WRITE setAlbum)
-    Q_PROPERTY(QString albumArtist READ getAlbumArtist WRITE setAlbumArtist)
-    Q_PROPERTY(QString genre READ getGenre WRITE setGenre)
-    Q_PROPERTY(QString composer READ getComposer WRITE setComposer)
-    Q_PROPERTY(QString grouping READ getGrouping WRITE setGrouping)
-    Q_PROPERTY(QString year READ getYear WRITE setYear)
-    Q_PROPERTY(QString track_number READ getTrackNumber WRITE setTrackNumber)
+    Q_PROPERTY(QString artist READ getArtist WRITE setArtist NOTIFY metadataUpdated)
+    Q_PROPERTY(QString title READ getTitle WRITE setTitle    NOTIFY metadataUpdated)
+    Q_PROPERTY(QString album READ getAlbum WRITE setAlbum    NOTIFY metadataUpdated)
+    Q_PROPERTY(QString albumArtist READ getAlbumArtist WRITE setAlbumArtist NOTIFY metadataUpdated)
+    Q_PROPERTY(QString genre READ getGenre WRITE setGenre NOTIFY metadataUpdated)
+    Q_PROPERTY(QString composer READ getComposer WRITE setComposer NOTIFY metadataUpdated)
+    Q_PROPERTY(QString grouping READ getGrouping WRITE setGrouping NOTIFY metadataUpdated)
+    Q_PROPERTY(QString year READ getYear WRITE setYear NOTIFY metadataUpdated)
+    Q_PROPERTY(QString track_number READ getTrackNumber WRITE setTrackNumber NOTIFY metadataUpdated)
     Q_PROPERTY(int times_played READ getTimesPlayed)
-    Q_PROPERTY(QString comment READ getComment WRITE setComment)
-    Q_PROPERTY(double bpm READ getBpm WRITE setBpm)
-    Q_PROPERTY(QString bpmFormatted READ getBpmStr STORED false)
-    Q_PROPERTY(QString key READ getKeyText WRITE setKeyText)
-    Q_PROPERTY(double duration READ getDuration WRITE setDuration)
-    Q_PROPERTY(QString durationFormatted READ getDurationStr STORED false)
+    Q_PROPERTY(QString comment READ getComment WRITE setComment NOTIFY metadataUpdated)
+    Q_PROPERTY(double bpm READ getBpm WRITE setBpm NOTIFY bpmUpdated)
+    Q_PROPERTY(double progress READ getAnalyserProgress WRITE setAnalyserProgress NOTIFY analyserProgress);
+    Q_PROPERTY(double replayGain READ getReplayGain WRITE setReplayGain NOTIFY replayGainUpdated);
+    Q_PROPERTY(QString bpmFormatted READ getBpmStr NOTIFY bpmUpdated STORED false)
+    Q_PROPERTY(QString key READ getKeyText WRITE setKeyText  NOTIFY metadataUpdated)
+    Q_PROPERTY(double duration READ getDuration WRITE setDuration NOTIFY metadataUpdated)
+    Q_PROPERTY(QString durationFormatted READ getDurationStr NOTIFY metadataUpdated STORED false)
+    Q_PROPERTY(QString location READ getLocation WRITE setLocation NOTIFY locationChanged);
+    Q_PROPERTY(QString directory READ getDirectory NOTIFY locationChanged);
+    Q_PROPERTY(QString filename READ getFilename NOTIFY locationChanged);
     // Returns absolute path to the file, including the filename.
     QString getLocation() const;
     QString getCanonicalLocation() const;
@@ -225,7 +221,7 @@ class TrackInfoObject : public QObject {
     // Calls for managing the track's cue points
     Cue* addCue();
     void removeCue(Cue* cue);
-    const QList<Cue*>& getCuePoints();
+    QList<Cue*> getCuePoints();
     void setCuePoints(QList<Cue*> cuePoints);
     bool isDirty();
     // Returns true if the track location has changed
@@ -260,17 +256,19 @@ class TrackInfoObject : public QObject {
     void waveformUpdated();
     void waveformSummaryUpdated();
     void coverArtUpdated();
+    void metadataUpdated();
     void analyserProgress(double progress);
     void bpmUpdated(double bpm);
     void beatsUpdated();
     void keyUpdated(double key);
     void keysUpdated();
-    void ReplayGainUpdated(double replaygain);
+    void replayGainUpdated(double replaygain);
     void cuesUpdated();
     void changed(TrackInfoObject* pTrack);
     void dirty(TrackInfoObject* pTrack);
     void clean(TrackInfoObject* pTrack);
     void referenceExpired(TrackInfoObject* pTrack);
+    void locationChanged(QString);
   private slots:
     void slotBeatsUpdated();
   private:
@@ -339,7 +337,7 @@ class TrackInfoObject : public QObject {
     // True if header was parsed
     std::atomic<bool> m_bHeaderParsed{false};
     // Id. Unique ID of track
-    TrackId m_id;
+    std::atomic<TrackId> m_id;
     // Cue point in samples or something
     std::atomic<double> m_dCuePoint{0.0};
     // Date the track was added to the library
@@ -361,5 +359,3 @@ class TrackInfoObject : public QObject {
     friend class TrackDAO;
     friend class AutoDJProcessorTest;
 };
-
-#endif

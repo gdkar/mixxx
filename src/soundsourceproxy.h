@@ -1,6 +1,4 @@
-#ifndef SOUNDSOURCEPROXY_H
-#define SOUNDSOURCEPROXY_H
-
+_Pragma("once")
 #include "trackinfoobject.h"
 
 #include "sources/soundsourceproviderregistry.h"
@@ -59,4 +57,3 @@ private:
     Mixxx::AudioSourcePointer m_pAudioSource;
 };
 
-#endif

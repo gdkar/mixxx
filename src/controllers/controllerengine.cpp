@@ -11,7 +11,7 @@
 #include "controllers/controller.h"
 #include "controlobject.h"
 #include "controlobjectslave.h"
-#include "errordialoghandler.h"
+#include "preferences/errordialoghandler.h"
 #include "playermanager.h"
 // to tell the msvs compiler about `isnan`
 #include "util/math.h"

@@ -38,22 +38,18 @@
 **
 ****************************************************************************/
 
-#ifndef BYTEARRAYPROTOTYPE_H
-#define BYTEARRAYPROTOTYPE_H
-
+_Pragma("once")
 #include <QtCore/QByteArray>
 #include <QtCore/QObject>
 #include <QtScript/QScriptable>
 #include <QtScript/QScriptValue>
-
 //! [0]
 class ByteArrayPrototype : public QObject, public QScriptable
 {
-Q_OBJECT
+    Q_OBJECT
 public:
     ByteArrayPrototype(QObject *parent = 0);
-    ~ByteArrayPrototype();
-
+    virtual ~ByteArrayPrototype();
 public slots:
     void chop(int n);
     bool equals(const QByteArray &other);
@@ -69,11 +65,7 @@ public slots:
     void truncate(int pos);
     QString toLatin1String() const;
     QScriptValue valueOf() const;
-
 private:
     QByteArray *thisByteArray() const;
 };
 //! [0]
-
-
-#endif

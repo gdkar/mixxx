@@ -24,7 +24,6 @@
 // 1 to display the text "finalizing"
 // 100 for 10% step after finalize
 #define FINALIZE_PROMILLE (1.0e-3)
-
 namespace {
     // Analysis is done in blocks.
     // We need to use a smaller block size, because on Linux the AnalyserQueue
@@ -291,7 +290,6 @@ void AnalyserQueue::run() {
                 emitUpdateProgress(nextTrack, 1.0 - FINALIZE_PROMILLE);
                 // This takes around 3 sec on a Atom Netbook
                 for(auto itf : m_aq ) itf->finalise(nextTrack);
-                emit(trackDone(nextTrack));
                 emitUpdateProgress(nextTrack, 1.0); // 100%
             }
         } else {
@@ -319,9 +317,10 @@ void AnalyserQueue::emitUpdateProgress(TrackPointer tio, double progress) {
             // Signals during processing are not required in any case
             if (!m_progressInfo.sema.tryAcquire()) { return; }
         } else { m_progressInfo.sema.acquire(); }
-        m_progressInfo.current_track = tio;
+        m_progressInfo.current_track  = tio;
         m_progressInfo.track_progress = progress;
-        m_progressInfo.queue_size = m_queue_size;
+        tio->setAnalyserProgress ( progress );
+        m_progressInfo.queue_size     = m_queue_size;
         emit(updateProgress());
     }
 }
@@ -335,7 +334,6 @@ void AnalyserQueue::slotUpdateProgress() {
     if (m_progressInfo.track_progress == 1) { emit(trackFinished(m_progressInfo.queue_size)); }
     m_progressInfo.sema.release();
 }
-
 void AnalyserQueue::slotAnalyseTrack(TrackPointer tio) {
     // This slot is called from the decks and and samplers when the track was loaded.
     queueAnalyseTrack(tio);

@@ -14,14 +14,14 @@
 class ControlPushButton;
 class ControlObjectSlave;
 class TrackCollection;
-class PlayerManagerInterface;
-class BaseTrackPlayer;
+class PlayerManager;
+class Player;
 
 class DeckAttributes : public QObject {
     Q_OBJECT
   public:
     DeckAttributes(int index,
-                   BaseTrackPlayer* pPlayer,
+                   Player* pPlayer,
                    EngineChannel::ChannelOrientation orientation);
     virtual ~DeckAttributes();
     bool isLeft() const;
@@ -59,7 +59,7 @@ class DeckAttributes : public QObject {
     ControlObjectSlave* m_playPos;
     ControlObjectSlave* m_play;
     ControlObjectSlave* m_repeat;
-    BaseTrackPlayer* m_pPlayer;
+    Player* m_pPlayer;
 };
 class AutoDJProcessor : public QObject {
     Q_OBJECT
@@ -85,7 +85,7 @@ class AutoDJProcessor : public QObject {
     Q_ENUMS(AutoDJError);
     AutoDJProcessor(QObject* pParent,
                     ConfigObject<ConfigValue>* pConfig,
-                    PlayerManagerInterface* pPlayerManager,
+                    PlayerManager* pPlayerManager,
                     int iAutoDJPlaylistId,
                     TrackCollection* pCollection);
     virtual ~AutoDJProcessor();
@@ -137,7 +137,7 @@ class AutoDJProcessor : public QObject {
     bool removeTrackFromTopOfQueue(TrackPointer pTrack);
 
     ConfigObject<ConfigValue>* m_pConfig;
-    PlayerManagerInterface* m_pPlayerManager;
+    PlayerManager* m_pPlayerManager;
     PlaylistTableModel* m_pAutoDJTableModel;
 
     AutoDJState m_eState;

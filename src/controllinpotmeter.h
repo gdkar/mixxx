@@ -1,5 +1,4 @@
-#ifndef CONTROLLINPOTMETER_H
-#define CONTROLLINPOTMETER_H
+_Pragma("once")
 #include "controlpotmeter.h"
 class ControlLinPotmeter : public ControlPotmeter {
     Q_OBJECT
@@ -10,5 +9,3 @@ class ControlLinPotmeter : public ControlPotmeter {
             double dStep = 0, double dSmallStep = 0,
             bool allowOutOfBounds = false);
 };
-
-#endif // CONTROLLINPOTMETER_H

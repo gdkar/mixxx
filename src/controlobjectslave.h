@@ -1,6 +1,4 @@
-#ifndef CONTROLOBJECTSLAVE_H
-#define CONTROLOBJECTSLAVE_H
-
+_Pragma("once")
 #include <QObject>
 #include <QSharedPointer>
 #include <QString>
@@ -52,4 +50,3 @@ class ControlObjectSlave : public QObject {
     // Pointer to connected control.
     QSharedPointer<ControlDoublePrivate> m_pControl;
 };
-#endif // CONTROLOBJECTSLAVE_H

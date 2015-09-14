@@ -27,7 +27,6 @@
 #include "engine/sync/syncable.h"
 #include "trackinfoobject.h"
 #include "configobject.h"
-#include "rotary.h"
 #include "control/controlvalue.h"
 #include "cachingreader.h"
 
@@ -52,8 +51,6 @@ class ControlObject;
 class ControlObjectSlave;
 class ControlPushButton;
 class ControlIndicator;
-class ControlBeat;
-class ControlTTRotary;
 class ControlPotmeter;
 class CachingReader;
 class EngineBufferScale;

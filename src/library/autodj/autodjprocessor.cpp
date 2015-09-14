@@ -5,7 +5,7 @@
 #include "controlobjectslave.h"
 #include "util/math.h"
 #include "playermanager.h"
-#include "basetrackplayer.h"
+#include "player.h"
 
 #define kConfigKey "[Auto DJ]"
 const char* kTransitionPreferenceName = "Transition";
@@ -13,9 +13,7 @@ const int kTransitionPreferenceDefault = 10;
 
 static const bool sDebug = false;
 
-DeckAttributes::DeckAttributes(int index,
-                               BaseTrackPlayer* pPlayer,
-                               EngineChannel::ChannelOrientation orientation)
+DeckAttributes::DeckAttributes(int index,Player* pPlayer,EngineChannel::ChannelOrientation orientation)
         : index(index),
           group(pPlayer->getGroup()),
           posThreshold(1.0),
@@ -84,7 +82,7 @@ TrackPointer DeckAttributes::getLoadedTrack() const {
 
 AutoDJProcessor::AutoDJProcessor(QObject* pParent,
                                  ConfigObject<ConfigValue>* pConfig,
-                                 PlayerManagerInterface* pPlayerManager,
+                                 PlayerManager* pPlayerManager,
                                  int iAutoDJPlaylistId,
                                  TrackCollection* pTrackCollection)
         : QObject(pParent),
@@ -123,7 +121,7 @@ AutoDJProcessor::AutoDJProcessor(QObject* pParent,
     // are created.
     for (unsigned int i = 0; i < pPlayerManager->numberOfDecks(); ++i) {
         QString group = PlayerManager::groupForDeck(i);
-        BaseTrackPlayer* pPlayer = pPlayerManager->getPlayer(group);
+        auto pPlayer = pPlayerManager->getPlayer(group);
         // Shouldn't be possible.
         if (pPlayer == NULL) {
             qWarning() << "PROGRAMMING ERROR deck does not exist" << i;

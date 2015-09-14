@@ -1,13 +1,11 @@
+syntax = "proto2";
 package mixxx.track.io.key;
-
 option optimize_for = LITE_RUNTIME;
-
 enum Source {
   ANALYSER = 0;
   FILE_METADATA = 1;
   USER = 2;
 }
-
 enum ChromaticKey {
   INVALID = 0;
   C_MAJOR = 1;
@@ -35,16 +33,13 @@ enum ChromaticKey {
   B_FLAT_MINOR = 23;
   B_MINOR = 24;
 };
-
 message KeyMap {
   optional ChromaticKey global_key = 1 [ default = INVALID ];
   optional string global_key_text = 2;
-
   message KeyChange {
     optional int32 frame_position = 1;
     optional ChromaticKey key = 2;
   }
   repeated KeyChange key_change = 3;
-
   optional Source source = 4 [ default = ANALYSER ];
 }

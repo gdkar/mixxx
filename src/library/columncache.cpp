@@ -3,7 +3,7 @@
 #include "library/dao/trackdao.h"
 #include "library/dao/playlistdao.h"
 #include "library/dao/cratedao.h"
-
+ColumnCache::ColumnCache(QObject *pParent):QObject(pParent){}
 void ColumnCache::setColumns(const QStringList& columns) {
     m_columnsByIndex.clear();
     m_columnsByIndex.append(columns);

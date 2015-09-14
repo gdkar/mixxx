@@ -219,11 +219,10 @@ void PlaylistDAO::renamePlaylist(const int playlistId, const QString& newName) {
 bool PlaylistDAO::setPlaylistLocked(const int playlistId, const bool locked) {
     QSqlQuery query(m_database);
     query.prepare("UPDATE Playlists SET locked = :lock WHERE id = :id");
-    // SQLite3 doesn't support boolean value. Using integer instead.
+    // doesn't support boolean value. Using integer instead.
     int lock = locked ? 1 : 0;
     query.bindValue(":lock", lock);
     query.bindValue(":id", playlistId);
-
     if (!query.exec()) {
         LOG_FAILED_QUERY(query);
         return false;
@@ -231,12 +230,10 @@ bool PlaylistDAO::setPlaylistLocked(const int playlistId, const bool locked) {
     emit(lockChanged(playlistId));
     return true;
 }
-
 bool PlaylistDAO::isPlaylistLocked(const int playlistId) const {
     QSqlQuery query(m_database);
     query.prepare("SELECT locked FROM Playlists WHERE id = :id");
     query.bindValue(":id", playlistId);
-
     if (query.exec()) {
         if (query.next()) {
             int lockValue = query.value(0).toInt();

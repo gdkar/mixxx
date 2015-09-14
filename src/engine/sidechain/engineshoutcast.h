@@ -25,7 +25,7 @@
 #include "configobject.h"
 #include "encoder/encodercallback.h"
 #include "engine/sidechain/sidechainworker.h"
-#include "errordialoghandler.h"
+#include "preferences/errordialoghandler.h"
 #include "trackinfoobject.h"
 #define SHOUTCAST_DISCONNECTED 0
 #define SHOUTCAST_CONNECTING 1
@@ -52,7 +52,7 @@ class EngineShoutcast : public QObject, public EncoderCallback, public SideChain
     void shutdown() { m_bQuit = true; }
     // Called by the encoder in method 'encodebuffer()' to flush the stream to
     // the server.
-    void write(unsigned char *header, unsigned char *body, int headerLen, int bodyLen);
+    int write(unsigned char *data, int bodyLen);
     /** connects to server **/
     bool serverConnect();
     bool serverDisconnect();

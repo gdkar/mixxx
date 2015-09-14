@@ -1,13 +1,8 @@
-#ifndef MIXXXAPPLICATION_H
-#define MIXXXAPPLICATION_H
-
+_Pragma("once")
 #include <QApplication>
-
 class ControlObjectSlave;
-
 class MixxxApplication : public QApplication {
     Q_OBJECT
-
   public:
     MixxxApplication(int& argc, char** argv);
     virtual ~MixxxApplication();
@@ -17,7 +12,5 @@ class MixxxApplication : public QApplication {
     QWidget* m_fakeMouseWidget = nullptr;
     enum Qt::MouseButton m_activeTouchButton = Qt::NoButton;
     ControlObjectSlave* m_pTouchShift = nullptr;
-
 };
 
-#endif // MIXXXAPPLICATION_H

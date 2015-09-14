@@ -1,6 +1,4 @@
-#ifndef GUITICK_H
-#define GUITICK_H
-
+_Pragma("once")
 #include <QObject>
 
 #include "util/performancetimer.h"
@@ -20,5 +18,3 @@ class GuiTick : public QObject {
     double m_lastUpdateTime         = 0;
     static double m_cpuTimeLastTick; // Stream Time in seconds
 };
-
-#endif // GUITICK_H

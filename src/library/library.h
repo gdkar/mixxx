@@ -31,14 +31,14 @@ class MixxxLibraryFeature;
 class PlaylistFeature;
 class CrateFeature;
 class LibraryControl;
-class PlayerManagerInterface;
+class PlayerManager;
 
 class Library : public QObject {
     Q_OBJECT
 public:
     Library(QObject* parent,
             ConfigObject<ConfigValue>* pConfig,
-            PlayerManagerInterface* pPlayerManager,
+            PlayerManager* pPlayerManager,
             RecordingManager* pRecordingManager);
     virtual ~Library();
 

@@ -14,9 +14,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef CONTROLTTROTARY_H
-#define CONTROLTTROTARY_H
-
+_Pragma("once")
 #include "configobject.h"
 #include "controlobject.h"
 
@@ -25,5 +23,3 @@ class ControlTTRotary : public ControlObject {
   public:
     ControlTTRotary(ConfigKey key);
 };
-
-#endif

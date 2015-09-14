@@ -15,9 +15,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef CONTROLPOTMETER_H
-#define CONTROLPOTMETER_H
-
+_Pragma("once")
 #include "configobject.h"
 #include "controlobject.h"
 
@@ -31,17 +29,10 @@ class ControlObjectSlave;
 class PotmeterControls : public QObject {
     Q_OBJECT
   public:
-    PotmeterControls(const ConfigKey& key);
+    PotmeterControls(const ConfigKey& key,QObject *pParent=nullptr);
     virtual ~PotmeterControls();
-
-    void setStepCount(int count) {
-        m_stepCount = count;
-    }
-
-    void setSmallStepCount(int count) {
-        m_smallStepCount = count;
-    }
-
+    void setStepCount(int count);
+    void setSmallStepCount(int count);
   public slots:
     // Increases the value.
     void incValue(double);
@@ -63,36 +54,48 @@ class PotmeterControls : public QObject {
     void toggleValue(double);
     // Toggles the value between -1.0 and 0.0.
     void toggleMinusValue(double);
-
   private:
-    ControlObjectSlave* m_pControl;
-    int m_stepCount;
-    double m_smallStepCount;
+    ControlObjectSlave* m_pControl = nullptr;
+    int m_stepCount = 0;
+    int m_smallStepCount = 0;
 };
-
 class ControlPotmeter : public ControlObject {
     Q_OBJECT
+    Q_PROPERTY(int stepCount READ stepCount WRITE setStepCount NOTIFY stepCountChanged);
+    Q_PROPERTY(int smallStepCount READ smallStepCount WRITE setSmallStepCount NOTIFY smallStepCountChanged);
+    Q_PROPERTY(double minValue READ minValue WRITE setMinValue NOTIFY rangeChanged);
+    Q_PROPERTY(double maxValue READ maxValue WRITE setMaxValue NOTIFY rangeChanged);
   public:
     ControlPotmeter(ConfigKey key, double dMinValue = 0.0, double dMaxValue = 1.0,
-                    bool allowOutOfBounds = false,
+                    bool bAllowOutOfBounds = false,
                     bool bIgnoreNops = true,
                     bool bTrack = false,
                     bool bPersist = false);
     virtual ~ControlPotmeter();
-
     // Sets the step count of the associated PushButtons.
     void setStepCount(int count);
-
     // Sets the small step count of the associated PushButtons.
     void setSmallStepCount(int count);
-
+    int  stepCount()const;
+    int  smallStepCount()const;
+    double minValue()const;
+    double maxValue()const;
+    bool   allowOutOfBounds()const;
+    void   setMinValue(double);
+    void   setMaxValue(double);
+    void   setAllowOutOfBounds(bool);
     // Sets the minimum and maximum allowed value. The control value is reset
     // when calling this method
     void setRange(double dMinValue, double dMaxValue, bool allowOutOfBounds);
-
+  signals:
+    void rangeChanged();
+    void smallStepCountChanged(int);
+    void stepCountChanged(int);
   protected:
     bool m_bAllowOutOfBounds;
+    double m_minValue;
+    double m_maxValue;
+    int m_stepCount;
+    int m_smallStepCount;
     PotmeterControls m_controls;
 };
-
-#endif

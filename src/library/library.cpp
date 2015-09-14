@@ -42,7 +42,7 @@ const QString Library::m_sTrackViewName = QString("WTrackTableView");
 const int Library::kDefaultRowHeightPx = 20;
 
 Library::Library(QObject* parent, ConfigObject<ConfigValue>* pConfig,
-                 PlayerManagerInterface* pPlayerManager,
+                 PlayerManager* pPlayerManager,
                  RecordingManager* pRecordingManager) :
         m_pConfig(pConfig),
         m_pSidebarModel(new SidebarModel(parent)),

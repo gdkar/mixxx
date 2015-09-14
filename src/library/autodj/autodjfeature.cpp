@@ -26,7 +26,7 @@ static const int kMaxRetrieveAttempts = 3;
 
 AutoDJFeature::AutoDJFeature(Library* pLibrary,
                              ConfigObject<ConfigValue>* pConfig,
-                             PlayerManagerInterface* pPlayerManager,
+                             PlayerManager* pPlayerManager,
                              TrackCollection* pTrackCollection)
         : LibraryFeature(pLibrary),
           m_pConfig(pConfig),

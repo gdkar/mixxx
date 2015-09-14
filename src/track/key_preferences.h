@@ -1,6 +1,4 @@
-#ifndef KEY_PREFERENCES_H
-#define KEY_PREFERENCES_H
-
+_Pragma("once")
 #define VAMP_CONFIG_KEY "[Vamp]"
 
 // VAMP_CONFIG_KEY Preferences
@@ -21,5 +19,3 @@
 #define KEY_NOTATION_TRADITIONAL "Traditional"
 #define KEY_NOTATION_CUSTOM "Custom"
 #define KEY_NOTATION_CUSTOM_PREFIX "CustomKeyNotation"
-
-#endif // KEY_PREFERENCES_H

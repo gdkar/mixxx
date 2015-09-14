@@ -14,10 +14,7 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
-
-#ifndef CONTROLPUSHBUTTON_H
-#define CONTROLPUSHBUTTON_H
-
+_Pragma("once")
 #include "controlobject.h"
 
 /**
@@ -34,34 +31,20 @@ class ControlPushButton : public ControlObject {
          LONGPRESSLATCHING,
          TRIGGER,
     };
-
-    static QString buttonModeToString(int mode) {
-        switch(mode) {
-            case ControlPushButton::PUSH:
-                return "PUSH";
-            case ControlPushButton::TOGGLE:
-                return "TOGGLE";
-            case ControlPushButton::POWERWINDOW:
-                return "POWERWINDOW";
-            case ControlPushButton::LONGPRESSLATCHING:
-                return "LONGPRESSLATCHING";
-            case ControlPushButton::TRIGGER:
-                return "TRIGGER";
-            default:
-                return "UNKNOWN";
-        }
-    }
-
-    ControlPushButton(ConfigKey key, bool bPersist=false);
+    Q_ENUM(ButtonMode);
+    Q_PROPERTY(ButtonMode buttonMode READ getButtonMode WRITE setButtonMode NOTIFY buttonModeChanged);
+    Q_PROPERTY(int numStates READ numStates WRITE setStates NOTIFY numStatesChanged);
+    static QString buttonModeToString(int mode);
+    ControlPushButton(ConfigKey key, bool bPersist=false,QObject *pParent=nullptr);
     virtual ~ControlPushButton();
-
-    inline ButtonMode getButtonMode() const {return m_buttonMode;}
+   ButtonMode getButtonMode() const;
     void setButtonMode(enum ButtonMode mode);
+    int  numStates()const;
     void setStates(int num_states);
-
+  signals:
+    void buttonModeChanged(ButtonMode);
+    void numStatesChanged(int);
   private:
     enum ButtonMode m_buttonMode;
     int m_iNoStates;
 };
-
-#endif

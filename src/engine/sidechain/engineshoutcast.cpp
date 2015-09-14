@@ -34,8 +34,8 @@
 #include "controlobjectslave.h"
 #include "playerinfo.h"
 #include "encoder/encoder.h"
-#include "encoder/encodermp3.h"
-#include "encoder/encodervorbis.h"
+#include "encoder/encoderffmpegmp3.h"
+#include "encoder/encoderffmpegvorbis.h"
 #include "shoutcast/defs_shoutcast.h"
 #include "trackinfoobject.h"
 #include "util/sleep.h"
@@ -333,9 +333,9 @@ void EngineShoutcast::updateFromPreferences() {
     }
 
     if (m_format_is_mp3) {
-        m_encoder = new EncoderMp3(this);
+        m_encoder = new EncoderFfmpegMp3(this);
     } else if (m_format_is_ov) {
-        m_encoder = new EncoderVorbis(this);
+        m_encoder = new EncoderFfmpegVorbis(this);
     } else {
         qDebug() << "**** Unknown Encoder Format";
         return;
@@ -433,55 +433,23 @@ bool EngineShoutcast::serverConnect() {
     return false;
 }
 
-void EngineShoutcast::write(unsigned char *header, unsigned char *body,
-                            int headerLen, int bodyLen) {
+int EngineShoutcast::write(unsigned char *data,int length) {
     int ret;
-
-    if (!m_pShout)
-        return;
-
+    if (!m_pShout) return EINVAL;
     if (m_iShoutStatus == SHOUTERR_CONNECTED) {
-        // Send header if there is one
-        if (headerLen > 0) {
-            ret = shout_send(m_pShout, header, headerLen);
-            if (ret != SHOUTERR_SUCCESS) {
-                qDebug() << "DEBUG: Send error: " << shout_get_error(m_pShout);
-                if (m_iShoutFailures > 3) {
-                    if(!serverConnect())
-                        errorDialog(tr("Lost connection to streaming server"), tr("Please check your connection to the Internet and verify that your username and password are correct."));
-                }
-                else{
-                    m_iShoutFailures++;
-                }
-
-                return;
-            } else {
-                //qDebug() << "yea I kinda sent header";
-            }
-        }
-
-        ret = shout_send(m_pShout, body, bodyLen);
+        ret = shout_send(m_pShout, data, length);
         if (ret != SHOUTERR_SUCCESS) {
             qDebug() << "DEBUG: Send error: " << shout_get_error(m_pShout);
             if (m_iShoutFailures > 3) {
                 if(!serverConnect())
                     errorDialog(tr("Lost connection to streaming server"), tr("Please check your connection to the Internet and verify that your username and password are correct."));
             }
-            else{
-                m_iShoutFailures++;
-            }
-
-            return;
-        } else {
-            //qDebug() << "yea I kinda sent footer";
-        }
-        if (shout_queuelen(m_pShout) > 0) {
-            qDebug() << "DEBUG: queue length:" << (int)shout_queuelen(m_pShout);
-        }
-    } else {
-        qDebug() << "Error connecting to streaming server:" << shout_get_error(m_pShout);
-        // errorDialog(tr("Shoutcast aborted connect after 3 tries"), tr("Please check your connection to the Internet and verify that your username and password are correct."));
-    }
+            else{m_iShoutFailures++;}
+            return EINVAL;
+        } else {}
+        if (shout_queuelen(m_pShout) > 0) { qDebug() << "DEBUG: queue length:" << (int)shout_queuelen(m_pShout);}
+    } else {qDebug() << "Error connecting to streaming server:" << shout_get_error(m_pShout);}
+    return length;
 }
 
 void EngineShoutcast::process(const CSAMPLE* pBuffer, const int iBufferSize) {

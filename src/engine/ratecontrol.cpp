@@ -6,7 +6,6 @@
 #include "controlpotmeter.h"
 #include "controlttrotary.h"
 #include "controlobjectslave.h"
-#include "rotary.h"
 #include "util/math.h"
 #include "vinylcontrol/defs_vinylcontrol.h"
 
@@ -14,7 +13,7 @@
 #include "engine/enginecontrol.h"
 #include "engine/ratecontrol.h"
 #include "engine/positionscratchcontroller.h"
-
+#include <cstring>
 #include <QtDebug>
 
 // Static default values for rate buttons (percents). Note that these are not
@@ -30,10 +29,9 @@ const double RateControl::kWheelMultiplier = 40.0;
 const double RateControl::kPausedJogMultiplier = 18.0;
 enum RateControl::RATERAMP_MODE RateControl::m_eRateRampMode = RateControl::RATERAMP_STEP;
 
-RateControl::RateControl(QString group,
-                         ConfigObject<ConfigValue>* _config)
+RateControl::RateControl(QString group,ConfigObject<ConfigValue>* _config)
     : EngineControl(group, _config),
-      m_pBpmControl(NULL),
+      m_pBpmControl(nullptr),
       m_ePbCurrent(0),
       m_ePbPressed(0),
       m_bTempStarted(false),
@@ -157,14 +155,10 @@ RateControl::RateControl(QString group,
 
 
     m_pJog = new ControlObject(ConfigKey(group, "jog"));
-    m_pJogFilter = new Rotary();
-    // FIXME: This should be dependent on sample rate/block size or something
-    m_pJogFilter->setFilterLength(25);
-
+    std::memset(m_jogFilter,0,sizeof(m_jogFilter));
     // Update Internal Settings
     // Set Pitchbend Mode
-    m_eRateRampMode = (RateControl::RATERAMP_MODE)
-            getConfig()->getValueString(ConfigKey("[Controls]","RateRamp")).toInt();
+    m_eRateRampMode = (RateControl::RATERAMP_MODE)getConfig()->getValueString(ConfigKey("[Controls]","RateRamp")).toInt();
 
     // Set the Sensitivity
     m_iRateRampSensitivity =
@@ -200,7 +194,6 @@ RateControl::~RateControl() {
     delete m_pScratch2Scratching;
     delete m_pScratch2Enable;
     delete m_pJog;
-    delete m_pJogFilter;
     delete m_pScratchController;
 }
 
@@ -382,70 +375,49 @@ double RateControl::getRawRate() const {
         m_pRateRange->get() *
         m_pRateDir->get();
 }
-
-double RateControl::getWheelFactor() const {
-    return m_pWheel->get();
-}
-
-double RateControl::getJogFactor() const {
+double RateControl::getWheelFactor() const {return m_pWheel->get();}
+double RateControl::getJogFactor()  {
     // FIXME: Sensitivity should be configurable separately?
-    const double jogSensitivity = 0.1;  // Nudges during playback
-    double jogValue = m_pJog->get();
-
+    const auto jogSensitivity = 0.1;  // Nudges during playback
+    auto jogValue = m_pJog->get();
     // Since m_pJog is an accumulator, reset it since we've used its value.
-    if(jogValue != 0.)
-        m_pJog->set(0.);
-
-    double jogValueFiltered = m_pJogFilter->filter(jogValue);
-    double jogFactor = jogValueFiltered * jogSensitivity;
-
-    if (isnan(jogValue) || isnan(jogFactor)) {
-        jogFactor = 0.0;
-    }
-
+    if(jogValue != 0.) m_pJog->set(0.);
+    m_jogIndex = (m_jogIndex+1)&((sizeof(m_jogFilter)/sizeof(m_jogFilter[0]))-1);
+    m_jogAccum -= m_jogFilter[m_jogIndex];
+    m_jogFilter[m_jogIndex] = jogValue;
+    m_jogAccum += m_jogFilter[m_jogIndex];
+    auto jogValueFiltered = m_jogAccum/((sizeof(m_jogFilter)/sizeof(m_jogFilter[0])));
+    auto jogFactor = jogValueFiltered * jogSensitivity;
+    if (isnan(jogValue) || isnan(jogFactor)) {jogFactor = 0.0;}
     return jogFactor;
 }
-
-SyncMode RateControl::getSyncMode() const {
-    return syncModeFromDouble(m_pSyncMode->get());
-}
-
-double RateControl::calculateSpeed(double baserate, double speed, bool paused,
-                                   int iSamplesPerBuffer,
-                                   bool* pReportScratching,
-                                   bool* pReportReverse) {
+SyncMode RateControl::getSyncMode() const {return syncModeFromDouble(m_pSyncMode->get());}
+double RateControl::calculateSpeed(double baserate, double speed, bool paused,int iSamplesPerBuffer,bool* pReportScratching,bool* pReportReverse) {
     *pReportScratching = false;
     *pReportReverse = false;
-    double rate = (paused ? 0 : 1.0);
-    double searching = m_pRateSearch->get();
+    auto rate = (paused ? 0.0 : 1.0);
+    auto searching = m_pRateSearch->get();
     if (searching) {
         // If searching is in progress, it overrides everything else
         rate = searching;
     } else {
-        double wheelFactor = getWheelFactor();
-        double jogFactor = getJogFactor();
-        bool bVinylControlEnabled = m_pVCEnabled && m_pVCEnabled->toBool();
-        bool useScratch2Value = m_pScratch2Enable->get() != 0;
+        auto wheelFactor = getWheelFactor();
+        auto jogFactor = getJogFactor();
+        auto bVinylControlEnabled = m_pVCEnabled && m_pVCEnabled->toBool();
+        auto useScratch2Value = m_pScratch2Enable->get() != 0;
 
         // By default scratch2_enable is enough to determine if the user is
         // scratching or not. Moving platter controllers have to disable
         // "scratch2_indicates_scratching" if they are not scratching,
         // to allow things like key-lock.
-        if (useScratch2Value && m_pScratch2Scratching->get()) {
-            *pReportScratching = true;
-        }
-
+        if (useScratch2Value && m_pScratch2Scratching->get()) {*pReportScratching = true;}
         if (bVinylControlEnabled) {
-            if (m_pVCScratching->toBool()) {
-                *pReportScratching = true;
-            }
+            if (m_pVCScratching->toBool()) {*pReportScratching = true;}
             rate = speed;
         } else {
-            double scratchFactor = m_pScratch2->get();
+            auto scratchFactor = m_pScratch2->get();
             // Don't trust values from m_pScratch2
-            if (isnan(scratchFactor)) {
-                scratchFactor = 0.0;
-            }
+            if (isnan(scratchFactor)) {scratchFactor = 0.0;}
             if (paused) {
                 // Stopped. Wheel, jog and scratch controller all scrub through audio.
                 if (useScratch2Value) {
@@ -463,9 +435,8 @@ double RateControl::calculateSpeed(double baserate, double speed, bool paused,
                 // Temp: pitch bend
 
                 // New scratch behavior - overrides playback speed (and old behavior)
-                if (useScratch2Value) {
-                    rate = scratchFactor;
-                } else {
+                if (useScratch2Value) {rate = scratchFactor;}
+                else {
                     rate = speed + getTempRate();
                     rate += wheelFactor;
                 }
@@ -533,36 +504,23 @@ double RateControl::process(const double rate,
      * the troublesome Latency ControlObject... Either the Master or Soundcard
      * one.
      */
-
-    double latrate = ((double)bufferSamples / (double)m_pSampleRate->get());
-
-
+    auto latrate = ((double)bufferSamples / (double)m_pSampleRate->get());
     if ((m_ePbPressed) && (!m_bTempStarted)) {
         m_bTempStarted = true;
-
         if (m_eRateRampMode == RATERAMP_STEP) {
             // old temporary pitch shift behavior
-            double range = m_pRateRange->get();
-
+            auto range = m_pRateRange->get();
             // Avoid Division by Zero
             if (range == 0) {
                 qDebug() << "Avoiding a Division by Zero in RATERAMP_STEP code";
                 return kNoTrigger;
             }
-
-            double change = m_pRateDir->get() * m_dTemp /
-                                    (100. * range);
-            double csmall = m_pRateDir->get() * m_dTempSmall /
-                                    (100. * range);
-
-            if (buttonRateTempUp->get())
-                addRateTemp(change);
-            else if (buttonRateTempDown->get())
-                subRateTemp(change);
-            else if (buttonRateTempUpSmall->get())
-                addRateTemp(csmall);
-            else if (buttonRateTempDownSmall->get())
-                subRateTemp(csmall);
+            double change = m_pRateDir->get() * m_dTemp / (100. * range);
+            double csmall = m_pRateDir->get() * m_dTempSmall / (100. * range);
+            if (buttonRateTempUp->get())addRateTemp(change);
+            else if (buttonRateTempDown->get())subRateTemp(change);
+            else if (buttonRateTempUpSmall->get())addRateTemp(csmall);
+            else if (buttonRateTempDownSmall->get())subRateTemp(csmall);
         } else {
             // m_eRateRampMode == RATERAMP_LINEAR
             m_dTempRateChange = ((double)latrate / ((double)m_iRateRampSensitivity / 100.));

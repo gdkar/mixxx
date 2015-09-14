@@ -29,7 +29,7 @@ const SINT kDefaultHintSamples = 1024 * CachingReaderChunk::kChannels;
 // currently CachingReaderWorker::kCachingReaderChunkLength is 65536 (0x10000);
 // For 80 chunks we need 5242880 (0x500000) bytes (5 MiB) of Memory
 //static
-const int CachingReader::maximumCachingReaderChunksInMemory = (1<<24) / (kDefaultHintSamples * sizeof(CSAMPLE));
+const int CachingReader::maximumCachingReaderChunksInMemory = (1<<23) / (8192 * 2 * sizeof(float));
 CachingReader::CachingReader(QString group, ConfigObject<ConfigValue>* config)
         : m_pConfig(config),
           m_chunkReadRequestFIFO(1024),

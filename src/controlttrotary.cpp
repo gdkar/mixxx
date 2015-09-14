@@ -15,15 +15,15 @@
 ***************************************************************************/
 
 #include "controlttrotary.h"
-
+#include "control/controlbehavior.h"
+#include "control/control.h"
 /* -------- ------------------------------------------------------
    Purpose: Creates a new rotary encoder
    Input:   key
    -------- ------------------------------------------------------ */
 ControlTTRotary::ControlTTRotary(ConfigKey key) : ControlObject(key) {
     if (m_pControl) {
-        m_pControl->setBehavior(
-                new ControlTTRotaryBehavior());
+        m_pControl->setBehavior(new ControlTTRotaryBehavior());
     }
 }
 

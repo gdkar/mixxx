@@ -3,6 +3,7 @@
 #include <QList>
 #include <QPair>
 
+#include "control/control.h"
 #include "controlpushbutton.h"
 #include "configobject.h"
 #include "controlaudiotaperpot.h"

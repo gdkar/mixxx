@@ -25,9 +25,8 @@
 #include "util/stat.h"
 #include "util/timer.h"
 
-ControlObject::ControlObject() {}
-ControlObject::ControlObject(ConfigKey key, bool bIgnoreNops, bool bTrack,
-                             bool bPersist) {
+ControlObject::ControlObject() = default;
+ControlObject::ControlObject(ConfigKey key, bool bIgnoreNops, bool bTrack,bool bPersist) {
     initialize(key, bIgnoreNops, bTrack, bPersist);
 }
 ControlObject::~ControlObject() { if (m_pControl) {m_pControl->removeCreatorCO();} }

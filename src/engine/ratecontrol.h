@@ -16,7 +16,6 @@ const int RATE_SENSITIVITY_MIN = 100;
 const int RATE_SENSITIVITY_MAX = 2500;
 
 class BpmControl;
-class Rotary;
 class ControlTTRotary;
 class ControlObject;
 class ControlPotmeter;
@@ -79,7 +78,7 @@ public:
     virtual void trackUnloaded(TrackPointer pTrack);
 
   private:
-    double getJogFactor() const;
+    double getJogFactor() ;
     double getWheelFactor() const;
     SyncMode getSyncMode() const;
 
@@ -115,16 +114,15 @@ public:
 
     ControlPushButton* m_pScratch2Enable;
     ControlObject* m_pJog;
-    ControlObject* m_pVCEnabled;
-    ControlObject* m_pVCScratching;
-    ControlObject* m_pVCMode;
-    ControlObject* m_pScratch2Scratching;
-    Rotary* m_pJogFilter;
-
-    ControlObject* m_pSampleRate;
-
+    double         m_jogFilter[32];
+    double         m_jogAccum = 0;
+    int            m_jogIndex = 0;
+    ControlObject* m_pVCEnabled = nullptr;
+    ControlObject* m_pVCScratching = nullptr;
+    ControlObject* m_pVCMode = nullptr;
+    ControlObject* m_pScratch2Scratching = nullptr;
+    ControlObject* m_pSampleRate = nullptr;
     TrackPointer m_pTrack;
-
     // For Master Sync
     BpmControl* m_pBpmControl;
 

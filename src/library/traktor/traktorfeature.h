@@ -1,9 +1,4 @@
-// traktorfeature.h
-// Created 9/26/2010 by Tobias Rafreider
-
-#ifndef TRAKTOR_FEATURE_H
-#define TRAKTOR_FEATURE_H
-
+_Pragma("once")
 #include <QStringListModel>
 #include <QtSql>
 #include <QXmlStreamReader>
@@ -21,38 +16,29 @@ class BaseExternalPlaylistModel;
 
 class TraktorTrackModel : public BaseExternalTrackModel {
   public:
-    TraktorTrackModel(QObject* parent,
-                      TrackCollection* pTrackCollection,
-                      QSharedPointer<BaseTrackCache> trackSource);
+    TraktorTrackModel(QObject* parent,TrackCollection* pTrackCollection,QSharedPointer<BaseTrackCache> trackSource);
     virtual bool isColumnHiddenByDefault(int column);
 };
 
 class TraktorPlaylistModel : public BaseExternalPlaylistModel {
   public:
-    TraktorPlaylistModel(QObject* parent,
-                         TrackCollection* pTrackCollection,
-                         QSharedPointer<BaseTrackCache> trackSource);
+    TraktorPlaylistModel(QObject* parent,TrackCollection* pTrackCollection,QSharedPointer<BaseTrackCache> trackSource);
     virtual bool isColumnHiddenByDefault(int column);
 };
-
 class TraktorFeature : public BaseExternalLibraryFeature {
     Q_OBJECT
   public:
     TraktorFeature(QObject* parent, TrackCollection*);
     virtual ~TraktorFeature();
-
     QVariant title();
     QIcon getIcon();
     static bool isSupported();
-
     TreeItemModel* getChildModel();
-
   public slots:
     void activate();
     void activateChild(const QModelIndex& index);
     void refreshLibraryModels();
     void onTrackCollectionLoaded();
-
   private:
     virtual BaseSqlTableModel* getPlaylistModelForPlaylist(QString playlist);
     TreeItem* importLibrary(QString file);
@@ -72,14 +58,10 @@ class TraktorFeature : public BaseExternalLibraryFeature {
     QSqlDatabase m_database;
     TraktorTrackModel* m_pTraktorTableModel;
     TraktorPlaylistModel* m_pTraktorPlaylistModel;
-
     bool m_isActivated;
     bool m_cancelImport;
     QFutureWatcher<TreeItem*> m_future_watcher;
     QFuture<TreeItem*> m_future;
     QString m_title;
-
     QSharedPointer<BaseTrackCache> m_trackSource;
 };
-
-#endif // TRAKTOR_FEATURE_H

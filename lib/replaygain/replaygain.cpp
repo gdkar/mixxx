@@ -91,15 +91,13 @@
  */
 
 #include <iostream>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cmath>
 #include "replaygain.h"
 
-#if defined(_MSC_VER)
-    #include <stdint.h>
-#endif
+#include <cstdint>
 
 typedef float Float_t;
 
@@ -155,21 +153,11 @@ ReplayGain::ReplayGain() :
         num_channels(1),
         freqindex(0) {
 }
-
-ReplayGain::~ReplayGain() {
-}
-
+ReplayGain::~ReplayGain() = default;
 bool ReplayGain::initialise(long samplefreq, size_t channels) {
-
-    if (channels < 1 || channels > 2) {
-        return false;
-    }
-
-
+    if (channels < 1 || channels > 2) {return false;}
     bool ok = ResetSampleFrequency(samplefreq);
-    if (!ok) {
-        return false;
-    }
+    if (!ok) {return false;}
 
     linpre       = linprebuf + MAX_ORDER;
     rinpre       = rinprebuf + MAX_ORDER;
@@ -184,15 +172,13 @@ bool ReplayGain::initialise(long samplefreq, size_t channels) {
 
 
 bool ReplayGain::process(const float* left_samples, const float* right_samples, size_t blockSize) {
-    const float*  curleft = NULL;
-    const float*  curright = NULL;
+    const float*  curleft  = nullptr;
+    const float*  curright = nullptr;
     long            batchsamples;
     long            cursamples;
     long            cursamplepos;
     int             i;
-
-    if ( blockSize == 0 )
-        return true;
+    if ( blockSize == 0 ) return true;
 
     cursamplepos = 0;
     batchsamples = blockSize;
@@ -204,12 +190,12 @@ bool ReplayGain::process(const float* left_samples, const float* right_samples, 
     }
 
     if (blockSize < MAX_ORDER) {
-        memcpy ( linprebuf + MAX_ORDER, left_samples , blockSize * sizeof(float) );
-        memcpy ( rinprebuf + MAX_ORDER, right_samples, blockSize * sizeof(float) );
+        std::memcpy ( linprebuf + MAX_ORDER, left_samples , blockSize * sizeof(linprebuf[0]) );
+        std::memcpy ( rinprebuf + MAX_ORDER, right_samples, blockSize * sizeof(rinprebuf[0]) );
     }
     else {
-        memcpy ( linprebuf + MAX_ORDER, left_samples,  MAX_ORDER   * sizeof(float) );
-        memcpy ( rinprebuf + MAX_ORDER, right_samples, MAX_ORDER   * sizeof(float) );
+        std::memcpy ( linprebuf + MAX_ORDER, left_samples,  MAX_ORDER   * sizeof(linprebuf[0]) );
+        std::memcpy ( rinprebuf + MAX_ORDER, right_samples, MAX_ORDER   * sizeof(rinprebuf[0]) );
     }
 
     while ( batchsamples > 0 ) {
@@ -217,14 +203,12 @@ bool ReplayGain::process(const float* left_samples, const float* right_samples, 
         if ( cursamplepos < MAX_ORDER ) {
             curleft  = linpre+cursamplepos;
             curright = rinpre+cursamplepos;
-            if (cursamples > MAX_ORDER - cursamplepos )
-                cursamples = MAX_ORDER - cursamplepos;
+            cursamples = std::max(MAX_ORDER - cursamplepos, cursamples);
         }
         else {
             curleft  = left_samples  + cursamplepos;
             curright = right_samples + cursamplepos;
         }
-
         filterYule( curleft , lstep + totsamp, cursamples );
         filterYule( curright, rstep + totsamp, cursamples );
 
@@ -235,35 +219,34 @@ bool ReplayGain::process(const float* left_samples, const float* right_samples, 
             lsum += lout [totsamp+i] * lout [totsamp+i];
             rsum += rout [totsamp+i] * rout [totsamp+i];
         }
-
         batchsamples -= cursamples;
         cursamplepos += cursamples;
         totsamp      += cursamples;
         if ( totsamp == sampleWindow ) {  /* Get the Root Mean Square (RMS) for this set of samples */
-            double  val  = STEPS_per_dB * 10 * log10 ( (lsum+rsum) / totsamp * 0.5 + 1.e-37 );
-            int     ival = (int) val;
+            auto     val  = STEPS_per_dB * 10 * std::log10 ( (lsum+rsum) / totsamp * 0.5 + 1.e-37 );
+            auto    ival = (int) val;
             if ( ival <                     0 ) ival = 0;
             if ( ival >= (int)(sizeof(A)/sizeof(*A)) ) ival = (int)(sizeof(A)/sizeof(*A)) - 1;
             A [ival]++;
             lsum = rsum = 0.;
-            memmove ( loutbuf , loutbuf  + totsamp, MAX_ORDER * sizeof(float) );
-            memmove ( routbuf , routbuf  + totsamp, MAX_ORDER * sizeof(float) );
-            memmove ( lstepbuf, lstepbuf + totsamp, MAX_ORDER * sizeof(float) );
-            memmove ( rstepbuf, rstepbuf + totsamp, MAX_ORDER * sizeof(float) );
+            std::memmove ( loutbuf , loutbuf  + totsamp, MAX_ORDER * sizeof(*loutbuf) );
+            std::memmove ( routbuf , routbuf  + totsamp, MAX_ORDER * sizeof(*routbuf) );
+            std::memmove ( lstepbuf, lstepbuf + totsamp, MAX_ORDER * sizeof(*lstepbuf) );
+            std::memmove ( rstepbuf, rstepbuf + totsamp, MAX_ORDER * sizeof(*rstepbuf) );
             totsamp = 0;
         }
         if ( totsamp > sampleWindow )   /* somehow I really screwed up: Error in programming! Contact author about totsamp > sampleWindow */
             return false;
     }
     if (  blockSize < MAX_ORDER ) {
-        memmove ( linprebuf,                           linprebuf +  blockSize, (MAX_ORDER- blockSize) * sizeof(float) );
-        memmove ( rinprebuf,                           rinprebuf +  blockSize, (MAX_ORDER- blockSize) * sizeof(float) );
-        memcpy  ( linprebuf + MAX_ORDER -  blockSize, left_samples,           blockSize             * sizeof(float) );
-        memcpy  ( rinprebuf + MAX_ORDER -  blockSize, right_samples,          blockSize            * sizeof(float) );
+      std::memmove ( linprebuf,                           linprebuf +  blockSize, (MAX_ORDER- blockSize) * sizeof(linprebuf[0]) );
+        std::memmove ( rinprebuf,                           rinprebuf +  blockSize, (MAX_ORDER- blockSize) * sizeof(rinprebuf[0]) );
+        std::memcpy  ( linprebuf + MAX_ORDER -  blockSize, left_samples,           blockSize             * sizeof(linprebuf[0]) );
+        std::memcpy  ( rinprebuf + MAX_ORDER -  blockSize, right_samples,          blockSize            * sizeof(rinprebuf[0]) );
     }
     else {
-        memcpy  ( linprebuf, left_samples  + blockSize - MAX_ORDER, MAX_ORDER * sizeof(float) );
-        memcpy  ( rinprebuf, right_samples + blockSize - MAX_ORDER, MAX_ORDER * sizeof(float) );
+      std::memcpy  ( linprebuf, left_samples  + blockSize - MAX_ORDER, MAX_ORDER * sizeof(linprebuf[0]) );
+        std::memcpy  ( rinprebuf, right_samples + blockSize - MAX_ORDER, MAX_ORDER * sizeof(linprebuf[0]) );
     }
     return true;
 }
@@ -273,7 +256,7 @@ float ReplayGain::end()
     float  retval;
     unsigned int    i;
 
-    retval = analyzeResult( A, sizeof(A)/sizeof(*A) );
+    retval = analyzeResult( A, sizeof(A)/sizeof(A[0]) );
 
     for ( i = 0; i < (int)(sizeof(A)/sizeof(*A)); i++ ) {
         A[i]  = 0;
@@ -286,9 +269,7 @@ float ReplayGain::end()
     lsum    = rsum = 0.;
     return retval;
 }
-
 //private functions
-
 void
 ReplayGain::filterYule (const float* input, float* output, size_t nSamples) {
     const float* a = AYule[freqindex];
@@ -302,7 +283,6 @@ ReplayGain::filterYule (const float* input, float* output, size_t nSamples) {
         output[i] = (Float_t)y;
     }
 }
-
 void
 ReplayGain::filterButter(const float* input, float* output, size_t nSamples) {
     const float* a = AButter[freqindex];
@@ -317,11 +297,9 @@ ReplayGain::filterButter(const float* input, float* output, size_t nSamples) {
     }
 
 }
-
 bool
 ReplayGain::ResetSampleFrequency(long samplefreq){
     int  i;
-
     // zero out initial values
     for ( i = 0; i < MAX_ORDER; i++ )
         linprebuf[i] = lstepbuf[i] = loutbuf[i] = rinprebuf[i] = rstepbuf[i] = routbuf[i] = 0.;
@@ -338,37 +316,25 @@ ReplayGain::ResetSampleFrequency(long samplefreq){
         case  8000: freqindex = 8; break;
         default:    return false;
     }
-
     sampleWindow = (int) ceil (samplefreq * RMS_WINDOW_TIME);
-
     lsum         = 0.;
     rsum         = 0.;
     totsamp      = 0;
-
-    memset ( A, 0, sizeof(A) );
-
+    std::memset ( A, 0, sizeof(A) );
     return true;
 }
-
 float
 ReplayGain::analyzeResult ( unsigned int* Array, size_t len ){
-
     Uint32_t  elems;
     Int32_t   upper;
     size_t    i;
-
     elems = 0;
     // TODO(XXX) possible overflow?
-    for ( i = 0; i < len; i++ )
-        elems += Array[i];
-    if ( elems == 0 )
-        return GAIN_NOT_ENOUGH_SAMPLES;
-
+    for ( i = 0; i < len; i++ ) elems += Array[i];
+    if ( elems == 0 ) return GAIN_NOT_ENOUGH_SAMPLES;
     upper = (Int32_t) ceil (elems * (1. - RMS_PERCENTILE));
     for ( i = len; i-- > 0; ) {
-        if ( (upper -= Array[i]) <= 0 )
-            break;
+        if ( (upper -= Array[i]) <= 0 ) break;
     }
-
-    return (float) ((float)PINK_REF - (float)i / (float)STEPS_per_dB);
+    return ((float)PINK_REF - (float)i / (float)STEPS_per_dB);
 }

@@ -460,7 +460,7 @@ int AutoDJCratesDAO::getRandomTrackId(void) {
     // The number of active-tracks might also be tracks that haven't been played
     // in a while.
     if (m_bUseIgnoreTime) {
-        // Get the current time, in UTC (since that's what sqlite uses).
+        // Get the current time, in UTC 
         QDateTime timCurrent = QDateTime::currentDateTime().toUTC();
 
         // Subtract the replay age.
@@ -469,7 +469,7 @@ int AutoDJCratesDAO::getRandomTrackId(void) {
         timCurrent = timCurrent.addSecs(-(timIgnoreTime.hour() * 3600
             + timIgnoreTime.minute() * 60));
 
-        // Convert the time to sqlite's format, which is similar to ISO date,
+        // Convert the time to format, which is similar to ISO date,
         // but not quite.
         QString strDateTime = timCurrent.toString("yyyy-MM-dd hh:mm:ss");
 

@@ -15,16 +15,13 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef CONTROLOBJECT_H
-#define CONTROLOBJECT_H
-
+_Pragma("once")
 #include <QObject>
 #include <QEvent>
 #include <QMutex>
 
 #include "configobject.h"
-#include "control/control.h"
-
+class ControlDoublePrivate;
 class ControlObject : public QObject {
     Q_OBJECT
   public:
@@ -95,4 +92,3 @@ class ControlObject : public QObject {
     virtual void initialize(ConfigKey key, bool bIgnoreNops, bool bTrack, bool bPersist);
     bool ignoreNops() const;
 };
-#endif

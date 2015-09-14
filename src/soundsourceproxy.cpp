@@ -1,7 +1,5 @@
 #include "soundsourceproxy.h"
-#ifdef __FFMPEGFILE__
 #include "sources/soundsourceffmpeg.h"
-#endif
 #include "util/cmdlineargs.h"
 #include <QApplication>
 #include <QDesktopServices>
@@ -126,11 +124,9 @@ void SoundSourceProxy::closeAudioSource() {
 // static
 void SoundSourceProxy::loadPlugins() {
     // Initialize built-in file types (last provider wins)
-#ifdef __FFMPEGFILE__
     // FFmpeg currently overrides all other built-in providers
     // if enabled
     s_soundSourceProviders.registerProvider(Mixxx::SoundSourceProviderPointer(new Mixxx::SoundSourceProviderFFmpeg));
-#endif
     // Scan for and initialize all plugins.
     // Loaded plugins will replace any built-in providers
     // that have been registered before (see above)!

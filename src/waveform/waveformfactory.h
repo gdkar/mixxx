@@ -1,6 +1,4 @@
-#ifndef WAVEFORMFACTORY_H
-#define WAVEFORMFACTORY_H
-
+_Pragma("once")
 #include "library/dao/analysisdao.h"
 
 class Waveform;
@@ -32,8 +30,6 @@ class Waveform;
 #define WAVEFORMSUMMARY_CURRENT_VERSION WAVEFORMSUMMARY_5_VERSION
 #define WAVEFORM_CURRENT_DESCRIPTION WAVEFORM_5_DESCRIPTION
 #define WAVEFORMSUMMARY_CURRENT_DESCRIPTION WAVEFORMSUMMARY_5_DESCRIPTION
-
-
 class WaveformFactory {
   public:
     enum VersionClass {
@@ -41,9 +37,7 @@ class WaveformFactory {
         VC_KEEP,
         VC_REMOVE
     };
-
-    static Waveform* loadWaveformFromAnalysis(
-            const AnalysisDao::AnalysisInfo& analysis);
+    static Waveform* loadWaveformFromAnalysis(const AnalysisDao::AnalysisInfo& analysis);
     static VersionClass waveformVersionToVersionClass(const QString& version);
     static VersionClass waveformSummaryVersionToVersionClass(const QString& version);
     static QString currentWaveformVersion();
@@ -51,5 +45,3 @@ class WaveformFactory {
     static QString currentWaveformSummaryVersion();
     static QString currentWaveformSummaryDescription();
 };
-
-#endif /* WAVEFORMFACTORY_H */
