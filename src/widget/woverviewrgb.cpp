@@ -28,9 +28,9 @@ bool WOverviewRGB::drawNextPixmapPart() {
         m_pWaveformSourceImage->fill(QColor(0,0,0,0).value());
     }
     // Always multiple of 2
-    const auto waveformCompletion = pWaveform->getCompletion();
+    const auto waveformCompletion = static_cast<int>(pWaveform->getCompletion());
     // Test if there is some new to draw (at least of pixel width)
-    const auto  completionIncrement = waveformCompletion - m_actualCompletion;
+    const auto  completionIncrement = static_cast<int>(waveformCompletion - m_actualCompletion);
     auto visiblePixelIncrement = (completionIncrement * width() / dataSize);
     if (completionIncrement < 2 || visiblePixelIncrement == 0) {return false;}
     const auto nextCompletion = (m_actualCompletion + completionIncrement);
@@ -40,7 +40,6 @@ bool WOverviewRGB::drawNextPixmapPart() {
     //         << "m_actualCompletion:" << m_actualCompletion
     //         << "waveformCompletion:" << waveformCompletion
     //         << "completionIncrement:" << completionIncrement;
-
     QPainter painter(m_pWaveformSourceImage);
     painter.translate(0.0,(double)m_pWaveformSourceImage->height()/2.0);
     QColor color;
@@ -50,20 +49,20 @@ bool WOverviewRGB::drawNextPixmapPart() {
     m_signalColors.getRgbMidColor().getRgbF(&midColor_r, &midColor_g, &midColor_b);
     qreal highColor_r, highColor_g, highColor_b;
     m_signalColors.getRgbHighColor().getRgbF(&highColor_r, &highColor_g, &highColor_b);
-    for (auto currentCompletion = static_cast<int>(m_actualCompletion); currentCompletion < nextCompletion; currentCompletion += 2) {
-
-        unsigned char left = pWaveform->getAll(currentCompletion);
-        unsigned char right = pWaveform->getAll(currentCompletion + 1);
+    auto currentCompletion = static_cast<int>(m_actualCompletion);
+    for (; currentCompletion < nextCompletion; currentCompletion += 2) {
+        auto left  = pWaveform->getAll(currentCompletion);
+        auto right = pWaveform->getAll(currentCompletion + 1);
         // Retrieve "raw" LMH values from waveform
-        qreal low = static_cast<qreal>(pWaveform->getLow(currentCompletion));
-        qreal mid = static_cast<qreal>(pWaveform->getMid(currentCompletion));
-        qreal high = static_cast<qreal>(pWaveform->getHigh(currentCompletion));
+        auto low = static_cast<qreal>(pWaveform->getLow(currentCompletion));
+        auto mid = static_cast<qreal>(pWaveform->getMid(currentCompletion));
+        auto high = static_cast<qreal>(pWaveform->getHigh(currentCompletion));
         // Do matrix multiplication
-        qreal red = low * lowColor_r + mid * midColor_r + high * highColor_r;
-        qreal green = low * lowColor_g + mid * midColor_g + high * highColor_g;
-        qreal blue = low * lowColor_b + mid * midColor_b + high * highColor_b;
+        auto red = low * lowColor_r + mid * midColor_r + high * highColor_r;
+        auto green = low * lowColor_g + mid * midColor_g + high * highColor_g;
+        auto blue = low * lowColor_b + mid * midColor_b + high * highColor_b;
         // Normalize and draw
-        qreal max = math_max3(red, green, blue);
+        auto max = math_max3(red, green, blue);
         if (max > 0.0) {
             color.setRgbF(red / max, green / max, blue / max);
             painter.setPen(color);
@@ -86,13 +85,13 @@ bool WOverviewRGB::drawNextPixmapPart() {
         }
     }
     // Evaluate waveform ratio peak
-    for (auto currentCompletion = static_cast<int>(m_actualCompletion);currentCompletion < nextCompletion; currentCompletion += 2) {
+    for (currentCompletion = static_cast<int>(m_actualCompletion);currentCompletion < nextCompletion; currentCompletion += 2) {
         m_waveformPeak = math_max3(
                 m_waveformPeak,
                 static_cast<float>(pWaveform->getAll(currentCompletion)),
                 static_cast<float>(pWaveform->getAll(currentCompletion + 1)));
     }
-    m_actualCompletion = nextCompletion;
+    m_actualCompletion = currentCompmletion;
     m_waveformImageScaled = QImage();
     m_diffGain = 0;
     // Test if the complete waveform is done

@@ -167,16 +167,19 @@ bool AnalyserQueue::doAnalysis(TrackPointer tio, Mixxx::AudioSourcePointer pAudi
         }
         // To compare apples to apples, let's only look at blocks that are
         // the full block size.
+        auto frameProgress = 0.0;
         if (kAnalysisFramesPerBlock == framesRead) {
             // Complete analysis block of audio samples has been read.
             for(auto an : m_aq )
             {
               an->process(m_sampleBuffer.data(), m_sampleBuffer.size());
             }
+            frameProgress = std::min<double>(double(frameIndex) / double(pAudioSource->getMaxFrameIndex()),1.0);
         } else {
             // Partial analysis block of audio samples has been read.
             // This should only happen at the end of an audio stream,
             // otherwise a decoding error must have occurred.
+            frameProgress = 1.0;
             if (frameIndex < pAudioSource->getMaxFrameIndex()) {
                 // EOF not reached -> Maybe a corrupt file?
                 qWarning() << "Failed to read sample data from file:" << tio->getFilename() << "@" << frameIndex;
@@ -192,7 +195,6 @@ bool AnalyserQueue::doAnalysis(TrackPointer tio, Mixxx::AudioSourcePointer pAudi
         // During the doAnalysis function it goes only to 100% - FINALIZE_PERCENT
         // because the finalise functions will take also some time
         //fp div here prevents insane signed overflow
-        const auto frameProgress = std::min<double>(double(frameIndex) / double(pAudioSource->getMaxFrameIndex()),1.0);
         if (m_progressInfo.track_progress != frameProgress) {
             if (progressUpdateInhibitTimer.elapsed() > 60 || frameProgress==1) {
                 // Inhibit Updates for 60 milliseconds

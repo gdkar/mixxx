@@ -92,16 +92,13 @@ void WOverview::setup(QDomNode node, const SkinContext& context) {
             markRange.setup(m_group, child, context, m_signalColors);
 
             if (markRange.m_markEnabledControl) {
-                connect(markRange.m_markEnabledControl, SIGNAL(valueChanged(double)),
-                        this, SLOT(onMarkRangeChange(double)));
+                connect(markRange.m_markEnabledControl, SIGNAL(valueChanged(double)),this, SLOT(onMarkRangeChange(double)));
             }
             if (markRange.m_markStartPointControl) {
-                connect(markRange.m_markStartPointControl, SIGNAL(valueChanged(double)),
-                        this, SLOT(onMarkRangeChange(double)));
+                connect(markRange.m_markStartPointControl, SIGNAL(valueChanged(double)),this, SLOT(onMarkRangeChange(double)));
             }
             if (markRange.m_markEndPointControl) {
-                connect(markRange.m_markEndPointControl, SIGNAL(valueChanged(double)),
-                        this, SLOT(onMarkRangeChange(double)));
+                connect(markRange.m_markEndPointControl, SIGNAL(valueChanged(double)),this, SLOT(onMarkRangeChange(double)));
             }
         }
         child = child.nextSibling();
