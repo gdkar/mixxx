@@ -472,24 +472,8 @@ class AutoDjCrates(Feature):
         if int(build.flags['autodjcrates']): return True
         return False
     def add_options(self, build, vars):
-        vars.Add('autodjcrates',
-                 'Set to 1 to enable crates as a source for random Auto-DJ tracks.', 1)
+        vars.Add('autodjcrates','Set to 1 to enable crates as a source for random Auto-DJ tracks.', 1)
     def configure(self, build, conf):
         if not self.enabled(build): return
         build.env.Append(CPPDEFINES='__AUTODJCRATES__')
-    def sources(self, build):
-        return ['library/dao/autodjcratesdao.cpp']
-class MacAppStoreException(Feature):
-    def description(self): return "Build for Mac App Store"
-    def enabled(self, build):
-        build.flags['macappstore'] = util.get_flags(build.env,'macappstore',0)
-        if int(build.flags['macappstore']):
-            # Existence of the macappstore option forces vinylcontrol off due to
-            # licensing issues.
-            build.flags['vinylcontrol'] = 0
-            return True
-        return False
-    def add_options(self, build, vars): vars.Add('macappstore', 'Set to 1 to indicate the build is for the Mac App Store', 0)
-    def configure(self, build, conf):
-        if not self.enabled(build): return
-        build.env.Append(CPPDEFINES='__MACAPPSTORE__')
+    def sources(self, build):return ['library/dao/autodjcratesdao.cpp']

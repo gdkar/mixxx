@@ -35,8 +35,6 @@ toolchain = ARGUMENTS.get('toolchain', None)
 available_features = [features.HSS1394,
                       features.HID,
                       features.Bulk,
-                      features.MacAppStoreException,
-                      features.VinylControl,
                       features.Shoutcast,
                       features.Profiling,
                       features.QDebug,
@@ -45,7 +43,6 @@ available_features = [features.HSS1394,
                       features.TestSuite,
                       features.Vamp,
                       features.AutoDjCrates,
-                      features.ColorDiagnostics,
                       # "Features" of dubious quality
                       features.PerfTools]
 build = mixxx.MixxxBuild(target, machine, build_type, toolchain, available_features)

@@ -22,13 +22,8 @@
 #include "controlobjectslave.h"
 #include "encoder/encoder.h"
 
-#ifdef __FFMPEGFILE__
 #include "encoder/encoderffmpegmp3.h"
 #include "encoder/encoderffmpegvorbis.h"
-#else
-#include "encoder/encodermp3.h"
-#include "encoder/encodervorbis.h"
-#endif
 
 #include "preferences/errordialoghandler.h"
 #include "playerinfo.h"
@@ -40,19 +35,11 @@ const int kMetaDataLifeTimeout = 16;
 EngineRecord::EngineRecord(ConfigObject<ConfigValue>* _config)
         : m_pConfig(_config),
           m_pEncoder(nullptr),
-          m_pSndfile(nullptr),
           m_frames(0),
           m_recordedDuration(0),
           m_iMetaDataLife(0),
           m_cueTrack(0),
           m_bCueIsEnabled(false) {
-    m_sfInfo.frames = 0;
-    m_sfInfo.samplerate = 0;
-    m_sfInfo.channels = 0;
-    m_sfInfo.format = 0;
-    m_sfInfo.sections = 0;
-    m_sfInfo.seekable = 0;
-
     m_pRecReady = new ControlObjectSlave(RECORDING_PREF_KEY, "status", this);
     m_pSamplerate = new ControlObjectSlave("[Master]", "samplerate", this);
     m_sampleRate = m_pSamplerate->get();
@@ -83,38 +70,22 @@ void EngineRecord::updateFromPreferences() {
         m_pEncoder = nullptr;
     }
     if (m_encoding == ENCODING_MP3) {
-#ifdef __FFMPEGFILE__
         m_pEncoder = new EncoderFfmpegMp3(this);
-#else
-        m_pEncoder = new EncoderMp3(this);
-#endif
         m_pEncoder->updateMetaData(m_baAuthor.data(),m_baTitle.data(),m_baAlbum.data());
         if(m_pEncoder->initEncoder(Encoder::convertToBitrate(m_MP3quality.toInt()), m_sampleRate) < 0) {
             delete m_pEncoder;
             m_pEncoder = nullptr;
-#ifdef __FFMPEGFILE__
             qDebug() << "MP3 recording is not supported. FFMPEG mp3 could not be initialized";
-#else
-            qDebug() << "MP3 recording is not supported. Lame could not be initialized";
-#endif
         }
     } else if (m_encoding == ENCODING_OGG) {
-#ifdef __FFMPEGFILE__
         m_pEncoder = new EncoderFfmpegVorbis(this);
-#else
-        m_pEncoder = new EncoderVorbis(this);
-#endif
         m_pEncoder->updateMetaData(m_baAuthor.data(),m_baTitle.data(),m_baAlbum.data());
 
         if (m_pEncoder->initEncoder(Encoder::convertToBitrate(m_OGGquality.toInt()),
                                    m_sampleRate) < 0) {
             delete m_pEncoder;
             m_pEncoder = nullptr;
-#ifdef __FFMPEGFILE__
             qDebug() << "OGG recording is not supported. FFMPEG OGG/Vorbis could not be initialized";
-#else
-            qDebug() << "OGG recording is not supported. OGG/Vorbis library could not be initialized";
-#endif
         }
     }
     // If we use WAVE OR AIFF the encoder will be nullptr at all times.
@@ -185,17 +156,10 @@ void EngineRecord::process(const CSAMPLE* pBuffer, const int iBufferSize) {
         }
     } else if (recordingStatus == RECORD_ON) {
         // If recording is enabled process audio to compressed or uncompressed data.
-        if (m_encoding == ENCODING_WAVE || m_encoding == ENCODING_AIFF) {
-            if (m_pSndfile != nullptr) {
-                sf_write_float(m_pSndfile, pBuffer, iBufferSize);
-                emit(bytesRecorded(iBufferSize * 2));
-            }
-        } else {
-            if (m_pEncoder) {
-                // Compress audio. Encoder will call method 'write()' below to
-                // write a file stream
-                m_pEncoder->encodeBuffer(pBuffer, iBufferSize);
-            }
+        if (m_pEncoder) {
+            // Compress audio. Encoder will call method 'write()' below to
+            // write a file stream
+            m_pEncoder->encodeBuffer(pBuffer, iBufferSize);
         }
 
         // update frames counting and recorded duration (seconds)
@@ -251,52 +215,19 @@ int EngineRecord::write(unsigned char *data,int length) {
 }
 bool EngineRecord::fileOpen() {
     // Both encoder and file must be initialized.
-    if (m_encoding == ENCODING_WAVE || m_encoding == ENCODING_AIFF) {return (m_pSndfile != nullptr);}
-    else {return (m_file.handle() != -1);}
+    return (m_file.handle() != -1);
 }
 bool EngineRecord::openFile() {
     // Unfortunately, we cannot use QFile for writing WAV and AIFF audio.
-    if (m_encoding == ENCODING_WAVE || m_encoding == ENCODING_AIFF) {
-        // set sfInfo
-        m_sfInfo.samplerate = m_sampleRate;
-        m_sfInfo.channels = 2;
-        if (m_encoding == ENCODING_WAVE) m_sfInfo.format = SF_FORMAT_WAV | SF_FORMAT_PCM_16;
-        else m_sfInfo.format = SF_FORMAT_AIFF | SF_FORMAT_PCM_16;
-        // Creates a new WAVE or AIFF file and writes header information.
-#ifdef __WINDOWS__
-        // Pointer valid until string changed
-        LPCWSTR lpcwFilename = (LPCWSTR)m_fileName.utf16();
-        m_pSndfile = sf_wchar_open(lpcwFilename, SFM_WRITE, &m_sfInfo);
-#else
-        m_pSndfile = sf_open(m_fileName.toLocal8Bit().constData(), SFM_WRITE, &m_sfInfo);
-#endif
-        if (m_pSndfile) {
-            sf_command(m_pSndfile, SFC_SET_NORM_FLOAT, nullptr, SF_TRUE);
-            // Set meta data
-            int ret;
-            ret = sf_set_string(m_pSndfile, SF_STR_TITLE, m_baTitle.constData());
-            if(ret != 0) qDebug("libsndfile: %s", sf_error_number(ret));
-            ret = sf_set_string(m_pSndfile, SF_STR_ARTIST, m_baAuthor.constData());
-            if(ret != 0) qDebug("libsndfile: %s", sf_error_number(ret));
-            ret = sf_set_string(m_pSndfile, SF_STR_COMMENT, m_baAlbum.constData());
-            if(ret != 0) qDebug("libsndfile: %s", sf_error_number(ret));
-        }
-    } else {
-        // We can use a QFile to write compressed audio.
-        if (m_pEncoder) {
-            m_file.setFileName(m_fileName);
-            if (!m_file.open(QIODevice::WriteOnly)) {
-                qDebug() << "Could not write:" << m_fileName;
-                return false;
-            }
-            if (m_file.handle() != -1) {
-                m_dataStream.setDevice(&m_file);
-            }
-        } else {
+    // We can use a QFile to write compressed audio.
+    if (m_pEncoder) {
+        m_file.setFileName(m_fileName);
+        if (!m_file.open(QIODevice::WriteOnly)) {
+            qDebug() << "Could not write:" << m_fileName;
             return false;
         }
-    }
-
+        if (m_file.handle() != -1) {m_dataStream.setDevice(&m_file);}
+    } else {return false;}
     // Check if file is really open.
     if (!fileOpen()) {
         ErrorDialogProperties* props = ErrorDialogHandler::instance()->newDialogProperties();
@@ -337,12 +268,7 @@ bool EngineRecord::openCueFile() {
     return true;
 }
 void EngineRecord::closeFile() {
-    if (m_encoding == ENCODING_WAVE || m_encoding == ENCODING_AIFF) {
-        if (m_pSndfile != nullptr) {
-            sf_close(m_pSndfile);
-            m_pSndfile = nullptr;
-        }
-    } else if (m_file.handle() != -1) {
+    if (m_file.handle() != -1) {
         // Close QFile and encoder, if open.
         if (m_pEncoder) {
             m_pEncoder->flush();

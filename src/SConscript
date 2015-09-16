@@ -168,8 +168,6 @@ icon_files = Glob('#res/images/mixxx-icon.png')
 #Images for preferences dialog
 image_files = Glob('#res/images/preferences/*')  # These are compiled in to the "mixxx" binary through mixxx.qrc
 #Windows DLLs
-# TODO: Use reference to SharedLibrary for libsndfile and others, glob only gets
-# all files on 2+ builds after a clean.
 if build.toolchain_is_msvs:
         mixxx_winlib_path = SCons.ARGUMENTS.get('winlib', '..\\..\\..\\mixxx-win32lib-msvc90-release')
         # skip the MSVC DLLs incase they're in there too

@@ -5,37 +5,24 @@ import util
 from mixxx import Dependence, Feature
 import SCons.Script as SCons
 
-
 class PortAudio(Dependence):
-
     def configure(self, build, conf):
         if not conf.CheckLib('portaudio'):
-            raise Exception(
-                'Did not find libportaudio.a, portaudio.lib, or the PortAudio-v19 development header files.')
-
+            raise Exception('Did not find libportaudio.a, portaudio.lib, or the PortAudio-v19 development header files.')
         # Turn on PortAudio support in Mixxx
         build.env.Append(CPPDEFINES='__PORTAUDIO__')
-
-        if build.platform_is_windows and build.static_dependencies:
-            conf.CheckLib('advapi32')
-
-    def sources(self, build):
-        return ['sounddeviceportaudio.cpp']
-
-
+        if build.platform_is_windows and build.static_dependencies: conf.CheckLib('advapi32')
+    def sources(self, build): return ['sounddeviceportaudio.cpp']
 class PortMIDI(Dependence):
-
     def configure(self, build, conf):
         # Check for PortTime
         libs = ['porttime', 'libporttime']
         headers = ['porttime.h']
-
         # Depending on the library configuration PortTime might be statically
         # linked with PortMidi. We treat either presence of the lib or the
         # header as success.
         if not conf.CheckLib(libs) and not conf.CheckHeader(headers):
             raise Exception("Did not find PortTime or its development headers.")
-
         # Check for PortMidi
         libs = ['portmidi', 'libportmidi']
         headers = ['portmidi.h']
@@ -47,13 +34,10 @@ class PortMIDI(Dependence):
             # static/dynamic choice should be made by the whether the .a is an
             # import library for a shared library or a static library.
             libs.append('portmidi_s')
-
         if not conf.CheckLib(libs) or not conf.CheckHeader(headers):
             raise Exception("Did not find PortMidi or its development headers.")
-
     def sources(self, build):
         return ['controllers/midi/portmidienumerator.cpp', 'controllers/midi/portmidicontroller.cpp']
-
 class FFMPEG(Dependence):
     def description(self): return "FFmpeg/Avconv support"
     def configure(self, build, conf):
@@ -72,7 +56,6 @@ class FFMPEG(Dependence):
                 raise Exception('Missing libavformat  or it\'s too old!'
                                 'It can be separated from main package so'
                                 'check your operating system packages.')
-
             # Needed to build new FFmpeg
             build.env.Append(CCFLAGS='-D__STDC_CONSTANT_MACROS')
             build.env.Append(CCFLAGS='-D__STDC_LIMIT_MACROS')
@@ -110,7 +93,6 @@ class FFMPEG(Dependence):
             build.env.Append(LIBS='m')
             build.env.Append(LIBS='ogg')
             build.env.Append(CPPDEFINES='__FFMPEGFILE__')
-
         # Add new path for FFmpeg header files.
         # Non-crosscompiled builds need this too, don't they?
         if build.crosscompile and build.platform_is_windows and build.toolchain_is_gnu:
@@ -137,94 +119,27 @@ class OpenGL(Dependence):
 class SecurityFramework(Dependence):
     """The iOS/OS X security framework is used to implement sandboxing."""
     def configure(self, build, conf):
-        if not build.platform_is_osx:
-            return
+        if not build.platform_is_osx:return
         build.env.Append(CPPPATH='/System/Library/Frameworks/Security.framework/Headers/')
         build.env.Append(LINKFLAGS='-framework Security')
-
-
 class CoreServices(Dependence):
     def configure(self, build, conf):
-        if not build.platform_is_osx:
-            return
+        if not build.platform_is_osx:return
         build.env.Append(CPPPATH='/System/Library/Frameworks/CoreServices.framework/Headers/')
         build.env.Append(LINKFLAGS='-framework CoreServices')
-
-
-class OggVorbis(Dependence):
-
-    def configure(self, build, conf):
-#        if build.platform_is_windows and build.machine_is_64bit:
-            # For some reason this has to be checked this way on win64,
-            # otherwise it looks for the dll lib which will cause a conflict
-            # later
-#            if not conf.CheckLib('vorbisfile_static'):
-#                raise Exception('Did not find vorbisfile_static.lib or the libvorbisfile development headers.')
-#        else:
-        libs = ['libvorbisfile', 'vorbisfile']
-        if not conf.CheckLib(libs):
-            Exception('Did not find libvorbisfile.a, libvorbisfile.lib, '
-                      'or the libvorbisfile development headers.')
-
-        libs = ['libvorbis', 'vorbis']
-        if not conf.CheckLib(libs):
-            raise Exception(
-                'Did not find libvorbis.a, libvorbis.lib, or the libvorbis development headers.')
-
-        libs = ['libogg', 'ogg']
-        if not conf.CheckLib(libs):
-            raise Exception(
-                'Did not find libogg.a, libogg.lib, or the libogg development headers')
-
-        # libvorbisenc only exists on Linux, OSX and mingw32 on Windows. On
-        # Windows with MSVS it is included in vorbisfile.dll. libvorbis and
-        # libogg are included from build.py so don't add here.
-        if not build.platform_is_windows or build.toolchain_is_gnu:
-            vorbisenc_found = conf.CheckLib(['libvorbisenc', 'vorbisenc'])
-            if not vorbisenc_found:
-                raise Exception(
-                    'Did not find libvorbisenc.a, libvorbisenc.lib, or the libvorbisenc development headers.')
-
-    def sources(self, build):
-        return []
-
-class SndFile(Dependence):
-    def configure(self, build, conf):
-        # if not conf.CheckLibWithHeader(['sndfile', 'libsndfile', 'libsndfile-1'], 'sndfile.h', 'C'):
-        # TODO: check for debug version on Windows when one is available
-        if not conf.CheckLib(['sndfile', 'libsndfile', 'libsndfile-1']):
-            raise Exception(
-                "Did not find libsndfile or it\'s development headers")
-        build.env.Append(CPPDEFINES='__SNDFILE__')
-
-    def sources(self, build):
-        return []
 class Qt(Dependence):
-
-    DEFAULT_QT5DIRS64 = {'linux': '/usr/lib/x86_64-linux-gnu/qt5',
-                         'osx': '/Library/Frameworks',
-                         'windows': 'C:\\qt\\5.0.1'}
-
-    DEFAULT_QT5DIRS32 = {'linux': '/usr/lib/i386-linux-gnu/qt5',
-                         'osx': '/Library/Frameworks',
-                         'windows': 'C:\\qt\\5.0.1'}
-
+    DEFAULT_QT5DIRS64 = {'linux': '/usr/lib/x86_64-linux-gnu/qt5','osx': '/Library/Frameworks','windows': 'C:\\qt\\5.0.1'}
+    DEFAULT_QT5DIRS32 = {'linux': '/usr/lib/i386-linux-gnu/qt5','osx': '/Library/Frameworks','windows': 'C:\\qt\\5.0.1'}
     @staticmethod
-    def qt5_enabled(build):
-        return True
-
+    def qt5_enabled(build): return True
     @staticmethod
-    def uic(build):
-        return build.env.Uic5 
-
+    def uic(build):return build.env.Uic5 
     @staticmethod
     def find_framework_path(qtdir):
         for d in (os.path.join(qtdir, x) for x in ['', 'Frameworks', 'lib']):
             core = os.path.join(d, 'QtCore.framework')
-            if os.path.isdir(core):
-                return d
+            if os.path.isdir(core):return d
         return None
-
     @staticmethod
     def enabled_modules(build):
         qt_modules = [
@@ -234,7 +149,6 @@ class Qt(Dependence):
         ]
         qt_modules.extend(['QtWidgets', 'QtConcurrent'])
         return qt_modules
-
     @staticmethod
     def enabled_imageformats(build):
         qt_imageformats = [
@@ -275,8 +189,7 @@ class Qt(Dependence):
             qtdir = build.env['QTDIR']
             build.env.Append(LINKFLAGS=' '.join('-framework %s' % m for m in qt_modules))
             framework_path = Qt.find_framework_path(qtdir)
-            if not framework_path:
-                raise Exception('Could not find frameworks in Qt directory: %s' % qtdir)
+            if not framework_path:raise Exception('Could not find frameworks in Qt directory: %s' % qtdir)
             # Necessary for raw includes of headers like #include <qobject.h>
             build.env.Append(CPPPATH=[os.path.join(framework_path, '%s.framework' % m, 'Headers')for m in qt_modules])
             # Framework path needs to be altered for CCFLAGS as well since a
@@ -300,8 +213,7 @@ class Qt(Dependence):
                 'QtConcurrent': ['QT_CONCURRENT_LIB'],
             }
             module_defines = qt5_module_defines
-            for module in qt_modules:
-                build.env.AppendUnique(CPPDEFINES=module_defines.get(module, []))
+            for module in qt_modules:build.env.AppendUnique(CPPDEFINES=module_defines.get(module, []))
             build.env["QT5_MOCCPPPATH"] = build.env["CPPPATH"]
         elif build.platform_is_windows:
             # This automatically converts QtCore to QtCore[45][d] where
@@ -311,8 +223,7 @@ class Qt(Dependence):
         # This is not supported on OS X before the 10.5 SDK.
         using_104_sdk = (str(build.env["CCFLAGS"]).find("10.4") >= 0)
         compiling_on_104 = False
-        if build.platform_is_osx:
-            compiling_on_104 = (os.popen('sw_vers').readlines()[1].find('10.4') >= 0)
+        if build.platform_is_osx:compiling_on_104 = (os.popen('sw_vers').readlines()[1].find('10.4') >= 0)
         if not build.platform_is_windows and not (using_104_sdk or compiling_on_104):
             qtdir = build.env['QTDIR']
             # TODO(XXX) should we use find_framework_path here or keep lib
@@ -401,18 +312,12 @@ class Chromaprint(Dependence):
 class ProtoBuf(Dependence):
     def configure(self, build, conf):
         libs = ['libprotobuf-lite', 'protobuf-lite', 'libprotobuf', 'protobuf']
-        if build.platform_is_windows:
-            if not build.static_dependencies:build.env.Append(CPPDEFINES='PROTOBUF_USE_DLLS')
-        if not conf.CheckLib(libs):
-            raise Exception("Could not find libprotobuf or its development headers.")
+        if build.platform_is_windows:if not build.static_dependencies:build.env.Append(CPPDEFINES='PROTOBUF_USE_DLLS')
+        if not conf.CheckLib(libs):raise Exception("Could not find libprotobuf or its development headers.")
 class QtScriptByteArray(Dependence):
     def configure(self, build, conf):build.env.Append(CPPPATH='#lib/qtscript-bytearray')
     def sources(self, build):
-        return ['#lib/qtscript-bytearray/bytearrayclass.cpp',
-                '#lib/qtscript-bytearray/bytearrayprototype.cpp']
-class Reverb(Dependence):
-    def configure(self, build, conf):build.env.Append(CPPPATH='#lib/reverb')
-    def sources(self, build): return ['#lib/reverb/Reverb.cc']
+        return ['#lib/qtscript-bytearray/bytearrayclass.cpp','#lib/qtscript-bytearray/bytearrayprototype.cpp']
 class MixxxCore(Feature):
     def description(self): return "Mixxx Core Features"
     def enabled(self, build): return True
@@ -989,59 +894,41 @@ class MixxxCore(Feature):
             # Restrict ATL to XP-compatible SDK functions.
             # TODO(rryan): Remove once we ditch XP support.
             build.env.Append(CPPDEFINES='_ATL_XP_TARGETING')
-            build.env.Append(
-                CPPDEFINES='_ATL_MIN_CRT')  # Helps prevent duplicate symbols
-            # Need this on Windows until we have UTF16 support in Mixxx
-            # use stl min max defines
-            # http://connect.microsoft.com/VisualStudio/feedback/details/553420/std-cpp-max-and-std-cpp-min-not-available-in-visual-c-2010
+            build.env.Append(CPPDEFINES='_ATL_MIN_CRT')  # Helps prevent duplicate symbols
             build.env.Append(CPPDEFINES='NOMINMAX')
             build.env.Append(CPPDEFINES='UNICODE')
-            build.env.Append(
-                CPPDEFINES='WIN%s' % build.bitwidth)  # WIN32 or WIN64
+            build.env.Append(CPPDEFINES='WIN%s' % build.bitwidth)  # WIN32 or WIN64
             # Tobias: Don't remove this line
             # I used the Windows API in foldertreemodel.cpp
             # to quickly test if a folder has subfolders
             build.env.Append(LIBS='shell32')
-
         elif build.platform_is_linux:
             build.env.Append(CPPDEFINES='__LINUX__')
-
             # Check for pkg-config >= 0.15.0
-            if not conf.CheckForPKGConfig('0.15.0'):
-                raise Exception('pkg-config >= 0.15.0 not found.')
-
+            if not conf.CheckForPKGConfig('0.15.0'):raise Exception('pkg-config >= 0.15.0 not found.')
         elif build.platform_is_osx:
             # Stuff you may have compiled by hand
             if os.path.isdir('/usr/local/include'):
                 build.env.Append(LIBPATH=['/usr/local/lib'])
                 build.env.Append(CPPPATH=['/usr/local/include'])
-
             # Non-standard libpaths for fink and certain (most?) darwin ports
             if os.path.isdir('/sw/include'):
                 build.env.Append(LIBPATH=['/sw/lib'])
                 build.env.Append(CPPPATH=['/sw/include'])
-
             # Non-standard libpaths for darwin ports
             if os.path.isdir('/opt/local/include'):
                 build.env.Append(LIBPATH=['/opt/local/lib'])
                 build.env.Append(CPPPATH=['/opt/local/include'])
-
         elif build.platform_is_bsd:
             build.env.Append(CPPDEFINES='__BSD__')
-            build.env.Append(CPPPATH=['/usr/include',
-                                      '/usr/local/include',
-                                      '/usr/X11R6/include/'])
-            build.env.Append(LIBPATH=['/usr/lib/',
-                                      '/usr/local/lib',
-                                      '/usr/X11R6/lib'])
+            build.env.Append(CPPPATH=['/usr/include','/usr/local/include','/usr/X11R6/include/'])
+            build.env.Append(LIBPATH=['/usr/lib/','/usr/local/lib','/usr/X11R6/lib'])
             build.env.Append(LIBS='pthread')
             # why do we need to do this on OpenBSD and not on Linux?  if we
             # don't then CheckLib("vorbisfile") fails
             build.env.Append(LIBS=['ogg', 'vorbis'])
-
         # Define for things that would like to special case UNIX (Linux or BSD)
-        if build.platform_is_bsd or build.platform_is_linux:
-            build.env.Append(CPPDEFINES='__UNIX__')
+        if build.platform_is_bsd or build.platform_is_linux:build.env.Append(CPPDEFINES='__UNIX__')
         # Add the src/ directory to the include path
         build.env.Append(CPPPATH=['.'])
         # Set up flags for config/track listing files
@@ -1052,10 +939,8 @@ class MixxxCore(Feature):
                 # to QDir::filePath elsewhere in the code. This is candidate for removal.
                 ('SETTINGS_PATH', '.mixxx/'),
                 ('SETTINGS_FILE', 'mixxx.cfg')]
-        elif build.platform_is_osx:
-            mixxx_files = [ ('SETTINGS_FILE', 'mixxx.cfg')]
-        elif build.platform_is_windows:
-            mixxx_files = [ ('SETTINGS_FILE', 'mixxx.cfg')]
+        elif build.platform_is_osx:mixxx_files = [ ('SETTINGS_FILE', 'mixxx.cfg')]
+        elif build.platform_is_windows:mixxx_files = [ ('SETTINGS_FILE', 'mixxx.cfg')]
         # Escape the filenames so they don't end up getting screwed up in the
         # shell.
         mixxx_files = [(k, r'\"%s\"' % v) for k, v in mixxx_files]
@@ -1070,7 +955,7 @@ class MixxxCore(Feature):
             build.env.Append(CPPDEFINES=('UNIX_LIB_PATH', r'\"%s\"' % lib_path))
     def depends(self, build):
         return [SoundTouch, ReplayGain, PortAudio, PortMIDI, Qt, TestHeaders,
-                FidLib, OggVorbis, OpenGL, TagLib, ProtoBuf, SndFile,FFMPEG,
+                FidLib, OpenGL, TagLib, ProtoBuf, FFMPEG,
                 Chromaprint, RubberBand, SecurityFramework, CoreServices,
                 QtScriptByteArray, Reverb]
     def post_dependency_check_configure(self, build, conf):
