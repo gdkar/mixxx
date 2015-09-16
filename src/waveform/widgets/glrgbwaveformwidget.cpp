@@ -16,7 +16,6 @@
 GLRGBWaveformWidget::GLRGBWaveformWidget(const char* group, QWidget* parent)
         : QGLWidget(parent, SharedGLContext::getWidget()),
           WaveformWidgetAbstract(group) {
-
     addRenderer<WaveformRenderBackground>();
     addRenderer<WaveformRendererEndOfTrack>();
     addRenderer<WaveformRendererPreroll>();
@@ -24,31 +23,21 @@ GLRGBWaveformWidget::GLRGBWaveformWidget(const char* group, QWidget* parent)
     addRenderer<GLWaveformRendererRGB>();
     addRenderer<WaveformRenderBeat>();
     addRenderer<WaveformRenderMark>();
-
     setAttribute(Qt::WA_NoSystemBackground);
     setAttribute(Qt::WA_OpaquePaintEvent);
-
     setAutoBufferSwap(false);
-
     qDebug() << "Created QGLWidget. Context"
              << "Valid:" << context()->isValid()
              << "Sharing:" << context()->isSharing();
-    if (QGLContext::currentContext() != context()) {
-        makeCurrent();
-    }
+    if (QGLContext::currentContext() != context()) {makeCurrent();}
     m_initSuccess = init();
 }
 
-GLRGBWaveformWidget::~GLRGBWaveformWidget() {
-
-}
-
+GLRGBWaveformWidget::~GLRGBWaveformWidget() = default;
 void GLRGBWaveformWidget::castToQWidget() {
     m_widget = static_cast<QWidget*>(static_cast<QGLWidget*>(this));
 }
-
-void GLRGBWaveformWidget::paintEvent(QPaintEvent* event) {
-    Q_UNUSED(event);
+void GLRGBWaveformWidget::paintEvent(QPaintEvent* /*event*/) {
 }
 
 int GLRGBWaveformWidget::render() {

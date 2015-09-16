@@ -1,21 +1,14 @@
-#ifndef QTSIMPLEWAVEFORMWIDGET_H
-#define QTSIMPLEWAVEFORMWIDGET_H
-
-#include <QGLWidget>
-
+_Pragma("once")
+#include <QWidget>
 #include "waveformwidgetabstract.h"
-
-class QtSimpleWaveformWidget : public QGLWidget, public WaveformWidgetAbstract {
+class QtSimpleWaveformWidget : public QWidget, public WaveformWidgetAbstract {
     Q_OBJECT
   public:
     QtSimpleWaveformWidget(const char* group, QWidget* parent);
     virtual ~QtSimpleWaveformWidget();
-
-
     virtual WaveformWidgetType::Type getType() const { return WaveformWidgetType::GLSimpleWaveform; }
-
     static inline QString getWaveformWidgetName() { return tr("Simple") + " - Qt"; }
-    static inline bool useOpenGl() { return true; }
+    static inline bool useOpenGl() { return false; }
     static inline bool useOpenGLShaders() { return false; }
     static inline bool developerOnly() { return false; }
 
@@ -27,5 +20,3 @@ class QtSimpleWaveformWidget : public QGLWidget, public WaveformWidgetAbstract {
   private:
     friend class WaveformWidgetFactory;
 };
-
-#endif // QTSIMPLEWAVEFORMWIDGET_H

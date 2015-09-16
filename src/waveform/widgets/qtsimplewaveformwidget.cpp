@@ -16,7 +16,7 @@
 #include "util/performancetimer.h"
 
 QtSimpleWaveformWidget::QtSimpleWaveformWidget(const char* group, QWidget* parent)
-        : QGLWidget(parent, SharedGLContext::getWidget()),
+        : QWidget(parent, SharedGLContext::getWidget()),
           WaveformWidgetAbstract(group) {
     addRenderer<WaveformRenderBackground>();
     addRenderer<WaveformRendererEndOfTrack>();
@@ -29,44 +29,11 @@ QtSimpleWaveformWidget::QtSimpleWaveformWidget(const char* group, QWidget* paren
     setAttribute(Qt::WA_NoSystemBackground);
     setAttribute(Qt::WA_OpaquePaintEvent);
 
-    setAutoBufferSwap(false);
-
-    qDebug() << "Created QGLWidget. Context"
-             << "Valid:" << context()->isValid()
-             << "Sharing:" << context()->isSharing();
-    if (QGLContext::currentContext() != context()) {
-        makeCurrent();
-    }
     m_initSuccess = init();
 }
-
-QtSimpleWaveformWidget::~QtSimpleWaveformWidget() {
-    if (QGLContext::currentContext() != context()) {
-        makeCurrent();
-    }
-}
-
-void QtSimpleWaveformWidget::castToQWidget() {
-    m_widget = static_cast<QWidget*>(static_cast<QGLWidget*>(this));
-}
-
-void QtSimpleWaveformWidget::paintEvent(QPaintEvent* event) {
-    Q_UNUSED(event);
-}
-
-int QtSimpleWaveformWidget::render() {
-    PerformanceTimer timer;
-    int t1;
-    //int t2, t3;
-    timer.start();
-    // QPainter makes QGLContext::currentContext() == context()
-    // this may delayed until previous buffer swap finished
+QtSimpleWaveformWidget::~QtSimpleWaveformWidget() = default;
+void QtSimpleWaveformWidget::castToQWidget() {m_widget = static_cast<QWidget*>(static_cast<QGLWidget*>(this));}
+void QtSimpleWaveformWidget::paintEvent(QPaintEvent *e) {
     QPainter painter(this);
-    t1 = timer.restart();
-    draw(&painter, NULL);
-    //t2 = timer.restart();
-    //glFinish();
-    //t3 = timer.restart();
-    //qDebug() << "GLVSyncTestWidget "<< t1 << t2 << t3;
-    return t1 / 1000; // return timer for painter setup
+    draw(&painter, e);
 }

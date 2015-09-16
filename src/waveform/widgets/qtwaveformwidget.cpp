@@ -1,5 +1,4 @@
 #include <QPainter>
-#include <QGLContext>
 #include <QtDebug>
 
 #include "qtwaveformwidget.h"
@@ -12,12 +11,9 @@
 #include "waveform/renderers/waveformrendermarkrange.h"
 #include "waveform/renderers/waveformrendererendoftrack.h"
 #include "waveform/renderers/waveformrenderbeat.h"
-#include "sharedglcontext.h"
-
-#include "util/performancetimer.h"
 
 QtWaveformWidget::QtWaveformWidget(const char* group, QWidget* parent)
-        : QGLWidget(parent, SharedGLContext::getWidget()),
+        : QWidget(parent, getWidget()),
           WaveformWidgetAbstract(group) {
     addRenderer<WaveformRenderBackground>();
     addRenderer<WaveformRendererEndOfTrack>();
@@ -30,41 +26,11 @@ QtWaveformWidget::QtWaveformWidget(const char* group, QWidget* parent)
     setAttribute(Qt::WA_NoSystemBackground);
     setAttribute(Qt::WA_OpaquePaintEvent);
 
-    setAutoBufferSwap(false);
-
-    qDebug() << "Created QGLWidget. Context"
-             << "Valid:" << context()->isValid()
-             << "Sharing:" << context()->isSharing();
-    if (QGLContext::currentContext() != context()) {
-        makeCurrent();
-    }
     m_initSuccess = init();
 }
-
-QtWaveformWidget::~QtWaveformWidget() {
-}
-
-void QtWaveformWidget::castToQWidget() {
-    m_widget = static_cast<QWidget*>(static_cast<QGLWidget*>(this));
-}
-
+QtWaveformWidget::~QtWaveformWidget() = default;
+void QtWaveformWidget::castToQWidget() {m_widget = static_cast<QWidget*>(static_cast<QWidget*>(this));}
 void QtWaveformWidget::paintEvent(QPaintEvent* event) {
-    Q_UNUSED(event);
-}
-
-int QtWaveformWidget::render() {
-    PerformanceTimer timer;
-    int t1;
-    //int t2, t3;
-    timer.start();
-    // QPainter makes QGLContext::currentContext() == context()
-    // this may delayed until previous buffer swap finished
-    QPainter painter(this);
-    t1 = timer.restart();
-    draw(&painter, NULL);
-    //t2 = timer.restart();
-    //glFinish();
-    //t3 = timer.restart();
-    //qDebug() << "GLVSyncTestWidget "<< t1 << t2 << t3;
-    return t1 / 1000; // return timer for painter setup
+  QPainter painter(this);
+  draw(&painter,event);
 }

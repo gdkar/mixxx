@@ -1,6 +1,4 @@
-#ifndef WAVEFORMWIDGETABSTRACT_H
-#define WAVEFORMWIDGETABSTRACT_H
-
+_Pragma("once")
 #include <QWidget>
 #include <QString>
 
@@ -22,26 +20,18 @@ class WaveformWidgetAbstract : public WaveformWidgetRenderer {
 
     //Type is use by the factory to safely up-cast waveform widgets
     virtual WaveformWidgetType::Type getType() const = 0;
-
     bool isValid() const { return (m_widget && m_initSuccess); }
     QWidget* getWidget() { return m_widget; }
-
     void hold();
     void release();
-
     virtual void preRender(VSyncThread* vsyncThread);
     virtual int render();
-
     virtual void resize(int width, int height);
-
   protected:
-    QWidget* m_widget;
-    bool m_initSuccess;
+    QWidget* m_widget  = nullptr;
+    bool m_initSuccess = false;
 
     //this is the factory resposability to trigger QWidget casting after constructor
     virtual void castToQWidget() = 0;
-
     friend class WaveformWidgetFactory;
 };
-
-#endif // WAVEFORMWIDGETABSTRACT_H

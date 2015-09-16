@@ -1,6 +1,4 @@
-#ifndef QTWAVEFROMRENDERERFILTEREDSIGNAL_H
-#define QTWAVEFROMRENDERERFILTEREDSIGNAL_H
-
+_Pragma("once")
 #include "waveformrenderersignalbase.h"
 
 #include <QBrush>
@@ -30,5 +28,3 @@ class QtWaveformRendererFilteredSignal : public WaveformRendererSignalBase {
 
     QVector<QPointF> m_polygon[3];
 };
-
-#endif // QTWAVEFROMRENDERERFILTEREDSIGNAL_H

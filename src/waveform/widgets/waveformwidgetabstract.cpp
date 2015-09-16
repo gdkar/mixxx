@@ -7,39 +7,27 @@
 
 WaveformWidgetAbstract::WaveformWidgetAbstract(const char* group)
     : WaveformWidgetRenderer(group),
-      m_initSuccess(false) {
-    m_widget = NULL;
+      m_initSuccess(false),
+      m_widget(nullptr){
 }
-
-WaveformWidgetAbstract::~WaveformWidgetAbstract() {
-}
+WaveformWidgetAbstract::~WaveformWidgetAbstract() = default;
 
 void WaveformWidgetAbstract::hold() {
-    if (m_widget) {
-        m_widget->hide();
-    }
+    if (m_widget) {m_widget->hide();}
 }
 
 void WaveformWidgetAbstract::release() {
-    if (m_widget) {
-        m_widget->show();
-    }
+    if (m_widget) {m_widget->show();}
 }
-
 void WaveformWidgetAbstract::preRender(VSyncThread* vsyncThread) {
     WaveformWidgetRenderer::onPreRender(vsyncThread);
 }
-
 int WaveformWidgetAbstract::render() {
-    if (m_widget) {
-        m_widget->repaint(); // Repaints the widget directly by calling paintEvent()
-    }
+    if (m_widget) {m_widget->repaint();}
     return 0; // Time for Painter setup, unknown in this case
 }
 
 void WaveformWidgetAbstract::resize(int width, int height) {
-    if (m_widget) {
-        m_widget->resize(width, height);
-    }
+    if (m_widget) {m_widget->resize(width, height);}
     WaveformWidgetRenderer::resize(width, height);
 }

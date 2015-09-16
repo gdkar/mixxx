@@ -27,14 +27,8 @@ SoftwareWaveformWidget::SoftwareWaveformWidget(const char* group, QWidget* paren
 
     m_initSuccess = init();
 }
-
-SoftwareWaveformWidget::~SoftwareWaveformWidget() {
-}
-
-void SoftwareWaveformWidget::castToQWidget() {
-    m_widget = static_cast<QWidget*>(this);
-}
-
+SoftwareWaveformWidget::~SoftwareWaveformWidget() = default;
+void SoftwareWaveformWidget::castToQWidget() {m_widget = static_cast<QWidget*>(this);}
 void SoftwareWaveformWidget::paintEvent(QPaintEvent* event) {
     QPainter painter(this);
     draw(&painter, event);
