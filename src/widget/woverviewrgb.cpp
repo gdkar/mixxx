@@ -91,7 +91,7 @@ bool WOverviewRGB::drawNextPixmapPart() {
                 static_cast<float>(pWaveform->getAll(currentCompletion)),
                 static_cast<float>(pWaveform->getAll(currentCompletion + 1)));
     }
-    m_actualCompletion = currentCompmletion;
+    m_actualCompletion = currentCompletion;
     m_waveformImageScaled = QImage();
     m_diffGain = 0;
     // Test if the complete waveform is done

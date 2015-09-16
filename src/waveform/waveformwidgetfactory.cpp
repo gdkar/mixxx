@@ -7,7 +7,7 @@
 #include <QGLShaderProgram>
 
 #include "waveform/waveformwidgetfactory.h"
-
+#include "sharedglcontext.h"
 #include "controlpotmeter.h"
 #include "waveform/widgets/emptywaveformwidget.h"
 #include "waveform/widgets/softwarewaveformwidget.h"
@@ -78,10 +78,12 @@ WaveformWidgetFactory::WaveformWidgetFactory() :
     m_visualGain[High] = 1.0;
 
     if (QGLFormat::hasOpenGL()) {
-        QGLFormat glFormat;
+        QGLFormat glFormat = QGLFormat::defaultFormat();
         glFormat.setDirectRendering(true);
         glFormat.setDoubleBuffer(true);
         glFormat.setDepth(false);
+        glFormat.setVersion(3,3);
+        glFormat.setProfile(QGLFormat::CompatibilityProfile);
         // Disable waiting for vertical Sync
         // This can be enabled when using a single Threads for each QGLContext
         // Setting 1 causes QGLContext::swapBuffer to sleep until the next VSync
@@ -96,55 +98,26 @@ WaveformWidgetFactory::WaveformWidgetFactory() :
         // TOOD(XXX): What should we do on Windows?
         glFormat.setSwapInterval(0);
 #endif
-
-
         glFormat.setRgba(true);
         QGLFormat::setDefaultFormat(glFormat);
-
-        QGLFormat::OpenGLVersionFlags version = QGLFormat::openGLVersionFlags();
-
-        int majorVersion = 0;
-        int minorVersion = 0;
-        if (version == QGLFormat::OpenGL_Version_None) {
-            m_openGLVersion = "None";
-        } else if (version & QGLFormat::OpenGL_Version_3_0) {
-            majorVersion = 3;
-        } else if (version & QGLFormat::OpenGL_Version_2_1) {
-            majorVersion = 2;
-            minorVersion = 1;
-        } else if (version & QGLFormat::OpenGL_Version_2_0) {
-            majorVersion = 2;
-            minorVersion = 0;
-        } else if (version & QGLFormat::OpenGL_Version_1_5) {
-            majorVersion = 1;
-            minorVersion = 5;
-        } else if (version & QGLFormat::OpenGL_Version_1_4) {
-            majorVersion = 1;
-            minorVersion = 4;
-        } else if (version & QGLFormat::OpenGL_Version_1_3) {
-            majorVersion = 1;
-            minorVersion = 3;
-        } else if (version & QGLFormat::OpenGL_Version_1_2) {
-            majorVersion = 1;
-            minorVersion = 2;
-        } else if (version & QGLFormat::OpenGL_Version_1_1) {
-            majorVersion = 1;
-            minorVersion = 1;
+        {
+            QGLWidget glWidget{}; // create paint device
+            auto context = glWidget.context();
+            if ( context && (context->isValid() || context->create(SharedGLContext::getWidget()->context())))
+            {
+                glFormat = context->format();
+                auto majorVersion = glFormat.majorVersion();
+                auto minorVersion = glFormat.minorVersion();
+                m_openGLVersion = QString::number(majorVersion) + "." + QString::number(minorVersion);
+                m_openGLAvailable = true;
+                m_openGLShaderAvailable = QGLShaderProgram::hasOpenGLShaderPrograms(context);
+                qDebug() << "opengl shaders available: "<<m_openGLShaderAvailable;
+                qDebug() << "opengl version : " << m_openGLVersion;
+            }
         }
-
-        if (majorVersion != 0) {
-            m_openGLVersion = QString::number(majorVersion) + "." +
-                    QString::number(minorVersion);
-        }
-
-        m_openGLAvailable = true;
-
-        QGLWidget* glWidget = new QGLWidget(); // create paint device
+        m_openGLShaderAvailable = true;
         // QGLShaderProgram::hasOpenGLShaderPrograms(); valgind error
-        m_openGLShaderAvailable = QGLShaderProgram::hasOpenGLShaderPrograms(glWidget->context());
-        delete glWidget;
     }
-
     evaluateWidgets();
     m_time.start();
 }
