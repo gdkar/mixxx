@@ -13,9 +13,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef SOUNDMANAGERUTIL_U
-#define SOUNDMANAGERUTIL_U
-
+_Pragma("once")
 #include <QString>
 #include <QMutex>
 #include <QDomElement>
@@ -180,5 +178,3 @@ typedef AudioPath::AudioPathType AudioPathType;
 unsigned int qHash(const ChannelGroup &group);
 unsigned int qHash(const AudioOutput &output);
 unsigned int qHash(const AudioInput &input);
-
-#endif

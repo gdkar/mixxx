@@ -51,12 +51,11 @@ class Waveform {
     double getAudioVisualRatio() const;
     // Atomically lookup the completion of the waveform. Represents the number
     // of data elements that have been processed out of dataSize.
-    int getCompletion() const;
-    void setCompletion(int completion);
+    double getCompletion() const;
+    void setCompletion(double completion);
     // We do not lock the mutex since m_textureStride is not changed after
     // the constructor runs.
     int getTextureStride() const;
-
     // We do not lock the mutex since m_data is not resized after the
     // constructor runs.
     int getTextureSize() const;

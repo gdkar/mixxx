@@ -11,9 +11,9 @@ WSplitter::WSplitter(QWidget* pParent, ConfigObject<ConfigValue> *pConfig)
 WSplitter::~WSplitter() = default;
 void WSplitter::setup(QDomNode node, const SkinContext& context) {
     // Load split sizes
-    QString sizesJoined;
-    QString msg;
-    bool ok = false;
+    auto sizesJoined = QString{};
+    auto msg = QString{};
+    auto ok = false;
     // Try to load last values stored in mixxx.cfg
     if (context.hasNode(node, "SplitSizesConfigKey")) {
         m_configKey = ConfigKey::parseCommaSeparated(context.selectString(node, "SplitSizesConfigKey"));
@@ -37,11 +37,11 @@ void WSplitter::setup(QDomNode node, const SkinContext& context) {
                 + QString::number(this->count());
     }
     // found some value for splitsizes?
-    if (sizesJoined != NULL) {
-        QStringList sizesSplit = sizesJoined.split(",");
-        QList<int> sizesList;
+    if (!sizesJoined.isEmpty()) {
+        auto sizesSplit = sizesJoined.split(",");
+        auto sizesList = QList<int> {};
         ok = false;
-        foreach (const QString& sizeStr, sizesSplit) {
+        for(auto sizeStr: sizesSplit) {
             sizesList.push_back(sizeStr.toInt(&ok));
             if (!ok) {break;}
         }
@@ -53,16 +53,16 @@ void WSplitter::setup(QDomNode node, const SkinContext& context) {
     }
     // Default orientation is horizontal.
     if (context.hasNode(node, "Orientation")) {
-        QString layout = context.selectString(node, "Orientation");
+        auto layout = context.selectString(node, "Orientation");
         if (layout == "vertical") {setOrientation(Qt::Vertical);}
         else if (layout == "horizontal") {setOrientation(Qt::Horizontal);}
     }
 }
 void WSplitter::slotSplitterMoved() {
     if (!m_configKey.group.isEmpty() && !m_configKey.item.isEmpty()) {
-        QStringList sizeStrList;
+        auto sizeStrList = QStringList{};
         for(auto & sizeInt: sizes()) {sizeStrList.push_back(QString::number(sizeInt));}
-        QString sizesStr = sizeStrList.join(",");
+        auto sizesStr = sizeStrList.join(",");
         m_pConfig->set(m_configKey, ConfigValue(sizesStr));
     }
 }

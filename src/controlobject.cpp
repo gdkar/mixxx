@@ -29,7 +29,7 @@ ControlObject::ControlObject() = default;
 ControlObject::ControlObject(ConfigKey key, bool bIgnoreNops, bool bTrack,bool bPersist) {
     initialize(key, bIgnoreNops, bTrack, bPersist);
 }
-ControlObject::~ControlObject() { if (m_pControl) {m_pControl->removeCreatorCO();} }
+ControlObject::~ControlObject() = default;
 void ControlObject::initialize(ConfigKey key, bool bIgnoreNops, bool bTrack,bool bPersist) {
     m_key = key;
     // Don't bother looking up the control if key is nullptr. Prevents log spew.

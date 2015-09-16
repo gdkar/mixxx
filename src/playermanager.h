@@ -71,19 +71,16 @@ class PlayerManager : public QObject{
     // Slots for loading tracks into a Player, which is either a Player or a Player
     void slotLoadTrackToPlayer(TrackPointer pTrack, QString group, bool play = false);
     void slotLoadToPlayer(QString location, QString group);
-
     // Slots for loading tracks to decks
     void slotLoadTrackIntoNextAvailableDeck(TrackPointer pTrack);
     // Loads the location to the deck. deckNumber is 1-indexed
     void slotLoadToDeck(QString location, int deckNumber);
-
     // Loads the location to the preview deck. previewDeckNumber is 1-indexed
     void slotLoadToPreviewDeck(QString location, int previewDeckNumber);
     // Slots for loading tracks to samplers
     void slotLoadTrackIntoNextAvailableSampler(TrackPointer pTrack);
     // Loads the location to the sampler. samplerNumber is 1-indexed
     void slotLoadToSampler(QString location, int samplerNumber);
-
     void slotNumDecksControlChanged(double v);
     void slotNumSamplersControlChanged(double v);
     void slotNumPreviewDecksControlChanged(double v);
@@ -115,4 +112,3 @@ class PlayerManager : public QObject{
     QList<Player*> m_preview_decks;
     QMap<QString, Player*> m_players;
 };
-

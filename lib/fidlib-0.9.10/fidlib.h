@@ -1,8 +1,10 @@
 //
 //	fidlib include file
-//
-#ifndef FIDLIB_H
-#define FIDLIB_H
+_Pragma("once")
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct FidFilter FidFilter;
 struct FidFilter {
    short typ;		// Type of filter element 'I' IIR, 'F' FIR, or 0 for end of list
@@ -36,9 +38,6 @@ typedef double (FidFunc)(void*, double);
 //
 //	Prototypes
 //
-#ifdef MIXXX
-extern "C" {
-#endif
 
 extern void fid_set_error_handler(void(*rout)(char *));
 extern char *fid_version();
@@ -71,7 +70,7 @@ extern void fid_run_zapbuf(void *buf);
 extern void fid_run_freebuf(void *runbuf);
 extern void fid_run_free(void *run);
 
-#ifdef MIXXX
+#ifdef __cplusplus
 }
-#endif
+
 #endif

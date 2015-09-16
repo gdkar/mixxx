@@ -23,7 +23,6 @@
 // 0 for no progress during finalize
 // 1 to display the text "finalizing"
 // 100 for 10% step after finalize
-#define FINALIZE_PROMILLE (1.0e-3)
 namespace {
     // Analysis is done in blocks.
     // We need to use a smaller block size, because on Linux the AnalyserQueue
@@ -86,8 +85,8 @@ bool AnalyserQueue::isLoadedTrackWaiting(TrackPointer analysingTrack) {
     }
     m_qm.unlock();
     // update progress after unlock to avoid a deadlock
-    for(auto pTrack: progress100List) { emitUpdateProgress(pTrack, 1.0); }
     for(auto pTrack: progress0List) { emitUpdateProgress(pTrack, 0); }
+    for(auto pTrack: progress100List) { emitUpdateProgress(pTrack, 1.0); }
     if (info.isTrackLoaded(analysingTrack)) { return false; }
     return trackWaiting;
 }
@@ -194,11 +193,11 @@ bool AnalyserQueue::doAnalysis(TrackPointer tio, Mixxx::AudioSourcePointer pAudi
         // because the finalise functions will take also some time
         //fp div here prevents insane signed overflow
         const auto frameProgress = std::min<double>(double(frameIndex) / double(pAudioSource->getMaxFrameIndex()),1.0);
-        auto progressPromille = frameProgress * (1.0 - FINALIZE_PROMILLE);
-        if (m_progressInfo.track_progress != progressPromille) {
-            if (progressUpdateInhibitTimer.elapsed() > 60) {
+        if (m_progressInfo.track_progress != frameProgress) {
+            if (progressUpdateInhibitTimer.elapsed() > 60 || frameProgress==1) {
                 // Inhibit Updates for 60 milliseconds
-                emitUpdateProgress(tio, progressPromille);
+                emitUpdateProgress(tio, frameProgress);
+                tio->setAnalyserProgress(frameProgress);
                 progressUpdateInhibitTimer.start();
             }
         }
@@ -266,12 +265,7 @@ void AnalyserQueue::run() {
         auto processTrack = false;
         for ( auto it : m_aq )
         {
-          if ( it 
-           &&  it->initialise(
-             nextTrack, 
-             pAudioSource->getFrameRate(),
-             pAudioSource->getFrameCount() * kAnalysisChannels )
-           )
+          if ( it  &&  it->initialise( nextTrack,  pAudioSource->getFrameRate(), pAudioSource->getFrameCount() * kAnalysisChannels ))
             processTrack = true;
         }
         m_qm.lock();
@@ -279,21 +273,24 @@ void AnalyserQueue::run() {
         m_qm.unlock();
         if (processTrack) {
             emitUpdateProgress(nextTrack, 0);
+            nextTrack->setAnalyserProgress(0);
             auto completed = doAnalysis(nextTrack, pAudioSource);
             if (!completed) {
                 // This track was cancelled
                 for(auto &itf : m_aq ) itf->cleanup(nextTrack);
                 queueAnalyseTrack(nextTrack);
                 emitUpdateProgress(nextTrack, 0);
+                nextTrack->setAnalyserProgress(0);
             } else {
                 // 100% - FINALIZE_PERCENT finished
-                emitUpdateProgress(nextTrack, 1.0 - FINALIZE_PROMILLE);
+                nextTrack->setAnalyserProgress(1.0 );
                 // This takes around 3 sec on a Atom Netbook
                 for(auto itf : m_aq ) itf->finalise(nextTrack);
-                emitUpdateProgress(nextTrack, 1.0); // 100%
+                nextTrack->setAnalyserProgress(1.0);
             }
         } else {
             emitUpdateProgress(nextTrack, 1.0); // 100%
+            nextTrack->setAnalyserProgress(1.0);
             qDebug() << "Skipping track analysis because no analyzer initialized.";
         }
         emptyCheck();
@@ -313,25 +310,24 @@ void AnalyserQueue::emitUpdateProgress(TrackPointer tio, double progress) {
         // The following tries will success if the previous signal was processed in the GUI Thread
         // This prevent the AnalysisQueue from filling up the GUI Thread event Queue
         // 100 % is emitted in any case
-        if (progress < 1.0 - FINALIZE_PROMILLE && progress > 0) {
+        if (progress < 1.0 && progress > 0) {
             // Signals during processing are not required in any case
             if (!m_progressInfo.sema.tryAcquire()) { return; }
         } else { m_progressInfo.sema.acquire(); }
         m_progressInfo.current_track  = tio;
         m_progressInfo.track_progress = progress;
-        tio->setAnalyserProgress ( progress );
         m_progressInfo.queue_size     = m_queue_size;
         emit(updateProgress());
     }
 }
 //slot
 void AnalyserQueue::slotUpdateProgress() {
-    if (m_progressInfo.current_track) {
-        m_progressInfo.current_track->setAnalyserProgress( m_progressInfo.track_progress );
+    auto prog = m_progressInfo.track_progress;
+    emit(trackProgress(prog));
+    if (auto ct = m_progressInfo.current_track) {
         m_progressInfo.current_track.clear();
     }
-    emit(trackProgress(m_progressInfo.track_progress ));
-    if (m_progressInfo.track_progress == 1) { emit(trackFinished(m_progressInfo.queue_size)); }
+    if ( prog == 1) { emit(trackFinished(m_progressInfo.queue_size)); }
     m_progressInfo.sema.release();
 }
 void AnalyserQueue::slotAnalyseTrack(TrackPointer tio) {
@@ -339,7 +335,6 @@ void AnalyserQueue::slotAnalyseTrack(TrackPointer tio) {
     queueAnalyseTrack(tio);
     m_aiCheckPriorities = true;
 }
-
 // This is called from the GUI and from the AnalyserQueue thread
 void AnalyserQueue::queueAnalyseTrack(TrackPointer tio) {
     m_qm.lock();
@@ -349,7 +344,6 @@ void AnalyserQueue::queueAnalyseTrack(TrackPointer tio) {
     }
     m_qm.unlock();
 }
-
 // static
 AnalyserQueue* AnalyserQueue::createDefaultAnalyserQueue( ConfigObject<ConfigValue>* pConfig, TrackCollection* pTrackCollection) {
     AnalyserQueue* ret = new AnalyserQueue(pTrackCollection);
@@ -361,7 +355,6 @@ AnalyserQueue* AnalyserQueue::createDefaultAnalyserQueue( ConfigObject<ConfigVal
     ret->start(QThread::LowPriority);
     return ret;
 }
-
 // static
 AnalyserQueue* AnalyserQueue::createAnalysisFeatureAnalyserQueue( ConfigObject<ConfigValue>* pConfig, TrackCollection* pTrackCollection) {
     AnalyserQueue* ret = new AnalyserQueue(pTrackCollection);

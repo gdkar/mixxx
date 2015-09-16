@@ -1,7 +1,7 @@
 
 #include "console.h"
 
-#include <stdio.h>
+#include <cstdio>
 #include <QtDebug>
 
 #ifdef __WINDOWS__
@@ -70,10 +70,9 @@ Console::~Console() {
     // changing back will destroy the console history
     if (m_shouldResetCodePage) {SetConsoleOutputCP(m_oldCodePage);}
 }
-
 #else // __WINDOWS__
 // Nothing to do on non Windows targets
-Console::Console() {}
-Console::~Console() {}
+Console::Console() = default;
+Console::~Console() = default;
 
 #endif // __WINDOWS__

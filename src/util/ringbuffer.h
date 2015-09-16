@@ -88,10 +88,7 @@ public:
     auto numWritten = getWriteRegions ( elementCount, &data0, &size0, &data1, &size1 );
     std::move ( data, data+size0, data0 );
     data += size0;
-    if ( size1 > 0 )
-    {
-      std::move ( data, data+size1, data1 );
-    }
+    if ( size1 > 0 ) std::move ( data, data+size1, data1 );
     advanceWriteIndex ( numWritten );
     return numWritten;
   }
@@ -102,10 +99,7 @@ public:
     auto numRead = getReadRegions ( elementCount, &data0, &size0, &data1, &size1 );
     std::move ( data0, data0+size0, data );
     data += size0;
-    if ( size1 )
-    {
-      std::move ( data1, data1+size1, data );
-    }
+    if ( size1 ) std::move ( data1, data1+size1, data );
     advanceReadIndex ( numRead );
     return numRead;
   }

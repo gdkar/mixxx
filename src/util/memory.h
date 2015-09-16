@@ -28,11 +28,7 @@
 // This file is released into the public domain. See LICENCE for more information.
 // ===============================================================================
 
-#ifndef MIXXX_UTIL_MEMORY_H
-#define MIXXX_UTIL_MEMORY_H
+_Pragma("once")
 #include <memory>
 #include <utility>
 #include <algorithm>
-#include <iterator>
-#include <numeric>
-#endif

@@ -9,7 +9,7 @@
 #include "library/trackcollection.h"
 #include "recording/recordingmanager.h"
 #include "trackinfoobject.h"
-#include "ui_dlgrecording.h"
+#include "preferences/ui_dlgrecording.h"
 
 class AnalyserQueue;
 class PlaylistTableModel;

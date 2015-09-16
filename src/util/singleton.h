@@ -1,43 +1,23 @@
-#ifndef SINGLETON_H
-#define SINGLETON_H
-
+_Pragma("once")
 #include <QtDebug>
-
+#include <memory>
+#include <utility>
+#include <atomic>
 template<class T>
 class Singleton {
   public:
-    static T* create() {
-        if (!m_instance) {
-            m_instance = new T();
-        }
-        return m_instance;
-    }
-
-    static T* instance() {
-        if (m_instance == NULL) {
-            qWarning() << "Singleton class has not been created yet, returning NULL";
-        }
-        return m_instance;
-    }
-
-    static void destroy() {
-        if (m_instance) {
-            delete m_instance;
-        }
-    }
-
+    static T* create() {return instance();}
+    static T* instance() { return get_instance().load();}
+    static void destroy() {auto old = get_instance().exchange(nullptr); if(old)delete old;}
+    virtual ~Singleton() = default;
   protected:
-    Singleton() {}
-    virtual ~Singleton() {}
-
-  private:
+    static std::atomic<T*>& get_instance(){
+      static std::atomic<T*> m_instance{new T()};
+      return m_instance;
+    }
+    Singleton() = default;
+    friend class std::unique_ptr<Singleton<T> >;
     // hide copy constructor and assign operator
-    Singleton(const Singleton&) {}
-    const Singleton& operator= (const Singleton&) {}
-
-    static T* m_instance;
+    Singleton(const Singleton&) = delete;
+    const Singleton& operator= (const Singleton&) = delete;
 };
-
-template<class T> T* Singleton<T>::m_instance = NULL;
-
-#endif // SINGLETON_H

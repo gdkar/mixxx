@@ -20,7 +20,7 @@
 
 #include <QWidget>
 
-#include "ui_dlgprefcontrolsdlg.h"
+#include "preferences/ui_dlgprefcontrolsdlg.h"
 #include "configobject.h"
 #include "preferences/dlgpreferencepage.h"
 

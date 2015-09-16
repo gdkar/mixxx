@@ -23,30 +23,30 @@
 #include <QTabWidget>
 
 #ifdef __VINYLCONTROL__
-#include "dlgprefvinyl.h"
+#include "preferences/dlgprefvinyl.h"
 #else
-#include "dlgprefnovinyl.h"
+#include "preferences/dlgprefnovinyl.h"
 #endif
 
 #ifdef __SHOUTCAST__
-#include "dlgprefshoutcast.h"
+#include "preferences/dlgprefshoutcast.h"
 #endif
 
-#include "dlgprefbeats.h"
-#include "dlgprefkey.h"
+#include "preferences/dlgprefbeats.h"
+#include "preferences/dlgprefkey.h"
 
-#include "dlgpreferences.h"
-#include "dlgprefsound.h"
+#include "preferences/dlgpreferences.h"
+#include "preferences/dlgprefsound.h"
 #include "controllers/dlgprefcontrollers.h"
-#include "dlgpreflibrary.h"
-#include "dlgprefcontrols.h"
-#include "dlgprefwaveform.h"
-#include "dlgprefautodj.h"
-#include "dlgprefeq.h"
-#include "dlgprefcrossfader.h"
-#include "dlgprefrecord.h"
-#include "dlgprefreplaygain.h"
-#include "dlgprefeffects.h"
+#include "preferences/dlgpreflibrary.h"
+#include "preferences/dlgprefcontrols.h"
+#include "preferences/dlgprefwaveform.h"
+#include "preferences/dlgprefautodj.h"
+#include "preferences/dlgprefeq.h"
+#include "preferences/dlgprefcrossfader.h"
+#include "preferences/dlgprefrecord.h"
+#include "preferences/dlgprefreplaygain.h"
+#include "preferences/dlgprefeffects.h"
 #include "mixxx.h"
 #include "controllers/controllermanager.h"
 #include "skin/skinloader.h"

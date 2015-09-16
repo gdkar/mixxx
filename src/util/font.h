@@ -1,6 +1,4 @@
-#ifndef FONT_H
-#define FONT_H
-
+_Pragma("once")
 #include <QFontDatabase>
 #include <QString>
 #include <QtDebug>
@@ -15,20 +13,17 @@ class FontUtils {
             qWarning() << "Failed to add font:" << path;
             return false;
         }
-
         // In developer mode, spit out all the families / styles / sizes
         // supported by the new font.
         if (CmdlineArgs::Instance().getDeveloper()) {
             QFontDatabase database;
-            QStringList families = QFontDatabase::applicationFontFamilies(result);
-            foreach (const QString& family, families) {
-                QStringList styles = database.styles(family);
-                foreach (const QString& style, styles) {
-                    QList<int> pointSizes = database.pointSizes(family, style);
+            auto families = QFontDatabase::applicationFontFamilies(result);
+            for(auto & family: families) {
+                auto styles = database.styles(family);
+                for(auto& style: styles) {
+                    auto pointSizes = database.pointSizes(family, style);
                     QStringList pointSizesStr;
-                    foreach (int point, pointSizes) {
-                        pointSizesStr.append(QString::number(point));
-                    }
+                    for(auto point: pointSizes) {pointSizesStr.append(QString::number(point));}
                     qDebug() << "FONT LOADED family:" << family
                              << "style:" << style
                              << "point sizes:" << pointSizesStr.join(",");
@@ -41,5 +36,3 @@ class FontUtils {
   private:
     FontUtils() {}
 };
-
-#endif /* FONT_H */

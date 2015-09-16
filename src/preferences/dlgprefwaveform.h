@@ -3,7 +3,7 @@
 
 #include <QWidget>
 
-#include "ui_dlgprefwaveformdlg.h"
+#include "preferences/ui_dlgprefwaveformdlg.h"
 #include "configobject.h"
 #include "preferences/dlgpreferencepage.h"
 

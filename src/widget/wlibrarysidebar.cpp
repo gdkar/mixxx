@@ -63,8 +63,8 @@ void WLibrarySidebar::dragEnterEvent(QDragEnterEvent * event) {
 void WLibrarySidebar::dragMoveEvent(QDragMoveEvent * event) {
     //qDebug() << "dragMoveEvent" << event->mimeData()->formats();
     // Start a timer to auto-expand sections the user hovers on.
-    QPoint pos = event->pos();
-    QModelIndex index = indexAt(pos);
+    auto pos = event->pos();
+    auto index = indexAt(pos);
     if (m_hoverIndex != index) {
         m_expandTimer.stop();
         m_hoverIndex = index;
@@ -74,19 +74,18 @@ void WLibrarySidebar::dragMoveEvent(QDragMoveEvent * event) {
     // rejected -- rryan 3/2011
     QTreeView::dragMoveEvent(event);
     if (event->mimeData()->hasUrls()) {
-        QList<QUrl> urls(event->mimeData()->urls());
+        auto urls = event->mimeData()->urls();
         // Drag and drop within this widget
-        if ((event->source() == this)
-                && (event->possibleActions() & Qt::MoveAction)) {
+        if ((event->source() == this) && (event->possibleActions() & Qt::MoveAction)) {
             // Do nothing.
             event->ignore();
         } else {
-            SidebarModel* sidebarModel = dynamic_cast<SidebarModel*>(model());
-            bool accepted = true;
+            auto sidebarModel = dynamic_cast<SidebarModel*>(model());
+            auto accepted = true;
             if (sidebarModel) {
                 accepted = false;
-                foreach (QUrl url, urls) {
-                    QModelIndex destIndex = this->indexAt(event->pos());
+                for(auto url: urls) {
+                    auto destIndex = this->indexAt(event->pos());
                     if (sidebarModel->dragMoveAccept(destIndex, url)) {
                         // We only need one URL to be valid for us
                         // to accept the whole drag...
@@ -99,32 +98,24 @@ void WLibrarySidebar::dragMoveEvent(QDragMoveEvent * event) {
                     }
                 }
             }
-            if (accepted) {
-                event->acceptProposedAction();
-            } else {
-                event->ignore();
-            }
+            if (accepted) {event->acceptProposedAction();}
+            else {event->ignore();}
         }
-    } else {
-        event->ignore();
-    }
+    } else {event->ignore();}
 }
 
 void WLibrarySidebar::timerEvent(QTimerEvent *event) {
     if (event->timerId() == m_expandTimer.timerId()) {
-        QPoint pos = viewport()->mapFromGlobal(QCursor::pos());
+        auto pos = viewport()->mapFromGlobal(QCursor::pos());
         if (viewport()->rect().contains(pos)) {
-            QModelIndex index = indexAt(pos);
-            if (m_hoverIndex == index) {
-                setExpanded(index, !isExpanded(index));
-            }
+            auto index = indexAt(pos);
+            if (m_hoverIndex == index) {setExpanded(index, !isExpanded(index));}
         }
         m_expandTimer.stop();
         return;
     }
     QTreeView::timerEvent(event);
 }
-
 // Drag-and-drop "drop" event. Occurs when something is dropped onto the track sources view
 void WLibrarySidebar::dropEvent(QDropEvent * event) {
     if (event->mimeData()->hasUrls()) {

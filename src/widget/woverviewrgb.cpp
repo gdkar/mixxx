@@ -16,7 +16,6 @@ bool WOverviewRGB::drawNextPixmapPart() {
 
     //qDebug() << "WOverview::drawNextPixmapPart() - m_waveform" << m_waveform;
 
-    auto currentCompletion;
     auto pWaveform = getWaveform();
     if (!pWaveform) {return false;}
     const auto dataSize = pWaveform->getDataSize();
@@ -32,9 +31,9 @@ bool WOverviewRGB::drawNextPixmapPart() {
     const auto waveformCompletion = pWaveform->getCompletion();
     // Test if there is some new to draw (at least of pixel width)
     const auto  completionIncrement = waveformCompletion - m_actualCompletion;
-    auto visiblePixelIncrement = int(completionIncrement * width() / dataSize);
+    auto visiblePixelIncrement = (completionIncrement * width() / dataSize);
     if (completionIncrement < 2 || visiblePixelIncrement == 0) {return false;}
-    const auto nextCompletion = int(m_actualCompletion + completionIncrement);
+    const auto nextCompletion = (m_actualCompletion + completionIncrement);
 
     //qDebug() << "WOverview::drawNextPixmapPart() - nextCompletion:"
     //         << nextCompletion
@@ -51,7 +50,7 @@ bool WOverviewRGB::drawNextPixmapPart() {
     m_signalColors.getRgbMidColor().getRgbF(&midColor_r, &midColor_g, &midColor_b);
     qreal highColor_r, highColor_g, highColor_b;
     m_signalColors.getRgbHighColor().getRgbF(&highColor_r, &highColor_g, &highColor_b);
-    for (currentCompletion = m_actualCompletion; currentCompletion < nextCompletion; currentCompletion += 2) {
+    for (auto currentCompletion = static_cast<int>(m_actualCompletion); currentCompletion < nextCompletion; currentCompletion += 2) {
 
         unsigned char left = pWaveform->getAll(currentCompletion);
         unsigned char right = pWaveform->getAll(currentCompletion + 1);
@@ -87,7 +86,7 @@ bool WOverviewRGB::drawNextPixmapPart() {
         }
     }
     // Evaluate waveform ratio peak
-    for (currentCompletion = m_actualCompletion;currentCompletion < nextCompletion; currentCompletion += 2) {
+    for (auto currentCompletion = static_cast<int>(m_actualCompletion);currentCompletion < nextCompletion; currentCompletion += 2) {
         m_waveformPeak = math_max3(
                 m_waveformPeak,
                 static_cast<float>(pWaveform->getAll(currentCompletion)),
@@ -98,6 +97,5 @@ bool WOverviewRGB::drawNextPixmapPart() {
     m_diffGain = 0;
     // Test if the complete waveform is done
     if (m_actualCompletion >= dataSize - 2) {m_pixmapDone = true;}
-
     return true;
 }

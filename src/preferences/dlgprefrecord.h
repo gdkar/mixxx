@@ -21,7 +21,7 @@
 #include <QRadioButton>
 #include <QWidget>
 
-#include "ui_dlgprefrecorddlg.h"
+#include "preferences/ui_dlgprefrecorddlg.h"
 #include "configobject.h"
 #include "preferences/dlgpreferencepage.h"
 

@@ -1,10 +1,8 @@
-#ifndef DLGAUTODJ_H
-#define DLGAUTODJ_H
-
+_Pragma("once")
 #include <QWidget>
 #include <QString>
 
-#include "ui_dlgautodj.h"
+#include "preferences/ui_dlgautodj.h"
 #include "configobject.h"
 #include "library/libraryview.h"
 #include "library/library.h"
@@ -51,5 +49,3 @@ class DlgAutoDJ : public QWidget, public Ui::DlgAutoDJ, public LibraryView {
     WTrackTableView* m_pTrackTableView = nullptr;
     PlaylistTableModel* m_pAutoDJTableModel = nullptr;
 };
-
-#endif //DLGAUTODJ_H

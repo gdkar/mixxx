@@ -1,6 +1,4 @@
-#ifndef WBASEWIDGET_H
-#define WBASEWIDGET_H
-
+_Pragma("once")
 #include <QString>
 #include <QWidget>
 #include <QList>
@@ -51,14 +49,12 @@ class WBaseWidget {
     void updateTooltip();
     virtual void fillDebugTooltip(QStringList* debug);
     QList<ControlParameterWidgetConnection*> m_connections;
-    ControlParameterWidgetConnection* m_pDisplayConnection;
+    ControlParameterWidgetConnection* m_pDisplayConnection = nullptr;
     QList<ControlParameterWidgetConnection*> m_leftConnections;
     QList<ControlParameterWidgetConnection*> m_rightConnections;
     QList<ControlWidgetPropertyConnection*> m_propertyConnections;
   private:
-    QWidget* m_pWidget;
+    QWidget* m_pWidget = nullptr;
     QString m_baseTooltip;
     friend class ControlParameterWidgetConnection;
 };
-
-#endif /* WBASEWIDGET_H */

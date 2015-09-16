@@ -1,8 +1,5 @@
-#ifndef SYNCCONTROL_H
-#define SYNCCONTROL_H
-
+_Pragma("once")
 #include <QScopedPointer>
-#include <gtest/gtest_prod.h>
 
 #include "engine/enginecontrol.h"
 #include "engine/sync/syncable.h"
@@ -69,7 +66,6 @@ class SyncControl : public EngineControl, public Syncable {
     void slotSyncEnabledChangeRequest(double enabled);
     void slotSyncMasterEnabledChangeRequest(double state);
   private:
-    FRIEND_TEST(SyncControlTest, TestDetermineBpmMultiplier);
     // Sometimes it's best to match bpms based on half or double the target
     // bpm.  e.g. 70 matches better with 140/2.  This function returns the
     // best factor for multiplying the master bpm to get a bpm this syncable
@@ -87,7 +83,6 @@ class SyncControl : public EngineControl, public Syncable {
     bool m_bOldScratching;
     // When syncing, sometimes it's better to match half or double the
     // master bpm.
-    FRIEND_TEST(EngineSyncTest, HalfDoubleBpmTest);
     // The amount we should multiply the master BPM to find a good sync match.
     // Sometimes this is 2 or 0.5.
     double m_masterBpmAdjustFactor;
@@ -114,6 +109,3 @@ class SyncControl : public EngineControl, public Syncable {
     QScopedPointer<ControlObjectSlave> m_pEjectButton;
     QScopedPointer<ControlObjectSlave> m_pSyncPhaseButton;
 };
-
-
-#endif /* SYNCCONTROL_H */

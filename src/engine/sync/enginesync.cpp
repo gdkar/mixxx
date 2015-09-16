@@ -110,7 +110,7 @@ void EngineSync::requestEnableSync(Syncable* pSyncable, bool bEnabled) {
             double targetBeatDistance = 0.0;
             double targetBaseBpm = 0.0;
 
-            foreach (const Syncable* other_deck, m_syncables) {
+            for(auto other_deck: m_syncables) {
                 if (other_deck == pSyncable) {
                     // skip this deck
                     continue;
@@ -195,7 +195,7 @@ void EngineSync::notifyPlaying(Syncable* pSyncable, bool playing) {
         const Syncable* uniqueSyncDisabled = NULL;
         int playing_sync_decks = 0;
         int playing_nonsync_decks = 0;
-        foreach (Syncable* pOtherSyncable, m_syncables) {
+        for(auto pOtherSyncable: m_syncables) {
             if (pOtherSyncable->isPlaying()) {
                 if (pOtherSyncable->getSyncMode() != SYNC_NONE) {
                     uniqueSyncEnabled = pOtherSyncable;
@@ -228,10 +228,8 @@ void EngineSync::notifyTrackLoaded(Syncable* pSyncable, double suggested_bpm) {
     }
 
     bool sync_deck_exists = false;
-    foreach (const Syncable* pOtherSyncable, m_syncables) {
-        if (pOtherSyncable == pSyncable) {
-            continue;
-        }
+    for(auto pOtherSyncable: m_syncables) {
+        if (pOtherSyncable == pSyncable) {continue;}
         if (pOtherSyncable->getSyncMode() != SYNC_NONE && pOtherSyncable->getBpm() != 0) {
             sync_deck_exists = true;
             break;
@@ -369,30 +367,22 @@ void EngineSync::deactivateSync(Syncable* pSyncable) {
 
 EngineChannel* EngineSync::pickNonSyncSyncTarget(EngineChannel* pDontPick) const {
     EngineChannel* pFirstNonplayingDeck = NULL;
-    foreach (Syncable* pSyncable, m_syncables) {
+    for(auto pSyncable: m_syncables) {
         EngineChannel* pChannel = pSyncable->getChannel();
-        if (pChannel == NULL || pChannel == pDontPick) {
-            continue;
-        }
-
+        if (!pChannel || pChannel == pDontPick) {continue;}
         // Only consider channels that have a track loaded and are in the master
         // mix.
         if (pChannel->isActive() && pChannel->isMasterEnabled()) {
             EngineBuffer* pBuffer = pChannel->getEngineBuffer();
             if (pBuffer && pBuffer->getBpm() > 0) {
                 // If the deck is playing then go with it immediately.
-                if (fabs(pBuffer->getSpeed()) > 0) {
-                    return pChannel;
-                }
+                if (std::abs(pBuffer->getSpeed()) > 0) {return pChannel;}
                 // Otherwise hold out for a deck that might be playing but
                 // remember the first deck that matched our criteria.
-                if (pFirstNonplayingDeck == NULL) {
-                    pFirstNonplayingDeck = pChannel;
-                }
+                if (!pFirstNonplayingDeck ) {pFirstNonplayingDeck = pChannel;}
             }
         }
     }
-
     // No playing decks have a BPM. Go with the first deck that was stopped but
     // had a BPM.
     return pFirstNonplayingDeck;

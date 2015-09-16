@@ -1,7 +1,7 @@
 #ifndef DLGMISSING_H
 #define DLGMISSING_H
 
-#include "ui_dlgmissing.h"
+#include "preferences/ui_dlgmissing.h"
 #include "configobject.h"
 #include "library/library.h"
 #include "library/libraryview.h"

@@ -3,7 +3,7 @@
 
 #include <QWidget>
 
-#include "ui_dlgprefreplaygaindlg.h"
+#include "preferences/ui_dlgprefreplaygaindlg.h"
 #include "preferences/dlgpreferencepage.h"
 #include "configobject.h"
 class ControlObjectSlave;

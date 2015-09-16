@@ -2,7 +2,7 @@
 #define DLGANALYSIS_H
 
 #include <QItemSelection>
-#include "ui_dlganalysis.h"
+#include "preferences/ui_dlganalysis.h"
 #include "configobject.h"
 #include "library/libraryview.h"
 #include "library/trackcollection.h"

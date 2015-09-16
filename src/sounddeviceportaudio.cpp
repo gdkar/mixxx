@@ -14,9 +14,9 @@
 *   (at your option) any later version.                                   *
 *                                                                         *
 ***************************************************************************/
-
-#include <portaudio.h>
-
+extern "C"{
+  #include <portaudio.h>
+};
 #include <QtDebug>
 #include <QThread>
 
@@ -62,18 +62,8 @@ SoundDevicePortAudio::SoundDevicePortAudio(ConfigObject<ConfigValue> *config, So
     m_pMasterAudioLatencyOverloadCount = std::make_unique<ControlObjectSlave>("[Master]", "audio_latency_overload_count");
     m_pMasterAudioLatencyUsage = std::make_unique<ControlObjectSlave>("[Master]", "audio_latency_usage");
     m_pMasterAudioLatencyOverload  = std::make_unique<ControlObjectSlave>("[Master]", "audio_latency_overload");
-    m_inputParams.device = 0;
-    m_inputParams.channelCount = 0;
-    m_inputParams.sampleFormat = 0;
-    m_inputParams.suggestedLatency = 0.0;
-    m_inputParams.hostApiSpecificStreamInfo = nullptr;
-
-    m_outputParams.device = 0;
-    m_outputParams.channelCount = 0;
-    m_outputParams.sampleFormat = 0;
-    m_outputParams.suggestedLatency = 0.0;
-    m_outputParams.hostApiSpecificStreamInfo = nullptr;
 }
+SoundDevicePortAudio::~SoundDevicePortAudio()=default;
 Result SoundDevicePortAudio::open(bool isClkRefDevice, int syncBuffers) {
     qDebug() << "SoundDevicePortAudio::open()" << getInternalName();
     PaError err;
@@ -282,9 +272,9 @@ void SoundDevicePortAudio::readProcess() {
             auto copyCount = qMin(writeAvailable, readAvailable);
             if (copyCount > 0) {
                 CSAMPLE* dataPtr1;
-                ring_buffer_size_t size1;
+                long size1;
                 CSAMPLE* dataPtr2;
-                ring_buffer_size_t size2;
+                long size2;
                 (void)m_inputFifo->aquireWriteRegions(copyCount,&dataPtr1, &size1, &dataPtr2, &size2);
                 // Fetch fresh samples and write to the the input buffer
                 auto err = Pa_ReadStream(pStream, dataPtr1, size1 / m_inputParams.channelCount);
@@ -294,7 +284,7 @@ void SoundDevicePortAudio::readProcess() {
                     m_underflowHappend = 1;
                 }
                 if (size2 > 0) {
-                    auto rr = Pa_ReadStream(pStream, dataPtr2, size2 / m_inputParams.channelCount);
+                    err = Pa_ReadStream(pStream, dataPtr2, size2 / m_inputParams.channelCount);
                     lastFrame = &dataPtr2[size2 - m_inputParams.channelCount];
                     if (err == paInputOverflowed) {
                         //qDebug() << "SoundDevicePortAudio::readProcess() Pa_ReadStream paInputOverflowed" << getInternalName();
@@ -340,9 +330,9 @@ void SoundDevicePortAudio::readProcess() {
         }
         if (readCount) {
             CSAMPLE* dataPtr1;
-            ring_buffer_size_t size1;
+            long size1;
             CSAMPLE* dataPtr2;
-            ring_buffer_size_t size2;
+            long size2;
             // We use size1 and size2, so we can ignore the return value
             (void)m_inputFifo->aquireReadRegions(readCount, &dataPtr1, &size1, &dataPtr2, &size2);
             // Fetch fresh samples and write to the the output buffer
@@ -372,9 +362,9 @@ void SoundDevicePortAudio::writeProcess() {
         }
         if (writeCount) {
             CSAMPLE* dataPtr1;
-            ring_buffer_size_t size1;
+            long size1;
             CSAMPLE* dataPtr2;
-            ring_buffer_size_t size2;
+            long size2;
             // We use size1 and size2, so we can ignore the return value
             (void)m_outputFifo->aquireWriteRegions(writeCount, &dataPtr1, &size1, &dataPtr2, &size2);
             // Fetch fresh samples and write to the the output buffer
@@ -393,9 +383,9 @@ void SoundDevicePortAudio::writeProcess() {
             //qDebug() << "SoundDevicePortAudio::writeProcess()" << toRead << writeAvailable;
             if (copyCount > 0) {
                 CSAMPLE* dataPtr1;
-                ring_buffer_size_t size1;
+                long size1;
                 CSAMPLE* dataPtr2;
-                ring_buffer_size_t size2;
+                long size2;
                 m_outputFifo->aquireReadRegions(copyCount,&dataPtr1, &size1, &dataPtr2, &size2);
                 if (writeAvailable == outChunkSize * 2) {
                     // Underflow

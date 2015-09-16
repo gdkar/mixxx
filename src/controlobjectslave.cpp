@@ -27,7 +27,7 @@ void ControlObjectSlave::initialize(const ConfigKey& key) {
 bool ControlObjectSlave::connectValueChanged(const QObject* receiver,const char* method, Qt::ConnectionType type) {
     auto ret = false;
     if (m_pControl) {
-        ret = connect((QObject*)this, SIGNAL(valueChanged(double)),receiver, method, type);
+        ret = connect(this, SIGNAL(valueChanged(double)),receiver, method, type);
         if (ret) {
             // Connect to ControlObjectPrivate only if required. Do not allow
             // duplicate connections.

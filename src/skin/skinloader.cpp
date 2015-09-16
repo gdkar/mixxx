@@ -32,74 +32,47 @@ QList<QDir> SkinLoader::getSkinSearchPaths() {
     // is a critical error in the user's Mixxx installation.
     QDir skinsPath(m_pConfig->getResourcePath());
     if (!skinsPath.cd("skins")) {
-        reportCriticalErrorAndQuit("Skin directory does not exist: " +
-                                   skinsPath.absoluteFilePath("skins"));
+        reportCriticalErrorAndQuit("Skin directory does not exist: " + skinsPath.absoluteFilePath("skins"));
     }
     searchPaths.append(skinsPath);
-
     QDir developerSkinsPath(m_pConfig->getResourcePath());
-    if (developerSkinsPath.cd("developer_skins")) {
-        searchPaths.append(developerSkinsPath);
-    }
-
+    if (developerSkinsPath.cd("developer_skins")) {searchPaths.append(developerSkinsPath);}
     return searchPaths;
 }
-
 QString SkinLoader::getConfiguredSkinPath() {
-    QString configSkin = m_pConfig->getValueString(ConfigKey("[Config]", "ResizableSkin"));
+    auto configSkin = m_pConfig->getValueString(ConfigKey("[Config]", "ResizableSkin"));
 
     // If we don't have a skin defined, we might be migrating from 1.11 and
     // should pick the closest-possible skin.
     if (configSkin.isEmpty()) {
-        QString oldSkin = m_pConfig->getValueString(ConfigKey("[Config]", "Skin"));
-        if (!oldSkin.isEmpty()) {
-            configSkin = pickResizableSkin(oldSkin);
-        }
+        auto oldSkin = m_pConfig->getValueString(ConfigKey("[Config]", "Skin"));
+        if (!oldSkin.isEmpty()) {configSkin = pickResizableSkin(oldSkin);}
         // If the old skin was empty or we couldn't guess a skin, go with the
         // default.
-        if (configSkin.isEmpty()) {
-            configSkin = getDefaultSkinName();
-        }
-        m_pConfig->set(ConfigKey("[Config]", "ResizableSkin"),
-                       ConfigValue(configSkin));
+        if (configSkin.isEmpty()) {configSkin = getDefaultSkinName();}
+        m_pConfig->set(ConfigKey("[Config]", "ResizableSkin"),ConfigValue(configSkin));
     }
-
-    QList<QDir> skinSearchPaths = getSkinSearchPaths();
-    foreach (QDir dir, skinSearchPaths) {
-        if (dir.cd(configSkin)) {
-            return dir.absolutePath();
-        }
+    auto skinSearchPaths = getSkinSearchPaths();
+    for(auto dir: skinSearchPaths) {
+        if (dir.cd(configSkin)) {return dir.absolutePath();}
     }
-
     return QString();
 }
-
 QString SkinLoader::getDefaultSkinName() const {
     QRect screenGeo = QApplication::desktop()->screenGeometry();
     if (screenGeo.width() >= 1280 && screenGeo.height() >= 800) {
         return "LateNight";
-    } else {
-        return "Shade";
-    }
+    } else {return "Shade";}
 }
-
 QString SkinLoader::getDefaultSkinPath() {
     // Fall back to default skin.
-    QString defaultSkin = getDefaultSkinName();
-
-    QList<QDir> skinSearchPaths = getSkinSearchPaths();
-    foreach (QDir dir, skinSearchPaths) {
-        if (dir.cd(defaultSkin)) {
-            return dir.absolutePath();
-        }
-    }
-
+    auto defaultSkin = getDefaultSkinName();
+    auto skinSearchPaths = getSkinSearchPaths();
+    for(auto dir: skinSearchPaths) {if (dir.cd(defaultSkin)) {return dir.absolutePath();}}
     return QString();
 }
-
 QString SkinLoader::getSkinPath() {
-    QString skinPath = getConfiguredSkinPath();
-
+    auto skinPath = getConfiguredSkinPath();
     if (skinPath.isEmpty()) {
         skinPath = getDefaultSkinPath();
         qDebug() << "Could not find the user's configured skin."

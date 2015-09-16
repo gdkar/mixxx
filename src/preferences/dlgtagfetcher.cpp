@@ -147,9 +147,7 @@ void DlgTagFetcher::updateStack() {
     addDivider(tr("Suggested tags"), results);
 
     int trackIndex = 0;
-    foreach (const TrackPointer track, m_data.m_results) {
-        addTrack(track, trackIndex++, results);
-    }
+    for(auto track: m_data.m_results) {addTrack(track, trackIndex++, results);}
 
     // Find the item that was selected last time
     for (int i=0 ; i<results->model()->rowCount() ; ++i) {

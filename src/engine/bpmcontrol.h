@@ -1,8 +1,4 @@
-#ifndef BPMCONTROL_H
-#define BPMCONTROL_H
-
-#include <gtest/gtest_prod.h>
-
+_Pragma("once")
 #include "engine/enginecontrol.h"
 #include "engine/sync/syncable.h"
 #include "util/tapfilter.h"
@@ -157,7 +153,6 @@ class BpmControl : public EngineControl {
     double m_dSyncInstantaneousBpm;
     double m_dLastSyncAdjustment;
     bool m_resetSyncAdjustment;
-    FRIEND_TEST(EngineSyncTest, UserTweakBeatDistance);
     double m_dUserOffset;
 
     TapFilter m_tapFilter;
@@ -168,5 +163,3 @@ class BpmControl : public EngineControl {
     QString m_sGroup;
 };
 
-
-#endif // BPMCONTROL_H

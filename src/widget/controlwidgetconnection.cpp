@@ -11,9 +11,7 @@ ControlWidgetConnection::ControlWidgetConnection(WBaseWidget* pBaseWidget,Contro
     // If m_pControl is nullptr then the creator of ControlWidgetConnection has
     // screwed up badly. Assert in development mode. In release mode the
     // connection will be defunct.
-    DEBUG_ASSERT_AND_HANDLE(!m_pControl.isNull()) {
-        m_pControl.reset(new ControlObjectSlave());
-    }
+    DEBUG_ASSERT_AND_HANDLE(!m_pControl.isNull()) {m_pControl.reset(new ControlObjectSlave());}
     m_pControl->connectValueChanged(this, SLOT(slotControlValueChanged(double)));
 }
 
@@ -75,7 +73,9 @@ ControlParameterWidgetConnection::ControlParameterWidgetConnection(WBaseWidget* 
           m_directionOption(directionOption),
           m_emitOption(emitOption) {}
 ControlParameterWidgetConnection::~ControlParameterWidgetConnection() = default;
-void ControlParameterWidgetConnection::Init() {slotControlValueChanged(m_pControl->get());}
+void ControlParameterWidgetConnection::Init() {
+  if(m_pControl) slotControlValueChanged(m_pControl->get());
+}
 QString ControlParameterWidgetConnection::toDebugString() const {
     const ConfigKey& key = getKey();
     return QString("%1,%2 Parameter: %3 Direction: %4 Emit: %5")

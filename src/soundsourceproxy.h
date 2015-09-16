@@ -1,5 +1,8 @@
 _Pragma("once")
 #include "trackinfoobject.h"
+
+#include "sources/soundsourceproviderregistry.h"
+
 #include "util/sandbox.h"
 
 // Creates sound sources for filenames or tracks

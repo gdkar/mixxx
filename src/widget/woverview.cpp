@@ -137,7 +137,7 @@ void WOverview::onConnectedControlChanged(double dParameter, double dValue) {
 }
 void WOverview::slotWaveformSummaryUpdated() {
     //qDebug() << "WOverview::slotWaveformSummaryUpdated()";
-    TrackPointer pTrack(m_pCurrentTrack);
+    TrackPointer pTrack = m_pCurrentTrack;
     if (!pTrack) {return;}
     m_pWaveform = pTrack->getWaveformSummary();
     // If the waveform is already complete, just draw it.
@@ -149,14 +149,12 @@ void WOverview::slotWaveformSummaryUpdated() {
 void WOverview::slotAnalyserProgress(double progress) {
     if (!m_pCurrentTrack) {return;}
     auto analyserProgress = progress;
-    auto finalizing = progress >= 0.99;
+    auto finalizing = progress >= 0.98;
     auto updateNeeded = drawNextPixmapPart();
     // progress 0 .. 1000
-    if (updateNeeded || (m_dAnalyserProgress != analyserProgress)) {
-        m_dAnalyserProgress   = analyserProgress;
-        m_bAnalyserFinalizing = finalizing;
-        update();
-    }
+    if (updateNeeded || (m_dAnalyserProgress != analyserProgress)) {update();}
+    m_dAnalyserProgress   = analyserProgress;
+    m_bAnalyserFinalizing = finalizing;
 }
 void WOverview::slotLoadNewTrack(TrackPointer pTrack) {
     // qDebug() << "WOverview::slotLoadNewTrack(TrackPointer pTrack)";
@@ -191,10 +189,9 @@ void WOverview::slotUnloadTrack(TrackPointer pTrack) {
     // it may happen that this call is a delayed call
     // of a track that was already replaced
     //qDebug() << "WOverview::slotUnloadTrack(TrackPointer pTrack)";
-    if (pTrack != NULL && pTrack == m_pCurrentTrack) {
+    if (pTrack && pTrack == m_pCurrentTrack) {
         disconnect(m_pCurrentTrack.data(), SIGNAL(waveformSummaryUpdated()), this, SLOT(slotWaveformSummaryUpdated()));
         disconnect(m_pCurrentTrack.data(), SIGNAL(analyserProgress(double)), this, SLOT(slotAnalyserProgress(double)));
-
         m_pCurrentTrack.clear();
         m_pWaveform.clear();
         m_actualCompletion = 0;
@@ -251,7 +248,6 @@ void WOverview::paintEvent(QPaintEvent *) {
         painter.drawRect(rect().adjusted(1,1,-2,-2));
         painter.setOpacity(1);
     }
-
     //Draw waveform pixmap
     auto widgetFactory = WaveformWidgetFactory::instance();
     if (m_pWaveform) {
@@ -259,7 +255,7 @@ void WOverview::paintEvent(QPaintEvent *) {
         painter.setPen(QPen(m_signalColors.getAxesColor(), 1));
         painter.drawLine(0, height()/2, width(), height()/2);
         if (m_pWaveformSourceImage) {
-            auto diffGain;
+            auto diffGain = 0.0;
             auto normalize = widgetFactory->isOverviewNormalized();
             if (normalize && m_pixmapDone && m_waveformPeak > 1) {
                 diffGain = 255 - m_waveformPeak - 1;
@@ -274,7 +270,7 @@ void WOverview::paintEvent(QPaintEvent *) {
             }
             painter.drawImage(rect(), m_waveformImageScaled);
         }
-        if (m_dAnalyserProgress != 1.0) {
+        if (m_dAnalyserProgress < 0.98) {
             // Paint analyzer Progress
             painter.setPen(QPen(m_signalColors.getAxesColor(), 3));
             painter.drawLine(m_dAnalyserProgress * width(), height()/2,width(), height()/2);
@@ -417,5 +413,5 @@ void WOverview::dropEvent(QDropEvent* event) {
     event->ignore();
 }
 int    WOverview::valueToPosition(double value) const {return static_cast<int>(m_a * value - m_b);}
-double Woverview::positionToValue(int position) const {return (static_cast<double>(position) + m_b) / m_a;}
+double WOverview::positionToValue(int position) const {return (static_cast<double>(position) + m_b) / m_a;}
 ConstWaveformPointer WOverview::getWaveform()const{return m_pWaveform;}

@@ -15,9 +15,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef SOUNDDEVICEPORTAUDIO_H
-#define SOUNDDEVICEPORTAUDIO_H
-
+_Pragma("once")
 #include <portaudio.h>
 #include <QString>
 #include <atomic>
@@ -41,7 +39,7 @@ class SoundDevicePortAudio : public SoundDevice {
     SoundDevicePortAudio(ConfigObject<ConfigValue> *config,
                          SoundManager *sm, const PaDeviceInfo *deviceInfo,
                          unsigned int devIndex);
-    virtual ~SoundDevicePortAudio() = default;
+    virtual ~SoundDevicePortAudio() ;
     virtual Result open(bool isClkRefDevice, int syncBuffers);
     virtual Result close();
     virtual void readProcess();
@@ -75,9 +73,9 @@ class SoundDevicePortAudio : public SoundDevice {
     // belongs to PortAudio.
     const PaDeviceInfo* m_deviceInfo = nullptr;
     // Description of the output stream going to the soundcard.
-    PaStreamParameters m_outputParams {0 };
+    PaStreamParameters m_outputParams {0,0,0,0,nullptr };
     // Description of the input stream coming from the soundcard.
-    PaStreamParameters m_inputParams;
+    PaStreamParameters m_inputParams  {0,0,0,0,nullptr };
     FIFO<CSAMPLE>* m_outputFifo = nullptr;
     FIFO<CSAMPLE>* m_inputFifo  = nullptr;
     bool m_outputDrift = false;
@@ -114,4 +112,3 @@ int paV19CallbackClkRef(const void* inputBuffer, void* outputBuffer,
                   const PaStreamCallbackTimeInfo* timeInfo,
                   PaStreamCallbackFlags statusFlags,
                   void *soundDevice);
-#endif

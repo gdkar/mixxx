@@ -21,7 +21,7 @@
 #include <QWidget>
 #include <QComboBox>
 
-#include "ui_dlgprefeqdlg.h"
+#include "preferences/ui_dlgprefeqdlg.h"
 #include "configobject.h"
 #include "preferences/dlgpreferencepage.h"
 #include "effects/effectsmanager.h"

@@ -64,8 +64,8 @@ bool SoundManagerConfig::readFromDisk() {
     setDeckCount(rootElement.attribute("deck_count", QString(kDefaultDeckCount)).toUInt());
     clearOutputs();
     clearInputs();
-    QDomNodeList devElements(rootElement.elementsByTagName("SoundDevice"));
-    for (int i = 0; i < devElements.count(); ++i) {
+    auto  devElements = rootElement.elementsByTagName("SoundDevice");
+    for (auto i = 0; i < devElements.count(); ++i) {
         auto devElement = (devElements.at(i).toElement());
         if (devElement.isNull()) continue;
         auto device = (devElement.attribute("name"));
@@ -115,16 +115,17 @@ bool SoundManagerConfig::writeToDisk() const {
     docElement.setAttribute("sync_buffers", m_syncBuffers);
     docElement.setAttribute("deck_count", m_deckCount);
     doc.appendChild(docElement);
-    foreach (QString device, m_outputs.keys().toSet().unite(m_inputs.keys().toSet())) {
-        QDomElement devElement(doc.createElement("SoundDevice"));
+    auto keys =  m_outputs.keys().toSet().unite(m_inputs.keys().toSet());
+    for(auto device : keys){
+        auto devElement(doc.createElement("SoundDevice"));
         devElement.setAttribute("name", device);
-        foreach (AudioInput in, m_inputs.values(device)) {
-            QDomElement inElement(doc.createElement("input"));
+        for(auto in: m_inputs.values(device)) {
+            auto inElement = doc.createElement("input");
             in.toXML(&inElement);
             devElement.appendChild(inElement);
         }
-        foreach (AudioOutput out, m_outputs.values(device)) {
-            QDomElement outElement(doc.createElement("output"));
+        for(auto out: m_outputs.values(device)) {
+            auto  outElement = doc.createElement("output");
             out.toXML(&outElement);
             devElement.appendChild(outElement);
         }
@@ -169,8 +170,9 @@ unsigned int SoundManagerConfig::getDeckCount() const { return m_deckCount; }
 void SoundManagerConfig::setDeckCount(unsigned int deckCount) { m_deckCount = deckCount; }
 void SoundManagerConfig::setCorrectDeckCount(int configuredDeckCount) {
     auto minimum_deck_count = 0;
-    foreach (QString device, m_outputs.keys().toSet().unite(m_inputs.keys().toSet())) {
-        foreach (AudioInput in, m_inputs.values(device)) {
+    auto keys = m_outputs.keys().toSet().unite(m_inputs.keys().toSet());
+    for(auto device : keys){
+        for(auto in: m_inputs.values(device)) {
             if ((in.getType() == AudioInput::DECK ||
                  in.getType() == AudioInput::VINYLCONTROL ||
                  in.getType() == AudioInput::AUXILIARY) &&
@@ -179,9 +181,8 @@ void SoundManagerConfig::setCorrectDeckCount(int configuredDeckCount) {
                 minimum_deck_count = in.getIndex() + 1;
             }
         }
-        foreach (AudioOutput out, m_outputs.values(device)) {
-            if (out.getType() == AudioOutput::DECK &&
-                    out.getIndex() + 1 > minimum_deck_count) {
+        for(auto out: m_outputs.values(device)) {
+            if (out.getType() == AudioOutput::DECK && out.getIndex() + 1 > minimum_deck_count) {
                 qDebug() << "Found an output connection above current deck count";
                 minimum_deck_count = out.getIndex() + 1;
             }
@@ -227,8 +228,8 @@ void SoundManagerConfig::clearInputs() {m_inputs.clear(); }
  * SoundManager.
  */
 void SoundManagerConfig::filterOutputs(SoundManager *soundManager) {
-    QSet<QString> deviceNames;
-    QSet<QString> toDelete;
+    auto deviceNames = QSet<QString>{};
+    auto toDelete = QSet<QString>{};
     for(auto device: soundManager->getDeviceList(m_api, true, false)) { deviceNames.insert(device->getInternalName()); }
     for(auto deviceName: m_outputs.uniqueKeys()) {
         if (!deviceNames.contains(deviceName)) { toDelete.insert(deviceName); }
@@ -240,8 +241,8 @@ void SoundManagerConfig::filterOutputs(SoundManager *soundManager) {
  * SoundManager.
  */
 void SoundManagerConfig::filterInputs(SoundManager *soundManager) {
-    QSet<QString> deviceNames;
-    QSet<QString> toDelete;
+    auto deviceNames = QSet<QString>{};
+    auto toDelete    = QSet<QString>{};
     for(auto device: soundManager->getDeviceList(m_api, false, true)) { deviceNames.insert(device->getInternalName()); }
     for(auto deviceName:m_inputs.uniqueKeys()) { if (!deviceNames.contains(deviceName)) { toDelete.insert(deviceName); }}
     for(auto del: toDelete) { m_inputs.remove(del); }

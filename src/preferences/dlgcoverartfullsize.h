@@ -3,7 +3,7 @@
 
 #include <QDialog>
 
-#include "ui_dlgcoverartfullsize.h"
+#include "preferences/ui_dlgcoverartfullsize.h"
 #include "library/coverart.h"
 
 class DlgCoverArtFullSize

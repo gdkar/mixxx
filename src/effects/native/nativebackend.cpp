@@ -9,9 +9,6 @@
 #include "effects/native/graphiceqeffect.h"
 #include "effects/native/filtereffect.h"
 #include "effects/native/moogladder4filtereffect.h"
-#ifndef __MACAPPSTORE__
-#include "effects/native/reverbeffect.h"
-#endif
 #include "effects/native/echoeffect.h"
 #include "effects/native/autopaneffect.h"
 #include "effects/native/phasereffect.h"
@@ -32,9 +29,6 @@ NativeBackend::NativeBackend(QObject* pParent) : EffectsBackend(pParent, tr("Nat
     registerEffect<FlangerEffect>();
     registerEffect<EchoEffect>();
     registerEffect<AutoPanEffect>();
-#ifndef __MACAPPSTORE__
-    registerEffect<ReverbEffect>();
-#endif
     registerEffect<PhaserEffect>();
 }
-NativeBackend::~NativeBackend() {}
+NativeBackend::~NativeBackend() = default;

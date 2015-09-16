@@ -21,6 +21,18 @@ SkinContext::SkinContext(ConfigObject<ConfigValue>* pConfig,
     importScriptExtension("console");
     importScriptExtension("svg");
     m_pScriptEngine->installTranslatorFunctions();
+    auto context = m_pScriptEngine->pushContext()->activationObject();
+    auto newGlobal = m_pScriptEngine->newObject();
+    QScriptValueIterator it(m_parentGlobal);
+    while (it.hasNext()) {
+        it.next();
+        newGlobal.setProperty(it.name(), it.value());
+    }
+    m_pScriptEngine->setGlobalObject(newGlobal);
+    for (auto it = m_variables.cbegin();it != m_variables.cend(); ++it) {
+        m_pScriptEngine->globalObject().setProperty(it.key(), it.value());
+    }
+
 }
 
 SkinContext::SkinContext(const SkinContext& parent)
@@ -35,47 +47,34 @@ SkinContext::SkinContext(const SkinContext& parent)
 
     // we generate a new global object to preserve the scope between
     // a context and its children
-    QScriptValue context = m_pScriptEngine->pushContext()->activationObject();
-    QScriptValue newGlobal = m_pScriptEngine->newObject();
+    auto context = m_pScriptEngine->pushContext()->activationObject();
+    auto newGlobal = m_pScriptEngine->newObject();
     QScriptValueIterator it(m_parentGlobal);
     while (it.hasNext()) {
         it.next();
         newGlobal.setProperty(it.name(), it.value());
     }
     m_pScriptEngine->setGlobalObject(newGlobal);
-
-    for (QHash<QString, QString>::const_iterator it = m_variables.begin();
-         it != m_variables.end(); ++it) {
+    for (auto it = m_variables.cbegin();it != m_variables.cend(); ++it) {
         m_pScriptEngine->globalObject().setProperty(it.key(), it.value());
     }
 }
-
 SkinContext::~SkinContext() {
     m_pScriptEngine->popContext();
     m_pScriptEngine->setGlobalObject(m_parentGlobal);
 }
-
-QString SkinContext::variable(const QString& name) const {
-    return m_variables.value(name, QString());
-}
-
+QString SkinContext::variable(const QString& name) const {return m_variables.value(name, QString());}
 void SkinContext::setVariable(const QString& name, const QString& value) {
     m_variables[name] = value;
     QScriptValue context = m_pScriptEngine->currentContext()->activationObject();
     context.setProperty(name, value);
 }
-
-void SkinContext::setXmlPath(const QString& xmlPath) {
-    m_xmlPath = xmlPath;
-}
-
+void SkinContext::setXmlPath(const QString& xmlPath) {m_xmlPath = xmlPath;}
 void SkinContext::updateVariables(const QDomNode& node) {
-    QDomNode child = node.firstChild();
+    auto child = node.firstChildElement(QString{"SetVariable"});
     while (!child.isNull()) {
-        if (child.isElement() && child.nodeName() == "SetVariable") {
-            updateVariable(child.toElement());
-        }
-        child = child.nextSibling();
+        updateVariable(child.toElement());
+        child = child.nextSiblingElement(QString{"SetVariable"});
     }
 }
 

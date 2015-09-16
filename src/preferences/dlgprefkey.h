@@ -5,7 +5,7 @@
 #include <QWidget>
 #include <QMap>
 
-#include "ui_dlgprefkeydlg.h"
+#include "preferences/ui_dlgprefkeydlg.h"
 #include "configobject.h"
 #include "track/keyutils.h"
 #include "preferences/dlgpreferencepage.h"

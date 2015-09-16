@@ -25,37 +25,26 @@
 WWidget::WWidget(QWidget* parent, Qt::WindowFlags flags)
         : QWidget(parent, flags),
           WBaseWidget(this),
-          m_activeTouchButton(Qt::NoButton) {
-    m_pTouchShift = new ControlObjectSlave("[Controls]", "touch_shift");
+          m_activeTouchButton(Qt::NoButton),
+          m_pTouchShift(new ControlObjectSlave("[Controls]","touch_shift",this)){
     setAttribute(Qt::WA_StaticContents);
     setAttribute(Qt::WA_AcceptTouchEvents);
     setFocusPolicy(Qt::ClickFocus);
 }
-
-WWidget::~WWidget() {
-    delete m_pTouchShift;
-}
-
-bool WWidget::touchIsRightButton() {
-    return (m_pTouchShift->get() != 0.0);
-}
-
+WWidget::~WWidget() = default;
+bool WWidget::touchIsRightButton() {return (m_pTouchShift->get() != 0.0);}
 bool WWidget::event(QEvent* e) {
-    if (e->type() == QEvent::ToolTip) {
-        updateTooltip();
-    } else if (isEnabled()) {
+    if (e->type() == QEvent::ToolTip) {updateTooltip();}
+    else if (isEnabled()) {
         switch(e->type()) {
         case QEvent::TouchBegin:
         case QEvent::TouchUpdate:
         case QEvent::TouchEnd:
         {
-            QTouchEvent* touchEvent = static_cast<QTouchEvent*>(e);
-            if (touchEvent->deviceType() !=  QTouchEvent::TouchScreen) {
-                break;
-            }
-
+            auto  touchEvent = static_cast<QTouchEvent*>(e);
+            if (touchEvent->deviceType() !=  QTouchEvent::TouchScreen) {break;}
             // fake a mouse event!
-            QEvent::Type eventType = QEvent::None;
+            auto eventType = QEvent::None;
             switch (touchEvent->type()) {
             case QEvent::TouchBegin:
                 eventType = QEvent::MouseButtonPress;
@@ -76,20 +65,16 @@ bool WWidget::event(QEvent* e) {
                 DEBUG_ASSERT(false);
                 break;
             }
-
-            const QTouchEvent::TouchPoint &touchPoint =
-                    touchEvent->touchPoints().first();
-            QMouseEvent mouseEvent(eventType,
+            const auto &touchPoint = touchEvent->touchPoints().first();
+            auto mouseEvent = QMouseEvent(eventType,
                     touchPoint.pos().toPoint(),
                     touchPoint.screenPos().toPoint(),
                     m_activeTouchButton, // Button that causes the event
                     Qt::NoButton, // Not used, so no need to fake a proper value.
                     touchEvent->modifiers());
-
             return QWidget::event(&mouseEvent);
         }
-        default:
-            break;
+        default:break;
         }
     }
 

@@ -39,136 +39,85 @@ Syncable* BaseSyncableListener::getSyncableForGroup(const QString& group) {
     return nullptr;
 }
 bool BaseSyncableListener::syncDeckExists() const {
-    foreach (const Syncable* pSyncable, m_syncables) {
-        if (pSyncable->getSyncMode() != SYNC_NONE && pSyncable->getBaseBpm() > 0) {
-            return true;
-        }
+    for(auto pSyncable: m_syncables) {
+        if (pSyncable->getSyncMode() != SYNC_NONE && pSyncable->getBaseBpm() > 0) {return true;}
     }
     return false;
 }
 
 int BaseSyncableListener::playingSyncDeckCount() const {
     int playing_sync_decks = 0;
-
-    foreach (const Syncable* pSyncable, m_syncables) {
-        SyncMode sync_mode = pSyncable->getSyncMode();
-        if (sync_mode == SYNC_NONE) {
-            continue;
-        }
-
-        if (pSyncable->isPlaying()) {
-            ++playing_sync_decks;
-        }
+    for(auto pSyncable: m_syncables) {
+        auto sync_mode = pSyncable->getSyncMode();
+        if (sync_mode == SYNC_NONE) {continue;}
+        if (pSyncable->isPlaying()) {++playing_sync_decks;}
     }
-
     return playing_sync_decks;
 }
-
 double BaseSyncableListener::masterBpm() const {
-    if (m_pMasterSyncable) {
-        return m_pMasterSyncable->getBpm();
-    }
+    if (m_pMasterSyncable) {return m_pMasterSyncable->getBpm();}
     return m_pInternalClock->getBpm();
 }
-
 double BaseSyncableListener::masterBeatDistance() const {
-    if (m_pMasterSyncable) {
-        return m_pMasterSyncable->getBeatDistance();
-    }
+    if (m_pMasterSyncable) {return m_pMasterSyncable->getBeatDistance();}
     return m_pInternalClock->getBeatDistance();
 }
-
 double BaseSyncableListener::masterBaseBpm() const {
-    if (m_pMasterSyncable) {
-        return m_pMasterSyncable->getBaseBpm();
-    }
+    if (m_pMasterSyncable) {return m_pMasterSyncable->getBaseBpm();}
     return m_pInternalClock->getBaseBpm();
 }
-
 void BaseSyncableListener::setMasterBpm(Syncable* pSource, double bpm) {
-    if (pSource != m_pInternalClock) {
-        m_pInternalClock->setMasterBpm(bpm);
-    }
-    foreach (Syncable* pSyncable, m_syncables) {
-        if (pSyncable == pSource ||
-                pSyncable->getSyncMode() == SYNC_NONE) {
-            continue;
-        }
+    if (pSource != m_pInternalClock) {m_pInternalClock->setMasterBpm(bpm);}
+    for(auto pSyncable: m_syncables) {
+        if (pSyncable == pSource || pSyncable->getSyncMode() == SYNC_NONE) {continue;}
         pSyncable->setMasterBpm(bpm);
     }
 }
-
 void BaseSyncableListener::setMasterInstantaneousBpm(Syncable* pSource, double bpm) {
-    if (pSource != m_pInternalClock) {
-        m_pInternalClock->setInstantaneousBpm(bpm);
-    }
-    foreach (Syncable* pSyncable, m_syncables) {
-        if (pSyncable == pSource ||
-                pSyncable->getSyncMode() == SYNC_NONE) {
-            continue;
-        }
+    if (pSource != m_pInternalClock) {m_pInternalClock->setInstantaneousBpm(bpm);}
+    for(auto pSyncable: m_syncables) {
+        if (pSyncable == pSource || pSyncable->getSyncMode() == SYNC_NONE) {continue;}
         pSyncable->setInstantaneousBpm(bpm);
     }
 }
 
 void BaseSyncableListener::setMasterBaseBpm(Syncable* pSource, double bpm) {
-    if (pSource != m_pInternalClock) {
-        m_pInternalClock->setMasterBaseBpm(bpm);
-    }
-    foreach (Syncable* pSyncable, m_syncables) {
-        if (pSyncable == pSource ||
-                pSyncable->getSyncMode() == SYNC_NONE) {
-            continue;
-        }
+    if (pSource != m_pInternalClock) {m_pInternalClock->setMasterBaseBpm(bpm);}
+    for(auto pSyncable: m_syncables) {
+        if (pSyncable == pSource ||pSyncable->getSyncMode() == SYNC_NONE) {continue;}
         pSyncable->setMasterBaseBpm(bpm);
     }
 }
-
 void BaseSyncableListener::setMasterBeatDistance(Syncable* pSource, double beat_distance) {
     if (pSource != m_pInternalClock) {
         m_pInternalClock->setMasterBeatDistance(beat_distance);
     }
-    foreach (Syncable* pSyncable, m_syncables) {
-        if (pSyncable == pSource ||
-                pSyncable->getSyncMode() == SYNC_NONE) {
-            continue;
-        }
+    for(auto pSyncable: m_syncables) {
+        if (pSyncable == pSource || pSyncable->getSyncMode() == SYNC_NONE) {continue;}
         pSyncable->setMasterBeatDistance(beat_distance);
     }
 }
-
-void BaseSyncableListener::setMasterParams(Syncable* pSource, double beat_distance,
-                                           double base_bpm, double bpm) {
+void BaseSyncableListener::setMasterParams(Syncable* pSource, double beat_distance,double base_bpm, double bpm) {
     if (pSource != m_pInternalClock) {
         m_pInternalClock->setMasterParams(beat_distance, base_bpm, bpm);
     }
-    foreach (Syncable* pSyncable, m_syncables) {
-        if (pSyncable == pSource ||
-                pSyncable->getSyncMode() == SYNC_NONE) {
-            continue;
-        }
+    for(auto pSyncable: m_syncables) {
+        if (pSyncable == pSource || pSyncable->getSyncMode() == SYNC_NONE) {continue;}
         pSyncable->setMasterParams(beat_distance, base_bpm, bpm);
     }
 }
 
 void BaseSyncableListener::checkUniquePlayingSyncable() {
-    int playing_sync_decks = 0;
-    Syncable* unique_syncable = NULL;
-    foreach (Syncable* pSyncable, m_syncables) {
-        SyncMode sync_mode = pSyncable->getSyncMode();
-        if (sync_mode == SYNC_NONE) {
-            continue;
-        }
-
+    auto playing_sync_decks = 0;
+    auto unique_syncable = static_cast<Syncable*>(nullptr);
+    for(auto pSyncable: m_syncables) {
+        auto sync_mode = pSyncable->getSyncMode();
+        if (sync_mode == SYNC_NONE) {continue;}
         if (pSyncable->isPlaying()) {
-            if (playing_sync_decks > 0) {
-                return;
-            }
+            if (playing_sync_decks > 0) {return;}
             unique_syncable = pSyncable;
             ++playing_sync_decks;
         }
     }
-    if (playing_sync_decks == 1) {
-        unique_syncable->notifyOnlyPlayingSyncable();
-    }
+    if (playing_sync_decks == 1) {unique_syncable->notifyOnlyPlayingSyncable();}
 }

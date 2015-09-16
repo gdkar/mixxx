@@ -5,7 +5,7 @@
 #include <QSortFilterProxyModel>
 #include <QTimerEvent>
 
-#include "ui_dlgdevelopertoolsdlg.h"
+#include "preferences/ui_dlgdevelopertoolsdlg.h"
 #include "configobject.h"
 #include "control/controlmodel.h"
 #include "util/statmodel.h"

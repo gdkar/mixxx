@@ -1,7 +1,5 @@
-#ifndef TASK_H
-#define TASK_H
-
-#include <QAtomicInt>
+_Pragma("once")
+#include <atomic>
 #include <QObject>
 
 // Waits for a number of tasks to complete and emits allTasksDone() once all are
@@ -28,7 +26,5 @@ class TaskWatcher : public QObject {
     void taskDone();
 
   private:
-    QAtomicInt m_activeTasks;
+  std::atomic<int> m_activeTasks{0};
 };
-
-#endif /* TASK_H */

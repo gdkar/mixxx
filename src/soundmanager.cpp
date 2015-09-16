@@ -17,11 +17,10 @@
 #include <QtDebug>
 #include <cstring> // for memcpy and strcmp
 
-#ifdef __PORTAUDIO__
 #include <QLibrary>
-#include <portaudio.h>
-#endif // ifdef __PORTAUDIO__
-
+extern "C"{
+  #include <portaudio.h>
+};
 #include "soundmanager.h"
 #include "sounddevice.h"
 #include "sounddeviceportaudio.h"
@@ -32,21 +31,16 @@
 #include "vinylcontrol/defs_vinylcontrol.h"
 #include "sampleutil.h"
 #include "util/cmdlineargs.h"
-#ifdef __PORTAUDIO__
+
 typedef PaError (*SetJackClientName)(const char *name);
-#endif
+
 SoundManager::SoundManager(ConfigObject<ConfigValue> *pConfig, EngineMaster *pMaster)
         : m_pMaster(pMaster),
           m_pConfig(pConfig),
-#ifdef __PORTAUDIO__
           m_paInitialized(false),
           m_jackSampleRate(-1),
-#endif
           m_pErrorDevice(nullptr) {
-#ifdef __PORTAUDIO__
-    qDebug() << "PortAudio version:" << Pa_GetVersion()
-             << "text:" << Pa_GetVersionText();
-#endif
+    qDebug() << "PortAudio version:" << Pa_GetVersion() << "text:" << Pa_GetVersionText();
     // TODO(xxx) some of these ControlObject are not needed by soundmanager, or are unused here.
     // It is possible to take them out?
     m_pControlObjectSoundStatusCO = new ControlObject(ConfigKey("[SoundManager]", "status"));
@@ -65,12 +59,10 @@ SoundManager::SoundManager(ConfigObject<ConfigValue> *pConfig, EngineMaster *pMa
 SoundManager::~SoundManager() {
     //Clean up devices.
     clearDeviceList();
-#ifdef __PORTAUDIO__
     if (m_paInitialized) {
         Pa_Terminate();
         m_paInitialized = false;
     }
-#endif
     // vinyl control proxies and input buffers are freed in closeDevices, called
     // by clearDeviceList -- bkgood
     delete m_pControlObjectSoundStatusCO;
@@ -138,15 +130,9 @@ void SoundManager::clearDeviceList() {
     closeDevices();
     // Empty out the list of devices we currently have.
     while (!m_devices.empty()) { delete m_devices.takeLast(); }
-#ifdef __PORTAUDIO__
-    if (m_paInitialized) {
-        Pa_Terminate();
-        m_paInitialized = false;
-    }
-#endif
+    if (m_paInitialized) {Pa_Terminate();m_paInitialized = false;}
 }
 QList<unsigned int> SoundManager::getSampleRates(QString api) const {
-#ifdef __PORTAUDIO__
     if (api == MIXXX_PORTAUDIO_JACK_STRING) {
         // queryDevices must have been called for this to work, but the
         // ctor calls it -bkgood
@@ -154,14 +140,12 @@ QList<unsigned int> SoundManager::getSampleRates(QString api) const {
         samplerates.append(m_jackSampleRate);
         return samplerates;
     }
-#endif
     return m_samplerates;
 }
 QList<unsigned int> SoundManager::getSampleRates() const { return getSampleRates(""); }
 void SoundManager::queryDevices() {
     //qDebug() << "SoundManager::queryDevices()";
     clearDeviceList();
-#ifdef __PORTAUDIO__
     PaError err = paNoError;
     if (!m_paInitialized) {
 #ifdef Q_OS_LINUX
@@ -201,7 +185,6 @@ void SoundManager::queryDevices() {
             m_jackSampleRate = deviceInfo->defaultSampleRate;
         }
     }
-#endif
     // now tell the prefs that we updated the device list -- bkgood
     emit(devicesUpdated());
 }
@@ -398,7 +381,6 @@ void SoundManager::registerInput(AudioInput input, AudioDestination *dest) {
 QList<AudioOutput> SoundManager::registeredOutputs() const { return m_registeredSources.keys(); }
 QList<AudioInput> SoundManager::registeredInputs() const { return m_registeredDestinations.keys(); }
 void SoundManager::setJACKName() const {
-#ifdef __PORTAUDIO__
 #ifdef Q_OS_LINUX
     typedef PaError (*SetJackClientName)(const char *name);
     QLibrary portaudio("libportaudio.so.2");
@@ -408,7 +390,6 @@ void SoundManager::setJACKName() const {
             if (!func("Mixxx")) qDebug() << "JACK client name set";
         } else {qWarning() << "failed to resolve JACK name method";}
     } else { qWarning() << "failed to load portaudio for JACK rename"; }
-#endif
 #endif
 }
 void SoundManager::setConfiguredDeckCount(int count) {

@@ -20,7 +20,7 @@
 
 #include <QWidget>
 
-#include "ui_dlgprefvinyldlg.h"
+#include "preferences/ui_dlgprefvinyldlg.h"
 #include "configobject.h"
 #include "vinylcontrol/vinylcontrolsignalwidget.h"
 #include "preferences/dlgpreferencepage.h"

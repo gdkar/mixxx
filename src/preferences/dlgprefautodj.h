@@ -3,7 +3,7 @@
 
 #include <QWidget>
 
-#include "ui_dlgprefautodjdlg.h"
+#include "preferences/ui_dlgprefautodjdlg.h"
 #include "configobject.h"
 #include "preferences/dlgpreferencepage.h"
 

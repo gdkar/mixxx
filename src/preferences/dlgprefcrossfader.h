@@ -20,7 +20,7 @@
 
 #include <QWidget>
 
-#include "ui_dlgprefcrossfaderdlg.h"
+#include "preferences/ui_dlgprefcrossfaderdlg.h"
 #include "configobject.h"
 #include "preferences/dlgpreferencepage.h"
 

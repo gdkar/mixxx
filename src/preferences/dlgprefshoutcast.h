@@ -22,7 +22,7 @@
 
 #include <QWidget>
 
-#include "ui_dlgprefshoutcastdlg.h"
+#include "preferences/ui_dlgprefshoutcastdlg.h"
 #include "configobject.h"
 #include "shoutcast/defs_shoutcast.h"
 #include "preferences/dlgpreferencepage.h"

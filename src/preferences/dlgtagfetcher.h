@@ -2,7 +2,7 @@
 #define DLGTAGFETCHER_H
 
 #include <QDialog>
-#include "ui_dlgtagfetcher.h"
+#include "preferences/ui_dlgtagfetcher.h"
 #include "trackinfoobject.h"
 #include "musicbrainz/tagfetcher.h"
 

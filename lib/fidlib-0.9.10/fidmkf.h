@@ -128,9 +128,7 @@
 //	Not A Lawyer".
 //
 
-#ifndef FIDMK_H
-#define FIDMK_H
-
+_Pragma("once")
 #ifndef T_MSVC
  #ifdef HUGE_VAL
   #define INF HUGE_VAL
@@ -840,7 +838,3 @@ prop_integral(double freq) {
    zertyp[0]= 1;
    zer[0]= -TWOPI * freq;
 }
-   
-// END //
-#endif
-

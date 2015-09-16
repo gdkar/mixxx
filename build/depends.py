@@ -48,14 +48,6 @@ class FFMPEG(Dependence):
         if build.platform_is_linux or build.platform_is_osx or build.platform_is_bsd:
             # Check for libavcodec, libavformat
             # I just randomly picked version numbers lower than mine for this
-            if not conf.CheckForPKG('libavcodec', '53.35.0'):
-                raise Exception('Missing libavcodec or it\'s too old! It can'
-                                'be separated from main package so check your'
-                                'operating system packages.')
-            if not conf.CheckForPKG('libavformat', '53.21.0'):
-                raise Exception('Missing libavformat  or it\'s too old!'
-                                'It can be separated from main package so'
-                                'check your operating system packages.')
             # Needed to build new FFmpeg
             build.env.Append(CCFLAGS='-D__STDC_CONSTANT_MACROS')
             build.env.Append(CCFLAGS='-D__STDC_LIMIT_MACROS')
@@ -67,6 +59,11 @@ class FFMPEG(Dependence):
             build.env.ParseConfig('pkg-config libswresample --silence-errors --cflags --libs')
             build.env.ParseConfig('pkg-config libavfilter --silence-errors --cflags --libs')
             build.env.ParseConfig('pkg-config libavdevice --silence-errors --cflags --libs')
+
+            for lib in [['libavcodec','avcodec'],['libavutil','avutil'],['libavformat','avformat'],['libswresample','swresample']]:
+                if not conf.CheckLib(lib):
+                    raise Exception("Missing {} or it is too old. Boo Hoo Hoo. T___T".format(lib[0]))
+
             build.env.Append(CPPDEFINES='__FFMPEGFILE__')
             self.status = "Enabled"
         else:
@@ -119,14 +116,14 @@ class OpenGL(Dependence):
 class SecurityFramework(Dependence):
     """The iOS/OS X security framework is used to implement sandboxing."""
     def configure(self, build, conf):
-        if not build.platform_is_osx:return
-        build.env.Append(CPPPATH='/System/Library/Frameworks/Security.framework/Headers/')
-        build.env.Append(LINKFLAGS='-framework Security')
+        if build.platform_is_osx:
+            build.env.Append(CPPPATH='/System/Library/Frameworks/Security.framework/Headers/')
+            build.env.Append(LINKFLAGS='-framework Security')
 class CoreServices(Dependence):
     def configure(self, build, conf):
-        if not build.platform_is_osx:return
-        build.env.Append(CPPPATH='/System/Library/Frameworks/CoreServices.framework/Headers/')
-        build.env.Append(LINKFLAGS='-framework CoreServices')
+        if build.platform_is_osx:
+            build.env.Append(CPPPATH='/System/Library/Frameworks/CoreServices.framework/Headers/')
+            build.env.Append(LINKFLAGS='-framework CoreServices')
 class Qt(Dependence):
     DEFAULT_QT5DIRS64 = {'linux': '/usr/lib/x86_64-linux-gnu/qt5','osx': '/Library/Frameworks','windows': 'C:\\qt\\5.0.1'}
     DEFAULT_QT5DIRS32 = {'linux': '/usr/lib/i386-linux-gnu/qt5','osx': '/Library/Frameworks','windows': 'C:\\qt\\5.0.1'}
@@ -145,9 +142,8 @@ class Qt(Dependence):
         qt_modules = [
             'QtCore', 'QtGui', 'QtOpenGL', 'QtXml', 'QtSvg',
             'QtSql', 'QtScript', 'QtXmlPatterns', 'QtNetwork',
-            'QtTest', 'QtScriptTools'
-        ]
-        qt_modules.extend(['QtWidgets', 'QtConcurrent'])
+            'QtTest', 'QtScriptTools','QtWidgets', 'QtConcurrent',
+            'QtQml','QtQmlDevTools','QtMultimedia','QtQuick']
         return qt_modules
     @staticmethod
     def enabled_imageformats(build):
@@ -221,10 +217,7 @@ class Qt(Dependence):
             build.env.EnableQt5Modules(qt_modules,debug=build.build_is_debug)
         # Set the rpath for linux/bsd/osx.
         # This is not supported on OS X before the 10.5 SDK.
-        using_104_sdk = (str(build.env["CCFLAGS"]).find("10.4") >= 0)
-        compiling_on_104 = False
-        if build.platform_is_osx:compiling_on_104 = (os.popen('sw_vers').readlines()[1].find('10.4') >= 0)
-        if not build.platform_is_windows and not (using_104_sdk or compiling_on_104):
+        if not build.platform_is_windows:
             qtdir = build.env['QTDIR']
             # TODO(XXX) should we use find_framework_path here or keep lib
             # hardcoded?
@@ -232,9 +225,9 @@ class Qt(Dependence):
             if os.path.isdir(framework_path):
                 build.env.Append(LINKFLAGS="-Wl,-rpath," + framework_path)
                 build.env.Append(LINKFLAGS="-L" + framework_path)
-        # Mixxx requires C++11 support. Windows enables C++11 features by
-        # default but Clang/GCC require a flag.
-        if not build.platform_is_windows: build.env.Append(CXXFLAGS='-std=gnu++14')
+            # Mixxx requires C++11 support. Windows enables C++11 features by
+            # default but Clang/GCC require a flag.
+            build.env.Append(CXXFLAGS='-std=gnu++14')
 class TestHeaders(Dependence):
     def configure(self, build, conf):build.env.Append(CPPPATH="#lib/gtest-1.7.0/include")
 class FidLib(Dependence):
@@ -312,7 +305,9 @@ class Chromaprint(Dependence):
 class ProtoBuf(Dependence):
     def configure(self, build, conf):
         libs = ['libprotobuf-lite', 'protobuf-lite', 'libprotobuf', 'protobuf']
-        if build.platform_is_windows:if not build.static_dependencies:build.env.Append(CPPDEFINES='PROTOBUF_USE_DLLS')
+        if build.platform_is_windows:
+            if not build.static_dependencies:
+                build.env.Append(CPPDEFINES='PROTOBUF_USE_DLLS')
         if not conf.CheckLib(libs):raise Exception("Could not find libprotobuf or its development headers.")
 class QtScriptByteArray(Dependence):
     def configure(self, build, conf):build.env.Append(CPPPATH='#lib/qtscript-bytearray')
@@ -393,7 +388,6 @@ class MixxxCore(Feature):
                    "effects/native/flangereffect.cpp",
                    "effects/native/filtereffect.cpp",
                    "effects/native/moogladder4filtereffect.cpp",
-                   "effects/native/reverbeffect.cpp",
                    "effects/native/echoeffect.cpp",
                    "effects/native/autopaneffect.cpp",
                    "effects/native/phasereffect.cpp",
@@ -741,6 +735,7 @@ class MixxxCore(Feature):
                    "util/sleepableqthread.cpp",
                    "util/statsmanager.cpp",
                    "util/stat.cpp",
+                   "util/compatibility.cpp",
                    "util/statmodel.cpp",
                    "util/time.cpp",
                    "util/timer.cpp",
@@ -957,7 +952,7 @@ class MixxxCore(Feature):
         return [SoundTouch, ReplayGain, PortAudio, PortMIDI, Qt, TestHeaders,
                 FidLib, OpenGL, TagLib, ProtoBuf, FFMPEG,
                 Chromaprint, RubberBand, SecurityFramework, CoreServices,
-                QtScriptByteArray, Reverb]
+                QtScriptByteArray]
     def post_dependency_check_configure(self, build, conf):
         """Sets up additional things in the Environment that must happen
         after the Configure checks run."""

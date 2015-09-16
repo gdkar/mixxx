@@ -93,44 +93,27 @@ int ReadAheadManager::getNextSamples(double dRate, CSAMPLE* buffer, int requeste
     //qDebug() << "read" << m_iCurrentPosition << samples_read;
     return samples_read;
 }
-
-void ReadAheadManager::addRateControl(RateControl* pRateControl) {
-    m_pRateControl = pRateControl;
-}
-
+void ReadAheadManager::addRateControl(RateControl* pRateControl) {m_pRateControl = pRateControl;}
 // Not thread-save, call from engine thread only
 void ReadAheadManager::notifySeek(int iSeekPosition) {
     m_iCurrentPosition = iSeekPosition;
     m_readAheadLog.clear();
-
-    // TODO(XXX) notifySeek on the engine controls. EngineBuffer currently does
-    // a fine job of this so it isn't really necessary but eventually I think
-    // RAMAN should do this job. rryan 11/2011
-
-    // foreach (EngineControl* pControl, m_sEngineControls) {
-    //     pControl->notifySeek(iSeekPosition);
-    // }
 }
-
 void ReadAheadManager::hintReader(double dRate, HintVector* pHintList) {
-    bool in_reverse = dRate < 0;
+    auto in_reverse = dRate < 0;
     Hint current_position;
-
     // SoundTouch can read up to 2 chunks ahead. Always keep 2 chunks ahead in
     // cache.
-    int length_to_cache = 2 * CachingReaderChunk::kSamples;
-
+    auto length_to_cache = 2 * CachingReaderChunk::kSamples;
     current_position.length = length_to_cache;
     current_position.sample = in_reverse ?
             m_iCurrentPosition - length_to_cache :
             m_iCurrentPosition;
-
     // If we are trying to cache before the start of the track,
     // Then we don't need to cache because it's all zeros!
     if (current_position.sample < 0 &&
         current_position.sample + current_position.length < 0)
         return;
-
     // top priority, we need to read this data immediately
     current_position.priority = 1;
     pHintList->append(current_position);

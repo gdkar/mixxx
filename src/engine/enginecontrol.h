@@ -1,9 +1,7 @@
 // enginecontrol.h
 // Created 7/5/2009 by RJ Ryan (rryan@mit.edu)
 
-#ifndef ENGINECONTROL_H
-#define ENGINECONTROL_H
-
+_Pragma("once")
 #include <QObject>
 #include <QList>
 
@@ -113,4 +111,3 @@ class EngineControl : public QObject {
     ControlObjectSlave* m_numDecks = nullptr;
 };
 
-#endif /* ENGINECONTROL_H */

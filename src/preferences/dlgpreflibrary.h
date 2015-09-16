@@ -22,7 +22,7 @@
 #include <QWidget>
 #include <QFont>
 
-#include "ui_dlgpreflibrarydlg.h"
+#include "preferences/ui_dlgpreflibrarydlg.h"
 #include "configobject.h"
 #include "library/library.h"
 #include "preferences/dlgpreferencepage.h"

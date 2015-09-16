@@ -57,19 +57,15 @@ bool MixxxKeyboard::eventFilter(QObject*, QEvent* e) {
         // Run through list of active keys to see if the pressed key is already active
         // Just for returning true if we are consuming this key event
 
-        foreach (const KeyDownInformation& keyDownInfo, m_qActiveKeyList) {
-            if (keyDownInfo.keyId == keyId) {
-                return true;
-            }
+        for(auto & keyDownInfo: m_qActiveKeyList) {
+            if (keyDownInfo.keyId == keyId) {return true;}
         }
 
         QKeySequence ks = getKeySeq(ke);
         if (!ks.isEmpty()) {
             // Check if a shortcut is defined
             bool result = false;
-            for (QMultiHash<QKeySequence, ConfigKey>::const_iterator it =
-                         m_keySequenceToControlHash.find(ks);
-                 it != m_keySequenceToControlHash.end() && it.key() == ks; ++it) {
+            for (auto it = m_keySequenceToControlHash.find(ks); it != m_keySequenceToControlHash.end() && it.key() == ks; ++it) {
                 const ConfigKey& configKey = it.value();
                 if (configKey.group != "[KeyboardShortcuts]") {
                     ControlObject* control = ControlObject::getControl(configKey);
@@ -133,35 +129,22 @@ bool MixxxKeyboard::eventFilter(QObject*, QEvent* e) {
 }
 
 QKeySequence MixxxKeyboard::getKeySeq(QKeyEvent* e) {
-    QString modseq;
-    QKeySequence k;
-
+    auto modseq = QString{};
+    auto k = QKeySequence{};
     // TODO(XXX) check if we may simply return QKeySequence(e->modifiers()+e->key())
 
-    if (e->modifiers() & Qt::ShiftModifier)
-        modseq += "Shift+";
-
-    if (e->modifiers() & Qt::ControlModifier)
-        modseq += "Ctrl+";
-
-    if (e->modifiers() & Qt::AltModifier)
-        modseq += "Alt+";
-
-    if (e->modifiers() & Qt::MetaModifier)
-        modseq += "Meta+";
-
+    if (e->modifiers() & Qt::ShiftModifier)modseq += "Shift+";
+    if (e->modifiers() & Qt::ControlModifier)modseq += "Ctrl+";
+    if (e->modifiers() & Qt::AltModifier)modseq += "Alt+";
+    if (e->modifiers() & Qt::MetaModifier)modseq += "Meta+";
     if (e->key() >= 0x01000020 && e->key() <= 0x01000023) {
         // Do not act on Modifier only
         // avoid returning "khmer vowel sign ie (U+17C0)"
         return k;
     }
-
-    QString keyseq = QKeySequence(e->key()).toString();
+    auto keyseq = QKeySequence(e->key()).toString();
     k = QKeySequence(modseq + keyseq);
-
-    if (CmdlineArgs::Instance().getDeveloper()) {
-        qDebug() << "keyboard press: " << k.toString();
-    }
+    if (CmdlineArgs::Instance().getDeveloper()) {qDebug() << "keyboard press: " << k.toString();}
     return k;
 }
 
@@ -170,17 +153,11 @@ void MixxxKeyboard::setKeyboardConfig(ConfigObject<ConfigValueKbd>* pKbdConfigOb
     // invert the mapping to create an injection from key sequence to
     // ConfigKey. This allows a key sequence to trigger multiple controls in
     // Mixxx.
-    QHash<ConfigKey, ConfigValueKbd> keyboardConfig =
-            pKbdConfigObject->toHash();
-
+    auto keyboardConfig = pKbdConfigObject->toHash();
     m_keySequenceToControlHash.clear();
-    for (QHash<ConfigKey, ConfigValueKbd>::const_iterator it =
-                 keyboardConfig.begin(); it != keyboardConfig.end(); ++it) {
+    for (auto it = keyboardConfig.begin(); it != keyboardConfig.end(); ++it) {
         m_keySequenceToControlHash.insert(it.value().m_qKey, it.key());
     }
     m_pKbdConfigObject = pKbdConfigObject;
 }
-
-ConfigObject<ConfigValueKbd>* MixxxKeyboard::getKeyboardConfig() {
-    return m_pKbdConfigObject;
-}
+ConfigObject<ConfigValueKbd>* MixxxKeyboard::getKeyboardConfig() {return m_pKbdConfigObject;}

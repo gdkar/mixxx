@@ -54,7 +54,7 @@ class WOverview : public WWidget {
     QImage m_waveformImageScaled;
     WaveformSignalColors m_signalColors;
     // Hold the last visual sample processed to generate the pixmap
-    int m_actualCompletion;
+    double m_actualCompletion;
     bool m_pixmapDone;
     float m_waveformPeak;
     int m_diffGain;

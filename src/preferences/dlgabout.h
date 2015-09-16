@@ -18,7 +18,7 @@
 #ifndef DLGABOUT_H
 #define DLGABOUT_H
 
-#include "ui_dlgaboutdlg.h"
+#include "preferences/ui_dlgaboutdlg.h"
 #include "configobject.h"
 
 class QWidget;

@@ -1,13 +1,8 @@
-#ifndef DEFS_H
-#define DEFS_H
-
+_Pragma("once")
 // Used for returning errors from functions.
-enum Result {
-    OK = 0,
-    ERR = -1
-};
-
+typedef bool Result;
+const Result OK  = true;
+const Result ERR = false;
 // Maximum buffer length to each EngineObject::process call.
 const unsigned int MAX_BUFFER_LEN = 160000;
 
-#endif /* DEFS_H */

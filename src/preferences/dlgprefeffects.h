@@ -2,7 +2,7 @@
 #define DLGPREFEFFECTS_H
 
 #include "configobject.h"
-#include "ui_dlgprefeffectsdlg.h"
+#include "preferences/ui_dlgprefeffectsdlg.h"
 #include "preferences/dlgpreferencepage.h"
 
 class EffectsManager;

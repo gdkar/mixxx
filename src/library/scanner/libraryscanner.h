@@ -15,9 +15,7 @@
 *                                                                         *
 ***************************************************************************/
 
-#ifndef LIBRARYSCANNER_H
-#define LIBRARYSCANNER_H
-
+_Pragma("once")
 #include <QThread>
 #include <QThreadPool>
 #include <QList>
@@ -42,12 +40,10 @@
 #include "library/scanner/scannertask.h"
 #include "util/sandbox.h"
 #include "trackinfoobject.h"
-#include <gtest/gtest.h>
 
 class TrackCollection;
 
 class LibraryScanner : public QThread {
-    FRIEND_TEST(LibraryScannerTest, ScannerRoundtrip);
     Q_OBJECT
   public:
     LibraryScanner(QWidget* pParent, TrackCollection* collection, ConfigObject<ConfigValue>* pConfig);
@@ -129,5 +125,3 @@ class LibraryScanner : public QThread {
     // this is accessed main and LibraryScanner thread
     std::atomic<ScannerState> m_state{IDLE};
 };
-
-#endif

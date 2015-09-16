@@ -19,11 +19,10 @@ CoverArtDelegate::CoverArtDelegate(QObject *parent)
     connect(parent, SIGNAL(onlyCachedCoverArt(bool)), this, SLOT(slotOnlyCachedCoverArt(bool)));
     auto  pCache = CoverArtCache::instance();
     if (pCache) {
-        connect(pCache, SIGNAL(coverFound(const QObject*, int, const CoverInfo&, QPixmap, bool)),
-                this, SLOT(slotCoverFound(const QObject*, int, const CoverInfo&, QPixmap, bool)));
+        connect(pCache, SIGNAL(coverFound(const QObject*, int, const CoverInfo&, QPixmap, bool)),this, SLOT(slotCoverFound(const QObject*, int, const CoverInfo&, QPixmap, bool)));
     }
-    TrackModel* pTrackModel = nullptr;
-    QTableView* pTableView = nullptr;
+    auto pTrackModel = static_cast<TrackModel*>( nullptr);
+    auto pTableView = static_cast<QTableView*>( nullptr);
     if (auto tableView = qobject_cast<QTableView*>(parent)) {
         pTableView = tableView;
         pTrackModel = dynamic_cast<TrackModel*>(pTableView->model());

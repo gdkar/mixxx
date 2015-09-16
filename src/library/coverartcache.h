@@ -1,6 +1,4 @@
-#ifndef COVERARTCACHE_H
-#define COVERARTCACHE_H
-
+_Pragma("once")
 #include <QObject>
 #include <QPixmap>
 
@@ -44,6 +42,7 @@ class CoverArtCache : public QObject, public Singleton<CoverArtCache> {
         int desiredWidth = 0;
         bool signalWhenDone = false;
     };
+    virtual ~CoverArtCache();
   public slots:
     // Called when loadCover is complete in the main thread.
     void coverLoaded();
@@ -52,7 +51,7 @@ class CoverArtCache : public QObject, public Singleton<CoverArtCache> {
                     const CoverInfo& info, QPixmap pixmap, bool fromCache);
   protected:
     CoverArtCache();
-    virtual ~CoverArtCache();
+    friend class std::unique_ptr<CoverArtCache>;
     friend class Singleton<CoverArtCache>;
     // Load cover from path indicated in coverInfo. WARNING: This is run in a
     // worker thread.
@@ -67,5 +66,3 @@ class CoverArtCache : public QObject, public Singleton<CoverArtCache> {
   private:
     QSet<QPair<const QObject*, int> > m_runningRequests;
 };
-
-#endif // COVERARTCACHE_H

@@ -702,23 +702,19 @@ void LoopingControl::slotBeatLoop(double beats, bool keepStartPoint) {
 
     // O(n) search, but there are only ~10-ish beatloop controls so this is
     // fine.
-    foreach (BeatLoopingControl* pBeatLoopControl, m_beatLoops) {
+    for(auto  pBeatLoopControl: m_beatLoops) {
         if (pBeatLoopControl->getSize() == beats) {
             if (m_pActiveBeatLoop != pBeatLoopControl) {
-                if (m_pActiveBeatLoop) {
-                    m_pActiveBeatLoop->deactivate();
-                }
+                if (m_pActiveBeatLoop) {m_pActiveBeatLoop->deactivate();}
                 m_pActiveBeatLoop = pBeatLoopControl;
             }
             pBeatLoopControl->activate();
             break;
         }
     }
-
     // give loop_in and loop_out defaults so we can detect problems
-    int loop_in = -1;
-    int loop_out = -1;
-
+    auto loop_in = -1;
+    auto loop_out = -1;
     // For positive numbers we start from the current position/closest beat and
     // create the loop around X beats from there.
     if (beats > 0) {

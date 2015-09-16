@@ -20,7 +20,7 @@
 
 #include <QWidget>
 
-#include "ui_dlgprefnovinyldlg.h"
+#include "preferences/ui_dlgprefnovinyldlg.h"
 #include "configobject.h"
 #include "preferences/dlgpreferencepage.h"
 
