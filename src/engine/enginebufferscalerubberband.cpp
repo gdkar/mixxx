@@ -24,14 +24,11 @@ EngineBufferScaleRubberBand::EngineBufferScaleRubberBand(
           m_pRubberBand(nullptr),
           m_pReadAheadManager(pReadAheadManager) {
     qDebug() << "RubberBand version" << RUBBERBAND_VERSION;
-
     m_retrieve_buffer[0] = SampleUtil::alloc(MAX_BUFFER_LEN);
     m_retrieve_buffer[1] = SampleUtil::alloc(MAX_BUFFER_LEN);
-
     // m_iSampleRate defaults to 44100.
     initializeRubberBand(m_iSampleRate);
 }
-
 EngineBufferScaleRubberBand::~EngineBufferScaleRubberBand() {
     SampleUtil::free(m_buffer_back);
     SampleUtil::free(m_retrieve_buffer[0]);
@@ -51,10 +48,9 @@ void EngineBufferScaleRubberBand::initializeRubberBand(int iSampleRate) {
     // Setting the time ratio to a very high value will cause RubberBand
     // to preallocate buffers large enough to (almost certainly)
     // avoid memory reallocations during playback.
-    m_pRubberBand->setTimeRatio(2.0);
+    m_pRubberBand->setTimeRatio(10.0);
     m_pRubberBand->setTimeRatio(1.0);
 }
-
 void EngineBufferScaleRubberBand::setScaleParameters(double base_rate,double* pTempoRatio,double* pPitchRatio) {
     // Negative speed means we are going backwards. pitch does not affect
     // the playback direction.
@@ -66,7 +62,7 @@ void EngineBufferScaleRubberBand::setScaleParameters(double base_rate,double* pT
     // References:
     // https://bugs.launchpad.net/ubuntu/+bug/1263233
     // https://bitbucket.org/breakfastquay/rubberband/issue/4/sigfpe-zero-division-with-high-time-ratios
-    const double kMinSeekSpeed = 1.0 / 128.0;
+    const double kMinSeekSpeed = 1.0 / 1024.0;
     double speed_abs = std::abs(*pTempoRatio);
     if (speed_abs < kMinSeekSpeed) {
         // Let the caller know we ignored their speed.
@@ -74,7 +70,7 @@ void EngineBufferScaleRubberBand::setScaleParameters(double base_rate,double* pT
     }
     // RubberBand handles checking for whether the change in pitchScale is a
     // no-op.
-    double pitchScale = std::abs(base_rate * *pPitchRatio);
+    auto pitchScale = std::abs(base_rate * *pPitchRatio);
     if (pitchScale > 0) {
         //qDebug() << "EngineBufferScaleRubberBand setPitchScale" << *pitch << pitchScale;
         m_pRubberBand->setPitchScale(pitchScale);
@@ -112,48 +108,40 @@ void EngineBufferScaleRubberBand::setSampleRate(int iSampleRate) {
     m_iSampleRate = iSampleRate;
 }
 void EngineBufferScaleRubberBand::clear() {m_pRubberBand->reset();}
-size_t EngineBufferScaleRubberBand::retrieveAndDeinterleave(CSAMPLE* pBuffer,
-                                                            size_t frames) {
-    size_t frames_available = m_pRubberBand->available();
-    size_t frames_to_read = math_min(frames_available, frames);
-    size_t received_frames = m_pRubberBand->retrieve((float* const*)m_retrieve_buffer, frames_to_read);
-    for (size_t i = 0; i < received_frames; ++i) {
-        pBuffer[i*2] = m_retrieve_buffer[0][i];
-        pBuffer[i*2+1] = m_retrieve_buffer[1][i];
-    }
+size_t EngineBufferScaleRubberBand::retrieveAndDeinterleave(CSAMPLE* pBuffer,size_t frames) {
+    auto frames_available = m_pRubberBand->available();
+    auto frames_to_read = std::min<size_t>(frames_available, frames);
+    auto received_frames = m_pRubberBand->retrieve((float* const*)m_retrieve_buffer, frames_to_read);
+    SampleUtil::interleaveBuffer(pBuffer,m_retrieve_buffer[0],m_retrieve_buffer[1],received_frames);
     return received_frames;
 }
 void EngineBufferScaleRubberBand::deinterleaveAndProcess(const CSAMPLE* pBuffer, size_t frames, bool flush) {
-    for (size_t i = 0; i < frames; ++i) {
-        m_retrieve_buffer[0][i] = pBuffer[i*2];
-        m_retrieve_buffer[1][i] = pBuffer[i*2+1];
-    }
+    SampleUtil::deinterleaveBuffer(m_retrieve_buffer[0],m_retrieve_buffer[0],pBuffer,frames);
     m_pRubberBand->process((const float* const*)m_retrieve_buffer,frames, flush);
 }
 CSAMPLE* EngineBufferScaleRubberBand::getScaled(unsigned long buf_size) {
     // qDebug() << "EngineBufferScaleRubberBand::getScaled" << buf_size
     //          << "m_dSpeedAdjust" << m_dSpeedAdjust;
     m_samplesRead = 0.0;
-
     if (m_dBaseRate == 0 || m_dTempoRatio == 0) {
         SampleUtil::clear(m_buffer, buf_size);
         m_samplesRead = buf_size;
         return m_buffer;
     }
-    const int iNumChannels = 2;
+    const auto iNumChannels = 2;
     unsigned long total_received_frames = 0;
     unsigned long total_read_frames = 0;
 
-    unsigned long remaining_frames = buf_size/iNumChannels;
-    CSAMPLE* read = m_buffer;
-    bool last_read_failed = false;
-    bool break_out_after_retrieve_and_reset_rubberband = false;
+    auto remaining_frames = buf_size/iNumChannels;
+    auto  read = m_buffer;
+    auto  last_read_failed = false;
+    auto break_out_after_retrieve_and_reset_rubberband = false;
     while (remaining_frames > 0) {
         // ReadAheadManager will eventually read the requested frames with
         // enough calls to retrieveAndDeinterleave because CachingReader returns
         // zeros for reads that are not in cache. So it's safe to loop here
         // without any checks for failure in retrieveAndDeinterleave.
-        unsigned long received_frames = retrieveAndDeinterleave(read, remaining_frames);
+        auto received_frames = retrieveAndDeinterleave(read, remaining_frames);
         remaining_frames -= received_frames;
         total_received_frames += received_frames;
         read += received_frames * iNumChannels;
@@ -164,7 +152,7 @@ CSAMPLE* EngineBufferScaleRubberBand::getScaled(unsigned long buf_size) {
             m_pRubberBand->reset();
             break;
         }
-        size_t iLenFramesRequired = m_pRubberBand->getSamplesRequired();
+        auto iLenFramesRequired = m_pRubberBand->getSamplesRequired();
         if (iLenFramesRequired == 0) {
             // rubberband 1.3 (packaged up through Ubuntu Quantal) has a bug
             // where it can report 0 samples needed forever which leads us to an
@@ -176,15 +164,14 @@ CSAMPLE* EngineBufferScaleRubberBand::getScaled(unsigned long buf_size) {
         }
         //qDebug() << "iLenFramesRequired" << iLenFramesRequired;
         if (remaining_frames > 0 && iLenFramesRequired > 0) {
-            unsigned long iAvailSamples = m_pReadAheadManager
+            auto iAvailSamples = m_pReadAheadManager
                     ->getNextSamples(
                         // The value doesn't matter here. All that matters is we
                         // are going forward or backward.
                         (m_bBackwards ? -1.0 : 1.0) * m_dBaseRate * m_dTempoRatio,
                         m_buffer_back,
                         iLenFramesRequired * iNumChannels);
-            unsigned long iAvailFrames = iAvailSamples / iNumChannels;
-
+            auto iAvailFrames = iAvailSamples / iNumChannels;
             if (iAvailFrames > 0) {
                 last_read_failed = false;
                 total_read_frames += iAvailFrames;
@@ -215,6 +202,5 @@ CSAMPLE* EngineBufferScaleRubberBand::getScaled(unsigned long buf_size) {
     // time, then multiplying that by the ratio of unstretched time to stretched
     // time will get us the unstretched samples read.
     m_samplesRead = m_dBaseRate * m_dTempoRatio * total_received_frames * iNumChannels;
-
     return m_buffer;
 }

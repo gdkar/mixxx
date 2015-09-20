@@ -31,9 +31,7 @@ extern "C"{
 #include "vinylcontrol/defs_vinylcontrol.h"
 #include "sampleutil.h"
 #include "util/cmdlineargs.h"
-
 typedef PaError (*SetJackClientName)(const char *name);
-
 SoundManager::SoundManager(ConfigObject<ConfigValue> *pConfig, EngineMaster *pMaster)
         : m_pMaster(pMaster),
           m_pConfig(pConfig),
@@ -43,9 +41,9 @@ SoundManager::SoundManager(ConfigObject<ConfigValue> *pConfig, EngineMaster *pMa
     qDebug() << "PortAudio version:" << Pa_GetVersion() << "text:" << Pa_GetVersionText();
     // TODO(xxx) some of these ControlObject are not needed by soundmanager, or are unused here.
     // It is possible to take them out?
-    m_pControlObjectSoundStatusCO = new ControlObject(ConfigKey("[SoundManager]", "status"));
+    m_pControlObjectSoundStatusCO = new ControlObject(ConfigKey("[SoundManager]", "status"),this);
     m_pControlObjectSoundStatusCO->set(SOUNDMANAGER_DISCONNECTED);
-    m_pControlObjectVinylControlGainCO = new ControlObject(ConfigKey(VINYL_PREF_KEY, "gain"));
+    m_pControlObjectVinylControlGainCO = new ControlObject(ConfigKey(VINYL_PREF_KEY, "gain"),this);
     //Hack because PortAudio samplerate enumeration is slow as hell on Linux (ALSA dmix sucks, so we can't blame PortAudio)
     m_samplerates.push_back(44100);
     m_samplerates.push_back(48000);
@@ -63,10 +61,6 @@ SoundManager::~SoundManager() {
         Pa_Terminate();
         m_paInitialized = false;
     }
-    // vinyl control proxies and input buffers are freed in closeDevices, called
-    // by clearDeviceList -- bkgood
-    delete m_pControlObjectSoundStatusCO;
-    delete m_pControlObjectVinylControlGainCO;
 }
 QList<SoundDevice*> SoundManager::getDeviceList(QString filterAPI, bool bOutputDevices, bool bInputDevices) {
     //qDebug() << "SoundManager::getDeviceList";
@@ -249,9 +243,9 @@ Result SoundManager::setupDevices() {
             m_inputBuffers.append(aib.getBuffer());
             // Check if any AudioDestination is registered for this AudioInput
             // and call the onInputConnected method.
-            for (auto it = m_registeredDestinations.constFind(in);
-                 it != m_registeredDestinations.cend() && it.key() == in; ++it) {
-                it.value()->onInputConfigured(in);
+            for(auto it:m_registeredDestinations.values(in))
+            {
+              it->onInputConfigured(in);
             }
         }
         for(auto out: m_config.getOutputs().values(device->getInternalName())) {
@@ -267,7 +261,8 @@ Result SoundManager::setupDevices() {
             err = device->addOutput(aob) != SOUNDDEVICE_ERROR_OK ? ERR : OK;
             if (err != OK) goto closeAndError;
             if (out.getType() == AudioOutput::MASTER) { pNewMasterClockRef = device;}
-            else if ((out.getType() == AudioOutput::DECK || out.getType() == AudioOutput::BUS) && !pNewMasterClockRef) {
+            else if ((out.getType() == AudioOutput::DECK || out.getType() == AudioOutput::BUS) && !pNewMasterClockRef)
+            {
                 pNewMasterClockRef = device;
             }
             // Check if any AudioSource is registered for this AudioOutput and
@@ -299,7 +294,7 @@ Result SoundManager::setupDevices() {
         // the default of 2 sync buffers instead.
         if (CmdlineArgs::Instance().getSafeMode() && syncBuffers == 0) { syncBuffers = 2; }
         err = device->open(pNewMasterClockRef == device, syncBuffers);
-        if (err != OK) { goto closeAndError;}
+        if (err != OK) goto closeAndError;
         else {
             ++devicesOpened;
             if (isOutput) { ++outputDevicesOpened; }
@@ -361,8 +356,9 @@ void SoundManager::onDeviceOutputCallback(const unsigned int iFramesPerBuffer) {
 void SoundManager::pushInputBuffers(const QList<AudioInputBuffer>& inputs, const unsigned int iFramesPerBuffer) {
    for ( const auto &in : inputs ){
         auto  pInputBuffer = in.getBuffer();
-        for ( auto it = m_registeredDestinations.constFind(in),end=m_registeredDestinations.cend();it!=end&&it.key()==in;++it){
-            it.value()->receiveBuffer(in, pInputBuffer, iFramesPerBuffer);
+        for ( auto it: m_registeredDestinations.values(in))
+        {
+          it->receiveBuffer(in,pInputBuffer,iFramesPerBuffer);
         }
     }
 }
@@ -397,4 +393,7 @@ void SoundManager::setConfiguredDeckCount(int count) {
     checkConfig();
     m_config.writeToDisk();
 }
-int SoundManager::getConfiguredDeckCount() const { return m_config.getDeckCount(); }
+int SoundManager::getConfiguredDeckCount() const 
+{ 
+  return m_config.getDeckCount(); 
+}
