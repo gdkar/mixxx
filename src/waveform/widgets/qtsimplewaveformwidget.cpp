@@ -16,7 +16,7 @@
 #include "util/performancetimer.h"
 
 QtSimpleWaveformWidget::QtSimpleWaveformWidget(const char* group, QWidget* parent)
-        : QWidget(parent, SharedGLContext::getWidget()),
+        : QWidget(parent),
           WaveformWidgetAbstract(group) {
     addRenderer<WaveformRenderBackground>();
     addRenderer<WaveformRendererEndOfTrack>();
@@ -32,7 +32,7 @@ QtSimpleWaveformWidget::QtSimpleWaveformWidget(const char* group, QWidget* paren
     m_initSuccess = init();
 }
 QtSimpleWaveformWidget::~QtSimpleWaveformWidget() = default;
-void QtSimpleWaveformWidget::castToQWidget() {m_widget = static_cast<QWidget*>(static_cast<QGLWidget*>(this));}
+void QtSimpleWaveformWidget::castToQWidget() {m_widget = static_cast<QWidget*>(this);}
 void QtSimpleWaveformWidget::paintEvent(QPaintEvent *e) {
     QPainter painter(this);
     draw(&painter, e);

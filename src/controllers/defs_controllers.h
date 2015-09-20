@@ -8,16 +8,10 @@
 #include <QDir>
 #include "configobject.h"
 
-QString resourcePresetsPath(ConfigObject<ConfigValue>* pConfig) {
-    return QDir{pConfig->getResourcePath().append("/controllers/")}.absolutePath().append("/");
-}
+QString resourcePresetsPath(ConfigObject<ConfigValue>* pConfig);
 // Prior to Mixxx 1.11.0 presets were stored in ${SETTINGS_PATH}/midi.
-QString legacyUserPresetsPath(ConfigObject<ConfigValue>* pConfig) {
-    return QDir{pConfig->getSettingsPath().append("/midi/")}.absolutePath().append("/");
-}
-QString userPresetsPath(ConfigObject<ConfigValue>* pConfig) {
-    return QDir(pConfig->getSettingsPath().append("/controllers/")).absolutePath().append("/");
-}
+QString legacyUserPresetsPath(ConfigObject<ConfigValue>* pConfig);
+QString userPresetsPath(ConfigObject<ConfigValue>* pConfig);
 #define HID_PRESET_EXTENSION ".hid.xml"
 #define MIDI_PRESET_EXTENSION ".midi.xml"
 #define BULK_PRESET_EXTENSION ".bulk.xml"

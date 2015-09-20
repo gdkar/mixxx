@@ -82,7 +82,7 @@ WaveformWidgetFactory::WaveformWidgetFactory() :
         glFormat.setDirectRendering(true);
         glFormat.setDoubleBuffer(true);
         glFormat.setDepth(false);
-        glFormat.setVersion(3,3);
+        glFormat.setVersion(3,0);
         glFormat.setProfile(QGLFormat::CompatibilityProfile);
         // Disable waiting for vertical Sync
         // This can be enabled when using a single Threads for each QGLContext

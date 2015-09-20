@@ -450,6 +450,7 @@ class MixxxCore(Feature):
                    "anqueue/analyserwaveform.cpp",
                    "anqueue/analyserkey.cpp",
 
+                   "controllers/defs_controllers.cpp",
                    "controllers/controller.cpp",
                    "controllers/controllerengine.cpp",
                    "controllers/controllerenumerator.cpp",
