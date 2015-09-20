@@ -1,9 +1,7 @@
 // cachingreader.h
 // Created 7/9/2009 by RJ Ryan (rryan@mit.edu)
 
-#ifndef CACHINGREADER_H
-#define CACHINGREADER_H
-
+_Pragma("once")
 #include <QtDebug>
 #include <QList>
 #include <QVector>
@@ -47,7 +45,7 @@ typedef struct Hint {
 //    reallocate on every callback. resize(0) should work but a future developer
 //    may see a resize(0) and say "that's a silly way of writing clear()!" and
 //    replace it without realizing.
-typedef QVarLengthArray<Hint, 512> HintVector;
+typedef QVarLengthArray<Hint, 64> HintVector;
 
 // CachingReader provides a layer on top of a SoundSource for reading samples
 // from a file. Since we cannot do file I/O in the audio callback thread
@@ -85,7 +83,7 @@ class CachingReader : public QObject {
     // processed in the work thread, so the reader must be woken up via wake()
     // for this to take effect.
     virtual void newTrack(TrackPointer pTrack);
-    void setScheduler(EngineWorkerScheduler* pScheduler) { m_worker.setScheduler(pScheduler); }
+    virtual void setScheduler(EngineWorkerScheduler* pScheduler);
     const static int maximumCachingReaderChunksInMemory;
   signals:
     // Emitted once a new track is loaded and ready to be read from.
@@ -132,9 +130,7 @@ class CachingReader : public QObject {
     // The maximum readable frame index as reported by the worker.
     // This frame index references the frame that follows the last
     // frame with sample data.
-    SINT m_maxReadableFrameIndex;
+    SINT m_maxReadableFrameIndex = 0;
+    TrackPointer m_pTrack{nullptr};
     CachingReaderWorker m_worker;
 };
-
-
-#endif /* CACHINGREADER_H */

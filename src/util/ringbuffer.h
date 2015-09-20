@@ -22,7 +22,7 @@ public:
   , buffer     ( std::make_unique<T[]> ( bufferSize ) )
   {}
   virtual ~PaUtilRingBuffer ( ) = default;
-  virtual long getReadAvailable () const { return ( writeIndex.load() - readIndex.load() ) & bigMask ;}
+  virtual long getReadAvailable () const { return ( (writeIndex.load()&bigMask) - (readIndex.load()&bigMask) ) & bigMask ;}
   virtual long getWriteAvailable() const { return ( bufferSize - getReadAvailable () );}
   virtual void flush () { writeIndex.store ( 0 ); readIndex.store ( 0 ); }
   virtual long getWriteRegions   ( long elementCount, T **pData0, long *pSize0, T **pData1, long *pSize1 )
@@ -30,56 +30,62 @@ public:
     auto widx = writeIndex.load();
     auto ridx = readIndex.load();
     auto available = bufferSize - ((widx-ridx)&bigMask);
-    elementCount = std::min ( elementCount, available );
-    auto index = widx & smallMask;
-    if ( index + elementCount > bufferSize )
+    if((elementCount = std::min ( elementCount, available )))
     {
-      auto firstHalf = bufferSize - index;
-      *pData0 = (&buffer[index]);
-      *pSize0 = firstHalf;
-      *pData1 = (&buffer[0]);
-      *pSize1 = elementCount - firstHalf;
-    }
-    else
-    {
-      *pData0 = (&buffer[index]);
-      *pSize0 = elementCount;
-      *pData1 = nullptr;
-      *pSize1 = 0;
+      auto index = widx & smallMask;
+      if ( index + elementCount > bufferSize )
+      {
+        auto firstHalf = bufferSize - index;
+        *pData0 = (&buffer[index]);
+        *pSize0 = firstHalf;
+        *pData1 = (&buffer[0]);
+        *pSize1 = elementCount - firstHalf;
+      }
+      else
+      {
+        *pData0 = (&buffer[index]);
+        *pSize0 = elementCount;
+        *pData1 = nullptr;
+        *pSize1 = 0;
+      }
     }
     return elementCount;
   }
   virtual long advanceWriteIndex ( long elementCount )
   {
-    return (writeIndex.fetch_add ( elementCount ) + elementCount) & bigMask;
+    writeIndex.fetch_add ( elementCount );
+    return elementCount;
   }
   virtual long getReadRegions    ( long elementCount, T ** pData0, long *pSize0, T **pData1, long *pSize1 )
   {
     auto widx = writeIndex.load ();
     auto ridx = readIndex .load ();
     auto available = (widx-ridx) & bigMask;
-    elementCount = std::min(elementCount,available);
-    auto index = ridx & smallMask;
-    if ( index + elementCount > bufferSize )
+    if((elementCount = std::min(elementCount,available)))
     {
-      auto firstHalf = bufferSize - index;
-      *pData0 = (&buffer[index]);
-      *pSize0 = firstHalf;
-      *pData1 = (&buffer[0]);
-      *pSize1 = elementCount - firstHalf;
-    }
-    else
-    {
-      *pData0 = (&buffer[index]);
-      *pSize0 = elementCount;
-      *pData1 = nullptr;
-      *pSize1 = 0;
+      auto index = ridx & smallMask;
+      if ( index + elementCount > bufferSize )
+      {
+        auto firstHalf = bufferSize - index;
+        *pData0 = (&buffer[index]);
+        *pSize0 = firstHalf;
+        *pData1 = (&buffer[0]);
+        *pSize1 = elementCount - firstHalf;
+      }
+      else
+      {
+        *pData0 = (&buffer[index]);
+        *pSize0 = elementCount;
+        *pData1 = nullptr;
+        *pSize1 = 0;
+      }
     }
     return elementCount;
   }
   virtual long advanceReadIndex  ( long elementCount )
   {
-    return (readIndex.fetch_add ( elementCount ) + elementCount ) & bigMask;
+    readIndex.fetch_add ( elementCount );
+    return elementCount;
   }
   virtual long write ( const T *data, long elementCount )
   {

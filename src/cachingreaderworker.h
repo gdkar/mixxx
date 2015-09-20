@@ -1,6 +1,4 @@
-#ifndef CACHINGREADERWORKER_H
-#define CACHINGREADERWORKER_H
-
+_Pragma("once")
 #include <QtDebug>
 #include <QMutex>
 #include <QSemaphore>
@@ -15,15 +13,17 @@
 #include "util/fifo.h"
 
 
-typedef struct CachingReaderChunkReadRequest {
-    CachingReaderChunk* chunk;
-
+struct CachingReaderChunkReadRequest {
+    CachingReaderChunk* chunk = nullptr;
+    TrackPointer        track { };
+    CachingReaderChunkReadRequest() = default;
     explicit CachingReaderChunkReadRequest(
-            CachingReaderChunk* chunkArg = nullptr)
-        : chunk(chunkArg) {
+            CachingReaderChunk* chunkArg,
+            TrackPointer pTrack)
+        : chunk(chunkArg),
+          track(pTrack){
     }
-} CachingReaderChunkReadRequest;
-
+};
 enum ReaderStatus {
     INVALID,
     TRACK_NOT_LOADED,
@@ -32,16 +32,11 @@ enum ReaderStatus {
     CHUNK_READ_EOF,
     CHUNK_READ_INVALID
 };
-
-typedef struct ReaderStatusUpdate {
-    ReaderStatus status;
-    CachingReaderChunk* chunk;
-    SINT maxReadableFrameIndex;
-    ReaderStatusUpdate()
-        : status(INVALID)
-        , chunk(nullptr)
-        , maxReadableFrameIndex(0) {
-    }
+struct ReaderStatusUpdate {
+    ReaderStatus status = INVALID;
+    CachingReaderChunk* chunk = nullptr;
+    SINT maxReadableFrameIndex = 0;
+    ReaderStatusUpdate() = default;
     ReaderStatusUpdate(
             ReaderStatus statusArg,
             CachingReaderChunk* chunkArg,
@@ -50,8 +45,7 @@ typedef struct ReaderStatusUpdate {
         , chunk(chunkArg)
         , maxReadableFrameIndex(maxReadableFrameIndexArg) {
     }
-} ReaderStatusUpdate;
-
+};
 class CachingReaderWorker : public EngineWorker {
     Q_OBJECT
   public:
@@ -82,6 +76,7 @@ class CachingReaderWorker : public EngineWorker {
     // lock to touch.
     QMutex m_newTrackMutex;
     TrackPointer m_newTrack{nullptr};
+    TrackPointer m_pTrack{nullptr};
     // Internal method to load a track. Emits trackLoaded when finished.
     void loadTrack(const TrackPointer& pTrack);
     ReaderStatusUpdate processReadRequest( const CachingReaderChunkReadRequest& request);
@@ -95,4 +90,3 @@ class CachingReaderWorker : public EngineWorker {
     SINT m_maxReadableFrameIndex = -1;
     std::atomic<bool> m_stop{false};
 };
-#endif /* CACHINGREADERWORKER_H */

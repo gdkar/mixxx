@@ -88,12 +88,12 @@ CachingReaderChunkForOwner::CachingReaderChunkForOwner(CSAMPLE* sampleBuffer)
 void CachingReaderChunkForOwner::init(SINT index) {
     DEBUG_ASSERT(READ_PENDING != m_state);
     CachingReaderChunk::init(index);
-    m_state = READY;
+    m_state.store(READY);
 }
 void CachingReaderChunkForOwner::free() {
     DEBUG_ASSERT(READ_PENDING != m_state);
     CachingReaderChunk::init(kInvalidIndex);
-    m_state = FREE;
+    m_state.store(FREE);
 }
 void CachingReaderChunkForOwner::insertIntoListBefore(CachingReaderChunkForOwner* pBefore) {
     DEBUG_ASSERT(!m_pNext);
@@ -124,4 +124,32 @@ void CachingReaderChunkForOwner::removeFromList(CachingReaderChunkForOwner** ppH
     // ...and adjust head/tail.
     if (ppHead && (this == *ppHead)) { *ppHead = pNext; }
     if (ppTail && (this == *ppTail)) { *ppTail = pPrev;}
+}
+ SINT CachingReaderChunk::indexForFrame(SINT frameIndex) {
+    DEBUG_ASSERT(0 <= frameIndex);
+    return frameIndex / kFrames;
+}
+SINT CachingReaderChunk::frameForIndex(SINT chunkIndex) {
+    DEBUG_ASSERT(0 <= chunkIndex);
+    return chunkIndex * kFrames;
+}
+SINT CachingReaderChunk::frames2samples(SINT frames) { return frames * kChannels; }
+SINT CachingReaderChunk::samples2frames(SINT samples) {
+    DEBUG_ASSERT(0 == (samples % kChannels));
+    return samples / kChannels;
+}
+SINT CachingReaderChunk::getIndex() const { return m_index; }
+bool CachingReaderChunk::isValid() const { return 0 <= getIndex(); }
+SINT CachingReaderChunk::getFrameCount() const { return m_frameCount; }
+CachingReaderChunk::~CachingReaderChunk() = default;
+
+CachingReaderChunkForOwner::State CachingReaderChunkForOwner::getState() const { return m_state.load(); }
+CachingReaderChunkForOwner::~CachingReaderChunkForOwner() = default;
+void CachingReaderChunkForOwner::giveToWorker() {
+    DEBUG_ASSERT(READY ==  m_state.load());
+    m_state.store(READ_PENDING);
+}
+void CachingReaderChunkForOwner::takeFromWorker() {
+    DEBUG_ASSERT(READ_PENDING == m_state.load());
+    m_state.store(READY);
 }

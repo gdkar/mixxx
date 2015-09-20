@@ -428,7 +428,7 @@ class MixxxCore(Feature):
                    "engine/enginemicrophone.cpp",
                    "engine/enginedeck.cpp",
                    "engine/engineaux.cpp",
-                   "engine/channelmixer_autogen.cpp",
+                   "engine/channelmixer.cpp",
 
                    "engine/enginecontrol.cpp",
                    "engine/ratecontrol.cpp",

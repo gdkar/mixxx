@@ -25,10 +25,19 @@ class FIFO : public PaUtilRingBuffer<DataType>{
     FIFO&operator = ( const FIFO& ) = delete;
     FIFO&operator = ( FIFO && ) = default;
     explicit FIFO(long size)
-            : PaUtilRingBuffer<DataType> ( size ) { m_spaceAvailable.release ( getWriteAvailable () );}
+            : PaUtilRingBuffer<DataType> ( size ) 
+    { 
+      m_spaceAvailable.release ( getWriteAvailable () );
+    }
     virtual ~FIFO() = default;
-    long readAvailable() const { return getReadAvailable () ; }
-    long writeAvailable() const { return getWriteAvailable () ; }
+    long readAvailable() const 
+    { 
+      return getReadAvailable () ; 
+    }
+    long writeAvailable() const 
+    { 
+      return getWriteAvailable () ; 
+    }
     long read ( DataType *pData, long count ) override {
       auto n = PaUtilRingBuffer<DataType>::read (pData, count);
       m_spaceAvailable.release(n);
@@ -48,22 +57,27 @@ class FIFO : public PaUtilRingBuffer<DataType>{
           {
             auto n = PaUtilRingBuffer<DataType>::write ( pData + written, count - written );
             written += n;
-            m_spaceAvailable.acquire ( n - (written < count ));
+            if ( written < count ) m_spaceAvailable.acquire ( n );
+            else                   m_spaceAvailable.acquire ( n - 1 );
           }
         }
     }
-    long aquireWriteRegions(long count, DataType** dataPtr0, long* sizePtr0, DataType** dataPtr1, long* sizePtr1) {
+    long aquireWriteRegions(long count, DataType** dataPtr0, long* sizePtr0, DataType** dataPtr1, long* sizePtr1)
+    {
         return getWriteRegions ( count, dataPtr0, sizePtr0, dataPtr1, sizePtr1 );
     }
-    long releaseWriteRegions(long count) {
+    long releaseWriteRegions(long count) 
+    {
         auto n = advanceWriteIndex ( count );
         m_spaceAvailable.tryAcquire ( count);
         return n;
     }
-    long aquireReadRegions(long count, DataType** dataPtr0, long * sizePtr0, DataType** dataPtr1, long * sizePtr1) {
+    long aquireReadRegions(long count, DataType** dataPtr0, long * sizePtr0, DataType** dataPtr1, long * sizePtr1)
+    {
       return getReadRegions ( count, dataPtr0, sizePtr0, dataPtr1, sizePtr1 );
     }
-    long releaseReadRegions(long count) {
+    long releaseReadRegions(long count)
+    {
       auto n =  advanceReadIndex ( count );
       m_spaceAvailable.release ( count );
       return n;
@@ -88,10 +102,16 @@ class MessagePipe {
 
     // Returns the number of ReceiverMessageType messages waiting to be read by
     // the receiver. Non-blocking.
-    long messageCount() const {return m_sender_messages.readAvailable();}
+    long messageCount() const 
+    {
+      return m_sender_messages.readAvailable();
+    }
     // Read a ReceiverMessageType written by the receiver addressed to the
     // sender. Non-blocking.
-    long readMessages(ReceiverMessageType* messages, long count) {return m_sender_messages.read(messages, count);}
+    long readMessages(ReceiverMessageType* messages, long count) 
+    {
+      return m_sender_messages.read(messages, count);
+    }
     // Writes up to 'count' messages from the 'message' array to the receiver
     // and returns the number of successfully written messages. If
     // serializeWrites is active, this method is blocking.

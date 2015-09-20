@@ -19,7 +19,9 @@ void ChannelMixer::mixChannels(
     if(gainCache.m_fadeout){
       newGain = 0;
       gainCache.m_fadeout = false;
-    }else{ newGain = gainCalculator.getGain(pChannel); }
+    }else{
+      newGain = gainCalculator.getGain(pChannel);
+    }
     gainCache.m_gain = newGain;
     auto pBuffer = pChannel->m_pBuffer;
     SampleUtil::copy1WithGain(pOutput,pBuffer,newGain,iBufferSize);
@@ -31,7 +33,9 @@ void ChannelMixer::mixChannels(
       if(gainCache1.m_fadeout){
         newGain = 0;
         gainCache1.m_fadeout = false;
-      }else{ newGain = gainCalculator.getGain(pChannel); }
+      }else{
+        newGain = gainCalculator.getGain(pChannel);
+      }
       gainCache1.m_gain = newGain;
       pBuffer = pChannel->m_pBuffer;
       SampleUtil::copy1WithGainAdding(pOutput,pBuffer,newGain,iBufferSize);
@@ -56,7 +60,9 @@ void ChannelMixer::mixChannelsRamping(
     if(gainCache.m_fadeout){
       newGain = 0;
       gainCache.m_fadeout = false;
-    }else{ newGain = gainCalculator.getGain(pChannel); }
+    }else{
+      newGain = gainCalculator.getGain(pChannel);
+    }
     gainCache.m_gain = newGain;
     auto pBuffer = pChannel->m_pBuffer;
     SampleUtil::copy1WithRampingGain(pOutput,pBuffer,oldGain,newGain,iBufferSize);
@@ -69,7 +75,9 @@ void ChannelMixer::mixChannelsRamping(
       if(gainCache1.m_fadeout){
         newGain = 0;
         gainCache1.m_fadeout = false;
-      }else{ newGain = gainCalculator.getGain(pChannel); }
+      }else{
+        newGain = gainCalculator.getGain(pChannel);
+      }
       gainCache1.m_gain = newGain;
       pBuffer = pChannel->m_pBuffer;
       SampleUtil::copy1WithRampingGainAdding(pOutput,pBuffer,oldGain,newGain,iBufferSize);

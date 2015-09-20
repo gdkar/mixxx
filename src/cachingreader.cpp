@@ -32,8 +32,8 @@ const SINT kDefaultHintSamples = 1024 * CachingReaderChunk::kChannels;
 const int CachingReader::maximumCachingReaderChunksInMemory = (1<<23) / (8192 * 2 * sizeof(float));
 CachingReader::CachingReader(QString group, ConfigObject<ConfigValue>* config)
         : m_pConfig(config),
-          m_chunkReadRequestFIFO(1024),
-          m_readerStatusFIFO(1024),
+          m_chunkReadRequestFIFO(256),
+          m_readerStatusFIFO(256),
           m_readerStatus(INVALID),
           m_mruCachingReaderChunk(nullptr),
           m_lruCachingReaderChunk(nullptr),
@@ -63,7 +63,7 @@ CachingReader::~CachingReader() {
 }
 void CachingReader::freeChunk(CachingReaderChunkForOwner* pChunk) {
     DEBUG_ASSERT(pChunk->getState() != CachingReaderChunkForOwner::READ_PENDING);
-    const auto removed = m_allocatedCachingReaderChunks.remove(pChunk->getIndex());
+    auto removed = m_allocatedCachingReaderChunks.remove(pChunk->getIndex());
     // We'll tolerate not being in allocatedCachingReaderChunks,
     // because sometime you free a chunk right after you allocated it.
     DEBUG_ASSERT(removed <= 1);
@@ -72,10 +72,13 @@ void CachingReader::freeChunk(CachingReaderChunkForOwner* pChunk) {
     m_freeChunks.push_back(pChunk);
 }
 void CachingReader::freeAllChunks() {
-    for (CachingReaderChunkForOwner* pChunk: m_chunks) {
+    for (auto pChunk: m_chunks) {
         // We will receive CHUNK_READ_INVALID for all pending chunk reads
         // which should free the chunks individually.
-        if (pChunk->getState() == CachingReaderChunkForOwner::READ_PENDING) { continue; }
+        if (pChunk->getState() == CachingReaderChunkForOwner::READ_PENDING) 
+        { 
+          continue; 
+        }
         if (pChunk->getState() != CachingReaderChunkForOwner::FREE) {
             pChunk->removeFromList( &m_mruCachingReaderChunk, &m_lruCachingReaderChunk);
             pChunk->free();
@@ -132,6 +135,7 @@ CachingReaderChunkForOwner* CachingReader::lookupChunkAndFreshen(SINT chunkIndex
     return pChunk;
 }
 void CachingReader::newTrack(TrackPointer pTrack) {
+    m_pTrack = pTrack;
     m_worker.newTrack(pTrack);
     m_worker.workReady();
 }
@@ -188,8 +192,8 @@ int CachingReader::read(int sample, int numSamples, CSAMPLE* buffer) {
     // i.e. if the frame index points a region before the first
     // track sample.
     if (0 > frameIndex) {
-        const auto prerollFrames = std::min<SINT>(numFrames, 0 - frameIndex);
-        const auto prerollSamples = CachingReaderChunk::frames2samples(prerollFrames);
+        auto prerollFrames = std::min<SINT>(numFrames, 0 - frameIndex);
+        auto prerollSamples = CachingReaderChunk::frames2samples(prerollFrames);
         std::fill_n(buffer,prerollSamples,0);
         buffer += prerollSamples;
         samplesRead += prerollSamples;
@@ -208,7 +212,7 @@ int CachingReader::read(int sample, int numSamples, CSAMPLE* buffer) {
         if (maxReadableFrameIndex > frameIndex) {
             // The intersection between the readable samples from the track
             // and the requested samples is not empty, so start reading.
-            const auto firstCachingReaderChunkIndex = CachingReaderChunk::indexForFrame(frameIndex);
+            auto firstCachingReaderChunkIndex = CachingReaderChunk::indexForFrame(frameIndex);
             auto lastCachingReaderChunkIndex = CachingReaderChunk::indexForFrame(maxReadableFrameIndex - 1);
             for (auto chunkIndex = firstCachingReaderChunkIndex; chunkIndex <= lastCachingReaderChunkIndex; ++chunkIndex) {
                 auto  pChunk = lookupChunkAndFreshen(chunkIndex);
@@ -231,22 +235,22 @@ int CachingReader::read(int sample, int numSamples, CSAMPLE* buffer) {
                 }
                 DEBUG_ASSERT(0 < maxReadableFrameIndex);
                 lastCachingReaderChunkIndex = CachingReaderChunk::indexForFrame(maxReadableFrameIndex - 1);
-                const auto  chunkFrameIndex = CachingReaderChunk::frameForIndex(chunkIndex);
+                auto  chunkFrameIndex = CachingReaderChunk::frameForIndex(chunkIndex);
                 DEBUG_ASSERT(chunkFrameIndex <= frameIndex);
                 DEBUG_ASSERT((chunkIndex == firstCachingReaderChunkIndex) || (chunkFrameIndex == frameIndex));
-                const auto chunkFrameOffset = frameIndex - chunkFrameIndex;
+                auto chunkFrameOffset = frameIndex - chunkFrameIndex;
                 DEBUG_ASSERT(chunkFrameOffset >= 0);
-                const auto chunkFrameCount = math_min( pChunk->getFrameCount(), maxReadableFrameIndex - chunkFrameIndex);
+                auto chunkFrameCount = math_min( pChunk->getFrameCount(), maxReadableFrameIndex - chunkFrameIndex);
                 if (chunkFrameCount < chunkFrameOffset) {
                     // No more readable data available from this chunk (and
                     // consequently all following chunks). Exit the loop and
                     // fill the remaining buffer with silence.
                     break;
                 }
-                const auto framesToCopy = chunkFrameCount - chunkFrameOffset;
+                auto framesToCopy = chunkFrameCount - chunkFrameOffset;
                 DEBUG_ASSERT(framesToCopy >= 0);
-                const auto chunkSampleOffset = CachingReaderChunk::frames2samples(chunkFrameOffset);
-                const auto samplesToCopy = CachingReaderChunk::frames2samples(framesToCopy);
+                auto chunkSampleOffset = CachingReaderChunk::frames2samples(chunkFrameOffset);
+                auto samplesToCopy = CachingReaderChunk::frames2samples(framesToCopy);
                 pChunk->copySamples(buffer, chunkSampleOffset, samplesToCopy);
                 buffer += samplesToCopy;
                 samplesRead += samplesToCopy;
@@ -280,8 +284,8 @@ void CachingReader::hintAndMaybeWake(const HintVector& hintList) {
             qDebug() << "ERROR: Negative hint length. Ignoring.";
             continue;
         }
-        const auto hintFrame = CachingReaderChunk::samples2frames(hint.sample);
-        const auto hintFrameCount = CachingReaderChunk::samples2frames(hint.length);
+        auto hintFrame = CachingReaderChunk::samples2frames(hint.sample);
+        auto hintFrameCount = CachingReaderChunk::samples2frames(hint.length);
         auto minReadableFrameIndex = hintFrame;
         auto maxReadableFrameIndex = hintFrame + hintFrameCount;
         Mixxx::AudioSource::clampFrameInterval(minReadableFrameIndex, maxReadableFrameIndex, m_maxReadableFrameIndex);
@@ -297,11 +301,11 @@ void CachingReader::hintAndMaybeWake(const HintVector& hintList) {
                     qDebug() << "ERROR: Couldn't allocate spare CachingReaderChunk to make CachingReaderChunkReadRequest.";
                     continue;
                 }
-                auto request = CachingReaderChunkReadRequest(pChunk);
+                auto request = CachingReaderChunkReadRequest(pChunk,m_pTrack);
                 pChunk->giveToWorker();
                 // qDebug() << "Requesting read of chunk" << current << "into" << pChunk;
                 // qDebug() << "Requesting read into " << request.chunk->data;
-                if (m_chunkReadRequestFIFO.write(&request, 1) != 1) {
+                if (!m_chunkReadRequestFIFO.write(&request, 1)) {
                     qWarning() << "ERROR: Could not submit read request for " << chunkIndex;
                     pChunk->takeFromWorker();
                     freeChunk(pChunk);
@@ -316,4 +320,8 @@ void CachingReader::hintAndMaybeWake(const HintVector& hintList) {
     }
     // If there are chunks to be read, wake up.
     if (shouldWake) { m_worker.workReady(); }
+}
+void CachingReader::setScheduler(EngineWorkerScheduler* pScheduler) 
+{ 
+  m_worker.setScheduler(pScheduler);
 }

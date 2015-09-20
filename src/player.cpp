@@ -119,7 +119,7 @@ void Player::slotLoadTrack(TrackPointer track, bool bPlay) {
         connect(m_pLoadedTrack.data(), SIGNAL(bpmUpdated(double)),m_pBPM, SLOT(set(double)));
         connect(m_pLoadedTrack.data(), SIGNAL(keyUpdated(double)),m_pKey, SLOT(set(double)));
         // Listen for updates to the file's Replay Gain
-        connect(m_pLoadedTrack.data(), SIGNAL(ReplayGainUpdated(double)),this, SLOT(slotSetReplayGain(double)));
+        connect(m_pLoadedTrack.data(), SIGNAL(replayGainUpdated(double)),this, SLOT(slotSetReplayGain(double)));
     }
     // Request a new track from the reader
     emit(loadTrack(track, bPlay));
