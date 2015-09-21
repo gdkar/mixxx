@@ -46,24 +46,15 @@ WTrackTableView::WTrackTableView(QWidget * parent,
     // Give a NULL parent because otherwise it inherits our style which can make
     // it unreadable. Bug #673411
     m_pTrackInfo = new DlgTrackInfo(NULL, m_DlgTagFetcher);
-    connect(m_pTrackInfo, SIGNAL(next()),
-            this, SLOT(slotNextTrackInfo()));
-    connect(m_pTrackInfo, SIGNAL(previous()),
-            this, SLOT(slotPrevTrackInfo()));
-    connect(&m_DlgTagFetcher, SIGNAL(next()),
-            this, SLOT(slotNextDlgTagFetcher()));
-    connect(&m_DlgTagFetcher, SIGNAL(previous()),
-            this, SLOT(slotPrevDlgTagFetcher()));
+    connect(m_pTrackInfo, SIGNAL(next()),this, SLOT(slotNextTrackInfo()));
+    connect(m_pTrackInfo, SIGNAL(previous()),this, SLOT(slotPrevTrackInfo()));
+    connect(&m_DlgTagFetcher, SIGNAL(next()),this, SLOT(slotNextDlgTagFetcher()));
+    connect(&m_DlgTagFetcher, SIGNAL(previous()),this, SLOT(slotPrevDlgTagFetcher()));
+    connect(&m_loadTrackMapper, SIGNAL(mapped(QString)),this, SLOT(loadSelectionToGroup(QString)));
 
-    connect(&m_loadTrackMapper, SIGNAL(mapped(QString)),
-            this, SLOT(loadSelectionToGroup(QString)));
-
-    connect(&m_deckMapper, SIGNAL(mapped(QString)),
-            this, SLOT(loadSelectionToGroup(QString)));
-    connect(&m_samplerMapper, SIGNAL(mapped(QString)),
-            this, SLOT(loadSelectionToGroup(QString)));
-    connect(&m_BpmMapper, SIGNAL(mapped(int)),
-            this, SLOT(slotScaleBpm(int)));
+    connect(&m_deckMapper, SIGNAL(mapped(QString)),this, SLOT(loadSelectionToGroup(QString)));
+    connect(&m_samplerMapper, SIGNAL(mapped(QString)),this, SLOT(loadSelectionToGroup(QString)));
+    connect(&m_BpmMapper, SIGNAL(mapped(int)),this, SLOT(slotScaleBpm(int)));
 
     m_pNumSamplers = new ControlObjectSlave("[Master]", "num_samplers",this);
     m_pNumDecks = new ControlObjectSlave("[Master]", "num_decks",this);
@@ -81,10 +72,8 @@ WTrackTableView::WTrackTableView(QWidget * parent,
     m_pBPMMenu->setTitle(tr("BPM Options"));
     m_pCoverMenu = new WCoverArtMenu(this);
     m_pCoverMenu->setTitle(tr("Cover Art"));
-    connect(m_pCoverMenu, SIGNAL(coverArtSelected(const CoverArt&)),
-            this, SLOT(slotCoverArtSelected(const CoverArt&)));
-    connect(m_pCoverMenu, SIGNAL(reloadCoverArt()),
-            this, SLOT(slotReloadCoverArt()));
+    connect(m_pCoverMenu, SIGNAL(coverArtSelected(const CoverArt&)),this, SLOT(slotCoverArtSelected(const CoverArt&)));
+    connect(m_pCoverMenu, SIGNAL(reloadCoverArt()),this, SLOT(slotReloadCoverArt()));
 
 
     // Disable editing
@@ -93,37 +82,24 @@ WTrackTableView::WTrackTableView(QWidget * parent,
     // Create all the context m_pMenu->actions (stuff that shows up when you
     //right-click)
     createActions();
-
     //Connect slots and signals to make the world go 'round.
-    connect(this, SIGNAL(doubleClicked(const QModelIndex &)),
-            this, SLOT(slotMouseDoubleClicked(const QModelIndex &)));
-
-    connect(&m_playlistMapper, SIGNAL(mapped(int)),
-            this, SLOT(addSelectionToPlaylist(int)));
-    connect(&m_crateMapper, SIGNAL(mapped(int)),
-            this, SLOT(addSelectionToCrate(int)));
+    connect(this, SIGNAL(doubleClicked(const QModelIndex &)),this, SLOT(slotMouseDoubleClicked(const QModelIndex &)));
+    connect(&m_playlistMapper, SIGNAL(mapped(int)),this, SLOT(addSelectionToPlaylist(int)));
+    connect(&m_crateMapper, SIGNAL(mapped(int)),this, SLOT(addSelectionToCrate(int)));
 
     m_pCOTGuiTick = new ControlObjectSlave("[Master]", "guiTick50ms");
     m_pCOTGuiTick->connectValueChanged(this, SLOT(slotGuiTick50ms(double)));
 
-    connect(this, SIGNAL(scrollValueChanged(int)),
-            this, SLOT(slotScrollValueChanged(int)));
+    connect(this, SIGNAL(scrollValueChanged(int)),this, SLOT(slotScrollValueChanged(int)));
 
-    QShortcut *setFocusShortcut = new QShortcut(
-        QKeySequence(tr("ESC", "Focus")), this);
-    connect(setFocusShortcut, SIGNAL(activated()),
-            this, SLOT(setFocus()));
+    QShortcut *setFocusShortcut = new QShortcut(QKeySequence(tr("ESC", "Focus")), this);
+    connect(setFocusShortcut, SIGNAL(activated()),this, SLOT(setFocus()));
 }
-
 WTrackTableView::~WTrackTableView() {
     qDebug() << "~WTrackTableView()";
-    WTrackTableViewHeader* pHeader =
-            dynamic_cast<WTrackTableViewHeader*>(horizontalHeader());
-    if (pHeader) {
-        pHeader->saveHeaderState();
-    }
+    auto pHeader =dynamic_cast<WTrackTableViewHeader*>(horizontalHeader());
+    if (pHeader)  pHeader->saveHeaderState();
     delete m_pTrackInfo;
-
     delete m_pReloadMetadataAct;
     delete m_pReloadMetadataFromMusicBrainzAct;
     delete m_pAddToPreviewDeck;
@@ -163,13 +139,8 @@ void WTrackTableView::enableCachedOnly() {
     }
     m_lastUserActionNanos = Time::elapsed();
 }
-
-void WTrackTableView::slotScrollValueChanged(int) {
-    enableCachedOnly();
-}
-
-void WTrackTableView::selectionChanged(const QItemSelection& selected,
-                                       const QItemSelection& deselected) {
+void WTrackTableView::slotScrollValueChanged(int) {enableCachedOnly();}
+void WTrackTableView::selectionChanged(const QItemSelection& selected,const QItemSelection& deselected) {
     m_selectionChangedSinceLastGuiTick = true;
     enableCachedOnly();
     QTableView::selectionChanged(selected, deselected);
@@ -180,46 +151,33 @@ void WTrackTableView::slotGuiTick50ms(double) {
     // we load un-cached cover arts as well.
     qint64 timeDeltaNanos = Time::elapsed() - m_lastUserActionNanos;
     if (m_loadCachedOnly && timeDeltaNanos > 100000000) {
-
         // Show the currently selected track in the large cover art view. Doing
         // this in selectionChanged slows down scrolling performance so we wait
         // until the user has stopped interacting first.
         if (m_selectionChangedSinceLastGuiTick) {
-            const QModelIndexList indices = selectionModel()->selectedRows();
+            auto indices = selectionModel()->selectedRows();
             if (indices.size() > 0 && indices.last().isValid()) {
-                TrackModel* trackModel = getTrackModel();
+                auto trackModel = getTrackModel();
                 if (trackModel) {
-                    TrackPointer pTrack = trackModel->getTrack(indices.last());
-                    if (pTrack) {
-                        emit(trackSelected(pTrack));
-                    }
+                    auto pTrack = trackModel->getTrack(indices.last());
+                    if (pTrack) emit(trackSelected(pTrack));
                 }
-            } else {
-                emit(trackSelected(TrackPointer()));
-            }
+            } else  emit(trackSelected(TrackPointer()));
             m_selectionChangedSinceLastGuiTick = false;
         }
-
         // This allows CoverArtDelegate to request that we load covers from disk
         // (as opposed to only serving them from cache).
         emit(onlyCachedCoverArt(false));
         m_loadCachedOnly = false;
     }
 }
-
 // slot
 void WTrackTableView::loadTrackModel(QAbstractItemModel *model) {
     //qDebug() << "WTrackTableView::loadTrackModel()" << model;
 
-    TrackModel* trackModel = dynamic_cast<TrackModel*>(model);
-
-    DEBUG_ASSERT_AND_HANDLE(model) {
-        return;
-    }
-    DEBUG_ASSERT_AND_HANDLE(trackModel) {
-        return;
-    }
-
+    auto  trackModel = dynamic_cast<TrackModel*>(model);
+    DEBUG_ASSERT_AND_HANDLE(model) {return;}
+    DEBUG_ASSERT_AND_HANDLE(trackModel) {return;}
     /* If the model has not changed
      * there's no need to exchange the headers
      * this will cause a small GUI freeze
@@ -230,7 +188,6 @@ void WTrackTableView::loadTrackModel(QAbstractItemModel *model) {
         doSortByColumn(horizontalHeader()->sortIndicatorSection());
         return;
     }
-
     // The "coverLocation" and "hash" column numbers are required very often
     // by slotLoadCoverArt(). As this value will not change when the model
     // still the same, we must avoid doing hundreds of "fieldIndex" calls
@@ -245,18 +202,14 @@ void WTrackTableView::loadTrackModel(QAbstractItemModel *model) {
     setVisible(false);
 
     // Save the previous track model's header state
-    WTrackTableViewHeader* oldHeader =
-            dynamic_cast<WTrackTableViewHeader*>(horizontalHeader());
-    if (oldHeader) {
-        oldHeader->saveHeaderState();
-    }
-
+    auto  oldHeader =dynamic_cast<WTrackTableViewHeader*>(horizontalHeader());
+    if (oldHeader) oldHeader->saveHeaderState();
     // rryan 12/2009 : Due to a bug in Qt, in order to switch to a model with
     // different columns than the old model, we have to create a new horizontal
     // header. Also, for some reason the WTrackTableView has to be hidden or
     // else problems occur. Since we parent the WtrackTableViewHeader's to the
     // WTrackTableView, they are automatically deleted.
-    WTrackTableViewHeader* header = new WTrackTableViewHeader(Qt::Horizontal, this);
+    auto header = new WTrackTableViewHeader(Qt::Horizontal, this);
 
     // WTF(rryan) The following saves on unnecessary work on the part of
     // WTrackTableHeaderView. setHorizontalHeader() calls setModel() on the
@@ -266,7 +219,7 @@ void WTrackTableView::loadTrackModel(QAbstractItemModel *model) {
     // WTrackTableViewHeader, so this is wasteful. Setting a temporary
     // QHeaderView here saves on setModel() calls. Since we parent the
     // QHeaderView to the WTrackTableView, it is automatically deleted.
-    QHeaderView* tempHeader = new QHeaderView(Qt::Horizontal, this);
+    auto tempHeader = new QHeaderView(Qt::Horizontal, this);
     /* Tobias Rafreider: DO NOT SET SORTING TO TRUE during header replacement
      * Otherwise, setSortingEnabled(1) will immediately trigger sortByColumn()
      * For some reason this will cause 4 select statements in series
@@ -278,10 +231,8 @@ void WTrackTableView::loadTrackModel(QAbstractItemModel *model) {
      *
      * Fixes Bug #672762
      */
-
     setSortingEnabled(false);
     setHorizontalHeader(tempHeader);
-
     setModel(model);
     setHorizontalHeader(header);
     header->setMovable(true);
@@ -293,14 +244,13 @@ void WTrackTableView::loadTrackModel(QAbstractItemModel *model) {
     // Initialize all column-specific things
     for (int i = 0; i < model->columnCount(); ++i) {
         // Setup delegates according to what the model tells us
-        QAbstractItemDelegate* delegate = trackModel->delegateForColumn(i, this);
+        auto delegate = trackModel->delegateForColumn(i, this);
         // We need to delete the old delegates, since the docs say the view will
         // not take ownership of them.
-        QAbstractItemDelegate* old_delegate = itemDelegateForColumn(i);
+        auto old_delegate = itemDelegateForColumn(i);
         // If delegate is NULL, it will unset the delegate for the column
         setItemDelegateForColumn(i, delegate);
         delete old_delegate;
-
         // Show or hide the column based on whether it should be shown or not.
         if (trackModel->isColumnInternal(i)) {
             //qDebug() << "Hiding column" << i;
@@ -317,44 +267,34 @@ void WTrackTableView::loadTrackModel(QAbstractItemModel *model) {
             horizontalHeader()->hideSection(i);
         }
     }
-
     if (m_sorting) {
         // NOTE: Should be a UniqueConnection but that requires Qt 4.6
-        connect(horizontalHeader(), SIGNAL(sortIndicatorChanged(int, Qt::SortOrder)),
-                this, SLOT(doSortByColumn(int)), Qt::AutoConnection);
-
+        connect(horizontalHeader(), SIGNAL(sortIndicatorChanged(int, Qt::SortOrder)),this, SLOT(doSortByColumn(int)), Qt::AutoConnection);
         // Stupid hack that assumes column 0 is never visible, but this is a weak
         // proxy for "there was a saved column sort order"
         if (horizontalHeader()->sortIndicatorSection() > 0) {
             // Sort by the saved sort section and order. This line sorts the
             // TrackModel and in turn generates a select()
-            horizontalHeader()->setSortIndicator(horizontalHeader()->sortIndicatorSection(),
-                                                 horizontalHeader()->sortIndicatorOrder());
+            horizontalHeader()->setSortIndicator(horizontalHeader()->sortIndicatorSection(),horizontalHeader()->sortIndicatorOrder());
         } else {
             // No saved order is present. Use the TrackModel's default sort order.
             int sortColumn = trackModel->defaultSortColumn();
             Qt::SortOrder sortOrder = trackModel->defaultSortOrder();
-
             // If the TrackModel has an invalid or internal column as its default
             // sort, find the first non-internal column and sort by that.
-            while (sortColumn < 0 || trackModel->isColumnInternal(sortColumn)) {
-                sortColumn++;
-            }
+            while (sortColumn < 0 || trackModel->isColumnInternal(sortColumn)) sortColumn++;
             // This line sorts the TrackModel and in turn generates a select()
             horizontalHeader()->setSortIndicator(sortColumn, sortOrder);
         }
     }
-
     // Set up drag and drop behavior according to whether or not the track
     // model says it supports it.
-
     // Defaults
     setAcceptDrops(true);
     setDragDropMode(QAbstractItemView::DragOnly);
     // Always enable drag for now (until we have a model that doesn't support
     // this.)
     setDragEnabled(true);
-
     if (modelHasCapabilities(TrackModel::TRACKMODELCAPS_RECEIVEDROPS)) {
         setDragDropMode(QAbstractItemView::DragDrop);
         setDropIndicatorShown(true);
@@ -388,45 +328,36 @@ void WTrackTableView::createActions() {
     connect(m_pPurgeAct, SIGNAL(triggered()), this, SLOT(slotPurge()));
 
     m_pPropertiesAct = new QAction(tr("Properties"), this);
-    connect(m_pPropertiesAct, SIGNAL(triggered()),
-            this, SLOT(slotShowTrackInfo()));
+    connect(m_pPropertiesAct, SIGNAL(triggered()),this, SLOT(slotShowTrackInfo()));
 
     m_pFileBrowserAct = new QAction(tr("Open in File Browser"), this);
-    connect(m_pFileBrowserAct, SIGNAL(triggered()),
-            this, SLOT(slotOpenInFileBrowser()));
+    connect(m_pFileBrowserAct, SIGNAL(triggered()),this, SLOT(slotOpenInFileBrowser()));
 
     m_pAutoDJAct = new QAction(tr("Add to Auto-DJ Queue (bottom)"), this);
     connect(m_pAutoDJAct, SIGNAL(triggered()), this, SLOT(slotSendToAutoDJ()));
 
     m_pAutoDJTopAct = new QAction(tr("Add to Auto-DJ Queue (top)"), this);
-    connect(m_pAutoDJTopAct, SIGNAL(triggered()),
-            this, SLOT(slotSendToAutoDJTop()));
+    connect(m_pAutoDJTopAct, SIGNAL(triggered()),this, SLOT(slotSendToAutoDJTop()));
 
     m_pReloadMetadataAct = new QAction(tr("Reload Metadata from File"), this);
-    connect(m_pReloadMetadataAct, SIGNAL(triggered()),
-            this, SLOT(slotReloadTrackMetadata()));
+    connect(m_pReloadMetadataAct, SIGNAL(triggered()),this, SLOT(slotReloadTrackMetadata()));
 
     m_pReloadMetadataFromMusicBrainzAct = new QAction(tr("Get Metadata from MusicBrainz"),this);
-    connect(m_pReloadMetadataFromMusicBrainzAct, SIGNAL(triggered()),
-            this, SLOT(slotShowDlgTagFetcher()));
+    connect(m_pReloadMetadataFromMusicBrainzAct, SIGNAL(triggered()),this, SLOT(slotShowDlgTagFetcher()));
 
     m_pAddToPreviewDeck = new QAction(tr("Load to Preview Deck"), this);
     // currently there is only one preview deck so just map it here.
     QString previewDeckGroup = PlayerManager::groupForPreviewDeck(0);
     m_deckMapper.setMapping(m_pAddToPreviewDeck, previewDeckGroup);
-    connect(m_pAddToPreviewDeck, SIGNAL(triggered()),
-            &m_deckMapper, SLOT(map()));
+    connect(m_pAddToPreviewDeck, SIGNAL(triggered()),&m_deckMapper, SLOT(map()));
 
     m_pResetPlayedAct = new QAction(tr("Reset Play Count"), this);
-    connect(m_pResetPlayedAct, SIGNAL(triggered()),
-            this, SLOT(slotResetPlayed()));
+    connect(m_pResetPlayedAct, SIGNAL(triggered()),this, SLOT(slotResetPlayed()));
 
     m_pBpmLockAction = new QAction(tr("Lock BPM"), this);
     m_pBpmUnlockAction = new QAction(tr("Unlock BPM"), this);
-    connect(m_pBpmLockAction, SIGNAL(triggered()),
-            this, SLOT(slotLockBpm()));
-    connect(m_pBpmUnlockAction, SIGNAL(triggered()),
-            this, SLOT(slotUnlockBpm()));
+    connect(m_pBpmLockAction, SIGNAL(triggered()),this, SLOT(slotLockBpm()));
+    connect(m_pBpmUnlockAction, SIGNAL(triggered()),this, SLOT(slotUnlockBpm()));
 
     //new BPM actions
     m_pBpmDoubleAction = new QAction(tr("Double BPM"), this);
@@ -439,18 +370,13 @@ void WTrackTableView::createActions() {
     m_BpmMapper.setMapping(m_pBpmTwoThirdsAction, TWOTHIRDS);
     m_BpmMapper.setMapping(m_pBpmThreeFourthsAction, THREEFOURTHS);
 
-    connect(m_pBpmDoubleAction, SIGNAL(triggered()),
-            &m_BpmMapper, SLOT(map()));
-    connect(m_pBpmHalveAction, SIGNAL(triggered()),
-            &m_BpmMapper, SLOT(map()));
-    connect(m_pBpmTwoThirdsAction, SIGNAL(triggered()),
-            &m_BpmMapper, SLOT(map()));
-    connect(m_pBpmThreeFourthsAction, SIGNAL(triggered()),
-            &m_BpmMapper, SLOT(map()));
+    connect(m_pBpmDoubleAction, SIGNAL(triggered()),&m_BpmMapper, SLOT(map()));
+    connect(m_pBpmHalveAction, SIGNAL(triggered()),&m_BpmMapper, SLOT(map()));
+    connect(m_pBpmTwoThirdsAction, SIGNAL(triggered()),&m_BpmMapper, SLOT(map()));
+    connect(m_pBpmThreeFourthsAction, SIGNAL(triggered()),&m_BpmMapper, SLOT(map()));
 
     m_pClearBeatsAction = new QAction(tr("Clear BPM and Beatgrid"), this);
-    connect(m_pClearBeatsAction, SIGNAL(triggered()),
-            this, SLOT(slotClearBeats()));
+    connect(m_pClearBeatsAction, SIGNAL(triggered()),this, SLOT(slotClearBeats()));
 }
 
 // slot
@@ -479,7 +405,6 @@ void WTrackTableView::slotMouseDoubleClicked(const QModelIndex &index) {
             break;
     }
 }
-
 void WTrackTableView::loadSelectionToGroup(QString group, bool play) {
     QModelIndexList indices = selectionModel()->selectedRows();
     if (indices.size() > 0) {
@@ -493,36 +418,28 @@ void WTrackTableView::loadSelectionToGroup(QString group, bool play) {
                 return;
             }
         }
-        QModelIndex index = indices.at(0);
-        TrackModel* trackModel = getTrackModel();
+        auto index = indices.at(0);
+        auto trackModel = getTrackModel();
         TrackPointer pTrack;
-        if (trackModel &&
-                (pTrack = trackModel->getTrack(index))) {
+        if (trackModel && (pTrack = trackModel->getTrack(index))) {
             emit(loadTrackToPlayer(pTrack, group, play));
         }
     }
 }
-
 void WTrackTableView::slotRemove() {
-    QModelIndexList indices = selectionModel()->selectedRows();
+    auto indices = selectionModel()->selectedRows();
     if (indices.size() > 0) {
-        TrackModel* trackModel = getTrackModel();
-        if (trackModel) {
-            trackModel->removeTracks(indices);
-        }
+        auto  trackModel = getTrackModel();
+        if (trackModel)  trackModel->removeTracks(indices);
     }
 }
-
 void WTrackTableView::slotPurge() {
-    QModelIndexList indices = selectionModel()->selectedRows();
+    auto indices = selectionModel()->selectedRows();
     if (indices.size() > 0) {
-        TrackModel* trackModel = getTrackModel();
-        if (trackModel) {
-            trackModel->purgeTracks(indices);
-        }
+        auto trackModel = getTrackModel();
+        if (trackModel) trackModel->purgeTracks(indices);
     }
 }
-
 void WTrackTableView::slotOpenInFileBrowser() {
     auto trackModel = getTrackModel();
     if (!trackModel)return;

@@ -1,7 +1,5 @@
 #include "engine/effects/engineeffect.h"
 #include "sampleutil.h"
-
-
 EngineEffect::EngineEffect(const EffectManifest& manifest,
                            const QSet<ChannelHandleAndGroup>& registeredChannels,
                            EffectInstantiatorPointer pInstantiator)
@@ -81,32 +79,19 @@ void EngineEffect::process(const ChannelHandle& handle,
                            const EffectProcessor::EnableState enableState,
                            const GroupFeatureState& groupFeatures) {
     auto effectiveEnableState = m_enableState;
-    if (enableState == EffectProcessor::DISABLING) {
-        effectiveEnableState = EffectProcessor::DISABLING;
-    } else if (enableState == EffectProcessor::ENABLING) {
-        effectiveEnableState = EffectProcessor::ENABLING;
-    }
+    if (enableState == EffectProcessor::DISABLING) effectiveEnableState = EffectProcessor::DISABLING;
+    else if (enableState == EffectProcessor::ENABLING) effectiveEnableState = EffectProcessor::ENABLING;
     m_pProcessor->process(handle, pInput, pOutput, numSamples, sampleRate, effectiveEnableState, groupFeatures);
     if (!m_effectRampsFromDry) {
         // the effect does not fade, so we care for it
         if (effectiveEnableState == EffectProcessor::DISABLING) {
             // Fade out (fade to dry signal)
-            SampleUtil::copy2WithRampingGain(pOutput,
-                    pInput, 0.0, 1.0,
-                    pOutput, 1.0, 0.0,
-                    numSamples);
+            SampleUtil::copy2WithRampingGain(pOutput,pInput, 0.0, 1.0,pOutput, 1.0, 0.0,numSamples);
         } else if (effectiveEnableState == EffectProcessor::ENABLING) {
             // Fade in (fade to wet signal)
-            SampleUtil::copy2WithRampingGain(pOutput,
-                    pInput, 1.0, 0.0,
-                    pOutput, 0.0, 1.0,
-                    numSamples);
+            SampleUtil::copy2WithRampingGain(pOutput,pInput, 1.0, 0.0,pOutput, 0.0, 1.0,numSamples);
         }
     }
-
-    if (m_enableState == EffectProcessor::DISABLING) {
-        m_enableState = EffectProcessor::DISABLED;
-    } else if (m_enableState == EffectProcessor::ENABLING) {
-        m_enableState = EffectProcessor::ENABLED;
-    }
+    if (m_enableState == EffectProcessor::DISABLING) m_enableState = EffectProcessor::DISABLED;
+    else if (m_enableState == EffectProcessor::ENABLING)  m_enableState = EffectProcessor::ENABLED;
 }

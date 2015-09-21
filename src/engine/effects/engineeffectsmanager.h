@@ -1,6 +1,4 @@
-#ifndef ENGINEEFFECTSMANAGER_H
-#define ENGINEEFFECTSMANAGER_H
-
+_Pragma("once")
 #include <QScopedPointer>
 
 #include "util/types.h"
@@ -40,4 +38,3 @@ class EngineEffectsManager : public EffectsRequestHandler {
     QList<EngineEffectChain*> m_chains;
     QList<EngineEffect*> m_effects;
 };
-#endif /* ENGINEEFFECTSMANAGER_H */

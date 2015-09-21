@@ -11,7 +11,7 @@ EngineEffectsManager::EngineEffectsManager(EffectsResponsePipe* pResponsePipe)
     m_chains.reserve(256);
     m_effects.reserve(256);
 }
-EngineEffectsManager::~EngineEffectsManager() {}
+EngineEffectsManager::~EngineEffectsManager() = default;
 void EngineEffectsManager::onCallbackStart() {
     EffectsRequest* request = nullptr;
     while (m_pResponsePipe->readMessages(&request, 1) > 0) {
@@ -128,9 +128,8 @@ void EngineEffectsManager::process(const ChannelHandle& handle,
 }
 bool EngineEffectsManager::addEffectRack(EngineEffectRack* pRack) {
     if (m_racks.contains(pRack)) {
-        if (kEffectDebugOutput) {
+        if (kEffectDebugOutput) 
             qDebug() << debugString() << "WARNING: EffectRack already added to EngineEffectsManager:" << pRack->number();
-        }
         return false;
     }
     m_racks.append(pRack);

@@ -140,61 +140,37 @@ void WSpinny::setup(QDomNode node, const SkinContext& context) {
     // Set images
     QDomElement backPathElement = context.selectElement(node, "PathBackground");
     m_pBgImage = WImageStore::getImage(context.getPixmapSource(backPathElement));
-    Paintable::DrawMode bgmode = context.selectScaleMode(backPathElement,
-                                                         Paintable::FIXED);
+    Paintable::DrawMode bgmode = context.selectScaleMode(backPathElement,Paintable::FIXED);
     if (m_pBgImage && !m_pBgImage->isNull() && bgmode == Paintable::FIXED) {
         setFixedSize(m_pBgImage->size());
-    } else {
-        setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
-    }
-    m_pMaskImage = WImageStore::getImage(context.getPixmapSource(
-                        context.selectNode(node, "PathMask")));
-    m_pFgImage = WImageStore::getImage(context.getPixmapSource(
-                        context.selectNode(node,"PathForeground")));
+    } else setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
+    m_pMaskImage = WImageStore::getImage(context.getPixmapSource(context.selectNode(node, "PathMask")));
+    m_pFgImage = WImageStore::getImage(context.getPixmapSource(context.selectNode(node,"PathForeground")));
     if (m_pFgImage && !m_pFgImage->isNull()) {
-        m_fgImageScaled = m_pFgImage->scaled(
-                size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        m_fgImageScaled = m_pFgImage->scaled(size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
     }
-    m_pGhostImage = WImageStore::getImage(context.getPixmapSource(
-                        context.selectNode(node,"PathGhost")));
+    m_pGhostImage = WImageStore::getImage(context.getPixmapSource(context.selectNode(node,"PathGhost")));
     if (m_pGhostImage && !m_pGhostImage->isNull()) {
-        m_ghostImageScaled = m_pGhostImage->scaled(
-                size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        m_ghostImageScaled = m_pGhostImage->scaled(size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
     }
-
     m_bShowCover = context.selectBool(node, "ShowCover", false);
-
 #ifdef __VINYLCONTROL__
     // Find the vinyl input we should listen to reports about.
-    if (m_pVCManager) {
-        m_iVinylInput = m_pVCManager->vinylInputFromGroup(m_group);
-    }
+    if (m_pVCManager)  m_iVinylInput = m_pVCManager->vinylInputFromGroup(m_group);
     m_iVinylScopeSize = MIXXX_VINYL_SCOPE_SIZE;
     m_qImage = QImage(m_iVinylScopeSize, m_iVinylScopeSize, QImage::Format_ARGB32);
     // fill with transparent black
     m_qImage.fill(qRgba(0,0,0,0));
 #endif
-
-    m_pPlay = new ControlObjectSlave(
-            m_group, "play");
-    m_pPlayPos = new ControlObjectSlave(
-            m_group, "playposition");
+    m_pPlay = new ControlObjectSlave(m_group, "play");
+    m_pPlayPos = new ControlObjectSlave(m_group, "playposition");
     m_pVisualPlayPos = VisualPlayPosition::getVisualPlayPosition(m_group);
-    m_pTrackSamples = new ControlObjectSlave(
-            m_group, "track_samples");
-    m_pTrackSampleRate = new ControlObjectSlave(
-            m_group, "track_samplerate");
-
-    m_pScratchToggle = new ControlObjectSlave(
-            m_group, "scratch_position_enable");
-    m_pScratchPos = new ControlObjectSlave(
-            m_group, "scratch_position");
-
-    m_pSlipEnabled = new ControlObjectSlave(
-            m_group, "slip_enabled");
-    connect(m_pSlipEnabled, SIGNAL(valueChanged(double)),
-            this, SLOT(updateSlipEnabled(double)));
-
+    m_pTrackSamples = new ControlObjectSlave(m_group, "track_samples");
+    m_pTrackSampleRate = new ControlObjectSlave(m_group, "track_samplerate");
+    m_pScratchToggle = new ControlObjectSlave(m_group, "scratch_position_enable");
+    m_pScratchPos = new ControlObjectSlave(m_group, "scratch_position");
+    m_pSlipEnabled = new ControlObjectSlave(m_group, "slip_enabled");
+    connect(m_pSlipEnabled, SIGNAL(valueChanged(double)),this, SLOT(updateSlipEnabled(double)));
 #ifdef __VINYLCONTROL__
     m_pVinylControlSpeedType = new ControlObjectSlave(
             m_group, "vinylcontrol_speed_type");
@@ -203,24 +179,14 @@ void WSpinny::setup(QDomNode node, const SkinContext& context) {
         //Initialize the rotational speed.
         this->updateVinylControlSpeed(m_pVinylControlSpeedType->get());
     }
-
-    m_pVinylControlEnabled = new ControlObjectSlave(
-            m_group, "vinylcontrol_enabled");
-    connect(m_pVinylControlEnabled, SIGNAL(valueChanged(double)),
-            this, SLOT(updateVinylControlEnabled(double)));
-
-    m_pSignalEnabled = new ControlObjectSlave(
-            m_group, "vinylcontrol_signal_enabled");
-    connect(m_pSignalEnabled, SIGNAL(valueChanged(double)),
-            this, SLOT(updateVinylControlSignalEnabled(double)));
+    m_pVinylControlEnabled = new ControlObjectSlave(m_group, "vinylcontrol_enabled");
+    connect(m_pVinylControlEnabled, SIGNAL(valueChanged(double)),this, SLOT(updateVinylControlEnabled(double)));
+    m_pSignalEnabled = new ControlObjectSlave(m_group, "vinylcontrol_signal_enabled");
+    connect(m_pSignalEnabled, SIGNAL(valueChanged(double)),this, SLOT(updateVinylControlSignalEnabled(double)));
 
     //Match the vinyl control's set RPM so that the spinny widget rotates at the same
     //speed as your physical decks, if you're using vinyl control.
-    connect(m_pVinylControlSpeedType, SIGNAL(valueChanged(double)),
-            this, SLOT(updateVinylControlSpeed(double)));
-
-
-
+    connect(m_pVinylControlSpeedType, SIGNAL(valueChanged(double)),this, SLOT(updateVinylControlSpeed(double)));
 #else
     //if no vinyl control, just call it 33
     this->updateVinylControlSpeed(33.0);
@@ -229,9 +195,7 @@ void WSpinny::setup(QDomNode node, const SkinContext& context) {
 
 void WSpinny::maybeUpdate() {
     if (!m_pVisualPlayPos.isNull()) {
-        m_pVisualPlayPos->getPlaySlipAt(0,
-                                        &m_dAngleCurrentPlaypos,
-                                        &m_dGhostAngleCurrentPlaypos);
+        m_pVisualPlayPos->getPlaySlipAt(0,&m_dAngleCurrentPlaypos,&m_dGhostAngleCurrentPlaypos);
     }
     if (m_dAngleCurrentPlaypos != m_dAngleLastPlaypos ||
             m_dGhostAngleCurrentPlaypos != m_dGhostAngleLastPlaypos ||
@@ -239,7 +203,6 @@ void WSpinny::maybeUpdate() {
         repaint();
     }
 }
-
 void WSpinny::slotLoadTrack(TrackPointer pTrack) {
     if (m_loadedTrack) {
         disconnect(m_loadedTrack.data(), SIGNAL(coverArtUpdated()),

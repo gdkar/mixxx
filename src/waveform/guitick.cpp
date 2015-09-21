@@ -29,4 +29,6 @@ void GuiTick::process() {
     }
 }
 // static
-double GuiTick::cpuTimeLastTick() {return m_cpuTimeLastTick;}
+double GuiTick::cpuTimeLastTick() {
+  return m_cpuTimeLastTick;
+}

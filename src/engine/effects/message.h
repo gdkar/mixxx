@@ -1,6 +1,4 @@
-#ifndef MESSAGE_H
-#define MESSAGE_H
-
+_Pragma("once")
 #include <QVariant>
 #include <QString>
 #include <QtGlobal>
@@ -19,26 +17,21 @@ struct EffectsRequest {
         // Messages for EngineEffectsManager
         ADD_EFFECT_RACK = 0,
         REMOVE_EFFECT_RACK,
-
         // Messages for EngineEffectRack
         ADD_CHAIN_TO_RACK,
         REMOVE_CHAIN_FROM_RACK,
-
         // Messages for EngineEffectChain
         SET_EFFECT_CHAIN_PARAMETERS,
         ADD_EFFECT_TO_CHAIN,
         REMOVE_EFFECT_FROM_CHAIN,
         ENABLE_EFFECT_CHAIN_FOR_CHANNEL,
         DISABLE_EFFECT_CHAIN_FOR_CHANNEL,
-
         // Messages for EngineEffect
         SET_EFFECT_PARAMETERS,
         SET_PARAMETER_PARAMETERS,
-
         // Must come last.
         NUM_REQUEST_TYPES
     };
-
     EffectsRequest()
             : type(NUM_REQUEST_TYPES),
               request_id(-1),
@@ -170,5 +163,3 @@ class EffectsRequestHandler {
         const EffectsRequest& message,
         EffectsResponsePipe* pResponsePipe) = 0;
 };
-
-#endif /* MESSAGE_H */
