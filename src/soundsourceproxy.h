@@ -26,20 +26,20 @@ public:
         if (m_pSoundSource) { return m_pSoundSource->getType();}
         else { return QString(); }
     }
-    Result parseTrackMetadataAndCoverArt( Mixxx::TrackMetadata* pTrackMetadata, QImage* pCoverArt) const override {
+    bool parseTrackMetadataAndCoverArt( Mixxx::TrackMetadata* pTrackMetadata, QImage* pCoverArt) const override {
         if (m_pSoundSource) {
             return m_pSoundSource->parseTrackMetadataAndCoverArt( pTrackMetadata, pCoverArt);
-        } else { return ERR; }
+        } else { return false; }
     }
     // Only for  backward compatibility.
     // Should be removed when no longer needed.
-    Result parseTrackMetadata(Mixxx::TrackMetadata* pTrackMetadata) { return parseTrackMetadataAndCoverArt(pTrackMetadata, NULL) ;}
+    bool parseTrackMetadata(Mixxx::TrackMetadata* pTrackMetadata) { return parseTrackMetadataAndCoverArt(pTrackMetadata, NULL) ;}
     // Only for  backward compatibility.
     // Should be removed when no longer needed.
     QImage parseCoverArt() const {
         QImage coverArt;
-        const Result result = parseTrackMetadataAndCoverArt(NULL, &coverArt);
-        return (result == OK) ? coverArt : QImage();
+        const auto result = parseTrackMetadataAndCoverArt(NULL, &coverArt);
+        return (result ) ? coverArt : QImage();
     }
     // Opening the audio data through the proxy will
     // update the some metadata of the track object.

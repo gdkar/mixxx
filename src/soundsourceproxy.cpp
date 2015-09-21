@@ -90,7 +90,7 @@ Mixxx::AudioSourcePointer SoundSourceProxy::openAudioSource(const Mixxx::AudioSo
         qDebug() << "No SoundSource available";
         return m_pAudioSource;
     }
-    if (OK != m_pSoundSource->open(audioSrcCfg)) {
+    if (!m_pSoundSource->open(audioSrcCfg)) {
         qWarning() << "Failed to open SoundSource";
         return m_pAudioSource;
     }

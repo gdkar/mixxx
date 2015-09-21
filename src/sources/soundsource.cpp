@@ -15,18 +15,18 @@ SoundSource::SoundSource(const QUrl& url, const QString& type)
           m_type(type) {
     DEBUG_ASSERT(getUrl().isValid());
 }
-Result SoundSource::open(const AudioSourceConfig& audioSrcCfg) {
+bool SoundSource::open(const AudioSourceConfig& audioSrcCfg) {
     close(); // reopening is not supported
-    Result result;
+    auto result = false;
     try { result = tryOpen(audioSrcCfg); }
     catch (...) {
         close();
         throw;
     }
-    if (OK != result) { close(); }
+    if (!result) { close(); }
     return result;
 }
-Result SoundSource::parseTrackMetadataAndCoverArt( TrackMetadata* pTrackMetadata, QImage* pCoverArt) const {
+bool SoundSource::parseTrackMetadataAndCoverArt( TrackMetadata* pTrackMetadata, QImage* pCoverArt) const {
     return readTrackMetadataAndCoverArtFromFile(pTrackMetadata, pCoverArt, getLocalFileName());
 }
 } //namespace Mixxx

@@ -182,12 +182,12 @@ void SoundManager::queryDevices() {
     // now tell the prefs that we updated the device list -- bkgood
     emit(devicesUpdated());
 }
-Result SoundManager::setupDevices() {
+bool SoundManager::setupDevices() {
     // NOTE(rryan): Big warning: This function is concurrent with calls to
     // pushBuffer and onDeviceOutputCallback until closeDevices() below.
     qDebug() << "SoundManager::setupDevices()";
     m_pControlObjectSoundStatusCO->set(SOUNDMANAGER_CONNECTING);
-    Result err = OK;
+    auto err = true;
     // NOTE(rryan): Do not clear m_pClkRefDevice here. If we didn't touch the
     // SoundDevice that is the clock reference, then it is safe to leave it as
     // it was. Clearing it causes the engine to stop being processed which
@@ -235,8 +235,8 @@ Result SoundManager::setupDevices() {
             // TODO(bkgood) look into allocating this with the frames per
             // buffer value from SMConfig
             auto aib = AudioInputBuffer {in, SampleUtil::alloc(MAX_BUFFER_LEN)};
-            err = device->addInput(aib) != SOUNDDEVICE_ERROR_OK ? ERR : OK;
-            if (err != OK) {
+            err = device->addInput(aib) != SOUNDDEVICE_ERROR_OK ? false : true;
+            if (err != true) {
                 delete [] aib.getBuffer();
                 goto closeAndError;
             }
@@ -258,8 +258,8 @@ Result SoundManager::setupDevices() {
                 continue;
             }
             auto aob = AudioOutputBuffer{out, pBuffer};
-            err = device->addOutput(aob) != SOUNDDEVICE_ERROR_OK ? ERR : OK;
-            if (err != OK) goto closeAndError;
+            err = device->addOutput(aob) != SOUNDDEVICE_ERROR_OK ? false : true;
+            if (err != true) goto closeAndError;
             if (out.getType() == AudioOutput::MASTER) { pNewMasterClockRef = device;}
             else if ((out.getType() == AudioOutput::DECK || out.getType() == AudioOutput::BUS) && !pNewMasterClockRef)
             {
@@ -294,7 +294,7 @@ Result SoundManager::setupDevices() {
         // the default of 2 sync buffers instead.
         if (CmdlineArgs::Instance().getSafeMode() && syncBuffers == 0) { syncBuffers = 2; }
         err = device->open(pNewMasterClockRef == device, syncBuffers);
-        if (err != OK) goto closeAndError;
+        if (err != true) goto closeAndError;
         else {
             ++devicesOpened;
             if (isOutput) { ++outputDevicesOpened; }
@@ -311,18 +311,18 @@ Result SoundManager::setupDevices() {
     // returns OK if we were able to open all the devices the user wanted
     if (devicesAttempted == devicesOpened) {
         emit(devicesSetup());
-        return OK;
+        return true;
     }
     m_pErrorDevice = nullptr;
-    return ERR;
+    return false;
 closeAndError:
     closeDevices();
     return err;
 }
 SoundDevice* SoundManager::getErrorDevice() const { return m_pErrorDevice; }
 SoundManagerConfig SoundManager::getConfig() const { return m_config; }
-Result SoundManager::setConfig(SoundManagerConfig config) {
-    Result err = OK;
+bool SoundManager::setConfig(SoundManagerConfig config) {
+    auto err = true;
     m_config = config;
     checkConfig();
 
@@ -331,7 +331,7 @@ Result SoundManager::setConfig(SoundManagerConfig config) {
     // Do this first so vinyl control gets the right samplerate -- Owen W.
     m_pConfig->set(ConfigKey("[Soundcard]","Samplerate"), ConfigValue(m_config.getSampleRate()));
     err = setupDevices();
-    if (err == OK) { m_config.writeToDisk(); }
+    if (err == true) { m_config.writeToDisk(); }
     return err;
 }
 void SoundManager::checkConfig() {

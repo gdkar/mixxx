@@ -6,7 +6,6 @@ _Pragma("once")
 #define __STDC_CONSTANT_MACROS
 #endif
 #include "sources/ffmpeg_util.h"
-
 #include <cstdint>
 #include <vector>
 #include <atomic>
@@ -24,7 +23,7 @@ class SoundSourceFFmpeg : public SoundSource {
     virtual SINT seekSampleFrame(SINT frameIndex) override;
     virtual SINT readSampleFrames(SINT numberOfFrames, CSAMPLE* sampleBuffer) override;
   private:
-    Result  tryOpen(const AudioSourceConfig& audioSrcCfg) override;
+    bool    tryOpen(const AudioSourceConfig& audioSrcCfg) override;
     bool    decode_next_frame();
     AVFormatContext       *m_format_ctx   = nullptr;
     AVStream              *m_stream       = nullptr;

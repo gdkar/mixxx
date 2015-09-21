@@ -43,6 +43,16 @@ class FIFO : public PaUtilRingBuffer<DataType>{
       m_spaceAvailable.release(n);
       return n;
     }
+    long peek ( DataType *pData, long count ) 
+    {
+      long size0, size1;
+      DataType *ptr0,ptr1;
+      auto avail = getWriteRegions(count, &ptr0, &size0, &ptr1, &size1);
+      std::copy_n(ptr0,size0,pData);
+      pData += size0;
+      std::copy_n(ptr1,size1,pData);
+      return avail;
+    }
     long write( const DataType *pData, long count ) override {
       auto n = PaUtilRingBuffer<DataType>::write(pData, count);
       m_spaceAvailable.tryAcquire(n);

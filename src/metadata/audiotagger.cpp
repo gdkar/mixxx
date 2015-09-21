@@ -1,10 +1,7 @@
 #include "metadata/audiotagger.h"
-
 #include "metadata/trackmetadatataglib.h"
-
 namespace {
-
-inline SecurityTokenPointer openSecurityToken(QFileInfo file,
+SecurityTokenPointer openSecurityToken(QFileInfo file,
         const SecurityTokenPointer& pToken) {
     if (pToken.isNull()) {return Sandbox::openSecurityToken(file, true);}
     else {return pToken;}
@@ -14,6 +11,6 @@ AudioTagger::AudioTagger(const QString& file, SecurityTokenPointer pToken) :
         m_file(file),
         m_pSecurityToken(openSecurityToken(m_file, pToken)) {
 }
-Result AudioTagger::save(const Mixxx::TrackMetadata& trackMetadata) {
+bool AudioTagger::save(const Mixxx::TrackMetadata& trackMetadata) {
     return writeTrackMetadataIntoFile(trackMetadata, m_file.canonicalFilePath());
 }

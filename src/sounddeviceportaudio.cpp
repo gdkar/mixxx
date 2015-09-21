@@ -64,13 +64,13 @@ SoundDevicePortAudio::SoundDevicePortAudio(ConfigObject<ConfigValue> *config, So
     m_pMasterAudioLatencyOverload  = std::make_unique<ControlObjectSlave>("[Master]", "audio_latency_overload");
 }
 SoundDevicePortAudio::~SoundDevicePortAudio()=default;
-Result SoundDevicePortAudio::open(bool isClkRefDevice, int syncBuffers) {
+bool SoundDevicePortAudio::open(bool isClkRefDevice, int syncBuffers) {
     qDebug() << "SoundDevicePortAudio::open()" << getInternalName();
     PaError err;
     if (m_audioOutputs.empty() && m_audioInputs.empty()) {
         m_lastError = QString::fromAscii("No inputs or outputs in SDPA::open() "
             "(THIS IS A BUG, this should be filtered by SM::setupDevices)");
-        return ERR;
+        return false;
     }
     std::memset(&m_outputParams, 0, sizeof(m_outputParams));
     std::memset(&m_inputParams, 0, sizeof(m_inputParams));
@@ -180,7 +180,7 @@ Result SoundDevicePortAudio::open(bool isClkRefDevice, int syncBuffers) {
     if (err != paNoError) {
         qWarning() << "Error opening stream:" << Pa_GetErrorText(err);
         m_lastError = QString::fromUtf8(Pa_GetErrorText(err));
-        return ERR;
+        return false;
     } else {qDebug() << "Opened PortAudio stream successfully... starting";}
 #ifdef __LINUX__
     //Attempt to dynamically load and resolve stuff in the PortAudio library
@@ -199,7 +199,7 @@ Result SoundDevicePortAudio::open(bool isClkRefDevice, int syncBuffers) {
         m_lastError = QString::fromUtf8(Pa_GetErrorText(err));
         err = Pa_CloseStream(pStream);
         if (err != paNoError) {qWarning() << "PortAudio: Close stream error:" << Pa_GetErrorText(err) << getInternalName();}
-        return ERR;
+        return false;
     } else {qDebug() << "PortAudio: Started stream successfully";}
     // Get the actual details of the stream & update Mixxx's data
     const auto streamDetails = Pa_GetStreamInfo(pStream);
@@ -215,9 +215,9 @@ Result SoundDevicePortAudio::open(bool isClkRefDevice, int syncBuffers) {
         if (m_pMasterAudioLatencyOverloadCount) {m_pMasterAudioLatencyOverloadCount->set(0);}
     }
     m_pStream.store(pStream);
-    return OK;
+    return true;
 }
-Result SoundDevicePortAudio::close() {
+bool SoundDevicePortAudio::close() {
     //qDebug() << "SoundDevicePortAudio::close()" << getInternalName();
     auto pStream = m_pStream.exchange(nullptr);
     if (pStream) {
@@ -226,12 +226,12 @@ Result SoundDevicePortAudio::close() {
         // 1 means the stream is stopped. 0 means active.
         if (err == 1) {
             //qDebug() << "PortAudio: Stream already stopped, but no error.";
-            return OK;
+            return true;
         }
         // Real PaErrors are always negative.
         if (err < 0) {
             qWarning() << "PortAudio: Stream already stopped:" << Pa_GetErrorText(err) << getInternalName();
-            return ERR;
+            return false;
         }
         //Stop the stream.
         err = Pa_StopStream(pStream);
@@ -244,13 +244,13 @@ Result SoundDevicePortAudio::close() {
                                                    //state. Don't use it!
         if (err != paNoError) {
             qWarning() << "PortAudio: Stop stream error:" << Pa_GetErrorText(err) << getInternalName();
-            return ERR;
+            return false;
         }
         // Close stream
         err = Pa_CloseStream(pStream);
         if (err != paNoError) {
             qWarning() << "PortAudio: Close stream error:" << Pa_GetErrorText(err) << getInternalName();
-            return ERR;
+            return false;
         }
         if (m_outputFifo) { delete m_outputFifo;}
         if (m_inputFifo) {  delete m_inputFifo;}
@@ -258,7 +258,7 @@ Result SoundDevicePortAudio::close() {
     m_outputFifo = nullptr;
     m_inputFifo = nullptr;
     m_bSetThreadPriority = false;
-    return OK;
+    return true;
 }
 QString SoundDevicePortAudio::getError() const {return m_lastError;}
 void SoundDevicePortAudio::readProcess() {

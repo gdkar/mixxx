@@ -1,6 +1,4 @@
-#ifndef MIXXX_SOUNDSOURCE_H
-#define MIXXX_SOUNDSOURCE_H
-
+_Pragma("once")
 #include "sources/metadatasource.h"
 #include "sources/audiosource.h"
 namespace Mixxx {
@@ -9,12 +7,12 @@ class SoundSource: public MetadataSource, public AudioSource {
 public:
     static QString getFileExtensionFromUrl(const QUrl& url);
     const QString& getType() const { return m_type; }
-    Result parseTrackMetadataAndCoverArt(TrackMetadata* pTrackMetadata,QImage* pCoverArt) const override;
+    bool parseTrackMetadataAndCoverArt(TrackMetadata* pTrackMetadata,QImage* pCoverArt) const override;
     // Opens the AudioSource for reading audio data.
     //
     // Since reopening is not supported close() will be called
     // implicitly before the AudioSource is actually opened.
-    Result open(const AudioSourceConfig& audioSrcCfg = AudioSourceConfig());
+    bool open(const AudioSourceConfig& audioSrcCfg = AudioSourceConfig());
     // Closes the AudioSource and frees all resources.
     //
     // Might be called even if the AudioSource has never been
@@ -33,9 +31,8 @@ private:
     // need to free resources in tryOpen() themselves, but
     // should instead be prepared for the following invocation
     // of close().
-    virtual Result tryOpen(const AudioSourceConfig& audioSrcCfg) = 0;
+    virtual bool tryOpen(const AudioSourceConfig& audioSrcCfg) = 0;
     const QString m_type;
 };
 typedef QSharedPointer<SoundSource> SoundSourcePointer;
 } //namespace Mixxx
-#endif // MIXXX_SOUNDSOURCE_H

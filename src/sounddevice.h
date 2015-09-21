@@ -15,9 +15,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef SOUNDDEVICE_H
-#define SOUNDDEVICE_H
-
+_Pragma("once")
 #include <QString>
 #include <QList>
 #include <memory>
@@ -47,8 +45,8 @@ class SoundDevice {
     void setHostAPI(QString api);
     void setSampleRate(double sampleRate);
     void setFramesPerBuffer(unsigned int framesPerBuffer);
-    virtual Result open(bool isClkRefDevice, int syncBuffers) = 0;
-    virtual Result close() = 0;
+    virtual bool open(bool isClkRefDevice, int syncBuffers) = 0;
+    virtual bool close() = 0;
     virtual void readProcess() = 0;
     virtual void writeProcess() = 0;
     virtual QString getError() const = 0;
@@ -93,4 +91,3 @@ class SoundDevice {
     QList<AudioOutputBuffer> m_audioOutputs;
     QList<AudioInputBuffer> m_audioInputs;
 };
-#endif

@@ -1,8 +1,5 @@
-#ifndef TRACKMETADATATAGLIB_H
-#define TRACKMETADATATAGLIB_H
-
+_Pragma("once")
 #include "metadata/trackmetadata.h"
-#include "util/defs.h" // Result
 
 #include <taglib/apetag.h>
 #include <taglib/id3v2tag.h>
@@ -15,10 +12,10 @@ namespace Mixxx {
 
 // Read both track metadata and cover art of supported file types.
 // Both parameters are optional and might be NULL.
-Result readTrackMetadataAndCoverArtFromFile(TrackMetadata* pTrackMetadata, QImage* pCoverArt, QString fileName);
+bool readTrackMetadataAndCoverArtFromFile(TrackMetadata* pTrackMetadata, QImage* pCoverArt, QString fileName);
 
 // Write track metadata into the file with the given name
-Result writeTrackMetadataIntoFile(const TrackMetadata& trackMetadata, QString fileName);
+bool writeTrackMetadataIntoFile(const TrackMetadata& trackMetadata, QString fileName);
 
 // Low-level tag read/write functions are exposed only for testing purposes!
 void readTrackMetadataFromID3v2Tag(TrackMetadata* pTrackMetadata, const TagLib::ID3v2::Tag& tag);
@@ -34,5 +31,3 @@ bool writeTrackMetadataIntoXiphComment(TagLib::Ogg::XiphComment* pTag,
 bool writeTrackMetadataIntoMP4Tag(TagLib::MP4::Tag* pTag, const TrackMetadata& trackMetadata);
 
 } //namespace Mixxx
-
-#endif

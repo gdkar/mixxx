@@ -26,7 +26,7 @@ SoundSourceFFmpeg::SoundSourceFFmpeg(QUrl url)
     : SoundSource(url),
       m_format_ctx(avformat_alloc_context()) {}
 SoundSourceFFmpeg::~SoundSourceFFmpeg() { close(); }
-Result SoundSourceFFmpeg::tryOpen(const AudioSourceConfig& config) {
+bool SoundSourceFFmpeg::tryOpen(const AudioSourceConfig& config) {
     av_register_all();
     auto l_format_opts = (AVDictionary *)nullptr;
     const auto filename = getLocalFileNameBytes();
@@ -35,13 +35,13 @@ Result SoundSourceFFmpeg::tryOpen(const AudioSourceConfig& config) {
     // Open file and make m_pFormatCtx
     if (( ret = avformat_open_input(&m_format_ctx, filename.constData(), nullptr,&l_format_opts))<0) {
         qDebug() << __FUNCTION__ << "cannot open" << filename << ff_make_error_string ( ret );
-        return ERR;
+        return false;
     }
     av_dict_free(&l_format_opts);
     // Retrieve stream information
     if ( ( ret = avformat_find_stream_info(m_format_ctx, nullptr)) < 0) {
         qDebug() << __FUNCTION__ << "cannot open" << filename << ff_make_error_string ( ret );
-        return ERR;
+        return false;
     }
     //debug only (Enable if needed)
     av_dump_format(m_format_ctx, 0, filename.constData(), false);
@@ -58,34 +58,34 @@ Result SoundSourceFFmpeg::tryOpen(const AudioSourceConfig& config) {
             0))<0)
     {
       qDebug() << __FUNCTION__ << "cannot find audio stream in" << filename << ff_make_error_string ( m_stream_index );
-      return ERR;
+      return false;
     }
     m_stream          = m_format_ctx->streams[m_stream_index];
     m_stream->discard = AVDISCARD_NONE;
     if ( ! m_codec && ! ( m_codec = avcodec_find_decoder ( m_stream->codec->codec_id ) ) )
     {
       qDebug() << __FUNCTION__ << "cannot find codec for" << filename;
-      return ERR;
+      return false;
     }
     if ( !(m_codec_ctx = avcodec_alloc_context3 ( m_codec )))
     {
       qDebug() << __FUNCTION__ << "cannot allocate codec context for" << m_codec->long_name;
-      return ERR;
+      return false;
     }
     if ( ( ret = avcodec_copy_context ( m_codec_ctx, m_stream->codec ) ) < 0 )
     {
       qDebug() << __FUNCTION__ << "cannot copy avcodec context for " << filename << " with codec " << m_codec->long_name << ff_make_error_string(ret);
-      return ERR;
+      return false;
     };
     if((ret=av_dict_set(&l_format_opts,"refcounted_frames","1",0))<0)
     {
       qDebug() << __FUNCTION__ << "failed to set refcounted frames for " << filename << " with codec " << m_codec->long_name << ff_make_error_string ( ret );
-      return ERR;
+      return false;
     }
 
     if((ret = avcodec_open2(m_codec_ctx, m_codec,&l_format_opts))<0){
       qDebug() << __FUNCTION__ << "cannot open codec for" << filename << ff_make_error_string ( ret );
-      return ERR;
+      return false;
     }
     av_dict_free(&l_format_opts);
     m_stream_tb = m_stream->time_base;
@@ -112,11 +112,11 @@ Result SoundSourceFFmpeg::tryOpen(const AudioSourceConfig& config) {
     if(!(m_swr = swr_alloc ( )))
     {
       qDebug() << __FUNCTION__ << "cannot allocate swr context for" << filename << ff_make_error_string(AVERROR(ENOMEM));
-      return ERR;
+      return false;
     }
     if(!(m_orig_frame = av_frame_alloc () ) || !(m_frame = av_frame_alloc() ) ){
       qDebug() << __FUNCTION__ << "cannot allocate AVFrames for " << filename << ff_make_error_string(AVERROR(ENOMEM));
-      return ERR;
+      return false;
     }
     m_frame->channel_layout = av_get_default_channel_layout ( getChannelCount() );
     m_frame->format         = AV_SAMPLE_FMT_FLT;
@@ -157,7 +157,7 @@ Result SoundSourceFFmpeg::tryOpen(const AudioSourceConfig& config) {
                              << ", total packets = " << m_pkt_array.size() << "\n"
                              << ", total demuxed size = " << total_size << " ( bytes )\n";
     decode_next_frame ();
-    return OK;
+    return true;
 }
 void SoundSourceFFmpeg::close() {
     swr_free ( &m_swr );
