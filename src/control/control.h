@@ -1,18 +1,13 @@
-#ifndef CONTROL_H
-#define CONTROL_H
-
+_Pragma("once")
 #include <QHash>
 #include <QMutex>
 #include <QString>
 #include <QObject>
-#include <QAtomicPointer>
-
+#include <atomic>
 #include "control/controlbehavior.h"
-#include "control/controlvalue.h"
 #include "configobject.h"
 
 class ControlObject;
-
 class ControlDoublePrivate : public QObject {
     Q_OBJECT
   public:
@@ -98,9 +93,9 @@ class ControlDoublePrivate : public QObject {
     int m_trackFlags;
     bool m_confirmRequired;
     // The control value.
-    ControlValueAtomic<double> m_value;
+    std::atomic<double> m_value;
     // The default control value.
-    ControlValueAtomic<double> m_defaultValue;
+    std::atomic<double> m_defaultValue;
     QSharedPointer<ControlNumericBehavior> m_pBehavior;
     ControlObject* m_pCreatorCO;
     // Hack to implement persistent controls. This is a pointer to the current
@@ -111,11 +106,10 @@ class ControlDoublePrivate : public QObject {
     // configuration object would be arduous.
     static ConfigObject<ConfigValue>* s_pUserConfig;
     // Hash of ControlDoublePrivate instantiations.
-    static QHash<ConfigKey, QWeakPointer<ControlDoublePrivate> > s_qCOHash;
+    static QHash<ConfigKey, QSharedPointer<ControlDoublePrivate> > s_qCOHash;
     // Hash of aliases between ConfigKeys. Solely used for looking up the first
     // alias associated with a key.
     static QHash<ConfigKey, ConfigKey> s_qCOAliasHash;
     // Mutex guarding access to s_qCOHash and s_qCOAliasHash.
     static QMutex s_qCOHashMutex;
 };
-#endif /* CONTROL_H */

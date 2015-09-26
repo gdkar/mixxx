@@ -1,6 +1,6 @@
 #include <QApplication>
 #include <QtDebug>
-
+#include "util/assert.h"
 #include "controlobjectslave.h"
 #include "control/control.h"
 
