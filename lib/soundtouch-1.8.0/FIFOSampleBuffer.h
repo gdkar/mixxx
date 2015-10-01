@@ -43,14 +43,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef FIFOSampleBuffer_H
-#define FIFOSampleBuffer_H
-
+_Pragma("once")
 #include "FIFOSamplePipe.h"
-
 namespace soundtouch
 {
-
 /// Sample buffer working in FIFO (first-in-first-out) principle. The class takes
 /// care of storage size adjustment and data moving during input/output operations.
 ///
@@ -60,46 +56,34 @@ class FIFOSampleBuffer : public FIFOSamplePipe
 {
 private:
     /// Sample buffer.
-    SAMPLETYPE *buffer;
-
+    SAMPLETYPE *buffer = nullptr;
     // Raw unaligned buffer memory. 'buffer' is made aligned by pointing it to first
     // 16-byte aligned location of this buffer
-    SAMPLETYPE *bufferUnaligned;
-
+    SAMPLETYPE *bufferUnaligned = nullptr;
     /// Sample buffer size in bytes
     uint sizeInBytes;
-
     /// How many samples are currently in buffer.
     uint samplesInBuffer;
-
     /// Channels, 1=mono, 2=stereo.
     uint channels;
-
     /// Current position pointer to the buffer. This pointer is increased when samples are 
     /// removed from the pipe so that it's necessary to actually rewind buffer (move data)
     /// only new data when is put to the pipe.
     uint bufferPos;
-
     /// Rewind the buffer by moving data from position pointed by 'bufferPos' to real 
     /// beginning of the buffer.
     void rewind();
-
     /// Ensures that the buffer has capacity for at least this many samples.
     void ensureCapacity(uint capacityRequirement);
-
     /// Returns current capacity.
     uint getCapacity() const;
-
 public:
-
     /// Constructor
     FIFOSampleBuffer(int numChannels = 2     ///< Number of channels, 1=mono, 2=stereo.
                                               ///< Default is stereo.
                      );
-
     /// destructor
-    ~FIFOSampleBuffer();
-
+    virtual ~FIFOSampleBuffer();
     /// Returns a pointer to the beginning of the output samples. 
     /// This function is provided for accessing the output samples directly. 
     /// Please be careful for not to corrupt the book-keeping!
@@ -108,7 +92,6 @@ public:
     /// output samples from the buffer by calling the 
     /// 'receiveSamples(numSamples)' function
     virtual SAMPLETYPE *ptrBegin();
-
     /// Returns a pointer to the end of the used part of the sample buffer (i.e. 
     /// where the new samples are to be inserted). This function may be used for 
     /// inserting new samples into the sample buffer directly. Please be careful
@@ -169,16 +152,12 @@ public:
     }
 
     /// Returns nonzero if there aren't any samples available for outputting.
-    virtual int isEmpty() const;
-
+    virtual bool empty() const;
     /// Clears all the samples.
     virtual void clear();
-
     /// allow trimming (downwards) amount of samples in pipeline.
     /// Returns adjusted amount of samples
     uint adjustAmountOfSamples(uint numSamples);
 };
 
 }
-
-#endif

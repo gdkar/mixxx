@@ -84,30 +84,25 @@
 #include "vinylcontrol/vinylcontrolmanager.h"
 #endif
 
-// static
-const int MixxxMainWindow::kMicrophoneCount = 4;
-// static
-const int MixxxMainWindow::kAuxiliaryCount = 4;
-
 MixxxMainWindow::MixxxMainWindow(QApplication* pApp, const CmdlineArgs& args)
-        : m_pWidgetParent(NULL),
-          m_pSoundManager(NULL),
-          m_pRecordingManager(NULL),
+        : m_pWidgetParent(nullptr),
+          m_pSoundManager(nullptr),
+          m_pRecordingManager(nullptr),
 #ifdef __SHOUTCAST__
-          m_pShoutcastManager(NULL),
+          m_pShoutcastManager(nullptr),
 #endif
-          m_pControllerManager(NULL),
-          m_pDeveloperToolsDlg(NULL),
+          m_pControllerManager(nullptr),
+          m_pDeveloperToolsDlg(nullptr),
 #ifdef __VINYLCONTROL__
-          m_pShowVinylControl(NULL),
+          m_pShowVinylControl(nullptr),
 #endif
-          m_pShowSamplers(NULL),
-          m_pShowMicrophone(NULL),
-          m_pShowPreviewDeck(NULL),
-          m_pShowEffects(NULL),
-          m_pShowCoverArt(NULL),
+          m_pShowSamplers(nullptr),
+          m_pShowMicrophone(nullptr),
+          m_pShowPreviewDeck(nullptr),
+          m_pShowEffects(nullptr),
+          m_pShowCoverArt(nullptr),
 
-          m_pPrefDlg(NULL),
+          m_pPrefDlg(nullptr),
           m_runtime_timer("MixxxMainWindow::runtime"),
           m_cmdLineArgs(args),
           m_iNumConfiguredDecks(0) {
@@ -116,11 +111,11 @@ MixxxMainWindow::MixxxMainWindow(QApplication* pApp, const CmdlineArgs& args)
     initMenuBar();
     // Check to see if this is the first time this version of Mixxx is run
     // after an upgrade and make any needed changes.
-    m_pUpgrader = new Upgrade;
+    m_pUpgrader = new Upgrade{this};
     m_pConfig = m_pUpgrader->versionUpgrade(args.getSettingsPath());
     ControlDoublePrivate::setUserConfig(m_pConfig);
     // First load launch image to show a the user a quick responds
-    m_pSkinLoader = new SkinLoader(m_pConfig);
+    m_pSkinLoader = new SkinLoader(m_pConfig,this);
     m_pLaunchImage = m_pSkinLoader->loadLaunchImage(this);
     m_pWidgetParent = (QWidget*)m_pLaunchImage;
     setCentralWidget(m_pWidgetParent);
@@ -136,11 +131,7 @@ MixxxMainWindow::MixxxMainWindow(QApplication* pApp, const CmdlineArgs& args)
     pApp->processEvents();
     initalize(pApp, args);
 }
-MixxxMainWindow::~MixxxMainWindow() {
-    delete m_pUpgrader;
-    // SkinLoader depends on Config;
-    delete m_pSkinLoader;
-}
+MixxxMainWindow::~MixxxMainWindow() = default;
 void MixxxMainWindow::initalize(QApplication* pApp, const CmdlineArgs& args) {
     // Register custom data types for signal processing
     qRegisterMetaType<TrackId>("TrackId");
@@ -212,7 +203,7 @@ void MixxxMainWindow::initalize(QApplication* pApp, const CmdlineArgs& args) {
         m_pEngine->addChannel(pAux);
         m_pSoundManager->registerInput(auxInput, pAux);
         m_pNumAuxiliaries->set(m_pNumAuxiliaries->get() + 1);
-        m_pAuxiliaryPassthrough.push_back(new ControlObjectSlave(group, "passthrough"));
+        m_pAuxiliaryPassthrough.push_back(new ControlObjectSlave(ConfigKey(group, "passthrough"),this));
         auto auxiliary_passthrough =m_pAuxiliaryPassthrough.back();
         // These non-vinyl passthrough COs have their index offset by the max
         // number of vinyl inputs.
@@ -248,7 +239,7 @@ void MixxxMainWindow::initalize(QApplication* pApp, const CmdlineArgs& args) {
 #ifdef __VINYLCONTROL__
     m_pVCManager->init();
 #endif
-    m_pNumDecks = new ControlObjectSlave(ConfigKey("[Master]", "num_decks"));
+    m_pNumDecks = new ControlObjectSlave(ConfigKey("[Master]", "num_decks"),this);
     m_pNumDecks->connectValueChanged(this, SLOT(slotNumDecksChanged(double)));
     CoverArtCache::create();
     // (long)
@@ -463,14 +454,6 @@ void MixxxMainWindow::finalize() {
     PlayerInfo::destroy();
     WaveformWidgetFactory::destroy();
     delete m_pGuiTick;
-    delete m_pShowVinylControl;
-    delete m_pShowSamplers;
-    delete m_pShowMicrophone;
-    delete m_pShowPreviewDeck;
-    delete m_pShowEffects;
-    delete m_pShowCoverArt;
-    delete m_pNumAuxiliaries;
-    delete m_pNumDecks;
     // Check for leaked ControlObjects and give warnings.
     QList<QSharedPointer<ControlDoublePrivate> > leakedControls;
     QList<ConfigKey> leakedConfigKeys;
@@ -676,31 +659,28 @@ void toggleVisibility(ConfigKey key, bool enable) {
     qDebug() << "Setting visibility for" << key.group << key.item << enable;
     ControlObject::set(key, enable ? 1.0 : 0.0);
 }
-void MixxxMainWindow::slotViewShowSamplers(bool enable) {
-    toggleVisibility(ConfigKey("[Samplers]", "show_samplers"), enable);
-}
 void MixxxMainWindow::slotViewShowVinylControl(bool enable) {
-    toggleVisibility(ConfigKey(VINYL_PREF_KEY, "show_vinylcontrol"), enable);
+  ControlObject::set(ConfigKey(VINYL_PREF_KEY, "show_vinylcontrol"), enable);
 }
 void MixxxMainWindow::slotViewShowMicrophone(bool enable) {
-    toggleVisibility(ConfigKey("[Microphone]", "show_microphone"), enable);
+  ControlObject::set(ConfigKey("[Microphone]", "show_microphone"), enable);
 }
 void MixxxMainWindow::slotViewShowPreviewDeck(bool enable) {
-    toggleVisibility(ConfigKey("[PreviewDeck]", "show_previewdeck"), enable);
+  ControlObject::set(ConfigKey("[PreviewDeck]", "show_previewdeck"), enable);
 }
 void MixxxMainWindow::slotViewShowEffects(bool enable) {
-    toggleVisibility(ConfigKey("[EffectRack1]", "show"), enable);
+  ControlObject::set(ConfigKey("[EffectRack1]", "show"), enable);
 }
 void MixxxMainWindow::slotViewShowCoverArt(bool enable) {
-    toggleVisibility(ConfigKey("[Library]", "show_coverart"), enable);
+  ControlObject::set(ConfigKey("[Library]", "show_coverart"), enable);
 }
 void MixxxMainWindow::slotViewMaximizeLibrary(bool enable) {
-    toggleVisibility(ConfigKey("[Master]", "maximize_library"), enable);
+  ControlObject::set(ConfigKey("[Master]", "maximize_library"), enable);
 }
 void setVisibilityOptionState(QAction* pAction, ConfigKey key) {
     auto pVisibilityControl = ControlObject::getControl(key);
-    pAction->setEnabled(pVisibilityControl != NULL);
-    pAction->setChecked(pVisibilityControl != NULL ? pVisibilityControl->get() > 0.0 : false);
+    pAction->setEnabled(pVisibilityControl != nullptr);
+    pAction->setChecked(pVisibilityControl != nullptr ? pVisibilityControl->get() > 0.0 : false);
 }
 void MixxxMainWindow::updateCheckedMenuAction(QAction* menuAction, ConfigKey key) {
     menuAction->blockSignals(true);
@@ -732,9 +712,10 @@ void MixxxMainWindow::slotToggleCheckedCoverArt() {
     updateCheckedMenuAction(m_pViewShowCoverArt, key);
 }
 void MixxxMainWindow::linkSkinWidget(ControlObjectSlave** pCOS,ConfigKey key, const char* slot) {
-    if (!*pCOS) {
-        *pCOS = new ControlObjectSlave(key, this);
-        (*pCOS)->connectValueChanged(this, slot, Qt::DirectConnection);
+    if (pCOS )
+    {
+      if(!*pCOS) *pCOS = new ControlObjectSlave(key, this);
+      (*pCOS)->connectValueChanged(slot, Qt::DirectConnection);
     }
 }
 void MixxxMainWindow::onNewSkinLoaded() {
@@ -969,37 +950,66 @@ void MixxxMainWindow::initActions()
     m_pHelpAboutApp = new QAction(aboutTitle, this);
     m_pHelpAboutApp->setStatusTip(aboutText);
     m_pHelpAboutApp->setWhatsThis(buildWhatsThis(aboutTitle, aboutText));
-    connect(m_pHelpAboutApp, SIGNAL(triggered()),this, SLOT(slotHelpAbout()));
+    connect(m_pHelpAboutApp, &QAction::triggered,[this](){(new DlgAbout(this))->show();});
     auto supportTitle = tr("&Community Support") + externalLinkSuffix;
     auto supportText = tr("Get help with Mixxx");
     m_pHelpSupport = new QAction(supportTitle, this);
     m_pHelpSupport->setStatusTip(supportText);
     m_pHelpSupport->setWhatsThis(buildWhatsThis(supportTitle, supportText));
-    connect(m_pHelpSupport, SIGNAL(triggered()), this, SLOT(slotHelpSupport()));
+    connect(m_pHelpSupport, &QAction::triggered, 
+        [](){QDesktopServices::openUrl(QUrl{MIXXX_SUPPORT_URL});}
+        );
     auto manualTitle = tr("&User Manual") + externalLinkSuffix;
     auto manualText = tr("Read the Mixxx user manual.");
     m_pHelpManual = new QAction(manualTitle, this);
     m_pHelpManual->setStatusTip(manualText);
     m_pHelpManual->setWhatsThis(buildWhatsThis(manualTitle, manualText));
-    connect(m_pHelpManual, SIGNAL(triggered()), this, SLOT(slotHelpManual()));
+    connect(m_pHelpManual, &QAction::triggered, 
+        [this](){
+        QDir resourceDir(m_pConfig->getResourcePath());
+          // Default to the mixxx.org hosted version of the manual.
+          auto qManualUrl = QUrl(MIXXX_MANUAL_URL);
+#if defined(__APPLE__)
+          // FIXME: We don't include the PDF manual in the bundle on OSX.
+          // Default to the web-hosted version.
+#elif defined(__WINDOWS__)
+          // On Windows, the manual PDF sits in the same folder as the 'skins' folder.
+          if (resourceDir.exists(MIXXX_MANUAL_FILENAME))
+              qManualUrl = QUrl::fromLocalFile(resourceDir.absoluteFilePath(MIXXX_MANUAL_FILENAME));
+#elif defined(__LINUX__)
+          // On GNU/Linux, the manual is installed to e.g. /usr/share/mixxx/doc/
+          if (resourceDir.cd("../doc/mixxx") && resourceDir.exists(MIXXX_MANUAL_FILENAME))
+              qManualUrl = QUrl::fromLocalFile(resourceDir.absoluteFilePath(MIXXX_MANUAL_FILENAME));
+#else
+          // No idea, default to the mixxx.org hosted version.
+#endif
+          QDesktopServices::openUrl(qManualUrl);
+          }
+        );
     auto shortcutsTitle = tr("&Keyboard Shortcuts") + externalLinkSuffix;
     auto shortcutsText = tr("Speed up your workflow with keyboard shortcuts.");
     m_pHelpShortcuts = new QAction(shortcutsTitle, this);
     m_pHelpShortcuts->setStatusTip(shortcutsText);
     m_pHelpShortcuts->setWhatsThis(buildWhatsThis(shortcutsTitle, shortcutsText));
-    connect(m_pHelpShortcuts, SIGNAL(triggered()), this, SLOT(slotHelpShortcuts()));
+    connect(m_pHelpShortcuts, &QAction::triggered, 
+        [](){QDesktopServices::openUrl(QUrl{MIXXX_SHORTCUTS_URL});}
+        );
     auto feedbackTitle = tr("Send Us &Feedback") + externalLinkSuffix;
     auto feedbackText = tr("Send feedback to the Mixxx team.");
     m_pHelpFeedback = new QAction(feedbackTitle, this);
     m_pHelpFeedback->setStatusTip(feedbackText);
     m_pHelpFeedback->setWhatsThis(buildWhatsThis(feedbackTitle, feedbackText));
-    connect(m_pHelpFeedback, SIGNAL(triggered()), this, SLOT(slotHelpFeedback()));
+    connect(m_pHelpFeedback, &QAction::triggered, 
+        [](){QDesktopServices::openUrl(QUrl{MIXXX_FEEDBACK_URL});}
+        );
     auto translateTitle = tr("&Translate This Application") + externalLinkSuffix;
     auto translateText = tr("Help translate this application into your language.");
     m_pHelpTranslation = new QAction(translateTitle, this);
     m_pHelpTranslation->setStatusTip(translateText);
     m_pHelpTranslation->setWhatsThis(buildWhatsThis(translateTitle, translateText));
-    connect(m_pHelpTranslation, SIGNAL(triggered()), this, SLOT(slotHelpTranslation()));
+    connect(m_pHelpTranslation, &QAction::triggered, 
+        [](){QDesktopServices::openUrl(QUrl{MIXXX_TRANSLATION_URL});}
+        );
 #ifdef __VINYLCONTROL__
     auto vinylControlText = tr( "Use timecoded vinyls on external turntables to control Mixxx");
     QList<QString> vinylControlTitle;
@@ -1011,72 +1021,37 @@ void MixxxMainWindow::initActions()
         vinylControlTitle.push_back(tr("Enable Vinyl Control &%1").arg(i + 1));
         m_pOptionsVinylControl.push_back(new QAction(vinylControlTitle.back(), this));
         auto vc_checkbox = m_pOptionsVinylControl.back();
-        QString binding;
-        switch (i) {
-        case 0:
-            binding = tr("Ctrl+t");
-            break;
-        case 1:
-            binding = tr("Ctrl+y");
-            break;
-        case 2:
-            binding = tr("Ctrl+u");
-            break;
-        case 3:
-            binding = tr("Ctrl+i");
-            break;
-        default:
-            qCritical() << "Programming error: bindings need to be defined for "
-                        "vinyl control enabling";
-        }
-
-        vc_checkbox->setShortcut(
-                QKeySequence(m_pKbdConfig->getValueString(ConfigKey(
-                        "[KeyboardShortcuts]",
-                        QString("OptionsMenu_EnableVinyl%1").arg(i + 1)),
-                                                         binding)));
-        vc_checkbox->setShortcutContext(Qt::ApplicationShortcut);
-
         // Either check or uncheck the vinyl control menu item depending on what
         // it was saved as.
         vc_checkbox->setCheckable(true);
         vc_checkbox->setChecked(false);
         vc_checkbox->setStatusTip(vinylControlText);
-        vc_checkbox->setWhatsThis(
-                buildWhatsThis(vinylControlTitle.back(), vinylControlText));
-
+        vc_checkbox->setWhatsThis(buildWhatsThis(vinylControlTitle.back(), vinylControlText));
         m_VCCheckboxMapper->setMapping(vc_checkbox, i);
-        connect(vc_checkbox, SIGNAL(toggled(bool)),
-                m_VCCheckboxMapper, SLOT(map()));
+        connect(vc_checkbox, &QAction::toggled,m_VCCheckboxMapper, static_cast<void (QSignalMapper::*)(int)(&QSignalMapper::map));
     }
-
 #endif
-
 #ifdef __SHOUTCAST__
     auto shoutcastTitle = tr("Enable Live &Broadcasting");
     auto shoutcastText = tr("Stream your mixes to a shoutcast or icecast server");
     m_pOptionsShoutcast = new QAction(shoutcastTitle, this);
-    m_pOptionsShoutcast->setShortcut(
-        QKeySequence(m_pKbdConfig->getValueString(ConfigKey("[KeyboardShortcuts]","OptionsMenu_EnableLiveBroadcasting"),tr("Ctrl+L"))));
+    m_pOptionsShoutcast->setShortcut(QKeySequence(m_pKbdConfig->getValueString(ConfigKey("[KeyboardShortcuts]","OptionsMenu_EnableLiveBroadcasting"),tr("Ctrl+L"))));
     m_pOptionsShoutcast->setShortcutContext(Qt::ApplicationShortcut);
     m_pOptionsShoutcast->setCheckable(true);
     m_pOptionsShoutcast->setChecked(m_pShoutcastManager->isEnabled());
     m_pOptionsShoutcast->setStatusTip(shoutcastText);
     m_pOptionsShoutcast->setWhatsThis(buildWhatsThis(shoutcastTitle, shoutcastText));
-
-    connect(m_pOptionsShoutcast, SIGNAL(triggered(bool)),
-            m_pShoutcastManager, SLOT(setEnabled(bool)));
+    connect(m_pOptionsShoutcast, &QAction::triggered,m_pShoutcastManager, &ShoutcastManager::setEnabled);
 #endif
     auto mayNotBeSupported = tr("May not be supported on all skins.");
     auto showSamplersTitle = tr("Show Samplers");
     auto showSamplersText = tr("Show the sample deck section of the Mixxx interface.") +" " + mayNotBeSupported;
     m_pViewShowSamplers = new QAction(showSamplersTitle, this);
     m_pViewShowSamplers->setCheckable(true);
-    m_pViewShowSamplers->setShortcut(
-        QKeySequence(m_pKbdConfig->getValueString(ConfigKey("[KeyboardShortcuts]","ViewMenu_ShowSamplers"),tr("Ctrl+1", "Menubar|View|Show Samplers"))));
+    m_pViewShowSamplers->setShortcut(QKeySequence(m_pKbdConfig->getValueString(ConfigKey("[KeyboardShortcuts]","ViewMenu_ShowSamplers"),tr("Ctrl+1", "Menubar|View|Show Samplers"))));
     m_pViewShowSamplers->setStatusTip(showSamplersText);
     m_pViewShowSamplers->setWhatsThis(buildWhatsThis(showSamplersTitle, showSamplersText));
-    connect(m_pViewShowSamplers, SIGNAL(toggled(bool)),this, SLOT(slotViewShowSamplers(bool)));
+    connect(m_pViewShowSamplers, &QAction::toggled,[](bool enable){ControlObject::set(ConfigKey("[Samplers]", "show_samplers"), enable);});
     auto showVinylControlTitle = tr("Show Vinyl Control Section");
     auto  showVinylControlText = tr("Show the vinyl control section of the Mixxx interface.") +" " + mayNotBeSupported;
 #ifdef __VINYLCONTROL__
@@ -1541,11 +1516,11 @@ void MixxxMainWindow::slotNumDecksChanged(double dNumDecks) {
     // Only show menu items to activate vinyl inputs that exist.
     for (auto i = m_iNumConfiguredDecks; i < num_decks; ++i) {
         m_pOptionsVinylControl[i]->setVisible(true);
-        m_pVinylControlEnabled.push_back(new ControlObjectSlave(PlayerManager::groupForDeck(i),"vinylcontrol_enabled"));
+        m_pVinylControlEnabled.push_back(new ControlObjectSlave(ConfigKey(PlayerManager::groupForDeck(i),"vinylcontrol_enabled"),this));
         ControlObjectSlave* vc_enabled = m_pVinylControlEnabled.back();
         m_VCControlMapper->setMapping(vc_enabled, i);
         vc_enabled->connectValueChanged(m_VCControlMapper, SLOT(map()));
-        m_pPassthroughEnabled.push_back(new ControlObjectSlave(PlayerManager::groupForDeck(i),"passthrough"));
+        m_pPassthroughEnabled.push_back(new ControlObjectSlave(ConfigKey(PlayerManager::groupForDeck(i),"passthrough"),this));
         auto  passthrough_enabled = m_pPassthroughEnabled.back();
         m_PassthroughMapper->setMapping(passthrough_enabled, i);
         passthrough_enabled->connectValueChanged(m_PassthroughMapper,SLOT(map()));
@@ -1579,35 +1554,6 @@ void MixxxMainWindow::slotTalkoverChanged(int mic_num) {
     m_pPrefDlg->show();
     m_pPrefDlg->showSoundHardwarePage();
 }
-
-void MixxxMainWindow::slotHelpAbout() {(new DlgAbout(this))->show();}
-void MixxxMainWindow::slotHelpSupport() {QDesktopServices::openUrl(QUrl{MIXXX_SUPPORT_URL});}
-void MixxxMainWindow::slotHelpFeedback() {QDesktopServices::openUrl(QUrl{MIXXX_FEEDBACK_URL});}
-void MixxxMainWindow::slotHelpTranslation() {QDesktopServices::openUrl(QUrl{MIXXX_TRANSLATION_URL});}
-void MixxxMainWindow::slotHelpShortcuts() {QDesktopServices::openUrl(QUrl{MIXXX_SHORTCUTS_URL});}
-void MixxxMainWindow::slotHelpManual() {
-    QDir resourceDir(m_pConfig->getResourcePath());
-    // Default to the mixxx.org hosted version of the manual.
-    auto qManualUrl = QUrl(MIXXX_MANUAL_URL);
-#if defined(__APPLE__)
-    // FIXME: We don't include the PDF manual in the bundle on OSX.
-    // Default to the web-hosted version.
-#elif defined(__WINDOWS__)
-    // On Windows, the manual PDF sits in the same folder as the 'skins' folder.
-    if (resourceDir.exists(MIXXX_MANUAL_FILENAME)) {
-        qManualUrl = QUrl::fromLocalFile(resourceDir.absoluteFilePath(MIXXX_MANUAL_FILENAME));
-    }
-#elif defined(__LINUX__)
-    // On GNU/Linux, the manual is installed to e.g. /usr/share/mixxx/doc/
-    if (resourceDir.cd("../doc/mixxx") && resourceDir.exists(MIXXX_MANUAL_FILENAME)) {
-        qManualUrl = QUrl::fromLocalFile(resourceDir.absoluteFilePath(MIXXX_MANUAL_FILENAME));
-    }
-#else
-    // No idea, default to the mixxx.org hosted version.
-#endif
-    QDesktopServices::openUrl(qManualUrl);
-}
-
 void MixxxMainWindow::setToolTipsCfg(int tt) {
     m_pConfig->set(ConfigKey("[Controls]","Tooltips"),ConfigValue(tt));
     m_toolTipsCfg = tt;
@@ -1618,25 +1564,11 @@ void MixxxMainWindow::rebootMixxxView() {
     auto initSize = size();
     // Every time a skin is loaded, the Cos objects need to be recreated
     // See onNewSkinLoaded()
-#ifdef __VINYLCONTROL__
-    delete m_pShowVinylControl;
-    m_pShowVinylControl = nullptr;
-#endif
-    delete m_pShowSamplers;
-    delete m_pShowMicrophone;
-    delete m_pShowPreviewDeck;
-    delete m_pShowEffects;
-    delete m_pShowCoverArt;
-    m_pShowSamplers = NULL;
-    m_pShowMicrophone = NULL;
-    m_pShowPreviewDeck = NULL;
-    m_pShowEffects = NULL;
-    m_pShowCoverArt = NULL;
     if (m_pWidgetParent) {
         m_pWidgetParent->hide();
         WaveformWidgetFactory::instance()->destroyWidgets();
         delete m_pWidgetParent;
-        m_pWidgetParent = NULL;
+        m_pWidgetParent = nullptr;
     }
     // Workaround for changing skins while fullscreen, just go out of fullscreen
     // mode. If you change skins while in fullscreen (on Linux, at least) the
@@ -1656,17 +1588,16 @@ void MixxxMainWindow::rebootMixxxView() {
         QMessageBox::critical(this,
                               tr("Error in skin file"),
                               tr("The selected skin cannot be loaded."));
-        // m_pWidgetParent is NULL, we can't continue.
+        // m_pWidgetParent is nullptr, we can't continue.
         return;
     }
-
     setCentralWidget(m_pWidgetParent);
     adjustSize();
-    if (wasFullScreen) {slotViewFullScreen(true);}
-    else {
+    if (wasFullScreen) 
+      slotViewFullScreen(true);
+    else
         move(initPosition.x() + (initSize.width() - m_pWidgetParent->width()) / 2,
              initPosition.y() + (initSize.height() - m_pWidgetParent->height()) / 2);
-    }
 #ifdef __APPLE__
     // Original the following line fixes issue on OSX where menu bar went away
     // after a skin change. It was original surrounded by #if __OSX__
@@ -1809,6 +1740,14 @@ bool MixxxMainWindow::confirmExit() {
     }
     finalize();
     return true;
+}
+int MixxxMainWindow::getToolTipsCfg() const
+{
+  return m_toolTipsCfg;
+}
+GuiTick* MixxxMainWindow::getGuiTick()
+{
+  return m_pGuiTick;
 }
 void MixxxMainWindow::launchProgress(int progress) {
     m_pLaunchImage->progress(progress);

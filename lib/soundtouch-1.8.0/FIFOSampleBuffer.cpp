@@ -247,9 +247,9 @@ uint FIFOSampleBuffer::receiveSamples(uint maxSamples)
 
 
 // Returns nonzero if the sample buffer is empty
-int FIFOSampleBuffer::isEmpty() const
+bool FIFOSampleBuffer::empty() const
 {
-    return (samplesInBuffer == 0) ? 1 : 0;
+    return (samplesInBuffer == 0);
 }
 
 

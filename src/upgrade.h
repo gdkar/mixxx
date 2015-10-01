@@ -14,19 +14,20 @@
 *   (at your option) any later version.                                   *
 *                                                                         *
 ***************************************************************************/
-
-#ifndef UPGRADE_H
-#define UPGRADE_H
-class Upgrade
+_Pragma("once")
+#include <QObject>
+#include "configobject.h"
+class Upgrade : public QObject
 {
+    Q_OBJECT
     public:
-        Upgrade();
+        Upgrade(QObject*pParent=nullptr);
         virtual ~Upgrade();
         ConfigObject<ConfigValue>* versionUpgrade(const QString& settingsPath);
         static QString mixxx17HomePath();
-        bool isFirstRun() { return m_bFirstRun; };
-        bool isUpgraded() { return m_bUpgraded; };
-        bool rescanLibrary() {return m_bRescanLibrary; };
+        bool isFirstRun() const;
+        bool isUpgraded() const;
+        bool rescanLibrary() const;
     private:
         bool askReanalyzeBeats();
         bool askReScanLibrary();
@@ -34,4 +35,3 @@ class Upgrade
         bool m_bUpgraded      = false;
         bool m_bRescanLibrary = false;
 };
-#endif

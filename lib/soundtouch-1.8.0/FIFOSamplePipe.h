@@ -45,11 +45,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef FIFOSamplePipe_H
-#define FIFOSamplePipe_H
-
-#include <assert.h>
-#include <stdlib.h>
+_Pragma("once")
+#include <cassert>
+#include <cstdlib>
 #include "STTypes.h"
 
 namespace soundtouch
@@ -97,7 +95,6 @@ public:
     virtual uint receiveSamples(SAMPLETYPE *output, ///< Buffer where to copy output samples.
                                 uint maxSamples                 ///< How many samples to receive at max.
                                 ) = 0;
-
     /// Adjusts book-keeping so that given number of samples are removed from beginning of the 
     /// sample buffer without copying them anywhere. 
     ///
@@ -105,16 +102,12 @@ public:
     /// with 'ptrBegin' function.
     virtual uint receiveSamples(uint maxSamples   ///< Remove this many samples from the beginning of pipe.
                                 ) = 0;
-
     /// Returns number of samples currently available.
     virtual uint numSamples() const = 0;
-
     // Returns nonzero if there aren't any samples available for outputting.
-    virtual int isEmpty() const = 0;
-
+    virtual bool empty() const = 0;
     /// Clears all the samples.
     virtual void clear() = 0;
-
     /// allow trimming (downwards) amount of samples in pipeline.
     /// Returns adjusted amount of samples
     virtual uint adjustAmountOfSamples(uint numSamples) = 0;
@@ -215,11 +208,10 @@ public:
 
 
     /// Returns nonzero if there aren't any samples available for outputting.
-    virtual int isEmpty() const
+    virtual bool empty() const
     {
-        return output->isEmpty();
+        return output->empty();
     }
-
     /// allow trimming (downwards) amount of samples in pipeline.
     /// Returns adjusted amount of samples
     virtual uint adjustAmountOfSamples(uint numSamples)
@@ -228,7 +220,4 @@ public:
     }
 
 };
-
 }
-
-#endif

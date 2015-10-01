@@ -312,10 +312,6 @@ void AnalyserQueue::emitUpdateProgress(TrackPointer tio, double progress) {
         // The following tries will success if the previous signal was processed in the GUI Thread
         // This prevent the AnalysisQueue from filling up the GUI Thread event Queue
         // 100 % is emitted in any case
-        if (progress < 1.0 && progress > 0) {
-            // Signals during processing are not required in any case
-            if (!m_progressInfo.sema.tryAcquire()) { return; }
-        } else { m_progressInfo.sema.acquire(); }
         m_progressInfo.current_track  = tio;
         m_progressInfo.track_progress = progress;
         m_progressInfo.queue_size     = m_queue_size;

@@ -146,7 +146,7 @@ void WOverview::slotWaveformSummaryUpdated() {
 void WOverview::slotAnalyserProgress(double progress) {
     if (!m_pCurrentTrack) {return;}
     auto analyserProgress = progress;
-    auto finalizing = progress >= 0.98;
+    auto finalizing = progress >= 0.9;
     auto updateNeeded = drawNextPixmapPart();
     // progress 0 .. 1000
     if (updateNeeded || (m_dAnalyserProgress != analyserProgress)) {update();}

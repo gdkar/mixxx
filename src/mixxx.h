@@ -15,9 +15,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef MIXXX_H
-#define MIXXX_H
-
+_Pragma("once")
 #include <QAction>
 #include <QList>
 #include <QMainWindow>
@@ -62,15 +60,12 @@ class QTranslator;
 // created which creates your view.
 class MixxxMainWindow : public QMainWindow {
     Q_OBJECT
-
   public:
     // Construtor. files is a list of command line arguments
     MixxxMainWindow(QApplication *app, const CmdlineArgs& args);
     virtual ~MixxxMainWindow();
-
     void initalize(QApplication *app, const CmdlineArgs& args);
     void finalize();
-
     // initializes all QActions of the application
     void initActions();
     // creates the menu_bar and inserts the file Menu
@@ -78,19 +73,14 @@ class MixxxMainWindow : public QMainWindow {
     // creates the menu_bar and inserts the file Menu
     // after it was inited
     void populateMenuBar();
-
     void setToolTipsCfg(int tt);
-    inline int getToolTipsCgf() { return m_toolTipsCfg; }
+    int getToolTipsCfg() const;
     void rebootMixxxView();
-
-    inline GuiTick* getGuiTick() { return m_pGuiTick; };
-
+    GuiTick* getGuiTick();
     // progresses the launch image progress bar
     // this must be called from the GUi thread only
     void launchProgress(int progress);
-
   public slots:
-
     //void slotQuitFullScreen();
     void slotFileLoadSongPlayer(int deck);
     // Opens a file in player 1
@@ -109,18 +99,6 @@ class MixxxMainWindow : public QMainWindow {
     void slotOptionsKeyboard(bool toggle);
     // Preference dialog
     void slotOptionsPreferences();
-    // shows an about dlg
-    void slotHelpAbout();
-    // visits support section of website
-    void slotHelpSupport();
-    // Visits a feedback form
-    void slotHelpFeedback();
-    // Open the manual.
-    void slotHelpManual();
-    // Open the keyboard mapping table in the manual.
-    void slotHelpShortcuts();
-    // Visits translation interface on www.transifex.com
-    void slotHelpTranslation();
     // Scan or rescan the music library directory
     void slotScanLibrary();
     // Enables the "Rescan Library" menu item. This gets disabled when a scan is running.
@@ -128,7 +106,6 @@ class MixxxMainWindow : public QMainWindow {
     //Updates the checkboxes for Recording and Livebroadcasting when connection drops, or lame is not available
     void slotOptionsMenuShow();
     // toogle on-screen widget visibility
-    void slotViewShowSamplers(bool);
     void slotViewShowVinylControl(bool);
     void slotViewShowMicrophone(bool);
     void slotViewShowPreviewDeck(bool);
@@ -146,27 +123,20 @@ class MixxxMainWindow : public QMainWindow {
     void slotDeveloperStatsBase();
     // toogle the script debugger
     void slotDeveloperDebugger(bool toggle);
-
     void slotToCenterOfPrimaryScreen();
-
     void onNewSkinLoaded();
-
     // Activated when the number of decks changed, so we can update the UI.
     void slotNumDecksChanged(double);
-
     // Activated when the talkover button is pushed on a microphone so we
     // can alert the user if a mic is not configured.
     void slotTalkoverChanged(int);
-
     void slotUpdateWindowTitle(TrackPointer pTrack);
-
     void slotToggleCheckedVinylControl();
     void slotToggleCheckedSamplers();
     void slotToggleCheckedMicrophone();
     void slotToggleCheckedPreviewDeck();
     void slotToggleCheckedEffects();
     void slotToggleCheckedCoverArt();
-
   signals:
     void newSkinLoaded();
     void libraryScanStarted();
@@ -174,13 +144,11 @@ class MixxxMainWindow : public QMainWindow {
     // used to uncheck the menu when the dialog of develeoper tools is closed
     void developerToolsDlgClosed(int r);
     void closeDeveloperToolsDlgChecked(int r);
-
   protected:
     // Event filter to block certain events (eg. tooltips if tooltips are disabled)
     virtual bool eventFilter(QObject *obj, QEvent *event);
     virtual void closeEvent(QCloseEvent *event);
     virtual bool event(QEvent* e);
-
   private:
     void logBuildDetails();
     void initializeWindow();
@@ -219,119 +187,102 @@ class MixxxMainWindow : public QMainWindow {
 #ifdef __SHOUTCAST__
     ShoutcastManager* m_pShoutcastManager;
 #endif
-    ControllerManager* m_pControllerManager;
-
-    ConfigObject<ConfigValue>* m_pConfig;
-
-    GuiTick* m_pGuiTick;
-
-    VinylControlManager* m_pVCManager;
-
-    MixxxKeyboard* m_pKeyboard;
+    ControllerManager* m_pControllerManager = nullptr;
+    ConfigObject<ConfigValue>* m_pConfig = nullptr;
+    GuiTick* m_pGuiTick = nullptr;
+    VinylControlManager* m_pVCManager = nullptr;
+    MixxxKeyboard* m_pKeyboard = nullptr;
     // Library scanner object
-    LibraryScanner* m_pLibraryScanner;
+    LibraryScanner* m_pLibraryScanner = nullptr;
     // The library management object
-    Library* m_pLibrary;
-
-    Upgrade* m_pUpgrader;
-
+    Library* m_pLibrary = nullptr;
+    Upgrade* m_pUpgrader = nullptr;
     // file_menu contains all items of the menubar entry "File"
-    QMenu* m_pFileMenu;
+    QMenu* m_pFileMenu = nullptr;
     // edit_menu contains all items of the menubar entry "Edit"
-    QMenu* m_pEditMenu;
+    QMenu* m_pEditMenu = nullptr;
     // library menu
-    QMenu* m_pLibraryMenu;
+    QMenu* m_pLibraryMenu = nullptr;
     // options_menu contains all items of the menubar entry "Options"
-    QMenu* m_pOptionsMenu;
+    QMenu* m_pOptionsMenu = nullptr;
     // view_menu contains all items of the menubar entry "View"
-    QMenu* m_pViewMenu;
+    QMenu* m_pViewMenu = nullptr;
     // view_menu contains all items of the menubar entry "Help"
-    QMenu* m_pHelpMenu;
+    QMenu* m_pHelpMenu = nullptr;
     // Developer options.
-    QMenu* m_pDeveloperMenu;
-
-    QAction* m_pFileLoadSongPlayer1;
-    QAction* m_pFileLoadSongPlayer2;
-    QAction* m_pFileQuit;
-    QAction* m_pPlaylistsNew;
-    QAction* m_pCratesNew;
-    QAction* m_pLibraryRescan;
+    QMenu* m_pDeveloperMenu = nullptr;
+    QAction* m_pFileLoadSongPlayer1 = nullptr;
+    QAction* m_pFileLoadSongPlayer2 = nullptr;
+    QAction* m_pFileQuit            = nullptr;
+    QAction* m_pPlaylistsNew        = nullptr;
+    QAction* m_pCratesNew           = nullptr;
+    QAction* m_pLibraryRescan       = nullptr;
 #ifdef __VINYLCONTROL__
     QMenu* m_pVinylControlMenu;
     QList<QAction*> m_pOptionsVinylControl;
 #endif
-    QAction* m_pOptionsRecord;
-    QAction* m_pOptionsKeyboard;
-
-    QAction* m_pOptionsPreferences;
+    QAction* m_pOptionsRecord       = nullptr;
+    QAction* m_pOptionsKeyboard     = nullptr;
+    QAction* m_pOptionsPreferences  = nullptr;
 #ifdef __SHOUTCAST__
-    QAction* m_pOptionsShoutcast;
+    QAction* m_pOptionsShoutcast    = nullptr;
 #endif
-    QAction* m_pViewShowSamplers;
-    QAction* m_pViewVinylControl;
-    QAction* m_pViewShowMicrophone;
-    QAction* m_pViewShowPreviewDeck;
-    QAction* m_pViewShowEffects;
-    QAction* m_pViewShowCoverArt;
-    QAction* m_pViewMaximizeLibrary;
-    QAction* m_pViewFullScreen;
-    QAction* m_pHelpAboutApp;
-    QAction* m_pHelpSupport;
-    QAction* m_pHelpFeedback;
-    QAction* m_pHelpManual;
-    QAction* m_pHelpShortcuts;
-    QAction* m_pHelpTranslation;
+    QAction* m_pViewShowSamplers    = nullptr;
+    QAction* m_pViewVinylControl    = nullptr;
+    QAction* m_pViewShowMicrophone  = nullptr;
+    QAction* m_pViewShowPreviewDeck = nullptr;
+    QAction* m_pViewShowEffects     = nullptr;
+    QAction* m_pViewShowCoverArt    = nullptr;
+    QAction* m_pViewMaximizeLibrary = nullptr;
+    QAction* m_pViewFullScreen      = nullptr;
+    QAction* m_pHelpAboutApp        = nullptr;
+    QAction* m_pHelpSupport         = nullptr;
+    QAction* m_pHelpFeedback        = nullptr;
+    QAction* m_pHelpManual          = nullptr;
+    QAction* m_pHelpShortcuts       = nullptr;
+    QAction* m_pHelpTranslation     = nullptr;
 
-    QAction* m_pDeveloperReloadSkin;
-    QAction* m_pDeveloperTools;
-    QAction* m_pDeveloperStatsExperiment;
-    QAction* m_pDeveloperStatsBase;
-    DlgDeveloperTools* m_pDeveloperToolsDlg;
-    QAction* m_pDeveloperDebugger;
+    QAction* m_pDeveloperReloadSkin = nullptr;
+    QAction* m_pDeveloperTools      = nullptr;
+    QAction* m_pDeveloperStatsExperiment = nullptr;
+    QAction* m_pDeveloperStatsBase  = nullptr;
+    DlgDeveloperTools* m_pDeveloperToolsDlg = nullptr;
+    QAction* m_pDeveloperDebugger   = nullptr;
+    ControlObjectSlave* m_pShowVinylControl = nullptr;
+    ControlObjectSlave* m_pShowSamplers     = nullptr;
+    ControlObjectSlave* m_pShowMicrophone   = nullptr;
+    ControlObjectSlave* m_pShowPreviewDeck  = nullptr;
+    ControlObjectSlave* m_pShowEffects      = nullptr;
+    ControlObjectSlave* m_pShowCoverArt     = nullptr;
+    ControlObject* m_pNumAuxiliaries        = nullptr;
 
-    ControlObjectSlave* m_pShowVinylControl;
-    ControlObjectSlave* m_pShowSamplers;
-    ControlObjectSlave* m_pShowMicrophone;
-    ControlObjectSlave* m_pShowPreviewDeck;
-    ControlObjectSlave* m_pShowEffects;
-    ControlObjectSlave* m_pShowCoverArt;
-    ControlObject* m_pNumAuxiliaries;
-
-    int m_iNoPlaylists;
+    int m_iNoPlaylists = 0;
 
     /** Pointer to preference dialog */
-    DlgPreferences* m_pPrefDlg;
-
+    DlgPreferences* m_pPrefDlg = nullptr;
     int noSoundDlg(void);
     int noOutputDlg(bool* continueClicked);
     // Fullscreen patch
     QPoint m_winpos;
-    bool m_NativeMenuBarSupport;
-
-    ConfigObject<ConfigValueKbd>* m_pKbdConfig;
-    ConfigObject<ConfigValueKbd>* m_pKbdConfigEmpty;
-
+    bool m_NativeMenuBarSupport = true;
+    ConfigObject<ConfigValueKbd>* m_pKbdConfig = nullptr;
+    ConfigObject<ConfigValueKbd>* m_pKbdConfigEmpty = nullptr;
     int m_toolTipsCfg; //0=OFF, 1=ON, 2=ON (only in Library)
     // Timer that tracks how long Mixxx has been running.
     Timer m_runtime_timer;
-
     const CmdlineArgs& m_cmdLineArgs;
-
-    ControlPushButton* m_pTouchShift;
+    ControlObject* m_pTouchShift = nullptr;
     QList<ControlObjectSlave*> m_pVinylControlEnabled;
     QList<ControlObjectSlave*> m_pPassthroughEnabled;
     QList<ControlObjectSlave*> m_pAuxiliaryPassthrough;
     ControlObjectSlave* m_pNumDecks;
-    int m_iNumConfiguredDecks;
+    int m_iNumConfiguredDecks = 0;
     QList<ControlObjectSlave*> m_micTalkoverControls;
-    QSignalMapper* m_VCControlMapper;
-    QSignalMapper* m_VCCheckboxMapper;
-    QSignalMapper* m_PassthroughMapper;
-    QSignalMapper* m_AuxiliaryMapper;
-    QSignalMapper* m_TalkoverMapper;
-
-    static const int kMicrophoneCount;
-    static const int kAuxiliaryCount;
+    QSignalMapper* m_VCControlMapper   = nullptr;
+    QSignalMapper* m_VCCheckboxMapper  = nullptr;
+    QSignalMapper* m_PassthroughMapper = nullptr;
+    QSignalMapper* m_AuxiliaryMapper   = nullptr;
+    QSignalMapper* m_TalkoverMapper    = nullptr;
+    int kMicrophoneCount = 2;
+    int kAuxiliaryCount  = 2;
 };
-
-#endif

@@ -298,7 +298,7 @@ DlgPrefControls::DlgPrefControls(QWidget * parent, MixxxMainWindow * mixxx,
     ComboBoxTooltips->addItem(tr("On (only in Library)")); // 2
     ComboBoxTooltips->addItem(tr("Off")); // 0
     // Update combo box
-    auto configTooltips = m_mixxx->getToolTipsCgf();
+    auto configTooltips = m_mixxx->getToolTipsCfg();
     // Add two mod-3 makes the on-disk order match up with the combo-box
     // order.
     ComboBoxTooltips->setCurrentIndex((configTooltips + 2) % 3);

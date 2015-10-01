@@ -32,7 +32,7 @@
 #include "upgrade.h"
 
 
-Upgrade::Upgrade() = default;
+Upgrade::Upgrade(QObject*pParent):QObject(pParent) {};
 Upgrade::~Upgrade() = default;
 // static 
 QString Upgrade::mixxx17HomePath() {
@@ -206,3 +206,8 @@ bool Upgrade::askReanalyzeBeats() {
     if (msgBox.clickedButton() == (QAbstractButton*)OverwriteButton) {return true;}
     return false;
 }
+
+bool Upgrade::isFirstRun()    const { return m_bFirstRun; };
+bool Upgrade::isUpgraded()    const { return m_bUpgraded; };
+bool Upgrade::rescanLibrary() const {return m_bRescanLibrary; };
+

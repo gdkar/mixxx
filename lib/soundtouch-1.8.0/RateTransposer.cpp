@@ -38,10 +38,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <memory.h>
-#include <assert.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include <memory>
+#include <cassert>
+#include <cstdlib>
+#include <cstdio>
 #include "RateTransposer.h"
 #include "InterpolateLinear.h"
 #include "InterpolateCubic.h"
@@ -49,45 +49,30 @@
 #include "AAFilter.h"
 
 using namespace soundtouch;
-
 // Define default interpolation algorithm here
 TransposerBase::ALGORITHM TransposerBase::algorithm = TransposerBase::CUBIC;
-
-
 // Constructor
 RateTransposer::RateTransposer() : FIFOProcessor(&outputBuffer)
+                                 , pAAFilter(new AAFilter(64))
+                                 , pTransposer(TransposerBase::newInstance())
 {
-    bUseAAFilter = true;
-
     // Instantiates the anti-alias filter
-    pAAFilter = new AAFilter(64);
-    pTransposer = TransposerBase::newInstance();
 }
-
-
-
 RateTransposer::~RateTransposer()
 {
     delete pAAFilter;
     delete pTransposer;
 }
-
-
-
 /// Enables/disables the anti-alias filter. Zero to disable, nonzero to enable
 void RateTransposer::enableAAFilter(bool newMode)
 {
     bUseAAFilter = newMode;
 }
-
-
 /// Returns nonzero if anti-alias filter is enabled.
 bool RateTransposer::isAAFilterEnabled() const
 {
     return bUseAAFilter;
 }
-
-
 AAFilter *RateTransposer::getAAFilter()
 {
     return pAAFilter;
@@ -99,31 +84,23 @@ AAFilter *RateTransposer::getAAFilter()
 // iRate, larger faster iRates.
 void RateTransposer::setRate(float newRate)
 {
-    double fCutoff;
-
     pTransposer->setRate(newRate);
-
     // design a new anti-alias filter
     if (newRate > 1.0f) 
     {
-        fCutoff = 0.5f / newRate;
+        pAAFilter->setCutoffFreq(0.5f / newRate);
     } 
     else 
     {
-        fCutoff = 0.5f * newRate;
+        pAAFilter->setCutoffFreq(0.5f * newRate);
     }
-    pAAFilter->setCutoffFreq(fCutoff);
 }
-
-
 // Adds 'nSamples' pcs of samples from the 'samples' memory position into
 // the input of the object.
 void RateTransposer::putSamples(const SAMPLETYPE *samples, uint nSamples)
 {
     processSamples(samples, nSamples);
 }
-
-
 // Transposes sample rate by applying anti-alias filter to prevent folding. 
 // Returns amount of samples returned in the "dest" buffer.
 // The maximum amount of samples that can be returned at a time is set by
@@ -131,12 +108,9 @@ void RateTransposer::putSamples(const SAMPLETYPE *samples, uint nSamples)
 void RateTransposer::processSamples(const SAMPLETYPE *src, uint nSamples)
 {
     uint count;
-
     if (nSamples == 0) return;
-
     // Store samples to input buffer
     inputBuffer.putSamples(src, nSamples);
-
     // If anti-alias filter is turned off, simply transpose without applying
     // the filter
     if (bUseAAFilter == false) 
@@ -144,18 +118,14 @@ void RateTransposer::processSamples(const SAMPLETYPE *src, uint nSamples)
         count = pTransposer->transpose(outputBuffer, inputBuffer);
         return;
     }
-
     assert(pAAFilter);
-
     // Transpose with anti-alias filter
     if (pTransposer->rate < 1.0f) 
     {
         // If the parameter 'Rate' value is smaller than 1, first transpose
         // the samples and then apply the anti-alias filter to remove aliasing.
-
         // Transpose the samples, store the result to end of "midBuffer"
         pTransposer->transpose(midBuffer, inputBuffer);
-
         // Apply the anti-alias filter for transposed samples in midBuffer
         pAAFilter->evaluate(outputBuffer, midBuffer);
     } 
@@ -178,16 +148,12 @@ void RateTransposer::processSamples(const SAMPLETYPE *src, uint nSamples)
 void RateTransposer::setChannels(int nChannels)
 {
     assert(nChannels > 0);
-
     if (pTransposer->numChannels == nChannels) return;
     pTransposer->setChannels(nChannels);
-
     inputBuffer.setChannels(nChannels);
     midBuffer.setChannels(nChannels);
     outputBuffer.setChannels(nChannels);
 }
-
-
 // Clears all the samples in the object
 void RateTransposer::clear()
 {
@@ -195,19 +161,14 @@ void RateTransposer::clear()
     midBuffer.clear();
     inputBuffer.clear();
 }
-
-
 // Returns nonzero if there aren't any samples available for outputting.
-int RateTransposer::isEmpty() const
+bool RateTransposer::empty() const
 {
-    int res;
-
-    res = FIFOProcessor::isEmpty();
+    auto res = 0;
+    res = FIFOProcessor::empty();
     if (res == 0) return 0;
-    return inputBuffer.isEmpty();
+    return inputBuffer.empty();
 }
-
-
 //////////////////////////////////////////////////////////////////////////////
 //
 // TransposerBase - Base class for interpolation
@@ -275,28 +236,16 @@ void TransposerBase::setRate(float newRate)
     rate = newRate;
 }
 
-
 // static factory function
 TransposerBase *TransposerBase::newInstance()
 {
-#ifdef SOUNDTOUCH_INTEGER_SAMPLES
-    // Notice: For integer arithmetics support only linear algorithm (due to simplest calculus)
-    return ::new InterpolateLinearInteger;
-#else
     switch (algorithm)
     {
-        case LINEAR:
-            return new InterpolateLinearFloat;
-
-        case CUBIC:
-            return new InterpolateCubic;
-
-        case SHANNON:
-            return new InterpolateShannon;
-
+        case LINEAR:  return new InterpolateLinearFloat;
+        case CUBIC:   return new InterpolateCubic;
+        case SHANNON: return new InterpolateShannon;
         default:
             assert(false);
             return NULL;
     }
-#endif
 }
