@@ -19,6 +19,7 @@ _Pragma("once")
 #include <QString>
 #include <QList>
 #include <QHash>
+#include <atomic>
 
 #include "util/types.h"
 #include "util/defs.h"
@@ -94,22 +95,19 @@ class SoundManager : public QObject {
     void devicesSetup(); // emitted when the sound devices have been set up
     void outputRegistered(AudioOutput output, AudioSource *src);
     void inputRegistered(AudioInput input, AudioDestination *dest);
-
   private:
     void setJACKName() const;
-
-    EngineMaster *m_pMaster;
+    EngineMaster *m_pMaster = nullptr;
     ConfigObject<ConfigValue> *m_pConfig;
-    bool m_paInitialized;
+    std::atomic<bool> m_paInitialized{false};
     unsigned int m_jackSampleRate;
     QList<SoundDevice*> m_devices;
     QList<unsigned int> m_samplerates;
     QList<CSAMPLE*> m_inputBuffers;
-
     SoundManagerConfig m_config;
-    SoundDevice* m_pErrorDevice;
+    SoundDevice* m_pErrorDevice = nullptr;
     QHash<AudioOutput, AudioSource*> m_registeredSources;
     QHash<AudioInput, AudioDestination*> m_registeredDestinations;
-    ControlObject* m_pControlObjectSoundStatusCO;
-    ControlObject* m_pControlObjectVinylControlGainCO;
+    ControlObject* m_pControlObjectSoundStatusCO = nullptr;
+    ControlObject* m_pControlObjectVinylControlGainCO = nullptr;
 };
