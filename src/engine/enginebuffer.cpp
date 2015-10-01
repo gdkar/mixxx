@@ -199,7 +199,7 @@ EngineBuffer::~EngineBuffer() {
 double EngineBuffer::fractionalPlayposFromAbsolute(double absolutePlaypos) {
     double fFractionalPlaypos = 0.0;
     if (m_trackSamplesOld != 0.) {
-        fFractionalPlaypos = math_min<double>(absolutePlaypos, m_trackSamplesOld);
+        fFractionalPlaypos = std::min<double>(absolutePlaypos, m_trackSamplesOld);
         fFractionalPlaypos /= m_trackSamplesOld;
     }
     return fFractionalPlaypos;

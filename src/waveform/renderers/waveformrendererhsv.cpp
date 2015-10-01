@@ -106,8 +106,8 @@ void WaveformRendererHSV::draw(QPainter* painter,
         // We now know that some subset of [visualFrameStart, visualFrameStop]
         // lies within the valid range of visual frames. Clamp
         // visualFrameStart/Stop to within [0, lastVisualFrame].
-        visualFrameStart = math_clamp(visualFrameStart, 0, lastVisualFrame);
-        visualFrameStop = math_clamp(visualFrameStop, 0, lastVisualFrame);
+        visualFrameStart = clamp(visualFrameStart, 0, lastVisualFrame);
+        visualFrameStop = clamp(visualFrameStop, 0, lastVisualFrame);
 
         int visualIndexStart = visualFrameStart * 2;
         int visualIndexStop = visualFrameStop * 2;
@@ -121,14 +121,14 @@ void WaveformRendererHSV::draw(QPainter* painter,
              i >= 0 && i + 1 < dataSize && i + 1 <= visualIndexStop; i += 2) {
             const WaveformData& waveformData = *(data + i);
             const WaveformData& waveformDataNext = *(data + i + 1);
-            maxLow[0] = math_max(maxLow[0], (int)waveformData.filtered.low);
-            maxLow[1] = math_max(maxLow[1], (int)waveformDataNext.filtered.low);
-            maxMid[0] = math_max(maxMid[0], (int)waveformData.filtered.mid);
-            maxMid[1] = math_max(maxMid[1], (int)waveformDataNext.filtered.mid);
-            maxHigh[0] = math_max(maxHigh[0], (int)waveformData.filtered.high);
-            maxHigh[1] = math_max(maxHigh[1], (int)waveformDataNext.filtered.high);
-            maxAll[0] = math_max(maxAll[0], (int)waveformData.filtered.all);
-            maxAll[1] = math_max(maxAll[1], (int)waveformDataNext.filtered.all);
+            maxLow[0] = std::max(maxLow[0], (int)waveformData.filtered.low);
+            maxLow[1] = std::max(maxLow[1], (int)waveformDataNext.filtered.low);
+            maxMid[0] = std::max(maxMid[0], (int)waveformData.filtered.mid);
+            maxMid[1] = std::max(maxMid[1], (int)waveformDataNext.filtered.mid);
+            maxHigh[0] = std::max(maxHigh[0], (int)waveformData.filtered.high);
+            maxHigh[1] = std::max(maxHigh[1], (int)waveformDataNext.filtered.high);
+            maxAll[0] = std::max(maxAll[0], (int)waveformData.filtered.all);
+            maxAll[1] = std::max(maxAll[1], (int)waveformDataNext.filtered.all);
         }
 
         if (maxAll[0] && maxAll[1]) {
@@ -154,12 +154,12 @@ void WaveformRendererHSV::draw(QPainter* painter,
                 case Qt::AlignBottom :
                     painter->drawLine(
                         x, m_waveformRenderer->getHeight(),
-                        x, m_waveformRenderer->getHeight() - (int)(heightFactor*(float)math_max(maxAll[0],maxAll[1])));
+                        x, m_waveformRenderer->getHeight() - (int)(heightFactor*(float)std::max(maxAll[0],maxAll[1])));
                     break;
                 case Qt::AlignTop :
                     painter->drawLine(
                         x, 0,
-                        x, (int)(heightFactor*(float)math_max(maxAll[0],maxAll[1])));
+                        x, (int)(heightFactor*(float)std::max(maxAll[0],maxAll[1])));
                     break;
                 default :
                     painter->drawLine(

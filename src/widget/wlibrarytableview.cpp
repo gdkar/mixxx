@@ -119,7 +119,7 @@ void WLibraryTableView::setTrackTableFont(const QFont& font) {
 void WLibraryTableView::setTrackTableRowHeight(int rowHeight) {
     QFontMetrics metrics(font());
     int fontHeightPx = metrics.height();
-    verticalHeader()->setDefaultSectionSize(math_max(
+    verticalHeader()->setDefaultSectionSize(std::max(
             rowHeight, fontHeightPx));
 }
 

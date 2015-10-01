@@ -224,15 +224,7 @@
 //	  RF_COMBINED -- easy to understand code, lower accuracy
 //	  RF_CMDLIST  -- faster pre-compiled code
 //
-
-#ifndef RF_COMBINED
-#ifndef RF_CMDLIST
-
-#define RF_CMDLIST
-
-#endif
-#endif
-
+#define RF_COMBINED 1
 //
 //	Includes
 //
@@ -1078,8 +1070,6 @@ des_lpba(double rate, double f0, double f1, int order, int n_arg, double *arg) {
    for (a= 0; a<=max*2; a++) ff->val[a] *= adj;
    return ff;
 }
-
-
 //
 //	Filter table
 //
@@ -1234,7 +1224,6 @@ fid_design(const char *spec, double rate, double freq0, double freq1, int f_adj,
    Spec sp;
    double f0, f1;
    char *err;
-
    // Parse the filter-spec
    sp.spec= spec;
    sp.in_f0= freq0;
@@ -1244,13 +1233,11 @@ fid_design(const char *spec, double rate, double freq0, double freq1, int f_adj,
    if (err) error("%s", err);
    f0= sp.f0;
    f1= sp.f1;
-
    // Adjust frequencies to range 0-0.5, and check them
    f0 /= rate;
    if (f0 > 0.5) error("Frequency of %gHz out of range with sampling rate of %gHz", f0*rate, rate);
    f1 /= rate;
    if (f1 > 0.5) error("Frequency of %gHz out of range with sampling rate of %gHz", f1*rate, rate);
-
    // Okay we now have a successful spec-match to filter[sp.fi], and sp.n_arg
    // args are now in sp.argarr[]
 
@@ -1261,7 +1248,6 @@ fid_design(const char *spec, double rate, double freq0, double freq1, int f_adj,
       rv= auto_adjust_dual(&sp, rate, f0, f1);
    else 
       rv= auto_adjust_single(&sp, rate, f0);
-   
    // Generate a long description if required
    if (descp) {
       char *fmt= filter[sp.fi].txt;
@@ -1375,19 +1361,16 @@ auto_adjust_dual(Spec *sp, double rate, double f0, double f1) {
    int cnt_design= 0;
 
 #define DESIGN(mm,ww) { if (rv) {free(rv);rv= 0;} \
-   rv= design(rate, mm-ww, mm+ww, sp->order, sp->n_arg, sp->argarr); \
-   r0= fid_response(rv, f0); r1= fid_response(rv, f1); \
+   rv = design(rate, mm-ww, mm+ww, sp->order, sp->n_arg, sp->argarr); \
+   r0 = fid_response(rv, f0); r1= fid_response(rv, f1); \
    err0= fabs(M301DB-r0); err1= fabs(M301DB-r1); cnt_design++; }
-
 #define INC_WID ((r0+r1 < 1.0) == bpass)
 #define INC_MID ((r0 > r1) == bpass)
 #define MATCH (err0 < 0.000000499 && err1 < 0.000000499)
 #define PERR (err0+err1)
-
    DESIGN(mid, wid);
    bpass= (fid_response(rv, 0) < 0.5);
    delta= wid * 0.5;
-   
    // Try delta changes until we get there
    for (cnt= 0; 1; cnt++, delta *= 0.51) {
       DESIGN(mid, wid);		// I know -- this is redundant
@@ -1419,11 +1402,8 @@ auto_adjust_dual(Spec *sp, double rate, double f0, double f1) {
 #undef MATCH
 #undef PERR
 #undef DESIGN
-
    return rv;
 }
-
-
 //
 //	Expand a specification string to the given buffer; if out of
 //	space, drops dead
@@ -1479,22 +1459,18 @@ fid_design_coef(double *coef, int n_coef, const char *spec, double rate,
    static double const_one= 1;
    int n_iir, n_fir;
    int iir_cbm, fir_cbm;
-
    while (ff->typ) {
       if (ff->typ == 'F' && ff->len == 1) {
-	 gain *= ff->val[0];
-	 ff= FFNEXT(ff);
-	 continue;
+        gain *= ff->val[0];
+        ff= FFNEXT(ff);
+        continue;
       }
-
       if (ff->typ != 'I' && ff->typ != 'F')
-	 error("fid_design_coef can't handle FidFilter type: %c", ff->typ);
-
+        error("fid_design_coef can't handle FidFilter type: %c", ff->typ);
       // Initialise to safe defaults
-      iir= fir= &const_one;
-      n_iir= n_fir= 1;
-      iir_cbm= fir_cbm= ~0;
-
+      iir = fir = &const_one;
+      n_iir   = n_fir   = 1;
+      iir_cbm = fir_cbm = ~0;
       // See if we have an IIR filter
       if (ff->typ == 'I') {
           iir= ff->val;
@@ -1504,7 +1480,6 @@ fid_design_coef(double *coef, int n_coef, const char *spec, double rate,
           ff= FFNEXT(ff);
           gain *= iir_adj;
       }
-
       // See if we have an FIR filter
       if (ff->typ == 'F') {
           fir= ff->val;
@@ -1515,32 +1490,26 @@ fid_design_coef(double *coef, int n_coef, const char *spec, double rate,
       // Dump out all non-const coefficients in reverse order
       len= n_fir > n_iir ? n_fir : n_iir;
       for (a= len-1; a>=0; a--) {
-	 // Output IIR if present and non-const
-	 if (a < n_iir && a>0 &&  !(iir_cbm & (1<<(a<15?a:15)))) {
-	    if (cnt++ < n_coef) *coef++= iir_adj * iir[a];
-	 }
-
-	 // Output FIR if present and non-const
-	 if (a < n_fir && 
-	     !(fir_cbm & (1<<(a<15?a:15)))) {
-	    if (cnt++ < n_coef) *coef++= fir[a];
-	 }
+          // Output IIR if present and non-const
+          if (a < n_iir && a>0 &&  !(iir_cbm & (1<<(a<15?a:15)))) {
+              if (cnt++ < n_coef) *coef++= iir_adj * iir[a];
+          }
+          // Output FIR if present and non-const
+          if (a < n_fir &&  !(fir_cbm & (1<<(a<15?a:15)))) {
+              if (cnt++ < n_coef) *coef++= fir[a];
+          }
       }
    }
-
    if (cnt != n_coef)
       error("fid_design_coef called with the wrong number of coefficients.\n"
 	    "  Given %d, expecting %d: (\"%s\",%g,%g,%g,%d)",
 	    n_coef, cnt, spec, rate, freq0, freq1, adj);
-   
    free(filt);
    return gain;
 }
-   
 //
 //	List all the known filters to the given file handle
 //
-
 void 
 fid_list_filters(FILE *out) {
    int a;
@@ -1895,15 +1864,12 @@ fid_cat(int freeme, ...) {
       if (freeme) free(ff0);
    }
    va_end(ap);
-
    // Final element already zero'd
    return rv;
 }
-
 //
 //	Support for fid_parse
 //
-
 // Skip white space (including comments)
 static void 
 skipWS(char **pp) {
@@ -1918,7 +1884,6 @@ skipWS(char **pp) {
    }
    *pp= p;
 }
-
 // Grab a word from the input into the given buffer.  Returns 0: end
 // of file or error, else 1: success.  Error is indicated when the
 // word doesn't fit in the buffer.
@@ -1926,25 +1891,19 @@ static int
 grabWord(char **pp, char *buf, int buflen) {
    char *p, *q;
    int len; 
-   
    skipWS(pp);
    p= *pp;
    if (!*p) return 0;
-
    q= p;
-   if (*q == ',' || *q == ';' || *q == ')' || *q == ']' || *q == '}') {
-      q++;
-   } else {
+   if (*q == ',' || *q == ';' || *q == ')' || *q == ']' || *q == '}') q++;
+   else {
       while (*q && *q != '#' && !isspace(*q) && 
-	     (*q != ',' && *q != ';' && *q != ')' && *q != ']' && *q != '}'))
-	 q++;
+	     (*q != ',' && *q != ';' && *q != ')' && *q != ']' && *q != '}')) q++;
    }
    len= q-p;
    if (len >= buflen) return 0;
-   
    memcpy(buf, p, len);
    buf[len]= 0;
-   
    *pp= q;
    return 1;
 }
@@ -1982,12 +1941,11 @@ fid_parse(double rate, char **pp, FidFilter **ffp) {
 #define INCBUF { tmp= (char*)realloc(rv, (rvend-rv) * 2); if (!tmp) error("Out of memory"); \
  rvend= (rvend-rv) * 2 + tmp; rvp= (rvp-rv) + tmp; \
  curr= (FidFilter*)(((char*)curr) - rv + tmp); rv= tmp; }
-   
    while (1) {
       rew= p;
       if (!grabWord(&p, buf, sizeof(buf))) {
-	 if (*p) ERR(p, strdupf("Filter element unexpectedly long -- syntax error?"));
-	 buf[0]= 0;
+          if (*p) ERR(p, strdupf("Filter element unexpectedly long -- syntax error?"));
+          buf[0]= 0;
       }
       if (!buf[0] || !buf[1]) switch (buf[0]) {
        default:
@@ -1998,75 +1956,69 @@ fid_parse(double rate, char **pp, FidFilter **ffp) {
        case ')':
        case ']':
        case '}':
-	  // End of filter, return it
-	  tmp= (char*)realloc(rv, (rvp-rv) + xtra);
-	  if (!tmp) error("Out of memory");
-	  curr= (FidFilter*)((rvp-rv) + tmp);
-	  curr->typ= 0; curr->cbm= 0; curr->len= 0;
-	  *pp= buf[0] ? (p-1) : p;
-	  *ffp= (FidFilter*)tmp;
-	  return 0;
+            // End of filter, return it
+            tmp= (char*)realloc(rv, (rvp-rv) + xtra);
+            if (!tmp) error("Out of memory");
+            curr= (FidFilter*)((rvp-rv) + tmp);
+            curr->typ= 0; curr->cbm= 0; curr->len= 0;
+            *pp= buf[0] ? (p-1) : p;
+            *ffp= (FidFilter*)tmp;
+            return 0;
        case '/':
-	  if (typ > 0) ERR(rew, strdupf("Filter syntax error; unexpected '/'"));
-	  typ= 'I';
-	  continue;
+            if (typ > 0) ERR(rew, strdupf("Filter syntax error; unexpected '/'"));
+            typ= 'I';
+            continue;
        case 'x':
-	  if (typ > 0) ERR(rew, strdupf("Filter syntax error; unexpected 'x'"));
-	  typ= 'F';
-	  continue;
+            if (typ > 0) ERR(rew, strdupf("Filter syntax error; unexpected 'x'"));
+            typ= 'F';
+            continue;
       }
 
       if (typ < 0) typ= 'F';		// Assume 'x' if missing
       if (!typ) ERR(p, strdupf("Expecting a 'x' or '/' before this"));
-
       if (1 != sscanf(buf, "%lf %c", &val, &dmy)) {
-	 // Must be a predefined filter
-	 FidFilter *ff;
-	 FidFilter *ff1;
-	 Spec sp;
-	 double f0, f1;
-	 char *err;
-	 int len;
+          // Must be a predefined filter
+          FidFilter *ff;
+          FidFilter *ff1;
+          Spec sp;
+          double f0, f1;
+          char *err;
+          int len;
 
-	 if (typ != 'F') ERR(rew, strdupf("Predefined filters cannot be used with '/'"));
+          if (typ != 'F') ERR(rew, strdupf("Predefined filters cannot be used with '/'"));
 
-	 // Parse the filter-spec
-	 memset(&sp, 0, sizeof(sp));
-	 sp.spec= buf;
-	 sp.in_f0= sp.in_f1= -1;
-	 if ((err= parse_spec(&sp))) ERR(rew, err);
-	 f0= sp.f0;
-	 f1= sp.f1;
-	 
-	 // Adjust frequencies to range 0-0.5, and check them
-	 f0 /= rate;
-	 if (f0 > 0.5) ERR(rew, strdupf("Frequency of %gHz out of range with "
-					"sampling rate of %gHz", f0*rate, rate));
-	 f1 /= rate;
-	 if (f1 > 0.5) ERR(rew, strdupf("Frequency of %gHz out of range with "
-					"sampling rate of %gHz", f1*rate, rate));
-	 
-	 // Okay we now have a successful spec-match to filter[sp.fi], and sp.n_arg
-	 // args are now in sp.argarr[]
-	 
-	 // Generate the filter
-	 if (!sp.adj)
-	    ff= filter[sp.fi].rout(rate, f0, f1, sp.order, sp.n_arg, sp.argarr);
-	 else if (strstr(filter[sp.fi].fmt, "#R"))
-	    ff= auto_adjust_dual(&sp, rate, f0, f1);
-	 else 
-	    ff= auto_adjust_single(&sp, rate, f0);
-
-	 // Append it to our FidFilter to return
-	 for (ff1= ff; ff1->typ; ff1= FFNEXT(ff1)) ;
-	 len= ((char*)ff1-(char*)ff);
-	 while (rvp + len + xtra >= rvend) INCBUF;
-	 memcpy(rvp, ff, len); rvp += len;
-	 free(ff);
-	 typ= 0;
-	 continue;
+          // Parse the filter-spec
+          memset(&sp, 0, sizeof(sp));
+          sp.spec= buf;
+          sp.in_f0= sp.in_f1= -1;
+          if ((err= parse_spec(&sp))) ERR(rew, err);
+          f0= sp.f0;
+          f1= sp.f1;
+          // Adjust frequencies to range 0-0.5, and check them
+          f0 /= rate;
+          if (f0 > 0.5) ERR(rew, strdupf("Frequency of %gHz out of range with "
+                  "sampling rate of %gHz", f0*rate, rate));
+          f1 /= rate;
+          if (f1 > 0.5) ERR(rew, strdupf("Frequency of %gHz out of range with "
+                  "sampling rate of %gHz", f1*rate, rate));
+          // Okay we now have a successful spec-match to filter[sp.fi], and sp.n_arg
+          // args are now in sp.argarr[]
+          // Generate the filter
+          if (!sp.adj)
+              ff= filter[sp.fi].rout(rate, f0, f1, sp.order, sp.n_arg, sp.argarr);
+          else if (strstr(filter[sp.fi].fmt, "#R"))
+              ff= auto_adjust_dual(&sp, rate, f0, f1);
+          else 
+              ff= auto_adjust_single(&sp, rate, f0);
+          // Append it to our FidFilter to return
+          for (ff1= ff; ff1->typ; ff1= FFNEXT(ff1)) ;
+          len= ((char*)ff1-(char*)ff);
+          while (rvp + len + xtra >= rvend) INCBUF;
+          memcpy(rvp, ff, len); rvp += len;
+          free(ff);
+          typ= 0;
+          continue;
       }
-
       // Must be a list of coefficients
       curr= (FidFilter*)rvp;
       rvp += xtra;
@@ -2076,43 +2028,32 @@ fid_parse(double rate, char **pp, FidFilter **ffp) {
       curr->len= 1;
       *(double*)rvp= val;
       rvp += sizeof(double);
-
       // See how many more coefficients we can pick up
       while (1) {
-	 rew= p;
-	 if (!grabWord(&p, buf, sizeof(buf))) {
-	    if (*p) ERR(p, strdupf("Filter element unexpectedly long -- syntax error?"));
-	    buf[0]= 0;
-	 }
-	 if (1 != sscanf(buf, "%lf %c", &val, &dmy)) {
-	    p= rew;
-	    break;
-	 }
-	 while (rvp + sizeof(double) >= rvend) INCBUF;
-	 curr->len++;
-	 *(double*)rvp= val;
-	 rvp += sizeof(double);
+          rew= p;
+          if (!grabWord(&p, buf, sizeof(buf))) {
+              if (*p) ERR(p, strdupf("Filter element unexpectedly long -- syntax error?"));
+              buf[0]= 0;
+          }
+          if (1 != sscanf(buf, "%lf %c", &val, &dmy)) {
+              p= rew;
+              break;
+          }
+          while (rvp + sizeof(double) >= rvend) INCBUF;
+          curr->len++;
+          *(double*)rvp= val;
+          rvp += sizeof(double);
       }
       typ= 0;
       continue;
    }
-
 #undef INCBUF
 #undef ERR
-
    return strdupf("Internal error, shouldn't reach here");
 }
-
-
 //
 //	Filter-running code
 //
 
-#ifdef RF_COMBINED
 #include "fidrf_combined.h"
-#endif
-
-#ifdef RF_CMDLIST
-#include "fidrf_cmdlist.h"
-#endif
 // END //

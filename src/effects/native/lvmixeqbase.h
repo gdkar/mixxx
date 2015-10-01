@@ -107,7 +107,7 @@ class LVMixEQEffectGroupState {
                 }
                 // ramping is done in one of the following calls if
                 // pState->m_rampHoldOff >= numSamples;
-                copySamples = math_min<int>(m_rampHoldOff, numSamples);
+                copySamples = std::min<int>(m_rampHoldOff, numSamples);
                 m_rampHoldOff -= copySamples;
                 rampingSamples = numSamples - copySamples;
                 SampleUtil::copy3WithGain(pOutput,

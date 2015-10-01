@@ -298,7 +298,7 @@ void MidiController::processInputMapping(const MidiInputMapping& mapping,
                 // directly to 0x40. See ControlLinPotmeterBehavior and
                 // ControlPotmeterBehavior for more fun of this variety :).
                 newValue = static_cast<double>(iValue) / 128.0;
-                newValue = math_min(newValue, 127.0);
+                newValue = std::min(newValue, 127.0);
                 // Erase the queued message since we processed it.
                 m_fourteen_bit_queued_mappings.erase(it);
                 found = true;
@@ -322,7 +322,7 @@ void MidiController::processInputMapping(const MidiInputMapping& mapping,
         // directly to 0x40. See ControlLinPotmeterBehavior and
         // ControlPotmeterBehavior for more fun of this variety :).
         newValue = static_cast<double>(iValue) / 128.0;
-        newValue = math_min(newValue, 127.0);
+        newValue = std::min(newValue, 127.0);
     } else {
         double currControlValue = pCO->getParameter() * 128.0;
         newValue = computeValue(mapping.options, currControlValue, value);

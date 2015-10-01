@@ -121,15 +121,15 @@ void GLWaveformRendererFilteredSignal::draw(QPainter* painter, QPaintEvent* /*ev
 
                 glColor4f(m_lowColor_r, m_lowColor_g, m_lowColor_b, 0.8);
                 glVertex2f(float(visualIndex),0.f);
-                glVertex2f(float(visualIndex),lowGain*math_max(maxLow[0],maxLow[1]));
+                glVertex2f(float(visualIndex),lowGain*std::max(maxLow[0],maxLow[1]));
 
                 glColor4f(m_midColor_r, m_midColor_g, m_midColor_b, 0.85);
                 glVertex2f(float(visualIndex),0.f);
-                glVertex2f(float(visualIndex),midGain*math_max(maxMid[0],maxMid[1]));
+                glVertex2f(float(visualIndex),midGain*std::max(maxMid[0],maxMid[1]));
 
                 glColor4f(m_highColor_r, m_highColor_g, m_highColor_b, 0.9);
                 glVertex2f(float(visualIndex),0.f);
-                glVertex2f(float(visualIndex),highGain*math_max(maxHigh[0],maxHigh[1]));
+                glVertex2f(float(visualIndex),highGain*std::max(maxHigh[0],maxHigh[1]));
             }
         }
         glEnd();

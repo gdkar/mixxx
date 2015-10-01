@@ -162,7 +162,7 @@ void EffectChainSlot::slotChainEffectsChanged(bool shouldEmit) {
             if (pSlot)
                 pSlot->loadEffect(pEffect);
         }
-        m_pControlNumEffects->setAndConfirm(math_min(
+        m_pControlNumEffects->setAndConfirm(std::min(
             static_cast<unsigned int>(m_slots.size()),
             m_pEffectChain->numEffects()));
         if (shouldEmit) {
@@ -342,7 +342,7 @@ void EffectChainSlot::slotControlChainMix(double v) {
     // Clamp to [0.0, 1.0]
     if (v < 0.0 || v > 1.0) {
         qWarning() << debugString() << "value out of limits";
-        v = math_clamp(v, 0.0, 1.0);
+        v = clamp(v, 0.0, 1.0);
         m_pControlChainMix->set(v);
     }
     if (m_pEffectChain) {
@@ -356,7 +356,7 @@ void EffectChainSlot::slotControlChainSuperParameter(double v) {
     // Clamp to [0.0, 1.0]
     if (v < 0.0 || v > 1.0) {
         qWarning() << debugString() << "value out of limits";
-        v = math_clamp(v, 0.0, 1.0);
+        v = clamp(v, 0.0, 1.0);
         m_pControlChainSuperParameter->set(v);
     }
     for (int i = 0; i < m_slots.size(); ++i) {

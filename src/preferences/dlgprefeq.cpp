@@ -613,8 +613,8 @@ double DlgPrefEQ::getEqFreq(int sliderVal, int minValue, int maxValue) {
     return result;
 }
 void DlgPrefEQ::validate_levels() {
-    m_highEqFreq = math_clamp<double>(m_highEqFreq, kFrequencyLowerLimit, kFrequencyUpperLimit);
-    m_lowEqFreq = math_clamp<double>(m_lowEqFreq, kFrequencyLowerLimit,kFrequencyUpperLimit);
+    m_highEqFreq = clamp<double>(m_highEqFreq, kFrequencyLowerLimit, kFrequencyUpperLimit);
+    m_lowEqFreq = clamp<double>(m_lowEqFreq, kFrequencyLowerLimit,kFrequencyUpperLimit);
     if (m_lowEqFreq == m_highEqFreq) {
         if (m_lowEqFreq == kFrequencyLowerLimit) {
             ++m_highEqFreq;

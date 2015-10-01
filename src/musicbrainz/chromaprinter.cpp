@@ -28,7 +28,7 @@ namespace
         // Allocate a sample buffer with maximum size to avoid the
         // implicit allocation of a temporary buffer when reducing
         // the audio signal to stereo.
-        SampleBuffer sampleBuffer( math_max(numFrames * kFingerprintChannels, pAudioSource->frames2samples(numFrames)));
+        SampleBuffer sampleBuffer( std::max(numFrames * kFingerprintChannels, pAudioSource->frames2samples(numFrames)));
         DEBUG_ASSERT(2 == kFingerprintChannels); // implicit assumption of the next line
         const SINT readFrames = pAudioSource->readSampleFramesStereo(numFrames, &sampleBuffer);
         if (readFrames != numFrames) {

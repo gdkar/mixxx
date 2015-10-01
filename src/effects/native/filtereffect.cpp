@@ -111,13 +111,13 @@ void FilterEffect::processChannel(const ChannelHandle& handle,
         if (ratio < 1.414 && ratio >= 1) {
             ratio -= 1;
             double qmax = 2 + ratio * ratio * ratio * 29;
-            clampedQ = math_min(q, qmax);
+            clampedQ = std::min(q, qmax);
         } else if (ratio < 1 && ratio >= 0.7) {
-            clampedQ = math_min(q, 2.0);
+            clampedQ = std::min(q, 2.0);
         } else if (ratio < 0.7 && ratio > 0.1) {
             ratio -= 0.1;
             double qmax = 4 - 2 / 0.6 * ratio;
-            clampedQ = math_min(q, qmax);
+            clampedQ = std::min(q, qmax);
         }
         pState->m_pLowFilter->setFrequencyCorners(1, lpf, clampedQ);
         pState->m_pHighFilter->setFrequencyCorners(1, hpf, clampedQ);

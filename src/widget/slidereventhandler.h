@@ -52,7 +52,7 @@ class SliderEventHandler {
 
             // Clamp to the range [0, sliderLength - m_dHandleLength].
             if (m_dSliderLength - m_dHandleLength > 0.0) {
-                m_dPos = math_clamp(m_dPos, 0.0, m_dSliderLength - m_dHandleLength);
+                m_dPos = clamp(m_dPos, 0.0, m_dSliderLength - m_dHandleLength);
             }
             double newParameter = positionToParameter(m_dPos);
 
@@ -109,7 +109,7 @@ class SliderEventHandler {
         double newParameter = pWidget->getControlParameter() + wheelAdjustment;
 
         // Clamp to [0.0, 1.0]
-        newParameter = math_clamp(newParameter, 0.0, 1.0);
+        newParameter = clamp(newParameter, 0.0, 1.0);
 
         pWidget->setControlParameter(newParameter);
         onConnectedControlChanged(pWidget, newParameter);
@@ -136,7 +136,7 @@ class SliderEventHandler {
 
             // Clamp to [0.0, sliderLength - m_dHandleLength].
             if (m_dSliderLength - m_dHandleLength > 0.0) {
-                newPos = math_clamp(newPos, 0.0, m_dSliderLength - m_dHandleLength);
+                newPos = clamp(newPos, 0.0, m_dSliderLength - m_dHandleLength);
             }
 
             // Check a second time for no-ops. It's possible the parameter changed

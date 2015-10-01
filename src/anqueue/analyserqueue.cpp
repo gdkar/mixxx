@@ -144,7 +144,7 @@ bool AnalyserQueue::doAnalysis(TrackPointer tio, Mixxx::AudioSourcePointer pAudi
             << pAudioSource->getMaxFrameIndex();
         }
         const auto framesRemaining = pAudioSource->getMaxFrameIndex() - frameIndex;
-        const auto framesToRead    = math_min(kAnalysisFramesPerBlock, framesRemaining);
+        const auto framesToRead    = std::min(kAnalysisFramesPerBlock, framesRemaining);
         const auto framesRead      = pAudioSource->readSampleFramesStereo( framesToRead, &m_sampleBuffer);
         if ( framesRead > framesToRead || framesRead < 0 )
         {

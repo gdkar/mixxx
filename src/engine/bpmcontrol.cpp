@@ -173,14 +173,14 @@ void BpmControl::slotFileBpmChanged(double bpm) {
 
 void BpmControl::slotAdjustBeatsFaster(double v) {
     if (v > 0 && m_pBeats && (m_pBeats->getCapabilities() & Beats::BEATSCAP_SET)) {
-        double new_bpm = math_min(200.0, m_pBeats->getBpm() + .01);
+        double new_bpm = std::min(200.0, m_pBeats->getBpm() + .01);
         m_pBeats->setBpm(new_bpm);
     }
 }
 
 void BpmControl::slotAdjustBeatsSlower(double v) {
     if (v > 0 && m_pBeats && (m_pBeats->getCapabilities() & Beats::BEATSCAP_SET)) {
-        double new_bpm = math_max(10.0, m_pBeats->getBpm() - .01);
+        double new_bpm = std::max(10.0, m_pBeats->getBpm() - .01);
         m_pBeats->setBpm(new_bpm);
     }
 }
@@ -493,10 +493,10 @@ double BpmControl::calcSyncAdjustment(double my_percentage, bool userTweakingSyn
             const double adjust = 1.0 + (-error * kSyncAdjustmentProportional);
             // Cap the difference between the last adjustment and this one.
             double delta = adjust - m_dLastSyncAdjustment;
-            delta = math_clamp(delta, -kSyncDeltaCap, kSyncDeltaCap);
+            delta = clamp(delta, -kSyncDeltaCap, kSyncDeltaCap);
 
             // Cap the adjustment between -kSyncAdjustmentCap and +kSyncAdjustmentCap
-            adjustment = 1.0 + math_clamp(
+            adjustment = 1.0 + clamp(
                     m_dLastSyncAdjustment - 1.0 + delta,
                     -kSyncAdjustmentCap, kSyncAdjustmentCap);
         } else {

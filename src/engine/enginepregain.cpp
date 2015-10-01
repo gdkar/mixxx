@@ -107,7 +107,7 @@ void EnginePregain::process(CSAMPLE* pInOut, const int iBufferSize) {
     // (some corrupt files get really high replay gain values).
     // 10 allows a maximum replay Gain Boost * calculated replay gain of ~2
     float totalGain = (float)m_pPotmeterPregain->get() *
-            math_clamp(fReplayGainCorrection, 0.0f, 10.0f);
+            clamp(fReplayGainCorrection, 0.0f, 10.0f);
 
     m_pTotalGain->set(totalGain);
 

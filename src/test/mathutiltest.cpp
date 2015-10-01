@@ -32,15 +32,15 @@ const int MathUtilTest::VALUE_MAX = 2  * MathUtilTest::MAX;
 
 TEST_F(MathUtilTest, MathClampUnsafe) {
     for (int i = VALUE_MIN; i <= VALUE_MAX; ++i) {
-        EXPECT_LE(MIN, math_clamp(i, MIN, MAX));
-        EXPECT_GE(MAX, math_clamp(i, MIN, MAX));
-        EXPECT_EQ(MIN, math_clamp(i, MIN, MIN));
-        EXPECT_EQ(MAX, math_clamp(i, MAX, MAX));
+        EXPECT_LE(MIN, clamp(i, MIN, MAX));
+        EXPECT_GE(MAX, clamp(i, MIN, MAX));
+        EXPECT_EQ(MIN, clamp(i, MIN, MIN));
+        EXPECT_EQ(MAX, clamp(i, MAX, MAX));
         if (MIN >= i) {
-            EXPECT_EQ(MIN, math_clamp(i, MIN, MAX));
+            EXPECT_EQ(MIN, clamp(i, MIN, MAX));
         }
         if (MAX <= i) {
-            EXPECT_EQ(MAX, math_clamp(i, MIN, MAX));
+            EXPECT_EQ(MAX, clamp(i, MIN, MAX));
         }
     }
 }

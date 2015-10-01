@@ -85,7 +85,7 @@ bool WOverviewLMH::drawNextPixmapPart() {
     // Evaluate waveform ratio peak
 
     for (currentCompletion = m_actualCompletion; currentCompletion < nextCompletion; currentCompletion += 2) {
-        m_waveformPeak = math_max3(
+        m_waveformPeak = max3(
                 m_waveformPeak,
                 static_cast<float>(pWaveform->getAll(currentCompletion)),
                 static_cast<float>(pWaveform->getAll(currentCompletion + 1)));

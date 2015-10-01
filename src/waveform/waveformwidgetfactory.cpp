@@ -219,7 +219,7 @@ bool WaveformWidgetFactory::setWaveformWidget(WWaveformViewer* viewer,const QDom
     return true;
 }
 void WaveformWidgetFactory::setFrameRate(int frameRate) {
-    m_frameRate = math_clamp(frameRate, 1, 120);
+    m_frameRate = clamp(frameRate, 1, 120);
     if (m_config) m_config->set(ConfigKey("[Waveform]","FrameRate"), ConfigValue(m_frameRate));
     m_vsyncThread->setUsSyncIntervalTime(1e6 / m_frameRate);
 }
@@ -298,7 +298,7 @@ bool WaveformWidgetFactory::setWidgetTypeFromHandle(int handleIndex) {
 }
 
 void WaveformWidgetFactory::setDefaultZoom(int zoom) {
-    m_defaultZoom = math_clamp(zoom, WaveformWidgetRenderer::s_waveformMinZoom, WaveformWidgetRenderer::s_waveformMaxZoom);
+    m_defaultZoom = clamp(zoom, WaveformWidgetRenderer::s_waveformMinZoom, WaveformWidgetRenderer::s_waveformMaxZoom);
     if (m_config)  m_config->set(ConfigKey("[Waveform]","DefaultZoom"), ConfigValue(m_defaultZoom));
     for (int i = 0; i < m_waveformWidgetHolders.size(); i++)  m_waveformWidgetHolders[i].m_waveformViewer->setZoom(m_defaultZoom);
 }

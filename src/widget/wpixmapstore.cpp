@@ -199,8 +199,8 @@ void Paintable::draw(const QRectF& targetRect, QPainter* pPainter,
     if (m_draw_mode == FIXED) {
         // Only render the minimum overlapping rectangle between the source
         // and target.
-        QSizeF fixedSize(math_min(sourceRect.width(), targetRect.width()),
-                         math_min(sourceRect.height(), targetRect.height()));
+        QSizeF fixedSize(std::min(sourceRect.width(), targetRect.width()),
+                         std::min(sourceRect.height(), targetRect.height()));
         QRectF adjustedTarget(targetRect.topLeft(), fixedSize);
         QRectF adjustedSource(sourceRect.topLeft(), fixedSize);
         return drawInternal(adjustedTarget, pPainter, adjustedSource);
@@ -210,7 +210,7 @@ void Paintable::draw(const QRectF& targetRect, QPainter* pPainter,
 
         // Adjust the scale so that the scaling in both axes is equal.
         if (sx != sy) {
-            qreal scale = math_min(sx, sy);
+            qreal scale = std::min(sx, sy);
             QRectF adjustedTarget(targetRect.x(),
                                   targetRect.y(),
                                   scale * sourceRect.width(),
@@ -231,8 +231,8 @@ void Paintable::drawCentered(const QRectF& targetRect, QPainter* pPainter,
     if (m_draw_mode == FIXED) {
         // Only render the minimum overlapping rectangle between the source
         // and target.
-        QSizeF fixedSize(math_min(sourceRect.width(), targetRect.width()),
-                         math_min(sourceRect.height(), targetRect.height()));
+        QSizeF fixedSize(std::min(sourceRect.width(), targetRect.width()),
+                         std::min(sourceRect.height(), targetRect.height()));
 
         QRectF adjustedSource(sourceRect.topLeft(), fixedSize);
         QRectF adjustedTarget(QPointF(-adjustedSource.width() / 2.0,
@@ -245,7 +245,7 @@ void Paintable::drawCentered(const QRectF& targetRect, QPainter* pPainter,
 
         // Adjust the scale so that the scaling in both axes is equal.
         if (sx != sy) {
-            qreal scale = math_min(sx, sy);
+            qreal scale = std::min(sx, sy);
             qreal scaledWidth = scale * sourceRect.width();
             qreal scaledHeight = scale * sourceRect.height();
             QRectF adjustedTarget(-scaledWidth / 2.0, -scaledHeight / 2.0,

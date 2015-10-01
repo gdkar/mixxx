@@ -51,7 +51,7 @@ int ReadAheadManager::getNextSamples(double dRate, CSAMPLE* buffer, int requeste
             samples_needed = 0;
         } else {
             preloop_samples = samples_available;
-            samples_needed = math_clamp(samples_needed, 0, samples_available);
+            samples_needed = clamp(samples_needed, 0, samples_available);
         }
     }
     if (in_reverse) { start_sample = m_iCurrentPosition - samples_needed; }

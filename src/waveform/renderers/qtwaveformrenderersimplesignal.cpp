@@ -134,8 +134,8 @@ void QtWaveformRendererSimpleSignal::draw(QPainter* painter, QPaintEvent* /*even
             // visualFrameStop] lies within the valid range of visual
             // frames. Clamp visualFrameStart/Stop to within [0,
             // lastVisualFrame].
-            visualFrameStart = math_clamp(visualFrameStart, 0, lastVisualFrame);
-            visualFrameStop = math_clamp(visualFrameStop, 0, lastVisualFrame);
+            visualFrameStart = clamp(visualFrameStart, 0, lastVisualFrame);
+            visualFrameStop = clamp(visualFrameStop, 0, lastVisualFrame);
             auto visualIndexStart = visualFrameStart * 2 + channel;
             auto visualIndexStop = visualFrameStop * 2 + channel;
 
@@ -154,7 +154,7 @@ void QtWaveformRendererSimpleSignal::draw(QPainter* painter, QPaintEvent* /*even
             for (auto i = visualIndexStart; i >= 0 && i < dataSize && i <= visualIndexStop;i += channelSeparation) {
                 const auto& waveformData = *(data + i);
                 auto all = waveformData.filtered.all;
-                maxAll = math_max(maxAll, all);
+                maxAll = std::max(maxAll, all);
             }
             m_polygon.append(QPointF(x, (float)maxAll * direction));
         }

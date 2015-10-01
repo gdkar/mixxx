@@ -141,7 +141,7 @@ ConfigObject<ConfigValue>* Upgrade::versionUpgrade(const QString& settingsPath) 
         // 6 from everyone's replay gain should keep things consistent for
         // all users.
         auto oldReplayGain = config->getValueString(ConfigKey("[ReplayGain]", "InitialReplayGainBoost"), "6").toInt();
-        auto newReplayGain = math_max(-6, oldReplayGain - 6);
+        auto newReplayGain = std::max(-6, oldReplayGain - 6);
         config->set(ConfigKey("[ReplayGain]", "InitialReplayGainBoost"),ConfigValue(newReplayGain));
         // if everything until here worked fine we can mark the configuration as
         // updated

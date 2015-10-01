@@ -197,8 +197,8 @@ void WCoverArt::paintEvent(QPaintEvent*) {
         QSize widgetSize = size();
         QSize pixmapSize = toDraw.size();
 
-        int x = math_max(0, (widgetSize.width() - pixmapSize.width()) / 2);
-        int y = math_max(0, (widgetSize.height() - pixmapSize.height()) / 2);
+        int x = std::max(0, (widgetSize.width() - pixmapSize.width()) / 2);
+        int y = std::max(0, (widgetSize.height() - pixmapSize.height()) / 2);
         painter.drawPixmap(x, y, toDraw);
     }
 }

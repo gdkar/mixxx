@@ -44,13 +44,13 @@ class SoundDevice {
     inline const QString& getHostAPI() const {return m_hostAPI;}
     void setHostAPI(QString api);
     void setSampleRate(double sampleRate);
-    void setFramesPerBuffer(unsigned int framesPerBuffer);
+    void setFramesPerBuffer(size_t framesPerBuffer);
     virtual bool open(bool isClkRefDevice, int syncBuffers) = 0;
     virtual bool close() = 0;
     virtual void readProcess() = 0;
     virtual void writeProcess() = 0;
     virtual QString getError() const = 0;
-    virtual unsigned int getDefaultSampleRate() const = 0;
+    virtual size_t getDefaultSampleRate() const = 0;
     int getNumOutputChannels() const;
     int getNumInputChannels() const;
     SoundDeviceError addOutput(const AudioOutputBuffer& out);
@@ -63,15 +63,11 @@ class SoundDevice {
     bool operator==(const QString &other) const;
   protected:
     void composeOutputBuffer(CSAMPLE* outputBuffer,
-                             const unsigned int iFramesPerBuffer,
-                             const unsigned int readOffset,
-                             const unsigned int iFrameSize);
-    void composeInputBuffer(const CSAMPLE* inputBuffer,
-                            const unsigned int framesToPush,
-                            const unsigned int framesWriteOffset,
-                            const unsigned int iFrameSize);
-    void clearInputBuffer(const unsigned int framesToPush,
-                          const unsigned int framesWriteOffset);
+                             size_t iFramesPerBuffer,
+                             size_t readOffset,
+                             size_t iFrameSize);
+    void composeInputBuffer(const CSAMPLE* inputBuffer,size_t framesToPush,size_t framesWriteOffset,size_t iFrameSize);
+    void clearInputBuffer(const size_t framesToPush,size_t framesWriteOffset);
     ConfigObject<ConfigValue> *m_pConfig;
     // Pointer to the SoundManager object which we'll request audio from.
     SoundManager* m_pSoundManager;
@@ -87,7 +83,7 @@ class SoundDevice {
     double m_dSampleRate;
     // The name of the audio API used by this device.
     QString m_hostAPI;
-    unsigned int m_framesPerBuffer;
+    size_t m_framesPerBuffer;
     QList<AudioOutputBuffer> m_audioOutputs;
     QList<AudioInputBuffer> m_audioInputs;
 };

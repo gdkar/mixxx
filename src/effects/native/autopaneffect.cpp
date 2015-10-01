@@ -191,7 +191,7 @@ void AutoPanEffect::processChannel(const ChannelHandle& handle, PanGroupState* p
         gs.frac.setWithRampingApplied((sinusoid + 1.0f) / 2.0f);
         // apply the delay
         gs.delay->process(&pInput[i], &pOutput[i],
-                -0.005 * math_clamp(((gs.frac * 2.0) - 1.0f), -1.0, 1.0) * sampleRate);
+                -0.005 * clamp(((gs.frac * 2.0) - 1.0f), -1.0, 1.0) * sampleRate);
         double lawCoef = computeLawCoefficient(sinusoid);
         pOutput[i] *= gs.frac * lawCoef;
         pOutput[i+1] *= (1.0f - gs.frac) * lawCoef;

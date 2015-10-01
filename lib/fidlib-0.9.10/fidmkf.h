@@ -130,7 +130,6 @@
 
 _Pragma("once")
 //Hacks for crappy linker error in MSVC... - Albert
-#define TWOPI (2*M_PI)
 
 
 //
@@ -337,7 +336,7 @@ static void
 lowpass(double freq) {
    int a;
    // Adjust poles
-   freq *= TWOPI;
+   freq *= M_2_PI;
    for (a= 0; a<n_pol; a++) pol[a] *= freq;
    // Add zeros
    n_zer= n_pol;
@@ -353,7 +352,7 @@ static void
 highpass(double freq) {
    int a;
    // Adjust poles
-   freq *= TWOPI;
+   freq *= M_2_PI;
    for (a= 0; a<n_pol; ) {
       if (poltyp[a] == 1) {
         pol[a]= freq / pol[a];
@@ -377,8 +376,8 @@ highpass(double freq) {
 //
 static void 
 bandpass(double freq1, double freq2) {
-   double w0= TWOPI * sqrt(freq1*freq2);
-   double bw= 0.5 * TWOPI * (freq2-freq1);
+   double w0= M_2_PI * sqrt(freq1*freq2);
+   double bw= 0.5 * M_2_PI * (freq2-freq1);
    int a, b;
    if (n_pol * 2 > MAXPZ)  error("Maximum order for bandpass filters is %d", MAXPZ/2);
    // Run through the list backwards, expanding as we go
@@ -431,8 +430,8 @@ bandpass(double freq1, double freq2) {
 //
 static void 
 bandstop(double freq1, double freq2) {
-   double w0= TWOPI * sqrt(freq1*freq2);
-   double bw= 0.5 * TWOPI * (freq2-freq1);
+   double w0= M_2_PI * sqrt(freq1*freq2);
+   double bw= 0.5 * M_2_PI * (freq2-freq1);
    int a, b;
    if (n_pol * 2 > MAXPZ)  error("Maximum order for bandstop filters is %d", MAXPZ/2);
    // Run through the list backwards, expanding as we go
@@ -671,7 +670,7 @@ static void
 bandpass_res(double freq, double qfact) {
    double mag;
    double th0, th1, th2;
-   double theta= freq * TWOPI;
+   double theta= freq * M_2_PI;
    double val[2];
    double tmp1[2], tmp2[2], tmp3[2], tmp4[2];
    int cnt;
@@ -719,7 +718,7 @@ static void
 bandstop_res(double freq, double qfact) {
    bandpass_res(freq, qfact);
    zertyp[0]= 2; zertyp[1]= 0;
-   cexpj(zer, TWOPI * freq);
+   cexpj(zer, M_2_PI * freq);
 }
 //
 //	Setup poles/zeros for an allpass resonator
@@ -742,5 +741,5 @@ prop_integral(double freq) {
    pol[0]= 0.0;
    n_zer= 1;
    zertyp[0]= 1;
-   zer[0]= -TWOPI * freq;
+   zer[0]= -M_2_PI * freq;
 }

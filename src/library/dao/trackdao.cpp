@@ -1252,7 +1252,7 @@ TrackPointer TrackDAO::getTrackFromDB(TrackId trackId) const {
     QSqlRecord queryRecord = query.record();
     int recordCount = queryRecord.count();
     DEBUG_ASSERT_AND_HANDLE(recordCount == columnsCount) {
-        recordCount = math_min(recordCount, columnsCount);
+        recordCount = std::min(recordCount, columnsCount);
     }
 
     // Location is the first column.
