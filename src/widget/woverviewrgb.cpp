@@ -62,7 +62,7 @@ bool WOverviewRGB::drawNextPixmapPart() {
         auto green = low * lowColor_g + mid * midColor_g + high * highColor_g;
         auto blue = low * lowColor_b + mid * midColor_b + high * highColor_b;
         // Normalize and draw
-        auto max = max3(red, green, blue);
+        auto max = math_max3(red, green, blue);
         if (max > 0.0) {
             color.setRgbF(red / max, green / max, blue / max);
             painter.setPen(color);
@@ -77,7 +77,7 @@ bool WOverviewRGB::drawNextPixmapPart() {
         green = low * lowColor_g + mid * midColor_g + high * highColor_g;
         blue = low * lowColor_b + mid * midColor_b + high * highColor_b;
         // Normalize and draw
-        max = max3(red, green, blue);
+        max = math_max3(red, green, blue);
         if (max > 0.0) {
             color.setRgbF(red / max, green / max, blue / max);
             painter.setPen(color);
@@ -86,7 +86,7 @@ bool WOverviewRGB::drawNextPixmapPart() {
     }
     // Evaluate waveform ratio peak
     for (currentCompletion = static_cast<int>(m_actualCompletion);currentCompletion < nextCompletion; currentCompletion += 2) {
-        m_waveformPeak = max3(
+        m_waveformPeak = math_max3(
                 m_waveformPeak,
                 static_cast<float>(pWaveform->getAll(currentCompletion)),
                 static_cast<float>(pWaveform->getAll(currentCompletion + 1)));

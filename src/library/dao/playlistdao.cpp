@@ -856,7 +856,7 @@ void PlaylistDAO::shuffleTracks(const int playlistId, const QList<int>& position
     qsrand(seed);
     QHash<int,TrackId> trackPositionIds = allIds;
     QList<int> newPositions = positions;
-    const int searchDistance = std::max(trackPositionIds.count() / 4, 1);
+    const int searchDistance = math_max(trackPositionIds.count() / 4, 1);
 
     qDebug() << "Shuffling Tracks";
     qDebug() << "*** Search Distance: " << searchDistance;
@@ -911,8 +911,8 @@ void PlaylistDAO::shuffleTracks(const int playlistId, const QList<int>& position
 
             // Search around Track B for Track A
             searchForDuplicateTrack(
-                    clamp(trackBPosition - searchDistance, 0, playlistEnd),
-                    clamp(trackBPosition + searchDistance, 0, playlistEnd),
+                    math_clamp(trackBPosition - searchDistance, 0, playlistEnd),
+                    math_clamp(trackBPosition + searchDistance, 0, playlistEnd),
                     trackAId, trackAPosition, trackBPosition,
                     &trackPositionIds, &trackDistance);
             // Wrap search if needed
@@ -932,8 +932,8 @@ void PlaylistDAO::shuffleTracks(const int playlistId, const QList<int>& position
             }
             // Search around Track A for Track B
             searchForDuplicateTrack(
-                    clamp(trackAPosition - searchDistance, 0, playlistEnd),
-                    clamp(trackAPosition + searchDistance, 0, playlistEnd),
+                    math_clamp(trackAPosition - searchDistance, 0, playlistEnd),
+                    math_clamp(trackAPosition + searchDistance, 0, playlistEnd),
                     trackBId, trackBPosition, trackAPosition,
                     &trackPositionIds, &trackDistance);
             // Wrap search if needed

@@ -136,7 +136,7 @@ void SoundManager::queryDevices() {
     //qDebug() << "SoundManager::queryDevices()";
     clearDeviceList();
     PaError err = paNoError;
-    if (m_paInitialized.exchange(true)) 
+    if (!m_paInitialized.exchange(true)) 
     {
       if((err = Pa_Initialize())!=paNoError)
       {

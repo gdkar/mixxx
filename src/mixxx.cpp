@@ -1502,7 +1502,7 @@ void MixxxMainWindow::slotCheckboxVinylControl(int deck) {
 #endif
 }
 void MixxxMainWindow::slotNumDecksChanged(double dNumDecks) {
-    auto num_decks = std::min<int>(dNumDecks, kMaximumVinylControlInputs);
+    auto num_decks = math_min<int>(dNumDecks, kMaximumVinylControlInputs);
 #ifdef __VINYLCONTROL__
     // Only show menu items to activate vinyl inputs that exist.
     for (auto i = m_iNumConfiguredDecks; i < num_decks; ++i) {

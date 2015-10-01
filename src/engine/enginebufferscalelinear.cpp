@@ -166,7 +166,7 @@ CSAMPLE* EngineBufferScaleLinear::do_scale(CSAMPLE* buf,
 
         // Use up what's left of the internal buffer.
         int iNextSample = static_cast<int>(std::ceil(m_dNextFrame)) * 2;
-        int readSize = std::min<int>(m_bufferIntSize - iNextSample, samples_needed);
+        int readSize = math_min<int>(m_bufferIntSize - iNextSample, samples_needed);
         if (readSize > 0) {
             SampleUtil::copy(write_buf, &m_bufferInt[iNextSample], readSize);
             samples_needed -= readSize;
@@ -238,7 +238,7 @@ CSAMPLE* EngineBufferScaleLinear::do_scale(CSAMPLE* buf,
     // Multiply by 2 because it is predicting mono rates, while we want a stereo
     // number of samples.
     // 0 is never the right answer
-    int unscaled_samples_needed = std::max<int>(2, unscaled_frames_needed * 2);
+    int unscaled_samples_needed = math_max<int>(2, unscaled_frames_needed * 2);
 
     bool last_read_failed = false;
     CSAMPLE floor_sample[2];
@@ -284,7 +284,7 @@ CSAMPLE* EngineBufferScaleLinear::do_scale(CSAMPLE* buf,
                 screwups++;
             }
 
-            int samples_to_read = std::min<int>(kiLinearScaleReadAheadLength,
+            int samples_to_read = math_min<int>(kiLinearScaleReadAheadLength,
                                                 unscaled_samples_needed);
 
             m_bufferIntSize = m_pReadAheadManager->getNextSamples(

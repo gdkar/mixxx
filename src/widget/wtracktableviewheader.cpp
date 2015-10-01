@@ -59,7 +59,7 @@ QString HeaderViewState::saveState() const {
 
 void HeaderViewState::restoreState(QHeaderView* headers) {
     const int max_columns =
-            std::min(headers->count(), m_view_state.header_state_size());
+            math_min(headers->count(), m_view_state.header_state_size());
 
     typedef QMap<QString, mixxx::library::HeaderViewState::HeaderState*> state_map;
     state_map map;

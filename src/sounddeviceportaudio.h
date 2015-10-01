@@ -29,6 +29,7 @@ class SoundManager;
 /** Dynamically resolved function which allows us to enable a realtime-priority callback
     thread from ALSA/PortAudio. This must be dynamically resolved because PortAudio can't
     tell us if ALSA is compiled into it or not. */
+typedef int (*EnableAlsaRT)(PaStream* s, int enable);
 
 class ControlObject;
 class ControlObjectSlave;
@@ -60,7 +61,9 @@ class SoundDevicePortAudio : public SoundDevice {
                         CSAMPLE *output, const CSAMPLE* in,
                         const PaStreamCallbackTimeInfo *timeInfo,
                         PaStreamCallbackFlags statusFlags);
-    virtual size_t getDefaultSampleRate() const;
+    virtual unsigned int getDefaultSampleRate() const {
+        return m_deviceInfo ? static_cast<unsigned int>(m_deviceInfo->defaultSampleRate) : 44100;
+    }
   private:
     // PortAudio stream for this device.
     std::atomic<PaStream*> m_pStream{nullptr};
@@ -87,9 +90,25 @@ class SoundDevicePortAudio : public SoundDevice {
     int m_underflowUpdateCount = 0;
     std::atomic<int> m_underflowCount {0};
     std::atomic<int> m_overflowCount  {0};
-    static std::atomic<int> m_underflowHappend{0};
+    static std::atomic<int> m_underflowHappend;
     qint64 m_nsInAudioCb = 0;
     int m_framesSinceAudioLatencyUsageUpdate = 0;
     int m_syncBuffers = 2;
 };
-
+// Wrapper function to call SoundDevicePortAudio::callbackProcess. Used by
+// PortAudio, which knows nothing about C++.
+int paV19Callback(const void* inputBuffer, void* outputBuffer,
+                  unsigned long framesPerBuffer,
+                  const PaStreamCallbackTimeInfo* timeInfo,
+                  PaStreamCallbackFlags statusFlags,
+                  void* soundDevice);
+int paV19CallbackDrift(const void* inputBuffer, void* outputBuffer,
+                  unsigned long framesPerBuffer,
+                  const PaStreamCallbackTimeInfo* timeInfo,
+                  PaStreamCallbackFlags statusFlags,
+                  void* soundDevice);
+int paV19CallbackClkRef(const void* inputBuffer, void* outputBuffer,
+                  unsigned long framesPerBuffer,
+                  const PaStreamCallbackTimeInfo* timeInfo,
+                  PaStreamCallbackFlags statusFlags,
+                  void *soundDevice);

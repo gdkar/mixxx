@@ -49,7 +49,7 @@ int EngineFilterBessel8Low::setFrequencyCornersForIntDelay(
 
 
     double dDelay = kDelayFactor1 / desiredCorner1Ratio - kDelayFactor2 * desiredCorner1Ratio;
-    int iDelay =  clamp((int)(dDelay + 0.5), 0, maxDelay);
+    int iDelay =  math_clamp((int)(dDelay + 0.5), 0, maxDelay);
 
     double quantizedRatio;
     if (iDelay >= (int)(sizeof(delayRatioTable) / sizeof(double))) {

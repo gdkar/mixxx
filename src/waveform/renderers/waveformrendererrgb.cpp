@@ -97,8 +97,8 @@ void WaveformRendererRGB::draw(QPainter* painter,
         // We now know that some subset of [visualFrameStart, visualFrameStop]
         // lies within the valid range of visual frames. Clamp
         // visualFrameStart/Stop to within [0, lastVisualFrame].
-        visualFrameStart = clamp(visualFrameStart, 0, lastVisualFrame);
-        visualFrameStop = clamp(visualFrameStop, 0, lastVisualFrame);
+        visualFrameStart = math_clamp(visualFrameStart, 0, lastVisualFrame);
+        visualFrameStop = math_clamp(visualFrameStop, 0, lastVisualFrame);
 
         int visualIndexStart = visualFrameStart * 2;
         int visualIndexStop  = visualFrameStop * 2;
@@ -114,11 +114,11 @@ void WaveformRendererRGB::draw(QPainter* painter,
             const WaveformData& waveformData = *(data + i);
             const WaveformData& waveformDataNext = *(data + i + 1);
 
-            maxLow  = max3(maxLow,  waveformData.filtered.low,  waveformDataNext.filtered.low);
-            maxMid  = max3(maxMid,  waveformData.filtered.mid,  waveformDataNext.filtered.mid);
-            maxHigh = max3(maxHigh, waveformData.filtered.high, waveformDataNext.filtered.high);
-            maxAllA = std::max(maxAllA, waveformData.filtered.all);
-            maxAllB = std::max(maxAllB, waveformDataNext.filtered.all);
+            maxLow  = math_max3(maxLow,  waveformData.filtered.low,  waveformDataNext.filtered.low);
+            maxMid  = math_max3(maxMid,  waveformData.filtered.mid,  waveformDataNext.filtered.mid);
+            maxHigh = math_max3(maxHigh, waveformData.filtered.high, waveformDataNext.filtered.high);
+            maxAllA = math_max(maxAllA, waveformData.filtered.all);
+            maxAllB = math_max(maxAllB, waveformDataNext.filtered.all);
         }
 
         qreal maxLowF = maxLow * lowGain;
@@ -130,7 +130,7 @@ void WaveformRendererRGB::draw(QPainter* painter,
         qreal blue  = maxLowF * m_rgbLowColor_b + maxMidF * m_rgbMidColor_b + maxHighF * m_rgbHighColor_b;
 
         // Compute maximum (needed for value normalization)
-        qreal max = max3(red, green, blue);
+        qreal max = math_max3(red, green, blue);
 
         // Prevent division by zero
         if (max > 0.0f) {
@@ -142,12 +142,12 @@ void WaveformRendererRGB::draw(QPainter* painter,
                 case Qt::AlignBottom :
                     painter->drawLine(
                         x, m_waveformRenderer->getHeight(),
-                        x, m_waveformRenderer->getHeight() - (int)(heightFactor*(float)std::max(maxAllA,maxAllB)));
+                        x, m_waveformRenderer->getHeight() - (int)(heightFactor*(float)math_max(maxAllA,maxAllB)));
                     break;
                 case Qt::AlignTop :
                     painter->drawLine(
                         x, 0,
-                        x, (int)(heightFactor*(float)std::max(maxAllA,maxAllB)));
+                        x, (int)(heightFactor*(float)math_max(maxAllA,maxAllB)));
                     break;
                 default :
                     painter->drawLine(

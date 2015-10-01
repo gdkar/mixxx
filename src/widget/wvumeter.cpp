@@ -107,7 +107,7 @@ void WVuMeter::setPixmaps(PixmapSource source,bool bHorizontal, Paintable::DrawM
 
 void WVuMeter::onConnectedControlChanged(double dParameter, double dValue) {
     Q_UNUSED(dValue);
-    m_dParameter = clamp(dParameter, 0.0, 1.0);
+    m_dParameter = math_clamp(dParameter, 0.0, 1.0);
 
     if (dParameter > 0.0) {
         setPeak(dParameter);
@@ -142,7 +142,7 @@ void WVuMeter::updateState(double msecsElapsed) {
     m_dPeakParameter -= static_cast<double>(m_iPeakFallStep) *
             msecsElapsed /
             static_cast<double>(m_iPeakFallTime * m_iPixmapLength);
-    m_dPeakParameter = clamp(m_dPeakParameter, 0.0, 1.0);
+    m_dPeakParameter = math_clamp(m_dPeakParameter, 0.0, 1.0);
 }
 
 void WVuMeter::maybeUpdate() {
@@ -162,30 +162,30 @@ void WVuMeter::paintEvent(QPaintEvent *) {
         const double pixmapHeight = m_pPixmapVu->height();
         // Draw (part of) vu
         if (m_bHorizontal) {
-            const double widgetPosition = clamp(widgetWidth * m_dParameter,0.0, widgetWidth);
+            const double widgetPosition = math_clamp(widgetWidth * m_dParameter,0.0, widgetWidth);
             QRectF targetRect(0, 0, widgetPosition, widgetHeight);
-            const double pixmapPosition = clamp(pixmapWidth * m_dParameter,0.0, pixmapWidth);
+            const double pixmapPosition = math_clamp(pixmapWidth * m_dParameter,0.0, pixmapWidth);
             QRectF sourceRect(0, 0, pixmapPosition,  m_pPixmapVu->height());
             m_pPixmapVu->draw(targetRect, &p, sourceRect);
             if (m_iPeakHoldSize > 0 && m_dPeakParameter > 0.0) {
-                const double widgetPeakPosition = clamp(widgetWidth * m_dPeakParameter, 0.0, widgetWidth);
+                const double widgetPeakPosition = math_clamp(widgetWidth * m_dPeakParameter, 0.0, widgetWidth);
                 const double widgetPeakHoldSize = widgetWidth *static_cast<double>(m_iPeakHoldSize) / pixmapWidth;
-                const double pixmapPeakPosition = clamp(pixmapWidth * m_dPeakParameter, 0.0, pixmapWidth);
+                const double pixmapPeakPosition = math_clamp(pixmapWidth * m_dPeakParameter, 0.0, pixmapWidth);
                 const double pixmapPeakHoldSize = m_iPeakHoldSize;
                 targetRect = QRectF(widgetPeakPosition - widgetPeakHoldSize, 0,widgetPeakHoldSize, widgetHeight);
                 sourceRect = QRectF(pixmapPeakPosition - pixmapPeakHoldSize, 0,pixmapPeakHoldSize, pixmapHeight);
                 m_pPixmapVu->draw(targetRect, &p, sourceRect);
             }
         } else {
-            const double widgetPosition = clamp(widgetHeight * m_dParameter,0.0, widgetHeight);
+            const double widgetPosition = math_clamp(widgetHeight * m_dParameter,0.0, widgetHeight);
             QRectF targetRect(0, widgetHeight - widgetPosition,widgetWidth, widgetPosition);
-            const double pixmapPosition = clamp(pixmapHeight * m_dParameter,0.0, pixmapHeight);
+            const double pixmapPosition = math_clamp(pixmapHeight * m_dParameter,0.0, pixmapHeight);
             QRectF sourceRect(0, pixmapHeight - pixmapPosition,pixmapWidth, pixmapPosition);
             m_pPixmapVu->draw(targetRect, &p, sourceRect);
             if (m_iPeakHoldSize > 0 && m_dPeakParameter > 0.0) {
-                const double widgetPeakPosition = clamp(widgetHeight * m_dPeakParameter, 0.0, widgetHeight);
+                const double widgetPeakPosition = math_clamp(widgetHeight * m_dPeakParameter, 0.0, widgetHeight);
                 const double widgetPeakHoldSize = widgetHeight *static_cast<double>(m_iPeakHoldSize) / pixmapHeight;
-                const double pixmapPeakPosition = clamp(pixmapHeight * m_dPeakParameter, 0.0, pixmapHeight);
+                const double pixmapPeakPosition = math_clamp(pixmapHeight * m_dPeakParameter, 0.0, pixmapHeight);
                 const double pixmapPeakHoldSize = m_iPeakHoldSize;
                 targetRect = QRectF(0, widgetHeight - widgetPeakPosition,widgetWidth, widgetPeakHoldSize);
                 sourceRect = QRectF(0, pixmapHeight - pixmapPeakPosition,pixmapWidth, pixmapPeakHoldSize);

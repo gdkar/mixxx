@@ -160,7 +160,7 @@ void CachingReader::process() {
         }
         // Adjust the max. readable frame index
         if (m_readerStatus == TRACK_LOADED) {
-            m_maxReadableFrameIndex = std::min(status.maxReadableFrameIndex, m_maxReadableFrameIndex);
+            m_maxReadableFrameIndex = math_min(status.maxReadableFrameIndex, m_maxReadableFrameIndex);
         } else { m_maxReadableFrameIndex = 0; }
     }
 }
@@ -240,7 +240,7 @@ int CachingReader::read(int sample, int numSamples, CSAMPLE* buffer) {
                 DEBUG_ASSERT((chunkIndex == firstCachingReaderChunkIndex) || (chunkFrameIndex == frameIndex));
                 auto chunkFrameOffset = frameIndex - chunkFrameIndex;
                 DEBUG_ASSERT(chunkFrameOffset >= 0);
-                auto chunkFrameCount = std::min( pChunk->getFrameCount(), maxReadableFrameIndex - chunkFrameIndex);
+                auto chunkFrameCount = math_min( pChunk->getFrameCount(), maxReadableFrameIndex - chunkFrameIndex);
                 if (chunkFrameCount < chunkFrameOffset) {
                     // No more readable data available from this chunk (and
                     // consequently all following chunks). Exit the loop and

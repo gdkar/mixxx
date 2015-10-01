@@ -30,15 +30,15 @@ bool CachingReaderChunk::isReadable( const Mixxx::AudioSourcePointer& pAudioSour
     DEBUG_ASSERT(0 <= maxReadableFrameIndex);
     if (!isValid() || pAudioSource.isNull()) {return false; }
     const SINT frameIndex = frameForIndex(getIndex());
-    const SINT maxFrameIndex = std::min( maxReadableFrameIndex, pAudioSource->getMaxFrameIndex());
+    const SINT maxFrameIndex = math_min( maxReadableFrameIndex, pAudioSource->getMaxFrameIndex());
     return frameIndex <= maxFrameIndex;
 }
 SINT CachingReaderChunk::readSampleFrames(const Mixxx::AudioSourcePointer& pAudioSource, SINT* pMaxReadableFrameIndex) {
     DEBUG_ASSERT(pMaxReadableFrameIndex);
     const auto frameIndex = frameForIndex(getIndex());
-    const auto maxFrameIndex = std::min( *pMaxReadableFrameIndex, pAudioSource->getMaxFrameIndex());
+    const auto maxFrameIndex = math_min( *pMaxReadableFrameIndex, pAudioSource->getMaxFrameIndex());
     const auto framesRemaining = *pMaxReadableFrameIndex - frameIndex;
-    const auto framesToRead = std::min(kFrames, framesRemaining);
+    const auto framesToRead = math_min(kFrames, framesRemaining);
     auto seekFrameIndex = pAudioSource->seekSampleFrame(frameIndex);
     if (frameIndex != seekFrameIndex) {
         // Failed to seek to the requested index. The file might
@@ -59,7 +59,7 @@ SINT CachingReaderChunk::readSampleFrames(const Mixxx::AudioSourcePointer& pAudi
         if (frameIndex != seekFrameIndex) {
             // Unexpected/premature end of file -> prevent further
             // seeks beyond the current seek position
-            *pMaxReadableFrameIndex = std::min(seekFrameIndex, *pMaxReadableFrameIndex);
+            *pMaxReadableFrameIndex = math_min(seekFrameIndex, *pMaxReadableFrameIndex);
             // Don't read any samples on a seek failure!
             m_frameCount = 0;
             return m_frameCount;

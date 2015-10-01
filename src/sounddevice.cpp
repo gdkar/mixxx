@@ -44,7 +44,7 @@ void SoundDevice::setSampleRate(double sampleRate) {
     }
     m_dSampleRate = sampleRate;
 }
-void SoundDevice::setFramesPerBuffer(size_t framesPerBuffer) {
+void SoundDevice::setFramesPerBuffer(unsigned int framesPerBuffer) {
     if (framesPerBuffer * 2 > MAX_BUFFER_LEN) {
         // framesPerBuffer * 2 because a frame will generally end up
         // being 2 samples and MAX_BUFFER_LEN is a number of samples
@@ -79,9 +79,9 @@ void SoundDevice::clearInputs() {m_audioInputs.clear();}
 bool SoundDevice::operator==(const SoundDevice &other) const { return getInternalName() == other.getInternalName(); }
 bool SoundDevice::operator==(const QString &other) const { return getInternalName() == other; }
 void SoundDevice::composeOutputBuffer(CSAMPLE* outputBuffer,
-                                      size_t framesToCompose,
-                                      size_t framesReadOffset,
-                                      size_t iFrameSize) {
+                                      const unsigned int framesToCompose,
+                                      const unsigned int framesReadOffset,
+                                      const unsigned int iFrameSize) {
     //qDebug() << "SoundDevice::composeOutputBuffer()"
     //         << device->getInternalName()
     //         << framesToCompose << iFrameSize;
@@ -135,9 +135,9 @@ void SoundDevice::composeOutputBuffer(CSAMPLE* outputBuffer,
 }
 
 void SoundDevice::composeInputBuffer(const CSAMPLE* inputBuffer,
-                                     size_t framesToPush,
-                                     size_t framesWriteOffset,
-                                     size_t iFrameSize) {
+                                     const unsigned int framesToPush,
+                                     const unsigned int framesWriteOffset,
+                                     const unsigned int iFrameSize) {
     //qDebug() << "SoundManager::pushBuffer"
     //         << framesToPush << framesWriteOffset << iFrameSize;
     // This function is called a *lot* and is a big source of CPU usage.
@@ -150,7 +150,7 @@ void SoundDevice::composeInputBuffer(const CSAMPLE* inputBuffer,
         // One mono device only
         const auto& in = m_audioInputs.at(0);
         auto pInputBuffer = &in.getBuffer()[framesWriteOffset*2]; // Always Stereo
-        for (auto iFrameNo = decltype(framesToPush){0}; iFrameNo < framesToPush; ++iFrameNo) {
+        for (unsigned int iFrameNo = 0; iFrameNo < framesToPush; ++iFrameNo) {
             pInputBuffer[iFrameNo * 2]     = inputBuffer[iFrameNo];
             pInputBuffer[iFrameNo * 2 + 1] = inputBuffer[iFrameNo];
         }
@@ -168,7 +168,7 @@ void SoundDevice::composeInputBuffer(const CSAMPLE* inputBuffer,
             auto iChannelCount = chanGroup.getChannelCount();
             auto iChannelBase = chanGroup.getChannelBase();
             auto pInputBuffer = &in.getBuffer()[framesWriteOffset*2];
-            for (auto iFrameNo = decltype(framesToPush){0}; iFrameNo < framesToPush; ++iFrameNo) {
+            for (unsigned int iFrameNo = 0; iFrameNo < framesToPush; ++iFrameNo) {
                 // iFrameBase is the "base sample" in a frame (ie. the first
                 // sample in a frame)
                 auto iFrameBase = iFrameNo * iFrameSize;
@@ -184,7 +184,7 @@ void SoundDevice::composeInputBuffer(const CSAMPLE* inputBuffer,
         }
     }
 }
-void SoundDevice::clearInputBuffer(size_t framesToPush,size_t framesWriteOffset) {
+void SoundDevice::clearInputBuffer(const unsigned int framesToPush,const unsigned int framesWriteOffset) {
     for ( auto &in : m_audioInputs ){
       auto pInputBuffer = in.getBuffer();
       SampleUtil::clear(&pInputBuffer[framesWriteOffset*2],framesToPush*2);

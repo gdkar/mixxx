@@ -146,7 +146,7 @@ void GLWaveformRendererSimpleSignal::draw(QPainter* painter, QPaintEvent* /*even
                 maxAll[1] = (float)data[visualIndex+1].filtered.all;
                 glColor4f(m_signalColor_r, m_signalColor_g, m_signalColor_b, 0.8);
                 glVertex2f(float(visualIndex),0.f);
-                glVertex2f(float(visualIndex),std::max(maxAll[0],maxAll[1]));
+                glVertex2f(float(visualIndex),math_max(maxAll[0],maxAll[1]));
             }
         }
         glEnd();

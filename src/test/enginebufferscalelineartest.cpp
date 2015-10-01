@@ -277,7 +277,7 @@ TEST_F(EngineBufferScaleLinearTest, TestRepeatedScaleCalls) {
 
     int samplesRemaining = bufferSize;
     while (samplesRemaining > 0) {
-        int toRead = std::min(8, samplesRemaining);
+        int toRead = math_min(8, samplesRemaining);
         CSAMPLE* pOutput = m_pScaler->getScaled(8);
         samplesRemaining -= toRead;
         AssertBufferCycles(pOutput, toRead, expectedResult, toRead);

@@ -515,7 +515,7 @@ void AutoDJProcessor::playerPositionChanged(DeckAttributes* pAttributes,
             autoDJStateChanged(m_eState);
         }
 
-        double posFadeEnd = std::min(1.0, thisDeck.posThreshold + thisFadeDuration);
+        double posFadeEnd = math_min(1.0, thisDeck.posThreshold + thisFadeDuration);
         if (thisPlayPosition >= posFadeEnd) {
             // If this track has passed the end of its target fade then we stop
             // it. We don't handle mode switches here since that's handled by
@@ -683,7 +683,7 @@ void AutoDJProcessor::calculateTransition(DeckAttributes* pFromDeck,DeckAttribut
             qDebug() << fromTrack->getLocation() << "fromTrackDuration =" << fromTrackDuration;
             // The track might be shorter than the transition period. Use a
             // sensible cap.
-            m_nextTransitionTime = std::min(m_iTransitionTime,fromTrackDuration / 2);
+            m_nextTransitionTime = math_min(m_iTransitionTime,fromTrackDuration / 2);
             if (pToDeck) {
                 TrackPointer toTrack = pToDeck->getLoadedTrack();
                 if (toTrack) {
@@ -691,7 +691,7 @@ void AutoDJProcessor::calculateTransition(DeckAttributes* pFromDeck,DeckAttribut
                     // track_samples / track_samplerate instead.
                     int toTrackDuration = toTrack->getDuration();
                     qDebug() << toTrack->getLocation() << "toTrackDuration = " << toTrackDuration;
-                    m_nextTransitionTime = std::min(m_nextTransitionTime,toTrackDuration / 2);
+                    m_nextTransitionTime = math_min(m_nextTransitionTime,toTrackDuration / 2);
                 }
             }
 

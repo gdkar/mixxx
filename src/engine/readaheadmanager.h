@@ -95,7 +95,7 @@ class ReadAheadManager {
         // consumed. Caller should check if length() is 0 after consumption in
         // order to expire the ReadLogEntry.
         double consume(double numSamples) {
-            double available = std::min(numSamples, length());
+            double available = math_min(numSamples, length());
             virtualPlaypositionStart += (direction() ? 1 : -1) * available;
             return available;
         }

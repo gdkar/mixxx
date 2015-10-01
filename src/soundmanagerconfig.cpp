@@ -215,7 +215,7 @@ unsigned int SoundManagerConfig::getFramesPerBuffer() const {
 void SoundManagerConfig::setAudioBufferSizeIndex(unsigned int sizeIndex) {
     // latency should be either the min of kMaxAudioBufferSizeIndex and the passed value
     // if it's 0, pretend it was 1 -- bkgood
-    m_audioBufferSizeIndex = sizeIndex != 0 ? std::min(sizeIndex, kMaxAudioBufferSizeIndex) : 1;
+    m_audioBufferSizeIndex = sizeIndex != 0 ? math_min(sizeIndex, kMaxAudioBufferSizeIndex) : 1;
 }
 void SoundManagerConfig::addOutput(const QString &device, const AudioOutput &out) { m_outputs.insert(device, out); }
 void SoundManagerConfig::addInput(const QString &device, const AudioInput &in) { m_inputs.insert(device, in); }

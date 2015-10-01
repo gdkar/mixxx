@@ -79,8 +79,8 @@ void CoverArtDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opti
     // BaseSqlTableModel when a row's cover is ready.
     auto pixmap = pCache->requestCover(info, this, info.hash, option.rect.width(), m_bOnlyCachedCover, true);
     if (!pixmap.isNull()) {
-        int width = std::min(pixmap.width(), option.rect.width());
-        int height = std::min(pixmap.height(), option.rect.height());
+        int width = math_min(pixmap.width(), option.rect.width());
+        int height = math_min(pixmap.height(), option.rect.height());
         QRect target(option.rect.x(), option.rect.y(), width, height);
         QRect source(0, 0, target.width(), target.height());
         painter->drawPixmap(target, pixmap, source);

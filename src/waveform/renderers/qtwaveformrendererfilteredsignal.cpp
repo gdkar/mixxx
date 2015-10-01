@@ -173,8 +173,8 @@ int QtWaveformRendererFilteredSignal::buildPolygon() {
             // visualFrameStop] lies within the valid range of visual
             // frames. Clamp visualFrameStart/Stop to within [0,
             // lastVisualFrame].
-            visualFrameStart = clamp(visualFrameStart, 0, lastVisualFrame);
-            visualFrameStop = clamp(visualFrameStop, 0, lastVisualFrame);
+            visualFrameStart = math_clamp(visualFrameStart, 0, lastVisualFrame);
+            visualFrameStop = math_clamp(visualFrameStop, 0, lastVisualFrame);
 
             auto visualIndexStart = visualFrameStart * 2 + channel;
             auto visualIndexStop = visualFrameStop * 2 + channel;
@@ -199,9 +199,9 @@ int QtWaveformRendererFilteredSignal::buildPolygon() {
                 auto low = waveformData.filtered.low;
                 auto mid = waveformData.filtered.mid;
                 auto high = waveformData.filtered.high;
-                maxLow = std::max(maxLow, low);
-                maxBand = std::max(maxBand, mid);
-                maxHigh = std::max(maxHigh, high);
+                maxLow = math_max(maxLow, low);
+                maxBand = math_max(maxBand, mid);
+                maxHigh = math_max(maxHigh, high);
             }
             m_polygon[0].append(QPointF(x, (float)maxLow * lowGain * direction));
             m_polygon[1].append(QPointF(x, (float)maxBand * midGain * direction));

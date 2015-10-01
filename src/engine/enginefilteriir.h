@@ -1,10 +1,13 @@
-_Pragma("once")
-#include <cstring>
-#include <algorithm>
+#ifndef ENGINEFILTERIIR_H
+#define ENGINEFILTERIIR_H
+
+#include <string.h>
 
 #include "engine/engineobject.h"
 #include "sampleutil.h"
+#define MIXXX
 #include <fidlib.h>
+#include <algorithm>
 // set to 1 to print some analysis data using qDebug()
 // It prints the resulting delay after 50 % of impulse have passed
 // and the gain and phase shift at some sample frequencies
@@ -18,10 +21,14 @@ enum IIRPass {
     IIR_LPMO,
     IIR_HPMO,
 };
+
+
 class EngineFilterIIRBase : public EngineObjectConstIn {
   public:
     virtual void assumeSettled() = 0;
 };
+
+
 // length of the 3rd argument to fid_design_coef
 #define FIDSPEC_LENGTH 40
 
@@ -441,3 +448,4 @@ inline CSAMPLE EngineFilterIIR<4, IIR_HPMO>::processSample(CSAMPLE* coef,CSAMPLE
    buf[3]= iir; val= fir;
    return val;
 }
+#endif // ENGINEFILTERIIR_H

@@ -108,7 +108,7 @@ void GLWaveformRendererRGB::draw(QPainter* painter, QPaintEvent* /*event*/) {
                 float left_red    = left_low  * m_rgbLowColor_r + left_mid  * m_rgbMidColor_r + left_high  * m_rgbHighColor_r;
                 float left_green  = left_low  * m_rgbLowColor_g + left_mid  * m_rgbMidColor_g + left_high  * m_rgbHighColor_g;
                 float left_blue   = left_low  * m_rgbLowColor_b + left_mid  * m_rgbMidColor_b + left_high  * m_rgbHighColor_b;
-                float left_max    = max3(left_red, left_green, left_blue);
+                float left_max    = math_max3(left_red, left_green, left_blue);
                 if (left_max > 0.0f) {  // Prevent division by zero
                     glColor4f(left_red / left_max, left_green / left_max, left_blue / left_max, 0.8f);
                     glVertex2f(visualIndex, 0.0f);
@@ -122,7 +122,7 @@ void GLWaveformRendererRGB::draw(QPainter* painter, QPaintEvent* /*event*/) {
                 float right_red   = right_low * m_rgbLowColor_r + right_mid * m_rgbMidColor_r + right_high * m_rgbHighColor_r;
                 float right_green = right_low * m_rgbLowColor_g + right_mid * m_rgbMidColor_g + right_high * m_rgbHighColor_g;
                 float right_blue  = right_low * m_rgbLowColor_b + right_mid * m_rgbMidColor_b + right_high * m_rgbHighColor_b;
-                float right_max   = max3(right_red, right_green, right_blue);
+                float right_max   = math_max3(right_red, right_green, right_blue);
                 if (right_max > 0.0f) {  // Prevent division by zero
                     glColor4f(right_red / right_max, right_green / right_max, right_blue / right_max, 0.8f);
                     glVertex2f(visualIndex, 0.0f);
@@ -165,9 +165,9 @@ void GLWaveformRendererRGB::draw(QPainter* painter, QPaintEvent* /*event*/) {
                     break;
                 }
 
-                float low  = lowGain  * (float) std::max(data[visualIndex].filtered.low,  data[visualIndex+1].filtered.low);
-                float mid  = midGain  * (float) std::max(data[visualIndex].filtered.mid,  data[visualIndex+1].filtered.mid);
-                float high = highGain * (float) std::max(data[visualIndex].filtered.high, data[visualIndex+1].filtered.high);
+                float low  = lowGain  * (float) math_max(data[visualIndex].filtered.low,  data[visualIndex+1].filtered.low);
+                float mid  = midGain  * (float) math_max(data[visualIndex].filtered.mid,  data[visualIndex+1].filtered.mid);
+                float high = highGain * (float) math_max(data[visualIndex].filtered.high, data[visualIndex+1].filtered.high);
 
                 float all = sqrtf(low * low + mid * mid + high * high) * kHeightScaleFactor;
 
@@ -175,7 +175,7 @@ void GLWaveformRendererRGB::draw(QPainter* painter, QPaintEvent* /*event*/) {
                 float green = low * m_rgbLowColor_g + mid * m_rgbMidColor_g + high * m_rgbHighColor_g;
                 float blue  = low * m_rgbLowColor_b + mid * m_rgbMidColor_b + high * m_rgbHighColor_b;
 
-                float max = max3(red, green, blue);
+                float max = math_max3(red, green, blue);
                 if (max > 0.0f) {  // Prevent division by zero
                     glColor4f(red / max, green / max, blue / max, 0.9f);
                     glVertex2f(float(visualIndex), 0.0f);

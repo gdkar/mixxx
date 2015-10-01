@@ -144,7 +144,7 @@ bool AnalyserQueue::doAnalysis(TrackPointer tio, Mixxx::AudioSourcePointer pAudi
             << pAudioSource->getMaxFrameIndex();
         }
         const auto framesRemaining = pAudioSource->getMaxFrameIndex() - frameIndex;
-        const auto framesToRead    = std::min(kAnalysisFramesPerBlock, framesRemaining);
+        const auto framesToRead    = math_min(kAnalysisFramesPerBlock, framesRemaining);
         const auto framesRead      = pAudioSource->readSampleFramesStereo( framesToRead, &m_sampleBuffer);
         if ( framesRead > framesToRead || framesRead < 0 )
         {
@@ -196,12 +196,8 @@ bool AnalyserQueue::doAnalysis(TrackPointer tio, Mixxx::AudioSourcePointer pAudi
         // because the finalise functions will take also some time
         //fp div here prevents insane signed overflow
         if (m_progressInfo.track_progress != frameProgress) {
-            if (progressUpdateInhibitTimer.elapsed() > 60 || frameProgress==1) {
-                // Inhibit Updates for 60 milliseconds
-                emitUpdateProgress(tio, frameProgress);
-                tio->setAnalyserProgress(frameProgress);
-                progressUpdateInhibitTimer.start();
-            }
+            tio->setAnalyserProgress(frameProgress);
+            emitUpdateProgress(tio, frameProgress);
         }
         // Since this is a background analysis queue, we should co-operatively
         // yield every now and then to try and reduce CPU contention. The

@@ -122,7 +122,7 @@ void WOverview::onConnectedControlChanged(double dParameter, double dValue) {
     if (!m_bDrag) {
         // Calculate handle position. Clamp the value within 0-1 because that's
         // all we represent with this widget.
-        dParameter = clamp(dParameter, 0.0, 1.0);
+        dParameter = math_clamp(dParameter, 0.0, 1.0);
 
         int iPos = valueToPosition(dParameter);
         if (iPos != m_iPos) {
@@ -212,7 +212,7 @@ void WOverview::onMarkRangeChange(double /*v*/) {
     update();
 }
 void WOverview::mouseMoveEvent(QMouseEvent* e) {
-    m_iPos = clamp(e->x(), 0, width() - 1);
+    m_iPos = math_clamp(e->x(), 0, width() - 1);
     //qDebug() << "WOverview::mouseMoveEvent" << e->pos() << m_iPos;
     update();
 }

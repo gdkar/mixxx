@@ -72,12 +72,12 @@ void WaveformWidgetRenderer::onPreRender(VSyncThread* vsyncThread) {
     // EnginePregain. See the comment there.
     m_gain = m_pGainControlObject->get() * 2;
     //Legacy stuff (Ryan it that OK?) -> Limit our rate adjustment to < 99%, "Bad Things" might happen otherwise.
-    m_rateAdjust = m_rateDir * std::min(0.99, m_rate * m_rateRange);
+    m_rateAdjust = m_rateDir * math_min(0.99, m_rate * m_rateRange);
     //rate adjust may have change sampling per
     //vRince for the moment only more than one sample per pixel is supported
     //due to the fact we play the visual play pos modulo floor m_visualSamplePerPixel ...
     auto visualSamplePerPixel = m_zoomFactor * (1.0 + m_rateAdjust);
-    m_visualSamplePerPixel = std::max(1.0, visualSamplePerPixel);
+    m_visualSamplePerPixel = math_max(1.0, visualSamplePerPixel);
     auto pTrack = TrackPointer(m_pTrack);
     auto pWaveform = pTrack ? pTrack->getWaveform() : ConstWaveformPointer();
     if (pWaveform) {
@@ -152,7 +152,7 @@ void WaveformWidgetRenderer::setup(const QDomNode& node, const SkinContext& cont
 }
 void WaveformWidgetRenderer::setZoom(int zoom) {
     //qDebug() << "WaveformWidgetRenderer::setZoom" << zoom;
-    m_zoomFactor = clamp<double>(zoom, s_waveformMinZoom, s_waveformMaxZoom);
+    m_zoomFactor = math_clamp<double>(zoom, s_waveformMinZoom, s_waveformMaxZoom);
 }
 void WaveformWidgetRenderer::setTrack(TrackPointer track) {
     m_pTrack = track;

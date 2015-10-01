@@ -82,7 +82,7 @@ void WNumberPos::slotSetValue(double dValue) {
         valueMillis = dValue * 500.0 * m_dTrackSamples / m_dTrackSampleRate;
         double durationMillis = dDuration * Time::kMillisPerSecond;
         if (m_bRemain)
-            valueMillis = std::max(durationMillis - valueMillis, 0.0);
+            valueMillis = math_max(durationMillis - valueMillis, 0.0);
     }
 
     QString valueString;

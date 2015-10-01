@@ -4,36 +4,34 @@ _Pragma("once")
 #define _USE_MATH_DEFINES
 #include <cmath>
 #include <algorithm>
-
 #include "util/assert.h"
+// If we don't do this then we get the C90 fabs from the global namespace which
+// is only defined for double.
+#define math_max std::max
+#define math_min std::min
+#define math_max3(a, b, c) math_max(math_max((a), (b)), (c))
 
-template<typename T>
-constexpr T max3(T a,T b,T c)
-{
-  return std::max<T>(std::max<T>(a,b),c);
-}
-template<typename T>
-constexpr T max4(T a,T b,T c,T d)
-{
-  return std::max<T>(std::max<T>(a,b),std::max<T>(c,d));
-}
-template <typename S, typename T>
-constexpr S clamp(S value, T min_val, T max_val) {
-    return static_cast<S>(std::max<T>(min_val, std::min<T>(max_val, static_cast<T>(value))));
+// Restrict value to the range [min, max]. Undefined behavior if min > max.
+template <typename T>
+T math_clamp(T value, T min, T max) {
+    // DEBUG_ASSERT compiles out in release builds so it does not affect
+    // vectorization or pipelining of clamping in tight loops.
+    return std::max<T>(min, std::min<T>(max, value));
 }
 // NOTE(rryan): It is an error to call even() on a floating point number. Do not
 // hack this to support floating point values! The programmer should be required
 // to manually convert so they are aware of the conversion.
 template <typename T>
-constexpr bool even(T value) { return value % 2 == 0; }
+bool even(T value) {return value % 2 == 0; }
 template<typename T>
-constexpr T roundUpToPowerOf2(T arg)
+constexpr T roundUpToPowerOf2(T v)
 {
-  arg--;
-  for(auto shift = size_t{1}; shift < 8 * sizeof(T); shift <<=1) arg |= arg>>shift;
-  return arg+1;
+  v--;
+  for(auto i = size_t{1}; i < 8 * sizeof(T);i<<=1) v|=(v>>i);
+  return v+1;
 }
+// MSVS 2013 (_MSC_VER 1800) introduced C99 support.
 template <typename T>
-constexpr T ratio2db(const T a) { return std::log10(a) * 20; }
+constexpr T ratio2db(T a) {return std::log10(a) * 20;}
 template <typename T>
-constexpr T db2ratio(const T a) { return std::pow(10, a / 20); }
+constexpr T db2ratio(T a) {return std::pow(10, a / 20);}
