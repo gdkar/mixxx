@@ -30,7 +30,8 @@ class ControlDoublePrivate : public QObject {
             bool bPersist = false);
 
     // Adds all ControlDoublePrivate that currently exist to pControlList
-    static void getControls(QList<QSharedPointer<ControlDoublePrivate> >* pControlsList);
+    static QList<QSharedPointer<ControlDoublePrivate> > getControls();
+    static void clearControls();
     static QHash<ConfigKey, ConfigKey> getControlAliases();
     QString name() const;
     void setName(const QString& name);

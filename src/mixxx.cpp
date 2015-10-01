@@ -455,33 +455,26 @@ void MixxxMainWindow::finalize() {
     WaveformWidgetFactory::destroy();
     delete m_pGuiTick;
     // Check for leaked ControlObjects and give warnings.
-    QList<QSharedPointer<ControlDoublePrivate> > leakedControls;
-    QList<ConfigKey> leakedConfigKeys;
-    ControlDoublePrivate::getControls(&leakedControls);
-    if (leakedControls.size() > 0) {
-        qDebug() << "WARNING: The following" << leakedControls.size() << "controls were leaked:";
-        for(auto  pCDP: leakedControls) {
-            if (pCDP.isNull()) {continue;}
-            auto key = pCDP->getKey();
-            qDebug() << key.group << key.item << pCDP->getCreatorCO();
-            leakedConfigKeys.append(key);
-        }
-
-        // Deleting leaked objects helps to satisfy valgrind.
-        // These delete calls could cause crashes if a destructor for a control
-        // we thought was leaked is triggered after this one exits.
-        // So, only delete so if developer mode is on.
-        if (CmdlineArgs::Instance().getDeveloper()) {
-            for(auto key: leakedConfigKeys) {
-                // A deletion early in the list may trigger a destructor
-                // for a control later in the list, so we check for a null
-                // pointer each time.
-                auto pCo = ControlObject::getControl(key, false);
-                if (pCo) {delete pCo;}
-            }
-        }
-        leakedControls.clear();
-    }
+    if(m_cmdLineArgs.getDeveloper())
+    {
+      auto leakedControls = ControlDoublePrivate::getControls();
+      if (leakedControls.size()) {
+          qDebug() << "WARNING: The following" << leakedControls.size() << "controls were leaked:";
+          for(auto  pCDP: leakedControls) {
+              if (pCDP)
+              {
+                auto key = pCDP->getKey();
+                qDebug() << key.group << key.item ;
+              }
+          }
+          // Deleting leaked objects helps to satisfy valgrind.
+          // These delete calls could cause crashes if a destructor for a control
+          // we thought was leaked is triggered after this one exits.
+          // So, only delete so if developer mode is on.
+          leakedControls.clear();
+      }
+  }
+    ControlDoublePrivate::clearControls();
     // HACK: Save config again. We saved it once before doing some dangerous
     // stuff. We only really want to save it here, but the first one was just
     // a precaution. The earlier one can be removed when stuff is more stable
@@ -670,12 +663,6 @@ void MixxxMainWindow::slotViewShowPreviewDeck(bool enable) {
 }
 void MixxxMainWindow::slotViewShowEffects(bool enable) {
   ControlObject::set(ConfigKey("[EffectRack1]", "show"), enable);
-}
-void MixxxMainWindow::slotViewShowCoverArt(bool enable) {
-  ControlObject::set(ConfigKey("[Library]", "show_coverart"), enable);
-}
-void MixxxMainWindow::slotViewMaximizeLibrary(bool enable) {
-  ControlObject::set(ConfigKey("[Master]", "maximize_library"), enable);
 }
 void setVisibilityOptionState(QAction* pAction, ConfigKey key) {
     auto pVisibilityControl = ControlObject::getControl(key);
@@ -1099,7 +1086,9 @@ void MixxxMainWindow::initActions()
         QKeySequence(m_pKbdConfig->getValueString(ConfigKey("[KeyboardShortcuts]","ViewMenu_ShowCoverArt"),tr("Ctrl+6", "Menubar|View|Show Cover Art"))));
     m_pViewShowCoverArt->setStatusTip(showCoverArtText);
     m_pViewShowCoverArt->setWhatsThis(buildWhatsThis(showCoverArtTitle, showCoverArtText));
-    connect(m_pViewShowCoverArt, SIGNAL(toggled(bool)),this, SLOT(slotViewShowCoverArt(bool)));
+    connect(m_pViewShowCoverArt, &QAction::toggled,[](auto enabled)
+        {ControlObject::set(ConfigKey("[Library]","show_coverart"),enabled);}
+        );
     auto maximizeLibraryTitle = tr("Maximize Library");
     auto  maximizeLibraryText = tr("Maximize the track library to take up all the available screen space.") +" " + mayNotBeSupported;
     m_pViewMaximizeLibrary = new QAction(maximizeLibraryTitle, this);
@@ -1108,7 +1097,9 @@ void MixxxMainWindow::initActions()
         QKeySequence(m_pKbdConfig->getValueString(ConfigKey("[KeyboardShortcuts]","ViewMenu_MaximizeLibrary"),tr("Space", "Menubar|View|Maximize Library"))));
     m_pViewMaximizeLibrary->setStatusTip(maximizeLibraryText);
     m_pViewMaximizeLibrary->setWhatsThis(buildWhatsThis(maximizeLibraryTitle, maximizeLibraryText));
-    connect(m_pViewMaximizeLibrary, SIGNAL(toggled(bool)),this, SLOT(slotViewMaximizeLibrary(bool)));
+    connect(m_pViewMaximizeLibrary, &QAction::toggled,
+        [](auto enabled){ ControlObject::set(ConfigKey("[Master]","maximize_library"),enabled);}
+        );
     auto recordTitle = tr("&Record Mix");
     auto recordText = tr("Record your mix to a file");
     m_pOptionsRecord = new QAction(recordTitle, this);
@@ -1118,7 +1109,7 @@ void MixxxMainWindow::initActions()
     m_pOptionsRecord->setCheckable(true);
     m_pOptionsRecord->setStatusTip(recordText);
     m_pOptionsRecord->setWhatsThis(buildWhatsThis(recordTitle, recordText));
-    connect(m_pOptionsRecord, SIGNAL(toggled(bool)),m_pRecordingManager, SLOT(slotSetRecording(bool)));
+    connect(m_pOptionsRecord, &QAction::toggled,m_pRecordingManager, &RecordingManager::slotSetRecording);
     auto reloadSkinTitle = tr("&Reload Skin");
     auto reloadSkinText = tr("Reload the skin");
     m_pDeveloperReloadSkin = new QAction(reloadSkinTitle, this);
@@ -1593,8 +1584,7 @@ void MixxxMainWindow::rebootMixxxView() {
     }
     setCentralWidget(m_pWidgetParent);
     adjustSize();
-    if (wasFullScreen) 
-      slotViewFullScreen(true);
+    if (wasFullScreen)  slotViewFullScreen(true);
     else
         move(initPosition.x() + (initSize.width() - m_pWidgetParent->width()) / 2,
              initPosition.y() + (initSize.height() - m_pWidgetParent->height()) / 2);

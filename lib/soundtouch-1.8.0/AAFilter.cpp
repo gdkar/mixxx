@@ -40,17 +40,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <memory.h>
-#include <assert.h>
-#include <math.h>
-#include <stdlib.h>
+#include <memory>
+#include <cassert>
+#include <cmath>
+#include <cstdlib>
 #include "AAFilter.h"
 #include "FIRFilter.h"
 
 using namespace soundtouch;
-
-#define PI        3.141592655357989
-#define TWOPI    (2 * PI)
 
 // define this to save AA filter coefficients to a file
 // #define _DEBUG_SAVE_AAFILTER_COEFFICIENTS   1
@@ -88,16 +85,10 @@ AAFilter::AAFilter(uint len)
     cutoffFreq = 0.5;
     setLength(len);
 }
-
-
-
 AAFilter::~AAFilter()
 {
     delete pFIR;
 }
-
-
-
 // Sets new anti-alias filter cut-off edge frequency, scaled to
 // sampling frequency (nyquist frequency = 0.5).
 // The filter will cut frequencies higher than the given frequency.
@@ -106,96 +97,64 @@ void AAFilter::setCutoffFreq(double newCutoffFreq)
     cutoffFreq = newCutoffFreq;
     calculateCoeffs();
 }
-
-
-
 // Sets number of FIR filter taps
 void AAFilter::setLength(uint newLength)
 {
     length = newLength;
     calculateCoeffs();
 }
-
-
-
 // Calculates coefficients for a low-pass FIR filter using Hamming window
 void AAFilter::calculateCoeffs()
 {
-    uint i;
-    double cntTemp, temp, tempCoeff,h, w;
-    double wc;
-    double scaleCoeff, sum;
-    double *work;
-    SAMPLETYPE *coeffs;
-
+    double h, w;
+    double scaleCoeff;
     assert(length >= 2);
     assert(length % 4 == 0);
     assert(cutoffFreq >= 0);
     assert(cutoffFreq <= 0.5);
-
-    work = new double[length];
-    coeffs = new SAMPLETYPE[length];
-
-    wc = 2.0 * PI * cutoffFreq;
-    tempCoeff = TWOPI / (double)length;
-
-    sum = 0;
-    for (i = 0; i < length; i ++) 
+    auto work   = std::make_unique<double[]>(length);
+    auto coeffs = std::make_unique<SAMPLETYPE[]>(length);
+    auto wc = 2 * M_PI * cutoffFreq;
+    auto tempCoeff = M_2_PI / (double)length;
+    auto sum = 0.0;
+    for (auto i = decltype(length){0}; i < length; i ++) 
     {
-        cntTemp = (double)i - (double)(length / 2);
-
-        temp = cntTemp * wc;
-        if (temp != 0) 
+        auto cntTemp = (double)i - (double)(length / 2);
+        if(auto temp = cntTemp * wc)
         {
-            h = sin(temp) / temp;                     // sinc function
+            h = std::sin(temp) / temp;                     // sinc function
         } 
         else 
         {
             h = 1.0;
         }
-        w = 0.54 + 0.46 * cos(tempCoeff * cntTemp);       // hamming window
-
-        temp = w * h;
-        work[i] = temp;
-
+        w = 0.54 + 0.46 * std::cos(tempCoeff * cntTemp);       // hamming window
+        sum += (work[i] = w * h);
         // calc net sum of coefficients 
-        sum += temp;
     }
-
     // ensure the sum of coefficients is larger than zero
     assert(sum > 0);
-
     // ensure we've really designed a lowpass filter...
     assert(work[length/2] > 0);
     assert(work[length/2 + 1] > -1e-6);
     assert(work[length/2 - 1] > -1e-6);
-
     // Calculate a scaling coefficient in such a way that the result can be
     // divided by 16384
-    scaleCoeff = 16384.0f / sum;
-
-    for (i = 0; i < length; i ++) 
+    scaleCoeff = 16384 / sum;
+    for (auto i = decltype(length){0}; i < length; i ++) 
     {
-        temp = work[i] * scaleCoeff;
+        auto temp = work[i] * scaleCoeff;
 //#if SOUNDTOUCH_INTEGER_SAMPLES
         // scale & round to nearest integer
         temp += (temp >= 0) ? 0.5 : -0.5;
         // ensure no overfloods
         assert(temp >= -32768 && temp <= 32767);
 //#endif
-        coeffs[i] = (SAMPLETYPE)temp;
+        coeffs[i] = temp;
     }
-
     // Set coefficients. Use divide factor 14 => divide result by 2^14 = 16384
-    pFIR->setCoefficients(coeffs, length, 14);
-
-    _DEBUG_SAVE_AAFIR_COEFFS(coeffs, length);
-
-    delete[] work;
-    delete[] coeffs;
+    pFIR->setCoefficients(&coeffs[0], length, 14);
 }
-
-
 // Applies the filter to the given sequence of samples. 
 // Note : The amount of outputted samples is by value of 'filter length' 
 // smaller than the amount of input samples.
@@ -203,33 +162,22 @@ uint AAFilter::evaluate(SAMPLETYPE *dest, const SAMPLETYPE *src, uint numSamples
 {
     return pFIR->evaluate(dest, src, numSamples, numChannels);
 }
-
-
 /// Applies the filter to the given src & dest pipes, so that processed amount of
 /// samples get removed from src, and produced amount added to dest 
 /// Note : The amount of outputted samples is by value of 'filter length' 
 /// smaller than the amount of input samples.
 uint AAFilter::evaluate(FIFOSampleBuffer &dest, FIFOSampleBuffer &src) const
 {
-    SAMPLETYPE *pdest;
-    const SAMPLETYPE *psrc;
-    uint numSrcSamples;
-    uint result;
-    int numChannels = src.getChannels();
-
+    auto  numChannels = src.getChannels();
     assert(numChannels == dest.getChannels());
-
-    numSrcSamples = src.numSamples();
-    psrc = src.ptrBegin();
-    pdest = dest.ptrEnd(numSrcSamples);
-    result = pFIR->evaluate(pdest, psrc, numSrcSamples, numChannels);
+    auto numSrcSamples = src.numSamples();
+    auto psrc = src.ptrBegin();
+    auto pdest = dest.ptrEnd(numSrcSamples);
+    auto result = pFIR->evaluate(pdest, psrc, numSrcSamples, numChannels);
     src.receiveSamples(result);
     dest.putSamples(result);
-
     return result;
 }
-
-
 uint AAFilter::getLength() const
 {
     return pFIR->getLength();

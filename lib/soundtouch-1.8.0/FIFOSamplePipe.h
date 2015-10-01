@@ -58,9 +58,7 @@ class FIFOSamplePipe
 {
 public:
     // virtual default destructor
-    virtual ~FIFOSamplePipe() {}
-
-
+    virtual ~FIFOSamplePipe() = default;
     /// Returns a pointer to the beginning of the output samples. 
     /// This function is provided for accessing the output samples directly. 
     /// Please be careful for not to corrupt the book-keeping!
@@ -69,14 +67,11 @@ public:
     /// output samples from the buffer by calling the 
     /// 'receiveSamples(numSamples)' function
     virtual SAMPLETYPE *ptrBegin() = 0;
-
     /// Adds 'numSamples' pcs of samples from the 'samples' memory position to
     /// the sample buffer.
     virtual void putSamples(const SAMPLETYPE *samples,  ///< Pointer to samples.
                             uint numSamples             ///< Number of samples to insert.
                             ) = 0;
-
-
     // Moves samples from the 'other' pipe instance to this instance.
     void moveSamples(FIFOSamplePipe &other  ///< Other pipe instance where from the receive the data.
          )
@@ -86,7 +81,6 @@ public:
         putSamples(other.ptrBegin(), oNumSamples);
         other.receiveSamples(oNumSamples);
     };
-
     /// Output samples from beginning of the sample buffer. Copies requested samples to 
     /// output buffer and removes them from the sample buffer. If there are less than 
     /// 'numsample' samples in the buffer, returns all that available.
@@ -111,11 +105,7 @@ public:
     /// allow trimming (downwards) amount of samples in pipeline.
     /// Returns adjusted amount of samples
     virtual uint adjustAmountOfSamples(uint numSamples) = 0;
-
 };
-
-
-
 /// Base-class for sound processing routines working in FIFO principle. With this base 
 /// class it's easy to implement sound processing stages that can be chained together,
 /// so that samples that are fed into beginning of the pipe automatically go through 
@@ -128,39 +118,22 @@ class FIFOProcessor :public FIFOSamplePipe
 {
 protected:
     /// Internal pipe where processed samples are put.
-    FIFOSamplePipe *output;
-
+    FIFOSamplePipe *output = nullptr;
     /// Sets output pipe.
     void setOutPipe(FIFOSamplePipe *pOutput)
     {
-        assert(output == NULL);
-        assert(pOutput != NULL);
-        output = pOutput;
+      output = pOutput;
     }
-
-
     /// Constructor. Doesn't define output pipe; it has to be set be 
     /// 'setOutPipe' function.
-    FIFOProcessor()
-    {
-        output = NULL;
-    }
-
-
+    FIFOProcessor() = default;
     /// Constructor. Configures output pipe.
     FIFOProcessor(FIFOSamplePipe *pOutput   ///< Output pipe.
                  )
-    {
-        output = pOutput;
-    }
-
-
+      :output(pOutput)
+    {}
     /// Destructor.
-    virtual ~FIFOProcessor()
-    {
-    }
-
-
+    virtual ~FIFOProcessor() = default;
     /// Returns a pointer to the beginning of the output samples. 
     /// This function is provided for accessing the output samples directly. 
     /// Please be careful for not to corrupt the book-keeping!

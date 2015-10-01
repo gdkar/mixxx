@@ -39,21 +39,19 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <memory.h>
-#include <assert.h>
-#include <math.h>
-#include <stdlib.h>
+#include <memory>
+#include <cassert>
+#include <algorithm>
+#include <cmath>
+#include <cstdlib>
 #include "FIRFilter.h"
 #include "cpu_detect.h"
-
 using namespace soundtouch;
-
 /*****************************************************************************
  *
  * Implementation of the class 'FIRFilter'
  *
  *****************************************************************************/
-
 FIRFilter::FIRFilter()
 {
     resultDivFactor = 0;
@@ -64,14 +62,11 @@ FIRFilter::FIRFilter()
     sum = NULL;
     sumsize = 0;
 }
-
-
 FIRFilter::~FIRFilter()
 {
     delete[] filterCoeffs;
     delete[] sum;
 }
-
 // Usual C-version of the filter routine for stereo sound
 uint FIRFilter::evaluateFilterStereo(SAMPLETYPE *dest, const SAMPLETYPE *src, uint numSamples) const
 {
@@ -80,16 +75,13 @@ uint FIRFilter::evaluateFilterStereo(SAMPLETYPE *dest, const SAMPLETYPE *src, ui
 #ifdef SOUNDTOUCH_FLOAT_SAMPLES
     // when using floating point samples, use a scaler instead of a divider
     // because division is much slower operation than multiplying.
-    double dScaler = 1.0 / (double)resultDivider;
+    auto dScaler = 1.0 / (double)resultDivider;
 #endif
-
     assert(length != 0);
     assert(src != NULL);
     assert(dest != NULL);
     assert(filterCoeffs != NULL);
-
     end = 2 * (numSamples - length);
-
     for (j = 0; j < end; j += 2) 
     {
         const SAMPLETYPE *ptr;
@@ -249,7 +241,7 @@ void FIRFilter::setCoefficients(const SAMPLETYPE *coeffs, uint newLength, uint u
 
     delete[] filterCoeffs;
     filterCoeffs = new SAMPLETYPE[length];
-    memcpy(filterCoeffs, coeffs, length * sizeof(SAMPLETYPE));
+    std::move(coeffs,coeffs+length, filterCoeffs);
 }
 
 

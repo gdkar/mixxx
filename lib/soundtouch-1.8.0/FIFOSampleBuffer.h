@@ -61,15 +61,15 @@ private:
     // 16-byte aligned location of this buffer
     SAMPLETYPE *bufferUnaligned = nullptr;
     /// Sample buffer size in bytes
-    uint sizeInBytes;
+    uint sizeInBytes = 0;
     /// How many samples are currently in buffer.
-    uint samplesInBuffer;
+    uint samplesInBuffer = 0;
     /// Channels, 1=mono, 2=stereo.
-    uint channels;
+    uint channels = 0;
     /// Current position pointer to the buffer. This pointer is increased when samples are 
     /// removed from the pipe so that it's necessary to actually rewind buffer (move data)
     /// only new data when is put to the pipe.
-    uint bufferPos;
+    uint bufferPos = 0;
     /// Rewind the buffer by moving data from position pointed by 'bufferPos' to real 
     /// beginning of the buffer.
     void rewind();
@@ -159,5 +159,4 @@ public:
     /// Returns adjusted amount of samples
     uint adjustAmountOfSamples(uint numSamples);
 };
-
 }

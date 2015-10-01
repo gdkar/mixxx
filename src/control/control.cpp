@@ -58,19 +58,8 @@ void ControlDoublePrivate::initialize() {
 /* static */ void
 ControlDoublePrivate::setUserConfig(ConfigObject<ConfigValue>* pConfig){s_pUserConfig = pConfig;}
 ControlDoublePrivate::~ControlDoublePrivate() {
-    {
-      QMutexLocker locker(&s_qCOHashMutex);
-      {
-        auto pControl = s_qCOHash.value(m_key);
-        if ( pControl == this )
-        {
-          s_qCOHash.remove(m_key);
-        }
-      }
-    }
     if (m_bPersistInConfiguration)
         if(auto pConfig = ControlDoublePrivate::s_pUserConfig) pConfig->set(m_key, QString::number(get()));
-    if(m_pCreatorCO) delete m_pCreatorCO;
 }
 // static
 void ControlDoublePrivate::insertAlias(const ConfigKey& alias, const ConfigKey& key) {
@@ -125,13 +114,15 @@ ControlObject *ControlDoublePrivate::getCreatorCO() const{ return m_pCreatorCO;}
 void ControlDoublePrivate::removeCreatorCO(){m_pCreatorCO = nullptr;}
 ConfigKey ControlDoublePrivate::getKey() const{return m_key;}
 // static
-void ControlDoublePrivate::getControls( QList<QSharedPointer<ControlDoublePrivate> >* pControlList) {
-    s_qCOHashMutex.lock();
-    pControlList->clear();
-    for ( auto it = s_qCOHash.cbegin(),end=s_qCOHash.cend();it!=end;++it){
-      if(auto pControl = it.value() ) pControlList->push_back(pControl);
-    }
-    s_qCOHashMutex.unlock();
+void ControlDoublePrivate::clearControls()
+{
+  QMutexLocker locker(&s_qCOHashMutex);
+  s_qCOHash.clear();
+}
+// static
+QList<QSharedPointer<ControlDoublePrivate> > ControlDoublePrivate::getControls( ) {
+    QMutexLocker locker(&s_qCOHashMutex);
+    return s_qCOHash.values();
 }
 // static
 QHash<ConfigKey, ConfigKey> ControlDoublePrivate::getControlAliases() {
@@ -147,8 +138,8 @@ void ControlDoublePrivate::reset() {
 void ControlDoublePrivate::set(double value, QObject* pSender) {
     // If the behavior says to ignore the set, ignore it.
     auto pBehavior = m_pBehavior;
-    if (!pBehavior.isNull() && !pBehavior->setFilter(&value)) {return;}
-    if (m_confirmRequired) { emit(valueChangeRequest(value));}
+    if   (!pBehavior.isNull() && !pBehavior->setFilter(&value)) {return;}
+    if   (m_confirmRequired) { emit(valueChangeRequest(value));}
     else { setInner(value, pSender);}
 }
 void ControlDoublePrivate::setAndConfirm(double value, QObject* pSender) { setInner(value, pSender); }

@@ -110,8 +110,6 @@ class MixxxMainWindow : public QMainWindow {
     void slotViewShowMicrophone(bool);
     void slotViewShowPreviewDeck(bool);
     void slotViewShowEffects(bool);
-    void slotViewShowCoverArt(bool);
-    void slotViewMaximizeLibrary(bool);
     // toogle full screen mode
     void slotViewFullScreen(bool toggle);
     // Reload the skin.
