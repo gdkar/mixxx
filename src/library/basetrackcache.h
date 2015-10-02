@@ -1,9 +1,7 @@
 // trackcache.h
 // Created 7/3/2011 by RJ Ryan (rryan@mit.edu)
 
-#ifndef BASETRACKCACHE_H
-#define BASETRACKCACHE_H
-
+_Pragma("once")
 #include <QList>
 #include <QObject>
 #include <QSet>
@@ -101,4 +99,3 @@ class BaseTrackCache : public QObject {
     SearchQueryParser* m_pQueryParser = nullptr;
     DISALLOW_COPY_AND_ASSIGN(BaseTrackCache);
 };
-#endif // BASETRACKCACHE_H

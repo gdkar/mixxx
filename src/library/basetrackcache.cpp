@@ -378,16 +378,13 @@ int BaseTrackCache::findSortInsertionPoint(TrackPointer pTrack,
             // "correct"
             min = mid;
             break;
-        } else if (compare > 0) {
-            min = mid + 1;
-        } else {
-            max = mid - 1;
-        }
+        } 
+        else if (compare > 0) min = mid + 1;
+        else                  max = mid - 1;
     }
     return min;
 }
-int BaseTrackCache::compareColumnValues(int sortColumn, Qt::SortOrder sortOrder,
-                                        QVariant val1, QVariant val2) const {
+int BaseTrackCache::compareColumnValues(int sortColumn, Qt::SortOrder sortOrder,QVariant val1, QVariant val2) const {
     auto result = 0;
     if (sortColumn == fieldIndex(ColumnCache::COLUMN_PLAYLISTTRACKSTABLE_POSITION) ||
             sortColumn == fieldIndex(ColumnCache::COLUMN_LIBRARYTABLE_BITRATE) ||

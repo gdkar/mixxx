@@ -135,6 +135,9 @@ bool SoundSourceFFmpeg::tryOpen(const AudioSourceConfig& config) {
         else if ( ret != AVERROR_EOF )
           qDebug() << __FUNCTION__ << filename << "av_read_packet returned error" << ff_make_error_string(ret);
         av_free_packet(&m_packet);
+        av_init_packet(&m_packet);
+        m_packet.size = 0;
+        m_packet.data = nullptr;
       }
       else
       {
@@ -148,30 +151,32 @@ bool SoundSourceFFmpeg::tryOpen(const AudioSourceConfig& config) {
     if ( m_stream->start_time != AV_NOPTS_VALUE ) m_first_pts = m_stream->start_time;
     else if ( m_pkt_array.size() ) m_first_pts = m_pkt_array.front().pts;
     m_pkt_index = 0;
-    if ( m_pkt_index < m_pkt_array.size() ) m_packet = m_pkt_array.at(m_pkt_index);
+    if ( m_pkt_index < decltype(m_pkt_index)(m_pkt_array.size() ) ) m_packet = m_pkt_array.at(m_pkt_index);
     setFrameCount ( av_rescale_q ( m_pkt_array.back().pts + m_pkt_array.back().duration - m_first_pts, m_stream_tb, m_output_tb ) );
-    qDebug() << __FUNCTION__ << ": demuxing results for " << filename << "\n" 
-                             << "  frameRate = " << getFrameRate() << "\n" 
-                             << ", channelCount = " << getChannelCount() << "\n"
-                             << ", frameCount = " << getFrameCount() << "\n"
-                             << ", total packets = " << m_pkt_array.size() << "\n"
-                             << ", total demuxed size = " << total_size << " ( bytes )\n";
+    qDebug() << __FUNCTION__ << QString{": demuxing results for %1"}.arg(getLocalFileName()) << "\n"
+                             << QString{"  frameRate = %1"}.arg(getFrameRate()) << "\n"
+                             << QString{", channelCount = %L1"}.arg(getChannelCount()) << "\n"
+                             << QString{", frameCount = %L1"}.arg(getFrameCount()) << "\n"
+                             << QString{", total packets = %L1"}.arg(m_pkt_array.size()) << "\n"
+                             << QString{", total demuxed size = %L1 bytes"}.arg(total_size) << "\n" ;
     decode_next_frame ();
     return true;
 }
 void SoundSourceFFmpeg::close() {
     swr_free ( &m_swr );
-    while ( m_pkt_array.size() )
+    for ( auto & pkt : m_pkt_array )
     {
-      av_free_packet ( &m_pkt_array.back() );
-      m_pkt_array.pop_back();
+      av_free_packet ( &pkt );
     }
+    m_pkt_array.clear();
     avcodec_close(m_codec_ctx);
     avcodec_free_context ( &m_codec_ctx );
     avformat_close_input(&m_format_ctx);
     avformat_free_context(m_format_ctx);
+
     av_frame_free(&m_orig_frame);
     av_frame_free(&m_frame     );
+
     m_stream       = nullptr;
     m_stream_index = -1;
     m_codec        = nullptr;
@@ -238,7 +243,7 @@ SINT SoundSourceFFmpeg::seekSampleFrame(SINT frameIndex) {
       if ( mpts > frame_pts )
       {
         hindex = mindex;
-        lpts   = mpts;
+        hpts   = mpts;
       }
       else if ( npts <= frame_pts )
       {

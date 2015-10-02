@@ -2,9 +2,6 @@ _Pragma("once")
 #include "sources/soundsourceprovider.h"
 
 // Needed to ensure that macros in <stdint.h> get defined.
-#ifndef __STDC_CONSTANT_MACROS
-#define __STDC_CONSTANT_MACROS
-#endif
 #include "sources/ffmpeg_util.h"
 #include <cstdint>
 #include <vector>

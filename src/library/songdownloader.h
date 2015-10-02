@@ -1,6 +1,4 @@
-#ifndef SONGDOWNLOADER_H
-#define SONGDOWNLOADER_H
-
+_Pragma("once")
 #include <QFile>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
@@ -8,7 +6,7 @@
 #include <QObject>
 #include <QQueue>
 #include <QUrl>
-
+#include <string>
 class SongDownloader : public QObject {
     Q_OBJECT
   public:
@@ -33,4 +31,3 @@ class SongDownloader : public QObject {
     QNetworkReply* m_pReply = nullptr;
     QNetworkRequest* m_pRequest = nullptr;
 };
-#endif // SONGDOWNLOADER_H

@@ -22,13 +22,11 @@ _Pragma("once")
 #include <atomic>
 #include "soundmanager.h"
 #include "util/defs.h"
-
 //Forward declarations
 class SoundDevice;
 class SoundManager;
 class AudioOutput;
 class AudioInput;
-
 enum SoundDeviceError {
     SOUNDDEVICE_ERROR_OK = OK,
     SOUNDDEVICE_ERROR_DUPLICATE_OUTPUT_CHANNEL,
@@ -38,13 +36,13 @@ enum SoundDeviceError {
 class SoundDevice {
   public:
     SoundDevice(ConfigObject<ConfigValue> *config, SoundManager* sm);
-    virtual ~SoundDevice() = default;
-    inline const QString& getInternalName() const {return m_strInternalName;}
-    inline const QString& getDisplayName() const {return m_strDisplayName;}
-    inline const QString& getHostAPI() const {return m_hostAPI;}
+    virtual ~SoundDevice();
+    QString getInternalName() const;
+    QString getDisplayName() const;
+    QString getHostAPI() const;
     void setHostAPI(QString api);
     void setSampleRate(double sampleRate);
-    void setFramesPerBuffer(unsigned int framesPerBuffer);
+    void setFramesPerBuffer(size_t framesPerBuffer);
     virtual bool open(bool isClkRefDevice, int syncBuffers) = 0;
     virtual bool close() = 0;
     virtual void readProcess() = 0;
@@ -55,39 +53,38 @@ class SoundDevice {
     int getNumInputChannels() const;
     SoundDeviceError addOutput(const AudioOutputBuffer& out);
     SoundDeviceError addInput(const AudioInputBuffer& in);
-    const QList<AudioInputBuffer>& inputs() const {return m_audioInputs;}
-    const QList<AudioOutputBuffer>& outputs() const {return m_audioOutputs;}
+    QList<AudioInputBuffer>  inputs() const;
+    QList<AudioOutputBuffer> outputs() const;
     void clearOutputs();
     void clearInputs();
     bool operator==(const SoundDevice &other) const;
     bool operator==(const QString &other) const;
   protected:
     void composeOutputBuffer(CSAMPLE* outputBuffer,
-                             const unsigned int iFramesPerBuffer,
-                             const unsigned int readOffset,
-                             const unsigned int iFrameSize);
+                             size_t iFramesPerBuffer,
+                             size_t readOffset,
+                             size_t iFrameSize);
     void composeInputBuffer(const CSAMPLE* inputBuffer,
-                            const unsigned int framesToPush,
-                            const unsigned int framesWriteOffset,
-                            const unsigned int iFrameSize);
-    void clearInputBuffer(const unsigned int framesToPush,
-                          const unsigned int framesWriteOffset);
-    ConfigObject<ConfigValue> *m_pConfig;
+                            size_t framesToPush,
+                            size_t framesWriteOffset,
+                            size_t iFrameSize);
+    void clearInputBuffer(size_t  framesToPush, size_t framesWriteOffset);
+    ConfigObject<ConfigValue> *m_pConfig = nullptr;
     // Pointer to the SoundManager object which we'll request audio from.
-    SoundManager* m_pSoundManager;
+    SoundManager* m_pSoundManager        = nullptr;
     // The name of the soundcard, used internally (may include the device ID)
     QString m_strInternalName;
     // The name of the soundcard, as displayed to the user
     QString m_strDisplayName;
     // The number of output channels that the soundcard has
-    int m_iNumOutputChannels;
+    int m_iNumOutputChannels = 0;
     // The number of input channels that the soundcard has
-    int m_iNumInputChannels;
+    int m_iNumInputChannels  = 0;
     // The current samplerate for the sound device.
-    double m_dSampleRate;
+    double m_dSampleRate     = 0.0;
     // The name of the audio API used by this device.
     QString m_hostAPI;
-    unsigned int m_framesPerBuffer;
+    size_t m_framesPerBuffer = 0;
     QList<AudioOutputBuffer> m_audioOutputs;
     QList<AudioInputBuffer> m_audioInputs;
 };

@@ -26,16 +26,11 @@ QString CoverArtUtils::supportedCoverArtExtensionsRegex() {
 }
 
 //static
-QImage CoverArtUtils::extractEmbeddedCover(
-        const QString& trackLocation,
-        SecurityTokenPointer pToken) {
-    SoundSourceProxy proxy(trackLocation, pToken);
+QImage CoverArtUtils::extractEmbeddedCover(QString trackLocation,SecurityTokenPointer pToken) {
+    auto proxy = SoundSourceProxy(trackLocation, pToken);
     QImage coverArt;
-    if (OK == proxy.parseTrackMetadataAndCoverArt(nullptr, &coverArt)) {
-        return coverArt;
-    } else {
-        return QImage();
-    }
+    if (proxy.parseTrackMetadataAndCoverArt(nullptr, &coverArt)) return coverArt;
+    else  return QImage();
 }
 
 //static
@@ -53,22 +48,18 @@ QImage CoverArtUtils::loadCover(const CoverInfo& info) {
         if (info.trackLocation.isEmpty()) {
             qDebug() << "CoverArtUtils::loadCover FILE cover with empty trackLocation."
                      << "Relative paths will not work.";
-            SecurityTokenPointer pToken = Sandbox::openSecurityToken(
-                QFileInfo(info.coverLocation), true);
+            auto pToken = Sandbox::openSecurityToken( QFileInfo(info.coverLocation), true);
             return QImage(info.coverLocation);
         }
-
-        QFileInfo track(info.trackLocation);
-        QFileInfo cover(track.dir(), info.coverLocation);
-
+        auto track = QFileInfo(info.trackLocation);
+        auto cover = QFileInfo(track.dir(), info.coverLocation);
         if (!cover.exists()) {
             qDebug() << "CoverArtUtils::loadCover FILE cover does not exist:"
                      << info.coverLocation << info.trackLocation;
             return QImage();
         }
-        QString coverPath = cover.filePath();
-        SecurityTokenPointer pToken = Sandbox::openSecurityToken(
-            cover, true);
+        auto coverPath = cover.filePath();
+        auto pToken = Sandbox::openSecurityToken( cover, true);
         return QImage(coverPath);
     } else {
         qDebug() << "CoverArtUtils::loadCover bad type";
@@ -80,13 +71,9 @@ QImage CoverArtUtils::loadCover(const CoverInfo& info) {
 CoverArt CoverArtUtils::guessCoverArt(TrackPointer pTrack) {
     CoverArt art;
     art.info.source = CoverInfo::GUESSED;
-
-    if (pTrack.isNull()) {
-        return art;
-    }
-
-    const QFileInfo trackInfo = pTrack->getFileInfo();
-    const QString trackLocation = trackInfo.absoluteFilePath();
+    if (pTrack.isNull()) return art;
+    auto trackInfo = pTrack->getFileInfo();
+    auto trackLocation = trackInfo.absoluteFilePath();
 
     art.image = extractEmbeddedCover(trackLocation, pTrack->getSecurityToken());
     if (!art.image.isNull()) {
@@ -96,25 +83,20 @@ CoverArt CoverArtUtils::guessCoverArt(TrackPointer pTrack) {
         qDebug() << "CoverArtUtils::guessCoverArt found metadata art" << art;
         return art;
     }
-
-    QLinkedList<QFileInfo> possibleCovers = findPossibleCoversInFolder(
-        trackInfo.absolutePath());
+    auto possibleCovers = findPossibleCoversInFolder( trackInfo.absolutePath());
     art = selectCoverArtForTrack(pTrack.data(), possibleCovers);
-    if (art.info.type == CoverInfo::FILE) {
+    if (art.info.type == CoverInfo::FILE)
         qDebug() << "CoverArtUtils::guessCoverArt found file art" << art;
-    } else {
+    else
         qDebug() << "CoverArtUtils::guessCoverArt didn't find art" << art;
-    }
     return art;
 }
 
 //static
-QLinkedList<QFileInfo> CoverArtUtils::findPossibleCoversInFolder(const QString& folder) {
+QLinkedList<QFileInfo> CoverArtUtils::findPossibleCoversInFolder(QString folder) {
     // Search for image files in the track directory.
-    QRegExp coverArtFilenames(supportedCoverArtExtensionsRegex(),
-                              Qt::CaseInsensitive);
-    QDirIterator it(folder,
-                    QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
+    QRegExp coverArtFilenames(supportedCoverArtExtensionsRegex(), Qt::CaseInsensitive);
+    QDirIterator it(folder, QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
     QFile currentFile;
     QFileInfo currentFileInfo;
     QLinkedList<QFileInfo> possibleCovers;
@@ -130,34 +112,26 @@ QLinkedList<QFileInfo> CoverArtUtils::findPossibleCoversInFolder(const QString& 
 }
 
 //static
-CoverArt CoverArtUtils::selectCoverArtForTrack(
-        TrackInfoObject* pTrack,
-        const QLinkedList<QFileInfo>& covers) {
-    if (pTrack == NULL || covers.isEmpty()) {
+CoverArt CoverArtUtils::selectCoverArtForTrack(TrackInfoObject* pTrack,QLinkedList<QFileInfo> covers) {
+    if (!pTrack || covers.isEmpty()) {
         CoverArt art;
         art.info.source = CoverInfo::GUESSED;
         return art;
     }
-
-    const QString trackBaseName = pTrack->getFileInfo().baseName();
-    const QString albumName = pTrack->getAlbum();
+    QString trackBaseName = pTrack->getFileInfo().baseName();
+    QString albumName = pTrack->getAlbum();
     return selectCoverArtForTrack(trackBaseName, albumName, covers);
 }
-
 //static
 CoverArt CoverArtUtils::selectCoverArtForTrack(
-        const QString& trackBaseName,
-        const QString& albumName,
-        const QLinkedList<QFileInfo>& covers) {
+        QString trackBaseName,
+        QString albumName,
+        QLinkedList<QFileInfo> covers) {
     CoverArt art;
     art.info.source = CoverInfo::GUESSED;
-    if (covers.isEmpty()) {
-        return art;
-    }
-
+    if (covers.isEmpty()) return art;
     PreferredCoverType bestType = NONE;
-    const QFileInfo* bestInfo = NULL;
-
+    auto bestInfo = static_cast<const QFileInfo*>(nullptr);
     // If there is a single image then we use it unconditionally. Otherwise
     // we use the priority order described in PreferredCoverType. Notably,
     // if there are multiple image files in the folder we require they match
@@ -169,45 +143,34 @@ CoverArt CoverArtUtils::selectCoverArtForTrack(
     } else {
         // TODO(XXX) Sort instead so that we can fall-back if one fails to
         // open?
-        foreach (const QFileInfo& file, covers) {
-            const QString coverBaseName = file.baseName();
+        for(auto &file: covers) {
+            QString coverBaseName = file.baseName();
             if (bestType > TRACK_BASENAME &&
-                coverBaseName.compare(trackBaseName,
-                                      Qt::CaseInsensitive) == 0) {
+                coverBaseName.compare(trackBaseName,Qt::CaseInsensitive) == 0) {
                 bestType = TRACK_BASENAME;
                 bestInfo = &file;
                 // This is the best type so we know we're done.
                 break;
             } else if (bestType > ALBUM_NAME &&
-                       coverBaseName.compare(albumName,
-                                             Qt::CaseInsensitive) == 0) {
+                       coverBaseName.compare(albumName,Qt::CaseInsensitive) == 0) {
                 bestType = ALBUM_NAME;
                 bestInfo = &file;
-            } else if (bestType > COVER &&
-                       coverBaseName.compare(QLatin1String("cover"),
-                                             Qt::CaseInsensitive) == 0) {
+            } else if (bestType > COVER && !coverBaseName.compare(QLatin1String("cover"), Qt::CaseInsensitive)) {
                 bestType = COVER;
                 bestInfo = &file;
-            } else if (bestType > FRONT &&
-                       coverBaseName.compare(QLatin1String("front"),
-                                             Qt::CaseInsensitive) == 0) {
+            } else if (bestType > FRONT && !coverBaseName.compare(QLatin1String("front"), Qt::CaseInsensitive)) {
                 bestType = FRONT;
                 bestInfo = &file;
-            } else if (bestType > ALBUM &&
-                       coverBaseName.compare(QLatin1String("album"),
-                                             Qt::CaseInsensitive) == 0) {
+            } else if (bestType > ALBUM && !coverBaseName.compare(QLatin1String("album"), Qt::CaseInsensitive)) {
                 bestType = ALBUM;
                 bestInfo = &file;
-            } else if (bestType > FOLDER &&
-                       coverBaseName.compare(QLatin1String("folder"),
-                                             Qt::CaseInsensitive) == 0) {
+            } else if (bestType > FOLDER && !coverBaseName.compare(QLatin1String("folder"), Qt::CaseInsensitive)) {
                 bestType = FOLDER;
                 bestInfo = &file;
             }
         }
     }
-
-    if (bestInfo != NULL) {
+    if (bestInfo) {
         art.image = QImage(bestInfo->filePath());
         if (!art.image.isNull()) {
             art.info.source = CoverInfo::GUESSED;
@@ -217,6 +180,9 @@ CoverArt CoverArtUtils::selectCoverArtForTrack(
             return art;
         }
     }
-
     return art;
+}
+CoverArtUtils::CoverArtUtils() = default;
+quint16 CoverArtUtils::calculateHash(const QImage& image) {
+    return qChecksum(reinterpret_cast<const char*>(image.constBits()), image.byteCount());
 }

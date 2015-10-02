@@ -62,7 +62,7 @@ class SoundDevicePortAudio : public SoundDevice {
                         const PaStreamCallbackTimeInfo *timeInfo,
                         PaStreamCallbackFlags statusFlags);
     virtual unsigned int getDefaultSampleRate() const {
-        return m_deviceInfo ? static_cast<unsigned int>(m_deviceInfo->defaultSampleRate) : 44100;
+        return m_deviceInfo ? static_cast<unsigned int>(m_deviceInfo->defaultSampleRate) : 44100u;
     }
   private:
     // PortAudio stream for this device.
@@ -95,20 +95,3 @@ class SoundDevicePortAudio : public SoundDevice {
     int m_framesSinceAudioLatencyUsageUpdate = 0;
     int m_syncBuffers = 2;
 };
-// Wrapper function to call SoundDevicePortAudio::callbackProcess. Used by
-// PortAudio, which knows nothing about C++.
-int paV19Callback(const void* inputBuffer, void* outputBuffer,
-                  unsigned long framesPerBuffer,
-                  const PaStreamCallbackTimeInfo* timeInfo,
-                  PaStreamCallbackFlags statusFlags,
-                  void* soundDevice);
-int paV19CallbackDrift(const void* inputBuffer, void* outputBuffer,
-                  unsigned long framesPerBuffer,
-                  const PaStreamCallbackTimeInfo* timeInfo,
-                  PaStreamCallbackFlags statusFlags,
-                  void* soundDevice);
-int paV19CallbackClkRef(const void* inputBuffer, void* outputBuffer,
-                  unsigned long framesPerBuffer,
-                  const PaStreamCallbackTimeInfo* timeInfo,
-                  PaStreamCallbackFlags statusFlags,
-                  void *soundDevice);

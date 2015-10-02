@@ -1,6 +1,4 @@
-#ifndef LIBRARYTABLEMODEL_H
-#define LIBRARYTABLEMODEL_H
-
+_Pragma("once")
 #include "library/basesqltablemodel.h"
 
 class LibraryTableModel : public BaseSqlTableModel {
@@ -17,5 +15,3 @@ class LibraryTableModel : public BaseSqlTableModel {
     TrackModel::CapabilitiesFlags getCapabilities() const;
     static const QString DEFAULT_LIBRARYFILTER;
 };
-
-#endif

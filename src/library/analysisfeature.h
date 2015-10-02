@@ -2,9 +2,7 @@
 // Created 8/23/2009 by RJ Ryan (rryan@mit.edu)
 // Forked 11/11/2009 by Albert Santoni (alberts@mixxx.org)
 
-#ifndef ANALYSISFEATURE_H
-#define ANALYSISFEATURE_H
-
+_Pragma("once")
 #include <QStringListModel>
 #include <QUrl>
 #include <QObject>
@@ -23,9 +21,7 @@ class TrackCollection;
 class AnalysisFeature : public LibraryFeature {
     Q_OBJECT
   public:
-    AnalysisFeature(QObject* parent,
-                    ConfigObject<ConfigValue>* pConfig,
-                    TrackCollection* pTrackCollection);
+    AnalysisFeature(QObject* parent,ConfigObject<ConfigValue>* pConfig,TrackCollection* pTrackCollection);
     virtual ~AnalysisFeature();
 
     QVariant title();
@@ -73,6 +69,3 @@ class AnalysisFeature : public LibraryFeature {
     QString m_analysisTitleName;
     DlgAnalysis* m_pAnalysisView;
 };
-
-
-#endif /* ANALYSISFEATURE_H */

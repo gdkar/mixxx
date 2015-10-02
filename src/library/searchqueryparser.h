@@ -1,6 +1,4 @@
-#ifndef SEARCHQUERYPARSER_H
-#define SEARCHQUERYPARSER_H
-
+_Pragma("once")
 #include <memory>
 #include <utility>
 #include <QRegExp>
@@ -21,12 +19,9 @@ class SearchQueryParser {
             const QString& extraFilter) const;
 
   private:
-    void parseTokens(QStringList tokens,
-                     QStringList searchColumns,
-                     AndNode* pQuery) const;
+    void parseTokens(QStringList tokens,QStringList searchColumns,AndNode* pQuery) const;
 
-    QString getTextArgument(QString argument,
-                            QStringList* tokens) const;
+    QString getTextArgument(QString argument,QStringList* tokens) const;
 
     QSqlDatabase m_database;
     QStringList m_textFilters;
@@ -42,5 +37,3 @@ class SearchQueryParser {
 
     DISALLOW_COPY_AND_ASSIGN(SearchQueryParser);
 };
-
-#endif /* SEARCHQUERYPARSER_H */

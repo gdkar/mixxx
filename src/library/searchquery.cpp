@@ -197,45 +197,33 @@ void NumericFilterNode::init(QString argument) {
 
     QStringList rangeArgs = argument.split("-");
     if (rangeArgs.length() == 2) {
-        bool lowOk = false;
+        auto lowOk = false;
         m_dRangeLow = parse(rangeArgs[0], &lowOk);
-        bool highOk = false;
+        auto  highOk = false;
         m_dRangeHigh = parse(rangeArgs[1], &highOk);
-
-        if (lowOk && highOk && m_dRangeLow <= m_dRangeHigh) {
-            m_bRangeQuery = true;
-        }
+        if (lowOk && highOk && m_dRangeLow <= m_dRangeHigh) m_bRangeQuery = true;
     }
 }
-
-double NumericFilterNode::parse(const QString& arg, bool *ok) {
+double NumericFilterNode::parse(const QString& arg, bool *ok)
+{
     return arg.toDouble(ok);
 }
-
 bool NumericFilterNode::match(const TrackPointer& pTrack) const {
     for (const auto& sqlColumn: m_sqlColumns) {
-        QVariant value = getTrackValueForColumn(pTrack, sqlColumn);
-        if (!value.isValid() || !qVariantCanConvert<double>(value)) {
-            continue;
-        }
-
-        double dValue = value.toDouble();
+        auto value = getTrackValueForColumn(pTrack, sqlColumn);
+        if (!value.isValid() || !qVariantCanConvert<double>(value)) continue;
+        auto dValue = value.toDouble();
         if (m_bOperatorQuery) {
             if ((m_operator == "=" && dValue == m_dOperatorArgument) ||
                 (m_operator == "<" && dValue < m_dOperatorArgument) ||
                 (m_operator == ">" && dValue > m_dOperatorArgument) ||
                 (m_operator == "<=" && dValue <= m_dOperatorArgument) ||
-                (m_operator == ">=" && dValue >= m_dOperatorArgument)) {
+                (m_operator == ">=" && dValue >= m_dOperatorArgument))
                 return true;
-            }
-        } else if (m_bRangeQuery && dValue >= m_dRangeLow &&
-                   dValue <= m_dRangeHigh) {
-            return true;
-        }
+        } else if (m_bRangeQuery && dValue >= m_dRangeLow && dValue <= m_dRangeHigh) return true;
     }
     return false;
 }
-
 QString NumericFilterNode::toSql() const {
     if (m_bOperatorQuery) {
         QStringList searchClauses;
@@ -245,23 +233,18 @@ QString NumericFilterNode::toSql() const {
         }
         return concatSqlClauses(searchClauses, "OR");
     }
-
     if (m_bRangeQuery) {
         QStringList searchClauses;
         for (const auto& sqlColumn: m_sqlColumns) {
             QStringList rangeClauses;
-            rangeClauses << QString("%1 >= %2").arg(
-                    sqlColumn, QString::number(m_dRangeLow));
-            rangeClauses << QString("%1 <= %2").arg(
-                    sqlColumn, QString::number(m_dRangeHigh));
+            rangeClauses << QString("%1 >= %2").arg(sqlColumn, QString::number(m_dRangeLow));
+            rangeClauses << QString("%1 <= %2").arg(sqlColumn, QString::number(m_dRangeHigh));
             searchClauses << concatSqlClauses(rangeClauses, "AND");
         }
         return concatSqlClauses(searchClauses, "OR");
     }
-
     return QString();
 }
-
 DurationFilterNode::DurationFilterNode(
         const QStringList& sqlColumns, const QString& argument)
         : NumericFilterNode(sqlColumns) {
@@ -269,19 +252,17 @@ DurationFilterNode::DurationFilterNode(
     // the implementation of this and not that of the base class!
     init(argument);
 }
-
 double DurationFilterNode::parse(const QString& arg, bool* ok) {
-    QRegExp regex("^(\\d*)(m|:)?([0-6]?\\d)?s?$");
+    auto regex = QRegExp("^(\\d*)(m|:)?([0-6]?\\d)?s?$");
     if (regex.indexIn(arg) == -1) {
         *ok = false;
         return 0;
     }
-
     // You can check that the minutes are parsed to entry 2 of the list and the
     // seconds are in the 4th entry. If you don't believe me or this doesn't
     // work anymore because we changed our Qt version just have a look at caps.
     // -- (kain88, Aug 2014)
-    QStringList caps = regex.capturedTexts();
+    auto caps = regex.capturedTexts();
     double m = 0;
     double s = 0;
     // if only a number is entered parse as seconds
@@ -291,22 +272,13 @@ double DurationFilterNode::parse(const QString& arg, bool* ok) {
         m = caps.at(1).toDouble(ok);
         s = caps.at(3).toDouble();
     }
-
-    if (!*ok) {
-        return 0;
-    }
-
+    if (!*ok) return 0;
     *ok = true;
     return 60 * m + s;
 }
-
-KeyFilterNode::KeyFilterNode(mixxx::track::io::key::ChromaticKey key,
-                             bool fuzzy) {
-    if (fuzzy) {
-        m_matchKeys = KeyUtils::getCompatibleKeys(key);
-    } else {
-        m_matchKeys.push_back(key);
-    }
+KeyFilterNode::KeyFilterNode(mixxx::track::io::key::ChromaticKey key, bool fuzzy) {
+    if (fuzzy) m_matchKeys = KeyUtils::getCompatibleKeys(key);
+    else m_matchKeys.push_back(key);
 }
 
 bool KeyFilterNode::match(const TrackPointer& pTrack) const {
@@ -319,4 +291,40 @@ QString KeyFilterNode::toSql() const {
         searchClauses << QString("key_id IS %1").arg(QString::number(matchKey));
     }
     return concatSqlClauses(searchClauses, "OR");
+}
+QueryNode::~QueryNode() = default;
+QueryNode::QueryNode() = default;
+void GroupNode::addNode(std::unique_ptr<QueryNode> pNode)
+{
+  DEBUG_ASSERT(pNode);
+  m_nodes.push_back(std::move(pNode));
+}
+NotNode::NotNode(std::unique_ptr<QueryNode> pNode)
+  : m_pNode(std::move(pNode))
+{
+  DEBUG_ASSERT(m_pNode);
+}
+TextFilterNode::TextFilterNode(const QSqlDatabase& database,
+                   const QStringList& sqlColumns,
+                   const QString& argument)
+            : m_database(database),
+              m_sqlColumns(sqlColumns),
+              m_argument(argument) 
+{
+} 
+SqlNode::SqlNode(QString sqlExpression)
+        // No need to wrap into parantheses here! This will be done
+        // later in toSql() if this node is a component of another
+        // composite node.
+        : m_sql(sqlExpression) {
+}
+bool SqlNode::match(const TrackPointer& pTrack) const {
+    // We are usually embedded in an AND node so if we don't match
+    // everything then we block everything.
+    Q_UNUSED(pTrack);
+    return true;
+}
+QString SqlNode::toSql() const 
+{
+    return m_sql;
 }
