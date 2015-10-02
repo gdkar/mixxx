@@ -26,6 +26,8 @@ bool even(T value) {return value % 2 == 0; }
 template<typename T>
 constexpr T roundUpToPowerOf2(T v)
 {
+  DEBUG_ASSERT(v < std::numeric_limits<T>::max()/2);
+  if(v<=0) return 1;
   v--;
   for(auto i = size_t{1}; i < 8 * sizeof(T);i<<=1) v|=(v>>i);
   return v+1;

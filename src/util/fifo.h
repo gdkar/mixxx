@@ -20,46 +20,48 @@ class FIFO : public PaUtilRingBuffer<DataType>{
     using PaUtilRingBuffer<DataType>::getWriteRegions;
     using PaUtilRingBuffer<DataType>::advanceReadIndex;
     using PaUtilRingBuffer<DataType>::advanceWriteIndex;
+    using size_type = typename PaUtilRingBuffer<DataType>::size_type;
+    using difference_type = typename PaUtilRingBuffer<DataType>::difference_type;
     FIFO ( const FIFO& ) = delete;
     FIFO ( FIFO && ) = default;
     FIFO&operator = ( const FIFO& ) = delete;
     FIFO&operator = ( FIFO && ) = default;
-    explicit FIFO(long size)
+    explicit FIFO(size_type size)
             : PaUtilRingBuffer<DataType> ( size ) 
     { 
       m_spaceAvailable.release ( getWriteAvailable () );
     }
     virtual ~FIFO() = default;
-    long readAvailable() const 
+    size_type readAvailable() const 
     { 
       return getReadAvailable () ; 
     }
-    long writeAvailable() const 
+    size_type writeAvailable() const 
     { 
       return getWriteAvailable () ; 
     }
-    long read ( DataType *pData, long count ) override {
+    size_type read ( DataType *pData, size_type count ) override {
       auto n = PaUtilRingBuffer<DataType>::read (pData, count);
       m_spaceAvailable.release(n);
       return n;
     }
-    long peek ( DataType *pData, long count ) 
+    size_type peek ( DataType *pData, size_type count ) 
     {
-      long size0, size1;
-      DataType *ptr0,ptr1;
+      auto size0 = size_type{0}, size1 = size_type{0};
+      auto ptr0 = static_cast<DataType*>(nullptr), ptr1 = static_cast<DataType*>(nullptr);
       auto avail = getWriteRegions(count, &ptr0, &size0, &ptr1, &size1);
       std::copy_n(ptr0,size0,pData);
       pData += size0;
       std::copy_n(ptr1,size1,pData);
       return avail;
     }
-    long write( const DataType *pData, long count ) override {
+    size_type write( const DataType *pData, size_type count ) override {
       auto n = PaUtilRingBuffer<DataType>::write(pData, count);
       m_spaceAvailable.tryAcquire(n);
       return n;
     }
-    void writeBlocking(const DataType* pData, long count) {
-        auto written = long{0};
+    void writeBlocking(const DataType* pData, size_type count) {
+        auto written = size_type {0};
         if ( count )
         {
           m_spaceAvailable.acquire ( 1 );
@@ -72,21 +74,21 @@ class FIFO : public PaUtilRingBuffer<DataType>{
           }
         }
     }
-    long aquireWriteRegions(long count, DataType** dataPtr0, long* sizePtr0, DataType** dataPtr1, long* sizePtr1)
+    size_type aquireWriteRegions(size_type count, DataType** dataPtr0, size_type * sizePtr0, DataType** dataPtr1, size_type * sizePtr1)
     {
         return getWriteRegions ( count, dataPtr0, sizePtr0, dataPtr1, sizePtr1 );
     }
-    long releaseWriteRegions(long count) 
+    size_type releaseWriteRegions(size_type count) 
     {
         auto n = advanceWriteIndex ( count );
         m_spaceAvailable.tryAcquire ( count);
         return n;
     }
-    long aquireReadRegions(long count, DataType** dataPtr0, long * sizePtr0, DataType** dataPtr1, long * sizePtr1)
+    size_type aquireReadRegions(size_type count, DataType** dataPtr0, size_type * sizePtr0, DataType** dataPtr1, size_type * sizePtr1)
     {
       return getReadRegions ( count, dataPtr0, sizePtr0, dataPtr1, sizePtr1 );
     }
-    long releaseReadRegions(long count)
+    size_type releaseReadRegions(size_type count)
     {
       auto n =  advanceReadIndex ( count );
       m_spaceAvailable.release ( count );
