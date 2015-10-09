@@ -15,9 +15,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef ENGINEBUFFERSCALE_H
-#define ENGINEBUFFERSCALE_H
-
+_Pragma("once")
 #include <QObject>
 
 #include "util/types.h"
@@ -36,11 +34,12 @@
 /**
   *@author Tue & Ken Haste Andersen
   */
+class ReadAheadManager;
 
 class EngineBufferScale : public QObject {
     Q_OBJECT
   public:
-    EngineBufferScale();
+    EngineBufferScale(ReadAheadManager *pRAMan, QObject *pParent );
     virtual ~EngineBufferScale();
 
     // Sets the scaling parameters.
@@ -75,17 +74,15 @@ class EngineBufferScale : public QObject {
     virtual void clear() = 0;
     /** Scale buffer */
     virtual CSAMPLE* getScaled(unsigned long buf_size) = 0;
-
   protected:
-    int m_iSampleRate;
-    double m_dBaseRate;
-    bool m_bSpeedAffectsPitch;
-    double m_dTempoRatio;
-    double m_dPitchRatio;
+    ReadAheadManager * m_pRAMan = nullptr;
+    int m_iSampleRate = 0;
+    double m_dBaseRate = 1.0;
+    bool m_bSpeedAffectsPitch = false;
+    double m_dTempoRatio = 1.0;
+    double m_dPitchRatio = 1.0;
     /** Pointer to internal buffer */
-    CSAMPLE* m_buffer;
+    CSAMPLE* m_buffer = nullptr;
     /** New playpos after call to scale */
-    double m_samplesRead;
+    double m_samplesRead = 0;
 };
-
-#endif

@@ -134,11 +134,11 @@ void WOverview::onConnectedControlChanged(double dParameter, double dValue) {
 }
 void WOverview::slotWaveformSummaryUpdated() {
     //qDebug() << "WOverview::slotWaveformSummaryUpdated()";
-    TrackPointer pTrack = m_pCurrentTrack;
+    auto pTrack = m_pCurrentTrack;
     if (!pTrack) {return;}
     m_pWaveform = pTrack->getWaveformSummary();
     // If the waveform is already complete, just draw it.
-    if (m_pWaveform && m_pWaveform->getCompletion() == m_pWaveform->getDataSize()) {
+    if (m_pWaveform && m_pWaveform->getCompletion() == m_pWaveform->ize()) {
         m_actualCompletion = 0;
         if (drawNextPixmapPart()) {update();}
     }

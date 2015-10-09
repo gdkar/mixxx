@@ -1,6 +1,4 @@
-#ifndef ENGINEBUFFERSCALERUBBERBAND_H
-#define ENGINEBUFFERSCALERUBBERBAND_H
-
+_Pragma("once")
 #include "engine/enginebufferscale.h"
 
 namespace RubberBand {
@@ -13,7 +11,7 @@ class ReadAheadManager;
 class EngineBufferScaleRubberBand : public EngineBufferScale {
     Q_OBJECT
   public:
-    EngineBufferScaleRubberBand(ReadAheadManager* pReadAheadManager);
+    EngineBufferScaleRubberBand(ReadAheadManager* pRAMan,QObject *pParent);
     virtual ~EngineBufferScaleRubberBand();
 
     virtual void setScaleParameters(double base_rate,
@@ -35,16 +33,8 @@ class EngineBufferScaleRubberBand : public EngineBufferScale {
     size_t retrieveAndDeinterleave(CSAMPLE* pBuffer, size_t frames);
 
     // Holds the playback direction
-    bool m_bBackwards;
-
-    CSAMPLE* m_retrieve_buffer[2];
-    CSAMPLE* m_buffer_back;
-
-    RubberBand::RubberBandStretcher* m_pRubberBand;
-
-    // The read-ahead manager that we use to fetch samples
-    ReadAheadManager* m_pReadAheadManager;
+    bool m_bBackwards = false;
+    CSAMPLE* m_retrieve_buffer[2] = {nullptr,nullptr};
+    CSAMPLE* m_buffer_back = nullptr;
+    RubberBand::RubberBandStretcher* m_pRubberBand = nullptr;
 };
-
-
-#endif /* ENGINEBUFFERSCALERUBBERBAND_H */

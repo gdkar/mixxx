@@ -34,7 +34,7 @@ void ControlObject::initialize(ConfigKey key, bool bIgnoreNops, bool bTrack,bool
     m_key = key;
     // Don't bother looking up the control if key is nullptr. Prevents log spew.
     if (!m_key.isNull()) {
-        m_pControl = ControlDoublePrivate::getControl(m_key, true, this,bIgnoreNops, bTrack,bPersist);
+        m_pControl = ControlDoublePrivate::getControl(m_key, false, this,bIgnoreNops, bTrack,bPersist);
     }
     // getControl can fail and return a nullptr control even with the create flag.
     if (m_pControl) {

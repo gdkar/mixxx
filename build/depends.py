@@ -397,7 +397,6 @@ class MixxxCore(Feature):
                    "engine/effects/engineeffectchain.cpp",
                    "engine/effects/engineeffect.cpp",
 
-                   "engine/sync/basesyncablelistener.cpp",
                    "engine/sync/enginesync.cpp",
                    "engine/sync/synccontrol.cpp",
                    "engine/sync/internalclock.cpp",

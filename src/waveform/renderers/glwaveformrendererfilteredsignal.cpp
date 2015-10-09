@@ -22,7 +22,7 @@ void GLWaveformRendererFilteredSignal::draw(QPainter* painter, QPaintEvent* /*ev
     if (!pTrack) {return;}
     auto waveform = pTrack->getWaveform();
     if (waveform.isNull()) {return;}
-    int dataSize = waveform->getDataSize();
+    int dataSize = waveform->size();
     if (dataSize <= 1) {return;}
     auto data = waveform->data();
     if (!data ) {return;}

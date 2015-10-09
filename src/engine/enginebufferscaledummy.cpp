@@ -5,22 +5,17 @@
 #include "sampleutil.h"
 
 
-EngineBufferScaleDummy::EngineBufferScaleDummy(ReadAheadManager* pReadAheadManager)
-    : EngineBufferScale(),
-      m_pReadAheadManager(pReadAheadManager)
+EngineBufferScaleDummy::EngineBufferScaleDummy(ReadAheadManager* pRAMan,QObject *pParent)
+    : EngineBufferScale(pRAMan,pParent),
 {
     m_samplesRead = 0.0;
 }
 
-EngineBufferScaleDummy::~EngineBufferScaleDummy()
-{
-
-}
+EngineBufferScaleDummy::~EngineBufferScaleDummy() = default;
 
 void EngineBufferScaleDummy::clear()
 {
 }
-
 
 CSAMPLE* EngineBufferScaleDummy::getScaled(unsigned long buf_size) {
     m_samplesRead = 0.0;
@@ -32,7 +27,7 @@ CSAMPLE* EngineBufferScaleDummy::getScaled(unsigned long buf_size) {
     int samples_remaining = buf_size;
     CSAMPLE* buffer_back = m_buffer;
     while (samples_remaining > 0) {
-        int read_samples = m_pReadAheadManager->getNextSamples(rate,
+        int read_samples = m_pRAMan->getNextSamples(rate,
                                                                buffer_back,
                                                                samples_remaining);
         samples_remaining -= read_samples;

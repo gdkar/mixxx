@@ -9,12 +9,12 @@ _Pragma("once")
 template<class T>
 class PaUtilRingBuffer {
 public:
-  using size_type       = uint64_t;
-  using difference_type = int64_t;
+  using size_type            = uint64_t;
+  using difference_type      = int64_t;
 private:
-  size_type                bufferSize = 0;
-  size_type                bigMask    = 0;
-  size_type                smallMask  = 0;
+  size_type       bufferSize = 0;
+  difference_type bigMask    = 0;
+  difference_type smallMask  = 0;
   std::unique_ptr<T[]> buffer {nullptr};
   std::atomic<difference_type> writeIndex { 0 };
   std::atomic<difference_type> readIndex { 0 };
@@ -39,8 +39,8 @@ public:
   {
     auto widx = writeIndex.load() & bigMask;
     auto ridx = readIndex.load()  & bigMask;
-    auto available = bufferSize - ((widx-ridx)&bigMask);
-    if((elementCount = std::min ( elementCount, available )))
+    auto available = bufferSize - std::min(0l,((widx-ridx)&bigMask));
+    if((elementCount = std::min<decltype(elementCount)> ( elementCount, available )))
     {
       auto index = widx & smallMask;
       if ( index + elementCount > bufferSize )
@@ -65,8 +65,8 @@ public:
   {
     auto widx = writeIndex.load() & bigMask;
     auto ridx = readIndex.load() & bigMask;
-    auto available = bufferSize - ((widx-ridx)&bigMask);
-    if((elementCount = std::min ( elementCount, available )))
+    auto available = bufferSize - std::min(0l,(widx-ridx)&bigMask);
+    if((elementCount = std::min<decltype(elementCount)> ( elementCount, available )))
     writeIndex.fetch_add ( elementCount );
     return elementCount;
   }
@@ -74,8 +74,8 @@ public:
   {
     auto widx = writeIndex.load () & bigMask;
     auto ridx = readIndex .load () & bigMask;
-    auto available = (widx-ridx) & bigMask;
-    if((elementCount = std::min(elementCount,available)))
+    auto available = std::max(0l,(widx-ridx) & bigMask);
+    if((elementCount = std::min<decltype(elementCount)>(elementCount,available)))
     {
       auto index = ridx & smallMask;
       if ( index + elementCount > bufferSize )
@@ -100,8 +100,8 @@ public:
   {
     auto widx = writeIndex.load () & bigMask;
     auto ridx = readIndex .load () & bigMask;
-    auto available = (widx-ridx) & bigMask;
-    if((elementCount = std::min(elementCount,available)))
+    auto available = std::max(0l,(widx-ridx) & bigMask);
+    if((elementCount = std::min<decltype(elementCount)>(elementCount,available)))
       readIndex.fetch_add ( elementCount );
     return elementCount;
   }
@@ -110,9 +110,9 @@ public:
     auto size0 = size_type {}, size1 = size_type {};
     T *data0, *data1;
     auto numWritten = getWriteRegions ( elementCount, &data0, &size0, &data1, &size1 );
-    std::move ( data, data+size0, data0 );
+    std::copy( data, data+size0, data0 );
     data += size0;
-    if ( size1 > 0 ) std::move ( data, data+size1, data1 );
+    if ( size1 > 0 ) std::copy( data, data+size1, data1 );
     advanceWriteIndex ( numWritten );
     return numWritten;
   }
@@ -121,9 +121,9 @@ public:
     auto size0 = size_type {},size1 = size_type {};
     T *data0, *data1;
     auto numRead = getReadRegions ( elementCount, &data0, &size0, &data1, &size1 );
-    std::move ( data0, data0+size0, data );
+    std::copy( data0, data0+size0, data );
     data += size0;
-    if ( size1 ) std::move ( data1, data1+size1, data );
+    if ( size1 ) std::copy( data1, data1+size1, data );
     advanceReadIndex ( numRead );
     return numRead;
   }

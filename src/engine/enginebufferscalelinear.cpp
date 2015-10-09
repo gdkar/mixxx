@@ -7,13 +7,12 @@
 #include "util/math.h"
 #include "util/assert.h"
 
-EngineBufferScaleLinear::EngineBufferScaleLinear(ReadAheadManager *pReadAheadManager)
-    : EngineBufferScale(),
+EngineBufferScaleLinear::EngineBufferScaleLinear(ReadAheadManager *pRAMan,QObject *pParent)
+    : EngineBufferScale(pRAMan,pParent),
       m_bBackwards(false),
       m_bClear(false),
       m_dRate(1.0),
       m_dOldRate(1.0),
-      m_pReadAheadManager(pReadAheadManager),
       m_dCurrentFrame(0.0),
       m_dNextFrame(0.0)
 {
@@ -110,7 +109,7 @@ CSAMPLE* EngineBufferScaleLinear::getScaled(unsigned long buf_size) {
                 extra_samples++;
             //qDebug() << "extra samples" << extra_samples;
 
-            samples_read += m_pReadAheadManager->getNextSamples(
+            samples_read += m_pRAMan->getNextSamples(
                     rate_add_new, m_bufferInt, extra_samples);
         }
         // force a buffer read:
@@ -182,7 +181,7 @@ CSAMPLE* EngineBufferScaleLinear::do_scale(CSAMPLE* buf,
         // to call getNextSamples until you receive the number of samples you
         // wanted.
         while (samples_needed > 0) {
-            int read_size = m_pReadAheadManager->getNextSamples(
+            int read_size = m_pRAMan->getNextSamples(
                     1.0, write_buf, samples_needed);
             samples_needed -= read_size;
             write_buf += read_size;
@@ -283,31 +282,18 @@ CSAMPLE* EngineBufferScaleLinear::do_scale(CSAMPLE* buf,
                 unscaled_samples_needed = 2;
                 screwups++;
             }
-
-            int samples_to_read = math_min<int>(kiLinearScaleReadAheadLength,
-                                                unscaled_samples_needed);
-
-            m_bufferIntSize = m_pReadAheadManager->getNextSamples(
-                    rate_new == 0 ? rate_old : rate_new,
-                    m_bufferInt, samples_to_read);
+            int samples_to_read = math_min<int>(kiLinearScaleReadAheadLength, unscaled_samples_needed);
+            m_bufferIntSize = m_pRAMan->getNextSamples(rate_new == 0 ? rate_old : rate_new,m_bufferInt, samples_to_read);
             *samples_read += m_bufferIntSize;
-
-            if (m_bufferIntSize == 0 && last_read_failed) {
-                break;
-            }
+            if (m_bufferIntSize == 0 && last_read_failed) break;
             last_read_failed = m_bufferIntSize == 0;
-
             unscaled_samples_needed -= m_bufferIntSize;
-
             // adapt the m_dCurrentFrame the index of the new buffer
             m_dCurrentFrame -= old_bufsize / 2.;
         }
 
         // I guess?
-        if (last_read_failed) {
-            break;
-        }
-
+        if (last_read_failed) break;
         // Now that the buffer is up to date, we can get the value of the sample
         // at the floor of our position.
         if (static_cast<int>(std::floor(m_dCurrentFrame)) * 2 >= 0) {

@@ -51,8 +51,8 @@ class Waveform {
     double getAudioVisualRatio() const;
     // Atomically lookup the completion of the waveform. Represents the number
     // of data elements that have been processed out of dataSize.
-    double getCompletion() const;
-    void setCompletion(double completion);
+    int getCompletion() const;
+    void setCompletion(int completion);
     // We do not lock the mutex since m_textureStride is not changed after
     // the constructor runs.
     int getTextureStride() const;
@@ -62,7 +62,7 @@ class Waveform {
     // Atomically get the number of data elements in this Waveform. We do not
     // lock the mutex since m_dataSize is not changed after the constructor
     // runs.
-    int getDataSize() const;
+    int size() const;
     const WaveformData& get(int i) const;
     unsigned char getLow(int i) const;
     unsigned char getMid(int i) const;
@@ -111,7 +111,7 @@ class Waveform {
     std::atomic<int> m_textureStride{0};
     // For performance, completion is shared as a QAtomicInt and does not lock
     // the mutex. The completion of the waveform calculation.
-    std::atomic<double> m_completion{0};
+    std::atomic<int> m_completion{0};
     mutable QMutex m_mutex;
 };
 typedef QSharedPointer<Waveform> WaveformPointer;

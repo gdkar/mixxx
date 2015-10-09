@@ -36,7 +36,7 @@ void QtWaveformRendererSimpleSignal::draw(QPainter* painter, QPaintEvent* /*even
     if (!pTrack) {return;}
     auto waveform = pTrack->getWaveform();
     if (waveform.isNull()) {return;}
-    auto dataSize = waveform->getDataSize();
+    auto dataSize = waveform->size();
     if (dataSize <= 1) {return;}
     auto data = waveform->data();
     if (!data) {return;}

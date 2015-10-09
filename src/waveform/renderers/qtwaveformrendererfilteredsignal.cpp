@@ -98,7 +98,7 @@ int QtWaveformRendererFilteredSignal::buildPolygon() {
     if (!pTrack) {return 0;}
     auto waveform = pTrack->getWaveform();
     if (waveform.isNull()) {return 0;}
-    auto dataSize = waveform->getDataSize();
+    auto dataSize = waveform->size();
     if (dataSize <= 1) {return 0;}
     auto  data = waveform->data();
     if (!data) {return 0;}

@@ -17,12 +17,11 @@ using RubberBand::RubberBandStretcher;
 // This is the default increment from RubberBand 1.8.1.
 static size_t kRubberBandBlockSize = 256;
 
-EngineBufferScaleRubberBand::EngineBufferScaleRubberBand(
-    ReadAheadManager* pReadAheadManager)
-        : m_bBackwards(false),
-          m_buffer_back(SampleUtil::alloc(MAX_BUFFER_LEN)),
-          m_pRubberBand(nullptr),
-          m_pReadAheadManager(pReadAheadManager) {
+EngineBufferScaleRubberBand::EngineBufferScaleRubberBand(ReadAheadManager* pRAMan,QObject*pParent)
+        : EngineBufferScale(pRAMan,pParent),
+          m_bBackwards(false),
+          m_buffer_back(SampleUtil::alloc(MAX_BUFFER_LEN))
+{
     qDebug() << "RubberBand version" << RUBBERBAND_VERSION;
     m_retrieve_buffer[0] = SampleUtil::alloc(MAX_BUFFER_LEN);
     m_retrieve_buffer[1] = SampleUtil::alloc(MAX_BUFFER_LEN);
@@ -164,7 +163,7 @@ CSAMPLE* EngineBufferScaleRubberBand::getScaled(unsigned long buf_size) {
         }
         //qDebug() << "iLenFramesRequired" << iLenFramesRequired;
         if (remaining_frames > 0 && iLenFramesRequired > 0) {
-            auto iAvailSamples = m_pReadAheadManager
+            auto iAvailSamples =m_pRAMan 
                     ->getNextSamples(
                         // The value doesn't matter here. All that matters is we
                         // are going forward or backward.

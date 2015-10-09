@@ -18,8 +18,6 @@
 #include "engine/enginebufferscalest.h"
 
 // Fixes redefinition warnings from SoundTouch.
-#undef TRUE
-#undef FALSE
 #include <SoundTouch.h>
 
 #include "controlobject.h"
@@ -31,11 +29,10 @@
 
 using namespace soundtouch;
 
-EngineBufferScaleST::EngineBufferScaleST(ReadAheadManager *pReadAheadManager)
-    : EngineBufferScale(),
-      m_bBackwards(false),
-      m_pReadAheadManager(pReadAheadManager) {
-    m_pSoundTouch = new soundtouch::SoundTouch();
+EngineBufferScaleST::EngineBufferScaleST(ReadAheadManager *pRAMan,QObject *pParent)
+    : EngineBufferScale(pRAMan,pParent),
+      m_pSoundTouch(new soundtouch::SoundTouch())
+{
     m_pSoundTouch->setChannels(2);
     m_pSoundTouch->setRate(m_dBaseRate);
     m_pSoundTouch->setPitch(1.0);
@@ -68,7 +65,7 @@ void EngineBufferScaleST::setScaleParameters(double base_rate,
 
     // It's an error to pass a rate or tempo smaller than MIN_SEEK_SPEED to
     // SoundTouch (see definition of MIN_SEEK_SPEED for more details).
-    double speed_abs = fabs(*pTempoRatio);
+    double speed_abs = std::abs(*pTempoRatio);
     if (speed_abs > MAX_SEEK_SPEED) {
         speed_abs = MAX_SEEK_SPEED;
     } else if (speed_abs < MIN_SEEK_SPEED) {
@@ -93,7 +90,7 @@ void EngineBufferScaleST::setScaleParameters(double base_rate,
 
     if (*pPitchRatio != m_dPitchRatio) {
         // Note: pitch ratio must be positive
-        double pitch = fabs(*pPitchRatio);
+        double pitch = std::abs(*pPitchRatio);
         if (pitch > 0.0) {
             m_pSoundTouch->setPitch(pitch);
         }
@@ -138,7 +135,7 @@ CSAMPLE* EngineBufferScaleST::getScaled(unsigned long buf_size) {
 
         if (remaining_frames > 0) {
             unsigned long iLenFrames = kiSoundTouchReadAheadLength;
-            unsigned long iAvailSamples = m_pReadAheadManager->getNextSamples(
+            unsigned long iAvailSamples = m_pRAMan->getNextSamples(
                         // The value doesn't matter here. All that matters is we
                         // are going forward or backward.
                         (m_bBackwards ? -1.0 : 1.0) * m_dBaseRate * m_dTempoRatio,

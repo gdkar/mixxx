@@ -15,9 +15,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef ENGINEOBJECT_H
-#define ENGINEOBJECT_H
-
+_Pragma("once")
 #include <QObject>
 
 #include "util/types.h"
@@ -44,4 +42,3 @@ class EngineObjectConstIn : public QObject {
     virtual ~EngineObjectConstIn();
     virtual void process(const CSAMPLE* pIn, CSAMPLE* pOut, const int iBufferSize) = 0;
 };
-#endif

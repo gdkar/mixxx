@@ -66,15 +66,15 @@ QString Waveform::getVersion()const{return m_version;}
 void    Waveform::setVersion(QString version){m_version.swap(version);}
 QString Waveform::getDescription()const{return m_description;}
 void    Waveform::setDescription(QString desc){m_description.swap(desc);}
-bool    Waveform::isValid()const{return getDataSize()>0&&getVisualSampleRate()>0;}
+bool    Waveform::isValid()const{return size()>0&&getVisualSampleRate()>0;}
 bool    Waveform::isDirty()const{return m_bDirty.load();}
 void    Waveform::setDirty(bool d)const{m_bDirty.store(d);}
 double  Waveform::getAudioVisualRatio()const{return m_audioVisualRatio.load();}
-double  Waveform::getCompletion()const{return m_completion.load();}
-void    Waveform::setCompletion(double c){m_completion.store(c);}
+int     Waveform::getCompletion()const{return m_completion.load();}
+void    Waveform::setCompletion(int c){m_completion.store(c);}
 int     Waveform::getTextureStride()const{return m_textureStride;}
 int     Waveform::getTextureSize()const{return m_data.size();}
-int     Waveform::getDataSize()const{return m_dataSize.load();}
+int     Waveform::size()const{return m_dataSize.load();}
 WaveformData * Waveform::data(){return &m_data[0];}
 const WaveformData * Waveform::data()const{return &m_data[0];}
 WaveformData &Waveform::at(int i){return m_data[i];}
@@ -120,7 +120,7 @@ QByteArray Waveform::toByteArray() const {
     mid->set_channels(numChannels);
     high->set_units(io::Waveform::RMS);
     high->set_channels(numChannels);
-    auto dataSize = getDataSize();
+    auto dataSize = size();
     for (auto i = 0; i < dataSize; ++i) {
         const auto& datum = m_data.at(i);
         all->add_value(datum.filtered.all);
@@ -164,7 +164,7 @@ void Waveform::readByteArray(const QByteArray& data) {
              << "visualSampleRate" << waveform.visual_sample_rate()
              << "audioVisualRatio" << waveform.audio_visual_ratio();
     resize(all.value_size());
-    auto dataSize = getDataSize();
+    auto dataSize = size();
     if (all.value_size() != dataSize) {
         qDebug() << "ERROR: Couldn't resize Waveform to" << all.value_size()
                  << "while reading.";
@@ -209,7 +209,7 @@ void Waveform::assign(int size, int value) {
 }
 void Waveform::dump() const {
     qDebug() << "Waveform" << this
-             << "size("+QString::number(getDataSize())+")"
+             << "size("+QString::number(size())+")"
              << "textureStride("+QString::number(m_textureStride.load())+")"
              << "completion("+QString::number(getCompletion())+")"
              << "visualSampleRate("+QString::number(m_visualSampleRate.load())+")"

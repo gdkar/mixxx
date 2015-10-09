@@ -15,9 +15,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef ENGINEBUFFERSCALELINEAR_H
-#define ENGINEBUFFERSCALELINEAR_H
-
+_Pragma("once")
 #include "engine/enginebufferscale.h"
 #include "engine/readaheadmanager.h"
 
@@ -28,16 +26,13 @@
 
 /** Number of samples to read ahead */
 const int kiLinearScaleReadAheadLength = 10240;
-
-
 class EngineBufferScaleLinear : public EngineBufferScale  {
   public:
-    EngineBufferScaleLinear(ReadAheadManager *pReadAheadManager);
+    EngineBufferScaleLinear(ReadAheadManager *pReadAheadManager, QObject *pParent);
     virtual ~EngineBufferScaleLinear();
 
     CSAMPLE* getScaled(unsigned long buf_size);
     void clear();
-
     virtual void setScaleParameters(double base_rate,
                                     double* pTempoRatio,
                                     double* pPitchRatio);
@@ -57,9 +52,6 @@ class EngineBufferScaleLinear : public EngineBufferScale  {
     int m_bufferIntSize;
     CSAMPLE m_floorSampleOld[2];
     // The read-ahead manager that we use to fetch samples
-    ReadAheadManager* m_pReadAheadManager;
     double m_dCurrentFrame;
     double m_dNextFrame;
 };
-
-#endif

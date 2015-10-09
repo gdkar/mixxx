@@ -85,7 +85,7 @@ static bool sDebug = false;
 
 ControlObject* controlFromConfigKey(ConfigKey key, bool bPersist,
                                     bool* created) {
-    auto pControl = ControlObject::getControl(key);
+    auto pControl = ControlObject::getControl(key,true);
     if (pControl) {
         if (created) { *created = false; }
         return pControl;

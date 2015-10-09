@@ -32,7 +32,7 @@ void WaveformRendererRGB::draw(QPainter* painter,
         return;
     }
 
-    const int dataSize = waveform->getDataSize();
+    const int dataSize = waveform->size();
     if (dataSize <= 1) {
         return;
     }

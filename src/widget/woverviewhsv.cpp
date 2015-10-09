@@ -18,17 +18,10 @@ bool WOverviewHSV::drawNextPixmapPart() {
     //qDebug() << "WOverview::drawNextPixmapPart() - m_waveform" << m_waveform;
 
     int currentCompletion;
-
-    ConstWaveformPointer pWaveform = getWaveform();
-    if (!pWaveform) {
-        return false;
-    }
-
-    const int dataSize = pWaveform->getDataSize();
-    if (dataSize == 0) {
-        return false;
-    }
-
+    auto  pWaveform = getWaveform();
+    if (!pWaveform) return false;
+    int dataSize = pWaveform->size();
+    if (dataSize == 0) return false;
     if (!m_pWaveformSourceImage) {
         // Waveform pixmap twice the height of the viewport to be scalable
         // by total_gain
@@ -39,10 +32,9 @@ bool WOverviewHSV::drawNextPixmapPart() {
     }
 
     // Always multiple of 2
-    const int waveformCompletion = pWaveform->getCompletion();
+    int waveformCompletion = pWaveform->getCompletion();
     // Test if there is some new to draw (at least of pixel width)
-    const int completionIncrement = waveformCompletion - m_actualCompletion;
-
+    int completionIncrement = waveformCompletion - m_actualCompletion;
     int visiblePixelIncrement = completionIncrement * width() / dataSize;
     if (completionIncrement < 2 || visiblePixelIncrement == 0) {
         return false;

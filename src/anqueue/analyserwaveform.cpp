@@ -234,7 +234,7 @@ void AnalyserWaveform::process(const CSAMPLE* buffer, const int bufferLength) {
         storeIfGreater(&m_stride.m_filteredData[Right][High], chigh[Right]);
         m_stride.m_position++;
         if (std::fmod(m_stride.m_position, m_stride.m_length) < 1) {
-            if (m_currentStride + ChannelCount > m_waveform->getDataSize()) {
+            if (m_currentStride + ChannelCount > m_waveform->size()) {
                 qWarning() << "AnalyserWaveform::process - currentStride >= waveform size";
                 return;
             }
@@ -243,7 +243,7 @@ void AnalyserWaveform::process(const CSAMPLE* buffer, const int bufferLength) {
             m_waveform->setCompletion(m_currentStride);
         }
         if (std::fmod(m_stride.m_position, m_stride.m_averageLength) < 1) {
-            if (m_currentSummaryStride + ChannelCount > m_waveformSummary->getDataSize()) {
+            if (m_currentSummaryStride + ChannelCount > m_waveformSummary->size()) {
                 qWarning() << "AnalyserWaveform::process - current summary stride >= waveform summary size";
                 return;
             }
@@ -267,10 +267,11 @@ void AnalyserWaveform::cleanup(TrackPointer tio) {
     m_waveformSummary.clear();
 }
 void AnalyserWaveform::finalise(TrackPointer tio) {
-    if (m_skipProcessing) {return;}
+    if (m_skipProcessing) 
+      return;
     // Force completion to waveform size
     if (m_waveform) {
-        m_waveform->setCompletion(m_waveform->getDataSize());
+        m_waveform->setCompletion(m_waveform->size());
         m_waveform->setVersion(WaveformFactory::currentWaveformVersion());
         m_waveform->setDescription(WaveformFactory::currentWaveformDescription());
         // Since clear() could delete the waveform, clear our pointer to the
@@ -280,7 +281,7 @@ void AnalyserWaveform::finalise(TrackPointer tio) {
     }
     // Force completion to waveform size
     if (m_waveformSummary) {
-        m_waveformSummary->setCompletion(m_waveformSummary->getDataSize());
+        m_waveformSummary->setCompletion(m_waveformSummary->size());
         m_waveformSummary->setVersion(WaveformFactory::currentWaveformSummaryVersion());
         m_waveformSummary->setDescription(WaveformFactory::currentWaveformSummaryDescription());
         // Since clear() could delete the waveform, clear our pointer to the

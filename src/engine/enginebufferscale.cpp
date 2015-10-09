@@ -16,11 +16,14 @@
 ***************************************************************************/
 
 #include "engine/enginebufferscale.h"
+#include "engine/readaheadmanager.h"
 #include "util/defs.h"
 #include "sampleutil.h"
 
-EngineBufferScale::EngineBufferScale()
-        : m_iSampleRate(44100),
+EngineBufferScale::EngineBufferScale(ReadAheadManager * pRAMan, QObject *pParent)
+        : QObject(pParent),
+          m_pRAMan(pRAMan),
+          m_iSampleRate(44100),
           m_dBaseRate(1.0),
           m_bSpeedAffectsPitch(false),
           m_dTempoRatio(1.0),

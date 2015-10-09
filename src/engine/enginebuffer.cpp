@@ -148,9 +148,9 @@ EngineBuffer::EngineBuffer(QString group, ConfigObject<ConfigValue>* _config,
     m_pReadAheadManager = new ReadAheadManager(m_pReader,m_pLoopingControl);
     m_pReadAheadManager->addRateControl(m_pRateControl);
     // Construct scaling objects
-    m_pScaleLinear = new EngineBufferScaleLinear(m_pReadAheadManager);
-    m_pScaleST = new EngineBufferScaleST(m_pReadAheadManager);
-    m_pScaleRB = new EngineBufferScaleRubberBand(m_pReadAheadManager);
+    m_pScaleLinear = new EngineBufferScaleLinear(m_pReadAheadManager,this);
+    m_pScaleST = new EngineBufferScaleST(m_pReadAheadManager,this);
+    m_pScaleRB = new EngineBufferScaleRubberBand(m_pReadAheadManager,this);
     if (m_pKeylockEngine->get() == SOUNDTOUCH) m_pScaleKeylock = m_pScaleST;
     else  m_pScaleKeylock = m_pScaleRB;
     m_pScaleVinyl = m_pScaleLinear;
@@ -186,10 +186,6 @@ EngineBuffer::~EngineBuffer() {
 
     delete m_pTrackSamples;
     delete m_pTrackSampleRate;
-
-    delete m_pScaleLinear;
-    delete m_pScaleST;
-    delete m_pScaleRB;
 
     delete m_pKeylock;
     delete m_pEject;

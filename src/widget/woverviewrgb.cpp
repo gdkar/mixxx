@@ -18,7 +18,7 @@ bool WOverviewRGB::drawNextPixmapPart() {
 
     auto pWaveform = getWaveform();
     if (!pWaveform) {return false;}
-    const auto dataSize = pWaveform->getDataSize();
+    const auto dataSize = pWaveform->size();
     if (dataSize == 0) {return false;}
     if (!m_pWaveformSourceImage) {
         // Waveform pixmap twice the height of the viewport to be scalable

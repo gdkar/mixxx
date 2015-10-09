@@ -86,7 +86,7 @@ QSharedPointer<ControlDoublePrivate> ControlDoublePrivate::getControl(const Conf
     QMutexLocker locker(&s_qCOHashMutex);
     auto pControl = QSharedPointer<ControlDoublePrivate>{};
     if(s_qCOHash.contains(key))  pControl = s_qCOHash.value(key);
-    if (!pControl) {
+    if (!pControl && !warn) {
             pControl = QSharedPointer<ControlDoublePrivate>(new ControlDoublePrivate(
                   key, 
                   pCreatorCO, 

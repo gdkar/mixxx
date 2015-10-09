@@ -1,6 +1,6 @@
-#ifndef SYNCABLE_H
-#define SYNCABLE_H
-
+_Pragma("once")
+#include <QObject>
+#include <QtPlugin>
 #include <QString>
 
 class EngineChannel;
@@ -12,17 +12,18 @@ enum SyncMode {
     SYNC_MASTER = 2,
     SYNC_NUM_MODES
 };
-
-inline SyncMode syncModeFromDouble(double value) {
-    // msvs does not allow to cast from double to an enum
-    auto mode = static_cast<SyncMode>(int(value));
-    if (mode >= SYNC_NUM_MODES || mode < 0) {return SYNC_NONE;}
-    return mode;
-}
+namespace{
+  SyncMode syncModeFromDouble(double value) {
+      // msvs does not allow to cast from double to an enum
+      auto mode = static_cast<SyncMode>(int(value));
+      if (mode >= SYNC_NUM_MODES || mode < 0) {return SYNC_NONE;}
+      return mode;
+  }
+};
 class Syncable {
   public:
-    virtual ~Syncable() { }
-    virtual const QString& getGroup() const = 0;
+    virtual ~Syncable() = default;
+    virtual QString getGroup() const = 0;
     virtual EngineChannel* getChannel() const = 0;
     // Notify a Syncable that their mode has changed. The Syncable must record
     // this mode and return the latest mode received via notifySyncModeChanged
@@ -65,8 +66,12 @@ class Syncable {
     // occur.
     virtual void setInstantaneousBpm(double bpm) = 0;
 };
+#define MixxxEngineSyncable_iid "org.mixxx.Engine.Syncable"
+Q_DECLARE_INTERFACE(Syncable,MixxxEngineSyncable_iid);
+
 class SyncableListener {
   public:
+    virtual ~SyncableListener() = default;
     virtual void requestSyncMode(Syncable* pSyncable, SyncMode mode) = 0;
     virtual void requestEnableSync(Syncable* pSyncable, bool enabled) = 0;
     // A Syncable must never call notifyBpmChanged in response to a setMasterBpm()
@@ -85,4 +90,6 @@ class SyncableListener {
     // the syncable to the existing master bpm.
     virtual void notifyTrackLoaded(Syncable* pSyncable, double suggested_bpm) = 0;
 };
-#endif /* SYNCABLE_H */
+#define MixxxEngineSyncableListener_iid "org.mixxx.Engine.SyncableListener"
+Q_DECLARE_INTERFACE(SyncableListener,MixxxEngineSyncableListener_iid);
+

@@ -23,7 +23,7 @@ bool WOverviewLMH::drawNextPixmapPart() {
 
     ConstWaveformPointer pWaveform = getWaveform();
     if (!pWaveform) {return false;}
-    const int dataSize = pWaveform->getDataSize();
+    const int dataSize = pWaveform->size();
     if (dataSize == 0) {return false;}
     if (!m_pWaveformSourceImage) {
         // Waveform pixmap twice the height of the viewport to be scalable

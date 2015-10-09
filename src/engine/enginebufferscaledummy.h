@@ -15,9 +15,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef ENGINEBUFFERSCALEDUMMY_H
-#define ENGINEBUFFERSCALEDUMMY_H
-
+_Pragma("once")
 #include <QObject>
 
 #include "util/types.h"
@@ -27,16 +25,11 @@ class ReadAheadManager;
 
 class EngineBufferScaleDummy : public EngineBufferScale {
   public:
-    EngineBufferScaleDummy(ReadAheadManager* pReadAheadManager);
+    EngineBufferScaleDummy(ReadAheadManager* pReadAheadManager, QObject *pParent);
     virtual ~EngineBufferScaleDummy();
 
     /** Called from EngineBuffer when seeking, to ensure the buffers are flushed */
     void clear();
     /** Scale buffer */
     CSAMPLE* getScaled(unsigned long buf_size);
-
-  private:
-    ReadAheadManager* m_pReadAheadManager;
 };
-
-#endif

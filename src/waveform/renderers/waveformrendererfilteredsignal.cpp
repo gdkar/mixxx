@@ -27,7 +27,7 @@ void WaveformRendererFilteredSignal::draw(QPainter* painter,QPaintEvent* /*event
     if (!trackInfo) {return;}
     auto waveform = trackInfo->getWaveform();
     if (waveform.isNull()) {return;}
-    auto dataSize = waveform->getDataSize();
+    auto dataSize = waveform->size();
     if (dataSize <= 1) {return;}
     auto  data = waveform->data();
     if (!data) {return;}

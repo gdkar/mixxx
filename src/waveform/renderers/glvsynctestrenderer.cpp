@@ -43,7 +43,7 @@ void GLVSyncTestRenderer::draw(QPainter* painter, QPaintEvent* /*event*/) {
         return;
     }
 
-    const int dataSize = waveform->getDataSize();
+    const int dataSize = waveform->size();
     if (dataSize <= 1) {
         return;
     }

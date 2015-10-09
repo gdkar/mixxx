@@ -138,21 +138,20 @@ bool AnalyserBeats::loadStored(TrackPointer tio) const {
         return false;
     }
 }
-
 void AnalyserBeats::process(const CSAMPLE *pIn, const int iLen) {
-    if (m_pVamp == nullptr) return;
+    if (!m_pVamp) return;
     bool success = m_pVamp->Process(pIn, iLen);
     if (!success) {
         delete m_pVamp;
         m_pVamp = nullptr;
     }
 }
-void AnalyserBeats::cleanup(TrackPointer tio) {
+void AnalyserBeats::cleanup(TrackPointer /*tio*/) {
     delete m_pVamp;
     m_pVamp = nullptr;
 }
 void AnalyserBeats::finalise(TrackPointer tio) {
-    if (m_pVamp == nullptr) {return;}
+    if (!m_pVamp) return;
     // Call End() here, because the number of total samples may have been
     // estimated incorrectly.
     auto success = m_pVamp->End();
