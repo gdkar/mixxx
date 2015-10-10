@@ -428,7 +428,7 @@ class MixxxCore(Feature):
                    "engine/enginedeck.cpp",
                    "engine/engineaux.cpp",
                    "engine/channelmixer.cpp",
-
+                   "enginehandle.cpp",
                    "engine/enginecontrol.cpp",
                    "engine/ratecontrol.cpp",
                    "engine/positionscratchcontroller.cpp",
@@ -960,9 +960,7 @@ class MixxxCore(Feature):
         if build.platform_is_windows:
             if build.toolchain_is_msvs:
                 if not build.static_dependencies or build.build_is_debug:
-                    build.env.Append(LINKFLAGS=['/nodefaultlib:LIBCMT.lib',
-                                                '/nodefaultlib:LIBCMTd.lib'])
-
+                    build.env.Append(LINKFLAGS=['/nodefaultlib:LIBCMT.lib','/nodefaultlib:LIBCMTd.lib'])
                 build.env.Append(LINKFLAGS='/entry:mainCRTStartup')
                 # Declare that we are using the v120_xp toolset.
                 # http://blogs.msdn.com/b/vcblog/archive/2012/10/08/windows-xp-targeting-with-c-in-visual-studio-2012.aspx

@@ -45,25 +45,10 @@ class ChannelHandle {
     int m_iHandle = -1;
     friend class ChannelHandleFactory;
 };
-bool operator==(const ChannelHandle& h1, const ChannelHandle& h2)
-{
-    return h1.handle() == h2.handle();
-}
-
-bool operator!=(const ChannelHandle& h1, const ChannelHandle& h2)
-{
-    return h1.handle() != h2.handle();
-}
-
-QDebug operator<<(QDebug stream, const ChannelHandle& h)
-{
-    stream << "ChannelHandle(" << h.handle() << ")";
-    return stream;
-}
-uint qHash(const ChannelHandle& handle)
-{
-    return qHash(handle.handle());
-}
+bool operator==(const ChannelHandle& h1, const ChannelHandle& h2);
+bool operator!=(const ChannelHandle& h1, const ChannelHandle& h2);
+QDebug operator<<(QDebug stream, const ChannelHandle& h);
+uint qHash(const ChannelHandle& handle);
 // Convenience class that mimics QPair<ChannelHandle, QString> except with
 // custom equality and hash methods that save the cost of touching the QString.
 class ChannelHandleAndGroup {
@@ -84,24 +69,10 @@ class ChannelHandleAndGroup {
     const ChannelHandle m_handle;
     const QString m_name;
 };
-bool operator==(const ChannelHandleAndGroup& g1, const ChannelHandleAndGroup& g2)
-{
-    return g1.handle() == g2.handle();
-}
-
-bool operator!=(const ChannelHandleAndGroup& g1, const ChannelHandleAndGroup& g2)
-{
-    return g1.handle() != g2.handle();
-}
-QDebug operator<<(QDebug stream, const ChannelHandleAndGroup& g)
-{
-    stream << "ChannelHandleAndGroup(" << g.name() << "," << g.handle() << ")";
-    return stream;
-}
-uint qHash(const ChannelHandleAndGroup& handle_group)
-{
-    return qHash(handle_group.handle());
-}
+bool operator==(const ChannelHandleAndGroup& g1, const ChannelHandleAndGroup& g2);
+bool operator!=(const ChannelHandleAndGroup& g1, const ChannelHandleAndGroup& g2);
+QDebug operator<<(QDebug stream, const ChannelHandleAndGroup& g);
+uint qHash(const ChannelHandleAndGroup& handle_group);
 // A helper class used by EngineMaster to assign ChannelHandles to channel group
 // strings. Warning: ChannelHandles produced by different ChannelHandleFactory
 // objects are not compatible and will produce incorrect results when compared,
