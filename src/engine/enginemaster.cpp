@@ -270,7 +270,8 @@ void EngineMaster::processChannels(int iBufferSize)
     // Now that the list is built and ordered, do the processing.
     for(auto &pChannelInfo : m_activeChannels)
     {
-        pChannelInfo->m_pChannel->process(&pChannelInfo->m_pBuffer[0],iBufferSize);
+        if ( pChannelInfo && pChannelInfo->m_pBuffer )
+          pChannelInfo->m_pChannel->process(&pChannelInfo->m_pBuffer[0],iBufferSize);
     }
     // After all the engines have been processed, trigger post-processing
     // which ensures that all channels are updating certain values at the

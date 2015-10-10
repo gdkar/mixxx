@@ -30,8 +30,9 @@ RecordingManager::RecordingManager(ConfigObject<ConfigValue>* pConfig, EngineMas
     m_split_size = getFileSplitSize();
     // Register EngineRecord with the engine sidechain.
     auto pSidechain = pEngine->getSideChain();
-    if (pSidechain) {
-        auto pEngineRecord = new EngineRecord(m_pConfig);
+    if (pSidechain)
+    {
+        auto pEngineRecord = new EngineRecord(m_pConfig,this);
         connect(pEngineRecord, SIGNAL(isRecording(bool)), this, SLOT(slotIsRecording(bool)));
         connect(pEngineRecord, SIGNAL(bytesRecorded(int)), this, SLOT(slotBytesRecorded(int)));
         connect(pEngineRecord, SIGNAL(durationRecorded(QString)), this, SLOT(slotDurationRecorded(QString)));

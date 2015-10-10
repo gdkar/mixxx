@@ -44,6 +44,7 @@
 
 EngineShoutcast::EngineShoutcast(ConfigObject<ConfigValue>* _config, QObject *pParent)
         : QObject(pParent),
+          m_pConfig(_config),
           m_pMasterSamplerate(new ControlObjectSlave("[Master]", "samplerate",this)),
           m_pShoutcastStatus(new ControlObject(ConfigKey(SHOUTCAST_PREF_KEY, "status"),this))
 {
