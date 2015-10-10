@@ -135,7 +135,7 @@ bool ParserM3u::writeM3U8File(const QString &file_str, QStringList  &items, bool
     return writeM3UFile(file_str, items, useRelativePath, true);
 }
 
-bool ParserM3u::writeM3UFile(const QString &file_str, QStringLit &items, bool useRelativePath, bool useUtf8)
+bool ParserM3u::writeM3UFile(const QString &file_str, QStringList &items, bool useRelativePath, bool useUtf8)
 {
     // Important note:
     // On Windows \n will produce a <CR><CL> (=\r\n)

@@ -1,6 +1,4 @@
-#ifndef BEATS_H
-#define BEATS_H
-
+_Pragma("once")
 #include <QString>
 #include <QList>
 #include <QByteArray>
@@ -115,5 +113,3 @@ class Beats {
     // have the capability BEATSCAP_SET.
     virtual void setBpm(double dBpm) = 0;
 };
-
-#endif /* BEATS_H */

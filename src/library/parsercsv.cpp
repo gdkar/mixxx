@@ -19,7 +19,7 @@
 #include <QDir>
 #include <QMessageBox>
 
-ParserCsv::ParserCsv() : Parser()  = default;
+ParserCsv::ParserCsv() = default;
 ParserCsv::~ParserCsv() = default;
 QStringList ParserCsv::parse(QString sFilename)
 {
@@ -46,7 +46,7 @@ QStringList ParserCsv::parse(QString sFilename)
                 if (loc_coll < tokens[i].size())
                 {
                     // Todo: check if path is relative
-                    auto fi = tokens[i][loc_coll];
+                    auto fi = QFileInfo(tokens[i][loc_coll]);
                     if (fi.isRelative())
                     {
                         // add base path

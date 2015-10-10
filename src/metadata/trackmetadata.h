@@ -1,6 +1,4 @@
-#ifndef TRACKMETADATA_H
-#define TRACKMETADATA_H
-
+_Pragma("once")
 #include <QDateTime>
 
 #include <cmath>
@@ -126,76 +124,84 @@ public:
     static const double kBpmUndefined;
     static const double kBpmMin; // lower bound (exclusive)
     static const double kBpmMax; // upper bound (inclusive)
-    inline double getBpm() const {
+    inline double getBpm() const
+    {
         return m_bpm;
     }
-    inline int getBpmAsInteger() const {
+    inline int getBpmAsInteger() const
+    {
         return round(getBpm());
     }
-    inline static bool isBpmValid(double bpm) {
+    inline static bool isBpmValid(double bpm)
+    {
         return (kBpmMin < bpm) && (kBpmMax >= bpm);
     }
-    inline bool isBpmValid() const {
+    inline bool isBpmValid() const
+    {
         return isBpmValid(getBpm());
     }
-    inline void setBpm(double bpm) {
+    inline void setBpm(double bpm)
+    {
         m_bpm = bpm;
     }
-    inline void resetBpm() {
+    inline void resetBpm()
+    {
         m_bpm = kBpmUndefined;
     }
-
     static const double kReplayGainUndefined;
     static const double kReplayGainMin; // lower bound (exclusive)
     static const double kReplayGain0dB;
-    inline double getReplayGain() const {
+    inline double getReplayGain() const
+    {
         return m_replayGain;
     }
-    inline static bool isReplayGainValid(double replayGain) {
+    inline static bool isReplayGainValid(double replayGain)
+    {
         return kReplayGainMin < replayGain;
     }
-    inline bool isReplayGainValid() const {
+    inline bool isReplayGainValid() const
+    {
         return isReplayGainValid(getReplayGain());
     }
-    inline void setReplayGain(double replayGain) {
+    inline void setReplayGain(double replayGain)
+    {
         m_replayGain = replayGain;
     }
-    inline void resetReplayGain() {
+    inline void resetReplayGain()
+    {
         m_replayGain = kReplayGainUndefined;
     }
-
     // Parse and format BPM metadata
     static double parseBpm(const QString& sBpm, bool* pValid = 0);
     static QString formatBpm(double bpm);
     static QString formatBpm(int bpm);
-
     // Parse and format replay gain metadata according to the
     // ReplayGain 1.0 specification.
     // http://wiki.hydrogenaud.io/index.php?title=ReplayGain_1.0_specification
     static double parseReplayGain(QString sReplayGain, bool* pValid = 0);
     static QString formatReplayGain(double replayGain);
-
     // Parse an format date/time values according to ISO 8601
-    inline static QDate parseDate(QString str) {
+    inline static QDate parseDate(QString str)
+    {
         return QDate::fromString(str.trimmed().replace(" ", ""), Qt::ISODate);
     }
-    inline static QDateTime parseDateTime(QString str) {
+    inline static QDateTime parseDateTime(QString str)
+    {
         return QDateTime::fromString(str.trimmed().replace(" ", ""), Qt::ISODate);
     }
-    inline static QString formatDate(QDate date) {
+    inline static QString formatDate(QDate date)
+    {
         return date.toString(Qt::ISODate);
     }
-    inline static QString formatDateTime(QDateTime dateTime) {
+    inline static QString formatDateTime(QDateTime dateTime)
+    {
         return dateTime.toString(Qt::ISODate);
     }
-
     // Parse and format the calendar year (for simplified display)
     static const int kCalendarYearInvalid;
     static int parseCalendarYear(QString year, bool* pValid = 0);
     static QString formatCalendarYear(QString year, bool* pValid = 0);
-
     static QString reformatYear(QString year);
-
 private:
     QString m_artist;
     QString m_title;
@@ -219,7 +225,4 @@ private:
     double m_bpm;
     double m_replayGain;
 };
-
 }
-
-#endif

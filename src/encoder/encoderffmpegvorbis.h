@@ -16,11 +16,9 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef ENCODERFFMPEGVORBIS_H
-#define ENCODERFFMPEGVORBIS_H
+_Pragma("once")
 #include "encoderffmpegcore.h"
 class EncoderFfmpegVorbis : public EncoderFfmpegCore {
 public:
     EncoderFfmpegVorbis(EncoderCallback* pCallback=nullptr);
 };
-#endif

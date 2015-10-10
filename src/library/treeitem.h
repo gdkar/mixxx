@@ -46,13 +46,8 @@ class TreeItem {
     bool isFolder() const;
     /* Returns the Library feature object to which an item belongs to */
     LibraryFeature* getFeature();
-
-    void setBold(bool bold) {
-        m_bold = bold;
-    }
-    bool isBold() const {
-        return m_bold;
-    }
+    void setBold(bool bold);
+    bool isBold() const;
     void setIcon(const QIcon& icon);
     QIcon getIcon();
   private:

@@ -630,7 +630,7 @@ QList<TrackId> TrackDAO::addTracks(const QList<QFileInfo>& fileInfoList,bool unr
     auto idColumn = query.record().indexOf("id");
     while (query.next())
     {
-        auto trackId = TrackId(query.value(idColumn);
+        auto trackId = TrackId(query.value(idColumn));
         trackIds.append(trackId);
     }
     // If imported-playlist tracks are to be unremoved, do that for all playlist
@@ -989,7 +989,7 @@ bool setTrackKey(const QSqlRecord& record, const int column,TrackPointer pTrack)
 bool setTrackCoverInfo(const QSqlRecord& record, const int column, TrackPointer pTrack) {
     CoverInfo coverInfo;
     auto ok = false;
-    auto .source = static_cast<CoverInfo::Source>(record.value(column).toInt(&ok));
+    auto source = static_cast<CoverInfo::Source>(record.value(column).toInt(&ok));
     if (!ok) coverInfo.source = CoverInfo::UNKNOWN;
     coverInfo.type = static_cast<CoverInfo::Type>(record.value(column + 1).toInt(&ok));
     if (!ok) coverInfo.type = CoverInfo::NONE;

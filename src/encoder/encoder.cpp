@@ -32,3 +32,5 @@ int Encoder::convertToBitrate(int quality) {
         default: return 128;
     }
 }
+Encoder::Encoder() = default;
+Encoder::~Encoder() = default;

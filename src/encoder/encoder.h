@@ -13,14 +13,12 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
-
-#ifndef ENCODER_H
-#define ENCODER_H
+_Pragma("once")
 #include "util/types.h"
 class Encoder {
   public:
-    Encoder() = default;
-    virtual ~Encoder() = default;
+    Encoder() ;
+    virtual ~Encoder() ;
     virtual int initEncoder(int bitrate, int samplerate) = 0;
     // encodes the provided buffer of audio.
     virtual void encodeBuffer(const CSAMPLE *samples, const int size) = 0;
@@ -32,4 +30,3 @@ class Encoder {
     /**converts an OGG quality measure from 1..10 to a bitrate **/
     static int convertToBitrate(int quality);
 };
-#endif // ENCODER_H
