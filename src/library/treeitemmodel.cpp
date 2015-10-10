@@ -30,26 +30,22 @@ TreeItemModel::TreeItemModel(QObject *parent)
         : QAbstractItemModel(parent),
           m_pRootItem(new TreeItem()) {
 }
-
-TreeItemModel::~TreeItemModel() {
+TreeItemModel::~TreeItemModel()
+{
     delete m_pRootItem;
 }
 
 //Our Treeview Model supports exactly a single column
-int TreeItemModel::columnCount(const QModelIndex &parent) const {
+int TreeItemModel::columnCount(const QModelIndex &parent) const
+{
     Q_UNUSED(parent);
     return 1;
 }
 
 QVariant TreeItemModel::data(const QModelIndex &index, int role) const {
-    if (!index.isValid())
-        return QVariant();
-
-    if (role != Qt::DisplayRole && role != kDataPathRole && role != kBoldRole)
-        return QVariant();
-
-    TreeItem *item = static_cast<TreeItem*>(index.internalPointer());
-
+    if (!index.isValid())return QVariant();
+    if (role != Qt::DisplayRole && role != kDataPathRole && role != kBoldRole) return QVariant();
+    auto item = static_cast<TreeItem*>(index.internalPointer());
     // We use Qt::UserRole to ask for the datapath.
     if (role == kDataPathRole) {
         return item->dataPath();
@@ -58,15 +54,11 @@ QVariant TreeItemModel::data(const QModelIndex &index, int role) const {
     }
     return item->data();
 }
-
 bool TreeItemModel::setData(const QModelIndex &a_rIndex,
                             const QVariant &a_rValue, int a_iRole) {
     // Get the item referred to by this index.
-    TreeItem *pItem = static_cast<TreeItem*>(a_rIndex.internalPointer());
-    if (pItem == NULL) {
-        return false;
-    }
-
+    auto pItem = static_cast<TreeItem*>(a_rIndex.internalPointer());
+    if (!pItem) return false;
     // Set the relevant data.
     switch (a_iRole) {
     case Qt::DisplayRole:
@@ -81,60 +73,40 @@ bool TreeItemModel::setData(const QModelIndex &a_rIndex,
     default:
         return false;
     }
-
     emit(dataChanged(a_rIndex, a_rIndex));
     return true;
 }
 
 Qt::ItemFlags TreeItemModel::flags(const QModelIndex &index) const {
-    if (!index.isValid())
-        return 0;
-
+    if (!index.isValid())return 0;
     return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 }
-
 QVariant TreeItemModel::headerData(int section, Qt::Orientation orientation, int role) const {
     Q_UNUSED(section);
     Q_UNUSED(orientation);
     Q_UNUSED(role);
     return QVariant();
 }
-
 QModelIndex TreeItemModel::index(int row, int column, const QModelIndex &parent) const {
-    if (!hasIndex(row, column, parent))
-        return QModelIndex();
-
+    if (!hasIndex(row, column, parent)) return QModelIndex();
     TreeItem *parentItem = NULL;
-
     if (!parent.isValid())
         parentItem = m_pRootItem;
     else
         parentItem = static_cast<TreeItem*>(parent.internalPointer());
-
-    TreeItem *childItem = parentItem->child(row);
-    if (childItem)
-        return createIndex(row, column, childItem);
-    else
-        return QModelIndex();
+    auto childItem = parentItem->child(row);
+    if (childItem) return createIndex(row, column, childItem);
+    else return QModelIndex();
 }
-
 QModelIndex TreeItemModel::parent(const QModelIndex &index) const {
-    if (!index.isValid())
-        return QModelIndex();
-
-    TreeItem *childItem = static_cast<TreeItem*>(index.internalPointer());
-    TreeItem *parentItem = childItem->parent();
-
-    if (parentItem == m_pRootItem)
-        return QModelIndex();
-
+    if (!index.isValid()) return QModelIndex();
+    auto childItem = static_cast<TreeItem*>(index.internalPointer());
+    auto parentItem = childItem->parent();
+    if (parentItem == m_pRootItem)return QModelIndex();
     return createIndex(parentItem->row(), 0, parentItem);
 }
-
 int TreeItemModel::rowCount(const QModelIndex &parent) const {
-    if (parent.column() > 0)
-        return 0;
-
+    if (parent.column() > 0) return 0;
     TreeItem *parentItem = NULL;
     //qDebug() << "parent data: " << parent.data();
     if (!parent.isValid()) {
@@ -144,9 +116,6 @@ int TreeItemModel::rowCount(const QModelIndex &parent) const {
         parentItem = static_cast<TreeItem*>(parent.internalPointer());
 
     }
-
-    //qDebug() << "TreeItem data: " << parent.internalPointer();
-
     return parentItem->childCount();
 }
 
@@ -156,29 +125,23 @@ int TreeItemModel::rowCount(const QModelIndex &parent) const {
  */
 void TreeItemModel::setRootItem(TreeItem *item) {
     if(m_pRootItem) delete m_pRootItem;
-
     m_pRootItem = item;
     reset();
 }
-
 /**
  * Before you can resize the data model dynamically by using 'insertRows' and 'removeRows'
  * make sure you have initialized
  */
 bool TreeItemModel::insertRows(QList<TreeItem*> &data, int position, int rows, const QModelIndex &parent) {
-    if (rows == 0) {
-        return true;
-    }
-    TreeItem *parentItem = getItem(parent);
-
+    if (rows == 0) return true;
+    auto parentItem = getItem(parent);
     beginInsertRows(parent, position, position + rows - 1);
-    bool success = parentItem->insertChildren(data, position, rows);
+    auto success = parentItem->insertChildren(data, position, rows);
     endInsertRows();
-
     return success;
 }
-
-bool TreeItemModel::removeRows(int position, int rows, const QModelIndex &parent) {
+bool TreeItemModel::removeRows(int position, int rows, const QModelIndex &parent)
+{
     if (rows == 0) {
         return true;
     }

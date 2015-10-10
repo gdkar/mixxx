@@ -26,8 +26,8 @@ Player::Player(QObject* pParent,
                                          bool defaultHeadphones)
         : QObject(pParent),
           m_group(group),
-          m_pConfig(pConfig),
-          m_replaygainPending(false) {
+          m_pConfig(pConfig)
+{
     auto channelGroup = pMixingEngine->registerChannelGroup(group);
     m_pChannel = new EngineDeck(channelGroup, pConfig, pMixingEngine,pEffectsManager, defaultOrientation,this);
     auto pEngineBuffer = m_pChannel->getEngineBuffer();
@@ -63,8 +63,12 @@ Player::Player(QObject* pParent,
     m_pPlay = new ControlObjectSlave(group, "play",this);
     connect(m_pPlay, SIGNAL(valueChanged(double)),this, SLOT(slotPlayToggled(double)));
 }
-QString Player::getGroup()const{return m_group;}
-Player::~Player() {
+QString Player::getGroup()const
+{
+  return m_group;
+}
+Player::~Player()
+{
     if (m_pLoadedTrack) {
         emit(unloadingTrack(m_pLoadedTrack));
         disconnect(m_pLoadedTrack.data(), 0, m_pBPM, 0);
@@ -73,27 +77,27 @@ Player::~Player() {
         m_pLoadedTrack.clear();
     }
 }
-
 void Player::slotLoadTrack(TrackPointer track, bool bPlay) {
     // Before loading the track, ensure we have access. This uses lazy
     // evaluation to make sure track isn't nullptr before we dereference it.
-    if (!track.isNull() && !Sandbox::askForAccess(track->getCanonicalLocation())) {return;}
+    if (!track.isNull() && !Sandbox::askForAccess(track->getCanonicalLocation())) return;
     //Disconnect the old track's signals.
-    if (m_pLoadedTrack) {
+    if (m_pLoadedTrack)
+    {
         // Save the loops that are currently set in a loop cue. If no loop cue is
         // currently on the track, then create a new one.
-        int loopStart = m_pLoopInPoint->get();
-        int loopEnd = m_pLoopOutPoint->get();
+        auto loopStart = static_cast<int>(m_pLoopInPoint->get());
+        auto loopEnd = static_cast<int>(m_pLoopOutPoint->get());
         if (loopStart != -1 && loopEnd != -1 &&
             even(loopStart) && even(loopEnd) && loopStart <= loopEnd) {
-            Cue* pLoopCue = nullptr;
+            auto pLoopCue = static_cast<Cue*>(nullptr);
             auto cuePoints = m_pLoadedTrack->getCuePoints();
-            QListIterator<Cue*> it(cuePoints);
-            while (it.hasNext()) {
-                Cue* pCue = it.next();
-                if (pCue->getType() == Cue::LOOP) {pLoopCue = pCue;}
+            for(auto pCue : cuePoints )
+            {
+                if (pCue->getType() == Cue::LOOP) pLoopCue = pCue;
             }
-            if (!pLoopCue) {
+            if (!pLoopCue)
+            {
                 pLoopCue = m_pLoadedTrack->addCue();
                 pLoopCue->setType(Cue::LOOP);
             }
@@ -112,7 +116,8 @@ void Player::slotLoadTrack(TrackPointer track, bool bPlay) {
         emit(unloadingTrack(m_pLoadedTrack));
     }
     m_pLoadedTrack = track;
-    if (m_pLoadedTrack) {
+    if (m_pLoadedTrack)
+    {
         // Listen for updates to the file's BPM
         connect(m_pLoadedTrack.data(), SIGNAL(bpmUpdated(double)),m_pBPM, SLOT(set(double)));
         connect(m_pLoadedTrack.data(), SIGNAL(keyUpdated(double)),m_pKey, SLOT(set(double)));
@@ -201,9 +206,7 @@ void Player::slotFinishLoading(TrackPointer pTrackInfoObject)
         if (m_pHighFilterKill) {m_pHighFilterKill->set(0.0);}
         m_pPreGain->set(1.0);
     }
-    int reset = m_pConfig->getValueString(ConfigKey(
-            "[Controls]", "SpeedAutoReset"),
-            QString("%1").arg(RESET_PITCH)).toInt();
+    auto reset = m_pConfig->getValueString(ConfigKey( "[Controls]", "SpeedAutoReset"), QString("%1").arg(RESET_PITCH)).toInt();
     switch (reset) {
       case RESET_PITCH_AND_SPEED:
         // Note: speed may affect pitch
@@ -218,11 +221,12 @@ TrackPointer Player::getLoadedTrack() const {return m_pLoadedTrack;}
 void Player::slotSetReplayGain(double replayGain) {
     // Do not change replay gain when track is playing because
     // this may lead to an unexpected volume change
-    if (m_pPlay->get() == 0.0) {m_pReplayGain->set(replayGain);
-    } else {m_replaygainPending = true;}
+    if (m_pPlay->get() == 0.0) m_pReplayGain->set(replayGain);
+    else m_replaygainPending = true;
 }
 
-void Player::slotPlayToggled(double v) {
+void Player::slotPlayToggled(double v)
+{
     if (!v && m_replaygainPending) {
         m_pReplayGain->set(m_pLoadedTrack->getReplayGain());
         m_replaygainPending = false;

@@ -70,7 +70,8 @@ void EngineAux::process(CSAMPLE* pOut, const int iBufferSize) {
         SampleUtil::copyWithGain(pOut, sampleBuffer, pregain, iBufferSize);
         m_sampleBuffer = nullptr;
     } else {SampleUtil::clear(pOut, iBufferSize);}
-    if (m_pEngineEffectsManager != nullptr) {
+    if (m_pEngineEffectsManager)
+    {
         GroupFeatureState features;
         // This is out of date by a callback but some effects will want the RMS
         // volume.

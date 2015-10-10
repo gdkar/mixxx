@@ -25,11 +25,11 @@ class TreeItemModel : public QAbstractItemModel {
     virtual bool setData(const QModelIndex &a_rIndex, const QVariant &a_rValue,int a_iRole = Qt::EditRole);
     virtual int rowCount(const QModelIndex &parent = QModelIndex()) const;
     virtual int columnCount(const QModelIndex &parent = QModelIndex()) const;
-    void setRootItem(TreeItem *item);
+    virtual void setRootItem(TreeItem *item);
     // Return the underlying TreeItem.
     // If the index is invalid, the root item is returned.
-    TreeItem* getItem(const QModelIndex &index) const;
-    void triggerRepaint();
+    virtual TreeItem* getItem(const QModelIndex &index) const;
+    virtual void triggerRepaint();
   private:
     TreeItem *m_pRootItem;
 };

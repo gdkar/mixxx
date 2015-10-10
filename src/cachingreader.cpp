@@ -134,12 +134,16 @@ CachingReaderChunkForOwner* CachingReader::lookupChunkAndFreshen(SINT chunkIndex
     if (pChunk ) { freshenChunk(pChunk); }
     return pChunk;
 }
-void CachingReader::newTrack(TrackPointer pTrack) {
-    m_pTrack = pTrack;
+void CachingReader::newTrack(TrackPointer pTrack)
+{
+    auto tmp = pTrack;
+    if(pTrack) qDebug() << tr("Loading track") << pTrack->getTitle() << "by artist" << pTrack->getArtist() << "at location" << pTrack->getLocation();
+    m_pTrack.swap(tmp);
     m_worker.newTrack(pTrack);
     m_worker.workReady();
 }
-void CachingReader::process() {
+void CachingReader::process()
+{
     auto status = ReaderStatusUpdate{};
     while (m_readerStatusFIFO.read(&status, 1) == 1) {
         auto pChunk = static_cast<CachingReaderChunkForOwner*>(status.chunk);

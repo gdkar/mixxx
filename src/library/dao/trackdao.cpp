@@ -56,7 +56,7 @@ TrackCacheItem::~TrackCacheItem()
 // functions to prevent repeated getTrack() calls for the same track from
 // repeatedly deserializing / serializing a track to the database since this is
 // expensive.
-const int kRecentTracksCacheSize = 3;
+const int kRecentTracksCacheSize = 2;
 TrackDAO::TrackDAO(QSqlDatabase& database,
                    CueDAO& cueDao,
                    PlaylistDAO& playlistDao,

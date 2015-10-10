@@ -82,9 +82,7 @@ class TrackCacheItem : public QObject {
   public:
     TrackCacheItem(TrackPointer pTrack);
     virtual ~TrackCacheItem();
-    TrackPointer getTrack() {
-        return m_pTrack;
-    }
+    TrackPointer getTrack() {return m_pTrack;}
   signals:
     void saveTrack(TrackPointer pTrack);
   private:

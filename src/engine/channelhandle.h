@@ -68,7 +68,7 @@ class ChannelHandleFactory {
         auto& handle = m_groupToHandle[group];
         if (!handle.valid())
         {
-            handle.setHandle(m_iNextHandle++);
+            handle.setHandle(m_iNextHandle.fetch_add(1));
             DEBUG_ASSERT(handle.valid());
             DEBUG_ASSERT(!m_handleToGroup.contains(handle));
             m_handleToGroup.insert(handle, group);

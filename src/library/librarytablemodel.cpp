@@ -13,9 +13,7 @@ LibraryTableModel::LibraryTableModel(QObject* parent,
     setTableModel();
 }
 
-LibraryTableModel::~LibraryTableModel() {
-}
-
+LibraryTableModel::~LibraryTableModel() = default;
 void LibraryTableModel::setTableModel(int id) {
     Q_UNUSED(id);
     QStringList columns;
@@ -24,9 +22,7 @@ void LibraryTableModel::setTableModel(int id) {
             // For sorting the cover art column we give LIBRARYTABLE_COVERART
             // the same value as the cover hash.
             << LIBRARYTABLE_COVERART_HASH + " AS " + LIBRARYTABLE_COVERART;
-
     const QString tableName = "library_view";
-
     QSqlQuery query(m_pTrackCollection->getDatabase());
     QString queryString = "CREATE TEMPORARY VIEW IF NOT EXISTS " + tableName + " AS "
             "SELECT " + columns.join(", ") +
@@ -34,16 +30,12 @@ void LibraryTableModel::setTableModel(int id) {
             "ON library.location = track_locations.id "
             "WHERE (" + LibraryTableModel::DEFAULT_LIBRARYFILTER + ")";
     query.prepare(queryString);
-    if (!query.exec()) {
-        LOG_FAILED_QUERY(query);
-    }
-
+    if (!query.exec()) LOG_FAILED_QUERY(query);
     QStringList tableColumns;
     tableColumns << LIBRARYTABLE_ID;
     tableColumns << LIBRARYTABLE_PREVIEW;
     tableColumns << LIBRARYTABLE_COVERART;
-    setTable(tableName, LIBRARYTABLE_ID, tableColumns,
-             m_pTrackCollection->getTrackSource());
+    setTable(tableName, LIBRARYTABLE_ID, tableColumns,m_pTrackCollection->getTrackSource());
     setSearch("");
     setDefaultSort(fieldIndex("artist"), Qt::AscendingOrder);
 }

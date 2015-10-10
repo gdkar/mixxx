@@ -37,46 +37,38 @@ EngineDeck::EngineDeck(const ChannelHandleAndGroup& handle_group,
           m_pPassing(new ControlPushButton(ConfigKey(getGroup(), "passthrough"))),
           // Need a +1 here because the CircularBuffer only allows its size-1
           // items to be held at once (it keeps a blank spot open persistently)
-          m_sampleBuffer(nullptr) {
-    if (pEffectsManager ) {
-        pEffectsManager->registerChannel(handle_group);
-    }
-
+          m_sampleBuffer(nullptr)
+{
+    if (pEffectsManager ) pEffectsManager->registerChannel(handle_group);
     // Set up passthrough utilities and fields
     m_pPassing->setButtonMode(ControlPushButton::POWERWINDOW);
     m_bPassthroughIsActive = false;
     m_bPassthroughWasActive = false;
-
     // Set up passthrough toggle button
-    connect(m_pPassing, SIGNAL(valueChanged(double)),
-            this, SLOT(slotPassingToggle(double)),
-            Qt::DirectConnection);
-
+    connect(m_pPassing, SIGNAL(valueChanged(double)),this, SLOT(slotPassingToggle(double)),Qt::DirectConnection);
     m_pSampleRate = new ControlObjectSlave("[Master]", "samplerate");
-
     // Set up additional engines
     m_pPregain = new EnginePregain(getGroup(),this);
     m_pVUMeter = new EngineVuMeter(getGroup(),this);
     m_pBuffer = new EngineBuffer(getGroup(), pConfig, this, pMixingEngine,this);
 }
-
-EngineDeck::~EngineDeck() {
+EngineDeck::~EngineDeck()
+{
     delete m_pPassing;
-
     delete m_pBuffer;
     delete m_pPregain;
     delete m_pVUMeter;
     delete m_pSampleRate;
 }
-
 void EngineDeck::process(CSAMPLE* pOut, const int iBufferSize) {
     GroupFeatureState features;
     // Feed the incoming audio through if passthrough is active
-    const CSAMPLE* sampleBuffer = m_sampleBuffer; // save pointer on stack
-    if (isPassthroughActive() && sampleBuffer) {
+    auto sampleBuffer = m_sampleBuffer; // save pointer on stack
+    if (isPassthroughActive() && sampleBuffer)
+    {
       std::copy_n(sampleBuffer,iBufferSize,pOut);
         m_bPassthroughWasActive = true;
-        m_sampleBuffer = NULL;
+        m_sampleBuffer = nullptr;
         m_pPregain->setSpeed(1);
         m_pPregain->setScratching(false);
     } else {
@@ -93,11 +85,10 @@ void EngineDeck::process(CSAMPLE* pOut, const int iBufferSize) {
         m_pPregain->setScratching(m_pBuffer->getScratching());
         m_bPassthroughWasActive = false;
     }
-
     // Apply pregain
     m_pPregain->process(pOut, iBufferSize);
     // Process effects enabled for this channel
-    if (m_pEngineEffectsManager != NULL) {
+    if (m_pEngineEffectsManager) {
         // This is out of date by a callback but some effects will want the RMS
         // volume.
         m_pVUMeter->collectFeatures(&features);
@@ -108,20 +99,16 @@ void EngineDeck::process(CSAMPLE* pOut, const int iBufferSize) {
     // Update VU meter
     m_pVUMeter->process(pOut, iBufferSize);
 }
-
-void EngineDeck::postProcess(const int iBufferSize) {
+void EngineDeck::postProcess(const int iBufferSize)
+{
     m_pBuffer->postProcess(iBufferSize);
 }
-
-EngineBuffer* EngineDeck::getEngineBuffer() {
+EngineBuffer* EngineDeck::getEngineBuffer()
+{
     return m_pBuffer;
 }
-
 bool EngineDeck::isActive() {
-    if (m_bPassthroughWasActive && !m_bPassthroughIsActive) {
-        return true;
-    }
-
+    if (m_bPassthroughWasActive && !m_bPassthroughIsActive)  return true;
     return (m_pBuffer->isTrackLoaded() || isPassthroughActive());
 }
 

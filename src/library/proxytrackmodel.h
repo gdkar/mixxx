@@ -1,9 +1,7 @@
 // proxytrackmodel.h
 // Created 10/22/2009 by RJ Ryan (rryan@mit.edu)
 
-#ifndef PROXYTRACKMODEL_H
-#define PROXYTRACKMODEL_H
-
+_Pragma("once")
 #include <QSortFilterProxyModel>
 #include <QAbstractItemModel>
 
@@ -35,17 +33,15 @@ class ProxyTrackModel : public QSortFilterProxyModel, public TrackModel {
     virtual bool isColumnHiddenByDefault(int column);
     virtual void removeTracks(const QModelIndexList& indices);
     virtual void moveTrack(const QModelIndex& sourceIndex, const QModelIndex& destIndex);
-    void deleteTracks(const QModelIndexList& indices);
+    virtual void deleteTracks(const QModelIndexList& indices);
     virtual QAbstractItemDelegate* delegateForColumn(const int i, QObject* pParent);
     virtual TrackModel::CapabilitiesFlags getCapabilities() const;
-    bool filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const;
+    virtual bool filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const;
     virtual QString getModelSetting(QString name);
     virtual bool setModelSetting(QString name, QVariant value);
-    void sort(int column, Qt::SortOrder order = Qt::AscendingOrder);
+    virtual void sort(int column, Qt::SortOrder order = Qt::AscendingOrder);
   private:
     TrackModel* m_pTrackModel = nullptr;
     QString m_currentSearch;
     bool m_bHandleSearches;
 };
-
-#endif /* PROXYTRACKMODEL_H */

@@ -41,20 +41,20 @@ class EngineChannel : public EngineObject {
     virtual ChannelOrientation getOrientation() const;
     virtual ChannelHandle getHandle() const;
     virtual bool isActive() = 0;
-    void setPfl(bool enabled);
+    virtual void setPfl(bool enabled);
     virtual bool isPflEnabled() const;
-    void setMaster(bool enabled);
+    virtual void setMaster(bool enabled);
     virtual bool isMasterEnabled() const;
-    void setTalkover(bool enabled);
+    virtual void setTalkover(bool enabled);
     virtual bool isTalkoverEnabled() const;
     virtual void process(CSAMPLE* pOut, const int iBufferSize) = 0;
     virtual void postProcess(const int iBuffersize) = 0;
     // TODO(XXX) This hack needs to be removed.
     virtual EngineBuffer* getEngineBuffer() const;
   private slots:
-    void slotOrientationLeft(double v);
-    void slotOrientationRight(double v);
-    void slotOrientationCenter(double v);
+    virtual void slotOrientationLeft(double v);
+    virtual void slotOrientationRight(double v);
+    virtual void slotOrientationCenter(double v);
   private:
     const ChannelHandleAndGroup m_handle_group;
     ControlPushButton* m_pMaster = nullptr;

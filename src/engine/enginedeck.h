@@ -15,9 +15,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef ENGINEDECK_H
-#define ENGINEDECK_H
-
+_Pragma("once")
 #include "configobject.h"
 #include "engine/engineobject.h"
 #include "engine/enginechannel.h"
@@ -74,4 +72,3 @@ class EngineDeck : public EngineChannel, public AudioDestination {
     bool m_bPassthroughIsActive = false;
     bool m_bPassthroughWasActive = false;
 };
-#endif

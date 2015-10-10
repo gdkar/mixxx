@@ -1,7 +1,6 @@
 _Pragma("once")
 #include <QtDebug>
 #include <QMutex>
-#include <QSemaphore>
 #include <QThread>
 #include <QString>
 #include <atomic>

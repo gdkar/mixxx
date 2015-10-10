@@ -64,7 +64,8 @@ PlayerManager::~PlayerManager() {
     delete m_pCONumPreviewDecks;
     if (m_pAnalyserQueue) {delete m_pAnalyserQueue;}
 }
-void PlayerManager::bindToLibrary(Library* pLibrary) {
+void PlayerManager::bindToLibrary(Library* pLibrary)
+{
     QMutexLocker locker(&m_mutex);
     connect(pLibrary, SIGNAL(loadTrackToPlayer(TrackPointer, QString, bool)), this, SLOT(slotLoadTrackToPlayer(TrackPointer, QString, bool)));
     connect(pLibrary, SIGNAL(loadTrack(TrackPointer)), this, SLOT(slotLoadTrackIntoNextAvailableDeck(TrackPointer)));
@@ -87,10 +88,11 @@ unsigned int PlayerManager::numberOfDecks()const{return numDecks();}
 unsigned int PlayerManager::numberOfSamplers()const{return numSamplers();}
 unsigned int PlayerManager::numberOfPreviewDecks()const{return numPreviewDecks();}
 // static
-unsigned int PlayerManager::numDecks() {
+unsigned int PlayerManager::numDecks()
+{
     // We do this to cache the control once it is created so callers don't incur
     // a hashtable lookup every time they call this.
-    static ControlObjectSlave* pNumCO = new ControlObjectSlave(ConfigKey("[Master]","num_decks"));
+    static auto pNumCO = new ControlObjectSlave(ConfigKey("[Master]","num_decks"));
     if (pNumCO && !pNumCO->valid()) {
         delete pNumCO;
         pNumCO = nullptr;
@@ -119,7 +121,7 @@ bool PlayerManager::isPreviewDeckGroup(const QString& group, int* number) {
 unsigned int PlayerManager::numSamplers() {
     // We do this to cache the control once it is created so callers don't incur
     // a hashtable lookup every time they call this.
-    static ControlObjectSlave* pNumCO = new ControlObjectSlave(ConfigKey("[Master]","num_samplers"));
+    static auto pNumCO = new ControlObjectSlave(ConfigKey("[Master]","num_samplers"));
     if (pNumCO && !pNumCO->valid()) {
         delete pNumCO;
         pNumCO = nullptr;
@@ -226,7 +228,8 @@ void PlayerManager::addSamplerInner() {
     m_players[group] = pSampler;
     m_samplers.append(pSampler);
 }
-void PlayerManager::addPreviewDeck() {
+void PlayerManager::addPreviewDeck()
+{
     QMutexLocker locker(&m_mutex);
     addPreviewDeckInner();
     m_pCONumPreviewDecks->set(m_preview_decks.count());
@@ -238,15 +241,15 @@ void PlayerManager::addPreviewDeckInner() {
     // All preview decks are in the center
     auto orientation = EngineChannel::CENTER;
     auto  pPreviewDeck = new Player(this, m_pConfig, m_pEngine,m_pEffectsManager, orientation,group,false,true);
-    if (m_pAnalyserQueue) {
+    if (m_pAnalyserQueue)
         connect(pPreviewDeck, SIGNAL(newTrackLoaded(TrackPointer)), m_pAnalyserQueue, SLOT(slotAnalyseTrack(TrackPointer)));
-    }
     m_players[group] = pPreviewDeck;
     m_preview_decks.append(pPreviewDeck);
 }
-Player* PlayerManager::getPlayer(QString group) const {
+Player* PlayerManager::getPlayer(QString group) const
+{
     QMutexLocker locker(&m_mutex);
-    if (m_players.contains(group)) {return m_players[group];}
+    if (m_players.contains(group)) return m_players[group];
     return nullptr;
 }
 Player* PlayerManager::getDeck(unsigned int deck) const {
@@ -267,13 +270,15 @@ Player* PlayerManager::getPreviewDeck(unsigned int libPreviewPlayer) const {
 }
 Player* PlayerManager::getSampler(unsigned int sampler) const {
     QMutexLocker locker(&m_mutex);
-    if (sampler < 1 || sampler > numSamplers()) {
+    if (sampler < 1 || sampler > numSamplers())
+    {
         qWarning() << "Warning PlayerManager::getSampler() called with invalid index: " << sampler;
         return nullptr;
     }
     return m_samplers[sampler - 1];
 }
-bool PlayerManager::hasVinylInput(int inputnum) const {
+bool PlayerManager::hasVinylInput(int inputnum) const
+{
     AudioInput vinyl_input(AudioInput::VINYLCONTROL, 0, 0, inputnum);
     return m_pSoundManager->getConfig().getInputs().values().contains(vinyl_input);
 }
@@ -281,7 +286,8 @@ void PlayerManager::slotLoadTrackToPlayer(TrackPointer pTrack, QString group, bo
     // Do not lock mutex in this method unless it is changed to access
     // PlayerManager state.
     auto  pPlayer = getPlayer(group);
-    if (pPlayer == nullptr) {
+    if (!pPlayer )
+    {
         qWarning() << "Invalid group argument " << group << " to slotLoadTrackToPlayer.";
         return;
     }

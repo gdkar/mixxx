@@ -270,7 +270,7 @@ void EngineMaster::processChannels(int iBufferSize)
     // Now that the list is built and ordered, do the processing.
     for(auto &pChannelInfo : m_activeChannels)
     {
-        if ( pChannelInfo && pChannelInfo->m_pBuffer )
+        if ( pChannelInfo && pChannelInfo->m_pChannel )
           pChannelInfo->m_pChannel->process(&pChannelInfo->m_pBuffer[0],iBufferSize);
     }
     // After all the engines have been processed, trigger post-processing
@@ -282,13 +282,15 @@ void EngineMaster::processChannels(int iBufferSize)
         activeChannel->m_pChannel->postProcess(iBufferSize);
     }
 }
-void EngineMaster::process(const int iBufferSize) {
+void EngineMaster::process(const int iBufferSize)
+{
     QThread::currentThread()->setObjectName("Engine");
     Trace t("EngineMaster::process");
     auto masterEnabled = m_pMasterEnabled->get();
     auto headphoneEnabled = m_pHeadphoneEnabled->get();
     auto iSampleRate = static_cast<int>(m_pMasterSampleRate->get());
-    if (m_pEngineEffectsManager) {m_pEngineEffectsManager->onCallbackStart();}
+    if (m_pEngineEffectsManager) 
+      m_pEngineEffectsManager->onCallbackStart();
     // Update internal master sync rate.
     m_pMasterSync->onCallbackStart(iSampleRate, iBufferSize);
     // Prepare each channel for output
@@ -420,10 +422,10 @@ void EngineMaster::process(const int iBufferSize) {
             }
         }
     }
-    if (m_pMasterMonoMixdown->get()) {SampleUtil::mixStereoToMono(m_pMaster, m_pMaster, iBufferSize);}
-    if (masterEnabled) {m_pMasterDelay->process(m_pMaster, iBufferSize);}
+    if (m_pMasterMonoMixdown->get()) SampleUtil::mixStereoToMono(m_pMaster, m_pMaster, iBufferSize);
+    if (masterEnabled) m_pMasterDelay->process(m_pMaster, iBufferSize);
     else {SampleUtil::clear(m_pMaster, iBufferSize);}
-    if (headphoneEnabled) {m_pHeadDelay->process(m_pHead, iBufferSize);}
+    if (headphoneEnabled) m_pHeadDelay->process(m_pHead, iBufferSize);
     // We're close to the end of the callback. Wake up the engine worker
     // scheduler so that it runs the workers.
     m_pWorkerScheduler->runWorkers();
@@ -452,7 +454,8 @@ EngineChannel* EngineMaster::getChannel(QString group)
 {
     for ( auto pChannelInfo : m_channels )
     {
-      if ( pChannelInfo && pChannelInfo->m_pChannel->getGroup() == group ) return pChannelInfo->m_pChannel;
+      if ( pChannelInfo && pChannelInfo->m_pChannel->getGroup() == group ) 
+        return pChannelInfo->m_pChannel;
     }
     return nullptr;
 }
@@ -462,7 +465,8 @@ const CSAMPLE* EngineMaster::getDeckBuffer(unsigned int i) const
 }
 const CSAMPLE* EngineMaster::getOutputBusBuffer(unsigned int i) const
 {
-    if (i <= EngineChannel::RIGHT) return m_pOutputBusBuffers[i]; else return nullptr;
+    if (i <= EngineChannel::RIGHT) return m_pOutputBusBuffers[i]; 
+    else return nullptr;
 }
 const CSAMPLE* EngineMaster::getChannelBuffer(QString group) const
 {
@@ -510,7 +514,6 @@ void EngineMaster::onOutputConnected(AudioOutput output) {
             break;
     }
 }
-
 void EngineMaster::onOutputDisconnected(AudioOutput output) {
     switch (output.getType()) {
         case AudioOutput::MASTER:

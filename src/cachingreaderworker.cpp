@@ -54,7 +54,8 @@ ReaderStatusUpdate CachingReaderWorker::processReadRequest(const CachingReaderCh
     return ReaderStatusUpdate(status, pChunk, m_maxReadableFrameIndex);
 }
 // WARNING: Always called from a different thread (GUI)
-void CachingReaderWorker::newTrack(TrackPointer pTrack) {
+void CachingReaderWorker::newTrack(TrackPointer pTrack)
+{
     QMutexLocker locker(&m_newTrackMutex);
     m_newTrack = pTrack;
 }
@@ -63,7 +64,8 @@ void CachingReaderWorker::run() {
     QThread::currentThread()->setObjectName(QString("CachingReaderWorker %1").arg(++id));
     auto request = CachingReaderChunkReadRequest{};
     Event::start(m_tag);
-    while (!(m_stop.load())) {
+    while (!(m_stop.load()))
+    {
         if (m_newTrack) {
             auto pLoadTrack = TrackPointer{nullptr};
             m_newTrack.swap(pLoadTrack);
@@ -74,7 +76,8 @@ void CachingReaderWorker::run() {
             m_pReaderStatusFIFO->writeBlocking(&update, 1);
         } else {
             Event::end(m_tag);
-            m_semaRun.acquire();
+            std::unique_lock<std::mutex> lock(m_mutex);
+            m_condv.wait(lock);
             Event::start(m_tag);
         }
     }
@@ -139,6 +142,6 @@ void CachingReaderWorker::loadTrack(const TrackPointer& pTrack) {
 }
 void CachingReaderWorker::quitWait() {
     m_stop.store(true);
-    m_semaRun.release();
+    m_condv.notify_all();
     wait();
 }

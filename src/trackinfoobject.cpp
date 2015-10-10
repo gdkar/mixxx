@@ -199,7 +199,7 @@ void TrackInfoObject::getMetadata(Mixxx::TrackMetadata* pTrackMetadata) {
 void TrackInfoObject::parse(bool parseCoverArt) {
     // Log parsing of header information in developer mode. This is useful for
     // tracking down corrupt files.
-    const QString& canonicalLocation = m_fileInfo.canonicalFilePath();
+    auto canonicalLocation = m_fileInfo.canonicalFilePath();
     if (CmdlineArgs::Instance().getDeveloper()) { qDebug() << "TrackInfoObject::parse()" << canonicalLocation;}
     SoundSourceProxy proxy(canonicalLocation, m_pSecurityToken);
     if (!proxy.getType().isEmpty()) {
@@ -256,43 +256,67 @@ void TrackInfoObject::setLocation(const QString& location) {
         setDirty(true);
     }
 }
-QString TrackInfoObject::getLocation() const { return getFileInfo().absoluteFilePath(); }
-QString TrackInfoObject::getCanonicalLocation() const { return getFileInfo().canonicalFilePath(); }
-QFileInfo TrackInfoObject::getFileInfo() const {
+QString TrackInfoObject::getLocation() const 
+{ 
+  return getFileInfo().absoluteFilePath();
+}
+QString TrackInfoObject::getCanonicalLocation() const 
+{ 
+  return getFileInfo().canonicalFilePath();
+}
+QFileInfo TrackInfoObject::getFileInfo() const 
+{
     // No need for locking since we are passing a copy by value. Qt doesn't say
     // that QFileInfo is thread-safe but its copy constructor just copies the
     // d_ptr.
     auto fileInfo = m_fileInfo;
     return fileInfo;
 }
-SecurityTokenPointer TrackInfoObject::getSecurityToken() { return m_pSecurityToken; }
-QString TrackInfoObject::getDirectory() const { return getFileInfo().absolutePath(); }
-QString TrackInfoObject::getFilename() const { return getFileInfo().fileName(); }
-bool TrackInfoObject::exists() const {
+SecurityTokenPointer TrackInfoObject::getSecurityToken() 
+{ 
+  return m_pSecurityToken; 
+}
+QString TrackInfoObject::getDirectory() const 
+{ 
+  return getFileInfo().absolutePath();
+}
+QString TrackInfoObject::getFilename() const 
+{ 
+  return getFileInfo().fileName();
+}
+bool TrackInfoObject::exists() const 
+{
     // return here a fresh calculated value to be sure
     // the file is not deleted or gone with an USB-Stick
     // because it will probably stop the Auto-DJ
     return QFile::exists(getLocation());
 }
-double TrackInfoObject::getReplayGain() const { return m_dReplayGain.load(); }
-void TrackInfoObject::setReplayGain(double f) {
+double TrackInfoObject::getReplayGain() const 
+{ 
+  return m_dReplayGain.load();
+}
+void TrackInfoObject::setReplayGain(double f) 
+{
     //qDebug() << "Reported ReplayGain value: " << m_fReplayGain;
     auto g = m_dReplayGain.exchange(f);
-    if (g!=f) {
+    if (g!=f) 
+    {
         setDirty(true);
         emit(replayGainUpdated(f));
     }
 }
-double TrackInfoObject::getBpm() const {
+double TrackInfoObject::getBpm() const 
+{
     auto pBeats = m_pBeats;
-    if (!pBeats) { return 0; }
+    if (!pBeats) return 0;
     // getBpm() returns -1 when invalid.
     auto bpm = pBeats->getBpm();
-    if (bpm >= 0.0) { return bpm; }
+    if (bpm >= 0.0) return bpm;
     return 0;
 }
-void TrackInfoObject::setBpm(double f) {
-    if (f < 0) { return; }
+void TrackInfoObject::setBpm(double f)
+{
+    if (f < 0) return;
     // TODO(rryan): Assume always dirties.
     auto dirty = false;
     auto pBeats = m_pBeats;

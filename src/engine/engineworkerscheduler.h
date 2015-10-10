@@ -1,6 +1,4 @@
-#ifndef ENGINEWORKERSCHEDULER_H
-#define ENGINEWORKERSCHEDULER_H
-
+_Pragma("once")
 #include <QMutex>
 #include <QThreadPool>
 #include <QWaitCondition>
@@ -16,24 +14,18 @@ class EngineWorker;
 class EngineWorkerScheduler : public QThread {
     Q_OBJECT
   public:
-    EngineWorkerScheduler(QObject* pParent=NULL);
+    EngineWorkerScheduler(QObject* pParent=nullptr);
     virtual ~EngineWorkerScheduler();
-
     void runWorkers();
     void workerReady(EngineWorker* worker);
-
   protected:
     void run();
-
   private:
     // Indicates whether workerReady has been called since the last time
     // runWorkers was run. This should only be touched from the engine callback.
-    bool m_bWakeScheduler;
-
+    bool m_bWakeScheduler = false;
     FIFO<EngineWorker*> m_scheduleFIFO;
     QWaitCondition m_waitCondition;
     QMutex m_mutex;
     volatile bool m_bQuit;
 };
-
-#endif /* ENGINEWORKERSCHEDULER_H */

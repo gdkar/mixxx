@@ -1,12 +1,11 @@
 // engineworker.h
 // Created 6/2/2010 by RJ Ryan (rryan@mit.edu)
 
-#ifndef ENGINEWORKER_H
-#define ENGINEWORKER_H
-
-#include <QAtomicInt>
+_Pragma("once")
+#include <atomic>
+#include <condition_variable>
+#include <mutex>
 #include <QObject>
-#include <QSemaphore>
 #include <QThread>
 
 // EngineWorker is an interface for running background processing work when the
@@ -21,20 +20,15 @@ class EngineWorker : public QThread {
   public:
     EngineWorker();
     virtual ~EngineWorker();
-
     virtual void run();
-
     void setScheduler(EngineWorkerScheduler* pScheduler);
     bool workReady();
     void wake() {
-        m_semaRun.release();
+        m_condv.notify_all();
     }
-
   protected:
-    QSemaphore m_semaRun;
-
+    std::condition_variable m_condv;
+    std::mutex              m_mutex;
   private:
     EngineWorkerScheduler* m_pScheduler;
 };
-
-#endif /* ENGINEWORKER_H */

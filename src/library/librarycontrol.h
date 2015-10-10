@@ -1,6 +1,4 @@
-#ifndef LIBRARYCONTROL_H
-#define LIBRARYCONTROL_H
-
+_Pragma("once")
 #include <QObject>
 #include <QMap>
 
@@ -90,5 +88,3 @@ class LibraryControl : public QObject {
     ControlObjectSlave*m_numPreviewDecks;
     QMap<QString, LoadToGroupController*> m_loadToGroupControllers;
 };
-
-#endif //LIBRARYCONTROL_H

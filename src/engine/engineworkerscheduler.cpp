@@ -29,12 +29,12 @@ void EngineWorkerScheduler::workerReady(EngineWorker* pWorker) {
         m_bWakeScheduler = true;
     }
 }
-
 void EngineWorkerScheduler::runWorkers() {
     // Wake the scheduler if we have written a worker-ready message to the
     // scheduler. There is no race condition in accessing this boolean because
     // both workerReady and runWorkers are called from the callback thread.
-    if (m_bWakeScheduler) {
+    if (m_bWakeScheduler)
+    {
         m_bWakeScheduler = false;
         m_waitCondition.wakeAll();
     }
@@ -45,9 +45,7 @@ void EngineWorkerScheduler::run() {
         Event::start("EngineWorkerScheduler");
         EngineWorker* pWorker = NULL;
         while (m_scheduleFIFO.read(&pWorker, 1) == 1) {
-            if (pWorker) {
-                pWorker->wake();
-            }
+            if (pWorker) pWorker->wake();
         }
         Event::end("EngineWorkerScheduler");
         m_mutex.lock();

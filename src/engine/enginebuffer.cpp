@@ -930,22 +930,33 @@ void EngineBuffer::addControl(EngineControl* pControl) {
     connect(this, SIGNAL(trackLoaded(TrackPointer)),pControl, SLOT(trackLoaded(TrackPointer)),Qt::DirectConnection);
     connect(this, SIGNAL(trackUnloaded(TrackPointer)),pControl, SLOT(trackUnloaded(TrackPointer)),Qt::DirectConnection);
 }
-void EngineBuffer::bindWorkers(EngineWorkerScheduler* pWorkerScheduler) {m_pReader->setScheduler(pWorkerScheduler);}
-bool EngineBuffer::isTrackLoaded() {
-    if (m_pCurrentTrack) {return true;}
-    return false;
+void EngineBuffer::bindWorkers(EngineWorkerScheduler* pWorkerScheduler)
+{
+  m_pReader->setScheduler(pWorkerScheduler);
+}
+bool EngineBuffer::isTrackLoaded()
+{
+    return !!m_pCurrentTrack;
 }
 void EngineBuffer::slotEjectTrack(double v) {
-    if (v > 0) {
+    if (v > 0)
+    {
         // Don't allow rejections while playing a track. We don't need to lock to
         // call ControlObject::get() so this is fine.
-        if (m_playButton->get() > 0) {return;}
+        if (m_playButton->get() > 0) return;
         ejectTrack();
     }
 }
-double EngineBuffer::getVisualPlayPos() {return m_visualPlayPos->getEnginePlayPos();}
-double EngineBuffer::getTrackSamples() {return m_pTrackSamples->get();}
-void EngineBuffer::setScalerForTest(EngineBufferScale* pScaleVinyl,EngineBufferScale* pScaleKeylock) {
+double EngineBuffer::getVisualPlayPos() 
+{
+  return m_visualPlayPos->getEnginePlayPos();
+}
+double EngineBuffer::getTrackSamples() 
+{
+  return m_pTrackSamples->get();
+}
+void EngineBuffer::setScalerForTest(EngineBufferScale* pScaleVinyl,EngineBufferScale* pScaleKeylock) 
+{
     m_pScaleVinyl = pScaleVinyl;
     m_pScaleKeylock = pScaleKeylock;
     m_pScale = m_pScaleVinyl;
@@ -954,13 +965,15 @@ void EngineBuffer::setScalerForTest(EngineBufferScale* pScaleVinyl,EngineBufferS
     // This bool is permanently set and can't be undone.
     m_bScalerOverride = true;
 }
-void EngineBuffer::collectFeatures(GroupFeatureState* pGroupFeatures) const {
+void EngineBuffer::collectFeatures(GroupFeatureState* pGroupFeatures) const 
+{
     pGroupFeatures->has_current_position = true;
     pGroupFeatures->current_position = m_filepos_play;
-    if (m_pBpmControl) {m_pBpmControl->collectFeatures(pGroupFeatures);}
-    if (m_pKeyControl) {m_pKeyControl->collectFeatures(pGroupFeatures);}
+    if (m_pBpmControl) m_pBpmControl->collectFeatures(pGroupFeatures);
+    if (m_pKeyControl) m_pKeyControl->collectFeatures(pGroupFeatures);
 }
-QString EngineBuffer::getKeylockEngineName(KeylockEngine engine) {
+QString EngineBuffer::getKeylockEngineName(KeylockEngine engine) 
+{
     switch (engine) {
     case SOUNDTOUCH:return tr("Soundtouch (faster)");
     case RUBBERBAND:return tr("Rubberband (better)");

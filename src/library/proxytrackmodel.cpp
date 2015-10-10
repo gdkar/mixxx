@@ -144,4 +144,6 @@ void ProxyTrackModel::sort(int column, Qt::SortOrder order) {
         QSortFilterProxyModel::sort(column, order);
     }
 }
-
+void ProxyTrackModel::deleteTracks(QList<QModelIndex>const&)
+{
+}
