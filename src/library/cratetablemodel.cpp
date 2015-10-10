@@ -180,7 +180,7 @@ TrackModel::CapabilitiesFlags CrateTableModel::getCapabilities() const {
 
     return caps;
 }
-int CrateTableMode::getCrate() const
+int CrateTableModel::getCrate() const
 {
   return m_iCrateId;
 }

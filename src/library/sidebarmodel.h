@@ -1,9 +1,7 @@
 // sidebarmodel.h
 // Created 8/21/09 by RJ Ryan (rryan@mit.edu)
 
-#ifndef SIDEBARMODEL_H
-#define SIDEBARMODEL_H
-
+_Pragma("once")
 #include <QAbstractItemModel>
 #include <QList>
 #include <QModelIndex>
@@ -68,5 +66,3 @@ class SidebarModel : public QAbstractItemModel {
     QList<LibraryFeature*> m_sFeatures;
     unsigned int m_iDefaultSelectedIndex; /** Index of the item in the sidebar model to select at startup. */
 };
-
-#endif /* SIDEBARMODEL_H */
