@@ -24,7 +24,7 @@
 #include "engine/enginechannel.h"
 #include "engine/sync/internalclock.h"
 #include "util/assert.h"
-constexpr auto kInternalClockGroup = QString{"[InternalClock]"};
+const auto kInternalClockGroup = "[InternalClock]";
 EngineSync::EngineSync(ConfigObject<ConfigValue>* pConfig)
         : m_pConfig(pConfig),
           m_pInternalClock(new InternalClock(kInternalClockGroup, this)),
@@ -167,12 +167,12 @@ void EngineSync::requestSyncMode(Syncable* pSyncable, SyncMode mode) {
             }
         } else if (channelIsMaster) {
             // Was this deck master before? If so do a handoff.
-            m_pMasterSyncable = NULL;
+            m_pMasterSyncable = nullptr;
             activateFollower(pSyncable);
             // Hand off to the internal clock and keep the current BPM and beat
             // distance.
             activateMaster(m_pInternalClock);
-        } else if (m_pMasterSyncable == NULL) {
+        } else if (m_pMasterSyncable == nullptr) {
             // If no master active, activate the internal clock.
             activateMaster(m_pInternalClock);
             if (pSyncable->getBaseBpm() > 0) {
@@ -204,7 +204,7 @@ void EngineSync::requestEnableSync(Syncable* pSyncable, bool bEnabled) {
             return;
         }
         bool foundPlayingDeck = false;
-        if (m_pMasterSyncable == NULL) {
+        if (m_pMasterSyncable == nullptr) {
             // There is no master. If any other deck is playing we will match
             // the first available bpm -- sync won't be enabled on these decks,
             // otherwise there would have been a master.
@@ -265,7 +265,7 @@ void EngineSync::requestEnableSync(Syncable* pSyncable, bool bEnabled) {
             if (playingSyncDeckCount() > 0) {
                 foundPlayingDeck = true;
             }
-        } else if (m_pMasterSyncable != NULL) {
+        } else if (m_pMasterSyncable != nullptr) {
             foundPlayingDeck = true;
         }
         activateFollower(pSyncable);
@@ -295,8 +295,8 @@ void EngineSync::notifyPlaying(Syncable* pSyncable, bool playing) {
         // If there is only one deck playing, set internal clock beat distance
         // to match it, unless there is a single other playing deck, in which
         // case we should match that.
-        Syncable* uniqueSyncEnabled = NULL;
-        const Syncable* uniqueSyncDisabled = NULL;
+        Syncable* uniqueSyncEnabled = nullptr;
+        const Syncable* uniqueSyncDisabled = nullptr;
         int playing_sync_decks = 0;
         int playing_nonsync_decks = 0;
         for(auto pOtherSyncable: m_syncables) {
@@ -404,8 +404,8 @@ void EngineSync::notifyBeatDistanceChanged(Syncable* pSyncable, double beat_dist
 }
 
 void EngineSync::activateFollower(Syncable* pSyncable) {
-    if (pSyncable == NULL) {
-        qWarning() << "WARNING: Logic Error: Called activateFollower on a NULL Syncable.";
+    if (pSyncable == nullptr) {
+        qWarning() << "WARNING: Logic Error: Called activateFollower on a nullptr Syncable.";
         return;
     }
 
@@ -414,8 +414,8 @@ void EngineSync::activateFollower(Syncable* pSyncable) {
 }
 
 void EngineSync::activateMaster(Syncable* pSyncable) {
-    if (pSyncable == NULL) {
-        qWarning() << "WARNING: Logic Error: Called activateMaster on a NULL Syncable.";
+    if (pSyncable == nullptr) {
+        qWarning() << "WARNING: Logic Error: Called activateMaster on a nullptr Syncable.";
         return;
     }
 
@@ -431,7 +431,7 @@ void EngineSync::activateMaster(Syncable* pSyncable) {
     // If a channel is master, disable it.
     Syncable* pOldChannelMaster = m_pMasterSyncable;
 
-    m_pMasterSyncable = NULL;
+    m_pMasterSyncable = nullptr;
     if (pOldChannelMaster) {
         activateFollower(pOldChannelMaster);
     }
@@ -447,7 +447,7 @@ void EngineSync::activateMaster(Syncable* pSyncable) {
 void EngineSync::deactivateSync(Syncable* pSyncable) {
     bool wasMaster = pSyncable->getSyncMode() == SYNC_MASTER;
     if (wasMaster) {
-        m_pMasterSyncable = NULL;
+        m_pMasterSyncable = nullptr;
     }
 
     // Notifications happen after-the-fact.
@@ -463,14 +463,14 @@ void EngineSync::deactivateSync(Syncable* pSyncable) {
             }
         } else {
             // Deactivate the internal clock if there are no more sync decks left.
-            m_pMasterSyncable = NULL;
+            m_pMasterSyncable = nullptr;
             m_pInternalClock->notifySyncModeChanged(SYNC_NONE);
         }
     }
 }
 
 EngineChannel* EngineSync::pickNonSyncSyncTarget(EngineChannel* pDontPick) const {
-    EngineChannel* pFirstNonplayingDeck = NULL;
+    EngineChannel* pFirstNonplayingDeck = nullptr;
     for(auto pSyncable: m_syncables) {
         EngineChannel* pChannel = pSyncable->getChannel();
         if (!pChannel || pChannel == pDontPick) {continue;}

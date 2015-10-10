@@ -29,7 +29,7 @@ Player::Player(QObject* pParent,
           m_pConfig(pConfig),
           m_replaygainPending(false) {
     auto channelGroup = pMixingEngine->registerChannelGroup(group);
-    m_pChannel = new EngineDeck(channelGroup, pConfig, pMixingEngine,pEffectsManager, defaultOrientation);
+    m_pChannel = new EngineDeck(channelGroup, pConfig, pMixingEngine,pEffectsManager, defaultOrientation,this);
     auto pEngineBuffer = m_pChannel->getEngineBuffer();
     pMixingEngine->addChannel(m_pChannel);
     // Set the routing option defaults for the master and headphone mixes.
@@ -46,17 +46,15 @@ Player::Player(QObject* pParent,
     m_pLoopInPoint = new ControlObjectSlave(getGroup(),"loop_start_position",this);
     m_pLoopOutPoint = new ControlObjectSlave(getGroup(),"loop_end_position",this);
     // Duration of the current song, we create this one because nothing else does.
-    m_pDuration = new ControlObject(ConfigKey(getGroup(), "duration"));
-    m_pDuration->setParent(this);
+    m_pDuration = new ControlObject(ConfigKey(getGroup(), "duration"),this);
     // Waveform controls
     m_pWaveformZoom = new ControlPotmeter(ConfigKey(group, "waveform_zoom"),WaveformWidgetRenderer::s_waveformMinZoom,WaveformWidgetRenderer::s_waveformMaxZoom);
     m_pWaveformZoom->setParent(this);
     m_pWaveformZoom->set(1.0);
     m_pWaveformZoom->setProperty("stepCount",WaveformWidgetRenderer::s_waveformMaxZoom -WaveformWidgetRenderer::s_waveformMinZoom);
     m_pWaveformZoom->setProperty("smallStepCount",WaveformWidgetRenderer::s_waveformMaxZoom -WaveformWidgetRenderer::s_waveformMinZoom);
-    m_pEndOfTrack = new ControlObject(ConfigKey(group, "end_of_track"));
+    m_pEndOfTrack = new ControlObject(ConfigKey(group, "end_of_track"),this);
     m_pEndOfTrack->set(0.);
-    m_pEndOfTrack->setParent(this);
     m_pPreGain = new ControlObjectSlave(ConfigKey(group, "pregain"),this);
     //BPM of the current song
     m_pBPM = new ControlObjectSlave(group, "file_bpm",this);

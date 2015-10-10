@@ -2,13 +2,10 @@
 #include <QDebug>
 #include "effects/native/phasereffect.h"
 
-const unsigned int updateCoef = 32;
+auto updateCoef = 32u;
 
 // static
-QString PhaserEffect::getId() {
-    return "org.mixxx.effects.phaser";
-}
-
+QString PhaserEffect::getId() { return "org.mixxx.effects.phaser"; }
 // static
 EffectManifest PhaserEffect::getManifest() {
     EffectManifest manifest;
@@ -85,10 +82,8 @@ EffectManifest PhaserEffect::getManifest() {
     range->setDefault(0.5);
     range->setMinimum(0.05);
     range->setMaximum(0.95);
-
     return manifest;
 }
-
 PhaserEffect::PhaserEffect(EngineEffect* pEffect,
                            const EffectManifest& manifest) 
         : m_pStagesParameter(pEffect->getParameterById("stages")),
@@ -99,11 +94,7 @@ PhaserEffect::PhaserEffect(EngineEffect* pEffect,
           m_pStereoParameter(pEffect->getParameterById("stereo")) {
     Q_UNUSED(manifest);
 }
-
-PhaserEffect::~PhaserEffect() {
-    //qDebug() << debugString() << "destroyed";
-}
-
+PhaserEffect::~PhaserEffect() = default;
 void PhaserEffect::processChannel(const ChannelHandle& handle,
                                   PhaserGroupState* pState,
                                   const CSAMPLE* pInput, CSAMPLE* pOutput,
@@ -116,51 +107,44 @@ void PhaserEffect::processChannel(const ChannelHandle& handle,
     Q_UNUSED(enableState);
     Q_UNUSED(groupFeatures);
     Q_UNUSED(sampleRate);
+    auto frequency = m_pLFOFrequencyParameter->value();
+    auto depth = m_pDepthParameter->value();
+    auto feedback = m_pFeedbackParameter->value();
+    auto range = m_pRangeParameter->value();
+    auto stages = 2 * m_pStagesParameter->value();
 
-    CSAMPLE frequency = m_pLFOFrequencyParameter->value();
-    CSAMPLE depth = m_pDepthParameter->value();
-    CSAMPLE feedback = m_pFeedbackParameter->value();
-    CSAMPLE range = m_pRangeParameter->value();
-    int stages = 2 * m_pStagesParameter->value();
-
-    CSAMPLE* oldInLeft = pState->oldInLeft;
-    CSAMPLE* oldOutLeft = pState->oldOutLeft;
-    CSAMPLE* oldInRight = pState->oldInRight;
-    CSAMPLE* oldOutRight = pState->oldOutRight;
+    auto oldInLeft = pState->oldInLeft;
+    auto oldOutLeft = pState->oldOutLeft;
+    auto oldInRight = pState->oldInRight;
+    auto oldOutRight = pState->oldOutRight;
 
     // Using two sets of coefficients for left and right channel 
-    CSAMPLE filterCoefLeft = 0;
-    CSAMPLE filterCoefRight = 0;
+    auto filterCoefLeft = CSAMPLE{0};
+    auto filterCoefRight = CSAMPLE{0};
 
-    CSAMPLE left = 0, right = 0;
-    CSAMPLE freqSkip = frequency * 2.0 * M_PI / sampleRate;
-
-    int stereoCheck = m_pStereoParameter->value();
-    int counter = 0;
-
-    const int kChannels = 2;
-    for (unsigned int i = 0; i < numSamples; i += kChannels) {
-        left = pInput[i] + tanh(left * feedback); 
+    auto left = CSAMPLE{0}, right = CSAMPLE{0};
+    auto freqSkip = static_cast<CSAMPLE>(frequency * M_2_PI / sampleRate);
+    auto stereoCheck = m_pStereoParameter->value();
+    auto counter = 0;
+    auto kChannels = 2;
+    for (auto i = decltype(numSamples){0}; i < numSamples; i += kChannels) {
+        left  = pInput[i] + tanh(left * feedback); 
         right = pInput[i + 1] + tanh(right * feedback);
-
         // For stereo enabled, the channels are out of phase
-        pState->leftPhase = fmodf(pState->leftPhase + freqSkip, 2.0 * M_PI);
-        pState->rightPhase = fmodf(pState->rightPhase + freqSkip + M_PI * stereoCheck, 2.0 * M_PI);
+        pState->leftPhase  = std::fmod(pState->leftPhase + freqSkip, M_2_PI);
+        pState->rightPhase = std::fmod(pState->rightPhase + freqSkip + M_PI * stereoCheck, M_2_PI);
 
         // Updating filter coefficients once every 'updateCoef' samples to avoid
         // extra computing
         if ((counter++) % updateCoef == 0) {
-                CSAMPLE delayLeft = 0.5 + 0.5 * sin(pState->leftPhase);
-                CSAMPLE delayRight = 0.5 + 0.5 * sin(pState->rightPhase);
-                
+                auto delayLeft = static_cast<CSAMPLE>(std::sin(pState->leftPhase)+1)*0.5;
+                auto delayRight = static_cast<CSAMPLE>(std::sin(pState->rightPhase)+1)*0.5;
                 // Coefficient computing based on the following:
                 // https://ccrma.stanford.edu/~jos/pasp/Classic_Virtual_Analog_Phase.html
-                CSAMPLE wLeft = range * delayLeft;
-                CSAMPLE wRight = range * delayRight;
-
-                CSAMPLE tanwLeft = tanh(wLeft / 2);
-                CSAMPLE tanwRight = tanh(wRight / 2);
-
+                auto wLeft = range * delayLeft;
+                auto wRight = range * delayRight;
+                auto tanwLeft = tanh(wLeft / 2);
+                auto tanwRight = tanh(wRight / 2);
                 filterCoefLeft = (1.0 - tanwLeft) / (1.0 + tanwLeft);
                 filterCoefRight = (1.0 - tanwRight) / (1.0 + tanwRight);
         }
@@ -172,4 +156,19 @@ void PhaserEffect::processChannel(const ChannelHandle& handle,
         pOutput[i] = pInput[i] * (1.0 - 0.5 * depth) + left * depth * 0.5;
         pOutput[i + 1] = pInput[i + 1] * (1.0 - 0.5 * depth) + right * depth * 0.5;
     }
+}
+QString PhaserEffect::debugString() const
+{
+  return getId();
+}
+CSAMPLE PhaserEffect::processSample(CSAMPLE input, CSAMPLE *oldIn, CSAMPLE *oldOut, CSAMPLE mainCoef, int stages )
+{
+  for(auto j = 0; j < stages; j++)
+  {
+    oldOut[j] = mainCoef * (input + oldOut[j]) - oldIn[j];
+    oldIn [j] = input;
+    input     = oldOut[j];
+
+  }
+  return input;
 }

@@ -71,10 +71,8 @@ EffectManifest EchoEffect::getManifest() {
     time->setMinimum(0.0);
     time->setDefault(0.0);
     time->setMaximum(1.0);
-
     return manifest;
 }
-
 EchoEffect::EchoEffect(EngineEffect* pEffect, const EffectManifest& manifest)
         : m_pDelayParameter(pEffect->getParameterById("delay_time")),
           m_pSendParameter(pEffect->getParameterById("send_amount")),
@@ -82,13 +80,9 @@ EchoEffect::EchoEffect(EngineEffect* pEffect, const EffectManifest& manifest)
           m_pPingPongParameter(pEffect->getParameterById("pingpong_amount")) {
     Q_UNUSED(manifest);
 }
-
-EchoEffect::~EchoEffect() {
-    //qDebug() << debugString() << "destroyed";
-}
-
+EchoEffect::~EchoEffect() = default;
 int EchoEffect::getDelaySamples(double delay_time, const unsigned int sampleRate) const {
-    int delay_samples = CHANNEL_COUNT * delay_time * sampleRate;
+    auto delay_samples = CHANNEL_COUNT * delay_time * sampleRate;
     if (delay_samples > static_cast<int>(MAX_BUFFER_LEN)) {
         qWarning() << "Delay buffer requested is larger than max buffer!";
         delay_samples = static_cast<int>(MAX_BUFFER_LEN);
@@ -107,15 +101,14 @@ void EchoEffect::processChannel(const ChannelHandle& handle, EchoGroupState* pGr
     Q_UNUSED(groupFeatures);
     DEBUG_ASSERT(0 == (numSamples % CHANNEL_COUNT));
     EchoGroupState& gs = *pGroupState;
-    double delay_time = m_pDelayParameter->value();
-    double send_amount = m_pSendParameter->value();
-    double feedback_amount = m_pFeedbackParameter->value();
-    double pingpong_frac = m_pPingPongParameter->value();
+    auto delay_time = m_pDelayParameter->value();
+    auto send_amount = m_pSendParameter->value();
+    auto feedback_amount = m_pFeedbackParameter->value();
+    auto pingpong_frac = m_pPingPongParameter->value();
 
     // TODO(owilliams): get actual sample rate from somewhere.
 
-    int delay_samples = gs.prev_delay_samples;
-
+    auto delay_samples = gs.prev_delay_samples;
     if (delay_time < gs.prev_delay_time) {
         // If the delay time has shrunk, we may need to wrap the write position.
         delay_samples = getDelaySamples(delay_time, sampleRate);
@@ -123,66 +116,59 @@ void EchoEffect::processChannel(const ChannelHandle& handle, EchoGroupState* pGr
     } else if (delay_time > gs.prev_delay_time) {
         // If the delay time has grown, we need to zero out the new portion
         // of the buffer we are using.
-        SampleUtil::applyGain(gs.delay_buf + gs.prev_delay_samples, 0,
-                              MAX_BUFFER_LEN - gs.prev_delay_samples);
+        SampleUtil::applyGain(gs.delay_buf + gs.prev_delay_samples, 0, MAX_BUFFER_LEN - gs.prev_delay_samples);
         delay_samples = getDelaySamples(delay_time, sampleRate);
     }
 
-    int read_position = gs.write_position;
+    auto read_position = gs.write_position;
     gs.prev_delay_time = delay_time;
     gs.prev_delay_samples = delay_samples;
 
     // Feedback the delay buffer and then add the new input.
-    for (unsigned int i = 0; i < numSamples; i += CHANNEL_COUNT) {
+    for (auto i = decltype(numSamples){0}; i < numSamples; i += CHANNEL_COUNT) {
         // Ramp the beginning and end of the delay buffer to prevent clicks.
-        double write_ramper = 1.0;
+        auto write_ramper = 1.0;
         if (gs.write_position < RAMP_LENGTH) {
             write_ramper = static_cast<double>(gs.write_position) / RAMP_LENGTH;
         } else if (gs.write_position > delay_samples - RAMP_LENGTH) {
-            write_ramper = static_cast<double>(delay_samples - gs.write_position)
-                    / RAMP_LENGTH;
+            write_ramper = static_cast<double>(delay_samples - gs.write_position) / RAMP_LENGTH;
         }
         gs.delay_buf[gs.write_position] *= feedback_amount;
         gs.delay_buf[gs.write_position + 1] *= feedback_amount;
         gs.delay_buf[gs.write_position] += pInput[i] * send_amount * write_ramper;
         gs.delay_buf[gs.write_position + 1] += pInput[i + 1] * send_amount * write_ramper;
         // Actual delays distort and saturate, so clamp the buffer here.
-        gs.delay_buf[gs.write_position] =
-                SampleUtil::clampSample(gs.delay_buf[gs.write_position]);
-        gs.delay_buf[gs.write_position + 1] =
-                SampleUtil::clampSample(gs.delay_buf[gs.write_position + 1]);
+        gs.delay_buf[gs.write_position] = SampleUtil::clampSample(gs.delay_buf[gs.write_position]);
+        gs.delay_buf[gs.write_position + 1] = SampleUtil::clampSample(gs.delay_buf[gs.write_position + 1]);
         INCREMENT_RING(gs.write_position, CHANNEL_COUNT, delay_samples);
     }
-
     // Pingpong the output.  If the pingpong value is zero, all of the
     // math below should result in a simple copy of delay buf to pOutput.
-    for (unsigned int i = 0; i < numSamples; i += CHANNEL_COUNT) {
+    for (auto i = decltype(numSamples){0}; i < numSamples; i += CHANNEL_COUNT) {
         if (gs.ping_pong_left) {
             // Left sample plus a fraction of the right sample, normalized
             // by 1 + fraction.
             pOutput[i] = (pInput[i] +
-                    (gs.delay_buf[read_position] +
-                            gs.delay_buf[read_position + 1] * pingpong_frac) /
+                    (gs.delay_buf[read_position] + gs.delay_buf[read_position + 1] * pingpong_frac) /
                     (1 + pingpong_frac)) / 2.0;
             // Right sample reduced by (1 - fraction)
             pOutput[i + 1] = (pInput[i + 1] +
                     gs.delay_buf[read_position + 1] * (1 - pingpong_frac)) / 2.0;
         } else {
             // Left sample reduced by (1 - fraction)
-            pOutput[i] = (pInput[i] +
-                    gs.delay_buf[read_position] * (1 - pingpong_frac)) / 2.0;
+            pOutput[i] = (pInput[i] + gs.delay_buf[read_position] * (1 - pingpong_frac)) / 2.0;
             // Right sample plus fraction of left sample, normalized by
             // 1 + fraction
             pOutput[i + 1] = (pInput[i + 1] +
-                    (gs.delay_buf[read_position + 1] +
-                            gs.delay_buf[read_position] * pingpong_frac) /
+                    (gs.delay_buf[read_position + 1] + gs.delay_buf[read_position] * pingpong_frac) /
                     (1 + pingpong_frac)) / 2.0;
         }
-
         INCREMENT_RING(read_position, CHANNEL_COUNT, delay_samples);
         // If the buffer has looped around, flip-flop the ping-pong.
-        if (read_position == 0) {
-            gs.ping_pong_left = !gs.ping_pong_left;
-        }
+        if (read_position == 0) gs.ping_pong_left = !gs.ping_pong_left;
     }
+}
+QString EchoEffect::debugString() const
+{
+  return getId();
 }

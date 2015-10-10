@@ -1,16 +1,15 @@
-#ifndef POSITIONSCRATCHCONTROLLER_H
-#define POSITIONSCRATCHCONTROLLER_H
-
+_Pragma("once")
 #include <QObject>
 #include <QString>
-
+#include <memory>
 class ControlObject;
 class VelocityController;
 class RateIIFilter;
 
 class PositionScratchController : public QObject {
+  Q_OBJECT
   public:
-    PositionScratchController(QString group);
+    PositionScratchController(QString group,QObject *p);
     virtual ~PositionScratchController();
 
     void process(double currentSample, double releaseRate,
@@ -21,20 +20,18 @@ class PositionScratchController : public QObject {
 
   private:
     const QString m_group;
-    ControlObject* m_pScratchEnable;
-    ControlObject* m_pScratchPosition;
-    ControlObject* m_pMasterSampleRate;
-    VelocityController* m_pVelocityController;
-    RateIIFilter* m_pRateIIFilter;
-    bool m_bScratching;
-    bool m_bEnableInertia;
-    double m_dLastPlaypos;
-    double m_dPositionDeltaSum;
-    double m_dTargetDelta;
-    double m_dStartScratchPosition;
-    double m_dRate;
-    double m_dMoveDelay;
-    double m_dMouseSampeTime;
+    ControlObject* m_pScratchEnable    = nullptr;
+    ControlObject* m_pScratchPosition  = nullptr;
+    ControlObject* m_pMasterSampleRate = nullptr;
+    std::unique_ptr<VelocityController> m_pVelocityController;
+    std::unique_ptr<RateIIFilter> m_pRateIIFilter;
+    bool m_bScratching              = false;
+    bool m_bEnableInertia           = false;
+    double m_dLastPlaypos           = 0;
+    double m_dPositionDeltaSum      = 0;
+    double m_dTargetDelta           = 0;
+    double m_dStartScratchPosition  = 0;
+    double m_dRate                  = 0;
+    double m_dMoveDelay             = 0;
+    double m_dMouseSampleTime       = 0;
 };
-
-#endif /* POSITIONSCRATCHCONTROLLER_H */

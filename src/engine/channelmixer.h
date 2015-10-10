@@ -1,6 +1,4 @@
-#ifndef CHANNELMIXER_H
-#define CHANNELMIXER_H
-
+_Pragma("once")
 #include <QVarLengthArray>
 
 #include "util/types.h"
@@ -10,15 +8,15 @@ class ChannelMixer {
   public:
     static void mixChannels(
         const EngineMaster::GainCalculator& gainCalculator,
-        QVarLengthArray<EngineMaster::ChannelInfo*, kPreallocatedChannels>* activeChannels,
+        QVarLengthArray<ChannelInfo*, kPreallocatedChannels>* activeChannels,
         QVarLengthArray<EngineMaster::GainCache, kPreallocatedChannels>* channelGainCache,
         CSAMPLE* pOutput,
         unsigned int iBufferSize);
     static void mixChannelsRamping(
         const EngineMaster::GainCalculator& gainCalculator,
-        QVarLengthArray<EngineMaster::ChannelInfo*, kPreallocatedChannels>* activeChannels,
+        QVarLengthArray<ChannelInfo*, kPreallocatedChannels>* activeChannels,
         QVarLengthArray<EngineMaster::GainCache, kPreallocatedChannels>* channelGainCache,
         CSAMPLE* pOutput,
         unsigned int iBufferSize);
+    ChannelMixer() = delete;
 };
-#endif /* CHANNELMIXER_H */

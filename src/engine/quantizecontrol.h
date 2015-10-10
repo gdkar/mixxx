@@ -1,6 +1,4 @@
-#ifndef QUANTIZECONTROL_H
-#define QUANTIZECONTROL_H
-
+_Pragma("once")
 #include <QObject>
 
 #include "configobject.h"
@@ -15,33 +13,24 @@ class ControlPushButton;
 class QuantizeControl : public EngineControl {
     Q_OBJECT
   public:
-    QuantizeControl(QString group, ConfigObject<ConfigValue>* pConfig);
+    QuantizeControl(QString group, ConfigObject<ConfigValue>* pConfig,QObject*);
     virtual ~QuantizeControl();
-
-    virtual void setCurrentSample(const double dCurrentSample,
-                                  const double dTotalSamples);
-
+    virtual void setCurrentSample(double dCurrentSample, double dTotalSamples);
   public slots:
     virtual void trackLoaded(TrackPointer pTrack);
     virtual void trackUnloaded(TrackPointer pTrack);
-
   private slots:
     void slotBeatsUpdated();
-
   private:
     // Update positions of previous and next beats from beatgrid.
     void lookupBeatPositions(double dCurrentSample);
     // Update position of the closest beat based on existing previous and
     // next beat values.  Usually callers will call lookupBeatPositions first.
     void updateClosestBeat(double dCurrentSample);
-
-    ControlPushButton* m_pCOQuantizeEnabled;
-    ControlObject* m_pCONextBeat;
-    ControlObject* m_pCOPrevBeat;
-    ControlObject* m_pCOClosestBeat;
-
-    TrackPointer m_pTrack;
-    BeatsPointer m_pBeats;
+    ControlPushButton* m_pCOQuantizeEnabled = nullptr;
+    ControlObject* m_pCONextBeat    = nullptr;
+    ControlObject* m_pCOPrevBeat    = nullptr;
+    ControlObject* m_pCOClosestBeat = nullptr;
+    TrackPointer m_pTrack{nullptr};
+    BeatsPointer m_pBeats{nullptr};
 };
-
-#endif // QUANTIZECONTROL_H

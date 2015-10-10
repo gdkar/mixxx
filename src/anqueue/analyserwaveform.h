@@ -1,3 +1,4 @@
+_Pragma("once")
 #include <QImage>
 #include <QSqlDatabase>
 #include <limits>
@@ -32,8 +33,9 @@ struct WaveformStride {
     float m_postScaleConversion;
 };
 class AnalyserWaveform : public Analyser {
+  Q_OBJECT;
   public:
-    AnalyserWaveform(ConfigObject<ConfigValue>* pConfig);
+    AnalyserWaveform(ConfigObject<ConfigValue>* pConfig, QObject *);
     virtual ~AnalyserWaveform();
     bool initialise(TrackPointer tio, int sampleRate, int totalSamples);
     bool loadStored(TrackPointer tio) const;
@@ -48,11 +50,11 @@ class AnalyserWaveform : public Analyser {
     void storeIfGreater(float* pDest, float source);
   private:
     bool m_skipProcessing = false;
-    WaveformPointer m_waveform;
-    WaveformPointer m_waveformSummary;
+    WaveformPointer m_waveform{nullptr};
+    WaveformPointer m_waveformSummary{nullptr};
     WaveformData* m_waveformData        = nullptr;
     WaveformData* m_waveformSummaryData = nullptr;
-    WaveformStride m_stride;
+    WaveformStride m_stride{0,0};
     int m_currentStride = 0;
     int m_currentSummaryStride = 0;
     std::unique_ptr<EngineFilterIIRBase> m_filter[FilterCount];

@@ -1,5 +1,4 @@
-#ifndef CHANNELHANDLE_H
-#define CHANNELHANDLE_H
+_Pragma("once")
 // ChannelHandle defines a unique identifier for channels of audio in the engine
 // (e.g. headphone output, master output, deck 1, microphone 3). Previously we
 // used the group string of the channel in the engine to uniquely identify it
@@ -17,6 +16,7 @@
 // have been assigned.
 
 #include <QtDebug>
+#include <atomic>
 #include <QHash>
 #include <QString>
 #include <QVarLengthArray>
@@ -28,86 +28,80 @@
 // audio in the engine.
 class ChannelHandle {
   public:
-    ChannelHandle() : m_iHandle(-1) {
-    }
-
-    inline bool valid() const {
+    ChannelHandle() = default;
+    bool valid() const {
         return m_iHandle >= 0;
     }
-
-    inline int handle() const {
+    int handle() const {
         return m_iHandle;
     }
-
   private:
     ChannelHandle(int iHandle)
             : m_iHandle(iHandle) {
     }
-
     void setHandle(int iHandle) {
         m_iHandle = iHandle;
     }
-
-    int m_iHandle;
-
+    int m_iHandle = -1;
     friend class ChannelHandleFactory;
 };
-
-inline bool operator==(const ChannelHandle& h1, const ChannelHandle& h2) {
+bool operator==(const ChannelHandle& h1, const ChannelHandle& h2)
+{
     return h1.handle() == h2.handle();
 }
 
-inline bool operator!=(const ChannelHandle& h1, const ChannelHandle& h2) {
+bool operator!=(const ChannelHandle& h1, const ChannelHandle& h2)
+{
     return h1.handle() != h2.handle();
 }
 
-inline QDebug operator<<(QDebug stream, const ChannelHandle& h) {
+QDebug operator<<(QDebug stream, const ChannelHandle& h)
+{
     stream << "ChannelHandle(" << h.handle() << ")";
     return stream;
 }
-
-inline uint qHash(const ChannelHandle& handle) {
+uint qHash(const ChannelHandle& handle)
+{
     return qHash(handle.handle());
 }
-
 // Convenience class that mimics QPair<ChannelHandle, QString> except with
 // custom equality and hash methods that save the cost of touching the QString.
 class ChannelHandleAndGroup {
   public:
     ChannelHandleAndGroup(const ChannelHandle& handle, const QString& name)
             : m_handle(handle),
-              m_name(name) {
+              m_name(name)
+    {
     }
-
-    inline const QString& name() const {
+    const QString& name() const
+    {
         return m_name;
     }
-
-    inline const ChannelHandle& handle() const {
+    const ChannelHandle& handle() const
+    {
         return m_handle;
     }
-
     const ChannelHandle m_handle;
     const QString m_name;
 };
-
-inline bool operator==(const ChannelHandleAndGroup& g1, const ChannelHandleAndGroup& g2) {
+bool operator==(const ChannelHandleAndGroup& g1, const ChannelHandleAndGroup& g2)
+{
     return g1.handle() == g2.handle();
 }
 
-inline bool operator!=(const ChannelHandleAndGroup& g1, const ChannelHandleAndGroup& g2) {
+bool operator!=(const ChannelHandleAndGroup& g1, const ChannelHandleAndGroup& g2)
+{
     return g1.handle() != g2.handle();
 }
-
-inline QDebug operator<<(QDebug stream, const ChannelHandleAndGroup& g) {
+QDebug operator<<(QDebug stream, const ChannelHandleAndGroup& g)
+{
     stream << "ChannelHandleAndGroup(" << g.name() << "," << g.handle() << ")";
     return stream;
 }
-
-inline uint qHash(const ChannelHandleAndGroup& handle_group) {
+uint qHash(const ChannelHandleAndGroup& handle_group)
+{
     return qHash(handle_group.handle());
 }
-
 // A helper class used by EngineMaster to assign ChannelHandles to channel group
 // strings. Warning: ChannelHandles produced by different ChannelHandleFactory
 // objects are not compatible and will produce incorrect results when compared,
@@ -115,12 +109,12 @@ inline uint qHash(const ChannelHandleAndGroup& handle_group) {
 // EngineMaster.
 class ChannelHandleFactory {
   public:
-    ChannelHandleFactory() : m_iNextHandle(0) {
-    }
-
-    ChannelHandle getOrCreateHandle(const QString& group) {
-        ChannelHandle& handle = m_groupToHandle[group];
-        if (!handle.valid()) {
+    ChannelHandleFactory() = default;
+    ChannelHandle getOrCreateHandle(const QString& group)
+    {
+        auto& handle = m_groupToHandle[group];
+        if (!handle.valid())
+        {
             handle.setHandle(m_iNextHandle++);
             DEBUG_ASSERT(handle.valid());
             DEBUG_ASSERT(!m_handleToGroup.contains(handle));
@@ -128,21 +122,19 @@ class ChannelHandleFactory {
         }
         return handle;
     }
-
-    ChannelHandle handleForGroup(const QString& group) const {
+    ChannelHandle handleForGroup(const QString& group) const
+    {
         return m_groupToHandle.value(group, ChannelHandle());
     }
-
-    QString groupForHandle(const ChannelHandle& handle) const {
+    QString groupForHandle(const ChannelHandle& handle) const
+    {
         return m_handleToGroup.value(handle, QString());
     }
-
   private:
-    int m_iNextHandle;
+    std::atomic<int> m_iNextHandle{0};
     QHash<QString, ChannelHandle> m_groupToHandle;
     QHash<ChannelHandle, QString> m_handleToGroup;
 };
-
 // An associative container mapping ChannelHandle to a template type T. Backed
 // by a QVarLengthArray with ChannelHandleMap::kMaxExpectedGroups pre-allocated
 // entries. Insertions are amortized O(1) time (if less than kMaxExpectedGroups
@@ -150,67 +142,74 @@ class ChannelHandleFactory {
 // O(1) and quite fast -- a simple index into an array using the handle's
 // integer value.
 template <class T>
-class ChannelHandleMap {
-    static const int kMaxExpectedGroups = 256;
-    typedef QVarLengthArray<T, kMaxExpectedGroups> container_type;
+class ChannelHandleMap
+{
   public:
-    typedef typename QVarLengthArray<T, kMaxExpectedGroups>::const_iterator const_iterator;
-    typedef typename QVarLengthArray<T, kMaxExpectedGroups>::iterator iterator;
-
-    const T& at(const ChannelHandle& handle) const {
-        if (!handle.valid()) {
-            return m_dummy;
-        }
+    using size_type      = int;
+    using difference_type= int;
+    static const int kMaxExpectedGroups = 256;
+    using container_type = QVarLengthArray<T, kMaxExpectedGroups>;
+    using const_iterator = typename container_type::const_iterator;
+    using iterator       = typename container_type::iterator;
+    const T& at(const ChannelHandle& handle) const
+    {
+        if (!handle.valid())  return m_dummy;
         return m_data.at(handle.handle());
     }
-
     void insert(const ChannelHandle& handle, const T& value) {
-        if (!handle.valid()) {
-            return;
-        }
-
-        int iHandle = handle.handle();
-        maybeExpand(iHandle + 1);
+        if (!handle.valid())  return;
+        auto iHandle = handle.handle();
+        maybeExpand(iHandle);
         m_data[iHandle] = value;
     }
-
-    T& operator[](const ChannelHandle& handle) {
-        if (!handle.valid()) {
-            return m_dummy;
-        }
-        int iHandle = handle.handle();
-        maybeExpand(iHandle + 1);
+    T& operator[](const ChannelHandle& handle)
+    {
+        if (!handle.valid()) return m_dummy;
+        auto iHandle = handle.handle();
+        maybeExpand(iHandle);
         return m_data[iHandle];
     }
-
-    void clear() {
+    const T& operator[](const ChannelHandle& handle) const
+    {
+      if (!handle.valid()) return m_dummy;
+      auto iHandle = handle.handle();
+      maybeExpand(iHandle);
+      return m_data[iHandle];
+    }
+    void clear()
+    {
         m_data.clear();
     }
-
-    typename container_type::iterator begin() {
+    iterator begin()
+    {
         return m_data.begin();
     }
-
-    typename container_type::const_iterator begin() const {
-        return m_data.begin();
+    const_iterator begin() const
+    {
+        return m_data.cbegin();
     }
-
-    typename container_type::iterator end() {
+    const_iterator cbegin() const
+    {
+        return m_data.cbegin();
+    }
+    iterator end()
+    {
         return m_data.end();
     }
-
-    typename container_type::const_iterator end() const {
-        return m_data.end();
+    const_iterator end() const
+    {
+        return m_data.cend();
+    }
+    const_iterator cend() const
+    {
+      return m_data.cend();
     }
 
   private:
-    inline void maybeExpand(int iSize) {
-        if (m_data.size() < iSize) {
-            m_data.resize(iSize);
-        }
+    void maybeExpand(difference_type iIndex)
+    {
+        if (m_data.size() <= iIndex) m_data.resize(iIndex+1);
     }
     container_type m_data;
-    T m_dummy;
+    T              m_dummy{};
 };
-
-#endif /* CHANNELHANDLE,_H */

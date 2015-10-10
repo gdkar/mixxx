@@ -1,6 +1,4 @@
-#ifndef ANALYSERKEY_H
-#define ANALYSERKEY_H
-
+_Pragma("once")
 #include <QHash>
 #include <QString>
 
@@ -10,8 +8,9 @@
 #include "vamp/vampanalyser.h"
 
 class AnalyserKey : public Analyser {
+  Q_OBJECT;
   public:
-    AnalyserKey(ConfigObject<ConfigValue>* pConfig);
+    AnalyserKey(ConfigObject<ConfigValue>* pConfig, QObject *);
     virtual ~AnalyserKey();
     bool initialise(TrackPointer tio, int sampleRate, int totalSamples);
     bool loadStored(TrackPointer tio) const;
@@ -29,4 +28,3 @@ class AnalyserKey : public Analyser {
     bool m_bPreferencesFastAnalysisEnabled = false;
     bool m_bPreferencesReanalyzeEnabled    = false;
 };
-#endif /* ANALYSERKEY_H */

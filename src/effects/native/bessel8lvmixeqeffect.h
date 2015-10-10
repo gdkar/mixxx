@@ -1,6 +1,4 @@
-#ifndef BESSEL8LVMIXEQEFFECT_H
-#define BESSEL8LVMIXEQEFFECT_H
-
+_Pragma("once")
 #include "lvmixeqbase.h"
 
 #include <QMap>
@@ -40,22 +38,13 @@ class Bessel8LVMixEQEffect : public PerChannelEffectProcessor<Bessel8LVMixEQEffe
                         const GroupFeatureState& groupFeatureState);
 
   private:
-    QString debugString() const {
-        return getId();
-    }
-
+    QString debugString() const;
     EngineEffectParameter* m_pPotLow;
     EngineEffectParameter* m_pPotMid;
     EngineEffectParameter* m_pPotHigh;
-
     EngineEffectParameter* m_pKillLow;
     EngineEffectParameter* m_pKillMid;
     EngineEffectParameter* m_pKillHigh;
-
     ControlObjectSlave* m_pLoFreqCorner;
     ControlObjectSlave* m_pHiFreqCorner;
-
-    DISALLOW_COPY_AND_ASSIGN(Bessel8LVMixEQEffect);
 };
-
-#endif /* BESSEL8LVMIXEQEFFECT_H */

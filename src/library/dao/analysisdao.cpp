@@ -325,7 +325,7 @@ void AnalysisDao::saveTrackAnalyses(TrackInfoObject* pTrack) {
 
     // Don't try to save invalid or non-dirty waveforms.
     if (!pWaveform || !pWaveform->size() || !pWaveform->isDirty() ||
-        !pWaveSummary !pWaveSummary->size() || !pWaveSummary->isDirty()) {
+        !pWaveSummary ||  !pWaveSummary->size() || !pWaveSummary->isDirty()) {
         return;
     }
 

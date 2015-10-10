@@ -1,6 +1,4 @@
-#ifndef ECHOEFFECT_H
-#define ECHOEFFECT_H
-
+_Pragma("once")
 #include <QMap>
 
 #include "util.h"
@@ -34,10 +32,8 @@ class EchoEffect : public PerChannelEffectProcessor<EchoGroupState> {
   public:
     EchoEffect(EngineEffect* pEffect, const EffectManifest& manifest);
     virtual ~EchoEffect();
-
     static QString getId();
     static EffectManifest getManifest();
-
     // See effectprocessor.h
     void processChannel(const ChannelHandle& handle,
                         EchoGroupState* pState,
@@ -46,20 +42,11 @@ class EchoEffect : public PerChannelEffectProcessor<EchoGroupState> {
                         const unsigned int sampleRate,
                         const EffectProcessor::EnableState enableState,
                         const GroupFeatureState& groupFeatures);
-
   private:
     int getDelaySamples(double delay_time, const unsigned int sampleRate) const;
-
-    QString debugString() const {
-        return getId();
-    }
-
+    QString debugString() const;
     EngineEffectParameter* m_pDelayParameter;
     EngineEffectParameter* m_pSendParameter;
     EngineEffectParameter* m_pFeedbackParameter;
     EngineEffectParameter* m_pPingPongParameter;
-
-    DISALLOW_COPY_AND_ASSIGN(EchoEffect);
 };
-
-#endif /* ECHOEFFECT_H */

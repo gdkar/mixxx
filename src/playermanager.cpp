@@ -69,7 +69,7 @@ void PlayerManager::bindToLibrary(Library* pLibrary) {
     connect(pLibrary, SIGNAL(loadTrackToPlayer(TrackPointer, QString, bool)), this, SLOT(slotLoadTrackToPlayer(TrackPointer, QString, bool)));
     connect(pLibrary, SIGNAL(loadTrack(TrackPointer)), this, SLOT(slotLoadTrackIntoNextAvailableDeck(TrackPointer)));
     connect(this, SIGNAL(loadLocationToPlayer(QString, QString)), pLibrary, SLOT(slotLoadLocationToPlayer(QString, QString)));
-    m_pAnalyserQueue = AnalyserQueue::createDefaultAnalyserQueue(m_pConfig,pLibrary->getTrackCollection());
+    m_pAnalyserQueue = AnalyserQueue::createDefaultAnalyserQueue(m_pConfig,pLibrary->getTrackCollection(),this);
     // Connect the player to the analyser queue so that loaded tracks are
     // analysed.
     for(auto pDeck: m_decks) { connect(pDeck, SIGNAL(newTrackLoaded(TrackPointer)),m_pAnalyserQueue, SLOT(slotAnalyseTrack(TrackPointer))); }

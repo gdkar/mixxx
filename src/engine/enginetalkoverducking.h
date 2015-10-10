@@ -13,7 +13,7 @@ class EngineTalkoverDucking : public QObject, public EngineSideChainCompressor {
         MANUAL,
     };
     Q_ENUMS(TalkoverDuckSetting);
-    EngineTalkoverDucking(ConfigObject<ConfigValue>* pConfig, const char* group);
+    EngineTalkoverDucking(ConfigObject<ConfigValue>* pConfig, const char* group,QObject *pParent);
     virtual ~EngineTalkoverDucking();
     TalkoverDuckSetting getMode() const ;
     CSAMPLE getGain(int numFrames);

@@ -1,9 +1,7 @@
 // enginemicrophone.h
 // created 3/16/2011 by RJ Ryan (rryan@mit.edu)
 
-#ifndef ENGINEMICROPHONE_H
-#define ENGINEMICROPHONE_H
-
+_Pragma("once")
 #include "engine/enginechannel.h"
 #include "engine/enginevumeter.h"
 
@@ -19,7 +17,7 @@ class EngineMicrophone : public EngineChannel, public AudioDestination {
     Q_OBJECT
   public:
     EngineMicrophone(const ChannelHandleAndGroup& handle_group,
-                     EffectsManager* pEffectsManager);
+                     EffectsManager* pEffectsManager,QObject *pParent);
     virtual ~EngineMicrophone();
 
     bool isActive();
@@ -57,5 +55,3 @@ class EngineMicrophone : public EngineChannel, public AudioDestination {
 
     bool m_wasActive;
 };
-
-#endif /* ENGINEMICROPHONE_H */

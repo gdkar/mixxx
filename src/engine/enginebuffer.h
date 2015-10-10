@@ -100,7 +100,7 @@ class EngineBuffer : public EngineObject {
     Q_ENUM(SyncRequestQueued);
     Q_ENUM(SeekRequest);
     Q_ENUM(KeylockEngine);
-    EngineBuffer(QString _group, ConfigObject<ConfigValue>* _config,EngineChannel* pChannel, EngineMaster* pMixingEngine);
+    EngineBuffer(QString _group, ConfigObject<ConfigValue>* _config,EngineChannel* pChannel, EngineMaster* pMixingEngine,QObject * pParent);
     virtual ~EngineBuffer();
     void bindWorkers(EngineWorkerScheduler* pWorkerScheduler);
     // Return the current rate (not thread-safe)

@@ -1,7 +1,5 @@
-#ifndef ENGINEFILTERPAN_H
-#define ENGINEFILTERPAN_H
-
-#include <string.h>
+_Pragma("once")
+#include <cstring>
 
 #include "engine/engineobject.h"
 #include "util/assert.h"
@@ -11,18 +9,13 @@ static const int numChannels = 2;
 template<unsigned int SIZE>
 class EngineFilterPan : public EngineObjectConstIn {
   public:
-    EngineFilterPan()
-            : m_leftDelayFrames(0),
-              m_oldLeftDelayFrames(0),
-              m_delayFrame(0),
-              m_doRamping(false),
-              m_doStart(false) {
+    EngineFilterPan(QObject *p)
+      :EngineObjectConstIn(p)
+  {
         // Set the current buffers to 0
         memset(m_buf, 0, sizeof(m_buf));
     }
-
-    virtual ~EngineFilterPan() {};
-
+    virtual ~EngineFilterPan() = default;
     void pauseFilter() {
         // Set the current buffers to 0
         if (!m_doStart) {
@@ -30,7 +23,6 @@ class EngineFilterPan : public EngineObjectConstIn {
             m_doStart = true;
         }
     }
-
     void setLeftDelay(unsigned int leftDelaySamples) {
         if (m_leftDelayFrames != leftDelaySamples) {
             m_oldLeftDelayFrames = m_leftDelayFrames;
@@ -119,14 +111,11 @@ class EngineFilterPan : public EngineObjectConstIn {
         }
         m_doStart = false;
     }
-
   protected:
-    int m_leftDelayFrames;
-    int m_oldLeftDelayFrames;
-    int m_delayFrame;
+    int m_leftDelayFrames = 0;
+    int m_oldLeftDelayFrames = 0;
+    int m_delayFrame = 0;
     CSAMPLE m_buf[SIZE * numChannels];
-    bool m_doRamping;
-    bool m_doStart;
+    bool m_doRamping = false;
+    bool m_doStart = false;
 };
-
-#endif // ENGINEFILTERPAN_H

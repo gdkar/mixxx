@@ -32,3 +32,7 @@ NativeBackend::NativeBackend(QObject* pParent) : EffectsBackend(pParent, tr("Nat
     registerEffect<PhaserEffect>();
 }
 NativeBackend::~NativeBackend() = default;
+QString NativeBackend::debugString() const
+{
+  return QString{"NativeBackend"};
+}

@@ -2,7 +2,8 @@
 #include "util/math.h"
 #include "controlobjectslave.h"
 // static
-QString Bessel4LVMixEQEffect::getId() {
+QString Bessel4LVMixEQEffect::getId()
+{
     return "org.mixxx.effects.bessel4lvmixeq";
 }
 
@@ -90,9 +91,7 @@ EffectManifest Bessel4LVMixEQEffect::getManifest() {
 
     return manifest;
 }
-
-Bessel4LVMixEQEffect::Bessel4LVMixEQEffect(EngineEffect* pEffect,
-                                           const EffectManifest& manifest)
+Bessel4LVMixEQEffect::Bessel4LVMixEQEffect(EngineEffect* pEffect, const EffectManifest& manifest)
         : m_pPotLow(pEffect->getParameterById("low")),
           m_pPotMid(pEffect->getParameterById("mid")),
           m_pPotHigh(pEffect->getParameterById("high")),
@@ -103,8 +102,8 @@ Bessel4LVMixEQEffect::Bessel4LVMixEQEffect(EngineEffect* pEffect,
     m_pLoFreqCorner = new ControlObjectSlave("[Mixer Profile]", "LoEQFrequency");
     m_pHiFreqCorner = new ControlObjectSlave("[Mixer Profile]", "HiEQFrequency");
 }
-
-Bessel4LVMixEQEffect::~Bessel4LVMixEQEffect() {
+Bessel4LVMixEQEffect::~Bessel4LVMixEQEffect()
+{
     delete m_pLoFreqCorner;
     delete m_pHiFreqCorner;
 }
@@ -149,3 +148,4 @@ void Bessel4LVMixEQEffect::processChannel(const ChannelHandle& handle,
                            fLow, fMid, fHigh,
                            m_pLoFreqCorner->get(), m_pHiFreqCorner->get());
 }
+QString Bessel4LVMixEQEffect::debugString() const{return getId();}

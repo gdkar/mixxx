@@ -1,7 +1,5 @@
-#ifndef ENGINEFILTERDELAY_H
-#define ENGINEFILTERDELAY_H
-
-#include <string.h>
+_Pragma("once")
+#include <cstring>
 
 #include "engine/engineobject.h"
 #include "util/assert.h"
@@ -9,8 +7,9 @@
 template<unsigned int SIZE>
 class EngineFilterDelay : public EngineObjectConstIn {
   public:
-    EngineFilterDelay()
-            : m_delaySamples(0),
+    EngineFilterDelay(QObject *pParent)
+            : EngineObjectConstIn(pParent),
+              m_delaySamples(0),
               m_oldDelaySamples(0),
               m_delayPos(0),
               m_doRamping(false),
@@ -18,28 +17,24 @@ class EngineFilterDelay : public EngineObjectConstIn {
         // Set the current buffers to 0
         memset(m_buf, 0, sizeof(m_buf));
     }
-
-    virtual ~EngineFilterDelay() {};
-
-    void pauseFilter() {
+    virtual ~EngineFilterDelay() = default;;
+    void pauseFilter()
+    {
         // Set the current buffers to 0
-        if (!m_doStart) {
+        if (!m_doStart)
+        {
             memset(m_buf, 0, sizeof(m_buf));
             m_doStart = true;
         }
     }
-
     void setDelay(unsigned int delaySamples) {
         m_oldDelaySamples = m_delaySamples;
         m_delaySamples = delaySamples;
         m_doRamping = true;
     }
-
-    virtual void process(const CSAMPLE* pIn, CSAMPLE* pOutput,
-                         const int iBufferSize) {
+    virtual void process(const CSAMPLE* pIn, CSAMPLE* pOutput, int iBufferSize) {
         if (!m_doRamping) {
-            int delaySourcePos = (m_delayPos + SIZE - m_delaySamples) % SIZE;
-
+            auto delaySourcePos = (m_delayPos + SIZE - m_delaySamples) % SIZE;
             DEBUG_ASSERT_AND_HANDLE(delaySourcePos >= 0) {
               std::copy_n(pIn,iBufferSize,pOutput);
                 return;
@@ -48,7 +43,6 @@ class EngineFilterDelay : public EngineObjectConstIn {
                 std::copy_n(pIn,iBufferSize,pOutput);
                 return;
             }
-
             for (int i = 0; i < iBufferSize; ++i) {
                 // put sample into delay buffer:
                 m_buf[m_delayPos] = pIn[i];
@@ -113,4 +107,3 @@ class EngineFilterDelay : public EngineObjectConstIn {
     bool m_doStart;
 };
 
-#endif // ENGINEFILTERDELAY_H

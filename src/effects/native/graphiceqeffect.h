@@ -1,6 +1,4 @@
-#ifndef GRAPHICEQEFFECT_H
-#define GRAPHICEQEFFECT_H
-
+_Pragma("once")
 #include <QMap>
 
 #include "effects/effect.h"
@@ -41,12 +39,9 @@ class GraphicEQEffect : public PerChannelEffectProcessor<GraphicEQEffectGroupSta
                         const EffectProcessor::EnableState enableState,
                         const GroupFeatureState& groupFeatureState);
   private:
-    QString debugString() const {return getId();}
-    EngineEffectParameter* m_pPotLow;
+    QString debugString() const;
+    EngineEffectParameter* m_pPotLow = nullptr;
     QList<EngineEffectParameter*> m_pPotMid;
-    EngineEffectParameter* m_pPotHigh;
-    unsigned int m_oldSampleRate;
-    DISALLOW_COPY_AND_ASSIGN(GraphicEQEffect);
+    EngineEffectParameter* m_pPotHigh = nullptr;
+    unsigned int m_oldSampleRate = 0;
 };
-
-#endif // GRAPHICEQEFFECT_H

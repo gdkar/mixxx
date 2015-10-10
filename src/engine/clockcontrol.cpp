@@ -6,28 +6,23 @@
 #include "engine/enginecontrol.h"
 #include "controlobjectslave.h"
 
-ClockControl::ClockControl(QString group, ConfigObject<ConfigValue>* pConfig)
-        : EngineControl(group, pConfig) {
-    m_pCOBeatActive = new ControlObject(ConfigKey(group, "beat_active"));
+ClockControl::ClockControl(QString group, ConfigObject<ConfigValue>* pConfig,QObject *p)
+        : EngineControl(group, pConfig,p)
+{
+    m_pCOBeatActive = new ControlObject(ConfigKey(group, "beat_active"),this);
     m_pCOBeatActive->set(0.0);
-    m_pCOSampleRate = new ControlObjectSlave("[Master]","samplerate");
+    m_pCOSampleRate = new ControlObjectSlave(ConfigKey("[Master]","samplerate"),this);
 }
-
-ClockControl::~ClockControl() {
-    delete m_pCOBeatActive;
-    delete m_pCOSampleRate;
-}
-
+ClockControl::~ClockControl() = default;
 void ClockControl::trackLoaded(TrackPointer pTrack) {
     // Clear on-beat control
     m_pCOBeatActive->set(0.0);
     // Disconnect any previously loaded track/beats
-    if (m_pTrack) {
-        disconnect(m_pTrack.data(), SIGNAL(beatsUpdated()),this, SLOT(slotBeatsUpdated()));
-    }
+    if (m_pTrack) disconnect(m_pTrack.data(), SIGNAL(beatsUpdated()),this, SLOT(slotBeatsUpdated()));
     m_pBeats.clear();
     m_pTrack.clear();
-    if (pTrack) {
+    if (pTrack)
+    {
         m_pTrack = pTrack;
         m_pBeats = m_pTrack->getBeats();
         connect(m_pTrack.data(), SIGNAL(beatsUpdated()),this, SLOT(slotBeatsUpdated()));
@@ -35,23 +30,23 @@ void ClockControl::trackLoaded(TrackPointer pTrack) {
 }
 void ClockControl::trackUnloaded(TrackPointer /*pTrack*/) {trackLoaded(TrackPointer());}
 void ClockControl::slotBeatsUpdated() {if(m_pTrack) {m_pBeats = m_pTrack->getBeats();}}
-double ClockControl::process(const double dRate,
-                             const double currentSample,
-                             const double totalSamples,
-                             const int iBuffersize) {
+double ClockControl::process(double dRate,
+                             double currentSample,
+                             double totalSamples,
+                             int iBuffersize) {
     Q_UNUSED(totalSamples);
     Q_UNUSED(iBuffersize);
     auto samplerate = m_pCOSampleRate->get();
     // TODO(XXX) should this be customizable, or latency dependent?
-    const auto blinkSeconds = 0.100;
+    auto blinkSeconds = 0.100;
     // Multiply by two to get samples from frames. Interval is scaled linearly
     // by the rate.
-    const auto blinkIntervalSamples = 2.0 * samplerate * (1.0 * dRate) * blinkSeconds;
-    if (m_pBeats) {
+    auto blinkIntervalSamples = 2.0 * samplerate * (1.0 * dRate) * blinkSeconds;
+    if (m_pBeats)
+    {
         auto closestBeat = m_pBeats->findClosestBeat(currentSample);
         auto distanceToClosestBeat = fabs(currentSample - closestBeat);
         m_pCOBeatActive->set(distanceToClosestBeat < blinkIntervalSamples / 2.0);
     }
-
     return kNoTrigger;
 }

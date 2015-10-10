@@ -5,17 +5,16 @@
  *      Author: Vittorio Colao
  *       */
 
-#ifndef ANALYSERRG_H_
-#define ANALYSERRG_H_
-
+_Pragma("once")
 #include "analyser.h"
 #include "configobject.h"
 
 class ReplayGain;
 
 class AnalyserGain : public Analyser {
+  Q_OBJECT;
   public:
-    AnalyserGain(ConfigObject<ConfigValue> *_config);
+    AnalyserGain(ConfigObject<ConfigValue> *_config, QObject *);
     virtual ~AnalyserGain();
 
     bool initialise(TrackPointer tio, int sampleRate, int totalSamples);
@@ -24,12 +23,10 @@ class AnalyserGain : public Analyser {
     void cleanup(TrackPointer tio);
     void finalise(TrackPointer tio);
   private:
-    bool m_bStepControl;
+    bool m_bStepControl = false;
     ConfigObject<ConfigValue> *m_pConfigReplayGain = nullptr;
     CSAMPLE* m_pLeftTempBuffer = nullptr;
     CSAMPLE* m_pRightTempBuffer = nullptr;
     ReplayGain *m_pReplayGain = nullptr;
     int m_iBufferSize = 0;
 };
-
-#endif /* ANALYSERRG_H_ */

@@ -17,17 +17,14 @@
 
 #include "engineobject.h"
 
-EngineObject::EngineObject() {
+EngineObject::EngineObject(QObject *p)
+  : QObject(p)
+{
 }
-
-EngineObject::~EngineObject() {
+EngineObject::~EngineObject() = default;
+EngineObjectConstIn::EngineObjectConstIn(QObject *p)
+:QObject(p)
+{
 }
-
-EngineObjectConstIn::EngineObjectConstIn() {
-}
-
-EngineObjectConstIn::~EngineObjectConstIn() {
-}
-
-
+EngineObjectConstIn::~EngineObjectConstIn() = default;
 

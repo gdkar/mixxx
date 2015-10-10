@@ -33,28 +33,26 @@ namespace {
     const SINT kAnalysisFramesPerBlock  = 4096;
     const SINT kAnalysisSamplesPerBlock = kAnalysisFramesPerBlock * kAnalysisChannels;
 } // anonymous namespace
-AnalyserQueue::AnalyserQueue(TrackCollection* /*pTrackCollection*/)
-        : m_aq(),
-          m_exit(false),
-          m_aiCheckPriorities(false),
-          m_sampleBuffer(kAnalysisSamplesPerBlock),
-          m_tioq(),
-          m_qm(),
-          m_qwait(),
-          m_queue_size(0) {
+AnalyserQueue::AnalyserQueue(TrackCollection* /*pTrackCollection*/,QObject *p)
+        : QThread(p),
+          m_sampleBuffer(kAnalysisSamplesPerBlock)
+{
     connect(this, SIGNAL(updateProgress()), this, SLOT(slotUpdateProgress()));
 }
 AnalyserQueue::~AnalyserQueue() {
     stop();
     m_progressInfo.sema.release();
     wait(); //Wait until thread has actually stopped before proceeding.
-    for ( auto an : m_aq ) delete an;
     m_aq.clear();
     //qDebug() << "AnalyserQueue::~AnalyserQueue()";
 }
-void AnalyserQueue::addAnalyser(Analyser* an) { m_aq.push_back(an); }
+void AnalyserQueue::addAnalyser(Analyser* an)
+{
+  m_aq.push_back(an);
+}
 // This is called from the AnalyserQueue thread
-bool AnalyserQueue::isLoadedTrackWaiting(TrackPointer analysingTrack) {
+bool AnalyserQueue::isLoadedTrackWaiting(TrackPointer analysingTrack)
+{
     auto &info = PlayerInfo::instance();
     auto pTrack = TrackPointer{nullptr};
     auto trackWaiting = false;
@@ -85,9 +83,10 @@ bool AnalyserQueue::isLoadedTrackWaiting(TrackPointer analysingTrack) {
     }
     m_qm.unlock();
     // update progress after unlock to avoid a deadlock
-    for(auto pTrack: progress0List) { emitUpdateProgress(pTrack, 0); }
-    for(auto pTrack: progress100List) { emitUpdateProgress(pTrack, 1.0); }
-    if (info.isTrackLoaded(analysingTrack)) { return false; }
+    for(auto pTrack: progress0List)     emitUpdateProgress(pTrack, 0);
+    for(auto pTrack: progress100List)   emitUpdateProgress(pTrack, 1.0);
+    if (info.isTrackLoaded(analysingTrack)) 
+      return false;
     return trackWaiting;
 }
 // This is called from the AnalyserQueue thread
@@ -97,12 +96,12 @@ TrackPointer AnalyserQueue::dequeueNextBlocking() {
         Event::end("AnalyserQueue process");
         m_qwait.wait(&m_qm);
         Event::start("AnalyserQueue process");
-        if (m_exit) {
+        if (m_abExit.load()) {
             m_qm.unlock();
             return TrackPointer();
         }
     }
-    const PlayerInfo& info = PlayerInfo::instance();
+    const auto& info = PlayerInfo::instance();
     auto pLoadTrack = TrackPointer{nullptr};
     auto new_list = decltype(m_tioq){};
     for ( auto pTrack : m_tioq )
@@ -129,7 +128,7 @@ TrackPointer AnalyserQueue::dequeueNextBlocking() {
 bool AnalyserQueue::doAnalysis(TrackPointer tio, Mixxx::AudioSourcePointer pAudioSource) {
     QTime progressUpdateInhibitTimer;
     progressUpdateInhibitTimer.start(); // Inhibit Updates for 60 milliseconds
-    SINT frameIndex = pAudioSource->getMinFrameIndex();
+    auto frameIndex = pAudioSource->getMinFrameIndex();
     auto dieflag = false;
     auto cancelled = false;
     do {
@@ -143,9 +142,9 @@ bool AnalyserQueue::doAnalysis(TrackPointer tio, Mixxx::AudioSourcePointer pAudi
             << " should be 0 <= frameIndex < "
             << pAudioSource->getMaxFrameIndex();
         }
-        const auto framesRemaining = pAudioSource->getMaxFrameIndex() - frameIndex;
-        const auto framesToRead    = math_min(kAnalysisFramesPerBlock, framesRemaining);
-        const auto framesRead      = pAudioSource->readSampleFramesStereo( framesToRead, &m_sampleBuffer);
+        auto framesRemaining = pAudioSource->getMaxFrameIndex() - frameIndex;
+        auto framesToRead    = math_min(kAnalysisFramesPerBlock, framesRemaining);
+        auto framesRead      = pAudioSource->readSampleFramesStereo( framesToRead, &m_sampleBuffer);
         if ( framesRead > framesToRead || framesRead < 0 )
         {
           qDebug() 
@@ -206,47 +205,51 @@ bool AnalyserQueue::doAnalysis(TrackPointer tio, Mixxx::AudioSourcePointer pAudi
         //QThread::yieldCurrentThread();
         //QThread::usleep(10);
         // has something new entered the queue?
-        if (m_aiCheckPriorities.fetchAndStoreAcquire(false)) {
+        if (m_abCheckPriorities.exchange(false)) {
             if (isLoadedTrackWaiting(tio)) {
                 qDebug() << "Interrupting analysis to give preference to a loaded track.";
                 dieflag = true;
                 cancelled = true;
             }
         }
-        if (m_exit) {
+        if (m_abExit.load()) {
             dieflag = true;
             cancelled = true;
         }
         // Ignore blocks in which we decided to bail for stats purposes.
-        if (dieflag || cancelled) { t.cancel(); }
+        if (dieflag || cancelled) 
+          t.cancel();
     } while (!dieflag && (frameIndex < pAudioSource->getMaxFrameIndex()));
     return !cancelled; //don't return !dieflag or we might reanalyze over and over
 }
-void AnalyserQueue::stop() {
-    m_exit = true;
+void AnalyserQueue::stop()
+{
+    m_abExit.store(true);
     m_qm.lock();
     m_qwait.wakeAll();
     m_qm.unlock();
 }
-
-void AnalyserQueue::run() {
+void AnalyserQueue::run()
+{
     static std::atomic<int> id{0}; //the id of this thread, for debugging purposes
     QThread::currentThread()->setObjectName(QString("AnalyserQueue %1").arg(++id));
     // If there are no analyzers, don't waste time running.
-    if (m_aq.size() == 0) return;
+    if (!m_aq.size()) return;
     m_progressInfo.current_track.clear();
     m_progressInfo.track_progress = 0;
     m_progressInfo.queue_size = 0;
     m_progressInfo.sema.release(); // Initialise with one
-    while (!m_exit) {
+    while (!m_abExit.load()) 
+    {
         auto nextTrack = dequeueNextBlocking();
         // It's important to check for m_exit here in case we decided to exit
         // while blocking for a new track.
-        if (m_exit) { break; }
+        if (m_abExit.load()) break;
         // If the track is NULL, try to get the next one.
         // Could happen if the track was queued but then deleted.
         // Or if dequeueNextBlocking is unblocked by exit == true
-        if (!nextTrack) {
+        if (!nextTrack)
+        {
             emptyCheck();
             continue;
         }
@@ -295,15 +298,17 @@ void AnalyserQueue::run() {
     }
     emit(queueEmpty()); // emit in case of exit;
 }
-void AnalyserQueue::emptyCheck() {
+void AnalyserQueue::emptyCheck()
+{
     m_qm.lock();
-    m_queue_size = m_tioq.size();
+    m_queue_size.store(m_tioq.size());
     m_qm.unlock();
-    if (m_queue_size == 0) { emit(queueEmpty()); }
+    if (!m_queue_size.load()) emit(queueEmpty());
 }
 // This is called from the AnalyserQueue thread
-void AnalyserQueue::emitUpdateProgress(TrackPointer tio, double progress) {
-    if (!m_exit) {
+void AnalyserQueue::emitUpdateProgress(TrackPointer tio, double progress)
+{
+    if (!m_abExit.load()) {
         // First tryAcqire will have always success because sema is initialized with on
         // The following tries will success if the previous signal was processed in the GUI Thread
         // This prevent the AnalysisQueue from filling up the GUI Thread event Queue
@@ -327,7 +332,7 @@ void AnalyserQueue::slotUpdateProgress() {
 void AnalyserQueue::slotAnalyseTrack(TrackPointer tio) {
     // This slot is called from the decks and and samplers when the track was loaded.
     queueAnalyseTrack(tio);
-    m_aiCheckPriorities = true;
+    m_abCheckPriorities.store(true);
 }
 // This is called from the GUI and from the AnalyserQueue thread
 void AnalyserQueue::queueAnalyseTrack(TrackPointer tio) {
@@ -339,23 +344,25 @@ void AnalyserQueue::queueAnalyseTrack(TrackPointer tio) {
     m_qm.unlock();
 }
 // static
-AnalyserQueue* AnalyserQueue::createDefaultAnalyserQueue( ConfigObject<ConfigValue>* pConfig, TrackCollection* pTrackCollection) {
-    AnalyserQueue* ret = new AnalyserQueue(pTrackCollection);
-    ret->addAnalyser(new AnalyserWaveform(pConfig));
-    ret->addAnalyser(new AnalyserGain(pConfig));
+AnalyserQueue* AnalyserQueue::createDefaultAnalyserQueue( ConfigObject<ConfigValue>* pConfig, TrackCollection* pTrackCollection, QObject *pParent)
+{
     VampAnalyser::initializePluginPaths();
-    ret->addAnalyser(new AnalyserBeats(pConfig));
-    ret->addAnalyser(new AnalyserKey(pConfig));
+    auto ret = new AnalyserQueue(pTrackCollection, pParent);
+    ret->addAnalyser(new AnalyserWaveform(pConfig,ret));
+    ret->addAnalyser(new AnalyserGain(pConfig,ret));
+    ret->addAnalyser(new AnalyserBeats(pConfig,ret));
+    ret->addAnalyser(new AnalyserKey(pConfig,ret));
     ret->start(QThread::LowPriority);
     return ret;
 }
 // static
-AnalyserQueue* AnalyserQueue::createAnalysisFeatureAnalyserQueue( ConfigObject<ConfigValue>* pConfig, TrackCollection* pTrackCollection) {
-    AnalyserQueue* ret = new AnalyserQueue(pTrackCollection);
-    ret->addAnalyser(new AnalyserGain(pConfig));
+AnalyserQueue* AnalyserQueue::createAnalysisFeatureAnalyserQueue( ConfigObject<ConfigValue>* pConfig, TrackCollection* pTrackCollection,QObject *pParent)
+{
     VampAnalyser::initializePluginPaths();
-    ret->addAnalyser(new AnalyserBeats(pConfig));
-    ret->addAnalyser(new AnalyserKey(pConfig));
+    auto ret = new AnalyserQueue(pTrackCollection,pParent);
+    ret->addAnalyser(new AnalyserGain(pConfig,ret));
+    ret->addAnalyser(new AnalyserBeats(pConfig,ret));
+    ret->addAnalyser(new AnalyserKey(pConfig,ret));
     ret->start(QThread::LowPriority);
     return ret;
 }

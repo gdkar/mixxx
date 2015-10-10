@@ -28,7 +28,7 @@ _Pragma("once")
 class EngineObject : public QObject {
     Q_OBJECT
   public:
-    EngineObject();
+    EngineObject(QObject *pParent );
     virtual ~EngineObject();
     virtual void process(CSAMPLE* pInOut, const int iBufferSize) = 0;
     // Sub-classes re-implement and populate GroupFeatureState with the features
@@ -38,7 +38,7 @@ class EngineObject : public QObject {
 class EngineObjectConstIn : public QObject {
     Q_OBJECT
   public:
-    EngineObjectConstIn();
+    EngineObjectConstIn( QObject *pParent);
     virtual ~EngineObjectConstIn();
     virtual void process(const CSAMPLE* pIn, CSAMPLE* pOut, const int iBufferSize) = 0;
 };

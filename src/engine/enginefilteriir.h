@@ -25,6 +25,9 @@ enum IIRPass {
 
 class EngineFilterIIRBase : public EngineObjectConstIn {
   public:
+    EngineFilterIIRBase(QObject *pParent)
+      :EngineObjectConstIn(pParent){}
+    virtual ~EngineFilterIIRBase() = default;
     virtual void assumeSettled() = 0;
 };
 
@@ -35,29 +38,22 @@ class EngineFilterIIRBase : public EngineObjectConstIn {
 template<unsigned int SIZE, enum IIRPass PASS>
 class EngineFilterIIR : public EngineFilterIIRBase {
   public:
-    EngineFilterIIR()
-            : m_doRamping(false),
-              m_doStart(false),
-              m_startFromDry(false) {
+    EngineFilterIIR(QObject *pParent)
+            : EngineFilterIIRBase(pParent)
+    {
         memset(m_coef, 0, sizeof(m_coef));
         pauseFilter();
     }
-
-    virtual ~EngineFilterIIR() {};
-
+    virtual ~EngineFilterIIR() = default;
     // this can be called continuously for Filters that have own ramping
     // or need no fade when disabling
     void pauseFilter() {
-        if (!m_doStart) {
-            pauseFilterInner();
-        }
+        if (!m_doStart) pauseFilterInner();
     }
-
     // this is can be used instead off a final process() call before pause
     // It fades to dry or 0 according to the m_startFromDry parameter
     // it is an alternative for using pauseFillter() calls
-    void processAndPauseFilter(const CSAMPLE* pIn, CSAMPLE* pOutput,
-                       const int iBufferSize) {
+    void processAndPauseFilter(const CSAMPLE* pIn, CSAMPLE* pOutput, const int iBufferSize) {
         process(pIn, pOutput, iBufferSize);
         SampleUtil::copy2WithRampingGain(pOutput,
                 pOutput, 1.0, 0,  // fade out filtered
@@ -65,7 +61,6 @@ class EngineFilterIIR : public EngineFilterIIRBase {
                 iBufferSize);
         pauseFilterInner();
     }
-
     void initBuffers() {
         // Copy the current buffers into the old buffers
         memcpy(m_oldBuf1, m_buf1, sizeof(m_buf1));

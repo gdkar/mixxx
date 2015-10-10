@@ -1,6 +1,4 @@
-#ifndef FILTEREFFECT_H
-#define FILTEREFFECT_H
-
+_Pragma("once")
 #include "effects/effect.h"
 #include "effects/effectprocessor.h"
 #include "engine/effects/engineeffect.h"
@@ -38,12 +36,9 @@ class FilterEffect : public PerChannelEffectProcessor<FilterGroupState> {
                         const unsigned int sampleRate,
                         const EffectProcessor::EnableState enableState,
                         const GroupFeatureState& groupFeatures);
-
   private:
-    QString debugString() const {return getId();}
+    QString debugString() const;
     EngineEffectParameter* m_pLPF;
     EngineEffectParameter* m_pQ;
     EngineEffectParameter* m_pHPF;
-    DISALLOW_COPY_AND_ASSIGN(FilterEffect);
 };
-#endif /* FILTEREFFECT_H */

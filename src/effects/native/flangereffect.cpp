@@ -129,3 +129,4 @@ void FlangerEffect::processChannel(const ChannelHandle& handle,
         pOutput[i+1] = pInput[i+1] + lfoDepth * delayedSampleRight;
     }
 }
+QString FlangerEffect::debugString() const{return getId();}

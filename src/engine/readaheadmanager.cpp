@@ -9,18 +9,14 @@
 #include "engine/ratecontrol.h"
 #include "cachingreader.h"
 
-ReadAheadManager::ReadAheadManager()
-        : m_pLoopingControl(NULL),
-          m_pRateControl(NULL),
-          m_iCurrentPosition(0),
-          m_pReader(NULL),
+ReadAheadManager::ReadAheadManager(QObject*pParent)
+        : QObject(pParent),
           m_pCrossFadeBuffer(new CSAMPLE[MAX_BUFFER_LEN]) {
     // For testing only: ReadAheadManagerMock
 }
-ReadAheadManager::ReadAheadManager(CachingReader* pReader,  LoopingControl* pLoopingControl) 
-        : m_pLoopingControl(pLoopingControl),
-          m_pRateControl(nullptr),
-          m_iCurrentPosition(0),
+ReadAheadManager::ReadAheadManager(CachingReader* pReader,  LoopingControl* pLoopingControl,QObject*pParent) 
+        : QObject(pParent),
+          m_pLoopingControl(pLoopingControl),
           m_pReader(pReader),
           m_pCrossFadeBuffer(new CSAMPLE[MAX_BUFFER_LEN]) {
     DEBUG_ASSERT(m_pLoopingControl);
@@ -120,72 +116,85 @@ void ReadAheadManager::hintReader(double dRate, HintVector* pHintList) {
 }
 
 // Not thread-save, call from engine thread only
-void ReadAheadManager::addReadLogEntry(double virtualPlaypositionStart,
-                                       double virtualPlaypositionEndNonInclusive) {
-    ReadLogEntry newEntry(virtualPlaypositionStart,
-                          virtualPlaypositionEndNonInclusive);
+void ReadAheadManager::addReadLogEntry(double vpps, double vppe) {
+    auto newEntry = ReadLogEntry(vpps, vppe);
     if (m_readAheadLog.size() > 0) {
-        ReadLogEntry& last = m_readAheadLog.last();
-        if (last.merge(newEntry)) {
-            return;
-        }
+        auto &last = m_readAheadLog.last();
+        if (last.merge(newEntry)) return;
     }
     m_readAheadLog.append(newEntry);
 }
-
 // Not thread-save, call from engine thread only
-int ReadAheadManager::getEffectiveVirtualPlaypositionFromLog(double currentVirtualPlayposition,
-                                                             double numConsumedSamples) {
-    if (numConsumedSamples == 0) {
-        return currentVirtualPlayposition;
-    }
-
+int ReadAheadManager::getEffectiveVirtualPlaypositionFromLog(double currentVirtualPlayposition, double numConsumedSamples) {
+    if (numConsumedSamples == 0)  return currentVirtualPlayposition;
     if (m_readAheadLog.size() == 0) {
         // No log entries to read from.
         qDebug() << this << "No read ahead log entries to read from. Case not currently handled.";
         // TODO(rryan) log through a stats pipe eventually
         return currentVirtualPlayposition;
     }
-
-    double virtualPlayposition = 0;
-    bool shouldNotifySeek = false;
-    bool direction = true;
+    auto virtualPlayposition = 0.0;
+    auto shouldNotifySeek = false;
+    auto direction = true;
     while (m_readAheadLog.size() > 0 && numConsumedSamples > 0) {
         ReadLogEntry& entry = m_readAheadLog.first();
         direction = entry.direction();
-
         // Notify EngineControls that we have taken a seek.
         if (shouldNotifySeek) {
-            m_pLoopingControl->notifySeek(entry.virtualPlaypositionStart);
-            if (m_pRateControl) {
-                m_pRateControl->notifySeek(entry.virtualPlaypositionStart);
-            }
+            m_pLoopingControl->notifySeek(entry.m_vpps);
+            if (m_pRateControl) m_pRateControl->notifySeek(entry.m_vpps);
         }
-
-        double consumed = entry.consume(numConsumedSamples);
+        auto consumed = entry.consume(numConsumedSamples);
         numConsumedSamples -= consumed;
-
         // Advance our idea of the current virtual playposition to this
         // ReadLogEntry's start position.
-        virtualPlayposition = entry.virtualPlaypositionStart;
-
-        if (entry.length() == 0) {
-            // This entry is empty now.
-            m_readAheadLog.removeFirst();
-        }
+        virtualPlayposition = entry.m_vpps;
+        if (entry.length() == 0) m_readAheadLog.removeFirst();
         shouldNotifySeek = true;
     }
-    int result = 0;
+    auto result = 0;
     if (direction) {
-        result = static_cast<int>(floor(virtualPlayposition));
-        if (!even(result)) {
-            result--;
-        }
+        result = static_cast<int>(std::floor(virtualPlayposition));
+        if (!even(result)) result--;
     } else {
-        result = static_cast<int>(ceil(virtualPlayposition));
-        if (!even(result)) {
-            result++;
-        }
+        result = static_cast<int>(std::ceil(virtualPlayposition));
+        if (!even(result)) result++;
     }
     return result;
+}
+ReadAheadManager::ReadLogEntry::ReadLogEntry(double vpps, double vppe)
+ : m_vpps(vpps),
+   m_vppe(vppe){
+}
+bool ReadAheadManager::ReadLogEntry::direction() const {
+    // NOTE(rryan): We try to avoid 0-length ReadLogEntry's when
+    // possible but they have happened in the past. We treat 0-length
+    // ReadLogEntry's as forward reads because this prevents them from
+    // being interpreted as a seek in the common case.
+    return m_vpps <= m_vppe;
+}
+double ReadAheadManager::ReadLogEntry::length() const
+{
+    return std::abs(m_vppe - m_vpps);
+}
+
+// Moves the start position forward or backward (depending on
+// direction()) by numSamples. Returns the total number of samples
+// consumed. Caller should check if length() is 0 after consumption in
+// order to expire the ReadLogEntry.
+double ReadAheadManager::ReadLogEntry::consume(double numSamples)
+{
+    auto available = math_min(numSamples, length());
+    m_vpps += (direction() ? 1 : -1) * available;
+    return available;
+}
+bool ReadAheadManager::ReadLogEntry::merge(const ReadLogEntry& other) {
+    // Allow 0-length ReadLogEntry's to merge regardless of their
+    // direction if they have the right start point.
+    if ((!other.length() || direction() == other.direction()) &&
+        m_vppe == other.m_vpps) {
+        m_vppe = other.m_vppe;
+        return true;
+    }
+    return false;
 }

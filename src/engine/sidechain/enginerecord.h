@@ -14,9 +14,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef ENGINERECORD_H
-#define ENGINERECORD_H
-
+_Pragma("once")
 #include <QDataStream>
 #include <QFile>
 
@@ -86,5 +84,3 @@ class EngineRecord : public QObject, public EncoderCallback, public SideChainWor
     quint64 m_cueTrack;
     bool m_bCueIsEnabled;
 };
-
-#endif

@@ -1,6 +1,4 @@
-#ifndef EFFECTPROCESSOR_H
-#define EFFECTPROCESSOR_H
-
+_Pragma("once")
 #include <QString>
 #include <QHash>
 #include <QPair>
@@ -17,7 +15,7 @@ class EffectProcessor {
         DISABLING = 0x02,
         ENABLING = 0x03
     };
-    virtual ~EffectProcessor() { }
+    virtual ~EffectProcessor()  = default;
     virtual void initialize( const QSet<ChannelHandleAndGroup>& registeredChannels) = 0;
     // Take a buffer of numSamples samples of audio from a channel, provided as
     // pInput, process the buffer according to Effect-specific logic, and output
@@ -73,13 +71,11 @@ class PerChannelEffectProcessor : public EffectProcessor {
                                 const unsigned int sampleRate,
                                 const EffectProcessor::EnableState enableState,
                                 const GroupFeatureState& groupFeatures) = 0;
-
   private:
-    inline T* getOrCreateChannelState(const ChannelHandle& handle) {
+    T* getOrCreateChannelState(const ChannelHandle& handle) {
         auto& holder = m_channelState[handle];
         if (holder.state == nullptr) { holder.state = new T(); }
         return holder.state;
     }
     ChannelHandleMap<ChannelStateHolder> m_channelState;
 };
-#endif /* EFFECTPROCESSOR_H */

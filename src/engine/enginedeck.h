@@ -38,7 +38,7 @@ class EngineDeck : public EngineChannel, public AudioDestination {
   public:
     EngineDeck(const ChannelHandleAndGroup& handle_group, ConfigObject<ConfigValue>* pConfig,
                EngineMaster* pMixingEngine, EffectsManager* pEffectsManager,
-               EngineChannel::ChannelOrientation defaultOrientation = CENTER);
+               EngineChannel::ChannelOrientation defaultOrientation , QObject *pParent);
     virtual ~EngineDeck();
     virtual void process(CSAMPLE* pOutput, const int iBufferSize);
     virtual void postProcess(const int iBufferSize);

@@ -15,9 +15,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef ENGINECHANNEL_H
-#define ENGINECHANNEL_H
-
+_Pragma("once")
 #include "engine/engineobject.h"
 #include "engine/channelhandle.h"
 #include "configobject.h"
@@ -37,20 +35,12 @@ class EngineChannel : public EngineObject {
         CENTER,
         RIGHT,
     };
-
-    EngineChannel(const ChannelHandleAndGroup& handle_group, ChannelOrientation defaultOrientation = CENTER);
+    Q_ENUM(ChannelOrientation);
+    EngineChannel(const ChannelHandleAndGroup& handle_group, ChannelOrientation defaultOrientation ,QObject *pParent);
     virtual ~EngineChannel();
-
     virtual ChannelOrientation getOrientation() const;
-
-    inline const ChannelHandle& getHandle() const {
-        return m_group.handle();
-    }
-
-    virtual const QString& getGroup() const {
-        return m_group.name();
-    }
-
+    virtual ChannelHandle getHandle() const {return m_group.handle();}
+    virtual QString getGroup() const {return m_group.name();}
     virtual bool isActive() = 0;
     void setPfl(bool enabled);
     virtual bool isPflEnabled() const;
@@ -58,13 +48,11 @@ class EngineChannel : public EngineObject {
     virtual bool isMasterEnabled() const;
     void setTalkover(bool enabled);
     virtual bool isTalkoverEnabled() const;
-
     virtual void process(CSAMPLE* pOut, const int iBufferSize) = 0;
     virtual void postProcess(const int iBuffersize) = 0;
-
     // TODO(XXX) This hack needs to be removed.
     virtual EngineBuffer* getEngineBuffer() {
-        return NULL;
+        return nullptr;
     }
 
   private slots:
@@ -82,5 +70,3 @@ class EngineChannel : public EngineObject {
     ControlPushButton* m_pOrientationCenter;
     ControlPushButton* m_pTalkover;
 };
-
-#endif

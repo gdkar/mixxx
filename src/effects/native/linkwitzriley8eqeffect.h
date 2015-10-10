@@ -1,6 +1,4 @@
-#ifndef LINKWITZRILEYEQEFFECT_H
-#define LINKWITZRILEYEQEFFECT_H
-
+_Pragma("once")
 #include <QMap>
 
 #include "effects/effect.h"
@@ -50,7 +48,7 @@ class LinkwitzRiley8EQEffect : public PerChannelEffectProcessor<LinkwitzRiley8EQ
                         const GroupFeatureState& groupFeatureState);
 
   private:
-    QString debugString() const {return getId();}
+    QString debugString() const;
     EngineEffectParameter* m_pPotLow = nullptr;
     EngineEffectParameter* m_pPotMid = nullptr;
     EngineEffectParameter* m_pPotHigh= nullptr;
@@ -61,7 +59,4 @@ class LinkwitzRiley8EQEffect : public PerChannelEffectProcessor<LinkwitzRiley8EQ
 
     ControlObjectSlave* m_pLoFreqCorner = nullptr;
     ControlObjectSlave* m_pHiFreqCorner = nullptr;
-    DISALLOW_COPY_AND_ASSIGN(LinkwitzRiley8EQEffect);
 };
-
-#endif /* LINKWITZRILEYEQEFFECT_H */

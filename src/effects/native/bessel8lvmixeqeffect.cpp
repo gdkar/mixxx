@@ -2,7 +2,8 @@
 #include "util/math.h"
 #include "controlobjectslave.h"
 // static
-QString Bessel8LVMixEQEffect::getId() {
+QString Bessel8LVMixEQEffect::getId()
+{
     return "org.mixxx.effects.bessel8lvmixeq";
 }
 
@@ -148,4 +149,8 @@ void Bessel8LVMixEQEffect::processChannel(const ChannelHandle& handle,
     pState->processChannel(pInput, pOutput, numSamples, sampleRate,
                            fLow, fMid, fHigh,
                            m_pLoFreqCorner->get(), m_pHiFreqCorner->get());
+}
+QString Bessel8LVMixEQEffect::debugString() const
+{
+  return getId();
 }

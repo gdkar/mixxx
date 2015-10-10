@@ -1,6 +1,6 @@
-#ifndef ANALYSER_H
-#define ANALYSER_H
+_Pragma("once")
 #include "util/types.h"
+#include <QObject>
 /*
  * An Analyser is an object which wants to process an entire song to
  * calculate some kind of metadata about it. This could be bpm, the
@@ -9,13 +9,16 @@
  *   -- Adam
  */
 #include "trackinfoobject.h"
-class Analyser {
+class Analyser : public QObject{
+    Q_OBJECT;
 public:
     virtual bool initialise(TrackPointer tio, int sampleRate, int totalSamples) = 0;
     virtual bool loadStored(TrackPointer tio) const = 0;
     virtual void process(const CSAMPLE* pIn, const int iLen) = 0;
     virtual void cleanup(TrackPointer tio) = 0;
     virtual void finalise(TrackPointer tio) = 0;
+    Analyser(QObject * p)
+      :QObject(p)
+    {}
     virtual ~Analyser() = default;
 };
-#endif

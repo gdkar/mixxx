@@ -1,6 +1,4 @@
-#ifndef ENGINEPREGAIN_H
-#define ENGINEPREGAIN_H
-
+_Pragma("once")
 #include "engine/engineobject.h"
 #include "util/performancetimer.h"
 
@@ -13,20 +11,16 @@ class ControlObject;
 // adjustments in volume relative to playback speed.
 class EnginePregain : public EngineObject {
   public:
-    EnginePregain(QString group);
+    EnginePregain(QString group,QObject *p);
     virtual ~EnginePregain();
-
     void setSpeed(double speed);
-
     // If the user is scratching and the record reverses direction, the volume
     // will be ramped to zero and back up again to mimic a vinyl scratch.
     // If the user is not scratching and the direction is reversed
     // (e.g. reverse button is pressed), the audio will be immediately
     // reversed without a ramp to zero.
     void setScratching(bool scratching);
-
     void process(CSAMPLE* pInOut, const int iBufferSize);
-
   private:
     double m_dSpeed;
     double m_dOldSpeed;
@@ -42,5 +36,3 @@ class EnginePregain : public EngineObject {
     bool m_bSmoothFade;
     PerformanceTimer m_timer;
 };
-
-#endif

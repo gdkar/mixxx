@@ -35,8 +35,9 @@
 
 #define SIDECHAIN_BUFFER_SIZE 65536
 
-EngineSideChain::EngineSideChain(ConfigObject<ConfigValue>* pConfig)
-        : m_pConfig(pConfig),
+EngineSideChain::EngineSideChain(ConfigObject<ConfigValue>* pConfig,QObject *p)
+        : QThread(p),
+          m_pConfig(pConfig),
           m_bStopThread(false),
           m_sampleFifo(SIDECHAIN_BUFFER_SIZE),
           m_pWorkBuffer(SampleUtil::alloc(SIDECHAIN_BUFFER_SIZE)) {

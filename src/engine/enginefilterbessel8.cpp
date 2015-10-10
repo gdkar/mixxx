@@ -3,7 +3,10 @@
 
 
 EngineFilterBessel8Low::EngineFilterBessel8Low(int sampleRate,
-                                               double freqCorner1) {
+                                               double freqCorner1,
+                                               QObject *p)
+:EngineFilterIIR<8,IIR_LP>(p)
+{
     setFrequencyCorners(sampleRate, freqCorner1);
 }
 
@@ -67,7 +70,10 @@ int EngineFilterBessel8Low::setFrequencyCornersForIntDelay(
 
 EngineFilterBessel8Band::EngineFilterBessel8Band(int sampleRate,
                                                  double freqCorner1,
-                                                 double freqCorner2) {
+                                                 double freqCorner2,
+                                                 QObject *p)
+:EngineFilterIIR<16,IIR_BP>(p)
+{
     setFrequencyCorners(sampleRate, freqCorner1, freqCorner2);
 }
 
@@ -79,7 +85,10 @@ void EngineFilterBessel8Band::setFrequencyCorners(int sampleRate,
 
 
 EngineFilterBessel8High::EngineFilterBessel8High(int sampleRate,
-                                                 double freqCorner1) {
+                                                 double freqCorner1,
+                                                 QObject *p)
+:EngineFilterIIR<8,IIR_HP>(p)
+{
     setFrequencyCorners(sampleRate, freqCorner1);
 }
 

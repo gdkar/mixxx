@@ -14,9 +14,7 @@
 *                                                                         *
 ***************************************************************************/
 
-#ifndef ENGINESIDECHAIN_H
-#define ENGINESIDECHAIN_H
-
+_Pragma("once")
 #include <QThread>
 #include <QMutex>
 #include <QWaitCondition>
@@ -30,7 +28,7 @@
 class EngineSideChain : public QThread {
     Q_OBJECT
   public:
-    EngineSideChain(ConfigObject<ConfigValue>* pConfig);
+    EngineSideChain(ConfigObject<ConfigValue>* pConfig,QObject *);
     virtual ~EngineSideChain();
     // Not thread-safe, wait-free. Submit buffer of samples to the sidechain for
     // processing. Should only be called from a single writer thread (typically
@@ -53,5 +51,3 @@ class EngineSideChain : public QThread {
     QMutex m_workerLock;
     QList<SideChainWorker*> m_workers;
 };
-
-#endif

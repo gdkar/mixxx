@@ -1,6 +1,4 @@
-#ifndef ANALYSERQUEUE_H
-#define ANALYSERQUEUE_H
-
+_Pragma("once")
 #include "configobject.h"
 #include "analyser.h"
 #include "trackinfoobject.h"
@@ -18,12 +16,19 @@ class TrackCollection;
 class AnalyserQueue : public QThread {
     Q_OBJECT
   public:
-    AnalyserQueue(TrackCollection* pTrackCollection);
+    AnalyserQueue(TrackCollection* pTrackCollection,QObject *pParent);
     virtual ~AnalyserQueue();
     void stop();
     void queueAnalyseTrack(TrackPointer tio);
-    static AnalyserQueue* createDefaultAnalyserQueue(ConfigObject<ConfigValue>* pConfig, TrackCollection* pTrackCollection);
-    static AnalyserQueue* createAnalysisFeatureAnalyserQueue(ConfigObject<ConfigValue>* pConfig, TrackCollection* pTrackCollection);
+    static AnalyserQueue* createDefaultAnalyserQueue(ConfigObject<ConfigValue>* pConfig, TrackCollection* pTrackCollection, QObject *pParent);
+    static AnalyserQueue* createAnalysisFeatureAnalyserQueue(ConfigObject<ConfigValue>* pConfig, TrackCollection* pTrackCollection, QObject *pParent);
+    struct progress_info
+    {
+        TrackPointer current_track{nullptr};
+        double track_progress{0}; 
+        int queue_size = 0;
+        QSemaphore sema{0};
+    };
   public slots:
     void slotAnalyseTrack(TrackPointer tio);
     void slotUpdateProgress();
@@ -36,12 +41,6 @@ class AnalyserQueue : public QThread {
   protected:
     void run();
   private:
-    struct progress_info {
-        TrackPointer current_track{nullptr};
-        double track_progress{0}; 
-        int queue_size = 0;
-        QSemaphore sema{0};
-    };
     void addAnalyser(Analyser* an);
     QList<Analyser*> m_aq;
     bool isLoadedTrackWaiting(TrackPointer analysingTrack);
@@ -49,15 +48,14 @@ class AnalyserQueue : public QThread {
     bool doAnalysis(TrackPointer tio, Mixxx::AudioSourcePointer pAudioSource);
     void emitUpdateProgress(TrackPointer tio, double progress);
     void emptyCheck();
-    bool m_exit;
-    QAtomicInt m_aiCheckPriorities;
+    std::atomic<bool> m_abExit{false};
+    std::atomic<bool> m_abCheckPriorities{false};
     SampleBuffer m_sampleBuffer;
     // The processing queue and associated mutex
     QQueue<TrackPointer> m_tioq;
     QMutex m_qm;
     QWaitCondition m_qwait;
-    struct progress_info m_progressInfo;
-    int m_queue_size;
+    progress_info m_progressInfo;
+    std::atomic<int> m_queue_size{0};
 };
 
-#endif

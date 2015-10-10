@@ -12,11 +12,9 @@ class SyncControl;
 
 class BpmControl : public EngineControl {
     Q_OBJECT
-
   public:
-    BpmControl(QString group, ConfigObject<ConfigValue>* _config);
+    BpmControl(QString group, ConfigObject<ConfigValue>* _config, QObject*);
     virtual ~BpmControl();
-
     double getBpm() const;
     double getLocalBpm() const; 
     // When in master sync mode, ratecontrol calls calcSyncedRate to figure out
@@ -32,11 +30,11 @@ class BpmControl : public EngineControl {
     double getBeatDistance(double dThisPosition) const;
     double getPreviousSample() const;
 
-    void setCurrentSample(const double dCurrentSample, const double dTotalSamples);
-    double process(const double dRate,
-                   const double dCurrentSample,
-                   const double dTotalSamples,
-                   const int iBufferSize);
+    void setCurrentSample(double dCurrentSample, double dTotalSamples);
+    double process(double dRate,
+                   double dCurrentSample,
+                   double dTotalSamples,
+                   int iBufferSize);
     void setTargetBeatDistance(double beatDistance);
     void setInstantaneousBpm(double instantaneousBpm);
     void resetSyncAdjustment();
@@ -50,7 +48,7 @@ class BpmControl : public EngineControl {
     // lies within the current beat). Returns false if a previous or next beat
     // does not exist. NULL arguments are safe and ignored.
     static bool getBeatContext(const BeatsPointer& pBeats,
-                               const double dPosition,
+                               double dPosition,
                                double* dpPrevBeat,
                                double* dpNextBeat,
                                double* dpBeatLength,
@@ -59,17 +57,16 @@ class BpmControl : public EngineControl {
     // Alternative version that works if the next and previous beat positions
     // are already known.
     static bool getBeatContextNoLookup(
-                               const double dPosition,
-                               const double dPrevBeat,
-                               const double dNextBeat,
+                               double dPosition,
+                               double dPrevBeat,
+                               double dNextBeat,
                                double* dpBeatLength,
                                double* dpBeatPercentage);
 
     // Returns the shortest change in percentage needed to achieve
     // target_percentage.
     // Example: shortestPercentageChange(0.99, 0.01) == 0.02
-    static double shortestPercentageChange(const double& current_percentage,
-                                           const double& target_percentage);
+    static double shortestPercentageChange(double current_percentage, double target_percentage);
 
   public slots:
     virtual void trackLoaded(TrackPointer pTrack);
@@ -99,67 +96,54 @@ class BpmControl : public EngineControl {
     double calcSyncAdjustment(double my_percentage, bool userTweakingSync);
     friend class SyncControl;
     // ControlObjects that come from EngineBuffer
-    ControlObjectSlave* m_pPlayButton;
-    ControlObjectSlave* m_pReverseButton;
-    ControlObjectSlave* m_pRateSlider;
-    ControlObject* m_pQuantize;
-    ControlObjectSlave* m_pRateRange;
-    ControlObjectSlave* m_pRateDir;
-
+    ControlObjectSlave* m_pPlayButton     = nullptr;
+    ControlObjectSlave* m_pReverseButton  = nullptr;
+    ControlObjectSlave* m_pRateSlider     = nullptr;
+    ControlObject* m_pQuantize            = nullptr;
+    ControlObjectSlave* m_pRateRange      = nullptr;
+    ControlObjectSlave* m_pRateDir        = nullptr;
     // ControlObjects that come from QuantizeControl
     QScopedPointer<ControlObjectSlave> m_pNextBeat;
     QScopedPointer<ControlObjectSlave> m_pPrevBeat;
     QScopedPointer<ControlObjectSlave> m_pClosestBeat;
-
     // ControlObjects that come from LoopingControl
-    ControlObjectSlave* m_pLoopEnabled;
-    ControlObjectSlave* m_pLoopStartPosition;
-    ControlObjectSlave* m_pLoopEndPosition;
-
-    ControlObjectSlave* m_pVCEnabled;
-
+    ControlObjectSlave* m_pLoopEnabled          = nullptr;
+    ControlObjectSlave* m_pLoopStartPosition    = nullptr;
+    ControlObjectSlave* m_pLoopEndPosition      = nullptr;
+    ControlObjectSlave* m_pVCEnabled            = nullptr;
     // The current loaded file's detected BPM
-    ControlObject* m_pFileBpm;
+    ControlObject* m_pFileBpm                   = nullptr;
     // The average bpm around the current playposition;
-    ControlObject* m_pLocalBpm;
-    ControlPushButton* m_pAdjustBeatsFaster;
-    ControlPushButton* m_pAdjustBeatsSlower;
-    ControlPushButton* m_pTranslateBeatsEarlier;
-    ControlPushButton* m_pTranslateBeatsLater;
-
+    ControlObject* m_pLocalBpm                  = nullptr;
+    ControlPushButton* m_pAdjustBeatsFaster     = nullptr;
+    ControlPushButton* m_pAdjustBeatsSlower     = nullptr;
+    ControlPushButton* m_pTranslateBeatsEarlier = nullptr;
+    ControlPushButton* m_pTranslateBeatsLater   = nullptr;
     // The current effective BPM of the engine
-    ControlLinPotmeter* m_pEngineBpm;
-
+    ControlLinPotmeter* m_pEngineBpm      = nullptr;
     // Used for bpm tapping from GUI and controllers
-    ControlPushButton* m_pButtonTap;
-
+    ControlPushButton* m_pButtonTap       = nullptr;
     // Button for sync'ing with the other EngineBuffer
-    ControlPushButton* m_pButtonSync;
-    ControlPushButton* m_pButtonSyncPhase;
-    ControlPushButton* m_pButtonSyncTempo;
-
+    ControlPushButton* m_pButtonSync      = nullptr;
+    ControlPushButton* m_pButtonSyncPhase = nullptr;
+    ControlPushButton* m_pButtonSyncTempo = nullptr;
     // Button that translates the beats so the nearest beat is on the current
     // playposition.
-    ControlPushButton* m_pTranslateBeats;
+    ControlPushButton* m_pTranslateBeats = nullptr;
     // Button that translates beats to match another playing deck
-    ControlPushButton* m_pBeatsTranslateMatchAlignment;
-
-    double m_dPreviousSample;
-
+    ControlPushButton* m_pBeatsTranslateMatchAlignment = nullptr;
+    double m_dPreviousSample = 0;
     // Master Sync objects and values.
-    ControlObject* m_pSyncMode;
-    ControlObjectSlave* m_pThisBeatDistance;
-    double m_dSyncTargetBeatDistance;
-    double m_dSyncInstantaneousBpm;
-    double m_dLastSyncAdjustment;
-    bool m_resetSyncAdjustment;
-    double m_dUserOffset;
-
+    ControlObject* m_pSyncMode = nullptr;
+    ControlObjectSlave* m_pThisBeatDistance = nullptr;
+    double m_dSyncTargetBeatDistance = 0;
+    double m_dSyncInstantaneousBpm = 0;
+    double m_dLastSyncAdjustment = 1.0;
+    bool m_resetSyncAdjustment = false;
+    double m_dUserOffset = 0;
     TapFilter m_tapFilter;
-
-    TrackPointer m_pTrack;
-    BeatsPointer m_pBeats;
-
+    TrackPointer m_pTrack{nullptr};
+    BeatsPointer m_pBeats{nullptr};
     QString m_sGroup;
 };
 

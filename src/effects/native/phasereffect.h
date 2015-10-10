@@ -1,6 +1,4 @@
-#ifndef PHASEREFFECT_H
-#define PHASEREFFECT_H
-
+_Pragma("once")
 #include "util.h"
 #include "util/defs.h"
 #include "util/types.h"
@@ -28,16 +26,12 @@ struct PhaserGroupState {
     CSAMPLE leftPhase;
     CSAMPLE rightPhase;
 };
-
 class PhaserEffect : public PerChannelEffectProcessor<PhaserGroupState> {
-
   public:
     PhaserEffect(EngineEffect* pEffect, const EffectManifest& manifest);
     virtual ~PhaserEffect();
-
     static QString getId();
     static EffectManifest getManifest();
-
     // See effectprocessor.h
     void processChannel(const ChannelHandle& handle,
                         PhaserGroupState* pState,
@@ -48,29 +42,13 @@ class PhaserEffect : public PerChannelEffectProcessor<PhaserGroupState> {
                         const GroupFeatureState& groupFeatures);
 
   private:
-    QString debugString() const {
-        return getId();
-    }
-
+    QString debugString() const;
     EngineEffectParameter* m_pStagesParameter;
     EngineEffectParameter* m_pLFOFrequencyParameter;
     EngineEffectParameter* m_pDepthParameter; 
     EngineEffectParameter* m_pFeedbackParameter; 
     EngineEffectParameter* m_pRangeParameter; 
     EngineEffectParameter* m_pStereoParameter;
-
     //Passing the sample through a series of allpass filters
-    inline CSAMPLE processSample(CSAMPLE input, CSAMPLE* oldIn, CSAMPLE* oldOut, 
-                                 CSAMPLE mainCoef, int stages) { 
-        for (int j = 0; j < stages; j++) {
-            oldOut[j] = (mainCoef * input) + (mainCoef * oldOut[j]) - oldIn[j];
-            oldIn[j] = input;
-            input = oldOut[j];
-        }
-        return input;
-    }
-
-    DISALLOW_COPY_AND_ASSIGN(PhaserEffect);
+    CSAMPLE processSample(CSAMPLE input, CSAMPLE* oldIn, CSAMPLE* oldOut,  CSAMPLE mainCoef, int stages);
 };
-
-#endif

@@ -12,175 +12,142 @@ EffectChainSlot::EffectChainSlot(EffectRack* pRack, const QString& group,
           // is 0-indexed.
           m_group(group),
           m_pEffectRack(pRack) {
-    m_pControlClear = new ControlPushButton(ConfigKey(m_group, "clear"));
-    connect(m_pControlClear, SIGNAL(valueChanged(double)),
-            this, SLOT(slotControlClear(double)));
-
-    m_pControlNumEffects = new ControlObject(ConfigKey(m_group, "num_effects"));
-    m_pControlNumEffects->connectValueChangeRequest(
-        this, SLOT(slotControlNumEffects(double)));
-
-    m_pControlNumEffectSlots = new ControlObject(ConfigKey(m_group, "num_effectslots"));
-    m_pControlNumEffectSlots->connectValueChangeRequest(
-        this, SLOT(slotControlNumEffectSlots(double)));
-
-    m_pControlChainLoaded = new ControlObject(ConfigKey(m_group, "loaded"));
-    m_pControlChainLoaded->connectValueChangeRequest(
-        this, SLOT(slotControlChainLoaded(double)));
-
-    m_pControlChainEnabled = new ControlPushButton(ConfigKey(m_group, "enabled"));
+    m_pControlClear = new ControlPushButton(ConfigKey(m_group, "clear"),false,this);
+    connect(m_pControlClear, SIGNAL(valueChanged(double)),this, SLOT(slotControlClear(double)));
+    m_pControlNumEffects = new ControlObject(ConfigKey(m_group, "num_effects"),this);
+    m_pControlNumEffects->connectValueChangeRequest(this, SLOT(slotControlNumEffects(double)));
+    m_pControlNumEffectSlots = new ControlObject(ConfigKey(m_group, "num_effectslots"),this);
+    m_pControlNumEffectSlots->connectValueChangeRequest(this, SLOT(slotControlNumEffectSlots(double)));
+    m_pControlChainLoaded = new ControlObject(ConfigKey(m_group, "loaded"),this);
+    m_pControlChainLoaded->connectValueChangeRequest(this, SLOT(slotControlChainLoaded(double)));
+    m_pControlChainEnabled = new ControlPushButton(ConfigKey(m_group, "enabled"),false,this);
     m_pControlChainEnabled->setButtonMode(ControlPushButton::POWERWINDOW);
     // Default to enabled. The skin might not show these buttons.
     m_pControlChainEnabled->setDefaultValue(true);
     m_pControlChainEnabled->set(true);
-    connect(m_pControlChainEnabled, SIGNAL(valueChanged(double)),
-            this, SLOT(slotControlChainEnabled(double)));
-
+    connect(m_pControlChainEnabled, SIGNAL(valueChanged(double)),this, SLOT(slotControlChainEnabled(double)));
     m_pControlChainMix = new ControlPotmeter(ConfigKey(m_group, "mix"), 0.0, 1.0);
-    connect(m_pControlChainMix, SIGNAL(valueChanged(double)),
-            this, SLOT(slotControlChainMix(double)));
+    m_pControlChainMix->setParent(this);
+    connect(m_pControlChainMix, SIGNAL(valueChanged(double)),this, SLOT(slotControlChainMix(double)));
     m_pControlChainMix->set(1.0);
-
     m_pControlChainSuperParameter = new ControlPotmeter(ConfigKey(m_group, "super1"), 0.0, 1.0);
-    connect(m_pControlChainSuperParameter, SIGNAL(valueChanged(double)),
-            this, SLOT(slotControlChainSuperParameter(double)));
+    m_pControlChainSuperParameter->setParent(this);
+    connect(m_pControlChainSuperParameter, SIGNAL(valueChanged(double)),this, SLOT(slotControlChainSuperParameter(double)));
     m_pControlChainSuperParameter->set(0.0);
     m_pControlChainSuperParameter->setDefaultValue(0.0);
-
-    m_pControlChainInsertionType = new ControlPushButton(ConfigKey(m_group, "insertion_type"));
+    m_pControlChainInsertionType = new ControlPushButton(ConfigKey(m_group, "insertion_type"),false,this);
     m_pControlChainInsertionType->setButtonMode(ControlPushButton::TOGGLE);
     m_pControlChainInsertionType->setStates(EffectChain::NUM_INSERTION_TYPES);
-    connect(m_pControlChainInsertionType, SIGNAL(valueChanged(double)),
-            this, SLOT(slotControlChainInsertionType(double)));
-
-    m_pControlChainNextPreset = new ControlPushButton(ConfigKey(m_group, "next_chain"));
-    connect(m_pControlChainNextPreset, SIGNAL(valueChanged(double)),
-            this, SLOT(slotControlChainNextPreset(double)));
-
-    m_pControlChainPrevPreset = new ControlPushButton(ConfigKey(m_group, "prev_chain"));
-    connect(m_pControlChainPrevPreset, SIGNAL(valueChanged(double)),
-            this, SLOT(slotControlChainPrevPreset(double)));
-
+    connect(m_pControlChainInsertionType, SIGNAL(valueChanged(double)),this, SLOT(slotControlChainInsertionType(double)));
+    m_pControlChainNextPreset = new ControlPushButton(ConfigKey(m_group, "next_chain"),false,this);
+    connect(m_pControlChainNextPreset, SIGNAL(valueChanged(double)),this, SLOT(slotControlChainNextPreset(double)));
+    m_pControlChainPrevPreset = new ControlPushButton(ConfigKey(m_group, "prev_chain"),false,this);
+    connect(m_pControlChainPrevPreset, SIGNAL(valueChanged(double)),this, SLOT(slotControlChainPrevPreset(double)));
     // Ignoring no-ops is important since this is for +/- tickers.
     m_pControlChainSelector = new ControlObject(ConfigKey(m_group, "chain_selector"), false);
-    connect(m_pControlChainSelector, SIGNAL(valueChanged(double)),
-            this, SLOT(slotControlChainSelector(double)));
-
-    connect(&m_channelStatusMapper, SIGNAL(mapped(const QString&)),
-            this, SLOT(slotChannelStatusChanged(const QString&)));
+    m_pControlChainSelector->setParent(this);
+    connect(m_pControlChainSelector, SIGNAL(valueChanged(double)),this, SLOT(slotControlChainSelector(double)));
+    connect(&m_channelStatusMapper, SIGNAL(mapped(const QString&)),this, SLOT(slotChannelStatusChanged(const QString&)));
 }
 
 EffectChainSlot::~EffectChainSlot() {
     //qDebug() << debugString() << "destroyed";
     clear();
-    delete m_pControlClear;
-    delete m_pControlNumEffects;
-    delete m_pControlNumEffectSlots;
-    delete m_pControlChainLoaded;
-    delete m_pControlChainEnabled;
-    delete m_pControlChainMix;
-    delete m_pControlChainSuperParameter;
-    delete m_pControlChainInsertionType;
-    delete m_pControlChainPrevPreset;
-    delete m_pControlChainNextPreset;
-    delete m_pControlChainSelector;
-
-    for (QMap<QString, ChannelInfo*>::iterator it = m_channelInfoByName.begin();
-         it != m_channelInfoByName.end();) {
+    for (auto it = m_channelInfoByName.begin(),end = m_channelInfoByName.end(); it != end;it++)
         delete it.value();
-        it = m_channelInfoByName.erase(it);
-    }
-
     m_slots.clear();
     m_pEffectChain.clear();
 }
-
-QString EffectChainSlot::id() const {
-    if (m_pEffectChain)
-        return m_pEffectChain->id();
+QString EffectChainSlot::id() const
+{
+    if (m_pEffectChain) return m_pEffectChain->id();
     return "";
 }
-
-double EffectChainSlot::getSuperParameter() const {
+double EffectChainSlot::getSuperParameter() const
+{
     return m_pControlChainSuperParameter->get();
 }
-
-void EffectChainSlot::setSuperParameter(double value) {
+void EffectChainSlot::setSuperParameter(double value)
+{
     m_pControlChainSuperParameter->set(value);
 }
-
-void EffectChainSlot::setSuperParameterDefaultValue(double value) {
+void EffectChainSlot::setSuperParameterDefaultValue(double value)
+{
     m_pControlChainSuperParameter->setDefaultValue(value);
 }
-
-void EffectChainSlot::slotChainNameChanged(const QString&) {
+void EffectChainSlot::slotChainNameChanged(const QString&)
+{
     emit(updated());
 }
-
-void EffectChainSlot::slotChainEnabledChanged(bool bEnabled) {
-    m_pControlChainEnabled->set(bEnabled);
-    emit(updated());
+void EffectChainSlot::slotChainEnabledChanged(bool bEnabled)
+{
+    if(m_pControlChainEnabled->get() != bEnabled)
+    {
+      m_pControlChainEnabled->set(bEnabled);
+      emit(updated());
+    }
 }
-
-void EffectChainSlot::slotChainMixChanged(double mix) {
-    m_pControlChainMix->set(mix);
-    emit(updated());
+void EffectChainSlot::slotChainMixChanged(double mix)
+{
+    if(m_pControlChainMix->get()!=mix)
+    {
+      m_pControlChainMix->set(mix);
+      emit(updated());
+    }
 }
-
-void EffectChainSlot::slotChainSuperParameterChanged(double parameter) {
-    m_pControlChainSuperParameter->set(parameter);
-    emit(updated());
+void EffectChainSlot::slotChainSuperParameterChanged(double parameter)
+{
+    if(m_pControlChainSuperParameter->get() != parameter )
+    {
+      m_pControlChainSuperParameter->set(parameter);
+      emit(updated());
+    }
 }
-
-void EffectChainSlot::slotChainInsertionTypeChanged(EffectChain::InsertionType type) {
-    m_pControlChainInsertionType->set(static_cast<double>(type));
-    emit(updated());
+void EffectChainSlot::slotChainInsertionTypeChanged(EffectChain::InsertionType type)
+{
+    if(m_pControlChainInsertionType->get() != static_cast<double>(type))
+    {
+      m_pControlChainInsertionType->set(static_cast<double>(type));
+      emit(updated());
+    }
 }
-
-void EffectChainSlot::slotChainChannelStatusChanged(const QString& group,
-                                                    bool enabled) {
-    ChannelInfo* pInfo = m_channelInfoByName.value(group, NULL);
-    if (pInfo != NULL && pInfo->pEnabled != NULL) {
+void EffectChainSlot::slotChainChannelStatusChanged(const QString& group,bool enabled)
+{
+    auto  pInfo = m_channelInfoByName.value(group, nullptr);
+    if (pInfo && pInfo->pEnabled)
+    {
         pInfo->pEnabled->set(enabled);
         emit(updated());
     }
 }
 
-void EffectChainSlot::slotChainEffectsChanged(bool shouldEmit) {
+void EffectChainSlot::slotChainEffectsChanged(bool shouldEmit)
+{
     //qDebug() << debugString() << "slotChainEffectsChanged";
-    if (m_pEffectChain) {
-        QList<EffectPointer> effects = m_pEffectChain->effects();
-        if (effects.size() > m_slots.size()) {
-            qWarning() << debugString() << "has too few slots for effect";
+    if (m_pEffectChain)
+    {
+        auto effects = m_pEffectChain->effects();
+        if (effects.size() > m_slots.size()) qWarning() << debugString() << "has too few slots for effect";
+        for (auto i = 0; i < m_slots.size(); ++i) 
+        {
+            auto pSlot = m_slots[i];
+            auto pEffect = EffectPointer{};
+            if (i < effects.size())  pEffect = effects[i];
+            if (pSlot) pSlot->loadEffect(pEffect);
         }
-        for (int i = 0; i < m_slots.size(); ++i) {
-            EffectSlotPointer pSlot = m_slots[i];
-            EffectPointer pEffect;
-            if (i < effects.size()) {
-                pEffect = effects[i];
-            }
-            if (pSlot)
-                pSlot->loadEffect(pEffect);
-        }
-        m_pControlNumEffects->setAndConfirm(math_min(
-            static_cast<unsigned int>(m_slots.size()),
-            m_pEffectChain->numEffects()));
-        if (shouldEmit) {
-            emit(updated());
-        }
+        m_pControlNumEffects->setAndConfirm(math_min( static_cast<unsigned int>(m_slots.size()),m_pEffectChain->numEffects()));
+        if (shouldEmit) emit(updated());
     }
 }
-
-void EffectChainSlot::loadEffectChain(EffectChainPointer pEffectChain) {
+void EffectChainSlot::loadEffectChain(EffectChainPointer pEffectChain)
+{
     //qDebug() << debugString() << "loadEffectChain" << (pEffectChain ? pEffectChain->id() : "(null)");
     clear();
-
-    if (pEffectChain) {
+    if (pEffectChain)
+    {
         m_pEffectChain = pEffectChain;
-        m_pEffectChain->addToEngine(m_pEffectRack->getEngineEffectRack(),
-                                    m_iChainSlotNumber);
+        m_pEffectChain->addToEngine(m_pEffectRack->getEngineEffectRack(),m_iChainSlotNumber);
         m_pEffectChain->updateEngineState();
-
         connect(m_pEffectChain.data(), SIGNAL(effectsChanged()),
                 this, SLOT(slotChainEffectsChanged()));
         connect(m_pEffectChain.data(), SIGNAL(nameChanged(const QString&)),
@@ -193,42 +160,36 @@ void EffectChainSlot::loadEffectChain(EffectChainPointer pEffectChain) {
                 this, SLOT(slotChainInsertionTypeChanged(EffectChain::InsertionType)));
         connect(m_pEffectChain.data(), SIGNAL(channelStatusChanged(const QString&, bool)),
                 this, SLOT(slotChainChannelStatusChanged(const QString&, bool)));
-
         m_pControlChainLoaded->setAndConfirm(true);
         m_pControlChainInsertionType->set(m_pEffectChain->insertionType());
-
         // Mix and enabled channels are persistent properties of the chain slot,
         // not of the chain. Propagate the current settings to the chain.
         m_pEffectChain->setMix(m_pControlChainMix->get());
         m_pEffectChain->setEnabled(m_pControlChainEnabled->get() > 0.0);
-        foreach (ChannelInfo* pChannelInfo, m_channelInfoByName) {
-            if (pChannelInfo->pEnabled->toBool()) {
-                m_pEffectChain->enableForChannel(pChannelInfo->handle_group);
-            } else {
-                m_pEffectChain->disableForChannel(pChannelInfo->handle_group);
-            }
+        for(auto  pChannelInfo: m_channelInfoByName)
+        {
+            if (pChannelInfo->pEnabled->toBool())
+                  m_pEffectChain->enableForChannel(pChannelInfo->handle_group);
+            else  m_pEffectChain->disableForChannel(pChannelInfo->handle_group);
         }
 
         // Don't emit because we will below.
         slotChainEffectsChanged(false);
     }
-
     emit(effectChainLoaded(pEffectChain));
     emit(updated());
 }
-
-EffectChainPointer EffectChainSlot::getEffectChain() const {
+EffectChainPointer EffectChainSlot::getEffectChain() const
+{
     return m_pEffectChain;
 }
-
-void EffectChainSlot::clear() {
+void EffectChainSlot::clear()
+{
     // Stop listening to signals from any loaded effect
-    if (m_pEffectChain) {
-        m_pEffectChain->removeFromEngine(m_pEffectRack->getEngineEffectRack(),
-                                         m_iChainSlotNumber);
-        foreach (EffectSlotPointer pSlot, m_slots) {
-            pSlot->clear();
-        }
+    if (m_pEffectChain)
+    {
+        m_pEffectChain->removeFromEngine(m_pEffectRack->getEngineEffectRack(),m_iChainSlotNumber);
+        for(auto pSlot: m_slots) pSlot->clear();
         m_pEffectChain->disconnect(this);
         m_pEffectChain.clear();
     }
@@ -237,17 +198,13 @@ void EffectChainSlot::clear() {
     m_pControlChainInsertionType->set(EffectChain::INSERT);
     emit(updated());
 }
-
-unsigned int EffectChainSlot::numSlots() const {
+unsigned int EffectChainSlot::numSlots() const
+{
     //qDebug() << debugString() << "numSlots";
     return m_slots.size();
 }
-
 EffectSlotPointer EffectChainSlot::addEffectSlot(const QString& group) {
-    //qDebug() << debugString() << "addEffectSlot" << group;
-
-    EffectSlot* pEffectSlot = new EffectSlot(group, m_iChainSlotNumber,
-                                             m_slots.size());
+    EffectSlot* pEffectSlot = new EffectSlot(group, m_iChainSlotNumber,m_slots.size());
     // Rebroadcast effectLoaded signals
     connect(pEffectSlot, SIGNAL(effectLoaded(EffectPointer, unsigned int)),
             this, SLOT(slotEffectLoaded(EffectPointer, unsigned int)));
@@ -257,156 +214,120 @@ EffectSlotPointer EffectChainSlot::addEffectSlot(const QString& group) {
             this, SIGNAL(nextEffect(unsigned int, unsigned int, EffectPointer)));
     connect(pEffectSlot, SIGNAL(prevEffect(unsigned int, unsigned int, EffectPointer)),
             this, SIGNAL(prevEffect(unsigned int, unsigned int, EffectPointer)));
-
     EffectSlotPointer pSlot(pEffectSlot);
     m_slots.append(pSlot);
     m_pControlNumEffectSlots->setAndConfirm(m_pControlNumEffectSlots->get() + 1);
     return pSlot;
 }
 
-void EffectChainSlot::registerChannel(const ChannelHandleAndGroup& handle_group) {
-    if (m_channelInfoByName.contains(handle_group.name())) {
+void EffectChainSlot::registerChannel(const ChannelHandleAndGroup& handle_group)
+{
+    if (m_channelInfoByName.contains(handle_group.name()))
+    {
         qWarning() << debugString()
                    << "WARNING: registerChannel already has channel registered:"
                    << handle_group.name();
         return;
     }
-    ControlPushButton* pEnableControl = new ControlPushButton(
-            ConfigKey(m_group, QString("group_%1_enable").arg(handle_group.name())));
+    ControlPushButton* pEnableControl = new ControlPushButton(ConfigKey(m_group, QString("group_%1_enable").arg(handle_group.name())));
     pEnableControl->setButtonMode(ControlPushButton::POWERWINDOW);
-
     ChannelInfo* pInfo = new ChannelInfo(handle_group, pEnableControl);
     m_channelInfoByName[handle_group.name()] = pInfo;
     m_channelStatusMapper.setMapping(pEnableControl, handle_group.name());
-    connect(pEnableControl, SIGNAL(valueChanged(double)),
-            &m_channelStatusMapper, SLOT(map()));
+    connect(pEnableControl, SIGNAL(valueChanged(double)),&m_channelStatusMapper, SLOT(map()));
 }
-
-void EffectChainSlot::slotEffectLoaded(EffectPointer pEffect, unsigned int slotNumber) {
+void EffectChainSlot::slotEffectLoaded(EffectPointer pEffect, unsigned int slotNumber)
+{
     // const int is a safe read... don't bother locking
     emit(effectLoaded(pEffect, m_iChainSlotNumber, slotNumber));
 }
-
-void EffectChainSlot::slotClearEffect(unsigned int iEffectSlotNumber) {
-    if (m_pEffectChain) {
-        m_pEffectChain->removeEffect(iEffectSlotNumber);
-    }
+void EffectChainSlot::slotClearEffect(unsigned int iEffectSlotNumber)
+{
+    if (m_pEffectChain) m_pEffectChain->removeEffect(iEffectSlotNumber);
 }
-
-EffectSlotPointer EffectChainSlot::getEffectSlot(unsigned int slotNumber) {
+EffectSlotPointer EffectChainSlot::getEffectSlot(unsigned int slotNumber)
+{
     //qDebug() << debugString() << "getEffectSlot" << slotNumber;
-    if (slotNumber >= static_cast<unsigned int>(m_slots.size())) {
+    if (slotNumber >= static_cast<decltype(slotNumber)>(m_slots.size()))
+    {
         qWarning() << "WARNING: slotNumber out of range";
         return EffectSlotPointer();
     }
     return m_slots[slotNumber];
 }
-
 void EffectChainSlot::slotControlClear(double v) {
-    if (v > 0) {
-        clear();
-    }
+    if (v > 0) clear();
 }
-
-void EffectChainSlot::slotControlNumEffects(double v) {
-    // Ignore sets to num_effects.
-    Q_UNUSED(v);
+void EffectChainSlot::slotControlNumEffects(double /*v*/)
+{
     //qDebug() << debugString() << "slotControlNumEffects" << v;
     qWarning() << "WARNING: num_effects is a read-only control.";
 }
 
-void EffectChainSlot::slotControlNumEffectSlots(double v) {
-    // Ignore sets to num_effectslots.
-    Q_UNUSED(v);
-    //qDebug() << debugString() << "slotControlNumEffectSlots" << v;
+void EffectChainSlot::slotControlNumEffectSlots(double /*v*/)
+{
     qWarning() << "WARNING: num_effectslots is a read-only control.";
 }
-
-void EffectChainSlot::slotControlChainLoaded(double v) {
-    // Ignore sets to loaded.
-    Q_UNUSED(v);
-    //qDebug() << debugString() << "slotControlChainLoaded" << v;
+void EffectChainSlot::slotControlChainLoaded(double /*v*/)
+{
     qWarning() << "WARNING: loaded is a read-only control.";
 }
-
 void EffectChainSlot::slotControlChainEnabled(double v) {
     //qDebug() << debugString() << "slotControlChainEnabled" << v;
-    if (m_pEffectChain) {
-        m_pEffectChain->setEnabled(v > 0);
-    }
+    if (m_pEffectChain) m_pEffectChain->setEnabled(v > 0);
 }
-
-void EffectChainSlot::slotControlChainMix(double v) {
-    //qDebug() << debugString() << "slotControlChainMix" << v;
-
-    // Clamp to [0.0, 1.0]
-    if (v < 0.0 || v > 1.0) {
+void EffectChainSlot::slotControlChainMix(double v)
+{
+    if (v < 0.0 || v > 1.0)
+    {
         qWarning() << debugString() << "value out of limits";
         v = math_clamp(v, 0.0, 1.0);
         m_pControlChainMix->set(v);
     }
-    if (m_pEffectChain) {
-        m_pEffectChain->setMix(v);
-    }
+    if (m_pEffectChain) m_pEffectChain->setMix(v);
 }
 
-void EffectChainSlot::slotControlChainSuperParameter(double v) {
+void EffectChainSlot::slotControlChainSuperParameter(double v)
+{
     //qDebug() << debugString() << "slotControlChainSuperParameter" << v;
 
     // Clamp to [0.0, 1.0]
-    if (v < 0.0 || v > 1.0) {
+    if (v < 0.0 || v > 1.0)
+    {
         qWarning() << debugString() << "value out of limits";
         v = math_clamp(v, 0.0, 1.0);
         m_pControlChainSuperParameter->set(v);
     }
-    for (int i = 0; i < m_slots.size(); ++i) {
+    for (int i = 0; i < m_slots.size(); ++i)
         m_slots[i]->onChainSuperParameterChanged(v);
-    }
 }
-
 void EffectChainSlot::slotControlChainInsertionType(double v) {
     // Intermediate cast to integer is needed for VC++.
-    EffectChain::InsertionType type = static_cast<EffectChain::InsertionType>(int(v));
+    auto type = static_cast<EffectChain::InsertionType>(int(v));
     (void)v; // this avoids a false warning with g++ 4.8.1
-    if (m_pEffectChain && type >= 0 &&
-            type < EffectChain::NUM_INSERTION_TYPES) {
+    if (m_pEffectChain && type >= 0 && type < EffectChain::NUM_INSERTION_TYPES)
         m_pEffectChain->setInsertionType(type);
-    }
 }
-
 void EffectChainSlot::slotControlChainSelector(double v) {
     //qDebug() << debugString() << "slotControlChainSelector" << v;
-    if (v > 0) {
-        emit(nextChain(m_iChainSlotNumber, m_pEffectChain));
-    } else if (v < 0) {
-        emit(prevChain(m_iChainSlotNumber, m_pEffectChain));
-    }
+    if (v > 0) emit(nextChain(m_iChainSlotNumber, m_pEffectChain));
+    else if (v < 0) emit(prevChain(m_iChainSlotNumber, m_pEffectChain));
 }
-
 void EffectChainSlot::slotControlChainNextPreset(double v) {
     //qDebug() << debugString() << "slotControlChainNextPreset" << v;
-    if (v > 0) {
-        slotControlChainSelector(1);
-    }
+    if (v > 0) slotControlChainSelector(1);
 }
-
 void EffectChainSlot::slotControlChainPrevPreset(double v) {
     //qDebug() << debugString() << "slotControlChainPrevPreset" << v;
-    if (v > 0) {
-        slotControlChainSelector(-1);
-    }
+    if (v > 0)  slotControlChainSelector(-1);
 }
-
 void EffectChainSlot::slotChannelStatusChanged(const QString& group) {
     if (m_pEffectChain) {
-        ChannelInfo* pChannelInfo = m_channelInfoByName.value(group, NULL);
-        if (pChannelInfo != NULL && pChannelInfo->pEnabled != NULL) {
-            bool bEnable = pChannelInfo->pEnabled->toBool();
-            if (bEnable) {
-                m_pEffectChain->enableForChannel(pChannelInfo->handle_group);
-            } else {
-                m_pEffectChain->disableForChannel(pChannelInfo->handle_group);
-            }
+        auto  pChannelInfo = m_channelInfoByName.value(group, nullptr);
+        if (pChannelInfo && pChannelInfo->pEnabled) {
+            auto bEnable = pChannelInfo->pEnabled->toBool();
+            if (bEnable)  m_pEffectChain->enableForChannel(pChannelInfo->handle_group);
+            else           m_pEffectChain->disableForChannel(pChannelInfo->handle_group);
         }
     }
 }
@@ -419,6 +340,11 @@ EffectChainSlot::ChannelInfo::~ChannelInfo()
 {
   delete pEnabled;
 }
-unsigned int EffectChainSlot::getChainSlotNumber() const {
+unsigned int EffectChainSlot::getChainSlotNumber() const
+{
     return m_iChainSlotNumber;
+}
+QString EffectChainSlot::debugString() const 
+{
+  return QString("EffectChainSlot(%1)").arg(m_group);
 }

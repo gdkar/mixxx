@@ -1,6 +1,4 @@
-#ifndef AUTOPANEFFECT_H
-#define AUTOPANEFFECT_H
-
+_Pragma("once")
 #include <QMap>
 
 #include "util.h"
@@ -87,7 +85,5 @@ class AutoPanEffect : public PerChannelEffectProcessor<PanGroupState> {
     EngineEffectParameter* m_pPeriodUnitParameter;
     EngineEffectParameter* m_pPeriodParameter;
     EngineEffectParameter* m_pWidthParameter;
-    DISALLOW_COPY_AND_ASSIGN(AutoPanEffect);
 };
 
-#endif /* AUTOPANEFFECT_H */

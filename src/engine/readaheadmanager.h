@@ -1,12 +1,11 @@
 // readaheadmanager.h
 // Created 8/2/2009 by RJ Ryan (rryan@mit.edu)
 
-#ifndef READAHEADMANGER_H
-#define READAHEADMANGER_H
-
+_Pragma("once")
 #include <QLinkedList>
 #include <QList>
 #include <QPair>
+#include <QObject>
 
 #include "util/types.h"
 #include "util/math.h"
@@ -25,11 +24,11 @@ class CachingReader;
 // seeks or the current play position is invalidated somehow, the Engine must
 // call notifySeek to inform the ReadAheadManager to reset itself to the seek
 // point.
-class ReadAheadManager {
+class ReadAheadManager : public QObject{
+  Q_OBJECT
   public:
-    explicit ReadAheadManager(); // Only for testing: ReadAheadManagerMock
-    explicit ReadAheadManager(CachingReader* reader,
-                              LoopingControl* pLoopingControl);
+    explicit ReadAheadManager(QObject *pParent); // Only for testing: ReadAheadManagerMock
+    explicit ReadAheadManager(CachingReader* reader, LoopingControl* pLoopingControl, QObject *pParent);
     virtual ~ReadAheadManager();
 
     // Call this method to fill buffer with requested_samples out of the
@@ -63,67 +62,28 @@ class ReadAheadManager {
         m_pReader = pReader;
     }
 
-  private:
     // An entry in the read log indicates the virtual playposition the read
     // began at and the virtual playposition it ended at.
     struct ReadLogEntry {
-        double virtualPlaypositionStart;
-        double virtualPlaypositionEndNonInclusive;
-
-        ReadLogEntry(double virtualPlaypositionStart,
-                     double virtualPlaypositionEndNonInclusive) {
-            this->virtualPlaypositionStart = virtualPlaypositionStart;
-            this->virtualPlaypositionEndNonInclusive =
-                    virtualPlaypositionEndNonInclusive;
-        }
-
-        bool direction() const {
-            // NOTE(rryan): We try to avoid 0-length ReadLogEntry's when
-            // possible but they have happened in the past. We treat 0-length
-            // ReadLogEntry's as forward reads because this prevents them from
-            // being interpreted as a seek in the common case.
-            return virtualPlaypositionStart <= virtualPlaypositionEndNonInclusive;
-        }
-
-        double length() const {
-            return fabs(virtualPlaypositionEndNonInclusive -
-                       virtualPlaypositionStart);
-        }
-
-        // Moves the start position forward or backward (depending on
-        // direction()) by numSamples. Returns the total number of samples
-        // consumed. Caller should check if length() is 0 after consumption in
-        // order to expire the ReadLogEntry.
-        double consume(double numSamples) {
-            double available = math_min(numSamples, length());
-            virtualPlaypositionStart += (direction() ? 1 : -1) * available;
-            return available;
-        }
-
-        bool merge(const ReadLogEntry& other) {
-            // Allow 0-length ReadLogEntry's to merge regardless of their
-            // direction if they have the right start point.
-            if ((other.length() == 0 || direction() == other.direction()) &&
-                virtualPlaypositionEndNonInclusive == other.virtualPlaypositionStart) {
-                virtualPlaypositionEndNonInclusive =
-                        other.virtualPlaypositionEndNonInclusive;
-                return true;
-            }
-            return false;
-        }
+        double m_vpps;
+        double m_vppe;
+        ReadLogEntry() = default;
+        ReadLogEntry(double vpps,
+                     double vppe);
+        bool direction() const;
+        double length() const;
+        double consume(double numSamples);
+        bool merge(const ReadLogEntry& other);
     };
-
+  private:
     // virtualPlaypositionEnd is the first sample in the direction that was read
     // that was NOT read as part of this log entry. This is to simplify the
-    void addReadLogEntry(double virtualPlaypositionStart,
-                         double virtualPlaypositionEndNonInclusive);
-
-    LoopingControl* m_pLoopingControl;
-    RateControl* m_pRateControl;
+    void addReadLogEntry(double vpps,double vppe);
+    LoopingControl* m_pLoopingControl = nullptr;
+    RateControl* m_pRateControl = nullptr;
     QLinkedList<ReadLogEntry> m_readAheadLog;
-    int m_iCurrentPosition;
-    CachingReader* m_pReader;
-    CSAMPLE* m_pCrossFadeBuffer;
+    int m_iCurrentPosition = 0;
+    CachingReader* m_pReader    = nullptr;
+    CSAMPLE* m_pCrossFadeBuffer = nullptr;
 };
-
-#endif // READAHEADMANGER_H
+Q_DECLARE_TYPEINFO(ReadAheadManager::ReadLogEntry,Q_PRIMITIVE_TYPE);

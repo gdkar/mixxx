@@ -101,10 +101,10 @@ LinkwitzRiley8EQEffectGroupState::LinkwitzRiley8EQEffectGroupState()
     m_pLowBuf = SampleUtil::alloc(MAX_BUFFER_LEN);
     m_pBandBuf = SampleUtil::alloc(MAX_BUFFER_LEN);
     m_pHighBuf = SampleUtil::alloc(MAX_BUFFER_LEN);
-    m_low1 = new EngineFilterLinkwtzRiley8Low(kStartupSamplerate, kStartupLoFreq);
-    m_high1 = new EngineFilterLinkwtzRiley8High(kStartupSamplerate, kStartupLoFreq);
-    m_low2 = new EngineFilterLinkwtzRiley8Low(kStartupSamplerate, kStartupHiFreq);
-    m_high2 = new EngineFilterLinkwtzRiley8High(kStartupSamplerate, kStartupHiFreq);
+    m_low1 = new EngineFilterLinkwtzRiley8Low(kStartupSamplerate, kStartupLoFreq,nullptr);
+    m_high1 = new EngineFilterLinkwtzRiley8High(kStartupSamplerate, kStartupLoFreq,nullptr);
+    m_low2 = new EngineFilterLinkwtzRiley8Low(kStartupSamplerate, kStartupHiFreq,nullptr);
+    m_high2 = new EngineFilterLinkwtzRiley8High(kStartupSamplerate, kStartupHiFreq,nullptr);
 }
 LinkwitzRiley8EQEffectGroupState::~LinkwitzRiley8EQEffectGroupState() {
     delete m_low1;
@@ -202,4 +202,8 @@ void LinkwitzRiley8EQEffect::processChannel(const ChannelHandle& handle,
         pState->old_mid = fMid;
         pState->old_high = fHigh;
     }
+}
+QString LinkwitzRiley8EQEffect::debugString() const
+{
+  return getId();
 }

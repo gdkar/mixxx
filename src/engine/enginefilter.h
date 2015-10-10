@@ -15,9 +15,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef ENGINEFILTER_H
-#define ENGINEFILTER_H
-
+_Pragma("once")
 #define MIXXX
 #include "engine/engineobject.h"
 #include <fidlib.h>
@@ -35,7 +33,7 @@ class EngineFilter : public EngineObject {
       FidFunc *funcp = nullptr;
       void    *runp  = nullptr;
     };
-    EngineFilter(char* conf, int predefinedType = 0);
+    EngineFilter(char* conf, int predefinedTypec, QObject *pParent);
     virtual ~EngineFilter();
     void process(CSAMPLE* pInOut, const int iBufferSize);
   protected:
@@ -50,8 +48,3 @@ class EngineFilter : public EngineObject {
     void *fbuf1 = nullptr;
     void *fbuf2 = nullptr;
 };
-CSAMPLE processSampleDynamic(void *buf, const CSAMPLE  sample);
-CSAMPLE processSampleHp(void *buf, const CSAMPLE  sample);
-CSAMPLE processSampleBp(void *buf, const CSAMPLE  sample);
-CSAMPLE processSampleLp(void *buf, const CSAMPLE  sample);
-#endif

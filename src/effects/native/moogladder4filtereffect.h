@@ -1,6 +1,4 @@
-#ifndef MOOGLADDER4FILTEREFFECT_H
-#define MOOGLADDER4FILTEREFFECT_H
-
+_Pragma("once")
 #include "effects/effect.h"
 #include "effects/effectprocessor.h"
 #include "engine/effects/engineeffect.h"
@@ -47,15 +45,8 @@ class MoogLadder4FilterEffect : public PerChannelEffectProcessor<MoogLadder4Filt
                         const GroupFeatureState& groupFeatures);
 
   private:
-    QString debugString() const {
-        return getId();
-    }
-
+    QString debugString() const;
     EngineEffectParameter* m_pLPF;
     EngineEffectParameter* m_pResonance;
     EngineEffectParameter* m_pHPF;
-
-    DISALLOW_COPY_AND_ASSIGN(MoogLadder4FilterEffect);
 };
-
-#endif /* MOOGLADDER4FILTEREFFECT_H */

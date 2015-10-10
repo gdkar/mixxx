@@ -14,9 +14,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef ENGINEVUMETER_H
-#define ENGINEVUMETER_H
-
+_Pragma("once")
 #include "engine/engineobject.h"
 
 // Rate at which the vumeter is updated (using a sample rate of 44100 Hz):
@@ -34,7 +32,7 @@ class ControlObjectSlave;
 class EngineVuMeter : public EngineObject {
     Q_OBJECT
   public:
-    EngineVuMeter(QString group);
+    EngineVuMeter(QString group,QObject *);
     virtual ~EngineVuMeter();
 
     virtual void process(CSAMPLE* pInOut, const int iBufferSize);
@@ -54,14 +52,10 @@ class EngineVuMeter : public EngineObject {
     CSAMPLE m_fRMSvolumeR;
     CSAMPLE m_fRMSvolumeSumR;
     int m_iSamplesCalculated;
-
     ControlPotmeter* m_ctrlPeakIndicator;
     ControlPotmeter* m_ctrlPeakIndicatorL;
     ControlPotmeter* m_ctrlPeakIndicatorR;
     int m_peakDurationL;
     int m_peakDurationR;
-
     ControlObjectSlave* m_pSampleRate;
 };
-
-#endif

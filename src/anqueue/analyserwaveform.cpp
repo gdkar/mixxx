@@ -83,13 +83,9 @@ void WaveformStride::averageStore(WaveformData *data)
     }
   }
 }
-AnalyserWaveform::AnalyserWaveform(ConfigObject<ConfigValue>* pConfig) :
-        m_skipProcessing(false),
-        m_waveformData(nullptr),
-        m_waveformSummaryData(nullptr),
-        m_stride(0, 0),
-        m_currentStride(0),
-        m_currentSummaryStride(0) {
+AnalyserWaveform::AnalyserWaveform(ConfigObject<ConfigValue>* pConfig, QObject *p) 
+  : Analyser(p)
+{
     qDebug() << "AnalyserWaveform::AnalyserWaveform()";
     m_filter[0] = 0;
     m_filter[1] = 0;
@@ -187,9 +183,9 @@ void AnalyserWaveform::createFilters(int sampleRate) {
     // m_filter[Low] = new EngineFilterButterworth8(FILTER_LOWPASS, sampleRate, 200);
     // m_filter[Mid] = new EngineFilterButterworth8(FILTER_BANDPASS, sampleRate, 200, 2000);
     // m_filter[High] = new EngineFilterButterworth8(FILTER_HIGHPASS, sampleRate, 2000);
-    m_filter[Low]  = std::make_unique<EngineFilterBessel4Low>(sampleRate, 600);
-    m_filter[Mid]  = std::make_unique<EngineFilterBessel4Band>(sampleRate, 600, 4000);
-    m_filter[High] = std::make_unique<EngineFilterBessel4High>(sampleRate, 4000);
+    m_filter[Low]  = std::make_unique<EngineFilterBessel4Low>(sampleRate, 600,this);
+    m_filter[Mid]  = std::make_unique<EngineFilterBessel4Band>(sampleRate, 600, 4000,this);
+    m_filter[High] = std::make_unique<EngineFilterBessel4High>(sampleRate, 4000,this);
     // settle filters for silence in preroll to avoids ramping (Bug #1406389)
     for (int i = 0; i < FilterCount; ++i) {m_filter[i]->assumeSettled();}
 }

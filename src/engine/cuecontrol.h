@@ -1,9 +1,7 @@
 // cuecontrol.h
 // Created 11/5/2009 by RJ Ryan (rryan@mit.edu)
 
-#ifndef CUECONTROL_H
-#define CUECONTROL_H
-
+_Pragma("once")
 #include <QList>
 #include <QMutex>
 
@@ -11,7 +9,7 @@
 #include "configobject.h"
 #include "trackinfoobject.h"
 
-#define NUM_HOT_CUES 37
+#define NUM_HOT_CUES 8 
 
 class ControlObject;
 class ControlPushButton;
@@ -22,21 +20,18 @@ class ControlIndicator;
 class HotcueControl : public QObject {
     Q_OBJECT
   public:
-    HotcueControl(QString group, int hotcueNumber);
+    HotcueControl(QString group, int hotcueNumber, QObject *);
     virtual ~HotcueControl();
-
-    inline int getHotcueNumber() { return m_iHotcueNumber; }
-    inline Cue* getCue() { return m_pCue; }
-    inline void setCue(Cue* pCue) { m_pCue = pCue; }
-    inline ControlObject* getPosition() { return m_hotcuePosition; }
-    inline ControlObject* getEnabled() { return m_hotcueEnabled; }
-
+    int getHotcueNumber() { return m_iHotcueNumber; }
+    Cue* getCue() { return m_pCue; }
+    void setCue(Cue* pCue) { m_pCue = pCue; }
+    ControlObject* getPosition() { return m_hotcuePosition; }
+    ControlObject* getEnabled() { return m_hotcueEnabled; }
     // Used for caching the preview state of this hotcue control.
-    inline bool isPreviewing() { return m_bPreviewing; }
-    inline void setPreviewing(bool bPreviewing) { m_bPreviewing = bPreviewing; }
-    inline int getPreviewingPosition() { return m_iPreviewingPosition; }
-    inline void setPreviewingPosition(int iPosition) { m_iPreviewingPosition = iPosition; }
-
+    bool isPreviewing() { return m_bPreviewing; }
+    void setPreviewing(bool bPreviewing) { m_bPreviewing = bPreviewing; }
+    int getPreviewingPosition() { return m_iPreviewingPosition; }
+    void setPreviewingPosition(int iPosition) { m_iPreviewingPosition = iPosition; }
   private slots:
     void slotHotcueSet(double v);
     void slotHotcueGoto(double v);
@@ -60,44 +55,37 @@ class HotcueControl : public QObject {
 
   private:
     ConfigKey keyForControl(int hotcue, QString name);
-
     QString m_group;
-    int m_iHotcueNumber;
-    Cue* m_pCue;
-
+    int m_iHotcueNumber = -1;
+    Cue* m_pCue = nullptr;
     // Hotcue state controls
-    ControlObject* m_hotcuePosition;
-    ControlObject* m_hotcueEnabled;
+    ControlObject* m_hotcuePosition = nullptr;
+    ControlObject* m_hotcueEnabled = nullptr;
     // Hotcue button controls
-    ControlObject* m_hotcueSet;
-    ControlObject* m_hotcueGoto;
-    ControlObject* m_hotcueGotoAndPlay;
-    ControlObject* m_hotcueGotoAndStop;
-    ControlObject* m_hotcueActivate;
-    ControlObject* m_hotcueActivatePreview;
-    ControlObject* m_hotcueClear;
-
-    bool m_bPreviewing;
-    int m_iPreviewingPosition;
+    ControlObject* m_hotcueSet = nullptr;
+    ControlObject* m_hotcueGoto = nullptr;
+    ControlObject* m_hotcueGotoAndPlay = nullptr;
+    ControlObject* m_hotcueGotoAndStop = nullptr;
+    ControlObject* m_hotcueActivate = nullptr;
+    ControlObject* m_hotcueActivatePreview = nullptr;
+    ControlObject* m_hotcueClear = nullptr;
+    bool m_bPreviewing = false;
+    int m_iPreviewingPosition = 0;
 };
 
 class CueControl : public EngineControl {
     Q_OBJECT
   public:
-    CueControl(QString group,
-               ConfigObject<ConfigValue>* _config);
+    CueControl(QString group, ConfigObject<ConfigValue>* _config, QObject *);
     virtual ~CueControl();
-
     virtual void hintReader(HintVector* pHintList);
     bool updateIndicatorsAndModifyPlay(bool newPlay, bool playPossible);
     void updateIndicators();
     bool isTrackAtCue();
     bool getPlayFlashingAtPause();
-
   public slots:
     void trackLoaded(TrackPointer pTrack);
     void trackUnloaded(TrackPointer pTrack);
-
   private slots:
     void cueUpdated();
     void trackCuesUpdated();
@@ -127,43 +115,34 @@ class CueControl : public EngineControl {
     void attachCue(Cue* pCue, int hotcueNumber);
     void detachCue(int hotcueNumber);
     void saveCuePoint(double cuePoint);
-
-    bool m_bHotcueCancel;
-    bool m_bPreviewing;
-    bool m_bPreviewingHotcue;
-    ControlObject* m_pPlayButton;
-    ControlObject* m_pStopButton;
-    int m_iCurrentlyPreviewingHotcues;
-    ControlObject* m_pQuantizeEnabled;
-    ControlObject* m_pNextBeat;
-    ControlObject* m_pClosestBeat;
-
-    const int m_iNumHotCues;
+    bool m_bHotcueCancel     = false;
+    bool m_bPreviewing       = false;
+    bool m_bPreviewingHotcue = false;
+    ControlObject* m_pPlayButton = nullptr;
+    ControlObject* m_pStopButton = nullptr;
+    int m_iCurrentlyPreviewingHotcues = -1;
+    ControlObject* m_pQuantizeEnabled = nullptr;
+    ControlObject* m_pNextBeat    = nullptr;
+    ControlObject* m_pClosestBeat = nullptr;
+    const int m_iNumHotCues = NUM_HOT_CUES;
     QList<HotcueControl*> m_hotcueControl;
-
-    ControlObject* m_pTrackSamples;
-    ControlObject* m_pCuePoint;
-    ControlObject* m_pCueMode;
-    ControlPushButton* m_pCueSet;
-    ControlPushButton* m_pCueCDJ;
-    ControlPushButton* m_pCueDefault;
-    ControlPushButton* m_pPlayStutter;
-    ControlIndicator* m_pCueIndicator;
-    ControlIndicator* m_pPlayIndicator;
-    ControlPushButton* m_pCueGoto;
-    ControlPushButton* m_pCueGotoAndPlay;
-    ControlPushButton* m_pCueGotoAndStop;
-    ControlPushButton* m_pCuePreview;
-    ControlObjectSlave* m_pVinylControlEnabled;
-    ControlObjectSlave* m_pVinylControlMode;
-
-    TrackPointer m_pLoadedTrack;
-
+    ControlObject* m_pTrackSamples = nullptr;
+    ControlObject* m_pCuePoint = nullptr;
+    ControlObject* m_pCueMode = nullptr;
+    ControlPushButton* m_pCueSet = nullptr;
+    ControlPushButton* m_pCueCDJ = nullptr;
+    ControlPushButton* m_pCueDefault = nullptr;
+    ControlPushButton* m_pPlayStutter = nullptr;
+    ControlIndicator* m_pCueIndicator = nullptr;
+    ControlIndicator* m_pPlayIndicator = nullptr;
+    ControlPushButton* m_pCueGoto = nullptr;
+    ControlPushButton* m_pCueGotoAndPlay = nullptr;
+    ControlPushButton* m_pCueGotoAndStop = nullptr;
+    ControlPushButton* m_pCuePreview = nullptr;
+    ControlObjectSlave* m_pVinylControlEnabled = nullptr;
+    ControlObjectSlave* m_pVinylControlMode = nullptr;
+    TrackPointer m_pLoadedTrack{nullptr};
     // Tells us which controls map to which hotcue
     QMap<QObject*, int> m_controlMap;
-
     QMutex m_mutex;
 };
-
-
-#endif /* CUECONTROL_H */

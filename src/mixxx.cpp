@@ -182,7 +182,7 @@ void MixxxMainWindow::initalize(QApplication* pApp, const CmdlineArgs& args) {
         QString group("[Microphone]");
         if (i > 0) { group = QString("[Microphone%1]").arg(i + 1);}
         auto channelGroup = m_pEngine->registerChannelGroup(group);
-        auto pMicrophone = new EngineMicrophone(channelGroup, m_pEffectsManager);
+        auto pMicrophone = new EngineMicrophone(channelGroup, m_pEffectsManager,this);
         // What should channelbase be?
         auto micInput = AudioInput(AudioPath::MICROPHONE, 0, 0, i);
         m_pEngine->addChannel(pMicrophone);
@@ -197,7 +197,7 @@ void MixxxMainWindow::initalize(QApplication* pApp, const CmdlineArgs& args) {
     for (int i = 0; i < kAuxiliaryCount; ++i) {
         auto group = QString("[Auxiliary%1]").arg(i + 1);
         auto channelGroup = m_pEngine->registerChannelGroup(group);
-        auto pAux = new EngineAux(channelGroup, m_pEffectsManager);
+        auto pAux = new EngineAux(channelGroup, m_pEffectsManager,this);
         // What should channelbase be?
         auto auxInput = AudioInput(AudioPath::AUXILIARY, 0, 0, i);
         m_pEngine->addChannel(pAux);

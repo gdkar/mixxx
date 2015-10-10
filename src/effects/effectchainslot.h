@@ -112,26 +112,25 @@ class EffectChainSlot : public QObject {
     void slotControlChainNextPreset(double v);
     void slotControlChainPrevPreset(double v);
     void slotChannelStatusChanged(const QString& group);
-
   private:
-    QString debugString() const {return QString("EffectChainSlot(%1)").arg(m_group);}
+    QString debugString() const;
     const unsigned int m_iChainSlotNumber;
     const QString m_group;
-    EffectRack* m_pEffectRack;
-    EffectChainPointer m_pEffectChain;
-    ControlPushButton* m_pControlClear;
-    ControlObject* m_pControlNumEffects;
-    ControlObject* m_pControlNumEffectSlots;
-    ControlObject* m_pControlChainLoaded;
-    ControlPushButton* m_pControlChainEnabled;
-    ControlObject* m_pControlChainMix;
-    ControlObject* m_pControlChainSuperParameter;
-    ControlPushButton* m_pControlChainInsertionType;
-    ControlObject* m_pControlChainSelector;
-    ControlPushButton* m_pControlChainNextPreset;
-    ControlPushButton* m_pControlChainPrevPreset;
-
-    struct ChannelInfo {
+    EffectRack* m_pEffectRack                       = nullptr;
+    EffectChainPointer m_pEffectChain{nullptr};
+    ControlPushButton* m_pControlClear              = nullptr;
+    ControlObject* m_pControlNumEffects             = nullptr;
+    ControlObject* m_pControlNumEffectSlots         = nullptr;
+    ControlObject* m_pControlChainLoaded            = nullptr;
+    ControlPushButton* m_pControlChainEnabled       = nullptr;
+    ControlObject* m_pControlChainMix               = nullptr;
+    ControlObject* m_pControlChainSuperParameter    = nullptr;
+    ControlPushButton* m_pControlChainInsertionType = nullptr;
+    ControlObject* m_pControlChainSelector       = nullptr;
+    ControlPushButton* m_pControlChainNextPreset = nullptr;
+    ControlPushButton* m_pControlChainPrevPreset = nullptr;
+    class ChannelInfo {
+        public:
         // Takes ownership of pEnabled.
         ChannelInfo(const ChannelHandleAndGroup& handle_group, ControlObject* pEnabled);
         ~ChannelInfo();

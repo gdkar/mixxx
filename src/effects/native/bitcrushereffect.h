@@ -1,6 +1,4 @@
-#ifndef BITCRUSHEREFFECT_H
-#define BITCRUSHEREFFECT_H
-
+_Pragma("once")
 #include <QMap>
 
 #include "effects/effect.h"
@@ -21,15 +19,12 @@ struct BitCrusherGroupState {
     // Accumulated fractions of a samplerate period.
     CSAMPLE accumulator;
 };
-
 class BitCrusherEffect : public PerChannelEffectProcessor<BitCrusherGroupState> {
   public:
     BitCrusherEffect(EngineEffect* pEffect, const EffectManifest& manifest);
     virtual ~BitCrusherEffect();
-
     static QString getId();
     static EffectManifest getManifest();
-
     // See effectprocessor.h
     void processChannel(const ChannelHandle& handle,
                         BitCrusherGroupState* pState,
@@ -40,14 +35,8 @@ class BitCrusherEffect : public PerChannelEffectProcessor<BitCrusherGroupState> 
                         const GroupFeatureState& groupFeatureState);
 
   private:
-    QString debugString() const {
-        return getId();
-    }
-
+    QString debugString() const;
     EngineEffectParameter* m_pBitDepthParameter;
     EngineEffectParameter* m_pDownsampleParameter;
-
-    DISALLOW_COPY_AND_ASSIGN(BitCrusherEffect);
 };
 
-#endif /* BITCRUSHEREFFECT_H */

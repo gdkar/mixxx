@@ -1,6 +1,4 @@
-#ifndef ENGINEFILTERMOOGLADDER4_H
-#define ENGINEFILTERMOOGLADDER4_H
-
+_Pragma("once")
 // Filter based on the text "Non linear digital implementation of the moog ladder filter"
 // by Antti Houvilainen
 // This implementation is probably a more accurate digital representation of the original analogue filter.
@@ -49,56 +47,48 @@ class EngineFilterMoogLadderBase : public EngineObjectConstIn {
     };
 
   public:
-    EngineFilterMoogLadderBase(unsigned int sampleRate, float cutoff, float resonance) {
+    EngineFilterMoogLadderBase(unsigned int sampleRate, float cutoff, float resonance,QObject*pParent)
+    :EngineObjectConstIn(pParent)
+    {
         setParameter(sampleRate, cutoff, resonance);
         initBuffers();
     }
-
-    virtual ~EngineFilterMoogLadderBase() {
-    }
-
+    virtual ~EngineFilterMoogLadderBase() = default;
     void initBuffers() {
         memset(&m_buf, 0, sizeof(m_buf));
         m_buffersClear = true;
     }
-
     // cutoff  in Hz
     // resonance  range 0 ... 4 (4 = self resonance)
     void setParameter(int sampleRate, float cutoff, float resonance) {
-        const float v2 = 2 + kVt;   // twice the 'thermal voltage of a transistor'
-
-        float kfc = cutoff / sampleRate;
-        float kf = kfc;
+        auto v2 = 2 + kVt;   // twice the 'thermal voltage of a transistor'
+        auto kfc = cutoff / sampleRate;
+        auto kf = kfc;
         if (MODE == LP_OVERS || MODE == HP_OVERS) {
             // m_inputSampeRate is half the actual filter sampling rate in oversampling mode
             kf = kfc / 2;
         }
 
         // frequency & amplitude correction
-        float kfcr = 1.8730 * (kfc*kfc*kfc) + 0.4955 * (kfc*kfc) - 0.6490 * kfc + 0.9988;
+        auto kfcr = 1.8730 * (kfc*kfc*kfc) + 0.4955 * (kfc*kfc) - 0.6490 * kfc + 0.9988;
 
-        float x  = -2.0 * kPi * kfcr * kf; // input for taylor approximations
-        float exp_out  = expf(x);
+        auto x  = -2.0 * kPi * kfcr * kf; // input for taylor approximations
+        auto exp_out  = expf(x);
         m_k2vg = v2 * (1 - exp_out); // filter tuning
-
         // Resonance correction for self oscillation ~4
         m_kacr = resonance * (-3.9364 * (kfc*kfc) + 1.8409 * kfc + 0.9968);
-
         if (MODE == HP_OVERS || MODE == HP) {
             m_postGain = 1;
         } else {
             m_postGain = (1 + resonance / 4 * (1.1f + cutoff / sampleRate * 3.5f))
                     * (2 - (1.0f - resonance / 4) * (1.0f - resonance / 4));
         }
-
         // qDebug() << "setParameter" << m_cutoff << m_resonance;
     }
-
     // this is can be used instead off a final process() call before pause
     // It fades to dry or 0 according to the m_startFromDry parameter
     // it is an alternative for using pauseFillter() calls
-    void processAndPauseFilter(const CSAMPLE* pIn, CSAMPLE* pOutput,
-                       const int iBufferSize) {
+    void processAndPauseFilter(const CSAMPLE* pIn, CSAMPLE* pOutput, const int iBufferSize) {
         process(pIn, pOutput, iBufferSize);
         SampleUtil::copy2WithRampingGain(pOutput,
                 pOutput, 1.0, 0,  // fade out filtered
@@ -147,24 +137,21 @@ class EngineFilterMoogLadderBase : public EngineObjectConstIn {
             m_buffersClear = false;
         }
     }
-
-    inline CSAMPLE processSample(float input, struct Buffer* pB) {
-
-        const float v2 = 2 + kVt;   // twice the 'thermal voltage of a transistor'
-
+    CSAMPLE processSample(float input, struct Buffer* pB) {
+        auto v2 = 2 + kVt;   // twice the 'thermal voltage of a transistor'
         // cascade of 4 1st order sections
-        float x1 = input - pB->m_amf * m_kacr;
-        float az1 = pB->m_azt1 + m_k2vg * tanh_approx(x1 / v2);
-        float at1 = m_k2vg * tanh_approx(az1 / v2);
+        auto x1 = input - pB->m_amf * m_kacr;
+        auto az1 = pB->m_azt1 + m_k2vg * tanh_approx(x1 / v2);
+        auto at1 = m_k2vg * tanh_approx(az1 / v2);
         pB->m_azt1 = az1 - at1;
-        float az2 = pB->m_azt2 + at1;
-        float at2 = m_k2vg * tanh_approx(az2 / v2);
+        auto az2 = pB->m_azt2 + at1;
+        auto at2 = m_k2vg * tanh_approx(az2 / v2);
         pB->m_azt2 = az2 - at2;
-        float az3 = pB->m_azt3 + at2;
-        float at3 = m_k2vg * tanh_approx(az3 / v2);
+        auto az3 = pB->m_azt3 + at2;
+        auto at3 = m_k2vg * tanh_approx(az3 / v2);
         pB->m_azt3 = az3 - at3;
-        float az4 = pB->m_azt4 + at3;
-        float at4 = m_k2vg * tanh_approx(az4 / v2);
+        auto az4 = pB->m_azt4 + at3;
+        auto at4 = m_k2vg * tanh_approx(az4 / v2);
         pB->m_azt4 = az4 - at4;
 
         // Oversampling if requested
@@ -174,61 +161,47 @@ class EngineFilterMoogLadderBase : public EngineObjectConstIn {
             pB->m_az5 = az4;
 
             // Oversampling (repeat same block)
-            float x1 = input - pB->m_amf * m_kacr;
-            float az1 = pB->m_azt1 + m_k2vg * tanh_approx(x1 / v2);
-            float at1 = m_k2vg * tanh_approx(az1 / v2);
+            auto x1 = input - pB->m_amf * m_kacr;
+            auto az1 = pB->m_azt1 + m_k2vg * tanh_approx(x1 / v2);
+            auto at1 = m_k2vg * tanh_approx(az1 / v2);
             pB->m_azt1 = az1 - at1;
-            float az2 = pB->m_azt2 + at1;
-            float at2 = m_k2vg * tanh_approx(az2 / v2);
+            auto az2 = pB->m_azt2 + at1;
+            auto at2 = m_k2vg * tanh_approx(az2 / v2);
             pB->m_azt2 = az2 - at2;
-            float az3 = pB->m_azt3 + at2;
-            float at3 = m_k2vg * tanh_approx(az3 / v2);
+            auto az3 = pB->m_azt3 + at2;
+            auto at3 = m_k2vg * tanh_approx(az3 / v2);
             pB->m_azt3 = az3 - at3;
-            float az4 = pB->m_azt4 + at3;
-            float at4 = m_k2vg * tanh_approx(az4 / v2);
+            auto az4 = pB->m_azt4 + at3;
+            auto at4 = m_k2vg * tanh_approx(az4 / v2);
             pB->m_azt4 = az4 - at4;
 
             // 1/2-sample delay for phase compensation
             pB->m_amf = (az4 + pB->m_az5) / 2;
             pB->m_az5 = az4;
-        } else {
-            pB->m_amf = az4;
-        }
-
-        if (MODE == HP_OVERS || MODE == HP) {
-            return (x1 - 3 * az3 + 2 * az4) * m_postGain;
-        }
+        } else  pB->m_amf = az4;
+        if (MODE == HP_OVERS || MODE == HP) return (x1 - 3 * az3 + 2 * az4) * m_postGain;
         return pB->m_amf * m_postGain;
     }
-
-    inline float tanh_approx(float input) {
+    float tanh_approx(float input) {
         // return tanhf(input); // 142ns for process;
         return input / (1 + input * input / (3 + input * input / 5)); // 119ns for process
     }
-
-
   private:
-
     struct Buffer m_buf[2];
-
     float m_postGain;
     float m_kacr; // resonance factor
     float m_k2vg; // IIF factor
-
     bool m_buffersClear;
 };
-
 class EngineFilterMoogLadder4Low : public EngineFilterMoogLadderBase<LP_OVERS> {
     Q_OBJECT
   public:
-    EngineFilterMoogLadder4Low(int sampleRate, double freqCorner1, double resonance);
+    EngineFilterMoogLadder4Low(int sampleRate, double freqCorner1, double resonance,QObject *);
 };
 
 
 class EngineFilterMoogLadder4High : public EngineFilterMoogLadderBase<HP_OVERS> {
     Q_OBJECT
   public:
-    EngineFilterMoogLadder4High(int sampleRate, double freqCorner1, double resonance);
+    EngineFilterMoogLadder4High(int sampleRate, double freqCorner1, double resonance,QObject *);
 };
-
-#endif // ENGINEFILTERMOOGLADDER4_H

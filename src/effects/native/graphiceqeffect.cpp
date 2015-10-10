@@ -78,29 +78,31 @@ GraphicEQEffectGroupState::GraphicEQEffectGroupState() {
     m_centerFrequencies[6] = 5416;
     m_centerFrequencies[7] = 9828;
     // Initialize the filters with default parameters
-    m_low = new EngineFilterBiquad1LowShelving(44100, m_centerFrequencies[0], Q);
-    m_high = new EngineFilterBiquad1HighShelving(44100, m_centerFrequencies[7], Q);
-    for (int i = 1; i < 7; i++) {
-        m_bands.append(new EngineFilterBiquad1Peaking(44100,m_centerFrequencies[i],Q));
+    m_low = new EngineFilterBiquad1LowShelving(44100, m_centerFrequencies[0], Q, nullptr);
+    m_high = new EngineFilterBiquad1HighShelving(44100, m_centerFrequencies[7], Q, nullptr);
+    for (auto  i = 1; i < 7; i++) {
+        m_bands.append(new EngineFilterBiquad1Peaking(44100,m_centerFrequencies[i],Q, nullptr));
     }
 }
 GraphicEQEffectGroupState::~GraphicEQEffectGroupState() {
-    for(auto filter: m_bands) {delete filter;}
+    for(auto filter: m_bands) 
+      delete filter;
     delete m_low;
     delete m_high;
-    for(auto buf: m_pBufs) {delete[] buf;}
+    for(auto buf: m_pBufs) 
+      delete[] buf;
 }
 void GraphicEQEffectGroupState::setFilters(int sampleRate) {
     m_low->setFrequencyCorners(sampleRate, m_centerFrequencies[0], Q,m_oldLow);
     m_high->setFrequencyCorners(sampleRate, m_centerFrequencies[7], Q,m_oldHigh);
-    for (int i = 0; i < 6; i++) {
+    for (auto i = 0; i < 6; i++) {
         m_bands[i]->setFrequencyCorners(sampleRate, m_centerFrequencies[i + 1],Q, m_oldMid[i]);
     }
 }
 GraphicEQEffect::GraphicEQEffect(EngineEffect* pEffect,const EffectManifest& manifest): m_oldSampleRate(44100) {
     Q_UNUSED(manifest);
     m_pPotLow = pEffect->getParameterById("low");
-    for (int i = 0; i < 6; i++) {m_pPotMid.append(pEffect->getParameterById(QString("mid%1").arg(i)));}
+    for (auto i = 0; i < 6; i++) {m_pPotMid.append(pEffect->getParameterById(QString("mid%1").arg(i)));}
     m_pPotHigh = pEffect->getParameterById("high");
 }
 GraphicEQEffect::~GraphicEQEffect() {}
@@ -130,20 +132,18 @@ void GraphicEQEffect::processChannel(const ChannelHandle& handle,
     } else {
         fLow = m_pPotLow->value();
         fHigh = m_pPotHigh->value();
-        for (int i = 0; i < 6; i++) {fMid[i] = m_pPotMid[i]->value();}
+        for (auto i = 0; i < 6; i++) 
+          fMid[i] = m_pPotMid[i]->value();
     }
-    if (fLow != pState->m_oldLow) {
+    if (fLow != pState->m_oldLow)
         pState->m_low->setFrequencyCorners(sampleRate,pState->m_centerFrequencies[0], Q,fLow);
-    }
-    if (fHigh != pState->m_oldHigh) {
+    if (fHigh != pState->m_oldHigh)
         pState->m_high->setFrequencyCorners(sampleRate,pState->m_centerFrequencies[7], Q,fHigh);
-    }
     for (int i = 0; i < 6; i++) {
-        if (fMid[i] != pState->m_oldMid[i]) {
+        if (fMid[i] != pState->m_oldMid[i])
             pState->m_bands[i]->setFrequencyCorners(sampleRate,pState->m_centerFrequencies[i + 1],Q, fMid[i]);
-        }
     }
-    int bufIndex = 0;
+    auto bufIndex = 0;
     if (fLow) {
         pState->m_low->process(pInput, pState->m_pBufs[1 - bufIndex], numSamples);
         bufIndex = 1 - bufIndex;
@@ -155,7 +155,8 @@ void GraphicEQEffect::processChannel(const ChannelHandle& handle,
         if (fMid[i]) {
             pState->m_bands[i]->process(pState->m_pBufs[bufIndex],pState->m_pBufs[1 - bufIndex], numSamples);
             bufIndex = 1 - bufIndex;
-        } else {pState->m_bands[i]->pauseFilter();}
+        } else 
+          pState->m_bands[i]->pauseFilter();
     }
     if (fHigh) {
         pState->m_high->process(pState->m_pBufs[bufIndex],pOutput, numSamples);
@@ -166,10 +167,11 @@ void GraphicEQEffect::processChannel(const ChannelHandle& handle,
     }
     pState->m_oldLow = fLow;
     pState->m_oldHigh = fHigh;
-    for (int i = 0; i < 6; i++) {pState->m_oldMid[i] = fMid[i];}
+    for (auto i = 0; i < 6; i++) {pState->m_oldMid[i] = fMid[i];}
     if (enableState == EffectProcessor::DISABLING) {
         pState->m_low->pauseFilter();
         pState->m_high->pauseFilter();
-        for (int i = 0; i < 6; i++) {pState->m_bands[i]->pauseFilter();}
+        for (auto i = 0; i < 6; i++) {pState->m_bands[i]->pauseFilter();}
     }
 }
+QString GraphicEQEffect::debugString() const{return getId();}

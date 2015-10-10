@@ -1,6 +1,4 @@
-#ifndef EFFECTSBACKEND_H
-#define EFFECTSBACKEND_H
-
+_Pragma("once")
 #include <QObject>
 #include <QList>
 #include <QSet>
@@ -43,5 +41,3 @@ class EffectsBackend : public QObject {
     QMap<QString, QPair<EffectManifest, EffectInstantiatorPointer> > m_registeredEffects;
     QList<QString> m_effectIds;
 };
-
-#endif /* EFFECTSBACKEND_H */

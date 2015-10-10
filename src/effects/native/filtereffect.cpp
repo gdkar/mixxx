@@ -62,8 +62,8 @@ FilterGroupState::FilterGroupState()
           m_q(0.707106781),
           m_hiFreq(kMinCorner) {
     m_pBuf = SampleUtil::alloc(MAX_BUFFER_LEN);
-    m_pLowFilter = new EngineFilterBiquad1Low(1, m_loFreq, m_q, true);
-    m_pHighFilter = new EngineFilterBiquad1High(1, m_hiFreq, m_q, true);
+    m_pLowFilter = new EngineFilterBiquad1Low(1, m_loFreq, m_q, true,nullptr);
+    m_pHighFilter = new EngineFilterBiquad1High(1, m_hiFreq, m_q, true,nullptr);
 }
 
 FilterGroupState::~FilterGroupState() {
@@ -154,3 +154,4 @@ void FilterEffect::processChannel(const ChannelHandle& handle,
     pState->m_q = q;
     pState->m_hiFreq = hpf;
 }
+QString FilterEffect::debugString() const{return getId();}

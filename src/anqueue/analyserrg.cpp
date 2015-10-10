@@ -6,12 +6,10 @@
 #include "analyserrg.h"
 #include "util/math.h"
 
-AnalyserGain::AnalyserGain(ConfigObject<ConfigValue> *_config) {
+AnalyserGain::AnalyserGain(ConfigObject<ConfigValue> *_config, QObject *p)
+   :Analyser(p)
+{
     m_pConfigReplayGain = _config;
-    m_bStepControl = false;
-    m_pLeftTempBuffer = NULL;
-    m_pRightTempBuffer = NULL;
-    m_iBufferSize = 0;
     m_pReplayGain = new ReplayGain();
 }
 AnalyserGain::~AnalyserGain() {

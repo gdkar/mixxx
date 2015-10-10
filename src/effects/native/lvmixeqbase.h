@@ -1,6 +1,4 @@
-#ifndef BESSELLVMIXEQBASE_H
-#define BESSELLVMIXEQBASE_H
-
+_Pragma("once")
 #include "util/types.h"
 #include "util/defs.h"
 #include "util/math.h"
@@ -28,10 +26,10 @@ class LVMixEQEffectGroupState {
         m_pLowBuf = SampleUtil::alloc(MAX_BUFFER_LEN);
         m_pBandBuf = SampleUtil::alloc(MAX_BUFFER_LEN);
         m_pHighBuf = SampleUtil::alloc(MAX_BUFFER_LEN);
-        m_low1 = new LPF(kStartupSamplerate, kStartupLoFreq);
-        m_low2 = new LPF(kStartupSamplerate, kStartupHiFreq);
-        m_delay2 = new EngineFilterDelay<kMaxDelay>();
-        m_delay3 = new EngineFilterDelay<kMaxDelay>();
+        m_low1 = new LPF(kStartupSamplerate, kStartupLoFreq, nullptr);
+        m_low2 = new LPF(kStartupSamplerate, kStartupHiFreq, nullptr);
+        m_delay2 = new EngineFilterDelay<kMaxDelay>(nullptr);
+        m_delay3 = new EngineFilterDelay<kMaxDelay>(nullptr);
         setFilters(kStartupSamplerate, kStartupLoFreq, kStartupHiFreq);
     }
     virtual ~LVMixEQEffectGroupState() {
@@ -146,4 +144,3 @@ class LVMixEQEffectGroupState {
     CSAMPLE* m_pBandBuf;
     CSAMPLE* m_pHighBuf;
 };
-#endif // BESSELLVMIXEQBASE_H

@@ -5,9 +5,7 @@
  *      Author: Vittorio Colao
  */
 
-#ifndef ANALYSERBEATS_H_
-#define ANALYSERBEATS_H_
-
+_Pragma("once")
 #include <QHash>
 
 #include "analyser.h"
@@ -15,8 +13,9 @@
 #include "vamp/vampanalyser.h"
 
 class AnalyserBeats: public Analyser {
+  Q_OBJECT;
   public:
-    AnalyserBeats(ConfigObject<ConfigValue>* pConfig);
+    AnalyserBeats(ConfigObject<ConfigValue>* pConfig, QObject *);
     virtual ~AnalyserBeats();
     bool initialise(TrackPointer tio, int sampleRate, int totalSamples);
     bool loadStored(TrackPointer tio) const;
@@ -37,5 +36,3 @@ class AnalyserBeats: public Analyser {
     int m_iSampleRate = -1, m_iTotalSamples = -1;
     int m_iMinBpm, m_iMaxBpm = -1;
 };
-
-#endif /* ANALYSERVAMPTEST_H_ */

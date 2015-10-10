@@ -14,32 +14,24 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef ENGINEDELAY_H
-#define ENGINEDELAY_H
-
+_Pragma("once")
 #include "engine/engineobject.h"
 #include "configobject.h"
 
 class ControlPotmeter;
 class ControlObjectSlave;
-
 class EngineDelay : public EngineObject {
     Q_OBJECT
   public:
-    EngineDelay(const char* group, ConfigKey delayControl);
+    EngineDelay(const char* group, ConfigKey delayControl,QObject*);
     virtual ~EngineDelay();
-
     void process(CSAMPLE* pInOut, const int iBufferSize);
-
   public slots:
     void slotDelayChanged();
-
   private:
-    ControlPotmeter* m_pDelayPot;
-    ControlObjectSlave* m_pSampleRate;
-    CSAMPLE* m_pDelayBuffer;
-    int m_iDelayPos;
-    int m_iDelay;
+    ControlPotmeter* m_pDelayPot = nullptr;
+    ControlObjectSlave* m_pSampleRate = nullptr;
+    CSAMPLE* m_pDelayBuffer = nullptr;
+    int m_iDelayPos = 0;
+    int m_iDelay    = 0;
 };
-
-#endif

@@ -1,15 +1,10 @@
-#ifndef NATIVEBACKEND_H
-#define NATIVEBACKEND_H
-
+_Pragma("once")
 #include "effects/effectsbackend.h"
-
 class NativeBackend : public EffectsBackend {
     Q_OBJECT
   public:
     NativeBackend(QObject* pParent=nullptr);
     virtual ~NativeBackend();
   private:
-    QString debugString() const {return "NativeBackend";}
+    QString debugString() const;
 };
-
-#endif /* NATIVEBACKEND_H */

@@ -45,8 +45,9 @@
 const double kLinearScalerElipsis = 1.00058; // 2^(0.01/12): changes < 1 cent allows a linear scaler
 const int kSamplesPerFrame = 2; // Engine buffer uses Stereo frames only
 EngineBuffer::EngineBuffer(QString group, ConfigObject<ConfigValue>* _config,
-                           EngineChannel* pChannel, EngineMaster* pMixingEngine)
-        : m_group(group),
+                           EngineChannel* pChannel, EngineMaster* pMixingEngine, QObject *pParent)
+        : EngineObject(pParent),
+          m_group(group),
           m_pConfig(_config),
           m_pDitherBuffer(std::make_unique< CSAMPLE[]>(MAX_BUFFER_LEN)),
           m_pCrossfadeBuffer(std::make_unique<CSAMPLE[]>(MAX_BUFFER_LEN)){
@@ -66,70 +67,71 @@ EngineBuffer::EngineBuffer(QString group, ConfigObject<ConfigValue>* _config,
     connect(m_pReader, SIGNAL(trackLoaded(TrackPointer, int, int)),this, SLOT(slotTrackLoaded(TrackPointer, int, int)),Qt::DirectConnection);
     connect(m_pReader, SIGNAL(trackLoadFailed(TrackPointer, QString)),this, SLOT(slotTrackLoadFailed(TrackPointer, QString)),Qt::DirectConnection);
     // Play button
-    m_playButton = new ControlPushButton(ConfigKey(m_group, "play"));
+    m_playButton = new ControlPushButton(ConfigKey(m_group, "play"),false,this);
     m_playButton->setButtonMode(ControlPushButton::TOGGLE);
     m_playButton->connectValueChangeRequest(this, SLOT(slotControlPlayRequest(double)),Qt::DirectConnection);
     //Play from Start Button (for sampler)
-    m_playStartButton = new ControlPushButton(ConfigKey(m_group, "start_play"));
+    m_playStartButton = new ControlPushButton(ConfigKey(m_group, "start_play"),false,this);
     connect(m_playStartButton, SIGNAL(valueChanged(double)),this, SLOT(slotControlPlayFromStart(double)),Qt::DirectConnection);
     // Jump to start and stop button
-    m_stopStartButton = new ControlPushButton(ConfigKey(m_group, "start_stop"));
+    m_stopStartButton = new ControlPushButton(ConfigKey(m_group, "start_stop"),false,this);
     connect(m_stopStartButton, SIGNAL(valueChanged(double)),this, SLOT(slotControlJumpToStartAndStop(double)),Qt::DirectConnection);
     //Stop playback (for sampler)
-    m_stopButton = new ControlPushButton(ConfigKey(m_group, "stop"));
+    m_stopButton = new ControlPushButton(ConfigKey(m_group, "stop"),false,this);
     connect(m_stopButton, SIGNAL(valueChanged(double)),this, SLOT(slotControlStop(double)),Qt::DirectConnection);
     // Start button
-    m_startButton = new ControlPushButton(ConfigKey(m_group, "start"));
+    m_startButton = new ControlPushButton(ConfigKey(m_group, "start"),false,this);
     m_startButton->setButtonMode(ControlPushButton::TRIGGER);
     connect(m_startButton, SIGNAL(valueChanged(double)),this, SLOT(slotControlStart(double)),Qt::DirectConnection);
     // End button
-    m_endButton = new ControlPushButton(ConfigKey(m_group, "end"));
+    m_endButton = new ControlPushButton(ConfigKey(m_group, "end"),false,this);
     connect(m_endButton, SIGNAL(valueChanged(double)),this, SLOT(slotControlEnd(double)),Qt::DirectConnection);
-    m_pSlipButton = new ControlPushButton(ConfigKey(m_group, "slip_enabled"));
+    m_pSlipButton = new ControlPushButton(ConfigKey(m_group, "slip_enabled"),false,this);
     m_pSlipButton->setButtonMode(ControlPushButton::TOGGLE);
     connect(m_pSlipButton, SIGNAL(valueChanged(double)),this, SLOT(slotControlSlip(double)),Qt::DirectConnection);
     connect(m_pSlipButton, SIGNAL(valueChangedFromEngine(double)),this, SLOT(slotControlSlip(double)),Qt::DirectConnection);
     // BPM to display in the UI (updated more slowly than the actual bpm)
-    m_visualBpm = new ControlObject(ConfigKey(m_group, "visual_bpm"));
-    m_visualKey = new ControlObject(ConfigKey(m_group, "visual_key"));
+    m_visualBpm = new ControlObject(ConfigKey(m_group, "visual_bpm"),this);
+    m_visualKey = new ControlObject(ConfigKey(m_group, "visual_key"),this);
 
     m_playposSlider = new ControlLinPotmeter(ConfigKey(m_group, "playposition"), 0.0, 1.0, 0, 0, true);
+    m_playposSlider->setParent(this);
     connect(m_playposSlider, SIGNAL(valueChanged(double)),this, SLOT(slotControlSeek(double)),Qt::DirectConnection);
     // Control used to communicate ratio playpos to GUI thread
     m_visualPlayPos = VisualPlayPosition::getVisualPlayPosition(m_group);
-    m_pRepeat = new ControlPushButton(ConfigKey(m_group, "repeat"));
+    m_pRepeat = new ControlPushButton(ConfigKey(m_group, "repeat"),false,this);
     m_pRepeat->setButtonMode(ControlPushButton::TOGGLE);
     // Sample rate
     m_pSampleRate = new ControlObjectSlave("[Master]", "samplerate", this);
     m_pKeylockEngine = new ControlObjectSlave("[Master]", "keylock_engine", this);
     m_pKeylockEngine->connectValueChanged(this,SLOT(slotKeylockEngineChanged(double)),Qt::DirectConnection);
-    m_pTrackSamples = new ControlObject(ConfigKey(m_group, "track_samples"));
-    m_pTrackSampleRate = new ControlObject(ConfigKey(m_group, "track_samplerate"));
-    m_pKeylock = new ControlPushButton(ConfigKey(m_group, "keylock"), true);
+    m_pTrackSamples = new ControlObject(ConfigKey(m_group, "track_samples"),this);
+    m_pTrackSampleRate = new ControlObject(ConfigKey(m_group, "track_samplerate"),this);
+    m_pKeylock = new ControlPushButton(ConfigKey(m_group, "keylock"), true,this);
     m_pKeylock->setButtonMode(ControlPushButton::TOGGLE);
-    m_pEject = new ControlPushButton(ConfigKey(m_group, "eject"));
+    m_pEject = new ControlPushButton(ConfigKey(m_group, "eject"),false,this);
     connect(m_pEject, SIGNAL(valueChanged(double)),this, SLOT(slotEjectTrack(double)),Qt::DirectConnection);
     // Quantization Controller for enabling and disabling the
     // quantization (alignment) of loop in/out positions and (hot)cues with
     // beats.
-    auto quantize_control = new QuantizeControl(group, _config);
+    auto quantize_control = new QuantizeControl(group, _config,this);
     // Create the Loop Controller
-    m_pLoopingControl = new LoopingControl(group, _config);
+    m_pLoopingControl = new LoopingControl(group, _config,this);
     addControl(m_pLoopingControl);
     addControl(quantize_control);
     m_pQuantize = ControlObject::getControl(ConfigKey(group, "quantize"));
     m_pEngineSync = pMixingEngine->getEngineSync();
-    m_pSyncControl = new SyncControl(group, _config, pChannel, m_pEngineSync);
+    m_pSyncControl = new SyncControl(group, _config, pChannel, m_pEngineSync,this);
     addControl(m_pSyncControl);
 #ifdef __VINYLCONTROL__
-    m_pVinylControlControl = new VinylControlControl(group, _config);
+    m_pVinylControlControl = new VinylControlControl(group, _config,this);
     addControl(m_pVinylControlControl);
 #endif
-    m_pRateControl = new RateControl(group, _config);
+    m_pRateControl = new RateControl(group, _config,this);
     // Add the Rate Controller
     addControl(m_pRateControl);
     // Create the BPM Controller
-    m_pBpmControl = new BpmControl(group, _config);
+    m_pBpmControl = new BpmControl(group, _config,this);
     addControl(m_pBpmControl);
     // TODO(rryan) remove this dependence?
     m_pRateControl->setBpmControl(m_pBpmControl);
@@ -137,15 +139,15 @@ EngineBuffer::EngineBuffer(QString group, ConfigObject<ConfigValue>* _config,
     pMixingEngine->getEngineSync()->addSyncableDeck(m_pSyncControl);
     m_fwdButton = ControlObject::getControl(ConfigKey(group, "fwd"));
     m_backButton = ControlObject::getControl(ConfigKey(group, "back"));
-    m_pKeyControl = new KeyControl(group, _config);
+    m_pKeyControl = new KeyControl(group, _config,this);
     addControl(m_pKeyControl);
     // Create the clock controller
-    m_pClockControl = new ClockControl(group, _config);
+    m_pClockControl = new ClockControl(group, _config,this);
     addControl(m_pClockControl);
     // Create the cue controller
-    m_pCueControl = new CueControl(group, _config);
+    m_pCueControl = new CueControl(group, _config,this);
     addControl(m_pCueControl);
-    m_pReadAheadManager = new ReadAheadManager(m_pReader,m_pLoopingControl);
+    m_pReadAheadManager = new ReadAheadManager(m_pReader,m_pLoopingControl,this);
     m_pReadAheadManager->addRateControl(m_pRateControl);
     // Construct scaling objects
     m_pScaleLinear = new EngineBufferScaleLinear(m_pReadAheadManager,this);
@@ -166,9 +168,6 @@ EngineBuffer::EngineBuffer(QString group, ConfigObject<ConfigValue>* _config,
     setEngineMaster(pMixingEngine);
 }
 EngineBuffer::~EngineBuffer() {
-    delete m_pReadAheadManager;
-    delete m_pReader;
-
     delete m_playButton;
     delete m_playStartButton;
     delete m_stopStartButton;
