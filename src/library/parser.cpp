@@ -26,11 +26,7 @@ Parser::Parser() : QObject()
 {
 }
 
-Parser::~Parser()
-{
-
-
-}
+Parser::~Parser() = default;
 
 void Parser::clearLocations()
 {
@@ -55,24 +51,18 @@ bool Parser::isBinary(QString filename) {
     if (file.open(QIODevice::ReadOnly)) {
         char c;
         unsigned char uc;
-
         if(!file.getChar(&c))
         {
           qDebug() << "Parser: Error reading stream on " << filename;
           return true; //should this raise an exception?
         }
-
         uc = uchar(c);
-
         if(!(33<=uc && uc<=127))  //Starting byte is no character
         {
             file.close();
             return true;
         }
-
-    } else{
-        qDebug() << "Parser: Could not open file: " << filename;
-    }
+    } else qDebug() << "Parser: Could not open file: " << filename;
     //qDebug(QString("Parser: textstream starting character is: %1").arg(i));
     file.close();
     return false;
@@ -83,12 +73,10 @@ bool Parser::isBinary(QString filename) {
 // Thank you Christoph!
 // static
 bool Parser::isUtf8(const char* string) {
-    if (!string) {
-        return false;
-    }
-
-    const unsigned char* bytes = (const unsigned char *)string;
-    while (*bytes) {
+    if (!string)  return false;
+    auto bytes = (const unsigned char *)string;
+    while (*bytes)
+    {
         if(     (// ASCII
                         bytes[0] == 0x09 ||
                         bytes[0] == 0x0A ||

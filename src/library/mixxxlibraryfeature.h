@@ -1,9 +1,7 @@
 // mixxxlibraryfeature.h
 // Created 8/23/2009 by RJ Ryan (rryan@mit.edu)
 
-#ifndef MIXXXLIBRARYFEATURE_H
-#define MIXXXLIBRARYFEATURE_H
-
+_Pragma("once")
 #include <QStringListModel>
 #include <QUrl>
 #include <QVariant>
@@ -54,5 +52,3 @@ class MixxxLibraryFeature : public LibraryFeature {
     ConfigObject<ConfigValue>* m_pConfig = nullptr;
     TrackCollection* m_pTrackCollection = nullptr;
 };
-
-#endif /* MIXXXLIBRARYFEATURE_H */

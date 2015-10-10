@@ -30,46 +30,31 @@ class ReadAheadManager : public QObject{
     explicit ReadAheadManager(QObject *pParent); // Only for testing: ReadAheadManagerMock
     explicit ReadAheadManager(CachingReader* reader, LoopingControl* pLoopingControl, QObject *pParent);
     virtual ~ReadAheadManager();
-
     // Call this method to fill buffer with requested_samples out of the
     // lookahead buffer. Provide rate as dRate so that the manager knows the
     // direction the audio is progressing in. Returns the total number of
     // samples read into buffer. Note that it is very common that the total
     // samples read is less than the requested number of samples.
     virtual int getNextSamples(double dRate, CSAMPLE* buffer, int requested_samples);
-
-
     // Used to add a new EngineControls that ReadAheadManager will use to decide
     // which samples to return.
     void addLoopingControl();
     void addRateControl(RateControl* pRateControl);
-
     // Get the current read-ahead position in samples.
-    virtual inline int getPlaypos() const {
-        return m_iCurrentPosition;
-    }
-
+    virtual int getPlaypos() const;
     virtual void notifySeek(int iSeekPosition);
-
     // hintReader allows the ReadAheadManager to provide hints to the reader to
     // indicate that the given portion of a song is about to be read.
     virtual void hintReader(double dRate, HintVector* hintList);
-
-    virtual int getEffectiveVirtualPlaypositionFromLog(double currentVirtualPlayposition,
-                                                       double numConsumedSamples);
-
-    virtual void setReader(CachingReader* pReader) {
-        m_pReader = pReader;
-    }
-
+    virtual int getEffectiveVirtualPlaypositionFromLog(double cvpp,double consumed);
+    virtual void setReader(CachingReader* pReader);
     // An entry in the read log indicates the virtual playposition the read
     // began at and the virtual playposition it ended at.
     struct ReadLogEntry {
         double m_vpps;
         double m_vppe;
         ReadLogEntry() = default;
-        ReadLogEntry(double vpps,
-                     double vppe);
+        ReadLogEntry(double vpps, double vppe);
         bool direction() const;
         double length() const;
         double consume(double numSamples);

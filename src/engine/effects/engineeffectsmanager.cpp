@@ -13,14 +13,15 @@ EngineEffectsManager::EngineEffectsManager(EffectsResponsePipe* pResponsePipe)
 }
 EngineEffectsManager::~EngineEffectsManager() = default;
 void EngineEffectsManager::onCallbackStart() {
-    EffectsRequest* request = nullptr;
-    while (m_pResponsePipe->readMessages(&request, 1) > 0) {
+    auto request = static_cast<EffectsRequest*>( nullptr );
+    while (m_pResponsePipe->readMessages(&request, 1) > 0)
+    {
         auto response = EffectsResponse (*request);
         auto processed = false;
         switch (request->type) {
             case EffectsRequest::ADD_EFFECT_RACK:
             case EffectsRequest::REMOVE_EFFECT_RACK:
-                if (processEffectsRequest(*request, m_pResponsePipe.data())) {
+                if (processEffectsRequest(*request, m_pResponsePipe.get())) {
                     processed = true;
                 }
                 break;
@@ -35,7 +36,7 @@ void EngineEffectsManager::onCallbackStart() {
                     response.success = false;
                     response.status = EffectsResponse::NO_SUCH_RACK;
                 } else {
-                    processed = request->pTargetRack->processEffectsRequest( *request, m_pResponsePipe.data());
+                    processed = request->pTargetRack->processEffectsRequest( *request, m_pResponsePipe.get());
                     if (processed) {
                         // When an effect-chain becomes active (part of a rack), keep
                         // it in our master list so that we can respond to
@@ -69,8 +70,7 @@ void EngineEffectsManager::onCallbackStart() {
                     response.success = false;
                     response.status = EffectsResponse::NO_SUCH_CHAIN;
                 } else {
-                    processed = request->pTargetChain->processEffectsRequest(
-                        *request, m_pResponsePipe.data());
+                    processed = request->pTargetChain->processEffectsRequest(*request, m_pResponsePipe.get());
 
                     if (processed) {
                         // When an effect becomes active (part of a chain), keep
@@ -102,7 +102,7 @@ void EngineEffectsManager::onCallbackStart() {
                     response.success = false;
                     response.status = EffectsResponse::NO_SUCH_EFFECT;
                 } else {
-                    processed = request->pTargetEffect ->processEffectsRequest(*request, m_pResponsePipe.data());
+                    processed = request->pTargetEffect ->processEffectsRequest(*request, m_pResponsePipe.get());
                     if (!processed) {
                         // If we got here, the message was not handled for an
                         // unknown reason.

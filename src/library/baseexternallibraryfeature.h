@@ -1,6 +1,4 @@
-#ifndef BASEEXTERNALLIBRARYFEATURE_H
-#define BASEEXTERNALLIBRARYFEATURE_H
-
+_Pragma("once")
 #include <QAction>
 #include <QModelIndex>
 
@@ -34,4 +32,3 @@ class BaseExternalLibraryFeature : public LibraryFeature {
     QAction* m_pAddToAutoDJTopAction = nullptr;
     QAction* m_pImportAsMixxxPlaylistAction = nullptr;
 };
-#endif // BASEEXTERNALLIBRARYFEATURE_H

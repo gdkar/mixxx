@@ -4,9 +4,7 @@
 // A Library class is a container for all the model-side aspects of the library.
 // A library widget can be attached to the Library object by calling bindWidget.
 
-#ifndef LIBRARY_H
-#define LIBRARY_H
-
+_Pragma("once")
 #include <QList>
 #include <QObject>
 #include <QAbstractItemModel>
@@ -52,28 +50,17 @@ public:
     // waveform widgets can signal to a player to load a track. This can be
     // fixed by moving the waveform renderers inside player and connecting the
     // signals directly.
-    TrackCollection* getTrackCollection() {
-        return m_pTrackCollection;
-    }
-
-    inline int getTrackTableRowHeight() const {
-        return m_iTrackTableRowHeight;
-    }
-
-    inline const QFont& getTrackTableFont() const {
-        return m_trackTableFont;
-    }
-
+    TrackCollection* getTrackCollection();
+    int getTrackTableRowHeight() const;
+    QFont getTrackTableFont() const;
     //static Library* buildDefaultLibrary();
-
     enum RemovalType {
         LeaveTracksUnchanged = 0,
         HideTracks,
         PurgeTracks
     };
-
+    Q_ENUM(RemovalType);
     static const int kDefaultRowHeightPx;
-
   public slots:
     void slotShowTrackModel(QAbstractItemModel* model);
     void slotSwitchToView(const QString& view);
@@ -123,5 +110,3 @@ public:
     QFont m_trackTableFont;
     int m_iTrackTableRowHeight;
 };
-
-#endif /* LIBRARY_H */

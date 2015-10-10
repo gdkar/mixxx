@@ -10,7 +10,7 @@ template<unsigned int SIZE>
 class EngineFilterPan : public EngineObjectConstIn {
   public:
     EngineFilterPan(QObject *p)
-      :EngineObjectConstIn(p)
+      :EngineObjectConstIn(QString{},p)
   {
         // Set the current buffers to 0
         memset(m_buf, 0, sizeof(m_buf));

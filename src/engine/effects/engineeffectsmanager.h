@@ -1,6 +1,6 @@
 _Pragma("once")
-#include <QScopedPointer>
 
+#include <memory>
 #include "util/types.h"
 #include "util/fifo.h"
 #include "engine/effects/message.h"
@@ -33,7 +33,7 @@ class EngineEffectsManager : public EffectsRequestHandler {
     QString debugString() const { return QString("EngineEffectsManager"); }
     bool addEffectRack(EngineEffectRack* pRack);
     bool removeEffectRack(EngineEffectRack* pRack);
-    QScopedPointer<EffectsResponsePipe> m_pResponsePipe;
+    std::unique_ptr<EffectsResponsePipe> m_pResponsePipe;
     QList<EngineEffectRack*> m_racks;
     QList<EngineEffectChain*> m_chains;
     QList<EngineEffect*> m_effects;

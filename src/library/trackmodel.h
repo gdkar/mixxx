@@ -1,6 +1,4 @@
-#ifndef TRACKMODEL_H
-#define TRACKMODEL_H
-
+_Pragma("once")
 #include <QList>
 #include <QLinkedList>
 #include <QItemDelegate>
@@ -15,8 +13,7 @@ class TrackModel {
   public:
     static const int kHeaderWidthRole = Qt::UserRole + 0;
     static const int kHeaderNameRole = Qt::UserRole + 1;
-    TrackModel(QSqlDatabase db,
-               const char* settingsNamespace)
+    TrackModel(QSqlDatabase db, const char* settingsNamespace)
             : m_db(db),
               m_settingsNamespace(settingsNamespace),
               m_iDefaultSortColumn(-1),
@@ -100,4 +97,3 @@ class TrackModel {
     int m_iDefaultSortColumn;
     Qt::SortOrder m_eDefaultSortOrder;
 };
-#endif

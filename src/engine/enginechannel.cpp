@@ -23,8 +23,8 @@
 EngineChannel::EngineChannel(const ChannelHandleAndGroup& handle_group,
                              EngineChannel::ChannelOrientation defaultOrientation,
                              QObject *pParent)
-        : EngineObject(pParent),
-          m_group(handle_group)
+        : EngineObject(handle_group.name(),pParent),
+          m_handle_group(handle_group)
 {
     m_pPFL = new ControlPushButton(ConfigKey(getGroup(), "pfl"),false,this);
     m_pPFL->setButtonMode(ControlPushButton::TOGGLE);
@@ -60,4 +60,12 @@ EngineChannel::ChannelOrientation EngineChannel::getOrientation() const {
     else if (dOrientation == CENTER)  return CENTER;
     else if (dOrientation == RIGHT)   return RIGHT;
     return CENTER;
+}
+EngineBuffer * EngineChannel::getEngineBuffer() const
+{
+  return nullptr;
+}
+ChannelHandle EngineChannel::getHandle() const
+{
+  return m_handle_group.handle();
 }

@@ -571,7 +571,7 @@ void CrateFeature::slotImportPlaylist() {
     }
 
     if (playlist_parser) {
-      QList<QString> entries = playlist_parser->parse(playlist_file);
+      QStringList entries = playlist_parser->parse(playlist_file);
       //qDebug() << "Size of Imported Playlist: " << entries.size();
 
       //Iterate over the List that holds URLs of playlist entires
@@ -625,7 +625,7 @@ void CrateFeature::slotExportPlaylist() {
             ConfigKey("[Library]", "UseRelativePathOnExport")).toInt());
 
     // Create list of files of the crate
-    QList<QString> playlist_items;
+    QStringList playlist_items;
     // Create a new table model since the main one might have an active search.
     QScopedPointer<CrateTableModel> pCrateTableModel(
         new CrateTableModel(this, m_pTrackCollection));
@@ -638,7 +638,7 @@ void CrateFeature::slotExportPlaylist() {
         ParserCsv::writeReadableTextFile(file_location, pCrateTableModel.data(), false);
     } else{
         // populate a list of files of the crate
-        QList<QString> playlist_items;
+        QStringList playlist_items;
         int rows = pCrateTableModel->rowCount();
         for (int i = 0; i < rows; ++i) {
             QModelIndex index = m_crateTableModel.index(i, 0);

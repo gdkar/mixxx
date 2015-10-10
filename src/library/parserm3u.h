@@ -10,9 +10,7 @@
 // Copyright: See COPYING file that comes with this distribution
 //
 //
-#ifndef PARSERM3U_H
-#define PARSERM3U_H
-
+_Pragma("once")
 #include <QTextStream>
 #include <QList>
 #include <QString>
@@ -26,17 +24,12 @@ public:
     ParserM3u();
     ~ParserM3u();
     /**Overwriting function parse in class Parser**/
-    QList<QString> parse(QString);
+    QStringList parse(QString);
     //Playlist Export
-    static bool writeM3UFile(const QString &file_str, QList<QString> &items, bool useRelativePath, bool useUtf8);
-    static bool writeM3UFile(const QString &file, QList<QString> &items, bool useRelativePath);
-    static bool writeM3U8File(const QString &file_str, QList<QString> &items, bool useRelativePath);
-
+    static bool writeM3UFile(const QString &file_str, QStringList &items, bool useRelativePath, bool useUtf8);
+    static bool writeM3UFile(const QString &file, QStringList &items, bool useRelativePath);
+    static bool writeM3U8File(const QString &file_str, QStringList &items, bool useRelativePath);
 private:
     /**Reads a line from the file and returns filepath if a valid file**/
     QString getFilepath(QTextStream *, QString);
-
-
 };
-
-#endif

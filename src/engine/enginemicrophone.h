@@ -19,7 +19,6 @@ class EngineMicrophone : public EngineChannel, public AudioDestination {
     EngineMicrophone(const ChannelHandleAndGroup& handle_group,
                      EffectsManager* pEffectsManager,QObject *pParent);
     virtual ~EngineMicrophone();
-
     bool isActive();
 
     // Called by EngineMaster whenever is requesting a new buffer of audio.

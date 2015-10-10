@@ -1,6 +1,4 @@
-#ifndef SCANNERTASK_H
-#define SCANNERTASK_H
-
+_Pragma("once")
 #include <QObject>
 #include <QRunnable>
 
@@ -31,6 +29,5 @@ class ScannerTask : public QObject, public QRunnable {
     LibraryScanner* m_pScanner = nullptr;
     ScannerGlobalPointer m_scannerGlobal;
   private:
-    bool m_success;
+    bool m_success = false;
 };
-#endif /* SCANNERTASK_H */

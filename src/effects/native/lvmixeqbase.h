@@ -28,8 +28,8 @@ class LVMixEQEffectGroupState {
         m_pHighBuf = SampleUtil::alloc(MAX_BUFFER_LEN);
         m_low1 = new LPF(kStartupSamplerate, kStartupLoFreq, nullptr);
         m_low2 = new LPF(kStartupSamplerate, kStartupHiFreq, nullptr);
-        m_delay2 = new EngineFilterDelay<kMaxDelay>(nullptr);
-        m_delay3 = new EngineFilterDelay<kMaxDelay>(nullptr);
+        m_delay2 = new EngineFilterDelay(kMaxDelay,nullptr);
+        m_delay3 = new EngineFilterDelay(kMaxDelay,nullptr);
         setFilters(kStartupSamplerate, kStartupLoFreq, kStartupHiFreq);
     }
     virtual ~LVMixEQEffectGroupState() {
@@ -130,8 +130,8 @@ class LVMixEQEffectGroupState {
   private:
     LPF* m_low1;
     LPF* m_low2;
-    EngineFilterDelay<kMaxDelay>* m_delay2;
-    EngineFilterDelay<kMaxDelay>* m_delay3;
+    EngineFilterDelay* m_delay2;
+    EngineFilterDelay* m_delay3;
     double m_oldLow;
     double m_oldMid;
     double m_oldHigh;

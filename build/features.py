@@ -8,12 +8,8 @@ import depends
 class HSS1394(Feature):
     def description(self): return "HSS1394 MIDI device support"
     def enabled(self, build):
-        if build.platform_is_windows or build.platform_is_osx:
-            build.flags['hss1394'] = util.get_flags(build.env, 'hss1394', 1)
-        else:
-            build.flags['hss1394'] = util.get_flags(build.env, 'hss1394', 0)
-        if int(build.flags['hss1394']): return True
-        return False
+        build.flags['hss1394'] = util.get_flags(build.env, 'hss1394', int(build.platform_is_windows or build.platform_is_osx))
+        return bool(int(build.flags['hss1394']))
     def add_options(self, build, vars):
         if build.platform_is_windows or build.platform_is_osx:
             vars.Add('hss1394','Set to 1 to enable HSS1394 MIDI device support.', 1)

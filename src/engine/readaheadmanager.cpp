@@ -25,6 +25,14 @@ ReadAheadManager::ReadAheadManager(CachingReader* pReader,  LoopingControl* pLoo
 }
 
 ReadAheadManager::~ReadAheadManager() { delete[] m_pCrossFadeBuffer; }
+int ReadAheadManager::getPlaypos() const
+{
+  return m_iCurrentPosition;
+}
+void ReadAheadManager::setReader(CachingReader* pReader)
+{
+  m_pReader = pReader;
+}
 int ReadAheadManager::getNextSamples(double dRate, CSAMPLE* buffer, int requested_samples) {
     if (!even(requested_samples)) {
         qDebug() << "ERROR: Non-even requested_samples to ReadAheadManager::getNextSamples";

@@ -1,9 +1,7 @@
 // cuedao.h
 // Created 10/26/2009 by RJ Ryan (rryan@mit.edu)
 
-#ifndef CUEDAO_H
-#define CUEDAO_H
-
+_Pragma("once")
 #include <QMap>
 #include <QSqlDatabase>
 
@@ -33,9 +31,6 @@ class CueDAO : public DAO {
     void saveTrackCues(TrackId trackId, TrackInfoObject*);
   private:
     Cue* cueFromRow(const QSqlQuery& query) const;
-
     QSqlDatabase& m_database;
     mutable QMap<int, Cue*> m_cues;
 };
-
-#endif /* CUEDAO_H */

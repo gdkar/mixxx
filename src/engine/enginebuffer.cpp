@@ -46,8 +46,7 @@ const double kLinearScalerElipsis = 1.00058; // 2^(0.01/12): changes < 1 cent al
 const int kSamplesPerFrame = 2; // Engine buffer uses Stereo frames only
 EngineBuffer::EngineBuffer(QString group, ConfigObject<ConfigValue>* _config,
                            EngineChannel* pChannel, EngineMaster* pMixingEngine, QObject *pParent)
-        : EngineObject(pParent),
-          m_group(group),
+        : EngineObject(group,pParent),
           m_pConfig(_config),
           m_pDitherBuffer(std::make_unique< CSAMPLE[]>(MAX_BUFFER_LEN)),
           m_pCrossfadeBuffer(std::make_unique<CSAMPLE[]>(MAX_BUFFER_LEN)){
@@ -220,8 +219,8 @@ void EngineBuffer::enableIndependentPitchTempoScaling(bool bEnable,const int iBu
         m_bScalerChanged = true;
     }
 }
-double EngineBuffer::getBpm() {return m_pBpmControl->getBpm();}
-double EngineBuffer::getLocalBpm() { return m_pBpmControl->getLocalBpm(); }
+double EngineBuffer::getBpm() const {return m_pBpmControl->getBpm();}
+double EngineBuffer::getLocalBpm() const { return m_pBpmControl->getLocalBpm(); }
 void EngineBuffer::setEngineMaster(EngineMaster* pEngineMaster) {
     for(auto pControl: m_engineControls) {pControl->setEngineMaster(pEngineMaster);}
 }
@@ -281,9 +280,8 @@ void EngineBuffer::setNewPlaypos(double newpos) {
     for(auto pControl:m_engineControls) pControl->notifySeek(m_filepos_play);
     verifyPlay(); // verify or update play button and indicator
 }
-QString EngineBuffer::getGroup() {return m_group;}
-double EngineBuffer::getSpeed() {return m_speed_old;}
-bool EngineBuffer::getScratching() {return m_scratching_old;}
+double EngineBuffer::getSpeed() const {return m_speed_old;}
+bool EngineBuffer::getScratching() const {return m_scratching_old;}
 // WARNING: Always called from the EngineWorker thread pool
 void EngineBuffer::slotTrackLoading() {
     // Pause EngineBuffer from processing frames

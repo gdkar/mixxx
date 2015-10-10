@@ -15,23 +15,23 @@
  ***************************************************************************/
 
 _Pragma("once")
+#include <memory>
 #include "engine/engineobject.h"
 #include "configobject.h"
-
 class ControlPotmeter;
 class ControlObjectSlave;
 class EngineDelay : public EngineObject {
     Q_OBJECT
   public:
-    EngineDelay(const char* group, ConfigKey delayControl,QObject*);
+    EngineDelay(QString group, ConfigKey delayControl,QObject*);
     virtual ~EngineDelay();
-    void process(CSAMPLE* pInOut, const int iBufferSize);
+    void process(CSAMPLE* pInOut, int iBufferSize);
   public slots:
     void slotDelayChanged();
   private:
     ControlPotmeter* m_pDelayPot = nullptr;
     ControlObjectSlave* m_pSampleRate = nullptr;
-    CSAMPLE* m_pDelayBuffer = nullptr;
+    std::unique_ptr<CSAMPLE[]> m_pDelayBuffer;
     int m_iDelayPos = 0;
     int m_iDelay    = 0;
 };

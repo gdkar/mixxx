@@ -32,28 +32,21 @@
 
 const int kMetaDataLifeTimeout = 16;
 
-EngineRecord::EngineRecord(ConfigObject<ConfigValue>* _config)
-        : 
-          m_pConfig(_config),
-          m_pEncoder(nullptr),
-          m_frames(0),
-          m_recordedDuration(0),
-          m_iMetaDataLife(0),
-          m_cueTrack(0),
-          m_bCueIsEnabled(false) {
+EngineRecord::EngineRecord(ConfigObject<ConfigValue>* _config, QObject *pParent)
+        : QObject(pParent),
+          m_pConfig(_config)
+{
     m_pRecReady = new ControlObjectSlave(RECORDING_PREF_KEY, "status", this);
     m_pSamplerate = new ControlObjectSlave("[Master]", "samplerate", this);
     m_sampleRate = m_pSamplerate->get();
 }
-
-EngineRecord::~EngineRecord() {
+EngineRecord::~EngineRecord()
+{
     closeCueFile();
     closeFile();
-    delete m_pRecReady;
-    delete m_pSamplerate;
 }
-
-void EngineRecord::updateFromPreferences() {
+void EngineRecord::updateFromPreferences()
+{
     m_encoding = m_pConfig->getValueString(ConfigKey(RECORDING_PREF_KEY, "Encoding")).toLatin1();
     // returns a number from 1 .. 10
     m_OGGquality = m_pConfig->getValueString(ConfigKey(RECORDING_PREF_KEY, "OGG_Quality")).toLatin1();
@@ -66,24 +59,27 @@ void EngineRecord::updateFromPreferences() {
     m_bCueIsEnabled = m_pConfig->getValueString(ConfigKey(RECORDING_PREF_KEY, "CueEnabled")).toInt();
     m_sampleRate = m_pSamplerate->get();
     // Delete m_pEncoder if it has been initialized (with maybe) different bitrate.
-    if (m_pEncoder) {
+    if (m_pEncoder)
+    {
         delete m_pEncoder;
         m_pEncoder = nullptr;
     }
-    if (m_encoding == ENCODING_MP3) {
+    if (m_encoding == ENCODING_MP3)
+    {
         m_pEncoder = new EncoderFfmpegMp3(this);
         m_pEncoder->updateMetaData(m_baAuthor.data(),m_baTitle.data(),m_baAlbum.data());
-        if(m_pEncoder->initEncoder(Encoder::convertToBitrate(m_MP3quality.toInt()), m_sampleRate) < 0) {
+        if(m_pEncoder->initEncoder(Encoder::convertToBitrate(m_MP3quality.toInt()), m_sampleRate) < 0)
+        {
             delete m_pEncoder;
             m_pEncoder = nullptr;
             qDebug() << "MP3 recording is not supported. FFMPEG mp3 could not be initialized";
         }
-    } else if (m_encoding == ENCODING_OGG) {
+    } else if (m_encoding == ENCODING_OGG)
+    {
         m_pEncoder = new EncoderFfmpegVorbis(this);
         m_pEncoder->updateMetaData(m_baAuthor.data(),m_baTitle.data(),m_baAlbum.data());
-
-        if (m_pEncoder->initEncoder(Encoder::convertToBitrate(m_OGGquality.toInt()),
-                                   m_sampleRate) < 0) {
+        if (m_pEncoder->initEncoder(Encoder::convertToBitrate(m_OGGquality.toInt()), m_sampleRate) < 0)
+        {
             delete m_pEncoder;
             m_pEncoder = nullptr;
             qDebug() << "OGG recording is not supported. FFMPEG OGG/Vorbis could not be initialized";
@@ -91,91 +87,93 @@ void EngineRecord::updateFromPreferences() {
     }
     // If we use WAVE OR AIFF the encoder will be nullptr at all times.
 }
-
 bool EngineRecord::metaDataHasChanged()
 {
-    if (m_iMetaDataLife < kMetaDataLifeTimeout) {
+    if (m_iMetaDataLife < kMetaDataLifeTimeout)
+    {
         m_iMetaDataLife++;
         return false;
     }
     m_iMetaDataLife = 0;
-
-    TrackPointer pTrack = PlayerInfo::instance().getCurrentPlayingTrack();
-    if (!pTrack)
-        return false;
-
-    if (m_pCurrentTrack) {
-        if (!pTrack->getId().isValid() || !m_pCurrentTrack->getId().isValid()) {
-            if ((pTrack->getArtist() == m_pCurrentTrack->getArtist()) &&
-                (pTrack->getTitle() == m_pCurrentTrack->getArtist())) {
+    auto pTrack = PlayerInfo::instance().getCurrentPlayingTrack();
+    if (!pTrack) return false;
+    if (m_pCurrentTrack)
+    {
+        if (!pTrack->getId().isValid() || !m_pCurrentTrack->getId().isValid())
+        {
+            if ((pTrack->getArtist() == m_pCurrentTrack->getArtist()) && (pTrack->getTitle() == m_pCurrentTrack->getArtist()))
+            {
                 return false;
             }
         }
-        else if (pTrack->getId() == m_pCurrentTrack->getId()) {
-            return false;
-        }
+        else if (pTrack->getId() == m_pCurrentTrack->getId()) return false;
     }
-
     m_pCurrentTrack = pTrack;
     return true;
 }
-void EngineRecord::process(const CSAMPLE* pBuffer, const int iBufferSize) {
+void EngineRecord::process(const CSAMPLE* pBuffer, int iBufferSize)
+{
     auto recordingStatus = m_pRecReady->get();
-    if (recordingStatus == RECORD_OFF) {
+    if (recordingStatus == RECORD_OFF)
+    {
         //qDebug("Setting record flag to: OFF");
-        if (fileOpen()) {
+        if (fileOpen())
+        {
             Event::end("EngineRecord recording");
             closeFile();  // Close file and free encoder.
             emit(isRecording(false));
         }
-    } else if (recordingStatus == RECORD_READY) {
+    }
+    else if (recordingStatus == RECORD_READY)
+    {
         // If we are ready for recording, i.e, the output file has been selected, we
         // open a new file.
         updateFromPreferences();  // Update file location from preferences.
-        if (openFile()) {
+        if (openFile())
+        {
             Event::start("EngineRecord recording");
             qDebug("Setting record flag to: ON");
             m_pRecReady->set(RECORD_ON);
             emit(isRecording(true));  // will notify the RecordingManager
-
             // Since we just started recording, timeout and clear the metadata.
             m_iMetaDataLife = kMetaDataLifeTimeout;
             m_pCurrentTrack = TrackPointer();
-
             // clean frames couting and get current sample rate.
             m_frames = 0;
             m_sampleRate = m_pSamplerate->get();
-
-            if (m_bCueIsEnabled) {
+            if (m_bCueIsEnabled)
+            {
                 openCueFile();
                 m_cueTrack = 0;
             }
-        } else {  // Maybe the encoder could not be initialized
+        }
+        else
+        {  // Maybe the encoder could not be initialized
             qDebug("Setting record flag to: OFF");
             m_pRecReady->set(RECORD_OFF);
             emit(isRecording(false));
         }
-    } else if (recordingStatus == RECORD_ON) {
+    }
+    else if (recordingStatus == RECORD_ON)
+    {
         // If recording is enabled process audio to compressed or uncompressed data.
         if (m_pEncoder) {
             // Compress audio. Encoder will call method 'write()' below to
             // write a file stream
             m_pEncoder->encodeBuffer(pBuffer, iBufferSize);
         }
-
         // update frames counting and recorded duration (seconds)
         m_frames += iBufferSize / 2;
-        unsigned long lastDuration = m_recordedDuration;
+        auto lastDuration = m_recordedDuration;
         m_recordedDuration = m_frames / m_sampleRate;
-
         // gets recorded duration and emit signal that will be used
         // by RecordingManager to update the label besides start/stop button
-        if (lastDuration != m_recordedDuration) {
+        if (lastDuration != m_recordedDuration)
             emit(durationRecorded(getRecordedDurationStr()));
-        }
-
-        if (m_bCueIsEnabled) {
-            if (metaDataHasChanged()) {
+        if (m_bCueIsEnabled)
+        {
+            if (metaDataHasChanged())
+            {
                 m_cueTrack++;
                 writeCueLine();
                 m_cueFile.flush();
@@ -183,7 +181,6 @@ void EngineRecord::process(const CSAMPLE* pBuffer, const int iBufferSize) {
         }
     }
 }
-
 QString EngineRecord::getRecordedDurationStr() {
     return QString("%1:%2")
                  .arg(m_recordedDuration / 60, 2, 'f', 0, '0')   // minutes
@@ -192,14 +189,10 @@ QString EngineRecord::getRecordedDurationStr() {
 void EngineRecord::writeCueLine() {
     if (!m_pCurrentTrack) {return;}
     // CDDA is specified as having 75 frames a second
-    unsigned long cueFrame = ((unsigned long) ((m_frames / (m_sampleRate / 75))) % 75);
-    m_cueFile.write(QString("  TRACK %1 AUDIO\n")
-                    .arg((double)m_cueTrack, 2, 'f', 0, '0')
-                    .toLatin1());
-    m_cueFile.write(QString("    TITLE \"%1\"\n")
-        .arg(m_pCurrentTrack->getTitle()).toLatin1());
-    m_cueFile.write(QString("    PERFORMER \"%1\"\n")
-        .arg(m_pCurrentTrack->getArtist()).toLatin1());
+    auto cueFrame = ((unsigned long) ((m_frames / (m_sampleRate / 75))) % 75);
+    m_cueFile.write(QString("  TRACK %1 AUDIO\n").arg((double)m_cueTrack, 2, 'f', 0, '0').toLatin1());
+    m_cueFile.write(QString("    TITLE \"%1\"\n").arg(m_pCurrentTrack->getTitle()).toLatin1());
+    m_cueFile.write(QString("    PERFORMER \"%1\"\n").arg(m_pCurrentTrack->getArtist()).toLatin1());
     // Woefully inaccurate (at the seconds level anyways).
     // We'd need a signal fired state tracker
     // for the track detection code.
@@ -208,30 +201,36 @@ void EngineRecord::writeCueLine() {
                     .arg((double)cueFrame, 2, 'f', 0, '0').toLatin1());
 }
 // Encoder calls this method to write compressed audio
-int EngineRecord::write(unsigned char *data,int length) {
-    if (!fileOpen()) {return EINVAL;}
-    if (length> 0) {m_dataStream.writeRawData((const char*) data, length);}
+int EngineRecord::write(unsigned char *data,int length)
+{
+    if (!fileOpen()) return EINVAL;
+    if (length> 0) m_dataStream.writeRawData((const char*) data, length);
     emit(bytesRecorded((length)));
     return length;
 }
-bool EngineRecord::fileOpen() {
+bool EngineRecord::fileOpen()
+{
     // Both encoder and file must be initialized.
     return (m_file.handle() != -1);
 }
 bool EngineRecord::openFile() {
     // Unfortunately, we cannot use QFile for writing WAV and AIFF audio.
     // We can use a QFile to write compressed audio.
-    if (m_pEncoder) {
+    if (m_pEncoder)
+    {
         m_file.setFileName(m_fileName);
-        if (!m_file.open(QIODevice::WriteOnly)) {
+        if (!m_file.open(QIODevice::WriteOnly))
+        {
             qDebug() << "Could not write:" << m_fileName;
             return false;
         }
         if (m_file.handle() != -1) {m_dataStream.setDevice(&m_file);}
-    } else {return false;}
+    }
+    else return false;
     // Check if file is really open.
-    if (!fileOpen()) {
-        ErrorDialogProperties* props = ErrorDialogHandler::instance()->newDialogProperties();
+    if (!fileOpen())
+    {
+        auto props = ErrorDialogHandler::instance()->newDialogProperties();
         props->setType(DLG_WARNING);
         props->setTitle(tr("Recording"));
         props->setText("<html>"+tr("Could not create audio file for recording!")
@@ -244,20 +243,23 @@ bool EngineRecord::openFile() {
     return true;
 }
 bool EngineRecord::openCueFile() {
-    if (m_cueFileName.length() <= 0) {return false;}
+    if (m_cueFileName.length() <= 0) return false;
     qDebug() << "Opening Cue File:" << m_cueFileName;
     m_cueFile.setFileName(m_cueFileName);
     // TODO(rryan): maybe we need to use the sandbox to get read/write rights on Mac OS ?!
-    if (!m_cueFile.open(QIODevice::WriteOnly)) {
+    if (!m_cueFile.open(QIODevice::WriteOnly))
+    {
         qDebug() << "Could not write Cue File:" << m_cueFileName;
         return false;
     }
-    if (m_baAuthor.length() > 0) {
+    if (m_baAuthor.length() > 0)
+    {
         m_cueFile.write(QString("PERFORMER \"%1\"\n")
                         .arg(QString(m_baAuthor).replace(QString("\""), QString("\\\"")))
                         .toLatin1());
     }
-    if (m_baTitle.length() > 0) {
+    if (m_baTitle.length() > 0)
+    {
         m_cueFile.write(QString("TITLE \"%1\"\n")
                         .arg(QString(m_baTitle).replace(QString("\""), QString("\\\"")))
                         .toLatin1());
@@ -269,9 +271,11 @@ bool EngineRecord::openCueFile() {
     return true;
 }
 void EngineRecord::closeFile() {
-    if (m_file.handle() != -1) {
+    if (m_file.handle() != -1)
+    {
         // Close QFile and encoder, if open.
-        if (m_pEncoder) {
+        if (m_pEncoder)
+        {
             m_pEncoder->flush();
             delete m_pEncoder;
             m_pEncoder = nullptr;
@@ -279,4 +283,7 @@ void EngineRecord::closeFile() {
         m_file.close();
     }
 }
-void EngineRecord::closeCueFile() { if (m_cueFile.handle() != -1) {m_cueFile.close();}}
+void EngineRecord::closeCueFile() 
+{
+  if (m_cueFile.handle() != -1) m_cueFile.close();
+}

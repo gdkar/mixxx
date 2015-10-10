@@ -15,21 +15,18 @@ SongDownloader::SongDownloader(QObject* parent)
       m_pReply(nullptr),
       m_pRequest(nullptr) {
     qDebug() << "SongDownloader constructed";
-
     m_pNetwork = new QNetworkAccessManager();
-    //connect(m_pNetwork, SIGNAL(finished(QNetworkReply*)),
-    //     this, SLOT(finishedSlot(QNetworkReply*)));
 }
-
-SongDownloader::~SongDownloader() {
+SongDownloader::~SongDownloader()
+{
     delete m_pNetwork;
-
     delete m_pDownloadedFile;
     m_pDownloadedFile = nullptr;
     delete m_pRequest;
     m_pRequest = nullptr;
 }
-bool SongDownloader::downloadSongFromURL(QUrl& url) {
+bool SongDownloader::downloadSongFromURL(QUrl& url)
+{
     qDebug() << "SongDownloader::downloadSongFromURL()";
     m_downloadQueue.enqueue(url);
     downloadFromQueue();
@@ -41,14 +38,12 @@ bool SongDownloader::downloadFromQueue() {
     auto filename = downloadUrl.path();
     QFileInfo fileInfo(filename);
     filename = fileInfo.fileName();
-
     m_pDownloadedFile = new QFile(filename + TEMP_EXTENSION);
     if (!m_pDownloadedFile->open(QIODevice::WriteOnly)) {
         //TODO: Error
         qDebug() << "Failed to open" << m_pDownloadedFile->fileName();
         return false;
     }
-
     qDebug() << "SongDownloader: setting up download stuff";
     m_pRequest = new QNetworkRequest(downloadUrl);
     //Set up user agent for great justice

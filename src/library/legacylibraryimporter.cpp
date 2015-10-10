@@ -47,60 +47,49 @@ void LegacyLibraryImporter::import() {
         //qDebug() << "Could not import legacy 1.7 XML library: " << trackXML;
         return;
     }
-
-    QString* errorMsg = NULL;
-    int* errorLine = NULL;
-    int* errorColumn = NULL;
-
+    QString* errorMsg = nullptr;
+    int* errorLine = nullptr;
+    int* errorColumn = nullptr;
     qDebug() << "Starting upgrade from 1.7 library...";
-
     QHash<TrackId, QString> playlistHashTable; // Maps track indices onto track locations
     QList<LegacyPlaylist> legacyPlaylists; // <= 1.7 playlists
-
-    if (doc.setContent(&file, false, errorMsg, errorLine, errorColumn)) {
-
-        QDomNodeList playlistList = doc.elementsByTagName("Playlist");
+    if (doc.setContent(&file, false, errorMsg, errorLine, errorColumn))
+    {
+        auto playlistList = doc.elementsByTagName("Playlist");
         QDomNode playlist;
-        for (int i = 0; i < playlistList.size(); i++) {
+        for (auto i = 0; i < playlistList.size(); i++) {
             LegacyPlaylist legPlaylist;
             playlist = playlistList.at(i);
-
-            QString name = playlist.firstChildElement("Name").text();
-
+            auto name = playlist.firstChildElement("Name").text();
             legPlaylist.name = name;
-
             // Store the IDs in the hash table so we can map them to track locations later,
             // and also store them in-order in a temporary playlist struct.
-            QDomElement listNode = playlist.firstChildElement("List").toElement();
-            QDomNodeList trackIDs = listNode.elementsByTagName("Id");
-            for (int j = 0; j < trackIDs.size(); j++) {
-                TrackId trackId(trackIDs.at(j).toElement().text().toInt());
-                if (!playlistHashTable.contains(trackId))
-                    playlistHashTable.insert(trackId, "");
+            auto listNode = playlist.firstChildElement("List").toElement();
+            auto trackIDs = listNode.elementsByTagName("Id");
+            for (auto j = 0; j < trackIDs.size(); j++) {
+                auto trackId = TrackId(trackIDs.at(j).toElement().text().toInt());
+                if (!playlistHashTable.contains(trackId)) playlistHashTable.insert(trackId, "");
                 legPlaylist.indexes.push_back(trackId); // Save this track id.
             }
             // Save this playlist in our list.
             legacyPlaylists.push_back(legPlaylist);
         }
-
-        QDomNodeList trackList = doc.elementsByTagName("Track");
+        auto trackList = doc.elementsByTagName("Track");
         QDomNode track;
-
-        for (int i = 0; i < trackList.size(); i++) {
+        for (auto i = 0; i < trackList.size(); i++) {
             // blah, can't figure out how to use an iterator with QDomNodeList
             track = trackList.at(i);
             TrackInfoObject trackInfo17(track);
             // Only add the track to the DB if the file exists on disk,
             // because Mixxx <= 1.7 had no logic to deal with detecting deleted
             // files.
-
-            if (trackInfo17.exists()) {
+            if (trackInfo17.exists())
+            {
                 // Create a TrackInfoObject by directly parsing
                 // the actual MP3/OGG/whatever because 1.7 didn't parse
                 // genre and album tags (so the imported TIO doesn't have
                 // those fields).
                 emit(progress("Upgrading Mixxx 1.7 Library: " + trackInfo17.getTitle()));
-
                 // Read the metadata we couldn't support in <1.8 from file.
                 QFileInfo fileInfo(trackInfo17.getLocation());
                 // Ensure we have the absolute file path stored
@@ -113,49 +102,44 @@ void LegacyLibraryImporter::import() {
                 trackInfo17.setTrackNumber(trackInfoNew.getTrackNumber());
                 trackInfo17.setKeys(trackInfoNew.getKeys());
                 trackInfo17.setHeaderParsed(true);
-
                 // Import the track's saved cue point if it is non-zero.
-                float fCuePoint = trackInfo17.getCuePoint();
-                if (fCuePoint != 0.0f) {
-                    Cue* pCue = trackInfo17.addCue();
+                auto fCuePoint = trackInfo17.getCuePoint();
+                if (fCuePoint != 0.0f)
+                {
+                    auto pCue = trackInfo17.addCue();
                     pCue->setType(Cue::CUE);
                     pCue->setPosition(fCuePoint);
                 }
-
                 // Provide a no-op deleter b/c this Track is on the stack.
-                TrackPointer pTrack(&trackInfo17, &doNothing);
+                auto pTrack = TrackPointer(&trackInfo17, &doNothing);
                 m_trackDao.saveTrack(pTrack);
-
                 // Check if this track is used in a playlist anywhere. If it is, save the
                 // track location. (The "id" of a track in 1.8 is a database index, so it's totally
                 // different. Using the track location is the best way for us to identify the song.)
-                TrackId trackId(pTrack->getId());
-                if (playlistHashTable.contains(trackId)) {
+                auto trackId = pTrack->getId();
+                if (playlistHashTable.contains(trackId))
+                {
                     playlistHashTable[trackId] = pTrack->getLocation();
                 }
             }
         }
-
-
         // Create the imported playlists
         QListIterator<LegacyPlaylist> it(legacyPlaylists);
         LegacyPlaylist current;
-        while (it.hasNext()) {
+        while (it.hasNext())
+        {
             current = it.next();
             emit(progress("Upgrading Mixxx 1.7 Playlists: " + current.name));
-
             // Create the playlist with the imported name.
             //qDebug() << "Importing playlist:" << current.name;
-            int playlistId = m_playlistDao.createPlaylist(current.name);
-
+            auto playlistId = m_playlistDao.createPlaylist(current.name);
             // For each track ID in the XML...
-            QList<TrackId> trackIds = current.indexes;
-            for (int i = 0; i < trackIds.size(); i++)
+            auto trackIds = current.indexes;
+            for (auto i = 0; i < trackIds.size(); i++)
             {
                 QString trackLocation;
-                TrackId trackId(trackIds[i]);
+                auto  trackId = trackIds[i];
                 //qDebug() << "track ID:" << id;
-
                 // Try to resolve the (XML's) track ID to a track location.
                 if (playlistHashTable.contains(trackId)) {
                     trackLocation = playlistHashTable[trackId];

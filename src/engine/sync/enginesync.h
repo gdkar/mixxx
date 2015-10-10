@@ -21,7 +21,9 @@ _Pragma("once")
 #include "engine/sync/syncable.h"
 class EngineChannel;
 class InternalClock;
-class EngineSync : public SyncableListener {
+class EngineSync : public QObject, public SyncableListener {
+  Q_OBJECT
+  Q_INTERFACES(SyncableListener);
   public:
     explicit EngineSync(ConfigObject<ConfigValue>* pConfig);
     virtual ~EngineSync();
@@ -30,9 +32,8 @@ class EngineSync : public SyncableListener {
     void onCallbackStart(int sampleRate, int bufferSize);
     void onCallbackEnd(int sampleRate, int bufferSize);
     // Only for testing. Do not use.
-    Syncable* getSyncableForGroup(const QString& group);
-    Syncable* getMasterSyncable() {return m_pMasterSyncable;}
-
+    Syncable* getSyncableForGroup(const QString& group) const;
+    Syncable* getMasterSyncable() const;
     // Used by Syncables to tell EngineSync it wants to be enabled in a
     // specific mode. If the state change is accepted, EngineSync calls
     // Syncable::notifySyncModeChanged.

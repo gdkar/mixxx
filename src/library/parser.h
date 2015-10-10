@@ -11,9 +11,7 @@
 //
 //
 
-#ifndef PARSER_H
-#define PARSER_H
-
+_Pragma("once")
 /**Developer Information:
 This is the rootclass for all parser classes for the Importer class.
 It can be used to write a new type-specific parser by deriving a new class
@@ -23,7 +21,7 @@ it afterwards fro proper functioning
 
 #include <QObject>
 #include <QString>
-#include <QList>
+#include <QStringList>
 
 class Parser : public QObject {
   public:
@@ -40,12 +38,12 @@ class Parser : public QObject {
     Note for developers:
     This function should return an empty PtrList
      or 0 in order for the trackimporter to function**/
-    virtual QList<QString> parse(QString) = 0;
+    virtual QStringList parse(QString) = 0;
 
 
 protected:
     /**Pointer to the parsed Filelocations**/
-    QList<QString> m_sLocations;
+    QStringList m_sLocations;
     /**Returns the number of parsed locations**/
     long countParsed();
     /**Clears m_psLocations**/
@@ -57,5 +55,3 @@ protected:
     // check for Utf8 encoding
     static bool isUtf8(const char* string);
 };
-
-#endif

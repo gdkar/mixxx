@@ -48,7 +48,7 @@ class EngineFilterMoogLadderBase : public EngineObjectConstIn {
 
   public:
     EngineFilterMoogLadderBase(unsigned int sampleRate, float cutoff, float resonance,QObject*pParent)
-    :EngineObjectConstIn(pParent)
+    :EngineObjectConstIn(QString{},pParent)
     {
         setParameter(sampleRate, cutoff, resonance);
         initBuffers();

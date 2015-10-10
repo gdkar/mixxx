@@ -375,3 +375,15 @@ void Library::slotSetTrackTableRowHeight(int rowHeight) {
     m_iTrackTableRowHeight = rowHeight;
     emit(setTrackTableRowHeight(rowHeight));
 }
+TrackCollection* Library::getTrackCollection()
+{
+  return m_pTrackCollection;
+}
+int Library::getTrackTableRowHeight() const
+{
+  return m_iTrackTableRowHeight;
+}
+QFont Library::getTrackTableFont() const
+{
+  return m_trackTableFont;
+}

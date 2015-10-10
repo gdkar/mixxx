@@ -28,17 +28,24 @@ _Pragma("once")
 class EngineObject : public QObject {
     Q_OBJECT
   public:
-    EngineObject(QObject *pParent );
+    EngineObject(QString group, QObject *pParent );
     virtual ~EngineObject();
     virtual void process(CSAMPLE* pInOut, const int iBufferSize) = 0;
     // Sub-classes re-implement and populate GroupFeatureState with the features
     // they extract.
-    virtual void collectFeatures(GroupFeatureState* pGroupFeatures) const { Q_UNUSED(pGroupFeatures); }
+    virtual void collectFeatures(GroupFeatureState* pGroupFeatures) const;
+    virtual QString getGroup() const;
+  protected:
+    const QString m_group;
 };
 class EngineObjectConstIn : public QObject {
     Q_OBJECT
   public:
-    EngineObjectConstIn( QObject *pParent);
+    EngineObjectConstIn( QString group, QObject *pParent);
     virtual ~EngineObjectConstIn();
     virtual void process(const CSAMPLE* pIn, CSAMPLE* pOut, const int iBufferSize) = 0;
+    virtual QString getGroup() const;
+  protected:
+    const QString m_group;
+
 };

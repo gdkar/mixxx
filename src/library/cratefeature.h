@@ -1,6 +1,4 @@
-#ifndef CRATEFEATURE_H
-#define CRATEFEATURE_H
-
+_Pragma("once")
 #include <QModelIndex>
 #include <QList>
 #include <QPair>
@@ -28,21 +26,14 @@ class CrateFeature : public LibraryFeature {
                  TrackCollection* pTrackCollection,
                  ConfigObject<ConfigValue>* pConfig);
     virtual ~CrateFeature();
-
     QVariant title();
     QIcon getIcon();
-
-    bool dropAcceptChild(const QModelIndex& index, QList<QUrl> urls,
-                         QObject* pSource);
+    bool dropAcceptChild(const QModelIndex& index, QList<QUrl> urls,QObject* pSource);
     bool dragMoveAcceptChild(const QModelIndex& index, QUrl url);
-
     void bindWidget(WLibrary* libraryWidget,QObject* keyboard);
-
     TreeItemModel* getChildModel();
-
   signals:
     void analyzeTracks(QList<TrackId>);
-
   public slots:
     void activate();
     void activateChild(const QModelIndex& index);
@@ -94,5 +85,3 @@ class CrateFeature : public LibraryFeature {
     TrackPointer m_pSelectedTrack;
     QSet<int> m_cratesSelectedTrackIsIn;
 };
-
-#endif /* CRATEFEATURE_H */

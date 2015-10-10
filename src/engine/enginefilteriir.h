@@ -26,7 +26,7 @@ enum IIRPass {
 class EngineFilterIIRBase : public EngineObjectConstIn {
   public:
     EngineFilterIIRBase(QObject *pParent)
-      :EngineObjectConstIn(pParent){}
+      :EngineObjectConstIn(QString{},pParent){}
     virtual ~EngineFilterIIRBase() = default;
     virtual void assumeSettled() = 0;
 };

@@ -29,6 +29,7 @@ const double kNoTrigger = -1;
  */
 class EngineControl : public QObject {
     Q_OBJECT
+    Q_PROPERTY(QString group READ getGroup CONSTANT);
   public:
     EngineControl(QString group, ConfigObject<ConfigValue>* _config, QObject *pParent);
     virtual ~EngineControl();
@@ -42,22 +43,18 @@ class EngineControl : public QObject {
                            double dCurrentSample,
                            double dTotalSamples,
                            int iBufferSize);
-
     virtual double nextTrigger(double dRate,
                                double dCurrentSample,
                                double dTotalSamples,
                                int iBufferSize);
-
     virtual double getTrigger(double dRate,
                               double dCurrentSample,
                               double dTotalSamples,
                               int iBufferSize);
-
     // hintReader allows the EngineControl to provide hints to the reader to
     // indicate that the given portion of a song is a potential imminent seek
     // target.
     virtual void hintReader(HintVector* pHintList);
-
     virtual void setEngineMaster(EngineMaster* pEngineMaster);
     void setEngineBuffer(EngineBuffer* pEngineBuffer);
     virtual void setCurrentSample(double dCurrentSample, double dTotalSamples);
@@ -65,23 +62,23 @@ class EngineControl : public QObject {
     double getTotalSamples() const;
     bool atEndPosition() const;
     QString getGroup() const;
-
     // Called to collect player features for effects processing.
     virtual void collectFeatureState(GroupFeatureState* pGroupFeatures) const;
+    ConfigObject<ConfigValue>* getConfig();
     // Called whenever a seek occurs to allow the EngineControl to respond.
-    virtual void notifySeek(double dNewPlaypo);
   public slots:
     virtual void trackLoaded(TrackPointer pTrack);
     virtual void trackUnloaded(TrackPointer pTrack);
-  protected:
+    virtual void notifySeek(double dNewPlaypo);
+  protected slots:
     void seek(double fractionalPosition);
     void seekAbs(double sample);
     // Seek to an exact sample and don't allow quantizing adjustment.
     void seekExact(double sample);
     EngineBuffer* pickSyncTarget();
-    ConfigObject<ConfigValue>* getConfig();
     EngineMaster* getEngineMaster();
     EngineBuffer* getEngineBuffer();
+  protected:
     QString m_group;
     ConfigObject<ConfigValue>* m_pConfig = nullptr;
   private:

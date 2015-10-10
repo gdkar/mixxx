@@ -17,8 +17,6 @@ public:
     virtual void process(const CSAMPLE* pIn, const int iLen) = 0;
     virtual void cleanup(TrackPointer tio) = 0;
     virtual void finalise(TrackPointer tio) = 0;
-    Analyser(QObject * p)
-      :QObject(p)
-    {}
-    virtual ~Analyser() = default;
+    Analyser(QObject * p);
+    virtual ~Analyser() ;
 };

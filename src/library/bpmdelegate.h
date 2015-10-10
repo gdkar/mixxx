@@ -1,6 +1,4 @@
-#ifndef BPMDELEGATE_H
-#define BPMDELEGATE_H
-
+_Pragma("once")
 #include <QCheckBox>
 #include <QModelIndex>
 #include <QObject>
@@ -14,14 +12,9 @@ class BPMDelegate : public QStyledItemDelegate {
   public:
     explicit BPMDelegate(QObject* parent);
     virtual ~BPMDelegate();
-
-    void paint(QPainter *painter, const QStyleOptionViewItem &option,
-               const QModelIndex &index) const;
-
+    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
   private:
     QTableView* m_pTableView;
     QCheckBox* m_pCheckBox;
     QItemEditorFactory* m_pFactory;
 };
-
-#endif // BUTTONCOLUMNDELEGATE_H

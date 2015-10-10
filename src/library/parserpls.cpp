@@ -36,7 +36,7 @@ ParserPls::~ParserPls()
 {
 }
 
-QList<QString> ParserPls::parse(QString sFilename)
+QStringList ParserPls::parse(QString sFilename)
 {
     //long numEntries =0;
     QFile file(sFilename);
@@ -77,11 +77,11 @@ QList<QString> ParserPls::parse(QString sFilename)
         if(m_sLocations.count() != 0)
             return m_sLocations;
         else
-            return QList<QString>(); // NULL pointer returned when no locations were found
+            return QStringList(); // NULL pointer returned when no locations were found
     }
 
     file.close();
-    return QList<QString>(); //if we get here something went wrong :D
+    return QStringList(); //if we get here something went wrong :D
 }
 
 long ParserPls::getNumEntries(QTextStream *stream)
@@ -148,7 +148,7 @@ QString ParserPls::getFilepath(QTextStream *stream, QString basepath)
     return 0;
 
 }
-bool ParserPls::writePLSFile(const QString &file_str, QList<QString> &items, bool useRelativePath)
+bool ParserPls::writePLSFile(const QString &file_str, QStringList &items, bool useRelativePath)
 {
     QFile file(file_str);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {

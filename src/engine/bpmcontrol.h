@@ -40,9 +40,7 @@ class BpmControl : public EngineControl {
     void resetSyncAdjustment();
     double updateLocalBpm();
     double updateBeatDistance();
-
     void collectFeatures(GroupFeatureState* pGroupFeatures) const;
-
     // Calculates contextual information about beats: the previous beat, the
     // next beat, the current beat length, and the beat ratio (how far dPosition
     // lies within the current beat). Returns false if a previous or next beat
@@ -53,7 +51,6 @@ class BpmControl : public EngineControl {
                                double* dpNextBeat,
                                double* dpBeatLength,
                                double* dpBeatPercentage);
-
     // Alternative version that works if the next and previous beat positions
     // are already known.
     static bool getBeatContextNoLookup(
@@ -62,16 +59,13 @@ class BpmControl : public EngineControl {
                                double dNextBeat,
                                double* dpBeatLength,
                                double* dpBeatPercentage);
-
     // Returns the shortest change in percentage needed to achieve
     // target_percentage.
     // Example: shortestPercentageChange(0.99, 0.01) == 0.02
     static double shortestPercentageChange(double current_percentage, double target_percentage);
-
   public slots:
     virtual void trackLoaded(TrackPointer pTrack);
     virtual void trackUnloaded(TrackPointer pTrack);
-
   private slots:
     void slotSetEngineBpm(double);
     void slotFileBpmChanged(double);

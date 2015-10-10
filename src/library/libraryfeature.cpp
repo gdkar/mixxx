@@ -10,6 +10,35 @@ LibraryFeature::LibraryFeature(QObject* parent)
               : QObject(parent) {
 }
 
-LibraryFeature::~LibraryFeature() {
-    
+LibraryFeature::~LibraryFeature() = default;
+bool LibraryFeature::dropAccept(QList<QUrl>,QObject*)
+{
+  return false;
+}
+bool LibraryFeature::dropAcceptChild(const QModelIndex&,QList<QUrl>,QObject*)
+{
+  return false;
+}
+bool LibraryFeature::dragMoveAccept(QUrl)
+{
+  return false;
+}
+bool LibraryFeature::dragMoveAcceptChild(const QModelIndex&,QUrl)
+{
+  return false;
+}
+void LibraryFeature::bindWidget(WLibrary*,QObject*)
+{
+}
+void LibraryFeature::activateChild(const QModelIndex&)
+{
+}
+void LibraryFeature::onRightClick(const QPoint&)
+{
+}
+void LibraryFeature::onRightClickChild(const QPoint&,QModelIndex)
+{
+}
+void LibraryFeature::onLazyChildExpandation(const QModelIndex&)
+{
 }

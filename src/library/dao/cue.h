@@ -1,9 +1,7 @@
 // cue.h
 // Created 10/26/2009 by RJ Ryan (rryan@mit.edu)
 
-#ifndef CUE_H
-#define CUE_H
-
+_Pragma("once")
 #include <QObject>
 #include <QMutex>
 
@@ -70,5 +68,3 @@ class Cue : public QObject {
     friend class TrackInfoObject;
     friend class CueDAO;
 };
-
-#endif /* CUE_H */

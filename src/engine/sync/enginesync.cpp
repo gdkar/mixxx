@@ -47,8 +47,12 @@ void EngineSync::addSyncableDeck(Syncable* pSyncable) {
 void EngineSync::onCallbackStart(int sampleRate, int bufferSize) {
     m_pInternalClock->onCallbackStart(sampleRate, bufferSize);
 }
-EngineChannel* EngineSync::getMaster() const {return m_pMasterSyncable ? m_pMasterSyncable->getChannel() : nullptr;}
-Syncable* EngineSync::getSyncableForGroup(const QString& group) {
+EngineChannel* EngineSync::getMaster() const 
+{
+  return m_pMasterSyncable ? m_pMasterSyncable->getChannel() : nullptr;
+}
+Syncable* EngineSync::getSyncableForGroup(const QString& group) const
+{
     for(auto  pSyncable: m_syncables) {
         if (pSyncable->getGroup() == group) {return pSyncable;}
     }
@@ -490,4 +494,8 @@ EngineChannel* EngineSync::pickNonSyncSyncTarget(EngineChannel* pDontPick) const
     // No playing decks have a BPM. Go with the first deck that was stopped but
     // had a BPM.
     return pFirstNonplayingDeck;
+}
+Syncable * EngineSync::getMasterSyncable( ) const
+{
+  return m_pMasterSyncable;
 }

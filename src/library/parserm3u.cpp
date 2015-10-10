@@ -38,21 +38,12 @@
           or on a mounted harddrive.
  **/
 
-ParserM3u::ParserM3u() : Parser()
-{
-}
-
-ParserM3u::~ParserM3u()
-{
-
-}
-
-
-QList<QString> ParserM3u::parse(QString sFilename)
+ParserM3u::ParserM3u() = default;
+ParserM3u::~ParserM3u() = default;
+QStringList ParserM3u::parse(QString sFilename)
 {
     QFile file(sFilename);
-    QString basepath = sFilename.section('/', 0, -2);
-
+    auto  basepath = sFilename.section('/', 0, -2);
     clearLocations();
     //qDebug() << "ParserM3u: Starting to parse.";
     if (file.open(QIODevice::ReadOnly) && !isBinary(sFilename)) {
@@ -92,7 +83,7 @@ QList<QString> ParserM3u::parse(QString sFilename)
     }
 
     file.close();
-    return QList<QString>(); //if we get here something went wrong
+    return QStringList(); //if we get here something went wrong
 }
 
 
@@ -136,15 +127,15 @@ QString ParserM3u::getFilepath(QTextStream *stream, QString basepath)
 
 }
 
-bool ParserM3u::writeM3UFile(const QString &file_str, QList<QString> &items, bool useRelativePath) {
+bool ParserM3u::writeM3UFile(const QString &file_str, QStringList  &items, bool useRelativePath) {
     return writeM3UFile(file_str, items, useRelativePath, false);
 }
 
-bool ParserM3u::writeM3U8File(const QString &file_str, QList<QString> &items, bool useRelativePath) {
+bool ParserM3u::writeM3U8File(const QString &file_str, QStringList  &items, bool useRelativePath) {
     return writeM3UFile(file_str, items, useRelativePath, true);
 }
 
-bool ParserM3u::writeM3UFile(const QString &file_str, QList<QString> &items, bool useRelativePath, bool useUtf8)
+bool ParserM3u::writeM3UFile(const QString &file_str, QStringLit &items, bool useRelativePath, bool useUtf8)
 {
     // Important note:
     // On Windows \n will produce a <CR><CL> (=\r\n)

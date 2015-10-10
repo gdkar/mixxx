@@ -19,37 +19,36 @@
 #include <QDir>
 #include <QMessageBox>
 
-ParserCsv::ParserCsv() : Parser() {
-}
-
-ParserCsv::~ParserCsv() {
-}
-
-QList<QString> ParserCsv::parse(QString sFilename) {
+ParserCsv::ParserCsv() : Parser()  = default;
+ParserCsv::~ParserCsv() = default;
+QStringList ParserCsv::parse(QString sFilename)
+{
     QFile file(sFilename);
-    QString basepath = sFilename.section('/', 0, -2);
-
+    auto basepath = sFilename.section('/', 0, -2);
     clearLocations();
     //qDebug() << "ParserCsv: Starting to parse.";
     if (file.open(QIODevice::ReadOnly) && !isBinary(sFilename)) {
-        QByteArray ba = file.readAll();
-
-        QList<QList<QString> > tokens = tokenize(ba, ',');
-
+        auto ba = file.readAll();
+        auto tokens = tokenize(ba, ',');
         // detect Location column
-        int loc_coll = 0x7fffffff;
-        if (tokens.size()) {
-            for (int i = 0; i < tokens[0].size(); ++i) {
-                if (tokens[0][i] == tr("Location")) {
+        auto loc_coll = 0x7fffffff;
+        if (tokens.size())
+        {
+            for (auto i = 0; i < tokens[0].size(); ++i)
+            {
+                if (tokens[0][i] == tr("Location"))
+                {
                     loc_coll = i;
                     break;
                 }
             }
-            for (int i = 1; i < tokens.size(); ++i) {
-                if (loc_coll < tokens[i].size()) {
+            for (auto i = 1; i < tokens.size(); ++i) {
+                if (loc_coll < tokens[i].size())
+                {
                     // Todo: check if path is relative
-                    QFileInfo fi = tokens[i][loc_coll];
-                    if (fi.isRelative()) {
+                    auto fi = tokens[i][loc_coll];
+                    if (fi.isRelative())
+                    {
                         // add base path
                         qDebug() << "is relative" << basepath << fi.filePath();
                         fi.setFile(basepath,fi.filePath());
@@ -58,31 +57,23 @@ QList<QString> ParserCsv::parse(QString sFilename) {
                 }
             }
         }
-
         file.close();
-
-        if(m_sLocations.count() != 0)
-            return m_sLocations;
-        else
-            return QList<QString>(); // NULL pointer returned when no locations were found
-
+        if(m_sLocations.count() != 0) return m_sLocations;
+        else                          return QStringList(); // NULL pointer returned when no locations were found
     }
-
     file.close();
-    return QList<QString>(); //if we get here something went wrong
+    return QStringList(); //if we get here something went wrong
 }
 
 // Code was posted at http://www.qtcentre.org/threads/35511-Parsing-CSV-data
 // by "adzajac" and adapted to use QT Classes
-QList<QList<QString> > ParserCsv::tokenize(const QByteArray& str, char delimiter) {
-    QList<QList<QString> > tokens;
+QList<QStringList > ParserCsv::tokenize(const QByteArray& str, char delimiter) {
+    QList<QStringList > tokens;
 
     unsigned int row = 0;
     bool quotes = false;
     QByteArray field = "";
-
-    tokens.append(QList<QString>());
-
+    tokens.append(QStringList{});
     for (int pos = 0; pos < str.length(); ++pos) {
         char c = str[pos];
         if (!quotes && c == '"') {
@@ -108,7 +99,7 @@ QList<QList<QString> > ParserCsv::tokenize(const QByteArray& str, char delimiter
                 tokens[row].append(QString::fromLatin1(field));
             }
             field.clear();
-            tokens.append(QList<QString>());
+            tokens.append(QStringList());
             row++;
         } else {
             field.push_back(c);

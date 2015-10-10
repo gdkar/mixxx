@@ -12,14 +12,15 @@ class ControlObjectSlave;
 class ControlPushButton;
 class SyncControl : public EngineControl, public Syncable {
     Q_OBJECT
+    Q_INTERFACES(Syncable);
   public:
+    QString getGroup() const;
     static const double kBpmUnity;
     static const double kBpmHalve;
     static const double kBpmDouble;
     SyncControl(const QString& group, ConfigObject<ConfigValue>* pConfig,EngineChannel* pChannel, SyncableListener* pEngineSync,QObject *);
     virtual ~SyncControl();
-    QString getGroup() const { return m_sGroup; }
-    EngineChannel* getChannel() const { return m_pChannel; }
+    EngineChannel* getChannel() const;
     double getBpm() const;
     SyncMode getSyncMode() const;
     void notifySyncModeChanged(SyncMode mode);
@@ -72,40 +73,37 @@ class SyncControl : public EngineControl, public Syncable {
     // should match against.
     double determineBpmMultiplier(double myBpm, double targetBpm) const;
     void updateTargetBeatDistance();
-    QString m_sGroup;
     // The only reason we have this pointer is an optimzation so that the
     // EngineSync can ask us what our EngineChannel is. EngineMaster in turn
     // asks EngineSync what EngineChannel is the "master" channel.
-    EngineChannel* m_pChannel;
-    SyncableListener* m_pEngineSync;
-    BpmControl* m_pBpmControl;
-    RateControl* m_pRateControl;
-    bool m_bOldScratching;
+    EngineChannel* m_pChannel = nullptr;
+    SyncableListener* m_pEngineSync = nullptr;
+    BpmControl* m_pBpmControl = nullptr;
+    RateControl* m_pRateControl = nullptr;
+    bool m_bOldScratching = false;
     // When syncing, sometimes it's better to match half or double the
     // master bpm.
     // The amount we should multiply the master BPM to find a good sync match.
     // Sometimes this is 2 or 0.5.
-    double m_masterBpmAdjustFactor;
+    double m_masterBpmAdjustFactor = 1.0;
     // It is handy to store the raw reported target beat distance in case the
     // multiplier changes and we need to recalculate the target distance.
-    double m_unmultipliedTargetBeatDistance;
-    double m_beatDistance;
-    double m_prevLocalBpm;
-
-    QScopedPointer<ControlPushButton> m_pSyncMode;
-    QScopedPointer<ControlPushButton> m_pSyncMasterEnabled;
-    QScopedPointer<ControlPushButton> m_pSyncEnabled;
-    QScopedPointer<ControlObject> m_pSyncBeatDistance;
-
-    QScopedPointer<ControlObjectSlave> m_pPlayButton;
-    QScopedPointer<ControlObjectSlave> m_pBpm;
-    QScopedPointer<ControlObjectSlave> m_pLocalBpm;
-    QScopedPointer<ControlObjectSlave> m_pFileBpm;
-    QScopedPointer<ControlObjectSlave> m_pRateSlider;
-    QScopedPointer<ControlObjectSlave> m_pRateDirection;
-    QScopedPointer<ControlObjectSlave> m_pRateRange;
-    QScopedPointer<ControlObjectSlave> m_pVCEnabled;
-    QScopedPointer<ControlObjectSlave> m_pPassthroughEnabled;
-    QScopedPointer<ControlObjectSlave> m_pEjectButton;
-    QScopedPointer<ControlObjectSlave> m_pSyncPhaseButton;
+    double m_unmultipliedTargetBeatDistance = 0.0;
+    double m_beatDistance = 0.0;
+    double m_prevLocalBpm = 0.0;
+    ControlPushButton* m_pSyncMode = nullptr;
+    ControlPushButton* m_pSyncMasterEnabled = nullptr;
+    ControlPushButton* m_pSyncEnabled = nullptr;
+    ControlObject* m_pSyncBeatDistance= nullptr;
+    ControlObjectSlave* m_pPlayButton= nullptr;
+    ControlObjectSlave* m_pBpm= nullptr;
+    ControlObjectSlave* m_pLocalBpm= nullptr;
+    ControlObjectSlave* m_pFileBpm= nullptr;
+    ControlObjectSlave* m_pRateSlider= nullptr;
+    ControlObjectSlave* m_pRateDirection= nullptr;
+    ControlObjectSlave* m_pRateRange= nullptr;
+    ControlObjectSlave* m_pVCEnabled= nullptr;
+    ControlObjectSlave* m_pPassthroughEnabled= nullptr;
+    ControlObjectSlave* m_pEjectButton= nullptr;
+    ControlObjectSlave* m_pSyncPhaseButton= nullptr;
 };

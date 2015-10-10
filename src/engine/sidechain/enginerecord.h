@@ -30,9 +30,9 @@ class Encoder;
 class EngineRecord : public QObject, public EncoderCallback, public SideChainWorker {
     Q_OBJECT
   public:
-    EngineRecord(ConfigObject<ConfigValue>* _config);
+    EngineRecord(ConfigObject<ConfigValue>* _config,QObject *pParent);
     virtual ~EngineRecord();
-    void process(const CSAMPLE* pBuffer, const int iBufferSize);
+    void process(const CSAMPLE* pBuffer, int iBufferSize);
     void shutdown() {}
     // writes compressed audio to file 
     int write(unsigned char *data, int length);
@@ -56,8 +56,8 @@ class EngineRecord : public QObject, public EncoderCallback, public SideChainWor
     // to avoid changing the metadata during scratches.
     bool metaDataHasChanged();
     void writeCueLine();
-    ConfigObject<ConfigValue>* m_pConfig;
-    Encoder* m_pEncoder;
+    ConfigObject<ConfigValue>* m_pConfig = nullptr;
+    Encoder* m_pEncoder = nullptr;
     QByteArray m_OGGquality;
     QByteArray m_MP3quality;
     QByteArray m_encoding;
@@ -70,17 +70,15 @@ class EngineRecord : public QObject, public EncoderCallback, public SideChainWor
     QFile m_cueFile;
     QDataStream m_dataStream;
 
-    ControlObjectSlave* m_pRecReady;
-    ControlObjectSlave* m_pSamplerate;
-    quint64 m_frames;
-    quint64 m_sampleRate;
-    quint64 m_recordedDuration;
+    ControlObjectSlave* m_pRecReady = nullptr;
+    ControlObjectSlave* m_pSamplerate = nullptr;
+    quint64 m_frames = 0;
+    quint64 m_sampleRate = 0;
+    quint64 m_recordedDuration = 0;
     QString getRecordedDurationStr();
-
-    int m_iMetaDataLife;
-    TrackPointer m_pCurrentTrack;
-
+    int m_iMetaDataLife = 0;
+    TrackPointer m_pCurrentTrack{nullptr};
     QByteArray m_cueFileName;
-    quint64 m_cueTrack;
-    bool m_bCueIsEnabled;
+    quint64 m_cueTrack = 0;
+    bool m_bCueIsEnabled = false;
 };

@@ -453,13 +453,12 @@ void BasePlaylistFeature::slotExportPlaylist() {
         }
     } else {
         // Create and populate a list of files of the playlist
-        QList<QString> playlist_items;
+        QStringList playlist_items;
         int rows = pPlaylistTableModel->rowCount();
         for (int i = 0; i < rows; ++i) {
             QModelIndex index = pPlaylistTableModel->index(i, 0);
             playlist_items << pPlaylistTableModel->getTrackLocation(index);
         }
-
         if (file_location.endsWith(".pls", Qt::CaseInsensitive)) {
             ParserPls::writePLSFile(file_location, playlist_items, useRelativePath);
         } else if (file_location.endsWith(".m3u8", Qt::CaseInsensitive)) {

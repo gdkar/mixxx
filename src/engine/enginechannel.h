@@ -39,8 +39,7 @@ class EngineChannel : public EngineObject {
     EngineChannel(const ChannelHandleAndGroup& handle_group, ChannelOrientation defaultOrientation ,QObject *pParent);
     virtual ~EngineChannel();
     virtual ChannelOrientation getOrientation() const;
-    virtual ChannelHandle getHandle() const {return m_group.handle();}
-    virtual QString getGroup() const {return m_group.name();}
+    virtual ChannelHandle getHandle() const;
     virtual bool isActive() = 0;
     void setPfl(bool enabled);
     virtual bool isPflEnabled() const;
@@ -51,22 +50,18 @@ class EngineChannel : public EngineObject {
     virtual void process(CSAMPLE* pOut, const int iBufferSize) = 0;
     virtual void postProcess(const int iBuffersize) = 0;
     // TODO(XXX) This hack needs to be removed.
-    virtual EngineBuffer* getEngineBuffer() {
-        return nullptr;
-    }
-
+    virtual EngineBuffer* getEngineBuffer() const;
   private slots:
     void slotOrientationLeft(double v);
     void slotOrientationRight(double v);
     void slotOrientationCenter(double v);
-
   private:
-    const ChannelHandleAndGroup m_group;
-    ControlPushButton* m_pMaster;
-    ControlPushButton* m_pPFL;
-    ControlPushButton* m_pOrientation;
-    ControlPushButton* m_pOrientationLeft;
-    ControlPushButton* m_pOrientationRight;
-    ControlPushButton* m_pOrientationCenter;
-    ControlPushButton* m_pTalkover;
+    const ChannelHandleAndGroup m_handle_group;
+    ControlPushButton* m_pMaster = nullptr;
+    ControlPushButton* m_pPFL    = nullptr;
+    ControlPushButton* m_pOrientation = nullptr;
+    ControlPushButton* m_pOrientationLeft = nullptr;
+    ControlPushButton* m_pOrientationRight = nullptr;
+    ControlPushButton* m_pOrientationCenter = nullptr;
+    ControlPushButton* m_pTalkover = nullptr;
 };

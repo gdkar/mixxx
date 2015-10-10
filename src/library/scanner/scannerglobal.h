@@ -1,6 +1,4 @@
-#ifndef SCANNERGLOBAL_H
-#define SCANNERGLOBAL_H
-
+_Pragma("once")
 #include <QSet>
 #include <QHash>
 #include <QRegExp>
@@ -99,4 +97,3 @@ class ScannerGlobal {
     int m_numScannedDirectories;
 };
 typedef QSharedPointer<ScannerGlobal> ScannerGlobalPointer;
-#endif /* SCANNERGLOBAL_H */

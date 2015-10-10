@@ -21,7 +21,7 @@
 #include "util/math.h"
 
 EngineVuMeter::EngineVuMeter(QString group,QObject *p)
-:EngineObject(p)
+:EngineObject(group,p)
 {
     // The VUmeter widget is controlled via a controlpotmeter, which means
     // that it should react on the setValue(int) signal.
@@ -30,22 +30,15 @@ EngineVuMeter::EngineVuMeter(QString group,QObject *p)
     m_ctrlVuMeterL = new ControlPotmeter(ConfigKey(group, "VuMeterL"), 0., 1.);
     // right channel VU meter
     m_ctrlVuMeterR = new ControlPotmeter(ConfigKey(group, "VuMeterR"), 0., 1.);
-
     // Used controlpotmeter as the example used it :/ perhaps someone with more
     // knowledge could use something more suitable...
-    m_ctrlPeakIndicator = new ControlPotmeter(ConfigKey(group, "PeakIndicator"),
-                                              0., 1.);
-    m_ctrlPeakIndicatorL = new ControlPotmeter(ConfigKey(group, "PeakIndicatorL"),
-                                              0., 1.);
-    m_ctrlPeakIndicatorR = new ControlPotmeter(ConfigKey(group, "PeakIndicatorR"),
-                                              0., 1.);
-
+    m_ctrlPeakIndicator = new ControlPotmeter(ConfigKey(group, "PeakIndicator"),0., 1.);
+    m_ctrlPeakIndicatorL = new ControlPotmeter(ConfigKey(group, "PeakIndicatorL"),0., 1.);
+    m_ctrlPeakIndicatorR = new ControlPotmeter(ConfigKey(group, "PeakIndicatorR"),0., 1.);
     m_pSampleRate = new ControlObjectSlave("[Master]", "samplerate", this);
-
     // Initialize the calculation:
     reset();
 }
-
 EngineVuMeter::~EngineVuMeter()
 {
     delete m_ctrlVuMeter;
@@ -58,22 +51,16 @@ EngineVuMeter::~EngineVuMeter()
 
 void EngineVuMeter::process(CSAMPLE* pIn, const int iBufferSize) {
     CSAMPLE fVolSumL, fVolSumR;
-
-    int sampleRate = (int)m_pSampleRate->get();
-
-    SampleUtil::CLIP_STATUS clipped = SampleUtil::sumAbsPerChannel(&fVolSumL, &fVolSumR, pIn, iBufferSize);
+    auto sampleRate = (int)m_pSampleRate->get();
+    auto clipped = SampleUtil::sumAbsPerChannel(&fVolSumL, &fVolSumR, pIn, iBufferSize);
     m_fRMSvolumeSumL += fVolSumL;
     m_fRMSvolumeSumR += fVolSumR;
-
     m_iSamplesCalculated += iBufferSize/2;
-
     // Are we ready to update the VU meter?:
     if (m_iSamplesCalculated > (sampleRate/VU_UPDATE_RATE)) {
         doSmooth(m_fRMSvolumeL, log10(SHRT_MAX * m_fRMSvolumeSumL/(m_iSamplesCalculated*1000)+1));
         doSmooth(m_fRMSvolumeR, log10(SHRT_MAX * m_fRMSvolumeSumR/(m_iSamplesCalculated*1000)+1));
-
-        const double epsilon = .0001;
-
+        auto epsilon = .0001;
         // Since VU meters are a rolling sum of audio, the no-op checks in
         // ControlObject will not prevent us from causing tons of extra
         // work. Because of this, we use an epsilon here to be gentle on the GUI
@@ -82,17 +69,14 @@ void EngineVuMeter::process(CSAMPLE* pIn, const int iBufferSize) {
             m_ctrlVuMeterL->set(m_fRMSvolumeL);
         if (std::abs(m_fRMSvolumeR - m_ctrlVuMeterR->get()) > epsilon)
             m_ctrlVuMeterR->set(m_fRMSvolumeR);
-
-        double fRMSvolume = (m_fRMSvolumeL + m_fRMSvolumeR) / 2.0;
+        auto fRMSvolume = (m_fRMSvolumeL + m_fRMSvolumeR) / 2.0;
         if (std::abs(fRMSvolume - m_ctrlVuMeter->get()) > epsilon)
             m_ctrlVuMeter->set(fRMSvolume);
-
         // Reset calculation:
         m_iSamplesCalculated = 0;
         m_fRMSvolumeSumL = 0;
         m_fRMSvolumeSumR = 0;
     }
-
     if (clipped & SampleUtil::CLIPPING_LEFT) {
         m_ctrlPeakIndicatorL->set(1.);
         m_peakDurationL = PEAK_DURATION * sampleRate / iBufferSize / 2000;
@@ -101,7 +85,6 @@ void EngineVuMeter::process(CSAMPLE* pIn, const int iBufferSize) {
     } else {
         --m_peakDurationL;
     }
-
     if (clipped & SampleUtil::CLIPPING_RIGHT) {
         m_ctrlPeakIndicatorR->set(1.);
         m_peakDurationR = PEAK_DURATION * sampleRate / iBufferSize / 2000;

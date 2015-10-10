@@ -134,7 +134,7 @@ namespace{
     }
 };
 EngineFilter::EngineFilter(char * conf, int predefinedType, QObject *pParent)
-:EngineObject(pParent)
+:EngineObject(QString{},pParent)
 {
     switch(predefinedType)
     {

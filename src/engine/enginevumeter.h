@@ -34,16 +34,11 @@ class EngineVuMeter : public EngineObject {
   public:
     EngineVuMeter(QString group,QObject *);
     virtual ~EngineVuMeter();
-
     virtual void process(CSAMPLE* pInOut, const int iBufferSize);
-
     virtual void collectFeatures(GroupFeatureState* pGroupFeatures) const;
-
     void reset();
-
   private:
     void doSmooth(CSAMPLE &currentVolume, CSAMPLE newVolume);
-
     ControlPotmeter* m_ctrlVuMeter;
     ControlPotmeter* m_ctrlVuMeterL;
     ControlPotmeter* m_ctrlVuMeterR;

@@ -17,14 +17,26 @@
 
 #include "engineobject.h"
 
-EngineObject::EngineObject(QObject *p)
+EngineObject::EngineObject(QString group, QObject *p)
   : QObject(p)
+  , m_group(group)
 {
 }
 EngineObject::~EngineObject() = default;
-EngineObjectConstIn::EngineObjectConstIn(QObject *p)
+void EngineObject::collectFeatures(GroupFeatureState* /*pGroupFeatures*/) const
+{
+}
+QString EngineObject::getGroup() const
+{
+  return m_group;
+}
+EngineObjectConstIn::EngineObjectConstIn(QString group, QObject *p)
 :QObject(p)
+,m_group(group)
 {
 }
 EngineObjectConstIn::~EngineObjectConstIn() = default;
-
+QString EngineObjectConstIn::getGroup() const
+{
+  return m_group;
+}

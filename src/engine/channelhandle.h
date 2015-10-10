@@ -29,19 +29,11 @@ _Pragma("once")
 class ChannelHandle {
   public:
     ChannelHandle() = default;
-    bool valid() const {
-        return m_iHandle >= 0;
-    }
-    int handle() const {
-        return m_iHandle;
-    }
+    bool valid() const;
+    int handle() const;
   private:
-    ChannelHandle(int iHandle)
-            : m_iHandle(iHandle) {
-    }
-    void setHandle(int iHandle) {
-        m_iHandle = iHandle;
-    }
+    ChannelHandle(int iHandle);
+    void setHandle(int iHandle);
     int m_iHandle = -1;
     friend class ChannelHandleFactory;
 };
@@ -53,19 +45,9 @@ uint qHash(const ChannelHandle& handle);
 // custom equality and hash methods that save the cost of touching the QString.
 class ChannelHandleAndGroup {
   public:
-    ChannelHandleAndGroup(const ChannelHandle& handle, const QString& name)
-            : m_handle(handle),
-              m_name(name)
-    {
-    }
-    const QString& name() const
-    {
-        return m_name;
-    }
-    const ChannelHandle& handle() const
-    {
-        return m_handle;
-    }
+    ChannelHandleAndGroup(const ChannelHandle& , const QString& );
+    const QString& name() const;
+    const ChannelHandle& handle() const;
     const ChannelHandle m_handle;
     const QString m_name;
 };

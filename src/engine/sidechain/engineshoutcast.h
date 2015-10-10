@@ -15,9 +15,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef ENGINESHOUTCAST_H
-#define ENGINESHOUTCAST_H
-
+_Pragma("once")
 #include <QObject>
 #include <QMessageBox>
 #include <QTextCodec>
@@ -44,11 +42,11 @@ typedef struct _util_dict shout_metadata_t;
 class EngineShoutcast : public QObject, public EncoderCallback, public SideChainWorker {
     Q_OBJECT
   public:
-    EngineShoutcast(ConfigObject<ConfigValue>* _config);
+    EngineShoutcast(ConfigObject<ConfigValue>* _config, QObject *pParent);
     virtual ~EngineShoutcast();
     // This is called by the Engine implementation for each sample. Encode and
     // send the stream, as well as check for metadata changes.
-    void process(const CSAMPLE* pBuffer, const int iBufferSize);
+    void process(const CSAMPLE* pBuffer, int iBufferSize);
     void shutdown() { m_bQuit = true; }
     // Called by the encoder in method 'encodebuffer()' to flush the stream to
     // the server.
@@ -77,38 +75,33 @@ class EngineShoutcast : public QObject, public EncoderCallback, public SideChain
     // when connected or disconnected and so on
     void errorDialog(QString text, QString detailedError);
     void infoDialog(QString text, QString detailedError);
-
     QByteArray encodeString(const QString& string);
-    QTextCodec* m_pTextCodec;
-    TrackPointer m_pMetaData;
-    shout_t *m_pShout;
-    shout_metadata_t *m_pShoutMetaData;
-    int m_iMetaDataLife;
-    long m_iShoutStatus;
-    long m_iShoutFailures;
-    ConfigObject<ConfigValue>* m_pConfig;
-    Encoder *m_encoder;
-    ControlObject* m_pShoutcastNeedUpdateFromPrefs;
-    ControlObjectSlave* m_pUpdateShoutcastFromPrefs;
-    ControlObjectSlave* m_pMasterSamplerate;
-    ControlObject* m_pShoutcastStatus;
+    QTextCodec* m_pTextCodec = nullptr;
+    TrackPointer m_pMetaData{nullptr};
+    shout_t *m_pShout = nullptr;
+    shout_metadata_t *m_pShoutMetaData = nullptr;
+    int m_iMetaDataLife   = 0;
+    long m_iShoutStatus   = 0;
+    long m_iShoutFailures = 0;
+    ConfigObject<ConfigValue>* m_pConfig = nullptr;
+    Encoder *m_encoder = nullptr;
+    ControlObject* m_pShoutcastNeedUpdateFromPrefs = nullptr;
+    ControlObjectSlave* m_pUpdateShoutcastFromPrefs = nullptr;
+    ControlObjectSlave* m_pMasterSamplerate = nullptr;
+    ControlObject* m_pShoutcastStatus = nullptr;
     volatile bool m_bQuit;
     // static metadata according to prefereneces
-    bool m_custom_metadata;
+    bool m_custom_metadata = false;
     QString m_customArtist;
     QString m_customTitle;
     QString m_metadataFormat;
-
     // when static metadata is used, we only need calling shout_set_metedata
     // once
-    bool m_firstCall;
-
-    bool m_format_is_mp3;
-    bool m_format_is_ov;
-    bool m_protocol_is_icecast1;
-    bool m_protocol_is_icecast2;
-    bool m_protocol_is_shoutcast;
-    bool m_ogg_dynamic_update;
+    bool m_firstCall              = false;
+    bool m_format_is_mp3          = false;
+    bool m_format_is_ov           = false;
+    bool m_protocol_is_icecast1   = false;
+    bool m_protocol_is_icecast2   = false;
+    bool m_protocol_is_shoutcast  = false;
+    bool m_ogg_dynamic_update     = false;
 };
-
-#endif

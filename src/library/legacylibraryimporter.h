@@ -1,6 +1,4 @@
-#ifndef LEGACY_LIBRARY_IMPORTER_H
-#define LEGACY_LIBRARY_IMPORTER_H
-
+_Pragma("once")
 #include "library/dao/trackdao.h"
 #include "library/dao/playlistdao.h"
 
@@ -9,7 +7,7 @@ class LegacyLibraryImporter : public QObject {
     Q_OBJECT
     public: 
         LegacyLibraryImporter(TrackDAO& trackDao, PlaylistDAO& playlistDao);
-        ~LegacyLibraryImporter();
+        virtual ~LegacyLibraryImporter();
         void import();
     signals:
         void progress(QString);
@@ -17,5 +15,3 @@ class LegacyLibraryImporter : public QObject {
         TrackDAO& m_trackDao;
         PlaylistDAO& m_playlistDao;
 };
-
-#endif //LEGACY_LIBRARY_IMPORTER_H
