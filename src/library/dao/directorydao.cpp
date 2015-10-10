@@ -11,8 +11,7 @@ DirectoryDAO::DirectoryDAO(QSqlDatabase& database)
             : m_database(database) {
 }
 
-DirectoryDAO::~DirectoryDAO() {
-}
+DirectoryDAO::~DirectoryDAO() = default;
 
 void DirectoryDAO::initialize() {
     qDebug() << "DirectoryDAO::initialize" << QThread::currentThread()
@@ -26,46 +25,38 @@ int DirectoryDAO::addDirectory(const QString& newDir) {
     QStringList dirs = getDirs();
     QString childDir;
     QString parentDir;
-    foreach (const QString& dir, dirs) {
-        if (isChildDir(newDir, dir)) {
-            childDir = dir;
-        }
-        if (isChildDir(dir, newDir)) {
-            parentDir = dir;
-        }
+    for(auto dir: dirs) {
+        if (isChildDir(newDir, dir))childDir = dir;
+        if (isChildDir(dir, newDir)) parentDir = dir;
     }
-
     if (!childDir.isEmpty()) {
         qDebug() << "return already watching";
         return ALREADY_WATCHING;
     }
-
     if (!parentDir.isEmpty()) {
         // removeing the old directory won't harm because we are adding the
         // parent later in this function
         removeDirectory(parentDir);
     }
-
     QSqlQuery query(m_database);
     query.prepare("INSERT INTO " % DIRECTORYDAO_TABLE %
                   " (" % DIRECTORYDAO_DIR % ") VALUES (:dir)");
     query.bindValue(":dir", newDir);
-    if (!query.exec()) {
+    if (!query.exec())
+    {
         LOG_FAILED_QUERY(query) << "Adding new dir (" % newDir % ") failed.";
         return SQL_ERROR;
     }
     transaction.commit();
     return ALL_FINE;
 }
-
 bool DirectoryDAO::isChildDir(QString testDir, QString dirStr) {
     QDir test = QDir(testDir);
     QDir dir = QDir(dirStr);
-    bool child = dir == test;
-    while (test.cdUp()) {
-        if (dir == test) {
-            child = true;
-        }
+    auto child = dir == test;
+    while (test.cdUp())
+    {
+        if (dir == test)  child = true;
     }
     // qDebug() << "--- test related function ---";
     // qDebug() << "testDir " << testDir;
@@ -74,44 +65,35 @@ bool DirectoryDAO::isChildDir(QString testDir, QString dirStr) {
     // qDebug() << "-----------------------------";
     return child;
 }
-
 int DirectoryDAO::removeDirectory(const QString& dir) {
     QSqlQuery query(m_database);
-    query.prepare("DELETE FROM " % DIRECTORYDAO_TABLE  % " WHERE "
-                   % DIRECTORYDAO_DIR % "= :dir");
+    query.prepare("DELETE FROM " % DIRECTORYDAO_TABLE  % " WHERE " % DIRECTORYDAO_DIR % "= :dir");
     query.bindValue(":dir", dir);
-    if (!query.exec()) {
+    if (!query.exec())
+    {
         LOG_FAILED_QUERY(query) << "purging dir (" % dir % ") failed";
         return SQL_ERROR;
     }
     return ALL_FINE;
 }
-
-
-QSet<TrackId> DirectoryDAO::relocateDirectory(const QString& oldFolder,
-                                          const QString& newFolder) {
+QSet<TrackId> DirectoryDAO::relocateDirectory(const QString& oldFolder,const QString& newFolder) {
     // TODO(rryan): This method could use error reporting. It can fail in
     // mysterious ways for example if a track in the oldFolder also has a zombie
     // track location in newFolder then the replace query will fail because the
     // location column becomes non-unique.
     ScopedTransaction transaction(m_database);
     QSqlQuery query(m_database);
-    query.prepare("UPDATE " % DIRECTORYDAO_TABLE % " SET " % DIRECTORYDAO_DIR %
-                  "=:newFolder WHERE " % DIRECTORYDAO_DIR % " = :oldFolder");
+    query.prepare("UPDATE " % DIRECTORYDAO_TABLE % " SET " % DIRECTORYDAO_DIR % "=:newFolder WHERE " % DIRECTORYDAO_DIR % " = :oldFolder");
     query.bindValue(":newFolder", newFolder);
     query.bindValue(":oldFolder", oldFolder);
     if (!query.exec()) {
-        LOG_FAILED_QUERY(query) << "could not relocate directory"
-                                << oldFolder << "to" << newFolder;
+        LOG_FAILED_QUERY(query) << "could not relocate directory" << oldFolder << "to" << newFolder;
         return QSet<TrackId>();
     }
-
     FieldEscaper escaper(m_database);
     // on Windows the absolute path starts with the drive name
     // we also need to check for that
-    QString startsWithOldFolder = escaper.escapeStringForLike(
-        QDir(oldFolder).absolutePath() + "/", '%') + "%";
-
+    auto startsWithOldFolder = escaper.escapeStringForLike(QDir(oldFolder).absolutePath() + "/", '%') + "%";
     // Also update information in the track_locations table. This is where mixxx
     // gets the location information for a track. Put marks around %1 so that
     // this also works on windows
@@ -161,8 +143,6 @@ QStringList DirectoryDAO::getDirs() {
     }
     QStringList dirs;
     const int dirColumn = query.record().indexOf(DIRECTORYDAO_DIR);
-    while (query.next()) {
-        dirs << query.value(dirColumn).toString();
-    }
+    while (query.next())  dirs << query.value(dirColumn).toString();
     return dirs;
 }

@@ -135,3 +135,11 @@ QIcon TreeItem::getIcon() {
 void TreeItem::setIcon(const QIcon& icon) {
     m_icon = icon;
 }
+bool TreeItem::isBold() const
+{
+  return m_bold;
+}
+void TreeItem::setBold(bool b)
+{
+  m_bold = b;
+}

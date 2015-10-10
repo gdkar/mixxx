@@ -1,6 +1,4 @@
-#ifndef LIBRARYHASHDAO_H
-#define LIBRARYHASHDAO_H
-
+_Pragma("once")
 #include <QObject>
 #include <QHash>
 #include <QString>
@@ -25,12 +23,8 @@ class LibraryHashDAO : public DAO {
     void invalidateAllDirectories();
     void markUnverifiedDirectoriesAsDeleted();
     void removeDeletedDirectoryHashes();
-    void updateDirectoryStatuses(const QStringList& dirPaths,
-                                 const bool deleted, const bool verified);
+    void updateDirectoryStatuses(const QStringList& dirPaths,const bool deleted, const bool verified);
     QStringList getDeletedDirectories();
-
   private:
     QSqlDatabase& m_database;
 };
-
-#endif //LIBRARYHASHDAO_H

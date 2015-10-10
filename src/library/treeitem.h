@@ -1,9 +1,7 @@
 // treeitem.h
 // Created 10/02/2010 by Tobias Rafreider
 
-#ifndef TREEITEM_H
-#define TREEITEM_H
-
+_Pragma("once")
 #include <QList>
 #include <QString>
 #include <QVariant>
@@ -55,20 +53,14 @@ class TreeItem {
     bool isBold() const {
         return m_bold;
     }
-
-
     void setIcon(const QIcon& icon);
     QIcon getIcon();
-
   private:
     QList<TreeItem*> m_childItems;
     QString m_dataPath;
     QString m_data;
     LibraryFeature* m_feature;
     bool m_bold;
-
     TreeItem *m_parentItem;
     QIcon m_icon;
 };
-
-#endif

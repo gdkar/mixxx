@@ -1,6 +1,4 @@
-#ifndef TRACKDAO_H
-#define TRACKDAO_H
-
+_Pragma("once")
 #include <QFileInfo>
 #include <QObject>
 #include <QSet>
@@ -84,18 +82,14 @@ class TrackCacheItem : public QObject {
   public:
     TrackCacheItem(TrackPointer pTrack);
     virtual ~TrackCacheItem();
-
     TrackPointer getTrack() {
         return m_pTrack;
     }
-
   signals:
     void saveTrack(TrackPointer pTrack);
-
   private:
     TrackPointer m_pTrack;
 };
-
 class TrackDAO : public QObject, public virtual DAO {
     Q_OBJECT
   public:
@@ -227,10 +221,5 @@ class TrackDAO : public QObject, public virtual DAO {
     int m_trackLocationIdColumn;
     int m_queryLibraryIdColumn;
     int m_queryLibraryMixxxDeletedColumn;
-
     QSet<TrackId> m_tracksAddedSet;
-
-    DISALLOW_COPY_AND_ASSIGN(TrackDAO);
 };
-
-#endif //TRACKDAO_H
