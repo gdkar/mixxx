@@ -11,7 +11,6 @@
 #include "controlaudiotaperpot.h"
 #include "engine/enginebuffer.h"
 #include "engine/enginemaster.h"
-#include "engine/engineworkerscheduler.h"
 #include "engine/enginedeck.h"
 #include "engine/enginebuffer.h"
 #include "engine/enginechannel.h"
@@ -70,9 +69,8 @@ EngineMaster::EngineMaster(ConfigObject<ConfigValue>* _config,
     m_bBusOutputConnected[EngineChannel::LEFT] = false;
     m_bBusOutputConnected[EngineChannel::CENTER] = false;
     m_bBusOutputConnected[EngineChannel::RIGHT] = false;
-    m_pWorkerScheduler = new EngineWorkerScheduler(this);
-    m_pWorkerScheduler->start(QThread::HighPriority);
-    if (pEffectsManager) {
+    if (pEffectsManager)
+    {
         pEffectsManager->registerChannel(m_masterHandle);
         pEffectsManager->registerChannel(m_headphoneHandle);
         pEffectsManager->registerChannel(m_busLeftHandle);
@@ -176,7 +174,6 @@ EngineMaster::~EngineMaster() {
     SampleUtil::free(m_pMaster);
     SampleUtil::free(m_pTalkover);
     for (auto o = static_cast<int>(EngineChannel::LEFT); o <= static_cast<int>(EngineChannel::RIGHT); o++) SampleUtil::free(m_pOutputBusBuffers[o]);
-    delete m_pWorkerScheduler;
     delete m_pMasterSync;
 }
 const CSAMPLE* EngineMaster::getMasterBuffer() const 
@@ -428,7 +425,6 @@ void EngineMaster::process(const int iBufferSize)
     if (headphoneEnabled) m_pHeadDelay->process(m_pHead, iBufferSize);
     // We're close to the end of the callback. Wake up the engine worker
     // scheduler so that it runs the workers.
-    m_pWorkerScheduler->runWorkers();
 }
 void EngineMaster::addChannel(EngineChannel* pChannel) {
     auto group = pChannel->getGroup();
@@ -448,7 +444,6 @@ void EngineMaster::addChannel(EngineChannel* pChannel) {
     m_activeBusChannels[EngineChannel::RIGHT].reserve(m_channels.size());
     m_activeHeadphoneChannels.reserve(m_channels.size());
     m_activeTalkoverChannels.reserve(m_channels.size());
-    if(auto pBuffer = pChannelInfo->m_pChannel->getEngineBuffer()) pBuffer->bindWorkers(m_pWorkerScheduler);
 }
 EngineChannel* EngineMaster::getChannel(QString group)
 {

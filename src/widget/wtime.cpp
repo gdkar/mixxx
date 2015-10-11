@@ -16,7 +16,7 @@ WTime::~WTime() {
     delete m_pTimer;
 }
 
-void WTime::setup(QDomNode node, const SkinContext& context) {
+void WTime::setup(QDomNode node, const SkinContext* context) {
     WLabel::setup(node, context);
     setTimeFormat(node, context);
     m_pTimer->start(m_iInterval);
@@ -25,11 +25,11 @@ void WTime::setup(QDomNode node, const SkinContext& context) {
     refreshTime();
 }
 
-void WTime::setTimeFormat(QDomNode node, const SkinContext& context) {
+void WTime::setTimeFormat(QDomNode node, const SkinContext* context) {
     // if a custom format is defined, all other formatting flags are ignored
-    if (!context.hasNode(node, "CustomFormat")) {
+    if (!context->hasNode(node, "CustomFormat")) {
         // check if seconds should be shown
-        QString secondsFormat = context.selectString(node, "ShowSeconds");
+        QString secondsFormat = context->selectString(node, "ShowSeconds");
         // long format is equivalent to showing seconds
         QLocale::FormatType format;
         if(secondsFormat == "true" || secondsFormat == "yes") {
@@ -42,7 +42,7 @@ void WTime::setTimeFormat(QDomNode node, const SkinContext& context) {
         m_sTimeFormat = QLocale().timeFormat(format);
     } else {
         // set the time format to the custom format
-        m_sTimeFormat = context.selectString(node, "CustomFormat");
+        m_sTimeFormat = context->selectString(node, "CustomFormat");
     }
 }
 

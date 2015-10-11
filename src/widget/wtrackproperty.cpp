@@ -15,13 +15,10 @@ WTrackProperty::WTrackProperty(const char* group,
     setAcceptDrops(true);
 }
 
-WTrackProperty::~WTrackProperty() {
-}
-
-void WTrackProperty::setup(QDomNode node, const SkinContext& context) {
+WTrackProperty::~WTrackProperty() = default;
+void WTrackProperty::setup(QDomNode node, const SkinContext* context) {
     WLabel::setup(node, context);
-
-    m_property = context.selectString(node, "Property");
+    m_property = context->selectString(node, "Property");
 }
 
 void WTrackProperty::slotTrackLoaded(TrackPointer track) {

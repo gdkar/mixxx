@@ -6,7 +6,7 @@ bool ControlNumericBehavior::setFilter(double* /*dValue*/) { return true; }
 double ControlNumericBehavior::valueToParameter(double dValue) { return dValue; }
 double ControlNumericBehavior::parameterToValue(double dParam) { return dParam; }
 void ControlNumericBehavior::setValueFromParameter(double dParam, ControlDoublePrivate* pControl) {
-    pControl->set(parameterToValue(dParam), nullptr);
+    pControl->set(parameterToValue(dParam));
 }
 ControlPotmeterBehavior::ControlPotmeterBehavior(double dMinValue, double dMaxValue,bool allowOutOfBounds)
         : m_dMinValue(dMinValue),
@@ -108,7 +108,7 @@ double ControlAudioTaperPotBehavior::parameterToValue(double dParam) {
     //qDebug() << "ControlAudioTaperPotBehavior::parameterToValue" << "dValue =" << dValue << "dParam =" << dParam;
     return dValue;
 }
-void ControlAudioTaperPotBehavior::setValueFromParameter(double dParam,ControlDoublePrivate* pControl) { pControl->set(parameterToValue(dParam), nullptr); }
+void ControlAudioTaperPotBehavior::setValueFromParameter(double dParam,ControlDoublePrivate* pControl) { pControl->set(parameterToValue(dParam)); }
 double ControlTTRotaryBehavior::valueToParameter(double dValue) { return (dValue * 200.0 + 64) / 127.0; }
 double ControlTTRotaryBehavior::parameterToValue(double dParam) {
     dParam *= 128.0;
@@ -131,10 +131,10 @@ void ControlPushButtonBehavior::setValueFromParameter(double dParam, ControlDoub
         if (pressed) {
             // Toggle on press
             double value = pControl->get();
-            pControl->set(!value, nullptr);
+            pControl->set(!value);
             m_pushTimer.setSingleShot(true);
             m_pushTimer.start(kPowerWindowTimeMillis);
-        } else if (!m_pushTimer.isActive()) {pControl->set(0., nullptr);}
+        } else if (!m_pushTimer.isActive()) {pControl->set(0);}
     } else if (m_buttonMode == TOGGLE || m_buttonMode == LONGPRESSLATCHING) {
         // This block makes push-buttons act as toggle buttons.
         if (m_iNumStates > 1) { // multistate button
@@ -145,7 +145,7 @@ void ControlPushButtonBehavior::setValueFromParameter(double dParam, ControlDoub
                 // the same control from different devices.
                 double value = pControl->get();
                 value = (int)(value + 1.) % m_iNumStates;
-                pControl->set(value, nullptr);
+                pControl->set(value);
                 if (m_buttonMode == LONGPRESSLATCHING) {
                     m_pushTimer.setSingleShot(true);
                     m_pushTimer.start(kLongPressLatchingTimeMillis);
@@ -155,12 +155,12 @@ void ControlPushButtonBehavior::setValueFromParameter(double dParam, ControlDoub
                 if (m_buttonMode == LONGPRESSLATCHING && m_pushTimer.isActive() && value >= 1.) {
                     // revert toggle if button is released too early
                     value = (int)(value - 1.) % m_iNumStates;
-                    pControl->set(value, nullptr);
+                    pControl->set(value);
                 }
             }
         }
     } else { // Not a toggle button (trigger only when button pushed)
-        if (pressed) { pControl->set(1., nullptr);}
-        else         { pControl->set(0., nullptr); }
+        if (pressed) { pControl->set(1);}
+        else         { pControl->set(0); }
     }
 }

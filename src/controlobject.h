@@ -61,16 +61,10 @@ class ControlObject : public QObject {
     virtual bool operator!() const;
     // Returns the parameterized value of the object. Thread safe, non-blocking.
     virtual double getParameter() const;
-
     // Returns the parameterized value of the object. Thread safe, non-blocking.
     virtual double getParameterForValue(double value) const;
-
     // Sets the control parameterized value to v. Thread safe, non-blocking.
     virtual void setParameter(double v);
-
-    // Sets the control parameterized value to v. Thread safe, non-blocking.
-    virtual void setParameterFrom(double v, QObject* pSender = nullptr);
-
     // Connects a Qt slot to a signal that is delivered when a new value change
     // request arrives for this control.
     // Qt::AutoConnection: Qt ensures that the signal slot is called from the
@@ -81,13 +75,10 @@ class ControlObject : public QObject {
     bool connectValueChangeRequest(const QObject* receiver, const char* method, Qt::ConnectionType type = Qt::AutoConnection);
   signals:
     void valueChanged(double);
-    void valueChangedFromEngine(double);
   protected:
     // Key of the object
     ConfigKey m_key;
     QSharedPointer<ControlDoublePrivate> m_pControl;
-  private slots:
-    virtual void privateValueChanged(double value, QObject* pSetter);
   private:
     virtual void initialize(ConfigKey key, bool bIgnoreNops, bool bTrack, bool bPersist);
     bool ignoreNops() const;

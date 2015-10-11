@@ -109,7 +109,7 @@ void CachingReaderWorker::loadTrack(const TrackPointer& pTrack) {
         emit(trackLoadFailed(pTrack, QString("The file '%1' could not be found.").arg(filename)));
         return;
     }
-    auto audioSrcCfg = Mixxx::AudioSourceConfig { CachingReaderChunk::kChannels,-1};
+    auto audioSrcCfg = Mixxx::AudioSourceConfig { CachingReaderChunk::kChannels(),-1};
     m_pAudioSource = openAudioSourceForReading(pTrack, audioSrcCfg);
     if (m_pAudioSource.isNull()) {
         m_maxReadableFrameIndex = 0;

@@ -19,7 +19,7 @@ class WSearchLineEdit : public QLineEdit, public WBaseWidget {
     WSearchLineEdit(QWidget* pParent);
     virtual ~WSearchLineEdit();
 
-    void setup(QDomNode node, const SkinContext& context);
+    void setup(QDomNode node, const SkinContext* context);
 
   protected:
     void resizeEvent(QResizeEvent*);

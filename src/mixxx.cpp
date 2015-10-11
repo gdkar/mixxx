@@ -23,7 +23,8 @@
 #include <QDesktopWidget>
 #include <QDesktopServices>
 #include <QUrl>
-
+#include <QOpenGLContext>
+#include <QGLWidget>
 #include "mixxx.h"
 
 #include "anqueue/analyserqueue.h"

@@ -1,8 +1,5 @@
-
-#ifndef _WSPINNY_H
-#define _WSPINNY_H
-
-#include <QGLWidget>
+_Pragma("once")
+#include <QWidget>
 #include <QShowEvent>
 #include <QHideEvent>
 #include <QEvent>
@@ -18,7 +15,7 @@ class ControlObjectSlave;
 class VisualPlayPosition;
 class VinylControlManager;
 
-class WSpinny : public QGLWidget, public WBaseWidget, public VinylSignalQualityListener {
+class WSpinny : public QWidget, public WBaseWidget, public VinylSignalQualityListener {
     Q_OBJECT
   public:
     WSpinny(QWidget* parent, const QString& group,
@@ -28,7 +25,7 @@ class WSpinny : public QGLWidget, public WBaseWidget, public VinylSignalQualityL
 
     void onVinylSignalQualityUpdate(const VinylSignalQualityReport& report);
 
-    void setup(QDomNode node, const SkinContext& context);
+    void setup(QDomNode node, const SkinContext* context);
     void dragEnterEvent(QDragEnterEvent *event);
     void dropEvent(QDropEvent *event);
 
@@ -120,5 +117,3 @@ class WSpinny : public QGLWidget, public WBaseWidget, public VinylSignalQualityL
     bool m_bGhostPlayback;
     bool m_bWidgetDirty;
 };
-
-#endif //_WSPINNY_H

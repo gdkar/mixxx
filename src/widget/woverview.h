@@ -33,7 +33,7 @@ class WOverview : public WWidget {
   public:
     WOverview(const char* pGroup, ConfigObject<ConfigValue>* pConfig, QWidget* parent=nullptr);
     virtual ~WOverview();
-    void setup(QDomNode node, const SkinContext& context);
+    void setup(QDomNode node, const SkinContext* context);
   public slots:
     void onConnectedControlChanged(double dParameter, double dValue);
     void slotLoadNewTrack(TrackPointer pTrack);

@@ -38,7 +38,7 @@ class ControlDoublePrivate : public QObject {
     QString description() const; 
     void setDescription(const QString& description);
     // Sets the control value.
-    void set(double value, QObject* pSender);
+    void set(double value);
     // directly sets the control value. Must be used from and only from the
     // ValueChangeRequest slot.
     void setAndConfirm(double value, QObject* pSender);
@@ -51,7 +51,7 @@ class ControlDoublePrivate : public QObject {
     // The caller must not delete the behavior at any time. The memory is managed
     // by this function.
     void setBehavior(ControlNumericBehavior* pBehavior);
-    void setParameter(double dParam, QObject* pSender);
+    void setParameter(double dParam);
     double getParameter() const;
     double getParameterForValue(double value) const;
     bool ignoreNops() const;
@@ -70,12 +70,12 @@ class ControlDoublePrivate : public QObject {
   signals:
     // Emitted when the ControlDoublePrivate value changes. pSender is a
     // pointer to the setter of the value (potentially NULL).
-    void valueChanged(double value, QObject* pSender);
+    void valueChanged(double value);
     void valueChangeRequest(double value);
   private:
     ControlDoublePrivate(ConfigKey key, ControlObject* pCreatorCO,bool bIgnoreNops, bool bTrack, bool bPersist);
     void initialize();
-    void setInner(double value, QObject* pSender);
+    void setInner(double value);
     ConfigKey m_key;
     // Whether the control should persist in the Mixxx user configuration. The
     // value is loaded from configuration when the control is created and

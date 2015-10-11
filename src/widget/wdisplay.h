@@ -33,7 +33,7 @@ class WDisplay : public WWidget {
     WDisplay(QWidget *parent=NULL);
     virtual ~WDisplay();
 
-    void setup(QDomNode node, const SkinContext& context);
+    void setup(QDomNode node, const SkinContext* context);
 
     void onConnectedControlChanged(double dParameter, double dValue);
 

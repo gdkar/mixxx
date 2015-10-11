@@ -7,7 +7,6 @@
 #include "controlobject.h"
 #include "controlobjectslave.h"
 #include "library/coverartcache.h"
-#include "sharedglcontext.h"
 #include "util/dnd.h"
 #include "util/math.h"
 #include "visualplayposition.h"
@@ -20,25 +19,25 @@
 WSpinny::WSpinny(QWidget* parent, const QString& group,
                  ConfigObject<ConfigValue>* pConfig,
                  VinylControlManager* pVCMan)
-        : QGLWidget(QGLFormat(QGL::SampleBuffers), parent, SharedGLContext::getWidget()),
+        : QWidget(parent),
           WBaseWidget(this),
           m_group(group),
           m_pConfig(pConfig),
-          m_pBgImage(NULL),
-          m_pMaskImage(NULL),
-          m_pFgImage(NULL),
-          m_pGhostImage(NULL),
-          m_pPlay(NULL),
-          m_pPlayPos(NULL),
-          m_pVisualPlayPos(NULL),
-          m_pTrackSamples(NULL),
-          m_pTrackSampleRate(NULL),
-          m_pScratchToggle(NULL),
-          m_pScratchPos(NULL),
-          m_pVinylControlSpeedType(NULL),
-          m_pVinylControlEnabled(NULL),
-          m_pSignalEnabled(NULL),
-          m_pSlipEnabled(NULL),
+          m_pBgImage(nullptr),
+          m_pMaskImage(nullptr),
+          m_pFgImage(nullptr),
+          m_pGhostImage(nullptr),
+          m_pPlay(nullptr),
+          m_pPlayPos(nullptr),
+          m_pVisualPlayPos(nullptr),
+          m_pTrackSamples(nullptr),
+          m_pTrackSampleRate(nullptr),
+          m_pScratchToggle(nullptr),
+          m_pScratchPos(nullptr),
+          m_pVinylControlSpeedType(nullptr),
+          m_pVinylControlEnabled(nullptr),
+          m_pSignalEnabled(nullptr),
+          m_pSlipEnabled(nullptr),
           m_bShowCover(true),
           m_dInitialPos(0.),
           m_iVinylInput(-1),
@@ -65,12 +64,8 @@ WSpinny::WSpinny(QWidget* parent, const QString& group,
 #endif
     //Drag and drop
     setAcceptDrops(true);
-    qDebug() << "WSpinny(): Created QGLWidget, Context"
-             << "Valid:" << context()->isValid()
-             << "Sharing:" << context()->isSharing();
-
     CoverArtCache* pCache = CoverArtCache::instance();
-    if (pCache != NULL) {
+    if (pCache != nullptr) {
         connect(pCache, SIGNAL(coverFound(const QObject*, const int,
                                           const CoverInfo&, QPixmap, bool)),
                 this, SLOT(slotCoverFound(const QObject*, const int,
@@ -136,24 +131,24 @@ void WSpinny::onVinylSignalQualityUpdate(const VinylSignalQualityReport& report)
 #endif
 }
 
-void WSpinny::setup(QDomNode node, const SkinContext& context) {
+void WSpinny::setup(QDomNode node, const SkinContext* context) {
     // Set images
-    QDomElement backPathElement = context.selectElement(node, "PathBackground");
-    m_pBgImage = WImageStore::getImage(context.getPixmapSource(backPathElement));
-    Paintable::DrawMode bgmode = context.selectScaleMode(backPathElement,Paintable::FIXED);
+    QDomElement backPathElement = context->selectElement(node, "PathBackground");
+    m_pBgImage = WImageStore::getImage(context->getPixmapSource(backPathElement));
+    Paintable::DrawMode bgmode = context->selectScaleMode(backPathElement,Paintable::FIXED);
     if (m_pBgImage && !m_pBgImage->isNull() && bgmode == Paintable::FIXED) {
         setFixedSize(m_pBgImage->size());
     } else setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
-    m_pMaskImage = WImageStore::getImage(context.getPixmapSource(context.selectNode(node, "PathMask")));
-    m_pFgImage = WImageStore::getImage(context.getPixmapSource(context.selectNode(node,"PathForeground")));
+    m_pMaskImage = WImageStore::getImage(context->getPixmapSource(context->selectNode(node, "PathMask")));
+    m_pFgImage = WImageStore::getImage(context->getPixmapSource(context->selectNode(node,"PathForeground")));
     if (m_pFgImage && !m_pFgImage->isNull()) {
         m_fgImageScaled = m_pFgImage->scaled(size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
     }
-    m_pGhostImage = WImageStore::getImage(context.getPixmapSource(context.selectNode(node,"PathGhost")));
+    m_pGhostImage = WImageStore::getImage(context->getPixmapSource(context->selectNode(node,"PathGhost")));
     if (m_pGhostImage && !m_pGhostImage->isNull()) {
         m_ghostImageScaled = m_pGhostImage->scaled(size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
     }
-    m_bShowCover = context.selectBool(node, "ShowCover", false);
+    m_bShowCover = context->selectBool(node, "ShowCover", false);
 #ifdef __VINYLCONTROL__
     // Find the vinyl input we should listen to reports about.
     if (m_pVCManager)  m_iVinylInput = m_pVCManager->vinylInputFromGroup(m_group);
@@ -237,7 +232,7 @@ void WSpinny::slotTrackCoverArtUpdated() {
         m_lastRequestedCover = m_loadedTrack->getCoverInfo();
         m_lastRequestedCover.trackLocation = m_loadedTrack->getLocation();
         CoverArtCache* pCache = CoverArtCache::instance();
-        if (pCache != NULL) {
+        if (pCache != nullptr) {
             // TODO(rryan): Don't use track id.
             pCache->requestCover(m_lastRequestedCover, this, m_loadedTrack->getId().toInt());
         }
@@ -452,7 +447,7 @@ void WSpinny::updateVinylControlSpeed(double rpm) {
 
 void WSpinny::updateVinylControlSignalEnabled(double enabled) {
 #ifdef __VINYLCONTROL__
-    if (m_pVCManager == NULL) {
+    if (m_pVCManager == nullptr) {
         return;
     }
     m_bSignalActive = enabled;
@@ -594,10 +589,8 @@ void WSpinny::hideEvent(QHideEvent* event) {
 }
 
 bool WSpinny::event(QEvent* pEvent) {
-    if (pEvent->type() == QEvent::ToolTip) {
-        updateTooltip();
-    }
-    return QGLWidget::event(pEvent);
+    if (pEvent->type() == QEvent::ToolTip) updateTooltip();
+    return QWidget::event(pEvent);
 }
 
 void WSpinny::dragEnterEvent(QDragEnterEvent* event) {

@@ -5,9 +5,7 @@
  *      Author: asantoni
  */
 
-#ifndef CONTROLGROUPDELEGATE_H_
-#define CONTROLGROUPDELEGATE_H_
-
+_Pragma("once")
 #include <QAbstractItemModel>
 #include <QItemDelegate>
 #include <QModelIndex>
@@ -46,11 +44,8 @@ public:
  void updateEditorGeometry(QWidget *editor,
      const QStyleOptionViewItem &option, const QModelIndex &index) const;
     /** This getter is used by the "Add Control" GUI */
-    static QStringList getControlGroups() { return m_controlGroups; };
-
+    static QStringList getControlGroups();
 private:
     static QStringList m_controlGroups;
 
 };
-
-#endif /* CONTROLGROUPDELEGATE_H_ */

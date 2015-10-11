@@ -25,12 +25,12 @@ WNumber::WNumber(QWidget* pParent)
 WNumber::~WNumber() {
 }
 
-void WNumber::setup(QDomNode node, const SkinContext& context) {
+void WNumber::setup(QDomNode node, const SkinContext* context) {
     WLabel::setup(node, context);
 
     // Number of digits after the decimal.
-    if (context.hasNode(node, "NumberOfDigits")) {
-        m_iNoDigits = context.selectInt(node, "NumberOfDigits");
+    if (context->hasNode(node, "NumberOfDigits")) {
+        m_iNoDigits = context->selectInt(node, "NumberOfDigits");
     }
     setValue(0.);
 }

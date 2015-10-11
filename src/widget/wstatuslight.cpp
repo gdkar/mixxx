@@ -47,26 +47,26 @@ void WStatusLight::setNoPos(int iNoPos) {
     m_pixmaps.resize(iNoPos);
 }
 
-void WStatusLight::setup(QDomNode node, const SkinContext& context) {
+void WStatusLight::setup(QDomNode node, const SkinContext* context) {
     // Number of states. Add one to account for the background.
-    setNoPos(context.selectInt(node, "NumberPos") + 1);
+    setNoPos(context->selectInt(node, "NumberPos") + 1);
 
     // Set pixmaps
     for (int i = 0; i < m_pixmaps.size(); ++i) {
         // Accept either PathStatusLight or PathStatusLight1 for value 1,
         QString nodeName = QString("PathStatusLight%1").arg(i);
-        if (context.hasNode(node, nodeName)) {
-            QDomElement statusLightNode = context.selectElement(node, nodeName);
-            setPixmap(i, context.getPixmapSource(statusLightNode),
-                      context.selectScaleMode(statusLightNode, Paintable::FIXED));
-        } else if (i == 0 && context.hasNode(node, "PathBack")) {
-            QDomElement statusLightNode = context.selectElement(node, "PathBack");
-            setPixmap(i, context.getPixmapSource(statusLightNode),
-                      context.selectScaleMode(statusLightNode, Paintable::FIXED));
-        } else if (i == 1 && context.hasNode(node, "PathStatusLight")) {
-            QDomElement statusLightNode = context.selectElement(node, "PathStatusLight");
-            setPixmap(i, context.getPixmapSource(statusLightNode),
-                      context.selectScaleMode(statusLightNode, Paintable::FIXED));
+        if (context->hasNode(node, nodeName)) {
+            QDomElement statusLightNode = context->selectElement(node, nodeName);
+            setPixmap(i, context->getPixmapSource(statusLightNode),
+                      context->selectScaleMode(statusLightNode, Paintable::FIXED));
+        } else if (i == 0 && context->hasNode(node, "PathBack")) {
+            QDomElement statusLightNode = context->selectElement(node, "PathBack");
+            setPixmap(i, context->getPixmapSource(statusLightNode),
+                      context->selectScaleMode(statusLightNode, Paintable::FIXED));
+        } else if (i == 1 && context->hasNode(node, "PathStatusLight")) {
+            QDomElement statusLightNode = context->selectElement(node, "PathStatusLight");
+            setPixmap(i, context->getPixmapSource(statusLightNode),
+                      context->selectScaleMode(statusLightNode, Paintable::FIXED));
         } else {
             m_pixmaps[i].clear();
         }

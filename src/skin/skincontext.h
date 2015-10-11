@@ -13,7 +13,7 @@ _Pragma("once")
 #include "widget/wsingletoncontainer.h"
 #include "widget/wpixmapstore.h"
 
-#define SKIN_WARNING(node, context) (context).logWarning(__FILE__, __LINE__, (node))
+#define SKIN_WARNING(node, context) (*context).logWarning(__FILE__, __LINE__, (node))
 
 // A class for managing the current context/environment when processing a
 // skin. Used hierarchically by LegacySkinParser to create new contexts and

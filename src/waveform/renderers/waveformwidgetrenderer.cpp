@@ -146,7 +146,7 @@ void WaveformWidgetRenderer::resize(int width, int height) {
         m_rendererStack[i]->onResize();
     }
 }
-void WaveformWidgetRenderer::setup(const QDomNode& node, const SkinContext& context) {
+void WaveformWidgetRenderer::setup(const QDomNode& node, const SkinContext* context) {
     m_colors.setup(node, context);
     for (int i = 0; i < m_rendererStack.size(); ++i) {m_rendererStack[i]->setup(node, context);}
 }

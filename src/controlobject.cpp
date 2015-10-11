@@ -38,7 +38,7 @@ void ControlObject::initialize(ConfigKey key, bool bIgnoreNops, bool bTrack,bool
     }
     // getControl can fail and return a nullptr control even with the create flag.
     if (m_pControl) {
-        connect(m_pControl.data(), SIGNAL(valueChanged(double, QObject*)),this, SLOT(privateValueChanged(double, QObject*)),Qt::DirectConnection);
+        connect(m_pControl.data(), &ControlDoublePrivate::valueChanged,this, &ControlObject::valueChanged,Qt::DirectConnection);
     }
 }
 /* static */ ControlObject*
@@ -58,7 +58,7 @@ void ControlObject::setDescription(const QString &s){if ( m_pControl ) m_pContro
 ConfigKey ControlObject::getKey()const{return m_key;}
 double ControlObject::get()const{if ( m_pControl ) return m_pControl->get(); else return 0;}
 bool ControlObject::toBool() const { return get()>0.0;}
-void ControlObject::set(double v){if(m_pControl)m_pControl->set(v,this);}
+void ControlObject::set(double v){if(m_pControl)m_pControl->set(v);}
 void ControlObject::setAndConfirm(double v){if(m_pControl)m_pControl->setAndConfirm(v,this);}
 void ControlObject::reset(){if(m_pControl)m_pControl->reset();}
 void ControlObject::setDefaultValue(double v){if(m_pControl) m_pControl->setDefaultValue(v);}
@@ -66,16 +66,13 @@ double ControlObject::defaultValue()const{return m_pControl ? m_pControl->defaul
 ControlObject::operator bool()const{return toBool();}
 bool ControlObject::operator!()const{return !toBool();}
 bool ControlObject::ignoreNops()const{return m_pControl ? m_pControl->ignoreNops() : true;}
-// slot
-void ControlObject::privateValueChanged(double dValue, QObject* pSender) {
-    // Only emit valueChanged() if we did not originate this change.
-    if (pSender != this) { emit(valueChanged(dValue));}
-    else { emit(valueChangedFromEngine(dValue));}
-}
 // static
 ControlObject* ControlObject::getControl(const ConfigKey& key, bool warn) {
     //qDebug() << "ControlObject::getControl for (" << key.group << "," << key.item << ")";
-    if(auto pCDP = ControlDoublePrivate::getControl(key, warn)) { return pCDP->getCreatorCO(); }
+    if(auto pCDP = ControlDoublePrivate::getControl(key, warn)) 
+    { 
+      return pCDP->getCreatorCO();
+    }
     return nullptr;
 }
 // static
@@ -84,12 +81,11 @@ double ControlObject::get(const ConfigKey& key) {
 }
 double ControlObject::getParameter() const {return m_pControl ? m_pControl->getParameter() : 0.0; }
 double ControlObject::getParameterForValue(double value) const {return m_pControl ? m_pControl->getParameterForValue(value) : 0.0;}
-void ControlObject::setParameter(double v) { if (m_pControl) { m_pControl->setParameter(v, this);} }
-void ControlObject::setParameterFrom(double v, QObject* pSender) { if (m_pControl) { m_pControl->setParameter(v, pSender); } }
+void ControlObject::setParameter(double v) { if (m_pControl) { m_pControl->setParameter(v);} }
 // static
 void ControlObject::set(const ConfigKey& key, const double& value) {
     auto pCop = ControlDoublePrivate::getControl(key);
-    if (pCop) { pCop->set(value, nullptr); }
+    if (pCop) { pCop->set(value); }
 }
 bool ControlObject::connectValueChangeRequest(const QObject* receiver,const char* method, Qt::ConnectionType type) {
     auto ret = false;

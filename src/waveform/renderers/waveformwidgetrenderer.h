@@ -25,7 +25,7 @@ class WaveformWidgetRenderer {
     virtual ~WaveformWidgetRenderer();
     bool init();
     virtual bool onInit() {return true;}
-    void setup(const QDomNode& node, const SkinContext& context);
+    void setup(const QDomNode& node, const SkinContext* context);
     void onPreRender(VSyncThread* vsyncThread);
     void draw(QPainter* painter, QPaintEvent* event);
     const char* getGroup() const { return m_group;}

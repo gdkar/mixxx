@@ -13,13 +13,11 @@ WEffectChain::WEffectChain(QWidget* pParent, EffectsManager* pEffectsManager)
 WEffectChain::~WEffectChain() {
 }
 
-void WEffectChain::setup(QDomNode node, const SkinContext& context) {
+void WEffectChain::setup(QDomNode node, const SkinContext* context) {
     WLabel::setup(node, context);
     // EffectWidgetUtils propagates NULLs so this is all safe.
-    EffectRackPointer pRack = EffectWidgetUtils::getEffectRackFromNode(
-            node, context, m_pEffectsManager);
-    EffectChainSlotPointer pChainSlot = EffectWidgetUtils::getEffectChainSlotFromNode(
-            node, context, pRack);
+    EffectRackPointer pRack = EffectWidgetUtils::getEffectRackFromNode(node, context, m_pEffectsManager);
+    EffectChainSlotPointer pChainSlot = EffectWidgetUtils::getEffectChainSlotFromNode(node, context, pRack);
     if (pChainSlot) {
         setEffectChainSlot(pChainSlot);
     } else {
@@ -31,8 +29,7 @@ void WEffectChain::setup(QDomNode node, const SkinContext& context) {
 void WEffectChain::setEffectChainSlot(EffectChainSlotPointer pEffectChainSlot) {
     if (pEffectChainSlot) {
         m_pEffectChainSlot = pEffectChainSlot;
-        connect(pEffectChainSlot.data(), SIGNAL(updated()),
-                this, SLOT(chainUpdated()));
+        connect(pEffectChainSlot.data(), SIGNAL(updated()),this, SLOT(chainUpdated()));
         chainUpdated();
     }
 }

@@ -21,7 +21,7 @@ class WaveformRendererEndOfTrack : public WaveformRendererAbstract {
     virtual ~WaveformRendererEndOfTrack();
 
     virtual bool init();
-    virtual void setup(const QDomNode& node, const SkinContext& context);
+    virtual void setup(const QDomNode& node, const SkinContext* context);
     virtual void onResize();
     virtual void draw(QPainter* painter, QPaintEvent* event);
 

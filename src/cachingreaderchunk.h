@@ -17,18 +17,18 @@ _Pragma("once")
 // and the worker.
 class CachingReaderChunk {
 public:
-    static const SINT kInvalidIndex;
-    static const SINT kChannels;
-    static const SINT kFrames;
-    static const SINT kSamples;
+    // Converts frames to samples
+    static constexpr SINT kChannels(){return 2;};
+    static constexpr SINT frames2samples(SINT frames){return frames * kChannels();}
+    static constexpr SINT samples2frames(SINT samples){return samples / kChannels();}
+    static constexpr SINT kInvalidIndex(){return -1;};
+    static constexpr SINT kFrames(){return 8192;}
+    static constexpr SINT kSamples(){return frames2samples(kFrames());}
+
     // Returns the corresponding chunk index for a frame index
     static SINT indexForFrame(SINT frameIndex);
     // Returns the corresponding chunk index for a frame index
     static SINT frameForIndex(SINT chunkIndex);
-    // Converts frames to samples
-    static SINT frames2samples(SINT frames);
-    // Converts samples to frames
-    static SINT samples2frames(SINT samples);
     // Disable copy and move constructors
     CachingReaderChunk(const CachingReaderChunk&) = delete;
     CachingReaderChunk(CachingReaderChunk&&) = delete;

@@ -61,17 +61,17 @@ void WWidgetGroup::setLayoutAlignment(int alignment) {
         pLayout->setAlignment(static_cast<Qt::Alignment>(alignment));
     }
 }
-void WWidgetGroup::setup(QDomNode node, const SkinContext& context) {
+void WWidgetGroup::setup(QDomNode node, const SkinContext* context) {
     setContentsMargins(0, 0, 0, 0);
     // Set background pixmap if available
-    if (context.hasNode(node, "BackPath")) {
-        auto backPathNode = context.selectElement(node, "BackPath");
-        setPixmapBackground(context.getPixmapSource(backPathNode),
-                            context.selectScaleMode(backPathNode, Paintable::TILE));
+    if (context->hasNode(node, "BackPath")) {
+        auto backPathNode = context->selectElement(node, "BackPath");
+        setPixmapBackground(context->getPixmapSource(backPathNode),
+                            context->selectScaleMode(backPathNode, Paintable::TILE));
     }
     QLayout* pLayout = NULL;
-    if (context.hasNode(node, "Layout")) {
-        auto layout = context.selectString(node, "Layout");
+    if (context->hasNode(node, "Layout")) {
+        auto layout = context->selectString(node, "Layout");
         if (layout == "vertical") {
             pLayout = new QVBoxLayout();
         } else if (layout == "horizontal") {
@@ -89,7 +89,7 @@ void WWidgetGroup::setup(QDomNode node, const SkinContext& context) {
         }
     }
 
-    if (pLayout && context.hasNode(node, "SizeConstraint")) {
+    if (pLayout && context->hasNode(node, "SizeConstraint")) {
         QMap<QString, QLayout::SizeConstraint> constraints;
         constraints["SetDefaultConstraint"] = QLayout::SetDefaultConstraint;
         constraints["SetFixedSize"] = QLayout::SetFixedSize;
@@ -97,7 +97,7 @@ void WWidgetGroup::setup(QDomNode node, const SkinContext& context) {
         constraints["SetMaximumSize"] = QLayout::SetMaximumSize;
         constraints["SetMinAndMaxSize"] = QLayout::SetMinAndMaxSize;
         constraints["SetNoConstraint"] = QLayout::SetNoConstraint;
-        auto sizeConstraintStr = context.selectString(node, "SizeConstraint");
+        auto sizeConstraintStr = context->selectString(node, "SizeConstraint");
         if (constraints.contains(sizeConstraintStr)) {
             pLayout->setSizeConstraint(constraints[sizeConstraintStr]);
         } else {

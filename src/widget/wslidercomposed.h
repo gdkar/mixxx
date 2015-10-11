@@ -43,7 +43,7 @@ class WSliderComposed : public WWidget  {
     WSliderComposed(QWidget* parent = 0);
     virtual ~WSliderComposed();
 
-    void setup(QDomNode node, const SkinContext& context);
+    void setup(QDomNode node, const SkinContext* context);
     void setSliderPixmap(PixmapSource sourceSlider, Paintable::DrawMode mode);
     void setHandlePixmap(bool bHorizontal, PixmapSource sourceHandle,
                          Paintable::DrawMode mode);

@@ -15,7 +15,6 @@
 #include "engine/enginebufferscalerubberband.h"
 #include "engine/enginebufferscalelinear.h"
 #include "engine/sync/enginesync.h"
-#include "engine/engineworkerscheduler.h"
 #include "engine/readaheadmanager.h"
 #include "engine/enginecontrol.h"
 #include "engine/loopingcontrol.h"
@@ -88,7 +87,6 @@ EngineBuffer::EngineBuffer(QString group, ConfigObject<ConfigValue>* _config,
     m_pSlipButton = new ControlPushButton(ConfigKey(m_group, "slip_enabled"),false,this);
     m_pSlipButton->setButtonMode(ControlPushButton::TOGGLE);
     connect(m_pSlipButton, SIGNAL(valueChanged(double)),this, SLOT(slotControlSlip(double)),Qt::DirectConnection);
-    connect(m_pSlipButton, SIGNAL(valueChangedFromEngine(double)),this, SLOT(slotControlSlip(double)),Qt::DirectConnection);
     // BPM to display in the UI (updated more slowly than the actual bpm)
     m_visualBpm = new ControlObject(ConfigKey(m_group, "visual_bpm"),this);
     m_visualKey = new ControlObject(ConfigKey(m_group, "visual_key"),this);
@@ -228,7 +226,7 @@ void EngineBuffer::queueNewPlaypos(double newpos, enum SeekRequest seekType) {
     // All seeks need to be done in the Engine thread so queue it up.
     // Write the position before the seek type, to reduce a possible race
     // condition effect
-    m_queuedPosition.setValue(newpos);
+    m_queuedPosition.store(newpos);
     m_iSeekQueued = seekType;
 }
 void EngineBuffer::requestSyncPhase() {m_iSeekQueued.store(SEEK_PHASE);}
@@ -816,7 +814,7 @@ void EngineBuffer::processSeek() {
     // the later case is ok, because we will process the new seek in the next call anyway.
     SeekRequest seekType =
             static_cast<SeekRequest>(m_iSeekQueued.exchange(NO_SEEK));
-    double position = m_queuedPosition.getValue();
+    double position = m_queuedPosition.load();
     switch (seekType) {
         case NO_SEEK:
             return;
@@ -929,10 +927,6 @@ void EngineBuffer::addControl(EngineControl* pControl) {
     pControl->setEngineBuffer(this);
     connect(this, SIGNAL(trackLoaded(TrackPointer)),pControl, SLOT(trackLoaded(TrackPointer)),Qt::DirectConnection);
     connect(this, SIGNAL(trackUnloaded(TrackPointer)),pControl, SLOT(trackUnloaded(TrackPointer)),Qt::DirectConnection);
-}
-void EngineBuffer::bindWorkers(EngineWorkerScheduler* pWorkerScheduler)
-{
-  m_pReader->setScheduler(pWorkerScheduler);
 }
 bool EngineBuffer::isTrackLoaded()
 {

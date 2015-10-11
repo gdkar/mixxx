@@ -9,6 +9,6 @@ class SharedGLContext {
     static const QGLWidget* getWidget();
     static void setWidget(const QGLWidget* pWidget);
   private:
-    SharedGLContext() { };
+    SharedGLContext() = delete;;
     static const QGLWidget* s_pSharedGLWidget;
 };

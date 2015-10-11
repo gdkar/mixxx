@@ -11,7 +11,7 @@ class WaveformSignalColors {
     WaveformSignalColors();
     virtual ~WaveformSignalColors() {}
 
-    bool setup(const QDomNode &node, const SkinContext& context);
+    bool setup(const QDomNode &node, const SkinContext* context);
 
     inline const QColor& getSignalColor() const { return m_signalColor; }
     inline const QColor& getLowColor() const { return m_lowColor; }

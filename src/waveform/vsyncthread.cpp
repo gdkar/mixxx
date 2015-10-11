@@ -1,6 +1,5 @@
 #include <QThread>
 #include <QGLWidget>
-#include <QGLFormat>
 #include <QTime>
 #include <QtDebug>
 #include <QTime>

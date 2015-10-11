@@ -13,7 +13,7 @@ WaveformMarkSet::~WaveformMarkSet() {
 }
 
 void WaveformMarkSet::setup(const QString& group, const QDomNode& node,
-                            const SkinContext& context,
+                            const SkinContext* context,
                             const WaveformSignalColors& signalColors) {
 
     clear();

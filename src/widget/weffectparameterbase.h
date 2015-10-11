@@ -15,7 +15,7 @@ class WEffectParameterBase : public WLabel {
     WEffectParameterBase(QWidget* pParent, EffectsManager* pEffectsManager);
     virtual ~WEffectParameterBase();
 
-    virtual void setup(QDomNode node, const SkinContext& context) = 0;
+    virtual void setup(QDomNode node, const SkinContext* context) = 0;
 
   protected slots:
     void parameterUpdated();

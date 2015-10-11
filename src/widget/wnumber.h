@@ -29,7 +29,7 @@ class WNumber : public WLabel  {
     WNumber(QWidget* pParent = NULL);
     virtual ~WNumber();
 
-    virtual void setup(QDomNode node, const SkinContext& context);
+    virtual void setup(QDomNode node, const SkinContext* context);
 
     virtual void onConnectedControlChanged(double dParameter, double dValue);
 

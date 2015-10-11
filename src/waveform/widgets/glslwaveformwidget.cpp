@@ -45,7 +45,7 @@ GLSLWaveformWidget::GLSLWaveformWidget(const char* group, QWidget* parent,
     qDebug() << "Created QGLWidget. Context"
              << "Valid:" << context()->isValid()
              << "Sharing:" << context()->isSharing();
-    // Initialization requires activating our context.
+    // Initialization requires activating our context->
     if (QGLContext::currentContext() != context()) {makeCurrent();}
     m_initSuccess = init();
 }

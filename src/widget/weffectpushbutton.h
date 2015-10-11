@@ -1,6 +1,4 @@
-#ifndef WEFFECTPUSHBUTTON_H
-#define WEFFECTPUSHBUTTON_H
-
+_Pragma("once")
 #include <QMenu>
 #include <QAction>
 #include <QMouseEvent>
@@ -17,7 +15,7 @@ class WEffectPushButton : public WPushButton {
     WEffectPushButton(QWidget* pParent, EffectsManager* pEffectsManager);
     virtual ~WEffectPushButton();
 
-    virtual void setup(QDomNode node, const SkinContext& context);
+    virtual void setup(QDomNode node, const SkinContext* context);
 
   public slots:
     virtual void onConnectedControlChanged(double dParameter, double dValue);
@@ -35,5 +33,3 @@ class WEffectPushButton : public WPushButton {
     EffectParameterSlotBasePointer m_pEffectParameterSlot;
     QMenu* m_pButtonMenu;
 };
-
-#endif // WEFFECTPUSHBUTTON_H

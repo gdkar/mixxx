@@ -24,12 +24,11 @@ namespace {
 // constant. 2048 is a pretty good number of samples because 25ms
 // latency corresponds to 1102.5 mono samples and we need double
 // that for stereo samples.
-const SINT kDefaultHintSamples = 1024 * CachingReaderChunk::kChannels;
+const SINT kDefaultHintSamples = 1024 * CachingReaderChunk::kChannels();
 } // anonymous namespace
 // currently CachingReaderWorker::kCachingReaderChunkLength is 65536 (0x10000);
 // For 80 chunks we need 5242880 (0x500000) bytes (5 MiB) of Memory
 //static
-const int CachingReader::maximumCachingReaderChunksInMemory = (1<<23) / (8192 * 2 * sizeof(float));
 CachingReader::CachingReader(QString group, ConfigObject<ConfigValue>* config)
         : m_pConfig(config),
           m_chunkReadRequestFIFO(256),
@@ -37,7 +36,7 @@ CachingReader::CachingReader(QString group, ConfigObject<ConfigValue>* config)
           m_readerStatus(INVALID),
           m_mruCachingReaderChunk(nullptr),
           m_lruCachingReaderChunk(nullptr),
-          m_sampleBuffer(CachingReaderChunk::kSamples * maximumCachingReaderChunksInMemory),
+          m_sampleBuffer(CachingReaderChunk::kSamples() * maximumCachingReaderChunksInMemory()),
           m_maxReadableFrameIndex(0),
           m_worker(group, &m_chunkReadRequestFIFO, &m_readerStatusFIFO) {
     m_allocatedCachingReaderChunks.reserve(m_sampleBuffer.size());
@@ -45,11 +44,11 @@ CachingReader::CachingReader(QString group, ConfigObject<ConfigValue>* config)
     // Divide up the allocated raw memory buffer into total_chunks
     // chunks. Initialize each chunk to hold nothing and add it to the free
     // list.
-    for (int i = 0; i < maximumCachingReaderChunksInMemory; ++i) {
+    for (int i = 0; i < maximumCachingReaderChunksInMemory(); ++i) {
         auto c = new CachingReaderChunkForOwner(bufferStart);
         m_chunks.push_back(c);
         m_freeChunks.push_back(c);
-        bufferStart += CachingReaderChunk::kSamples;
+        bufferStart += CachingReaderChunk::kSamples();
     }
     // Forward signals from worker
     connect(&m_worker, SIGNAL(trackLoading()), this, SIGNAL(trackLoading()), Qt::DirectConnection);
@@ -140,7 +139,7 @@ void CachingReader::newTrack(TrackPointer pTrack)
     if(pTrack) qDebug() << tr("Loading track") << pTrack->getTitle() << "by artist" << pTrack->getArtist() << "at location" << pTrack->getLocation();
     m_pTrack.swap(tmp);
     m_worker.newTrack(pTrack);
-    m_worker.workReady();
+    m_worker.wake();
 }
 void CachingReader::process()
 {
@@ -170,12 +169,12 @@ void CachingReader::process()
 }
 int CachingReader::read(int sample, int numSamples, CSAMPLE* buffer) {
     // Check for bad inputs
-    DEBUG_ASSERT_AND_HANDLE(sample % CachingReaderChunk::kChannels == 0) {
+    DEBUG_ASSERT_AND_HANDLE(sample % CachingReaderChunk::kChannels() == 0) {
         // This problem is easy to fix, but this type of call should be
         // complained about loudly.
         --sample;
     }
-    DEBUG_ASSERT_AND_HANDLE(numSamples % CachingReaderChunk::kChannels == 0) { --numSamples; }
+    DEBUG_ASSERT_AND_HANDLE(numSamples % CachingReaderChunk::kChannels() == 0) { --numSamples; }
     if (numSamples < 0 || !buffer) {
         QString temp = QString("Sample = %1").arg(sample);
         qDebug() << "CachingReader::read() invalid arguments sample:" << sample
@@ -323,9 +322,5 @@ void CachingReader::hintAndMaybeWake(const HintVector& hintList) {
         }
     }
     // If there are chunks to be read, wake up.
-    if (shouldWake) { m_worker.workReady(); }
-}
-void CachingReader::setScheduler(EngineWorkerScheduler* pScheduler) 
-{ 
-  m_worker.setScheduler(pScheduler);
+    if (shouldWake) { m_worker.wake(); }
 }

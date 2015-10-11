@@ -1,6 +1,4 @@
-#ifndef WEFFECTPARAMETER_H
-#define WEFFECTPARAMETER_H
-
+_Pragma("once")
 #include <QDomNode>
 
 #include "widget/wlabel.h"
@@ -14,9 +12,5 @@ class WEffectParameter : public WEffectParameterBase {
   public:
     WEffectParameter(QWidget* pParent, EffectsManager* pEffectsManager);
     virtual ~WEffectParameter();
-
-    void setup(QDomNode node, const SkinContext& context);
+    void setup(QDomNode node, const SkinContext* context);
 };
-
-
-#endif /* WEFFECTPARAMETER_H */

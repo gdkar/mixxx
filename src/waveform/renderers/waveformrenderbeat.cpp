@@ -28,8 +28,8 @@ bool WaveformRenderBeat::init() {
     return m_pBeatActive->valid();
 }
 
-void WaveformRenderBeat::setup(const QDomNode& node, const SkinContext& context) {
-    m_beatColor.setNamedColor(context.selectString(node, "BeatColor"));
+void WaveformRenderBeat::setup(const QDomNode& node, const SkinContext* context) {
+    m_beatColor.setNamedColor(context->selectString(node, "BeatColor"));
     m_beatColor = WSkinColor::getCorrectColor(m_beatColor).toRgb();
 
     if (m_beatColor.alphaF() > 0.99)

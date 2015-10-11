@@ -14,7 +14,7 @@ public:
     virtual ~WaveformRendererSignalBase();
 
     virtual bool init();
-    virtual void setup(const QDomNode& node, const SkinContext& context);
+    virtual void setup(const QDomNode& node, const SkinContext* context);
 
     virtual bool onInit() {return true;}
     virtual void onSetup(const QDomNode &node) = 0;

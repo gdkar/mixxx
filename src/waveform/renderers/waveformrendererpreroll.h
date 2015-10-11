@@ -12,7 +12,7 @@ class WaveformRendererPreroll : public WaveformRendererAbstract {
     explicit WaveformRendererPreroll(WaveformWidgetRenderer* waveformWidgetRenderer);
     virtual ~WaveformRendererPreroll();
 
-    virtual void setup(const QDomNode& node, const SkinContext& context);
+    virtual void setup(const QDomNode& node, const SkinContext* context);
     virtual void draw(QPainter* painter, QPaintEvent* event);
 
   private:

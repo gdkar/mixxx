@@ -1,4 +1,3 @@
-// cachingreader.h
 // Created 7/9/2009 by RJ Ryan (rryan@mit.edu)
 
 _Pragma("once")
@@ -83,8 +82,11 @@ class CachingReader : public QObject {
     // processed in the work thread, so the reader must be woken up via wake()
     // for this to take effect.
     virtual void newTrack(TrackPointer pTrack);
-    virtual void setScheduler(EngineWorkerScheduler* pScheduler);
-    const static int maximumCachingReaderChunksInMemory;
+    static constexpr int chunkMemoryBudget(){return (1 << 20 ) * 8;}
+    static constexpr int maximumCachingReaderChunksInMemory()
+    {
+      return chunkMemoryBudget() / (CachingReaderChunk::kSamples() * sizeof(CSAMPLE));
+    }
   signals:
     // Emitted once a new track is loaded and ready to be read from.
     void trackLoading();

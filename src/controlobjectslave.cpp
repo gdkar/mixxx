@@ -22,7 +22,8 @@ ControlObjectSlave::ControlObjectSlave(const ConfigKey& key, QObject* pParent)
 void ControlObjectSlave::initialize(const ConfigKey& key) {
     m_key = key;
     // Don't bother looking up the control if key is NULL. Prevents log spew.
-    if (!key.isNull()) {m_pControl = ControlDoublePrivate::getControl(key);}
+    if (!key.isNull()) m_pControl = ControlDoublePrivate::getControl(key);
+    if(m_pControl) connect(m_pControl.data(),&ControlDoublePrivate::valueChanged,this,&ControlObjectSlave::valueChanged);
 }
 bool ControlObjectSlave::connectValueChanged(const QObject* receiver,const char* method, Qt::ConnectionType type) {
     auto ret = false;
@@ -31,9 +32,8 @@ bool ControlObjectSlave::connectValueChanged(const QObject* receiver,const char*
         if (ret) {
             // Connect to ControlObjectPrivate only if required. Do not allow
             // duplicate connections.
-            connect(m_pControl.data(), SIGNAL(valueChanged(double, QObject*)),
-                    this, SLOT(slotValueChanged(double, QObject*)),
-                    static_cast<Qt::ConnectionType>(Qt::DirectConnection | Qt::UniqueConnection));
+            connect(m_pControl.data(),&ControlDoublePrivate::valueChanged,this,&ControlObjectSlave::valueChanged,
+                static_cast<Qt::ConnectionType>(Qt::DirectConnection|Qt::UniqueConnection));;
         }
     }
     return ret;
@@ -47,12 +47,12 @@ double ControlObjectSlave::getParameter()const{return m_pControl?m_pControl->get
 double ControlObjectSlave::getParameterForValue(double v)const
 {return m_pControl?m_pControl->getParameterForValue(v):0.0;}
 const ConfigKey&ControlObjectSlave::getKey()const{return m_key;}
-void ControlObjectSlave::set(double v){if ( m_pControl ) m_pControl->set(v,this);}
-void ControlObjectSlave::setParameter(double v){if(m_pControl)m_pControl->setParameter(v,this);}
+void ControlObjectSlave::set(double v){if ( m_pControl ) m_pControl->set(v);}
+void ControlObjectSlave::setParameter(double v){if(m_pControl)m_pControl->setParameter(v);}
 void ControlObjectSlave::reset(){if(m_pControl)m_pControl->reset();}
-void ControlObjectSlave::slotValueChanged(double v, QObject *pSetter) { if ( pSetter != this ) emit(valueChanged(v)); }
 // connect to parent object
-bool ControlObjectSlave::connectValueChanged( const char* method, Qt::ConnectionType type) {
+bool ControlObjectSlave::connectValueChanged( const char* method, Qt::ConnectionType type)
+{
     DEBUG_ASSERT(parent());
     return connectValueChanged(parent(), method, type);
 }

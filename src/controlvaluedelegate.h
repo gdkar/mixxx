@@ -5,9 +5,7 @@
  *      Author: asantoni
  */
 
-#ifndef CONTROLVALUEDELEGATE_H_
-#define CONTROLVALUEDELEGATE_H_
-
+_Pragma("once")
 #include <QItemDelegate>
 #include <QModelIndex>
 #include <QObject>
@@ -32,16 +30,13 @@ public:
 
  void updateEditorGeometry(QWidget *editor,
      const QStyleOptionViewItem &option, const QModelIndex &index) const;
-
-    static bool verifyControlValueValidity(QString controlGroup, QAbstractItemModel *model,
-                                           const QModelIndex &index);
+    static bool verifyControlValueValidity(QString controlGroup, QAbstractItemModel *model,const QModelIndex &index);
     /** These getters are used by the "Add Control" dialog in the prefs. */
-    static QStringList getChannelControlValues() { return m_channelControlValues; };
-    static QStringList getMasterControlValues() { return m_masterControlValues; };
-    static QStringList getPlaylistControlValues() { return m_playlistControlValues; };
-    static QStringList getFlangerControlValues() { return m_flangerControlValues; };
-    static QStringList getMicrophoneControlValues() { return m_microphoneControlValues; };
-
+    static QStringList getChannelControlValues();
+    static QStringList getMasterControlValues();
+    static QStringList getPlaylistControlValues();
+    static QStringList getFlangerControlValues();
+    static QStringList getMicrophoneControlValues();
 private:
     static QStringList m_channelControlValues;
     static QStringList m_masterControlValues;
@@ -49,5 +44,3 @@ private:
     static QStringList m_flangerControlValues;
     static QStringList m_microphoneControlValues;
 };
-
-#endif /* CONTROLVALUEDELEGATE_H_ */

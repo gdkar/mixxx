@@ -17,7 +17,7 @@ class WaveformMark {
     WaveformMark();
     ~WaveformMark();
     void setup(const QString& group, const QDomNode& node,
-               const SkinContext& context,
+               const SkinContext* context,
                const WaveformSignalColors& signalColors);
     void setKeyAndIndex(const ConfigKey& key, int i);
 

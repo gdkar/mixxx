@@ -1,6 +1,4 @@
-#ifndef VSYNCTHREAD_H
-#define VSYNCTHREAD_H
-
+_Pragma("once")
 #include <QTime>
 #include <QThread>
 #include <QSemaphore>
@@ -118,10 +116,5 @@ class VSyncThread : public QThread {
     QSemaphore m_semaVsyncSlot;
     double m_displayFrameRate;
     int m_vSyncPerRendering;
-
-
     GuiTick* m_pGuiTick;
 };
-
-
-#endif // VSYNCTHREAD_H

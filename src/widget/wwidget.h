@@ -15,9 +15,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef WWIDGET_H
-#define WWIDGET_H
-
+_Pragma("once")
 #include <QWidget>
 #include <QEvent>
 #include <QString>
@@ -50,5 +48,3 @@ class WWidget : public QWidget, public WBaseWidget {
   private:
     ControlObjectSlave* m_pTouchShift;
 };
-
-#endif

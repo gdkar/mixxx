@@ -17,7 +17,7 @@ WaveformRenderMark::WaveformRenderMark(WaveformWidgetRenderer* waveformWidgetRen
     WaveformRendererAbstract(waveformWidgetRenderer) {
 }
 
-void WaveformRenderMark::setup(const QDomNode& node, const SkinContext& context) {
+void WaveformRenderMark::setup(const QDomNode& node, const SkinContext* context) {
     m_marks.setup(m_waveformRenderer->getGroup(), node, context,
                   *m_waveformRenderer->getWaveformSignalColors());
 }

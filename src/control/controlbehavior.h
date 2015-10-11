@@ -1,6 +1,4 @@
-#ifndef CONTROLBEHAVIOR_H
-#define CONTROLBEHAVIOR_H
-
+_Pragma("once")
 #include <QTimer>
 class ControlDoublePrivate;
 class ControlNumericBehavior {
@@ -83,4 +81,3 @@ class ControlPushButtonBehavior : public ControlNumericBehavior {
     int m_iNumStates;
     QTimer m_pushTimer;
 };
-#endif /* CONTROLBEHAVIOR_H */

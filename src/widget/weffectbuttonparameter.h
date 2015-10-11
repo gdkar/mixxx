@@ -15,7 +15,7 @@ class WEffectButtonParameter : public WEffectParameterBase {
     WEffectButtonParameter(QWidget* pParent, EffectsManager* pEffectsManager);
     virtual ~WEffectButtonParameter();
 
-    void setup(QDomNode node, const SkinContext& context);
+    void setup(QDomNode node, const SkinContext* context);
 };
 
 

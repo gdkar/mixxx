@@ -35,7 +35,7 @@ class WVuMeter : public WWidget  {
     WVuMeter(QWidget *parent=0);
     virtual ~WVuMeter();
 
-    void setup(QDomNode node, const SkinContext& context);
+    void setup(QDomNode node, const SkinContext* context);
     void setPixmapBackground(PixmapSource source, Paintable::DrawMode mode);
     void setPixmaps(PixmapSource source,
                     bool bHorizontal,

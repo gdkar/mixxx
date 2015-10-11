@@ -24,7 +24,6 @@ _Pragma("once")
 #include "engine/sync/syncable.h"
 #include "trackinfoobject.h"
 #include "configobject.h"
-#include "control/controlvalue.h"
 #include "cachingreader.h"
 
 class EngineChannel;
@@ -46,7 +45,6 @@ class ControlPotmeter;
 class CachingReader;
 class EngineBufferScale;
 class EngineSync;
-class EngineWorkerScheduler;
 class VisualPlayPosition;
 class EngineMaster;
 
@@ -102,7 +100,6 @@ class EngineBuffer : public EngineObject {
     Q_ENUM(KeylockEngine);
     EngineBuffer(QString _group, ConfigObject<ConfigValue>* _config,EngineChannel* pChannel, EngineMaster* pMixingEngine,QObject * pParent);
     virtual ~EngineBuffer();
-    void bindWorkers(EngineWorkerScheduler* pWorkerScheduler);
     // Return the current rate (not thread-safe)
     double getSpeed() const;
     bool getScratching() const;
@@ -279,7 +276,7 @@ class EngineBuffer : public EngineObject {
     std::atomic<int> m_iSeekQueued{NO_SEEK};
     std::atomic<int> m_iEnableSyncQueued{SYNC_REQUEST_NONE};
     std::atomic<int> m_iSyncModeQueued{SYNC_INVALID};
-    ControlValueAtomic<double> m_queuedPosition;
+    std::atomic<double> m_queuedPosition;
     // Holds the last sample value of the previous buffer. This is used when ramping to
     // zero in case of an immediate stop of the playback
     float m_fLastSampleValue[2];

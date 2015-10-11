@@ -539,7 +539,8 @@ void TrackInfoObject::setWaveformSummary(ConstWaveformPointer pWaveform) {
 }
 void TrackInfoObject::setAnalyserProgress(double progress) {
     // progress in 0 .. 1000. QAtomicInt so no need for lock.
-	  if (progress != m_analyserProgress.exchange(progress) ) emit analyserProgress(progress);
+	  if (progress != m_analyserProgress.exchange(progress) ) 
+      emit analyserProgress(progress);
 }
 double TrackInfoObject::getAnalyserProgress() const { return m_analyserProgress.load(); }
 void TrackInfoObject::setCuePoint(double cue) { if ( m_dCuePoint.exchange(cue)!=cue){ emit metadataUpdated();setDirty(true);} }
@@ -661,7 +662,8 @@ QString TrackInfoObject::getKeyText() const {
 }
 void TrackInfoObject::setBpmLock(bool bpmLock) { if (bpmLock != m_bBpmLock.exchange(bpmLock)) { setDirty(true); } }
 bool TrackInfoObject::hasBpmLock() const { return m_bBpmLock.load(); }
-void TrackInfoObject::setCoverInfo(const CoverInfo& info) {
+void TrackInfoObject::setCoverInfo(const CoverInfo& info)
+{
     QMutexLocker lock(&m_qMutex);
     if (info != m_coverArt.info) {
         m_coverArt = CoverArt();
@@ -671,11 +673,13 @@ void TrackInfoObject::setCoverInfo(const CoverInfo& info) {
         emit(coverArtUpdated());
     }
 }
-CoverInfo TrackInfoObject::getCoverInfo() const {
+CoverInfo TrackInfoObject::getCoverInfo() const
+{
     QMutexLocker lock(&m_qMutex);
     return m_coverArt.info;
 }
-void TrackInfoObject::setCoverArt(const CoverArt& cover) {
+void TrackInfoObject::setCoverArt(const CoverArt& cover)
+{
     QMutexLocker lock(&m_qMutex);
     if (cover != m_coverArt) {
         m_coverArt = cover;

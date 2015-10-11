@@ -30,7 +30,6 @@ class WaveformWidgetAbstract : public WaveformWidgetRenderer {
   protected:
     QWidget* m_widget  = nullptr;
     bool m_initSuccess = false;
-
     //this is the factory resposability to trigger QWidget casting after constructor
     virtual void castToQWidget() = 0;
     friend class WaveformWidgetFactory;

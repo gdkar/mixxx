@@ -12,7 +12,7 @@ class WKey : public WLabel  {
     virtual ~WKey();
 
     virtual void onConnectedControlChanged(double dParameter, double dValue);
-    void setup(QDomNode node, const SkinContext& context);
+    void setup(QDomNode node, const SkinContext* context);
 
   private slots:
     void setValue(double dValue);

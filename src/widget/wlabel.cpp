@@ -32,26 +32,26 @@ WLabel::WLabel(QWidget* pParent)
 WLabel::~WLabel() {
 }
 
-void WLabel::setup(QDomNode node, const SkinContext& context) {
+void WLabel::setup(QDomNode node, const SkinContext* context) {
     // Colors
     QPalette pal = palette(); //we have to copy out the palette to edit it since it's const (probably for threadsafety)
-    if (context.hasNode(node, "BgColor")) {
-        m_qBgColor.setNamedColor(context.selectString(node, "BgColor"));
+    if (context->hasNode(node, "BgColor")) {
+        m_qBgColor.setNamedColor(context->selectString(node, "BgColor"));
         pal.setColor(this->backgroundRole(), WSkinColor::getCorrectColor(m_qBgColor));
         setAutoFillBackground(true);
     }
-    m_qFgColor.setNamedColor(context.selectString(node, "FgColor"));
+    m_qFgColor.setNamedColor(context->selectString(node, "FgColor"));
     pal.setColor(this->foregroundRole(), WSkinColor::getCorrectColor(m_qFgColor));
     setPalette(pal);
 
     // Text
-    if (context.hasNodeSelectString(node, "Text", &m_skinText)) {
+    if (context->hasNodeSelectString(node, "Text", &m_skinText)) {
         setText(m_skinText);
     }
 
     // Font size
     QString strFontSize;
-    if (context.hasNodeSelectString(node, "FontSize", &strFontSize)) {
+    if (context->hasNodeSelectString(node, "FontSize", &strFontSize)) {
         int fontsize = strFontSize.toInt();
         // TODO(XXX) "Helvetica" should retrain the Qt default font matching, verify that.
         setFont(QFont("Helvetica", fontsize, QFont::Normal));
@@ -59,7 +59,7 @@ void WLabel::setup(QDomNode node, const SkinContext& context) {
 
     // Alignment
     QString alignment;
-    if (context.hasNodeSelectString(node, "Alignment", &alignment)) {
+    if (context->hasNodeSelectString(node, "Alignment", &alignment)) {
     	alignment = alignment.toLower();
         if (alignment == "right") {
             setAlignment(Qt::AlignRight | Qt::AlignVCenter);
@@ -75,7 +75,7 @@ void WLabel::setup(QDomNode node, const SkinContext& context) {
 
     // Adds an ellipsis to turncated text
     QString elide;
-    if (context.hasNodeSelectString(node, "Elide", &elide)) {
+    if (context->hasNodeSelectString(node, "Elide", &elide)) {
     	elide = elide.toLower();
         if (elide == "right") {
             m_elideMode = Qt::ElideRight;

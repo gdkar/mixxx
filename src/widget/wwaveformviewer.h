@@ -23,7 +23,7 @@ class WWaveformViewer : public WWidget {
     virtual ~WWaveformViewer();
 
     const char* getGroup() const { return m_pGroup;}
-    void setup(QDomNode node, const SkinContext& context);
+    void setup(QDomNode node, const SkinContext* context);
 
     void dragEnterEvent(QDragEnterEvent *event);
     void dropEvent(QDropEvent *event);

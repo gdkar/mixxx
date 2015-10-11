@@ -17,7 +17,7 @@ class WStarRating : public QWidget, public WBaseWidget {
     WStarRating(QString group, QWidget* pParent);
     virtual ~WStarRating();
 
-    virtual void setup(QDomNode node, const SkinContext& context);
+    virtual void setup(QDomNode node, const SkinContext* context);
     QSize sizeHint() const;
 
   public slots:

@@ -8,54 +8,54 @@
 WaveformSignalColors::WaveformSignalColors() {
 }
 
-bool WaveformSignalColors::setup(const QDomNode &node, const SkinContext& context) {
+bool WaveformSignalColors::setup(const QDomNode &node, const SkinContext* context) {
     // NOTE(rryan): It is critical that every color is converted to RGB with
     // toRgb(). Otherwise Mixxx will waste 3% of its CPU time while rendering
     // the filtered waveform doing RGB color space conversions!
 
-    m_signalColor.setNamedColor(context.selectString(node, "SignalColor"));
+    m_signalColor.setNamedColor(context->selectString(node, "SignalColor"));
     m_signalColor = WSkinColor::getCorrectColor(m_signalColor).toRgb();
 
-    m_lowColor.setNamedColor(context.selectString(node, "SignalLowColor"));
+    m_lowColor.setNamedColor(context->selectString(node, "SignalLowColor"));
     m_lowColor = WSkinColor::getCorrectColor(m_lowColor).toRgb();
 
-    m_midColor.setNamedColor(context.selectString(node, "SignalMidColor"));
+    m_midColor.setNamedColor(context->selectString(node, "SignalMidColor"));
     m_midColor = WSkinColor::getCorrectColor(m_midColor).toRgb();
 
-    m_highColor.setNamedColor(context.selectString(node, "SignalHighColor"));
+    m_highColor.setNamedColor(context->selectString(node, "SignalHighColor"));
     m_highColor = WSkinColor::getCorrectColor(m_highColor).toRgb();
 
-    m_rgbLowColor.setNamedColor(context.selectString(node, "SignalRGBLowColor"));
+    m_rgbLowColor.setNamedColor(context->selectString(node, "SignalRGBLowColor"));
     if (!m_rgbLowColor.isValid()) {
         m_rgbLowColor = Qt::red;
     }
     m_rgbLowColor = WSkinColor::getCorrectColor(m_rgbLowColor).toRgb();
 
-    m_rgbMidColor.setNamedColor(context.selectString(node, "SignalRGBMidColor"));
+    m_rgbMidColor.setNamedColor(context->selectString(node, "SignalRGBMidColor"));
     if (!m_rgbMidColor.isValid()) {
         m_rgbMidColor = Qt::green;
     }
     m_rgbMidColor = WSkinColor::getCorrectColor(m_rgbMidColor).toRgb();
 
-    m_rgbHighColor.setNamedColor(context.selectString(node, "SignalRGBHighColor"));
+    m_rgbHighColor.setNamedColor(context->selectString(node, "SignalRGBHighColor"));
     if (!m_rgbHighColor.isValid()) {
         m_rgbHighColor = Qt::blue;
     }
     m_rgbHighColor = WSkinColor::getCorrectColor(m_rgbHighColor).toRgb();
 
-    m_axesColor.setNamedColor(context.selectString(node, "AxesColor"));
+    m_axesColor.setNamedColor(context->selectString(node, "AxesColor"));
     if (!m_axesColor.isValid()) {
         m_axesColor = QColor(245,245,245);
     }
     m_axesColor = WSkinColor::getCorrectColor(m_axesColor).toRgb();
 
-    m_playPosColor.setNamedColor(context.selectString(node, "PlayPosColor"));
+    m_playPosColor.setNamedColor(context->selectString(node, "PlayPosColor"));
     m_playPosColor = WSkinColor::getCorrectColor(m_playPosColor).toRgb();
     if (!m_playPosColor.isValid()) {
         m_playPosColor = m_axesColor;
     }
 
-    m_bgColor.setNamedColor(context.selectString(node, "BgColor"));
+    m_bgColor.setNamedColor(context->selectString(node, "BgColor"));
     if (!m_bgColor.isValid()) {
         m_bgColor = QColor(0, 0, 0);
     }

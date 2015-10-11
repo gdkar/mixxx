@@ -40,31 +40,31 @@ WSliderComposed::~WSliderComposed() {
     unsetPixmaps();
 }
 
-void WSliderComposed::setup(QDomNode node, const SkinContext& context) {
+void WSliderComposed::setup(QDomNode node, const SkinContext* context) {
     // Setup pixmaps
     unsetPixmaps();
 
-    if (context.hasNode(node, "Slider")) {
-        QDomElement slider = context.selectElement(node, "Slider");
+    if (context->hasNode(node, "Slider")) {
+        QDomElement slider = context->selectElement(node, "Slider");
         // The implicit default in <1.12.0 was FIXED so we keep it for backwards
         // compatibility.
-        PixmapSource sourceSlider = context.getPixmapSource(slider);
-        setSliderPixmap(sourceSlider, context.selectScaleMode(slider, Paintable::FIXED));
+        PixmapSource sourceSlider = context->getPixmapSource(slider);
+        setSliderPixmap(sourceSlider, context->selectScaleMode(slider, Paintable::FIXED));
     }
 
     m_dSliderLength = m_bHorizontal ? width() : height();
     m_handler.setSliderLength(m_dSliderLength);
 
-    QDomElement handle = context.selectElement(node, "Handle");
-    PixmapSource sourceHandle = context.getPixmapSource(handle);
-    bool h = context.selectBool(node, "Horizontal", false);
+    QDomElement handle = context->selectElement(node, "Handle");
+    PixmapSource sourceHandle = context->getPixmapSource(handle);
+    bool h = context->selectBool(node, "Horizontal", false);
     // The implicit default in <1.12.0 was FIXED so we keep it for backwards
     // compatibility.
     setHandlePixmap(h, sourceHandle,
-                    context.selectScaleMode(handle, Paintable::FIXED));
+                    context->selectScaleMode(handle, Paintable::FIXED));
 
-    if (context.hasNode(node, "EventWhileDrag")) {
-        if (context.selectString(node, "EventWhileDrag").contains("no")) {
+    if (context->hasNode(node, "EventWhileDrag")) {
+        if (context->selectString(node, "EventWhileDrag").contains("no")) {
             m_handler.setEventWhileDrag(false);
         }
     }

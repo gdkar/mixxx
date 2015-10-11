@@ -16,13 +16,13 @@ class WTime: public WLabel {
     WTime(QWidget *parent=0);
     virtual ~WTime();
 
-    void setup(QDomNode node, const SkinContext& context);
+    void setup(QDomNode node, const SkinContext* context);
 
   private slots:
     void refreshTime();
 
   private:
-    void setTimeFormat(QDomNode node, const SkinContext& context);
+    void setTimeFormat(QDomNode node, const SkinContext* context);
 
     QTimer* m_pTimer;
     QString m_sTimeFormat;

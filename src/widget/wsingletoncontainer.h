@@ -44,9 +44,7 @@
 // in the skin.  Note that if a Singleton is visible twice at the same time,
 // behavior is undefined and could be crashy.
 
-#ifndef WSINGLETONCONTAINER_H
-#define WSINGLETONCONTAINER_H
-
+_Pragma("once")
 #include <QPointer>
 
 #include "widget/wwidgetgroup.h"
@@ -58,7 +56,7 @@ class WSingletonContainer : public WWidgetGroup {
     // widget to the container.
     WSingletonContainer(QWidget* pParent=NULL);
 
-    virtual void setup(QDomNode node, const SkinContext& context);
+    virtual void setup(QDomNode node, const SkinContext* context);
 
   public slots:
     virtual void showEvent(QShowEvent* event);
@@ -83,6 +81,3 @@ class SingletonMap {
   private:
     QMap<QString, QWidget*> m_singletons;
 };
-
-
-#endif  // WSINGLETONCONTAINER_H

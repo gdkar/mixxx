@@ -263,10 +263,10 @@ void AnalyserWaveform::cleanup(TrackPointer tio) {
     m_waveformSummary.clear();
 }
 void AnalyserWaveform::finalise(TrackPointer tio) {
-    if (m_skipProcessing) 
-      return;
+    if (m_skipProcessing) return;
     // Force completion to waveform size
-    if (m_waveform) {
+    if (m_waveform)
+    {
         m_waveform->setCompletion(m_waveform->size());
         m_waveform->setVersion(WaveformFactory::currentWaveformVersion());
         m_waveform->setDescription(WaveformFactory::currentWaveformDescription());
@@ -274,9 +274,11 @@ void AnalyserWaveform::finalise(TrackPointer tio) {
         // waveform's vector data first.
         m_waveformData = nullptr;
         m_waveform.clear();
+        tio->waveformUpdated();
     }
     // Force completion to waveform size
-    if (m_waveformSummary) {
+    if (m_waveformSummary)
+    {
         m_waveformSummary->setCompletion(m_waveformSummary->size());
         m_waveformSummary->setVersion(WaveformFactory::currentWaveformSummaryVersion());
         m_waveformSummary->setDescription(WaveformFactory::currentWaveformSummaryDescription());
@@ -284,6 +286,7 @@ void AnalyserWaveform::finalise(TrackPointer tio) {
         // waveform's vector data first.
         m_waveformSummaryData = nullptr;
         m_waveformSummary.clear();
+        tio->waveformSummaryUpdated();
     }
 }
 void AnalyserWaveform::storeIfGreater(float* pDest, float source) {if (*pDest < source) {*pDest = source;}}

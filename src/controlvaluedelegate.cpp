@@ -303,3 +303,10 @@ bool ControlValueDelegate::verifyControlValueValidity(QString controlGroup,QAbst
 
     return false;
 }
+
+QStringList ControlValueDelegate::getChannelControlValues() { return m_channelControlValues; };
+QStringList ControlValueDelegate::getMasterControlValues() { return m_masterControlValues; };
+QStringList ControlValueDelegate::getPlaylistControlValues() { return m_playlistControlValues; };
+QStringList ControlValueDelegate::getFlangerControlValues() { return m_flangerControlValues; };
+QStringList ControlValueDelegate::getMicrophoneControlValues() { return m_microphoneControlValues; };
+

@@ -1,6 +1,4 @@
-#ifndef WEFFECTCHAIN_H
-#define WEFFECTCHAIN_H
-
+_Pragma("once")
 #include <QWidget>
 #include <QLabel>
 #include <QDomNode>
@@ -17,7 +15,7 @@ class WEffectChain : public WLabel {
     WEffectChain(QWidget* pParent, EffectsManager* pEffectsManager);
     virtual ~WEffectChain();
 
-    void setup(QDomNode node, const SkinContext& context);
+    void setup(QDomNode node, const SkinContext* context);
 
   private slots:
     void chainUpdated();
@@ -29,5 +27,3 @@ class WEffectChain : public WLabel {
     EffectsManager* m_pEffectsManager;
     EffectChainSlotPointer m_pEffectChainSlot;
 };
-
-#endif /* WEFFECTCHAIN_H */

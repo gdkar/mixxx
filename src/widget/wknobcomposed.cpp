@@ -16,37 +16,37 @@ WKnobComposed::WKnobComposed(QWidget* pParent)
 WKnobComposed::~WKnobComposed() {
 }
 
-void WKnobComposed::setup(QDomNode node, const SkinContext& context) {
+void WKnobComposed::setup(QDomNode node, const SkinContext* context) {
     clear();
 
     // Set background pixmap if available
-    if (context.hasNode(node, "BackPath")) {
-        QDomElement backPathElement = context.selectElement(node, "BackPath");
-        setPixmapBackground(context.getPixmapSource(backPathElement),
-                            context.selectScaleMode(backPathElement, Paintable::STRETCH));
+    if (context->hasNode(node, "BackPath")) {
+        QDomElement backPathElement = context->selectElement(node, "BackPath");
+        setPixmapBackground(context->getPixmapSource(backPathElement),
+                            context->selectScaleMode(backPathElement, Paintable::STRETCH));
     }
 
     // Set knob pixmap if available
-    if (context.hasNode(node, "Knob")) {
-        QDomElement knobNode = context.selectElement(node, "Knob");
-        setPixmapKnob(context.getPixmapSource(knobNode),
-                      context.selectScaleMode(knobNode, Paintable::STRETCH));
+    if (context->hasNode(node, "Knob")) {
+        QDomElement knobNode = context->selectElement(node, "Knob");
+        setPixmapKnob(context->getPixmapSource(knobNode),
+                      context->selectScaleMode(knobNode, Paintable::STRETCH));
     }
 
-    if (context.hasNode(node, "MinAngle")) {
-        m_dMinAngle = context.selectDouble(node, "MinAngle");
+    if (context->hasNode(node, "MinAngle")) {
+        m_dMinAngle = context->selectDouble(node, "MinAngle");
     }
 
-    if (context.hasNode(node, "MaxAngle")) {
-        m_dMaxAngle = context.selectDouble(node, "MaxAngle");
+    if (context->hasNode(node, "MaxAngle")) {
+        m_dMaxAngle = context->selectDouble(node, "MaxAngle");
     }
 
-    if (context.hasNode(node, "KnobCenterXOffset")) {
-        m_dKnobCenterXOffset = context.selectDouble(node, "KnobCenterXOffset");
+    if (context->hasNode(node, "KnobCenterXOffset")) {
+        m_dKnobCenterXOffset = context->selectDouble(node, "KnobCenterXOffset");
     }
 
-    if (context.hasNode(node, "KnobCenterYOffset")) {
-        m_dKnobCenterYOffset = context.selectDouble(node, "KnobCenterYOffset");
+    if (context->hasNode(node, "KnobCenterYOffset")) {
+        m_dKnobCenterYOffset = context->selectDouble(node, "KnobCenterYOffset");
     }
 }
 

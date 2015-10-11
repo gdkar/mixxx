@@ -12,18 +12,6 @@ QHash<ConfigKey, QSharedPointer<ControlDoublePrivate> > ControlDoublePrivate::s_
 QHash<ConfigKey, ConfigKey> ControlDoublePrivate::s_qCOAliasHash;
 QMutex ControlDoublePrivate::s_qCOHashMutex;
 
-/*
-ControlDoublePrivate::ControlDoublePrivate()
-        : m_bIgnoreNops(true),
-          m_bTrack(false),
-          m_trackType(Stat::UNSPECIFIED),
-          m_trackFlags(Stat::COUNT | Stat::SUM | Stat::AVERAGE |
-                       Stat::SAMPLE_VARIANCE | Stat::MIN | Stat::MAX),
-          m_confirmRequired(false) {
-    initialize();
-}
-*/
-
 ControlDoublePrivate::ControlDoublePrivate(ConfigKey key,
                                            ControlObject* pCreatorCO,
                                            bool bIgnoreNops, bool bTrack,
@@ -133,20 +121,20 @@ void ControlDoublePrivate::reset() {
     // NOTE: pSender = NULL is important. The originator of this action does
     // not know the resulting value so it makes sense that we should emit a
     // general valueChanged() signal even though we know the originator.
-    set(m_defaultValue.load(), nullptr);
+    set(m_defaultValue.load());
 }
-void ControlDoublePrivate::set(double value, QObject* pSender) {
+void ControlDoublePrivate::set(double value) {
     // If the behavior says to ignore the set, ignore it.
     auto pBehavior = m_pBehavior;
     if   (!pBehavior.isNull() && !pBehavior->setFilter(&value)) {return;}
     if   (m_confirmRequired) { emit(valueChangeRequest(value));}
-    else { setInner(value, pSender);}
+    else { setInner(value);}
 }
-void ControlDoublePrivate::setAndConfirm(double value, QObject* pSender) { setInner(value, pSender); }
-void ControlDoublePrivate::setInner(double value, QObject* pSender) {
+void ControlDoublePrivate::setAndConfirm(double value, QObject* pSender) { setInner(value); }
+void ControlDoublePrivate::setInner(double value) {
     if (m_value.exchange(value) != value)
     {
-      emit(valueChanged(value, pSender));
+      emit(valueChanged(value));
       if (m_bTrack) {Stat::track(m_trackKey, static_cast<Stat::StatType>(m_trackType), static_cast<Stat::ComputeFlags>(m_trackFlags), value);}
     }
 }
@@ -155,9 +143,9 @@ void ControlDoublePrivate::setBehavior(ControlNumericBehavior* pBehavior) {
     // used in any other function
     m_pBehavior = QSharedPointer<ControlNumericBehavior>(pBehavior);
 }
-void ControlDoublePrivate::setParameter(double dParam, QObject* pSender) {
+void ControlDoublePrivate::setParameter(double dParam) {
     auto pBehavior = m_pBehavior;
-    if (pBehavior.isNull()) { set(dParam, pSender);}
+    if (pBehavior.isNull()) { set(dParam);}
     else { pBehavior->setValueFromParameter(dParam,this);}
 }
 double ControlDoublePrivate::getParameter() const {return getParameterForValue(get()); }

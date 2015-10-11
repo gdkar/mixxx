@@ -13,22 +13,14 @@ _Pragma("once")
 // EngineWorker can emit its workReady signal, and an EngineWorkerManager will
 // schedule it for running after the audio callback has completed.
 
-class EngineWorkerScheduler;
-
 class EngineWorker : public QThread {
     Q_OBJECT
   public:
     EngineWorker();
     virtual ~EngineWorker();
     virtual void run();
-    void setScheduler(EngineWorkerScheduler* pScheduler);
-    bool workReady();
-    void wake() {
-        m_condv.notify_all();
-    }
+    void wake();
   protected:
     std::condition_variable m_condv;
     std::mutex              m_mutex;
-  private:
-    EngineWorkerScheduler* m_pScheduler;
 };

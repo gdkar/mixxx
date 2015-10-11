@@ -51,39 +51,39 @@ WVuMeter::WVuMeter(QWidget* parent)
 WVuMeter::~WVuMeter() {
 }
 
-void WVuMeter::setup(QDomNode node, const SkinContext& context) {
+void WVuMeter::setup(QDomNode node, const SkinContext* context) {
     // Set pixmaps
-    bool bHorizontal = context.hasNode(node, "Horizontal") &&
-    context.selectString(node, "Horizontal") == "true";
+    bool bHorizontal = context->hasNode(node, "Horizontal") &&
+    context->selectString(node, "Horizontal") == "true";
 
     // Set background pixmap if available
-    if (context.hasNode(node, "PathBack")) {
-        QDomElement backPathNode = context.selectElement(node, "PathBack");
+    if (context->hasNode(node, "PathBack")) {
+        QDomElement backPathNode = context->selectElement(node, "PathBack");
         // The implicit default in <1.12.0 was FIXED so we keep it for backwards
         // compatibility.
-        setPixmapBackground(context.getPixmapSource(backPathNode),
-                            context.selectScaleMode(backPathNode, Paintable::FIXED));
+        setPixmapBackground(context->getPixmapSource(backPathNode),
+                            context->selectScaleMode(backPathNode, Paintable::FIXED));
     }
 
-    QDomElement vuNode = context.selectElement(node, "PathVu");
+    QDomElement vuNode = context->selectElement(node, "PathVu");
     // The implicit default in <1.12.0 was FIXED so we keep it for backwards
     // compatibility.
-    setPixmaps(context.getPixmapSource(vuNode), bHorizontal,
-               context.selectScaleMode(vuNode, Paintable::FIXED));
+    setPixmaps(context->getPixmapSource(vuNode), bHorizontal,
+               context->selectScaleMode(vuNode, Paintable::FIXED));
 
-    m_iPeakHoldSize = context.selectInt(node, "PeakHoldSize");
+    m_iPeakHoldSize = context->selectInt(node, "PeakHoldSize");
     if (m_iPeakHoldSize < 0 || m_iPeakHoldSize > 100)
         m_iPeakHoldSize = DEFAULT_HOLDSIZE;
 
-    m_iPeakFallStep = context.selectInt(node, "PeakFallStep");
+    m_iPeakFallStep = context->selectInt(node, "PeakFallStep");
     if (m_iPeakFallStep < 1 || m_iPeakFallStep > 1000)
         m_iPeakFallStep = DEFAULT_FALLSTEP;
 
-    m_iPeakHoldTime = context.selectInt(node, "PeakHoldTime");
+    m_iPeakHoldTime = context->selectInt(node, "PeakHoldTime");
     if (m_iPeakHoldTime < 1 || m_iPeakHoldTime > 3000)
         m_iPeakHoldTime = DEFAULT_HOLDTIME;
 
-    m_iPeakFallTime = context.selectInt(node, "PeakFallTime");
+    m_iPeakFallTime = context->selectInt(node, "PeakFallTime");
     if (m_iPeakFallTime < 1 || m_iPeakFallTime > 1000)
         m_iPeakFallTime = DEFAULT_FALLTIME;
 }

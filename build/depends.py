@@ -402,7 +402,6 @@ class MixxxCore(Feature):
                    "engine/sync/internalclock.cpp",
 
                    "engine/engineworker.cpp",
-                   "engine/engineworkerscheduler.cpp",
                    "engine/enginebuffer.cpp",
                    "engine/enginebufferscale.cpp",
                    "engine/enginebufferscalelinear.cpp",

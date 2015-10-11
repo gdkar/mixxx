@@ -35,11 +35,8 @@ PlayerManager::PlayerManager(ConfigObject<ConfigValue>* pConfig,
         m_pCONumSamplers(new ControlObject(ConfigKey("[Master]", "num_samplers"), true, true)),
         m_pCONumPreviewDecks(new ControlObject(ConfigKey("[Master]", "num_preview_decks"), true, true)) {
     connect(m_pCONumDecks, SIGNAL(valueChanged(double)),this, SLOT(slotNumDecksControlChanged(double)),Qt::DirectConnection);
-    connect(m_pCONumDecks, SIGNAL(valueChangedFromEngine(double)),this, SLOT(slotNumDecksControlChanged(double)),Qt::DirectConnection);
     connect(m_pCONumSamplers, SIGNAL(valueChanged(double)),this, SLOT(slotNumSamplersControlChanged(double)),Qt::DirectConnection);
-    connect(m_pCONumSamplers, SIGNAL(valueChangedFromEngine(double)),this, SLOT(slotNumSamplersControlChanged(double)),Qt::DirectConnection);
     connect(m_pCONumPreviewDecks, SIGNAL(valueChanged(double)),this, SLOT(slotNumPreviewDecksControlChanged(double)),Qt::DirectConnection);
-    connect(m_pCONumPreviewDecks, SIGNAL(valueChangedFromEngine(double)),this, SLOT(slotNumPreviewDecksControlChanged(double)),Qt::DirectConnection);
     // This is parented to the PlayerManager so does not need to be deleted
     auto pSamplerBank = new SamplerBank(this);
     Q_UNUSED(pSamplerBank);

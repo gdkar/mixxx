@@ -43,7 +43,7 @@ class LegacySkinParser : public QObject, public SkinParser {
     // Parse a skin manifest from the provided skin document root.
     static mixxx::skin::SkinManifest getSkinManifest(QDomElement skinDocument);
     static void freeChannelStrings();
-    static Qt::MouseButton parseButtonState(QDomNode node,const SkinContext& context);
+    static Qt::MouseButton parseButtonState(QDomNode node,const SkinContext* context);
   private:
     static QDomElement openSkin(QString skinPath);
     QList<QWidget*> parseNode(QDomElement node);

@@ -9,14 +9,14 @@ WSplitter::WSplitter(QWidget* pParent, ConfigObject<ConfigValue> *pConfig)
     connect(this, SIGNAL(splitterMoved(int,int)), this, SLOT(slotSplitterMoved()));
 }
 WSplitter::~WSplitter() = default;
-void WSplitter::setup(QDomNode node, const SkinContext& context) {
+void WSplitter::setup(QDomNode node, const SkinContext* context) {
     // Load split sizes
     auto sizesJoined = QString{};
     auto msg = QString{};
     auto ok = false;
     // Try to load last values stored in mixxx.cfg
-    if (context.hasNode(node, "SplitSizesConfigKey")) {
-        m_configKey = ConfigKey::parseCommaSeparated(context.selectString(node, "SplitSizesConfigKey"));
+    if (context->hasNode(node, "SplitSizesConfigKey")) {
+        m_configKey = ConfigKey::parseCommaSeparated(context->selectString(node, "SplitSizesConfigKey"));
         if (m_pConfig->exists(m_configKey)) {
             sizesJoined = m_pConfig->getValueString(m_configKey);
             msg = "Reading .cfg file: '"
@@ -29,8 +29,8 @@ void WSplitter::setup(QDomNode node, const SkinContext& context) {
         }
     }
     // nothing in mixxx.cfg? Load default values
-    if (!ok && context.hasNode(node, "SplitSizes")) {
-        sizesJoined = context.selectString(node, "SplitSizes");
+    if (!ok && context->hasNode(node, "SplitSizes")) {
+        sizesJoined = context->selectString(node, "SplitSizes");
         msg = "<SplitSizes> for <Splitter> ("
                 + sizesJoined
                 + ") does not match the number of children nodes:"
@@ -52,8 +52,8 @@ void WSplitter::setup(QDomNode node, const SkinContext& context) {
         if (ok) {this->setSizes(sizesList);}
     }
     // Default orientation is horizontal.
-    if (context.hasNode(node, "Orientation")) {
-        auto layout = context.selectString(node, "Orientation");
+    if (context->hasNode(node, "Orientation")) {
+        auto layout = context->selectString(node, "Orientation");
         if (layout == "vertical") {setOrientation(Qt::Vertical);}
         else if (layout == "horizontal") {setOrientation(Qt::Horizontal);}
     }

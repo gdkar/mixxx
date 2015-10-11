@@ -10,7 +10,7 @@ WEffectPushButton::WEffectPushButton(QWidget* pParent, EffectsManager* pEffectsM
           m_pButtonMenu(nullptr) {
 }
 WEffectPushButton::~WEffectPushButton() = default;
-void WEffectPushButton::setup(QDomNode node, const SkinContext& context) {
+void WEffectPushButton::setup(QDomNode node, const SkinContext* context) {
     // Setup parent class.
     WPushButton::setup(node, context);
     m_pButtonMenu = new QMenu(this);

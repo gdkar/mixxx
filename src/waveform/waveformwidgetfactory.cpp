@@ -3,8 +3,9 @@
 #include <QTimer>
 #include <QWidget>
 #include <QtDebug>
-#include <QGLFormat>
-#include <QGLShaderProgram>
+#include <QSurfaceFormat>
+#include <QOpenGLShaderProgram>
+#include <QOpenGLContext>
 
 #include "waveform/waveformwidgetfactory.h"
 #include "sharedglcontext.h"
@@ -39,19 +40,22 @@ WaveformWidgetAbstractHandle::WaveformWidgetAbstractHandle()
 ///////////////////////////////////////////
 
 WaveformWidgetHolder::WaveformWidgetHolder()
-    : m_waveformWidget(NULL),
-      m_waveformViewer(NULL),
-      m_skinContextCache(NULL, QString()) {
+    : m_waveformWidget(nullptr),
+      m_waveformViewer(nullptr),
+      m_skinContextCache(nullptr,QString{})
+{
 }
 
 WaveformWidgetHolder::WaveformWidgetHolder(WaveformWidgetAbstract* waveformWidget,
                                            WWaveformViewer* waveformViewer,
                                            const QDomNode& node,
-                                           const SkinContext& skinContext)
+                                           const SkinContext* skinContext)
     : m_waveformWidget(waveformWidget),
       m_waveformViewer(waveformViewer),
       m_skinNodeCache(node.cloneNode()),
-      m_skinContextCache(skinContext) {
+      m_skinContextCache(nullptr,QString{})
+{
+  if(skinContext) m_skinContextCache = *skinContext;
 }
 
 ///////////////////////////////////////////
@@ -76,41 +80,38 @@ WaveformWidgetFactory::WaveformWidgetFactory() :
     m_visualGain[Low] = 1.0;
     m_visualGain[Mid] = 1.0;
     m_visualGain[High] = 1.0;
-
-    if (QGLFormat::hasOpenGL()) {
-        QGLFormat glFormat = QGLFormat::defaultFormat();
-        glFormat.setDirectRendering(true);
-        glFormat.setDoubleBuffer(true);
-        glFormat.setDepth(false);
-        glFormat.setVersion(3,0);
-        glFormat.setProfile(QGLFormat::CompatibilityProfile);
+    {
+        auto sFormat = QSurfaceFormat::defaultFormat();
+        sFormat.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
+        sFormat.setDepthBufferSize(0);
+        sFormat.setVersion(3,3);
+        sFormat.setProfile(QSurfaceFormat::CompatibilityProfile);
         // Disable waiting for vertical Sync
         // This can be enabled when using a single Threads for each QGLContext
         // Setting 1 causes QGLContext::swapBuffer to sleep until the next VSync
 #if defined(__APPLE__)
         // On OS X, syncing to vsync has good performance FPS-wise and
         // eliminates tearing.
-        glFormat.setSwapInterval(1);
+        sFormat.setSwapInterval(1);
 #else
         // Otherwise, turn VSync off because it could cause horrible FPS on
         // Linux.
         // TODO(XXX): Make this configurable.
         // TOOD(XXX): What should we do on Windows?
-        glFormat.setSwapInterval(0);
+        sFormat.setSwapInterval(0);
 #endif
-        glFormat.setRgba(true);
-        QGLFormat::setDefaultFormat(glFormat);
+        QSurfaceFormat::setDefaultFormat(sFormat);
         {
-            QGLWidget glWidget{}; // create paint device
-            auto context = glWidget.context();
-            if ( context && (context->isValid() || context->create(SharedGLContext::getWidget()->context())))
+            QOpenGLContext context{}; // create paint device
+            context.create();
+            if ( context.isValid() || context.create() )
             {
-                glFormat = context->format();
-                auto majorVersion = glFormat.majorVersion();
-                auto minorVersion = glFormat.minorVersion();
+                sFormat = context.format();
+                auto majorVersion = sFormat.majorVersion();
+                auto minorVersion = sFormat.minorVersion();
                 m_openGLVersion = QString::number(majorVersion) + "." + QString::number(minorVersion);
                 m_openGLAvailable = true;
-                m_openGLShaderAvailable = QGLShaderProgram::hasOpenGLShaderPrograms(context);
+                m_openGLShaderAvailable = QOpenGLShaderProgram::hasOpenGLShaderPrograms(&context);
                 qDebug() << "opengl shaders available: "<<m_openGLShaderAvailable;
                 qDebug() << "opengl version : " << m_openGLVersion;
             }
@@ -121,22 +122,18 @@ WaveformWidgetFactory::WaveformWidgetFactory() :
     evaluateWidgets();
     m_time.start();
 }
-
-WaveformWidgetFactory::~WaveformWidgetFactory() {
-    if (m_vsyncThread) {
-        delete m_vsyncThread;
-    }
+WaveformWidgetFactory::~WaveformWidgetFactory()
+{
+    if (m_vsyncThread) delete m_vsyncThread;
 }
-
-bool WaveformWidgetFactory::setConfig(ConfigObject<ConfigValue> *config) {
+bool WaveformWidgetFactory::setConfig(ConfigObject<ConfigValue> *config)
+{
     m_config = config;
     if (!m_config) {
         return false;
     }
-
-    bool ok = false;
-
-    int frameRate = m_config->getValueString(ConfigKey("[Waveform]","FrameRate")).toInt(&ok);
+    auto ok = false;
+    auto frameRate = m_config->getValueString(ConfigKey("[Waveform]","FrameRate")).toInt(&ok);
     if (ok) {
         setFrameRate(frameRate);
     } else {
@@ -194,7 +191,7 @@ void WaveformWidgetFactory::addTimerListener(QWidget* pWidget) {
     // can decide whether to paint or not.
     connect(this, SIGNAL(waveformUpdateTick()),pWidget, SLOT(maybeUpdate()),Qt::DirectConnection);
 }
-bool WaveformWidgetFactory::setWaveformWidget(WWaveformViewer* viewer,const QDomElement& node,const SkinContext& context) {
+bool WaveformWidgetFactory::setWaveformWidget(WWaveformViewer* viewer,const QDomElement& node,const SkinContext* context) {
     int index = findIndexOf(viewer);
     if (index != -1) {
         qDebug() << "WaveformWidgetFactory::setWaveformWidget - "\
@@ -282,7 +279,7 @@ bool WaveformWidgetFactory::setWidgetTypeFromHandle(int handleIndex) {
         auto widget = createWaveformWidget(m_type, holder.m_waveformViewer);
         holder.m_waveformWidget = widget;
         viewer->setWaveformWidget(widget);
-        viewer->setup(holder.m_skinNodeCache, holder.m_skinContextCache);
+        viewer->setup(holder.m_skinNodeCache, &holder.m_skinContextCache);
         viewer->setZoom(previousZoom);
         // resize() doesn't seem to get called on the widget. I think Qt skips
         // it since the size didn't change.
@@ -379,7 +376,7 @@ void WaveformWidgetFactory::swap() {
             for (int i = 0; i < m_waveformWidgetHolders.size(); i++) {
                 auto pWaveformWidget = m_waveformWidgetHolders[i].m_waveformWidget;
                 if (pWaveformWidget->getWidth() > 0) {
-                    auto  glw = dynamic_cast<QGLWidget*>(pWaveformWidget->getWidget());
+                    auto  glw = qobject_cast<QGLWidget*>(pWaveformWidget->getWidget());
                     if (glw) m_vsyncThread->swapGl(glw, i);
                 }
                 //qDebug() << "swap x" << m_vsyncThread->elapsed();
@@ -591,3 +588,13 @@ void WaveformWidgetFactory::startVSync(MixxxMainWindow* mixxxMainWindow) {
 void WaveformWidgetFactory::getAvailableVSyncTypes(QList<QPair<int, QString > >* pList) {
     m_vsyncThread->getAvailableVSyncTypes(pList);
 }
+
+int WaveformWidgetFactory::getFrameRate() const { return m_frameRate;}
+int WaveformWidgetFactory::getEndOfTrackWarningTime() const { return m_endOfTrackWarningTime;}
+bool WaveformWidgetFactory::isOpenGLAvailable() const { return m_openGLAvailable;}
+bool WaveformWidgetFactory::isOpenGlShaderAvailable() const { return m_openGLShaderAvailable;}
+WaveformWidgetType::Type WaveformWidgetFactory::getType() const { return m_type;}
+int WaveformWidgetFactory::getDefaultZoom() const { return m_defaultZoom;}
+int WaveformWidgetFactory::isZoomSync() const { return m_zoomSync;}
+int WaveformWidgetFactory::isOverviewNormalized() const { return m_overviewNormalized;}
+QString WaveformWidgetFactory::getOpenGLVersion() const { return m_openGLVersion;}

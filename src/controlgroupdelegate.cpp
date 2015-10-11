@@ -110,3 +110,5 @@ void ControlGroupDelegate::updateEditorGeometry(QWidget *editor,
 {
     editor->setGeometry(option.rect);
 }
+
+QStringList ControlGroupDelegate::getControlGroups() { return m_controlGroups; };

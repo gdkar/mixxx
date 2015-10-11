@@ -18,9 +18,9 @@ void WKey::onConnectedControlChanged(double dParameter, double dValue) {
     // make sense to use the parameter here yet.
     setValue(dValue);
 }
-void WKey::setup(QDomNode node, const SkinContext& context) {
+void WKey::setup(QDomNode node, const SkinContext* context) {
     WLabel::setup(node, context);
-    m_displayCents = context.selectBool(node, "DisplayCents", false);
+    m_displayCents = context->selectBool(node, "DisplayCents", false);
 }
 void WKey::setValue(double dValue) {
     m_dOldValue = dValue;

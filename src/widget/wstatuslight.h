@@ -37,7 +37,7 @@ class WStatusLight : public WWidget  {
     WStatusLight(QWidget *parent=0);
     virtual ~WStatusLight();
 
-    void setup(QDomNode node, const SkinContext& context);
+    void setup(QDomNode node, const SkinContext* context);
 
   public slots:
     void onConnectedControlChanged(double dParameter, double dValue);

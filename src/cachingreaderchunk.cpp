@@ -4,8 +4,6 @@
 #include "sampleutil.h"
 #include "util/math.h"
 
-const SINT CachingReaderChunk::kInvalidIndex = -1;
-
 // One chunk should contain 1/2 - 1/4th of a second of audio.
 // 8192 frames contain about 170 ms of audio at 48 kHz, which
 // is well above (hopefully) the latencies people are seeing.
@@ -14,11 +12,8 @@ const SINT CachingReaderChunk::kInvalidIndex = -1;
 // easier memory alignment.
 // TODO(XXX): The optimum value of the "constant" kFrames depends
 // on the properties of the AudioSource as the remarks above suggest!
-const SINT CachingReaderChunk::kChannels = Mixxx::AudioSource::kChannelCountStereo;
-const SINT CachingReaderChunk::kFrames   = 8192; // ~ 170 ms at 48 kHz
-const SINT CachingReaderChunk::kSamples  = CachingReaderChunk::frames2samples(CachingReaderChunk::kFrames);
 CachingReaderChunk::CachingReaderChunk( CSAMPLE* sampleBuffer)
-        : m_index{kInvalidIndex},
+        : m_index{kInvalidIndex()},
           m_sampleBuffer{sampleBuffer},
           m_frameCount{0} {
 }
@@ -38,7 +33,7 @@ SINT CachingReaderChunk::readSampleFrames(const Mixxx::AudioSourcePointer& pAudi
     const auto frameIndex = frameForIndex(getIndex());
     const auto maxFrameIndex = math_min( *pMaxReadableFrameIndex, pAudioSource->getMaxFrameIndex());
     const auto framesRemaining = *pMaxReadableFrameIndex - frameIndex;
-    const auto framesToRead = math_min(kFrames, framesRemaining);
+    const auto framesToRead = math_min(kFrames(), framesRemaining);
     auto seekFrameIndex = pAudioSource->seekSampleFrame(frameIndex);
     if (frameIndex != seekFrameIndex) {
         // Failed to seek to the requested index. The file might
@@ -66,8 +61,8 @@ SINT CachingReaderChunk::readSampleFrames(const Mixxx::AudioSourcePointer& pAudi
         }
     }
     DEBUG_ASSERT(frameIndex == seekFrameIndex);
-    DEBUG_ASSERT(CachingReaderChunk::kChannels == Mixxx::AudioSource::kChannelCountStereo);
-    m_frameCount = pAudioSource->readSampleFramesStereo(framesToRead, m_sampleBuffer, kSamples);
+    DEBUG_ASSERT(CachingReaderChunk::kChannels() == Mixxx::AudioSource::kChannelCountStereo);
+    m_frameCount = pAudioSource->readSampleFramesStereo(framesToRead, m_sampleBuffer, kSamples());
     if (m_frameCount < framesToRead) {
         qWarning() << "Failed to read chunk samples:" << " actual =" << m_frameCount << ", expected =" << framesToRead;
         // Adjust the max. readable frame index for future
@@ -92,7 +87,7 @@ void CachingReaderChunkForOwner::init(SINT index) {
 }
 void CachingReaderChunkForOwner::free() {
     DEBUG_ASSERT(READ_PENDING != m_state);
-    CachingReaderChunk::init(kInvalidIndex);
+    CachingReaderChunk::init(kInvalidIndex());
     m_state.store(FREE);
 }
 void CachingReaderChunkForOwner::insertIntoListBefore(CachingReaderChunkForOwner* pBefore) {
@@ -127,16 +122,11 @@ void CachingReaderChunkForOwner::removeFromList(CachingReaderChunkForOwner** ppH
 }
  SINT CachingReaderChunk::indexForFrame(SINT frameIndex) {
     DEBUG_ASSERT(0 <= frameIndex);
-    return frameIndex / kFrames;
+    return frameIndex / kFrames();
 }
 SINT CachingReaderChunk::frameForIndex(SINT chunkIndex) {
     DEBUG_ASSERT(0 <= chunkIndex);
-    return chunkIndex * kFrames;
-}
-SINT CachingReaderChunk::frames2samples(SINT frames) { return frames * kChannels; }
-SINT CachingReaderChunk::samples2frames(SINT samples) {
-    DEBUG_ASSERT(0 == (samples % kChannels));
-    return samples / kChannels;
+    return chunkIndex * kFrames();
 }
 SINT CachingReaderChunk::getIndex() const { return m_index; }
 bool CachingReaderChunk::isValid() const { return 0 <= getIndex(); }

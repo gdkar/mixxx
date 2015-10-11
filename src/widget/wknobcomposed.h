@@ -1,6 +1,4 @@
-#ifndef WKNOBCOMPOSED_H
-#define WKNOBCOMPOSED_H
-
+_Pragma("once")
 #include <QWidget>
 #include <QPaintEvent>
 #include <QMouseEvent>
@@ -18,7 +16,7 @@ class WKnobComposed : public WWidget {
     WKnobComposed(QWidget* pParent=NULL);
     virtual ~WKnobComposed();
 
-    void setup(QDomNode node, const SkinContext& context);
+    void setup(QDomNode node, const SkinContext* context);
 
     void onConnectedControlChanged(double dParameter, double dValue);
 
@@ -44,5 +42,3 @@ class WKnobComposed : public WWidget {
     double m_dKnobCenterYOffset;
     friend class KnobEventHandler<WKnobComposed>;
 };
-
-#endif /* WKNOBCOMPOSED_H */

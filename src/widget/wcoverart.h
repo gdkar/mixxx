@@ -1,6 +1,4 @@
-#ifndef WCOVERART_H
-#define WCOVERART_H
-
+_Pragma("once")
 #include <QColor>
 #include <QDomNode>
 #include <QMouseEvent>
@@ -21,7 +19,7 @@ class WCoverArt : public QWidget, public WBaseWidget {
               const QString& group);
     virtual ~WCoverArt();
 
-    void setup(QDomNode node, const SkinContext& context);
+    void setup(QDomNode node, const SkinContext* context);
 
   public slots:
     void slotLoadTrack(TrackPointer);
@@ -63,5 +61,3 @@ class WCoverArt : public QWidget, public WBaseWidget {
     CoverInfo m_lastRequestedCover;
     DlgCoverArtFullSize* m_pDlgFullSize;
 };
-
-#endif // WCOVERART_H
