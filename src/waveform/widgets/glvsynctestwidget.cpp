@@ -2,7 +2,6 @@
 
 #include <QPainter>
 
-#include "sharedglcontext.h"
 #include "waveform/renderers/waveformwidgetrenderer.h"
 #include "waveform/renderers/waveformrenderbackground.h"
 #include "waveform/renderers/glwaveformrenderersimplesignal.h"
@@ -16,7 +15,7 @@
 #include "util/performancetimer.h"
 
 GLVSyncTestWidget::GLVSyncTestWidget(const char* group, QWidget* parent)
-    : QGLWidget(parent, SharedGLContext::getWidget()),
+    : QGLWidget(parent),
       WaveformWidgetAbstract(group) {
 
 //    addRenderer<WaveformRenderBackground>(); // 172 µs

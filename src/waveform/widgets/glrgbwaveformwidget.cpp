@@ -1,7 +1,5 @@
 #include "glrgbwaveformwidget.h"
 
-#include "sharedglcontext.h"
-
 #include "waveform/renderers/waveformwidgetrenderer.h"
 #include "waveform/renderers/waveformrenderbackground.h"
 #include "waveform/renderers/glwaveformrendererrgb.h"
@@ -14,7 +12,7 @@
 #include "util/performancetimer.h"
 
 GLRGBWaveformWidget::GLRGBWaveformWidget(const char* group, QWidget* parent)
-        : QGLWidget(parent, SharedGLContext::getWidget()),
+        : QGLWidget(parent) 
           WaveformWidgetAbstract(group) {
     addRenderer<WaveformRenderBackground>();
     addRenderer<WaveformRendererEndOfTrack>();

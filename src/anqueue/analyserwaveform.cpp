@@ -183,9 +183,9 @@ void AnalyserWaveform::createFilters(int sampleRate) {
     // m_filter[Low] = new EngineFilterButterworth8(FILTER_LOWPASS, sampleRate, 200);
     // m_filter[Mid] = new EngineFilterButterworth8(FILTER_BANDPASS, sampleRate, 200, 2000);
     // m_filter[High] = new EngineFilterButterworth8(FILTER_HIGHPASS, sampleRate, 2000);
-    m_filter[Low]  = std::make_unique<EngineFilterBessel4Low>(sampleRate, 600,this);
-    m_filter[Mid]  = std::make_unique<EngineFilterBessel4Band>(sampleRate, 600, 4000,this);
-    m_filter[High] = std::make_unique<EngineFilterBessel4High>(sampleRate, 4000,this);
+    m_filter[Low]  = std::make_unique<EngineFilterBessel4Low>(sampleRate, 600,nullptr);
+    m_filter[Mid]  = std::make_unique<EngineFilterBessel4Band>(sampleRate, 600, 4000,nullptr);
+    m_filter[High] = std::make_unique<EngineFilterBessel4High>(sampleRate, 4000,nullptr);
     // settle filters for silence in preroll to avoids ramping (Bug #1406389)
     for (int i = 0; i < FilterCount; ++i) {m_filter[i]->assumeSettled();}
 }
@@ -209,17 +209,6 @@ void AnalyserWaveform::process(const CSAMPLE* buffer, const int bufferLength) {
         CSAMPLE clow[2]  = { std::abs(m_buffers[Low][i]),  std::abs(m_buffers[Low][i + 1]) };
         CSAMPLE cmid[2]  = { std::abs(m_buffers[Mid][i]),  std::abs(m_buffers[Mid][i + 1]) };
         CSAMPLE chigh[2] = { std::abs(m_buffers[High][i]), std::abs(m_buffers[High][i + 1]) };
-        // This is for if you want to experiment with averaging instead of
-        // maxing.
-        // m_stride.m_overallData[Right] += buffer[i]*buffer[i];
-        // m_stride.m_overallData[Left] += buffer[i + 1]*buffer[i + 1];
-        // m_stride.m_filteredData[Right][Low] += m_buffers[Low][i]*m_buffers[Low][i];
-        // m_stride.m_filteredData[Left][Low] += m_buffers[Low][i + 1]*m_buffers[Low][i + 1];
-        // m_stride.m_filteredData[Right][Mid] += m_buffers[Mid][i]*m_buffers[Mid][i];
-        // m_stride.m_filteredData[Left][Mid] += m_buffers[Mid][i + 1]*m_buffers[Mid][i + 1];
-        // m_stride.m_filteredData[Right][High] += m_buffers[High][i]*m_buffers[High][i];
-        // m_stride.m_filteredData[Left][High] += m_buffers[High][i + 1]*m_buffers[High][i + 1];
-        // Record the max across this stride.
         storeIfGreater(&m_stride.m_overallData[Left], cover[Left]);
         storeIfGreater(&m_stride.m_overallData[Right], cover[Right]);
         storeIfGreater(&m_stride.m_filteredData[Left][Low], clow[Left]);

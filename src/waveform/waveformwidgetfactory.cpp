@@ -8,7 +8,6 @@
 #include <QOpenGLContext>
 
 #include "waveform/waveformwidgetfactory.h"
-#include "sharedglcontext.h"
 #include "controlpotmeter.h"
 #include "waveform/widgets/emptywaveformwidget.h"
 #include "waveform/widgets/softwarewaveformwidget.h"
@@ -86,6 +85,12 @@ WaveformWidgetFactory::WaveformWidgetFactory() :
         sFormat.setDepthBufferSize(0);
         sFormat.setVersion(3,3);
         sFormat.setProfile(QSurfaceFormat::CompatibilityProfile);
+        auto glFormat = QGLFormat::defaultFormat();
+        glFormt.setDoubleBuffer(true);
+        glFormat.setDepth(false);
+        glFormat.setVersion(3,3);
+        glFormat.setProfile(QGLFormat::CompatibilityProfile);
+        glFormat.setRgba(true);
         // Disable waiting for vertical Sync
         // This can be enabled when using a single Threads for each QGLContext
         // Setting 1 causes QGLContext::swapBuffer to sleep until the next VSync
@@ -93,13 +98,16 @@ WaveformWidgetFactory::WaveformWidgetFactory() :
         // On OS X, syncing to vsync has good performance FPS-wise and
         // eliminates tearing.
         sFormat.setSwapInterval(1);
+        glFormat.setSwapInterval(1);
 #else
         // Otherwise, turn VSync off because it could cause horrible FPS on
         // Linux.
         // TODO(XXX): Make this configurable.
         // TOOD(XXX): What should we do on Windows?
         sFormat.setSwapInterval(0);
+        glFormat.setSwapInterval(0);
 #endif
+        GLFormat::setDefaultFormat(glFormat);
         QSurfaceFormat::setDefaultFormat(sFormat);
         {
             QOpenGLContext context{}; // create paint device
