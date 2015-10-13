@@ -1,6 +1,4 @@
-#ifndef SAMPLERBANK_H
-#define SAMPLERBANK_H
-
+_Pragma("once")
 #include <QObject>
 
 class ControlObject;
@@ -22,5 +20,3 @@ class SamplerBank : public QObject {
     ControlObject* m_pLoadControl;
     ControlObject* m_pSaveControl;
 };
-
-#endif /* SAMPLERBANK_H */

@@ -1,6 +1,4 @@
-#ifndef SAMPLEBUFFER_H
-#define SAMPLEBUFFER_H
-
+_Pragma("once")
 #include "util/types.h"
 #include <memory>
 #include <algorithm>
@@ -115,4 +113,3 @@ template<>
 void swap(SampleBuffer& lhs, SampleBuffer& rhs) { lhs.swap(rhs); }
 }  // namespace std
 */
-#endif // SAMPLEBUFFER_H

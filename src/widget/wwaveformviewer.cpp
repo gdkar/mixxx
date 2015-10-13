@@ -36,7 +36,6 @@ WWaveformViewer::WWaveformViewer(const char *group, ConfigObject<ConfigValue>* p
 WWaveformViewer::~WWaveformViewer()
 {
     //qDebug() << "~WWaveformViewer";
-
     delete m_pZoom;
     delete m_pScratchPositionEnable;
     delete m_pScratchPosition;
@@ -122,7 +121,6 @@ void WWaveformViewer::mouseReleaseEvent(QMouseEvent* /*event*/) {
     // Set the cursor back to an arrow.
     setCursor(Qt::ArrowCursor);
 }
-
 void WWaveformViewer::wheelEvent(QWheelEvent *event) {
     if (m_waveformWidget) {
         //NOTE: (vrince) to limit the zoom action area uncomment the following line
@@ -144,7 +142,6 @@ void WWaveformViewer::dragEnterEvent(QDragEnterEvent* event) {
         event->acceptProposedAction();
     } else  event->ignore();
 }
-
 void WWaveformViewer::dropEvent(QDropEvent* event) {
     if (DragAndDropHelper::allowLoadToPlayer(m_pGroup, m_pConfig)) {
         QList<QFileInfo> files = DragAndDropHelper::dropEventFiles(
@@ -175,7 +172,6 @@ void WWaveformViewer::onZoomChange(double zoom)
 void WWaveformViewer::setZoom(int zoom) {
     //qDebug() << "WaveformWidgetRenderer::setZoom" << zoom;
     if (m_waveformWidget) m_waveformWidget->setZoom(zoom);
-
     // If multiple waveform widgets for the same group are created then it's
     // possible that this setZoom() is coming from another waveform with the
     // same group. That means that if we set the zoom control here, that
@@ -186,14 +182,10 @@ void WWaveformViewer::setZoom(int zoom) {
     if (m_pZoom->get() != zoom)  m_pZoom->set(zoom);
 }
 void WWaveformViewer::setWaveformWidget(WaveformWidgetAbstract* waveformWidget) {
-    if (m_waveformWidget) {
-        auto pWidget = m_waveformWidget->getWidget();
-        disconnect(pWidget, SIGNAL(destroyed()),this, SLOT(slotWidgetDead()));
-    }
+    if (m_waveformWidget) disconnect(m_waveformWidget, SIGNAL(destroyed()),this, SLOT(slotWidgetDead()));
     m_waveformWidget = waveformWidget;
     if (m_waveformWidget)
     {
-        auto pWidget = m_waveformWidget->getWidget();
-        connect(pWidget, SIGNAL(destroyed()),this, SLOT(slotWidgetDead()));
+      connect(m_waveformWidget, SIGNAL(destroyed()),this, SLOT(slotWidgetDead()));
     }
 }

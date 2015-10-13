@@ -36,18 +36,14 @@ WaveformWidgetHolder::WaveformWidgetHolder()
       m_skinContextCache(NULL, QString()) {
 }
 
-WaveformWidgetHolder::WaveformWidgetHolder(WaveformWidgetAbstract* waveformWidget,
-                                           WWaveformViewer* waveformViewer,
-                                           const QDomNode& node,
-                                           const SkinContext& skinContext)
+WaveformWidgetHolder::WaveformWidgetHolder(WaveformWidgetAbstract* waveformWidget,WWaveformViewer* waveformViewer,const QDomNode& node,const SkinContext& skinContext)
     : m_waveformWidget(waveformWidget),
       m_waveformViewer(waveformViewer),
       m_skinNodeCache(node.cloneNode()),
-      m_skinContextCache(skinContext) {
+      m_skinContextCache(skinContext)
+{
 }
-
 ///////////////////////////////////////////
-
 WaveformWidgetFactory::WaveformWidgetFactory() :
         m_type(WaveformWidgetType::Count_WaveformwidgetType),
         m_config(0),
@@ -59,8 +55,7 @@ WaveformWidgetFactory::WaveformWidgetFactory() :
         m_overviewNormalized(false),
         m_vsyncThread(NULL),
         m_frameCnt(0),
-        m_actualFrameRate(0),
-        m_vSyncType(0) {
+        m_actualFrameRate(0){
 
     m_visualGain[All] = 1.0;
     m_visualGain[Low] = 1.0;
@@ -86,7 +81,6 @@ bool WaveformWidgetFactory::setConfig(ConfigObject<ConfigValue> *config) {
     if (ok) setEndOfTrackWarningTime(endTime);
     else    m_config->set(ConfigKey("[Waveform]","EndOfTrackWarningTime"), ConfigValue(m_endOfTrackWarningTime));
     auto vsync = m_config->getValueString(ConfigKey("[Waveform]","VSync"),"0").toInt();
-    setVSyncType(vsync);
     auto defaultZoom = m_config->getValueString(ConfigKey("[Waveform]","DefaultZoom")).toInt(&ok);
     if (ok) setDefaultZoom(defaultZoom);
     else m_config->set(ConfigKey("[Waveform]","DefaultZoom"), ConfigValue(m_defaultZoom));
@@ -146,9 +140,7 @@ bool WaveformWidgetFactory::setWaveformWidget(WWaveformViewer* viewer,const QDom
     if (index == -1) {
         m_waveformWidgetHolders.push_back( WaveformWidgetHolder(waveformWidget, viewer, node, context));
         index = m_waveformWidgetHolders.size() - 1;
-    } else { //update holder
-        m_waveformWidgetHolders[index] = WaveformWidgetHolder(waveformWidget, viewer, node, context);
-    }
+    } else m_waveformWidgetHolders[index] = WaveformWidgetHolder(waveformWidget, viewer, node, context);
     viewer->setZoom(m_defaultZoom);
     viewer->update();
     qDebug() << "WaveformWidgetFactory::setWaveformWidget - waveform widget added in factory, index" << index;

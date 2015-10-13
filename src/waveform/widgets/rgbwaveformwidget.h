@@ -10,8 +10,6 @@ class RGBWaveformWidget : public WaveformWidgetAbstract {
     static inline bool useOpenGl() { return false; }
     static inline bool useOpenGLShaders() { return false; }
     static inline bool developerOnly() { return false; }
-  protected:
-    virtual void paintEvent(QPaintEvent* event);
   private:
     RGBWaveformWidget(const char* group, QWidget* parent);
     friend class WaveformWidgetFactory;

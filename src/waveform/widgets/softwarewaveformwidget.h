@@ -11,8 +11,6 @@ class SoftwareWaveformWidget : public WaveformWidgetAbstract
     static bool useOpenGl() { return false; }
     static bool useOpenGLShaders() { return false; }
     static bool developerOnly() { return false; }
-  protected:
-    virtual void paintEvent(QPaintEvent* event);
   private:
     SoftwareWaveformWidget(const char* group, QWidget* parent);
     friend class WaveformWidgetFactory;

@@ -5,8 +5,8 @@
 #include <QWidget>
 
 
-WaveformWidgetAbstract::WaveformWidgetAbstract(const char* group)
-    : QWidget(),
+WaveformWidgetAbstract::WaveformWidgetAbstract(const char* group,QWidget *p)
+    : QWidget(p),
     WaveformWidgetRenderer(group)
 {
 }
@@ -30,6 +30,11 @@ int WaveformWidgetAbstract::render()
 }
 void WaveformWidgetAbstract::resize(int width, int height)
 {
-    resize(width, height);
+    QWidget::resize(width,height);
     WaveformWidgetRenderer::resize(width, height);
+}
+void WaveformWidgetAbstract::paintEvent(QPaintEvent *e)
+{
+  QPainter painter(this);
+  draw(&painter,e);
 }

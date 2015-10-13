@@ -81,32 +81,23 @@ class WaveformWidgetFactory : public QObject, public Singleton<WaveformWidgetFac
 
     void setOverviewNormalized(bool normalize);
     int isOverviewNormalized() const { return m_overviewNormalized;}
-
     const QVector<WaveformWidgetAbstractHandle> getAvailableTypes() const { return m_waveformWidgetHandles;}
     void destroyWidgets();
     void addTimerListener(QWidget* pWidget);
     void startVSync(MixxxMainWindow* mixxxApp);
     void setVSyncType(int vsType);
     int getVSyncType();
-
     void notifyZoomChange(WWaveformViewer *viewer);
-
     WaveformWidgetType::Type autoChooseWidgetType() const;
-
   signals:
     void waveformUpdateTick();
     void waveformMeasured(float frameRate, int droppedFrames);
-
   protected:
     WaveformWidgetFactory();
     virtual ~WaveformWidgetFactory();
-
     friend class Singleton<WaveformWidgetFactory>;
-
   private slots:
     void render();
-    void swap();
-
   private:
     void evaluateWidgets();
     WaveformWidgetAbstract* createWaveformWidget(WaveformWidgetType::Type type, WWaveformViewer* viewer);

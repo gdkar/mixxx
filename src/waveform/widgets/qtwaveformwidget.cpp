@@ -13,7 +13,7 @@
 #include "waveform/renderers/waveformrenderbeat.h"
 
 QtWaveformWidget::QtWaveformWidget(const char* group, QWidget* parent)
-        : WaveformWidgetAbstract(group)
+        : WaveformWidgetAbstract(group,parent)
 {
     addRenderer<WaveformRenderBackground>();
     addRenderer<WaveformRendererEndOfTrack>();
@@ -22,15 +22,6 @@ QtWaveformWidget::QtWaveformWidget(const char* group, QWidget* parent)
     addRenderer<QtWaveformRendererFilteredSignal>();
     addRenderer<WaveformRenderBeat>();
     addRenderer<WaveformRenderMark>();
-
-    setAttribute(Qt::WA_NoSystemBackground);
-    setAttribute(Qt::WA_OpaquePaintEvent);
-
     m_initSuccess = init();
 }
 QtWaveformWidget::~QtWaveformWidget() = default;
-void QtWaveformWidget::paintEvent(QPaintEvent* event)
-{
-  QPainter painter(this);
-  draw(&painter,event);
-}

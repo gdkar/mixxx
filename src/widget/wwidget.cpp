@@ -77,6 +77,5 @@ bool WWidget::event(QEvent* e) {
         default:break;
         }
     }
-
     return QWidget::event(e);
 }

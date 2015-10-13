@@ -102,7 +102,8 @@ void WaveformWidgetRenderer::onPreRender(VSyncThread* vsyncThread)
         m_playPosVSample = m_playPos * m_trackPixelCount * m_visualSamplePerPixel;
         m_firstDisplayedPosition = m_playPos - displayedLengthHalf;
         m_lastDisplayedPosition = m_playPos + displayedLengthHalf;
-    } else m_playPos = -1; // disable renderers
+    }
+    else m_playPos = -1; // disable renderers
 }
 void WaveformWidgetRenderer::draw(QPainter* painter, QPaintEvent* event)
 {
@@ -111,7 +112,8 @@ void WaveformWidgetRenderer::draw(QPainter* painter, QPaintEvent* event)
     // not ready to display need to wait until track initialization is done
     // draw only first is stack (background)
     auto  stackSize = m_rendererStack.size();
-    if (m_trackSamples <= 0.0 || m_playPos == -1) {
+    if (m_trackSamples <= 0.0 || m_playPos == -1)
+    {
         if (stackSize) {m_rendererStack.at(0)->draw(painter, event);}
         return;
     }

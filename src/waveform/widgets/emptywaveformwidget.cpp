@@ -6,7 +6,8 @@
 #include "waveform/renderers/waveformrenderbackground.h"
 
 EmptyWaveformWidget::EmptyWaveformWidget(const char* group, QWidget* parent)
-        : WaveformWidgetAbstract(group) {
+        : WaveformWidgetAbstract(group,parent)
+{
     //Empty means just a background ;)
     addRenderer<WaveformRenderBackground>();
 
@@ -17,13 +18,6 @@ EmptyWaveformWidget::EmptyWaveformWidget(const char* group, QWidget* parent)
 }
 
 EmptyWaveformWidget::~EmptyWaveformWidget() = default;
-
-void EmptyWaveformWidget::paintEvent(QPaintEvent* event)
-{
-    // Only render if Qt thinks it is required
-    QPainter painter(this);
-    draw(&painter,event);
-}
 int EmptyWaveformWidget::render()
 {
     return 0;
