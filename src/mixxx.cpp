@@ -63,7 +63,6 @@
 #include "widget/wwaveformviewer.h"
 #include "widget/wwidget.h"
 #include "widget/wspinny.h"
-#include "sharedglcontext.h"
 #include "util/debug.h"
 #include "util/statsmanager.h"
 #include "util/timer.h"
@@ -301,9 +300,6 @@ void MixxxMainWindow::initalize(QApplication* pApp, const CmdlineArgs& args) {
     populateMenuBar(); // already inited in the constructor
     // Before creating the first skin we need to create a QGLWidget so that all
     // the QGLWidget's we create can use it as a shared QGLContext.
-    auto pContextWidget = new QGLWidget(this);
-    pContextWidget->hide();
-    SharedGLContext::setWidget(pContextWidget);
     launchProgress(63);
     auto oldWidget = m_pWidgetParent;
     // Load skin to a QWidget that we set as the central widget. Assignment

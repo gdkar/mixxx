@@ -12,11 +12,10 @@
 #include "waveform/renderers/waveformrendermarkrange.h"
 #include "waveform/renderers/waveformrendererendoftrack.h"
 #include "waveform/renderers/waveformrenderbeat.h"
-#include "sharedglcontext.h"
 #include "util/performancetimer.h"
 
 GLWaveformWidget::GLWaveformWidget(const char* group, QWidget* parent)
-        : QGLWidget(parent, SharedGLContext::getWidget()),
+        : QGLWidget(parent),
           WaveformWidgetAbstract(group) {
 
     addRenderer<WaveformRenderBackground>();
@@ -33,18 +32,13 @@ GLWaveformWidget::GLWaveformWidget(const char* group, QWidget* parent)
     setAutoBufferSwap(false);
 
     qDebug() << "Created QGLWidget. Context"
-             << "Valid:" << context()->isValid()
-             << "Sharing:" << context()->isSharing();
-    if (QGLContext::currentContext() != context()) {
-        makeCurrent();
-    }
+             << "Valid:" << context()->isValid();
+    if (QGLContext::currentContext() != context()) makeCurrent();
     m_initSuccess = init();
 }
-
-GLWaveformWidget::~GLWaveformWidget() {
-}
-
-void GLWaveformWidget::castToQWidget() {
+GLWaveformWidget::~GLWaveformWidget() = default;
+void GLWaveformWidget::castToQWidget()
+{
     m_widget = static_cast<QWidget*>(static_cast<QGLWidget*>(this));
 }
 

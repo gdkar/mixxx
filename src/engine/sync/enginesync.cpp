@@ -24,10 +24,10 @@
 #include "engine/enginechannel.h"
 #include "engine/sync/internalclock.h"
 #include "util/assert.h"
-constexpr auto kInternalClockGroup = QString{"[InternalClock]"};
+const char* kInternalClockGroup = "[InternalClock]";
 EngineSync::EngineSync(ConfigObject<ConfigValue>* pConfig)
         : m_pConfig(pConfig),
-          m_pInternalClock(new InternalClock(kInternalClockGroup, this)),
+          m_pInternalClock(new InternalClock(kInternalClockGroup, this,nullptr)),
           m_pMasterSyncable(nullptr) {
     qRegisterMetaType<SyncMode>("SyncMode");
     m_pInternalClock->setMasterBpm(124.0);

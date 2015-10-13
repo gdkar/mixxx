@@ -1,13 +1,11 @@
 // readaheadmanager.h
 // Created 8/2/2009 by RJ Ryan (rryan@mit.edu)
 
-#ifndef READAHEADMANGER_H
-#define READAHEADMANGER_H
-
+_Pragma("once")
 #include <QLinkedList>
 #include <QList>
 #include <QPair>
-
+#include <QObject>
 #include "util/types.h"
 #include "util/math.h"
 #include "cachingreader.h"
@@ -25,11 +23,12 @@ class CachingReader;
 // seeks or the current play position is invalidated somehow, the Engine must
 // call notifySeek to inform the ReadAheadManager to reset itself to the seek
 // point.
-class ReadAheadManager {
+class ReadAheadManager : public QObject{
   public:
-    explicit ReadAheadManager(); // Only for testing: ReadAheadManagerMock
+    explicit ReadAheadManager(QObject *p); // Only for testing: ReadAheadManagerMock
     explicit ReadAheadManager(CachingReader* reader,
-                              LoopingControl* pLoopingControl);
+                              LoopingControl* pLoopingControl,
+                              QObject *p);
     virtual ~ReadAheadManager();
 
     // Call this method to fill buffer with requested_samples out of the
@@ -125,5 +124,3 @@ class ReadAheadManager {
     CachingReader* m_pReader;
     CSAMPLE* m_pCrossFadeBuffer;
 };
-
-#endif // READAHEADMANGER_H

@@ -9,16 +9,13 @@
 #include "engine/ratecontrol.h"
 #include "cachingreader.h"
 
-ReadAheadManager::ReadAheadManager()
-        : m_pLoopingControl(NULL),
-          m_pRateControl(NULL),
-          m_iCurrentPosition(0),
-          m_pReader(NULL),
-          m_pCrossFadeBuffer(new CSAMPLE[MAX_BUFFER_LEN]) {
-    // For testing only: ReadAheadManagerMock
+ReadAheadManager::ReadAheadManager(QObject*p)
+        : ReadAheadManager(nullptr,nullptr,p)
+{
 }
-ReadAheadManager::ReadAheadManager(CachingReader* pReader,  LoopingControl* pLoopingControl) 
-        : m_pLoopingControl(pLoopingControl),
+ReadAheadManager::ReadAheadManager(CachingReader* pReader,  LoopingControl* pLoopingControl,QObject *p) 
+        : QObject(p),
+          m_pLoopingControl(pLoopingControl),
           m_pRateControl(nullptr),
           m_iCurrentPosition(0),
           m_pReader(pReader),
@@ -40,13 +37,12 @@ int ReadAheadManager::getNextSamples(double dRate, CSAMPLE* buffer, int requeste
     auto samples_needed = requested_samples;
     auto  base_buffer = buffer;
     // A loop will only limit the amount we can read in one shot.
-    const double loop_trigger = m_pLoopingControl->nextTrigger(
+    auto loop_trigger = m_pLoopingControl->nextTrigger(
             dRate, m_iCurrentPosition, 0, 0);
-    bool loop_active = loop_trigger != kNoTrigger;
-    int preloop_samples = 0;
-
+    auto loop_active = loop_trigger != kNoTrigger;
+    auto preloop_samples = 0;
     if (loop_active) {
-        int samples_available = in_reverse ? m_iCurrentPosition - loop_trigger : loop_trigger - m_iCurrentPosition;
+        auto samples_available = static_cast<int>(in_reverse ? m_iCurrentPosition - loop_trigger : loop_trigger - m_iCurrentPosition);
         if (samples_available < 0) {
             samples_needed = 0;
         } else {
@@ -60,9 +56,8 @@ int ReadAheadManager::getNextSamples(double dRate, CSAMPLE* buffer, int requeste
         qDebug() << "Need negative samples in ReadAheadManager::getNextSamples. Ignoring read";
         return 0;
     }
-    int samples_read = m_pReader->read(start_sample, samples_needed, base_buffer);
+    auto  samples_read = m_pReader->read(start_sample, samples_needed, base_buffer);
     if (samples_read != samples_needed) { qDebug() << "didn't get what we wanted" << samples_read << samples_needed; }
-
     // Increment or decrement current read-ahead position
     if (in_reverse) {
         addReadLogEntry(m_iCurrentPosition, m_iCurrentPosition - samples_read);
@@ -76,11 +71,11 @@ int ReadAheadManager::getNextSamples(double dRate, CSAMPLE* buffer, int requeste
     if (loop_active) {
         // LoopingControl makes the decision about whether we should loop or
         // not.
-        const auto loop_target = m_pLoopingControl-> process(dRate, m_iCurrentPosition, 0, 0);
+        auto loop_target = m_pLoopingControl-> process(dRate, m_iCurrentPosition, 0, 0);
         if (loop_target != kNoTrigger) {
             m_iCurrentPosition = loop_target;
-            int loop_read_position = m_iCurrentPosition + (in_reverse ? preloop_samples : -preloop_samples);
-            int looping_samples_read = m_pReader->read(loop_read_position, samples_read, m_pCrossFadeBuffer);
+            auto loop_read_position = m_iCurrentPosition + (in_reverse ? preloop_samples : -preloop_samples);
+            auto looping_samples_read = m_pReader->read(loop_read_position, samples_read, m_pCrossFadeBuffer);
             if (looping_samples_read != samples_read) {qDebug() << "ERROR: Couldn't get all needed samples for crossfade.";}
             // do crossfade from the current buffer into the new loop beginning
             if (samples_read) { // avoid division by zero

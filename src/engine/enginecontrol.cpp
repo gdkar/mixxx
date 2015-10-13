@@ -7,31 +7,32 @@
 #include "engine/sync/enginesync.h"
 #include "playermanager.h"
 #include "controlobjectslave.h"
-EngineControl::EngineControl(QString group,ConfigObject<ConfigValue>* _config)
-        : m_group(group),
+EngineControl::EngineControl(QString group,ConfigObject<ConfigValue>* _config, QObject *p)
+        : QObject(p),
+          m_group(group),
           m_pConfig(_config),
           m_numDecks(new ControlObjectSlave(ConfigKey("[Master]", "num_decks"),this)) {
     setCurrentSample(0.0, 0.0);
 }
 EngineControl::~EngineControl() = default;
-double EngineControl::process(const double,
-                              const double,
-                              const double,
-                              const int) {
+double EngineControl::process(double,
+                              double,
+                              double,
+                              int) {
     return kNoTrigger;
 }
 
-double EngineControl::nextTrigger(const double,
-                                  const double,
-                                  const double,
-                                  const int) {
+double EngineControl::nextTrigger(double,
+                                  double,
+                                  double,
+                                  int) {
     return kNoTrigger;
 }
 
-double EngineControl::getTrigger(const double,
-                                 const double,
-                                 const double,
-                                 const int) {
+double EngineControl::getTrigger(double,
+                                 double,
+                                 double,
+                                 int) {
     return kNoTrigger;
 }
 
@@ -52,7 +53,7 @@ void EngineControl::setEngineBuffer(EngineBuffer* pEngineBuffer) {
     m_pEngineBuffer = pEngineBuffer;
 }
 
-void EngineControl::setCurrentSample(const double dCurrentSample, const double dTotalSamples) {
+void EngineControl::setCurrentSample(double dCurrentSample, double dTotalSamples) {
     SampleOfTrack sot;
     sot.current = dCurrentSample;
     sot.total = dTotalSamples;

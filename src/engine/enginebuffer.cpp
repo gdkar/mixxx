@@ -145,7 +145,7 @@ EngineBuffer::EngineBuffer(QString group, ConfigObject<ConfigValue>* _config,
     // Create the cue controller
     m_pCueControl = new CueControl(group, _config);
     addControl(m_pCueControl);
-    m_pReadAheadManager = new ReadAheadManager(m_pReader,m_pLoopingControl);
+    m_pReadAheadManager = new ReadAheadManager(m_pReader,m_pLoopingControl,this);
     m_pReadAheadManager->addRateControl(m_pRateControl);
     // Construct scaling objects
     m_pScaleLinear = new EngineBufferScaleLinear(m_pReadAheadManager,this);
@@ -221,8 +221,8 @@ void EngineBuffer::enableIndependentPitchTempoScaling(bool bEnable,const int iBu
         m_bScalerChanged = true;
     }
 }
-double EngineBuffer::getBpm() {return m_pBpmControl->getBpm();}
-double EngineBuffer::getLocalBpm() { return m_pBpmControl->getLocalBpm(); }
+double EngineBuffer::getBpm()  const{return m_pBpmControl->getBpm();}
+double EngineBuffer::getLocalBpm() const { return m_pBpmControl->getLocalBpm(); }
 void EngineBuffer::setEngineMaster(EngineMaster* pEngineMaster) {
     for(auto pControl: m_engineControls) {pControl->setEngineMaster(pEngineMaster);}
 }
@@ -282,9 +282,9 @@ void EngineBuffer::setNewPlaypos(double newpos) {
     for(auto pControl:m_engineControls) pControl->notifySeek(m_filepos_play);
     verifyPlay(); // verify or update play button and indicator
 }
-QString EngineBuffer::getGroup() {return m_group;}
-double EngineBuffer::getSpeed() {return m_speed_old;}
-bool EngineBuffer::getScratching() {return m_scratching_old;}
+QString EngineBuffer::getGroup() const {return m_group;}
+double EngineBuffer::getSpeed() const {return m_speed_old;}
+bool EngineBuffer::getScratching() const {return m_scratching_old;}
 // WARNING: Always called from the EngineWorker thread pool
 void EngineBuffer::slotTrackLoading() {
     // Pause EngineBuffer from processing frames

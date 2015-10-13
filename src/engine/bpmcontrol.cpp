@@ -324,10 +324,10 @@ bool BpmControl::syncTempo() {
         // algorithm sometimes finding double or half BPMs. This avoids drastic
         // scales.
 
-        float fFileBpmDelta = fabs(fThisLocalBpm - fOtherLocalBpm);
-        if (fabs(fThisLocalBpm * 2.0 - fOtherLocalBpm) < fFileBpmDelta) {
+        auto  fFileBpmDelta = std::abs(fThisLocalBpm - fOtherLocalBpm);
+        if (std::abs(fThisLocalBpm * 2.0 - fOtherLocalBpm) < fFileBpmDelta) {
             desiredRate /= 2.0;
-        } else if (fabs(fThisLocalBpm - 2.0 * fOtherLocalBpm) < fFileBpmDelta) {
+        } else if (std::abs(fThisLocalBpm - 2.0 * fOtherLocalBpm) < fFileBpmDelta) {
             desiredRate *= 2.0;
         }
 
@@ -358,8 +358,7 @@ bool BpmControl::syncTempo() {
 }
 
 // static
-double BpmControl::shortestPercentageChange(const double& current_percentage,
-                                            const double& target_percentage) {
+double BpmControl::shortestPercentageChange(double current_percentage,double target_percentage) {
     if (current_percentage == target_percentage) {
         return 0.0;
     } else if (current_percentage < target_percentage) {
@@ -369,26 +368,26 @@ double BpmControl::shortestPercentageChange(const double& current_percentage,
         // my: 0.25 target: 0.5 forwards: 0.25
         // my: 0.25 target: 0.75 forwards: 0.5
         // my: 0.98 target: 0.99 forwards: 0.01
-        const double forwardDistance = target_percentage - current_percentage;
+        auto forwardDistance = target_percentage - current_percentage;
 
         // my: 0.01 target:0.99 backwards: -0.02
         // my: 0.25 target: 0.5 backwards: -0.75
         // my: 0.25 target: 0.75 backwards: -0.5
         // my: 0.98 target: 0.99 backwards: -0.99
-        const double backwardsDistance = target_percentage - current_percentage - 1.0;
+        auto backwardsDistance = target_percentage - current_percentage - 1.0;
 
-        return (fabs(forwardDistance) < fabs(backwardsDistance)) ?
+        return (std::abs(forwardDistance) < std::abs(backwardsDistance)) ?
                 forwardDistance : backwardsDistance;
     } else { // current_percentage > target_percentage
         // Invariant: forwardDistance - backwardsDistance == 1.0
 
         // my: 0.99 target: 0.01 forwards: 0.02
-        const double forwardDistance = 1.0 - current_percentage + target_percentage;
+        auto forwardDistance = 1.0 - current_percentage + target_percentage;
 
         // my: 0.99 target:0.01 backwards: -0.98
-        const double backwardsDistance = target_percentage - current_percentage;
+        auto backwardsDistance = target_percentage - current_percentage;
 
-        return (fabs(forwardDistance) < fabs(backwardsDistance)) ?
+        return (std::abs(forwardDistance) < std::abs(backwardsDistance)) ?
                 forwardDistance : backwardsDistance;
     }
 }
@@ -422,8 +421,8 @@ double BpmControl::calcSyncedRate(double userTweak) {
 
     // Now that we have our beat distance we can also check how large the
     // current loop is.  If we are in a <1 beat loop, don't worry about offset.
-    const bool loop_enabled = m_pLoopEnabled->get() > 0.0;
-    const double loop_size = (m_pLoopEndPosition->get() -
+    auto loop_enabled = m_pLoopEnabled->get() > 0.0;
+    auto loop_size = (m_pLoopEndPosition->get() -
                               m_pLoopStartPosition->get()) /
                               dBeatLength;
     if (loop_enabled && loop_size < 1.0 && loop_size > 0) {
@@ -474,25 +473,25 @@ double BpmControl::calcSyncAdjustment(double my_percentage, bool userTweakingSyn
     } else {
         double error = shortest_distance - m_dUserOffset;
         // Threshold above which we do sync adjustment.
-        const double kErrorThreshold = 0.01;
+        auto kErrorThreshold = 0.01;
         // Threshold above which sync is really, really bad, so much so that we
         // don't even know if we're ahead or behind.  This can occur when quantize was
         // off, but then it gets turned on.
-        const double kTrainWreckThreshold = 0.2;
-        const double kSyncAdjustmentCap = 0.05;
-        if (fabs(error) > kTrainWreckThreshold) {
+        auto kTrainWreckThreshold = 0.2;
+        auto kSyncAdjustmentCap = 0.05;
+        if (std::abs(error) > kTrainWreckThreshold) {
             // Assume poor reflexes (late button push) -- speed up to catch the other track.
             adjustment = 1.0 + kSyncAdjustmentCap;
-        } else if (fabs(error) > kErrorThreshold) {
+        } else if (std::abs(error) > kErrorThreshold) {
             // Proportional control constant. The higher this is, the more we
             // influence sync.
-            const double kSyncAdjustmentProportional = 0.7;
-            const double kSyncDeltaCap = 0.02;
+            auto kSyncAdjustmentProportional = 0.7;
+            auto kSyncDeltaCap = 0.02;
 
             // TODO(owilliams): There are a lot of "1.0"s in this code -- can we eliminate them?
-            const double adjust = 1.0 + (-error * kSyncAdjustmentProportional);
+            auto adjust = 1.0 + (-error * kSyncAdjustmentProportional);
             // Cap the difference between the last adjustment and this one.
-            double delta = adjust - m_dLastSyncAdjustment;
+            auto delta = adjust - m_dLastSyncAdjustment;
             delta = math_clamp(delta, -kSyncDeltaCap, kSyncDeltaCap);
 
             // Cap the adjustment between -kSyncAdjustmentCap and +kSyncAdjustmentCap
@@ -534,7 +533,7 @@ double BpmControl::getBeatDistance(double dThisPosition) const {
 
 // static
 bool BpmControl::getBeatContext(const BeatsPointer& pBeats,
-                                const double dPosition,
+                                double dPosition,
                                 double* dpPrevBeat,
                                 double* dpNextBeat,
                                 double* dpBeatLength,
@@ -563,9 +562,9 @@ bool BpmControl::getBeatContext(const BeatsPointer& pBeats,
 
 // static
 bool BpmControl::getBeatContextNoLookup(
-                                const double dPosition,
-                                const double dPrevBeat,
-                                const double dNextBeat,
+                                double dPosition,
+                                double dPrevBeat,
+                                double dNextBeat,
                                 double* dpBeatLength,
                                 double* dpBeatPercentage) {
     if (dPrevBeat == -1 || dNextBeat == -1) {
@@ -681,9 +680,9 @@ double BpmControl::getPhaseOffset(double dThisPosition) {
     }
 
     // We might be seeking outside the loop.
-    const bool loop_enabled = m_pLoopEnabled->get() > 0.0;
-    const double loop_start_position = m_pLoopStartPosition->get();
-    const double loop_end_position = m_pLoopEndPosition->get();
+    auto loop_enabled = m_pLoopEnabled->get() > 0.0;
+    auto loop_start_position = m_pLoopStartPosition->get();
+    auto loop_end_position = m_pLoopEndPosition->get();
 
     // Cases for sanity:
     //
@@ -702,7 +701,7 @@ double BpmControl::getPhaseOffset(double dThisPosition) {
     // TODO(rryan): Revise this with something that keeps a broader number of
     // cases in sync. This at least prevents breaking out of the loop.
     if (loop_enabled) {
-        const double loop_length = loop_end_position - loop_start_position;
+        auto loop_length = loop_end_position - loop_start_position;
         if (loop_length <= 0.0) {
             return false;
         }
@@ -793,15 +792,15 @@ void BpmControl::slotBeatsTranslateMatchAlignment(double v) {
     }
 }
 
-void BpmControl::setCurrentSample(const double dCurrentSample, const double dTotalSamples) {
+void BpmControl::setCurrentSample(double dCurrentSample, double dTotalSamples) {
     m_dPreviousSample = dCurrentSample;
     EngineControl::setCurrentSample(dCurrentSample, dTotalSamples);
 }
 
-double BpmControl::process(const double dRate,
-                           const double dCurrentSample,
-                           const double dTotalSamples,
-                           const int iBufferSize) {
+double BpmControl::process(double dRate,
+                           double dCurrentSample,
+                           double dTotalSamples,
+                           int iBufferSize) {
     Q_UNUSED(dRate);
     Q_UNUSED(dCurrentSample);
     Q_UNUSED(dTotalSamples);

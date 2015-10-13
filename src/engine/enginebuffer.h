@@ -104,12 +104,12 @@ class EngineBuffer : public EngineObject {
     virtual ~EngineBuffer();
     void bindWorkers(EngineWorkerScheduler* pWorkerScheduler);
     // Return the current rate (not thread-safe)
-    double getSpeed();
-    bool getScratching();
+    double getSpeed() const;
+    bool getScratching() const;
     // Returns current bpm value (not thread-safe)
-    double getBpm();
+    double getBpm() const;
     // Returns the BPM of the loaded track around the current position (not thread-safe)
-    double getLocalBpm();
+    double getLocalBpm() const;
     // Sets pointer to other engine buffer/channel
     void setEngineMaster(EngineMaster*);
     void queueNewPlaypos(double newpos, enum SeekRequest seekType);
@@ -120,7 +120,7 @@ class EngineBuffer : public EngineObject {
     void process(CSAMPLE* pOut, const int iBufferSize);
     void processSlip(int iBufferSize);
     void postProcess(const int iBufferSize);
-    QString getGroup();
+    QString getGroup() const;
     bool isTrackLoaded();
     TrackPointer getLoadedTrack() const;
     double getVisualPlayPos();

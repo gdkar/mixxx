@@ -31,8 +31,7 @@ const double kNoTrigger = -1;
 class EngineControl : public QObject {
     Q_OBJECT
   public:
-    EngineControl(QString group,
-                  ConfigObject<ConfigValue>* _config);
+    EngineControl(QString group, ConfigObject<ConfigValue>* _config, QObject * p = nullptr);
     virtual ~EngineControl();
 
     // Called by EngineBuffer::process every latency period. See the above
@@ -41,20 +40,20 @@ class EngineControl : public QObject {
     // this call. If the EngineControl would like to request the playback
     // position to be altered, it should return the sample to seek to from this
     // method. Otherwise it should return kNoTrigger.
-    virtual double process(const double dRate,
-                           const double dCurrentSample,
-                           const double dTotalSamples,
-                           const int iBufferSize);
+    virtual double process(double dRate,
+                           double dCurrentSample,
+                           double dTotalSamples,
+                           int iBufferSize);
 
-    virtual double nextTrigger(const double dRate,
-                               const double dCurrentSample,
-                               const double dTotalSamples,
-                               const int iBufferSize);
+    virtual double nextTrigger(double dRate,
+                               double dCurrentSample,
+                               double dTotalSamples,
+                               int iBufferSize);
 
-    virtual double getTrigger(const double dRate,
-                              const double dCurrentSample,
-                              const double dTotalSamples,
-                              const int iBufferSize);
+    virtual double getTrigger(double dRate,
+                              double dCurrentSample,
+                              double dTotalSamples,
+                              int iBufferSize);
 
     // hintReader allows the EngineControl to provide hints to the reader to
     // indicate that the given portion of a song is a potential imminent seek
@@ -62,12 +61,12 @@ class EngineControl : public QObject {
     virtual void hintReader(HintVector* pHintList);
 
     virtual void setEngineMaster(EngineMaster* pEngineMaster);
-    void setEngineBuffer(EngineBuffer* pEngineBuffer);
-    virtual void setCurrentSample(const double dCurrentSample, const double dTotalSamples);
-    double getCurrentSample() const;
-    double getTotalSamples() const;
-    bool atEndPosition() const;
-    QString getGroup() const;
+    virtual void setEngineBuffer(EngineBuffer* pEngineBuffer);
+    virtual void setCurrentSample(double dCurrentSample, double dTotalSamples);
+    virtual double getCurrentSample() const;
+    virtual double getTotalSamples() const;
+    virtual bool atEndPosition() const;
+    virtual QString getGroup() const;
 
     // Called to collect player features for effects processing.
     virtual void collectFeatureState(GroupFeatureState* pGroupFeatures) const {
@@ -76,7 +75,6 @@ class EngineControl : public QObject {
 
     // Called whenever a seek occurs to allow the EngineControl to respond.
     virtual void notifySeek(double dNewPlaypo);
-
   public slots:
     virtual void trackLoaded(TrackPointer pTrack);
     virtual void trackUnloaded(TrackPointer pTrack);

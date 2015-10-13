@@ -7,7 +7,6 @@
 #include <QGLShaderProgram>
 
 #include "waveform/waveformwidgetfactory.h"
-#include "sharedglcontext.h"
 #include "controlpotmeter.h"
 #include "waveform/widgets/emptywaveformwidget.h"
 #include "waveform/widgets/softwarewaveformwidget.h"
@@ -103,7 +102,7 @@ WaveformWidgetFactory::WaveformWidgetFactory() :
         {
             QGLWidget glWidget{}; // create paint device
             auto context = glWidget.context();
-            if ( context && (context->isValid() || context->create(SharedGLContext::getWidget()->context())))
+            if ( context && (context->isValid() || context->create()))
             {
                 glFormat = context->format();
                 auto majorVersion = glFormat.majorVersion();

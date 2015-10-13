@@ -138,7 +138,7 @@ void WOverview::slotWaveformSummaryUpdated() {
     if (!pTrack) {return;}
     m_pWaveform = pTrack->getWaveformSummary();
     // If the waveform is already complete, just draw it.
-    if (m_pWaveform && m_pWaveform->getCompletion() == m_pWaveform->ize()) {
+    if (m_pWaveform && m_pWaveform->getCompletion() == m_pWaveform->size()) {
         m_actualCompletion = 0;
         if (drawNextPixmapPart()) {update();}
     }

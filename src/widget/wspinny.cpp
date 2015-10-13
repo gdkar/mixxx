@@ -7,7 +7,6 @@
 #include "controlobject.h"
 #include "controlobjectslave.h"
 #include "library/coverartcache.h"
-#include "sharedglcontext.h"
 #include "util/dnd.h"
 #include "util/math.h"
 #include "visualplayposition.h"
@@ -20,7 +19,7 @@
 WSpinny::WSpinny(QWidget* parent, const QString& group,
                  ConfigObject<ConfigValue>* pConfig,
                  VinylControlManager* pVCMan)
-        : QGLWidget(QGLFormat(QGL::SampleBuffers), parent, SharedGLContext::getWidget()),
+        : QWidget(parent),
           WBaseWidget(this),
           m_group(group),
           m_pConfig(pConfig),
@@ -65,20 +64,12 @@ WSpinny::WSpinny(QWidget* parent, const QString& group,
 #endif
     //Drag and drop
     setAcceptDrops(true);
-    qDebug() << "WSpinny(): Created QGLWidget, Context"
-             << "Valid:" << context()->isValid()
-             << "Sharing:" << context()->isSharing();
-
     CoverArtCache* pCache = CoverArtCache::instance();
-    if (pCache != NULL) {
-        connect(pCache, SIGNAL(coverFound(const QObject*, const int,
-                                          const CoverInfo&, QPixmap, bool)),
-                this, SLOT(slotCoverFound(const QObject*, const int,
-                                          const CoverInfo&, QPixmap, bool)));
+    if (pCache) {
+        connect(pCache, SIGNAL(coverFound(const QObject*, const int,const CoverInfo&, QPixmap, bool)),
+                this, SLOT(slotCoverFound(const QObject*, const int,const CoverInfo&, QPixmap, bool)));
     }
-
 }
-
 WSpinny::~WSpinny() {
 #ifdef __VINYLCONTROL__
     m_pVCManager->removeSignalQualityListener(this);
@@ -103,17 +94,12 @@ WSpinny::~WSpinny() {
 
 void WSpinny::onVinylSignalQualityUpdate(const VinylSignalQualityReport& report) {
 #ifdef __VINYLCONTROL__
-    if (!m_bVinylActive || !m_bSignalActive) {
-        return;
-    }
+    if (!m_bVinylActive || !m_bSignalActive)return;
     // Skip reports for vinyl inputs we don't care about.
-    if (report.processor != m_iVinylInput) {
-        return;
-    }
+    if (report.processor != m_iVinylInput)return;
     int r,g,b;
     QColor qual_color = QColor();
     float signalQuality = report.timecode_quality;
-
     // color is related to signal quality
     // hsv:  s=1, v=1
     // h is the only variable.
@@ -138,9 +124,9 @@ void WSpinny::onVinylSignalQualityUpdate(const VinylSignalQualityReport& report)
 
 void WSpinny::setup(QDomNode node, const SkinContext& context) {
     // Set images
-    QDomElement backPathElement = context.selectElement(node, "PathBackground");
+    auto backPathElement = context.selectElement(node, "PathBackground");
     m_pBgImage = WImageStore::getImage(context.getPixmapSource(backPathElement));
-    Paintable::DrawMode bgmode = context.selectScaleMode(backPathElement,Paintable::FIXED);
+    auto bgmode = context.selectScaleMode(backPathElement,Paintable::FIXED);
     if (m_pBgImage && !m_pBgImage->isNull() && bgmode == Paintable::FIXED) {
         setFixedSize(m_pBgImage->size());
     } else setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
@@ -597,7 +583,7 @@ bool WSpinny::event(QEvent* pEvent) {
     if (pEvent->type() == QEvent::ToolTip) {
         updateTooltip();
     }
-    return QGLWidget::event(pEvent);
+    return QWidget::event(pEvent);
 }
 
 void WSpinny::dragEnterEvent(QDragEnterEvent* event) {

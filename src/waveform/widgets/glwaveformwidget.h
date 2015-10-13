@@ -1,6 +1,4 @@
-#ifndef GLWAVEFORMWIDGET_H
-#define GLWAVEFORMWIDGET_H
-
+_Pragma("once")
 #include <QGLWidget>
 
 #include "waveformwidgetabstract.h"
@@ -13,18 +11,15 @@ class GLWaveformWidget : public QGLWidget, public WaveformWidgetAbstract {
 
     virtual WaveformWidgetType::Type getType() const { return WaveformWidgetType::GLFilteredWaveform; }
 
-    static inline QString getWaveformWidgetName() { return tr("Filtered"); }
-    static inline bool useOpenGl() { return true; }
-    static inline bool useOpenGLShaders() { return false; }
-    static inline bool developerOnly() { return false; }
+    static QString getWaveformWidgetName() { return tr("Filtered"); }
+    static bool useOpenGl() { return true; }
+    static bool useOpenGLShaders() { return false; }
+    static bool developerOnly() { return false; }
 
   protected:
     virtual void castToQWidget();
     virtual void paintEvent(QPaintEvent* event);
     virtual int render();
-
   private:
     friend class WaveformWidgetFactory;
 };
-
-#endif // GLWAVEFORMWIDGET_H

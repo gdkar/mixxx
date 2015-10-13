@@ -1,6 +1,4 @@
-#ifndef CLOCKCONTROL_H
-#define CLOCKCONTROL_H
-
+_Pragma("once")
 #include "configobject.h"
 #include "engine/enginecontrol.h"
 
@@ -17,19 +15,15 @@ class ClockControl: public EngineControl {
 
     virtual ~ClockControl();
 
-    double process(const double dRate, const double currentSample,
-                   const double totalSamples, const int iBufferSize);
-
+    double process(double dRate, double currentSample,
+                   double totalSamples, int iBufferSize);
   public slots:
     virtual void trackLoaded(TrackPointer pTrack);
     virtual void trackUnloaded(TrackPointer pTrack);
     void slotBeatsUpdated();
-
   private:
     ControlObject* m_pCOBeatActive;
     ControlObjectSlave* m_pCOSampleRate;
     TrackPointer m_pTrack;
     BeatsPointer m_pBeats;
 };
-
-#endif /* CLOCKCONTROL_H */

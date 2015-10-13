@@ -1,5 +1,4 @@
-#ifndef CHANNELHANDLE_H
-#define CHANNELHANDLE_H
+_Pragma("once")
 // ChannelHandle defines a unique identifier for channels of audio in the engine
 // (e.g. headphone output, master output, deck 1, microphone 3). Previously we
 // used the group string of the channel in the engine to uniquely identify it
@@ -31,11 +30,11 @@ class ChannelHandle {
     ChannelHandle() : m_iHandle(-1) {
     }
 
-    inline bool valid() const {
+    bool valid() const {
         return m_iHandle >= 0;
     }
 
-    inline int handle() const {
+    int handle() const {
         return m_iHandle;
     }
 
@@ -79,11 +78,11 @@ class ChannelHandleAndGroup {
               m_name(name) {
     }
 
-    inline const QString& name() const {
+    const QString& name() const {
         return m_name;
     }
 
-    inline const ChannelHandle& handle() const {
+    const ChannelHandle& handle() const {
         return m_handle;
     }
 
@@ -204,7 +203,7 @@ class ChannelHandleMap {
     }
 
   private:
-    inline void maybeExpand(int iSize) {
+    void maybeExpand(int iSize) {
         if (m_data.size() < iSize) {
             m_data.resize(iSize);
         }
@@ -212,5 +211,3 @@ class ChannelHandleMap {
     container_type m_data;
     T m_dummy;
 };
-
-#endif /* CHANNELHANDLE,_H */

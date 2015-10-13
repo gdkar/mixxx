@@ -1,6 +1,5 @@
 #include "glrgbwaveformwidget.h"
 
-#include "sharedglcontext.h"
 
 #include "waveform/renderers/waveformwidgetrenderer.h"
 #include "waveform/renderers/waveformrenderbackground.h"
@@ -14,7 +13,7 @@
 #include "util/performancetimer.h"
 
 GLRGBWaveformWidget::GLRGBWaveformWidget(const char* group, QWidget* parent)
-        : QGLWidget(parent, SharedGLContext::getWidget()),
+        : QGLWidget(parent),
           WaveformWidgetAbstract(group) {
     addRenderer<WaveformRenderBackground>();
     addRenderer<WaveformRendererEndOfTrack>();
@@ -27,8 +26,7 @@ GLRGBWaveformWidget::GLRGBWaveformWidget(const char* group, QWidget* parent)
     setAttribute(Qt::WA_OpaquePaintEvent);
     setAutoBufferSwap(false);
     qDebug() << "Created QGLWidget. Context"
-             << "Valid:" << context()->isValid()
-             << "Sharing:" << context()->isSharing();
+             << "Valid:" << context()->isValid();
     if (QGLContext::currentContext() != context()) {makeCurrent();}
     m_initSuccess = init();
 }

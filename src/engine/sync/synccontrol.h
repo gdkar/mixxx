@@ -18,7 +18,7 @@ class SyncControl : public EngineControl, public Syncable {
     static const double kBpmDouble;
     SyncControl(const QString& group, ConfigObject<ConfigValue>* pConfig,EngineChannel* pChannel, SyncableListener* pEngineSync);
     virtual ~SyncControl();
-    const QString& getGroup() const { return m_sGroup; }
+    virtual QString getGroup() const { return m_sGroup;}
     EngineChannel* getChannel() const { return m_pChannel; }
     double getBpm() const;
     SyncMode getSyncMode() const;

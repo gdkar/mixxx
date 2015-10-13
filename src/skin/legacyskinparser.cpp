@@ -826,13 +826,6 @@ QWidget* LegacySkinParser::parseSpinny(QDomElement node) {
         return dummy;
     }
     auto spinny = new WSpinny(m_pParent, channelStr, m_pConfig,m_pVCManager);
-    if (!spinny->isValid()) {
-        delete spinny;
-        auto dummy = new WLabel(m_pParent);
-        //: Shown when Spinny can not be displayed. Please keep \n unchanged
-        dummy->setText(tr("No OpenGL\nsupport."));
-        return dummy;
-    }
     commonWidgetSetup(node, spinny);
     WaveformWidgetFactory::instance()->addTimerListener(spinny);
     connect(spinny, SIGNAL(trackDropped(QString, QString)),m_pPlayerManager, SLOT(slotLoadToPlayer(QString, QString)));
