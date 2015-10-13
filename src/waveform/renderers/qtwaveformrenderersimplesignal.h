@@ -15,7 +15,8 @@ public:
 protected:
     virtual void onResize();
 private:
-    QBrush m_brush;
-    QPen m_borderPen;
+    int buildPolygon();
+    QBrush m_allBrush;
+    QPen m_allPen;
     QVector<QPointF> m_polygon;
 };

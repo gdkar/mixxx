@@ -29,7 +29,6 @@
 #include "soundmanagerutil.h"
 #include "recording/recordingmanager.h"
 
-class EngineWorkerScheduler;
 class EngineBuffer;
 class EngineChannel;
 class EngineDeck;
@@ -231,7 +230,6 @@ class EngineMaster : public QObject, public AudioSource {
     CSAMPLE* m_pOutputBusBuffers[3];
     CSAMPLE* m_pHead;
     CSAMPLE* m_pTalkover;
-    EngineWorkerScheduler* m_pWorkerScheduler;
     EngineSync* m_pMasterSync;
 
     ControlObject* m_pMasterGain;

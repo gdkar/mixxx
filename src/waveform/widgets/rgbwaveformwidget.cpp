@@ -12,8 +12,7 @@
 #include "waveform/renderers/waveformrenderbeat.h"
 
 RGBWaveformWidget::RGBWaveformWidget(const char* group, QWidget* parent)
-        : QWidget(parent),
-          WaveformWidgetAbstract(group) {
+        : WaveformWidgetAbstract(group) {
     addRenderer<WaveformRenderBackground>();
     addRenderer<WaveformRendererEndOfTrack>();
     addRenderer<WaveformRendererPreroll>();
@@ -28,14 +27,9 @@ RGBWaveformWidget::RGBWaveformWidget(const char* group, QWidget* parent)
     m_initSuccess = init();
 }
 
-RGBWaveformWidget::~RGBWaveformWidget() {
-}
-
-void RGBWaveformWidget::castToQWidget() {
-    m_widget = static_cast<QWidget*>(this);
-}
-
-void RGBWaveformWidget::paintEvent(QPaintEvent* event) {
+RGBWaveformWidget::~RGBWaveformWidget() = default;
+void RGBWaveformWidget::paintEvent(QPaintEvent* event)
+{
     QPainter painter(this);
     draw(&painter,event);
 }

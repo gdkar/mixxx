@@ -92,7 +92,8 @@ SoundDevicePortAudio::SoundDevicePortAudio(
     m_pMasterAudioLatencyOverload  = std::make_unique<ControlObjectSlave>("[Master]", "audio_latency_overload");
 }
 SoundDevicePortAudio::~SoundDevicePortAudio()=default;
-bool SoundDevicePortAudio::open(bool isClkRefDevice, int syncBuffers) {
+bool SoundDevicePortAudio::open(bool isClkRefDevice, int syncBuffers)
+{
     qDebug() << "SoundDevicePortAudio::open()" << getInternalName();
     PaError err;
     if (m_audioOutputs.empty() && m_audioInputs.empty()) {
@@ -192,18 +193,14 @@ bool SoundDevicePortAudio::open(bool isClkRefDevice, int syncBuffers) {
             // Clear first two 1.5 chunks (see above)
             m_inputFifo->releaseWriteRegions(m_inputParams.channelCount * m_framesPerBuffer * kFifoSize / 2);
         }
-    } else if (m_syncBuffers == 1) {
+    } else if (m_syncBuffers == 1)
+    {
         // this can be used on a second device when it id driven by the Clock reference device clock
         callback = paV19Callback;
         if (m_outputParams.channelCount)
           m_outputFifo = new FIFO<CSAMPLE>(m_outputParams.channelCount * m_framesPerBuffer);
         if (m_inputParams.channelCount)
           m_inputFifo = new FIFO<CSAMPLE>(m_inputParams.channelCount * m_framesPerBuffer);
-    } else if (m_syncBuffers == 0) {
-        if (m_outputParams.channelCount)
-          m_outputFifo = new FIFO<CSAMPLE>(m_outputParams.channelCount * m_framesPerBuffer * 2);
-        if (m_inputParams.channelCount)
-          m_inputFifo = new FIFO<CSAMPLE>(m_inputParams.channelCount * m_framesPerBuffer * 2);
     }
     auto pStream = static_cast<PaStream*>(nullptr);
     // Try open device using iChannelMax
@@ -301,54 +298,6 @@ void SoundDevicePortAudio::readProcess() {
     auto  pStream = m_pStream.load();
     if (pStream && m_inputParams.channelCount && m_inputFifo) {
         auto inChunkSize = m_framesPerBuffer * m_inputParams.channelCount;
-        if (m_syncBuffers == 0) {
-            // Polling mode
-            auto readAvailable  = Pa_GetStreamReadAvailable(pStream) * m_inputParams.channelCount;
-            auto writeAvailable = static_cast<decltype(readAvailable)>(m_inputFifo->writeAvailable());
-            auto copyCount = qMin(writeAvailable, readAvailable);
-            if (copyCount > 0) {
-                auto dataPtr1 = static_cast<CSAMPLE*>(nullptr);
-                auto size1 = PaUtilRingBuffer<CSAMPLE>::size_type{0};
-                auto dataPtr2 = static_cast<CSAMPLE*>(nullptr);
-                auto size2 = PaUtilRingBuffer<CSAMPLE>::size_type{0};
-                (void)m_inputFifo->aquireWriteRegions(copyCount,&dataPtr1, &size1, &dataPtr2, &size2);
-                // Fetch fresh samples and write to the the input buffer
-                auto err = Pa_ReadStream(pStream, dataPtr1, size1 / m_inputParams.channelCount);
-                auto lastFrame = &dataPtr1[size1 - m_inputParams.channelCount];
-                if (err == paInputOverflowed) m_underflowHappend = 1;
-                if (size2 > 0) {
-                    err = Pa_ReadStream(pStream, dataPtr2, size2 / m_inputParams.channelCount);
-                    lastFrame = &dataPtr2[size2 - m_inputParams.channelCount];
-                    if (err == paInputOverflowed) {
-                        //qDebug() << "SoundDevicePortAudio::readProcess() Pa_ReadStream paInputOverflowed" << getInternalName();
-                        m_underflowHappend = 1;
-                    }
-                }
-                m_inputFifo->releaseWriteRegions(copyCount);
-                if (readAvailable > writeAvailable + inChunkSize / 2) {
-                    // we are not able to consume all frames
-                    if (m_inputDrift) {
-                        // Skip one frame
-                        //qDebug() << "SoundDevicePortAudio::readProcess() skip one frame"
-                        //        << (float)writeAvailable / inChunkSize << (float)readAvailable / inChunkSize;
-                        auto err = Pa_ReadStream(pStream, dataPtr1, 1);
-                        if (err == paInputOverflowed) m_underflowHappend = 1;
-                    } else m_inputDrift = true;
-                } else if (readAvailable < inChunkSize / 2) {
-                    // We should read at least inChunkSize
-                    if (m_inputDrift) {
-                        // duplicate one frame
-                        //qDebug() << "SoundDevicePortAudio::readProcess() duplicate one frame"
-                        //        << (float)writeAvailable / inChunkSize << (float)readAvailable / inChunkSize;
-                        (void)m_inputFifo->aquireWriteRegions(m_inputParams.channelCount,&dataPtr1, &size1, &dataPtr2, &size2);
-                        if (size1) {
-                            SampleUtil::copy(dataPtr1, lastFrame, size1);
-                            m_inputFifo->releaseWriteRegions(size1);
-                        }
-                    } else m_inputDrift = true;
-                } else m_inputDrift = false;
-            }
-        }
         auto readAvailable = m_inputFifo->readAvailable();
         auto readCount = inChunkSize;
         if (inChunkSize > readAvailable) {
@@ -399,48 +348,6 @@ void SoundDevicePortAudio::writeProcess() {
                         static_cast<unsigned int>(m_outputParams.channelCount));
             }
             m_outputFifo->releaseWriteRegions(writeCount);
-        }
-        if (m_syncBuffers == 0) {
-            // Polling
-            auto writeAvailable = Pa_GetStreamWriteAvailable(pStream) * m_outputParams.channelCount;
-            auto readAvailable = static_cast<decltype(writeAvailable)>(m_outputFifo->readAvailable());
-            auto copyCount = qMin(readAvailable, writeAvailable);
-            //qDebug() << "SoundDevicePortAudio::writeProcess()" << toRead << writeAvailable;
-            if (copyCount > 0) {
-                auto dataPtr1 = static_cast<CSAMPLE*>(nullptr);
-                auto size1 = PaUtilRingBuffer<CSAMPLE>::size_type{0};
-                auto dataPtr2 = static_cast<CSAMPLE*>(nullptr);
-                auto size2 = PaUtilRingBuffer<CSAMPLE>::size_type{0};
-                m_outputFifo->aquireReadRegions(copyCount,&dataPtr1, &size1, &dataPtr2, &size2);
-                if (writeAvailable == outChunkSize * 2) {
-                    // Underflow
-                    //qDebug() << "SoundDevicePortAudio::writeProcess() Buffer empty";
-                    // fill buffer duplicate one sample
-                    for (int i = 0; i < writeAvailable - copyCount; i += m_outputParams.channelCount)
-                        Pa_WriteStream(pStream, dataPtr1, 1);
-                    m_underflowHappend = 1;
-                } else if (writeAvailable > readAvailable + outChunkSize / 2) {
-                    // try to keep PAs buffer filled up to 0.5 chunks
-                    if (m_outputDrift) {
-                        // duplicate one frame
-                        //qDebug() << "SoundDevicePortAudio::writeProcess() duplicate one frame"
-                        //        << (float)writeAvailable / outChunkSize << (float)readAvailable / outChunkSize;
-                        auto err = Pa_WriteStream(pStream, dataPtr1, 1);
-                        if (err == paOutputUnderflowed) m_underflowHappend = 1;
-                    } else m_outputDrift = true;
-                } else if (writeAvailable < outChunkSize / 2) {
-                    // We are not able to store all new frames
-                    if (m_outputDrift) ++copyCount;
-                    else m_outputDrift = true;
-                } else m_outputDrift = false;
-                PaError err = Pa_WriteStream(pStream, dataPtr1, size1 / m_outputParams.channelCount);
-                if (err == paOutputUnderflowed) m_underflowHappend = 1;
-                if (size2 > 0) {
-                    PaError err = Pa_WriteStream(pStream, dataPtr2, size2 / m_outputParams.channelCount);
-                    if (err == paOutputUnderflowed) m_underflowHappend = 1;
-                }
-                m_outputFifo->releaseReadRegions(copyCount);
-            }
         }
     }
 }

@@ -12,8 +12,7 @@
 #include "waveform/renderers/waveformrenderbeat.h"
 
 HSVWaveformWidget::HSVWaveformWidget(const char* group, QWidget* parent)
-    : QWidget(parent),
-      WaveformWidgetAbstract(group) {
+    :WaveformWidgetAbstract(group) {
     addRenderer<WaveformRenderBackground>();
     addRenderer<WaveformRendererEndOfTrack>();
     addRenderer<WaveformRendererPreroll>();
@@ -28,12 +27,7 @@ HSVWaveformWidget::HSVWaveformWidget(const char* group, QWidget* parent)
     m_initSuccess = init();
 }
 
-HSVWaveformWidget::~HSVWaveformWidget() {
-}
-
-void HSVWaveformWidget::castToQWidget() {
-    m_widget = static_cast<QWidget*>(this);
-}
+HSVWaveformWidget::~HSVWaveformWidget() = default;
 
 void HSVWaveformWidget::paintEvent(QPaintEvent* event) {
     QPainter painter(this);

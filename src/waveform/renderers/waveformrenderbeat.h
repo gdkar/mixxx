@@ -1,6 +1,4 @@
-#ifndef WAVEFORMRENDERBEAT_H
-#define WAVEFORMRENDERBEAT_H
-
+_Pragma("once")
 #include <QColor>
 
 #include "waveform/renderers/waveformrendererabstract.h"
@@ -23,7 +21,4 @@ class WaveformRenderBeat : public WaveformRendererAbstract {
     ControlObjectSlave* m_pBeatActive;
     QVector<QLineF> m_beats;
 
-    DISALLOW_COPY_AND_ASSIGN(WaveformRenderBeat);
 };
-
-#endif //WAVEFORMRENDERBEAT_H

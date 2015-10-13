@@ -57,8 +57,7 @@ DlgPrefSound::DlgPrefSound(QWidget* pParent, SoundManager* pSoundManager,PlayerM
     deviceSyncComboBox->clear();
     deviceSyncComboBox->addItem(tr("Default (long delay)"),QVariant{1});
     deviceSyncComboBox->addItem(tr("Experimental (no delay)"),QVariant{2});
-    deviceSyncComboBox->addItem(tr("Disabled (short delay)"),QVariant{0});
-    deviceSyncComboBox->setCurrentIndex(2);
+    deviceSyncComboBox->setCurrentIndex(1);
     connect(deviceSyncComboBox, SIGNAL(currentIndexChanged(int)),this, SLOT(syncBuffersChanged(int)));
 
     keylockComboBox->clear();

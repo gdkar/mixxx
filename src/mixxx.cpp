@@ -318,8 +318,6 @@ void MixxxMainWindow::initalize(QApplication* pApp, const CmdlineArgs& args) {
     // At a later place it will newer shown up, since it is
     // immediately replaced by the real widget.
     launchProgress(100);
-    // Check direct rendering and warn user if they don't have it
-    checkDirectRendering();
     // Install an event filter to catch certain QT events, such as tooltips.
     // This allows us to turn off tooltips.
     pApp->installEventFilter(this); // The eventfilter is located in this
@@ -1657,33 +1655,6 @@ void MixxxMainWindow::slotToCenterOfPrimaryScreen() {
     auto primaryScreenRect = desktop->availableGeometry(primaryScreen);
     move(primaryScreenRect.left() + (primaryScreenRect.width() - m_pWidgetParent->width()) / 2,
          primaryScreenRect.top() + (primaryScreenRect.height() - m_pWidgetParent->height()) / 2);
-}
-void MixxxMainWindow::checkDirectRendering() {
-    // IF
-    //  * A waveform viewer exists
-    // AND
-    //  * The waveform viewer is an OpenGL waveform viewer
-    // AND
-    //  * The waveform viewer does not have direct rendering enabled.
-    // THEN
-    //  * Warn user
-    auto factory = WaveformWidgetFactory::instance();
-    if (!factory)return;
-    if (!factory->isOpenGLAvailable() &&
-        m_pConfig->getValueString(ConfigKey("[Direct Rendering]", "Warned")) != QString("yes")) {
-        QMessageBox::warning(
-            0, tr("OpenGL Direct Rendering"),
-            tr("Direct rendering is not enabled on your machine.<br><br>"
-               "This means that the waveform displays will be very<br>"
-               "<b>slow and may tax your CPU heavily</b>. Either update your<br>"
-               "configuration to enable direct rendering, or disable<br>"
-               "the waveform displays in the Mixxx preferences by selecting<br>"
-               "\"Empty\" as the waveform display in the 'Interface' section.<br><br>"
-               "NOTE: If you use NVIDIA hardware,<br>"
-               "direct rendering may not be present, but you should<br>"
-               "not experience degraded performance."));
-        m_pConfig->set(ConfigKey("[Direct Rendering]", "Warned"), QString("yes"));
-    }
 }
 bool MixxxMainWindow::confirmExit() {
     auto playing(false);

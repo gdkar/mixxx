@@ -46,7 +46,6 @@ class ControlPotmeter;
 class CachingReader;
 class EngineBufferScale;
 class EngineSync;
-class EngineWorkerScheduler;
 class VisualPlayPosition;
 class EngineMaster;
 
@@ -102,7 +101,6 @@ class EngineBuffer : public EngineObject {
     Q_ENUM(KeylockEngine);
     EngineBuffer(QString _group, ConfigObject<ConfigValue>* _config,EngineChannel* pChannel, EngineMaster* pMixingEngine);
     virtual ~EngineBuffer();
-    void bindWorkers(EngineWorkerScheduler* pWorkerScheduler);
     // Return the current rate (not thread-safe)
     double getSpeed() const;
     bool getScratching() const;

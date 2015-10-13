@@ -83,7 +83,6 @@ class CachingReader : public QObject {
     // processed in the work thread, so the reader must be woken up via wake()
     // for this to take effect.
     virtual void newTrack(TrackPointer pTrack);
-    virtual void setScheduler(EngineWorkerScheduler* pScheduler);
     const static int maximumCachingReaderChunksInMemory;
   signals:
     // Emitted once a new track is loaded and ready to be read from.

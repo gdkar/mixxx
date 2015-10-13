@@ -1,9 +1,8 @@
 _Pragma("once")
-#include <QWidget>
-
 #include "waveformwidgetabstract.h"
 
-class SoftwareWaveformWidget : public QWidget, public WaveformWidgetAbstract {
+class SoftwareWaveformWidget : public WaveformWidgetAbstract
+{
     Q_OBJECT
   public:
     virtual ~SoftwareWaveformWidget();
@@ -13,7 +12,6 @@ class SoftwareWaveformWidget : public QWidget, public WaveformWidgetAbstract {
     static bool useOpenGLShaders() { return false; }
     static bool developerOnly() { return false; }
   protected:
-    virtual void castToQWidget();
     virtual void paintEvent(QPaintEvent* event);
   private:
     SoftwareWaveformWidget(const char* group, QWidget* parent);

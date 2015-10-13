@@ -15,7 +15,6 @@
 #include "engine/enginebufferscalerubberband.h"
 #include "engine/enginebufferscalelinear.h"
 #include "engine/sync/enginesync.h"
-#include "engine/engineworkerscheduler.h"
 #include "engine/readaheadmanager.h"
 #include "engine/enginecontrol.h"
 #include "engine/loopingcontrol.h"
@@ -933,7 +932,6 @@ void EngineBuffer::addControl(EngineControl* pControl) {
     connect(this, SIGNAL(trackLoaded(TrackPointer)),pControl, SLOT(trackLoaded(TrackPointer)),Qt::DirectConnection);
     connect(this, SIGNAL(trackUnloaded(TrackPointer)),pControl, SLOT(trackUnloaded(TrackPointer)),Qt::DirectConnection);
 }
-void EngineBuffer::bindWorkers(EngineWorkerScheduler* pWorkerScheduler) {m_pReader->setScheduler(pWorkerScheduler);}
 bool EngineBuffer::isTrackLoaded() {
     if (m_pCurrentTrack) {return true;}
     return false;

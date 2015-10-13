@@ -1,11 +1,7 @@
-#ifndef HSVWAVEFORMWIDGET_H
-#define HSVWAVEFORMWIDGET_H
-
-#include <QWidget>
-
+_Pragma("once")
 #include "waveformwidgetabstract.h"
 
-class HSVWaveformWidget : public QWidget, public WaveformWidgetAbstract {
+class HSVWaveformWidget : public WaveformWidgetAbstract {
     Q_OBJECT
   public:
     virtual ~HSVWaveformWidget();
@@ -16,14 +12,9 @@ class HSVWaveformWidget : public QWidget, public WaveformWidgetAbstract {
     static inline bool useOpenGl() { return false; }
     static inline bool useOpenGLShaders() { return false; }
     static inline bool developerOnly() { return false; }
-
   protected:
-    virtual void castToQWidget();
     virtual void paintEvent(QPaintEvent* event);
-
   private:
     HSVWaveformWidget(const char* group, QWidget* parent);
     friend class WaveformWidgetFactory;
 };
-
-#endif // HSVWAVEFORMWIDGET_H

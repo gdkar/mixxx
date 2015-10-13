@@ -156,7 +156,6 @@ class MixxxMainWindow : public QMainWindow {
     bool loadTranslations(const QLocale& systemLocale, QString userLocale,
                           const QString& translation, const QString& prefix,
                           const QString& translationPath, QTranslator* pTranslator);
-    void checkDirectRendering();
     bool confirmExit();
     void linkSkinWidget(ControlObjectSlave** pCOS,
                         ConfigKey key, const char* slot);

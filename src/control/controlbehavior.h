@@ -1,11 +1,9 @@
-#ifndef CONTROLBEHAVIOR_H
-#define CONTROLBEHAVIOR_H
-
+_Pragma("once")
 #include <QTimer>
 class ControlDoublePrivate;
 class ControlNumericBehavior {
   public:
-    virtual ~ControlNumericBehavior() { };
+    virtual ~ControlNumericBehavior() = default;
     // Returns true if the set should occur. Mutates dValue if the value should
     // be changed.
     virtual bool setFilter(double* dValue);
@@ -83,4 +81,3 @@ class ControlPushButtonBehavior : public ControlNumericBehavior {
     int m_iNumStates;
     QTimer m_pushTimer;
 };
-#endif /* CONTROLBEHAVIOR_H */

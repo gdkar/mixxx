@@ -21,66 +21,25 @@ void QtWaveformRendererFilteredSignal::onSetup(const QDomNode& /*node*/) {
     QColor mid = m_pColors->getMidColor();
     QColor high = m_pColors->getHighColor();
 
-    QColor lowCenter = low;
-    QColor midCenter = mid;
-    QColor highCenter = high;
+    low.setAlphaF(0.5);
+    mid.setAlphaF(0.5);
+    high.setAlphaF(0.5);
+    
+    m_lowBrush = QBrush(low);
+    m_midBrush = QBrush(mid);
+    m_highBrush= QBrush(high);
 
-    low.setAlphaF(0.9);
-    mid.setAlphaF(0.9);
-    high.setAlphaF(0.9);
+    low.setAlphaF(0.1);
+    mid.setAlphaF(0.1);
+    high.setAlphaF(0.1);
 
-    lowCenter.setAlphaF(0.5);
-    midCenter.setAlphaF(0.5);
-    highCenter.setAlphaF(0.5);
-
-    QLinearGradient gradientLow(QPointF(0.0,-255.0/2.0),QPointF(0.0,255.0/2.0));
-    gradientLow.setColorAt(0.0, low);
-    gradientLow.setColorAt(0.25,low.lighter(85));
-    gradientLow.setColorAt(0.5, lowCenter.darker(115));
-    gradientLow.setColorAt(0.75,low.lighter(85));
-    gradientLow.setColorAt(1.0, low);
-    m_lowBrush = QBrush(gradientLow);
-
-    QLinearGradient gradientMid(QPointF(0.0,-255.0/2.0),QPointF(0.0,255.0/2.0));
-    gradientMid.setColorAt(0.0, mid);
-    gradientMid.setColorAt(0.35,mid.lighter(85));
-    gradientMid.setColorAt(0.5, midCenter.darker(115));
-    gradientMid.setColorAt(0.65,mid.lighter(85));
-    gradientMid.setColorAt(1.0, mid);
-    m_midBrush = QBrush(gradientMid);
-
-    QLinearGradient gradientHigh(QPointF(0.0,-255.0/2.0),QPointF(0.0,255.0/2.0));
-    gradientHigh.setColorAt(0.0, high);
-    gradientHigh.setColorAt(0.45,high.lighter(85));
-    gradientHigh.setColorAt(0.5, highCenter.darker(115));
-    gradientHigh.setColorAt(0.55,high.lighter(85));
-    gradientHigh.setColorAt(1.0, high);
-    m_highBrush = QBrush(gradientHigh);
-
-    low.setAlphaF(0.3);
-    mid.setAlphaF(0.3);
-    high.setAlphaF(0.3);
-
-    QLinearGradient gradientKilledLow(QPointF(0.0,-255.0/2.0),QPointF(0.0,255.0/2.0));
-    gradientKilledLow.setColorAt(0.0,low.darker(80));
-    gradientKilledLow.setColorAt(0.5,lowCenter.darker(150));
-    gradientKilledLow.setColorAt(1.0,low.darker(80));
-    m_lowKilledBrush = QBrush(gradientKilledLow);
-
-    QLinearGradient gradientKilledMid(QPointF(0.0,-255.0/2.0),QPointF(0.0,255.0/2.0));
-    gradientKilledMid.setColorAt(0.0,mid.darker(80));
-    gradientKilledMid.setColorAt(0.5,midCenter.darker(150));
-    gradientKilledMid.setColorAt(1.0,mid.darker(80));
-    m_midKilledBrush = QBrush(gradientKilledMid);
-
-    QLinearGradient gradientKilledHigh(QPointF(0.0,-255.0/2.0),QPointF(0.0,255.0/2.0));
-    gradientKilledHigh.setColorAt(0.0,high.darker(80));
-    gradientKilledHigh.setColorAt(0.5,highCenter.darker(150));
-    gradientKilledHigh.setColorAt(1.0,high.darker(80));
-    m_highKilledBrush = QBrush(gradientKilledHigh);
+    m_lowKilledBrush = QBrush(low);
+    m_midKilledBrush = QBrush(mid);
+    m_highKilledBrush= QBrush(high);
 }
 
-void QtWaveformRendererFilteredSignal::onResize() {
+void QtWaveformRendererFilteredSignal::onResize()
+{
     m_polygon[0].resize(2*m_waveformRenderer->getWidth()+2);
     m_polygon[1].resize(2*m_waveformRenderer->getWidth()+2);
     m_polygon[2].resize(2*m_waveformRenderer->getWidth()+2);
@@ -141,7 +100,6 @@ int QtWaveformRendererFilteredSignal::buildPolygon() {
             m_polygon[1].append(point);
             m_polygon[2].append(point);
         }
-
         for (auto x = startPixel; (startPixel < endPixel) ? (x <= endPixel) : (x >= endPixel); x += delta) {
             auto xSampleWidth = gain * x;
             // Effective visual index of x
@@ -179,22 +137,10 @@ int QtWaveformRendererFilteredSignal::buildPolygon() {
             auto visualIndexStart = visualFrameStart * 2 + channel;
             auto visualIndexStop = visualFrameStop * 2 + channel;
 
-            // if (x == m_waveformRenderer->getWidth() / 2) {
-            //     qDebug() << "audioVisualRatio" << waveform->getAudioVisualRatio();
-            //     qDebug() << "visualSampleRate" << waveform->getVisualSampleRate();
-            //     qDebug() << "audioSamplesPerVisualPixel" << waveform->getAudioSamplesPerVisualSample();
-            //     qDebug() << "visualSamplePerPixel" << visualSamplePerPixel;
-            //     qDebug() << "xSampleWidth" << xSampleWidth;
-            //     qDebug() << "xVisualSampleIndex" << xVisualSampleIndex;
-            //     qDebug() << "maxSamplingRange" << maxSamplingRange;;
-            //     qDebug() << "Sampling pixel " << x << "over [" << visualIndexStart << visualIndexStop << "]";
-            // }
-
             unsigned char maxLow = 0;
             unsigned char maxBand = 0;
             unsigned char maxHigh = 0;
-            for (int i = visualIndexStart; i >= 0 && i < dataSize && i <= visualIndexStop;
-                 i += channelSeparation) {
+            for (auto i = visualIndexStart; i >= 0 && i < dataSize && i <= visualIndexStop; i += channelSeparation) {
                 auto& waveformData = *(data + i);
                 auto low = waveformData.filtered.low;
                 auto mid = waveformData.filtered.mid;
@@ -217,7 +163,8 @@ int QtWaveformRendererFilteredSignal::buildPolygon() {
     }
     return m_polygon[0].size();
 }
-void QtWaveformRendererFilteredSignal::draw(QPainter* painter, QPaintEvent* /*event*/) {
+void QtWaveformRendererFilteredSignal::draw(QPainter* painter, QPaintEvent* /*event*/)
+{
     auto pTrack = m_waveformRenderer->getTrackInfo();
     if (!pTrack) return;
     painter->save();
@@ -243,7 +190,8 @@ void QtWaveformRendererFilteredSignal::draw(QPainter* painter, QPaintEvent* /*ev
         painter->drawLine(0,0,m_waveformRenderer->getWidth(),0);
     }
     auto numberOfPoints = buildPolygon();
-    if (m_pLowKillControlObject && m_pLowKillControlObject->get() > 0.1) {
+    if (m_pLowKillControlObject && m_pLowKillControlObject->get() > 0.1)
+    {
         painter->setPen(QPen(m_lowKilledBrush, 0.0));
         painter->setBrush(QColor(150,150,150,20));
     } else {
@@ -251,7 +199,8 @@ void QtWaveformRendererFilteredSignal::draw(QPainter* painter, QPaintEvent* /*ev
         painter->setBrush(m_lowBrush);
     }
     painter->drawPolygon(&m_polygon[0][0], numberOfPoints);
-    if (m_pMidKillControlObject && m_pMidKillControlObject->get() > 0.1) {
+    if (m_pMidKillControlObject && m_pMidKillControlObject->get() > 0.1)
+    {
         painter->setPen(QPen(m_midKilledBrush, 0.0));
         painter->setBrush(QColor(150,150,150,20));
     } else {
@@ -259,7 +208,8 @@ void QtWaveformRendererFilteredSignal::draw(QPainter* painter, QPaintEvent* /*ev
         painter->setBrush(m_midBrush);
     }
     painter->drawPolygon(&m_polygon[1][0], numberOfPoints);
-    if (m_pHighKillControlObject && m_pHighKillControlObject->get() > 0.1) {
+    if (m_pHighKillControlObject && m_pHighKillControlObject->get() > 0.1)
+    {
         painter->setPen(QPen(m_highKilledBrush, 0.0));
         painter->setBrush(QColor(150,150,150,20));
     } else {

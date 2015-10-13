@@ -1,3 +1,4 @@
+_Pragma("once")
 #include <QImage>
 #include <QSqlDatabase>
 #include <limits>

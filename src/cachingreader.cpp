@@ -137,7 +137,7 @@ CachingReaderChunkForOwner* CachingReader::lookupChunkAndFreshen(SINT chunkIndex
 void CachingReader::newTrack(TrackPointer pTrack) {
     m_pTrack = pTrack;
     m_worker.newTrack(pTrack);
-    m_worker.workReady();
+    m_worker.wake();
 }
 void CachingReader::process() {
     auto status = ReaderStatusUpdate{};
@@ -319,9 +319,5 @@ void CachingReader::hintAndMaybeWake(const HintVector& hintList) {
         }
     }
     // If there are chunks to be read, wake up.
-    if (shouldWake) { m_worker.workReady(); }
-}
-void CachingReader::setScheduler(EngineWorkerScheduler* pScheduler) 
-{ 
-  m_worker.setScheduler(pScheduler);
+    if (shouldWake) { m_worker.wake(); }
 }

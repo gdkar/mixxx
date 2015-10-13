@@ -1,6 +1,4 @@
-#ifndef WAVEFORMWIDGETFACTORY_H
-#define WAVEFORMWIDGETFACTORY_H
-
+_Pragma("once")
 #include <QObject>
 #include <QTime>
 #include <QVector>
@@ -20,19 +18,15 @@ class MixxxMainWindow;
 class WaveformWidgetAbstractHandle {
   public:
     WaveformWidgetAbstractHandle();
-
     WaveformWidgetType::Type getType() const { return m_type;}
     QString getDisplayName() const { return m_displayString;}
     bool isActive() const { return m_active;}
-
   private:
     bool m_active;
     WaveformWidgetType::Type m_type;
     QString m_displayString;
-
     friend class WaveformWidgetFactory;
 };
-
 class WaveformWidgetHolder {
   public:
     WaveformWidgetHolder();
@@ -57,14 +51,10 @@ class WaveformWidgetFactory : public QObject, public Singleton<WaveformWidgetFac
   public:
     //TODO merge this enum woth the waveform analyser one
     enum FilterIndex { All = 0, Low = 1, Mid = 2, High = 3, FilterCount = 4};
-
     bool setConfig(ConfigObject<ConfigValue>* config);
-
     //creates the waveform widget and bind it to the viewer
     //clean-up every thing if needed
-    bool setWaveformWidget(WWaveformViewer* viewer,
-                           const QDomElement &node, const SkinContext& context);
-
+    bool setWaveformWidget(WWaveformViewer* viewer,const QDomElement &node, const SkinContext& context);
     void setFrameRate(int frameRate);
     int getFrameRate() const { return m_frameRate;}
 //    bool getVSync() const { return m_vSyncType;}
@@ -93,11 +83,8 @@ class WaveformWidgetFactory : public QObject, public Singleton<WaveformWidgetFac
     int isOverviewNormalized() const { return m_overviewNormalized;}
 
     const QVector<WaveformWidgetAbstractHandle> getAvailableTypes() const { return m_waveformWidgetHandles;}
-    void getAvailableVSyncTypes(QList<QPair<int, QString > >* list);
     void destroyWidgets();
-
     void addTimerListener(QWidget* pWidget);
-
     void startVSync(MixxxMainWindow* mixxxApp);
     void setVSyncType(int vsType);
     int getVSyncType();
@@ -154,7 +141,4 @@ class WaveformWidgetFactory : public QObject, public Singleton<WaveformWidgetFac
     QTime m_time;
     float m_frameCnt;
     double m_actualFrameRate;
-    int m_vSyncType;
 };
-
-#endif // WAVEFORMWIDGETFACTORY_H

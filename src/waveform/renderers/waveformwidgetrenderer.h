@@ -99,6 +99,7 @@ class WaveformWidgetRenderer {
     double m_gain = 0;
     ControlObjectSlave* m_pTrackSamplesControlObject = nullptr;
     int m_trackSamples = 0;
+    bool m_initSuccess = false;
 private:
     DISALLOW_COPY_AND_ASSIGN(WaveformWidgetRenderer);
     friend class WaveformWidgetFactory;

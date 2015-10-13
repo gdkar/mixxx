@@ -74,7 +74,7 @@ void CachingReaderWorker::run() {
             m_pReaderStatusFIFO->writeBlocking(&update, 1);
         } else {
             Event::end(m_tag);
-            m_semaRun.acquire();
+            pause();
             Event::start(m_tag);
         }
     }
@@ -139,6 +139,6 @@ void CachingReaderWorker::loadTrack(const TrackPointer& pTrack) {
 }
 void CachingReaderWorker::quitWait() {
     m_stop.store(true);
-    m_semaRun.release();
+    wake();
     wait();
 }

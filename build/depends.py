@@ -402,7 +402,6 @@ class MixxxCore(Feature):
                    "engine/sync/internalclock.cpp",
 
                    "engine/engineworker.cpp",
-                   "engine/engineworkerscheduler.cpp",
                    "engine/enginebuffer.cpp",
                    "engine/enginebufferscale.cpp",
                    "engine/enginebufferscalelinear.cpp",
@@ -666,11 +665,6 @@ class MixxxCore(Feature):
                    "waveform/renderers/waveformrendererrgb.cpp",
                    "waveform/renderers/qtwaveformrendererfilteredsignal.cpp",
                    "waveform/renderers/qtwaveformrenderersimplesignal.cpp",
-                   "waveform/renderers/glwaveformrendererfilteredsignal.cpp",
-                   "waveform/renderers/glwaveformrenderersimplesignal.cpp",
-                   "waveform/renderers/glslwaveformrenderersignal.cpp",
-                   "waveform/renderers/glvsynctestrenderer.cpp",
-                   "waveform/renderers/glwaveformrendererrgb.cpp",
 
                    "waveform/renderers/waveformsignalcolors.cpp",
 
@@ -686,13 +680,6 @@ class MixxxCore(Feature):
                    "waveform/widgets/rgbwaveformwidget.cpp",
                    "waveform/widgets/qtwaveformwidget.cpp",
                    "waveform/widgets/qtsimplewaveformwidget.cpp",
-                   "waveform/widgets/glwaveformwidget.cpp",
-                   "waveform/widgets/glsimplewaveformwidget.cpp",
-                   "waveform/widgets/glvsynctestwidget.cpp",
-
-                   "waveform/widgets/glslwaveformwidget.cpp",
-
-                   "waveform/widgets/glrgbwaveformwidget.cpp",
 
                    "skin/imginvert.cpp",
                    "skin/imgloader.cpp",

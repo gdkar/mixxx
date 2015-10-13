@@ -13,8 +13,8 @@
 #include "waveform/renderers/waveformrenderbeat.h"
 
 QtWaveformWidget::QtWaveformWidget(const char* group, QWidget* parent)
-        : QWidget(parent),
-          WaveformWidgetAbstract(group) {
+        : WaveformWidgetAbstract(group)
+{
     addRenderer<WaveformRenderBackground>();
     addRenderer<WaveformRendererEndOfTrack>();
     addRenderer<WaveformRendererPreroll>();
@@ -29,8 +29,8 @@ QtWaveformWidget::QtWaveformWidget(const char* group, QWidget* parent)
     m_initSuccess = init();
 }
 QtWaveformWidget::~QtWaveformWidget() = default;
-void QtWaveformWidget::castToQWidget() {m_widget = static_cast<QWidget*>(this);}
-void QtWaveformWidget::paintEvent(QPaintEvent* event) {
+void QtWaveformWidget::paintEvent(QPaintEvent* event)
+{
   QPainter painter(this);
   draw(&painter,event);
 }

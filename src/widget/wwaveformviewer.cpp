@@ -23,23 +23,18 @@ WWaveformViewer::WWaveformViewer(const char *group, ConfigObject<ConfigValue>* p
           m_zoomZoneWidth(20),
           m_bScratching(false),
           m_bBending(false),
-          m_waveformWidget(NULL) {
+          m_waveformWidget(NULL)
+{
     setAcceptDrops(true);
-
     m_pZoom = new ControlObjectSlave(group, "waveform_zoom");
     m_pZoom->connectValueChanged(this, SLOT(onZoomChange(double)));
-
-    m_pScratchPositionEnable = new ControlObjectSlave(
-            group, "scratch_position_enable");
-    m_pScratchPosition = new ControlObjectSlave(
-            group, "scratch_position");
-    m_pWheel = new ControlObjectSlave(
-            group, "wheel");
-
+    m_pScratchPositionEnable = new ControlObjectSlave(group, "scratch_position_enable");
+    m_pScratchPosition = new ControlObjectSlave(group, "scratch_position");
+    m_pWheel = new ControlObjectSlave( group, "wheel");
     setAttribute(Qt::WA_OpaquePaintEvent);
 }
-
-WWaveformViewer::~WWaveformViewer() {
+WWaveformViewer::~WWaveformViewer()
+{
     //qDebug() << "~WWaveformViewer";
 
     delete m_pZoom;
@@ -47,27 +42,23 @@ WWaveformViewer::~WWaveformViewer() {
     delete m_pScratchPosition;
     delete m_pWheel;
 }
-
-void WWaveformViewer::setup(QDomNode node, const SkinContext& context) {
-    Q_UNUSED(context);
-    if (m_waveformWidget) {
-        m_waveformWidget->setup(node, context);
-    }
+void WWaveformViewer::setup(QDomNode node, const SkinContext& context)
+{
+    if (m_waveformWidget) m_waveformWidget->setup(node, context);
 }
-
-void WWaveformViewer::resizeEvent(QResizeEvent* /*event*/) {
-    if (m_waveformWidget) {
-        m_waveformWidget->resize(width(), height());
-    }
+void WWaveformViewer::resizeEvent(QResizeEvent* /*event*/)
+{
+    if (m_waveformWidget) m_waveformWidget->resize(width(), height());
 }
-
-void WWaveformViewer::mousePressEvent(QMouseEvent* event) {
+void WWaveformViewer::mousePressEvent(QMouseEvent* event)
+{
     m_mouseAnchor = event->pos();
-
-    if (event->button() == Qt::LeftButton && m_waveformWidget) {
+    if (event->button() == Qt::LeftButton && m_waveformWidget)
+    {
         // If we are pitch-bending then disable and reset because the two
         // shouldn't be used at once.
-        if (m_bBending) {
+        if (m_bBending)
+        {
             m_pWheel->setParameter(0.5);
             m_bBending = false;
         }
@@ -76,7 +67,9 @@ void WWaveformViewer::mousePressEvent(QMouseEvent* event) {
         double targetPosition = -1.0 * event->pos().x() * audioSamplePerPixel * 2;
         m_pScratchPosition->set(targetPosition);
         m_pScratchPositionEnable->set(1.0);
-    } else if (event->button() == Qt::RightButton) {
+    }
+    else if (event->button() == Qt::RightButton)
+    {
         // If we are scratching then disable and reset because the two shouldn't
         // be used at once.
         if (m_bScratching) {
@@ -114,18 +107,18 @@ void WWaveformViewer::mouseMoveEvent(QMouseEvent* event) {
         m_pWheel->setParameter(v);
     }
 }
-
 void WWaveformViewer::mouseReleaseEvent(QMouseEvent* /*event*/) {
-    if (m_bScratching) {
+    if (m_bScratching)
+    {
         m_pScratchPositionEnable->set(0.0);
         m_bScratching = false;
     }
-    if (m_bBending) {
+    if (m_bBending)
+    {
         m_pWheel->setParameter(0.5);
         m_bBending = false;
     }
     m_mouseAnchor = QPoint();
-
     // Set the cursor back to an arrow.
     setCursor(Qt::ArrowCursor);
 }
@@ -144,15 +137,12 @@ void WWaveformViewer::wheelEvent(QWheelEvent *event) {
         //}
     }
 }
-
 void WWaveformViewer::dragEnterEvent(QDragEnterEvent* event) {
     if (DragAndDropHelper::allowLoadToPlayer(m_pGroup, m_pConfig) &&
             DragAndDropHelper::dragEnterAccept(*event->mimeData(), m_pGroup,
                                                true, false)) {
         event->acceptProposedAction();
-    } else {
-        event->ignore();
-    }
+    } else  event->ignore();
 }
 
 void WWaveformViewer::dropEvent(QDropEvent* event) {
@@ -167,31 +157,24 @@ void WWaveformViewer::dropEvent(QDropEvent* event) {
     }
     event->ignore();
 }
-
-void WWaveformViewer::onTrackLoaded(TrackPointer track) {
-    if (m_waveformWidget) {
-        m_waveformWidget->setTrack(track);
-    }
+void WWaveformViewer::onTrackLoaded(TrackPointer track)
+{
+    if (m_waveformWidget) m_waveformWidget->setTrack(track);
 }
-
-void WWaveformViewer::onTrackUnloaded(TrackPointer /*track*/) {
-    if (m_waveformWidget) {
-        m_waveformWidget->setTrack(TrackPointer());
-    }
+void WWaveformViewer::onTrackUnloaded(TrackPointer /*track*/)
+{
+    if (m_waveformWidget) m_waveformWidget->setTrack(TrackPointer());
 }
-
-void WWaveformViewer::onZoomChange(double zoom) {
+void WWaveformViewer::onZoomChange(double zoom)
+{
     //qDebug() << "WaveformWidgetRenderer::onZoomChange" << this << zoom;
     setZoom(zoom);
     // notify back the factory to sync zoom if needed
     WaveformWidgetFactory::instance()->notifyZoomChange(this);
 }
-
 void WWaveformViewer::setZoom(int zoom) {
     //qDebug() << "WaveformWidgetRenderer::setZoom" << zoom;
-    if (m_waveformWidget) {
-        m_waveformWidget->setZoom(zoom);
-    }
+    if (m_waveformWidget) m_waveformWidget->setZoom(zoom);
 
     // If multiple waveform widgets for the same group are created then it's
     // possible that this setZoom() is coming from another waveform with the
@@ -200,21 +183,17 @@ void WWaveformViewer::setZoom(int zoom) {
     // turn notify the WaveformWidgetFactory that zoom changed which will
     // infinite loop because we will receive another setZoom() from
     // WaveformWidgetFactory. To prevent this recursion, check for no-ops.
-    if (m_pZoom->get() != zoom) {
-        m_pZoom->set(zoom);
-    }
+    if (m_pZoom->get() != zoom)  m_pZoom->set(zoom);
 }
-
 void WWaveformViewer::setWaveformWidget(WaveformWidgetAbstract* waveformWidget) {
     if (m_waveformWidget) {
-        QWidget* pWidget = m_waveformWidget->getWidget();
-        disconnect(pWidget, SIGNAL(destroyed()),
-                   this, SLOT(slotWidgetDead()));
+        auto pWidget = m_waveformWidget->getWidget();
+        disconnect(pWidget, SIGNAL(destroyed()),this, SLOT(slotWidgetDead()));
     }
     m_waveformWidget = waveformWidget;
-    if (m_waveformWidget) {
-        QWidget* pWidget = m_waveformWidget->getWidget();
-        connect(pWidget, SIGNAL(destroyed()),
-                this, SLOT(slotWidgetDead()));
+    if (m_waveformWidget)
+    {
+        auto pWidget = m_waveformWidget->getWidget();
+        connect(pWidget, SIGNAL(destroyed()),this, SLOT(slotWidgetDead()));
     }
 }

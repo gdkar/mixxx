@@ -86,16 +86,6 @@ void WaveformRendererFilteredSignal::draw(QPainter* painter,QPaintEvent* /*event
         visualFrameStop = math_clamp(visualFrameStop, 0, lastVisualFrame);
         auto visualIndexStart = visualFrameStart * 2;
         auto visualIndexStop = visualFrameStop * 2;
-        // if (x == m_waveformRenderer->getWidth() / 2) {
-        //     qDebug() << "audioVisualRatio" << waveform->getAudioVisualRatio();
-        //     qDebug() << "visualSampleRate" << waveform->getVisualSampleRate();
-        //     qDebug() << "audioSamplesPerVisualPixel" << waveform->getAudioSamplesPerVisualSample();
-        //     qDebug() << "visualSamplePerPixel" << visualSamplePerPixel;
-        //     qDebug() << "xSampleWidth" << xSampleWidth;
-        //     qDebug() << "xVisualSampleIndex" << xVisualSampleIndex;
-        //     qDebug() << "maxSamplingRange" << maxSamplingRange;;
-        //     qDebug() << "Sampling pixel " << x << "over [" << visualIndexStart << visualIndexStop << "]";
-        // }
 
         unsigned char maxLow[2] = {0, 0};
         unsigned char maxMid[2] = {0, 0};

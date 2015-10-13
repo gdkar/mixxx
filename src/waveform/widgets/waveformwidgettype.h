@@ -1,6 +1,4 @@
-#ifndef WAVEFORMWIDGETTYPE_H
-#define WAVEFORMWIDGETTYPE_H
-
+_Pragma("once")
 class WaveformWidgetType {
   public:
     enum Type {
@@ -9,16 +7,8 @@ class WaveformWidgetType {
         SoftwareWaveform,
         QtSimpleWaveform,
         QtWaveform,
-        GLSimpleWaveform,
-        GLFilteredWaveform,
-        GLSLFilteredWaveform,
         HSVWaveform,
-        GLVSyncTest,
         RGBWaveform,
-        GLRGBWaveform,
-        GLSLRGBWaveform,
         Count_WaveformwidgetType // Also used as invalid value
     };
 };
-
-#endif // WAVEFORMWIDGETTYPE_H
