@@ -1,19 +1,14 @@
-#ifndef WAVEFORMMARKRANGE_H
-#define WAVEFORMMARKRANGE_H
-
+_Pragma("once")
 #include <QImage>
-
 #include "skin/skincontext.h"
-
 class ControlObjectSlave;
 class QDomNode;
 class WaveformSignalColors;
-
-class WaveformMarkRange {
+class WaveformMarkRange
+{
   public:
     WaveformMarkRange();
-    ~WaveformMarkRange();
-
+    virtual ~WaveformMarkRange();
     // If a mark range is active it has valid start/end points so it should be
     // drawn on waveforms.
     bool active();
@@ -24,26 +19,18 @@ class WaveformMarkRange {
     double start();
     // Returns end value or -1 if the end control doesn't exist.
     double end();
-
     void setup(const QString &group, const QDomNode& node,
                const SkinContext& context,
                const WaveformSignalColors& signalColors);
-
   private:
     void generateImage(int weidth, int height);
-
-    ControlObjectSlave* m_markStartPointControl;
-    ControlObjectSlave* m_markEndPointControl;
-    ControlObjectSlave* m_markEnabledControl;
-
+    ControlObjectSlave* m_markStartPointControl = nullptr;
+    ControlObjectSlave* m_markEndPointControl   = nullptr;
+    ControlObjectSlave* m_markEnabledControl    = nullptr;
     QColor m_activeColor;
     QColor m_disabledColor;
-
     QImage m_activeImage;
     QImage m_disabledImage;
-
     friend class WaveformRenderMarkRange;
     friend class WOverview;
 };
-
-#endif // WAVEFORMMARKRANGE_H

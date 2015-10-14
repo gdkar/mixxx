@@ -15,17 +15,13 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef IMGINVERT_H
-#define IMGINVERT_H
-
+_Pragma("once")
 #include "imgsource.h"
 
 class ImgInvert : public ImgColorProcessor {
 
 public:
-    inline ImgInvert(ImgSource* parent) : ImgColorProcessor(parent) {}
-    virtual QColor doColorCorrection(QColor c);
+    ImgInvert(ImgSource* parent);
+    virtual ~ImgInvert();
+    virtual QColor doColorCorrection(QColor c) const;
 };
-
-#endif
-

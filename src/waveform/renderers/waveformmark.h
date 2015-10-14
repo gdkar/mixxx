@@ -1,6 +1,4 @@
-#ifndef WAVEFORMMARK_H
-#define WAVEFORMMARK_H
-
+_Pragma("once")
 #include <QString>
 #include <QImage>
 #include <QColor>
@@ -16,14 +14,10 @@ class WaveformMark {
   public:
     WaveformMark();
     ~WaveformMark();
-    void setup(const QString& group, const QDomNode& node,
-               const SkinContext& context,
-               const WaveformSignalColors& signalColors);
+    void setup(const QString& group, const QDomNode& node,const SkinContext& context,const WaveformSignalColors& signalColors);
     void setKeyAndIndex(const ConfigKey& key, int i);
-
   private:
-    ControlObjectSlave* m_pointControl;
-
+    ControlObjectSlave* m_pointControl = nullptr;
     QColor m_color;
     QColor m_textColor;
     QString m_text;
@@ -35,5 +29,3 @@ class WaveformMark {
     friend class WaveformRenderMark;
     friend class WOverview;
 };
-
-#endif // WAVEFORMMARK_H

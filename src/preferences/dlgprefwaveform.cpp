@@ -8,28 +8,26 @@ DlgPrefWaveform::DlgPrefWaveform(QWidget* pParent, MixxxMainWindow* pMixxx,
                                  ConfigObject<ConfigValue>* pConfig)
         : DlgPreferencePage(pParent),
           m_pConfig(pConfig),
-          m_pMixxx(pMixxx) {
+          m_pMixxx(pMixxx)
+{
     setupUi(this);
-
     // Waveform overview init
     waveformOverviewComboBox->addItem(tr("Filtered")); // "0"
     waveformOverviewComboBox->addItem(tr("HSV")); // "1"
     waveformOverviewComboBox->addItem(tr("RGB")); // "2"
-
     // Populate waveform options.
-    WaveformWidgetFactory* factory = WaveformWidgetFactory::instance();
-    QVector<WaveformWidgetAbstractHandle> handles = factory->getAvailableTypes();
-    for (int i = 0; i < handles.size(); ++i) {
-        waveformTypeComboBox->addItem(handles[i].getDisplayName(),
-                                      handles[i].getType());
+    auto  factory = WaveformWidgetFactory::instance();
+    auto handles = factory->getAvailableTypes();
+    for (int i = 0; i < handles.size(); ++i)
+    {
+        waveformTypeComboBox->addItem(handles[i].getDisplayName(),handles[i].getType());
     }
-
     // Populate zoom options.
     for (int i = WaveformWidgetRenderer::s_waveformMinZoom;
-         i <= WaveformWidgetRenderer::s_waveformMaxZoom; i++) {
+         i <= WaveformWidgetRenderer::s_waveformMaxZoom; i++)
+    {
         defaultZoomComboBox->addItem(QString::number(100/double(i), 'f', 1) + " %");
     }
-
     // The GUI is not fully setup so connecting signals before calling
     // slotUpdate can generate rebootMixxxView calls.
     // TODO(XXX): Improve this awkwardness.
@@ -68,25 +66,19 @@ DlgPrefWaveform::DlgPrefWaveform(QWidget* pParent, MixxxMainWindow* pMixxx,
     connect(waveformOverviewComboBox,SIGNAL(currentIndexChanged(int)),
             this,SLOT(slotSetWaveformOverviewType(int)));
 }
-
-DlgPrefWaveform::~DlgPrefWaveform() {
-}
-
+DlgPrefWaveform::~DlgPrefWaveform() = default;
 void DlgPrefWaveform::slotUpdate() {
-    WaveformWidgetFactory* factory = WaveformWidgetFactory::instance();
-
+    auto factory = WaveformWidgetFactory::instance();
     if (factory->isOpenGLAvailable()) {
         openGlStatusIcon->setText(factory->getOpenGLVersion());
     } else {
         openGlStatusIcon->setText(tr("OpenGL not available"));
     }
-
-    WaveformWidgetType::Type currentType = factory->getType();
+    auto currentType = factory->getType();
     int currentIndex = waveformTypeComboBox->findData(currentType);
     if (currentIndex != -1 && waveformTypeComboBox->currentIndex() != currentIndex) {
         waveformTypeComboBox->setCurrentIndex(currentIndex);
     }
-
     frameRateSpinBox->setValue(factory->getFrameRate());
     frameRateSlider->setValue(factory->getFrameRate());
     endOfTrackWarningTimeSpinBox->setValue(factory->getEndOfTrackWarningTime());
@@ -151,46 +143,52 @@ void DlgPrefWaveform::slotSetWaveformEndRender(int endTime) {
 }
 void DlgPrefWaveform::slotSetWaveformType(int index) {
     // Ignore sets for -1 since this happens when we clear the combobox.
-    if (index < 0) {
-        return;
-    }
+    if (index < 0)  return;
     WaveformWidgetFactory::instance()->setWidgetTypeFromHandle(index);
 }
-
-void DlgPrefWaveform::slotSetWaveformOverviewType(int index) {
+void DlgPrefWaveform::slotSetWaveformOverviewType(int index)
+{
     m_pConfig->set(ConfigKey("[Waveform]","WaveformOverviewType"), ConfigValue(index));
     m_pMixxx->rebootMixxxView();
 }
 
-void DlgPrefWaveform::slotSetDefaultZoom(int index) {
+void DlgPrefWaveform::slotSetDefaultZoom(int index)
+{
     WaveformWidgetFactory::instance()->setDefaultZoom(index + 1);
 }
 
-void DlgPrefWaveform::slotSetZoomSynchronization(bool checked) {
+void DlgPrefWaveform::slotSetZoomSynchronization(bool checked)
+{
     WaveformWidgetFactory::instance()->setZoomSync(checked);
 }
 
-void DlgPrefWaveform::slotSetVisualGainAll(double gain) {
+void DlgPrefWaveform::slotSetVisualGainAll(double gain)
+{
     WaveformWidgetFactory::instance()->setVisualGain(WaveformWidgetFactory::All,gain);
 }
 
-void DlgPrefWaveform::slotSetVisualGainLow(double gain) {
+void DlgPrefWaveform::slotSetVisualGainLow(double gain)
+{
     WaveformWidgetFactory::instance()->setVisualGain(WaveformWidgetFactory::Low,gain);
 }
 
-void DlgPrefWaveform::slotSetVisualGainMid(double gain) {
+void DlgPrefWaveform::slotSetVisualGainMid(double gain)
+{
     WaveformWidgetFactory::instance()->setVisualGain(WaveformWidgetFactory::Mid,gain);
 }
 
-void DlgPrefWaveform::slotSetVisualGainHigh(double gain) {
+void DlgPrefWaveform::slotSetVisualGainHigh(double gain)
+{
     WaveformWidgetFactory::instance()->setVisualGain(WaveformWidgetFactory::High,gain);
 }
 
-void DlgPrefWaveform::slotSetNormalizeOverview(bool normalize) {
+void DlgPrefWaveform::slotSetNormalizeOverview(bool normalize)
+{
     WaveformWidgetFactory::instance()->setOverviewNormalized(normalize);
 }
 
-void DlgPrefWaveform::slotWaveformMeasured(float frameRate, int droppedFrames) {
+void DlgPrefWaveform::slotWaveformMeasured(float frameRate, int droppedFrames)
+{
     frameRateAverage->setText(
             QString::number((double)frameRate, 'f', 2) + " : " +
             tr("dropped frames") + " " + QString::number(droppedFrames));

@@ -18,7 +18,7 @@ class WaveformRenderBeat : public WaveformRendererAbstract {
 
   private:
     QColor m_beatColor;
-    ControlObjectSlave* m_pBeatActive;
+    ControlObjectSlave* m_pBeatActive = nullptr;
     QVector<QLineF> m_beats;
 
 };

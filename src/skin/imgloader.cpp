@@ -1,10 +1,10 @@
 #include "imgloader.h"
 #include "widget/wwidget.h"
 
-ImgLoader::ImgLoader() {
-}
-
-QImage * ImgLoader::getImage(QString img) {
+ImgLoader::ImgLoader() = default;
+ImgLoader::~ImgLoader() = default;
+QImage * ImgLoader::getImage(QString img) const
+{
     return new QImage(img);
 }
 

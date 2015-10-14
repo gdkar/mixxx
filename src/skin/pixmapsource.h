@@ -1,6 +1,4 @@
-#ifndef PIXMAPSOURCE_H
-#define PIXMAPSOURCE_H
-
+_Pragma("once")
 #include <QString>
 #include <QByteArray>
 
@@ -11,25 +9,21 @@ class PixmapSource {
     PixmapSource();
     PixmapSource(const QString& filepath);
     virtual ~PixmapSource();
-
-    bool isEmpty() const;
-    bool isSVG() const;
-    bool isBitmap() const;
-    void setSVG(const QByteArray& content);
-    void setPath(const QString& newPath);
-    QString getPath() const;
-    QByteArray getData() const;
-    QString getId() const;
-
+    virtual bool isEmpty() const;
+    virtual bool isSVG() const;
+    virtual bool isBitmap() const;
+    virtual void setSVG(const QByteArray& content);
+    virtual void setPath(const QString& newPath);
+    virtual QString getPath() const;
+    virtual QByteArray getData() const;
+    virtual QString getId() const;
   private:
-    enum Type {
+    enum Type
+    {
         SVG,
         BITMAP
     };
-
     QString m_path;
     QByteArray m_baData;
     enum Type m_eType;
 };
-
-#endif /* PIXMAPSOURCE_H */

@@ -24,22 +24,20 @@
 WKnob::WKnob(QWidget* pParent)
         : WDisplay(pParent) {
 }
-
-WKnob::~WKnob() {
-}
-
-void WKnob::mouseMoveEvent(QMouseEvent* e) {
+WKnob::~WKnob() = default;
+void WKnob::mouseMoveEvent(QMouseEvent* e)
+{
     m_handler.mouseMoveEvent(this, e);
 }
-
-void WKnob::mousePressEvent(QMouseEvent* e) {
+void WKnob::mousePressEvent(QMouseEvent* e)
+{
     m_handler.mousePressEvent(this, e);
 }
-
-void WKnob::mouseReleaseEvent(QMouseEvent* e) {
+void WKnob::mouseReleaseEvent(QMouseEvent* e)
+{
     m_handler.mouseReleaseEvent(this, e);
 }
-
-void WKnob::wheelEvent(QWheelEvent* e) {
+void WKnob::wheelEvent(QWheelEvent* e)
+{
     m_handler.wheelEvent(this, e);
 }

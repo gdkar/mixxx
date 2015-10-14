@@ -1,6 +1,11 @@
 #include "imgcolor.h"
-
-QColor ImgHueInv::doColorCorrection(QColor c) {
+ImgHueInv::ImgHueInv(ImgSource *p)
+  : ImgColorProcessor(p)
+{
+}
+ImgHueInv::~ImgHueInv() = default;
+QColor ImgHueInv::doColorCorrection(QColor c) const
+{
     int h, s, v, a;
     c.getHsv(&h, &s, &v, &a);
     int r, g, b;
@@ -11,8 +16,14 @@ QColor ImgHueInv::doColorCorrection(QColor c) {
     c.setHsv(hi, s, v, a);
     return c;
 }
-
-QColor ImgHueRot::doColorCorrection(QColor c) {
+ImgHueRot::ImgHueRot(ImgSource *p,int amt)
+  : ImgColorProcessor(p)
+  , m_amt(amt)
+{
+}
+ImgHueRot::~ImgHueRot() = default;
+QColor ImgHueRot::doColorCorrection(QColor c) const
+{
     int h, s, v, a;
     c.getHsv(&h, &s, &v, &a);
     h = (h + m_amt) % 256;
@@ -20,8 +31,14 @@ QColor ImgHueRot::doColorCorrection(QColor c) {
     c.setHsv(h, s, v, a);
     return c;
 }
-
-QColor ImgScaleWhite::doColorCorrection(QColor c) {
+ImgScaleWhite::ImgScaleWhite(ImgSource *p, float amt)
+  : ImgColorProcessor(p)
+  , m_amt(amt)
+{
+}
+ImgScaleWhite::~ImgScaleWhite() = default;
+QColor ImgScaleWhite::doColorCorrection(QColor c) const
+{
     int h, s, v, a;
     c.getHsv(&h, &s, &v, &a);
     if (s < 50) { v *= m_amt; }
@@ -31,11 +48,12 @@ QColor ImgScaleWhite::doColorCorrection(QColor c) {
 }
 
 ImgAdd::ImgAdd(ImgSource * parent, int amt)
-    : ImgColorProcessor(parent), m_amt(amt) {
-    // Nothing left to do
+    : ImgColorProcessor(parent), m_amt(amt)
+{
 }
-
-QColor ImgAdd::doColorCorrection(QColor c) {
+ImgAdd::~ImgAdd() = default;
+QColor ImgAdd::doColorCorrection(QColor c) const
+{
     int r = c.red() + m_amt;
     int g = c.green() + m_amt;
     int b = c.blue() + m_amt;
@@ -47,12 +65,13 @@ QColor ImgAdd::doColorCorrection(QColor c) {
     if (b > 255) { b = 255; }
     return QColor(r, g, b, c.alpha());
 }
-
 ImgMax::ImgMax(ImgSource * parent, int amt)
-    : ImgColorProcessor(parent), m_amt(amt) {
+    : ImgColorProcessor(parent), m_amt(amt)
+{
 }
-
-QColor ImgMax::doColorCorrection(QColor c) {
+ImgMax::~ImgMax() = default;
+QColor ImgMax::doColorCorrection(QColor c) const
+{
     int r = c.red();
     int g = c.green();
     int b = c.blue();
@@ -61,9 +80,27 @@ QColor ImgMax::doColorCorrection(QColor c) {
     if (b > m_amt) { b = m_amt; }
     return QColor(r, g, b, c.alpha());
 }
-
-
-QColor ImgHSVTweak::doColorCorrection(QColor c) {
+ImgHSVTweak::ImgHSVTweak(ImgSource* parent, int hmin, int hmax, int smin,
+                    int smax, int vmin, int vmax, float hfact, int hconst, float sfact,
+                    int sconst, float vfact, int vconst)
+        : ImgColorProcessor(parent)
+        , m_hmin(hmin)
+        , m_hmax(hmax)
+        , m_smin(smin)
+        , m_smax(smax)
+        , m_vmin(vmin)
+        , m_vmax(vmax)
+        , m_hconst(hconst)
+        , m_sconst(sconst)
+        , m_vconst(vconst)
+        , m_hfact(hfact)
+        , m_sfact(sfact)
+        , m_vfact(vfact)
+{
+}
+ImgHSVTweak::~ImgHSVTweak() = default;
+QColor ImgHSVTweak::doColorCorrection(QColor c) const
+{
     int h, s, v, a;
     c.getHsv(&h, &s, &v, &a);
 
@@ -87,4 +124,3 @@ QColor ImgHSVTweak::doColorCorrection(QColor c) {
     }
     return c;
 }
-

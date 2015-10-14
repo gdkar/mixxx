@@ -2,6 +2,7 @@ _Pragma("once")
 #include <QObject>
 #include <QTime>
 #include <QVector>
+#include <memory>
 
 #include "util/singleton.h"
 #include "configobject.h"
@@ -10,7 +11,7 @@ _Pragma("once")
 #include "skin/skincontext.h"
 
 class WWaveformViewer;
-class WaveformWidgetAbstract;
+class WaveformWidget;
 class QTimer;
 class VSyncThread;
 class MixxxMainWindow;
@@ -31,12 +32,12 @@ class WaveformWidgetHolder {
   public:
     WaveformWidgetHolder();
   private:
-    WaveformWidgetHolder(WaveformWidgetAbstract* waveformWidget,
+    WaveformWidgetHolder(WaveformWidget* waveformWidget,
                          WWaveformViewer* waveformViewer,
                          const QDomNode& skinNode,
                          const SkinContext& skinContext);
 
-    WaveformWidgetAbstract* m_waveformWidget;
+    WaveformWidget* m_waveformWidget;
     WWaveformViewer* m_waveformViewer;
     QDomNode m_skinNodeCache;
     SkinContext m_skinContextCache;
@@ -100,20 +101,14 @@ class WaveformWidgetFactory : public QObject, public Singleton<WaveformWidgetFac
     void render();
   private:
     void evaluateWidgets();
-    WaveformWidgetAbstract* createWaveformWidget(WaveformWidgetType::Type type, WWaveformViewer* viewer);
+    WaveformWidget* createWaveformWidget(WaveformWidgetType::Type type, WWaveformViewer* viewer);
     int findIndexOf(WWaveformViewer* viewer) const;
-
     //All type of available widgets
-
     QVector<WaveformWidgetAbstractHandle> m_waveformWidgetHandles;
-
     //Currently in use widgets/visual/node
     QVector<WaveformWidgetHolder> m_waveformWidgetHolders;
-
     WaveformWidgetType::Type m_type;
-
     ConfigObject<ConfigValue>* m_config;
-
     bool m_skipRender;
     int m_frameRate;
     int m_endOfTrackWarningTime;

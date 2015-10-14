@@ -15,17 +15,13 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef IMGLOADER_H
-#define IMGLOADER_H
-
+_Pragma("once");
 #include "imgsource.h"
 
 class ImgLoader : public ImgSource {
 
 public:
     ImgLoader();
-    virtual QImage* getImage(QString img);
+    virtual ~ImgLoader();
+    virtual QImage* getImage(QString img) const;
 };
-
-#endif
-

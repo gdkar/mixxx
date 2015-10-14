@@ -1,6 +1,4 @@
-#ifndef DLGPREFWAVEFORM_H
-#define DLGPREFWAVEFORM_H
-
+_Pragma("once")
 #include <QWidget>
 
 #include "preferences/ui_dlgprefwaveformdlg.h"
@@ -34,13 +32,8 @@ class DlgPrefWaveform : public DlgPreferencePage, public Ui::DlgPrefWaveformDlg 
     void slotSetVisualGainHigh(double gain);
     void slotSetNormalizeOverview(bool normalize);
     void slotWaveformMeasured(float frameRate, int droppedFrames);
-
   private:
     void initWaveformControl();
-
     ConfigObject<ConfigValue>* m_pConfig;
     MixxxMainWindow* m_pMixxx;
 };
-
-
-#endif /* DLGPREFWAVEFORM_H */

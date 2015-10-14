@@ -15,9 +15,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef WDISPLAY_H
-#define WDISPLAY_H
-
+_Pragma("once")
 #include <QVector>
 #include <QPixmap>
 #include <QPaintEvent>
@@ -27,49 +25,32 @@
 #include "widget/wpixmapstore.h"
 #include "skin/skincontext.h"
 
-class WDisplay : public WWidget {
+class WDisplay : public WWidget
+{
    Q_OBJECT
   public:
-    WDisplay(QWidget *parent=NULL);
+    WDisplay(QWidget *parent=nullptr);
     virtual ~WDisplay();
-
     void setup(QDomNode node, const SkinContext& context);
-
     void onConnectedControlChanged(double dParameter, double dValue);
-
   protected:
     void paintEvent(QPaintEvent*);
-
-    int numPixmaps() const {
-        return m_pixmaps.size();
-    }
-
+    int numPixmaps() const;
   private:
     void setPixmap(QVector<PaintablePointer>* pPixmaps, int iPos,
                    const QString& filename, Paintable::DrawMode mode);
-
     void setPixmapBackground(PixmapSource source, Paintable::DrawMode mode);
-
     void setPositions(int iNoPos);
-
     int getPixmapForParameter(double dParameter) const;
-
     int m_iCurrentPixmap;
-
     // Free existing pixmaps.
     void resetPositions();
-
     // Associated background pixmap
     PaintablePointer m_pPixmapBack;
-
     // List of associated pixmaps.
     QVector<PaintablePointer> m_pixmaps;
-
     // Whether disabled pixmaps are loaded.
     bool m_bDisabledLoaded;
-
     // List of disabled pixmaps.
     QVector<PaintablePointer> m_disabledPixmaps;
 };
-
-#endif

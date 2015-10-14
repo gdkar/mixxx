@@ -1,6 +1,4 @@
-#ifndef WAVEFORMRENDERERABSTRACT_H
-#define WAVEFORMRENDERERABSTRACT_H
-
+_Pragma("once")
 #include <QDomNode>
 #include <QPaintEvent>
 #include <QPainter>
@@ -13,25 +11,15 @@ class WaveformRendererAbstract {
   public:
     explicit WaveformRendererAbstract(WaveformWidgetRenderer* waveformWidgetRenderer);
     virtual ~WaveformRendererAbstract();
-
-    virtual bool init() {return true; }
+    virtual bool init();
     virtual void setup(const QDomNode& node, const SkinContext& context) = 0;
     virtual void draw(QPainter* painter, QPaintEvent* event) = 0;
-
-    virtual void onResize() {}
-    virtual void onSetTrack() {}
-
+    virtual void onResize() ;
+    virtual void onSetTrack() ;
   protected:
-    bool isDirty() const {
-        return m_dirty;
-    }
-    void setDirty(bool dirty = true) {
-        m_dirty = dirty;
-    }
-    WaveformWidgetRenderer* m_waveformRenderer;
-    bool m_dirty;
-
+    bool isDirty() const;
+    void setDirty(bool dirty = true);
+    WaveformWidgetRenderer* m_waveformRenderer = nullptr;
+    bool m_dirty = true;
     friend class WaveformWidgetRenderer;
 };
-
-#endif // WAVEFORMRENDERERABSTRACT_H

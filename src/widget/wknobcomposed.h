@@ -1,6 +1,4 @@
-#ifndef WKNOBCOMPOSED_H
-#define WKNOBCOMPOSED_H
-
+_Pragma("once")
 #include <QWidget>
 #include <QPaintEvent>
 #include <QMouseEvent>
@@ -15,25 +13,20 @@
 class WKnobComposed : public WWidget {
     Q_OBJECT
   public:
-    WKnobComposed(QWidget* pParent=NULL);
+    WKnobComposed(QWidget* pParent=nullptr);
     virtual ~WKnobComposed();
-
     void setup(QDomNode node, const SkinContext& context);
-
     void onConnectedControlChanged(double dParameter, double dValue);
-
   protected:
     void wheelEvent(QWheelEvent *e);
     void mouseMoveEvent(QMouseEvent *e);
     void mousePressEvent(QMouseEvent *e);
     void mouseReleaseEvent(QMouseEvent *e);
     void paintEvent(QPaintEvent*);
-
   private:
     void clear();
     void setPixmapBackground(PixmapSource source, Paintable::DrawMode mode);
     void setPixmapKnob(PixmapSource source, Paintable::DrawMode mode);
-
     double m_dCurrentAngle;
     PaintablePointer m_pKnob;
     PaintablePointer m_pPixmapBack;
@@ -44,5 +37,3 @@ class WKnobComposed : public WWidget {
     double m_dKnobCenterYOffset;
     friend class KnobEventHandler<WKnobComposed>;
 };
-
-#endif /* WKNOBCOMPOSED_H */

@@ -17,28 +17,27 @@ void WaveformMarkSet::setup(const QString& group, const QDomNode& node,
                             const WaveformSignalColors& signalColors) {
 
     clear();
-
-#if QT_VERSION >= 0x040700
-    m_marks.reserve(NUM_HOT_CUES);
-#endif
-
     std::set<QString> controlItemSet;
     bool hasDefaultMark = false;
-
-    QDomNode child = node.firstChild();
-    while (!child.isNull()) {
-        if (child.nodeName() == "DefaultMark") {
+    auto child = node.firstChild();
+    while (!child.isNull())
+    {
+        if (child.nodeName() == "DefaultMark")
+        {
             m_defaultMark.setup(group, child, context, signalColors);
             hasDefaultMark = true;
-        } else if (child.nodeName() == "Mark") {
+        }
+        else if (child.nodeName() == "Mark")
+        {
             m_marks.push_back(WaveformMark());
-            WaveformMark& mark = m_marks.back();
+            auto& mark = m_marks.back();
             mark.setup(group, child, context, signalColors);
-
-            if (mark.m_pointControl) {
+            if (mark.m_pointControl)
+            {
                 // guarantee uniqueness even if there is a misdesigned skin
-                QString item = mark.m_pointControl->getKey().item;
-                if (!controlItemSet.insert(item).second) {
+                auto item = mark.m_pointControl->getKey().item;
+                if (!controlItemSet.insert(item).second)
+                {
                     qWarning() << "WaveformRenderMark::setup - redefinition of" << item;
                     m_marks.removeAt(m_marks.size() - 1);
                 }
@@ -46,29 +45,41 @@ void WaveformMarkSet::setup(const QString& group, const QDomNode& node,
         }
         child = child.nextSibling();
     }
-
     // check if there is a default mark and compare declared
     // and to create all missing hot_cues
-    if (hasDefaultMark) {
+    if (hasDefaultMark)
+    {
         for (int i = 1; i < NUM_HOT_CUES; ++i) {
-            QString hotCueControlItem = "hotcue_" + QString::number(i) + "_position";
-            ControlObject* pHotcue = ControlObject::getControl(
-                    ConfigKey(group, hotCueControlItem));
-            if (pHotcue == NULL) {
-                continue;
-            }
-
-            if (controlItemSet.insert(hotCueControlItem).second) {
+            auto hotCueControlItem = QString{"hotcue_" + QString::number(i) + "_position"};
+            auto pHotcue = ControlObject::getControl(ConfigKey(group, hotCueControlItem));
+            if (!pHotcue )continue;
+            if (controlItemSet.insert(hotCueControlItem).second)
+            {
                 //qDebug() << "WaveformRenderMark::setup - Automatic mark" << hotCueControlItem;
                 m_marks.push_back(m_defaultMark);
-                WaveformMark& mark = m_marks.back();
-                mark.setKeyAndIndex(pHotcue->getKey(), i);
+                m_marks.back().setKeyAndIndex(pHotcue->getKey(),i);
             }
         }
     }
 }
-
-void WaveformMarkSet::clear() {
+int WaveformMarkSet::size() const
+{
+  return m_marks.size();
+}
+WaveformMark& WaveformMarkSet::operator[] ( int i )
+{
+  return m_marks[i];
+}
+const WaveformMark& WaveformMarkSet::at(int i )
+{
+  return m_marks.at(i);
+}
+const WaveformMark& WaveformMarkSet::getDefaultMark() const
+{
+  return m_defaultMark;
+}
+void WaveformMarkSet::clear()
+{
     m_defaultMark = WaveformMark();
     m_marks.clear();
 }

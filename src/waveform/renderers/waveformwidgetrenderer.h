@@ -21,20 +21,20 @@ class WaveformWidgetRenderer {
     static const int s_waveformMinZoom;
     static const int s_waveformMaxZoom;
   public:
-    explicit WaveformWidgetRenderer(const char* group);
+    explicit WaveformWidgetRenderer(QString group);
     virtual ~WaveformWidgetRenderer();
-    bool init();
-    virtual bool onInit() {return true;}
-    void setup(const QDomNode& node, const SkinContext& context);
-    void onPreRender(VSyncThread* vsyncThread);
-    void draw(QPainter* painter, QPaintEvent* event);
-    const char* getGroup() const { return m_group;}
-    const TrackPointer getTrackInfo() const { return m_pTrack;}
-    double getFirstDisplayedPosition() const { return m_firstDisplayedPosition;}
-    double getLastDisplayedPosition() const { return m_lastDisplayedPosition;}
-    void setZoom(int zoom);
-    double getVisualSamplePerPixel() const { return m_visualSamplePerPixel;};
-    double getAudioSamplePerPixel() const { return m_audioSamplePerPixel;};
+    virtual bool init();
+    virtual bool onInit();
+    virtual void setup(const QDomNode& node, const SkinContext& context);
+    virtual void onPreRender(VSyncThread* vsyncThread);
+    virtual void draw(QPainter* painter, QPaintEvent* event);
+    virtual QString getGroup() const;
+    virtual TrackPointer getTrackInfo() const;
+    virtual double getFirstDisplayedPosition() const;
+    virtual double getLastDisplayedPosition() const;
+    virtual void setZoom(int zoom);
+    virtual double getVisualSamplePerPixel() const;
+    virtual double getAudioSamplePerPixel() const;
     //those function replace at its best sample position to an admissible
     //sample position according to the current visual resampling
     //this make mark and signal deterministic
@@ -42,35 +42,24 @@ class WaveformWidgetRenderer {
     //this "regulate" against visual sampling to make the position in widget
     //stable and deterministic
     // Transform sample index to pixel in track.
-    double transformSampleIndexInRendererWorld(int sampleIndex) const {
-        const double relativePosition = (double)sampleIndex / (double)m_trackSamples;
-        return transformPositionInRendererWorld(relativePosition);
-    }
+    double transformSampleIndexInRendererWorld(int sampleIndex) const;
     // Transform position (percentage of track) to pixel in track.
-    double transformPositionInRendererWorld(double position) const {
-        return m_trackPixelCount * (position - m_firstDisplayedPosition);
-    }
-    double getPlayPos() const { return m_playPos;}
-    double getPlayPosVSample() const { return m_playPosVSample;}
-    double getZoomFactor() const { return m_zoomFactor;}
-    double getRateAdjust() const { return m_rateAdjust;}
-    double getGain() const { return m_gain;}
-    int getTrackSamples() const { return m_trackSamples;}
+    double transformPositionInRendererWorld(double position) const;
+    double getPlayPos() const;
+    double getPlayPosVSample() const;
+    double getZoomFactor() const;
+    double getRateAdjust() const;
+    double getGain() const;
+    int getTrackSamples() const;
     void resize(int width, int height);
-    int getHeight() const { return m_height;}
-    int getWidth() const { return m_width;}
-    const WaveformSignalColors* getWaveformSignalColors() const { return &m_colors; };
-    template< class T_Renderer>
-    T_Renderer* addRenderer() {
-        T_Renderer* renderer = new T_Renderer(this);
-        m_rendererStack.push_back(renderer);
-        return renderer;
-    }
+    int getHeight() const;
+    int getWidth() const;
+    const WaveformSignalColors* getWaveformSignalColors() const;
     void setTrack(TrackPointer track);
   protected:
-    const char* m_group;
+    QString m_group;
     TrackPointer m_pTrack;
-    QList<WaveformRendererAbstract*> m_rendererStack;
+    QVector<WaveformRendererAbstract*> m_rendererStack;
     int m_height = 0;
     int m_width  = 0;
     WaveformSignalColors m_colors;
@@ -100,7 +89,7 @@ class WaveformWidgetRenderer {
     ControlObjectSlave* m_pTrackSamplesControlObject = nullptr;
     int m_trackSamples = 0;
     bool m_initSuccess = false;
+    bool m_haveSetup   = false;
 private:
-    DISALLOW_COPY_AND_ASSIGN(WaveformWidgetRenderer);
     friend class WaveformWidgetFactory;
 };

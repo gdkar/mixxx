@@ -8,20 +8,22 @@ _Pragma("once")
 
 class VSyncThread;
 
-class WaveformWidgetAbstract : public QWidget, public WaveformWidgetRenderer {
+class WaveformWidget: public QWidget, public WaveformWidgetRenderer {
     Q_OBJECT
   public:
-    WaveformWidgetAbstract(const char* group,QWidget*);
-    virtual ~WaveformWidgetAbstract();
+    WaveformWidget(const char* group,QWidget*);
+    virtual ~WaveformWidget();
     //Type is use by the factory to safely up-cast waveform widgets
-    virtual WaveformWidgetType::Type getType() const = 0;
-    bool isValid() const { return (m_initSuccess); }
+    virtual WaveformWidgetType::Type getType() const;
+    virtual bool isValid() const;
     void hold();
     void release();
+    virtual void setRenderType(WaveformWidgetType::Type type);
     virtual void preRender(VSyncThread* vsyncThread);
     virtual int render();
     virtual void resize(int width, int height);
     virtual void paintEvent(QPaintEvent *e);
   protected:
+    WaveformWidgetType::Type m_type = WaveformWidgetType::EmptyWaveform;
     friend class WaveformWidgetFactory;
 };

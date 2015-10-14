@@ -18,13 +18,13 @@ WaveformRenderBeat::WaveformRenderBeat(WaveformWidgetRenderer* waveformWidgetRen
     m_beats.resize(128);
 }
 
-WaveformRenderBeat::~WaveformRenderBeat() {
-    if (m_pBeatActive)
-        delete m_pBeatActive;
+WaveformRenderBeat::~WaveformRenderBeat()
+{
+    if (m_pBeatActive) delete m_pBeatActive;
 }
-
-bool WaveformRenderBeat::init() {
-    m_pBeatActive = new ControlObjectSlave(m_waveformRenderer->getGroup(), "beat_active");
+bool WaveformRenderBeat::init()
+{
+    if(!m_pBeatActive) m_pBeatActive = new ControlObjectSlave(m_waveformRenderer->getGroup(), "beat_active");
     return m_pBeatActive->valid();
 }
 

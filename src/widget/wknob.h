@@ -15,9 +15,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef WKNOB_H
-#define WKNOB_H
-
+_Pragma("once")
 #include <QPixmap>
 #include <QString>
 #include <QPaintEvent>
@@ -30,18 +28,14 @@
 class WKnob : public WDisplay {
    Q_OBJECT
   public:
-    WKnob(QWidget* pParent=NULL);
+    WKnob(QWidget* pParent=nullptr);
     virtual ~WKnob();
-
   protected:
     void wheelEvent(QWheelEvent *e);
     void mouseMoveEvent(QMouseEvent *e);
     void mousePressEvent(QMouseEvent *e);
     void mouseReleaseEvent(QMouseEvent *e);
-
   private:
     KnobEventHandler<WKnob> m_handler;
     friend class KnobEventHandler<WKnob>;
 };
-
-#endif

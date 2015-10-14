@@ -1,6 +1,4 @@
-#ifndef COLORSCHEMEPARSER_H
-#define COLORSCHEMEPARSER_H
-
+_Pragma("once")
 #include "configobject.h"
 
 class ImgSource;
@@ -10,8 +8,6 @@ class ColorSchemeParser {
     static void setupLegacyColorSchemes(QDomElement docElem, ConfigObject<ConfigValue>* pConfig);
   private:
     static ImgSource* parseFilters(QDomNode filter);
-    ColorSchemeParser() { }
-    ~ColorSchemeParser() { }
+    ColorSchemeParser() = delete;
+    ~ColorSchemeParser() = delete;
 };
-
-#endif /* COLORSCHEMEPARSER_H */

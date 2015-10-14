@@ -44,12 +44,6 @@ void QtWaveformRendererFilteredSignal::onResize()
     m_polygon[1].resize(2*m_waveformRenderer->getWidth()+2);
     m_polygon[2].resize(2*m_waveformRenderer->getWidth()+2);
 }
-namespace{
-  void setPoint(QPointF& point, qreal x, qreal y) {
-      point.setX(x);
-      point.setY(y);
-  }
-};
 int QtWaveformRendererFilteredSignal::buildPolygon() {
     // We have to check the track is present because it might have been unloaded
     // between the call to draw and the call to buildPolygon
@@ -172,12 +166,15 @@ void QtWaveformRendererFilteredSignal::draw(QPainter* painter, QPaintEvent* /*ev
     painter->resetTransform();
     //visual gain
     float allGain(1.0);
-    getGains(&allGain, NULL, NULL, NULL);
+    getGains(&allGain, nullptr, nullptr, nullptr);
     auto heightGain = allGain * (double)m_waveformRenderer->getHeight()/255.0;
-    if (m_alignment == Qt::AlignTop) {
+    if (m_alignment == Qt::AlignTop)
+    {
         painter->translate(0.0, 0.0);
         painter->scale(1.0, heightGain);
-    } else if (m_alignment == Qt::AlignBottom) {
+    }
+    else if (m_alignment == Qt::AlignBottom)
+    {
         painter->translate(0.0, m_waveformRenderer->getHeight());
         painter->scale(1.0, heightGain);
     } else {

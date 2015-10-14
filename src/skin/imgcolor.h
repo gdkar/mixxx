@@ -15,37 +15,30 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef IMGCOLOR_H
-#define IMGCOLOR_H
-
+_Pragma("once")
 #include "imgsource.h"
 
 class ImgAdd : public ImgColorProcessor {
-
 public:
     ImgAdd(ImgSource* parent, int amt);
-    virtual QColor doColorCorrection(QColor c);
-
+    virtual ~ImgAdd();
+    virtual QColor doColorCorrection(QColor c) const;
 private:
-    int m_amt;
+    int m_amt = 0;
 };
-
 class ImgMax : public ImgColorProcessor {
-
 public:
     ImgMax(ImgSource* parent, int amt);
-    virtual QColor doColorCorrection(QColor c);
-
+    virtual ~ImgMax();
+    virtual QColor doColorCorrection(QColor c) const;
 private:
-    int m_amt;
+    int m_amt = 0;
 };
-
 class ImgScaleWhite : public ImgColorProcessor {
-
 public:
-    inline ImgScaleWhite(ImgSource* parent, float amt)
-        : ImgColorProcessor(parent), m_amt(amt) {}
-    virtual QColor doColorCorrection(QColor c);
+    ImgScaleWhite(ImgSource* parent, float amt);
+    virtual ~ImgScaleWhite();
+    virtual QColor doColorCorrection(QColor c) const;
 private:
     float m_amt;
 };
@@ -53,34 +46,27 @@ private:
 class ImgHueRot : public ImgColorProcessor {
 
 public:
-    inline ImgHueRot(ImgSource* parent, int amt)
-        : ImgColorProcessor(parent), m_amt(amt) {}
-    virtual QColor doColorCorrection(QColor c);
-
+    ImgHueRot(ImgSource* parent, int amt);
+    virtual ~ImgHueRot() ;
+    virtual QColor doColorCorrection(QColor c) const;
 private:
-    int m_amt;
+    int m_amt = 0;
 };
-
-class ImgHueInv : public ImgColorProcessor {
-
+class ImgHueInv : public ImgColorProcessor
+{
 public:
-    inline ImgHueInv(ImgSource* parent) : ImgColorProcessor(parent) {}
-    virtual QColor doColorCorrection(QColor c);
+    ImgHueInv(ImgSource* parent);
+    virtual ~ImgHueInv();
+    virtual QColor doColorCorrection(QColor c) const;
 };
-
-class ImgHSVTweak : public ImgColorProcessor {
+class ImgHSVTweak : public ImgColorProcessor
+{
   public:
-    inline ImgHSVTweak(ImgSource* parent, int hmin, int hmax, int smin,
+    ImgHSVTweak(ImgSource* parent, int hmin, int hmax, int smin,
                        int smax, int vmin, int vmax, float hfact, int hconst, float sfact,
-                       int sconst, float vfact, int vconst)
-            : ImgColorProcessor(parent),
-              m_hmin(hmin), m_hmax(hmax),
-              m_smin(smin), m_smax(smax),
-              m_vmin(vmin), m_vmax(vmax),
-              m_hconst(hconst), m_sconst(sconst), m_vconst(vconst),
-              m_hfact(hfact), m_sfact(sfact), m_vfact(vfact) {}
-    virtual QColor doColorCorrection(QColor c);
-
+                       int sconst, float vfact, int vconst);
+    virtual ~ImgHSVTweak();
+    virtual QColor doColorCorrection(QColor c) const;
   private:
     int m_hmin, m_hmax,
         m_smin, m_smax,
@@ -88,5 +74,3 @@ class ImgHSVTweak : public ImgColorProcessor {
         m_hconst, m_sconst, m_vconst;
     float m_hfact, m_sfact, m_vfact;
 };
-#endif
-

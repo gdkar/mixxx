@@ -1,6 +1,4 @@
-#ifndef WAVEFORMMARKSET_H
-#define WAVEFORMMARKSET_H
-
+_Pragma("once")
 #include <QList>
 
 #include "waveformmark.h"
@@ -17,16 +15,11 @@ class WaveformMarkSet {
                const SkinContext& context,
                const WaveformSignalColors& signalColors);
     void clear();
-
-    int size() const { return m_marks.size();}
-    WaveformMark& operator[] (int i) { return m_marks[i]; }
-
-    const WaveformMark& getDefaultMark() const { return m_defaultMark;}
-
+    int size() const;
+    WaveformMark& operator[] (int i);
+    const WaveformMark& at(int i );
+    const WaveformMark& getDefaultMark() const;
   private:
     WaveformMark m_defaultMark;
     QList<WaveformMark> m_marks;
-    DISALLOW_COPY_AND_ASSIGN(WaveformMarkSet);
 };
-
-#endif // WAVEFORMMARKSET_H

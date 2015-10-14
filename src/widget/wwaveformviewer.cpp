@@ -10,7 +10,7 @@
 #include "controlobject.h"
 #include "controlobjectslave.h"
 #include "trackinfoobject.h"
-#include "waveform/widgets/waveformwidgetabstract.h"
+#include "waveform/widgets/waveformwidget.h"
 #include "widget/wwaveformviewer.h"
 #include "waveform/waveformwidgetfactory.h"
 #include "util/dnd.h"
@@ -181,7 +181,7 @@ void WWaveformViewer::setZoom(int zoom) {
     // WaveformWidgetFactory. To prevent this recursion, check for no-ops.
     if (m_pZoom->get() != zoom)  m_pZoom->set(zoom);
 }
-void WWaveformViewer::setWaveformWidget(WaveformWidgetAbstract* waveformWidget) {
+void WWaveformViewer::setWaveformWidget(WaveformWidget* waveformWidget) {
     if (m_waveformWidget) disconnect(m_waveformWidget, SIGNAL(destroyed()),this, SLOT(slotWidgetDead()));
     m_waveformWidget = waveformWidget;
     if (m_waveformWidget)

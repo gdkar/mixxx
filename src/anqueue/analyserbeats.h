@@ -5,9 +5,7 @@
  *      Author: Vittorio Colao
  */
 
-#ifndef ANALYSERBEATS_H_
-#define ANALYSERBEATS_H_
-
+_Pragma("once")
 #include <QHash>
 
 #include "analyser.h"
@@ -37,5 +35,3 @@ class AnalyserBeats: public Analyser {
     int m_iSampleRate = -1, m_iTotalSamples = -1;
     int m_iMinBpm, m_iMaxBpm = -1;
 };
-
-#endif /* ANALYSERVAMPTEST_H_ */

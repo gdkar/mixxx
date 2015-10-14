@@ -11,7 +11,7 @@ _Pragma("once")
 #include "skin/skincontext.h"
 
 class ControlObjectSlave;
-class WaveformWidgetAbstract;
+class WaveformWidget;
 class ControlPotmeter;
 
 class WWaveformViewer : public WWidget {
@@ -38,8 +38,8 @@ private slots:
     void onZoomChange(double zoom);
     void slotWidgetDead() {m_waveformWidget = nullptr;}
 private:
-    void setWaveformWidget(WaveformWidgetAbstract* waveformWidget);
-    WaveformWidgetAbstract* getWaveformWidget()
+    void setWaveformWidget(WaveformWidget* waveformWidget);
+    WaveformWidget* getWaveformWidget()
     {
         return m_waveformWidget;
     }
@@ -56,6 +56,6 @@ private:
     bool m_bScratching;
     bool m_bBending;
     QPoint m_mouseAnchor;
-    WaveformWidgetAbstract* m_waveformWidget = nullptr;
+    WaveformWidget* m_waveformWidget = nullptr;
     friend class WaveformWidgetFactory;
 };

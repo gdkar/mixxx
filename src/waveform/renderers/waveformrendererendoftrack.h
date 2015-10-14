@@ -1,6 +1,4 @@
-#ifndef WAVEFORMRENDERERENDOFTRACK_H
-#define WAVEFORMRENDERERENDOFTRACK_H
-
+_Pragma("once")
 #include <QColor>
 #include <QTime>
 //#include <QLinearGradient>
@@ -26,22 +24,16 @@ class WaveformRendererEndOfTrack : public WaveformRendererAbstract {
     virtual void draw(QPainter* painter, QPaintEvent* event);
 
   private:
-    ControlObjectSlave*  m_pEndOfTrackControl;
-    bool m_endOfTrackEnabled;
-    ControlObjectSlave* m_pTrackSampleRate;
-    ControlObjectSlave* m_pPlayControl;
-    ControlObjectSlave* m_pLoopControl;
-
+    ControlObjectSlave*  m_pEndOfTrackControl = nullptr;
+    bool m_endOfTrackEnabled = false;
+    ControlObjectSlave* m_pTrackSampleRate = nullptr;
+    ControlObjectSlave* m_pPlayControl = nullptr;
+    ControlObjectSlave* m_pLoopControl = nullptr;
     QColor m_color;
     QTime m_timer;
-    int m_remainingTimeTriggerSeconds;
-    int m_blinkingPeriodMillis;
-
+    int m_remainingTimeTriggerSeconds = 30;
+    int m_blinkingPeriodMillis = 200;
     QVector<QRect> m_backRects;
     QPen m_pen;
     //QLinearGradient m_gradient;
-
-    DISALLOW_COPY_AND_ASSIGN(WaveformRendererEndOfTrack);
 };
-
-#endif // WAVEFORMRENDERERENDOFTRACK_H

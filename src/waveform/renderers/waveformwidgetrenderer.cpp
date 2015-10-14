@@ -12,7 +12,7 @@
 const int WaveformWidgetRenderer::s_waveformMinZoom = 1;
 const int WaveformWidgetRenderer::s_waveformMaxZoom = 6;
 
-WaveformWidgetRenderer::WaveformWidgetRenderer(const char* group)
+WaveformWidgetRenderer::WaveformWidgetRenderer(QString group)
     : m_group(group),
       m_height(-1),
       m_width(-1),
@@ -36,12 +36,19 @@ WaveformWidgetRenderer::WaveformWidgetRenderer(const char* group)
       m_pGainControlObject(NULL),
       m_gain(1.0),
       m_pTrackSamplesControlObject(NULL),
-      m_trackSamples(0.0) {
+      m_trackSamples(0.0)
+{
 }
 WaveformWidgetRenderer::~WaveformWidgetRenderer()
 {
     //qDebug() << "~WaveformWidgetRenderer";
-    for (int i = 0; i < m_rendererStack.size(); ++i) delete m_rendererStack[i];
+    for ( auto &renderer : m_rendererStack )
+    {
+      if ( auto ptr = std::exchange(renderer,nullptr) )
+      {
+        delete ptr;
+      }
+    }
     delete m_pRateControlObject;
     delete m_pRateRangeControlObject;
     delete m_pRateDirControlObject;
@@ -57,9 +64,9 @@ bool WaveformWidgetRenderer::init()
     m_pRateDirControlObject = new ControlObjectSlave(m_group, "rate_dir");
     m_pGainControlObject = new ControlObjectSlave(m_group, "total_gain");
     m_pTrackSamplesControlObject = new ControlObjectSlave(m_group, "track_samples");
-    for (int i = 0; i < m_rendererStack.size(); ++i)
+    for ( auto r : m_rendererStack )
     {
-        if (!m_rendererStack[i]->init()) return false;
+      if ( r && !r->init()) return false;
     }
     return (m_initSuccess = true);
 }
@@ -111,19 +118,19 @@ void WaveformWidgetRenderer::draw(QPainter* painter, QPaintEvent* event)
     //timer.start();
     // not ready to display need to wait until track initialization is done
     // draw only first is stack (background)
-    auto  stackSize = m_rendererStack.size();
     if (m_trackSamples <= 0.0 || m_playPos == -1)
     {
-        if (stackSize) {m_rendererStack.at(0)->draw(painter, event);}
+        if (m_rendererStack.size())
+        {
+          if(auto renderer = m_rendererStack.at(0)) renderer->draw(painter,event);
+        }
         return;
     }
     else
     {
-        for (int i = 0; i < stackSize; i++)
+        for ( auto renderer : m_rendererStack )
         {
-            // qDebug() << i << " a  " << timer.restart();
-            m_rendererStack.at(i)->draw(painter, event);
-            // qDebug() << i << " e " << timer.restart();
+          if ( renderer ) renderer->draw(painter, event );
         }
         painter->setPen(m_colors.getPlayPosColor());
         painter->drawLine(m_width/2,0,m_width/2,m_height);
@@ -139,25 +146,84 @@ void WaveformWidgetRenderer::resize(int width, int height)
     m_width = width;
     m_height = height;
     if(m_initSuccess)
-    {
-      for (int i = 0; i < m_rendererStack.size(); ++i)
+    { 
+      for ( auto renderer : m_rendererStack )
       {
-          m_rendererStack[i]->setDirty(true);
-          m_rendererStack[i]->onResize();
+        if ( renderer )
+        {
+          renderer->setDirty(true);
+          renderer->onResize();
+        }
       }
     }
 }
-void WaveformWidgetRenderer::setup(const QDomNode& node, const SkinContext& context) {
+void WaveformWidgetRenderer::setup(const QDomNode& node, const SkinContext& context)
+{
     m_colors.setup(node, context);
-    for (int i = 0; i < m_rendererStack.size(); ++i) {m_rendererStack[i]->setup(node, context);}
+    for ( auto renderer : m_rendererStack )
+    {
+      if ( renderer ) renderer->setup(node,context);
+    }
 }
-void WaveformWidgetRenderer::setZoom(int zoom) {
+void WaveformWidgetRenderer::setZoom(int zoom)
+{
     //qDebug() << "WaveformWidgetRenderer::setZoom" << zoom;
     m_zoomFactor = math_clamp<double>(zoom, s_waveformMinZoom, s_waveformMaxZoom);
 }
-void WaveformWidgetRenderer::setTrack(TrackPointer track) {
+void WaveformWidgetRenderer::setTrack(TrackPointer track)
+{
     m_pTrack = track;
     //used to postpone first display until track sample is actually available
     m_trackSamples = -1.0;
-    for (int i = 0; i < m_rendererStack.size(); ++i) {m_rendererStack[i]->onSetTrack();}
+    for ( auto renderer : m_rendererStack )
+    {
+      if ( renderer ) renderer->onSetTrack();
+    }
 }
+QString WaveformWidgetRenderer::getGroup() const
+{
+  return m_group;
+}
+TrackPointer WaveformWidgetRenderer::getTrackInfo() const
+{
+  return m_pTrack;
+}
+double WaveformWidgetRenderer::getFirstDisplayedPosition () const
+{
+  return m_firstDisplayedPosition;
+}
+double WaveformWidgetRenderer::getLastDisplayedPosition () const
+{
+  return m_lastDisplayedPosition;
+}
+bool WaveformWidgetRenderer::onInit()
+{
+  return true;
+}
+double WaveformWidgetRenderer::getVisualSamplePerPixel() const
+{
+  return m_visualSamplePerPixel;
+}
+double WaveformWidgetRenderer::getAudioSamplePerPixel() const
+{
+  return m_audioSamplePerPixel;
+}
+double WaveformWidgetRenderer::transformSampleIndexInRendererWorld(int sampleIndex) const
+{
+    auto relativePosition = (double)sampleIndex / (double)m_trackSamples;
+    return transformPositionInRendererWorld(relativePosition);
+}
+// Transform position (percentage of track) to pixel in track.
+double WaveformWidgetRenderer::transformPositionInRendererWorld(double position) const
+{
+    return m_trackPixelCount * (position - m_firstDisplayedPosition);
+}
+double WaveformWidgetRenderer::getPlayPos() const { return m_playPos;}
+double WaveformWidgetRenderer::getPlayPosVSample() const { return m_playPosVSample;}
+double WaveformWidgetRenderer::getZoomFactor() const { return m_zoomFactor;}
+double WaveformWidgetRenderer::getRateAdjust() const { return m_rateAdjust;}
+double WaveformWidgetRenderer::getGain() const { return m_gain;}
+int WaveformWidgetRenderer::getTrackSamples() const { return m_trackSamples;}
+int WaveformWidgetRenderer::getHeight() const { return m_height;}
+int WaveformWidgetRenderer::getWidth() const { return m_width;}
+const WaveformSignalColors* WaveformWidgetRenderer::getWaveformSignalColors() const { return &m_colors; };

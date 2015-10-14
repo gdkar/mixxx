@@ -11,82 +11,73 @@
 #include "skin/imgcolor.h"
 #include "skin/imginvert.h"
 
-void ColorSchemeParser::setupLegacyColorSchemes(QDomElement docElem,
-                                                ConfigObject<ConfigValue>* pConfig) {
-    QDomNode colsch = docElem.namedItem("Schemes");
-
-    if (!colsch.isNull() && colsch.isElement()) {
-        QString schname = pConfig->getValueString(ConfigKey("[Config]","Scheme"));
-        QDomNode sch = colsch.firstChild();
-
-        bool found = false;
-
-        if (schname.isEmpty()) {
+void ColorSchemeParser::setupLegacyColorSchemes(QDomElement docElem,ConfigObject<ConfigValue>* pConfig)
+{
+    auto colsch = docElem.namedItem("Schemes");
+    if (!colsch.isNull() && colsch.isElement())
+    {
+        auto schname = pConfig->getValueString(ConfigKey("[Config]","Scheme"));
+        auto sch = colsch.firstChild();
+        auto found = false;
+        if (schname.isEmpty())
+        {
             // If no scheme stored, accept the first one in the file
             found = true;
         }
-
-        while (!sch.isNull() && !found) {
-            QString thisname = XmlParse::selectNodeQString(sch, "Name");
-            if (thisname == schname) {
-                found = true;
-            } else {
-                sch = sch.nextSibling();
-            }
+        while (!sch.isNull() && !found)
+        {
+            auto thisname = XmlParse::selectNodeQString(sch, "Name");
+            if (thisname == schname) found = true;
+            else sch = sch.nextSibling();
         }
-
-        if (found) {
-            QSharedPointer<ImgSource> imsrc =
-                    QSharedPointer<ImgSource>(parseFilters(sch.namedItem("Filters")));
+        if (found)
+        {
+            auto imsrc = QSharedPointer<ImgSource>(parseFilters(sch.namedItem("Filters")));
             WPixmapStore::setLoader(imsrc);
             WImageStore::setLoader(imsrc);
             WSkinColor::setLoader(imsrc);
-        } else {
+        }
+        else
+        {
             WPixmapStore::setLoader(QSharedPointer<ImgSource>());
             WImageStore::setLoader(QSharedPointer<ImgSource>());
             WSkinColor::setLoader(QSharedPointer<ImgSource>());
         }
-    } else {
+    }
+    else
+    {
         WPixmapStore::setLoader(QSharedPointer<ImgSource>());
         WImageStore::setLoader(QSharedPointer<ImgSource>());
         WSkinColor::setLoader(QSharedPointer<ImgSource>());
     }
 }
-
-ImgSource* ColorSchemeParser::parseFilters(QDomNode filt) {
-
+ImgSource* ColorSchemeParser::parseFilters(QDomNode filt)
+{
     // TODO: Move this code into ImgSource
-    if (!filt.hasChildNodes()) {
-        return 0;
-    }
-
-    ImgSource * ret = new ImgLoader();
-
-    QDomNode f = filt.firstChild();
-
-    while (!f.isNull()) {
-        QString name = f.nodeName().toLower();
-        if (name == "invert") {
-            ret = new ImgInvert(ret);
-        } else if (name == "hueinv") {
-            ret = new ImgHueInv(ret);
-        } else if (name == "add") {
-            ret = new ImgAdd(ret, XmlParse::selectNodeInt(f, "Amount"));
-        } else if (name == "scalewhite") {
-            ret = new ImgScaleWhite(ret, XmlParse::selectNodeFloat(f, "Amount"));
-        } else if (name == "hsvtweak") {
-            int hmin = 0;
-            int hmax = 359;
-            int smin = 0;
-            int smax = 255;
-            int vmin = 0;
-            int vmax = 255;
-            float hfact = 1.0f;
-            float sfact = 1.0f;
-            float vfact = 1.0f;
-            int hconst = 0;
-            int sconst = 0;
-            int vconst = 0;
+    if (!filt.hasChildNodes()) return 0;
+    auto ret = static_cast<ImgSource*>(new ImgLoader());
+    auto f = filt.firstChild();
+    while (!f.isNull())
+    {
+        auto name = f.nodeName().toLower();
+        if (name == "invert")          ret = new ImgInvert(ret);
+        else if (name == "hueinv")     ret = new ImgHueInv(ret);
+        else if (name == "add")        ret = new ImgAdd(ret, XmlParse::selectNodeInt(f, "Amount"));
+        else if (name == "scalewhite") ret = new ImgScaleWhite(ret, XmlParse::selectNodeFloat(f, "Amount"));
+        else if (name == "hsvtweak")
+        {
+            auto hmin = 0;
+            auto hmax = 359;
+            auto smin = 0;
+            auto smax = 255;
+            auto vmin = 0;
+            auto vmax = 255;
+            auto hfact = 1.0f;
+            auto sfact = 1.0f;
+            auto vfact = 1.0f;
+            auto hconst = 0;
+            auto sconst = 0;
+            auto vconst = 0;
 
             if (!f.namedItem("HMin").isNull()) { hmin = XmlParse::selectNodeInt(f, "HMin"); }
             if (!f.namedItem("HMax").isNull()) { hmax = XmlParse::selectNodeInt(f, "HMax"); }
@@ -102,14 +93,9 @@ ImgSource* ColorSchemeParser::parseFilters(QDomNode filt) {
             if (!f.namedItem("HFact").isNull()) { hfact = XmlParse::selectNodeFloat(f, "HFact"); }
             if (!f.namedItem("SFact").isNull()) { sfact = XmlParse::selectNodeFloat(f, "SFact"); }
             if (!f.namedItem("VFact").isNull()) { vfact = XmlParse::selectNodeFloat(f, "VFact"); }
-
-            ret = new ImgHSVTweak(ret, hmin, hmax, smin, smax, vmin, vmax, hfact, hconst,
-                                  sfact, sconst, vfact, vconst);
-        } else {
-            qDebug() << "Unkown image filter:" << name;
-        }
+            ret = new ImgHSVTweak(ret, hmin, hmax, smin, smax, vmin, vmax, hfact, hconst,sfact,sconst,vfact,vconst);
+        } else qDebug() << "Unkown image filter:" << name;
         f = f.nextSibling();
     }
-
     return ret;
 }

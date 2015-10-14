@@ -11,18 +11,20 @@
 
 WaveformRendererFilteredSignal::WaveformRendererFilteredSignal(
         WaveformWidgetRenderer* waveformWidgetRenderer)
-    : WaveformRendererSignalBase(waveformWidgetRenderer) {
+    : WaveformRendererSignalBase(waveformWidgetRenderer)
+{
 }
 
 WaveformRendererFilteredSignal::~WaveformRendererFilteredSignal() = default;
-
-void WaveformRendererFilteredSignal::onResize() {
+void WaveformRendererFilteredSignal::onResize()
+{
     m_lowLines.resize(m_waveformRenderer->getWidth());
     m_midLines.resize(m_waveformRenderer->getWidth());
     m_highLines.resize(m_waveformRenderer->getWidth());
 }
 void WaveformRendererFilteredSignal::onSetup(const QDomNode& /*node*/) {}
-void WaveformRendererFilteredSignal::draw(QPainter* painter,QPaintEvent* /*event*/) {
+void WaveformRendererFilteredSignal::draw(QPainter* painter,QPaintEvent* /*event*/)
+{
     auto trackInfo = m_waveformRenderer->getTrackInfo();
     if (!trackInfo) {return;}
     auto waveform = trackInfo->getWaveform();
@@ -37,27 +39,26 @@ void WaveformRendererFilteredSignal::draw(QPainter* painter,QPaintEvent* /*event
     painter->setRenderHints(QPainter::SmoothPixmapTransform, false);
     painter->setWorldMatrixEnabled(false);
     painter->resetTransform();
-
     auto firstVisualIndex = m_waveformRenderer->getFirstDisplayedPosition() * dataSize;
     auto lastVisualIndex = m_waveformRenderer->getLastDisplayedPosition() * dataSize;
     // Represents the # of waveform data points per horizontal pixel.
     auto gain = (lastVisualIndex - firstVisualIndex) / (double)m_waveformRenderer->getWidth();
     // Per-band gain from the EQ knobs.
-    float allGain(1.0), lowGain(1.0), midGain(1.0), highGain(1.0);
+    auto allGain = 1.f, lowGain = 1.f, midGain = 1.f, highGain = 1.f;
     getGains(&allGain, &lowGain, &midGain, &highGain);
-    auto halfHeight = (float)m_waveformRenderer->getHeight()/2.0;
-    auto heightFactor = m_alignment == Qt::AlignCenter
-            ? allGain*halfHeight/255.0
-            : allGain*m_waveformRenderer->getHeight()/255.0;
+    auto halfHeight = (float)m_waveformRenderer->getHeight() * 0.5;
+    auto heightFactor = static_cast<float>(m_alignment == Qt::AlignCenter ? allGain*halfHeight/255.0 : allGain*m_waveformRenderer->getHeight()/255.0);
     //draw reference line
-    if (m_alignment == Qt::AlignCenter) {
+    if (m_alignment == Qt::AlignCenter)
+    {
         painter->setPen(m_pColors->getAxesColor());
         painter->drawLine(0,halfHeight,m_waveformRenderer->getWidth(),halfHeight);
     }
     auto actualLowLineNumber = 0;
     auto actualMidLineNumber = 0;
     auto actualHighLineNumber = 0;
-    for (int x = 0; x < m_waveformRenderer->getWidth(); ++x) {
+    for (auto x = 0; x < m_waveformRenderer->getWidth(); ++x)
+    {
         // Width of the x position in visual indices.
         auto xSampleWidth = gain * x;
         // Effective visual index of x
@@ -74,7 +75,6 @@ void WaveformRendererFilteredSignal::draw(QPainter* painter,QPaintEvent* /*event
         // to the nearest integer by adding 0.5 before casting to int.
         auto visualFrameStart = int(xVisualSampleIndex / 2.0 - maxSamplingRange + 0.5);
         auto visualFrameStop = int(xVisualSampleIndex / 2.0 + maxSamplingRange + 0.5);
-
         // If the entire sample range is off the screen then don't calculate a
         // point for this pixel.
         auto lastVisualFrame = dataSize / 2 - 1;
@@ -86,14 +86,13 @@ void WaveformRendererFilteredSignal::draw(QPainter* painter,QPaintEvent* /*event
         visualFrameStop = math_clamp(visualFrameStop, 0, lastVisualFrame);
         auto visualIndexStart = visualFrameStart * 2;
         auto visualIndexStop = visualFrameStop * 2;
-
         unsigned char maxLow[2] = {0, 0};
         unsigned char maxMid[2] = {0, 0};
         unsigned char maxHigh[2] = {0, 0};
-
-        for (auto i = visualIndexStart; i >= 0 && i + 1 < dataSize && i + 1 <= visualIndexStop; i += 2) {
-            const auto& waveformData = *(data + i);
-            const auto& waveformDataNext = *(data + i + 1);
+        for (auto i = visualIndexStart; i >= 0 && i + 1 < dataSize && i + 1 <= visualIndexStop; i += 2)
+        {
+            auto& waveformData = *(data + i);
+            auto& waveformDataNext = *(data + i + 1);
             maxLow[0] = math_max(maxLow[0], waveformData.filtered.low);
             maxLow[1] = math_max(maxLow[1], waveformDataNext.filtered.low);
             maxMid[0] = math_max(maxMid[0], waveformData.filtered.mid);
@@ -162,17 +161,20 @@ void WaveformRendererFilteredSignal::draw(QPainter* painter,QPaintEvent* /*event
             actualHighLineNumber++;
         }
     }
-    painter->setPen(QPen(QBrush(m_pColors->getLowColor()), 1));
-    if (m_pLowKillControlObject && m_pLowKillControlObject->get() == 0.0) {
-       painter->drawLines(&m_lowLines[0], actualLowLineNumber);
-    }
-    painter->setPen(QPen(QBrush(m_pColors->getMidColor()), 1));
-    if (m_pMidKillControlObject && m_pMidKillControlObject->get() == 0.0) {
-        painter->drawLines(&m_midLines[0], actualMidLineNumber);
-    }
-    painter->setPen(QPen(QBrush(m_pColors->getHighColor()), 1));
-    if (m_pHighKillControlObject && m_pHighKillControlObject->get() == 0.0) {
-        painter->drawLines(&m_highLines[0], actualHighLineNumber);
-    }
+    if (m_pLowKillControlObject && !m_pLowKillControlObject->get())
+      painter->setPen(QPen(QBrush(m_pColors->getLowColor()), 0.5));
+    else 
+      painter->setPen(QPen(QBrush(m_pColors->getLowColor()), 0.125));
+    painter->drawLines(&m_lowLines[0], actualLowLineNumber);
+    if (m_pMidKillControlObject && !m_pMidKillControlObject->get())
+      painter->setPen(QPen(QBrush(m_pColors->getMidColor()), 0.5));
+    else
+      painter->setPen(QPen(QBrush(m_pColors->getMidColor()), 0.125));
+    painter->drawLines(&m_midLines[0], actualMidLineNumber);
+    if (m_pHighKillControlObject && !m_pHighKillControlObject->get())
+      painter->setPen(QPen(QBrush(m_pColors->getHighColor()), 0.5));
+    else
+      painter->setPen(QPen(QBrush(m_pColors->getHighColor()), 0.125));
+    painter->drawLines(&m_highLines[0], actualHighLineNumber);
     painter->restore();
 }

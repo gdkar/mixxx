@@ -29,9 +29,8 @@ SkinContext::SkinContext(ConfigObject<ConfigValue>* pConfig,
         newGlobal.setProperty(it.name(), it.value());
     }
     m_pScriptEngine->setGlobalObject(newGlobal);
-    for (auto it = m_variables.cbegin();it != m_variables.cend(); ++it) {
+    for (auto it = m_variables.cbegin();it != m_variables.cend(); ++it)
         m_pScriptEngine->globalObject().setProperty(it.key(), it.value());
-    }
 
 }
 void SkinContext::defineSingleton(QString objectName, QWidget* widget)
@@ -56,8 +55,8 @@ SkinContext::SkinContext(const SkinContext& parent)
           m_pScriptEngine(parent.m_pScriptEngine),
           m_pScriptDebugger(parent.m_pScriptDebugger),
           m_parentGlobal(m_pScriptEngine->globalObject()),
-          m_pSingletons(parent.m_pSingletons) {
-
+          m_pSingletons(parent.m_pSingletons)
+{
     // we generate a new global object to preserve the scope between
     // a context and its children
     auto context = m_pScriptEngine->pushContext()->activationObject();
@@ -85,7 +84,8 @@ void SkinContext::setVariable(const QString& name, const QString& value) {
 void SkinContext::setXmlPath(const QString& xmlPath) {m_xmlPath = xmlPath;}
 void SkinContext::updateVariables(const QDomNode& node) {
     auto child = node.firstChildElement(QString{"SetVariable"});
-    while (!child.isNull()) {
+    while (!child.isNull())
+    {
         updateVariable(child.toElement());
         child = child.nextSiblingElement(QString{"SetVariable"});
     }
