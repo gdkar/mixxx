@@ -5,9 +5,7 @@
 * @brief Configuration dialog for a DJ controller
 */
 
-#ifndef DLGPREFCONTROLLER_H_
-#define DLGPREFCONTROLLER_H_
-
+_Pragma("once")
 #include <QHash>
 #include <QSortFilterProxyModel>
 
@@ -103,5 +101,3 @@ class DlgPrefController : public DlgPreferencePage {
     QSortFilterProxyModel* m_pOutputProxyModel;
     bool m_bDirty;
 };
-
-#endif /*DLGPREFCONTROLLER_H_*/

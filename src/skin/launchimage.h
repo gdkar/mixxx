@@ -1,10 +1,6 @@
-#ifndef LAUNCHIMAGE_H_
-#define LAUNCHIMAGE_H_
-
+_Pragma("once")
 #include <QWidget>
-
 class QProgressBar;
-
 // This is a widget that is shown in the Mixxx main window
 // until the skin is ready to use.
 // It shows a centered Image and a progress bar below.
@@ -33,19 +29,14 @@ class QProgressBar;
 //        }
 //        QProgressBar::chunk { background-color: #ec4522; }
 //    </LaunchImageStyle>
-
 class LaunchImage: public QWidget {
     Q_OBJECT
   public:
     LaunchImage(QWidget* pParent, const QString& styleSheet);
     virtual ~LaunchImage();
     void progress(int value);
-
   protected:
     virtual void paintEvent(QPaintEvent *);
-
   private:
     QProgressBar* m_pProgressBar;
 };
-
-#endif // LAUNCHIMAGE_H_

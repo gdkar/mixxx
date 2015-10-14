@@ -8,8 +8,10 @@
 #include <QPainter>
 
 LaunchImage::LaunchImage(QWidget* pParent, const QString& styleSheet)
-        : QWidget(pParent) {
-    if (styleSheet.isEmpty()) {
+        : QWidget(pParent)
+{
+    if (styleSheet.isEmpty())
+    {
         setStyleSheet(
                 "LaunchImage { background-color: #202020; }"
                 "QLabel { "
@@ -31,17 +33,12 @@ LaunchImage::LaunchImage(QWidget* pParent, const QString& styleSheet)
                     "max-height: 3px;"
                 "}"
                 "QProgressBar::chunk { background-color: #f3efed; }");
-    } else {
-        setStyleSheet(styleSheet);
-    }
-
-    QLabel *label = new QLabel(this);
-
+    } else setStyleSheet(styleSheet);
+    auto label = new QLabel(this);
     m_pProgressBar = new QProgressBar(this);
     m_pProgressBar->setTextVisible(false);
-
-    QHBoxLayout* hbox = new QHBoxLayout(this);
-    QVBoxLayout* vbox = new QVBoxLayout(this);
+    auto hbox = new QHBoxLayout(this);
+    auto vbox = new QVBoxLayout(this);
     vbox->addStretch();
     vbox->addWidget(label);
     vbox->addWidget(m_pProgressBar);
@@ -50,14 +47,11 @@ LaunchImage::LaunchImage(QWidget* pParent, const QString& styleSheet)
     hbox->addLayout(vbox);
     hbox->addStretch();
 }
-
-LaunchImage::~LaunchImage() {
-}
-
-void LaunchImage::progress(int value) {
+LaunchImage::~LaunchImage() = default;
+void LaunchImage::progress(int value)
+{
     m_pProgressBar->setValue(value);
 }
-
 void LaunchImage::paintEvent(QPaintEvent *)
 {
     QStyleOption opt;
@@ -65,4 +59,3 @@ void LaunchImage::paintEvent(QPaintEvent *)
     QPainter p(this);
     style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, this);
 }
-

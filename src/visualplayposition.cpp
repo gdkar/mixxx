@@ -14,16 +14,21 @@ PerformanceTimer VisualPlayPosition::m_timeInfoTime;
 VisualPlayPosition::VisualPlayPosition(const QString& key)
         : m_valid(false),
           m_key(key),
-          m_invalidTimeInfoWarned(false) {
+          m_invalidTimeInfoWarned(false)
+{
     m_audioBufferSize = new ControlObjectSlave("[Master]", "audio_buffer_size");
     m_audioBufferSize->setParent(this);
     m_audioBufferSize->connectValueChanged(this, SLOT(slotAudioBufferSizeChanged(double)));
     m_dAudioBufferSize = m_audioBufferSize->get();
 }
 
-VisualPlayPosition::~VisualPlayPosition() {m_listVisualPlayPosition.remove(m_key);}
+VisualPlayPosition::~VisualPlayPosition() 
+{
+  m_listVisualPlayPosition.remove(m_key);
+}
 
-void VisualPlayPosition::set(double playPos, double rate, double positionStep, double pSlipPosition) {
+void VisualPlayPosition::set(double playPos, double rate, double positionStep, double pSlipPosition)
+{
     VisualPlayPositionData data;
     data.m_referenceTime = m_timeInfoTime;
     // Time from reference time to Buffer at DAC in µs
@@ -33,9 +38,11 @@ void VisualPlayPosition::set(double playPos, double rate, double positionStep, d
     data.m_positionStep = positionStep;
     data.m_pSlipPosition = pSlipPosition;
 
-    if (data.m_callbackEntrytoDac < 0 || data.m_callbackEntrytoDac > m_dAudioBufferSize * 1000) {
+    if (data.m_callbackEntrytoDac < 0 || data.m_callbackEntrytoDac > m_dAudioBufferSize * 1000)
+    {
         // m_timeInfo Invalid, Audio API broken
-        if (!m_invalidTimeInfoWarned) {
+        if (!m_invalidTimeInfoWarned)
+        {
             qWarning() << "VisualPlayPosition: Audio API provides invalid time stamps,"
                        << "waveform syncing disabled."
                        << "DacTime:" << m_timeInfo.outputBufferDacTime
@@ -50,12 +57,10 @@ void VisualPlayPosition::set(double playPos, double rate, double positionStep, d
     m_valid = true;
 }
 
-double VisualPlayPosition::getAtNextVSync(VSyncThread* vsyncThread) {
-    //static double testPos = 0;
-    //testPos += 0.000017759; //0.000016608; //  1.46257e-05;
-    //return testPos;
-
-    if (m_valid) {
+double VisualPlayPosition::getAtNextVSync(VSyncThread* vsyncThread)
+{
+    if (m_valid)
+    {
         VisualPlayPositionData data = m_data.getValue();
         int usRefToVSync = vsyncThread->usFromTimerToNextSync(&data.m_referenceTime);
         int offset = usRefToVSync - data.m_callbackEntrytoDac;
@@ -69,11 +74,13 @@ double VisualPlayPosition::getAtNextVSync(VSyncThread* vsyncThread) {
     }
     return -1;
 }
-void VisualPlayPosition::getPlaySlipAt(int usFromNow, double* playPosition, double* slipPosition) {
+void VisualPlayPosition::getPlaySlipAt(int usFromNow, double* playPosition, double* slipPosition)
+{
     //static double testPos = 0;
     //testPos += 0.000017759; //0.000016608; //  1.46257e-05;
     //return testPos;
-    if (m_valid) {
+    if (m_valid)
+    {
         VisualPlayPositionData data = m_data.getValue();
         int usElapsed = data.m_referenceTime.elapsed() / 1000;
         int dacFromNow = usElapsed - data.m_callbackEntrytoDac;
@@ -84,29 +91,35 @@ void VisualPlayPosition::getPlaySlipAt(int usFromNow, double* playPosition, doub
         *slipPosition = data.m_pSlipPosition;
     }
 }
-double VisualPlayPosition::getEnginePlayPos() {
-    if (m_valid) {
-        VisualPlayPositionData data = m_data.getValue();
+double VisualPlayPosition::getEnginePlayPos()
+{
+    if (m_valid)
+    {
+        auto data = m_data.getValue();
         return data.m_enginePlayPos;
-    } else {return -1;}
+    }
+    else return -1;
 }
 
-void VisualPlayPosition::slotAudioBufferSizeChanged(double size) {m_dAudioBufferSize = size;}
+void VisualPlayPosition::slotAudioBufferSizeChanged(double size)
+{
+  m_dAudioBufferSize = size;
+}
 
 //static
-QSharedPointer<VisualPlayPosition> VisualPlayPosition::getVisualPlayPosition(QString group) {
+QSharedPointer<VisualPlayPosition> VisualPlayPosition::getVisualPlayPosition(QString group)
+{
     auto vpp = m_listVisualPlayPosition.value(group).toStrongRef();
-    if (vpp.isNull()) {
+    if (vpp.isNull())
+    {
         vpp = QSharedPointer<VisualPlayPosition>::create(group);
         m_listVisualPlayPosition.insert(group, vpp);
     }
     return vpp;
 }
 //static
-void VisualPlayPosition::setTimeInfo(const PaStreamCallbackTimeInfo* timeInfo) {
-    // the timeInfo is valid only just NOW, so measure the time from NOW for
-    // later correction
+void VisualPlayPosition::setTimeInfo(const PaStreamCallbackTimeInfo* timeInfo)
+{
     m_timeInfoTime.start();
     m_timeInfo = *timeInfo;
-    //qDebug() << "TimeInfo" << (timeInfo->currentTime - floor(timeInfo->currentTime)) << (timeInfo->outputBufferDacTime - floor(timeInfo->outputBufferDacTime));
 }

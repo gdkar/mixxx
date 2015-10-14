@@ -8,27 +8,26 @@
 #include "library/queryutil.h"
 
 #include "bansheedbconnection.h"
-
-BansheeDbConnection::BansheeDbConnection() {
-}
-
+BansheeDbConnection::BansheeDbConnection() = default;
 BansheeDbConnection::~BansheeDbConnection() {
     qDebug() << "Close Banshee database";
     m_database.close();
 }
-
-bool BansheeDbConnection::open(const QString& databaseFile) {
+bool BansheeDbConnection::open(const QString& databaseFile)
+{
     m_database = QSqlDatabase::addDatabase("QSQLITE", "BANSHE_DB_CONNECTION");
     m_database.setHostName("localhost");
     m_database.setDatabaseName(databaseFile);
     m_database.setConnectOptions("SQLITE_OPEN_READONLY");
-
     //Open the database connection in this thread.
-    if (!m_database.open()) {
+    if (!m_database.open())
+    {
         m_database.setConnectOptions(); // clear options
         qDebug() << "Failed to open Banshee database." << m_database.lastError();
         return false;
-    } else {
+    }
+    else
+    {
         // TODO(DSC): Verify schema
         // Banshee Schema file:
         // https://git.gnome.org/browse/banshee/tree/src/Core/Banshee.Services/Banshee.Database/BansheeDbFormatMigrator.cs
@@ -38,55 +37,44 @@ bool BansheeDbConnection::open(const QString& databaseFile) {
         return true;
     }
 }
-
-int BansheeDbConnection::getSchemaVersion() {
+int BansheeDbConnection::getSchemaVersion()
+{
     QSqlQuery query(m_database);
     query.prepare("SELECT Value FROM CoreConfiguration WHERE Key = \"DatabaseVersion\"");
-
     if (query.exec()) {
-        if (query.next()) {
-            return query.value(0).toInt();
-        }
-    } else {
-        LOG_FAILED_QUERY(query);
-    }
+        if (query.next())  return query.value(0).toInt();
+    } else  LOG_FAILED_QUERY(query);
     return -1;
 }
-
-QList<struct BansheeDbConnection::Playlist> BansheeDbConnection::getPlaylists() {
-
+QList<struct BansheeDbConnection::Playlist> BansheeDbConnection::getPlaylists()
+{
     QList<struct BansheeDbConnection::Playlist> list;
-    struct BansheeDbConnection::Playlist playlist;
-
+    BansheeDbConnection::Playlist playlist;
     QSqlQuery query(m_database);
     query.prepare("SELECT PlaylistID, Name FROM CorePlaylists ORDER By Name");
-
-    if (query.exec()) {
-        while (query.next()) {
+    if (query.exec())
+    {
+        while (query.next())
+        {
             playlist.playlistId = query.value(0).toString();
             playlist.name = query.value(1).toString();
             list.append(playlist);
         }
-    } else {
-        LOG_FAILED_QUERY(query);
-    }
+    } else LOG_FAILED_QUERY(query);
     return list;
 }
-
-QList<struct BansheeDbConnection::PlaylistEntry> BansheeDbConnection::getPlaylistEntries(int playlistId) {
+QList<struct BansheeDbConnection::PlaylistEntry> BansheeDbConnection::getPlaylistEntries(int playlistId)
+{
 
     QTime time;
     time.start();
-
-    QList<struct BansheeDbConnection::PlaylistEntry> list;
-    struct BansheeDbConnection::PlaylistEntry entry;
-
+    QList<BansheeDbConnection::PlaylistEntry> list;
+    BansheeDbConnection::PlaylistEntry entry;
     QSqlQuery query(m_database);
     query.setForwardOnly(true); // Saves about 50% time
-
     QString queryString;
-
-    if (playlistId == 0) {
+    if (playlistId == 0)
+    {
         // Create Master Playlist
         queryString = QString(
             "SELECT "
@@ -185,47 +173,29 @@ QList<struct BansheeDbConnection::PlaylistEntry> BansheeDbConnection::getPlaylis
             entry.pAlbumArtist = &m_artistMap[albumArtistId];
             list.append(entry);
         }
-    } else {
-        LOG_FAILED_QUERY(query);
-    }
-
+    } else LOG_FAILED_QUERY(query);
     qDebug() << "BansheeDbConnection::getPlaylistEntries(), took " << time.elapsed() << "ms";
-
     return list;
 }
-
 // static
-QString BansheeDbConnection::getDatabaseFile() {
-
+QString BansheeDbConnection::getDatabaseFile()
+{
     QString dbfile;
-
     // Banshee Application Data Path
     // on Windows - "%APPDATA%\banshee-1" ("<Drive>:\Documents and Settings\<login>\<Application Data>\banshee-1")
     // on Unix and Mac OS X - "$HOME/.config/banshee-1"
-
-    QSettings ini(QSettings::IniFormat, QSettings::UserScope,
-            "banshee-1","banshee");
+    QSettings ini(QSettings::IniFormat, QSettings::UserScope,"banshee-1","banshee");
     dbfile = QFileInfo(ini.fileName()).absolutePath();
     dbfile += "/banshee.db";
-    if (QFile::exists(dbfile)) {
-        return dbfile;
-    }
-
+    if (QFile::exists(dbfile)) return dbfile;
     // Legacy Banshee Application Data Path
-    QSettings ini2(QSettings::IniFormat, QSettings::UserScope,
-            "banshee","banshee");
+    QSettings ini2(QSettings::IniFormat, QSettings::UserScope,"banshee","banshee");
     dbfile = QFileInfo(ini2.fileName()).absolutePath();
     dbfile += "/banshee.db";
-    if (QFile::exists(dbfile)) {
-        return dbfile;
-    }
-
+    if (QFile::exists(dbfile)) return dbfile;
     // Legacy Banshee Application Data Path
     dbfile = QDesktopServices::storageLocation(QDesktopServices::HomeLocation);
     dbfile += "/.gnome2/banshee/banshee.db";
-    if (QFile::exists(dbfile)) {
-        return dbfile;
-    }
-
+    if (QFile::exists(dbfile)) return dbfile;
     return QString();
 }

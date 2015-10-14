@@ -1,9 +1,7 @@
 // itunesfeaturefeature.h
 // Created 8/23/2009 by RJ Ryan (rryan@mit.edu)
 
-#ifndef ITUNESFEATURE_H
-#define ITUNESFEATURE_H
-
+_Pragma("once")
 #include <QStringListModel>
 #include <QtSql>
 #include <QFuture>
@@ -61,17 +59,11 @@ class ITunesFeature : public BaseExternalLibraryFeature {
     bool m_cancelImport;
     bool m_isActivated;
     QString m_dbfile;
-
     QFutureWatcher<TreeItem*> m_future_watcher;
     QFuture<TreeItem*> m_future;
     QString m_title;
-
     QString m_dbItunesRoot;
     QString m_mixxxItunesRoot;
-
     QSharedPointer<BaseTrackCache> m_trackSource;
-
     static const QString ITDB_PATH_KEY;
 };
-
-#endif // ITUNESFEATURE_H

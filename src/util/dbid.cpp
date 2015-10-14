@@ -17,7 +17,7 @@ int DbId::toInt() const
 {
   return m_value;
 }
-int DbId::operator int() const
+DbId::operator int() const
 {
   return m_value;
 }

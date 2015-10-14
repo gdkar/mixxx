@@ -32,7 +32,6 @@ QImage * ImgColorProcessor::getImage(QString img) const
 void ImgColorProcessor::correctImageColors(QImage* i) const
 {
     if (!i || i->isNull())return;
-    auto col = QColor{};
     auto bytesPerPixel = 4;
     switch(i->format()) {
     case QImage::Format_Mono:
@@ -66,16 +65,16 @@ void ImgColorProcessor::correctImageColors(QImage* i) const
     if (bytesPerPixel < 4)
     {
         // Handling Indexed color or mono colors requires different logic
-        qDebug() << "ImgColorProcessor aborting on unsupported color format:" << i->format();
-        return;
+        qDebug() << "ImgColorProcessor converting unsupported color format:" << i->format();
+        *i = i->convertToFormat(QImage::Format_ARGB32);
     }
-    for (auto y = 0; y < i->height(); y++) {
-        auto line = (QRgb*)i->scanLine(y); // cast the returned pointer to QRgb*
+    for (auto y = 0; y < i->height(); y++)
+    {
+        auto line = reinterpret_cast<QRgb*>(i->scanLine(y)); // cast the returned pointer to QRgb*
         if (!line ) continue;
-        for (auto x = 0; x < i->width(); x++) {
-            col.setRgba(*line);
-            col = doColorCorrection(col);
-            *line = col.rgba();
+        for (auto x = 0; x < i->width(); x++,line++)
+        {
+            *line = doColorCorrection(QColor(*line)).rgba();
             line++;
         }
     }

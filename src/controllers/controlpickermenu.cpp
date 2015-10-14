@@ -1011,3 +1011,7 @@ QString ControlPickerMenu::descriptionForConfigKey(ConfigKey key) const {
 QString ControlPickerMenu::controlTitleForConfigKey(ConfigKey key) const {
     return m_titlesByKey.value(key, QString());
 }
+QList<ConfigKey> ControlPickerMenu::controlsAvailable() const
+{
+  return m_controlsAvailable;
+}

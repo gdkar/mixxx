@@ -41,9 +41,7 @@ class ImgProcessor : public ImgSource {
   protected:
     ImgSource* m_parent = nullptr;
 };
-
 class ImgColorProcessor : public ImgProcessor {
-
 public:
     virtual ~ImgColorProcessor();
     ImgColorProcessor(ImgSource* parent);

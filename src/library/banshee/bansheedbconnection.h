@@ -1,18 +1,13 @@
-#ifndef BANSHEEDBCONNECTION_H
-#define BANSHEEDBCONNECTION_H
-
+_Pragma("once")
 #include <QSqlDatabase>
 #include <QUrl>
-
 class BansheeDbConnection
 {
 public:
-
     struct Playlist {
         QString playlistId;
         QString name;
     };
-
     struct Track {
         QString title;
         QUrl uri;
@@ -29,15 +24,12 @@ public:
         int playcount;
         QString composer;
     };
-
     struct Artist {
         QString name;
     };
-
     struct Album {
         QString title;
     };
-
     struct PlaylistEntry {
         int trackId;
         int viewOrder;
@@ -46,12 +38,9 @@ public:
         struct Album* pAlbum;
         struct Artist* pAlbumArtist;
     };
-
     BansheeDbConnection();
     virtual ~BansheeDbConnection();
-
     static QString getDatabaseFile();
-
     bool open(const QString& databaseFile);
     int getSchemaVersion();
     QList<struct Playlist> getPlaylists();
@@ -64,5 +53,3 @@ private:
     QMap<int, struct Album> m_albumMap;
 
 };
-
-#endif // BANSHEEDBCONNECTION_H

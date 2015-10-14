@@ -19,7 +19,7 @@
 
 #include <QString>
 #include <QtDebug>
-
+#include <memory>
 #include "util/math.h"
 
 // static
@@ -82,9 +82,9 @@ Paintable::Paintable(const PixmapSource& source, DrawMode mode)
 {
     if (source.isSVG())
     {
-        QSvgRenderer pSvgRenderer{};
-        if (source.getData().isEmpty()) pSvgRenderer.load(source.getPath());
-        else pSvgRenderer.load(source.getData());
+        auto pSvgRenderer = std::make_unique<QSvgRenderer>();
+        if (source.getData().isEmpty()) pSvgRenderer->load(source.getPath());
+        else pSvgRenderer->load(source.getData());
         if (mode == TILE)
         {
             // The SVG renderer doesn't directly support tiling, so we render
@@ -93,9 +93,10 @@ Paintable::Paintable(const PixmapSource& source, DrawMode mode)
             copy_buffer.fill(0x00000000);  // Transparent black.
             m_pPixmap.reset(new QPixmap(pSvgRenderer->defaultSize()));
             QPainter painter(&copy_buffer);
-            pSvgRenderer.render(&painter);
+            pSvgRenderer->render(&painter);
             m_pPixmap->convertFromImage(copy_buffer);
-        } else m_pSvg.reset(pSvgRenderer.take());
+        } else
+          m_pSvg.reset(pSvgRenderer.release());
     }
     else
     {
@@ -166,7 +167,7 @@ void Paintable::draw(const QRectF& targetRect, QPainter* pPainter,const QRectF& 
     {
         // Only render the minimum overlapping rectangle between the source
         // and target.
-        auto fixedSize = QRectF(math_min(sourceRect.width(), targetRect.width()),math_min(sourceRect.height(), targetRect.height()));
+        auto fixedSize = QPointF(math_min(sourceRect.width(), targetRect.width()),math_min(sourceRect.height(), targetRect.height()));
         auto adjustedTarget = QRectF(targetRect.topLeft(), fixedSize);
         auto adjustedSource = QRectF(sourceRect.topLeft(), fixedSize);
         return drawInternal(adjustedTarget, pPainter, adjustedSource);
@@ -184,9 +185,11 @@ void Paintable::draw(const QRectF& targetRect, QPainter* pPainter,const QRectF& 
                                   scale * sourceRect.width(),
                                   scale * sourceRect.height());
             return drawInternal(adjustedTarget, pPainter, sourceRect);
+        }
         else return drawInternal(targetRect, pPainter, sourceRect);
-    } else if (m_draw_mode == STRETCH) return drawInternal(targetRect, pPainter, sourceRect);
-    else if (m_draw_mode == TILE)      return drawInternal(targetRect, pPainter, sourceRect);
+    }
+    else if (m_draw_mode == STRETCH) return drawInternal(targetRect, pPainter, sourceRect);
+    else if (m_draw_mode == TILE)    return drawInternal(targetRect, pPainter, sourceRect);
 }
 void Paintable::drawCentered(const QRectF& targetRect, QPainter* pPainter,const QRectF& sourceRect)
 {
@@ -194,7 +197,7 @@ void Paintable::drawCentered(const QRectF& targetRect, QPainter* pPainter,const 
     {
         // Only render the minimum overlapping rectangle between the source
         // and target.
-        auto fixedSize = QRectF(math_min(sourceRect.width(), targetRect.width()),math_min(sourceRect.height(), targetRect.height()));
+        auto fixedSize = QPointF(math_min(sourceRect.width(), targetRect.width()),math_min(sourceRect.height(), targetRect.height()));
         auto adjustedSource = QRectF(sourceRect.topLeft(), fixedSize);
         auto adjustedTarget = QRectF(QPointF(-adjustedSource.width() / 2.0, -adjustedSource.height() / 2.0),fixedSize);
         return drawInternal(adjustedTarget, pPainter, adjustedSource);
@@ -256,7 +259,7 @@ void Paintable::drawInternal(const QRectF& targetRect, QPainter* pPainter,const 
 // static
 PaintablePointer WPixmapStore::getPaintable(PixmapSource source,Paintable::DrawMode mode) {
     // See if we have a cached value for the pixmap.
-    auto pPaintable = m_paintableCache.value(source.getId(), PaintablePointer());
+    auto pPaintable = m_paintableCache.value(source.getId(), PaintablePointer()).toStrongRef();
     if (pPaintable) return pPaintable;
     // Otherwise, construct it with the pixmap loader.
     //qDebug() << "WPixmapStore Loading pixmap from file" << source.getPath();

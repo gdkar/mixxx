@@ -44,45 +44,35 @@
 // in the skin.  Note that if a Singleton is visible twice at the same time,
 // behavior is undefined and could be crashy.
 
-#ifndef WSINGLETONCONTAINER_H
-#define WSINGLETONCONTAINER_H
-
+_Pragma("once")
 #include <QPointer>
-
 #include "widget/wwidgetgroup.h"
-
-class WSingletonContainer : public WWidgetGroup {
+class WSingletonContainer : public WWidgetGroup
+{
     Q_OBJECT
   public:
     // Prepares the container and remembers the widget, but does not add the
     // widget to the container.
-    WSingletonContainer(QWidget* pParent=NULL);
-
+    WSingletonContainer(QWidget* pParent=nullptr);
     virtual void setup(QDomNode node, const SkinContext& context);
-
   public slots:
     virtual void showEvent(QShowEvent* event);
-
   private:
     QPointer<QWidget> m_pWidget;
     QLayout* m_pLayout;
 };
-
-class SingletonMap {
+class SingletonMap
+{
   public:
     // Takes a constructed QWidget and inserts it in the map of available
     // singletons.  Checks that an object of that name hasn't already been
     // defined.
     void insertSingleton(QString objectName, QWidget* widget);
-
     // We don't want to end up with badly-constructed containers, so only
     // provide a factory function.  Returns NULL if the objectName is not in
     // the map.
     QWidget* getSingletonWidget(QString objectName) const;
-
   private:
     QMap<QString, QWidget*> m_singletons;
 };
 
-
-#endif  // WSINGLETONCONTAINER_H
