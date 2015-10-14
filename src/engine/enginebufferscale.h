@@ -19,7 +19,7 @@ _Pragma("once")
 #include <QObject>
 
 #include "util/types.h"
-
+#include <memory>
 // MAX_SEEK_SPEED needs to be good and high to allow room for the very high
 //  instantaneous velocities of advanced scratching (Uzi) and spin-backs.
 //  (Yes, I can actually spin the SCS.1d faster than 15x nominal.
@@ -55,34 +55,24 @@ class EngineBufferScale : public QObject {
     //
     // If parameter settings are outside of acceptable limits, each setting will
     // be set to the value it was clamped to.
-    virtual void setScaleParameters(double base_rate,
-                                    double* pTempoRatio,
-                                    double* pPitchRatio) {
-        m_dBaseRate = base_rate;
-        m_dTempoRatio = *pTempoRatio;
-        m_dPitchRatio = *pPitchRatio;
-    }
-
+    virtual void setScaleParameters(double base_rate,double* pTempoRatio,double* pPitchRatio);
     // Set the desired output sample rate.
-    virtual void setSampleRate(int iSampleRate) {
-        m_iSampleRate = iSampleRate;
-    }
-
+    virtual void setSampleRate(int iSampleRate);
     /** Get new playpos after call to scale() */
     double getSamplesRead();
     /** Called from EngineBuffer when seeking, to ensure the buffers are flushed */
     virtual void clear() = 0;
     /** Scale buffer */
-    virtual CSAMPLE* getScaled(unsigned long buf_size) = 0;
+    virtual CSAMPLE* getScaled(size_t buf_size) = 0;
   protected:
     ReadAheadManager * m_pRAMan = nullptr;
-    int m_iSampleRate = 0;
+    int m_iSampleRate = 44100;
     double m_dBaseRate = 1.0;
     bool m_bSpeedAffectsPitch = false;
     double m_dTempoRatio = 1.0;
     double m_dPitchRatio = 1.0;
     /** Pointer to internal buffer */
-    CSAMPLE* m_buffer = nullptr;
+    std::unique_ptr<CSAMPLE[]> m_buffer;
     /** New playpos after call to scale */
     double m_samplesRead = 0;
 };

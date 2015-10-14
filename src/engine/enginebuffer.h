@@ -24,7 +24,6 @@ _Pragma("once")
 #include "engine/sync/syncable.h"
 #include "trackinfoobject.h"
 #include "configobject.h"
-#include "control/controlvalue.h"
 #include "cachingreader.h"
 
 class EngineChannel;
@@ -124,11 +123,6 @@ class EngineBuffer : public EngineObject {
     double getVisualPlayPos();
     double getTrackSamples();
     void collectFeatures(GroupFeatureState* pGroupFeatures) const;
-    // For dependency injection of readers.
-    //void setReader(CachingReader* pReader);
-
-    // For dependency injection of scalers.
-    void setScalerForTest(EngineBufferScale* pScaleVinyl,EngineBufferScale* pScaleKeylock);
     // For dependency injection of fake tracks, with an optional filebpm value.
     TrackPointer loadFakeTrack(double filebpm = 0);
     static QString getKeylockEngineName(KeylockEngine engine);
@@ -261,7 +255,7 @@ class EngineBuffer : public EngineObject {
     ControlPushButton* m_endButton       = nullptr;
 
     // Object used to perform waveform scaling (sample rate conversion).  These
-    // three pointers may be reassigned depending on configuration and tests.
+    // three pointers may be reassigned depending on configuration .
     EngineBufferScale* m_pScale          = nullptr;
     EngineBufferScale* m_pScaleVinyl     = nullptr;
     // The keylock engine is configurable, so it could flip flop between
@@ -279,7 +273,7 @@ class EngineBuffer : public EngineObject {
     std::atomic<int> m_iSeekQueued{NO_SEEK};
     std::atomic<int> m_iEnableSyncQueued{SYNC_REQUEST_NONE};
     std::atomic<int> m_iSyncModeQueued{SYNC_INVALID};
-    ControlValueAtomic<double> m_queuedPosition;
+    std::atomic<double> m_queuedPosition;
     // Holds the last sample value of the previous buffer. This is used when ramping to
     // zero in case of an immediate stop of the playback
     float m_fLastSampleValue[2];

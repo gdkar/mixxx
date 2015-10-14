@@ -1,6 +1,4 @@
-#ifndef WWIDGETGROUP_H
-#define WWIDGETGROUP_H
-
+_Pragma("once")
 #include <QDomNode>
 #include <QFrame>
 #include <QPaintEvent>
@@ -18,7 +16,7 @@ class SkinContext;
 class WWidgetGroup : public QFrame, public WBaseWidget {
     Q_OBJECT
   public:
-    WWidgetGroup(QWidget* pParent=NULL);
+    WWidgetGroup(QWidget* pParent=nullptr);
     virtual ~WWidgetGroup();
 
     // QLayouts are not stylable using Qt style sheets. These properties let us
@@ -35,27 +33,21 @@ class WWidgetGroup : public QFrame, public WBaseWidget {
     Q_PROPERTY(int layoutSpacing READ layoutSpacing WRITE setLayoutSpacing DESIGNABLE true);
     Q_PROPERTY(QRect layoutContentsMargins READ layoutContentsMargins WRITE setLayoutContentsMargins DESIGNABLE true);
     Q_PROPERTY(Qt::Alignment layoutAlignment READ layoutAlignment WRITE setLayoutAlignment DESIGNABLE true);
-
     int layoutSpacing() const;
     void setLayoutSpacing(int spacing);
     QRect layoutContentsMargins() const;
     void setLayoutContentsMargins(QRect margins);
     Qt::Alignment layoutAlignment() const;
     void setLayoutAlignment(int alignment);
-
     void setup(QDomNode node, const SkinContext& context);
     void setPixmapBackground(PixmapSource source, Paintable::DrawMode mode);
     void addWidget(QWidget* pChild);
-
   protected:
     virtual void paintEvent(QPaintEvent* pe);
     virtual void resizeEvent(QResizeEvent* re);
     bool event(QEvent* pEvent);
     void fillDebugTooltip(QStringList* debug);
-
   private:
     // Associated background pixmap
     PaintablePointer m_pPixmapBack;
 };
-
-#endif // WWIDGETGROUP_H

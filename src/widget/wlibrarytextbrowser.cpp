@@ -4,8 +4,10 @@
 #include "widget/wlibrarytextbrowser.h"
 
 WLibraryTextBrowser::WLibraryTextBrowser(QWidget* parent)
-        : QTextBrowser(parent) {
+        : QTextBrowser(parent)
+{
 }
-
-WLibraryTextBrowser::~WLibraryTextBrowser() {
+WLibraryTextBrowser::~WLibraryTextBrowser() = default;
+void WLibraryTextBrowser::onShow()
+{
 }

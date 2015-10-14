@@ -7,9 +7,7 @@
  *  See http://www.wtfpl.net/ for more details.                              *
  *****************************************************************************/
     
-#ifndef ACOUSTIDCLIENT_H
-#define ACOUSTIDCLIENT_H
-
+_Pragma("once")
 #include <QMap>
 #include <QObject>
 #include <QtNetwork>
@@ -31,38 +29,27 @@ class AcoustidClient : public QObject {
     // the finished signal - they have no meaning to AcoustidClient.
 
   public:
-    AcoustidClient(QObject* parent = 0);
-
+    AcoustidClient(QObject* parent = nullptr);
     // Network requests will be aborted after this interval.
     void setTimeout(int msec);
-
     // Starts a request and returns immediately.  Finished() will be emitted
     // later with the same ID.
     void start(int id, const QString& fingerprint, int duration);
-
     // Cancels the request with the given ID.  Finished() will never be emitted
     // for that ID.  Does nothing if there is no request with the given ID.
     void cancel(int id);
-
     // Cancels all requests.  Finished() will never be emitted for any pending
     // requests.
     void cancelAll();
-
     QString parseResult(QXmlStreamReader& reader);
-
   signals:
     void finished(int id, const QString& mbid);
     void networkError(int, QString);
-
   private slots:
     void requestFinished();
-
   private:
     static const int m_DefaultTimeout;
-
     QNetworkAccessManager m_network;
     NetworkTimeouts m_timeouts;
     QMap<QNetworkReply*, int> m_requests;
 };
-
-#endif // ACOUSTIDCLIENT_H

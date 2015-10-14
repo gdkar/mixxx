@@ -46,25 +46,16 @@ VinylControl::VinylControl(ConfigObject<ConfigValue> * pConfig, QString group)
     ControlObject::set(ConfigKey(VINYL_PREF_KEY, "gain"),
         m_pConfig->getValueString(ConfigKey(VINYL_PREF_KEY,"gain")).toInt());
 }
-
-bool VinylControl::isEnabled() {
+bool VinylControl::isEnabled()
+{
     return m_bIsEnabled;
 }
-
 void VinylControl::toggleVinylControl(bool enable) {
-    if (m_pConfig) {
-        m_pConfig->set(ConfigKey(m_group,"vinylcontrol_enabled"), ConfigValue((int)enable));
-    }
-
+    if (m_pConfig) m_pConfig->set(ConfigKey(m_group,"vinylcontrol_enabled"), ConfigValue((int)enable));
     enabled->set(enable);
-
-    // Reset the scratch control to make sure we don't get stuck moving forwards or backwards.
-    // actually that might be a good thing
-    //if (!enable)
-    //    controlScratch->set(0.0);
 }
-
-VinylControl::~VinylControl() {
+VinylControl::~VinylControl()
+{
     bool wasEnabled = m_bIsEnabled;
     enabled->set(false);
     vinylStatus->set(VINYL_STATUS_DISABLED);
@@ -73,25 +64,4 @@ VinylControl::~VinylControl() {
         //be enabled
         wantenabled->set(true);
     }
-
-    delete reverseButton;
-    delete m_pVinylControlInputGain;
-    delete playPos;
-    delete trackSamples;
-    delete trackSampleRate;
-    delete vinylSeek;
-    delete m_pVCRate;
-    delete m_pRateSlider;
-    delete playButton;
-    delete duration;
-    delete mode;
-    delete enabled;
-    delete wantenabled;
-    delete cueing;
-    delete scratching;
-    delete rateRange;
-    delete vinylStatus;
-    delete rateDir;
-    delete loopEnabled;
-    delete signalenabled;
 }

@@ -9,6 +9,42 @@
 #include "engine/ratecontrol.h"
 #include "cachingreader.h"
 
+ReadAheadManager::ReadLogEntry::ReadLogEntry() = default;
+ReadAheadManager::ReadLogEntry::ReadLogEntry(double s, double e)
+  : m_start(s)
+  , m_end  (e)
+{
+}
+int ReadAheadManager::ReadLogEntry::direction() const
+{
+  return (m_start <= m_end ) ? 1 : -1;
+}
+double ReadAheadManager::ReadLogEntry::length() const
+{
+  return std::abs(m_end-m_start);
+}
+double ReadAheadManager::ReadLogEntry::consume(double count)
+{
+  auto consumed = std::min(count,length());
+  m_start += direction() * consumed;
+  return consumed;
+}
+bool ReadAheadManager::ReadLogEntry::empty() const
+{
+  return m_start == m_end;
+}
+bool ReadAheadManager::ReadLogEntry::merge(const ReadLogEntry& other)
+{
+    // Allow 0-length ReadLogEntry's to merge regardless of their
+    // direction if they have the right start point.
+    if(other.empty() || (direction() == other.direction() && m_end == other.m_start))
+    {
+      m_end = other.m_end;
+      return true;
+    }
+    return false;
+}
+
 ReadAheadManager::ReadAheadManager(QObject*p)
         : ReadAheadManager(nullptr,nullptr,p)
 {
@@ -19,15 +55,18 @@ ReadAheadManager::ReadAheadManager(CachingReader* pReader,  LoopingControl* pLoo
           m_pRateControl(nullptr),
           m_iCurrentPosition(0),
           m_pReader(pReader),
-          m_pCrossFadeBuffer(new CSAMPLE[MAX_BUFFER_LEN]) {
+          m_pCrossFadeBuffer(std::make_unique<CSAMPLE[]>(MAX_BUFFER_LEN))
+{
     DEBUG_ASSERT(m_pLoopingControl);
     DEBUG_ASSERT(m_pReader);
-    std::fill_n(m_pCrossFadeBuffer,MAX_BUFFER_LEN,0);
+    std::fill_n(&m_pCrossFadeBuffer[0],MAX_BUFFER_LEN,0);
 }
 
-ReadAheadManager::~ReadAheadManager() { delete[] m_pCrossFadeBuffer; }
-int ReadAheadManager::getNextSamples(double dRate, CSAMPLE* buffer, int requested_samples) {
-    if (!even(requested_samples)) {
+ReadAheadManager::~ReadAheadManager() = default;
+int ReadAheadManager::getNextSamples(double dRate, CSAMPLE* buffer, int requested_samples) 
+{
+    if (!even(requested_samples))
+    {
         qDebug() << "ERROR: Non-even requested_samples to ReadAheadManager::getNextSamples";
         requested_samples--;
     }
@@ -37,150 +76,150 @@ int ReadAheadManager::getNextSamples(double dRate, CSAMPLE* buffer, int requeste
     auto samples_needed = requested_samples;
     auto  base_buffer = buffer;
     // A loop will only limit the amount we can read in one shot.
-    auto loop_trigger = m_pLoopingControl->nextTrigger(
-            dRate, m_iCurrentPosition, 0, 0);
+    auto loop_trigger = m_pLoopingControl->nextTrigger(dRate, m_iCurrentPosition, 0, 0);
     auto loop_active = loop_trigger != kNoTrigger;
     auto preloop_samples = 0;
-    if (loop_active) {
+    if (loop_active)
+    {
         auto samples_available = static_cast<int>(in_reverse ? m_iCurrentPosition - loop_trigger : loop_trigger - m_iCurrentPosition);
-        if (samples_available < 0) {
-            samples_needed = 0;
-        } else {
+        if (samples_available < 0)samples_needed = 0;
+        else
+        {
             preloop_samples = samples_available;
             samples_needed = math_clamp(samples_needed, 0, samples_available);
         }
     }
-    if (in_reverse) { start_sample = m_iCurrentPosition - samples_needed; }
+    if (in_reverse) start_sample = m_iCurrentPosition - samples_needed;
     // Sanity checks.
-    if (samples_needed < 0) {
+    if (samples_needed < 0)
+    {
         qDebug() << "Need negative samples in ReadAheadManager::getNextSamples. Ignoring read";
         return 0;
     }
     auto  samples_read = m_pReader->read(start_sample, samples_needed, base_buffer);
-    if (samples_read != samples_needed) { qDebug() << "didn't get what we wanted" << samples_read << samples_needed; }
+    if (samples_read != samples_needed) qDebug() << "didn't get what we wanted" << samples_read << samples_needed;
     // Increment or decrement current read-ahead position
-    if (in_reverse) {
+    if (in_reverse)
+    {
         addReadLogEntry(m_iCurrentPosition, m_iCurrentPosition - samples_read);
         m_iCurrentPosition -= samples_read;
-    } else {
+    }
+    else
+    {
         addReadLogEntry(m_iCurrentPosition, m_iCurrentPosition + samples_read);
         m_iCurrentPosition += samples_read;
     }
-
     // Activate on this trigger if necessary
-    if (loop_active) {
+    if (loop_active)
+    {
         // LoopingControl makes the decision about whether we should loop or
         // not.
         auto loop_target = m_pLoopingControl-> process(dRate, m_iCurrentPosition, 0, 0);
-        if (loop_target != kNoTrigger) {
+        if (loop_target != kNoTrigger)
+        {
             m_iCurrentPosition = loop_target;
             auto loop_read_position = m_iCurrentPosition + (in_reverse ? preloop_samples : -preloop_samples);
-            auto looping_samples_read = m_pReader->read(loop_read_position, samples_read, m_pCrossFadeBuffer);
-            if (looping_samples_read != samples_read) {qDebug() << "ERROR: Couldn't get all needed samples for crossfade.";}
+            auto looping_samples_read = m_pReader->read(loop_read_position, samples_read, &m_pCrossFadeBuffer[0]);
+            if (looping_samples_read != samples_read) qDebug() << "ERROR: Couldn't get all needed samples for crossfade.";
             // do crossfade from the current buffer into the new loop beginning
-            if (samples_read) { // avoid division by zero
-                SampleUtil::linearCrossfadeBuffers(base_buffer, base_buffer, m_pCrossFadeBuffer, samples_read);
-            }
+            if (samples_read) SampleUtil::linearCrossfadeBuffers(base_buffer, base_buffer, &m_pCrossFadeBuffer[0], samples_read);
         }
     }
     // Reverse the samples in-place
-    if (in_reverse) { SampleUtil::reverse(base_buffer, samples_read); }
+    if (in_reverse) SampleUtil::reverse(base_buffer, samples_read);
     //qDebug() << "read" << m_iCurrentPosition << samples_read;
     return samples_read;
 }
-void ReadAheadManager::addRateControl(RateControl* pRateControl) {m_pRateControl = pRateControl;}
+void ReadAheadManager::addRateControl(RateControl* pRateControl)
+{
+  m_pRateControl = pRateControl;
+}
 // Not thread-save, call from engine thread only
-void ReadAheadManager::notifySeek(int iSeekPosition) {
+void ReadAheadManager::notifySeek(int iSeekPosition)
+{
     m_iCurrentPosition = iSeekPosition;
     m_readAheadLog.clear();
 }
-void ReadAheadManager::hintReader(double dRate, HintVector* pHintList) {
+void ReadAheadManager::hintReader(double dRate, HintVector* pHintList)
+{
     auto in_reverse = dRate < 0;
-    Hint current_position;
+    auto current_position = Hint{};
     // SoundTouch can read up to 2 chunks ahead. Always keep 2 chunks ahead in
     // cache.
     auto length_to_cache = 2 * CachingReaderChunk::kSamples;
     current_position.length = length_to_cache;
-    current_position.sample = in_reverse ?
-            m_iCurrentPosition - length_to_cache :
-            m_iCurrentPosition;
+    current_position.sample = in_reverse ? m_iCurrentPosition - length_to_cache : m_iCurrentPosition;
     // If we are trying to cache before the start of the track,
     // Then we don't need to cache because it's all zeros!
-    if (current_position.sample < 0 &&
-        current_position.sample + current_position.length < 0)
-        return;
+    if (current_position.sample < 0 && current_position.sample + current_position.length < 0) return;
     // top priority, we need to read this data immediately
     current_position.priority = 1;
     pHintList->append(current_position);
 }
 
 // Not thread-save, call from engine thread only
-void ReadAheadManager::addReadLogEntry(double virtualPlaypositionStart,
-                                       double virtualPlaypositionEndNonInclusive) {
-    ReadLogEntry newEntry(virtualPlaypositionStart,
-                          virtualPlaypositionEndNonInclusive);
-    if (m_readAheadLog.size() > 0) {
-        ReadLogEntry& last = m_readAheadLog.last();
-        if (last.merge(newEntry)) {
-            return;
-        }
+void ReadAheadManager::addReadLogEntry(double start,double end)
+{
+    ReadLogEntry newEntry(start,end);
+    if (!m_readAheadLog.empty())
+    {
+        auto& last = m_readAheadLog.last();
+        if (last.merge(newEntry)) return;
     }
     m_readAheadLog.append(newEntry);
 }
 
 // Not thread-save, call from engine thread only
-int ReadAheadManager::getEffectiveVirtualPlaypositionFromLog(double currentVirtualPlayposition,
-                                                             double numConsumedSamples) {
-    if (numConsumedSamples == 0) {
-        return currentVirtualPlayposition;
-    }
-
-    if (m_readAheadLog.size() == 0) {
+int ReadAheadManager::getEffectiveVirtualPlaypositionFromLog(double pos,double consumed) {
+    if (!consumed) return pos;
+    if (m_readAheadLog.empty())
+    {
         // No log entries to read from.
         qDebug() << this << "No read ahead log entries to read from. Case not currently handled.";
         // TODO(rryan) log through a stats pipe eventually
-        return currentVirtualPlayposition;
+        return pos;
     }
-
-    double virtualPlayposition = 0;
-    bool shouldNotifySeek = false;
-    bool direction = true;
-    while (m_readAheadLog.size() > 0 && numConsumedSamples > 0) {
-        ReadLogEntry& entry = m_readAheadLog.first();
+    auto vpos = 0.0;
+    auto shouldNotifySeek = false;
+    auto direction = 1;
+    while (!m_readAheadLog.empty()&& consumed > 0)
+    {
+        auto& entry = m_readAheadLog.first();
         direction = entry.direction();
-
         // Notify EngineControls that we have taken a seek.
-        if (shouldNotifySeek) {
-            m_pLoopingControl->notifySeek(entry.virtualPlaypositionStart);
+        if (shouldNotifySeek)
+        {
+            m_pLoopingControl->notifySeek(entry.m_start);
             if (m_pRateControl) {
-                m_pRateControl->notifySeek(entry.virtualPlaypositionStart);
+                m_pRateControl->notifySeek(entry.m_start);
             }
         }
-
-        double consumed = entry.consume(numConsumedSamples);
-        numConsumedSamples -= consumed;
-
+        auto chunk = entry.consume(consumed);
+        consumed -= chunk;
         // Advance our idea of the current virtual playposition to this
         // ReadLogEntry's start position.
-        virtualPlayposition = entry.virtualPlaypositionStart;
-
-        if (entry.length() == 0) {
-            // This entry is empty now.
-            m_readAheadLog.removeFirst();
-        }
+        vpos = entry.m_start;
+        if (entry.empty()) m_readAheadLog.removeFirst();
         shouldNotifySeek = true;
     }
-    int result = 0;
-    if (direction) {
-        result = static_cast<int>(floor(virtualPlayposition));
-        if (!even(result)) {
-            result--;
-        }
-    } else {
-        result = static_cast<int>(ceil(virtualPlayposition));
-        if (!even(result)) {
-            result++;
-        }
+    auto result = 0;
+    if (direction < 0)
+    {
+        result = static_cast<int>(std::floor(vpos));
+        if (!even(result)) result--;
+    }
+    else
+    {
+        result = static_cast<int>(std::ceil(vpos));
+        if (!even(result)) result++;
     }
     return result;
+}
+int ReadAheadManager::getPlaypos() const
+{
+  return m_iCurrentPosition;
+}
+void ReadAheadManager::setReader(CachingReader *r)
+{
+  m_pReader = r;
 }

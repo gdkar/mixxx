@@ -1,6 +1,4 @@
-#ifndef WLIBRARYSIDEBAR_H
-#define WLIBRARYSIDEBAR_H
-
+_Pragma("once")
 #include <QBasicTimer>
 #include <QContextMenuEvent>
 #include <QDragEnterEvent>
@@ -19,7 +17,6 @@ class WLibrarySidebar : public QTreeView, public WBaseWidget {
   public:
     WLibrarySidebar(QWidget* parent = 0);
     virtual ~WLibrarySidebar();
-
     void contextMenuEvent(QContextMenuEvent * event);
     void dragMoveEvent(QDragMoveEvent * event);
     void dragEnterEvent(QDragEnterEvent * event);
@@ -27,20 +24,14 @@ class WLibrarySidebar : public QTreeView, public WBaseWidget {
     void keyPressEvent(QKeyEvent* event);
     void timerEvent(QTimerEvent* event);
     void toggleSelectedItem();
-
   public slots:
     void selectIndex(const QModelIndex&);
     void slotSetFont(const QFont& font);
-
   signals:
     void rightClicked(const QPoint&, const QModelIndex&);
-
   protected:
     bool event(QEvent* pEvent);
-
   private:
     QBasicTimer m_expandTimer;
     QModelIndex m_hoverIndex;
 };
-
-#endif /* WLIBRARYSIDEBAR_H */

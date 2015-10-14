@@ -27,9 +27,9 @@ protected:
     // or any other type.
     typedef int value_type;
 public:
-    DbId();
-    explicit DbId(int value);
-    explicit DbId(QVariant variant);
+    DbId() = default;
+    explicit DbId(int value) noexcept;
+    explicit DbId(QVariant variant) ;
     bool isValid() const;
     // This function is needed for backward compatibility and
     // should only be used within legacy code. It can be deleted

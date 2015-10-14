@@ -1,6 +1,4 @@
-#ifndef VINYLCONTROL_H
-#define VINYLCONTROL_H
-
+_Pragma("once")
 #include <QString>
 
 #include "util/types.h"
@@ -52,19 +50,13 @@ class VinylControl : public QObject {
     ControlObjectSlave *loopEnabled; //looping enabled?
     ControlObjectSlave *signalenabled; //show the signal in the skin?
     ControlObjectSlave *reverseButton; // When the user has pressed the "reverse" button.
-
     // The lead-in time...
     int m_iLeadInTime;
-
     // The position of the needle on the record as read by the VinylControl
     // implementation.
     double m_dVinylPosition;
-
     // Used as a measure of the quality of the timecode signal.
     float m_fTimecodeQuality;
-
     // Whether this VinylControl instance is enabled.
     bool m_bIsEnabled;
 };
-
-#endif

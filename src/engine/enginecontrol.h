@@ -67,43 +67,33 @@ class EngineControl : public QObject {
     virtual double getTotalSamples() const;
     virtual bool atEndPosition() const;
     virtual QString getGroup() const;
-
     // Called to collect player features for effects processing.
     virtual void collectFeatureState(GroupFeatureState* pGroupFeatures) const {
         Q_UNUSED(pGroupFeatures);
     }
-
     // Called whenever a seek occurs to allow the EngineControl to respond.
     virtual void notifySeek(double dNewPlaypo);
   public slots:
     virtual void trackLoaded(TrackPointer pTrack);
     virtual void trackUnloaded(TrackPointer pTrack);
-
   protected:
     void seek(double fractionalPosition);
     void seekAbs(double sample);
     // Seek to an exact sample and don't allow quantizing adjustment.
     void seekExact(double sample);
     EngineBuffer* pickSyncTarget();
-
     ConfigObject<ConfigValue>* getConfig();
     EngineMaster* getEngineMaster();
     EngineBuffer* getEngineBuffer();
-
     QString m_group;
     ConfigObject<ConfigValue>* m_pConfig = nullptr;
-
   private:
-    struct SampleOfTrack {
-      union{
-        long double aligned;
-        struct{
-          double current;
-          double total;
-        };
-      };
-    };
-    ControlValueAtomic<SampleOfTrack> m_sampleOfTrack;
+    struct SampleOfTrack
+    {
+      double current;
+      double total;
+    } __attribute__((aligned(sizeof(double)*2)));
+    std::atomic<SampleOfTrack> m_sampleOfTrack;
     EngineMaster* m_pEngineMaster = nullptr;
     EngineBuffer* m_pEngineBuffer = nullptr;
     ControlObjectSlave* m_numDecks = nullptr;

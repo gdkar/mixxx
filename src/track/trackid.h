@@ -1,6 +1,7 @@
 _Pragma("once")
 #include "util/dbid.h"
-class TrackId: public DbId {
+class TrackId: public DbId
+{
 public:
     // Inherit constructors from base class
     using DbId::DbId;

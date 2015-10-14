@@ -1,6 +1,4 @@
-#ifndef EFFECTMANIFESTPARAMETER_H
-#define EFFECTMANIFESTPARAMETER_H
-
+_Pragma("once")
 #include <QVariant>
 #include <QString>
 #include <QtDebug>
@@ -176,31 +174,23 @@ class EffectManifestParameter {
     QString debugString() const {
         return QString("EffectManifestParameter(%1)").arg(m_id);
     }
-
     QString m_id;
     QString m_name;
     QString m_description;
-
     ControlHint m_controlHint;
     SemanticHint m_semanticHint;
     UnitsHint m_unitsHint;
     LinkType m_defaultLinkType;
     double m_neutralPointOnScale;
-
     double m_default;
     double m_minimum;
     double m_maximum;
-
     // Used to describe steps of
     // CONTROL_KNOB_STEPPING and CONTROL_TOGGLE_STEPPING
     // effect parameters
     // Each pair has the following form:
     // name - value
     QList<QPair<QString, double> > m_steps;
-
     bool m_showInParametertSlot;
 };
-
 QDebug operator<<(QDebug dbg, const EffectManifestParameter& parameter);
-
-#endif /* EFFECTMANIFESTPARAMETER_H */

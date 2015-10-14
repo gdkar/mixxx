@@ -26,14 +26,17 @@ const int AcoustidClient::m_DefaultTimeout = 5000; // msec
 AcoustidClient::AcoustidClient(QObject* parent)
               : QObject(parent),
                 m_network(this),
-                m_timeouts(m_DefaultTimeout, this) {
+                m_timeouts(m_DefaultTimeout, this)
+{
 }
 
-void AcoustidClient::setTimeout(int msec) {
+void AcoustidClient::setTimeout(int msec)
+{
     m_timeouts.setTimeout(msec);
 }
 
-void AcoustidClient::start(int id, const QString& fingerprint, int duration) {
+void AcoustidClient::start(int id, const QString& fingerprint, int duration)
+{
     QUrl url;
     url.addQueryItem("format", "xml");
     url.addQueryItem("client", CLIENT_APIKEY);

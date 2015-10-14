@@ -2,13 +2,14 @@
 // Created 8/2/2009 by RJ Ryan (rryan@mit.edu)
 
 _Pragma("once")
-#include <QLinkedList>
+#include <QVector>
 #include <QList>
 #include <QPair>
 #include <QObject>
 #include "util/types.h"
 #include "util/math.h"
 #include "cachingreader.h"
+#include <memory>
 
 class LoopingControl;
 class RateControl;
@@ -30,97 +31,46 @@ class ReadAheadManager : public QObject{
                               LoopingControl* pLoopingControl,
                               QObject *p);
     virtual ~ReadAheadManager();
-
     // Call this method to fill buffer with requested_samples out of the
     // lookahead buffer. Provide rate as dRate so that the manager knows the
     // direction the audio is progressing in. Returns the total number of
     // samples read into buffer. Note that it is very common that the total
     // samples read is less than the requested number of samples.
     virtual int getNextSamples(double dRate, CSAMPLE* buffer, int requested_samples);
-
-
     // Used to add a new EngineControls that ReadAheadManager will use to decide
     // which samples to return.
     void addLoopingControl();
     void addRateControl(RateControl* pRateControl);
-
     // Get the current read-ahead position in samples.
-    virtual inline int getPlaypos() const {
-        return m_iCurrentPosition;
-    }
-
+    virtual int getPlaypos() const;
     virtual void notifySeek(int iSeekPosition);
-
     // hintReader allows the ReadAheadManager to provide hints to the reader to
     // indicate that the given portion of a song is about to be read.
     virtual void hintReader(double dRate, HintVector* hintList);
-
-    virtual int getEffectiveVirtualPlaypositionFromLog(double currentVirtualPlayposition,
-                                                       double numConsumedSamples);
-
-    virtual void setReader(CachingReader* pReader) {
-        m_pReader = pReader;
-    }
-
-  private:
+    virtual int getEffectiveVirtualPlaypositionFromLog(double currentVirtualPlayposition,double numConsumedSamples);
+    virtual void setReader(CachingReader* pReader);
     // An entry in the read log indicates the virtual playposition the read
     // began at and the virtual playposition it ended at.
     struct ReadLogEntry {
-        double virtualPlaypositionStart;
-        double virtualPlaypositionEndNonInclusive;
-
-        ReadLogEntry(double virtualPlaypositionStart,
-                     double virtualPlaypositionEndNonInclusive) {
-            this->virtualPlaypositionStart = virtualPlaypositionStart;
-            this->virtualPlaypositionEndNonInclusive =
-                    virtualPlaypositionEndNonInclusive;
-        }
-
-        bool direction() const {
-            // NOTE(rryan): We try to avoid 0-length ReadLogEntry's when
-            // possible but they have happened in the past. We treat 0-length
-            // ReadLogEntry's as forward reads because this prevents them from
-            // being interpreted as a seek in the common case.
-            return virtualPlaypositionStart <= virtualPlaypositionEndNonInclusive;
-        }
-
-        double length() const {
-            return fabs(virtualPlaypositionEndNonInclusive -
-                       virtualPlaypositionStart);
-        }
-
-        // Moves the start position forward or backward (depending on
-        // direction()) by numSamples. Returns the total number of samples
-        // consumed. Caller should check if length() is 0 after consumption in
-        // order to expire the ReadLogEntry.
-        double consume(double numSamples) {
-            double available = math_min(numSamples, length());
-            virtualPlaypositionStart += (direction() ? 1 : -1) * available;
-            return available;
-        }
-
-        bool merge(const ReadLogEntry& other) {
-            // Allow 0-length ReadLogEntry's to merge regardless of their
-            // direction if they have the right start point.
-            if ((other.length() == 0 || direction() == other.direction()) &&
-                virtualPlaypositionEndNonInclusive == other.virtualPlaypositionStart) {
-                virtualPlaypositionEndNonInclusive =
-                        other.virtualPlaypositionEndNonInclusive;
-                return true;
-            }
-            return false;
-        }
+        double m_start = 0;
+        double m_end   = 0;
+        ReadLogEntry();
+        ReadLogEntry(double start,double end);
+        int direction() const;
+        double length() const ;
+        double consume(double numSamples);
+        bool empty() const;
+        bool merge(const ReadLogEntry& other);
     };
-
+  private:
     // virtualPlaypositionEnd is the first sample in the direction that was read
     // that was NOT read as part of this log entry. This is to simplify the
-    void addReadLogEntry(double virtualPlaypositionStart,
-                         double virtualPlaypositionEndNonInclusive);
-
-    LoopingControl* m_pLoopingControl;
-    RateControl* m_pRateControl;
-    QLinkedList<ReadLogEntry> m_readAheadLog;
+    void addReadLogEntry(double start,double end);
+    LoopingControl* m_pLoopingControl = nullptr;
+    RateControl* m_pRateControl       = nullptr;
+    QVector<ReadLogEntry> m_readAheadLog;
     int m_iCurrentPosition;
-    CachingReader* m_pReader;
-    CSAMPLE* m_pCrossFadeBuffer;
+    CachingReader* m_pReader          = nullptr;
+    std::unique_ptr<CSAMPLE[]> m_pCrossFadeBuffer;
 };
+Q_DECLARE_TYPEINFO(ReadAheadManager::ReadLogEntry,Q_PRIMITIVE_TYPE);

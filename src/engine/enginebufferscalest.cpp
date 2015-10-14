@@ -112,30 +112,29 @@ void EngineBufferScaleST::clear() {
 
 CSAMPLE* EngineBufferScaleST::getScaled(unsigned long buf_size) {
     m_samplesRead = 0.0;
-
-    if (m_dBaseRate == 0 || m_dTempoRatio == 0 || m_dPitchRatio == 0) {
-        SampleUtil::clear(m_buffer, buf_size);
+    if (m_dBaseRate == 0 || m_dTempoRatio == 0 || m_dPitchRatio == 0)
+    {
+        SampleUtil::clear(&m_buffer[0], buf_size);
         m_samplesRead = buf_size;
-        return m_buffer;
+        return &m_buffer[0];
     }
+    auto iNumChannels = 2;
+    auto total_received_frames = 0ul;
+    auto total_read_frames = 0ul;
 
-    const int iNumChannels = 2;
-    unsigned long total_received_frames = 0;
-    unsigned long total_read_frames = 0;
-
-    unsigned long remaining_frames = buf_size/2;
-    CSAMPLE* read = m_buffer;
-    bool last_read_failed = false;
-    while (remaining_frames > 0) {
-        unsigned long received_frames = m_pSoundTouch->receiveSamples(
-                (SAMPLETYPE*)read, remaining_frames);
+    auto remaining_frames = buf_size/2;
+    auto read = &m_buffer[0];
+    auto last_read_failed = false;
+    while (remaining_frames > 0)
+    {
+        auto received_frames = m_pSoundTouch->receiveSamples((SAMPLETYPE*)read, remaining_frames);
         remaining_frames -= received_frames;
         total_received_frames += received_frames;
         read += received_frames * iNumChannels;
-
-        if (remaining_frames > 0) {
-            unsigned long iLenFrames = kiSoundTouchReadAheadLength;
-            unsigned long iAvailSamples = m_pRAMan->getNextSamples(
+        if (remaining_frames > 0)
+        {
+            auto iLenFrames = kiSoundTouchReadAheadLength;
+            auto iAvailSamples = m_pRAMan->getNextSamples(
                         // The value doesn't matter here. All that matters is we
                         // are going forward or backward.
                         (m_bBackwards ? -1.0 : 1.0) * m_dBaseRate * m_dTempoRatio,
@@ -147,8 +146,11 @@ CSAMPLE* EngineBufferScaleST::getScaled(unsigned long buf_size) {
                 last_read_failed = false;
                 total_read_frames += iAvailFrames;
                 m_pSoundTouch->putSamples(buffer_back, iAvailFrames);
-            } else {
-                if (last_read_failed) {
+            }
+            else
+            {
+                if (last_read_failed)
+                {
                     m_pSoundTouch->flush();
                     break;
                 }
@@ -156,22 +158,17 @@ CSAMPLE* EngineBufferScaleST::getScaled(unsigned long buf_size) {
             }
         }
     }
-
     // qDebug() << "Fed ST" << total_read_frames*2
     //          << "samples to get" << total_received_frames*2 << "samples";
-    if (total_received_frames != buf_size/2) {
+    if (total_received_frames != buf_size/2)
         qDebug() << __FILE__ << "- only wrote" << total_received_frames
                  << "frames instead of requested" << buf_size;
-    }
-
     // m_samplesRead is interpreted as the total number of virtual samples
     // consumed to produce the scaled buffer. Due to this, we do not take into
     // account directionality or starting point.
     // NOTE(rryan): Why no m_dPitchAdjust here? SoundTouch implements pitch
     // shifting as a tempo shift of (1/m_dPitchAdjust) and a rate shift of
     // (*m_dPitchAdjust) so these two cancel out.
-    m_samplesRead = m_dBaseRate * m_dTempoRatio *
-            total_received_frames * iNumChannels;
-
-    return m_buffer;
+    m_samplesRead = m_dBaseRate * m_dTempoRatio *total_received_frames * iNumChannels;
+    return &m_buffer[0];
 }

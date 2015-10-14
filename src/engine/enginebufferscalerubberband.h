@@ -21,10 +21,10 @@ class EngineBufferScaleRubberBand : public EngineBufferScale {
     virtual void setSampleRate(int iSampleRate);
 
     // Read and scale buf_size samples from the provided RAMAN.
-    CSAMPLE* getScaled(unsigned long buf_size);
+    virtual CSAMPLE* getScaled(unsigned long buf_size);
 
     // Flush buffer.
-    void clear();
+    virtual void clear();
 
     // Reset RubberBand library with new samplerate.
     void initializeRubberBand(int iSampleRate);
@@ -34,7 +34,7 @@ class EngineBufferScaleRubberBand : public EngineBufferScale {
 
     // Holds the playback direction
     bool m_bBackwards = false;
-    CSAMPLE* m_retrieve_buffer[2] = {nullptr,nullptr};
-    CSAMPLE* m_buffer_back = nullptr;
-    RubberBand::RubberBandStretcher* m_pRubberBand = nullptr;
+    std::unique_ptr<CSAMPLE[]> m_retrieve_buffer[2];
+    std::unique_ptr<CSAMPLE[]> m_buffer_back;
+    std::unique_ptr<RubberBand::RubberBandStretcher> m_pRubberBand;
 };

@@ -9,41 +9,57 @@ EngineEffectChain::EngineEffectChain(const QString& id)
           m_enableState(EffectProcessor::ENABLED),
           m_insertionType(EffectChain::INSERT),
           m_dMix(0),
-          m_pBuffer(SampleUtil::alloc(MAX_BUFFER_LEN)) {
+          m_pBuffer(SampleUtil::alloc(MAX_BUFFER_LEN))
+{
     // Try to prevent memory allocation.
     m_effects.reserve(256);
 }
-EngineEffectChain::~EngineEffectChain() { SampleUtil::free(m_pBuffer); }
-bool EngineEffectChain::addEffect(EngineEffect* pEffect, int iIndex) {
-    if (iIndex < 0) {
-        if (kEffectDebugOutput) {
+EngineEffectChain::~EngineEffectChain()
+{ 
+  SampleUtil::free(m_pBuffer);
+}
+bool EngineEffectChain::addEffect(EngineEffect* pEffect, int iIndex)
+{
+    if (iIndex < 0)
+    {
+        if (kEffectDebugOutput)
+        {
             qDebug() << debugString()
                      << "WARNING: ADD_EFFECT_TO_CHAIN message with invalid index:"
                      << iIndex;
         }
         return false;
     }
-    if (m_effects.contains(pEffect)) {
-        if (kEffectDebugOutput) {
+    if (m_effects.contains(pEffect))
+    {
+        if (kEffectDebugOutput)
+        {
             qDebug() << debugString() << "WARNING: effect already added to EngineEffectChain:"
                      << pEffect->name();
         }
         return false;
     }
-    while (iIndex >= m_effects.size()) { m_effects.append(nullptr); }
+    while (iIndex >= m_effects.size())
+    { 
+      m_effects.append(nullptr);
+    }
     m_effects.replace(iIndex, pEffect);
     return true;
 }
-bool EngineEffectChain::removeEffect(EngineEffect* pEffect, int iIndex) {
-    if (iIndex < 0) {
-        if (kEffectDebugOutput) {
+bool EngineEffectChain::removeEffect(EngineEffect* pEffect, int iIndex)
+{
+    if (iIndex < 0)
+    {
+        if (kEffectDebugOutput)
+        {
             qDebug() << debugString()
                      << "WARNING: REMOVE_EFFECT_FROM_CHAIN message with invalid index:"
                      << iIndex;
         }
         return false;
     }
-    if (m_effects.at(iIndex) != pEffect) {
+    if (m_effects.at(iIndex) != pEffect)
+    {
         qDebug() << debugString()
                  << "WARNING: REMOVE_EFFECT_FROM_CHAIN consistency error"
                  << m_effects.at(iIndex) << "loaded but received request to remove"
@@ -54,22 +70,29 @@ bool EngineEffectChain::removeEffect(EngineEffect* pEffect, int iIndex) {
     return true;
 }
 // this is called from the engine thread onCallbackStart()
-bool EngineEffectChain::updateParameters(const EffectsRequest& message) {
+bool EngineEffectChain::updateParameters(const EffectsRequest& message)
+{
     // TODO(rryan): Parameter interpolation.
     m_insertionType = message.SetEffectChainParameters.insertion_type;
     m_dMix = message.SetEffectChainParameters.mix;
-    if (m_enableState != EffectProcessor::DISABLED && !message.SetEffectParameters.enabled) {
+    if (m_enableState != EffectProcessor::DISABLED && !message.SetEffectParameters.enabled)
+    {
         m_enableState = EffectProcessor::DISABLING;
-    } else if (m_enableState == EffectProcessor::DISABLED && message.SetEffectParameters.enabled) {
+    }
+    else if (m_enableState == EffectProcessor::DISABLED && message.SetEffectParameters.enabled)
+    {
         m_enableState = EffectProcessor::ENABLING;
     }
     return true;
 }
-bool EngineEffectChain::processEffectsRequest(const EffectsRequest& message, EffectsResponsePipe* pResponsePipe) {
+bool EngineEffectChain::processEffectsRequest(const EffectsRequest& message, EffectsResponsePipe* pResponsePipe)
+{
     auto response = EffectsResponse (message);
-    switch (message.type) {
+    switch (message.type)
+    {
         case EffectsRequest::ADD_EFFECT_TO_CHAIN:
-            if (kEffectDebugOutput) {
+            if (kEffectDebugOutput)
+            {
                 qDebug() << debugString() << "ADD_EFFECT_TO_CHAIN"
                          << message.AddEffectToChain.pEffect
                          << message.AddEffectToChain.iIndex;
@@ -78,7 +101,8 @@ bool EngineEffectChain::processEffectsRequest(const EffectsRequest& message, Eff
                                          message.AddEffectToChain.iIndex);
             break;
         case EffectsRequest::REMOVE_EFFECT_FROM_CHAIN:
-            if (kEffectDebugOutput) {
+            if (kEffectDebugOutput)
+            {
                 qDebug() << debugString() << "REMOVE_EFFECT_FROM_CHAIN"
                          << message.RemoveEffectFromChain.pEffect
                          << message.RemoveEffectFromChain.iIndex;
@@ -87,7 +111,8 @@ bool EngineEffectChain::processEffectsRequest(const EffectsRequest& message, Eff
                                             message.RemoveEffectFromChain.iIndex);
             break;
         case EffectsRequest::SET_EFFECT_CHAIN_PARAMETERS:
-            if (kEffectDebugOutput) {
+            if (kEffectDebugOutput)
+            {
                 qDebug() << debugString() << "SET_EFFECT_CHAIN_PARAMETERS"
                          << "enabled" << message.SetEffectChainParameters.enabled
                          << "mix" << message.SetEffectChainParameters.mix;
@@ -95,14 +120,16 @@ bool EngineEffectChain::processEffectsRequest(const EffectsRequest& message, Eff
             response.success = updateParameters(message);
             break;
         case EffectsRequest::ENABLE_EFFECT_CHAIN_FOR_CHANNEL:
-            if (kEffectDebugOutput) {
+            if (kEffectDebugOutput)
+            {
                 qDebug() << debugString() << "ENABLE_EFFECT_CHAIN_FOR_CHANNEL"
                          << message.channel;
             }
             response.success = enableForChannel(message.channel);
             break;
         case EffectsRequest::DISABLE_EFFECT_CHAIN_FOR_CHANNEL:
-            if (kEffectDebugOutput) {
+            if (kEffectDebugOutput)
+            {
                 qDebug() << debugString() << "DISABLE_EFFECT_CHAIN_FOR_CHANNEL"
                          << message.channel;
             }
@@ -113,65 +140,71 @@ bool EngineEffectChain::processEffectsRequest(const EffectsRequest& message, Eff
     pResponsePipe->writeMessages(&response, 1);
     return true;
 }
-bool EngineEffectChain::enableForChannel(const ChannelHandle& handle) {
+bool EngineEffectChain::enableForChannel(const ChannelHandle& handle)
+{
     auto & status = getChannelStatus(handle);
-    if (status.enable_state != EffectProcessor::ENABLED) { status.enable_state = EffectProcessor::ENABLING; }
+    if (status.enable_state != EffectProcessor::ENABLED)status.enable_state = EffectProcessor::ENABLING;
     return true;
 }
-bool EngineEffectChain::disableForChannel(const ChannelHandle& handle) {
+bool EngineEffectChain::disableForChannel(const ChannelHandle& handle)
+{
     auto & status = getChannelStatus(handle);
-    if (status.enable_state != EffectProcessor::DISABLED) { status.enable_state = EffectProcessor::DISABLING; }
+    if (status.enable_state != EffectProcessor::DISABLED)  status.enable_state = EffectProcessor::DISABLING;
     return true;
 }
-EngineEffectChain::ChannelStatus& EngineEffectChain::getChannelStatus( const ChannelHandle& handle) {
+EngineEffectChain::ChannelStatus& EngineEffectChain::getChannelStatus( const ChannelHandle& handle)
+{
     return m_channelStatus[handle];
 }
 void EngineEffectChain::process(const ChannelHandle& handle,
                                 CSAMPLE* pInOut,
                                 const unsigned int numSamples,
                                 const unsigned int sampleRate,
-                                const GroupFeatureState& groupFeatures) {
+                                const GroupFeatureState& groupFeatures)
+{
     auto & channel_info = getChannelStatus(handle);
-    if (m_enableState == EffectProcessor::DISABLED || channel_info.enable_state == EffectProcessor::DISABLED) {
-        // If the chain is not enabled and the channel is not enabled and we are not
-        // ramping out then do nothing.
-        return;
-    }
+    if (m_enableState == EffectProcessor::DISABLED || channel_info.enable_state == EffectProcessor::DISABLED) return;
     auto effectiveEnableState = channel_info.enable_state;
-    if (m_enableState == EffectProcessor::DISABLING) {
-        effectiveEnableState = EffectProcessor::DISABLING;
-    } else if (m_enableState == EffectProcessor::ENABLING) {
-        effectiveEnableState = EffectProcessor::ENABLING;
-    }
+    if (m_enableState == EffectProcessor::DISABLING) effectiveEnableState = EffectProcessor::DISABLING;
+    else if (m_enableState == EffectProcessor::ENABLING) effectiveEnableState = EffectProcessor::ENABLING;
     // At this point either the chain and channel are enabled or we are ramping
     // out. If we are ramping out then ramp to 0 instead of m_dMix.
     auto wet_gain = m_dMix;
     auto wet_gain_old = channel_info.old_gain;
     // INSERT mode: output = input * (1-wet) + effect(input) * wet
-    if (m_insertionType == EffectChain::INSERT) {
-        if (wet_gain_old == 1.0 && wet_gain == 1.0) {
+    if (m_insertionType == EffectChain::INSERT)
+    {
+        if (wet_gain_old == 1.0 && wet_gain == 1.0) 
+        {
             // Fully wet, no ramp, insert optimization. No temporary buffer needed.
-            for (int i = 0; i < m_effects.size(); ++i) {
+            for (int i = 0; i < m_effects.size(); ++i)
+            {
                 EngineEffect* pEffect = m_effects[i];
-                if (!pEffect || !pEffect->enabled()) { continue; }
+                if (!pEffect || !pEffect->enabled()) continue;
                 pEffect->process(handle, pInOut, pInOut, numSamples, sampleRate, effectiveEnableState, groupFeatures);
             }
-        } else if (wet_gain_old == 0.0 && wet_gain == 0.0) {
+        }
+        else if (wet_gain_old == 0.0 && wet_gain == 0.0)
+        {
             // Fully dry, no ramp, insert optimization. No action is needed
-        } else {
+        }
+        else
+        {
             // Clear scratch buffer.
             SampleUtil::clear(m_pBuffer, numSamples);
             // Chain each effect
             auto anyProcessed = false;
-            for (int i = 0; i < m_effects.size(); ++i) {
+            for (auto i = 0; i < m_effects.size(); ++i)
+            {
                 auto pEffect = m_effects[i];
                 if (!pEffect || !pEffect->enabled()) { continue; }
-                const auto pIntermediateInput = (i == 0) ? pInOut : m_pBuffer;
+                auto pIntermediateInput = (i == 0) ? pInOut : m_pBuffer;
                 auto pIntermediateOutput = m_pBuffer;
                 pEffect->process(handle, pIntermediateInput, pIntermediateOutput, numSamples, sampleRate,effectiveEnableState, groupFeatures);
                 anyProcessed = true;
             }
-            if (anyProcessed) {
+            if (anyProcessed)
+            {
                 // m_pBuffer now contains the fully wet output.
                 // TODO(rryan): benchmark applyGain followed by addWithGain versus
                 // copy2WithGain.
@@ -180,34 +213,28 @@ void EngineEffectChain::process(const ChannelHandle& handle,
                     m_pBuffer, wet_gain_old, wet_gain, numSamples);
             }
         }
-    } else { // SEND mode: output = input + effect(input) * wet
+    }
+    else
+    { // SEND mode: output = input + effect(input) * wet
         // Clear scratch buffer.
         SampleUtil::applyGain(m_pBuffer, 0.0, numSamples);
         // Chain each effect
         auto anyProcessed = false;
-        for (int i = 0; i < m_effects.size(); ++i) {
+        for (int i = 0; i < m_effects.size(); ++i)
+        {
             auto pEffect = m_effects[i];
-            if (!pEffect  || !pEffect->enabled()) { continue; }
+            if (!pEffect  || !pEffect->enabled()) continue;
             const auto pIntermediateInput = (i == 0) ? pInOut : m_pBuffer;
             auto pIntermediateOutput = m_pBuffer;
             pEffect->process(handle, pIntermediateInput,pIntermediateOutput, numSamples, sampleRate,effectiveEnableState, groupFeatures);
             anyProcessed = true;
         }
-        if (anyProcessed) {
-            // m_pBuffer now contains the fully wet output.
-            SampleUtil::addWithRampingGain(pInOut, m_pBuffer, wet_gain_old, wet_gain, numSamples);
-        }
+        if (anyProcessed) SampleUtil::addWithRampingGain(pInOut, m_pBuffer, wet_gain_old, wet_gain, numSamples);
     }
     // Update ChannelStatus with the latest values.
     channel_info.old_gain = wet_gain;
-    if (m_enableState == EffectProcessor::DISABLING) {
-        m_enableState = EffectProcessor::DISABLED;
-    } else if (m_enableState == EffectProcessor::ENABLING) {
-        m_enableState = EffectProcessor::ENABLED;
-    }
-    if (channel_info.enable_state == EffectProcessor::DISABLING) {
-        channel_info.enable_state = EffectProcessor::DISABLED;
-    } else if (channel_info.enable_state == EffectProcessor::ENABLING) {
-        channel_info.enable_state = EffectProcessor::ENABLED;
-    }
+    if (m_enableState == EffectProcessor::DISABLING)m_enableState = EffectProcessor::DISABLED;
+    else if (m_enableState == EffectProcessor::ENABLING)m_enableState = EffectProcessor::ENABLED;
+    if (channel_info.enable_state == EffectProcessor::DISABLING)channel_info.enable_state = EffectProcessor::DISABLED;
+    else if (channel_info.enable_state == EffectProcessor::ENABLING)channel_info.enable_state = EffectProcessor::ENABLED;
 }

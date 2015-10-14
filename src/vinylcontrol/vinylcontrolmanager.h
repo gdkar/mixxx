@@ -4,9 +4,7 @@
  * @date April 15, 2011
  */
 
-#ifndef VINYLCONTROLMANAGER_H
-#define VINYLCONTROLMANAGER_H
-
+_Pragma("once")
 #include <QObject>
 #include <QString>
 #include <QTimerEvent>
@@ -68,5 +66,3 @@ class VinylControlManager : public QObject {
     ControlObjectSlave* m_pNumDecks;
     int m_iNumConfiguredDecks;
 };
-
-#endif // VINYLCONTROLMANAGER_H

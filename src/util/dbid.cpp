@@ -1,7 +1,6 @@
 #include "util/dbid.h"
 
-DbId::DbId() = default;
-DbId::DbId(int value)
+DbId::DbId(int value) noexcept
   : m_value(value)
 {
 }
@@ -18,7 +17,7 @@ int DbId::toInt() const
 {
   return m_value;
 }
-int DbId;:operator int() const
+int DbId::operator int() const
 {
   return m_value;
 }
@@ -65,7 +64,7 @@ std::ostream& operator<< ( std::ostream &os, const DbId& dbId)
 {
   return ( os << dbId.m_value );
 }
-DbId::DbId(QVariant v):DbId(valueOf(std::move(v))){}
+DbId::DbId(QVariant v) :DbId(valueOf(std::move(v))){}
 QVariant DbId::toVariant()const
 {
   return QVariant(m_value);}

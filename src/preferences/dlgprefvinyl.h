@@ -15,9 +15,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef DLGPREFVINYL_H
-#define DLGPREFVINYL_H
-
+_Pragma("once")
 #include <QWidget>
 
 #include "preferences/ui_dlgprefvinyldlg.h"
@@ -70,5 +68,3 @@ class DlgPrefVinyl : public DlgPreferencePage, Ui::DlgPrefVinylDlg  {
     ControlObjectSlave* m_pNumDecks;
     int m_iConfiguredDecks;
 };
-
-#endif

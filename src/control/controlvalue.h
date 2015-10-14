@@ -1,6 +1,4 @@
-#ifndef CONTROLVALUE_H
-#define CONTROLVALUE_H
-
+_Pragma("once")
 #include <limits>
 
 #include <atomic>
@@ -27,22 +25,27 @@
 // anyway. reads are always consistent and wait-free if t::operator delete is.
 
 template<typename T, bool ATOMIC = false>
-class ControlValueAtomicBase {
+class ControlValueAtomicBase
+{
   public:
     ControlValueAtomicBase()=default;
-    ControlValueAtomicBase(const T &val){
+    ControlValueAtomicBase(const T &val)
+    {
       setValue(val);
     }
     virtual ~ControlValueAtomicBase() = default;
-    T getValue() const {
+    T getValue() const
+    {
         auto data = QSharedPointer<T>(m_data);
-        if(data) {
+        if(data)
+        {
           auto value = *data;
           return value;
         }
         return T{};
     }
-    void setValue(const T& value) {
+    void setValue(const T& value)
+    {
         /* requires T to have a copy assignment operator, but whatever */
         auto data = QSharedPointer<T>::create(value);
         /* atomically replace the shared pointer contents accessible by
@@ -52,7 +55,8 @@ class ControlValueAtomicBase {
          * automatically. */
         m_data.swap(data);
   }
-  void swap(T &other){
+  void swap(T &other)
+  {
     auto data = QSharedPointer<T>::create(other);
     m_data.swap(data);
     if(data) other = *data;
@@ -62,38 +66,24 @@ class ControlValueAtomicBase {
   private:
     QSharedPointer<T>   m_data;
 };
-// Specialized template for types that are deemed to be atomic on the target
-// architecture. Instead of using a read/write ring to guarantee atomicity,
-// direct assignment/read of an aligned member variable is used.
-/*namespace{
-  template<unsigned int size>
-  struct numberForSize{
-  };
-  template<>
-  struct numberForSize<1>{typedef unsigned char type;};
-  template<>
-  struct numberForSize<2>{typedef unsigned short type;};
-  template<>
-  struct numberForSize<4>{typedef unsigned int type;};
-  template<>
-  struct numberForSize<8>{typedef unsigned long type;};
-  template<>
-  struct numberForSize<16>{typedef long double type;};
-};*/
 template<typename T>
-class ControlValueAtomicBase<T, true>{
+class ControlValueAtomicBase<T, true>
+{
   public:
     ControlValueAtomicBase() = default;
     ControlValueAtomicBase( const T& val)
              {setValue(val);}
     virtual ~ControlValueAtomicBase()=default;
-    T getValue() const {
+    T getValue() const
+    {
         return m_data.load();
     }
-    void setValue(const T& value) {
+    void setValue(const T& value)
+    {
         m_data.store(value);
     }
-    void swap(T & value){
+    void swap(T & value)
+    {
         value = m_data.exchange ( value );
     }
   private:
@@ -113,11 +103,12 @@ class ControlValueAtomic
     }
 };
 template<typename T>
-void swap(ControlValueAtomic<T> &lhs, T&rhs){
+void swap(ControlValueAtomic<T> &lhs, T&rhs)
+{
   lhs.swap(rhs);
 }
 template<typename T>
-void swap(T &lhs, ControlValueAtomic<T>&rhs){
+void swap(T &lhs, ControlValueAtomic<T>&rhs)
+{
   lhs.swap(rhs);
 }
-#endif /* CONTROLVALUE_H */

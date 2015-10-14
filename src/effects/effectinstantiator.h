@@ -1,6 +1,4 @@
-#ifndef EFFECTINSTANTIATOR_H
-#define EFFECTINSTANTIATOR_H
-
+_Pragma("once")
 #include <QSharedPointer>
 
 #include "effects/effectmanifest.h"
@@ -22,5 +20,3 @@ class EffectProcessorInstantiator : public EffectInstantiator {
         return new T(pEngineEffect, manifest);
     }
 };
-
-#endif /* EFFECTINSTANTIATOR_H */

@@ -7,9 +7,7 @@
  *  See http://www.wtfpl.net/ for more details.                              *
  *****************************************************************************/
     
-#ifndef MUSICBRAINZCLIENT_H
-#define MUSICBRAINZCLIENT_H
-
+_Pragma("once")
 #include <QHash>
 #include <QMap>
 #include <QObject>
@@ -27,7 +25,7 @@ class MusicBrainzClient : public QObject {
   // IDs are provided by the caller when a request is started and included in
   // the Finished signal - they have no meaning to MusicBrainzClient.
   public:
-    MusicBrainzClient(QObject* parent = 0);
+    MusicBrainzClient(QObject* parent = nullptr);
     struct Result {
         Result() : m_duration(0), m_track(0), m_year(-1) {}
         bool operator <(const Result& other) const {
@@ -110,4 +108,3 @@ inline uint qHash(const MusicBrainzClient::Result& result) {
          result.m_track ^
          result.m_year;
 }
-#endif // MUSICBRAINZCLIENT_H

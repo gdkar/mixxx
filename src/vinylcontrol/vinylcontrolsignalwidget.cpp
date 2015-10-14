@@ -28,7 +28,8 @@ VinylControlSignalWidget::VinylControlSignalWidget()
       m_bVinylActive(false) {
 }
 
-void VinylControlSignalWidget::setSize(int size) {
+void VinylControlSignalWidget::setSize(int size)
+{
     m_iSize = size;
     setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
     setMinimumSize(size, size);

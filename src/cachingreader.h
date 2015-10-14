@@ -68,7 +68,7 @@ class CachingReader : public QObject {
     Q_OBJECT
   public:
     // Construct a CachingReader with the given group.
-    CachingReader(QString group, ConfigObject<ConfigValue>* _config);
+    CachingReader(QString group, ConfigObject<ConfigValue>* _config, QObject *p);
     virtual ~CachingReader();
     virtual void process();
     // Read num_samples from the SoundSource starting with sample into

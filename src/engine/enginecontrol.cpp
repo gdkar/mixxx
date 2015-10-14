@@ -57,19 +57,19 @@ void EngineControl::setCurrentSample(double dCurrentSample, double dTotalSamples
     SampleOfTrack sot;
     sot.current = dCurrentSample;
     sot.total = dTotalSamples;
-    m_sampleOfTrack.setValue(sot);
+    m_sampleOfTrack.store(sot);
 }
 
 double EngineControl::getCurrentSample() const {
-    return m_sampleOfTrack.getValue().current;
+    return m_sampleOfTrack.load().current;
 }
 
 double EngineControl::getTotalSamples() const {
-    return m_sampleOfTrack.getValue().total;
+    return m_sampleOfTrack.load().total;
 }
 
 bool EngineControl::atEndPosition() const {
-    SampleOfTrack sot = m_sampleOfTrack.getValue();
+    SampleOfTrack sot = m_sampleOfTrack.load();
     return (sot.current >= sot.total);
 }
 

@@ -23,19 +23,25 @@
 EngineBufferScale::EngineBufferScale(ReadAheadManager * pRAMan, QObject *pParent)
         : QObject(pParent),
           m_pRAMan(pRAMan),
-          m_iSampleRate(44100),
-          m_dBaseRate(1.0),
-          m_bSpeedAffectsPitch(false),
-          m_dTempoRatio(1.0),
-          m_dPitchRatio(1.0),
-          m_buffer(SampleUtil::alloc(MAX_BUFFER_LEN)),
-          m_samplesRead(0) {
+          m_buffer(std::make_unique<CSAMPLE[]>(MAX_BUFFER_LEN))
+{
 }
 
-EngineBufferScale::~EngineBufferScale() {
-    SampleUtil::free(m_buffer);
+EngineBufferScale::~EngineBufferScale()
+{
 }
 
-double EngineBufferScale::getSamplesRead() {
+double EngineBufferScale::getSamplesRead()
+{
     return m_samplesRead;
+}
+void EngineBufferScale::setSampleRate(int iSampleRate)
+{
+  m_iSampleRate = iSampleRate;
+}
+void EngineBufferScale::setScaleParameters(double base_rate,double* pTempoRatio,double* pPitchRatio)
+{
+    m_dBaseRate = base_rate;
+    m_dTempoRatio = *pTempoRatio;
+    m_dPitchRatio = *pPitchRatio;
 }
