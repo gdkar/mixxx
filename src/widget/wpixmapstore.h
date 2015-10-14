@@ -15,9 +15,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef WPIXMAPSTORE_H
-#define WPIXMAPSTORE_H
-
+_Pragma("once")
 #include <QPixmap>
 #include <QHash>
 #include <QSharedPointer>
@@ -45,55 +43,38 @@ class Paintable {
         // Tile the image.
         TILE
     };
-
     // Takes ownership of QImage.
     Paintable(QImage* pImage, DrawMode mode);
     Paintable(const QString& fileName, DrawMode mode);
     Paintable(const PixmapSource& source, DrawMode mode);
-
     QSize size() const;
     int width() const;
     int height() const;
     QRectF rect() const;
-    DrawMode drawMode() const {
-        return m_draw_mode;
-    }
-
+    DrawMode drawMode() const;
     void draw(int x, int y, QPainter* pPainter);
-    void draw(const QPointF& point, QPainter* pPainter,
-              const QRectF& sourceRect);
+    void draw(const QPointF& point, QPainter* pPainter,const QRectF& sourceRect);
     void draw(const QRectF& targetRect, QPainter* pPainter);
-    void draw(const QRectF& targetRect, QPainter* pPainter,
-              const QRectF& sourceRect);
-    void drawCentered(const QRectF& targetRect, QPainter* pPainter,
-                      const QRectF& sourceRect);
+    void draw(const QRectF& targetRect, QPainter* pPainter,const QRectF& sourceRect);
+    void drawCentered(const QRectF& targetRect, QPainter* pPainter,const QRectF& sourceRect);
     bool isNull() const;
-
     static DrawMode DrawModeFromString(const QString& str);
     static QString DrawModeToString(DrawMode mode);
-
   private:
-    void drawInternal(const QRectF& targetRect, QPainter* pPainter,
-                      const QRectF& sourceRect);
-
+    void drawInternal(const QRectF& targetRect, QPainter* pPainter,const QRectF& sourceRect);
     QScopedPointer<QPixmap> m_pPixmap;
     QScopedPointer<QSvgRenderer> m_pSvg;
     DrawMode m_draw_mode;
 };
-
 typedef QSharedPointer<Paintable> PaintablePointer;
 typedef QWeakPointer<Paintable> WeakPaintablePointer;
-
 class WPixmapStore {
   public:
-    static PaintablePointer getPaintable(PixmapSource source,
-                                            Paintable::DrawMode mode);
+    static PaintablePointer getPaintable(PixmapSource source,Paintable::DrawMode mode);
     static QPixmap* getPixmapNoCache(const QString& fileName);
     static void setLoader(QSharedPointer<ImgSource> ld);
-
   private:
     static QHash<QString, WeakPaintablePointer> m_paintableCache;
     static QSharedPointer<ImgSource> m_loader;
 };
 
-#endif

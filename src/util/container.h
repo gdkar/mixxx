@@ -1,8 +1,6 @@
 // Misc. container helper functions.
 
-#ifndef CONTAINER_H
-#define CONTAINER_H
-
+_Pragma("once")
 #include <QMap>
 
 // Helper function to delete the values of a QMap if they are pointers.
@@ -17,5 +15,3 @@ void deleteMapValues(QMap<K,V>* pMap) {
         delete value;
     }
 }
-
-#endif /* CONTAINER_H */

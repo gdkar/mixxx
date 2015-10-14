@@ -15,9 +15,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef WLABEL_H
-#define WLABEL_H
-
+_Pragma("once")
 #include <QLabel>
 #include <QEvent>
 
@@ -27,14 +25,11 @@
 class WLabel : public QLabel, public WBaseWidget {
     Q_OBJECT
   public:
-    WLabel(QWidget* pParent=NULL);
+    WLabel(QWidget* pParent=nullptr);
     virtual ~WLabel();
-
     virtual void setup(QDomNode node, const SkinContext& context);
-
     QString text() const;
     void setText(const QString& text);
-
   protected:
     virtual bool event(QEvent* pEvent);
     virtual void resizeEvent(QResizeEvent* event);
@@ -47,5 +42,3 @@ class WLabel : public QLabel, public WBaseWidget {
     QString m_longText;
     Qt::TextElideMode m_elideMode;
 };
-
-#endif

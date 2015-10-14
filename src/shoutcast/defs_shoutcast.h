@@ -1,6 +1,4 @@
-#ifndef DEFS_SHOUTCAST_H
-#define DEFS_SHOUTCAST_H
-
+_Pragma("once")
 #define SHOUTCAST_PREF_KEY "[Shoutcast]"
 #define SHOUTCAST_DEFAULT_PORT "8000"
 
@@ -25,5 +23,3 @@
 
 #define SHOUTCAST_FORMAT_MP3 "MP3"
 #define SHOUTCAST_FORMAT_OV "OggVorbis"
-
-#endif /* DEFS_SHOUTCAST_H */

@@ -27,45 +27,33 @@ protected:
     // or any other type.
     typedef int value_type;
 public:
-    DbId() = default;
-    explicit constexpr DbId(int value):m_value(value){};
+    DbId();
+    explicit DbId(int value);
     explicit DbId(QVariant variant);
-    constexpr bool isValid() const{return isValidValue(m_value);};
+    bool isValid() const;
     // This function is needed for backward compatibility and
     // should only be used within legacy code. It can be deleted
     // after all integer IDs have been replaced by their type-safe
     // counterparts.
-    constexpr int toInt() const{return m_value;}
-    constexpr operator int()const{return m_value;}
+    int toInt() const;
+    operator int()const;
     // This function should be used for value binding in DB queries
     // with bindValue().
     QVariant toVariant() const;
     QString toString() const;
-    friend bool operator==(const DbId& lhs, const DbId& rhs) {
-        return lhs.m_value == rhs.m_value;
-    }
-    friend bool operator!=(const DbId& lhs, const DbId& rhs) {
-        return lhs.m_value != rhs.m_value;
-    }
-    friend bool operator<(const DbId& lhs, const DbId& rhs) {
-        return lhs.m_value < rhs.m_value;
-    }
-    friend bool operator>(const DbId& lhs, const DbId& rhs) {
-        return lhs.m_value > rhs.m_value;
-    }
-    friend bool operator<=(const DbId& lhs, const DbId& rhs) {
-        return lhs.m_value <= rhs.m_value;
-    }
-    friend bool operator>=(const DbId& lhs, const DbId& rhs) {
-        return lhs.m_value >= rhs.m_value;
-    }
+    friend bool operator==(const DbId& lhs, const DbId& rhs);
+    friend bool operator!=(const DbId& lhs, const DbId& rhs);
+    friend bool operator<(const DbId& lhs, const DbId& rhs);
+    friend bool operator>(const DbId& lhs, const DbId& rhs);
+    friend bool operator<=(const DbId& lhs, const DbId& rhs);
+    friend bool operator>=(const DbId& lhs, const DbId& rhs);
     friend std::ostream& operator<< (std::ostream& os, const DbId& dbId);
     friend QDebug& operator<< (QDebug& qd, const DbId& dbId) ;
     friend uint qHash(const DbId& dbId);
 private:
     static const int kInvalidValue = -1;
     static const QVariant::Type kVariantType;
-    static constexpr bool isValidValue(int value){return value>=0;};
+    static bool isValidValue(int value);
     static int valueOf(QVariant /*pass-by-value*/ variant);
     int m_value = kInvalidValue;
 };

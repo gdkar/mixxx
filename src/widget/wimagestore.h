@@ -1,7 +1,4 @@
-
-#ifndef WIMAGESTORE_H
-#define WIMAGESTORE_H
-
+_Pragma("once")
 #include <QHash>
 #include <QSharedPointer>
 
@@ -20,16 +17,13 @@ class WImageStore {
     static void setLoader(QSharedPointer<ImgSource> ld);
     // For external owned images like software generated ones.
     static void correctImageColors(QImage* p);
-
-  private:
-    struct ImageInfoType {
-        QImage *image;
-        int instCount;
+    struct ImageRef {
+      QImage *image  = nullptr;
+      int64_t refcnt = 1;
     };
-
+  private:
     /** Dictionary of Images already instantiated */
-    static QHash<QString, ImageInfoType*> m_dictionary;
+    static QHash<QString, ImageRef> m_dictionary;
     static QSharedPointer<ImgSource> m_loader;
 };
-
-#endif
+Q_DECLARE_TYPEINFO(WImageStore::ImageRef,Q_PRIMITIVE_TYPE);

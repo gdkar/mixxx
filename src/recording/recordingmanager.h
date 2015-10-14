@@ -1,6 +1,4 @@
-#ifndef RECORDINGMANAGER_H
-#define RECORDINGMANAGER_H
-
+_Pragma("once")
 #include <QDateTime>
 #include <QObject>
 #include <QString>
@@ -76,4 +74,3 @@ class RecordingManager : public QObject
     int m_iNumberSplits;
     QString m_durationRecorded;
 };
-#endif // RECORDINGMANAGER_H
