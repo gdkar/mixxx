@@ -1,6 +1,4 @@
-#ifndef SLIDEREVENTHANDLER_H
-#define SLIDEREVENTHANDLER_H
-
+_Pragma("once")
 #include <QMouseEvent>
 #include <QWheelEvent>
 #include <QCursor>
@@ -203,5 +201,3 @@ class SliderEventHandler {
     // Is true if events is emitted while the slider is dragged
     bool m_bEventWhileDrag;
 };
-
-#endif /* SLIDEREVENTHANDLER_H */

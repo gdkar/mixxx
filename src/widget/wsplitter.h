@@ -1,6 +1,4 @@
-#ifndef WSPLITTER_H
-#define WSPLITTER_H
-
+_Pragma("once")
 #include <QDomNode>
 #include <QEvent>
 #include <QSplitter>
@@ -9,7 +7,8 @@
 #include "skin/skincontext.h"
 #include "widget/wbasewidget.h"
 
-class WSplitter : public QSplitter, public WBaseWidget {
+class WSplitter : public QSplitter, public WBaseWidget
+{
     Q_OBJECT
   public:
     WSplitter(QWidget* pParent, ConfigObject<ConfigValue> *pConfig);
@@ -23,4 +22,3 @@ class WSplitter : public QSplitter, public WBaseWidget {
     ConfigObject<ConfigValue>* m_pConfig = nullptr;
     ConfigKey m_configKey;
 };
-#endif /* WSPLITTER_H */

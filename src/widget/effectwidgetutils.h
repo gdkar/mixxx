@@ -1,6 +1,4 @@
-#ifndef EFFECTWIDGETUTILS_H
-#define EFFECTWIDGETUTILS_H
-
+_Pragma("once")
 #include <QDomNode>
 
 #include "effects/effectsmanager.h"
@@ -93,4 +91,3 @@ class EffectWidgetUtils {
   private:
     EffectWidgetUtils() = delete;
 };
-#endif /* EFFECTWIDGETUTILS_H */
