@@ -27,7 +27,7 @@
 #include "playermanager.h"
 #include "effects/effectrack.h"
 
-const char* kConfigKey = "[Mixer Profile]";
+const char* kConfigKey = "Mixer Profile";
 const char* kEnableEqs = "EnableEQs";
 const char* kEqsOnly = "EQsOnly";
 const char* kSingleEq = "SingleEQEffect";
@@ -71,7 +71,7 @@ DlgPrefEQ::DlgPrefEQ(QWidget* pParent, EffectsManager* pEffectsManager,
 
     // Add drop down lists for current decks and connect num_decks control
     // to slotNumDecksChanged
-    m_pNumDecks = new ControlObjectSlave("[Master]", "num_decks", this);
+    m_pNumDecks = new ControlObjectSlave("Master", "num_decks", this);
     m_pNumDecks->connectValueChanged(SLOT(slotNumDecksChanged(double)));
     slotNumDecksChanged(m_pNumDecks->get());
     setUpMasterEQ();
@@ -553,7 +553,7 @@ void DlgPrefEQ::slotMasterEqEffectChanged(int effectIndex) {
     auto effectId = comboBoxMasterEq->itemData(effectIndex).toString();
     if (effectId == "none") {pbResetMasterEq->hide();}
     else {pbResetMasterEq->show();}
-    auto pChainSlot = m_pEQEffectRack->getGroupEffectChainSlot("[Master]");
+    auto pChainSlot = m_pEQEffectRack->getGroupEffectChainSlot("Master");
     if (pChainSlot) {
         auto pChain = pChainSlot->getEffectChain();
         if (pChain.isNull()) {

@@ -7,6 +7,7 @@
 #include "skin/skincontext.h"
 #include "skin/svgparser.h"
 #include "util/cmdlineargs.h"
+#include "widget/wsingletoncontainer.h"
 
 SkinContext::SkinContext(ConfigObject<ConfigValue>* pConfig,
                          const QString& xmlPath)
@@ -253,7 +254,7 @@ const QSharedPointer<QScriptEngine> SkinContext::getScriptEngine() const {
 }
 void SkinContext::enableDebugger(bool state) const {
     if (CmdlineArgs::Instance().getDeveloper() && m_pConfig != NULL &&
-            m_pConfig->getValueString(ConfigKey("[ScriptDebugger]", "Enabled")) == "1") {
+            m_pConfig->getValueString(ConfigKey("ScriptDebugger", "Enabled")) == "1") {
         if (state) m_pScriptDebugger->attachTo(m_pScriptEngine.data());
         else       m_pScriptDebugger->detach();
     }

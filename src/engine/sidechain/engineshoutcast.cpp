@@ -54,7 +54,7 @@ EngineShoutcast::EngineShoutcast(ConfigObject<ConfigValue>* _config)
           m_encoder(NULL),
           m_pShoutcastNeedUpdateFromPrefs(NULL),
           m_pUpdateShoutcastFromPrefs(NULL),
-          m_pMasterSamplerate(new ControlObjectSlave("[Master]", "samplerate")),
+          m_pMasterSamplerate(new ControlObjectSlave("Master", "samplerate")),
           m_pShoutcastStatus(new ControlObject(ConfigKey(SHOUTCAST_PREF_KEY, "status"))),
           m_bQuit(false),
           m_custom_metadata(false),

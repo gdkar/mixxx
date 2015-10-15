@@ -11,7 +11,7 @@ EngineControl::EngineControl(QString group,ConfigObject<ConfigValue>* _config, Q
         : QObject(p),
           m_group(group),
           m_pConfig(_config),
-          m_numDecks(new ControlObjectSlave(ConfigKey("[Master]", "num_decks"),this)) {
+          m_numDecks(new ControlObjectSlave(ConfigKey("Master", "num_decks"),this)) {
     setCurrentSample(0.0, 0.0);
 }
 EngineControl::~EngineControl() = default;

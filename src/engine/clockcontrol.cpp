@@ -10,7 +10,7 @@ ClockControl::ClockControl(QString group, ConfigObject<ConfigValue>* pConfig)
         : EngineControl(group, pConfig) {
     m_pCOBeatActive = new ControlObject(ConfigKey(group, "beat_active"));
     m_pCOBeatActive->set(0.0);
-    m_pCOSampleRate = new ControlObjectSlave("[Master]","samplerate");
+    m_pCOSampleRate = new ControlObjectSlave("Master","samplerate");
 }
 
 ClockControl::~ClockControl() {

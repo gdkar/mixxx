@@ -3,10 +3,9 @@
 
 _Pragma("once")
 #include <QTextBrowser>
-
 #include "library/libraryview.h"
-
-class WLibraryTextBrowser : public QTextBrowser, public LibraryView {
+class WLibraryTextBrowser : public QTextBrowser, public LibraryView
+{
     Q_OBJECT
   public:
     WLibraryTextBrowser(QWidget* parent = nullptr);

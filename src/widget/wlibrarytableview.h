@@ -1,9 +1,7 @@
 // wlibrarytableview.h
 // Created 10/19/2009 by RJ Ryan (rryan@mit.edu)
 
-#ifndef WLIBRARYTABLEVIEW_H
-#define WLIBRARYTABLEVIEW_H
-
+_Pragma("once")
 #include <QString>
 #include <QTableView>
 #include <QFont>
@@ -48,6 +46,3 @@ class WLibraryTableView : public QTableView, public virtual LibraryView {
     // executed
     int m_iSavedVScrollBarPos;
 };
-
-
-#endif /* WLIBRARYTABLEVIEW_H */

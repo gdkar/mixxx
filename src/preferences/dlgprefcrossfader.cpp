@@ -23,7 +23,7 @@
 #include "controlobjectslave.h"
 #include "engine/enginexfader.h"
 
-#define kConfigKey "[Mixer Profile]"
+#define kConfigKey "Mixer Profile"
 
 DlgPrefCrossfader::DlgPrefCrossfader(QWidget * parent, ConfigObject<ConfigValue> * _config)
         : DlgPreferencePage(parent),
@@ -36,7 +36,7 @@ DlgPrefCrossfader::DlgPrefCrossfader(QWidget * parent, ConfigObject<ConfigValue>
           m_COTCurve(new ControlObjectSlave(kConfigKey, "xFaderCurve",this)),
           m_COTCalibration(new ControlObjectSlave(kConfigKey, "xFaderCalibration",this)),
           m_COTReverse(new ControlObjectSlave(kConfigKey, "xFaderReverse",this)),
-          m_COTCrossfader(new ControlObjectSlave("[Master]", "crossfader",this)),
+          m_COTCrossfader(new ControlObjectSlave("Master", "crossfader",this)),
           m_xFaderReverse(false) {
     setupUi(this);
 

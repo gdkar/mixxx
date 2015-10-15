@@ -194,7 +194,7 @@ void Player::slotFinishLoading(TrackPointer pTrackInfoObject)
             }
         }
     }
-    if(m_pConfig->getValueString(ConfigKey("[Mixer Profile]", "EqAutoReset"), 0).toInt()) {
+    if(m_pConfig->getValueString(ConfigKey("Mixer Profile", "EqAutoReset"), 0).toInt()) {
         if (m_pLowFilter) {m_pLowFilter->set(1.0);}
         if (m_pMidFilter) {m_pMidFilter->set(1.0);}
         if (m_pHighFilter) {m_pHighFilter->set(1.0);}
@@ -204,7 +204,7 @@ void Player::slotFinishLoading(TrackPointer pTrackInfoObject)
         m_pPreGain->set(1.0);
     }
     int reset = m_pConfig->getValueString(ConfigKey(
-            "[Controls]", "SpeedAutoReset"),
+            "Controls", "SpeedAutoReset"),
             QString("%1").arg(RESET_PITCH)).toInt();
     switch (reset) {
       case RESET_PITCH_AND_SPEED:

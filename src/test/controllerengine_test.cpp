@@ -18,7 +18,7 @@ class ControllerEngineTest : public MixxxTest {
     virtual void SetUp() {
         qDebug() << "SetUp";
         QThread::currentThread()->setObjectName("Main");
-        new ControlPotmeter(ConfigKey("[Test]", "potmeter"),-1.,1.);
+        new ControlPotmeter(ConfigKey("Test", "potmeter"),-1.,1.);
         Controller* pController = NULL;
         cEngine = new ControllerEngine(pController);
         cEngine->setDebug(true);
@@ -47,7 +47,7 @@ TEST_F(ControllerEngineTest, scriptSetValue) {
     cEngine->evaluate(script->fileName());
     EXPECT_FALSE(cEngine->hasErrors(script->fileName()));
 
-    ControlObject *co = new ControlObject(ConfigKey("[Channel1]", "co"));
+    ControlObject *co = new ControlObject(ConfigKey("Channel1", "co"));
     co->set(0.0);
     cEngine->execute("setValue");
     EXPECT_DOUBLE_EQ(co->get(), 1.0);
@@ -62,7 +62,7 @@ TEST_F(ControllerEngineTest, scriptGetSetValue) {
     cEngine->evaluate(script->fileName());
     EXPECT_FALSE(cEngine->hasErrors(script->fileName()));
 
-    ScopedControl co(new ControlObject(ConfigKey("[Channel1]", "co")));
+    ScopedControl co(new ControlObject(ConfigKey("Channel1", "co")));
     co->set(0.0);
     cEngine->execute("getSetValue");
     EXPECT_DOUBLE_EQ(co->get(), 1.0);
@@ -247,7 +247,7 @@ TEST_F(ControllerEngineTest, automaticReaction) {
     cEngine->evaluate(script->fileName());
     EXPECT_FALSE(cEngine->hasErrors(script->fileName()));
 
-    ScopedControl co(new ControlObject(ConfigKey("[Channel1]", "co")));
+    ScopedControl co(new ControlObject(ConfigKey("Channel1", "co")));
     co->set(0.0);
     EXPECT_TRUE(cEngine->execute("setUp"));
 

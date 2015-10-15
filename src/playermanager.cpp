@@ -31,9 +31,9 @@ PlayerManager::PlayerManager(ConfigObject<ConfigValue>* pConfig,
         // NOTE(XXX) LegacySkinParser relies on these controls being COs and
         // not COTMs listening to a CO.
         m_pAnalyserQueue(nullptr),
-        m_pCONumDecks(new ControlObject(ConfigKey("[Master]", "num_decks"), true, true)),
-        m_pCONumSamplers(new ControlObject(ConfigKey("[Master]", "num_samplers"), true, true)),
-        m_pCONumPreviewDecks(new ControlObject(ConfigKey("[Master]", "num_preview_decks"), true, true)) {
+        m_pCONumDecks(new ControlObject(ConfigKey("Master", "num_decks"), true, true)),
+        m_pCONumSamplers(new ControlObject(ConfigKey("Master", "num_samplers"), true, true)),
+        m_pCONumPreviewDecks(new ControlObject(ConfigKey("Master", "num_preview_decks"), true, true)) {
     connect(m_pCONumDecks, SIGNAL(valueChanged(double)),this, SLOT(slotNumDecksControlChanged(double)),Qt::DirectConnection);
     connect(m_pCONumDecks, SIGNAL(valueChangedFromEngine(double)),this, SLOT(slotNumDecksControlChanged(double)),Qt::DirectConnection);
     connect(m_pCONumSamplers, SIGNAL(valueChanged(double)),this, SLOT(slotNumSamplersControlChanged(double)),Qt::DirectConnection);
@@ -80,9 +80,9 @@ void PlayerManager::bindToLibrary(Library* pLibrary) {
     // analysed.
     for(auto pPreviewDeck: m_preview_decks) { connect(pPreviewDeck, SIGNAL(newTrackLoaded(TrackPointer)),m_pAnalyserQueue, SLOT(slotAnalyseTrack(TrackPointer))); }
 }
-/* static */ QString PlayerManager::groupForSampler(int i){return QString{"[Sampler%1]"}.arg(i+1);}
-/* static */ QString PlayerManager::groupForDeck(int i){return QString{"[Channel%1]"}.arg(i+1);}
-/* static */ QString PlayerManager::groupForPreviewDeck(int i){return QString{"[PreviewDeck%1]"}.arg(i+1);}
+/* static */ QString PlayerManager::groupForSampler(int i){return QString{"Sampler%1"}.arg(i+1);}
+/* static */ QString PlayerManager::groupForDeck(int i){return QString{"Channel%1"}.arg(i+1);}
+/* static */ QString PlayerManager::groupForPreviewDeck(int i){return QString{"PreviewDeck%1"}.arg(i+1);}
 unsigned int PlayerManager::numberOfDecks()const{return numDecks();}
 unsigned int PlayerManager::numberOfSamplers()const{return numSamplers();}
 unsigned int PlayerManager::numberOfPreviewDecks()const{return numPreviewDecks();}
@@ -90,7 +90,7 @@ unsigned int PlayerManager::numberOfPreviewDecks()const{return numPreviewDecks()
 unsigned int PlayerManager::numDecks() {
     // We do this to cache the control once it is created so callers don't incur
     // a hashtable lookup every time they call this.
-    static ControlObjectSlave* pNumCO = new ControlObjectSlave(ConfigKey("[Master]","num_decks"));
+    static ControlObjectSlave* pNumCO = new ControlObjectSlave(ConfigKey("Master","num_decks"));
     if (pNumCO && !pNumCO->valid()) {
         delete pNumCO;
         pNumCO = nullptr;
@@ -99,7 +99,7 @@ unsigned int PlayerManager::numDecks() {
 }
 // static
 bool PlayerManager::isDeckGroup(const QString& group, int* number) {
-    if (!group.startsWith("[Channel")) {return false;}
+    if (!group.startsWith("Channel")) {return false;}
     auto ok = false;
     auto deckNum = group.mid(8,group.lastIndexOf("]")-8).toInt(&ok);
     if (!ok || deckNum <= 0) {return false;}
@@ -108,7 +108,7 @@ bool PlayerManager::isDeckGroup(const QString& group, int* number) {
 }
 // static
 bool PlayerManager::isPreviewDeckGroup(const QString& group, int* number) {
-    if (!group.startsWith("[PreviewDeck")) {return false;}
+    if (!group.startsWith("PreviewDeck")) {return false;}
     auto ok = false;
     auto deckNum = group.mid(12,group.lastIndexOf("]")-12).toInt(&ok);
     if (!ok || deckNum <= 0) {return false;}
@@ -119,7 +119,7 @@ bool PlayerManager::isPreviewDeckGroup(const QString& group, int* number) {
 unsigned int PlayerManager::numSamplers() {
     // We do this to cache the control once it is created so callers don't incur
     // a hashtable lookup every time they call this.
-    static ControlObjectSlave* pNumCO = new ControlObjectSlave(ConfigKey("[Master]","num_samplers"));
+    static ControlObjectSlave* pNumCO = new ControlObjectSlave(ConfigKey("Master","num_samplers"));
     if (pNumCO && !pNumCO->valid()) {
         delete pNumCO;
         pNumCO = nullptr;
@@ -130,7 +130,7 @@ unsigned int PlayerManager::numSamplers() {
 unsigned int PlayerManager::numPreviewDecks() {
     // We do this to cache the control once it is created so callers don't incur
     // a hashtable lookup every time they call this.
-    static auto  pNumCO = new ControlObjectSlave(ConfigKey("[Master]","num_preview_decks"));
+    static auto  pNumCO = new ControlObjectSlave(ConfigKey("Master","num_preview_decks"));
     if (pNumCO && !pNumCO->valid()) {
         delete pNumCO;
         pNumCO = nullptr;

@@ -1,13 +1,13 @@
 #ifndef BEAT_PREFERENCES_H
 #define BEAT_PREFERENCES_H
 
-#define VAMP_CONFIG_KEY "[Vamp]"
+#define VAMP_CONFIG_KEY "Vamp"
 
 // VAMP_CONFIG_KEY Preferences
 #define VAMP_ANALYSER_BEAT_LIBRARY "AnalyserBeatLibrary"
 #define VAMP_ANALYSER_BEAT_PLUGIN_ID "AnalyserBeatPluginID"
 
-#define BPM_CONFIG_KEY "[BPM]"
+#define BPM_CONFIG_KEY "BPM"
 
 // BPM_CONFIG_KEY Preferences
 #define BPM_DETECTION_ENABLED "BPMDetectionEnabled"

@@ -194,10 +194,10 @@ template <class ValueType> bool ConfigObject<ValueType>::Parse()
             line = text.readLine().trimmed();
             if (line.length() != 0)
             {
-                if (line.startsWith("[") && line.endsWith("]"))
+                if (line.startsWith("") && line.endsWith(""))
                 {
                     group++;
-                    groupStr = line;
+                    groupStr = line.mid(1,line.length()-2);
                     //qDebug() << "Group :" << groupStr;
                 }
                 else if (group>0)

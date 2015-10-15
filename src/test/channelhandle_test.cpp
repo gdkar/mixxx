@@ -8,8 +8,8 @@ namespace {
 
 TEST(ChannelHandleTest, BasicUsage) {
     ChannelHandleFactory factory;
-    const QString group = "[Test]";
-    const QString group2 = "[Test2]";
+    const QString group = "Test";
+    const QString group2 = "Test2";
 
     ChannelHandle nullHandle;
     EXPECT_EQ(nullHandle, nullHandle);
@@ -41,9 +41,9 @@ TEST(ChannelHandleTest, BasicUsage) {
 TEST(ChannelHandleTest, ChannelHandleMap) {
     ChannelHandleFactory factory;
 
-    ChannelHandle test = factory.getOrCreateHandle("[Test]");
+    ChannelHandle test = factory.getOrCreateHandle("Test");
     EXPECT_TRUE(test.valid());
-    ChannelHandle test2 = factory.getOrCreateHandle("[Test2]");
+    ChannelHandle test2 = factory.getOrCreateHandle("Test2");
     EXPECT_TRUE(test2.valid());
 
     ChannelHandleMap<QString> map;

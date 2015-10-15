@@ -137,14 +137,14 @@ VinylControlXwax::VinylControlXwax(ConfigObject<ConfigValue>* pConfig, QString g
     }
 
     double latency = ControlObject::getControl(
-            ConfigKey("[Master]", "latency"))->get();
+            ConfigKey("Master", "latency"))->get();
     if (latency <= 0 || latency > 200) {
         qDebug() << "Failed to get sane latency, assuming 20 as a reasonable value";
         latency = 20;
     }
 
     int iSampleRate = m_pConfig->getValueString(
-        ConfigKey("[Soundcard]","Samplerate")).toULong();
+        ConfigKey("Soundcard","Samplerate")).toULong();
 
     // Set pitch ring size to 1/4 of one revolution -- a full revolution adds
     // too much stickiness to the pitch.
@@ -712,7 +712,7 @@ void VinylControlXwax::doTrackSelection(bool valid_pos, double pitch, double pos
     {
         //this isn't done in the constructor because this object
         //doesn't seem to be created yet
-        m_pControlTrackSelector = new ControlObjectSlave("[Playlist]","SelectTrackKnob",this);
+        m_pControlTrackSelector = new ControlObjectSlave("Playlist","SelectTrackKnob",this);
     }
     if (!valid_pos) {
         if (std::abs(pitch) > 0.1)

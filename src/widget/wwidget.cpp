@@ -26,7 +26,7 @@ WWidget::WWidget(QWidget* parent, Qt::WindowFlags flags)
         : QWidget(parent, flags),
           WBaseWidget(this),
           m_activeTouchButton(Qt::NoButton),
-          m_pTouchShift(new ControlObjectSlave("[Controls]","touch_shift",this)){
+          m_pTouchShift(new ControlObjectSlave("Controls","touch_shift",this)){
     setAttribute(Qt::WA_StaticContents);
     setAttribute(Qt::WA_AcceptTouchEvents);
     setFocusPolicy(Qt::ClickFocus);

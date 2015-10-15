@@ -63,7 +63,7 @@ ConfigObject<ConfigValue>* Upgrade::versionUpgrade(const QString& settingsPath) 
 ****************************************************************************/
     // Read the config file from home directory
     auto config = new ConfigObject<ConfigValue>(QDir(settingsPath).filePath(SETTINGS_FILE));
-    auto configVersion = config->getValueString(ConfigKey("[Config]","Version"));
+    auto configVersion = config->getValueString(ConfigKey("Config","Version"));
     if (configVersion.isEmpty()) {
 #ifdef __APPLE__
         qDebug() << "Config version is empty, trying to read pre-1.9.0 config";
@@ -77,7 +77,7 @@ ConfigObject<ConfigValue>* Upgrade::versionUpgrade(const QString& settingsPath) 
             // TODO(XXX) Trailing slash not needed anymore as we switches from String::append
             // to QDir::filePath elsewhere in the code. This is candidate for removal.
             CmdlineArgs::Instance().setSettingsPath(QDir::homePath().append("/.mixxx/"));
-            configVersion = config->getValueString(ConfigKey("[Config]","Version"));
+            configVersion = config->getValueString(ConfigKey("Config","Version"));
         }
         else {
 #elif __WINDOWS__
@@ -92,13 +92,13 @@ ConfigObject<ConfigValue>* Upgrade::versionUpgrade(const QString& settingsPath) 
             // TODO(XXX) Trailing slash not needed anymore as we switches from String::append
             // to QDir::filePath elsewhere in the code. This is candidate for removal.
             CmdlineArgs::Instance().setSettingsPath(QDir::homePath().append("/Local Settings/Application Data/Mixxx/")); 
-            configVersion = config->getValueString(ConfigKey("[Config]","Version"));
+            configVersion = config->getValueString(ConfigKey("Config","Version"));
         }
         else {
 #endif
             // This must have been the first run... right? :)
             qDebug() << "No version number in configuration file. Setting to" << VERSION;
-            config->set(ConfigKey("[Config]","Version"), ConfigValue(VERSION));
+            config->set(ConfigKey("Config","Version"), ConfigValue(VERSION));
             m_bFirstRun = true;
             return config;
 #ifdef __APPLE__
@@ -140,15 +140,15 @@ ConfigObject<ConfigValue>* Upgrade::versionUpgrade(const QString& settingsPath) 
         // default of 6.  We've now removed all of the hacks, so subtracting
         // 6 from everyone's replay gain should keep things consistent for
         // all users.
-        auto oldReplayGain = config->getValueString(ConfigKey("[ReplayGain]", "InitialReplayGainBoost"), "6").toInt();
+        auto oldReplayGain = config->getValueString(ConfigKey("ReplayGain", "InitialReplayGainBoost"), "6").toInt();
         auto newReplayGain = math_max(-6, oldReplayGain - 6);
-        config->set(ConfigKey("[ReplayGain]", "InitialReplayGainBoost"),ConfigValue(newReplayGain));
+        config->set(ConfigKey("ReplayGain", "InitialReplayGainBoost"),ConfigValue(newReplayGain));
         // if everything until here worked fine we can mark the configuration as
         // updated
         if (successful) {
             configVersion = VERSION;
             m_bUpgraded = true;
-            config->set(ConfigKey("[Config]","Version"), ConfigValue(VERSION));
+            config->set(ConfigKey("Config","Version"), ConfigValue(VERSION));
         }
         else {qDebug() << "Upgrade failed!\n";}
     }

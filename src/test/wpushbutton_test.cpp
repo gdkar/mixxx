@@ -13,7 +13,7 @@
 class WPushButtonTest : public MixxxTest {
   public:
     WPushButtonTest()
-          : m_pGroup("[Channel1]") {
+          : m_pGroup("Channel1") {
     }
 
   protected:
@@ -29,7 +29,7 @@ class WPushButtonTest : public MixxxTest {
 
 TEST_F(WPushButtonTest, QuickPressNoLatchTest) {
     QScopedPointer<ControlPushButton> pPushControl(
-        new ControlPushButton(ConfigKey("[Test]", "push")));
+        new ControlPushButton(ConfigKey("Test", "push")));
     pPushControl->setButtonMode(ControlPushButton::LONGPRESSLATCHING);
 
     m_pButton.reset(new WPushButton(NULL, ControlPushButton::LONGPRESSLATCHING,
@@ -54,7 +54,7 @@ TEST_F(WPushButtonTest, QuickPressNoLatchTest) {
 
 TEST_F(WPushButtonTest, LongPressLatchTest) {
     QScopedPointer<ControlPushButton> pPushControl(
-        new ControlPushButton(ConfigKey("[Test]", "push")));
+        new ControlPushButton(ConfigKey("Test", "push")));
     pPushControl->setButtonMode(ControlPushButton::LONGPRESSLATCHING);
 
     m_pButton.reset(new WPushButton(NULL, ControlPushButton::LONGPRESSLATCHING,

@@ -39,11 +39,11 @@ EngineMaster::EngineMaster(ConfigObject<ConfigValue>* _config,
           m_masterGainOld(0.0),
           m_headphoneMasterGainOld(0.0),
           m_headphoneGainOld(1.0),
-          m_masterHandle(registerChannelGroup("[Master]")),
-          m_headphoneHandle(registerChannelGroup("[Headphone]")),
-          m_busLeftHandle(registerChannelGroup("[BusLeft]")),
-          m_busCenterHandle(registerChannelGroup("[BusCenter]")),
-          m_busRightHandle(registerChannelGroup("[BusRight]")) {
+          m_masterHandle(registerChannelGroup("Master")),
+          m_headphoneHandle(registerChannelGroup("Headphone")),
+          m_busLeftHandle(registerChannelGroup("BusLeft")),
+          m_busCenterHandle(registerChannelGroup("BusCenter")),
+          m_busRightHandle(registerChannelGroup("BusRight")) {
     m_bBusOutputConnected[EngineChannel::LEFT] = false;
     m_bBusOutputConnected[EngineChannel::CENTER] = false;
     m_bBusOutputConnected[EngineChannel::RIGHT] = false;
@@ -69,8 +69,8 @@ EngineMaster::EngineMaster(ConfigObject<ConfigValue>* _config,
     // Master sync controller
     m_pMasterSync = new EngineSync(_config);
     // The last-used bpm value is saved in the destructor of EngineSync.
-    auto default_bpm = _config->getValueString(ConfigKey("[InternalClock]", "bpm"),"124.0").toDouble();
-    ControlObject::set(ConfigKey("[InternalClock","bpm"),default_bpm);
+    auto default_bpm = _config->getValueString(ConfigKey("InternalClock", "bpm"),"124.0").toDouble();
+    ControlObject::set(ConfigKey("InternalClock","bpm"),default_bpm);
     // Crossfader
     m_pCrossfader = new ControlPotmeter(ConfigKey(group, "crossfader"), -1., 1.);
     // Balance
@@ -113,11 +113,11 @@ EngineMaster::EngineMaster(ConfigObject<ConfigValue>* _config,
     // Starts a thread for recording and shoutcast
     m_pSideChain = bEnableSidechain ? new EngineSideChain(_config) : NULL;
     // X-Fader Setup
-    m_pXFaderMode = new ControlPushButton( ConfigKey("[Mixer Profile]", "xFaderMode"));
+    m_pXFaderMode = new ControlPushButton( ConfigKey("Mixer Profile", "xFaderMode"));
     m_pXFaderMode->setButtonMode(ControlPushButton::TOGGLE);
-    m_pXFaderCurve = new ControlPotmeter( ConfigKey("[Mixer Profile]", "xFaderCurve"), 0., 2.);
-    m_pXFaderCalibration = new ControlPotmeter( ConfigKey("[Mixer Profile]", "xFaderCalibration"), -2., 2.);
-    m_pXFaderReverse = new ControlPushButton(ConfigKey("[Mixer Profile]", "xFaderReverse"));
+    m_pXFaderCurve = new ControlPotmeter( ConfigKey("Mixer Profile", "xFaderCurve"), 0., 2.);
+    m_pXFaderCalibration = new ControlPotmeter( ConfigKey("Mixer Profile", "xFaderCalibration"), -2., 2.);
+    m_pXFaderReverse = new ControlPushButton(ConfigKey("Mixer Profile", "xFaderReverse"));
     m_pXFaderReverse->setButtonMode(ControlPushButton::TOGGLE);
     m_pKeylockEngine = new ControlObject(ConfigKey(group, "keylock_engine"),true, false, true);
     m_pKeylockEngine->set(_config->getValueString(ConfigKey(group, "keylock_engine")).toDouble());

@@ -220,7 +220,7 @@ int ControllerManager::slotSetUpDevices() {
             continue;
         }
 
-        if (m_pConfig->getValueString(ConfigKey("[Controller]", presetBaseName)) != "1") {
+        if (m_pConfig->getValueString(ConfigKey("Controller", presetBaseName)) != "1") {
             continue;
         }
 
@@ -309,7 +309,7 @@ void ControllerManager::openController(Controller* pController) {
 
         // Update configuration to reflect controller is enabled.
         m_pConfig->set(ConfigKey(
-            "[Controller]", presetFilenameFromName(pController->getName())), 1);
+            "Controller", presetFilenameFromName(pController->getName())), 1);
     }
 }
 
@@ -321,7 +321,7 @@ void ControllerManager::closeController(Controller* pController) {
     maybeStartOrStopPolling();
     // Update configuration to reflect controller is disabled.
     m_pConfig->set(ConfigKey(
-        "[Controller]", presetFilenameFromName(pController->getName())), 0);
+        "Controller", presetFilenameFromName(pController->getName())), 0);
 }
 
 bool ControllerManager::loadPreset(Controller* pController,
@@ -333,7 +333,7 @@ bool ControllerManager::loadPreset(Controller* pController,
     // Save the file path/name in the config so it can be auto-loaded at
     // startup next time
     m_pConfig->set(
-        ConfigKey("[ControllerPreset]",
+        ConfigKey("ControllerPreset",
                   presetFilenameFromName(pController->getName())),
         preset->filePath());
     return true;

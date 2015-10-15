@@ -116,14 +116,14 @@ void DlgPrefLibrary::slotResetToDefaults() {
 }
 void DlgPrefLibrary::slotUpdate() {
     initialiseDirList();
-    checkBox_library_scan->setChecked((bool)m_pconfig->getValueString(ConfigKey("[Library]","RescanOnStartup")).toInt());
-    checkbox_ID3_sync->setChecked((bool)m_pconfig->getValueString(ConfigKey("[Library]","WriteAudioTags")).toInt());
-    checkBox_use_relative_path->setChecked((bool)m_pconfig->getValueString(ConfigKey("[Library]","UseRelativePathOnExport")).toInt());
-    checkBox_show_rhythmbox->setChecked((bool)m_pconfig->getValueString(ConfigKey("[Library]","ShowRhythmboxLibrary"),"1").toInt());
-    checkBox_show_banshee->setChecked((bool)m_pconfig->getValueString(ConfigKey("[Library]","ShowBansheeLibrary"),"1").toInt());
-    checkBox_show_itunes->setChecked((bool)m_pconfig->getValueString(ConfigKey("[Library]","ShowITunesLibrary"),"1").toInt());
-    checkBox_show_traktor->setChecked((bool)m_pconfig->getValueString(ConfigKey("[Library]","ShowTraktorLibrary"),"1").toInt());
-    switch (m_pconfig->getValueString(ConfigKey("[Library]","TrackLoadAction"),QString::number(LOAD_TRACK_DECK)).toInt()) {
+    checkBox_library_scan->setChecked((bool)m_pconfig->getValueString(ConfigKey("Library","RescanOnStartup")).toInt());
+    checkbox_ID3_sync->setChecked((bool)m_pconfig->getValueString(ConfigKey("Library","WriteAudioTags")).toInt());
+    checkBox_use_relative_path->setChecked((bool)m_pconfig->getValueString(ConfigKey("Library","UseRelativePathOnExport")).toInt());
+    checkBox_show_rhythmbox->setChecked((bool)m_pconfig->getValueString(ConfigKey("Library","ShowRhythmboxLibrary"),"1").toInt());
+    checkBox_show_banshee->setChecked((bool)m_pconfig->getValueString(ConfigKey("Library","ShowBansheeLibrary"),"1").toInt());
+    checkBox_show_itunes->setChecked((bool)m_pconfig->getValueString(ConfigKey("Library","ShowITunesLibrary"),"1").toInt());
+    checkBox_show_traktor->setChecked((bool)m_pconfig->getValueString(ConfigKey("Library","ShowTraktorLibrary"),"1").toInt());
+    switch (m_pconfig->getValueString(ConfigKey("Library","TrackLoadAction"),QString::number(LOAD_TRACK_DECK)).toInt()) {
     case ADD_TRACK_BOTTOM:
             radioButton_dbclick_bottom->setChecked(true);
             break;
@@ -221,25 +221,25 @@ void DlgPrefLibrary::slotRelocateDir() {
     }
 }
 void DlgPrefLibrary::slotApply() {
-    m_pconfig->set(ConfigKey("[Library]","RescanOnStartup"),ConfigValue((int)checkBox_library_scan->isChecked()));
-    m_pconfig->set(ConfigKey("[Library]","WriteAudioTags"),ConfigValue((int)checkbox_ID3_sync->isChecked()));
-    m_pconfig->set(ConfigKey("[Library]","UseRelativePathOnExport"),ConfigValue((int)checkBox_use_relative_path->isChecked()));
-    m_pconfig->set(ConfigKey("[Library]","ShowRhythmboxLibrary"),ConfigValue((int)checkBox_show_rhythmbox->isChecked()));
-    m_pconfig->set(ConfigKey("[Library]","ShowBansheeLibrary"),ConfigValue((int)checkBox_show_banshee->isChecked()));
-    m_pconfig->set(ConfigKey("[Library]","ShowITunesLibrary"),ConfigValue((int)checkBox_show_itunes->isChecked()));
-    m_pconfig->set(ConfigKey("[Library]","ShowTraktorLibrary"),ConfigValue((int)checkBox_show_traktor->isChecked()));
+    m_pconfig->set(ConfigKey("Library","RescanOnStartup"),ConfigValue((int)checkBox_library_scan->isChecked()));
+    m_pconfig->set(ConfigKey("Library","WriteAudioTags"),ConfigValue((int)checkbox_ID3_sync->isChecked()));
+    m_pconfig->set(ConfigKey("Library","UseRelativePathOnExport"),ConfigValue((int)checkBox_use_relative_path->isChecked()));
+    m_pconfig->set(ConfigKey("Library","ShowRhythmboxLibrary"),ConfigValue((int)checkBox_show_rhythmbox->isChecked()));
+    m_pconfig->set(ConfigKey("Library","ShowBansheeLibrary"),ConfigValue((int)checkBox_show_banshee->isChecked()));
+    m_pconfig->set(ConfigKey("Library","ShowITunesLibrary"),ConfigValue((int)checkBox_show_itunes->isChecked()));
+    m_pconfig->set(ConfigKey("Library","ShowTraktorLibrary"),ConfigValue((int)checkBox_show_traktor->isChecked()));
     auto dbclick_status = 0;
     if (radioButton_dbclick_bottom->isChecked()) { dbclick_status = ADD_TRACK_BOTTOM;
     } else if (radioButton_dbclick_top->isChecked()) { dbclick_status = ADD_TRACK_TOP;
     } else { dbclick_status = LOAD_TRACK_DECK; }
-    m_pconfig->set(ConfigKey("[Library]","TrackLoadAction"),ConfigValue(dbclick_status));
+    m_pconfig->set(ConfigKey("Library","TrackLoadAction"),ConfigValue(dbclick_status));
     auto font = m_pLibrary->getTrackTableFont();
     if (m_originalTrackTableFont != font) {
-        m_pconfig->set(ConfigKey("[Library]", "Font"),ConfigValue(font.toString()));
+        m_pconfig->set(ConfigKey("Library", "Font"),ConfigValue(font.toString()));
     }
     auto rowHeight = spinBoxRowHeight->value();
     if (m_iOriginalTrackTableRowHeight != rowHeight) {
-        m_pconfig->set(ConfigKey("[Library]","RowHeight"),ConfigValue(rowHeight));
+        m_pconfig->set(ConfigKey("Library","RowHeight"),ConfigValue(rowHeight));
     }
     // TODO(rryan): Don't save here.
     m_pconfig->Save();

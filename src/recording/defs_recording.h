@@ -1,5 +1,5 @@
 _Pragma("once")
-#define RECORDING_PREF_KEY "[Recording]"
+#define RECORDING_PREF_KEY "Recording"
 #define ENCODING_WAVE "WAV"
 #define ENCODING_FLAC "FLAC"
 #define ENCODING_AIFF "AIFF"

@@ -10,8 +10,8 @@
 #include "util/assert.h"
 
 #include "controlpotmeter.h"
-const char* kEqualizerRackName = "[EqualizerChain]";
-const char* kQuickEffectRackName = "[QuickEffectChain]";
+const char* kEqualizerRackName = "EqualizerChain";
+const char* kQuickEffectRackName = "QuickEffectChain";
 
 EffectsManager::EffectsManager(QObject* pParent, ConfigObject<ConfigValue>* pConfig)
         : QObject(pParent),
@@ -211,12 +211,12 @@ void EffectsManager::setupDefaults()
     pChain->addEffect(pEffect);
     m_pEffectChainManager->addEffectChain(pChain);
     // These controls are used inside EQ Effects
-    m_pLoEqFreq = new ControlPotmeter(ConfigKey("[Mixer Profile]", "LoEQFrequency"), 0., 22040);
-    m_pHiEqFreq = new ControlPotmeter(ConfigKey("[Mixer Profile]", "HiEQFrequency"), 0., 22040);
+    m_pLoEqFreq = new ControlPotmeter(ConfigKey("Mixer Profile", "LoEQFrequency"), 0., 22040);
+    m_pHiEqFreq = new ControlPotmeter(ConfigKey("Mixer Profile", "HiEQFrequency"), 0., 22040);
     // Add an EqualizerRack.
     auto pEqRack = addEqualizerRack();
     // Add Master EQ here, because EngineMaster is already up
-    pEqRack->addEffectChainSlotForGroup("[Master]");
+    pEqRack->addEffectChainSlotForGroup("Master");
     // Add a QuickEffectRack
     addQuickEffectRack();
 }

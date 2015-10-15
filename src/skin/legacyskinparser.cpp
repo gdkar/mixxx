@@ -700,7 +700,7 @@ QWidget* LegacySkinParser::parseOverview(QDomElement node) {
     if (!pPlayer) return nullptr;
     WOverview* overviewWidget = nullptr;
     // "RGB" = "2", "HSV" = "1" or "Filtered" = "0" (LMH) waveform overview type
-    auto type = m_pConfig->getValueString(ConfigKey("[Waveform]","WaveformOverviewType"), "0").toInt();
+    auto type = m_pConfig->getValueString(ConfigKey("Waveform","WaveformOverviewType"), "0").toInt();
     if (type == 0) {
         overviewWidget = new WOverviewLMH(pSafeChannelStr, m_pConfig, m_pParent);
     } else if (type == 1) {
@@ -905,12 +905,10 @@ void LegacySkinParser::parseSingletonDefinition(QDomElement node) {
       m_pContext->defineSingleton(objectName, pChild);
       pChild->hide();
     }
-    else {
-        SKIN_WARNING(node, *m_pContext) << "SingletonDefinition child widget is NULL";
-    }
+    else SKIN_WARNING(node, *m_pContext) << "SingletonDefinition child widget is NULL";
 }
-
-QWidget* LegacySkinParser::parseLibrary(QDomElement node) {
+QWidget* LegacySkinParser::parseLibrary(QDomElement node)
+{
     auto pLibraryWidget = new WLibrary(m_pParent);
     pLibraryWidget->installEventFilter(m_pKeyboard);
     pLibraryWidget->installEventFilter(m_pControllerManager->getControllerLearningEventFilter());
@@ -922,7 +920,8 @@ QWidget* LegacySkinParser::parseLibrary(QDomElement node) {
     commonWidgetSetup(node, pLibraryWidget, false);
     return pLibraryWidget;
 }
-QWidget* LegacySkinParser::parseLibrarySidebar(QDomElement node) {
+QWidget* LegacySkinParser::parseLibrarySidebar(QDomElement node)
+{
     auto pLibrarySidebar = new WLibrarySidebar(m_pParent);
     pLibrarySidebar->installEventFilter(m_pKeyboard);
     pLibrarySidebar->installEventFilter(m_pControllerManager->getControllerLearningEventFilter());
@@ -930,7 +929,8 @@ QWidget* LegacySkinParser::parseLibrarySidebar(QDomElement node) {
     commonWidgetSetup(node, pLibrarySidebar, false);
     return pLibrarySidebar;
 }
-QWidget* LegacySkinParser::parseTableView(QDomElement node) {
+QWidget* LegacySkinParser::parseTableView(QDomElement node)
+{
     auto pTabWidget = new QStackedWidget(m_pParent);
     setupPosition(node, pTabWidget);
     setupSize(node, pTabWidget);
@@ -973,7 +973,6 @@ QWidget* LegacySkinParser::parseTableView(QDomElement node) {
                                   1,    //Span 1 row
                                   3,    //Span 3 cols
                                   0);   //Default alignment
-
     pTabWidget->addWidget(pLibraryPage);
     pTabWidget->setStyleSheet(getLibraryStyle(node));
     return pTabWidget;

@@ -40,7 +40,7 @@ TEST_F(EngineBufferTest, DisableKeylockResetsPitch) {
 /* Does not work yet because we have no BaseTrackPlayerImpl in this test
 TEST_F(EngineBufferTest, TrackLoadResetsPitch) {
     // When a new track is loaded, the pitch value should be reset.
-    config()->set(ConfigKey("[Controls]","SpeedAutoReset"),
+    config()->set(ConfigKey("Controls","SpeedAutoReset"),
             ConfigValue(BaseTrackPlayer::RESET_PITCH));
     ControlObject::set(ConfigKey(m_sGroup1, "file_bpm"), 128.0);
     ControlObject::set(ConfigKey(m_sGroup1, "pitch"), 0.5);
@@ -104,7 +104,7 @@ TEST_F(EngineBufferTest, SlowRubberBand) {
     ControlObject::set(ConfigKey(m_sGroup1, "rateSearch"), 0.0072);
 
     // With Soundtouch, it should switch the scaler as well
-    ControlObject::set(ConfigKey("[Master]", "keylock_engine"),
+    ControlObject::set(ConfigKey("Master", "keylock_engine"),
                        static_cast<double>(EngineBuffer::SOUNDTOUCH));
     ProcessBuffer();
     EXPECT_EQ(m_pMockScaleVinyl1, m_pChannel1->getEngineBuffer()->m_pScale);
@@ -114,7 +114,7 @@ TEST_F(EngineBufferTest, SlowRubberBand) {
     ProcessBuffer();
 
     // With Rubberband, and transport stopped it should be still keylock
-    ControlObject::set(ConfigKey("[Master]", "keylock_engine"),
+    ControlObject::set(ConfigKey("Master", "keylock_engine"),
                        static_cast<double>(EngineBuffer::RUBBERBAND));
     ControlObject::set(ConfigKey(m_sGroup1, "rateSearch"), 0.0);
     ProcessBuffer();
@@ -206,7 +206,7 @@ TEST_F(EngineBufferTest, ResetPitchAdjustUsesLinear) {
 TEST_F(EngineBufferE2ETest, SoundTouchCrashTest) {
     // Soundtouch has a bug where a pitch value of zero causes an infinite loop
     // and crash.
-    ControlObject::set(ConfigKey("[Master]", "keylock_engine"),
+    ControlObject::set(ConfigKey("Master", "keylock_engine"),
                        static_cast<double>(EngineBuffer::SOUNDTOUCH));
     ControlObject::set(ConfigKey(m_sGroup1, "pitch"), 1.2);
     ControlObject::set(ConfigKey(m_sGroup1, "rate"), 0.05);
@@ -266,7 +266,7 @@ TEST_F(EngineBufferE2ETest, ReverseTest) {
 // DISABLED: This test is too dependent on the sound touch library version.
 //TEST_F(EngineBufferE2ETest, SoundTouchToggleTest) {
 //    // Test various cases where SoundTouch toggles on and off.
-//    ControlObject::set(ConfigKey("[Master]", "keylock_engine"),
+//    ControlObject::set(ConfigKey("Master", "keylock_engine"),
 //                       static_cast<double>(EngineBuffer::SOUNDTOUCH));
 //    ControlObject::set(ConfigKey(m_sGroup1, "rate"), 0.5);
 //    ControlObject::set(ConfigKey(m_sGroup1, "play"), 1.0);
@@ -292,7 +292,7 @@ TEST_F(EngineBufferE2ETest, ReverseTest) {
 // DISABLED: This test is too dependent on the rubber band library version.
 //TEST_F(EngineBufferE2ETest, RubberbandToggleTest) {
 //    // Test various cases where Rubberband toggles on and off.
-//    ControlObject::set(ConfigKey("[Master]", "keylock_engine"),
+//    ControlObject::set(ConfigKey("Master", "keylock_engine"),
 //                       static_cast<double>(EngineBuffer::RUBBERBAND));
 //    ControlObject::set(ConfigKey(m_sGroup1, "rate"), 0.5);
 //    ControlObject::set(ConfigKey(m_sGroup1, "play"), 1.0);
@@ -343,7 +343,7 @@ TEST_F(EngineBufferE2ETest, SeekTest) {
 TEST_F(EngineBufferE2ETest, SoundTouchRevereTest) {
     // This test must not crash when changing to reverse while pitch is tweaked
     // Testing bug #1458263
-    ControlObject::set(ConfigKey("[Master]", "keylock_engine"),
+    ControlObject::set(ConfigKey("Master", "keylock_engine"),
                        static_cast<double>(EngineBuffer::SOUNDTOUCH));
     ControlObject::set(ConfigKey(m_sGroup1, "pitch"), -1);
     ControlObject::set(ConfigKey(m_sGroup1, "play"), 1.0);
@@ -357,7 +357,7 @@ TEST_F(EngineBufferE2ETest, SoundTouchRevereTest) {
 TEST_F(EngineBufferE2ETest, RubberbandRevereTest) {
     // This test must not crash when changing to reverse while pitch is tweaked
     // Testing bug #1458263
-    ControlObject::set(ConfigKey("[Master]", "keylock_engine"),
+    ControlObject::set(ConfigKey("Master", "keylock_engine"),
                        static_cast<double>(EngineBuffer::RUBBERBAND));
     ControlObject::set(ConfigKey(m_sGroup1, "pitch"), -1);
     ControlObject::set(ConfigKey(m_sGroup1, "play"), 1.0);

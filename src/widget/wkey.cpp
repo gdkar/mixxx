@@ -5,7 +5,7 @@
 WKey::WKey(const char* group, QWidget* pParent)
         : WLabel(pParent),
           m_dOldValue(0),
-          m_preferencesUpdated(new ControlObjectSlave(ConfigKey("[Preferences]", "updated"),this)),
+          m_preferencesUpdated(new ControlObjectSlave(ConfigKey("Preferences", "updated"),this)),
           m_engineKeyDistance(new ControlObjectSlave(ConfigKey(group, "visual_key_distance"),this)) {
     setValue(m_dOldValue);
     connect(m_preferencesUpdated, SIGNAL(valueChanged(double)),this, SLOT(preferencesUpdated(double)));

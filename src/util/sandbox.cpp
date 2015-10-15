@@ -138,7 +138,7 @@ bool Sandbox::askForAccess(const QString& canonicalPath) {
 
 // static
 ConfigKey Sandbox::keyForCanonicalPath(const QString& canonicalPath) {
-    return ConfigKey("[OSXBookmark]",
+    return ConfigKey("OSXBookmark",
                      QString(canonicalPath.toLocal8Bit().toBase64()));
 }
 

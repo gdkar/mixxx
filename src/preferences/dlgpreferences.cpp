@@ -60,7 +60,7 @@ DlgPreferences::DlgPreferences(MixxxMainWindow * mixxx, SkinLoader* pSkinLoader,
                                ConfigObject<ConfigValue>* pConfig, Library *pLibrary)
         : m_pConfig(pConfig),
           m_pageSizeHint(QSize(0, 0)),
-          m_preferencesUpdated(new ControlPushButton(ConfigKey("[Preferences]", "updated"), false)) {
+          m_preferencesUpdated(new ControlPushButton(ConfigKey("Preferences", "updated"), false)) {
     setupUi(this);
     m_preferencesUpdated->setParent(this);
     contentsTreeWidget->setHeaderHidden(true);
@@ -127,7 +127,7 @@ DlgPreferences::DlgPreferences(MixxxMainWindow * mixxx, SkinLoader* pSkinLoader,
 
 DlgPreferences::~DlgPreferences() {
     // store last geometry in mixxx.cfg
-    m_pConfig->set(ConfigKey("[Preferences]","geometry"),
+    m_pConfig->set(ConfigKey("Preferences","geometry"),
                    m_geometry.join(","));
 
     // Need to explicitly delete rather than relying on child auto-deletion
@@ -337,7 +337,7 @@ void DlgPreferences::onShow() {
 
         // get last geometry OR use default values from
         m_geometry = m_pConfig->getValueString(
-                    ConfigKey("[Preferences]", "geometry"),
+                    ConfigKey("Preferences", "geometry"),
                     defaultGeometryStr).split(",");
     }
 

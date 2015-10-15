@@ -14,7 +14,7 @@ WNumberPos::WNumberPos(const char* group, QWidget* parent)
           m_dTrackSamples(0.0),
           m_dTrackSampleRate(0.0),
           m_bRemain(false) {
-    m_pShowTrackTimeRemaining = new ControlObjectSlave("[Controls]", "ShowDurationRemaining",this);
+    m_pShowTrackTimeRemaining = new ControlObjectSlave("Controls", "ShowDurationRemaining",this);
     m_pShowTrackTimeRemaining->connectValueChanged(this, SLOT(slotSetRemain(double)));
     slotSetRemain(m_pShowTrackTimeRemaining->get());
 

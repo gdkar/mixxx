@@ -87,9 +87,9 @@ SoundDevicePortAudio::SoundDevicePortAudio(
     m_iNumInputChannels = m_deviceInfo->maxInputChannels;
     m_iNumOutputChannels = m_deviceInfo->maxOutputChannels;
 
-    m_pMasterAudioLatencyOverloadCount = std::make_unique<ControlObjectSlave>("[Master]", "audio_latency_overload_count");
-    m_pMasterAudioLatencyUsage = std::make_unique<ControlObjectSlave>("[Master]", "audio_latency_usage");
-    m_pMasterAudioLatencyOverload  = std::make_unique<ControlObjectSlave>("[Master]", "audio_latency_overload");
+    m_pMasterAudioLatencyOverloadCount = std::make_unique<ControlObjectSlave>("Master", "audio_latency_overload_count");
+    m_pMasterAudioLatencyUsage = std::make_unique<ControlObjectSlave>("Master", "audio_latency_usage");
+    m_pMasterAudioLatencyOverload  = std::make_unique<ControlObjectSlave>("Master", "audio_latency_overload");
 }
 SoundDevicePortAudio::~SoundDevicePortAudio()=default;
 bool SoundDevicePortAudio::open(bool isClkRefDevice, int syncBuffers)
@@ -245,9 +245,9 @@ bool SoundDevicePortAudio::open(bool isClkRefDevice, int syncBuffers)
     if (isClkRefDevice) {
         // Update the samplerate and latency ControlObjects, which allow the
         // waveform view to properly correct for the latency.
-        ControlObject::set(ConfigKey("[Master]", "latency"), currentLatencyMSec);
-        ControlObject::set(ConfigKey("[Master]", "samplerate"), m_dSampleRate);
-        ControlObject::set(ConfigKey("[Master]", "audio_buffer_size"), bufferMSec);
+        ControlObject::set(ConfigKey("Master", "latency"), currentLatencyMSec);
+        ControlObject::set(ConfigKey("Master", "samplerate"), m_dSampleRate);
+        ControlObject::set(ConfigKey("Master", "audio_buffer_size"), bufferMSec);
         if (m_pMasterAudioLatencyOverloadCount) {m_pMasterAudioLatencyOverloadCount->set(0);}
     }
     m_pStream.store(pStream);

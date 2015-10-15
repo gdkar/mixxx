@@ -16,7 +16,7 @@ void ColorSchemeParser::setupLegacyColorSchemes(QDomElement docElem,ConfigObject
     auto colsch = docElem.namedItem("Schemes");
     if (!colsch.isNull() && colsch.isElement())
     {
-        auto schname = pConfig->getValueString(ConfigKey("[Config]","Scheme"));
+        auto schname = pConfig->getValueString(ConfigKey("Config","Scheme"));
         auto sch = colsch.firstChild();
         auto found = false;
         if (schname.isEmpty())

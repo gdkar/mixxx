@@ -29,15 +29,17 @@ ControlObject::ControlObject() = default;
 ControlObject::ControlObject(ConfigKey key, bool bIgnoreNops, bool bTrack,bool bPersist) {
     initialize(key, bIgnoreNops, bTrack, bPersist);
 }
-ControlObject::~ControlObject() = default;
+ControlObject::~ControlObject()
+{
+    if(m_pControl) m_pControl->removeCreatorCO(this);
+};
 void ControlObject::initialize(ConfigKey key, bool bIgnoreNops, bool bTrack,bool bPersist) {
     m_key = key;
     // Don't bother looking up the control if key is nullptr. Prevents log spew.
-    if (!m_key.isNull()) {
-        m_pControl = ControlDoublePrivate::getControl(m_key, false, this,bIgnoreNops, bTrack,bPersist);
-    }
+    if (!m_key.isNull()) m_pControl = ControlDoublePrivate::getControl(m_key, false, this,bIgnoreNops, bTrack,bPersist);
     // getControl can fail and return a nullptr control even with the create flag.
-    if (m_pControl) {
+    if (m_pControl)
+    {
         connect(m_pControl.data(), SIGNAL(valueChanged(double, QObject*)),this, SLOT(privateValueChanged(double, QObject*)),Qt::DirectConnection);
     }
 }
@@ -73,9 +75,12 @@ void ControlObject::privateValueChanged(double dValue, QObject* pSender) {
     else { emit(valueChangedFromEngine(dValue));}
 }
 // static
-ControlObject* ControlObject::getControl(const ConfigKey& key, bool warn) {
-    //qDebug() << "ControlObject::getControl for (" << key.group << "," << key.item << ")";
-    if(auto pCDP = ControlDoublePrivate::getControl(key, warn)) { return pCDP->getCreatorCO(); }
+ControlObject* ControlObject::getControl(const ConfigKey& key, bool warn)
+{
+    if(auto pCDP = ControlDoublePrivate::getControl(key, warn))
+    { 
+      return pCDP->getCreatorCO();
+    }
     return nullptr;
 }
 // static

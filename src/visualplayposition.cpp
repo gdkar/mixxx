@@ -15,7 +15,7 @@ VisualPlayPosition::VisualPlayPosition(const QString& key)
           m_key(key),
           m_invalidTimeInfoWarned(false)
 {
-    m_audioBufferSize = new ControlObjectSlave("[Master]", "audio_buffer_size");
+    m_audioBufferSize = new ControlObjectSlave("Master", "audio_buffer_size");
     m_audioBufferSize->setParent(this);
     m_audioBufferSize->connectValueChanged(this, SLOT(slotAudioBufferSizeChanged(double)));
     m_dAudioBufferSize = m_audioBufferSize->get();

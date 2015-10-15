@@ -1,5 +1,5 @@
 _Pragma("once")
-#define SHOUTCAST_PREF_KEY "[Shoutcast]"
+#define SHOUTCAST_PREF_KEY "Shoutcast"
 #define SHOUTCAST_DEFAULT_PORT "8000"
 
 #define SHOUTCAST_CHANNELS_STEREO 2

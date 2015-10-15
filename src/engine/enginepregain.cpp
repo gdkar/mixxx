@@ -27,9 +27,9 @@ EnginePregain::EnginePregain(QString group)
     m_pPassthroughEnabled = ControlObject::getControl(ConfigKey(group, "passthrough"));
 
     if (s_pReplayGainBoost == NULL) {
-        s_pReplayGainBoost = new ControlAudioTaperPot(ConfigKey("[ReplayGain]", "ReplayGainBoost"), -12, 12, 0.5);
-        s_pDefaultBoost = new ControlAudioTaperPot(ConfigKey("[ReplayGain]", "DefaultBoost"), -12, 12, 0.5);
-        s_pEnableReplayGain = new ControlObject(ConfigKey("[ReplayGain]", "ReplayGainEnabled"));
+        s_pReplayGainBoost = new ControlAudioTaperPot(ConfigKey("ReplayGain", "ReplayGainBoost"), -12, 12, 0.5);
+        s_pDefaultBoost = new ControlAudioTaperPot(ConfigKey("ReplayGain", "DefaultBoost"), -12, 12, 0.5);
+        s_pEnableReplayGain = new ControlObject(ConfigKey("ReplayGain", "ReplayGainEnabled"));
     }
 }
 

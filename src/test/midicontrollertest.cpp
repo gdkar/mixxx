@@ -50,7 +50,7 @@ class MidiControllerTest : public MixxxTest {
 TEST_F(MidiControllerTest, ReceiveMessage_PushButtonCO_PushOnOff) {
     // Most MIDI controller send push-buttons as (NOTE_ON, 0x7F) for press and
     // (NOTE_OFF, 0x00) for release.
-    ConfigKey key("[Channel1]", "hotcue_1_activate");
+    ConfigKey key("Channel1", "hotcue_1_activate");
     ControlPushButton cpb(key);
 
     unsigned char channel = 0x01;
@@ -78,7 +78,7 @@ TEST_F(MidiControllerTest, ReceiveMessage_PushButtonCO_PushOnOff) {
 TEST_F(MidiControllerTest, ReceiveMessage_PushButtonCO_PushOnOn) {
     // Some MIDI controllers send push-buttons as (NOTE_ON, 0x7f) for press and
     // (NOTE_ON, 0x00) for release.
-    ConfigKey key("[Channel1]", "hotcue_1_activate");
+    ConfigKey key("Channel1", "hotcue_1_activate");
     ControlPushButton cpb(key);
 
     unsigned char channel = 0x01;
@@ -104,7 +104,7 @@ TEST_F(MidiControllerTest, ReceiveMessage_PushButtonCO_PushOnOn) {
 TEST_F(MidiControllerTest, ReceiveMessage_PushButtonCO_ToggleOnOff_ButtonMidiOption) {
     // Using the button MIDI option allows you to use a MIDI toggle button as a
     // push button.
-    ConfigKey key("[Channel1]", "hotcue_1_activate");
+    ConfigKey key("Channel1", "hotcue_1_activate");
     ControlPushButton cpb(key);
 
     unsigned char channel = 0x01;
@@ -135,7 +135,7 @@ TEST_F(MidiControllerTest, ReceiveMessage_PushButtonCO_ToggleOnOff_ButtonMidiOpt
 TEST_F(MidiControllerTest, ReceiveMessage_PushButtonCO_ToggleOnOff_SwitchMidiOption) {
     // Using the switch MIDI option interprets a MIDI toggle button as a toggle
     // button rather than a momentary push button.
-    ConfigKey key("[Channel1]", "hotcue_1_activate");
+    ConfigKey key("Channel1", "hotcue_1_activate");
     ControlPushButton cpb(key);
 
     unsigned char channel = 0x01;
@@ -184,7 +184,7 @@ TEST_F(MidiControllerTest, ReceiveMessage_PushButtonCO_ToggleOnOff_SwitchMidiOpt
 TEST_F(MidiControllerTest, ReceiveMessage_PushButtonCO_PushCC) {
     // Some MIDI controllers (e.g. Korg nanoKONTROL) send momentary push-buttons
     // as (CC, 0x7f) for press and (CC, 0x00) for release.
-    ConfigKey key("[Channel1]", "hotcue_1_activate");
+    ConfigKey key("Channel1", "hotcue_1_activate");
     ControlPushButton cpb(key);
 
     unsigned char channel = 0x01;
@@ -210,7 +210,7 @@ TEST_F(MidiControllerTest, ReceiveMessage_PushButtonCO_PushCC) {
 TEST_F(MidiControllerTest, ReceiveMessage_ToggleCO_PushOnOff) {
     // Most MIDI controller send push-buttons as (NOTE_ON, 0x7F) for press and
     // (NOTE_OFF, 0x00) for release.
-    ConfigKey key("[Channel1]", "keylock");
+    ConfigKey key("Channel1", "keylock");
     ControlPushButton cpb(key);
     cpb.setButtonMode(ControlPushButton::TOGGLE);
 
@@ -239,7 +239,7 @@ TEST_F(MidiControllerTest, ReceiveMessage_ToggleCO_PushOnOff) {
 TEST_F(MidiControllerTest, ReceiveMessage_ToggleCO_PushOnOn) {
     // Some MIDI controllers send push-buttons as (NOTE_ON, 0x7f) for press and
     // (NOTE_ON, 0x00) for release.
-    ConfigKey key("[Channel1]", "keylock");
+    ConfigKey key("Channel1", "keylock");
     ControlPushButton cpb(key);
     cpb.setButtonMode(ControlPushButton::TOGGLE);
 
@@ -266,7 +266,7 @@ TEST_F(MidiControllerTest, ReceiveMessage_ToggleCO_PushOnOn) {
 TEST_F(MidiControllerTest, ReceiveMessage_ToggleCO_ToggleOnOff_ButtonMidiOption) {
     // Using the button MIDI option allows you to use a MIDI toggle button as a
     // push button.
-    ConfigKey key("[Channel1]", "keylock");
+    ConfigKey key("Channel1", "keylock");
     ControlPushButton cpb(key);
     cpb.setButtonMode(ControlPushButton::TOGGLE);
 
@@ -300,7 +300,7 @@ TEST_F(MidiControllerTest, ReceiveMessage_ToggleCO_ToggleOnOff_ButtonMidiOption)
 TEST_F(MidiControllerTest, ReceiveMessage_ToggleCO_ToggleOnOff_SwitchMidiOption) {
     // Using the switch MIDI option interprets a MIDI toggle button as a toggle
     // button rather than a momentary push button.
-    ConfigKey key("[Channel1]", "keylock");
+    ConfigKey key("Channel1", "keylock");
     ControlPushButton cpb(key);
     cpb.setButtonMode(ControlPushButton::TOGGLE);
 
@@ -350,7 +350,7 @@ TEST_F(MidiControllerTest, ReceiveMessage_ToggleCO_ToggleOnOff_SwitchMidiOption)
 TEST_F(MidiControllerTest, ReceiveMessage_ToggleCO_PushCC) {
     // Some MIDI controllers (e.g. Korg nanoKONTROL) send momentary push-buttons
     // as (CC, 0x7f) for press and (CC, 0x00) for release.
-    ConfigKey key("[Channel1]", "keylock");
+    ConfigKey key("Channel1", "keylock");
     ControlPushButton cpb(key);
     cpb.setButtonMode(ControlPushButton::TOGGLE);
 
@@ -375,7 +375,7 @@ TEST_F(MidiControllerTest, ReceiveMessage_ToggleCO_PushCC) {
 }
 
 TEST_F(MidiControllerTest, ReceiveMessage_PotMeterCO_7BitCC) {
-    ConfigKey key("[Channel1]", "playposition");
+    ConfigKey key("Channel1", "playposition");
 
     const double kMinValue = -1234.5;
     const double kMaxValue = 678.9;
@@ -403,7 +403,7 @@ TEST_F(MidiControllerTest, ReceiveMessage_PotMeterCO_7BitCC) {
 }
 
 TEST_F(MidiControllerTest, ReceiveMessage_PotMeterCO_14BitCC) {
-    ConfigKey key("[Channel1]", "playposition");
+    ConfigKey key("Channel1", "playposition");
 
     const double kMinValue = -1234.5;
     const double kMaxValue = 678.9;
@@ -489,7 +489,7 @@ TEST_F(MidiControllerTest, ReceiveMessage_PotMeterCO_14BitCC) {
 }
 
 TEST_F(MidiControllerTest, ReceiveMessage_PotMeterCO_14BitPitchBend) {
-    ConfigKey key("[Channel1]", "rate");
+    ConfigKey key("Channel1", "rate");
 
     const double kMinValue = -1234.5;
     const double kMaxValue = 678.9;

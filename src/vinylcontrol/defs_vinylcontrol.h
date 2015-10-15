@@ -1,9 +1,9 @@
 #ifndef DEFS_VINYLCONTROL_H
 #define DEFS_VINYLCONTROL_H
 
-#define VINYL_PREF_KEY "[VinylControl]"
+#define VINYL_PREF_KEY "VinylControl"
 
-const QString kVCGroup = QString("[Channel%1]");
+const QString kVCGroup = QString("Channel%1");
 const int VINYL_STATUS_DISABLED = 0;
 const int VINYL_STATUS_OK = 1;
 const int VINYL_STATUS_WARNING = 2;

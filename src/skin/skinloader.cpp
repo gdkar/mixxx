@@ -37,16 +37,16 @@ QList<QDir> SkinLoader::getSkinSearchPaths() {
     return searchPaths;
 }
 QString SkinLoader::getConfiguredSkinPath() {
-    auto configSkin = m_pConfig->getValueString(ConfigKey("[Config]", "ResizableSkin"));
+    auto configSkin = m_pConfig->getValueString(ConfigKey("Config", "ResizableSkin"));
     // If we don't have a skin defined, we might be migrating from 1.11 and
     // should pick the closest-possible skin.
     if (configSkin.isEmpty()) {
-        auto oldSkin = m_pConfig->getValueString(ConfigKey("[Config]", "Skin"));
+        auto oldSkin = m_pConfig->getValueString(ConfigKey("Config", "Skin"));
         if (!oldSkin.isEmpty()) {configSkin = pickResizableSkin(oldSkin);}
         // If the old skin was empty or we couldn't guess a skin, go with the
         // default.
         if (configSkin.isEmpty()) {configSkin = getDefaultSkinName();}
-        m_pConfig->set(ConfigKey("[Config]", "ResizableSkin"),ConfigValue(configSkin));
+        m_pConfig->set(ConfigKey("Config", "ResizableSkin"),ConfigValue(configSkin));
     }
     auto skinSearchPaths = getSkinSearchPaths();
     for(auto dir: skinSearchPaths) if (dir.cd(configSkin)) {return dir.absolutePath();}

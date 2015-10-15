@@ -133,7 +133,7 @@ RateControl::RateControl(QString group,ConfigObject<ConfigValue>* _config)
 
     // We need the sample rate so we can guesstimate something close
     // what latency is.
-    m_pSampleRate = ControlObject::getControl(ConfigKey("[Master]","samplerate"));
+    m_pSampleRate = ControlObject::getControl(ConfigKey("Master","samplerate"));
 
     // Wheel to control playback position/speed
     m_pWheel = new ControlTTRotary(ConfigKey(group, "wheel"));
@@ -158,11 +158,11 @@ RateControl::RateControl(QString group,ConfigObject<ConfigValue>* _config)
     std::memset(m_jogFilter,0,sizeof(m_jogFilter));
     // Update Internal Settings
     // Set Pitchbend Mode
-    m_eRateRampMode = (RateControl::RATERAMP_MODE)getConfig()->getValueString(ConfigKey("[Controls]","RateRamp")).toInt();
+    m_eRateRampMode = (RateControl::RATERAMP_MODE)getConfig()->getValueString(ConfigKey("Controls","RateRamp")).toInt();
 
     // Set the Sensitivity
     m_iRateRampSensitivity =
-            getConfig()->getValueString(ConfigKey("[Controls]","RateRampSensitivity")).toInt();
+            getConfig()->getValueString(ConfigKey("Controls","RateRampSensitivity")).toInt();
 
     m_pSyncMode = new ControlObjectSlave(group, "sync_mode", this);
 }

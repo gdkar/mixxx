@@ -46,9 +46,10 @@
 
 _Pragma("once")
 #include <QPointer>
+
 #include "widget/wwidgetgroup.h"
-class WSingletonContainer : public WWidgetGroup
-{
+#include "skin/skincontext.h"
+class WSingletonContainer : public WWidgetGroup {
     Q_OBJECT
   public:
     // Prepares the container and remembers the widget, but does not add the
@@ -61,8 +62,7 @@ class WSingletonContainer : public WWidgetGroup
     QPointer<QWidget> m_pWidget;
     QLayout* m_pLayout;
 };
-class SingletonMap
-{
+class SingletonMap {
   public:
     // Takes a constructed QWidget and inserts it in the map of available
     // singletons.  Checks that an object of that name hasn't already been
@@ -75,4 +75,3 @@ class SingletonMap
   private:
     QMap<QString, QWidget*> m_singletons;
 };
-

@@ -212,7 +212,7 @@ void BasePlaylistFeature::slotDuplicatePlaylist() {
                                      tr("Enter name for new playlist:"),
                                      QLineEdit::Normal,
                                      //: Appendix to default name when duplicating a playlist
-                                     oldName + tr("_copy" , "[noun]"),
+                                     oldName + tr("_copy" , "noun"),
                                      &ok).trimmed();
         if (!ok || oldName == name) {
             return;
@@ -331,7 +331,7 @@ void BasePlaylistFeature::slotImportPlaylist() {
     }
 
     QString lastPlaylistDirectory = m_pConfig->getValueString(
-            ConfigKey("[Library]", "LastImportExportPlaylistDirectory"),
+            ConfigKey("Library", "LastImportExportPlaylistDirectory"),
             QDesktopServices::storageLocation(QDesktopServices::MusicLocation));
 
     QString playlist_file = QFileDialog::getOpenFileName(
@@ -346,7 +346,7 @@ void BasePlaylistFeature::slotImportPlaylist() {
 
     // Update the import/export playlist directory
     QFileInfo fileName(playlist_file);
-    m_pConfig->set(ConfigKey("[Library]","LastImportExportPlaylistDirectory"),
+    m_pConfig->set(ConfigKey("Library","LastImportExportPlaylistDirectory"),
                 ConfigValue(fileName.dir().absolutePath()));
 
     // The user has picked a new directory via a file dialog. This means the
@@ -391,7 +391,7 @@ void BasePlaylistFeature::slotExportPlaylist() {
     qDebug() << "Export playlist" << playlistName;
 
     QString lastPlaylistDirectory = m_pConfig->getValueString(
-                ConfigKey("[Library]", "LastImportExportPlaylistDirectory"),
+                ConfigKey("Library", "LastImportExportPlaylistDirectory"),
                 QDesktopServices::storageLocation(QDesktopServices::MusicLocation));
 
     // Open a dialog to let the user choose the file location for playlist export.
@@ -420,7 +420,7 @@ void BasePlaylistFeature::slotExportPlaylist() {
     }
     // Update the import/export playlist directory
     //QFileInfo fileName(file_location);
-    m_pConfig->set(ConfigKey("[Library]","LastImportExportPlaylistDirectory"),
+    m_pConfig->set(ConfigKey("Library","LastImportExportPlaylistDirectory"),
                 ConfigValue(fileName.dir().absolutePath()));
 
     // The user has picked a new directory via a file dialog. This means the
@@ -441,7 +441,7 @@ void BasePlaylistFeature::slotExportPlaylist() {
 
     // check config if relative paths are desired
     bool useRelativePath = static_cast<bool>(m_pConfig->getValueString(
-        ConfigKey("[Library]", "UseRelativePathOnExport")).toInt());
+        ConfigKey("Library", "UseRelativePathOnExport")).toInt());
 
     if (file_location.endsWith(".csv", Qt::CaseInsensitive)) {
         ParserCsv::writeCSVFile(file_location, pPlaylistTableModel.data(), useRelativePath);

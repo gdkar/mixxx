@@ -93,7 +93,7 @@ void DlgPrefWaveform::slotUpdate() {
 
     // By default we set filtered woverview = "0"
     int overviewType = m_pConfig->getValueString(
-            ConfigKey("[Waveform]","WaveformOverviewType"), "0").toInt();
+            ConfigKey("Waveform","WaveformOverviewType"), "0").toInt();
     if (overviewType != waveformOverviewComboBox->currentIndex()) {
         waveformOverviewComboBox->setCurrentIndex(overviewType);
     }
@@ -148,7 +148,7 @@ void DlgPrefWaveform::slotSetWaveformType(int index) {
 }
 void DlgPrefWaveform::slotSetWaveformOverviewType(int index)
 {
-    m_pConfig->set(ConfigKey("[Waveform]","WaveformOverviewType"), ConfigValue(index));
+    m_pConfig->set(ConfigKey("Waveform","WaveformOverviewType"), ConfigValue(index));
     m_pMixxx->rebootMixxxView();
 }
 

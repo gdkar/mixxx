@@ -15,9 +15,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef ENGINEMASTER_H
-#define ENGINEMASTER_H
-
+_Pragma("once")
 #include <QObject>
 #include <QVarLengthArray>
 
@@ -279,4 +277,3 @@ class EngineMaster : public QObject, public AudioSource {
     ControlObject* m_pHeadphoneEnabled;
     bool m_bBusOutputConnected[3];
 };
-#endif

@@ -25,7 +25,7 @@ EngineAux::EngineAux(const ChannelHandleAndGroup& handle_group, EffectsManager* 
     // by default Aux is enabled on the master and disabled on PFL. User
     // can over-ride by setting the "pfl" or "master" controls.
     setMaster(true);
-    m_pSampleRate = new ControlObjectSlave("[Master]", "samplerate");
+    m_pSampleRate = new ControlObjectSlave("Master", "samplerate");
 }
 EngineAux::~EngineAux() {
     qDebug() << "~EngineAux()";

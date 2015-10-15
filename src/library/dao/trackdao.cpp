@@ -1774,7 +1774,7 @@ void TrackDAO::markTracksAsMixxxDeleted(const QString& dir) {
 }
 
 void TrackDAO::writeMetadataToFile(TrackInfoObject* pTrack) {
-    if (m_pConfig && m_pConfig->getValueString(ConfigKey("[Library]","WriteAudioTags")).toInt() == 1) {
+    if (m_pConfig && m_pConfig->getValueString(ConfigKey("Library","WriteAudioTags")).toInt() == 1) {
 
         Mixxx::TrackMetadata trackMetadata;
         pTrack->getMetadata(&trackMetadata);

@@ -43,7 +43,7 @@ bool BansheeFeature::isSupported()
 
 // static
 void BansheeFeature::prepareDbPath(ConfigObject<ConfigValue>* pConfig) {
-    m_databaseFile = pConfig->getValueString(ConfigKey("[Banshee]","Database"));
+    m_databaseFile = pConfig->getValueString(ConfigKey("Banshee","Database"));
     if (!QFile::exists(m_databaseFile)) {
         // Fall back to default
         m_databaseFile = BansheeDbConnection::getDatabaseFile();

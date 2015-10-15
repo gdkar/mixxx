@@ -80,41 +80,41 @@ DlgPrefSound::DlgPrefSound(QWidget* pParent, SoundManager* pSoundManager,PlayerM
     connect(m_pSoundManager, SIGNAL(inputRegistered(AudioInput, AudioDestination*)),this, SLOT(addPath(AudioInput)));
     connect(m_pSoundManager, SIGNAL(inputRegistered(AudioInput, AudioDestination*)),this, SLOT(loadSettings()));
 
-    m_pMasterAudioLatencyOverloadCount = new ControlObjectSlave("[Master]", "audio_latency_overload_count", this);
+    m_pMasterAudioLatencyOverloadCount = new ControlObjectSlave("Master", "audio_latency_overload_count", this);
     m_pMasterAudioLatencyOverloadCount->connectValueChanged(SLOT(bufferUnderflow(double)));
 
-    m_pMasterLatency = new ControlObjectSlave("[Master]", "latency", this);
+    m_pMasterLatency = new ControlObjectSlave("Master", "latency", this);
     m_pMasterLatency->connectValueChanged(SLOT(masterLatencyChanged(double)));
 
 
-    m_pHeadDelay = new ControlObjectSlave("[Master]", "headDelay", this);
-    m_pMasterDelay = new ControlObjectSlave("[Master]", "delay", this);
+    m_pHeadDelay = new ControlObjectSlave("Master", "headDelay", this);
+    m_pMasterDelay = new ControlObjectSlave("Master", "delay", this);
 
     headDelaySpinBox->setValue(m_pHeadDelay->get());
     masterDelaySpinBox->setValue(m_pMasterDelay->get());
 
-    m_pMasterEnabled = new ControlObjectSlave("[Master]", "enabled", this);
+    m_pMasterEnabled = new ControlObjectSlave("Master", "enabled", this);
     masterMixComboBox->addItem(tr("Disabled"));
     masterMixComboBox->addItem(tr("Enabled"));
     masterMixComboBox->setCurrentIndex(m_pMasterEnabled->get() ? 1 : 0);
     connect(masterMixComboBox, SIGNAL(currentIndexChanged(int)),this, SLOT(masterMixChanged(int)));
     m_pMasterEnabled->connectValueChanged(this, SLOT(masterEnabledChanged(double)));
 
-    m_pMasterMonoMixdown = new ControlObjectSlave("[Master]", "mono_mixdown", this);
+    m_pMasterMonoMixdown = new ControlObjectSlave("Master", "mono_mixdown", this);
     masterOutputModeComboBox->addItem(tr("Stereo"));
     masterOutputModeComboBox->addItem(tr("Mono"));
     masterOutputModeComboBox->setCurrentIndex(m_pMasterMonoMixdown->get() ? 1 : 0);
     connect(masterOutputModeComboBox, SIGNAL(currentIndexChanged(int)),this, SLOT(masterOutputModeComboBoxChanged(int)));
     m_pMasterMonoMixdown->connectValueChanged(this, SLOT(masterMonoMixdownChanged(double)));
 
-    m_pMasterTalkoverMix = new ControlObjectSlave("[Master]", "talkover_mix", this);
+    m_pMasterTalkoverMix = new ControlObjectSlave("Master", "talkover_mix", this);
     micMixComboBox->addItem(tr("Master output"));
     micMixComboBox->addItem(tr("Broadcast and Recording only"));
     micMixComboBox->setCurrentIndex((int)m_pMasterTalkoverMix->get());
     connect(micMixComboBox, SIGNAL(currentIndexChanged(int)),this, SLOT(talkoverMixComboBoxChanged(int)));
     m_pMasterTalkoverMix->connectValueChanged(this, SLOT(talkoverMixChanged(double)));
 
-    m_pKeylockEngine = new ControlObjectSlave("[Master]", "keylock_engine", this);
+    m_pKeylockEngine = new ControlObjectSlave("Master", "keylock_engine", this);
     connect(headDelaySpinBox, SIGNAL(valueChanged(double)),this, SLOT(headDelayChanged(double)));
     connect(masterDelaySpinBox, SIGNAL(valueChanged(double)),this, SLOT(masterDelayChanged(double)));
 
@@ -148,7 +148,7 @@ void DlgPrefSound::slotUpdate() {
 void DlgPrefSound::slotApply() {
     if (!m_settingsModified) {return;}
     m_pKeylockEngine->set(keylockComboBox->currentIndex());
-    m_pConfig->set(ConfigKey("[Master]", "keylock_engine"),ConfigValue(keylockComboBox->currentIndex()));
+    m_pConfig->set(ConfigKey("Master", "keylock_engine"),ConfigValue(keylockComboBox->currentIndex()));
     m_config.clearInputs();
     m_config.clearOutputs();
     emit(writePaths(&m_config));
@@ -284,7 +284,7 @@ void DlgPrefSound::loadSettings(const SoundManagerConfig &config) {
     auto syncBuffers = m_config.getSyncBuffers();
     auto syncIndex   = deviceSyncComboBox->findData(QVariant(syncBuffers));
     if ( syncIndex != -1 ) { deviceSyncComboBox->setCurrentIndex(syncIndex);}
-    int keylock_engine = m_pConfig->getValueString(ConfigKey("[Master]", "keylock_engine"), "1").toInt();
+    int keylock_engine = m_pConfig->getValueString(ConfigKey("Master", "keylock_engine"), "1").toInt();
     keylockComboBox->setCurrentIndex(keylock_engine);
     emit(loadPaths(m_config));
     m_loading = false;

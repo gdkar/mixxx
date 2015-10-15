@@ -41,8 +41,8 @@ class EngineChannelMock : public EngineChannel {
 class EngineMasterTest : public MixxxTest {
   protected:
     virtual void SetUp() {
-        m_pMaster = new EngineMaster(config(), "[Master]", NULL, false, false);
-        m_pMasterEnabled = new ControlObjectSlave(ConfigKey("[Master]", "enabled"));
+        m_pMaster = new EngineMaster(config(), "Master", NULL, false, false);
+        m_pMasterEnabled = new ControlObjectSlave(ConfigKey("Master", "enabled"));
         m_pMasterEnabled->set(1);
     }
 
@@ -77,11 +77,11 @@ class EngineMasterTest : public MixxxTest {
 
 TEST_F(EngineMasterTest, SingleChannelOutputWorks) {
     EngineChannelMock* pChannel = new EngineChannelMock(
-            "[Test1]", EngineChannel::CENTER, m_pMaster);
+            "Test1", EngineChannel::CENTER, m_pMaster);
     m_pMaster->addChannel(pChannel);
 
     // Pretend that the channel processed the buffer by stuffing it with 1.0's
-    CSAMPLE* pChannelBuffer = const_cast<CSAMPLE*>(m_pMaster->getChannelBuffer("[Test1]"));
+    CSAMPLE* pChannelBuffer = const_cast<CSAMPLE*>(m_pMaster->getChannelBuffer("Test1"));
     // We assume it uses MAX_BUFFER_LEN. This should probably be fixed.
     FillBuffer(pChannelBuffer, 0.1f, MAX_BUFFER_LEN);
 
@@ -114,15 +114,15 @@ TEST_F(EngineMasterTest, SingleChannelOutputWorks) {
 
 TEST_F(EngineMasterTest, TwoChannelOutputWorks) {
     EngineChannelMock* pChannel1 = new EngineChannelMock(
-            "[Test1]", EngineChannel::CENTER, m_pMaster);
+            "Test1", EngineChannel::CENTER, m_pMaster);
     m_pMaster->addChannel(pChannel1);
     EngineChannelMock* pChannel2 = new EngineChannelMock(
-            "[Test2]", EngineChannel::CENTER, m_pMaster);
+            "Test2", EngineChannel::CENTER, m_pMaster);
     m_pMaster->addChannel(pChannel2);
 
     // Pretend that the channel processed the buffer by stuffing it with 1.0's
-    CSAMPLE* pChannel1Buffer = const_cast<CSAMPLE*>(m_pMaster->getChannelBuffer("[Test1]"));
-    CSAMPLE* pChannel2Buffer = const_cast<CSAMPLE*>(m_pMaster->getChannelBuffer("[Test2]"));
+    CSAMPLE* pChannel1Buffer = const_cast<CSAMPLE*>(m_pMaster->getChannelBuffer("Test1"));
+    CSAMPLE* pChannel2Buffer = const_cast<CSAMPLE*>(m_pMaster->getChannelBuffer("Test2"));
 
     // We assume it uses MAX_BUFFER_LEN. This should probably be fixed.
     FillBuffer(pChannel1Buffer, 0.1f, MAX_BUFFER_LEN);
@@ -171,15 +171,15 @@ TEST_F(EngineMasterTest, TwoChannelOutputWorks) {
 
 TEST_F(EngineMasterTest, TwoChannelPFLOutputWorks) {
     EngineChannelMock* pChannel1 = new EngineChannelMock(
-            "[Test1]", EngineChannel::CENTER, m_pMaster);
+            "Test1", EngineChannel::CENTER, m_pMaster);
     m_pMaster->addChannel(pChannel1);
     EngineChannelMock* pChannel2 = new EngineChannelMock(
-            "[Test2]", EngineChannel::CENTER, m_pMaster);
+            "Test2", EngineChannel::CENTER, m_pMaster);
     m_pMaster->addChannel(pChannel2);
 
     // Pretend that the channel processed the buffer by stuffing it with 1.0's
-    CSAMPLE* pChannel1Buffer = const_cast<CSAMPLE*>(m_pMaster->getChannelBuffer("[Test1]"));
-    CSAMPLE* pChannel2Buffer = const_cast<CSAMPLE*>(m_pMaster->getChannelBuffer("[Test2]"));
+    CSAMPLE* pChannel1Buffer = const_cast<CSAMPLE*>(m_pMaster->getChannelBuffer("Test1"));
+    CSAMPLE* pChannel2Buffer = const_cast<CSAMPLE*>(m_pMaster->getChannelBuffer("Test2"));
 
     // We assume it uses MAX_BUFFER_LEN. This should probably be fixed.
     FillBuffer(pChannel1Buffer, 0.1f, MAX_BUFFER_LEN);
@@ -228,19 +228,19 @@ TEST_F(EngineMasterTest, TwoChannelPFLOutputWorks) {
 
 TEST_F(EngineMasterTest, ThreeChannelOutputWorks) {
     EngineChannelMock* pChannel1 = new EngineChannelMock(
-            "[Test1]", EngineChannel::CENTER, m_pMaster);
+            "Test1", EngineChannel::CENTER, m_pMaster);
     m_pMaster->addChannel(pChannel1);
     EngineChannelMock* pChannel2 = new EngineChannelMock(
-            "[Test2]", EngineChannel::CENTER, m_pMaster);
+            "Test2", EngineChannel::CENTER, m_pMaster);
     m_pMaster->addChannel(pChannel2);
     EngineChannelMock* pChannel3 = new EngineChannelMock(
-            "[Test3]", EngineChannel::CENTER, m_pMaster);
+            "Test3", EngineChannel::CENTER, m_pMaster);
     m_pMaster->addChannel(pChannel3);
 
     // Pretend that the channel processed the buffer by stuffing it with 1.0's
-    CSAMPLE* pChannel1Buffer = const_cast<CSAMPLE*>(m_pMaster->getChannelBuffer("[Test1]"));
-    CSAMPLE* pChannel2Buffer = const_cast<CSAMPLE*>(m_pMaster->getChannelBuffer("[Test2]"));
-    CSAMPLE* pChannel3Buffer = const_cast<CSAMPLE*>(m_pMaster->getChannelBuffer("[Test3]"));
+    CSAMPLE* pChannel1Buffer = const_cast<CSAMPLE*>(m_pMaster->getChannelBuffer("Test1"));
+    CSAMPLE* pChannel2Buffer = const_cast<CSAMPLE*>(m_pMaster->getChannelBuffer("Test2"));
+    CSAMPLE* pChannel3Buffer = const_cast<CSAMPLE*>(m_pMaster->getChannelBuffer("Test3"));
 
     // We assume it uses MAX_BUFFER_LEN. This should probably be fixed.
     FillBuffer(pChannel1Buffer, 0.1f, MAX_BUFFER_LEN);
@@ -304,19 +304,19 @@ TEST_F(EngineMasterTest, ThreeChannelOutputWorks) {
 
 TEST_F(EngineMasterTest, ThreeChannelPFLOutputWorks) {
     EngineChannelMock* pChannel1 = new EngineChannelMock(
-            "[Test1]", EngineChannel::CENTER, m_pMaster);
+            "Test1", EngineChannel::CENTER, m_pMaster);
     m_pMaster->addChannel(pChannel1);
     EngineChannelMock* pChannel2 = new EngineChannelMock(
-            "[Test2]", EngineChannel::CENTER, m_pMaster);
+            "Test2", EngineChannel::CENTER, m_pMaster);
     m_pMaster->addChannel(pChannel2);
     EngineChannelMock* pChannel3 = new EngineChannelMock(
-            "[Test3]", EngineChannel::CENTER, m_pMaster);
+            "Test3", EngineChannel::CENTER, m_pMaster);
     m_pMaster->addChannel(pChannel3);
 
     // Pretend that the channel processed the buffer by stuffing it with 1.0's
-    CSAMPLE* pChannel1Buffer = const_cast<CSAMPLE*>(m_pMaster->getChannelBuffer("[Test1]"));
-    CSAMPLE* pChannel2Buffer = const_cast<CSAMPLE*>(m_pMaster->getChannelBuffer("[Test2]"));
-    CSAMPLE* pChannel3Buffer = const_cast<CSAMPLE*>(m_pMaster->getChannelBuffer("[Test3]"));
+    CSAMPLE* pChannel1Buffer = const_cast<CSAMPLE*>(m_pMaster->getChannelBuffer("Test1"));
+    CSAMPLE* pChannel2Buffer = const_cast<CSAMPLE*>(m_pMaster->getChannelBuffer("Test2"));
+    CSAMPLE* pChannel3Buffer = const_cast<CSAMPLE*>(m_pMaster->getChannelBuffer("Test3"));
 
     // We assume it uses MAX_BUFFER_LEN. This should probably be fixed.
     FillBuffer(pChannel1Buffer, 0.1f, MAX_BUFFER_LEN);
@@ -380,11 +380,11 @@ TEST_F(EngineMasterTest, ThreeChannelPFLOutputWorks) {
 
 TEST_F(EngineMasterTest, SingleChannelPFLOutputWorks) {
     EngineChannelMock* pChannel = new EngineChannelMock(
-            "[Test1]", EngineChannel::CENTER, m_pMaster);
+            "Test1", EngineChannel::CENTER, m_pMaster);
     m_pMaster->addChannel(pChannel);
 
     // Pretend that the channel processed the buffer by stuffing it with 1.0's
-    CSAMPLE* pChannelBuffer = const_cast<CSAMPLE*>(m_pMaster->getChannelBuffer("[Test1]"));
+    CSAMPLE* pChannelBuffer = const_cast<CSAMPLE*>(m_pMaster->getChannelBuffer("Test1"));
     // We assume it uses MAX_BUFFER_LEN. This should probably be fixed.
     FillBuffer(pChannelBuffer, 0.1f, MAX_BUFFER_LEN);
 

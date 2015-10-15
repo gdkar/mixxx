@@ -51,7 +51,7 @@ EngineDeck::EngineDeck(const ChannelHandleAndGroup& handle_group,
             this, SLOT(slotPassingToggle(double)),
             Qt::DirectConnection);
 
-    m_pSampleRate = new ControlObjectSlave("[Master]", "samplerate");
+    m_pSampleRate = new ControlObjectSlave("Master", "samplerate");
 
     // Set up additional engines
     m_pPregain = new EnginePregain(getGroup());

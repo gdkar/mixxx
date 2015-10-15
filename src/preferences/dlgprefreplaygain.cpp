@@ -4,7 +4,7 @@
 #include "controlobjectslave.h"
 #include "util/math.h"
 
-#define kConfigKey "[ReplayGain]"
+#define kConfigKey "ReplayGain"
 
 static const int kReplayGainReferenceLUFS = -18; 
 

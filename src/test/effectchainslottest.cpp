@@ -18,8 +18,8 @@ using ::testing::_;
 class EffectChainSlotTest : public BaseEffectTest {
   protected:
     EffectChainSlotTest()
-            : m_master(m_factory.getOrCreateHandle("[Master]"), "[Master]"),
-              m_headphone(m_factory.getOrCreateHandle("[Headphone]"), "[Headphone]") {
+            : m_master(m_factory.getOrCreateHandle("Master"), "Master"),
+              m_headphone(m_factory.getOrCreateHandle("Headphone"), "Headphone") {
         m_pEffectsManager->registerChannel(m_master);
         m_pEffectsManager->registerChannel(m_headphone);
     }

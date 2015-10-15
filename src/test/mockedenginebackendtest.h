@@ -62,9 +62,9 @@ class MockScaler : public EngineBufferScale {
 class MockedEngineBackendTest : public MixxxTest {
   protected:
     virtual void SetUp() {
-        m_pNumDecks = new ControlObject(ConfigKey("[Master]", "num_decks"));
+        m_pNumDecks = new ControlObject(ConfigKey("Master", "num_decks"));
         m_pEffectsManager = new EffectsManager(NULL, config());
-        m_pEngineMaster = new EngineMaster(m_pConfig.data(), "[Master]",
+        m_pEngineMaster = new EngineMaster(m_pConfig.data(), "Master",
                                            m_pEffectsManager, false, false);
 
         m_pChannel1 = new EngineDeck(

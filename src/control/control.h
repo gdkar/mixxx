@@ -58,7 +58,7 @@ class ControlDoublePrivate : public QObject {
     void setDefaultValue(double dValue);
     double defaultValue() const;
     ControlObject* getCreatorCO() const;
-    void removeCreatorCO();
+    void removeCreatorCO(ControlObject *);
     ConfigKey getKey() const;
     // Connects a slot to the ValueChange request for CO validation. All change
     // requests issued by set are routed though the connected slot. This can

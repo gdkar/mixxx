@@ -51,7 +51,7 @@ VinylControlManager::~VinylControlManager() {
 }
 
 void VinylControlManager::init() {
-    m_pNumDecks = new ControlObjectSlave("[Master]", "num_decks", this);
+    m_pNumDecks = new ControlObjectSlave("Master", "num_decks", this);
     m_pNumDecks->connectValueChanged(SLOT(slotNumDecksChanged(double)));
     slotNumDecksChanged(m_pNumDecks->get());
 }

@@ -378,16 +378,16 @@ QString BrowseFeature::getRootViewHtml() const {
 }
 
 void BrowseFeature::saveQuickLinks() {
-    m_pConfig->set(ConfigKey("[Browse]","QuickLinks"),ConfigValue(
+    m_pConfig->set(ConfigKey("Browse","QuickLinks"),ConfigValue(
         m_quickLinkList.join(kQuickLinksSeparator)));
 }
 
 void BrowseFeature::loadQuickLinks() {
-    if (m_pConfig->getValueString(ConfigKey("[Browse]","QuickLinks")).isEmpty()) {
+    if (m_pConfig->getValueString(ConfigKey("Browse","QuickLinks")).isEmpty()) {
         m_quickLinkList = getDefaultQuickLinks();
     } else {
         m_quickLinkList = m_pConfig->getValueString(
-            ConfigKey("[Browse]","QuickLinks")).split(kQuickLinksSeparator);
+            ConfigKey("Browse","QuickLinks")).split(kQuickLinksSeparator);
     }
 }
 

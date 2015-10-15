@@ -79,17 +79,17 @@ void ControlDoublePrivate::insertAlias(const ConfigKey& alias, const ConfigKey& 
 // static
 QSharedPointer<ControlDoublePrivate> ControlDoublePrivate::getControl(const ConfigKey& key, bool warn, ControlObject* pCreatorCO,bool bIgnoreNops, bool bTrack, bool bPersist) {
     if (key.isNull()) {
-        if (warn)
-            qWarning() << "ControlDoublePrivate::getControl returning NULL" << "for empty ConfigKey.";
+        if (warn) qWarning() << "ControlDoublePrivate::getControl returning NULL" << "for empty ConfigKey.";
         return QSharedPointer<ControlDoublePrivate>();
     }
     QMutexLocker locker(&s_qCOHashMutex);
     auto pControl = QSharedPointer<ControlDoublePrivate>{};
     if(s_qCOHash.contains(key))  pControl = s_qCOHash.value(key);
-    if (!pControl && !warn) {
+    if (!pControl && !warn)
+    {
             pControl = QSharedPointer<ControlDoublePrivate>(new ControlDoublePrivate(
                   key, 
-                  pCreatorCO, 
+                  pCreatorCO,
                   bIgnoreNops,
                   bTrack, 
                   bPersist
@@ -97,21 +97,65 @@ QSharedPointer<ControlDoublePrivate> ControlDoublePrivate::getControl(const Conf
                 );
             //qDebug() << "ControlDoublePrivate::s_qCOHash.insert(" << key.group << "," << key.item << ")";
             s_qCOHash.insert(key, pControl);
-            locker.unlock();
-        if (!pCreatorCO) pControl->m_pCreatorCO = new ControlObject(key,bIgnoreNops,bTrack,bPersist);
+
+    }
+    if (pControl && !pControl->m_pCreatorCO)
+    {
+      if ( !pCreatorCO ) 
+      {
+        locker.unlock();  
+        pCreatorCO = new ControlObject(key,bIgnoreNops,bTrack,bPersist);
+        locker.relock();
+        if ( pControl->m_pCreatorCO != pCreatorCO )
+        {
+          delete pCreatorCO;
+          pCreatorCO = pControl->m_pCreatorCO;
+        }
+      }
+      pControl->m_pCreatorCO = pCreatorCO;
     }
     return pControl;
 }
-QString ControlDoublePrivate::name() const {return m_name;}
-void ControlDoublePrivate::setName(const QString &s){m_name = s;}
-QString ControlDoublePrivate::description() const { return m_description;}
-void ControlDoublePrivate::setDescription(const QString &s){m_description = s;}
-double ControlDoublePrivate::get()const{return m_value.load();}
-bool ControlDoublePrivate::ignoreNops() const{return m_bIgnoreNops;}
-void ControlDoublePrivate::setDefaultValue(double dValue){m_defaultValue.store(dValue);}
-double ControlDoublePrivate::defaultValue()const{return m_defaultValue.load();}
-ControlObject *ControlDoublePrivate::getCreatorCO() const{ return m_pCreatorCO;}
-void ControlDoublePrivate::removeCreatorCO(){m_pCreatorCO = nullptr;}
+QString ControlDoublePrivate::name() const 
+{
+  return m_name;
+}
+void ControlDoublePrivate::setName(const QString &s)
+{
+  m_name = s;
+}
+QString ControlDoublePrivate::description() const 
+{
+  return m_description;
+}
+void ControlDoublePrivate::setDescription(const QString &s)
+{
+  m_description = s;
+}
+double ControlDoublePrivate::get()const
+{
+  return m_value.load();
+}
+bool ControlDoublePrivate::ignoreNops() const
+{
+  return m_bIgnoreNops;
+}
+void ControlDoublePrivate::setDefaultValue(double dValue)
+{
+  m_defaultValue.store(dValue);
+}
+double ControlDoublePrivate::defaultValue()const
+{
+  return m_defaultValue.load();
+}
+ControlObject *ControlDoublePrivate::getCreatorCO() const
+{ 
+  return m_pCreatorCO;
+}
+void ControlDoublePrivate::removeCreatorCO(ControlObject *co)
+{
+  if ( m_pCreatorCO == co ) m_pCreatorCO = nullptr;
+}
 ConfigKey ControlDoublePrivate::getKey() const{return m_key;}
 // static
 void ControlDoublePrivate::clearControls()

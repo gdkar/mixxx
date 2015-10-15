@@ -99,8 +99,8 @@ EngineBuffer::EngineBuffer(QString group, ConfigObject<ConfigValue>* _config,
     m_pRepeat = new ControlPushButton(ConfigKey(m_group, "repeat"));
     m_pRepeat->setButtonMode(ControlPushButton::TOGGLE);
     // Sample rate
-    m_pSampleRate = new ControlObjectSlave("[Master]", "samplerate", this);
-    m_pKeylockEngine = new ControlObjectSlave("[Master]", "keylock_engine", this);
+    m_pSampleRate = new ControlObjectSlave("Master", "samplerate", this);
+    m_pKeylockEngine = new ControlObjectSlave("Master", "keylock_engine", this);
     m_pKeylockEngine->connectValueChanged(this,SLOT(slotKeylockEngineChanged(double)),Qt::DirectConnection);
     m_pTrackSamples = new ControlObject(ConfigKey(m_group, "track_samples"));
     m_pTrackSampleRate = new ControlObject(ConfigKey(m_group, "track_samplerate"));

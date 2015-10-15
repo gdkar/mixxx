@@ -24,7 +24,7 @@
 #include "engine/enginechannel.h"
 #include "engine/sync/internalclock.h"
 #include "util/assert.h"
-const char* kInternalClockGroup = "[InternalClock]";
+const char* kInternalClockGroup = "InternalClock";
 EngineSync::EngineSync(ConfigObject<ConfigValue>* pConfig)
         : m_pConfig(pConfig),
           m_pInternalClock(new InternalClock(kInternalClockGroup, this,nullptr)),
@@ -34,7 +34,7 @@ EngineSync::EngineSync(ConfigObject<ConfigValue>* pConfig)
 }
 EngineSync::~EngineSync() {
     // We use the slider value because that is never set to 0.0.
-    m_pConfig->set(ConfigKey("[InternalClock]", "bpm"), ConfigValue(m_pInternalClock->getBpm()));
+    m_pConfig->set(ConfigKey("InternalClock", "bpm"), ConfigValue(m_pInternalClock->getBpm()));
     delete m_pInternalClock;
 }
 void EngineSync::addSyncableDeck(Syncable* pSyncable) {

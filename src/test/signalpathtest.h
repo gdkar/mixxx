@@ -51,9 +51,9 @@ class TestEngineMaster : public EngineMaster {
 class SignalPathTest : public MixxxTest {
   protected:
     virtual void SetUp() {
-        m_pNumDecks = new ControlObject(ConfigKey("[Master]", "num_decks"));
+        m_pNumDecks = new ControlObject(ConfigKey("Master", "num_decks"));
         m_pEffectsManager = new EffectsManager(NULL, config());
-        m_pEngineMaster = new TestEngineMaster(m_pConfig.data(), "[Master]",
+        m_pEngineMaster = new TestEngineMaster(m_pConfig.data(), "Master",
                                                m_pEffectsManager, false, false);
 
         m_pChannel1 = new EngineDeck(
@@ -83,7 +83,7 @@ class SignalPathTest : public MixxxTest {
         loadTrack(m_pChannel2, QDir::currentPath() + "/src/test/sine-30.wav");
         loadTrack(m_pChannel3, QDir::currentPath() + "/src/test/sine-30.wav");
 
-        ControlObject::set(ConfigKey("[Master]", "enabled"), 1.0);
+        ControlObject::set(ConfigKey("Master", "enabled"), 1.0);
     }
 
     void addDeck(EngineDeck* pDeck) {

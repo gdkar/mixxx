@@ -67,7 +67,7 @@ bool MixxxKeyboard::eventFilter(QObject*, QEvent* e) {
             bool result = false;
             for (auto it = m_keySequenceToControlHash.find(ks); it != m_keySequenceToControlHash.end() && it.key() == ks; ++it) {
                 const ConfigKey& configKey = it.value();
-                if (configKey.group != "[KeyboardShortcuts]") {
+                if (configKey.group != "KeyboardShortcuts") {
                     ControlObject* control = ControlObject::getControl(configKey);
                     if (control) {
                         m_qActiveKeyList.append(KeyDownInformation(keyId, ke->modifiers(), control));

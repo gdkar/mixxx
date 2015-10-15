@@ -377,7 +377,7 @@ void CrateFeature::slotDuplicateCrate() {
                                      tr("Enter name for new crate:"),
                                      QLineEdit::Normal,
                                      //: Appendix to default name when duplicating a crate
-                                     oldName + tr("_copy" , "[noun]"),
+                                     oldName + tr("_copy" , "noun"),
                                      &ok).trimmed();
 
         if (!ok || name == oldName) {
@@ -535,7 +535,7 @@ void CrateFeature::slotImportPlaylist() {
     qDebug() << "slotImportPlaylist() row:" ; //<< m_lastRightClickedIndex.data();
 
     QString lastCrateDirectory = m_pConfig->getValueString(
-            ConfigKey("[Library]", "LastImportExportCrateDirectory"),
+            ConfigKey("Library", "LastImportExportCrateDirectory"),
             QDesktopServices::storageLocation(QDesktopServices::MusicLocation));
 
     QString playlist_file = QFileDialog::getOpenFileName(
@@ -548,7 +548,7 @@ void CrateFeature::slotImportPlaylist() {
 
     // Update the import/export crate directory
     QFileInfo fileName(playlist_file);
-    m_pConfig->set(ConfigKey("[Library]","LastImportExportCrateDirectory"),
+    m_pConfig->set(ConfigKey("Library","LastImportExportCrateDirectory"),
                    ConfigValue(fileName.dir().absolutePath()));
 
     // The user has picked a new directory via a file dialog. This means the
@@ -596,7 +596,7 @@ void CrateFeature::slotExportPlaylist() {
     qDebug() << "Export crate" << m_lastRightClickedIndex.data();
 
     QString lastCrateDirectory = m_pConfig->getValueString(
-            ConfigKey("[Library]", "LastImportExportCrateDirectory"),
+            ConfigKey("Library", "LastImportExportCrateDirectory"),
             QDesktopServices::storageLocation(QDesktopServices::MusicLocation));
 
     QString file_location = QFileDialog::getSaveFileName(
@@ -611,7 +611,7 @@ void CrateFeature::slotExportPlaylist() {
 
     // Update the import/export crate directory
     QFileInfo fileName(file_location);
-    m_pConfig->set(ConfigKey("[Library]","LastImportExportCrateDirectory"),
+    m_pConfig->set(ConfigKey("Library","LastImportExportCrateDirectory"),
                 ConfigValue(fileName.dir().absolutePath()));
 
     // The user has picked a new directory via a file dialog. This means the
@@ -622,7 +622,7 @@ void CrateFeature::slotExportPlaylist() {
     // check config if relative paths are desired
     bool useRelativePath = static_cast<bool>(
         m_pConfig->getValueString(
-            ConfigKey("[Library]", "UseRelativePathOnExport")).toInt());
+            ConfigKey("Library", "UseRelativePathOnExport")).toInt());
 
     // Create list of files of the crate
     QList<QString> playlist_items;

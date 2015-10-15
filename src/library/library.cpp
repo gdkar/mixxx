@@ -82,21 +82,21 @@ Library::Library(QObject* parent, ConfigObject<ConfigValue>* pConfig,
     //messagebox popup when you select them. (This forces you to reach for your
     //mouse or keyboard if you're using control and you scroll through them...)
     if (RhythmboxFeature::isSupported() &&
-        pConfig->getValueString(ConfigKey("[Library]","ShowRhythmboxLibrary"),"1").toInt()) {
+        pConfig->getValueString(ConfigKey("Library","ShowRhythmboxLibrary"),"1").toInt()) {
         addFeature(new RhythmboxFeature(this, m_pTrackCollection));
     }
-    if (pConfig->getValueString(ConfigKey("[Library]","ShowBansheeLibrary"),"1").toInt()) {
+    if (pConfig->getValueString(ConfigKey("Library","ShowBansheeLibrary"),"1").toInt()) {
         BansheeFeature::prepareDbPath(pConfig);
         if (BansheeFeature::isSupported()) {
             addFeature(new BansheeFeature(this, m_pTrackCollection, pConfig));
         }
     }
     if (ITunesFeature::isSupported() &&
-        pConfig->getValueString(ConfigKey("[Library]","ShowITunesLibrary"),"1").toInt()) {
+        pConfig->getValueString(ConfigKey("Library","ShowITunesLibrary"),"1").toInt()) {
         addFeature(new ITunesFeature(this, m_pTrackCollection));
     }
     if (TraktorFeature::isSupported() &&
-        pConfig->getValueString(ConfigKey("[Library]","ShowTraktorLibrary"),"1").toInt()) {
+        pConfig->getValueString(ConfigKey("Library","ShowTraktorLibrary"),"1").toInt()) {
         addFeature(new TraktorFeature(this, m_pTrackCollection));
     }
 
@@ -113,9 +113,9 @@ Library::Library(QObject* parent, ConfigObject<ConfigValue>* pConfig,
     }
 
     m_iTrackTableRowHeight = m_pConfig->getValueString(
-            ConfigKey("[Library]", "RowHeight"),
+            ConfigKey("Library", "RowHeight"),
             QString::number(kDefaultRowHeightPx)).toInt();
-    QString fontStr = m_pConfig->getValueString(ConfigKey("[Library]", "Font"));
+    QString fontStr = m_pConfig->getValueString(ConfigKey("Library", "Font"));
     if (!fontStr.isEmpty()) {
         m_trackTableFont.fromString(fontStr);
     } else {

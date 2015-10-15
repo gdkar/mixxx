@@ -65,34 +65,34 @@ bool WaveformWidgetFactory::setConfig(ConfigObject<ConfigValue> *config) {
     m_config = config;
     if (!m_config) return false;
     auto ok = false;
-    auto frameRate = m_config->getValueString(ConfigKey("[Waveform]","FrameRate")).toInt(&ok);
+    auto frameRate = m_config->getValueString(ConfigKey("Waveform","FrameRate")).toInt(&ok);
     if (ok) setFrameRate(frameRate);
-    else    m_config->set(ConfigKey("[Waveform]","FrameRate"), ConfigValue(m_frameRate));
-    auto endTime = m_config->getValueString(ConfigKey("[Waveform]","EndOfTrackWarningTime")).toInt(&ok);
+    else    m_config->set(ConfigKey("Waveform","FrameRate"), ConfigValue(m_frameRate));
+    auto endTime = m_config->getValueString(ConfigKey("Waveform","EndOfTrackWarningTime")).toInt(&ok);
     if (ok) setEndOfTrackWarningTime(endTime);
-    else    m_config->set(ConfigKey("[Waveform]","EndOfTrackWarningTime"), ConfigValue(m_endOfTrackWarningTime));
-    auto vsync = m_config->getValueString(ConfigKey("[Waveform]","VSync"),"0").toInt();
-    auto defaultZoom = m_config->getValueString(ConfigKey("[Waveform]","DefaultZoom")).toInt(&ok);
+    else    m_config->set(ConfigKey("Waveform","EndOfTrackWarningTime"), ConfigValue(m_endOfTrackWarningTime));
+    auto vsync = m_config->getValueString(ConfigKey("Waveform","VSync"),"0").toInt();
+    auto defaultZoom = m_config->getValueString(ConfigKey("Waveform","DefaultZoom")).toInt(&ok);
     if (ok) setDefaultZoom(defaultZoom);
-    else m_config->set(ConfigKey("[Waveform]","DefaultZoom"), ConfigValue(m_defaultZoom));
-    auto zoomSync = m_config->getValueString(ConfigKey("[Waveform]","ZoomSynchronization")).toInt(&ok);
+    else m_config->set(ConfigKey("Waveform","DefaultZoom"), ConfigValue(m_defaultZoom));
+    auto zoomSync = m_config->getValueString(ConfigKey("Waveform","ZoomSynchronization")).toInt(&ok);
     if (ok) {
         setZoomSync(static_cast<bool>(zoomSync));
-    } else  m_config->set(ConfigKey("[Waveform]","ZoomSynchronization"), ConfigValue(m_zoomSync));
-    auto type = static_cast<WaveformWidgetType::Type>(m_config->getValueString(ConfigKey("[Waveform]","WaveformType")).toInt(&ok));
+    } else  m_config->set(ConfigKey("Waveform","ZoomSynchronization"), ConfigValue(m_zoomSync));
+    auto type = static_cast<WaveformWidgetType::Type>(m_config->getValueString(ConfigKey("Waveform","WaveformType")).toInt(&ok));
     if (!ok || !setWidgetType(type)) {
         setWidgetType(autoChooseWidgetType());
     }
     for (auto i = 0; i < FilterCount; i++) {
-        auto visualGain = m_config->getValueString(ConfigKey("[Waveform]","VisualGain_" + QString::number(i))).toDouble(&ok);
+        auto visualGain = m_config->getValueString(ConfigKey("Waveform","VisualGain_" + QString::number(i))).toDouble(&ok);
         if (ok) setVisualGain(FilterIndex(i), visualGain);
-        else  m_config->set(ConfigKey("[Waveform]","VisualGain_" + QString::number(i)),QString::number(m_visualGain[i]));
+        else  m_config->set(ConfigKey("Waveform","VisualGain_" + QString::number(i)),QString::number(m_visualGain[i]));
     }
-    int overviewNormalized = m_config->getValueString(ConfigKey("[Waveform]","OverviewNormalized")).toInt(&ok);
+    int overviewNormalized = m_config->getValueString(ConfigKey("Waveform","OverviewNormalized")).toInt(&ok);
     if (ok) {
         setOverviewNormalized(static_cast<bool>(overviewNormalized));
     } else {
-        m_config->set(ConfigKey("[Waveform]","OverviewNormalized"), ConfigValue(m_overviewNormalized));
+        m_config->set(ConfigKey("Waveform","OverviewNormalized"), ConfigValue(m_overviewNormalized));
     }
     return true;
 }
@@ -139,13 +139,13 @@ bool WaveformWidgetFactory::setWaveformWidget(WWaveformViewer* viewer,const QDom
 void WaveformWidgetFactory::setFrameRate(int frameRate)
 {
     m_frameRate = math_clamp(frameRate, 1, 120);
-    if (m_config) m_config->set(ConfigKey("[Waveform]","FrameRate"), ConfigValue(m_frameRate));
+    if (m_config) m_config->set(ConfigKey("Waveform","FrameRate"), ConfigValue(m_frameRate));
     m_updateTimer.setInterval(1e3/m_frameRate);
 }
 void WaveformWidgetFactory::setEndOfTrackWarningTime(int endTime)
 {
     m_endOfTrackWarningTime = endTime;
-    if (m_config) m_config->set(ConfigKey("[Waveform]","EndOfTrackWarningTime"), ConfigValue(m_endOfTrackWarningTime));
+    if (m_config) m_config->set(ConfigKey("Waveform","EndOfTrackWarningTime"), ConfigValue(m_endOfTrackWarningTime));
 }
 bool WaveformWidgetFactory::setWidgetType(WaveformWidgetType::Type type) {
     if (type == m_type) return true;
@@ -157,13 +157,13 @@ bool WaveformWidgetFactory::setWidgetType(WaveformWidgetType::Type type) {
         {
             // type is acceptable
             m_type = type;
-            if (m_config)  m_config->set(ConfigKey("[Waveform]","WaveformType"), ConfigValue((int)m_type));
+            if (m_config)  m_config->set(ConfigKey("Waveform","WaveformType"), ConfigValue((int)m_type));
             return true;
         }
     }
     // fallback
     m_type = WaveformWidgetType::EmptyWaveform;
-    if (m_config)  m_config->set(ConfigKey("[Waveform]","WaveformType"), ConfigValue((int)m_type));
+    if (m_config)  m_config->set(ConfigKey("Waveform","WaveformType"), ConfigValue((int)m_type));
     return false;
 }
 bool WaveformWidgetFactory::setWidgetTypeFromHandle(int handleIndex)
@@ -209,20 +209,20 @@ bool WaveformWidgetFactory::setWidgetTypeFromHandle(int handleIndex)
 
 void WaveformWidgetFactory::setDefaultZoom(int zoom) {
     m_defaultZoom = math_clamp(zoom, WaveformWidgetRenderer::s_waveformMinZoom, WaveformWidgetRenderer::s_waveformMaxZoom);
-    if (m_config)  m_config->set(ConfigKey("[Waveform]","DefaultZoom"), ConfigValue(m_defaultZoom));
+    if (m_config)  m_config->set(ConfigKey("Waveform","DefaultZoom"), ConfigValue(m_defaultZoom));
     for (int i = 0; i < m_waveformWidgetHolders.size(); i++)  m_waveformWidgetHolders[i].m_waveformViewer->setZoom(m_defaultZoom);
 }
 
 void WaveformWidgetFactory::setZoomSync(bool sync) {
     m_zoomSync = sync;
-    if (m_config)  m_config->set(ConfigKey("[Waveform]","ZoomSynchronization"), ConfigValue(m_zoomSync));
+    if (m_config)  m_config->set(ConfigKey("Waveform","ZoomSynchronization"), ConfigValue(m_zoomSync));
     if (m_waveformWidgetHolders.size() == 0)  return;
     int refZoom = m_waveformWidgetHolders[0].m_waveformWidget->getZoomFactor();
     for (int i = 1; i < m_waveformWidgetHolders.size(); i++)  m_waveformWidgetHolders[i].m_waveformViewer->setZoom(refZoom);
 }
 void WaveformWidgetFactory::setVisualGain(FilterIndex index, double gain) {
     m_visualGain[index] = gain;
-    if (m_config) m_config->set(ConfigKey("[Waveform]","VisualGain_" + QString::number(index)), QString::number(m_visualGain[index]));
+    if (m_config) m_config->set(ConfigKey("Waveform","VisualGain_" + QString::number(index)), QString::number(m_visualGain[index]));
 }
 double WaveformWidgetFactory::getVisualGain(FilterIndex index) const
 {
@@ -231,7 +231,7 @@ double WaveformWidgetFactory::getVisualGain(FilterIndex index) const
 void WaveformWidgetFactory::setOverviewNormalized(bool normalize)
 {
     m_overviewNormalized = normalize;
-    if (m_config) m_config->set(ConfigKey("[Waveform]","OverviewNormalized"), ConfigValue(m_overviewNormalized));
+    if (m_config) m_config->set(ConfigKey("Waveform","OverviewNormalized"), ConfigValue(m_overviewNormalized));
 }
 void WaveformWidgetFactory::notifyZoomChange(WWaveformViewer* viewer)
 {

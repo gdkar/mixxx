@@ -1,7 +1,5 @@
 // Platform-specific helpers for OS X and iOS.
-#ifndef MAC_H
-#define MAC_H
-
+_Pragma("once")
 #include <QtGlobal>
 
 #ifdef Q_OS_MAC
@@ -12,5 +10,3 @@ QString CFStringToQString(CFStringRef str);
 CFStringRef QStringToCFString(const QString& str);
 
 #endif
-
-#endif /* MAC_H */

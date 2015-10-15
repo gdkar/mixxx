@@ -10,11 +10,9 @@ _Pragma("once")
 
 #include "configobject.h"
 #include "skin/pixmapsource.h"
-#include "widget/wsingletoncontainer.h"
 #include "widget/wpixmapstore.h"
-
 #define SKIN_WARNING(node, context) (context).logWarning(__FILE__, __LINE__, (node))
-
+class SingletonMap;
 // A class for managing the current context/environment when processing a
 // skin. Used hierarchically by LegacySkinParser to create new contexts and
 // evaluate skin XML nodes while loading the skin.

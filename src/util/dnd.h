@@ -66,7 +66,7 @@ class DragAndDropHelper {
         // Always allow loads to preview decks.
         if (PlayerManager::isPreviewDeckGroup(group)) {return true;}
         return !isPlaying || pConfig->getValueString(
-                ConfigKey("[Controls]",
+                ConfigKey("Controls",
                           "AllowTrackLoadToPlayingDeck")).toInt();
     }
     static bool dragEnterAccept(const QMimeData& mimeData,

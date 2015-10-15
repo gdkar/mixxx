@@ -90,7 +90,7 @@ long ParserPls::getNumEntries(QTextStream *stream)
     QString textline;
     textline = stream->readLine();
 
-    if (textline.contains("[playlist]")) {
+    if (textline.contains("playlist")) {
         while (!textline.contains("NumberOfEntries")) {
             textline = stream->readLine();
         }

@@ -56,9 +56,9 @@ WTrackTableView::WTrackTableView(QWidget * parent,
     connect(&m_samplerMapper, SIGNAL(mapped(QString)),this, SLOT(loadSelectionToGroup(QString)));
     connect(&m_BpmMapper, SIGNAL(mapped(int)),this, SLOT(slotScaleBpm(int)));
 
-    m_pNumSamplers = new ControlObjectSlave("[Master]", "num_samplers",this);
-    m_pNumDecks = new ControlObjectSlave("[Master]", "num_decks",this);
-    m_pNumPreviewDecks = new ControlObjectSlave("[Master]", "num_preview_decks",this);
+    m_pNumSamplers = new ControlObjectSlave("Master", "num_samplers",this);
+    m_pNumDecks = new ControlObjectSlave("Master", "num_decks",this);
+    m_pNumPreviewDecks = new ControlObjectSlave("Master", "num_preview_decks",this);
 
     m_pMenu = new QMenu(this);
 
@@ -87,7 +87,7 @@ WTrackTableView::WTrackTableView(QWidget * parent,
     connect(&m_playlistMapper, SIGNAL(mapped(int)),this, SLOT(addSelectionToPlaylist(int)));
     connect(&m_crateMapper, SIGNAL(mapped(int)),this, SLOT(addSelectionToCrate(int)));
 
-    m_pCOTGuiTick = new ControlObjectSlave("[Master]", "guiTick50ms");
+    m_pCOTGuiTick = new ControlObjectSlave("Master", "guiTick50ms");
     m_pCOTGuiTick->connectValueChanged(this, SLOT(slotGuiTick50ms(double)));
 
     connect(this, SIGNAL(scrollValueChanged(int)),this, SLOT(slotScrollValueChanged(int)));
@@ -387,7 +387,7 @@ void WTrackTableView::slotMouseDoubleClicked(const QModelIndex &index) {
     // Read the current TrackLoadAction settings
     int action = DlgPrefLibrary::LOAD_TRACK_DECK; // default action
     if (modelHasCapabilities(TrackModel::TRACKMODELCAPS_ADDTOAUTODJ)) {
-        action = m_pConfig->getValueString(ConfigKey("[Library]","TrackLoadAction")).toInt();
+        action = m_pConfig->getValueString(ConfigKey("Library","TrackLoadAction")).toInt();
     }
     switch (action) {
     case DlgPrefLibrary::ADD_TRACK_BOTTOM:
@@ -411,9 +411,9 @@ void WTrackTableView::loadSelectionToGroup(QString group, bool play) {
         // If the track load override is disabled, check to see if a track is
         // playing before trying to load it
         if (!(m_pConfig->getValueString(
-            ConfigKey("[Controls]","AllowTrackLoadToPlayingDeck")).toInt())) {
+            ConfigKey("Controls","AllowTrackLoadToPlayingDeck")).toInt())) {
             // TODO(XXX): Check for other than just the first preview deck.
-            if (group != "[PreviewDeck1]" &&
+            if (group != "PreviewDeck1" &&
                     ControlObject::get(ConfigKey(group, "play")) > 0.0) {
                 return;
             }
@@ -555,7 +555,7 @@ void WTrackTableView::contextMenuEvent(QContextMenuEvent* event) {
                 // PlayerManager::groupForDeck is 0-indexed.
                 auto deckGroup = PlayerManager::groupForDeck(i - 1);
                 auto deckPlaying = ControlObject::get(ConfigKey(deckGroup, "play")) > 0.0;
-                auto loadTrackIntoPlayingDeck = m_pConfig->getValueString(ConfigKey("[Controls]", "AllowTrackLoadToPlayingDeck")).toInt();
+                auto loadTrackIntoPlayingDeck = m_pConfig->getValueString(ConfigKey("Controls", "AllowTrackLoadToPlayingDeck")).toInt();
                 auto deckEnabled = (!deckPlaying  || loadTrackIntoPlayingDeck)  && oneSongSelected;
                 auto pAction = new QAction(tr("Load to Deck %1").arg(i), m_pMenu);
                 pAction->setEnabled(deckEnabled);

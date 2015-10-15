@@ -7,8 +7,8 @@ ControlIndicator::ControlIndicator(ConfigKey key)
           m_blinkValue(OFF),
           m_nextSwitchTime(0.0) {
 	// Tick time in audio buffer resolution
-    m_pCOTGuiTickTime = new ControlObjectSlave("[Master]", "guiTickTime", this);
-    m_pCOTGuiTick50ms = new ControlObjectSlave("[Master]", "guiTick50ms", this);
+    m_pCOTGuiTickTime = new ControlObjectSlave("Master", "guiTickTime", this);
+    m_pCOTGuiTick50ms = new ControlObjectSlave("Master", "guiTick50ms", this);
     m_pCOTGuiTick50ms->connectValueChanged(SLOT(slotGuiTick50ms(double)));
     connect(this, SIGNAL(blinkValueChanged()), this, SLOT(slotBlinkValueChanged()));
 }

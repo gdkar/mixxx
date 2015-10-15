@@ -17,6 +17,6 @@ MixxxApplication::MixxxApplication(int& argc, char** argv)
 }
 MixxxApplication::~MixxxApplication() {delete m_pTouchShift;}
 bool MixxxApplication::touchIsRightButton() {
-    if (!m_pTouchShift) { m_pTouchShift = new ControlObjectSlave("[Controls]", "touch_shift",this);}
+    if (!m_pTouchShift) { m_pTouchShift = new ControlObjectSlave("Controls", "touch_shift",this);}
     return (m_pTouchShift->get() != 0.0);
 }

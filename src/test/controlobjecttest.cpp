@@ -14,8 +14,8 @@ class ControlObjectTest : public testing::Test {
 
     virtual void SetUp() {
         qDebug() << "SetUp";
-        ck1 = ConfigKey("[Channel1]", "co1");
-        ck2 = ConfigKey("[Channel1]", "co2");
+        ck1 = ConfigKey("Channel1", "co1");
+        ck2 = ConfigKey("Channel1", "co2");
         co1 = new ControlObject(ck1);
         co2 = new ControlObject(ck2);
     }
@@ -55,8 +55,8 @@ TEST_F(ControlObjectTest, getControl) {
 }
 
 TEST_F(ControlObjectTest, aliasRetrieval) {
-    ConfigKey ck("[Microphone1]", "volume");
-    ConfigKey ckAlias("[Microphone]", "volume");
+    ConfigKey ck("Microphone1", "volume");
+    ConfigKey ckAlias("Microphone", "volume");
 
     // Create the Control Object
     ControlObject* co = new ControlObject(ck);

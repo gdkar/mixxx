@@ -97,8 +97,8 @@ void ControlGroupDelegate::setModelData(QWidget *editor, QAbstractItemModel *mod
     model->setData(index, group, Qt::EditRole);
 
     //Verify that the ControlValue in the next column is valid for the
-    //newly selected ControlGroup. For example, switching from "[Channel1]"
-    //to "[Master]" means that a ControlValue of "play" is no longer valid.
+    //newly selected ControlGroup. For example, switching from "Channel1"
+    //to "Master" means that a ControlValue of "play" is no longer valid.
     //If it isn't, then blank that column's value.
     QModelIndex nextDoor = index.sibling(index.row(), MIDIINPUTTABLEINDEX_CONTROLOBJECTVALUE);
     ControlValueDelegate::verifyControlValueValidity(group, model, nextDoor);

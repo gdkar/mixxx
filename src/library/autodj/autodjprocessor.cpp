@@ -7,7 +7,7 @@
 #include "playermanager.h"
 #include "player.h"
 
-#define kConfigKey "[Auto DJ]"
+#define kConfigKey "Auto DJ"
 const char* kTransitionPreferenceName = "Transition";
 const int kTransitionPreferenceDefault = 10;
 
@@ -97,22 +97,22 @@ AutoDJProcessor::AutoDJProcessor(QObject* pParent,
     m_pAutoDJTableModel->setTableModel(iAutoDJPlaylistId);
 
     m_pShufflePlaylist = new ControlPushButton(
-            ConfigKey("[AutoDJ]", "shuffle_playlist"));
+            ConfigKey("AutoDJ", "shuffle_playlist"));
     connect(m_pShufflePlaylist, SIGNAL(valueChanged(double)),
             this, SLOT(controlShuffle(double)));
 
     m_pSkipNext = new ControlPushButton(
-            ConfigKey("[AutoDJ]", "skip_next"));
+            ConfigKey("AutoDJ", "skip_next"));
     connect(m_pSkipNext, SIGNAL(valueChanged(double)),
             this, SLOT(controlSkipNext(double)));
 
     m_pFadeNow = new ControlPushButton(
-            ConfigKey("[AutoDJ]", "fade_now"));
+            ConfigKey("AutoDJ", "fade_now"));
     connect(m_pFadeNow, SIGNAL(valueChanged(double)),
             this, SLOT(controlFadeNow(double)));
 
     m_pEnabledAutoDJ = new ControlPushButton(
-            ConfigKey("[AutoDJ]", "enabled"));
+            ConfigKey("AutoDJ", "enabled"));
     m_pEnabledAutoDJ->setButtonMode(ControlPushButton::TOGGLE);
     connect(m_pEnabledAutoDJ, SIGNAL(valueChanged(double)),
             this, SLOT(controlEnable(double)));
@@ -134,8 +134,8 @@ AutoDJProcessor::AutoDJProcessor(QObject* pParent,
     // Auto-DJ needs at least two decks
     DEBUG_ASSERT(m_decks.length() > 1);
 
-    m_pCOCrossfader = new ControlObjectSlave("[Master]", "crossfader");
-    m_pCOCrossfaderReverse = new ControlObjectSlave("[Mixer Profile]", "xFaderReverse");
+    m_pCOCrossfader = new ControlObjectSlave("Master", "crossfader");
+    m_pCOCrossfaderReverse = new ControlObjectSlave("Mixer Profile", "xFaderReverse");
 
     QString str_autoDjTransition = m_pConfig->getValueString(
             ConfigKey(kConfigKey, kTransitionPreferenceName));
@@ -546,7 +546,7 @@ void AutoDJProcessor::playerPositionChanged(DeckAttributes* pAttributes,
 TrackPointer AutoDJProcessor::getNextTrackFromQueue() {
     // Get the track at the top of the playlist.
     bool randomQueueEnabled = (((m_pConfig->getValueString(
-                ConfigKey("[Auto DJ]", "EnableRandomQueue")).toInt())) == 1);
+                ConfigKey("Auto DJ", "EnableRandomQueue")).toInt())) == 1);
     int minAutoDJCrateTracks = m_pConfig->getValueString(
                 ConfigKey(kConfigKey, "RandomQueueMinimumAllowed")).toInt();
     int tracksToAdd = minAutoDJCrateTracks - m_pAutoDJTableModel->rowCount();
@@ -641,7 +641,7 @@ bool AutoDJProcessor::removeTrackFromTopOfQueue(TrackPointer pTrack) {
     int minAutoDJCrateTracks = m_pConfig->getValueString(
             ConfigKey(kConfigKey, "RandomQueueMinimumAllowed")).toInt();
     bool randomQueueEnabled = (((m_pConfig->getValueString(
-            ConfigKey("[Auto DJ]", "EnableRandomQueue")).toInt())) == 1);
+            ConfigKey("Auto DJ", "EnableRandomQueue")).toInt())) == 1);
 
     int tracksToAdd = minAutoDJCrateTracks - m_pAutoDJTableModel->rowCount();
     if (randomQueueEnabled && (tracksToAdd > 0)) {

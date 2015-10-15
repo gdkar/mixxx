@@ -13,7 +13,7 @@
 class WWidgetStackTest : public MixxxTest {
   public:
     WWidgetStackTest()
-          : m_pGroup("[Channel1]") {
+          : m_pGroup("Channel1") {
     }
 
   protected:

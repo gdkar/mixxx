@@ -26,7 +26,7 @@ bool AnalyserGain::initialise(TrackPointer tio, int sampleRate, int totalSamples
 }
 
 bool AnalyserGain::loadStored(TrackPointer tio) const {
-    auto bAnalyserEnabled = (bool)m_pConfigReplayGain->getValueString(ConfigKey("[ReplayGain]","ReplayGainAnalyserEnabled")).toInt();
+    auto bAnalyserEnabled = (bool)m_pConfigReplayGain->getValueString(ConfigKey("ReplayGain","ReplayGainAnalyserEnabled")).toInt();
     auto  fReplayGain = tio->getReplayGain();
     if (fReplayGain != 0 || !bAnalyserEnabled) {return true;}
     return false;

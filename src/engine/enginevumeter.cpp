@@ -38,7 +38,7 @@ EngineVuMeter::EngineVuMeter(QString group) {
     m_ctrlPeakIndicatorR = new ControlPotmeter(ConfigKey(group, "PeakIndicatorR"),
                                               0., 1.);
 
-    m_pSampleRate = new ControlObjectSlave("[Master]", "samplerate", this);
+    m_pSampleRate = new ControlObjectSlave("Master", "samplerate", this);
 
     // Initialize the calculation:
     reset();

@@ -147,15 +147,15 @@ void MixxxMainWindow::initalize(QApplication* pApp, const CmdlineArgs& args) {
     initializeFonts(); // takes a long time
     launchProgress(2);
     // Set the visibility of tooltips, default "1" = ON
-    m_toolTipsCfg = m_pConfig->getValueString(ConfigKey("[Controls]", "Tooltips"), "1").toInt();
+    m_toolTipsCfg = m_pConfig->getValueString(ConfigKey("Controls", "Tooltips"), "1").toInt();
     // Store the path in the config database
-    m_pConfig->set(ConfigKey("[Config]", "Path"), ConfigValue(resourcePath));
+    m_pConfig->set(ConfigKey("Config", "Path"), ConfigValue(resourcePath));
     setAttribute(Qt::WA_AcceptTouchEvents);
-    m_pTouchShift = new ControlPushButton(ConfigKey("[Controls]", "touch_shift"));
+    m_pTouchShift = new ControlPushButton(ConfigKey("Controls", "touch_shift"));
     // Create the Effects subsystem.
     m_pEffectsManager = new EffectsManager(this, m_pConfig);
     // Starting the master (mixing of the channels and effects):
-    m_pEngine = new EngineMaster(m_pConfig, "[Master]", m_pEffectsManager, true, true);
+    m_pEngine = new EngineMaster(m_pConfig, "Master", m_pEffectsManager, true, true);
     // Create effect backends. We do this after creating EngineMaster to allow
     // effect backends to refer to controls that are produced by the engine.
     auto pNativeBackend = new NativeBackend(m_pEffectsManager);
@@ -175,11 +175,11 @@ void MixxxMainWindow::initalize(QApplication* pApp, const CmdlineArgs& args) {
     launchProgress(11);
     // TODO(rryan): Fold microphone and aux creation into a manager
     // (e.g. PlayerManager, though they aren't players).
-    auto pNumMicrophones = new ControlObject(ConfigKey("[Master]", "num_microphones"));
+    auto pNumMicrophones = new ControlObject(ConfigKey("Master", "num_microphones"));
     pNumMicrophones->setParent(this);
     for (int i = 0; i < kMicrophoneCount; ++i) {
-        QString group("[Microphone]");
-        if (i > 0) { group = QString("[Microphone%1]").arg(i + 1);}
+        QString group("Microphone");
+        if (i > 0) { group = QString("Microphone%1").arg(i + 1);}
         auto channelGroup = m_pEngine->registerChannelGroup(group);
         auto pMicrophone = new EngineMicrophone(channelGroup, m_pEffectsManager);
         // What should channelbase be?
@@ -188,13 +188,13 @@ void MixxxMainWindow::initalize(QApplication* pApp, const CmdlineArgs& args) {
         m_pSoundManager->registerInput(micInput, pMicrophone);
         pNumMicrophones->set(pNumMicrophones->get() + 1);
     }
-    m_pNumAuxiliaries = new ControlObject(ConfigKey("[Master]", "num_auxiliaries"));
+    m_pNumAuxiliaries = new ControlObject(ConfigKey("Master", "num_auxiliaries"));
     m_PassthroughMapper = new QSignalMapper(this);
     connect(m_PassthroughMapper, SIGNAL(mapped(int)),this, SLOT(slotControlPassthrough(int)));
     m_AuxiliaryMapper = new QSignalMapper(this);
     connect(m_AuxiliaryMapper, SIGNAL(mapped(int)),this, SLOT(slotControlAuxiliary(int)));
     for (int i = 0; i < kAuxiliaryCount; ++i) {
-        auto group = QString("[Auxiliary%1]").arg(i + 1);
+        auto group = QString("Auxiliary%1").arg(i + 1);
         auto channelGroup = m_pEngine->registerChannelGroup(group);
         auto pAux = new EngineAux(channelGroup, m_pEffectsManager);
         // What should channelbase be?
@@ -214,7 +214,7 @@ void MixxxMainWindow::initalize(QApplication* pApp, const CmdlineArgs& args) {
     // writing meta data may ruin your MP3 file if done simultaneously.
     // see Bug #728197
     // For safety reasons, we deactivate this feature.
-    m_pConfig->set(ConfigKey("[Library]","WriteAudioTags"), ConfigValue(0));
+    m_pConfig->set(ConfigKey("Library","WriteAudioTags"), ConfigValue(0));
     // library dies in seemingly unrelated qtsql error about not having a
     // sql if this path doesn't exist. Normally config->Save()
     // above would make it but if it doesn't get run for whatever reason
@@ -238,7 +238,7 @@ void MixxxMainWindow::initalize(QApplication* pApp, const CmdlineArgs& args) {
 #ifdef __VINYLCONTROL__
     m_pVCManager->init();
 #endif
-    m_pNumDecks = new ControlObjectSlave(ConfigKey("[Master]", "num_decks"),this);
+    m_pNumDecks = new ControlObjectSlave(ConfigKey("Master", "num_decks"),this);
     m_pNumDecks->connectValueChanged(this, SLOT(slotNumDecksChanged(double)));
     CoverArtCache::create();
     // (long)
@@ -267,14 +267,14 @@ void MixxxMainWindow::initalize(QApplication* pApp, const CmdlineArgs& args) {
     }
     // Call inits to invoke all other construction parts
     // Intialize default BPM system values
-    if (m_pConfig->getValueString(ConfigKey("[BPM]", "BPMRangeStart")).length() < 1) {
-        m_pConfig->set(ConfigKey("[BPM]", "BPMRangeStart"),ConfigValue(65));
+    if (m_pConfig->getValueString(ConfigKey("BPM", "BPMRangeStart")).length() < 1) {
+        m_pConfig->set(ConfigKey("BPM", "BPMRangeStart"),ConfigValue(65));
     }
-    if (m_pConfig->getValueString(ConfigKey("[BPM]", "BPMRangeEnd")).length() < 1) {
-        m_pConfig->set(ConfigKey("[BPM]", "BPMRangeEnd"),ConfigValue(135));
+    if (m_pConfig->getValueString(ConfigKey("BPM", "BPMRangeEnd")).length() < 1) {
+        m_pConfig->set(ConfigKey("BPM", "BPMRangeEnd"),ConfigValue(135));
     }
-    if (m_pConfig->getValueString(ConfigKey("[BPM]", "AnalyzeEntireSong")).length() < 1) {
-        m_pConfig->set(ConfigKey("[BPM]", "AnalyzeEntireSong"),ConfigValue(1));
+    if (m_pConfig->getValueString(ConfigKey("BPM", "AnalyzeEntireSong")).length() < 1) {
+        m_pConfig->set(ConfigKey("BPM", "AnalyzeEntireSong"),ConfigValue(1));
     }
     // Initialize controller sub-system,
     // but do not set up controllers until the end of the application startup
@@ -325,19 +325,19 @@ void MixxxMainWindow::initalize(QApplication* pApp, const CmdlineArgs& args) {
     // If we were told to start in fullscreen mode on the command-line or if
     // user chose always starts in fullscreen mode, then turn on fullscreen
     // mode.
-    auto fullscreenPref = m_pConfig->getValueString(ConfigKey("[Config]", "StartInFullscreen"), "0").toInt();
+    auto fullscreenPref = m_pConfig->getValueString(ConfigKey("Config", "StartInFullscreen"), "0").toInt();
     if (args.getStartInFullscreen() || fullscreenPref) {slotViewFullScreen(true);}
     emit(newSkinLoaded());
     // Wait until all other ControlObjects are set up before initializing
     // controllers
     m_pControllerManager->setUpDevices();
     // Scan the library for new files and directories
-    auto rescan = m_pConfig->getValueString(ConfigKey("[Library]","RescanOnStartup")).toInt();
+    auto rescan = m_pConfig->getValueString(ConfigKey("Library","RescanOnStartup")).toInt();
     // rescan the library if we get a new plugin
-    auto prev_plugins = QSet<QString>::fromList(m_pConfig->getValueString(ConfigKey("[Library]", "SupportedFileExtensions")).split(",", QString::SkipEmptyParts));
+    auto prev_plugins = QSet<QString>::fromList(m_pConfig->getValueString(ConfigKey("Library", "SupportedFileExtensions")).split(",", QString::SkipEmptyParts));
     auto curr_plugins = QSet<QString>::fromList(SoundSourceProxy::getSupportedFileExtensions());
     rescan = rescan || (prev_plugins != curr_plugins);
-    m_pConfig->set(ConfigKey("[Library]", "SupportedFileExtensions"),QStringList(SoundSourceProxy::getSupportedFileExtensions()).join(","));
+    m_pConfig->set(ConfigKey("Library", "SupportedFileExtensions"),QStringList(SoundSourceProxy::getSupportedFileExtensions()).join(","));
     // Scan the library directory. Initialize this after the skinloader has
     // loaded a skin, see Bug #1047435
     m_pLibraryScanner = new LibraryScanner(this,m_pLibrary->getTrackCollection(),m_pConfig);
@@ -573,7 +573,7 @@ void MixxxMainWindow::initializeTranslations(QApplication* pApp) {
     auto userLocale = m_cmdLineArgs.getLocale();
     auto systemLocale = QLocale::system();
     // Attempt to load user locale from config
-    if (userLocale.isEmpty()) {userLocale = m_pConfig->getValueString(ConfigKey("[Config]","Locale"));}
+    if (userLocale.isEmpty()) {userLocale = m_pConfig->getValueString(ConfigKey("Config","Locale"));}
     if (userLocale.isEmpty()) {QLocale::setDefault(QLocale(systemLocale));}
     else {QLocale::setDefault(QLocale(userLocale));}
     // source language
@@ -609,8 +609,8 @@ void MixxxMainWindow::initializeTranslations(QApplication* pApp) {
 void MixxxMainWindow::initializeKeyboard() {
     auto resourcePath = m_pConfig->getResourcePath();
     // Set the default value in settings file
-    if (m_pConfig->getValueString(ConfigKey("[Keyboard]","Enabled")).length() == 0)
-        m_pConfig->set(ConfigKey("[Keyboard]","Enabled"), ConfigValue(1));
+    if (m_pConfig->getValueString(ConfigKey("Keyboard","Enabled")).length() == 0)
+        m_pConfig->set(ConfigKey("Keyboard","Enabled"), ConfigValue(1));
     // Read keyboard configuration and set kdbConfig object in WWidget
     // Check first in user's Mixxx directory
     auto userKeyboard = QDir(m_cmdLineArgs.getSettingsPath()).filePath("Custom.kbd.cfg");
@@ -639,7 +639,7 @@ void MixxxMainWindow::initializeKeyboard() {
     // TODO(XXX) leak pKbdConfig, MixxxKeyboard owns it? Maybe roll all keyboard
     // initialization into MixxxKeyboard
     // Workaround for today: MixxxKeyboard calls delete
-    auto keyboardShortcutsEnabled = m_pConfig->getValueString( ConfigKey("[Keyboard]", "Enabled")) == "1";
+    auto keyboardShortcutsEnabled = m_pConfig->getValueString( ConfigKey("Keyboard", "Enabled")) == "1";
     m_pKeyboard = new MixxxKeyboard(keyboardShortcutsEnabled ? m_pKbdConfig : m_pKbdConfigEmpty);
 }
 void toggleVisibility(ConfigKey key, bool enable) {
@@ -650,13 +650,13 @@ void MixxxMainWindow::slotViewShowVinylControl(bool enable) {
   ControlObject::set(ConfigKey(VINYL_PREF_KEY, "show_vinylcontrol"), enable);
 }
 void MixxxMainWindow::slotViewShowMicrophone(bool enable) {
-  ControlObject::set(ConfigKey("[Microphone]", "show_microphone"), enable);
+  ControlObject::set(ConfigKey("Microphone", "show_microphone"), enable);
 }
 void MixxxMainWindow::slotViewShowPreviewDeck(bool enable) {
-  ControlObject::set(ConfigKey("[PreviewDeck]", "show_previewdeck"), enable);
+  ControlObject::set(ConfigKey("PreviewDeck", "show_previewdeck"), enable);
 }
 void MixxxMainWindow::slotViewShowEffects(bool enable) {
-  ControlObject::set(ConfigKey("[EffectRack1]", "show"), enable);
+  ControlObject::set(ConfigKey("EffectRack1", "show"), enable);
 }
 void setVisibilityOptionState(QAction* pAction, ConfigKey key) {
     auto pVisibilityControl = ControlObject::getControl(key);
@@ -673,23 +673,23 @@ void MixxxMainWindow::slotToggleCheckedVinylControl() {
     updateCheckedMenuAction(m_pViewVinylControl, key);
 }
 void MixxxMainWindow::slotToggleCheckedSamplers() {
-    auto key = ConfigKey("[Samplers]", "show_samplers");
+    auto key = ConfigKey("Samplers", "show_samplers");
     updateCheckedMenuAction(m_pViewShowSamplers, key);
 }
 void MixxxMainWindow::slotToggleCheckedMicrophone() {
-    auto key = ConfigKey("[Microphone]", "show_microphone");
+    auto key = ConfigKey("Microphone", "show_microphone");
     updateCheckedMenuAction(m_pViewShowMicrophone, key);
 }
 void MixxxMainWindow::slotToggleCheckedPreviewDeck() {
-    auto key = ConfigKey("[PreviewDeck]", "show_previewdeck");
+    auto key = ConfigKey("PreviewDeck", "show_previewdeck");
     updateCheckedMenuAction(m_pViewShowPreviewDeck, key);
 }
 void MixxxMainWindow::slotToggleCheckedEffects() {
-    auto key = ConfigKey("[EffectRack1]", "show");
+    auto key = ConfigKey("EffectRack1", "show");
     updateCheckedMenuAction(m_pViewShowEffects, key);
 }
 void MixxxMainWindow::slotToggleCheckedCoverArt() {
-    auto key = ConfigKey("[Library]", "show_coverart");
+    auto key = ConfigKey("Library", "show_coverart");
     updateCheckedMenuAction(m_pViewShowCoverArt, key);
 }
 void MixxxMainWindow::linkSkinWidget(ControlObjectSlave** pCOS,ConfigKey key, const char* slot) {
@@ -703,21 +703,21 @@ void MixxxMainWindow::onNewSkinLoaded() {
 #ifdef __VINYLCONTROL__
     setVisibilityOptionState(m_pViewVinylControl,ConfigKey(VINYL_PREF_KEY, "show_vinylcontrol"));
 #endif
-    setVisibilityOptionState(m_pViewShowSamplers,ConfigKey("[Samplers]", "show_samplers"));
-    setVisibilityOptionState(m_pViewShowMicrophone,ConfigKey("[Microphone]", "show_microphone"));
-    setVisibilityOptionState(m_pViewShowPreviewDeck,ConfigKey("[PreviewDeck]", "show_previewdeck"));
-    setVisibilityOptionState(m_pViewShowEffects,ConfigKey("[EffectRack1]", "show"));
-    setVisibilityOptionState(m_pViewShowCoverArt,ConfigKey("[Library]", "show_coverart"));
-    setVisibilityOptionState(m_pViewMaximizeLibrary,ConfigKey("[Master]", "maximize_library"));
+    setVisibilityOptionState(m_pViewShowSamplers,ConfigKey("Samplers", "show_samplers"));
+    setVisibilityOptionState(m_pViewShowMicrophone,ConfigKey("Microphone", "show_microphone"));
+    setVisibilityOptionState(m_pViewShowPreviewDeck,ConfigKey("PreviewDeck", "show_previewdeck"));
+    setVisibilityOptionState(m_pViewShowEffects,ConfigKey("EffectRack1", "show"));
+    setVisibilityOptionState(m_pViewShowCoverArt,ConfigKey("Library", "show_coverart"));
+    setVisibilityOptionState(m_pViewMaximizeLibrary,ConfigKey("Master", "maximize_library"));
 
 #ifdef __VINYLCONTROL__
     linkSkinWidget(&m_pShowVinylControl,ConfigKey(VINYL_PREF_KEY, "show_vinylcontrol"),SLOT(slotToggleCheckedVinylControl()));
 #endif
-    linkSkinWidget(&m_pShowSamplers,ConfigKey("[Samplers]", "show_samplers"),SLOT(slotToggleCheckedSamplers()));
-    linkSkinWidget(&m_pShowMicrophone,ConfigKey("[Microphone]", "show_microphone"),SLOT(slotToggleCheckedMicrophone()));
-    linkSkinWidget(&m_pShowPreviewDeck,ConfigKey("[PreviewDeck]", "show_previewdeck"),SLOT(slotToggleCheckedPreviewDeck()));
-    linkSkinWidget(&m_pShowEffects,ConfigKey("[EffectRack1]", "show"),SLOT(slotToggleCheckedEffects()));
-    linkSkinWidget(&m_pShowCoverArt,ConfigKey("[Library]", "show_coverart"),SLOT(slotToggleCheckedCoverArt()));
+    linkSkinWidget(&m_pShowSamplers,ConfigKey("Samplers", "show_samplers"),SLOT(slotToggleCheckedSamplers()));
+    linkSkinWidget(&m_pShowMicrophone,ConfigKey("Microphone", "show_microphone"),SLOT(slotToggleCheckedMicrophone()));
+    linkSkinWidget(&m_pShowPreviewDeck,ConfigKey("PreviewDeck", "show_previewdeck"),SLOT(slotToggleCheckedPreviewDeck()));
+    linkSkinWidget(&m_pShowEffects,ConfigKey("EffectRack1", "show"),SLOT(slotToggleCheckedEffects()));
+    linkSkinWidget(&m_pShowCoverArt,ConfigKey("Library", "show_coverart"),SLOT(slotToggleCheckedCoverArt()));
 }
 int MixxxMainWindow::noSoundDlg(void)
 {
@@ -831,14 +831,14 @@ void MixxxMainWindow::initActions()
     auto openText = tr("Open");
     auto player1LoadStatusText = loadTrackStatusText.arg(QString::number(1));
     m_pFileLoadSongPlayer1 = new QAction(loadTrackText.arg(QString::number(1)), this);
-    m_pFileLoadSongPlayer1->setShortcut(QKeySequence(m_pKbdConfig->getValueString(ConfigKey("[KeyboardShortcuts]","FileMenu_LoadDeck1"),tr("Ctrl+o"))));
+    m_pFileLoadSongPlayer1->setShortcut(QKeySequence(m_pKbdConfig->getValueString(ConfigKey("KeyboardShortcuts","FileMenu_LoadDeck1"),tr("Ctrl+o"))));
     m_pFileLoadSongPlayer1->setShortcutContext(Qt::ApplicationShortcut);
     m_pFileLoadSongPlayer1->setStatusTip(player1LoadStatusText);
     m_pFileLoadSongPlayer1->setWhatsThis(buildWhatsThis(openText, player1LoadStatusText));
     connect(m_pFileLoadSongPlayer1, SIGNAL(triggered()),this, SLOT(slotFileLoadSongPlayer1()));
     auto player2LoadStatusText = loadTrackStatusText.arg(QString::number(2));
     m_pFileLoadSongPlayer2 = new QAction(loadTrackText.arg(QString::number(2)), this);
-    m_pFileLoadSongPlayer2->setShortcut(QKeySequence(m_pKbdConfig->getValueString(ConfigKey("[KeyboardShortcuts]",
+    m_pFileLoadSongPlayer2->setShortcut(QKeySequence(m_pKbdConfig->getValueString(ConfigKey("KeyboardShortcuts",
                                                   "FileMenu_LoadDeck2"),
                                                   tr("Ctrl+Shift+O"))));
     m_pFileLoadSongPlayer2->setShortcutContext(Qt::ApplicationShortcut);
@@ -850,7 +850,7 @@ void MixxxMainWindow::initActions()
     auto quitText = tr("Quits Mixxx");
     m_pFileQuit = new QAction(quitTitle, this);
     m_pFileQuit->setShortcut(
-        QKeySequence(m_pKbdConfig->getValueString(ConfigKey("[KeyboardShortcuts]", "FileMenu_Quit"),tr("Ctrl+q"))));
+        QKeySequence(m_pKbdConfig->getValueString(ConfigKey("KeyboardShortcuts", "FileMenu_Quit"),tr("Ctrl+q"))));
     m_pFileQuit->setShortcutContext(Qt::ApplicationShortcut);
     m_pFileQuit->setStatusTip(quitText);
     m_pFileQuit->setWhatsThis(buildWhatsThis(quitTitle, quitText));connect(m_pFileQuit, SIGNAL(triggered()), this, SLOT(slotFileQuit()));
@@ -865,7 +865,7 @@ void MixxxMainWindow::initActions()
     auto createPlaylistText = tr("Create a new playlist");
     m_pPlaylistsNew = new QAction(createPlaylistTitle, this);
     m_pPlaylistsNew->setShortcut(
-        QKeySequence(m_pKbdConfig->getValueString(ConfigKey("[KeyboardShortcuts]","LibraryMenu_NewPlaylist"),tr("Ctrl+n"))));
+        QKeySequence(m_pKbdConfig->getValueString(ConfigKey("KeyboardShortcuts","LibraryMenu_NewPlaylist"),tr("Ctrl+n"))));
     m_pPlaylistsNew->setShortcutContext(Qt::ApplicationShortcut);
     m_pPlaylistsNew->setStatusTip(createPlaylistText);
     m_pPlaylistsNew->setWhatsThis(buildWhatsThis(createPlaylistTitle, createPlaylistText));
@@ -874,7 +874,7 @@ void MixxxMainWindow::initActions()
     auto createCrateText = tr("Create a new crate");
     m_pCratesNew = new QAction(createCrateTitle, this);
     m_pCratesNew->setShortcut(
-        QKeySequence(m_pKbdConfig->getValueString(ConfigKey("[KeyboardShortcuts]","LibraryMenu_NewCrate"),tr("Ctrl+Shift+N"))));
+        QKeySequence(m_pKbdConfig->getValueString(ConfigKey("KeyboardShortcuts","LibraryMenu_NewCrate"),tr("Ctrl+Shift+N"))));
     m_pCratesNew->setShortcutContext(Qt::ApplicationShortcut);
     m_pCratesNew->setStatusTip(createCrateText);
     m_pCratesNew->setWhatsThis(buildWhatsThis(createCrateTitle, createCrateText));
@@ -890,7 +890,7 @@ void MixxxMainWindow::initActions()
     QString fullscreen_key = tr("F11");
 #endif
     m_pViewFullScreen->setShortcut(
-        QKeySequence(m_pKbdConfig->getValueString(ConfigKey("[KeyboardShortcuts]","ViewMenu_Fullscreen"),fullscreen_key)));
+        QKeySequence(m_pKbdConfig->getValueString(ConfigKey("KeyboardShortcuts","ViewMenu_Fullscreen"),fullscreen_key)));
     m_pViewFullScreen->setShortcutContext(Qt::ApplicationShortcut);
     // QShortcut * shortcut = new QShortcut(QKeySequence(tr("Esc")),  this);
     // connect(shortcut, SIGNAL(triggered()), this, SLOT(slotQuitFullScreen()));
@@ -901,10 +901,10 @@ void MixxxMainWindow::initActions()
     connect(m_pViewFullScreen, SIGNAL(toggled(bool)), this, SLOT(slotViewFullScreen(bool)));
     auto keyboardShortcutTitle = tr("Enable &Keyboard Shortcuts");
     auto keyboardShortcutText = tr("Toggles keyboard shortcuts on or off");
-    auto keyboardShortcutsEnabled = m_pConfig->getValueString(ConfigKey("[Keyboard]", "Enabled")) == "1";
+    auto keyboardShortcutsEnabled = m_pConfig->getValueString(ConfigKey("Keyboard", "Enabled")) == "1";
     m_pOptionsKeyboard = new QAction(keyboardShortcutTitle, this);
     m_pOptionsKeyboard->setShortcut(
-        QKeySequence(m_pKbdConfig->getValueString(ConfigKey("[KeyboardShortcuts]","OptionsMenu_EnableShortcuts"),tr("Ctrl+`"))));
+        QKeySequence(m_pKbdConfig->getValueString(ConfigKey("KeyboardShortcuts","OptionsMenu_EnableShortcuts"),tr("Ctrl+`"))));
     m_pOptionsKeyboard->setShortcutContext(Qt::ApplicationShortcut);
     m_pOptionsKeyboard->setCheckable(true);
     m_pOptionsKeyboard->setChecked(keyboardShortcutsEnabled);
@@ -916,10 +916,10 @@ void MixxxMainWindow::initActions()
     m_pOptionsPreferences = new QAction(preferencesTitle, this);
 #ifdef __APPLE__
     m_pOptionsPreferences->setShortcut(
-        QKeySequence(m_pKbdConfig->getValueString(ConfigKey("[KeyboardShortcuts]","OptionsMenu_Preferences"),tr("Ctrl+,"))));
+        QKeySequence(m_pKbdConfig->getValueString(ConfigKey("KeyboardShortcuts","OptionsMenu_Preferences"),tr("Ctrl+,"))));
 #else
     m_pOptionsPreferences->setShortcut(
-        QKeySequence(m_pKbdConfig->getValueString(ConfigKey("[KeyboardShortcuts]","OptionsMenu_Preferences"),tr("Ctrl+P"))));
+        QKeySequence(m_pKbdConfig->getValueString(ConfigKey("KeyboardShortcuts","OptionsMenu_Preferences"),tr("Ctrl+P"))));
 #endif
     m_pOptionsPreferences->setShortcutContext(Qt::ApplicationShortcut);
     m_pOptionsPreferences->setStatusTip(preferencesText);
@@ -1016,7 +1016,7 @@ void MixxxMainWindow::initActions()
     auto shoutcastTitle = tr("Enable Live &Broadcasting");
     auto shoutcastText = tr("Stream your mixes to a shoutcast or icecast server");
     m_pOptionsShoutcast = new QAction(shoutcastTitle, this);
-    m_pOptionsShoutcast->setShortcut(QKeySequence(m_pKbdConfig->getValueString(ConfigKey("[KeyboardShortcuts]","OptionsMenu_EnableLiveBroadcasting"),tr("Ctrl+L"))));
+    m_pOptionsShoutcast->setShortcut(QKeySequence(m_pKbdConfig->getValueString(ConfigKey("KeyboardShortcuts","OptionsMenu_EnableLiveBroadcasting"),tr("Ctrl+L"))));
     m_pOptionsShoutcast->setShortcutContext(Qt::ApplicationShortcut);
     m_pOptionsShoutcast->setCheckable(true);
     m_pOptionsShoutcast->setChecked(m_pShoutcastManager->isEnabled());
@@ -1029,17 +1029,17 @@ void MixxxMainWindow::initActions()
     auto showSamplersText = tr("Show the sample deck section of the Mixxx interface.") +" " + mayNotBeSupported;
     m_pViewShowSamplers = new QAction(showSamplersTitle, this);
     m_pViewShowSamplers->setCheckable(true);
-    m_pViewShowSamplers->setShortcut(QKeySequence(m_pKbdConfig->getValueString(ConfigKey("[KeyboardShortcuts]","ViewMenu_ShowSamplers"),tr("Ctrl+1", "Menubar|View|Show Samplers"))));
+    m_pViewShowSamplers->setShortcut(QKeySequence(m_pKbdConfig->getValueString(ConfigKey("KeyboardShortcuts","ViewMenu_ShowSamplers"),tr("Ctrl+1", "Menubar|View|Show Samplers"))));
     m_pViewShowSamplers->setStatusTip(showSamplersText);
     m_pViewShowSamplers->setWhatsThis(buildWhatsThis(showSamplersTitle, showSamplersText));
-    connect(m_pViewShowSamplers, &QAction::toggled,[](bool enable){ControlObject::set(ConfigKey("[Samplers]", "show_samplers"), enable);});
+    connect(m_pViewShowSamplers, &QAction::toggled,[](bool enable){ControlObject::set(ConfigKey("Samplers", "show_samplers"), enable);});
     auto showVinylControlTitle = tr("Show Vinyl Control Section");
     auto  showVinylControlText = tr("Show the vinyl control section of the Mixxx interface.") +" " + mayNotBeSupported;
 #ifdef __VINYLCONTROL__
     m_pViewVinylControl = new QAction(showVinylControlTitle, this);
     m_pViewVinylControl->setCheckable(true);
     m_pViewVinylControl->setShortcut(
-        QKeySequence(m_pKbdConfig->getValueString(ConfigKey("[KeyboardShortcuts]", "ViewMenu_ShowVinylControl"),tr("Ctrl+3", "Menubar|View|Show Vinyl Control Section"))));
+        QKeySequence(m_pKbdConfig->getValueString(ConfigKey("KeyboardShortcuts", "ViewMenu_ShowVinylControl"),tr("Ctrl+3", "Menubar|View|Show Vinyl Control Section"))));
     m_pViewVinylControl->setStatusTip(showVinylControlText);
     m_pViewVinylControl->setWhatsThis(buildWhatsThis(showVinylControlTitle, showVinylControlText));
     connect(m_pViewVinylControl, SIGNAL(toggled(bool)),this, SLOT(slotViewShowVinylControl(bool)));
@@ -1049,7 +1049,7 @@ void MixxxMainWindow::initActions()
     m_pViewShowMicrophone = new QAction(showMicrophoneTitle, this);
     m_pViewShowMicrophone->setCheckable(true);
     m_pViewShowMicrophone->setShortcut(
-        QKeySequence(m_pKbdConfig->getValueString(ConfigKey("[KeyboardShortcuts]", "ViewMenu_ShowMicrophone"),tr("Ctrl+2", "Menubar|View|Show Microphone Section"))));
+        QKeySequence(m_pKbdConfig->getValueString(ConfigKey("KeyboardShortcuts", "ViewMenu_ShowMicrophone"),tr("Ctrl+2", "Menubar|View|Show Microphone Section"))));
     m_pViewShowMicrophone->setStatusTip(showMicrophoneText);
     m_pViewShowMicrophone->setWhatsThis(buildWhatsThis(showMicrophoneTitle, showMicrophoneText));
     connect(m_pViewShowMicrophone, SIGNAL(toggled(bool)),this, SLOT(slotViewShowMicrophone(bool)));
@@ -1058,7 +1058,7 @@ void MixxxMainWindow::initActions()
     m_pViewShowPreviewDeck = new QAction(showPreviewDeckTitle, this);
     m_pViewShowPreviewDeck->setCheckable(true);
     m_pViewShowPreviewDeck->setShortcut(
-        QKeySequence(m_pKbdConfig->getValueString(ConfigKey("[KeyboardShortcuts]","ViewMenu_ShowPreviewDeck"),tr("Ctrl+4", "Menubar|View|Show Preview Deck"))));
+        QKeySequence(m_pKbdConfig->getValueString(ConfigKey("KeyboardShortcuts","ViewMenu_ShowPreviewDeck"),tr("Ctrl+4", "Menubar|View|Show Preview Deck"))));
     m_pViewShowPreviewDeck->setStatusTip(showPreviewDeckText);
     m_pViewShowPreviewDeck->setWhatsThis(buildWhatsThis(showPreviewDeckTitle, showPreviewDeckText));
     connect(m_pViewShowPreviewDeck, SIGNAL(toggled(bool)),this, SLOT(slotViewShowPreviewDeck(bool)));
@@ -1068,7 +1068,7 @@ void MixxxMainWindow::initActions()
     m_pViewShowEffects = new QAction(showEffectsTitle, this);
     m_pViewShowEffects->setCheckable(true);
     m_pViewShowEffects->setShortcut(
-        QKeySequence(m_pKbdConfig->getValueString(ConfigKey("[KeyboardShortcuts]","ViewMenu_ShowEffects"),tr("Ctrl+5", "Menubar|View|Show Effect Rack"))));
+        QKeySequence(m_pKbdConfig->getValueString(ConfigKey("KeyboardShortcuts","ViewMenu_ShowEffects"),tr("Ctrl+5", "Menubar|View|Show Effect Rack"))));
     m_pViewShowEffects->setStatusTip(showEffectsText);
     m_pViewShowEffects->setWhatsThis(buildWhatsThis(showEffectsTitle, showEffectsText));
     connect(m_pViewShowEffects, SIGNAL(toggled(bool)),this, SLOT(slotViewShowEffects(bool)));
@@ -1077,28 +1077,28 @@ void MixxxMainWindow::initActions()
     m_pViewShowCoverArt = new QAction(showCoverArtTitle, this);
     m_pViewShowCoverArt->setCheckable(true);
     m_pViewShowCoverArt->setShortcut(
-        QKeySequence(m_pKbdConfig->getValueString(ConfigKey("[KeyboardShortcuts]","ViewMenu_ShowCoverArt"),tr("Ctrl+6", "Menubar|View|Show Cover Art"))));
+        QKeySequence(m_pKbdConfig->getValueString(ConfigKey("KeyboardShortcuts","ViewMenu_ShowCoverArt"),tr("Ctrl+6", "Menubar|View|Show Cover Art"))));
     m_pViewShowCoverArt->setStatusTip(showCoverArtText);
     m_pViewShowCoverArt->setWhatsThis(buildWhatsThis(showCoverArtTitle, showCoverArtText));
     connect(m_pViewShowCoverArt, &QAction::toggled,[](auto enabled)
-        {ControlObject::set(ConfigKey("[Library]","show_coverart"),enabled);}
+        {ControlObject::set(ConfigKey("Library","show_coverart"),enabled);}
         );
     auto maximizeLibraryTitle = tr("Maximize Library");
     auto  maximizeLibraryText = tr("Maximize the track library to take up all the available screen space.") +" " + mayNotBeSupported;
     m_pViewMaximizeLibrary = new QAction(maximizeLibraryTitle, this);
     m_pViewMaximizeLibrary->setCheckable(true);
     m_pViewMaximizeLibrary->setShortcut(
-        QKeySequence(m_pKbdConfig->getValueString(ConfigKey("[KeyboardShortcuts]","ViewMenu_MaximizeLibrary"),tr("Space", "Menubar|View|Maximize Library"))));
+        QKeySequence(m_pKbdConfig->getValueString(ConfigKey("KeyboardShortcuts","ViewMenu_MaximizeLibrary"),tr("Space", "Menubar|View|Maximize Library"))));
     m_pViewMaximizeLibrary->setStatusTip(maximizeLibraryText);
     m_pViewMaximizeLibrary->setWhatsThis(buildWhatsThis(maximizeLibraryTitle, maximizeLibraryText));
     connect(m_pViewMaximizeLibrary, &QAction::toggled,
-        [](auto enabled){ ControlObject::set(ConfigKey("[Master]","maximize_library"),enabled);}
+        [](auto enabled){ ControlObject::set(ConfigKey("Master","maximize_library"),enabled);}
         );
     auto recordTitle = tr("&Record Mix");
     auto recordText = tr("Record your mix to a file");
     m_pOptionsRecord = new QAction(recordTitle, this);
     m_pOptionsRecord->setShortcut(
-        QKeySequence(m_pKbdConfig->getValueString(ConfigKey("[KeyboardShortcuts]","OptionsMenu_RecordMix"),tr("Ctrl+R"))));
+        QKeySequence(m_pKbdConfig->getValueString(ConfigKey("KeyboardShortcuts","OptionsMenu_RecordMix"),tr("Ctrl+R"))));
     m_pOptionsRecord->setShortcutContext(Qt::ApplicationShortcut);
     m_pOptionsRecord->setCheckable(true);
     m_pOptionsRecord->setStatusTip(recordText);
@@ -1108,7 +1108,7 @@ void MixxxMainWindow::initActions()
     auto reloadSkinText = tr("Reload the skin");
     m_pDeveloperReloadSkin = new QAction(reloadSkinTitle, this);
     m_pDeveloperReloadSkin->setShortcut(
-        QKeySequence(m_pKbdConfig->getValueString(ConfigKey("[KeyboardShortcuts]","OptionsMenu_ReloadSkin"),tr("Ctrl+Shift+R"))));
+        QKeySequence(m_pKbdConfig->getValueString(ConfigKey("KeyboardShortcuts","OptionsMenu_ReloadSkin"),tr("Ctrl+Shift+R"))));
     m_pDeveloperReloadSkin->setShortcutContext(Qt::ApplicationShortcut);
     m_pDeveloperReloadSkin->setStatusTip(reloadSkinText);
     m_pDeveloperReloadSkin->setWhatsThis(buildWhatsThis(reloadSkinTitle, reloadSkinText));
@@ -1117,7 +1117,7 @@ void MixxxMainWindow::initActions()
     auto developerToolsText = tr("Opens the developer tools dialog");
     m_pDeveloperTools = new QAction(developerToolsTitle, this);
     m_pDeveloperTools->setShortcut(
-        QKeySequence(m_pKbdConfig->getValueString(ConfigKey("[KeyboardShortcuts]","OptionsMenu_DeveloperTools"),tr("Ctrl+Shift+T"))));
+        QKeySequence(m_pKbdConfig->getValueString(ConfigKey("KeyboardShortcuts","OptionsMenu_DeveloperTools"),tr("Ctrl+Shift+T"))));
     m_pDeveloperTools->setShortcutContext(Qt::ApplicationShortcut);
     m_pDeveloperTools->setCheckable(true);
     m_pDeveloperTools->setChecked(false);
@@ -1128,7 +1128,7 @@ void MixxxMainWindow::initActions()
     auto enableExperimentToolsText = tr("Enables experiment mode. Collects stats in the EXPERIMENT tracking bucket.");
     m_pDeveloperStatsExperiment = new QAction(enableExperimentTitle, this);
     m_pDeveloperStatsExperiment->setShortcut(
-        QKeySequence(m_pKbdConfig->getValueString(ConfigKey("[KeyboardShortcuts]","OptionsMenu_DeveloperStatsExperiment"),tr("Ctrl+Shift+E"))));
+        QKeySequence(m_pKbdConfig->getValueString(ConfigKey("KeyboardShortcuts","OptionsMenu_DeveloperStatsExperiment"),tr("Ctrl+Shift+E"))));
     m_pDeveloperStatsExperiment->setShortcutContext(Qt::ApplicationShortcut);
     m_pDeveloperStatsExperiment->setStatusTip(enableExperimentToolsText);
     m_pDeveloperStatsExperiment->setWhatsThis(buildWhatsThis(enableExperimentTitle, enableExperimentToolsText));
@@ -1139,7 +1139,7 @@ void MixxxMainWindow::initActions()
     auto enableBaseToolsText = tr("Enables base mode. Collects stats in the BASE tracking bucket.");
     m_pDeveloperStatsBase = new QAction(enableBaseTitle, this);
     m_pDeveloperStatsBase->setShortcut(
-        QKeySequence(m_pKbdConfig->getValueString(ConfigKey("[KeyboardShortcuts]","OptionsMenu_DeveloperStatsBase"),tr("Ctrl+Shift+B"))));
+        QKeySequence(m_pKbdConfig->getValueString(ConfigKey("KeyboardShortcuts","OptionsMenu_DeveloperStatsBase"),tr("Ctrl+Shift+B"))));
     m_pDeveloperStatsBase->setShortcutContext(Qt::ApplicationShortcut);
     m_pDeveloperStatsBase->setStatusTip(enableBaseToolsText);
     m_pDeveloperStatsBase->setWhatsThis(buildWhatsThis(enableBaseTitle, enableBaseToolsText));
@@ -1149,10 +1149,10 @@ void MixxxMainWindow::initActions()
     // "D" cannont be used with Alt here as it is already by the Developer menu
     auto scriptDebuggerTitle = tr("Deb&ugger Enabled");
     auto scriptDebuggerText = tr("Enables the debugger during skin parsing");
-    auto scriptDebuggerEnabled = m_pConfig->getValueString(ConfigKey("[ScriptDebugger]", "Enabled")) == "1";
+    auto scriptDebuggerEnabled = m_pConfig->getValueString(ConfigKey("ScriptDebugger", "Enabled")) == "1";
     m_pDeveloperDebugger = new QAction(scriptDebuggerTitle, this);
     m_pDeveloperDebugger->setShortcut(
-        QKeySequence(m_pKbdConfig->getValueString(ConfigKey("[KeyboardShortcuts]","DeveloperMenu_EnableDebugger"),tr("Ctrl+Shift+D"))));
+        QKeySequence(m_pKbdConfig->getValueString(ConfigKey("KeyboardShortcuts","DeveloperMenu_EnableDebugger"),tr("Ctrl+Shift+D"))));
     m_pDeveloperDebugger->setShortcutContext(Qt::ApplicationShortcut);
     m_pDeveloperDebugger->setWhatsThis(buildWhatsThis(keyboardShortcutTitle, keyboardShortcutText));
     m_pDeveloperDebugger->setCheckable(true);
@@ -1163,9 +1163,9 @@ void MixxxMainWindow::initActions()
     m_TalkoverMapper = new QSignalMapper(this);
     connect(m_TalkoverMapper, SIGNAL(mapped(int)),this, SLOT(slotTalkoverChanged(int)));
     for (int i = 0; i < kMicrophoneCount; ++i) {
-        auto group = QString("[Microphone]");
+        auto group = QString("Microphone");
         if (i > 0) {
-            group = QString("[Microphone%1]").arg(i + 1);
+            group = QString("Microphone%1").arg(i + 1);
         }
         auto  talkover_button(new ControlObjectSlave(group, "talkover", this));
         m_TalkoverMapper->setMapping(talkover_button, i);
@@ -1312,11 +1312,11 @@ void MixxxMainWindow::slotOptionsKeyboard(bool toggle) {
     if (toggle) {
         //qDebug() << "Enable keyboard shortcuts/mappings";
         m_pKeyboard->setKeyboardConfig(m_pKbdConfig);
-        m_pConfig->set(ConfigKey("[Keyboard]","Enabled"), ConfigValue(1));
+        m_pConfig->set(ConfigKey("Keyboard","Enabled"), ConfigValue(1));
     } else {
         //qDebug() << "Disable keyboard shortcuts/mappings";
         m_pKeyboard->setKeyboardConfig(m_pKbdConfigEmpty);
-        m_pConfig->set(ConfigKey("[Keyboard]","Enabled"), ConfigValue(0));
+        m_pConfig->set(ConfigKey("Keyboard","Enabled"), ConfigValue(0));
     }
 }
 void MixxxMainWindow::slotDeveloperReloadSkin(bool /*toggle*/) {rebootMixxxView();}
@@ -1349,7 +1349,7 @@ void MixxxMainWindow::slotDeveloperStatsBase() {
     } else {Experiment::disable();}
 }
 void MixxxMainWindow::slotDeveloperDebugger(bool toggle) {
-    m_pConfig->set(ConfigKey("[ScriptDebugger]","Enabled"),ConfigValue(toggle ? 1 : 0));
+    m_pConfig->set(ConfigKey("ScriptDebugger","Enabled"),ConfigValue(toggle ? 1 : 0));
 }
 void MixxxMainWindow::slotViewFullScreen(bool toggle)
 {
@@ -1540,7 +1540,7 @@ void MixxxMainWindow::slotTalkoverChanged(int mic_num) {
     m_pPrefDlg->showSoundHardwarePage();
 }
 void MixxxMainWindow::setToolTipsCfg(int tt) {
-    m_pConfig->set(ConfigKey("[Controls]","Tooltips"),ConfigValue(tt));
+    m_pConfig->set(ConfigKey("Controls","Tooltips"),ConfigValue(tt));
     m_toolTipsCfg = tt;
 }
 void MixxxMainWindow::rebootMixxxView() {

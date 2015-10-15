@@ -19,8 +19,8 @@ using ::testing::_;
 class EffectSlotTest : public BaseEffectTest {
   protected:
     EffectSlotTest()
-            : m_master(m_factory.getOrCreateHandle("[Master]"), "[Master]"),
-              m_headphone(m_factory.getOrCreateHandle("[Headphone]"), "[Headphone]") {
+            : m_master(m_factory.getOrCreateHandle("Master"), "Master"),
+              m_headphone(m_factory.getOrCreateHandle("Headphone"), "Headphone") {
         m_pEffectsManager->registerChannel(m_master);
         m_pEffectsManager->registerChannel(m_headphone);
         registerTestBackend();
