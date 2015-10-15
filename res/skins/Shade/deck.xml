@@ -26,7 +26,7 @@
 							<PathStatusLight3>btn_vinylcontrol_indicator_horizontal3.png</PathStatusLight3>
 							<Pos>-1,0</Pos>
 							<Connection>
-								<ConfigKey>[Channel<Variable name="channum"/>],vinylcontrol_status</ConfigKey>
+								<ConfigKey>Channel<Variable name="channum"/>,vinylcontrol_status</ConfigKey>
 							</Connection>
 						</StatusLight>
 						<StatusLight>
@@ -38,7 +38,7 @@
 							<PathStatusLight3>btn_vinylcontrol_indicator_horizontal3.png</PathStatusLight3>
 							<Pos>-1,248</Pos>
 							<Connection>
-								<ConfigKey>[Channel<Variable name="channum"/>],vinylcontrol_status</ConfigKey>
+								<ConfigKey>Channel<Variable name="channum"/>,vinylcontrol_status</ConfigKey>
 							</Connection>
 						</StatusLight>
 						<StatusLight>
@@ -50,7 +50,7 @@
 							<PathStatusLight3>btn_vinylcontrol_indicator_vertical3.png</PathStatusLight3>
 							<Pos>0,0</Pos>
 							<Connection>
-								<ConfigKey>[Channel<Variable name="channum"/>],vinylcontrol_status</ConfigKey>
+								<ConfigKey>Channel<Variable name="channum"/>,vinylcontrol_status</ConfigKey>
 							</Connection>
 						</StatusLight>
 						<StatusLight>
@@ -62,7 +62,7 @@
 							<PathStatusLight3>btn_vinylcontrol_indicator_vertical3.png</PathStatusLight3>
 							<Pos>367,0</Pos>
 							<Connection>
-								<ConfigKey>[Channel<Variable name="channum"/>],vinylcontrol_status</ConfigKey>
+								<ConfigKey>Channel<Variable name="channum"/>,vinylcontrol_status</ConfigKey>
 							</Connection>
 						</StatusLight>
 	
@@ -184,7 +184,7 @@
 												</Spinny>
 											</Children>
 											<Connection>
-												<ConfigKey>[Spinny<Variable name="channum"/>],show_spinny</ConfigKey>
+												<ConfigKey>Spinny<Variable name="channum"/>,show_spinny</ConfigKey>
 												<BindProperty>visible</BindProperty>
 											</Connection>
 										</WidgetGroup>
@@ -243,7 +243,7 @@
 								<TextColor>#FFFFFF</TextColor>
 							</Mark>
 							<Connection>
-								<ConfigKey>[Channel<Variable name="channum"/>],playposition</ConfigKey>
+								<ConfigKey>Channel<Variable name="channum"/>,playposition</ConfigKey>
 								<EmitOnDownPress>false</EmitOnDownPress>
 							</Connection>
 						</Overview>
@@ -320,7 +320,7 @@
 							<!--CSS alignments not respected see bug lp:605530 , lets call <Alignment>-->
 							<Alignment>right</Alignment>
 							<Connection>
-								<ConfigKey>[Channel<Variable name="channum"/>],playposition</ConfigKey>
+								<ConfigKey>Channel<Variable name="channum"/>,playposition</ConfigKey>
 							</Connection>
 						</NumberPos>
 						
@@ -346,7 +346,7 @@
 							<!--CSS alignments not respected see bug lp:605530 , lets call <Alignment>-->
 							<Alignment>center</Alignment>
 							<Connection>
-								<ConfigKey>[Channel<Variable name="channum"/>],visual_bpm</ConfigKey>
+								<ConfigKey>Channel<Variable name="channum"/>,visual_bpm</ConfigKey>
 							</Connection>
 						</NumberBpm>
 						
@@ -373,7 +373,7 @@
 							<!--CSS alignments not respected see bug lp:605530 , lets call <Alignment>-->
 							<Alignment>center</Alignment>
 							<Connection>
-								<ConfigKey>[Channel<Variable name="channum"/>],visual_key</ConfigKey>
+								<ConfigKey>Channel<Variable name="channum"/>,visual_key</ConfigKey>
 							</Connection>
 						</Key>
 
@@ -384,7 +384,7 @@
 							<Pos>333,57</Pos>
 							<Horizontal>true</Horizontal>
 							<Connection>
-								<ConfigKey>[Channel<Variable name="channum"/>],visual_key_distance</ConfigKey>
+								<ConfigKey>Channel<Variable name="channum"/>,visual_key_distance</ConfigKey>
 								<EmitOnDownPress>false</EmitOnDownPress>
 							</Connection>
 						</SliderComposed>
@@ -397,7 +397,7 @@
 							<Pos>333,61</Pos>
 							<Horizontal>true</Horizontal>
 							<Connection>
-								<ConfigKey>[Channel<Variable name="channum"/>],pitch</ConfigKey>
+								<ConfigKey>Channel<Variable name="channum"/>,pitch</ConfigKey>
 								<EmitOnDownPress>false</EmitOnDownPress>
 							</Connection>
 						</SliderComposed>
@@ -417,11 +417,11 @@
 							</State>
 							<Pos>353,55</Pos>
 							<Connection>
-								<ConfigKey>[Channel<Variable name="channum"/>],pitch_up</ConfigKey>
+								<ConfigKey>Channel<Variable name="channum"/>,pitch_up</ConfigKey>
 								<ButtonState>LeftButton</ButtonState>
 							</Connection>
 							<Connection>
-								<ConfigKey>[Channel<Variable name="channum"/>],pitch_up_small</ConfigKey>
+								<ConfigKey>Channel<Variable name="channum"/>,pitch_up_small</ConfigKey>
 								<ButtonState>RightButton</ButtonState>
 							</Connection>
 						</PushButton>
@@ -441,11 +441,11 @@
 							</State>
 							<Pos>320,55</Pos>
 							<Connection>
-								<ConfigKey>[Channel<Variable name="channum"/>],pitch_down</ConfigKey>
+								<ConfigKey>Channel<Variable name="channum"/>,pitch_down</ConfigKey>
 								<ButtonState>LeftButton</ButtonState>
 							</Connection>
 							<Connection>
-								<ConfigKey>[Channel<Variable name="channum"/>],pitch_down_small</ConfigKey>
+								<ConfigKey>Channel<Variable name="channum"/>,pitch_down_small</ConfigKey>
 								<ButtonState>RightButton</ButtonState>
 							</Connection>
 						</PushButton>
@@ -463,7 +463,7 @@
 							<Pos>335,65</Pos>
 							<Horizontal>false</Horizontal>
 							<Connection>
-								<ConfigKey>[Channel<Variable name="channum"/>],rate</ConfigKey>
+								<ConfigKey>Channel<Variable name="channum"/>,rate</ConfigKey>
 								<EmitOnDownPress>false</EmitOnDownPress>
 							</Connection>
 						</SliderComposed>
@@ -489,11 +489,11 @@
 							</State>
 							<Pos>321,19</Pos>
 							<Connection>
-								<ConfigKey>[Channel<Variable name="channum"/>],sync_enabled</ConfigKey>
+								<ConfigKey>Channel<Variable name="channum"/>,sync_enabled</ConfigKey>
 								<ButtonState>LeftButton</ButtonState>
 							</Connection>
 							<Connection>
-								<ConfigKey>[Channel<Variable name="channum"/>],beatsync_tempo</ConfigKey>
+								<ConfigKey>Channel<Variable name="channum"/>,beatsync_tempo</ConfigKey>
 								<ButtonState>RightButton</ButtonState>
 							</Connection>
 						</PushButton>
@@ -514,11 +514,11 @@
 							</State>
 							<Pos>347,19</Pos>
 							<Connection>
-								<ConfigKey>[Channel<Variable name="channum"/>],sync_key</ConfigKey>
+								<ConfigKey>Channel<Variable name="channum"/>,sync_key</ConfigKey>
 								<ButtonState>LeftButton</ButtonState>
 							</Connection>
 							<Connection>
-								<ConfigKey>[Channel<Variable name="channum"/>],reset_key</ConfigKey>
+								<ConfigKey>Channel<Variable name="channum"/>,reset_key</ConfigKey>
 								<ButtonState>RightButton</ButtonState>
 							</Connection>
 						</PushButton>
@@ -539,12 +539,12 @@
 							</State>
 							<Pos>342,174</Pos>
 							<Connection>
-								<ConfigKey>[Channel<Variable name="channum"/>],rate_temp_up</ConfigKey>
+								<ConfigKey>Channel<Variable name="channum"/>,rate_temp_up</ConfigKey>
 								<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
 								<ButtonState>LeftButton</ButtonState>
 							</Connection>
 							<Connection>
-								<ConfigKey>[Channel<Variable name="channum"/>],rate_temp_up_small</ConfigKey>
+								<ConfigKey>Channel<Variable name="channum"/>,rate_temp_up_small</ConfigKey>
 								<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
 								<ButtonState>RightButton</ButtonState>
 							</Connection>
@@ -560,12 +560,12 @@
 							</State>
 							<Pos>321,174</Pos>
 							<Connection>
-								<ConfigKey>[Channel<Variable name="channum"/>],rate_temp_down</ConfigKey>
+								<ConfigKey>Channel<Variable name="channum"/>,rate_temp_down</ConfigKey>
 								<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
 								<ButtonState>LeftButton</ButtonState>
 							</Connection>
 							<Connection>
-								<ConfigKey>[Channel<Variable name="channum"/>],rate_temp_down_small</ConfigKey>
+								<ConfigKey>Channel<Variable name="channum"/>,rate_temp_down_small</ConfigKey>
 								<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
 								<ButtonState>RightButton</ButtonState>
 							</Connection>
@@ -592,7 +592,7 @@
 							</State>
 							<Pos>253,161</Pos>
 							<Connection>
-								<ConfigKey>[Spinny<Variable name="channum"/>],show_spinny</ConfigKey>
+								<ConfigKey>Spinny<Variable name="channum"/>,show_spinny</ConfigKey>
 								<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
 								<ButtonState>LeftButton</ButtonState>
 							</Connection>
@@ -614,12 +614,12 @@
 							</State>
 							<Pos>253,180</Pos>
 							<Connection>
-								<ConfigKey>[Channel<Variable name="channum"/>],beats_translate_curpos</ConfigKey>
+								<ConfigKey>Channel<Variable name="channum"/>,beats_translate_curpos</ConfigKey>
 								<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
 								<ButtonState>LeftButton</ButtonState>
 							</Connection>
 							<Connection>
-								<ConfigKey>[Channel<Variable name="channum"/>],beats_translate_match_alignment</ConfigKey>
+								<ConfigKey>Channel<Variable name="channum"/>,beats_translate_match_alignment</ConfigKey>
 								<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
 								<ButtonState>RightButton</ButtonState>
 							</Connection>
@@ -646,7 +646,7 @@
 							</State>
 							<Pos>295,180</Pos>
 							<Connection>
-								<ConfigKey>[Channel<Variable name="channum"/>],keylock</ConfigKey>
+								<ConfigKey>Channel<Variable name="channum"/>,keylock</ConfigKey>
 							</Connection>
 						</PushButton>
 	
@@ -671,7 +671,7 @@
 							</State>
 							<Pos>274,180</Pos>
 							<Connection>
-								<ConfigKey>[Channel<Variable name="channum"/>],quantize</ConfigKey>
+								<ConfigKey>Channel<Variable name="channum"/>,quantize</ConfigKey>
 								<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
 								<ButtonState>LeftButton</ButtonState>
 							</Connection>
@@ -698,7 +698,7 @@
 							</State>
 							<Pos>274,161</Pos>
 							<Connection>
-								<ConfigKey>[Channel<Variable name="channum"/>],repeat</ConfigKey>
+								<ConfigKey>Channel<Variable name="channum"/>,repeat</ConfigKey>
 							</Connection>
 						</PushButton>
 	
@@ -718,7 +718,7 @@
 							</State>
 							<Pos>295,161</Pos>
 							<Connection>
-								<ConfigKey>[Channel<Variable name="channum"/>],eject</ConfigKey>
+								<ConfigKey>Channel<Variable name="channum"/>,eject</ConfigKey>
 								<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
 								<ButtonState>LeftButton</ButtonState>
 								<ConnectValueToWidget>false</ConnectValueToWidget>

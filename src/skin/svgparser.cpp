@@ -110,7 +110,8 @@ void SvgParser::parseAttributes(const QDomNode& node) const
     // expr-attribute_name="var_name";
     QRegExp nameRx("^expr-([^=\\s]+)$");
     // TODO (jclaveau) : move this pattern definition to the script extension?
-    for (auto i = 0; i < attributes.count(); i++) {
+    for (auto i = 0; i < attributes.count(); i++)
+    {
         auto attribute = attributes.item(i).toAttr();
         auto attributeValue = attribute.value();
         auto attributeName = attribute.name();
@@ -150,5 +151,6 @@ QScriptValue SvgParser::evaluateTemplateExpression(const QString& expression,int
 {
     auto out = m_context.evaluateScript(expression, m_currentFile, lineNumber);
     if (m_context.getScriptEngine()->hasUncaughtException()) return QScriptValue();
-    else return out;
+    qDebug() << "Evaluated template expression " << expression << " with result " << out.toString();
+    return out;
 }

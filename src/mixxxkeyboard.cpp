@@ -32,16 +32,16 @@ MixxxKeyboard::MixxxKeyboard(ConfigObject<ConfigValueKbd>* pKbdConfigObject,
     setObjectName(name);
     setKeyboardConfig(pKbdConfigObject);
 }
-
-MixxxKeyboard::~MixxxKeyboard() {
-}
-
-bool MixxxKeyboard::eventFilter(QObject*, QEvent* e) {
-    if (e->type() == QEvent::FocusOut) {
+MixxxKeyboard::~MixxxKeyboard() = default;
+bool MixxxKeyboard::eventFilter(QObject*, QEvent* e)
+{
+    if (e->type() == QEvent::FocusOut)
+    {
         // If we lose focus, we need to clear out the active key list
         // because we might not get Key Release events.
         m_qActiveKeyList.clear();
-    } else if (e->type() == QEvent::KeyPress) {
+    } else if (e->type() == QEvent::KeyPress)
+    {
         QKeyEvent* ke = (QKeyEvent *)e;
 
 #ifdef __APPLE__
@@ -58,32 +58,30 @@ bool MixxxKeyboard::eventFilter(QObject*, QEvent* e) {
         // Just for returning true if we are consuming this key event
 
         for(auto & keyDownInfo: m_qActiveKeyList) {
-            if (keyDownInfo.keyId == keyId) {return true;}
+            if (keyDownInfo.keyId == keyId) return true;
         }
-
-        QKeySequence ks = getKeySeq(ke);
+        auto ks = getKeySeq(ke);
         if (!ks.isEmpty()) {
             // Check if a shortcut is defined
-            bool result = false;
+            auto result = false;
             for (auto it = m_keySequenceToControlHash.find(ks); it != m_keySequenceToControlHash.end() && it.key() == ks; ++it) {
-                const ConfigKey& configKey = it.value();
-                if (configKey.group != "KeyboardShortcuts") {
-                    ControlObject* control = ControlObject::getControl(configKey);
-                    if (control) {
+                auto& configKey = it.value();
+                if (configKey.group != "KeyboardShortcuts")
+                {
+                    auto control = ControlObject::getControl(configKey);
+                    if (control)
+                    {
                         m_qActiveKeyList.append(KeyDownInformation(keyId, ke->modifiers(), control));
                         control->setParameter( 1);
                         result = true;
-                    } else {
-                        qDebug() << "Warning: Keyboard key is configured for nonexistent control:"
-                                 << configKey.group << configKey.item;
                     }
+                    else qDebug() << "Warning: Keyboard key is configured for nonexistent control:" << configKey.group << configKey.item;
                 }
             }
             return result;
         }
     } else if (e->type()==QEvent::KeyRelease) {
         QKeyEvent* ke = (QKeyEvent*)e;
-
 #ifdef __APPLE__
         // On Mac OSX the nativeScanCode is empty
         int keyId = ke->key();
@@ -91,9 +89,7 @@ bool MixxxKeyboard::eventFilter(QObject*, QEvent* e) {
         int keyId = ke->nativeScanCode();
 #endif
         bool autoRepeat = ke->isAutoRepeat();
-
         //qDebug() << "KeyRelease event =" << ke->key() << "AutoRepeat =" << autoRepeat << "KeyId =" << keyId;
-
         int clearModifiers = 0;
 #ifdef __APPLE__
         // OS X apparently doesn't deliver KeyRelease events when you are
@@ -106,11 +102,14 @@ bool MixxxKeyboard::eventFilter(QObject*, QEvent* e) {
 
         bool matched = false;
         // Run through list of active keys to see if the released key is active
-        for (int i = m_qActiveKeyList.size() - 1; i >= 0; i--) {
-            const KeyDownInformation& keyDownInfo = m_qActiveKeyList[i];
-            ControlObject* pControl = keyDownInfo.pControl;
-            if (keyDownInfo.keyId == keyId ||(clearModifiers > 0 && keyDownInfo.modifiers == clearModifiers)) {
-                if (!autoRepeat) {
+        for (int i = m_qActiveKeyList.size() - 1; i >= 0; i--)
+        {
+            auto& keyDownInfo = m_qActiveKeyList[i];
+            auto pControl = keyDownInfo.pControl;
+            if (keyDownInfo.keyId == keyId ||(clearModifiers > 0 && keyDownInfo.modifiers == clearModifiers))
+            {
+                if (!autoRepeat)
+                {
                     pControl->setParameter( 0);
                     m_qActiveKeyList.removeAt(i);
                 }
@@ -144,10 +143,9 @@ QKeySequence MixxxKeyboard::getKeySeq(QKeyEvent* e) {
     }
     auto keyseq = QKeySequence(e->key()).toString();
     k = QKeySequence(modseq + keyseq);
-    if (CmdlineArgs::Instance().getDeveloper()) {qDebug() << "keyboard press: " << k.toString();}
+    if (CmdlineArgs::Instance().getDeveloper()) qDebug() << "keyboard press: " << k.toString();
     return k;
 }
-
 void MixxxKeyboard::setKeyboardConfig(ConfigObject<ConfigValueKbd>* pKbdConfigObject) {
     // Keyboard configs are a surjection from ConfigKey to key sequence. We
     // invert the mapping to create an injection from key sequence to
@@ -155,9 +153,13 @@ void MixxxKeyboard::setKeyboardConfig(ConfigObject<ConfigValueKbd>* pKbdConfigOb
     // Mixxx.
     auto keyboardConfig = pKbdConfigObject->toHash();
     m_keySequenceToControlHash.clear();
-    for (auto it = keyboardConfig.begin(); it != keyboardConfig.end(); ++it) {
+    for (auto it = keyboardConfig.begin(); it != keyboardConfig.end(); ++it)
+    {
         m_keySequenceToControlHash.insert(it.value().m_qKey, it.key());
     }
     m_pKbdConfigObject = pKbdConfigObject;
 }
-ConfigObject<ConfigValueKbd>* MixxxKeyboard::getKeyboardConfig() {return m_pKbdConfigObject;}
+ConfigObject<ConfigValueKbd>* MixxxKeyboard::getKeyboardConfig()
+{
+  return m_pKbdConfigObject;
+}

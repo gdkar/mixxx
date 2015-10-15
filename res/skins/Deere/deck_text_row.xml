@@ -24,7 +24,7 @@
           </CoverArt>
         </Children>
         <Connection>
-          <ConfigKey persist="true">[Deere],show_coverart</ConfigKey>
+          <ConfigKey persist="true">Deere,show_coverart</ConfigKey>
           <BindProperty>visible</BindProperty>
           <!-- Needed for the show/hide logic to work when circling through
                the cover art display options: none/vinyl cover/text row -->
@@ -61,7 +61,7 @@
                     <Group><Variable name="group"/></Group>
                     <Elide>right</Elide>
                     <Connection>
-                      <ConfigKey>[Deere],show_no_track_info</ConfigKey>
+                      <ConfigKey>Deere,show_no_track_info</ConfigKey>
                       <BindProperty>visible</BindProperty>
                       <Transform>
                         <Not/>
@@ -75,7 +75,7 @@
                     <ObjectName>HiddenTrackTitleInfo</ObjectName>
                     <Text>***</Text>
                     <Connection>
-                      <ConfigKey>[Deere],show_no_track_info</ConfigKey>
+                      <ConfigKey>Deere,show_no_track_info</ConfigKey>
                       <BindProperty>visible</BindProperty>
                     </Connection>
                   </Label>
@@ -114,7 +114,7 @@
                                   <Unpressed scalemode="STRETCH"></Unpressed>
                                 </State>
                                 <Connection>
-                                  <ConfigKey>[Deere],key_layout_next</ConfigKey>
+                                  <ConfigKey>Deere,key_layout_next</ConfigKey>
                                 </Connection>
                               </PushButton>
                               <Key>
@@ -154,7 +154,7 @@
                                       <Unpressed scalemode="STRETCH"></Unpressed>
                                     </State>
                                     <Connection>
-                                      <ConfigKey>[Deere],key_layout_next</ConfigKey>
+                                      <ConfigKey>Deere,key_layout_next</ConfigKey>
                                     </Connection>
                                   </PushButton>
 
@@ -251,7 +251,7 @@
                                   <Unpressed scalemode="STRETCH"></Unpressed>
                                 </State>
                                 <Connection>
-                                  <ConfigKey>[Deere],bpm_layout_next</ConfigKey>
+                                  <ConfigKey>Deere,bpm_layout_next</ConfigKey>
                                 </Connection>
                               </PushButton>
 
@@ -267,7 +267,7 @@
                                   <ConfigKey><Variable name="group"/>,visual_bpm</ConfigKey>
                                 </Connection>
                                 <Connection>
-                                  <ConfigKey>[Deere],show_no_bpm_info</ConfigKey>
+                                  <ConfigKey>Deere,show_no_bpm_info</ConfigKey>
                                   <BindProperty>visible</BindProperty>
                                   <Transform>
                                     <Not/>
@@ -281,7 +281,7 @@
                                 <ObjectName>HiddenBpmInfo</ObjectName>
                                 <Text>***.**</Text>
                                 <Connection>
-                                  <ConfigKey>[Deere],show_no_bpm_info</ConfigKey>
+                                  <ConfigKey>Deere,show_no_bpm_info</ConfigKey>
                                   <BindProperty>visible</BindProperty>
                                 </Connection>
                               </Label>
@@ -308,7 +308,7 @@
                                       <Unpressed scalemode="STRETCH"></Unpressed>
                                     </State>
                                     <Connection>
-                                      <ConfigKey>[Deere],bpm_layout_next</ConfigKey>
+                                      <ConfigKey>Deere,bpm_layout_next</ConfigKey>
                                     </Connection>
                                   </PushButton>
 
@@ -454,7 +454,7 @@
                     <Elide>right</Elide>
                     <Group><Variable name="group"/></Group>
                     <Connection>
-                      <ConfigKey>[Deere],show_no_track_info</ConfigKey>
+                      <ConfigKey>Deere,show_no_track_info</ConfigKey>
                       <BindProperty>visible</BindProperty>
                       <Transform>
                         <Not/>
@@ -468,7 +468,7 @@
                     <ObjectName>HiddenTrackArtistInfo</ObjectName>
                     <Text>***</Text>
                     <Connection>
-                      <ConfigKey>[Deere],show_no_track_info</ConfigKey>
+                      <ConfigKey>Deere,show_no_track_info</ConfigKey>
                       <BindProperty>visible</BindProperty>
                     </Connection>
                   </Label>
@@ -484,7 +484,7 @@
                       </StarRating>
                     </Children>
                     <Connection>
-                      <ConfigKey persist="true">[Deere],show_starrating</ConfigKey>
+                      <ConfigKey persist="true">Deere,show_starrating</ConfigKey>
                       <BindProperty>visible</BindProperty>
                     </Connection>
                   </WidgetGroup>

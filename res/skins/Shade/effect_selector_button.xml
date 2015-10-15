@@ -34,7 +34,7 @@
 					<Unpressed>btn_kill_over.png</Unpressed>
 				</State>
 				<Connection>
-		        <ConfigKey>[EffectRack1_EffectUnit<Variable name="effectunitnum"/>_Effect<Variable name="effectnum"/>],enabled</ConfigKey>
+		        <ConfigKey>EffectRack1_EffectUnit<Variable name="effectunitnum"/>_Effect<Variable name="effectnum"/>,enabled</ConfigKey>
 		        	<ButtonState>LeftButton</ButtonState>
 		 		</Connection>
 			</PushButton>
@@ -47,7 +47,7 @@
 					<Unpressed>btn_previous.png</Unpressed>
 				</State>
 				<Connection>
-		      		<ConfigKey>[EffectRack1_EffectUnit<Variable name="effectunitnum"/>_Effect<Variable name="effectnum"/>],prev_effect</ConfigKey>
+		      		<ConfigKey>EffectRack1_EffectUnit<Variable name="effectunitnum"/>_Effect<Variable name="effectnum"/>,prev_effect</ConfigKey>
 					<ButtonState>LeftButton</ButtonState>
 		        </Connection>
 		    </PushButton>
@@ -70,7 +70,7 @@
 					<Unpressed>btn_next.png</Unpressed>
 			    </State>
 				<Connection>
-			        <ConfigKey>[EffectRack1_EffectUnit<Variable name="effectunitnum"/>_Effect<Variable name="effectnum"/>],next_effect</ConfigKey>
+			        <ConfigKey>EffectRack1_EffectUnit<Variable name="effectunitnum"/>_Effect<Variable name="effectnum"/>,next_effect</ConfigKey>
 			    	<ButtonState>LeftButton</ButtonState>
 				</Connection>
 			</PushButton>

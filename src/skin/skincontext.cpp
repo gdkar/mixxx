@@ -241,25 +241,31 @@ Paintable::DrawMode SkinContext::selectScaleMode(const QDomElement& element,Pain
  * All the methods below exist to access some of the scriptEngine features
  * from the svgParser.
  */
-QScriptValue SkinContext::evaluateScript(const QString& expression,const QString& filename,int lineNumber) {
+QScriptValue SkinContext::evaluateScript(const QString& expression,const QString& filename,int lineNumber)
+{
     return m_pScriptEngine->evaluate(expression, filename, lineNumber);
 }
-QScriptValue SkinContext::importScriptExtension(const QString& extensionName) {
+QScriptValue SkinContext::importScriptExtension(const QString& extensionName)
+{
     auto out = m_pScriptEngine->importExtension(extensionName);
     if (m_pScriptEngine->hasUncaughtException()) qDebug() << out.toString();
     return out;
 }
-const QSharedPointer<QScriptEngine> SkinContext::getScriptEngine() const {
+const QSharedPointer<QScriptEngine> SkinContext::getScriptEngine() const
+{
     return m_pScriptEngine;
 }
-void SkinContext::enableDebugger(bool state) const {
+void SkinContext::enableDebugger(bool state) const
+{
     if (CmdlineArgs::Instance().getDeveloper() && m_pConfig != NULL &&
-            m_pConfig->getValueString(ConfigKey("ScriptDebugger", "Enabled")) == "1") {
+            m_pConfig->getValueString(ConfigKey("ScriptDebugger", "Enabled")) == "1")
+    {
         if (state) m_pScriptDebugger->attachTo(m_pScriptEngine.data());
         else       m_pScriptDebugger->detach();
     }
 }
-QDebug SkinContext::logWarning(const char* file, const int line,const QDomNode& node) const {
+QDebug SkinContext::logWarning(const char* file, const int line,const QDomNode& node) const
+{
     return qWarning() << QString("%1:%2 SKIN ERROR at %3:%4 <%5>:")
                              .arg(file, QString::number(line), m_xmlPath,
                                   QString::number(node.lineNumber()),

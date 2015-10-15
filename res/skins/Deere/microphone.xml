@@ -35,7 +35,7 @@
       </Template>
     </Children>
     <Connection>
-      <ConfigKey>[Microphone<Variable name="i"/>],enabled</ConfigKey>
+      <ConfigKey>Microphone<Variable name="i"/>,enabled</ConfigKey>
       <BindProperty>visible</BindProperty>
     </Connection>
   </WidgetGroup>

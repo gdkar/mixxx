@@ -24,11 +24,11 @@
             <Text>VINYL ON</Text>
           </State>
           <Connection>
-            <ConfigKey>[Channel<Variable name="channum" />],vinylcontrol_enabled</ConfigKey>
+            <ConfigKey>Channel<Variable name="channum" />,vinylcontrol_enabled</ConfigKey>
             <ButtonState>LeftButton</ButtonState>
           </Connection>
           <Connection>
-            <ConfigKey>[Channel<Variable name="channum" />],vinylcontrol_enabled</ConfigKey>
+            <ConfigKey>Channel<Variable name="channum" />,vinylcontrol_enabled</ConfigKey>
           </Connection>
         </PushButton>
         <PushButton>
@@ -45,11 +45,11 @@
             <Text>PASS ON</Text>
           </State>
           <Connection>
-            <ConfigKey>[Channel<Variable name="channum" />],passthrough</ConfigKey>
+            <ConfigKey>Channel<Variable name="channum" />,passthrough</ConfigKey>
             <ButtonState>LeftButton</ButtonState>
           </Connection>
           <Connection>
-            <ConfigKey>[Channel<Variable name="channum" />],passthrough</ConfigKey>
+            <ConfigKey>Channel<Variable name="channum" />,passthrough</ConfigKey>
           </Connection>
         </PushButton>
         </Children>
@@ -78,11 +78,11 @@
               <Text>CONST</Text>
             </State>
             <Connection>
-              <ConfigKey persist="true">[Channel<Variable name="channum" />],vinylcontrol_mode</ConfigKey>
+              <ConfigKey persist="true">Channel<Variable name="channum" />,vinylcontrol_mode</ConfigKey>
               <ButtonState>LeftButton</ButtonState>
             </Connection>
             <Connection>
-              <ConfigKey persist="true">[Channel<Variable name="channum" />],vinylcontrol_mode</ConfigKey>
+              <ConfigKey persist="true">Channel<Variable name="channum" />,vinylcontrol_mode</ConfigKey>
             </Connection>
           </PushButton>
           <PushButton>
@@ -103,18 +103,18 @@
               <Text>HOTCUE</Text>
             </State>
             <Connection>
-              <ConfigKey persist="true">[Channel<Variable name="channum" />],vinylcontrol_cueing</ConfigKey>
+              <ConfigKey persist="true">Channel<Variable name="channum" />,vinylcontrol_cueing</ConfigKey>
               <ButtonState>LeftButton</ButtonState>
             </Connection>
             <Connection>
-              <ConfigKey persist="true">[Channel<Variable name="channum" />],vinylcontrol_cueing</ConfigKey>
+              <ConfigKey persist="true">Channel<Variable name="channum" />,vinylcontrol_cueing</ConfigKey>
             </Connection>
           </PushButton>
         </Children>
       </WidgetGroup>
     </Children>
     <Connection>
-      <ConfigKey persist="true">[VinylControl],show_vinylcontrol</ConfigKey>
+      <ConfigKey persist="true">VinylControl,show_vinylcontrol</ConfigKey>
       <BindProperty>visible</BindProperty>
     </Connection>
   </WidgetGroup>

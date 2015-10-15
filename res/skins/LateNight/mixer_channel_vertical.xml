@@ -26,7 +26,7 @@
                                     <Unpressed>btn_pfl1_over.png</Unpressed>
                                 </State>
                                 <Connection>
-                                    <ConfigKey>[Channel<Variable name="channum"/>],pfl</ConfigKey>
+                                    <ConfigKey>Channel<Variable name="channum"/>,pfl</ConfigKey>
                                 </Connection>
                             </PushButton>
                         </Children>
@@ -67,7 +67,7 @@
                                 <PathStatusLight>btn_clipping1_over.png</PathStatusLight>
                                 <PathBack>btn_clipping1.png</PathBack>
                                 <Connection>
-                                    <ConfigKey>[Channel<Variable name="channum"/>],PeakIndicator</ConfigKey>
+                                    <ConfigKey>Channel<Variable name="channum"/>,PeakIndicator</ConfigKey>
                                 </Connection>
                             </StatusLight>
                             <VuMeter>
@@ -80,7 +80,7 @@
                                 <PeakFallTime>50</PeakFallTime>
                                 <PeakFallStep>2</PeakFallStep>
                                 <Connection>
-                                    <ConfigKey>[Channel<Variable name="channum"/>],VuMeter</ConfigKey>
+                                    <ConfigKey>Channel<Variable name="channum"/>,VuMeter</ConfigKey>
                                 </Connection>
                             </VuMeter>
                         </Children>
@@ -91,7 +91,7 @@
                         <Slider>slider_volume1.png</Slider>
                         <Horizontal>false</Horizontal>
                         <Connection>
-                          <ConfigKey>[Channel<Variable name="channum"/>],volume</ConfigKey>
+                          <ConfigKey>Channel<Variable name="channum"/>,volume</ConfigKey>
                         </Connection>
                       </SliderComposed>
                 </Children>

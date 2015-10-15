@@ -18,7 +18,7 @@
 					<PathBack>btn_clipping_microphone.png</PathBack>
 					<Pos>99,4</Pos>
 					<Connection>
-						<ConfigKey>[Auxiliary<Variable name="auxnum"/>],PeakIndicator</ConfigKey>
+						<ConfigKey>Auxiliary<Variable name="auxnum"/>,PeakIndicator</ConfigKey>
 					</Connection>
 				</StatusLight>
 
@@ -38,7 +38,7 @@
 					<PeakFallTime>50</PeakFallTime>
 					<PeakFallStep>2</PeakFallStep>
 					<Connection>
-						<ConfigKey>[Auxiliary<Variable name="auxnum"/>],VuMeter</ConfigKey>
+						<ConfigKey>Auxiliary<Variable name="auxnum"/>,VuMeter</ConfigKey>
 					</Connection>
 				</VuMeter>
 
@@ -58,7 +58,7 @@
 				    </State>
 				    <Pos>45,30</Pos>
 				    <Connection>
-					    <ConfigKey>[Auxiliary<Variable name="auxnum"/>],mute</ConfigKey>
+					    <ConfigKey>Auxiliary<Variable name="auxnum"/>,mute</ConfigKey>
 					    <ButtonState>LeftButton</ButtonState>
 				    </Connection>
 			    </PushButton>
@@ -71,7 +71,7 @@
 					<Path>knobs/knob_rotary_s%1.png</Path>
 					<Pos>66,22</Pos>
 					<Connection>
-						<ConfigKey>[Auxiliary<Variable name="auxnum"/>],pregain</ConfigKey>
+						<ConfigKey>Auxiliary<Variable name="auxnum"/>,pregain</ConfigKey>
 					</Connection>
 				</Knob>
 
@@ -96,7 +96,7 @@
 					</State>
 					<Pos>0,28</Pos>
 					<Connection>
-						<ConfigKey>[Auxiliary<Variable name="auxnum"/>],orientation</ConfigKey>
+						<ConfigKey>Auxiliary<Variable name="auxnum"/>,orientation</ConfigKey>
 						<EmitOnDownPress>true</EmitOnDownPress>
 						<ButtonState>LeftButton</ButtonState>
 					</Connection>
@@ -118,7 +118,7 @@
 				    </State>
 				    <Pos>21,30</Pos>
 				    <Connection>
-					    <ConfigKey>[Auxiliary<Variable name="auxnum"/>],pfl</ConfigKey>
+					    <ConfigKey>Auxiliary<Variable name="auxnum"/>,pfl</ConfigKey>
 					    <ButtonState>LeftButton</ButtonState>
 				    </Connection>
 			    </PushButton>

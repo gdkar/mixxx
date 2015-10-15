@@ -19,7 +19,7 @@
           <Template src="skin:deck_mixer_controls_col1.xml"/>
         </Children>
         <Connection>
-          <ConfigKey>[Master],show_4decks</ConfigKey>
+          <ConfigKey>Master,show_4decks</ConfigKey>
           <BindProperty>visible</BindProperty>
           <Transform>
             <Not/>
@@ -41,7 +41,7 @@
           </WidgetGroup>
         </Children>
         <Connection>
-          <ConfigKey>[Master],show_4decks</ConfigKey>
+          <ConfigKey>Master,show_4decks</ConfigKey>
           <BindProperty>visible</BindProperty>
         </Connection>
       </WidgetGroup>

@@ -28,7 +28,7 @@
 				    </State>
 				    <Pos>6,30</Pos>
 				    <Connection>
-					    <ConfigKey>[Master],talkoverDucking</ConfigKey>
+					    <ConfigKey>Master,talkoverDucking</ConfigKey>
 					    <EmitOnPressAndRelease>true</EmitOnPressAndRelease>
 					    <ButtonState>LeftButton</ButtonState>
 				    </Connection>
@@ -41,7 +41,7 @@
 					<Path>knobs/knob_rotary_s%1.png</Path>
 					<Pos>27,22</Pos>
 					<Connection>
-						<ConfigKey>[Master],duckStrength</ConfigKey>
+						<ConfigKey>Master,duckStrength</ConfigKey>
 					</Connection>
 				</Knob>
 			</Children>

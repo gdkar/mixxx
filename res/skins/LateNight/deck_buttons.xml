@@ -20,11 +20,11 @@
 							<Unpressed>btn_beatloop2_halve.png</Unpressed>
 						</State>
 						<Connection>
-							<ConfigKey>[Channel<Variable name="channum" />],loop_halve</ConfigKey>
+							<ConfigKey>Channel<Variable name="channum" />,loop_halve</ConfigKey>
 							<ButtonState>LeftButton</ButtonState>
 						</Connection>
 						<Connection>
-							<ConfigKey>[Channel<Variable name="channum" />],loop_move_1_backward</ConfigKey>
+							<ConfigKey>Channel<Variable name="channum" />,loop_move_1_backward</ConfigKey>
 							<ButtonState>RightButton</ButtonState>
 						</Connection>
 					</PushButton>
@@ -52,15 +52,15 @@
 											<Unpressed>btn_beatloop2_0125_over.png</Unpressed>
 										</State>
 										<Connection>
-											<ConfigKey>[Channel<Variable name="channum" />],beatloop_0.125_toggle</ConfigKey>
+											<ConfigKey>Channel<Variable name="channum" />,beatloop_0.125_toggle</ConfigKey>
 											<ButtonState>LeftButton</ButtonState>
 										</Connection>
 										<Connection>
-											<ConfigKey>[Channel<Variable name="channum" />],beatlooproll_0.125_activate</ConfigKey>
+											<ConfigKey>Channel<Variable name="channum" />,beatlooproll_0.125_activate</ConfigKey>
 											<ButtonState>RightButton</ButtonState>
 										</Connection>
 										<Connection>
-											<ConfigKey>[Channel<Variable name="channum" />],beatloop_0.125_enabled</ConfigKey>
+											<ConfigKey>Channel<Variable name="channum" />,beatloop_0.125_enabled</ConfigKey>
 										</Connection>
 									</PushButton>
 									<PushButton>
@@ -79,15 +79,15 @@
 											<Unpressed>btn_beatloop2_0250_over.png</Unpressed>
 										</State>
 										<Connection>
-											<ConfigKey>[Channel<Variable name="channum" />],beatloop_0.25_toggle</ConfigKey>
+											<ConfigKey>Channel<Variable name="channum" />,beatloop_0.25_toggle</ConfigKey>
 											<ButtonState>LeftButton</ButtonState>
 										</Connection>
 										<Connection>
-											<ConfigKey>[Channel<Variable name="channum" />],beatlooproll_0.25_activate</ConfigKey>
+											<ConfigKey>Channel<Variable name="channum" />,beatlooproll_0.25_activate</ConfigKey>
 											<ButtonState>RightButton</ButtonState>
 										</Connection>
 										<Connection>
-											<ConfigKey>[Channel<Variable name="channum" />],beatloop_0.25_enabled</ConfigKey>
+											<ConfigKey>Channel<Variable name="channum" />,beatloop_0.25_enabled</ConfigKey>
 										</Connection>
 									</PushButton>
 									<PushButton>
@@ -106,15 +106,15 @@
 											<Unpressed>btn_beatloop2_0500_over.png</Unpressed>
 										</State>
 										<Connection>
-											<ConfigKey>[Channel<Variable name="channum" />],beatloop_0.5_toggle</ConfigKey>
+											<ConfigKey>Channel<Variable name="channum" />,beatloop_0.5_toggle</ConfigKey>
 											<ButtonState>LeftButton</ButtonState>
 										</Connection>
 										<Connection>
-											<ConfigKey>[Channel<Variable name="channum" />],beatlooproll_0.5_activate</ConfigKey>
+											<ConfigKey>Channel<Variable name="channum" />,beatlooproll_0.5_activate</ConfigKey>
 											<ButtonState>RightButton</ButtonState>
 										</Connection>
 										<Connection>
-											<ConfigKey>[Channel<Variable name="channum" />],beatloop_0.5_enabled</ConfigKey>
+											<ConfigKey>Channel<Variable name="channum" />,beatloop_0.5_enabled</ConfigKey>
 										</Connection>
 									</PushButton>
 									<PushButton>
@@ -133,15 +133,15 @@
 											<Unpressed>btn_beatloop2_1_over.png</Unpressed>
 										</State>
 										<Connection>
-											<ConfigKey>[Channel<Variable name="channum" />],beatloop_1_toggle</ConfigKey>
+											<ConfigKey>Channel<Variable name="channum" />,beatloop_1_toggle</ConfigKey>
 											<ButtonState>LeftButton</ButtonState>
 										</Connection>
 										<Connection>
-											<ConfigKey>[Channel<Variable name="channum" />],beatlooproll_1_activate</ConfigKey>
+											<ConfigKey>Channel<Variable name="channum" />,beatlooproll_1_activate</ConfigKey>
 											<ButtonState>RightButton</ButtonState>
 										</Connection>
 										<Connection>
-											<ConfigKey>[Channel<Variable name="channum" />],beatloop_1_enabled</ConfigKey>
+											<ConfigKey>Channel<Variable name="channum" />,beatloop_1_enabled</ConfigKey>
 										</Connection>
 									</PushButton>
 								</Children>
@@ -166,15 +166,15 @@
 											<Unpressed>btn_beatloop2_2_over.png</Unpressed>
 										</State>
 										<Connection>
-											<ConfigKey>[Channel<Variable name="channum" />],beatloop_2_toggle</ConfigKey>
+											<ConfigKey>Channel<Variable name="channum" />,beatloop_2_toggle</ConfigKey>
 											<ButtonState>LeftButton</ButtonState>
 										</Connection>
 										<Connection>
-											<ConfigKey>[Channel<Variable name="channum" />],beatlooproll_2_activate</ConfigKey>
+											<ConfigKey>Channel<Variable name="channum" />,beatlooproll_2_activate</ConfigKey>
 											<ButtonState>RightButton</ButtonState>
 										</Connection>
 										<Connection>
-											<ConfigKey>[Channel<Variable name="channum" />],beatloop_2_enabled</ConfigKey>
+											<ConfigKey>Channel<Variable name="channum" />,beatloop_2_enabled</ConfigKey>
 										</Connection>
 									</PushButton>
 									<PushButton>
@@ -193,15 +193,15 @@
 											<Unpressed>btn_beatloop2_4_over.png</Unpressed>
 										</State>
 										<Connection>
-											<ConfigKey>[Channel<Variable name="channum" />],beatloop_4_toggle</ConfigKey>
+											<ConfigKey>Channel<Variable name="channum" />,beatloop_4_toggle</ConfigKey>
 											<ButtonState>LeftButton</ButtonState>
 										</Connection>
 										<Connection>
-											<ConfigKey>[Channel<Variable name="channum" />],beatlooproll_4_activate</ConfigKey>
+											<ConfigKey>Channel<Variable name="channum" />,beatlooproll_4_activate</ConfigKey>
 											<ButtonState>RightButton</ButtonState>
 										</Connection>
 										<Connection>
-											<ConfigKey>[Channel<Variable name="channum" />],beatloop_4_enabled</ConfigKey>
+											<ConfigKey>Channel<Variable name="channum" />,beatloop_4_enabled</ConfigKey>
 										</Connection>
 									</PushButton>
 									<PushButton>
@@ -220,15 +220,15 @@
 											<Unpressed>btn_beatloop2_8_over.png</Unpressed>
 										</State>
 										<Connection>
-											<ConfigKey>[Channel<Variable name="channum" />],beatloop_8_toggle</ConfigKey>
+											<ConfigKey>Channel<Variable name="channum" />,beatloop_8_toggle</ConfigKey>
 											<ButtonState>LeftButton</ButtonState>
 										</Connection>
 										<Connection>
-											<ConfigKey>[Channel<Variable name="channum" />],beatlooproll_8_activate</ConfigKey>
+											<ConfigKey>Channel<Variable name="channum" />,beatlooproll_8_activate</ConfigKey>
 											<ButtonState>RightButton</ButtonState>
 										</Connection>
 										<Connection>
-											<ConfigKey>[Channel<Variable name="channum" />],beatloop_8_enabled</ConfigKey>
+											<ConfigKey>Channel<Variable name="channum" />,beatloop_8_enabled</ConfigKey>
 										</Connection>
 									</PushButton>
 									<PushButton>
@@ -247,15 +247,15 @@
 											<Unpressed>btn_beatloop2_16_over.png</Unpressed>
 										</State>
 										<Connection>
-											<ConfigKey>[Channel<Variable name="channum" />],beatloop_16_toggle</ConfigKey>
+											<ConfigKey>Channel<Variable name="channum" />,beatloop_16_toggle</ConfigKey>
 											<ButtonState>LeftButton</ButtonState>
 										</Connection>
 										<Connection>
-											<ConfigKey>[Channel<Variable name="channum" />],beatlooproll_16_activate</ConfigKey>
+											<ConfigKey>Channel<Variable name="channum" />,beatlooproll_16_activate</ConfigKey>
 											<ButtonState>RightButton</ButtonState>
 										</Connection>
 										<Connection>
-											<ConfigKey>[Channel<Variable name="channum" />],beatloop_16_enabled</ConfigKey>
+											<ConfigKey>Channel<Variable name="channum" />,beatloop_16_enabled</ConfigKey>
 										</Connection>
 									</PushButton>
 								</Children>
@@ -272,11 +272,11 @@
 							<Unpressed>btn_beatloop2_double.png</Unpressed>
 						</State>
 						<Connection>
-							<ConfigKey>[Channel<Variable name="channum" />],loop_double</ConfigKey>
+							<ConfigKey>Channel<Variable name="channum" />,loop_double</ConfigKey>
 							<ButtonState>LeftButton</ButtonState>
 						</Connection>
 						<Connection>
-							<ConfigKey>[Channel<Variable name="channum" />],loop_move_1_forward</ConfigKey>
+							<ConfigKey>Channel<Variable name="channum" />,loop_move_1_forward</ConfigKey>
 							<ButtonState>RightButton</ButtonState>
 						</Connection>
 					</PushButton>
@@ -300,7 +300,7 @@
 									<Unpressed>btn_loop_in2.png</Unpressed>
 								</State>
 								<Connection>
-									<ConfigKey>[Channel<Variable name="channum" />],loop_in</ConfigKey>
+									<ConfigKey>Channel<Variable name="channum" />,loop_in</ConfigKey>
 									<ButtonState>LeftButton</ButtonState>
 								</Connection>
 							</PushButton>
@@ -313,7 +313,7 @@
 									<Unpressed>btn_loop_out2.png</Unpressed>
 								</State>
 								<Connection>
-									<ConfigKey>[Channel<Variable name="channum" />],loop_out</ConfigKey>
+									<ConfigKey>Channel<Variable name="channum" />,loop_out</ConfigKey>
 									<ButtonState>LeftButton</ButtonState>
 								</Connection>
 							</PushButton>
@@ -338,11 +338,11 @@
 									<Text>LOOP</Text>
 								</State>
 								<Connection>
-									<ConfigKey>[Channel<Variable name="channum" />],reloop_exit</ConfigKey>
+									<ConfigKey>Channel<Variable name="channum" />,reloop_exit</ConfigKey>
 									<ButtonState>LeftButton</ButtonState>
 								</Connection>
 								<Connection>
-									<ConfigKey>[Channel<Variable name="channum" />],loop_enabled</ConfigKey>
+									<ConfigKey>Channel<Variable name="channum" />,loop_enabled</ConfigKey>
 								</Connection>
 							</PushButton>
 						</Children>
@@ -369,11 +369,11 @@
                                     <Unpressed>btn_rewind2.png</Unpressed>
                                 </State>
                                 <Connection>
-                                    <ConfigKey>[Channel<Variable name="channum" />],back</ConfigKey>
+                                    <ConfigKey>Channel<Variable name="channum" />,back</ConfigKey>
                                     <ButtonState>LeftButton</ButtonState>
                                 </Connection>
                                 <Connection>
-                                    <ConfigKey>[Channel<Variable name="channum" />],start</ConfigKey>
+                                    <ConfigKey>Channel<Variable name="channum" />,start</ConfigKey>
                                     <ButtonState>RightButton</ButtonState>
                                 </Connection>
                             </PushButton>
@@ -386,11 +386,11 @@
                                     <Unpressed>btn_forward2.png</Unpressed>
                                 </State>
                                 <Connection>
-                                    <ConfigKey>[Channel<Variable name="channum" />],fwd</ConfigKey>
+                                    <ConfigKey>Channel<Variable name="channum" />,fwd</ConfigKey>
                                     <ButtonState>LeftButton</ButtonState>
                                 </Connection>
                                 <Connection>
-                                    <ConfigKey>[Channel<Variable name="channum" />],end</ConfigKey>
+                                    <ConfigKey>Channel<Variable name="channum" />,end</ConfigKey>
                                     <ButtonState>RightButton</ButtonState>
                                 </Connection>
                             </PushButton>
@@ -411,11 +411,11 @@
                                     <Unpressed>btn_reverse2.png</Unpressed>
                                 </State>
                                 <Connection>
-                                    <ConfigKey>[Channel<Variable name="channum" />],reverse</ConfigKey>
+                                    <ConfigKey>Channel<Variable name="channum" />,reverse</ConfigKey>
                                     <ButtonState>LeftButton</ButtonState>
                                 </Connection>
                                 <Connection>
-                                    <ConfigKey>[Channel<Variable name="channum" />],reverseroll</ConfigKey>
+                                    <ConfigKey>Channel<Variable name="channum" />,reverseroll</ConfigKey>
                                     <ButtonState>RightButton</ButtonState>
                                 </Connection>
                             </PushButton>
@@ -442,15 +442,15 @@
 							<Text>CUE</Text>
 						</State>
 						<Connection>
-							<ConfigKey>[Channel<Variable name="channum" />],cue_default</ConfigKey>
+							<ConfigKey>Channel<Variable name="channum" />,cue_default</ConfigKey>
 							<ButtonState>LeftButton</ButtonState>
 						</Connection>
 						<Connection>
-							<ConfigKey>[Channel<Variable name="channum" />],cue_gotoandstop</ConfigKey>
+							<ConfigKey>Channel<Variable name="channum" />,cue_gotoandstop</ConfigKey>
 							<ButtonState>RightButton</ButtonState>
 						</Connection>
 						<Connection>
-							<ConfigKey>[Channel<Variable name="channum" />],cue_indicator</ConfigKey>
+							<ConfigKey>Channel<Variable name="channum" />,cue_indicator</ConfigKey>
 						</Connection>
 					</PushButton>
 					<PushButton>
@@ -468,11 +468,11 @@
 							<Unpressed>btn_play1_over.png</Unpressed>
 						</State>
 						<Connection>
-							<ConfigKey>[Channel<Variable name="channum" />],play</ConfigKey>
+							<ConfigKey>Channel<Variable name="channum" />,play</ConfigKey>
 							<ButtonState>LeftButton</ButtonState>
 						</Connection>
 						<Connection>
-							<ConfigKey>[Channel<Variable name="channum" />],play_indicator</ConfigKey>
+							<ConfigKey>Channel<Variable name="channum" />,play_indicator</ConfigKey>
 						</Connection>
 					</PushButton>
 				</Children>

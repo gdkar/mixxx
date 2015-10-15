@@ -31,7 +31,7 @@
 				</State>
 				<Pos>22,3</Pos>
 				<Connection>
-					<ConfigKey>[Channel<Variable name="channum"/>],vinylcontrol_enabled</ConfigKey>
+					<ConfigKey>Channel<Variable name="channum"/>,vinylcontrol_enabled</ConfigKey>
 				</Connection>
 			</PushButton>
 
@@ -51,7 +51,7 @@
 				</State>
 				<Pos>1,3</Pos>
 				<Connection>
-					<ConfigKey>[Channel<Variable name="channum"/>],passthrough</ConfigKey>
+					<ConfigKey>Channel<Variable name="channum"/>,passthrough</ConfigKey>
 				</Connection>
 			</PushButton>
 
@@ -87,7 +87,7 @@
 				</State>
 				<Pos>43,2</Pos>
 				<Connection>
-					<ConfigKey>[Channel<Variable name="channum"/>],vinylcontrol_mode</ConfigKey>
+					<ConfigKey>Channel<Variable name="channum"/>,vinylcontrol_mode</ConfigKey>
 				</Connection>
 			</PushButton>
 
@@ -118,13 +118,13 @@
 				</State>
 				<Pos>64,02</Pos>
 				<Connection>
-					<ConfigKey>[Channel<Variable name="channum"/>],vinylcontrol_cueing</ConfigKey>
+					<ConfigKey>Channel<Variable name="channum"/>,vinylcontrol_cueing</ConfigKey>
 				</Connection>
 			</PushButton>
 
 		</Children>
 		<Connection>
-			<ConfigKey>[VinylControl],show_vinylcontrol</ConfigKey>
+			<ConfigKey>VinylControl,show_vinylcontrol</ConfigKey>
 			<BindProperty>visible</BindProperty>
 		</Connection>
 	</WidgetGroup>

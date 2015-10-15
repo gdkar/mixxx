@@ -51,15 +51,15 @@
 		                                    <Unpressed>btn_play_sampler_over.png</Unpressed>
 		                                </State>
 		                                <Connection>
-		                                    <ConfigKey>[Sampler<Variable name="samplernum"/>],cue_gotoandplay</ConfigKey>
+		                                    <ConfigKey>Sampler<Variable name="samplernum"/>,cue_gotoandplay</ConfigKey>
 		                                    <ButtonState>LeftButton</ButtonState>
 		                                </Connection>
 		                                <Connection>
-		                                    <ConfigKey>[Sampler<Variable name="samplernum"/>],start_stop</ConfigKey>
+		                                    <ConfigKey>Sampler<Variable name="samplernum"/>,start_stop</ConfigKey>
 		                                    <ButtonState>RightButton</ButtonState>
 		                                </Connection>
                                         <Connection>
-                                            <ConfigKey>[Sampler<Variable name="samplernum"/>],play_indicator</ConfigKey>
+                                            <ConfigKey>Sampler<Variable name="samplernum"/>,play_indicator</ConfigKey>
                                         </Connection>
 		                            </PushButton>
 	                            </Children>
@@ -81,7 +81,7 @@
                                     <Text> %1 </Text>
                                 </DefaultMark>
                                 <Connection>
-                                    <ConfigKey>[Sampler<Variable name="samplernum"/>],playposition</ConfigKey>
+                                    <ConfigKey>Sampler<Variable name="samplernum"/>,playposition</ConfigKey>
                                 </Connection>
                             </Overview>
                             <!-- Button Grid -->
@@ -108,7 +108,7 @@
 				                                    <Unpressed>btn_repeat_sampler_over.png</Unpressed>
 				                                </State>
 				                                <Connection>
-				                                    <ConfigKey>[Sampler<Variable name="samplernum"/>],repeat</ConfigKey>
+				                                    <ConfigKey>Sampler<Variable name="samplernum"/>,repeat</ConfigKey>
 				                                </Connection>
 				                            </PushButton>
 				                            <PushButton>
@@ -120,7 +120,7 @@
 				                                    <Unpressed>btn_eject_sampler.png</Unpressed>
 				                                </State>
 				                                <Connection>
-				                                    <ConfigKey>[Sampler<Variable name="samplernum"/>],eject</ConfigKey>
+				                                    <ConfigKey>Sampler<Variable name="samplernum"/>,eject</ConfigKey>
 				                                    <ButtonState>LeftButton</ButtonState>
 				                                </Connection>
 				                            </PushButton>
@@ -149,7 +149,7 @@
 				                                    <Unpressed>btn_orientation_sampler_right_over.png</Unpressed>
 				                                </State>
 				                                <Connection>
-				                                    <ConfigKey>[Sampler<Variable name="samplernum"/>],orientation</ConfigKey>
+				                                    <ConfigKey>Sampler<Variable name="samplernum"/>,orientation</ConfigKey>
 				                                    <ButtonState>LeftButton</ButtonState>
 				                                </Connection>
 				                            </PushButton>
@@ -167,7 +167,7 @@
 				                                    <Unpressed>btn_keylock_sampler_over.png</Unpressed>
 				                                </State>
 				                                <Connection>
-				                                    <ConfigKey>[Sampler<Variable name="samplernum"/>],keylock</ConfigKey>
+				                                    <ConfigKey>Sampler<Variable name="samplernum"/>,keylock</ConfigKey>
 				                                </Connection>
 				                            </PushButton>
 			                            </Children>
@@ -208,11 +208,11 @@
 			                               <Unpressed>btn_sync_sampler.png</Unpressed>
 			                           </State>
 			                           <Connection>
-			                               <ConfigKey>[Sampler<Variable name="samplernum"/>],beatsync</ConfigKey>
+			                               <ConfigKey>Sampler<Variable name="samplernum"/>,beatsync</ConfigKey>
 			                               <ButtonState>LeftButton</ButtonState>
 			                           </Connection>
 			                           <Connection>
-			                               <ConfigKey>[Sampler<Variable name="samplernum"/>],beatsync_tempo</ConfigKey>
+			                               <ConfigKey>Sampler<Variable name="samplernum"/>,beatsync_tempo</ConfigKey>
 			                               <ButtonState>RightButton</ButtonState>
 			                           </Connection>
 			                       </PushButton>
@@ -239,15 +239,15 @@
 		                                    <Unpressed>btn_hotcue1_1_over.png</Unpressed>
 		                                </State>
 		                                <Connection>
-		                                    <ConfigKey>[Sampler<Variable name="samplernum"/>],hotcue_1_activate</ConfigKey>
+		                                    <ConfigKey>Sampler<Variable name="samplernum"/>,hotcue_1_activate</ConfigKey>
 		                                    <ButtonState>LeftButton</ButtonState>
 		                                </Connection>
 		                                <Connection>
-		                                    <ConfigKey>[Sampler<Variable name="samplernum"/>],hotcue_1_clear</ConfigKey>
+		                                    <ConfigKey>Sampler<Variable name="samplernum"/>,hotcue_1_clear</ConfigKey>
 		                                    <ButtonState>RightButton</ButtonState>
 		                                </Connection>
 		                                <Connection>
-		                                    <ConfigKey>[Sampler<Variable name="samplernum"/>],hotcue_1_enabled</ConfigKey>
+		                                    <ConfigKey>Sampler<Variable name="samplernum"/>,hotcue_1_enabled</ConfigKey>
 		                                </Connection>
 		                            </PushButton>
 		                            <PushButton>
@@ -266,15 +266,15 @@
 		                                    <Unpressed>btn_hotcue1_2_over.png</Unpressed>
 		                                </State>
 		                                <Connection>
-		                                    <ConfigKey>[Sampler<Variable name="samplernum"/>],hotcue_2_activate</ConfigKey>
+		                                    <ConfigKey>Sampler<Variable name="samplernum"/>,hotcue_2_activate</ConfigKey>
 		                                    <ButtonState>LeftButton</ButtonState>
 		                                </Connection>
 		                                <Connection>
-		                                    <ConfigKey>[Sampler<Variable name="samplernum"/>],hotcue_2_clear</ConfigKey>
+		                                    <ConfigKey>Sampler<Variable name="samplernum"/>,hotcue_2_clear</ConfigKey>
 		                                    <ButtonState>RightButton</ButtonState>
 		                                </Connection>
 		                                <Connection>
-		                                    <ConfigKey>[Sampler<Variable name="samplernum"/>],hotcue_2_enabled</ConfigKey>
+		                                    <ConfigKey>Sampler<Variable name="samplernum"/>,hotcue_2_enabled</ConfigKey>
 		                                </Connection>
 		                            </PushButton>
 		                            <PushButton>
@@ -293,15 +293,15 @@
 		                                    <Unpressed>btn_hotcue1_3_over.png</Unpressed>
 		                                </State>
 		                                <Connection>
-		                                    <ConfigKey>[Sampler<Variable name="samplernum"/>],hotcue_3_activate</ConfigKey>
+		                                    <ConfigKey>Sampler<Variable name="samplernum"/>,hotcue_3_activate</ConfigKey>
 		                                    <ButtonState>LeftButton</ButtonState>
 		                                </Connection>
 		                                <Connection>
-		                                    <ConfigKey>[Sampler<Variable name="samplernum"/>],hotcue_3_clear</ConfigKey>
+		                                    <ConfigKey>Sampler<Variable name="samplernum"/>,hotcue_3_clear</ConfigKey>
 		                                    <ButtonState>RightButton</ButtonState>
 		                                </Connection>
 		                                <Connection>
-		                                    <ConfigKey>[Sampler<Variable name="samplernum"/>],hotcue_3_enabled</ConfigKey>
+		                                    <ConfigKey>Sampler<Variable name="samplernum"/>,hotcue_3_enabled</ConfigKey>
 		                                </Connection>
 		                            </PushButton>
 		                            <PushButton>
@@ -320,15 +320,15 @@
 		                                    <Unpressed>btn_hotcue1_4_over.png</Unpressed>
 		                                </State>
 		                                <Connection>
-		                                    <ConfigKey>[Sampler<Variable name="samplernum"/>],hotcue_4_activate</ConfigKey>
+		                                    <ConfigKey>Sampler<Variable name="samplernum"/>,hotcue_4_activate</ConfigKey>
 		                                    <ButtonState>LeftButton</ButtonState>
 		                                </Connection>
 		                                <Connection>
-		                                    <ConfigKey>[Sampler<Variable name="samplernum"/>],hotcue_4_clear</ConfigKey>
+		                                    <ConfigKey>Sampler<Variable name="samplernum"/>,hotcue_4_clear</ConfigKey>
 		                                    <ButtonState>RightButton</ButtonState>
 		                                </Connection>
 		                                <Connection>
-		                                    <ConfigKey>[Sampler<Variable name="samplernum"/>],hotcue_4_enabled</ConfigKey>
+		                                    <ConfigKey>Sampler<Variable name="samplernum"/>,hotcue_4_enabled</ConfigKey>
 		                                </Connection>
 		                            </PushButton>
 	                           </Children>
@@ -352,7 +352,7 @@
 		                                    <Unpressed>btn_pfl_sampler_over.png</Unpressed>
 		                                </State>
 		                                <Connection>
-		                                    <ConfigKey>[Sampler<Variable name="samplernum"/>],pfl</ConfigKey>
+		                                    <ConfigKey>Sampler<Variable name="samplernum"/>,pfl</ConfigKey>
 		                                </Connection>
 		                            </PushButton>
 	                           </Children>
@@ -373,7 +373,7 @@
 						<PathStatusLight>btn_clipping_sampler_over.png</PathStatusLight>
 						<PathBack>btn_clipping_sampler.png</PathBack>
 						<Connection>
-							<ConfigKey>[Sampler<Variable name="samplernum"/>],PeakIndicator</ConfigKey>
+							<ConfigKey>Sampler<Variable name="samplernum"/>,PeakIndicator</ConfigKey>
 						</Connection>
 					</StatusLight>
 					<VuMeter>
@@ -386,7 +386,7 @@
 						<PeakFallTime>50</PeakFallTime>
 						<PeakFallStep>2</PeakFallStep>
 						<Connection>
-							<ConfigKey>[Sampler<Variable name="samplernum"/>],VuMeter</ConfigKey>
+							<ConfigKey>Sampler<Variable name="samplernum"/>,VuMeter</ConfigKey>
 						</Connection>
 					</VuMeter>
 				</Children>
@@ -404,7 +404,7 @@
 						<Slider>slider_pitch_sampler.png</Slider>
 						<Horizontal>false</Horizontal>
 						<Connection>
-							<ConfigKey>[Sampler<Variable name="samplernum"/>],rate</ConfigKey>
+							<ConfigKey>Sampler<Variable name="samplernum"/>,rate</ConfigKey>
 						</Connection>
 					</SliderComposed>
 				</Children>

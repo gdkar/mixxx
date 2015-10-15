@@ -42,7 +42,7 @@
 					<TextColor>#FFFFFF</TextColor>
 				</Mark>
 				<Connection>
-					<ConfigKey>[Channel<Variable name="channum"/>],playposition</ConfigKey>
+					<ConfigKey>Channel<Variable name="channum"/>,playposition</ConfigKey>
 				</Connection>
 			</Overview>
 
@@ -69,7 +69,7 @@
 		              <Unpressed>btn_spinny1_over.png</Unpressed>
 	              </State>
 	              <Connection>
-		              <ConfigKey persist="true">[Spinny],show_spinnies</ConfigKey>
+		              <ConfigKey persist="true">Spinny,show_spinnies</ConfigKey>
 		              <ButtonState>LeftButton</ButtonState>
 	              </Connection>
               </PushButton>
@@ -88,7 +88,7 @@
 		              <Unpressed>btn_repeat2_over.png</Unpressed>
 	              </State>
 	              <Connection>
-		              <ConfigKey>[Channel<Variable name="channum"/>],repeat</ConfigKey>
+		              <ConfigKey>Channel<Variable name="channum"/>,repeat</ConfigKey>
 	              </Connection>
               </PushButton>
               <PushButton>
@@ -101,7 +101,7 @@
 		              <Unpressed>btn_eject2.png</Unpressed>
 	              </State>
 	              <Connection>
-		              <ConfigKey>[Channel<Variable name="channum"/>],eject</ConfigKey>
+		              <ConfigKey>Channel<Variable name="channum"/>,eject</ConfigKey>
 		              <ButtonState>LeftButton</ButtonState>
 	              </Connection>
               </PushButton>
@@ -121,11 +121,11 @@
 			          </State>
 			          <Pos>0,23</Pos>
 			          <Connection>
-				          <ConfigKey>[Channel<Variable name="channum"/>],beats_translate_curpos</ConfigKey>
+				          <ConfigKey>Channel<Variable name="channum"/>,beats_translate_curpos</ConfigKey>
 				          <ButtonState>LeftButton</ButtonState>
 			          </Connection>
 			          <Connection>
-				          <ConfigKey>[Channel<Variable name="channum"/>],beats_translate_match_alignment</ConfigKey>
+				          <ConfigKey>Channel<Variable name="channum"/>,beats_translate_match_alignment</ConfigKey>
 				          <ButtonState>RightButton</ButtonState>
 			          </Connection>
 		          </PushButton>
@@ -145,7 +145,7 @@
 			          </State>
 			          <Pos>26,23</Pos>
 			          <Connection>
-				          <ConfigKey>[Channel<Variable name="channum"/>],quantize</ConfigKey>
+				          <ConfigKey>Channel<Variable name="channum"/>,quantize</ConfigKey>
 				          <ButtonState>LeftButton</ButtonState>
 			          </Connection>
 		          </PushButton>
@@ -165,7 +165,7 @@
 			          </State>
 			          <Pos>52,23</Pos>
 			          <Connection>
-				          <ConfigKey>[Channel<Variable name="channum"/>],keylock</ConfigKey>
+				          <ConfigKey>Channel<Variable name="channum"/>,keylock</ConfigKey>
 			          </Connection>
 		          </PushButton>
 	          </Children>

@@ -664,9 +664,11 @@ QWidget* LegacySkinParser::parseBackground(QDomElement node,
 }
 
 template <class T>
-QWidget* LegacySkinParser::parseStandardWidget(QDomElement element,bool timerListener) {
+QWidget* LegacySkinParser::parseStandardWidget(QDomElement element,bool timerListener)
+{
     auto pWidget = new T(m_pParent);
-    if (timerListener) {WaveformWidgetFactory::instance()->addTimerListener(pWidget);}
+    if (timerListener) 
+      WaveformWidgetFactory::instance()->addTimerListener(pWidget);
     commonWidgetSetup(element, pWidget);
     pWidget->setup(element, *m_pContext);
     pWidget->installEventFilter(m_pKeyboard);
@@ -676,12 +678,14 @@ QWidget* LegacySkinParser::parseStandardWidget(QDomElement element,bool timerLis
 }
 
 template <class T>
-QWidget* LegacySkinParser::parseLabelWidget(QDomElement element) {
+QWidget* LegacySkinParser::parseLabelWidget(QDomElement element)
+{
     auto pLabel = new T(m_pParent);
     setupLabelWidget(element, pLabel);
     return pLabel;
 }
-void LegacySkinParser::setupLabelWidget(QDomElement element, WLabel* pLabel) {
+void LegacySkinParser::setupLabelWidget(QDomElement element, WLabel* pLabel)
+{
     // NOTE(rryan): To support color schemes, the WWidget::setup() call must
     // come first. This is because WLabel derivatives change the palette based
     // on the node and setupWidget() will set the widget style. If the style is
@@ -1030,19 +1034,19 @@ QString LegacySkinParser::getLibraryStyle(QDomNode node) {
     style.prepend(styleHack);
     return style;
 }
-QDomElement LegacySkinParser::loadTemplate(const QString& path) {
+QDomElement LegacySkinParser::loadTemplate(const QString& path)
+{
     QFileInfo templateFileInfo(path);
     auto absolutePath = templateFileInfo.absoluteFilePath();
     if ( m_templateCache.contains(absolutePath ) ) return m_templateCache.value(absolutePath);
     QFile templateFile(absolutePath);
-    if (!templateFile.open(QIODevice::ReadOnly)) {
-        qWarning() << "Could not open template file:" << absolutePath;
-    }
+    if (!templateFile.open(QIODevice::ReadOnly)) qWarning() << "Could not open template file:" << absolutePath;
     QDomDocument tmpl("template");
     auto errorMessage = QString{};
     auto errorLine   = 0;
     auto errorColumn = 0;
-    if (!tmpl.setContent(&templateFile, &errorMessage, &errorLine, &errorColumn)) {
+    if (!tmpl.setContent(&templateFile, &errorMessage, &errorLine, &errorColumn))
+    {
         qWarning() << "LegacySkinParser::loadTemplate - setContent failed see"
                    << absolutePath << "line:" << errorLine << "column:" << errorColumn;
         qWarning() << "LegacySkinParser::loadTemplate - message:" << errorMessage;
@@ -1052,19 +1056,19 @@ QDomElement LegacySkinParser::loadTemplate(const QString& path) {
     return tmpl.documentElement();
 }
 QList<QWidget*> LegacySkinParser::parseTemplate(QDomElement node) {
-    if (!node.hasAttribute("src")) {
-        SKIN_WARNING(node, *m_pContext)
-                << "Template instantiation without src attribute:"
-                << node.text();
+    if (!node.hasAttribute("src"))
+    {
+        SKIN_WARNING(node, *m_pContext) << "Template instantiation without src attribute:" << node.text();
         return QList<QWidget*>();
     }
     auto path = node.attribute("src");
     auto templateNode = loadTemplate(path);
-    if (templateNode.isNull()) {
+    if (templateNode.isNull())
+    {
         SKIN_WARNING(node, *m_pContext) << "Template instantiation for template failed:" << path;
         return QList<QWidget*>();
     }
-    if (sDebug) {qDebug() << "BEGIN TEMPLATE" << path;}
+    if (sDebug) qDebug() << "BEGIN TEMPLATE" << path;
     auto pOldContext = m_pContext;
     m_pContext = new SkinContext(*pOldContext);
     // Take any <SetVariable> elements from this node and update the context
@@ -1072,8 +1076,9 @@ QList<QWidget*> LegacySkinParser::parseTemplate(QDomElement node) {
     m_pContext->updateVariables(node);
     m_pContext->setXmlPath(path);
     QList<QWidget*> widgets;
-    QDomNode child = templateNode.firstChildElement();
-    while (!child.isNull()) {
+    auto child = templateNode.firstChildElement();
+    while (!child.isNull())
+    {
         auto childWidgets = parseNode(child.toElement());
         widgets.append(childWidgets);
         child = child.nextSiblingElement();
@@ -1083,13 +1088,15 @@ QList<QWidget*> LegacySkinParser::parseTemplate(QDomElement node) {
     if (sDebug) {qDebug() << "END TEMPLATE" << path;}
     return widgets;
 }
-QString LegacySkinParser::lookupNodeGroup(QDomElement node) {
+QString LegacySkinParser::lookupNodeGroup(QDomElement node)
+{
     auto group = m_pContext->selectString(node, "Group");
     // If the group is not present, then check for a Channel, since legacy skins
     // will specify the channel as either 1 or 2.
     if (group.size() == 0) {
         auto channel = m_pContext->selectInt(node, "Channel");
-        if (channel > 0) {
+        if (channel > 0)
+        {
             // groupForDeck is 0-indexed
             group = PlayerManager::groupForDeck(channel - 1);
         }
@@ -1097,9 +1104,10 @@ QString LegacySkinParser::lookupNodeGroup(QDomElement node) {
     return group;
 }
 // static
-const char* LegacySkinParser::safeChannelString(QString channelStr) {
+const char* LegacySkinParser::safeChannelString(QString channelStr)
+{
     QMutexLocker lock(&s_safeStringMutex);
-    for(auto s: s_channelStrs) {if (channelStr == QString{s}) {return s;}}
+    for(auto s: s_channelStrs) {if (channelStr == QString{s}) return s;}
     auto qba = channelStr.toLocal8Bit();
     auto safe = new char[qba.size() + 1]; // +1 for \0
     auto i = 0;

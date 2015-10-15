@@ -193,7 +193,7 @@
 						                    </Template>
                             				</Children>
 		                                    <Connection>
-                                                <ConfigKey>[Microphone2],enabled</ConfigKey>
+                                                <ConfigKey>Microphone2,enabled</ConfigKey>
                                                 <BindProperty>visible</BindProperty>
                                             </Connection>
                                         </WidgetGroup>
@@ -201,7 +201,7 @@
 						                </Template>
                     				</Children>
 			                        <Connection>
-				                        <ConfigKey>[Microphone],show_microphone</ConfigKey>
+				                        <ConfigKey>Microphone,show_microphone</ConfigKey>
 				                        <BindProperty>visible</BindProperty>
 			                        </Connection>
 		                		</WidgetGroup>
@@ -249,13 +249,13 @@
 					                        </Template>
                             				</Children>
 	                                        <Connection>
-                                                <ConfigKey>[Auxiliary2],enabled</ConfigKey>
+                                                <ConfigKey>Auxiliary2,enabled</ConfigKey>
                                                 <BindProperty>visible</BindProperty>
                                             </Connection>
                                         </WidgetGroup>
                     				</Children>
 		                            <Connection>
-			                            <ConfigKey>[Microphone],show_microphone</ConfigKey>
+			                            <ConfigKey>Microphone,show_microphone</ConfigKey>
 			                            <BindProperty>visible</BindProperty>
 		                            </Connection>
 	                    		</WidgetGroup>
@@ -265,7 +265,7 @@
 				</WidgetGroup>
 			</Children>
       <Connection>
-        <ConfigKey>[Master],maximize_library</ConfigKey>
+        <ConfigKey>Master,maximize_library</ConfigKey>
         <BindProperty>visible</BindProperty>
         <Transform>
           <Not/>
@@ -315,13 +315,13 @@
                 </Template>
               </Children>
               <Connection>
-                <ConfigKey>[Samplers],show_samplers</ConfigKey>
+                <ConfigKey>Samplers,show_samplers</ConfigKey>
                 <BindProperty>visible</BindProperty>
               </Connection>
             </WidgetGroup>
           </Children>
            <Connection>
-             <ConfigKey>[Master],maximize_library</ConfigKey>
+             <ConfigKey>Master,maximize_library</ConfigKey>
              <BindProperty>visible</BindProperty>
              <Transform>
                <Not/>
@@ -350,13 +350,13 @@
                 </Template>
               </Children>
               <Connection>
-                <ConfigKey>[EffectRack1],show</ConfigKey>
+                <ConfigKey>EffectRack1,show</ConfigKey>
                 <BindProperty>visible</BindProperty>
               </Connection>
             </WidgetGroup>
           </Children>
           <Connection>
-            <ConfigKey>[Master],maximize_library</ConfigKey>
+            <ConfigKey>Master,maximize_library</ConfigKey>
             <BindProperty>visible</BindProperty>
             <Transform>
               <Not/>
@@ -552,7 +552,7 @@
 															</State>
 															<Pos></Pos>
 															<Connection>
-																<ConfigKey>[PreviewDeck1],eject</ConfigKey>
+																<ConfigKey>PreviewDeck1,eject</ConfigKey>
 																<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
 																<ButtonState>LeftButton</ButtonState>
 																<ConnectValueToWidget>false</ConnectValueToWidget>
@@ -588,12 +588,12 @@
 															</State>
 															<Pos>2,2</Pos>
 															<Connection>
-																<ConfigKey>[PreviewDeck1],play</ConfigKey>
+																<ConfigKey>PreviewDeck1,play</ConfigKey>
 																<EmitOnDownPress>true</EmitOnDownPress>
 																<ButtonState>LeftButton</ButtonState>
 															</Connection>
 															<Connection>
-																<ConfigKey>[PreviewDeck1],start</ConfigKey>
+																<ConfigKey>PreviewDeck1,start</ConfigKey>
 																<EmitOnDownPress>true</EmitOnDownPress>
 																<ButtonState>RightButton</ButtonState>
 																<ConnectValueToWidget>false</ConnectValueToWidget>
@@ -624,7 +624,7 @@
 																<TextColor>#00FF00</TextColor>
 															</Mark>
 															<Connection>
-																<ConfigKey>[PreviewDeck1],playposition</ConfigKey>
+																<ConfigKey>PreviewDeck1,playposition</ConfigKey>
 																<EmitOnDownPress>false</EmitOnDownPress>
 															</Connection>
 														</Overview>
@@ -650,7 +650,7 @@
 														<PathBack>btn_clipping_previewdeck.png</PathBack>
 														<Pos>0,1</Pos>
 														<Connection>
-															<ConfigKey>[PreviewDeck1],PeakIndicator</ConfigKey>
+															<ConfigKey>PreviewDeck1,PeakIndicator</ConfigKey>
 														</Connection>
 													</StatusLight>
 
@@ -671,7 +671,7 @@
 														<PeakFallTime>50</PeakFallTime>
 														<PeakFallStep>3</PeakFallStep>
 														<Connection>
-															<ConfigKey>[PreviewDeck1],VuMeter</ConfigKey>
+															<ConfigKey>PreviewDeck1,VuMeter</ConfigKey>
 														</Connection>
 													</VuMeter>
 
@@ -688,7 +688,7 @@
 														<Pos>10,2</Pos>
 														<Horizontal>false</Horizontal>
 														<Connection>
-															<ConfigKey>[PreviewDeck1],pregain</ConfigKey>
+															<ConfigKey>PreviewDeck1,pregain</ConfigKey>
 															<EmitOnDownPress>false</EmitOnDownPress>
 														</Connection>
 													</SliderComposed>
@@ -696,7 +696,7 @@
 												</WidgetGroup>
 											</Children>
 											<Connection>
-												<ConfigKey>[PreviewDeck],show_previewdeck</ConfigKey>
+												<ConfigKey>PreviewDeck,show_previewdeck</ConfigKey>
 												<BindProperty>visible</BindProperty>
 											</Connection>
 										</WidgetGroup>
@@ -714,7 +714,7 @@
 													<MinimumSize>16,16</MinimumSize>
 													<SizePolicy>me,me</SizePolicy>
 													<Connection>
-														<ConfigKey>[Library],show_coverart</ConfigKey>
+														<ConfigKey>Library,show_coverart</ConfigKey>
 														<BindProperty>visible</BindProperty>
 													</Connection>
 												</CoverArt>

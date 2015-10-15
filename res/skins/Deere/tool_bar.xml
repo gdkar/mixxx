@@ -42,11 +42,11 @@
               <Unpressed scalemode="STRETCH_ASPECT">icon/ic_record_48px.svg</Unpressed>
             </State>
             <Connection>
-              <ConfigKey>[Recording],toggle_recording</ConfigKey>
+              <ConfigKey>Recording,toggle_recording</ConfigKey>
               <ButtonState>LeftButton</ButtonState>
             </Connection>
             <Connection>
-              <ConfigKey>[Recording],status</ConfigKey>
+              <ConfigKey>Recording,status</ConfigKey>
             </Connection>
           </PushButton>
           -->
@@ -191,7 +191,7 @@
               <Text>Split Cue</Text>
             </State>
             <Connection>
-              <ConfigKey>[Master],headSplit</ConfigKey>
+              <ConfigKey>Master,headSplit</ConfigKey>
               <EmitOnPressAndRelease>true</EmitOnPressAndRelease>
             </Connection>
           </PushButton>
@@ -289,7 +289,7 @@
           </Template>
         </Children>
         <Connection>
-          <ConfigKey>[Deere],show_skin_settings</ConfigKey>
+          <ConfigKey>Deere,show_skin_settings</ConfigKey>
           <BindProperty>visible</BindProperty>
           <Transform>
             <Not/>

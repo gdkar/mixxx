@@ -49,7 +49,7 @@
                                     <Variable name="channum" />
                                 </Channel>
                                 <Connection>
-                                    <ConfigKey>[Channel<Variable name="channum" />],playposition</ConfigKey>
+                                    <ConfigKey>Channel<Variable name="channum" />,playposition</ConfigKey>
                                 </Connection>
                             </NumberPos>
                         </Children>

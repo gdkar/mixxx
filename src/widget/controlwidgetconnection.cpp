@@ -15,8 +15,18 @@ ControlWidgetConnection::ControlWidgetConnection(WBaseWidget* pBaseWidget,Contro
     m_pControl->connectValueChanged(this, SLOT(slotControlValueChanged(double)));
 }
 
-void ControlWidgetConnection::setInvert(bool i){m_bInvert=i;}
-bool ControlWidgetConnection::invert()const{return m_bInvert;}
+void ControlWidgetConnection::setInvert(bool i)
+{
+  if ( m_bInvert != i )
+  {
+    m_bInvert=i;
+    if(m_pControl) slotControlValueChanged(m_pControl->get());
+  }
+}
+bool ControlWidgetConnection::invert()const
+{
+  return m_bInvert;
+}
 ControlWidgetConnection::~ControlWidgetConnection() = default;
 const ConfigKey& ControlWidgetConnection::getKey()const{return m_pControl->getKey();}
 void ControlWidgetConnection::setControlParameter(double parameter) {
@@ -91,61 +101,49 @@ void ControlParameterWidgetConnection::slotControlValueChanged(double value) {
         m_pWidget->onConnectedControlChanged(parameter, value);
     }
 }
-
-void ControlParameterWidgetConnection::resetControl() {
-    if (m_directionOption & DIR_FROM_WIDGET) {
-        m_pControl->reset();
-    }
+void ControlParameterWidgetConnection::resetControl()
+{
+    if (m_directionOption & DIR_FROM_WIDGET) m_pControl->reset();
+}
+void ControlParameterWidgetConnection::setControlParameter(double v)
+{
+    if (m_directionOption & DIR_FROM_WIDGET) ControlWidgetConnection::setControlParameter(v);
 }
 
-void ControlParameterWidgetConnection::setControlParameter(double v) {
-    if (m_directionOption & DIR_FROM_WIDGET) {
+void ControlParameterWidgetConnection::setControlParameterDown(double v)
+{
+    if ((m_directionOption & DIR_FROM_WIDGET) && (m_emitOption & EMIT_ON_PRESS))
         ControlWidgetConnection::setControlParameter(v);
-    }
 }
-
-void ControlParameterWidgetConnection::setControlParameterDown(double v) {
-    if ((m_directionOption & DIR_FROM_WIDGET) && (m_emitOption & EMIT_ON_PRESS)) {
+void ControlParameterWidgetConnection::setControlParameterUp(double v)
+{
+    if ((m_directionOption & DIR_FROM_WIDGET) && (m_emitOption & EMIT_ON_RELEASE))
         ControlWidgetConnection::setControlParameter(v);
-    }
 }
-
-void ControlParameterWidgetConnection::setControlParameterUp(double v) {
-    if ((m_directionOption & DIR_FROM_WIDGET) && (m_emitOption & EMIT_ON_RELEASE)) {
-        ControlWidgetConnection::setControlParameter(v);
-    }
-}
-
 ControlWidgetPropertyConnection::ControlWidgetPropertyConnection(WBaseWidget* pBaseWidget,
                                                                  ControlObjectSlave* pControl, 
                                                                  const QString& propertyName)
         : ControlWidgetConnection(pBaseWidget, pControl),
-          m_propertyName(propertyName.toAscii()) {
+          m_propertyName(propertyName.toAscii())
+{
     slotControlValueChanged(m_pControl->get());
 }
-
 ControlWidgetPropertyConnection::~ControlWidgetPropertyConnection() = default;
-
-QString ControlWidgetPropertyConnection::toDebugString() const {
-    const ConfigKey& key = getKey();
+QString ControlWidgetPropertyConnection::toDebugString() const
+{
+    auto key = getKey();
     return QString("%1,%2 Parameter: %3 Property: %4 Value: %5").arg(
         key.group, key.item, QString::number(m_pControl->getParameter()), m_propertyName,
-        m_pWidget->toQWidget()->property(
-            m_propertyName.constData()).toString());
+        m_pWidget->toQWidget()->property( m_propertyName.constData()).toString());
 }
-
-void ControlWidgetPropertyConnection::slotControlValueChanged(double v) {
+void ControlWidgetPropertyConnection::slotControlValueChanged(double v)
+{
     QVariant parameter;
     QWidget* pWidget = m_pWidget->toQWidget();
     QVariant property = pWidget->property(m_propertyName.constData());
-    if (property.type() == QVariant::Bool) {
-        parameter = getControlParameterForValue(v) > 0;
-    } else {
-        parameter = getControlParameterForValue(v);
-    }
-
+    if (property.type() == QVariant::Bool) parameter = getControlParameterForValue(v) > 0;
+    else                                   parameter = getControlParameterForValue(v);
     if (!pWidget->setProperty(m_propertyName.constData(),parameter)) {
-        qDebug() << "Setting property" << m_propertyName
-                << "to widget failed. Value:" << parameter;
+        qDebug() << "Setting property" << m_propertyName << "to widget failed. Value:" << parameter;
     }
 }

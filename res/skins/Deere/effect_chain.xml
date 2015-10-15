@@ -448,7 +448,7 @@
                   </Template>
                 </Children>
                 <Connection>
-                  <ConfigKey>[Microphone],enabled</ConfigKey>
+                  <ConfigKey>Microphone,enabled</ConfigKey>
                   <BindProperty>visible</BindProperty>
                 </Connection>
               </WidgetGroup>
@@ -462,7 +462,7 @@
                   </Template>
                 </Children>
                 <Connection>
-                  <ConfigKey>[Microphone2],enabled</ConfigKey>
+                  <ConfigKey>Microphone2,enabled</ConfigKey>
                   <BindProperty>visible</BindProperty>
                 </Connection>
               </WidgetGroup>
@@ -476,7 +476,7 @@
                   </Template>
                 </Children>
                 <Connection>
-                  <ConfigKey>[Microphone3],enabled</ConfigKey>
+                  <ConfigKey>Microphone3,enabled</ConfigKey>
                   <BindProperty>visible</BindProperty>
                 </Connection>
               </WidgetGroup>
@@ -490,7 +490,7 @@
                   </Template>
                 </Children>
                 <Connection>
-                  <ConfigKey>[Microphone4],enabled</ConfigKey>
+                  <ConfigKey>Microphone4,enabled</ConfigKey>
                   <BindProperty>visible</BindProperty>
                 </Connection>
               </WidgetGroup>
@@ -504,7 +504,7 @@
                   </Template>
                 </Children>
                 <Connection>
-                  <ConfigKey>[Auxiliary1],enabled</ConfigKey>
+                  <ConfigKey>Auxiliary1,enabled</ConfigKey>
                   <BindProperty>visible</BindProperty>
                 </Connection>
               </WidgetGroup>
@@ -518,7 +518,7 @@
                   </Template>
                 </Children>
                 <Connection>
-                  <ConfigKey>[Auxiliary2],enabled</ConfigKey>
+                  <ConfigKey>Auxiliary2,enabled</ConfigKey>
                   <BindProperty>visible</BindProperty>
                 </Connection>
               </WidgetGroup>
@@ -532,7 +532,7 @@
                   </Template>
                 </Children>
                 <Connection>
-                  <ConfigKey>[Auxiliary3],enabled</ConfigKey>
+                  <ConfigKey>Auxiliary3,enabled</ConfigKey>
                   <BindProperty>visible</BindProperty>
                 </Connection>
               </WidgetGroup>
@@ -546,7 +546,7 @@
                   </Template>
                 </Children>
                 <Connection>
-                  <ConfigKey>[Auxiliary4],enabled</ConfigKey>
+                  <ConfigKey>Auxiliary4,enabled</ConfigKey>
                   <BindProperty>visible</BindProperty>
                 </Connection>
               </WidgetGroup>

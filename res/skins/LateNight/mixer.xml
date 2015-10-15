@@ -38,7 +38,7 @@
                                       </State>
                                       <Pos>4,4</Pos>
                                       <Connection>
-                                          <ConfigKey>[InternalClock],sync_master</ConfigKey>
+                                          <ConfigKey>InternalClock,sync_master</ConfigKey>
                                           <ButtonState>LeftButton</ButtonState>
                                       </Connection>
                                   </PushButton>
@@ -54,7 +54,7 @@
                                       <Channel>1</Channel>
                                       <NumberOfDigits>2</NumberOfDigits>
                                       <Connection>
-                                          <ConfigKey>[InternalClock],bpm</ConfigKey>
+                                          <ConfigKey>InternalClock,bpm</ConfigKey>
                                       </Connection>
                                   </NumberBpm>
                               </Children>
@@ -86,7 +86,7 @@
               									</Template>
         						            </Children>
         						            <Connection>
-        						                <ConfigKey>[Master],show_4decks</ConfigKey>
+        						                <ConfigKey>Master,show_4decks</ConfigKey>
         						                <BindProperty>visible</BindProperty>
         						            </Connection>
         						       </WidgetGroup>
@@ -107,7 +107,7 @@
 															<PathStatusLight>btn_clipping1_over.png</PathStatusLight>
 															<PathBack>btn_clipping1.png</PathBack>
 															<Connection>
-																<ConfigKey>[Master],PeakIndicatorL</ConfigKey>
+																<ConfigKey>Master,PeakIndicatorL</ConfigKey>
 															</Connection>
 														</StatusLight>
 														<VuMeter>
@@ -121,7 +121,7 @@
 															<PeakFallTime>50</PeakFallTime>
 															<PeakFallStep>2</PeakFallStep>
 															<Connection>
-																<ConfigKey>[Master],VuMeterL</ConfigKey>
+																<ConfigKey>Master,VuMeterL</ConfigKey>
 															</Connection>
 														</VuMeter>
 													</Children>
@@ -135,7 +135,7 @@
 															<PathStatusLight>btn_clipping1_over.png</PathStatusLight>
 															<PathBack>btn_clipping1.png</PathBack>
 															<Connection>
-																<ConfigKey>[Master],PeakIndicatorR</ConfigKey>
+																<ConfigKey>Master,PeakIndicatorR</ConfigKey>
 															</Connection>
 														</StatusLight>
 														<VuMeter>
@@ -149,14 +149,14 @@
 															<PeakFallTime>50</PeakFallTime>
 															<PeakFallStep>2</PeakFallStep>
 															<Connection>
-																<ConfigKey>[Master],VuMeterR</ConfigKey>
+																<ConfigKey>Master,VuMeterR</ConfigKey>
 															</Connection>
 														</VuMeter>
 													</Children>
 												</WidgetGroup>
 											</Children>
 											<Connection>
-												<ConfigKey>[Master],show_4decks</ConfigKey>
+												<ConfigKey>Master,show_4decks</ConfigKey>
 												<BindProperty>visible</BindProperty>
 												<Transform>
 													<Invert/>
@@ -176,7 +176,7 @@
                                               </Template>
                                           </Children>
                                           <Connection>
-                                              <ConfigKey>[Master],show_4decks</ConfigKey>
+                                              <ConfigKey>Master,show_4decks</ConfigKey>
                                               <BindProperty>visible</BindProperty>
                                           </Connection>
                                        </WidgetGroup>
@@ -193,7 +193,7 @@
 											<Slider>slider_crossfader.png</Slider>
 											<Horizontal>true</Horizontal>
 											<Connection>
-												<ConfigKey>[Master],crossfader</ConfigKey>
+												<ConfigKey>Master,crossfader</ConfigKey>
 											</Connection>
 										</SliderComposed>
 									</Children>
@@ -288,7 +288,7 @@
 										<PathStatusLight>btn_clipping1_over.png</PathStatusLight>
 										<PathBack>btn_clipping1.png</PathBack>
 										<Connection>
-											<ConfigKey>[Master],PeakIndicatorL</ConfigKey>
+											<ConfigKey>Master,PeakIndicatorL</ConfigKey>
 										</Connection>
 									</StatusLight>
 									<VuMeter>
@@ -302,7 +302,7 @@
 										<PeakFallTime>50</PeakFallTime>
 										<PeakFallStep>2</PeakFallStep>
 										<Connection>
-											<ConfigKey>[Master],VuMeterL</ConfigKey>
+											<ConfigKey>Master,VuMeterL</ConfigKey>
 										</Connection>
 									</VuMeter>
 								</Children>
@@ -316,7 +316,7 @@
 										<PathStatusLight>btn_clipping1_over.png</PathStatusLight>
 										<PathBack>btn_clipping1.png</PathBack>
 										<Connection>
-											<ConfigKey>[Master],PeakIndicatorR</ConfigKey>
+											<ConfigKey>Master,PeakIndicatorR</ConfigKey>
 										</Connection>
 									</StatusLight>
 									<VuMeter>
@@ -330,14 +330,14 @@
 										<PeakFallTime>50</PeakFallTime>
 										<PeakFallStep>2</PeakFallStep>
 										<Connection>
-											<ConfigKey>[Master],VuMeterR</ConfigKey>
+											<ConfigKey>Master,VuMeterR</ConfigKey>
 										</Connection>
 									</VuMeter>
 								</Children>
 							</WidgetGroup>
 						</Children>
 						<Connection>
-							<ConfigKey>[Master],show_4decks</ConfigKey>
+							<ConfigKey>Master,show_4decks</ConfigKey>
 							<BindProperty>visible</BindProperty>
 						</Connection>
 					</WidgetGroup>

@@ -43,7 +43,7 @@
                       <Text>MANUAL</Text>
                     </State>
                     <Connection>
-                      <ConfigKey>[Master],talkoverDucking</ConfigKey>
+                      <ConfigKey>Master,talkoverDucking</ConfigKey>
                       <ButtonState>LeftButton</ButtonState>
                     </Connection>
                   </PushButton>

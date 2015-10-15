@@ -13,7 +13,7 @@
                           <Template src="skin:microphone_rack.xml"/>
                       </Children>
                       <Connection>
-                          <ConfigKey persist="true">[Microphone],show_microphone</ConfigKey>
+                          <ConfigKey persist="true">Microphone,show_microphone</ConfigKey>
                           <BindProperty>visible</BindProperty>
                       </Connection>
                   </WidgetGroup>
@@ -23,7 +23,7 @@
                           <Template src="skin:sampler_decks.xml"/>
                       </Children>
                       <Connection>
-                          <ConfigKey persist="true">[Samplers],show_samplers</ConfigKey>
+                          <ConfigKey persist="true">Samplers,show_samplers</ConfigKey>
                           <BindProperty>visible</BindProperty>
                       </Connection>
                   </WidgetGroup>
@@ -33,13 +33,13 @@
                           <Template src="skin:effect_rack.xml"/>
                       </Children>
                       <Connection>
-                          <ConfigKey persist="true">[EffectRack1],show</ConfigKey>
+                          <ConfigKey persist="true">EffectRack1,show</ConfigKey>
                           <BindProperty>visible</BindProperty>
                       </Connection>
                   </WidgetGroup>
               </Children>
               <Connection>
-                  <ConfigKey>[Master],maximize_library</ConfigKey>
+                  <ConfigKey>Master,maximize_library</ConfigKey>
                   <BindProperty>visible</BindProperty>
                   <Transform>
                     <Not/>

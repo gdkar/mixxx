@@ -37,7 +37,7 @@
               </Template>
             </Children>
               <Connection>
-              <ConfigKey>[Master],show_4decks</ConfigKey>
+              <ConfigKey>Master,show_4decks</ConfigKey>
               <BindProperty>visible</BindProperty>
               <Transform>
                 <Not/>
@@ -82,13 +82,13 @@
               </Template>
             </Children>
               <Connection>
-              <ConfigKey>[Master],show_4decks</ConfigKey>
+              <ConfigKey>Master,show_4decks</ConfigKey>
               <BindProperty>visible</BindProperty>
             </Connection>
           </WidgetGroup>
         </Children>
         <Connection>
-          <ConfigKey persist="true">[Deere],show_stacked_waveforms</ConfigKey>
+          <ConfigKey persist="true">Deere,show_stacked_waveforms</ConfigKey>
           <BindProperty>visible</BindProperty>
         </Connection>
       </WidgetGroup>
@@ -103,7 +103,7 @@
       </WidgetGroup>
     </Children>
     <Connection>
-      <ConfigKey>[Master],maximize_library</ConfigKey>
+      <ConfigKey>Master,maximize_library</ConfigKey>
       <BindProperty>visible</BindProperty>
       <Transform>
         <Not/>

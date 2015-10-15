@@ -29,7 +29,7 @@
       </Template>
     </Children>
     <Connection>
-      <ConfigKey>[Auxiliary<Variable name="i"/>],enabled</ConfigKey>
+      <ConfigKey>Auxiliary<Variable name="i"/>,enabled</ConfigKey>
       <BindProperty>visible</BindProperty>
     </Connection>
   </WidgetGroup>

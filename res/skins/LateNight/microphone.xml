@@ -46,7 +46,7 @@
                       <Text>TALK</Text>
                     </State>
                     <Connection>
-                      <ConfigKey>[Microphone<Variable name="micnum"/>],talkover</ConfigKey>
+                      <ConfigKey>Microphone<Variable name="micnum"/>,talkover</ConfigKey>
                       <ButtonState>LeftButton</ButtonState>
                     </Connection>
                   </PushButton>
@@ -71,7 +71,7 @@
                         <Unpressed>btn_pfl1_over.png</Unpressed>
                     </State>
                     <Connection>
-                        <ConfigKey>[Microphone<Variable name="micnum"/>],pfl</ConfigKey>
+                        <ConfigKey>Microphone<Variable name="micnum"/>,pfl</ConfigKey>
                     </Connection>
                   </PushButton>
                 </Children>
@@ -95,7 +95,7 @@
                 <PeakFallTime>50</PeakFallTime>
                 <PeakFallStep>2</PeakFallStep>
     						<Connection>
-    							<ConfigKey>[Microphone<Variable name="micnum"/>],VuMeter</ConfigKey>
+    							<ConfigKey>Microphone<Variable name="micnum"/>,VuMeter</ConfigKey>
     						</Connection>
               </VuMeter>
     					<PushButton>
@@ -118,7 +118,7 @@
     							<Unpressed>btn_orientation_microphone_right_over.png</Unpressed>
     						</State>
     						<Connection>
-    							<ConfigKey>[Microphone<Variable name="micnum"/>],orientation</ConfigKey>
+    							<ConfigKey>Microphone<Variable name="micnum"/>,orientation</ConfigKey>
     							<ButtonState>LeftButton</ButtonState>
     						</Connection>
     					</PushButton>

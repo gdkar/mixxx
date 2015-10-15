@@ -55,7 +55,7 @@
                   </Template>
                 </Children>
                 <Connection>
-                  <ConfigKey>[Microphone],enabled</ConfigKey>
+                  <ConfigKey>Microphone,enabled</ConfigKey>
                   <BindProperty>visible</BindProperty>
                   <Transform>
                     <Not/>
@@ -94,7 +94,7 @@
                   <Text>Manual</Text>
                 </State>
                 <Connection>
-                  <ConfigKey>[Master],talkoverDucking</ConfigKey>
+                  <ConfigKey>Master,talkoverDucking</ConfigKey>
                   <EmitOnPressAndRelease>true</EmitOnPressAndRelease>
                 </Connection>
               </PushButton>
@@ -128,13 +128,13 @@
 
         </Children>
         <Connection>
-          <ConfigKey persist="true">[Microphone],show_microphone</ConfigKey>
+          <ConfigKey persist="true">Microphone,show_microphone</ConfigKey>
           <BindProperty>visible</BindProperty>
         </Connection>
       </WidgetStack>
     </Children>
     <Connection>
-      <ConfigKey>[Master],maximize_library</ConfigKey>
+      <ConfigKey>Master,maximize_library</ConfigKey>
       <BindProperty>visible</BindProperty>
       <Transform>
         <Not/>

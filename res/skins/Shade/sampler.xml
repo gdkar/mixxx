@@ -74,7 +74,7 @@
 									<!--CSS alignments not respected see bug lp:605530 , lets call <Alignment>-->
 									<Alignment>right</Alignment>
 									<Connection>
-										<ConfigKey>[Sampler<Variable name="samplernum"/>],visual_bpm</ConfigKey>
+										<ConfigKey>Sampler<Variable name="samplernum"/>,visual_bpm</ConfigKey>
 									</Connection>
 								</NumberBpm>
 
@@ -101,7 +101,7 @@
 									</State>
 									<Pos>175,5</Pos>
 									<Connection>
-										<ConfigKey>[Sampler<Variable name="samplernum"/>],bpm_tap</ConfigKey>
+										<ConfigKey>Sampler<Variable name="samplernum"/>,bpm_tap</ConfigKey>
 										<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
 									</Connection>
 								</PushButton>
@@ -130,7 +130,7 @@
 										<Text> %1 </Text>
 									</DefaultMark>
 									<Connection>
-										<ConfigKey>[Sampler<Variable name="samplernum"/>],playposition</ConfigKey>
+										<ConfigKey>Sampler<Variable name="samplernum"/>,playposition</ConfigKey>
 										<EmitOnDownPress>false</EmitOnDownPress>
 									</Connection>
 								</Overview>
@@ -147,7 +147,7 @@
 									<Path>knobs/knob_rotary_s%1.png</Path>
 									<Pos>184,66</Pos>
 									<Connection>
-										<ConfigKey>[Sampler<Variable name="samplernum"/>],pregain</ConfigKey>
+										<ConfigKey>Sampler<Variable name="samplernum"/>,pregain</ConfigKey>
 									</Connection>
 								</Knob>
 
@@ -163,7 +163,7 @@
 									<PathBack>btn_clipping_sampler.png</PathBack>
 									<Pos>219,5</Pos>
 									<Connection>
-										<ConfigKey>[Sampler<Variable name="samplernum"/>],PeakIndicator</ConfigKey>
+										<ConfigKey>Sampler<Variable name="samplernum"/>,PeakIndicator</ConfigKey>
 									</Connection>
 								</StatusLight>
 
@@ -184,7 +184,7 @@
 									<PeakFallTime>50</PeakFallTime>
 									<PeakFallStep>2</PeakFallStep>
 									<Connection>
-										<ConfigKey>[Sampler<Variable name="samplernum"/>],VuMeter</ConfigKey>
+										<ConfigKey>Sampler<Variable name="samplernum"/>,VuMeter</ConfigKey>
 									</Connection>
 								</VuMeter>
 
@@ -201,7 +201,7 @@
 									<Pos>228,8</Pos>
 									<Horizontal>false</Horizontal>
 									<Connection>
-										<ConfigKey>[Sampler<Variable name="samplernum"/>],rate</ConfigKey>
+										<ConfigKey>Sampler<Variable name="samplernum"/>,rate</ConfigKey>
 										<EmitOnDownPress>false</EmitOnDownPress>
 									</Connection>
 								</SliderComposed>
@@ -228,15 +228,15 @@
 									</State>
 									<Pos>11,32</Pos>
 									<Connection>
-                                        <ConfigKey>[Sampler<Variable name="samplernum"/>],cue_gotoandplay</ConfigKey>
+                                        <ConfigKey>Sampler<Variable name="samplernum"/>,cue_gotoandplay</ConfigKey>
                                         <ButtonState>LeftButton</ButtonState>
                                     </Connection>
                                     <Connection>
-                                        <ConfigKey>[Sampler<Variable name="samplernum"/>],start_stop</ConfigKey>
+                                        <ConfigKey>Sampler<Variable name="samplernum"/>,start_stop</ConfigKey>
                                         <ButtonState>RightButton</ButtonState>
                                     </Connection>
                                     <Connection>
-                                        <ConfigKey>[Sampler<Variable name="samplernum"/>],play_indicator</ConfigKey>
+                                        <ConfigKey>Sampler<Variable name="samplernum"/>,play_indicator</ConfigKey>
                                     </Connection>
 								</PushButton>
 
@@ -256,12 +256,12 @@
 									</State>
 									<Pos>11,68</Pos>
 									<Connection>
-										<ConfigKey>[Sampler<Variable name="samplernum"/>],beatsync</ConfigKey>
+										<ConfigKey>Sampler<Variable name="samplernum"/>,beatsync</ConfigKey>
 										<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
 										<ButtonState>LeftButton</ButtonState>
 									</Connection>
 									<Connection>
-										<ConfigKey>[Sampler<Variable name="samplernum"/>],beatsync_tempo</ConfigKey>
+										<ConfigKey>Sampler<Variable name="samplernum"/>,beatsync_tempo</ConfigKey>
 										<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
 										<ButtonState>RightButton</ButtonState>
 									</Connection>
@@ -290,19 +290,19 @@
 									</State>
 									<Pos>58,68</Pos>
 									<Connection>
-										<ConfigKey>[Sampler<Variable name="samplernum"/>],hotcue_1_activate</ConfigKey>
+										<ConfigKey>Sampler<Variable name="samplernum"/>,hotcue_1_activate</ConfigKey>
 										<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
 										<ButtonState>LeftButton</ButtonState>
 										<ConnectValueToWidget>false</ConnectValueToWidget>
 									</Connection>
 									<Connection>
-										<ConfigKey>[Sampler<Variable name="samplernum"/>],hotcue_1_clear</ConfigKey>
+										<ConfigKey>Sampler<Variable name="samplernum"/>,hotcue_1_clear</ConfigKey>
 										<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
 										<ButtonState>RightButton</ButtonState>
 										<ConnectValueToWidget>false</ConnectValueToWidget>
 									</Connection>
 									<Connection>
-										<ConfigKey>[Sampler<Variable name="samplernum"/>],hotcue_1_enabled</ConfigKey>
+										<ConfigKey>Sampler<Variable name="samplernum"/>,hotcue_1_enabled</ConfigKey>
 										<ConnectValueFromWidget>false</ConnectValueFromWidget>
 									</Connection>
 								</PushButton>
@@ -324,19 +324,19 @@
 									</State>
 									<Pos>79,68</Pos>
 									<Connection>
-										<ConfigKey>[Sampler<Variable name="samplernum"/>],hotcue_2_activate</ConfigKey>
+										<ConfigKey>Sampler<Variable name="samplernum"/>,hotcue_2_activate</ConfigKey>
 										<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
 										<ButtonState>LeftButton</ButtonState>
 										<ConnectValueToWidget>false</ConnectValueToWidget>
 									</Connection>
 									<Connection>
-										<ConfigKey>[Sampler<Variable name="samplernum"/>],hotcue_2_clear</ConfigKey>
+										<ConfigKey>Sampler<Variable name="samplernum"/>,hotcue_2_clear</ConfigKey>
 										<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
 										<ButtonState>RightButton</ButtonState>
 										<ConnectValueToWidget>false</ConnectValueToWidget>
 									</Connection>
 									<Connection>
-										<ConfigKey>[Sampler<Variable name="samplernum"/>],hotcue_2_enabled</ConfigKey>
+										<ConfigKey>Sampler<Variable name="samplernum"/>,hotcue_2_enabled</ConfigKey>
 										<ConnectValueFromWidget>false</ConnectValueFromWidget>
 									</Connection>
 								</PushButton>
@@ -358,19 +358,19 @@
 									</State>
 									<Pos>100,68</Pos>
 									<Connection>
-										<ConfigKey>[Sampler<Variable name="samplernum"/>],hotcue_3_activate</ConfigKey>
+										<ConfigKey>Sampler<Variable name="samplernum"/>,hotcue_3_activate</ConfigKey>
 										<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
 										<ButtonState>LeftButton</ButtonState>
 										<ConnectValueToWidget>false</ConnectValueToWidget>
 									</Connection>
 									<Connection>
-										<ConfigKey>[Sampler<Variable name="samplernum"/>],hotcue_3_clear</ConfigKey>
+										<ConfigKey>Sampler<Variable name="samplernum"/>,hotcue_3_clear</ConfigKey>
 										<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
 										<ButtonState>RightButton</ButtonState>
 										<ConnectValueToWidget>false</ConnectValueToWidget>
 									</Connection>
 									<Connection>
-										<ConfigKey>[Sampler<Variable name="samplernum"/>],hotcue_3_enabled</ConfigKey>
+										<ConfigKey>Sampler<Variable name="samplernum"/>,hotcue_3_enabled</ConfigKey>
 										<ConnectValueFromWidget>false</ConnectValueFromWidget>
 									</Connection>
 								</PushButton>
@@ -392,19 +392,19 @@
 									</State>
 									<Pos>121,68</Pos>
 									<Connection>
-										<ConfigKey>[Sampler<Variable name="samplernum"/>],hotcue_4_activate</ConfigKey>
+										<ConfigKey>Sampler<Variable name="samplernum"/>,hotcue_4_activate</ConfigKey>
 										<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
 										<ButtonState>LeftButton</ButtonState>
 										<ConnectValueToWidget>false</ConnectValueToWidget>
 									</Connection>
 									<Connection>
-										<ConfigKey>[Sampler<Variable name="samplernum"/>],hotcue_4_clear</ConfigKey>
+										<ConfigKey>Sampler<Variable name="samplernum"/>,hotcue_4_clear</ConfigKey>
 										<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
 										<ButtonState>RightButton</ButtonState>
 										<ConnectValueToWidget>false</ConnectValueToWidget>
 									</Connection>
 									<Connection>
-										<ConfigKey>[Sampler<Variable name="samplernum"/>],hotcue_4_enabled</ConfigKey>
+										<ConfigKey>Sampler<Variable name="samplernum"/>,hotcue_4_enabled</ConfigKey>
 										<ConnectValueFromWidget>false</ConnectValueFromWidget>
 									</Connection>
 								</PushButton>
@@ -430,7 +430,7 @@
 									</State>
 									<Pos>147,68</Pos>
 									<Connection>
-										<ConfigKey>[Sampler<Variable name="samplernum"/>],pfl</ConfigKey>
+										<ConfigKey>Sampler<Variable name="samplernum"/>,pfl</ConfigKey>
 									</Connection>
 								</PushButton>
 
@@ -450,7 +450,7 @@
 									</State>
 									<Pos>198,23</Pos>
 									<Connection>
-										<ConfigKey>[Sampler<Variable name="samplernum"/>],eject</ConfigKey>
+										<ConfigKey>Sampler<Variable name="samplernum"/>,eject</ConfigKey>
 										<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
 										<ButtonState>LeftButton</ButtonState>
 										<ConnectValueToWidget>false</ConnectValueToWidget>
@@ -478,7 +478,7 @@
 									</State>
 									<Pos>176,23</Pos>
 									<Connection>
-										<ConfigKey>[Sampler<Variable name="samplernum"/>],repeat</ConfigKey>
+										<ConfigKey>Sampler<Variable name="samplernum"/>,repeat</ConfigKey>
 									</Connection>
 								</PushButton>
 
@@ -508,7 +508,7 @@
 									</State>
 									<Pos>176,41</Pos>
 									<Connection>
-										<ConfigKey>[Sampler<Variable name="samplernum"/>],orientation</ConfigKey>
+										<ConfigKey>Sampler<Variable name="samplernum"/>,orientation</ConfigKey>
 										<EmitOnDownPress>true</EmitOnDownPress>
 										<ButtonState>LeftButton</ButtonState>
 									</Connection>
@@ -535,7 +535,7 @@
 									</State>
 									<Pos>197,41</Pos>
 									<Connection>
-										<ConfigKey>[Sampler<Variable name="samplernum"/>],keylock</ConfigKey>
+										<ConfigKey>Sampler<Variable name="samplernum"/>,keylock</ConfigKey>
 									</Connection>
 								</PushButton>
 							</Children>

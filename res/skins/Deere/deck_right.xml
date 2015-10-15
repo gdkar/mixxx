@@ -34,7 +34,7 @@
               <Template src="skin:deck_visual_row.xml"/>
             </Children>
             <Connection>
-              <ConfigKey persist="true">[Deere],show_stacked_waveforms</ConfigKey>
+              <ConfigKey persist="true">Deere,show_stacked_waveforms</ConfigKey>
               <BindProperty>visible</BindProperty>
               <Transform>
                 <Not/>

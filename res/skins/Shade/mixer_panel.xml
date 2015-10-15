@@ -34,7 +34,7 @@
 							</State>
 							<Pos>68,77</Pos>
 							<Connection>
-								<ConfigKey>[Microphone],show_microphone</ConfigKey>
+								<ConfigKey>Microphone,show_microphone</ConfigKey>
 							</Connection>
 						</PushButton>
 
@@ -59,7 +59,7 @@
 							</State>
 							<Pos>105,77</Pos>
 							<Connection>
-								<ConfigKey>[Samplers],show_samplers</ConfigKey>
+								<ConfigKey>Samplers,show_samplers</ConfigKey>
 							</Connection>
 						</PushButton>
 
@@ -87,7 +87,7 @@
 							</State>
 							<Pos>160,77</Pos>
 							<Connection>
-								<ConfigKey>[EffectRack1],show</ConfigKey>
+								<ConfigKey>EffectRack1,show</ConfigKey>
 							</Connection>
 						</PushButton>
 
@@ -104,7 +104,7 @@
 							<Pos>72,91</Pos>
 							<Horizontal>false</Horizontal>
 							<Connection>
-								<ConfigKey>[Channel1],volume</ConfigKey>
+								<ConfigKey>Channel1,volume</ConfigKey>
 								<EmitOnDownPress>false</EmitOnDownPress>
 							</Connection>
 						</SliderComposed>
@@ -116,7 +116,7 @@
 							<Pos>168,91</Pos>
 							<Horizontal>false</Horizontal>
 							<Connection>
-								<ConfigKey>[Channel2],volume</ConfigKey>
+								<ConfigKey>Channel2,volume</ConfigKey>
 								<EmitOnDownPress>false</EmitOnDownPress>
 							</Connection>
 						</SliderComposed>
@@ -134,7 +134,7 @@
 							<Pos>72,230</Pos>
 							<Horizontal>true</Horizontal>
 							<Connection>
-								<ConfigKey>[Master],crossfader</ConfigKey>
+								<ConfigKey>Master,crossfader</ConfigKey>
 								<EmitOnDownPress>false</EmitOnDownPress>
 							</Connection>
 						</SliderComposed>
@@ -160,15 +160,15 @@
 							</State>
 							<Pos>11,226</Pos>
 							<Connection>
-								<ConfigKey>[Channel1],play</ConfigKey>
+								<ConfigKey>Channel1,play</ConfigKey>
 								<ButtonState>LeftButton</ButtonState>
 							</Connection>
 							<Connection>
-								<ConfigKey>[Channel1],cue_set</ConfigKey>
+								<ConfigKey>Channel1,cue_set</ConfigKey>
 								<ButtonState>RightButton</ButtonState>
 							</Connection>
 							<Connection>
-								<ConfigKey>[Channel1],play_indicator</ConfigKey>
+								<ConfigKey>Channel1,play_indicator</ConfigKey>
 							</Connection>
 						</PushButton>
 						<PushButton>
@@ -187,15 +187,15 @@
 							</State>
 							<Pos>203,226</Pos>
 							<Connection>
-								<ConfigKey>[Channel2],play</ConfigKey>
+								<ConfigKey>Channel2,play</ConfigKey>
 								<ButtonState>LeftButton</ButtonState>
 							</Connection>
 							<Connection>
-								<ConfigKey>[Channel2],cue_set</ConfigKey>
+								<ConfigKey>Channel2,cue_set</ConfigKey>
 								<ButtonState>RightButton</ButtonState>
 							</Connection>
 							<Connection>
-								<ConfigKey>[Channel2],play_indicator</ConfigKey>
+								<ConfigKey>Channel2,play_indicator</ConfigKey>
 							</Connection>
 						</PushButton>
 
@@ -220,17 +220,17 @@
 							</State>
 							<Pos>11,205</Pos>
 							<Connection>
-								<ConfigKey>[Channel1],cue_default</ConfigKey>
+								<ConfigKey>Channel1,cue_default</ConfigKey>
 								<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
 								<ButtonState>LeftButton</ButtonState>
 							</Connection>
 							<Connection>
-								<ConfigKey>[Channel1],cue_gotoandstop</ConfigKey>
+								<ConfigKey>Channel1,cue_gotoandstop</ConfigKey>
 								<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
 								<ButtonState>RightButton</ButtonState>
 							</Connection>
 							<Connection>
-								<ConfigKey>[Channel1],cue_indicator</ConfigKey>
+								<ConfigKey>Channel1,cue_indicator</ConfigKey>
 							</Connection>
 						</PushButton>
 						<PushButton>
@@ -249,17 +249,17 @@
 							</State>
 							<Pos>203,205</Pos>
 							<Connection>
-								<ConfigKey>[Channel2],cue_default</ConfigKey>
+								<ConfigKey>Channel2,cue_default</ConfigKey>
 								<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
 								<ButtonState>LeftButton</ButtonState>
 							</Connection>
 							<Connection>
-								<ConfigKey>[Channel2],cue_gotoandstop</ConfigKey>
+								<ConfigKey>Channel2,cue_gotoandstop</ConfigKey>
 								<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
 								<ButtonState>RightButton</ButtonState>
 							</Connection>
 							<Connection>
-								<ConfigKey>[Channel2],cue_indicator</ConfigKey>
+								<ConfigKey>Channel2,cue_indicator</ConfigKey>
 							</Connection>
 						</PushButton>
 
@@ -284,7 +284,7 @@
 							</State>
 							<Pos>64,197</Pos>
 							<Connection>
-								<ConfigKey>[Channel1],pfl</ConfigKey>
+								<ConfigKey>Channel1,pfl</ConfigKey>
 							</Connection>
 						</PushButton>
 						<PushButton>
@@ -303,7 +303,7 @@
 							</State>
 							<Pos>160,197</Pos>
 							<Connection>
-								<ConfigKey>[Channel2],pfl</ConfigKey>
+								<ConfigKey>Channel2,pfl</ConfigKey>
 							</Connection>
 						</PushButton>
 
@@ -328,7 +328,7 @@
 							</State>
 							<Pos>11,57</Pos>
 							<Connection>
-								<ConfigKey>[EffectRack1_EffectUnit1],group_[BusLeft]_enable</ConfigKey>
+								<ConfigKey>EffectRack1_EffectUnit1,group_[BusLeft]_enable</ConfigKey>
 								<ButtonState>LeftButton</ButtonState>
 							</Connection>
 						</PushButton>
@@ -349,7 +349,7 @@
 							</State>
 							<Pos>230,57</Pos>
 							<Connection>
-								<ConfigKey>[EffectRack1_EffectUnit2],group_[BusRight]_enable</ConfigKey>
+								<ConfigKey>EffectRack1_EffectUnit2,group_[BusRight]_enable</ConfigKey>
 								<ButtonState>LeftButton</ButtonState>
 							</Connection>
 						</PushButton>
@@ -375,7 +375,7 @@
 							</State>
 							<Pos>95,57</Pos>
 							<Connection>
-								<ConfigKey>[EffectRack1_EffectUnit1],group_[Headphone]_enable</ConfigKey>
+								<ConfigKey>EffectRack1_EffectUnit1,group_[Headphone]_enable</ConfigKey>
 								<ButtonState>LeftButton</ButtonState>
 							</Connection>
 						</PushButton>
@@ -396,7 +396,7 @@
 							</State>
 							<Pos>145,57</Pos>
 							<Connection>
-								<ConfigKey>[EffectRack1_EffectUnit2],group_[Headphone]_enable</ConfigKey>
+								<ConfigKey>EffectRack1_EffectUnit2,group_[Headphone]_enable</ConfigKey>
 								<ButtonState>LeftButton</ButtonState>
 							</Connection>
 						</PushButton>
@@ -423,12 +423,12 @@
 							</State>
 							<Pos>11,120</Pos>
 							<Connection>
-								<ConfigKey>[Channel1],filterHighKill</ConfigKey>
+								<ConfigKey>Channel1,filterHighKill</ConfigKey>
 								<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
 								<ButtonState>LeftButton</ButtonState>
 							</Connection>
 							<Connection>
-						        <ConfigKey>[Channel1],filterHighKill_loaded</ConfigKey>
+						        <ConfigKey>Channel1,filterHighKill_loaded</ConfigKey>
 						        <BindProperty>visible</BindProperty>
 					        </Connection>
 						</PushButton>
@@ -448,12 +448,12 @@
 							</State>
 							<Pos>11,149</Pos>
 							<Connection>
-								<ConfigKey>[Channel1],filterMidKill</ConfigKey>
+								<ConfigKey>Channel1,filterMidKill</ConfigKey>
 								<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
 								<ButtonState>LeftButton</ButtonState>
 							</Connection>
 							<Connection>
-						        <ConfigKey>[Channel1],filterMidKill_loaded</ConfigKey>
+						        <ConfigKey>Channel1,filterMidKill_loaded</ConfigKey>
 						        <BindProperty>visible</BindProperty>
 					        </Connection>
 						</PushButton>
@@ -473,12 +473,12 @@
 							</State>
 							<Pos>11,178</Pos>
 							<Connection>
-								<ConfigKey>[Channel1],filterLowKill</ConfigKey>
+								<ConfigKey>Channel1,filterLowKill</ConfigKey>
 								<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
 								<ButtonState>LeftButton</ButtonState>
 							</Connection>
 							<Connection>
-								<ConfigKey>[Channel1],filterLowKill_loaded</ConfigKey>
+								<ConfigKey>Channel1,filterLowKill_loaded</ConfigKey>
 								<BindProperty>visible</BindProperty>
 							</Connection>
 						</PushButton>
@@ -499,12 +499,12 @@
 							</State>
 							<Pos>229,120</Pos>
 							<Connection>
-								<ConfigKey>[Channel2],filterHighKill</ConfigKey>
+								<ConfigKey>Channel2,filterHighKill</ConfigKey>
 								<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
 								<ButtonState>LeftButton</ButtonState>
 							</Connection>
 							<Connection>
-								<ConfigKey>[Channel2],filterHighKill_loaded</ConfigKey>
+								<ConfigKey>Channel2,filterHighKill_loaded</ConfigKey>
 								<BindProperty>visible</BindProperty>
 							</Connection>
 						</PushButton>
@@ -524,12 +524,12 @@
 							</State>
 							<Pos>229,149</Pos>
 							<Connection>
-								<ConfigKey>[Channel2],filterMidKill</ConfigKey>
+								<ConfigKey>Channel2,filterMidKill</ConfigKey>
 								<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
 								<ButtonState>LeftButton</ButtonState>
 							</Connection>
 								<Connection>
-						        	<ConfigKey>[Channel2],filterMidKill_loaded</ConfigKey>
+						        	<ConfigKey>Channel2,filterMidKill_loaded</ConfigKey>
 						        	<BindProperty>visible</BindProperty>
 					        	</Connection>
 						</PushButton>
@@ -549,12 +549,12 @@
 							</State>
 							<Pos>229,178</Pos>
 							<Connection>
-								<ConfigKey>[Channel2],filterLowKill</ConfigKey>
+								<ConfigKey>Channel2,filterLowKill</ConfigKey>
 								<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
 								<ButtonState>LeftButton</ButtonState>
 							</Connection>
 							<Connection>
-								<ConfigKey>[Channel2],filterLowKill_loaded</ConfigKey>
+								<ConfigKey>Channel2,filterLowKill_loaded</ConfigKey>
 								<BindProperty>visible</BindProperty>
 							</Connection>
 						</PushButton>
@@ -588,7 +588,7 @@
 							<PathStatusLight>audio_latency/audio_latency_overload.png</PathStatusLight>
 							<PathBack>audio_latency/audio_latency_overload_back.png</PathBack>
 							<Connection>
-								<ConfigKey>[Master],audio_latency_overload</ConfigKey>
+								<ConfigKey>Master,audio_latency_overload</ConfigKey>
 							</Connection>
 						</StatusLight>
 
@@ -609,7 +609,7 @@
 							<PeakFallStep>1</PeakFallStep>
 							<Horizontal>true</Horizontal>
 							<Connection>
-								<ConfigKey>[Master],audio_latency_usage</ConfigKey>
+								<ConfigKey>Master,audio_latency_usage</ConfigKey>
 							</Connection>
 						</VuMeter>
 
@@ -627,7 +627,7 @@
 							<Path>knobs/knob_rotary_s%1.png</Path>
 							<Pos>208,15</Pos>
 							<Connection>
-								<ConfigKey>[Master],gain</ConfigKey>
+								<ConfigKey>Master,gain</ConfigKey>
 							</Connection>
 						</Knob>
 						<Knob>
@@ -637,7 +637,7 @@
 							<Path>knobs/knob_rotary_s%1.png</Path>
 							<Pos>155,15</Pos>
 							<Connection>
-								<ConfigKey>[Master],balance</ConfigKey>
+								<ConfigKey>Master,balance</ConfigKey>
 							</Connection>
 						</Knob>
 
@@ -653,7 +653,7 @@
 							<Path>knobs_no_center/knob_rotary_s%1.png</Path>
 							<Pos>20,15</Pos>
 							<Connection>
-								<ConfigKey>[Master],headGain</ConfigKey>
+								<ConfigKey>Master,headGain</ConfigKey>
 							</Connection>
 						</Knob>
 						<Knob>
@@ -663,7 +663,7 @@
 							<Path>knobs/knob_rotary_s%1.png</Path>
 							<Pos>72,15</Pos>
 							<Connection>
-								<ConfigKey>[Master],headMix</ConfigKey>
+								<ConfigKey>Master,headMix</ConfigKey>
 							</Connection>
 						</Knob>
 
@@ -674,7 +674,7 @@
 							<Path>knobs/knob_rotary_s%1.png</Path>
 							<Pos>32,51</Pos>
 							<Connection>
-								<ConfigKey>[EffectRack1_EffectUnit1],mix</ConfigKey>
+								<ConfigKey>EffectRack1_EffectUnit1,mix</ConfigKey>
 							</Connection>
 						</Knob>
 						<Knob>
@@ -684,7 +684,7 @@
 							<Path>knobs/knob_rotary_s%1.png</Path>
 							<Pos>65,51</Pos>
 							<Connection>
-								<ConfigKey>[EffectRack1_EffectUnit1],super1</ConfigKey>
+								<ConfigKey>EffectRack1_EffectUnit1,super1</ConfigKey>
 							</Connection>
 						</Knob>
 						<Knob>
@@ -694,7 +694,7 @@
 							<Path>knobs/knob_rotary_s%1.png</Path>
 							<Pos>163,51</Pos>
 							<Connection>
-								<ConfigKey>[EffectRack1_EffectUnit2],super1</ConfigKey>
+								<ConfigKey>EffectRack1_EffectUnit2,super1</ConfigKey>
 							</Connection>
 						</Knob>
 						<Knob>
@@ -704,7 +704,7 @@
 							<Path>knobs/knob_rotary_s%1.png</Path>
 							<Pos>196,51</Pos>
 							<Connection>
-								<ConfigKey>[EffectRack1_EffectUnit2],mix</ConfigKey>
+								<ConfigKey>EffectRack1_EffectUnit2,mix</ConfigKey>
 							</Connection>
 						</Knob>
 
@@ -720,7 +720,7 @@
 							<Path>knobs/knob_rotary_s%1.png</Path>
 							<Pos>32,83</Pos>
 							<Connection>
-								<ConfigKey>[Channel1],pregain</ConfigKey>
+								<ConfigKey>Channel1,pregain</ConfigKey>
 							</Connection>
 						</Knob>
 						<Knob>
@@ -730,10 +730,10 @@
 							<Path>knobs/knob_rotary_s%1.png</Path>
 							<Pos>32,112</Pos>
 							<Connection>
-								<ConfigKey>[Channel1],filterHigh</ConfigKey>
+								<ConfigKey>Channel1,filterHigh</ConfigKey>
 							</Connection>
 								<Connection>
-						        	<ConfigKey>[Channel1],filterHigh_loaded</ConfigKey>
+						        	<ConfigKey>Channel1,filterHigh_loaded</ConfigKey>
 						        	<BindProperty>visible</BindProperty>
 					        	</Connection>
 						</Knob>
@@ -744,10 +744,10 @@
 							<Path>knobs/knob_rotary_s%1.png</Path>
 							<Pos>32,141</Pos>
 							<Connection>
-								<ConfigKey>[Channel1],filterMid</ConfigKey>
+								<ConfigKey>Channel1,filterMid</ConfigKey>
 							</Connection>
 							<Connection>
-						        	<ConfigKey>[Channel1],filterMid_loaded</ConfigKey>
+						        	<ConfigKey>Channel1,filterMid_loaded</ConfigKey>
 						        	<BindProperty>visible</BindProperty>
 					        	</Connection>
 						</Knob>
@@ -758,10 +758,10 @@
 							<Path>knobs/knob_rotary_s%1.png</Path>
 							<Pos>32,170</Pos>
 							<Connection>
-								<ConfigKey>[Channel1],filterLow</ConfigKey>
+								<ConfigKey>Channel1,filterLow</ConfigKey>
 							</Connection>
 							<Connection>
-								<ConfigKey>[Channel1],filterLow_loaded</ConfigKey>
+								<ConfigKey>Channel1,filterLow_loaded</ConfigKey>
 								<BindProperty>visible</BindProperty>
 							</Connection>
 						</Knob>
@@ -773,7 +773,7 @@
 							<Path>knobs/knob_rotary_s%1.png</Path>
 							<Pos>196,83</Pos>
 							<Connection>
-								<ConfigKey>[Channel2],pregain</ConfigKey>
+								<ConfigKey>Channel2,pregain</ConfigKey>
 							</Connection>
 						</Knob>
 						<Knob>
@@ -783,10 +783,10 @@
 							<Path>knobs/knob_rotary_s%1.png</Path>
 							<Pos>196,112</Pos>
 							<Connection>
-								<ConfigKey>[Channel2],filterHigh</ConfigKey>
+								<ConfigKey>Channel2,filterHigh</ConfigKey>
 							</Connection>
 							<Connection>
-						        	<ConfigKey>[Channel2],filterHigh_loaded</ConfigKey>
+						        	<ConfigKey>Channel2,filterHigh_loaded</ConfigKey>
 						        	<BindProperty>visible</BindProperty>
 					        	</Connection>
 						</Knob>
@@ -797,10 +797,10 @@
 							<Path>knobs/knob_rotary_s%1.png</Path>
 							<Pos>196,141</Pos>
 							<Connection>
-								<ConfigKey>[Channel2],filterMid</ConfigKey>
+								<ConfigKey>Channel2,filterMid</ConfigKey>
 							</Connection>
 							<Connection>
-						        	<ConfigKey>[Channel2],filterMid_loaded</ConfigKey>
+						        	<ConfigKey>Channel2,filterMid_loaded</ConfigKey>
 						        	<BindProperty>visible</BindProperty>
 					        	</Connection>
 						</Knob>
@@ -811,10 +811,10 @@
 							<Path>knobs/knob_rotary_s%1.png</Path>
 							<Pos>196,170</Pos>
 							<Connection>
-								<ConfigKey>[Channel2],filterLow</ConfigKey>
+								<ConfigKey>Channel2,filterLow</ConfigKey>
 							</Connection>
 							<Connection>
-								<ConfigKey>[Channel2],filterLow_loaded</ConfigKey>
+								<ConfigKey>Channel2,filterLow_loaded</ConfigKey>
 								<BindProperty>visible</BindProperty>
 							</Connection>
 						</Knob>
@@ -836,7 +836,7 @@
 							<PeakFallTime>50</PeakFallTime>
 							<PeakFallStep>2</PeakFallStep>
 							<Connection>
-								<ConfigKey>[Channel1],VuMeter</ConfigKey>
+								<ConfigKey>Channel1,VuMeter</ConfigKey>
 							</Connection>
 						</VuMeter>
 						<VuMeter>
@@ -851,7 +851,7 @@
 							<PeakFallTime>50</PeakFallTime>
 							<PeakFallStep>2</PeakFallStep>
 							<Connection>
-								<ConfigKey>[Channel2],VuMeter</ConfigKey>
+								<ConfigKey>Channel2,VuMeter</ConfigKey>
 							</Connection>
 						</VuMeter>
 
@@ -866,7 +866,7 @@
 							<PeakFallTime>50</PeakFallTime>
 							<PeakFallStep>2</PeakFallStep>
 							<Connection>
-								<ConfigKey>[Master],VuMeterL</ConfigKey>
+								<ConfigKey>Master,VuMeterL</ConfigKey>
 							</Connection>
 						</VuMeter>
 						<VuMeter>
@@ -880,7 +880,7 @@
 							<PeakFallTime>50</PeakFallTime>
 							<PeakFallStep>2</PeakFallStep>
 							<Connection>
-								<ConfigKey>[Master],VuMeterR</ConfigKey>
+								<ConfigKey>Master,VuMeterR</ConfigKey>
 							</Connection>
 						</VuMeter>
 
@@ -896,7 +896,7 @@
 							<PathBack>btn_clipping1.png</PathBack>
 							<Pos>107,93</Pos>
 							<Connection>
-								<ConfigKey>[Channel1],PeakIndicator</ConfigKey>
+								<ConfigKey>Channel1,PeakIndicator</ConfigKey>
 							</Connection>
 						</StatusLight>
 						<StatusLight>
@@ -906,7 +906,7 @@
 							<PathBack>btn_clipping2.png</PathBack>
 							<Pos>143,93</Pos>
 							<Connection>
-								<ConfigKey>[Channel2],PeakIndicator</ConfigKey>
+								<ConfigKey>Channel2,PeakIndicator</ConfigKey>
 							</Connection>
 						</StatusLight>
 						<StatusLight>
@@ -916,7 +916,7 @@
 							<PathBack>btn_clipping_master.png</PathBack>
 							<Pos>122,93</Pos>
 							<Connection>
-								<ConfigKey>[Master],PeakIndicatorL</ConfigKey>
+								<ConfigKey>Master,PeakIndicatorL</ConfigKey>
 							</Connection>
 						</StatusLight>
                         <StatusLight>
@@ -926,7 +926,7 @@
 							<PathBack>btn_clipping_master.png</PathBack>
 							<Pos>128,93</Pos>
 							<Connection>
-								<ConfigKey>[Master],PeakIndicatorR</ConfigKey>
+								<ConfigKey>Master,PeakIndicatorR</ConfigKey>
 							</Connection>
 						</StatusLight>
 					</Children>

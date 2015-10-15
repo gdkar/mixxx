@@ -194,7 +194,7 @@ template <class ValueType> bool ConfigObject<ValueType>::Parse()
             line = text.readLine().trimmed();
             if (line.length() != 0)
             {
-                if (line.startsWith("") && line.endsWith(""))
+                if (line.startsWith("[") && line.endsWith("]"))
                 {
                     group++;
                     groupStr = line.mid(1,line.length()-2);
@@ -251,18 +251,18 @@ template <class ValueType> void ConfigObject<ValueType>::Save()
         QTextStream stream(&file);
         stream.setCodec("UTF-8");
         auto grp = QString{""};
-        QListIterator<ConfigOption<ValueType>* > iterator(m_list);
-        ConfigOption<ValueType>* it;
-        while (iterator.hasNext())
+        auto as_hash = QHash<QString,ConfigOption<ValueType>*>{};
+        for ( auto option : m_list )
         {
-            it = iterator.next();
-//            qDebug() << "group:" << it->key->group << "item" << it->key->item << "val" << it->val->value;
-            if (it->key->group != grp)
-            {
-                grp = it->key->group;
-                stream << "\n" << it->key->group << "\n";
-            }
-            stream << it->key->item << " " << it->val->value << "\n";
+          as_hash.insertMulti(option->key->group,option);
+        }
+        for ( auto grp : as_hash.uniqueKeys() )
+        {
+          stream << "\n" << QString("[%1]").arg( grp ) << "\n";
+          for ( auto option : as_hash.values(grp) )
+          {
+            stream << QString("%1 %2").arg(option->key->item).arg(option->val->value) << "\n";
+          }
         }
         file.close();
         if (file.error()!=QFile::NoError) //could be better... should actually say what the error was..
