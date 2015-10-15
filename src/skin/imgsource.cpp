@@ -66,7 +66,7 @@ void ImgColorProcessor::correctImageColors(QImage* i) const
     {
         // Handling Indexed color or mono colors requires different logic
         qDebug() << "ImgColorProcessor converting unsupported color format:" << i->format();
-        *i = i->convertToFormat(QImage::Format_ARGB32);
+        *i = i->convertToFormat(QImage::Format_RGB32);
     }
     for (auto y = 0; y < i->height(); y++)
     {
@@ -75,7 +75,6 @@ void ImgColorProcessor::correctImageColors(QImage* i) const
         for (auto x = 0; x < i->width(); x++,line++)
         {
             *line = doColorCorrection(QColor(*line)).rgba();
-            line++;
         }
     }
 }
