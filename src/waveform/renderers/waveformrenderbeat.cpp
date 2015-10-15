@@ -15,7 +15,7 @@
 WaveformRenderBeat::WaveformRenderBeat(WaveformWidgetRenderer* waveformWidgetRenderer)
         : WaveformRendererAbstract(waveformWidgetRenderer),
           m_pBeatActive(NULL) {
-    m_beats.resize(128);
+    m_beats.reserve(128);
 }
 
 WaveformRenderBeat::~WaveformRenderBeat()
@@ -31,52 +31,38 @@ bool WaveformRenderBeat::init()
 void WaveformRenderBeat::setup(const QDomNode& node, const SkinContext& context) {
     m_beatColor.setNamedColor(context.selectString(node, "BeatColor"));
     m_beatColor = WSkinColor::getCorrectColor(m_beatColor).toRgb();
-
-    if (m_beatColor.alphaF() > 0.99)
-        m_beatColor.setAlphaF(0.9);
+    if (m_beatColor.alphaF() > 0.9) m_beatColor.setAlphaF(0.9);
 }
 
-void WaveformRenderBeat::draw(QPainter* painter, QPaintEvent* /*event*/) {
-    TrackPointer trackInfo = m_waveformRenderer->getTrackInfo();
-
-    if (!trackInfo)
-        return;
-
-    BeatsPointer trackBeats = trackInfo->getBeats();
-    if (!trackBeats)
-        return;
-
-    const int trackSamples = m_waveformRenderer->getTrackSamples();
-    if (trackSamples <= 0) {
-        return;
-    }
-
-    const double firstDisplayedPosition = m_waveformRenderer->getFirstDisplayedPosition();
-    const double lastDisplayedPosition = m_waveformRenderer->getLastDisplayedPosition();
-
-    // qDebug() << "trackSamples" << trackSamples
-    //          << "firstDisplayedPosition" << firstDisplayedPosition
-    //          << "lastDisplayedPosition" << lastDisplayedPosition;
-
+void WaveformRenderBeat::draw(QPainter* painter, QPaintEvent* /*event*/)
+{
+    auto trackInfo = m_waveformRenderer->getTrackInfo();
+    if (!trackInfo)return;
+    auto trackBeats = trackInfo->getBeats();
+    if (!trackBeats) return;
+    auto trackSamples = m_waveformRenderer->getTrackSamples();
+    if (trackSamples <= 0) return;
+    auto firstDisplayedPosition = m_waveformRenderer->getFirstDisplayedPosition();
+    auto lastDisplayedPosition = m_waveformRenderer->getLastDisplayedPosition();
     auto it = trackBeats->findBeats(firstDisplayedPosition * trackSamples, lastDisplayedPosition * trackSamples);
     // if no beat do not waste time saving/restoring painter
     if (!it.hasNext()) {return;}
     painter->save();
     painter->setRenderHint(QPainter::Antialiasing);
-    QPen beatPen(m_beatColor);
+    auto beatPen = QPen(m_beatColor);
     beatPen.setWidthF(1);
     painter->setPen(beatPen);
-    const float rendererHeight = m_waveformRenderer->getHeight();
-    int beatCount = 0;
-    while (it.hasNext()) {
-        int beatPosition = it.next();
-        double xBeatPoint = m_waveformRenderer->transformSampleIndexInRendererWorld(beatPosition);
+    auto  rendererHeight = m_waveformRenderer->getHeight();
+    m_beats.clear();
+    while (it.hasNext())
+    {
+        auto beatPosition = it.next();
+        auto xBeatPoint = m_waveformRenderer->transformSampleIndexInRendererWorld(beatPosition);
         xBeatPoint = qRound(xBeatPoint);
         // If we don't have enough space, double the size.
-        if (beatCount >= m_beats.size()) {m_beats.resize(m_beats.size() * 2);}
-        m_beats[beatCount++].setLine(xBeatPoint, 0.0f, xBeatPoint, rendererHeight);
+        m_beats.emplace_back(xBeatPoint, 0.0f, xBeatPoint, rendererHeight);
     }
     // Make sure to use constData to prevent detaches!
-    painter->drawLines(m_beats.constData(), beatCount);
+    painter->drawLines(&m_beats[0], m_beats.size());
     painter->restore();
 }

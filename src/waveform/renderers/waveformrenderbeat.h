@@ -1,6 +1,6 @@
 _Pragma("once")
 #include <QColor>
-
+#include <vector>
 #include "waveform/renderers/waveformrendererabstract.h"
 #include "util.h"
 #include "skin/skincontext.h"
@@ -19,6 +19,6 @@ class WaveformRenderBeat : public WaveformRendererAbstract {
   private:
     QColor m_beatColor;
     ControlObjectSlave* m_pBeatActive = nullptr;
-    QVector<QLineF> m_beats;
+    std::vector<QLineF> m_beats;
 
 };

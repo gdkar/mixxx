@@ -137,8 +137,7 @@ void WWaveformViewer::wheelEvent(QWheelEvent *event) {
 }
 void WWaveformViewer::dragEnterEvent(QDragEnterEvent* event) {
     if (DragAndDropHelper::allowLoadToPlayer(m_pGroup, m_pConfig) &&
-            DragAndDropHelper::dragEnterAccept(*event->mimeData(), m_pGroup,
-                                               true, false)) {
+            DragAndDropHelper::dragEnterAccept(*event->mimeData(), m_pGroup,true, false)) {
         event->acceptProposedAction();
     } else  event->ignore();
 }
@@ -184,8 +183,5 @@ void WWaveformViewer::setZoom(int zoom) {
 void WWaveformViewer::setWaveformWidget(WaveformWidget* waveformWidget) {
     if (m_waveformWidget) disconnect(m_waveformWidget, SIGNAL(destroyed()),this, SLOT(slotWidgetDead()));
     m_waveformWidget = waveformWidget;
-    if (m_waveformWidget)
-    {
-      connect(m_waveformWidget, SIGNAL(destroyed()),this, SLOT(slotWidgetDead()));
-    }
+    if (m_waveformWidget) connect(m_waveformWidget, SIGNAL(destroyed()),this, SLOT(slotWidgetDead()));
 }

@@ -170,17 +170,17 @@ void WaveformRendererFilteredSignal::draw(QPainter* painter,QPaintEvent* /*event
                 case Qt::AlignBottom :
                     m_allLines[actualAllLineNumber].setLine(
                         x, m_waveformRenderer->getHeight(),
-                        x, m_waveformRenderer->getHeight() - (int)(heightFactor*allGain*math_max(maxAll[0],maxAll[1])));
+                        x, m_waveformRenderer->getHeight() - (int)(heightFactor*math_max(maxAll[0],maxAll[1])));
                     break;
                 case Qt::AlignTop :
                     m_allLines[actualAllLineNumber].setLine(
                         x, 0,
-                        x, (int)(heightFactor*allGain*math_max(maxAll[0],maxAll[1])));
+                        x, (int)(heightFactor*math_max(maxAll[0],maxAll[1])));
                     break;
                 default :
                     m_allLines[actualAllLineNumber].setLine(
-                        x, (int)(halfHeight-heightFactor*maxAll[0]*allGain),
-                        x, (int)(halfHeight+heightFactor*maxAll[1]*allGain));
+                        x, (int)(halfHeight-heightFactor*maxAll[0]),
+                        x, (int)(halfHeight+heightFactor*maxAll[1]));
                     break;
             }
             actualAllLineNumber++;
