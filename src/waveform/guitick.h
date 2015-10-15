@@ -7,7 +7,7 @@ class QTimer;
 class GuiTick : public QObject {
     Q_OBJECT
   public:
-    GuiTick(QObject* pParent = nullptr);
+    explicit GuiTick(QObject* pParent = nullptr);
     virtual ~GuiTick();
     virtual void process();
     static double cpuTimeLastTick();

@@ -14,7 +14,6 @@ _Pragma("once")
 class TrackInfoObject;
 class ControlObjectSlave;
 class VisualPlayPosition;
-class VSyncThread;
 
 class WaveformWidgetRenderer {
   public:
@@ -26,7 +25,7 @@ class WaveformWidgetRenderer {
     virtual bool init();
     virtual bool onInit();
     virtual void setup(const QDomNode& node, const SkinContext& context);
-    virtual void onPreRender(VSyncThread* vsyncThread);
+    virtual void onPreRender(int);
     virtual void draw(QPainter* painter, QPaintEvent* event);
     virtual QString getGroup() const;
     virtual TrackPointer getTrackInfo() const;

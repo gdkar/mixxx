@@ -4,7 +4,6 @@
 #include "controlobjectslave.h"
 #include "controlobject.h"
 #include "util/math.h"
-#include "waveform/vsyncthread.h"
 
 //static
 QMap<QString, QWeakPointer<VisualPlayPosition> > VisualPlayPosition::m_listVisualPlayPosition;
@@ -57,17 +56,17 @@ void VisualPlayPosition::set(double playPos, double rate, double positionStep, d
     m_valid = true;
 }
 
-double VisualPlayPosition::getAtNextVSync(VSyncThread* vsyncThread)
+double VisualPlayPosition::getEffectiveTime(int remaining)
 {
     if (m_valid)
     {
-        VisualPlayPositionData data = m_data.getValue();
-        int usRefToVSync = vsyncThread->usFromTimerToNextSync(&data.m_referenceTime);
-        int offset = usRefToVSync - data.m_callbackEntrytoDac;
-        double playPos = data.m_enginePlayPos;  // load playPos for the first sample in Buffer
+        auto data = m_data.getValue();
+//        auto usRefToVSync = vsyncThread->usFromTimerToNextSync(&data.m_referenceTime);
+        auto offset = remaining - data.m_callbackEntrytoDac;
+        auto playPos = data.m_enginePlayPos;  // load playPos for the first sample in Buffer
         // add the offset for the position of the sample that will be transfered to the DAC
         // When the next display frame is displayed
-        playPos += data.m_positionStep * offset * data.m_rate / m_dAudioBufferSize / 1000;
+        playPos += data.m_positionStep * offset * data.m_rate / m_dAudioBufferSize * 1e-3;
         //qDebug() << "delta Pos" << playPos - m_playPosOld << offset;
         //m_playPosOld = playPos;
         return playPos;
@@ -82,11 +81,11 @@ void VisualPlayPosition::getPlaySlipAt(int usFromNow, double* playPosition, doub
     if (m_valid)
     {
         VisualPlayPositionData data = m_data.getValue();
-        int usElapsed = data.m_referenceTime.elapsed() / 1000;
+        int usElapsed = data.m_referenceTime.elapsed() * 1e-3;
         int dacFromNow = usElapsed - data.m_callbackEntrytoDac;
         int offset = dacFromNow - usFromNow;
         double playPos = data.m_enginePlayPos;  // load playPos for the first sample in Buffer
-        playPos += data.m_positionStep * offset * data.m_rate / m_dAudioBufferSize / 1000;
+        playPos += data.m_positionStep * offset * data.m_rate / m_dAudioBufferSize * 1e-3;
         *playPosition = playPos;
         *slipPosition = data.m_pSlipPosition;
     }

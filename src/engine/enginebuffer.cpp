@@ -310,7 +310,8 @@ TrackPointer EngineBuffer::loadFakeTrack(double filebpm) {
     return pTrack;
 }
 // WARNING: Always called from the EngineWorker thread pool
-void EngineBuffer::slotTrackLoaded(TrackPointer pTrack,int iTrackSampleRate,int iTrackNumSamples) {
+void EngineBuffer::slotTrackLoaded(TrackPointer pTrack,int iTrackSampleRate,int iTrackNumSamples)
+{
     //qDebug() << getGroup() << "EngineBuffer::slotTrackLoaded";
     m_pause.lock();
     m_visualPlayPos->setInvalid();
@@ -898,22 +899,21 @@ void EngineBuffer::updateIndicators(double speed, int iBufferSize)
     m_pSyncControl->reportTrackPosition(fFractionalPlaypos);
     // Update indicators that are only updated after every
     // sampleRate/kiUpdateRate samples processed.  (e.g. playposSlider)
-    if (m_iSamplesCalculated > (m_pSampleRate->get() / kiPlaypositionUpdateRate))
-    {
-        m_playposSlider->set(fFractionalPlaypos);
-        m_pCueControl->updateIndicators();
-        // Update the BPM even more slowly
-        m_iUiSlowTick = (m_iUiSlowTick + 1) % kiBpmUpdateCnt;
-        if (m_iUiSlowTick == 0) m_visualBpm->set(m_pBpmControl->getBpm());
-        m_visualKey->set(m_pKeyControl->getKey());
-        // Reset sample counter
-        m_iSamplesCalculated = 0;
-    }
+//    if (m_iSamplesCalculated > (m_pSampleRate->get() / kiPlaypositionUpdateRate))
+//    {
+    m_playposSlider->set(fFractionalPlaypos);
+    m_pCueControl->updateIndicators();
+    // Update the BPM even more slowly
+    m_iUiSlowTick = (m_iUiSlowTick + 1) % kiBpmUpdateCnt;
+//    if (m_iUiSlowTick == 0) 
+    m_visualBpm->set(m_pBpmControl->getBpm());
+    m_visualKey->set(m_pKeyControl->getKey());
+    // Reset sample counter
+    m_iSamplesCalculated = 0;
+//    }
     // Update visual control object, this needs to be done more often than the
     // playpos slider
-    m_visualPlayPos->set(fFractionalPlaypos, speed * m_baserate_old,
-            (double)iBufferSize / m_trackSamplesOld,
-            fractionalPlayposFromAbsolute(m_dSlipPosition));
+    m_visualPlayPos->set(fFractionalPlaypos, speed * m_baserate_old,(double)iBufferSize / m_trackSamplesOld,fractionalPlayposFromAbsolute(m_dSlipPosition));
 }
 void EngineBuffer::hintReader(const double dRate)
 {

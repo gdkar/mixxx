@@ -70,7 +70,7 @@ bool WaveformWidgetRenderer::init()
     }
     return (m_initSuccess = true);
 }
-void WaveformWidgetRenderer::onPreRender(VSyncThread* vsyncThread)
+void WaveformWidgetRenderer::onPreRender(int remaining)
 {
     // For a valid track to render we need
     if ( !m_pTrackSamplesControlObject) return;
@@ -94,7 +94,7 @@ void WaveformWidgetRenderer::onPreRender(VSyncThread* vsyncThread)
     auto pWaveform = pTrack ? pTrack->getWaveform() : ConstWaveformPointer();
     if (pWaveform) m_audioSamplePerPixel = m_visualSamplePerPixel * pWaveform->getAudioVisualRatio();
     else  m_audioSamplePerPixel = 0.0;
-    auto truePlayPos = m_visualPlayPosition->getAtNextVSync(vsyncThread);
+    auto truePlayPos = m_visualPlayPosition->getEffectiveTime(remaining);
     // m_playPos = -1 happens, when a new track is in buffer but m_visualPlayPosition was not updated
     if (m_audioSamplePerPixel && truePlayPos != -1)
     {

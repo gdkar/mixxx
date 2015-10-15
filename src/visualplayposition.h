@@ -44,7 +44,7 @@ class VisualPlayPosition : public QObject
     // WARNING: Not thread safe. This function must be called only from the
     // engine thread.
     void set(double playPos, double rate, double positionStep, double pSlipPosition);
-    double getAtNextVSync(VSyncThread* vsyncThread);
+    double getEffectiveTime(int offset);
     void getPlaySlipAt(int usFromNow, double* playPosition, double* slipPosition);
     double getEnginePlayPos();
     // WARNING: Not thread safe. This function must only be called from the main

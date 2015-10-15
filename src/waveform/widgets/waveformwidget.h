@@ -19,7 +19,6 @@ class WaveformWidget: public QWidget, public WaveformWidgetRenderer {
     void hold();
     void release();
     virtual void setRenderType(WaveformWidgetType::Type type);
-    virtual void preRender(VSyncThread* vsyncThread);
     virtual int render();
     virtual void resize(int width, int height);
     virtual void paintEvent(QPaintEvent *e);

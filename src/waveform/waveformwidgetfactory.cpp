@@ -7,14 +7,13 @@
 #include "waveform/waveformwidgetfactory.h"
 #include "controlpotmeter.h"
 #include "waveform/widgets/waveformwidget.h"
+#include "waveform/guitick.h"
 #include "widget/wwaveformviewer.h"
-#include "waveform/vsyncthread.h"
-
 #include "util/cmdlineargs.h"
 #include "util/performancetimer.h"
 #include "util/timer.h"
 #include "util/math.h"
-
+#include "mixxx.h"
 ///////////////////////////////////////////
 
 WaveformWidgetAbstractHandle::WaveformWidgetAbstractHandle()
@@ -47,7 +46,6 @@ WaveformWidgetFactory::WaveformWidgetFactory() :
         m_defaultZoom(3),
         m_zoomSync(false),
         m_overviewNormalized(false),
-        m_vsyncThread(NULL),
         m_frameCnt(0),
         m_actualFrameRate(0)
 {
@@ -61,7 +59,6 @@ WaveformWidgetFactory::WaveformWidgetFactory() :
 }
 WaveformWidgetFactory::~WaveformWidgetFactory()
 {
-    if (m_vsyncThread) delete m_vsyncThread;
     destroyWidgets();
 }
 bool WaveformWidgetFactory::setConfig(ConfigObject<ConfigValue> *config) {
@@ -143,7 +140,7 @@ void WaveformWidgetFactory::setFrameRate(int frameRate)
 {
     m_frameRate = math_clamp(frameRate, 1, 120);
     if (m_config) m_config->set(ConfigKey("[Waveform]","FrameRate"), ConfigValue(m_frameRate));
-    m_vsyncThread->setUsSyncIntervalTime(1e6 / m_frameRate);
+    m_updateTimer.setInterval(1e3/m_frameRate);
 }
 void WaveformWidgetFactory::setEndOfTrackWarningTime(int endTime)
 {
@@ -261,7 +258,7 @@ void WaveformWidgetFactory::render()
             // next rendered frame is displayed after next buffer swap and than after VSync
             for (int i = 0; i < m_waveformWidgetHolders.size(); i++)
                 // Calculate play position for the new Frame in following run
-                m_waveformWidgetHolders[i].m_waveformWidget->preRender(m_vsyncThread);
+                m_waveformWidgetHolders[i].m_waveformWidget->onPreRender(0);
             // It may happen that there is an artificially delayed due to
             // anti tearing driver settings
             // all render commands are delayed until the swap from the previous run is executed
@@ -269,23 +266,11 @@ void WaveformWidgetFactory::render()
             {
                 auto pWaveformWidget = m_waveformWidgetHolders[i].m_waveformWidget;
                 if (pWaveformWidget->getWidth() > 0 && pWaveformWidget->isVisible()) (void)pWaveformWidget->render();
-                // qDebug() << "render" << i << m_vsyncThread->elapsed();
             }
         }
         // Notify all other waveform-like widgets (e.g. WSpinny's) that they should
         // update.
-        //int t1 = m_vsyncThread->elapsed();
         emit(waveformUpdateTick());
-        //qDebug() << "emit" << m_vsyncThread->elapsed() - t1;
-        m_frameCnt += 1.0;
-        auto timeCnt = m_time.elapsed();
-        if (timeCnt > 1000)
-        {
-            m_time.start();
-            m_frameCnt = m_frameCnt * 1000 / timeCnt; // latency correction
-            emit(waveformMeasured(m_frameCnt, m_vsyncThread->droppedFrames()));
-            m_frameCnt = 0.0;
-        }
     }
 }
 WaveformWidgetType::Type WaveformWidgetFactory::autoChooseWidgetType() const
@@ -345,7 +330,10 @@ int WaveformWidgetFactory::findIndexOf(WWaveformViewer* viewer) const
 }
 void WaveformWidgetFactory::startVSync(MixxxMainWindow* mixxxMainWindow)
 {
-    m_vsyncThread = new VSyncThread(mixxxMainWindow);
-    m_vsyncThread->start(QThread::NormalPriority);
-    connect(m_vsyncThread, SIGNAL(vsyncRender()),this, SLOT(render()));
+    m_updateTimer.setTimerType(Qt::PreciseTimer);
+    m_updateTimer.setInterval(1e3/m_frameRate);
+    connect(&m_updateTimer,&QTimer::timeout,this,&WaveformWidgetFactory::render);
+    auto guiTick = mixxxMainWindow->getGuiTick();
+    connect(&m_updateTimer,&QTimer::timeout,guiTick,&GuiTick::process);
+    m_updateTimer.start();
 }

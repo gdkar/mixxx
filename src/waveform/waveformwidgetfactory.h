@@ -1,6 +1,7 @@
 _Pragma("once")
 #include <QObject>
 #include <QTime>
+#include <QTimer>
 #include <QVector>
 #include <memory>
 
@@ -13,7 +14,6 @@ _Pragma("once")
 class WWaveformViewer;
 class WaveformWidget;
 class QTimer;
-class VSyncThread;
 class MixxxMainWindow;
 
 class WaveformWidgetAbstractHandle {
@@ -120,9 +120,7 @@ class WaveformWidgetFactory : public QObject, public Singleton<WaveformWidgetFac
     bool m_openGLAvailable;
     QString m_openGLVersion;
     bool m_openGLShaderAvailable;
-
-    VSyncThread* m_vsyncThread;
-
+    QTimer m_updateTimer;
     //Debug
     QTime m_time;
     float m_frameCnt;

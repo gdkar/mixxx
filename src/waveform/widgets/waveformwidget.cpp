@@ -40,10 +40,6 @@ void WaveformWidget::release()
 {
     show();
 }
-void WaveformWidget::preRender(VSyncThread* vsyncThread)
-{
-    WaveformWidgetRenderer::onPreRender(vsyncThread);
-}
 int WaveformWidget::render()
 {
     repaint();
