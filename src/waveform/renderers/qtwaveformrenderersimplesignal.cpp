@@ -18,19 +18,8 @@ QtWaveformRendererSimpleSignal::QtWaveformRendererSimpleSignal(
 QtWaveformRendererSimpleSignal::~QtWaveformRendererSimpleSignal() = default;
 void QtWaveformRendererSimpleSignal::onSetup(const QDomNode& /*node*/)
 {
-    QColor all = m_pColors->getLowColor();
-    QColor allCenter = all;
-    all.setAlphaF(0.9);
-    allCenter.setAlphaF(0.5);
-    QLinearGradient gradientAll(QPointF(0.0,-255.0/2.0),QPointF(0.0,255.0/2.0));
-    gradientAll.setColorAt(0.0, all);
-    gradientAll.setColorAt(0.25,all.lighter(85));
-    gradientAll.setColorAt(0.5, allCenter.darker(115));
-    gradientAll.setColorAt(0.75,all.lighter(85));
-    gradientAll.setColorAt(1.0, all);
-    m_allBrush = QBrush(gradientAll);
+    m_allBrush = QBrush(m_pColors->getSignalColor());
 }
-
 void QtWaveformRendererSimpleSignal::onResize()
 {
     m_polygon.resize(2*m_waveformRenderer->getWidth()+2);
@@ -51,13 +40,11 @@ int QtWaveformRendererSimpleSignal::buildPolygon()
     auto lastVisualIndex = m_waveformRenderer->getLastDisplayedPosition() * dataSize;
     m_polygon.clear();
     m_polygon.reserve(2 * m_waveformRenderer->getWidth() + 2);
-    QPointF point(0.0, 0.0);
-    m_polygon.append(point);
+    QPoint point(0, 0);
+    m_polygon.push_back(point);
     auto offset = firstVisualIndex;
     // Represents the # of waveform data points per horizontal pixel.
     auto gain = (lastVisualIndex - firstVisualIndex) / (double)m_waveformRenderer->getWidth();
-    float allGain{1.0};
-    getGains(&allGain, nullptr,nullptr,nullptr);
     //NOTE(vrince) Please help me find a better name for "channelSeparation"
     //this variable stand for merged channel ... 1 = merged & 2 = separated
     auto channelSeparation = 2;
@@ -77,8 +64,8 @@ int QtWaveformRendererSimpleSignal::buildPolygon()
             delta = -1;
             direction = -1.0;
             // After preparing the first channel, insert the pivot point.
-            point = QPointF(m_waveformRenderer->getWidth(), 0.0);
-            m_polygon.append(point);
+            point = QPoint(m_waveformRenderer->getWidth(), 0.0);
+            m_polygon.push_back(point);
         }
         for (auto x = startPixel; (startPixel < endPixel) ? (x <= endPixel) : (x >= endPixel); x += delta) {
             auto xSampleWidth = gain * x;
@@ -101,8 +88,7 @@ int QtWaveformRendererSimpleSignal::buildPolygon()
             auto lastVisualFrame = dataSize / 2 - 1;
             if (visualFrameStop < 0 || visualFrameStart > lastVisualFrame)
             {
-                point = QPointF(x, 0.0);
-                m_polygon.append(point);
+                m_polygon.emplace_back(x, 0);
                 continue;
             }
             // We now know that some subset of [visualFrameStart,
@@ -113,20 +99,19 @@ int QtWaveformRendererSimpleSignal::buildPolygon()
             visualFrameStop = math_clamp(visualFrameStop, 0, lastVisualFrame);
             auto visualIndexStart = visualFrameStart * 2 + channel;
             auto visualIndexStop = visualFrameStop * 2 + channel;
-            unsigned char maxAll= 0;
-            for (int i = visualIndexStart; i >= 0 && i < dataSize && i <= visualIndexStop; i += channelSeparation)
+            auto maxAll = 0;
+            for (auto i = visualIndexStart; i >= 0 && i < dataSize && i <= visualIndexStop; i += channelSeparation)
             {
-                auto& waveformData = *(data + i);
-                auto all= waveformData.filtered.all;
-                maxAll= math_max(maxAll, all);
+                maxAll= std::max<int>(maxAll, data[i].filtered.all);
             }
-            m_polygon.append(QPointF(x, (float)maxAll * allGain * direction));
+            m_polygon.emplace_back(x, maxAll * direction);
         }
     }
     //If channel are not displayed separately we need to close the loop properly
-    if (channelSeparation == 1) {
-        point = QPointF(m_waveformRenderer->getWidth(), 0.0);
-        m_polygon.append(point);
+    if (channelSeparation == 1)
+    {
+        point = QPoint(m_waveformRenderer->getWidth(), 0);
+        m_polygon.push_back(point);
     }
     return m_polygon.size();
 }
@@ -135,11 +120,11 @@ void QtWaveformRendererSimpleSignal::draw(QPainter* painter, QPaintEvent* /*even
     auto pTrack = m_waveformRenderer->getTrackInfo();
     if (!pTrack) return;
     painter->save();
-    painter->setRenderHint(QPainter::Antialiasing);
+//    painter->setRenderHint(QPainter::Antialiasing);
     painter->resetTransform();
     //visual gain
     float allGain(1.0);
-    getGains(&allGain, NULL, NULL, NULL);
+    getGains(&allGain, nullptr, nullptr, nullptr);
     auto heightGain = allGain * (double)m_waveformRenderer->getHeight()/255.0;
     if (m_alignment == Qt::AlignTop) {
         painter->translate(0.0, 0.0);

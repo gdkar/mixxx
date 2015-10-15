@@ -2,7 +2,7 @@ _Pragma("once")
 #include "waveformrenderersignalbase.h"
 
 #include <QBrush>
-#include <QVector>
+#include <vector>
 
 class ControlObject;
 
@@ -19,12 +19,12 @@ class QtWaveformRendererFilteredSignal : public WaveformRendererSignalBase {
     int buildPolygon();
 
   protected:
+    QBrush m_allBrush;
     QBrush m_lowBrush;
     QBrush m_midBrush;
     QBrush m_highBrush;
     QBrush m_lowKilledBrush;
     QBrush m_midKilledBrush;
     QBrush m_highKilledBrush;
-
-    QVector<QPointF> m_polygon[3];
+    std::vector<QPoint> m_polygon[4];
 };

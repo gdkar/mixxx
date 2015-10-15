@@ -2,7 +2,7 @@ _Pragma("once")
 #include "waveformrenderersignalbase.h"
 #include <QBrush>
 #include <QPen>
-#include <QVector>
+#include <vector>
 
 class ControlObject;
 
@@ -18,5 +18,5 @@ private:
     int buildPolygon();
     QBrush m_allBrush;
     QPen m_allPen;
-    QVector<QPointF> m_polygon;
+    std::vector<QPoint> m_polygon;
 };

@@ -218,12 +218,39 @@ double WaveformWidgetRenderer::transformPositionInRendererWorld(double position)
 {
     return m_trackPixelCount * (position - m_firstDisplayedPosition);
 }
-double WaveformWidgetRenderer::getPlayPos() const { return m_playPos;}
-double WaveformWidgetRenderer::getPlayPosVSample() const { return m_playPosVSample;}
-double WaveformWidgetRenderer::getZoomFactor() const { return m_zoomFactor;}
-double WaveformWidgetRenderer::getRateAdjust() const { return m_rateAdjust;}
-double WaveformWidgetRenderer::getGain() const { return m_gain;}
-int WaveformWidgetRenderer::getTrackSamples() const { return m_trackSamples;}
-int WaveformWidgetRenderer::getHeight() const { return m_height;}
-int WaveformWidgetRenderer::getWidth() const { return m_width;}
-const WaveformSignalColors* WaveformWidgetRenderer::getWaveformSignalColors() const { return &m_colors; };
+double WaveformWidgetRenderer::getPlayPos() const
+{ 
+  return m_playPos;
+}
+double WaveformWidgetRenderer::getPlayPosVSample() const
+{ 
+  return m_playPosVSample;
+}
+double WaveformWidgetRenderer::getZoomFactor() const
+{ 
+  return m_zoomFactor;
+}
+double WaveformWidgetRenderer::getRateAdjust() const
+{ 
+  return m_rateAdjust;
+}
+double WaveformWidgetRenderer::getGain() const
+{ 
+  return m_gain;
+}
+int WaveformWidgetRenderer::getTrackSamples() const
+{ 
+  return m_trackSamples;
+}
+int WaveformWidgetRenderer::getHeight() const
+{ 
+  return m_height;
+}
+int WaveformWidgetRenderer::getWidth() const
+{ 
+  return m_width;
+}
+const WaveformSignalColors* WaveformWidgetRenderer::getWaveformSignalColors() const
+{ 
+  return &m_colors; 
+};

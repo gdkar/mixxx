@@ -15,7 +15,8 @@ class WaveformRendererFilteredSignal : public WaveformRendererSignalBase
     virtual void draw(QPainter* painter, QPaintEvent* event);
     virtual void onResize();
   private:
-    std::vector<QLineF> m_lowLines;
-    std::vector<QLineF> m_midLines;
-    std::vector<QLineF> m_highLines;
+    std::vector<QLine> m_allLines;
+    std::vector<QLine> m_lowLines;
+    std::vector<QLine> m_midLines;
+    std::vector<QLine> m_highLines;
 };
