@@ -58,18 +58,18 @@
 		<language>en</language>
 		<license>Creative Commons Attribution, Share-Alike 3.0 Unported</license>
 		<attributes>
-			<attribute config_key="[Master],num_decks">2</attribute>
-			<attribute config_key="[Master],num_samplers">4</attribute>
-			<attribute config_key="[Master],num_preview_decks">1</attribute>
+			<attribute config_key="Master,num_decks">2</attribute>
+			<attribute config_key="Master,num_samplers">4</attribute>
+			<attribute config_key="Master,num_preview_decks">1</attribute>
 			<!--Optionally, make elements visible on skin load-->
-			<attribute persist="true" config_key="[Spinny1],show_spinny">1</attribute>
-			<attribute persist="true" config_key="[Spinny2],show_spinny">1</attribute>
-			<attribute persist="true" config_key="[Samplers],show_samplers">0</attribute>
-			<attribute persist="true" config_key="[EffectRack1],show">0</attribute>
-			<attribute persist="true" config_key="[Microphone],show_microphone">0</attribute>
-			<attribute persist="true" config_key="[PreviewDeck],show_previewdeck">0</attribute>
-			<attribute persist="true" config_key="[Library],show_coverart">0</attribute>
-			<attribute persist="true" config_key="[Vinylcontrol],show_vinylcontrol">0</attribute>
+			<attribute persist="true" config_key="Spinny1,show_spinny">1</attribute>
+			<attribute persist="true" config_key="Spinny2,show_spinny">1</attribute>
+			<attribute persist="true" config_key="Samplers,show_samplers">0</attribute>
+			<attribute persist="true" config_key="EffectRack1,show">0</attribute>
+			<attribute persist="true" config_key="Microphone,show_microphone">0</attribute>
+			<attribute persist="true" config_key="PreviewDeck,show_previewdeck">0</attribute>
+			<attribute persist="true" config_key="Library,show_coverart">0</attribute>
+			<attribute persist="true" config_key="Vinylcontrol,show_vinylcontrol">0</attribute>
 		</attributes>
 	</manifest>
 
@@ -531,7 +531,7 @@
 																padding-left: 1px;
 															}
 															</Style>
-															<Group>[PreviewDeck1]</Group>
+															<Group>PreviewDeck1</Group>
 															<Pos></Pos>
 															<Size>50me,15f</Size>
 															<Elide>right</Elide>
@@ -602,7 +602,7 @@
 														<Overview>
 															<TooltipId>waveform_overview</TooltipId>
 															<Style></Style>
-															<Group>[PreviewDeck1]</Group>
+															<Group>PreviewDeck1</Group>
 															<Size>me,30f</Size>
 															<BgColor>#8D98A3</BgColor>
 															<SignalHighColor>#FFE300</SignalHighColor>

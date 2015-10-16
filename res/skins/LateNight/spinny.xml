@@ -33,7 +33,7 @@
         <ObjectName>SpinnySingleton<Variable name="channum"/></ObjectName>
         <Children>
           <Spinny>
-            <Group>[Channel<Variable name="channum"/>]</Group>
+            <Group>Channel<Variable name="channum"/></Group>
             <PathBackground scalemode="STRETCH">spinny_bg.svg</PathBackground>
             <PathMask>spinny<Variable name="color"/>_mask.svg</PathMask>
             <PathForeground>spinny_indicator.svg</PathForeground>
@@ -62,7 +62,7 @@
                 <BindProperty>visible</BindProperty>
             </Connection>
           </WidgetGroup>
-          <WidgetGroup trigger="[Master],show_mixer">
+          <WidgetGroup trigger="Master,show_mixer">
             <ObjectName>SpinnyContainer</ObjectName>
             <Layout>horizontal</Layout>
             <SizePolicy>min,min</SizePolicy>

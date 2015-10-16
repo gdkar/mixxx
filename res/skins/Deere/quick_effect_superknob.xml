@@ -8,9 +8,9 @@
     color: the notch color. red, green, yellow, blue or light_blue
 -->
 <Template>
-  <SetVariable name="QuickEffectRackGroup">[QuickEffectRack<Variable name="QuickEffect"/>]</SetVariable>
-  <SetVariable name="QuickEffectUnitGroup">[QuickEffectRack<Variable name="QuickEffect"/>_<Variable name="group"/>]</SetVariable>
-  <SetVariable name="QuickEffectEffectGroup">[QuickEffectRack<Variable name="QuickEffect"/>_<Variable name="group"/>_Effect1]</SetVariable>
+  <SetVariable name="QuickEffectRackGroup">QuickEffectRack<Variable name="QuickEffect"/></SetVariable>
+  <SetVariable name="QuickEffectUnitGroup">QuickEffectRack<Variable name="QuickEffect"/>_<Variable name="group"/></SetVariable>
+  <SetVariable name="QuickEffectEffectGroup">QuickEffectRack<Variable name="QuickEffect"/>_<Variable name="group"/>_Effect1</SetVariable>
   <WidgetGroup>
     <Layout>horizontal</Layout>
     <Children>

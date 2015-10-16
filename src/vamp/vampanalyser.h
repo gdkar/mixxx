@@ -5,9 +5,7 @@
  *      Original ideas taken from Audacity VampEffect class from Chris Cannam.
  */
 
-#ifndef VAMPANALYSER_H_
-#define VAMPANALYSER_H_
-
+_Pragma("once")
 #include <QString>
 #include <QList>
 #include <QVector>
@@ -52,5 +50,3 @@ class VampAnalyser {
     bool m_FastAnalysisEnabled;
     int m_iMaxSamplesToAnalyse;
 };
-
-#endif /* VAMPANALYSER_H_ */

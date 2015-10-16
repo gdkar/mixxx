@@ -14,7 +14,7 @@
     <Size>40f,30f</Size>
     <Children>
       <Template src="skin:small_knob.xml">
-        <SetVariable name="group">[EffectRack<Variable name="EffectRack"/>_EffectUnit<Variable name="EffectUnit"/>_Effect<Variable name="Effect"/>]</SetVariable>
+        <SetVariable name="group">EffectRack<Variable name="EffectRack"/>_EffectUnit<Variable name="EffectUnit"/>_Effect<Variable name="Effect"/></SetVariable>
         <SetVariable name="control">parameter<Variable name="EffectParameter"/></SetVariable>
         <SetVariable name="color"><Variable name="color"/></SetVariable>
       </Template>
@@ -28,7 +28,7 @@
       </EffectParameterName>
     </Children>
     <Connection>
-      <ConfigKey>[EffectRack<Variable name="EffectRack"/>_EffectUnit<Variable name="EffectUnit"/>_Effect<Variable name="Effect"/>],parameter<Variable name="EffectParameter"/>_loaded</ConfigKey>
+      <ConfigKey>EffectRack<Variable name="EffectRack"/>_EffectUnit<Variable name="EffectUnit"/>_Effect<Variable name="Effect"/>,parameter<Variable name="EffectParameter"/>_loaded</ConfigKey>
       <BindProperty>visible</BindProperty>
     </Connection>
   </WidgetGroup>

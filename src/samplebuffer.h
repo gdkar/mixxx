@@ -2,7 +2,6 @@ _Pragma("once")
 #include "util/types.h"
 #include <memory>
 #include <algorithm>
-#include <algorithm> // std::swap
 
 // A sample buffer with properly aligned memory to enable SSE optimizations.
 // After construction the content of the buffer is uninitialized. No resize

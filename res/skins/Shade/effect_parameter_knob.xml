@@ -42,7 +42,7 @@
 						<NumberStates>64</NumberStates>
 						<Path>knobs/knob_rotary_s%1.png</Path>
 						<Connection>
-							<ConfigKey>[EffectRack1_EffectUnit<Variable name="effectunitnum"/>_Effect<Variable name="effectnum"/>],parameter<Variable name="effectparameternum"/></ConfigKey>
+							<ConfigKey>EffectRack1_EffectUnit<Variable name="effectunitnum"/>_Effect<Variable name="effectnum"/>,parameter<Variable name="effectparameternum"/></ConfigKey>
 						</Connection>
 					</Knob>
 					<PushButton>
@@ -74,7 +74,7 @@
 							<Unpressed>btn_link_type/btn_link_type_left_right.png</Unpressed>
 						</State>
 						<Connection>
-							<ConfigKey>[EffectRack1_EffectUnit<Variable name="effectunitnum"/>_Effect<Variable name="effectnum"/>],parameter<Variable name="effectparameternum"/>_link_type</ConfigKey>
+							<ConfigKey>EffectRack1_EffectUnit<Variable name="effectunitnum"/>_Effect<Variable name="effectnum"/>,parameter<Variable name="effectparameternum"/>_link_type</ConfigKey>
 				  			<ButtonState>LeftButton</ButtonState>
 						</Connection>
 					</PushButton>
@@ -82,7 +82,7 @@
 			</WidgetGroup>
 		</Children>
 		<Connection>
-			<ConfigKey>[EffectRack1_EffectUnit<Variable name="effectunitnum"/>_Effect<Variable name="effectnum"/>],parameter<Variable name="effectparameternum"/>_loaded</ConfigKey>
+			<ConfigKey>EffectRack1_EffectUnit<Variable name="effectunitnum"/>_Effect<Variable name="effectnum"/>,parameter<Variable name="effectparameternum"/>_loaded</ConfigKey>
 			<BindProperty>visible</BindProperty>
 		</Connection>
 	</WidgetGroup>

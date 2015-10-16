@@ -237,13 +237,13 @@
                                       <Children>
                                         <Template src="skin:knob.xml">
                                             <SetVariable name="tooltip">master_gain</SetVariable>
-                                            <SetVariable name="group">[Master]</SetVariable>
+                                            <SetVariable name="group">Master</SetVariable>
                                             <SetVariable name="control">gain</SetVariable>
                                             <SetVariable name="label">Master</SetVariable>
                                         </Template>
                                         <Template src="skin:knob.xml">
                                             <SetVariable name="tooltip">balance</SetVariable>
-                                            <SetVariable name="group">[Master]</SetVariable>
+                                            <SetVariable name="group">Master</SetVariable>
                                             <SetVariable name="control">balance</SetVariable>
                                             <SetVariable name="label">Balance</SetVariable>
                                         </Template>
@@ -256,13 +256,13 @@
                                       <Children>
                                           <Template src="skin:knob.xml">
                                             <SetVariable name="tooltip">headphone_gain</SetVariable>
-                                            <SetVariable name="group">[Master]</SetVariable>
+                                            <SetVariable name="group">Master</SetVariable>
                                             <SetVariable name="control">headGain</SetVariable>
                                             <SetVariable name="label">Head Gain</SetVariable>
                                           </Template>
                                           <Template src="skin:knob.xml">
                                             <SetVariable name="tooltip">headMix</SetVariable>
-                                            <SetVariable name="group">[Master]</SetVariable>
+                                            <SetVariable name="group">Master</SetVariable>
                                             <SetVariable name="control">headMix</SetVariable>
                                             <SetVariable name="label">Pre/Main</SetVariable>
                                           </Template>

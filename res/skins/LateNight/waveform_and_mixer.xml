@@ -199,7 +199,7 @@
                         </WidgetGroup>
                         <Template src="skin:vumeter_latency.xml">
                           <SetVariable name="TooltipId">audio_latency_usage</SetVariable>
-                          <SetVariable name="group">[Master]</SetVariable>
+                          <SetVariable name="group">Master</SetVariable>
                           <SetVariable name="control">audio_latency_usage</SetVariable>
                         </Template>
                       </Children>

@@ -659,7 +659,6 @@ class MixxxCore(Feature):
                    "waveform/renderers/waveformrendererendoftrack.cpp",
                    "waveform/renderers/waveformrendererpreroll.cpp",
 
-                   "waveform/renderers/waveformrendererfilteredsignal.cpp",
                    "waveform/renderers/waveformrendererhsv.cpp",
                    "waveform/renderers/waveformrendererrgb.cpp",
                    "waveform/renderers/qtwaveformrendererfilteredsignal.cpp",

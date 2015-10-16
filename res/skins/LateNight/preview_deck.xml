@@ -46,7 +46,7 @@
                           margin: 3px;
                           }
                         </Style>
-                        <Group>[PreviewDeck1]</Group>
+                        <Group>PreviewDeck1</Group>
                       </Text>
                     </Children>
                   </WidgetGroup>
@@ -103,7 +103,7 @@
                   </PushButton>
                   <Overview>
                     <TooltipId>waveform_overview</TooltipId>
-                    <Group>[PreviewDeck1]</Group>
+                    <Group>PreviewDeck1</Group>
                     <Size>me,24f</Size>
                     <BgColor></BgColor>
                     <BgColor>#FFFFFF</BgColor>

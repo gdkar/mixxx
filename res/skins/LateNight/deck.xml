@@ -97,7 +97,7 @@
                                   Unicode, Segoe UI, Arial, Verdana, sans-serif;
                                   background-color: transparent; padding: 0px; margin: 0px;}
                               </Style>
-                              <Group>[Channel<Variable name="channum"/>]</Group>
+                              <Group>Channel<Variable name="channum"/></Group>
                               <SizePolicy>min,f</SizePolicy>
                               <Size>-1,17</Size>
                               <Connection>

@@ -96,8 +96,8 @@
                         <SizePolicy>max,</SizePolicy>
                         <Style>
                         </Style>
-                        <NextControl>[Deere],key_layout_next</NextControl>
-                        <PrevControl>[Deere],key_layout_prev</PrevControl>
+                        <NextControl>Deere,key_layout_next</NextControl>
+                        <PrevControl>Deere,key_layout_prev</PrevControl>
                         <Children>
                           <WidgetGroup>
                             <Layout>stacked</Layout>
@@ -233,8 +233,8 @@
                         <SizePolicy>max,</SizePolicy>
                         <Style>
                         </Style>
-                        <NextControl>[Deere],bpm_layout_next</NextControl>
-                        <PrevControl>[Deere],bpm_layout_prev</PrevControl>
+                        <NextControl>Deere,bpm_layout_next</NextControl>
+                        <PrevControl>Deere,bpm_layout_prev</PrevControl>
                         <Children>
                           <WidgetGroup>
                             <Layout>stacked</Layout>

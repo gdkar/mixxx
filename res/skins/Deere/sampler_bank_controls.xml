@@ -31,7 +31,7 @@
         <SetVariable name="state_1_text">1</SetVariable>
         <SetVariable name="state_1_pressed"></SetVariable>
         <SetVariable name="state_1_unpressed"></SetVariable>
-        <SetVariable name="left_connection_control">[Deere],sampler_bank_1</SetVariable>
+        <SetVariable name="left_connection_control">Deere,sampler_bank_1</SetVariable>
       </Template>
 
       <Template src="skin:left_2state_button.xml">
@@ -47,7 +47,7 @@
         <SetVariable name="state_1_text">2</SetVariable>
         <SetVariable name="state_1_pressed"></SetVariable>
         <SetVariable name="state_1_unpressed"></SetVariable>
-        <SetVariable name="left_connection_control">[Deere],sampler_bank_2</SetVariable>
+        <SetVariable name="left_connection_control">Deere,sampler_bank_2</SetVariable>
       </Template>
 
       <Template src="skin:left_2state_button.xml">
@@ -63,7 +63,7 @@
         <SetVariable name="state_1_text">3</SetVariable>
         <SetVariable name="state_1_pressed"></SetVariable>
         <SetVariable name="state_1_unpressed"></SetVariable>
-        <SetVariable name="left_connection_control">[Deere],sampler_bank_3</SetVariable>
+        <SetVariable name="left_connection_control">Deere,sampler_bank_3</SetVariable>
       </Template>
 
       <Template src="skin:left_2state_button.xml">
@@ -79,7 +79,7 @@
         <SetVariable name="state_1_text">4</SetVariable>
         <SetVariable name="state_1_pressed"></SetVariable>
         <SetVariable name="state_1_unpressed"></SetVariable>
-        <SetVariable name="left_connection_control">[Deere],sampler_bank_4</SetVariable>
+        <SetVariable name="left_connection_control">Deere,sampler_bank_4</SetVariable>
       </Template>
     </Children>
     <Connection>
@@ -117,7 +117,7 @@
             <SetVariable name="state_1_text">1</SetVariable>
             <SetVariable name="state_1_pressed"></SetVariable>
             <SetVariable name="state_1_unpressed"></SetVariable>
-            <SetVariable name="left_connection_control">[Deere],sampler_bank_1</SetVariable>
+            <SetVariable name="left_connection_control">Deere,sampler_bank_1</SetVariable>
           </Template>
           <Template src="skin:left_2state_button.xml">
             <!-- TODO(jus): Add missing string to src/skin/tooltips.cpp -->
@@ -132,7 +132,7 @@
             <SetVariable name="state_1_text">2</SetVariable>
             <SetVariable name="state_1_pressed"></SetVariable>
             <SetVariable name="state_1_unpressed"></SetVariable>
-            <SetVariable name="left_connection_control">[Deere],sampler_bank_2</SetVariable>
+            <SetVariable name="left_connection_control">Deere,sampler_bank_2</SetVariable>
           </Template>
         </Children>
       </WidgetGroup>
@@ -153,7 +153,7 @@
             <SetVariable name="state_1_text">3</SetVariable>
             <SetVariable name="state_1_pressed"></SetVariable>
             <SetVariable name="state_1_unpressed"></SetVariable>
-            <SetVariable name="left_connection_control">[Deere],sampler_bank_3</SetVariable>
+            <SetVariable name="left_connection_control">Deere,sampler_bank_3</SetVariable>
           </Template>
           <Template src="skin:left_2state_button.xml">
             <!-- TODO(jus): Add missing string to src/skin/tooltips.cpp -->
@@ -168,7 +168,7 @@
             <SetVariable name="state_1_text">4</SetVariable>
             <SetVariable name="state_1_pressed"></SetVariable>
             <SetVariable name="state_1_unpressed"></SetVariable>
-            <SetVariable name="left_connection_control">[Deere],sampler_bank_4</SetVariable>
+            <SetVariable name="left_connection_control">Deere,sampler_bank_4</SetVariable>
           </Template>
         </Children>
       </WidgetGroup>
@@ -188,7 +188,7 @@
             <SetVariable name="state_0_text">Load</SetVariable>
             <SetVariable name="state_0_pressed"></SetVariable>
             <SetVariable name="state_0_unpressed"></SetVariable>
-            <SetVariable name="left_connection_control">[Sampler],LoadSamplerBank</SetVariable>
+            <SetVariable name="left_connection_control">Sampler,LoadSamplerBank</SetVariable>
           </Template>
 
           <Template src="skin:left_1state_button.xml">
@@ -201,7 +201,7 @@
             <SetVariable name="state_0_text">Save</SetVariable>
             <SetVariable name="state_0_pressed"></SetVariable>
             <SetVariable name="state_0_unpressed"></SetVariable>
-            <SetVariable name="left_connection_control">[Sampler],SaveSamplerBank</SetVariable>
+            <SetVariable name="left_connection_control">Sampler,SaveSamplerBank</SetVariable>
           </Template>
         </Children>
       </WidgetGroup>

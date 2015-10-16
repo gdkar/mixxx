@@ -6,7 +6,7 @@
     group: The group for the controls.
 -->
 <Template>
-  <SetVariable name="group">[EffectRack<Variable name="EffectRack"/>_EffectUnit<Variable name="EffectUnit"/>]</SetVariable>
+  <SetVariable name="group">EffectRack<Variable name="EffectRack"/>_EffectUnit<Variable name="EffectUnit"/></SetVariable>
   <WidgetGroup>
     <ObjectName>EffectUnit<Variable name="EffectUnit"/></ObjectName>
     <Layout>vertical</Layout>
@@ -402,32 +402,32 @@
         <Children>
           <Template src="skin:effect_chain_group_control_button.xml">
             <SetVariable name="group_name">Head</SetVariable>
-            <SetVariable name="group_group">[Headphone]</SetVariable>
+            <SetVariable name="group_group">Headphone</SetVariable>
           </Template>
 
           <Template src="skin:effect_chain_group_control_button.xml">
             <SetVariable name="group_name">Master</SetVariable>
-            <SetVariable name="group_group">[Master]</SetVariable>
+            <SetVariable name="group_group">Master</SetVariable>
           </Template>
 
           <Template src="skin:effect_chain_group_control_button.xml">
             <SetVariable name="group_name">CH1</SetVariable>
-            <SetVariable name="group_group">[Channel1]</SetVariable>
+            <SetVariable name="group_group">Channel1</SetVariable>
           </Template>
 
           <Template src="skin:effect_chain_group_control_button.xml">
             <SetVariable name="group_name">CH2</SetVariable>
-            <SetVariable name="group_group">[Channel2]</SetVariable>
+            <SetVariable name="group_group">Channel2</SetVariable>
           </Template>
 
           <Template src="skin:effect_chain_group_control_button.xml">
             <SetVariable name="group_name">CH3</SetVariable>
-            <SetVariable name="group_group">[Channel3]</SetVariable>
+            <SetVariable name="group_group">Channel3</SetVariable>
           </Template>
 
           <Template src="skin:effect_chain_group_control_button.xml">
             <SetVariable name="group_name">CH4</SetVariable>
-            <SetVariable name="group_group">[Channel4]</SetVariable>
+            <SetVariable name="group_group">Channel4</SetVariable>
           </Template>
 
           <!-- Optionally display Mic 1-4 and Aux 1-4 FX arm buttons if these
@@ -444,7 +444,7 @@
                 <Children>
                   <Template src="skin:effect_chain_group_control_button.xml">
                     <SetVariable name="group_name">MIC1</SetVariable>
-                    <SetVariable name="group_group">[Microphone]</SetVariable>
+                    <SetVariable name="group_group">Microphone</SetVariable>
                   </Template>
                 </Children>
                 <Connection>
@@ -458,7 +458,7 @@
                 <Children>
                   <Template src="skin:effect_chain_group_control_button.xml">
                     <SetVariable name="group_name">MIC2</SetVariable>
-                    <SetVariable name="group_group">[Microphone2]</SetVariable>
+                    <SetVariable name="group_group">Microphone2</SetVariable>
                   </Template>
                 </Children>
                 <Connection>
@@ -472,7 +472,7 @@
                 <Children>
                   <Template src="skin:effect_chain_group_control_button.xml">
                     <SetVariable name="group_name">MIC3</SetVariable>
-                    <SetVariable name="group_group">[Microphone3]</SetVariable>
+                    <SetVariable name="group_group">Microphone3</SetVariable>
                   </Template>
                 </Children>
                 <Connection>
@@ -486,7 +486,7 @@
                 <Children>
                   <Template src="skin:effect_chain_group_control_button.xml">
                     <SetVariable name="group_name">MIC4</SetVariable>
-                    <SetVariable name="group_group">[Microphone4]</SetVariable>
+                    <SetVariable name="group_group">Microphone4</SetVariable>
                   </Template>
                 </Children>
                 <Connection>
@@ -500,7 +500,7 @@
                   <Children>
                   <Template src="skin:effect_chain_group_control_button.xml">
                     <SetVariable name="group_name">Aux1</SetVariable>
-                    <SetVariable name="group_group">[Auxiliary1]</SetVariable>
+                    <SetVariable name="group_group">Auxiliary1</SetVariable>
                   </Template>
                 </Children>
                 <Connection>
@@ -514,7 +514,7 @@
                   <Children>
                   <Template src="skin:effect_chain_group_control_button.xml">
                     <SetVariable name="group_name">Aux2</SetVariable>
-                    <SetVariable name="group_group">[Auxiliary2]</SetVariable>
+                    <SetVariable name="group_group">Auxiliary2</SetVariable>
                   </Template>
                 </Children>
                 <Connection>
@@ -528,7 +528,7 @@
                   <Children>
                   <Template src="skin:effect_chain_group_control_button.xml">
                     <SetVariable name="group_name">Aux3</SetVariable>
-                    <SetVariable name="group_group">[Auxiliary3]</SetVariable>
+                    <SetVariable name="group_group">Auxiliary3</SetVariable>
                   </Template>
                 </Children>
                 <Connection>
@@ -542,7 +542,7 @@
                   <Children>
                   <Template src="skin:effect_chain_group_control_button.xml">
                     <SetVariable name="group_name">Aux4</SetVariable>
-                    <SetVariable name="group_group">[Auxiliary4]</SetVariable>
+                    <SetVariable name="group_group">Auxiliary4</SetVariable>
                   </Template>
                 </Children>
                 <Connection>

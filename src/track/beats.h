@@ -1,6 +1,4 @@
-#ifndef BEATS_H
-#define BEATS_H
-
+_Pragma("once")
 #include <QString>
 #include <QList>
 #include <QByteArray>
@@ -97,23 +95,17 @@ class Beats {
     // Add a beat at location dBeatSample. Beats instance must have the
     // capability BEATSCAP_ADDREMOVE.
     virtual void addBeat(double dBeatSample) = 0;
-
     // Remove a beat at location dBeatSample. Beats instance must have the
     // capability BEATSCAP_ADDREMOVE.
     virtual void removeBeat(double dBeatSample) = 0;
-
     // Translate all beats in the song by dNumSamples samples. Beats that lie
     // before the start of the track or after the end of the track are not
     // removed. Beats instance must have the capability BEATSCAP_TRANSLATE.
     virtual void translate(double dNumSamples) = 0;
-
     // Scale the position of every beat in the song by dScalePercentage. Beats
     // class must have the capability BEATSCAP_SCALE.
     virtual void scale(double dScalePercentage) = 0;
-
     // Adjust the beats so the global average BPM matches dBpm. Beats class must
     // have the capability BEATSCAP_SET.
     virtual void setBpm(double dBpm) = 0;
 };
-
-#endif /* BEATS_H */

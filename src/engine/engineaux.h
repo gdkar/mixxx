@@ -2,9 +2,7 @@
 // created 4/8/2011 by Bill Good (bkgood@gmail.com)
 // unapologetically copied from enginemicrophone.h from RJ
 
-#ifndef ENGINEAUX_H
-#define ENGINEAUX_H
-
+_Pragma("once")
 #include "engine/enginechannel.h"
 #include "engine/enginevumeter.h"
 #include "soundmanagerutil.h"
@@ -48,5 +46,3 @@ class EngineAux : public EngineChannel, public AudioDestination {
     const CSAMPLE* volatile m_sampleBuffer = nullptr;
     bool m_wasActive = false;
 };
-
-#endif // ENGINEAUX_H

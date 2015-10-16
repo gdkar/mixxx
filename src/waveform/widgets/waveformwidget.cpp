@@ -4,7 +4,6 @@
 #include "waveform/renderers/waveformrenderbackground.h"
 #include "waveform/renderers/qtwaveformrendererfilteredsignal.h"
 #include "waveform/renderers/qtwaveformrenderersimplesignal.h"
-#include "waveform/renderers/waveformrendererfilteredsignal.h"
 #include "waveform/renderers/waveformrendererrgb.h"
 #include "waveform/renderers/waveformrendererhsv.h"
 #include "waveform/renderers/waveformrendererpreroll.h"
@@ -16,7 +15,7 @@
 
 #include <QtDebug>
 #include <QWidget>
-
+#include <QMetaEnum>
 
 WaveformWidget::WaveformWidget(const char* group,QWidget *p)
     : QWidget(p),
@@ -32,14 +31,6 @@ WaveformWidget::WaveformWidget(const char* group,QWidget *p)
   m_initSuccess = init ();
 }
 WaveformWidget::~WaveformWidget() = default;
-void WaveformWidget::hold()
-{
-    hide();
-}
-void WaveformWidget::release()
-{
-    show();
-}
 int WaveformWidget::render()
 {
     repaint();
@@ -50,30 +41,28 @@ void WaveformWidget::resize(int width, int height)
     QWidget::resize(width,height);
     WaveformWidgetRenderer::resize(width, height);
 }
-void WaveformWidget::setRenderType(WaveformWidgetType::Type t)
+void WaveformWidget::setRenderType(RenderType t)
 {
   if ( t != m_type )
   {
     delete std::exchange(m_rendererStack[4],nullptr);
     switch ( t )
     {
-      case WaveformWidgetType::SoftwareWaveform:
-        m_rendererStack[4] = new WaveformRendererFilteredSignal(this);
-        break;
-      case WaveformWidgetType::QtSimpleWaveform:
+      case Simple:
         m_rendererStack[4] = new QtWaveformRendererSimpleSignal(this);
         break;
-      case WaveformWidgetType::QtWaveform:
+      case Filtered:
         m_rendererStack[4] = new QtWaveformRendererFilteredSignal(this);
         break;
-      case WaveformWidgetType::HSVWaveform:
+      case HSV:
         m_rendererStack[4] = new WaveformRendererHSV(this);
         break;
-      case WaveformWidgetType::RGBWaveform:
+      case RGB:
         m_rendererStack[4] = new WaveformRendererRGB(this);
         break;
       default:
         qDebug() << "Invalid Waveform Type";
+      case Empty:
         break;
     }
     m_type = t;
@@ -89,7 +78,7 @@ bool WaveformWidget::isValid() const
 {
   return m_initSuccess;
 }
-WaveformWidgetType::Type WaveformWidget::getType() const
+WaveformWidget::RenderType WaveformWidget::getType() const
 {
   return m_type;
 }

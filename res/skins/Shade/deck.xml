@@ -253,7 +253,7 @@
 							<TooltipId>coverart</TooltipId>
 							<ObjectName>DeckCoverArt</ObjectName>
 							<Size>35f,35f</Size>
-							<Group>[Channel<Variable name="channum"/>]</Group>
+							<Group>Channel<Variable name="channum"/></Group>
 						</CoverArt>
 
 						<!--
@@ -638,18 +638,17 @@
 								<Number>0</Number>
 								<Pressed>btn_keylock1.png</Pressed>
 								<Unpressed>btn_keylock1.png</Unpressed>
-							</State>
+              </State>
 							<State>
 								<Number>1</Number>
 								<Pressed>btn_keylock1_over.png</Pressed>
 								<Unpressed>btn_keylock1_over.png</Unpressed>
 							</State>
-							<Pos>295,180</Pos>
+              <Pos>295,180</Pos>
 							<Connection>
 								<ConfigKey>Channel<Variable name="channum"/>,keylock</ConfigKey>
 							</Connection>
 						</PushButton>
-	
 						<!--
 						**********************************************
 						Button - Quantize

@@ -1,6 +1,4 @@
-#ifndef BEAT_PREFERENCES_H
-#define BEAT_PREFERENCES_H
-
+_Pragma("once")
 #define VAMP_CONFIG_KEY "Vamp"
 
 // VAMP_CONFIG_KEY Preferences
@@ -19,5 +17,3 @@
 #define BPM_RANGE_START "BPMRangeStart"
 #define BPM_RANGE_END "BPMRangeEnd"
 #define BPM_ABOVE_RANGE_ENABLED "BPMAboveRangeEnabled"
-
-#endif /* BEAT_PREFERENCES_H */

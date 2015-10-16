@@ -11,8 +11,8 @@
     <Layout>horizontal</Layout>
     <MinimumSize>-1,-1</MinimumSize>
     <SizePolicy>max,min</SizePolicy>
-    <NextControl>[LoopMove],next</NextControl>
-    <PrevControl>[LoopMove],prev</PrevControl>
+    <NextControl>LoopMove,next</NextControl>
+    <PrevControl>LoopMove,prev</PrevControl>
     <Children>
        <!-- Set moving loops 4 beats as default for audible effect on first try. Later user changes persist. -->
        <WidgetGroup>
@@ -34,7 +34,7 @@
              <SetVariable name="state_0_text">4</SetVariable>
              <SetVariable name="state_0_pressed"></SetVariable>
              <SetVariable name="state_0_unpressed"></SetVariable>
-             <SetVariable name="left_connection_control">[LoopMove],next</SetVariable>
+             <SetVariable name="left_connection_control">LoopMove,next</SetVariable>
            </Template>
 
            <Template src="skin:loopmove_button.xml">
@@ -68,7 +68,7 @@
              <SetVariable name="state_0_text">8</SetVariable>
              <SetVariable name="state_0_pressed"></SetVariable>
              <SetVariable name="state_0_unpressed"></SetVariable>
-             <SetVariable name="left_connection_control">[LoopMove],next</SetVariable>
+             <SetVariable name="left_connection_control">LoopMove,next</SetVariable>
            </Template>
 
           <Template src="skin:loopmove_button.xml">
@@ -100,7 +100,7 @@
              <SetVariable name="state_0_text">16</SetVariable>
              <SetVariable name="state_0_pressed"></SetVariable>
              <SetVariable name="state_0_unpressed"></SetVariable>
-             <SetVariable name="left_connection_control">[LoopMove],next</SetVariable>
+             <SetVariable name="left_connection_control">LoopMove,next</SetVariable>
            </Template>
 
            <Template src="skin:loopmove_button.xml">
@@ -132,7 +132,7 @@
              <SetVariable name="state_0_text">32</SetVariable>
              <SetVariable name="state_0_pressed"></SetVariable>
              <SetVariable name="state_0_unpressed"></SetVariable>
-             <SetVariable name="left_connection_control">[LoopMove],next</SetVariable>
+             <SetVariable name="left_connection_control">LoopMove,next</SetVariable>
            </Template>
 
           <Template src="skin:loopmove_button.xml">
@@ -164,7 +164,7 @@
             <SetVariable name="state_0_text">64</SetVariable>
             <SetVariable name="state_0_pressed"></SetVariable>
             <SetVariable name="state_0_unpressed"></SetVariable>
-            <SetVariable name="left_connection_control">[LoopMove],next</SetVariable>
+            <SetVariable name="left_connection_control">LoopMove,next</SetVariable>
           </Template>
 
           <Template src="skin:loopmove_button.xml">
@@ -196,7 +196,7 @@
              <SetVariable name="state_0_text">1/32</SetVariable>
              <SetVariable name="state_0_pressed"></SetVariable>
              <SetVariable name="state_0_unpressed"></SetVariable>
-             <SetVariable name="left_connection_control">[LoopMove],next</SetVariable>
+             <SetVariable name="left_connection_control">LoopMove,next</SetVariable>
            </Template>
 
          <Template src="skin:loopmove_button.xml">
@@ -228,7 +228,7 @@
              <SetVariable name="state_0_text">1/16</SetVariable>
              <SetVariable name="state_0_pressed"></SetVariable>
              <SetVariable name="state_0_unpressed"></SetVariable>
-             <SetVariable name="left_connection_control">[LoopMove],next</SetVariable>
+             <SetVariable name="left_connection_control">LoopMove,next</SetVariable>
            </Template>
 
          <Template src="skin:loopmove_button.xml">
@@ -260,7 +260,7 @@
              <SetVariable name="state_0_text">1/8</SetVariable>
              <SetVariable name="state_0_pressed"></SetVariable>
              <SetVariable name="state_0_unpressed"></SetVariable>
-             <SetVariable name="left_connection_control">[LoopMove],next</SetVariable>
+             <SetVariable name="left_connection_control">LoopMove,next</SetVariable>
            </Template>
 
            <Template src="skin:loopmove_button.xml">
@@ -292,7 +292,7 @@
              <SetVariable name="state_0_text">1/4</SetVariable>
              <SetVariable name="state_0_pressed"></SetVariable>
              <SetVariable name="state_0_unpressed"></SetVariable>
-             <SetVariable name="left_connection_control">[LoopMove],next</SetVariable>
+             <SetVariable name="left_connection_control">LoopMove,next</SetVariable>
            </Template>
 
            <Template src="skin:loopmove_button.xml">
@@ -324,7 +324,7 @@
              <SetVariable name="state_0_text">1/2</SetVariable>
              <SetVariable name="state_0_pressed"></SetVariable>
              <SetVariable name="state_0_unpressed"></SetVariable>
-             <SetVariable name="left_connection_control">[LoopMove],next</SetVariable>
+             <SetVariable name="left_connection_control">LoopMove,next</SetVariable>
            </Template>
 
            <Template src="skin:loopmove_button.xml">
@@ -356,7 +356,7 @@
              <SetVariable name="state_0_text">1</SetVariable>
              <SetVariable name="state_0_pressed"></SetVariable>
              <SetVariable name="state_0_unpressed"></SetVariable>
-             <SetVariable name="left_connection_control">[LoopMove],next</SetVariable>
+             <SetVariable name="left_connection_control">LoopMove,next</SetVariable>
            </Template>
 
            <Template src="skin:loopmove_button.xml">
@@ -388,7 +388,7 @@
              <SetVariable name="state_0_text">2</SetVariable>
              <SetVariable name="state_0_pressed"></SetVariable>
              <SetVariable name="state_0_unpressed"></SetVariable>
-             <SetVariable name="left_connection_control">[LoopMove],next</SetVariable>
+             <SetVariable name="left_connection_control">LoopMove,next</SetVariable>
            </Template>
 
            <Template src="skin:loopmove_button.xml">

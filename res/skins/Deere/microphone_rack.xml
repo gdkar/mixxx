@@ -33,20 +33,20 @@
                        to the preferences pane for easy set up. Once Mic 1 is
                        set up, this widget hides itself. -->
                   <Template src="skin:microphone_talkover_button.xml">
-                    <SetVariable name="group">[Microphone<Variable name="i"/>]</SetVariable>
+                    <SetVariable name="group">Microphone<Variable name="i"/></SetVariable>
                     <SetVariable name="TooltipId">microphone_talkover</SetVariable>
                     <SetVariable name="talk_text">Talk</SetVariable>
                   </Template>
 
                   <Template src="skin:vumeter.xml">
-                    <SetVariable name="group">[Microphone<Variable name="i"/>]</SetVariable>
+                    <SetVariable name="group">Microphone<Variable name="i"/></SetVariable>
                     <SetVariable name="TooltipId">microphone_VuMeter</SetVariable>
                     <SetVariable name="control">VuMeter</SetVariable>
                   </Template>
 
                   <Template src="skin:knob_with_button.xml">
                     <SetVariable name="TooltipId">microphone_pregain</SetVariable>
-                    <SetVariable name="group">[Microphone<Variable name="i"/>]</SetVariable>
+                    <SetVariable name="group">Microphone<Variable name="i"/></SetVariable>
                     <SetVariable name="control">pregain</SetVariable>
                     <SetVariable name="color">red</SetVariable>
                     <SetVariable name="button_TooltipId">mute</SetVariable>
@@ -100,7 +100,7 @@
               </PushButton>
 
               <Template src="skin:knob_with_label.xml">
-                <SetVariable name="group">[Master]</SetVariable>
+                <SetVariable name="group">Master</SetVariable>
                 <SetVariable name="control">duckStrength</SetVariable>
                 <!-- TODO(jus): Add missing string to src/skin/tooltips.cpp -->
                 <SetVariable name="TooltipId"></SetVariable>

@@ -1,5 +1,5 @@
 <Template>
-    <SetVariable name="group">[Channel<Variable name="channum"/>]</SetVariable>
+    <SetVariable name="group">Channel<Variable name="channum"/></SetVariable>
     <WidgetGroup>
         <ObjectName>MixerChannel</ObjectName>
         <Layout>vertical</Layout>
@@ -34,7 +34,7 @@
                     <Template src="skin:knob_sized.xml">
                        <SetVariable name="width">48</SetVariable>
                        <SetVariable name="height">41</SetVariable>
-                       <SetVariable name="group">[Channel<Variable name="channum"/>]</SetVariable>
+                       <SetVariable name="group">Channel<Variable name="channum"/></SetVariable>
                        <SetVariable name="control">pregain</SetVariable>
                        <SetVariable name="label">gain</SetVariable>
                     </Template>

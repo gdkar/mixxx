@@ -12,7 +12,7 @@
     <MinimumSize>0,0</MinimumSize>
     <Children>
       <!-- Main Library -->
-      <WidgetGroup trigger="[Library],show_library">
+      <WidgetGroup trigger="Library,show_library">
         <ObjectName>LibraryExpanded</ObjectName>
         <Layout>vertical</Layout>
         <!-- Fixed is interesting here. Ignore is the only thing that lets it
@@ -25,7 +25,7 @@
             <ObjectName>LibrarySplitter</ObjectName>
             <Orientation>horizontal</Orientation>
             <SizePolicy>me,me</SizePolicy>
-            <SplitSizesConfigKey>[Deere],LibrarySidebarSplitSize</SplitSizesConfigKey>
+            <SplitSizesConfigKey>Deere,LibrarySidebarSplitSize</SplitSizesConfigKey>
             <SplitSizes>2,8</SplitSizes>
             <Children>
               <WidgetGroup>
@@ -37,7 +37,7 @@
                       <Template src="skin:hide_show_button.xml">
                         <SetVariable name="TooltipId">show_library</SetVariable>
                         <SetVariable name="object_name">LibraryToggle</SetVariable>
-                        <SetVariable name="control">[Library],show_library</SetVariable>
+                        <SetVariable name="control">Library,show_library</SetVariable>
                       </Template>
                       <SearchBox>
                       </SearchBox>
@@ -53,7 +53,7 @@
                     <Children>
                       <Template src="skin:vumeter.xml">
                         <SetVariable name="TooltipId">channel_VuMeter</SetVariable>>
-                        <SetVariable name="group">[PreviewDeck1]</SetVariable>
+                        <SetVariable name="group">PreviewDeck1</SetVariable>
                         <SetVariable name="control">VuMeter</SetVariable>
                       </Template>
 
@@ -64,7 +64,7 @@
                           <Text>
                           <TooltipId>text</TooltipId>
                             <SizePolicy>me,min</SizePolicy>
-                            <Group>[PreviewDeck1]</Group>
+                            <Group>PreviewDeck1</Group>
                             <Elide>right</Elide>
                           </Text>
 
@@ -77,7 +77,7 @@
                             <SetVariable name="state_0_text"></SetVariable>
                             <SetVariable name="state_0_pressed">icon/ic_eject_48px.svg</SetVariable>
                             <SetVariable name="state_0_unpressed">icon/ic_eject_48px.svg</SetVariable>
-                            <SetVariable name="left_connection_control">[PreviewDeck1],eject</SetVariable>
+                            <SetVariable name="left_connection_control">PreviewDeck1,eject</SetVariable>
                           </Template>
                         </Children>
                       </WidgetGroup>
@@ -98,14 +98,14 @@
                             <SetVariable name="state_1_text"></SetVariable>
                             <SetVariable name="state_1_pressed">icon/ic_pause_48px.svg</SetVariable>
                             <SetVariable name="state_1_unpressed">icon/ic_pause_48px.svg</SetVariable>
-                            <SetVariable name="left_connection_control">[PreviewDeck1],play</SetVariable>
-                            <SetVariable name="right_connection_control">[PreviewDeck1],start</SetVariable>
+                            <SetVariable name="left_connection_control">PreviewDeck1,play</SetVariable>
+                            <SetVariable name="right_connection_control">PreviewDeck1,start</SetVariable>
                           </Template>
 
                           <Overview>
                             <TooltipId>waveform_overview</TooltipId>
                             <Style></Style>
-                            <Group>[PreviewDeck1]</Group>
+                            <Group>PreviewDeck1</Group>
                             <Size>me,30f</Size>
                             <BgColor></BgColor>
                             <SignalHighColor>#FFE300</SignalHighColor>
@@ -149,7 +149,7 @@
                     <Orientation>vertical</Orientation>
                     <SizePolicy>me,me</SizePolicy>
                     <MinimumSize>30,30</MinimumSize>
-                    <SplitSizesConfigKey>[Deere],LibraryCoverartSplitSize</SplitSizesConfigKey>
+                    <SplitSizesConfigKey>Deere,LibraryCoverartSplitSize</SplitSizesConfigKey>
                     <SplitSizes>2,8</SplitSizes>
                     <Children>
                       <LibrarySidebar>
@@ -187,7 +187,7 @@
           <Template src="skin:hide_show_button.xml">
             <SetVariable name="TooltipId">show_library</SetVariable>
             <SetVariable name="object_name">LibraryToggle</SetVariable>
-            <SetVariable name="control">[Library],show_library</SetVariable>
+            <SetVariable name="control">Library,show_library</SetVariable>
           </Template>
         </Children>
       </WidgetGroup>

@@ -31,7 +31,7 @@
 											text-align: left;
 											padding-left: 1px; }
 									</Style>
-									<Group>[Sampler<Variable name="samplernum"/>]</Group>
+									<Group>Sampler<Variable name="samplernum"/></Group>
 									<Pos>2,3</Pos>
 									<Size>165f,21</Size>
 									<Elide>right</Elide>
@@ -47,7 +47,7 @@
 											padding-left: 1px; }
 									</Style>
 									<Property>title</Property>
-									<Group>[Sampler<Variable name="samplernum"/>]</Group>
+									<Group>Sampler<Variable name="samplernum"/></Group>
 									<Pos>4,4</Pos>
 									<Size>258f,20</Size>
 									<Elide>right</Elide>
@@ -68,7 +68,7 @@
 											text-align: left;
 											padding-left: 1px; }
 									</Style>
-									<Group>[Sampler<Variable name="samplernum"/>]</Group>
+									<Group>Sampler<Variable name="samplernum"/></Group>
 									<Pos>164,3</Pos>
 									<Size>55,21</Size>
 									<!--CSS alignments not respected see bug lp:605530 , lets call <Alignment>-->
@@ -114,7 +114,7 @@
 								<Overview>
 									<TooltipId>waveform_overview</TooltipId>
 									<Style></Style>
-									<Group>[Sampler<Variable name="samplernum"/>]</Group>
+									<Group>Sampler<Variable name="samplernum"/></Group>
 									<Pos>36,25</Pos>
 									<Size>139,35</Size>
 									<BgColor>#8D98A3</BgColor>

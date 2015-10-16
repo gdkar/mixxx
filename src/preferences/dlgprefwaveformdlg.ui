@@ -93,19 +93,6 @@
        </property>
       </widget>
      </item>
-     <item row="10" column="0">
-      <widget class="QLabel" name="openGlStatusLabel_2">
-       <property name="toolTip">
-        <string/>
-       </property>
-       <property name="text">
-        <string>Average frame rate</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-       </property>
-      </widget>
-     </item>
      <item row="3" column="0">
       <widget class="QLabel" name="endOfTrackWarningTimeLabel">
        <property name="text">
@@ -400,26 +387,6 @@
        </property>
        <property name="buddy">
         <cstring>defaultZoomComboBox</cstring>
-       </property>
-      </widget>
-     </item>
-     <item row="10" column="1">
-      <widget class="QLabel" name="frameRateAverage">
-       <property name="toolTip">
-        <string>Displays the actual frame rate.</string>
-       </property>
-       <property name="text">
-        <string/>
-       </property>
-      </widget>
-     </item>
-     <item row="9" column="1">
-      <widget class="QLabel" name="openGlStatusIcon">
-       <property name="toolTip">
-        <string>Displays which OpenGL version is supported by the current platform.</string>
-       </property>
-       <property name="text">
-        <string/>
        </property>
       </widget>
      </item>

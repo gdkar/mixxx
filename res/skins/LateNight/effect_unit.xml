@@ -6,7 +6,7 @@
     group: The group for the controls.
 -->
 <Template>
-  <SetVariable name="group">[EffectRack<Variable name="EffectRack"/>_EffectUnit<Variable name="EffectUnit"/>]</SetVariable>
+  <SetVariable name="group">EffectRack<Variable name="EffectRack"/>_EffectUnit<Variable name="EffectUnit"/></SetVariable>
   <WidgetGroup>
     <ObjectName>EffectUnit<Variable name="EffectUnit"/></ObjectName>
     <Layout>vertical</Layout>
@@ -172,11 +172,11 @@
                     <Children>
                       <Template src="skin:effect_unit_group_control_button.xml">
                         <SetVariable name="group_name">MASTER</SetVariable>
-                        <SetVariable name="group_group">[Master]</SetVariable>
+                        <SetVariable name="group_group">Master</SetVariable>
                       </Template>
                       <Template src="skin:effect_unit_group_control_button.xml">
                         <SetVariable name="group_name">HEAD</SetVariable>
-                        <SetVariable name="group_group">[Headphone]</SetVariable>
+                        <SetVariable name="group_group">Headphone</SetVariable>
                       </Template>
                     </Children>
                   </WidgetGroup>
@@ -186,12 +186,12 @@
                     <Children>
                       <Template src="skin:effect_unit_group_control_button.xml">
                         <SetVariable name="group_name">CH1</SetVariable>
-                        <SetVariable name="group_group">[Channel1]</SetVariable>
+                        <SetVariable name="group_group">Channel1</SetVariable>
                       </Template>
 
                       <Template src="skin:effect_unit_group_control_button.xml">
                         <SetVariable name="group_name">CH2</SetVariable>
-                        <SetVariable name="group_group">[Channel2]</SetVariable>
+                        <SetVariable name="group_group">Channel2</SetVariable>
                       </Template>
                     </Children>
                   </WidgetGroup>
@@ -201,12 +201,12 @@
                     <Children>
                       <Template src="skin:effect_unit_group_control_button.xml">
                         <SetVariable name="group_name">CH3</SetVariable>
-                        <SetVariable name="group_group">[Channel3]</SetVariable>
+                        <SetVariable name="group_group">Channel3</SetVariable>
                       </Template>
 
                       <Template src="skin:effect_unit_group_control_button.xml">
                         <SetVariable name="group_name">CH4</SetVariable>
-                        <SetVariable name="group_group">[Channel4]</SetVariable>
+                        <SetVariable name="group_group">Channel4</SetVariable>
                       </Template>
                     </Children>
                   </WidgetGroup>

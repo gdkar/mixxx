@@ -63,7 +63,7 @@
 
       <Template src="skin:knob_with_button.xml">
         <SetVariable name="TooltipId">pregain</SetVariable>
-        <SetVariable name="group">[Sampler<Variable name="i"/>]</SetVariable>
+        <SetVariable name="group">Sampler<Variable name="i"/></SetVariable>
         <SetVariable name="control">pregain</SetVariable>
         <SetVariable name="color">red</SetVariable>
         <SetVariable name="button_TooltipId">mute</SetVariable>

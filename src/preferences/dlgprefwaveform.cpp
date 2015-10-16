@@ -1,3 +1,4 @@
+#include <QMetaEnum>
 #include "dlgprefwaveform.h"
 
 #include "mixxx.h"
@@ -16,11 +17,11 @@ DlgPrefWaveform::DlgPrefWaveform(QWidget* pParent, MixxxMainWindow* pMixxx,
     waveformOverviewComboBox->addItem(tr("HSV")); // "1"
     waveformOverviewComboBox->addItem(tr("RGB")); // "2"
     // Populate waveform options.
-    auto  factory = WaveformWidgetFactory::instance();
-    auto handles = factory->getAvailableTypes();
-    for (int i = 0; i < handles.size(); ++i)
+    auto factory = WaveformWidgetFactory::instance();
+    auto typeEnum = QMetaEnum::fromType<WaveformWidget::RenderType>();
+    for( auto i = 0; i < typeEnum.keyCount();i++)
     {
-        waveformTypeComboBox->addItem(handles[i].getDisplayName(),handles[i].getType());
+      waveformTypeComboBox->addItem(typeEnum.key(i));
     }
     // Populate zoom options.
     for (int i = WaveformWidgetRenderer::s_waveformMinZoom;
@@ -32,51 +33,31 @@ DlgPrefWaveform::DlgPrefWaveform(QWidget* pParent, MixxxMainWindow* pMixxx,
     // slotUpdate can generate rebootMixxxView calls.
     // TODO(XXX): Improve this awkwardness.
     slotUpdate();
-    connect(frameRateSpinBox, SIGNAL(valueChanged(int)),
-            this, SLOT(slotSetFrameRate(int)));
-    connect(endOfTrackWarningTimeSpinBox, SIGNAL(valueChanged(int)),
-            this, SLOT(slotSetWaveformEndRender(int)));
-    connect(frameRateSlider, SIGNAL(valueChanged(int)),
-            frameRateSpinBox, SLOT(setValue(int)));
-    connect(frameRateSpinBox, SIGNAL(valueChanged(int)),
-            frameRateSlider, SLOT(setValue(int)));
-    connect(endOfTrackWarningTimeSlider, SIGNAL(valueChanged(int)),
-            endOfTrackWarningTimeSpinBox, SLOT(setValue(int)));
-    connect(endOfTrackWarningTimeSpinBox, SIGNAL(valueChanged(int)),
-            endOfTrackWarningTimeSlider, SLOT(setValue(int)));
+    connect(frameRateSpinBox, SIGNAL(valueChanged(int)),this, SLOT(slotSetFrameRate(int)));
+    connect(endOfTrackWarningTimeSpinBox, SIGNAL(valueChanged(int)),this, SLOT(slotSetWaveformEndRender(int)));
+    connect(frameRateSlider, SIGNAL(valueChanged(int)),frameRateSpinBox, SLOT(setValue(int)));
+    connect(frameRateSpinBox, SIGNAL(valueChanged(int)),frameRateSlider, SLOT(setValue(int)));
+    connect(endOfTrackWarningTimeSlider, SIGNAL(valueChanged(int)),endOfTrackWarningTimeSpinBox, SLOT(setValue(int)));
+    connect(endOfTrackWarningTimeSpinBox, SIGNAL(valueChanged(int)),endOfTrackWarningTimeSlider, SLOT(setValue(int)));
 
-    connect(waveformTypeComboBox, SIGNAL(activated(int)),
-            this, SLOT(slotSetWaveformType(int)));
-    connect(defaultZoomComboBox, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(slotSetDefaultZoom(int)));
-    connect(synchronizeZoomCheckBox, SIGNAL(clicked(bool)),
-            this, SLOT(slotSetZoomSynchronization(bool)));
-    connect(allVisualGain,SIGNAL(valueChanged(double)),
-            this,SLOT(slotSetVisualGainAll(double)));
-    connect(lowVisualGain,SIGNAL(valueChanged(double)),
-            this,SLOT(slotSetVisualGainLow(double)));
-    connect(midVisualGain,SIGNAL(valueChanged(double)),
-            this,SLOT(slotSetVisualGainMid(double)));
-    connect(highVisualGain,SIGNAL(valueChanged(double)),
-            this,SLOT(slotSetVisualGainHigh(double)));
-    connect(normalizeOverviewCheckBox,SIGNAL(toggled(bool)),
-            this,SLOT(slotSetNormalizeOverview(bool)));
-    connect(factory, SIGNAL(waveformMeasured(float,int)),
-            this, SLOT(slotWaveformMeasured(float,int)));
-    connect(waveformOverviewComboBox,SIGNAL(currentIndexChanged(int)),
-            this,SLOT(slotSetWaveformOverviewType(int)));
+    connect(waveformTypeComboBox, SIGNAL(activated(int)),this, SLOT(slotSetWaveformType(int)));
+    connect(defaultZoomComboBox, SIGNAL(currentIndexChanged(int)),this, SLOT(slotSetDefaultZoom(int)));
+    connect(synchronizeZoomCheckBox, SIGNAL(clicked(bool)),this, SLOT(slotSetZoomSynchronization(bool)));
+    connect(allVisualGain,SIGNAL(valueChanged(double)),this,SLOT(slotSetVisualGainAll(double)));
+    connect(lowVisualGain,SIGNAL(valueChanged(double)),this,SLOT(slotSetVisualGainLow(double)));
+    connect(midVisualGain,SIGNAL(valueChanged(double)),this,SLOT(slotSetVisualGainMid(double)));
+    connect(highVisualGain,SIGNAL(valueChanged(double)),this,SLOT(slotSetVisualGainHigh(double)));
+    connect(normalizeOverviewCheckBox,SIGNAL(toggled(bool)),this,SLOT(slotSetNormalizeOverview(bool)));
+    connect(waveformOverviewComboBox,SIGNAL(currentIndexChanged(int)),this,SLOT(slotSetWaveformOverviewType(int)));
 }
 DlgPrefWaveform::~DlgPrefWaveform() = default;
-void DlgPrefWaveform::slotUpdate() {
+void DlgPrefWaveform::slotUpdate()
+{
     auto factory = WaveformWidgetFactory::instance();
-    if (factory->isOpenGLAvailable()) {
-        openGlStatusIcon->setText(factory->getOpenGLVersion());
-    } else {
-        openGlStatusIcon->setText(tr("OpenGL not available"));
-    }
     auto currentType = factory->getType();
-    int currentIndex = waveformTypeComboBox->findData(currentType);
-    if (currentIndex != -1 && waveformTypeComboBox->currentIndex() != currentIndex) {
+    auto currentIndex = waveformTypeComboBox->findData(currentType);
+    if (currentIndex != -1 && waveformTypeComboBox->currentIndex() != currentIndex)
+    {
         waveformTypeComboBox->setCurrentIndex(currentIndex);
     }
     frameRateSpinBox->setValue(factory->getFrameRate());
@@ -90,106 +71,81 @@ void DlgPrefWaveform::slotUpdate() {
     highVisualGain->setValue(factory->getVisualGain(WaveformWidgetFactory::High));
     normalizeOverviewCheckBox->setChecked(factory->isOverviewNormalized());
     defaultZoomComboBox->setCurrentIndex(factory->getDefaultZoom() - 1);
-
     // By default we set filtered woverview = "0"
-    int overviewType = m_pConfig->getValueString(
-            ConfigKey("Waveform","WaveformOverviewType"), "0").toInt();
-    if (overviewType != waveformOverviewComboBox->currentIndex()) {
+    auto overviewType = m_pConfig->getValueString(ConfigKey("Waveform","WaveformOverviewType"), "0").toInt();
+    if (overviewType != waveformOverviewComboBox->currentIndex())
         waveformOverviewComboBox->setCurrentIndex(overviewType);
-    }
 }
-
-void DlgPrefWaveform::slotApply() {
-}
-
+void DlgPrefWaveform::slotApply() {}
 void DlgPrefWaveform::slotResetToDefaults() {
-    WaveformWidgetFactory* factory = WaveformWidgetFactory::instance();
-
+    auto factory = WaveformWidgetFactory::instance();
     // Get the default we ought to use based on whether the user has OpenGL or
     // not.
-    WaveformWidgetType::Type defaultType = factory->autoChooseWidgetType();
-    int defaultIndex = waveformTypeComboBox->findData(defaultType);
-    if (defaultIndex != -1 && waveformTypeComboBox->currentIndex() != defaultIndex) {
+    auto defaultType = factory->autoChooseWidgetType();
+    auto defaultIndex = waveformTypeComboBox->findData(defaultType);
+    if (defaultIndex != -1 && waveformTypeComboBox->currentIndex() != defaultIndex)
         waveformTypeComboBox->setCurrentIndex(defaultIndex);
-    }
-
     allVisualGain->setValue(1.0);
     lowVisualGain->setValue(1.0);
     midVisualGain->setValue(1.0);
     highVisualGain->setValue(1.0);
-
     // Default zoom level is 3 in WaveformWidgetFactory.
     defaultZoomComboBox->setCurrentIndex(3 + 1);
-
     // Don't synchronize zoom by default.
-    synchronizeZoomCheckBox->setChecked(false);
-
+    synchronizeZoomCheckBox->setChecked(true);
     // Filtered overview.
     waveformOverviewComboBox->setCurrentIndex(0);
-
     // Don't normalize overview.
     normalizeOverviewCheckBox->setChecked(false);
-
     // 30FPS is the default
-    frameRateSlider->setValue(30);
+    frameRateSlider->setValue(60);
     endOfTrackWarningTimeSlider->setValue(30);
 }
-
-void DlgPrefWaveform::slotSetFrameRate(int frameRate) {
+void DlgPrefWaveform::slotSetFrameRate(int frameRate)
+{
     WaveformWidgetFactory::instance()->setFrameRate(frameRate);
 }
-void DlgPrefWaveform::slotSetWaveformEndRender(int endTime) {
+void DlgPrefWaveform::slotSetWaveformEndRender(int endTime)
+{
     WaveformWidgetFactory::instance()->setEndOfTrackWarningTime(endTime);
 }
-void DlgPrefWaveform::slotSetWaveformType(int index) {
+void DlgPrefWaveform::slotSetWaveformType(int index)
+{
     // Ignore sets for -1 since this happens when we clear the combobox.
-    if (index < 0)  return;
-    WaveformWidgetFactory::instance()->setWidgetTypeFromHandle(index);
+    if (index < 0 || index >= QMetaEnum::fromType<WaveformWidget::RenderType>().keyCount())  return;
+    auto type = QMetaEnum::fromType<WaveformWidget::RenderType>().value(index);
+    WaveformWidgetFactory::instance()->setWidgetType(static_cast<WaveformWidget::RenderType>(type));
 }
 void DlgPrefWaveform::slotSetWaveformOverviewType(int index)
 {
     m_pConfig->set(ConfigKey("Waveform","WaveformOverviewType"), ConfigValue(index));
     m_pMixxx->rebootMixxxView();
 }
-
 void DlgPrefWaveform::slotSetDefaultZoom(int index)
 {
     WaveformWidgetFactory::instance()->setDefaultZoom(index + 1);
 }
-
 void DlgPrefWaveform::slotSetZoomSynchronization(bool checked)
 {
     WaveformWidgetFactory::instance()->setZoomSync(checked);
 }
-
 void DlgPrefWaveform::slotSetVisualGainAll(double gain)
 {
     WaveformWidgetFactory::instance()->setVisualGain(WaveformWidgetFactory::All,gain);
 }
-
 void DlgPrefWaveform::slotSetVisualGainLow(double gain)
 {
     WaveformWidgetFactory::instance()->setVisualGain(WaveformWidgetFactory::Low,gain);
 }
-
 void DlgPrefWaveform::slotSetVisualGainMid(double gain)
 {
     WaveformWidgetFactory::instance()->setVisualGain(WaveformWidgetFactory::Mid,gain);
 }
-
 void DlgPrefWaveform::slotSetVisualGainHigh(double gain)
 {
     WaveformWidgetFactory::instance()->setVisualGain(WaveformWidgetFactory::High,gain);
 }
-
 void DlgPrefWaveform::slotSetNormalizeOverview(bool normalize)
 {
     WaveformWidgetFactory::instance()->setOverviewNormalized(normalize);
-}
-
-void DlgPrefWaveform::slotWaveformMeasured(float frameRate, int droppedFrames)
-{
-    frameRateAverage->setText(
-            QString::number((double)frameRate, 'f', 2) + " : " +
-            tr("dropped frames") + " " + QString::number(droppedFrames));
 }

@@ -98,7 +98,7 @@ ControlObject* controlFromConfigKey(ConfigKey key, bool bPersist,
     // button, actually make it a push button and set it to toggle.
     auto controlButton = new ControlPushButton(key, bPersist);
     controlButton->setButtonMode(ControlPushButton::TOGGLE);
-    if (created) { *created = true; }
+    if (created) *created = true;
     return controlButton;
 }
 
@@ -1473,7 +1473,8 @@ void LegacySkinParser::setupConnections(QDomNode node, WBaseWidget* pWidget) {
                 auto shortcut = m_pKeyboard->getKeyboardConfig()->getValueString(configKey);
                 addShortcutToToolTip(pWidget, shortcut, QString(""));
                 const WSliderComposed* pSlider;
-                if (qobject_cast<const  WPushButton*>(pWidget->toQWidget())) {
+                if (qobject_cast<WPushButton*>(pWidget->toQWidget()))
+                {
                     // check for "_activate", "_toggle"
                     auto subkey = ConfigKey{};
                     auto shortcut = QString{};

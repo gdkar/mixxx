@@ -159,7 +159,7 @@
         <Layout>horizontal</Layout>
         <SizePolicy>max,max</SizePolicy>
         <MinimumSize>-1,100</MinimumSize>
-        <NextControl>[Deere],show_coverart</NextControl>
+        <NextControl>Deere,show_coverart</NextControl>
         <PrevControl></PrevControl>
         <Children>
           <WidgetGroup>

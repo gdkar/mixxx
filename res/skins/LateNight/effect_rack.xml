@@ -10,7 +10,7 @@
     <Layout>vertical</Layout>
     <ObjectName>EffectRackContainer</ObjectName>
     <Children>
-        <WidgetGroup trigger="[EffectRack1],show">
+        <WidgetGroup trigger="EffectRack1,show">
           <ObjectName>EffectRackExpanded</ObjectName>
           <SizePolicy>me,min</SizePolicy>
           <Layout>vertical</Layout>

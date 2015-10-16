@@ -6,7 +6,7 @@
     i: The Sampler number (1-indexed)
 -->
 <Template>
-  <SetVariable name="group">[Sampler<Variable name="i"/>]</SetVariable>
+  <SetVariable name="group">Sampler<Variable name="i"/></SetVariable>
   <WidgetGroup>
     <ObjectName>Sampler</ObjectName>
     <Layout>horizontal</Layout>

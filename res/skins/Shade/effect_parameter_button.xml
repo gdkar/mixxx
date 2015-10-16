@@ -59,7 +59,7 @@
 					</State>
 					<Pos>11,57</Pos>
 					<Connection>
-						<ConfigKey>[EffectRack1_EffectUnit<Variable name="effectunitnum"/>_Effect<Variable name="effectnum"/>],button_parameter<Variable name="effectparameternum"/></ConfigKey>
+						<ConfigKey>EffectRack1_EffectUnit<Variable name="effectunitnum"/>_Effect<Variable name="effectnum"/>,button_parameter<Variable name="effectparameternum"/></ConfigKey>
 						<ButtonState>LeftButton</ButtonState>
 					</Connection>
 				</EffectPushButton>
@@ -67,7 +67,7 @@
 		</WidgetGroup>
     	</Children>
     	<Connection>
-      		<ConfigKey>[EffectRack1_EffectUnit<Variable name="effectunitnum"/>_Effect<Variable name="effectnum"/>],button_parameter<Variable name="effectparameternum"/>_loaded</ConfigKey>
+      		<ConfigKey>EffectRack1_EffectUnit<Variable name="effectunitnum"/>_Effect<Variable name="effectnum"/>,button_parameter<Variable name="effectparameternum"/>_loaded</ConfigKey>
       		<BindProperty>visible</BindProperty>
     	</Connection>
   	</WidgetGroup>

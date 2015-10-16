@@ -33,7 +33,7 @@
                 <Text>ON</Text>
               </State>
             <Connection>
-              <ConfigKey>[EffectRack<Variable name="EffectRack"/>_EffectUnit<Variable name="EffectUnit"/>_Effect<Variable name="Effect"/>],button_parameter<Variable name="EffectButtonParameter"/></ConfigKey>
+              <ConfigKey>EffectRack<Variable name="EffectRack"/>_EffectUnit<Variable name="EffectUnit"/>_Effect<Variable name="Effect"/>,button_parameter<Variable name="EffectButtonParameter"/></ConfigKey>
               <ButtonState>LeftButton</ButtonState>
             </Connection>
           </EffectPushButton>
@@ -48,7 +48,7 @@
         </Children>
 
         <Connection>
-          <ConfigKey>[EffectRack<Variable name="EffectRack"/>_EffectUnit<Variable name="EffectUnit"/>_Effect<Variable name="Effect"/>],button_parameter<Variable name="EffectButtonParameter"/>_loaded</ConfigKey>
+          <ConfigKey>EffectRack<Variable name="EffectRack"/>_EffectUnit<Variable name="EffectUnit"/>_Effect<Variable name="Effect"/>,button_parameter<Variable name="EffectButtonParameter"/>_loaded</ConfigKey>
           <BindProperty>visible</BindProperty>
         </Connection>
       </WidgetGroup>

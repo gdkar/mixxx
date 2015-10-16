@@ -137,8 +137,10 @@ void ControlPushButtonBehavior::setValueFromParameter(double dParam, ControlDoub
         } else if (!m_pushTimer.isActive()) {pControl->set(0., nullptr);}
     } else if (m_buttonMode == TOGGLE || m_buttonMode == LONGPRESSLATCHING) {
         // This block makes push-buttons act as toggle buttons.
-        if (m_iNumStates > 1) { // multistate button
-            if (pressed) {
+        if (m_iNumStates > 1)
+        { // multistate button
+            if (pressed)
+            {
                 // This is a possibly race condition if another writer wants
                 // to change the value at the same time. We allow the race here,
                 // because this is possibly what the user expects if he changes
@@ -146,13 +148,17 @@ void ControlPushButtonBehavior::setValueFromParameter(double dParam, ControlDoub
                 double value = pControl->get();
                 value = (int)(value + 1.) % m_iNumStates;
                 pControl->set(value, nullptr);
-                if (m_buttonMode == LONGPRESSLATCHING) {
+                if (m_buttonMode == LONGPRESSLATCHING)
+                {
                     m_pushTimer.setSingleShot(true);
                     m_pushTimer.start(kLongPressLatchingTimeMillis);
                 }
-            } else {
+            }
+            else
+            {
                 double value = pControl->get();
-                if (m_buttonMode == LONGPRESSLATCHING && m_pushTimer.isActive() && value >= 1.) {
+                if (m_buttonMode == LONGPRESSLATCHING && m_pushTimer.isActive() && value >= 1.)
+                {
                     // revert toggle if button is released too early
                     value = (int)(value - 1.) % m_iNumStates;
                     pControl->set(value, nullptr);
@@ -160,7 +166,6 @@ void ControlPushButtonBehavior::setValueFromParameter(double dParam, ControlDoub
             }
         }
     } else { // Not a toggle button (trigger only when button pushed)
-        if (pressed) { pControl->set(1., nullptr);}
-        else         { pControl->set(0., nullptr); }
+        pControl->set(pressed,nullptr);
     }
 }

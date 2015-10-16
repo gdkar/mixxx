@@ -24,7 +24,7 @@
               <Template src="skin:knob_sized_textless.xml">
                  <SetVariable name="width">28</SetVariable>
                  <SetVariable name="height">24</SetVariable>
-                 <SetVariable name="group">[Auxiliary<Variable name="auxnum"/>]</SetVariable>
+                 <SetVariable name="group">Auxiliary<Variable name="auxnum"/></SetVariable>
                  <SetVariable name="control">pregain</SetVariable>
               </Template>
               <WidgetGroup>

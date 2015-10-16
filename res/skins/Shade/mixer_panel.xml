@@ -328,7 +328,7 @@
 							</State>
 							<Pos>11,57</Pos>
 							<Connection>
-								<ConfigKey>EffectRack1_EffectUnit1,group_[BusLeft]_enable</ConfigKey>
+								<ConfigKey>EffectRack1_EffectUnit1,group_BusLeft_enable</ConfigKey>
 								<ButtonState>LeftButton</ButtonState>
 							</Connection>
 						</PushButton>
@@ -349,7 +349,7 @@
 							</State>
 							<Pos>230,57</Pos>
 							<Connection>
-								<ConfigKey>EffectRack1_EffectUnit2,group_[BusRight]_enable</ConfigKey>
+								<ConfigKey>EffectRack1_EffectUnit2,group_BusRight_enable</ConfigKey>
 								<ButtonState>LeftButton</ButtonState>
 							</Connection>
 						</PushButton>
@@ -375,7 +375,7 @@
 							</State>
 							<Pos>95,57</Pos>
 							<Connection>
-								<ConfigKey>EffectRack1_EffectUnit1,group_[Headphone]_enable</ConfigKey>
+								<ConfigKey>EffectRack1_EffectUnit1,group_Headphone_enable</ConfigKey>
 								<ButtonState>LeftButton</ButtonState>
 							</Connection>
 						</PushButton>
@@ -396,7 +396,7 @@
 							</State>
 							<Pos>145,57</Pos>
 							<Connection>
-								<ConfigKey>EffectRack1_EffectUnit2,group_[Headphone]_enable</ConfigKey>
+								<ConfigKey>EffectRack1_EffectUnit2,group_Headphone_enable</ConfigKey>
 								<ButtonState>LeftButton</ButtonState>
 							</Connection>
 						</PushButton>

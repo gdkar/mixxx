@@ -11,8 +11,8 @@
     <Layout>horizontal</Layout>
     <MinimumSize>-1,-1</MinimumSize>
     <SizePolicy>max,max</SizePolicy>
-    <NextControl>[BeatJump],next</NextControl>
-    <PrevControl>[BeatJump],prev</PrevControl>
+    <NextControl>BeatJump,next</NextControl>
+    <PrevControl>BeatJump,prev</PrevControl>
     <Children>
       <!-- Set jumping 4 beats as default for audible effect on first try. Later user changes persist. -->
        <WidgetGroup>
@@ -34,8 +34,8 @@
              <SetVariable name="state_0_text">4</SetVariable>
              <SetVariable name="state_0_pressed"></SetVariable>
              <SetVariable name="state_0_unpressed"></SetVariable>
-             <SetVariable name="left_connection_control">[BeatJump],next</SetVariable>
-             <SetVariable name="right_connection_control">[BeatJump],prev</SetVariable>
+             <SetVariable name="left_connection_control">BeatJump,next</SetVariable>
+             <SetVariable name="right_connection_control">BeatJump,prev</SetVariable>
            </Template>
 
            <Template src="skin:beatjump_button.xml">
@@ -67,8 +67,8 @@
              <SetVariable name="state_0_text">8</SetVariable>
              <SetVariable name="state_0_pressed"></SetVariable>
              <SetVariable name="state_0_unpressed"></SetVariable>
-             <SetVariable name="left_connection_control">[BeatJump],next</SetVariable>
-             <SetVariable name="right_connection_control">[BeatJump],prev</SetVariable>
+             <SetVariable name="left_connection_control">BeatJump,next</SetVariable>
+             <SetVariable name="right_connection_control">BeatJump,prev</SetVariable>
            </Template>
 
           <Template src="skin:beatjump_button.xml">
@@ -100,8 +100,8 @@
              <SetVariable name="state_0_text">16</SetVariable>
              <SetVariable name="state_0_pressed"></SetVariable>
              <SetVariable name="state_0_unpressed"></SetVariable>
-             <SetVariable name="left_connection_control">[BeatJump],next</SetVariable>
-             <SetVariable name="right_connection_control">[BeatJump],prev</SetVariable>
+             <SetVariable name="left_connection_control">BeatJump,next</SetVariable>
+             <SetVariable name="right_connection_control">BeatJump,prev</SetVariable>
            </Template>
 
            <Template src="skin:beatjump_button.xml">
@@ -133,8 +133,8 @@
              <SetVariable name="state_0_text">32</SetVariable>
              <SetVariable name="state_0_pressed"></SetVariable>
              <SetVariable name="state_0_unpressed"></SetVariable>
-             <SetVariable name="left_connection_control">[BeatJump],next</SetVariable>
-             <SetVariable name="right_connection_control">[BeatJump],prev</SetVariable>
+             <SetVariable name="left_connection_control">BeatJump,next</SetVariable>
+             <SetVariable name="right_connection_control">BeatJump,prev</SetVariable>
            </Template>
 
           <Template src="skin:beatjump_button.xml">
@@ -166,8 +166,8 @@
             <SetVariable name="state_0_text">64</SetVariable>
             <SetVariable name="state_0_pressed"></SetVariable>
             <SetVariable name="state_0_unpressed"></SetVariable>
-            <SetVariable name="left_connection_control">[BeatJump],next</SetVariable>
-            <SetVariable name="right_connection_control">[BeatJump],prev</SetVariable>
+            <SetVariable name="left_connection_control">BeatJump,next</SetVariable>
+            <SetVariable name="right_connection_control">BeatJump,prev</SetVariable>
           </Template>
 
           <Template src="skin:beatjump_button.xml">
@@ -199,8 +199,8 @@
              <SetVariable name="state_0_text">1/32</SetVariable>
              <SetVariable name="state_0_pressed"></SetVariable>
              <SetVariable name="state_0_unpressed"></SetVariable>
-             <SetVariable name="left_connection_control">[BeatJump],next</SetVariable>
-             <SetVariable name="right_connection_control">[BeatJump],prev</SetVariable>
+             <SetVariable name="left_connection_control">BeatJump,next</SetVariable>
+             <SetVariable name="right_connection_control">BeatJump,prev</SetVariable>
            </Template>
 
          <Template src="skin:beatjump_button.xml">
@@ -232,8 +232,8 @@
              <SetVariable name="state_0_text">1/16</SetVariable>
              <SetVariable name="state_0_pressed"></SetVariable>
              <SetVariable name="state_0_unpressed"></SetVariable>
-             <SetVariable name="left_connection_control">[BeatJump],next</SetVariable>
-             <SetVariable name="right_connection_control">[BeatJump],prev</SetVariable>
+             <SetVariable name="left_connection_control">BeatJump,next</SetVariable>
+             <SetVariable name="right_connection_control">BeatJump,prev</SetVariable>
            </Template>
 
          <Template src="skin:beatjump_button.xml">
@@ -265,8 +265,8 @@
              <SetVariable name="state_0_text">1/8</SetVariable>
              <SetVariable name="state_0_pressed"></SetVariable>
              <SetVariable name="state_0_unpressed"></SetVariable>
-             <SetVariable name="left_connection_control">[BeatJump],next</SetVariable>
-             <SetVariable name="right_connection_control">[BeatJump],prev</SetVariable>
+             <SetVariable name="left_connection_control">BeatJump,next</SetVariable>
+             <SetVariable name="right_connection_control">BeatJump,prev</SetVariable>
            </Template>
 
            <Template src="skin:beatjump_button.xml">
@@ -298,8 +298,8 @@
              <SetVariable name="state_0_text">1/4</SetVariable>
              <SetVariable name="state_0_pressed"></SetVariable>
              <SetVariable name="state_0_unpressed"></SetVariable>
-             <SetVariable name="left_connection_control">[BeatJump],next</SetVariable>
-             <SetVariable name="right_connection_control">[BeatJump],prev</SetVariable>
+             <SetVariable name="left_connection_control">BeatJump,next</SetVariable>
+             <SetVariable name="right_connection_control">BeatJump,prev</SetVariable>
            </Template>
 
            <Template src="skin:beatjump_button.xml">
@@ -331,8 +331,8 @@
              <SetVariable name="state_0_text">1/2</SetVariable>
              <SetVariable name="state_0_pressed"></SetVariable>
              <SetVariable name="state_0_unpressed"></SetVariable>
-             <SetVariable name="left_connection_control">[BeatJump],next</SetVariable>
-             <SetVariable name="right_connection_control">[BeatJump],prev</SetVariable>
+             <SetVariable name="left_connection_control">BeatJump,next</SetVariable>
+             <SetVariable name="right_connection_control">BeatJump,prev</SetVariable>
            </Template>
 
            <Template src="skin:beatjump_button.xml">
@@ -364,8 +364,8 @@
              <SetVariable name="state_0_text">1</SetVariable>
              <SetVariable name="state_0_pressed"></SetVariable>
              <SetVariable name="state_0_unpressed"></SetVariable>
-             <SetVariable name="left_connection_control">[BeatJump],next</SetVariable>
-             <SetVariable name="right_connection_control">[BeatJump],prev</SetVariable>
+             <SetVariable name="left_connection_control">BeatJump,next</SetVariable>
+             <SetVariable name="right_connection_control">BeatJump,prev</SetVariable>
            </Template>
 
            <Template src="skin:beatjump_button.xml">
@@ -397,8 +397,8 @@
              <SetVariable name="state_0_text">2</SetVariable>
              <SetVariable name="state_0_pressed"></SetVariable>
              <SetVariable name="state_0_unpressed"></SetVariable>
-             <SetVariable name="left_connection_control">[BeatJump],next</SetVariable>
-             <SetVariable name="right_connection_control">[BeatJump],prev</SetVariable>
+             <SetVariable name="left_connection_control">BeatJump,next</SetVariable>
+             <SetVariable name="right_connection_control">BeatJump,prev</SetVariable>
            </Template>
 
            <Template src="skin:beatjump_button.xml">
