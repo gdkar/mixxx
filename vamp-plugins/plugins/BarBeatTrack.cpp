@@ -433,3 +433,4 @@ BarBeatTracker::barBeatTrack()
     return returnFeatures;
 }
 
+Vamp::Plugin::InputDomain BarBeatTracker::getInputDomain() const { return TimeDomain; }

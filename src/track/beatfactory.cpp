@@ -9,15 +9,18 @@
 BeatsPointer BeatFactory::loadBeatsFromByteArray(TrackPointer pTrack,
                                                  QString beatsVersion,
                                                  QString beatsSubVersion,
-                                                 QByteArray* beatsSerialized) {
-    if (beatsVersion == BEAT_GRID_1_VERSION ||
-        beatsVersion == BEAT_GRID_2_VERSION) {
-        BeatGrid* pGrid = new BeatGrid(pTrack.data(), 0, beatsSerialized);
+                                                 QByteArray* beatsSerialized)
+{
+    if (beatsVersion == BEAT_GRID_1_VERSION || beatsVersion == BEAT_GRID_2_VERSION)
+    {
+        auto pGrid = new BeatGrid(pTrack.data(), 0, beatsSerialized);
         pGrid->setSubVersion(beatsSubVersion);
         qDebug() << "Successfully deserialized BeatGrid";
         return BeatsPointer(pGrid, &BeatFactory::deleteBeats);
-    } else if (beatsVersion == BEAT_MAP_VERSION) {
-        BeatMap* pMap = new BeatMap(pTrack, 0, beatsSerialized);
+    }
+    else if (beatsVersion == BEAT_MAP_VERSION)
+    {
+        auto pMap = new BeatMap(pTrack, 0, beatsSerialized);
         pMap->setSubVersion(beatsSubVersion);
         qDebug() << "Successfully deserialized BeatMap";
         return BeatsPointer(pMap, &BeatFactory::deleteBeats);
@@ -27,17 +30,17 @@ BeatsPointer BeatFactory::loadBeatsFromByteArray(TrackPointer pTrack,
 }
 
 BeatsPointer BeatFactory::makeBeatGrid(TrackInfoObject* pTrack, double dBpm,
-                                       double dFirstBeatSample) {
-    BeatGrid* pGrid = new BeatGrid(pTrack, 0);
+                                       double dFirstBeatSample)
+{
+    auto pGrid = new BeatGrid(pTrack, 0);
     pGrid->setGrid(dBpm, dFirstBeatSample);
     return BeatsPointer(pGrid, &BeatFactory::deleteBeats);
 }
 
 // static
-QString BeatFactory::getPreferredVersion(const bool bEnableFixedTempoCorrection) {
-    if (bEnableFixedTempoCorrection) {
-        return BEAT_GRID_2_VERSION;
-    }
+QString BeatFactory::getPreferredVersion(const bool bEnableFixedTempoCorrection)
+{
+    if (bEnableFixedTempoCorrection)return BEAT_GRID_2_VERSION;
     return BEAT_MAP_VERSION;
 }
 
@@ -45,26 +48,28 @@ QString BeatFactory::getPreferredSubVersion(
     const bool bEnableFixedTempoCorrection,
     const bool bEnableOffsetCorrection,
     const int iMinBpm, const int iMaxBpm,
-    const QHash<QString, QString> extraVersionInfo) {
-    const char* kSubVersionKeyValueSeparator = "=";
-    const char* kSubVersionFragmentSeparator = "|";
-    QStringList fragments;
+    const QHash<QString, QString> extraVersionInfo)
+{
+    auto kSubVersionKeyValueSeparator = "=";
+    auto kSubVersionFragmentSeparator = "|";
+    auto fragments = QStringList{};
 
     // min/max BPM limits only apply to fixed-tempo assumption
-    if (bEnableFixedTempoCorrection) {
-        fragments << QString("min_bpm%1%2").arg(kSubVersionKeyValueSeparator,
-                                                QString::number(iMinBpm));
-        fragments << QString("max_bpm%1%2").arg(kSubVersionKeyValueSeparator,
-                                                QString::number(iMaxBpm));
+    if (bEnableFixedTempoCorrection)
+    {
+        fragments << QString("min_bpm%1%2").arg(kSubVersionKeyValueSeparator,QString::number(iMinBpm));
+        fragments << QString("max_bpm%1%2").arg(kSubVersionKeyValueSeparator,QString::number(iMaxBpm));
     }
 
     QHashIterator<QString, QString> it(extraVersionInfo);
-    while (it.hasNext()) {
+    while (it.hasNext())
+    {
         it.next();
         if (it.key().contains(kSubVersionKeyValueSeparator) ||
             it.key().contains(kSubVersionFragmentSeparator) ||
             it.value().contains(kSubVersionKeyValueSeparator) ||
-            it.value().contains(kSubVersionFragmentSeparator)) {
+            it.value().contains(kSubVersionFragmentSeparator))
+        {
             qDebug() << "ERROR: Your analyser key/value contains invalid characters:"
                      << it.key() << ":" << it.value() << "Skipping.";
             continue;
@@ -72,14 +77,12 @@ QString BeatFactory::getPreferredSubVersion(
         fragments << QString("%1%2%3").arg(
             it.key(), kSubVersionKeyValueSeparator, it.value());
     }
-    if (bEnableFixedTempoCorrection && bEnableOffsetCorrection) {
-        fragments << QString("offset_correction%1%2")
-                .arg(kSubVersionKeyValueSeparator, QString::number(1));
+    if (bEnableFixedTempoCorrection && bEnableOffsetCorrection)
+    {
+        fragments << QString("offset_correction%1%2").arg(kSubVersionKeyValueSeparator, QString::number(1));
     }
 
-    fragments << QString("rounding%1%2").
-            arg(kSubVersionKeyValueSeparator, QString::number(0.05));
-
+    fragments << QString("rounding%1%2").arg(kSubVersionKeyValueSeparator, QString::number(0.05));
     qSort(fragments);
     return (fragments.size() > 0) ? fragments.join(kSubVersionFragmentSeparator) : "";
 }
@@ -90,34 +93,40 @@ BeatsPointer BeatFactory::makePreferredBeats(
     const QHash<QString, QString> extraVersionInfo,
     const bool bEnableFixedTempoCorrection, const bool bEnableOffsetCorrection,
     const int iSampleRate, const int iTotalSamples,
-    const int iMinBpm, const int iMaxBpm) {
-    const QString version = getPreferredVersion(bEnableFixedTempoCorrection);
-    const QString subVersion = getPreferredSubVersion(bEnableFixedTempoCorrection,
+    int iMinBpm, const int iMaxBpm)
+{
+    auto version = getPreferredVersion(bEnableFixedTempoCorrection);
+    auto subVersion = getPreferredSubVersion(bEnableFixedTempoCorrection,
                                                       bEnableOffsetCorrection,
                                                       iMinBpm, iMaxBpm,
                                                       extraVersionInfo);
-
     BeatUtils::printBeatStatistics(beats, iSampleRate);
-    if (version == BEAT_GRID_2_VERSION) {
-        double globalBpm = BeatUtils::calculateBpm(beats, iSampleRate, iMinBpm, iMaxBpm);
-        double firstBeat = BeatUtils::calculateFixedTempoFirstBeat(
+    if (version == BEAT_GRID_2_VERSION)
+    {
+        auto globalBpm = BeatUtils::calculateBpm(beats, iSampleRate, iMinBpm, iMaxBpm);
+        auto firstBeat = BeatUtils::calculateFixedTempoFirstBeat(
             bEnableOffsetCorrection,
             beats, iSampleRate, iTotalSamples, globalBpm);
-        BeatGrid* pGrid = new BeatGrid(pTrack.data(), iSampleRate);
+        auto pGrid = new BeatGrid(pTrack.data(), iSampleRate);
         // firstBeat is in frames here and setGrid() takes samples.
         pGrid->setGrid(globalBpm, firstBeat * 2);
         pGrid->setSubVersion(subVersion);
         return BeatsPointer(pGrid, &BeatFactory::deleteBeats);
-    } else if (version == BEAT_MAP_VERSION) {
-        BeatMap* pBeatMap = new BeatMap(pTrack, iSampleRate, beats);
+    }
+    else if (version == BEAT_MAP_VERSION)
+    {
+        auto pBeatMap = new BeatMap(pTrack, iSampleRate, beats);
         pBeatMap->setSubVersion(subVersion);
         return BeatsPointer(pBeatMap, &BeatFactory::deleteBeats);
-    } else {
+    }
+    else
+    {
         qDebug() << "ERROR: Could not determine what type of beatgrid to create.";
         return BeatsPointer();
     }
 }
-void BeatFactory::deleteBeats(Beats* pBeats) {
+void BeatFactory::deleteBeats(Beats* pBeats)
+{
     // BeatGrid/BeatMap objects have no parent and live in the same thread as
     // their associated TIO. QObject::deleteLater does not have the desired
     // effect when the QObject's thread does not have an event loop (i.e. when

@@ -11,6 +11,7 @@ AudioTagger::AudioTagger(const QString& file, SecurityTokenPointer pToken) :
         m_file(file),
         m_pSecurityToken(openSecurityToken(m_file, pToken)) {
 }
+AudioTagger::~AudioTagger() = default;
 bool AudioTagger::save(const Mixxx::TrackMetadata& trackMetadata) {
     return writeTrackMetadataIntoFile(trackMetadata, m_file.canonicalFilePath());
 }

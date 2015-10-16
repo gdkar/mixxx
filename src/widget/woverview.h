@@ -50,14 +50,14 @@ class WOverview : public WWidget {
     virtual void dragEnterEvent(QDragEnterEvent* event);
     virtual void dropEvent(QDropEvent* event);
     ConstWaveformPointer getWaveform() const;
-    QImage* m_pWaveformSourceImage;
+    QImage* m_pWaveformSourceImage = nullptr;
     QImage m_waveformImageScaled;
     WaveformSignalColors m_signalColors;
     // Hold the last visual sample processed to generate the pixmap
-    double m_actualCompletion;
-    bool m_pixmapDone;
-    float m_waveformPeak;
-    int m_diffGain;
+    double m_actualCompletion = 0;
+    bool m_pixmapDone    = false;
+    float m_waveformPeak = -1;
+    int m_diffGain = 0;
   private slots:
     void onEndOfTrackChange(double v);
 
@@ -93,9 +93,9 @@ class WOverview : public WWidget {
     WaveformMarkSet m_marks;
     std::vector<WaveformMarkRange> m_markRanges;
     // Coefficient value-position linear transposition
-    double m_a = 0;
+    double m_a = 1.0;
     double m_b = 0;
-    double m_dAnalyserProgress = 0;
+    double m_dAnalyserProgress = -1.0;
     bool m_bAnalyserFinalizing = false;
     bool m_trackLoaded         = false;
 };

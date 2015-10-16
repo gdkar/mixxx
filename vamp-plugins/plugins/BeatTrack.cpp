@@ -525,3 +525,4 @@ BeatTracker::beatTrackNew()
     return returnFeatures;
 }
 
+Vamp::Plugin::InputDomain BeatTracker::getInputDomain() const { return FrequencyDomain; }

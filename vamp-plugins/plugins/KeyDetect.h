@@ -12,9 +12,7 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef _GETMODE_PLUGIN_H_
-#define _GETMODE_PLUGIN_H_
-
+_Pragma("once")
 #include <vamp-sdk/Plugin.h>
 
 #include "../dsp/GetKeyMode.h"
@@ -28,7 +26,7 @@ public:
     bool initialise(size_t channels, size_t stepSize, size_t blockSize);
     void reset();
 
-    InputDomain getInputDomain() const { return TimeDomain; }
+    InputDomain getInputDomain() const;
 
     std::string getIdentifier() const;
     std::string getName() const;
@@ -64,6 +62,3 @@ protected:
     int m_prevKey;
     bool m_first;
 };
-
-
-#endif

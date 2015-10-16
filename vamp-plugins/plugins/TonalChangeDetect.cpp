@@ -442,3 +442,4 @@ TonalChangeDetect::FeatureSet TonalChangeDetect::getRemainingFeatures()
 	
 }
 
+Vamp::Plugin::InputDomain TonalChangeDetect::getInputDomain() const { return TimeDomain; }

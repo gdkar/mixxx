@@ -1,27 +1,14 @@
 // Created on: 30/nov/2011
 // Author: vittorio
 
-#ifndef BEATUTILS_H_
-#define BEATUTILS_H_
-
+_Pragma("once")
 #include <QVector>
 
 class BeatUtils {
   public:
     BeatUtils ( ) = delete;
     static void printBeatStatistics(const QVector<double>& beats, int SampleRate);
-    static double constrainBpm(double bpm, const int min_bpm, const int max_bpm, bool aboveRange) {
-        if (bpm <= 0.0 || min_bpm < 0 || max_bpm < 0 ||
-            min_bpm >= max_bpm ||
-            (bpm >= min_bpm && bpm <= max_bpm)) {
-            return bpm;
-        }
-        if (!aboveRange) {
-            while (bpm > max_bpm) {bpm /= 2.0;}
-        }
-        while (bpm < min_bpm) { bpm *= 2.0;}
-        return bpm;
-    }
+    static double constrainBpm(double bpm, const int min_bpm, const int max_bpm, bool aboveRange);
     /*
      * This method detects the BPM given a set of beat positions.
      * We compute the average local BPM of by considering 8 beats
@@ -59,5 +46,3 @@ class BeatUtils {
         const int sampleRate, QMap<double, int>* frequencyHistogram);
 
 };
-
-#endif /* BEATUTILS_H_ */

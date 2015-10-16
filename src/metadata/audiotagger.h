@@ -5,7 +5,7 @@ _Pragma("once")
 class AudioTagger {
 public:
     AudioTagger(const QString& file, SecurityTokenPointer pToken);
-    virtual ~AudioTagger() = default;
+    virtual ~AudioTagger() ;
     bool save(const Mixxx::TrackMetadata& trackMetadata);
 private:
     QFileInfo m_file;

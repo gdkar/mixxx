@@ -1,8 +1,6 @@
 _Pragma("once")
 #include <QHash>
-
 #include "track/beats.h"
-
 class BeatFactory {
   public:
     static BeatsPointer loadBeatsFromByteArray(TrackPointer pTrack,QString beatsVersion,

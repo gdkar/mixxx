@@ -12,9 +12,7 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef _TONALCHANGEDETECT_
-#define _TONALCHANGEDETECT_
-
+_Pragma("once")
 #include <vamp-sdk/Plugin.h>
 
 #include "../dsp/Chromagram.h"
@@ -33,7 +31,7 @@ class TonalChangeDetect : public Vamp::Plugin {
     bool initialise(size_t channels, size_t stepSize, size_t blockSize);
     void reset();
 
-    InputDomain getInputDomain() const { return TimeDomain; }
+    InputDomain getInputDomain() const;
 
     std::string getIdentifier() const;
     std::string getName() const;
@@ -78,6 +76,3 @@ class TonalChangeDetect : public Vamp::Plugin {
     Vamp::RealTime m_origin;
     bool m_haveOrigin;
 };
-
-
-#endif // _TONALCHANGEDETECT_

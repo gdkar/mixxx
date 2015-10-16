@@ -691,6 +691,7 @@ class MixxxCore(Feature):
                    "samplebuffer.cpp",
 
                    "trackinfoobject.cpp",
+                   "track/beats.cpp",
                    "track/beatgrid.cpp",
                    "track/beatmap.cpp",
                    "track/beatfactory.cpp",

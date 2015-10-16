@@ -17,7 +17,7 @@ _Pragma("once")
 
 typedef QList<mixxx::track::io::Beat> BeatList;
 
-class BeatMap : public QObject, public Beats {
+class BeatMap : public Beats {
     Q_OBJECT
   public:
     // Construct a BeatMap. iSampleRate may be provided if a more accurate
@@ -32,14 +32,11 @@ class BeatMap : public QObject, public Beats {
     BeatMap(TrackPointer pTrack, int iSampleRate,const QVector<double>& beats);
     virtual ~BeatMap();
     // See method comments in beats.h
-    virtual Beats::CapabilitiesFlags getCapabilities() const {
-        return BEATSCAP_TRANSLATE | BEATSCAP_SCALE | BEATSCAP_ADDREMOVE | BEATSCAP_MOVEBEAT | BEATSCAP_SET;
-    }
+    virtual Beats::CapabilitiesFlags getCapabilities() const;
     virtual QByteArray* toByteArray() const;
     virtual QString getVersion() const;
     virtual QString getSubVersion() const;
     virtual void setSubVersion(QString subVersion);
-
     ////////////////////////////////////////////////////////////////////////////
     // Beat calculations
     ////////////////////////////////////////////////////////////////////////////

@@ -12,9 +12,7 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef _BEAT_TRACK_PLUGIN_H_
-#define _BEAT_TRACK_PLUGIN_H_
-
+_Pragma("once")
 #include <vamp-sdk/Plugin.h>
 
 class BeatTrackerData;
@@ -28,7 +26,7 @@ public:
     bool initialise(size_t channels, size_t stepSize, size_t blockSize);
     void reset();
 
-    InputDomain getInputDomain() const { return FrequencyDomain; }
+    InputDomain getInputDomain() const;
 
     std::string getIdentifier() const;
     std::string getName() const;
@@ -60,6 +58,3 @@ protected:
     FeatureSet beatTrackOld();
     FeatureSet beatTrackNew();
 };
-
-
-#endif

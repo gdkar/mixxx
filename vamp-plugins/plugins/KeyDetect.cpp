@@ -354,3 +354,5 @@ KeyDetector::getKeyName(int index, bool minor, bool includeMajMin) const
     else return base + " major";
 }
 
+
+Vamp::Plugin::InputDomain KeyDetector::getInputDomain() const { return TimeDomain; }

@@ -5,19 +5,21 @@ _Pragma("once")
 #include <QSharedPointer>
 class Beats;
 typedef QSharedPointer<Beats> BeatsPointer;
-class BeatIterator {
+class BeatIterator
+{
   public:
-    virtual ~BeatIterator() = default;
-    virtual bool hasNext() const {return false;};
-    virtual double next() {return -1;};
+    virtual ~BeatIterator() ;
+    virtual bool hasNext() const;
+    virtual double next();
 };
 // Beats is a pure abstract base class for BPM and beat management classes. It
 // provides a specification of all methods a beat-manager class must provide, as
 // well as a capability model for representing optional features.
-class Beats {
+class Beats : public QObject{
+  Q_OBJECT
   public:
-    Beats() = default;
-    virtual ~Beats() = default;
+    explicit Beats(QObject * p) ;
+    virtual ~Beats();
     enum Capabilities {
         BEATSCAP_NONE          = 0x0000,
         BEATSCAP_ADDREMOVE     = 0x0001,
@@ -26,8 +28,9 @@ class Beats {
         BEATSCAP_MOVEBEAT      = 0x0008,
         BEATSCAP_SET           = 0x0010
     };
-    typedef int CapabilitiesFlags; // Allows us to do ORing
-    virtual Beats::CapabilitiesFlags getCapabilities() const = 0;
+    Q_ENUM(Capabilities);
+    Q_DECLARE_FLAGS(CapabilitiesFlags,Capabilities);
+    virtual CapabilitiesFlags getCapabilities() const = 0;
     // Serialization
     virtual QByteArray* toByteArray() const = 0;
     // A string representing the version of the beat-processing code that
@@ -108,4 +111,7 @@ class Beats {
     // Adjust the beats so the global average BPM matches dBpm. Beats class must
     // have the capability BEATSCAP_SET.
     virtual void setBpm(double dBpm) = 0;
+signals:
+    void updated();
 };
+Q_DECLARE_OPERATORS_FOR_FLAGS(Beats::CapabilitiesFlags);

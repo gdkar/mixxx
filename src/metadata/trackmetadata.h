@@ -1,6 +1,4 @@
-#ifndef TRACKMETADATA_H
-#define TRACKMETADATA_H
-
+_Pragma("once")
 #include <QDateTime>
 
 #include <cmath>
@@ -219,7 +217,4 @@ private:
     double m_bpm;
     double m_replayGain;
 };
-
 }
-
-#endif

@@ -7,7 +7,7 @@
 
 _Pragma("once")
 #include <QHash>
-
+#include <memory>
 #include "analyser.h"
 #include "configobject.h"
 #include "vamp/vampanalyser.h"
@@ -26,12 +26,12 @@ class AnalyserBeats: public Analyser {
     static QHash<QString, QString> getExtraVersionInfo(QString pluginId, bool bPreferencesFastAnalysis);
     QVector<double> correctedBeats(QVector<double> rawbeats);
     ConfigObject<ConfigValue>* m_pConfig = nullptr;
-    VampAnalyser* m_pVamp = nullptr;
+    std::unique_ptr<VampAnalyser> m_pVamp;
     QString m_pluginId;
-    bool m_bPreferencesReanalyzeOldBpm = false;
+    bool m_bPreferencesReanalyzeOldBpm = true;
     bool m_bPreferencesFixedTempo = false;
-    bool m_bPreferencesOffsetCorrection = false;
+    bool m_bPreferencesOffsetCorrection = true;
     bool m_bPreferencesFastAnalysis = false;
     int m_iSampleRate = -1, m_iTotalSamples = -1;
-    int m_iMinBpm, m_iMaxBpm = -1;
+    int m_iMinBpm = 0, m_iMaxBpm = 9999;
 };
