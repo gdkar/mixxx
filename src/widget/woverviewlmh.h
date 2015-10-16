@@ -1,14 +1,10 @@
-#ifndef WOVERVIEWLMH_H
-#define WOVERVIEWLMH_H
-
+_Pragma("once")
 #include "widget/woverview.h"
 
 class WOverviewLMH : public WOverview {
   public:
     WOverviewLMH(const char *pGroup, ConfigObject<ConfigValue>* pConfig, QWidget* parent);
-
+    virtual ~WOverviewLMH();
   private:
     virtual bool drawNextPixmapPart();
 };
-
-#endif // WOVERVIEWLMH_H

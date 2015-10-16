@@ -12,7 +12,8 @@ _Pragma("once")
 // BeatGrid is an implementation of the Beats interface that implements an
 // infinite grid of beats, aligned to a song simply by a starting offset of the
 // first beat and the song's average beats-per-minute.
-class BeatGrid : public Beats {
+class BeatGrid : public Beats
+{
     Q_OBJECT
   public:
     // Construct a BeatGrid. If a more accurate sample rate is known, provide it

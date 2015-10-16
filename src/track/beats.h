@@ -8,9 +8,16 @@ typedef QSharedPointer<Beats> BeatsPointer;
 class BeatIterator
 {
   public:
+    BeatIterator();
+    BeatIterator(Beats *pBeats, double start, double stop);
     virtual ~BeatIterator() ;
     virtual bool hasNext() const;
     virtual double next();
+  private:
+    double       m_start   = -1;
+    double       m_stop    = -1;
+    double       m_current = -1;
+    Beats*       m_pBeats;
 };
 // Beats is a pure abstract base class for BPM and beat management classes. It
 // provides a specification of all methods a beat-manager class must provide, as

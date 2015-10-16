@@ -23,32 +23,6 @@ bool BeatLessThan(const Beat& beat1, const Beat& beat2)
 {
   return beat1.frame_position() < beat2.frame_position();
 }
-class BeatMapIterator : public BeatIterator
-{
-  public:
-    BeatMapIterator() = default;
-    BeatMapIterator(BeatList::const_iterator start, BeatList::const_iterator end)
-            : m_currentBeat(start),
-              m_endBeat(end)
-  {
-        // Advance to the first enabled beat.
-        while (m_currentBeat != m_endBeat && !m_currentBeat->enabled()) ++m_currentBeat;
-    }
-    virtual bool hasNext() const 
-    {
-      return m_currentBeat != m_endBeat;
-    }
-    virtual double next()
-    {
-        auto beat = framesToSamples(m_currentBeat->frame_position());
-        ++m_currentBeat;
-        while (m_currentBeat != m_endBeat && !m_currentBeat->enabled()) ++m_currentBeat;
-        return beat;
-    }
-  private:
-    BeatList::const_iterator m_currentBeat;
-    BeatList::const_iterator m_endBeat;
-};
 BeatMap::BeatMap(TrackPointer pTrack, int iSampleRate,const QByteArray* pByteArray)
         : Beats(nullptr),
           m_mutex(QMutex::Recursive)
@@ -275,28 +249,30 @@ BeatIterator BeatMap::findBeats(double startSample, double stopSample) const {
     QMutexLocker locker(&m_mutex);
     //startSample and stopSample are sample offsets, converting them to
     //frames
-    if (!isValid() || startSample > stopSample) {return BeatMapIterator{};}
+    if (!isValid() || startSample > stopSample) return BeatIterator{};
     Beat startBeat, stopBeat;
     startBeat.set_frame_position(samplesToFrames(startSample));
-    stopBeat.set_frame_position(samplesToFrames(stopSample));
-    auto curBeat   = qLowerBound(m_beats.begin(), m_beats.end(), startBeat, BeatLessThan);
+    stopBeat. set_frame_position(samplesToFrames(stopSample));
+    auto curBeat  = qLowerBound(m_beats.begin(), m_beats.end(), startBeat, BeatLessThan);
     auto lastBeat = qUpperBound(m_beats.begin(), m_beats.end(),stopBeat, BeatLessThan);
-    if (curBeat >= lastBeat) {return BeatMapIterator{};}
-    return BeatMapIterator(curBeat, lastBeat);
+    if (curBeat >= lastBeat) return BeatIterator{};
+    return BeatIterator(this,curBeat.frame_position(), stopSample);
 }
 bool BeatMap::hasBeatInRange(double startSample, double stopSample) const {
     QMutexLocker locker(&m_mutex);
-    if (!isValid() || startSample > stopSample) {return false;}
+    if (!isValid() || startSample > stopSample) return false;
     double curBeat = findNextBeat(startSample);
-    if (curBeat <= stopSample) {return true;}
+    if (curBeat <= stopSample) return true;
     return false;
 }
-double BeatMap::getBpm() const {
+double BeatMap::getBpm() const
+{
     QMutexLocker locker(&m_mutex);
     if (!isValid()) return -1;
     return m_dCachedBpm;
 }
-double BeatMap::getBpmRange(double startSample, double stopSample) const {
+double BeatMap::getBpmRange(double startSample, double stopSample) const
+{
     QMutexLocker locker(&m_mutex);
     if (!isValid()) return -1;
     Beat startBeat, stopBeat;

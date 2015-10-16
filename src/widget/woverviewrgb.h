@@ -1,14 +1,10 @@
-#ifndef WOVERVIEWRGB_H
-#define WOVERVIEWRGB_H
-
+_Pragma("once")
 #include "widget/woverview.h"
 
 class WOverviewRGB : public WOverview {
   public:
     WOverviewRGB(const char *pGroup, ConfigObject<ConfigValue>* pConfig, QWidget* parent);
-
+    virtual ~WOverviewRGB();
   private:
     virtual bool drawNextPixmapPart();
 };
-
-#endif // WOVERVIEWRGB_H

@@ -10,16 +10,15 @@ WOverviewRGB::WOverviewRGB(const char* pGroup,
                            ConfigObject<ConfigValue>* pConfig, QWidget* parent)
         : WOverview(pGroup, pConfig, parent)  {
 }
-
-bool WOverviewRGB::drawNextPixmapPart() {
+WOverviewRGB::~WOverviewRGB() = default;
+bool WOverviewRGB::drawNextPixmapPart()
+{
     ScopedTimer t("WOverviewRGB::drawNextPixmapPart");
-
     //qDebug() << "WOverview::drawNextPixmapPart() - m_waveform" << m_waveform;
-
     auto pWaveform = getWaveform();
-    if (!pWaveform) {return false;}
-    const auto dataSize = pWaveform->size();
-    if (dataSize == 0) {return false;}
+    if (!pWaveform) return false;
+    auto dataSize = pWaveform->size();
+    if (dataSize == 0) return false;
     if (!m_pWaveformSourceImage) {
         // Waveform pixmap twice the height of the viewport to be scalable
         // by total_gain
@@ -28,12 +27,12 @@ bool WOverviewRGB::drawNextPixmapPart() {
         m_pWaveformSourceImage->fill(QColor(0,0,0,0).value());
     }
     // Always multiple of 2
-    const auto waveformCompletion = static_cast<int>(pWaveform->getCompletion());
+    auto waveformCompletion = static_cast<int>(pWaveform->getCompletion());
     // Test if there is some new to draw (at least of pixel width)
-    const auto  completionIncrement = static_cast<int>(waveformCompletion - m_actualCompletion);
+    auto  completionIncrement = static_cast<int>(waveformCompletion - m_actualCompletion);
     auto visiblePixelIncrement = (completionIncrement * width() / dataSize);
-    if (completionIncrement < 2 || visiblePixelIncrement == 0) {return false;}
-    const auto nextCompletion = (m_actualCompletion + completionIncrement);
+    if (completionIncrement < 2 || visiblePixelIncrement == 0) return false;
+    auto nextCompletion = (m_actualCompletion + completionIncrement);
 
     //qDebug() << "WOverview::drawNextPixmapPart() - nextCompletion:"
     //         << nextCompletion

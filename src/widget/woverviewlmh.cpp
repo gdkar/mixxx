@@ -12,18 +12,15 @@ WOverviewLMH::WOverviewLMH(const char *pGroup,
                            ConfigObject<ConfigValue>* pConfig, QWidget * parent)
         : WOverview(pGroup, pConfig, parent)  {
 }
-
-
-bool WOverviewLMH::drawNextPixmapPart() {
+WOverviewLMH::~WOverviewLMH() = default;
+bool WOverviewLMH::drawNextPixmapPart()
+{
     ScopedTimer t("WOverviewLMH::drawNextPixmapPart");
-
     //qDebug() << "WOverview::drawNextPixmapPart() - m_waveform" << m_waveform;
-
     int currentCompletion;
-
-    ConstWaveformPointer pWaveform = getWaveform();
+    auto pWaveform = getWaveform();
     if (!pWaveform) {return false;}
-    const int dataSize = pWaveform->size();
+    auto dataSize = pWaveform->size();
     if (dataSize == 0) {return false;}
     if (!m_pWaveformSourceImage) {
         // Waveform pixmap twice the height of the viewport to be scalable
