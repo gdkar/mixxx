@@ -1549,9 +1549,9 @@ void MixxxMainWindow::rebootMixxxView() {
     auto initSize = size();
     // Every time a skin is loaded, the Cos objects need to be recreated
     // See onNewSkinLoaded()
-    if (m_pWidgetParent) {
+    if (m_pWidgetParent)
+    {
         m_pWidgetParent->hide();
-        WaveformWidgetFactory::instance()->destroyWidgets();
         delete m_pWidgetParent;
         m_pWidgetParent = nullptr;
     }
@@ -1570,10 +1570,7 @@ void MixxxMainWindow::rebootMixxxView() {
                                                            m_pLibrary,
                                                            m_pVCManager,
                                                            m_pEffectsManager))) {
-        QMessageBox::critical(this,
-                              tr("Error in skin file"),
-                              tr("The selected skin cannot be loaded."));
-        // m_pWidgetParent is nullptr, we can't continue.
+        QMessageBox::critical(this,tr("Error in skin file"),tr("The selected skin cannot be loaded."));
         return;
     }
     setCentralWidget(m_pWidgetParent);

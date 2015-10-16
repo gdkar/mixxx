@@ -51,10 +51,7 @@ WaveformWidgetFactory::WaveformWidgetFactory() :
 
     m_time.start();
 }
-WaveformWidgetFactory::~WaveformWidgetFactory()
-{
-    destroyWidgets();
-}
+WaveformWidgetFactory::~WaveformWidgetFactory() = default;
 bool WaveformWidgetFactory::setConfig(ConfigObject<ConfigValue> *config) {
     m_config = config;
     if (!m_config) return false;
@@ -88,16 +85,8 @@ bool WaveformWidgetFactory::setConfig(ConfigObject<ConfigValue> *config) {
     } else m_config->set(ConfigKey("Waveform","OverviewNormalized"), ConfigValue(m_overviewNormalized));
     return true;
 }
-
-void WaveformWidgetFactory::destroyWidgets()
+void WaveformWidgetFactory::addTimerListener(QWidget* pWidget)
 {
-    for ( auto & holder : m_waveformWidgetHolders)
-    {
-      if ( auto ptr = std::exchange(holder.m_waveformWidget,nullptr)) delete ptr;
-    }
-    m_waveformWidgetHolders.clear();
-}
-void WaveformWidgetFactory::addTimerListener(QWidget* pWidget) {
     // Do not hold the pointer to of timer listeners since they may be deleted.
     // We don't activate update() or repaint() directly so listener widgets
     // can decide whether to paint or not.

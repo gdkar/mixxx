@@ -62,7 +62,6 @@ class WaveformWidgetFactory : public QObject, public Singleton<WaveformWidgetFac
 
     void setOverviewNormalized(bool normalize);
     int isOverviewNormalized() const { return m_overviewNormalized;}
-    void destroyWidgets();
     void addTimerListener(QWidget* pWidget);
     void startVSync(MixxxMainWindow* mixxxApp);
     void setVSyncType(int vsType);
