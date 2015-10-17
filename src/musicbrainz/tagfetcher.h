@@ -7,9 +7,7 @@
  *  See http://www.wtfpl.net/ for more details.                              *
  *****************************************************************************/
     
-#ifndef TAGFETCHER_H
-#define TAGFETCHER_H
-
+_Pragma("once")
 #include <QFutureWatcher>
 #include <QObject>
 
@@ -42,18 +40,13 @@ class TagFetcher : public QObject {
     void fingerprintFound(int index);
     void mbidFound(int index, const QString& mbid);
     void tagsFetched(int index, const MusicBrainzClient::ResultList& result);
-
   private:
     // has to be static so we can call it with QtConcurrent and have a nice
     // responsive UI while the fingerprint is calculated
     static QString getFingerprint(const TrackPointer tio);
-
     QFutureWatcher<QString>* m_pFingerprintWatcher;
     AcoustidClient m_AcoustidClient;
     MusicBrainzClient m_MusicbrainzClient;
-
     // Code can already be run on an arbitrary number of input tracks
     QList<TrackPointer> m_tracks;
 };
-
-#endif // TAGFETCHER_H

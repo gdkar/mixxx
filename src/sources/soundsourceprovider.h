@@ -1,6 +1,5 @@
-#ifndef MIXXX_SOUNDSOURCEPROVIDER_H
-#define MIXXX_SOUNDSOURCEPROVIDER_H
-
+_Pragma("once")
+#include <QSharedPointer>
 #include <QString>
 #include <QStringList>
 #include <QUrl>
@@ -15,7 +14,7 @@ public:
     virtual ~SoundSourceProvider() = default;
     virtual QString getName() const = 0;
     virtual QStringList getSupportedFileExtensions() const = 0;
-    virtual SoundSourcePointer newSoundSource(const QUrl& url) = 0;
+    virtual SoundSourcePointer newSoundSource(QUrl url) = 0;
 };
+typedef QSharedPointer<SoundSourceProvider> SoundSourceProviderPointer;
 } // namespace Mixxx
-#endif // MIXXX_SOUNDSOURCEPROVIDER_H

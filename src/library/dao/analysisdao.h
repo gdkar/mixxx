@@ -1,6 +1,4 @@
-#ifndef ANALYSISDAO_H
-#define ANALYSISDAO_H
-
+_Pragma("once")
 #include <QObject>
 #include <QSqlDatabase>
 
@@ -47,23 +45,15 @@ class AnalysisDao : public DAO {
     bool deleteAnalysis(const int analysisId);
     void deleteAnalyses(const QList<TrackId>& trackIds);
     bool deleteAnalysesForTrack(TrackId trackId);
-
     void saveTrackAnalyses(TrackInfoObject* pTrack);
-
   private:
-    bool saveWaveform(const TrackInfoObject& tio,
-                      const Waveform& waveform,
-                      AnalysisType type);
-    bool loadWaveform(const TrackInfoObject& tio,
-                      Waveform* waveform, AnalysisType type);
+    bool saveWaveform(const TrackInfoObject& tio,const Waveform& waveform,AnalysisType type);
+    bool loadWaveform(const TrackInfoObject& tio,Waveform* waveform, AnalysisType type);
     QDir getAnalysisStoragePath() const;
     QByteArray loadDataFromFile(const QString& fileName) const;
     bool saveDataToFile(const QString& fileName, const QByteArray& data) const;
     bool deleteFile(const QString& filename) const;
     QList<AnalysisInfo> loadAnalysesFromQuery(TrackId trackId, QSqlQuery* query);
-
     ConfigObject<ConfigValue>* m_pConfig;
     QSqlDatabase m_db;
 };
-
-#endif // ANALYSISDAO_H

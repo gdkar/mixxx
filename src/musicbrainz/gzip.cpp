@@ -15,7 +15,7 @@ inline QByteArray render32BitInt(unsigned long value)
     return QByteArray((char *)data, 4);
 }
 
-inline unsigned long calculateCrc32(const QByteArray &data)
+inline unsigned long calculateCrc32(QByteArray data)
 {
     crc_t crc;
     crc = crc_init();
@@ -24,7 +24,7 @@ inline unsigned long calculateCrc32(const QByteArray &data)
     return crc;
 }
 
-QByteArray gzipCompress(const QByteArray &data)
+QByteArray gzipCompress(QByteArray data)
 {
     const unsigned char header[10] = {
         0x1f, 0x8b, // ID1 + ID2

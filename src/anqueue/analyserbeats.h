@@ -13,8 +13,9 @@ _Pragma("once")
 #include "vamp/vampanalyser.h"
 
 class AnalyserBeats: public Analyser {
+  Q_OBJECT
   public:
-    AnalyserBeats(ConfigObject<ConfigValue>* pConfig);
+    AnalyserBeats(ConfigObject<ConfigValue>* pConfig, QObject *pParent = nullptr);
     virtual ~AnalyserBeats();
     bool initialise(TrackPointer tio, int sampleRate, int totalSamples);
     bool loadStored(TrackPointer tio) const;
@@ -25,7 +26,6 @@ class AnalyserBeats: public Analyser {
   private:
     static QHash<QString, QString> getExtraVersionInfo(QString pluginId, bool bPreferencesFastAnalysis);
     QVector<double> correctedBeats(QVector<double> rawbeats);
-    ConfigObject<ConfigValue>* m_pConfig = nullptr;
     std::unique_ptr<VampAnalyser> m_pVamp;
     QString m_pluginId;
     bool m_bPreferencesReanalyzeOldBpm = true;

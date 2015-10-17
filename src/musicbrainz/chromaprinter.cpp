@@ -3,14 +3,9 @@
 #include "soundsourceproxy.h"
 #include "samplebuffer.h"
 #include "sampleutil.h"
-
 #include <chromaprint.h>
-
 #include <QtDebug>
-
 #include <vector>
-
-
 namespace
 {
     // this is worth 2min of audio
@@ -18,19 +13,19 @@ namespace
     // on their server so we need only a fingerprint of the first two minutes
     // --kain88 July 2012
     const SINT kFingerprintDuration = 120; // in seconds
-    const SINT kFingerprintChannels = Mixxx::AudioSource::kChannelCountStereo;
-    QString calcFingerprint(const Mixxx::AudioSourcePointer& pAudioSource) {
-        SINT numFrames = kFingerprintDuration * pAudioSource->getFrameRate();
+    const SINT kFingerprintChannels = Mixxx::SoundSource::kChannelCountStereo;
+    QString calcFingerprint(const Mixxx::SoundSourcePointer& pSoundSource) {
+        SINT numFrames = kFingerprintDuration * pSoundSource->getFrameRate();
         // check that the song is actually longer then the amount of audio we use
-        if (numFrames > pAudioSource->getFrameCount()) { numFrames = pAudioSource->getFrameCount();}
+        if (numFrames > pSoundSource->getFrameCount()) { numFrames = pSoundSource->getFrameCount();}
         QTime timerReadingFile;
         timerReadingFile.start();
         // Allocate a sample buffer with maximum size to avoid the
         // implicit allocation of a temporary buffer when reducing
         // the audio signal to stereo.
-        SampleBuffer sampleBuffer( math_max(numFrames * kFingerprintChannels, pAudioSource->frames2samples(numFrames)));
+        SampleBuffer sampleBuffer( math_max(numFrames * kFingerprintChannels, pSoundSource->frames2samples(numFrames)));
         DEBUG_ASSERT(2 == kFingerprintChannels); // implicit assumption of the next line
-        const SINT readFrames = pAudioSource->readSampleFramesStereo(numFrames, &sampleBuffer);
+        const SINT readFrames = pSoundSource->readSampleFramesStereo(numFrames, &sampleBuffer);
         if (readFrames != numFrames) {
             qDebug() << "oh that's embarrassing I couldn't read the track";
             return QString();
@@ -40,7 +35,7 @@ namespace
         std::copy_n(sampleBuffer.data(),fingerprintSamples.size(),&fingerprintSamples[0]);
         qDebug("reading file took: %d ms" , timerReadingFile.elapsed());
         ChromaprintContext* ctx = chromaprint_new(CHROMAPRINT_ALGORITHM_DEFAULT);
-        chromaprint_start(ctx, pAudioSource->getFrameRate(), kFingerprintChannels);
+        chromaprint_start(ctx, pSoundSource->getFrameRate(), kFingerprintChannels);
         QTime timerGeneratingFingerprint;
         timerGeneratingFingerprint.start();
         int success = chromaprint_feed(ctx, &fingerprintSamples[0], fingerprintSamples.size());
@@ -69,15 +64,18 @@ namespace
 }
 
 ChromaPrinter::ChromaPrinter(QObject* parent)
-             : QObject(parent) {}
-QString ChromaPrinter::getFingerprint(TrackPointer pTrack) {
+             : QObject(parent)
+{}
+QString ChromaPrinter::getFingerprint(TrackPointer pTrack)
+{
     SoundSourceProxy soundSourceProxy(pTrack);
-    Mixxx::AudioSourceConfig audioSrcCfg;
+    Mixxx::SoundSourceConfig audioSrcCfg;
     audioSrcCfg.channelCountHint = kFingerprintChannels;
-    Mixxx::AudioSourcePointer pAudioSource(soundSourceProxy.openAudioSource(audioSrcCfg));
-    if (pAudioSource.isNull()) {
+    auto pSoundSource(soundSourceProxy.openSoundSource(audioSrcCfg));
+    if (pSoundSource.isNull())
+    {
         qDebug() << "Skipping invalid file:" << pTrack->getLocation();
         return QString();
     }
-    return calcFingerprint(pAudioSource);
+    return calcFingerprint(pSoundSource);
 }

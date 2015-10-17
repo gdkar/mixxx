@@ -121,6 +121,14 @@ double BeatGrid::findClosestBeat(double dSamples) const
     else if (nextBeat == -1) return prevBeat;
     return (nextBeat - dSamples > dSamples - prevBeat) ? prevBeat : nextBeat;
 }
+int BeatGrid::findIndexNear(double dSamples) const
+{
+  return static_cast<int>((firstBeatSample() - dSamples)/m_dBeatLength);
+}
+double BeatGrid::beatAtIndex(int index) const
+{
+  return m_dBeatLength * index + firstBeatSample();
+}
 double BeatGrid::findNthBeat(double dSamples, int n) const
 {
     QMutexLocker locker(&m_mutex);
@@ -212,19 +220,6 @@ bool BeatGrid::findPrevNextBeats(double dSamples,
     if (!even(static_cast<int>(*dpNextBeatSamples))) --*dpNextBeatSamples;
     return true;
 }
-
-
-BeatIterator BeatGrid::findBeats(double startSample, double stopSample) const
-{
-    QMutexLocker locker(&m_mutex);
-    if (!isValid() || startSample > stopSample) return BeatGridIterator{};
-    // qDebug() << "BeatGrid::findBeats startSample" << startSample << "stopSample"
-    //          << stopSample << "beatlength" << m_dBeatLength << "BPM" << bpm();
-    auto curBeat = findNextBeat(startSample);
-    if (curBeat == -1.0) return BeatIterator{};
-    return BeatIterator(this, curBeat, stopSample);
-}
-
 bool BeatGrid::hasBeatInRange(double startSample, double stopSample) const
 {
     QMutexLocker locker(&m_mutex);

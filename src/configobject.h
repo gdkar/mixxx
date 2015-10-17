@@ -15,9 +15,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef CONFIGOBJECT_H
-#define CONFIGOBJECT_H
-
+_Pragma("once")
 #include <QString>
 #include <QFile>
 #include <QKeySequence>
@@ -126,26 +124,19 @@ template <class ValueType> class ConfigObject {
     QString getValueString(ConfigKey k);
     QString getValueString(ConfigKey k, const QString& default_string);
     QHash<ConfigKey, ValueType> toHash() const;
-
     void clear();
     void reopen(QString file);
     void Save();
-
     // Returns the resource path -- the path where controller presets, skins,
     // library schema, keyboard mappings, and more are stored.
     QString getResourcePath() const;
-
     // Returns the settings path -- the path where user data (config file,
     // library SQLite database, etc.) is stored.
     QString getSettingsPath() const;
-
   protected:
     QList<ConfigOption<ValueType>*> m_list;
     QString m_filename;
-
     // Loads and parses the configuration file. Returns false if the file could
     // not be opened; otherwise true.
     bool Parse();
 };
-
-#endif

@@ -26,7 +26,7 @@ SoundSourceFFmpeg::SoundSourceFFmpeg(QUrl url)
     : SoundSource(url),
       m_format_ctx(avformat_alloc_context()) {}
 SoundSourceFFmpeg::~SoundSourceFFmpeg() { close(); }
-bool SoundSourceFFmpeg::tryOpen(const AudioSourceConfig& config) {
+bool SoundSourceFFmpeg::tryOpen(SoundSourceConfig config) {
     av_register_all();
     auto l_format_opts = (AVDictionary *)nullptr;
     const auto filename = getLocalFileNameBytes();

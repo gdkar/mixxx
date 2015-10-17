@@ -8,52 +8,40 @@
 
 EffectParameterSlot::EffectParameterSlot(const QString& group, const unsigned int iParameterSlotNumber)
         : EffectParameterSlotBase(group, iParameterSlotNumber) {
-    QString itemPrefix = formatItemPrefix(iParameterSlotNumber);
-    m_pControlLoaded = new ControlObject(
-            ConfigKey(m_group, itemPrefix + QString("_loaded")));
-    m_pControlLinkType = new ControlPushButton(
-            ConfigKey(m_group, itemPrefix + QString("_link_type")));
+    auto itemPrefix = formatItemPrefix(iParameterSlotNumber);
+    m_pControlLoaded = new ControlObject(ConfigKey(m_group, itemPrefix + QString("_loaded")));
+    m_pControlLinkType = new ControlPushButton(ConfigKey(m_group, itemPrefix + QString("_link_type")));
     m_pControlLinkType->setButtonMode(ControlPushButton::TOGGLE);
     m_pControlLinkType->setStates(EffectManifestParameter::NUM_LINK_TYPES);
-    m_pControlLinkInverse = new ControlPushButton(
-            ConfigKey(m_group, itemPrefix + QString("_link_inverse")));
+    m_pControlLinkInverse = new ControlPushButton(ConfigKey(m_group, itemPrefix + QString("_link_inverse")));
     m_pControlLinkInverse->setButtonMode(ControlPushButton::TOGGLE);
-    m_pControlValue = new ControlEffectKnob(
-            ConfigKey(m_group, itemPrefix));
-    m_pControlType = new ControlObject(
-            ConfigKey(m_group, itemPrefix + QString("_type")));
+    m_pControlValue = new ControlEffectKnob(ConfigKey(m_group, itemPrefix));
+    m_pControlType = new ControlObject(ConfigKey(m_group, itemPrefix + QString("_type")));
 
-    m_pControlLinkType->connectValueChangeRequest(
-            this, SLOT(slotLinkTypeChanging(double)));
-    connect(m_pControlLinkInverse, SIGNAL(valueChanged(double)),
-            this, SLOT(slotLinkInverseChanged(double)));
-    connect(m_pControlValue, SIGNAL(valueChanged(double)),
-            this, SLOT(slotValueChanged(double)));
+    m_pControlLinkType->connectValueChangeRequest(this, SLOT(slotLinkTypeChanging(double)));
+    connect(m_pControlLinkInverse, SIGNAL(valueChanged(double)),this, SLOT(slotLinkInverseChanged(double)));
+    connect(m_pControlValue, SIGNAL(valueChanged(double)),this, SLOT(slotValueChanged(double)));
 
     // Read-only controls.
-    m_pControlType->connectValueChangeRequest(
-            this, SLOT(slotValueType(double)));
-    m_pControlLoaded->connectValueChangeRequest(
-            this, SLOT(slotLoaded(double)));
-
-
+    m_pControlType->connectValueChangeRequest(this, SLOT(slotValueType(double)));
+    m_pControlLoaded->connectValueChangeRequest(this, SLOT(slotLoaded(double)));
     m_pSoftTakeover = new SoftTakeover();
-
     clear();
 }
-
-EffectParameterSlot::~EffectParameterSlot() {
+EffectParameterSlot::~EffectParameterSlot()
+{
     //qDebug() << debugString() << "destroyed";
     delete m_pControlValue;
     delete m_pSoftTakeover;
     delete m_pControlLinkType;
     delete m_pControlLinkInverse;
 }
-
-void EffectParameterSlot::loadEffect(EffectPointer pEffect) {
+void EffectParameterSlot::loadEffect(EffectPointer pEffect)
+{
     //qDebug() << debugString() << "loadEffect" << (pEffect ? pEffect->getManifest().name() : "(null)");
     clear();
-    if (pEffect) {
+    if (pEffect)
+    {
         // Returns null if it doesn't have a parameter for that number
         m_pEffectParameter = pEffect->getKnobParameterForSlot(m_iParameterSlotNumber);
 
@@ -227,11 +215,11 @@ void EffectParameterSlot::onChainSuperParameterChanged(double parameter, bool fo
 
         //qDebug() << "onChainParameterChanged" << parameter;
         if (force) {
-            m_pControlValue->setParameterFrom(parameter, NULL);
+            m_pControlValue->setParameter(parameter);
             // This ensures that softtakover is in sync for following updates
             m_pSoftTakeover->ignore(m_pControlValue, parameter);
         } else if (!m_pSoftTakeover->ignore(m_pControlValue, parameter)) {
-            m_pControlValue->setParameterFrom(parameter, NULL);
+            m_pControlValue->setParameter(parameter);
         }
     }
 }

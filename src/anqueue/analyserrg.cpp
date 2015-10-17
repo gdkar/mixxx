@@ -6,8 +6,9 @@
 #include "analyserrg.h"
 #include "util/math.h"
 
-AnalyserGain::AnalyserGain(ConfigObject<ConfigValue> *_config) {
-    m_pConfigReplayGain = _config;
+AnalyserGain::AnalyserGain(ConfigObject<ConfigValue> *_config,QObject *p)
+:Analyser(_config,p)
+{
     m_bStepControl = false;
     m_pLeftTempBuffer = NULL;
     m_pRightTempBuffer = NULL;
@@ -26,7 +27,7 @@ bool AnalyserGain::initialise(TrackPointer tio, int sampleRate, int totalSamples
 }
 
 bool AnalyserGain::loadStored(TrackPointer tio) const {
-    auto bAnalyserEnabled = (bool)m_pConfigReplayGain->getValueString(ConfigKey("ReplayGain","ReplayGainAnalyserEnabled")).toInt();
+    auto bAnalyserEnabled = (bool)m_pConfig->getValueString(ConfigKey("ReplayGain","ReplayGainAnalyserEnabled")).toInt();
     auto  fReplayGain = tio->getReplayGain();
     if (fReplayGain != 0 || !bAnalyserEnabled) {return true;}
     return false;

@@ -38,17 +38,17 @@ BeatsPointer BeatFactory::makeBeatGrid(TrackInfoObject* pTrack, double dBpm,
 }
 
 // static
-QString BeatFactory::getPreferredVersion(const bool bEnableFixedTempoCorrection)
+QString BeatFactory::getPreferredVersion(bool bEnableFixedTempoCorrection)
 {
     if (bEnableFixedTempoCorrection)return BEAT_GRID_2_VERSION;
     return BEAT_MAP_VERSION;
 }
 
 QString BeatFactory::getPreferredSubVersion(
-    const bool bEnableFixedTempoCorrection,
-    const bool bEnableOffsetCorrection,
-    const int iMinBpm, const int iMaxBpm,
-    const QHash<QString, QString> extraVersionInfo)
+    bool bEnableFixedTempoCorrection,
+    bool bEnableOffsetCorrection,
+    int iMinBpm, int iMaxBpm,
+    QHash<QString, QString> extraVersionInfo)
 {
     auto kSubVersionKeyValueSeparator = "=";
     auto kSubVersionFragmentSeparator = "|";
@@ -90,10 +90,10 @@ QString BeatFactory::getPreferredSubVersion(
 
 BeatsPointer BeatFactory::makePreferredBeats(
     TrackPointer pTrack, QVector<double> beats,
-    const QHash<QString, QString> extraVersionInfo,
-    const bool bEnableFixedTempoCorrection, const bool bEnableOffsetCorrection,
-    const int iSampleRate, const int iTotalSamples,
-    int iMinBpm, const int iMaxBpm)
+    QHash<QString, QString> extraVersionInfo,
+    bool bEnableFixedTempoCorrection, bool bEnableOffsetCorrection,
+    int iSampleRate, int iTotalSamples,
+    int iMinBpm, int iMaxBpm)
 {
     auto version = getPreferredVersion(bEnableFixedTempoCorrection);
     auto subVersion = getPreferredSubVersion(bEnableFixedTempoCorrection,

@@ -5,9 +5,7 @@
   * @brief Manages creation/enumeration/deletion of hardware controllers.
   */
 
-#ifndef CONTROLLERMANAGER_H
-#define CONTROLLERMANAGER_H
-
+_Pragma("once")
 #include "configobject.h"
 #include "controllers/controllerenumerator.h"
 #include "controllers/controllerpreset.h"
@@ -78,5 +76,3 @@ class ControllerManager : public QObject {
     QThread* m_pThread;
     PresetInfoEnumerator* m_pMainThreadPresetEnumerator;
 };
-
-#endif  // CONTROLLERMANAGER_H

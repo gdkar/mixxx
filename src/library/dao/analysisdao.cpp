@@ -18,23 +18,26 @@ const int kCompressionLevel = -1;
 
 AnalysisDao::AnalysisDao(QSqlDatabase& database, ConfigObject<ConfigValue>* pConfig)
         : m_pConfig(pConfig),
-          m_db(database) {
+          m_db(database)
+{
     QDir storagePath = getAnalysisStoragePath();
-    if (!QDir().mkpath(storagePath.absolutePath())) {
+    if (!QDir().mkpath(storagePath.absolutePath())) 
         qDebug() << "WARNING: Could not create analysis storage path. Mixxx will be unable to store analyses.";
-    }
 }
 AnalysisDao::~AnalysisDao() = default;
-void AnalysisDao::initialize() {}
-void AnalysisDao::setDatabase(QSqlDatabase& database) {
+void AnalysisDao::initialize()
+{
+}
+void AnalysisDao::setDatabase(QSqlDatabase& database)
+{
     m_db = database;
 }
-QList<AnalysisDao::AnalysisInfo> AnalysisDao::getAnalysesForTrack(TrackId trackId) {
+QList<AnalysisDao::AnalysisInfo> AnalysisDao::getAnalysesForTrack(TrackId trackId)
+{
     if (!m_db.isOpen() || !trackId.isValid()) return QList<AnalysisInfo>();
     QSqlQuery query(m_db);
-    query.prepare(QString(
-        "SELECT id, type, description, version, data_checksum FROM %1 "
-        "WHERE track_id=:trackId").arg(s_analysisTableName));
+    query.prepare(QString("SELECT id, type, description, version, data_checksum FROM %1 "
+                          "WHERE track_id=:trackId").arg(s_analysisTableName));
     query.bindValue(":trackId", trackId.toVariant());
     return loadAnalysesFromQuery(trackId, &query);
 }
@@ -279,9 +282,7 @@ void AnalysisDao::saveTrackAnalyses(TrackInfoObject* pTrack)
     analysis.data = pWaveform->toByteArray();
     auto success = saveAnalysis(&analysis);
     if (success) pWaveform->setDirty(false);
-    qDebug() << (success ? "Saved" : "Failed to save")
-                 << "waveform analysis for trackId" << trackId
-                 << "analysisId" << analysis.analysisId;
+    qDebug() << (success ? "Saved" : "Failed to save") << "waveform analysis for trackId" << trackId << "analysisId" << analysis.analysisId;
     // Clear analysisId since we are re-using the AnalysisInfo
     analysis.analysisId = -1;
     analysis.type = AnalysisDao::TYPE_WAVESUMMARY;
@@ -290,7 +291,5 @@ void AnalysisDao::saveTrackAnalyses(TrackInfoObject* pTrack)
     analysis.data = pWaveSummary->toByteArray();
     success = saveAnalysis(&analysis);
     if (success) pWaveSummary->setDirty(false);
-    qDebug() << (success ? "Saved" : "Failed to save")
-             << "waveform summary analysis for trackId" << trackId
-             << "analysisId" << analysis.analysisId;
+    qDebug() << (success ? "Saved" : "Failed to save") << "waveform summary analysis for trackId" << trackId << "analysisId" << analysis.analysisId;
 }

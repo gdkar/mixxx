@@ -28,12 +28,9 @@ class AnalyserWaveformTest: public MixxxTest {
         //  [ canary | big buf | canary ]
 
         canaryBigBuf = new CSAMPLE[BIGBUF_SIZE + 2*CANARY_SIZE];
-        for (int i = 0; i < CANARY_SIZE; i++)
-            canaryBigBuf[i] = CANARY_FLOAT;
-        for (int i = CANARY_SIZE; i < CANARY_SIZE+BIGBUF_SIZE; i++)
-            canaryBigBuf[i] = MAGIC_FLOAT;
-        for (int i = CANARY_SIZE+BIGBUF_SIZE; i < 2*CANARY_SIZE+BIGBUF_SIZE; i++)
-            canaryBigBuf[i] = CANARY_FLOAT;
+        for (int i = 0; i < CANARY_SIZE; i++)                                    canaryBigBuf[i] = CANARY_FLOAT;
+        for (int i = CANARY_SIZE; i < CANARY_SIZE+BIGBUF_SIZE; i++)              canaryBigBuf[i] = MAGIC_FLOAT;
+        for (int i = CANARY_SIZE+BIGBUF_SIZE; i < 2*CANARY_SIZE+BIGBUF_SIZE; i++)canaryBigBuf[i] = CANARY_FLOAT;
     }
 
     virtual void TearDown() {

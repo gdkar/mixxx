@@ -1,5 +1,4 @@
 syntax = "proto2";
-
 package mixxx.track.io;
 option optimize_for = LITE_RUNTIME;
 

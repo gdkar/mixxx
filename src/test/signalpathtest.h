@@ -1,6 +1,4 @@
-#ifndef ENGINEBACKENDTEST_H_
-#define ENGINEBACKENDTEST_H_
-
+_Pragma("once")
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
@@ -216,4 +214,3 @@ class SignalPathTest : public MixxxTest {
     static const int kProcessBufferSize;
 };
 
-#endif /* ENGINEBACKENDTEST_H_ */

@@ -40,7 +40,8 @@ class BeatGrid : public Beats
     virtual bool findPrevNextBeats(double dSamples,double* dpPrevBeatSamples,double* dpNextBeatSamples) const;
     virtual double findClosestBeat(double dSamples) const;
     virtual double findNthBeat(double dSamples, int n) const;
-    virtual BeatIterator findBeats(double startSample, double stopSample) const;
+    virtual double beatAtIndex(int n) const;
+    virtual int    findIndexNear(double dSamples) const;
     virtual bool hasBeatInRange(double startSample, double stopSample) const;
     virtual double getBpm() const;
     virtual double getBpmRange(double startSample, double stopSample) const;

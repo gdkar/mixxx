@@ -13,9 +13,7 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
-
-#ifndef ENCODER_H
-#define ENCODER_H
+_Pragma("once")
 #include "util/types.h"
 class Encoder {
   public:
@@ -32,4 +30,3 @@ class Encoder {
     /**converts an OGG quality measure from 1..10 to a bitrate **/
     static int convertToBitrate(int quality);
 };
-#endif // ENCODER_H

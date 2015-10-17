@@ -13,10 +13,12 @@ extern void qt_translateRawTouchEvent(QWidget *window,
 
 MixxxApplication::MixxxApplication(int& argc, char** argv)
         : QApplication(argc, argv),
-          m_activeTouchButton(Qt::NoButton){
+          m_activeTouchButton(Qt::NoButton)
+{
 }
-MixxxApplication::~MixxxApplication() {delete m_pTouchShift;}
-bool MixxxApplication::touchIsRightButton() {
-    if (!m_pTouchShift) { m_pTouchShift = new ControlObjectSlave("Controls", "touch_shift",this);}
+MixxxApplication::~MixxxApplication() = default;
+bool MixxxApplication::touchIsRightButton()
+{
+    if (!m_pTouchShift) m_pTouchShift = new ControlObjectSlave("Controls", "touch_shift",this);
     return (m_pTouchShift->get() != 0.0);
 }

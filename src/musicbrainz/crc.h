@@ -13,11 +13,8 @@
  *    ReflectOut   = True
  *    Algorithm    = table-driven
  *****************************************************************************/
-#ifndef __CRC_H__
-#define __CRC_H__
-
-#include <stdint.h>
-#include <stdlib.h>
+_Pragma("once")
+#include <stddef.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,16 +25,12 @@ extern "C" {
  * The definition of the used algorithm.
  *****************************************************************************/
 #define CRC_ALGO_TABLE_DRIVEN 1
-
-
 /**
  * The type of the CRC values.
  *
  * This type must be big enough to contain at least 32 bits.
  *****************************************************************************/
 typedef unsigned long crc_t;
-
-
 /**
  * Reflect all bits of a \a data word of \a data_len bytes.
  *
@@ -46,16 +39,12 @@ typedef unsigned long crc_t;
  * \return             The reflected data.
  *****************************************************************************/
 crc_t crc_reflect(crc_t data, size_t data_len);
-
-
 /**
  * Calculate the initial crc value.
  *
  * \return     The initial crc value.
  *****************************************************************************/
 #define crc_init()      (0xffffffff)
-
-
 /**
  * Update the crc value with new data.
  *
@@ -65,8 +54,6 @@ crc_t crc_reflect(crc_t data, size_t data_len);
  * \return         The updated crc value.
  *****************************************************************************/
 crc_t crc_update(crc_t crc, const unsigned char *data, size_t data_len);
-
-
 /**
  * Calculate the final crc value.
  *
@@ -74,10 +61,6 @@ crc_t crc_update(crc_t crc, const unsigned char *data, size_t data_len);
  * \return     The final crc value.
  *****************************************************************************/
 #define crc_finalize(crc)      (crc ^ 0xffffffff)
-
-
 #ifdef __cplusplus
 }           /* closing brace for extern "C" */
 #endif
-
-#endif      /* __CRC_H__ */

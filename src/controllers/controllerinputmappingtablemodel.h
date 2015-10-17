@@ -1,6 +1,4 @@
-#ifndef CONTROLLERINPUTMAPPINGTABLEMODEL_H
-#define CONTROLLERINPUTMAPPINGTABLEMODEL_H
-
+_Pragma("once")
 #include <QAbstractTableModel>
 #include <QVariant>
 #include <QModelIndex>
@@ -64,5 +62,3 @@ class ControllerInputMappingTableModel : public ControllerMappingTableModel {
 
     QList<MidiInputMapping> m_midiInputMappings;
 };
-
-#endif /* CONTROLLERINPUTMAPPINGTABLEMODEL_H */

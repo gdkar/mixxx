@@ -2,61 +2,82 @@
 #include "control/control.h"
 #include "util/math.h"
 
-bool ControlNumericBehavior::setFilter(double* /*dValue*/) { return true; }
-double ControlNumericBehavior::valueToParameter(double dValue) { return dValue; }
-double ControlNumericBehavior::parameterToValue(double dParam) { return dParam; }
-void ControlNumericBehavior::setValueFromParameter(double dParam, ControlDoublePrivate* pControl) {
-    pControl->set(parameterToValue(dParam), nullptr);
+bool ControlNumericBehavior::setFilter(double* /*dValue*/)
+{ 
+  return true;
+}
+double ControlNumericBehavior::valueToParameter(double dValue)
+{ 
+  return dValue;
+}
+double ControlNumericBehavior::parameterToValue(double dParam)
+{ 
+  return dParam;
+}
+void ControlNumericBehavior::setValueFromParameter(double dParam, ControlDoublePrivate* pControl)
+{
+    pControl->set(parameterToValue(dParam));
 }
 ControlPotmeterBehavior::ControlPotmeterBehavior(double dMinValue, double dMaxValue,bool allowOutOfBounds)
         : m_dMinValue(dMinValue),
           m_dMaxValue(dMaxValue),
           m_dValueRange(m_dMaxValue - m_dMinValue),
-          m_bAllowOutOfBounds(allowOutOfBounds) {
+          m_bAllowOutOfBounds(allowOutOfBounds)
+{
 }
-ControlPotmeterBehavior::~ControlPotmeterBehavior() {}
-bool ControlPotmeterBehavior::setFilter(double* dValue) {
-    if (!m_bAllowOutOfBounds) {
-        if (*dValue > m_dMaxValue) { *dValue = m_dMaxValue;}
-        else if (*dValue < m_dMinValue) { *dValue = m_dMinValue;}
+ControlPotmeterBehavior::~ControlPotmeterBehavior() = default;
+bool ControlPotmeterBehavior::setFilter(double* dValue)
+{
+    if (!m_bAllowOutOfBounds)
+    {
+        if (*dValue > m_dMaxValue)      *dValue = m_dMaxValue;
+        else if (*dValue < m_dMinValue) *dValue = m_dMinValue;
     }
     return true;
 }
-double ControlPotmeterBehavior::valueToParameter(double dValue) {
-    if (m_dValueRange == 0.0)      { return 0; }
-    if (dValue > m_dMaxValue)      { dValue = m_dMaxValue; }
-    else if (dValue < m_dMinValue) { dValue = m_dMinValue; }
+double ControlPotmeterBehavior::valueToParameter(double dValue)
+{
+    if (m_dValueRange == 0.0)        return 0;
+    if (dValue > m_dMaxValue)        dValue = m_dMaxValue;
+    else if (dValue < m_dMinValue)   dValue = m_dMinValue;
     return (dValue - m_dMinValue) / m_dValueRange;
 }
-double ControlPotmeterBehavior::parameterToValue(double dParam) { return m_dMinValue + (dParam * m_dValueRange); }
+double ControlPotmeterBehavior::parameterToValue(double dParam)
+{ 
+  return m_dMinValue + (dParam * m_dValueRange);
+}
 #define maxPosition 1.0
 #define minPosition 0.0
 #define middlePosition ((maxPosition - minPosition) / 2.0)
 #define positionrange (maxPosition - minPosition)
 ControlLogPotmeterBehavior::ControlLogPotmeterBehavior(double dMinValue, double dMaxValue, double minDB)
-        : ControlPotmeterBehavior(dMinValue, dMaxValue, false) {
-    if (minDB >= 0) { m_minDB = -1; }
-    else            { m_minDB = minDB; }
+        : ControlPotmeterBehavior(dMinValue, dMaxValue, false)
+{
+    if (minDB >= 0)   m_minDB = -1;
+    else              m_minDB = minDB;
     m_minOffset = db2ratio(m_minDB);
 }
-ControlLogPotmeterBehavior::~ControlLogPotmeterBehavior() {}
-double ControlLogPotmeterBehavior::valueToParameter(double dValue) {
-    if (m_dValueRange == 0.0)      { return 0; }
-    if (dValue > m_dMaxValue)      { dValue = m_dMaxValue;}
-    else if (dValue < m_dMinValue) { dValue = m_dMinValue; }
-    double linPrameter = (dValue - m_dMinValue) / m_dValueRange;
-    double dbParamter = ratio2db(linPrameter + m_minOffset * (1 - linPrameter));
+ControlLogPotmeterBehavior::~ControlLogPotmeterBehavior() = default;
+double ControlLogPotmeterBehavior::valueToParameter(double dValue)
+{
+    if (m_dValueRange == 0.0)      return 0;
+    if (dValue > m_dMaxValue)      dValue = m_dMaxValue;
+    else if (dValue < m_dMinValue) dValue = m_dMinValue;
+    auto linPrameter = (dValue - m_dMinValue) / m_dValueRange;
+    auto dbParamter = ratio2db(linPrameter + m_minOffset * (1 - linPrameter));
     return 1 - (dbParamter / m_minDB);
 }
-double ControlLogPotmeterBehavior::parameterToValue(double dParam) {
-    double dbParamter = (1 - dParam) * m_minDB;
-    double linPrameter = (db2ratio(dbParamter) - m_minOffset) / (1 - m_minOffset);
+double ControlLogPotmeterBehavior::parameterToValue(double dParam)
+{
+    auto dbParamter = (1 - dParam) * m_minDB;
+    auto linPrameter = (db2ratio(dbParamter) - m_minOffset) / (1 - m_minOffset);
     return m_dMinValue + (linPrameter * m_dValueRange);
 }
 ControlLinPotmeterBehavior::ControlLinPotmeterBehavior(double dMinValue, double dMaxValue, bool allowOutOfBounds)
-        : ControlPotmeterBehavior(dMinValue, dMaxValue, allowOutOfBounds) {
+        : ControlPotmeterBehavior(dMinValue, dMaxValue, allowOutOfBounds)
+{
 }
-ControlLinPotmeterBehavior::~ControlLinPotmeterBehavior() {}
+ControlLinPotmeterBehavior::~ControlLinPotmeterBehavior() = default;
 ControlAudioTaperPotBehavior::ControlAudioTaperPotBehavior(
                              double minDB, double maxDB,
                              double neutralParameter)
@@ -64,22 +85,26 @@ ControlAudioTaperPotBehavior::ControlAudioTaperPotBehavior(
           m_neutralParameter(neutralParameter),
           m_minDB(minDB),
           m_maxDB(maxDB),
-          m_offset(db2ratio(m_minDB)) {
+          m_offset(db2ratio(m_minDB))
+{
 }
-ControlAudioTaperPotBehavior::~ControlAudioTaperPotBehavior() {}
-double ControlAudioTaperPotBehavior::valueToParameter(double dValue) {
-    double dParam = 1.0;
-    if (dValue <= 0.0) {return 0;}
-    else if (dValue < 1.0) {
+ControlAudioTaperPotBehavior::~ControlAudioTaperPotBehavior() = default;
+double ControlAudioTaperPotBehavior::valueToParameter(double dValue)
+{
+    auto dParam = 1.0;
+    if (dValue <= 0.0) return 0;
+    else if (dValue < 1.0)
+    {
         // db + linear overlay to reach
         // m_minDB = 0
         // 0 dB = m_neutralParameter
-        double overlay = m_offset * (1 - dValue);
-        if (m_minDB) {
-            dParam = (ratio2db(dValue + overlay) - m_minDB) / m_minDB * m_neutralParameter * -1;
-        } else {dParam = dValue * m_neutralParameter;}
-    } else if (dValue == 1.0) {dParam = m_neutralParameter;}
-    else if (dValue < m_dMaxValue) {
+        auto overlay = m_offset * (1 - dValue);
+        if (m_minDB) dParam = (ratio2db(dValue + overlay) - m_minDB) / m_minDB * m_neutralParameter * -1;
+        else dParam = dValue * m_neutralParameter;
+    }
+    else if (dValue == 1.0) dParam = m_neutralParameter;
+    else if (dValue < m_dMaxValue)
+    {
         // m_maxDB = 1
         // 0 dB = m_neutralParameter
         dParam = (ratio2db(dValue) / m_maxDB * (1 - m_neutralParameter)) + m_neutralParameter;
@@ -88,19 +113,25 @@ double ControlAudioTaperPotBehavior::valueToParameter(double dValue) {
     return dParam;
 }
 
-double ControlAudioTaperPotBehavior::parameterToValue(double dParam) {
+double ControlAudioTaperPotBehavior::parameterToValue(double dParam)
+{
     auto dValue = 1.0;
-    if (dParam <= 0.0) {dValue = 0;}
-    else if (dParam < m_neutralParameter) {
+    if (dParam <= 0.0) dValue = 0;
+    else if (dParam < m_neutralParameter)
+    {
         // db + linear overlay to reach
         // m_minDB = 0
         // 0 dB = m_neutralParameter;
-        if (m_minDB) {
-            double db = (dParam * m_minDB / (m_neutralParameter * -1)) + m_minDB;
+        if (m_minDB)
+        {
+            auto db = (dParam * m_minDB / (m_neutralParameter * -1)) + m_minDB;
             dValue = (db2ratio(db) - m_offset) / (1 - m_offset) ;
-        } else {dValue = dParam / m_neutralParameter;}
-    } else if (dParam == m_neutralParameter) {dValue = 1.0;}
-    else if (dParam <= 1.0) {
+        }
+        else dValue = dParam / m_neutralParameter;
+    }
+    else if (dParam == m_neutralParameter) dValue = 1.0;
+    else if (dParam <= 1.0)
+    {
         // m_maxDB = 1
         // 0 dB = m_neutralParame;
         dValue = db2ratio((dParam - m_neutralParameter) * m_maxDB / (1 - m_neutralParameter));
@@ -108,13 +139,20 @@ double ControlAudioTaperPotBehavior::parameterToValue(double dParam) {
     //qDebug() << "ControlAudioTaperPotBehavior::parameterToValue" << "dValue =" << dValue << "dParam =" << dParam;
     return dValue;
 }
-void ControlAudioTaperPotBehavior::setValueFromParameter(double dParam,ControlDoublePrivate* pControl) { pControl->set(parameterToValue(dParam), nullptr); }
-double ControlTTRotaryBehavior::valueToParameter(double dValue) { return (dValue * 200.0 + 64) / 127.0; }
-double ControlTTRotaryBehavior::parameterToValue(double dParam) {
+void ControlAudioTaperPotBehavior::setValueFromParameter(double dParam,ControlDoublePrivate* pControl)
+{ 
+  pControl->set(parameterToValue(dParam));
+}
+double ControlTTRotaryBehavior::valueToParameter(double dValue)
+{ 
+  return (dValue * 200.0 + 64) / 127.0;
+}
+double ControlTTRotaryBehavior::parameterToValue(double dParam)
+{
     dParam *= 128.0;
     // Non-linear scaling
     double temp = ((dParam - 64.0) * (dParam - 64.0)) / 64.0;
-    if (dParam - 64 < 0) {temp = -temp;}
+    if (dParam - 64 < 0) temp = -temp;
     return temp;
 }
 // static
@@ -122,20 +160,27 @@ const int ControlPushButtonBehavior::kPowerWindowTimeMillis = 300;
 const int ControlPushButtonBehavior::kLongPressLatchingTimeMillis = 300;
 ControlPushButtonBehavior::ControlPushButtonBehavior(ButtonMode buttonMode, int iNumStates)
         : m_buttonMode(buttonMode),
-          m_iNumStates(iNumStates) {
+          m_iNumStates(iNumStates)
+{
 }
-void ControlPushButtonBehavior::setValueFromParameter(double dParam, ControlDoublePrivate* pControl) {
+void ControlPushButtonBehavior::setValueFromParameter(double dParam, ControlDoublePrivate* pControl)
+{
     auto pressed = !!dParam;
     // This block makes push-buttons act as power window buttons.
-    if (m_buttonMode == POWERWINDOW && m_iNumStates == 2) {
-        if (pressed) {
+    if (m_buttonMode == POWERWINDOW && m_iNumStates == 2)
+    {
+        if (pressed)
+        {
             // Toggle on press
-            double value = pControl->get();
-            pControl->set(!value, nullptr);
+            auto value = pControl->get();
+            pControl->set(!value);
             m_pushTimer.setSingleShot(true);
             m_pushTimer.start(kPowerWindowTimeMillis);
-        } else if (!m_pushTimer.isActive()) {pControl->set(0., nullptr);}
-    } else if (m_buttonMode == TOGGLE || m_buttonMode == LONGPRESSLATCHING) {
+        }
+        else if (!m_pushTimer.isActive()) pControl->set(0.);
+    }
+    else if (m_buttonMode == TOGGLE || m_buttonMode == LONGPRESSLATCHING)
+    {
         // This block makes push-buttons act as toggle buttons.
         if (m_iNumStates > 1)
         { // multistate button
@@ -145,9 +190,9 @@ void ControlPushButtonBehavior::setValueFromParameter(double dParam, ControlDoub
                 // to change the value at the same time. We allow the race here,
                 // because this is possibly what the user expects if he changes
                 // the same control from different devices.
-                double value = pControl->get();
+                auto value = pControl->get();
                 value = (int)(value + 1.) % m_iNumStates;
-                pControl->set(value, nullptr);
+                pControl->set(value);
                 if (m_buttonMode == LONGPRESSLATCHING)
                 {
                     m_pushTimer.setSingleShot(true);
@@ -156,16 +201,14 @@ void ControlPushButtonBehavior::setValueFromParameter(double dParam, ControlDoub
             }
             else
             {
-                double value = pControl->get();
+                auto value = pControl->get();
                 if (m_buttonMode == LONGPRESSLATCHING && m_pushTimer.isActive() && value >= 1.)
                 {
                     // revert toggle if button is released too early
                     value = (int)(value - 1.) % m_iNumStates;
-                    pControl->set(value, nullptr);
+                    pControl->set(value);
                 }
             }
         }
-    } else { // Not a toggle button (trigger only when button pushed)
-        pControl->set(pressed,nullptr);
-    }
+    } else pControl->set(pressed);
 }

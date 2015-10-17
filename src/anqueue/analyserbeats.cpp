@@ -17,8 +17,8 @@
 #include "track/beatutils.h"
 #include "track/beat_preferences.h"
 
-AnalyserBeats::AnalyserBeats(ConfigObject<ConfigValue>* pConfig)
-        : m_pConfig(pConfig)
+AnalyserBeats::AnalyserBeats(ConfigObject<ConfigValue>* pConfig, QObject *p)
+        : Analyser(pConfig,p)
 {
 }
 AnalyserBeats::~AnalyserBeats() = default;

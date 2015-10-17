@@ -14,9 +14,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef PLAYERINFO_H
-#define PLAYERINFO_H
-
+_Pragma("once")
 #include <QObject>
 #include <QMutex>
 #include <QMap>
@@ -28,10 +26,10 @@ class DeckControls : public QObject{
     public:
         DeckControls(QString& group, QObject *pParent = nullptr);
         virtual ~DeckControls();
-        ControlObjectSlave* m_play;
-        ControlObjectSlave* m_pregain;
-        ControlObjectSlave* m_volume;
-        ControlObjectSlave* m_orientation;
+        ControlObjectSlave* m_play        = nullptr;
+        ControlObjectSlave* m_pregain     = nullptr;
+        ControlObjectSlave* m_volume      = nullptr;
+        ControlObjectSlave* m_orientation = nullptr;
 };
 class PlayerInfo : public QObject {
     Q_OBJECT
@@ -50,7 +48,6 @@ class PlayerInfo : public QObject {
     void trackLoaded(QString group, TrackPointer pTrack);
     void trackUnloaded(QString group, TrackPointer pTrack);
   private:
-
     void clearControlCache();
     void timerEvent(QTimerEvent* pTimerEvent);
     void updateCurrentPlayingDeck();
@@ -64,6 +61,4 @@ class PlayerInfo : public QObject {
     QMap<QString, TrackPointer> m_loadedTrackMap;
     int m_currentlyPlayingDeck;
     QList<DeckControls*> m_deckControlList;
-    static PlayerInfo* m_pPlayerinfo;
 };
-#endif /* _PLAYERINFO_H_ */

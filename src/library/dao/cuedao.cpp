@@ -15,8 +15,7 @@ CueDAO::CueDAO(QSqlDatabase& database)
         : m_database(database) {
 }
 
-CueDAO::~CueDAO() {
-}
+CueDAO::~CueDAO() = default;
 
 void CueDAO::initialize() {
     qDebug() << "CueDAO::initialize" << QThread::currentThread() << m_database.connectionName();
@@ -262,4 +261,9 @@ void CueDAO::saveTrackCues(TrackId trackId, TrackInfoObject* pTrack) {
         LOG_FAILED_QUERY(query) << "Delete cues failed.";
     }
     //qDebug() << "Deleting cues took " << time.elapsed() << "ms";
+}
+
+void CueDAO::setDatabase(QSqlDatabase& database)
+{ 
+  m_database = database;
 }

@@ -20,7 +20,7 @@ class SoundSourceFFmpeg : public SoundSource {
     virtual SINT seekSampleFrame(SINT frameIndex) override;
     virtual SINT readSampleFrames(SINT numberOfFrames, CSAMPLE* sampleBuffer) override;
   private:
-    bool    tryOpen(const AudioSourceConfig& audioSrcCfg) override;
+    bool    tryOpen(SoundSourceConfig audioSrcCfg) override;
     bool    decode_next_frame();
     AVFormatContext       *m_format_ctx   = nullptr;
     AVStream              *m_stream       = nullptr;
@@ -43,7 +43,7 @@ class SoundSourceProviderFFmpeg: public SoundSourceProvider {
   public:
     QString getName() const override {return "FFmpeg";}
     QStringList getSupportedFileExtensions() const override;
-    SoundSourcePointer newSoundSource(const QUrl& url) override {
+    SoundSourcePointer newSoundSource(QUrl url) override {
         return SoundSourcePointer(new SoundSourceFFmpeg(url));
     }
 };

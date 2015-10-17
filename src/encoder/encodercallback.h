@@ -1,6 +1,4 @@
-#ifndef ENCODERCALLBACK_H
-#define ENCODERCALLBACK_H
-
+_Pragma("once")
 class EncoderCallback {
   public:
     // writes to encoded audio to a stream, e.g., a file stream or shoutcast stream
@@ -10,6 +8,3 @@ class EncoderCallback {
       return reinterpret_cast<EncoderCallback*>(opaque)->write(data,length);
     }
 };
-
-#endif /* ENCODERCALLBACK_H */
-

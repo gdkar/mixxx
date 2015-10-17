@@ -90,13 +90,14 @@ void WaveformStride::averageStore(WaveformData *data)
     }
   }
 }
-AnalyserWaveform::AnalyserWaveform(ConfigObject<ConfigValue>* pConfig) :
-        m_skipProcessing(false),
-        m_waveformData(nullptr),
-        m_waveformSummaryData(nullptr),
-        m_stride(0, 0),
-        m_currentStride(0),
-        m_currentSummaryStride(0)
+AnalyserWaveform::AnalyserWaveform(ConfigObject<ConfigValue>* pConfig, QObject *p)
+  : Analyser(pConfig,p),
+    m_skipProcessing(false),
+    m_waveformData(nullptr),
+    m_waveformSummaryData(nullptr),
+    m_stride(0, 0),
+    m_currentStride(0),
+    m_currentSummaryStride(0)
 {
     qDebug() << "AnalyserWaveform::AnalyserWaveform()";
     m_filter[0] = 0;

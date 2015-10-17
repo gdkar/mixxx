@@ -27,7 +27,6 @@ class AcoustidClient : public QObject {
     // You can create one AcoustidClient and make multiple requests using it.
     // IDs are provided by the caller when a request is started and included in
     // the finished signal - they have no meaning to AcoustidClient.
-
   public:
     AcoustidClient(QObject* parent = nullptr);
     // Network requests will be aborted after this interval.

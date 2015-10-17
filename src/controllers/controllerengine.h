@@ -5,9 +5,7 @@
 * @brief The script engine for use by a Controller.
 */
 
-#ifndef CONTROLLERENGINE_H
-#define CONTROLLERENGINE_H
-
+_Pragma("once")
 #include <QEvent>
 #include <QtScript>
 #include <QMessageBox>
@@ -196,5 +194,3 @@ class ControllerEngine : public QObject {
     QFileSystemWatcher m_scriptWatcher;
     QList<QString> m_lastScriptPaths;
 };
-
-#endif

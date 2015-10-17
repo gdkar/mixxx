@@ -12,17 +12,9 @@ Cue::~Cue() {
 }
 
 Cue::Cue(TrackId trackId)
-        : m_bDirty(false),
-          m_iId(-1),
-          m_trackId(trackId),
-          m_type(INVALID),
-          m_iPosition(-1),
-          m_iLength(0),
-          m_iHotCue(-1),
-          m_label("") {
+:m_trackId(trackId)
+{
 }
-
-
 Cue::Cue(int id, TrackId trackId, Cue::CueType type, int position, int length,
          int hotCue, QString label)
         : m_bDirty(false),
@@ -32,114 +24,104 @@ Cue::Cue(int id, TrackId trackId, Cue::CueType type, int position, int length,
           m_iPosition(position),
           m_iLength(length),
           m_iHotCue(hotCue),
-          m_label(label) {
+          m_label(label)
+{
 }
-
-int Cue::getId() const {
-    QMutexLocker lock(&m_mutex);
-    return m_iId;
+int Cue::getId() const
+{
+    return m_iId.load();
 }
-
-void Cue::setId(int cueId) {
-    QMutexLocker lock(&m_mutex);
-    m_iId = cueId;
-    m_bDirty = true;
-    lock.unlock();
-    emit(updated());
-}
-
-TrackId Cue::getTrackId() const {
-    QMutexLocker lock(&m_mutex);
-    return m_trackId;
-}
-
-void Cue::setTrackId(TrackId trackId) {
-    QMutexLocker lock(&m_mutex);
-    m_trackId = trackId;
-    m_bDirty = true;
-    lock.unlock();
-    emit(updated());
-}
-
-Cue::CueType Cue::getType() const {
-    QMutexLocker lock(&m_mutex);
-    return m_type;
-}
-
-void Cue::setType(Cue::CueType type) {
-    QMutexLocker lock(&m_mutex);
-    m_type = type;
-    m_bDirty = true;
-    lock.unlock();
-    emit(updated());
-}
-
-int Cue::getPosition() const {
-    QMutexLocker lock(&m_mutex);
-    return m_iPosition;
-}
-
-void Cue::setPosition(int position) {
-    DEBUG_ASSERT_AND_HANDLE(position % 2 == 0) {
-        return;
+void Cue::setId(int cueId)
+{
+    if(m_iId.exchange(cueId)!=cueId)
+    {
+      m_bDirty = true;
+      emit updated();
     }
-    QMutexLocker lock(&m_mutex);
-    m_iPosition = position;
-    m_bDirty = true;
-    lock.unlock();
-    emit(updated());
 }
-
-int Cue::getLength() const {
-    QMutexLocker lock(&m_mutex);
-    return m_iLength;
+TrackId Cue::getTrackId() const
+{
+    return m_trackId.load();
 }
-
-void Cue::setLength(int length) {
-    DEBUG_ASSERT_AND_HANDLE(length % 2 == 0) {
-        return;
+void Cue::setTrackId(TrackId trackId)
+{
+    if(m_trackId.exchange(trackId)!=trackId)
+    {
+      m_bDirty = true;
+      emit updated();
     }
-    QMutexLocker lock(&m_mutex);
-    m_iLength = length;
-    m_bDirty = true;
-    lock.unlock();
-    emit(updated());
 }
-
-int Cue::getHotCue() const {
-    QMutexLocker lock(&m_mutex);
-    return m_iHotCue;
+Cue::CueType Cue::getType() const
+{
+    return m_type.load();
 }
-
-void Cue::setHotCue(int hotCue) {
-    QMutexLocker lock(&m_mutex);
+void Cue::setType(Cue::CueType type)
+{
+    if(m_type.exchange(type) != type)
+    {
+      m_bDirty = true;
+      emit(updated());
+    }
+}
+int Cue::getPosition() const
+{
+    return m_iPosition.load();
+}
+void Cue::setPosition(int position)
+{
+    DEBUG_ASSERT_AND_HANDLE(position % 2 == 0) {return;}
+    if(m_iPosition.exchange(position)!=position)
+    {
+      m_bDirty = true;
+      emit(updated());
+    }
+}
+int Cue::getLength() const
+{
+    return m_iLength.load();
+}
+void Cue::setLength(int length)
+{
+    DEBUG_ASSERT_AND_HANDLE(length % 2 == 0) {return;}
+    if(m_iLength.exchange(length)!=length)
+    {
+      m_bDirty = true;
+      emit(updated());
+    }
+}
+int Cue::getHotCue() const
+{
+    return m_iHotCue.load();
+}
+void Cue::setHotCue(int hotCue)
+{
     // TODO(XXX) enforce uniqueness?
-    m_iHotCue = hotCue;
-    m_bDirty = true;
-    lock.unlock();
-    emit(updated());
+    if(m_iHotCue.exchange(hotCue)!=hotCue)
+    {
+      m_bDirty = true;
+      emit(updated());
+    }
 }
-
-QString Cue::getLabel() const {
+QString Cue::getLabel() const
+{
     QMutexLocker lock(&m_mutex);
     return m_label;
 }
-
-void Cue::setLabel(const QString label) {
-    //qDebug() << "setLabel()" << m_label << "-" << label;
-    QMutexLocker lock(&m_mutex);
-    m_label = label;
-    m_bDirty = true;
-    lock.unlock();
-    emit(updated());
+void Cue::setLabel(const QString label)
+{
+    auto old_label = label;
+    m_label.swap(old_label);
+    if(old_label != label)
+    {
+      m_bDirty = true;
+      emit(updated());
+    }
 }
-
-bool Cue::isDirty() const {
-    QMutexLocker lock(&m_mutex);
-    return m_bDirty;
+bool Cue::isDirty() const
+{
+    return m_bDirty.load();;
 }
-
-void Cue::setDirty(bool dirty) {
-    QMutexLocker lock(&m_mutex);
-    m_bDirty = dirty;
+void Cue::setDirty(bool dirty)
+{
+    m_bDirty.store(dirty);
 }

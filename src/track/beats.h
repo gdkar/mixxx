@@ -9,15 +9,14 @@ class BeatIterator
 {
   public:
     BeatIterator();
-    BeatIterator(Beats *pBeats, double start, double stop);
+    BeatIterator(const Beats *pBeats, int index, double stop);
     virtual ~BeatIterator() ;
     virtual bool hasNext() const;
     virtual double next();
   private:
-    double       m_start   = -1;
+    const Beats* m_pBeats  = nullptr;
+    int          m_index   = -1;
     double       m_stop    = -1;
-    double       m_current = -1;
-    Beats*       m_pBeats;
 };
 // Beats is a pure abstract base class for BPM and beat management classes. It
 // provides a specification of all methods a beat-manager class must provide, as
@@ -81,11 +80,13 @@ class Beats : public QObject{
     // findPrevBeat, respectively. If dSamples refers to the location of a beat,
     // then dSamples is returned. If no beat can be found, returns -1.
     virtual double findNthBeat(double dSamples, int n) const = 0;
+    virtual double beatAtIndex(int n) const = 0;
+    virtual int    findIndexNear(double dSamples) const = 0;
     // Adds to pBeatsList the position in samples of every beat occuring between
     // startPosition and endPosition. BeatIterator must be iterated while
     // holding a strong references to the Beats object to ensure that the Beats
     // object is not deleted. Caller takes ownership of the returned BeatIterator;
-    virtual BeatIterator findBeats(double startSample, double stopSample) const = 0;
+    virtual BeatIterator findBeats(double startSample, double stopSample) const;
     // Return whether or not a sample lies between startPosition and endPosition
     virtual bool hasBeatInRange(double startSample, double stopSample) const = 0;
     // Return the average BPM over the entire track if the BPM is

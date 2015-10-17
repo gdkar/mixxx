@@ -21,11 +21,13 @@
 //
 // Constructor
 EncoderFfmpegCore::EncoderFfmpegCore(EncoderCallback* pCallback, AVCodecID codec)
-   : m_pCallback(pCallback), m_SCcodecId(codec){
+   : m_pCallback(pCallback), m_SCcodecId(codec)
+{
     m_lBitrate = 128000;
 }
 // Destructor  //call flush before any encoder gets deleted
-EncoderFfmpegCore::~EncoderFfmpegCore() {
+EncoderFfmpegCore::~EncoderFfmpegCore()
+{
     qDebug() << "EncoderFfmpegCore::~EncoderFfmpegCore()";
     closeAudio();
 }
@@ -36,11 +38,13 @@ void EncoderFfmpegCore::flush()
 }
 //  Get new random serial number
 //  -> returns random number
-int EncoderFfmpegCore::getSerial() {
-    int l_iSerial = 0;
+int EncoderFfmpegCore::getSerial()
+{
+    auto l_iSerial = 0;
     return l_iSerial;
 }
-void EncoderFfmpegCore::encodeBuffer(const CSAMPLE *samples, const int size) {
+void EncoderFfmpegCore::encodeBuffer(const CSAMPLE *samples, const int size)
+{
     auto pre_frame = av_frame_alloc();
     pre_frame->nb_samples     = size;
     pre_frame->format         = AV_SAMPLE_FMT_FLT;
@@ -57,7 +61,8 @@ void EncoderFfmpegCore::encodeBuffer(const CSAMPLE *samples, const int size) {
     if((err=swr_convert_frame(m_pSwr,post_frame,pre_frame))<0)
     {
       if(((err=swr_config_frame(m_pSwr,post_frame,pre_frame))<0)
-      || ((err=swr_convert_frame(m_pSwr,post_frame,pre_frame))<0)){
+      || ((err=swr_convert_frame(m_pSwr,post_frame,pre_frame))<0))
+      {
         av_frame_free(&pre_frame);
         av_frame_free(&post_frame);
         return ;
@@ -73,26 +78,23 @@ void EncoderFfmpegCore::encodeBuffer(const CSAMPLE *samples, const int size) {
 //
 // Currently this method is used before init() once to save artist, title and album
 //
-void EncoderFfmpegCore::updateMetaData(char* artist, char* title, char* album) {
+void EncoderFfmpegCore::updateMetaData(char* artist, char* title, char* album)
+{
     qDebug() << "ffmpegencodercore: UpdateMetadata: !" << artist << " - " << title << " - " << album;
     m_strMetaDataTitle = title;
     m_strMetaDataArtist = artist;
     m_strMetaDataAlbum = album;
 }
-int EncoderFfmpegCore::initEncoder(int bitrate, int samplerate) {
+int EncoderFfmpegCore::initEncoder(int bitrate, int samplerate)
+{
     m_lBitrate = bitrate * 1000;
     m_lSampleRate = samplerate;
     const char *output_name = nullptr;
-    if (m_SCcodecId == AV_CODEC_ID_MP3) {
-      output_name = "output.mp3";
-    } else if (m_SCcodecId == AV_CODEC_ID_AAC) {
-      output_name = "output.m4a";
-    }else{
-      output_name = "output.ogg";
-    }
+    if (m_SCcodecId == AV_CODEC_ID_MP3)      output_name = "output.mp3";
+    else if (m_SCcodecId == AV_CODEC_ID_AAC) output_name = "output.m4a";
+    else                                     output_name = "output.ogg";
     m_pEncoderFormatCtx = avformat_alloc_context();
     auto buffer = reinterpret_cast<uint8_t*>(av_malloc(4096));
-
     m_pEncoderFormatCtx->pb = avio_alloc_context(buffer,4096,1,reinterpret_cast<void*>(m_pCallback),nullptr,&EncoderCallback::write_thunk,nullptr);
     m_pEncoderFormatCtx->oformat = av_guess_format(nullptr,output_name,nullptr);
     avformat_alloc_output_context2(&m_pEncoderFormatCtx,nullptr,nullptr,output_name);
@@ -109,10 +111,10 @@ int EncoderFfmpegCore::initEncoder(int bitrate, int samplerate) {
     m_pEncoderCodecCtx->sample_fmt     = m_pEncoderAudioCodec->sample_fmts[0];
     m_pEncoderCodecCtx->strict_std_compliance = FF_COMPLIANCE_EXPERIMENTAL;
 
-    if(m_pEncoderFormatCtx->oformat->flags & AVFMT_GLOBALHEADER)
-      m_pEncoderCodecCtx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+    if(m_pEncoderFormatCtx->oformat->flags & AVFMT_GLOBALHEADER) m_pEncoderCodecCtx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
     avcodec_open2(m_pEncoderCodecCtx,m_pEncoderAudioCodec,nullptr);
-    m_pSwr = swr_alloc_set_opts(m_pSwr,
+    m_pSwr = swr_alloc_set_opts(
+        m_pSwr,
         m_pEncoderCodecCtx->channel_layout,
         m_pEncoderCodecCtx->sample_fmt,
         m_pEncoderCodecCtx->sample_rate,
@@ -122,7 +124,8 @@ int EncoderFfmpegCore::initEncoder(int bitrate, int samplerate) {
         0, nullptr);
     swr_init(m_pSwr);
     m_pAudioFifo = av_audio_fifo_alloc(m_pEncoderCodecCtx->sample_fmt,m_pEncoderCodecCtx->channels,1);
-    if (avformat_write_header(m_pEncoderFormatCtx, nullptr) != 0) {
+    if (avformat_write_header(m_pEncoderFormatCtx, nullptr))
+    {
         qDebug() << "EncoderFfmpegCore::initEncoder: failed to write a header.";
         return -1;
     }
@@ -132,13 +135,15 @@ int EncoderFfmpegCore::initEncoder(int bitrate, int samplerate) {
     return 0;
 }
 // Private methods
-int EncoderFfmpegCore::writeAudioFrames(bool flushing) {
+int EncoderFfmpegCore::writeAudioFrames(bool flushing)
+{
     auto got_frame = 0;
     auto err = 0;
     // Mixxx uses float (32 bit) samples..
     auto frame = av_frame_alloc();
     AVPacket packet;
-    while(av_audio_fifo_size(m_pAudioFifo) >= m_iAudioInputFrameSize || (av_audio_fifo_size(m_pAudioFifo) > 0 && flushing)){
+    while(av_audio_fifo_size(m_pAudioFifo) >= m_iAudioInputFrameSize || (av_audio_fifo_size(m_pAudioFifo) > 0 && flushing))
+    {
       av_init_packet(&packet);
       packet.size = 0;
       packet.data = nullptr;
@@ -152,7 +157,8 @@ int EncoderFfmpegCore::writeAudioFrames(bool flushing) {
       frame->channels       = m_pEncoderCodecCtx->channels;
       frame->sample_rate    = m_pEncoderCodecCtx->sample_rate;
       err = av_frame_get_buffer ( frame, 0 );
-      if (err != 0) {
+      if (err)
+      {
           qDebug() << "Can't fill FFMPEG frame: error " <<
                   ff_make_error_string(err) << " " << "m_iAudioInputFrameSize= " <<  m_iAudioInputFrameSize;
           av_frame_free(&frame);

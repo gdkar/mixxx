@@ -59,7 +59,7 @@ void WaveformRenderBeat::draw(QPainter* painter, QPaintEvent* /*event*/)
         auto beatPosition = it.next();
         auto xBeatPoint = m_waveformRenderer->transformSampleIndexInRendererWorld(beatPosition);
         xBeatPoint = qRound(xBeatPoint);
-        m_beats.emplace_back(xBeatPoint, 0.0f, xBeatPoint, rendererHeight);
+        m_beats.push_back(QLineF(xBeatPoint, 0.0f, xBeatPoint, rendererHeight));
     }
     // Make sure to use constData to prevent detaches!
     painter->drawLines(&m_beats[0], m_beats.size());

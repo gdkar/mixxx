@@ -38,12 +38,10 @@
 
 #include <QFile>
 #include <QFileInfo>
-#ifdef __FFMPEGFILE__
 extern "C" {
-#include <libavcodec/avcodec.h>
-#include <libavformat/avformat.h>
+  #include <libavcodec/avcodec.h>
+  #include <libavformat/avformat.h>
 }
-#endif
 
 #ifdef Q_OS_LINUX
 #include <X11/Xlib.h>
@@ -249,11 +247,7 @@ int main(int argc, char * argv[])
         return(0);
     }
 
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-    qInstallMsgHandler(MessageHandler);
-#else
     qInstallMessageHandler(MessageHandler);
-#endif
 
     // Other things depend on this name to enforce thread exclusivity,
     //  so if you change it here, change it also in:
@@ -264,30 +258,15 @@ int main(int argc, char * argv[])
     // Support utf-8 for all translation strings. Not supported in Qt 5.
     // TODO(rryan): Is this needed when we switch to qt5? Some sources claim it
     // isn't.
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-    QTextCodec::setCodecForTr(QTextCodec::codecForName("UTF-8"));
-#endif
-
-#ifdef __FFMPEGFILE__
      av_register_all();
      avcodec_register_all();
-#endif
-
-     //Enumerate and load SoundSource plugins
-     SoundSourceProxy::loadPlugins();
-
-    // Check if one of the command line arguments is "--no-visuals"
-//    bool bVisuals = true;
-//    for (int i=0; i<argc; ++i)
-//        if(QString("--no-visuals")==argv[i])
-//            bVisuals = false;
-
 
 #ifdef __APPLE__
      QDir dir(QApplication::applicationDirPath());
      // Set the search path for Qt plugins to be in the bundle's PlugIns
      // directory, but only if we think the mixxx binary is in a bundle.
-     if (dir.path().contains(".app/")) {
+     if (dir.path().contains(".app/"))
+     {
          // If in a bundle, applicationDirPath() returns something formatted
          // like: .../Mixxx.app/Contents/MacOS
          dir.cdUp();
@@ -299,43 +278,28 @@ int main(int argc, char * argv[])
          QApplication::setLibraryPaths(QStringList(dir.absolutePath()));
      }
 #endif
-
     MixxxMainWindow* mixxx = new MixxxMainWindow(&a, args);
-
     //a.setMainWidget(mixxx);
     QObject::connect(&a, SIGNAL(lastWindowClosed()), &a, SLOT(quit()));
-
-    int result = -1;
-
-    if (!(ErrorDialogHandler::instance()->checkError())) {
+    auto result = -1;
+    if (!(ErrorDialogHandler::instance()->checkError()))
+    {
         qDebug() << "Displaying mixxx";
         mixxx->show();
-
         qDebug() << "Running Mixxx";
         result = a.exec();
-    } else {
-        mixxx->finalize();
     }
-
+    else mixxx->finalize();
     delete mixxx;
-
     qDebug() << "Mixxx shutdown complete with code" << result;
-
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-    qInstallMsgHandler(NULL);  // Reset to default.
-#else
-    qInstallMessageHandler(NULL);  // Reset to default.
-#endif
+    qInstallMessageHandler(nullptr);  // Reset to default.
 
     // Don't make any more output after this
     //    or mixxx.log will get clobbered!
     { // scope
         QMutexLocker locker(&mutexLogfile);
-        if(Logfile.isOpen()) {
-            Logfile.close();
-        }
+        if(Logfile.isOpen()) Logfile.close();
     }
-
     //delete plugin_paths;
     return result;
 }

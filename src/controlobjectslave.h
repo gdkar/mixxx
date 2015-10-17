@@ -8,6 +8,12 @@ _Pragma("once")
 class ControlDoublePrivate;
 class ControlObjectSlave : public QObject {
     Q_OBJECT
+    Q_PROPERTY(QString name READ name NOTIFY nameChanged);
+    Q_PROPERTY(QString description READ description NOTIFY descriptionChanged);
+    Q_PROPERTY(QString group READ group CONSTANT);
+    Q_PROPERTY(QString item READ item CONSTANT);
+    Q_PROPERTY(double value READ get WRITE set RESET reset NOTIFY valueChanged);
+    Q_PROPERTY(double parameter READ getParameter WRITE setParameter RESET reset NOTIFY parameterChanged);
   public:
     ControlObjectSlave(QObject* pParent = nullptr);
     ControlObjectSlave(const QString& g, const QString& i, QObject* pParent = nullptr);
@@ -30,6 +36,10 @@ class ControlObjectSlave : public QObject {
     virtual double getDefault() const;
     // Returns the parameterized value of the object. Thread safe, non-blocking.
     virtual double getParameterForValue(double value) const;
+    virtual QString name() const;
+    virtual QString description() const;
+    virtual QString group() const;
+    virtual QString item() const;
   public slots:
     // Sets the control value to v. Thread safe, non-blocking.
     virtual void set ( double v);
@@ -41,10 +51,9 @@ class ControlObjectSlave : public QObject {
     // This signal must not connected by connect(). Use connectValueChanged()
     // instead. It will connect to the base ControlDoublePrivate as well.
     void valueChanged(double);
-  protected slots:
-    // Receives the value from the master control and re-emits either
-    // valueChanged(double) or valueChangedByThis(double) based on pSetter.
-    virtual void slotValueChanged(double v, QObject* pSetter);
+    void nameChanged(QString);
+    void descriptionChanged(QString);
+    void parameterChanged();
   protected:
     ConfigKey m_key;
     // Pointer to connected control.

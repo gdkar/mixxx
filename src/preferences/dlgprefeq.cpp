@@ -531,7 +531,7 @@ void DlgPrefEQ::setUpMasterEQ() {
     auto effect = EffectPointer(m_pEffectMasterEQ);
     if (!effect.isNull()) {
         auto knobNum = effect->numKnobParameters();
-        for (auto i = 0; i < knobNum; i++) {
+        for (auto i = decltype(knobNum){0}; i < knobNum; i++) {
             auto param = effect->getKnobParameterForSlot(i);
             if (param) {
                 auto strValue = m_pConfig->getValueString(ConfigKey(kConfigKey,QString("EffectForGroup_[Master]_parameter%1").arg(i + 1)));
@@ -567,10 +567,11 @@ void DlgPrefEQ::slotMasterEqEffectChanged(int effectIndex) {
             m_pEffectMasterEQ = pEffect;
             auto knobNum = pEffect->numKnobParameters();
             // Create and set up Master EQ's sliders
-            auto i = 0;
+            auto i = decltype(knobNum){0};
             for (; i < knobNum; i++) {
                 auto param = pEffect->getKnobParameterForSlot(i);
-                if (param) {
+                if (param)
+                {
                     // Setup Label
                     auto centerFreqLabel = new QLabel(this);
                     auto labelText = param->manifest().name();
@@ -644,7 +645,7 @@ void DlgPrefEQ::slotMasterEQToDefault() {
     auto effect = EffectPointer(m_pEffectMasterEQ);
     if (!effect.isNull()) {
         auto knobNum = effect->numKnobParameters();
-        for (auto i = 0; i < knobNum; i++) {
+        for (auto i = decltype(knobNum){0}; i < knobNum; i++) {
             auto param = effect->getKnobParameterForSlot(i);
             if (param) {
                 auto defaultValue = param->getDefault();

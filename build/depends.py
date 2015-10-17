@@ -443,6 +443,7 @@ class MixxxCore(Feature):
                    "cachingreaderchunk.cpp",
                    "cachingreaderworker.cpp",
 
+                   "anqueue/analyser.cpp",
                    "anqueue/analyserrg.cpp",
                    "anqueue/analyserqueue.cpp",
                    "anqueue/analyserwaveform.cpp",
@@ -481,12 +482,10 @@ class MixxxCore(Feature):
                    "preferences/errordialoghandler.cpp",
                    "upgrade.cpp",
 
-                   "sources/soundsourceproviderregistry.cpp",
-                   "sources/soundsourceplugin.cpp",
-                   "sources/soundsourcepluginlibrary.cpp",
+#                   "sources/soundsourceproviderregistry.cpp",
+#                   "sources/soundsourceplugin.cpp",
+#                   "sources/soundsourcepluginlibrary.cpp",
                    "sources/soundsource.cpp",
-                   "sources/audiosource.cpp",
-                   "sources/urlresource.cpp",
 
                    "metadata/trackmetadata.cpp",
                    "metadata/trackmetadatataglib.cpp",

@@ -28,7 +28,7 @@ namespace {
     // We need to use a smaller block size, because on Linux the AnalyserQueue
     // can starve the CPU of its resources, resulting in xruns. A block size
     // of 4096 frames per block seems to do fine.
-    const SINT kAnalysisChannels        = Mixxx::AudioSource::kChannelCountStereo;
+    const SINT kAnalysisChannels        = Mixxx::SoundSource::kChannelCountStereo;
     const SINT kAnalysisFrameRate       = 0;
     const SINT kAnalysisFramesPerBlock  = 4096;
     const SINT kAnalysisSamplesPerBlock = kAnalysisFramesPerBlock * kAnalysisChannels;
@@ -126,26 +126,26 @@ TrackPointer AnalyserQueue::dequeueNextBlocking() {
 }
 
 // This is called from the AnalyserQueue thread
-bool AnalyserQueue::doAnalysis(TrackPointer tio, Mixxx::AudioSourcePointer pAudioSource) {
+bool AnalyserQueue::doAnalysis(TrackPointer tio, Mixxx::SoundSourcePointer pSoundSource) {
     QTime progressUpdateInhibitTimer;
     progressUpdateInhibitTimer.start(); // Inhibit Updates for 60 milliseconds
-    SINT frameIndex = pAudioSource->getMinFrameIndex();
+    SINT frameIndex = pSoundSource->getMinFrameIndex();
     auto dieflag = false;
     auto cancelled = false;
     do {
         ScopedTimer t("AnalyserQueue::doAnalysis block");
-        if ( frameIndex >= pAudioSource->getMaxFrameIndex() )
+        if ( frameIndex >= pSoundSource->getMaxFrameIndex() )
         {
           qDebug()
             << __FUNCTION__
             << " invalid starting frame index "
             << frameIndex
             << " should be 0 <= frameIndex < "
-            << pAudioSource->getMaxFrameIndex();
+            << pSoundSource->getMaxFrameIndex();
         }
-        const auto framesRemaining = pAudioSource->getMaxFrameIndex() - frameIndex;
+        const auto framesRemaining = pSoundSource->getMaxFrameIndex() - frameIndex;
         const auto framesToRead    = math_min(kAnalysisFramesPerBlock, framesRemaining);
-        const auto framesRead      = pAudioSource->readSampleFramesStereo( framesToRead, &m_sampleBuffer);
+        const auto framesRead      = pSoundSource->readSampleFramesStereo( framesToRead, &m_sampleBuffer);
         if ( framesRead > framesToRead || framesRead < 0 )
         {
           qDebug() 
@@ -156,14 +156,14 @@ bool AnalyserQueue::doAnalysis(TrackPointer tio, Mixxx::AudioSourcePointer pAudi
             << framesRead;
         }
         frameIndex += framesRead;
-        if ( frameIndex < 0 || frameIndex > pAudioSource->getMaxFrameIndex ( ) )
+        if ( frameIndex < 0 || frameIndex > pSoundSource->getMaxFrameIndex ( ) )
         {
           qDebug() 
             << __FUNCTION__ 
             << " invalid frame index " 
             << frameIndex 
             << " should be 0 <= frameIndex < " 
-            << pAudioSource->getMaxFrameIndex ( );
+            << pSoundSource->getMaxFrameIndex ( );
         }
         // To compare apples to apples, let's only look at blocks that are
         // the full block size.
@@ -174,13 +174,13 @@ bool AnalyserQueue::doAnalysis(TrackPointer tio, Mixxx::AudioSourcePointer pAudi
             {
               an->process(m_sampleBuffer.data(), m_sampleBuffer.size());
             }
-            frameProgress = std::min<double>(double(frameIndex) / double(pAudioSource->getMaxFrameIndex()),1.0);
+            frameProgress = std::min<double>(double(frameIndex) / double(pSoundSource->getMaxFrameIndex()),1.0);
         } else {
             // Partial analysis block of audio samples has been read.
             // This should only happen at the end of an audio stream,
             // otherwise a decoding error must have occurred.
             frameProgress = 1.0;
-            if (frameIndex < pAudioSource->getMaxFrameIndex()) {
+            if (frameIndex < pSoundSource->getMaxFrameIndex()) {
                 // EOF not reached -> Maybe a corrupt file?
                 qWarning() << "Failed to read sample data from file:" << tio->getFilename() << "@" << frameIndex;
                 if (0 >= framesRead) {
@@ -219,7 +219,7 @@ bool AnalyserQueue::doAnalysis(TrackPointer tio, Mixxx::AudioSourcePointer pAudi
         }
         // Ignore blocks in which we decided to bail for stats purposes.
         if (dieflag || cancelled) { t.cancel(); }
-    } while (!dieflag && (frameIndex < pAudioSource->getMaxFrameIndex()));
+    } while (!dieflag && (frameIndex < pSoundSource->getMaxFrameIndex()));
     return !cancelled; //don't return !dieflag or we might reanalyze over and over
 }
 void AnalyserQueue::stop() {
@@ -253,9 +253,9 @@ void AnalyserQueue::run() {
         Trace trace("AnalyserQueue analyzing track");
         // Get the audio
         auto soundSourceProxy= SoundSourceProxy{nextTrack};
-        auto audioSrcCfg = Mixxx::AudioSourceConfig{ kAnalysisChannels, kAnalysisFrameRate};
-        auto pAudioSource = soundSourceProxy.openAudioSource(audioSrcCfg);
-        if (!pAudioSource) {
+        auto audioSrcCfg = Mixxx::SoundSourceConfig{ kAnalysisChannels, kAnalysisFrameRate};
+        auto pSoundSource = soundSourceProxy.openSoundSource(audioSrcCfg);
+        if (!pSoundSource) {
             qWarning() << "Failed to open file for analyzing:" << nextTrack->getLocation();
             emptyCheck();
             continue;
@@ -263,7 +263,7 @@ void AnalyserQueue::run() {
         auto processTrack = false;
         for ( auto it : m_aq )
         {
-          if ( it  &&  it->initialise( nextTrack,  pAudioSource->getFrameRate(), pAudioSource->getFrameCount() * kAnalysisChannels ))
+          if ( it  &&  it->initialise( nextTrack,  pSoundSource->getFrameRate(), pSoundSource->getFrameCount() * kAnalysisChannels ))
             processTrack = true;
         }
         m_qm.lock();
@@ -272,7 +272,7 @@ void AnalyserQueue::run() {
         if (processTrack) {
             emitUpdateProgress(nextTrack, 0);
             nextTrack->setAnalyserProgress(0);
-            auto completed = doAnalysis(nextTrack, pAudioSource);
+            auto completed = doAnalysis(nextTrack, pSoundSource);
             if (!completed) {
                 // This track was cancelled
                 for(auto &itf : m_aq ) itf->cleanup(nextTrack);
@@ -295,15 +295,18 @@ void AnalyserQueue::run() {
     }
     emit(queueEmpty()); // emit in case of exit;
 }
-void AnalyserQueue::emptyCheck() {
+void AnalyserQueue::emptyCheck()
+{
     m_qm.lock();
     m_queue_size = m_tioq.size();
     m_qm.unlock();
     if (m_queue_size == 0) { emit(queueEmpty()); }
 }
 // This is called from the AnalyserQueue thread
-void AnalyserQueue::emitUpdateProgress(TrackPointer tio, double progress) {
-    if (!m_exit) {
+void AnalyserQueue::emitUpdateProgress(TrackPointer tio, double progress)
+{
+    if (!m_exit)
+    {
         // First tryAcqire will have always success because sema is initialized with on
         // The following tries will success if the previous signal was processed in the GUI Thread
         // This prevent the AnalysisQueue from filling up the GUI Thread event Queue
@@ -318,9 +321,7 @@ void AnalyserQueue::emitUpdateProgress(TrackPointer tio, double progress) {
 void AnalyserQueue::slotUpdateProgress() {
     auto prog = m_progressInfo.track_progress;
     emit(trackProgress(prog));
-    if (auto ct = m_progressInfo.current_track) {
-        m_progressInfo.current_track.clear();
-    }
+    if (auto ct = m_progressInfo.current_track) m_progressInfo.current_track.clear();
     if ( prog == 1) { emit(trackFinished(m_progressInfo.queue_size)); }
     m_progressInfo.sema.release();
 }
@@ -332,30 +333,33 @@ void AnalyserQueue::slotAnalyseTrack(TrackPointer tio) {
 // This is called from the GUI and from the AnalyserQueue thread
 void AnalyserQueue::queueAnalyseTrack(TrackPointer tio) {
     m_qm.lock();
-    if (!m_tioq.contains(tio)) {
+    if (!m_tioq.contains(tio))
+    {
         m_tioq.enqueue(tio);
         m_qwait.wakeAll();
     }
     m_qm.unlock();
 }
 // static
-AnalyserQueue* AnalyserQueue::createDefaultAnalyserQueue( ConfigObject<ConfigValue>* pConfig, TrackCollection* pTrackCollection) {
-    AnalyserQueue* ret = new AnalyserQueue(pTrackCollection);
-    ret->addAnalyser(new AnalyserWaveform(pConfig));
-    ret->addAnalyser(new AnalyserGain(pConfig));
+AnalyserQueue* AnalyserQueue::createDefaultAnalyserQueue( ConfigObject<ConfigValue>* pConfig, TrackCollection* pTrackCollection)
+{
     VampAnalyser::initializePluginPaths();
-    ret->addAnalyser(new AnalyserBeats(pConfig));
-    ret->addAnalyser(new AnalyserKey(pConfig));
+    auto ret = new AnalyserQueue(pTrackCollection);
+    ret->addAnalyser(new AnalyserWaveform(pConfig,ret));
+    ret->addAnalyser(new AnalyserGain(pConfig,ret));
+    ret->addAnalyser(new AnalyserBeats(pConfig,ret));
+    ret->addAnalyser(new AnalyserKey(pConfig,ret));
     ret->start(QThread::LowPriority);
     return ret;
 }
 // static
-AnalyserQueue* AnalyserQueue::createAnalysisFeatureAnalyserQueue( ConfigObject<ConfigValue>* pConfig, TrackCollection* pTrackCollection) {
-    AnalyserQueue* ret = new AnalyserQueue(pTrackCollection);
-    ret->addAnalyser(new AnalyserGain(pConfig));
+AnalyserQueue* AnalyserQueue::createAnalysisFeatureAnalyserQueue( ConfigObject<ConfigValue>* pConfig, TrackCollection* pTrackCollection)
+{
     VampAnalyser::initializePluginPaths();
-    ret->addAnalyser(new AnalyserBeats(pConfig));
-    ret->addAnalyser(new AnalyserKey(pConfig));
+    auto ret = new AnalyserQueue(pTrackCollection);
+    ret->addAnalyser(new AnalyserGain(pConfig,ret));
+    ret->addAnalyser(new AnalyserBeats(pConfig,ret));
+    ret->addAnalyser(new AnalyserKey(pConfig,ret));
     ret->start(QThread::LowPriority);
     return ret;
 }

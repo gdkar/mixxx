@@ -8,13 +8,12 @@ namespace {
 class BeatGridTest : public testing::Test {
   protected:
 
-    BeatGridTest() {
+    BeatGridTest() = default;
+    virtual void SetUp()
+    {
     }
-
-    virtual void SetUp() {
-    }
-
-    virtual void TearDown() {
+    virtual void TearDown()
+    {
     }
 };
 

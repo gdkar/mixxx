@@ -9,7 +9,7 @@ _Pragma("once")
 #include "cachingreaderchunk.h"
 #include "trackinfoobject.h"
 #include "engine/engineworker.h"
-#include "sources/audiosource.h"
+#include "sources/soundsource.h"
 #include "util/fifo.h"
 
 
@@ -81,8 +81,8 @@ class CachingReaderWorker : public EngineWorker {
     void loadTrack(const TrackPointer& pTrack);
     ReaderStatusUpdate processReadRequest( const CachingReaderChunkReadRequest& request);
     // The current audio source of the track loaded
-    Mixxx::AudioSourcePointer m_pAudioSource;
-    // The maximum readable frame index of the AudioSource. Might
+    Mixxx::SoundSourcePointer m_pSoundSource;
+    // The maximum readable frame index of the SoundSource. Might
     // be adjusted when decoding errors occur to prevent reading
     // the same chunk(s) over and over again.
     // This frame index references the frame that follows the

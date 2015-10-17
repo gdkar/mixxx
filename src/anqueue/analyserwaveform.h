@@ -34,7 +34,7 @@ struct WaveformStride {
 };
 class AnalyserWaveform : public Analyser {
   public:
-    AnalyserWaveform(ConfigObject<ConfigValue>* pConfig);
+    AnalyserWaveform(ConfigObject<ConfigValue>* pConfig, QObject *p=nullptr);
     virtual ~AnalyserWaveform();
     bool initialise(TrackPointer tio, int sampleRate, int totalSamples);
     bool loadStored(TrackPointer tio) const;

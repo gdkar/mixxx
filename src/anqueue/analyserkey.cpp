@@ -9,8 +9,8 @@
 using mixxx::track::io::key::ChromaticKey;
 using mixxx::track::io::key::ChromaticKey_IsValid;
 
-AnalyserKey::AnalyserKey(ConfigObject<ConfigValue>* pConfig)
-        : m_pConfig(pConfig),
+AnalyserKey::AnalyserKey(ConfigObject<ConfigValue>* pConfig, QObject *p)
+        : Analyser(pConfig,p),
           m_bPreferencesKeyDetectionEnabled(true),
           m_bPreferencesFastAnalysisEnabled(false),
           m_bPreferencesReanalyzeEnabled(false) {

@@ -1,5 +1,5 @@
 _Pragma("once")
-#include "sources/audiosource.h"
+#include "sources/soundsource.h"
 #include <atomic>
 #include <utility>
 #include <algorithm>
@@ -37,11 +37,11 @@ public:
     virtual SINT getFrameCount() const;
     // Check if the audio source has sample data available
     // for this chunk.
-    virtual bool isReadable( const Mixxx::AudioSourcePointer& pAudioSource, SINT maxReadableFrameIndex) const;
+    virtual bool isReadable( const Mixxx::SoundSourcePointer& pSoundSource, SINT maxReadableFrameIndex) const;
     // Read sample frames from the audio source and return the
     // number of frames that have been read. The in/out parameter
     // pMaxReadableFrameIndex is adjusted if reading fails.
-    virtual SINT readSampleFrames( const Mixxx::AudioSourcePointer& pAudioSource, SINT* pMaxReadableFrameIndex);
+    virtual SINT readSampleFrames( const Mixxx::SoundSourcePointer& pSoundSource, SINT* pMaxReadableFrameIndex);
     // Copy sampleCount samples starting at sampleOffset from
     // the chunk's internal buffer into sampleBuffer.
     void copySamples( CSAMPLE* sampleBuffer, SINT sampleOffset, SINT sampleCount) const;

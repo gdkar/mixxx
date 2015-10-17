@@ -24,6 +24,12 @@ _Pragma("once")
 class ControlDoublePrivate;
 class ControlObject : public QObject {
     Q_OBJECT
+    Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged);
+    Q_PROPERTY(QString description READ description WRITE setDescription NOTIFY descriptionChanged);
+    Q_PROPERTY(QString group READ group CONSTANT);
+    Q_PROPERTY(QString item READ item CONSTANT);
+    Q_PROPERTY(double value READ get WRITE set RESET reset NOTIFY valueChanged);
+    Q_PROPERTY(double parameter READ getParameter WRITE setParameter RESET reset NOTIFY parameterChanged);
   public:
     ControlObject();
     // bIgnoreNops: Don't emit a signal if the CO is set to its current value.
@@ -32,13 +38,15 @@ class ControlObject : public QObject {
     ControlObject(ConfigKey key,bool bIgnoreNops=true, bool bTrack=false, bool bPersist=false);
     virtual ~ControlObject();
     // Returns a pointer to the ControlObject matching the given ConfigKey
-    static ControlObject* getControl(const ConfigKey& key, bool warn = true);
-    static ControlObject* getControl(const QString& group, const QString& item, bool warn = true);
+    static ControlObject* getControl(ConfigKey key, bool warn = true);
+    static ControlObject* getControl( QString group, QString item, bool warn = true);
     static ControlObject* getControl(const char* group, const char* item, bool warn = true);
     QString name() const;
-    void setName(const QString& name);
+    void setName(QString );
     QString description() const;
-    void setDescription(const QString& description);
+    void setDescription(QString);
+    QString group() const;
+    QString item() const;
     // Return the key of the object
     ConfigKey getKey() const;
     // Returns the value of the ControlObject
@@ -46,13 +54,13 @@ class ControlObject : public QObject {
     // Returns the bool interpretation of the ControlObject
     virtual bool toBool() const;
     // Instantly returns the value of the ControlObject
-    static double get(const ConfigKey& key);
+    static double get(ConfigKey key);
     // Sets the ControlObject value. May require confirmation by owner.
     virtual void set(double value);
     // Sets the ControlObject value and confirms it.
     virtual void setAndConfirm(double value);
     // Instantly sets the value of the ControlObject
-    static void set(const ConfigKey& key, const double& value);
+    static void set(ConfigKey key, double value);
     // Sets the default value
     virtual void reset();
     virtual void setDefaultValue(double dValue);
@@ -61,16 +69,10 @@ class ControlObject : public QObject {
     virtual bool operator!() const;
     // Returns the parameterized value of the object. Thread safe, non-blocking.
     virtual double getParameter() const;
-
     // Returns the parameterized value of the object. Thread safe, non-blocking.
     virtual double getParameterForValue(double value) const;
-
     // Sets the control parameterized value to v. Thread safe, non-blocking.
     virtual void setParameter(double v);
-
-    // Sets the control parameterized value to v. Thread safe, non-blocking.
-    virtual void setParameterFrom(double v, QObject* pSender = nullptr);
-
     // Connects a Qt slot to a signal that is delivered when a new value change
     // request arrives for this control.
     // Qt::AutoConnection: Qt ensures that the signal slot is called from the
@@ -81,13 +83,13 @@ class ControlObject : public QObject {
     bool connectValueChangeRequest(const QObject* receiver, const char* method, Qt::ConnectionType type = Qt::AutoConnection);
   signals:
     void valueChanged(double);
-    void valueChangedFromEngine(double);
+    void nameChanged(QString);
+    void descriptionChanged(QString);
+    void parameterChanged();
   protected:
     // Key of the object
     ConfigKey m_key;
     QSharedPointer<ControlDoublePrivate> m_pControl;
-  private slots:
-    virtual void privateValueChanged(double value, QObject* pSetter);
   private:
     virtual void initialize(ConfigKey key, bool bIgnoreNops, bool bTrack, bool bPersist);
     bool ignoreNops() const;

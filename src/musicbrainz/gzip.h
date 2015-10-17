@@ -2,11 +2,7 @@
  * Author: Lukáš Lalinský <info@acoustid.org>                                *
  *****************************************************************************/
 
-#ifndef FPSUBMIT_GZIP_H_
-#define FPSUBMIT_GZIP_H_
-
+_Pragma("once")
 #include <QByteArray>
 
-QByteArray gzipCompress(const QByteArray &data);
-
-#endif
+QByteArray gzipCompress(QByteArray data);

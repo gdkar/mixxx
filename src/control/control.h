@@ -10,6 +10,12 @@ _Pragma("once")
 class ControlObject;
 class ControlDoublePrivate : public QObject {
     Q_OBJECT
+    Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged);
+    Q_PROPERTY(QString description READ description WRITE setDescription NOTIFY descriptionChanged);
+    Q_PROPERTY(QString group READ group CONSTANT);
+    Q_PROPERTY(QString item READ item CONSTANT);
+    Q_PROPERTY(double value READ get WRITE set RESET reset NOTIFY valueChanged);
+    Q_PROPERTY(double parameter READ getParameter WRITE setParameter RESET reset NOTIFY parameterChanged);
   public:
     virtual ~ControlDoublePrivate();
 
@@ -20,12 +26,12 @@ class ControlDoublePrivate : public QObject {
     // Adds a ConfigKey for 'alias' to the control for 'key'. Can be used for
     // supporting a legacy / deprecated control. The 'key' control must exist
     // for this to work.
-    static void insertAlias(const ConfigKey& alias, const ConfigKey& key);
+    static void insertAlias(ConfigKey alias, ConfigKey key);
     // Gets the ControlDoublePrivate matching the given ConfigKey. If pCreatorCO
     // is non-NULL, allocates a new ControlDoublePrivate for the ConfigKey if
     // one does not exist.
     static QSharedPointer<ControlDoublePrivate> getControl(
-            const ConfigKey& key, bool warn = true,
+            ConfigKey key, bool warn = true,
             ControlObject* pCreatorCO = nullptr, bool bIgnoreNops = true, bool bTrack = false,
             bool bPersist = false);
 
@@ -34,11 +40,11 @@ class ControlDoublePrivate : public QObject {
     static void clearControls();
     static QHash<ConfigKey, ConfigKey> getControlAliases();
     QString name() const;
-    void setName(const QString& name);
+    void setName(QString name);
     QString description() const; 
-    void setDescription(const QString& description);
+    void setDescription(QString );
     // Sets the control value.
-    void set(double value, QObject* pSender);
+    void set(double value);
     // directly sets the control value. Must be used from and only from the
     // ValueChangeRequest slot.
     void setAndConfirm(double value, QObject* pSender);
@@ -51,7 +57,7 @@ class ControlDoublePrivate : public QObject {
     // The caller must not delete the behavior at any time. The memory is managed
     // by this function.
     void setBehavior(ControlNumericBehavior* pBehavior);
-    void setParameter(double dParam, QObject* pSender);
+    void setParameter(double dParam);
     double getParameter() const;
     double getParameterForValue(double value) const;
     bool ignoreNops() const;
@@ -60,6 +66,8 @@ class ControlDoublePrivate : public QObject {
     ControlObject* getCreatorCO() const;
     void removeCreatorCO(ControlObject *);
     ConfigKey getKey() const;
+    QString group() const;
+    QString item()  const;
     // Connects a slot to the ValueChange request for CO validation. All change
     // requests issued by set are routed though the connected slot. This can
     // decide with its own thread safe solution if the requested value can be
@@ -70,12 +78,15 @@ class ControlDoublePrivate : public QObject {
   signals:
     // Emitted when the ControlDoublePrivate value changes. pSender is a
     // pointer to the setter of the value (potentially NULL).
-    void valueChanged(double value, QObject* pSender);
+    void valueChanged(double value);
     void valueChangeRequest(double value);
+    void nameChanged(QString);
+    void descriptionChanged(QString);
+    void parameterChanged();
   private:
     ControlDoublePrivate(ConfigKey key, ControlObject* pCreatorCO,bool bIgnoreNops, bool bTrack, bool bPersist);
     void initialize();
-    void setInner(double value, QObject* pSender);
+    void setInner(double value);
     ConfigKey m_key;
     // Whether the control should persist in the Mixxx user configuration. The
     // value is loaded from configuration when the control is created and

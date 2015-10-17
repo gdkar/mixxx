@@ -65,24 +65,37 @@ void Controller::applyPreset(QList<QString> scriptPaths) {
         qWarning() << "Controller::applyPreset(): No engine exists!";
         return;
     }
-
     if (pPreset->scripts.isEmpty()) {
         qWarning() << "No script functions available! Did the XML file(s) load successfully? See above for any errors.";
         return;
     }
-
     m_pEngine->loadScriptFiles(scriptPaths, pPreset->scripts);
     m_pEngine->initializeScripts(pPreset->scripts);
 }
-
-void Controller::startLearning() {
-    qDebug() << m_sDeviceName << "started learning";
-    m_bLearning = true;
+void Controller::startLearning()
+{
+    if(!m_bLearning)
+    {
+      qDebug() << m_sDeviceName << "started learning" << true;
+      m_bLearning = true;
+      emit isLearningChanged(true);
+    }
 }
-
+void Controller::setLearning(bool b)
+{
+  if(m_bLearning!=b)
+  {
+    m_bLearning = b;
+    emit isLearningChanged(b);
+  }
+}
 void Controller::stopLearning() {
     //qDebug() << m_sDeviceName << "stopped learning.";
-    m_bLearning = false;
+    if(m_bLearning)
+    {
+      m_bLearning = false;
+      emit isLearningChanged(false);
+    }
 
 }
 
@@ -130,4 +143,96 @@ void Controller::receive(const QByteArray data) {
             qWarning() << "Controller: Invalid script function" << function;
         }
     }
+}
+bool Controller::isOpen() const
+{
+  return m_bIsOpen;
+}
+bool Controller::isOutputDevice() const
+{
+  return m_bIsOutputDevice;
+}
+bool Controller::isInputDevice() const
+{
+  return m_bIsInputDevice;
+}
+QString Controller::getName() const
+{
+  return m_sDeviceName;
+}
+QString Controller::getCategory() const
+{
+  return m_sDeviceCategory;
+}
+bool Controller::debugging() const
+{
+  return m_bDebug;
+}
+bool Controller::isMappable() const
+{
+  return false;
+}
+bool Controller::isLearning() const
+{
+  return m_bLearning;
+}
+void Controller::setPreset(const ControllerPreset& preset)
+{
+  preset.accept(this);
+}
+bool Controller::matchPreset(const PresetInfo&)
+{
+  return false;
+}
+ControllerEngine* Controller::getEngine() const
+{
+  return m_pEngine;
+}
+void Controller::setDeviceName(QString s)
+{
+  if(m_sDeviceName != s)
+  {
+      m_sDeviceName = s;
+      emit nameChanged(s);
+  }
+}
+void Controller::setDeviceCategory(QString s)
+{
+  if(m_sDeviceCategory != s)
+  {
+    m_sDeviceCategory = s;
+    emit categoryChanged(s);
+  }
+}
+void Controller::setOutputDevice(bool b)
+{
+  if(m_bIsOutputDevice!=b)
+  {
+    m_bIsOutputDevice = b;
+    emit isOutputChanged(b);
+  }
+}
+void Controller::setInputDevice(bool b)
+{
+  if(m_bIsInputDevice!=b)
+  {
+    m_bIsInputDevice = b;
+    emit isInputChanged(b);
+  }
+}
+void Controller::setOpen(bool b)
+{
+  if(m_bIsOpen != b)
+  {
+    m_bIsOpen = b;
+    emit isOpenChanged(b);
+  }
+}
+bool Controller::poll()
+{
+  return false;
+}
+bool Controller::isPolling() const
+{
+  return false;
 }

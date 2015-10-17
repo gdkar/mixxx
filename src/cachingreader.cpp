@@ -289,7 +289,7 @@ void CachingReader::hintAndMaybeWake(const HintVector& hintList) {
         auto hintFrameCount = CachingReaderChunk::samples2frames(hint.length);
         auto minReadableFrameIndex = hintFrame;
         auto maxReadableFrameIndex = hintFrame + hintFrameCount;
-        Mixxx::AudioSource::clampFrameInterval(minReadableFrameIndex, maxReadableFrameIndex, m_maxReadableFrameIndex);
+        Mixxx::SoundSource::clampFrameInterval(minReadableFrameIndex, maxReadableFrameIndex, m_maxReadableFrameIndex);
         if (minReadableFrameIndex >= maxReadableFrameIndex) { continue; }
         const auto firstCachingReaderChunkIndex = CachingReaderChunk::indexForFrame(minReadableFrameIndex);
         const auto lastCachingReaderChunkIndex = CachingReaderChunk::indexForFrame(maxReadableFrameIndex - 1);

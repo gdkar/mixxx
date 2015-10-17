@@ -24,42 +24,48 @@
 #include "playermanager.h"
 
 static const int kPlayingDeckUpdateIntervalMillis = 2000;
-static PlayerInfo* m_pPlayerInfo = nullptr;
 PlayerInfo::PlayerInfo()
         : m_pCOxfader(new ControlObjectSlave("Master","crossfader",this)),
-          m_currentlyPlayingDeck(-1) {
+          m_currentlyPlayingDeck(-1)
+{
     startTimer(kPlayingDeckUpdateIntervalMillis);
 }
-PlayerInfo::~PlayerInfo() {
+PlayerInfo::~PlayerInfo()
+{
     m_loadedTrackMap.clear();
     clearControlCache();
 }
 // static
-PlayerInfo& PlayerInfo::instance() {
-    if (!m_pPlayerInfo) { m_pPlayerInfo = new PlayerInfo(); }
-    return *m_pPlayerInfo;
+PlayerInfo& PlayerInfo::instance()
+{
+    static auto s_pPlayerInfo = new PlayerInfo();
+    return *s_pPlayerInfo;
 }
 // static
-void PlayerInfo::destroy() { delete m_pPlayerInfo;}
-TrackPointer PlayerInfo::getTrackInfo(const QString& group) {
+void PlayerInfo::destroy()
+{ 
+  delete &instance();
+}
+TrackPointer PlayerInfo::getTrackInfo(const QString& group)
+{
     QMutexLocker locker(&m_mutex);
     return m_loadedTrackMap.value(group);
 }
-void PlayerInfo::setTrackInfo(const QString& group, const TrackPointer& track) {
+void PlayerInfo::setTrackInfo(const QString& group, const TrackPointer& track)
+{
     TrackPointer pOld;
     { // Scope
         QMutexLocker locker(&m_mutex);
         pOld = m_loadedTrackMap.value(group);
         m_loadedTrackMap.insert(group, track);
     }
-    if (pOld) { emit(trackUnloaded(group, pOld)); }
+    if (pOld) emit(trackUnloaded(group, pOld));
     emit(trackLoaded(group, track));
 }
-bool PlayerInfo::isTrackLoaded(const TrackPointer& pTrack) const {
+bool PlayerInfo::isTrackLoaded(const TrackPointer& pTrack) const
+{
     QMutexLocker locker(&m_mutex);
-    for ( auto ptr : m_loadedTrackMap ) 
-      if ( ptr == pTrack ) 
-        return true;
+    for ( auto ptr : m_loadedTrackMap ) if ( ptr == pTrack )  return true;
     return false;
 }
 QMap<QString, TrackPointer> PlayerInfo::getLoadedTracks() {
@@ -67,63 +73,70 @@ QMap<QString, TrackPointer> PlayerInfo::getLoadedTracks() {
     auto ret = m_loadedTrackMap;
     return ret;
 }
-bool PlayerInfo::isFileLoaded(const QString& track_location) const {
+bool PlayerInfo::isFileLoaded(const QString& track_location) const
+{
     QMutexLocker locker(&m_mutex);
-    for(auto pTrack : m_loadedTrackMap ) {
-        if (pTrack && pTrack->getLocation() == track_location ) {return true;}
+    for(auto pTrack : m_loadedTrackMap )
+    {
+        if (pTrack && pTrack->getLocation() == track_location ) return true;
     }
     return false;
 }
-void PlayerInfo::timerEvent(QTimerEvent* pTimerEvent) {
+void PlayerInfo::timerEvent(QTimerEvent* pTimerEvent)
+{
     Q_UNUSED(pTimerEvent);
     updateCurrentPlayingDeck();
 }
-void PlayerInfo::updateCurrentPlayingDeck() {
+void PlayerInfo::updateCurrentPlayingDeck()
+{
     QMutexLocker locker(&m_mutex);
-    double maxVolume = 0;
-    int maxDeck = -1;
-    for (int i = 0; i < (int)PlayerManager::numDecks(); ++i) {
+    auto maxVolume = 0.0;
+    auto maxDeck = -1;
+    for (auto i = 0; i < (int)PlayerManager::numDecks(); ++i)
+    {
         auto pDc = getDeckControls(i);
         if (pDc->m_play->get() == 0.0) { continue; }
         if (pDc->m_pregain->get() <= 0.5) { continue; }
         auto fvol = pDc->m_volume->get();
-        if (fvol == 0.0) { continue;}
-        double xfl, xfr;
+        if (fvol == 0.0) continue;
+        auto  xfl = 0.0, xfr = 0.0;
         EngineXfader::getXfadeGains(m_pCOxfader->get(), 1.0, 0.0, false, false, &xfl, &xfr);
-        int orient = pDc->m_orientation->get();
-        double xfvol;
-        if (orient == EngineChannel::LEFT) {
-            xfvol = xfl;
-        } else if (orient == EngineChannel::RIGHT) {
-            xfvol = xfr;
-        } else {
-            xfvol = 1.0;
-        }
+        auto orient = pDc->m_orientation->get();
+        auto xfvol = 0.0;
+        if (orient == EngineChannel::LEFT)        xfvol = xfl;
+        else if (orient == EngineChannel::RIGHT)  xfvol = xfr;
+        else                                      xfvol = 1.0;
         auto dvol = fvol * xfvol;
-        if (dvol > maxVolume) {
+        if (dvol > maxVolume)
+        {
             maxDeck = i;
             maxVolume = dvol;
         }
     }
-    if (maxDeck != m_currentlyPlayingDeck) {
+    if (maxDeck != m_currentlyPlayingDeck)
+    {
         m_currentlyPlayingDeck = maxDeck;
         locker.unlock();
         emit(currentPlayingDeckChanged(maxDeck));
         emit(currentPlayingTrackChanged(getCurrentPlayingTrack()));
     }
 }
-int PlayerInfo::getCurrentPlayingDeck() {
+int PlayerInfo::getCurrentPlayingDeck()
+{
     QMutexLocker locker(&m_mutex);
     return m_currentlyPlayingDeck;
 }
-TrackPointer PlayerInfo::getCurrentPlayingTrack() {
-    int deck = getCurrentPlayingDeck();
-    if (deck >= 0) {return getTrackInfo(PlayerManager::groupForDeck(deck));}
+TrackPointer PlayerInfo::getCurrentPlayingTrack()
+{
+    auto deck = getCurrentPlayingDeck();
+    if (deck >= 0) return getTrackInfo(PlayerManager::groupForDeck(deck));
     return TrackPointer();
 }
-DeckControls* PlayerInfo::getDeckControls(int i) {
-    if (m_deckControlList.count() == i) {
-        QString group = PlayerManager::groupForDeck(i);
+DeckControls* PlayerInfo::getDeckControls(int i)
+{
+    if (m_deckControlList.count() == i)
+    {
+        auto group = PlayerManager::groupForDeck(i);
         m_deckControlList.append(new DeckControls(group,this));
     }
     return m_deckControlList[i];
@@ -134,9 +147,11 @@ DeckControls::DeckControls(QString &group, QObject *pParent)
   ,m_pregain(new ControlObjectSlave(ConfigKey{group,"pregain"},this))
   ,m_volume(new ControlObjectSlave(ConfigKey{group,"volume"},this))
   ,m_orientation(new ControlObjectSlave(ConfigKey{group,"orientation"},this))
-{}
+{
+}
 DeckControls::~DeckControls() = default;
-void PlayerInfo::clearControlCache() {
-    for (int i = 0; i < m_deckControlList.count(); ++i) {delete m_deckControlList[i];}
+void PlayerInfo::clearControlCache()
+{
+    for (int i = 0; i < m_deckControlList.count(); ++i) delete m_deckControlList[i];
     m_deckControlList.clear();
 }

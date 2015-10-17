@@ -50,7 +50,7 @@ DlgPrefLibrary::DlgPrefLibrary(QWidget * parent,
     connect(pushButtonExtraPlugins, SIGNAL(clicked()),this, SLOT(slotExtraPlugins()));
     // plugins are loaded in src/main.cpp way early in boot so this is safe
     // here, doesn't need done at every slotUpdate
-    auto plugins(SoundSourceProxy::getSupportedFileExtensionsByPlugins());
+    auto plugins(SoundSourceProxy::getSupportedFileExtensions());
     if (plugins.length() > 0) {pluginsLabel->setText(plugins.join(", "));}
     // Set default direction as stored in config file
     auto rowHeight = m_pLibrary->getTrackTableRowHeight();

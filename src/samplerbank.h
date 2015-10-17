@@ -16,7 +16,7 @@ class SamplerBank : public QObject {
     void slotLoadSamplerBank(double v);
 
   private:
-    PlayerManager* m_pPlayerManager;
-    ControlObject* m_pLoadControl;
-    ControlObject* m_pSaveControl;
+    PlayerManager* m_pPlayerManager = nullptr;
+    ControlObject* m_pLoadControl   = nullptr;
+    ControlObject* m_pSaveControl   = nullptr;
 };

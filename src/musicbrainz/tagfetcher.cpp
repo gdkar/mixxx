@@ -23,18 +23,14 @@ TagFetcher::TagFetcher(QObject* parent)
             m_pFingerprintWatcher(NULL),
             m_AcoustidClient(this),
             m_MusicbrainzClient(this) {
-    connect(&m_AcoustidClient, SIGNAL(finished(int,QString)),
-            this, SLOT(mbidFound(int,QString)));
-    connect(&m_MusicbrainzClient, SIGNAL(finished(int,MusicBrainzClient::ResultList)),
-            this, SLOT(tagsFetched(int,MusicBrainzClient::ResultList)));
-    connect(&m_AcoustidClient, SIGNAL(networkError(int, QString)),
-            this, SIGNAL(networkError(int, QString)));
-    connect(&m_MusicbrainzClient, SIGNAL(networkError(int, QString)),
-            this, SIGNAL(networkError(int, QString)));
+    connect(&m_AcoustidClient, SIGNAL(finished(int,QString)),this, SLOT(mbidFound(int,QString)));
+    connect(&m_MusicbrainzClient, SIGNAL(finished(int,MusicBrainzClient::ResultList)),this, SLOT(tagsFetched(int,MusicBrainzClient::ResultList)));
+    connect(&m_AcoustidClient, SIGNAL(networkError(int, QString)),this, SIGNAL(networkError(int, QString)));
+    connect(&m_MusicbrainzClient, SIGNAL(networkError(int, QString)),this, SIGNAL(networkError(int, QString)));
 }
-
-QString TagFetcher::getFingerprint(const TrackPointer tio) {
-    return ChromaPrinter(NULL).getFingerprint(tio);
+QString TagFetcher::getFingerprint(const TrackPointer tio)
+{
+    return ChromaPrinter(nullptr).getFingerprint(tio);
 }
 
 void TagFetcher::startFetch(const TrackPointer track) {

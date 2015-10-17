@@ -1,10 +1,8 @@
-#ifndef ANALYSERQUEUE_H
-#define ANALYSERQUEUE_H
-
+_Pragma("once")
 #include "configobject.h"
 #include "analyser.h"
 #include "trackinfoobject.h"
-#include "sources/audiosource.h"
+#include "sources/soundsource.h"
 #include "samplebuffer.h"
 
 #include <QList>
@@ -46,7 +44,7 @@ class AnalyserQueue : public QThread {
     QList<Analyser*> m_aq;
     bool isLoadedTrackWaiting(TrackPointer analysingTrack);
     TrackPointer dequeueNextBlocking();
-    bool doAnalysis(TrackPointer tio, Mixxx::AudioSourcePointer pAudioSource);
+    bool doAnalysis(TrackPointer tio, Mixxx::SoundSourcePointer pSoundSource);
     void emitUpdateProgress(TrackPointer tio, double progress);
     void emptyCheck();
     bool m_exit;
@@ -59,5 +57,3 @@ class AnalyserQueue : public QThread {
     struct progress_info m_progressInfo;
     int m_queue_size;
 };
-
-#endif
