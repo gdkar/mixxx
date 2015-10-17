@@ -104,7 +104,6 @@ void Cue::setHotCue(int hotCue)
 }
 QString Cue::getLabel() const
 {
-    QMutexLocker lock(&m_mutex);
     return m_label;
 }
 void Cue::setLabel(const QString label)

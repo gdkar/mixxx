@@ -7,6 +7,37 @@ _Pragma("once")
 #include <algorithm>
 #include <cstring> // memset
 
+// MSVC does this
+// __declspec(align(16))
+// while GCC does
+// __attribute__((aligned(16)))
+// IntelCC does
+// _MM_ALIGN_16
+// but I dont know how to test for ICC.
+
+#if !_ALIGN_16
+#define _ALIGN_16
+#define _ALIGN_STACK
+#elif (defined __GNUC__)
+#define _ALIGN_16 __attribute__((aligned(16)))
+#define _ALIGN_STACK __attribute__((force_align_arg_pointer, aligned(16)))
+#elif (defined _MSC_VER)
+#define _ALIGN_16 __declspec(align(16))
+#define _ALIGN_STACK
+#else
+#error Please email mixxx-devel@lists.sourceforge.net and tell us what is the equivalent of __attribute__((aligned(16))) for your compiler.
+#endif
+
+#if !_RESTRICT
+#define _RESTRICT
+#elif (defined __GNUC__)
+#define _RESTRICT __restrict__
+#elif (defined _MSC_VER)
+#define _RESTRICT __restrict
+#else
+#error Please email mixxx-devel@lists.sourceforge.net and tell us what is the equivalent of __restrict__ for your compiler.
+#endif
+
 // A group of utilities for working with samples.
 class SampleUtil {
   public:

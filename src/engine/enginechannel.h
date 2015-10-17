@@ -15,9 +15,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef ENGINECHANNEL_H
-#define ENGINECHANNEL_H
-
+_Pragma("once")
 #include "engine/engineobject.h"
 #include "engine/channelhandle.h"
 #include "configobject.h"
@@ -37,7 +35,7 @@ class EngineChannel : public EngineObject {
         CENTER,
         RIGHT,
     };
-
+    Q_ENUM(ChannelOrientation);
     EngineChannel(const ChannelHandleAndGroup& handle_group, ChannelOrientation defaultOrientation = CENTER);
     virtual ~EngineChannel();
 
@@ -82,5 +80,3 @@ class EngineChannel : public EngineObject {
     ControlPushButton* m_pOrientationCenter;
     ControlPushButton* m_pTalkover;
 };
-
-#endif

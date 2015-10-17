@@ -115,15 +115,15 @@ double BeatMap::findClosestBeat(double dSamples) const
     else if (nextBeat == -1) return prevBeat;
     return (nextBeat - dSamples > dSamples - prevBeat) ? prevBeat : nextBeat;
 }
-int BeatMap::findIndexNear(double dSamples)
+int BeatMap::findIndexNear(double dSamples) const
 {
     if ( dSamples == -1 ) return -1;
     auto startBeat = Beat{};
-    startBeat.set_frame_position(samplesToFrames(startSample));
+    startBeat.set_frame_position(samplesToFrames(dSamples));
     auto curBeat = qLowerBound(m_beats.begin(), m_beats.end(), startBeat, BeatLessThan);
     return curBeat - m_beats.begin();
 }
-double BeatMap::beatAtIndex(int n)
+double BeatMap::beatAtIndex(int n) const 
 {
   if ( n < 0 || n > m_beats.size() ) return -1;
   return framesToSamples(m_beats.at(n).frame_position());

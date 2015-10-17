@@ -54,9 +54,9 @@ ImgAdd::ImgAdd(ImgSource * parent, int amt)
 ImgAdd::~ImgAdd() = default;
 QColor ImgAdd::doColorCorrection(QColor c) const
 {
-    int r = c.red() + m_amt;
-    int g = c.green() + m_amt;
-    int b = c.blue() + m_amt;
+    auto r = c.red() + m_amt;
+    auto g = c.green() + m_amt;
+    auto b = c.blue() + m_amt;
     if (r < 0) { r = 0; }
     if (g < 0) { g = 0; }
     if (b < 0) { b = 0; }
@@ -104,8 +104,8 @@ QColor ImgHSVTweak::doColorCorrection(QColor c) const
     int h, s, v, a;
     c.getHsv(&h, &s, &v, &a);
 
-    if (h >= m_hmin && h <= m_hmax && s >= m_smin && s <= m_smax &&
-        v >= m_vmin && v <= m_vmax) {
+    if (h >= m_hmin && h <= m_hmax && s >= m_smin && s <= m_smax && v >= m_vmin && v <= m_vmax)
+    {
         h *= m_hfact;
         s *= m_sfact;
         v *= m_vfact;
@@ -114,11 +114,11 @@ QColor ImgHSVTweak::doColorCorrection(QColor c) const
         v += m_vconst;
 
         h = h % 360;
-        if (h < 0) { h += 360; }
-        if (s < 0) { s = 0; }
-        if (s > 255) { s = 255; }
-        if (v < 0) { v = 0; }
-        if (v > 255) { v = 255; }
+        if (h < 0)   h += 360;
+        if (s < 0)   s = 0;
+        if (s > 255) s = 255;
+        if (v < 0)   v = 0;
+        if (v > 255) v = 255;
 
         c.setHsv(h, s, v, a);
     }

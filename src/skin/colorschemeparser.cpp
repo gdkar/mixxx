@@ -94,7 +94,8 @@ ImgSource* ColorSchemeParser::parseFilters(QDomNode filt)
             if (!f.namedItem("SFact").isNull()) { sfact = XmlParse::selectNodeFloat(f, "SFact"); }
             if (!f.namedItem("VFact").isNull()) { vfact = XmlParse::selectNodeFloat(f, "VFact"); }
             ret = new ImgHSVTweak(ret, hmin, hmax, smin, smax, vmin, vmax, hfact, hconst,sfact,sconst,vfact,vconst);
-        } else qDebug() << "Unkown image filter:" << name;
+        }
+        else qDebug() << "Unkown image filter:" << name;
         f = f.nextSibling();
     }
     return ret;

@@ -123,7 +123,7 @@ double BeatGrid::findClosestBeat(double dSamples) const
 }
 int BeatGrid::findIndexNear(double dSamples) const
 {
-  return static_cast<int>((firstBeatSample() - dSamples)/m_dBeatLength);
+  return static_cast<int>((dSamples - firstBeatSample())/m_dBeatLength);
 }
 double BeatGrid::beatAtIndex(int index) const
 {

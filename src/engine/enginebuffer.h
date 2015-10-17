@@ -78,24 +78,23 @@ const int ENGINE_RAMP_UP = 1;
 class EngineBuffer : public EngineObject {
      Q_OBJECT
   public:
-    enum SyncRequestQueued {
-        SYNC_REQUEST_NONE,
-        SYNC_REQUEST_ENABLE,
-        SYNC_REQUEST_DISABLE,
-        SYNC_REQUEST_ENABLEDISABLE,
+    enum class SyncRequest : int{
+        None,
+        Enable,
+        Disable,
+        Toggle,
     };
-    enum SeekRequest {
-        NO_SEEK,
-        SEEK_STANDARD,
-        SEEK_EXACT,
-        SEEK_PHASE
+    enum class SeekRequest : int{
+        None,
+        Standard,
+        Exact,
+        Phase 
     };
-    enum KeylockEngine {
-        SOUNDTOUCH,
-        RUBBERBAND,
-        KEYLOCK_ENGINE_COUNT,
+    enum class KeylockEngine : int{
+        SoundTouch,
+        RubberBand,
     };
-    Q_ENUM(SyncRequestQueued);
+    Q_ENUM(SyncRequest);
     Q_ENUM(SeekRequest);
     Q_ENUM(KeylockEngine);
     EngineBuffer(QString _group, ConfigObject<ConfigValue>* _config,EngineChannel* pChannel, EngineMaster* pMixingEngine);
@@ -125,7 +124,6 @@ class EngineBuffer : public EngineObject {
     void collectFeatures(GroupFeatureState* pGroupFeatures) const;
     // For dependency injection of fake tracks, with an optional filebpm value.
     TrackPointer loadFakeTrack(double filebpm = 0);
-    static QString getKeylockEngineName(KeylockEngine engine);
   public slots:
     void slotControlPlayRequest(double);
     void slotControlPlayFromStart(double);
@@ -270,8 +268,8 @@ class EngineBuffer : public EngineObject {
     bool m_bScalerChanged = false;
     // Indicates that dependency injection has taken place.
     bool m_bScalerOverride = false;
-    std::atomic<int> m_iSeekQueued{NO_SEEK};
-    std::atomic<int> m_iEnableSyncQueued{SYNC_REQUEST_NONE};
+    std::atomic<SeekRequest> m_iSeekQueued{SeekRequest::None};
+    std::atomic<SyncRequest> m_iEnableSyncQueued{SyncRequest::None};
     std::atomic<int> m_iSyncModeQueued{SYNC_INVALID};
     std::atomic<double> m_queuedPosition;
     // Holds the last sample value of the previous buffer. This is used when ramping to

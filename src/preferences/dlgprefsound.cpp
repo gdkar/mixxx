@@ -15,6 +15,7 @@
 
 #include <QtDebug>
 #include <QMessageBox>
+#include <QMetaEnum>
 #include "dlgprefsound.h"
 #include "dlgprefsounditem.h"
 #include "engine/enginebuffer.h"
@@ -61,8 +62,9 @@ DlgPrefSound::DlgPrefSound(QWidget* pParent, SoundManager* pSoundManager,PlayerM
     connect(deviceSyncComboBox, SIGNAL(currentIndexChanged(int)),this, SLOT(syncBuffersChanged(int)));
 
     keylockComboBox->clear();
-    for (int i = 0; i < EngineBuffer::KEYLOCK_ENGINE_COUNT; ++i) {
-        keylockComboBox->addItem(EngineBuffer::getKeylockEngineName(static_cast<EngineBuffer::KeylockEngine>(i)));
+    auto keylockEnum = QMetaEnum::fromType<EngineBuffer::KeylockEngine>();
+    for (int i = 0; i < keylockEnum.keyCount(); ++i) {
+        keylockComboBox->addItem(QString(keylockEnum.key(i)),keylockEnum.value(i));
     }
     initializePaths();
     loadSettings();
@@ -415,9 +417,12 @@ void DlgPrefSound::slotResetToDefaults() {
     SoundManagerConfig newConfig;
     newConfig.loadDefaults(m_pSoundManager, SoundManagerConfig::ALL);
     loadSettings(newConfig);
-    keylockComboBox->setCurrentIndex(EngineBuffer::RUBBERBAND);
-    m_pKeylockEngine->set(EngineBuffer::RUBBERBAND);
-
+    {
+      auto keylockEnum = QMetaEnum::fromType<EngineBuffer::KeylockEngine>();
+      keylockComboBox->setCurrentIndex(
+          keylockComboBox->findData(static_cast<int>(EngineBuffer::KeylockEngine::RubberBand)));
+      m_pKeylockEngine->set(static_cast<int>(EngineBuffer::KeylockEngine::RubberBand));
+    }
     masterMixComboBox->setCurrentIndex(1);
     m_pMasterEnabled->set(1.0);
 
