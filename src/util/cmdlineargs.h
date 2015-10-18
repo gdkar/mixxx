@@ -1,6 +1,4 @@
-#ifndef CMDLINEARGS_H
-#define CMDLINEARGS_H
-
+_Pragma("once")
 #include <QList>
 #include <QString>
 #include <QDir>
@@ -102,5 +100,3 @@ class CmdlineArgs {
     QString m_pluginPath;
     QString m_timelinePath;
 };
-
-#endif /* CMDLINEARGS_H */

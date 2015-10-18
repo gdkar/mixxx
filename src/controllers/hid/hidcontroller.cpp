@@ -9,10 +9,8 @@
 #include <wchar.h>
 #include <string.h>
 
-#include "util/path.h" // for PATH_MAX on Windows
 #include "controllers/hid/hidcontroller.h"
 #include "controllers/defs_controllers.h"
-#include "util/compatibility.h"
 #include "util/trace.h"
 
 HidReader::HidReader(hid_device* device)
@@ -20,13 +18,23 @@ HidReader::HidReader(hid_device* device)
           m_pHidDevice(device) {
 }
 
-HidReader::~HidReader() {
+HidReader::~HidReader()
+{
+  stop();
+  wait();
 }
 
-void HidReader::run() {
+void HidReader::stop()
+{
+  m_stop.store(true);
+}
+void HidReader::run()
+{
     m_stop = 0;
     unsigned char *data = new unsigned char[255];
-    while (m_stop.load() == 0) {
+    auto data = QByteArray(256,'\0');
+    while (!m_stop.load())
+    {
         // Blocked polling: The only problem with this is that we can't close
         // the device until the block is released, which means the controller
         // has to send more data
@@ -34,73 +42,65 @@ void HidReader::run() {
 
         // This relieves that at the cost of higher CPU usage since we only
         // block for a short while (500ms)
-        int result = hid_read_timeout(m_pHidDevice, data, 255, 500);
+        auto result = hid_read_timeout(m_pHidDevice, data.data(), 256, 500);
         Trace timeout("HidReader timeout");
-        if (result > 0) {
+        if (result > 0)
+        {
             Trace process("HidReader process packet");
             //qDebug() << "Read" << result << "bytes, pointer:" << data;
-            QByteArray outData(reinterpret_cast<char*>(data), result);
-            emit(incomingData(outData));
+            emit(incomingData(outData.left(result)));
         }
     }
-    delete [] data;
 }
 
-QString safeDecodeWideString(wchar_t* pStr, size_t max_length) {
-    if (pStr == NULL) {
-        return QString();
-    }
+QString safeDecodeWideString(wchar_t* pStr, size_t max_length)
+{
+    if (!pStr) return QString();
     // pStr is untrusted since it might be non-null terminated.
-    wchar_t* tmp = new wchar_t[max_length+1];
+    wchar_t tmp[max_length+1];
+    std::memset(tmp,0,sizeof(tmp));
     // wcsnlen is not available on all platforms, so just make a temporary
     // buffer
     wcsncpy(tmp, pStr, max_length);
-    tmp[max_length] = 0;
-    QString result = QString::fromWCharArray(tmp);
-    delete [] tmp;
-    return result;
+    return QString::fromWCharArray(tmp);
 }
-
 HidController::HidController(const hid_device_info deviceInfo)
-        : m_pHidDevice(NULL) {
+        : m_pHidDevice(nullptr)
+{
     // Copy required variables from deviceInfo, which will be freed after
     // this class is initialized by caller.
-    hid_vendor_id = deviceInfo.vendor_id;
-    hid_product_id = deviceInfo.product_id;
+    hid_vendor_id        = deviceInfo.vendor_id;
+    hid_product_id       = deviceInfo.product_id;
     hid_interface_number = deviceInfo.interface_number;
-    if (hid_interface_number == -1) {
+    if (hid_interface_number == -1)
+    {
         // OS/X and windows don't use interface numbers, but usage_page/usage
         hid_usage_page = deviceInfo.usage_page;
         hid_usage = deviceInfo.usage;
-    } else {
+    }
+    else
+    {
         // Linux hidapi does not set value for usage_page or usage and uses
         // interface number to identify subdevices
         hid_usage_page = 0;
         hid_usage = 0;
     }
-
     // Don't trust path to be null terminated.
-    hid_path = new char[PATH_MAX+1];
-    strncpy(hid_path, deviceInfo.path, PATH_MAX);
-    hid_path[PATH_MAX] = 0;
-
-    hid_serial_raw = NULL;
-    if (deviceInfo.serial_number != NULL) {
-        size_t serial_max_length = 512;
+    hid_path = QString::fromLatin1(deviceInfo.path);
+    hid_serial_raw = nullptr;
+    if (deviceInfo.serial_number)
+    {
+        auto serial_max_length = 512ul;
         hid_serial_raw = new wchar_t[serial_max_length+1];
         wcsncpy(hid_serial_raw, deviceInfo.serial_number, serial_max_length);
         hid_serial_raw[serial_max_length] = 0;
     }
-
     hid_serial = safeDecodeWideString(deviceInfo.serial_number, 512);
     hid_manufacturer = safeDecodeWideString(deviceInfo.manufacturer_string, 512);
     hid_product = safeDecodeWideString(deviceInfo.product_string, 512);
-
     guessDeviceCategory();
-
     // Set the Unique Identifier to the serial_number
     m_sUID = hid_serial;
-
     //Note: We include the last 4 digits of the serial number and the
     // interface number to allow the user (and Mixxx!) to keep track of
     // which is which
@@ -124,7 +124,6 @@ HidController::HidController(const hid_device_info deviceInfo)
 
 HidController::~HidController() {
     close();
-    delete [] hid_path;
     delete [] hid_serial_raw;
 }
 
@@ -232,7 +231,7 @@ int HidController::open() {
         qDebug() << "Opening HID device"
                  << getName() << "by HID path" << hid_path;
     }
-    m_pHidDevice = hid_open_path(hid_path);
+    m_pHidDevice = hid_open_path(hid_path.toLatin1().constData());
 
     // If that fails, try to open device with vendor/product/serial #
     if (m_pHidDevice == NULL) {
@@ -322,9 +321,33 @@ void HidController::send(QList<int> data, unsigned int length, unsigned int repo
     send(temp, reportID);
 }
 
-void HidController::send(QByteArray data) {
+void HidController::send(QByteArray data)
+{
     send(data, 0);
 }
+ControllerPresetPointer HidController::getPreset() const
+{
+    auto pClone = new HidControllerPreset();
+    *pClone = m_preset;
+    return ControllerPresetPointer(pClone);
+}
+bool HidController::isMappable() const
+{
+  return m_preset.isMappable();
+}
+bool HidController::isPolling() const
+{
+  return false;
+}
+ControllerPreset* HidController::preset()
+{
+  return &m_preset;
+}
+void HidController::accept(ControllerVisitor* visitor) {
+        if (visitor) {
+            visitor->visit(this);
+        }
+    }
 
 void HidController::send(QByteArray data, unsigned int reportID) {
     // Append the Report ID to the beginning of data[] per the API..

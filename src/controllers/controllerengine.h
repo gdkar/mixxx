@@ -12,7 +12,6 @@ _Pragma("once")
 #include <QFileSystemWatcher>
 
 #include "configobject.h"
-#include "util/alphabetafilter.h"
 #include "controllers/softtakeover.h"
 #include "controllers/controllerpreset.h"
 #include "bytearrayclass.h"
@@ -21,7 +20,7 @@ _Pragma("once")
 class Controller;
 class ControlObjectSlave;
 class ControllerEngine;
-
+class AlphaBetaFilter;
 // ControllerEngineConnection class for closure-compatible engine.connectControl
 class ControllerEngineConnection {
   public:

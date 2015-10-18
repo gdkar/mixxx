@@ -7,7 +7,6 @@
 #include "cachingreader.h"
 #include "trackinfoobject.h"
 #include "sampleutil.h"
-#include "util/counter.h"
 #include "util/math.h"
 #include "util/assert.h"
 
@@ -218,9 +217,8 @@ int CachingReader::read(int sample, int numSamples, CSAMPLE* buffer) {
             for (auto chunkIndex = firstCachingReaderChunkIndex; chunkIndex <= lastCachingReaderChunkIndex; ++chunkIndex) {
                 auto  pChunk = lookupChunkAndFreshen(chunkIndex);
                 // If the chunk is not in cache, then we must return an error.
-                if (!pChunk || (pChunk->getState() != CachingReaderChunkForOwner::READY)) {
-                    Counter("CachingReader::read(): Failed to read chunk on cache miss")++;
-                    // Exit the loop and fill the remaining buffer with silence
+                if (!pChunk || (pChunk->getState() != CachingReaderChunkForOwner::READY))
+                {
                     break;
                 }
                 // Please note that m_maxReadableFrameIndex might change with

@@ -28,7 +28,6 @@
 #include "engine/sidechain/enginesidechain.h"
 #include "engine/sidechain/sidechainworker.h"
 #include "util/timer.h"
-#include "util/counter.h"
 #include "util/event.h"
 #include "util/trace.h"
 #include "sampleutil.h"
@@ -71,13 +70,12 @@ void EngineSideChain::addSideChainWorker(SideChainWorker* pWorker) {
     m_workers.append(pWorker);
 }
 
-void EngineSideChain::writeSamples(const CSAMPLE* newBuffer, int buffer_size) {
+void EngineSideChain::writeSamples(const CSAMPLE* newBuffer, int buffer_size)
+{
     Trace sidechain("EngineSideChain::writeSamples");
-    int samples_written = m_sampleFifo.write(newBuffer, buffer_size);
-    if (samples_written != buffer_size) {
-        Counter("EngineSideChain::writeSamples buffer overrun").increment();
-    }
-    if (m_sampleFifo.writeAvailable() < SIDECHAIN_BUFFER_SIZE/5) {
+    auto samples_written = m_sampleFifo.write(newBuffer, buffer_size);
+    if (m_sampleFifo.writeAvailable() < SIDECHAIN_BUFFER_SIZE/5)
+    {
         // Signal to the sidechain that samples are available.
         Trace wakeup("EngineSideChain::writeSamples wake up");
         m_waitForSamples.wakeAll();

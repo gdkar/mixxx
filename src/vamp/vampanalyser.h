@@ -41,12 +41,12 @@ class VampAnalyser {
     Vamp::HostExt::PluginLoader::PluginKey m_key;
     int m_iSampleCount, m_iOUT, m_iRemainingSamples,
         m_iBlockSize, m_iStepSize, m_rate, m_iOutput;
-    CSAMPLE ** m_pluginbuf;
-    Vamp::Plugin *m_plugin;
+    CSAMPLE ** m_pluginbuf          = nullptr;
+    Vamp::Plugin *m_plugin          = nullptr;
     Vamp::Plugin::ParameterList mParameters;
     Vamp::Plugin::FeatureList m_Results;
 
-    bool m_bDoNotAnalyseMoreSamples;
-    bool m_FastAnalysisEnabled;
-    int m_iMaxSamplesToAnalyse;
+    bool m_bDoNotAnalyseMoreSamples = false;
+    bool m_FastAnalysisEnabled      = false;
+    int m_iMaxSamplesToAnalyse      = 0;
 };

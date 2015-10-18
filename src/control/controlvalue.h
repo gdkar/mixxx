@@ -8,7 +8,6 @@ _Pragma("once")
 #include <QSharedPointer>
 #include <QObject>
 
-#include "util/compatibility.h"
 #include "util/assert.h"
 
 // shared pointer based implementation for all Types sizeof(T) > sizeof(void*)

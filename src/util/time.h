@@ -8,7 +8,6 @@
 #include <QStringBuilder>
 
 #include "util/performancetimer.h"
-#include "util/threadcputimer.h"
 #include "util/timer.h"
 
 #define LLTIMER PerformanceTimer

@@ -1,15 +1,10 @@
-#ifndef DEBUG_H
-#define DEBUG_H
-
+_Pragma("once")
 #include <QDebug>
-#include <QMessageLogger>
-#include <QtDebug>
 #include <QString>
 
-#include "preferences/errordialoghandler.h"
-
 template <typename T>
-QString toDebugString(const T& object) {
+QString toDebugString(const T& object)
+{
     QString output;
 #ifndef QT_NO_DEBUG_OUTPUT
     QDebug deb(&output);
@@ -17,32 +12,15 @@ QString toDebugString(const T& object) {
 #endif
     return output;
 }
-
 // Calling this will report a qFatal and quit Mixxx, possibly disgracefully. Use
 // very sparingly! A modal message box will be issued to the user which allows
 // the Qt event loop to continue processing. This means that you must not call
 // this function from a code section which is not re-entrant (e.g. paintEvent on
 // a QWidget).
-inline void reportFatalErrorAndQuit(QString message) {
-    QByteArray message_bytes = message.toLocal8Bit();
-    qFatal("%s", message_bytes.constData());
-    ErrorDialogHandler* dialogHandler = ErrorDialogHandler::instance();
-    if (dialogHandler) {
-        dialogHandler->requestErrorDialog(DLG_FATAL, message, true);
-    }
-}
-
+void reportFatalErrorAndQuit(QString message);
 // Calling this will report a qCritical and quit Mixxx, possibly
 // disgracefully. Use very sparingly! A modal message box will be issued to the
 // user which allows the Qt event loop to continue processing. This means that
 // you must not call this function from a code section which is not re-entrant
 // (e.g. paintEvent on a QWidget).
-inline void reportCriticalErrorAndQuit(QString message) {
-    qCritical() << message;
-    ErrorDialogHandler* dialogHandler = ErrorDialogHandler::instance();
-    if (dialogHandler) {
-        dialogHandler->requestErrorDialog(DLG_CRITICAL, message, true);
-    }
-}
-
-#endif /* DEBUG_H */
+void reportCriticalErrorAndQuit(QString message);

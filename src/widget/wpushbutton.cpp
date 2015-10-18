@@ -132,27 +132,27 @@ void WPushButton::setup(QDomNode node, const SkinContext& context) {
             }
         }
         if (leftConnection->getEmitOption() &
-                ControlParameterWidgetConnection::EMIT_DEFAULT) {
+                ControlParameterWidgetConnection::EmitOption::Default) {
             switch (m_leftButtonMode) {
                 case ControlPushButton::PUSH:
                 case ControlPushButton::LONGPRESSLATCHING:
                 case ControlPushButton::POWERWINDOW:
-                    leftConnection->setEmitOption(ControlParameterWidgetConnection::EMIT_ON_PRESS_AND_RELEASE);
+                    leftConnection->setEmitOption(ControlParameterWidgetConnection::EmitOption::OnPress
+                                                 |ControlParameterWidgetConnection::EmitOption::OnRelease);
                     break;
                 default:
-                    leftConnection->setEmitOption(ControlParameterWidgetConnection::EMIT_ON_PRESS);
+                    leftConnection->setEmitOption(ControlParameterWidgetConnection::EmitOption::OnPress);
                     break;
             }
         }
-        if (leftConnection->getDirectionOption() &
-                        ControlParameterWidgetConnection::DIR_DEFAULT) {
+        if (leftConnection->getDirectionOption() & ControlParameterWidgetConnection::DirectionOption::Default) {
             if (m_pDisplayConnection == leftConnection) {
-                leftConnection->setDirectionOption(ControlParameterWidgetConnection::DIR_FROM_AND_TO_WIDGET);
+                leftConnection->setDirectionOption(ControlParameterWidgetConnection::DirectionOption::FromWidget
+                                                  |ControlParameterWidgetConnection::DirectionOption::ToWidget);
             } else {
-                leftConnection->setDirectionOption(ControlParameterWidgetConnection::DIR_FROM_WIDGET);
-                if (m_pDisplayConnection->getDirectionOption() &
-                        ControlParameterWidgetConnection::DIR_DEFAULT) {
-                    m_pDisplayConnection->setDirectionOption(ControlParameterWidgetConnection::DIR_TO_WIDGET);
+                leftConnection->setDirectionOption(ControlParameterWidgetConnection::DirectionOption::FromWidget);
+                if (m_pDisplayConnection->getDirectionOption() & ControlParameterWidgetConnection::DirectionOption::Default) {
+                    m_pDisplayConnection->setDirectionOption(ControlParameterWidgetConnection::DirectionOption::ToWidget);
                 }
             }
         }
@@ -177,24 +177,22 @@ void WPushButton::setup(QDomNode node, const SkinContext& context) {
             }
         }
         if (rightConnection->getEmitOption() &
-                ControlParameterWidgetConnection::EMIT_DEFAULT) {
+                ControlParameterWidgetConnection::EmitOption::Default) {
             switch (m_rightButtonMode) {
                 case ControlPushButton::PUSH:
                 case ControlPushButton::LONGPRESSLATCHING:
                 case ControlPushButton::POWERWINDOW:
                     rightConnection->setEmitOption(
-                            ControlParameterWidgetConnection::EMIT_ON_PRESS_AND_RELEASE);
+                            ControlParameterWidgetConnection::EmitOption::OnPress
+                           |ControlParameterWidgetConnection::EmitOption::OnRelease);
                     break;
                 default:
-                    rightConnection->setEmitOption(
-                            ControlParameterWidgetConnection::EMIT_ON_PRESS);
+                    rightConnection->setEmitOption(ControlParameterWidgetConnection::EmitOption::OnPress);
                     break;
             }
         }
-        if (rightConnection->getDirectionOption() &
-                        ControlParameterWidgetConnection::DIR_DEFAULT) {
-            rightConnection->setDirectionOption(ControlParameterWidgetConnection::DIR_FROM_WIDGET);
-        }
+        if (rightConnection->getDirectionOption() & ControlParameterWidgetConnection::DirectionOption::Default)
+            rightConnection->setDirectionOption(ControlParameterWidgetConnection::DirectionOption::FromWidget);
     }
 }
 

@@ -7,7 +7,6 @@
 
 #include "cachingreaderworker.h"
 #include "soundsourceproxy.h"
-#include "util/compatibility.h"
 #include "util/event.h"
 
 

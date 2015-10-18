@@ -70,19 +70,11 @@ void MessageHandler(QtMsgType type,
     // wrapped with isOpen() checks.
     QMutexLocker locker(&mutexLogfile);
     QByteArray ba;
-    QThread* thread = QThread::currentThread();
-    if (thread) {
-        ba = "[" + QThread::currentThread()->objectName().toLocal8Bit() + "]: ";
-    } else {
-        ba = "[?]: ";
-    }
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-    ba += input;
-#else
+    auto thread = QThread::currentThread();
+    if (thread) ba = "[" + QThread::currentThread()->objectName().toLocal8Bit() + "]: ";
+    else        ba = "[?]: ";
     ba += input.toLocal8Bit();
-#endif
     ba += "\n";
-
     if (!Logfile.isOpen()) {
         // This Must be done in the Message Handler itself, to guarantee that the
         // QApplication is initialized
@@ -91,26 +83,18 @@ void MessageHandler(QtMsgType type,
 
         // Rotate old logfiles
         //FIXME: cerr << doesn't get printed until after mixxx quits (???)
-        for (int i = 9; i >= 0; --i) {
-            if (i == 0) {
-                logFileName = QDir(logLocation).filePath("mixxx.log");
-            } else {
-                logFileName = QDir(logLocation).filePath(QString("mixxx.log.%1").arg(i));
-            }
+        for (auto i = 9; i >= 0; --i) {
+            if (i == 0) logFileName = QDir(logLocation).filePath("mixxx.log");
+            else        logFileName = QDir(logLocation).filePath(QString("mixxx.log.%1").arg(i));
             QFileInfo logbackup(logFileName);
             if (logbackup.exists()) {
-                QString olderlogname =
-                        QDir(logLocation).filePath(QString("mixxx.log.%1").arg(i + 1));
+                auto olderlogname = QDir(logLocation).filePath(QString("mixxx.log.%1").arg(i + 1));
                 // This should only happen with number 10
-                if (QFileInfo(olderlogname).exists()) {
-                    QFile::remove(olderlogname);
-                }
-                if (!QFile::rename(logFileName, olderlogname)) {
+                if (QFileInfo(olderlogname).exists()) QFile::remove(olderlogname);
+                if (!QFile::rename(logFileName, olderlogname))
                     std::cerr << "Error rolling over logfile " << logFileName.toStdString();
-                }
             }
         }
-
         // WARNING(XXX) getSettingsPath() may not be ready yet. This causes
         // Logfile writes below to print qWarnings which in turn recurse into
         // MessageHandler -- potentially deadlocking.
@@ -119,82 +103,74 @@ void MessageHandler(QtMsgType type,
         Logfile.setFileName(logFileName);
         Logfile.open(QIODevice::WriteOnly | QIODevice::Text);
     }
-
     switch (type) {
     case QtDebugMsg:
-#ifdef __WINDOWS__  //wtf? -kousu 2/2009
-        if (strstr(input, "doneCurrent")) {
-            break;
-        }
-#endif
         fprintf(stderr, "Debug %s", ba.constData());
-        if (Logfile.isOpen()) {
+        if (Logfile.isOpen())
+        {
             Logfile.write("Debug ");
             Logfile.write(ba);
         }
         break;
     case QtWarningMsg:
         fprintf(stderr, "Warning %s", ba.constData());
-        if (Logfile.isOpen()) {
+        if (Logfile.isOpen())
+        {
             Logfile.write("Warning ");
             Logfile.write(ba);
         }
         break;
     case QtCriticalMsg:
         fprintf(stderr, "Critical %s", ba.constData());
-        if (Logfile.isOpen()) {
+        if (Logfile.isOpen())
+        {
             Logfile.write("Critical ");
             Logfile.write(ba);
         }
         break; //NOTREACHED
     case QtFatalMsg:
         fprintf(stderr, "Fatal %s", ba.constData());
-        if (Logfile.isOpen()) {
+        if (Logfile.isOpen())
+        {
             Logfile.write("Fatal ");
             Logfile.write(ba);
         }
         break; //NOTREACHED
     default:
         fprintf(stderr, "Unknown %s", ba.constData());
-        if (Logfile.isOpen()) {
+        if (Logfile.isOpen())
+        {
             Logfile.write("Unknown ");
             Logfile.write(ba);
         }
         break;
     }
-    if (Logfile.isOpen()) {
-        Logfile.flush();
-    }
+    if (Logfile.isOpen()) Logfile.flush();
 }
-
 int main(int argc, char * argv[])
 {
     Console console;
-
 #ifdef Q_OS_LINUX
     XInitThreads();
 #endif
-
     // Check if an instance of Mixxx is already running
     // See http://qt.nokia.com/products/appdev/add-on-products/catalog/4/Utilities/qtsingleapplication
 
     // These need to be set early on (not sure how early) in order to trigger
     // logic in the OS X appstore support patch from QTBUG-16549.
     QCoreApplication::setOrganizationDomain("mixxx.org");
-
     // Setting the organization name results in a QDesktopStorage::DataLocation
     // of "$HOME/Library/Application Support/Mixxx/Mixxx" on OS X. Leave the
     // organization name blank.
     //QCoreApplication::setOrganizationName("Mixxx");
-
     QCoreApplication::setApplicationName("Mixxx");
-    QString mixxxVersion = Version::version();
-    QByteArray mixxxVersionBA = mixxxVersion.toLocal8Bit();
+    auto mixxxVersion = Version::version();
+    auto mixxxVersionBA = mixxxVersion.toLocal8Bit();
     QCoreApplication::setApplicationVersion(mixxxVersion);
-
     // Construct a list of strings based on the command line arguments
-    CmdlineArgs& args = CmdlineArgs::Instance();
-    if (!args.Parse(argc, argv)) {
+    auto& args = CmdlineArgs::Instance();
+    if (!args.Parse(argc, argv))
+    {
         fputs("Mixxx DJ Software v", stdout);
         fputs(mixxxVersionBA.constData(), stdout);
         fputs(" - Command line options", stdout);
@@ -204,8 +180,8 @@ int main(int argc, char * argv[])
                             Each must be one of the following file types:\n\
                             ", stdout);
 
-        QString fileExtensions(SoundSourceProxy::getSupportedFileNamePatterns().join(" "));
-        QByteArray fileExtensionsBA = QString(fileExtensions).toUtf8();
+        auto fileExtensions(SoundSourceProxy::getSupportedFileNamePatterns().join(" "));
+        auto fileExtensionsBA = QString(fileExtensions).toUtf8();
         fputs(fileExtensionsBA.constData(), stdout);
         fputs("\n\n", stdout);
         fputs("\
@@ -246,23 +222,19 @@ int main(int argc, char * argv[])
         fputs("\n\n(For more information, see http://mixxx.org/wiki/doku.php/command_line_options)\n",stdout);
         return(0);
     }
-
     qInstallMessageHandler(MessageHandler);
-
     // Other things depend on this name to enforce thread exclusivity,
     //  so if you change it here, change it also in:
     //      * ErrorDialogHandler::errorDialog()
     QThread::currentThread()->setObjectName("Main");
     MixxxApplication a(argc, argv);
-
     // Support utf-8 for all translation strings. Not supported in Qt 5.
     // TODO(rryan): Is this needed when we switch to qt5? Some sources claim it
     // isn't.
-     av_register_all();
-     avcodec_register_all();
-
+    av_register_all();
+    avcodec_register_all();
 #ifdef __APPLE__
-     QDir dir(QApplication::applicationDirPath());
+     auto dir = QDir(QApplication::applicationDirPath());
      // Set the search path for Qt plugins to be in the bundle's PlugIns
      // directory, but only if we think the mixxx binary is in a bundle.
      if (dir.path().contains(".app/"))
@@ -278,7 +250,7 @@ int main(int argc, char * argv[])
          QApplication::setLibraryPaths(QStringList(dir.absolutePath()));
      }
 #endif
-    MixxxMainWindow* mixxx = new MixxxMainWindow(&a, args);
+    auto mixxx = new MixxxMainWindow(&a, args);
     //a.setMainWidget(mixxx);
     QObject::connect(&a, SIGNAL(lastWindowClosed()), &a, SLOT(quit()));
     auto result = -1;
@@ -293,7 +265,6 @@ int main(int argc, char * argv[])
     delete mixxx;
     qDebug() << "Mixxx shutdown complete with code" << result;
     qInstallMessageHandler(nullptr);  // Reset to default.
-
     // Don't make any more output after this
     //    or mixxx.log will get clobbered!
     { // scope

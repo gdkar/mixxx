@@ -1,6 +1,4 @@
-#ifndef PLAYLISTDAO_H
-#define PLAYLISTDAO_H
-
+_Pragma("once")
 #include <QHash>
 #include <QObject>
 #include <QSqlDatabase>
@@ -37,10 +35,8 @@ class PlaylistDAO : public QObject, public virtual DAO {
         PLHT_SET_LOG = 2,
         PLHT_UNKNOWN = -1
     };
-
     PlaylistDAO(QSqlDatabase& database);
     virtual ~PlaylistDAO();
-
     void initialize();
     void setDatabase(QSqlDatabase& database) { m_database = database; }
     // Create a playlist, fails with -1 if already exists
@@ -97,14 +93,11 @@ class PlaylistDAO : public QObject, public virtual DAO {
     // Returns the number of tracks in the given playlist.
     int tracksInPlaylist(const int playlistId) const;
     // moved Track to a new position
-    void moveTrack(const int playlistId,
-            const int oldPosition, const int newPosition);
+    void moveTrack(const int playlistId,const int oldPosition, const int newPosition);
     // shuffles all tracks in the position List
     void shuffleTracks(const int playlistId, const QList<int>& positions, const QHash<int,TrackId>& allIds);
     bool isTrackInPlaylist(TrackId trackId, const int playlistId) const;
-
     void getPlaylistsTrackIsIn(TrackId trackId, QSet<int>* playlistSet) const;
-
   signals:
     void added(int playlistId);
     void deleted(int playlistId);
@@ -113,7 +106,6 @@ class PlaylistDAO : public QObject, public virtual DAO {
     void trackRemoved(int playlistId, TrackId trackId, int position);
     void renamed(int playlistId, QString a_strName);
     void lockChanged(int playlistId);
-
   private:
     void removeTracksFromPlaylistsInner(const QStringList& idList);
     void searchForDuplicateTrack(const int fromPosition,
@@ -124,10 +116,7 @@ class PlaylistDAO : public QObject, public virtual DAO {
                                  const QHash<int,TrackId>* pTrackPositionIds,
                                  int* pTrackDistance);
     void populatePlaylistMembershipCache();
-
     QSqlDatabase& m_database;
     QMultiHash<TrackId, int> m_playlistsTrackIsIn;
     DISALLOW_COPY_AND_ASSIGN(PlaylistDAO);
 };
-
-#endif //PLAYLISTDAO_H

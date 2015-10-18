@@ -11,7 +11,7 @@ import SCons.Script as SCons
 
 from build import util, depends
 
-mixxx_version = util.get_mixxx_version()
+mixxx_version = "1.12-beta"
 branch_name = util.get_branch_name()
 vcs_revision = util.get_revision()
 vcs_name = util.get_current_vcs()
@@ -740,6 +740,6 @@ def BuildUbuntuPackage(target, source, env):
 versiondebbld = Builder(action = BuildUbuntuPackage) #, suffix = '.foo', src_suffix = '.bar')
 env.Append(BUILDERS = {'BuildUbuntuPackage' : versiondebbld})
 
-if 'makeubuntu' in COMMAND_LINE_TARGETS:
-        makeubuntu = env.BuildUbuntuPackage("blah", "defs_version.h" ) #(binary_files)
-        env.Alias('makeubuntu', makeubuntu)
+#if 'makeubuntu' in COMMAND_LINE_TARGETS:
+#        makeubuntu = env.BuildUbuntuPackage("blah", "defs_version.h" ) #(binary_files)
+#        env.Alias('makeubuntu', makeubuntu)

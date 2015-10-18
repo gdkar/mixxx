@@ -1,7 +1,5 @@
 // Created by RJ Ryan (rryan@mit.edu) 1/29/2010
-#ifndef BASESQLTABLEMODEL_H
-#define BASESQLTABLEMODEL_H
-
+_Pragma("once")
 #include <QHash>
 #include <QtSql>
 
@@ -138,8 +136,4 @@ class BaseSqlTableModel : public QAbstractTableModel, public TrackModel {
     QString m_tableOrderBy;
     int m_trackSourceSortColumn;
     Qt::SortOrder m_trackSourceSortOrder;
-
-    DISALLOW_COPY_AND_ASSIGN(BaseSqlTableModel);
 };
-
-#endif /* BASESQLTABLEMODEL_H */

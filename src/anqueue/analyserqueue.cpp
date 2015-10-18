@@ -15,7 +15,6 @@
 #include "analyserbeats.h"
 #include "analyserkey.h"
 #include "vamp/vampanalyser.h"
-#include "util/compatibility.h"
 #include "util/event.h"
 #include "util/trace.h"
 

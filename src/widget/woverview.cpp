@@ -97,10 +97,9 @@ void WOverview::setup(QDomNode node, const SkinContext& context)
         ControlParameterWidgetConnection* defaultConnection = m_connections.at(0);
         if (defaultConnection)
         {
-            if (defaultConnection->getEmitOption() & ControlParameterWidgetConnection::EMIT_DEFAULT)
+            if (defaultConnection->getEmitOption() & ControlParameterWidgetConnection::EmitOption::Default)
             {
-                // ON_PRESS means here value change on mouse move during press
-                defaultConnection->setEmitOption(ControlParameterWidgetConnection::EMIT_ON_RELEASE);
+                defaultConnection->setEmitOption(ControlParameterWidgetConnection::EmitOption::OnRelease);
             }
         }
     }

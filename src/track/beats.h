@@ -36,6 +36,7 @@ class Beats : public QObject{
     };
     Q_ENUM(Capabilities);
     Q_DECLARE_FLAGS(CapabilitiesFlags,Capabilities);
+    Q_FLAG(CapabilitiesFlags);
     virtual CapabilitiesFlags getCapabilities() const = 0;
     // Serialization
     virtual QByteArray* toByteArray() const = 0;

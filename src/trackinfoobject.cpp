@@ -35,7 +35,6 @@
 #include "track/beatfactory.h"
 #include "track/keyfactory.h"
 #include "track/keyutils.h"
-#include "util/compatibility.h"
 #include "util/cmdlineargs.h"
 #include "util/time.h"
 #include "util/math.h"

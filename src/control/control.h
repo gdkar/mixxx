@@ -3,6 +3,7 @@ _Pragma("once")
 #include <QMutex>
 #include <QString>
 #include <QObject>
+#include <QSharedPointer>
 #include <atomic>
 #include "control/controlbehavior.h"
 #include "configobject.h"

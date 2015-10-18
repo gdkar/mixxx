@@ -1,6 +1,4 @@
-#ifndef TREE_ITEM_MODEL_H
-#define TREE_ITEM_MODEL_H
-
+_Pragma("once")
 #include <QAbstractItemModel>
 #include <QModelIndex>
 #include <QVariant>
@@ -36,9 +34,7 @@ class TreeItemModel : public QAbstractItemModel {
     TreeItem* getItem(const QModelIndex &index) const;
 
     void triggerRepaint();
-
   private:
     TreeItem *m_pRootItem;
 };
 
-#endif

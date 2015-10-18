@@ -21,7 +21,7 @@
 #include <QTranslator>
 #include <QScopedPointer>
 
-#include "defs_version.h"
+#include "util/version.h"
 #include "controllers/defs_controllers.h"
 #include "track/beat_preferences.h"
 #include "library/trackcollection.h"
@@ -97,8 +97,8 @@ ConfigObject<ConfigValue>* Upgrade::versionUpgrade(const QString& settingsPath) 
         else {
 #endif
             // This must have been the first run... right? :)
-            qDebug() << "No version number in configuration file. Setting to" << VERSION;
-            config->set(ConfigKey("Config","Version"), ConfigValue(VERSION));
+            qDebug() << "No version number in configuration file. Setting to" << Version::version();
+            config->set(ConfigKey("Config","Version"), ConfigValue(Version::version()));
             m_bFirstRun = true;
             return config;
 #ifdef __APPLE__
@@ -108,8 +108,9 @@ ConfigObject<ConfigValue>* Upgrade::versionUpgrade(const QString& settingsPath) 
 #endif
     }
     // If it's already current, stop here
-    if (configVersion == VERSION) {
-        qDebug() << "Configuration file is at the current version" << VERSION;
+    if (configVersion == Version::version())
+    {
+        qDebug() << "Configuration file is at the current version" << Version::version();
         return config;
     }
     // We use the following blocks to detect if this is the first time
@@ -146,25 +147,27 @@ ConfigObject<ConfigValue>* Upgrade::versionUpgrade(const QString& settingsPath) 
         // if everything until here worked fine we can mark the configuration as
         // updated
         if (successful) {
-            configVersion = VERSION;
+            configVersion = Version::version();
             m_bUpgraded = true;
-            config->set(ConfigKey("Config","Version"), ConfigValue(VERSION));
+            config->set(ConfigKey("Config","Version"), ConfigValue(Version::version()));
         }
-        else {qDebug() << "Upgrade failed!\n";}
+        else qDebug() << "Upgrade failed!\n";
     }
-    if (configVersion == VERSION) qDebug() << "Configuration file is now at the current version" << VERSION;
-    else {
+    if (configVersion == Version::version()) qDebug() << "Configuration file is now at the current version" << Version::version();
+    else
+    {
         /* Way too verbose, this confuses the hell out of Linux users when they see this:
         qWarning() << "Configuration file is at version" << configVersion
                    << "and I don't know how to upgrade it to the current" << VERSION
                    << "\n   (That means a function to do this needs to be added to upgrade.cpp.)"
                    << "\n-> Leaving the configuration file version as-is.";
         */
-        qWarning() << "Configuration file is at version" << configVersion << "instead of the current" << VERSION;
+        qWarning() << "Configuration file is at version" << configVersion << "instead of the current" << Version::version();
     }
     return config;
 }
-bool Upgrade::askReScanLibrary() {
+bool Upgrade::askReScanLibrary()
+{
     QMessageBox msgBox;
     msgBox.setIconPixmap(QPixmap(":/images/mixxx-icon.png"));
     msgBox.setWindowTitle(QMessageBox::tr("Upgrading Mixxx"));

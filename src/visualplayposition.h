@@ -57,11 +57,11 @@ class VisualPlayPosition : public QObject
     void slotAudioBufferSizeChanged(double size);
   private:
     ControlValueAtomic<VisualPlayPositionData> m_data;
-    ControlObjectSlave* m_audioBufferSize;
-    double m_dAudioBufferSize; // Audio buffer size in ms
-    bool m_valid;
+    ControlObjectSlave* m_audioBufferSize = nullptr;
+    double m_dAudioBufferSize             = 0.0;
+    bool m_valid                          = false;
     QString m_key;
-    bool m_invalidTimeInfoWarned;
+    bool m_invalidTimeInfoWarned          = false;
     static QMap<QString, QWeakPointer<VisualPlayPosition> > m_listVisualPlayPosition;
     // Time info from the Sound device, updated just after audio callback is called
     static PaStreamCallbackTimeInfo m_timeInfo;

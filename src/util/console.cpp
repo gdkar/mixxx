@@ -1,10 +1,8 @@
 
+#ifdef __WINDOWS__
 #include "console.h"
-
 #include <cstdio>
 #include <QtDebug>
-
-#ifdef __WINDOWS__
 #include <windows.h>
 #include <io.h> // Debug Console
 typedef BOOL(WINAPI* pfSetCurrentConsoleFontEx)(HANDLE, BOOL, PCONSOLE_FONT_INFOEX);

@@ -8,7 +8,6 @@
 #include "engine/readaheadmanager.h"
 #include "sampleutil.h"
 #include "track/keyutils.h"
-#include "util/counter.h"
 #include "util/math.h"
 #include "util/defs.h"
 
@@ -217,11 +216,7 @@ CSAMPLE* EngineBufferScaleRubberBand::getScaled(unsigned long buf_size)
             }
         }
     }
-    if (remaining_frames > 0) {
-        SampleUtil::clear(read, remaining_frames * iNumChannels);
-        Counter counter("EngineBufferScaleRubberBand::getScaled underflow");
-        counter.increment();
-    }
+    if (remaining_frames > 0) SampleUtil::clear(read, remaining_frames * iNumChannels);
     // m_samplesRead is interpreted as the total number of virtual samples
     // consumed to produce the scaled buffer. Due to this, we do not take into
     // account directionality or starting point.

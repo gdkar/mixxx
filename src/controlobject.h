@@ -19,7 +19,7 @@ _Pragma("once")
 #include <QObject>
 #include <QEvent>
 #include <QMutex>
-
+#include <QSharedPointer>
 #include "configobject.h"
 class ControlDoublePrivate;
 class ControlObject : public QObject {

@@ -650,32 +650,27 @@ void BaseSqlTableModel::setTrackValueForColumn(TrackPointer pTrack, int column,Q
         StarRating starRating = qVariantValue<StarRating>(value);
         pTrack->setRating(starRating.starCount());
     } else if (fieldIndex(ColumnCache::COLUMN_LIBRARYTABLE_KEY) == column) {
-        pTrack->setKeyText(value.toString(),
-                           mixxx::track::io::key::USER);
-    } else if (fieldIndex(ColumnCache::COLUMN_LIBRARYTABLE_BPM_LOCK) == column) {
-        pTrack->setBpmLock(value.toBool());
-    }
+        pTrack->setKeyText(value.toString(),mixxx::track::io::key::USER);
+    } else if (fieldIndex(ColumnCache::COLUMN_LIBRARYTABLE_BPM_LOCK) == column) 
+pTrack->setBpmLock(value.toBool());
 }
 
-QVariant BaseSqlTableModel::getBaseValue(
-    const QModelIndex& index, int role) const {
+QVariant BaseSqlTableModel::getBaseValue(const QModelIndex& index, int role) const {
     if (role != Qt::DisplayRole &&
         role != Qt::ToolTipRole &&
         role != Qt::EditRole) {
         return QVariant();
     }
 
-    int row = index.row();
-    int column = index.column();
+    auto row = index.row();
+    auto column = index.column();
 
-    if (row < 0 || row >= m_rowInfo.size()) {
-        return QVariant();
-    }
+    if (row < 0 || row >= m_rowInfo.size()) return QVariant();
 
     // TODO(rryan) check range on column
 
-    const RowInfo& rowInfo = m_rowInfo[row];
-    TrackId trackId(rowInfo.trackId);
+    auto rowInfo = m_rowInfo[row];
+    auto trackId = TrackId(rowInfo.trackId);
 
     // If the row info has the row-specific column, return that.
     if (column < m_tableColumns.size()) {
@@ -688,11 +683,8 @@ QVariant BaseSqlTableModel::getBaseValue(
             return m_previewDeckTrackId == trackId;
         }
 
-        const QVector<QVariant>& columns = rowInfo.metadata;
-        if (sDebug) {
-            qDebug() << "Returning table-column value" << columns.at(column)
-                     << "for column" << column << "role" << role;
-        }
+        auto columns = rowInfo.metadata;
+        if (sDebug) qDebug() << "Returning table-column value" << columns.at(column) << "for column" << column << "role" << role;
         return columns[column];
     }
 
@@ -716,9 +708,9 @@ QVariant BaseSqlTableModel::getBaseValue(
     }
     return QVariant();
 }
-
-QMimeData* BaseSqlTableModel::mimeData(const QModelIndexList &indexes) const {
-    QMimeData *mimeData = new QMimeData();
+QMimeData* BaseSqlTableModel::mimeData(const QModelIndexList &indexes) const
+{
+    auto mimeData = new QMimeData();
     QList<QUrl> urls;
 
     // The list of indexes we're given contains separates indexes for each
@@ -726,13 +718,13 @@ QMimeData* BaseSqlTableModel::mimeData(const QModelIndexList &indexes) const {
     // indices.  We need to only count each row once:
     QSet<int> rows;
 
-    foreach (QModelIndex index, indexes) {
-        if (!index.isValid() || rows.contains(index.row())) {
-            continue;
-        }
+    for(auto index: indexes)
+    {
+        if (!index.isValid() || rows.contains(index.row())) continue;
         rows.insert(index.row());
-        QUrl url = DragAndDropHelper::urlFromLocation(getTrackLocation(index));
-        if (!url.isValid()) {
+        auto url = DragAndDropHelper::urlFromLocation(getTrackLocation(index));
+        if (!url.isValid())
+        {
             qDebug() << this << "ERROR: invalid url" << url;
             continue;
         }
@@ -757,21 +749,21 @@ QAbstractItemDelegate* BaseSqlTableModel::delegateForColumn(const int i, QObject
     }
     return NULL;
 }
-
-void BaseSqlTableModel::refreshCell(int row, int column) {
-    QModelIndex coverIndex = index(row, column);
+void BaseSqlTableModel::refreshCell(int row, int column)
+{
+    auto coverIndex = index(row, column);
     emit(dataChanged(coverIndex, coverIndex));
 }
 
-void BaseSqlTableModel::hideTracks(const QModelIndexList& indices) {
+void BaseSqlTableModel::hideTracks(const QModelIndexList& indices)
+{
     QList<TrackId> trackIds;
-    foreach (QModelIndex index, indices) {
+    for(auto index: indices)
+    {
         TrackId trackId(getTrackId(index));
         trackIds.append(trackId);
     }
-
     m_trackDAO.hideTracks(trackIds);
-
     // TODO(rryan) : do not select, instead route event to BTC and notify from
     // there.
     select(); //Repopulate the data model.

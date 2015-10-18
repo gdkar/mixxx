@@ -31,8 +31,10 @@ class EngineSync : public SyncableListener {
     void onCallbackEnd(int sampleRate, int bufferSize);
     // Only for testing. Do not use.
     Syncable* getSyncableForGroup(const QString& group);
-    Syncable* getMasterSyncable() {return m_pMasterSyncable;}
-
+    Syncable* getMasterSyncable()
+    {
+      return m_pMasterSyncable;
+    }
     // Used by Syncables to tell EngineSync it wants to be enabled in a
     // specific mode. If the state change is accepted, EngineSync calls
     // Syncable::notifySyncModeChanged.

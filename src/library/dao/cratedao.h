@@ -1,9 +1,7 @@
 // cratedao.h
 // Created 10/22/2009 by RJ Ryan (rryan@mit.edu)
 
-#ifndef CRATEDAO_H
-#define CRATEDAO_H
-
+_Pragma("once")
 #include <QObject>
 #include <QMap>
 #include <QMultiHash>
@@ -32,12 +30,9 @@ class CrateDAO : public QObject, public virtual DAO {
   public:
     CrateDAO(QSqlDatabase& database);
     virtual ~CrateDAO();
-
     void setDatabase(QSqlDatabase& database) { m_database = database; }
-
     // Initialize this DAO, create the tables it relies on, etc.
     void initialize();
-
     unsigned int crateCount();
     int createCrate(const QString& name);
     bool deleteCrate(const int crateId);
@@ -66,7 +61,6 @@ class CrateDAO : public QObject, public virtual DAO {
     void removeTracksFromCrates(const QList<TrackId>& ids);
     bool isTrackInCrate(TrackId trackId, const int crateId);
     void getCratesTrackIsIn(TrackId trackId, QSet<int>* crateSet) const;
-
   signals:
     void added(int crateId);
     void renamed(int crateId, QString a_strName);
@@ -76,13 +70,8 @@ class CrateDAO : public QObject, public virtual DAO {
     void trackRemoved(int crateId, TrackId trackId);
     void lockChanged(int crateId);
     void autoDjChanged(int a_iCrateId, bool a_bIn);
-
   private:
     void populateCrateMembershipCache();
-
     QSqlDatabase& m_database;
     QMultiHash<TrackId, int> m_cratesTrackIsIn;
-    DISALLOW_COPY_AND_ASSIGN(CrateDAO);
 };
-
-#endif /* CRATEDAO_H */

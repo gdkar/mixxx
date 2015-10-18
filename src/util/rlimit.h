@@ -1,6 +1,4 @@
-#ifndef RLIMIT_H
-#define RLIMIT_H
-
+_Pragma("once")
 #ifdef __LINUX__
 
 class RLimit {
@@ -8,7 +6,6 @@ class RLimit {
     static unsigned int getCurRtPrio();
     static unsigned int getMaxRtPrio();
     static bool isRtPrioAllowed();
+  private:
+    RLimit::RLimit() = delete;
 };
-
-#endif // __LINUX__
-#endif // RLIMIT_H_

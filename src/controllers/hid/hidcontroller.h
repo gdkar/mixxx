@@ -5,9 +5,7 @@
   * @brief HID controller backend
   */
 
-#ifndef HIDCONTROLLER_H
-#define HIDCONTROLLER_H
-
+_Pragma("once")
 #include <hidapi.h>
 
 #include <atomic>
@@ -21,95 +19,57 @@ class HidReader : public QThread {
   public:
     HidReader(hid_device* device);
     virtual ~HidReader();
-
-    void stop() {
-        m_stop = 1;
-    }
-
   signals:
     void incomingData(QByteArray data);
-
   protected:
-    void run();
-
+    virtual void run();
   private:
-    hid_device* m_pHidDevice;
-    std::atomic<int> m_stop;
+    hid_device* m_pHidDevice = nullptr;
+    std::atomic<bool> m_stop{false};
 };
-
 class HidController : public Controller {
     Q_OBJECT
   public:
     HidController(const hid_device_info deviceInfo);
     virtual ~HidController();
-
     virtual QString presetExtension();
-
-    virtual ControllerPresetPointer getPreset() const {
-        HidControllerPreset* pClone = new HidControllerPreset();
-        *pClone = m_preset;
-        return ControllerPresetPointer(pClone);
-    }
-
+    virtual ControllerPresetPointer getPreset() const;
     virtual bool savePreset(const QString fileName) const;
-
     virtual void visit(const MidiControllerPreset* preset);
     virtual void visit(const HidControllerPreset* preset);
-
-    virtual void accept(ControllerVisitor* visitor) {
-        if (visitor) {
-            visitor->visit(this);
-        }
-    }
-
-    virtual bool isMappable() const {
-        return m_preset.isMappable();
-    }
-
+    virtual void accept(ControllerVisitor* visitor);
+    virtual bool isMappable() const;
     virtual bool matchPreset(const PresetInfo& preset);
     virtual bool matchProductInfo(QHash <QString,QString >);
     virtual void guessDeviceCategory();
-
   protected:
     Q_INVOKABLE void send(QList<int> data, unsigned int length, unsigned int reportID = 0);
-
   private slots:
     int open();
     int close();
-
   private:
     // For devices which only support a single report, reportID must be set to
     // 0x0.
     virtual void send(QByteArray data);
     virtual void send(QByteArray data, unsigned int reportID);
-
-    virtual bool isPolling() const {
-        return false;
-    }
-
+    virtual bool isPolling() const;
     // Returns a pointer to the currently loaded controller preset. For internal
     // use only.
-    virtual ControllerPreset* preset() {
-        return &m_preset;
-    }
-
-
+    virtual ControllerPreset* preset();
     // Local copies of things we need from hid_device_info
-    int hid_interface_number;
-    unsigned short hid_vendor_id;
-    unsigned short hid_product_id;
-    unsigned short hid_usage_page;
-    unsigned short hid_usage;
-    char* hid_path;
-    wchar_t* hid_serial_raw;
-    QString hid_serial;
-    QString hid_manufacturer;
-    QString hid_product;
+    int hid_interface_number = 0;
+    unsigned short hid_vendor_id = 0;
+    unsigned short hid_product_id = 0;
+    unsigned short hid_usage_page = 0;
+    unsigned short hid_usage = 0;
+    QString  hid_path;
+    wchar_t* hid_serial_raw = nullptr;
+    QString  hid_serial;
+    QString  hid_manufacturer;
+    QString  hid_product;
 
     QString m_sUID;
-    hid_device* m_pHidDevice;
-    HidReader* m_pReader;
-    HidControllerPreset m_preset;
+    hid_device* m_pHidDevice = nullptr;
+    HidReader* m_pReader = nullptr;
+    HidControllerPreset m_preset = nullptr;
 };
-
-#endif

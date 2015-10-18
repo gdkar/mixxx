@@ -1,6 +1,4 @@
-#ifndef DIRECTORYDAO_H
-#define DIRECTORYDAO_H
-
+_Pragma("once")
 #include <QSqlDatabase>
 #include "library/dao/trackdao.h"
 
@@ -30,5 +28,3 @@ class DirectoryDAO : public DAO {
     bool isChildDir(QString testDir, QString dirStr);
     QSqlDatabase& m_database;
 };
-
-#endif //DIRECTORYDAO_H

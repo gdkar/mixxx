@@ -11,9 +11,7 @@
 //
 //
 
-#ifndef PARSER_H
-#define PARSER_H
-
+_Pragma("once")
 /**Developer Information:
 This is the rootclass for all parser classes for the Importer class.
 It can be used to write a new type-specific parser by deriving a new class
@@ -33,16 +31,13 @@ class Parser : public QObject {
                 fileName.endsWith(".pls", Qt::CaseInsensitive) ||
                 fileName.endsWith(".csv", Qt::CaseInsensitive);
     }
-
     Parser();
-    ~Parser();
+    virtual ~Parser();
     /**Can be called to parse a pls file
     Note for developers:
     This function should return an empty PtrList
      or 0 in order for the trackimporter to function**/
     virtual QList<QString> parse(QString) = 0;
-
-
 protected:
     /**Pointer to the parsed Filelocations**/
     QList<QString> m_sLocations;
@@ -57,5 +52,3 @@ protected:
     // check for Utf8 encoding
     static bool isUtf8(const char* string);
 };
-
-#endif

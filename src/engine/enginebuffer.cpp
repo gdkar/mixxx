@@ -33,7 +33,6 @@
 #include "track/beatfactory.h"
 #include "track/keyutils.h"
 #include "controlobjectslave.h"
-#include "util/compatibility.h"
 #include "util/assert.h"
 
 #ifdef __VINYLCONTROL__
@@ -928,8 +927,8 @@ void EngineBuffer::updateIndicators(double speed, int iBufferSize)
     m_pSyncControl->reportTrackPosition(fFractionalPlaypos);
     // Update indicators that are only updated after every
     // sampleRate/kiUpdateRate samples processed.  (e.g. playposSlider)
-    if (m_iSamplesCalculated > (m_pSampleRate->get() / kiPlaypositionUpdateRate))
-    {
+//    if (m_iSamplesCalculated > (m_pSampleRate->get() / kiPlaypositionUpdateRate))
+//    {
       m_playposSlider->blockSignals(true);
       m_playposSlider->set(fFractionalPlaypos);
       m_playposSlider->blockSignals(false);
@@ -941,7 +940,7 @@ void EngineBuffer::updateIndicators(double speed, int iBufferSize)
       m_visualKey->set(m_pKeyControl->getKey());
       // Reset sample counter
       m_iSamplesCalculated = 0;
-    }
+//    }
     // Update visual control object, this needs to be done more often than the
     // playpos slider
     m_visualPlayPos->set(fFractionalPlaypos, speed * m_baserate_old,(double)iBufferSize / m_trackSamplesOld,fractionalPlayposFromAbsolute(m_dSlipPosition));

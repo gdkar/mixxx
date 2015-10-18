@@ -69,7 +69,6 @@
 #include "util/time.h"
 #include "util/version.h"
 #include "controlpushbutton.h"
-#include "util/compatibility.h"
 #include "util/sandbox.h"
 #include "playerinfo.h"
 #include "waveform/guitick.h"
@@ -621,7 +620,8 @@ void MixxxMainWindow::initializeKeyboard() {
         m_pKbdConfig = new ConfigObject<ConfigValueKbd>(userKeyboard);
     } else {
         // Default to the locale for the main input method (e.g. keyboard).
-        auto locale = inputLocale();
+        auto locale = QGuiApplication::inputMethod();
+        if ( !locale ) locale = QLocale(QLocale::English);
         // check if a default keyboard exists
         auto defaultKeyboard = QString(resourcePath).append("keyboard/");
         defaultKeyboard += locale.name();

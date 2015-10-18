@@ -71,10 +71,10 @@ void WSliderComposed::setup(QDomNode node, const SkinContext& context)
         auto defaultConnection = m_connections.at(0);
         if (defaultConnection)
         {
-            if (defaultConnection->getEmitOption() & ControlParameterWidgetConnection::EMIT_DEFAULT)
+            if (defaultConnection->getEmitOption() & ControlParameterWidgetConnection::EmitOption::Default)
             {
                 // ON_PRESS means here value change on mouse move during press
-                defaultConnection->setEmitOption(ControlParameterWidgetConnection::EMIT_ON_PRESS_AND_RELEASE);
+                defaultConnection->setEmitOption(ControlParameterWidgetConnection::EmitOption::OnRelease|ControlParameterWidgetConnection::EmitOption::OnPress);
             }
         }
     }

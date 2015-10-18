@@ -1389,69 +1389,73 @@ void LegacySkinParser::setupConnections(QDomNode node, WBaseWidget* pWidget) {
             auto nodeValue = false;
             Qt::MouseButton state = parseButtonState(con, *m_pContext);
             auto directionOptionSet = false;
-            auto directionOption = static_cast<int>(ControlParameterWidgetConnection::DIR_FROM_AND_TO_WIDGET);
-            if(m_pContext->hasNodeSelectBool(con, "ConnectValueFromWidget", &nodeValue)) {
-                if (nodeValue) {
-                    directionOption = directionOption | ControlParameterWidgetConnection::DIR_FROM_WIDGET;
-                } else {
-                    directionOption = directionOption & ~ControlParameterWidgetConnection::DIR_FROM_WIDGET;
-                }
+            auto dirFromWidget = ControlParameterWidgetConnection::DirectionOptions(
+                ControlParameterWidgetConnection::DirectionOption::FromWidget);
+            auto dirToWidget = ControlParameterWidgetConnection::DirectionOptions(
+                ControlParameterWidgetConnection::DirectionOption::ToWidget);
+
+            auto directionOption = dirFromWidget | dirToWidget;
+            if(m_pContext->hasNodeSelectBool(con, "ConnectValueFromWidget", &nodeValue))
+            {
+                if (nodeValue) directionOption = directionOption | dirToWidget;
+                else           directionOption = directionOption & ~dirFromWidget;
                 directionOptionSet = true;
             }
-            if(m_pContext->hasNodeSelectBool(con, "ConnectValueToWidget", &nodeValue)) {
-                if (nodeValue) {
-                    directionOption = directionOption | ControlParameterWidgetConnection::DIR_TO_WIDGET;
-                } else {
-                    directionOption = directionOption & ~ControlParameterWidgetConnection::DIR_TO_WIDGET;
-                }
+            if(m_pContext->hasNodeSelectBool(con, "ConnectValueToWidget", &nodeValue))
+            {
+                if (nodeValue) directionOption = directionOption | dirFromWidget;
+                else           directionOption = directionOption & ~dirToWidget;
                 directionOptionSet = true;
             }
-            if (!directionOptionSet) {
+            if (!directionOptionSet)
+            {
                 // default:
                 // no direction option is explicite set
                 // Set default flag to allow the widget to change this during setup
-                directionOption |= ControlParameterWidgetConnection::DIR_DEFAULT;
+                directionOption |= ControlParameterWidgetConnection::DirectionOption::Default;
             }
-            auto emitOption = static_cast<int>(ControlParameterWidgetConnection::EMIT_ON_PRESS);
+            auto emitOnPress   = ControlParameterWidgetConnection::EmitOptions(
+                ControlParameterWidgetConnection::EmitOption::OnPress);
+            auto emitOnRelease = ControlParameterWidgetConnection::EmitOptions(
+                ControlParameterWidgetConnection::EmitOption::OnRelease);
+            auto emitDefault   = ControlParameterWidgetConnection::EmitOptions(
+                ControlParameterWidgetConnection::EmitOption::Default);
+            auto emitOption = emitOnPress;
             if(m_pContext->hasNodeSelectBool(con, "EmitOnDownPress", &nodeValue)) {
                 if (nodeValue) {
-                    emitOption = ControlParameterWidgetConnection::EMIT_ON_PRESS;
+                    emitOption = emitOnPress;
                 } else {
-                    emitOption = ControlParameterWidgetConnection::EMIT_ON_RELEASE;
+                    emitOption = emitOnRelease;
                 }
             } else if(m_pContext->hasNodeSelectBool(con, "EmitOnPressAndRelease", &nodeValue)) {
                 if (nodeValue) {
-                    emitOption = ControlParameterWidgetConnection::EMIT_ON_PRESS_AND_RELEASE;
-                } else {
-                    SKIN_WARNING(con, *m_pContext)
-                            << "LegacySkinParser::setupConnections(): EmitOnPressAndRelease must not set false";
-                }
+                    emitOption = emitOnPress | emitOnRelease;
+                } else SKIN_WARNING(con, *m_pContext) 
+                  << "LegacySkinParser::setupConnections(): EmitOnPressAndRelease must not set false";
             } else {
                 // default:
                 // no emit option is set
                 // Allow to change the emitOption from Widget
-                emitOption |= ControlParameterWidgetConnection::EMIT_DEFAULT;
+                emitOption |= emitDefault;
             }
             // Connect control proxy to widget. Parented to pWidget so it is not
             // leaked.
             auto pControlWidget = new ControlObjectSlave(control->getKey(), pWidget->toQWidget());
-            auto pConnection = new ControlParameterWidgetConnection(pWidget, pControlWidget,
-                    static_cast<ControlParameterWidgetConnection::DirectionOption>(directionOption),
-                    static_cast<ControlParameterWidgetConnection::EmitOption>(emitOption));
+            auto pConnection = new ControlParameterWidgetConnection(pWidget, pControlWidget,directionOption,emitOption);
             pConnection->setInvert(bInvert);
             // If we created this control, bind it to the
             // ControlWidgetConnection so that it is deleted when the connection
             // is deleted.
-            if (created) {control->setParent(pConnection);}
+            if (created) control->setParent(pConnection);
             switch (state) {
             case Qt::NoButton:
                 pWidget->addConnection(pConnection);
-                if (directionOption & ControlParameterWidgetConnection::DIR_TO_WIDGET) 
+                if (directionOption & ControlParameterWidgetConnection::DirectionOption::ToWidget) 
                     pLastLeftOrNoButtonConnection = pConnection;
                 break;
             case Qt::LeftButton:
                 pWidget->addLeftConnection(pConnection);
-                if (directionOption & ControlParameterWidgetConnection::DIR_TO_WIDGET)
+                if (directionOption & ControlParameterWidgetConnection::DirectionOption::ToWidget)
                     pLastLeftOrNoButtonConnection = pConnection;
                 break;
             case Qt::RightButton:
@@ -1462,10 +1466,9 @@ void LegacySkinParser::setupConnections(QDomNode node, WBaseWidget* pWidget) {
             }
             // We only add info for controls that this widget affects, not
             // controls that only affect the widget.
-            if (directionOption & ControlParameterWidgetConnection::DIR_FROM_WIDGET) {
+            if (directionOption & ControlParameterWidgetConnection::DirectionOption::FromWidget) {
                 m_pControllerManager->getControllerLearningEventFilter()
-                        ->addWidgetClickInfo(pWidget->toQWidget(), state, control,
-                                static_cast<ControlParameterWidgetConnection::EmitOption>(emitOption));
+                        ->addWidgetClickInfo(pWidget->toQWidget(), state, control,emitOption);
                 // Add keyboard shortcut info to tooltip string
                 auto key = m_pContext->selectString(con, "ConfigKey");
                 auto configKey = ConfigKey::parseCommaSeparated(key);

@@ -1,6 +1,4 @@
-#ifndef MISSINGTABLEMODEL_H
-#define MISSINGTABLEMODEL_H
-
+_Pragma("once")
 #include <QtSql>
 #include <QItemDelegate>
 #include <QModelIndex>
@@ -24,5 +22,3 @@ class MissingTableModel : public BaseSqlTableModel {
   private:
     static const QString MISSINGFILTER;
 };
-
-#endif

@@ -13,8 +13,7 @@ CrateDAO::CrateDAO(QSqlDatabase& database)
         : m_database(database) {
 }
 
-CrateDAO::~CrateDAO() {
-}
+CrateDAO::~CrateDAO() = default;
 
 void CrateDAO::initialize() {
     qDebug() << "CrateDAO::initialize()";
@@ -22,111 +21,105 @@ void CrateDAO::initialize() {
     populateCrateMembershipCache();
 }
 
-void CrateDAO::populateCrateMembershipCache() {
+void CrateDAO::populateCrateMembershipCache()
+{
     // get the count to allocate HashMap
     int tracksInCratesCount = 0;
     QSqlQuery query(m_database);
     query.prepare("SELECT COUNT(*) from " CRATE_TRACKS_TABLE);
 
-    if (!query.exec()) {
-        LOG_FAILED_QUERY(query);
-    }
-
+    if (!query.exec()) LOG_FAILED_QUERY(query);
     tracksInCratesCount = query.value(0).toInt();
-
     m_cratesTrackIsIn.reserve(tracksInCratesCount);
-
     // now fetch all Tracks from all crates and insert them into the hashmap
     query.prepare("SELECT track_id, crate_id from " CRATE_TRACKS_TABLE);
-    if (!query.exec()) {
-        LOG_FAILED_QUERY(query);
-    }
+    if (!query.exec()) LOG_FAILED_QUERY(query);
 
-    const int trackIdColumn = query.record().indexOf("track_id");
-    const int crateIdColumn = query.record().indexOf("crate_id");
-    while (query.next()) {
-        TrackId trackId(query.value(trackIdColumn));
-        int crateId = query.value(crateIdColumn).toInt();
+    auto trackIdColumn = query.record().indexOf("track_id");
+    auto crateIdColumn = query.record().indexOf("crate_id");
+    while (query.next())
+    {
+        auto trackId = TrackId(query.value(trackIdColumn));
+        auto crateId = query.value(crateIdColumn).toInt();
         m_cratesTrackIsIn.insert(std::move(trackId), crateId);
     }
 }
 
-unsigned int CrateDAO::crateCount() {
+unsigned int CrateDAO::crateCount()
+{
     QSqlQuery query(m_database);
     query.prepare("SELECT count(*) FROM " CRATE_TABLE);
-
-    if (!query.exec() || !query.next()) {
+    if (!query.exec() || !query.next())
+    {
         LOG_FAILED_QUERY(query);
         return 0;
     }
     return query.value(0).toInt();
 }
 
-int CrateDAO::createCrate(const QString& name) {
+int CrateDAO::createCrate(const QString& name)
+{
     QSqlQuery query(m_database);
     query.prepare("INSERT INTO " CRATE_TABLE " (name) VALUES (:name)");
     query.bindValue(":name", name);
-
     if (!query.exec()) {
         LOG_FAILED_QUERY(query);
         return -1;
     }
-
-    int crateId = query.lastInsertId().toInt();
+    auto crateId = query.lastInsertId().toInt();
     emit(added(crateId));
     return crateId;
 }
-
-bool CrateDAO::renameCrate(const int crateId, const QString& newName) {
+bool CrateDAO::renameCrate(const int crateId, const QString& newName)
+{
     QSqlQuery query(m_database);
     query.prepare("UPDATE " CRATE_TABLE " SET name = :name WHERE id = :id");
     query.bindValue(":name", newName);
     query.bindValue(":id", crateId);
-
-    if (!query.exec()) {
+    if (!query.exec())
+    {
         LOG_FAILED_QUERY(query);
         return false;
     }
     emit(renamed(crateId, newName));
     return true;
 }
-
-bool CrateDAO::setCrateLocked(const int crateId, const bool locked) {
+bool CrateDAO::setCrateLocked(const int crateId, const bool locked)
+{
     // SQLite3 doesn't support boolean value. Using integer instead.
-    int lock = locked ? 1 : 0;
+    auto lock = locked ? 1 : 0;
     QSqlQuery query(m_database);
     query.prepare("UPDATE " CRATE_TABLE " SET locked = :lock WHERE id = :id");
     query.bindValue(":lock", lock);
     query.bindValue(":id", crateId);
-
-    if (!query.exec()) {
+    if (!query.exec())
+    {
         LOG_FAILED_QUERY(query);
         return false;
     }
     emit(lockChanged(crateId));
     return true;
 }
-
-bool CrateDAO::isCrateLocked(const int crateId) {
+bool CrateDAO::isCrateLocked(const int crateId)
+{
     QSqlQuery query(m_database);
     query.prepare("SELECT locked FROM " CRATE_TABLE " WHERE id = :id");
     query.bindValue(":id", crateId);
 
-    if (query.exec()) {
-        if (query.next()) {
-            int lockValue = query.value(0).toInt();
+    if (query.exec())
+    {
+        if (query.next())
+        {
+            auto lockValue = query.value(0).toInt();
             return lockValue == 1;
         }
-    } else {
-        LOG_FAILED_QUERY(query);
-    }
-
+    } else LOG_FAILED_QUERY(query);
     return false;
 }
 
-QList<TrackId> CrateDAO::getTrackIds(const int crateId) {
+QList<TrackId> CrateDAO::getTrackIds(const int crateId)
+{
     QList<TrackId> trackIds;
-
     QSqlQuery query(m_database);
     query.prepare("SELECT track_id from crate_tracks WHERE crate_id = :id");
     query.bindValue(":id", crateId);
