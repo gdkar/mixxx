@@ -125,7 +125,7 @@ int BeatMap::findIndexNear(double dSamples) const
 }
 double BeatMap::beatAtIndex(int n) const 
 {
-  if ( n < 0 || n > m_beats.size() ) return -1;
+  if ( n < 0 || n >= m_beats.size() ) return -1;
   return framesToSamples(m_beats.at(n).frame_position());
 }
 double BeatMap::findNthBeat(double dSamples, int n) const

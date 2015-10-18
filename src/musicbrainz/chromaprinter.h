@@ -5,5 +5,6 @@ class ChromaPrinter: public QObject {
   Q_OBJECT
 public:
       explicit ChromaPrinter(QObject* parent = nullptr);
-      QString getFingerprint(TrackPointer pTrack);
+      virtual ~ChromaPrinter();
+      QString  getFingerprint(TrackPointer pTrack);
 };

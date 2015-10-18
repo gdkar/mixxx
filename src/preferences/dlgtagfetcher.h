@@ -1,6 +1,4 @@
-#ifndef DLGTAGFETCHER_H
-#define DLGTAGFETCHER_H
-
+_Pragma("once")
 #include <QDialog>
 #include "preferences/ui_dlgtagfetcher.h"
 #include "trackinfoobject.h"
@@ -60,5 +58,3 @@ class DlgTagFetcher : public QDialog,  public Ui::DlgTagFetcher {
     TagFetcher m_TagFetcher;
     networkError m_networkError;
 };
-
-#endif // DLGTAGFETCHER_H

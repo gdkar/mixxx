@@ -66,6 +66,7 @@ namespace
 ChromaPrinter::ChromaPrinter(QObject* parent)
              : QObject(parent)
 {}
+ChromaPrinter::~ChromaPrinter() = default;
 QString ChromaPrinter::getFingerprint(TrackPointer pTrack)
 {
     SoundSourceProxy soundSourceProxy(pTrack);

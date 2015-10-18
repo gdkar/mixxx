@@ -1,6 +1,4 @@
-#ifndef GROUPFEATURESTATE_H
-#define GROUPFEATURESTATE_H
-
+_Pragma("once")
 #include "proto/keys.pb.h"
 
 struct GroupFeatureState {
@@ -71,5 +69,3 @@ struct GroupFeatureState {
     bool has_key;
     mixxx::track::io::key::ChromaticKey key;
 };
-
-#endif /* GROUPFEATURESTATE_H */

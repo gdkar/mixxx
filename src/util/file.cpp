@@ -1,7 +1,6 @@
 #include "util/file.h"
 
-MFile::MFile() {
-}
+MFile::MFile() = default;
 
 MFile::MFile(const QString& file)
         : m_fileName(file),
@@ -15,8 +14,7 @@ MFile::MFile(const MFile& other)
           m_pSecurityToken(other.m_pSecurityToken) {
 }
 
-MFile::~MFile() {
-}
+MFile::~MFile() = default;
 
 MFile& MFile::operator=(const MFile& other) {
     m_fileName = other.m_fileName;
@@ -29,10 +27,31 @@ bool MFile::canAccess() {
     QFileInfo info(m_file);
     return Sandbox::canAccessFile(info);
 }
-
-MDir::MDir() {
+QFile& MFile::file()
+{
+    return m_file;
 }
-
+const QFile& MFile::file() const
+{
+  return m_file;
+}
+SecurityTokenPointer MFile::token()
+{
+  return m_pSecurityToken;
+}
+MDir::MDir() = default;
+QDir& MDir::dir()
+{
+  return m_dir;
+}
+const QDir& MDir::dir() const
+{
+  return m_dir;
+}
+SecurityTokenPointer MDir::token()
+{
+  return m_pSecurityToken;
+}
 MDir::MDir(const QString& path)
         : m_dirPath(path),
           m_dir(path),
@@ -45,8 +64,7 @@ MDir::MDir(const MDir& other)
           m_pSecurityToken(other.m_pSecurityToken) {
 }
 
-MDir::~MDir() {
-}
+MDir::~MDir() = default;
 
 MDir& MDir::operator=(const MDir& other) {
     m_dirPath = other.m_dirPath;

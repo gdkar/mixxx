@@ -1,6 +1,4 @@
-#ifndef EVENT_H
-#define EVENT_H
-
+_Pragma("once")
 #include <QtGlobal>
 #include <QString>
 
@@ -30,5 +28,3 @@ class Event {
         return event(tag, Stat::EVENT_END);
     }
 };
-
-#endif /* EVENT_H */

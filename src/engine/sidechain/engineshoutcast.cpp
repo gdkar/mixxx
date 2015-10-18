@@ -27,7 +27,6 @@
 #ifdef __WINDOWS__
 #undef WIN32
 #endif
-
 #include "engine/sidechain/engineshoutcast.h"
 #include "configobject.h"
 #include "controlobject.h"
@@ -43,28 +42,10 @@
 #define TIMEOUT 10
 
 EngineShoutcast::EngineShoutcast(ConfigObject<ConfigValue>* _config)
-        : m_pTextCodec(NULL),
-          m_pMetaData(),
-          m_pShout(NULL),
-          m_pShoutMetaData(NULL),
-          m_iMetaDataLife(0),
-          m_iShoutStatus(0),
-          m_iShoutFailures(0),
-          m_pConfig(_config),
-          m_encoder(NULL),
-          m_pShoutcastNeedUpdateFromPrefs(NULL),
-          m_pUpdateShoutcastFromPrefs(NULL),
-          m_pMasterSamplerate(new ControlObjectSlave("Master", "samplerate")),
-          m_pShoutcastStatus(new ControlObject(ConfigKey(SHOUTCAST_PREF_KEY, "status"))),
-          m_bQuit(false),
-          m_custom_metadata(false),
-          m_firstCall(false),
-          m_format_is_mp3(false),
-          m_format_is_ov(false),
-          m_protocol_is_icecast1(false),
-          m_protocol_is_icecast2(false),
-          m_protocol_is_shoutcast(false),
-          m_ogg_dynamic_update(false) {
+         : m_pConfig(_config),
+           m_pMasterSamplerate(new ControlObjectSlave("Master", "samplerate")),
+          m_pShoutcastStatus(new ControlObject(ConfigKey(SHOUTCAST_PREF_KEY, "status")))
+{
 #ifndef __WINDOWS__
     // Ignore SIGPIPE signals that we get when the remote streaming server
     // disconnects.
@@ -75,21 +56,26 @@ EngineShoutcast::EngineShoutcast(ConfigObject<ConfigValue>* _config)
     m_pUpdateShoutcastFromPrefs = new ControlObjectSlave( m_pShoutcastNeedUpdateFromPrefs->getKey());
     // Initialize libshout
     shout_init();
-    if (!(m_pShout = shout_new())) {
+    if (!(m_pShout = shout_new()))
+    {
         errorDialog(tr("Mixxx encountered a problem"), tr("Could not allocate shout_t"));
         return;
     }
-    if (!(m_pShoutMetaData = shout_metadata_new())) {
+    if (!(m_pShoutMetaData = shout_metadata_new()))
+    {
         errorDialog(tr("Mixxx encountered a problem"), tr("Could not allocate shout_metadata_t"));
         return;
     }
-    if (shout_set_nonblocking(m_pShout, 1) != SHOUTERR_SUCCESS) {
+    if (shout_set_nonblocking(m_pShout, 1) != SHOUTERR_SUCCESS)
+    {
         errorDialog(tr("Error setting non-blocking mode:"), shout_get_error(m_pShout));
         return;
     }
 }
-EngineShoutcast::~EngineShoutcast() {
-    if (m_encoder) {
+EngineShoutcast::~EngineShoutcast()
+{
+    if (m_encoder)
+    {
         m_encoder->flush();
         delete m_encoder;
     }
@@ -97,14 +83,19 @@ EngineShoutcast::~EngineShoutcast() {
     delete m_pShoutcastNeedUpdateFromPrefs;
     delete m_pShoutcastStatus;
     delete m_pMasterSamplerate;
-    if (m_pShoutMetaData) { shout_metadata_free(m_pShoutMetaData); }
-    if (m_pShout) {
+    if (m_pShoutMetaData)
+    {
+      shout_metadata_free(m_pShoutMetaData);
+    }
+    if (m_pShout)
+    {
         shout_close(m_pShout);
         shout_free(m_pShout);
     }
     shout_shutdown();
 }
-bool EngineShoutcast::serverDisconnect() {
+bool EngineShoutcast::serverDisconnect()
+{
     if (m_encoder) {
         m_encoder->flush();
         delete m_encoder;
@@ -142,8 +133,8 @@ void EngineShoutcast::updateFromPreferences() {
     // Convert a bunch of QStrings to QByteArrays so we can get regular C char*
     // strings to pass to libshout.
 
-    QString codec = m_pConfig->getValueString(ConfigKey(SHOUTCAST_PREF_KEY, "metadata_charset"));
-    QByteArray baCodec = codec.toLatin1();
+    auto codec = m_pConfig->getValueString(ConfigKey(SHOUTCAST_PREF_KEY, "metadata_charset"));
+    auto baCodec = codec.toLatin1();
     m_pTextCodec = QTextCodec::codecForName(baCodec);
     if (!m_pTextCodec) {
         qDebug() << "Couldn't find shoutcast metadata codec for codec:" << codec
@@ -154,55 +145,45 @@ void EngineShoutcast::updateFromPreferences() {
     shout_metadata_add(m_pShoutMetaData, "charset",  baCodec.constData());
 
     // Host, server type, port, mountpoint, login, password should be latin1.
-    QByteArray baHost = m_pConfig->getValueString(
+    auto baHost = m_pConfig->getValueString(
             ConfigKey(SHOUTCAST_PREF_KEY, "host")).toLatin1();
-    QByteArray baServerType = m_pConfig->getValueString(
+    auto baServerType = m_pConfig->getValueString(
             ConfigKey(SHOUTCAST_PREF_KEY, "servertype")).toLatin1();
-    QByteArray baPort = m_pConfig->getValueString(
+    auto baPort = m_pConfig->getValueString(
             ConfigKey(SHOUTCAST_PREF_KEY, "port")).toLatin1();
-    QByteArray baMountPoint = m_pConfig->getValueString(
+    auto baMountPoint = m_pConfig->getValueString(
             ConfigKey(SHOUTCAST_PREF_KEY, "mountpoint")).toLatin1();
-    QByteArray baLogin = m_pConfig->getValueString(
+    auto baLogin = m_pConfig->getValueString(
             ConfigKey(SHOUTCAST_PREF_KEY, "login")).toLatin1();
-    QByteArray baPassword = m_pConfig->getValueString(
+    auto baPassword = m_pConfig->getValueString(
             ConfigKey(SHOUTCAST_PREF_KEY, "password")).toLatin1();
-    QByteArray baFormat = m_pConfig->getValueString(
+    auto baFormat = m_pConfig->getValueString(
             ConfigKey(SHOUTCAST_PREF_KEY, "format")).toLatin1();
-    QByteArray baBitrate = m_pConfig->getValueString(
+    auto baBitrate = m_pConfig->getValueString(
             ConfigKey(SHOUTCAST_PREF_KEY, "bitrate")).toLatin1();
 
     // Encode metadata like stream name, website, desc, genre, title/author with
     // the chosen TextCodec.
-    QByteArray baStreamName = encodeString(m_pConfig->getValueString(
+    auto baStreamName = encodeString(m_pConfig->getValueString(
             ConfigKey(SHOUTCAST_PREF_KEY, "stream_name")));
-    QByteArray baStreamWebsite = encodeString(m_pConfig->getValueString(
-            ConfigKey(SHOUTCAST_PREF_KEY, "stream_website")));
-    QByteArray baStreamDesc = encodeString(m_pConfig->getValueString(
-            ConfigKey(SHOUTCAST_PREF_KEY, "stream_desc")));
-    QByteArray baStreamGenre = encodeString(m_pConfig->getValueString(
-            ConfigKey(SHOUTCAST_PREF_KEY, "stream_genre")));
-
+    auto baStreamWebsite = encodeString(m_pConfig->getValueString(ConfigKey(SHOUTCAST_PREF_KEY, "stream_website")));
+    auto baStreamDesc = encodeString(m_pConfig->getValueString(ConfigKey(SHOUTCAST_PREF_KEY, "stream_desc")));
+    auto baStreamGenre = encodeString(m_pConfig->getValueString(ConfigKey(SHOUTCAST_PREF_KEY, "stream_genre")));
     // Whether the stream is public.
-    bool streamPublic = m_pConfig->getValueString(
+    auto streamPublic = m_pConfig->getValueString(
             ConfigKey(SHOUTCAST_PREF_KEY, "stream_public")).toInt() > 0;
-
     // Dynamic Ogg metadata update
     m_ogg_dynamic_update = (bool)m_pConfig->getValueString(
             ConfigKey(SHOUTCAST_PREF_KEY,"ogg_dynamicupdate")).toInt();
 
-    m_custom_metadata = (bool)m_pConfig->getValueString(
-            ConfigKey(SHOUTCAST_PREF_KEY, "enable_metadata")).toInt();
-    m_customTitle = m_pConfig->getValueString(
-            ConfigKey(SHOUTCAST_PREF_KEY, "custom_title"));
-    m_customArtist = m_pConfig->getValueString(
-            ConfigKey(SHOUTCAST_PREF_KEY, "custom_artist"));
+    m_custom_metadata = (bool)m_pConfig->getValueString(ConfigKey(SHOUTCAST_PREF_KEY, "enable_metadata")).toInt();
+    m_customTitle = m_pConfig->getValueString(ConfigKey(SHOUTCAST_PREF_KEY, "custom_title"));
+    m_customArtist = m_pConfig->getValueString(ConfigKey(SHOUTCAST_PREF_KEY, "custom_artist"));
 
-    m_metadataFormat = m_pConfig->getValueString(
-            ConfigKey(SHOUTCAST_PREF_KEY, "metadata_format"));
+    m_metadataFormat = m_pConfig->getValueString(ConfigKey(SHOUTCAST_PREF_KEY, "metadata_format"));
 
-    int format;
-    int protocol;
-
+    auto format   = 0;
+    auto protocol = 0;
     if (shout_set_host(m_pShout, baHost.constData()) != SHOUTERR_SUCCESS) {
         errorDialog(tr("Error setting hostname!"), shout_get_error(m_pShout));
         return;
@@ -218,48 +199,38 @@ void EngineShoutcast::updateFromPreferences() {
         errorDialog(tr("Error setting port!"), shout_get_error(m_pShout));
         return;
     }
-
     if (shout_set_password(m_pShout, baPassword.constData()) != SHOUTERR_SUCCESS) {
         errorDialog(tr("Error setting password!"), shout_get_error(m_pShout));
         return;
     }
-
     if (shout_set_mount(m_pShout, baMountPoint.constData()) != SHOUTERR_SUCCESS) {
         errorDialog(tr("Error setting mount!"), shout_get_error(m_pShout));
         return;
     }
-
-
     if (shout_set_user(m_pShout, baLogin.constData()) != SHOUTERR_SUCCESS) {
         errorDialog(tr("Error setting username!"), shout_get_error(m_pShout));
         return;
     }
-
     if (shout_set_name(m_pShout, baStreamName.constData()) != SHOUTERR_SUCCESS) {
         errorDialog(tr("Error setting stream name!"), shout_get_error(m_pShout));
         return;
     }
-
     if (shout_set_description(m_pShout, baStreamDesc.constData()) != SHOUTERR_SUCCESS) {
         errorDialog(tr("Error setting stream description!"), shout_get_error(m_pShout));
         return;
     }
-
     if (shout_set_genre(m_pShout, baStreamGenre.constData()) != SHOUTERR_SUCCESS) {
         errorDialog(tr("Error setting stream genre!"), shout_get_error(m_pShout));
         return;
     }
-
     if (shout_set_url(m_pShout, baStreamWebsite.constData()) != SHOUTERR_SUCCESS) {
         errorDialog(tr("Error setting stream url!"), shout_get_error(m_pShout));
         return;
     }
-
     if (shout_set_public(m_pShout, streamPublic ? 1 : 0) != SHOUTERR_SUCCESS) {
         errorDialog(tr("Error setting stream public!"), shout_get_error(m_pShout));
         return;
     }
-
     m_format_is_mp3 = !qstrcmp(baFormat.constData(), SHOUTCAST_FORMAT_MP3);
     m_format_is_ov = !qstrcmp(baFormat.constData(), SHOUTCAST_FORMAT_OV);
     if (m_format_is_mp3) {
@@ -270,7 +241,6 @@ void EngineShoutcast::updateFromPreferences() {
         qDebug() << "Error: unknown format:" << baFormat.constData();
         return;
     }
-
     if (shout_set_format(m_pShout, format) != SHOUTERR_SUCCESS) {
         errorDialog("Error setting streaming format!", shout_get_error(m_pShout));
         return;
@@ -632,7 +602,7 @@ void EngineShoutcast::updateMetaData() {
 
 void EngineShoutcast::errorDialog(QString text, QString detailedError) {
     qWarning() << "Streaming error: " << detailedError;
-    ErrorDialogProperties* props = ErrorDialogHandler::instance()->newDialogProperties();
+    auto props = ErrorDialogHandler::instance()->newDialogProperties();
     props->setType(DLG_WARNING);
     props->setTitle(tr("Live broadcasting"));
     props->setText(text);
@@ -644,7 +614,7 @@ void EngineShoutcast::errorDialog(QString text, QString detailedError) {
 }
 
 void EngineShoutcast::infoDialog(QString text, QString detailedInfo) {
-    ErrorDialogProperties* props = ErrorDialogHandler::instance()->newDialogProperties();
+    auto  props = ErrorDialogHandler::instance()->newDialogProperties();
     props->setType(DLG_INFO);
     props->setTitle(tr("Live broadcasting"));
     props->setText(text);

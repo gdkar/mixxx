@@ -295,7 +295,7 @@ void ITunesFeature::guessMusicLibraryMountpoint(QXmlStreamReader &xml) {
     // 2. For all tracks, replace the left-side of of the LCS in "Music Folder"
     //    with the left-side of the LCS in m_dbfile.
 
-    QString lcs = LCS(m_dbfile, music_folder);
+    auto lcs = LCS(m_dbfile, music_folder);
 
     if (lcs.size() <= 1) {
         qDebug() << "ERROR: Couldn't find a suitable transformation to load iTunes data files. Leaving defaults intact.";

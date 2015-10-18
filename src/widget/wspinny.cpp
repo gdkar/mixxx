@@ -3,6 +3,7 @@
 #include <QUrl>
 #include <QMimeData>
 #include <QStylePainter>
+#include <QStyleOption>
 
 #include "controlobject.h"
 #include "controlobjectslave.h"

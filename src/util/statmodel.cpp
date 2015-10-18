@@ -1,96 +1,84 @@
 #include <limits>
-
+#include <QMetaEnum>
 #include "util/statmodel.h"
 #include "util/math.h"
 
 StatModel::StatModel(QObject* pParent)
-        : QAbstractTableModel(pParent) {
-
-    setHeaderData(STAT_COLUMN_NAME, Qt::Horizontal, tr("Name"));
-    setHeaderData(STAT_COLUMN_COUNT, Qt::Horizontal, tr("Count"));
-    setHeaderData(STAT_COLUMN_TYPE, Qt::Horizontal, tr("Type"));
-    setHeaderData(STAT_COLUMN_UNITS, Qt::Horizontal, tr("Units"));
-    setHeaderData(STAT_COLUMN_SUM, Qt::Horizontal, tr("Sum"));
-    setHeaderData(STAT_COLUMN_MIN, Qt::Horizontal, tr("Min"));
-    setHeaderData(STAT_COLUMN_MAX, Qt::Horizontal, tr("Max"));
-    setHeaderData(STAT_COLUMN_MEAN, Qt::Horizontal, tr("Mean"));
-    setHeaderData(STAT_COLUMN_VARIANCE, Qt::Horizontal, tr("Variance"));
-    setHeaderData(STAT_COLUMN_STDDEV, Qt::Horizontal, tr("Standard Deviation"));
+        : QAbstractTableModel(pParent)
+{
+    auto colEnum = QMetaEnum::fromType<StatColumn>();
+    for(auto i = 0; i < colEnum.keyCount();i++)
+    {
+      setHeaderData(colEnum.value(i),Qt::Horizontal,tr(colEnum.key(i)));
+    }
 }
 
-StatModel::~StatModel() {
-}
+StatModel::~StatModel() = default;
 
 void StatModel::statUpdated(const Stat& stat) {
-    QHash<QString, int>::const_iterator it = m_statNameToRow.find(stat.m_tag);
-    if (it != m_statNameToRow.end()) {
-        int row = it.value();
-        m_stats[row] = stat;
-        QModelIndex left = index(row, 0);
-        QModelIndex right = index(row, columnCount() - 1);
-        emit(dataChanged(left, right));
-    } else {
-        beginInsertRows(QModelIndex(), m_stats.size(),
-                        m_stats.size());
+    auto it = m_statNameToRow.find(stat.m_tag);
+    if ( m_statNameToRow.contains(stat.m_tag))
+    {
+      auto row     = m_statNameToRow.value(stat.m_tag);
+      m_stats[row] = stat;
+      auto left = index(row,0);
+      auto right= index(row,columnCount() - 1);
+      emit dataChanged(left,right);
+    }
+    else
+    {
+        beginInsertRows(QModelIndex(), m_stats.size(),m_stats.size());
         m_statNameToRow[stat.m_tag] = m_stats.size();
         m_stats.append(stat);
         endInsertRows();
     }
 }
-
-int StatModel::rowCount(const QModelIndex& parent) const {
-    if (parent.isValid()) {
-        return 0;
-    }
+int StatModel::rowCount(const QModelIndex& parent) const
+{
+    if (parent.isValid()) return 0;
     return m_stats.size();
 }
 
-int StatModel::columnCount(const QModelIndex& parent) const {
-    if (parent.isValid()) {
-        return 0;
-    }
-    return NUM_STAT_COLUMNS;
+int StatModel::columnCount(const QModelIndex& parent) const
+{
+    if (parent.isValid()) return 0;
+    auto colEnum = QMetaEnum::fromType<StatColumn>();
+    return colEnum.keyCount();
 }
 
-QVariant StatModel::data(const QModelIndex& index,
-                            int role) const {
-    if (!index.isValid() || (role != Qt::DisplayRole &&
-                             role != Qt::EditRole)) {
-        return QVariant();
-    }
+QVariant StatModel::data(const QModelIndex& index, int role) const
+{
+    if (!index.isValid() || (role != Qt::DisplayRole && role != Qt::EditRole)) return QVariant();
+    auto row    = index.row();
+    auto column = index.column();
+    if (row < 0 || row >= m_stats.size()) return QVariant();
 
-    int row = index.row();
-    int column = index.column();
-
-    if (row < 0 || row >= m_stats.size()) {
-        return QVariant();
-    }
-
-    const Stat& stat = m_stats.at(row);
-    QString value;
-    switch (column) {
-        case STAT_COLUMN_NAME:
+    auto& stat = m_stats.at(row);
+    auto value = QString{};
+    auto col = static_cast<StatColumn>(column);
+    switch (col) {
+        case StatColumn::Name:
             return stat.m_tag;
-        case STAT_COLUMN_TYPE:
+        case StatColumn::Type:
             return stat.m_type;
-        case STAT_COLUMN_COUNT:
+        case StatColumn::Count:
             return stat.m_report_count;
-        case STAT_COLUMN_SUM:
+        case StatColumn::Sum:
             return stat.m_sum;
-        case STAT_COLUMN_MIN:
+        case StatColumn::Min:
             return std::numeric_limits<double>::max() == stat.m_min ?
                     QVariant("XXX") : QVariant(stat.m_min);
-        case STAT_COLUMN_MAX:
+        case StatColumn::Max:
             return std::numeric_limits<double>::min() == stat.m_max ?
                     QVariant("XXX") : QVariant(stat.m_max);
-        case STAT_COLUMN_MEAN:
+        case StatColumn::Mean:
             return stat.m_report_count > 0 ?
                     QVariant(stat.m_sum / stat.m_report_count) : QVariant("XXX");
-        case STAT_COLUMN_VARIANCE:
+        case StatColumn::Variance:
             return stat.variance();
-        case STAT_COLUMN_STDDEV:
+        case StatColumn::StdDev:
             return sqrt(stat.variance());
-        case STAT_COLUMN_UNITS:
+        case StatColumn::Units:
             return stat.valueUnits();
     }
     return QVariant();

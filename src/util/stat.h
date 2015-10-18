@@ -1,6 +1,4 @@
-#ifndef STAT_H
-#define STAT_H
-
+_Pragma("once")
 #include <QMap>
 #include <QVector>
 #include <QString>
@@ -77,23 +75,24 @@ class Stat {
     };
     typedef int ComputeFlags;
 
-    static Experiment::Mode modeFromFlags(ComputeFlags flags) {
+    static Experiment::Mode modeFromFlags(ComputeFlags flags)
+    {
         if (flags & Stat::STATS_EXPERIMENT) {
-            return Experiment::EXPERIMENT;
+            return Experiment::Mode::Experiment;
         } else if (flags & Stat::STATS_BASE) {
-            return Experiment::BASE;
+            return Experiment::Mode::Base;
         }
-        return Experiment::OFF;
+        return Experiment::Mode::Off;
     }
 
     static ComputeFlags experimentFlags(ComputeFlags flags) {
         switch (Experiment::mode()) {
-            case Experiment::EXPERIMENT:
+            case Experiment::Mode::Experiment:
                 return flags | STATS_EXPERIMENT;
-            case Experiment::BASE:
+            case Experiment::Mode::Base:
                 return flags | STATS_BASE;
             default:
-            case Experiment::OFF:
+            case Experiment::Mode::Off:
                 return flags;
         }
     }
@@ -118,10 +117,7 @@ class Stat {
     double m_variance_sk;
     QMap<double, double> m_histogram;
 
-    static bool track(const QString& tag,
-                      Stat::StatType type,
-                      Stat::ComputeFlags compute,
-                      double value);
+    static bool track(const QString& tag,Stat::StatType type,Stat::ComputeFlags compute,double value);
 };
 
 QDebug operator<<(QDebug dbg, const Stat &stat);
@@ -133,5 +129,3 @@ struct StatReport {
     Stat::ComputeFlags compute;
     double value;
 };
-
-#endif /* STAT_H */

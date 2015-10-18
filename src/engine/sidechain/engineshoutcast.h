@@ -15,9 +15,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef ENGINESHOUTCAST_H
-#define ENGINESHOUTCAST_H
-
+_Pragma("once")
 #include <QObject>
 #include <QMessageBox>
 #include <QTextCodec>
@@ -77,38 +75,35 @@ class EngineShoutcast : public QObject, public EncoderCallback, public SideChain
     // when connected or disconnected and so on
     void errorDialog(QString text, QString detailedError);
     void infoDialog(QString text, QString detailedError);
-
     QByteArray encodeString(const QString& string);
-    QTextCodec* m_pTextCodec;
+    QTextCodec* m_pTextCodec                        = nullptr;
     TrackPointer m_pMetaData;
-    shout_t *m_pShout;
-    shout_metadata_t *m_pShoutMetaData;
-    int m_iMetaDataLife;
-    long m_iShoutStatus;
-    long m_iShoutFailures;
-    ConfigObject<ConfigValue>* m_pConfig;
-    Encoder *m_encoder;
-    ControlObject* m_pShoutcastNeedUpdateFromPrefs;
-    ControlObjectSlave* m_pUpdateShoutcastFromPrefs;
-    ControlObjectSlave* m_pMasterSamplerate;
-    ControlObject* m_pShoutcastStatus;
-    volatile bool m_bQuit;
+    shout_t *m_pShout                               = nullptr;
+    shout_metadata_t *m_pShoutMetaData              = nullptr;
+    int m_iMetaDataLife                             = 0;
+    long m_iShoutStatus                             = 0;
+    long m_iShoutFailures                           = 0;
+    ConfigObject<ConfigValue>* m_pConfig            = nullptr;
+    Encoder *m_encoder                              = nullptr;
+    ControlObject* m_pShoutcastNeedUpdateFromPrefs  = nullptr;
+    ControlObjectSlave* m_pUpdateShoutcastFromPrefs = nullptr;
+    ControlObjectSlave* m_pMasterSamplerate         = nullptr;
+    ControlObject* m_pShoutcastStatus               = nullptr;
+    volatile bool m_bQuit         = false;
     // static metadata according to prefereneces
-    bool m_custom_metadata;
+    bool m_custom_metadata        = false;
     QString m_customArtist;
     QString m_customTitle;
     QString m_metadataFormat;
 
     // when static metadata is used, we only need calling shout_set_metedata
     // once
-    bool m_firstCall;
+    bool m_firstCall              = false;
 
-    bool m_format_is_mp3;
-    bool m_format_is_ov;
-    bool m_protocol_is_icecast1;
-    bool m_protocol_is_icecast2;
-    bool m_protocol_is_shoutcast;
-    bool m_ogg_dynamic_update;
+    bool m_format_is_mp3          = false;
+    bool m_format_is_ov           = false;
+    bool m_protocol_is_icecast1   = false;
+    bool m_protocol_is_icecast2   = false;
+    bool m_protocol_is_shoutcast  = false;
+    bool m_ogg_dynamic_update     = false;
 };
-
-#endif

@@ -1,6 +1,7 @@
 _Pragma("once")
 #include "library/basesqltablemodel.h"
-class LibraryTableModel : public BaseSqlTableModel {
+class LibraryTableModel : public BaseSqlTableModel
+{
     Q_OBJECT
   public:
     LibraryTableModel(QObject* parent, TrackCollection* pTrackCollection,const char* settingsNamespace);

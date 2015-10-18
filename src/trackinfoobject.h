@@ -70,7 +70,7 @@ class TrackInfoObject : public QObject {
     Q_PROPERTY(QString artist READ getArtist WRITE setArtist NOTIFY metadataUpdated)
     Q_PROPERTY(QString title READ getTitle WRITE setTitle    NOTIFY metadataUpdated)
     Q_PROPERTY(QString album READ getAlbum WRITE setAlbum    NOTIFY metadataUpdated)
-    Q_PROPERTY(QString albumArtist READ getAlbumArtist WRITE setAlbumArtist NOTIFY metadataUpdated)
+    Q_PROPERTY(QString album_artist READ getAlbumArtist WRITE setAlbumArtist NOTIFY metadataUpdated)
     Q_PROPERTY(QString genre READ getGenre WRITE setGenre NOTIFY metadataUpdated)
     Q_PROPERTY(QString composer READ getComposer WRITE setComposer NOTIFY metadataUpdated)
     Q_PROPERTY(QString grouping READ getGrouping WRITE setGrouping NOTIFY metadataUpdated)

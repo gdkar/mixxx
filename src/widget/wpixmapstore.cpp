@@ -167,7 +167,7 @@ void Paintable::draw(const QRectF& targetRect, QPainter* pPainter,const QRectF& 
     {
         // Only render the minimum overlapping rectangle between the source
         // and target.
-        auto fixedSize = QPointF(math_min(sourceRect.width(), targetRect.width()),math_min(sourceRect.height(), targetRect.height()));
+        auto fixedSize = QSizeF(math_min(sourceRect.width(), targetRect.width()),math_min(sourceRect.height(), targetRect.height()));
         auto adjustedTarget = QRectF(targetRect.topLeft(), fixedSize);
         auto adjustedSource = QRectF(sourceRect.topLeft(), fixedSize);
         return drawInternal(adjustedTarget, pPainter, adjustedSource);
@@ -197,7 +197,7 @@ void Paintable::drawCentered(const QRectF& targetRect, QPainter* pPainter,const 
     {
         // Only render the minimum overlapping rectangle between the source
         // and target.
-        auto fixedSize = QPointF(math_min(sourceRect.width(), targetRect.width()),math_min(sourceRect.height(), targetRect.height()));
+        auto fixedSize = QSizeF(math_min(sourceRect.width(), targetRect.width()),math_min(sourceRect.height(), targetRect.height()));
         auto adjustedSource = QRectF(sourceRect.topLeft(), fixedSize);
         auto adjustedTarget = QRectF(QPointF(-adjustedSource.width() / 2.0, -adjustedSource.height() / 2.0),fixedSize);
         return drawInternal(adjustedTarget, pPainter, adjustedSource);

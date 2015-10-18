@@ -39,9 +39,7 @@
 **
 ****************************************************************************/
 
-#ifndef PERFORMANCETIMER_H
-#define PERFORMANCETIMER_H
-
+_Pragma("once")
 //
 // This is a fork of QPerformanceTimer just without the Q prefix
 // To fix interface changes issues in different QT versions
@@ -54,22 +52,13 @@
 class PerformanceTimer
 {
 public:
-    PerformanceTimer() {
-      t1 = 0;
-#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
-      t2 = 0;
-#endif
-    };
     void start();
     qint64 elapsed() const;
     qint64 restart();
     qint64 difference(PerformanceTimer* timer);
-
 private:
-    qint64 t1;
+    qint64 t1 = 0;
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
-    qint64 t2;
+    qint64 t2 = 0;
 #endif
 };
-
-#endif // PERFORMANCETIMER_H

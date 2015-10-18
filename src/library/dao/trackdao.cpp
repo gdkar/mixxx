@@ -1755,34 +1755,23 @@ void TrackDAO::markTracksAsMixxxDeleted(const QString& dir) {
                           "ON library.location = track_locations.id "
                           "WHERE track_locations.location LIKE %1 ESCAPE '%'")
                   .arg(escaper.escapeString(likeClause)));
-
-    if (!query.exec()) {
-        LOG_FAILED_QUERY(query) << "could not get tracks within directory:" << dir;
-    }
-
+    if (!query.exec()) LOG_FAILED_QUERY(query) << "could not get tracks within directory:" << dir;
     QStringList trackIds;
-    const int idColumn = query.record().indexOf("id");
-    while (query.next()) {
-        trackIds.append(TrackId(query.value(idColumn)).toString());
-    }
-
+    auto idColumn = query.record().indexOf("id");
+    while (query.next()) trackIds.append(TrackId(query.value(idColumn)).toString());
     query.prepare(QString("UPDATE library SET mixxx_deleted=1 "
                           "WHERE id in (%1)").arg(trackIds.join(",")));
-    if (!query.exec()) {
-        LOG_FAILED_QUERY(query);
-    }
+    if (!query.exec())  LOG_FAILED_QUERY(query);
 }
 
-void TrackDAO::writeMetadataToFile(TrackInfoObject* pTrack) {
-    if (m_pConfig && m_pConfig->getValueString(ConfigKey("Library","WriteAudioTags")).toInt() == 1) {
-
+void TrackDAO::writeMetadataToFile(TrackInfoObject* pTrack)
+{
+    if (m_pConfig && m_pConfig->getValueString(ConfigKey("Library","WriteAudioTags")).toInt() == 1)
+    {
         Mixxx::TrackMetadata trackMetadata;
         pTrack->getMetadata(&trackMetadata);
-
         AudioTagger tagger(pTrack->getLocation(), pTrack->getSecurityToken());
-        if (OK != tagger.save(trackMetadata)) {
-            qWarning() << "Failed to write track metadata:" << pTrack->getLocation();
-        }
+        if (!tagger.save(trackMetadata))  qWarning() << "Failed to write track metadata:" << pTrack->getLocation();
     }
 }
 

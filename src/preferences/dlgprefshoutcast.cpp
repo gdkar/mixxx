@@ -19,7 +19,7 @@
 
 #include <QtDebug>
 
-#include "defs_urls.h"
+#include "util/urls.h"
 #include "dlgprefshoutcast.h"
 #include "shoutcast/defs_shoutcast.h"
 #include "controlobjectslave.h"
@@ -56,7 +56,7 @@ DlgPrefShoutcast::DlgPrefShoutcast(QWidget *parent, ConfigObject<ConfigValue> *_
     stream_name->setText(m_pConfig->getValueString(ConfigKey(SHOUTCAST_PREF_KEY,"stream_name")));
     // Stream website
     tmp_string = m_pConfig->getValueString(ConfigKey(SHOUTCAST_PREF_KEY,"stream_website"));
-    if (tmp_string.isEmpty())tmp_string = MIXXX_WEBSITE_URL;
+    if (tmp_string.isEmpty()) tmp_string = MixxxUrls::website().toString();
     stream_website->setText(tmp_string);
     // Stream description
     tmp_string = m_pConfig->getValueString(ConfigKey(SHOUTCAST_PREF_KEY,"stream_desc"));
@@ -138,7 +138,7 @@ void DlgPrefShoutcast::slotResetToDefaults() {
     login->setText("");
     password->setText("");
     stream_name->setText("");
-    stream_website->setText(MIXXX_WEBSITE_URL);
+    stream_website->setText(MixxxUrls::website().toString());
     stream_desc->setText(tr("This stream is online for testing purposes!"));
     stream_genre->setText(tr("Live Mix"));
     stream_public->setChecked(false);

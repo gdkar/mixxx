@@ -1,6 +1,4 @@
-#ifndef MOVINGINTERQUARTILEMEAN_H
-#define MOVINGINTERQUARTILEMEAN_H
-
+_Pragma("once")
 #include <QLinkedList>
 #include <QQueue>
 
@@ -36,9 +34,6 @@ class MovingInterquartileMean {
     // The queue keeps pointers to doubles in the list ordered
     // by the order they were received.
     QQueue<QLinkedList<double>::iterator> m_queue;
-
     // sum() checks this to know if it has to recalculate the mean.
     bool m_bChanged;
 };
-
-#endif /* MOVINGINTERQUARTILEMEAN_H */

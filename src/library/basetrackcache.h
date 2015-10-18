@@ -10,12 +10,12 @@ _Pragma("once")
 #include <QStringList>
 #include <QSqlDatabase>
 #include <QVector>
+#include <memory>
 
 #include "library/dao/trackdao.h"
 #include "library/columncache.h"
 #include "trackinfoobject.h"
 #include "util.h"
-#include "util/memory.h"
 
 class SearchQueryParser;
 class QueryNode;

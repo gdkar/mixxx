@@ -2,7 +2,8 @@
 
 #include "util/task.h"
 
-TaskWatcher::TaskWatcher(QObject* pParent) : QObject(pParent) {
+TaskWatcher::TaskWatcher(QObject* pParent) : QObject(pParent)
+{
 }
 
 TaskWatcher::~TaskWatcher() {
@@ -21,6 +22,6 @@ void TaskWatcher::watchTask(QObject* pTask, const char* doneSignal)
 void TaskWatcher::taskDone()
 {
     // Decrement m_activeTasks and if it is zero emit allTasksDone().
-    if ( m_activeTasks.load() > 0 ) { m_activeTasks--; }
-    if (!m_activeTasks.load()) {emit(allTasksDone());}
+    if ( m_activeTasks.load() > 0 )  m_activeTasks--;
+    if (!m_activeTasks.load()) emit allTasksDone();
 }

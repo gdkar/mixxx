@@ -32,7 +32,7 @@
 #include "controlobjectslave.h"
 #include "control/control.h"
 #include "player.h"
-#include "defs_urls.h"
+#include "util/urls.h"
 #include "preferences/dlgabout.h"
 #include "preferences/dlgpreferences.h"
 #include "preferences/dlgprefeq.h"
@@ -944,7 +944,7 @@ void MixxxMainWindow::initActions()
     m_pHelpSupport->setStatusTip(supportText);
     m_pHelpSupport->setWhatsThis(buildWhatsThis(supportTitle, supportText));
     connect(m_pHelpSupport, &QAction::triggered, 
-        [](){QDesktopServices::openUrl(QUrl{MIXXX_SUPPORT_URL});}
+        [](){QDesktopServices::openUrl(MixxxUrls::support());}
         );
     auto manualTitle = tr("&User Manual") + externalLinkSuffix;
     auto manualText = tr("Read the Mixxx user manual.");
@@ -955,18 +955,18 @@ void MixxxMainWindow::initActions()
         [this](){
         QDir resourceDir(m_pConfig->getResourcePath());
           // Default to the mixxx.org hosted version of the manual.
-          auto qManualUrl = QUrl(MIXXX_MANUAL_URL);
+          auto qManualUrl = QUrl(MixxxUrls::manual());
 #if defined(__APPLE__)
           // FIXME: We don't include the PDF manual in the bundle on OSX.
           // Default to the web-hosted version.
 #elif defined(__WINDOWS__)
           // On Windows, the manual PDF sits in the same folder as the 'skins' folder.
-          if (resourceDir.exists(MIXXX_MANUAL_FILENAME))
-              qManualUrl = QUrl::fromLocalFile(resourceDir.absoluteFilePath(MIXXX_MANUAL_FILENAME));
+          if (resourceDir.exists(MixxxUrls::manual_filename()))
+              qManualUrl = QUrl::fromLocalFile(resourceDir.absoluteFilePath(MixxxUrls::manual_filename()));
 #elif defined(__LINUX__)
           // On GNU/Linux, the manual is installed to e.g. /usr/share/mixxx/doc/
-          if (resourceDir.cd("../doc/mixxx") && resourceDir.exists(MIXXX_MANUAL_FILENAME))
-              qManualUrl = QUrl::fromLocalFile(resourceDir.absoluteFilePath(MIXXX_MANUAL_FILENAME));
+          if (resourceDir.cd("../doc/mixxx") && resourceDir.exists(MixxxUrls::manual_filename()))
+              qManualUrl = QUrl::fromLocalFile(resourceDir.absoluteFilePath(MixxxUrls::manual_filename()));
 #else
           // No idea, default to the mixxx.org hosted version.
 #endif
@@ -979,7 +979,7 @@ void MixxxMainWindow::initActions()
     m_pHelpShortcuts->setStatusTip(shortcutsText);
     m_pHelpShortcuts->setWhatsThis(buildWhatsThis(shortcutsTitle, shortcutsText));
     connect(m_pHelpShortcuts, &QAction::triggered, 
-        [](){QDesktopServices::openUrl(QUrl{MIXXX_SHORTCUTS_URL});}
+        [](){QDesktopServices::openUrl(MixxxUrls::shortcuts());}
         );
     auto feedbackTitle = tr("Send Us &Feedback") + externalLinkSuffix;
     auto feedbackText = tr("Send feedback to the Mixxx team.");
@@ -987,7 +987,7 @@ void MixxxMainWindow::initActions()
     m_pHelpFeedback->setStatusTip(feedbackText);
     m_pHelpFeedback->setWhatsThis(buildWhatsThis(feedbackTitle, feedbackText));
     connect(m_pHelpFeedback, &QAction::triggered, 
-        [](){QDesktopServices::openUrl(QUrl{MIXXX_FEEDBACK_URL});}
+        [](){QDesktopServices::openUrl(MixxxUrls::feedback());}
         );
     auto translateTitle = tr("&Translate This Application") + externalLinkSuffix;
     auto translateText = tr("Help translate this application into your language.");
@@ -995,7 +995,7 @@ void MixxxMainWindow::initActions()
     m_pHelpTranslation->setStatusTip(translateText);
     m_pHelpTranslation->setWhatsThis(buildWhatsThis(translateTitle, translateText));
     connect(m_pHelpTranslation, &QAction::triggered, 
-        [](){QDesktopServices::openUrl(QUrl{MIXXX_TRANSLATION_URL});}
+        [](){QDesktopServices::openUrl(MixxxUrls::translation());}
         );
 #ifdef __VINYLCONTROL__
     auto vinylControlText = tr( "Use timecoded vinyls on external turntables to control Mixxx");

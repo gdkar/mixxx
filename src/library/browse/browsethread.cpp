@@ -98,7 +98,8 @@ public:
     }
 };
 }
-void BrowseThread::populateModel() {
+void BrowseThread::populateModel()
+{
     m_path_mutex.lock();
     MDir thisPath = m_path;
     BrowseTableModel* thisModelObserver = m_model_observer;
@@ -113,7 +114,8 @@ void BrowseThread::populateModel() {
     QList< QList<QStandardItem*> > rows;
     auto row = 0;
     // Iterate over the files
-    while (fileIt.hasNext()) {
+    while (fileIt.hasNext())
+    {
         // If a user quickly jumps through the folders
         // the current task becomes "dirty"
         m_path_mutex.lock();
@@ -128,93 +130,94 @@ void BrowseThread::populateModel() {
         QList<QStandardItem*> row_data;
         auto item = new QStandardItem("0");
         item->setData("0", Qt::UserRole);
-        row_data.insert(COLUMN_PREVIEW, item);
+        row_data.insert(static_cast<int>(BrowseTableModel::Column::preview), item);
         item = new QStandardItem(tio.getFilename());
         item->setToolTip(item->text());
         item->setData(item->text(), Qt::UserRole);
-        row_data.insert(COLUMN_FILENAME, item);
+        row_data.insert(static_cast<int>(BrowseTableModel::Column::filename), item);
         item = new QStandardItem(tio.getArtist());
         item->setToolTip(item->text());
         item->setData(item->text(), Qt::UserRole);
-        row_data.insert(COLUMN_ARTIST, item);
+        row_data.insert(static_cast<int>(BrowseTableModel::Column::artist), item);
         item = new QStandardItem(tio.getTitle());
         item->setToolTip(item->text());
         item->setData(item->text(), Qt::UserRole);
-        row_data.insert(COLUMN_TITLE, item);
+        row_data.insert(static_cast<int>(BrowseTableModel::Column::title), item);
         item = new QStandardItem(tio.getAlbum());
         item->setToolTip(item->text());
         item->setData(item->text(), Qt::UserRole);
-        row_data.insert(COLUMN_ALBUM, item);
+        row_data.insert(static_cast<int>(BrowseTableModel::Column::album), item);
         item = new QStandardItem(tio.getAlbumArtist());
         item->setToolTip(item->text());
         item->setData(item->text(), Qt::UserRole);
-        row_data.insert(COLUMN_ALBUMARTIST, item);
+        row_data.insert(static_cast<int>(BrowseTableModel::Column::album_artist), item);
         item = new QStandardItem(tio.getTrackNumber());
         item->setToolTip(item->text());
         item->setData(item->text().toInt(), Qt::UserRole);
-        row_data.insert(COLUMN_TRACK_NUMBER, item);
-        const auto year = tio.getYear();
+        row_data.insert(static_cast<int>(BrowseTableModel::Column::track_number), item);
+        auto year = tio.getYear();
         item = new YearItem(year);
         item->setToolTip(year);
         // The year column is sorted according to the numeric calendar year
         item->setData(Mixxx::TrackMetadata::parseCalendarYear(year), Qt::UserRole);
-        row_data.insert(COLUMN_YEAR, item);
+        row_data.insert(static_cast<int>(BrowseTableModel::Column::year), item);
         item = new QStandardItem(tio.getGenre());
         item->setToolTip(item->text());
         item->setData(item->text(), Qt::UserRole);
-        row_data.insert(COLUMN_GENRE, item);
+        row_data.insert(static_cast<int>(BrowseTableModel::Column::genre), item);
         item = new QStandardItem(tio.getComposer());
         item->setToolTip(item->text());
         item->setData(item->text(), Qt::UserRole);
-        row_data.insert(COLUMN_COMPOSER, item);
+        row_data.insert(static_cast<int>(BrowseTableModel::Column::composer), item);
         item = new QStandardItem(tio.getGrouping());
         item->setToolTip(item->text());
         item->setData(item->text(), Qt::UserRole);
-        row_data.insert(COLUMN_GROUPING, item);
+        row_data.insert(static_cast<int>(BrowseTableModel::Column::grouping), item);
         item = new QStandardItem(tio.getComment());
         item->setToolTip(item->text());
         item->setData(item->text(), Qt::UserRole);
-        row_data.insert(COLUMN_COMMENT, item);
+        row_data.insert(static_cast<int>(BrowseTableModel::Column::comment), item);
         auto duration = Time::formatSeconds(qVariantValue<int>( tio.getDuration()), false);
         item = new QStandardItem(duration);
         item->setToolTip(item->text());
         item->setData(item->text(), Qt::UserRole);
-        row_data.insert(COLUMN_DURATION, item);
+        row_data.insert(static_cast<int>(BrowseTableModel::Column::duration), item);
         item = new QStandardItem(tio.getBpmStr());
         item->setToolTip(item->text());
         item->setData(tio.getBpm(), Qt::UserRole);
-        row_data.insert(COLUMN_BPM, item);
+        row_data.insert(static_cast<int>(BrowseTableModel::Column::bpm), item);
         item = new QStandardItem(tio.getKeyText());
         item->setToolTip(item->text());
         item->setData(item->text(), Qt::UserRole);
-        row_data.insert(COLUMN_KEY, item);
+        row_data.insert(static_cast<int>(BrowseTableModel::Column::key), item);
         item = new QStandardItem(tio.getType());
         item->setToolTip(item->text());
         item->setData(item->text(), Qt::UserRole);
-        row_data.insert(COLUMN_TYPE, item);
+        row_data.insert(static_cast<int>(BrowseTableModel::Column::type), item);
         item = new QStandardItem(tio.getBitrateStr());
         item->setToolTip(item->text());
         item->setData(tio.getBitrate(), Qt::UserRole);
-        row_data.insert(COLUMN_BITRATE, item);
+        row_data.insert(static_cast<int>(BrowseTableModel::Column::bitrate), item);
         item = new QStandardItem(filepath);
         item->setToolTip(item->text());
         item->setData(item->text(), Qt::UserRole);
-        row_data.insert(COLUMN_LOCATION, item);
+        row_data.insert(static_cast<int>(BrowseTableModel::Column::location), item);
         auto modifiedTime = tio.getFileModifiedTime().toLocalTime();
         item = new QStandardItem(modifiedTime.toString(Qt::DefaultLocaleShortDate));
         item->setToolTip(item->text());
         item->setData(modifiedTime, Qt::UserRole);
-        row_data.insert(COLUMN_FILE_MODIFIED_TIME, item);
+        row_data.insert(static_cast<int>(BrowseTableModel::Column::file_modification_time), item);
         auto creationTime = tio.getFileCreationTime().toLocalTime();
         item = new QStandardItem(creationTime.toString(Qt::DefaultLocaleShortDate));
         item->setToolTip(item->text());
         item->setData(creationTime, Qt::UserRole);
-        row_data.insert(COLUMN_FILE_CREATION_TIME, item);
+        row_data.insert(static_cast<int>(BrowseTableModel::Column::file_creation_time), item);
         rows.append(row_data);
         ++row;
         // If 10 tracks have been analyzed, send it to GUI
         // Will limit GUI freezing
-        if (row % 16 == 0) {
+        if (row % 16 == 0)
+        {
             // this is a blocking operation
             emit(rowsAppended(rows, thisModelObserver));
             qDebug() << "Append " << rows.count() << " from " << filepath;

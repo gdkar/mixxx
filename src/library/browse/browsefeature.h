@@ -1,9 +1,7 @@
 // browsefeature.h
 // Created 9/8/2009 by RJ Ryan (rryan@mit.edu)
 
-#ifndef BROWSEFEATURE_H
-#define BROWSEFEATURE_H
-
+_Pragma("once")
 #include <QStringListModel>
 #include <QSortFilterProxyModel>
 #include <QObject>
@@ -75,5 +73,3 @@ class BrowseFeature : public LibraryFeature {
     TreeItem* m_pQuickLinkItem;
     QStringList m_quickLinkList;
 };
-
-#endif // BROWSEFEATURE_H

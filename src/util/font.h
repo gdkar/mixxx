@@ -32,7 +32,6 @@ class FontUtils {
         }
         return true;
     }
-
   private:
-    FontUtils() {}
+    FontUtils() = delete;
 };

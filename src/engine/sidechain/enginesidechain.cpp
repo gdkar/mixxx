@@ -38,7 +38,8 @@ EngineSideChain::EngineSideChain(ConfigObject<ConfigValue>* pConfig)
         : m_pConfig(pConfig),
           m_bStopThread(false),
           m_sampleFifo(SIDECHAIN_BUFFER_SIZE),
-          m_pWorkBuffer(SampleUtil::alloc(SIDECHAIN_BUFFER_SIZE)) {
+          m_pWorkBuffer(SampleUtil::alloc(SIDECHAIN_BUFFER_SIZE))
+{
     // We use HighPriority to prevent starvation by lower-priority processes (Qt
     // main thread, analysis, etc.). This used to be LowPriority but that is not
     // a suitable choice since we do semi-realtime tasks (write to broadcast
@@ -48,7 +49,8 @@ EngineSideChain::EngineSideChain(ConfigObject<ConfigValue>* pConfig)
     start(QThread::HighPriority);
 }
 
-EngineSideChain::~EngineSideChain() {
+EngineSideChain::~EngineSideChain()
+{
     m_waitLock.lock();
     m_bStopThread = true;
     m_waitForSamples.wakeAll();
@@ -56,8 +58,9 @@ EngineSideChain::~EngineSideChain() {
     // Wait until the thread has finished.
     wait();
     QMutexLocker locker(&m_workerLock);
-    while (!m_workers.empty()) {
-        SideChainWorker* pWorker = m_workers.takeLast();
+    while (!m_workers.empty())
+    {
+        auto pWorker = m_workers.takeLast();
         pWorker->shutdown();
         delete pWorker;
     }
@@ -65,7 +68,8 @@ EngineSideChain::~EngineSideChain() {
     SampleUtil::free(m_pWorkBuffer);
 }
 
-void EngineSideChain::addSideChainWorker(SideChainWorker* pWorker) {
+void EngineSideChain::addSideChainWorker(SideChainWorker* pWorker)
+{
     QMutexLocker locker(&m_workerLock);
     m_workers.append(pWorker);
 }
@@ -81,13 +85,15 @@ void EngineSideChain::writeSamples(const CSAMPLE* newBuffer, int buffer_size)
         m_waitForSamples.wakeAll();
     }
 }
-void EngineSideChain::run() {
+void EngineSideChain::run()
+{
     // the id of this thread, for debugging purposes //XXX copypasta (should
     // factor this out somehow), -kousu 2/2009
     unsigned static id = 0;
     QThread::currentThread()->setObjectName(QString("EngineSideChain %1").arg(++id));
     Event::start("EngineSideChain");
-    while (!m_bStopThread) {
+    while (!m_bStopThread)
+    {
         // Sleep until samples are available.
         m_waitLock.lock();
         Event::end("EngineSideChain");
@@ -95,12 +101,13 @@ void EngineSideChain::run() {
         m_waitLock.unlock();
         Event::start("EngineSideChain");
         int samples_read;
-        while ((samples_read = m_sampleFifo.read(m_pWorkBuffer, SIDECHAIN_BUFFER_SIZE))) {
+        while ((samples_read = m_sampleFifo.read(m_pWorkBuffer, SIDECHAIN_BUFFER_SIZE)))
+        {
             Trace process("EngineSideChain::process");
             QMutexLocker locker(&m_workerLock);
-            for(auto & pWorker: m_workers) {pWorker->process(m_pWorkBuffer, samples_read);}
+            for(auto & pWorker: m_workers) pWorker->process(m_pWorkBuffer, samples_read);
         }
         // Check to see if we're supposed to exit/stop this thread.
-        if (m_bStopThread) {return;}
+        if (m_bStopThread) return;
     }
 }

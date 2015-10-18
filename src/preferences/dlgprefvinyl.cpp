@@ -26,7 +26,7 @@
 #include "playermanager.h"
 #include "vinylcontrol/defs_vinylcontrol.h"
 #include "vinylcontrol/vinylcontrolmanager.h"
-#include "defs_urls.h"
+#include "util/urls.h"
 
 DlgPrefVinyl::DlgPrefVinyl(QWidget * parent, VinylControlManager *pVCMan,
                            ConfigObject<ConfigValue> * _config)
@@ -91,7 +91,7 @@ DlgPrefVinyl::DlgPrefVinyl(QWidget * parent, VinylControlManager *pVCMan,
     ComboBoxVinylSpeed4->addItem(MIXXX_VINYL_SPEED_45);
 
     TroubleshootingLink->setText(QString("<a href='%1%2'>Troubleshooting</a>")
-                                         .arg(MIXXX_MANUAL_URL)
+                                         .arg(MixxUrls::manual().toString())
                                          .arg("/chapters/vinyl_control.html#troubleshooting"));
 
     connect(VinylGain, SIGNAL(sliderReleased()),

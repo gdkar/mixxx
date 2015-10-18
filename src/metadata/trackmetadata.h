@@ -1,167 +1,85 @@
 _Pragma("once")
 #include <QDateTime>
-
+#include <QObject>
 #include <cmath>
 
 namespace Mixxx {
 
-// DTO for track metadata properties. Must not be subclassed (no virtual destructor)!
-class TrackMetadata {
+class TrackMetadata : public QObject{
+    Q_OBJECT
+    Q_PROPERTY(QString artist READ getArtist WRITE setArtist NOTIFY updated);
+    Q_PROPERTY(QString album READ getAlbum WRITE setAlbum NOTIFY updated);
+    Q_PROPERTY(QString title READ getTitle WRITE setTitle NOTIFY updated);
+    Q_PROPERTY(QString album_artist READ getAlbumArtist WRITE setAlbumArtist NOTIFY updated);
+    Q_PROPERTY(QString genre READ getGenre WRITE setGenre NOTIFY updated);
+    Q_PROPERTY(QString comment READ getComment WRITE setComment NOTIFY updated);
+    Q_PROPERTY(QString year READ getYear WRITE setYear NOTIFY updated);
+    Q_PROPERTY(QString track_number READ getTrackNumber WRITE setTrackNumber NOTIFY updated);
+    Q_PROPERTY(QString composer READ getComposer WRITE setComposer NOTIFY updated);
+    Q_PROPERTY(QString grouping READ getGrouping WRITE setGrouping NOTIFY updated);
+    Q_PROPERTY(QString key READ getKey WRITE setKey NOTIFY updated);
+    Q_PROPERTY(int channels READ getChannels WRITE setChannels NOTIFY updated);
+    Q_PROPERTY(int sample_rate READ getSampleRate WRITE setSampleRate NOTIFY updated);
+    Q_PROPERTY(int bitrate READ getBitrate WRITE setBitrate NOTIFY updated);
+    Q_PROPERTY(int duration READ getDuration WRITE setDuration NOTIFY updated);
+    Q_PROPERTY(double bpm READ getBpm WRITE setBpm RESET resetBpm NOTIFY updated);
+    Q_PROPERTY(double replay_gain READ getReplayGain WRITE setReplayGain RESET resetReplayGain NOTIFY updated);
 public:
     TrackMetadata();
-
-    inline const QString& getArtist() const {
-        return m_artist;
-    }
-    inline void setArtist(QString artist) {
-        m_artist = artist;
-    }
-
-    inline const QString& getTitle() const {
-        return m_title;
-    }
-    inline void setTitle(QString title) {
-        m_title = title;
-    }
-
-    inline const QString& getAlbum() const {
-        return m_album;
-    }
-    inline void setAlbum(QString album) {
-        m_album = album;
-    }
-
-    inline const QString& getAlbumArtist() const {
-        return m_albumArtist;
-    }
-    inline void setAlbumArtist(QString albumArtist) {
-        m_albumArtist = albumArtist;
-    }
-
-    inline const QString& getGenre() const {
-        return m_genre;
-    }
-    inline void setGenre(QString genre) {
-        m_genre = genre;
-    }
-
-    inline const QString& getComment() const {
-        return m_comment;
-    }
-    inline void setComment(QString comment) {
-        m_comment = comment;
-    }
-
+    virtual ~TrackMetadata();
+    QString getArtist() const;
+    void setArtist(QString artist);
+    QString getTitle() const;
+    void setTitle(QString title);
+    QString getAlbum() const;
+    void setAlbum(QString album);
+    QString getAlbumArtist() const;
+    void setAlbumArtist(QString albumArtist);
+    QString getGenre() const;
+    void setGenre(QString genre);
+    QString getComment() const;
+    void setComment(QString comment);
     // year, date or date/time formatted according to ISO 8601
-    inline const QString& getYear() const {
-        return m_year;
-    }
-    inline void setYear(QString year) {
-        m_year = year;
-    }
-
-    inline const QString& getTrackNumber() const {
-        return m_trackNumber;
-    }
-    inline void setTrackNumber(QString trackNumber) {
-        m_trackNumber = trackNumber;
-    }
-
-    inline const QString& getComposer() const {
-        return m_composer;
-    }
-    inline void setComposer(QString composer) {
-        m_composer = composer;
-    }
-
-    inline const QString& getGrouping() const {
-        return m_grouping;
-    }
-    inline void setGrouping(QString grouping) {
-        m_grouping = grouping;
-    }
-
-    inline const QString& getKey() const {
-        return m_key;
-    }
-    inline void setKey(QString key) {
-        m_key = key;
-    }
-
+    QString getYear() const;
+    void setYear(QString year);
+    QString getTrackNumber() const;
+    void setTrackNumber(QString trackNumber);
+    QString getComposer() const;
+    void setComposer(QString composer);
+    QString getGrouping() const;
+    void setGrouping(QString grouping);
+    QString getKey() const;
+    void setKey(QString key);
     // #channels
-    inline int getChannels() const {
-        return m_channels;
-    }
-    inline void setChannels(int channels) {
-        m_channels = channels;
-    }
-
+    int getChannels() const;
+    void setChannels(int channels);
     // Hz
-    inline int getSampleRate() const {
-        return m_sampleRate;
-    }
-    inline void setSampleRate(int sampleRate) {
-        m_sampleRate = sampleRate;
-    }
-
+    int getSampleRate() const;
+    void setSampleRate(int sampleRate);
     // kbit / s
-    inline int getBitrate() const {
-        return m_bitrate;
-    }
-    inline void setBitrate(int bitrate) {
-        m_bitrate = bitrate;
-    }
-
+    int getBitrate() const;
+    void setBitrate(int bitrate);
     // #seconds
-    inline int getDuration() const {
-        return m_duration;
-    }
-    inline void setDuration(int duration) {
-        m_duration = duration;
-    }
-
+    int getDuration() const;
+    void setDuration(int duration);
     // beats / minute
     static const double kBpmUndefined;
     static const double kBpmMin; // lower bound (exclusive)
     static const double kBpmMax; // upper bound (inclusive)
-    inline double getBpm() const {
-        return m_bpm;
-    }
-    inline int getBpmAsInteger() const {
-        return round(getBpm());
-    }
-    inline static bool isBpmValid(double bpm) {
-        return (kBpmMin < bpm) && (kBpmMax >= bpm);
-    }
-    inline bool isBpmValid() const {
-        return isBpmValid(getBpm());
-    }
-    inline void setBpm(double bpm) {
-        m_bpm = bpm;
-    }
-    inline void resetBpm() {
-        m_bpm = kBpmUndefined;
-    }
-
+    double getBpm() const;
+    int getBpmAsInteger() const;
+    static bool isBpmValid(double bpm);
+    bool isBpmValid() const;
+    void setBpm(double bpm);
+    void resetBpm();
     static const double kReplayGainUndefined;
     static const double kReplayGainMin; // lower bound (exclusive)
     static const double kReplayGain0dB;
-    inline double getReplayGain() const {
-        return m_replayGain;
-    }
-    inline static bool isReplayGainValid(double replayGain) {
-        return kReplayGainMin < replayGain;
-    }
-    inline bool isReplayGainValid() const {
-        return isReplayGainValid(getReplayGain());
-    }
-    inline void setReplayGain(double replayGain) {
-        m_replayGain = replayGain;
-    }
-    inline void resetReplayGain() {
-        m_replayGain = kReplayGainUndefined;
-    }
-
+    double getReplayGain() const;
+    static bool isReplayGainValid(double replayGain);
+    bool isReplayGainValid() const;
+    void setReplayGain(double replayGain);
+    void resetReplayGain();
     // Parse and format BPM metadata
     static double parseBpm(const QString& sBpm, bool* pValid = 0);
     static QString formatBpm(double bpm);
@@ -174,26 +92,17 @@ public:
     static QString formatReplayGain(double replayGain);
 
     // Parse an format date/time values according to ISO 8601
-    inline static QDate parseDate(QString str) {
-        return QDate::fromString(str.trimmed().replace(" ", ""), Qt::ISODate);
-    }
-    inline static QDateTime parseDateTime(QString str) {
-        return QDateTime::fromString(str.trimmed().replace(" ", ""), Qt::ISODate);
-    }
-    inline static QString formatDate(QDate date) {
-        return date.toString(Qt::ISODate);
-    }
-    inline static QString formatDateTime(QDateTime dateTime) {
-        return dateTime.toString(Qt::ISODate);
-    }
-
+    static QDate     parseDate(QString str);
+    static QDateTime parseDateTime(QString str);
+    static QString   formatDate(QDate date);
+    static QString   formatDateTime(QDateTime dateTime);
     // Parse and format the calendar year (for simplified display)
     static const int kCalendarYearInvalid;
     static int parseCalendarYear(QString year, bool* pValid = 0);
     static QString formatCalendarYear(QString year, bool* pValid = 0);
-
     static QString reformatYear(QString year);
-
+signals:
+    void updated();
 private:
     QString m_artist;
     QString m_title;
@@ -210,11 +119,11 @@ private:
     // The following members need to be initialized
     // explicitly in the constructor! Otherwise their
     // value is undefined.
-    int m_channels;
-    int m_sampleRate;
-    int m_bitrate;
-    int m_duration;
-    double m_bpm;
-    double m_replayGain;
+    int m_channels = 2;
+    int m_sampleRate = 44100;
+    int m_bitrate = 0;
+    int m_duration = 0;
+    double m_bpm = 0;
+    double m_replayGain = 1.0;
 };
 }

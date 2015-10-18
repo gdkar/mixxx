@@ -61,7 +61,187 @@ const QString kReplayGainUnit("dB");
 const QString kReplayGainSuffix(" " + kReplayGainUnit);
 
 } // anonymous namespace
-
+TrackMetadata::~TrackMetadata() = default;
+QString TrackMetadata::getArtist() const
+{
+  return m_artist;
+}
+void TrackMetadata::setArtist(QString s)
+{
+  m_artist = s;
+}
+QString TrackMetadata::getTitle() const
+{
+  return m_title;
+}
+void TrackMetadata::setTitle(QString s)
+{
+  m_title = s;
+}
+QString TrackMetadata::getAlbum() const
+{
+  return m_album;
+}
+void TrackMetadata::setAlbum(QString s)
+{
+  m_album = s;
+}
+QString TrackMetadata::getAlbumArtist() const
+{
+  return m_albumArtist;
+}
+void TrackMetadata::setAlbumArtist(QString s)
+{
+  m_albumArtist = s;
+}
+QString TrackMetadata::getGenre() const
+{
+  return m_genre;
+}
+void TrackMetadata::setGenre(QString s)
+{
+  m_genre = s;
+}
+QString TrackMetadata::getComment() const
+{
+  return m_comment;
+}
+void TrackMetadata::setComment(QString s)
+{
+  m_comment = s;
+}
+QString TrackMetadata::getYear() const
+{
+  return m_year;
+}
+void TrackMetadata::setYear(QString s)
+{
+  m_year = s;
+}
+QString TrackMetadata::getTrackNumber() const
+{
+  return m_trackNumber;
+}
+void TrackMetadata::setTrackNumber(QString s)
+{
+  m_trackNumber = s;
+}
+QString TrackMetadata::getComposer() const
+{
+  return m_composer;
+}
+void TrackMetadata::setComposer(QString s)
+{
+  m_composer = s;
+}
+QString TrackMetadata::getGrouping() const
+{
+  return m_grouping;
+}
+void TrackMetadata::setGrouping(QString s)
+{
+  m_grouping = s;
+}
+QString TrackMetadata::getKey() const
+{
+  return m_key;
+}
+void TrackMetadata::setKey(QString s)
+{
+  m_key = s;
+}
+int TrackMetadata::getChannels() const
+{
+  return m_channels;
+}
+void TrackMetadata::setChannels(int i)
+{
+  m_channels = i;
+}
+int TrackMetadata::getSampleRate() const
+{
+  return m_sampleRate;
+}
+void TrackMetadata::setSampleRate(int i)
+{
+  m_sampleRate = i;
+}
+int TrackMetadata::getBitrate() const
+{
+  return m_bitrate;
+}
+void TrackMetadata::setBitrate(int i)
+{
+  m_bitrate = i;
+}
+int TrackMetadata::getDuration() const
+{
+  return m_duration;
+}
+void TrackMetadata::setDuration(int i)
+{
+  m_duration = i;
+}
+double TrackMetadata::getBpm() const
+{
+  return m_bpm;
+}
+int TrackMetadata::getBpmAsInteger() const
+{
+  return std::round(getBpm());
+}
+/* static */ bool TrackMetadata::isBpmValid(double d)
+{
+  return (kBpmMin < d ) && (kBpmMax >= d);
+}
+bool TrackMetadata::isBpmValid() const
+{
+  return isBpmValid(getBpm());
+}
+void TrackMetadata::setBpm(double d)
+{
+  m_bpm = d;
+}
+void TrackMetadata::resetBpm()
+{
+  m_bpm = kBpmUndefined;
+}
+double TrackMetadata::getReplayGain() const
+{
+  return m_replayGain;
+}
+/* static */ bool TrackMetadata::isReplayGainValid(double d)
+{
+  return kReplayGainMin < d;
+}
+bool TrackMetadata::isReplayGainValid() const
+{
+  return isReplayGainValid(getReplayGain());
+}
+void TrackMetadata::setReplayGain(double d)
+{
+  m_replayGain = d;
+}
+void TrackMetadata::resetReplayGain()
+{
+  setReplayGain(kReplayGainUndefined);
+}
+/* static */ QDate TrackMetadata::parseDate(QString s)
+{
+  return QDate::fromString(s.trimmed().replace(" ",""),Qt::ISODate);
+}
+/* static */ QDateTime TrackMetadata::parseDateTime(QString s)
+{
+  return QDateTime::fromString(s.trimmed().replace(" ",""),Qt::ISODate);
+}
+/* static */ QString TrackMetadata::formatDate(QDate d)
+{
+  return d.toString(Qt::ISODate);
+}
+/* static */ QString TrackMetadata::formatDateTime(QDateTime d)
+{
+  return d.toString(Qt::ISODate);
+}
 double TrackMetadata::parseReplayGain(QString sReplayGain, bool* pValid) {
     if (pValid) *pValid = false;
     auto  normalizedReplayGain = sReplayGain.trimmed();

@@ -711,6 +711,10 @@ class MixxxCore(Feature):
                    "visualplayposition.cpp",
 
                    "encoder/encoder.cpp",
+                   "util/urls.cpp",
+                   "util/cmdlineargs.cpp",
+                   "util/dnd.cpp",
+                   "util/regex.cpp",
                    "util/assert.cpp",
                    "util/debug.cpp",
                    "util/statsmanager.cpp",

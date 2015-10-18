@@ -1,36 +1,24 @@
-#ifndef EXPERIMENT_H
-#define EXPERIMENT_H
-
+_Pragma("once")
 #include <QtDebug>
-
-class Experiment {
+#include <QObject>
+#include <atomic>
+class Experiment : public QObject
+{
   public:
-    enum Mode {
-        OFF = 0,
-        BASE = 1,
-        EXPERIMENT = 2
+    enum class Mode {
+        Off = 0,
+        Base = 1,
+        Experiment = 2
     };
-    static inline bool isEnabled() {
-        return s_mode != OFF;
-    }
-    static void disable() {
-        qDebug() << "Experiment::setExperiment OFF";
-        s_mode = OFF;
-    }
-    static void setExperiment() {
-        qDebug() << "Experiment::setExperiment EXPERIMENT";
-        s_mode = EXPERIMENT;
-    }
-    static void setBase() {
-        qDebug() << "Experiment::setExperiment BASE";
-        s_mode = BASE;
-    }
-    static inline bool isExperiment() {return s_mode == EXPERIMENT;}
-    static inline bool isBase() {return s_mode == BASE;}
-    static Mode mode() {return s_mode;}
+    Q_ENUM(Mode);
+    static bool isEnabled();
+    static void disable();
+    static void setExperiment();
+    static void setBase();
+    static bool isExperiment();
+    static bool isBase();
+    static Mode mode();
   private:
-    Experiment();
-    static volatile Mode s_mode;
+    Experiment() = delete;
+    static std::atomic<Mode> s_mode;
 };
-
-#endif /* EXPERIMENT_H */

@@ -1,7 +1,6 @@
 _Pragma("once")
 #include <QtDebug>
 #include <memory>
-#include <utility>
 #include <atomic>
 template<class T>
 class Singleton {
@@ -11,7 +10,8 @@ class Singleton {
     static void destroy() {auto old = get_instance().exchange(nullptr); if(old)delete old;}
     virtual ~Singleton() = default;
   protected:
-    static std::atomic<T*>& get_instance(){
+    static std::atomic<T*>& get_instance()
+    {
       static std::atomic<T*> m_instance{new T()};
       return m_instance;
     }

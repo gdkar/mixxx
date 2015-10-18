@@ -14,9 +14,7 @@
 *                                                                         *
 ***************************************************************************/
 
-#ifndef ENGINESIDECHAIN_H
-#define ENGINESIDECHAIN_H
-
+_Pragma("once")
 #include <QThread>
 #include <QMutex>
 #include <QWaitCondition>
@@ -53,5 +51,3 @@ class EngineSideChain : public QThread {
     QMutex m_workerLock;
     QList<SideChainWorker*> m_workers;
 };
-
-#endif
