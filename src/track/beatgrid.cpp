@@ -10,19 +10,14 @@ struct BeatGridData
     double bpm;
     double firstBeat;
 };
-BeatGrid::BeatGrid(TrackInfoObject* pTrack, int iSampleRate,const QByteArray* pByteArray)
+BeatGrid::BeatGrid(TrackInfoObject* pTrack, int iSampleRate,QByteArray pByteArray)
         : Beats(nullptr),
           m_mutex(QMutex::Recursive),
           m_iSampleRate(iSampleRate > 0 ? iSampleRate : pTrack->getSampleRate()),
           m_dBeatLength(0.0)
 {
-    if (pTrack )
-    {
-        // BeatGrid should live in the same thread as the track it is associated
-        // with.
-        moveToThread(pTrack->thread());
-    }
-    if (pByteArray ) readByteArray(pByteArray);
+    if (pTrack ) moveToThread(pTrack->thread());
+    readByteArray(pByteArray);
 }
 
 BeatGrid::~BeatGrid()=default;
@@ -35,29 +30,25 @@ void BeatGrid::setGrid(double dBpm, double dFirstBeatSample)
     // Calculate beat length as sample offsets
     m_dBeatLength = (60.0 * m_iSampleRate / dBpm) * kFrameSize;
 }
-QByteArray* BeatGrid::toByteArray() const
+QByteArray BeatGrid::toByteArray() const
 {
     QMutexLocker locker(&m_mutex);
     std::string output;
     m_grid.SerializeToString(&output);
-    auto pByteArray = new QByteArray(output.data(), output.length());
-    // Caller is responsible for delete
-    return pByteArray;
+    return QByteArray(output.data(), output.length());
 }
-void BeatGrid::readByteArray(const QByteArray* pByteArray)
+void BeatGrid::readByteArray(QByteArray pByteArray)
 {
     mixxx::track::io::BeatGrid grid;
-    if (grid.ParseFromArray(pByteArray->constData(), pByteArray->length()))
+    if (grid.ParseFromArray(pByteArray.constData(), pByteArray.length()))
     {
         m_grid = grid;
         m_dBeatLength = (60.0 * m_iSampleRate / bpm()) * kFrameSize;
         return;
     }
-
     // Legacy fallback for BeatGrid-1.0
-    if (pByteArray->size() != sizeof(BeatGridData))return;
-    const BeatGridData* blob = (const BeatGridData*)pByteArray->constData();
-
+    if (pByteArray.size() != sizeof(BeatGridData))return;
+    auto blob = (const BeatGridData*)pByteArray.constData();
     // We serialize into frame offsets but use sample offsets at runtime
     setGrid(blob->bpm, blob->firstBeat * kFrameSize);
 }
@@ -66,7 +57,6 @@ double BeatGrid::firstBeatSample() const
 {
     return m_grid.first_beat().frame_position() * kFrameSize;
 }
-
 double BeatGrid::bpm() const
 {
     return m_grid.bpm().bpm();

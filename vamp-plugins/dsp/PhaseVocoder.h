@@ -13,9 +13,7 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef PHASEVOCODER_H
-#define PHASEVOCODER_H
-
+_Pragma("once")
 class FFTReal;
 
 class PhaseVocoder  
@@ -24,19 +22,17 @@ public:
     PhaseVocoder( unsigned int size );
     virtual ~PhaseVocoder();
 
-    void process( double* src, double* mag, double* theta);
+    void process( float* src, float* mag, float* theta);
 
 protected:
-    void getPhase(unsigned int size, double *theta, double *real, double *imag);
-//    void coreFFT( unsigned int NumSamples, double *RealIn, double* ImagIn, double *RealOut, double *ImagOut);
-    void getMagnitude( unsigned int size, double* mag, double* real, double* imag);
-    void FFTShift( unsigned int size, double* src);
+    void getPhase(unsigned int size, float *theta, float *real, float *imag);
+//    void coreFFT( unsigned int NumSamples, float *RealIn, float* ImagIn, float *RealOut, float *ImagOut);
+    void getMagnitude( unsigned int size, float* mag, float* real, float* imag);
+    void FFTShift( unsigned int size, float* src);
 
     unsigned int m_n;
     FFTReal *m_fft;
-    double *m_imagOut;
-    double *m_realOut;
+    float *m_imagOut;
+    float *m_realOut;
 
 };
-
-#endif

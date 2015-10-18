@@ -25,20 +25,23 @@ AnalysisFeature::AnalysisFeature(QObject* parent,
         m_pAnalyserQueue(nullptr),
         m_iOldBpmEnabled(0),
         m_analysisTitleName(tr("Analyze")),
-        m_pAnalysisView(nullptr) {
+        m_pAnalysisView(nullptr)
+{
     setTitleDefault();
 }
-
-AnalysisFeature::~AnalysisFeature() {
+AnalysisFeature::~AnalysisFeature()
+{
     // TODO(XXX) delete these
     //delete m_pLibraryTableModel;
     cleanupAnalyser();
 }
-void AnalysisFeature::setTitleDefault() {
+void AnalysisFeature::setTitleDefault()
+{
     m_Title = m_analysisTitleName;
     emit(featureIsLoading(this, false));
 }
-void AnalysisFeature::setTitleProgress(int trackNum, int totalNum) {
+void AnalysisFeature::setTitleProgress(int trackNum, int totalNum)
+{
     m_Title = QString("%1 (%2 / %3)")
             .arg(m_analysisTitleName)
             .arg(QString::number(trackNum))
@@ -53,7 +56,8 @@ QIcon AnalysisFeature::getIcon()
 {
     return QIcon(":/images/library/ic_library_prepare.png");
 }
-void AnalysisFeature::bindWidget(WLibrary* libraryWidget, QObject* keyboard) {
+void AnalysisFeature::bindWidget(WLibrary* libraryWidget, QObject* keyboard)
+{
     m_pAnalysisView = new DlgAnalysis(libraryWidget,m_pConfig,m_pTrackCollection);
     connect(m_pAnalysisView, SIGNAL(loadTrack(TrackPointer)), this, SIGNAL(loadTrack(TrackPointer)));
     connect(m_pAnalysisView, SIGNAL(loadTrackToPlayer(TrackPointer, QString)), this, SIGNAL(loadTrackToPlayer(TrackPointer, QString)));
@@ -76,7 +80,8 @@ void AnalysisFeature::refreshLibraryModels()
 {
     if (m_pAnalysisView) m_pAnalysisView->onShow();
 }
-void AnalysisFeature::activate() {
+void AnalysisFeature::activate()
+{
     //qDebug() << "AnalysisFeature::activate()";
     emit(switchToView(m_sAnalysisViewName));
     if (m_pAnalysisView) emit(restoreSearch(m_pAnalysisView->currentSearch()));
@@ -96,7 +101,8 @@ void AnalysisFeature::analyzeTracks(QList<TrackId> trackIds) {
         connect(m_pAnalyserQueue, SIGNAL(queueEmpty()),this, SLOT(cleanupAnalyser()));
         emit(analysisActive(true));
     }
-    for (auto trackId: trackIds) {
+    for (auto trackId: trackIds)
+    {
         auto pTrack = m_pTrackCollection->getTrackDAO().getTrack(trackId);
         if (pTrack)
             //qDebug() << this << "Queueing track for analysis" << pTrack->getLocation();
@@ -105,22 +111,26 @@ void AnalysisFeature::analyzeTracks(QList<TrackId> trackIds) {
     if (trackIds.size() > 0)  setTitleProgress(0, trackIds.size());
     emit(trackAnalysisStarted(trackIds.size()));
 }
-void AnalysisFeature::slotProgressUpdate(int num_left) {
+void AnalysisFeature::slotProgressUpdate(int num_left)
+{
     auto num_tracks = m_pAnalysisView->getNumTracks();
-    if (num_left > 0) {
+    if (num_left > 0)
+    {
         auto currentTrack = num_tracks - num_left + 1;
         setTitleProgress(currentTrack, num_tracks);
     }
 }
-void AnalysisFeature::stopAnalysis() {
+void AnalysisFeature::stopAnalysis()
+{
     //qDebug() << this << "stopAnalysis()";
     if (m_pAnalyserQueue) m_pAnalyserQueue->stop();
 }
-
-void AnalysisFeature::cleanupAnalyser() {
+void AnalysisFeature::cleanupAnalyser()
+{
     setTitleDefault();
     emit(analysisActive(false));
-    if (m_pAnalyserQueue != nullptr) {
+    if (m_pAnalyserQueue)
+    {
         m_pAnalyserQueue->stop();
         m_pAnalyserQueue->deleteLater();
         m_pAnalyserQueue = nullptr;
@@ -128,12 +138,12 @@ void AnalysisFeature::cleanupAnalyser() {
         m_pConfig->set(ConfigKey("BPM","BPMDetectionEnabled"), ConfigValue(m_iOldBpmEnabled));
     }
 }
-
-bool AnalysisFeature::dropAccept(QList<QUrl> urls, QObject* pSource) {
+bool AnalysisFeature::dropAccept(QList<QUrl> urls, QObject* pSource)
+{
     Q_UNUSED(pSource);
-    QList<QFileInfo> files = DragAndDropHelper::supportedTracksFromUrls(urls, false, true);
+    auto  files = DragAndDropHelper::supportedTracksFromUrls(urls, false, true);
     // Adds track, does not insert duplicates, handles unremoving logic.
-    QList<TrackId> trackIds = m_pTrackCollection->getTrackDAO().addTracks(files, true);
+    auto trackIds = m_pTrackCollection->getTrackDAO().addTracks(files, true);
     analyzeTracks(trackIds);
     return trackIds.size() > 0;
 }

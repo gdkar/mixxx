@@ -522,12 +522,8 @@ template<>
 inline CSAMPLE EngineFilterIIR<5, IIR_BP>::processSample(CSAMPLE* coef,CSAMPLE* buf,CSAMPLE val)
 {
     CSAMPLE fir, iir;
-    iir = val * coef[0];
-    iir -= coef[1] * buf[0];
-    fir = coef[2] * buf[0];
-    iir -= coef[3] * buf[1];
-    fir += coef[4] * buf[1];
-    fir += coef[5] * iir;
+    iir  = val * coef[0] -  coef[1] * buf[0] - coef[3] * buf[1];
+    fir  = coef[2] * buf[0] + coef[4] * buf[1] + coef[5] * iir;
     buf[0] = buf[1];
     buf[1] = iir;
     return fir;

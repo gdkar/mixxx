@@ -13,9 +13,7 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef CONSTANTQ_H
-#define CONSTANTQ_H
-
+_Pragma("once")
 #include <vector>
 #include <memory>
 #include "MathAliases.h"
@@ -23,33 +21,32 @@
 
 struct CQConfig{
     size_t FS;   // samplerate
-    double min;        // minimum frequency
-    double max;        // maximum frequency
+    float min;        // minimum frequency
+    float max;        // maximum frequency
     size_t BPO;  // bins per octave
-    double CQThresh;   // threshold
+    float CQThresh;   // threshold
 };
 
 class ConstantQ {
 	
 //public functions incl. sparsekernel so can keep out of loop in main
 public:
-    void process( const double* FFTRe, const double* FFTIm,
-                  double* CQRe, double* CQIm );
+    void process( const float * FFTRe, const float * FFTIm,
+                  float * CQRe, float * CQIm );
 
     ConstantQ( CQConfig Config );
     virtual ~ConstantQ();
 
-    double* process( const double* FFTData );
+    float * process( const float* FFTData );
 
     void sparsekernel();
 
-    double hamming(int len, int n) {
-	double out = 0.54 - 0.46*cos(2*PI*n/len);
-	return(out);
+    float hamming(int len, int n) {
+	return  static_cast<float>(0.54f - 0.46f*std::cos(2*M_PI*n/len));
     }
 	
     size_t getnumwin() { return m_numWin;}
-    double getQ() { return m_dQ;}
+    float getQ() { return m_dQ;}
     size_t getK() {return m_uK ;}
     size_t getfftlength() { return m_FFTLength;}
     size_t gethop() { return m_hop;}
@@ -58,12 +55,12 @@ private:
     void initialise( CQConfig Config );
     void deInitialise();
 	
-    double* m_CQdata;
+    float * m_CQdata;
     size_t m_FS;
-    double m_FMin;
-    double m_FMax;
-    double m_dQ;
-    double m_CQThresh;
+    float m_FMin;
+    float m_FMax;
+    float m_dQ;
+    float m_CQThresh;
     size_t m_numWin;
     size_t m_hop;
     size_t m_BPO;
@@ -73,12 +70,8 @@ private:
     struct SparseKernel {
         std::vector<size_t> is;
         std::vector<size_t> js;
-        std::vector<double> imag;
-        std::vector<double> real;
+        std::vector<float > imag;
+        std::vector<float> real;
     };
     SparseKernel *m_sparseKernel;
 };
-
-
-#endif//CONSTANTQ_H
-

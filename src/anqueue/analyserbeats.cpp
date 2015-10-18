@@ -112,7 +112,12 @@ bool AnalyserBeats::loadStored(TrackPointer tio) const
         auto newSubVersion = BeatFactory::getPreferredSubVersion(m_bPreferencesFixedTempo, m_bPreferencesOffsetCorrection,
             iMinBpm, iMaxBpm, extraVersionInfo);
         if (version == newVersion && subVersion == newSubVersion) return true;
-        else if (m_bPreferencesReanalyzeOldBpm)return false;
+        else if (m_bPreferencesReanalyzeOldBpm)
+        {
+          qDebug() << "got old version " << version << "-" << subVersion << " desired version " << newVersion << "-" << newSubVersion 
+            << "reanalysing.";
+          return false;
+        }
         else if (pBeats->getBpm() == 0.0)
         {
             qDebug() << "BPM is 0 for track so re-analyzing despite preference settings.";

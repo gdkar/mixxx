@@ -36,7 +36,7 @@ void ControlIndicator::slotGuiTick50ms(double cpuTime) {
     }
 }
 void ControlIndicator::slotBlinkValueChanged() {
-    bool oldValue = toBool();
+    auto oldValue = toBool();
     switch (m_blinkValue) {
     case OFF:
         if (oldValue) set(0.0);
@@ -55,11 +55,12 @@ void ControlIndicator::slotBlinkValueChanged() {
         break;
     }
 }
-void ControlIndicator::toggle(double duration) {
-	double tickTime = m_pCOTGuiTickTime->get();
-	double toggles = floor(tickTime / duration);
-	bool phase = fmod(toggles, 2) >= 1;
-	bool val = toBool();
+void ControlIndicator::toggle(double duration)
+{
+	auto tickTime = m_pCOTGuiTickTime->get();
+	auto toggles = floor(tickTime / duration);
+	auto phase = fmod(toggles, 2) >= 1;
+	auto val = toBool();
 		// Out of phase, wait until we are in phase
 	if(val != phase) m_nextSwitchTime = (toggles + 2) * duration;
 	else  m_nextSwitchTime = (toggles + 1) * duration;

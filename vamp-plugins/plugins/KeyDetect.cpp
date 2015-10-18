@@ -157,7 +157,7 @@ KeyDetector::initialise(size_t channels, size_t stepSize, size_t blockSize)
         m_getKeyMode = 0;
         return false;
     }
-    m_inputFrame = new double[m_blockSize];
+    m_inputFrame = new float[m_blockSize];
     m_prevKey = -1;
     m_first = true;
     return true;
@@ -250,7 +250,7 @@ KeyDetector::process(const float *const *inputBuffers, Vamp::RealTime now)
 {
     if (m_stepSize == 0) { return FeatureSet(); }
     FeatureSet returnFeatures;
-    for ( unsigned int i = 0 ; i < m_blockSize; i++ ) { m_inputFrame[i] = (double)inputBuffers[0][i]; }
+    for ( unsigned int i = 0 ; i < m_blockSize; i++ ) { m_inputFrame[i] = (float)inputBuffers[0][i]; }
 //    int key = (m_getKeyMode->process(m_inputFrame) % 24);
     auto key = m_getKeyMode->process(m_inputFrame);
     auto minor = m_getKeyMode->isModeMinor(key);

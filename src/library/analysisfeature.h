@@ -23,40 +23,31 @@ class AnalysisFeature : public LibraryFeature {
   public:
     AnalysisFeature(QObject* parent,ConfigObject<ConfigValue>* pConfig,TrackCollection* pTrackCollection);
     virtual ~AnalysisFeature();
-
     QVariant title();
     QIcon getIcon();
-
     bool dropAccept(QList<QUrl> urls, QObject* pSource);
     bool dragMoveAccept(QUrl url);
     void bindWidget(WLibrary* libraryWidget,QObject* keyboard);
-
     TreeItemModel* getChildModel();
     void refreshLibraryModels();
-
   signals:
     void analysisActive(bool bActive);
     void trackAnalysisStarted(int size);
-
   public slots:
     void activate();
     void analyzeTracks(QList<TrackId> trackIds);
-
   private slots:
     void slotProgressUpdate(int num_left);
     void stopAnalysis();
     void cleanupAnalyser();
-
   private:
     // Sets the title of this feature to the default name, given by
     // m_sAnalysisTitleName
     void setTitleDefault();
-
     // Sets the title of this feature to the default name followed by (x / y)
     // where x is the current track being analyzed and y is the total number of
     // tracks in the job
     void setTitleProgress(int trackNum, int totalNum);
-
     ConfigObject<ConfigValue>* m_pConfig;
     TrackCollection* m_pTrackCollection;
     AnalyserQueue* m_pAnalyserQueue;

@@ -1,6 +1,4 @@
-#ifndef SCANNERGLOBAL_H
-#define SCANNERGLOBAL_H
-
+_Pragma("once")
 #include <QSet>
 #include <QHash>
 #include <QRegExp>
@@ -15,66 +13,39 @@
 
 class ScannerGlobal {
   public:
-    ScannerGlobal(const QSet<QString>& trackLocations,
-                  const QHash<QString, int>& directoryHashes,
-                  const QRegExp& supportedExtensionsMatcher,
-                  const QRegExp& supportedCoverExtensionsMatcher,
-                  const QStringList& directoriesBlacklist)
-            : m_trackLocations(trackLocations),
-              m_directoryHashes(directoryHashes),
-              m_supportedExtensionsMatcher(supportedExtensionsMatcher),
-              m_supportedCoverExtensionsMatcher(supportedCoverExtensionsMatcher),
-              m_directoriesBlacklist(directoriesBlacklist),
-              // Unless marked un-clean, we assume it will finish cleanly.
-              m_scanFinishedCleanly(true),
-              m_shouldCancel(false),
-              m_numAddedTracks(0),
-              m_numScannedDirectories(0) {
-    }
-    TaskWatcher& getTaskWatcher() { return m_watcher; }
+    ScannerGlobal(QSet<QString> trackLocations,
+                  QHash<QString, int> directoryHashes,
+                  QRegExp supportedExtensionsMatcher,
+                  QRegExp supportedCoverExtensionsMatcher,
+                  QStringList directoriesBlacklist);
+    TaskWatcher& getTaskWatcher();
     // Returns whether the track already exists in the database.
-    inline bool trackExistsInDatabase(const QString& trackLocation) const {
-        return m_trackLocations.contains(trackLocation);
-    }
+    bool trackExistsInDatabase(QString trackLocation) const;
     // Returns the directory hash if it exists or -1 if it doesn't.
-    inline int directoryHashInDatabase(const QString& directoryPath) const {
-        return m_directoryHashes.value(directoryPath, -1);
-    }
-    inline bool directoryBlacklisted(const QString& directoryPath) const {
-        return m_directoriesBlacklist.contains(directoryPath);
-    }
-    const QRegExp& supportedExtensionsRegex() const {
-        return m_supportedExtensionsMatcher;
-    }
+    int directoryHashInDatabase(QString directoryPath) const;
+    bool directoryBlacklisted(QString directoryPath) const;
+    QRegExp supportedExtensionsRegex() const;
     // TODO(rryan) test whether tasks should create their own QRegExp.
-    inline bool isAudioFileSupported(const QString& fileName) const {
-        QMutexLocker locker(&m_supportedExtensionsMatcherMutex);
-        return m_supportedExtensionsMatcher.indexIn(fileName) != -1;
-    }
-    const QRegExp& supportedCoverExtensionsRegex() const {
-        return m_supportedCoverExtensionsMatcher;
-    }
+    bool isAudioFileSupported(QString fileName) const;
+    QRegExp supportedCoverExtensionsRegex() const;
     // TODO(rryan) test whether tasks should create their own QRegExp.
-    inline bool isCoverFileSupported(const QString& fileName) const {
-        QMutexLocker locker(&m_supportedCoverExtensionsMatcherMutex);
-        return m_supportedCoverExtensionsMatcher.indexIn(fileName) != -1;
-    }
-    inline bool shouldCancel() { return m_shouldCancel; }
-    inline std::atomic<bool>* shouldCancelPointer() { return &m_shouldCancel; }
-    void cancel() { m_shouldCancel = true; }
-    inline bool scanFinishedCleanly() const { return m_scanFinishedCleanly; }
-    void clearScanFinishedCleanly() { m_scanFinishedCleanly = false; }
-    void addVerifiedDirectory(const QString& directory) { m_verifiedDirectories << directory; }
-    const QStringList& verifiedDirectories() const { return m_verifiedDirectories; }
-    void addVerifiedTrack(const QString& trackLocation) { m_verifiedTracks << trackLocation; }
-    const QStringList& verifiedTracks() const { return m_verifiedTracks; }
-    void startTimer() { m_timer.start(); }
+    bool isCoverFileSupported(QString fileName) const;
+    bool shouldCancel() const;
+    std::atomic<bool>* shouldCancelPointer();
+    void cancel();
+    bool scanFinishedCleanly() const;
+    void clearScanFinishedCleanly();
+    void addVerifiedDirectory(QString directory);
+    QStringList verifiedDirectories() const;
+    void addVerifiedTrack(QString trackLocation);
+    QStringList verifiedTracks() const;
+    void startTimer();
     // Elapsed time in nanoseconds since startTimer was called.
-    qint64 timerElapsed() { return m_timer.elapsed(); }
-    int numAddedTracks() const { return m_numAddedTracks; }
-    void trackAdded() { m_numAddedTracks++; }
-    int numScannedDirectories() const { return m_numScannedDirectories; }
-    void directoryScanned() { m_numScannedDirectories++;}
+    qint64 timerElapsed();
+    int numAddedTracks() const;
+    void trackAdded();
+    int numScannedDirectories() const;
+    void directoryScanned();
   private:
     TaskWatcher m_watcher;
     QSet<QString> m_trackLocations;
@@ -99,4 +70,3 @@ class ScannerGlobal {
     int m_numScannedDirectories;
 };
 typedef QSharedPointer<ScannerGlobal> ScannerGlobalPointer;
-#endif /* SCANNERGLOBAL_H */

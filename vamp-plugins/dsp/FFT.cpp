@@ -51,8 +51,8 @@ FFTReal::~FFTReal()
 
 void
 FFTReal::process(bool inverse,
-                 const double *realIn,
-                 double *realOut, double *imagOut)
+                 const float *realIn,
+                 float *realOut, float *imagOut)
 {
     ((FFT *)m_private)->process(inverse, realIn, 0, realOut, imagOut);
 }
@@ -87,8 +87,8 @@ static unsigned int reverseBits(unsigned int p_nIndex, unsigned int p_nBits)
 
 void
 FFT::process(bool p_bInverseTransform,
-             const double *p_lpRealIn, const double *p_lpImagIn,
-             double *p_lpRealOut, double *p_lpImagOut)
+             const float *p_lpRealIn, const float *p_lpImagIn,
+             float *p_lpRealOut, float *p_lpImagOut)
 {
     if (!p_lpRealIn || !p_lpRealOut || !p_lpImagOut) return;
 
@@ -98,9 +98,8 @@ FFT::process(bool p_bInverseTransform,
     unsigned int i, j, k, n;
     unsigned int BlockSize, BlockEnd;
 
-    double angle_numerator = 2.0 * M_PI;
-    double tr, ti;
-
+    auto angle_numerator = static_cast<float>(2.0 * M_PI);
+    auto tr = 0.f, ti = 0.f;
     if( !MathUtilities::isPowerOfTwo(m_n) )
     {
         std::cerr << "ERROR: FFT::process: Non-power-of-two FFT size "
@@ -125,13 +124,13 @@ FFT::process(bool p_bInverseTransform,
     BlockEnd = 1;
     for( BlockSize = 2; BlockSize <= m_n; BlockSize <<= 1 )
     {
-	double delta_angle = angle_numerator / (double)BlockSize;
-	double sm2 = -sin ( -2 * delta_angle );
-	double sm1 = -sin ( -delta_angle );
-	double cm2 = cos ( -2 * delta_angle );
-	double cm1 = cos ( -delta_angle );
-	double w = 2 * cm1;
-	double ar[3], ai[3];
+	auto delta_angle = angle_numerator / (float)BlockSize;
+	auto sm2 = -std::sin ( -2 * delta_angle );
+	auto sm1 = -std::sin ( -delta_angle );
+	auto cm2 = std::cos ( -2 * delta_angle );
+	auto cm1 = std::cos ( -delta_angle );
+	auto w = 2 * cm1;
+	float ar[3], ai[3];
 
 	for( i=0; i < m_n; i += BlockSize )
 	{
@@ -173,12 +172,12 @@ FFT::process(bool p_bInverseTransform,
 
     if( p_bInverseTransform )
     {
-	double denom = (double)m_n;
+	auto denom = 1.f/m_n;
 
 	for ( i=0; i < m_n; i++ )
 	{
-	    p_lpRealOut[i] /= denom;
-	    p_lpImagOut[i] /= denom;
+	    p_lpRealOut[i] *= denom;
+	    p_lpImagOut[i] *= denom;
 	}
     }
 }

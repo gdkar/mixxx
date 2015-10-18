@@ -39,7 +39,7 @@ class Beats : public QObject{
     Q_FLAG(CapabilitiesFlags);
     virtual CapabilitiesFlags getCapabilities() const = 0;
     // Serialization
-    virtual QByteArray* toByteArray() const = 0;
+    virtual QByteArray toByteArray() const = 0;
     // A string representing the version of the beat-processing code that
     // produced this Beats instance. Used by BeatsFactory for associating a
     // given serialization with the version that produced it.

@@ -58,7 +58,7 @@ protected:
     std::string getKeyName(int index, bool minor, bool includeMajMin) const;
 
     GetKeyMode* m_getKeyMode;
-    double* m_inputFrame;
+    float* m_inputFrame;
     int m_prevKey;
     bool m_first;
 };

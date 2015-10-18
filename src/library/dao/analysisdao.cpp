@@ -225,19 +225,19 @@ QDir AnalysisDao::getAnalysisStoragePath() const
     auto dir = QDir(settingsPath.append("/analysis/"));
     return dir.absolutePath().append("/");
 }
-QByteArray AnalysisDao::loadDataFromFile(const QString& filename) const
+QByteArray AnalysisDao::loadDataFromFile(QString filename) const
 {
     QFile file(filename);
     if (!file.exists())return QByteArray();
     if (!file.open(QIODevice::ReadOnly))return QByteArray();
     return file.readAll();
 }
-bool AnalysisDao::deleteFile(const QString& fileName) const
+bool AnalysisDao::deleteFile(QString fileName) const
 {
     QFile file(fileName);
     return file.remove();
 }
-bool AnalysisDao::saveDataToFile(const QString& fileName, const QByteArray& data) const
+bool AnalysisDao::saveDataToFile(QString fileName, QByteArray data) const
 {
     QFile file(fileName);
     // If the file exists, do the right thing. Write to a temp file, unlink the

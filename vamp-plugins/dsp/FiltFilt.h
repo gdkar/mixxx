@@ -20,8 +20,8 @@
 
 struct FiltFiltConfig{
     unsigned int ord;
-    double* ACoeffs;
-    double* BCoeffs;
+    float* ACoeffs;
+    float* BCoeffs;
 };
 
 class FiltFilt  
@@ -31,7 +31,7 @@ public:
     virtual ~FiltFilt();
 
     void reset();
-    void process( double* src, double* dst, unsigned int length );
+    void process( float* src, float* dst, unsigned int length );
 
 private:
     void initialise( FiltFiltConfig Config );
@@ -41,8 +41,8 @@ private:
 
     Filter* m_filter;
 
-    double* m_filtScratchIn;
-    double* m_filtScratchOut;
+    float* m_filtScratchIn;
+    float* m_filtScratchOut;
 
     FilterConfig m_filterConfig;
 };

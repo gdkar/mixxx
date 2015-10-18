@@ -45,9 +45,9 @@ DownBeat::DownBeat(float originalSampleRate,
     m_beatframesize = MathUtilities::nextPowerOfTwo
         (int((m_rate / decimationFactor) * 1.3));
 //    std::cerr << "rate = " << m_rate << ", bfs = " << m_beatframesize << std::endl;
-    m_beatframe = new double[m_beatframesize];
-    m_fftRealOut = new double[m_beatframesize];
-    m_fftImagOut = new double[m_beatframesize];
+    m_beatframe = new float[m_beatframesize];
+    m_fftRealOut = new float[m_beatframesize];
+    m_fftImagOut = new float[m_beatframesize];
     m_fft = new FFTReal(m_beatframesize);
 }
 
@@ -140,10 +140,7 @@ DownBeat::resetAudioBuffer()
 }
 
 void
-DownBeat::findDownBeats(const float *audio,
-                        size_t audioLength,
-                        const d_vec_t &beats,
-                        i_vec_t &downbeats)
+DownBeat::findDownBeats(const float *audio,size_t audioLength,const std::vector<double> &beats,i_vec_t &downbeats)
 {
     // FIND DOWNBEATS BY PARTITIONING THE INPUT AUDIO FILE INTO BEAT SEGMENTS
     // WHERE THE AUDIO FRAMES ARE DOWNSAMPLED  BY A FACTOR OF 16 (fs ~= 2700Hz)
@@ -155,42 +152,30 @@ DownBeat::findDownBeats(const float *audio,
 
     d_vec_t newspec(m_beatframesize / 2); // magnitude spectrum of current beat
     d_vec_t oldspec(m_beatframesize / 2); // magnitude spectrum of previous beat
-
     m_beatsd.clear();
-
     if (audioLength == 0) return;
-
-    for (size_t i = 0; i + 1 < beats.size(); ++i) {
-
+    for (auto i = size_t{0}; i + 1 < beats.size(); ++i)
+    {
         // Copy the extents of the current beat from downsampled array
         // into beat frame buffer
-
-        size_t beatstart = (beats[i] * m_increment) / m_factor;
-        size_t beatend = (beats[i+1] * m_increment) / m_factor;
+        auto beatstart = static_cast<int>((beats[i] * m_increment) / m_factor);
+        auto beatend   = static_cast<int>((beats[i+1] * m_increment) / m_factor);
         if (beatend >= audioLength) beatend = audioLength - 1;
         if (beatend < beatstart) beatend = beatstart;
-        size_t beatlen = beatend - beatstart;
-
+        auto beatlen = beatend - beatstart;
         // Also apply a Hanning window to the beat frame buffer, sized
         // to the beat extents rather than the frame size.  (Because
         // the size varies, it's easier to do this by hand than use
         // our Window abstraction.)
-
-//        std::cerr << "beatlen = " << beatlen << std::endl;
-
-//        float rms = 0;
-        for (size_t j = 0; j < beatlen && j < m_beatframesize; ++j) {
-            double mul = 0.5 * (1.0 - cos(TWO_PI * (double(j) / double(beatlen))));
+        for (size_t j = 0; j < beatlen && j < m_beatframesize; ++j)
+        {
+            auto mul = static_cast<float>(0.5f * (1 - std::cos(M_2_PI* (float(j) / float(beatlen)))));
             m_beatframe[j] = audio[beatstart + j] * mul;
-//            rms += m_beatframe[j] * m_beatframe[j];
         }
-//        rms = sqrt(rms);
-//        std::cerr << "beat " << i << ": audio rms " << rms << std::endl;
-
-        for (size_t j = beatlen; j < m_beatframesize; ++j) {
-            m_beatframe[j] = 0.0;
+        for (auto j = decltype(m_beatframesize){beatlen}; j < m_beatframesize; ++j)
+        {
+            m_beatframe[j] = 0;
         }
-
         // Now FFT beat frame
         
         m_fft->process(false, m_beatframe, m_fftRealOut, m_fftImagOut);
@@ -252,7 +237,7 @@ DownBeat::findDownBeats(const float *audio,
     }
 }
 
-double
+float
 DownBeat::measureSpecDiff(d_vec_t oldspec, d_vec_t newspec)
 {
     // JENSEN-SHANNON DIVERGENCE BETWEEN SPECTRAL FRAMES
@@ -261,11 +246,11 @@ DownBeat::measureSpecDiff(d_vec_t oldspec, d_vec_t newspec)
     if (SPECSIZE > oldspec.size()/4) {
         SPECSIZE = oldspec.size()/4;
     }
-    double SD = 0.;
-    double sd1 = 0.;
+    float SD = 0.;
+    float sd1 = 0.;
 
-    double sumnew = 0.;
-    double sumold = 0.;
+    float sumnew = 0.;
+    float sumold = 0.;
   
     for (unsigned int i = 0;i < SPECSIZE;i++)
     {
@@ -301,7 +286,7 @@ DownBeat::measureSpecDiff(d_vec_t oldspec, d_vec_t newspec)
 }
 
 void
-DownBeat::getBeatSD(vector<double> &beatsd) const
+DownBeat::getBeatSD(vector<float> &beatsd) const
 {
     for (int i = 0; i < (int)m_beatsd.size(); ++i) beatsd.push_back(m_beatsd[i]);
 }

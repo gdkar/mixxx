@@ -9,7 +9,6 @@ _Pragma("once")
 class AnalysisDao : public DAO {
   public:
     static const QString s_analysisTableName;
-
     enum AnalysisType {
         TYPE_UNKNOWN = 0,
         TYPE_WAVEFORM,
@@ -50,9 +49,9 @@ class AnalysisDao : public DAO {
     bool saveWaveform(const TrackInfoObject& tio,const Waveform& waveform,AnalysisType type);
     bool loadWaveform(const TrackInfoObject& tio,Waveform* waveform, AnalysisType type);
     QDir getAnalysisStoragePath() const;
-    QByteArray loadDataFromFile(const QString& fileName) const;
-    bool saveDataToFile(const QString& fileName, const QByteArray& data) const;
-    bool deleteFile(const QString& filename) const;
+    QByteArray loadDataFromFile(QString fileName) const;
+    bool saveDataToFile(QString fileName, QByteArray data) const;
+    bool deleteFile(QString filename) const;
     QList<AnalysisInfo> loadAnalysesFromQuery(TrackId trackId, QSqlQuery* query);
     ConfigObject<ConfigValue>* m_pConfig;
     QSqlDatabase m_db;

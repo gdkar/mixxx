@@ -11,22 +11,17 @@
 #include "widget/wlibrarytableview.h"
 #include "util/math.h"
 
-WLibraryTableView::WLibraryTableView(QWidget* parent,
-                                     ConfigObject<ConfigValue>* pConfig,
-                                     ConfigKey vScrollBarPosKey)
+WLibraryTableView::WLibraryTableView(QWidget* parent,ConfigObject<ConfigValue>* pConfig,ConfigKey vScrollBarPosKey)
         : QTableView(parent),
           m_pConfig(pConfig),
-          m_vScrollBarPosKey(vScrollBarPosKey) {
-
+          m_vScrollBarPosKey(vScrollBarPosKey)
+{
     // Setup properties for table
-
     // Editing starts when clicking on an already selected item.
     setEditTriggers(QAbstractItemView::SelectedClicked);
-
     //Enable selection by rows and extended selection (ctrl/shift click)
     setSelectionBehavior(QAbstractItemView::SelectRows);
     setSelectionMode(QAbstractItemView::ExtendedSelection);
-
     setWordWrap(false);
     setShowGrid(false);
     setCornerButtonEnabled(false);
@@ -37,89 +32,71 @@ WLibraryTableView::WLibraryTableView(QWidget* parent,
     //Work around a Qt bug that lets you make your columns so wide you
     //can't reach the divider to make them small again.
     setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
-
     verticalHeader()->hide();
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     setAlternatingRowColors(true);
-
     loadVScrollBarPosState();
-
-    connect(verticalScrollBar(), SIGNAL(valueChanged(int)),
-            this, SIGNAL(scrollValueChanged(int)));
-
+    connect(verticalScrollBar(), SIGNAL(valueChanged(int)),this, SIGNAL(scrollValueChanged(int)));
     setTabKeyNavigation(false);
 }
-
-WLibraryTableView::~WLibraryTableView() {
+WLibraryTableView::~WLibraryTableView()
+{
     qDebug() << "~WLibraryTableView";
     saveVScrollBarPosState();
 }
-
-void WLibraryTableView::loadVScrollBarPosState() {
-    // TODO(rryan) I'm not sure I understand the value in saving the v-scrollbar
-    // position across restarts of Mixxx. Now that we have different views for
-    // each mode, the views should just maintain their scrollbar position when
-    // you switch views. We should discuss this.
+void WLibraryTableView::loadVScrollBarPosState()
+{
     m_iSavedVScrollBarPos = m_pConfig->getValueString(m_vScrollBarPosKey).toInt();
 }
-
-void WLibraryTableView::restoreVScrollBarPos() {
+void WLibraryTableView::restoreVScrollBarPos()
+{
     //Restore the scrollbar's position (scroll to that spot)
     //when the search has been cleared
     updateGeometries();
     verticalScrollBar()->setValue(m_iSavedVScrollBarPos);
 }
-
-void WLibraryTableView::saveVScrollBarPos() {
-    //Save the scrollbar's position so we can return here after
-    //a search is cleared.
+void WLibraryTableView::saveVScrollBarPos()
+{
     m_iSavedVScrollBarPos = verticalScrollBar()->value();
 }
-
-
-void WLibraryTableView::saveVScrollBarPosState() {
+void WLibraryTableView::saveVScrollBarPosState()
+{
     //Save the vertical scrollbar position.
     int scrollbarPosition = verticalScrollBar()->value();
     m_pConfig->set(m_vScrollBarPosKey, ConfigValue(scrollbarPosition));
 }
-
-void WLibraryTableView::moveSelection(int delta) {
-    QAbstractItemModel* pModel = model();
-
-    if (pModel == NULL) {
-        return;
-    }
-
-    while(delta != 0) {
+void WLibraryTableView::moveSelection(int delta)
+{
+    auto pModel = model();
+    if (!pModel) return;
+    while(delta)
+    {
         // TODO(rryan) what happens if there is nothing selected?
-        QModelIndex current = currentIndex();
-        if(delta > 0) {
+        auto current = currentIndex();
+        if(delta > 0)
+        {
             // i is positive, so we want to move the highlight down
-            int row = current.row();
-            if (row + 1 < pModel->rowCount())
-                selectRow(row + 1);
-
+            auto row = current.row();
+            if (row + 1 < pModel->rowCount()) selectRow(row + 1);
             delta--;
-        } else {
+        }
+        else
+        {
             // i is negative, so we want to move the highlight up
-            int row = current.row();
-            if (row - 1 >= 0)
-                selectRow(row - 1);
-
+            auto row = current.row();
+            if (row - 1 >= 0) selectRow(row - 1);
             delta++;
         }
     }
 }
-
-void WLibraryTableView::setTrackTableFont(const QFont& font) {
+void WLibraryTableView::setTrackTableFont(const QFont& font)
+{
     setFont(font);
     setTrackTableRowHeight(verticalHeader()->defaultSectionSize());
 }
-
-void WLibraryTableView::setTrackTableRowHeight(int rowHeight) {
+void WLibraryTableView::setTrackTableRowHeight(int rowHeight)
+{
     QFontMetrics metrics(font());
-    int fontHeightPx = metrics.height();
-    verticalHeader()->setDefaultSectionSize(math_max(
-            rowHeight, fontHeightPx));
+    auto fontHeightPx = metrics.height();
+    verticalHeader()->setDefaultSectionSize(std::max(rowHeight, fontHeightPx));
 }
-

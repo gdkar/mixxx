@@ -23,12 +23,12 @@ bool BeatLessThan(const Beat& beat1, const Beat& beat2)
 {
   return beat1.frame_position() < beat2.frame_position();
 }
-BeatMap::BeatMap(TrackPointer pTrack, int iSampleRate,const QByteArray* pByteArray)
+BeatMap::BeatMap(TrackPointer pTrack, int iSampleRate,QByteArray pByteArray)
         : Beats(nullptr),
           m_mutex(QMutex::Recursive)
 {
     initialize(pTrack, iSampleRate);
-    if (pByteArray) readByteArray(pByteArray);
+    readByteArray(pByteArray);
 }
 BeatMap::BeatMap(TrackPointer pTrack, int iSampleRate,const QVector<double>& beats)
         : Beats(nullptr),
@@ -45,7 +45,7 @@ void BeatMap::initialize(TrackPointer pTrack, int iSampleRate)
     if (!pTrack.isNull()) moveToThread(pTrack->thread());
 }
 BeatMap::~BeatMap() = default;
-QByteArray* BeatMap::toByteArray() const
+QByteArray BeatMap::toByteArray() const
 {
     QMutexLocker locker(&m_mutex);
     // No guarantees BeatLists are made of a data type which located adjacent
@@ -54,16 +54,15 @@ QByteArray* BeatMap::toByteArray() const
     for (auto i = 0; i < m_beats.size(); ++i) map.add_beat()->CopyFrom(m_beats[i]);
     std::string output;
     map.SerializeToString(&output);
-    auto pByteArray = new QByteArray(output.data(), output.length());
-    return pByteArray;
+    return QByteArray(output.data(), output.length());
 }
-void BeatMap::readByteArray(const QByteArray* pByteArray)
+void BeatMap::readByteArray(QByteArray pByteArray)
 {
     mixxx::track::io::BeatMap map;
-    if (!map.ParseFromArray(pByteArray->constData(), pByteArray->size()))
+    if (!map.ParseFromArray(pByteArray.constData(), pByteArray.size()))
     {
         qDebug() << "ERROR: Could not parse BeatMap from QByteArray of size"
-                << pByteArray->size();
+                << pByteArray.size();
         return;
     }
     for (auto i = 0; i < map.beat_size(); ++i)

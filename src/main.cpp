@@ -57,7 +57,8 @@ QMutex mutexLogfile;
 /* Debug message handler which outputs to both a logfile and a
  * and prepends the thread the message came from too.
  */
-void MessageHandler(QtMsgType type,const QMessageLogContext&, const QString& input) {
+void MessageHandler(QtMsgType type,const QMessageLogContext&, const QString& input)
+{
     // It's possible to deadlock if any method in this function can
     // qDebug/qWarning/etc. Writing to a closed QFile, for example, produces a
     // qWarning which causes a deadlock. That's why every use of Logfile is
@@ -69,19 +70,21 @@ void MessageHandler(QtMsgType type,const QMessageLogContext&, const QString& inp
     else        ba = "[?]: ";
     ba += input.toLocal8Bit();
     ba += "\n";
-    if (!Logfile.isOpen()) {
+    if (!Logfile.isOpen())
+    {
         // This Must be done in the Message Handler itself, to guarantee that the
         // QApplication is initialized
-        QString logLocation = CmdlineArgs::Instance().getSettingsPath();
-        QString logFileName;
-
+        auto logLocation = CmdlineArgs::Instance().getSettingsPath();
+        auto logFileName = QString{};
         // Rotate old logfiles
         //FIXME: cerr << doesn't get printed until after mixxx quits (???)
-        for (auto i = 9; i >= 0; --i) {
+        for (auto i = 9; i >= 0; --i)
+        {
             if (i == 0) logFileName = QDir(logLocation).filePath("mixxx.log");
             else        logFileName = QDir(logLocation).filePath(QString("mixxx.log.%1").arg(i));
             QFileInfo logbackup(logFileName);
-            if (logbackup.exists()) {
+            if (logbackup.exists())
+            {
                 auto olderlogname = QDir(logLocation).filePath(QString("mixxx.log.%1").arg(i + 1));
                 // This should only happen with number 10
                 if (QFileInfo(olderlogname).exists()) QFile::remove(olderlogname);
@@ -97,7 +100,8 @@ void MessageHandler(QtMsgType type,const QMessageLogContext&, const QString& inp
         Logfile.setFileName(logFileName);
         Logfile.open(QIODevice::WriteOnly | QIODevice::Text);
     }
-    switch (type) {
+    switch (type)
+    {
     case QtDebugMsg:
         fprintf(stderr, "Debug %s", ba.constData());
         if (Logfile.isOpen())

@@ -48,7 +48,7 @@ public:
 
     DFConfig dfConfig;
     DetectionFunction *df;
-    vector<double> dfOutput;
+    vector<float> dfOutput;
     Vamp::RealTime origin;
 };
 
@@ -300,8 +300,7 @@ BeatTracker::getOutputDescriptors() const
 }
 
 BeatTracker::FeatureSet
-BeatTracker::process(const float *const *inputBuffers,
-                     Vamp::RealTime timestamp)
+BeatTracker::process(const float *const *inputBuffers,Vamp::RealTime timestamp)
 {
     if (!m_d) {
 	cerr << "ERROR: BeatTracker::process: "
@@ -310,36 +309,29 @@ BeatTracker::process(const float *const *inputBuffers,
 	return FeatureSet();
     }
 
-    size_t len = m_d->dfConfig.frameLength / 2;
+    auto len = m_d->dfConfig.frameLength / 2;
 
-    double *magnitudes = new double[len];
-    double *phases = new double[len];
+    auto magnitudes = new float[len];
+    auto phases = new float[len];
 
     // We only support a single input channel
 
-    for (size_t i = 0; i < len; ++i) {
-
-        magnitudes[i] = sqrt(inputBuffers[0][i*2  ] * inputBuffers[0][i*2  ] +
+    for (auto i = decltype(len){0}; i < len; ++i)
+    {
+        magnitudes[i] = std::sqrt(inputBuffers[0][i*2  ] * inputBuffers[0][i*2  ] +
                              inputBuffers[0][i*2+1] * inputBuffers[0][i*2+1]);
 
-	phases[i] = atan2(-inputBuffers[0][i*2+1], inputBuffers[0][i*2]);
+	phases[i] = std::atan2(-inputBuffers[0][i*2+1], inputBuffers[0][i*2]);
     }
-
-    double output = m_d->df->process(magnitudes, phases);
-
+    auto output = m_d->df->process(magnitudes, phases);
     delete[] magnitudes;
     delete[] phases;
-
     if (m_d->dfOutput.empty()) m_d->origin = timestamp;
-
     m_d->dfOutput.push_back(output);
-
     FeatureSet returnFeatures;
-
     Feature feature;
     feature.hasTimestamp = false;
     feature.values.push_back(output);
-
     returnFeatures[1].push_back(feature); // detection function is output 1
     return returnFeatures;
 }
@@ -361,8 +353,8 @@ BeatTracker::getRemainingFeatures()
 BeatTracker::FeatureSet
 BeatTracker::beatTrackOld()
 {
-    double aCoeffs[] = { 1.0000, -0.5949, 0.2348 };
-    double bCoeffs[] = { 0.1600,  0.3200, 0.1600 };
+    float aCoeffs[] = { 1.0000, -0.5949, 0.2348 };
+    float bCoeffs[] = { 0.1600,  0.3200, 0.1600 };
 
     TTParams ttParams;
     ttParams.winLength = 512;
@@ -376,7 +368,7 @@ BeatTracker::beatTrackOld()
 
     TempoTrack tempoTracker(ttParams);
 
-    vector<double> tempi;
+    vector<float > tempi;
     vector<int> beats = tempoTracker.process(m_d->dfOutput, &tempi);
 
     FeatureSet returnFeatures;
@@ -414,7 +406,7 @@ BeatTracker::beatTrackOld()
 	returnFeatures[0].push_back(feature); // beats are output 0
     }
 
-    double prevTempo = 0.0;
+    float prevTempo = 0.0;
 
     for (size_t i = 0; i < tempi.size(); ++i) {
 
@@ -441,9 +433,9 @@ BeatTracker::beatTrackOld()
 BeatTracker::FeatureSet
 BeatTracker::beatTrackNew()
 {
-    vector<double> df;
-    vector<double> beatPeriod;
-    vector<double> tempi;
+    vector<float > df;
+    vector<float > beatPeriod;
+    vector<float> tempi;
 
     size_t nonZeroCount = m_d->dfOutput.size();
     while (nonZeroCount > 0) {
@@ -503,7 +495,7 @@ BeatTracker::beatTrackNew()
 	returnFeatures[0].push_back(feature); // beats are output 0
     }
 
-    double prevTempo = 0.0;
+    float prevTempo = 0.0f;
 
     for (size_t i = 0; i < tempi.size(); ++i) {
 

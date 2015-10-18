@@ -13,9 +13,7 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef CHROMAGRAM_H
-#define CHROMAGRAM_H
-
+_Pragma("once")
 #include <memory>
 #include <utility>
 #include "FFT.h"
@@ -24,10 +22,10 @@
 
 struct ChromaConfig{
     size_t FS;
-    double min;
-    double max;
+    float min;
+    float max;
     size_t BPO;
-    double CQThresh;
+    float CQThresh;
     MathUtilities::NormaliseType normalise;
 };
 
@@ -37,12 +35,12 @@ public:
     Chromagram( ChromaConfig Config );
     virtual ~Chromagram();
 	
-    double* process( const double *data ); // time domain
-    double* process( const double *real, const double *imag ); // frequency domain
-    void unityNormalise( double* src );
+    float * process( const float *data ); // time domain
+    float * process( const float *real, const float *imag ); // frequency domain
+    void unityNormalise( float * src );
 
     // Complex arithmetic
-    double kabs( double real, double imag );
+    float kabs( float real, float imag );
 	
     // Results
     size_t getK()         { return m_uK;}
@@ -53,12 +51,12 @@ private:
     int initialise( ChromaConfig Config );
     int deInitialise();
 
-    std::unique_ptr<Window<double> >m_window    = nullptr;
-    double         *m_windowbuf = nullptr;
+    std::unique_ptr<Window<float > >m_window    = nullptr;
+    float *m_windowbuf = nullptr;
 	
-    double* m_chromadata= nullptr;
-    double       m_FMin = 0;
-    double       m_FMax = 0;
+    float * m_chromadata= nullptr;
+    float m_FMin = 0;
+    float m_FMax = 0;
     size_t       m_BPO  = 0;
     size_t       m_uK   = 0;
 
@@ -70,12 +68,10 @@ private:
     std::unique_ptr<FFTReal>   m_FFT;
     std::unique_ptr<ConstantQ> m_ConstantQ;
 
-    double* m_FFTRe    = nullptr;
-    double* m_FFTIm    = nullptr;
-    double* m_CQRe     = nullptr;
-    double* m_CQIm     = nullptr;
+    float* m_FFTRe    = nullptr;
+    float* m_FFTIm    = nullptr;
+    float* m_CQRe     = nullptr;
+    float* m_CQIm     = nullptr;
 
     bool m_skGenerated = false;
 };
-
-#endif

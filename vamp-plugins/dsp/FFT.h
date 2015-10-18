@@ -6,9 +6,7 @@
     Centre for Digital Music, Queen Mary, University of London.
 */
 
-#ifndef FFT_H
-#define FFT_H
-
+_Pragma("once")
 class FFT  
 {
 public:
@@ -16,8 +14,8 @@ public:
     ~FFT();
 
     void process(bool inverse,
-                 const double *realIn, const double *imagIn,
-                 double *realOut, double *imagOut);
+                 const float *realIn, const float *imagIn,
+                 float *realOut, float *imagOut);
     
 private:
     unsigned int m_n;
@@ -31,12 +29,10 @@ public:
     ~FFTReal();
 
     void process(bool inverse,
-                 const double *realIn,
-                 double *realOut, double *imagOut);
+                 const float *realIn,
+                 float *realOut, float *imagOut);
 
 private:
     unsigned int m_n;
     void *m_private;
 };    
-
-#endif

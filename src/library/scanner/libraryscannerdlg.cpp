@@ -25,7 +25,8 @@
 
 LibraryScannerDlg::LibraryScannerDlg(QWidget* parent, Qt::WindowFlags f)
         : QWidget(parent, f),
-          m_bCancelled(false) {
+          m_bCancelled(false)
+{
     setWindowIcon(QIcon(":/images/ic_mixxx_window.png"));
     auto pLayout = new QVBoxLayout(this);
     setWindowTitle(tr("Library Scanner"));
@@ -45,28 +46,41 @@ LibraryScannerDlg::LibraryScannerDlg(QWidget* parent, Qt::WindowFlags f)
     pLayout->addWidget(pCurrent);
     setLayout(pLayout);
 }
-LibraryScannerDlg::~LibraryScannerDlg() {}
-void LibraryScannerDlg::slotUpdate(QString path) {
+LibraryScannerDlg::~LibraryScannerDlg() = default;
+void LibraryScannerDlg::slotUpdate(QString path)
+{
     //qDebug() << "LibraryScannerDlg slotUpdate" << m_timer.elapsed() << path;
-    if (!m_bCancelled && m_timer.elapsed() > 2000) { setVisible(true); }
-    if (isVisible()) {
+    if (!m_bCancelled && m_timer.elapsed() > 2000) setVisible(true);
+    if (isVisible())
+    {
         auto  status = tr("Scanning: ") + path;
         emit(progress(status));
     }
 }
-void LibraryScannerDlg::slotUpdateCover(QString path) {
+void LibraryScannerDlg::slotUpdateCover(QString path)
+{
     //qDebug() << "LibraryScannerDlg slotUpdate" << m_timer.elapsed() << path;
-    if (!m_bCancelled && m_timer.elapsed() > 2000) { setVisible(true); }
-    if (isVisible()) {
+    if (!m_bCancelled && m_timer.elapsed() > 2000) setVisible(true);
+    if (isVisible())
+    {
         auto status = QString("%1: %2") .arg(tr("Scanning cover art (safe to cancel)")) .arg(path);
         emit(progress(status));
     }
 }
-void LibraryScannerDlg::slotCancel() {
+void LibraryScannerDlg::slotCancel()
+{
     qDebug() << "Cancelling library scan...";
     m_bCancelled = true;
     emit(scanCancelled());
     hide();
 }
-void LibraryScannerDlg::slotScanStarted() { m_bCancelled = false; m_timer.start(); }
-void LibraryScannerDlg::slotScanFinished() { m_bCancelled = true; hide();}
+void LibraryScannerDlg::slotScanStarted()
+{ 
+  m_bCancelled = false;
+  m_timer.start(); 
+}
+void LibraryScannerDlg::slotScanFinished()
+{ 
+  m_bCancelled = true;
+  hide();
+}

@@ -15,21 +15,13 @@
 
 #include "ChangeDetectionFunction.h"
 
-#ifndef PI
-#define PI (3.14159265358979232846)
-#endif
-
-
-
 ChangeDetectionFunction::ChangeDetectionFunction(ChangeDFConfig config) :
 	m_dFilterSigma(0.0), m_iFilterWidth(0)
 {
 	setFilterWidth(config.smoothingWidth);
 }
 
-ChangeDetectionFunction::~ChangeDetectionFunction()
-{
-}
+ChangeDetectionFunction::~ChangeDetectionFunction() = default;
 
 void ChangeDetectionFunction::setFilterWidth(const int iWidth)
 {
@@ -37,14 +29,14 @@ void ChangeDetectionFunction::setFilterWidth(const int iWidth)
 	
 	// it is assumed that the gaussian is 0 outside of +/- FWHM
 	// => filter width = 2*FWHM = 2*2.3548*sigma
-	m_dFilterSigma = double(m_iFilterWidth) / double(2*2.3548);
+	m_dFilterSigma = float(m_iFilterWidth) / float(2*2.3548);
 	m_vaGaussian.resize(m_iFilterWidth);
 	
-	double dScale = 1.0 / (m_dFilterSigma*sqrt(2*PI));
+	float dScale = 1.0 / (m_dFilterSigma*sqrt(2*M_PI));
 	
 	for (int x = -(m_iFilterWidth-1)/2; x <= (m_iFilterWidth-1)/2; x++)
 	{
-		double w = dScale * std::exp ( -(x*x)/(2*m_dFilterSigma*m_dFilterSigma) );
+		float w = dScale * std::exp ( -(x*x)/(2*m_dFilterSigma*m_dFilterSigma) );
 		m_vaGaussian[x + (m_iFilterWidth-1)/2] = w;
 	}
 	
@@ -87,7 +79,7 @@ ChangeDistance ChangeDetectionFunction::process(const TCSGram& rTCSGram)
 		for (int iPC = 0; iPC < 6; iPC++)
 		{	
 			size_t j = 0;
-			double dSmoothedValue = 0.0;
+			float dSmoothedValue = 0.0;
 			TCSVector rCV;
 		
 			for (int i = iLowerPos; i <= iUpperPos; i++)
@@ -130,7 +122,7 @@ ChangeDistance ChangeDetectionFunction::process(const TCSGram& rTCSGram)
 			iWindow++;
 		}
 
-		double distance = 0.0;
+		float distance = 0.0;
 		// Euclidean distance
 		for (size_t j = 0; j < 6; j++)
 		{

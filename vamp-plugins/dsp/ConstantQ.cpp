@@ -28,8 +28,8 @@
 static bool push_precalculated(int uk, int fftlength,
                                std::vector<size_t> &is,
                                std::vector<size_t> &js,
-                               std::vector<double> &real,
-                               std::vector<double> &imag)
+                               std::vector<float> &real,
+                               std::vector<float> &imag)
 {
     if (uk == 76 && fftlength == 16384) {
         push_76_16384(is, js, real, imag);
@@ -53,12 +53,12 @@ static bool push_precalculated(int uk, int fftlength,
 
 //---------------------------------------------------------------------------
 // nextpow2 returns the smallest integer n such that 2^n >= x.
-static double nextpow2(double x) {
-    double y = std::ceil(std::log(x)/std::log(2));
+static float nextpow2(float x) {
+    float y = std::ceil(std::log(x)/std::log(2));
     return(y);
 }
 
-static double squaredModule(const double & xx, const double & yy) {
+static float squaredModule(const float & xx, const float & yy) {
     return xx*xx + yy*yy;
 }
 //----------------------------------------------------------------------------
@@ -88,10 +88,10 @@ void ConstantQ::sparsekernel(){
     //generates spectral kernel matrix (upside down?)
     // initialise temporal kernel with zeros, twice length to deal w. complex numbers
 
-    auto hammingWindowRe = std::make_unique<double[]>(m_FFTLength);
-    auto hammingWindowIm = std::make_unique<double[]> ( m_FFTLength );
-    auto transfHammingWindowRe = std::make_unique<double[]> ( m_FFTLength );
-    auto transfHammingWindowIm = std::make_unique<double[]> ( m_FFTLength );
+    auto hammingWindowRe = std::make_unique<float []>(m_FFTLength);
+    auto hammingWindowIm = std::make_unique<float []> ( m_FFTLength );
+    auto transfHammingWindowRe = std::make_unique<float []> ( m_FFTLength );
+    auto transfHammingWindowIm = std::make_unique<float []> ( m_FFTLength );
     std::fill(&hammingWindowRe[0],&hammingWindowRe[m_FFTLength],0);
     std::fill(&hammingWindowIm[0],&hammingWindowIm[m_FFTLength],0);
 
@@ -116,7 +116,7 @@ void ConstantQ::sparsekernel(){
             hammingWindowIm[u] = 0;
         }
 	// Computing a hamming window
-	const auto hammingLength = static_cast<size_t>(std:: ceil( m_dQ * m_FS / ( m_FMin * std::pow(2,(static_cast<double>(k))/static_cast<double>(m_BPO)))));
+	const auto hammingLength = static_cast<size_t>(std:: ceil( m_dQ * m_FS / ( m_FMin * std::pow(2,(static_cast<float >(k))/static_cast<float >(m_BPO)))));
         auto origin = m_FFTLength/2 - hammingLength/2;
 	for (auto i=decltype(hammingLength){0}; i<hammingLength; i++) 
 	{
@@ -139,7 +139,7 @@ void ConstantQ::sparsekernel(){
 	    // perform thresholding
 	    const auto squaredBin = squaredModule( transfHammingWindowRe[ j ], transfHammingWindowIm[ j ]);
 	    if (squaredBin <= squareThreshold) continue;
-	    // Insert non-zero position indexes, doubled because they are floats
+	    // Insert non-zero position indexes, float because they are floats
 	    sk->is.push_back(j);
 	    sk->js.push_back(k);
 	    // take conjugate, normalise and add to array sparkernel
@@ -179,7 +179,7 @@ void ConstantQ::sparsekernel(){
 
     w = 2;
     n = sk->real.size();
-    cout << "static double sk_real_" << m_uK << "_" << m_FFTLength << "[" << n << "] = {" << endl;
+    cout << "static float sk_real_" << m_uK << "_" << m_FFTLength << "[" << n << "] = {" << endl;
     for (int i = 0; i < n; ++i) {
         if (i % w == 0) cout << "    ";
         cout << sk->real[i];
@@ -190,7 +190,7 @@ void ConstantQ::sparsekernel(){
     cout << "};" << endl;
 
     n = sk->imag.size();
-    cout << "static double sk_imag_" << m_uK << "_" << m_FFTLength << "[" << n << "] = {" << endl;
+    cout << "static float sk_imag_" << m_uK << "_" << m_FFTLength << "[" << n << "] = {" << endl;
     for (int i = 0; i < n; ++i) {
         if (i % w == 0) cout << "    ";
         cout << sk->imag[i];
@@ -200,7 +200,7 @@ void ConstantQ::sparsekernel(){
     if (n % w != 0) cout << endl;
     cout << "};" << endl;
 
-    cout << "static void push_" << m_uK << "_" << m_FFTLength << "(vector<unsigned int> &is, vector<unsigned int> &js, vector<double> &real, vector<double> &imag)" << endl;
+    cout << "static void push_" << m_uK << "_" << m_FFTLength << "(vector<unsigned int> &is, vector<unsigned int> &js, vector<float> &real, vector<float> &imag)" << endl;
     cout << "{\n    is.reserve(" << n << ");\n";
     cout << "    js.reserve(" << n << ");\n";
     cout << "    real.reserve(" << n << ");\n";
@@ -219,7 +219,7 @@ void ConstantQ::sparsekernel(){
 }
 
 //-----------------------------------------------------------------------------
-double* ConstantQ::process( const double* fftdata )
+float * ConstantQ::process( const float * fftdata )
 {
     if (!m_sparseKernel)
     {
@@ -260,7 +260,7 @@ void ConstantQ::initialise( CQConfig Config )
     m_BPO = Config.BPO;		// bins per octave
     m_CQThresh = Config.CQThresh;// ConstantQ threshold for kernel generation
 
-    m_dQ = 1/(std::pow(2,(1/(double)m_BPO))-1);	// Work out Q value for Filter bank
+    m_dQ = 1/(std::pow(2,(1/(float )m_BPO))-1);	// Work out Q value for Filter bank
     m_uK =  std::ceil(m_BPO * std::log(m_FMax/m_FMin)/std::log(2.0));	// No. of constant Q bins
 
 //    std::cerr << "ConstantQ::initialise: rate = " << m_FS << ", fmin = " << m_FMin << ", fmax = " << m_FMax << ", bpo = " << m_BPO << ", K = " << m_uK << ", Q = " << m_dQ << std::endl;
@@ -270,7 +270,7 @@ void ConstantQ::initialise( CQConfig Config )
     m_hop = m_FFTLength/8; // <------ hop size is window length divided by 32
 //    std::cerr << "ConstantQ::initialise: -> fft length = " << m_FFTLength << ", hop = " << m_hop << std::endl;
     // allocate memory for cqdata
-    m_CQdata = new double [2*m_uK];
+    m_CQdata = new float [2*m_uK];
 }
 
 void ConstantQ::deInitialise()
@@ -279,7 +279,7 @@ void ConstantQ::deInitialise()
     delete m_sparseKernel;
 }
 
-void ConstantQ::process(const double *FFTRe, const double* FFTIm, double *CQRe, double *CQIm)
+void ConstantQ::process(const float *FFTRe, const float * FFTIm, float *CQRe, float *CQIm)
 {
     if (!m_sparseKernel)
     {

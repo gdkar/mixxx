@@ -1,6 +1,4 @@
-#ifndef EFFECTCHAIN_H
-#define EFFECTCHAIN_H
-
+_Pragma("once")
 #include <QObject>
 #include <QMap>
 #include <QList>
@@ -129,8 +127,4 @@ class EffectChain : public QObject {
     QList<EffectPointer> m_effects;
     EngineEffectChain* m_pEngineEffectChain;
     bool m_bAddedToEngine;
-
-    DISALLOW_COPY_AND_ASSIGN(EffectChain);
 };
-
-#endif /* EFFECTCHAIN_H */

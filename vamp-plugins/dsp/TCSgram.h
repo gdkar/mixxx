@@ -13,9 +13,7 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef _TCSGram_
-#define _TCSGram_
-
+_Pragma("once")
 #include <vector>
 #include <valarray>
 #include <utility>
@@ -37,13 +35,11 @@ public:
 	int getSize() const { return m_VectorList.size(); }
 	void reserve(size_t uSize) { m_VectorList.reserve(uSize); }
 	void clear() { m_VectorList.clear(); }
-	void setFrameDuration(const double dFrameDurationMS) { m_dFrameDurationMS = dFrameDurationMS; }
+	void setFrameDuration(const float dFrameDurationMS) { m_dFrameDurationMS = dFrameDurationMS; }
 	void setNumBins(const unsigned int uNumBins) { m_uNumBins = uNumBins; }
 	void normalize();
 protected:
 	vectorlist_t m_VectorList;
 	unsigned int m_uNumBins;
-	double m_dFrameDurationMS;
+	float m_dFrameDurationMS;
 };
-
-#endif

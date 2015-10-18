@@ -13,14 +13,10 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef DOWNBEAT_H
-#define DOWNBEAT_H
-
+_Pragma("once")
 #include <vector>
 
-#ifdef __LINUX__
-#include <stddef.h>  //resolves size_t compile error on Ubuntu 11.10
-#endif
+#include <cstddef>  //resolves size_t compile error on Ubuntu 11.10
 
 #include "Decimator.h"
 
@@ -51,11 +47,8 @@ public:
      * decimationFactor must be a power of two no greater than 64, and
      * dfIncrement must be a multiple of decimationFactor.
      */
-    DownBeat(float originalSampleRate,
-             size_t decimationFactor,
-             size_t dfIncrement);
-    ~DownBeat();
-
+    DownBeat(float originalSampleRate,size_t decimationFactor,size_t dfIncrement);
+    virtual ~DownBeat();
     void setBeatsPerBar(int bpb);
 
     /**
@@ -76,7 +69,6 @@ public:
                        size_t audioLength, // after downsampling
                        const vector<double> &beats,
                        vector<int> &downbeats);
-
     /**
      * Return the beat spectral difference function.  This is
      * calculated during findDownBeats, so this function can only be
@@ -86,8 +78,7 @@ public:
      * difference between region prior to the beat's nominal position
      * and the region following it.
      */
-    void getBeatSD(vector<double> &beatsd) const;
-    
+    void getBeatSD(vector<float> &beatsd) const;
     /**
      * For your downsampling convenience: call this function
      * repeatedly with input audio blocks containing dfIncrement
@@ -103,20 +94,19 @@ public:
      * Retrieve the accumulated audio produced by pushAudioBlock calls.
      */
     const float *getBufferedAudio(size_t &length) const;
-
     /**
      * Clear any buffered downsampled audio data.
      */
     void resetAudioBuffer();
 
-private:
     typedef vector<int> i_vec_t;
     typedef vector<vector<int> > i_mat_t;
-    typedef vector<double> d_vec_t;
-    typedef vector<vector<double> > d_mat_t;
+    typedef vector<float> d_vec_t;
+    typedef vector<vector<float> > d_mat_t;
+private:
 
     void makeDecimators();
-    double measureSpecDiff(d_vec_t oldspec, d_vec_t newspec);
+    float measureSpecDiff(d_vec_t oldspec, d_vec_t newspec);
 
     int m_bpb;
     float m_rate;
@@ -129,11 +119,9 @@ private:
     size_t m_bufsiz;
     size_t m_buffill;
     size_t m_beatframesize;
-    double *m_beatframe;
+    float *m_beatframe;
     FFTReal *m_fft;
-    double *m_fftRealOut;
-    double *m_fftImagOut;
+    float *m_fftRealOut;
+    float *m_fftImagOut;
     d_vec_t m_beatsd;
 };
-
-#endif

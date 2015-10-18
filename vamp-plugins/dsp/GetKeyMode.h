@@ -26,26 +26,26 @@ class GetKeyMode
 {
 public:
 	GetKeyMode( int sampleRate, float tuningFrequency,
-		    double hpcpAverage, double medianAverage );
+		    float hpcpAverage, float medianAverage );
 
 	virtual ~GetKeyMode();
 
-	int process( double* PCMData );
+	int process( float* PCMData );
 
-	double krumCorr( double* pData1, double* pData2, size_t length );
+	float krumCorr( float* pData1, float* pData2, size_t length );
 
 	size_t getBlockSize() { return m_ChromaFrameSize*m_DecimationFactor; }
 	size_t getHopSize() { return m_ChromaHopSize*m_DecimationFactor; }
-	double* getChroma() { return m_ChrPointer; }
+	float* getChroma() { return m_ChrPointer; }
 	size_t getChromaSize() { return m_BPO; }
-	double* getMeanHPCP() { return m_MeanHPCP; }
-	double *getKeyStrengths() { return m_keyStrengths; }
+	float* getMeanHPCP() { return m_MeanHPCP; }
+	float *getKeyStrengths() { return m_keyStrengths; }
 	bool isModeMinor( int key ); 
 
 protected:
 
-	double       m_hpcpAverage;
-	double       m_medianAverage;
+	float       m_hpcpAverage;
+	float       m_medianAverage;
 	size_t       m_DecimationFactor;
 
 	//Decimator (fixed)
@@ -55,7 +55,7 @@ protected:
 	//Chromagram object
   std::unique_ptr<Chromagram> m_Chroma;
 	//Chromagram output pointer
-	double* m_ChrPointer;
+	float* m_ChrPointer;
 	//Framesize
 	size_t m_ChromaFrameSize;
 	//Hop
@@ -71,17 +71,17 @@ protected:
 	size_t m_MedianBufferFilling;
 	
 
-	double* m_DecimatedBuffer;
-	double* m_ChromaBuffer;
-	double* m_MeanHPCP;
+	float* m_DecimatedBuffer;
+	float* m_ChromaBuffer;
+	float* m_MeanHPCP;
 
-	double* m_MajCorr;
-	double* m_MinCorr;
-	double* m_Keys;
+	float* m_MajCorr;
+	float* m_MinCorr;
+	float* m_Keys;
 	int* m_MedianFilterBuffer;
 	int* m_SortedBuffer;
 
-	double *m_keyStrengths;
+	float *m_keyStrengths;
 };
 
 #endif // !defined GETKEYMODE_H

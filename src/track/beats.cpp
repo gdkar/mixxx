@@ -29,7 +29,6 @@ Beats::Beats(QObject *p)
 {
 }
 Beats::~Beats() = default;
-
 BeatIterator Beats::findBeats(double startSample, double stopSample) const
 {
     startSample = std::max(0.0,startSample);

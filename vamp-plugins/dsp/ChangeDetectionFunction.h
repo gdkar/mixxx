@@ -13,9 +13,7 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef _CHANGEDETECTIONFUNCTION_
-#define _CHANGEDETECTIONFUNCTION_
-
+_Pragma("once")
 //#define DEBUG_CHANGE_DETECTION_FUNCTION 1
 
 #include "TCSgram.h"
@@ -23,7 +21,7 @@
 #include <valarray>
 using std::valarray;
 
-typedef	valarray<double> ChangeDistance;
+typedef	valarray<float> ChangeDistance;
 
 struct ChangeDFConfig
 {
@@ -40,9 +38,7 @@ private:
 	void setFilterWidth(const int iWidth);
 	
 private:
-	valarray<double> m_vaGaussian;
-	double m_dFilterSigma;
+	valarray<float> m_vaGaussian;
+	float m_dFilterSigma;
 	int m_iFilterWidth;
 };
-
-#endif // _CHANGDETECTIONFUNCTION_

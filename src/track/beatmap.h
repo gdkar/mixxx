@@ -16,7 +16,6 @@ _Pragma("once")
 #define BEAT_MAP_VERSION "BeatMap-1.0"
 
 typedef QList<mixxx::track::io::Beat> BeatList;
-
 class BeatMap : public Beats {
     Q_OBJECT
   public:
@@ -24,7 +23,7 @@ class BeatMap : public Beats {
     // sample rate is known than the one associated with the Track. If it is
     // zero then the track's sample rate will be used. If a byte array is
     // provided then the BeatMap will be deserialized from the byte array.
-    BeatMap(TrackPointer pTrack, int iSampleRate,const QByteArray* pByteArray=nullptr);
+    BeatMap(TrackPointer pTrack, int iSampleRate,QByteArray pByteArray=QByteArray{});
     // Construct a BeatMap. iSampleRate may be provided if a more accurate
     // sample rate is known than the one associated with the Track. If it is
     // zero then the track's sample rate will be used. A list of beat locations
@@ -33,7 +32,7 @@ class BeatMap : public Beats {
     virtual ~BeatMap();
     // See method comments in beats.h
     virtual Beats::CapabilitiesFlags getCapabilities() const;
-    virtual QByteArray* toByteArray() const;
+    virtual QByteArray toByteArray() const;
     virtual QString getVersion() const;
     virtual QString getSubVersion() const;
     virtual void setSubVersion(QString subVersion);
@@ -64,7 +63,7 @@ class BeatMap : public Beats {
     void updated();
   private:
     void initialize(TrackPointer pTrack, int iSampleRate);
-    void readByteArray(const QByteArray* pByteArray);
+    void readByteArray(QByteArray pByteArray);
     void createFromBeatVector(const QVector<double>& beats);
     void onBeatlistChanged();
     double calculateBpm(const mixxx::track::io::Beat& startBeat,const mixxx::track::io::Beat& stopBeat) const;

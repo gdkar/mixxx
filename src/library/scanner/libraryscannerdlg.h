@@ -16,9 +16,7 @@
 *                                                                         *
 ***************************************************************************/
 
-#ifndef LIBRARYSCANNERDLG_H
-#define LIBRARYSCANNERDLG_H
-
+_Pragma("once")
 #include <QThread>
 #include <QWidget>
 #include <QString>
@@ -42,4 +40,3 @@ class LibraryScannerDlg : public QWidget {
     QTime m_timer;
     bool m_bCancelled;
 };
-#endif
