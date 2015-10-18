@@ -17,6 +17,7 @@
 
 #include <QtDebug>
 #include <QTranslator>
+#include <QSignalMapper>
 #include <QMenu>
 #include <QMenuBar>
 #include <QFileDialog>
@@ -615,21 +616,26 @@ void MixxxMainWindow::initializeKeyboard() {
     auto userKeyboard = QDir(m_cmdLineArgs.getSettingsPath()).filePath("Custom.kbd.cfg");
     //Empty keyboard configuration
     m_pKbdConfigEmpty = new ConfigObject<ConfigValueKbd>("");
-    if (QFile::exists(userKeyboard)) {
+    if (QFile::exists(userKeyboard))
+    {
         qDebug() << "Found and will use custom keyboard preset" << userKeyboard;
         m_pKbdConfig = new ConfigObject<ConfigValueKbd>(userKeyboard);
-    } else {
+    }else
+    {
         // Default to the locale for the main input method (e.g. keyboard).
-        auto locale = QGuiApplication::inputMethod();
-        if ( !locale ) locale = QLocale(QLocale::English);
+        auto locale = QLocale{};
+        if ( auto inputMethod = QGuiApplication::inputMethod() ) locale = inputMethod->locale();
+        else                                                     locale = QLocale(QLocale::English);
         // check if a default keyboard exists
         auto defaultKeyboard = QString(resourcePath).append("keyboard/");
         defaultKeyboard += locale.name();
         defaultKeyboard += ".kbd.cfg";
-        if (!QFile::exists(defaultKeyboard)) {
+        if (!QFile::exists(defaultKeyboard))
+        {
             qDebug() << defaultKeyboard << " not found, using en_US.kbd.cfg";
             defaultKeyboard = QString(resourcePath).append("keyboard/").append("en_US.kbd.cfg");
-            if (!QFile::exists(defaultKeyboard)) {
+            if (!QFile::exists(defaultKeyboard))
+            {
                 qDebug() << defaultKeyboard << " not found, starting without shortcuts";
                 defaultKeyboard = "";
             }

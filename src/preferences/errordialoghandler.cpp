@@ -20,7 +20,7 @@
 #include <QScopedPointer>
 #include <QThread>
 #include <QtDebug>
-
+#include <QMessageBox>
 #include "preferences/errordialoghandler.h"
 #include "util/assert.h"
 

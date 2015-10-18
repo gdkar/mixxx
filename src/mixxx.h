@@ -44,7 +44,7 @@ class ControlPushButton;
 class DlgDeveloperTools;
 class Upgrade;
 class LaunchImage;
-
+class QSignalMapper;
 #include "configobject.h"
 #include "trackinfoobject.h"
 #include "util/cmdlineargs.h"

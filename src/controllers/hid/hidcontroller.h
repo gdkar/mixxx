@@ -19,6 +19,7 @@ class HidReader : public QThread {
   public:
     HidReader(hid_device* device);
     virtual ~HidReader();
+    virtual void stop();
   signals:
     void incomingData(QByteArray data);
   protected:
@@ -71,5 +72,5 @@ class HidController : public Controller {
     QString m_sUID;
     hid_device* m_pHidDevice = nullptr;
     HidReader* m_pReader = nullptr;
-    HidControllerPreset m_preset = nullptr;
+    HidControllerPreset m_preset ;
 };

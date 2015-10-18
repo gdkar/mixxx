@@ -12,7 +12,7 @@ class SongDownloader : public QObject {
   public:
     SongDownloader(QObject* parent);
     virtual ~SongDownloader();
-    bool downloadSongFromURL(QUrl& url);
+    bool downloadSongFromURL(QUrl url);
   public slots:
     void slotReadyRead();
     void slotError(QNetworkReply::NetworkError error);

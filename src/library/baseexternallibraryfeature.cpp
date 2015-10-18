@@ -1,7 +1,7 @@
 #include "library/baseexternallibraryfeature.h"
 
 #include <QMenu>
-
+#include <QMessageBox>
 #include "library/basesqltablemodel.h"
 
 BaseExternalLibraryFeature::BaseExternalLibraryFeature(QObject* pParent,

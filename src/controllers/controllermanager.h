@@ -63,9 +63,7 @@ class ControllerManager : public QObject {
     void startPolling();
     void stopPolling();
     void maybeStartOrStopPolling();
-    static QString presetFilenameFromName(QString name) {
-        return name.replace(" ", "_").replace("/", "_").replace("\\", "_");
-    }
+    static QString presetFilenameFromName(QString name);
   private:
     ConfigObject<ConfigValue> *m_pConfig;
     ControllerLearningEventFilter* m_pControllerLearningEventFilter;

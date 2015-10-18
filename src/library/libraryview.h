@@ -7,7 +7,8 @@
 _Pragma("once")
 #include <QString>
 
-class LibraryView {
+class LibraryView
+{
   public:
     virtual ~LibraryView() = default;
     virtual void onShow() = 0;

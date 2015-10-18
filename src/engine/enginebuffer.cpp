@@ -86,7 +86,6 @@ EngineBuffer::EngineBuffer(QString group, ConfigObject<ConfigValue>* _config,
     m_pSlipButton = new ControlPushButton(ConfigKey(m_group, "slip_enabled"));
     m_pSlipButton->setButtonMode(ControlPushButton::TOGGLE);
     connect(m_pSlipButton, SIGNAL(valueChanged(double)),this, SLOT(slotControlSlip(double)),Qt::DirectConnection);
-    connect(m_pSlipButton, SIGNAL(valueChangedFromEngine(double)),this, SLOT(slotControlSlip(double)),Qt::DirectConnection);
     // BPM to display in the UI (updated more slowly than the actual bpm)
     m_visualBpm = new ControlObject(ConfigKey(m_group, "visual_bpm"));
     m_visualKey = new ControlObject(ConfigKey(m_group, "visual_key"));

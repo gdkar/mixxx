@@ -7,7 +7,7 @@
   */
 
 #include <wchar.h>
-#include <string.h>
+#include <cstring>
 
 #include "controllers/hid/hidcontroller.h"
 #include "controllers/defs_controllers.h"
@@ -31,7 +31,6 @@ void HidReader::stop()
 void HidReader::run()
 {
     m_stop = 0;
-    unsigned char *data = new unsigned char[255];
     auto data = QByteArray(256,'\0');
     while (!m_stop.load())
     {
@@ -42,13 +41,13 @@ void HidReader::run()
 
         // This relieves that at the cost of higher CPU usage since we only
         // block for a short while (500ms)
-        auto result = hid_read_timeout(m_pHidDevice, data.data(), 256, 500);
+        auto result = hid_read_timeout(m_pHidDevice, reinterpret_cast<unsigned char*>(data.data()), 256, 500);
         Trace timeout("HidReader timeout");
         if (result > 0)
         {
             Trace process("HidReader process packet");
             //qDebug() << "Read" << result << "bytes, pointer:" << data;
-            emit(incomingData(outData.left(result)));
+            emit(incomingData(data.left(result)));
         }
     }
 }

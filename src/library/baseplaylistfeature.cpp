@@ -3,6 +3,7 @@
 #include <QInputDialog>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QMessageBox>
 #include <QDesktopServices>
 
 #include "library/library.h"

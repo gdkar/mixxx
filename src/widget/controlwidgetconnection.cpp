@@ -16,7 +16,7 @@ ControlWidgetConnection::ControlWidgetConnection(WBaseWidget* pBaseWidget,Contro
     DEBUG_ASSERT_AND_HANDLE(!m_pControl.isNull()) m_pControl.reset(new ControlObjectSlave());
     m_pControl->connectValueChanged(this, SLOT(slotControlValueChanged(double)));
     connect(m_pControl.data(),&ControlObjectSlave::valueChanged,this,&ControlWidgetConnection::controlParameterChanged,
-        static_cast<Qt::DirectionOption>(Qt::DirectConnection|Qt::UniqueConnection));
+        static_cast<Qt::ConnectionType>(Qt::DirectConnection|Qt::UniqueConnection));
 }
 
 void ControlWidgetConnection::setInvert(bool i)

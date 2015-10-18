@@ -34,15 +34,15 @@
 #include "preferences/errordialoghandler.h"
 #include "util/cmdlineargs.h"
 #include "util/version.h"
+#ifdef __WINDOWS__
 #include "util/console.h"
-
+#endif
 #include <QFile>
 #include <QFileInfo>
 extern "C" {
   #include <libavcodec/avcodec.h>
   #include <libavformat/avformat.h>
 }
-
 #ifdef Q_OS_LINUX
 #include <X11/Xlib.h>
 #endif
@@ -57,13 +57,7 @@ QMutex mutexLogfile;
 /* Debug message handler which outputs to both a logfile and a
  * and prepends the thread the message came from too.
  */
-void MessageHandler(QtMsgType type,
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-                    const char* input) {
-#else
-                    const QMessageLogContext&, const QString& input) {
-#endif
-
+void MessageHandler(QtMsgType type,const QMessageLogContext&, const QString& input) {
     // It's possible to deadlock if any method in this function can
     // qDebug/qWarning/etc. Writing to a closed QFile, for example, produces a
     // qWarning which causes a deadlock. That's why every use of Logfile is
@@ -149,7 +143,9 @@ void MessageHandler(QtMsgType type,
 }
 int main(int argc, char * argv[])
 {
+#ifdef __WINDOWS__
     Console console;
+#endif
 #ifdef Q_OS_LINUX
     XInitThreads();
 #endif

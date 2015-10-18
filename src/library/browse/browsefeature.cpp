@@ -2,6 +2,7 @@
 // Created 9/8/2009 by RJ Ryan (rryan@mit.edu)
 
 #include <QStringList>
+#include <QMessageBox>
 #include <QTreeView>
 #include <QDirModel>
 #include <QStringList>

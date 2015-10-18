@@ -1,6 +1,7 @@
 #include "util/sandbox.h"
 
 #include <QtDebug>
+#include <QMessageBox>
 #include <QFileInfo>
 #include <QFileDialog>
 #include <QObject>

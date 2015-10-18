@@ -23,7 +23,6 @@ ProtocAction = SCons.Action.Action('$PROTOCCOM', '$PROTOCCOMSTR')
 def ProtocEmitter(target, source, env):
     dirOfCallingSConscript = Dir('.').srcnode()
     env.Prepend(PROTOCPROTOPATH = dirOfCallingSConscript.path)
-
     source_with_corrected_path = []
     for src in source:
         commonprefix = os.path.commonprefix([dirOfCallingSConscript.path, src.srcnode().path])
@@ -31,26 +30,18 @@ def ProtocEmitter(target, source, env):
             source_with_corrected_path.append( src.srcnode().path[len(commonprefix + os.sep):] )
         else:
             source_with_corrected_path.append( src.srcnode().path )
-
     source = source_with_corrected_path
-
     for src in source:
         modulename = os.path.splitext(src)[0]
-
         if env['PROTOCOUTDIR']:
             #base = os.path.join(env['PROTOCOUTDIR'] , modulename)
             base = os.path.join(modulename)
             target.extend( [ base + '.pb.cc', base + '.pb.h' ] )
-
         if env['PROTOCPYTHONOUTDIR']:
             base = os.path.join(env['PROTOCPYTHONOUTDIR'] , modulename)
             target.append( base + '_pb2.py' )
-
-    try:
-        target.append(env['PROTOCFDSOUT'])
-    except KeyError:
-        pass
-
+    try: target.append(env['PROTOCFDSOUT'])
+    except KeyError: pass
     #~ print "PROTOC SOURCE:", [str(s) for s in source]
     #~ print "PROTOC TARGET:", [str(s) for s in target]
 
@@ -62,12 +53,10 @@ ProtocBuilder = SCons.Builder.Builder(action = ProtocAction,
 
 def generate(env):
     """Add Builders and construction variables for protoc to an Environment."""
-    try:
-         bld = env['BUILDERS']['Protoc']
+    try: bld = env['BUILDERS']['Protoc']
     except KeyError:
         bld = ProtocBuilder
         env['BUILDERS']['Protoc'] = bld
- 
     env['PROTOC']        = env.Detect(protocs) or 'protoc'
     env['PROTOCFLAGS']   = SCons.Util.CLVar('')
     env['PROTOCPROTOPATH'] = SCons.Util.CLVar('')
@@ -75,6 +64,4 @@ def generate(env):
     env['PROTOCOUTDIR'] = '${SOURCE.dir}'
     env['PROTOCPYTHONOUTDIR'] = "python"
     env['PROTOCSRCSUFFIX']  = '.proto'
-
-def exists(env):
-    return env.Detect(protocs)
+def exists(env): return env.Detect(protocs)

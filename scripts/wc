@@ -19,10 +19,8 @@ count = 0
 for _file in files:
     try:
         with _file.open(mode='r',encoding='ascii') as f: num = len(f.readlines())
-        if verbose:
-            print("{}: {}".format(_file.as_posix(),num))
+        if verbose: print("{}: {}".format(_file.as_posix(),num))
         count += num
     except Exception as e:
-        if verbose:
-            print("{}: ERROR {}".format(_file.as_posix(),e))
+        if verbose: print("{}: ERROR {}".format(_file.as_posix(),e))
 print("Total: {}".format(count))

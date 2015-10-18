@@ -20,6 +20,7 @@
 #include <QToolTip>
 #include <QDoubleSpinBox>
 #include <QWidget>
+#include <QMessageBox>
 #include <QLocale>
 #include <QDesktopWidget>
 

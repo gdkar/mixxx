@@ -1,6 +1,6 @@
 #include <QtSql>
 #include <QtDebug>
-
+#include <QMessageBox>
 #include "library/trackcollection.h"
 #include "library/librarytablemodel.h"
 #include "library/schemamanager.h"

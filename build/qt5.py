@@ -944,14 +944,11 @@ def enable_modules(self, modules, debug=False, crosscompiling=False) :
         self.AppendUnique(LIBS=['qtmain'+debugSuffix])
         self.AppendUnique(LIBS=[lib.replace("Qt","Qt5")+debugSuffix for lib in modules if lib not in staticModules])
         self.PrependUnique(LIBS=[lib+debugSuffix for lib in modules if lib in staticModules])
-        if 'QtOpenGL' in modules:
-            self.AppendUnique(LIBS=['opengl32'])
+        if 'QtOpenGL' in modules: self.AppendUnique(LIBS=['opengl32'])
         self.AppendUnique(CPPPATH=[ '$QT5DIR/include/'])
         self.AppendUnique(CPPPATH=[ '$QT5DIR/include/'+module for module in modules])
         if crosscompiling :
-            self["QT5_MOCCPPPATH"] = [
-                path.replace('$QT5DIR', transformedQtdir)
-                    for path in self['CPPPATH'] ]
+            self["QT5_MOCCPPPATH"] = [path.replace('$QT5DIR', transformedQtdir) for path in self['CPPPATH'] ]
         else :
             self["QT5_MOCCPPPATH"] = self["CPPPATH"]
         self.AppendUnique(LIBPATH=[os.path.join('$QT5DIR','lib')])
@@ -987,6 +984,4 @@ def enable_modules(self, modules, debug=False, crosscompiling=False) :
 #    env.AppendUnique(FRAMEWORKPATH=[os.path.join(env['QT5DIR'],'lib')])
 #    env.AppendUnique(FRAMEWORKS=['QtCore','QtGui','QtOpenGL', 'AGL'])
     """
-        
-def exists(env):
-    return _detect(env)
+def exists(env): return _detect(env)

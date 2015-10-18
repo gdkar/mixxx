@@ -12,11 +12,10 @@ LibraryTableModel::LibraryTableModel(QObject* parent,
         : BaseSqlTableModel(parent, pTrackCollection, settingsNamespace) {
     setTableModel();
 }
+LibraryTableModel::~LibraryTableModel() = default;
 
-LibraryTableModel::~LibraryTableModel() {
-}
-
-void LibraryTableModel::setTableModel(int id) {
+void LibraryTableModel::setTableModel(int id)
+{
     Q_UNUSED(id);
     QStringList columns;
     columns << "library." + LIBRARYTABLE_ID
@@ -25,8 +24,7 @@ void LibraryTableModel::setTableModel(int id) {
             // the same value as the cover hash.
             << LIBRARYTABLE_COVERART_HASH + " AS " + LIBRARYTABLE_COVERART;
 
-    const QString tableName = "library_view";
-
+    auto tableName = QString{"library_view"};
     QSqlQuery query(m_pTrackCollection->getDatabase());
     QString queryString = "CREATE TEMPORARY VIEW IF NOT EXISTS " + tableName + " AS "
             "SELECT " + columns.join(", ") +
@@ -34,34 +32,25 @@ void LibraryTableModel::setTableModel(int id) {
             "ON library.location = track_locations.id "
             "WHERE (" + LibraryTableModel::DEFAULT_LIBRARYFILTER + ")";
     query.prepare(queryString);
-    if (!query.exec()) {
-        LOG_FAILED_QUERY(query);
-    }
-
+    if (!query.exec()) LOG_FAILED_QUERY(query);
     QStringList tableColumns;
     tableColumns << LIBRARYTABLE_ID;
     tableColumns << LIBRARYTABLE_PREVIEW;
     tableColumns << LIBRARYTABLE_COVERART;
-    setTable(tableName, LIBRARYTABLE_ID, tableColumns,
-             m_pTrackCollection->getTrackSource());
+    setTable(tableName, LIBRARYTABLE_ID, tableColumns,m_pTrackCollection->getTrackSource());
     setSearch("");
     setDefaultSort(fieldIndex("artist"), Qt::AscendingOrder);
 }
-
-
-int LibraryTableModel::addTracks(const QModelIndex& index,
-                                 const QList<QString>& locations) {
+int LibraryTableModel::addTracks(const QModelIndex& index,const QList<QString>& locations) {
     Q_UNUSED(index);
     QList<QFileInfo> fileInfoList;
-    foreach (QString fileLocation, locations) {
-        fileInfoList.append(QFileInfo(fileLocation));
-    }
-    QList<TrackId> trackIds = m_trackDAO.addTracks(fileInfoList, true);
+    for(auto fileLocation: locations) fileInfoList.append(QFileInfo(fileLocation));
+    auto trackIds = m_trackDAO.addTracks(fileInfoList, true);
     select();
     return trackIds.size();
 }
-
-bool LibraryTableModel::isColumnInternal(int column) {
+bool LibraryTableModel::isColumnInternal(int column)
+{
     if ((column == fieldIndex(ColumnCache::COLUMN_LIBRARYTABLE_ID)) ||
             (column == fieldIndex(ColumnCache::COLUMN_LIBRARYTABLE_URL)) ||
             (column == fieldIndex(ColumnCache::COLUMN_LIBRARYTABLE_CUEPOINT)) ||

@@ -4,6 +4,7 @@
 #include <QUrl>
 #include <QDrag>
 #include <QShortcut>
+#include <QMessageBox>
 
 #include "widget/wwidget.h"
 #include "widget/wskincolor.h"

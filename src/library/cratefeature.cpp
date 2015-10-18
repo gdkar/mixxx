@@ -4,6 +4,7 @@
 #include <QFileDialog>
 #include <QInputDialog>
 #include <QLineEdit>
+#include <QMessageBox>
 #include <QMenu>
 #include <QDesktopServices>
 

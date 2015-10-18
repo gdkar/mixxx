@@ -20,7 +20,8 @@ Console::Console() {
     // LOCALE_IDEFAULTANSICODEPAGE "1252" // ANSI Codepage used by Qt toLocal8Bit
     // LOCALE_IDEFAULTCODEPAGE "850" // OEM Codepage Console
     m_shouldResetCodePage = false;
-    if(AttachConsole(ATTACH_PARENT_PROCESS)) {
+    if(AttachConsole(ATTACH_PARENT_PROCESS))
+    {
         // we are started from a console porcess
         auto fd = _open_osfhandle((long) GetStdHandle(STD_OUTPUT_HANDLE), 0);
         auto fp = _fdopen(fd, "w");
@@ -66,11 +67,6 @@ Console::~Console() {
     // Reset Windows console to old code page
     // We need to stick with the unicode font since
     // changing back will destroy the console history
-    if (m_shouldResetCodePage) {SetConsoleOutputCP(m_oldCodePage);}
+    if (m_shouldResetCodePage) SetConsoleOutputCP(m_oldCodePage);
 }
-#else // __WINDOWS__
-// Nothing to do on non Windows targets
-Console::Console() = default;
-Console::~Console() = default;
-
-#endif // __WINDOWS__
+#endif// __WINDOWS__

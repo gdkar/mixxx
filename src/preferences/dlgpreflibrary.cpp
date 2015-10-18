@@ -19,6 +19,7 @@
 #include <QDir>
 #include <QFileDialog>
 #include <QStringList>
+#include <QMessageBox>
 #include <QUrl>
 #include <QApplication>
 #include <QFontDialog>

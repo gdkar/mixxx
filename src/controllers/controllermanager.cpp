@@ -29,19 +29,14 @@
 // http://developer.qt.nokia.com/wiki/Threads_Events_QObjects
 
 // Poll every 1ms (where possible) for good controller response
-#ifdef __LINUX__
-// Many Linux distros ship with the system tick set to 250Hz so 1ms timer
-// reportedly causes CPU hosage. See Bug #990992 rryan 6/2012
-const int kPollIntervalMillis = 5;
-#else
 const int kPollIntervalMillis = 1;
-#endif
 
-QString firstAvailableFilename(QSet<QString>& filenames,
-                               const QString originalFilename) {
-    QString filename = originalFilename;
-    int i = 1;
-    while (filenames.contains(filename)) {
+QString firstAvailableFilename(QSet<QString>& filenames,const QString originalFilename)
+{
+    auto filename = originalFilename;
+    auto i = 1;
+    while (filenames.contains(filename))
+    {
         i++;
         filename = QString("%1--%2").arg(originalFilename, QString::number(i));
     }
@@ -49,10 +44,10 @@ QString firstAvailableFilename(QSet<QString>& filenames,
     return filename;
 }
 
-bool controllerCompare(Controller *a,Controller *b) {
+bool controllerCompare(Controller *a,Controller *b)
+{
     return a->getName() < b->getName();
 }
-
 ControllerManager::ControllerManager(ConfigObject<ConfigValue>* pConfig)
         : QObject(),
           m_pConfig(pConfig),
@@ -60,20 +55,20 @@ ControllerManager::ControllerManager(ConfigObject<ConfigValue>* pConfig)
           // ControllerManager because the CM is moved to its own thread and runs
           // its own event loop.
           m_pControllerLearningEventFilter(new ControllerLearningEventFilter()),
-          m_pollTimer(this) {
+          m_pollTimer(this)
+{
     qRegisterMetaType<ControllerPresetPointer>("ControllerPresetPointer");
 
     // Create controller mapping paths in the user's home directory.
-    QString userPresets = userPresetsPath(m_pConfig);
-    if (!QDir(userPresets).exists()) {
+    auto userPresets = userPresetsPath(m_pConfig);
+    if (!QDir(userPresets).exists())
+    {
         qDebug() << "Creating user controller presets directory:" << userPresets;
         QDir().mkpath(userPresets);
     }
-
     // Initialize preset info parsers. This object is only for use in the main
     // thread. Do not touch it from within ControllerManager.
     m_pMainThreadPresetEnumerator = new PresetInfoEnumerator(m_pConfig);
-
     // Instantiate all enumerators
     m_enumerators.append(new PortMidiEnumerator());
 #ifdef __HSS1394__
@@ -87,25 +82,17 @@ ControllerManager::ControllerManager(ConfigObject<ConfigValue>* pConfig)
 #endif
 
     m_pollTimer.setInterval(kPollIntervalMillis);
-    connect(&m_pollTimer, SIGNAL(timeout()),
-            this, SLOT(pollDevices()));
-
+    connect(&m_pollTimer, SIGNAL(timeout()),this, SLOT(pollDevices()));
     m_pThread = new QThread;
     m_pThread->setObjectName("Controller");
-
     // Moves all children (including the poll timer) to m_pThread
     moveToThread(m_pThread);
-
     // Controller processing needs to be prioritized since it can affect the
     // audio directly, like when scratching
     m_pThread->start(QThread::HighPriority);
-
-    connect(this, SIGNAL(requestSetUpDevices()),
-            this, SLOT(slotSetUpDevices()));
-    connect(this, SIGNAL(requestShutdown()),
-            this, SLOT(slotShutdown()));
-    connect(this, SIGNAL(requestSave(bool)),
-            this, SLOT(slotSavePresets(bool)));
+    connect(this, SIGNAL(requestSetUpDevices()),this, SLOT(slotSetUpDevices()));
+    connect(this, SIGNAL(requestShutdown()),this, SLOT(slotShutdown()));
+    connect(this, SIGNAL(requestSave(bool)),this, SLOT(slotSavePresets(bool)));
 }
 
 ControllerManager::~ControllerManager() {
@@ -481,3 +468,8 @@ bool ControllerManager::importScript(const QString& scriptPath,
     *newScriptFileName = scriptFileName;
     return true;
 }
+QString ControllerManager::presetFilenameFromName(QString name)
+{
+        return name.replace(" ", "_").replace("/", "_").replace("\\", "_");
+    }
+

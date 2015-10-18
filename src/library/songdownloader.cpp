@@ -17,38 +17,36 @@ SongDownloader::SongDownloader(QObject* parent)
     qDebug() << "SongDownloader constructed";
 
     m_pNetwork = new QNetworkAccessManager();
-    //connect(m_pNetwork, SIGNAL(finished(QNetworkReply*)),
-    //     this, SLOT(finishedSlot(QNetworkReply*)));
 }
 
-SongDownloader::~SongDownloader() {
+SongDownloader::~SongDownloader()
+{
     delete m_pNetwork;
-
     delete m_pDownloadedFile;
     m_pDownloadedFile = nullptr;
     delete m_pRequest;
     m_pRequest = nullptr;
 }
-bool SongDownloader::downloadSongFromURL(QUrl& url) {
+bool SongDownloader::downloadSongFromURL(QUrl url)
+{
     qDebug() << "SongDownloader::downloadSongFromURL()";
     m_downloadQueue.enqueue(url);
     downloadFromQueue();
     return true;
 }
-bool SongDownloader::downloadFromQueue() {
+bool SongDownloader::downloadFromQueue()
+{
     auto  downloadUrl = m_downloadQueue.dequeue();
     //Extract the filename from the URL path
     auto filename = downloadUrl.path();
-    QFileInfo fileInfo(filename);
+    auto fileInfo = QFileInfo(filename);
     filename = fileInfo.fileName();
-
     m_pDownloadedFile = new QFile(filename + TEMP_EXTENSION);
-    if (!m_pDownloadedFile->open(QIODevice::WriteOnly)) {
-        //TODO: Error
+    if (!m_pDownloadedFile->open(QIODevice::WriteOnly))
+    {
         qDebug() << "Failed to open" << m_pDownloadedFile->fileName();
         return false;
     }
-
     qDebug() << "SongDownloader: setting up download stuff";
     m_pRequest = new QNetworkRequest(downloadUrl);
     //Set up user agent for great justice
@@ -63,35 +61,35 @@ bool SongDownloader::downloadFromQueue() {
     connect(m_pReply, SIGNAL(finished()),this, SLOT(slotDownloadFinished()));
     return true;
 }
-void SongDownloader::slotReadyRead() {
-    //Magic. Isn't this how C++ is supposed to work?
-    //m_pDownloadedFile << m_pReply;
-    //Update: :(
-
+void SongDownloader::slotReadyRead()
+{
     //QByteArray buffer;
-    while (m_pReply->bytesAvailable() > 0) {
+    while (m_pReply->bytesAvailable() > 0)
+    {
         qDebug() << "downloading...";
         m_pDownloadedFile->write(m_pReply->read(512));
     }
 }
-void SongDownloader::slotError(QNetworkReply::NetworkError error) {
-    Q_UNUSED(error);
+void SongDownloader::slotError(QNetworkReply::NetworkError /*error*/)
+{
     qDebug() << "SongDownloader: Network error while trying to download a plugin.";
     //Delete partial file
     m_pDownloadedFile->remove();
     emit(downloadError());
 }
-void SongDownloader::slotProgress(qint64 bytesReceived, qint64 bytesTotal) {
+void SongDownloader::slotProgress(qint64 bytesReceived, qint64 bytesTotal)
+{
     qDebug() << bytesReceived << "/" << bytesTotal;
     emit(downloadProgress(bytesReceived, bytesTotal));
 }
-void SongDownloader::slotDownloadFinished() {
+void SongDownloader::slotDownloadFinished()
+{
     qDebug() << "SongDownloader: Download finished!";
     //Finish up with the reply and close the file handle
     m_pReply->deleteLater();
     m_pDownloadedFile->close();
     //Chop off the .tmp from the filename
-    QFileInfo info(*m_pDownloadedFile);
+    auto info = QFileInfo(*m_pDownloadedFile);
     auto filenameWithoutTmp = info.absoluteFilePath();
     filenameWithoutTmp.chop(QString(TEMP_EXTENSION).length());
     m_pDownloadedFile->rename(filenameWithoutTmp);

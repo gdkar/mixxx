@@ -95,8 +95,8 @@ Paintable::Paintable(const PixmapSource& source, DrawMode mode)
             QPainter painter(&copy_buffer);
             pSvgRenderer->render(&painter);
             m_pPixmap->convertFromImage(copy_buffer);
-        } else
-          m_pSvg.reset(pSvgRenderer.release());
+        }
+        else m_pSvg.reset(pSvgRenderer.release());
     }
     else
     {
@@ -123,7 +123,7 @@ int Paintable::width() const
     if (!m_pPixmap.isNull()) return m_pPixmap->width();
     else if (!m_pSvg.isNull())
     {
-        QSize size = m_pSvg->defaultSize();
+        auto size = m_pSvg->defaultSize();
         return size.width();
     }
     return 0;
@@ -133,7 +133,7 @@ int Paintable::height() const
     if (!m_pPixmap.isNull())return m_pPixmap->height();
     else if (!m_pSvg.isNull())
     {
-        QSize size = m_pSvg->defaultSize();
+        auto size = m_pSvg->defaultSize();
         return size.height();
     }
     return 0;
@@ -257,7 +257,8 @@ void Paintable::drawInternal(const QRectF& targetRect, QPainter* pPainter,const 
     }
 }
 // static
-PaintablePointer WPixmapStore::getPaintable(PixmapSource source,Paintable::DrawMode mode) {
+PaintablePointer WPixmapStore::getPaintable(PixmapSource source,Paintable::DrawMode mode)
+{
     // See if we have a cached value for the pixmap.
     auto pPaintable = m_paintableCache.value(source.getId(), PaintablePointer()).toStrongRef();
     if (pPaintable) return pPaintable;
@@ -268,7 +269,8 @@ PaintablePointer WPixmapStore::getPaintable(PixmapSource source,Paintable::DrawM
     {
         auto pImage = m_loader->getImage(source.getPath());
         pPaintable = PaintablePointer(new Paintable(pImage, mode));
-    } else pPaintable = PaintablePointer(new Paintable(source, mode));
+    }
+    else pPaintable = PaintablePointer(new Paintable(source, mode));
     if (pPaintable.isNull() || pPaintable->isNull())
     {
         // Only log if it looks like the user tried to specify a

@@ -7,5 +7,6 @@ class RLimit {
     static unsigned int getMaxRtPrio();
     static bool isRtPrioAllowed();
   private:
-    RLimit::RLimit() = delete;
+    RLimit() = delete;
 };
+#endif

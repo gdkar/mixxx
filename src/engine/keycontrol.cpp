@@ -77,32 +77,17 @@ KeyControl::KeyControl(QString group,
     connect(m_pRateSlider, SIGNAL(valueChanged(double)),
             this, SLOT(slotRateChanged()),
             Qt::DirectConnection);
-    connect(m_pRateSlider, SIGNAL(valueChangedFromEngine(double)),
-            this, SLOT(slotRateChanged()),
-            Qt::DirectConnection);
-
     m_pRateRange = ControlObject::getControl(ConfigKey(group, "rateRange"));
     connect(m_pRateRange, SIGNAL(valueChanged(double)),
             this, SLOT(slotRateChanged()),
             Qt::DirectConnection);
-    connect(m_pRateRange, SIGNAL(valueChangedFromEngine(double)),
-            this, SLOT(slotRateChanged()),
-            Qt::DirectConnection);
-
     m_pRateDir = ControlObject::getControl(ConfigKey(group, "rate_dir"));
     connect(m_pRateDir, SIGNAL(valueChanged(double)),
             this, SLOT(slotRateChanged()),
             Qt::DirectConnection);
-    connect(m_pRateDir, SIGNAL(valueChangedFromEngine(double)),
-            this, SLOT(slotRateChanged()),
-            Qt::DirectConnection);
-
     m_pVCEnabled = ControlObject::getControl(ConfigKey(group, "vinylcontrol_enabled"));
     if (m_pVCEnabled) {
         connect(m_pVCEnabled, SIGNAL(valueChanged(double)),
-                this, SLOT(slotRateChanged()),
-                Qt::DirectConnection);
-        connect(m_pVCEnabled, SIGNAL(valueChangedFromEngine(double)),
                 this, SLOT(slotRateChanged()),
                 Qt::DirectConnection);
     }
@@ -112,16 +97,10 @@ KeyControl::KeyControl(QString group,
         connect(m_pVCRate, SIGNAL(valueChanged(double)),
                 this, SLOT(slotRateChanged()),
                 Qt::DirectConnection);
-        connect(m_pVCRate, SIGNAL(valueChangedFromEngine(double)),
-                this, SLOT(slotRateChanged()),
-                Qt::DirectConnection);
     }
 
     m_pKeylock = ControlObject::getControl(ConfigKey(group, "keylock"));
     connect(m_pKeylock, SIGNAL(valueChanged(double)),
-            this, SLOT(slotRateChanged()),
-            Qt::DirectConnection);
-    connect(m_pKeylock, SIGNAL(valueChangedFromEngine(double)),
             this, SLOT(slotRateChanged()),
             Qt::DirectConnection);
 }

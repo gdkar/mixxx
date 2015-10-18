@@ -40,34 +40,36 @@ class ControllerEngineConnectionScriptValue : public QObject {
     // There's little use in exposing the function...
     //Q_PROPERTY(QScriptValue function READ function)
   public:
-    ControllerEngineConnectionScriptValue(ControllerEngineConnection conn) {
-        this->conn = conn;
+    ControllerEngineConnectionScriptValue(ControllerEngineConnection _conn)
+    : conn(_conn)
+    {}
+    QString readId() const
+    { 
+      return conn.id; 
     }
-    QString readId() const { return this->conn.id; }
     Q_INVOKABLE void disconnect();
-
   private:
    ControllerEngineConnection conn;
 };
 
 /* comparison function for ControllerEngineConnection */
-inline bool operator==(const ControllerEngineConnection &c1, const ControllerEngineConnection &c2) {
+inline bool operator==(const ControllerEngineConnection &c1, const ControllerEngineConnection &c2)
+{
     return c1.id == c2.id && c1.key.group == c2.key.group && c1.key.item == c2.key.item;
 }
-
-class ControllerEngine : public QObject {
+class ControllerEngine : public QObject
+{
     Q_OBJECT
   public:
     ControllerEngine(Controller* controller);
     virtual ~ControllerEngine();
-
     bool isReady();
     // Check whether a source file that was evaluated()'d has errors.
     bool hasErrors(QString filename);
     // Get the errors for a source file that was evaluated()'d
     const QStringList getErrors(QString filename);
-
-    void setDebug(bool bDebug) {
+    void setDebug(bool bDebug)
+    {
         m_bDebug = bDebug;
     }
 

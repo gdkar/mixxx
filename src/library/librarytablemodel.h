@@ -1,11 +1,9 @@
 _Pragma("once")
 #include "library/basesqltablemodel.h"
-
 class LibraryTableModel : public BaseSqlTableModel {
     Q_OBJECT
   public:
-    LibraryTableModel(QObject* parent, TrackCollection* pTrackCollection,
-                      const char* settingsNamespace);
+    LibraryTableModel(QObject* parent, TrackCollection* pTrackCollection,const char* settingsNamespace);
     virtual ~LibraryTableModel();
     void setTableModel(int id =-1);
     bool isColumnInternal(int column);
