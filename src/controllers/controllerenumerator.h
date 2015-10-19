@@ -8,9 +8,7 @@
 *   must be inherited by a class that implements it on some API.
 */
 
-#ifndef CONTROLLERENUMERATOR_H
-#define CONTROLLERENUMERATOR_H
-
+_Pragma("once")
 #include "controllers/controller.h"
 
 class ControllerEnumerator : public QObject {
@@ -20,14 +18,8 @@ class ControllerEnumerator : public QObject {
     // In this function, the inheriting class must delete the Controllers it
     // creates
     virtual ~ControllerEnumerator();
-
     virtual QList<Controller*> queryDevices() = 0;
-
     // Sub-classes return true here if their devices must be polled to get data
     // from the controler.
-    virtual bool needPolling() {
-        return false;
-    }
+    virtual bool needPolling();
 };
-
-#endif

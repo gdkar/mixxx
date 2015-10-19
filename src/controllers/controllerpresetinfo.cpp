@@ -15,12 +15,11 @@
 #include "controllers/defs_controllers.h"
 #include "util/xml.h"
 
-PresetInfo::PresetInfo()
-        : m_valid(false) {
-}
+PresetInfo::PresetInfo() = default;
+PresetInfo::~PresetInfo() = default;
 
 PresetInfo::PresetInfo(const QString preset_path)
-        : m_valid(false) {
+{
     // Parse <info> header section from a controller description XML file
     // Contents parsed by xml path:
     // info.name        Preset name, used for drop down menus in dialogs
@@ -35,61 +34,48 @@ PresetInfo::PresetInfo(const QString preset_path)
     m_description = "";
     m_forumlink = "";
     m_wikilink = "";
-
-    QDomElement root = XmlParse::openXMLFile(m_path, "controller");
-    if (root.isNull()) {
+    auto root = XmlParse::openXMLFile(m_path, "controller");
+    if (root.isNull())
+    {
         qDebug() << "ERROR parsing" << m_path;
         return;
     }
-    QDomElement info = root.firstChildElement("info");
-    if (info.isNull()) {
+    auto info = root.firstChildElement("info");
+    if (info.isNull())
+    {
         qDebug() << "MISSING <info> ELEMENT: " << m_path;
         return;
     }
-
     m_valid = true;
-
-    QDomElement dom_name = info.firstChildElement("name");
+    auto dom_name = info.firstChildElement("name");
     if (!dom_name.isNull()) m_name = dom_name.text();
-
-    QDomElement dom_author = info.firstChildElement("author");
+    auto dom_author = info.firstChildElement("author");
     if (!dom_author.isNull()) m_author = dom_author.text();
-
-    QDomElement dom_description = info.firstChildElement("description");
+    auto dom_description = info.firstChildElement("description");
     if (!dom_description.isNull()) m_description = dom_description.text();
-
-    QDomElement dom_forums = info.firstChildElement("forums");
+    auto dom_forums = info.firstChildElement("forums");
     if (!dom_forums.isNull()) m_forumlink = dom_forums.text();
-
-    QDomElement dom_wiki = info.firstChildElement("wiki");
+    auto dom_wiki = info.firstChildElement("wiki");
     if (!dom_wiki.isNull()) m_wikilink = dom_wiki.text();
-
-    QDomElement devices = info.firstChildElement("devices");
-    if (!devices.isNull()) {
-        QDomElement product = devices.firstChildElement("product");
-        while (!product.isNull()) {
-            QString protocol = product.attribute("protocol","");
-            if (protocol=="hid") {
-                m_products.append(parseHIDProduct(product));
-            } else if (protocol=="bulk") {
-                m_products.append(parseBulkProduct(product));
-            } else if (protocol=="midi") {
-                qDebug("MIDI product info parsing not yet implemented");
-                //m_products.append(parseMIDIProduct(product);
-            } else if (protocol=="osc") {
-                qDebug("OSC product info parsing not yet implemented");
-                //m_products.append(parseOSCProduct(product);
-            } else {
-                qDebug("Product specification missing protocol attribute");
-            }
+    auto devices = info.firstChildElement("devices");
+    if (!devices.isNull())
+    {
+        auto product = devices.firstChildElement("product");
+        while (!product.isNull())
+        {
+            auto protocol = product.attribute("protocol","");
+            if (protocol=="hid") m_products.append(parseHIDProduct(product));
+            else if (protocol=="bulk") m_products.append(parseBulkProduct(product));
+            else if (protocol=="midi") qDebug("MIDI product info parsing not yet implemented");
+            else if (protocol=="osc")  qDebug("OSC product info parsing not yet implemented");
+            else qDebug("Product specification missing protocol attribute");
             product = product.nextSiblingElement("product");
         }
     }
 }
-
-QHash<QString,QString> PresetInfo::parseBulkProduct(const QDomElement& element) const {
+QHash<QString,QString> PresetInfo::parseBulkProduct(const QDomElement& element) const
+{
     // <product protocol="bulk" vendor_id="0x06f8" product_id="0x0b105" in_epaddr="0x82" out_epaddr="0x03">
-
     QHash<QString, QString> product;
     product.insert("protocol", element.attribute("protocol",""));
     product.insert("vendor_id", element.attribute("vendor_id",""));
@@ -98,8 +84,8 @@ QHash<QString,QString> PresetInfo::parseBulkProduct(const QDomElement& element) 
     product.insert("out_epaddr", element.attribute("out_epaddr",""));
     return product;
 }
-
-QHash<QString,QString> PresetInfo::parseHIDProduct(const QDomElement& element) const {
+QHash<QString,QString> PresetInfo::parseHIDProduct(const QDomElement& element) const
+{
     // HID device <product> element parsing. Example of valid element:
     //   <product protocol="hid" vendor_id="0x1" product_id="0x2" usage_page="0x3" usage="0x4" interface_number="0x3" />
     // All numbers must be hex prefixed with 0x
@@ -116,16 +102,16 @@ QHash<QString,QString> PresetInfo::parseHIDProduct(const QDomElement& element) c
     product.insert("interface_number", element.attribute("interface_number",""));
     return product;
 }
-
-QHash<QString,QString> PresetInfo::parseMIDIProduct(const QDomElement& element) const {
+QHash<QString,QString> PresetInfo::parseMIDIProduct(const QDomElement& element) const
+{
     // TODO - implement parsing of MIDI attributes
     // When done, remember to fix switch() above to call this
     QHash<QString,QString> product;
     product.insert("procotol",element.attribute("protocol",""));
     return product;
 }
-
-QHash<QString,QString> PresetInfo::parseOSCProduct(const QDomElement& element) const {
+QHash<QString,QString> PresetInfo::parseOSCProduct(const QDomElement& element) const
+{
     // TODO - implement parsing of OSC product attributes
     // When done, remember to fix switch() above to call this
     QHash<QString,QString> product;

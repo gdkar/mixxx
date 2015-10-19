@@ -30,7 +30,7 @@ class HSS1394(Feature):
         return ['controllers/midi/hss1394controller.cpp',
                 'controllers/midi/hss1394enumerator.cpp']
 class HID(Feature):
-    HIDAPI_INTERNAL_PATH = '#lib/hidapi-0.8.0-pre'
+    HIDAPI_INTERNAL_PATH = '#lib/hidapi'
     def description(self): return "HID controller support"
     def enabled(self, build):
         build.flags['hid'] = util.get_flags(build.env, 'hid', 1)
@@ -66,7 +66,7 @@ class HID(Feature):
             # setupapi.
             sources.append( os.path.join(self.HIDAPI_INTERNAL_PATH, "windows/hid.c"))
         elif build.platform_is_linux:
-            sources.append( os.path.join(self.HIDAPI_INTERNAL_PATH, 'linux/hid-libusb.c'))
+            sources.append( os.path.join(self.HIDAPI_INTERNAL_PATH, 'libusb/hid.c'))
         elif build.platform_is_osx:
             sources.append( os.path.join(self.HIDAPI_INTERNAL_PATH, 'mac/hid.c'))
         return sources

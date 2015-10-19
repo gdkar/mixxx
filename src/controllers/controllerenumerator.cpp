@@ -7,12 +7,13 @@
     email                : spappalardo@mixxx.org
 
 ***************************************************************************/
-
 #include "controllers/controllerenumerator.h"
-
 ControllerEnumerator::ControllerEnumerator()
-        : QObject() {
+        : QObject()
+{
 }
-
-ControllerEnumerator::~ControllerEnumerator() {
+ControllerEnumerator::~ControllerEnumerator() = default;
+bool ControllerEnumerator::needPolling()
+{
+  return false;
 }
