@@ -478,9 +478,6 @@ class MixxxCore(Feature):
                    "preferences/errordialoghandler.cpp",
                    "upgrade.cpp",
 
-#                   "sources/soundsourceproviderregistry.cpp",
-#                   "sources/soundsourceplugin.cpp",
-#                   "sources/soundsourcepluginlibrary.cpp",
                    "sources/soundsource.cpp",
 
                    "metadata/trackmetadata.cpp",
