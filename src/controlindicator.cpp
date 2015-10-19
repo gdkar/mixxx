@@ -2,68 +2,56 @@
 #include "controlobjectslave.h"
 #include "util/math.h"
 
+
+/* static */
+std::atomic<int> ControlIndicator::s_tick{0};
+QTimer           ControlIndicator::s_timer{};
+/* static */
+void ControlIndicator::initialize()
+{
+  s_timer.setTimerType(Qt::PreciseTimer);
+  s_timer.setInterval(250);
+  s_timer.start();
+  QObject::connect(&s_timer,&QTimer::timeout,[](){ ControlIndicator::s_tick++; });
+}
 ControlIndicator::ControlIndicator(ConfigKey key)
         : ControlObject(key, false),
-          m_blinkValue(OFF),
-          m_nextSwitchTime(0.0) {
-	// Tick time in audio buffer resolution
-    m_pCOTGuiTickTime = new ControlObjectSlave("Master", "guiTickTime", this);
-    m_pCOTGuiTick50ms = new ControlObjectSlave("Master", "guiTick50ms", this);
-    m_pCOTGuiTick50ms->connectValueChanged(SLOT(slotGuiTick50ms(double)));
-    connect(this, SIGNAL(blinkValueChanged()), this, SLOT(slotBlinkValueChanged()));
+          m_blinkValue(BlinkValue::Off)
+{
+    connect(this, &ControlIndicator::blinkValueChanged, this, &ControlIndicator::onTick);
+    connect(&s_timer,&QTimer::timeout,this,&ControlIndicator::onTick);
 }
 ControlIndicator::~ControlIndicator() = default;
-
-void ControlIndicator::setBlinkValue(enum BlinkValue bv) {
-    if (m_blinkValue != bv) {
-        m_blinkValue = bv; // must be set at first, to avoid timer toggle
-        emit(blinkValueChanged());
-    }
-}
-void ControlIndicator::slotGuiTick50ms(double cpuTime) {
-    if (m_nextSwitchTime <= cpuTime) {
-        switch (m_blinkValue) {
-        case RATIO1TO1_500MS:
-            toggle(0.5);
-            break;
-        case RATIO1TO1_250MS:
-            toggle(0.25);
-            break;
-        case OFF: // fall through
-        case ON: // fall through
-        default: break;
-        }
-    }
-}
-void ControlIndicator::slotBlinkValueChanged() {
-    auto oldValue = toBool();
-    switch (m_blinkValue) {
-    case OFF:
-        if (oldValue) set(0.0);
-        break;
-    case ON:
-        if (!oldValue)  set(1.0);
-        break;
-    case RATIO1TO1_500MS:
-        toggle(0.5);
-        break;
-    case RATIO1TO1_250MS:
-        toggle(0.25);
-        break;
-    default:
-        // nothing to do
-        break;
-    }
-}
-void ControlIndicator::toggle(double duration)
+void ControlIndicator::setBlinkValue(BlinkValue bv)
 {
-	auto tickTime = m_pCOTGuiTickTime->get();
-	auto toggles = floor(tickTime / duration);
-	auto phase = fmod(toggles, 2) >= 1;
-	auto val = toBool();
-		// Out of phase, wait until we are in phase
-	if(val != phase) m_nextSwitchTime = (toggles + 2) * duration;
-	else  m_nextSwitchTime = (toggles + 1) * duration;
-	set(val ? 0.0 : 1.0);
+    if (m_blinkValue.exchange(bv) != bv) emit(blinkValueChanged());
 }
-
+void ControlIndicator::onTick()
+{
+    auto ticks = s_tick.load();
+    switch ( m_blinkValue.load() )
+    {
+      case BlinkValue::Off:
+        set(0.0);
+        break;
+      case BlinkValue::On:
+        set(1.0);
+        break;
+      case BlinkValue::Fast:
+        set( (ticks & 1) ? 1.0 : 0.0);
+        break;
+      case BlinkValue::Slow:
+        set( (ticks & 2) ? 1.0 : 0.0);
+        break;
+      default:
+        break;
+    }
+}
+void ControlIndicator::set(double v)
+{
+  ControlObject::set(v);
+}
+ControlIndicator::BlinkValue ControlIndicator::blinkValue() const
+{
+  return m_blinkValue.load();
+}

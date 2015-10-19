@@ -38,7 +38,6 @@ class EngineSideChain;
 class EffectsManager;
 class EngineEffectsManager;
 class SyncWorker;
-class GuiTick;
 class EngineSync;
 class EngineTalkoverDucking;
 class EngineDelay;

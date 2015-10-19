@@ -217,7 +217,7 @@ void CueControl::trackUnloaded(TrackPointer pTrack) {
         }
         loadCue->setPosition(cuePoint);
     }
-    m_pCueIndicator->setBlinkValue(ControlIndicator::OFF);
+    m_pCueIndicator->setProperty("blinkValue",int((int)ControlIndicator::BlinkValue::Off));
     m_pCuePoint->set(-1.0);
     m_pLoadedTrack.clear();
 }
@@ -611,8 +611,8 @@ void CueControl::cueCDJ(double v)
     }
     // indicator may flash because the delayed adoption of seekAbs
     // Correct the Indicator set via play
-    if (m_pLoadedTrack && !playing) m_pCueIndicator->setBlinkValue(ControlIndicator::ON);
-    else                            m_pCueIndicator->setBlinkValue(ControlIndicator::OFF);
+    if (m_pLoadedTrack && !playing) m_pCueIndicator->setProperty("blinkValue",(int)(int)ControlIndicator::BlinkValue::On);
+    else                            m_pCueIndicator->setProperty("blinkValue",(int)(int)ControlIndicator::BlinkValue::Off);
 }
 void CueControl::cueDenon(double v)
 {
@@ -697,13 +697,13 @@ bool CueControl::updateIndicatorsAndModifyPlay(bool newPlay, bool playPossible)
     {
         // play not possible
         newPlay = false;
-        m_pPlayIndicator->setBlinkValue(ControlIndicator::OFF);
+        m_pPlayIndicator->setProperty("blinkValue",(int)(int)ControlIndicator::BlinkValue::Off);
         m_pStopButton->set(0.0);
     }
     else if (newPlay && !previewing)
     {
         // Play: Indicates a latched Play
-        m_pPlayIndicator->setBlinkValue(ControlIndicator::ON);
+        m_pPlayIndicator->setProperty("blinkValue",(int)(int)ControlIndicator::BlinkValue::On);
         m_pStopButton->set(0.0);
     }
     else
@@ -712,11 +712,11 @@ bool CueControl::updateIndicatorsAndModifyPlay(bool newPlay, bool playPossible)
         m_pStopButton->set(1.0);
         if (cueMode == CUE_MODE_DENON)
         {
-            if (isTrackAtCue())  m_pPlayIndicator->setBlinkValue(ControlIndicator::OFF);
-            else                 m_pPlayIndicator->setBlinkValue(ControlIndicator::RATIO1TO1_500MS);
+            if (isTrackAtCue())  m_pPlayIndicator->setProperty("blinkValue",(int)ControlIndicator::BlinkValue::Off);
+            else                 m_pPlayIndicator->setProperty("blinkValue",(int)ControlIndicator::BlinkValue::Slow);
         } else if (cueMode == CUE_MODE_MIXXX || cueMode == CUE_MODE_NUMARK) 
-             m_pPlayIndicator->setBlinkValue(ControlIndicator::OFF);
-        else m_pPlayIndicator->setBlinkValue(ControlIndicator::RATIO1TO1_500MS);
+             m_pPlayIndicator->setProperty("blinkValue",(int)ControlIndicator::BlinkValue::Off);
+        else m_pPlayIndicator->setProperty("blinkValue",(int)ControlIndicator::BlinkValue::Slow);
     }
     if (cueMode != CUE_MODE_DENON && cueMode != CUE_MODE_NUMARK)
     {
@@ -725,10 +725,10 @@ bool CueControl::updateIndicatorsAndModifyPlay(bool newPlay, bool playPossible)
             if (newPlay == 0.0 && !isTrackAtCue() && !atEndPosition())
             {
                 if (cueMode == CUE_MODE_MIXXX) 
-                      m_pCueIndicator->setBlinkValue(ControlIndicator::RATIO1TO1_500MS);
-                else  m_pCueIndicator->setBlinkValue(ControlIndicator::RATIO1TO1_250MS);
-            } else    m_pCueIndicator->setBlinkValue(ControlIndicator::OFF);
-        } else        m_pCueIndicator->setBlinkValue(ControlIndicator::OFF);
+                      m_pCueIndicator->setProperty("blinkValue",(int)ControlIndicator::BlinkValue::Slow);
+                else  m_pCueIndicator->setProperty("blinkValue",(int)ControlIndicator::BlinkValue::Fast);
+            } else    m_pCueIndicator->setProperty("blinkValue",(int)ControlIndicator::BlinkValue::Off);
+        } else        m_pCueIndicator->setProperty("blinkValue",(int)ControlIndicator::BlinkValue::Off);
     }
     m_pPlayStutter->set(newPlay ? 1.0 : 0.0);
     return newPlay;
@@ -745,17 +745,17 @@ void CueControl::updateIndicators()
             // at cue point
             if (!playing)
             {
-                m_pCueIndicator->setBlinkValue(ControlIndicator::ON);
-                m_pPlayIndicator->setBlinkValue(ControlIndicator::OFF);
+                m_pCueIndicator->setProperty("blinkValue",(int)ControlIndicator::BlinkValue::Off);
+                m_pPlayIndicator->setProperty("blinkValue",(int)ControlIndicator::BlinkValue::Off);
             }
         }
         else
         {
-            m_pCueIndicator->setBlinkValue(ControlIndicator::OFF);
+            m_pCueIndicator->setProperty("blinkValue",(int)ControlIndicator::BlinkValue::Off);
             if (!playing) {
                 if (!atEndPosition() && cueMode != CUE_MODE_NUMARK)
-                     m_pPlayIndicator->setBlinkValue(ControlIndicator::RATIO1TO1_500MS);
-                else m_pPlayIndicator->setBlinkValue(ControlIndicator::OFF);
+                     m_pPlayIndicator->setProperty("blinkValue",(int)ControlIndicator::BlinkValue::Slow);
+                else m_pPlayIndicator->setProperty("blinkValue",(int)ControlIndicator::BlinkValue::Off);
             }
         }
     }
@@ -774,12 +774,12 @@ void CueControl::updateIndicators()
                     {
                         if (cueMode == CUE_MODE_MIXXX)
                             // in Mixxx mode Cue Button is flashing slow if CUE will move Cue point
-                             m_pCueIndicator->setBlinkValue(ControlIndicator::RATIO1TO1_500MS);
-                        else m_pCueIndicator->setBlinkValue(ControlIndicator::RATIO1TO1_250MS);
-                    } else   m_pCueIndicator->setBlinkValue(ControlIndicator::OFF);
+                             m_pCueIndicator->setProperty("blinkValue",(int)ControlIndicator::BlinkValue::Slow);
+                        else m_pCueIndicator->setProperty("blinkValue",(int)ControlIndicator::BlinkValue::Fast);
+                    } else   m_pCueIndicator->setProperty("blinkValue",(int)ControlIndicator::BlinkValue::Off);
                 }
                 else if (m_pCuePoint->get() != -1) 
-                             m_pCueIndicator->setBlinkValue(ControlIndicator::ON);
+                             m_pCueIndicator->setProperty("blinkValue",(int)ControlIndicator::BlinkValue::On);
             }
         }
     }

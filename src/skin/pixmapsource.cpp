@@ -3,7 +3,8 @@
 #include "skin/pixmapsource.h"
 
 PixmapSource::PixmapSource():
-    m_eType(SVG) {
+    m_eType(SVG)
+{
 }
 PixmapSource::PixmapSource(const QString& filepath)
 {
@@ -40,11 +41,11 @@ bool PixmapSource::isBitmap() const
 void PixmapSource::setSVG(const QByteArray& content)
 {
     m_baData = content;
-    m_eType = SVG;
+    m_eType  = SVG;
 }
 QString PixmapSource::getId() const
 {
-    quint16 checksum;
+    auto checksum = quint16{};
     if (m_baData.isEmpty()) checksum = qChecksum(m_path.toAscii().constData(), m_path.length());
     else                    checksum = qChecksum(m_baData.constData(), m_baData.length());
     return m_path + QString::number(checksum);

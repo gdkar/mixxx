@@ -25,10 +25,12 @@ class WaveformWidget: public QWidget, public WaveformWidgetRenderer
     //Type is use by the factory to safely up-cast waveform widgets
     virtual RenderType getType() const;
     virtual bool isValid() const;
-    virtual void setRenderType(RenderType type);
-    virtual int render();
     virtual void resize(int width, int height);
     virtual void paintEvent(QPaintEvent *e);
+  public slots:
+    virtual void setRenderType(RenderType type);
+    virtual int render();
+    virtual void onPreRender(int);
   protected:
     RenderType m_type = Empty;
     friend class WaveformWidgetFactory;

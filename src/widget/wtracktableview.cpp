@@ -22,7 +22,6 @@
 #include "util/dnd.h"
 #include "util/time.h"
 #include "preferences/dlgpreflibrary.h"
-#include "waveform/guitick.h"
 #include "widget/wcoverartmenu.h"
 #include "util/assert.h"
 
@@ -88,15 +87,18 @@ WTrackTableView::WTrackTableView(QWidget * parent,
     connect(&m_playlistMapper, SIGNAL(mapped(int)),this, SLOT(addSelectionToPlaylist(int)));
     connect(&m_crateMapper, SIGNAL(mapped(int)),this, SLOT(addSelectionToCrate(int)));
 
-    m_pCOTGuiTick = new ControlObjectSlave("Master", "guiTick50ms");
-    m_pCOTGuiTick->connectValueChanged(this, SLOT(slotGuiTick50ms(double)));
+    m_guiTick.setInterval(20);
+    m_guiTick.setTimerType(Qt::PreciseTimer);
+    m_guiTick.start();
+    connect(&m_guiTick,&QTimer::timeout,this,&WTrackTableView::onGuiTick);
 
     connect(this, SIGNAL(scrollValueChanged(int)),this, SLOT(slotScrollValueChanged(int)));
 
     QShortcut *setFocusShortcut = new QShortcut(QKeySequence(tr("ESC", "Focus")), this);
     connect(setFocusShortcut, SIGNAL(activated()),this, SLOT(setFocus()));
 }
-WTrackTableView::~WTrackTableView() {
+WTrackTableView::~WTrackTableView()
+{
     qDebug() << "~WTrackTableView()";
     auto pHeader =dynamic_cast<WTrackTableViewHeader*>(horizontalHeader());
     if (pHeader)  pHeader->saveHeaderState();
@@ -128,11 +130,12 @@ WTrackTableView::~WTrackTableView() {
     delete m_pFileBrowserAct;
     delete m_pResetPlayedAct;
     delete m_pSamplerMenu;
-    delete m_pCOTGuiTick;
 }
 
-void WTrackTableView::enableCachedOnly() {
-    if (!m_loadCachedOnly) {
+void WTrackTableView::enableCachedOnly()
+{
+    if (!m_loadCachedOnly)
+    {
         // don't try to load and search covers, drawing only
         // covers which are already in the QPixmapCache.
         emit(onlyCachedCoverArt(true));
@@ -140,17 +143,21 @@ void WTrackTableView::enableCachedOnly() {
     }
     m_lastUserActionNanos = Time::elapsed();
 }
-void WTrackTableView::slotScrollValueChanged(int) {enableCachedOnly();}
-void WTrackTableView::selectionChanged(const QItemSelection& selected,const QItemSelection& deselected) {
+void WTrackTableView::slotScrollValueChanged(int)
+{
+  enableCachedOnly();
+}
+void WTrackTableView::selectionChanged(const QItemSelection& selected,const QItemSelection& deselected)
+{
     m_selectionChangedSinceLastGuiTick = true;
     enableCachedOnly();
     QTableView::selectionChanged(selected, deselected);
 }
-
-void WTrackTableView::slotGuiTick50ms(double) {
+void WTrackTableView::onGuiTick()
+{
     // if the user is stopped in the same row for more than 0.1 s,
     // we load un-cached cover arts as well.
-    qint64 timeDeltaNanos = Time::elapsed() - m_lastUserActionNanos;
+    auto timeDeltaNanos = Time::elapsed() - m_lastUserActionNanos;
     if (m_loadCachedOnly && timeDeltaNanos > 100000000) {
         // Show the currently selected track in the large cover art view. Doing
         // this in selectionChanged slows down scrolling performance so we wait
@@ -163,7 +170,8 @@ void WTrackTableView::slotGuiTick50ms(double) {
                     auto pTrack = trackModel->getTrack(indices.last());
                     if (pTrack) emit(trackSelected(pTrack));
                 }
-            } else  emit(trackSelected(TrackPointer()));
+            }
+            else  emit(trackSelected(TrackPointer()));
             m_selectionChangedSinceLastGuiTick = false;
         }
         // This allows CoverArtDelegate to request that we load covers from disk

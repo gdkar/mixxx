@@ -241,23 +241,24 @@ void MidiController::processInputMapping(const MidiInputMapping& mapping,
                                          unsigned char value) {
     unsigned char channel = MidiUtils::channelFromStatus(status);
     unsigned char opCode = MidiUtils::opCodeFromStatus(status);
-    if (mapping.options.script) {
+    if (mapping.options.script)
+    {
         if(auto  pEngine = getEngine())
         {
-          QScriptValueList args;
-          args << QScriptValue(channel);
-          args << QScriptValue(control);
-          args << QScriptValue(value);
-          args << QScriptValue(status);
-          args << QScriptValue(mapping.control.group);
+          QJSValueList args;
+          args << QJSValue(channel);
+          args << QJSValue(control);
+          args << QJSValue(value);
+          args << QJSValue(status);
+          args << QJSValue(mapping.control.group);
           auto function = pEngine->resolveFunction(mapping.control.item, true);
-          pEngine->execute(function, args);
+          pEngine->execute(function, QJSValue{},args);
         }
         return;
     }
     // Only pass values on to valid ControlObjects.
     auto pCO = ControlObject::getControl(mapping.control);
-    if (!pCO) {return;}
+    if (!pCO) return;
     double newValue = value;
     bool mapping_is_14bit = mapping.options.fourteen_bit_msb || mapping.options.fourteen_bit_lsb;
     if (!mapping_is_14bit && !m_fourteen_bit_queued_mappings.isEmpty()) {
@@ -267,25 +268,32 @@ void MidiController::processInputMapping(const MidiInputMapping& mapping,
         m_fourteen_bit_queued_mappings.clear();
     }
     //qDebug() << "MIDI Options" << QString::number(mapping.options.all, 2).rightJustified(16,'0');
-    if (mapping_is_14bit) {
+    if (mapping_is_14bit)
+    {
         auto found = false;
         for (auto it  = m_fourteen_bit_queued_mappings.begin(),
-                  end = m_fourteen_bit_queued_mappings.end(); it != end; ++it) {
-            if (it->first.control == mapping.control) {
+                  end = m_fourteen_bit_queued_mappings.end(); it != end; ++it)
+        {
+            if (it->first.control == mapping.control)
+            {
                 if ((it->first.options.fourteen_bit_lsb && mapping.options.fourteen_bit_lsb) ||
-                    (it->first.options.fourteen_bit_msb && mapping.options.fourteen_bit_msb)) {
+                    (it->first.options.fourteen_bit_msb && mapping.options.fourteen_bit_msb))
+                {
                     qWarning() << "MidiController: 14-bit MIDI mapping has mis-matched LSB/MSB options."
                                << "Ignoring both messages.";
                     m_fourteen_bit_queued_mappings.erase(it);
                     return;
                 }
                 int iValue = 0;
-                if (mapping.options.fourteen_bit_msb) {
+                if (mapping.options.fourteen_bit_msb)
+                {
                     iValue = (value << 7) | it->second;
                     // qDebug() << "MSB" << value
                     //          << "LSB" << it->second
                     //          << "Joint:" << iValue;
-                } else if (mapping.options.fourteen_bit_lsb) {
+                }
+                else if (mapping.options.fourteen_bit_lsb)
+                {
                     iValue = (it->second << 7) | value;
                     // qDebug() << "MSB" << it->second
                     //          << "LSB" << value
@@ -441,7 +449,7 @@ void MidiController::processInputMapping(const MidiInputMapping& mapping,const Q
         auto pEngine = getEngine();
         if (!pEngine ) {return;}
         auto function = pEngine->resolveFunction(mapping.control.item, true);
-        if (!pEngine->execute(function, data)) {qDebug() << "MidiController: Invalid script function" << mapping.control.item;}
+        if (!pEngine->execute(function, QJSValue{},data)) qDebug() << "MidiController: Invalid script function" << mapping.control.item;
         return;
     }
     qWarning() << "MidiController: No script function specified for" << formatSysexMessage(getName(), data);

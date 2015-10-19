@@ -75,13 +75,16 @@ void WLibrarySidebar::dragMoveEvent(QDragMoveEvent * event)
         if ((event->source() == this) && (event->possibleActions() & Qt::MoveAction)) {
             // Do nothing.
             event->ignore();
-        } else {
+        } else
+        {
             auto sidebarModel = dynamic_cast<SidebarModel*>(model());
             auto accepted = true;
-            if (sidebarModel) {
+            if (sidebarModel)
+            {
                 accepted = false;
-                for(auto url: urls) {
-                    auto destIndex = this->indexAt(event->pos());
+                for(auto url: urls)
+                {
+                    auto destIndex = indexAt(event->pos());
                     if (sidebarModel->dragMoveAccept(destIndex, url)) {
                         // We only need one URL to be valid for us
                         // to accept the whole drag...
@@ -124,7 +127,7 @@ void WLibrarySidebar::dropEvent(QDropEvent * event)
         if ((event->source() == this) && (event->possibleActions() & Qt::MoveAction)) event->ignore();
         else {
             //Reset the selected items (if you had anything highlighted, it clears it)
-            //this->selectionModel()->clear();
+            //selectionModel()->clear();
             //Drag-and-drop from an external application or the track table widget
             //eg. dragging a track from Windows Explorer onto the sidebar
             auto sidebarModel = dynamic_cast<SidebarModel*>(model());

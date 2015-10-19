@@ -13,12 +13,11 @@ SongDownloader::SongDownloader(QObject* parent)
     : QObject(parent),
       m_pDownloadedFile(nullptr),
       m_pReply(nullptr),
-      m_pRequest(nullptr) {
+      m_pRequest(nullptr)
+{
     qDebug() << "SongDownloader constructed";
-
     m_pNetwork = new QNetworkAccessManager();
 }
-
 SongDownloader::~SongDownloader()
 {
     delete m_pNetwork;

@@ -68,7 +68,11 @@ QString TrackMetadata::getArtist() const
 }
 void TrackMetadata::setArtist(QString s)
 {
-  m_artist = s;
+  if ( m_artist != s )
+  {
+    m_artist = s;
+    emit updated();
+  }
 }
 QString TrackMetadata::getTitle() const
 {
@@ -76,7 +80,11 @@ QString TrackMetadata::getTitle() const
 }
 void TrackMetadata::setTitle(QString s)
 {
-  m_title = s;
+  if ( m_title != s )
+  {
+    m_title = s;
+    emit updated();
+  }
 }
 QString TrackMetadata::getAlbum() const
 {
@@ -84,7 +92,11 @@ QString TrackMetadata::getAlbum() const
 }
 void TrackMetadata::setAlbum(QString s)
 {
-  m_album = s;
+  if ( m_album != s)
+  {
+    m_album = s;
+    emit updated();
+  }
 }
 QString TrackMetadata::getAlbumArtist() const
 {
@@ -92,7 +104,11 @@ QString TrackMetadata::getAlbumArtist() const
 }
 void TrackMetadata::setAlbumArtist(QString s)
 {
-  m_albumArtist = s;
+  if ( m_albumArtist != s )
+  {
+    m_albumArtist = s;
+    emit updated();
+  }
 }
 QString TrackMetadata::getGenre() const
 {
@@ -100,7 +116,11 @@ QString TrackMetadata::getGenre() const
 }
 void TrackMetadata::setGenre(QString s)
 {
-  m_genre = s;
+  if ( m_genre != s )
+  {
+    m_genre = s;
+    emit updated();
+  }
 }
 QString TrackMetadata::getComment() const
 {
@@ -108,7 +128,11 @@ QString TrackMetadata::getComment() const
 }
 void TrackMetadata::setComment(QString s)
 {
-  m_comment = s;
+  if ( m_comment != s )
+  {
+    m_comment = s;
+    emit updated();
+  }
 }
 QString TrackMetadata::getYear() const
 {
@@ -116,7 +140,11 @@ QString TrackMetadata::getYear() const
 }
 void TrackMetadata::setYear(QString s)
 {
-  m_year = s;
+  if ( m_year != s )
+  {
+    m_year = s;
+    emit updated();
+  }
 }
 QString TrackMetadata::getTrackNumber() const
 {
@@ -124,7 +152,11 @@ QString TrackMetadata::getTrackNumber() const
 }
 void TrackMetadata::setTrackNumber(QString s)
 {
-  m_trackNumber = s;
+  if ( m_trackNumber != s )
+  {
+    m_trackNumber = s;
+    emit updated();
+  }
 }
 QString TrackMetadata::getComposer() const
 {
@@ -132,7 +164,11 @@ QString TrackMetadata::getComposer() const
 }
 void TrackMetadata::setComposer(QString s)
 {
-  m_composer = s;
+  if ( m_composer != s )
+  {
+    m_composer = s;
+    emit updated();
+  }
 }
 QString TrackMetadata::getGrouping() const
 {
@@ -140,7 +176,11 @@ QString TrackMetadata::getGrouping() const
 }
 void TrackMetadata::setGrouping(QString s)
 {
-  m_grouping = s;
+  if ( m_grouping != s)
+  {
+    m_grouping = s;
+    emit updated();
+  }
 }
 QString TrackMetadata::getKey() const
 {
@@ -148,7 +188,11 @@ QString TrackMetadata::getKey() const
 }
 void TrackMetadata::setKey(QString s)
 {
-  m_key = s;
+  if ( m_key != s )
+  {
+    m_key = s;
+    emit updated();
+  }
 }
 int TrackMetadata::getChannels() const
 {
@@ -156,7 +200,11 @@ int TrackMetadata::getChannels() const
 }
 void TrackMetadata::setChannels(int i)
 {
-  m_channels = i;
+  if ( m_channels != i )
+  {
+    m_channels = i;
+    emit updated();
+  }
 }
 int TrackMetadata::getSampleRate() const
 {
@@ -164,7 +212,11 @@ int TrackMetadata::getSampleRate() const
 }
 void TrackMetadata::setSampleRate(int i)
 {
-  m_sampleRate = i;
+  if ( m_sampleRate != i )
+  {
+    m_sampleRate = i;
+    emit updated();
+  }
 }
 int TrackMetadata::getBitrate() const
 {
@@ -172,7 +224,11 @@ int TrackMetadata::getBitrate() const
 }
 void TrackMetadata::setBitrate(int i)
 {
-  m_bitrate = i;
+  if ( m_bitrate != i )
+  {
+    m_bitrate = i;
+    emit updated();
+  }
 }
 int TrackMetadata::getDuration() const
 {
@@ -180,7 +236,11 @@ int TrackMetadata::getDuration() const
 }
 void TrackMetadata::setDuration(int i)
 {
-  m_duration = i;
+  if ( m_duration != i )
+  {
+    m_duration = i;
+    emit updated();
+  }
 }
 double TrackMetadata::getBpm() const
 {
@@ -200,11 +260,15 @@ bool TrackMetadata::isBpmValid() const
 }
 void TrackMetadata::setBpm(double d)
 {
-  m_bpm = d;
+  if ( m_bpm != d )
+  {
+    m_bpm = d;
+    updated();
+  }
 }
 void TrackMetadata::resetBpm()
 {
-  m_bpm = kBpmUndefined;
+  setBpm(kBpmUndefined);
 }
 double TrackMetadata::getReplayGain() const
 {
@@ -220,7 +284,11 @@ bool TrackMetadata::isReplayGainValid() const
 }
 void TrackMetadata::setReplayGain(double d)
 {
-  m_replayGain = d;
+  if ( m_replayGain != d )
+  {
+    m_replayGain = d;
+    emit updated();
+  }
 }
 void TrackMetadata::resetReplayGain()
 {
@@ -242,36 +310,38 @@ void TrackMetadata::resetReplayGain()
 {
   return d.toString(Qt::ISODate);
 }
-double TrackMetadata::parseReplayGain(QString sReplayGain, bool* pValid) {
+double TrackMetadata::parseReplayGain(QString sReplayGain, bool* pValid)
+{
     if (pValid) *pValid = false;
     auto  normalizedReplayGain = sReplayGain.trimmed();
     auto plusIndex = normalizedReplayGain.indexOf('+');
-    if (0 == plusIndex) {
-        // strip leading "+"
-        normalizedReplayGain = normalizedReplayGain.mid(plusIndex + 1).trimmed();
-    }
+    if (!plusIndex) normalizedReplayGain = normalizedReplayGain.mid(plusIndex + 1).trimmed();
     auto unitIndex = normalizedReplayGain.lastIndexOf(kReplayGainUnit, -1, Qt::CaseInsensitive);
-    if ((0 <= unitIndex) && ((normalizedReplayGain.length() - 2) == unitIndex)) {
+    if ((0 <= unitIndex) && ((normalizedReplayGain.length() - 2) == unitIndex))
+    {
         // strip trailing unit suffix
         normalizedReplayGain = normalizedReplayGain.left(unitIndex).trimmed();
     }
     if (normalizedReplayGain.isEmpty()) return kReplayGainUndefined;
     auto replayGainValid = false;
     auto replayGainDb = normalizedReplayGain.toDouble(&replayGainValid);
-    if (replayGainValid) {
+    if (replayGainValid)
+    {
         auto replayGain = db2ratio(replayGainDb);
         DEBUG_ASSERT(kReplayGainUndefined != replayGain);
         // Some applications (e.g. Rapid Evolution 3) write a replay gain
         // of 0 dB even if the replay gain is undefined. To be safe we
         // ignore this special value and instead prefer to recalculate
         // the replay gain.
-        if (kReplayGain0dB == replayGain) {
+        if (kReplayGain0dB == replayGain)
+        {
             // special case
             qDebug() << "Ignoring possibly undefined replay gain:" << formatReplayGain(replayGain);
             if (pValid) *pValid = true;
             return kReplayGainUndefined;
         }
-        if (TrackMetadata::isReplayGainValid(replayGain)) {
+        if (TrackMetadata::isReplayGainValid(replayGain))
+        {
             if (pValid) *pValid = true;
             return replayGain;
         } else qDebug() << "Invalid replay gain value:" << sReplayGain << " -> "<< replayGain;
@@ -314,7 +384,8 @@ QString TrackMetadata::formatCalendarYear(QString year, bool* pValid)
     if (calendarYearValid) return QString::number(calendarYear);
     else return QString(); // empty string
 }
-QString TrackMetadata::reformatYear(QString year) {
+QString TrackMetadata::reformatYear(QString year)
+{
     auto dateTime = QDateTime(parseDateTime(year));
     if (dateTime.isValid()) return formatDateTime(dateTime);
     const QDate date(dateTime.date());

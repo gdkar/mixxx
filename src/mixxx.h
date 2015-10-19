@@ -37,7 +37,6 @@ class ShoutcastManager;
 class SkinLoader;
 class EffectsManager;
 class VinylControlManager;
-class GuiTick;
 class DlgPreferences;
 class SoundManager;
 class ControlPushButton;
@@ -76,7 +75,6 @@ class MixxxMainWindow : public QMainWindow {
     void setToolTipsCfg(int tt);
     int getToolTipsCfg() const;
     void rebootMixxxView();
-    GuiTick* getGuiTick();
     // progresses the launch image progress bar
     // this must be called from the GUi thread only
     void launchProgress(int progress);
@@ -186,7 +184,6 @@ class MixxxMainWindow : public QMainWindow {
 #endif
     ControllerManager* m_pControllerManager = nullptr;
     ConfigObject<ConfigValue>* m_pConfig = nullptr;
-    GuiTick* m_pGuiTick = nullptr;
     VinylControlManager* m_pVCManager = nullptr;
     MixxxKeyboard* m_pKeyboard = nullptr;
     // Library scanner object

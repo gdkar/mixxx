@@ -3,9 +3,10 @@ _Pragma("once")
 #include <QString>
 #include <QDomNode>
 #include <QDomElement>
-#include <QScriptEngine>
+#include <QJSEngine>
+#include <QJSValue>
+#include <QJSValueList>
 #include <QDir>
-#include <QScriptEngineDebugger>
 #include <QtDebug>
 
 #include "configobject.h"
@@ -27,7 +28,6 @@ class SkinContext {
     void setSkinBasePath(const QString& skinBasePath) { m_skinBasePath = skinBasePath;}
     // Variable lookup and modification methods.
     QString variable(const QString& name) const;
-    QHash<QString, QString> variables() const;
     void setVariable(const QString& name, const QString& value);
     void setXmlPath(const QString& xmlPath);
     // Updates the SkinContext with all the <SetVariable> children of node.
@@ -50,9 +50,9 @@ class SkinContext {
     QString nodeToString(const QDomNode& node) const;
     PixmapSource getPixmapSource(const QDomNode& pixmapNode) const;
     Paintable::DrawMode selectScaleMode(const QDomElement& element,Paintable::DrawMode defaultDrawMode) const;
-    QScriptValue evaluateScript(const QString& expression,const QString& filename=QString(),int lineNumber=1);
-    QScriptValue importScriptExtension(const QString& extensionName);
-    const QSharedPointer<QScriptEngine> getScriptEngine() const;
+    QJSValue evaluateScript(const QString& expression,const QString& filename=QString(),int lineNumber=1);
+    QJSValue importScriptExtension(const QString& extensionName);
+    QSharedPointer<QJSEngine> getScriptEngine() const;
     void enableDebugger(bool state) const;
     QDebug logWarning(const char* file, const int line, const QDomNode& node) const;
     void defineSingleton(QString objectName, QWidget* widget);
@@ -62,10 +62,8 @@ class SkinContext {
     QString m_xmlPath;
     QString m_skinBasePath;
     ConfigObject<ConfigValue>* m_pConfig = nullptr;
-    QHash<QString, QString> m_variables;
-    QSharedPointer<QScriptEngine> m_pScriptEngine;
-    QSharedPointer<QScriptEngineDebugger> m_pScriptDebugger;
-    QScriptValue m_parentGlobal;
+    QSharedPointer<QJSEngine> m_pScriptEngine;
+    QJSValue m_context;
     // The SingletonContainer map is passed to child SkinContexts, so that all
     // templates in the tree can share a single map.
     QSharedPointer<SingletonMap> m_pSingletons;

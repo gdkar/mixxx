@@ -29,6 +29,7 @@
 
 #include "anqueue/analyserqueue.h"
 #include "controlpotmeter.h"
+#include "controlindicator.h"
 #include "controlobjectslave.h"
 #include "control/control.h"
 #include "player.h"
@@ -72,7 +73,6 @@
 #include "controlpushbutton.h"
 #include "util/sandbox.h"
 #include "playerinfo.h"
-#include "waveform/guitick.h"
 #include "util/math.h"
 #include "util/experiment.h"
 #include "util/font.h"
@@ -220,7 +220,7 @@ void MixxxMainWindow::initalize(QApplication* pApp, const CmdlineArgs& args) {
     // above would make it but if it doesn't get run for whatever reason
     // we get hosed -- bkgood
     if (!QDir(args.getSettingsPath()).exists()) {QDir().mkpath(args.getSettingsPath());}
-    m_pGuiTick = new GuiTick();
+    ControlIndicator::initialize();
 #ifdef __VINYLCONTROL__
     m_pVCManager = new VinylControlManager(this, m_pConfig, m_pSoundManager);
 #else
@@ -447,7 +447,6 @@ void MixxxMainWindow::finalize() {
     delete m_pTouchShift;
     PlayerInfo::destroy();
     WaveformWidgetFactory::destroy();
-    delete m_pGuiTick;
     // Check for leaked ControlObjects and give warnings.
     if(m_cmdLineArgs.getDeveloper())
     {
@@ -1704,10 +1703,6 @@ bool MixxxMainWindow::confirmExit() {
 int MixxxMainWindow::getToolTipsCfg() const
 {
   return m_toolTipsCfg;
-}
-GuiTick* MixxxMainWindow::getGuiTick()
-{
-  return m_pGuiTick;
 }
 void MixxxMainWindow::launchProgress(int progress) {
     m_pLaunchImage->progress(progress);

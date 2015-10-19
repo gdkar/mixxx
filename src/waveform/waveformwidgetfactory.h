@@ -15,24 +15,6 @@ class WWaveformViewer;
 class QTimer;
 class MixxxMainWindow;
 
-class WaveformWidgetHolder
-{
-  public:
-    WaveformWidgetHolder();
-  private:
-    WaveformWidgetHolder(WaveformWidget* waveformWidget,
-                         WWaveformViewer* waveformViewer,
-                         const QDomNode& skinNode,
-                         const SkinContext& skinContext);
-
-    WaveformWidget* m_waveformWidget;
-    WWaveformViewer* m_waveformViewer;
-    QDomNode m_skinNodeCache;
-    SkinContext m_skinContextCache;
-
-    friend class WaveformWidgetFactory;
-};
-
 //########################################
 
 class WaveformWidgetFactory : public QObject, public Singleton<WaveformWidgetFactory> {
@@ -71,17 +53,18 @@ class WaveformWidgetFactory : public QObject, public Singleton<WaveformWidgetFac
   signals:
     void waveformUpdateTick();
     void waveformMeasured(float frameRate, int droppedFrames);
+    void renderTypeChanged(WaveformWidget::RenderType type);
+    void zoomChanged(int);
+    void preRender(int);
+    void render();
   protected:
     WaveformWidgetFactory();
     virtual ~WaveformWidgetFactory();
     friend class Singleton<WaveformWidgetFactory>;
   private slots:
-    void render();
+    void onRender();
   private:
-    WaveformWidget* createWaveformWidget(WaveformWidget::RenderType type, WWaveformViewer* viewer);
-    int findIndexOf(WWaveformViewer* viewer) const;
     //Currently in use widgets/visual/node
-    QVector<WaveformWidgetHolder> m_waveformWidgetHolders;
     WaveformWidget::RenderType m_type;
     ConfigObject<ConfigValue>* m_config;
     bool m_skipRender;

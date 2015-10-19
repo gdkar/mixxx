@@ -1,9 +1,7 @@
-#ifndef WTRACKTABLEVIEW_H
-#define WTRACKTABLEVIEW_H
-
+_Pragma("once")
 #include <QAbstractItemModel>
 #include <QSortFilterProxyModel>
-
+#include <QTimer>
 #include "configobject.h"
 #include "trackinfoobject.h"
 #include "library/libraryview.h"
@@ -72,11 +70,10 @@ class WTrackTableView : public WLibraryTableView {
     void slotScaleBpm(int);
     void slotClearBeats();
     // Signalled 20 times per second (every 50ms) by GuiTick.
-    void slotGuiTick50ms(double);
+    void onGuiTick();
     void slotScrollValueChanged(int);
     void slotCoverArtSelected(const CoverArt& art);
     void slotReloadCoverArt();
-
   private:
     void sendToAutoDJ(bool bTop);
     void showTrackInfo(QModelIndex index);
@@ -168,7 +165,5 @@ class WTrackTableView : public WLibraryTableView {
     qint64 m_lastUserActionNanos;
     bool m_selectionChangedSinceLastGuiTick;
     bool m_loadCachedOnly;
-    ControlObjectSlave* m_pCOTGuiTick;
+    QTimer m_guiTick;
 };
-
-#endif

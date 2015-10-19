@@ -8,6 +8,7 @@ _Pragma("once")
 
 #include "trackinfoobject.h"
 #include "widget/wwidget.h"
+#include "waveform/widgets/waveformwidget.h"
 #include "skin/skincontext.h"
 
 class ControlObjectSlave;
@@ -31,30 +32,30 @@ signals:
 public slots:
     void onTrackLoaded(TrackPointer track);
     void onTrackUnloaded(TrackPointer track);
+    void setRenderType(WaveformWidget::RenderType);
+    void onZoomChanged(double);
 protected:
     virtual void resizeEvent(QResizeEvent *event);
     virtual void wheelEvent(QWheelEvent *event);
 private slots:
-    void onZoomChange(double zoom);
     void slotWidgetDead() {m_waveformWidget = nullptr;}
 private:
-    void setWaveformWidget(WaveformWidget* waveformWidget);
-    WaveformWidget* getWaveformWidget()
-    {
-        return m_waveformWidget;
-    }
+    WaveformWidget* getWaveformWidget() const;
     //direct access to let factory sync/set default zoom
     void setZoom(int zoom);
 private:
     const char* m_pGroup;
-    ConfigObject<ConfigValue>* m_pConfig;
-    int m_zoomZoneWidth;
-    ControlObjectSlave* m_pZoom;
-    ControlObjectSlave* m_pScratchPositionEnable;
-    ControlObjectSlave* m_pScratchPosition;
-    ControlObjectSlave* m_pWheel;
-    bool m_bScratching;
-    bool m_bBending;
+    ConfigObject<ConfigValue>* m_pConfig = nullptr;
+    int m_zoomZoneWidth = 20;
+    bool                m_cacheValid = false;
+    QDomNode            m_skinNodeCache{};
+    SkinContext         m_skinContextCache{nullptr,QString{}};
+    ControlObjectSlave* m_pZoom = nullptr;
+    ControlObjectSlave* m_pScratchPositionEnable = nullptr;
+    ControlObjectSlave* m_pScratchPosition = nullptr;
+    ControlObjectSlave* m_pWheel = nullptr;
+    bool m_bScratching = false;
+    bool m_bBending = false;
     QPoint m_mouseAnchor;
     WaveformWidget* m_waveformWidget = nullptr;
     friend class WaveformWidgetFactory;

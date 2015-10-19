@@ -36,6 +36,10 @@ int WaveformWidget::render()
     repaint();
     return 0; // Time for Painter setup, unknown in this case
 }
+void WaveformWidget::onPreRender(int i)
+{
+  WaveformWidgetRenderer::onPreRender(i);
+}
 void WaveformWidget::resize(int width, int height)
 {
     QWidget::resize(width,height);
@@ -62,8 +66,7 @@ void WaveformWidget::setRenderType(RenderType t)
         break;
       default:
         qDebug() << "Invalid Waveform Type";
-      case Empty:
-        break;
+      case Empty: break;
     }
     m_type = t;
     if ( m_initSuccess ) m_initSuccess = init ();

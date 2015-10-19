@@ -25,7 +25,6 @@ class WaveformWidgetRenderer {
     virtual bool init();
     virtual bool onInit();
     virtual void setup(const QDomNode& node, const SkinContext& context);
-    virtual void onPreRender(int);
     virtual void draw(QPainter* painter, QPaintEvent* event);
     virtual QString getGroup() const;
     virtual TrackPointer getTrackInfo() const;
@@ -55,6 +54,8 @@ class WaveformWidgetRenderer {
     int getWidth() const;
     const WaveformSignalColors* getWaveformSignalColors() const;
     void setTrack(TrackPointer track);
+  public slots:
+    virtual void onPreRender(int);
   protected:
     QString m_group;
     TrackPointer m_pTrack;

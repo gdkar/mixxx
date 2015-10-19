@@ -6,7 +6,7 @@
 */
 
 #include <QApplication>
-#include <QScriptValue>
+#include <QJSValue>
 
 #include "controllers/controller.h"
 #include "controllers/defs_controllers.h"
@@ -118,12 +118,14 @@ void Controller::receive(const QByteArray data) {
         return;
     }
 
-    int length = data.size();
-    if (debugging()) {
+    auto length = data.size();
+    if (debugging())
+    {
         // Formatted packet display
-        QString message = QString("%1: %2 bytes:\n").arg(m_sDeviceName).arg(length);
-        for(int i=0; i<length; i++) {
-            QString spacer=" ";
+        auto message = QString("%1: %2 bytes:\n").arg(m_sDeviceName).arg(length);
+        for(auto i=0; i<length; i++)
+        {
+            auto spacer=QString{" "};
             if ((i+1) % 4 == 0) spacer="  ";
             if ((i+1) % 16 == 0) spacer="\n";
             message += QString("%1%2")
@@ -132,16 +134,13 @@ void Controller::receive(const QByteArray data) {
         }
         qDebug() << message;
     }
-
-    foreach (QString function, m_pEngine->getScriptFunctionPrefixes()) {
-        if (function == "") {
-            continue;
-        }
+    for(auto function: m_pEngine->getScriptFunctionPrefixes())
+    {
+        if (function == "") continue;
         function.append(".incomingData");
-        QScriptValue incomingData = m_pEngine->resolveFunction(function, true);
-        if (!m_pEngine->execute(incomingData, data)) {
+        auto incomingData = m_pEngine->resolveFunction(function, true);
+        if (!m_pEngine->execute(incomingData, QJSValue{},data)) 
             qWarning() << "Controller: Invalid script function" << function;
-        }
     }
 }
 bool Controller::isOpen() const

@@ -1,6 +1,4 @@
-#ifndef RECURSIVESCANDIRECTORYTASK_H
-#define RECURSIVESCANDIRECTORYTASK_H
-
+_Pragma("once")
 #include <QDir>
 
 #include "library/scanner/scannertask.h"
@@ -19,10 +17,9 @@ class RecursiveScanDirectoryTask : public ScannerTask {
                                const ScannerGlobalPointer scannerGlobal,
                                const QDir& dir,
                                SecurityTokenPointer pToken);
-    virtual ~RecursiveScanDirectoryTask() {}
+    virtual ~RecursiveScanDirectoryTask();
     virtual void run();
   private:
     QDir m_dir;
     SecurityTokenPointer m_pToken;
 };
-#endif /* RECURSIVESCANDIRECTORYTASK_H */
