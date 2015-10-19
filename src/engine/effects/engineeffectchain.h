@@ -14,7 +14,7 @@ class EngineEffect;
 
 class EngineEffectChain : public EffectsRequestHandler {
   public:
-    EngineEffectChain(const QString& id);
+    EngineEffectChain(QString id);
     virtual ~EngineEffectChain();
     bool processEffectsRequest( const EffectsRequest& message, EffectsResponsePipe* pResponsePipe);
     void process(const ChannelHandle& handle,
@@ -22,7 +22,7 @@ class EngineEffectChain : public EffectsRequestHandler {
                  const unsigned int numSamples,
                  const unsigned int sampleRate,
                  const GroupFeatureState& groupFeatures);
-    const QString& id() const { return m_id; }
+    QString id() const { return m_id; }
     bool enabledForChannel(const ChannelHandle& handle) const;
   private:
     struct ChannelStatus {

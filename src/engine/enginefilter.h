@@ -15,9 +15,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef ENGINEFILTER_H
-#define ENGINEFILTER_H
-
+_Pragma("once")
 #define MIXXX
 #include "engine/engineobject.h"
 #include <fidlib.h>
@@ -54,4 +52,3 @@ CSAMPLE processSampleDynamic(void *buf, const CSAMPLE  sample);
 CSAMPLE processSampleHp(void *buf, const CSAMPLE  sample);
 CSAMPLE processSampleBp(void *buf, const CSAMPLE  sample);
 CSAMPLE processSampleLp(void *buf, const CSAMPLE  sample);
-#endif

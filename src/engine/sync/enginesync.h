@@ -30,7 +30,7 @@ class EngineSync : public SyncableListener {
     void onCallbackStart(int sampleRate, int bufferSize);
     void onCallbackEnd(int sampleRate, int bufferSize);
     // Only for testing. Do not use.
-    Syncable* getSyncableForGroup(const QString& group);
+    Syncable* getSyncableForGroup(QString group);
     Syncable* getMasterSyncable()
     {
       return m_pMasterSyncable;

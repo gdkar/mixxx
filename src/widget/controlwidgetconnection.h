@@ -19,7 +19,7 @@ class ControlWidgetConnection : public QObject {
     virtual ~ControlWidgetConnection();
     double getControlParameter() const;
     double getControlParameterForValue(double value) const;
-    const ConfigKey& getKey() const; 
+    ConfigKey getKey() const; 
     virtual QString toDebugString() const = 0;
     bool invert()const;
     void setInvert(bool);

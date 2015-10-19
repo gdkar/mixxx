@@ -25,7 +25,7 @@ class Trace {
         if (writeToStdout || CmdlineArgs::Instance().getDeveloper()) initialize(tag, QString::number(arg));
     }
 
-    Trace(const char* tag, const QString& arg,
+    Trace(const char* tag, QString arg,
           bool writeToStdout=false, bool time=true)
             : m_writeToStdout(writeToStdout),
               m_time(time)
@@ -60,7 +60,7 @@ class Trace {
         }
     }
   private:
-    void initialize(const QString& key, const QString& arg)
+    void initialize(QString key, QString arg)
     {
         if (arg.isEmpty())   m_tag = key;
         else                 m_tag = key.arg(arg);

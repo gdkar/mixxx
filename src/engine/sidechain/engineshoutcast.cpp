@@ -43,7 +43,7 @@
 EngineShoutcast::EngineShoutcast(ConfigObject<ConfigValue>* _config)
          : m_pConfig(_config),
            m_pMasterSamplerate(new ControlObject(ConfigKey("Master", "samplerate"),this)),
-          m_pShoutcastStatus(new ControlObject(ConfigKey(SHOUTCAST_PREF_KEY, "status")))
+          m_pShoutcastStatus(new ControlObject(ConfigKey(SHOUTCAST_PREF_KEY, "status"),this))
 {
 #ifndef __WINDOWS__
     // Ignore SIGPIPE signals that we get when the remote streaming server
@@ -51,7 +51,7 @@ EngineShoutcast::EngineShoutcast(ConfigObject<ConfigValue>* _config)
     signal(SIGPIPE, SIG_IGN);
 #endif
     m_pShoutcastStatus->set(SHOUTCAST_DISCONNECTED);
-    m_pShoutcastNeedUpdateFromPrefs = new ControlObject( ConfigKey(SHOUTCAST_PREF_KEY,"update_from_prefs"));
+    m_pShoutcastNeedUpdateFromPrefs = new ControlObject( ConfigKey(SHOUTCAST_PREF_KEY,"update_from_prefs"),this);
     m_pUpdateShoutcastFromPrefs = new ControlObject( m_pShoutcastNeedUpdateFromPrefs->getKey(),this);
     // Initialize libshout
     shout_init();
@@ -115,7 +115,7 @@ bool EngineShoutcast::isConnected() {
     }
     return false;
 }
-QByteArray EngineShoutcast::encodeString(const QString& string) {
+QByteArray EngineShoutcast::encodeString(QString string) {
     if (m_pTextCodec) { return m_pTextCodec->fromUnicode(string); }
     return string.toLatin1();
 }
@@ -144,36 +144,25 @@ void EngineShoutcast::updateFromPreferences() {
     shout_metadata_add(m_pShoutMetaData, "charset",  baCodec.constData());
 
     // Host, server type, port, mountpoint, login, password should be latin1.
-    auto baHost = m_pConfig->getValueString(
-            ConfigKey(SHOUTCAST_PREF_KEY, "host")).toLatin1();
-    auto baServerType = m_pConfig->getValueString(
-            ConfigKey(SHOUTCAST_PREF_KEY, "servertype")).toLatin1();
-    auto baPort = m_pConfig->getValueString(
-            ConfigKey(SHOUTCAST_PREF_KEY, "port")).toLatin1();
-    auto baMountPoint = m_pConfig->getValueString(
-            ConfigKey(SHOUTCAST_PREF_KEY, "mountpoint")).toLatin1();
-    auto baLogin = m_pConfig->getValueString(
-            ConfigKey(SHOUTCAST_PREF_KEY, "login")).toLatin1();
-    auto baPassword = m_pConfig->getValueString(
-            ConfigKey(SHOUTCAST_PREF_KEY, "password")).toLatin1();
-    auto baFormat = m_pConfig->getValueString(
-            ConfigKey(SHOUTCAST_PREF_KEY, "format")).toLatin1();
-    auto baBitrate = m_pConfig->getValueString(
-            ConfigKey(SHOUTCAST_PREF_KEY, "bitrate")).toLatin1();
+    auto baHost = m_pConfig->getValueString(ConfigKey(SHOUTCAST_PREF_KEY, "host")).toLatin1();
+    auto baServerType = m_pConfig->getValueString(ConfigKey(SHOUTCAST_PREF_KEY, "servertype")).toLatin1();
+    auto baPort = m_pConfig->getValueString(ConfigKey(SHOUTCAST_PREF_KEY, "port")).toLatin1();
+    auto baMountPoint = m_pConfig->getValueString(ConfigKey(SHOUTCAST_PREF_KEY, "mountpoint")).toLatin1();
+    auto baLogin = m_pConfig->getValueString(ConfigKey(SHOUTCAST_PREF_KEY, "login")).toLatin1();
+    auto baPassword = m_pConfig->getValueString(ConfigKey(SHOUTCAST_PREF_KEY, "password")).toLatin1();
+    auto baFormat = m_pConfig->getValueString(ConfigKey(SHOUTCAST_PREF_KEY, "format")).toLatin1();
+    auto baBitrate = m_pConfig->getValueString(ConfigKey(SHOUTCAST_PREF_KEY, "bitrate")).toLatin1();
 
     // Encode metadata like stream name, website, desc, genre, title/author with
     // the chosen TextCodec.
-    auto baStreamName = encodeString(m_pConfig->getValueString(
-            ConfigKey(SHOUTCAST_PREF_KEY, "stream_name")));
+    auto baStreamName = encodeString(m_pConfig->getValueString(ConfigKey(SHOUTCAST_PREF_KEY, "stream_name")));
     auto baStreamWebsite = encodeString(m_pConfig->getValueString(ConfigKey(SHOUTCAST_PREF_KEY, "stream_website")));
     auto baStreamDesc = encodeString(m_pConfig->getValueString(ConfigKey(SHOUTCAST_PREF_KEY, "stream_desc")));
     auto baStreamGenre = encodeString(m_pConfig->getValueString(ConfigKey(SHOUTCAST_PREF_KEY, "stream_genre")));
     // Whether the stream is public.
-    auto streamPublic = m_pConfig->getValueString(
-            ConfigKey(SHOUTCAST_PREF_KEY, "stream_public")).toInt() > 0;
+    auto streamPublic = m_pConfig->getValueString(ConfigKey(SHOUTCAST_PREF_KEY, "stream_public")).toInt() > 0;
     // Dynamic Ogg metadata update
-    m_ogg_dynamic_update = (bool)m_pConfig->getValueString(
-            ConfigKey(SHOUTCAST_PREF_KEY,"ogg_dynamicupdate")).toInt();
+    m_ogg_dynamic_update = (bool)m_pConfig->getValueString(ConfigKey(SHOUTCAST_PREF_KEY,"ogg_dynamicupdate")).toInt();
 
     m_custom_metadata = (bool)m_pConfig->getValueString(ConfigKey(SHOUTCAST_PREF_KEY, "enable_metadata")).toInt();
     m_customTitle = m_pConfig->getValueString(ConfigKey(SHOUTCAST_PREF_KEY, "custom_title"));
@@ -366,8 +355,7 @@ bool EngineShoutcast::serverConnect() {
         sleep(1);
     }
     if (m_iShoutFailures == iMaxTries) {
-        if (m_pShout)
-            shout_close(m_pShout);
+        if (m_pShout) shout_close(m_pShout);
         m_pConfig->set(ConfigKey(SHOUTCAST_PREF_KEY,"enabled"),ConfigValue("0"));
         m_pShoutcastStatus->set(SHOUTCAST_DISCONNECTED);
         return false;

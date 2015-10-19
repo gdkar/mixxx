@@ -137,7 +137,7 @@ QDebug operator<<(QDebug dbg, const Stat &stat) {
 }
 
 // static
-bool Stat::track(const QString& tag,
+bool Stat::track(QString tag,
                  Stat::StatType type,
                  Stat::ComputeFlags compute,
                  double value) {

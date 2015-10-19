@@ -58,24 +58,24 @@ class EffectManifestParameter {
     // Parameter Information
     ////////////////////////////////////////////////////////////////////////////////
 
-    virtual const QString& id() const {
+    virtual QString id() const {
         return m_id;
     }
-    virtual void setId(const QString& id) {
+    virtual void setId(QString id) {
         m_id = id;
     }
 
-    virtual const QString& name() const {
+    virtual QString name() const {
         return m_name;
     }
-    virtual void setName(const QString& name) {
+    virtual void setName(QString name) {
         m_name = name;
     }
 
-    virtual const QString& description() const {
+    virtual QString description() const {
         return m_description;
     }
-    virtual void setDescription(const QString& description) {
+    virtual void setDescription(QString description) {
         m_description = description;
     }
 
@@ -142,28 +142,33 @@ class EffectManifestParameter {
     // Value Settings
     ////////////////////////////////////////////////////////////////////////////////
 
-    virtual const double& getDefault() const {
+    virtual double getDefault() const
+    {
         return m_default;
     }
-    virtual void setDefault(const double& defaultValue) {
+    virtual void setDefault(double defaultValue)
+    {
         m_default = defaultValue;
     }
-
-    virtual const double& getMinimum() const {
+    virtual double getMinimum() const
+    {
         return m_minimum;
     }
-    virtual void setMinimum(const double& minimum) {
+    virtual void setMinimum(double minimum)
+    {
         m_minimum = minimum;
     }
-
-    virtual const double& getMaximum() const {
+    virtual double getMaximum() const
+    {
         return m_maximum;
     }
-    virtual void setMaximum(const double& maximum) {
+    virtual void setMaximum(double maximum)
+    {
         m_maximum = maximum;
     }
 
-    virtual void appendStep(const QPair<QString, double>& step) {
+    virtual void appendStep(QPair<QString, double> step)
+    {
         m_steps.append(step);
     }
     virtual const QList<QPair<QString, double> >& getSteps() const {

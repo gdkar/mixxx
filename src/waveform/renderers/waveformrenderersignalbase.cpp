@@ -36,7 +36,7 @@ bool WaveformRendererSignalBase::init()
 {
     deleteControls();
     //create controls
-    m_pEQEnabled = new ControlObject(ConfigKey(cm_waveformRenderer->getGroup(), "filterWaveformEnable"));
+    m_pEQEnabled = new ControlObject(ConfigKey(m_waveformRenderer->getGroup(), "filterWaveformEnable"));
     m_pLowFilterControlObject = new ControlObject(ConfigKey(m_waveformRenderer->getGroup(), "filterLow"));
     m_pMidFilterControlObject = new ControlObject(ConfigKey(m_waveformRenderer->getGroup(), "filterMid"));
     m_pHighFilterControlObject = new ControlObject(ConfigKey(m_waveformRenderer->getGroup(), "filterHigh"));

@@ -23,7 +23,7 @@ class Upgrade : public QObject
     public:
         Upgrade(QObject*pParent=nullptr);
         virtual ~Upgrade();
-        ConfigObject<ConfigValue>* versionUpgrade(const QString& settingsPath);
+        ConfigObject<ConfigValue>* versionUpgrade(QString settingsPath);
         static QString mixxx17HomePath();
         bool isFirstRun() const;
         bool isUpgraded() const;

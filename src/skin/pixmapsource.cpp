@@ -6,7 +6,7 @@ PixmapSource::PixmapSource():
     m_eType(SVG)
 {
 }
-PixmapSource::PixmapSource(const QString& filepath)
+PixmapSource::PixmapSource(QString filepath)
 {
     setPath(filepath);
 }
@@ -19,7 +19,7 @@ QString PixmapSource::getPath() const
 {
     return m_path;
 }
-void PixmapSource::setPath(const QString& newPath)
+void PixmapSource::setPath(QString newPath)
 {
     m_baData.truncate(0);
     m_path = newPath;
@@ -38,7 +38,7 @@ bool PixmapSource::isBitmap() const
 {
     return m_eType == BITMAP;
 }
-void PixmapSource::setSVG(const QByteArray& content)
+void PixmapSource::setSVG(QByteArray content)
 {
     m_baData = content;
     m_eType  = SVG;

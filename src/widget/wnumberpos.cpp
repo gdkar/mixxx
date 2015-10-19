@@ -29,12 +29,12 @@ WNumberPos::WNumberPos(const char* group, QWidget* parent)
 
     // Tell the CO to re-emit its value since we could be created after it was
     // set to a valid value.
-    m_pTrackSamples->emitValueChanged();
+    m_pTrackSamples->valueChanged(m_pTrackSamples->get());
     m_pTrackSampleRate = new ControlObject(ConfigKey(group, "track_samplerate"),this);
     m_pTrackSampleRate->connectValueChanged(this, SLOT(slotSetTrackSampleRate(double)));
     // Tell the CO to re-emit its value since we could be created after it was
     // set to a valid value.
-    m_pTrackSampleRate->emitValueChanged();
+    m_pTrackSampleRate->valueChanged(m_pTrackSampleRate->get());
     slotSetValue(m_pVisualPlaypos->get());
 }
 WNumberPos::~WNumberPos() {

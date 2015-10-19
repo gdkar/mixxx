@@ -320,7 +320,7 @@ QDomElement AudioOutput::toXML(QDomElement *element) const {
  * Constructs and returns an AudioOutput given an XML element representing it.
  * @note This method is static.
  */
-AudioOutput AudioOutput::fromXML(const QDomElement &xml) {
+AudioOutput AudioOutput::fromXML(QDomElement xml) {
     AudioPathType type(AudioPath::getTypeFromString(xml.attribute("type")));
     unsigned int index(xml.attribute("index", "0").toUInt());
     unsigned int channel(xml.attribute("channel", "0").toUInt());
@@ -398,7 +398,7 @@ QDomElement AudioInput::toXML(QDomElement *element) const {
  * Constructs and returns an AudioInput given an XML element representing it.
  * @note This method is static.
  */
-AudioInput AudioInput::fromXML(const QDomElement &xml) {
+AudioInput AudioInput::fromXML(QDomElement xml) {
     AudioPathType type(AudioPath::getTypeFromString(xml.attribute("type")));
     unsigned int index(xml.attribute("index", "0").toUInt());
     unsigned int channel(xml.attribute("channel", "0").toUInt());

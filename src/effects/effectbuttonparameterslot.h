@@ -15,7 +15,7 @@ typedef QSharedPointer<EffectButtonParameterSlot> EffectButtonParameterSlotPoint
 class EffectButtonParameterSlot : public EffectParameterSlotBase {
     Q_OBJECT
   public:
-    EffectButtonParameterSlot(const QString& group, const unsigned int iParameterSlotNumber);
+    EffectButtonParameterSlot(QString group, const unsigned int iParameterSlotNumber);
     virtual ~EffectButtonParameterSlot();
     static QString formatItemPrefix(const unsigned int iParameterSlotNumber) {
         return QString("button_parameter%1").arg(iParameterSlotNumber + 1);

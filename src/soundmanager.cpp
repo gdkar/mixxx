@@ -345,7 +345,7 @@ void SoundManager::onDeviceOutputCallback(const unsigned int iFramesPerBuffer) {
     // samples so multiply iFramesPerBuffer by 2.
     m_pMaster->process(iFramesPerBuffer*2);
 }
-void SoundManager::pushInputBuffers(const QList<AudioInputBuffer>& inputs, const unsigned int iFramesPerBuffer) {
+void SoundManager::pushInputBuffers(QList<AudioInputBuffer> inputs, const unsigned int iFramesPerBuffer) {
    for ( const auto &in : inputs ){
         auto  pInputBuffer = in.getBuffer();
         for ( auto it: m_registeredDestinations.values(in))

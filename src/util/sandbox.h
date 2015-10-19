@@ -16,7 +16,7 @@ struct SandboxSecurityToken {
     ~SandboxSecurityToken();
     QString m_path;
 #ifdef Q_OS_MAC
-    SandboxSecurityToken(const QString& path, CFURLRef url);
+    SandboxSecurityToken(QString path, CFURLRef url);
     CFURLRef m_url;
 #endif
 };
@@ -27,7 +27,7 @@ typedef QWeakPointer<SandboxSecurityToken> SecurityTokenWeakPointer;
 
 class Sandbox {
   public:
-    static void initialize(const QString& permissionsFile);
+    static void initialize(QString permissionsFile);
     static void shutdown();
 
     // Returns true if we are in a sandbox.
@@ -36,7 +36,7 @@ class Sandbox {
     }
 
     // Prompt the user to give us access to the path with an open-file dialog.
-    static bool askForAccess(const QString& canonicalPath);
+    static bool askForAccess(QString canonicalPath);
 
     static bool canAccessFile(const QFileInfo& file) {
         SecurityTokenPointer pToken = openSecurityToken(file, true);
@@ -63,14 +63,14 @@ class Sandbox {
   private:
     Sandbox() {}
 
-    static ConfigKey keyForCanonicalPath(const QString& canonicalPath);
+    static ConfigKey keyForCanonicalPath(QString canonicalPath);
 
     // Must hold s_mutex to call this.
-    static SecurityTokenPointer openTokenFromBookmark(const QString& canonicalPath,
-                                                      const QString& bookmarkBase64);
+    static SecurityTokenPointer openTokenFromBookmark(QString canonicalPath,
+                                                      QString bookmarkBase64);
 
     // Creates a security token. s_mutex is not needed for this method.
-    static bool createSecurityToken(const QString& canonicalPath, bool isDirectory);
+    static bool createSecurityToken(QString canonicalPath, bool isDirectory);
 
     static QMutex s_mutex;
     static bool s_bInSandbox;

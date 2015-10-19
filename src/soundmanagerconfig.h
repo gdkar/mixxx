@@ -46,7 +46,7 @@ public:
     bool readFromDisk();
     bool writeToDisk() const;
     QString getAPI() const;
-    void setAPI(const QString &api);
+    void setAPI(QString api);
     bool checkAPI(const SoundManager &soundManager);
     unsigned int getSampleRate() const;
     void setSampleRate(unsigned int sampleRate);
@@ -61,8 +61,8 @@ public:
     void setAudioBufferSizeIndex(unsigned int latency);
     unsigned int getSyncBuffers() const;
     void setSyncBuffers(unsigned int sampleRate);
-    void addOutput(const QString &device, const AudioOutput &out);
-    void addInput(const QString &device, const AudioInput &in);
+    void addOutput(QString device, const AudioOutput &out);
+    void addInput(QString device, const AudioInput &in);
     QMultiHash<QString, AudioOutput> getOutputs() const;
     QMultiHash<QString, AudioInput> getInputs() const;
     void clearOutputs();

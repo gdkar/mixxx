@@ -4,15 +4,15 @@
 #include "util/xml.h"
 #include "preferences/errordialoghandler.h"
 
-int XmlParse::selectNodeInt(const QDomNode& nodeHeader, const QString& sNode)
+int XmlParse::selectNodeInt(QDomNode nodeHeader, QString sNode)
 {
     return selectNode(nodeHeader, sNode).toElement().text().toInt();
 }
-float XmlParse::selectNodeFloat(const QDomNode& nodeHeader,const QString& sNode)
+float XmlParse::selectNodeFloat(QDomNode nodeHeader,QString sNode)
 {
     return selectNode(nodeHeader, sNode).toElement().text().toFloat();
 }
-QDomNode XmlParse::selectNode(const QDomNode& nodeHeader,const QString& sNode)
+QDomNode XmlParse::selectNode(QDomNode nodeHeader,QString sNode)
 {
     auto node = nodeHeader.firstChild();
     while (!node.isNull())
@@ -23,7 +23,7 @@ QDomNode XmlParse::selectNode(const QDomNode& nodeHeader,const QString& sNode)
     return node;
 }
 
-QDomElement XmlParse::selectElement(const QDomNode& nodeHeader,const QString& sNode) {
+QDomElement XmlParse::selectElement(QDomNode nodeHeader,QString sNode) {
     auto node = nodeHeader.firstChild();
     while (!node.isNull())
     {
@@ -36,13 +36,13 @@ QDomElement XmlParse::selectElement(const QDomNode& nodeHeader,const QString& sN
     }
     return QDomElement();
 }
-QString XmlParse::selectNodeQString(const QDomNode& nodeHeader,const QString& sNode)
+QString XmlParse::selectNodeQString(QDomNode nodeHeader,QString sNode)
 {
     auto node = selectNode(nodeHeader, sNode);
     if (!node.isNull()) return node.toElement().text();
     return QString("");
 }
-QDomElement XmlParse::openXMLFile(const QString& path, const QString& name)
+QDomElement XmlParse::openXMLFile(QString path, QString name)
 {
     QDomDocument doc(name);
     QFile file(path);
@@ -75,8 +75,8 @@ QDomElement XmlParse::openXMLFile(const QString& path, const QString& name)
 }
 QDomElement XmlParse::addElement(QDomDocument& doc,
                                  QDomElement& header,
-                                 const QString& sElementName,
-                                 const QString& sText)
+                                 QString sElementName,
+                                 QString sText)
 {
     auto element = doc.createElement(sElementName);
     element.appendChild(doc.createTextNode(sText));

@@ -39,7 +39,7 @@ class VisualPlayPosition : public QObject
 {
     Q_OBJECT
   public:
-    VisualPlayPosition(const QString& m_key);
+    VisualPlayPosition(QString m_key);
     virtual ~VisualPlayPosition();
     // WARNING: Not thread safe. This function must be called only from the
     // engine thread.

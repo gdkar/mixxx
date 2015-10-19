@@ -38,7 +38,7 @@ ReaderStatusUpdate CachingReaderWorker::processReadRequest(const CachingReaderCh
     }
     // Try to read the data required for the chunk from the audio source
     // and adjust the max. readable frame index if decoding errors occur.
-    const SINT framesRead = pChunk->readSampleFrames( m_pSoundSource, &m_maxReadableFrameIndex);
+    auto framesRead = pChunk->readSampleFrames( m_pSoundSource, &m_maxReadableFrameIndex);
     if (0 < framesRead) status = CHUNK_READ_SUCCESS;
     else
     {
@@ -89,7 +89,7 @@ void CachingReaderWorker::run()
 }
 namespace
 {
-    Mixxx::SoundSourcePointer openSoundSourceForReading(const TrackPointer& pTrack, const Mixxx::SoundSourceConfig& audioSrcCfg)
+    Mixxx::SoundSourcePointer openSoundSourceForReading(TrackPointer pTrack, const Mixxx::SoundSourceConfig& audioSrcCfg)
     {
         SoundSourceProxy soundSourceProxy(pTrack);
         auto  pSoundSource = soundSourceProxy.openSoundSource(audioSrcCfg);
@@ -102,7 +102,7 @@ namespace
         return pSoundSource;
     }
 }
-void CachingReaderWorker::loadTrack(const TrackPointer& pTrack)
+void CachingReaderWorker::loadTrack(TrackPointer pTrack)
 {
     //qDebug() << m_group << "CachingReaderWorker::loadTrack() lock acquired for load.";
     // Emit that a new track is loading, stops the current track

@@ -21,7 +21,7 @@ void ControlModel::addControl(const ConfigKey& key,const QString& title,const QS
     info.title = title;
     info.description = description;
     info.pControl = new ControlObject(this);
-    info.pControl->initialize(info.key,true,false,false);
+    info.pControl->initialize(info.key,false,false);
     beginInsertRows(QModelIndex(), m_controls.size(),m_controls.size());
     m_controls.append(info);
     endInsertRows();

@@ -58,7 +58,7 @@ class SoundDevice {
     void clearOutputs();
     void clearInputs();
     bool operator==(const SoundDevice &other) const;
-    bool operator==(const QString &other) const;
+    bool operator==(QString other) const;
   protected:
     void composeOutputBuffer(CSAMPLE* outputBuffer,
                              size_t iFramesPerBuffer,

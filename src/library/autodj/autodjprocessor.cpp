@@ -114,7 +114,7 @@ AutoDJProcessor::AutoDJProcessor(QObject* pParent,
 
     m_pEnabledAutoDJ = new ControlPushButton(
             ConfigKey("AutoDJ", "enabled"));
-    m_pEnabledAutoDJ->setButtonMode(ControlPushButton::TOGGLE);
+    m_pEnabledAutoDJ->setProperty("buttonMode",ControlPushButton::TOGGLE);
     connect(m_pEnabledAutoDJ, SIGNAL(valueChanged(double)),
             this, SLOT(controlEnable(double)));
 

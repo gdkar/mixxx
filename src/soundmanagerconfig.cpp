@@ -138,7 +138,7 @@ bool SoundManagerConfig::writeToDisk() const {
     return true;
 }
 QString SoundManagerConfig::getAPI() const { return m_api; }
-void SoundManagerConfig::setAPI(const QString &api) { m_api = api; }
+void SoundManagerConfig::setAPI(QString api) { m_api = api; }
 /**
  * Checks that the API in the object is valid according to the list of APIs
  * given by SoundManager.
@@ -217,8 +217,8 @@ void SoundManagerConfig::setAudioBufferSizeIndex(unsigned int sizeIndex) {
     // if it's 0, pretend it was 1 -- bkgood
     m_audioBufferSizeIndex = sizeIndex != 0 ? math_min(sizeIndex, kMaxAudioBufferSizeIndex) : 1;
 }
-void SoundManagerConfig::addOutput(const QString &device, const AudioOutput &out) { m_outputs.insert(device, out); }
-void SoundManagerConfig::addInput(const QString &device, const AudioInput &in) { m_inputs.insert(device, in); }
+void SoundManagerConfig::addOutput(QString device, const AudioOutput &out) { m_outputs.insert(device, out); }
+void SoundManagerConfig::addInput(QString device, const AudioInput &in) { m_inputs.insert(device, in); }
 QMultiHash<QString, AudioOutput> SoundManagerConfig::getOutputs() const { return m_outputs;}
 QMultiHash<QString, AudioInput> SoundManagerConfig::getInputs() const {return m_inputs; }
 void SoundManagerConfig::clearOutputs() {m_outputs.clear(); }

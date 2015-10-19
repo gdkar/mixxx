@@ -40,7 +40,7 @@ EngineDeck::EngineDeck(const ChannelHandleAndGroup& handle_group,
 {
     if (pEffectsManager)  pEffectsManager->registerChannel(handle_group);
     // Set up passthrough utilities and fields
-    if(auto ptr = qobject_cast<ControlPushButton*>(m_pPassing)) ptr->setButtonMode(ControlPushButton::POWERWINDOW);
+    if(auto ptr = qobject_cast<ControlPushButton*>(m_pPassing)) ptr->setProperty("buttonMode",ControlPushButton::POWERWINDOW);
     m_bPassthroughIsActive = false;
     m_bPassthroughWasActive = false;
     // Set up passthrough toggle button

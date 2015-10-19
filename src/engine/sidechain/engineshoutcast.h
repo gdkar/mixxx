@@ -74,7 +74,7 @@ class EngineShoutcast : public QObject, public EncoderCallback, public SideChain
     // when connected or disconnected and so on
     void errorDialog(QString text, QString detailedError);
     void infoDialog(QString text, QString detailedError);
-    QByteArray encodeString(const QString& string);
+    QByteArray encodeString(QString string);
     QTextCodec* m_pTextCodec                        = nullptr;
     TrackPointer m_pMetaData;
     shout_t *m_pShout                               = nullptr;

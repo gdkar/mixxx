@@ -53,24 +53,23 @@ KeyControl::KeyControl(QString group,
             this, SLOT(slotResetKey(double)),
             Qt::DirectConnection);
 
-    m_pFileKey = new ControlObject(ConfigKey(group, "file_key"));
+    m_pFileKey = new ControlObject(ConfigKey(group, "file_key"),this);
     connect(m_pFileKey, SIGNAL(valueChanged(double)),
             this, SLOT(slotFileKeyChanged(double)),
             Qt::DirectConnection);
 
-    m_pEngineKey = new ControlObject(ConfigKey(group, "key"));
+    m_pEngineKey = new ControlObject(ConfigKey(group, "key"),this);
     connect(m_pEngineKey, SIGNAL(valueChanged(double)),
             this, SLOT(slotSetEngineKey(double)),
             Qt::DirectConnection);
 
-    m_pEngineKeyDistance = new ControlPotmeter(ConfigKey(group, "visual_key_distance"),
-                                               -0.5, 0.5);
+    m_pEngineKeyDistance = new ControlPotmeter(ConfigKey(group, "visual_key_distance"),-0.5, 0.5);
     connect(m_pEngineKeyDistance, SIGNAL(valueChanged(double)),
             this, SLOT(slotSetEngineKeyDistance(double)),
             Qt::DirectConnection);
 
     m_keylockMode = new ControlPushButton(ConfigKey(group, "keylockMode"));
-    m_keylockMode->setButtonMode(ControlPushButton::TOGGLE);
+    m_keylockMode->setProperty("buttonMode",ControlPushButton::TOGGLE);
 
     // In case of vinyl control "rate" is a filtered mean value for display
     m_pRateSlider = ControlObject::getControl(ConfigKey(group, "rate"));

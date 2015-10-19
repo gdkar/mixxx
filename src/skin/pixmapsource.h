@@ -7,13 +7,13 @@ _Pragma("once")
 class PixmapSource {
   public:
     PixmapSource();
-    PixmapSource(const QString& filepath);
+    PixmapSource(QString filepath);
     virtual ~PixmapSource();
     virtual bool isEmpty() const;
     virtual bool isSVG() const;
     virtual bool isBitmap() const;
-    virtual void setSVG(const QByteArray& content);
-    virtual void setPath(const QString& newPath);
+    virtual void setSVG(QByteArray content);
+    virtual void setPath(QString newPath);
     virtual QString getPath() const;
     virtual QByteArray getData() const;
     virtual QString getId() const;

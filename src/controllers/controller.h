@@ -36,7 +36,7 @@ class Controller : public QObject, ConstControllerPresetVisitor {
     virtual QString presetExtension() = 0;
     void setPreset(const ControllerPreset& preset);
     virtual void accept(ControllerVisitor* visitor) = 0;
-    virtual bool savePreset(const QString filename) const = 0;
+    virtual bool savePreset(QString filename) const = 0;
     // Returns a clone of the Controller's loaded preset.
     virtual ControllerPresetPointer getPreset() const = 0;
     bool isOpen() const;
@@ -64,7 +64,7 @@ class Controller : public QObject, ConstControllerPresetVisitor {
     // Handles packets of raw bytes and passes them to an ".incomingData" script
     // function that is assumed to exist. (Sub-classes may want to reimplement
     // this if they have an alternate way of handling such data.)
-    virtual void receive(const QByteArray data);
+    virtual void receive(QByteArray data);
     // Initializes the controller engine
     virtual void applyPreset(QList<QString> scriptPaths);
     // Puts the controller in and out of learning mode.

@@ -39,10 +39,10 @@ class PlayerManager : public QObject{
     unsigned int numberOfDecks() const;
     // Returns true if the group is a deck group. If index is non-NULL,
     // populates it with the deck number (1-indexed).
-    static bool isDeckGroup(const QString& group, int* number=nullptr);
+    static bool isDeckGroup(QString group, int* number=nullptr);
     // Returns true if the group is a preview deck group. If index is non-NULL,
     // populates it with the deck number (1-indexed).
-    static bool isPreviewDeckGroup(const QString& group, int* number=nullptr);
+    static bool isPreviewDeckGroup(QString group, int* number=nullptr);
     // Return the number of samplers. Thread-safe.
     static unsigned int numSamplers();
     unsigned int numberOfSamplers() const;

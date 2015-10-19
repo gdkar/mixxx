@@ -1,7 +1,7 @@
 #include "util/timer.h"
 #include "util/experiment.h"
 
-Timer::Timer(const QString& key, Stat::ComputeFlags compute)
+Timer::Timer(QString key, Stat::ComputeFlags compute)
         : m_key(key),
           m_compute(Stat::experimentFlags(compute)),
           m_running(false)
@@ -43,7 +43,7 @@ qint64 Timer::elapsed(bool report)
     }
     return nsec;
 }
-SuspendableTimer::SuspendableTimer(const QString& key,Stat::ComputeFlags compute)
+SuspendableTimer::SuspendableTimer(QString key,Stat::ComputeFlags compute)
         : Timer(key, compute),
           m_leapTime(0)
 {
@@ -86,7 +86,7 @@ ScopedTimer::ScopedTimer(const char* key, const char *arg,Stat::ComputeFlags com
 {
     if (CmdlineArgs::Instance().getDeveloper()) initialize(QString(key), arg ? QString(arg) : QString(), compute);
 }
-ScopedTimer::ScopedTimer(const char* key, const QString& arg,Stat::ComputeFlags compute)
+ScopedTimer::ScopedTimer(const char* key, QString arg,Stat::ComputeFlags compute)
         : m_pTimer(nullptr),
           m_cancel(false)
 {
@@ -100,7 +100,7 @@ ScopedTimer::~ScopedTimer()
         m_pTimer->~Timer();
     }
 }
-void ScopedTimer::initialize(const QString& key, const QString& arg,Stat::ComputeFlags compute )
+void ScopedTimer::initialize(QString key, QString arg,Stat::ComputeFlags compute )
 {
     QString strKey;
     if (arg.isEmpty()) strKey = key;

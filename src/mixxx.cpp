@@ -490,9 +490,9 @@ void MixxxMainWindow::finalize() {
     m_runtime_timer.elapsed(true);
     StatsManager::destroy();
 }
-bool MixxxMainWindow::loadTranslations(const QLocale& systemLocale, QString userLocale,
-                      const QString& translation, const QString& prefix,
-                      const QString& translationPath, QTranslator* pTranslator) {
+bool MixxxMainWindow::loadTranslations(QLocale systemLocale, QString userLocale,
+                      QString translation, QString prefix,
+                      QString translationPath, QTranslator* pTranslator) {
     if (userLocale.size() == 0) {
 #if QT_VERSION >= 0x040800
         QStringList uiLanguages = systemLocale.uiLanguages();
@@ -828,7 +828,7 @@ int MixxxMainWindow::noOutputDlg(bool *continueClicked)
         } else if (msgBox.clickedButton() == exitButton) {return 1;}
     }
 }
-QString buildWhatsThis(const QString& title, const QString& text) {
+QString buildWhatsThis(QString title, QString text) {
     auto preparedTitle = title;
     return QString("%1\n\n%2").arg(preparedTitle.replace("&", ""), text);
 }

@@ -109,31 +109,22 @@ void WPushButton::setup(QDomNode node, const SkinContext& context) {
         }
         state = state.nextSibling();
     }
-
-    ControlParameterWidgetConnection* leftConnection = NULL;
+    auto leftConnection = static_cast<ControlParameterWidgetConnection*>(nullptr);
     if (m_leftConnections.isEmpty()) {
-        if (!m_connections.isEmpty()) {
-            // If no left connection is set, the this is the left connection
-            leftConnection = m_connections.at(0);
-        }
-    } else {
-        leftConnection = m_leftConnections.at(0);
-    }
-
+        if (!m_connections.isEmpty()) leftConnection = m_connections.at(0);
+    } else leftConnection = m_leftConnections.at(0);
     if (leftConnection) {
-        bool leftClickForcePush = context.selectBool(node, "LeftClickIsPushButton", false);
+        auto leftClickForcePush = context.selectBool(node, "LeftClickIsPushButton", false);
         m_leftButtonMode = ControlPushButton::PUSH;
-        if (!leftClickForcePush) {
-            const ConfigKey& configKey = leftConnection->getKey();
-            ControlPushButton* p = dynamic_cast<ControlPushButton*>(
-                    ControlObject::getControl(configKey));
-            if (p) {
-                m_leftButtonMode = p->getButtonMode();
-            }
+        if (!leftClickForcePush)
+        {
+            auto configKey = leftConnection->getKey();
+            auto p = dynamic_cast<ControlPushButton*>(ControlObject::getControl(configKey));
+            if (p) m_leftButtonMode = p->getButtonMode();
         }
-        if (leftConnection->getEmitOption() &
-                ControlParameterWidgetConnection::EmitOption::Default) {
-            switch (m_leftButtonMode) {
+        if (leftConnection->getEmitOption() & ControlParameterWidgetConnection::EmitOption::Default) {
+            switch (m_leftButtonMode)
+            {
                 case ControlPushButton::PUSH:
                 case ControlPushButton::LONGPRESSLATCHING:
                 case ControlPushButton::POWERWINDOW:
@@ -159,13 +150,12 @@ void WPushButton::setup(QDomNode node, const SkinContext& context) {
     }
 
     if (!m_rightConnections.isEmpty()) {
-        ControlParameterWidgetConnection* rightConnection = m_rightConnections.at(0);
-        bool rightClickForcePush = context.selectBool(node, "RightClickIsPushButton", false);
+        auto rightConnection = m_rightConnections.at(0);
+        auto rightClickForcePush = context.selectBool(node, "RightClickIsPushButton", false);
         m_rightButtonMode = ControlPushButton::PUSH;
         if (!rightClickForcePush) {
-            const ConfigKey configKey = rightConnection->getKey();
-            ControlPushButton* p = dynamic_cast<ControlPushButton*>(
-                    ControlObject::getControl(configKey));
+            auto configKey = rightConnection->getKey();
+            auto p = dynamic_cast<ControlPushButton*>(ControlObject::getControl(configKey));
             if (p) {
                 m_rightButtonMode = p->getButtonMode();
                 if (m_rightButtonMode != ControlPushButton::PUSH &&
@@ -176,8 +166,7 @@ void WPushButton::setup(QDomNode node, const SkinContext& context) {
                 }
             }
         }
-        if (rightConnection->getEmitOption() &
-                ControlParameterWidgetConnection::EmitOption::Default) {
+        if (rightConnection->getEmitOption() & ControlParameterWidgetConnection::EmitOption::Default) {
             switch (m_rightButtonMode) {
                 case ControlPushButton::PUSH:
                 case ControlPushButton::LONGPRESSLATCHING:
@@ -195,8 +184,8 @@ void WPushButton::setup(QDomNode node, const SkinContext& context) {
             rightConnection->setDirectionOption(ControlParameterWidgetConnection::DirectionOption::FromWidget);
     }
 }
-
-void WPushButton::setStates(int iStates) {
+void WPushButton::setStates(int iStates)
+{
     m_bPressed = false;
     m_iNoStates = iStates;
     m_activeTouchButton = Qt::NoButton;
@@ -209,39 +198,29 @@ void WPushButton::setStates(int iStates) {
 
 void WPushButton::setPixmap(int iState, bool bPressed, PixmapSource source,
                             Paintable::DrawMode mode) {
-    QVector<PaintablePointer>& pixmaps = bPressed ?
-            m_pressedPixmaps : m_unpressedPixmaps;
-
-    if (iState < 0 || iState >= pixmaps.size()) {
-        return;
-    }
-
-    PaintablePointer pPixmap = WPixmapStore::getPaintable(source, mode);
-    if (pPixmap.isNull() || pPixmap->isNull()) {
+    auto pixmaps = bPressed ? m_pressedPixmaps : m_unpressedPixmaps;
+    if (iState < 0 || iState >= pixmaps.size()) return;
+    auto pPixmap = WPixmapStore::getPaintable(source, mode);
+    if (pPixmap.isNull() || pPixmap->isNull())
+    {
         // Only log if it looks like the user tried to specify a pixmap.
-        if (!source.isEmpty()) {
-            qDebug() << "WPushButton: Error loading pixmap:" << source.getPath();
-        }
-    } else if (mode == Paintable::FIXED) {
-        // Set size of widget equal to pixmap size
-        setFixedSize(pPixmap->size());
-    }
+        if (!source.isEmpty())  qDebug() << "WPushButton: Error loading pixmap:" << source.getPath();
+    } else if (mode == Paintable::FIXED) setFixedSize(pPixmap->size());
     pixmaps.replace(iState, pPixmap);
 }
-
-void WPushButton::setPixmapBackground(PixmapSource source,Paintable::DrawMode mode) {
+void WPushButton::setPixmapBackground(PixmapSource source,Paintable::DrawMode mode)
+{
     // Load background pixmap
     m_pPixmapBack = WPixmapStore::getPaintable(source, mode);
-    if (!source.isEmpty() &&
-            (m_pPixmapBack.isNull() || m_pPixmapBack->isNull())) {
+    if (!source.isEmpty() && (m_pPixmapBack.isNull() || m_pPixmapBack->isNull()))
+    {
         // Only log if it looks like the user tried to specify a pixmap.
         qDebug() << "WPushButton: Error loading background pixmap:" << source.getPath();
     }
 }
-
-void WPushButton::restyleAndRepaint() {
+void WPushButton::restyleAndRepaint()
+{
     emit(displayValueChanged(readDisplayValue()));
-
     // According to http://stackoverflow.com/a/3822243 this is the least
     // expensive way to restyle just this widget.
     // Since we expect button connections to not change at high frequency we
@@ -249,23 +228,19 @@ void WPushButton::restyleAndRepaint() {
     // re-render.
     style()->unpolish(this);
     style()->polish(this);
-
     // These calls don't always trigger the repaint, so call it explicitly.
     repaint();
 }
-
-void WPushButton::onConnectedControlChanged(double dParameter, double dValue) {
+void WPushButton::onConnectedControlChanged(double dParameter, double dValue)
+{
     Q_UNUSED(dParameter);
     // Enums are not currently represented using parameter space so it doesn't
     // make sense to use the parameter here yet.
-    if (m_iNoStates == 1) {
-        m_bPressed = (dValue == 1.0);
-    }
-
+    if (m_iNoStates == 1) m_bPressed = (dValue == 1.0);
     restyleAndRepaint();
 }
-
-void WPushButton::paintEvent(QPaintEvent* e) {
+void WPushButton::paintEvent(QPaintEvent* e)
+{
     Q_UNUSED(e);
     QStyleOption option;
     option.initFrom(this);

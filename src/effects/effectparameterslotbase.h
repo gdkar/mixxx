@@ -1,6 +1,4 @@
-#ifndef EFFECTPARAMETERSLOTBASE_H
-#define EFFECTPARAMETERSLOTBASE_H
-
+_Pragma("once")
 #include <QObject>
 #include <QVariant>
 #include <QString>
@@ -17,7 +15,7 @@ typedef QSharedPointer<EffectParameterSlotBase> EffectParameterSlotBasePointer;
 class EffectParameterSlotBase : public QObject {
     Q_OBJECT
   public:
-    EffectParameterSlotBase(const QString& group, const unsigned int iParameterSlotNumber);
+    EffectParameterSlotBase(QString group, const unsigned int iParameterSlotNumber);
     virtual ~EffectParameterSlotBase();
 
     QString name() const;
@@ -43,8 +41,4 @@ class EffectParameterSlotBase : public QObject {
     ControlObject* m_pControlLoaded;
     ControlObject* m_pControlType;
     double m_dChainParameter;
-
-    DISALLOW_COPY_AND_ASSIGN(EffectParameterSlotBase);
 };
-
-#endif /* EFFECTPARAMETERSLOTBASE_H */

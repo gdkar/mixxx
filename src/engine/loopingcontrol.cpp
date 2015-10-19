@@ -72,18 +72,16 @@ LoopingControl::LoopingControl(QString group,
             Qt::DirectConnection);
     m_pReloopExitButton->set(0);
 
-    m_pCOLoopEnabled = new ControlObject(ConfigKey(group, "loop_enabled"));
+    m_pCOLoopEnabled = new ControlObject(ConfigKey(group, "loop_enabled"),this);
     m_pCOLoopEnabled->set(0.0);
 
-    m_pCOLoopStartPosition =
-            new ControlObject(ConfigKey(group, "loop_start_position"));
+    m_pCOLoopStartPosition =new ControlObject(ConfigKey(group, "loop_start_position"),this);
     m_pCOLoopStartPosition->set(kNoTrigger);
     connect(m_pCOLoopStartPosition, SIGNAL(valueChanged(double)),
             this, SLOT(slotLoopStartPos(double)),
             Qt::DirectConnection);
 
-    m_pCOLoopEndPosition =
-            new ControlObject(ConfigKey(group, "loop_end_position"));
+    m_pCOLoopEndPosition =new ControlObject(ConfigKey(group, "loop_end_position"),this);
     m_pCOLoopEndPosition->set(kNoTrigger);
     connect(m_pCOLoopEndPosition, SIGNAL(valueChanged(double)),
             this, SLOT(slotLoopEndPos(double)),
@@ -98,7 +96,7 @@ LoopingControl::LoopingControl(QString group,
     // Connect beatloop, which can flexibly handle different values.
     // Using this CO directly is meant to be used internally and by scripts,
     // or anything else that can pass in arbitrary values.
-    m_pCOBeatLoop = new ControlObject(ConfigKey(group, "beatloop"), false);
+    m_pCOBeatLoop = new ControlObject(ConfigKey(group, "beatloop"), this);
     connect(m_pCOBeatLoop, SIGNAL(valueChanged(double)), this,
             SLOT(slotBeatLoop(double)), Qt::DirectConnection);
 
@@ -122,7 +120,7 @@ LoopingControl::LoopingControl(QString group,
         m_beatLoops.append(pBeatLoop);
     }
 
-    m_pCOBeatJump = new ControlObject(ConfigKey(group, "beatjump"), false);
+    m_pCOBeatJump = new ControlObject(ConfigKey(group, "beatjump"), this);
     connect(m_pCOBeatJump, SIGNAL(valueChanged(double)),
             this, SLOT(slotBeatJump(double)), Qt::DirectConnection);
 
@@ -136,7 +134,7 @@ LoopingControl::LoopingControl(QString group,
         m_beatJumps.append(pBeatJump);
     }
 
-    m_pCOLoopMove = new ControlObject(ConfigKey(group, "loop_move"), false);
+    m_pCOLoopMove = new ControlObject(ConfigKey(group, "loop_move"), this);
     connect(m_pCOLoopMove, SIGNAL(valueChanged(double)),
             this, SLOT(slotLoopMove(double)), Qt::DirectConnection);
 
@@ -150,7 +148,7 @@ LoopingControl::LoopingControl(QString group,
         m_loopMoves.append(pLoopMove);
     }
 
-    m_pCOLoopScale = new ControlObject(ConfigKey(group, "loop_scale"), false);
+    m_pCOLoopScale = new ControlObject(ConfigKey(group, "loop_scale"), this);
     connect(m_pCOLoopScale, SIGNAL(valueChanged(double)),
             this, SLOT(slotLoopScale(double)));
     m_pLoopHalveButton = new ControlPushButton(ConfigKey(group, "loop_halve"));
@@ -954,15 +952,11 @@ LoopMoveControl::~LoopMoveControl() {
 }
 
 void LoopMoveControl::slotMoveBackward(double v) {
-    if (v > 0) {
-        emit(loopMove(-m_dLoopMoveSize));
-    }
+    if (v > 0) emit(loopMove(-m_dLoopMoveSize));
 }
 
 void LoopMoveControl::slotMoveForward(double v) {
-    if (v > 0) {
-        emit(loopMove(m_dLoopMoveSize));
-    }
+    if (v > 0) emit(loopMove(m_dLoopMoveSize));
 }
 
 BeatLoopingControl::BeatLoopingControl(QString group, double size)
@@ -970,35 +964,30 @@ BeatLoopingControl::BeatLoopingControl(QString group, double size)
           m_bActive(false) {
     // This is the original beatloop control which is now deprecated. Its value
     // is the state of the beatloop control (1 for enabled, 0 for disabled).
-    m_pLegacy = new ControlPushButton(
-            keyForControl(group, "beatloop_%1", size));
-    m_pLegacy->setButtonMode(ControlPushButton::TOGGLE);
+    m_pLegacy = new ControlPushButton(keyForControl(group, "beatloop_%1", size));
+    m_pLegacy->setProperty("buttonMode",ControlPushButton::TOGGLE);
     connect(m_pLegacy, SIGNAL(valueChanged(double)),
             this, SLOT(slotLegacy(double)),
             Qt::DirectConnection);
     // A push-button which activates the beatloop.
-    m_pActivate = new ControlPushButton(
-            keyForControl(group, "beatloop_%1_activate", size));
+    m_pActivate = new ControlPushButton(keyForControl(group, "beatloop_%1_activate", size));
     connect(m_pActivate, SIGNAL(valueChanged(double)),
             this, SLOT(slotActivate(double)),
             Qt::DirectConnection);
     // A push-button which toggles the beatloop as active or inactive.
-    m_pToggle = new ControlPushButton(
-            keyForControl(group, "beatloop_%1_toggle", size));
+    m_pToggle = new ControlPushButton(keyForControl(group, "beatloop_%1_toggle", size));
     connect(m_pToggle, SIGNAL(valueChanged(double)),
             this, SLOT(slotToggle(double)),
             Qt::DirectConnection);
 
     // A push-button which activates rolling beatloops
-    m_pActivateRoll = new ControlPushButton(
-            keyForControl(group, "beatlooproll_%1_activate", size));
+    m_pActivateRoll = new ControlPushButton(keyForControl(group, "beatlooproll_%1_activate", size));
     connect(m_pActivateRoll, SIGNAL(valueChanged(double)),
             this, SLOT(slotActivateRoll(double)),
             Qt::DirectConnection);
 
     // An indicator control which is 1 if the beatloop is enabled and 0 if not.
-    m_pEnabled = new ControlObject(
-            keyForControl(group, "beatloop_%1_enabled", size));
+    m_pEnabled = new ControlObject( keyForControl(group, "beatloop_%1_enabled", size),this);
 }
 
 BeatLoopingControl::~BeatLoopingControl() {

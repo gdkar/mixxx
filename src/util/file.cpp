@@ -2,7 +2,7 @@
 
 MFile::MFile() = default;
 
-MFile::MFile(const QString& file)
+MFile::MFile(QString file)
         : m_fileName(file),
           m_file(file),
           m_pSecurityToken(Sandbox::openSecurityToken(m_file, true)) {
@@ -52,7 +52,7 @@ SecurityTokenPointer MDir::token()
 {
   return m_pSecurityToken;
 }
-MDir::MDir(const QString& path)
+MDir::MDir(QString path)
         : m_dirPath(path),
           m_dir(path),
           m_pSecurityToken(Sandbox::openSecurityToken(m_dir, true)) {

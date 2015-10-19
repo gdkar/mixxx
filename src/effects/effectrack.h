@@ -1,6 +1,4 @@
-#ifndef EFFECTRACK_H
-#define EFFECTRACK_H
-
+_Pragma("once")
 #include <QObject>
 #include <QString>
 #include <QSharedPointer>
@@ -28,7 +26,7 @@ class EffectRack : public QObject {
     EffectRack(EffectsManager* pEffectsManager,
                EffectChainManager* pChainManager,
                const unsigned int iRackNumber,
-               const QString& group);
+               QString group);
     virtual ~EffectRack();
 
     void addToEngine();
@@ -43,7 +41,7 @@ class EffectRack : public QObject {
         return m_iRackNumber;
     }
 
-    const QString& getGroup() const {
+    QString getGroup() const {
         return m_group;
     }
 
@@ -119,18 +117,18 @@ class PerGroupRack : public EffectRack {
     PerGroupRack(EffectsManager* pEffectsManager,
                  EffectChainManager* pChainManager,
                  const unsigned int iRackNumber,
-                 const QString& group);
+                 QString group);
     virtual ~PerGroupRack() {}
 
-    EffectChainSlotPointer addEffectChainSlotForGroup(const QString& group);
-    EffectChainSlotPointer getGroupEffectChainSlot(const QString& group);
+    EffectChainSlotPointer addEffectChainSlotForGroup(QString group);
+    EffectChainSlotPointer getGroupEffectChainSlot(QString group);
 
   protected:
     virtual void configureEffectChainSlotForGroup(EffectChainSlotPointer pSlot,
                                                   const ChannelHandleAndGroup& handle_group) = 0;
     virtual QString formatEffectChainSlotGroupForGroup(const unsigned int iRackNumber,
                                                        const unsigned int iChainSlotNumber,
-                                                       const QString& group) const = 0;
+                                                       QString group) const = 0;
 
   private:
     QHash<QString, EffectChainSlotPointer> m_groupToChainSlot;
@@ -141,28 +139,28 @@ class QuickEffectRack : public PerGroupRack {
   public:
     QuickEffectRack(EffectsManager* pEffectsManager,EffectChainManager* pChainManager,const unsigned int iRackNumber);
     virtual ~QuickEffectRack() {}
-    bool loadEffectToGroup(const QString& group, EffectPointer pEffect);
+    bool loadEffectToGroup(QString group, EffectPointer pEffect);
     static QString formatGroupString(const unsigned int iRackNumber) {
         return QString("QuickEffectRack%1")
                 .arg(QString::number(iRackNumber + 1));
     }
-    static QString formatEffectChainSlotGroupString(const unsigned int iRackNumber,const QString& group) {
+    static QString formatEffectChainSlotGroupString(const unsigned int iRackNumber,QString group) {
         return QString("QuickEffectRack%1_%2")
                 .arg(QString::number(iRackNumber + 1))
                 .arg(group);
     }
-    static QString formatEffectSlotGroupString(const unsigned int iRackNumber,const unsigned int iEffectSlotNumber,const QString& group) {
+    static QString formatEffectSlotGroupString(const unsigned int iRackNumber,const unsigned int iEffectSlotNumber,QString group) {
         return QString("QuickEffectRack%1_%2_Effect%3")
                 .arg(QString::number(iRackNumber + 1))
                 .arg(group)
                 .arg(QString::number(iEffectSlotNumber + 1));
     }
-    QString formatEffectSlotGroupString(const unsigned int iEffectSlotNumber,const QString& group) const {
+    QString formatEffectSlotGroupString(const unsigned int iEffectSlotNumber,QString group) const {
         return formatEffectSlotGroupString(getRackNumber(), iEffectSlotNumber,group);
     }
   protected:
     virtual void configureEffectChainSlotForGroup(EffectChainSlotPointer pSlot,const ChannelHandleAndGroup& handle_group);
-    virtual QString formatEffectChainSlotGroupForGroup(const unsigned int iRackNumber,const unsigned int iChainSlotNumber,const QString& group) const {
+    virtual QString formatEffectChainSlotGroupForGroup(const unsigned int iRackNumber,const unsigned int iChainSlotNumber,QString group) const {
         Q_UNUSED(iChainSlotNumber);
         return formatEffectChainSlotGroupString(iRackNumber, group);
     }
@@ -172,32 +170,30 @@ class EqualizerRack : public PerGroupRack {
   public:
     EqualizerRack(EffectsManager* pEffectsManager,EffectChainManager* pChainManager,const unsigned int iRackNumber);
     virtual ~EqualizerRack() {}
-    bool loadEffectToGroup(const QString& group, EffectPointer pEffect);
+    bool loadEffectToGroup(QString group, EffectPointer pEffect);
     static QString formatGroupString(const unsigned int iRackNumber) {
         return QString("EqualizerRack%1").arg(QString::number(iRackNumber + 1));
     }
-    static QString formatEffectChainSlotGroupString(const unsigned int iRackNumber,const QString& group) {
+    static QString formatEffectChainSlotGroupString(const unsigned int iRackNumber,QString group) {
         return QString("EqualizerRack%1_%2")
                 .arg(QString::number(iRackNumber + 1))
                 .arg(group);
     }
-    static QString formatEffectSlotGroupString(const unsigned int iRackNumber,const unsigned int iEffectSlotNumber,const QString& group) {
+    static QString formatEffectSlotGroupString(const unsigned int iRackNumber,const unsigned int iEffectSlotNumber,QString group) {
         return QString("EqualizerRack%1_%2_Effect%3")
                 .arg(QString::number(iRackNumber + 1))
                 .arg(group)
                 .arg(QString::number(iEffectSlotNumber + 1));
     }
-    QString formatEffectSlotGroupString(const unsigned int iEffectSlotNumber,const QString& group) const {
+    QString formatEffectSlotGroupString(const unsigned int iEffectSlotNumber,QString group) const {
         return formatEffectSlotGroupString(getRackNumber(), iEffectSlotNumber,group);
     }
   protected:
     virtual void configureEffectChainSlotForGroup(EffectChainSlotPointer pSlot,const ChannelHandleAndGroup& handle_group);
     virtual QString formatEffectChainSlotGroupForGroup(const unsigned int iRackNumber,
                                                        const unsigned int iChainSlotNumber,
-                                                       const QString& group) const {
+                                                       QString group) const {
         Q_UNUSED(iChainSlotNumber);
         return formatEffectChainSlotGroupString(iRackNumber, group);
     }
 };
-
-#endif /* EFFECTRACK_H */

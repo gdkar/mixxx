@@ -15,7 +15,7 @@ QMutex ControlDoublePrivate::s_qCOHashMutex;
 
 ControlDoublePrivate::ControlDoublePrivate(ConfigKey key,
                                            ControlObject* pCreatorCO,
-                                           bool bIgnoreNops, bool bTrack,
+                                           bool bTrack,
                                            bool bPersist)
         : m_key(key),
           m_bPersistInConfiguration(bPersist),
@@ -72,7 +72,7 @@ void ControlDoublePrivate::insertAlias(ConfigKey alias, ConfigKey key)
     s_qCOHash.insert(alias, pControl);
 }
 // static
-QSharedPointer<ControlDoublePrivate> ControlDoublePrivate::getControl(ConfigKey key, bool warn, ControlObject* pCreatorCO,bool bIgnoreNops, bool bTrack, bool bPersist)
+QSharedPointer<ControlDoublePrivate> ControlDoublePrivate::getControl(ConfigKey key, bool warn, ControlObject* pCreatorCO,bool bTrack, bool bPersist)
 {
     if (key.isNull())
     {
@@ -87,7 +87,6 @@ QSharedPointer<ControlDoublePrivate> ControlDoublePrivate::getControl(ConfigKey 
             pControl = QSharedPointer<ControlDoublePrivate>(new ControlDoublePrivate(
                   key, 
                   pCreatorCO,
-                  bIgnoreNops,
                   bTrack, 
                   bPersist
                   )
@@ -101,7 +100,7 @@ QSharedPointer<ControlDoublePrivate> ControlDoublePrivate::getControl(ConfigKey 
       if ( !pCreatorCO ) 
       {
         locker.unlock();  
-        pCreatorCO = new ControlObject(key,bIgnoreNops,bTrack,bPersist);
+        pCreatorCO = new ControlObject(key,pControl.data(),bTrack,bPersist);
         locker.relock();
         if ( pControl->m_pCreatorCO != pCreatorCO )
         {

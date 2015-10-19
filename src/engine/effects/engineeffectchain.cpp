@@ -4,7 +4,7 @@
 #include "sampleutil.h"
 #include "util/defs.h"
 
-EngineEffectChain::EngineEffectChain(const QString& id)
+EngineEffectChain::EngineEffectChain(QString id)
         : m_id(id),
           m_enableState(EffectProcessor::ENABLED),
           m_insertionType(EffectChain::INSERT),

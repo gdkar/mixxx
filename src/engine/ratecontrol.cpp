@@ -40,8 +40,8 @@ RateControl::RateControl(QString group,ConfigObject<ConfigValue>* _config)
       m_dRateTempRampbackChange(0.0) {
     m_pScratchController = new PositionScratchController(group);
 
-    m_pRateDir = new ControlObject(ConfigKey(group, "rate_dir"));
-    m_pRateRange = new ControlObject(ConfigKey(group, "rateRange"));
+    m_pRateDir = new ControlObject(ConfigKey(group, "rate_dir"),this);
+    m_pRateRange = new ControlObject(ConfigKey(group, "rateRange"),this);
     // Allow rate slider to go out of bounds so that master sync rate
     // adjustments are not capped.
     m_pRateSlider = new ControlPotmeter(ConfigKey(group, "rate"),
@@ -140,7 +140,7 @@ RateControl::RateControl(QString group,ConfigObject<ConfigValue>* _config)
     // Scratch controller, this is an accumulator which is useful for
     // controllers that return individiual +1 or -1s, these get added up and
     // cleared when we read
-    m_pScratch2 = new ControlObject(ConfigKey(group, "scratch2"));
+    m_pScratch2 = new ControlObject(ConfigKey(group, "scratch2"),this);
 
     // Scratch enable toggle
     m_pScratch2Enable = new ControlPushButton(ConfigKey(group, "scratch2_enable"));
@@ -153,7 +153,7 @@ RateControl::RateControl(QString group,ConfigObject<ConfigValue>* _config)
     m_pScratch2Scratching->set(1.0);
 
 
-    m_pJog = new ControlObject(ConfigKey(group, "jog"));
+    m_pJog = new ControlObject(ConfigKey(group, "jog"),this);
     std::memset(m_jogFilter,0,sizeof(m_jogFilter));
     // Update Internal Settings
     // Set Pitchbend Mode

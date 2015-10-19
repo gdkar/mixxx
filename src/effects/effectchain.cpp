@@ -7,7 +7,7 @@
 #include "sampleutil.h"
 #include "util/xml.h"
 
-EffectChain::EffectChain(EffectsManager* pEffectsManager, const QString& id,
+EffectChain::EffectChain(EffectsManager* pEffectsManager, QString id,
                          EffectChainPointer pPrototype)
         : QObject(pEffectsManager),
           m_pEffectsManager(pEffectsManager),
@@ -109,15 +109,15 @@ EffectChainPointer EffectChain::prototype() const {
     return m_pPrototype;
 }
 
-const QString& EffectChain::id() const {
+QString EffectChain::id() const {
     return m_id;
 }
 
-const QString& EffectChain::name() const {
+QString EffectChain::name() const {
     return m_name;
 }
 
-void EffectChain::setName(const QString& name) {
+void EffectChain::setName(QString name) {
     m_name = name;
     emit(nameChanged(name));
 }
@@ -126,7 +126,7 @@ QString EffectChain::description() const {
     return m_description;
 }
 
-void EffectChain::setDescription(const QString& description) {
+void EffectChain::setDescription(QString description) {
     m_description = description;
     emit(descriptionChanged(description));
 }
@@ -159,7 +159,8 @@ bool EffectChain::enabledForChannel(const ChannelHandleAndGroup& handle_group) c
     return m_enabledChannels.contains(handle_group);
 }
 
-const QSet<ChannelHandleAndGroup>& EffectChain::enabledChannels() const {
+QSet<ChannelHandleAndGroup> EffectChain::enabledChannels() const
+{
     return m_enabledChannels;
 }
 
@@ -179,7 +180,7 @@ double EffectChain::mix() const {
     return m_dMix;
 }
 
-void EffectChain::setMix(const double& dMix) {
+void EffectChain::setMix(double dMix) {
     m_dMix = dMix;
     sendParameterUpdate();
     emit(mixChanged(dMix));
@@ -250,7 +251,7 @@ unsigned int EffectChain::numEffects() const {
     return m_effects.size();
 }
 
-const QList<EffectPointer>& EffectChain::effects() const {
+QList<EffectPointer> EffectChain::effects() const {
     return m_effects;
 }
 
@@ -294,7 +295,7 @@ QDomElement EffectChain::toXML(QDomDocument* doc) const {
 
 // static
 EffectChainPointer EffectChain::fromXML(EffectsManager* pEffectsManager,
-                                        const QDomElement& element) {
+                                        QDomElement element) {
     QString id = XmlParse::selectNodeQString(element, "Id");
     QString name = XmlParse::selectNodeQString(element, "Name");
     QString description = XmlParse::selectNodeQString(element, "Description");

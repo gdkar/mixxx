@@ -17,7 +17,7 @@ EngineAux::EngineAux(const ChannelHandleAndGroup& handle_group, EffectsManager* 
         : EngineChannel(handle_group, EngineChannel::CENTER),
           m_pEngineEffectsManager(pEffectsManager ? pEffectsManager->getEngineEffectsManager() : nullptr),
           m_vuMeter(getGroup()),
-          m_pEnabled(new ControlObject(ConfigKey(getGroup(), "enabled"))),
+          m_pEnabled(new ControlObject(ConfigKey(getGroup(), "enabled"),this)),
           m_pPregain(new ControlAudioTaperPot(ConfigKey(getGroup(), "pregain"), -12, 12, 0.5)),
           m_sampleBuffer(nullptr),
           m_wasActive(false)

@@ -21,11 +21,11 @@
 #include "control/control.h"
 ControlPotmeter::ControlPotmeter(ConfigKey key, double dMinValue, double dMaxValue,
                                  bool bAllowOutOfBounds,
-                                 bool bIgnoreNops,
                                  bool bTrack,
                                  bool bPersist)
-        : ControlObject(key, bIgnoreNops, bTrack, bPersist),
-          m_controls(key) {
+        : ControlObject(key, nullptr, bTrack, bPersist),
+          m_controls(key)
+{
     setRange(dMinValue, dMaxValue, bAllowOutOfBounds);
     auto default_value = dMinValue + 0.5 * (dMaxValue - dMinValue);
     setDefaultValue(default_value);

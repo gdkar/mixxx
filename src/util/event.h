@@ -17,14 +17,14 @@ class Event {
     EventType m_type;
     qint64 m_time;
 
-    static bool event(const QString& tag, Event::EventType type = Stat::EVENT) {
+    static bool event(QString tag, Event::EventType type = Stat::EVENT) {
         return Stat::track(tag, type, Stat::experimentFlags(Stat::COUNT), 0.0);
     }
 
-    static bool start(const QString& tag) {
+    static bool start(QString tag) {
         return event(tag, Stat::EVENT_START);
     }
-    static bool end(const QString& tag) {
+    static bool end(QString tag) {
         return event(tag, Stat::EVENT_END);
     }
 };

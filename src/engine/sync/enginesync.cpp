@@ -48,7 +48,7 @@ void EngineSync::onCallbackStart(int sampleRate, int bufferSize) {
     m_pInternalClock->onCallbackStart(sampleRate, bufferSize);
 }
 EngineChannel* EngineSync::getMaster() const {return m_pMasterSyncable ? m_pMasterSyncable->getChannel() : nullptr;}
-Syncable* EngineSync::getSyncableForGroup(const QString& group) {
+Syncable* EngineSync::getSyncableForGroup(QString group) {
     for(auto  pSyncable: m_syncables) {
         if (pSyncable->getGroup() == group) {return pSyncable;}
     }

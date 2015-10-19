@@ -50,7 +50,7 @@ class TrackInfoObject : public QObject {
     Q_OBJECT
   public:
     // Initialize a new track with the filename.
-    TrackInfoObject(const QString& file="",SecurityTokenPointer pToken=SecurityTokenPointer(),bool parseHeader=true,bool parseCoverArt=false);
+    TrackInfoObject(QString file="",SecurityTokenPointer pToken=SecurityTokenPointer(),bool parseHeader=true,bool parseCoverArt=false);
     // Initialize track with a QFileInfo class
     TrackInfoObject(const QFileInfo& fileInfo,SecurityTokenPointer pToken=SecurityTokenPointer(),bool parseHeader=true,bool parseCoverArt=false);
     // Creates a new track given information from the xml file.
@@ -121,11 +121,11 @@ class TrackInfoObject : public QObject {
     // Returns the user comment
     QString getComment() const;
     // Sets the user commnet
-    void setComment(const QString&);
+    void setComment(QString);
     // Returns the file type
     QString getType() const;
     // Sets the type of the string
-    void setType(const QString&);
+    void setType(QString);
     // Returns the bitrate
     int getBitrate() const;
     // Returns the bitrate as a string
@@ -154,39 +154,39 @@ class TrackInfoObject : public QObject {
     // Return title
     QString getTitle() const;
     // Set title
-    void setTitle(const QString&);
+    void setTitle(QString);
     // Return artist
     QString getArtist() const;
     // Set artist
-    void setArtist(const QString&);
+    void setArtist(QString);
     // Return album
     QString getAlbum() const;
     // Set album
-    void setAlbum(const QString&);
+    void setAlbum(QString);
     // Return album artist
     QString getAlbumArtist() const;
     // Set album artist
-    void setAlbumArtist(const QString&);
+    void setAlbumArtist(QString);
     // Return Year
     QString getYear() const;
     // Set year
-    void setYear(const QString&);
+    void setYear(QString);
     // Return genre
     QString getGenre() const;
     // Set genre
-    void setGenre(const QString&);
+    void setGenre(QString);
     // Return composer
     QString getComposer() const;
     // Set composer
-    void setComposer(const QString&);
+    void setComposer(QString);
     // Return grouping
     QString getGrouping() const;
     // Set grouping
-    void setGrouping(const QString&);
+    void setGrouping(QString);
     // Return Track Number
     QString getTrackNumber() const;
     // Set Track Number
-    void setTrackNumber(const QString&);
+    void setTrackNumber(QString);
     // Return number of times the track has been played
     int getTimesPlayed() const;
     // Set number of times the track has been played
@@ -207,7 +207,7 @@ class TrackInfoObject : public QObject {
     // Get URL for track
     QString getURL() const;
     // Set URL for track
-    void setURL(const QString& url);
+    void setURL(QString url);
     ConstWaveformPointer getWaveform() const;
     void setWaveform(ConstWaveformPointer pWaveform);
     ConstWaveformPointer getWaveformSummary() const;
@@ -227,13 +227,13 @@ class TrackInfoObject : public QObject {
     // Returns true if the track location has changed
     bool locationChanged();
     // Set the track's full file path
-    void setLocation(const QString& location);
+    void setLocation(QString location);
     // Get the track's Beats list
     BeatsPointer getBeats() const;
     // Set the track's Beats
     void setBeats(BeatsPointer beats);
     void setKeys(Keys keys);
-    const Keys& getKeys() const;
+    Keys getKeys() const;
     double getNumericKey() const;
     mixxx::track::io::key::ChromaticKey getKey() const;
     QString getKeyText() const;

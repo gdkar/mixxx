@@ -17,11 +17,11 @@ _Pragma("once")
 class EngineEffect : public EffectsRequestHandler {
   public:
     EngineEffect(const EffectManifest& manifest,
-                 const QSet<ChannelHandleAndGroup>& registeredChannels,
+                 QSet<ChannelHandleAndGroup> registeredChannels,
                  EffectInstantiatorPointer pInstantiator);
     virtual ~EngineEffect();
-    const QString& name() const { return m_manifest.name(); }
-    EngineEffectParameter* getParameterById(const QString& id) { return m_parametersById.value(id, nullptr); }
+    QString name() const { return m_manifest.name(); }
+    EngineEffectParameter* getParameterById(QString id) { return m_parametersById.value(id, nullptr); }
     bool processEffectsRequest( const EffectsRequest& message, EffectsResponsePipe* pResponsePipe);
     void process(const ChannelHandle& handle,
                  const CSAMPLE* pInput, CSAMPLE* pOutput,

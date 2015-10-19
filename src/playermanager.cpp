@@ -30,9 +30,9 @@ PlayerManager::PlayerManager(ConfigObject<ConfigValue>* pConfig,
         // NOTE(XXX) LegacySkinParser relies on these controls being COs and
         // not COTMs listening to a CO.
         m_pAnalyserQueue(nullptr),
-        m_pCONumDecks(new ControlObject(ConfigKey("Master", "num_decks"), true, true)),
-        m_pCONumSamplers(new ControlObject(ConfigKey("Master", "num_samplers"), true, true)),
-        m_pCONumPreviewDecks(new ControlObject(ConfigKey("Master", "num_preview_decks"), true, true))
+        m_pCONumDecks(new ControlObject(ConfigKey("Master", "num_decks"), this,true, true)),
+        m_pCONumSamplers(new ControlObject(ConfigKey("Master", "num_samplers"), this,true, true)),
+        m_pCONumPreviewDecks(new ControlObject(ConfigKey("Master", "num_preview_decks"),this, true, true))
 {
     connect(m_pCONumDecks, SIGNAL(valueChanged(double)),this, SLOT(slotNumDecksControlChanged(double)),Qt::DirectConnection);
     connect(m_pCONumSamplers, SIGNAL(valueChanged(double)),this, SLOT(slotNumSamplersControlChanged(double)),Qt::DirectConnection);
@@ -112,7 +112,7 @@ unsigned int PlayerManager::numDecks()
     return pNumCO ? pNumCO->get() : 0;
 }
 // static
-bool PlayerManager::isDeckGroup(const QString& group, int* number)
+bool PlayerManager::isDeckGroup(QString group, int* number)
 {
     if (!group.startsWith("Channel")) return false;
     auto ok = false;
@@ -122,7 +122,7 @@ bool PlayerManager::isDeckGroup(const QString& group, int* number)
     return true;
 }
 // static
-bool PlayerManager::isPreviewDeckGroup(const QString& group, int* number)
+bool PlayerManager::isPreviewDeckGroup(QString group, int* number)
 {
     if (!group.startsWith("PreviewDeck")) return false;
     auto ok = false;

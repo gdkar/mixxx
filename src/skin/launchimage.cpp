@@ -7,7 +7,7 @@
 #include <QStyleOption>
 #include <QPainter>
 
-LaunchImage::LaunchImage(QWidget* pParent, const QString& styleSheet)
+LaunchImage::LaunchImage(QWidget* pParent, QString styleSheet)
         : QWidget(pParent)
 {
     if (styleSheet.isEmpty())

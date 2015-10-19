@@ -22,13 +22,13 @@ class EffectsBackend : public QObject {
     virtual const QString getName() const;
     // returns a list sorted like it should be displayed in the GUI 
     virtual const QList<QString>& getEffectIds() const;
-    virtual EffectManifest getManifest(const QString& effectId) const;
-    virtual bool canInstantiateEffect(const QString& effectId) const;
-    virtual EffectPointer instantiateEffect(EffectsManager* pEffectsManager, const QString& effectId);
+    virtual EffectManifest getManifest(QString effectId) const;
+    virtual bool canInstantiateEffect(QString effectId) const;
+    virtual EffectPointer instantiateEffect(EffectsManager* pEffectsManager, QString effectId);
   signals:
     void effectRegistered();
   protected:
-    void registerEffect(const QString& id,const EffectManifest& manifest,EffectInstantiatorPointer pInstantiator);
+    void registerEffect(QString id,const EffectManifest& manifest,EffectInstantiatorPointer pInstantiator);
     template <typename EffectProcessorImpl>
     void registerEffect() {
         registerEffect(

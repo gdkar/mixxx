@@ -32,7 +32,7 @@ class QProgressBar;
 class LaunchImage: public QWidget {
     Q_OBJECT
   public:
-    LaunchImage(QWidget* pParent, const QString& styleSheet);
+    LaunchImage(QWidget* pParent, QString styleSheet);
     virtual ~LaunchImage();
     void progress(int value);
   protected:

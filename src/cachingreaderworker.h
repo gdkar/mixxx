@@ -78,7 +78,7 @@ class CachingReaderWorker : public EngineWorker {
     TrackPointer m_newTrack{nullptr};
     TrackPointer m_pTrack{nullptr};
     // Internal method to load a track. Emits trackLoaded when finished.
-    void loadTrack(const TrackPointer& pTrack);
+    void loadTrack(TrackPointer pTrack);
     ReaderStatusUpdate processReadRequest( const CachingReaderChunkReadRequest& request);
     // The current audio source of the track loaded
     Mixxx::SoundSourcePointer m_pSoundSource;

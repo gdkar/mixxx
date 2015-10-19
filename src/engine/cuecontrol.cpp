@@ -37,13 +37,13 @@ CueControl::CueControl(QString group,
     m_pQuantizeEnabled = ControlObject::getControl(ConfigKey(group, "quantize"));
     m_pNextBeat = ControlObject::getControl(ConfigKey(group, "beat_next"));
     m_pClosestBeat = ControlObject::getControl(ConfigKey(group, "beat_closest"));
-    m_pCuePoint = new ControlObject(ConfigKey(group, "cue_point"));
+    m_pCuePoint = new ControlObject(ConfigKey(group, "cue_point"),this);
     m_pCuePoint->set(-1.0);
-    m_pCueMode = new ControlObject(ConfigKey(group, "cue_mode"));
+    m_pCueMode = new ControlObject(ConfigKey(group, "cue_mode"),this);
     // 0.0 -> Pioneer mode
     // 1.0 -> Denon mode
     m_pCueSet = new ControlPushButton(ConfigKey(group, "cue_set"));
-    m_pCueSet->setButtonMode(ControlPushButton::TRIGGER);
+    m_pCueSet->setProperty("buttonMode",ControlPushButton::TRIGGER);
     connect(m_pCueSet, SIGNAL(valueChanged(double)),this, SLOT(cueSet(double)));
 
     m_pCueGoto = new ControlPushButton(ConfigKey(group, "cue_goto"));

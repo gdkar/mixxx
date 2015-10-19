@@ -31,15 +31,15 @@ BpmControl::BpmControl(QString group,
         m_tapFilter(this, filterLength, maxInterval),
         m_sGroup(group) {
     m_pPlayButton = new ControlObject(ConfigKey(group, "play"), this);
-    m_pPlayButton->connectValueChanged(SLOT(slotControlPlay(double)), Qt::DirectConnection);
+    m_pPlayButton->connectValueChanged(this,SLOT(slotControlPlay(double)), Qt::DirectConnection);
     m_pReverseButton = new ControlObject(ConfigKey(group, "reverse"), this);
     m_pRateSlider = new ControlObject(ConfigKey(group, "rate"), this);
-    m_pRateSlider->connectValueChanged(SLOT(slotAdjustRateSlider()), Qt::DirectConnection);
+    m_pRateSlider->connectValueChanged(this,SLOT(slotAdjustRateSlider()), Qt::DirectConnection);
     m_pQuantize = ControlObject::getControl(group, "quantize");
     m_pRateRange = new ControlObject(ConfigKey(group, "rateRange"), this);
-    m_pRateRange->connectValueChanged(SLOT(slotAdjustRateSlider()), Qt::DirectConnection);
+    m_pRateRange->connectValueChanged(this,SLOT(slotAdjustRateSlider()), Qt::DirectConnection);
     m_pRateDir = new ControlObject(ConfigKey(group, "rate_dir"), this);
-    m_pRateDir->connectValueChanged(SLOT(slotAdjustRateSlider()), Qt::DirectConnection);
+    m_pRateDir->connectValueChanged(this,SLOT(slotAdjustRateSlider()), Qt::DirectConnection);
 
     m_pPrevBeat.reset(new ControlObject(ConfigKey(group, "beat_prev"),this));
     m_pNextBeat.reset(new ControlObject(ConfigKey(group, "beat_next"),this));

@@ -22,14 +22,14 @@ class EffectChainManager : public QObject {
     EffectChainManager(ConfigObject<ConfigValue>* pConfig,EffectsManager* pEffectsManager);
     virtual ~EffectChainManager();
     void registerChannel(const ChannelHandleAndGroup& handle_group);
-    const QSet<ChannelHandleAndGroup>& registeredChannels() const {return m_registeredChannels;}
+    QSet<ChannelHandleAndGroup> registeredChannels() const {return m_registeredChannels;}
     StandardEffectRackPointer addStandardEffectRack();
     StandardEffectRackPointer getStandardEffectRack(int rack);
     EqualizerRackPointer addEqualizerRack();
     EqualizerRackPointer getEqualizerRack(int rack);
     QuickEffectRackPointer addQuickEffectRack();
     QuickEffectRackPointer getQuickEffectRack(int rack);
-    EffectRackPointer getEffectRack(const QString& group);
+    EffectRackPointer getEffectRack(QString group);
     void addEffectChain(EffectChainPointer pEffectChain);
     void removeEffectChain(EffectChainPointer pEffectChain);
     // To support cycling through effect chains, there is a global ordering of

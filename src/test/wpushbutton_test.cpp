@@ -30,7 +30,7 @@ class WPushButtonTest : public MixxxTest {
 TEST_F(WPushButtonTest, QuickPressNoLatchTest) {
     QScopedPointer<ControlPushButton> pPushControl(
         new ControlPushButton(ConfigKey("Test", "push")));
-    pPushControl->setButtonMode(ControlPushButton::LONGPRESSLATCHING);
+    pPushControl->setProperty("buttonMode",ControlPushButton::LONGPRESSLATCHING);
 
     m_pButton.reset(new WPushButton(NULL, ControlPushButton::LONGPRESSLATCHING,
                                     ControlPushButton::PUSH));
@@ -55,7 +55,7 @@ TEST_F(WPushButtonTest, QuickPressNoLatchTest) {
 TEST_F(WPushButtonTest, LongPressLatchTest) {
     QScopedPointer<ControlPushButton> pPushControl(
         new ControlPushButton(ConfigKey("Test", "push")));
-    pPushControl->setButtonMode(ControlPushButton::LONGPRESSLATCHING);
+    pPushControl->setProperty("buttonMode",ControlPushButton::LONGPRESSLATCHING);
 
     m_pButton.reset(new WPushButton(NULL, ControlPushButton::LONGPRESSLATCHING,
                                     ControlPushButton::PUSH));

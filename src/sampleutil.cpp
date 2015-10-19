@@ -5,13 +5,17 @@
 #include <cstring>
 
 #include "sampleutil.h"
-#include "util/sse_mathfun.h"
 #include "util/math.h"
 #ifdef __WINDOWS__
 #include <QtGlobal>
 typedef qint64 int64_t;
 typedef qint32 int32_t;
 #endif
+
+#include <xmmintrin.h>
+#include <pmmintrin.h>
+#include <immintrin.h>
+#include <emmintrin.h>
 
 void SampleUtil::clear(CSAMPLE* pBuffer, int iNumSamples) {
     // Special case: This works, because the binary representation

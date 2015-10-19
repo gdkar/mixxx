@@ -110,7 +110,7 @@ void Controller::send(QList<int> data, unsigned int length) {
     send(msg);
 }
 
-void Controller::receive(const QByteArray data) {
+void Controller::receive(QByteArray data) {
     if (m_pEngine == NULL) {
         //qWarning() << "Controller::receive called with no active engine!";
         // Don't complain, since this will always show after closing a device as

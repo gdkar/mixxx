@@ -117,7 +117,7 @@ class Stat {
     double m_variance_sk;
     QMap<double, double> m_histogram;
 
-    static bool track(const QString& tag,Stat::StatType type,Stat::ComputeFlags compute,double value);
+    static bool track(QString tag,Stat::StatType type,Stat::ComputeFlags compute,double value);
 };
 
 QDebug operator<<(QDebug dbg, const Stat &stat);

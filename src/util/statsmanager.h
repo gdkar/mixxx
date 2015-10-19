@@ -41,7 +41,7 @@ class StatsManager : public QThread, public Singleton<StatsManager> {
     void processIncomingStatReports();
     StatsPipe* getStatsPipeForThread();
     void onStatsPipeDestroyed(StatsPipe* pPipe);
-    void writeTimeline(const QString& filename);
+    void writeTimeline(QString filename);
     std::atomic<bool> m_emitAllStats{false};
     std::atomic<bool> m_quit{false};
     QMap<QString, Stat> m_stats;

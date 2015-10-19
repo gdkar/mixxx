@@ -43,21 +43,21 @@ const EffectManifestParameter& EffectParameter::manifest() const {
     return m_parameter;
 }
 
-const QString EffectParameter::id() const {
+QString EffectParameter::id() const {
     return m_parameter.id();
 }
 
-const QString EffectParameter::name() const {
+QString EffectParameter::name() const {
     return m_parameter.name();
 }
 
-const QString EffectParameter::description() const {
+QString EffectParameter::description() const {
     return m_parameter.description();
 }
 
 // static
 bool EffectParameter::clampValue(double* pValue,
-                                 const double& minimum, const double& maximum) {
+                                 double minimum, double maximum) {
     if (*pValue < minimum) {
         *pValue = minimum;
         return true;

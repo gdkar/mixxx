@@ -117,7 +117,7 @@ bool SoundDevice::operator==(const SoundDevice &other) const
 { 
   return getInternalName() == other.getInternalName();
 }
-bool SoundDevice::operator==(const QString &other) const
+bool SoundDevice::operator==(QString other) const
 { 
   return getInternalName() == other;
 }

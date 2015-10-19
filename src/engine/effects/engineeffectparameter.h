@@ -1,6 +1,4 @@
-#ifndef ENGINEEFFECTPARAMETER_H
-#define ENGINEEFFECTPARAMETER_H
-
+_Pragma("once")
 #include <QString>
 #include <QVariant>
 
@@ -26,9 +24,9 @@ class EngineEffectParameter {
     ///////////////////////////////////////////////////////////////////////////
     // Parameter Information
     ///////////////////////////////////////////////////////////////////////////
-    const QString& id() const { return m_parameter.id(); }
-    const QString& name() const { return m_parameter.name(); }
-    const QString& description() const { return m_parameter.description(); }
+    QString id() const { return m_parameter.id(); }
+    QString name() const { return m_parameter.name(); }
+    QString description() const { return m_parameter.description(); }
 
     ///////////////////////////////////////////////////////////////////////////
     // Value Settings
@@ -51,4 +49,3 @@ class EngineEffectParameter {
     double m_maximum = 0;
     DISALLOW_COPY_AND_ASSIGN(EngineEffectParameter);
 };
-#endif /* ENGINEEFFECTPARAMETER_H */

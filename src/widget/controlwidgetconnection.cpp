@@ -33,9 +33,10 @@ bool ControlWidgetConnection::invert()const
   return m_bInvert;
 }
 ControlWidgetConnection::~ControlWidgetConnection() = default;
-const ConfigKey& ControlWidgetConnection::getKey()const
+ConfigKey ControlWidgetConnection::getKey()const
 {
-  return m_pControl->getKey();
+  if ( m_pControl ) return m_pControl->getKey();
+  else              return ConfigKey{};
 }
 void ControlWidgetConnection::setControlParameter(double parameter)
 {

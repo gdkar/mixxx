@@ -29,19 +29,20 @@
 ControlObject::ControlObject(QObject *p):QObject(p)
 {
 };
-ControlObject::ControlObject(ConfigKey key, bool bIgnoreNops, bool bTrack,bool bPersist)
+ControlObject::ControlObject(ConfigKey key, QObject *p,  bool bTrack,bool bPersist)
+  :QObject(p)
 {
-    initialize(key, bIgnoreNops, bTrack, bPersist);
+    initialize(key, bTrack, bPersist);
 }
 ControlObject::~ControlObject()
 {
     if(m_pControl) m_pControl->removeCreatorCO(this);
 };
-void ControlObject::initialize(ConfigKey key, bool bIgnoreNops, bool bTrack,bool bPersist)
+void ControlObject::initialize(ConfigKey key, bool bTrack,bool bPersist)
 {
     m_key = key;
     // Don't bother looking up the control if key is nullptr. Prevents log spew.
-    if (!m_key.isNull()) m_pControl = ControlDoublePrivate::getControl(m_key, false, this, bIgnoreNops, bTrack, bPersist);
+    if (!m_key.isNull()) m_pControl = ControlDoublePrivate::getControl(m_key, false, this, bTrack, bPersist);
     // getControl can fail and return a nullptr control even with the create flag.
     if (m_pControl)
     {
@@ -169,7 +170,8 @@ QString ControlObject::item() const
 bool ControlObject::connectValueChanged( const char* method, Qt::ConnectionType type) 
 {
     DEBUG_ASSERT(parent());
-    return connectValueChanged(parent(), method, type);
+    if ( auto p = parent() ) return connectValueChanged(p, method, type);
+    else return false;
 }
 bool ControlObject::connectValueChanged(const QObject* receiver,const char* method, Qt::ConnectionType type)
 {

@@ -67,7 +67,6 @@ class ControlPotmeter : public ControlObject {
   public:
     ControlPotmeter(ConfigKey key, double dMinValue = 0.0, double dMaxValue = 1.0,
                     bool bAllowOutOfBounds = false,
-                    bool bIgnoreNops = true,
                     bool bTrack = false,
                     bool bPersist = false);
     virtual ~ControlPotmeter();

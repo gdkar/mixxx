@@ -45,12 +45,12 @@ void PlayerInfo::destroy()
 { 
   delete &instance();
 }
-TrackPointer PlayerInfo::getTrackInfo(const QString& group)
+TrackPointer PlayerInfo::getTrackInfo(QString group)
 {
     QMutexLocker locker(&m_mutex);
     return m_loadedTrackMap.value(group);
 }
-void PlayerInfo::setTrackInfo(const QString& group, const TrackPointer& track)
+void PlayerInfo::setTrackInfo(QString group, const TrackPointer& track)
 {
     TrackPointer pOld;
     { // Scope
@@ -72,7 +72,7 @@ QMap<QString, TrackPointer> PlayerInfo::getLoadedTracks() {
     auto ret = m_loadedTrackMap;
     return ret;
 }
-bool PlayerInfo::isFileLoaded(const QString& track_location) const
+bool PlayerInfo::isFileLoaded(QString track_location) const
 {
     QMutexLocker locker(&m_mutex);
     for(auto pTrack : m_loadedTrackMap )

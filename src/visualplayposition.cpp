@@ -9,7 +9,7 @@ QMap<QString, QWeakPointer<VisualPlayPosition> > VisualPlayPosition::m_listVisua
 PaStreamCallbackTimeInfo VisualPlayPosition::m_timeInfo = { 0.0, 0.0, 0.0 };
 PerformanceTimer VisualPlayPosition::m_timeInfoTime;
 
-VisualPlayPosition::VisualPlayPosition(const QString& key)
+VisualPlayPosition::VisualPlayPosition(QString key)
         : m_valid(false),
           m_key(key),
           m_invalidTimeInfoWarned(false)

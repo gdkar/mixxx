@@ -29,35 +29,35 @@ class EffectManifest {
         //qDebug() << debugString() << "deleted";
     }
 
-    virtual const QString& id() const {
+    virtual QString id() const {
         return m_id;
     }
-    virtual void setId(const QString& id) {
+    virtual void setId(QString id) {
         m_id = id;
     }
 
-    virtual const QString& name() const {
+    virtual QString name() const {
         return m_name;
     }
-    virtual void setName(const QString& name) {
+    virtual void setName(QString name) {
         m_name = name;
     }
 
-    virtual const QString& author() const {
+    virtual QString author() const {
         return m_author;
     }
-    virtual void setAuthor(const QString& author) {
+    virtual void setAuthor(QString author) {
         m_author = author;
     }
 
-    virtual const QString& version() const {
+    virtual QString version() const {
         return m_version;
     }
-    virtual void setVersion(const QString& version) {
+    virtual void setVersion(QString version) {
         m_version = version;
     }
 
-    virtual const QString& description() const {
+    virtual QString description() const {
         return m_description;
     }
 
@@ -85,7 +85,7 @@ class EffectManifest {
         m_isForFilterKnob = value;
     }
 
-    virtual void setDescription(const QString& description) {
+    virtual void setDescription(QString description) {
         m_description = description;
     }
 

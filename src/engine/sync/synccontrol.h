@@ -15,7 +15,7 @@ class SyncControl : public EngineControl, public Syncable {
     static const double kBpmUnity;
     static const double kBpmHalve;
     static const double kBpmDouble;
-    SyncControl(const QString& group, ConfigObject<ConfigValue>* pConfig,EngineChannel* pChannel, SyncableListener* pEngineSync);
+    SyncControl(QString group, ConfigObject<ConfigValue>* pConfig,EngineChannel* pChannel, SyncableListener* pEngineSync);
     virtual ~SyncControl();
     virtual QString getGroup() const { return m_sGroup;}
     EngineChannel* getChannel() const { return m_pChannel; }

@@ -151,9 +151,9 @@ class MixxxMainWindow : public QMainWindow {
     void initializeKeyboard();
     void initializeTranslations(QApplication* pApp);
     void initializeFonts();
-    bool loadTranslations(const QLocale& systemLocale, QString userLocale,
-                          const QString& translation, const QString& prefix,
-                          const QString& translationPath, QTranslator* pTranslator);
+    bool loadTranslations(QLocale systemLocale, QString userLocale,
+                          QString translation, QString prefix,
+                          QString translationPath, QTranslator* pTranslator);
     bool confirmExit();
     void linkSkinWidget(ControlObject** pCOS,
                         ConfigKey key, const char* slot);

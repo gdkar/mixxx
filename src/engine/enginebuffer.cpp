@@ -64,7 +64,7 @@ EngineBuffer::EngineBuffer(QString group, ConfigObject<ConfigValue>* _config,
     connect(m_pReader, SIGNAL(trackLoadFailed(TrackPointer, QString)),this, SLOT(slotTrackLoadFailed(TrackPointer, QString)),Qt::DirectConnection);
     // Play button
     m_playButton = new ControlPushButton(ConfigKey(m_group, "play"));
-    m_playButton->setButtonMode(ControlPushButton::TOGGLE);
+    m_playButton->setProperty("buttonMode",ControlPushButton::TOGGLE);
     m_playButton->connectValueChangeRequest(this, SLOT(slotControlPlayRequest(double)),Qt::DirectConnection);
     //Play from Start Button (for sampler)
     m_playStartButton = new ControlPushButton(ConfigKey(m_group, "start_play"));
@@ -77,32 +77,32 @@ EngineBuffer::EngineBuffer(QString group, ConfigObject<ConfigValue>* _config,
     connect(m_stopButton, SIGNAL(valueChanged(double)),this, SLOT(slotControlStop(double)),Qt::DirectConnection);
     // Start button
     m_startButton = new ControlPushButton(ConfigKey(m_group, "start"));
-    m_startButton->setButtonMode(ControlPushButton::TRIGGER);
+    m_startButton->setProperty("buttonMode",ControlPushButton::TRIGGER);
     connect(m_startButton, SIGNAL(valueChanged(double)),this, SLOT(slotControlStart(double)),Qt::DirectConnection);
     // End button
     m_endButton = new ControlPushButton(ConfigKey(m_group, "end"));
     connect(m_endButton, SIGNAL(valueChanged(double)),this, SLOT(slotControlEnd(double)),Qt::DirectConnection);
     m_pSlipButton = new ControlPushButton(ConfigKey(m_group, "slip_enabled"));
-    m_pSlipButton->setButtonMode(ControlPushButton::TOGGLE);
+    m_pSlipButton->setProperty("buttonMode",ControlPushButton::TOGGLE);
     connect(m_pSlipButton, SIGNAL(valueChanged(double)),this, SLOT(slotControlSlip(double)),Qt::DirectConnection);
     // BPM to display in the UI (updated more slowly than the actual bpm)
-    m_visualBpm = new ControlObject(ConfigKey(m_group, "visual_bpm"));
-    m_visualKey = new ControlObject(ConfigKey(m_group, "visual_key"));
+    m_visualBpm = new ControlObject(ConfigKey(m_group, "visual_bpm"),this);
+    m_visualKey = new ControlObject(ConfigKey(m_group, "visual_key"),this);
 
     m_playposSlider = new ControlLinPotmeter(ConfigKey(m_group, "playposition"), 0.0, 1.0, 0, 0, true);
     connect(m_playposSlider, SIGNAL(valueChanged(double)),this, SLOT(slotControlSeek(double)),Qt::DirectConnection);
     // Control used to communicate ratio playpos to GUI thread
     m_visualPlayPos = VisualPlayPosition::getVisualPlayPosition(m_group);
     m_pRepeat = new ControlPushButton(ConfigKey(m_group, "repeat"));
-    m_pRepeat->setButtonMode(ControlPushButton::TOGGLE);
+    m_pRepeat->setProperty("buttonMode",ControlPushButton::TOGGLE);
     // Sample rate
     m_pSampleRate = new ControlObject(ConfigKey("Master", "samplerate"), this);
     m_pKeylockEngine = new ControlObject(ConfigKey("Master", "keylock_engine"), this);
     m_pKeylockEngine->connectValueChanged(this,SLOT(slotKeylockEngineChanged(double)),Qt::DirectConnection);
-    m_pTrackSamples = new ControlObject(ConfigKey(m_group, "track_samples"));
-    m_pTrackSampleRate = new ControlObject(ConfigKey(m_group, "track_samplerate"));
+    m_pTrackSamples = new ControlObject(ConfigKey(m_group, "track_samples"),this);
+    m_pTrackSampleRate = new ControlObject(ConfigKey(m_group, "track_samplerate"),this);
     m_pKeylock = new ControlPushButton(ConfigKey(m_group, "keylock"), true);
-    m_pKeylock->setButtonMode(ControlPushButton::TOGGLE);
+    m_pKeylock->setProperty("buttonMode",ControlPushButton::TOGGLE);
     m_pEject = new ControlPushButton(ConfigKey(m_group, "eject"));
     connect(m_pEject, SIGNAL(valueChanged(double)),this, SLOT(slotEjectTrack(double)),Qt::DirectConnection);
     // Quantization Controller for enabling and disabling the

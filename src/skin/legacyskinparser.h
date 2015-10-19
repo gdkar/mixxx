@@ -51,7 +51,7 @@ class LegacySkinParser : public QObject, public SkinParser {
     void parseColorSchemes(QDomElement node);
     bool compareConfigKeys(QDomNode node, QString key);
     // Load the given template from file and return its document element.
-    QDomElement loadTemplate(const QString& path);
+    QDomElement loadTemplate(QString path);
     // Parsers for each node
     // Most widgets can use parseStandardWidget.
     template <class T>
@@ -98,12 +98,12 @@ class LegacySkinParser : public QObject, public SkinParser {
     void setupBaseWidget(QDomNode node, WBaseWidget* pBaseWidget);
     void setupWidget(QDomNode node, QWidget* pWidget,bool setupPosition=true);
     void setupConnections(QDomNode node, WBaseWidget* pWidget);
-    void addShortcutToToolTip(WBaseWidget* pWidget, const QString& shortcut, const QString& cmd);
+    void addShortcutToToolTip(WBaseWidget* pWidget, QString shortcut, QString cmd);
     QString getLibraryStyle(QDomNode node);
     QString getStyleFromNode(QDomNode node);
     QString lookupNodeGroup(QDomElement node);
     static const char* safeChannelString(QString channelStr);
-    ControlObject* controlFromConfigNode(QDomElement element,const QString& nodeName,bool* created);
+    ControlObject* controlFromConfigNode(QDomElement element,QString nodeName,bool* created);
     QString parseLaunchImageStyle(QDomNode node);
     ConfigObject<ConfigValue>* m_pConfig;
     MixxxKeyboard* m_pKeyboard;

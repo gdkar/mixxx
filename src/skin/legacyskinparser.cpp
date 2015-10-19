@@ -97,12 +97,12 @@ ControlObject* controlFromConfigKey(ConfigKey key, bool bPersist,bool* created)
     // Since the usual behavior here is to create a skin-defined push
     // button, actually make it a push button and set it to toggle.
     auto controlButton = new ControlPushButton(key, bPersist);
-    controlButton->setButtonMode(ControlPushButton::TOGGLE);
+    controlButton->setProperty("buttonMode",(int)ControlPushButton::TOGGLE);
     if (created) *created = true;
     return controlButton;
 }
 
-ControlObject* LegacySkinParser::controlFromConfigNode(QDomElement element,const QString& nodeName,bool* created)
+ControlObject* LegacySkinParser::controlFromConfigNode(QDomElement element,QString nodeName,bool* created)
 {
     if (element.isNull() || !m_pContext->hasNode(element, nodeName)) return nullptr;
     auto keyElement = m_pContext->selectElement(element, nodeName);
@@ -813,10 +813,10 @@ QWidget* LegacySkinParser::parseSearchBox(QDomElement node)
     commonWidgetSetup(node, pLineEditSearch, false);
     pLineEditSearch->setup(node, *m_pContext);
     // Connect search box signals to the library
-    connect(pLineEditSearch, SIGNAL(search(const QString&)),m_pLibrary, SIGNAL(search(const QString&)));
+    connect(pLineEditSearch, SIGNAL(search(QString)),m_pLibrary, SIGNAL(search(QString)));
     connect(pLineEditSearch, SIGNAL(searchCleared()),m_pLibrary, SIGNAL(searchCleared()));
     connect(pLineEditSearch, SIGNAL(searchStarting()),m_pLibrary, SIGNAL(searchStarting()));
-    connect(m_pLibrary, SIGNAL(restoreSearch(const QString&)),pLineEditSearch, SLOT(restoreSearch(const QString&)));
+    connect(m_pLibrary, SIGNAL(restoreSearch(QString)),pLineEditSearch, SLOT(restoreSearch(QString)));
     return pLineEditSearch;
 }
 QWidget* LegacySkinParser::parseCoverArt(QDomElement node)
@@ -830,7 +830,7 @@ QWidget* LegacySkinParser::parseCoverArt(QDomElement node)
     if (channel.isEmpty())
     {
         // Connect cover art signals to the library
-        connect(m_pLibrary, SIGNAL(switchToView(const QString&)),pCoverArt, SLOT(slotReset()));
+        connect(m_pLibrary, SIGNAL(switchToView(QString)),pCoverArt, SLOT(slotReset()));
         connect(m_pLibrary, SIGNAL(enableCoverArtDisplay(bool)),pCoverArt, SLOT(slotEnable(bool)));
         connect(m_pLibrary, SIGNAL(trackSelected(TrackPointer)),pCoverArt, SLOT(slotLoadTrack(TrackPointer)));
     }
@@ -891,7 +891,7 @@ QWidget* LegacySkinParser::parseLibrary(QDomElement node)
     pLibraryWidget->installEventFilter(m_pKeyboard);
     pLibraryWidget->installEventFilter(m_pControllerManager->getControllerLearningEventFilter());
     // Connect Library search signals to the WLibrary
-    connect(m_pLibrary, SIGNAL(search(const QString&)),pLibraryWidget, SLOT(search(const QString&)));
+    connect(m_pLibrary, SIGNAL(search(QString)),pLibraryWidget, SLOT(search(QString)));
     m_pLibrary->bindWidget(pLibraryWidget, m_pKeyboard);
     // This must come after the bindWidget or we will not style any of the
     // LibraryView's because they have not been added yet.
@@ -1012,7 +1012,7 @@ QString LegacySkinParser::getLibraryStyle(QDomNode node)
     style.prepend(styleHack);
     return style;
 }
-QDomElement LegacySkinParser::loadTemplate(const QString& path)
+QDomElement LegacySkinParser::loadTemplate(QString path)
 {
     auto templateFileInfo = QFileInfo(path);
     auto absolutePath     = templateFileInfo.absoluteFilePath();
@@ -1542,7 +1542,7 @@ void LegacySkinParser::setupConnections(QDomNode node, WBaseWidget* pWidget)
     // display connection.
     if (pLastLeftOrNoButtonConnection) pWidget->setDisplayConnection(pLastLeftOrNoButtonConnection);
 }
-void LegacySkinParser::addShortcutToToolTip(WBaseWidget* pWidget, const QString& shortcut, const QString& cmd)
+void LegacySkinParser::addShortcutToToolTip(WBaseWidget* pWidget, QString shortcut, QString cmd)
 {
     if (shortcut.isEmpty()) return;
     auto tooltip = QString{};

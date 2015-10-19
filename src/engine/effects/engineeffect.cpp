@@ -1,7 +1,7 @@
 #include "engine/effects/engineeffect.h"
 #include "sampleutil.h"
 EngineEffect::EngineEffect(const EffectManifest& manifest,
-                           const QSet<ChannelHandleAndGroup>& registeredChannels,
+                           QSet<ChannelHandleAndGroup> registeredChannels,
                            EffectInstantiatorPointer pInstantiator)
         : m_manifest(manifest),
           m_enableState(EffectProcessor::ENABLING),

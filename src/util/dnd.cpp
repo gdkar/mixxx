@@ -9,7 +9,7 @@
 #include "playermanager.h"
 #include "util/sandbox.h"
 #include "controlobject.h"
-QList<QFileInfo> DragAndDropHelper::supportedTracksFromUrls(const QList<QUrl>& urls,bool firstOnly,bool acceptPlaylists)
+QList<QFileInfo> DragAndDropHelper::supportedTracksFromUrls(QList<QUrl> urls,bool firstOnly,bool acceptPlaylists)
 {
     QList<QFileInfo> fileLocations;
     for(auto url: urls)
@@ -45,25 +45,25 @@ QList<QFileInfo> DragAndDropHelper::supportedTracksFromUrls(const QList<QUrl>& u
     }
     return fileLocations;
 }
-bool DragAndDropHelper::allowLoadToPlayer(const QString& group,ConfigObject<ConfigValue>* pConfig)
+bool DragAndDropHelper::allowLoadToPlayer(QString group,ConfigObject<ConfigValue>* pConfig)
 {
     return allowLoadToPlayer(
             group, ControlObject::get(ConfigKey(group, "play")) > 0.0,
             pConfig);
 }
-bool DragAndDropHelper::allowLoadToPlayer(const QString& group,bool isPlaying,ConfigObject<ConfigValue>* pConfig)
+bool DragAndDropHelper::allowLoadToPlayer(QString group,bool isPlaying,ConfigObject<ConfigValue>* pConfig)
 {
     // Always allow loads to preview decks.
     if (PlayerManager::isPreviewDeckGroup(group)) return true;
     return !isPlaying || pConfig->getValueString(ConfigKey("Controls","AllowTrackLoadToPlayingDeck")).toInt();
 }
-bool DragAndDropHelper::dragEnterAccept(const QMimeData& mimeData,const QString& sourceIdentifier,bool firstOnly,bool acceptPlaylists)
+bool DragAndDropHelper::dragEnterAccept(QMimeData mimeData,QString sourceIdentifier,bool firstOnly,bool acceptPlaylists)
 {
 auto files = dropEventFiles(mimeData, sourceIdentifier,firstOnly, acceptPlaylists);
     return !files.isEmpty();
 }
-QList<QFileInfo> DragAndDropHelper::dropEventFiles(const QMimeData& mimeData,
-                                           const QString& sourceIdentifier,
+QList<QFileInfo> DragAndDropHelper::dropEventFiles(QMimeData mimeData,
+                                           QString sourceIdentifier,
                                            bool firstOnly,
                                            bool acceptPlaylists)
 {
@@ -76,7 +76,7 @@ QDrag* DragAndDropHelper::dragTrack(TrackPointer pTrack, QWidget* pDragSource,QS
     locationUrls.append(urlFromLocation(pTrack->getLocation()));
     return dragUrls(locationUrls, pDragSource, sourceIdentifier);
 }
-QDrag* DragAndDropHelper::dragTrackLocations(const QList<QString>& locations,
+QDrag* DragAndDropHelper::dragTrackLocations(QList<QString> locations,
                                   QWidget* pDragSource,
                                   QString sourceIdentifier)
 {
@@ -84,11 +84,11 @@ QDrag* DragAndDropHelper::dragTrackLocations(const QList<QString>& locations,
     for(auto location: locations) {locationUrls.append(urlFromLocation(location));}
     return dragUrls(locationUrls, pDragSource, sourceIdentifier);
 }
-QUrl DragAndDropHelper::urlFromLocation(const QString& trackLocation)
+QUrl DragAndDropHelper::urlFromLocation(QString trackLocation)
 {
     return QUrl::fromLocalFile(trackLocation);
 }
-QDrag* DragAndDropHelper::dragUrls(const QList<QUrl>& locationUrls, QWidget* pDragSource, QString sourceIdentifier)
+QDrag* DragAndDropHelper::dragUrls(QList<QUrl> locationUrls, QWidget* pDragSource, QString sourceIdentifier)
 {
     if (locationUrls.isEmpty()) return nullptr;
     auto mimeData = new QMimeData();
@@ -100,7 +100,7 @@ QDrag* DragAndDropHelper::dragUrls(const QList<QUrl>& locationUrls, QWidget* pDr
     drag->exec(Qt::CopyAction);
     return drag;
 }
-bool DragAndDropHelper::addFileToList(const QString& file, QList<QFileInfo>* files)
+bool DragAndDropHelper::addFileToList(QString file, QList<QFileInfo>* files)
 {
     auto fileInfo = QFileInfo(file);
     // Since the user just dropped these files into Mixxx we have permission

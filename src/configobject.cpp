@@ -26,7 +26,7 @@
 #include "util/cmdlineargs.h"
 #include "util/xml.h"
 ConfigKey::ConfigKey() = default;
-ConfigKey::ConfigKey(const QString& g, const QString& i)
+ConfigKey::ConfigKey(QString g, QString i)
     : group(g),
       item(i) {
 }
@@ -166,7 +166,7 @@ ConfigKey *ConfigObject<ValueType>::get(ValueType v)
 template <class ValueType>
 QString ConfigObject<ValueType>::getValueString(ConfigKey k){ return get(k)->val->value; }
 template <class ValueType>
-QString ConfigObject<ValueType>::getValueString(ConfigKey k, const QString& default_string)
+QString ConfigObject<ValueType>::getValueString(ConfigKey k, QString default_string)
 {
     auto ret = get(k)->val->value;
     if (ret.isEmpty()) {return default_string;}

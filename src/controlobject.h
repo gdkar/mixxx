@@ -33,10 +33,7 @@ class ControlObject : public QObject {
     Q_PROPERTY(double defaultValue READ defaultValue WRITE setDefaultValue NOTIFY defaultValueChanged);
   public:
     ControlObject(QObject * = nullptr);
-    // bIgnoreNops: Don't emit a signal if the CO is set to its current value.
-    // bTrack: Record statistics about this control.
-    // bPersist: Store value on exit, load on startup.
-    ControlObject(ConfigKey key,bool bIgnoreNops=true, bool bTrack=false, bool bPersist=false);
+    ControlObject(ConfigKey key, QObject *parent = nullptr, bool bTrack=false, bool bPersist=false);
     virtual ~ControlObject();
     // Returns a pointer to the ControlObject matching the given ConfigKey
     static ControlObject* getControl(ConfigKey key, bool warn = true);
@@ -85,7 +82,7 @@ class ControlObject : public QObject {
     bool connectValueChangeRequest(const QObject* receiver, const char* method, Qt::ConnectionType type = Qt::AutoConnection);
     bool connectValueChanged(const QObject* receiver,const char* method, Qt::ConnectionType type = Qt::AutoConnection);
     bool connectValueChanged(const char* method, Qt::ConnectionType type = Qt::AutoConnection);
-    virtual void initialize(ConfigKey key, bool bIgnoreNops, bool bTrack, bool bPersist);
+    virtual void initialize(ConfigKey key, bool bTrack, bool bPersist);
   signals:
     void valueChanged(double);
     void defaultValueChanged(double);

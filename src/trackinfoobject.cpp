@@ -42,7 +42,7 @@
 #include "library/coverartutils.h"
 #include "util/assert.h"
 
-TrackInfoObject::TrackInfoObject(const QString& file, SecurityTokenPointer pToken, bool parseHeader, bool parseCoverArt)
+TrackInfoObject::TrackInfoObject(QString file, SecurityTokenPointer pToken, bool parseHeader, bool parseCoverArt)
         : m_fileInfo(file),
           m_pSecurityToken(pToken.isNull() ? Sandbox::openSecurityToken( m_fileInfo, true) : pToken)
 {
@@ -262,7 +262,7 @@ QString TrackInfoObject::getDurationStr() const
     auto dDuration = m_dDuration.load();
     return Time::formatSeconds(dDuration, false);
 }
-void TrackInfoObject::setLocation(const QString& location)
+void TrackInfoObject::setLocation(QString location)
 {
     auto newFileInfo = QFileInfo{location};
     auto oldFileInfo = newFileInfo;
@@ -443,7 +443,7 @@ QString TrackInfoObject::getTitle() const
 { 
   return m_sTitle;
 }
-void TrackInfoObject::setTitle(const QString& s)
+void TrackInfoObject::setTitle(QString s)
 {
     auto title = s.trimmed();
     auto oldTitle = title;
@@ -454,7 +454,7 @@ QString TrackInfoObject::getArtist() const
 { 
   return m_sArtist;
 }
-void TrackInfoObject::setArtist(const QString& s)
+void TrackInfoObject::setArtist(QString s)
 {
     auto artist = s.trimmed();
     auto oldArtist = artist;
@@ -465,7 +465,7 @@ QString TrackInfoObject::getAlbum() const
 { 
   return m_sAlbum;
 }
-void TrackInfoObject::setAlbum(const QString& s)
+void TrackInfoObject::setAlbum(QString s)
 {
     auto album = s.trimmed();
     auto sAlbum = album;
@@ -480,7 +480,7 @@ QString TrackInfoObject::getAlbumArtist()  const
 { 
   return m_sAlbumArtist;
 }
-void TrackInfoObject::setAlbumArtist(const QString& s)
+void TrackInfoObject::setAlbumArtist(QString s)
 {
     auto st = s.trimmed();
     auto ost = st;
@@ -495,7 +495,7 @@ QString TrackInfoObject::getYear()  const
 { 
   return m_sYear;
 }
-void TrackInfoObject::setYear(const QString& s)
+void TrackInfoObject::setYear(QString s)
 {
     auto year = s.trimmed();
     auto ret = year;
@@ -510,7 +510,7 @@ QString TrackInfoObject::getGenre() const
 { 
   return m_sGenre;
 }
-void TrackInfoObject::setGenre(const QString& s)
+void TrackInfoObject::setGenre(QString s)
 {
     auto genre = s.trimmed();
     auto ret = genre;
@@ -526,7 +526,7 @@ QString TrackInfoObject::getComposer() const
   return  m_sComposer;;
 }
 
-void TrackInfoObject::setComposer(const QString& s)
+void TrackInfoObject::setComposer(QString s)
 {
     auto composer = s.trimmed();
     auto ret = composer;
@@ -540,7 +540,7 @@ QString TrackInfoObject::getGrouping()  const
 {
   return m_sGrouping;
 }
-void TrackInfoObject::setGrouping(const QString& s)
+void TrackInfoObject::setGrouping(QString s)
 {
     auto grouping = s.trimmed();
     auto ret = grouping;
@@ -555,7 +555,7 @@ QString TrackInfoObject::getTrackNumber()  const
 {
   return m_sTrackNumber;
 }
-void TrackInfoObject::setTrackNumber(const QString& s)
+void TrackInfoObject::setTrackNumber(QString s)
 {
     auto tn = s.trimmed();
     auto ret = tn;
@@ -605,7 +605,7 @@ QString TrackInfoObject::getComment() const
 {
   return m_sComment;
 }
-void TrackInfoObject::setComment(const QString& s)
+void TrackInfoObject::setComment(QString s)
 {
     auto ret = s;
     m_sComment.swap(ret);
@@ -619,7 +619,7 @@ QString TrackInfoObject::getType() const
 {
   return m_sType;
 }
-void TrackInfoObject::setType(const QString& s)
+void TrackInfoObject::setType(QString s)
 {
     auto ret = s;
     m_sType.swap(ret);
@@ -696,7 +696,7 @@ void TrackInfoObject::setWaveSummary(const QByteArray* pWave, bool updateUI)
     lock.unlock();
     emit(wavesummaryUpdated(this));
 }*/
-void TrackInfoObject::setURL(const QString& url)
+void TrackInfoObject::setURL(QString url)
 {
     auto ret = url;
     m_sURL.swap(ret);
@@ -837,7 +837,7 @@ void TrackInfoObject::setKeys(Keys keys)
     emit(keyUpdated(KeyUtils::keyToNumericValue(newKey)));
     emit(keysUpdated());
 }
-const Keys& TrackInfoObject::getKeys() const
+Keys TrackInfoObject::getKeys() const
 {
     QMutexLocker lock(&m_qMutex);
     return m_keys;

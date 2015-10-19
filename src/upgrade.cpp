@@ -46,7 +46,8 @@ QString Upgrade::mixxx17HomePath() {
 }
 // We return the ConfigObject here because we have to make changes to the
 // configuration and the location of the file may change between releases.
-ConfigObject<ConfigValue>* Upgrade::versionUpgrade(const QString& settingsPath) {
+ConfigObject<ConfigValue>* Upgrade::versionUpgrade(QString settingsPath)
+{
 /*  Pre-1.7.0:
 *
 *   Since we didn't store version numbers in the config file prior to 1.7.0,

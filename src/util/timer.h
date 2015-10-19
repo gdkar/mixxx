@@ -10,7 +10,7 @@ const Stat::ComputeFlags kDefaultComputeFlags = Stat::COUNT | Stat::SUM | Stat::
 // computed for the times.
 class Timer {
   public:
-    Timer(const QString& key, Stat::ComputeFlags compute = kDefaultComputeFlags);
+    Timer(QString key, Stat::ComputeFlags compute = kDefaultComputeFlags);
     virtual ~Timer();
     virtual void start();
     // Restart the timer returning the nanoseconds since it was last
@@ -29,7 +29,7 @@ class Timer {
 class SuspendableTimer : public Timer
 {
   public:
-    SuspendableTimer(const QString& key,Stat::ComputeFlags compute = kDefaultComputeFlags);
+    SuspendableTimer(QString key,Stat::ComputeFlags compute = kDefaultComputeFlags);
     virtual ~SuspendableTimer();
     virtual void start();
     virtual qint64 suspend();
@@ -43,9 +43,9 @@ class ScopedTimer
   public:
     ScopedTimer(const char* key, int i,Stat::ComputeFlags compute = kDefaultComputeFlags);
     ScopedTimer(const char* key, const char *arg = nullptr,Stat::ComputeFlags compute = kDefaultComputeFlags);
-    ScopedTimer(const char* key, const QString& arg,Stat::ComputeFlags compute = kDefaultComputeFlags);
+    ScopedTimer(const char* key, QString arg,Stat::ComputeFlags compute = kDefaultComputeFlags);
     virtual ~ScopedTimer();
-    virtual void initialize(const QString& key, const QString& arg,Stat::ComputeFlags compute = kDefaultComputeFlags);
+    virtual void initialize(QString key, QString arg,Stat::ComputeFlags compute = kDefaultComputeFlags);
     virtual void cancel();
   private:
     Timer* m_pTimer = nullptr;

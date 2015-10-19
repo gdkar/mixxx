@@ -58,12 +58,12 @@ class EngineMaster : public QObject, public AudioSource {
     // Get access to the sample buffers. None of these are thread safe. Only to
     // be called by SoundManager.
     const CSAMPLE* buffer(AudioOutput output) const;
-    inline const QString& getMasterGroup() const { return m_masterHandle.name(); }
-    inline const QString& getHeadphoneGroup() const { return m_headphoneHandle.name(); }
-    inline const QString& getBusLeftGroup() const { return m_busLeftHandle.name(); }
-    inline const QString& getBusCenterGroup() const { return m_busCenterHandle.name(); }
-    inline const QString& getBusRightGroup() const { return m_busRightHandle.name(); }
-    ChannelHandleAndGroup registerChannelGroup(const QString& group) {
+    inline QString getMasterGroup() const { return m_masterHandle.name(); }
+    inline QString getHeadphoneGroup() const { return m_headphoneHandle.name(); }
+    inline QString getBusLeftGroup() const { return m_busLeftHandle.name(); }
+    inline QString getBusCenterGroup() const { return m_busCenterHandle.name(); }
+    inline QString getBusRightGroup() const { return m_busRightHandle.name(); }
+    ChannelHandleAndGroup registerChannelGroup(QString group) {
         return ChannelHandleAndGroup( m_channelHandleFactory.getOrCreateHandle(group), group);
     }
     // WARNING: These methods are called by the main thread. They should only
@@ -77,7 +77,7 @@ class EngineMaster : public QObject, public AudioSource {
     // Add an EngineChannel to the mixing engine. This is not thread safe --
     // only call it before the engine has started mixing.
     void addChannel(EngineChannel* pChannel);
-    EngineChannel* getChannel(const QString& group);
+    EngineChannel* getChannel(QString group);
     static inline double gainForOrientation(EngineChannel::ChannelOrientation orientation,
                                             double leftGain,
                                             double centerGain,

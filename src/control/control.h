@@ -34,9 +34,12 @@ class ControlDoublePrivate : public QObject {
     // is non-NULL, allocates a new ControlDoublePrivate for the ConfigKey if
     // one does not exist.
     static QSharedPointer<ControlDoublePrivate> getControl(
-            ConfigKey key, bool warn = true,
-            ControlObject* pCreatorCO = nullptr, bool bIgnoreNops = true, bool bTrack = false,
-            bool bPersist = false);
+              ConfigKey key
+            , bool warn = true
+            , ControlObject* pCreatorCO = nullptr
+            , bool bTrack = false
+            , bool bPersist = false
+            );
     // Adds all ControlDoublePrivate that currently exist to pControlList
     static QList<QSharedPointer<ControlDoublePrivate> > getControls();
     static void clearControls();
@@ -86,7 +89,7 @@ class ControlDoublePrivate : public QObject {
     void descriptionChanged(QString);
     void parameterChanged();
   private:
-    ControlDoublePrivate(ConfigKey key, ControlObject* pCreatorCO,bool bIgnoreNops, bool bTrack, bool bPersist);
+    ControlDoublePrivate(ConfigKey key, ControlObject* pCreatorCO,bool bTrack, bool bPersist);
     void initialize();
     void setInner(double value);
     ConfigKey m_key;

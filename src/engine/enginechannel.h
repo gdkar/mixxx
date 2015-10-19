@@ -45,7 +45,7 @@ class EngineChannel : public EngineObject {
         return m_group.handle();
     }
 
-    virtual const QString& getGroup() const {
+    virtual QString getGroup() const {
         return m_group.name();
     }
 

@@ -17,39 +17,30 @@ QuantizeControl::QuantizeControl(QString group,
         : EngineControl(group, pConfig) {
     // Turn quantize OFF by default. See Bug #898213
     m_pCOQuantizeEnabled = new ControlPushButton(ConfigKey(group, "quantize"), true);
-    m_pCOQuantizeEnabled->setButtonMode(ControlPushButton::TOGGLE);
-    m_pCONextBeat = new ControlObject(ConfigKey(group, "beat_next"));
+    m_pCOQuantizeEnabled->setProperty("buttonMode",ControlPushButton::TOGGLE);
+    m_pCONextBeat = new ControlObject(ConfigKey(group, "beat_next"),this);
     m_pCONextBeat->set(-1);
-    m_pCOPrevBeat = new ControlObject(ConfigKey(group, "beat_prev"));
+    m_pCOPrevBeat = new ControlObject(ConfigKey(group, "beat_prev"),this);
     m_pCOPrevBeat->set(-1);
-    m_pCOClosestBeat = new ControlObject(ConfigKey(group, "beat_closest"));
+    m_pCOClosestBeat = new ControlObject(ConfigKey(group, "beat_closest"),this);
     m_pCOClosestBeat->set(-1);
 }
 
-QuantizeControl::~QuantizeControl() {
-    delete m_pCOQuantizeEnabled;
-    delete m_pCONextBeat;
-    delete m_pCOPrevBeat;
-    delete m_pCOClosestBeat;
-}
+QuantizeControl::~QuantizeControl() = default;
 
 void QuantizeControl::trackLoaded(TrackPointer pTrack) {
-    if (m_pTrack) {
-        trackUnloaded(m_pTrack);
-    }
-
-    if (pTrack) {
+    if (m_pTrack) trackUnloaded(m_pTrack);
+    if (pTrack)
+    {
         m_pTrack = pTrack;
         m_pBeats = m_pTrack->getBeats();
-        connect(m_pTrack.data(), SIGNAL(beatsUpdated()),
-                this, SLOT(slotBeatsUpdated()));
+        connect(m_pTrack.data(), SIGNAL(beatsUpdated()),this, SLOT(slotBeatsUpdated()));
         // Initialize prev and next beat as if current position was zero.
         // If there is a cue point, the value will be updated.
         lookupBeatPositions(0.0);
         updateClosestBeat(0.0);
     }
 }
-
 void QuantizeControl::trackUnloaded(TrackPointer pTrack) {
     Q_UNUSED(pTrack);
     if (m_pTrack) {
@@ -63,14 +54,14 @@ void QuantizeControl::trackUnloaded(TrackPointer pTrack) {
     m_pCOClosestBeat->set(-1);
 }
 
-void QuantizeControl::slotBeatsUpdated() {
+void QuantizeControl::slotBeatsUpdated()
+{
     if (m_pTrack) {
         m_pBeats = m_pTrack->getBeats();
         lookupBeatPositions(getCurrentSample());
         updateClosestBeat(getCurrentSample());
     }
 }
-
 void QuantizeControl::setCurrentSample(const double dCurrentSample,
                                        const double dTotalSamples) {
     if (dCurrentSample == getCurrentSample()) {

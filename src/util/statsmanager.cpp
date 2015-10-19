@@ -57,7 +57,8 @@ QString humanizeNanos(qint64 nanos) {
     if (micros > 1) {return QString("%1us").arg(QString::number(micros));}
     return QString("%1ns").arg(QString::number(nanos));
 }
-void StatsManager::writeTimeline(const QString& filename) {
+void StatsManager::writeTimeline(QString filename)
+{
     QFile timeline(filename);
     if (!timeline.open(QIODevice::WriteOnly | QIODevice::Text)) {
         qDebug() << "Could not open timeline file for writing:"<< timeline.fileName();

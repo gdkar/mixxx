@@ -73,12 +73,12 @@ inline uint qHash(const ChannelHandle& handle) {
 // custom equality and hash methods that save the cost of touching the QString.
 class ChannelHandleAndGroup {
   public:
-    ChannelHandleAndGroup(const ChannelHandle& handle, const QString& name)
+    ChannelHandleAndGroup(const ChannelHandle& handle, QString name)
             : m_handle(handle),
               m_name(name) {
     }
 
-    const QString& name() const {
+    QString name() const {
         return m_name;
     }
 
@@ -117,7 +117,7 @@ class ChannelHandleFactory {
     ChannelHandleFactory() : m_iNextHandle(0) {
     }
 
-    ChannelHandle getOrCreateHandle(const QString& group) {
+    ChannelHandle getOrCreateHandle(QString group) {
         ChannelHandle& handle = m_groupToHandle[group];
         if (!handle.valid()) {
             handle.setHandle(m_iNextHandle++);
@@ -128,7 +128,7 @@ class ChannelHandleFactory {
         return handle;
     }
 
-    ChannelHandle handleForGroup(const QString& group) const {
+    ChannelHandle handleForGroup(QString group) const {
         return m_groupToHandle.value(group, ChannelHandle());
     }
 

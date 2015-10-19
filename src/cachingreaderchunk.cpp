@@ -28,15 +28,15 @@ void CachingReaderChunk::init(SINT index)
     m_index.store(index);
     m_frameCount.store(0);
 }
-bool CachingReaderChunk::isReadable( const Mixxx::SoundSourcePointer& pSoundSource, SINT maxReadableFrameIndex) const
+bool CachingReaderChunk::isReadable( Mixxx::SoundSourcePointer pSoundSource, SINT maxReadableFrameIndex) const
 {
     DEBUG_ASSERT(0 <= maxReadableFrameIndex);
     if (!isValid() || pSoundSource.isNull()) return false;
-    const SINT frameIndex = frameForIndex(getIndex());
-    const SINT maxFrameIndex = math_min( maxReadableFrameIndex, pSoundSource->getMaxFrameIndex());
+    auto frameIndex = frameForIndex(getIndex());
+    auto maxFrameIndex = math_min( maxReadableFrameIndex, pSoundSource->getMaxFrameIndex());
     return frameIndex <= maxFrameIndex;
 }
-SINT CachingReaderChunk::readSampleFrames(const Mixxx::SoundSourcePointer& pSoundSource, SINT* pMaxReadableFrameIndex)
+SINT CachingReaderChunk::readSampleFrames(Mixxx::SoundSourcePointer pSoundSource, SINT* pMaxReadableFrameIndex)
 {
     DEBUG_ASSERT(pMaxReadableFrameIndex);
     auto frameIndex = frameForIndex(getIndex());
@@ -59,7 +59,7 @@ SINT CachingReaderChunk::readSampleFrames(const Mixxx::SoundSourcePointer& pSoun
             // seek position. But only skip twice as many frames/samples
             // as have been requested to avoid decoding great portions of
             // the file for small read requests on seek errors.
-            const auto framesToSkip = frameIndex - seekFrameIndex;
+            auto framesToSkip = frameIndex - seekFrameIndex;
             if (framesToSkip <= (2 * framesToRead)) seekFrameIndex += pSoundSource->skipSampleFrames(framesToSkip);
         }
         if (frameIndex != seekFrameIndex)

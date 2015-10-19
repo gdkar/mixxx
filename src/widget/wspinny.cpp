@@ -144,8 +144,8 @@ void WSpinny::setup(QDomNode node, const SkinContext& context)
     // fill with transparent black
     m_qImage.fill(qRgba(0,0,0,0));
 #endif
-    m_pPlay = new ControlObject(ConfigKey(m_group, "play",this));
-    m_pPlayPos = new ControlObject(ConfigKey(m_group, "playposition",this));
+    m_pPlay = new ControlObject(ConfigKey(m_group, "play"),this);
+    m_pPlayPos = new ControlObject(ConfigKey(m_group, "playposition"),this);
     m_pVisualPlayPos = VisualPlayPosition::getVisualPlayPosition(m_group);
     m_pTrackSamples = new ControlObject(ConfigKey(m_group, "track_samples"),this);
     m_pTrackSampleRate = new ControlObject(ConfigKey(m_group, "track_samplerate"),this);

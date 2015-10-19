@@ -33,39 +33,32 @@ _Pragma("once")
 class ConfigKey {
   public:
     ConfigKey();
-    ConfigKey(const QString& g, const QString& i);
+    ConfigKey(QString g, QString i);
     ConfigKey(const char* g, const char* i);
     static ConfigKey parseCommaSeparated(QString key);
-
-    inline bool isNull() const {
+    inline bool isNull() const
+    {
         return group.isNull() && item.isNull();
     }
-
     QString group, item;
 };
 Q_DECLARE_METATYPE(ConfigKey);
-
 // comparison function for ConfigKeys. Used by a QHash in ControlObject
 inline bool operator==(const ConfigKey& c1, const ConfigKey& c2) {
     return c1.group == c2.group && c1.item == c2.item;
 }
-
 // stream operator function for trivial qDebug()ing of ConfigKeys
 inline QDebug operator<<(QDebug stream, const ConfigKey& c1) {
     stream << c1.group << "," << c1.item;
     return stream;
 }
-
 // QHash hash function for ConfigKey objects.
 inline uint qHash(const ConfigKey& key) {
     return qHash(key.group) ^ qHash(key.item);
 }
-
 inline uint qHash(const QKeySequence& key) {
     return qHash(key.toString());
 }
-
-
 // The value corresponding to a key. The basic value is a string, but can be
 // subclassed to more specific needs.
 class ConfigValue {
@@ -122,7 +115,7 @@ template <class ValueType> class ConfigObject {
     bool exists(ConfigKey key);
     ConfigKey *get(ValueType v);
     QString getValueString(ConfigKey k);
-    QString getValueString(ConfigKey k, const QString& default_string);
+    QString getValueString(ConfigKey k, QString default_string);
     QHash<ConfigKey, ValueType> toHash() const;
     void clear();
     void reopen(QString file);

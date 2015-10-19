@@ -7,7 +7,7 @@
 // The maximum number of effect parameters we're going to support.
 const unsigned int kDefaultMaxParameters = 16;
 
-EffectSlot::EffectSlot(const QString& group,
+EffectSlot::EffectSlot(QString group,
                        const unsigned int iChainNumber,
                        const unsigned int iEffectnumber)
         : m_iChainNumber(iChainNumber),
@@ -24,7 +24,7 @@ EffectSlot::EffectSlot(const QString& group,
     m_pControlNumButtonParameterSlots = new ControlObject(ConfigKey(m_group, "num_button_parameterslots"));
     m_pControlNumButtonParameterSlots->connectValueChangeRequest(this, SLOT(slotNumParameterSlots(double)));
     m_pControlEnabled = new ControlPushButton(ConfigKey(m_group, "enabled"));
-    m_pControlEnabled->setButtonMode(ControlPushButton::POWERWINDOW);
+    m_pControlEnabled->setProperty("buttonMode",ControlPushButton::POWERWINDOW);
     // Default to enabled. The skin might not show these buttons.
     m_pControlEnabled->setDefaultValue(true);
     m_pControlEnabled->set(true);

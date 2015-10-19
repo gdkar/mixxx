@@ -7,7 +7,7 @@ _Pragma("once")
 class MFile {
   public:
     MFile();
-    MFile(const QString& name);
+    MFile(QString name);
     MFile(const MFile& other);
     virtual ~MFile();
     QFile& file();
@@ -23,7 +23,7 @@ class MFile {
 class MDir {
   public:
     MDir();
-    MDir(const QString& name);
+    MDir(QString name);
     MDir(const MDir& other);
     virtual ~MDir();
     QDir& dir();
