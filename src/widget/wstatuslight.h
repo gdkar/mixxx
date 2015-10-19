@@ -17,9 +17,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef WSTATUSLIGHT_H
-#define WSTATUSLIGHT_H
-
+_Pragma("once")
 #include <QPaintEvent>
 #include <QWidget>
 #include <QString>
@@ -36,26 +34,17 @@ class WStatusLight : public WWidget  {
   public:
     WStatusLight(QWidget *parent=0);
     virtual ~WStatusLight();
-
     void setup(QDomNode node, const SkinContext& context);
-
   public slots:
     void onConnectedControlChanged(double dParameter, double dValue);
-
   protected:
     void paintEvent(QPaintEvent *);
-
   private:
     void setPixmap(int iState, PixmapSource source, Paintable::DrawMode mode);
     void setNoPos(int iNoPos);
-
     // Current position
     int m_iPos;
-
     PaintablePointer m_pPixmapBackground;
-
     // Associated pixmaps
     QVector<PaintablePointer> m_pixmaps;
 };
-
-#endif

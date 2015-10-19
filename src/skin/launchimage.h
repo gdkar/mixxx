@@ -38,5 +38,5 @@ class LaunchImage: public QWidget {
   protected:
     virtual void paintEvent(QPaintEvent *);
   private:
-    QProgressBar* m_pProgressBar;
+    QProgressBar* m_pProgressBar = nullptr;
 };

@@ -165,7 +165,11 @@
 			          </State>
 			          <Pos>52,23</Pos>
 			          <Connection>
-				          <ConfigKey>Channel<Variable name="channum"/>,keylock</ConfigKey>
+                  <ConfigKey persist="true" >Channel<Variable name="channum"/>,keylock</ConfigKey>
+                  <ButtonState>LeftButton</ButtonState>
+                </Connection>
+			          <Connection>
+                  <ConfigKey persist="true" >Channel<Variable name="channum"/>,keylock</ConfigKey>
 			          </Connection>
 		          </PushButton>
 	          </Children>

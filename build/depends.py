@@ -309,10 +309,6 @@ class ProtoBuf(Dependence):
             if not build.static_dependencies:
                 build.env.Append(CPPDEFINES='PROTOBUF_USE_DLLS')
         if not conf.CheckLib(libs):raise Exception("Could not find libprotobuf or its development headers.")
-class QtScriptByteArray(Dependence):
-    def configure(self, build, conf):build.env.Append(CPPPATH='#lib/qtscript-bytearray')
-    def sources(self, build):
-        return ['#lib/qtscript-bytearray/bytearrayclass.cpp','#lib/qtscript-bytearray/bytearrayprototype.cpp']
 class MixxxCore(Feature):
     def description(self): return "Mixxx Core Features"
     def enabled(self, build): return True
@@ -932,8 +928,7 @@ class MixxxCore(Feature):
     def depends(self, build):
         return [SoundTouch, ReplayGain, PortAudio, PortMIDI, Qt, TestHeaders,
                 FidLib, OpenGL, TagLib, ProtoBuf, FFMPEG,
-                Chromaprint, RubberBand, SecurityFramework, CoreServices,
-                QtScriptByteArray]
+                Chromaprint, RubberBand, SecurityFramework, CoreServices]
     def post_dependency_check_configure(self, build, conf):
         """Sets up additional things in the Environment that must happen
         after the Configure checks run."""

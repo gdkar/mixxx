@@ -3,8 +3,8 @@
 
 ImgLoader::ImgLoader() = default;
 ImgLoader::~ImgLoader() = default;
-QImage * ImgLoader::getImage(QString img) const
+QImage ImgLoader::getImage(QString img) const
 {
-    return new QImage(img);
+    return QImage(img);
 }
 

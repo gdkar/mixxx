@@ -71,9 +71,9 @@ void WaveformRenderMark::generateMarkImage(WaveformMark& mark) {
         QImage image = QImage(path);
         // If loading the image didn't fail, then we're done. Otherwise fall
         // through and render a label.
-        if (!image.isNull()) {
+        if (!image.isNull())
+        {
             mark.m_image = image.convertToFormat(QImage::Format_ARGB32_Premultiplied);
-            WImageStore::correctImageColors(&mark.m_image);
             return;
         }
     }

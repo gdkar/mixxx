@@ -9,19 +9,19 @@ QHash<QString, WImageStore::ImageRef> WImageStore::m_dictionary;
 QSharedPointer<ImgSource> WImageStore::m_loader = QSharedPointer<ImgSource>();
 
 // static
-QImage* WImageStore::getImageNoCache(const QString& fileName)
+QImage WImageStore::getImageNoCache(const QString& fileName)
 {
     return getImageNoCache(PixmapSource(fileName));
 }
 
 // static
-QImage* WImageStore::getImage(const QString& fileName)
+QImage WImageStore::getImage(const QString& fileName)
 {
     return getImage(PixmapSource(fileName));
 }
 
 // static
-QImage* WImageStore::getImage(const PixmapSource& source)
+QImage WImageStore::getImage(const PixmapSource& source)
 {
     // Search for Image in list
     if ( m_dictionary.contains(source.getId()))
@@ -33,12 +33,10 @@ QImage* WImageStore::getImage(const PixmapSource& source)
     // Image wasn't found, construct it
     //qDebug() << "WImageStore Loading Image from file" << source.getPath();
     auto loadedImage = getImageNoCache(source);
-    if (!loadedImage ) return nullptr;
-    if (loadedImage->isNull())
+    if (loadedImage.isNull())
     {
-        qDebug() << "WImageStore couldn't load:" << source.getPath() << (loadedImage == NULL);
-        delete loadedImage;
-        return nullptr;
+        qDebug() << "WImageStore couldn't load:" << source.getPath();
+        return QImage();
     }
     auto info  = ImageRef{};
     info.image = loadedImage;
@@ -47,26 +45,26 @@ QImage* WImageStore::getImage(const PixmapSource& source)
     return info.image;
 }
 // static
-QImage* WImageStore::getImageNoCache(const PixmapSource& source)
+QImage WImageStore::getImageNoCache(const PixmapSource& source)
 {
-    auto pImage = static_cast<QImage*>(nullptr);
     if (source.isSVG())
     {
         QSvgRenderer renderer;
         if (source.getData().isEmpty()) renderer.load(source.getPath());
         else                            renderer.load(source.getData());
-        pImage = new QImage(renderer.defaultSize(), QImage::Format_ARGB32);
-        pImage->fill(0x00000000);  // Transparent black.
-        QPainter painter(pImage);
+        auto pImage = QImage(renderer.defaultSize(), QImage::Format_ARGB32);
+        pImage.fill(0x00000000);  // Transparent black.
+        QPainter painter(&pImage);
         renderer.render(&painter);
+        return pImage;
     } else {
-        if (m_loader) pImage = m_loader->getImage(source.getPath());
-        else          pImage = new QImage(source.getPath());
+        if (m_loader) return m_loader->getImage(source.getPath());
+        else          return QImage(source.getPath());
     }
-    return pImage;
+    return QImage{};
 }
 // static
-void WImageStore::deleteImage(QImage * p)
+void WImageStore::deleteImage(QImage p)
 {
     // Search for Image in list
     QMutableHashIterator<QString, ImageRef> it(m_dictionary);
@@ -76,19 +74,10 @@ void WImageStore::deleteImage(QImage * p)
         if (p == info.image)
         {
             info.refcnt--;
-            if (info.refcnt<1)
-            {
-                delete info.image;
-                it.remove();
-            }
+            if (info.refcnt<1) it.remove();
             break;
         }
     }
-}
-// static
-void WImageStore::correctImageColors(QImage* p)
-{
-    if (m_loader) m_loader->correctImageColors(p);
 }
 // static
 void WImageStore::setLoader(QSharedPointer<ImgSource> ld)

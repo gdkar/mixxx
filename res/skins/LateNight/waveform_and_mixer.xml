@@ -56,11 +56,11 @@
                                   <Text>MIXER</Text>
                                 </State>
                                 <Connection>
-                                  <ConfigKey>Master,show_mixer</ConfigKey>
+                                  <ConfigKey persist="true">Master,show_mixer</ConfigKey>
                                   <ButtonState>LeftButton</ButtonState>
                                 </Connection>
                                 <Connection>
-                                  <ConfigKey>Master,show_mixer</ConfigKey>
+                                  <ConfigKey persist="true">Master,show_mixer</ConfigKey>
                                 </Connection>
                             </PushButton>
                         </Children>
@@ -83,11 +83,11 @@
                                   <Text>EQ</Text>
                                 </State>
                                 <Connection>
-                                  <ConfigKey>Master,show_eqs</ConfigKey>
+                                  <ConfigKey persist="true">Master,show_eqs</ConfigKey>
                                   <ButtonState>LeftButton</ButtonState>
                                 </Connection>
                                 <Connection>
-                                  <ConfigKey>Master,show_eqs</ConfigKey>
+                                  <ConfigKey persist="true">Master,show_eqs</ConfigKey>
                                 </Connection>
                             </PushButton>
                         </Children>

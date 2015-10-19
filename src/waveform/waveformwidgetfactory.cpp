@@ -13,7 +13,6 @@
 #include "util/performancetimer.h"
 #include "util/timer.h"
 #include "util/math.h"
-#include "mixxx.h"
 ///////////////////////////////////////////
 
 ///////////////////////////////////////////
@@ -56,8 +55,7 @@ bool WaveformWidgetFactory::setConfig(ConfigObject<ConfigValue> *config)
     else  m_config->set(ConfigKey("Waveform","ZoomSynchronization"), ConfigValue(m_zoomSync));
     auto typeString = m_config->getValueString(ConfigKey("Waveform","WaveformType"));
     auto type = static_cast<WaveformWidget::RenderType>(QMetaEnum::fromType<WaveformWidget::RenderType>().keyToValue(qPrintable(typeString),&ok));
-    if (!ok || !setWidgetType(type)) 
-      setWidgetType(autoChooseWidgetType());
+    if (!ok || !setWidgetType(type)) setWidgetType(autoChooseWidgetType());
     for (auto i = 0; i < FilterCount; i++)
     {
         auto visualGain = m_config->getValueString(ConfigKey("Waveform","VisualGain_" + QString::number(i))).toDouble(&ok);
@@ -142,7 +140,7 @@ WaveformWidget::RenderType WaveformWidgetFactory::autoChooseWidgetType() const
 {
   return WaveformWidget::Filtered;
 }
-void WaveformWidgetFactory::startVSync(MixxxMainWindow* mixxxMainWindow)
+void WaveformWidgetFactory::startVSync()
 {
     m_updateTimer.setTimerType(Qt::PreciseTimer);
     m_updateTimer.setInterval(1e3/m_frameRate);

@@ -45,7 +45,7 @@ class WaveformWidgetFactory : public QObject, public Singleton<WaveformWidgetFac
     void setOverviewNormalized(bool normalize);
     int isOverviewNormalized() const { return m_overviewNormalized;}
     void addTimerListener(QWidget* pWidget);
-    void startVSync(MixxxMainWindow* mixxxApp);
+    void startVSync();
     void setVSyncType(int vsType);
     int getVSyncType();
     void notifyZoomChange(WWaveformViewer *viewer);

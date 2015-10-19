@@ -66,11 +66,11 @@ class WSpinny : public QWidget, public WBaseWidget, public VinylSignalQualityLis
   private:
     QString m_group;
     ConfigObject<ConfigValue>* m_pConfig;
-    QImage* m_pBgImage;
-    QImage* m_pMaskImage;
-    QImage* m_pFgImage;
+    QImage m_pBgImage;
+    QImage m_pMaskImage;
+    QImage m_pFgImage;
     QImage m_fgImageScaled;
-    QImage* m_pGhostImage;
+    QImage m_pGhostImage;
     QImage m_ghostImageScaled;
     ControlObjectSlave* m_pPlay;
     ControlObjectSlave* m_pPlayPos;

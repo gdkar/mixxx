@@ -5,8 +5,9 @@ QColor ImgSource::getCorrectColor(QColor c) const
 {
   return c;
 }
-void ImgSource::correctImageColors(QImage*) const
+QImage ImgSource::correctImageColors(QImage i) const
 {
+  return i;
 }
 ImgProcessor::ImgProcessor(ImgSource *p) : m_parent(p)
 {
@@ -16,24 +17,24 @@ QColor ImgProcessor::getCorrectColor(QColor c) const
 {
   return doColorCorrection(m_parent->getCorrectColor(c));
 }
-void ImgProcessor::correctImageColors(QImage* ) const
+QImage ImgProcessor::correctImageColors(QImage i ) const
 {
+  return i;
 }
 ImgColorProcessor::~ImgColorProcessor() = default;
 ImgColorProcessor::ImgColorProcessor(ImgSource *p) : ImgProcessor(p)
 {
 }
-QImage * ImgColorProcessor::getImage(QString img) const
+QImage ImgColorProcessor::getImage(QString img) const
 {
-  auto i = m_parent->getImage(img);
-  correctImageColors(i);
-  return i;
+  return correctImageColors(m_parent->getImage(img));
 }
-void ImgColorProcessor::correctImageColors(QImage* i) const
+QImage ImgColorProcessor::correctImageColors(QImage i) const
 {
-    if (!i || i->isNull())return;
+    if (i.isNull())return i;
     auto bytesPerPixel = 4;
-    switch(i->format()) {
+    switch(i.format())
+    {
     case QImage::Format_Mono:
     case QImage::Format_MonoLSB:
     case QImage::Format_Indexed8:
@@ -62,19 +63,22 @@ void ImgColorProcessor::correctImageColors(QImage* i) const
         bytesPerPixel = 0;
         break;
     }
+    auto ret = QImage{};
     if (bytesPerPixel < 4)
     {
         // Handling Indexed color or mono colors requires different logic
-        qDebug() << "ImgColorProcessor converting unsupported color format:" << i->format();
-        *i = i->convertToFormat(QImage::Format_ARGB32);
+        qDebug() << "ImgColorProcessor converting unsupported color format:" << i.format();
+        ret = i.convertToFormat(QImage::Format_ARGB32);
     }
-    for (auto y = 0; y < i->height(); y++)
+    else
     {
-        auto line = reinterpret_cast<QRgb*>(i->scanLine(y)); // cast the returned pointer to QRgb*
-        if (!line ) continue;
-        for (auto x = 0; x < i->width(); x++,line++)
-        {
-            *line = doColorCorrection(QColor(*line)).rgba();
-        }
+      ret = i;
     }
+    for (auto y = 0; y < ret.height(); y++)
+    {
+        auto line = reinterpret_cast<QRgb*>(ret.scanLine(y)); // cast the returned pointer to QRgb*
+        if (!line ) continue;
+        for (auto x = 0; x < ret.width(); x++,line++) *line = doColorCorrection(QColor(*line)).rgba();
+    }
+    return ret;
 }

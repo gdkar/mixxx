@@ -44,8 +44,8 @@ class Paintable {
         TILE
     };
     // Takes ownership of QImage.
-    Paintable(QImage* pImage, DrawMode mode);
-    Paintable(const QString& fileName, DrawMode mode);
+    Paintable(QImage pImage, DrawMode mode);
+    Paintable(QString fileName, DrawMode mode);
     Paintable(const PixmapSource& source, DrawMode mode);
     QSize size() const;
     int width() const;
@@ -53,17 +53,17 @@ class Paintable {
     QRectF rect() const;
     DrawMode drawMode() const;
     void draw(int x, int y, QPainter* pPainter);
-    void draw(const QPointF& point, QPainter* pPainter,const QRectF& sourceRect);
-    void draw(const QRectF& targetRect, QPainter* pPainter);
-    void draw(const QRectF& targetRect, QPainter* pPainter,const QRectF& sourceRect);
-    void drawCentered(const QRectF& targetRect, QPainter* pPainter,const QRectF& sourceRect);
+    void draw(QPointF point, QPainter* pPainter,QRectF sourceRect);
+    void draw(QRectF targetRect, QPainter* pPainter);
+    void draw(QRectF targetRect, QPainter* pPainter,QRectF sourceRect);
+    void drawCentered(QRectF targetRect, QPainter* pPainter,QRectF sourceRect);
     bool isNull() const;
-    static DrawMode DrawModeFromString(const QString& str);
+    static DrawMode DrawModeFromString(QString str);
     static QString DrawModeToString(DrawMode mode);
   private:
-    void drawInternal(const QRectF& targetRect, QPainter* pPainter,const QRectF& sourceRect);
-    QScopedPointer<QPixmap> m_pPixmap;
-    QScopedPointer<QSvgRenderer> m_pSvg;
+    void drawInternal(QRectF targetRect, QPainter* pPainter,QRectF sourceRect);
+    QPixmap                 m_pPixmap;
+    QSvgRenderer             m_pSvg;
     DrawMode m_draw_mode;
 };
 typedef QSharedPointer<Paintable> PaintablePointer;
@@ -71,7 +71,7 @@ typedef QWeakPointer<Paintable> WeakPaintablePointer;
 class WPixmapStore {
   public:
     static PaintablePointer getPaintable(PixmapSource source,Paintable::DrawMode mode);
-    static QPixmap* getPixmapNoCache(const QString& fileName);
+    static QPixmap getPixmapNoCache(QString fileName);
     static void setLoader(QSharedPointer<ImgSource> ld);
   private:
     static QHash<QString, WeakPaintablePointer> m_paintableCache;

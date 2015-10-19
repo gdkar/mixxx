@@ -282,9 +282,14 @@ void MixxxMainWindow::initalize(QApplication* pApp, const CmdlineArgs& args) {
     qDebug() << "Creating ControllerManager";
     m_pControllerManager = new ControllerManager(m_pConfig);
     launchProgress(47);
-    WaveformWidgetFactory::create(); // takes a long time
-    WaveformWidgetFactory::instance()->startVSync(this);
-    WaveformWidgetFactory::instance()->setConfig(m_pConfig);
+    {
+      ScopedTimer _t("WaveformWidgetFactory::instance()");
+      WaveformWidgetFactory::instance()->setConfig(m_pConfig);
+    }
+    {
+      ScopedTimer _t("WaveformWidgetFactory::startVSync()");
+      WaveformWidgetFactory::instance()->startVSync();
+    }
     launchProgress(52);
     connect(this, SIGNAL(newSkinLoaded()),this, SLOT(onNewSkinLoaded()));
     connect(this, SIGNAL(newSkinLoaded()),m_pLibrary, SLOT(onSkinLoadFinished()));
@@ -1324,10 +1329,16 @@ void MixxxMainWindow::slotOptionsKeyboard(bool toggle) {
         m_pConfig->set(ConfigKey("Keyboard","Enabled"), ConfigValue(0));
     }
 }
-void MixxxMainWindow::slotDeveloperReloadSkin(bool /*toggle*/) {rebootMixxxView();}
-void MixxxMainWindow::slotDeveloperTools() {
-    if (m_pDeveloperTools->isChecked()) {
-        if ( !m_pDeveloperToolsDlg ) {
+void MixxxMainWindow::slotDeveloperReloadSkin(bool /*toggle*/)
+{
+  rebootMixxxView();
+}
+void MixxxMainWindow::slotDeveloperTools()
+{
+    if (m_pDeveloperTools->isChecked())
+    {
+        if ( !m_pDeveloperToolsDlg )
+        {
             m_pDeveloperToolsDlg = new DlgDeveloperTools(this, m_pConfig);
             connect(m_pDeveloperToolsDlg, SIGNAL(destroyed()),this, SLOT(slotDeveloperToolsClosed()));
             connect(this, SIGNAL(closeDeveloperToolsDlgChecked(int)),m_pDeveloperToolsDlg, SLOT(done(int)));
@@ -1335,7 +1346,9 @@ void MixxxMainWindow::slotDeveloperTools() {
         }
         m_pDeveloperToolsDlg->show();
         m_pDeveloperToolsDlg->activateWindow();
-    } else {
+    }
+    else
+    {
         disconnect(m_pDeveloperToolsDlg, SIGNAL(destroyed()),m_pDeveloperTools, SLOT(toggle()));
         emit closeDeveloperToolsDlgChecked(0);
     }
@@ -1548,10 +1561,11 @@ void MixxxMainWindow::setToolTipsCfg(int tt) {
     m_pConfig->set(ConfigKey("Controls","Tooltips"),ConfigValue(tt));
     m_toolTipsCfg = tt;
 }
-void MixxxMainWindow::rebootMixxxView() {
+void MixxxMainWindow::rebootMixxxView()
+{
     qDebug() << "Now in rebootMixxxView...";
     auto initPosition = pos();
-    auto initSize = size();
+    auto initSize     = size();
     // Every time a skin is loaded, the Cos objects need to be recreated
     // See onNewSkinLoaded()
     if (m_pWidgetParent)
@@ -1574,7 +1588,8 @@ void MixxxMainWindow::rebootMixxxView() {
                                                            m_pControllerManager,
                                                            m_pLibrary,
                                                            m_pVCManager,
-                                                           m_pEffectsManager))) {
+                                                           m_pEffectsManager)))
+    {
         QMessageBox::critical(this,tr("Error in skin file"),tr("The selected skin cannot be loaded."));
         return;
     }

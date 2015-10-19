@@ -9,5 +9,4 @@ class ColorSchemeParser {
   private:
     static ImgSource* parseFilters(QDomNode filter);
     ColorSchemeParser() = delete;
-    ~ColorSchemeParser() = delete;
 };

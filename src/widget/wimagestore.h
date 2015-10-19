@@ -9,16 +9,15 @@ class QImage;
 
 class WImageStore {
   public:
-    static QImage* getImage(const QString &fileName);
-    static QImage* getImageNoCache(const QString &fileName);
-    static QImage* getImage(const PixmapSource& source);
-    static QImage* getImageNoCache(const PixmapSource& source);
-    static void deleteImage(QImage* p);
+    static QImage getImage(const QString &fileName);
+    static QImage getImageNoCache(const QString &fileName);
+    static QImage getImage(const PixmapSource& source);
+    static QImage getImageNoCache(const PixmapSource& source);
+    static void deleteImage(QImage p);
     static void setLoader(QSharedPointer<ImgSource> ld);
     // For external owned images like software generated ones.
-    static void correctImageColors(QImage* p);
     struct ImageRef {
-      QImage *image  = nullptr;
+      QImage  image;
       int64_t refcnt = 1;
     };
   private:

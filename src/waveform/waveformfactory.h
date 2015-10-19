@@ -44,4 +44,5 @@ class WaveformFactory {
     static QString currentWaveformDescription();
     static QString currentWaveformSummaryVersion();
     static QString currentWaveformSummaryDescription();
+  WaveformFactory() = delete;
 };

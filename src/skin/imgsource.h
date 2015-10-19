@@ -25,9 +25,9 @@ _Pragma("once")
 class ImgSource {
   public:
     virtual ~ImgSource();
-    virtual QImage* getImage(QString img) const = 0;
+    virtual QImage getImage(QString img) const = 0;
     virtual QColor getCorrectColor(QColor c) const;
-    virtual void correctImageColors(QImage* p) const;
+    virtual QImage correctImageColors(QImage p) const;
 };
 
 class ImgProcessor : public ImgSource {
@@ -37,7 +37,7 @@ class ImgProcessor : public ImgSource {
     ImgProcessor(ImgSource* parent);
     virtual QColor doColorCorrection(QColor c)const = 0;
     virtual QColor getCorrectColor(QColor c) const;
-    virtual void correctImageColors(QImage* p) const;
+    virtual QImage correctImageColors(QImage p) const;
   protected:
     ImgSource* m_parent = nullptr;
 };
@@ -45,6 +45,6 @@ class ImgColorProcessor : public ImgProcessor {
 public:
     virtual ~ImgColorProcessor();
     ImgColorProcessor(ImgSource* parent);
-    virtual QImage* getImage(QString img) const;
-    virtual void correctImageColors(QImage* i) const;
+    virtual QImage getImage(QString img) const;
+    virtual QImage correctImageColors(QImage i) const;
 };

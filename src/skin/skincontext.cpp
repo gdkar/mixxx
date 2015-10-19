@@ -8,21 +8,11 @@
 #include "util/cmdlineargs.h"
 #include "widget/wsingletoncontainer.h"
 
-SkinContext::SkinContext(ConfigObject<ConfigValue>* pConfig, const QString& xmlPath)
+SkinContext::SkinContext(ConfigObject<ConfigValue>* pConfig, QString xmlPath)
         : m_xmlPath(xmlPath),
           m_pConfig(pConfig),
-          m_pScriptEngine(new QJSEngine()),
-          m_context(m_pScriptEngine->newObject()),
           m_pSingletons(new SingletonMap)
 {
-    enableDebugger(true);
-    // the extensions are imported once and will be passed to the children
-    // global object as properties of the parent's global object.
-    importScriptExtension("console");
-    importScriptExtension("svg");
-    m_pScriptEngine->installTranslatorFunctions();
-    auto context = m_pScriptEngine->globalObject();
-    m_context.setPrototype(context);
 }
 void SkinContext::defineSingleton(QString objectName, QWidget* widget)
 {
@@ -32,7 +22,7 @@ QWidget* SkinContext::getSingletonWidget(QString objectName) const
 {
     return m_pSingletons->getSingletonWidget(objectName);
 }
-QString SkinContext::getSkinPath(const QString& relativePath) const
+QString SkinContext::getSkinPath(QString relativePath) const
 {
     return QDir(m_skinBasePath).filePath(relativePath);
 }
@@ -40,30 +30,25 @@ SkinContext::SkinContext(const SkinContext& parent)
         : m_xmlPath(parent.m_xmlPath),
           m_skinBasePath(parent.m_skinBasePath),
           m_pConfig(parent.m_pConfig),
-          m_pScriptEngine(parent.m_pScriptEngine),
-          m_context(m_pScriptEngine->newObject()),
+          m_variables(parent.m_variables),
           m_pSingletons(parent.m_pSingletons)
 {
-    // we generate a new global object to preserve the scope between
-    // a context and its children
-    m_context.setPrototype(parent.m_context);
 }
 SkinContext::~SkinContext() = default;
-QString SkinContext::variable(const QString& name) const
+QString SkinContext::variable(QString name) const
 {
-  auto value = m_context.property(name);
-  if ( value.isNull() || value.isUndefined() ) return QString{};
-  else return value.toString();
+  if ( m_variables.contains(name) ) return m_variables.value(name);
+  else                              return QString{};
 }
-void SkinContext::setVariable(const QString& name, const QString& value)
+void SkinContext::setVariable(QString name, QString value)
 {
-    m_context.setProperty(name,value);
+      m_variables.insert(name,value);
 }
-void SkinContext::setXmlPath(const QString& xmlPath)
+void SkinContext::setXmlPath(QString xmlPath)
 {
   m_xmlPath = xmlPath;
 }
-void SkinContext::updateVariables(const QDomNode& node)
+void SkinContext::updateVariables(QDomNode node)
 {
     auto child = node.firstChildElement(QString{"SetVariable"});
     while (!child.isNull())
@@ -72,7 +57,7 @@ void SkinContext::updateVariables(const QDomNode& node)
         child = child.nextSiblingElement(QString{"SetVariable"});
     }
 }
-void SkinContext::updateVariable(const QDomElement& element)
+void SkinContext::updateVariable(QDomElement element)
 {
     if (!element.hasAttribute("name"))
     {
@@ -83,11 +68,11 @@ void SkinContext::updateVariable(const QDomElement& element)
     auto value = variableNodeToText(element);
     setVariable(name, value);
 }
-bool SkinContext::hasNode(const QDomNode& node, const QString& nodeName) const
+bool SkinContext::hasNode(QDomNode node, QString nodeName) const
 {
     return !selectNode(node, nodeName).isNull();
 }
-QDomNode SkinContext::selectNode(const QDomNode& node,const QString& nodeName) const
+QDomNode SkinContext::selectNode(QDomNode node,QString nodeName) const
 {
     auto child = node.firstChild();
     while (!child.isNull())
@@ -97,40 +82,40 @@ QDomNode SkinContext::selectNode(const QDomNode& node,const QString& nodeName) c
     }
     return child;
 }
-QDomElement SkinContext::selectElement(const QDomNode& node,const QString& nodeName) const
+QDomElement SkinContext::selectElement(QDomNode node,QString nodeName) const
 {
     return node.firstChildElement(nodeName);
 }
-QString SkinContext::selectString(const QDomNode& node,const QString& nodeName) const
+QString SkinContext::selectString(QDomNode node,QString nodeName) const
 {
     return nodeToString(selectElement(node, nodeName));
 }
-float SkinContext::selectFloat(const QDomNode& node,const QString& nodeName) const
+float SkinContext::selectFloat(QDomNode node,QString nodeName) const
 {
     auto ok = false;
     auto  conv = nodeToString(selectElement(node, nodeName)).toFloat(&ok);
     return ok ? conv : 0.0f;
 }
-double SkinContext::selectDouble(const QDomNode& node,const QString& nodeName) const
+double SkinContext::selectDouble(QDomNode node,QString nodeName) const
 {
     auto ok = false;
     auto conv = nodeToString(selectElement(node, nodeName)).toDouble(&ok);
     return ok ? conv : 0.0;
 }
-int SkinContext::selectInt(const QDomNode& node,const QString& nodeName,bool* pOk) const
+int SkinContext::selectInt(QDomNode node,QString nodeName,bool* pOk) const
 {
     auto ok = false;
     auto conv = nodeToString(selectElement(node, nodeName)).toInt(&ok);
     if (pOk) {*pOk = ok;}
     return ok ? conv : 0;
 }
-bool SkinContext::selectBool(const QDomNode& node,const QString& nodeName,bool defaultValue) const
+bool SkinContext::selectBool(QDomNode node,QString nodeName,bool defaultValue) const
 {
     auto child = selectNode(node, nodeName);
     if (!child.isNull()) return nodeToString(child).contains("true",Qt::CaseInsensitive);
     return defaultValue;
 }
-bool SkinContext::hasNodeSelectString(const QDomNode& node,const QString& nodeName, QString *value) const
+bool SkinContext::hasNodeSelectString(QDomNode node,QString nodeName, QString *value) const
 {
     auto child = selectNode(node, nodeName);
     if (!child.isNull())
@@ -140,7 +125,7 @@ bool SkinContext::hasNodeSelectString(const QDomNode& node,const QString& nodeNa
     }
     return false;
 }
-bool SkinContext::hasNodeSelectBool(const QDomNode& node,const QString& nodeName, bool *value) const {
+bool SkinContext::hasNodeSelectBool(QDomNode node,QString nodeName, bool *value) const {
     auto child = selectNode(node, nodeName);
     if (!child.isNull())
     {
@@ -149,30 +134,23 @@ bool SkinContext::hasNodeSelectBool(const QDomNode& node,const QString& nodeName
     }
     return false;
 }
-bool SkinContext::selectAttributeBool(const QDomElement& element,const QString& attributeName,bool defaultValue) const
+bool SkinContext::selectAttributeBool(QDomElement element,QString attributeName,bool defaultValue) const
+{
+    if (element.hasAttribute(attributeName)) return element.attribute(attributeName).contains("true",Qt::CaseInsensitive);
+    return defaultValue;
+}
+QString SkinContext::selectAttributeString(QDomElement element,QString attributeName,QString defaultValue) const
 {
     if (element.hasAttribute(attributeName))
     {
-        return element.attribute(attributeName).contains("true",Qt::CaseInsensitive);
-    }
-    return defaultValue;
-}
-QString SkinContext::selectAttributeString(const QDomElement& element,const QString& attributeName,QString defaultValue) const
-{
-    if (element.hasAttribute(attributeName)) {
         auto value = element.attribute(attributeName);
         if ( !value.isEmpty() ) return value;
     }
     return defaultValue;
 }
-QString SkinContext::variableNodeToText(const QDomElement& variableNode) const
+QString SkinContext::variableNodeToText(QDomElement variableNode) const
 {
-    if (variableNode.hasAttribute("expression"))
-    {
-        auto result = m_pScriptEngine->evaluate(variableNode.attribute("expression"), m_xmlPath,variableNode.lineNumber());
-        return result.toString();
-    }
-    else if (variableNode.hasAttribute("name"))
+    if (variableNode.hasAttribute("name"))
     {
         auto variableName = variableNode.attribute("name");
         if (variableNode.hasAttribute("format"))
@@ -182,16 +160,13 @@ QString SkinContext::variableNodeToText(const QDomElement& variableNode) const
         }
         else if (variableNode.nodeName() == "SetVariable")
         {
-            // If we are setting the variable name and we didn't get a format
-            // string then return the node text. Use nodeToString to translate
-            // embedded variable references.
             return nodeToString(variableNode);
         }
         else return variable(variableName);
     }
     return nodeToString(variableNode);
 }
-QString SkinContext::nodeToString(const QDomNode& node) const
+QString SkinContext::nodeToString(QDomNode node) const
 {
     QStringList result;
     auto child = node.firstChild();
@@ -208,7 +183,7 @@ QString SkinContext::nodeToString(const QDomNode& node) const
     }
     return result.join("");
 }
-PixmapSource SkinContext::getPixmapSource(const QDomNode& pixmapNode) const
+PixmapSource SkinContext::getPixmapSource(QDomNode pixmapNode) const
 {
     PixmapSource source;
     if (!pixmapNode.isNull())
@@ -219,44 +194,12 @@ PixmapSource SkinContext::getPixmapSource(const QDomNode& pixmapNode) const
     }
     return source;
 }
-Paintable::DrawMode SkinContext::selectScaleMode(const QDomElement& element,Paintable::DrawMode defaultDrawMode) const
+Paintable::DrawMode SkinContext::selectScaleMode(QDomElement element,Paintable::DrawMode defaultDrawMode) const
 {
     auto drawModeStr = selectAttributeString( element, "scalemode", Paintable::DrawModeToString(defaultDrawMode));
     return Paintable::DrawModeFromString(drawModeStr);
 }
-/**
- * All the methods below exist to access some of the scriptEngine features
- * from the svgParser.
- */
-QJSValue SkinContext::evaluateScript(const QString& expression,const QString& filename,int lineNumber)
-{
-    qDebug() << "Evaluating script expression " << expression << " from file " << filename << " line " << lineNumber;
-    return m_pScriptEngine->evaluate(expression, filename, lineNumber);
-}
-QJSValue SkinContext::importScriptExtension(const QString& extensionName)
-{
-/*    auto out = m_pScriptEngine->importExtension(extensionName);
-    if ( out.isError() )
-    {
-      qDebug() << "Error importing extension " << out.property("name").toString() << " 
-    }
-    if (m_pScriptEngine->hasUncaughtException()) qDebug() << out.toString();
-    return out;*/
-    return QJSValue{};
-}
-QSharedPointer<QJSEngine> SkinContext::getScriptEngine() const
-{
-    return m_pScriptEngine;
-}
-void SkinContext::enableDebugger(bool state) const
-{
-    if (CmdlineArgs::Instance().getDeveloper() && m_pConfig  && m_pConfig->getValueString(ConfigKey("ScriptDebugger", "Enabled")) == "1")
-    {
-/*        if (state) m_pScriptDebugger->attachTo(m_pScriptEngine.data());
-        else       m_pScriptDebugger->detach();*/
-    }
-}
-QDebug SkinContext::logWarning(const char* file, const int line,const QDomNode& node) const
+QDebug SkinContext::logWarning(const char* file, const int line,QDomNode node) const
 {
     return qWarning() << QString("%1:%2 SKIN ERROR at %3:%4 <%5>:")
                              .arg(file, QString::number(line), m_xmlPath,

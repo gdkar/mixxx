@@ -27,7 +27,7 @@ QHash<QString, WeakPaintablePointer> WPixmapStore::m_paintableCache{};
 QSharedPointer<ImgSource>            WPixmapStore::m_loader{};
 
 // static
-Paintable::DrawMode Paintable::DrawModeFromString(const QString& str)
+Paintable::DrawMode Paintable::DrawModeFromString(QString str)
 {
     if (str.compare("FIXED", Qt::CaseInsensitive) == 0)                return FIXED;
     else if (str.compare("STRETCH", Qt::CaseInsensitive) == 0)         return STRETCH;
@@ -50,14 +50,12 @@ QString Paintable::DrawModeToString(DrawMode mode)
     qWarning() << "Unknown DrawMode in DrawModeToString " << mode << "using FIXED";
     return "FIXED";
 }
-Paintable::Paintable(QImage* pImage, DrawMode mode)
+Paintable::Paintable(QImage pImage, DrawMode mode)
         : m_draw_mode(mode)
+        , m_pPixmap(QPixmap::fromImage(pImage))
 {
-    m_pPixmap.reset(new QPixmap());
-    m_pPixmap->convertFromImage(*pImage);
-    delete pImage;
 }
-Paintable::Paintable(const QString& fileName, DrawMode mode)
+Paintable::Paintable(QString fileName, DrawMode mode)
         : m_draw_mode(mode)
 {
     if (fileName.endsWith(".svg", Qt::CaseInsensitive))
@@ -69,83 +67,69 @@ Paintable::Paintable(const QString& fileName, DrawMode mode)
             QSvgRenderer renderer(fileName);
             QImage copy_buffer(renderer.defaultSize(), QImage::Format_ARGB32);
             copy_buffer.fill(0x00000000);  // Transparent black.
-            m_pPixmap.reset(new QPixmap(renderer.defaultSize()));
             QPainter painter(&copy_buffer);
             renderer.render(&painter);
-            m_pPixmap->convertFromImage(copy_buffer);
+            m_pPixmap.convertFromImage(copy_buffer);
         }
-        else m_pSvg.reset(new QSvgRenderer(fileName));
-    } else m_pPixmap.reset(new QPixmap(fileName));
+        else m_pSvg.load(fileName);
+    }
+    else m_pPixmap.load(fileName);
 }
 Paintable::Paintable(const PixmapSource& source, DrawMode mode)
         : m_draw_mode(mode)
 {
     if (source.isSVG())
     {
-        auto pSvgRenderer = std::make_unique<QSvgRenderer>();
-        if (source.getData().isEmpty()) pSvgRenderer->load(source.getPath());
-        else pSvgRenderer->load(source.getData());
+        if (source.getData().isEmpty()) m_pSvg.load(source.getPath());
+        else m_pSvg.load(source.getData());
         if (mode == TILE)
         {
             // The SVG renderer doesn't directly support tiling, so we render
             // it to a pixmap which will then get tiled.
-            auto copy_buffer = QImage(pSvgRenderer->defaultSize(), QImage::Format_ARGB32);
+            auto copy_buffer = QImage(m_pSvg.defaultSize(), QImage::Format_ARGB32);
             copy_buffer.fill(0x00000000);  // Transparent black.
-            m_pPixmap.reset(new QPixmap(pSvgRenderer->defaultSize()));
+            m_pPixmap = QPixmap(m_pSvg.defaultSize());
             QPainter painter(&copy_buffer);
-            pSvgRenderer->render(&painter);
-            m_pPixmap->convertFromImage(copy_buffer);
+            m_pSvg.render(&painter);
+            m_pPixmap.convertFromImage(copy_buffer);
         }
-        else m_pSvg.reset(pSvgRenderer.release());
     }
     else
     {
-        auto pPixmap = new QPixmap();
-        if (!source.getData().isEmpty()) pPixmap->loadFromData(source.getData());
-        else pPixmap->load(source.getPath());
-        m_pPixmap.reset(pPixmap);
+        m_pPixmap = QPixmap();
+        if (!source.getData().isEmpty()) m_pPixmap.loadFromData(source.getData());
+        else                             m_pPixmap.load(source.getPath());
     }
 }
 bool Paintable::isNull() const
 {
-    if (!m_pPixmap.isNull()) return m_pPixmap->isNull();
-    else if (!m_pSvg.isNull()) return !m_pSvg->isValid();
-    return false;
+    return ( m_pPixmap.isNull() && !m_pSvg.isValid() );
 }
 QSize Paintable::size() const
 {
-    if (!m_pPixmap.isNull())   return m_pPixmap->size();
-    else if (!m_pSvg.isNull()) return m_pSvg->defaultSize();
-    return QSize();
+    if ( !m_pPixmap.isNull() )   return m_pPixmap.size();
+    else if ( m_pSvg.isValid() ) return m_pSvg.defaultSize();
+    else                         return QSize();
 }
 int Paintable::width() const
 {
-    if (!m_pPixmap.isNull()) return m_pPixmap->width();
-    else if (!m_pSvg.isNull())
-    {
-        auto size = m_pSvg->defaultSize();
-        return size.width();
-    }
-    return 0;
+    if (!m_pPixmap.isNull())   return m_pPixmap.width();
+    else if (m_pSvg.isValid()) return m_pSvg.defaultSize().width();
+    else                       return 0;
 }
 int Paintable::height() const
 {
-    if (!m_pPixmap.isNull())return m_pPixmap->height();
-    else if (!m_pSvg.isNull())
-    {
-        auto size = m_pSvg->defaultSize();
-        return size.height();
-    }
-    return 0;
+    if (!m_pPixmap.isNull())  return m_pPixmap.height();
+    else if (m_pSvg.isValid())return m_pSvg.defaultSize().height();
+    else                      return 0;
 }
-
 QRectF Paintable::rect() const
 {
-    if (!m_pPixmap.isNull())   return m_pPixmap->rect();
-    else if (!m_pSvg.isNull()) return QRectF(QPointF(0, 0), m_pSvg->defaultSize());
-    return QRectF();
+    if      (!m_pPixmap.isNull())   return m_pPixmap.rect();
+    else if (m_pSvg.isValid())      return QRectF(QPointF(0, 0), m_pSvg.defaultSize());
+    else                            return QRectF();
 }
-void Paintable::draw(const QRectF& targetRect, QPainter* pPainter)
+void Paintable::draw(QRectF targetRect, QPainter* pPainter)
 {
     // The sourceRect is implicitly the entire Paintable.
     draw(targetRect, pPainter, rect());
@@ -156,11 +140,11 @@ void Paintable::draw(int x, int y, QPainter* pPainter)
     auto targetRect = QRectF(QPointF(x, y), sourceRect.size());
     draw(targetRect, pPainter, sourceRect);
 }
-void Paintable::draw(const QPointF& point, QPainter* pPainter, const QRectF& sourceRect)
+void Paintable::draw(QPointF point, QPainter* pPainter, QRectF sourceRect)
 {
     return draw(QRectF(point, sourceRect.size()), pPainter, sourceRect);
 }
-void Paintable::draw(const QRectF& targetRect, QPainter* pPainter,const QRectF& sourceRect)
+void Paintable::draw(QRectF targetRect, QPainter* pPainter,QRectF sourceRect)
 {
     if (!targetRect.isValid() || !sourceRect.isValid() || isNull())return;
     if (m_draw_mode == FIXED)
@@ -191,7 +175,7 @@ void Paintable::draw(const QRectF& targetRect, QPainter* pPainter,const QRectF& 
     else if (m_draw_mode == STRETCH) return drawInternal(targetRect, pPainter, sourceRect);
     else if (m_draw_mode == TILE)    return drawInternal(targetRect, pPainter, sourceRect);
 }
-void Paintable::drawCentered(const QRectF& targetRect, QPainter* pPainter,const QRectF& sourceRect)
+void Paintable::drawCentered(QRectF targetRect, QPainter* pPainter,QRectF sourceRect)
 {
     if (m_draw_mode == FIXED)
     {
@@ -201,43 +185,44 @@ void Paintable::drawCentered(const QRectF& targetRect, QPainter* pPainter,const 
         auto adjustedSource = QRectF(sourceRect.topLeft(), fixedSize);
         auto adjustedTarget = QRectF(QPointF(-adjustedSource.width() / 2.0, -adjustedSource.height() / 2.0),fixedSize);
         return drawInternal(adjustedTarget, pPainter, adjustedSource);
-    } else if (m_draw_mode == STRETCH_ASPECT)
+    }
+    else if (m_draw_mode == STRETCH_ASPECT)
     {
         auto sx = targetRect.width() / sourceRect.width();
         auto sy = targetRect.height() / sourceRect.height();
         // Adjust the scale so that the scaling in both axes is equal.
-        if (sx != sy) {
+        if (sx != sy)
+        {
             auto scale = math_min(sx, sy);
             auto scaledWidth = scale * sourceRect.width();
             auto scaledHeight = scale * sourceRect.height();
             auto adjustedTarget = QRectF(-scaledWidth / 2.0, -scaledHeight / 2.0,scaledWidth, scaledHeight);
             return drawInternal(adjustedTarget, pPainter, sourceRect);
-        } else return drawInternal(targetRect, pPainter, sourceRect);
+        }
+        else return drawInternal(targetRect, pPainter, sourceRect);
     }
     else if (m_draw_mode == STRETCH) return drawInternal(targetRect, pPainter, sourceRect);
     else if (m_draw_mode == TILE)    return drawInternal(targetRect, pPainter, sourceRect);
 }
-void Paintable::drawInternal(const QRectF& targetRect, QPainter* pPainter,const QRectF& sourceRect)
+void Paintable::drawInternal(QRectF targetRect, QPainter* pPainter,QRectF sourceRect)
 {
     // qDebug() << "Paintable::drawInternal" << DrawModeToString(m_draw_mode)
     //          << targetRect << sourceRect;
-    if (m_pPixmap)
+    if (!m_pPixmap.isNull())
     {
         if (m_draw_mode == TILE)
         {
             // TODO(rryan): Using a source rectangle doesn't make much sense
             // with tiling. Ignore the source rect and tile our natural size
             // across the target rect. What's the right general behavior here?
-            // NOTE(rryan): We round our target/source rectangles to the nearest
-            // pixel for raster images.
-            pPainter->drawTiledPixmap(targetRect.toRect(), *m_pPixmap, QPoint(0,0));
-        }else
-        {
-            // NOTE(rryan): We round our target/source rectangles to the nearest
-            // pixel for raster images.
-            pPainter->drawPixmap(targetRect.toRect(), *m_pPixmap,sourceRect.toRect());
+            pPainter->drawTiledPixmap(targetRect.toRect(), m_pPixmap, QPoint(0,0));
         }
-    } else if (m_pSvg)
+        else
+        {
+            pPainter->drawPixmap(targetRect.toRect(), m_pPixmap,sourceRect.toRect());
+        }
+    }
+    else if (m_pSvg.isValid())
     {
         if (m_draw_mode == TILE) qWarning() << "Tiled SVG should have been rendered to pixmap!";
         else
@@ -250,8 +235,8 @@ void Paintable::drawInternal(const QRectF& targetRect, QPainter* pPainter,const 
             pPainter->save();
             pPainter->setClipping(true);
             pPainter->setClipRect(targetRect);
-            m_pSvg->setViewBox(sourceRect);
-            m_pSvg->render(pPainter, targetRect);
+            m_pSvg.setViewBox(sourceRect);
+            m_pSvg.render(pPainter, targetRect);
             pPainter->restore();
         }
     }
@@ -264,7 +249,6 @@ PaintablePointer WPixmapStore::getPaintable(PixmapSource source,Paintable::DrawM
     if (pPaintable) return pPaintable;
     // Otherwise, construct it with the pixmap loader.
     //qDebug() << "WPixmapStore Loading pixmap from file" << source.getPath();
-
     if (m_loader)
     {
         auto pImage = m_loader->getImage(source.getPath());
@@ -283,17 +267,10 @@ PaintablePointer WPixmapStore::getPaintable(PixmapSource source,Paintable::DrawM
     return pPaintable;
 }
 // static
-QPixmap* WPixmapStore::getPixmapNoCache(const QString& fileName) {
-    auto pPixmap = static_cast<QPixmap*>(nullptr);
+QPixmap WPixmapStore::getPixmapNoCache(QString fileName) {
     if (m_loader)
-    {
-        auto img = m_loader->getImage(fileName);
-        pPixmap = new QPixmap();
-        pPixmap->convertFromImage(*img);
-        delete img;
-    }
-    else pPixmap = new QPixmap(fileName);
-    return pPixmap;
+         return QPixmap::fromImage(m_loader->getImage(fileName));
+    else return QPixmap(fileName);
 }
 void WPixmapStore::setLoader(QSharedPointer<ImgSource> ld)
 {

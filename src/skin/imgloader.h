@@ -23,5 +23,5 @@ class ImgLoader : public ImgSource {
 public:
     ImgLoader();
     virtual ~ImgLoader();
-    virtual QImage* getImage(QString img) const;
+    virtual QImage getImage(QString img) const;
 };

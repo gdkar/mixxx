@@ -22,7 +22,6 @@ _Pragma("once")
 #include "configobject.h"
 #include "controllers/softtakeover.h"
 #include "controllers/controllerpreset.h"
-#include "bytearrayclass.h"
 
 // Forward declaration(s)
 class Controller;
@@ -169,31 +168,29 @@ class ControllerEngine : public QObject
 
     void callFunctionOnObjects(QList<QString>, QString, QJSValueList args = QJSValueList ());
     bool checkException(QJSValue);
-    QJSEngine *m_pEngine;
-
     ControlObjectSlave * getControlObjectSlave(QString group, QString name);
-
     // Scratching functions & variables
     void scratchProcess(int timerId);
 
     bool isDeckPlaying(const QString& group);
     double getDeckRate(const QString& group);
 
-    Controller* m_pController;
-    bool m_bDebug;
-    bool m_bPopups;
+    QJSEngine *m_pEngine =  nullptr;
+    Controller* m_pController = nullptr;
+    bool m_bDebug  = false;
+    bool m_bPopups = false;
     QMultiHash<ConfigKey, ControllerEngineConnection> m_connectedControls;
     QList<QString> m_scriptFunctionPrefixes;
     QMap<QString,QStringList> m_scriptErrors;
     QHash<ConfigKey, ControlObjectSlave*> m_controlCache;
-    struct TimerInfo {
+    struct TimerInfo
+    {
         QJSValue callback;
         QJSValue context;
         bool oneShot;
     };
     QHash<int, TimerInfo> m_timers;
     SoftTakeoverCtrl m_st;
-    ByteArrayClass* m_pBaClass;
     // 256 (default) available virtual decks is enough I would think.
     //  If more are needed at run-time, these will move to the heap automatically
     QVarLengthArray<int> m_intervalAccumulator;

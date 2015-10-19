@@ -88,11 +88,8 @@ class AlphaBetaFilter {
 };
 
 ControllerEngine::ControllerEngine(Controller* controller)
-        : m_pEngine(nullptr),
-          m_pController(controller),
-          m_bDebug(false),
-          m_bPopups(false),
-          m_pBaClass(nullptr) {
+        : m_pController(controller)
+{
     // Handle error dialog buttons
     qRegisterMetaType<QMessageBox::StandardButton>("QMessageBox::StandardButton");
     // Pre-allocate arrays for average number of virtual decks
