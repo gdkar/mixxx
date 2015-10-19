@@ -4,7 +4,6 @@
 
 #include "waveformwidgetrenderer.h"
 #include "controlobject.h"
-#include "controlobjectslave.h"
 #include "widget/wskincolor.h"
 
 WaveformMark::WaveformMark() = default;
@@ -15,7 +14,7 @@ WaveformMark::~WaveformMark()
 void WaveformMark::setup(const QString& group, const QDomNode& node,const SkinContext& context,const WaveformSignalColors& signalColors)
 {
     auto item = context.selectString(node, "Control");
-    if (!item.isEmpty())  m_pointControl = new ControlObjectSlave(group, item);
+    if (!item.isEmpty())  m_pointControl = new ControlObject(ConfigKey(group, item));
     m_color = context.selectString(node, "Color");
     if (!m_color.isValid()) {
         // As a fallback, grab the color from the parent's AxesColor
@@ -38,6 +37,6 @@ void WaveformMark::setup(const QString& group, const QDomNode& node,const SkinCo
 void WaveformMark::setKeyAndIndex(const ConfigKey& key, int i)
 {
     if(m_pointControl) delete m_pointControl;
-    m_pointControl = new ControlObjectSlave(key);
+    m_pointControl = new ControlObject(key);
     m_text = m_text.arg(i);
 }

@@ -10,7 +10,7 @@
 #include "effects/effectsmanager.h"
 #include "engine/effects/engineeffectsmanager.h"
 #include "controlaudiotaperpot.h"
-#include "controlobjectslave.h"
+#include "controlobject.h"
 
 EngineMicrophone::EngineMicrophone(const ChannelHandleAndGroup& handle_group,
                                    EffectsManager* pEffectsManager)
@@ -19,15 +19,12 @@ EngineMicrophone::EngineMicrophone(const ChannelHandleAndGroup& handle_group,
           m_vuMeter(getGroup()),
           m_pEnabled(new ControlObject(ConfigKey(getGroup(), "enabled"))),
           m_pPregain(new ControlAudioTaperPot(ConfigKey(getGroup(), "pregain"), -12, 12, 0.5)),
-          m_sampleBuffer(NULL),
-          m_wasActive(false) {
-    if (pEffectsManager != NULL) {
-        pEffectsManager->registerChannel(handle_group);
-    }
-
+          m_sampleBuffer(nullptr),
+          m_wasActive(false)
+{
+    if (pEffectsManager ) pEffectsManager->registerChannel(handle_group);
     setMaster(false); // Use "talkover" button to enable microphones
-
-    m_pSampleRate = new ControlObjectSlave("Master", "samplerate",this);
+    m_pSampleRate = new ControlObject(ConfigKey("Master", "samplerate"),this);
 }
 
 EngineMicrophone::~EngineMicrophone() {
@@ -53,7 +50,7 @@ void EngineMicrophone::onInputConfigured(AudioInput input) {
         qWarning() << "EngineMicrophone connected to AudioInput for a non-Microphone type!";
         return;
     }
-    m_sampleBuffer = NULL;
+    m_sampleBuffer = nullptr;
     m_pEnabled->set(1.0);
 }
 
@@ -63,7 +60,7 @@ void EngineMicrophone::onInputUnconfigured(AudioInput input) {
         qWarning() << "EngineMicrophone connected to AudioInput for a non-Microphone type!";
         return;
     }
-    m_sampleBuffer = NULL;
+    m_sampleBuffer = nullptr;
     m_pEnabled->set(0.0);
 }
 

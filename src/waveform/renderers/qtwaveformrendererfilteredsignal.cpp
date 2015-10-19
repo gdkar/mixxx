@@ -3,8 +3,8 @@
 #include "waveformwidgetrenderer.h"
 #include "waveform/waveform.h"
 #include "waveform/waveformwidgetfactory.h"
-#include "controlobjectslave.h"
 #include "trackinfoobject.h"
+#include "controlobject.h"
 #include "util/math.h"
 
 #include <QLineF>

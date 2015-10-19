@@ -28,7 +28,6 @@
 #include "dlgprefcontrols.h"
 #include "configobject.h"
 #include "controlobject.h"
-#include "controlobjectslave.h"
 #include "widget/wnumberpos.h"
 #include "engine/enginebuffer.h"
 #include "engine/ratecontrol.h"
@@ -52,11 +51,11 @@ DlgPrefControls::DlgPrefControls(QWidget * parent, MixxxMainWindow * mixxx,
            m_iNumConfiguredSamplers(0) {
     setupUi(this);
 
-    m_pNumDecks = new ControlObjectSlave("Master", "num_decks", this);
+    m_pNumDecks = new ControlObject(ConfigKey("Master", "num_decks"), this);
     m_pNumDecks->connectValueChanged(SLOT(slotNumDecksChanged(double)));
     slotNumDecksChanged(m_pNumDecks->get());
 
-    m_pNumSamplers = new ControlObjectSlave("Master", "num_samplers", this);
+    m_pNumSamplers = new ControlObject(ConfigKey("Master", "num_samplers"), this);
     m_pNumSamplers->connectValueChanged(SLOT(slotNumSamplersChanged(double)));
     slotNumSamplersChanged(m_pNumSamplers->get());
 
@@ -551,11 +550,11 @@ void DlgPrefControls::slotNumDecksChanged(double new_count) {
     }
     for (auto i = m_iNumConfiguredDecks; i < numdecks; ++i) {
         auto group = PlayerManager::groupForDeck(i);
-        m_rateControls.push_back(new ControlObjectSlave(group, "rate",this));
-        m_rateRangeControls.push_back(new ControlObjectSlave(group, "rateRange",this));
-        m_rateDirControls.push_back(new ControlObjectSlave(group, "rate_dir",this));
-        m_cueControls.push_back(new ControlObjectSlave(group, "cue_mode",this));
-        m_keylockModeControls.push_back(new ControlObjectSlave(group, "keylockMode",this));
+        m_rateControls.push_back(new ControlObject(ConfigKey(group, "rate"),this));
+        m_rateRangeControls.push_back(new ControlObject(ConfigKey(group, "rateRange"),this));
+        m_rateDirControls.push_back(new ControlObject(ConfigKey(group, "rate_dir"),this));
+        m_cueControls.push_back(new ControlObject(ConfigKey(group, "cue_mode"),this));
+        m_keylockModeControls.push_back(new ControlObject(ConfigKey(group, "keylockMode"),this));
         m_keylockModeControls.last()->set(m_keylockMode);
     }
     m_iNumConfiguredDecks = numdecks;
@@ -567,11 +566,11 @@ void DlgPrefControls::slotNumSamplersChanged(double new_count) {
     if (numsamplers <= m_iNumConfiguredSamplers) {return;}
     for (int i = m_iNumConfiguredSamplers; i < numsamplers; ++i) {
         auto group = PlayerManager::groupForSampler(i);
-        m_rateControls.push_back(new ControlObjectSlave(group, "rate",this));
-        m_rateRangeControls.push_back(new ControlObjectSlave(group, "rateRange",this));
-        m_rateDirControls.push_back(new ControlObjectSlave(group, "rate_dir",this));
-        m_cueControls.push_back(new ControlObjectSlave(group, "cue_mode",this));
-        m_keylockModeControls.push_back(new ControlObjectSlave(group, "keylockMode",this));
+        m_rateControls.push_back(new ControlObject(ConfigKey(group, "rate"),this));
+        m_rateRangeControls.push_back(new ControlObject(ConfigKey(group, "rateRange"),this));
+        m_rateDirControls.push_back(new ControlObject(ConfigKey(group, "rate_dir"),this));
+        m_cueControls.push_back(new ControlObject(ConfigKey(group, "cue_mode"),this));
+        m_keylockModeControls.push_back(new ControlObject(ConfigKey(group, "keylockMode"),this));
         m_keylockModeControls.last()->set(m_keylockMode);
     }
     m_iNumConfiguredSamplers = numsamplers;

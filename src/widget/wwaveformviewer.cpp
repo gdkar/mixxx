@@ -8,7 +8,6 @@
 #include <QMimeData>
 
 #include "controlobject.h"
-#include "controlobjectslave.h"
 #include "trackinfoobject.h"
 #include "waveform/widgets/waveformwidget.h"
 #include "widget/wwaveformviewer.h"
@@ -24,11 +23,11 @@ WWaveformViewer::WWaveformViewer(const char *group, ConfigObject<ConfigValue>* p
           m_waveformWidget(new WaveformWidget(group,this))
 {
     setAcceptDrops(true);
-    m_pZoom = new ControlObjectSlave(group, "waveform_zoom");
+    m_pZoom = new ControlObject(ConfigKey(group, "waveform_zoom"),this);
     m_pZoom->connectValueChanged(this, SLOT(onZoomChanged(double)));
-    m_pScratchPositionEnable = new ControlObjectSlave(group, "scratch_position_enable");
-    m_pScratchPosition = new ControlObjectSlave(group, "scratch_position");
-    m_pWheel = new ControlObjectSlave( group, "wheel");
+    m_pScratchPositionEnable = new ControlObject(ConfigKey(group, "scratch_position_enable"),this);
+    m_pScratchPosition = new ControlObject(ConfigKey(group, "scratch_position"),this);
+    m_pWheel = new ControlObject(ConfigKey( group, "wheel"),this);
     auto inst = WaveformWidgetFactory::instance();
     setRenderType(inst->getType());
     connect(inst,&WaveformWidgetFactory::renderTypeChanged,this,&WWaveformViewer::setRenderType);
@@ -37,14 +36,7 @@ WWaveformViewer::WWaveformViewer(const char *group, ConfigObject<ConfigValue>* p
     connect(inst,&WaveformWidgetFactory::render,m_waveformWidget,&WaveformWidget::render);
     setAttribute(Qt::WA_OpaquePaintEvent);
 }
-WWaveformViewer::~WWaveformViewer()
-{
-    //qDebug() << "~WWaveformViewer";
-    delete m_pZoom;
-    delete m_pScratchPositionEnable;
-    delete m_pScratchPosition;
-    delete m_pWheel;
-}
+WWaveformViewer::~WWaveformViewer() = default;
 void WWaveformViewer::setup(QDomNode node, const SkinContext& context)
 {
     m_skinNodeCache    = node;

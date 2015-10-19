@@ -1,6 +1,4 @@
-#ifndef AUTODJPROCESSOR_H
-#define AUTODJPROCESSOR_H
-
+_Pragma("once")
 #include <QObject>
 #include <QString>
 #include <QModelIndexList>
@@ -12,7 +10,7 @@
 #include "engine/enginechannel.h"
 
 class ControlPushButton;
-class ControlObjectSlave;
+class ControlObject;
 class TrackCollection;
 class PlayerManager;
 class Player;
@@ -56,9 +54,9 @@ class DeckAttributes : public QObject {
 
   private:
     EngineChannel::ChannelOrientation m_orientation;
-    ControlObjectSlave* m_playPos;
-    ControlObjectSlave* m_play;
-    ControlObjectSlave* m_repeat;
+    ControlObject* m_playPos;
+    ControlObject* m_play;
+    ControlObject* m_repeat;
     Player* m_pPlayer;
 };
 class AutoDJProcessor : public QObject {
@@ -146,15 +144,12 @@ class AutoDJProcessor : public QObject {
 
     QList<DeckAttributes*> m_decks;
 
-    ControlObjectSlave* m_pCOCrossfader;
-    ControlObjectSlave* m_pCOCrossfaderReverse;
+    ControlObject* m_pCOCrossfader;
+    ControlObject* m_pCOCrossfaderReverse;
 
     ControlPushButton* m_pSkipNext;
     ControlPushButton* m_pFadeNow;
     ControlPushButton* m_pShufflePlaylist;
     ControlPushButton* m_pEnabledAutoDJ;
 
-    DISALLOW_COPY_AND_ASSIGN(AutoDJProcessor);
 };
-
-#endif /* AUTODJPROCESSOR_H */

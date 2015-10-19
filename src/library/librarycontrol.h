@@ -1,10 +1,7 @@
-#ifndef LIBRARYCONTROL_H
-#define LIBRARYCONTROL_H
-
+_Pragma("once")
 #include <QObject>
 #include <QMap>
 
-class ControlObjectSlave;
 class ControlObject;
 class ControlPushButton;
 class Library;
@@ -85,10 +82,8 @@ class LibraryControl : public QObject {
 
     WLibrary* m_pLibraryWidget;
     WLibrarySidebar* m_pSidebarWidget;
-    ControlObjectSlave*m_numDecks;
-    ControlObjectSlave*m_numSamplers;
-    ControlObjectSlave*m_numPreviewDecks;
+    ControlObject*m_numDecks;
+    ControlObject*m_numSamplers;
+    ControlObject*m_numPreviewDecks;
     QMap<QString, LoadToGroupController*> m_loadToGroupControllers;
 };
-
-#endif //LIBRARYCONTROL_H

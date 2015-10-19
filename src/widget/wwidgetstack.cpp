@@ -1,13 +1,12 @@
 #include <QtDebug>
 
 #include "widget/wwidgetstack.h"
-#include "controlobjectslave.h"
 #include "controlobject.h"
 WidgetStackControlListener::WidgetStackControlListener(QObject* pParent,
                                                        ControlObject* pControl,
                                                        int index)
         : QObject(pParent),
-          m_control(new ControlObjectSlave(pControl ? pControl->getKey() : ConfigKey(),this)),
+          m_control(new ControlObject(pControl ? pControl->getKey() : ConfigKey(),this)),
           m_index(index) {
     connect(m_control, SIGNAL(valueChanged(double)),this, SLOT(slotValueChanged(double)));
 }
@@ -30,10 +29,10 @@ WWidgetStack::WWidgetStack(QWidget* pParent,
                            ControlObject* pCurrentPageControl)
         : QStackedWidget(pParent),
           WBaseWidget(this),
-          m_nextControl(new ControlObjectSlave(pNextControl ? pNextControl->getKey() : ConfigKey(),this)),
-          m_prevControl(new ControlObjectSlave(pPrevControl ? pPrevControl->getKey() : ConfigKey(),this)),
+          m_nextControl(new ControlObject(pNextControl ? pNextControl->getKey() : ConfigKey(),this)),
+          m_prevControl(new ControlObject(pPrevControl ? pPrevControl->getKey() : ConfigKey(),this)),
           m_currentPageControl(
-              new ControlObjectSlave(
+              new ControlObject(
                   pCurrentPageControl ?
                   pCurrentPageControl->getKey() : ConfigKey(),this)) {
     connect(m_nextControl, SIGNAL(valueChanged(double)),this, SLOT(onNextControlChanged(double)));

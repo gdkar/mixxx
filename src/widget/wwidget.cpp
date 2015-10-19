@@ -19,23 +19,29 @@
 #include <QTouchEvent>
 
 #include "widget/wwidget.h"
-#include "controlobjectslave.h"
+#include "controlobject.h"
 #include "util/assert.h"
 
 WWidget::WWidget(QWidget* parent, Qt::WindowFlags flags)
         : QWidget(parent, flags),
           WBaseWidget(this),
           m_activeTouchButton(Qt::NoButton),
-          m_pTouchShift(new ControlObjectSlave("Controls","touch_shift",this)){
+          m_pTouchShift(new ControlObject("Controls","touch_shift",this))
+{
     setAttribute(Qt::WA_StaticContents);
     setAttribute(Qt::WA_AcceptTouchEvents);
     setFocusPolicy(Qt::ClickFocus);
 }
 WWidget::~WWidget() = default;
-bool WWidget::touchIsRightButton() {return (m_pTouchShift->get() != 0.0);}
-bool WWidget::event(QEvent* e) {
-    if (e->type() == QEvent::ToolTip) {updateTooltip();}
-    else if (isEnabled()) {
+bool WWidget::touchIsRightButton()
+{
+  return !(*m_pTouchShift);
+}
+bool WWidget::event(QEvent* e)
+{
+    if (e->type() == QEvent::ToolTip)  updateTooltip();
+    else if (isEnabled())
+    {
         switch(e->type()) {
         case QEvent::TouchBegin:
         case QEvent::TouchUpdate:

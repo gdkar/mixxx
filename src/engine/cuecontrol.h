@@ -13,7 +13,7 @@ _Pragma("once")
 
 class ControlObject;
 class ControlPushButton;
-class ControlObjectSlave;
+class ControlObject;
 class Cue;
 class ControlIndicator;
 
@@ -152,8 +152,8 @@ class CueControl : public EngineControl {
     ControlPushButton* m_pCueGotoAndPlay;
     ControlPushButton* m_pCueGotoAndStop;
     ControlPushButton* m_pCuePreview;
-    ControlObjectSlave* m_pVinylControlEnabled;
-    ControlObjectSlave* m_pVinylControlMode;
+    ControlObject* m_pVinylControlEnabled;
+    ControlObject* m_pVinylControlMode;
 
     TrackPointer m_pLoadedTrack;
 

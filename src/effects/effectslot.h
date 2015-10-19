@@ -1,6 +1,4 @@
-#ifndef EFFECTSLOT_H
-#define EFFECTSLOT_H
-
+_Pragma("once")
 #include <QObject>
 #include <QSharedPointer>
 #include <QString>
@@ -11,7 +9,6 @@
 #include "effects/effectbuttonparameterslot.h"
 
 class EffectSlot;
-class ControlObjectSlave;
 class ControlObject;
 class ControlPushButton;
 typedef QSharedPointer<EffectSlot> EffectSlotPointer;
@@ -85,4 +82,3 @@ class EffectSlot : public QObject {
     QList<EffectButtonParameterSlotPointer> m_buttonParameters;
     DISALLOW_COPY_AND_ASSIGN(EffectSlot);
 };
-#endif /* EFFECTSLOT_H */

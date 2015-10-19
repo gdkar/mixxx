@@ -1,10 +1,8 @@
-#ifndef WKEY_H
-#define WKEY_H
-
+_Pragma("once")
 #include <QLabel>
 
 #include "widget/wlabel.h"
-class ControlObjectSlave;
+class ControlObject;
 class WKey : public WLabel  {
     Q_OBJECT
   public:
@@ -22,8 +20,6 @@ class WKey : public WLabel  {
   private:
     double m_dOldValue;
     bool m_displayCents;
-    ControlObjectSlave* m_preferencesUpdated;
-    ControlObjectSlave* m_engineKeyDistance;
+    ControlObject* m_preferencesUpdated;
+    ControlObject* m_engineKeyDistance;
 };
-
-#endif /* WKEY_H */

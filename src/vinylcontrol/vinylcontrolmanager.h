@@ -13,7 +13,7 @@ _Pragma("once")
 #include "configobject.h"
 #include "vinylcontrol/vinylsignalquality.h"
 
-class ControlObjectSlave;
+class ControlObject;
 class ControlPushButton;
 class SoundManager;
 class VinylControl;
@@ -62,7 +62,7 @@ class VinylControlManager : public QObject {
     QSet<VinylSignalQualityListener*> m_listeners;
     VinylControlProcessor* m_pProcessor;
     int m_iTimerId;
-    QList<ControlObjectSlave*> m_pVcEnabled;
-    ControlObjectSlave* m_pNumDecks;
+    QList<ControlObject*> m_pVcEnabled;
+    ControlObject* m_pNumDecks;
     int m_iNumConfiguredDecks;
 };

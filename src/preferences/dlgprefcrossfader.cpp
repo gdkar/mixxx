@@ -20,7 +20,6 @@
 #include "dlgprefcrossfader.h"
 #include "engine/enginefilterbessel4.h"
 #include "controlobject.h"
-#include "controlobjectslave.h"
 #include "engine/enginexfader.h"
 
 #define kConfigKey "Mixer Profile"
@@ -32,11 +31,11 @@ DlgPrefCrossfader::DlgPrefCrossfader(QWidget * parent, ConfigObject<ConfigValue>
           m_xFaderMode(MIXXX_XFADER_ADDITIVE),
           m_transform(0.0),
           m_cal(0.0),
-          m_COTMode(new ControlObjectSlave(kConfigKey, "xFaderMode",this)),
-          m_COTCurve(new ControlObjectSlave(kConfigKey, "xFaderCurve",this)),
-          m_COTCalibration(new ControlObjectSlave(kConfigKey, "xFaderCalibration",this)),
-          m_COTReverse(new ControlObjectSlave(kConfigKey, "xFaderReverse",this)),
-          m_COTCrossfader(new ControlObjectSlave("Master", "crossfader",this)),
+          m_COTMode(new ControlObject(ConfigKey(kConfigKey, "xFaderMode"),this)),
+          m_COTCurve(new ControlObject(ConfigKey(kConfigKey, "xFaderCurve"),this)),
+          m_COTCalibration(new ControlObject(ConfigKey(kConfigKey, "xFaderCalibration"),this)),
+          m_COTReverse(new ControlObject(ConfigKey(kConfigKey, "xFaderReverse"),this)),
+          m_COTCrossfader(new ControlObject(ConfigKey("Master", "crossfader"),this)),
           m_xFaderReverse(false) {
     setupUi(this);
 

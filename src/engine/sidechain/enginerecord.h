@@ -26,7 +26,7 @@
 #include "trackinfoobject.h"
 
 class ConfigKey;
-class ControlObjectSlave;
+class ControlObject;
 class Encoder;
 
 class EngineRecord : public QObject, public EncoderCallback, public SideChainWorker {
@@ -72,8 +72,8 @@ class EngineRecord : public QObject, public EncoderCallback, public SideChainWor
     QFile m_cueFile;
     QDataStream m_dataStream;
 
-    ControlObjectSlave* m_pRecReady;
-    ControlObjectSlave* m_pSamplerate;
+    ControlObject* m_pRecReady;
+    ControlObject* m_pSamplerate;
     quint64 m_frames;
     quint64 m_sampleRate;
     quint64 m_recordedDuration;

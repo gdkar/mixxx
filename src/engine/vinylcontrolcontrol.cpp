@@ -3,7 +3,6 @@
 #include "vinylcontrol/vinylcontrol.h"
 #include "library/dao/cue.h"
 #include "util/math.h"
-#include "controlobjectslave.h"
 #include "controlobject.h"
 #include "controlpushbutton.h"
 VinylControlControl::VinylControlControl(QString group, ConfigObject<ConfigValue>* pConfig)
@@ -48,7 +47,7 @@ VinylControlControl::VinylControlControl(QString group, ConfigObject<ConfigValue
     m_pControlVinylSignalEnabled->set(1);
     m_pControlVinylSignalEnabled->setButtonMode(ControlPushButton::TOGGLE);
 
-    m_pPlayEnabled = new ControlObjectSlave(group, "play", this);
+    m_pPlayEnabled = new ControlObject(ConfigKey(group, "play"), this);
 }
 
 VinylControlControl::~VinylControlControl() {

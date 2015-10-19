@@ -6,7 +6,6 @@
 #include "waveformwidgetrenderer.h"
 
 #include "controlobject.h"
-#include "controlobjectslave.h"
 
 #include "widget/wskincolor.h"
 #include "widget/wwidget.h"
@@ -31,12 +30,12 @@ WaveformRendererEndOfTrack::~WaveformRendererEndOfTrack()
 bool WaveformRendererEndOfTrack::init()
 {
     m_timer.restart();
-    if(!m_pEndOfTrackControl) m_pEndOfTrackControl = new ControlObjectSlave( m_waveformRenderer->getGroup(), "end_of_track");
+    if(!m_pEndOfTrackControl) m_pEndOfTrackControl = new ControlObject( ConfigKey(m_waveformRenderer->getGroup(), "end_of_track"));
     m_pEndOfTrackControl->set(0.);
     m_endOfTrackEnabled = false;
-    if(!m_pTrackSampleRate) m_pTrackSampleRate = new ControlObjectSlave(m_waveformRenderer->getGroup(), "track_samplerate");
-    if(!m_pPlayControl) m_pPlayControl = new ControlObjectSlave(m_waveformRenderer->getGroup(), "play");
-    if(!m_pLoopControl) m_pLoopControl = new ControlObjectSlave(m_waveformRenderer->getGroup(), "loop_enabled");
+    if(!m_pTrackSampleRate) m_pTrackSampleRate = new ControlObject(ConfigKey(m_waveformRenderer->getGroup(), "track_samplerate"));
+    if(!m_pPlayControl) m_pPlayControl = new ControlObject(ConfigKey(m_waveformRenderer->getGroup(), "play"));
+    if(!m_pLoopControl) m_pLoopControl = new ControlObject(ConfigKey(m_waveformRenderer->getGroup(), "loop_enabled"));
     return true;
 }
 

@@ -7,7 +7,7 @@ _Pragma("once")
 #include <QByteArray>
 #include <QtGlobal>
 #include "configobject.h"
-class ControlObjectSlave;
+class ControlObject;
 class WBaseWidget;
 class ControlWidgetConnection : public QObject {
     Q_OBJECT
@@ -15,7 +15,7 @@ class ControlWidgetConnection : public QObject {
     Q_PROPERTY(bool invert READ invert WRITE setInvert NOTIFY invertChanged);
   public:
     // Takes ownership of pControl and pTransformer.
-    ControlWidgetConnection(WBaseWidget* pBaseWidget,ControlObjectSlave* pControl);
+    ControlWidgetConnection(WBaseWidget* pBaseWidget,ControlObject* pControl);
     virtual ~ControlWidgetConnection();
     double getControlParameter() const;
     double getControlParameterForValue(double value) const;
@@ -31,7 +31,7 @@ class ControlWidgetConnection : public QObject {
   protected:
     void setControlParameter(double v);
     WBaseWidget* m_pWidget;
-    QScopedPointer<ControlObjectSlave> m_pControl;
+    QScopedPointer<ControlObject> m_pControl;
   private:
     bool m_bInvert = false;
 };
@@ -58,7 +58,7 @@ class ControlParameterWidgetConnection : public ControlWidgetConnection {
     Q_ENUM         (DirectionOption);
     Q_DECLARE_FLAGS(DirectionOptions,DirectionOption);
     static QString directionOptionToString(DirectionOptions option);
-    ControlParameterWidgetConnection(WBaseWidget* pBaseWidget,ControlObjectSlave* pControl, 
+    ControlParameterWidgetConnection(WBaseWidget* pBaseWidget,ControlObject* pControl, 
                                      DirectionOptions directionOption,EmitOptions emitOption);
     virtual ~ControlParameterWidgetConnection();
     void Init();
@@ -85,7 +85,7 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(ControlParameterWidgetConnection::DirectionOptions
 class ControlWidgetPropertyConnection : public ControlWidgetConnection {
     Q_OBJECT
   public:
-    ControlWidgetPropertyConnection(WBaseWidget* pBaseWidget,ControlObjectSlave* pControl, const QString& property);
+    ControlWidgetPropertyConnection(WBaseWidget* pBaseWidget,ControlObject* pControl, const QString& property);
     virtual ~ControlWidgetPropertyConnection();
     QString toDebugString() const;
   private slots:

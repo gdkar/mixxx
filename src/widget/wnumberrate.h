@@ -9,12 +9,10 @@
 // Copyright: See COPYING file that comes with this distribution
 //
 //
-#ifndef WNUMBERRATE_H
-#define WNUMBERRATE_H
-
+_Pragma("once")
 #include "widget/wnumber.h"
 
-class ControlObjectSlave;
+class ControlObject;
 
 class WNumberRate : public WNumber {
     Q_OBJECT
@@ -27,9 +25,7 @@ class WNumberRate : public WNumber {
 
   private:
     // Pointer to control objects for rate.
-    ControlObjectSlave* m_pRateControl;
-    ControlObjectSlave* m_pRateRangeControl;
-    ControlObjectSlave* m_pRateDirControl;
+    ControlObject* m_pRateControl;
+    ControlObject* m_pRateRangeControl;
+    ControlObject* m_pRateDirControl;
 };
-
-#endif

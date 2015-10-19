@@ -3,19 +3,19 @@
 #include "widget/controlwidgetconnection.h"
 
 #include "widget/wbasewidget.h"
-#include "controlobjectslave.h"
+#include "controlobject.h"
 #include "util/debug.h"
 #include "util/assert.h"
 
-ControlWidgetConnection::ControlWidgetConnection(WBaseWidget* pBaseWidget,ControlObjectSlave* pControl)
+ControlWidgetConnection::ControlWidgetConnection(WBaseWidget* pBaseWidget,ControlObject* pControl)
         : m_pWidget(pBaseWidget),
           m_pControl(pControl){
     // If m_pControl is nullptr then the creator of ControlWidgetConnection has
     // screwed up badly. Assert in development mode. In release mode the
     // connection will be defunct.
-    DEBUG_ASSERT_AND_HANDLE(!m_pControl.isNull()) m_pControl.reset(new ControlObjectSlave());
+    DEBUG_ASSERT_AND_HANDLE(!m_pControl.isNull()) m_pControl.reset(new ControlObject());
     m_pControl->connectValueChanged(this, SLOT(slotControlValueChanged(double)));
-    connect(m_pControl.data(),&ControlObjectSlave::valueChanged,this,&ControlWidgetConnection::controlParameterChanged,
+    connect(m_pControl.data(),&ControlObject::valueChanged,this,&ControlWidgetConnection::controlParameterChanged,
         static_cast<Qt::ConnectionType>(Qt::DirectConnection|Qt::UniqueConnection));
 }
 
@@ -88,7 +88,7 @@ double ControlWidgetConnection::getControlParameterForValue(double value) const
     return (invert()?static_cast<double>(!parameter):parameter);
 }
 ControlParameterWidgetConnection::ControlParameterWidgetConnection(WBaseWidget* pBaseWidget,
-                                                                   ControlObjectSlave* pControl, 
+                                                                   ControlObject* pControl, 
                                                                    DirectionOptions directionOption,
                                                                    EmitOptions emitOption)
         : ControlWidgetConnection(pBaseWidget, pControl),
@@ -136,7 +136,7 @@ void ControlParameterWidgetConnection::setControlParameterUp(double v)
         ControlWidgetConnection::setControlParameter(v);
 }
 ControlWidgetPropertyConnection::ControlWidgetPropertyConnection(WBaseWidget* pBaseWidget,
-                                                                 ControlObjectSlave* pControl, 
+                                                                 ControlObject* pControl, 
                                                                  const QString& propertyName)
         : ControlWidgetConnection(pBaseWidget, pControl),
           m_propertyName(propertyName.toAscii())

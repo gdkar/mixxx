@@ -11,7 +11,7 @@ _Pragma("once")
 #include "waveform/widgets/waveformwidget.h"
 #include "skin/skincontext.h"
 
-class ControlObjectSlave;
+class ControlObject;
 class WaveformWidget;
 class ControlPotmeter;
 
@@ -50,10 +50,10 @@ private:
     bool                m_cacheValid = false;
     QDomNode            m_skinNodeCache{};
     SkinContext         m_skinContextCache{nullptr,QString{}};
-    ControlObjectSlave* m_pZoom = nullptr;
-    ControlObjectSlave* m_pScratchPositionEnable = nullptr;
-    ControlObjectSlave* m_pScratchPosition = nullptr;
-    ControlObjectSlave* m_pWheel = nullptr;
+    ControlObject* m_pZoom = nullptr;
+    ControlObject* m_pScratchPositionEnable = nullptr;
+    ControlObject* m_pScratchPosition = nullptr;
+    ControlObject* m_pWheel = nullptr;
     bool m_bScratching = false;
     bool m_bBending = false;
     QPoint m_mouseAnchor;

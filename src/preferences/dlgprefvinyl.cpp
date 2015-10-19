@@ -22,7 +22,6 @@
 #include "dlgprefvinyl.h"
 
 #include "controlobject.h"
-#include "controlobjectslave.h"
 #include "playermanager.h"
 #include "vinylcontrol/defs_vinylcontrol.h"
 #include "vinylcontrol/vinylcontrolmanager.h"
@@ -34,7 +33,7 @@ DlgPrefVinyl::DlgPrefVinyl(QWidget * parent, VinylControlManager *pVCMan,
           m_pVCManager(pVCMan),
           config(_config),
           m_iConfiguredDecks(0) {
-    m_pNumDecks = new ControlObjectSlave("Master", "num_decks", this);
+    m_pNumDecks = new ControlObject(ConfigKey("Master", "num_decks"), this);
     m_pNumDecks->connectValueChanged(SLOT(slotNumDecksChanged(double)));
 
     setupUi(this);
@@ -130,7 +129,7 @@ void DlgPrefVinyl::slotNumDecksChanged(double dNumDecks) {
 
     for (int i = m_iConfiguredDecks; i < num_decks; ++i) {
         QString group = PlayerManager::groupForDeck(i);
-        m_COSpeeds.push_back(new ControlObjectSlave(group, "vinylcontrol_speed_type"));
+        m_COSpeeds.push_back(new ControlObject(ConfigKey(group, "vinylcontrol_speed_type"),this));
         setDeckWidgetsVisible(i, true);
     }
 }

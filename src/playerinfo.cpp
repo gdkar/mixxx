@@ -18,14 +18,13 @@
 
 #include "playerinfo.h"
 #include "controlobject.h"
-#include "controlobjectslave.h"
 #include "engine/enginechannel.h"
 #include "engine/enginexfader.h"
 #include "playermanager.h"
 
 static const int kPlayingDeckUpdateIntervalMillis = 2000;
 PlayerInfo::PlayerInfo()
-        : m_pCOxfader(new ControlObjectSlave("Master","crossfader",this)),
+        : m_pCOxfader(new ControlObject(ConfigKey("Master","crossfader"),this)),
           m_currentlyPlayingDeck(-1)
 {
     startTimer(kPlayingDeckUpdateIntervalMillis);
@@ -143,10 +142,10 @@ DeckControls* PlayerInfo::getDeckControls(int i)
 }
 DeckControls::DeckControls(QString &group, QObject *pParent)
   : QObject(pParent)
-  ,m_play(new ControlObjectSlave(ConfigKey{group,"play"},this))
-  ,m_pregain(new ControlObjectSlave(ConfigKey{group,"pregain"},this))
-  ,m_volume(new ControlObjectSlave(ConfigKey{group,"volume"},this))
-  ,m_orientation(new ControlObjectSlave(ConfigKey{group,"orientation"},this))
+  ,m_play(new ControlObject(ConfigKey{group,"play"},this))
+  ,m_pregain(new ControlObject(ConfigKey{group,"pregain"},this))
+  ,m_volume(new ControlObject(ConfigKey{group,"volume"},this))
+  ,m_orientation(new ControlObject(ConfigKey{group,"orientation"},this))
 {
 }
 DeckControls::~DeckControls() = default;

@@ -22,7 +22,7 @@
 #include "recording/defs_recording.h"
 #include "controlobject.h"
 #include "encoder/encoder.h"
-#include "controlobjectslave.h"
+#include "controlobject.h"
 #include "util/sandbox.h"
 
 DlgPrefRecord::DlgPrefRecord(QWidget* parent, ConfigObject<ConfigValue>* pConfig)
@@ -36,7 +36,7 @@ DlgPrefRecord::DlgPrefRecord(QWidget* parent, ConfigObject<ConfigValue>* pConfig
           m_pRadioWav(NULL) {
     setupUi(this);
     // See RECORD_* #defines in defs_recording.h
-    m_pRecordControl = new ControlObjectSlave( RECORDING_PREF_KEY, "status",this);
+    m_pRecordControl = new ControlObject(ConfigKey( RECORDING_PREF_KEY, "status"),this);
     m_pRadioOgg = new QRadioButton("Ogg Vorbis");
     m_pRadioMp3 = new QRadioButton(ENCODING_MP3);
     // Setting recordings path.

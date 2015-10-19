@@ -6,7 +6,6 @@
 #include <QStyleOption>
 
 #include "controlobject.h"
-#include "controlobjectslave.h"
 #include "library/coverartcache.h"
 #include "util/dnd.h"
 #include "util/math.h"
@@ -145,21 +144,21 @@ void WSpinny::setup(QDomNode node, const SkinContext& context)
     // fill with transparent black
     m_qImage.fill(qRgba(0,0,0,0));
 #endif
-    m_pPlay = new ControlObjectSlave(m_group, "play");
-    m_pPlayPos = new ControlObjectSlave(m_group, "playposition");
+    m_pPlay = new ControlObject(ConfigKey(m_group, "play",this));
+    m_pPlayPos = new ControlObject(ConfigKey(m_group, "playposition",this));
     m_pVisualPlayPos = VisualPlayPosition::getVisualPlayPosition(m_group);
-    m_pTrackSamples = new ControlObjectSlave(m_group, "track_samples");
-    m_pTrackSampleRate = new ControlObjectSlave(m_group, "track_samplerate");
-    m_pScratchToggle = new ControlObjectSlave(m_group, "scratch_position_enable");
-    m_pScratchPos = new ControlObjectSlave(m_group, "scratch_position");
-    m_pSlipEnabled = new ControlObjectSlave(m_group, "slip_enabled");
+    m_pTrackSamples = new ControlObject(ConfigKey(m_group, "track_samples"),this);
+    m_pTrackSampleRate = new ControlObject(ConfigKey(m_group, "track_samplerate"),this);
+    m_pScratchToggle = new ControlObject(ConfigKey(m_group, "scratch_position_enable"),this);
+    m_pScratchPos = new ControlObject(ConfigKey(m_group, "scratch_position"),this);
+    m_pSlipEnabled = new ControlObject(ConfigKey(m_group, "slip_enabled"),this);
     connect(m_pSlipEnabled, SIGNAL(valueChanged(double)),this, SLOT(updateSlipEnabled(double)));
 #ifdef __VINYLCONTROL__
-    m_pVinylControlSpeedType = new ControlObjectSlave(m_group, "vinylcontrol_speed_type");
+    m_pVinylControlSpeedType = new ControlObject(ConfigKey(m_group, "vinylcontrol_speed_type"),this);
     if (m_pVinylControlSpeedType) updateVinylControlSpeed(m_pVinylControlSpeedType->get());
-    m_pVinylControlEnabled = new ControlObjectSlave(m_group, "vinylcontrol_enabled");
+    m_pVinylControlEnabled = new ControlObject(ConfigKey(m_group, "vinylcontrol_enabled"),this);
     connect(m_pVinylControlEnabled, SIGNAL(valueChanged(double)),this, SLOT(updateVinylControlEnabled(double)));
-    m_pSignalEnabled = new ControlObjectSlave(m_group, "vinylcontrol_signal_enabled");
+    m_pSignalEnabled = new ControlObject(ConfigKey(m_group, "vinylcontrol_signal_enabled"),this);
     connect(m_pSignalEnabled, SIGNAL(valueChanged(double)),this, SLOT(updateVinylControlSignalEnabled(double)));
     //Match the vinyl control's set RPM so that the spinny widget rotates at the same
     //speed as your physical decks, if you're using vinyl control.

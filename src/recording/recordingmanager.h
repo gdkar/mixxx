@@ -19,7 +19,6 @@ _Pragma("once")
 
 class EngineMaster;
 class ControlPushButton;
-class ControlObjectSlave;
 class ControlObject;
 class RecordingManager : public QObject
 {
@@ -55,7 +54,7 @@ class RecordingManager : public QObject
     void slotToggleRecording(double v);
   private:
     QString formatDateTimeForFilename(QDateTime dateTime) const;
-    ControlObjectSlave* m_recReady;
+    ControlObject* m_recReady;
     ControlObject* m_recReadyCO;
     ControlPushButton* m_pToggleRecording;
     long getFileSplitSize();

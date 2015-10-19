@@ -6,12 +6,12 @@
 #include "engine/enginebuffer.h"
 #include "engine/sync/enginesync.h"
 #include "playermanager.h"
-#include "controlobjectslave.h"
+#include "controlobject.h"
 EngineControl::EngineControl(QString group,ConfigObject<ConfigValue>* _config, QObject *p)
         : QObject(p),
           m_group(group),
           m_pConfig(_config),
-          m_numDecks(new ControlObjectSlave(ConfigKey("Master", "num_decks"),this)) {
+          m_numDecks(new ControlObject(ConfigKey("Master", "num_decks"),this)) {
     setCurrentSample(0.0, 0.0);
 }
 EngineControl::~EngineControl() = default;

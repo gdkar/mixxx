@@ -8,7 +8,6 @@ class EngineChannel;
 class BpmControl;
 class RateControl;
 class ControlObject;
-class ControlObjectSlave;
 class ControlPushButton;
 class SyncControl : public EngineControl, public Syncable {
     Q_OBJECT
@@ -97,15 +96,15 @@ class SyncControl : public EngineControl, public Syncable {
     QScopedPointer<ControlPushButton> m_pSyncEnabled;
     QScopedPointer<ControlObject> m_pSyncBeatDistance;
 
-    QScopedPointer<ControlObjectSlave> m_pPlayButton;
-    QScopedPointer<ControlObjectSlave> m_pBpm;
-    QScopedPointer<ControlObjectSlave> m_pLocalBpm;
-    QScopedPointer<ControlObjectSlave> m_pFileBpm;
-    QScopedPointer<ControlObjectSlave> m_pRateSlider;
-    QScopedPointer<ControlObjectSlave> m_pRateDirection;
-    QScopedPointer<ControlObjectSlave> m_pRateRange;
-    QScopedPointer<ControlObjectSlave> m_pVCEnabled;
-    QScopedPointer<ControlObjectSlave> m_pPassthroughEnabled;
-    QScopedPointer<ControlObjectSlave> m_pEjectButton;
-    QScopedPointer<ControlObjectSlave> m_pSyncPhaseButton;
+    QScopedPointer<ControlObject> m_pPlayButton;
+    QScopedPointer<ControlObject> m_pBpm;
+    QScopedPointer<ControlObject> m_pLocalBpm;
+    QScopedPointer<ControlObject> m_pFileBpm;
+    QScopedPointer<ControlObject> m_pRateSlider;
+    QScopedPointer<ControlObject> m_pRateDirection;
+    QScopedPointer<ControlObject> m_pRateRange;
+    QScopedPointer<ControlObject> m_pVCEnabled;
+    QScopedPointer<ControlObject> m_pPassthroughEnabled;
+    QScopedPointer<ControlObject> m_pEjectButton;
+    QScopedPointer<ControlObject> m_pSyncPhaseButton;
 };

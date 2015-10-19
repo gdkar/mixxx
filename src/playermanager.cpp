@@ -4,7 +4,6 @@
 
 #include "playermanager.h"
 #include "player.h"
-#include "controlobjectslave.h"
 #include "controlobject.h"
 #include "trackinfoobject.h"
 #include "anqueue/analyserqueue.h"
@@ -109,12 +108,7 @@ unsigned int PlayerManager::numDecks()
 {
     // We do this to cache the control once it is created so callers don't incur
     // a hashtable lookup every time they call this.
-    static ControlObjectSlave* pNumCO = new ControlObjectSlave(ConfigKey("Master","num_decks"));
-    if (pNumCO && !pNumCO->valid())
-    {
-        delete pNumCO;
-        pNumCO = nullptr;
-    }
+    static auto pNumCO = new ControlObject(ConfigKey("Master","num_decks"));
     return pNumCO ? pNumCO->get() : 0;
 }
 // static
@@ -142,12 +136,7 @@ unsigned int PlayerManager::numSamplers()
 {
     // We do this to cache the control once it is created so callers don't incur
     // a hashtable lookup every time they call this.
-    static ControlObjectSlave* pNumCO = new ControlObjectSlave(ConfigKey("Master","num_samplers"));
-    if (pNumCO && !pNumCO->valid())
-    {
-        delete pNumCO;
-        pNumCO = nullptr;
-    }
+    static auto pNumCO = new ControlObject(ConfigKey("Master","num_samplers"));
     return pNumCO ? pNumCO->get() : 0;
 }
 // static
@@ -155,12 +144,7 @@ unsigned int PlayerManager::numPreviewDecks()
 {
     // We do this to cache the control once it is created so callers don't incur
     // a hashtable lookup every time they call this.
-    static auto  pNumCO = new ControlObjectSlave(ConfigKey("Master","num_preview_decks"));
-    if (pNumCO && !pNumCO->valid())
-    {
-        delete pNumCO;
-        pNumCO = nullptr;
-    }
+    static auto  pNumCO = new ControlObject(ConfigKey("Master","num_preview_decks"));
     return pNumCO ? pNumCO->get() : 0;
 }
 void PlayerManager::slotNumDecksControlChanged(double v)

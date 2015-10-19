@@ -1,5 +1,4 @@
 #include "vinylcontrol/vinylcontrol.h"
-#include "controlobjectslave.h"
 #include "controlobject.h"
 
 VinylControl::VinylControl(ConfigObject<ConfigValue> * pConfig, QString group)
@@ -10,32 +9,32 @@ VinylControl::VinylControl(ConfigObject<ConfigValue> * pConfig, QString group)
           m_dVinylPosition(0.0),
           m_fTimecodeQuality(0.0f) {
     // Get Control objects
-    m_pVinylControlInputGain = new ControlObjectSlave(VINYL_PREF_KEY, "gain",this);
+    m_pVinylControlInputGain = new ControlObject(ConfigKey(VINYL_PREF_KEY, "gain"),this);
 
     bool gainOk = false;
     double gain = m_pConfig->getValueString(ConfigKey(VINYL_PREF_KEY, "gain"))
             .toDouble(&gainOk);
     m_pVinylControlInputGain->set(gainOk ? gain : 1.0);
 
-    playPos             = new ControlObjectSlave(group, "playposition",this);    // Range: 0 to 1.0
-    trackSamples        = new ControlObjectSlave(group, "track_samples",this);
-    trackSampleRate     = new ControlObjectSlave(group, "track_samplerate",this);
-    vinylSeek           = new ControlObjectSlave(group, "vinylcontrol_seek",this);
-    m_pVCRate = new ControlObjectSlave(group, "vinylcontrol_rate",this);
-    m_pRateSlider = new ControlObjectSlave(group, "rate",this);
-    playButton          = new ControlObjectSlave(group, "play",this);
-    duration            = new ControlObjectSlave(group, "duration",this);
-    mode                = new ControlObjectSlave(group, "vinylcontrol_mode",this);
-    enabled             = new ControlObjectSlave(group, "vinylcontrol_enabled",this);
-    wantenabled         = new ControlObjectSlave(group, "vinylcontrol_wantenabled",this);
-    cueing              = new ControlObjectSlave(group, "vinylcontrol_cueing",this);
-    scratching          = new ControlObjectSlave(group, "vinylcontrol_scratching",this);
-    rateRange           = new ControlObjectSlave(group, "rateRange",this);
-    vinylStatus         = new ControlObjectSlave(group, "vinylcontrol_status",this);
-    rateDir             = new ControlObjectSlave(group, "rate_dir",this);
-    loopEnabled         = new ControlObjectSlave(group, "loop_enabled",this);
-    signalenabled       = new ControlObjectSlave(group, "vinylcontrol_signal_enabled",this);
-    reverseButton       = new ControlObjectSlave(group, "reverse",this);
+    playPos             = new ControlObject(ConfigKey(group, "playposition",this);    // Range: 0 to 1.0
+    trackSamples        = new ControlObject(ConfigKey(group, "track_samples",this);
+    trackSampleRate     = new ControlObject(ConfigKey(group, "track_samplerate",this);
+    vinylSeek           = new ControlObject(ConfigKey(group, "vinylcontrol_seek",this);
+    m_pVCRate = new ControlObject(ConfigKey(group, "vinylcontrol_rate",this);
+    m_pRateSlider = new ControlObject(ConfigKey(group, "rate",this);
+    playButton          = new ControlObject(ConfigKey(group, "play",this);
+    duration            = new ControlObject(ConfigKey(group, "duration",this);
+    mode                = new ControlObject(ConfigKey(group, "vinylcontrol_mode",this);
+    enabled             = new ControlObject(ConfigKey(group, "vinylcontrol_enabled",this);
+    wantenabled         = new ControlObject(ConfigKey(group, "vinylcontrol_wantenabled",this);
+    cueing              = new ControlObject(ConfigKey(group, "vinylcontrol_cueing",this);
+    scratching          = new ControlObject(ConfigKey(group, "vinylcontrol_scratching",this);
+    rateRange           = new ControlObject(ConfigKey(group, "rateRange",this);
+    vinylStatus         = new ControlObject(ConfigKey(group, "vinylcontrol_status",this);
+    rateDir             = new ControlObject(ConfigKey(group, "rate_dir"),this);
+    loopEnabled         = new ControlObject(ConfigKey(group, "loop_enabled"),this);
+    signalenabled       = new ControlObject(ConfigKey(group, "vinylcontrol_signal_enabled"),this);
+    reverseButton       = new ControlObject(ConfigKey(group, "reverse"),this);
 
     //Enabled or not -- load from saved value in case vinyl control is restarting
     m_bIsEnabled = wantenabled->get() > 0.0;

@@ -5,7 +5,6 @@ _Pragma("once")
 #include "trackinfoobject.h"
 #include "track/beats.h"
 
-class ControlObjectSlave;
 class ControlObject;
 class ClockControl: public EngineControl {
     Q_OBJECT
@@ -23,7 +22,7 @@ class ClockControl: public EngineControl {
     void slotBeatsUpdated();
   private:
     ControlObject* m_pCOBeatActive;
-    ControlObjectSlave* m_pCOSampleRate;
+    ControlObject* m_pCOSampleRate;
     TrackPointer m_pTrack;
     BeatsPointer m_pBeats;
 };

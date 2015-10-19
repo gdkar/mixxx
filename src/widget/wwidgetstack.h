@@ -6,7 +6,6 @@ _Pragma("once")
 #include <QEvent>
 #include <QMap>
 #include "widget/wbasewidget.h"
-class ControlObjectSlave;
 class ControlObject;
 class WidgetStackControlListener : public QObject {
     Q_OBJECT
@@ -23,7 +22,7 @@ class WidgetStackControlListener : public QObject {
   private slots:
     void slotValueChanged(double v);
   private:
-    ControlObjectSlave* m_control;
+    ControlObject* m_control;
     const int m_index;
 };
 class WWidgetStack : public QStackedWidget, public WBaseWidget {
@@ -62,9 +61,9 @@ class WWidgetStack : public QStackedWidget, public WBaseWidget {
   private:
     QSignalMapper m_showMapper;
     QSignalMapper m_hideMapper;
-    ControlObjectSlave* m_nextControl;
-    ControlObjectSlave* m_prevControl;
-    ControlObjectSlave* m_currentPageControl;
+    ControlObject* m_nextControl;
+    ControlObject* m_prevControl;
+    ControlObject* m_currentPageControl;
     // Optional map that defines which page to select if a page gets a hide
     // signal.
     QMap<int, int> m_hideMap;

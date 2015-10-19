@@ -1,11 +1,8 @@
-#ifndef VINYLCONTROLCONTROL_H
-#define VINYLCONTROLCONTROL_H
-
+_Pragma("once")
 #include "engine/enginecontrol.h"
 #include "configobject.h"
 class ControlPushButton;
 class ControlObject;
-class ControlObjectSlave;
 class VinylControlControl : public EngineControl {
     Q_OBJECT
   public:
@@ -34,9 +31,7 @@ class VinylControlControl : public EngineControl {
     ControlPushButton* m_pControlVinylWantEnabled;
     ControlPushButton* m_pControlVinylCueing;
     ControlPushButton* m_pControlVinylSignalEnabled;
-    ControlObjectSlave* m_pPlayEnabled;
+    ControlObject* m_pPlayEnabled;
     TrackPointer m_pCurrentTrack;
     bool m_bSeekRequested;
 };
-
-#endif /* VINYLCONTROLCONTROL_H */

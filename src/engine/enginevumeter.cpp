@@ -16,7 +16,7 @@
 
 #include "engine/enginevumeter.h"
 #include "controlpotmeter.h"
-#include "controlobjectslave.h"
+#include "controlobject.h"
 #include "sampleutil.h"
 #include "util/math.h"
 
@@ -31,14 +31,11 @@ EngineVuMeter::EngineVuMeter(QString group) {
 
     // Used controlpotmeter as the example used it :/ perhaps someone with more
     // knowledge could use something more suitable...
-    m_ctrlPeakIndicator = new ControlPotmeter(ConfigKey(group, "PeakIndicator"),
-                                              0., 1.);
-    m_ctrlPeakIndicatorL = new ControlPotmeter(ConfigKey(group, "PeakIndicatorL"),
-                                              0., 1.);
-    m_ctrlPeakIndicatorR = new ControlPotmeter(ConfigKey(group, "PeakIndicatorR"),
-                                              0., 1.);
+    m_ctrlPeakIndicator = new ControlPotmeter(ConfigKey(group, "PeakIndicator"),0., 1.);
+    m_ctrlPeakIndicatorL = new ControlPotmeter(ConfigKey(group, "PeakIndicatorL"),0., 1.);
+    m_ctrlPeakIndicatorR = new ControlPotmeter(ConfigKey(group, "PeakIndicatorR"),0., 1.);
 
-    m_pSampleRate = new ControlObjectSlave("Master", "samplerate", this);
+    m_pSampleRate = new ControlObject(ConfigKey("Master", "samplerate"), this);
 
     // Initialize the calculation:
     reset();

@@ -1,7 +1,6 @@
 #include "dlgprefreplaygain.h"
 
 #include "controlobject.h"
-#include "controlobjectslave.h"
 #include "util/math.h"
 
 #define kConfigKey "ReplayGain"
@@ -12,9 +11,9 @@ static const int kReplayGainReferenceLUFS = -18;
 DlgPrefReplayGain::DlgPrefReplayGain(QWidget * parent, ConfigObject<ConfigValue> * _config)
         : DlgPreferencePage(parent),
           config(_config),
-          m_replayGainBoost(new ControlObjectSlave(kConfigKey, "ReplayGainBoost",this)),
-          m_defaultBoost(new ControlObjectSlave(kConfigKey, "DefaultBoost",this)),
-          m_enabled(new ControlObjectSlave(kConfigKey, "ReplayGainEnabled",this)) {
+          m_replayGainBoost(new ControlObject(ConfigKey(kConfigKey, "ReplayGainBoost"),this)),
+          m_defaultBoost(new ControlObject(ConfigKey(kConfigKey, "DefaultBoost"),this)),
+          m_enabled(new ControlObject(ConfigKey(kConfigKey, "ReplayGainEnabled"),this)) {
     setupUi(this);
 
     //Connections

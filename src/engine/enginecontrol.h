@@ -6,13 +6,12 @@ _Pragma("once")
 #include <QList>
 
 #include "trackinfoobject.h"
-#include "control/controlvalue.h"
 #include "engine/effects/groupfeaturestate.h"
 #include "cachingreader.h"
 
 class EngineMaster;
 class EngineBuffer;
-class ControlObjectSlave;
+class ControlObject;
 const double kNoTrigger = -1;
 
 /**
@@ -96,6 +95,6 @@ class EngineControl : public QObject {
     std::atomic<SampleOfTrack> m_sampleOfTrack;
     EngineMaster* m_pEngineMaster = nullptr;
     EngineBuffer* m_pEngineBuffer = nullptr;
-    ControlObjectSlave* m_numDecks = nullptr;
+    ControlObject* m_numDecks = nullptr;
 };
 

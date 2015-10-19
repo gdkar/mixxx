@@ -5,7 +5,6 @@
 #include <QModelIndex>
 #include <QModelIndexList>
 #include <QtDebug>
-#include "controlobjectslave.h"
 #include "controlobject.h"
 #include "controlpushbutton.h"
 #include "playermanager.h"
@@ -41,9 +40,9 @@ LibraryControl::LibraryControl(Library* pLibrary)
           m_pLibrary(pLibrary),
           m_pLibraryWidget(nullptr),
           m_pSidebarWidget(nullptr),
-          m_numDecks(new ControlObjectSlave("Master", "num_decks",this)),
-          m_numSamplers(new ControlObjectSlave("Master", "num_samplers",this)),
-          m_numPreviewDecks(new ControlObjectSlave("Master", "num_preview_decks",this))
+          m_numDecks(new ControlObject(ConfigKey("Master", "num_decks"),this)),
+          m_numSamplers(new ControlObject(ConfigKey("Master", "num_samplers"),this)),
+          m_numPreviewDecks(new ControlObject(ConfigKey("Master", "num_preview_decks"),this))
 {
     slotNumDecksChanged(m_numDecks->get());
     slotNumSamplersChanged(m_numSamplers->get());

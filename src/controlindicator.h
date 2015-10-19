@@ -3,8 +3,6 @@ _Pragma("once")
 #include <atomic>
 #include <QTimer>
 
-class ControlObjectSlave;
-
 class ControlIndicator : public ControlObject {
     Q_OBJECT
   public:

@@ -12,7 +12,7 @@
 #include "effects/effectsmanager.h"
 #include "engine/effects/engineeffectsmanager.h"
 #include "controlaudiotaperpot.h"
-#include "controlobjectslave.h"
+#include "controlobject.h"
 EngineAux::EngineAux(const ChannelHandleAndGroup& handle_group, EffectsManager* pEffectsManager)
         : EngineChannel(handle_group, EngineChannel::CENTER),
           m_pEngineEffectsManager(pEffectsManager ? pEffectsManager->getEngineEffectsManager() : nullptr),
@@ -20,30 +20,36 @@ EngineAux::EngineAux(const ChannelHandleAndGroup& handle_group, EffectsManager* 
           m_pEnabled(new ControlObject(ConfigKey(getGroup(), "enabled"))),
           m_pPregain(new ControlAudioTaperPot(ConfigKey(getGroup(), "pregain"), -12, 12, 0.5)),
           m_sampleBuffer(nullptr),
-          m_wasActive(false) {
-    if (pEffectsManager != nullptr) {pEffectsManager->registerChannel(handle_group);}
+          m_wasActive(false)
+{
+    if (pEffectsManager ) pEffectsManager->registerChannel(handle_group);
     // by default Aux is enabled on the master and disabled on PFL. User
     // can over-ride by setting the "pfl" or "master" controls.
     setMaster(true);
-    m_pSampleRate = new ControlObjectSlave("Master", "samplerate");
+    m_pSampleRate = new ControlObject(ConfigKey("Master", "samplerate"),this);
 }
-EngineAux::~EngineAux() {
+EngineAux::~EngineAux()
+{
     qDebug() << "~EngineAux()";
     delete m_pEnabled;
     delete m_pPregain;
     delete m_pSampleRate;
 }
-bool EngineAux::isActive() {
+bool EngineAux::isActive()
+{
     auto enabled = m_pEnabled->get() > 0.0;
-    if (enabled && m_sampleBuffer) {m_wasActive = true;}
-    else if (m_wasActive) {
+    if (enabled && m_sampleBuffer) m_wasActive = true;
+    else if (m_wasActive)
+    {
         m_vuMeter.reset();
         m_wasActive = false;
     }
     return m_wasActive;
 }
-void EngineAux::onInputConfigured(AudioInput input) {
-    if (input.getType() != AudioPath::AUXILIARY) {
+void EngineAux::onInputConfigured(AudioInput input)
+{
+    if (input.getType() != AudioPath::AUXILIARY)
+    {
         // This is an error!
         qDebug() << "WARNING: EngineAux connected to AudioInput for a non-auxiliary type!";
         return;
@@ -51,8 +57,10 @@ void EngineAux::onInputConfigured(AudioInput input) {
     m_sampleBuffer = nullptr;
     m_pEnabled->set(1.0);
 }
-void EngineAux::onInputUnconfigured(AudioInput input) {
-    if (input.getType() != AudioPath::AUXILIARY) {
+void EngineAux::onInputUnconfigured(AudioInput input)
+{
+    if (input.getType() != AudioPath::AUXILIARY)
+    {
         // This is an error!
         qDebug() << "WARNING: EngineAux connected to AudioInput for a non-auxiliary type!";
         return;
@@ -60,17 +68,22 @@ void EngineAux::onInputUnconfigured(AudioInput input) {
     m_sampleBuffer = nullptr;
     m_pEnabled->set(0.0);
 }
-void EngineAux::receiveBuffer(AudioInput input, const CSAMPLE* pBuffer,unsigned int nFrames) {
+void EngineAux::receiveBuffer(AudioInput input, const CSAMPLE* pBuffer,unsigned int nFrames)
+{
     m_sampleBuffer = pBuffer;
 }
-void EngineAux::process(CSAMPLE* pOut, const int iBufferSize) {
+void EngineAux::process(CSAMPLE* pOut, const int iBufferSize)
+{
     auto sampleBuffer = m_sampleBuffer; // save pointer on stack
     auto pregain =  m_pPregain->get();
-    if (sampleBuffer) {
+    if (sampleBuffer)
+    {
         SampleUtil::copyWithGain(pOut, sampleBuffer, pregain, iBufferSize);
         m_sampleBuffer = nullptr;
-    } else {SampleUtil::clear(pOut, iBufferSize);}
-    if (m_pEngineEffectsManager != nullptr) {
+    }
+    else SampleUtil::clear(pOut, iBufferSize);
+    if (m_pEngineEffectsManager )
+    {
         GroupFeatureState features;
         // This is out of date by a callback but some effects will want the RMS
         // volume.

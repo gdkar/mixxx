@@ -7,7 +7,6 @@ _Pragma("once")
 
 class EngineMaster;
 class ControlObject;
-class ControlObjectSlave;
 class AnalyserQueue;
 class EffectsManager;
 class Player : public QObject {
@@ -53,22 +52,22 @@ class Player : public QObject {
     // Waveform display related controls
     ControlObject* m_pWaveformZoom = nullptr;
     ControlObject* m_pEndOfTrack = nullptr;
-    ControlObjectSlave* m_pLoopInPoint = nullptr;
-    ControlObjectSlave* m_pLoopOutPoint = nullptr;
+    ControlObject* m_pLoopInPoint = nullptr;
+    ControlObject* m_pLoopOutPoint = nullptr;
     ControlObject* m_pDuration = nullptr;
-    ControlObjectSlave* m_pBPM = nullptr;
-    ControlObjectSlave* m_pKey = nullptr;
-    ControlObjectSlave* m_pReplayGain = nullptr;
-    ControlObjectSlave* m_pPlay = nullptr;
-    ControlObjectSlave* m_pLowFilter = nullptr;
-    ControlObjectSlave* m_pMidFilter = nullptr;
-    ControlObjectSlave* m_pHighFilter = nullptr;
-    ControlObjectSlave* m_pLowFilterKill = nullptr;
-    ControlObjectSlave* m_pMidFilterKill = nullptr;
-    ControlObjectSlave* m_pHighFilterKill = nullptr;
-    ControlObjectSlave* m_pPreGain = nullptr;
-    ControlObjectSlave* m_pSpeed = nullptr;
-    ControlObjectSlave* m_pPitchAdjust = nullptr;
+    ControlObject* m_pBPM = nullptr;
+    ControlObject* m_pKey = nullptr;
+    ControlObject* m_pReplayGain = nullptr;
+    ControlObject* m_pPlay = nullptr;
+    ControlObject* m_pLowFilter = nullptr;
+    ControlObject* m_pMidFilter = nullptr;
+    ControlObject* m_pHighFilter = nullptr;
+    ControlObject* m_pLowFilterKill = nullptr;
+    ControlObject* m_pMidFilterKill = nullptr;
+    ControlObject* m_pHighFilterKill = nullptr;
+    ControlObject* m_pPreGain = nullptr;
+    ControlObject* m_pSpeed = nullptr;
+    ControlObject* m_pPitchAdjust = nullptr;
     EngineDeck* m_pChannel = nullptr;
     bool m_replaygainPending = false;
     

@@ -99,8 +99,8 @@ class VinylControlXwax : public VinylControl {
     // Whether track select mode is enabled.
     bool m_bTrackSelectMode;
     // Controls for manipulating the library.
-    ControlObjectSlave* m_pControlTrackSelector;
-    ControlObjectSlave* m_pControlTrackLoader;
+    ControlObject* m_pControlTrackSelector;
+    ControlObject* m_pControlTrackLoader;
     // The previous and current track select position. Used for track selection
     // using the control region.
     double m_dLastTrackSelectPos;

@@ -1,9 +1,9 @@
 _Pragma("once")
 #include <QImage>
 #include "skin/skincontext.h"
-class ControlObjectSlave;
 class QDomNode;
 class WaveformSignalColors;
+class ControlObject;
 class WaveformMarkRange
 {
   public:
@@ -24,9 +24,9 @@ class WaveformMarkRange
                const WaveformSignalColors& signalColors);
   private:
     void generateImage(int weidth, int height);
-    ControlObjectSlave* m_markStartPointControl = nullptr;
-    ControlObjectSlave* m_markEndPointControl   = nullptr;
-    ControlObjectSlave* m_markEnabledControl    = nullptr;
+    ControlObject* m_markStartPointControl = nullptr;
+    ControlObject* m_markEndPointControl   = nullptr;
+    ControlObject* m_markEnabledControl    = nullptr;
     QColor m_activeColor;
     QColor m_disabledColor;
     QImage m_activeImage;

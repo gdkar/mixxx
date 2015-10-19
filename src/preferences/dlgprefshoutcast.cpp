@@ -22,14 +22,14 @@
 #include "util/urls.h"
 #include "dlgprefshoutcast.h"
 #include "shoutcast/defs_shoutcast.h"
-#include "controlobjectslave.h"
+#include "controlobject.h"
 
 const char* kDefaultMetadataFormat = "$artist - $title";
 DlgPrefShoutcast::DlgPrefShoutcast(QWidget *parent, ConfigObject<ConfigValue> *_config)
         : DlgPreferencePage(parent),
           m_pConfig(_config) {
     setupUi(this);
-    m_pUpdateShoutcastFromPrefs = new ControlObjectSlave(SHOUTCAST_PREF_KEY, "update_from_prefs",this);
+    m_pUpdateShoutcastFromPrefs = new ControlObject(ConfigKey(SHOUTCAST_PREF_KEY, "update_from_prefs"),this);
     // Enable live broadcasting checkbox
     enableLiveBroadcasting->setChecked((bool)m_pConfig->getValueString(ConfigKey(SHOUTCAST_PREF_KEY,"enabled")).toInt());
     //Server type combobox

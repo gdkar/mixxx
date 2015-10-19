@@ -10,7 +10,7 @@ _Pragma("once")
 class EffectsManager;
 class EngineEffectsManager;
 class ControlAudioTaperPot;
-class ControlObjectSlave;
+class ControlObject;
 // EngineAux is an EngineChannel that implements a mixing source whose
 // samples are fed directly from the SoundManager
 class EngineAux : public EngineChannel, public AudioDestination {
@@ -42,7 +42,7 @@ class EngineAux : public EngineChannel, public AudioDestination {
     EngineVuMeter m_vuMeter;
     ControlObject* m_pEnabled = nullptr;
     ControlAudioTaperPot* m_pPregain = nullptr;
-    ControlObjectSlave* m_pSampleRate = nullptr;
+    ControlObject* m_pSampleRate = nullptr;
     const CSAMPLE* volatile m_sampleBuffer = nullptr;
     bool m_wasActive = false;
 };

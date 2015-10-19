@@ -20,16 +20,16 @@ _Pragma("once")
 #include <QMap>
 #include <QTimerEvent>
 #include "trackinfoobject.h"
-class ControlObjectSlave;
+class ControlObject;
 class DeckControls : public QObject{
   Q_OBJECT
     public:
         DeckControls(QString& group, QObject *pParent = nullptr);
         virtual ~DeckControls();
-        ControlObjectSlave* m_play        = nullptr;
-        ControlObjectSlave* m_pregain     = nullptr;
-        ControlObjectSlave* m_volume      = nullptr;
-        ControlObjectSlave* m_orientation = nullptr;
+        ControlObject* m_play        = nullptr;
+        ControlObject* m_pregain     = nullptr;
+        ControlObject* m_volume      = nullptr;
+        ControlObject* m_orientation = nullptr;
 };
 class PlayerInfo : public QObject {
     Q_OBJECT
@@ -56,7 +56,7 @@ class PlayerInfo : public QObject {
     PlayerInfo();
     virtual ~PlayerInfo();
     mutable QMutex m_mutex;
-    ControlObjectSlave* m_pCOxfader;
+    ControlObject* m_pCOxfader;
     // QMap is faster than QHash for small count of elements < 50
     QMap<QString, TrackPointer> m_loadedTrackMap;
     int m_currentlyPlayingDeck;

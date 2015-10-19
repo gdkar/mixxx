@@ -14,7 +14,6 @@
 #include <QtGlobal>
 
 #include "controlobject.h"
-#include "controlobjectslave.h"
 
 #include "mixxxkeyboard.h"
 #include "playermanager.h"
@@ -1365,7 +1364,7 @@ void LegacySkinParser::setupConnections(QDomNode node, WBaseWidget* pWidget)
         {
             auto property = m_pContext->selectString(con, "BindProperty");
             //qDebug() << "Making property connection for" << property;
-            auto pControlWidget =new ControlObjectSlave(control->getKey(),pWidget->toQWidget());
+            auto pControlWidget =new ControlObject(control->getKey(),pWidget->toQWidget());
             auto pConnection = new ControlWidgetPropertyConnection(pWidget, pControlWidget, property);
             pConnection->setInvert(bInvert);
             pWidget->addPropertyConnection(pConnection);
@@ -1431,7 +1430,7 @@ void LegacySkinParser::setupConnections(QDomNode node, WBaseWidget* pWidget)
             }
             // Connect control proxy to widget. Parented to pWidget so it is not
             // leaked.
-            auto pControlWidget = new ControlObjectSlave(control->getKey(), pWidget->toQWidget());
+            auto pControlWidget = new ControlObject(control->getKey(), pWidget->toQWidget());
             auto pConnection = new ControlParameterWidgetConnection(pWidget, pControlWidget,directionOption,emitOption);
             pConnection->setInvert(bInvert);
             // If we created this control, bind it to the

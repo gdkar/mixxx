@@ -4,7 +4,6 @@
 #include "effects/effectchainmanager.h"
 #include "engine/effects/engineeffectrack.h"
 #include "control/control.h"
-#include "controlobjectslave.h"
 #include "controlobject.h"
 EffectRack::EffectRack(EffectsManager* pEffectsManager,
                        EffectChainManager* pEffectChainManager,

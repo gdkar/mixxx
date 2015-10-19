@@ -1,12 +1,10 @@
-#ifndef DLGPREFREPLAYGAIN_H_
-#define DLGPREFREPLAYGAIN_H_
-
+_Pragma("once")
 #include <QWidget>
 
 #include "preferences/ui_dlgprefreplaygaindlg.h"
 #include "preferences/dlgpreferencepage.h"
 #include "configobject.h"
-class ControlObjectSlave;
+class ControlObject;
 class DlgPrefReplayGain: public DlgPreferencePage,
                          public Ui::DlgPrefReplayGainDlg {
     Q_OBJECT
@@ -36,9 +34,7 @@ class DlgPrefReplayGain: public DlgPreferencePage,
     // Pointer to config object
     ConfigObject<ConfigValue>* config;
 
-    ControlObjectSlave* m_replayGainBoost;
-    ControlObjectSlave* m_defaultBoost;
-    ControlObjectSlave* m_enabled;
+    ControlObject* m_replayGainBoost;
+    ControlObject* m_defaultBoost;
+    ControlObject* m_enabled;
 };
-
-#endif /* DLGPREFREPLAYGAIN_H_ */

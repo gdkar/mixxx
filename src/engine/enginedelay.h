@@ -14,14 +14,12 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef ENGINEDELAY_H
-#define ENGINEDELAY_H
-
+_Pragma("once")
 #include "engine/engineobject.h"
 #include "configobject.h"
 
 class ControlPotmeter;
-class ControlObjectSlave;
+class ControlObject;
 
 class EngineDelay : public EngineObject {
     Q_OBJECT
@@ -36,10 +34,8 @@ class EngineDelay : public EngineObject {
 
   private:
     ControlPotmeter* m_pDelayPot;
-    ControlObjectSlave* m_pSampleRate;
+    ControlObject* m_pSampleRate;
     CSAMPLE* m_pDelayBuffer;
     int m_iDelayPos;
     int m_iDelay;
 };
-
-#endif

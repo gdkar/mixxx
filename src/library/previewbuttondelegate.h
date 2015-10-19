@@ -5,7 +5,7 @@ _Pragma("once")
 
 #include "trackinfoobject.h"
 
-class ControlObjectSlave;
+class ControlObject;
 class PreviewButtonDelegate : public QStyledItemDelegate {
   Q_OBJECT
   public:
@@ -26,7 +26,7 @@ class PreviewButtonDelegate : public QStyledItemDelegate {
     void previewDeckPlayChanged(double v);
   private:
     QTableView* m_pTableView;
-    ControlObjectSlave* m_pPreviewDeckPlay;
+    ControlObject* m_pPreviewDeckPlay;
     QPushButton* m_pButton;
     bool m_isOneCellInEditMode;
     QPersistentModelIndex m_currentEditedCellIndex;

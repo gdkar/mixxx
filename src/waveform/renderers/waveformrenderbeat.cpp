@@ -5,7 +5,6 @@
 #include "waveform/renderers/waveformrenderbeat.h"
 
 #include "controlobject.h"
-#include "controlobjectslave.h"
 #include "track/beats.h"
 #include "trackinfoobject.h"
 #include "waveform/renderers/waveformwidgetrenderer.h"
@@ -25,8 +24,8 @@ WaveformRenderBeat::~WaveformRenderBeat()
 }
 bool WaveformRenderBeat::init()
 {
-    if(!m_pBeatActive) m_pBeatActive = new ControlObjectSlave(m_waveformRenderer->getGroup(), "beat_active");
-    return m_pBeatActive->valid();
+    if(!m_pBeatActive) m_pBeatActive = new ControlObject(ConfigKey(m_waveformRenderer->getGroup(), "beat_active"));
+    return true;
 }
 void WaveformRenderBeat::setup(const QDomNode& node, const SkinContext& context)
 {

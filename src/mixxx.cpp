@@ -30,7 +30,7 @@
 #include "anqueue/analyserqueue.h"
 #include "controlpotmeter.h"
 #include "controlindicator.h"
-#include "controlobjectslave.h"
+#include "controlobject.h"
 #include "control/control.h"
 #include "player.h"
 #include "util/urls.h"
@@ -202,7 +202,7 @@ void MixxxMainWindow::initalize(QApplication* pApp, const CmdlineArgs& args) {
         m_pEngine->addChannel(pAux);
         m_pSoundManager->registerInput(auxInput, pAux);
         m_pNumAuxiliaries->set(m_pNumAuxiliaries->get() + 1);
-        m_pAuxiliaryPassthrough.push_back(new ControlObjectSlave(ConfigKey(group, "passthrough"),this));
+        m_pAuxiliaryPassthrough.push_back(new ControlObject(ConfigKey(group, "passthrough"),this));
         auto auxiliary_passthrough =m_pAuxiliaryPassthrough.back();
         // These non-vinyl passthrough COs have their index offset by the max
         // number of vinyl inputs.
@@ -238,7 +238,7 @@ void MixxxMainWindow::initalize(QApplication* pApp, const CmdlineArgs& args) {
 #ifdef __VINYLCONTROL__
     m_pVCManager->init();
 #endif
-    m_pNumDecks = new ControlObjectSlave(ConfigKey("Master", "num_decks"),this);
+    m_pNumDecks = new ControlObject(ConfigKey("Master", "num_decks"),this);
     m_pNumDecks->connectValueChanged(this, SLOT(slotNumDecksChanged(double)));
     CoverArtCache::create();
     // (long)
@@ -436,7 +436,7 @@ void MixxxMainWindow::finalize() {
     qDebug() << "delete ShoutcastManager " << qTime.elapsed();
     delete m_pShoutcastManager;
 #endif
-    // Delete ControlObjectSlaves we created for checking passthrough and
+    // Delete ControlObjects we created for checking passthrough and
     // talkover status.
     qDeleteAll(m_pAuxiliaryPassthrough);
     qDeleteAll(m_pPassthroughEnabled);
@@ -702,10 +702,10 @@ void MixxxMainWindow::slotToggleCheckedCoverArt() {
     auto key = ConfigKey("Library", "show_coverart");
     updateCheckedMenuAction(m_pViewShowCoverArt, key);
 }
-void MixxxMainWindow::linkSkinWidget(ControlObjectSlave** pCOS,ConfigKey key, const char* slot) {
+void MixxxMainWindow::linkSkinWidget(ControlObject** pCOS,ConfigKey key, const char* slot) {
     if (pCOS )
     {
-      if(!*pCOS) *pCOS = new ControlObjectSlave(key, this);
+      if(!*pCOS) *pCOS = new ControlObject(key, this);
       (*pCOS)->connectValueChanged(slot, Qt::DirectConnection);
     }
 }
@@ -1172,37 +1172,39 @@ void MixxxMainWindow::initActions()
     // TODO: This code should live in a separate class.
     m_TalkoverMapper = new QSignalMapper(this);
     connect(m_TalkoverMapper, SIGNAL(mapped(int)),this, SLOT(slotTalkoverChanged(int)));
-    for (int i = 0; i < kMicrophoneCount; ++i) {
+    for (auto i = 0; i < kMicrophoneCount; ++i)
+    {
         auto group = QString("Microphone");
-        if (i > 0) {
-            group = QString("Microphone%1").arg(i + 1);
-        }
-        auto  talkover_button(new ControlObjectSlave(group, "talkover", this));
+        if (i > 0) group = QString("Microphone%1").arg(i + 1);
+        auto  talkover_button(new ControlObject(ConfigKey(group, "talkover"), this));
         m_TalkoverMapper->setMapping(talkover_button, i);
         talkover_button->connectValueChanged(m_TalkoverMapper, SLOT(map()));
         m_micTalkoverControls.push_back(talkover_button);
     }
 }
-void MixxxMainWindow::slotUpdateWindowTitle(TrackPointer pTrack) {
+void MixxxMainWindow::slotUpdateWindowTitle(TrackPointer pTrack)
+{
     auto appTitle = Version::applicationTitle();
     // If we have a track, use getInfo() to format a summary string and prepend
     // it to the title.
     // TODO(rryan): Does this violate Mac App Store policies?
-    if (pTrack) {
+    if (pTrack)
+    {
         auto trackInfo = pTrack->getInfo();
-        if (!trackInfo.isEmpty()) {
+        if (!trackInfo.isEmpty()) 
             appTitle = QString("%1 | %2")
                     .arg(trackInfo)
                     .arg(appTitle);
-        }
     }
-    this->setWindowTitle(appTitle);
+    setWindowTitle(appTitle);
 }
-void MixxxMainWindow::initMenuBar() {
+void MixxxMainWindow::initMenuBar()
+{
     m_pFileMenu = new QMenu(tr("&File"), menuBar());
     menuBar()->addMenu(m_pFileMenu);
 }
-void MixxxMainWindow::populateMenuBar() {
+void MixxxMainWindow::populateMenuBar()
+{
     // be sure initMenuBar is called first
     // MENUBAR
     m_pOptionsMenu = new QMenu(tr("&Options"), menuBar());
@@ -1222,7 +1224,8 @@ void MixxxMainWindow::populateMenuBar() {
     //optionsMenu->setCheckable(true);
 #ifdef __VINYLCONTROL__
     m_pVinylControlMenu = new QMenu(tr("&Vinyl Control"), menuBar());
-    for (int i = 0; i < kMaximumVinylControlInputs; ++i) {
+    for (auto i = 0; i < kMaximumVinylControlInputs; ++i)
+    {
         m_pVinylControlMenu->addAction(m_pOptionsVinylControl[i]);
     }
     m_pOptionsMenu->addMenu(m_pVinylControlMenu);
@@ -1272,20 +1275,20 @@ void MixxxMainWindow::populateMenuBar() {
     menuBar()->addMenu(m_pViewMenu);
     menuBar()->addMenu(m_pOptionsMenu);
 
-    if (m_cmdLineArgs.getDeveloper()) {
-        menuBar()->addMenu(m_pDeveloperMenu);
-    }
+    if (m_cmdLineArgs.getDeveloper()) menuBar()->addMenu(m_pDeveloperMenu);
 
     menuBar()->addSeparator();
     menuBar()->addMenu(m_pHelpMenu);
 }
 
-void MixxxMainWindow::slotFileLoadSongPlayer(int deck) {
+void MixxxMainWindow::slotFileLoadSongPlayer(int deck)
+{
     auto group = m_pPlayerManager->groupForDeck(deck-1);
     auto loadTrackText = tr("Load track to Deck %1").arg(QString::number(deck));
     auto deckWarningMessage = tr("Deck %1 is currently playing a track.").arg(QString::number(deck));
     auto areYouSure = tr("Are you sure you want to load a new track?");
-    if (ControlObject::get(ConfigKey(group, "play")) > 0.0) {
+    if (ControlObject::get(ConfigKey(group, "play")) > 0.0)
+    {
         int ret = QMessageBox::warning(this, tr("Mixxx"),
             deckWarningMessage + "\n" + areYouSure,
             QMessageBox::Yes | QMessageBox::No,
@@ -1299,7 +1302,8 @@ void MixxxMainWindow::slotFileLoadSongPlayer(int deck) {
             m_pConfig->getValueString(PREF_LEGACY_LIBRARY_DIR),
             QString("Audio (%1)")
                 .arg(SoundSourceProxy::getSupportedFileNamePatterns().join(" ")));
-    if (!trackPath.isNull()) {
+    if (!trackPath.isNull())
+    {
         // The user has picked a file via a file dialog. This means the system
         // sandboxer (if we are sandboxed) has granted us permission to this
         // folder. Create a security bookmark while we have permission so that
@@ -1310,20 +1314,30 @@ void MixxxMainWindow::slotFileLoadSongPlayer(int deck) {
         m_pPlayerManager->slotLoadToDeck(trackPath, deck);
     }
 }
-void MixxxMainWindow::slotFileLoadSongPlayer1() {slotFileLoadSongPlayer(1);}
-void MixxxMainWindow::slotFileLoadSongPlayer2() {slotFileLoadSongPlayer(2);}
+void MixxxMainWindow::slotFileLoadSongPlayer1()
+{
+  slotFileLoadSongPlayer(1);
+}
+void MixxxMainWindow::slotFileLoadSongPlayer2()
+{
+  slotFileLoadSongPlayer(2);
+}
 void MixxxMainWindow::slotFileQuit()
 {
-    if (!confirmExit()) {return;}
+    if (!confirmExit()) return;
     hide();
     qApp->quit();
 }
-void MixxxMainWindow::slotOptionsKeyboard(bool toggle) {
-    if (toggle) {
+void MixxxMainWindow::slotOptionsKeyboard(bool toggle)
+{
+    if (toggle)
+    {
         //qDebug() << "Enable keyboard shortcuts/mappings";
         m_pKeyboard->setKeyboardConfig(m_pKbdConfig);
         m_pConfig->set(ConfigKey("Keyboard","Enabled"), ConfigValue(1));
-    } else {
+    }
+    else
+    {
         //qDebug() << "Disable keyboard shortcuts/mappings";
         m_pKeyboard->setKeyboardConfig(m_pKbdConfigEmpty);
         m_pConfig->set(ConfigKey("Keyboard","Enabled"), ConfigValue(0));
@@ -1519,11 +1533,11 @@ void MixxxMainWindow::slotNumDecksChanged(double dNumDecks) {
     // Only show menu items to activate vinyl inputs that exist.
     for (auto i = m_iNumConfiguredDecks; i < num_decks; ++i) {
         m_pOptionsVinylControl[i]->setVisible(true);
-        m_pVinylControlEnabled.push_back(new ControlObjectSlave(ConfigKey(PlayerManager::groupForDeck(i),"vinylcontrol_enabled"),this));
-        ControlObjectSlave* vc_enabled = m_pVinylControlEnabled.back();
+        m_pVinylControlEnabled.push_back(new ControlObject(ConfigKey(PlayerManager::groupForDeck(i),"vinylcontrol_enabled"),this));
+        auto vc_enabled = m_pVinylControlEnabled.back();
         m_VCControlMapper->setMapping(vc_enabled, i);
         vc_enabled->connectValueChanged(m_VCControlMapper, SLOT(map()));
-        m_pPassthroughEnabled.push_back(new ControlObjectSlave(ConfigKey(PlayerManager::groupForDeck(i),"passthrough"),this));
+        m_pPassthroughEnabled.push_back(new ControlObject(ConfigKey(PlayerManager::groupForDeck(i),"passthrough"),this));
         auto  passthrough_enabled = m_pPassthroughEnabled.back();
         m_PassthroughMapper->setMapping(passthrough_enabled, i);
         passthrough_enabled->connectValueChanged(m_PassthroughMapper,SLOT(map()));

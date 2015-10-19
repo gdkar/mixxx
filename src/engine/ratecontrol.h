@@ -18,7 +18,6 @@ class ControlTTRotary;
 class ControlObject;
 class ControlPotmeter;
 class ControlPushButton;
-class ControlObjectSlave;
 class EngineChannel;
 class PositionScratchController;
 
@@ -124,8 +123,8 @@ public:
     // For Master Sync
     BpmControl* m_pBpmControl;
 
-    ControlObjectSlave* m_pSyncMode;
-    ControlObjectSlave* m_pSlipEnabled;
+    ControlObject* m_pSyncMode    = nullptr;
+    ControlObject* m_pSlipEnabled = nullptr;
 
     // Enumerations which hold the state of the pitchbend buttons.
     // These enumerations can be used like a bitmask.

@@ -1,6 +1,6 @@
 #include "effects/native/linkwitzriley8eqeffect.h"
 #include "util/math.h"
-#include "controlobjectslave.h"
+#include "controlobject.h"
 static const unsigned int kStartupSamplerate = 44100;
 static const unsigned int kStartupLoFreq = 246;
 static const unsigned int kStartupHiFreq = 2484;
@@ -132,8 +132,8 @@ LinkwitzRiley8EQEffect::LinkwitzRiley8EQEffect(EngineEffect* pEffect,
           m_pKillMid(pEffect->getParameterById("killMid")),
           m_pKillHigh(pEffect->getParameterById("killHigh")) {
     Q_UNUSED(manifest);
-    m_pLoFreqCorner = new ControlObjectSlave("Mixer Profile", "LoEQFrequency");
-    m_pHiFreqCorner = new ControlObjectSlave("Mixer Profile", "HiEQFrequency");
+    m_pLoFreqCorner = new ControlObject(ConfigKey("Mixer Profile", "LoEQFrequency"));
+    m_pHiFreqCorner = new ControlObject(ConfigKey("Mixer Profile", "HiEQFrequency"));
 }
 LinkwitzRiley8EQEffect::~LinkwitzRiley8EQEffect() {
     delete m_pLoFreqCorner;

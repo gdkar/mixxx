@@ -3,7 +3,6 @@
 #include <QMutexLocker>
 
 #include "controlobject.h"
-#include "controlobjectslave.h"
 
 #include "cachingreaderworker.h"
 #include "soundsourceproxy.h"

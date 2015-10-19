@@ -1,13 +1,11 @@
 // Tue Haste Andersen <haste@diku.dk>, (C) 2003
 
-#ifndef WNUMBERPOS_H
-#define WNUMBERPOS_H
-
+_Pragma("once")
 #include <QMouseEvent>
 
 #include "wnumber.h"
 
-class ControlObjectSlave;
+class ControlObject;
 
 class WNumberPos : public WNumber {
     Q_OBJECT
@@ -35,11 +33,9 @@ class WNumberPos : public WNumber {
     double m_dTrackSampleRate;
     // True if remaining content is being shown
     bool m_bRemain;
-    ControlObjectSlave* m_pShowTrackTimeRemaining;
+    ControlObject* m_pShowTrackTimeRemaining;
     // Pointer to control object for position, rate, and track info
-    ControlObjectSlave* m_pVisualPlaypos;
-    ControlObjectSlave* m_pTrackSamples;
-    ControlObjectSlave* m_pTrackSampleRate;
+    ControlObject* m_pVisualPlaypos;
+    ControlObject* m_pTrackSamples;
+    ControlObject* m_pTrackSampleRate;
 };
-
-#endif

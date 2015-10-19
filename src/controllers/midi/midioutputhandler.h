@@ -8,12 +8,10 @@
  * value.
  */
 
-#ifndef MIDIOUTPUTHANDLER_H
-#define MIDIOUTPUTHANDLER_H
-
+_Pragma("once")
 #include "controllers/midi/midimessage.h"
 
-class ControlObjectSlave;
+class ControlObject;
 class MidiController;
 
 class MidiOutputHandler : QObject {
@@ -32,8 +30,6 @@ class MidiOutputHandler : QObject {
   private:
     MidiController* m_pController;
     const MidiOutputMapping m_mapping;
-    ControlObjectSlave* m_cot;
+    ControlObject* m_cot;
     double m_lastVal;
 };
-
-#endif

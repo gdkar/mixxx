@@ -32,7 +32,6 @@
 #include "util/defs.h"
 #include "track/beatfactory.h"
 #include "track/keyutils.h"
-#include "controlobjectslave.h"
 #include "util/assert.h"
 
 #ifdef __VINYLCONTROL__
@@ -97,8 +96,8 @@ EngineBuffer::EngineBuffer(QString group, ConfigObject<ConfigValue>* _config,
     m_pRepeat = new ControlPushButton(ConfigKey(m_group, "repeat"));
     m_pRepeat->setButtonMode(ControlPushButton::TOGGLE);
     // Sample rate
-    m_pSampleRate = new ControlObjectSlave("Master", "samplerate", this);
-    m_pKeylockEngine = new ControlObjectSlave("Master", "keylock_engine", this);
+    m_pSampleRate = new ControlObject(ConfigKey("Master", "samplerate"), this);
+    m_pKeylockEngine = new ControlObject(ConfigKey("Master", "keylock_engine"), this);
     m_pKeylockEngine->connectValueChanged(this,SLOT(slotKeylockEngineChanged(double)),Qt::DirectConnection);
     m_pTrackSamples = new ControlObject(ConfigKey(m_group, "track_samples"));
     m_pTrackSampleRate = new ControlObject(ConfigKey(m_group, "track_samplerate"));
@@ -154,7 +153,7 @@ EngineBuffer::EngineBuffer(QString group, ConfigObject<ConfigValue>* _config,
     m_pScale = m_pScaleVinyl;
     m_pScale->clear();
     m_bScalerChanged = true;
-    m_pPassthroughEnabled=new ControlObjectSlave(group, "passthrough", this);
+    m_pPassthroughEnabled=new ControlObject(ConfigKey(group, "passthrough"), this);
     m_pPassthroughEnabled->connectValueChanged(this, SLOT(slotPassthroughChanged(double)),Qt::DirectConnection);
     // Now that all EngineControls have been created call setEngineMaster.
     // TODO(XXX): Get rid of EngineControl::setEngineMaster and

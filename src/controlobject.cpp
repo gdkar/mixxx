@@ -23,9 +23,12 @@
 #include "controlobject.h"
 #include "control/control.h"
 #include "util/stat.h"
+#include "util/assert.h"
 #include "util/timer.h"
 
-ControlObject::ControlObject() = default;
+ControlObject::ControlObject(QObject *p):QObject(p)
+{
+};
 ControlObject::ControlObject(ConfigKey key, bool bIgnoreNops, bool bTrack,bool bPersist)
 {
     initialize(key, bIgnoreNops, bTrack, bPersist);
@@ -38,7 +41,7 @@ void ControlObject::initialize(ConfigKey key, bool bIgnoreNops, bool bTrack,bool
 {
     m_key = key;
     // Don't bother looking up the control if key is nullptr. Prevents log spew.
-    if (!m_key.isNull()) m_pControl = ControlDoublePrivate::getControl(m_key, false, this,bIgnoreNops, bTrack,bPersist);
+    if (!m_key.isNull()) m_pControl = ControlDoublePrivate::getControl(m_key, false, this, bIgnoreNops, bTrack, bPersist);
     // getControl can fail and return a nullptr control even with the create flag.
     if (m_pControl)
     {
@@ -99,17 +102,14 @@ bool ControlObject::operator!()const
 {
   return !toBool();
 }
-bool ControlObject::ignoreNops()const
+ControlObject::operator int() const
 {
-  return m_pControl ? m_pControl->ignoreNops() : true;
+  return static_cast<int>(get());
 }
 // static
 ControlObject* ControlObject::getControl(ConfigKey key, bool warn)
 {
-    if(auto pCDP = ControlDoublePrivate::getControl(key, warn))
-    { 
-      return pCDP->getCreatorCO();
-    }
+    if(auto pCDP = ControlDoublePrivate::getControl(key, warn)) return pCDP->getCreatorCO();
     return nullptr;
 }
 // static
@@ -164,4 +164,25 @@ QString ControlObject::group() const
 QString ControlObject::item() const
 {
   return m_key.item;
+}
+// connect to parent object
+bool ControlObject::connectValueChanged( const char* method, Qt::ConnectionType type) 
+{
+    DEBUG_ASSERT(parent());
+    return connectValueChanged(parent(), method, type);
+}
+bool ControlObject::connectValueChanged(const QObject* receiver,const char* method, Qt::ConnectionType type)
+{
+    auto ret = false;
+    if (m_pControl)
+    {
+        ret = connect(this, SIGNAL(valueChanged(double)),receiver, method, type);
+        if (ret)
+        {
+            // Connect to ControlObjectPrivate only if required. Do not allow
+            // duplicate connections.
+            connect(m_pControl.data(), SIGNAL(valueChanged(double)),this, SIGNAL(valueChanged(double)),static_cast<Qt::ConnectionType>(Qt::DirectConnection | Qt::UniqueConnection));
+        }
+    }
+    return ret;
 }

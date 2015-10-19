@@ -5,7 +5,6 @@
 
 #include "waveformsignalcolors.h"
 #include "controlobject.h"
-#include "controlobjectslave.h"
 #include "widget/wskincolor.h"
 
 WaveformMarkRange::WaveformMarkRange() = default;
@@ -25,24 +24,18 @@ bool WaveformMarkRange::active()
 bool WaveformMarkRange::enabled()
 {
     // Default to enabled if there is no enabled control.
-    return !m_markEnabledControl || !m_markEnabledControl->valid() || m_markEnabledControl->get() > 0.0;
+    return !m_markEnabledControl || m_markEnabledControl->get() > 0.0;
 }
 double WaveformMarkRange::start()
 {
     auto start = -1.0;
-    if (m_markStartPointControl && m_markStartPointControl->valid())
-    {
-        start = m_markStartPointControl->get();
-    }
+    if (m_markStartPointControl) start = m_markStartPointControl->get();
     return start;
 }
 double WaveformMarkRange::end()
 {
     auto end = -1.0;
-    if (m_markEndPointControl && m_markEndPointControl->valid())
-    {
-        end = m_markEndPointControl->get();
-    }
+    if (m_markEndPointControl) end = m_markEndPointControl->get();
     return end;
 }
 void WaveformMarkRange::setup(const QString& group, const QDomNode& node,
@@ -66,11 +59,11 @@ void WaveformMarkRange::setup(const QString& group, const QDomNode& node,
         qDebug() << "Didn't get mark TextColor, using parent's <SignalColor>:" << m_disabledColor;
     }
     auto startControl = context.selectString(node, "StartControl");
-    if (!startControl.isEmpty()) m_markStartPointControl = new ControlObjectSlave(group, startControl);
+    if (!startControl.isEmpty()) m_markStartPointControl = new ControlObject(ConfigKey(group, startControl));
     auto endControl = context.selectString(node, "EndControl");
-    if (!endControl.isEmpty()) m_markEndPointControl = new ControlObjectSlave(group, endControl);
+    if (!endControl.isEmpty()) m_markEndPointControl = new ControlObject(ConfigKey(group, endControl));
     auto enabledControl = context.selectString(node, "EnabledControl");
-    if (!enabledControl.isEmpty()) m_markEnabledControl = new ControlObjectSlave(group, enabledControl);
+    if (!enabledControl.isEmpty()) m_markEnabledControl = new ControlObject(ConfigKey(group, enabledControl));
 }
 void WaveformMarkRange::generateImage(int weidth, int height)
 {

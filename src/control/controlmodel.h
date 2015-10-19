@@ -8,7 +8,7 @@ _Pragma("once")
 #include <QString>
 
 #include "configobject.h"
-class ControlObjectSlave;
+class ControlObject;
 class ControlModel : public QAbstractTableModel {
     Q_OBJECT
   public:
@@ -42,7 +42,7 @@ class ControlModel : public QAbstractTableModel {
         ConfigKey key;
         QString title;
         QString description;
-        ControlObjectSlave* pControl;
+        ControlObject* pControl;
     };
     QVector<QHash<int, QVariant> > m_headerInfo;
     QList<ControlInfo> m_controls;

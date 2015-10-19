@@ -32,7 +32,6 @@ class SoundManager;
 typedef int (*EnableAlsaRT)(PaStream* s, int enable);
 
 class ControlObject;
-class ControlObjectSlave;
 
 class SoundDevicePortAudio : public SoundDevice {
   public:
@@ -84,9 +83,9 @@ class SoundDevicePortAudio : public SoundDevice {
     QString m_lastError;
     // Whether we have set the thread priority to realtime or not.
     bool m_bSetThreadPriority = false;
-    std::unique_ptr<ControlObjectSlave> m_pMasterAudioLatencyOverloadCount;
-    std::unique_ptr<ControlObjectSlave> m_pMasterAudioLatencyUsage        ;
-    std::unique_ptr<ControlObjectSlave> m_pMasterAudioLatencyOverload     ;
+    std::unique_ptr<ControlObject> m_pMasterAudioLatencyOverloadCount;
+    std::unique_ptr<ControlObject> m_pMasterAudioLatencyUsage        ;
+    std::unique_ptr<ControlObject> m_pMasterAudioLatencyOverload     ;
     int m_underflowUpdateCount = 0;
     std::atomic<int> m_underflowCount {0};
     std::atomic<int> m_overflowCount  {0};

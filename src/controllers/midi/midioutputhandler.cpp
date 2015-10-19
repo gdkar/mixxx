@@ -11,12 +11,11 @@
 #include "controllers/midi/midioutputhandler.h"
 #include "controllers/midi/midicontroller.h"
 #include "controlobject.h"
-#include "controlobjectslave.h"
 MidiOutputHandler::MidiOutputHandler(MidiController* controller,
                                      const MidiOutputMapping& mapping)
         : m_pController(controller),
           m_mapping(mapping),
-          m_cot(new ControlObjectSlave(mapping.control,this)),
+          m_cot(new ControlObject(mapping.control,this)),
           m_lastVal(0) {
     connect(m_cot, SIGNAL(valueChanged(double)),this, SLOT(controlChanged(double)));
 }
@@ -28,33 +27,28 @@ MidiOutputHandler::~MidiOutputHandler() {
                 .arg(m_pController->getName(), cKey.group, cKey.item);
     }
 }
-
-bool MidiOutputHandler::validate() {
-    return m_cot->valid();
+bool MidiOutputHandler::validate()
+{
+    return m_cot;
 }
-
-void MidiOutputHandler::update() {
+void MidiOutputHandler::update()
+{
     controlChanged(m_cot->get());
 }
-
-void MidiOutputHandler::controlChanged(double value) {
+void MidiOutputHandler::controlChanged(double value)
+{
     // Don't send redundant messages.
-    if (value == m_lastVal) {
-        return;
-    }
-
+    if (value == m_lastVal) return;
     // Don't update with out of date messages.
     value = m_cot->get();
     m_lastVal = value;
-
-    unsigned char byte3 = m_mapping.output.off;
-    if (value >= m_mapping.output.min && value <= m_mapping.output.max) {
-        byte3 = m_mapping.output.on;
-    }
-
-    if (!m_pController->isOpen()) {
+    auto byte3 = m_mapping.output.off;
+    if (value >= m_mapping.output.min && value <= m_mapping.output.max) byte3 = m_mapping.output.on;
+    if (!m_pController->isOpen())
+    {
         qWarning() << "MIDI device" << m_pController->getName() << "not open for output!";
-    } else if (byte3 != 0xFF) {
+    } else if (byte3 != 0xFF)
+    {
         if (m_pController->debugging()) {
             qDebug() << "sending MIDI bytes:" << m_mapping.output.status
                      << ", " << m_mapping.output.control << ", "

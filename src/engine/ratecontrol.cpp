@@ -5,7 +5,6 @@
 #include "controlpushbutton.h"
 #include "controlpotmeter.h"
 #include "controlttrotary.h"
-#include "controlobjectslave.h"
 #include "util/math.h"
 #include "vinylcontrol/defs_vinylcontrol.h"
 
@@ -75,7 +74,7 @@ RateControl::RateControl(QString group,ConfigObject<ConfigValue>* _config)
             this, SLOT(slotReverseRollActivate(double)),
             Qt::DirectConnection);
 
-    m_pSlipEnabled = new ControlObjectSlave(group, "slip_enabled", this);
+    m_pSlipEnabled = new ControlObject(ConfigKey(group, "slip_enabled"), this);
 
     m_pVCEnabled = ControlObject::getControl(ConfigKey(getGroup(), "vinylcontrol_enabled"));
     m_pVCScratching = ControlObject::getControl(ConfigKey(getGroup(), "vinylcontrol_scratching"));
@@ -164,7 +163,7 @@ RateControl::RateControl(QString group,ConfigObject<ConfigValue>* _config)
     m_iRateRampSensitivity =
             getConfig()->getValueString(ConfigKey("Controls","RateRampSensitivity")).toInt();
 
-    m_pSyncMode = new ControlObjectSlave(group, "sync_mode", this);
+    m_pSyncMode = new ControlObject(ConfigKey(group, "sync_mode"), this);
 }
 
 RateControl::~RateControl() {

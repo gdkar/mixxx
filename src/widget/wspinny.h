@@ -11,7 +11,7 @@ _Pragma("once")
 #include "widget/wbasewidget.h"
 #include "widget/wwidget.h"
 
-class ControlObjectSlave;
+class ControlObject;
 class VisualPlayPosition;
 class VinylControlManager;
 
@@ -72,17 +72,17 @@ class WSpinny : public QWidget, public WBaseWidget, public VinylSignalQualityLis
     QImage m_fgImageScaled;
     QImage m_pGhostImage;
     QImage m_ghostImageScaled;
-    ControlObjectSlave* m_pPlay;
-    ControlObjectSlave* m_pPlayPos;
+    ControlObject* m_pPlay;
+    ControlObject* m_pPlayPos;
     QSharedPointer<VisualPlayPosition> m_pVisualPlayPos;
-    ControlObjectSlave* m_pTrackSamples;
-    ControlObjectSlave* m_pTrackSampleRate;
-    ControlObjectSlave* m_pScratchToggle;
-    ControlObjectSlave* m_pScratchPos;
-    ControlObjectSlave* m_pVinylControlSpeedType;
-    ControlObjectSlave* m_pVinylControlEnabled;
-    ControlObjectSlave* m_pSignalEnabled;
-    ControlObjectSlave* m_pSlipEnabled;
+    ControlObject* m_pTrackSamples;
+    ControlObject* m_pTrackSampleRate;
+    ControlObject* m_pScratchToggle;
+    ControlObject* m_pScratchPos;
+    ControlObject* m_pVinylControlSpeedType;
+    ControlObject* m_pVinylControlEnabled;
+    ControlObject* m_pSignalEnabled;
+    ControlObject* m_pSlipEnabled;
 
     TrackPointer m_loadedTrack;
     QPixmap m_loadedCover;

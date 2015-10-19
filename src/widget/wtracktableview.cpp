@@ -14,7 +14,6 @@
 #include "library/trackcollection.h"
 #include "trackinfoobject.h"
 #include "controlobject.h"
-#include "controlobjectslave.h"
 #include "widget/wtracktableview.h"
 #include "preferences/dlgtrackinfo.h"
 #include "soundsourceproxy.h"
@@ -57,9 +56,9 @@ WTrackTableView::WTrackTableView(QWidget * parent,
     connect(&m_samplerMapper, SIGNAL(mapped(QString)),this, SLOT(loadSelectionToGroup(QString)));
     connect(&m_BpmMapper, SIGNAL(mapped(int)),this, SLOT(slotScaleBpm(int)));
 
-    m_pNumSamplers = new ControlObjectSlave("Master", "num_samplers",this);
-    m_pNumDecks = new ControlObjectSlave("Master", "num_decks",this);
-    m_pNumPreviewDecks = new ControlObjectSlave("Master", "num_preview_decks",this);
+    m_pNumSamplers = new ControlObject(ConfigKey("Master", "num_samplers"),this);
+    m_pNumDecks = new ControlObject(ConfigKey("Master", "num_decks"),this);
+    m_pNumPreviewDecks = new ControlObject(ConfigKey("Master", "num_preview_decks"),this);
 
     m_pMenu = new QMenu(this);
 

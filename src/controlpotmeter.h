@@ -23,8 +23,7 @@ _Pragma("once")
   *@author Tue and Ken Haste Andersen
   */
 
-class ControlPushButton;
-class ControlObjectSlave;
+class ControlObject;
 
 class PotmeterControls : public QObject {
     Q_OBJECT
@@ -55,7 +54,7 @@ class PotmeterControls : public QObject {
     // Toggles the value between -1.0 and 0.0.
     void toggleMinusValue(double);
   private:
-    ControlObjectSlave* m_pControl = nullptr;
+    ControlObject* m_pControl = nullptr;
     int m_stepCount = 0;
     int m_smallStepCount = 0;
 };

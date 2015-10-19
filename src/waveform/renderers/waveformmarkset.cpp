@@ -4,17 +4,15 @@
 #include "waveformmarkset.h"
 #include "engine/cuecontrol.h"
 #include "controlobject.h"
-#include "controlobjectslave.h"
-WaveformMarkSet::WaveformMarkSet() {
-}
-
-WaveformMarkSet::~WaveformMarkSet() {
+WaveformMarkSet::WaveformMarkSet() = default;
+WaveformMarkSet::~WaveformMarkSet()
+{
     clear();
 }
-
 void WaveformMarkSet::setup(const QString& group, const QDomNode& node,
                             const SkinContext& context,
-                            const WaveformSignalColors& signalColors) {
+                            const WaveformSignalColors& signalColors)
+{
 
     clear();
     std::set<QString> controlItemSet;

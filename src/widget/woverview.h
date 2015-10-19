@@ -75,10 +75,10 @@ class WOverview : public WWidget {
     double positionToValue(int position) const;
     const QString m_group;
     ConfigObject<ConfigValue>* m_pConfig = nullptr;
-    ControlObjectSlave* m_endOfTrackControl = nullptr;
+    ControlObject* m_endOfTrackControl = nullptr;
     double m_endOfTrack = 0.0;
-    ControlObjectSlave* m_trackSamplesControl = nullptr;
-    ControlObjectSlave* m_playControl = nullptr;
+    ControlObject* m_trackSamplesControl = nullptr;
+    ControlObject* m_playControl = nullptr;
     // Current active track
     TrackPointer m_pCurrentTrack;
     ConstWaveformPointer m_pWaveform;

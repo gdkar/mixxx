@@ -30,8 +30,9 @@ class ControlObject : public QObject {
     Q_PROPERTY(QString item READ item CONSTANT);
     Q_PROPERTY(double value READ get WRITE set RESET reset NOTIFY valueChanged);
     Q_PROPERTY(double parameter READ getParameter WRITE setParameter RESET reset NOTIFY parameterChanged);
+    Q_PROPERTY(double defaultValue READ defaultValue WRITE setDefaultValue NOTIFY defaultValueChanged);
   public:
-    ControlObject();
+    ControlObject(QObject * = nullptr);
     // bIgnoreNops: Don't emit a signal if the CO is set to its current value.
     // bTrack: Record statistics about this control.
     // bPersist: Store value on exit, load on startup.
@@ -67,6 +68,7 @@ class ControlObject : public QObject {
     virtual double defaultValue() const;
     virtual operator bool()const;
     virtual bool operator!() const;
+    virtual operator int() const;
     // Returns the parameterized value of the object. Thread safe, non-blocking.
     virtual double getParameter() const;
     // Returns the parameterized value of the object. Thread safe, non-blocking.
@@ -81,8 +83,12 @@ class ControlObject : public QObject {
     // audio thread has no Qt event queue. But be a ware of race conditions in this case.
     // ref: http://qt-project.org/doc/qt-4.8/qt.html#ConnectionType-enum
     bool connectValueChangeRequest(const QObject* receiver, const char* method, Qt::ConnectionType type = Qt::AutoConnection);
+    bool connectValueChanged(const QObject* receiver,const char* method, Qt::ConnectionType type = Qt::AutoConnection);
+    bool connectValueChanged(const char* method, Qt::ConnectionType type = Qt::AutoConnection);
+    virtual void initialize(ConfigKey key, bool bIgnoreNops, bool bTrack, bool bPersist);
   signals:
     void valueChanged(double);
+    void defaultValueChanged(double);
     void nameChanged(QString);
     void descriptionChanged(QString);
     void parameterChanged();
@@ -91,6 +97,5 @@ class ControlObject : public QObject {
     ConfigKey m_key;
     QSharedPointer<ControlDoublePrivate> m_pControl;
   private:
-    virtual void initialize(ConfigKey key, bool bIgnoreNops, bool bTrack, bool bPersist);
     bool ignoreNops() const;
 };

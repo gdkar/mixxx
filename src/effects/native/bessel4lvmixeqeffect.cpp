@@ -1,6 +1,6 @@
 #include "effects/native/bessel4lvmixeqeffect.h"
 #include "util/math.h"
-#include "controlobjectslave.h"
+#include "controlobject.h"
 // static
 QString Bessel4LVMixEQEffect::getId() {
     return "org.mixxx.effects.bessel4lvmixeq";
@@ -100,8 +100,8 @@ Bessel4LVMixEQEffect::Bessel4LVMixEQEffect(EngineEffect* pEffect,
           m_pKillMid(pEffect->getParameterById("killMid")),
           m_pKillHigh(pEffect->getParameterById("killHigh")) {
     Q_UNUSED(manifest);
-    m_pLoFreqCorner = new ControlObjectSlave("Mixer Profile", "LoEQFrequency");
-    m_pHiFreqCorner = new ControlObjectSlave("Mixer Profile", "HiEQFrequency");
+    m_pLoFreqCorner = new ControlObject(ConfigKey("Mixer Profile", "LoEQFrequency"));
+    m_pHiFreqCorner = new ControlObject(ConfigKey("Mixer Profile", "HiEQFrequency"));
 }
 
 Bessel4LVMixEQEffect::~Bessel4LVMixEQEffect() {

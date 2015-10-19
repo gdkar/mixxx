@@ -21,7 +21,6 @@
 #include <QMimeData>
 
 #include "controlobject.h"
-#include "controlobjectslave.h"
 #include "woverview.h"
 #include "wskincolor.h"
 #include "widget/controlwidgetconnection.h"
@@ -38,10 +37,10 @@ WOverview::WOverview(const char *pGroup, ConfigObject<ConfigValue>* pConfig, QWi
         m_group(pGroup),
         m_pConfig(pConfig)
 {
-    m_endOfTrackControl = new ControlObjectSlave(m_group, "end_of_track",this);
+    m_endOfTrackControl = new ControlObject(ConfigKey(m_group, "end_of_track"),this);
     connect(m_endOfTrackControl, SIGNAL(valueChanged(double)),this, SLOT(onEndOfTrackChange(double)));
-    m_trackSamplesControl = new ControlObjectSlave(m_group, "track_samples",this);
-    m_playControl = new ControlObjectSlave(m_group, "play",this);
+    m_trackSamplesControl = new ControlObject(ConfigKey(m_group, "track_samples"),this);
+    m_playControl = new ControlObject(ConfigKey(m_group, "play"),this);
     setAcceptDrops(true);
 }
 WOverview::~WOverview()
@@ -94,7 +93,7 @@ void WOverview::setup(QDomNode node, const SkinContext& context)
     //qDebug() << "WOverview : m_markRanges" << m_markRanges.size();
     if (!m_connections.isEmpty())
     {
-        ControlParameterWidgetConnection* defaultConnection = m_connections.at(0);
+        auto defaultConnection = m_connections.at(0);
         if (defaultConnection)
         {
             if (defaultConnection->getEmitOption() & ControlParameterWidgetConnection::EmitOption::Default)

@@ -1,6 +1,4 @@
-#ifndef BESSEL4LVMIXEQEFFECT_H
-#define BESSEL4LVMIXEQEFFECT_H
-
+_Pragma("once")
 #include <QMap>
 
 #include "effects/effect.h"
@@ -13,7 +11,7 @@
 #include "util/types.h"
 #include "util/defs.h"
 #include "lvmixeqbase.h"
-class ControlObjectSlave;
+class ControlObject;
 class Bessel4LVMixEQEffectGroupState :
         public LVMixEQEffectGroupState<EngineFilterBessel4Low> {
 };
@@ -48,10 +46,7 @@ class Bessel4LVMixEQEffect : public PerChannelEffectProcessor<Bessel4LVMixEQEffe
     EngineEffectParameter* m_pKillMid;
     EngineEffectParameter* m_pKillHigh;
 
-    ControlObjectSlave* m_pLoFreqCorner;
-    ControlObjectSlave* m_pHiFreqCorner;
+    ControlObject* m_pLoFreqCorner;
+    ControlObject* m_pHiFreqCorner;
 
-    DISALLOW_COPY_AND_ASSIGN(Bessel4LVMixEQEffect);
 };
-
-#endif /* BESSEL4LVMIXEQEFFECT_H */

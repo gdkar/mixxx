@@ -30,13 +30,11 @@
 #include "sounddevice.h"
 #include "soundmanagerutil.h"
 #include "controlobject.h"
-#include "controlobjectslave.h"
 #include "visualplayposition.h"
 #include "util/timer.h"
 #include "util/trace.h"
 #include "vinylcontrol/defs_vinylcontrol.h"
 #include "sampleutil.h"
-#include "controlobjectslave.h"
 #include "util/performancetimer.h"
 #include "util/denormalsarezero.h"
 namespace /* anonymous */ {
@@ -87,9 +85,9 @@ SoundDevicePortAudio::SoundDevicePortAudio(
     m_iNumInputChannels = m_deviceInfo->maxInputChannels;
     m_iNumOutputChannels = m_deviceInfo->maxOutputChannels;
 
-    m_pMasterAudioLatencyOverloadCount = std::make_unique<ControlObjectSlave>("Master", "audio_latency_overload_count");
-    m_pMasterAudioLatencyUsage = std::make_unique<ControlObjectSlave>("Master", "audio_latency_usage");
-    m_pMasterAudioLatencyOverload  = std::make_unique<ControlObjectSlave>("Master", "audio_latency_overload");
+    m_pMasterAudioLatencyOverloadCount = std::make_unique<ControlObject>(ConfigKey("Master", "audio_latency_overload_count"));
+    m_pMasterAudioLatencyUsage = std::make_unique<ControlObject>(ConfigKey("Master", "audio_latency_usage"));
+    m_pMasterAudioLatencyOverload  = std::make_unique<ControlObject>(ConfigKey("Master", "audio_latency_overload"));
 }
 SoundDevicePortAudio::~SoundDevicePortAudio()=default;
 bool SoundDevicePortAudio::open(bool isClkRefDevice, int syncBuffers)

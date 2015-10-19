@@ -31,7 +31,6 @@ _Pragma("once")
 
 class Encoder;
 class ControlObject;
-class ControlObjectSlave;
 // Forward declare libshout structures to prevent leaking shout.h definitions
 // beyond where they are needed.
 struct shout;
@@ -86,8 +85,8 @@ class EngineShoutcast : public QObject, public EncoderCallback, public SideChain
     ConfigObject<ConfigValue>* m_pConfig            = nullptr;
     Encoder *m_encoder                              = nullptr;
     ControlObject* m_pShoutcastNeedUpdateFromPrefs  = nullptr;
-    ControlObjectSlave* m_pUpdateShoutcastFromPrefs = nullptr;
-    ControlObjectSlave* m_pMasterSamplerate         = nullptr;
+    ControlObject* m_pUpdateShoutcastFromPrefs = nullptr;
+    ControlObject* m_pMasterSamplerate         = nullptr;
     ControlObject* m_pShoutcastStatus               = nullptr;
     volatile bool m_bQuit         = false;
     // static metadata according to prefereneces

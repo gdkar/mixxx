@@ -10,7 +10,7 @@ _Pragma("once")
 #include "widget/wlibrarytableview.h"
 #include "preferences/dlgtagfetcher.h"
 
-class ControlObjectSlave;
+class ControlObject;
 class DlgTrackInfo;
 class TrackCollection;
 class WCoverArtMenu;
@@ -106,9 +106,9 @@ class WTrackTableView : public WLibraryTableView {
     QModelIndex currentTrackInfoIndex;
 
 
-    ControlObjectSlave* m_pNumSamplers;
-    ControlObjectSlave* m_pNumDecks;
-    ControlObjectSlave* m_pNumPreviewDecks;
+    ControlObject* m_pNumSamplers;
+    ControlObject* m_pNumDecks;
+    ControlObject* m_pNumPreviewDecks;
 
     // Context menu machinery
     QMenu *m_pMenu, *m_pPlaylistMenu, *m_pCrateMenu, *m_pSamplerMenu, *m_pBPMMenu;

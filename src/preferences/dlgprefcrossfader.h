@@ -15,9 +15,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef DLGPREFCROSSFADER_H
-#define DLGPREFCROSSFADER_H
-
+_Pragma("once")
 #include <QWidget>
 
 #include "preferences/ui_dlgprefcrossfaderdlg.h"
@@ -25,7 +23,7 @@
 #include "preferences/dlgpreferencepage.h"
 
 #define MIXXX_XFADER_STEEPNESS_COEFF 8.0
-class ControlObjectSlave;
+class ControlObject;
 /**
   *@author John Sully
   */
@@ -59,13 +57,11 @@ class DlgPrefCrossfader : public DlgPreferencePage, public Ui::DlgPrefCrossfader
     /** X-fader values */
     double m_xFaderMode, m_transform, m_cal;
 
-    ControlObjectSlave* m_COTMode;
-    ControlObjectSlave* m_COTCurve;
-    ControlObjectSlave* m_COTCalibration;
-    ControlObjectSlave* m_COTReverse;
-    ControlObjectSlave* m_COTCrossfader;
+    ControlObject* m_COTMode;
+    ControlObject* m_COTCurve;
+    ControlObject* m_COTCalibration;
+    ControlObject* m_COTReverse;
+    ControlObject* m_COTCrossfader;
 
     bool m_xFaderReverse;
 };
-
-#endif

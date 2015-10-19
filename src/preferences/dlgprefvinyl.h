@@ -23,7 +23,7 @@ _Pragma("once")
 #include "vinylcontrol/vinylcontrolsignalwidget.h"
 #include "preferences/dlgpreferencepage.h"
 
-class ControlObjectSlave;
+class ControlObject;
 class VinylControlManager;
 
 class DlgPrefVinyl : public DlgPreferencePage, Ui::DlgPrefVinylDlg  {
@@ -64,7 +64,7 @@ class DlgPrefVinyl : public DlgPreferencePage, Ui::DlgPrefVinylDlg  {
 
     VinylControlManager* m_pVCManager;
     ConfigObject<ConfigValue>* config;
-    QList<ControlObjectSlave*> m_COSpeeds;
-    ControlObjectSlave* m_pNumDecks;
+    QList<ControlObject*> m_COSpeeds;
+    ControlObject* m_pNumDecks;
     int m_iConfiguredDecks;
 };

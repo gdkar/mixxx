@@ -4,19 +4,15 @@
 #include "configobject.h"
 #include "cachingreader.h"
 #include "engine/enginecontrol.h"
-#include "controlobjectslave.h"
 
 ClockControl::ClockControl(QString group, ConfigObject<ConfigValue>* pConfig)
         : EngineControl(group, pConfig) {
-    m_pCOBeatActive = new ControlObject(ConfigKey(group, "beat_active"));
+    m_pCOBeatActive = new ControlObject(ConfigKey(group, "beat_active"),this);
     m_pCOBeatActive->set(0.0);
-    m_pCOSampleRate = new ControlObjectSlave("Master","samplerate");
+    m_pCOSampleRate = new ControlObject(ConfigKey("Master","samplerate"),this);
 }
 
-ClockControl::~ClockControl() {
-    delete m_pCOBeatActive;
-    delete m_pCOSampleRate;
-}
+ClockControl::~ClockControl() = default;
 
 void ClockControl::trackLoaded(TrackPointer pTrack) {
     // Clear on-beat control

@@ -13,9 +13,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef DLGPREFSOUND_H
-#define DLGPREFSOUND_H
-
+_Pragma("once")
 #include "preferences/ui_dlgprefsounddlg.h"
 #include "configobject.h"
 #include "soundmanagerconfig.h"
@@ -26,7 +24,6 @@ class PlayerManager;
 class ControlObject;
 class SoundDevice;
 class DlgPrefSoundItem;
-class ControlObjectSlave;
 
 /*
  * TODO(bkgood) (n-decks) establish a signal/slot connection with a signal
@@ -91,19 +88,17 @@ class DlgPrefSound : public DlgPreferencePage, public Ui::DlgPrefSoundDlg  {
     SoundManager *m_pSoundManager;
     PlayerManager *m_pPlayerManager;
     ConfigObject<ConfigValue> *m_pConfig;
-    ControlObjectSlave* m_pMasterAudioLatencyOverloadCount;
-    ControlObjectSlave* m_pMasterLatency;
-    ControlObjectSlave* m_pHeadDelay;
-    ControlObjectSlave* m_pMasterDelay;
-    ControlObjectSlave* m_pKeylockEngine;
-    ControlObjectSlave* m_pMasterEnabled;
-    ControlObjectSlave* m_pMasterMonoMixdown;
-    ControlObjectSlave* m_pMasterTalkoverMix;
+    ControlObject* m_pMasterAudioLatencyOverloadCount;
+    ControlObject* m_pMasterLatency;
+    ControlObject* m_pHeadDelay;
+    ControlObject* m_pMasterDelay;
+    ControlObject* m_pKeylockEngine;
+    ControlObject* m_pMasterEnabled;
+    ControlObject* m_pMasterMonoMixdown;
+    ControlObject* m_pMasterTalkoverMix;
     QList<SoundDevice*> m_inputDevices;
     QList<SoundDevice*> m_outputDevices;
     bool m_settingsModified;
     SoundManagerConfig m_config;
     bool m_loading;
 };
-
-#endif

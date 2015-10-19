@@ -49,7 +49,7 @@ class QSignalMapper;
 #include "util/cmdlineargs.h"
 #include "util/timer.h"
 
-class ControlObjectSlave;
+class ControlObject;
 class ControlObject;
 class QTranslator;
 
@@ -155,7 +155,7 @@ class MixxxMainWindow : public QMainWindow {
                           const QString& translation, const QString& prefix,
                           const QString& translationPath, QTranslator* pTranslator);
     bool confirmExit();
-    void linkSkinWidget(ControlObjectSlave** pCOS,
+    void linkSkinWidget(ControlObject** pCOS,
                         ConfigKey key, const char* slot);
     void updateCheckedMenuAction(QAction* menuAction, ConfigKey key);
 
@@ -242,12 +242,12 @@ class MixxxMainWindow : public QMainWindow {
     QAction* m_pDeveloperStatsBase  = nullptr;
     DlgDeveloperTools* m_pDeveloperToolsDlg = nullptr;
     QAction* m_pDeveloperDebugger   = nullptr;
-    ControlObjectSlave* m_pShowVinylControl = nullptr;
-    ControlObjectSlave* m_pShowSamplers     = nullptr;
-    ControlObjectSlave* m_pShowMicrophone   = nullptr;
-    ControlObjectSlave* m_pShowPreviewDeck  = nullptr;
-    ControlObjectSlave* m_pShowEffects      = nullptr;
-    ControlObjectSlave* m_pShowCoverArt     = nullptr;
+    ControlObject* m_pShowVinylControl = nullptr;
+    ControlObject* m_pShowSamplers     = nullptr;
+    ControlObject* m_pShowMicrophone   = nullptr;
+    ControlObject* m_pShowPreviewDeck  = nullptr;
+    ControlObject* m_pShowEffects      = nullptr;
+    ControlObject* m_pShowCoverArt     = nullptr;
     ControlObject* m_pNumAuxiliaries        = nullptr;
 
     int m_iNoPlaylists = 0;
@@ -266,12 +266,12 @@ class MixxxMainWindow : public QMainWindow {
     Timer m_runtime_timer;
     const CmdlineArgs& m_cmdLineArgs;
     ControlObject* m_pTouchShift = nullptr;
-    QList<ControlObjectSlave*> m_pVinylControlEnabled;
-    QList<ControlObjectSlave*> m_pPassthroughEnabled;
-    QList<ControlObjectSlave*> m_pAuxiliaryPassthrough;
-    ControlObjectSlave* m_pNumDecks;
+    QList<ControlObject*> m_pVinylControlEnabled;
+    QList<ControlObject*> m_pPassthroughEnabled;
+    QList<ControlObject*> m_pAuxiliaryPassthrough;
+    ControlObject* m_pNumDecks;
     int m_iNumConfiguredDecks = 0;
-    QList<ControlObjectSlave*> m_micTalkoverControls;
+    QList<ControlObject*> m_micTalkoverControls;
     QSignalMapper* m_VCControlMapper   = nullptr;
     QSignalMapper* m_VCCheckboxMapper  = nullptr;
     QSignalMapper* m_PassthroughMapper = nullptr;

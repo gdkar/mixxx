@@ -2,7 +2,6 @@
 
 #include "controlobject.h"
 #include "controlpushbutton.h"
-#include "controlobjectslave.h"
 #include "engine/bpmcontrol.h"
 #include "engine/enginebuffer.h"
 #include "engine/enginechannel.h"
@@ -31,7 +30,7 @@ SyncControl::SyncControl(const QString& group, ConfigObject<ConfigValue>* pConfi
           m_prevLocalBpm(0.0) {
     // Play button.  We only listen to this to disable master if the deck is
     // stopped.
-    m_pPlayButton.reset(new ControlObjectSlave(group, "play", this));
+    m_pPlayButton.reset(new ControlObject(ConfigKey(group, "play"), this));
     m_pPlayButton->connectValueChanged(this, SLOT(slotControlPlay(double)),Qt::DirectConnection);
 
     m_pSyncMode.reset(new ControlPushButton(ConfigKey(group, "sync_mode")));
@@ -45,10 +44,10 @@ SyncControl::SyncControl(const QString& group, ConfigObject<ConfigValue>* pConfi
     m_pSyncEnabled->setButtonMode(ControlPushButton::LONGPRESSLATCHING);
     m_pSyncEnabled->connectValueChangeRequest(this, SLOT(slotSyncEnabledChangeRequest(double)), Qt::DirectConnection);
     m_pSyncBeatDistance.reset(new ControlObject(ConfigKey(group, "beat_distance")));
-    m_pPassthroughEnabled.reset(new ControlObjectSlave(group, "passthrough", this));
+    m_pPassthroughEnabled.reset(new ControlObject(ConfigKey(group, "passthrough"), this));
     m_pPassthroughEnabled->connectValueChanged(this, SLOT(slotPassthroughChanged(double)),Qt::DirectConnection);
 
-    m_pEjectButton.reset(new ControlObjectSlave(group, "eject", this));
+    m_pEjectButton.reset(new ControlObject(ConfigKey(group, "eject"), this));
     m_pEjectButton->connectValueChanged(this, SLOT(slotEjectPushed(double)),Qt::DirectConnection);
     // BPMControl and RateControl will be initialized later.
 }
@@ -59,21 +58,19 @@ void SyncControl::setEngineControls(RateControl* pRateControl,BpmControl* pBpmCo
     // We set this to change the effective BPM in BpmControl. We do not listen
     // to changes from this control because changes in rate, rate_dir, rateRange
     // and file_bpm result in changes to this control.
-    m_pBpm.reset(new ControlObjectSlave(getGroup(), "bpm", this));
-    m_pLocalBpm.reset(new ControlObjectSlave(getGroup(), "local_bpm", this));
-    m_pFileBpm.reset(new ControlObjectSlave(getGroup(), "file_bpm", this));
+    m_pBpm.reset(new ControlObject(ConfigKey(getGroup(), "bpm"), this));
+    m_pLocalBpm.reset(new ControlObject(ConfigKey(getGroup(), "local_bpm"), this));
+    m_pFileBpm.reset(new ControlObject(ConfigKey(getGroup(), "file_bpm"), this));
     m_pFileBpm->connectValueChanged(this, SLOT(slotFileBpmChanged()),Qt::DirectConnection);
-    m_pRateSlider.reset(new ControlObjectSlave(getGroup(), "rate", this));
+    m_pRateSlider.reset(new ControlObject(ConfigKey(getGroup(), "rate"), this));
     m_pRateSlider->connectValueChanged(this, SLOT(slotRateChanged()),Qt::DirectConnection);
-    m_pRateDirection.reset(new ControlObjectSlave(getGroup(), "rate_dir", this));
+    m_pRateDirection.reset(new ControlObject(ConfigKey(getGroup(), "rate_dir"), this));
     m_pRateDirection->connectValueChanged(this, SLOT(slotRateChanged()),Qt::DirectConnection);
-    m_pRateRange.reset(new ControlObjectSlave(getGroup(), "rateRange", this));
+    m_pRateRange.reset(new ControlObject(ConfigKey(getGroup(), "rateRange"), this));
     m_pRateRange->connectValueChanged(this, SLOT(slotRateChanged()),Qt::DirectConnection);
-    m_pSyncPhaseButton.reset(new ControlObjectSlave(getGroup(), "beatsync_phase", this));
+    m_pSyncPhaseButton.reset(new ControlObject(ConfigKey(getGroup(), "beatsync_phase"), this));
 #ifdef __VINYLCONTROL__
-    m_pVCEnabled.reset(new ControlObjectSlave(
-        getGroup(), "vinylcontrol_enabled", this));
-
+    m_pVCEnabled.reset(new ControlObject(ConfigKey(getGroup(), "vinylcontrol_enabled"), this));
     // Throw a hissy fit if somebody moved us such that the vinylcontrol_enabled
     // control doesn't exist yet. This will blow up immediately, won't go unnoticed.
     DEBUG_ASSERT(m_pVCEnabled->valid());
@@ -104,7 +101,7 @@ void SyncControl::notifySyncModeChanged(SyncMode mode) {
         m_pPassthroughEnabled->set(0.0);
     }
     if (mode == SYNC_MASTER) {
-        // Make sure all the slaves update based on our current rate.
+        // Make sure all the followers update based on our current rate.
         slotRateChanged();
         double dRate = 1.0 + m_pRateDirection->get() * m_pRateRange->get() * m_pRateSlider->get();
         m_pEngineSync->notifyBeatDistanceChanged(this, getBeatDistance());

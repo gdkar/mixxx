@@ -15,9 +15,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef DLGPREFEQ_H
-#define DLGPREFEQ_H
-
+_Pragma("once")
 #include <QWidget>
 #include <QComboBox>
 
@@ -30,7 +28,7 @@
 /**
   *@author John Sully
   */
-class ControlObjectSlave;
+class ControlObject;
 class DlgPrefEQ : public DlgPreferencePage, public Ui::DlgPrefEQDlg  {
     Q_OBJECT
   public:
@@ -78,8 +76,8 @@ class DlgPrefEQ : public DlgPreferencePage, public Ui::DlgPrefEQDlg  {
     void setUpMasterEQ();
     void applySelections();
 
-    ControlObjectSlave* m_COLoFreq;
-    ControlObjectSlave* m_COHiFreq;
+    ControlObject* m_COLoFreq;
+    ControlObject* m_COHiFreq;
     ConfigObject<ConfigValue>* m_pConfig;
     double m_lowEqFreq, m_highEqFreq;
 
@@ -92,7 +90,7 @@ class DlgPrefEQ : public DlgPreferencePage, public Ui::DlgPrefEQDlg  {
     QList<QComboBox*> m_deckQuickEffectSelectors;
     QList<bool> m_filterWaveformEffectLoaded;
     QList<ControlObject*> m_filterWaveformEnableCOs;
-    ControlObjectSlave* m_pNumDecks;
+    ControlObject* m_pNumDecks;
 
     bool m_inSlotPopulateDeckEffectSelectors;
 
@@ -104,5 +102,3 @@ class DlgPrefEQ : public DlgPreferencePage, public Ui::DlgPrefEQDlg  {
 
     bool m_bEqAutoReset;
 };
-
-#endif

@@ -1,4 +1,4 @@
-#include "controlobjectslave.h"
+#include "controlobject.h"
 #include "controlpushbutton.h"
 #include "controlpotmeter.h"
 #include "engine/enginetalkoverducking.h"
@@ -10,7 +10,7 @@ EngineTalkoverDucking::EngineTalkoverDucking(
     : EngineSideChainCompressor(group),
       m_pConfig(pConfig),
       m_group(group) {
-    m_pMasterSampleRate = new ControlObjectSlave(m_group, "samplerate", this);
+    m_pMasterSampleRate = new ControlObject(ConfigKey(m_group, "samplerate"), this);
     m_pMasterSampleRate->connectValueChanged(SLOT(slotSampleRateChanged(double)),
                                              Qt::DirectConnection);
 

@@ -12,7 +12,7 @@ _Pragma("once")
 //#define WAVEFORMWIDGETRENDERER_DEBUG
 
 class TrackInfoObject;
-class ControlObjectSlave;
+class ControlObject;
 class VisualPlayPosition;
 
 class WaveformWidgetRenderer {
@@ -78,15 +78,15 @@ class WaveformWidgetRenderer {
     QSharedPointer<VisualPlayPosition> m_visualPlayPosition;
     double m_playPos = -1;
     int m_playPosVSample = -1;
-    ControlObjectSlave* m_pRateControlObject = nullptr;
+    ControlObject* m_pRateControlObject = nullptr;
     double m_rate = 0;
-    ControlObjectSlave* m_pRateRangeControlObject = nullptr;
+    ControlObject* m_pRateRangeControlObject = nullptr;
     double m_rateRange = 0;
-    ControlObjectSlave* m_pRateDirControlObject = nullptr;
+    ControlObject* m_pRateDirControlObject = nullptr;
     double m_rateDir = 0;
-    ControlObjectSlave* m_pGainControlObject = nullptr;
+    ControlObject* m_pGainControlObject = nullptr;
     double m_gain = 0;
-    ControlObjectSlave* m_pTrackSamplesControlObject = nullptr;
+    ControlObject* m_pTrackSamplesControlObject = nullptr;
     int m_trackSamples = 0;
     bool m_initSuccess = false;
     bool m_haveSetup   = false;

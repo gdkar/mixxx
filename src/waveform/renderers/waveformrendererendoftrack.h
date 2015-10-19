@@ -9,7 +9,6 @@ _Pragma("once")
 #include "waveform/waveformwidgetfactory.h"
 
 class ControlObject;
-class ControlObjectSlave;
 
 class WaveformRendererEndOfTrack : public WaveformRendererAbstract {
   public:
@@ -24,11 +23,11 @@ class WaveformRendererEndOfTrack : public WaveformRendererAbstract {
     virtual void draw(QPainter* painter, QPaintEvent* event);
 
   private:
-    ControlObjectSlave*  m_pEndOfTrackControl = nullptr;
+    ControlObject*  m_pEndOfTrackControl = nullptr;
     bool m_endOfTrackEnabled = false;
-    ControlObjectSlave* m_pTrackSampleRate = nullptr;
-    ControlObjectSlave* m_pPlayControl = nullptr;
-    ControlObjectSlave* m_pLoopControl = nullptr;
+    ControlObject* m_pTrackSampleRate = nullptr;
+    ControlObject* m_pPlayControl = nullptr;
+    ControlObject* m_pLoopControl = nullptr;
     QColor m_color;
     QTime m_timer;
     int m_remainingTimeTriggerSeconds = 30;

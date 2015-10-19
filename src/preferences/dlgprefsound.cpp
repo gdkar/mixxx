@@ -24,7 +24,7 @@
 #include "soundmanager.h"
 #include "sounddevice.h"
 #include "util/rlimit.h"
-#include "controlobjectslave.h"
+#include "controlobject.h"
 
 /**
  * Construct a new sound preferences pane. Initializes and populates all the
@@ -82,41 +82,41 @@ DlgPrefSound::DlgPrefSound(QWidget* pParent, SoundManager* pSoundManager,PlayerM
     connect(m_pSoundManager, SIGNAL(inputRegistered(AudioInput, AudioDestination*)),this, SLOT(addPath(AudioInput)));
     connect(m_pSoundManager, SIGNAL(inputRegistered(AudioInput, AudioDestination*)),this, SLOT(loadSettings()));
 
-    m_pMasterAudioLatencyOverloadCount = new ControlObjectSlave("Master", "audio_latency_overload_count", this);
+    m_pMasterAudioLatencyOverloadCount = new ControlObject(ConfigKey("Master", "audio_latency_overload_count"), this);
     m_pMasterAudioLatencyOverloadCount->connectValueChanged(SLOT(bufferUnderflow(double)));
 
-    m_pMasterLatency = new ControlObjectSlave("Master", "latency", this);
+    m_pMasterLatency = new ControlObject(ConfigKey("Master", "latency"), this);
     m_pMasterLatency->connectValueChanged(SLOT(masterLatencyChanged(double)));
 
 
-    m_pHeadDelay = new ControlObjectSlave("Master", "headDelay", this);
-    m_pMasterDelay = new ControlObjectSlave("Master", "delay", this);
+    m_pHeadDelay = new ControlObject(ConfigKey("Master", "headDelay"), this);
+    m_pMasterDelay = new ControlObject(ConfigKey("Master", "delay"), this);
 
     headDelaySpinBox->setValue(m_pHeadDelay->get());
     masterDelaySpinBox->setValue(m_pMasterDelay->get());
 
-    m_pMasterEnabled = new ControlObjectSlave("Master", "enabled", this);
+    m_pMasterEnabled = new ControlObject(ConfigKey("Master", "enabled"), this);
     masterMixComboBox->addItem(tr("Disabled"));
     masterMixComboBox->addItem(tr("Enabled"));
     masterMixComboBox->setCurrentIndex(m_pMasterEnabled->get() ? 1 : 0);
     connect(masterMixComboBox, SIGNAL(currentIndexChanged(int)),this, SLOT(masterMixChanged(int)));
     m_pMasterEnabled->connectValueChanged(this, SLOT(masterEnabledChanged(double)));
 
-    m_pMasterMonoMixdown = new ControlObjectSlave("Master", "mono_mixdown", this);
+    m_pMasterMonoMixdown = new ControlObject(ConfigKey("Master", "mono_mixdown"), this);
     masterOutputModeComboBox->addItem(tr("Stereo"));
     masterOutputModeComboBox->addItem(tr("Mono"));
     masterOutputModeComboBox->setCurrentIndex(m_pMasterMonoMixdown->get() ? 1 : 0);
     connect(masterOutputModeComboBox, SIGNAL(currentIndexChanged(int)),this, SLOT(masterOutputModeComboBoxChanged(int)));
     m_pMasterMonoMixdown->connectValueChanged(this, SLOT(masterMonoMixdownChanged(double)));
 
-    m_pMasterTalkoverMix = new ControlObjectSlave("Master", "talkover_mix", this);
+    m_pMasterTalkoverMix = new ControlObject(ConfigKey("Master", "talkover_mix"), this);
     micMixComboBox->addItem(tr("Master output"));
     micMixComboBox->addItem(tr("Broadcast and Recording only"));
     micMixComboBox->setCurrentIndex((int)m_pMasterTalkoverMix->get());
     connect(micMixComboBox, SIGNAL(currentIndexChanged(int)),this, SLOT(talkoverMixComboBoxChanged(int)));
     m_pMasterTalkoverMix->connectValueChanged(this, SLOT(talkoverMixChanged(double)));
 
-    m_pKeylockEngine = new ControlObjectSlave("Master", "keylock_engine", this);
+    m_pKeylockEngine = new ControlObject(ConfigKey("Master", "keylock_engine"), this);
     connect(headDelaySpinBox, SIGNAL(valueChanged(double)),this, SLOT(headDelayChanged(double)));
     connect(masterDelaySpinBox, SIGNAL(valueChanged(double)),this, SLOT(masterDelayChanged(double)));
 

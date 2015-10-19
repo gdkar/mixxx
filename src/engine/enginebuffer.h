@@ -38,7 +38,6 @@ class ClockControl;
 class CueControl;
 class ReadAheadManager;
 class ControlObject;
-class ControlObjectSlave;
 class ControlPushButton;
 class ControlIndicator;
 class ControlPotmeter;
@@ -241,10 +240,10 @@ class EngineBuffer : public EngineObject {
     ControlObject* m_pQuantize           = nullptr;
     ControlObject* m_pMasterRate         = nullptr;
     ControlPotmeter* m_playposSlider     = nullptr;
-    ControlObjectSlave* m_pSampleRate    = nullptr;
-    ControlObjectSlave* m_pKeylockEngine = nullptr;
+    ControlObject* m_pSampleRate    = nullptr;
+    ControlObject* m_pKeylockEngine = nullptr;
     ControlPushButton* m_pKeylock        = nullptr;
-    ControlObjectSlave* m_pPassthroughEnabled = nullptr;
+    ControlObject* m_pPassthroughEnabled = nullptr;
     ControlPushButton* m_pEject          = nullptr;
     // Whether or not to repeat the track when at the end
     ControlPushButton* m_pRepeat         = nullptr;

@@ -6,7 +6,7 @@ _Pragma("once")
 #include "configobject.h"
 #include "skin/skincontext.h"
 
-class ControlObjectSlave;
+class ControlObject;
 class QDomNode;
 class WaveformSignalColors;
 
@@ -17,7 +17,7 @@ class WaveformMark {
     void setup(const QString& group, const QDomNode& node,const SkinContext& context,const WaveformSignalColors& signalColors);
     void setKeyAndIndex(const ConfigKey& key, int i);
   private:
-    ControlObjectSlave* m_pointControl = nullptr;
+    ControlObject* m_pointControl = nullptr;
     QColor m_color;
     QColor m_textColor;
     QString m_text;

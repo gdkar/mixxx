@@ -17,9 +17,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef DLGPREFSHOUTCAST_H
-#define DLGPREFSHOUTCAST_H
-
+_Pragma("once")
 #include <QWidget>
 
 #include "preferences/ui_dlgprefshoutcastdlg.h"
@@ -31,7 +29,7 @@
   *@author John Sully
   */
 
-class ControlObjectSlave;
+class ControlObject;
 
 class DlgPrefShoutcast : public DlgPreferencePage, public Ui::DlgPrefShoutcastDlg  {
     Q_OBJECT
@@ -51,7 +49,6 @@ class DlgPrefShoutcast : public DlgPreferencePage, public Ui::DlgPrefShoutcastDl
   private:
     ConfigObject<ConfigValue>* m_pConfig;
     // If set to 1, EngineShoutcast will update it's settings.
-    ControlObjectSlave* m_pUpdateShoutcastFromPrefs;
+    ControlObject* m_pUpdateShoutcastFromPrefs;
 };
 
-#endif

@@ -15,16 +15,13 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef DLGPREFCONTROLS_H
-#define DLGPREFCONTROLS_H
-
+_Pragma("once")
 #include <QWidget>
 
 #include "preferences/ui_dlgprefcontrolsdlg.h"
 #include "configobject.h"
 #include "preferences/dlgpreferencepage.h"
 
-class ControlObjectSlave;
 class ControlPotmeter;
 class SkinLoader;
 class PlayerManager;
@@ -81,13 +78,13 @@ class DlgPrefControls : public DlgPreferencePage, public Ui::DlgPrefControlsDlg 
 
     ConfigObject<ConfigValue>* m_pConfig;
     ControlObject* m_pControlPositionDisplay;
-    ControlObjectSlave* m_pNumDecks;
-    ControlObjectSlave* m_pNumSamplers;
-    QList<ControlObjectSlave*> m_cueControls;
-    QList<ControlObjectSlave*> m_rateControls;
-    QList<ControlObjectSlave*> m_rateDirControls;
-    QList<ControlObjectSlave*> m_rateRangeControls;
-    QList<ControlObjectSlave*> m_keylockModeControls;
+    ControlObject* m_pNumDecks;
+    ControlObject* m_pNumSamplers;
+    QList<ControlObject*> m_cueControls;
+    QList<ControlObject*> m_rateControls;
+    QList<ControlObject*> m_rateDirControls;
+    QList<ControlObject*> m_rateRangeControls;
+    QList<ControlObject*> m_keylockModeControls;
     MixxxMainWindow *m_mixxx;
     SkinLoader* m_pSkinLoader;
     PlayerManager* m_pPlayerManager;
@@ -98,5 +95,3 @@ class DlgPrefControls : public DlgPreferencePage, public Ui::DlgPrefControlsDlg 
     int m_speedAutoReset;
     int m_keylockMode;
 };
-
-#endif

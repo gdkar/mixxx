@@ -19,7 +19,6 @@
 
 #include "configobject.h"
 #include "controlobject.h"
-#include "controlobjectslave.h"
 #include "encoder/encoder.h"
 
 #include "encoder/encoderffmpegmp3.h"
@@ -39,17 +38,17 @@ EngineRecord::EngineRecord(ConfigObject<ConfigValue>* _config)
           m_recordedDuration(0),
           m_iMetaDataLife(0),
           m_cueTrack(0),
-          m_bCueIsEnabled(false) {
-    m_pRecReady = new ControlObjectSlave(RECORDING_PREF_KEY, "status", this);
-    m_pSamplerate = new ControlObjectSlave("Master", "samplerate", this);
+          m_bCueIsEnabled(false)
+{
+    m_pRecReady = new ControlObject(ConfigKey(RECORDING_PREF_KEY, "status"), this);
+    m_pSamplerate = new ControlObject(ConfigKey("Master", "samplerate"), this);
     m_sampleRate = m_pSamplerate->get();
 }
 
-EngineRecord::~EngineRecord() {
+EngineRecord::~EngineRecord()
+{
     closeCueFile();
     closeFile();
-    delete m_pRecReady;
-    delete m_pSamplerate;
 }
 
 void EngineRecord::updateFromPreferences() {

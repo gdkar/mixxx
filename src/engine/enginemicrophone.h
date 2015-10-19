@@ -1,9 +1,7 @@
 // enginemicrophone.h
 // created 3/16/2011 by RJ Ryan (rryan@mit.edu)
 
-#ifndef ENGINEMICROPHONE_H
-#define ENGINEMICROPHONE_H
-
+_Pragma("once")
 #include "engine/enginechannel.h"
 #include "engine/enginevumeter.h"
 
@@ -12,7 +10,7 @@
 class EffectsManager;
 class EngineEffectsManager;
 class ControlAudioTaperPot;
-class ControlObjectSlave;
+class ControlObject;
 // EngineMicrophone is an EngineChannel that implements a mixing source whose
 // samples are fed directly from the SoundManager
 class EngineMicrophone : public EngineChannel, public AudioDestination {
@@ -52,10 +50,8 @@ class EngineMicrophone : public EngineChannel, public AudioDestination {
     EngineVuMeter m_vuMeter;
     ControlObject* m_pEnabled;
     ControlAudioTaperPot* m_pPregain;
-    ControlObjectSlave* m_pSampleRate;
+    ControlObject* m_pSampleRate;
     const CSAMPLE* volatile m_sampleBuffer;
 
     bool m_wasActive;
 };
-
-#endif /* ENGINEMICROPHONE_H */

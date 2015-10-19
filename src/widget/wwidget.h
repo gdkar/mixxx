@@ -23,7 +23,7 @@ _Pragma("once")
 #include "configobject.h"
 #include "widget/wbasewidget.h"
 
-class ControlObjectSlave;
+class ControlObject;
 
 /**
   * Abstract class used in widgets connected to ControlObjects. Derived
@@ -46,5 +46,5 @@ class WWidget : public QWidget, public WBaseWidget {
     bool event(QEvent* e);
     enum Qt::MouseButton m_activeTouchButton;
   private:
-    ControlObjectSlave* m_pTouchShift;
+    ControlObject* m_pTouchShift;
 };

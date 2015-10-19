@@ -18,14 +18,15 @@ _Pragma("once")
 
 #include <QMessageBox>
 #include <QFileSystemWatcher>
-
+#include <memory>
+#include <vector>
 #include "configobject.h"
 #include "controllers/softtakeover.h"
 #include "controllers/controllerpreset.h"
 
 // Forward declaration(s)
 class Controller;
-class ControlObjectSlave;
+class ControlObject;
 class ControllerEngine;
 class AlphaBetaFilter;
 // ControllerEngineConnection class for closure-compatible engine.connectControl
@@ -77,7 +78,7 @@ class ControllerEngine : public QObject
 {
     Q_OBJECT
   public:
-    ControllerEngine(Controller* controller);
+    ControllerEngine(Controller* controller, QObject *pParent = nullptr);
     virtual ~ControllerEngine();
     bool isReady();
     // Check whether a source file that was evaluated()'d has errors.
@@ -168,7 +169,7 @@ class ControllerEngine : public QObject
 
     void callFunctionOnObjects(QList<QString>, QString, QJSValueList args = QJSValueList ());
     bool checkException(QJSValue);
-    ControlObjectSlave * getControlObjectSlave(QString group, QString name);
+    ControlObject* getControlObject(QString group, QString name);
     // Scratching functions & variables
     void scratchProcess(int timerId);
 
@@ -182,7 +183,7 @@ class ControllerEngine : public QObject
     QMultiHash<ConfigKey, ControllerEngineConnection> m_connectedControls;
     QList<QString> m_scriptFunctionPrefixes;
     QMap<QString,QStringList> m_scriptErrors;
-    QHash<ConfigKey, ControlObjectSlave*> m_controlCache;
+    QHash<ConfigKey, ControlObject*> m_controlCache;
     struct TimerInfo
     {
         QJSValue callback;
@@ -193,11 +194,11 @@ class ControllerEngine : public QObject
     SoftTakeoverCtrl m_st;
     // 256 (default) available virtual decks is enough I would think.
     //  If more are needed at run-time, these will move to the heap automatically
-    QVarLengthArray<int> m_intervalAccumulator;
-    QVarLengthArray<uint> m_lastMovement;
-    QVarLengthArray<double> m_dx, m_rampTo, m_rampFactor;
-    QVarLengthArray<bool> m_ramp, m_brakeActive;
-    QVarLengthArray<AlphaBetaFilter*> m_scratchFilters;
+    std::vector<int> m_intervalAccumulator;
+    std::vector<uint> m_lastMovement;
+    std::vector<double> m_dx, m_rampTo, m_rampFactor;
+    std::vector<bool> m_ramp, m_brakeActive;
+    std::vector<std::unique_ptr<AlphaBetaFilter> > m_scratchFilters;
     QHash<int, int> m_scratchTimers;
     mutable QHash<QString, QJSValue > m_scriptValueCache;
     // Filesystem watcher for script auto-reload

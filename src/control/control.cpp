@@ -19,7 +19,6 @@ ControlDoublePrivate::ControlDoublePrivate(ConfigKey key,
                                            bool bPersist)
         : m_key(key),
           m_bPersistInConfiguration(bPersist),
-          m_bIgnoreNops(bIgnoreNops),
           m_bTrack(bTrack),
           m_trackKey("control " + m_key.group + "," + m_key.item),
           m_trackType(Stat::UNSPECIFIED),
@@ -138,13 +137,13 @@ double ControlDoublePrivate::get()const
 {
   return m_value.load();
 }
-bool ControlDoublePrivate::ignoreNops() const
-{
-  return m_bIgnoreNops;
-}
 void ControlDoublePrivate::setDefaultValue(double dValue)
 {
-  m_defaultValue.store(dValue);
+
+  if(dValue != m_defaultValue.exchange(dValue))
+  {
+    emit defaultValueChanged(dValue);
+  }
 }
 double ControlDoublePrivate::defaultValue()const
 {

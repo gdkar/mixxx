@@ -9,7 +9,6 @@
 #include "visualplayposition.h"
 #include "engine/enginechannel.h"
 #include "engine/enginemaster.h"
-#include "controlobjectslave.h"
 #include "util/assert.h"
 #include "util/math.h"
 
@@ -31,26 +30,26 @@ BpmControl::BpmControl(QString group,
         m_dUserOffset(0.0),
         m_tapFilter(this, filterLength, maxInterval),
         m_sGroup(group) {
-    m_pPlayButton = new ControlObjectSlave(group, "play", this);
+    m_pPlayButton = new ControlObject(ConfigKey(group, "play"), this);
     m_pPlayButton->connectValueChanged(SLOT(slotControlPlay(double)), Qt::DirectConnection);
-    m_pReverseButton = new ControlObjectSlave(group, "reverse", this);
-    m_pRateSlider = new ControlObjectSlave(group, "rate", this);
+    m_pReverseButton = new ControlObject(ConfigKey(group, "reverse"), this);
+    m_pRateSlider = new ControlObject(ConfigKey(group, "rate"), this);
     m_pRateSlider->connectValueChanged(SLOT(slotAdjustRateSlider()), Qt::DirectConnection);
     m_pQuantize = ControlObject::getControl(group, "quantize");
-    m_pRateRange = new ControlObjectSlave(group, "rateRange", this);
+    m_pRateRange = new ControlObject(ConfigKey(group, "rateRange"), this);
     m_pRateRange->connectValueChanged(SLOT(slotAdjustRateSlider()), Qt::DirectConnection);
-    m_pRateDir = new ControlObjectSlave(group, "rate_dir", this);
+    m_pRateDir = new ControlObject(ConfigKey(group, "rate_dir"), this);
     m_pRateDir->connectValueChanged(SLOT(slotAdjustRateSlider()), Qt::DirectConnection);
 
-    m_pPrevBeat.reset(new ControlObjectSlave(group, "beat_prev",this));
-    m_pNextBeat.reset(new ControlObjectSlave(group, "beat_next",this));
-    m_pClosestBeat.reset(new ControlObjectSlave(group, "beat_closest",this));
+    m_pPrevBeat.reset(new ControlObject(ConfigKey(group, "beat_prev"),this));
+    m_pNextBeat.reset(new ControlObject(ConfigKey(group, "beat_next"),this));
+    m_pClosestBeat.reset(new ControlObject(ConfigKey(group, "beat_closest"),this));
 
-    m_pLoopEnabled = new ControlObjectSlave(group, "loop_enabled", this);
-    m_pLoopStartPosition = new ControlObjectSlave(group, "loop_start_position", this);
-    m_pLoopEndPosition = new ControlObjectSlave(group, "loop_end_position", this);
+    m_pLoopEnabled = new ControlObject(ConfigKey(group, "loop_enabled"), this);
+    m_pLoopStartPosition = new ControlObject(ConfigKey(group, "loop_start_position"), this);
+    m_pLoopEndPosition = new ControlObject(ConfigKey(group, "loop_end_position"), this);
 
-    m_pVCEnabled = new ControlObjectSlave(group, "vinylcontrol_enabled", this);
+    m_pVCEnabled = new ControlObject(ConfigKey(group, "vinylcontrol_enabled"), this);
 
     m_pFileBpm = new ControlObject(ConfigKey(group, "file_bpm"),this);
     connect(m_pFileBpm, SIGNAL(valueChanged(double)),this, SLOT(slotFileBpmChanged(double)),Qt::DirectConnection);
@@ -89,7 +88,7 @@ BpmControl::BpmControl(QString group,
     connect(m_pBeatsTranslateMatchAlignment, SIGNAL(valueChanged(double)),this, SLOT(slotBeatsTranslateMatchAlignment(double)),Qt::DirectConnection);
     connect(&m_tapFilter, SIGNAL(tapped(double,int)),this, SLOT(slotTapFilter(double,int)),Qt::DirectConnection);
     // Measures distance from last beat in percentage: 0.5 = half-beat away.
-    m_pThisBeatDistance = new ControlObjectSlave(group, "beat_distance", this);
+    m_pThisBeatDistance = new ControlObject(ConfigKey(group, "beat_distance"), this);
     m_pSyncMode = ControlObject::getControl(ConfigKey(group, "sync_mode"));
 }
 BpmControl::~BpmControl()
@@ -368,7 +367,7 @@ double BpmControl::calcSyncedRate(double userTweak) {
     // If we are not quantized, or there are no beats, or we're master,
     // or we're in reverse, just return the rate as-is.
     if (!m_pQuantize->get() || getSyncMode() == SYNC_MASTER ||
-            m_pBeats == NULL || m_pReverseButton->get()) {
+            m_pBeats == nullptr || m_pReverseButton->get()) {
         m_resetSyncAdjustment = true;
         return rate + userTweak;
     }
@@ -514,11 +513,11 @@ bool BpmControl::getBeatContext(const BeatsPointer& pBeats,
         return false;
     }
 
-    if (dpPrevBeat != NULL) {
+    if (dpPrevBeat != nullptr) {
         *dpPrevBeat = dPrevBeat;
     }
 
-    if (dpNextBeat != NULL) {
+    if (dpNextBeat != nullptr) {
         *dpNextBeat = dNextBeat;
     }
 
@@ -538,11 +537,11 @@ bool BpmControl::getBeatContextNoLookup(
     }
 
     double dBeatLength = dNextBeat - dPrevBeat;
-    if (dpBeatLength != NULL) {
+    if (dpBeatLength != nullptr) {
         *dpBeatLength = dBeatLength;
     }
 
-    if (dpBeatPercentage != NULL) {
+    if (dpBeatPercentage != nullptr) {
         *dpBeatPercentage = dBeatLength == 0.0 ? 0.0 :
                 (dPosition - dPrevBeat) / dBeatLength;
         // Because findNext and findPrev have an epsilon built in, sometimes
@@ -574,49 +573,38 @@ double BpmControl::getPhaseOffset(double dThisPosition) {
         // this so this call isn't necessary.
         if (!getBeatContext(m_pBeats, dThisPosition,
                             &dThisPrevBeat, &dThisNextBeat,
-                            &dThisBeatLength, NULL)) {
+                            &dThisBeatLength, nullptr)) {
             return 0;
         }
     } else {
         if (!getBeatContextNoLookup(dThisPosition,
                                     dThisPrevBeat, dThisNextBeat,
-                                    &dThisBeatLength, NULL)) {
+                                    &dThisBeatLength, nullptr)) {
             return 0;
         }
     }
 
     double dOtherBeatFraction;
     if (getSyncMode() == SYNC_FOLLOWER) {
-        // If we're a slave, it's easy to get the other beat fraction
+        // If we're a follower , it's easy to get the other beat fraction
         dOtherBeatFraction = m_dSyncTargetBeatDistance;
-    } else {
+    } else
+    {
         // If not, we have to figure it out
-        EngineBuffer* pOtherEngineBuffer = pickSyncTarget();
-        if (pOtherEngineBuffer == NULL) {
-            return 0;
-        }
-
-        TrackPointer otherTrack = pOtherEngineBuffer->getLoadedTrack();
-        BeatsPointer otherBeats = otherTrack ? otherTrack->getBeats() : BeatsPointer();
-
+        auto pOtherEngineBuffer = pickSyncTarget();
+        if (!pOtherEngineBuffer) return 0;
+        auto otherTrack = pOtherEngineBuffer->getLoadedTrack();
+        auto otherBeats = otherTrack ? otherTrack->getBeats() : BeatsPointer();
         // If either track does not have beats, then we can't adjust the phase.
-        if (!otherBeats) {
-            return 0;
-        }
-
-        double dOtherLength = ControlObject::getControl(
-            ConfigKey(pOtherEngineBuffer->getGroup(), "track_samples"))->get();
-        double dOtherEnginePlayPos = pOtherEngineBuffer->getVisualPlayPos();
-        double dOtherPosition = dOtherLength * dOtherEnginePlayPos;
-
+        if (!otherBeats) return 0;
+        auto dOtherLength = ControlObject::getControl(ConfigKey(pOtherEngineBuffer->getGroup(), "track_samples"))->get();
+        auto dOtherEnginePlayPos = pOtherEngineBuffer->getVisualPlayPos();
+        auto dOtherPosition = dOtherLength * dOtherEnginePlayPos;
         if (!BpmControl::getBeatContext(otherBeats, dOtherPosition,
-                                        NULL, NULL, NULL, &dOtherBeatFraction)) {
-            return 0.0;
-        }
+                                        nullptr, nullptr, nullptr, &dOtherBeatFraction)) return 0.0;
     }
-
-    bool this_near_next = dThisNextBeat - dThisPosition <= dThisPosition - dThisPrevBeat;
-    bool other_near_next = dOtherBeatFraction >= 0.5;
+    auto this_near_next = dThisNextBeat - dThisPosition <= dThisPosition - dThisPrevBeat;
+    auto other_near_next = dOtherBeatFraction >= 0.5;
 
     // We want our beat fraction to be identical to theirs.
 

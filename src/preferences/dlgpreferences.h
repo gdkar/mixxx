@@ -15,9 +15,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef DLGPREFERENCES_H
-#define DLGPREFERENCES_H
-
+_Pragma("once")
 #include <QDialog>
 #include <QEvent>
 #include <QRect>
@@ -132,5 +130,3 @@ class DlgPreferences : public QDialog, public Ui::DlgPreferencesDlg {
     QSize m_pageSizeHint;
     ControlPushButton* m_preferencesUpdated;
 };
-
-#endif

@@ -1,12 +1,12 @@
 #include "widget/wkey.h"
 #include "track/keys.h"
 #include "track/keyutils.h"
-#include "controlobjectslave.h"
+#include "controlobject.h"
 WKey::WKey(const char* group, QWidget* pParent)
         : WLabel(pParent),
           m_dOldValue(0),
-          m_preferencesUpdated(new ControlObjectSlave(ConfigKey("Preferences", "updated"),this)),
-          m_engineKeyDistance(new ControlObjectSlave(ConfigKey(group, "visual_key_distance"),this)) {
+          m_preferencesUpdated(new ControlObject(ConfigKey("Preferences", "updated"),this)),
+          m_engineKeyDistance(new ControlObject(ConfigKey(group, "visual_key_distance"),this)) {
     setValue(m_dOldValue);
     connect(m_preferencesUpdated, SIGNAL(valueChanged(double)),this, SLOT(preferencesUpdated(double)));
     connect(m_engineKeyDistance, SIGNAL(valueChanged(double)),this, SLOT(setCents()));

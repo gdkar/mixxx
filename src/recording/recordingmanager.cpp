@@ -11,7 +11,7 @@
 #include "controlpushbutton.h"
 #include "controlobject.h"
 #include "engine/enginemaster.h"
-#include "controlobjectslave.h"
+#include "controlobject.h"
 RecordingManager::RecordingManager(ConfigObject<ConfigValue>* pConfig, EngineMaster* pEngine)
         : m_pConfig(pConfig),
           m_recordingDir(""),
@@ -26,7 +26,7 @@ RecordingManager::RecordingManager(ConfigObject<ConfigValue>* pConfig, EngineMas
     m_pToggleRecording = new ControlPushButton(ConfigKey(RECORDING_PREF_KEY, "toggle_recording"));
     connect(m_pToggleRecording, SIGNAL(valueChanged(double)), this, SLOT(slotToggleRecording(double)));
     m_recReadyCO = new ControlObject(ConfigKey(RECORDING_PREF_KEY, "status"));
-    m_recReady = new ControlObjectSlave(m_recReadyCO->getKey(),this);
+    m_recReady = new ControlObject(m_recReadyCO->getKey(),this);
     m_split_size = getFileSplitSize();
     // Register EngineRecord with the engine sidechain.
     auto pSidechain = pEngine->getSideChain();

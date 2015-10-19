@@ -9,6 +9,7 @@
 #include "waveform/renderers/waveformrendermarkrange.h"
 
 #include "configobject.h"
+#include "controlobject.h"
 #include "trackinfoobject.h"
 #include "waveform/renderers/waveformwidgetrenderer.h"
 #include "widget/wskincolor.h"

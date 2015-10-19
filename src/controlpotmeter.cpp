@@ -17,7 +17,7 @@
 
 #include "controlpushbutton.h"
 #include "controlpotmeter.h"
-#include "controlobjectslave.h"
+#include "controlobject.h"
 #include "control/control.h"
 ControlPotmeter::ControlPotmeter(ConfigKey key, double dMinValue, double dMaxValue,
                                  bool bAllowOutOfBounds,
@@ -70,7 +70,7 @@ void ControlPotmeter::setRange(double dMinValue, double dMaxValue,bool bAllowOut
 }
 PotmeterControls::PotmeterControls(const ConfigKey& key,QObject *pParent)
         : QObject(pParent),
-          m_pControl(new ControlObjectSlave(key,this)),
+          m_pControl(new ControlObject(key,this)),
           m_stepCount(10),
           m_smallStepCount(100) {
     // These controls are deleted when the ControlPotmeter is since

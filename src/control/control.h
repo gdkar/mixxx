@@ -4,6 +4,7 @@ _Pragma("once")
 #include <QString>
 #include <QObject>
 #include <QSharedPointer>
+#include <memory>
 #include <atomic>
 #include "control/controlbehavior.h"
 #include "configobject.h"
@@ -17,6 +18,7 @@ class ControlDoublePrivate : public QObject {
     Q_PROPERTY(QString item READ item CONSTANT);
     Q_PROPERTY(double value READ get WRITE set RESET reset NOTIFY valueChanged);
     Q_PROPERTY(double parameter READ getParameter WRITE setParameter RESET reset NOTIFY parameterChanged);
+    Q_PROPERTY(double defaultValue READ defaultValue WRITE setDefaultValue NOTIFY defaultValueChanged);
   public:
     virtual ~ControlDoublePrivate();
 
@@ -35,7 +37,6 @@ class ControlDoublePrivate : public QObject {
             ConfigKey key, bool warn = true,
             ControlObject* pCreatorCO = nullptr, bool bIgnoreNops = true, bool bTrack = false,
             bool bPersist = false);
-
     // Adds all ControlDoublePrivate that currently exist to pControlList
     static QList<QSharedPointer<ControlDoublePrivate> > getControls();
     static void clearControls();
@@ -61,7 +62,6 @@ class ControlDoublePrivate : public QObject {
     void setParameter(double dParam);
     double getParameter() const;
     double getParameterForValue(double value) const;
-    bool ignoreNops() const;
     void setDefaultValue(double dValue);
     double defaultValue() const;
     ControlObject* getCreatorCO() const;
@@ -80,7 +80,8 @@ class ControlDoublePrivate : public QObject {
     // Emitted when the ControlDoublePrivate value changes. pSender is a
     // pointer to the setter of the value (potentially NULL).
     void valueChanged(double value);
-    void valueChangeRequest(double value);
+    void valueChangeRequest(double);
+    void defaultValueChanged(double);
     void nameChanged(QString);
     void descriptionChanged(QString);
     void parameterChanged();
@@ -98,7 +99,6 @@ class ControlDoublePrivate : public QObject {
     // User-visible, i18n descripton for what the control does.
     QString m_description;
     // Whether to ignore sets which would have no effect.
-    bool m_bIgnoreNops;
     // Whether to track value changes with the stats framework.
     bool m_bTrack;
     QString m_trackKey;

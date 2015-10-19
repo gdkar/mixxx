@@ -5,7 +5,7 @@ _Pragma("once")
 #include "util.h"
 #include "skin/skincontext.h"
 
-class ControlObjectSlave;
+class ControlObject;
 
 class WaveformRenderBeat : public WaveformRendererAbstract {
   public:
@@ -18,7 +18,7 @@ class WaveformRenderBeat : public WaveformRendererAbstract {
 
   private:
     QColor m_beatColor;
-    ControlObjectSlave* m_pBeatActive = nullptr;
+    ControlObject* m_pBeatActive = nullptr;
     std::vector<QLineF> m_beats;
 
 };

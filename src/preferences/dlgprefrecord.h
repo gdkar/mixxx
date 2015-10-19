@@ -15,9 +15,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef DLGPREFRECORD_H
-#define DLGPREFRECORD_H
-
+_Pragma("once")
 #include <QRadioButton>
 #include <QWidget>
 
@@ -26,7 +24,6 @@
 #include "preferences/dlgpreferencepage.h"
 
 class ControlObject;
-class ControlObjectSlave;
 
 class DlgPrefRecord : public DlgPreferencePage, public Ui::DlgPrefRecordDlg  {
     Q_OBJECT
@@ -61,7 +58,7 @@ class DlgPrefRecord : public DlgPreferencePage, public Ui::DlgPrefRecordDlg  {
 
     // Pointer to config object
     ConfigObject<ConfigValue>* m_pConfig;
-    ControlObjectSlave* m_pRecordControl;
+    ControlObject* m_pRecordControl;
     bool m_bConfirmOverwrite;
     QString fileTypeExtension;
     QRadioButton* m_pRadioOgg;
@@ -70,5 +67,3 @@ class DlgPrefRecord : public DlgPreferencePage, public Ui::DlgPrefRecordDlg  {
     QRadioButton* m_pRadioFlac;
     QRadioButton* m_pRadioWav;
 };
-
-#endif

@@ -4,7 +4,6 @@ _Pragma("once")
 #include "skin/skincontext.h"
 
 class ControlObject;
-class ControlObjectSlave;
 
 class WaveformRendererSignalBase : public WaveformRendererAbstract {
 public:
@@ -18,13 +17,13 @@ public:
     void deleteControls();
     void getGains(float* pAllGain, float* pLowGain, float* pMidGain,float* highGain);
   protected:
-    ControlObjectSlave* m_pEQEnabled                = nullptr;
-    ControlObjectSlave* m_pLowFilterControlObject   = nullptr;
-    ControlObjectSlave* m_pMidFilterControlObject   = nullptr;
-    ControlObjectSlave* m_pHighFilterControlObject  = nullptr;
-    ControlObjectSlave* m_pLowKillControlObject     = nullptr;
-    ControlObjectSlave* m_pMidKillControlObject     = nullptr;
-    ControlObjectSlave* m_pHighKillControlObject    = nullptr;
+    ControlObject* m_pEQEnabled                = nullptr;
+    ControlObject* m_pLowFilterControlObject   = nullptr;
+    ControlObject* m_pMidFilterControlObject   = nullptr;
+    ControlObject* m_pHighFilterControlObject  = nullptr;
+    ControlObject* m_pLowKillControlObject     = nullptr;
+    ControlObject* m_pMidKillControlObject     = nullptr;
+    ControlObject* m_pHighKillControlObject    = nullptr;
 
     Qt::Alignment m_alignment = Qt::AlignCenter;
 

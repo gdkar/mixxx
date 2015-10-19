@@ -5,7 +5,6 @@
  */
 
 #include "controlobject.h"
-#include "controlobjectslave.h"
 #include "playermanager.h"
 #include "soundmanager.h"
 #include "util/timer.h"
@@ -51,7 +50,7 @@ VinylControlManager::~VinylControlManager() {
 }
 
 void VinylControlManager::init() {
-    m_pNumDecks = new ControlObjectSlave("Master", "num_decks", this);
+    m_pNumDecks = new ControlObject(ConfigKey("Master", "num_decks"), this);
     m_pNumDecks->connectValueChanged(SLOT(slotNumDecksChanged(double)));
     slotNumDecksChanged(m_pNumDecks->get());
 }
@@ -74,7 +73,7 @@ void VinylControlManager::slotNumDecksChanged(double dNumDecks) {
 
     for (int i = m_iNumConfiguredDecks; i < num_decks; ++i) {
         QString group = PlayerManager::groupForDeck(i);
-        m_pVcEnabled.push_back(new ControlObjectSlave(group, "vinylcontrol_enabled", this));
+        m_pVcEnabled.push_back(new ControlObject(ConfigKey(group, "vinylcontrol_enabled"), this));
         m_pVcEnabled.back()->set(0);
 
         // Default cueing should be off.

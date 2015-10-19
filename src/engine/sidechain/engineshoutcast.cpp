@@ -30,7 +30,6 @@
 #include "engine/sidechain/engineshoutcast.h"
 #include "configobject.h"
 #include "controlobject.h"
-#include "controlobjectslave.h"
 #include "playerinfo.h"
 #include "encoder/encoder.h"
 #include "encoder/encoderffmpegmp3.h"
@@ -43,7 +42,7 @@
 
 EngineShoutcast::EngineShoutcast(ConfigObject<ConfigValue>* _config)
          : m_pConfig(_config),
-           m_pMasterSamplerate(new ControlObjectSlave("Master", "samplerate")),
+           m_pMasterSamplerate(new ControlObject(ConfigKey("Master", "samplerate"),this)),
           m_pShoutcastStatus(new ControlObject(ConfigKey(SHOUTCAST_PREF_KEY, "status")))
 {
 #ifndef __WINDOWS__
@@ -53,7 +52,7 @@ EngineShoutcast::EngineShoutcast(ConfigObject<ConfigValue>* _config)
 #endif
     m_pShoutcastStatus->set(SHOUTCAST_DISCONNECTED);
     m_pShoutcastNeedUpdateFromPrefs = new ControlObject( ConfigKey(SHOUTCAST_PREF_KEY,"update_from_prefs"));
-    m_pUpdateShoutcastFromPrefs = new ControlObjectSlave( m_pShoutcastNeedUpdateFromPrefs->getKey());
+    m_pUpdateShoutcastFromPrefs = new ControlObject( m_pShoutcastNeedUpdateFromPrefs->getKey(),this);
     // Initialize libshout
     shout_init();
     if (!(m_pShout = shout_new()))

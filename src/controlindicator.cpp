@@ -1,5 +1,4 @@
 #include "controlindicator.h"
-#include "controlobjectslave.h"
 #include "util/math.h"
 
 

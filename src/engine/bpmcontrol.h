@@ -5,7 +5,6 @@ _Pragma("once")
 
 class ControlObject;
 class ControlLinPotmeter;
-class ControlObjectSlave;
 class ControlPushButton;
 class EngineBuffer;
 class SyncControl;
@@ -99,24 +98,24 @@ class BpmControl : public EngineControl {
     double calcSyncAdjustment(double my_percentage, bool userTweakingSync);
     friend class SyncControl;
     // ControlObjects that come from EngineBuffer
-    ControlObjectSlave* m_pPlayButton;
-    ControlObjectSlave* m_pReverseButton;
-    ControlObjectSlave* m_pRateSlider;
+    ControlObject* m_pPlayButton;
+    ControlObject* m_pReverseButton;
+    ControlObject* m_pRateSlider;
     ControlObject* m_pQuantize;
-    ControlObjectSlave* m_pRateRange;
-    ControlObjectSlave* m_pRateDir;
+    ControlObject* m_pRateRange;
+    ControlObject* m_pRateDir;
 
     // ControlObjects that come from QuantizeControl
-    QScopedPointer<ControlObjectSlave> m_pNextBeat;
-    QScopedPointer<ControlObjectSlave> m_pPrevBeat;
-    QScopedPointer<ControlObjectSlave> m_pClosestBeat;
+    QScopedPointer<ControlObject> m_pNextBeat;
+    QScopedPointer<ControlObject> m_pPrevBeat;
+    QScopedPointer<ControlObject> m_pClosestBeat;
 
     // ControlObjects that come from LoopingControl
-    ControlObjectSlave* m_pLoopEnabled;
-    ControlObjectSlave* m_pLoopStartPosition;
-    ControlObjectSlave* m_pLoopEndPosition;
+    ControlObject* m_pLoopEnabled;
+    ControlObject* m_pLoopStartPosition;
+    ControlObject* m_pLoopEndPosition;
 
-    ControlObjectSlave* m_pVCEnabled;
+    ControlObject* m_pVCEnabled;
 
     // The current loaded file's detected BPM
     ControlObject* m_pFileBpm;
@@ -148,7 +147,7 @@ class BpmControl : public EngineControl {
 
     // Master Sync objects and values.
     ControlObject* m_pSyncMode;
-    ControlObjectSlave* m_pThisBeatDistance;
+    ControlObject* m_pThisBeatDistance;
     double m_dSyncTargetBeatDistance;
     double m_dSyncInstantaneousBpm;
     double m_dLastSyncAdjustment;

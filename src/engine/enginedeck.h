@@ -15,9 +15,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef ENGINEDECK_H
-#define ENGINEDECK_H
-
+_Pragma("once")
 #include "configobject.h"
 #include "engine/engineobject.h"
 #include "engine/enginechannel.h"
@@ -31,8 +29,7 @@ class EngineMaster;
 class EngineVuMeter;
 class EffectsManager;
 class EngineEffectsManager;
-class ControlPushButton;
-class ControlObjectSlave;
+class ControlObject;
 class EngineDeck : public EngineChannel, public AudioDestination {
     Q_OBJECT
   public:
@@ -67,11 +64,10 @@ class EngineDeck : public EngineChannel, public AudioDestination {
     EnginePregain* m_pPregain = nullptr;
     EngineVuMeter* m_pVUMeter = nullptr;
     EngineEffectsManager* m_pEngineEffectsManager = nullptr;
-    ControlObjectSlave* m_pSampleRate = nullptr;
+    ControlObject* m_pSampleRate = nullptr;
     // Begin vinyl passthrough fields
-    ControlPushButton* m_pPassing = nullptr;
+    ControlObject* m_pPassing = nullptr;
     const CSAMPLE* volatile m_sampleBuffer = nullptr;
     bool m_bPassthroughIsActive = false;
     bool m_bPassthroughWasActive = false;
 };
-#endif

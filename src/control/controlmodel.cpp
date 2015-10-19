@@ -1,5 +1,5 @@
 #include "control/controlmodel.h"
-#include "controlobjectslave.h"
+#include "controlobject.h"
 #include <QMetaEnum>
 ControlModel::ControlModel(QObject* pParent)
         : QAbstractTableModel(pParent) {
@@ -20,8 +20,8 @@ void ControlModel::addControl(const ConfigKey& key,const QString& title,const QS
     info.key = key;
     info.title = title;
     info.description = description;
-    info.pControl = new ControlObjectSlave(this);
-    info.pControl->initialize(info.key);
+    info.pControl = new ControlObject(this);
+    info.pControl->initialize(info.key,true,false,false);
     beginInsertRows(QModelIndex(), m_controls.size(),m_controls.size());
     m_controls.append(info);
     endInsertRows();

@@ -22,7 +22,6 @@
 #include "dlgprefeq.h"
 #include "engine/enginefilterbessel4.h"
 #include "controlobject.h"
-#include "controlobjectslave.h"
 #include "util/math.h"
 #include "playermanager.h"
 #include "effects/effectrack.h"
@@ -41,8 +40,8 @@ const int kFrequencyLowerLimit = 16;
 DlgPrefEQ::DlgPrefEQ(QWidget* pParent, EffectsManager* pEffectsManager,
                      ConfigObject<ConfigValue>* pConfig)
         : DlgPreferencePage(pParent),
-          m_COLoFreq(new ControlObjectSlave(kConfigKey, "LoEQFrequency",this)),
-          m_COHiFreq(new ControlObjectSlave(kConfigKey, "HiEQFrequency",this)),
+          m_COLoFreq(new ControlObject(ConfigKey(kConfigKey, "LoEQFrequency"),this)),
+          m_COHiFreq(new ControlObject(ConfigKey(kConfigKey, "HiEQFrequency"),this)),
           m_pConfig(pConfig),
           m_lowEqFreq(0.0),
           m_highEqFreq(0.0),
@@ -71,7 +70,7 @@ DlgPrefEQ::DlgPrefEQ(QWidget* pParent, EffectsManager* pEffectsManager,
 
     // Add drop down lists for current decks and connect num_decks control
     // to slotNumDecksChanged
-    m_pNumDecks = new ControlObjectSlave("Master", "num_decks", this);
+    m_pNumDecks = new ControlObject(ConfigKey("Master", "num_decks"), this);
     m_pNumDecks->connectValueChanged(SLOT(slotNumDecksChanged(double)));
     slotNumDecksChanged(m_pNumDecks->get());
     setUpMasterEQ();
@@ -504,8 +503,8 @@ void DlgPrefEQ::slotBypass(int state) {
         // Enable effect processing for all decks by setting the appropriate
         // controls to 1 ("[EffectRackX_EffectUnitDeck_Effect1],enable")
         auto deck = 0;
-        ControlObjectSlave enableControl;
-        for(auto box: m_deckEqEffectSelectors) {
+        for(auto box: m_deckEqEffectSelectors)
+        {
             auto group = getEQEffectGroupForDeck(deck);
             ControlObject::set(ConfigKey(group, "enabled"), 1);
             m_filterWaveformEnableCOs[deck]->set(m_filterWaveformEffectLoaded[deck]);
