@@ -38,7 +38,7 @@ class EffectsManager : public QObject {
     // being deleted. Not thread safe -- use only from the GUI thread.
     void addEffectsBackend(EffectsBackend* pEffectsBackend);
     void registerChannel(const ChannelHandleAndGroup& handle_group);
-    QSet<ChannelHandleAndGroup> registeredChannels() const;
+    const QSet<ChannelHandleAndGroup>& registeredChannels() const;
 
     StandardEffectRackPointer addStandardEffectRack();
     StandardEffectRackPointer getStandardEffectRack(int rack);
@@ -49,18 +49,19 @@ class EffectsManager : public QObject {
     QuickEffectRackPointer addQuickEffectRack();
     QuickEffectRackPointer getQuickEffectRack(int rack);
 
-    EffectRackPointer getEffectRack(QString group);
+    EffectRackPointer getEffectRack(const QString& group);
 
-    QString getNextEffectId(QString effectId);
-    QString getPrevEffectId(QString effectId);
+    QString getNextEffectId(const QString& effectId);
+    QString getPrevEffectId(const QString& effectId);
 
-    QList<QString> getAvailableEffects() const;
+    const QList<QString> getAvailableEffects() const;
     // Each entry of the set is a pair containing the effect id and its name
-    QList<QPair<QString, QString> > getEffectNamesFiltered(EffectManifestFilterFnc filter) const;
-    bool isEQ(QString effectId) const;
-    QPair<EffectManifest, EffectsBackend*> getEffectManifestAndBackend(QString effectId) const;
-    EffectManifest getEffectManifest(QString effectId) const;
-    EffectPointer instantiateEffect(QString effectId);
+    const QList<QPair<QString, QString> > getEffectNamesFiltered(EffectManifestFilterFnc filter) const;
+    bool isEQ(const QString& effectId) const;
+    QPair<EffectManifest, EffectsBackend*> getEffectManifestAndBackend(
+            const QString& effectId) const;
+    EffectManifest getEffectManifest(const QString& effectId) const;
+    EffectPointer instantiateEffect(const QString& effectId);
 
     // Temporary, but for setting up all the default EffectChains and EffectRacks
     void setupDefaults();

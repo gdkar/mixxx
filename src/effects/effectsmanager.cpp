@@ -60,11 +60,11 @@ void EffectsManager::registerChannel(const ChannelHandleAndGroup& handle_group)
 {
     m_pEffectChainManager->registerChannel(handle_group);
 }
-QSet<ChannelHandleAndGroup> EffectsManager::registeredChannels() const
+const QSet<ChannelHandleAndGroup>& EffectsManager::registeredChannels() const
 {
     return m_pEffectChainManager->registeredChannels();
 }
-QList<QString> EffectsManager::getAvailableEffects() const
+const QList<QString> EffectsManager::getAvailableEffects() const
 {
     QList<QString> availableEffects;
     for(auto pBackend: m_effectsBackends) {
@@ -81,7 +81,7 @@ QList<QString> EffectsManager::getAvailableEffects() const
 
     return availableEffects;
 }
-QList<QPair<QString, QString> > EffectsManager::getEffectNamesFiltered(EffectManifestFilterFnc filter) const
+const QList<QPair<QString, QString> > EffectsManager::getEffectNamesFiltered(EffectManifestFilterFnc filter) const
 {
     QList<QPair<QString, QString> > filteredEQEffectNames;
     QString currentEffectName;
@@ -97,11 +97,11 @@ QList<QPair<QString, QString> > EffectsManager::getEffectNamesFiltered(EffectMan
     }
     return filteredEQEffectNames;
 }
-bool EffectsManager::isEQ(QString effectId) const
+bool EffectsManager::isEQ(const QString& effectId) const
 {
     return getEffectManifest(effectId).isMixingEQ();
 }
-QString EffectsManager::getNextEffectId(QString effectId)
+QString EffectsManager::getNextEffectId(const QString& effectId)
 {
     auto effects = getAvailableEffects();
     if (effects.isEmpty()) return QString();
@@ -110,7 +110,7 @@ QString EffectsManager::getNextEffectId(QString effectId)
     if (++index >= effects.size()) index = 0;
     return effects.at(index);
 }
-QString EffectsManager::getPrevEffectId(QString effectId)
+QString EffectsManager::getPrevEffectId(const QString& effectId)
 {
     auto effects = getAvailableEffects();
     if (effects.isEmpty()) return QString();
@@ -120,7 +120,7 @@ QString EffectsManager::getPrevEffectId(QString effectId)
     return effects.at(index);
 
 }
-QPair<EffectManifest, EffectsBackend*> EffectsManager::getEffectManifestAndBackend(QString effectId) const {
+QPair<EffectManifest, EffectsBackend*> EffectsManager::getEffectManifestAndBackend(const QString& effectId) const {
     for(auto  pBackend: m_effectsBackends)
     {
         if (pBackend->canInstantiateEffect(effectId))
@@ -129,12 +129,12 @@ QPair<EffectManifest, EffectsBackend*> EffectsManager::getEffectManifestAndBacke
     auto pBackend = static_cast<EffectsBackend*>(nullptr);
     return qMakePair(EffectManifest(), pBackend);
 }
-EffectManifest EffectsManager::getEffectManifest(QString effectId) const
+EffectManifest EffectsManager::getEffectManifest(const QString& effectId) const
 {
     auto manifestAndBackend = getEffectManifestAndBackend(effectId);
     return manifestAndBackend.first;
 }
-EffectPointer EffectsManager::instantiateEffect(QString effectId)
+EffectPointer EffectsManager::instantiateEffect(const QString& effectId)
 {
     for(auto  pBackend: m_effectsBackends)
     {
@@ -166,7 +166,7 @@ QuickEffectRackPointer EffectsManager::getQuickEffectRack(int rack)
 {
     return m_pEffectChainManager->getQuickEffectRack(rack);
 }
-EffectRackPointer EffectsManager::getEffectRack(QString group)
+EffectRackPointer EffectsManager::getEffectRack(const QString& group)
 {
     return m_pEffectChainManager->getEffectRack(group);
 }

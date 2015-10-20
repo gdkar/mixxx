@@ -51,14 +51,19 @@ DlgPrefSound::DlgPrefSound(QWidget* pParent, SoundManager* pSoundManager,PlayerM
             sampleRateComboBox->addItem(tr("%1 Hz").arg(srate), srate);
         }
     }
-    connect(sampleRateComboBox, SIGNAL(currentIndexChanged(int)),this, SLOT(sampleRateChanged(int)));
-    connect(sampleRateComboBox, SIGNAL(currentIndexChanged(int)),this, SLOT(updateAudioBufferSizes(int)));
-    connect(audioBufferComboBox, SIGNAL(currentIndexChanged(int)),this, SLOT(audioBufferChanged(int)));
-
+    connect(sampleRateComboBox, SIGNAL(currentIndexChanged(int)),   this, SLOT(sampleRateChanged(int)));
+    connect(sampleRateComboBox, SIGNAL(currentIndexChanged(int)),   this, SLOT(updateAudioBufferSizes(int)));
+    connect(audioBufferComboBox, SIGNAL(currentIndexChanged(int)),  this, SLOT(audioBufferChanged(int)));
+    connect(audioFragmentsComboBox,SIGNAL(currentIndexChanged(int)),this,SLOT(updateAudioBufferSizes(int)));
+    connect(audioFragmentsComboBox,SIGNAL(currentIndexChanged(int)),this,SLOT(audioFragmentsChanged(int)));
     deviceSyncComboBox->clear();
-    deviceSyncComboBox->addItem(tr("Default (long delay)"),QVariant{1});
-    deviceSyncComboBox->addItem(tr("Experimental (no delay)"),QVariant{2});
+    deviceSyncComboBox->addItem(tr("Default ( callbackProcess )"),QVariant{1});
+    deviceSyncComboBox->addItem(tr("Experimental ( callbackProcessDrift )"),QVariant{2});
     deviceSyncComboBox->setCurrentIndex(1);
+    for(auto i = 3; i < 33; i++)
+    {
+      audioFragmentsComboBox->addItem(QString::number(i),i);
+    }
     connect(deviceSyncComboBox, SIGNAL(currentIndexChanged(int)),this, SLOT(syncBuffersChanged(int)));
 
     keylockComboBox->clear();
@@ -315,8 +320,9 @@ void DlgPrefSound::apiChanged(int index) {
  * Updates the list of APIs, trying to keep the API and device selections
  * constant if possible.
  */
-void DlgPrefSound::updateAPIs() {
-    QString currentAPI(apiComboBox->itemData(apiComboBox->currentIndex()).toString());
+void DlgPrefSound::updateAPIs()
+{
+    QString currentAPI(apiComboBox->currentData().toString());
     emit(updatingAPI());
     while (apiComboBox->count() > 1) { apiComboBox->removeItem(apiComboBox->count() - 1);}
     for(auto api: m_pSoundManager->getHostAPIList()) {apiComboBox->addItem(api, api);}
@@ -333,48 +339,43 @@ void DlgPrefSound::sampleRateChanged(int index) {m_config.setSampleRate(sampleRa
  * Slot called when the latency combo box is changed to update the
  * latency in the config.
  */
-void DlgPrefSound::audioBufferChanged(int index) {
-    m_config.setAudioBufferSizeIndex(audioBufferComboBox->itemData(index).toUInt());
+void DlgPrefSound::audioBufferChanged(int index)
+{
+    m_config.setAudioBufferSizeIndex(audioBufferComboBox->currentData().toUInt());
 }
-void DlgPrefSound::syncBuffersChanged(int ) {
+void DlgPrefSound::audioFragmentsChanged(int index)
+{
+    m_config.setSyncFragments(audioFragmentsComboBox->currentData().toUInt());
+}
+void DlgPrefSound::syncBuffersChanged(int )
+{
     auto data = deviceSyncComboBox->currentData();
     auto ok   = false;
     auto val  = data.toInt(&ok);
-    if(ok)
-    {
-      m_config.setSyncBuffers(val);
-    }
+    if(ok) m_config.setSyncBuffers(val);
 }
 // Slot called whenever the selected sample rate is changed. Populates the
 // audio buffer input box with SMConfig::kMaxLatency values, starting at 1ms,
 // representing a number of frames per buffer, which will always be a power
 // of 2 (so the values displayed in ms won't be constant between sample rates,
 // but they'll be close).
-void DlgPrefSound::updateAudioBufferSizes(int sampleRateIndex) {
-    double sampleRate = sampleRateComboBox->itemData(sampleRateIndex).toDouble();
-    int oldSizeIndex = audioBufferComboBox->currentIndex();
-    unsigned int framesPerBuffer = 1; // start this at 0 and inf loop happens
+void DlgPrefSound::updateAudioBufferSizes(int sampleRateIndex)
+{
+    double sampleRate = 1/sampleRateComboBox->itemData(sampleRateComboBox->currentIndex()).toDouble();
+    auto oldSizeIndex = audioBufferComboBox->currentIndex();
     // we don't want to display any sub-1ms buffer sizes (well maybe we do but I
     // don't right now!), so we iterate over all the buffer sizes until we
     // find the first that gives us a buffer size >= 1 ms -- bkgood
     // no div-by-0 in the next line because we don't allow srates of 0 in our
     // srate list when we construct it in the ctor -- bkgood
-    for (; framesPerBuffer / sampleRate * 1000 < 1.0; framesPerBuffer *= 2) {
-    }
+    auto incr = static_cast<int>(64 / ( ( 2 * sizeof(float))));
+    auto framesPerBuffer = incr;;
+    auto frag = m_config.getSyncFragments();
     audioBufferComboBox->clear();
-    for (unsigned int i = 0; i < SoundManagerConfig::kMaxAudioBufferSizeIndex; ++i) {
-        float latency = framesPerBuffer / sampleRate * 1000;
-        // i + 1 in the next line is a latency index as described in SSConfig
-        audioBufferComboBox->addItem(tr("%1 ms").arg(latency,0,'g',3), i + 1);
-        framesPerBuffer <<= 1; // *= 2
-    }
-    if (oldSizeIndex < audioBufferComboBox->count() && oldSizeIndex >= 0) {
-        audioBufferComboBox->setCurrentIndex(oldSizeIndex);
-    } else {
-        // set it to the max, let the user dig if they need better latency. better
-        // than having a user get the pops on first use and thinking poorly of mixxx
-        // because of it -- bkgood
-        audioBufferComboBox->setCurrentIndex(audioBufferComboBox->count() - 1);
+    for(; framesPerBuffer * sampleRate < 1e-1; framesPerBuffer += incr )
+    {
+      auto latency = framesPerBuffer * sampleRate * frag;
+      audioBufferComboBox->addItem(tr("%1 ( %2 ms )").arg(framesPerBuffer).arg(latency * 1e3,0,'g',3),framesPerBuffer);
     }
 }
 /**

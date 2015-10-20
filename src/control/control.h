@@ -61,7 +61,7 @@ class ControlDoublePrivate : public QObject {
     // parameter and value space. Returns the previously set behavior (if any).
     // The caller must not delete the behavior at any time. The memory is managed
     // by this function.
-    void setBehavior(ControlNumericBehavior* pBehavior);
+    void setBehavior(ControlBehavior* pBehavior);
     void setParameter(double dParam);
     double getParameter() const;
     double getParameterForValue(double value) const;
@@ -112,7 +112,7 @@ class ControlDoublePrivate : public QObject {
     std::atomic<double> m_value;
     // The default control value.
     std::atomic<double> m_defaultValue;
-    QSharedPointer<ControlNumericBehavior> m_pBehavior;
+    QSharedPointer<ControlBehavior> m_pBehavior;
     ControlObject* m_pCreatorCO;
     // Hack to implement persistent controls. This is a pointer to the current
     // user configuration object (if one exists). In general, we do not want the

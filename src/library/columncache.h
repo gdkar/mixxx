@@ -65,13 +65,13 @@ class ColumnCache : public QObject{
     };
     Q_ENUM(Column);
     ColumnCache(QObject *pParent=nullptr);
-    ColumnCache(const QStringList& columns) { setColumns(columns); }
-    void setColumns(const QStringList& columns);
+    ColumnCache(QStringList columns) { setColumns(columns); }
+    void setColumns(QStringList columns);
     int fieldIndex(Column column) const {
         if (column < 0 || column >= NUM_COLUMNS) { return -1; }
         return m_columnIndexByEnum[column];
     }
-    int fieldIndex(const QString& columnName) const { return m_columnIndexByName.value(columnName, -1); }
+    int fieldIndex(QString columnName) const { return m_columnIndexByName.value(columnName, -1); }
     QString columnName(Column column) const { return columnNameForFieldIndex(fieldIndex(column)); }
     QString columnNameForFieldIndex(int index) const {
         if (index < 0 || index >= m_columnsByIndex.size()) { return QString(); }

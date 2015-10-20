@@ -15,8 +15,8 @@ class EffectProcessor {
         DISABLING = 0x02,
         ENABLING = 0x03
     };
-    virtual ~EffectProcessor() = default;
-    virtual void initialize( QSet<ChannelHandleAndGroup> registeredChannels) = 0;
+    virtual ~EffectProcessor() { }
+    virtual void initialize( const QSet<ChannelHandleAndGroup>& registeredChannels) = 0;
     // Take a buffer of numSamples samples of audio from a channel, provided as
     // pInput, process the buffer according to Effect-specific logic, and output
     // it to the buffer pOutput. If pInput is equal to pOutput, then the
@@ -50,7 +50,7 @@ class PerChannelEffectProcessor : public EffectProcessor {
         }
         m_channelState.clear();
     }
-    virtual void initialize( QSet<ChannelHandleAndGroup> registeredChannels) {
+    virtual void initialize( const QSet<ChannelHandleAndGroup>& registeredChannels) {
         for(auto& channel: registeredChannels) {
             getOrCreateChannelState(channel.handle());
         }
@@ -73,10 +73,9 @@ class PerChannelEffectProcessor : public EffectProcessor {
                                 const GroupFeatureState& groupFeatures) = 0;
 
   private:
-    inline T* getOrCreateChannelState(const ChannelHandle& handle)
-    {
+    inline T* getOrCreateChannelState(const ChannelHandle& handle) {
         auto& holder = m_channelState[handle];
-        if (!holder.state ) holder.state = new T();
+        if (holder.state == nullptr) { holder.state = new T(); }
         return holder.state;
     }
     ChannelHandleMap<ChannelStateHolder> m_channelState;

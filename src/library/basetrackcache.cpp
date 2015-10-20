@@ -13,9 +13,9 @@ namespace {
   const bool sDebug = false;
 }  // namespace
 BaseTrackCache::BaseTrackCache(TrackCollection* pTrackCollection,
-                               const QString& tableName,
-                               const QString& idColumn,
-                               const QStringList& columns,
+                               QString tableName,
+                               QString idColumn,
+                               QStringList columns,
                                bool isCaching)
         : QObject(),
           m_tableName(tableName),
@@ -54,7 +54,7 @@ int BaseTrackCache::fieldIndex(ColumnCache::Column column) const
 { 
   return m_columnCache.fieldIndex(column);
 }
-int BaseTrackCache::fieldIndex(const QString& columnName) const
+int BaseTrackCache::fieldIndex(QString columnName) const
 { 
   return m_columnCache.fieldIndex(columnName);
 }
@@ -70,7 +70,7 @@ void BaseTrackCache::slotTracksAdded(QSet<TrackId> trackIds)
 {
     if (sDebug) qDebug() << this << "slotTracksAdded" << trackIds.size();
     QSet<TrackId> updateTrackIds;
-    for (const auto& trackId: trackIds) updateTrackIds.insert(trackId);
+    for (auto trackId: trackIds) updateTrackIds.insert(trackId);
     updateTracksInIndex(updateTrackIds);
 }
 void BaseTrackCache::slotDbTrackAdded(TrackPointer pTrack)
@@ -113,7 +113,7 @@ void BaseTrackCache::ensureCached(QSet<TrackId> trackIds)
 { 
   updateTracksInIndex(trackIds);
 }
-void BaseTrackCache::setSearchColumns(const QStringList& columns)
+void BaseTrackCache::setSearchColumns(QStringList columns)
 { 
   m_searchColumns = columns;
 }
@@ -141,7 +141,7 @@ bool BaseTrackCache::updateIndexWithTrackpointer(TrackPointer pTrack)
     }
     return true;
 }
-bool BaseTrackCache::updateIndexWithQuery(const QString& queryString)
+bool BaseTrackCache::updateIndexWithQuery(QString queryString)
 {
     QTime timer;
     timer.start();
@@ -265,11 +265,11 @@ QVariant BaseTrackCache::data(TrackId trackId, int column) const
     }
     return result;
 }
-void BaseTrackCache::filterAndSort(const QSet<TrackId>& trackIds,
+void BaseTrackCache::filterAndSort(QSet<TrackId> trackIds,
                                    QString searchQuery,
                                    QString extraFilter,
                                    QString orderByClause,
-                                   const int sortColumn,
+                                   int sortColumn,
                                    Qt::SortOrder sortOrder,
                                    QHash<TrackId, int>* trackToIndex)
 {
@@ -380,9 +380,9 @@ std::unique_ptr<QueryNode> BaseTrackCache::parseQuery(QString query, QString ext
     return m_pQueryParser->parseQuery(query, m_searchColumns, queryFragments.join(" AND "));
 }
 int BaseTrackCache::findSortInsertionPoint(TrackPointer pTrack,
-                                           const int sortColumn,
+                                           int sortColumn,
                                            Qt::SortOrder sortOrder,
-                                           const QVector<TrackId> trackIds) const
+                                           QVector<TrackId> trackIds) const
 {
     QVariant trackValue;
     getTrackValueForColumn(pTrack, sortColumn, trackValue);

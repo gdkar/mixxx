@@ -43,7 +43,7 @@ CueControl::CueControl(QString group,
     // 0.0 -> Pioneer mode
     // 1.0 -> Denon mode
     m_pCueSet = new ControlPushButton(ConfigKey(group, "cue_set"));
-    m_pCueSet->setProperty("buttonMode",ControlPushButton::TRIGGER);
+    m_pCueSet->setProperty("buttonMode",QVariant::fromValue(ControlPushButton::ButtonMode::Trigger));
     connect(m_pCueSet, SIGNAL(valueChanged(double)),this, SLOT(cueSet(double)));
 
     m_pCueGoto = new ControlPushButton(ConfigKey(group, "cue_goto"));
@@ -805,24 +805,24 @@ HotcueControl::HotcueControl(QString group, int i)
     m_hotcuePosition->set(-1);
     m_hotcueEnabled = new ControlObject(keyForControl(i, "enabled"),this);
     m_hotcueEnabled->set(0);
-    m_hotcueSet = new ControlPushButton(keyForControl(i, "set"),false,this);
+    m_hotcueSet = new ControlPushButton(keyForControl(i, "set"),this);
     connect(m_hotcueSet, SIGNAL(valueChanged(double)),this, SLOT(slotHotcueSet(double)),Qt::DirectConnection);
-    m_hotcueGoto = new ControlPushButton(keyForControl(i, "goto"),false,this);
+    m_hotcueGoto = new ControlPushButton(keyForControl(i, "goto"),this);
     connect(m_hotcueGoto, SIGNAL(valueChanged(double)),this, SLOT(slotHotcueGoto(double)),Qt::DirectConnection);
 
-    m_hotcueGotoAndPlay = new ControlPushButton(keyForControl(i, "gotoandplay"),false,this);
+    m_hotcueGotoAndPlay = new ControlPushButton(keyForControl(i, "gotoandplay"),this);
     connect(m_hotcueGotoAndPlay, SIGNAL(valueChanged(double)),this, SLOT(slotHotcueGotoAndPlay(double)),Qt::DirectConnection);
 
-    m_hotcueGotoAndStop = new ControlPushButton(keyForControl(i, "gotoandstop"),false,this);
+    m_hotcueGotoAndStop = new ControlPushButton(keyForControl(i, "gotoandstop"),this);
     connect(m_hotcueGotoAndStop, SIGNAL(valueChanged(double)),this, SLOT(slotHotcueGotoAndStop(double)),Qt::DirectConnection);
 
-    m_hotcueActivate = new ControlPushButton(keyForControl(i, "activate"),false,this);
+    m_hotcueActivate = new ControlPushButton(keyForControl(i, "activate"),this);
     connect(m_hotcueActivate, SIGNAL(valueChanged(double)),this, SLOT(slotHotcueActivate(double)),Qt::DirectConnection);
 
-    m_hotcueActivatePreview = new ControlPushButton(keyForControl(i, "activate_preview"),false,this);
+    m_hotcueActivatePreview = new ControlPushButton(keyForControl(i, "activate_preview"),this);
     connect(m_hotcueActivatePreview, SIGNAL(valueChanged(double)),this, SLOT(slotHotcueActivatePreview(double)),Qt::DirectConnection);
 
-    m_hotcueClear = new ControlPushButton(keyForControl(i, "clear"),false,this);
+    m_hotcueClear = new ControlPushButton(keyForControl(i, "clear"),this);
     connect(m_hotcueClear, SIGNAL(valueChanged(double)),this, SLOT(slotHotcueClear(double)),Qt::DirectConnection);
 }
 

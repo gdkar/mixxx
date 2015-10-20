@@ -73,6 +73,7 @@ class DlgPrefSound : public DlgPreferencePage, public Ui::DlgPrefSoundDlg  {
     void updateAPIs();
     void sampleRateChanged(int index);
     void audioBufferChanged(int index);
+    void audioFragmentsChanged(int index);
     void updateAudioBufferSizes(int sampleRateIndex);
     void syncBuffersChanged(int index);
     void refreshDevices();

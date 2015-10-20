@@ -16,8 +16,8 @@ QuantizeControl::QuantizeControl(QString group,
                                  ConfigObject<ConfigValue>* pConfig)
         : EngineControl(group, pConfig) {
     // Turn quantize OFF by default. See Bug #898213
-    m_pCOQuantizeEnabled = new ControlPushButton(ConfigKey(group, "quantize"), true);
-    m_pCOQuantizeEnabled->setProperty("buttonMode",ControlPushButton::TOGGLE);
+    m_pCOQuantizeEnabled = new ControlPushButton(ConfigKey(group, "quantize"), this,true);
+    m_pCOQuantizeEnabled->setProperty("buttonMode",QVariant::fromValue(ControlPushButton::ButtonMode::Toggle));
     m_pCONextBeat = new ControlObject(ConfigKey(group, "beat_next"),this);
     m_pCONextBeat->set(-1);
     m_pCOPrevBeat = new ControlObject(ConfigKey(group, "beat_prev"),this);

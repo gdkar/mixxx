@@ -16,7 +16,7 @@ typedef QSharedPointer<EffectSlot> EffectSlotPointer;
 class EffectSlot : public QObject {
     Q_OBJECT
   public:
-    EffectSlot(QString group,const unsigned int iChainNumber,const unsigned int iEffectNumber);
+    EffectSlot(const QString& group,const unsigned int iChainNumber,const unsigned int iEffectNumber);
     virtual ~EffectSlot();
     // Return the currently loaded effect, if any. If no effect is loaded,
     // returns a null EffectPointer.
@@ -33,7 +33,7 @@ class EffectSlot : public QObject {
     void syncSofttakeover();
     // Unload the currently loaded effect
     void clear();
-    QString getGroup() const { return m_group;}
+    const QString& getGroup() const { return m_group;}
   public slots:
     // Request that this EffectSlot load the given Effect
     void loadEffect(EffectPointer pEffect);

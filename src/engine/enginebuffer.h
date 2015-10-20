@@ -38,7 +38,6 @@ class ClockControl;
 class CueControl;
 class ReadAheadManager;
 class ControlObject;
-class ControlPushButton;
 class ControlIndicator;
 class ControlPotmeter;
 class CachingReader;
@@ -227,14 +226,14 @@ class EngineBuffer : public EngineObject {
     bool m_bSlipEnabledProcessing = false;
     ControlObject* m_pTrackSamples    = nullptr;
     ControlObject* m_pTrackSampleRate = nullptr;
-    ControlPushButton* m_playButton   = nullptr;
-    ControlPushButton* m_playStartButton = nullptr;
-    ControlPushButton* m_stopStartButton = nullptr;
-    ControlPushButton* m_stopButton      = nullptr;
+    ControlObject* m_playButton   = nullptr;
+    ControlObject* m_playStartButton = nullptr;
+    ControlObject* m_stopStartButton = nullptr;
+    ControlObject* m_stopButton      = nullptr;
 
     ControlObject* m_fwdButton           = nullptr;
     ControlObject* m_backButton          = nullptr;
-    ControlPushButton* m_pSlipButton     = nullptr;
+    ControlObject* m_pSlipButton     = nullptr;
     ControlObject* m_visualBpm           = nullptr;
     ControlObject* m_visualKey           = nullptr;
     ControlObject* m_pQuantize           = nullptr;
@@ -242,14 +241,14 @@ class EngineBuffer : public EngineObject {
     ControlPotmeter* m_playposSlider     = nullptr;
     ControlObject* m_pSampleRate    = nullptr;
     ControlObject* m_pKeylockEngine = nullptr;
-    ControlPushButton* m_pKeylock        = nullptr;
+    ControlObject* m_pKeylock        = nullptr;
     ControlObject* m_pPassthroughEnabled = nullptr;
-    ControlPushButton* m_pEject          = nullptr;
+    ControlObject* m_pEject          = nullptr;
     // Whether or not to repeat the track when at the end
-    ControlPushButton* m_pRepeat         = nullptr;
+    ControlObject* m_pRepeat         = nullptr;
     // Fwd and back controls, start and end of track control
-    ControlPushButton* m_startButton     = nullptr;
-    ControlPushButton* m_endButton       = nullptr;
+    ControlObject* m_startButton     = nullptr;
+    ControlObject* m_endButton       = nullptr;
 
     // Object used to perform waveform scaling (sample rate conversion).  These
     // three pointers may be reassigned depending on configuration .

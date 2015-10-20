@@ -34,15 +34,18 @@ typedef int (*EnableAlsaRT)(PaStream* s, int enable);
 class ControlObject;
 
 class SoundDevicePortAudio : public SoundDevice {
+  Q_OBJECT
   public:
     SoundDevicePortAudio(ConfigObject<ConfigValue> *config,
                          SoundManager *sm, const PaDeviceInfo *deviceInfo,
-                         unsigned int devIndex);
+                         unsigned int devIndex,QObject*);
     virtual ~SoundDevicePortAudio() ;
-    virtual bool open(bool isClkRefDevice, int syncBuffers);
+    virtual bool open(bool isClkRefDevice, int syncBuffers, int fragments);
     virtual bool close();
     virtual void readProcess();
+    virtual int readAvailable();
     virtual void writeProcess();
+    virtual int writeAvailable();
     virtual QString getError() const;
     // This callback function gets called everytime the sound device runs out of
     // samples (ie. when it needs more sound to play)

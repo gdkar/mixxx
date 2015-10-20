@@ -31,9 +31,9 @@ class BaseTrackCache : public QObject {
     Q_OBJECT
   public:
     BaseTrackCache(TrackCollection* pTrackCollection,
-                   const QString& tableName,
-                   const QString& idColumn,
-                   const QStringList& columns,
+                   QString tableName,
+                   QString idColumn,
+                   QStringList columns,
                    bool isCaching);
     virtual ~BaseTrackCache();
     // Rebuild the BaseTrackCache index from the SQL table. This can be
@@ -44,20 +44,20 @@ class BaseTrackCache : public QObject {
     ////////////////////////////////////////////////////////////////////////////
     virtual QVariant data(TrackId trackId, int column) const;
     virtual int columnCount() const;
-    virtual int fieldIndex(const QString& column) const;
+    virtual int fieldIndex(QString column) const;
     QString columnNameForFieldIndex(int index) const;
     QString columnSortForFieldIndex(int index) const;
     int fieldIndex(ColumnCache::Column column) const;
-    virtual void filterAndSort(const QSet<TrackId>& trackIds,
+    virtual void filterAndSort(QSet<TrackId> trackIds,
                                QString query, QString extraFilter,
                                QString orderByClause,
-                               const int sortColumn,
+                               int sortColumn,
                                Qt::SortOrder sortOrder,
                                QHash<TrackId, int>* trackToIndex);
     virtual bool isCached(TrackId trackId) const;
     virtual void ensureCached(TrackId trackId);
     virtual void ensureCached(QSet<TrackId> trackIds);
-    virtual void setSearchColumns(const QStringList& columns);
+    virtual void setSearchColumns(QStringList columns);
   signals:
     void tracksChanged(QSet<TrackId> trackIds);
   private slots:
@@ -69,18 +69,18 @@ class BaseTrackCache : public QObject {
     void slotDbTrackAdded(TrackPointer pTrack);
   private:
     TrackPointer lookupCachedTrack(TrackId trackId) const;
-    bool updateIndexWithQuery(const QString& query);
+    bool updateIndexWithQuery(QString query);
     bool updateIndexWithTrackpointer(TrackPointer pTrack);
     void updateTrackInIndex(TrackId trackId);
     void updateTracksInIndex(QSet<TrackId> trackIds);
     void getTrackValueForColumn(TrackPointer pTrack, int column, QVariant& trackValue) const;
     std::unique_ptr<QueryNode> parseQuery(QString query, QString extraFilter, QStringList idStrings) const;
-    int findSortInsertionPoint(TrackPointer pTrack, const int sortColumn, const Qt::SortOrder sortOrder, const QVector<TrackId> trackIds) const;
+    int findSortInsertionPoint(TrackPointer pTrack, int sortColumn, Qt::SortOrder sortOrder, QVector<TrackId> trackIds) const;
     int compareColumnValues(int sortColumn, Qt::SortOrder sortOrder, QVariant val1, QVariant val2) const;
-    bool trackMatches(const TrackPointer& pTrack, const QRegExp& matcher) const;
-    bool trackMatchesNumeric(const TrackPointer& pTrack, const QStringList& numberMatchers) const;
-    bool trackMatchesNamedString(const TrackPointer& pTrack,const QStringList& numberMatchers) const;
-    bool evaluateNumeric(const int value, const QString& expression) const;
+    bool trackMatches(TrackPointer pTrack, QRegExp matcher) const;
+    bool trackMatchesNumeric(TrackPointer pTrack, QStringList numberMatchers) const;
+    bool trackMatchesNamedString(TrackPointer pTrack,QStringList numberMatchers) const;
+    bool evaluateNumeric(int value, QString expression) const;
     const QString m_tableName;
     const QString m_idColumn;
     const int m_columnCount;

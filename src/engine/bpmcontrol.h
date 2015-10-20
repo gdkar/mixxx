@@ -4,8 +4,6 @@ _Pragma("once")
 #include "util/tapfilter.h"
 
 class ControlObject;
-class ControlLinPotmeter;
-class ControlPushButton;
 class EngineBuffer;
 class SyncControl;
 
@@ -121,27 +119,27 @@ class BpmControl : public EngineControl {
     ControlObject* m_pFileBpm;
     // The average bpm around the current playposition;
     ControlObject* m_pLocalBpm;
-    ControlPushButton* m_pAdjustBeatsFaster;
-    ControlPushButton* m_pAdjustBeatsSlower;
-    ControlPushButton* m_pTranslateBeatsEarlier;
-    ControlPushButton* m_pTranslateBeatsLater;
+    ControlObject* m_pAdjustBeatsFaster;
+    ControlObject* m_pAdjustBeatsSlower;
+    ControlObject* m_pTranslateBeatsEarlier;
+    ControlObject* m_pTranslateBeatsLater;
 
     // The current effective BPM of the engine
-    ControlLinPotmeter* m_pEngineBpm;
+    ControlObject* m_pEngineBpm;
 
     // Used for bpm tapping from GUI and controllers
-    ControlPushButton* m_pButtonTap;
+    ControlObject* m_pButtonTap;
 
     // Button for sync'ing with the other EngineBuffer
-    ControlPushButton* m_pButtonSync;
-    ControlPushButton* m_pButtonSyncPhase;
-    ControlPushButton* m_pButtonSyncTempo;
+    ControlObject* m_pButtonSync;
+    ControlObject* m_pButtonSyncPhase;
+    ControlObject* m_pButtonSyncTempo;
 
     // Button that translates the beats so the nearest beat is on the current
     // playposition.
-    ControlPushButton* m_pTranslateBeats;
+    ControlObject* m_pTranslateBeats;
     // Button that translates beats to match another playing deck
-    ControlPushButton* m_pBeatsTranslateMatchAlignment;
+    ControlObject* m_pBeatsTranslateMatchAlignment;
 
     double m_dPreviousSample;
 

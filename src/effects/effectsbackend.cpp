@@ -18,7 +18,7 @@ const QString EffectsBackend::getName() const
 {
   return m_name;
 }
-void EffectsBackend::registerEffect(QString id,
+void EffectsBackend::registerEffect(const QString& id,
                                     const EffectManifest& manifest,
                                     EffectInstantiatorPointer pInstantiator)
 {
@@ -35,7 +35,7 @@ const QList<QString>& EffectsBackend::getEffectIds() const
 {
   return m_effectIds;
 }
-EffectManifest EffectsBackend::getManifest(QString effectId) const
+EffectManifest EffectsBackend::getManifest(const QString& effectId) const
 {
     if (!m_registeredEffects.contains(effectId))
     {
@@ -45,11 +45,11 @@ EffectManifest EffectsBackend::getManifest(QString effectId) const
     return m_registeredEffects[effectId].first;
 }
 
-bool EffectsBackend::canInstantiateEffect(QString effectId) const
+bool EffectsBackend::canInstantiateEffect(const QString& effectId) const
 {
   return m_registeredEffects.contains(effectId);
 }
-EffectPointer EffectsBackend::instantiateEffect(EffectsManager* pEffectsManager,QString effectId)
+EffectPointer EffectsBackend::instantiateEffect(EffectsManager* pEffectsManager,const QString& effectId)
 {
     if (!m_registeredEffects.contains(effectId))
     {

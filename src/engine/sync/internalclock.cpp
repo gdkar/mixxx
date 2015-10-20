@@ -26,8 +26,8 @@ InternalClock::InternalClock(const char* pGroup, SyncableListener* pEngineSync, 
     connect(m_pClockBpm.data(), SIGNAL(valueChanged(double)),this, SLOT(slotBpmChanged(double)),Qt::DirectConnection);
     m_pClockBeatDistance.reset(new ControlObject(ConfigKey(m_group, "beat_distance")));
     connect(m_pClockBeatDistance.data(), SIGNAL(valueChanged(double)),this, SLOT(slotBeatDistanceChanged(double)),Qt::DirectConnection);
-    m_pSyncMasterEnabled.reset(new ControlPushButton(ConfigKey(pGroup, "sync_master")));
-    m_pSyncMasterEnabled->setProperty("buttonMode",ControlPushButton::TOGGLE);
+    m_pSyncMasterEnabled.reset(new ControlPushButton(ConfigKey(pGroup, "sync_master"),this));
+    m_pSyncMasterEnabled->setProperty("buttonMode",QVariant::fromValue(ControlPushButton::ButtonMode::Toggle));
     m_pSyncMasterEnabled->connectValueChangeRequest(this, SLOT(slotSyncMasterEnabledChangeRequest(double)),Qt::DirectConnection);
 }
 InternalClock::~InternalClock() = default;

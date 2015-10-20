@@ -214,11 +214,11 @@ void ControlDoublePrivate::setInner(double value)
       if (m_bTrack) Stat::track(m_trackKey, static_cast<Stat::StatType>(m_trackType), static_cast<Stat::ComputeFlags>(m_trackFlags), value);
     }
 }
-void ControlDoublePrivate::setBehavior(ControlNumericBehavior* pBehavior)
+void ControlDoublePrivate::setBehavior(ControlBehavior* pBehavior)
 {
     // This marks the old mpBehavior for deletion. It is deleted once it is not
     // used in any other function
-    m_pBehavior = QSharedPointer<ControlNumericBehavior>(pBehavior);
+    m_pBehavior = QSharedPointer<ControlBehavior>(pBehavior);
 }
 void ControlDoublePrivate::setParameter(double dParam)
 {

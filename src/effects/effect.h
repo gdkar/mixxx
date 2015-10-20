@@ -33,8 +33,8 @@ class Effect : public QObject {
     EffectParameter* getFilteredParameterForSlot(ParameterFilterFnc filterFnc, unsigned int slotNumber);
     EffectParameter* getKnobParameterForSlot(unsigned int slotNumber);
     EffectParameter* getButtonParameterForSlot(unsigned int slotNumber);
-    EffectParameter* getParameterById(QString id) const;
-    EffectParameter* getButtonParameterById(QString id) const;
+    EffectParameter* getParameterById(const QString& id) const;
+    EffectParameter* getButtonParameterById(const QString& id) const;
     void setEnabled(bool enabled);
     bool enabled() const;
     EngineEffect* getEngineEffect();
@@ -42,7 +42,7 @@ class Effect : public QObject {
     void removeFromEngine(EngineEffectChain* pChain, int iIndex);
     void updateEngineState();
     QDomElement toXML(QDomDocument* doc) const;
-    static EffectPointer fromXML(EffectsManager* pEffectsManager, QDomElement element);
+    static EffectPointer fromXML(EffectsManager* pEffectsManager, const QDomElement& element);
   signals:
     void enabledChanged(bool enabled);
   private:

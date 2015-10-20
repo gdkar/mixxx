@@ -8,7 +8,7 @@ QTimer           ControlIndicator::s_timer{};
 /* static */
 void ControlIndicator::initialize()
 {
-  s_timer.setTimerType(Qt::PreciseTimer);
+  s_timer.setTimerType(Qt::CoarseTimer);
   s_timer.setInterval(250);
   s_timer.start();
   QObject::connect(&s_timer,&QTimer::timeout,[](){ ControlIndicator::s_tick++; });

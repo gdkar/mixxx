@@ -51,17 +51,13 @@ WTrackTableView::WTrackTableView(QWidget * parent,
     connect(&m_DlgTagFetcher, SIGNAL(next()),this, SLOT(slotNextDlgTagFetcher()));
     connect(&m_DlgTagFetcher, SIGNAL(previous()),this, SLOT(slotPrevDlgTagFetcher()));
     connect(&m_loadTrackMapper, SIGNAL(mapped(QString)),this, SLOT(loadSelectionToGroup(QString)));
-
     connect(&m_deckMapper, SIGNAL(mapped(QString)),this, SLOT(loadSelectionToGroup(QString)));
     connect(&m_samplerMapper, SIGNAL(mapped(QString)),this, SLOT(loadSelectionToGroup(QString)));
     connect(&m_BpmMapper, SIGNAL(mapped(int)),this, SLOT(slotScaleBpm(int)));
-
     m_pNumSamplers = new ControlObject(ConfigKey("Master", "num_samplers"),this);
     m_pNumDecks = new ControlObject(ConfigKey("Master", "num_decks"),this);
     m_pNumPreviewDecks = new ControlObject(ConfigKey("Master", "num_preview_decks"),this);
-
     m_pMenu = new QMenu(this);
-
     m_pSamplerMenu = new QMenu(this);
     m_pSamplerMenu->setTitle(tr("Load to Sampler"));
     m_pPlaylistMenu = new QMenu(this);
@@ -74,11 +70,8 @@ WTrackTableView::WTrackTableView(QWidget * parent,
     m_pCoverMenu->setTitle(tr("Cover Art"));
     connect(m_pCoverMenu, SIGNAL(coverArtSelected(const CoverArt&)),this, SLOT(slotCoverArtSelected(const CoverArt&)));
     connect(m_pCoverMenu, SIGNAL(reloadCoverArt()),this, SLOT(slotReloadCoverArt()));
-
-
     // Disable editing
     //setEditTriggers(QAbstractItemView::NoEditTriggers);
-
     // Create all the context m_pMenu->actions (stuff that shows up when you
     //right-click)
     createActions();
@@ -86,15 +79,12 @@ WTrackTableView::WTrackTableView(QWidget * parent,
     connect(this, SIGNAL(doubleClicked(const QModelIndex &)),this, SLOT(slotMouseDoubleClicked(const QModelIndex &)));
     connect(&m_playlistMapper, SIGNAL(mapped(int)),this, SLOT(addSelectionToPlaylist(int)));
     connect(&m_crateMapper, SIGNAL(mapped(int)),this, SLOT(addSelectionToCrate(int)));
-
-    m_guiTick.setInterval(20);
-    m_guiTick.setTimerType(Qt::PreciseTimer);
-    m_guiTick.start();
+    m_guiTick.setInterval(100);
+    m_guiTick.setSingleShot(true);
+    m_guiTick.setTimerType(Qt::CoarseTimer);
     connect(&m_guiTick,&QTimer::timeout,this,&WTrackTableView::onGuiTick);
-
     connect(this, SIGNAL(scrollValueChanged(int)),this, SLOT(slotScrollValueChanged(int)));
-
-    QShortcut *setFocusShortcut = new QShortcut(QKeySequence(tr("ESC", "Focus")), this);
+    auto setFocusShortcut = new QShortcut(QKeySequence(tr("ESC", "Focus")), this);
     connect(setFocusShortcut, SIGNAL(activated()),this, SLOT(setFocus()));
 }
 WTrackTableView::~WTrackTableView()
@@ -136,8 +126,6 @@ void WTrackTableView::enableCachedOnly()
 {
     if (!m_loadCachedOnly)
     {
-        // don't try to load and search covers, drawing only
-        // covers which are already in the QPixmapCache.
         emit(onlyCachedCoverArt(true));
         m_loadCachedOnly = true;
     }
@@ -150,6 +138,7 @@ void WTrackTableView::slotScrollValueChanged(int)
 void WTrackTableView::selectionChanged(const QItemSelection& selected,const QItemSelection& deselected)
 {
     m_selectionChangedSinceLastGuiTick = true;
+    m_guiTick.start(100);
     enableCachedOnly();
     QTableView::selectionChanged(selected, deselected);
 }
@@ -157,32 +146,31 @@ void WTrackTableView::onGuiTick()
 {
     // if the user is stopped in the same row for more than 0.1 s,
     // we load un-cached cover arts as well.
-    auto timeDeltaNanos = Time::elapsed() - m_lastUserActionNanos;
-    if (m_loadCachedOnly && timeDeltaNanos > 100000000)
-    {
-        // Show the currently selected track in the large cover art view. Doing
-        // this in selectionChanged slows down scrolling performance so we wait
-        // until the user has stopped interacting first.
-        if (m_selectionChangedSinceLastGuiTick)
-        {
-            auto indices = selectionModel()->selectedRows();
-            if (indices.size() > 0 && indices.last().isValid())
-            {
-                auto trackModel = getTrackModel();
-                if (trackModel)
-                {
-                    auto pTrack = trackModel->getTrack(indices.last());
-                    if (pTrack) emit(trackSelected(pTrack));
-                }
-            }
-            else  emit(trackSelected(TrackPointer()));
-            m_selectionChangedSinceLastGuiTick = false;
-        }
-        // This allows CoverArtDelegate to request that we load covers from disk
-        // (as opposed to only serving them from cache).
-        emit(onlyCachedCoverArt(false));
-        m_loadCachedOnly = false;
-    }
+//    auto timeDeltaNanos = Time::elapsed() - m_lastUserActionNanos;
+//    if (m_loadCachedOnly && timeDeltaNanos > 100000000)
+//    {
+      // Show the currently selected track in the large cover art view. Doing
+      // this in selectionChanged slows down scrolling performance so we wait
+      // until the user has stopped interacting first.
+      if (selectionModel() && std::exchange(m_selectionChangedSinceLastGuiTick,false))
+      {
+          auto indices = selectionModel()->selectedRows();
+          if (indices.size() > 0 && indices.last().isValid())
+          {
+              auto trackModel = getTrackModel();
+              if (trackModel)
+              {
+                  auto pTrack = trackModel->getTrack(indices.last());
+                  if (pTrack) emit(trackSelected(pTrack));
+              }
+          }
+          else  emit(trackSelected(TrackPointer()));
+      }
+      // This allows CoverArtDelegate to request that we load covers from disk
+      // (as opposed to only serving them from cache).
+      emit(onlyCachedCoverArt(false));
+      m_loadCachedOnly = false;
+//    }
 }
 // slot
 void WTrackTableView::loadTrackModel(QAbstractItemModel *model)
@@ -213,9 +201,7 @@ void WTrackTableView::loadTrackModel(QAbstractItemModel *model)
     m_iCoverHashColumn = trackModel->fieldIndex(LIBRARYTABLE_COVERART_HASH);
     m_iCoverColumn = trackModel->fieldIndex(LIBRARYTABLE_COVERART);
     m_iTrackLocationColumn = trackModel->fieldIndex(TRACKLOCATIONSTABLE_LOCATION);
-
     setVisible(false);
-
     // Save the previous track model's header state
     auto  oldHeader =dynamic_cast<WTrackTableViewHeader*>(horizontalHeader());
     if (oldHeader) oldHeader->saveHeaderState();
@@ -225,7 +211,6 @@ void WTrackTableView::loadTrackModel(QAbstractItemModel *model)
     // else problems occur. Since we parent the WtrackTableViewHeader's to the
     // WTrackTableView, they are automatically deleted.
     auto header = new WTrackTableViewHeader(Qt::Horizontal, this);
-
     // WTF(rryan) The following saves on unnecessary work on the part of
     // WTrackTableHeaderView. setHorizontalHeader() calls setModel() on the
     // current horizontal header. If this happens on the old
@@ -255,7 +240,6 @@ void WTrackTableView::loadTrackModel(QAbstractItemModel *model)
     header->setHighlightSections(true);
     header->setSortIndicatorShown(m_sorting);
     header->setDefaultAlignment(Qt::AlignLeft);
-
     // Initialize all column-specific things
     for (auto i = 0; i < model->columnCount(); ++i)
     {
@@ -275,10 +259,7 @@ void WTrackTableView::loadTrackModel(QAbstractItemModel *model)
          * key colum by default unless the user brings it to front
          */
         if (trackModel->isColumnHiddenByDefault(i) && !header->hasPersistedHeaderState())
-        {
-            //qDebug() << "Hiding column" << i;
             horizontalHeader()->hideSection(i);
-        }
     }
     if (m_sorting)
     {
@@ -295,8 +276,8 @@ void WTrackTableView::loadTrackModel(QAbstractItemModel *model)
         else
         {
             // No saved order is present. Use the TrackModel's default sort order.
-            int sortColumn = trackModel->defaultSortColumn();
-            Qt::SortOrder sortOrder = trackModel->defaultSortOrder();
+            auto sortColumn = trackModel->defaultSortColumn();
+            auto sortOrder = trackModel->defaultSortOrder();
             // If the TrackModel has an invalid or internal column as its default
             // sort, find the first non-internal column and sort by that.
             while (sortColumn < 0 || trackModel->isColumnInternal(sortColumn)) sortColumn++;
@@ -319,7 +300,6 @@ void WTrackTableView::loadTrackModel(QAbstractItemModel *model)
         setAcceptDrops(true);
         //viewport()->setAcceptDrops(true);
     }
-
     // Possible giant fuckup alert - It looks like Qt has something like these
     // caps built-in, see http://doc.trolltech.com/4.5/qt.html#ItemFlag-enum and
     // the flags(...) function that we're already using in LibraryTableModel. I

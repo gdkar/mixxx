@@ -11,10 +11,10 @@ EffectParameterSlot::EffectParameterSlot(const QString& group, const unsigned in
     auto itemPrefix = formatItemPrefix(iParameterSlotNumber);
     m_pControlLoaded = new ControlObject(ConfigKey(m_group, itemPrefix + QString("_loaded")));
     m_pControlLinkType = new ControlPushButton(ConfigKey(m_group, itemPrefix + QString("_link_type")));
-    m_pControlLinkType->setProperty("buttonMode",ControlPushButton::TOGGLE);
-    m_pControlLinkType->setStates(EffectManifestParameter::NUM_LINK_TYPES);
+    m_pControlLinkType->setProperty("buttonMode",QVariant::fromValue(ControlPushButton::ButtonMode::Toggle));
+    m_pControlLinkType->setProperty("numStates",EffectManifestParameter::NUM_LINK_TYPES);
     m_pControlLinkInverse = new ControlPushButton(ConfigKey(m_group, itemPrefix + QString("_link_inverse")));
-    m_pControlLinkInverse->setProperty("buttonMode",ControlPushButton::TOGGLE);
+    m_pControlLinkInverse->setProperty("buttonMode",QVariant::fromValue(ControlPushButton::ButtonMode::Toggle));
     m_pControlValue = new ControlEffectKnob(ConfigKey(m_group, itemPrefix));
     m_pControlType = new ControlObject(ConfigKey(m_group, itemPrefix + QString("_type")));
 

@@ -47,31 +47,14 @@ class ControlObject : public QObject {
     QString item() const;
     // Return the key of the object
     ConfigKey getKey() const;
-    // Returns the value of the ControlObject
-    virtual double get() const;
-    // Returns the bool interpretation of the ControlObject
     virtual bool toBool() const;
     // Instantly returns the value of the ControlObject
     static double get(ConfigKey key);
-    // Sets the ControlObject value. May require confirmation by owner.
-    virtual void set(double value);
-    // Sets the ControlObject value and confirms it.
     virtual void setAndConfirm(double value);
-    // Instantly sets the value of the ControlObject
     static void set(ConfigKey key, double value);
-    // Sets the default value
-    virtual void reset();
-    virtual void setDefaultValue(double dValue);
-    virtual double defaultValue() const;
     virtual operator bool()const;
     virtual bool operator!() const;
     virtual operator int() const;
-    // Returns the parameterized value of the object. Thread safe, non-blocking.
-    virtual double getParameter() const;
-    // Returns the parameterized value of the object. Thread safe, non-blocking.
-    virtual double getParameterForValue(double value) const;
-    // Sets the control parameterized value to v. Thread safe, non-blocking.
-    virtual void setParameter(double v);
     // Connects a Qt slot to a signal that is delivered when a new value change
     // request arrives for this control.
     // Qt::AutoConnection: Qt ensures that the signal slot is called from the
@@ -83,6 +66,15 @@ class ControlObject : public QObject {
     bool connectValueChanged(const QObject* receiver,const char* method, Qt::ConnectionType type = Qt::AutoConnection);
     bool connectValueChanged(const char* method, Qt::ConnectionType type = Qt::AutoConnection);
     virtual void initialize(ConfigKey key, bool bTrack, bool bPersist);
+  public slots:
+    virtual double get() const;
+    virtual void set(double value);
+    virtual void reset();
+    virtual void setDefaultValue(double dValue);
+    virtual double defaultValue() const;
+    virtual double getParameter() const;
+    virtual void setParameter(double v);
+    virtual double getParameterForValue(double value) const;
   signals:
     void valueChanged(double);
     void defaultValueChanged(double);

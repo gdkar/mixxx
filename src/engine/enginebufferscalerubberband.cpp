@@ -14,7 +14,7 @@
 using RubberBand::RubberBandStretcher;
 
 // This is the default increment from RubberBand 1.8.1.
-static size_t kRubberBandBlockSize = 1024;
+static size_t kRubberBandBlockSize = 256;
 
 EngineBufferScaleRubberBand::EngineBufferScaleRubberBand(ReadAheadManager* pReadAheadManager, QObject *p)
         : EngineBufferScale(pReadAheadManager,p),
@@ -74,7 +74,7 @@ void EngineBufferScaleRubberBand::setScaleParameters(double base_rate,
     // References:
     // https://bugs.launchpad.net/ubuntu/+bug/1263233
     // https://bitbucket.org/breakfastquay/rubberband/issue/4/sigfpe-zero-division-with-high-time-ratios
-    auto kMinSeekSpeed = 1.0 / 4096.0;
+    auto kMinSeekSpeed = 1.0 / 1024.0;
     auto speed_abs = std::abs(*pTempoRatio);
     if (speed_abs < kMinSeekSpeed)
     {

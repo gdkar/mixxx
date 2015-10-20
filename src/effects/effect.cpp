@@ -93,7 +93,7 @@ unsigned int Effect::numButtonParameters() const {
     }
     return num;
 }
-EffectParameter* Effect::getParameterById(QString id) const {
+EffectParameter* Effect::getParameterById(const QString& id) const {
     auto  pParameter = m_parametersById.value(id, nullptr);
     if (pParameter == nullptr) {
         qWarning() << debugString() << "getParameterById" << "WARNING: parameter for id does not exist:" << id;
@@ -138,7 +138,7 @@ QDomElement Effect::toXML(QDomDocument* doc) const {
     return element;
 }
 // static
-EffectPointer Effect::fromXML(EffectsManager* pEffectsManager, QDomElement element) {
+EffectPointer Effect::fromXML(EffectsManager* pEffectsManager, const QDomElement& element) {
     auto effectId = XmlParse::selectNodeQString(element, "Id");
     return pEffectsManager->instantiateEffect(effectId);
 }

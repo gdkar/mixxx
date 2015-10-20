@@ -18,8 +18,8 @@ class DragAndDropHelper
     // Allow loading to a player if the player isn't playing or the settings
     // allow interrupting a playing player.
     static bool allowLoadToPlayer(QString group,bool isPlaying,ConfigObject<ConfigValue>* pConfig);
-    static bool dragEnterAccept(QMimeData mimeData,QString sourceIdentifier,bool firstOnly,bool acceptPlaylists);
-    static QList<QFileInfo> dropEventFiles(QMimeData mimeData,QString sourceIdentifier,bool firstOnly,bool acceptPlaylists);
+    static bool dragEnterAccept(const QMimeData& mimeData,QString sourceIdentifier,bool firstOnly,bool acceptPlaylists);
+    static QList<QFileInfo> dropEventFiles(const QMimeData& mimeData,QString sourceIdentifier,bool firstOnly,bool acceptPlaylists);
     static QDrag* dragTrack(TrackPointer pTrack, QWidget* pDragSource,QString sourceIdentifier);
     static QDrag* dragTrackLocations(QList<QString> locations,QWidget* pDragSource,QString sourceIdentifier);
     static QUrl urlFromLocation(QString trackLocation);

@@ -155,7 +155,9 @@ void SoundManagerConfig::setSampleRate(unsigned int sampleRate) {
     m_sampleRate = sampleRate != 0 ? sampleRate : kFallbackSampleRate;
 }
 unsigned int SoundManagerConfig::getSyncBuffers() const { return m_syncBuffers; }
+unsigned int SoundManagerConfig::getSyncFragments() const { return m_syncFragments;}
 void SoundManagerConfig::setSyncBuffers(unsigned int syncBuffers) {m_syncBuffers = qMin(syncBuffers, (unsigned int)2); }
+void SoundManagerConfig::setSyncFragments(unsigned int fragments){m_syncFragments = qMax(fragments, 3u);}
 /**
  * Checks that the sample rate in the object is valid according to the list of
  * sample rates given by SoundManager.
@@ -167,44 +169,46 @@ bool SoundManagerConfig::checkSampleRate(const SoundManager &soundManager) {
     return true;
 }
 unsigned int SoundManagerConfig::getDeckCount() const { return m_deckCount; }
-void SoundManagerConfig::setDeckCount(unsigned int deckCount) { m_deckCount = deckCount; }
-void SoundManagerConfig::setCorrectDeckCount(int configuredDeckCount) {
+void SoundManagerConfig::setDeckCount(unsigned int deckCount)
+{ 
+  m_deckCount = deckCount;
+}
+void SoundManagerConfig::setCorrectDeckCount(int configuredDeckCount)
+{
     auto minimum_deck_count = 0;
     auto keys = m_outputs.keys().toSet().unite(m_inputs.keys().toSet());
-    for(auto device : keys){
-        for(auto in: m_inputs.values(device)) {
+    for(auto device : keys)
+    {
+        for(auto in: m_inputs.values(device))
+        {
             if ((in.getType() == AudioInput::DECK ||
                  in.getType() == AudioInput::VINYLCONTROL ||
                  in.getType() == AudioInput::AUXILIARY) &&
-                in.getIndex() + 1 > minimum_deck_count) {
+                in.getIndex() + 1 > minimum_deck_count)
+            {
                 qDebug() << "Found an input connection above current deck count";
                 minimum_deck_count = in.getIndex() + 1;
             }
         }
-        for(auto out: m_outputs.values(device)) {
-            if (out.getType() == AudioOutput::DECK && out.getIndex() + 1 > minimum_deck_count) {
+        for(auto out: m_outputs.values(device))
+        {
+            if (out.getType() == AudioOutput::DECK && out.getIndex() + 1 > minimum_deck_count)
+            {
                 qDebug() << "Found an output connection above current deck count";
                 minimum_deck_count = out.getIndex() + 1;
             }
         }
     }
-    if (minimum_deck_count > configuredDeckCount) { m_deckCount = minimum_deck_count;}
-    else { m_deckCount = configuredDeckCount; }
+    if (minimum_deck_count > configuredDeckCount) m_deckCount = minimum_deck_count;
+    else m_deckCount = configuredDeckCount;
 }
-unsigned int SoundManagerConfig::getAudioBufferSizeIndex() const { return m_audioBufferSizeIndex; }
-unsigned int SoundManagerConfig::getFramesPerBuffer() const {
-    // endless loop otherwise
-    auto audioBufferSizeIndex = m_audioBufferSizeIndex;
-    DEBUG_ASSERT_AND_HANDLE(audioBufferSizeIndex > 0) { audioBufferSizeIndex = kDefaultAudioBufferSizeIndex; }
-    auto framesPerBuffer = 1;
-    auto sampleRate = static_cast<double>(m_sampleRate); // need this to avoid int division
-    // first, get to the framesPerBuffer value corresponding to latency index 1
-    for (; framesPerBuffer / sampleRate * 1000 < 1.0; framesPerBuffer *= 2) { }
-    // then, keep going until we get to our desired latency index (if not 1)
-    for (auto latencyIndex = 1; latencyIndex < audioBufferSizeIndex; ++latencyIndex) {
-        framesPerBuffer <<= 1; // *= 2
-    }
-    return framesPerBuffer;
+unsigned int SoundManagerConfig::getAudioBufferSizeIndex() const
+{ 
+  return m_audioBufferSizeIndex;
+}
+unsigned int SoundManagerConfig::getFramesPerBuffer() const
+{
+    return m_audioBufferSizeIndex;
 }
 // Set the audio buffer size
 // @warning This IS NOT a value in milliseconds, or a number of frames per
@@ -212,10 +216,11 @@ unsigned int SoundManagerConfig::getFramesPerBuffer() const {
 // frames) which corresponds to a latency greater than or equal to 1 ms, 2 is
 // the second, etc. This is so that latency values are roughly equivalent
 // between different sample rates.
-void SoundManagerConfig::setAudioBufferSizeIndex(unsigned int sizeIndex) {
+void SoundManagerConfig::setAudioBufferSizeIndex(unsigned int sizeIndex)
+{
     // latency should be either the min of kMaxAudioBufferSizeIndex and the passed value
     // if it's 0, pretend it was 1 -- bkgood
-    m_audioBufferSizeIndex = sizeIndex != 0 ? math_min(sizeIndex, kMaxAudioBufferSizeIndex) : 1;
+    m_audioBufferSizeIndex = (sizeIndex + 63u)&(~63u);
 }
 void SoundManagerConfig::addOutput(QString device, const AudioOutput &out) { m_outputs.insert(device, out); }
 void SoundManagerConfig::addInput(QString device, const AudioInput &in) { m_inputs.insert(device, in); }

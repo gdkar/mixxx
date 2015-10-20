@@ -17,6 +17,8 @@ typedef qint32 int32_t;
 #include <immintrin.h>
 #include <emmintrin.h>
 
+typedef __m128 v4sf;
+
 void SampleUtil::clear(CSAMPLE* pBuffer, int iNumSamples) {
     // Special case: This works, because the binary representation
     // of 0.0f is 0!

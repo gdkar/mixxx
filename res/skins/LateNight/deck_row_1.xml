@@ -22,15 +22,15 @@
                          <SizePolicy>min,min</SizePolicy>
                          <Children>
                              <Template src="skin:knob_textless.xml">
-                                <SetVariable name="group">QuickEffectRack1_[Channel<Variable name="channum"/>]</SetVariable>
+                                <SetVariable name="group">[QuickEffectRack1_[Channel<Variable name="channum"/>]]</SetVariable>
                                 <SetVariable name="control">super1</SetVariable>
                              </Template>
                          </Children>
                      </WidgetGroup>
                      <EffectName>
                          <ObjectName>KnobLabel</ObjectName>
-                         <EffectRackGroup>QuickEffectRack1</EffectRackGroup>
-                         <EffectUnitGroup>QuickEffectRack1_[Channel<Variable name="channum"/>]</EffectUnitGroup>
+                         <EffectRackGroup>[QuickEffectRack1]</EffectRackGroup>
+                         <EffectUnitGroup>[QuickEffectRack1_[Channel<Variable name="channum"/>]]</EffectUnitGroup>
                          <Effect>1</Effect>
                      </EffectName>
                  </Children>
@@ -61,15 +61,15 @@
                                     <Unpressed>btn_hotcue2_1_over.png</Unpressed>
                                 </State>
                                 <Connection>
-                                    <ConfigKey>Channel<Variable name="channum" />,hotcue_1_activate</ConfigKey>
+                                    <ConfigKey>[Channel<Variable name="channum" />],hotcue_1_activate</ConfigKey>
                                     <ButtonState>LeftButton</ButtonState>
                                 </Connection>
                                 <Connection>
-                                    <ConfigKey>Channel<Variable name="channum" />,hotcue_1_clear</ConfigKey>
+                                    <ConfigKey>[Channel<Variable name="channum" />],hotcue_1_clear</ConfigKey>
                                     <ButtonState>RightButton</ButtonState>
                                 </Connection>
                                 <Connection>
-                                    <ConfigKey>Channel<Variable name="channum" />,hotcue_1_enabled</ConfigKey>
+                                    <ConfigKey>[Channel<Variable name="channum" />],hotcue_1_enabled</ConfigKey>
                                 </Connection>
                             </PushButton>
                             <PushButton>
@@ -88,15 +88,15 @@
                                     <Unpressed>btn_hotcue2_2_over.png</Unpressed>
                                 </State>
                                 <Connection>
-                                    <ConfigKey>Channel<Variable name="channum" />,hotcue_2_activate</ConfigKey>
+                                    <ConfigKey>[Channel<Variable name="channum" />],hotcue_2_activate</ConfigKey>
                                     <ButtonState>LeftButton</ButtonState>
                                 </Connection>
                                 <Connection>
-                                    <ConfigKey>Channel<Variable name="channum" />,hotcue_2_clear</ConfigKey>
+                                    <ConfigKey>[Channel<Variable name="channum" />],hotcue_2_clear</ConfigKey>
                                     <ButtonState>RightButton</ButtonState>
                                 </Connection>
                                 <Connection>
-                                    <ConfigKey>Channel<Variable name="channum" />,hotcue_2_enabled</ConfigKey>
+                                    <ConfigKey>[Channel<Variable name="channum" />],hotcue_2_enabled</ConfigKey>
                                 </Connection>
                             </PushButton>
                         </Children>
@@ -122,15 +122,15 @@
                                     <Unpressed>btn_hotcue2_3_over.png</Unpressed>
                                 </State>
                                 <Connection>
-                                    <ConfigKey>Channel<Variable name="channum" />,hotcue_3_activate</ConfigKey>
+                                    <ConfigKey>[Channel<Variable name="channum" />],hotcue_3_activate</ConfigKey>
                                     <ButtonState>LeftButton</ButtonState>
                                 </Connection>
                                 <Connection>
-                                    <ConfigKey>Channel<Variable name="channum" />,hotcue_3_clear</ConfigKey>
+                                    <ConfigKey>[Channel<Variable name="channum" />],hotcue_3_clear</ConfigKey>
                                     <ButtonState>RightButton</ButtonState>
                                 </Connection>
                                 <Connection>
-                                    <ConfigKey>Channel<Variable name="channum" />,hotcue_3_enabled</ConfigKey>
+                                    <ConfigKey>[Channel<Variable name="channum" />],hotcue_3_enabled</ConfigKey>
                                 </Connection>
                             </PushButton>
                             <PushButton>
@@ -149,15 +149,15 @@
                                     <Unpressed>btn_hotcue2_4_over.png</Unpressed>
                                 </State>
                                 <Connection>
-                                    <ConfigKey>Channel<Variable name="channum" />,hotcue_4_activate</ConfigKey>
+                                    <ConfigKey>[Channel<Variable name="channum" />],hotcue_4_activate</ConfigKey>
                                     <ButtonState>LeftButton</ButtonState>
                                 </Connection>
                                 <Connection>
-                                    <ConfigKey>Channel<Variable name="channum" />,hotcue_4_clear</ConfigKey>
+                                    <ConfigKey>[Channel<Variable name="channum" />],hotcue_4_clear</ConfigKey>
                                     <ButtonState>RightButton</ButtonState>
                                 </Connection>
                                 <Connection>
-                                    <ConfigKey>Channel<Variable name="channum" />,hotcue_4_enabled</ConfigKey>
+                                    <ConfigKey>[Channel<Variable name="channum" />],hotcue_4_enabled</ConfigKey>
                                 </Connection>
                             </PushButton>
                         </Children>

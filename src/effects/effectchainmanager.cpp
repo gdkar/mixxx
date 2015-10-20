@@ -55,7 +55,7 @@ QuickEffectRackPointer EffectChainManager::getQuickEffectRack(int i) {
     if (i < 0 || i >= m_quickEffectRacks.size()) {return QuickEffectRackPointer();}
     return m_quickEffectRacks[i];
 }
-EffectRackPointer EffectChainManager::getEffectRack(QString group) {return m_effectRacksByGroup.value(group);}
+EffectRackPointer EffectChainManager::getEffectRack(const QString& group) {return m_effectRacksByGroup.value(group);}
 void EffectChainManager::addEffectChain(EffectChainPointer pEffectChain) {
     if (pEffectChain) {m_effectChains.append(pEffectChain);}
 }

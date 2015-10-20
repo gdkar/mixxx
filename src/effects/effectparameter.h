@@ -1,4 +1,6 @@
-_Pragma("once")
+#ifndef EFFECTPARAMETER_H
+#define EFFECTPARAMETER_H
+
 #include <QObject>
 #include <QVariant>
 
@@ -28,9 +30,9 @@ class EffectParameter : public QObject {
     ///////////////////////////////////////////////////////////////////////////
 
     const EffectManifestParameter& manifest() const;
-    QString id() const;
-    QString name() const;
-    QString description() const;
+    const QString id() const;
+    const QString name() const;
+    const QString description() const;
 
     ///////////////////////////////////////////////////////////////////////////
     // Value Settings
@@ -65,7 +67,7 @@ class EffectParameter : public QObject {
     }
 
     static bool clampValue(double* pValue,
-                           double minimum, double maximum);
+                           const double& minimum, const double& maximum);
     bool clampValue();
     bool clampDefault();
     bool clampRanges();
@@ -82,3 +84,6 @@ class EffectParameter : public QObject {
 
     DISALLOW_COPY_AND_ASSIGN(EffectParameter);
 };
+
+
+#endif /* EFFECTPARAMETER_H */

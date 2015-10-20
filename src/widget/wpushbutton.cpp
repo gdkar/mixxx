@@ -20,6 +20,7 @@
 #include <QStylePainter>
 #include <QStyleOption>
 #include <QPixmap>
+#include <QMetaEnum>
 #include <QtDebug>
 #include <QMouseEvent>
 #include <QTouchEvent>
@@ -35,8 +36,9 @@
 
 WPushButton::WPushButton(QWidget* pParent)
         : WWidget(pParent),
-          m_leftButtonMode(ControlPushButton::PUSH),
-          m_rightButtonMode(ControlPushButton::PUSH) {
+          m_leftButtonMode(ControlPushButton::ButtonMode::Push),
+          m_rightButtonMode(ControlPushButton::ButtonMode::Push)
+{
     setStates(0);
 }
 
@@ -44,22 +46,22 @@ WPushButton::WPushButton(QWidget* pParent, ControlPushButton::ButtonMode leftBut
                          ControlPushButton::ButtonMode rightButtonMode)
         : WWidget(pParent),
           m_leftButtonMode(leftButtonMode),
-          m_rightButtonMode(rightButtonMode) {
+          m_rightButtonMode(rightButtonMode)
+{
     setStates(0);
 }
 
-WPushButton::~WPushButton() {
-}
+WPushButton::~WPushButton() = default;
 
-void WPushButton::setup(QDomNode node, const SkinContext& context) {
+void WPushButton::setup(QDomNode node, const SkinContext& context)
+{
     // Number of states
-    int iNumStates = context.selectInt(node, "NumberStates");
+    auto iNumStates = context.selectInt(node, "NumberStates");
     setStates(iNumStates);
-
     // Set background pixmap if available
     if (context.hasNode(node, "BackPath")) {
-        QDomElement backPathNode = context.selectElement(node, "BackPath");
-        PixmapSource backgroundSource = context.getPixmapSource(backPathNode);
+        auto backPathNode = context.selectElement(node, "BackPath");
+        auto backgroundSource = context.getPixmapSource(backPathNode);
         if (!backgroundSource.isEmpty()) {
             // The implicit default in <1.12.0 was FIXED so we keep it for
             // backwards compatibility.
@@ -75,28 +77,22 @@ void WPushButton::setup(QDomNode node, const SkinContext& context) {
             SkinContext stateContext(context);
             stateContext.updateVariables(state);
             auto iState = stateContext.selectInt(state, "Number");
-            if (iState < m_iNoStates) {
+            if (iState < m_iNoStates)
+            {
                 auto unpressedNode = stateContext.selectElement(state, "Unpressed");
                 auto pixmapSource = stateContext.getPixmapSource(unpressedNode);
                 // The implicit default in <1.12.0 was FIXED so we keep it for
                 // backwards compatibility.
                 auto unpressedMode = stateContext.selectScaleMode(unpressedNode, Paintable::FIXED);
-                if (!pixmapSource.isEmpty()) {
-                    setPixmap(iState, false, pixmapSource, unpressedMode);
-                }
-
-                QDomElement pressedNode = stateContext.selectElement(state, "Pressed");
+                if (!pixmapSource.isEmpty()) setPixmap(iState, false, pixmapSource, unpressedMode);
+                auto pressedNode = stateContext.selectElement(state, "Pressed");
                 pixmapSource = stateContext.getPixmapSource(pressedNode);
                 // The implicit default in <1.12.0 was FIXED so we keep it for
                 // backwards compatibility.
-                Paintable::DrawMode pressedMode =
-                        stateContext.selectScaleMode(pressedNode, Paintable::FIXED);
-                if (!pixmapSource.isEmpty()) {
-                    setPixmap(iState, true, pixmapSource, pressedMode);
-                }
-
+                auto pressedMode = stateContext.selectScaleMode(pressedNode, Paintable::FIXED);
+                if (!pixmapSource.isEmpty()) setPixmap(iState, true, pixmapSource, pressedMode);
                 m_text.replace(iState, stateContext.selectString(state, "Text"));
-                QString alignment = stateContext.selectString(state, "Alignment").toLower();
+                auto alignment = stateContext.selectString(state, "Alignment").toLower();
                 if (alignment == "left") {
                     m_align.replace(iState, Qt::AlignLeft);
                 } else if (alignment == "right") {
@@ -110,24 +106,29 @@ void WPushButton::setup(QDomNode node, const SkinContext& context) {
         state = state.nextSibling();
     }
     auto leftConnection = static_cast<ControlParameterWidgetConnection*>(nullptr);
-    if (m_leftConnections.isEmpty()) {
-        if (!m_connections.isEmpty()) leftConnection = m_connections.at(0);
-    } else leftConnection = m_leftConnections.at(0);
-    if (leftConnection) {
-        auto leftClickForcePush = context.selectBool(node, "LeftClickIsPushButton", false);
-        m_leftButtonMode = ControlPushButton::PUSH;
-        if (!leftClickForcePush)
+    if (m_leftConnections.isEmpty())
+    {
+        if (!m_connections.isEmpty())
         {
+            // If no left connection is set, the this is the left connection
+            leftConnection = m_connections.at(0);
+        }
+    } else leftConnection = m_leftConnections.at(0);
+    if (leftConnection)
+    {
+        auto leftClickForcePush = context.selectBool(node, "LeftClickIsPushButton", false);
+        m_leftButtonMode = ControlPushButton::ButtonMode::Push;
+        if (!leftClickForcePush) {
             auto configKey = leftConnection->getKey();
             auto p = dynamic_cast<ControlPushButton*>(ControlObject::getControl(configKey));
-            if (p) m_leftButtonMode = p->getButtonMode();
+            if (p) m_leftButtonMode = p->property("buttonMode").value<ControlPushButton::ButtonMode>();
         }
-        if (leftConnection->getEmitOption() & ControlParameterWidgetConnection::EmitOption::Default) {
-            switch (m_leftButtonMode)
-            {
-                case ControlPushButton::PUSH:
-                case ControlPushButton::LONGPRESSLATCHING:
-                case ControlPushButton::POWERWINDOW:
+        if (leftConnection->getEmitOption() & ControlParameterWidgetConnection::EmitOption::Default)
+        {
+            switch (m_leftButtonMode) {
+                case ControlPushButton::ButtonMode::Push:
+                case ControlPushButton::ButtonMode::Latching:
+                case ControlPushButton::ButtonMode::PowerWindow:
                     leftConnection->setEmitOption(ControlParameterWidgetConnection::EmitOption::OnPress
                                                  |ControlParameterWidgetConnection::EmitOption::OnRelease);
                     break;
@@ -148,29 +149,29 @@ void WPushButton::setup(QDomNode node, const SkinContext& context) {
             }
         }
     }
-
-    if (!m_rightConnections.isEmpty()) {
+    if (!m_rightConnections.isEmpty())
+    {
         auto rightConnection = m_rightConnections.at(0);
         auto rightClickForcePush = context.selectBool(node, "RightClickIsPushButton", false);
-        m_rightButtonMode = ControlPushButton::PUSH;
+        m_rightButtonMode = ControlPushButton::ButtonMode::Push;
         if (!rightClickForcePush) {
             auto configKey = rightConnection->getKey();
             auto p = dynamic_cast<ControlPushButton*>(ControlObject::getControl(configKey));
             if (p) {
-                m_rightButtonMode = p->getButtonMode();
-                if (m_rightButtonMode != ControlPushButton::PUSH &&
-                        m_rightButtonMode != ControlPushButton::TRIGGER) {
+                m_rightButtonMode = p->property("buttonMode").value<ControlPushButton::ButtonMode>() ;
+                if (m_rightButtonMode != ControlPushButton::ButtonMode::Push && m_rightButtonMode != ControlPushButton::ButtonMode::Trigger) {
                     SKIN_WARNING(node, context)
-                            << "WPushButton::setup: Connecting a Pushbutton not in PUSH or TRIGGER mode is not implemented\n"
+                            << "WPushButton::setup: Connecting a Pushbutton not in ButtonMode::Push or ButtonMode::Trigger mode is not implemented\n"
                             << "Please set <RightClickIsPushButton>true</RightClickIsPushButton>";
                 }
             }
         }
-        if (rightConnection->getEmitOption() & ControlParameterWidgetConnection::EmitOption::Default) {
+        if (rightConnection->getEmitOption() &
+                ControlParameterWidgetConnection::EmitOption::Default) {
             switch (m_rightButtonMode) {
-                case ControlPushButton::PUSH:
-                case ControlPushButton::LONGPRESSLATCHING:
-                case ControlPushButton::POWERWINDOW:
+                case ControlPushButton::ButtonMode::Push:
+                case ControlPushButton::ButtonMode::Latching:
+                case ControlPushButton::ButtonMode::PowerWindow:
                     rightConnection->setEmitOption(
                             ControlParameterWidgetConnection::EmitOption::OnPress
                            |ControlParameterWidgetConnection::EmitOption::OnRelease);
@@ -184,6 +185,7 @@ void WPushButton::setup(QDomNode node, const SkinContext& context) {
             rightConnection->setDirectionOption(ControlParameterWidgetConnection::DirectionOption::FromWidget);
     }
 }
+
 void WPushButton::setStates(int iStates)
 {
     m_bPressed = false;
@@ -195,32 +197,33 @@ void WPushButton::setStates(int iStates)
     m_text.resize(iStates);
     m_align.resize(iStates);
 }
-
-void WPushButton::setPixmap(int iState, bool bPressed, PixmapSource source,
-                            Paintable::DrawMode mode) {
-    auto pixmaps = bPressed ? m_pressedPixmaps : m_unpressedPixmaps;
-    if (iState < 0 || iState >= pixmaps.size()) return;
+void WPushButton::setPixmap(int iState, bool bPressed, PixmapSource source,Paintable::DrawMode mode) {
+    auto& pixmaps = bPressed ? m_pressedPixmaps : m_unpressedPixmaps;
+    if (iState < 0 || iState >= pixmaps.size())  return;
     auto pPixmap = WPixmapStore::getPaintable(source, mode);
-    if (pPixmap.isNull() || pPixmap->isNull())
-    {
+    if (pPixmap.isNull() || pPixmap->isNull()) {
         // Only log if it looks like the user tried to specify a pixmap.
-        if (!source.isEmpty())  qDebug() << "WPushButton: Error loading pixmap:" << source.getPath();
-    } else if (mode == Paintable::FIXED) setFixedSize(pPixmap->size());
+        if (!source.isEmpty()) qDebug() << "WPushButton: Error loading pixmap:" << source.getPath();
+    } else if (mode == Paintable::FIXED) {
+        // Set size of widget equal to pixmap size
+        setFixedSize(pPixmap->size());
+    }
     pixmaps.replace(iState, pPixmap);
 }
 void WPushButton::setPixmapBackground(PixmapSource source,Paintable::DrawMode mode)
 {
     // Load background pixmap
     m_pPixmapBack = WPixmapStore::getPaintable(source, mode);
-    if (!source.isEmpty() && (m_pPixmapBack.isNull() || m_pPixmapBack->isNull()))
-    {
+    if (!source.isEmpty() &&
+            (m_pPixmapBack.isNull() || m_pPixmapBack->isNull())) {
         // Only log if it looks like the user tried to specify a pixmap.
         qDebug() << "WPushButton: Error loading background pixmap:" << source.getPath();
     }
 }
-void WPushButton::restyleAndRepaint()
-{
+
+void WPushButton::restyleAndRepaint() {
     emit(displayValueChanged(readDisplayValue()));
+
     // According to http://stackoverflow.com/a/3822243 this is the least
     // expensive way to restyle just this widget.
     // Since we expect button connections to not change at high frequency we
@@ -228,19 +231,23 @@ void WPushButton::restyleAndRepaint()
     // re-render.
     style()->unpolish(this);
     style()->polish(this);
+
     // These calls don't always trigger the repaint, so call it explicitly.
     repaint();
 }
-void WPushButton::onConnectedControlChanged(double dParameter, double dValue)
-{
+
+void WPushButton::onConnectedControlChanged(double dParameter, double dValue) {
     Q_UNUSED(dParameter);
     // Enums are not currently represented using parameter space so it doesn't
     // make sense to use the parameter here yet.
-    if (m_iNoStates == 1) m_bPressed = (dValue == 1.0);
+    if (m_iNoStates == 1) {
+        m_bPressed = (dValue == 1.0);
+    }
+
     restyleAndRepaint();
 }
-void WPushButton::paintEvent(QPaintEvent* e)
-{
+
+void WPushButton::paintEvent(QPaintEvent* e) {
     Q_UNUSED(e);
     QStyleOption option;
     option.initFrom(this);
@@ -267,12 +274,12 @@ void WPushButton::mousePressEvent(QMouseEvent * e) {
     const bool leftClick = e->button() == Qt::LeftButton;
     const bool rightClick = e->button() == Qt::RightButton;
 
-    if (m_leftButtonMode == ControlPushButton::POWERWINDOW
+    if (m_leftButtonMode == ControlPushButton::ButtonMode::PowerWindow
             && m_iNoStates == 2) {
         if (leftClick) {
             if (getControlParameterLeft() == 0.0) {
                 m_clickTimer.setSingleShot(true);
-                m_clickTimer.start(ControlPushButtonBehavior::kPowerWindowTimeMillis);
+                m_clickTimer.start(PushButtonBehavior::kPowerWindowTimeMillis);
             }
             m_bPressed = true;
             setControlParameterLeftDown(1.0);
@@ -286,7 +293,7 @@ void WPushButton::mousePressEvent(QMouseEvent * e) {
     {
         // This is the secondary button function allways a Pushbutton
         // due the leak of visual feedback we do not allow a toggle function
-        if (m_rightButtonMode == ControlPushButton::PUSH || m_iNoStates == 1) {
+        if (m_rightButtonMode == ControlPushButton::ButtonMode::Push || m_iNoStates == 1) {
             m_bPressed = true;
             setControlParameterRightDown(1.0);
             restyleAndRepaint();
@@ -296,7 +303,7 @@ void WPushButton::mousePressEvent(QMouseEvent * e) {
     if (leftClick)
     {
         double emitValue;
-        if (m_leftButtonMode == ControlPushButton::PUSH
+        if (m_leftButtonMode == ControlPushButton::ButtonMode::Push
                 || m_iNoStates == 1) {
             // This is either forced to behave like a push button on left-click
             // or this is a push button.
@@ -307,9 +314,9 @@ void WPushButton::mousePressEvent(QMouseEvent * e) {
             if (!isnan(emitValue) && m_iNoStates > 0) {
                 emitValue = static_cast<int>(emitValue + 1.0) % m_iNoStates;
             }
-            if (m_leftButtonMode == ControlPushButton::LONGPRESSLATCHING) {
+            if (m_leftButtonMode == ControlPushButton::ButtonMode::Latching) {
                 m_clickTimer.setSingleShot(true);
-                m_clickTimer.start(ControlPushButtonBehavior::kLongPressLatchingTimeMillis);
+                m_clickTimer.start(PushButtonBehavior::kLongPressLatchingTimeMillis);
             }
         }
         m_bPressed = true;
@@ -333,7 +340,7 @@ void WPushButton::mouseReleaseEvent(QMouseEvent * e) {
     const bool leftClick = e->button() == Qt::LeftButton;
     const bool rightClick = e->button() == Qt::RightButton;
 
-    if (m_leftButtonMode == ControlPushButton::POWERWINDOW
+    if (m_leftButtonMode == ControlPushButton::ButtonMode::PowerWindow
             && m_iNoStates == 2) {
         if (leftClick) {
             const bool rightButtonDown = QApplication::mouseButtons() & Qt::RightButton;
@@ -351,7 +358,7 @@ void WPushButton::mouseReleaseEvent(QMouseEvent * e) {
         // This is the secondary clickButton function,
         // due the leak of visual feedback we do not allow a toggle
         // function
-        if (m_rightButtonMode == ControlPushButton::PUSH || m_iNoStates == 1) {
+        if (m_rightButtonMode == ControlPushButton::ButtonMode::Push || m_iNoStates == 1) {
             m_bPressed = false;
             setControlParameterRightUp(0.0);
             restyleAndRepaint();
@@ -362,12 +369,12 @@ void WPushButton::mouseReleaseEvent(QMouseEvent * e) {
     if (leftClick)
     {
         auto emitValue = getControlParameterLeft();
-        if (m_leftButtonMode == ControlPushButton::PUSH
+        if (m_leftButtonMode == ControlPushButton::ButtonMode::Push
                 || m_iNoStates == 1) {
             // This is a Pushbutton
             emitValue = 0.0;
         } else {
-            if (m_leftButtonMode == ControlPushButton::LONGPRESSLATCHING
+            if (m_leftButtonMode == ControlPushButton::ButtonMode::Latching
                     && m_clickTimer.isActive() && emitValue >= 1.0) {
                 // revert toggle if button is released too early
                 if (!isnan(emitValue) && m_iNoStates > 0) {
@@ -385,13 +392,14 @@ void WPushButton::mouseReleaseEvent(QMouseEvent * e) {
 
 void WPushButton::fillDebugTooltip(QStringList* debug) {
     WWidget::fillDebugTooltip(debug);
+    auto modeEnum = QMetaEnum::fromType<ControlPushButton::ButtonMode>();
     *debug << QString("NumberStates: %1").arg(m_iNoStates)
            << QString("LeftCurrentState: %1").arg(
                static_cast<int>(getControlParameterLeft()) %
                (m_iNoStates > 0 ? m_iNoStates : 1))
            << QString("Pressed: %1").arg(toDebugString(m_bPressed))
            << QString("LeftButtonMode: %1")
-            .arg(ControlPushButton::buttonModeToString(m_leftButtonMode))
+            .arg(QString(modeEnum.valueToKey((int)m_leftButtonMode)))
            << QString("RightButtonMode: %1")
-            .arg(ControlPushButton::buttonModeToString(m_rightButtonMode));
+            .arg(QString(modeEnum.valueToKey((int)m_rightButtonMode)));
 }

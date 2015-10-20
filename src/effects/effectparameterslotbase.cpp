@@ -5,7 +5,7 @@
 #include "controlobject.h"
 #include "controlpushbutton.h"
 
-EffectParameterSlotBase::EffectParameterSlotBase(QString group,
+EffectParameterSlotBase::EffectParameterSlotBase(const QString& group,
                                                  const unsigned int iParameterSlotNumber)
         : m_iParameterSlotNumber(iParameterSlotNumber),
           m_group(group),

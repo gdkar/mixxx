@@ -12,24 +12,24 @@ EffectChainSlot::EffectChainSlot(EffectRack* pRack, const QString& group,
           // is 0-indexed.
           m_group(group),
           m_pEffectRack(pRack) {
-    m_pControlClear = new ControlPushButton(ConfigKey(m_group, "clear"));
+    m_pControlClear = new ControlPushButton(ConfigKey(m_group, "clear"),this);
     connect(m_pControlClear, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlClear(double)));
 
-    m_pControlNumEffects = new ControlObject(ConfigKey(m_group, "num_effects"));
+    m_pControlNumEffects = new ControlObject(ConfigKey(m_group, "num_effects"),this);
     m_pControlNumEffects->connectValueChangeRequest(
         this, SLOT(slotControlNumEffects(double)));
 
-    m_pControlNumEffectSlots = new ControlObject(ConfigKey(m_group, "num_effectslots"));
+    m_pControlNumEffectSlots = new ControlObject(ConfigKey(m_group, "num_effectslots"),this);
     m_pControlNumEffectSlots->connectValueChangeRequest(
         this, SLOT(slotControlNumEffectSlots(double)));
 
-    m_pControlChainLoaded = new ControlObject(ConfigKey(m_group, "loaded"));
+    m_pControlChainLoaded = new ControlObject(ConfigKey(m_group, "loaded"),this);
     m_pControlChainLoaded->connectValueChangeRequest(
         this, SLOT(slotControlChainLoaded(double)));
 
-    m_pControlChainEnabled = new ControlPushButton(ConfigKey(m_group, "enabled"));
-    m_pControlChainEnabled->setProperty("buttonMode",ControlPushButton::POWERWINDOW);
+    m_pControlChainEnabled = new ControlPushButton(ConfigKey(m_group, "enabled"),this);
+    m_pControlChainEnabled->setProperty("buttonMode",QVariant::fromValue(ControlPushButton::ButtonMode::PowerWindow));
     // Default to enabled. The skin might not show these buttons.
     m_pControlChainEnabled->setDefaultValue(true);
     m_pControlChainEnabled->set(true);
@@ -47,27 +47,25 @@ EffectChainSlot::EffectChainSlot(EffectRack* pRack, const QString& group,
     m_pControlChainSuperParameter->set(0.0);
     m_pControlChainSuperParameter->setDefaultValue(0.0);
 
-    m_pControlChainInsertionType = new ControlPushButton(ConfigKey(m_group, "insertion_type"));
-    m_pControlChainInsertionType->setProperty("buttonMode",ControlPushButton::TOGGLE);
-    m_pControlChainInsertionType->setStates(EffectChain::NUM_INSERTION_TYPES);
+    m_pControlChainInsertionType = new ControlPushButton(ConfigKey(m_group, "insertion_type"),this);
+    m_pControlChainInsertionType->setProperty("buttonMode",QVariant::fromValue(ControlPushButton::ButtonMode::Toggle));
+    m_pControlChainInsertionType->setProperty("numStates",EffectChain::NUM_INSERTION_TYPES);
     connect(m_pControlChainInsertionType, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlChainInsertionType(double)));
 
-    m_pControlChainNextPreset = new ControlPushButton(ConfigKey(m_group, "next_chain"));
+    m_pControlChainNextPreset = new ControlPushButton(ConfigKey(m_group, "next_chain"),this);
     connect(m_pControlChainNextPreset, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlChainNextPreset(double)));
 
-    m_pControlChainPrevPreset = new ControlPushButton(ConfigKey(m_group, "prev_chain"));
+    m_pControlChainPrevPreset = new ControlPushButton(ConfigKey(m_group, "prev_chain"),this);
     connect(m_pControlChainPrevPreset, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlChainPrevPreset(double)));
 
     // Ignoring no-ops is important since this is for +/- tickers.
-    m_pControlChainSelector = new ControlObject(ConfigKey(m_group, "chain_selector") );
-    connect(m_pControlChainSelector, SIGNAL(valueChanged(double)),
-            this, SLOT(slotControlChainSelector(double)));
+    m_pControlChainSelector = new ControlObject(ConfigKey(m_group, "chain_selector"),this);
+    connect(m_pControlChainSelector, SIGNAL(valueChanged(double)),this, SLOT(slotControlChainSelector(double)));
 
-    connect(&m_channelStatusMapper, SIGNAL(mapped(const QString&)),
-            this, SLOT(slotChannelStatusChanged(const QString&)));
+    connect(&m_channelStatusMapper, SIGNAL(mapped(const QString&)),this, SLOT(slotChannelStatusChanged(const QString&)));
 }
 
 EffectChainSlot::~EffectChainSlot() {
@@ -113,11 +111,13 @@ void EffectChainSlot::setSuperParameterDefaultValue(double value) {
     m_pControlChainSuperParameter->setDefaultValue(value);
 }
 
-void EffectChainSlot::slotChainNameChanged(const QString&) {
+void EffectChainSlot::slotChainNameChanged(const QString&)
+{
     emit(updated());
 }
 
-void EffectChainSlot::slotChainEnabledChanged(bool bEnabled) {
+void EffectChainSlot::slotChainEnabledChanged(bool bEnabled)
+{
     m_pControlChainEnabled->set(bEnabled);
     emit(updated());
 }
@@ -181,18 +181,12 @@ void EffectChainSlot::loadEffectChain(EffectChainPointer pEffectChain) {
                                     m_iChainSlotNumber);
         m_pEffectChain->updateEngineState();
 
-        connect(m_pEffectChain.data(), SIGNAL(effectsChanged()),
-                this, SLOT(slotChainEffectsChanged()));
-        connect(m_pEffectChain.data(), SIGNAL(nameChanged(const QString&)),
-                this, SLOT(slotChainNameChanged(const QString&)));
-        connect(m_pEffectChain.data(), SIGNAL(enabledChanged(bool)),
-                this, SLOT(slotChainEnabledChanged(bool)));
-        connect(m_pEffectChain.data(), SIGNAL(mixChanged(double)),
-                this, SLOT(slotChainMixChanged(double)));
-        connect(m_pEffectChain.data(), SIGNAL(insertionTypeChanged(EffectChain::InsertionType)),
-                this, SLOT(slotChainInsertionTypeChanged(EffectChain::InsertionType)));
-        connect(m_pEffectChain.data(), SIGNAL(channelStatusChanged(const QString&, bool)),
-                this, SLOT(slotChainChannelStatusChanged(const QString&, bool)));
+        connect(m_pEffectChain.data(), SIGNAL(effectsChanged()),this, SLOT(slotChainEffectsChanged()));
+        connect(m_pEffectChain.data(), SIGNAL(nameChanged(const QString&)),this, SLOT(slotChainNameChanged(const QString&)));
+        connect(m_pEffectChain.data(), SIGNAL(enabledChanged(bool)),this, SLOT(slotChainEnabledChanged(bool)));
+        connect(m_pEffectChain.data(), SIGNAL(mixChanged(double)),this, SLOT(slotChainMixChanged(double)));
+        connect(m_pEffectChain.data(), SIGNAL(insertionTypeChanged(EffectChain::InsertionType)),this, SLOT(slotChainInsertionTypeChanged(EffectChain::InsertionType)));
+        connect(m_pEffectChain.data(), SIGNAL(channelStatusChanged(const QString&, bool)),this, SLOT(slotChainChannelStatusChanged(const QString&, bool)));
 
         m_pControlChainLoaded->setAndConfirm(true);
         m_pControlChainInsertionType->set(m_pEffectChain->insertionType());
@@ -271,11 +265,9 @@ void EffectChainSlot::registerChannel(const ChannelHandleAndGroup& handle_group)
                    << handle_group.name();
         return;
     }
-    ControlPushButton* pEnableControl = new ControlPushButton(
-            ConfigKey(m_group, QString("group_%1_enable").arg(handle_group.name())));
-    pEnableControl->setProperty("buttonMode",ControlPushButton::POWERWINDOW);
-
-    ChannelInfo* pInfo = new ChannelInfo(handle_group, pEnableControl);
+    auto pEnableControl = new ControlPushButton(ConfigKey(m_group, QString("group_%1_enable").arg(handle_group.name())));
+    pEnableControl->setProperty("buttonMode",QVariant::fromValue(ControlPushButton::ButtonMode::PowerWindow));
+    auto pInfo = new ChannelInfo(handle_group, pEnableControl);
     m_channelInfoByName[handle_group.name()] = pInfo;
     m_channelStatusMapper.setMapping(pEnableControl, handle_group.name());
     connect(pEnableControl, SIGNAL(valueChanged(double)),

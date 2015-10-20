@@ -93,28 +93,23 @@ AutoDJProcessor::AutoDJProcessor(QObject* pParent,
           m_eState(ADJ_DISABLED),
           m_iTransitionTime(kTransitionPreferenceDefault),
           m_nextTransitionTime(kTransitionPreferenceDefault) {
-    m_pAutoDJTableModel = new PlaylistTableModel(this, pTrackCollection,
-                                                 "mixxx.db.model.autodj");
+    m_pAutoDJTableModel = new PlaylistTableModel(this, pTrackCollection,"mixxx.db.model.autodj");
     m_pAutoDJTableModel->setTableModel(iAutoDJPlaylistId);
 
-    m_pShufflePlaylist = new ControlPushButton(
-            ConfigKey("AutoDJ", "shuffle_playlist"));
+    m_pShufflePlaylist = new ControlPushButton(ConfigKey("AutoDJ", "shuffle_playlist"),this);
     connect(m_pShufflePlaylist, SIGNAL(valueChanged(double)),
             this, SLOT(controlShuffle(double)));
 
-    m_pSkipNext = new ControlPushButton(
-            ConfigKey("AutoDJ", "skip_next"));
+    m_pSkipNext = new ControlPushButton(ConfigKey("AutoDJ", "skip_next"),this);
     connect(m_pSkipNext, SIGNAL(valueChanged(double)),
             this, SLOT(controlSkipNext(double)));
 
-    m_pFadeNow = new ControlPushButton(
-            ConfigKey("AutoDJ", "fade_now"));
+    m_pFadeNow = new ControlPushButton(ConfigKey("AutoDJ", "fade_now"),this);
     connect(m_pFadeNow, SIGNAL(valueChanged(double)),
             this, SLOT(controlFadeNow(double)));
 
-    m_pEnabledAutoDJ = new ControlPushButton(
-            ConfigKey("AutoDJ", "enabled"));
-    m_pEnabledAutoDJ->setProperty("buttonMode",ControlPushButton::TOGGLE);
+    m_pEnabledAutoDJ = new ControlPushButton(ConfigKey("AutoDJ", "enabled"),this);
+    m_pEnabledAutoDJ->setProperty("buttonMode",QVariant::fromValue(ControlPushButton::ButtonMode::Toggle));
     connect(m_pEnabledAutoDJ, SIGNAL(valueChanged(double)),
             this, SLOT(controlEnable(double)));
 

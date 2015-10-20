@@ -33,9 +33,10 @@ enum SoundDeviceError {
     SOUNDDEVICE_ERROR_EXCESSIVE_OUTPUT_CHANNEL,
     SOUNDDEVICE_ERROR_EXCESSIVE_INPUT_CHANNEL,
 };
-class SoundDevice {
+class SoundDevice : public QObject{
+  Q_OBJECT
   public:
-    SoundDevice(ConfigObject<ConfigValue> *config, SoundManager* sm);
+    SoundDevice(ConfigObject<ConfigValue> *config, SoundManager* sm,QObject *);
     virtual ~SoundDevice();
     QString getInternalName() const;
     QString getDisplayName() const;
@@ -43,9 +44,11 @@ class SoundDevice {
     void setHostAPI(QString api);
     void setSampleRate(double sampleRate);
     void setFramesPerBuffer(size_t framesPerBuffer);
-    virtual bool open(bool isClkRefDevice, int syncBuffers) = 0;
+    virtual bool open(bool isClkRefDevice, int syncBuffers, int fragments) = 0;
     virtual bool close() = 0;
     virtual void readProcess() = 0;
+    virtual int  readAvailable() = 0;
+    virtual int  writeAvailable() = 0;
     virtual void writeProcess() = 0;
     virtual QString getError() const = 0;
     virtual unsigned int getDefaultSampleRate() const = 0;
@@ -59,6 +62,8 @@ class SoundDevice {
     void clearInputs();
     bool operator==(const SoundDevice &other) const;
     bool operator==(QString other) const;
+  signals:
+    void needProcess (  );
   protected:
     void composeOutputBuffer(CSAMPLE* outputBuffer,
                              size_t iFramesPerBuffer,

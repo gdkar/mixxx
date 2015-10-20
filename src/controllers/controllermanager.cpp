@@ -29,7 +29,7 @@
 // http://developer.qt.nokia.com/wiki/Threads_Events_QObjects
 
 // Poll every 1ms (where possible) for good controller response
-const int kPollIntervalMillis = 1;
+const int kPollIntervalMillis = 5;
 
 QString firstAvailableFilename(QSet<QString>& filenames,QString originalFilename)
 {
@@ -81,6 +81,7 @@ ControllerManager::ControllerManager(ConfigObject<ConfigValue>* pConfig)
 #endif
 
     m_pollTimer.setInterval(kPollIntervalMillis);
+    m_pollTimer.setTimerType(Qt::PreciseTimer);
     connect(&m_pollTimer, SIGNAL(timeout()),this, SLOT(pollDevices()));
     m_pThread = new QThread;
     m_pThread->setObjectName("Controller");
@@ -94,7 +95,8 @@ ControllerManager::ControllerManager(ConfigObject<ConfigValue>* pConfig)
     connect(this, SIGNAL(requestSave(bool)),this, SLOT(slotSavePresets(bool)));
 }
 
-ControllerManager::~ControllerManager() {
+ControllerManager::~ControllerManager()
+{
     emit(requestShutdown());
     m_pThread->wait();
     delete m_pThread;
@@ -106,21 +108,17 @@ ControllerLearningEventFilter* ControllerManager::getControllerLearningEventFilt
     return m_pControllerLearningEventFilter;
 }
 
-void ControllerManager::slotShutdown() {
+void ControllerManager::slotShutdown()
+{
     stopPolling();
-
     // Clear m_enumerators before deleting the enumerators to prevent other code
     // paths from accessing them.
     QMutexLocker locker(&m_mutex);
     QList<ControllerEnumerator*> enumerators = m_enumerators;
     m_enumerators.clear();
     locker.unlock();
-
     // Delete enumerators and they'll delete their Devices
-    foreach (ControllerEnumerator* pEnumerator, enumerators) {
-        delete pEnumerator;
-    }
-
+    for(auto pEnumerator: enumerators) delete pEnumerator;
     // Stop the processor after the enumerators since the engines live in it
     m_pThread->quit();
 }
@@ -222,16 +220,11 @@ void ControllerManager::maybeStartOrStopPolling() {
     locker.unlock();
 
     bool shouldPoll = false;
-    foreach (Controller* pController, controllers) {
-        if (pController->isOpen() && pController->isPolling()) {
-            shouldPoll = true;
-        }
+    for(auto pController: controllers) {
+        if (pController->isOpen() && pController->isPolling()) shouldPoll = true;
     }
-    if (shouldPoll) {
-        startPolling();
-    } else {
-        stopPolling();
-    }
+    if (shouldPoll) startPolling();
+    else stopPolling();
 }
 
 void ControllerManager::startPolling() {
@@ -253,21 +246,18 @@ void ControllerManager::pollDevices() {
     // Continue to poll while any device returned data.
     do {
         eventsProcessed = false;
-        foreach (Controller* pDevice, m_controllers) {
-            if (pDevice->isOpen() && pDevice->isPolling()) {
+        for(auto pDevice: m_controllers) {
+            if (pDevice->isOpen() && pDevice->isPolling()) 
                 eventsProcessed = pDevice->poll() || eventsProcessed;
-            }
         }
-    } while (eventsProcessed);
+    }
+    while (eventsProcessed);
 }
 
-void ControllerManager::openController(Controller* pController) {
-    if (!pController) {
-        return;
-    }
-    if (pController->isOpen()) {
-        pController->close();
-    }
+void ControllerManager::openController(Controller* pController)
+{
+    if (!pController) return;
+    if (pController->isOpen()) pController->close();
     int result = pController->open();
     maybeStartOrStopPolling();
 
@@ -319,10 +309,9 @@ void ControllerManager::slotSavePresets(bool onlyActive) {
     // TODO(rryan): This should be split up somehow but the filename selection
     // is dependent on all of the controllers to prevent over-writing each
     // other. We need a better solution.
-    foreach (Controller* pController, deviceList) {
-        if (onlyActive && !pController->isOpen()) {
-            continue;
-        }
+    for(auto pController: deviceList)
+    {
+        if (onlyActive && !pController->isOpen()) continue;
         auto name = pController->getName();
         auto filename = firstAvailableFilename(filenames, presetFilenameFromName(name));
         auto presetPath = userPresetsPath(m_pConfig) + filename + pController->presetExtension();

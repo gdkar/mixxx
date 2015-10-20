@@ -95,7 +95,7 @@ EngineMaster::EngineMaster(ConfigObject<ConfigValue>* _config,
     m_pHeadMix->set(-1.);
     // Master / Headphone split-out mode (for devices with only one output).
     m_pHeadSplitEnabled = new ControlPushButton(ConfigKey(group, "headSplit"));
-    m_pHeadSplitEnabled->setProperty("buttonMode",ControlPushButton::TOGGLE);
+    m_pHeadSplitEnabled->setProperty("buttonMode",QVariant::fromValue(ControlPushButton::ButtonMode::Toggle));
     m_pHeadSplitEnabled->set(0.0);
     m_pTalkoverDucking = new EngineTalkoverDucking(_config, group);
     // Allocate buffers
@@ -113,12 +113,12 @@ EngineMaster::EngineMaster(ConfigObject<ConfigValue>* _config,
     // Starts a thread for recording and shoutcast
     m_pSideChain = bEnableSidechain ? new EngineSideChain(_config) : NULL;
     // X-Fader Setup
-    m_pXFaderMode = new ControlPushButton( ConfigKey("Mixer Profile", "xFaderMode"));
-    m_pXFaderMode->setProperty("buttonMode",ControlPushButton::TOGGLE);
+    m_pXFaderMode = new ControlPushButton( ConfigKey("Mixer Profile", "xFaderMode"),this);
+    m_pXFaderMode->setProperty("buttonMode",QVariant::fromValue(ControlPushButton::ButtonMode::Toggle));
     m_pXFaderCurve = new ControlPotmeter( ConfigKey("Mixer Profile", "xFaderCurve"), 0., 2.);
     m_pXFaderCalibration = new ControlPotmeter( ConfigKey("Mixer Profile", "xFaderCalibration"), -2., 2.);
-    m_pXFaderReverse = new ControlPushButton(ConfigKey("Mixer Profile", "xFaderReverse"));
-    m_pXFaderReverse->setProperty("buttonMode",ControlPushButton::TOGGLE);
+    m_pXFaderReverse = new ControlPushButton(ConfigKey("Mixer Profile", "xFaderReverse"),this);
+    m_pXFaderReverse->setProperty("buttonMode",QVariant::fromValue(ControlPushButton::ButtonMode::Toggle));
     m_pKeylockEngine = new ControlObject(ConfigKey(group, "keylock_engine"),this,false, true);
     m_pKeylockEngine->set(_config->getValueString(ConfigKey(group, "keylock_engine")).toDouble());
     m_pMasterEnabled = new ControlObject(ConfigKey(group, "enabled"),this, false, true);  // persist = true
@@ -193,8 +193,9 @@ void EngineMaster::processChannels(int iBufferSize) {
         auto pChannelInfo = m_channels[i];
         auto pChannel = pChannelInfo->m_pChannel;
         // Skip inactive channels.
-        if (!pChannel || !pChannel->isActive()) {continue;}
-        if (pChannel->isTalkoverEnabled()) {
+        if (!pChannel || !pChannel->isActive()) continue;
+        if (pChannel->isTalkoverEnabled())
+        {
             // talkover is an exclusive channel
             // once talkover is enabled it is not used in
             // xFader-Mix
@@ -205,20 +206,27 @@ void EngineMaster::processChannels(int iBufferSize) {
                 gainCache.m_fadeout = true;
                 m_activeBusChannels[pChannel->getOrientation()].append(pChannelInfo);
              }
-        } else {
+        }
+        else
+        {
             // Check if we need to fade out the channel
             auto& gainCache = m_channelTalkoverGainCache[i];
-            if (gainCache.m_gain) {
+            if (gainCache.m_gain)
+            {
                 gainCache.m_fadeout = true;
                 m_activeTalkoverChannels.append(pChannelInfo);
             }
-            if (pChannel->isMasterEnabled() && !pChannelInfo->m_pMuteControl->toBool()) {
+            if (pChannel->isMasterEnabled() && !pChannelInfo->m_pMuteControl->toBool())
+            {
                 // the xFader-Mix
                 m_activeBusChannels[pChannel->getOrientation()].append(pChannelInfo);
-            } else {
+            }
+            else
+            {
                 // Check if we need to fade out the channel
                 auto& gainCache = m_channelMasterGainCache[i];
-                if (gainCache.m_gain) {
+                if (gainCache.m_gain)
+                {
                     gainCache.m_fadeout = true;
                     m_activeBusChannels[pChannel->getOrientation()].append(pChannelInfo);
                 }
@@ -226,24 +234,28 @@ void EngineMaster::processChannels(int iBufferSize) {
         }
         // If the channel is enabled for previewing in headphones, copy it
         // over to the headphone buffer
-        if (pChannel->isPflEnabled()) {m_activeHeadphoneChannels.append(pChannelInfo);}
-        else {
+        if (pChannel->isPflEnabled()) m_activeHeadphoneChannels.append(pChannelInfo);
+        else
+        {
             // Check if we need to fade out the channel
             auto& gainCache = m_channelHeadphoneGainCache[i];
-            if (gainCache.m_gain) {
+            if (gainCache.m_gain)
+            {
                 m_channelHeadphoneGainCache[i].m_fadeout = true;
                 m_activeHeadphoneChannels.append(pChannelInfo);
             }
         }
         // If necessary, add the channel to the list of buffers to process.
-        if (pChannel == pMasterChannel) {
+        if (pChannel == pMasterChannel)
+        {
             // If this is the sync master, it should be processed first.
             m_activeChannels.replace(0, pChannelInfo);
             activeChannelsStartIndex = 0;
-        } else {m_activeChannels.append(pChannelInfo);}
+        } else m_activeChannels.append(pChannelInfo);
     }
     // Now that the list is built and ordered, do the processing.
-    for (int i = activeChannelsStartIndex; i < m_activeChannels.size(); ++i) {
+    for (int i = activeChannelsStartIndex; i < m_activeChannels.size(); ++i)
+    {
         auto pChannelInfo = m_activeChannels[i];
         auto pChannel = pChannelInfo->m_pChannel;
         pChannel->process(pChannelInfo->m_pBuffer, iBufferSize);
@@ -252,7 +264,8 @@ void EngineMaster::processChannels(int iBufferSize) {
     // which ensures that all channels are updating certain values at the
     // same point in time.  This prevents sync from failing depending on
     // if the sync target was processed before or after the sync origin.
-    for(auto &activeChannel : m_activeChannels){
+    for(auto &activeChannel : m_activeChannels)
+    {
       if(activeChannel && activeChannel->m_pChannel)activeChannel->m_pChannel->postProcess(iBufferSize);
     }
 }
@@ -452,7 +465,7 @@ void EngineMaster::addChannel(EngineChannel* pChannel) {
     pChannelInfo->m_pVolumeControl->setDefaultValue(1.0);
     pChannelInfo->m_pVolumeControl->set(1.0);
     pChannelInfo->m_pMuteControl = new ControlPushButton(ConfigKey(group, "mute"));
-    pChannelInfo->m_pMuteControl->setProperty("buttonMode",ControlPushButton::POWERWINDOW);
+    pChannelInfo->m_pMuteControl->setProperty("buttonMode",QVariant::fromValue(ControlPushButton::ButtonMode::PowerWindow));
     pChannelInfo->m_pBuffer = SampleUtil::alloc(MAX_BUFFER_LEN);
     SampleUtil::clear(pChannelInfo->m_pBuffer, MAX_BUFFER_LEN);
     m_channels.append(pChannelInfo);

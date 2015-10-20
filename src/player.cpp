@@ -126,10 +126,10 @@ void Player::slotLoadTrack(TrackPointer track, bool bPlay)
     if (m_pLoadedTrack)
     {
         // Listen for updates to the file's BPM
-        connect(m_pLoadedTrack.data(), SIGNAL(bpmUpdated(double)),m_pBPM, SLOT(set(double)));
-        connect(m_pLoadedTrack.data(), SIGNAL(keyUpdated(double)),m_pKey, SLOT(set(double)));
+        connect(m_pLoadedTrack.data(), &TrackInfoObject::bpmUpdated,m_pBPM, static_cast<void (ControlObject::*)(double)>((&ControlObject::set)));
+        connect(m_pLoadedTrack.data(), &TrackInfoObject::keyUpdated,m_pKey, static_cast<void (ControlObject::*)(double)>((&ControlObject::set)));
         // Listen for updates to the file's Replay Gain
-        connect(m_pLoadedTrack.data(), SIGNAL(replayGainUpdated(double)),this, SLOT(slotSetReplayGain(double)));
+        connect(m_pLoadedTrack.data(), &TrackInfoObject::replayGainUpdated,this, &Player::slotSetReplayGain);
     }
     // Request a new track from the reader
     emit(loadTrack(track, bPlay));

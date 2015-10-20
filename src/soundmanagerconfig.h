@@ -60,6 +60,8 @@ public:
     unsigned int getFramesPerBuffer() const;
     void setAudioBufferSizeIndex(unsigned int latency);
     unsigned int getSyncBuffers() const;
+    unsigned int getSyncFragments() const;
+    void setSyncFragments(unsigned int fragments);
     void setSyncBuffers(unsigned int sampleRate);
     void addOutput(QString device, const AudioOutput &out);
     void addInput(QString device, const AudioInput &in);
@@ -83,7 +85,8 @@ private:
     // latency as milliseconds or frames per buffer is bad because those
     // values vary with sample rate) -- bkgood
     unsigned int m_audioBufferSizeIndex = 5;
-    unsigned int m_syncBuffers = 2;
+    unsigned int m_syncBuffers          = 2;
+    unsigned int m_syncFragments        = 5;
     QMultiHash<QString, AudioOutput> m_outputs;
     QMultiHash<QString, AudioInput> m_inputs;
 };

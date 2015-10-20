@@ -60,7 +60,7 @@ LibraryControl::LibraryControl(Library* pLibrary)
     connect(m_pSelectPrevTrack, SIGNAL(valueChanged(double)),this, SLOT(slotSelectPrevTrack(double)));
 
     // Ignoring no-ops is important since this is for +/- tickers.
-    m_pSelectTrack = new ControlObject(ConfigKey("Playlist","SelectTrackKnob"), false);
+    m_pSelectTrack = new ControlObject(ConfigKey("Playlist","SelectTrackKnob"),this,false);
     connect(m_pSelectTrack, SIGNAL(valueChanged(double)),this, SLOT(slotSelectTrack(double)));
 
     m_pSelectNextSidebarItem = new ControlPushButton(ConfigKey("Playlist", "SelectNextPlaylist"));
@@ -70,7 +70,7 @@ LibraryControl::LibraryControl(Library* pLibrary)
     connect(m_pSelectPrevSidebarItem, SIGNAL(valueChanged(double)),this, SLOT(slotSelectPrevSidebarItem(double)));
 
     // Ignoring no-ops is important since this is for +/- tickers.
-    m_pSelectSidebarItem = new ControlObject(ConfigKey("Playlist", "SelectPlaylist"), false);
+    m_pSelectSidebarItem = new ControlObject(ConfigKey("Playlist", "SelectPlaylist"),this, false);
     connect(m_pSelectSidebarItem, SIGNAL(valueChanged(double)),this, SLOT(slotSelectSidebarItem(double)));
 
     m_pToggleSidebarItem = new ControlPushButton(ConfigKey("Playlist", "ToggleSelectedSidebarItem"));
@@ -86,7 +86,7 @@ LibraryControl::LibraryControl(Library* pLibrary)
     connect(m_pAutoDjAddBottom, SIGNAL(valueChanged(double)),this, SLOT(slotAutoDjAddBottom(double)));
 
     // Ignoring no-ops is important since this is for +/- tickers.
-    m_pFontSizeKnob = new ControlObject( ConfigKey("Library", "font_size_knob"), false);
+    m_pFontSizeKnob = new ControlObject( ConfigKey("Library", "font_size_knob"),this, false);
     connect(m_pFontSizeKnob, SIGNAL(valueChanged(double)),this, SLOT(slotFontSize(double)));
     m_pFontSizeDecrement = new ControlPushButton(ConfigKey("Library", "font_size_decrement"));
     connect(m_pFontSizeDecrement, SIGNAL(valueChanged(double)),this, SLOT(slotDecrementFontSize(double)));

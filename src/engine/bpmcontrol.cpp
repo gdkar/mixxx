@@ -54,13 +54,13 @@ BpmControl::BpmControl(QString group,
     m_pFileBpm = new ControlObject(ConfigKey(group, "file_bpm"),this);
     connect(m_pFileBpm, SIGNAL(valueChanged(double)),this, SLOT(slotFileBpmChanged(double)),Qt::DirectConnection);
     m_pLocalBpm = new ControlObject(ConfigKey(group, "local_bpm"),this);
-    m_pAdjustBeatsFaster = new ControlPushButton(ConfigKey(group, "beats_adjust_faster"), false,this);
+    m_pAdjustBeatsFaster = new ControlPushButton(ConfigKey(group, "beats_adjust_faster"), this);
     connect(m_pAdjustBeatsFaster, SIGNAL(valueChanged(double)),this, SLOT(slotAdjustBeatsFaster(double)),Qt::DirectConnection);
-    m_pAdjustBeatsSlower = new ControlPushButton(ConfigKey(group, "beats_adjust_slower"), false,this);
+    m_pAdjustBeatsSlower = new ControlPushButton(ConfigKey(group, "beats_adjust_slower"), this);
     connect(m_pAdjustBeatsSlower, SIGNAL(valueChanged(double)),this, SLOT(slotAdjustBeatsSlower(double)),Qt::DirectConnection);
-    m_pTranslateBeatsEarlier = new ControlPushButton(ConfigKey(group, "beats_translate_earlier"), false,this);
+    m_pTranslateBeatsEarlier = new ControlPushButton(ConfigKey(group, "beats_translate_earlier"), this);
     connect(m_pTranslateBeatsEarlier, SIGNAL(valueChanged(double)),this, SLOT(slotTranslateBeatsEarlier(double)),Qt::DirectConnection);
-    m_pTranslateBeatsLater = new ControlPushButton(ConfigKey(group, "beats_translate_later"), false,this);
+    m_pTranslateBeatsLater = new ControlPushButton(ConfigKey(group, "beats_translate_later"), this);
     connect(m_pTranslateBeatsLater, SIGNAL(valueChanged(double)),this, SLOT(slotTranslateBeatsLater(double)),Qt::DirectConnection);
     // Pick a wide range (1 to 200) and allow out of bounds sets. This lets you
     // map a soft-takeover knob to the BPM. This also creates bpm_up and
@@ -77,7 +77,7 @@ BpmControl::BpmControl(QString group,
     m_pButtonSync = new ControlPushButton(ConfigKey(group, "beatsync"));
     connect(m_pButtonSync, SIGNAL(valueChanged(double)),this, SLOT(slotControlBeatSync(double)),Qt::DirectConnection);
 
-    m_pButtonSyncPhase = new ControlPushButton(ConfigKey(group, "beatsync_phase"),false,this);
+    m_pButtonSyncPhase = new ControlPushButton(ConfigKey(group, "beatsync_phase"),this);
     connect(m_pButtonSyncPhase, SIGNAL(valueChanged(double)),this, SLOT(slotControlBeatSyncPhase(double)),Qt::DirectConnection);
     m_pButtonSyncTempo = new ControlPushButton(ConfigKey(group, "beatsync_tempo"),this);
     connect(m_pButtonSyncTempo, SIGNAL(valueChanged(double)),this, SLOT(slotControlBeatSyncTempo(double)),Qt::DirectConnection);

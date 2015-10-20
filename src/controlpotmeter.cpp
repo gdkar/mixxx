@@ -64,7 +64,7 @@ void ControlPotmeter::setRange(double dMinValue, double dMaxValue,bool bAllowOut
       m_minValue = dMinValue;
       m_maxValue = dMaxValue;
       m_bAllowOutOfBounds = bAllowOutOfBounds;
-      if (m_pControl) {m_pControl->setBehavior(new ControlPotmeterBehavior(dMinValue, dMaxValue, bAllowOutOfBounds));}
+      if (m_pControl) {m_pControl->setBehavior(new PotmeterBehavior(dMinValue, dMaxValue, bAllowOutOfBounds));}
       emit rangeChanged();
     }
 }

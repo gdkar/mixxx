@@ -31,8 +31,8 @@ EngineTalkoverDucking::EngineTalkoverDucking(
             m_pMasterSampleRate->get() / 2);
 
     m_pTalkoverDucking = new ControlPushButton(ConfigKey(m_group, "talkoverDucking"));
-    m_pTalkoverDucking->setProperty("buttonMode",ControlPushButton::TOGGLE);
-    m_pTalkoverDucking->setStates(3);
+    m_pTalkoverDucking->setProperty("buttonMode",QVariant::fromValue(ControlPushButton::ButtonMode::Toggle));
+    m_pTalkoverDucking->setProperty("numStates",3);
     m_pTalkoverDucking->set(
             m_pConfig->getValueString(
                 ConfigKey(m_group, "duckMode"), QString::number(AUTO)).toDouble());

@@ -19,6 +19,7 @@ _Pragma("once")
 #include <QString>
 #include <QList>
 #include <QHash>
+#include <QThread>
 #include <atomic>
 
 #include "util/types.h"
@@ -90,6 +91,8 @@ class SoundManager : public QObject {
     void registerInput(AudioInput input, AudioDestination *dest);
     QList<AudioOutput> registeredOutputs() const;
     QList<AudioInput> registeredInputs() const;
+  public slots:
+    void process();
   signals:
     void devicesUpdated(); // emitted when pointers to SoundDevices go stale
     void devicesSetup(); // emitted when the sound devices have been set up
@@ -110,4 +113,5 @@ class SoundManager : public QObject {
     QHash<AudioInput, AudioDestination*> m_registeredDestinations;
     ControlObject* m_pControlObjectSoundStatusCO = nullptr;
     ControlObject* m_pControlObjectVinylControlGainCO = nullptr;
+    QThread m_thread;
 };

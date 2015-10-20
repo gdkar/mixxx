@@ -24,27 +24,26 @@ _Pragma("once")
 class ControlPushButton : public ControlObject {
     Q_OBJECT
   public:
-    enum ButtonMode {
-         PUSH = 0,
-         TOGGLE,
-         POWERWINDOW,
-         LONGPRESSLATCHING,
-         TRIGGER,
+    enum class ButtonMode {
+         Push = 0,
+         Toggle,
+         PowerWindow,
+         Latching,
+         Trigger,
     };
     Q_ENUM(ButtonMode);
     Q_PROPERTY(ButtonMode buttonMode READ getButtonMode WRITE setButtonMode NOTIFY buttonModeChanged);
     Q_PROPERTY(int numStates READ numStates WRITE setStates NOTIFY numStatesChanged);
-    static QString buttonModeToString(int mode);
-    ControlPushButton(ConfigKey key, bool bPersist=false,QObject *pParent=nullptr);
+    ControlPushButton(ConfigKey key, QObject *pParent=nullptr,bool bPersist = false);
     virtual ~ControlPushButton();
    ButtonMode getButtonMode() const;
-    void setButtonMode(enum ButtonMode mode);
+    void setButtonMode(ButtonMode mode);
     int  numStates()const;
     void setStates(int num_states);
   signals:
     void buttonModeChanged(ButtonMode);
     void numStatesChanged(int);
   private:
-    enum ButtonMode m_buttonMode;
-    int m_iNoStates;
+    ButtonMode m_buttonMode = ButtonMode::Push;
+    int m_iNoStates = 2;
 };

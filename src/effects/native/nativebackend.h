@@ -7,8 +7,5 @@ class NativeBackend : public EffectsBackend {
     NativeBackend(QObject* pParent=nullptr);
     virtual ~NativeBackend();
   private:
-    QString debugString() const
-    {
-      return "NativeBackend";
-    }
+    QString debugString() const {return "NativeBackend";}
 };

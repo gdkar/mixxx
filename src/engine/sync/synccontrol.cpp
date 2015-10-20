@@ -33,15 +33,15 @@ SyncControl::SyncControl(QString group, ConfigObject<ConfigValue>* pConfig,
     m_pPlayButton.reset(new ControlObject(ConfigKey(group, "play"), this));
     m_pPlayButton->connectValueChanged(this, SLOT(slotControlPlay(double)),Qt::DirectConnection);
 
-    m_pSyncMode.reset(new ControlPushButton(ConfigKey(group, "sync_mode")));
-    m_pSyncMode->setProperty("buttonMode",ControlPushButton::TOGGLE);
-    m_pSyncMode->setStates(SYNC_NUM_MODES);
+    m_pSyncMode.reset(new ControlPushButton(ConfigKey(group, "sync_mode"),this));
+    m_pSyncMode->setProperty("buttonMode",QVariant::fromValue(ControlPushButton::ButtonMode::Toggle));
+    m_pSyncMode->setProperty("numStates",SYNC_NUM_MODES);
     m_pSyncMode->connectValueChangeRequest(this, SLOT(slotSyncModeChangeRequest(double)), Qt::DirectConnection);
-    m_pSyncMasterEnabled.reset(new ControlPushButton(ConfigKey(group, "sync_master")));
-    m_pSyncMasterEnabled->setProperty("buttonMode",ControlPushButton::TOGGLE);
+    m_pSyncMasterEnabled.reset(new ControlPushButton(ConfigKey(group, "sync_master"),this));
+    m_pSyncMasterEnabled->setProperty("buttonMode",QVariant::fromValue(ControlPushButton::ButtonMode::Toggle));
     m_pSyncMasterEnabled->connectValueChangeRequest(this, SLOT(slotSyncMasterEnabledChangeRequest(double)), Qt::DirectConnection);
-    m_pSyncEnabled.reset(new ControlPushButton(ConfigKey(group, "sync_enabled")));
-    m_pSyncEnabled->setProperty("buttonMode",ControlPushButton::LONGPRESSLATCHING);
+    m_pSyncEnabled.reset(new ControlPushButton(ConfigKey(group, "sync_enabled"),this));
+    m_pSyncEnabled->setProperty("buttonMode",QVariant::fromValue(ControlPushButton::ButtonMode::Latching));
     m_pSyncEnabled->connectValueChangeRequest(this, SLOT(slotSyncEnabledChangeRequest(double)), Qt::DirectConnection);
     m_pSyncBeatDistance.reset(new ControlObject(ConfigKey(group, "beat_distance")));
     m_pPassthroughEnabled.reset(new ControlObject(ConfigKey(group, "passthrough"), this));

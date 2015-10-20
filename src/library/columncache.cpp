@@ -4,7 +4,7 @@
 #include "library/dao/playlistdao.h"
 #include "library/dao/cratedao.h"
 ColumnCache::ColumnCache(QObject *pParent):QObject(pParent){}
-void ColumnCache::setColumns(const QStringList& columns)
+void ColumnCache::setColumns(QStringList columns)
 {
     m_columnsByIndex.clear();
     m_columnsByIndex.append(columns);
@@ -66,8 +66,8 @@ void ColumnCache::setColumns(const QStringList& columns)
     m_columnIndexByEnum[COLUMN_CRATETRACKSTABLE_TRACKID] = fieldIndex(CRATETRACKSTABLE_TRACKID);
     m_columnIndexByEnum[COLUMN_CRATETRACKSTABLE_CRATEID] = fieldIndex(CRATETRACKSTABLE_CRATEID);
 
-    const QString sortInt("cast(%1 as integer)");
-    const QString sortNoCase("lower(%1)");
+    QString sortInt("cast(%1 as integer)");
+    QString sortNoCase("lower(%1)");
     m_columnSortByIndex.clear();
     // Add the columns that requires a special sort
     m_columnSortByIndex.insert(m_columnIndexByEnum[COLUMN_LIBRARYTABLE_ARTIST], sortNoCase);

@@ -380,26 +380,22 @@ double WSpinny::calculatePositionFromAngle(double angle)
 
     // Convert t from seconds into a normalized playposition value.
     double playpos = t * trackSampleRate / trackFrames;
-    if (isnan(playpos)) {
-        return 0.0;
-    }
+    if (isnan(playpos)) return 0.0;
     return playpos;
 }
-
-void WSpinny::updateVinylControlSpeed(double rpm) {
+void WSpinny::updateVinylControlSpeed(double rpm)
+{
     m_dRotationsPerSecond = rpm/60.;
 }
 
-void WSpinny::updateVinylControlSignalEnabled(double enabled) {
+void WSpinny::updateVinylControlSignalEnabled(double enabled)
+{
 #ifdef __VINYLCONTROL__
-    if (m_pVCManager == NULL) {
-        return;
-    }
+    if (m_pVCManager == NULL) return;
     m_bSignalActive = enabled;
-
-    if (enabled && m_iVinylInput != -1) {
-        m_pVCManager->addSignalQualityListener(this);
-    } else {
+    if (enabled && m_iVinylInput != -1) m_pVCManager->addSignalQualityListener(this);
+    else
+    {
         m_pVCManager->removeSignalQualityListener(this);
         // fill with transparent black
         m_qImage.fill(qRgba(0,0,0,0));
@@ -407,20 +403,20 @@ void WSpinny::updateVinylControlSignalEnabled(double enabled) {
     m_bWidgetDirty = true;
 #endif
 }
-
-void WSpinny::updateVinylControlEnabled(double enabled) {
+void WSpinny::updateVinylControlEnabled(double enabled)
+{
     m_bVinylActive = enabled;
     m_bWidgetDirty = true;
 }
-
-void WSpinny::updateSlipEnabled(double enabled) {
+void WSpinny::updateSlipEnabled(double enabled)
+{
     m_bGhostPlayback = static_cast<bool>(enabled);
     m_bWidgetDirty = true;
 }
-
-void WSpinny::mouseMoveEvent(QMouseEvent * e) {
-    int y = e->y();
-    int x = e->x();
+void WSpinny::mouseMoveEvent(QMouseEvent * e)
+{
+    auto y = e->y();
+    auto x = e->x();
 
     //Keeping these around in case we want to switch to control relative
     //to the original mouse position.
@@ -428,9 +424,9 @@ void WSpinny::mouseMoveEvent(QMouseEvent * e) {
     //int dY = y-m_iStartMouseY;
 
     //Coordinates from center of widget
-    double c_x = x - width()/2;
-    double c_y = y - height()/2;
-    double theta = (180.0/M_PI)*atan2(c_x, -c_y);
+    auto c_x = x - width()/2;
+    auto c_y = y - height()/2;
+    auto theta = (180.0/M_PI)*atan2(c_x, -c_y);
 
     //qDebug() << "c_x:" << c_x << "c_y:" << c_y <<
     //            "dX:" << dX << "dY:" << dY;
@@ -444,22 +440,19 @@ void WSpinny::mouseMoveEvent(QMouseEvent * e) {
     } else if (m_dPrevTheta < -100 && theta > 0) {
         m_iFullRotations--;
     }
-
     m_dPrevTheta = theta;
     theta += m_iFullRotations*360;
-
     //qDebug() << "c t:" << theta << "pt:" << m_dPrevTheta <<
     //            "icr" << m_iFullRotations;
-
-    if ((e->buttons() & Qt::LeftButton || e->buttons() & Qt::RightButton) && !m_bVinylActive) {
+    if ((e->buttons() & Qt::LeftButton || e->buttons() & Qt::RightButton) && !m_bVinylActive)
+    {
         //Convert deltaTheta into a percentage of song length.
-        double absPos = calculatePositionFromAngle(theta);
-        double absPosInSamples = absPos * m_pTrackSamples->get();
+        auto absPos = calculatePositionFromAngle(theta);
+        auto  absPosInSamples = absPos * m_pTrackSamples->get();
         m_pScratchPos->set(absPosInSamples - m_dInitialPos);
-    } else if (e->buttons() & Qt::MidButton) {
-    } else if (e->buttons() & Qt::NoButton) {
-        setCursor(QCursor(Qt::OpenHandCursor));
     }
+    else if (e->buttons() & Qt::MidButton);
+    else if (e->buttons() & Qt::NoButton) setCursor(QCursor(Qt::OpenHandCursor));
 }
 
 void WSpinny::mousePressEvent(QMouseEvent * e)
@@ -474,24 +467,20 @@ void WSpinny::mousePressEvent(QMouseEvent * e)
     if (m_bVinylActive)
         return;
 
-    if (e->button() == Qt::LeftButton || e->button() == Qt::RightButton) {
+    if (e->button() == Qt::LeftButton || e->button() == Qt::RightButton)
+    {
         QApplication::setOverrideCursor(QCursor(Qt::ClosedHandCursor));
-
         // Coordinates from center of widget
-        double c_x = x - width()/2;
-        double c_y = y - height()/2;
-        double theta = (180.0/M_PI)*atan2(c_x, -c_y);
+        auto c_x = x - width()/2;
+        auto c_y = y - height()/2;
+        auto theta = (180.0/M_PI)*atan2(c_x, -c_y);
         m_dPrevTheta = theta;
         m_iFullRotations = calculateFullRotations(m_pPlayPos->get());
         theta += m_iFullRotations * 360.0;
         m_dInitialPos = calculatePositionFromAngle(theta) * m_pTrackSamples->get();
-
         m_pScratchPos->set(0);
         m_pScratchToggle->set(1.0);
-
-        if (e->button() == Qt::RightButton) {
-            m_pSlipEnabled->set(1.0);
-        }
+        if (e->button() == Qt::RightButton) m_pSlipEnabled->set(1.0);
 
         // Trigger a mouse move to immediately line up the vinyl with the cursor
         mouseMoveEvent(e);
@@ -500,62 +489,52 @@ void WSpinny::mousePressEvent(QMouseEvent * e)
 
 void WSpinny::mouseReleaseEvent(QMouseEvent * e)
 {
-    if (e->button() == Qt::LeftButton || e->button() == Qt::RightButton) {
+    if (e->button() == Qt::LeftButton || e->button() == Qt::RightButton)
+    {
         QApplication::restoreOverrideCursor();
         m_pScratchToggle->set(0.0);
         m_iFullRotations = 0;
-        if (e->button() == Qt::RightButton) {
-            m_pSlipEnabled->set(0.0);
-        }
+        if (e->button() == Qt::RightButton) m_pSlipEnabled->set(0.0);
     }
 }
-
-void WSpinny::showEvent(QShowEvent* event) {
+void WSpinny::showEvent(QShowEvent* event)
+{
     Q_UNUSED(event);
 #ifdef __VINYLCONTROL__
     // If we want to draw the VC signal on this widget then register for
     // updates.
-    if (m_bSignalActive && m_iVinylInput != -1 && m_pVCManager) {
-        m_pVCManager->addSignalQualityListener(this);
-    }
+    if (m_bSignalActive && m_iVinylInput != -1 && m_pVCManager)m_pVCManager->addSignalQualityListener(this);
 #endif
 }
-
-void WSpinny::hideEvent(QHideEvent* event) {
+void WSpinny::hideEvent(QHideEvent* event)
+{
     Q_UNUSED(event);
 #ifdef __VINYLCONTROL__
     // When we are hidden we do not want signal quality updates.
-    if (m_pVCManager) {
-        m_pVCManager->removeSignalQualityListener(this);
-    }
+    if (m_pVCManager) m_pVCManager->removeSignalQualityListener(this);
 #endif
     // fill with transparent black
     m_qImage.fill(qRgba(0,0,0,0));
 }
 
-bool WSpinny::event(QEvent* pEvent) {
-    if (pEvent->type() == QEvent::ToolTip) {
-        updateTooltip();
-    }
+bool WSpinny::event(QEvent* pEvent)
+{
+    if (pEvent->type() == QEvent::ToolTip) updateTooltip();
     return QWidget::event(pEvent);
 }
 
-void WSpinny::dragEnterEvent(QDragEnterEvent* event) {
-    if (DragAndDropHelper::allowLoadToPlayer(m_group, m_pPlay->get() > 0.0,
-                                             m_pConfig) &&
-            DragAndDropHelper::dragEnterAccept(*event->mimeData(), m_group,
-                                               true, false)) {
+void WSpinny::dragEnterEvent(QDragEnterEvent* event)
+{
+    if (DragAndDropHelper::allowLoadToPlayer(m_group, m_pPlay->get() > 0.0,m_pConfig) &&
+            DragAndDropHelper::dragEnterAccept(*event->mimeData(), m_group,true, false)) {
         event->acceptProposedAction();
-    } else {
-        event->ignore();
-    }
+    } else event->ignore();
 }
 
 void WSpinny::dropEvent(QDropEvent * event) {
-    if (DragAndDropHelper::allowLoadToPlayer(m_group, m_pPlay->get() > 0.0,
-                                             m_pConfig)) {
-        QList<QFileInfo> files = DragAndDropHelper::dropEventFiles(
-                *event->mimeData(), m_group, true, false);
+    if (DragAndDropHelper::allowLoadToPlayer(m_group, m_pPlay->get() > 0.0,m_pConfig))
+    {
+        auto  files = DragAndDropHelper::dropEventFiles(*event->mimeData(), m_group, true, false);
         if (!files.isEmpty()) {
             event->accept();
             emit(trackDropped(files.at(0).absoluteFilePath(), m_group));

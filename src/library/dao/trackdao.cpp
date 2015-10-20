@@ -435,7 +435,7 @@ void TrackDAO::bindTrackToLibraryInsert(TrackInfoObject* pTrack, int trackLocati
     m_pQueryLibraryInsert->bindValue(":beats_version", beatsVersion);
     m_pQueryLibraryInsert->bindValue(":beats_sub_version", beatsSubVersion);
     m_pQueryLibraryInsert->bindValue(":beats", pBeatsBlob );
-    auto& keys = pTrack->getKeys();
+    auto keys = pTrack->getKeys();
     QByteArray* pKeysBlob = NULL;
     QString keysVersion = "";
     QString keysSubVersion = "";
@@ -1410,7 +1410,7 @@ void TrackDAO::updateTrack(TrackInfoObject* pTrack)
     query.bindValue(":beats_version", beatsVersion);
     query.bindValue(":beats_sub_version", beatsSubVersion);
     query.bindValue(":bpm", dBpm);
-    auto& keys = pTrack->getKeys();
+    auto keys = pTrack->getKeys();
     auto pKeysBlob = static_cast<QByteArray*>(nullptr);
     auto keysVersion = QString{};
     auto keysSubVersion = QString{};

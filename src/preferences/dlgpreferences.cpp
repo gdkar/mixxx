@@ -60,19 +60,13 @@ DlgPreferences::DlgPreferences(MixxxMainWindow * mixxx, SkinLoader* pSkinLoader,
                                ConfigObject<ConfigValue>* pConfig, Library *pLibrary)
         : m_pConfig(pConfig),
           m_pageSizeHint(QSize(0, 0)),
-          m_preferencesUpdated(new ControlPushButton(ConfigKey("Preferences", "updated"), false)) {
+          m_preferencesUpdated(new ControlPushButton(ConfigKey("Preferences", "updated"), this,false)) {
     setupUi(this);
-    m_preferencesUpdated->setParent(this);
     contentsTreeWidget->setHeaderHidden(true);
     connect(buttonBox, SIGNAL(clicked(QAbstractButton*)),this, SLOT(slotButtonPressed(QAbstractButton*)));
-
-
     createIcons();
-
     while (pagesWidget->count() > 0) {pagesWidget->removeWidget(pagesWidget->currentWidget());}
-
     // Construct widgets for use in tabs.
-
 #ifdef __VINYLCONTROL__
     // It's important for this to be before the connect for wsound.
     // TODO(rryan) determine why/if this is still true
@@ -86,8 +80,7 @@ DlgPreferences::DlgPreferences(MixxxMainWindow * mixxx, SkinLoader* pSkinLoader,
     addPageWidget(m_wsound);
     m_wlibrary = new DlgPrefLibrary(this, m_pConfig, pLibrary);
     addPageWidget(m_wlibrary);
-    connect(m_wlibrary, SIGNAL(scanLibrary()),
-            mixxx, SLOT(slotScanLibrary()));
+    connect(m_wlibrary, SIGNAL(scanLibrary()),mixxx, SLOT(slotScanLibrary()));
     m_wcontrols = new DlgPrefControls(this, mixxx, pSkinLoader, pPlayerManager, m_pConfig);
     addPageWidget(m_wcontrols);
     m_wwaveform = new DlgPrefWaveform(this, mixxx, m_pConfig);
@@ -100,7 +93,6 @@ DlgPreferences::DlgPreferences(MixxxMainWindow * mixxx, SkinLoader* pSkinLoader,
     addPageWidget(m_weffects);
     m_wcrossfader = new DlgPrefCrossfader(this, m_pConfig);
     addPageWidget(m_wcrossfader);
-
     m_wbeats = new DlgPrefBeats(this, m_pConfig);
     addPageWidget (m_wbeats);
     m_wkey = new DlgPrefKey(this, m_pConfig);
@@ -113,30 +105,25 @@ DlgPreferences::DlgPreferences(MixxxMainWindow * mixxx, SkinLoader* pSkinLoader,
     m_wshoutcast = new DlgPrefShoutcast(this, m_pConfig);
     addPageWidget(m_wshoutcast);
 #endif
-    m_wcontrollers = new DlgPrefControllers(this, m_pConfig, controllers,
-                                            m_pControllerTreeItem);
+    m_wcontrollers = new DlgPrefControllers(this, m_pConfig, controllers,m_pControllerTreeItem);
     addPageWidget(m_wcontrollers);
-
     // Install event handler to generate closeDlg signal
     installEventFilter(this);
-
     // If we don't call this explicitly, then we default to showing the sound
     // hardware page but the tree item is not selected.
     showSoundHardwarePage();
 }
 
-DlgPreferences::~DlgPreferences() {
+DlgPreferences::~DlgPreferences()
+{
     // store last geometry in mixxx.cfg
-    m_pConfig->set(ConfigKey("Preferences","geometry"),
-                   m_geometry.join(","));
-
+    m_pConfig->set(ConfigKey("Preferences","geometry"),m_geometry.join(","));
     // Need to explicitly delete rather than relying on child auto-deletion
     // because otherwise the QStackedWidget will delete the controller
     // preference pages (and DlgPrefControllers dynamically generates and
     // deletes them).
     delete m_wcontrollers;
 }
-
 void DlgPreferences::createIcons() {
     m_pSoundButton = new QTreeWidgetItem(contentsTreeWidget, QTreeWidgetItem::Type);
     m_pSoundButton->setIcon(0, QIcon(":/images/preferences/ic_preferences_soundhardware.png"));
@@ -246,12 +233,12 @@ void DlgPreferences::createIcons() {
             SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)),
             this, SLOT(changePage(QTreeWidgetItem*, QTreeWidgetItem*)));
 }
+void DlgPreferences::changePage(QTreeWidgetItem* current, QTreeWidgetItem* previous)
+{
+    if (!current) current = previous;
 
-void DlgPreferences::changePage(QTreeWidgetItem* current, QTreeWidgetItem* previous) {
-    if (!current)
-        current = previous;
-
-    if (current == m_pSoundButton) {
+    if (current == m_pSoundButton)
+    {
         m_wsound->slotUpdate();
       switchToPage(m_wsound);
     } else if (current == m_pLibraryButton) {
@@ -292,21 +279,17 @@ void DlgPreferences::changePage(QTreeWidgetItem* current, QTreeWidgetItem* previ
     }
 }
 
-void DlgPreferences::showSoundHardwarePage() {
+void DlgPreferences::showSoundHardwarePage()
+{
     switchToPage(m_wsound);
     contentsTreeWidget->setCurrentItem(m_pSoundButton);
 }
 
-bool DlgPreferences::eventFilter(QObject* o, QEvent* e) {
+bool DlgPreferences::eventFilter(QObject* o, QEvent* e)
+{
     // Send a close signal if dialog is closing
-    if (e->type() == QEvent::Hide) {
-        onHide();
-    }
-
-    if (e->type() == QEvent::Show) {
-        onShow();
-    }
-
+    if (e->type() == QEvent::Hide) onHide();
+    if (e->type() == QEvent::Show) onShow();
     // Standard event processing
     return QWidget::eventFilter(o,e);
 }
@@ -314,12 +297,10 @@ bool DlgPreferences::eventFilter(QObject* o, QEvent* e) {
 void DlgPreferences::onHide() {
     // Notify children that we are about to hide.
     emit(closeDlg());
-
     // Notify other parts of Mixxx that the preferences window just saved and so
     // preferences are likely changed.
     m_preferencesUpdated->set(1);
 }
-
 void DlgPreferences::onShow() {
     //
     // Read last geometry (size and position) of preferences panel

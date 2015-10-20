@@ -20,7 +20,6 @@ _Pragma("once")
 #include <QVarLengthArray>
 
 #include "controlobject.h"
-#include "controlpushbutton.h"
 #include "engine/engineobject.h"
 #include "engine/enginechannel.h"
 #include "engine/channelhandle.h"
@@ -33,7 +32,7 @@ class EngineDeck;
 class EngineFlanger;
 class EngineVuMeter;
 class ControlPotmeter;
-class ControlPushButton;
+class ControlObject;
 class EngineSideChain;
 class EffectsManager;
 class EngineEffectsManager;
@@ -112,7 +111,7 @@ class EngineMaster : public QObject, public AudioSource {
         EngineChannel* m_pChannel = nullptr;
         CSAMPLE* m_pBuffer = nullptr;
         ControlObject* m_pVolumeControl = nullptr;
-        ControlPushButton* m_pMuteControl = nullptr;
+        ControlObject* m_pMuteControl = nullptr;
         int m_index = -1;
     };
     struct GainCache {
@@ -248,11 +247,11 @@ class EngineMaster : public QObject, public AudioSource {
     ControlPotmeter* m_pCrossfader;
     ControlPotmeter* m_pHeadMix;
     ControlPotmeter* m_pBalance;
-    ControlPushButton* m_pXFaderMode;
+    ControlObject* m_pXFaderMode;
     ControlPotmeter* m_pXFaderCurve;
     ControlPotmeter* m_pXFaderCalibration;
-    ControlPushButton* m_pXFaderReverse;
-    ControlPushButton* m_pHeadSplitEnabled;
+    ControlObject* m_pXFaderReverse;
+    ControlObject* m_pHeadSplitEnabled;
     ControlObject* m_pKeylockEngine;
 
     PflGainCalculator m_headphoneGain;

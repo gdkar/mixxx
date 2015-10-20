@@ -57,12 +57,12 @@ bool DragAndDropHelper::allowLoadToPlayer(QString group,bool isPlaying,ConfigObj
     if (PlayerManager::isPreviewDeckGroup(group)) return true;
     return !isPlaying || pConfig->getValueString(ConfigKey("Controls","AllowTrackLoadToPlayingDeck")).toInt();
 }
-bool DragAndDropHelper::dragEnterAccept(QMimeData mimeData,QString sourceIdentifier,bool firstOnly,bool acceptPlaylists)
+bool DragAndDropHelper::dragEnterAccept(const QMimeData& mimeData,QString sourceIdentifier,bool firstOnly,bool acceptPlaylists)
 {
 auto files = dropEventFiles(mimeData, sourceIdentifier,firstOnly, acceptPlaylists);
     return !files.isEmpty();
 }
-QList<QFileInfo> DragAndDropHelper::dropEventFiles(QMimeData mimeData,
+QList<QFileInfo> DragAndDropHelper::dropEventFiles(const QMimeData& mimeData,
                                            QString sourceIdentifier,
                                            bool firstOnly,
                                            bool acceptPlaylists)

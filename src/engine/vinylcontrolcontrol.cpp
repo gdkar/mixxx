@@ -30,22 +30,22 @@ VinylControlControl::VinylControlControl(QString group, ConfigObject<ConfigValue
     m_pControlVinylRate = new ControlObject(ConfigKey(group, "vinylcontrol_rate"),this);
     m_pControlVinylScratching = new ControlPushButton(ConfigKey(group, "vinylcontrol_scratching"));
     m_pControlVinylScratching->set(0);
-    m_pControlVinylScratching->setProperty("buttonMode",ControlPushButton::TOGGLE);
+    m_pControlVinylScratching->setProperty("buttonMode",QVariant::fromValue(ControlPushButton::ButtonMode::Toggle));
     m_pControlVinylEnabled = new ControlPushButton(ConfigKey(group, "vinylcontrol_enabled"));
     m_pControlVinylEnabled->set(0);
-    m_pControlVinylEnabled->setProperty("buttonMode",ControlPushButton::TOGGLE);
+    m_pControlVinylEnabled->setProperty("buttonMode",QVariant::fromValue(ControlPushButton::ButtonMode::Toggle));
     m_pControlVinylWantEnabled = new ControlPushButton(ConfigKey(group, "vinylcontrol_wantenabled"));
     m_pControlVinylWantEnabled->set(0);
-    m_pControlVinylWantEnabled->setProperty("buttonMode",ControlPushButton::TOGGLE);
+    m_pControlVinylWantEnabled->setProperty("buttonMode",QVariant::fromValue(ControlPushButton::ButtonMode::Toggle));
     m_pControlVinylMode = new ControlPushButton(ConfigKey(group, "vinylcontrol_mode"));
-    m_pControlVinylMode->setStates(3);
-    m_pControlVinylMode->setProperty("buttonMode",ControlPushButton::TOGGLE);
+    m_pControlVinylMode->setProperty("numStates",3);
+    m_pControlVinylMode->setProperty("buttonMode",QVariant::fromValue(ControlPushButton::ButtonMode::Toggle));
     m_pControlVinylCueing = new ControlPushButton(ConfigKey(group, "vinylcontrol_cueing"));
-    m_pControlVinylCueing->setStates(3);
-    m_pControlVinylCueing->setProperty("buttonMode",ControlPushButton::TOGGLE);
+    m_pControlVinylCueing->setProperty("numStates",3);
+    m_pControlVinylCueing->setProperty("buttonMode",QVariant::fromValue(ControlPushButton::ButtonMode::Toggle));
     m_pControlVinylSignalEnabled = new ControlPushButton(ConfigKey(group, "vinylcontrol_signal_enabled"));
     m_pControlVinylSignalEnabled->set(1);
-    m_pControlVinylSignalEnabled->setProperty("buttonMode",ControlPushButton::TOGGLE);
+    m_pControlVinylSignalEnabled->setProperty("buttonMode",QVariant::fromValue(ControlPushButton::ButtonMode::Toggle));
 
     m_pPlayEnabled = new ControlObject(ConfigKey(group, "play"), this);
 }

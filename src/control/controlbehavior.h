@@ -1,9 +1,10 @@
 _Pragma("once")
 #include <QTimer>
+#include "controlpushbutton.h"
 class ControlDoublePrivate;
-class ControlNumericBehavior {
+class ControlBehavior {
   public:
-    virtual ~ControlNumericBehavior() = default;
+    virtual ~ControlBehavior() = default;
     // Returns true if the set should occur. Mutates dValue if the value should
     // be changed.
     virtual bool setFilter(double* dValue);
@@ -11,10 +12,10 @@ class ControlNumericBehavior {
     virtual double parameterToValue(double dParam);
     virtual void setValueFromParameter(double dParam, ControlDoublePrivate* pControl);
 };
-class ControlPotmeterBehavior : public ControlNumericBehavior {
+class PotmeterBehavior : public ControlBehavior {
   public:
-    ControlPotmeterBehavior(double dMinValue, double dMaxValue, bool allowOutOfBounds);
-    virtual ~ControlPotmeterBehavior();
+    PotmeterBehavior(double dMinValue, double dMaxValue, bool allowOutOfBounds);
+    virtual ~PotmeterBehavior();
     virtual bool setFilter(double* dValue);
     virtual double valueToParameter(double dValue);
     virtual double parameterToValue(double dParam);
@@ -24,25 +25,25 @@ class ControlPotmeterBehavior : public ControlNumericBehavior {
     double m_dValueRange;
     bool m_bAllowOutOfBounds;
 };
-class ControlLogPotmeterBehavior : public ControlPotmeterBehavior {
+class LogPotmeterBehavior : public PotmeterBehavior {
   public:
-    ControlLogPotmeterBehavior(double dMinValue, double dMaxValue, double minDB);
-    virtual ~ControlLogPotmeterBehavior();
+    LogPotmeterBehavior(double dMinValue, double dMaxValue, double minDB);
+    virtual ~LogPotmeterBehavior();
     virtual double valueToParameter(double dValue);
     virtual double parameterToValue(double dParam);
   protected:
     double m_minDB;
     double m_minOffset;
 };
-class ControlLinPotmeterBehavior : public ControlPotmeterBehavior {
+class LinPotmeterBehavior : public PotmeterBehavior {
   public:
-    ControlLinPotmeterBehavior(double dMinValue, double dMaxValue, bool allowOutOfBounds);
-    virtual ~ControlLinPotmeterBehavior();
+    LinPotmeterBehavior(double dMinValue, double dMaxValue, bool allowOutOfBounds);
+    virtual ~LinPotmeterBehavior();
 };
-class ControlAudioTaperPotBehavior : public ControlPotmeterBehavior {
+class AudioTaperPotBehavior : public PotmeterBehavior {
   public:
-    ControlAudioTaperPotBehavior(double minDB, double maxDB, double neutralParameter);
-    virtual ~ControlAudioTaperPotBehavior();
+    AudioTaperPotBehavior(double minDB, double maxDB, double neutralParameter);
+    virtual ~AudioTaperPotBehavior();
     virtual double valueToParameter(double dValue);
     virtual double parameterToValue(double dParam);
     virtual void setValueFromParameter(double dParam, ControlDoublePrivate* pControl);
@@ -57,24 +58,20 @@ class ControlAudioTaperPotBehavior : public ControlPotmeterBehavior {
     // offset at knob position 0 (Parameter = 0) to reach -Infinity
     double m_offset;
 };
-class ControlTTRotaryBehavior : public ControlNumericBehavior {
+class TTRotaryBehavior : public ControlBehavior {
   public:
     virtual double valueToParameter(double dValue);
     virtual double parameterToValue(double dParam);
 };
-class ControlPushButtonBehavior : public ControlNumericBehavior {
+class PushButtonBehavior : public ControlBehavior {
   public:
+    using ButtonMode = typename ControlPushButton::ButtonMode;
     static const int kPowerWindowTimeMillis;
     static const int kLongPressLatchingTimeMillis;
     // TODO(XXX) Duplicated from ControlPushButton. It's complicated and
     // annoying to share them so I just copied them.
-    enum ButtonMode {
-         PUSH = 0,
-         TOGGLE,
-         POWERWINDOW,
-         LONGPRESSLATCHING,
-    };
-    ControlPushButtonBehavior(ButtonMode buttonMode, int iNumStates);
+    PushButtonBehavior(ButtonMode buttonMode, int iNumStates);
+    virtual ~PushButtonBehavior();
     virtual void setValueFromParameter(double dParam, ControlDoublePrivate* pControl);
   private:
     ButtonMode m_buttonMode;

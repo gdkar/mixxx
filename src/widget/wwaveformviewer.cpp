@@ -5,7 +5,6 @@
 #include <QDragEnterEvent>
 #include <QUrl>
 #include <QPainter>
-#include <QMimeData>
 
 #include "controlobject.h"
 #include "trackinfoobject.h"
@@ -34,7 +33,6 @@ WWaveformViewer::WWaveformViewer(const char *group, ConfigObject<ConfigValue>* p
     connect(inst,&WaveformWidgetFactory::zoomChanged,this,&WWaveformViewer::setZoom);
     connect(inst,&WaveformWidgetFactory::preRender,m_waveformWidget,&WaveformWidget::onPreRender);
     connect(inst,&WaveformWidgetFactory::render,m_waveformWidget,&WaveformWidget::render);
-    setAttribute(Qt::WA_OpaquePaintEvent);
 }
 WWaveformViewer::~WWaveformViewer() = default;
 void WWaveformViewer::setup(QDomNode node, const SkinContext& context)

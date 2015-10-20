@@ -23,7 +23,7 @@
    -------- ------------------------------------------------------ */
 ControlTTRotary::ControlTTRotary(ConfigKey key) : ControlObject(key)
 {
-    if (m_pControl)         m_pControl->setBehavior(new ControlTTRotaryBehavior());
+    if (m_pControl)         m_pControl->setBehavior(new TTRotaryBehavior());
 }
 
 

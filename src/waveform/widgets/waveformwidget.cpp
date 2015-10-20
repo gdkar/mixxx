@@ -33,7 +33,7 @@ WaveformWidget::WaveformWidget(const char* group,QWidget *p)
 WaveformWidget::~WaveformWidget() = default;
 int WaveformWidget::render()
 {
-    repaint();
+    update();
     return 0; // Time for Painter setup, unknown in this case
 }
 void WaveformWidget::onPreRender(int i)

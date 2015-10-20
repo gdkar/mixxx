@@ -23,5 +23,5 @@ ControlLogpotmeter::ControlLogpotmeter(ConfigKey key, double dMaxValue, double m
     // Override ControlPotmeters default value of 0.5
     setDefaultValue(1.0);
     set(1.0);
-    if (m_pControl) {m_pControl->setBehavior(new ControlLogPotmeterBehavior(0, dMaxValue, minDB));}
+    if (m_pControl) {m_pControl->setBehavior(new LogPotmeterBehavior(0, dMaxValue, minDB));}
 }

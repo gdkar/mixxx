@@ -62,7 +62,7 @@ class Paintable {
     static QString DrawModeToString(DrawMode mode);
   private:
     void drawInternal(QRectF targetRect, QPainter* pPainter,QRectF sourceRect);
-    QPixmap                 m_pPixmap;
+    QPixmap                  m_pPixmap;
     QSvgRenderer             m_pSvg;
     DrawMode m_draw_mode;
 };

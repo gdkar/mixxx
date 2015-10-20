@@ -1,6 +1,4 @@
-#ifndef QUANTIZECONTROL_H
-#define QUANTIZECONTROL_H
-
+_Pragma("once")
 #include <QObject>
 
 #include "configobject.h"
@@ -10,7 +8,6 @@
 #include "track/beats.h"
 
 class ControlObject;
-class ControlPushButton;
 
 class QuantizeControl : public EngineControl {
     Q_OBJECT
@@ -35,13 +32,10 @@ class QuantizeControl : public EngineControl {
     // next beat values.  Usually callers will call lookupBeatPositions first.
     void updateClosestBeat(double dCurrentSample);
 
-    ControlPushButton* m_pCOQuantizeEnabled;
+    ControlObject* m_pCOQuantizeEnabled;
     ControlObject* m_pCONextBeat;
     ControlObject* m_pCOPrevBeat;
     ControlObject* m_pCOClosestBeat;
-
     TrackPointer m_pTrack;
     BeatsPointer m_pBeats;
 };
-
-#endif // QUANTIZECONTROL_H

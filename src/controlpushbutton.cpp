@@ -22,46 +22,42 @@
    Purpose: Creates a new simulated latching push-button.
    Input:   key - Key for the configuration file
    -------- ------------------------------------------------------ */
-ControlPushButton::ControlPushButton(ConfigKey key, bool bPersist,QObject *pParent)
-        : ControlObject(key, false, false, bPersist),
-          m_buttonMode(PUSH),
-          m_iNoStates(2) {
+ControlPushButton::ControlPushButton(ConfigKey key, QObject *pParent,bool bPersist)
+        : ControlObject(key, pParent, false, bPersist)
+{
     setParent(pParent);
-    if (m_pControl) {
-        m_pControl->setBehavior(new ControlPushButtonBehavior(static_cast<ControlPushButtonBehavior::ButtonMode>(m_buttonMode),m_iNoStates));
-    }
+    qRegisterMetaType<ButtonMode>();
+    if (m_pControl) 
+        m_pControl->setBehavior(new PushButtonBehavior(m_buttonMode,m_iNoStates));
 }
 ControlPushButton::~ControlPushButton() = default;
 // Tell this PushButton how to act on rising and falling edges
-void ControlPushButton::setButtonMode(enum ButtonMode mode) {
+void ControlPushButton::setButtonMode(ButtonMode mode)
+{
     //qDebug() << "Setting " << m_Key.group << m_Key.item << "as toggle";
-    if(m_buttonMode != mode){
+    if(m_buttonMode != mode)
+    {
       m_buttonMode = mode;
-      if (m_pControl) {
-          m_pControl->setBehavior(new ControlPushButtonBehavior(static_cast<ControlPushButtonBehavior::ButtonMode>(m_buttonMode),m_iNoStates));
-      }
+      if (m_pControl) 
+          m_pControl->setBehavior(new PushButtonBehavior(m_buttonMode,m_iNoStates));
       emit buttonModeChanged(mode);
     }
 }
-int ControlPushButton::numStates()const{return m_iNoStates;}
-void ControlPushButton::setStates(int num_states) {
+int ControlPushButton::numStates()const
+{
+  return m_iNoStates;
+}
+void ControlPushButton::setStates(int num_states)
+{
     if(m_iNoStates != num_states)
     {
       m_iNoStates = num_states;
-      if (m_pControl) {
-              m_pControl->setBehavior(new ControlPushButtonBehavior(static_cast<ControlPushButtonBehavior::ButtonMode>(m_buttonMode),m_iNoStates));
-      }
+      if (m_pControl) 
+              m_pControl->setBehavior(new PushButtonBehavior(m_buttonMode,m_iNoStates));
       emit numStatesChanged(num_states);
     }
 }
-ControlPushButton::ButtonMode ControlPushButton::getButtonMode()const{return m_buttonMode;}
-/*static */QString ControlPushButton::buttonModeToString(int mode) {
-    switch(mode) {
-        case ControlPushButton::PUSH:return "PUSH";
-        case ControlPushButton::TOGGLE:return "TOGGLE";
-        case ControlPushButton::POWERWINDOW:return "POWERWINDOW";
-        case ControlPushButton::LONGPRESSLATCHING:return "LONGPRESSLATCHING";
-        case ControlPushButton::TRIGGER:return "TRIGGER";
-        default:return "UNKNOWN";
-    }
+ControlPushButton::ButtonMode ControlPushButton::getButtonMode()const
+{
+  return m_buttonMode;
 }

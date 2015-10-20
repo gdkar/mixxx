@@ -8,9 +8,10 @@
 WTime::WTime(QWidget *parent)
         : WLabel(parent),
           m_sTimeFormat("h:mm AP"),
-          m_iInterval(s_iMinuteInterval) {
+          m_iInterval(s_iMinuteInterval)
+{
     m_pTimer = new QTimer(this);
-    m_pTimer->setTimerType(Qt::PreciseTimer);
+    m_pTimer->setTimerType(Qt::CoarseTimer);
 }
 WTime::~WTime()
 {
