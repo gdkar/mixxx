@@ -29,8 +29,8 @@ Player::Player(QObject* pParent,
           m_replaygainPending(false)
 {
     auto channelGroup = pMixingEngine->registerChannelGroup(group);
-    m_pChannel = new EngineDeck(channelGroup, pConfig, pMixingEngine,pEffectsManager, defaultOrientation);
-    auto pEngineBuffer = m_pChannel->getEngineBuffer();
+    m_pChannel = new EngineDeck(channelGroup, pConfig, pMixingEngine,pEffectsManager, defaultOrientation,nullptr);
+    connect(this,&QObject::destroyed,m_pChannel,&QObject::deleteLater,Qt::AutoConnection);
     pMixingEngine->addChannel(m_pChannel);
     // Set the routing option defaults for the master and headphone mixes.
     m_pChannel->setMaster(defaultMaster);
@@ -38,10 +38,10 @@ Player::Player(QObject* pParent,
     // Connect our signals and slots with the EngineBuffer's signals and
     // slots. This will let us know when the reader is done loading a track, and
     // let us request that the reader load a track.
-    connect(this, SIGNAL(loadTrack(TrackPointer, bool)),pEngineBuffer, SLOT(slotLoadTrack(TrackPointer, bool)));
-    connect(pEngineBuffer, SIGNAL(trackLoaded(TrackPointer)),this, SLOT(slotFinishLoading(TrackPointer)));
-    connect(pEngineBuffer, SIGNAL(trackLoadFailed(TrackPointer, QString)),this, SLOT(slotLoadFailed(TrackPointer, QString)));
-    connect(pEngineBuffer, SIGNAL(trackUnloaded(TrackPointer)),this, SLOT(slotUnloadTrack(TrackPointer)));
+    connect(this, &Player::loadTrack,m_pChannel, &EngineDeck::loadTrack);
+    connect(m_pChannel, &EngineDeck::trackLoaded,this, &Player::slotFinishLoading);
+    connect(m_pChannel, &EngineDeck::trackLoadFailed,this, &Player::slotLoadFailed);
+    connect(m_pChannel, &EngineDeck::trackUnloaded,this, &Player::slotUnloadTrack);
     // Get loop point control objects
     m_pLoopInPoint = new ControlObject(ConfigKey(getGroup(),"loop_start_position"),this);
     m_pLoopOutPoint = new ControlObject(ConfigKey(getGroup(),"loop_end_position"),this);
@@ -79,7 +79,6 @@ Player::~Player()
         m_pLoadedTrack.clear();
     }
 }
-
 void Player::slotLoadTrack(TrackPointer track, bool bPlay)
 {
     // Before loading the track, ensure we have access. This uses lazy
@@ -100,7 +99,7 @@ void Player::slotLoadTrack(TrackPointer track, bool bPlay)
             QListIterator<Cue*> it(cuePoints);
             while (it.hasNext())
             {
-                Cue* pCue = it.next();
+                auto pCue = it.next();
                 if (pCue->getType() == Cue::LOOP) pLoopCue = pCue;
             }
             if (!pLoopCue)

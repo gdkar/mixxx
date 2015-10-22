@@ -36,99 +36,104 @@ DlgPrefSound::DlgPrefSound(QWidget* pParent, SoundManager* pSoundManager,PlayerM
           m_pPlayerManager(pPlayerManager),
           m_pConfig(pConfig),
           m_settingsModified(false),
-          m_loading(false) {
+          m_loading(false)
+{
     setupUi(this);
-    connect(m_pSoundManager, SIGNAL(devicesUpdated()),this, SLOT(refreshDevices()));
+    connect(m_pSoundManager,&SoundManager::devicesUpdated,this,&DlgPrefSound::refreshDevices);
     apiComboBox->clear();
     apiComboBox->addItem(tr("None"), "None");
     updateAPIs();
     connect(apiComboBox, SIGNAL(currentIndexChanged(int)),this, SLOT(apiChanged(int)));
     sampleRateComboBox->clear();
-    for(auto srate: m_pSoundManager->getSampleRates()) {
-        if (srate > 0) {
-            // no ridiculous sample rate values. prohibiting zero means
-            // avoiding a potential div-by-0 error in ::updateLatencies
-            sampleRateComboBox->addItem(tr("%1 Hz").arg(srate), srate);
-        }
-    }
-    connect(sampleRateComboBox, SIGNAL(currentIndexChanged(int)),   this, SLOT(sampleRateChanged(int)));
-    connect(sampleRateComboBox, SIGNAL(currentIndexChanged(int)),   this, SLOT(updateAudioBufferSizes(int)));
-    connect(audioBufferComboBox, SIGNAL(currentIndexChanged(int)),  this, SLOT(audioBufferChanged(int)));
-    connect(audioFragmentsComboBox,SIGNAL(currentIndexChanged(int)),this,SLOT(updateAudioBufferSizes(int)));
-    connect(audioFragmentsComboBox,SIGNAL(currentIndexChanged(int)),this,SLOT(audioFragmentsChanged(int)));
-    deviceSyncComboBox->clear();
-    deviceSyncComboBox->addItem(tr("Default ( callbackProcess )"),QVariant{1});
-    deviceSyncComboBox->addItem(tr("Experimental ( callbackProcessDrift )"),QVariant{2});
-    deviceSyncComboBox->setCurrentIndex(1);
-    for(auto i = 3; i < 33; i++)
+    for(auto srate: m_pSoundManager->getSampleRates())
     {
-      audioFragmentsComboBox->addItem(QString::number(i),i);
+        if (srate > 0) sampleRateComboBox->addItem(tr("%1 Hz").arg(srate), srate);
     }
-    connect(deviceSyncComboBox, SIGNAL(currentIndexChanged(int)),this, SLOT(syncBuffersChanged(int)));
+    connect(sampleRateComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+        [&](auto i){m_config.setSampleRate(sampleRateComboBox->currentData().toInt());});
+    connect(sampleRateComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+        this, &DlgPrefSound::updateAudioBufferSizes);
+    connect(audioBufferComboBox,static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+        [&](auto i){m_config.setAudioBufferSizeIndex(i + 1);});
+    deviceSyncComboBox->clear();
+    deviceSyncComboBox->addItem(tr("Default (long delay)"),QVariant{1});
+    deviceSyncComboBox->addItem(tr("Experimental (no delay)"),QVariant{2});
+    deviceSyncComboBox->setCurrentIndex(1);
+    connect(deviceSyncComboBox, SIGNAL(currentIndexChanged(int)),
+        this, SLOT(syncBuffersChanged(int)));
 
     keylockComboBox->clear();
     auto keylockEnum = QMetaEnum::fromType<EngineBuffer::KeylockEngine>();
-    for (int i = 0; i < keylockEnum.keyCount(); ++i) {
-        keylockComboBox->addItem(QString(keylockEnum.key(i)),keylockEnum.value(i));
+    for (int i = 0; i < keylockEnum.keyCount(); ++i)
+    {
+      keylockComboBox->addItem(QString(keylockEnum.key(i)),keylockEnum.value(i));
     }
     initializePaths();
     loadSettings();
-    connect(apiComboBox, SIGNAL(currentIndexChanged(int)),this, SLOT(settingChanged()));
-    connect(sampleRateComboBox, SIGNAL(currentIndexChanged(int)),this, SLOT(settingChanged()));
-    connect(audioBufferComboBox, SIGNAL(currentIndexChanged(int)),this, SLOT(settingChanged()));
-    connect(deviceSyncComboBox, SIGNAL(currentIndexChanged(int)),this, SLOT(settingChanged()));
-    connect(keylockComboBox, SIGNAL(currentIndexChanged(int)),this, SLOT(settingChanged()));
+    connect(apiComboBox, SIGNAL(currentIndexChanged(int)),
+        this, SLOT(settingChanged()));
+    connect(sampleRateComboBox, SIGNAL(currentIndexChanged(int)),
+        this, SLOT(settingChanged()));
+    connect(audioBufferComboBox, SIGNAL(currentIndexChanged(int)),
+        this, SLOT(settingChanged()));
+    connect(deviceSyncComboBox, SIGNAL(currentIndexChanged(int)),
+        this, SLOT(settingChanged()));
+    connect(keylockComboBox, SIGNAL(currentIndexChanged(int)),
+        this, SLOT(settingChanged()));
 
-    connect(queryButton, SIGNAL(clicked()),this, SLOT(queryClicked()));
+    connect(queryButton, SIGNAL(clicked()),
+        this, SLOT(queryClicked()));
 
-    connect(m_pSoundManager, SIGNAL(outputRegistered(AudioOutput, AudioSource*)),this, SLOT(addPath(AudioOutput)));
-    connect(m_pSoundManager, SIGNAL(outputRegistered(AudioOutput, AudioSource*)),this, SLOT(loadSettings()));
+    connect(m_pSoundManager, SIGNAL(outputRegistered(AudioOutput, AudioSource*)),
+        this, SLOT(addPath(AudioOutput)));
+    connect(m_pSoundManager, SIGNAL(outputRegistered(AudioOutput, AudioSource*)),
+        this, SLOT(loadSettings()));
 
-    connect(m_pSoundManager, SIGNAL(inputRegistered(AudioInput, AudioDestination*)),this, SLOT(addPath(AudioInput)));
-    connect(m_pSoundManager, SIGNAL(inputRegistered(AudioInput, AudioDestination*)),this, SLOT(loadSettings()));
+    connect(m_pSoundManager, SIGNAL(inputRegistered(AudioInput, AudioDestination*)),
+        this, SLOT(addPath(AudioInput)));
+    
+    connect(m_pSoundManager, SIGNAL(inputRegistered(AudioInput, AudioDestination*)),
+        this, SLOT(loadSettings()));
 
     m_pMasterAudioLatencyOverloadCount = new ControlObject(ConfigKey("Master", "audio_latency_overload_count"), this);
     m_pMasterAudioLatencyOverloadCount->connectValueChanged(SLOT(bufferUnderflow(double)));
-
     m_pMasterLatency = new ControlObject(ConfigKey("Master", "latency"), this);
     m_pMasterLatency->connectValueChanged(SLOT(masterLatencyChanged(double)));
-
-
     m_pHeadDelay = new ControlObject(ConfigKey("Master", "headDelay"), this);
     m_pMasterDelay = new ControlObject(ConfigKey("Master", "delay"), this);
-
     headDelaySpinBox->setValue(m_pHeadDelay->get());
     masterDelaySpinBox->setValue(m_pMasterDelay->get());
-
     m_pMasterEnabled = new ControlObject(ConfigKey("Master", "enabled"), this);
     masterMixComboBox->addItem(tr("Disabled"));
     masterMixComboBox->addItem(tr("Enabled"));
     masterMixComboBox->setCurrentIndex(m_pMasterEnabled->get() ? 1 : 0);
-    connect(masterMixComboBox, SIGNAL(currentIndexChanged(int)),this, SLOT(masterMixChanged(int)));
-    m_pMasterEnabled->connectValueChanged(this, SLOT(masterEnabledChanged(double)));
-
+    connect(masterMixComboBox,static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+        m_pMasterEnabled ,static_cast<void(ControlObject::*)(double)>(&ControlObject::set));
+    connect(m_pMasterEnabled,&ControlObject::valueChanged,
+        [=](auto val){masterMixComboBox->setCurrentIndex( val>0);});
     m_pMasterMonoMixdown = new ControlObject(ConfigKey("Master", "mono_mixdown"), this);
     masterOutputModeComboBox->addItem(tr("Stereo"));
     masterOutputModeComboBox->addItem(tr("Mono"));
     masterOutputModeComboBox->setCurrentIndex(m_pMasterMonoMixdown->get() ? 1 : 0);
-    connect(masterOutputModeComboBox, SIGNAL(currentIndexChanged(int)),this, SLOT(masterOutputModeComboBoxChanged(int)));
-    m_pMasterMonoMixdown->connectValueChanged(this, SLOT(masterMonoMixdownChanged(double)));
-
+    connect(masterOutputModeComboBox,static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+        m_pMasterMonoMixdown,static_cast<void(ControlObject::*)(double)>(&ControlObject::set));
+    connect(m_pMasterMonoMixdown,&ControlObject::valueChanged,
+        masterOutputModeComboBox,static_cast<void(QComboBox::*)(int)>(&QComboBox::setCurrentIndex));
     m_pMasterTalkoverMix = new ControlObject(ConfigKey("Master", "talkover_mix"), this);
     micMixComboBox->addItem(tr("Master output"));
     micMixComboBox->addItem(tr("Broadcast and Recording only"));
-    micMixComboBox->setCurrentIndex((int)m_pMasterTalkoverMix->get());
-    connect(micMixComboBox, SIGNAL(currentIndexChanged(int)),this, SLOT(talkoverMixComboBoxChanged(int)));
-    m_pMasterTalkoverMix->connectValueChanged(this, SLOT(talkoverMixChanged(double)));
-
+    micMixComboBox->setCurrentIndex(m_pMasterTalkoverMix->get());
+    connect(micMixComboBox,static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),m_pMasterTalkoverMix,
+        static_cast<void(ControlObject::*)(double)>(&ControlObject::set));
+    connect(m_pMasterTalkoverMix,&ControlObject::valueChanged, [=](auto val){micMixComboBox->setCurrentIndex(val?1:0);});
     m_pKeylockEngine = new ControlObject(ConfigKey("Master", "keylock_engine"), this);
-    connect(headDelaySpinBox, SIGNAL(valueChanged(double)),this, SLOT(headDelayChanged(double)));
-    connect(masterDelaySpinBox, SIGNAL(valueChanged(double)),this, SLOT(masterDelayChanged(double)));
-
+    connect(headDelaySpinBox,static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+        m_pHeadDelay,static_cast<void(ControlObject::*)(double)>(&ControlObject::set));
+    connect(masterDelaySpinBox, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+        m_pMasterDelay,static_cast<void(ControlObject::*)(double)>(&ControlObject::set));
 #ifdef __LINUX__
     qDebug() << "RLimit Cur " << RLimit::getCurRtPrio();
     qDebug() << "RLimit Max " << RLimit::getMaxRtPrio();
-
     if (RLimit::isRtPrioAllowed()) {limitsHint->hide();}
 #else
     // the limits warning is a Linux only thing
@@ -189,75 +194,80 @@ void DlgPrefSound::slotApply() {
  * and each path item has an identifier (Master, Headphones, ...) and an index,
  * if necessary.
  */
-void DlgPrefSound::initializePaths() {
-    for(auto out: m_pSoundManager->registeredOutputs()) {addPath(out);}
-    for(auto in: m_pSoundManager->registeredInputs()) {addPath(in);}
+void DlgPrefSound::initializePaths()
+{
+    for(auto out: m_pSoundManager->registeredOutputs()) addPath(out);
+    for(auto in: m_pSoundManager->registeredInputs()) addPath(in);
 }
-void DlgPrefSound::addPath(AudioOutput output) {
+void DlgPrefSound::addPath(AudioOutput output)
+{
     // if we already know about this output, don't make a new entry
     auto _children = outputTab->findChildren<DlgPrefSoundItem*>(QString{});
-    for(auto item: _children) {
-        if (item->type() == output.getType()) {
-            if (AudioPath::isIndexed(item->type())) {
-                if (item->index() == output.getIndex()) {return;}
-            } else {return;}
+    for(auto item: _children)
+    {
+        if (item->type() == output.getType())
+        {
+            if (AudioPath::isIndexed(item->type()))
+            {
+                if (item->index() == output.getIndex()) return;
+            } else return;
         }
     }
     DlgPrefSoundItem *toInsert;
     auto type = output.getType();
-    if (AudioPath::isIndexed(type)) {
-        toInsert = new DlgPrefSoundItem(outputTab, type,m_outputDevices, false, output.getIndex());
-    } else {
-        toInsert = new DlgPrefSoundItem(outputTab, type,m_outputDevices, false);
-    }
-    connect(this, SIGNAL(refreshOutputDevices(const QList<SoundDevice*>&)),toInsert, SLOT(refreshDevices(const QList<SoundDevice*>&)));
+    if (AudioPath::isIndexed(type)) toInsert = new DlgPrefSoundItem(outputTab, type,m_outputDevices, false, output.getIndex());
+    else                            toInsert = new DlgPrefSoundItem(outputTab, type,m_outputDevices, false);
+    connect(this,&DlgPrefSound::refreshOutputDevices,toInsert,&DlgPrefSoundItem::refreshDevices);
     insertItem(toInsert, outputVLayout);
     connectSoundItem(toInsert);
 }
 
-void DlgPrefSound::addPath(AudioInput input) {
+void DlgPrefSound::addPath(AudioInput input)
+{
     DlgPrefSoundItem *toInsert;
     // if we already know about this input, don't make a new entry
     auto _children = inputTab->findChildren<DlgPrefSoundItem*>(QString{});
-    for(auto item: _children ) {
-        if (item->type() == input.getType()) {
-            if (AudioPath::isIndexed(item->type())) {
-                if (item->index() == input.getIndex()) {return;}
-            } else {return;}
+    for(auto item: _children )
+    {
+        if (item->type() == input.getType())
+        {
+            if (AudioPath::isIndexed(item->type()))
+            {
+                if (item->index() == input.getIndex()) return;
+            }
+            else return;
         }
     }
     auto type = input.getType();
-    if (AudioPath::isIndexed(type)) {
-        toInsert = new DlgPrefSoundItem(inputTab, type,m_inputDevices, true, input.getIndex());
-    } else {
-        toInsert = new DlgPrefSoundItem(inputTab, type,m_inputDevices, true);
-    }
-    connect(this, SIGNAL(refreshInputDevices(const QList<SoundDevice*>&)),toInsert, SLOT(refreshDevices(const QList<SoundDevice*>&)));
+    if (AudioPath::isIndexed(type)) toInsert = new DlgPrefSoundItem(inputTab, type,m_inputDevices, true, input.getIndex());
+    else  toInsert = new DlgPrefSoundItem(inputTab, type,m_inputDevices, true);
+    connect(this, &DlgPrefSound::refreshInputDevices
+        ,toInsert, &DlgPrefSoundItem::refreshDevices);
     insertItem(toInsert, inputVLayout);
     connectSoundItem(toInsert);
 }
-
-void DlgPrefSound::connectSoundItem(DlgPrefSoundItem *item) {
-    connect(item, SIGNAL(settingChanged()),this, SLOT(settingChanged()));
-    connect(this, SIGNAL(loadPaths(const SoundManagerConfig&)),item, SLOT(loadPath(const SoundManagerConfig&)));
-    connect(this, SIGNAL(writePaths(SoundManagerConfig*)),item, SLOT(writePath(SoundManagerConfig*)));
-    connect(this, SIGNAL(updatingAPI()),item, SLOT(save()));
-    connect(this, SIGNAL(updatedAPI()),item, SLOT(reload()));
+void DlgPrefSound::connectSoundItem(DlgPrefSoundItem *item)
+{
+    connect(item, SIGNAL(settingChanged()),
+        this, SLOT(settingChanged()));
+    connect(this, SIGNAL(loadPaths(const SoundManagerConfig&)),
+        item, SLOT(loadPath(const SoundManagerConfig&)));
+    connect(this, SIGNAL(writePaths(SoundManagerConfig*)),
+        item, SLOT(writePath(SoundManagerConfig*)));
+    connect(this, SIGNAL(updatingAPI()),
+        item, SLOT(save()));
+    connect(this, SIGNAL(updatedAPI()),
+        item, SLOT(reload()));
 }
-
-void DlgPrefSound::insertItem(DlgPrefSoundItem *pItem, QVBoxLayout *pLayout) {
+void DlgPrefSound::insertItem(DlgPrefSoundItem *pItem, QVBoxLayout *pLayout)
+{
     int pos;
-    for (pos = 0; pos < pLayout->count() - 1; ++pos) {
-        DlgPrefSoundItem *pOther(qobject_cast<DlgPrefSoundItem*>(
-            pLayout->itemAt(pos)->widget()));
+    for (pos = 0; pos < pLayout->count() - 1; ++pos)
+    {
+        auto pOther(qobject_cast<DlgPrefSoundItem*>(pLayout->itemAt(pos)->widget()));
         if (!pOther) continue;
-        if (pItem->type() < pOther->type()) {
-            break;
-        } else if (pItem->type() == pOther->type()
-            && AudioPath::isIndexed(pItem->type())
-            && pItem->index() < pOther->index()) {
-            break;
-        }
+        if (pItem->type() < pOther->type()) break;
+        else if (pItem->type() == pOther->type() && AudioPath::isIndexed(pItem->type()) && pItem->index() < pOther->index()) break;
     }
     pLayout->insertWidget(pos, pItem);
 }
@@ -286,12 +296,12 @@ void DlgPrefSound::loadSettings(const SoundManagerConfig &config) {
             // the updateLatencies slot won't run -- bkgood lp bug 689373
         }
     }
-    int sizeIndex = audioBufferComboBox->findData(m_config.getAudioBufferSizeIndex());
+    auto sizeIndex = audioBufferComboBox->findData(m_config.getAudioBufferSizeIndex());
     if (sizeIndex != -1) {audioBufferComboBox->setCurrentIndex(sizeIndex);}
     auto syncBuffers = m_config.getSyncBuffers();
     auto syncIndex   = deviceSyncComboBox->findData(QVariant(syncBuffers));
     if ( syncIndex != -1 ) { deviceSyncComboBox->setCurrentIndex(syncIndex);}
-    int keylock_engine = m_pConfig->getValueString(ConfigKey("Master", "keylock_engine"), "1").toInt();
+    auto  keylock_engine = m_pConfig->getValueString(ConfigKey("Master", "keylock_engine"), "1").toInt();
     keylockComboBox->setCurrentIndex(keylock_engine);
     emit(loadPaths(m_config));
     m_loading = false;
@@ -303,26 +313,29 @@ void DlgPrefSound::loadSettings(const SoundManagerConfig &config) {
  * loads a value from SoundManager). Refreshes the device lists
  * for the new API and pushes those to the path items.
  */
-void DlgPrefSound::apiChanged(int index) {
+void DlgPrefSound::apiChanged(int index)
+{
     m_config.setAPI(apiComboBox->itemData(index).toString());
     refreshDevices();
     // JACK sets its own latency
-    if (m_config.getAPI() == MIXXX_PORTAUDIO_JACK_STRING) {
+    if (m_config.getAPI() == MIXXX_PORTAUDIO_JACK_STRING)
+    {
         latencyLabel->setEnabled(false);
         audioBufferComboBox->setEnabled(false);
-    } else {
+    }
+    else
+    {
         latencyLabel->setEnabled(true);
         audioBufferComboBox->setEnabled(true);
     }
 }
-
 /**
  * Updates the list of APIs, trying to keep the API and device selections
  * constant if possible.
  */
 void DlgPrefSound::updateAPIs()
 {
-    QString currentAPI(apiComboBox->currentData().toString());
+    auto currentAPI = apiComboBox->itemData(apiComboBox->currentIndex()).toString();
     emit(updatingAPI());
     while (apiComboBox->count() > 1) { apiComboBox->removeItem(apiComboBox->count() - 1);}
     for(auto api: m_pSoundManager->getHostAPIList()) {apiComboBox->addItem(api, api);}
@@ -331,22 +344,9 @@ void DlgPrefSound::updateAPIs()
     emit(updatedAPI());
 }
 /**
- * Slot called when the sample rate combo box changes to update the
- * sample rate in the config.
- */
-void DlgPrefSound::sampleRateChanged(int index) {m_config.setSampleRate(sampleRateComboBox->itemData(index).toUInt());}
-/**
  * Slot called when the latency combo box is changed to update the
  * latency in the config.
  */
-void DlgPrefSound::audioBufferChanged(int index)
-{
-    m_config.setAudioBufferSizeIndex(audioBufferComboBox->currentData().toUInt());
-}
-void DlgPrefSound::audioFragmentsChanged(int index)
-{
-    m_config.setSyncFragments(audioFragmentsComboBox->currentData().toUInt());
-}
 void DlgPrefSound::syncBuffersChanged(int )
 {
     auto data = deviceSyncComboBox->currentData();
@@ -361,32 +361,41 @@ void DlgPrefSound::syncBuffersChanged(int )
 // but they'll be close).
 void DlgPrefSound::updateAudioBufferSizes(int sampleRateIndex)
 {
-    double sampleRate = 1/sampleRateComboBox->itemData(sampleRateComboBox->currentIndex()).toDouble();
+    auto sampleRate = sampleRateComboBox->itemData(sampleRateIndex).toDouble();
     auto oldSizeIndex = audioBufferComboBox->currentIndex();
+    auto framesPerBuffer = 1; // start this at 0 and inf loop happens
     // we don't want to display any sub-1ms buffer sizes (well maybe we do but I
     // don't right now!), so we iterate over all the buffer sizes until we
     // find the first that gives us a buffer size >= 1 ms -- bkgood
     // no div-by-0 in the next line because we don't allow srates of 0 in our
     // srate list when we construct it in the ctor -- bkgood
-    auto incr = static_cast<int>(64 / ( ( 2 * sizeof(float))));
-    auto framesPerBuffer = incr;;
-    auto frag = m_config.getSyncFragments();
-    audioBufferComboBox->clear();
-    for(; framesPerBuffer * sampleRate < 1e-1; framesPerBuffer += incr )
+    for (; framesPerBuffer / sampleRate * 1000 < 1.0; framesPerBuffer *= 2)
     {
-      auto latency = framesPerBuffer * sampleRate * frag;
-      audioBufferComboBox->addItem(tr("%1 ( %2 ms )").arg(framesPerBuffer).arg(latency * 1e3,0,'g',3),framesPerBuffer);
     }
+    audioBufferComboBox->clear();
+    for (auto i = 0; i < SoundManagerConfig::kMaxAudioBufferSizeIndex; ++i)
+    {
+        auto  latency = framesPerBuffer * 1e3 / sampleRate ;
+        // i + 1 in the next line is a latency index as described in SSConfig
+        audioBufferComboBox->addItem(tr("%1 ms").arg(latency,0,'g',3), i + 1);
+        framesPerBuffer <<= 1; // *= 2
+    }
+    if (oldSizeIndex < audioBufferComboBox->count() && oldSizeIndex >= 0) audioBufferComboBox->setCurrentIndex(oldSizeIndex);
+    else audioBufferComboBox->setCurrentIndex(audioBufferComboBox->count() - 1);
 }
 /**
  * Slot called when device lists go bad to refresh them, or the API
  * just changes and we need to display new devices.
  */
-void DlgPrefSound::refreshDevices() {
-    if (m_config.getAPI() == "None") {
+void DlgPrefSound::refreshDevices()
+{
+    if (m_config.getAPI() == "None")
+    {
         m_outputDevices.clear();
         m_inputDevices.clear();
-    } else {
+    }
+    else
+    {
         m_outputDevices = m_pSoundManager->getDeviceList(m_config.getAPI(), true, false);
         m_inputDevices  = m_pSoundManager->getDeviceList(m_config.getAPI(), false, true);
     }
@@ -399,29 +408,30 @@ void DlgPrefSound::refreshDevices() {
  * apply button and marks that settings have been changed so that
  * DlgPrefSound::slotApply knows to apply them.
  */
-void DlgPrefSound::settingChanged() {
+void DlgPrefSound::settingChanged()
+{
     if (m_loading) return; // doesn't count if we're just loading prefs
     m_settingsModified = true;
 }
-
 /**
  * Slot called when the "Query Devices" button is clicked.
  */
-void DlgPrefSound::queryClicked() {
+void DlgPrefSound::queryClicked()
+{
     m_pSoundManager->queryDevices();
     updateAPIs();
 }
 /**
  * Slot called when the "Reset to Defaults" button is clicked.
  */
-void DlgPrefSound::slotResetToDefaults() {
+void DlgPrefSound::slotResetToDefaults()
+{
     SoundManagerConfig newConfig;
     newConfig.loadDefaults(m_pSoundManager, SoundManagerConfig::ALL);
     loadSettings(newConfig);
     {
       auto keylockEnum = QMetaEnum::fromType<EngineBuffer::KeylockEngine>();
-      keylockComboBox->setCurrentIndex(
-          keylockComboBox->findData(static_cast<int>(EngineBuffer::KeylockEngine::RubberBand)));
+      keylockComboBox->setCurrentIndex( keylockComboBox->findData(static_cast<int>(EngineBuffer::KeylockEngine::RubberBand)));
       m_pKeylockEngine->set(static_cast<int>(EngineBuffer::KeylockEngine::RubberBand));
     }
     masterMixComboBox->setCurrentIndex(1);
@@ -439,19 +449,13 @@ void DlgPrefSound::slotResetToDefaults() {
 
     settingChanged(); // force the apply button to enable
 }
-void DlgPrefSound::bufferUnderflow(double count) {
+void DlgPrefSound::bufferUnderflow(double count)
+{
     bufferUnderflowCount->setText(QString::number(count));
     update();
 }
-void DlgPrefSound::masterLatencyChanged(double latency) {
+void DlgPrefSound::masterLatencyChanged(double latency)
+{
     currentLatency->setText(QString("%1 ms").arg(latency));
     update();
 }
-void DlgPrefSound::headDelayChanged(double value) { m_pHeadDelay->set(value); }
-void DlgPrefSound::masterDelayChanged(double value) { m_pMasterDelay->set(value); }
-void DlgPrefSound::masterMixChanged(int value) { m_pMasterEnabled->set(value); }
-void DlgPrefSound::masterEnabledChanged(double value) { masterMixComboBox->setCurrentIndex(value ? 1 : 0);}
-void DlgPrefSound::masterOutputModeComboBoxChanged(int value) {m_pMasterMonoMixdown->set((double)value);}
-void DlgPrefSound::masterMonoMixdownChanged(double value) {masterOutputModeComboBox->setCurrentIndex(value ? 1 : 0);}
-void DlgPrefSound::talkoverMixComboBoxChanged(int value) {m_pMasterTalkoverMix->set((double)value);}
-void DlgPrefSound::talkoverMixChanged(double value) {micMixComboBox->setCurrentIndex(value ? 1 : 0);}

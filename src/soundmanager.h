@@ -19,7 +19,6 @@ _Pragma("once")
 #include <QString>
 #include <QList>
 #include <QHash>
-#include <QThread>
 #include <atomic>
 
 #include "util/types.h"
@@ -73,26 +72,24 @@ class SoundManager : public QObject {
     int getConfiguredDeckCount() const;
     SoundDevice* getErrorDevice() const;
     // Returns a list of samplerates we will attempt to support for a given API.
-    QList<unsigned int> getSampleRates(QString api) const;
+    QList<double> getSampleRates(QString api) const;
     // Convenience overload for SoundManager::getSampleRates(QString)
-    QList<unsigned int> getSampleRates() const;
+    QList<double> getSampleRates() const;
     // Get a list of host APIs supported by PortAudio.
     QList<QString> getHostAPIList() const;
     SoundManagerConfig getConfig() const;
     bool setConfig(SoundManagerConfig config);
     void checkConfig();
-    void onDeviceOutputCallback(const unsigned int iFramesPerBuffer);
+    void onDeviceOutputCallback(size_t iFramesPerBuffer);
     // Used by SoundDevices to "push" any audio from their inputs that they have
     // into the mixing engine.
-    void pushInputBuffers(QList<AudioInputBuffer> inputs,const unsigned int iFramesPerBuffer);
-    void writeProcess();
-    void readProcess();
+    void pushInputBuffers(QList<AudioInputBuffer> inputs,size_t iFramesPerBuffer);
+    void writeProcess(size_t );
+    void readProcess(size_t );
     void registerOutput(AudioOutput output, AudioSource *src);
     void registerInput(AudioInput input, AudioDestination *dest);
     QList<AudioOutput> registeredOutputs() const;
     QList<AudioInput> registeredInputs() const;
-  public slots:
-    void process();
   signals:
     void devicesUpdated(); // emitted when pointers to SoundDevices go stale
     void devicesSetup(); // emitted when the sound devices have been set up
@@ -103,9 +100,9 @@ class SoundManager : public QObject {
     EngineMaster *m_pMaster = nullptr;
     ConfigObject<ConfigValue> *m_pConfig;
     std::atomic<bool> m_paInitialized{false};
-    unsigned int m_jackSampleRate;
+    double m_jackSampleRate;
     QList<SoundDevice*> m_devices;
-    QList<unsigned int> m_samplerates;
+    QList<double> m_samplerates;
     QList<CSAMPLE*> m_inputBuffers;
     SoundManagerConfig m_config;
     SoundDevice* m_pErrorDevice = nullptr;
@@ -113,5 +110,4 @@ class SoundManager : public QObject {
     QHash<AudioInput, AudioDestination*> m_registeredDestinations;
     ControlObject* m_pControlObjectSoundStatusCO = nullptr;
     ControlObject* m_pControlObjectVinylControlGainCO = nullptr;
-    QThread m_thread;
 };

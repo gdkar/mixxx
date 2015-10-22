@@ -13,10 +13,10 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef CDFPROCESS_H
-#define CDFPROCESS_H
-
-#include <stdio.h>
+_Pragma("once")
+#include <cstdio>
+#include <memory>
+#include <iterator>
 #include "FiltFilt.h"
 
 struct DFProcConfig{
@@ -40,8 +40,6 @@ public:
 
 	
 private:
-    void initialise( DFProcConfig Config );
-    void deInitialise();
     void removeDCNormalize( float *src, float*dst );
     void medianFilter( float* src, float* dst );
 
@@ -53,17 +51,11 @@ private:
 
     float m_alphaNormParam;
 
-    float* filtSrc;
-    float* filtDst;
-
-    float* m_filtScratchIn;
-    float* m_filtScratchOut;
+    std::unique_ptr<float[]> filtSrc;
+    std::unique_ptr<float[]> filtDst;
 
     FiltFiltConfig m_FilterConfigParams;
 
-    FiltFilt* m_FiltFilt;
-
+    std::unique_ptr<FiltFilt> m_FiltFilt;
     bool m_isMedianPositive;
 };
-
-#endif

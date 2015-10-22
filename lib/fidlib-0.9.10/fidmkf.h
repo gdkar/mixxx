@@ -127,16 +127,12 @@
 //	probably counts as a derived work -- although as ever "I Am
 //	Not A Lawyer".
 //
-
 _Pragma("once")
 //Hacks for crappy linker error in MSVC... - Albert
 #define TWOPI (2*M_PI)
-
-
 //
 //	Complex square root: aa= aa^0.5
 //
-
 STATIC_INLINE double
 my_sqrt(double aa) { return aa <= 0.0 ? 0.0 : sqrt(aa); }
 // 'csqrt' clashes with builtin in GCC 4, so call it 'c_sqrt'
@@ -160,7 +156,6 @@ cexpj(double *aa, double theta) {
 //
 //	Complex exponent: aa= e^aa
 //
-
 // 'cexp' clashes with builtin in GCC 4, so call it 'c_exp'
 STATIC_INLINE void 
 c_exp(double *aa) {
@@ -184,73 +179,61 @@ c_exp(double *aa) {
 //	complex pole.  The second value of the pair has an entry of 0
 //	attached.  (Similarly for zeros in zertyp[])
 //
-
 #define MAXPZ 64 
-
 static int n_pol;		// Number of poles
 static double pol[MAXPZ];	// Pole values (see above)
 static char poltyp[MAXPZ];	// Pole value types: 1 real, 2 first of complex pair, 0 second
 static int n_zer;		// Same for zeros ...
 static double zer[MAXPZ];
 static char zertyp[MAXPZ];	
-
-
 //
 //	Pre-warp a frequency
 //
-
 STATIC_INLINE double 
-prewarp(double val) { return tan(val * M_PI) / M_PI; }
-
+prewarp(double val)
+{ 
+  return tan(val * M_PI) / M_PI;
+}
 //
 //	Bessel poles; final one is a real value for odd numbers of
 //	poles
 //
-
 static double bessel_1[]= {
  -1.00000000000e+00
 };
-
 static double bessel_2[]= {
  -1.10160133059e+00, 6.36009824757e-01,
 };
-
 static double bessel_3[]= {
  -1.04740916101e+00, 9.99264436281e-01,
  -1.32267579991e+00,
 };
-
 static double bessel_4[]= {
  -9.95208764350e-01, 1.25710573945e+00,
  -1.37006783055e+00, 4.10249717494e-01,
 };
-
 static double bessel_5[]= {
  -9.57676548563e-01, 1.47112432073e+00,
  -1.38087732586e+00, 7.17909587627e-01,
  -1.50231627145e+00,
 };
-
 static double bessel_6[]= {
  -9.30656522947e-01, 1.66186326894e+00,
  -1.38185809760e+00, 9.71471890712e-01,
  -1.57149040362e+00, 3.20896374221e-01,
 };
-
 static double bessel_7[]= {
  -9.09867780623e-01, 1.83645135304e+00,
  -1.37890321680e+00, 1.19156677780e+00,
  -1.61203876622e+00, 5.89244506931e-01,
  -1.68436817927e+00,
 };
-
 static double bessel_8[]= {
  -8.92869718847e-01, 1.99832584364e+00,
  -1.37384121764e+00, 1.38835657588e+00,
  -1.63693941813e+00, 8.22795625139e-01,
  -1.75740840040e+00, 2.72867575103e-01,
 };
-
 static double bessel_9[]= {
  -8.78399276161e-01, 2.14980052431e+00,
  -1.36758830979e+00, 1.56773371224e+00,
@@ -258,7 +241,6 @@ static double bessel_9[]= {
  -1.80717053496e+00, 5.12383730575e-01,
  -1.85660050123e+00,
 };
-
 static double bessel_10[]= {
  -8.65756901707e-01, 2.29260483098e+00,
  -1.36069227838e+00, 1.73350574267e+00,
@@ -266,46 +248,46 @@ static double bessel_10[]= {
  -1.84219624443e+00, 7.27257597722e-01,
  -1.92761969145e+00, 2.41623471082e-01,
 };
-
 static double *bessel_poles[10]= {
    bessel_1, bessel_2, bessel_3, bessel_4, bessel_5,
    bessel_6, bessel_7, bessel_8, bessel_9, bessel_10
 };
-
 //
 //	Generate Bessel poles for the given order.
 //
-
 static void 
-bessel(int order) {
+bessel(int order)
+{
    int a;
    if (order > 10) error("Maximum Bessel order is 10");
    n_pol= order;
    memcpy(pol, bessel_poles[order-1], n_pol * sizeof(double));
-   for (a= 0; a<order-1; ) {
+   for (a= 0; a<order-1; )
+   {
       poltyp[a++]= 2;
       poltyp[a++]= 0;
    }
    if (a < order)  poltyp[a++]= 1;
 }
-
 //
 //	Generate Butterworth poles for the given order.  These are
 //	regularly-spaced points on the unit circle to the left of the
 //	real==0 line.
 //
-
 static void 
-butterworth(int order) {
+butterworth(int order)
+{
    int a;
    if (order > MAXPZ)  error("Maximum butterworth/chebyshev order is %d", MAXPZ);
    n_pol= order;
-   for (a= 0; a<order-1; a += 2) {
+   for (a= 0; a<order-1; a += 2)
+   {
       poltyp[a]= 2;
       poltyp[a+1]= 0;
       cexpj(pol+a, M_PI - (order-a-1) * 0.5 * M_PI / order);
    }
-   if (a < order) {
+   if (a < order)
+   {
       poltyp[a]= 1;
       pol[a]= -1.0;
    }
@@ -314,7 +296,8 @@ butterworth(int order) {
 //	Generate Chebyshev poles for the given order and ripple.
 //
 static void 
-chebyshev(int order, double ripple) {
+chebyshev(int order, double ripple)
+{
    double eps, y;
    double sh, ch;
    int a;
@@ -325,23 +308,26 @@ chebyshev(int order, double ripple) {
    if (y <= 0.0) error("Internal error; chebyshev y-value <= 0.0: %g", y);
    sh= sinh(y);
    ch= cosh(y);
-   for (a= 0; a<n_pol; ) {
+   for (a= 0; a<n_pol; )
+   {
       if (poltyp[a] == 1) pol[a++] *= sh;
-      else { pol[a++] *= sh; pol[a++] *= ch; }
+      else                pol[a++] *= sh; pol[a++] *= ch;
    }
 }
 //
 //	Adjust raw poles to LP filter
 //
 static void 
-lowpass(double freq) {
+lowpass(double freq)
+{
    int a;
    // Adjust poles
    freq *= TWOPI;
    for (a= 0; a<n_pol; a++) pol[a] *= freq;
    // Add zeros
    n_zer= n_pol;
-   for (a= 0; a<n_zer; a++) {
+   for (a= 0; a<n_zer; a++)
+   {
       zer[a]= -INFINITY;
       zertyp[a]= 1;
    }
@@ -350,15 +336,20 @@ lowpass(double freq) {
 //	Adjust raw poles to HP filter
 //
 static void 
-highpass(double freq) {
+highpass(double freq)
+{
    int a;
    // Adjust poles
    freq *= TWOPI;
-   for (a= 0; a<n_pol; ) {
-      if (poltyp[a] == 1) {
+   for (a= 0; a<n_pol; )
+   {
+      if (poltyp[a] == 1)
+      {
         pol[a]= freq / pol[a];
         a++;
-      } else {
+      }
+      else
+      {
           crecip(pol + a);
           pol[a++] *= freq;
           pol[a++] *= freq;
@@ -366,7 +357,8 @@ highpass(double freq) {
    }
    // Add zeros
    n_zer= n_pol;
-   for (a= 0; a<n_zer; a++) {
+   for (a= 0; a<n_zer; a++)
+   {
       zer[a]= 0.0;
       zertyp[a]= 1;
    }
@@ -376,18 +368,21 @@ highpass(double freq) {
 //	doubled.
 //
 static void 
-bandpass(double freq1, double freq2) {
+bandpass(double freq1, double freq2)
+{
    double w0= TWOPI * sqrt(freq1*freq2);
    double bw= 0.5 * TWOPI * (freq2-freq1);
    int a, b;
    if (n_pol * 2 > MAXPZ)  error("Maximum order for bandpass filters is %d", MAXPZ/2);
    // Run through the list backwards, expanding as we go
-   for (a= n_pol, b= n_pol*2; a>0; ) {
+   for (a= n_pol, b= n_pol*2; a>0; )
+   {
       // hba= pole * bw;
       // temp= c_sqrt(1.0 - square(w0 / hba));
       // pole1= hba * (1.0 + temp);
       // pole2= hba * (1.0 - temp);
-      if (poltyp[a-1] == 1) {
+      if (poltyp[a-1] == 1)
+      {
           double hba;
           a--; b -= 2;
           poltyp[b]= 2; poltyp[b+1]= 0;
@@ -396,7 +391,9 @@ bandpass(double freq1, double freq2) {
           c_sqrt(pol+b);
           caddz(pol+b, 1.0, 0.0);
           cmulr(pol+b, hba);
-      } else {		// Assume poltyp[] data is valid
+      }
+      else
+      {		// Assume poltyp[] data is valid
           double hba[2];
           a -= 2; b -= 4;
           poltyp[b]= 2; poltyp[b+1]= 0;
@@ -420,7 +417,8 @@ bandpass(double freq1, double freq2) {
    n_pol *= 2;
    // Add zeros
    n_zer= n_pol; 
-   for (a= 0; a<n_zer; a++) {
+   for (a= 0; a<n_zer; a++)
+   {
       zertyp[a]= 1;
       zer[a]= (a<n_zer/2) ? 0.0 : -INFINITY;
    }
@@ -430,19 +428,22 @@ bandpass(double freq1, double freq2) {
 //	doubled.
 //
 static void 
-bandstop(double freq1, double freq2) {
+bandstop(double freq1, double freq2)
+{
    double w0= TWOPI * sqrt(freq1*freq2);
    double bw= 0.5 * TWOPI * (freq2-freq1);
    int a, b;
    if (n_pol * 2 > MAXPZ)  error("Maximum order for bandstop filters is %d", MAXPZ/2);
    // Run through the list backwards, expanding as we go
-   for (a= n_pol, b= n_pol*2; a>0; ) {
+   for (a= n_pol, b= n_pol*2; a>0; )
+   {
       // hba= bw / pole;
       // temp= c_sqrt(1.0 - square(w0 / hba));
       // pole1= hba * (1.0 + temp);
       // pole2= hba * (1.0 - temp);
 
-      if (poltyp[a-1] == 1) {
+      if (poltyp[a-1] == 1)
+      {
           double hba;
           a--; b -= 2;
           poltyp[b]= 2; poltyp[b+1]= 0;
@@ -451,7 +452,9 @@ bandstop(double freq1, double freq2) {
           c_sqrt(pol+b);
           caddz(pol+b, 1.0, 0.0);
           cmulr(pol+b, hba);
-      } else {		// Assume poltyp[] data is valid
+      } 
+      else
+      {		// Assume poltyp[] data is valid
           double hba[2];
           a -= 2; b -= 4;
           poltyp[b]= 2; poltyp[b+1]= 0;
@@ -476,7 +479,8 @@ bandstop(double freq1, double freq2) {
    n_pol *= 2;
    // Add zeros
    n_zer= n_pol; 
-   for (a= 0; a<n_zer; a+=2) {
+   for (a= 0; a<n_zer; a+=2)
+   {
       zertyp[a]= 2; zertyp[a+1]= 0;
       zer[a]= 0.0; zer[a+1]= w0;
    }
@@ -485,18 +489,20 @@ bandstop(double freq1, double freq2) {
 //	Convert list of poles+zeros from S to Z using bilinear
 //	transform
 //
-
 static void 
-s2z_bilinear() {
+s2z_bilinear()
+{
    int a;
-   for (a= 0; a<n_pol; ) {
-      if (poltyp[a] == 1) {
-          if (pol[a] == -INFINITY) 
-              pol[a]= -1.0;
-          else 
-              pol[a]= (2 + pol[a]) / (2 - pol[a]);
+   for (a= 0; a<n_pol; )
+   {
+      if (poltyp[a] == 1)
+      {
+          if (pol[a] == -INFINITY) pol[a]= -1.0;
+          else                     pol[a]= (2 + pol[a]) / (2 - pol[a]);
           a++;
-      } else {
+      }
+      else
+      {
           double val[2];
           cass(val, pol+a);
           cneg(val);
@@ -508,13 +514,14 @@ s2z_bilinear() {
    }
    for (a= 0; a<n_zer; ) {
       // Calculate (2 + val) / (2 - val)
-      if (zertyp[a] == 1) {
-          if (zer[a] == -INFINITY) 
-              zer[a]= -1.0;
-          else 
-              zer[a]= (2 + zer[a]) / (2 - zer[a]);
+      if (zertyp[a] == 1)
+      {
+          if (zer[a] == -INFINITY) zer[a]= -1.0;
+          else                     zer[a]= (2 + zer[a]) / (2 - zer[a]);
           a++;
-      } else {
+      }
+      else
+      {
           double val[2];
           cass(val, zer+a);
           cneg(val);
@@ -529,28 +536,35 @@ s2z_bilinear() {
 //	Convert S to Z using matched-Z transform
 //
 static void 
-s2z_matchedZ() {
+s2z_matchedZ()
+{
    int a;
-   for (a= 0; a<n_pol; ) {
+   for (a= 0; a<n_pol; )
+   {
       // Calculate cexp(val)
-      if (poltyp[a] == 1) {
+      if (poltyp[a] == 1)
+      {
           if (pol[a] == -INFINITY)  pol[a]= 0.0;
-          else                 pol[a]= exp(pol[a]);
+          else                      pol[a]= exp(pol[a]);
           a++;
-      } else {
+      }
+      else
+      {
           c_exp(pol+a);
           a += 2;
       }
    }
-   for (a= 0; a<n_zer; ) {
+   for (a= 0; a<n_zer; )
+   {
       // Calculate cexp(val)
-      if (zertyp[a] == 1) {
-          if (zer[a] == -INFINITY) 
-              zer[a]= 0.0;
-          else 
-              zer[a]= exp(zer[a]);
+      if (zertyp[a] == 1)
+      {
+          if (zer[a] == -INFINITY) zer[a]= 0.0;
+          else                     zer[a]= exp(zer[a]);
           a++;
-      } else {
+      }
+      else
+      {
           c_exp(zer+a);
           a += 2;
       }
@@ -572,9 +586,9 @@ s2z_matchedZ() {
 //	the end of the list.  All other poles/zeros are handled in
 //	pairs (whether pairs of real poles/zeros, or conjugate pairs).
 //
-
 static FidFilter*
-z2fidfilter(double gain, int cbm) {
+z2fidfilter(double gain, int cbm)
+{
    int n_head, n_val;
    int a;
    FidFilter *rv;
@@ -587,9 +601,11 @@ z2fidfilter(double gain, int cbm) {
    ff->val[0]= gain;
    ff= FFNEXT(ff);
    // Output as much as possible as 2x2 IIR/FIR filters
-   for (a= 0; a <= n_pol-2 && a <= n_zer-2; a += 2) {
+   for (a= 0; a <= n_pol-2 && a <= n_zer-2; a += 2)
+   {
       // Look for a pair of values for an IIR
-      if (poltyp[a] == 1 && poltyp[a+1] == 1) {
+      if (poltyp[a] == 1 && poltyp[a+1] == 1)
+      {
 	 // Two real values
          ff->typ= 'I';
          ff->len= 3;
@@ -597,7 +613,9 @@ z2fidfilter(double gain, int cbm) {
          ff->val[1]= -(pol[a] + pol[a+1]);
          ff->val[2]= pol[a] * pol[a+1];
          ff= FFNEXT(ff); 
-      } else if (poltyp[a] == 2) {
+      }
+      else if (poltyp[a] == 2)
+      {
 	 // A complex value and its conjugate pair
          ff->typ= 'I';
          ff->len= 3;
@@ -605,12 +623,15 @@ z2fidfilter(double gain, int cbm) {
          ff->val[1]= -2 * pol[a];
          ff->val[2]= pol[a] * pol[a] + pol[a+1] * pol[a+1];
          ff= FFNEXT(ff); 
-      } else error("Internal error -- bad poltyp[] values for z2fidfilter()");	 
+      }
+      else error("Internal error -- bad poltyp[] values for z2fidfilter()");	 
       // Look for a pair of values for an FIR
-      if (zertyp[a] == 1 && zertyp[a+1] == 1) {
+      if (zertyp[a] == 1 && zertyp[a+1] == 1)
+      {
           // Two real values
           // Skip if constant and 0/0
-          if (!cbm || zer[a] != 0.0 || zer[a+1] != 0.0) {
+          if (!cbm || zer[a] != 0.0 || zer[a+1] != 0.0)
+          {
               ff->typ= 'F';
               ff->cbm= cbm;
               ff->len= 3;
@@ -619,10 +640,13 @@ z2fidfilter(double gain, int cbm) {
               ff->val[2]= zer[a] * zer[a+1];
               ff= FFNEXT(ff); 
           }
-      } else if (zertyp[a] == 2) {
+      }
+      else if (zertyp[a] == 2)
+      {
           // A complex value and its conjugate pair
           // Skip if constant and 0/0
-          if (!cbm || zer[a] != 0.0 || zer[a+1] != 0.0) {
+          if (!cbm || zer[a] != 0.0 || zer[a+1] != 0.0)
+          {
               ff->typ= 'F';
               ff->cbm= cbm;
               ff->len= 3;
@@ -635,9 +659,9 @@ z2fidfilter(double gain, int cbm) {
    }
    // Clear up any remaining bits and pieces.  Should only be a 1x1
    // IIR/FIR.
-   if (n_pol-a == 0 && n_zer-a == 0) 
-      ;
-   else if (n_pol-a == 1 && n_zer-a == 1) {
+   if (n_pol-a == 0 && n_zer-a == 0) ;
+   else if (n_pol-a == 1 && n_zer-a == 1)
+   {
       if (poltyp[a] != 1 || zertyp[a] != 1) error("Internal error; bad poltyp or zertyp for final pole/zero");
       ff->typ= 'I';
       ff->len= 2;
@@ -645,7 +669,8 @@ z2fidfilter(double gain, int cbm) {
       ff->val[1]= -pol[a];
       ff= FFNEXT(ff); 
       // Skip FIR if it is constant and zero
-      if (!cbm || zer[a] != 0.0) {
+      if (!cbm || zer[a] != 0.0)
+      {
           ff->typ= 'F';
           ff->cbm= cbm;
           ff->len= 2;
@@ -653,7 +678,8 @@ z2fidfilter(double gain, int cbm) {
           ff->val[1]= -zer[a];
           ff= FFNEXT(ff); 
       }
-   } else  error("Internal error: unexpected poles/zeros at end of list");
+   }
+   else  error("Internal error: unexpected poles/zeros at end of list");
    // End of list
    ff->typ= 0;
    ff->len= 0;
@@ -668,7 +694,8 @@ z2fidfilter(double gain, int cbm) {
 //	giving an oscillator.
 //
 static void 
-bandpass_res(double freq, double qfact) {
+bandpass_res(double freq, double qfact)
+{
    double mag;
    double th0, th1, th2;
    double theta= freq * TWOPI;
@@ -680,7 +707,8 @@ bandpass_res(double freq, double qfact) {
    n_zer= 2;
    zertyp[0]= 1; zertyp[1]= 1;
    zer[0]= 1; zer[1]= -1;
-   if (qfact == 0.0) {
+   if (qfact == 0.0)
+   {
       cexpj(pol, theta);
       return;
    }
@@ -688,7 +716,8 @@ bandpass_res(double freq, double qfact) {
    cexpj(val, theta);
    mag= exp(-theta / (2.0 * qfact));
    th0= 0; th2= M_PI;
-   for (cnt= 60; cnt > 0; cnt--) {
+   for (cnt= 60; cnt > 0; cnt--)
+   {
       th1= 0.5 * (th0 + th2);
       cexpj(pol, th1);
       cmulr(pol, mag);
@@ -716,7 +745,8 @@ bandpass_res(double freq, double qfact) {
 //	Setup poles/zeros for a bandstop resonator
 //
 static void 
-bandstop_res(double freq, double qfact) {
+bandstop_res(double freq, double qfact)
+{
    bandpass_res(freq, qfact);
    zertyp[0]= 2; zertyp[1]= 0;
    cexpj(zer, TWOPI * freq);
@@ -724,9 +754,9 @@ bandstop_res(double freq, double qfact) {
 //
 //	Setup poles/zeros for an allpass resonator
 //
-
 static void 
-allpass_res(double freq, double qfact) {
+allpass_res(double freq, double qfact)
+{
    bandpass_res(freq, qfact);
    zertyp[0]= 2; zertyp[1]= 0;
    memcpy(zer, pol, 2*sizeof(double));
@@ -736,7 +766,8 @@ allpass_res(double freq, double qfact) {
 //	Setup poles/zeros for a proportional-integral filter
 //
 static void 
-prop_integral(double freq) {
+prop_integral(double freq)
+{
    n_pol= 1;
    poltyp[0]= 1;
    pol[0]= 0.0;

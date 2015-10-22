@@ -1,6 +1,4 @@
-#ifndef ENGINEFILTERBUTTERWORTH4_H
-#define ENGINEFILTERBUTTERWORTH4_H
-
+_Pragma("once")
 #include "engine/enginefilteriir.h"
 
 class EngineFilterButterworth4Low : public EngineFilterIIR<4, IIR_LP> {
@@ -21,4 +19,3 @@ class EngineFilterButterworth4High : public EngineFilterIIR<4, IIR_HP> {
     EngineFilterButterworth4High(int sampleRate, double freqCorner1);
     void setFrequencyCorners(int sampleRate, double freqCorner1);
 };
-#endif // ENGINEFILTERBUTTERWORTH4_H

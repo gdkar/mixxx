@@ -1,7 +1,5 @@
-#ifndef ENGINEFILTERDELAY_H
-#define ENGINEFILTERDELAY_H
-
-#include <string.h>
+_Pragma("once")
+#include <cstring>
 
 #include "engine/engineobject.h"
 #include "util/assert.h"
@@ -112,5 +110,3 @@ class EngineFilterDelay : public EngineObjectConstIn {
     bool m_doRamping;
     bool m_doStart;
 };
-
-#endif // ENGINEFILTERDELAY_H

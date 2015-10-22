@@ -17,8 +17,14 @@ using mixxx::track::io::Beat;
 
 const int kFrameSize = 2;
 
-inline double samplesToFrames(const double samples) {return std::floor(samples / kFrameSize);}
-inline double framesToSamples(const int frames) {return frames * kFrameSize;}
+inline double samplesToFrames(const double samples)
+{
+  return std::floor(samples / kFrameSize);
+}
+inline double framesToSamples(const int frames)
+{
+  return frames * kFrameSize;
+}
 bool BeatLessThan(const Beat& beat1, const Beat& beat2)
 {
   return beat1.frame_position() < beat2.frame_position();
@@ -362,13 +368,15 @@ void BeatMap::moveBeat(double dBeatSample, double dNewBeatSample) {
     locker.unlock();
     emit(updated());
 }
-void BeatMap::translate(double dNumSamples) {
+void BeatMap::translate(double dNumSamples)
+{
     QMutexLocker locker(&m_mutex);
     // Converting to frame offset
     if (!isValid()) {return;}
     auto dNumFrames = samplesToFrames(dNumSamples);
-    for (auto it = m_beats.begin(); it != m_beats.end(); ++it) {
-        double newpos = it->frame_position() + dNumFrames;
+    for (auto it = m_beats.begin(); it != m_beats.end(); ++it)
+    {
+        auto newpos = it->frame_position() + dNumFrames;
         if (newpos >= 0) it->set_frame_position(newpos);
         else m_beats.erase(it);
     }
@@ -376,17 +384,19 @@ void BeatMap::translate(double dNumSamples) {
     locker.unlock();
     emit(updated());
 }
-void BeatMap::scale(double dScalePercentage) {
+void BeatMap::scale(double dScalePercentage)
+{
     QMutexLocker locker(&m_mutex);
-    if (!isValid() || dScalePercentage <= 0.0 || m_beats.isEmpty()) {return;}
+    if (!isValid() || dScalePercentage <= 0.0 || m_beats.isEmpty()) return;
     // Scale the distance between every beat by 1/dScalePercentage to scale the
     // BPM by dScalePercentage.
-    const double kScaleBeatDistance = 1.0 / dScalePercentage;
-    Beat prevBeat = m_beats.first();
+    auto kScaleBeatDistance = 1.0 / dScalePercentage;
+    auto  prevBeat = m_beats.first();
     auto it = m_beats.begin() + 1;
-    for (; it != m_beats.end(); ++it) {
+    for (; it != m_beats.end(); ++it)
+    {
         // Need to not accrue fractional frames.
-        double newFrame = std::floor(
+        auto newFrame = std::floor(
                 (1 - kScaleBeatDistance) * prevBeat.frame_position() +
                 kScaleBeatDistance * it->frame_position());
         it->set_frame_position(newFrame);
@@ -395,7 +405,8 @@ void BeatMap::scale(double dScalePercentage) {
     locker.unlock();
     emit(updated());
 }
-void BeatMap::setBpm(double dBpm) {
+void BeatMap::setBpm(double dBpm)
+{
     /*
      * One of the problems of beattracking algorithms is the so called "octave error"
      * that is, calculated bpm is a power-of-two fraction of the bpm of the track.
@@ -429,8 +440,10 @@ void BeatMap::setBpm(double dBpm) {
     locker.unlock();
     scale(ratio);
 }
-void BeatMap::onBeatlistChanged() {
-    if (!isValid()) {
+void BeatMap::onBeatlistChanged()
+{
+    if (!isValid())
+    {
         m_dLastFrame = 0;
         m_dCachedBpm = 0;
         return;
@@ -440,16 +453,18 @@ void BeatMap::onBeatlistChanged() {
     Beat stopBeat =  m_beats.last();
     m_dCachedBpm = calculateBpm(startBeat, stopBeat);
 }
-double BeatMap::calculateBpm(const Beat& startBeat, const Beat& stopBeat) const {
-    if (startBeat.frame_position() > stopBeat.frame_position()) {return -1;}
+double BeatMap::calculateBpm(const Beat& startBeat, const Beat& stopBeat) const
+{
+    if (startBeat.frame_position() > stopBeat.frame_position()) return -1;
     auto curBeat = qLowerBound(m_beats.begin(), m_beats.end(), startBeat, BeatLessThan);
     auto lastBeat =qUpperBound(m_beats.begin(), m_beats.end(), stopBeat, BeatLessThan);
     QVector<double> beatvect;
-    for (; curBeat != lastBeat; ++curBeat) {
+    for (; curBeat != lastBeat; ++curBeat)
+    {
         const Beat& beat = *curBeat;
-        if (beat.enabled()) {beatvect.append(beat.frame_position());}
+        if (beat.enabled()) beatvect.append(beat.frame_position());
     }
-    if (beatvect.isEmpty()) {return -1;}
+    if (beatvect.isEmpty()) return -1;
     return BeatUtils::calculateBpm(beatvect, m_iSampleRate, 0, 9999);
 }
 Beats::CapabilitiesFlags BeatMap::getCapabilities() const

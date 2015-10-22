@@ -3,18 +3,14 @@
 //     - Supports what FFMPEG is compiled to supported
 //     - Same interface for all codecs
 //
-
 #include "encoder/encoderffmpegcore.h"
-
 #include <cstdlib>
 #include <algorithm>
 #include <ctime>
 #include <cstring>
 #include <QtDebug>
-
 #include "encoder/encodercallback.h"
 #include "preferences/errordialoghandler.h"
-//
 // FFMPEG changed their variable/define names in 1.0
 // smallest number that is AV_/AV compatible avcodec version is
 // 54/59/100 which is 3554148
@@ -60,8 +56,7 @@ void EncoderFfmpegCore::encodeBuffer(const CSAMPLE *samples, const int size)
     post_frame->sample_rate    = m_pEncoderCodecCtx->sample_rate;
     if((err=swr_convert_frame(m_pSwr,post_frame,pre_frame))<0)
     {
-      if(((err=swr_config_frame(m_pSwr,post_frame,pre_frame))<0)
-      || ((err=swr_convert_frame(m_pSwr,post_frame,pre_frame))<0))
+      if(((err=swr_config_frame(m_pSwr,post_frame,pre_frame))<0) || ((err=swr_convert_frame(m_pSwr,post_frame,pre_frame))<0))
       {
         av_frame_free(&pre_frame);
         av_frame_free(&post_frame);
@@ -99,29 +94,29 @@ int EncoderFfmpegCore::initEncoder(int bitrate, int samplerate)
     m_pEncoderFormatCtx->oformat = av_guess_format(nullptr,output_name,nullptr);
     avformat_alloc_output_context2(&m_pEncoderFormatCtx,nullptr,nullptr,output_name);
     m_pEncoderFormatCtx->oformat->audio_codec = m_SCcodecId;
-    m_pEncoderFormat                   = m_pEncoderFormatCtx->oformat;
-    m_pEncoderAudioCodec               = avcodec_find_encoder(m_pEncoderFormat->audio_codec);
-    m_pEncoderAudioStream              = avformat_new_stream(m_pEncoderFormatCtx,m_pEncoderAudioCodec);
-
-    m_pEncoderCodecCtx                 = m_pEncoderAudioStream->codec;
-    m_pEncoderCodecCtx->bit_rate       = m_lBitrate;
-    m_pEncoderCodecCtx->sample_rate    = 44100;
-    m_pEncoderCodecCtx->channels       = 2;
-    m_pEncoderCodecCtx->channel_layout = av_get_default_channel_layout(m_pEncoderCodecCtx->channels);
-    m_pEncoderCodecCtx->sample_fmt     = m_pEncoderAudioCodec->sample_fmts[0];
+    m_pEncoderFormat                          = m_pEncoderFormatCtx->oformat;
+    m_pEncoderAudioCodec                      = avcodec_find_encoder(m_pEncoderFormat->audio_codec);
+    m_pEncoderAudioStream                     = avformat_new_stream(m_pEncoderFormatCtx,m_pEncoderAudioCodec);
+    m_pEncoderCodecCtx                        = m_pEncoderAudioStream->codec;
+    m_pEncoderCodecCtx->bit_rate              = m_lBitrate;
+    m_pEncoderCodecCtx->sample_rate           = 44100;
+    m_pEncoderCodecCtx->channels              = 2;
+    m_pEncoderCodecCtx->channel_layout        = av_get_default_channel_layout(m_pEncoderCodecCtx->channels);
+    m_pEncoderCodecCtx->sample_fmt            = m_pEncoderAudioCodec->sample_fmts[0];
     m_pEncoderCodecCtx->strict_std_compliance = FF_COMPLIANCE_EXPERIMENTAL;
-
     if(m_pEncoderFormatCtx->oformat->flags & AVFMT_GLOBALHEADER) m_pEncoderCodecCtx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
     avcodec_open2(m_pEncoderCodecCtx,m_pEncoderAudioCodec,nullptr);
     m_pSwr = swr_alloc_set_opts(
-        m_pSwr,
-        m_pEncoderCodecCtx->channel_layout,
-        m_pEncoderCodecCtx->sample_fmt,
-        m_pEncoderCodecCtx->sample_rate,
-        av_get_default_channel_layout(2),
-        AV_SAMPLE_FMT_FLT,
-        44100,
-        0, nullptr);
+            m_pSwr,
+            m_pEncoderCodecCtx->channel_layout,
+            m_pEncoderCodecCtx->sample_fmt,
+            m_pEncoderCodecCtx->sample_rate,
+            av_get_default_channel_layout(2),
+            AV_SAMPLE_FMT_FLT,
+            44100,
+            0,
+            nullptr
+        );
     swr_init(m_pSwr);
     m_pAudioFifo = av_audio_fifo_alloc(m_pEncoderCodecCtx->sample_fmt,m_pEncoderCodecCtx->channels,1);
     if (avformat_write_header(m_pEncoderFormatCtx, nullptr))

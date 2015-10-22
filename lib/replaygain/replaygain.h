@@ -30,9 +30,7 @@
 
 _Pragma("once")
 #include <cstddef>
-
 #define GAIN_NOT_ENOUGH_SAMPLES  -24601
-
 #define YULE_ORDER         10
 #define BUTTER_ORDER        2
 #define RMS_PERCENTILE      0.95        /* percentile which is louder than the proposed level */
@@ -40,9 +38,7 @@ _Pragma("once")
 #define RMS_WINDOW_TIME     0.050       /* Time slice size [s] */
 #define STEPS_per_dB      100.          /* Table entries per dB */
 #define MAX_dB            120.          /* Table entries for 0...MAX_dB (normal max. values are 70...80 dB) */
-
 #define MAX_ORDER               (BUTTER_ORDER > YULE_ORDER ? BUTTER_ORDER : YULE_ORDER)
-
 /* [JEC] the following was originally #defined as:
  *   (size_t) (MAX_SAMP_FREQ * RMS_WINDOW_TIME)
  * but that seemed to fail to take into account the ceil() part of the
@@ -66,17 +62,14 @@ class ReplayGain {
   public:
     ReplayGain ();
     virtual ~ReplayGain();
-
     bool initialise(long samplefreq, size_t channels);
     bool process(const float* left_samples, const float* right_samples, size_t blockSize);
     float end();
-
   private:
     void filterYule (const float* input, float* output, size_t nSamples);
     void filterButter (const float* input, float* output, size_t nSamples);
     bool ResetSampleFrequency ( long samplefreq );
     float analyzeResult ( unsigned int* Array, size_t len );
-
     int             num_channels;
     float           linprebuf [MAX_ORDER * 2];
     float*          linpre;                                          // left input samples, with pre-buffer

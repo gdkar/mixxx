@@ -205,31 +205,28 @@ void BpmControl::slotTapFilter(double averageLength, int numSamples) {
 }
 
 void BpmControl::slotControlPlay(double v) {
-    if (v > 0.0) {
-        if (m_pQuantize->get() > 0.0 && m_pVCEnabled->get() == 0) {
-            getEngineBuffer()->requestSyncPhase();
-        }
+    if (v > 0.0)
+    {
+        if (m_pQuantize->get() > 0.0 && m_pVCEnabled->get() == 0) getEngineBuffer()->requestSyncPhase();
     }
 }
 
-void BpmControl::slotControlBeatSyncPhase(double v) {
+void BpmControl::slotControlBeatSyncPhase(double v)
+{
     if (!v) return;
     getEngineBuffer()->requestSyncPhase();
 }
-
-void BpmControl::slotControlBeatSyncTempo(double v) {
+void BpmControl::slotControlBeatSyncTempo(double v)
+{
     if (!v) return;
     syncTempo();
 }
-
-void BpmControl::slotControlBeatSync(double v) {
+void BpmControl::slotControlBeatSync(double v)
+{
     if (!v) return;
-
     // If the player is playing, and adjusting its tempo succeeded, adjust its
     // phase so that it plays in sync.
-    if (syncTempo() && m_pPlayButton->get() > 0) {
-        getEngineBuffer()->requestSyncPhase();
-    }
+    if (syncTempo() && m_pPlayButton->get() > 0) getEngineBuffer()->requestSyncPhase();
 }
 
 bool BpmControl::syncTempo() {

@@ -251,7 +251,6 @@ void AnalyserQueue::stop()
     m_qwait.wakeAll();
     m_qm.unlock();
 }
-
 void AnalyserQueue::run()
 {
     static std::atomic<int> id{0}; //the id of this thread, for debugging purposes

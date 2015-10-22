@@ -13,12 +13,10 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef FRAMER_H
-#define FRAMER_H
-
+_Pragma("once")
 //#include <io.h>
 #include <fcntl.h>
-#include <stdio.h>
+#include <cstdio>
 
 
 class Framer  
@@ -48,5 +46,3 @@ private:
 
     unsigned long	m_ulSrcIndex;
 };
-
-#endif

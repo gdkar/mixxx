@@ -25,23 +25,7 @@
 
 DFProcess::DFProcess( DFProcConfig Config )
 {
-    filtSrc = NULL;
-    filtDst = NULL;	
-    m_filtScratchIn = NULL;
-    m_filtScratchOut = NULL;
-
     m_FFOrd = 0;
-
-    initialise( Config );
-}
-
-DFProcess::~DFProcess()
-{
-    deInitialise();
-}
-
-void DFProcess::initialise( DFProcConfig Config )
-{
     m_length = Config.length;
     m_winPre = Config.winPre;
     m_winPost = Config.winPost;
@@ -49,8 +33,8 @@ void DFProcess::initialise( DFProcConfig Config )
 
     m_isMedianPositive = Config.isMedianPositive;
 
-    filtSrc = new float[ m_length ];
-    filtDst = new float[ m_length ];
+    filtSrc = std::make_unique<float[]>( m_length );
+    filtDst = std::make_unique<float[]>( m_length );
 
 	
     //Low Pass Smoothing Filter Config
@@ -58,81 +42,48 @@ void DFProcess::initialise( DFProcConfig Config )
     m_FilterConfigParams.ACoeffs = Config.LPACoeffs;
     m_FilterConfigParams.BCoeffs = Config.LPBCoeffs;
 	
-    m_FiltFilt = new FiltFilt( m_FilterConfigParams );	
+    m_FiltFilt = std::make_unique<FiltFilt>( m_FilterConfigParams );	
 }
-
-void DFProcess::deInitialise()
-{
-    delete [] filtSrc;
-
-    delete [] filtDst;
-
-    delete [] m_filtScratchIn;
-
-    delete [] m_filtScratchOut;
-
-    delete m_FiltFilt;
-}
-
+DFProcess::~DFProcess() = default;
 void DFProcess::process(float *src, float* dst)
 {
     if (m_length == 0) return;
-
-    removeDCNormalize( src, filtSrc );
-
-    m_FiltFilt->process( filtSrc, filtDst, m_length );
-
-    medianFilter( filtDst, dst );
+    removeDCNormalize( src, &filtSrc[0] );
+    m_FiltFilt->process( &filtSrc[0], &filtDst[0], m_length );
+    medianFilter( &filtDst[0], dst );
 }
-
-
 void DFProcess::medianFilter(float *src, float *dst)
 {
-    int i,k,j,l;
-    int index = 0;
-
-    float val = 0;
-
-    float* y = new float[ m_winPost + m_winPre + 1];
-    memset( y, 0, sizeof( float ) * ( m_winPost + m_winPre + 1) );
-
-    float* scratch = new float[ m_length ];
-
-    for( i = 0; i < m_winPre; i++)
+    auto  j = 0,l = 0;
+    auto index = 0;
+    auto y  = std::make_unique<float[]>(m_winPost + m_winPre + 1);
+    auto scratch = std::make_unique<float[]>( m_length );
+    for( auto i = 0; i < m_winPre; i++)
     {
         if (index >= m_length) break;
-
-	k = i + m_winPost + 1;
-
+	auto k = i + m_winPost + 1;
 	for( j = 0; j < k; j++)
 	{
 	    y[ j ] = src[ j ];
 	}
-	scratch[ index ] = MathUtilities::median( y, k );
+	scratch[ index ] = MathUtilities::median( &y[0], k );
 	index++;
     }
-
-    for(  i = 0; i + m_winPost + m_winPre < m_length; i ++)
+    for(  auto i = 0; i + m_winPost + m_winPre < m_length; i ++)
     {
         if (index >= m_length) break;
-
-			 
 	l = 0;
 	for(  j  = i; j < ( i + m_winPost + m_winPre + 1); j++)
 	{
 	    y[ l ] = src[ j ];
 	    l++;
 	}
-
-	scratch[ index++ ] = MathUtilities::median( y, (m_winPost + m_winPre + 1 ));
+	scratch[ index++ ] = MathUtilities::median( &y[0], (m_winPost + m_winPre + 1 ));
     }
-
-    for( i = std::max( m_length - m_winPost, 1); i < m_length; i++)
+    for( auto i = std::max( m_length - m_winPost, 1); i < m_length; i++)
     {
         if (index >= m_length) break;
-
-	k = std::max( i - m_winPre, 1);
-
+	auto k = std::max( i - m_winPre, 1);
 	l = 0;
 	for( j = k; j < m_length; j++)
 	{
@@ -140,49 +91,25 @@ void DFProcess::medianFilter(float *src, float *dst)
 
 	    l++;
 	}
-		
-	scratch[ index++ ] = MathUtilities::median( y, l); 
+	scratch[ index++ ] = MathUtilities::median( &y[0], l); 
     }
-
-
-    for( i = 0; i < m_length; i++ )
+    for( auto i = 0; i < m_length; i++ )
     {
-	val = src[ i ] - scratch[ i ];// - 0.033;
-		
+	auto val = src[ i ] - scratch[ i ];// - 0.033;
 	if( m_isMedianPositive )
 	{
-	    if( val > 0 )
-	    {
-		dst[ i ]  = val;
-	    }
-	    else
-	    {
-		dst[ i ]  = 0;
-	    }
+            dst[ i ] = std::max(val,0.f);
 	}
-	else
-	{
-	    dst[ i ]  = val;
-	}
+	else dst[ i ]  = val;
     }
-	
-    delete [] y;
-    delete [] scratch;
 }
-
-
 void DFProcess::removeDCNormalize( float *src, float*dst )
 {
-    float DFmax = 0;
-    float DFMin = 0;
-    float DFAlphaNorm = 0;
-
+    auto DFmax = 0.f;
+    auto DFMin = 0.f;
+    auto DFAlphaNorm = 0.f;
     MathUtilities::getFrameMinMax( src, m_length, &DFMin, &DFmax );
-
     MathUtilities::getAlphaNorm( src, m_length, m_alphaNormParam, &DFAlphaNorm );
-
-    for( unsigned int i = 0; i< m_length; i++)
-    {
-	dst[ i ] = ( src[ i ] - DFMin ) / DFAlphaNorm; 
-    }
+    DFAlphaNorm = 1.f/DFAlphaNorm;
+    for( unsigned int i = 0; i< m_length; i++) dst[ i ] = ( src[ i ] - DFMin ) * DFAlphaNorm; 
 }

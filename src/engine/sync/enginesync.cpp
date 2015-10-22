@@ -403,65 +403,55 @@ void EngineSync::notifyBeatDistanceChanged(Syncable* pSyncable, double beat_dist
     setMasterBeatDistance(pSyncable, beat_distance);
 }
 
-void EngineSync::activateFollower(Syncable* pSyncable) {
-    if (pSyncable == NULL) {
+void EngineSync::activateFollower(Syncable* pSyncable)
+{
+    if (!pSyncable)
+    {
         qWarning() << "WARNING: Logic Error: Called activateFollower on a NULL Syncable.";
         return;
     }
-
     pSyncable->notifySyncModeChanged(SYNC_FOLLOWER);
     pSyncable->setMasterParams(masterBeatDistance(), masterBaseBpm(), masterBpm());
 }
 
-void EngineSync::activateMaster(Syncable* pSyncable) {
-    if (pSyncable == NULL) {
+void EngineSync::activateMaster(Syncable* pSyncable)
+{
+    if (!pSyncable)
+    {
         qWarning() << "WARNING: Logic Error: Called activateMaster on a NULL Syncable.";
         return;
     }
-
     // Already master, no need to do anything.
-    if (m_pMasterSyncable == pSyncable) {
+    if (m_pMasterSyncable == pSyncable)
+    {
         // Sanity check.
-        if (m_pMasterSyncable->getSyncMode() != SYNC_MASTER) {
+        if (m_pMasterSyncable->getSyncMode() != SYNC_MASTER)
             qWarning() << "WARNING: Logic Error: m_pMasterSyncable is a syncable that does not think it is master.";
-        }
         return;
     }
-
     // If a channel is master, disable it.
-    Syncable* pOldChannelMaster = m_pMasterSyncable;
-
-    m_pMasterSyncable = NULL;
-    if (pOldChannelMaster) {
-        activateFollower(pOldChannelMaster);
-    }
-
+    auto pOldChannelMaster = m_pMasterSyncable;
+    m_pMasterSyncable = nullptr;
+    if (pOldChannelMaster) activateFollower(pOldChannelMaster);
     //qDebug() << "Setting up master " << pSyncable->getGroup();
     m_pMasterSyncable = pSyncable;
     pSyncable->notifySyncModeChanged(SYNC_MASTER);
-
-    // It is up to callers of this function to initialize bpm and beat_distance
-    // if necessary.
 }
-
-void EngineSync::deactivateSync(Syncable* pSyncable) {
+void EngineSync::deactivateSync(Syncable* pSyncable)
+{
     bool wasMaster = pSyncable->getSyncMode() == SYNC_MASTER;
-    if (wasMaster) {
-        m_pMasterSyncable = NULL;
-    }
-
+    if (wasMaster) m_pMasterSyncable = nullptr;
     // Notifications happen after-the-fact.
     pSyncable->notifySyncModeChanged(SYNC_NONE);
-
-    bool bSyncDeckExists = syncDeckExists();
-
-    if (pSyncable != m_pInternalClock) {
-        if (bSyncDeckExists) {
-            if (wasMaster) {
-                // Hand off to internal clock
-                activateMaster(m_pInternalClock);
-            }
-        } else {
+    auto bSyncDeckExists = syncDeckExists();
+    if (pSyncable != m_pInternalClock)
+    {
+        if (bSyncDeckExists)
+        {
+            if (wasMaster) activateMaster(m_pInternalClock);
+        }
+        else
+        {
             // Deactivate the internal clock if there are no more sync decks left.
             m_pMasterSyncable = NULL;
             m_pInternalClock->notifySyncModeChanged(SYNC_NONE);
@@ -469,21 +459,25 @@ void EngineSync::deactivateSync(Syncable* pSyncable) {
     }
 }
 
-EngineChannel* EngineSync::pickNonSyncSyncTarget(EngineChannel* pDontPick) const {
+EngineChannel* EngineSync::pickNonSyncSyncTarget(EngineChannel* pDontPick) const
+{
     EngineChannel* pFirstNonplayingDeck = NULL;
-    for(auto pSyncable: m_syncables) {
+    for(auto pSyncable: m_syncables)
+    {
         EngineChannel* pChannel = pSyncable->getChannel();
-        if (!pChannel || pChannel == pDontPick) {continue;}
+        if (!pChannel || pChannel == pDontPick) continue;
         // Only consider channels that have a track loaded and are in the master
         // mix.
-        if (pChannel->isActive() && pChannel->isMasterEnabled()) {
-            EngineBuffer* pBuffer = pChannel->getEngineBuffer();
-            if (pBuffer && pBuffer->getBpm() > 0) {
+        if (pChannel->isActive() && pChannel->isMasterEnabled())
+        {
+            auto pBuffer = pChannel->findChild<EngineBuffer*>();
+            if (pBuffer && pBuffer->getBpm() > 0)
+            {
                 // If the deck is playing then go with it immediately.
-                if (std::abs(pBuffer->getSpeed()) > 0) {return pChannel;}
+                if (std::abs(pBuffer->getSpeed()) > 0) return pChannel;
                 // Otherwise hold out for a deck that might be playing but
                 // remember the first deck that matched our criteria.
-                if (!pFirstNonplayingDeck ) {pFirstNonplayingDeck = pChannel;}
+                if (!pFirstNonplayingDeck ) pFirstNonplayingDeck = pChannel;
             }
         }
     }

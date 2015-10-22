@@ -96,11 +96,8 @@
 #include <cstring>
 #include <cmath>
 #include "replaygain.h"
-
 #include <cstdint>
-
 typedef float Float_t;
-
 static const Float_t  AYule [9] [11] = {
     { 1., -3.84664617118067,  7.81501653005538,-11.34170355132042, 13.05504219327545,-12.28759895145294,  9.48293806319790, -5.87257861775999,  2.75465861874613, -0.86984376593551, 0.13919314567432 },
     { 1., -3.47845948550071,  6.36317777566148, -8.54751527471874,  9.47693607801280, -8.81498681370155,  6.85401540936998, -4.39470996079559,  2.19611684890774, -0.75104302451432, 0.13149317958808 },
@@ -112,7 +109,6 @@ static const Float_t  AYule [9] [11] = {
     { 1., -0.51035327095184, -0.31863563325245, -0.20256413484477,  0.14728154134330,  0.38952639978999, -0.23313271880868, -0.05246019024463, -0.02505961724053,  0.02442357316099, 0.01818801111503 },
     { 1., -0.25049871956020, -0.43193942311114, -0.03424681017675, -0.04678328784242,  0.26408300200955,  0.15113130533216, -0.17556493366449, -0.18823009262115,  0.05477720428674, 0.04704409688120 }
 };
-
 static const Float_t  BYule [9] [11] = {
     { 0.03857599435200, -0.02160367184185, -0.00123395316851, -0.00009291677959, -0.01655260341619,  0.02161526843274, -0.02074045215285,  0.00594298065125,  0.00306428023191,  0.00012025322027,  0.00288463683916 },
     { 0.05418656406430, -0.02911007808948, -0.00848709379851, -0.00851165645469, -0.00834990904936,  0.02245293253339, -0.02596338512915,  0.01624864962975, -0.00240879051584,  0.00674613682247, -0.00187763777362 },
@@ -124,7 +120,6 @@ static const Float_t  BYule [9] [11] = {
     { 0.58100494960553, -0.53174909058578, -0.14289799034253,  0.17520704835522,  0.02377945217615,  0.15558449135573, -0.25344790059353,  0.01628462406333,  0.06920467763959, -0.03721611395801, -0.00749618797172 },
     { 0.53648789255105, -0.42163034350696, -0.00275953611929,  0.04267842219415, -0.10214864179676,  0.14590772289388, -0.02459864859345, -0.11202315195388, -0.04060034127000,  0.04788665548180, -0.02217936801134 }
 };
-
 static const Float_t  AButter [9] [3] = {
     { 1., -1.97223372919527, 0.97261396931306 },
     { 1., -1.96977855582618, 0.97022847566350 },
@@ -136,7 +131,6 @@ static const Float_t  AButter [9] [3] = {
     { 1., -1.91542108074780, 0.91885558323625 },
     { 1., -1.88903307939452, 0.89487434461664 }
 };
-
 static const Float_t  BButter [9] [3] = {
     { 0.98621192462708, -1.97242384925416, 0.98621192462708 },
     { 0.98500175787242, -1.97000351574484, 0.98500175787242 },
@@ -148,7 +142,6 @@ static const Float_t  BButter [9] [3] = {
     { 0.95856916599601, -1.91713833199203, 0.95856916599601 },
     { 0.94597685600279, -1.89195371200558, 0.94597685600279 }
 };
-
 ReplayGain::ReplayGain() :
         num_channels(1),
         freqindex(0) {
@@ -165,12 +158,9 @@ bool ReplayGain::initialise(long samplefreq, size_t channels) {
     rstep        = rstepbuf  + MAX_ORDER;
     lout         = loutbuf   + MAX_ORDER;
     rout         = routbuf   + MAX_ORDER;
-
     num_channels  = channels;
     return true;
 }
-
-
 bool ReplayGain::process(const float* left_samples, const float* right_samples, size_t blockSize) {
     const float*  curleft  = nullptr;
     const float*  curright = nullptr;
@@ -179,16 +169,13 @@ bool ReplayGain::process(const float* left_samples, const float* right_samples, 
     long            cursamplepos;
     int             i;
     if ( blockSize == 0 ) return true;
-
     cursamplepos = 0;
     batchsamples = blockSize;
-
     switch ( num_channels) {
     case  1: right_samples = left_samples;
     case  2: break;
     default: return false;
     }
-
     if (blockSize < MAX_ORDER) {
         std::memcpy ( linprebuf + MAX_ORDER, left_samples , blockSize * sizeof(linprebuf[0]) );
         std::memcpy ( rinprebuf + MAX_ORDER, right_samples, blockSize * sizeof(rinprebuf[0]) );
@@ -197,7 +184,6 @@ bool ReplayGain::process(const float* left_samples, const float* right_samples, 
         std::memcpy ( linprebuf + MAX_ORDER, left_samples,  MAX_ORDER   * sizeof(linprebuf[0]) );
         std::memcpy ( rinprebuf + MAX_ORDER, right_samples, MAX_ORDER   * sizeof(rinprebuf[0]) );
     }
-
     while ( batchsamples > 0 ) {
         cursamples = batchsamples > (long)(sampleWindow-totsamp)  ?  (long)(sampleWindow - totsamp)  :  batchsamples;
         if ( cursamplepos < MAX_ORDER ) {
@@ -211,7 +197,6 @@ bool ReplayGain::process(const float* left_samples, const float* right_samples, 
         }
         filterYule( curleft , lstep + totsamp, cursamples );
         filterYule( curright, rstep + totsamp, cursamples );
-
         filterButter( lstep + totsamp, lout + totsamp, cursamples );
         filterButter( rstep + totsamp, rout + totsamp, cursamples );
 
@@ -250,21 +235,15 @@ bool ReplayGain::process(const float* left_samples, const float* right_samples, 
     }
     return true;
 }
-
 float ReplayGain::end()
 {
     float  retval;
     unsigned int    i;
-
     retval = analyzeResult( A, sizeof(A)/sizeof(A[0]) );
-
-    for ( i = 0; i < (int)(sizeof(A)/sizeof(*A)); i++ ) {
+    for ( i = 0; i < (int)(sizeof(A)/sizeof(*A)); i++ ) 
         A[i]  = 0;
-    }
-
     for ( i = 0; i < MAX_ORDER; i++ )
         linprebuf[i] = lstepbuf[i] = loutbuf[i] = rinprebuf[i] = rstepbuf[i] = routbuf[i] = 0.f;
-
     totsamp = 0;
     lsum    = rsum = 0.;
     return retval;
@@ -303,7 +282,6 @@ ReplayGain::ResetSampleFrequency(long samplefreq){
     // zero out initial values
     for ( i = 0; i < MAX_ORDER; i++ )
         linprebuf[i] = lstepbuf[i] = loutbuf[i] = rinprebuf[i] = rstepbuf[i] = routbuf[i] = 0.;
-
     switch ( (int)(samplefreq) ) {
         case 48000: freqindex = 0; break;
         case 44100: freqindex = 1; break;

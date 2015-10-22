@@ -24,15 +24,11 @@ extern "C"{
 }
 #include <QByteArray>
 #include <QBuffer>
-
 #include <QLibrary>
-
 #include "util/types.h"
 #include "encoder/encoder.h"
 #include "trackinfoobject.h"
-
 class EncoderCallback;
-
 class EncoderFfmpegCore : public Encoder {
 public:
     EncoderFfmpegCore(EncoderCallback* pCallback=nullptr, AVCodecID codec = AV_CODEC_ID_MP2);
@@ -50,7 +46,7 @@ private:
     int writeAudioFrames(bool);
     void closeAudio();
     void openAudio(AVCodec *codec, AVStream *st);
-    AVStream *addStream(AVFormatContext *oc, AVCodec **codec, enum AVCodecID codec_id);
+    AVStream *addStream(AVFormatContext *oc, AVCodec **codec, AVCodecID codec_id);
     bool m_bStreamInitialized = false;
     EncoderCallback* m_pCallback = nullptr;
     TrackPointer m_pMetaData;
@@ -67,12 +63,11 @@ private:
     AVCodecContext *m_pEncoderCodecCtx = nullptr;
     AVOutputFormat *m_pEncoderFormat = nullptr;
     int m_iAudioInputFrameSize = 0;
-
     int32_t m_lBitrate = 0;
     int32_t m_lSampleRate = 0;
     int64_t m_lRecordedBytes = 0;
     int64_t m_lDts = 0;
     int64_t m_lPts = 0;
-    enum AVCodecID m_SCcodecId;
+    AVCodecID m_SCcodecId;
     AVStream *m_pStream = nullptr;
 };

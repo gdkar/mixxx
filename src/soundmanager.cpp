@@ -29,17 +29,14 @@
 #include "vinylcontrol/defs_vinylcontrol.h"
 #include "sampleutil.h"
 #include "util/cmdlineargs.h"
-#include "util/timer.h"
 typedef PaError (*SetJackClientName)(const char *name);
 SoundManager::SoundManager(ConfigObject<ConfigValue> *pConfig, EngineMaster *pMaster)
         : m_pMaster(pMaster),
           m_pConfig(pConfig),
           m_paInitialized(false),
           m_jackSampleRate(-1),
-          m_pErrorDevice(nullptr),
-          m_thread(nullptr)
+          m_pErrorDevice(nullptr)
 {
-    m_thread.setObjectName("EngineThread");
     qDebug() << "PortAudio version:" << Pa_GetVersion() << "text:" << Pa_GetVersionText();
     // TODO(xxx) some of these ControlObject are not needed by soundmanager, or are unused here.
     // It is possible to take them out?
@@ -55,75 +52,77 @@ SoundManager::SoundManager(ConfigObject<ConfigValue> *pConfig, EngineMaster *pMa
     if (!m_config.readFromDisk()) m_config.loadDefaults(this, SoundManagerConfig::ALL);
     checkConfig();
     m_config.writeToDisk(); // in case anything changed by applying defaults
-    moveToThread(&m_thread);
-    m_thread.start(QThread::HighPriority);
 }
-SoundManager::~SoundManager() {
+SoundManager::~SoundManager()
+{
     //Clean up devices.
     clearDeviceList();
     if (m_paInitialized.exchange(false))Pa_Terminate();
 }
-QList<SoundDevice*> SoundManager::getDeviceList(QString filterAPI, bool bOutputDevices, bool bInputDevices) {
+QList<SoundDevice*> SoundManager::getDeviceList(QString filterAPI, bool bOutputDevices, bool bInputDevices)
+{
     //qDebug() << "SoundManager::getDeviceList";
-    if (filterAPI == "None") { return QList<SoundDevice*>{}; }
+    if (filterAPI == "None") return QList<SoundDevice*>{};
     // Create a list of sound devices filtered to match given API and
     // input/output.
     QList<SoundDevice*> filteredDeviceList;
-    for(auto device: m_devices) {
+    for(auto device: m_devices)
+    {
         // Skip devices that don't match the API, don't have input channels when
         // we want input devices, or don't have output channels when we want
         // output devices.
         if (device->getHostAPI() != filterAPI ||
                 (bOutputDevices && device->getNumOutputChannels() <= 0) ||
-                (bInputDevices && device->getNumInputChannels() <= 0)) {
+                (bInputDevices && device->getNumInputChannels() <= 0))
+        {
             continue;
         }
         filteredDeviceList.push_back(device);
     }
     return filteredDeviceList;
 }
-QList<QString> SoundManager::getHostAPIList() const {
+QList<QString> SoundManager::getHostAPIList() const
+{
     QList<QString> apiList;
-    for (PaHostApiIndex i = 0; i < Pa_GetHostApiCount(); i++) {
+    for (PaHostApiIndex i = 0; i < Pa_GetHostApiCount(); i++)
+    {
         const PaHostApiInfo* api = Pa_GetHostApiInfo(i);
-        if (api && QString(api->name) != "skeleton implementation") { apiList.push_back(api->name); }
+        if (api && QString(api->name) != "skeleton implementation") apiList.push_back(api->name);
     }
     return apiList;
 }
 void SoundManager::closeDevices()
 {
     //qDebug() << "SoundManager::closeDevices()";
-    for ( auto & dev:m_devices )
-    {
-      QObject::disconnect(dev,0,this,SLOT(process()));
-      dev->close();
-    }
+    for ( auto & dev:m_devices ) dev->close();
     m_pErrorDevice = nullptr;
     // TODO(rryan): Should we do this before SoundDevice::close()? No! Because
     // then the callback may be running when we call
     // onInputDisconnected/onOutputDisconnected.
     for(auto  pDevice: m_devices)
     {
-        for (auto in: pDevice->inputs()) 
+        for (auto in: pDevice->inputs())
         {
             // Need to tell all registered AudioDestinations for this AudioInput
             // that the input was disconnected.
-            for ( auto dest : m_registeredDestinations.values(in))
-              dest->onInputUnconfigured(in);
+            for (auto it = m_registeredDestinations.constFind(in);
+                 it != m_registeredDestinations.cend() && it.key() == in; ++it)
+            {
+                it.value()->onInputUnconfigured(in);
+            }
         }
         for(auto out: pDevice->outputs())
         {
             // Need to tell all registered AudioSources for this AudioOutput
             // that the output was disconnected.
-            for ( auto src : m_registeredSources.values(out))
-              src->onOutputDisconnected(out);
+            for (auto it = m_registeredSources.constFind(out);
+                 it != m_registeredSources.cend() && it.key() == out; ++it)
+            {
+                it.value()->onOutputDisconnected(out);
+            }
         }
     }
-    while (!m_inputBuffers.isEmpty())
-    { 
-      if(auto  pBuffer = m_inputBuffers.takeLast())
-        SampleUtil::free(pBuffer); 
-    }
+    while (!m_inputBuffers.isEmpty()) if(auto  pBuffer = m_inputBuffers.takeLast()) SampleUtil::free(pBuffer);
     // Indicate to the rest of Mixxx that sound is disconnected.
     m_pControlObjectSoundStatusCO->set(SOUNDMANAGER_DISCONNECTED);
 }
@@ -136,20 +135,24 @@ void SoundManager::clearDeviceList()
     while (!m_devices.empty()) delete m_devices.takeLast();
     if (m_paInitialized) Pa_Terminate();m_paInitialized = false;
 }
-QList<unsigned int> SoundManager::getSampleRates(QString api) const
+QList<double> SoundManager::getSampleRates(QString api) const
 {
     if (api == MIXXX_PORTAUDIO_JACK_STRING)
     {
         // queryDevices must have been called for this to work, but the
         // ctor calls it -bkgood
-        QList<unsigned int> samplerates;
+        QList<double> samplerates;
         samplerates.append(m_jackSampleRate);
         return samplerates;
     }
     return m_samplerates;
 }
-QList<unsigned int> SoundManager::getSampleRates() const { return getSampleRates(""); }
-void SoundManager::queryDevices() {
+QList<double> SoundManager::getSampleRates() const
+{ 
+  return getSampleRates("");
+}
+void SoundManager::queryDevices()
+{
     //qDebug() << "SoundManager::queryDevices()";
     clearDeviceList();
     PaError err = paNoError;
@@ -163,11 +166,13 @@ void SoundManager::queryDevices() {
       }
     }
     auto iNumDevices = Pa_GetDeviceCount();
-    if (iNumDevices < 0) {
+    if (iNumDevices < 0)
+    {
         qDebug() << "ERROR: Pa_CountDevices returned" << iNumDevices;
         return;
     }
-    for (auto  i = 0; i < iNumDevices; i++) {
+    for (auto  i = 0; i < iNumDevices; i++)
+    {
         auto deviceInfo = Pa_GetDeviceInfo(i);
         if (!deviceInfo) continue;
         /* deviceInfo fields for quick reference:
@@ -182,7 +187,7 @@ void SoundManager::queryDevices() {
             PaTime  defaultHighOutputLatency
             double  defaultSampleRate
          */
-        auto currentDevice = new SoundDevicePortAudio(m_pConfig, this, deviceInfo, i,this);
+        auto currentDevice = new SoundDevicePortAudio(m_pConfig, this, deviceInfo, i);
         m_devices.push_back(currentDevice);
         if (!strcmp(Pa_GetHostApiInfo(deviceInfo->hostApi)->name, MIXXX_PORTAUDIO_JACK_STRING))
             m_jackSampleRate = deviceInfo->defaultSampleRate;
@@ -190,7 +195,8 @@ void SoundManager::queryDevices() {
     // now tell the prefs that we updated the device list -- bkgood
     emit(devicesUpdated());
 }
-bool SoundManager::setupDevices() {
+bool SoundManager::setupDevices()
+{
     // NOTE(rryan): Big warning: This function is concurrent with calls to
     // pushBuffer and onDeviceOutputCallback until closeDevices() below.
     qDebug() << "SoundManager::setupDevices()";
@@ -234,8 +240,8 @@ bool SoundManager::setupDevices() {
     auto toOpen = QHash<SoundDevice*, QPair<bool, bool> >{};
     for(auto device: m_devices)
     {
-        auto isInput = false;
-        auto isOutput = false;
+        bool isInput = false;
+        bool isOutput = false;
         device->clearInputs();
         device->clearOutputs();
         m_pErrorDevice = device;
@@ -245,7 +251,8 @@ bool SoundManager::setupDevices() {
             // TODO(bkgood) look into allocating this with the frames per
             // buffer value from SMConfig
             auto aib = AudioInputBuffer {in, SampleUtil::alloc(MAX_BUFFER_LEN)};
-            if (device->addInput(aib) != SOUNDDEVICE_ERROR_OK) {
+            if (device->addInput(aib) != SOUNDDEVICE_ERROR_OK)
+            {
                 delete [] aib.getBuffer();
                 closeDevices();
                 return false;
@@ -253,17 +260,16 @@ bool SoundManager::setupDevices() {
             m_inputBuffers.append(aib.getBuffer());
             // Check if any AudioDestination is registered for this AudioInput
             // and call the onInputConnected method.
-            for(auto it:m_registeredDestinations.values(in))
-            {
-              it->onInputConfigured(in);
-            }
+            for(auto it:m_registeredDestinations.values(in)) it->onInputConfigured(in);
         }
-        for(auto out: m_config.getOutputs().values(device->getInternalName())) {
+        for(auto out: m_config.getOutputs().values(device->getInternalName()))
+        {
             isOutput = true;
             // following keeps us from asking for a channel buffer EngineMaster
             // doesn't have -- bkgood
-            const auto pBuffer = m_registeredSources.value(out)->buffer(out);
-            if (pBuffer == nullptr) {
+            auto pBuffer = m_registeredSources.value(out)->buffer(out);
+            if (!pBuffer)
+            {
                 qDebug() << "AudioSource returned null for" << out.getString();
                 continue;
             }
@@ -273,7 +279,8 @@ bool SoundManager::setupDevices() {
               closeDevices();
               return false;
             }
-            if (out.getType() == AudioOutput::MASTER)  pNewMasterClockRef = device;
+            if (out.getType() == AudioOutput::MASTER) 
+              pNewMasterClockRef = device;
             else if ((out.getType() == AudioOutput::DECK || out.getType() == AudioOutput::BUS) && !pNewMasterClockRef)
               pNewMasterClockRef = device;
             // Check if any AudioSource is registered for this AudioOutput and
@@ -284,9 +291,7 @@ bool SoundManager::setupDevices() {
         {
             device->setSampleRate(m_config.getSampleRate());
             device->setFramesPerBuffer(m_config.getFramesPerBuffer());
-            QObject::connect(device,&SoundDevice::needProcess,this,&SoundManager::process,static_cast<Qt::ConnectionType>
-                ( Qt::UniqueConnection | Qt::QueuedConnection ));
-            toOpen[device] = QPair<bool, bool>(isInput, isOutput);
+            toOpen[device] = qMakePair(isInput, isOutput);
         }
     }
     for(auto device: toOpen.keys())
@@ -303,27 +308,26 @@ bool SoundManager::setupDevices() {
             qWarning() << "Output sound device clock reference not set! Using" << device->getDisplayName();
         }
         auto syncBuffers = m_config.getSyncBuffers();
-        auto syncFragments = m_config.getSyncFragments();
         // If we are in safe mode and using experimental polling support, use
         // the default of 2 sync buffers instead.
-        if (CmdlineArgs::Instance().getSafeMode() && syncBuffers == 0) syncBuffers = 2;
-        if(!(err = device->open(pNewMasterClockRef == device, syncBuffers,syncFragments)))
+        if (CmdlineArgs::Instance().getSafeMode() && syncBuffers == 0)
+          syncBuffers = 2;
+        if(!(err = device->open(pNewMasterClockRef == device, syncBuffers)))
         {
           closeDevices();
           return false;
         }
-        else {
+        else
+        {
             ++devicesOpened;
             outputDevicesOpened += static_cast<int>(isOutput);
             inputDevicesOpened  += static_cast<int>(isInput );
         }
     }
     if (pNewMasterClockRef)
-    {
-      qDebug() << "Using" << pNewMasterClockRef->getDisplayName() 
-               << "as output sound device clock reference";
-    }
-    else qDebug() << "No output devices opened, no clock reference device set";
+        qDebug() << "Using" << pNewMasterClockRef->getDisplayName() << "as output sound device clock reference";
+    else 
+      qDebug() << "No output devices opened, no clock reference device set";
     qDebug() << outputDevicesOpened << "output sound devices opened";
     qDebug() << inputDevicesOpened << "input  sound devices opened";
     m_pControlObjectSoundStatusCO->set(outputDevicesOpened > 0 ? SOUNDMANAGER_CONNECTED : SOUNDMANAGER_DISCONNECTED);
@@ -336,9 +340,16 @@ bool SoundManager::setupDevices() {
     m_pErrorDevice = nullptr;
     return false;
 }
-SoundDevice* SoundManager::getErrorDevice() const { return m_pErrorDevice; }
-SoundManagerConfig SoundManager::getConfig() const { return m_config; }
-bool SoundManager::setConfig(SoundManagerConfig config) {
+SoundDevice* SoundManager::getErrorDevice() const
+{ 
+  return m_pErrorDevice;
+}
+SoundManagerConfig SoundManager::getConfig() const
+{ 
+  return m_config;
+}
+bool SoundManager::setConfig(SoundManagerConfig config)
+{
     auto err = true;
     m_config = config;
     checkConfig();
@@ -348,15 +359,18 @@ bool SoundManager::setConfig(SoundManagerConfig config) {
     // Do this first so vinyl control gets the right samplerate -- Owen W.
     m_pConfig->set(ConfigKey("Soundcard","Samplerate"), ConfigValue(m_config.getSampleRate()));
     err = setupDevices();
-    if (err == true) { m_config.writeToDisk(); }
+    if (err == true) m_config.writeToDisk();
     return err;
 }
-void SoundManager::checkConfig() {
-    if (!m_config.checkAPI(*this)) {
+void SoundManager::checkConfig()
+{
+    if (!m_config.checkAPI(*this))
+    {
         m_config.setAPI(SoundManagerConfig::kDefaultAPI);
         m_config.loadDefaults(this, SoundManagerConfig::API | SoundManagerConfig::DEVICES);
     }
-    if (!m_config.checkSampleRate(*this)) {
+    if (!m_config.checkSampleRate(*this))
+    {
         m_config.setSampleRate(SoundManagerConfig::kFallbackSampleRate);
         m_config.loadDefaults(this, SoundManagerConfig::OTHER);
     }
@@ -365,41 +379,53 @@ void SoundManager::checkConfig() {
     m_config.setCorrectDeckCount(getConfiguredDeckCount());
     // latency checks itself for validity on SMConfig::setLatency()
 }
-void SoundManager::onDeviceOutputCallback(const unsigned int iFramesPerBuffer)
+void SoundManager::onDeviceOutputCallback(size_t iFramesPerBuffer)
 {
     // Produce a block of samples for output. EngineMaster expects stereo
     // samples so multiply iFramesPerBuffer by 2.
-    m_pMaster->process(iFramesPerBuffer*2);
+    m_pMaster->process(iFramesPerBuffer);
 }
-void SoundManager::pushInputBuffers(QList<AudioInputBuffer> inputs, const unsigned int iFramesPerBuffer)
+void SoundManager::pushInputBuffers(QList<AudioInputBuffer> inputs, size_t iFramesPerBuffer)
 {
    for ( const auto &in : inputs )
    {
         auto  pInputBuffer = in.getBuffer();
-        for ( auto it: m_registeredDestinations.values(in)) it->receiveBuffer(in,pInputBuffer,iFramesPerBuffer);
+        for ( auto it: m_registeredDestinations.values(in))
+        {
+          it->receiveBuffer(in,pInputBuffer,iFramesPerBuffer);
+        }
     }
 }
-void SoundManager::writeProcess() 
+void SoundManager::writeProcess(size_t fpb) 
 { 
-  for ( auto device : m_devices ) { if ( device ) device->writeProcess();} 
+  for ( auto device : m_devices ) if ( device ) device->writeProcess(fpb);
 }
-void SoundManager::readProcess() 
+void SoundManager::readProcess(size_t fpb) 
 {
-  for ( auto device : m_devices ) {if ( device ) device->readProcess();} 
+  for ( auto device : m_devices ) if ( device ) device->readProcess(fpb);
 }
-void SoundManager::registerOutput(AudioOutput output, AudioSource *src) {
-    if (m_registeredSources.contains(output)) { qDebug() << "WARNING: AudioOutput already registered!"; }
+void SoundManager::registerOutput(AudioOutput output, AudioSource *src)
+{
+    if (m_registeredSources.contains(output)) qDebug() << "WARNING: AudioOutput already registered!";
     m_registeredSources.insert(output, src);
     emit(outputRegistered(output, src));
 }
-void SoundManager::registerInput(AudioInput input, AudioDestination *dest) {
-    if (m_registeredDestinations.contains(input)) { qDebug() << "WARNING: AudioInput already registered!"; }
+void SoundManager::registerInput(AudioInput input, AudioDestination *dest)
+{
+    if (m_registeredDestinations.contains(input)) qDebug() << "WARNING: AudioInput already registered!";
     m_registeredDestinations.insertMulti(input, dest);
     emit(inputRegistered(input, dest));
 }
-QList<AudioOutput> SoundManager::registeredOutputs() const { return m_registeredSources.keys(); }
-QList<AudioInput> SoundManager::registeredInputs() const { return m_registeredDestinations.keys(); }
-void SoundManager::setConfiguredDeckCount(int count) {
+QList<AudioOutput> SoundManager::registeredOutputs() const
+{ 
+  return m_registeredSources.keys();
+}
+QList<AudioInput> SoundManager::registeredInputs() const
+{ 
+  return m_registeredDestinations.keys();
+}
+void SoundManager::setConfiguredDeckCount(int count)
+{
     m_config.setDeckCount(count);
     checkConfig();
     m_config.writeToDisk();
@@ -407,49 +433,4 @@ void SoundManager::setConfiguredDeckCount(int count) {
 int SoundManager::getConfiguredDeckCount() const 
 { 
   return m_config.getDeckCount(); 
-}
-void SoundManager::process()
-{
-  if ( QThread::currentThread()->priority() != QThread::TimeCriticalPriority)
-  {
-      QThread::currentThread()->setPriority(QThread::TimeCriticalPriority);
-      // This disables the denormals calculations, to avoid a
-      // performance penalty of ~20
-      // https://bugs.launchpad.net/mixxx/+bug/1404401
-#ifdef __SSE__
-      if (!_MM_GET_DENORMALS_ZERO_MODE())
-      { 
-            qDebug() << "SSE: Enabling denormals to zero mode";
-            _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
-      }
-      else qDebug() << "SSE: Denormals to zero mode already enabled";
-      if (!_MM_GET_FLUSH_ZERO_MODE())
-      {
-            qDebug() << "SSE: Enabling flush to zero mode";
-            _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
-      }
-      else qDebug() << "SSE: Flush to zero mode already enabled";
-#endif
-  }
-  auto count = std::numeric_limits<int>::max();
-  for ( auto device : m_devices )
-  {
-    count = std::min(device->writeAvailable(),count);
-  }
-  auto bufferSize = m_config.getFramesPerBuffer();
-  if ( count >= bufferSize )
-  {
-    {
-      ScopedTimer t("SoundManager::process: readProcess()");
-      readProcess();
-    }
-    {
-      ScopedTimer t("SoundManager::process: onDeviceOutputCallback(%1)",QString::number(bufferSize));
-      onDeviceOutputCallback(bufferSize);
-    }
-    {
-      ScopedTimer t("SoundManager::process: writeProcess()");
-      writeProcess();
-    }
-  }
 }

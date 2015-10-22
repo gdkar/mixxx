@@ -81,11 +81,13 @@ ConfigObject<ConfigValue>* EngineControl::getConfig() {
     return m_pConfig;
 }
 
-EngineMaster* EngineControl::getEngineMaster() {
+EngineMaster* EngineControl::getEngineMaster()
+{
     return m_pEngineMaster;
 }
 
-EngineBuffer* EngineControl::getEngineBuffer() {
+EngineBuffer* EngineControl::getEngineBuffer()
+{
     return m_pEngineBuffer;
 }
 
@@ -107,24 +109,20 @@ void EngineControl::seek(double sample) {
     }
 }
 
-void EngineControl::notifySeek(double dNewPlaypos) {
+void EngineControl::notifySeek(double dNewPlaypos)
+{
     Q_UNUSED(dNewPlaypos);
 }
-
-EngineBuffer* EngineControl::pickSyncTarget() {
-    EngineMaster* pMaster = getEngineMaster();
-    if (!pMaster) {
-        return NULL;
-    }
-
-    EngineSync* pEngineSync = pMaster->getEngineSync();
-    if (pEngineSync == NULL) {
-        return NULL;
-    }
+EngineBuffer* EngineControl::pickSyncTarget()
+{
+    auto pMaster = getEngineMaster();
+    if (!pMaster)  return nullptr;
+    auto pEngineSync = pMaster->getEngineSync();
+    if (!pEngineSync) return nullptr;
 
     // TODO(rryan): Remove. This is a linear search over groups in
     // EngineMaster. We should pass the EngineChannel into EngineControl.
-    EngineChannel* pThisChannel = pMaster->getChannel(getGroup());
-    EngineChannel* pChannel = pEngineSync->pickNonSyncSyncTarget(pThisChannel);
-    return pChannel ? pChannel->getEngineBuffer() : NULL;
+    auto pThisChannel = pMaster->getChannel(getGroup());
+    auto pChannel = pEngineSync->pickNonSyncSyncTarget(pThisChannel);
+    return pChannel->findChild<EngineBuffer*>();
 }

@@ -109,7 +109,10 @@ void SyncControl::notifySyncModeChanged(SyncMode mode) {
     }
 }
 void SyncControl::notifyOnlyPlayingSyncable() {m_pBpmControl->resetSyncAdjustment();}
-void SyncControl::requestSyncPhase() {m_pChannel->getEngineBuffer()->requestSyncPhase();}
+void SyncControl::requestSyncPhase()
+{
+  if ( auto ptr = m_pChannel->findChild<EngineBuffer*>()) ptr->requestSyncPhase();
+}
 bool SyncControl::isPlaying() const {return m_pPlayButton->get() > 0.0;}
 double SyncControl::getBeatDistance() const {
     double beatDistance = m_pSyncBeatDistance->get();
@@ -207,17 +210,19 @@ void SyncControl::setInstantaneousBpm(double bpm) {
 void SyncControl::reportTrackPosition(double fractionalPlaypos) {
     // If we're close to the end, and master, disable master so we don't stop
     // the party.
-    if (getSyncMode() == SYNC_MASTER && fractionalPlaypos > kTrackPositionMasterHandoff) {
-        m_pChannel->getEngineBuffer()->requestSyncMode(SYNC_NONE);
+    if (getSyncMode() == SYNC_MASTER && fractionalPlaypos > kTrackPositionMasterHandoff)
+    {
+        if ( auto ptr = m_pChannel->findChild<EngineBuffer*>()) ptr->requestSyncMode(SYNC_NONE);
     }
 }
 void SyncControl::trackLoaded(TrackPointer pTrack) {
     //qDebug() << getGroup() << "SyncControl::trackLoaded";
     Q_UNUSED(pTrack);
     m_masterBpmAdjustFactor = kBpmUnity;
-    if (getSyncMode() == SYNC_MASTER) {
+    if (getSyncMode() == SYNC_MASTER)
+    {
         // If we loaded a new track while master, hand off.
-        m_pChannel->getEngineBuffer()->requestSyncMode(SYNC_NONE);
+        if ( auto ptr = m_pChannel->findChild<EngineBuffer*>() ) ptr->requestSyncMode(SYNC_NONE);
     }
     if (getSyncMode() != SYNC_NONE) {
         // Because of the order signals get processed, the file/local_bpm COs and
@@ -237,15 +242,20 @@ void SyncControl::trackUnloaded(TrackPointer pTrack) {
     Q_UNUSED(pTrack);
     if (getSyncMode() == SYNC_MASTER) {
         // If we unloaded a new track while master, hand off.
-        m_pChannel->getEngineBuffer()->requestSyncMode(SYNC_NONE);
+        //
+        if ( auto ptr = m_pChannel->findChild<EngineBuffer*>() ) ptr->requestSyncMode(SYNC_NONE);
     }
 }
 void SyncControl::slotControlPlay(double play) {m_pEngineSync->notifyPlaying(this, play > 0.0);}
 void SyncControl::slotVinylControlChanged(double enabled) {
-    if (enabled && getSyncMode() == SYNC_FOLLOWER) {m_pChannel->getEngineBuffer()->requestSyncMode(SYNC_NONE);}
+    if (enabled && getSyncMode() == SYNC_FOLLOWER) 
+    {if ( auto ptr = m_pChannel->findChild<EngineBuffer*>() ) ptr->requestSyncMode(SYNC_NONE);}
 }
 void SyncControl::slotPassthroughChanged(double enabled) {
-    if (enabled && getSyncMode() != SYNC_NONE) {m_pChannel->getEngineBuffer()->requestSyncMode(SYNC_NONE);}
+    if (enabled && getSyncMode() != SYNC_NONE)
+    {
+      if ( auto ptr = m_pChannel->findChild<EngineBuffer*>() ) ptr->requestSyncMode(SYNC_NONE);
+    }
 }
 void SyncControl::slotEjectPushed(double enabled) {
     Q_UNUSED(enabled);
@@ -254,11 +264,14 @@ void SyncControl::slotEjectPushed(double enabled) {
     // actually causes the other decks to start playing, so not doing anything
     // is preferred.
 }
-void SyncControl::slotSyncModeChangeRequest(double state) {
+void SyncControl::slotSyncModeChangeRequest(double state)
+{
     SyncMode mode(syncModeFromDouble(state));
-    if (m_pPassthroughEnabled->get() && mode != SYNC_NONE) {
-        qDebug() << "Disallowing enabling of sync mode when passthrough active";
-    } else {m_pChannel->getEngineBuffer()->requestSyncMode(mode);}
+    if (m_pPassthroughEnabled->get() && mode != SYNC_NONE)
+    {
+      qDebug() << "Disallowing enabling of sync mode when passthrough active";
+    }
+    else if ( auto ptr = m_pChannel->findChild<EngineBuffer*>() ) ptr->requestSyncMode(mode);
 }
 void SyncControl::slotSyncMasterEnabledChangeRequest(double state) {
     auto currentlyMaster = getSyncMode() == SYNC_MASTER;
@@ -268,11 +281,13 @@ void SyncControl::slotSyncMasterEnabledChangeRequest(double state) {
             qDebug() << "Disallowing enabling of sync mode when passthrough active";
             return;
         }
-        m_pChannel->getEngineBuffer()->requestSyncMode(SYNC_MASTER);
+        if ( auto ptr = m_pChannel->findChild<EngineBuffer*>() )
+          ptr->requestSyncMode(SYNC_MASTER);
     } else {
         // Turning off master goes back to follower mode.
-        if (!currentlyMaster) {return;}
-        m_pChannel->getEngineBuffer()->requestSyncMode(SYNC_FOLLOWER);
+        if (currentlyMaster)
+          if ( auto ptr = m_pChannel->findChild<EngineBuffer*>() )
+            ptr->requestSyncMode(SYNC_FOLLOWER);
     }
 }
 void SyncControl::slotSyncEnabledChangeRequest(double enabled) {
@@ -283,7 +298,7 @@ void SyncControl::slotSyncEnabledChangeRequest(double enabled) {
         qDebug() << "Disallowing enabling of sync mode when passthrough active";
         return;
     }
-    m_pChannel->getEngineBuffer()->requestEnableSync(bEnabled);
+    if ( auto ptr = m_pChannel->findChild<EngineBuffer*>() ) ptr->requestEnableSync(bEnabled);
 }
 void SyncControl::setLocalBpm(double local_bpm) {
     if (getSyncMode() == SYNC_NONE) {return;}

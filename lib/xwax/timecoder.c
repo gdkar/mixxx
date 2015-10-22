@@ -28,28 +28,19 @@
 #include "timecoder.h"
 
 #define ZERO_THRESHOLD (128 << 16)
-
 #define ZERO_RC 0.001 /* time constant for zero/rumble filter */
-
 #define REF_PEAKS_AVG 48 /* in wave cycles */
-
 /* The number of correct bits which come in before the timecode is
  * declared valid. Set this too low, and risk the record skipping
  * around (often to blank areas of track) during scratching */
-
 #define VALID_BITS 24
-
 #define MONITOR_DECAY_EVERY 512 /* in samples */
-
 #define SQ(x) ((x)*(x))
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof(*x))
-
 /* Timecode definitions */
-
 #define SWITCH_PHASE 0x1 /* tone phase difference of 270 (not 90) degrees */
 #define SWITCH_PRIMARY 0x2 /* use left channel (not right) as primary */
 #define SWITCH_POLARITY 0x4 /* read bit values in negative (not positive) */
-
 static struct timecode_def timecodes[] = {
     {
         .name = "serato_2a",
@@ -136,97 +127,71 @@ static struct timecode_def timecodes[] = {
         .lookup = false
     },
 };
-
 /*
  * Calculate LFSR bit
  */
-
 static inline bits_t lfsr(bits_t code, bits_t taps)
 {
     bits_t taken;
     int xrs;
-
     taken = code & taps;
     xrs = 0;
     while (taken != 0x0) {
         xrs += taken & 0x1;
         taken >>= 1;
     }
-
     return xrs & 0x1;
 }
-
 /*
  * Linear Feedback Shift Register in the forward direction. New values
  * are generated at the least-significant bit.
  */
-
 static inline bits_t fwd(bits_t current, struct timecode_def *def)
 {
     bits_t l;
-
     /* New bits are added at the MSB; shift right by one */
-
     l = lfsr(current, def->taps | 0x1);
     return (current >> 1) | (l << (def->bits - 1));
 }
-
 /*
  * Linear Feedback Shift Register in the reverse direction
  */
-
 static inline bits_t rev(bits_t current, struct timecode_def *def)
 {
     bits_t l, mask;
-
     /* New bits are added at the LSB; shift left one and mask */
-
     mask = (1 << def->bits) - 1;
     l = lfsr(current, (def->taps >> 1) | (0x1 << (def->bits - 1)));
     return ((current << 1) & mask) | l;
 }
-
 /*
  * Where necessary, build the lookup table required for this timecode
  *
  * Return: -1 if not enough memory could be allocated, otherwise 0
  */
-
 static int build_lookup(struct timecode_def *def)
 {
     unsigned int n;
     bits_t current;
-
-    if (def->lookup)
-        return 0;
-
+    if (def->lookup) return 0;
     fprintf(stderr, "Building LUT for %d bit %dHz timecode (%s)\n",
             def->bits, def->resolution, def->desc);
-
     if (lut_init(&def->lut, def->length) == -1)
 	return -1;
-
     current = def->seed;
-
     for (n = 0; n < def->length; n++) {
         bits_t next;
-
         /* timecode must not wrap */
         dassert(lut_lookup(&def->lut, current) == (unsigned)-1);
         lut_push(&def->lut, current);
-
         /* check symmetry of the lfsr functions */
         next = fwd(current, def);
         dassert(rev(next, def) == current);
-
         current = next;
     }
-
     def->lookup = true;
-
     return 0;
 }
-
 /*
  * Find a timecode definition by name
  *
@@ -236,43 +201,28 @@ static int build_lookup(struct timecode_def *def)
 struct timecode_def* timecoder_find_definition(const char *name)
 {
     struct timecode_def *def, *end;
-
     def = &timecodes[0];
     end = def + ARRAY_SIZE(timecodes);
-
     for (;;) {
-        if (!strcmp(def->name, name))
-            break;
-
+        if (!strcmp(def->name, name)) break;
         def++;
-
-        if (def == end)
-            return NULL;
+        if (def == end) return NULL;
     }
-
-    if (build_lookup(def) == -1)
-        return NULL;
-
+    if (build_lookup(def) == -1) return NULL;
     return def;
 }
-
 /*
  * Free the timecoder lookup tables when they are no longer needed
  */
-
 void timecoder_free_lookup(void) {
     struct timecode_def *def, *end;
-
     def = &timecodes[0];
     end = def + ARRAY_SIZE(timecodes);
-
     while (def < end) {
-        if (def->lookup)
-            lut_clear(&def->lut);
+        if (def->lookup) lut_clear(&def->lut);
         def++;
     }
 }
-
 /*
  * Initialise filter values for one channel
  */
@@ -288,15 +238,12 @@ static void init_channel(struct timecoder_channel *ch)
  *
  * Return: -1 if the timecoder could not be initialised, otherwise 0
  */
-
 void timecoder_init(struct timecoder *tc, struct timecode_def *def,
                     double speed, unsigned int sample_rate, bool phono)
 {
     assert(def != NULL);
-
     /* A definition contains a lookup table which can be shared
      * across multiple timecoders */
-
     assert(def->lookup);
     tc->def = def;
     tc->speed = speed;

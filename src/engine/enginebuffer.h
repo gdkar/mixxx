@@ -95,7 +95,7 @@ class EngineBuffer : public EngineObject {
     Q_ENUM(SyncRequest);
     Q_ENUM(SeekRequest);
     Q_ENUM(KeylockEngine);
-    EngineBuffer(QString _group, ConfigObject<ConfigValue>* _config,EngineChannel* pChannel, EngineMaster* pMixingEngine);
+    EngineBuffer(QString _group, ConfigObject<ConfigValue>* _config,EngineChannel* pChannel, EngineMaster* pMixingEngine, QObject *pParent = nullptr);
     virtual ~EngineBuffer();
     // Return the current rate (not thread-safe)
     double getSpeed() const;
@@ -137,12 +137,13 @@ class EngineBuffer : public EngineObject {
     // Request that the EngineBuffer load a track. Since the process is
     // asynchronous, EngineBuffer will emit a trackLoaded signal when the load
     // has completed.
-    void slotLoadTrack(TrackPointer pTrack, bool play = false);
-    void slotEjectTrack(double);
+    void onLoadTrack(TrackPointer pTrack, bool play = false);
+    void onEjectTrack(double);
   signals:
     void trackLoaded(TrackPointer pTrack);
     void trackLoadFailed(TrackPointer pTrack, QString reason);
     void trackUnloaded(TrackPointer pTrack);
+    void loadTrack(TrackPointer,bool);
   private slots:
     void slotTrackLoading();
     void slotTrackLoaded(TrackPointer pTrack,int iSampleRate, int iNumSamples);

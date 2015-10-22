@@ -13,11 +13,9 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef FILTFILT_H
-#define FILTFILT_H
-
+_Pragma("once")
 #include "Filter.h"
-
+#include <vector>
 struct FiltFiltConfig{
     unsigned int ord;
     float* ACoeffs;
@@ -36,15 +34,9 @@ public:
 private:
     void initialise( FiltFiltConfig Config );
     void deInitialise();
-
     unsigned int m_ord;
-
-    Filter* m_filter;
-
-    float* m_filtScratchIn;
-    float* m_filtScratchOut;
-
+    std::unique_ptr<Filter> m_filter;
+    std::vector<float> m_filtScratchIn;
+    std::vector<float> m_filtScratchOut;
     FilterConfig m_filterConfig;
 };
-
-#endif

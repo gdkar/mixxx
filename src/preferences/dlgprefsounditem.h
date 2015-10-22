@@ -13,9 +13,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef DLGPREFSOUNDITEM_H
-#define DLGPREFSOUNDITEM_H
-
+_Pragma("once")
 #include "preferences/ui_dlgprefsounditem.h"
 #include "soundmanagerutil.h"
 
@@ -64,5 +62,3 @@ class DlgPrefSoundItem : public QWidget, public Ui::DlgPrefSoundItem {
     // channel info. x is the channel base and y is the channel count.
     QPoint m_savedChannel;
 };
-
-#endif

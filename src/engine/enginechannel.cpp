@@ -21,8 +21,11 @@
 #include "controlpushbutton.h"
 
 EngineChannel::EngineChannel(const ChannelHandleAndGroup& handle_group,
-                             EngineChannel::ChannelOrientation defaultOrientation)
-        : m_group(handle_group) {
+                             EngineChannel::ChannelOrientation defaultOrientation, QObject *pParent)
+        : EngineObject(pParent),
+          m_group(handle_group)
+{
+    setObjectName(getGroup());
     m_pPFL = new ControlPushButton(ConfigKey(getGroup(), "pfl"));
     m_pPFL->setProperty("buttonMode",QVariant::fromValue(ControlPushButton::ButtonMode::Toggle));
     m_pMaster = new ControlPushButton(ConfigKey(getGroup(), "master"));

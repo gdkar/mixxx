@@ -18,24 +18,14 @@
 
 #include <iostream>
 #include <cstring>
-
+#include <utility>
+#include <iterator>
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
-
 PeakPicking::PeakPicking( PPickParams Config )
-{
-    m_workBuffer = NULL;
-    initialise( Config );
-}
-
-PeakPicking::~PeakPicking()
-{
-    deInitialise();
-}
-
-void PeakPicking::initialise( PPickParams Config )
+    :m_workBuffer(std::make_unique<float[]>(Config.length))
 {
     m_DFLength = Config.length ;
     Qfilta = Config.QuadThresh.a ;
@@ -51,63 +41,38 @@ void PeakPicking::initialise( PPickParams Config )
     m_DFProcessingParams.AlphaNormParam = Config.alpha;
     m_DFProcessingParams.isMedianPositive = false;
 	
-    m_DFSmoothing = new DFProcess( m_DFProcessingParams );
-
-    m_workBuffer = new float[ m_DFLength ];
-    memset( m_workBuffer, 0, sizeof(float)*m_DFLength);
+    m_DFSmoothing = std::make_unique<DFProcess>( m_DFProcessingParams );
+    std::fill(&m_workBuffer[0],&m_workBuffer[m_DFLength],0);
 }
-
-void PeakPicking::deInitialise()
-{
-    delete [] m_workBuffer;
-    delete m_DFSmoothing;
-    m_workBuffer = NULL;
-}
-
+PeakPicking::~PeakPicking() = default;
 void PeakPicking::process( float* src, unsigned int len, vector<int> &onsets )
 {
     if (len < 4) return;
-
     vector <float> m_maxima;	
-
     // Signal conditioning 
-    m_DFSmoothing->process( src, m_workBuffer );
-	
-    for( unsigned int u = 0; u < len; u++)
-    {
-	m_maxima.push_back( m_workBuffer[ u ] );		
-    }
-	
+    m_DFSmoothing->process( src, &m_workBuffer[0] );
+    std::move(&m_workBuffer[0],&m_workBuffer[len],std::back_inserter(m_maxima));
     quadEval( m_maxima, onsets );
-
-    for( int b = 0; b <  m_maxima.size(); b++)
-    {
-	src[ b ] = m_maxima[ b ];
-    }
+    std::move(m_maxima.cbegin(),m_maxima.cend(),&src[0]);
 }
 
 int PeakPicking::quadEval( vector<float> &src, vector<int> &idx )
 {
-    unsigned int maxLength;
-
     vector <int> m_maxIndex;
     vector <int> m_onsetPosition;
-	
     vector <float> m_maxFit;
     vector <float> m_poly;
     vector <float> m_err;
-
-    float p;
-
+    auto maxLength = decltype(m_maxIndex.size()){0};
+    auto p = 0.f;
     m_poly.push_back(0);
     m_poly.push_back(0);
     m_poly.push_back(0);
-
-    for(  int t = -2; t < 3; t++)
+    for(  auto t = -2; t < 3; t++)
     {
 	m_err.push_back( (float)t );
     }
-    for( unsigned int i = 2; i < src.size() - 2; i++)
+    for( auto i = decltype(src.size()){2}; i < src.size() - 2; i++)
     {
 	if( (src[i] > src[i-1]) && (src[i] > src[i+1]) && (src[i] > 0) )
 	{
@@ -115,31 +80,23 @@ int PeakPicking::quadEval( vector<float> &src, vector<int> &idx )
             m_maxIndex.push_back(i);
 	}
     }
-
     maxLength = m_maxIndex.size();
-
-    float selMax = 0;
-
-    for( unsigned int j = 0; j < maxLength ; j++)
+    auto selMax = 0.f;
+    for( auto j = decltype(maxLength){0}; j < maxLength ; j++)
     {
-        for (int k = -2; k <= 2; ++k)
+        for (auto k = -2; k <= 2; ++k)
 	{
 	    selMax = src[ m_maxIndex[j] + k ] ;
 	    m_maxFit.push_back(selMax);			
 	}
-
 	p = TPolyFit::PolyFit2( m_err, m_maxFit, m_poly);
-
-	float f = m_poly[0];
-	float g = m_poly[1];
-	float h = m_poly[2];
+	auto f = m_poly[0];
+	auto g = m_poly[1];
+	auto h = m_poly[2];
 
 	int kk = m_poly.size();
 
-	if (h < -Qfilta || f > Qfiltc)
-	{
-	    idx.push_back(m_maxIndex[j]);
-	}
+	if (h < -Qfilta || f > Qfiltc) idx.push_back(m_maxIndex[j]);
 		
 	m_maxFit.clear();
     }

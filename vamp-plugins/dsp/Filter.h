@@ -13,12 +13,9 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef FILTER_H
-#define FILTER_H
-
-#ifndef NULL
-#define NULL 0
-#endif
+_Pragma("once")
+#include <memory>
+#include <algorithm>
 
 struct FilterConfig{
     unsigned int ord;
@@ -31,23 +28,12 @@ class Filter
 public:
     Filter( FilterConfig Config );
     virtual ~Filter();
-
     void reset();
-
     void process( float *src, float *dst, unsigned int length );
-	
-
 private:
-    void initialise( FilterConfig Config );
-    void deInitialise();
-
-    unsigned int m_ord;
-
-    float* m_inBuffer;
-    float* m_outBuffer;
-
+    unsigned int m_ord = 0;
+    std::unique_ptr<float[]> m_inBuffer;
+    std::unique_ptr<float[]> m_outBuffer;
     float* m_ACoeffs;
     float* m_BCoeffs;
 };
-
-#endif

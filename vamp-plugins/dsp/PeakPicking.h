@@ -21,21 +21,18 @@ _Pragma("once")
 #include "MathUtilities.h"
 #include "MathAliases.h"
 #include "DFProcess.h"
-
-
+#include <memory>
 struct PPWinThresh
 {
     unsigned int pre;
     unsigned int  post;
 };
-
 struct QFitThresh
 {
     float a;
     float b;
     float c;
 };
-
 struct PPickParams
 {
     unsigned int length; //Detection FunctionLength
@@ -48,30 +45,19 @@ struct PPickParams
     PPWinThresh WinT;//window size in frames for adaptive thresholding [pre post]:
     QFitThresh QuadThresh;
 };
-
 class PeakPicking  
 {
 public:
     PeakPicking( PPickParams Config );
     virtual ~PeakPicking();
-	
     void process( float* src, unsigned int len, vector<int> &onsets  );
-
-
 private:
-    void initialise( PPickParams Config  );
-    void deInitialise();
     int  quadEval( vector<float> &src, vector<int> &idx );
-	
     DFProcConfig m_DFProcessingParams;
-
     unsigned int m_DFLength ;
     float Qfilta ;
     float Qfiltb;
     float Qfiltc;
-
-
-    float* m_workBuffer;
-	
-    DFProcess*	m_DFSmoothing;
+    std::unique_ptr<float[]> m_workBuffer;
+    std::unique_ptr<DFProcess>	m_DFSmoothing;
 };

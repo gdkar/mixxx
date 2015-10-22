@@ -35,19 +35,17 @@ class EngineChannel : public EngineObject {
         RIGHT,
     };
     Q_ENUM(ChannelOrientation);
-    EngineChannel(const ChannelHandleAndGroup& handle_group, ChannelOrientation defaultOrientation = CENTER);
+    EngineChannel(const ChannelHandleAndGroup& handle_group, ChannelOrientation defaultOrientation = CENTER,QObject *pParent = nullptr);
     virtual ~EngineChannel();
-
     virtual ChannelOrientation getOrientation() const;
-
-    inline const ChannelHandle& getHandle() const {
+    const ChannelHandle& getHandle() const
+    {
         return m_group.handle();
     }
-
-    virtual QString getGroup() const {
+    virtual QString getGroup() const
+    {
         return m_group.name();
     }
-
     virtual bool isActive() = 0;
     void setPfl(bool enabled);
     virtual bool isPflEnabled() const;
@@ -55,20 +53,12 @@ class EngineChannel : public EngineObject {
     virtual bool isMasterEnabled() const;
     void setTalkover(bool enabled);
     virtual bool isTalkoverEnabled() const;
-
     virtual void process(CSAMPLE* pOut, const int iBufferSize) = 0;
     virtual void postProcess(const int iBuffersize) = 0;
-
-    // TODO(XXX) This hack needs to be removed.
-    virtual EngineBuffer* getEngineBuffer() {
-        return NULL;
-    }
-
   private slots:
     void slotOrientationLeft(double v);
     void slotOrientationRight(double v);
     void slotOrientationCenter(double v);
-
   private:
     const ChannelHandleAndGroup m_group;
     ControlObject* m_pMaster;

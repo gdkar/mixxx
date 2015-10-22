@@ -1,6 +1,5 @@
 _Pragma("once")
-#include <string.h>
-
+#include <cstring>
 #include "engine/engineobject.h"
 #include "sampleutil.h"
 #define MIXXX
@@ -15,9 +14,7 @@ _Pragma("once")
 enum IIRPass {
     IIR_LP,
     IIR_BP,
-    IIR_HP,
-    IIR_LPMO,
-    IIR_HPMO,
+    IIR_HP
 };
 class EngineFilterIIRBase : public EngineObjectConstIn
 {
@@ -246,15 +243,19 @@ inline CSAMPLE EngineFilterIIR<8, IIR_BP>::processSample(CSAMPLE* coef,CSAMPLE* 
     CSAMPLE fir, iir;
     iir = val * coef[0] - coef[1] * buf[0] - coef[2] * buf[1];
     fir = iir - 2 * buf[1] + buf[0];
+    buf[0] = buf[1];
     buf[1] = iir;
     iir = fir - coef[3] * buf[2] - coef[4] * buf[3];
     fir = iir - 2 * buf[3] +  buf[2];
+    buf[2] = buf[3];
     buf[3] = iir;
     iir = fir - coef[5] * buf[4] * coef[6] * buf[5];
     fir = iir + 2 * buf[5] + buf[4];
+    buf[4] = buf[5];
     buf[5] = iir;
     iir = fir - coef[7] * buf[6] * coef[8] * buf[7];
     fir = iir + 2 * buf[7] + buf[6];
+    buf[6] = buf[7];
     buf[7] = iir;
     return fir;
 }
@@ -279,52 +280,55 @@ inline CSAMPLE EngineFilterIIR<8, IIR_LP>::processSample(CSAMPLE* coef,CSAMPLE* 
     CSAMPLE fir, iir;
     iir = val * coef[0] - coef[1] * buf[0] - coef[2] * buf[1];
     fir = iir + 2 * buf[1] + buf[0];
+    buf[0] = buf[1];
     buf[1] = iir;
     iir = fir - coef[3] * buf[2] - coef[4] * buf[3];
     fir = iir + 2 * buf[3] + buf[2];
+    buf[2] = buf[3];
     buf[3] = iir;
     iir = fir - coef[5] * buf[4] - coef[6] * buf[5];
     fir = iir + 2 * buf[5] + buf[4];
+    buf[4] = buf[5];
     buf[5] = iir;
     iir = fir - coef[7] * buf[6] - coef[8] * buf[7];
     fir = iir + 2 * buf[7] + buf[6];
+    buf[6] = buf[7];
     buf[7] = iir;
     return fir;
 }
 template<>
 inline CSAMPLE EngineFilterIIR<16, IIR_BP>::processSample(CSAMPLE* coef,CSAMPLE* buf,CSAMPLE val)
 {
-
     auto iir = val * coef[0] - buf[0] * coef[1] - buf[1]  * coef[2];
     auto fir = iir - 2 * buf[1] + buf[0];
     buf[0] = buf[1];
     buf[1] = iir;
     iir    = fir - buf[2] * coef[3] - buf[3] * coef[4];
-    fir    = iir - 2 * buf[3] + buf[2];
+    fir    = buf[2] - 2 * buf[3] + iir;
     buf[2] = buf[3];
     buf[3] = iir;
     iir    = fir - buf[4] * coef[5] - buf[5] * coef[6];
-    fir    = iir - 2 * buf[5] + buf[4];
+    fir    = buf[4] - 2 * buf[5] + iir;
     buf[4] = buf[5];
     buf[5] = iir;
     iir    = fir - buf[6] * coef[7] - buf[7] * coef[8];
-    fir    = iir - 2 * buf[7] + buf[6];
+    fir    = buf[6] - 2 * buf[7] + iir;
     buf[6] = buf[7];
     buf[7] = iir;
     iir    = fir - buf[8] * coef[9] - buf[9] * coef[10];
-    fir    = iir + 2 * buf[9] + buf[8];
+    fir    = buf[8] + 2 * buf[9] + iir;
     buf[8] = buf[9];
     buf[9] = iir;
     iir    = fir - buf[10] * coef[11] - buf[11] * coef[12];
-    fir    = iir + 2 * buf[11] + buf[10];
+    fir    = buf[10] + 2 * buf[11] + iir;
     buf[10]= buf[11];
     buf[11]= iir;
     iir    = fir - buf[12] * coef[13] - buf[13] * coef[14];
-    fir    = iir + 2 * buf[13] + buf[12];
+    fir    = buf[12] + 2 * buf[13] + iir; 
     buf[12]= buf[13];
     buf[13]= iir;
     iir    = fir - buf[14] * coef[15] - buf[15] * coef[16];
-    fir    = iir + 2 * buf[15] + buf[14];
+    fir    = buf[15] + 2 * buf[15] + iir;
     buf[14]= buf[15];
     buf[15]= iir;
     return fir;
@@ -334,20 +338,23 @@ inline CSAMPLE EngineFilterIIR<8, IIR_HP>::processSample(CSAMPLE* coef,CSAMPLE* 
 {
     CSAMPLE fir, iir;
     iir = val * coef[0] - coef[1] * buf[0] - coef[2] * buf[1];
-    fir = iir - 2*buf[1] + buf[0];
+    fir = buf[0] - 2*buf[1] + iir;
+    buf[0] = buf[1];
     buf[1] = iir;
     iir = fir - coef[3] * buf[2] - coef[4] * buf[3];
-    fir = iir - 2 * buf[3] + buf[2];
+    fir = buf[2]  - 2 * buf[3] + iir;
+    buf[2] = buf[3];
     buf[3] = iir;
     iir = fir - coef[5] * buf[4] - coef[6] * buf[5];
-    fir = iir - 2 * buf[5] + buf[4];
+    fir = buf[4] - 2 * buf[5] + iir;
+    buf[4] = buf[5];
     buf[5] = iir;
     iir = fir - coef[7] * buf[6] - coef[8] * buf[7];
-    fir = iir - 2 * buf[7] + buf[6];
+    fir = buf[6]  - 2 * buf[7] + buf[6] + iir;
+    buf[6] = buf[7];
     buf[7] = iir;
     return fir;
 }
-
 // IIR_LP and IIR_HP use the same processSample routine
 template<>
 inline CSAMPLE EngineFilterIIR<5, IIR_BP>::processSample(CSAMPLE* coef,CSAMPLE* buf,CSAMPLE val)
@@ -358,42 +365,4 @@ inline CSAMPLE EngineFilterIIR<5, IIR_BP>::processSample(CSAMPLE* coef,CSAMPLE* 
     buf[0] = buf[1];
     buf[1] = iir;
     return fir;
-}
-template<>
-inline CSAMPLE EngineFilterIIR<4, IIR_LPMO>::processSample(CSAMPLE* coef,CSAMPLE* buf,CSAMPLE val)
-{
-   CSAMPLE fir, iir;
-   iir= val * coef[0] - coef[1] * buf[0];
-   iir -= coef[1]*buf[0];
-   fir= iir + buf[0];
-   buf[0]= iir;
-   iir= fir - coef[2] * buf[1];
-   fir= iir + buf[1];
-   buf[1]= iir;
-   iir= fir - coef[3] * buf[2];
-   fir= iir + buf[2];
-   buf[2]= iir;
-   iir = fir - coef[4] * buf[3];
-   fir= iir + buf[3];
-   fir += iir;
-   buf[3]= iir;
-   return fir;
-}
-template<>
-inline CSAMPLE EngineFilterIIR<4, IIR_HPMO>::processSample(CSAMPLE* coef,CSAMPLE* buf,CSAMPLE val)
-{
-   CSAMPLE fir, iir;
-   iir  = val * coef[0] - coef[1] * buf[0];
-   fir= iir - buf[0];
-   buf[0]= iir;
-   iir= fir - coef[2] * buf[1];
-   fir= iir - buf[1];
-   buf[1]= iir;
-   iir= fir - coef[3] * buf[2];
-   fir= iir - buf[2];
-   buf[2]= iir;
-   iir= fir - coef[4] * buf[3];
-   fir= iir - buf[3];
-   buf[3]= iir;
-   return fir;
 }

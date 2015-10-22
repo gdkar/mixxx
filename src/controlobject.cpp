@@ -169,22 +169,11 @@ QString ControlObject::item() const
 // connect to parent object
 bool ControlObject::connectValueChanged( const char* method, Qt::ConnectionType type) 
 {
-    DEBUG_ASSERT(parent());
-    if ( auto p = parent() ) return connectValueChanged(p, method, type);
-    else return false;
+    if ( auto p = parent() )  connectValueChanged(p, method, type);
+    return true;
 }
 bool ControlObject::connectValueChanged(const QObject* receiver,const char* method, Qt::ConnectionType type)
 {
-    auto ret = false;
-    if (m_pControl)
-    {
-        ret = connect(this, SIGNAL(valueChanged(double)),receiver, method, type);
-        if (ret)
-        {
-            // Connect to ControlObjectPrivate only if required. Do not allow
-            // duplicate connections.
-            connect(m_pControl.data(), SIGNAL(valueChanged(double)),this, SIGNAL(valueChanged(double)),static_cast<Qt::ConnectionType>(Qt::DirectConnection | Qt::UniqueConnection));
-        }
-    }
-    return ret;
+    if (m_pControl) connect(this, SIGNAL(valueChanged(double)),receiver, method, type);
+    return true;
 }

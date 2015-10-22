@@ -57,12 +57,13 @@ class EngineMaster : public QObject, public AudioSource {
     // Get access to the sample buffers. None of these are thread safe. Only to
     // be called by SoundManager.
     const CSAMPLE* buffer(AudioOutput output) const;
-    inline QString getMasterGroup() const { return m_masterHandle.name(); }
-    inline QString getHeadphoneGroup() const { return m_headphoneHandle.name(); }
-    inline QString getBusLeftGroup() const { return m_busLeftHandle.name(); }
-    inline QString getBusCenterGroup() const { return m_busCenterHandle.name(); }
-    inline QString getBusRightGroup() const { return m_busRightHandle.name(); }
-    ChannelHandleAndGroup registerChannelGroup(QString group) {
+    QString getMasterGroup() const { return m_masterHandle.name(); }
+    QString getHeadphoneGroup() const { return m_headphoneHandle.name(); }
+    QString getBusLeftGroup() const { return m_busLeftHandle.name(); }
+    QString getBusCenterGroup() const { return m_busCenterHandle.name(); }
+    QString getBusRightGroup() const { return m_busRightHandle.name(); }
+    ChannelHandleAndGroup registerChannelGroup(QString group)
+    {
         return ChannelHandleAndGroup( m_channelHandleFactory.getOrCreateHandle(group), group);
     }
     // WARNING: These methods are called by the main thread. They should only
@@ -75,9 +76,7 @@ class EngineMaster : public QObject, public AudioSource {
     void process(const int iBufferSize);
     // Add an EngineChannel to the mixing engine. This is not thread safe --
     // only call it before the engine has started mixing.
-    void addChannel(EngineChannel* pChannel);
-    EngineChannel* getChannel(QString group);
-    static inline double gainForOrientation(EngineChannel::ChannelOrientation orientation,
+    static double gainForOrientation(EngineChannel::ChannelOrientation orientation,
                                             double leftGain,
                                             double centerGain,
                                             double rightGain) {
@@ -195,6 +194,13 @@ class EngineMaster : public QObject, public AudioSource {
         // but avoids the constructor call T();
         long double m_buffer[(CAPACITY * sizeof(T) + sizeof(long double) - 1) / sizeof(long double)];
     };
+  signals:
+    void newChannel(EngineChannel* pChannel);
+  public slots:
+    void           addChannel  (EngineChannel* pChannel);
+    void           onNewChannel(EngineChannel* pChannel);
+    EngineChannel* getChannel(QString group);
+
   protected:
     // The master buffer is protected so it can be accessed by test subclasses.
     CSAMPLE* m_pMaster;
@@ -209,6 +215,7 @@ class EngineMaster : public QObject, public AudioSource {
     void processChannels(int iBufferSize);
     ChannelHandleFactory m_channelHandleFactory;
     EngineEffectsManager* m_pEngineEffectsManager;
+    ConfigObject<ConfigValue> * m_pConfig;
     bool m_bRampingGain;
     // List of channels added to the engine.
     QVarLengthArray<ChannelInfo*, kPreallocatedChannels> m_channels;

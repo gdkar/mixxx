@@ -4,30 +4,23 @@
  *  Created on: 30/nov/2011
  *      Author: vittorio
  */
-
 #include <QtDebug>
 #include <QString>
 #include <QList>
 #include <QMap>
-
 #include "track/beatutils.h"
 #include "util/math.h"
-
 // we are generous and assume the global_BPM to be at most 0.05 BPM far away
 // from the correct one
 #define BPM_ERROR 0.05
-
 // the raw beatgrid is divided into blocks of size N from which the local bpm is
 // computed. Tweaked from 8 to 12 which improves the BPM accurancy for 'problem songs'.
 #define N 12
-
 static bool sDebug = false;
-
 const auto kCorrectBeatLocalBpmEpsilon = 0.05; //0.2;
 const auto kHistogramDecimalPlaces = 2;
 const auto kHistogramDecimalScale = std::pow(10.0, kHistogramDecimalPlaces);
 const auto kBpmFilterTolerance = 1.0;
-
 void BeatUtils::printBeatStatistics(const QVector<double>& beats, int SampleRate)
 {
     if (!sDebug) return;

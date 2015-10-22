@@ -116,6 +116,20 @@ public:
     advanceWriteIndex ( numWritten );
     return numWritten;
   }
+  virtual bool put ( const T& item )
+  {
+    auto widx = writeIndex.load() & bigMask;
+    auto ridx = readIndex.load()  & bigMask;
+    auto available = bufferSize - std::min(0l, (widx-ridx)&bigMask);
+    if ( available )
+    {
+      auto index = widx & smallMask;
+      buffer[index] = item;
+      writeIndex.fetch_add(1);
+      return true;
+    }
+    return false;
+  }
   virtual size_type read  (       T *data, size_type elementCount )
   {
     auto size0 = size_type {},size1 = size_type {};
@@ -126,5 +140,18 @@ public:
     if ( size1 ) std::copy( data1, data1+size1, data );
     advanceReadIndex ( numRead );
     return numRead;
+  }
+  virtual bool pop ( T & item)
+  {
+    auto widx = writeIndex.load() & bigMask;
+    auto ridx = readIndex.load()  & bigMask;
+    if( auto available = std::max(0l,( widx - ridx ) ) )
+    {
+      auto index = ridx & smallMask;
+      item = buffer[index];
+      readIndex.fetch_add(1);
+      return true;
+    }
+    else return false;
   }
 };

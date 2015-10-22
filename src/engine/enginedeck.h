@@ -21,7 +21,7 @@ _Pragma("once")
 #include "engine/enginechannel.h"
 
 #include "soundmanagerutil.h"
-
+#include "trackinfoobject.h"
 class EngineBuffer;
 class EnginePregain;
 class EngineBuffer;
@@ -35,12 +35,11 @@ class EngineDeck : public EngineChannel, public AudioDestination {
   public:
     EngineDeck(const ChannelHandleAndGroup& handle_group, ConfigObject<ConfigValue>* pConfig,
                EngineMaster* pMixingEngine, EffectsManager* pEffectsManager,
-               EngineChannel::ChannelOrientation defaultOrientation = CENTER);
+               EngineChannel::ChannelOrientation defaultOrientation = CENTER,
+               QObject *pParent=nullptr);
     virtual ~EngineDeck();
     virtual void process(CSAMPLE* pOutput, const int iBufferSize);
     virtual void postProcess(const int iBufferSize);
-    // TODO(XXX) This hack needs to be removed.
-    virtual EngineBuffer* getEngineBuffer();
     virtual bool isActive();
     // This is called by SoundManager whenever there are new samples from the
     // configured input to be processed. This is run in the callback thread of
@@ -58,6 +57,11 @@ class EngineDeck : public EngineChannel, public AudioDestination {
     bool isPassthroughActive() const;
   public slots:
     void slotPassingToggle(double v);
+  signals:
+    void loadTrack(TrackPointer,bool);
+    void trackLoaded(TrackPointer);
+    void trackLoadFailed(TrackPointer,QString);
+    void trackUnloaded(TrackPointer);
   private:
     ConfigObject<ConfigValue>* m_pConfig = nullptr;
     EngineBuffer* m_pBuffer   = nullptr;

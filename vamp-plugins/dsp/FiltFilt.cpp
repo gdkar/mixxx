@@ -21,110 +21,42 @@
 
 FiltFilt::FiltFilt( FiltFiltConfig Config )
 {
-    m_filtScratchIn = NULL;
-    m_filtScratchOut = NULL;
-    m_ord = 0;
-	
-    initialise( Config );
-}
-
-FiltFilt::~FiltFilt()
-{
-    deInitialise();
-}
-
-void FiltFilt::initialise( FiltFiltConfig Config )
-{
     m_ord = Config.ord;
     m_filterConfig.ord = Config.ord;
     m_filterConfig.ACoeffs = Config.ACoeffs;
     m_filterConfig.BCoeffs = Config.BCoeffs;
-	
-    m_filter = new Filter( m_filterConfig );
+    m_filter = std::make_unique<Filter>( m_filterConfig );
 }
-
-void FiltFilt::deInitialise()
-{
-    delete m_filter;
-}
-
-
+FiltFilt::~FiltFilt() = default;
 void FiltFilt::process(float *src, float *dst, unsigned int length)
 {	
     unsigned int i;
-
     if (length == 0) return;
-
     unsigned int nFilt = m_ord + 1;
     unsigned int nFact = 3 * ( nFilt - 1);
     unsigned int nExt	= length + 2 * nFact;
-
-    m_filtScratchIn = new float[ nExt ];
-    m_filtScratchOut = new float[ nExt ];
-
-	
-    for( i = 0; i< nExt; i++ ) 
-    {
-	m_filtScratchIn[ i ] = 0.0;
-	m_filtScratchOut[ i ] = 0.0;
-    }
-
+    m_filtScratchIn .resize( nExt );
+    m_filtScratchOut.resize( nExt );
     // Edge transients reflection
-    float sample0 = 2 * src[ 0 ];
-    float sampleN = 2 * src[ length - 1 ];
-
-    unsigned int index = 0;
-    for( i = nFact; i > 0; i-- )
-    {
-	m_filtScratchIn[ index++ ] = sample0 - src[ i ];
-    }
+    auto sample0 = 2 * src[ 0 ];
+    auto sampleN = 2 * src[ length - 1 ];
+    auto index = 0;
+    for( i = nFact; i > 0; i-- ) m_filtScratchIn[ index++ ] = sample0 - src[ i ];
     index = 0;
-    for( i = 0; i < nFact; i++ )
-    {
-	m_filtScratchIn[ (nExt - nFact) + index++ ] = sampleN - src[ (length - 2) - i ];
-    }
-
+    for( i = 0; i < nFact; i++ ) m_filtScratchIn[ (nExt - nFact) + index++ ] = sampleN - src[ (length - 2) - i ];
     index = 0;
-    for( i = 0; i < length; i++ )
-    {
-	m_filtScratchIn[ i + nFact ] = src[ i ];
-    }
-	
+    std::copy(&src[0],&src[length],m_filtScratchIn.begin()+nFact);
     ////////////////////////////////
     // Do  0Ph filtering
-    m_filter->process( m_filtScratchIn, m_filtScratchOut, nExt);
-	
-    // reverse the series for FILTFILT 
-    for ( i = 0; i < nExt; i++)
-    { 
-	m_filtScratchIn[ i ] = m_filtScratchOut[ nExt - i - 1];
-    }
-
+    m_filter->process( &m_filtScratchIn[0], &m_filtScratchOut[0], nExt);
+    std::reverse_copy(m_filtScratchOut.cbegin(),m_filtScratchOut.cend(),m_filtScratchIn.begin());
     // do FILTER again 
-    m_filter->process( m_filtScratchIn, m_filtScratchOut, nExt);
-	
+    m_filter->process( &m_filtScratchIn[0], &m_filtScratchOut[0], nExt);
     // reverse the series back 
-    for ( i = 0; i < nExt; i++)
-    {
-	m_filtScratchIn[ i ] = m_filtScratchOut[ nExt - i - 1 ];
-    }
-    for ( i = 0;i < nExt; i++)
-    {
-	m_filtScratchOut[ i ] = m_filtScratchIn[ i ];
-    }
-
-    index = 0;
-    for( i = 0; i < length; i++ )
-    {
-	dst[ index++ ] = m_filtScratchOut[ i + nFact ];
-    }	
-
-    delete [] m_filtScratchIn;
-    delete [] m_filtScratchOut;
-
+    std::reverse_copy(m_filtScratchOut.cbegin(),m_filtScratchOut.cend(),m_filtScratchIn.begin());
+    std::copy(m_filtScratchIn.begin()+nFact,m_filtScratchIn.begin()+(length+nFact),&dst[0]);
 }
-
 void FiltFilt::reset()
 {
-
+    if(m_filter) m_filter->reset();
 }

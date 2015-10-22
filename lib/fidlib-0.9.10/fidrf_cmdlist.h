@@ -16,22 +16,18 @@
 //	advantage from flattening the filter list.  This code is also
 //	portable (unlike the JIT option).
 //
-
 typedef struct Run {
    int magic;		// Magic: 0x64966325
    int buf_size;	// Length of working buffer required in doubles	
    double *coef;	// Coefficient list
    char *cmd;		// Command list
 } Run;
-
 typedef struct RunBuf {
    double *coef;
    char *cmd;
    int mov_cnt;		// Number of bytes to memmove
    double buf[0];
 } RunBuf;
-
-
 //
 //	Filter processing routine.  This is designed to avoid too many
 //	branches, and references are very localized in the code,
@@ -70,9 +66,7 @@ typedef struct RunBuf {
 //	filters.  These have to be handled with a list of 7,6,5
 //	commands, plus a 13 command.
 //
-
 typedef unsigned char uchar;
-
 static double 
 filter_step(void *fbuf, double iir) {
    double *coef= ((RunBuf*)fbuf)->coef;
@@ -82,11 +76,9 @@ filter_step(void *fbuf, double iir) {
    double fir= 0;
    double tmp= buf[0];
    int cnt;
-
    // Using a memmove first is faster on gcc -O6 / ix86 than moving
    // the values whilst working through the buffers.
    memmove(buf, buf+1, ((RunBuf*)fbuf)->mov_cnt);
-
 #define IIR \
        iir -= *coef++ * tmp; \
        tmp= *buf++;
@@ -116,7 +108,6 @@ filter_step(void *fbuf, double iir) {
        fir= 0
 #define GAIN \
        iir *= *coef++
-
    while ((ch= *cmd++)) switch (ch) {
     case 1:
        IIR; break;
@@ -175,7 +166,6 @@ filter_step(void *fbuf, double iir) {
     case 22:
        GAIN; break;
    }
-
 #undef IIR
 #undef FIR
 #undef BOTH
@@ -183,11 +173,8 @@ filter_step(void *fbuf, double iir) {
 #undef ENDFIR
 #undef ENDBOTH
 #undef GAIN
-
    return iir;
 }
-
-
 //
 //	Create an instance of a filter, ready to run.  This returns a
 //	void* handle, and a function to call to execute the filter.
@@ -207,7 +194,6 @@ filter_step(void *fbuf, double iir) {
 //
 //	The returned handle must be released using fid_run_free().
 //
-
 void *
 fid_run_new(FidFilter *filt, double (**funcpp)(void *,double)) {
    int buf_size= 0;
@@ -229,80 +215,96 @@ fid_run_new(FidFilter *filt, double (**funcpp)(void *,double)) {
    dp= coef_tmp;
    cp= cmd_tmp;
    prev= 0;
-
    // Generate command and coefficient lists
-   while (filt->len) {
+   while (filt->len)
+   {
       int n_iir, n_fir, cnt;
       double *iir, *fir;
       double adj;
-      if (filt->typ == 'F' && filt->len == 1) {
+      if (filt->typ == 'F' && filt->len == 1)
+      {
           gain *= filt->val[0];
           filt= FFNEXT(filt);
           continue;
       }
-      if (filt->typ == 'F') {
+      if (filt->typ == 'F')
+      {
           iir= 0; n_iir= 0;
           fir= filt->val; n_fir= filt->len;
           filt= FFNEXT(filt);
-      } else if (filt->typ == 'I') {
+      } else if (filt->typ == 'I')
+      {
           iir= filt->val; n_iir= filt->len;
           fir= 0; n_fir= 0;
           filt= FFNEXT(filt);
-          while (filt->typ == 'F' && filt->len == 1) {
+          while (filt->typ == 'F' && filt->len == 1)
+          {
               gain *= filt->val[0]; 
               filt= FFNEXT(filt);
           }
-          if (filt->typ == 'F') {
+          if (filt->typ == 'F')
+          {
               fir= filt->val; n_fir= filt->len;
               filt= FFNEXT(filt); 
           }
-      } else error("Internal error: fid_run_new can only handle IIR + FIR types");
+      }
+      else error("Internal error: fid_run_new can only handle IIR + FIR types");
       // Okay, we now have an IIR/FIR pair to process, possibly with
       // n_iir or n_fir == 0 if one half is missing
       cnt= n_iir > n_fir ? n_iir : n_fir;
       buf_size += cnt-1;
-      if (n_iir) {
+      if (n_iir)
+      {
           adj= 1.0 / iir[0];
           gain *= adj;
       }
-      if (n_fir == 3 && n_iir == 3) {
-          if (prev == 18) { cp[-1]= prev= 21; *cp++= 2; }
-          else if (prev == 21) { cp[-1]++; }
+      if (n_fir == 3 && n_iir == 3)
+      {
+          if (prev == 18) cp[-1]= prev= 21; *cp++= 2;
+          else if (prev == 21)  cp[-1]++;
           else *cp++= prev= 18;
           *dp++= iir[2]*adj; *dp++= fir[2];
           *dp++= iir[1]*adj; *dp++= fir[1];
           *dp++= fir[0];
-      } else if (n_fir == 3 && n_iir == 0) {
-          if (prev == 17) { cp[-1]= prev= 20; *cp++= 2; }
-          else if (prev == 20) { cp[-1]++; }
+      }
+      else if (n_fir == 3 && n_iir == 0)
+      {
+          if (prev == 17) cp[-1]= prev= 20; *cp++= 2;
+          else if (prev == 20)  cp[-1]++;
           else *cp++= prev= 17;
           *dp++= fir[2];
           *dp++= fir[1];
           *dp++= fir[0];
-      } else if (n_fir == 0 && n_iir == 3) {
-          if (prev == 16) { cp[-1]= prev= 19; *cp++= 2; }
-          else if (prev == 19) { cp[-1]++; }
+      }
+      else if (n_fir == 0 && n_iir == 3)
+      {
+          if (prev == 16) cp[-1]= prev= 19; *cp++= 2;
+          else if (prev == 19) cp[-1]++;
           else *cp++= prev= 16;
           *dp++= iir[2]*adj;
           *dp++= iir[1]*adj;
-      } else {
+      }
+      else
+      {
           prev= 0;	// Just cancel 'prev' as we only use it for 16-18,19-21
-          if (cnt > n_fir) {
+          if (cnt > n_fir)
+          {
               a= 0; 
-              while (cnt > n_fir && cnt > 2) {
+              while (cnt > n_fir && cnt > 2)
+              {
                 *dp++= iir[--cnt] * adj; a++;
               }
-              while (a >= 4) { 
+              while (a >= 4)
+              { 
                 int nn= a/4; if (nn > 255) nn= 255;
                 *cp++= 4; *cp++= nn; a -= nn*4; 
               }
               if (a) *cp++= a;
           }
-          if (cnt > n_iir) {
+          if (cnt > n_iir)
+          {
               a= 0; 
-              while (cnt > n_iir && cnt > 2) {
-                *dp++= fir[--cnt]; a++;
-              }
+              while (cnt > n_iir && cnt > 2) *dp++= fir[--cnt]; a++;
               while (a >= 4) { 
                 int nn= a/4; if (nn > 255) nn= 255;
                 *cp++= 8; *cp++= nn; a -= nn*4; 
@@ -310,24 +312,31 @@ fid_run_new(FidFilter *filt, double (**funcpp)(void *,double)) {
               if (a) *cp++= 4+a;
           }
           a= 0;
-          while (cnt > 2) {
+          while (cnt > 2)
+          {
               cnt--; a++;
               *dp++= iir[cnt]*adj; *dp++= fir[cnt];
           }
-          while (a >= 4) { 
+          while (a >= 4)
+          {
               int nn= a/4; if (nn > 255) nn= 255;
               *cp++= 12; *cp++= nn; a -= nn*4; 
           }
           if (a) *cp++= 8+a;
 
-          if (!n_fir) {
+          if (!n_fir)
+          {
               *cp++= 13;
               *dp++= iir[1];
-          } else if (!n_iir) {
+          }
+          else if (!n_iir)
+          {
               *cp++= 14;
               *dp++= fir[1];
               *dp++= fir[0];
-          } else {
+          }
+          else
+          {
               *cp++= 15;
               *dp++= iir[1];
               *dp++= fir[1];
@@ -335,7 +344,8 @@ fid_run_new(FidFilter *filt, double (**funcpp)(void *,double)) {
           }
       }
    }
-   if (gain != 1.0) {
+   if (gain != 1.0)
+   {
       *cp++= 22;
       *dp++= gain;
    }
@@ -353,13 +363,6 @@ fid_run_new(FidFilter *filt, double (**funcpp)(void *,double)) {
    rr->cmd= (char*)(rr->coef + coef_cnt);
    memcpy(rr->coef, coef_tmp, coef_cnt*sizeof(double));
    memcpy(rr->cmd, cmd_tmp, cmd_cnt*sizeof(char));
-   //DEBUG   {
-   //DEBUG      int a;
-   //DEBUG      for (cp= cmd_tmp; *cp; cp++) printf("%d ", *cp);
-   //DEBUG      printf("\n");
-   //DEBUG      //for (a= 0; a<coef_cnt; a++) printf("%g ", coef_tmp[a]);
-   //DEBUG      //printf("\n");
-   //DEBUG   }
    free(coef_tmp);
    free(cmd_tmp);
    *funcpp= filter_step;
@@ -369,7 +372,8 @@ fid_run_new(FidFilter *filt, double (**funcpp)(void *,double)) {
 //	Create a new instance of the given filter
 //
 void *
-fid_run_newbuf(void *run) {
+fid_run_newbuf(void *run)
+{
    Run *rr= (Run*)run;
    RunBuf *rb;
    int siz;
@@ -389,7 +393,8 @@ fid_run_newbuf(void *run) {
 //
 
 int 
-fid_run_bufsize(void *run) {
+fid_run_bufsize(void *run)
+{
    Run *rr= (Run*)run;
    int siz;
    if (rr->magic != 0x64966325) error("Bad handle passed to fid_run_bufsize()");
@@ -407,7 +412,8 @@ fid_run_bufsize(void *run) {
 //
 
 void 
-fid_run_initbuf(void *run, void *buf) {
+fid_run_initbuf(void *run, void *buf)
+{
    Run *rr= (Run*)run;
    RunBuf *rb= (RunBuf*)buf;
    int siz;
@@ -426,7 +432,8 @@ fid_run_initbuf(void *run, void *buf) {
 //
 
 void 
-fid_run_zapbuf(void *buf) {
+fid_run_zapbuf(void *buf)
+{
    RunBuf *rb= (RunBuf*)buf;
    memset(rb->buf, 0, rb->mov_cnt + sizeof(double));
 }   
@@ -434,11 +441,16 @@ fid_run_zapbuf(void *buf) {
 //	Delete an instance
 //
 void 
-fid_run_freebuf(void *runbuf) { free(runbuf); }
+fid_run_freebuf(void *runbuf)
+{
+  free(runbuf);
+}
 //
 //	Delete the filter
 //
 void 
-fid_run_free(void *run) { free(run); }
-
+fid_run_free(void *run)
+{
+  free(run);
+}
 // END //

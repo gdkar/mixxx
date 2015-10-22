@@ -18,7 +18,9 @@ CachingReaderWorker::CachingReaderWorker(
           m_pChunkReadRequestFIFO(pChunkReadRequestFIFO),
           m_pReaderStatusFIFO(pReaderStatusFIFO),
           m_maxReadableFrameIndex(0),
-          m_stop{false} {}
+          m_stop{false}
+{
+}
 CachingReaderWorker::~CachingReaderWorker() = default;
 ReaderStatusUpdate CachingReaderWorker::processReadRequest(const CachingReaderChunkReadRequest& request)
 {

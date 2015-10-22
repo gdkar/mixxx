@@ -23,9 +23,8 @@
 #include "util/debug.h"
 #include "sampleutil.h"
 
-SoundDevice::SoundDevice(ConfigObject<ConfigValue> * config, SoundManager * sm, QObject *p)
-        : QObject(p),
-          m_pConfig(config),
+SoundDevice::SoundDevice(ConfigObject<ConfigValue> * config, SoundManager * sm)
+        : m_pConfig(config),
           m_pSoundManager(sm),
           m_strInternalName("Unknown Soundcard"),
           m_strDisplayName("Unknown Soundcard"),
@@ -122,7 +121,7 @@ bool SoundDevice::operator==(QString other) const
 { 
   return getInternalName() == other;
 }
-void SoundDevice::composeOutputBuffer(CSAMPLE* outputBuffer,size_t framesToCompose,size_t framesReadOffset,size_t iFrameSize)
+void SoundDevice::composeOutputBuffer(CSAMPLE* outputBuffer,size_t framesToCompose,off_t framesReadOffset,size_t iFrameSize)
 {
     //qDebug() << "SoundDevice::composeOutputBuffer()"
     //         << device->getInternalName()
@@ -178,7 +177,7 @@ void SoundDevice::composeOutputBuffer(CSAMPLE* outputBuffer,size_t framesToCompo
         }
     }
 }
-void SoundDevice::composeInputBuffer(const CSAMPLE* inputBuffer,size_t framesToPush,size_t framesWriteOffset,size_t iFrameSize)
+void SoundDevice::composeInputBuffer(const CSAMPLE* inputBuffer,size_t framesToPush,off_t framesWriteOffset,size_t iFrameSize)
 {
     // If the framesize is only 2, then we only have one pair of input channels
     //  That means we don't have to do any deinterlacing, and we can pass
@@ -227,7 +226,7 @@ void SoundDevice::composeInputBuffer(const CSAMPLE* inputBuffer,size_t framesToP
         }
     }
 }
-void SoundDevice::clearInputBuffer(size_t  framesToPush,size_t framesWriteOffset)
+void SoundDevice::clearInputBuffer(size_t framesToPush,off_t framesWriteOffset)
 {
     for ( auto &in : m_audioInputs )
     {

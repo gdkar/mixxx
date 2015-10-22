@@ -4,13 +4,11 @@ _Pragma("once")
 #include "trackinfoobject.h"
 #include "sources/soundsource.h"
 #include "samplebuffer.h"
-
 #include <QList>
 #include <QThread>
 #include <QQueue>
 #include <QWaitCondition>
 #include <QSemaphore>
-
 #include <vector>
 class TrackCollection;
 class AnalyserQueue : public QThread {

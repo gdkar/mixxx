@@ -14,20 +14,15 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
-
 _Pragma("once")
 #include <QObject>
-
 #include "util/types.h"
 #include "engine/enginebufferscale.h"
-
 class ReadAheadManager;
-
 class EngineBufferScaleDummy : public EngineBufferScale {
   public:
     EngineBufferScaleDummy(ReadAheadManager* pReadAheadManager, QObject *pParent);
     virtual ~EngineBufferScaleDummy();
-
     /** Called from EngineBuffer when seeking, to ensure the buffers are flushed */
     void clear();
     /** Scale buffer */

@@ -15,7 +15,7 @@ const SINT CachingReaderChunk::kInvalidIndex = -1;
 // TODO(XXX): The optimum value of the "constant" kFrames depends
 // on the properties of the SoundSource as the remarks above suggest!
 const SINT CachingReaderChunk::kChannels = Mixxx::SoundSource::kChannelCountStereo;
-const SINT CachingReaderChunk::kFrames   = 8192; // ~ 170 ms at 48 kHz
+const SINT CachingReaderChunk::kFrames   = 4096; // ~ 170 ms at 48 kHz
 const SINT CachingReaderChunk::kSamples  = CachingReaderChunk::frames2samples(CachingReaderChunk::kFrames);
 CachingReaderChunk::CachingReaderChunk( CSAMPLE* sampleBuffer)
         : m_index{kInvalidIndex},

@@ -42,8 +42,10 @@
 const double kLinearScalerElipsis = 1.00058; // 2^(0.01/12): changes < 1 cent allows a linear scaler
 const int kSamplesPerFrame = 2; // Engine buffer uses Stereo frames only
 EngineBuffer::EngineBuffer(QString group, ConfigObject<ConfigValue>* _config,
-                           EngineChannel* pChannel, EngineMaster* pMixingEngine)
-        : m_group(group),
+                           EngineChannel* pChannel, EngineMaster* pMixingEngine,
+                           QObject *pParent)
+        : EngineObject(pParent),
+          m_group(group),
           m_pConfig(_config),
           m_pDitherBuffer(std::make_unique< CSAMPLE[]>(MAX_BUFFER_LEN)),
           m_pCrossfadeBuffer(std::make_unique<CSAMPLE[]>(MAX_BUFFER_LEN)){
@@ -51,7 +53,8 @@ EngineBuffer::EngineBuffer(QString group, ConfigObject<ConfigValue>* _config,
     // SAMPLE_MAX] dithering values were in the range [-0.5, 0.5]. Now that we
     // normalize engine samples to the range [-1.0, 1.0] we divide by SAMPLE_MAX
     // to preserve the previous behavior.
-    for (unsigned int i = 0; i < MAX_BUFFER_LEN; ++i) {
+    for (auto i = 0; i < MAX_BUFFER_LEN; ++i)
+    {
         m_pDitherBuffer[i] = (static_cast<CSAMPLE>(rand() % RAND_MAX) / RAND_MAX - 0.5) / SAMPLE_MAX;
     }
     // zero out crossfade buffer
@@ -104,7 +107,7 @@ EngineBuffer::EngineBuffer(QString group, ConfigObject<ConfigValue>* _config,
     m_pKeylock = new ControlPushButton(ConfigKey(m_group, "keylock"), this,true);
     m_pKeylock->setProperty("buttonMode",QVariant::fromValue(ControlPushButton::ButtonMode::Toggle));
     m_pEject = new ControlPushButton(ConfigKey(m_group, "eject"),this);
-    connect(m_pEject, SIGNAL(valueChanged(double)),this, SLOT(slotEjectTrack(double)),Qt::DirectConnection);
+    connect(m_pEject, SIGNAL(valueChanged(double)),this, SLOT(onEjectTrack(double)),Qt::DirectConnection);
     // Quantization Controller for enabling and disabling the
     // quantization (alignment) of loop in/out positions and (hot)cues with
     // beats.
@@ -961,7 +964,7 @@ void EngineBuffer::hintReader(const double dRate)
     m_pReader->hintAndMaybeWake(m_hintList);
 }
 // WARNING: This method runs in the GUI thread
-void EngineBuffer::slotLoadTrack(TrackPointer pTrack, bool play)
+void EngineBuffer::onLoadTrack(TrackPointer pTrack, bool play)
 {
     // Signal to the reader to load the track. The reader will respond with
     // trackLoading and then either with trackLoaded or trackLoadFailed signals.
@@ -981,7 +984,7 @@ bool EngineBuffer::isTrackLoaded()
     if (m_pCurrentTrack) return true;
     return false;
 }
-void EngineBuffer::slotEjectTrack(double v)
+void EngineBuffer::onEjectTrack(double v)
 {
     if (v > 0)
     {

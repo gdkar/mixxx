@@ -16,25 +16,18 @@
  * MA 02110-1301, USA.
  *
  */
-
 #ifndef TIMECODER_H
 #define TIMECODER_H
-
 #ifndef _MSC_VER
 #include <stdbool.h>
 #endif
-
 #include "lut.h"
 #include "pitch.h"
-
 #define TIMECODER_CHANNELS 2
-
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
-
 typedef unsigned int bits_t;
-
 struct timecode_def {
     char *name, *desc;
     int bits, /* number of bits in string */
@@ -58,42 +51,30 @@ struct timecoder_channel {
 struct timecoder {
     struct timecode_def *def;
     double speed;
-
     /* Precomputed values */
-
     double dt, zero_alpha;
     signed int threshold;
-
     /* Pitch information */
-
     bool forwards;
     struct timecoder_channel primary, secondary;
     struct pitch pitch;
-
     /* Numerical timecode */
-
     signed int ref_level;
     bits_t bitstream, /* actual bits from the record */
         timecode; /* corrected timecode */
     unsigned int valid_counter, /* number of successful error checks */
         timecode_ticker; /* samples since valid timecode was read */
-
     /* Feedback */
-
     unsigned char *mon; /* x-y array */
     int mon_size, mon_counter;
 };
-
 struct timecode_def* timecoder_find_definition(const char *name);
 void timecoder_free_lookup(void);
-
 void timecoder_init(struct timecoder *tc, struct timecode_def *def,
                     double speed, unsigned int sample_rate, bool phono);
 void timecoder_clear(struct timecoder *tc);
-
 int timecoder_monitor_init(struct timecoder *tc, int size);
 void timecoder_monitor_clear(struct timecoder *tc);
-
 void timecoder_cycle_definition(struct timecoder *tc);
 void timecoder_submit(struct timecoder *tc, signed short *pcm, size_t npcm);
 signed int timecoder_get_position(struct timecoder *tc, double *when);

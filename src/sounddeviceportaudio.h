@@ -34,37 +34,35 @@ typedef int (*EnableAlsaRT)(PaStream* s, int enable);
 class ControlObject;
 
 class SoundDevicePortAudio : public SoundDevice {
-  Q_OBJECT
   public:
     SoundDevicePortAudio(ConfigObject<ConfigValue> *config,
                          SoundManager *sm, const PaDeviceInfo *deviceInfo,
-                         unsigned int devIndex,QObject*);
+                         unsigned int devIndex);
     virtual ~SoundDevicePortAudio() ;
-    virtual bool open(bool isClkRefDevice, int syncBuffers, int fragments);
+    virtual bool open(bool isClkRefDevice, int syncBuffers);
     virtual bool close();
-    virtual void readProcess();
-    virtual int readAvailable();
-    virtual void writeProcess();
-    virtual int writeAvailable();
+    virtual void readProcess( size_t fpb);
+    virtual void writeProcess( size_t fpb);
     virtual QString getError() const;
     // This callback function gets called everytime the sound device runs out of
     // samples (ie. when it needs more sound to play)
-    int callbackProcess(const unsigned int framesPerBuffer,
+    int callbackProcess(size_t framesPerBuffer,
                         CSAMPLE *output, const CSAMPLE* in,
                         const PaStreamCallbackTimeInfo *timeInfo,
                         PaStreamCallbackFlags statusFlags);
     // Same as above but with drift correction
-    int callbackProcessDrift(const unsigned int framesPerBuffer,
+    int callbackProcessDrift(size_t framesPerBuffer,
                         CSAMPLE *output, const CSAMPLE* in,
                         const PaStreamCallbackTimeInfo *timeInfo,
                         PaStreamCallbackFlags statusFlags);
     // The same as above but drives the MixxEngine
-    int callbackProcessClkRef(const unsigned int framesPerBuffer,
+    int callbackProcessClkRef(size_t framesPerBuffer,
                         CSAMPLE *output, const CSAMPLE* in,
                         const PaStreamCallbackTimeInfo *timeInfo,
                         PaStreamCallbackFlags statusFlags);
-    virtual unsigned int getDefaultSampleRate() const {
-        return m_deviceInfo ? static_cast<unsigned int>(m_deviceInfo->defaultSampleRate) : 44100u;
+    virtual double getDefaultSampleRate() const
+    {
+        return m_deviceInfo ? static_cast<double>(m_deviceInfo->defaultSampleRate) : 44100.0;
     }
   private:
     // PortAudio stream for this device.
@@ -78,8 +76,8 @@ class SoundDevicePortAudio : public SoundDevice {
     PaStreamParameters m_outputParams {0,0,0,0,nullptr };
     // Description of the input stream coming from the soundcard.
     PaStreamParameters m_inputParams  {0,0,0,0,nullptr };
-    FIFO<CSAMPLE>* m_outputFifo = nullptr;
-    FIFO<CSAMPLE>* m_inputFifo  = nullptr;
+    std::unique_ptr<FIFO<CSAMPLE> > m_outputFifo ;
+    std::unique_ptr<FIFO<CSAMPLE> > m_inputFifo  ;
     bool m_outputDrift = false;
     bool m_inputDrift  = false;
     // A string describing the last PortAudio error to occur.
@@ -92,7 +90,7 @@ class SoundDevicePortAudio : public SoundDevice {
     int m_underflowUpdateCount = 0;
     std::atomic<int> m_underflowCount {0};
     std::atomic<int> m_overflowCount  {0};
-    static std::atomic<int> m_underflowHappend;
+    static std::atomic<int> m_underflowHappened;
     qint64 m_nsInAudioCb = 0;
     int m_framesSinceAudioLatencyUsageUpdate = 0;
     int m_syncBuffers = 2;

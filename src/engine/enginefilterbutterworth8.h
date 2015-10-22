@@ -1,6 +1,4 @@
-#ifndef ENGINEFILTERBUTTERWORTH8_H
-#define ENGINEFILTERBUTTERWORTH8_H
-
+_Pragma("once")
 #include "engine/enginefilteriir.h"
 
 class EngineFilterButterworth8Low : public EngineFilterIIR<8, IIR_LP> {
@@ -21,4 +19,3 @@ class EngineFilterButterworth8High : public EngineFilterIIR<8, IIR_HP> {
     EngineFilterButterworth8High(int sampleRate, double freqCorner1);
     void setFrequencyCorners(int sampleRate, double freqCorner1);
 };
-#endif // ENGINEFILTERBUTTERWORTH8_H

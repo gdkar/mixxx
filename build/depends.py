@@ -393,6 +393,7 @@ class MixxxCore(Feature):
                    "engine/effects/engineeffect.cpp",
 
                    "engine/sync/enginesync.cpp",
+                   "engine/sync/syncable.cpp",
                    "engine/sync/synccontrol.cpp",
                    "engine/sync/internalclock.cpp",
 
@@ -479,9 +480,9 @@ class MixxxCore(Feature):
 
                    "sources/soundsource.cpp",
 
+                   "metadata/audiotagger.cpp",
                    "metadata/trackmetadata.cpp",
                    "metadata/trackmetadatataglib.cpp",
-                   "metadata/audiotagger.cpp",
 
                    "widget/controlwidgetconnection.cpp",
                    "widget/wbasewidget.cpp",
@@ -500,6 +501,7 @@ class MixxxCore(Feature):
                    "widget/wdisplay.cpp",
                    "widget/wvumeter.cpp",
                    "widget/wpushbutton.cpp",
+                   "widget/effectwidgetutils.cpp",
                    "widget/weffectpushbutton.cpp",
                    "widget/wslidercomposed.cpp",
                    "widget/wstatuslight.cpp",
@@ -709,6 +711,7 @@ class MixxxCore(Feature):
                    "util/assert.cpp",
                    "util/debug.cpp",
                    "util/statsmanager.cpp",
+                   "util/logmanager.cpp",
                    "util/stat.cpp",
                    "util/statmodel.cpp",
                    "util/time.cpp",

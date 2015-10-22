@@ -107,9 +107,11 @@ class AudioOutput : public AudioPath {
 class AudioOutputBuffer : public AudioOutput {
   public:
     AudioOutputBuffer(const AudioOutput& out, const CSAMPLE* pBuffer) : AudioOutput(out), m_pBuffer(pBuffer) {
-
     };
-    inline const CSAMPLE* getBuffer() const { return m_pBuffer; }
+    const CSAMPLE* getBuffer() const
+    { 
+      return m_pBuffer;
+    }
   private:
     const CSAMPLE* m_pBuffer;
 };
@@ -140,7 +142,10 @@ class AudioInputBuffer : public AudioInput {
               m_pBuffer(pBuffer) {
 
     }
-    inline CSAMPLE* getBuffer() const { return m_pBuffer; }
+    CSAMPLE* getBuffer() const
+    { 
+      return m_pBuffer;
+    }
   private:
     CSAMPLE* m_pBuffer;
 };
