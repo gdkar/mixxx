@@ -1,16 +1,15 @@
-#ifndef STATSMANAGER_H
-#define STATSMANAGER_H
-
+_Pragma("once")
 #include <QMap>
 #include <QObject>
 #include <QString>
 #include <QThread>
-#include <QAtomicInt>
 #include <QtDebug>
 #include <QMutex>
 #include <QWaitCondition>
 #include <QThreadStorage>
 #include <QList>
+
+#include <atomic>
 
 #include "util/fifo.h"
 #include "util/singleton.h"
@@ -30,14 +29,12 @@ class StatsPipe : public FIFO<StatReport> {
 class StatsManager : public QThread, public Singleton<StatsManager> {
     Q_OBJECT
   public:
-    explicit StatsManager();
-    virtual ~StatsManager();
-
+    explicit     StatsManager();
+    virtual     ~StatsManager();
+    virtual void stop();
     // Returns true if write succeeds.
     bool maybeWriteReport(const StatReport& report);
-
-    static bool s_bStatsManagerEnabled;
-
+    static std::atomic<bool> s_bStatsManagerEnabled;
     // Tell the StatsManager to emit statUpdated for every stat that exists.
     void emitAllStats() {
         m_emitAllStats = 1;
@@ -73,6 +70,3 @@ class StatsManager : public QThread, public Singleton<StatsManager> {
 
     friend class StatsPipe;
 };
-
-
-#endif /* STATSMANAGER_H */

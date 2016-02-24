@@ -17,7 +17,7 @@ void EngineFilterBessel8Low::setFrequencyCorners(int sampleRate,
 int EngineFilterBessel8Low::setFrequencyCornersForIntDelay(
         double desiredCorner1Ratio, int maxDelay) {
     // these values are calculated using the phase returned by
-    // fid_response_pha() at corner / 20
+    // Fid::response_pha() at corner / 20
 
     // group delay at 1 Hz freqCorner1 and 1 Hz Samplerate
     const double kDelayFactor1 = 0.506051799;

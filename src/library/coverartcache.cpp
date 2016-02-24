@@ -57,9 +57,7 @@ CoverArtCache::CoverArtCache() {
     QPixmapCache::setCacheLimit(20480);
 }
 
-CoverArtCache::~CoverArtCache() {
-    qDebug() << "~CoverArtCache()";
-}
+CoverArtCache::~CoverArtCache() = default;
 
 QPixmap CoverArtCache::requestCover(const CoverInfo& requestInfo,
                                     const QObject* pRequestor,

@@ -14,9 +14,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef MIXER_PLAYERINFO_H
-#define MIXER_PLAYERINFO_H
-
+_Pragma("once")
 #include <QObject>
 #include <QMutex>
 #include <QMap>
@@ -67,9 +65,8 @@ class PlayerInfo : public QObject {
 
     PlayerInfo();
     virtual ~PlayerInfo();
-
     mutable QMutex m_mutex;
-    ControlObjectSlave* m_pCOxfader;
+    ControlObjectSlave* m_pCOxfader{nullptr};
     // QMap is faster than QHash for small count of elements < 50
     QMap<QString, TrackPointer> m_loadedTrackMap;
     int m_currentlyPlayingDeck;
@@ -77,5 +74,3 @@ class PlayerInfo : public QObject {
 
     static PlayerInfo* m_pPlayerinfo;
 };
-
-#endif /* MIXER_PLAYERINFO_H */

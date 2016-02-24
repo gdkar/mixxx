@@ -1,6 +1,4 @@
-#ifndef MATH_H
-#define MATH_H
-
+_Pragma("once")
 // Causes MSVC to define M_PI and friends.
 // http://msdn.microsoft.com/en-us/library/4hwaceh6.aspx
 // Our SConscript defines this but check anyway.
@@ -13,7 +11,6 @@
 #include <algorithm>
 
 #include "util/assert.h"
-#include "util/fpclassify.h"
 
 // If we don't do this then we get the C90 fabs from the global namespace which
 // is only defined for double.
@@ -40,11 +37,6 @@ inline bool even(T value) {
     return value % 2 == 0;
 }
 
-#ifdef _MSC_VER
-// Ask VC++ to emit an intrinsic for fabs instead of calling std::fabs.
-#pragma intrinsic(fabs)
-#endif
-
 inline int roundUpToPowerOf2(int v) {
     int power = 1;
     while (power < v && power > 0) {
@@ -58,13 +50,6 @@ inline int roundUpToPowerOf2(int v) {
     return power;
 }
 
-// MSVS 2013 (_MSC_VER 1800) introduced C99 support.
-#if defined(__WINDOWS__) &&  _MSC_VER < 1800
-inline int round(double x) {
-    return x < 0.0 ? ceil(x - 0.5) : floor(x + 0.5);
-}
-#endif
-
 template <typename T>
 inline const T ratio2db(const T a) {
     return log10(a) * 20;
@@ -74,5 +59,3 @@ template <typename T>
 inline const T db2ratio(const T a) {
     return pow(10, a / 20);
 }
-
-#endif /* MATH_H */

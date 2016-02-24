@@ -14,14 +14,12 @@
 #include "util/fifo.h"
 
 
-typedef struct CachingReaderChunkReadRequest {
-    CachingReaderChunk* chunk;
-
-    explicit CachingReaderChunkReadRequest(
-            CachingReaderChunk* chunkArg = nullptr)
+struct CachingReaderChunkReadRequest {
+    CachingReaderChunk* chunk{nullptr};
+    explicit CachingReaderChunkReadRequest(CachingReaderChunk* chunkArg = nullptr)
         : chunk(chunkArg) {
     }
-} CachingReaderChunkReadRequest;
+};
 
 enum ReaderStatus {
     INVALID,
@@ -32,7 +30,7 @@ enum ReaderStatus {
     CHUNK_READ_INVALID
 };
 
-typedef struct ReaderStatusUpdate {
+struct ReaderStatusUpdate {
     ReaderStatus status;
     CachingReaderChunk* chunk;
     SINT maxReadableFrameIndex;
@@ -49,7 +47,7 @@ typedef struct ReaderStatusUpdate {
         , chunk(chunkArg)
         , maxReadableFrameIndex(maxReadableFrameIndexArg) {
     }
-} ReaderStatusUpdate;
+};
 
 class CachingReaderWorker : public EngineWorker {
     Q_OBJECT
@@ -108,6 +106,4 @@ class CachingReaderWorker : public EngineWorker {
 
     QAtomicInt m_stop;
 };
-
-
 #endif /* CACHINGREADERWORKER_H */

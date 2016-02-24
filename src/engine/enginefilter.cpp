@@ -45,11 +45,11 @@ EngineFilter::EngineFilter(char * conf, int predefinedType)
         fbuf2 = buf2;
         break;
     default:
-        ff = fid_design(conf, 44100., -1., -1., 1, NULL);
+        ff = fid.design(conf, 44100., -1., -1., 1, NULL);
         qDebug() << "Filter " << conf << " Setup: 0x" << ff;
-        run = fid_run_new(ff, &funcp);
-        fbuf1 = fid_run_newbuf(run);
-        fbuf2 = fid_run_newbuf(run);
+        run = fid.run_new(ff, &funcp);
+        fbuf1 = fid.run_newbuf(run);
+        fbuf2 = fid.run_newbuf(run);
         processSample = funcp;
     }
     int i;
@@ -61,9 +61,9 @@ EngineFilter::~EngineFilter()
 {
     if(processSample == funcp) //if we used fidlib
     {
-        fid_run_freebuf(fbuf2);
-        fid_run_freebuf(fbuf1);
-        fid_run_free(run);
+        fid.run_freebuf(fbuf2);
+        fid.run_freebuf(fbuf1);
+        fid.run_free(run);
         free(ff);
     }
 }

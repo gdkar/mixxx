@@ -181,34 +181,19 @@ void LinkwitzRiley8EQEffect::processChannel(const ChannelHandle& handle,
     pState->m_high2->process(pInput, pState->m_pHighBuf, numSamples); // HighPass first run
     pState->m_low2->process(pInput, pState->m_pLowBuf, numSamples); // LowPass first run for low and bandpass
 
-    if (fMid != pState->old_mid ||
-            fHigh != pState->old_high) {
-        SampleUtil::copy2WithRampingGain(pState->m_pHighBuf,
-                pState->m_pHighBuf, pState->old_high, fHigh,
-                pState->m_pLowBuf, pState->old_mid, fMid,
+        SampleUtil::copyWithRampingGain(pState->m_pHighBuf,
+                pState->m_pHighBuf,
+                pState->old_high,
+                fHigh,
                 numSamples);
-    } else {
-        SampleUtil::copy2WithGain(pState->m_pHighBuf,
-                pState->m_pHighBuf, fHigh,
-                pState->m_pLowBuf, fMid,
+        SampleUtil::addWithRampingGain(pState->m_pHighBuf,
+                pState->m_pLowBuf,pState->old_mid,fMid,
                 numSamples);
-    }
 
     pState->m_high1->process(pState->m_pHighBuf, pState->m_pBandBuf, numSamples); // HighPass + BandPass second run
     pState->m_low1->process(pState->m_pLowBuf, pState->m_pLowBuf, numSamples); // LowPass second run
-
-    if (fLow != pState->old_low) {
-        SampleUtil::copy2WithRampingGain(pOutput,
-                pState->m_pLowBuf, pState->old_low, fLow,
-                pState->m_pBandBuf, 1, 1,
-                numSamples);
-    } else {
-        SampleUtil::copy2WithGain(pOutput,
-                pState->m_pLowBuf, fLow,
-                pState->m_pBandBuf, 1,
-                numSamples);
-    }
-
+    SampleUtil::copyWithRampingGain(pOutput,pState->m_pLowBuf, pState->old_low,fLow,numSamples);
+    SampleUtil::addWithGain(pOutput,pState->m_pBandBuf, 1,numSamples);
     if (enableState == EffectProcessor::DISABLING) {
         // we rely on the ramping to dry in EngineEffect
         // since this EQ is not fully dry at unity

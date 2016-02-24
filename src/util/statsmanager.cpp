@@ -13,7 +13,7 @@ const int kStatsPipeSize = 1 << 20;
 const int kProcessLength = kStatsPipeSize * 4 / 5;
 
 // static
-bool StatsManager::s_bStatsManagerEnabled = false;
+std::atomic<bool> StatsManager::s_bStatsManagerEnabled{false};
 
 StatsPipe::StatsPipe(StatsManager* pManager)
         : FIFO<StatReport>(kStatsPipeSize),
@@ -22,67 +22,67 @@ StatsPipe::StatsPipe(StatsManager* pManager)
 }
 
 StatsPipe::~StatsPipe() {
-    if (m_pManager) {
+    if (m_pManager)
         m_pManager->onStatsPipeDestroyed(this);
-    }
 }
 
 StatsManager::StatsManager()
         : QThread(),
           m_quit(0) {
-    s_bStatsManagerEnabled = true;
+    s_bStatsManagerEnabled.store(true);
     setObjectName("StatsManager");
     moveToThread(this);
     start(QThread::LowPriority);
 }
-
-StatsManager::~StatsManager() {
-    s_bStatsManagerEnabled = false;
-    m_quit = 1;
+void StatsManager::stop()
+{
+    m_quit.store(1);
+    m_statsPipeLock.lock();
     m_statsPipeCondition.wakeAll();
+    m_statsPipeLock.unlock();
     wait();
+    if(!s_bStatsManagerEnabled.exchange(false))
+        return;
     qDebug() << "StatsManager shutdown report:";
     qDebug() << "=====================================";
     qDebug() << "ALL STATS";
     qDebug() << "=====================================";
-    for (QMap<QString, Stat>::const_iterator it = m_stats.begin();
-         it != m_stats.end(); ++it) {
+    for (auto it = m_stats.begin(); it != m_stats.end(); ++it) {
         qDebug() << it.value();
     }
+    for(auto it = m_stats.cbegin(); it!=m_stats.cend();it++)
+        qDebug() << it.value();
 
     if (!m_baseStats.isEmpty()) {
         qDebug() << "=====================================";
         qDebug() << "BASE STATS";
         qDebug() << "=====================================";
-        for (QMap<QString, Stat>::const_iterator it = m_baseStats.begin();
-             it != m_baseStats.end(); ++it) {
+        for (auto it = m_baseStats.begin(); it != m_baseStats.end(); ++it)
             qDebug() << it.value();
-        }
     }
 
     if (!m_experimentStats.isEmpty()) {
         qDebug() << "=====================================";
         qDebug() << "EXPERIMENT STATS";
         qDebug() << "=====================================";
-        for (QMap<QString, Stat>::const_iterator it = m_experimentStats.begin();
-             it != m_experimentStats.end(); ++it) {
+        for (auto it = m_experimentStats.begin();it != m_experimentStats.end(); ++it)
             qDebug() << it.value();
-        }
     }
     qDebug() << "=====================================";
 
-    if (CmdlineArgs::Instance().getTimelineEnabled()) {
+    if (CmdlineArgs::Instance().getTimelineEnabled())
         writeTimeline(CmdlineArgs::Instance().getTimelinePath());
-    }
 }
-
+StatsManager::~StatsManager()
+{
+    stop();
+}
 class OrderByTime {
   public:
     inline bool operator()(const Event& e1, const Event& e2) {
         return e1.m_time < e2.m_time;
     }
 };
-
 QString humanizeNanos(qint64 nanos) {
     double seconds = static_cast<double>(nanos) / 1e9;
     if (seconds > 1) {
@@ -194,16 +194,15 @@ bool StatsManager::maybeWriteReport(const StatReport& report) {
 
 void StatsManager::processIncomingStatReports() {
     StatReport report;
-    foreach (StatsPipe* pStatsPipe, m_statsPipes) {
+    for(auto  pStatsPipe: m_statsPipes) {
         while (pStatsPipe->read(&report, 1) == 1) {
-            QString tag = QString::fromUtf8(report.tag);
-            Stat& info = m_stats[tag];
-            info.m_tag = tag;
-            info.m_type = report.type;
+            auto tag       = QString::fromUtf8(report.tag);
+            auto& info     = m_stats[tag];
+            info.m_tag     = tag;
+            info.m_type    = report.type;
             info.m_compute = report.compute;
             info.processReport(report);
             emit(statUpdated(info));
-
             if (report.compute & Stat::STATS_EXPERIMENT) {
                 Stat& experiment = m_experimentStats[tag];
                 experiment.m_tag = tag;
@@ -217,7 +216,6 @@ void StatsManager::processIncomingStatReports() {
                 base.m_compute = report.compute;
                 base.processReport(report);
             }
-
             if (CmdlineArgs::Instance().getTimelineEnabled() &&
                     (report.type == Stat::EVENT ||
                      report.type == Stat::EVENT_START ||
@@ -232,28 +230,19 @@ void StatsManager::processIncomingStatReports() {
         }
     }
 }
-
 void StatsManager::run() {
     qDebug() << "StatsManager thread starting up.";
-    while (true) {
+    while (!m_quit.load()) {
         m_statsPipeLock.lock();
         m_statsPipeCondition.wait(&m_statsPipeLock);
         // We want to process reports even when we are about to quit since we
         // want to print the most accurate stat report on shutdown.
         processIncomingStatReports();
         m_statsPipeLock.unlock();
-
-        if (load_atomic(m_emitAllStats) == 1) {
-            for (QMap<QString, Stat>::const_iterator it = m_stats.begin();
-                 it != m_stats.end(); ++it) {
-                emit(statUpdated(it.value()));
-            }
-            m_emitAllStats = 0;
-        }
-
-        if (load_atomic(m_quit) == 1) {
-            qDebug() << "StatsManager thread shutting down.";
-            break;
+        if (m_emitAllStats.fetchAndStoreRelaxed(0)) {
+            for(auto &it : m_stats)
+                emit(statUpdated(it));
         }
     }
+    qDebug() << "StatsManager thread shutting down.";
 }

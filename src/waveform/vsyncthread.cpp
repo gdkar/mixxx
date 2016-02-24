@@ -38,10 +38,10 @@ VSyncThread::~VSyncThread() {
     m_bDoRendering = false;
     m_semaVsyncSlot.release(2); // Two slots
     wait();
-    //delete m_glw;
 }
 
-void VSyncThread::stop() {
+void VSyncThread::stop()
+{
     m_bDoRendering = false;
 }
 

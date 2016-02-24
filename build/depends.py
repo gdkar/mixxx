@@ -365,7 +365,7 @@ class Qt(Dependence):
         # Mixxx requires C++11 support. Windows enables C++11 features by
         # default but Clang/GCC require a flag.
         if not build.platform_is_windows:
-            build.env.Append(CXXFLAGS='-std=c++11')
+            build.env.Append(CXXFLAGS='-std=gnu++14')
 
 
 class TestHeaders(Dependence):
@@ -388,7 +388,7 @@ class FidLib(Dependence):
         else:
             symbol = 'T_LINUX'
 
-        return [build.env.StaticObject('#lib/fidlib-0.9.10/fidlib.c',
+        return [build.env.StaticObject('#lib/fidlib-0.9.10/fidlib.cpp',
                                        CPPDEFINES=symbol)]
 
     def configure(self, build, conf):
@@ -509,21 +509,6 @@ class ProtoBuf(Dependence):
         if not conf.CheckLib(libs):
             raise Exception(
                 "Could not find libprotobuf or its development headers.")
-
-class FpClassify(Dependence):
-
-    def enabled(self, build):
-        return build.toolchain_is_gnu
-
-    # This is a wrapper arround the fpclassify function that pevents inlining
-    # It is compiled without optimization and allows to use these function
-    # from -ffast-math optimized objects
-    def sources(self, build):
-        # add this file without fast-math flag
-        env = build.env.Clone()
-        if '-ffast-math' in env['CCFLAGS']:
-                env['CCFLAGS'].remove('-ffast-math')
-        return env.Object('util/fpclassify.cpp')
 
 class QtScriptByteArray(Dependence):
     def configure(self, build, conf):
@@ -660,7 +645,7 @@ class MixxxCore(Feature):
                    "engine/enginemicrophone.cpp",
                    "engine/enginedeck.cpp",
                    "engine/engineaux.cpp",
-                   "engine/channelmixer_autogen.cpp",
+                   "engine/channelmixer.cpp",
 
                    "engine/enginecontrol.cpp",
                    "engine/ratecontrol.cpp",
@@ -1274,7 +1259,7 @@ class MixxxCore(Feature):
         return [SoundTouch, ReplayGain, PortAudio, PortMIDI, Qt, TestHeaders,
                 FidLib, SndFile, FLAC, OggVorbis, OpenGL, TagLib, ProtoBuf,
                 Chromaprint, RubberBand, SecurityFramework, CoreServices,
-                QtScriptByteArray, Reverb, FpClassify]
+                QtScriptByteArray, Reverb]
 
     def post_dependency_check_configure(self, build, conf):
         """Sets up additional things in the Environment that must happen

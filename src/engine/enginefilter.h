@@ -31,6 +31,7 @@
 
 class EngineFilter : public EngineObject {
     Q_OBJECT
+    Fid fid;
   public:
     EngineFilter(char* conf, int predefinedType = 0);
     virtual ~EngineFilter();

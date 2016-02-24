@@ -80,30 +80,6 @@ adding_func (CSAMPLE * s, uint i, CSAMPLE x, CSAMPLE gain)
 	s[i] += gain * x;
 }
 
-#ifndef max
-
-template <class X, class Y>
-X min (X x, Y y)
-{
-	return x < y ? x : (X) y;
-}
-
-template <class X, class Y>
-X max (X x, Y y)
-{
-	return x > y ? x : (X) y;
-}
-
-#endif /* ! max */
-
-template <class T>
-T clamp (T value, T lower, T upper)
-{
-	if (value < lower) return lower;
-	if (value > upper) return upper;
-	return value;
-}
-
 static inline float
 frandom()
 {

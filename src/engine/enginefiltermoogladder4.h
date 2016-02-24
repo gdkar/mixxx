@@ -100,10 +100,8 @@ class EngineFilterMoogLadderBase : public EngineObjectConstIn {
     void processAndPauseFilter(const CSAMPLE* pIn, CSAMPLE* pOutput,
                        const int iBufferSize) {
         process(pIn, pOutput, iBufferSize);
-        SampleUtil::copy2WithRampingGain(pOutput,
-                pOutput, 1.0, 0,  // fade out filtered
-                pIn, 0, 1.0,  // fade in dry
-                iBufferSize);
+        SampleUtil::copyWithRampingGain(pOutput,pOutput,1,0,iBufferSize);
+        SampleUtil::addWithRampingGain (pOutput,pIn, 0, 1, iBufferSize);
         initBuffers();
     }
 

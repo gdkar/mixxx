@@ -1,43 +1,17 @@
-#ifndef SINGLETON_H
-#define SINGLETON_H
-
+_Pragma("once")
 #include <QtDebug>
 
 template<class T>
 class Singleton {
   public:
-    static T* create() {
-        if (!m_instance) {
-            m_instance = new T();
-        }
-        return m_instance;
+    static T* instance()
+    {
+        static T _instance{};
+        return &_instance;
     }
-
-    static T* instance() {
-        if (m_instance == NULL) {
-            qWarning() << "Singleton class has not been created yet, returning NULL";
-        }
-        return m_instance;
-    }
-
-    static void destroy() {
-        if (m_instance) {
-            delete m_instance;
-        }
-    }
-
   protected:
-    Singleton() {}
-    virtual ~Singleton() {}
-
-  private:
-    // hide copy constructor and assign operator
-    Singleton(const Singleton&) {}
-    const Singleton& operator= (const Singleton&) {}
-
-    static T* m_instance;
+    Singleton() = default;
+    virtual ~Singleton() = default;
+    Singleton(const Singleton&) = delete;
+    Singleton& operator=(const Singleton&) = delete;
 };
-
-template<class T> T* Singleton<T>::m_instance = NULL;
-
-#endif // SINGLETON_H

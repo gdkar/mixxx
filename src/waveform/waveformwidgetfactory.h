@@ -1,6 +1,4 @@
-#ifndef WAVEFORMWIDGETFACTORY_H
-#define WAVEFORMWIDGETFACTORY_H
-
+_Pragma("once")
 #include <QObject>
 #include <QTime>
 #include <QVector>
@@ -100,6 +98,7 @@ class WaveformWidgetFactory : public QObject, public Singleton<WaveformWidgetFac
     void addTimerListener(QWidget* pWidget);
 
     void startVSync(GuiTick* pGuiTick);
+    void stopVSync();
     void setVSyncType(int vsType);
     int getVSyncType();
 
@@ -157,5 +156,3 @@ class WaveformWidgetFactory : public QObject, public Singleton<WaveformWidgetFac
     double m_actualFrameRate;
     int m_vSyncType;
 };
-
-#endif // WAVEFORMWIDGETFACTORY_H
