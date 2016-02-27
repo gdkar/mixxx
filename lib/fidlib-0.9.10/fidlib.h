@@ -40,7 +40,7 @@ _Pragma("once")
 
 struct FidFilter {
    short typ;		// Type of filter element 'I' IIR, 'F' FIR, or 0 for end of list
-   short cbm;		// Constant bitmap.  Bits 0..14, if set, indicate that val[0..14]
+   short cbm;
    			//   is a constant across changes in frequency for this filter type
    			//   Bit 15, if set, indicates that val[15..inf] are constant.
    int len;		// Number of doubles stored in val[], or 0 for end of list
@@ -234,52 +234,6 @@ struct RunBuf;
 //	suitable part of the response is at gain==1.0.  However, this
 //	depends on the filter type.
 //
-
-//
-//	Check that a target macro has been set.  This macro selects
-//	various fixes required on various platforms:
-//
-//	  T_LINUX  Linux, or probably any UNIX-like platform with GCC
-//	  T_MINGW  MinGW -- either building on Win32 or cross-compiling
-//	  T_MSVC   Microsoft Visual C
-//
-//	(On MSVC, add "T_MSVC" to the preprocessor definitions in the
-//	project settings, or add /D "T_MSVC" to the compiler
-//	command-line.)
-//
-
-
-//
-//	Select which method of filter execution is preferred.
-//	RF_CMDLIST is recommended (and is the default).
-//
-//	  RF_COMBINED -- easy to understand code, lower accuracy
-//	  RF_CMDLIST  -- faster pre-compiled code
-//	  RF_JIT      -- fastest JIT run-time generated code (no longer supported)
-//
-
-#ifndef RF_COMBINED
-#ifndef RF_CMDLIST
-
-#define RF_COMBINED
-
-#endif
-#endif
-
-//
-//	Includes
-//
-
-
-///extern "C" FidFilter *mkfilter(char *, ...);
-
-//
-//	Target-specific fixes
-//
-
-// Macro for local inline routines that shouldn't be visible externally
-// See Mixxx Bug #1179683
-
 //
 //	Support code
 //
@@ -393,7 +347,7 @@ public:
     //	pairs (whether pairs of real poles/zeros, or conjugate pairs).
     //
     FidFilter*
-    z2fidfilter(double gain, int cbm);
+    z2fidfilter(double gain);
     //
     //	Setup poles/zeros for a band-pass resonator.  'qfact' gives
     //	the Q-factor; 0 is a special value indicating +infinity,
@@ -405,14 +359,6 @@ public:
     //	Setup poles/zeros for a proportional-integral filter
     //
     //
-    FidFilter*
-    do_lowpass(int mz, double freq);
-    FidFilter*
-    do_highpass(int mz, double freq);
-    FidFilter*
-    do_bandpass(int mz, double f0, double f1);
-    FidFilter*
-    do_bandstop(int mz, double f0, double f1);
     int 
     calc_delay(FidFilter *filt);
     double 
@@ -425,37 +371,33 @@ public:
 #define BL 0
 #define MZ 1
 
-//
-//	Information passed to individual filter design routines:
-//
-//	  double* rout(double rate, double f0, double f1, 
-//		       int order, int n_arg, double *arg);
-//
-//	'rate' is the sampling rate, or 1 if not set
-//	'f0' and 'f1' give the frequency or frequency range as a 
-//	 	proportion of the sampling rate
-//	'order' is the order of the filter (the integer passed immediately 
-//		after the name)
-//	'n_arg' is the number of additional arguments for the filter
-//	'arg' gives the additional argument values: arg[n]
-//
-//	Note that #O #o #F and #R are mapped to the f0/f1/order
-//	arguments, and are not included in the arg[] array.
-//
-//	See the previous description for the required meaning of the
-//	return value FidFilter list.
-//	
+    //
+    //	Information passed to individual filter design routines:
+    //
+    //	  double* rout(double rate, double f0, double f1, 
+    //		       int order, int n_arg, double *arg);
+    //
+    //	'rate' is the sampling rate, or 1 if not set
+    //	'f0' and 'f1' give the frequency or frequency range as a 
+    //	 	proportion of the sampling rate
+    //	'order' is the order of the filter (the integer passed immediately 
+    //		after the name)
+    //	'n_arg' is the number of additional arguments for the filter
+    //	'arg' gives the additional argument values: arg[n]
+    //
+    //	Note that #O #o #F and #R are mapped to the f0/f1/order
+    //	arguments, and are not included in the arg[] array.
+    //
+    //	See the previous description for the required meaning of the
+    //	return value FidFilter list.
+    //	
 
-//
-//	Filter design routines and supporting code
-//
-//
-//	Filter table
-//
-    static void error(const char *fmt, ...);
-    void (*error_handler)(char *err) = nullptr;
-    void set_error_handler(void (*rout)(char*));
-    static const char * VERSION;
+    //
+    //	Filter design routines and supporting code
+    //
+    //
+    //	Filter table
+    //
     static const char *
     version();
     //
@@ -559,13 +501,11 @@ public:
     //	sub-filters into a single IIR/FIR pair, and make sure the IIR
     //	first coefficient is 1.0.
     //
-
     FidFilter *
     flatten(FidFilter *filt);
     //	Parse a filter-spec and freq0/freq1 arguments.  Returns a
     //	strdup'd error string on error, or else 0.
     //
-
     char *
     parse_spec(Spec *sp);
     //
@@ -577,7 +517,6 @@ public:
     //	If either of spec1p or spec2p is 0, then that particular
     //	spec-string is not generated.
     //
-
     void 
     rewrite_spec(const char *spec, double freq0, double freq1, int adj,
             char **spec1p, 
@@ -605,7 +544,6 @@ public:
     //	newly allocated resultant filter is returned, which should be
     //	released with free() when finished with.
     //      
-
     FidFilter *
     cat(int freeme, ...);
     //	Support for fid_parse
