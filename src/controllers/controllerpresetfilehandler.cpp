@@ -192,23 +192,22 @@ QDomDocument ControllerPresetFileHandler::buildRootWithScripts(const ControllerP
         addTextTag(doc, info, "wiki", preset.wikilink());
     }
 
-    QDomElement controller = doc.createElement("controller");
+    auto controller = doc.createElement("controller");
     // Strip off the serial number
     controller.setAttribute("id", rootDeviceName(deviceName));
     rootNode.appendChild(controller);
 
-    QDomElement scriptFiles = doc.createElement("scriptfiles");
+    auto scriptFiles = doc.createElement("scriptfiles");
     controller.appendChild(scriptFiles);
 
-    foreach (const ControllerPreset::ScriptFileInfo& script, preset.scripts) {
-        QString filename = script.name;
+    for(const auto& script, preset.scripts) {
+        auto filename = script.name;
         // Don't need to write anything for built-in files.
-        if (script.builtin) {
+        if (script.builtin)
             continue;
-        }
         qDebug() << "writing script block for" << filename;
         QString functionPrefix = script.functionPrefix;
-        QDomElement scriptFile = doc.createElement("file");
+        auto scriptFile = doc.createElement("file");
 
         scriptFile.setAttribute("filename", filename);
         scriptFile.setAttribute("functionprefix", functionPrefix);

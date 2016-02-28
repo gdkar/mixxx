@@ -6,9 +6,7 @@
     email                : spappalardo@mixxx.org
  ***************************************************************************/
 
-#ifndef SOFTTAKEOVER_H
-#define SOFTTAKEOVER_H
-
+_Pragma("once")
 #include <QHash>
 
 #include "util/duration.h"
@@ -63,5 +61,3 @@ class SoftTakeoverCtrl {
   private:
     QHash<ControlObject*, SoftTakeover*> m_softTakeoverHash;
 };
-
-#endif

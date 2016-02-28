@@ -16,7 +16,7 @@ QWidget* MidiOpCodeDelegate::createEditor(QWidget* parent,
                                           const QModelIndex& index) const {
     Q_UNUSED(option);
     Q_UNUSED(index);
-    QComboBox* pComboBox = new QComboBox(parent);
+    auto pComboBox = new QComboBox(parent);
 
     QList<MidiOpCode> choices;
     choices.append(MIDI_NOTE_ON);
@@ -24,23 +24,22 @@ QWidget* MidiOpCodeDelegate::createEditor(QWidget* parent,
     choices.append(MIDI_CC);
     choices.append(MIDI_PITCH_BEND);
 
-    foreach (MidiOpCode choice, choices) {
+    for(auto choice: choices)
         pComboBox->addItem(MidiUtils::opCodeToTranslatedString(choice), choice);
-    }
     return pComboBox;
 }
 
 QString MidiOpCodeDelegate::displayText(const QVariant& value,
                                         const QLocale& locale) const {
     Q_UNUSED(locale);
-    MidiOpCode opCode = static_cast<MidiOpCode>(value.toInt());
+    auto opCode = static_cast<MidiOpCode>(value.toInt());
     return MidiUtils::opCodeToTranslatedString(opCode);
 }
 
 void MidiOpCodeDelegate::setEditorData(QWidget* editor,
                                        const QModelIndex& index) const {
     int opCode = index.data(Qt::EditRole).toInt();
-    QComboBox* pComboBox = dynamic_cast<QComboBox*>(editor);
+    auto pComboBox = dynamic_cast<QComboBox*>(editor);
     if (pComboBox == NULL) {
         return;
     }
@@ -55,10 +54,8 @@ void MidiOpCodeDelegate::setEditorData(QWidget* editor,
 void MidiOpCodeDelegate::setModelData(QWidget* editor,
                                       QAbstractItemModel* model,
                                       const QModelIndex& index) const {
-    QComboBox* pComboBox = dynamic_cast<QComboBox*>(editor);
-    if (pComboBox == NULL) {
+    auto pComboBox = dynamic_cast<QComboBox*>(editor);
+    if (!pComboBox)
         return;
-    }
-    model->setData(index, pComboBox->itemData(pComboBox->currentIndex()),
-                   Qt::EditRole);
+    model->setData(index, pComboBox->itemData(pComboBox->currentIndex()),Qt::EditRole);
 }

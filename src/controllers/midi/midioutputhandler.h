@@ -8,9 +8,7 @@
  * value.
  */
 
-#ifndef MIDIOUTPUTHANDLER_H
-#define MIDIOUTPUTHANDLER_H
-
+_Pragma("once")
 #include "controlobjectslave.h"
 #include "controllers/midi/midimessage.h"
 
@@ -35,5 +33,3 @@ class MidiOutputHandler : QObject {
     ControlObjectSlave m_cos;
     int m_lastVal;
 };
-
-#endif

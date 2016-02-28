@@ -55,7 +55,7 @@ bool PresetInfoEnumerator::hasPresetInfo(const QString extension, const QString 
 }
 
 bool PresetInfoEnumerator::hasPresetInfo(const QString path) {
-    foreach (QString extension, m_presetsByExtension.keys()) {
+    for(auto extension: m_presetsByExtension.keys()) {
         QMap<QString, PresetInfo> presets = m_presetsByExtension[extension];
         if (presets.contains(path))
             return true;
@@ -66,7 +66,7 @@ bool PresetInfoEnumerator::hasPresetInfo(const QString path) {
 PresetInfo PresetInfoEnumerator::getPresetInfo(const QString path) {
     // Lookup and return controller script preset info by script path
     // Return NULL if path is not found.
-    foreach (QString extension, m_presetsByExtension.keys()) {
+    for(auto extension: m_presetsByExtension.keys()) {
         QMap<QString, PresetInfo> presets = m_presetsByExtension[extension];
         if (presets.contains(path))
             return presets[path];
@@ -94,12 +94,12 @@ void PresetInfoEnumerator::addExtension(const QString extension) {
 }
 
 void PresetInfoEnumerator::loadSupportedPresets() {
-    foreach (QString dirPath, m_controllerDirPaths) {
+    for(auto dirPath: m_controllerDirPaths) {
         QDirIterator it(dirPath);
         while (it.hasNext()) {
             it.next();
-            const QString path = it.filePath();
-            foreach (QString extension, m_fileExtensions) {
+            auto path = it.filePath();
+            for(auto extension: m_fileExtensions) {
                 if (!path.endsWith(extension))
                     continue;
                 if (!m_presetsByExtension.contains(extension)) {
@@ -110,7 +110,7 @@ void PresetInfoEnumerator::loadSupportedPresets() {
         }
     }
 
-    foreach (QString extension, m_presetsByExtension.keys()) {
+    for(auto extension: m_presetsByExtension.keys()) {
         QMap<QString,PresetInfo> presets = m_presetsByExtension[extension];
         qDebug() << "Extension" << extension << "total" << presets.keys().length() << "presets";
     }
@@ -122,11 +122,11 @@ void PresetInfoEnumerator::updatePresets(const QString extension) {
     if (m_presetsByExtension.contains(extension))
         m_presetsByExtension.remove(extension);
 
-    foreach (QString dirPath, m_controllerDirPaths) {
+    for(auto dirPath: m_controllerDirPaths) {
         QDirIterator it(dirPath);
         while (it.hasNext()) {
             it.next();
-            const QString path = it.filePath();
+            auto path = it.filePath();
             if (!path.endsWith(extension))
                 continue;
             presets[path] = PresetInfo(path);

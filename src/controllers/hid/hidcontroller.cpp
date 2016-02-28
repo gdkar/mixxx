@@ -299,9 +299,8 @@ int HidController::close() {
 void HidController::send(QList<int> data, unsigned int length, unsigned int reportID) {
     Q_UNUSED(length);
     QByteArray temp;
-    foreach (int datum, data) {
+    for(int datum: data)
         temp.append(datum);
-    }
     send(temp, reportID);
 }
 

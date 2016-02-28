@@ -294,64 +294,63 @@ ControlPickerMenu::ControlPickerMenu(QWidget* pParent)
     QString loopMoveForwardDescription = tr("Move loop forward by %1 beats");
     QString loopMoveBackwardDescription = tr("Move loop backward by %1 beats");
 
-    foreach (double beats, beatSizes) {
-        QString humanBeats = humanBeatSizes.value(beats, QString::number(beats));
+    for(auto beats: beatSizes) {
+        auto humanBeats = humanBeatSizes.value(beats, QString::number(beats));
         addDeckControl(QString("loop_move_%1_forward").arg(beats),
                        loopMoveForwardTitle.arg(humanBeats),
                        loopMoveForwardDescription.arg(humanBeats), loopMenu);
     }
 
-    foreach (double beats, beatSizes) {
-        QString humanBeats = humanBeatSizes.value(beats, QString::number(beats));
+    for(auto beats: beatSizes) {
+        auto humanBeats = humanBeatSizes.value(beats, QString::number(beats));
         addDeckControl(QString("loop_move_%1_backward").arg(beats),
                        loopMoveBackwardTitle.arg(humanBeats),
                        loopMoveBackwardDescription.arg(humanBeats), loopMenu);
     }
 
     // Beatloops
-    QMenu* beatLoopMenu = addSubmenu(tr("Beat-Looping"));
-    QString beatLoopTitle = tr("Loop %1 Beats");
-    QString beatLoopRollTitle = tr("Loop Roll %1 Beats");
-    QString beatLoopDescription = tr("Create %1-beat loop");
-    QString beatLoopRollDescription = tr("Create temporary %1-beat loop roll");
+    auto beatLoopMenu = addSubmenu(tr("Beat-Looping"));
+    auto beatLoopTitle = tr("Loop %1 Beats");
+    auto beatLoopRollTitle = tr("Loop Roll %1 Beats");
+    auto beatLoopDescription = tr("Create %1-beat loop");
+    auto beatLoopRollDescription = tr("Create temporary %1-beat loop roll");
 
-    foreach (double beats, beatSizes) {
-        QString humanBeats = humanBeatSizes.value(beats, QString::number(beats));
+    for(auto beats: beatSizes) {
+        auto humanBeats = humanBeatSizes.value(beats, QString::number(beats));
         addDeckControl(QString("beatloop_%1_toggle").arg(beats),
                        beatLoopTitle.arg(humanBeats),
                        beatLoopDescription.arg(humanBeats), beatLoopMenu);
     }
 
-    foreach (double beats, beatSizes) {
-        QString humanBeats = humanBeatSizes.value(beats, QString::number(beats));
+    for(auto beats: beatSizes) {
+        auto humanBeats = humanBeatSizes.value(beats, QString::number(beats));
         addDeckControl(QString("beatlooproll_%1_activate").arg(beats),
                        beatLoopRollTitle.arg(humanBeats),
                        beatLoopRollDescription.arg(humanBeats), beatLoopMenu);
     }
-
     // Beat jumping
-    QMenu* beatJumpMenu = addSubmenu(tr("Beat-Jump"));
-    QString beatJumpForwardTitle = tr("Jump Forward %1 Beats");
-    QString beatJumpBackwardTitle = tr("Jump Back %1 Beats");
-    QString beatJumpForwardDescription = tr("Jump forward by %1 beats");
-    QString beatJumpBackwardDescription = tr("Jump backward by %1 beats");
+    auto  beatJumpMenu = addSubmenu(tr("Beat-Jump"));
+    auto beatJumpForwardTitle = tr("Jump Forward %1 Beats");
+    auto beatJumpBackwardTitle = tr("Jump Back %1 Beats");
+    auto beatJumpForwardDescription = tr("Jump forward by %1 beats");
+    auto beatJumpBackwardDescription = tr("Jump backward by %1 beats");
 
-    foreach (double beats, beatSizes) {
-        QString humanBeats = humanBeatSizes.value(beats, QString::number(beats));
+    for(auto beats: beatSizes) {
+        auto humanBeats = humanBeatSizes.value(beats, QString::number(beats));
         addDeckControl(QString("beatjump_%1_forward").arg(beats),
                        beatJumpForwardTitle.arg(humanBeats),
                        beatJumpForwardDescription.arg(humanBeats), beatJumpMenu);
     }
 
-    foreach (double beats, beatSizes) {
-        QString humanBeats = humanBeatSizes.value(beats, QString::number(beats));
+    for(auto beats: beatSizes) {
+        auto humanBeats = humanBeatSizes.value(beats, QString::number(beats));
         addDeckControl(QString("beatjump_%1_backward").arg(beats),
                        beatJumpBackwardTitle.arg(humanBeats),
                        beatJumpBackwardDescription.arg(humanBeats), beatJumpMenu);
     }
 
     // Library Controls
-    QMenu* libraryMenu = addSubmenu(tr("Library"));
+    auto libraryMenu = addSubmenu(tr("Library"));
     addPrefixedControl("[Playlist]", "ToggleSelectedSidebarItem",
                        tr("Expand/Collapse View"),
                        tr("Expand/collapse the selected view (library, playlist..)"),
@@ -1020,16 +1019,13 @@ void ControlPickerMenu::addAvailableControl(ConfigKey key,
 
 bool ControlPickerMenu::controlExists(ConfigKey key) const {
     qDebug() << "LOOKING FOR KEY " << key;
-    foreach(const ConfigKey& key, m_titlesByKey.keys()) {
+    for(const auto& key: m_titlesByKey.keys())
         qDebug() << "key: " << key;
-    }
     return m_titlesByKey.contains(key);
 }
-
 QString ControlPickerMenu::descriptionForConfigKey(ConfigKey key) const {
     return m_descriptionsByKey.value(key, QString());
 }
-
 QString ControlPickerMenu::controlTitleForConfigKey(ConfigKey key) const {
     return m_titlesByKey.value(key, QString());
 }

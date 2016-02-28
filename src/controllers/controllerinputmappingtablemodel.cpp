@@ -21,7 +21,7 @@ void ControllerInputMappingTableModel::apply() {
         // Clear existing input mappings and insert all the input mappings in
         // the table into the preset.
         m_pMidiPreset->inputMappings.clear();
-        foreach (const MidiInputMapping& mapping, m_midiInputMappings) {
+        for(const auto& mapping: m_midiInputMappings) {
             // Use insertMulti because we support multiple inputs mappings for
             // the same input MidiKey.
             m_pMidiPreset->inputMappings.insertMulti(mapping.key.key, mapping);
@@ -71,9 +71,8 @@ void ControllerInputMappingTableModel::addMappings(const MidiInputMappings& mapp
 
         if (!m_midiInputMappings.isEmpty()) {
             QSet<uint16_t> keys;
-            foreach (const MidiInputMapping& mapping, mappings) {
+            for(const auto& mapping: mappings)
                 keys.insert(mapping.key.key);
-            }
 
             for (int row = m_midiInputMappings.size() - 1; row >= 0; row--) {
                 if (keys.contains(m_midiInputMappings.at(row).key.key)) {
@@ -103,7 +102,7 @@ void ControllerInputMappingTableModel::addEmptyMapping() {
 void ControllerInputMappingTableModel::removeMappings(QModelIndexList indices) {
     // Values don't matter, it's just to get a consistent ordering.
     QList<int> rows;
-    foreach (const QModelIndex& index, indices) {
+    for(const auto& index: indices) {
         rows.append(index.row());
     }
     qSort(rows);

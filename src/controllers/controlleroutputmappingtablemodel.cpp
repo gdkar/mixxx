@@ -19,11 +19,10 @@ void ControllerOutputMappingTableModel::apply() {
         // Clear existing output mappings and insert all the output mappings in
         // the table into the preset.
         m_pMidiPreset->outputMappings.clear();
-        foreach (const MidiOutputMapping& mapping, m_midiOutputMappings) {
+        for(const auto& mapping: m_midiOutputMappings)
             // Use insertMulti because we support multiple outputs from the same
             // control.
             m_pMidiPreset->outputMappings.insertMulti(mapping.controlKey, mapping);
-        }
     }
 }
 
@@ -72,9 +71,8 @@ void ControllerOutputMappingTableModel::addEmptyMapping() {
 void ControllerOutputMappingTableModel::removeMappings(QModelIndexList indices) {
     // Values don't matter, it's just to get a consistent ordering.
     QList<int> rows;
-    foreach (const QModelIndex& index, indices) {
+    for(const auto& index: indices)
         rows.append(index.row());
-    }
     qSort(rows);
 
     int lastRow = -1;

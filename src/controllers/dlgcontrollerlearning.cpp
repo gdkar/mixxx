@@ -125,18 +125,16 @@ void DlgControllerLearning::populateComboBox() {
     comboBoxChosenControl->clear();
     comboBoxChosenControl->addItem("", QVariant::fromValue(ConfigKey()));
     QList<NamedControl> sorted_controls;
-    foreach(ConfigKey key, m_controlPickerMenu.controlsAvailable())
+    for(ConfigKey key: m_controlPickerMenu.controlsAvailable())
     {
         sorted_controls.push_back(
-                NamedControl(m_controlPickerMenu.controlTitleForConfigKey(key),
-                             key));
+                NamedControl(m_controlPickerMenu.controlTitleForConfigKey(key),key));
     }
     qSort(sorted_controls.begin(), sorted_controls.end(),
           namedControlComparator);
-    foreach(NamedControl control, sorted_controls)
+    for(auto control: sorted_controls)
     {
-        comboBoxChosenControl->addItem(control.first,
-                                       QVariant::fromValue(control.second));
+        comboBoxChosenControl->addItem(control.first,QVariant::fromValue(control.second));
     }
 }
 
@@ -170,9 +168,8 @@ void DlgControllerLearning::resetWizard(bool keepCurrentControl) {
 
 void DlgControllerLearning::slotChooseControlPressed() {
     // If we learned messages, commit them.
-    if (m_messagesLearned) {
+    if (m_messagesLearned)
         commitMapping();
-    }
     resetWizard();
     stackedWidget->setCurrentWidget(page1Choose);
     startListening();

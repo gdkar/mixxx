@@ -252,11 +252,11 @@ void DlgPrefController::enumeratePresets() {
 
     m_ui.comboBoxPreset->setInsertPolicy(QComboBox::InsertAlphabetically);
     // Ask the controller manager for a list of applicable presets
-    PresetInfoEnumerator* pie =  m_pControllerManager->getMainThreadPresetEnumerator();
-    QList<PresetInfo> presets = pie->getPresets(m_pController->presetExtension());
+    auto pie =  m_pControllerManager->getMainThreadPresetEnumerator();
+    auto presets = pie->getPresets(m_pController->presetExtension());
 
     PresetInfo match;
-    foreach (const PresetInfo& preset, presets) {
+    for(const auto & preset: presets) {
         m_ui.comboBoxPreset->addItem(nameForPreset(preset), preset.getPath());
         if (m_pController->matchPreset(preset)) {
             match = preset;
@@ -691,9 +691,8 @@ void DlgPrefController::removeScript() {
     }
 
     QList<int> selectedRows;
-    foreach (QModelIndex index, selectedIndices) {
+    for(auto index: selectedIndices)
         selectedRows.append(index.row());
-    }
     qSort(selectedRows);
 
     int lastRow = -1;
@@ -716,7 +715,7 @@ void DlgPrefController::removeScript() {
 }
 
 void DlgPrefController::openScript() {
-    QModelIndexList selectedIndices = m_ui.m_pScriptsTableWidget->selectionModel()
+    auto selectedIndices = m_ui.m_pScriptsTableWidget->selectionModel()
             ->selection().indexes();
     if (selectedIndices.isEmpty()) {
          QMessageBox::information(
@@ -726,19 +725,16 @@ void DlgPrefController::openScript() {
                     QMessageBox::Ok, QMessageBox::Ok);
         return;
     }
-
     QSet<int> selectedRows;
-    foreach (QModelIndex index, selectedIndices) {
+    for(auto index: selectedIndices)
         selectedRows.insert(index.row());
-    }
-    QList<QString> scriptPaths = ControllerManager::getPresetPaths(m_pConfig);
+    auto scriptPaths = ControllerManager::getPresetPaths(m_pConfig);
 
-    foreach (int row, selectedRows) {
-        QString scriptName = m_ui.m_pScriptsTableWidget->item(row, 0)->text();
+    for(auto row: selectedRows) {
+        auto scriptName = m_ui.m_pScriptsTableWidget->item(row, 0)->text();
 
-        QString scriptPath = ControllerManager::getAbsolutePath(scriptName, scriptPaths);
-        if (!scriptPath.isEmpty()) {
+        auto scriptPath = ControllerManager::getAbsolutePath(scriptName, scriptPaths);
+        if (!scriptPath.isEmpty())
             QDesktopServices::openUrl(QUrl::fromLocalFile(scriptPath));
-        }
     }
 }
