@@ -1,6 +1,4 @@
-#ifndef SETTINGSDAO_H
-#define SETTINGSDAO_H
-
+_Pragma("once")
 #include <QtSql>
 
 #define SETTINGS_TABLE "settings"
@@ -23,5 +21,3 @@ class SettingsDAO : public QObject {
   private:
     QSqlDatabase m_db;
 };
-
-#endif /* SETTINGSDAO_H */

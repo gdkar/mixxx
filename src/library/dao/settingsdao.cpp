@@ -7,11 +7,10 @@ SettingsDAO::SettingsDAO(QSqlDatabase& db)
         : m_db(db) {
 }
 
-SettingsDAO::~SettingsDAO() {
+SettingsDAO::~SettingsDAO() = default;
 
-}
-
-void SettingsDAO::initialize() {
+void SettingsDAO::initialize()
+{
 }
 
 QString SettingsDAO::getValue(const QString& name, QString defaultValue) {

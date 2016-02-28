@@ -1,9 +1,7 @@
 // cue.h
 // Created 10/26/2009 by RJ Ryan (rryan@mit.edu)
 
-#ifndef CUE_H
-#define CUE_H
-
+_Pragma("once")
 #include <QObject>
 #include <QMutex>
 #include <QSharedPointer>
@@ -14,7 +12,8 @@ class CueDAO;
 class TrackInfoObject;
 
 class Cue : public QObject {
-  Q_OBJECT
+    Q_OBJECT
+
   public:
     enum CueType {
         INVALID = 0,
@@ -24,7 +23,7 @@ class Cue : public QObject {
         LOOP,
         JUMP,
     };
-
+    Q_ENUM(CueType);
     virtual ~Cue();
 
     bool isDirty() const;
@@ -51,21 +50,19 @@ class Cue : public QObject {
 
   private:
     explicit Cue(TrackId trackId);
-    Cue(int id, TrackId trackId, CueType type, int position, int length,
-        int hotCue, QString label);
+    Cue(int id, TrackId trackId, CueType type, int position, int length,int hotCue, QString label);
     void setDirty(bool dirty);
     void setId(int id);
     void setTrackId(TrackId trackId);
-
     mutable QMutex m_mutex;
 
-    bool m_bDirty;
-    int m_iId;
-    TrackId m_trackId;
-    CueType m_type;
-    int m_iPosition;
-    int m_iLength;
-    int m_iHotCue;
+    bool m_bDirty{false};
+    int m_iId{-1};
+    TrackId m_trackId{-1};
+    CueType m_type{CueType::INVALID};
+    int m_iPosition{-1};
+    int m_iLength{-1};
+    int m_iHotCue{-1};
     QString m_label;
 
     friend class TrackInfoObject;
@@ -73,5 +70,3 @@ class Cue : public QObject {
 };
 
 typedef QSharedPointer<Cue> CuePointer;
-
-#endif /* CUE_H */

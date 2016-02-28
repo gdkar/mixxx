@@ -1,9 +1,7 @@
 // cuedao.h
 // Created 10/26/2009 by RJ Ryan (rryan@mit.edu)
 
-#ifndef CUEDAO_H
-#define CUEDAO_H
-
+_Pragma("once")
 #include <QMap>
 #include <QSqlDatabase>
 
@@ -37,5 +35,3 @@ class CueDAO : public DAO {
     QSqlDatabase& m_database;
     mutable QMap<int, CuePointer> m_cues;
 };
-
-#endif /* CUEDAO_H */

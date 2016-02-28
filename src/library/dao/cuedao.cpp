@@ -214,21 +214,18 @@ void CueDAO::saveTrackCues(TrackId trackId, TrackInfoObject* pTrack) {
     // TODO(XXX) transaction, but people who are already in a transaction call
     // this.
     PerformanceTimer time;
-
-    const QList<CuePointer> cueList(pTrack->getCuePoints());
-
+    auto cueList = pTrack->getCuePoints();
     // qDebug() << "CueDAO::saveTrackCues old size:" << oldCueList.size()
     //          << "new size:" << cueList.size();
-
     QString list = "";
 
     time.start();
     // For each id still in the TIO, save or delete it.
-    QListIterator<CuePointer> cueIt(cueList);
+    auto cueIt = QListIterator<CuePointer> (cueList);
     while (cueIt.hasNext()) {
-        CuePointer pCue(cueIt.next());
-        int cueId = pCue->getId();
-        bool newCue = cueId == -1;
+        auto pCue = CuePointer(cueIt.next());
+        auto cueId = pCue->getId();
+        auto newCue = cueId == -1;
         if (newCue) {
             // New cue
             pCue->setTrackId(trackId);
@@ -255,8 +252,7 @@ void CueDAO::saveTrackCues(TrackId trackId, TrackInfoObject* pTrack) {
 
     // Delete cues that are no longer on the track.
     QSqlQuery query(m_database);
-    query.prepare(QString("DELETE FROM cues where track_id=:track_id and not id in (%1)")
-                  .arg(list));
+    query.prepare(QString("DELETE FROM cues where track_id=:track_id and not id in (%1)").arg(list));
     query.bindValue(":track_id", trackId.toVariant());
 
     if (!query.exec()) {
