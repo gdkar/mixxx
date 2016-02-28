@@ -1,19 +1,15 @@
-#ifndef MIXXX_UTIL_LOGGING_H
-#define MIXXX_UTIL_LOGGING_H
-
+_Pragma("once")
 namespace mixxx {
 
-class Logging {
-  public:
-    static void initialize();
-    static void shutdown();
+    class Logging {
+    public:
+        static void initialize();
+        static void shutdown();
 
-  private:
-    Logging() = delete;
-};
+    private:
+        Logging() = delete;
+    };
 
-void install_message_handler();
+    void install_message_handler();
 
 }  // namespace mixxx
-
-#endif /* MIXXX_UTIL_LOGGING_H */

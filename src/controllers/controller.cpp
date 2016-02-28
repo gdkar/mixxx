@@ -12,19 +12,33 @@
 #include "controllers/controllerdebug.h"
 #include "controllers/defs_controllers.h"
 
-Controller::Controller()
-        : QObject(),
-          m_pEngine(NULL),
-          m_bIsOutputDevice(false),
-          m_bIsInputDevice(false),
-          m_bIsOpen(false),
-          m_bLearning(false) {
-}
+Controller::Controller() = default;
 
-Controller::~Controller() {
-    // Don't close the device here. Sub-classes should close the device in their
-    // destructors.
+bool Controller::isOpen() const
+{
+    return m_bIsOpen;
 }
+bool Controller::isOutputDevice() const
+{
+    return m_bIsOutputDevice;
+}
+bool Controller::isInputDevice() const
+{
+    return m_bIsInputDevice;
+}
+QString Controller::getName() const
+{
+    return m_sDeviceName;
+}
+QString Controller::getCategory() const
+{
+    return m_sDeviceCategory;
+}
+bool Controller::isLearning() const
+{
+    return m_bLearning;
+}
+Controller::~Controller() = default;
 
 void Controller::startEngine()
 {
@@ -50,7 +64,7 @@ void Controller::stopEngine() {
 bool Controller::applyPreset(QList<QString> scriptPaths, bool initializeScripts) {
     qDebug() << "Applying controller preset...";
 
-    const ControllerPreset* pPreset = preset();
+    auto pPreset = preset();
 
     // Load the script code into the engine
     if (m_pEngine == NULL) {
@@ -63,7 +77,7 @@ bool Controller::applyPreset(QList<QString> scriptPaths, bool initializeScripts)
         return true;
     }
 
-    bool success = m_pEngine->loadScriptFiles(scriptPaths, pPreset->scripts);
+    auto success = m_pEngine->loadScriptFiles(scriptPaths, pPreset->scripts);
     if (initializeScripts) {
         m_pEngine->initializeScripts(pPreset->scripts);
     }
@@ -74,25 +88,26 @@ void Controller::startLearning() {
     qDebug() << m_sDeviceName << "started learning";
     m_bLearning = true;
 }
-
-void Controller::stopLearning() {
+void Controller::stopLearning()
+{
     //qDebug() << m_sDeviceName << "stopped learning.";
     m_bLearning = false;
 
 }
-
-void Controller::send(QList<int> data, unsigned int length) {
+void Controller::send(QList<int> data, unsigned int length)
+{
     // If you change this implementation, also change it in HidController (That
     // function is required due to HID devices having report IDs)
 
-    QByteArray msg(length, 0);
+    auto msg = QByteArray(length, 0);
     for (unsigned int i = 0; i < length; ++i) {
         msg[i] = data.at(i);
     }
     send(msg);
 }
 
-void Controller::receive(const QByteArray data, mixxx::Duration timestamp) {
+void Controller::receive(const QByteArray data, mixxx::Duration timestamp)
+{
     if (m_pEngine == NULL) {
         //qWarning() << "Controller::receive called with no active engine!";
         // Don't complain, since this will always show after closing a device as
@@ -103,9 +118,9 @@ void Controller::receive(const QByteArray data, mixxx::Duration timestamp) {
     int length = data.size();
     if (ControllerDebug::enabled()) {
         // Formatted packet display
-        QString message = QString("%1: t:%2, %3 bytes:\n")
+        auto message = QString("%1: t:%2, %3 bytes:\n")
                 .arg(m_sDeviceName).arg(timestamp.formatMillisWithUnit()).arg(length);
-        for(int i=0; i<length; i++) {
+        for(auto i=0; i<length; i++) {
             QString spacer=" ";
             if ((i+1) % 4 == 0) spacer="  ";
             if ((i+1) % 16 == 0) spacer="\n";
@@ -116,14 +131,52 @@ void Controller::receive(const QByteArray data, mixxx::Duration timestamp) {
         controllerDebug(message);
     }
 
-    foreach (QString function, m_pEngine->getScriptFunctionPrefixes()) {
+    for (auto function: m_pEngine->getScriptFunctionPrefixes()) {
         if (function == "") {
             continue;
         }
         function.append(".incomingData");
-        QScriptValue incomingData = m_pEngine->resolveFunction(function);
+        auto incomingData = m_pEngine->resolveFunction(function);
         if (!m_pEngine->execute(incomingData, data, timestamp)) {
             qWarning() << "Controller: Invalid script function" << function;
         }
     }
+}
+ControllerEngine* Controller::getEngine() const
+{
+    return m_pEngine;
+}
+void Controller::setDeviceName(QString deviceName)
+{
+    m_sDeviceName = deviceName;
+}
+void Controller::setDeviceCategory(QString deviceCategory)
+{
+    m_sDeviceCategory = deviceCategory;
+}
+void Controller::setOutputDevice(bool outputDevice)
+{
+    m_bIsOutputDevice = outputDevice;
+}
+void Controller::setInputDevice(bool inputDevice)
+{
+    m_bIsInputDevice = inputDevice;
+}
+void Controller::setOpen(bool open)
+{
+    m_bIsOpen = open;
+}
+void Controller::setPreset(const ControllerPreset& preset) {
+    // We don't know the specific type of the preset so we need to ask
+    // the preset to call our visitor methods with its type.
+    preset.accept(this);
+}
+bool Controller::poll()
+{
+    return false;
+}
+void Controller::accept(ControllerVisitor*visitor)
+{
+    if(visitor)
+        visitor->visit(this);
 }

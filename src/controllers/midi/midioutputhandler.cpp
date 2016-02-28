@@ -56,8 +56,7 @@ void MidiOutputHandler::controlChanged(double value) {
         controllerDebug("sending MIDI bytes:" << m_mapping.output.status
                      << "," << m_mapping.output.control << ","
                      << byte3);
-        m_pController->sendShortMsg(m_mapping.output.status,
-                                    m_mapping.output.control, byte3);
+        m_pController->sendShortMsg(m_mapping.output.status,m_mapping.output.control, byte3);
         m_lastVal = static_cast<int>(byte3);
     }
 }

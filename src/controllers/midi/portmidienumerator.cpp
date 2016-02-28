@@ -20,7 +20,6 @@ bool shouldBlacklistDevice(const PmDeviceInfo* device) {
     return !CmdlineArgs::Instance().getDeveloper() &&
             deviceName.startsWith("Midi Through Port", Qt::CaseInsensitive);
 }
-
 PortMidiEnumerator::PortMidiEnumerator() : MidiEnumerator() {
     PmError err = Pm_Initialize();
     // Based on reading the source, it's not possible for this to fail.
@@ -28,7 +27,6 @@ PortMidiEnumerator::PortMidiEnumerator() : MidiEnumerator() {
         qWarning() << "PortMidi error:" << Pm_GetErrorText(err);
     }
 }
-
 PortMidiEnumerator::~PortMidiEnumerator() {
     qDebug() << "Deleting PortMIDI devices...";
     QListIterator<Controller*> dev_it(m_devices);
@@ -41,7 +39,6 @@ PortMidiEnumerator::~PortMidiEnumerator() {
         qWarning() << "PortMidi error:" << Pm_GetErrorText(err);
     }
 }
-
 bool namesMatchMidiPattern(const QString input_name,
                            const QString output_name) {
     // Some platforms format MIDI device names as "deviceName MIDI ###" where
@@ -172,7 +169,8 @@ bool shouldLinkInputToOutput(const QString input_name,
   * output and input into separate devices. Eg. PortMidi would tell us the Hercules is two half-duplex devices.
   * To help simplify a lot of code, we're going to aggregate these two streams into a single full-duplex device.
   */
-QList<Controller*> PortMidiEnumerator::queryDevices() {
+QList<Controller*> PortMidiEnumerator::queryDevices()
+{
     qDebug() << "Scanning PortMIDI devices:";
 
     int iNumDevices = Pm_CountDevices();
@@ -260,3 +258,6 @@ QList<Controller*> PortMidiEnumerator::queryDevices() {
     }
     return m_devices;
 }
+namespace {
+    ThisFactory<PortMidiEnumerator> m_factory{};
+};

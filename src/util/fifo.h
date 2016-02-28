@@ -1,5 +1,4 @@
-#ifndef FIFO_H
-#define FIFO_H
+_Pragma("once")
 
 #include <QtDebug>
 #include <QMutex>
@@ -191,5 +190,3 @@ class TwoWayMessagePipe {
     DISALLOW_COPY_AND_ASSIGN(TwoWayMessagePipe<SenderMessageType COMMA ReceiverMessageType>);
 #undef COMMA
 };
-
-#endif /* FIFO_H */

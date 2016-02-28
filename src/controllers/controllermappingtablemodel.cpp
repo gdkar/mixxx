@@ -26,13 +26,12 @@ void ControllerMappingTableModel::cancel() {
     // apply, simply call setPreset again.
     setPreset(m_pPreset);
 }
-
-void ControllerMappingTableModel::visit(MidiControllerPreset* pMidiPreset) {
-    m_pMidiPreset = pMidiPreset;
-}
-
-void ControllerMappingTableModel::visit(HidControllerPreset* pHidPreset) {
-    m_pHidPreset = pHidPreset;
+void ControllerMappingTableModel::visit(ControllerPreset *pPreset)
+{
+    if(auto mp = dynamic_cast<MidiControllerPreset*>(pPreset))
+        m_pMidiPreset = mp;
+    else if(auto hp = dynamic_cast<HidControllerPreset*>(pPreset))
+        m_pHidPreset = hp;
 }
 
 bool ControllerMappingTableModel::setHeaderData(int section,

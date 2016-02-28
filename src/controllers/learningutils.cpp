@@ -54,22 +54,22 @@ MidiInputMappings LearningUtils::guessMidiInputMappings(
     MessageStats stats;
 
     // Analyze the message
-    foreach (const MidiKeyAndValue& message, messages) {
+    for(const auto & message: messages) {
         stats.addMessage(message);
         stats_by_control[message.first.control].addMessage(message);
     }
 
     qDebug() << "LearningUtils guessing MIDI mapping from" << messages.size() << "messages.";
 
-    foreach (MidiOpCode opcode, stats.opcodes) {
+    for(auto opcode: stats.opcodes) {
         qDebug() << "Opcode:" << opcode;
     }
 
-    foreach (unsigned char channel, stats.channels) {
+    for(auto channel: stats.channels) {
         qDebug() << "Channel:" << channel;
     }
 
-    foreach (unsigned char control, stats.controls) {
+    for(auto control: stats.controls) {
         qDebug() << "Control:" << control;
     }
 

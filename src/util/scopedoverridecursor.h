@@ -1,26 +1,20 @@
-#ifndef SCOPEDOVERRIDECURSOR_H
-#define SCOPEDOVERRIDECURSOR_H
-
+_Pragma("once")
 #include <QApplication>
-
 class ScopedOverrideCursor {
   public:
-    inline explicit ScopedOverrideCursor(const QCursor& cursor) {
+    explicit ScopedOverrideCursor(const QCursor& cursor)
+    {
         QApplication::setOverrideCursor(cursor);
         QApplication::processEvents();
     }
-
-    inline virtual ~ScopedOverrideCursor() {
+    virtual ~ScopedOverrideCursor()
+    {
         QApplication::restoreOverrideCursor();
     }
 };
-
 class ScopedWaitCursor : public ScopedOverrideCursor {
   public:
     ScopedWaitCursor()
         : ScopedOverrideCursor(Qt::WaitCursor)
-    {
-    }
+    { }
 };
-
-#endif // SCOPEDOVERRIDECURSOR_H

@@ -8,9 +8,7 @@
 * make it up.
 */
 
-#ifndef CONTROLLERPRESET_H
-#define CONTROLLERPRESET_H
-
+_Pragma("once")
 #include <QHash>
 #include <QSharedPointer>
 #include <QString>
@@ -21,18 +19,12 @@ class ConstControllerPresetVisitor;
 
 class ControllerPreset {
   public:
-    ControllerPreset() {}
-    virtual ~ControllerPreset() {}
-
+    ControllerPreset();
+    virtual ~ControllerPreset();
     struct ScriptFileInfo {
-        ScriptFileInfo()
-                : builtin(false) {
-
-        }
-
         QString name;
         QString functionPrefix;
-        bool builtin;
+        bool builtin = false;
     };
 
     /** addScriptFile(QString,QString)
@@ -41,98 +33,32 @@ class ControllerPreset {
      * @param functionprefix Function prefix to add
      */
     void addScriptFile(QString filename, QString functionprefix,
-                       bool builtin=false) {
-        ScriptFileInfo info;
-        info.name = filename;
-        info.functionPrefix = functionprefix;
-        info.builtin = builtin;
-        scripts.append(info);
-    }
-
-    inline void setDeviceId(const QString id) {
-        m_deviceId = id;
-    }
-
-    inline QString deviceId() const {
-        return m_deviceId;
-    }
-
-    inline void setFilePath(const QString filePath) {
-        m_filePath = filePath;
-    }
-
-    inline QString filePath() const {
-        return m_filePath;
-    }
-
-    inline void setName(const QString name) {
-        m_name = name;
-    }
-
-    inline QString name() const {
-        return m_name;
-    }
-
-    inline void setAuthor(const QString author) {
-        m_author = author;
-    }
-
-    inline QString author() const {
-        return m_author;
-    }
-
-    inline void setDescription(const QString description) {
-        m_description = description;
-    }
-
-    inline QString description() const {
-        return m_description;
-    }
-
-    inline void setForumLink(const QString forumlink) {
-        m_forumlink = forumlink;
-    }
-
-    inline QString forumlink() const {
-        return m_forumlink;
-    }
-
-    inline void setWikiLink(const QString wikilink) {
-        m_wikilink = wikilink;
-    }
-
-    inline QString wikilink() const {
-        return m_wikilink;
-    }
-
-    inline void setSchemaVersion(const QString schemaVersion) {
-        m_schemaVersion = schemaVersion;
-    }
-
-    inline QString schemaVersion() const {
-        return m_schemaVersion;
-    }
-
-    inline void setMixxxVersion(const QString mixxxVersion) {
-        m_mixxxVersion = mixxxVersion;
-    }
-
-    inline QString mixxxVersion() const {
-        return m_mixxxVersion;
-    }
-
-    inline void addProductMatch(QHash<QString,QString> match) {
-        m_productMatches.append(match);
-    }
-
+                       bool builtin=false);
+    void setDeviceId(const QString id);
+    QString deviceId() const;
+    void setFilePath(const QString filePath);
+    QString filePath() const ;
+    void setName(const QString name);
+    QString name() const;
+    void setAuthor(const QString author) ;
+    QString author() const;
+    void setDescription(const QString description);
+    QString description() const;
+    void setForumLink(const QString forumlink);
+    QString forumlink() const;
+    void setWikiLink(const QString wikilink);
+    QString wikilink() const;
+    void setSchemaVersion(const QString schemaVersion);
+    QString schemaVersion() const;
+    void setMixxxVersion(const QString mixxxVersion);
+    QString mixxxVersion() const;
+    void addProductMatch(QHash<QString,QString> match);
     virtual void accept(ControllerPresetVisitor* visitor) = 0;
     virtual void accept(ConstControllerPresetVisitor* visitor) const = 0;
     virtual bool isMappable() const = 0;
-
     QList<ScriptFileInfo> scripts;
     // Optional list of controller device match details
     QList< QHash<QString,QString> > m_productMatches;
-
   private:
     QString m_deviceId;
     QString m_filePath;
@@ -144,7 +70,4 @@ class ControllerPreset {
     QString m_schemaVersion;
     QString m_mixxxVersion;
 };
-
 typedef QSharedPointer<ControllerPreset> ControllerPresetPointer;
-
-#endif

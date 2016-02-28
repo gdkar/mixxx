@@ -25,7 +25,6 @@ class StatsPipe : public FIFO<StatReport> {
   private:
     StatsManager* m_pManager;
 };
-
 class StatsManager : public QThread, public Singleton<StatsManager> {
     Q_OBJECT
   public:

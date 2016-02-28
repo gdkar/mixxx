@@ -49,3 +49,6 @@ QList<Controller*> Hss1394Enumerator::queryDevices() {
     }
     return m_devices;
 }
+namespace {
+    ThisFactory<Hss1394Enumerator> m_factory{};
+};

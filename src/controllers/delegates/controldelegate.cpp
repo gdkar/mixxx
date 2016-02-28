@@ -12,8 +12,7 @@ ControlDelegate::ControlDelegate(QObject* pParent)
           m_bIsIndexScript(false) {
 }
 
-ControlDelegate::~ControlDelegate() {
-}
+ControlDelegate::~ControlDelegate() = default;
 
 QWidget* ControlDelegate::createEditor(QWidget* parent,
                                        const QStyleOptionViewItem& option,

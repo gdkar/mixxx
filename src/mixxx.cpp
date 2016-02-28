@@ -299,6 +299,7 @@ void MixxxMainWindow::initialize(QApplication* pApp, const CmdlineArgs& args) {
     // (long)
     qDebug() << "Creating ControllerManager";
     m_pControllerManager = new ControllerManager(pConfig);
+    m_pControllerManager->setParent(this);
     launchProgress(47);
     WaveformWidgetFactory::instance()->startVSync(m_pGuiTick);
     WaveformWidgetFactory::instance()->setConfig(pConfig);
@@ -329,9 +330,7 @@ void MixxxMainWindow::initialize(QApplication* pApp, const CmdlineArgs& args) {
                                                            m_pLibrary,
                                                            m_pVCManager,
                                                            m_pEffectsManager))) {
-        reportCriticalErrorAndQuit(
-                "default skin cannot be loaded see <b>mixxx</b> trace for more information.");
-
+        reportCriticalErrorAndQuit("default skin cannot be loaded see <b>mixxx</b> trace for more information.");
         m_pWidgetParent = oldWidget;
         //TODO (XXX) add dialog to warn user and launch skin choice page
     }

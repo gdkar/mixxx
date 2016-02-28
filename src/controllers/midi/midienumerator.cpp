@@ -8,8 +8,5 @@
 
 #include "controllers/midi/midienumerator.h"
 
-MidiEnumerator::MidiEnumerator() : ControllerEnumerator() {
-}
-
-MidiEnumerator::~MidiEnumerator() {
-}
+MidiEnumerator::MidiEnumerator()  = default;
+MidiEnumerator::~MidiEnumerator() = default;

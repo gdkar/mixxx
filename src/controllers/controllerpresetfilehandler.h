@@ -13,11 +13,10 @@
 
 class ControllerPresetFileHandler {
   public:
-    ControllerPresetFileHandler() {};
-    virtual ~ControllerPresetFileHandler() {};
+    ControllerPresetFileHandler() = default;
+    virtual ~ControllerPresetFileHandler() = default;
 
-    static ControllerPresetPointer loadPreset(const QString& path,
-                                              const QStringList& presetPaths);
+    static ControllerPresetPointer loadPreset(const QString& path,const QStringList& presetPaths);
 
     /** load(QString,QString,bool)
      * Overloaded function for convenience

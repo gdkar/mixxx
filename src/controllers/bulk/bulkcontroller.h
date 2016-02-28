@@ -45,36 +45,21 @@ class BulkController : public Controller {
     BulkController(libusb_context* context, libusb_device_handle *handle,
                    struct libusb_device_descriptor *desc);
     virtual ~BulkController();
-
     virtual QString presetExtension();
-
     virtual ControllerPresetPointer getPreset() const {
-        HidControllerPreset* pClone = new HidControllerPreset();
+        auto pClone = new HidControllerPreset();
         *pClone = m_preset;
         return ControllerPresetPointer(pClone);
     }
-
     virtual bool savePreset(const QString fileName) const;
-
-    virtual void visit(const MidiControllerPreset* preset);
-    virtual void visit(const HidControllerPreset* preset);
-
-    virtual void accept(ControllerVisitor* visitor) {
-        if (visitor) {
-            visitor->visit(this);
-        }
-    }
-
+    virtual void visit(const ControllerPreset* preset);
     virtual bool isMappable() const {
         return m_preset.isMappable();
     }
-
     virtual bool matchPreset(const PresetInfo& preset);
     virtual bool matchProductInfo(QHash <QString,QString >);
-
   protected:
     Q_INVOKABLE void send(QList<int> data, unsigned int length);
-
   private slots:
     int open();
     int close();
@@ -110,5 +95,4 @@ class BulkController : public Controller {
     BulkReader* m_pReader;
     HidControllerPreset m_preset;
 };
-
 #endif

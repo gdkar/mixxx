@@ -38,9 +38,7 @@ class DlgControllerLearning : public QDialog,
     DlgControllerLearning(QWidget *parent, Controller *controller);
     virtual ~DlgControllerLearning();
 
-    void visit(MidiController* pController);
-    void visit(HidController* pController);
-    void visit(BulkController* pController);
+    void visit(Controller* pController);
 
   signals:
     void learnTemporaryInputMappings(const MidiInputMappings& mappings);

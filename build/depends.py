@@ -691,6 +691,7 @@ class MixxxCore(Feature):
                    "controllers/midi/midienumerator.cpp",
                    "controllers/midi/midioutputhandler.cpp",
                    "controllers/softtakeover.cpp",
+                   "controllers/controllerpreset.cpp",
 
                    "main.cpp",
                    "mixxx.cpp",

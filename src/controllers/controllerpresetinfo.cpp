@@ -15,10 +15,20 @@
 #include "controllers/defs_controllers.h"
 #include "util/xml.h"
 
-PresetInfo::PresetInfo()
-        : m_valid(false) {
+PresetInfo::PresetInfo() = default;
+PresetInfo::~PresetInfo() = default;
+bool PresetInfo::isValid() const
+{
+    return m_valid;
 }
+QString PresetInfo::getPath() const { return m_path; };
+QString PresetInfo::getName() const { return m_name; } ;
+QString PresetInfo::getDescription() const { return m_description; };
+QString PresetInfo::getForumLink() const { return m_forumlink; };
+QString PresetInfo::getWikiLink() const { return m_wikilink; };
+QString PresetInfo::getAuthor() const { return m_author; };
 
+QList<QHash<QString,QString> > PresetInfo::getProducts() const { return m_products; };
 PresetInfo::PresetInfo(const QString preset_path)
         : m_valid(false) {
     // Parse <info> header section from a controller description XML file

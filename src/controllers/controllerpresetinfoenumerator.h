@@ -4,9 +4,7 @@
 * @date Sat Jul 18 2015
 * @brief Enumerate list of available controller mapping presets
 */
-#ifndef CONTROLLERPRESETINFOENUMERATOR_H
-#define CONTROLLERPRESETINFOENUMERATOR_H
-
+_Pragma("once")
 #include <QMap>
 #include <QList>
 #include <QString>
@@ -46,5 +44,3 @@ class PresetInfoEnumerator {
     QMap<QString, QMap<QString, PresetInfo> > m_presetsByExtension;
     QMap<QString, ControllerPresetFileHandler*> m_presetFileHandlersByExtension;
 };
-
-#endif

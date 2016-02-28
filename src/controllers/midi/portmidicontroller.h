@@ -14,9 +14,7 @@
  *
  */
 
-#ifndef PORTMIDICONTROLLER_H
-#define PORTMIDICONTROLLER_H
-
+_Pragma("once")
 #include <portmidi.h>
 
 #include <QScopedPointer>
@@ -100,5 +98,3 @@ class PortMidiController : public MidiController {
 
     friend class PortMidiControllerTest;
 };
-
-#endif

@@ -17,8 +17,7 @@ ControllerPresetPointer ControllerPresetFileHandler::loadPreset(const QString& p
                                                                 const QStringList& presetPaths) {
     qDebug() << "Searching for controller preset" << pathOrFilename
              << "in paths:" << presetPaths.join(",");
-    QString scriptPath = ControllerManager::getAbsolutePath(pathOrFilename,
-                                                            presetPaths);
+    QString scriptPath = ControllerManager::getAbsolutePath(pathOrFilename,presetPaths);
 
     if (scriptPath.isEmpty()) {
         qDebug() << "Could not find" << pathOrFilename
@@ -59,43 +58,42 @@ ControllerPresetPointer ControllerPresetFileHandler::loadPreset(const QString& p
 ControllerPresetPointer ControllerPresetFileHandler::load(const QString path,
                                                           const QString deviceName) {
     qDebug() << "Loading controller preset from" << path;
-    ControllerPresetPointer pPreset = load(XmlParse::openXMLFile(path, "controller"),
-                                           deviceName);
+    ControllerPresetPointer pPreset = load(XmlParse::openXMLFile(path, "controller"),deviceName);
     if (pPreset) {
         pPreset->setFilePath(path);
     }
     return pPreset;
 }
 
-void ControllerPresetFileHandler::parsePresetInfo(const QDomElement& root,
-                                                  ControllerPreset* preset) const {
+void ControllerPresetFileHandler::parsePresetInfo(const QDomElement& root,ControllerPreset* preset) const
+{
     if (root.isNull() || !preset) {
         return;
     }
 
-    QDomElement info = root.firstChildElement("info");
+    auto info = root.firstChildElement("info");
     if (info.isNull()) {
         return;
     }
 
-    QString mixxxVersion = root.attribute("mixxxVersion", "");
+    auto mixxxVersion = root.attribute("mixxxVersion", "");
     preset->setMixxxVersion(mixxxVersion);
-    QString schemaVersion = root.attribute("schemaVersion", "");
+    auto schemaVersion = root.attribute("schemaVersion", "");
     preset->setSchemaVersion(schemaVersion);
-    QDomElement name = info.firstChildElement("name");
+    auto name = info.firstChildElement("name");
     preset->setName(name.isNull() ? "" : name.text());
-    QDomElement author = info.firstChildElement("author");
+    auto author = info.firstChildElement("author");
     preset->setAuthor(author.isNull() ? "" : author.text());
-    QDomElement description = info.firstChildElement("description");
+    auto description = info.firstChildElement("description");
     preset->setDescription(description.isNull() ? "" : description.text());
-    QDomElement forums = info.firstChildElement("forums");
+    auto forums = info.firstChildElement("forums");
     preset->setForumLink(forums.isNull() ? "" : forums.text());
-    QDomElement wiki = info.firstChildElement("wiki");
+    auto wiki = info.firstChildElement("wiki");
     preset->setWikiLink(wiki.isNull() ? "" : wiki.text());
 }
 
-QDomElement ControllerPresetFileHandler::getControllerNode(const QDomElement& root,
-                                                           const QString deviceName) {
+QDomElement ControllerPresetFileHandler::getControllerNode(const QDomElement& root,const QString deviceName)
+{
     Q_UNUSED(deviceName);
     if (root.isNull()) {
         return QDomElement();
@@ -107,16 +105,16 @@ QDomElement ControllerPresetFileHandler::getControllerNode(const QDomElement& ro
     return root.firstChildElement("controller");
 }
 
-void ControllerPresetFileHandler::addScriptFilesToPreset(
-    const QDomElement& controller, ControllerPreset* preset) const {
+void ControllerPresetFileHandler::addScriptFilesToPreset(const QDomElement& controller, ControllerPreset* preset) const
+{
     if (controller.isNull())
         return;
 
-    QString deviceId = controller.attribute("id", "");
+    auto deviceId = controller.attribute("id", "");
     preset->setDeviceId(deviceId);
 
     // Build a list of script files to load
-    QDomElement scriptFile = controller.firstChildElement("scriptfiles")
+    auto scriptFile = controller.firstChildElement("scriptfiles")
             .firstChildElement("file");
 
     // Default currently required file
@@ -124,8 +122,8 @@ void ControllerPresetFileHandler::addScriptFilesToPreset(
 
     // Look for additional ones
     while (!scriptFile.isNull()) {
-        QString functionPrefix = scriptFile.attribute("functionprefix","");
-        QString filename = scriptFile.attribute("filename","");
+        auto functionPrefix = scriptFile.attribute("functionprefix","");
+        auto filename = scriptFile.attribute("filename","");
         preset->addScriptFile(filename, functionPrefix);
         scriptFile = scriptFile.nextSiblingElement("file");
     }

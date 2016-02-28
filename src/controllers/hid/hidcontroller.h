@@ -51,28 +51,15 @@ class HidController : public Controller {
         *pClone = m_preset;
         return ControllerPresetPointer(pClone);
     }
-
     virtual bool savePreset(const QString fileName) const;
-
-    virtual void visit(const MidiControllerPreset* preset);
-    virtual void visit(const HidControllerPreset* preset);
-
-    virtual void accept(ControllerVisitor* visitor) {
-        if (visitor) {
-            visitor->visit(this);
-        }
-    }
-
+    virtual void visit(const ControllerPreset* preset);
     virtual bool isMappable() const {
         return m_preset.isMappable();
     }
-
     virtual bool matchPreset(const PresetInfo& preset);
     virtual bool matchProductInfo(QHash <QString,QString >);
     virtual void guessDeviceCategory();
-
     static QString safeDecodeWideString(const wchar_t* pStr, size_t max_length);
-
   protected:
     Q_INVOKABLE void send(QList<int> data, unsigned int length, unsigned int reportID = 0);
 

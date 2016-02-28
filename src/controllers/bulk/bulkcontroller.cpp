@@ -22,17 +22,17 @@ BulkReader::BulkReader(libusb_device_handle *handle, unsigned char in_epaddr)
           m_in_epaddr(in_epaddr) {
 }
 
-BulkReader::~BulkReader() {
-}
+BulkReader::~BulkReader() = default;
 
-void BulkReader::stop() {
+void BulkReader::stop()
+{
     m_stop = 1;
 }
 
-void BulkReader::run() {
+void BulkReader::run()
+{
     m_stop = 0;
     unsigned char data[255];
-
     while (load_atomic(m_stop) == 0) {
         // Blocked polling: The only problem with this is that we can't close
         // the device until the block is released, which means the controller
@@ -59,17 +59,14 @@ void BulkReader::run() {
     qDebug() << "Stopped Reader";
 }
 
-static QString get_string(libusb_device_handle *handle, u_int8_t id) {
+static QString get_string(libusb_device_handle *handle, u_int8_t id)
+{
     unsigned char buf[128] = { 0 };
-
     if (id) {
         libusb_get_string_descriptor_ascii(handle, id, buf, sizeof(buf));
     }
-
     return QString::fromAscii((char*)buf);
 }
-
-
 BulkController::BulkController(libusb_context* context,
                                libusb_device_handle *handle,
                                struct libusb_device_descriptor *desc)
@@ -91,48 +88,43 @@ BulkController::BulkController(libusb_context* context,
 
     setInputDevice(true);
     setOutputDevice(true);
-    m_pReader = NULL;
+    m_pReader = nullptr;
 }
-
-BulkController::~BulkController() {
-    if (isOpen()) {
+BulkController::~BulkController()
+{
+    if (isOpen())
         close();
-    }
 }
-
-QString BulkController::presetExtension() {
+QString BulkController::presetExtension()
+{
     return BULK_PRESET_EXTENSION;
 }
-
-void BulkController::visit(const MidiControllerPreset* preset) {
-    Q_UNUSED(preset);
-    // TODO(XXX): throw a hissy fit.
-    qDebug() << "ERROR: Attempting to load a MidiControllerPreset to an HidController!";
+void BulkController::visit(const ControllerPreset* preset)
+{
+    if(auto hp = dynamic_cast<const HidControllerPreset*>(preset)) {
+        m_preset = *hp;
+        emit(presetLoaded(getPreset()));
+    } else {
+        // TODO(XXX): throw a hissy fit.
+        qDebug() << "ERROR: Attempting to load a MidiControllerPreset to an HidController!";
+    }
 }
-
-void BulkController::visit(const HidControllerPreset* preset) {
-    m_preset = *preset;
-    // Emit presetLoaded with a clone of the preset.
-    emit(presetLoaded(getPreset()));
-}
-
-bool BulkController::savePreset(const QString fileName) const {
+bool BulkController::savePreset(const QString fileName) const
+{
     HidControllerPresetFileHandler handler;
     return handler.save(m_preset, getName(), fileName);
 }
-
-bool BulkController::matchPreset(const PresetInfo& preset) {
+bool BulkController::matchPreset(const PresetInfo& preset)
+{
     const QList<QHash<QString, QString> > products = preset.getProducts();
-    QHash <QString, QString> product;
-    foreach (product, products) {
-        if (matchProductInfo(product)) {
+    for(auto product: products) {
+        if (matchProductInfo(product))
             return true;
-        }
     }
     return false;
 }
-
-bool BulkController::matchProductInfo(QHash <QString, QString> info) {
+bool BulkController::matchProductInfo(QHash <QString, QString> info)
+{
     int value;
     bool ok;
     // Product and vendor match is always required
@@ -144,8 +136,8 @@ bool BulkController::matchProductInfo(QHash <QString, QString> info) {
     // Match found
     return true;
 }
-
-int BulkController::open() {
+int BulkController::open()
+{
     if (isOpen()) {
         qDebug() << "USB Bulk device" << getName() << "already open";
         return -1;
@@ -168,12 +160,12 @@ int BulkController::open() {
     }
 
     // XXX: we should enumerate devices and match vendor, product, and serial
-    if (m_phandle == NULL) {
+    if (m_phandle == nullptr) {
         m_phandle = libusb_open_device_with_vid_pid(
             m_context, vendor_id, product_id);
     }
 
-    if (m_phandle == NULL) {
+    if (m_phandle == nullptr) {
         qWarning()  << "Unable to open USB Bulk device" << getName();
         return -1;
     }
@@ -181,7 +173,7 @@ int BulkController::open() {
     setOpen(true);
     startEngine();
 
-    if (m_pReader != NULL) {
+    if (m_pReader != nullptr) {
         qWarning() << "BulkReader already present for" << getName();
     } else {
         m_pReader = new BulkReader(m_phandle, in_epaddr);
@@ -207,7 +199,7 @@ int BulkController::close() {
     qDebug() << "Shutting down USB Bulk device" << getName();
 
     // Stop the reading thread
-    if (m_pReader == NULL) {
+    if (m_pReader == nullptr) {
         qWarning() << "BulkReader not present for" << getName()
                    << "yet the device is open!";
     } else {
@@ -217,7 +209,7 @@ int BulkController::close() {
         controllerDebug("  Waiting on reader to finish");
         m_pReader->wait();
         delete m_pReader;
-        m_pReader = NULL;
+        m_pReader = nullptr;
     }
 
     // Stop controller engine here to ensure it's done before the device is
@@ -227,22 +219,24 @@ int BulkController::close() {
     // Close device
     controllerDebug("  Closing device");
     libusb_close(m_phandle);
-    m_phandle = NULL;
+    m_phandle = nullptr;
     setOpen(false);
     return 0;
 }
 
-void BulkController::send(QList<int> data, unsigned int length) {
+void BulkController::send(QList<int> data, unsigned int length)
+{
     Q_UNUSED(length);
     QByteArray temp;
 
-    foreach (int datum, data) {
+    for(auto datum: data) {
         temp.append(datum);
     }
     send(temp);
 }
 
-void BulkController::send(QByteArray data) {
+void BulkController::send(QByteArray data)
+{
     int ret;
     int transferred;
 
@@ -251,10 +245,8 @@ void BulkController::send(QByteArray data) {
                                (unsigned char *)data.constData(), data.size(),
                                &transferred, 0);
     if (ret < 0) {
-        qWarning() << "Unable to send data to" << getName()
-                   << "serial #" << m_sUID;
+        qWarning() << "Unable to send data to" << getName() << "serial #" << m_sUID;
     } else {
-        controllerDebug(ret << "bytes sent to" << getName()
-                 << "serial #" << m_sUID);
+        controllerDebug(ret << "bytes sent to" << getName() << "serial #" << m_sUID);
     }
 }

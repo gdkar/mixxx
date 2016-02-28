@@ -5,14 +5,12 @@
 * @brief Locate supported USB bulk controllers
 */
 
-#ifndef BULKENUMERATOR_H
-#define BULKENUMERATOR_H
-
 #include "controllers/controllerenumerator.h"
 
 struct libusb_context;
 
 class BulkEnumerator : public ControllerEnumerator {
+    Q_OBJECT
   public:
     BulkEnumerator();
     virtual ~BulkEnumerator();
@@ -23,5 +21,3 @@ class BulkEnumerator : public ControllerEnumerator {
     QList<Controller*> m_devices;
     libusb_context* m_context;
 };
-
-#endif

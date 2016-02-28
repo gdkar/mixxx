@@ -62,3 +62,6 @@ QList<Controller*> BulkEnumerator::queryDevices() {
     libusb_free_device_list(list, 1);
     return m_devices;
 }
+namespace {
+    ThisFactory<BulkEnumerator> m_factory{};
+};

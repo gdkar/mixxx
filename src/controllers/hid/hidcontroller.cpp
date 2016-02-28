@@ -120,35 +120,34 @@ HidController::~HidController() {
 QString HidController::presetExtension() {
     return HID_PRESET_EXTENSION;
 }
-
-void HidController::visit(const MidiControllerPreset* preset) {
-    Q_UNUSED(preset);
-    // TODO(XXX): throw a hissy fit.
-    qDebug() << "ERROR: Attempting to load a MidiControllerPreset to an HidController!";
-}
-
-void HidController::visit(const HidControllerPreset* preset) {
-    m_preset = *preset;
+void HidController::visit(const ControllerPreset* preset)
+{
+    if(auto hp = dynamic_cast<const HidControllerPreset*>(preset)) {
+        m_preset = *hp;
     // Emit presetLoaded with a clone of the preset.
     emit(presetLoaded(getPreset()));
+    }else{
+        Q_UNUSED(preset);
+        // TODO(XXX): throw a hissy fit.
+        qDebug() << "ERROR: Attempting to load a preset of the wrong type into an HidController!";
+    }
 }
-
-bool HidController::savePreset(const QString fileName) const {
+bool HidController::savePreset(const QString fileName) const
+{
     HidControllerPresetFileHandler handler;
     return handler.save(m_preset, getName(), fileName);
 }
-
-bool HidController::matchPreset(const PresetInfo& preset) {
-    const QList< QHash<QString,QString> > products = preset.getProducts();
-    QHash <QString, QString> product;
-    foreach (product, products) {
+bool HidController::matchPreset(const PresetInfo& preset)
+{
+    auto products = preset.getProducts();
+    for(auto product: products) {
         if (matchProductInfo(product))
             return true;
     }
     return false;
 }
-
-bool HidController::matchProductInfo(QHash <QString,QString > info) {
+bool HidController::matchProductInfo(QHash <QString,QString > info)
+{
     int value;
     bool ok;
     // Product and vendor match is always required

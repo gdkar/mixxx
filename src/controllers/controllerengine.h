@@ -5,9 +5,7 @@
 * @brief The script engine for use by a Controller.
 */
 
-#ifndef CONTROLLERENGINE_H
-#define CONTROLLERENGINE_H
-
+_Pragma("once")
 #include <QTimerEvent>
 #include <QFileSystemWatcher>
 #include <QMessageBox>
@@ -200,5 +198,3 @@ class ControllerEngine : public QObject {
 
     friend class ControllerEngineTest;
 };
-
-#endif

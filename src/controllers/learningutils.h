@@ -1,6 +1,4 @@
-#ifndef LEARNINGUTILS_H
-#define LEARNINGUTILS_H
-
+_Pragma("once")
 #include <QList>
 #include <QPair>
 
@@ -12,5 +10,3 @@ class LearningUtils {
         const ConfigKey& control,
         const QList<QPair<MidiKey, unsigned char> >& messages);
 };
-
-#endif /* LEARNINGUTILS_H */

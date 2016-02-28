@@ -12,8 +12,7 @@ ControllerOutputMappingTableModel::ControllerOutputMappingTableModel(QObject* pP
         : ControllerMappingTableModel(pParent) {
 }
 
-ControllerOutputMappingTableModel::~ControllerOutputMappingTableModel() {
-}
+ControllerOutputMappingTableModel::~ControllerOutputMappingTableModel() = default;
 
 void ControllerOutputMappingTableModel::apply() {
     if (m_pMidiPreset != NULL) {

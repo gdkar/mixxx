@@ -8,11 +8,13 @@
 
 ***************************************************************************/
 
+#include <QtDebug>
 #include "controllers/controllerenumerator.h"
+#include "controllers/controllermanager.h"
 
-ControllerEnumerator::ControllerEnumerator()
-        : QObject() {
-}
-
-ControllerEnumerator::~ControllerEnumerator() {
+ControllerEnumerator::ControllerEnumerator()  = default;
+ControllerEnumerator::~ControllerEnumerator() = default;
+bool ControllerEnumerator::needPolling()
+{
+    return false;
 }

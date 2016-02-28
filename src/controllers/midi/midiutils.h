@@ -1,6 +1,4 @@
-#ifndef MIDIUTILS_H
-#define MIDIUTILS_H
-
+_Pragma("once")
 #include "controllers/midi/midimessage.h"
 
 class MidiUtils {
@@ -39,6 +37,3 @@ class MidiUtils {
     static QString formatByteAsHex(unsigned char value);
     static QString midiOptionToTranslatedString(MidiOption option);
 };
-
-
-#endif /* MIDIUTILS_H */

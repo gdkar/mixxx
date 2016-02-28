@@ -10,9 +10,7 @@
 *   Note that the subclass' destructor should call close() at a minimum.
 */
 
-#ifndef MIDICONTROLLER_H
-#define MIDICONTROLLER_H
-
+_Pragma("once")
 #include "controllers/controller.h"
 #include "controllers/midi/midicontrollerpreset.h"
 #include "controllers/midi/midicontrollerpresetfilehandler.h"
@@ -26,43 +24,19 @@ class MidiController : public Controller {
   public:
     MidiController();
     virtual ~MidiController();
-
     virtual QString presetExtension();
-
-    virtual ControllerPresetPointer getPreset() const {
-        MidiControllerPreset* pClone = new MidiControllerPreset();
-        *pClone = m_preset;
-        return ControllerPresetPointer(pClone);
-    }
-
+    virtual ControllerPresetPointer getPreset() const;
     virtual bool savePreset(const QString fileName) const;
-
-    virtual void visit(const MidiControllerPreset* preset);
-    virtual void visit(const HidControllerPreset* preset);
-
-    virtual void accept(ControllerVisitor* visitor) {
-        if (visitor) {
-            visitor->visit(this);
-        }
-    }
-
-    virtual bool isMappable() const {
-        return m_preset.isMappable();
-    }
-
+    virtual void visit(const ControllerPreset* preset);
+    virtual bool isMappable() const;
     virtual bool matchPreset(const PresetInfo& preset);
-
   signals:
     void messageReceived(unsigned char status, unsigned char control,
                          unsigned char value);
-
   protected:
     Q_INVOKABLE void sendShortMsg(unsigned char status, unsigned char byte1, unsigned char byte2);
     // Alias for send()
-    Q_INVOKABLE inline void sendSysexMsg(QList<int> data, unsigned int length) {
-        send(data, length);
-    }
-
+    Q_INVOKABLE void sendSysexMsg(QList<int> data, unsigned int length);
   protected slots:
     virtual void receive(unsigned char status, unsigned char control,
                          unsigned char value, mixxx::Duration timestamp);
@@ -96,9 +70,7 @@ class MidiController : public Controller {
 
     // Returns a pointer to the currently loaded controller preset. For internal
     // use only.
-    virtual ControllerPreset* preset() {
-        return &m_preset;
-    }
+    ControllerPreset* preset();
 
     QHash<uint16_t, MidiInputMapping> m_temporaryInputMappings;
     QList<MidiOutputHandler*> m_outputs;
@@ -110,5 +82,3 @@ class MidiController : public Controller {
     friend class MidiOutputHandler;
     friend class MidiControllerTest;
 };
-
-#endif

@@ -21,8 +21,7 @@ class ControllerMappingTableModel : public QAbstractTableModel,
     virtual ~ControllerMappingTableModel();
 
     void setPreset(ControllerPresetPointer pPreset);
-    void visit(HidControllerPreset* pHidPreset);
-    void visit(MidiControllerPreset* pMidiPreset);
+    void visit(ControllerPreset* pHidPreset);
 
     // Apply the changes to the loaded preset.
     virtual void apply() = 0;

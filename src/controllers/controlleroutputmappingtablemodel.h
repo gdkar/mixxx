@@ -1,6 +1,4 @@
-#ifndef CONTROLLEROUTPUTMAPPINGTABLEMODEL_H
-#define CONTROLLEROUTPUTMAPPINGTABLEMODEL_H
-
+_Pragma("once")
 #include <QAbstractTableModel>
 #include <QVariant>
 #include <QModelIndex>
@@ -37,8 +35,7 @@ class ControllerOutputMappingTableModel : public ControllerMappingTableModel {
     int rowCount(const QModelIndex& parent = QModelIndex()) const;
     int columnCount(const QModelIndex& parent = QModelIndex()) const;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
-    bool setData(const QModelIndex& index, const QVariant& value,
-                 int role = Qt::EditRole);
+    bool setData(const QModelIndex& index, const QVariant& value,int role = Qt::EditRole);
 
   protected:
     void onPresetLoaded();
@@ -58,5 +55,3 @@ class ControllerOutputMappingTableModel : public ControllerMappingTableModel {
 
     QList<MidiOutputMapping> m_midiOutputMappings;
 };
-
-#endif /* CONTROLLEROUTPUTMAPPINGTABLEMODEL_H */

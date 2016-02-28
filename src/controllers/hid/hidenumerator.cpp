@@ -11,9 +11,7 @@
 #include "controllers/hid/hidenumerator.h"
 #include "controllers/hid/hidblacklist.h"
 
-HidEnumerator::HidEnumerator() : ControllerEnumerator() {
-}
-
+HidEnumerator::HidEnumerator()  = default;
 HidEnumerator::~HidEnumerator() {
     qDebug() << "Deleting HID devices...";
     while (m_devices.size() > 0) {
@@ -105,3 +103,6 @@ QList<Controller*> HidEnumerator::queryDevices() {
 
     return m_devices;
 }
+namespace {
+    ThisFactory<HidEnumerator> m_factory{};
+};
