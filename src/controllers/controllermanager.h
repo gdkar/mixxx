@@ -15,6 +15,7 @@ _Pragma("once")
 #include <vector>
 
 #include "preferences/usersettings.h"
+#include "controllers/controller.h"
 #include "controllers/controllerpreset.h"
 #include "controllers/controllerpresetinfo.h"
 #include "controllers/controllerpresetinfoenumerator.h"

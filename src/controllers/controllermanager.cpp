@@ -10,6 +10,8 @@
 #include <algorithm>
 #include <iterator>
 #include "util/trace.h"
+#include "controllers/controller.h"
+#include "controllers/controllerenumerator.h"
 #include "controllers/controllermanager.h"
 #include "controllers/defs_controllers.h"
 #include "controllers/controllerlearningeventfilter.h"
