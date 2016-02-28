@@ -9,12 +9,10 @@
 
 #include "fidlib.h"
 namespace{
-
     const char * VERSION = "0.0.0-FUCKIT";
     inline double prewarp(double val) {
         return std::tan(val * M_PI) / M_PI;
     }
-
     struct Entry {
         FidFilter *(*rout)(Fid *,double,double,double,int,int,double*); // Designer routine address
         const char *fmt;	// Format for spec-string
@@ -43,7 +41,6 @@ namespace{
         rv->val[0]= 1.0 / fid->response(rv, fid->search_peak(rv, f0, f1));
         return rv;
     }
-
     FidFilter* do_bandstop(Fid *fid, int mz, double f0, double f1) {
         fid->bandstop(prewarp(f0), prewarp(f1));
         if (mz) fid->s2z_matchedZ(); else fid->s2z_bilinear();
@@ -55,78 +52,62 @@ namespace{
         self->bessel(order);
         return do_lowpass(self,BL, f0);
     }
-
     FidFilter* des_hpbe(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         self->bessel(order);
         return do_highpass(self,BL, f0);
     }
-
     FidFilter* des_bpbe(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         self->bessel(order);
         return do_bandpass(self,BL, f0, f1);
     }
-
     FidFilter* des_bsbe(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         self->bessel(order);
         return do_bandstop(self,BL, f0, f1);
     }
-
     FidFilter* des_lpbez(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         self->bessel(order);
         return do_lowpass(self,MZ, f0);
     }
-
     FidFilter* des_hpbez(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         self->bessel(order);
         return do_highpass(self,MZ, f0);
     }
-
     FidFilter* des_bpbez(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         self->bessel(order);
         return do_bandpass(self,MZ, f0, f1);
     }
-
     FidFilter* des_bsbez(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         self->bessel(order);
         return do_bandstop(self,MZ, f0, f1);
     }
-
-
     FidFilter* des_lpbu(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         self->butterworth(order);
         return do_lowpass(self,BL, f0);
     }
-
     FidFilter* des_hpbu(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         self->butterworth(order);
         return do_highpass(self,BL, f0);
     }
-
     FidFilter* des_bpbu(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         self->butterworth(order);
         return do_bandpass(self,BL, f0, f1);
     }
-
     FidFilter* des_bsbu(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         self->butterworth(order);
         return do_bandstop(self,BL, f0, f1);
     }
-
     FidFilter* des_lpbuz(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         self->butterworth(order);
         return do_lowpass(self,MZ, f0);
     }
-
     FidFilter* des_hpbuz(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         self->butterworth(order);
         return do_highpass(self,MZ, f0);
     }
-
     FidFilter* des_bpbuz(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         self->butterworth(order);
         return do_bandpass(self,MZ, f0, f1);
     }
-
     FidFilter* des_bsbuz(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         self->chebyshev(order, arg[0]);
         return do_lowpass(self,BL, f0);
@@ -139,37 +120,30 @@ namespace{
         self->chebyshev(order, arg[0]);
         return do_highpass(self,BL, f0);
     }
-
     FidFilter* des_bpch(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         self->chebyshev(order, arg[0]);
         return do_bandpass(self,BL, f0, f1);
     }
-
     FidFilter* des_bsch(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         self->chebyshev(order, arg[0]);
         return do_bandstop(self,BL, f0, f1);
     }
-
     FidFilter* des_lpchz(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         self->chebyshev(order, arg[0]);
         return do_lowpass(self,MZ, f0);
     }
-
     FidFilter* des_hpchz(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         self->chebyshev(order, arg[0]);
         return do_highpass(self,MZ, f0);
     }
-
     FidFilter* des_bpchz(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         self->chebyshev(order, arg[0]);
         return do_bandpass(self,MZ, f0, f1);
     }
-
     FidFilter* des_bschz(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         self->chebyshev(order, arg[0]);
         return do_bandstop(self,MZ, f0, f1);
     }
-
     FidFilter* des_lpbq(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         auto omega= 2 * M_PI * f0;
         auto cosv= std::cos(omega);
@@ -179,7 +153,6 @@ namespace{
                     'F', 0x7, 3, 1.0, 2.0, 1.0,
                     'F', 0x0, 1, (1-cosv) * 0.5);
     }
-
     FidFilter* des_hpbq(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         auto omega= 2 * M_PI * f0;
         auto cosv= std::cos(omega);
@@ -189,7 +162,6 @@ namespace{
                     'F', 0x7, 3, 1.0, -2.0, 1.0,
                     'F', 0x0, 1, (1+cosv) * 0.5);
     }
-
     FidFilter* des_bpbq(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         auto omega= 2 * M_PI * f0;
         auto cosv= std::cos(omega);
@@ -199,7 +171,6 @@ namespace{
                     'F', 0x7, 3, 1.0, 0.0, -1.0,
                     'F', 0x0, 1, alpha);
     }
-
     FidFilter* des_bsbq(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         auto omega= 2 * M_PI * f0;
         auto cosv= std::cos(omega);
@@ -208,7 +179,6 @@ namespace{
                     'I', 0x0, 3, 1 + alpha, -2 * cosv, 1 - alpha,
                     'F', 0x5, 3, 1.0, -2 * cosv, 1.0);
     }
-
     FidFilter* des_apbq(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         auto omega= 2 * M_PI * f0;
         auto cosv = std::cos(omega);
@@ -217,17 +187,15 @@ namespace{
                     'I', 0x0, 3, 1 + alpha, -2 * cosv, 1 - alpha,
                     'F', 0x0, 3, 1 - alpha, -2 * cosv, 1 + alpha);
     }
-
     FidFilter* des_pkbq(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         auto omega= 2 * M_PI * f0;
-        auto cosv= std::cos(omega);
+        auto cosv = std::cos(omega);
         auto alpha= std::sin(omega) / 2 / arg[0];
-        auto A= std::pow(10, arg[1]/40);
+        auto A    = std::pow(10, arg[1]/40);
         return self->stack_filter(order, 2, 6,
                     'I', 0x0, 3, 1 + alpha/A, -2 * cosv, 1 - alpha/A,
                     'F', 0x0, 3, 1 + alpha*A, -2 * cosv, 1 - alpha*A);
     }
-
     FidFilter* des_lsbq(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         auto omega= 2 * M_PI * f0;
         auto cosv= std::cos(omega);
@@ -244,7 +212,6 @@ namespace{
                     2*A*((A-1) - (A+1)*cosv),
                     A*((A+1) - (A-1)*cosv - beta*sinv));
     }
-
     FidFilter* des_hsbq(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         auto omega= 2 * M_PI * f0;
         auto cosv= std::cos(omega);
@@ -261,7 +228,6 @@ namespace{
                     -2*A*((A-1) + (A+1)*cosv),
                     A*((A+1) + (A-1)*cosv - beta*sinv));
     }
-
     FidFilter* des_lpbl(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         auto wid= 0.4109205/f0;
         auto tot = 1., adj = 0.;
@@ -282,7 +248,6 @@ namespace{
             ff->val[a] *= adj;
         return ff;
     }
-
     FidFilter* des_lphm(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         auto wid= 0.3262096/f0;
         auto tot = 0., adj = 0.;
@@ -302,7 +267,6 @@ namespace{
         for (a= 0; a<=max*2; a++) ff->val[a] *= adj;
         return ff;
     }
-
     FidFilter* des_lphn(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         auto wid= 0.360144/f0;
         auto tot = 0., adj = 0.;
@@ -322,7 +286,6 @@ namespace{
         for (a= 0; a<=max*2; a++) ff->val[a] *= adj;
         return ff;
     }
-
     FidFilter* des_lpba(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         auto wid= 0.3189435/f0;
         auto tot = 0., adj = 0.;
@@ -551,7 +514,6 @@ namespace{
 //      rv[0]+i*rv[1] is the result, in[0]+i*in[1] is the input value.
 //      Coefficients are real values.
 //
-
 double 
 Fid::response(FidFilter *filt, double freq) {
    auto top = std::complex<double>{1,0};
@@ -1018,7 +980,7 @@ Fid::s2z_matchedZ() {
 //
 
 FidFilter*
-Fid::z2fidfilter(double gain) {
+Fid::z2fidfilter(double gain, int cbm) {
     int n_head, n_val;
     int a;
     FidFilter *rv;
@@ -1057,7 +1019,7 @@ Fid::z2fidfilter(double gain) {
         if (zertyp[a] == 1 && zertyp[a+1] == 1) {
             // Two real values
             // Skip if constant and 0/0
-//            if (!cbm || zer[a] != 0.0 || zer[a+1] != 0.0) {
+            if (!cbm || zer[a] != 0.0 || zer[a+1] != 0.0) {
                 ff->typ= 'F';
                 ff->cbm= cbm;
                 ff->len= 3;
@@ -1065,11 +1027,11 @@ Fid::z2fidfilter(double gain) {
                 ff->val[1]= -(zer[a].real() + zer[a+1].real());
                 ff->val[2]=  (zer[a].real() * zer[a+1].real());
                 ff= FFNEXT(ff); 
-//            }
+            }
         } else if (zertyp[a] == 2) {
             // A complex value and its conjugate pair
             // Skip if constant and 0/0
-//            if (!cbm || zer[a] != 0.0 || zer[a+1] != 0.0) {
+            if (!cbm || zer[a] != 0.0 || zer[a+1] != 0.0) {
                 ff->typ= 'F';
                 ff->cbm= cbm;
                 ff->len= 3;
@@ -1077,7 +1039,7 @@ Fid::z2fidfilter(double gain) {
                 ff->val[1]= - 2 * (zer[a].real());
                 ff->val[2]=  std::norm(zer[a]);
                 ff= FFNEXT(ff); 
-//            }
+            }
         } else error("Internal error -- bad zertyp[] values");	
     }
 
@@ -1150,7 +1112,7 @@ Fid::stack_filter(int order, int n_head, int n_val, ...) {
    p= q= rv;
    for (a= 0; a<n_head; a++) {
       p->typ= va_arg(ap, int);
-//      p->cbm= va_arg(ap, int);
+      p->cbm= va_arg(ap, int);
       p->len= va_arg(ap, int);
       for (b= 0; b<p->len; b++) 
         p->val[b]= va_arg(ap, double);
@@ -1339,25 +1301,25 @@ Fid::auto_adjust_dual(Fid::Spec *sp, double rate, double f0, double f1) {
       wid1= wid + (INC_WID ? delta : -delta);
       
       if (mid0 - wid1 > 0.0 && mid0 + wid1 < 0.5) {
-	 DESIGN(mid0, wid1);
-	 if (MATCH) break;
-	 if (PERR < perr) { perr= PERR; mid= mid0; wid= wid1; }
+        DESIGN(mid0, wid1);
+        if (MATCH) break;
+        if (PERR < perr) { perr= PERR; mid= mid0; wid= wid1; }
       }
 	 
       if (mid1 - wid0 > 0.0 && mid1 + wid0 < 0.5) {
-	 DESIGN(mid1, wid0);
-	 if (MATCH) break;
-	 if (PERR < perr) { perr= PERR; mid= mid1; wid= wid0; }
+        DESIGN(mid1, wid0);
+        if (MATCH) break;
+        if (PERR < perr) { perr= PERR; mid= mid1; wid= wid0; }
       }
 
       if (mid1 - wid1 > 0.0 && mid1 + wid1 < 0.5) {
-	 DESIGN(mid1, wid1);
-	 if (MATCH) break;
-	 if (PERR < perr) { perr= PERR; mid= mid1; wid= wid1; }
+        DESIGN(mid1, wid1);
+        if (MATCH) break;
+        if (PERR < perr) { perr= PERR; mid= mid1; wid= wid1; }
       }
 
       if (cnt > 1000)
-	 error("auto_adjust_dual -- design not converging");
+        error("auto_adjust_dual -- design not converging");
    }
 
 #undef INC_WID
@@ -1379,7 +1341,7 @@ Fid::design_coef(double *coef, int n_coef, const char *spec, double rate,
    double *iir, *fir, iir_adj = 0;
    static double const_one= 1;
    int n_iir, n_fir;
-//   int iir_cbm, fir_cbm;
+   int iir_cbm, fir_cbm;
 
    while (ff->typ) {
       if (ff->typ == 'F' && ff->len == 1) {
@@ -1387,20 +1349,19 @@ Fid::design_coef(double *coef, int n_coef, const char *spec, double rate,
         ff= FFNEXT(ff);
         continue;
       }
-
       if (ff->typ != 'I' && ff->typ != 'F')
         error("Fid::design_coef can't handle FidFilter type: %c", ff->typ);
 
       // Initialise to safe defaults
       iir= fir= &const_one;
       n_iir= n_fir= 1;
-//      iir_cbm= fir_cbm= ~0;
+      iir_cbm= fir_cbm= ~0;
 
       // See if we have an IIR filter
       if (ff->typ == 'I') {
         iir= ff->val;
         n_iir= ff->len;
-//        iir_cbm= ff->cbm;
+        iir_cbm= ff->cbm;
         iir_adj= 1.0 / ff->val[0];
         ff= FFNEXT(ff);
         gain *= iir_adj;
@@ -1410,29 +1371,24 @@ Fid::design_coef(double *coef, int n_coef, const char *spec, double rate,
       if (ff->typ == 'F') {
         fir= ff->val;
         n_fir= ff->len;
-//        fir_cbm= ff->cbm;
+        fir_cbm= ff->cbm;
         ff= FFNEXT(ff);
       }
-
       // Dump out all non-const coefficients in reverse order
       len= n_fir > n_iir ? n_fir : n_iir;
       for (a= len-1; a>=0; a--) {
         // Output IIR if present and non-const
-        if (a < n_iir && a>0){
-        //&&    !(iir_cbm & (1<<(a<15?a:15)))) {
+        if (a < n_iir && a>0 && !(iir_cbm & (1<<(a<15?a:15)))) {
             if (cnt++ < n_coef)
                 *coef++= iir_adj * iir[a];
         }
-
         // Output FIR if present and non-const
-        if (a < n_fir){
-            //&& !(fir_cbm & (1<<(a<15?a:15)))) {
+        if (a < n_fir && !(fir_cbm & (1<<(a<15?a:15)))) {
             if (cnt++ < n_coef)
                 *coef++ = fir[a];
         }
       }
    }
-
    if (cnt != n_coef)
       error("Fid::design_coef called with the wrong number of coefficients.\n"
 	    "  Given %d, expecting %d: (\"%s\",%g,%g,%g,%d)",
@@ -1446,7 +1402,6 @@ Fid::design_coef(double *coef, int n_coef, const char *spec, double rate,
 //	sub-filters into a single IIR/FIR pair, and make sure the IIR
 //	first coefficient is 1.0.
 //
-
 FidFilter *
 Fid::flatten(FidFilter *filt) {
    auto m_fir= 1;	// Maximum values
@@ -1464,7 +1419,6 @@ Fid::flatten(FidFilter *filt) {
         error("Fid::flatten doesn't know about type %d", ff->typ);
       ff= FFNEXT(ff);
    }
-   
    // Setup the output array
    auto rv= FFALLOC(2, m_iir + m_fir);
    rv->typ= 'I';
@@ -1520,104 +1474,102 @@ Fid::parse_spec(Spec *sp) {
       auto p= sp->spec;
       char ch, *q;
 
-      if (!fmt) return strdupf("Spec-string \"%s\" matches no known format", sp->spec);
-
+      if (!fmt)
+          return strdupf("Spec-string \"%s\" matches no known format", sp->spec);
       while (*p && (ch= *fmt++)) {
-	 if (ch != '#') {
-	    if (ch == *p++) continue;
-	    p= 0; break;
-	 }
-
-	 if (isalpha(*p)) { p= 0; break; }
-
-	 // Handling a format character
-	 switch (ch= *fmt++) {
-	  default:
-	     return strdupf("Internal error: Unknown format #%c in format: %s", 
-			    fmt[-1], filter[a].fmt);
-	  case 'o':
-	  case 'O':
-	     sp->order= (int)strtol(p, &q, 10);
-	     if (p == q) {
-		if (ch == 'O') goto bad;
-		sp->order= 1;
-	     }
-	     if (sp->order <= 0) 
-		return strdupf("Bad order %d in spec-string \"%s\"", sp->order, sp->spec);
-	     p= q; break;
-	  case 'V':
-	     sp->n_arg++; 
-	     *arg++= strtod(p, &q);
-	     if (p == q) goto bad; 
-	     p= q; break;
-	  case 'F':
-	     sp->minlen= p-1-sp->spec;
-	     sp->n_freq= 1;
-	     sp->adj= (p[0] == '=');
-	     if (sp->adj) p++;
-	     sp->f0= strtod(p, &q);
-	     sp->f1= 0;
-	     if (p == q) goto bad; 
-	     p= q; break;
-	  case 'R':
-	     sp->minlen= p-1-sp->spec;
-	     sp->n_freq= 2;
-	     sp->adj= (p[0] == '=');
-	     if (sp->adj) p++;
-	     sp->f0= strtod(p, &q);
-	     if (p == q) goto bad; 
-	     p= q;
-	     if (*p++ != '-') goto bad;
-	     sp->f1= strtod(p, &q);
-	     if (p == q) goto bad; 
-	     if (sp->f0 > sp->f1) 
-		return strdupf("Backwards frequency range in spec-string \"%s\"", sp->spec);
-	     p= q; break;
-	 }
+        if (ch != '#') {
+            if (ch == *p++)
+                continue;
+            p= 0; break;
+        }
+        if (isalpha(*p)) {
+            p= 0;
+            break;
+        }
+        // Handling a format character
+        switch (ch= *fmt++) {
+        default:
+            return strdupf("Internal error: Unknown format #%c in format: %s", 
+                    fmt[-1], filter[a].fmt);
+        case 'o':
+        case 'O':
+            sp->order= (int)strtol(p, &q, 10);
+            if (p == q) {
+            if (ch == 'O') goto bad;
+            sp->order= 1;
+            }
+            if (sp->order <= 0) 
+            return strdupf("Bad order %d in spec-string \"%s\"", sp->order, sp->spec);
+            p= q; break;
+        case 'V':
+            sp->n_arg++; 
+            *arg++= strtod(p, &q);
+            if (p == q) goto bad; 
+            p= q; break;
+        case 'F':
+            sp->minlen= p-1-sp->spec;
+            sp->n_freq= 1;
+            sp->adj= (p[0] == '=');
+            if (sp->adj) p++;
+            sp->f0= strtod(p, &q);
+            sp->f1= 0;
+            if (p == q) goto bad; 
+            p= q; break;
+        case 'R':
+            sp->minlen= p-1-sp->spec;
+            sp->n_freq= 2;
+            sp->adj= (p[0] == '=');
+            if (sp->adj) p++;
+            sp->f0= strtod(p, &q);
+            if (p == q) goto bad; 
+            p= q;
+            if (*p++ != '-') goto bad;
+            sp->f1= strtod(p, &q);
+            if (p == q) goto bad; 
+            if (sp->f0 > sp->f1) 
+            return strdupf("Backwards frequency range in spec-string \"%s\"", sp->spec);
+            p= q; break;
+        }
       }
 
       if (p == 0) continue;
 
       if (fmt[0] == '/' && fmt[1] == '#' && fmt[2] == 'F') {
-	 sp->minlen= p-sp->spec;
-	 sp->n_freq= 1;
-	 if (sp->in_f0 < 0.0) 
-	    return strdupf("Frequency omitted from filter-spec, and no default provided");
-	 sp->f0= sp->in_f0;
-	 sp->f1= 0;
-	 sp->adj= sp->in_adj;
-	 fmt += 3;
+        sp->minlen= p-sp->spec;
+        sp->n_freq= 1;
+        if (sp->in_f0 < 0.0) 
+            return strdupf("Frequency omitted from filter-spec, and no default provided");
+        sp->f0= sp->in_f0;
+        sp->f1= 0;
+        sp->adj= sp->in_adj;
+        fmt += 3;
       } else if (fmt[0] == '/' && fmt[1] == '#' && fmt[2] == 'R') {
-	 sp->minlen= p-sp->spec;
-	 sp->n_freq= 2;
-	 if (sp->in_f0 < 0.0 || sp->in_f1 < 0.0)
-	    return strdupf("Frequency omitted from filter-spec, and no default provided");
-	 sp->f0= sp->in_f0;
-	 sp->f1= sp->in_f1;
-	 sp->adj= sp->in_adj;
-	 fmt += 3;
+        sp->minlen= p-sp->spec;
+        sp->n_freq= 2;
+        if (sp->in_f0 < 0.0 || sp->in_f1 < 0.0)
+            return strdupf("Frequency omitted from filter-spec, and no default provided");
+        sp->f0= sp->in_f0;
+        sp->f1= sp->in_f1;
+        sp->adj= sp->in_adj;
+        fmt += 3;
       }
 
       // Check for trailing unmatched format characters
       if (*fmt) {
       bad:
-	 return strdupf("Bad match of spec-string \"%s\" to format \"%s\"", 
-			sp->spec, filter[a].fmt);
+        return strdupf("Bad match of spec-string \"%s\" to format \"%s\"", sp->spec, filter[a].fmt);
       }
       if (sp->n_arg > Spec::MAXARG) 
-	 return strdupf("Internal error -- maximum arguments exceeded");
-      
+        return strdupf("Internal error -- maximum arguments exceeded");
       // Set the minlen to the whole string if unset
-      if (sp->minlen < 0) sp->minlen= p-sp->spec;
-      
+      if (sp->minlen < 0)
+          sp->minlen= p-sp->spec;
       // Save values, return
       sp->fi= a;
       return 0;
    }
    return 0;
 }
-
-
 void 
 Fid::rewrite_spec(const char *spec, double freq0, double freq1, int adj,
 		 char **spec1p, 
@@ -1629,26 +1581,25 @@ Fid::rewrite_spec(const char *spec, double freq0, double freq1, int adj,
    sp.in_f1= freq1;
    sp.in_adj= adj;
    err= parse_spec(&sp);
-   if (err) error("%s", err);
-
+   if (err)
+       error("%s", err);
    if (spec1p) {
       char buf[128];
       int len;
       char *rv;
       switch (sp.n_freq) {
-       case 1: sprintf(buf, "/%s%.15g", sp.adj ? "=" : "", sp.f0); break;
-       case 2: sprintf(buf, "/%s%.15g-%.15g", sp.adj ? "=" : "", sp.f0, sp.f1); break;
-       default: buf[0]= 0;
+        case 1: sprintf(buf, "/%s%.15g", sp.adj ? "=" : "", sp.f0); break;
+        case 2: sprintf(buf, "/%s%.15g-%.15g", sp.adj ? "=" : "", sp.f0, sp.f1); break;
+        default: buf[0]= 0;
       }
-      len= strlen(buf);
-      rv= (char*)Alloc(sp.minlen + len + 1);
+      len = strlen(buf);
+      rv  = (char*)Alloc(sp.minlen + len + 1);
       memcpy(rv, spec, sp.minlen);
       strcpy(rv+sp.minlen, buf);
       *spec1p= rv;
    }
-
    if (spec2p) {
-      char *rv= (char*)Alloc(sp.minlen + 1);
+      auto rv= (char*)Alloc(sp.minlen + 1);
       memcpy(rv, spec, sp.minlen);
       *spec2p= rv;
       *freq0p= sp.f0;
@@ -1656,35 +1607,32 @@ Fid::rewrite_spec(const char *spec, double freq0, double freq1, int adj,
       *adjp= sp.adj;
    }
 }
-
 FidFilter *
 Fid::cv_array(double *arr) {
    double *dp;
    FidFilter *ff, *rv;
-   int n_head= 0;
-   int n_val= 0;
+   auto n_head= 0;
+   auto n_val= 0;
 
    // Scan through for sizes
-   for (dp= arr; *dp; ) {
+   for (auto dp = arr; *dp; ) {
       int len, typ;
 
       typ= (int)(*dp++);
       if (typ != 'F' && typ != 'I') 
-	 error("Bad type in array passed to Fid::cv_array: %g", dp[-1]);
+        error("Bad type in array passed to Fid::cv_array: %g", dp[-1]);
 
       len= (int)(*dp++);
       if (len < 1)
-	 error("Bad length in array passed to Fid::cv_array: %g", dp[-1]);
+        error("Bad length in array passed to Fid::cv_array: %g", dp[-1]);
 
       n_head++;
       n_val += len;
       dp += len;
    }
-
    rv= ff= (FidFilter*)Alloc(FFCSIZE(n_head, n_val));
-
    // Scan through to fill in FidFilter
-   for (dp= arr; *dp; ) {
+   for (auto dp = arr; *dp; ) {
       int len, typ;
       typ= (int)(*dp++);
       len= (int)(*dp++);
@@ -1695,12 +1643,9 @@ Fid::cv_array(double *arr) {
       dp += len;
       ff= FFNEXT(ff);
    }
-
    // Final element already zero'd thanks to allocation
-
    return rv;
 }
-
 //
 //	Create a single filter from the given list of filters in
 //	order.  If 'freeme' is set, then all the listed filters are
@@ -1803,52 +1748,52 @@ Fid::parse(double rate, char **pp, FidFilter **ffp) {
       if (!typ) ERR(p, strdupf("Expecting a 'x' or '/' before this"));
 
       if (1 != sscanf(buf, "%lf %c", &val, &dmy)) {
-	 // Must be a predefined filter
-	 FidFilter *ff;
-	 FidFilter *ff1;
-	 Spec sp;
-	 double f0, f1;
-	 char *err;
-	 int len;
+        // Must be a predefined filter
+        FidFilter *ff;
+        FidFilter *ff1;
+        Spec sp;
+        double f0, f1;
+        char *err;
+        int len;
 
-	 if (typ != 'F') ERR(rew, strdupf("Predefined filters cannot be used with '/'"));
+        if (typ != 'F') ERR(rew, strdupf("Predefined filters cannot be used with '/'"));
 
-	 // Parse the filter-spec
-	 memset(&sp, 0, sizeof(sp));
-	 sp.spec= buf;
-	 sp.in_f0= sp.in_f1= -1;
-	 if ((err= parse_spec(&sp))) ERR(rew, err);
-	 f0= sp.f0;
-	 f1= sp.f1;
-	 
-	 // Adjust frequencies to range 0-0.5, and check them
-	 f0 /= rate;
-	 if (f0 > 0.5) ERR(rew, strdupf("Frequency of %gHz out of range with "
-					"sampling rate of %gHz", f0*rate, rate));
-	 f1 /= rate;
-	 if (f1 > 0.5) ERR(rew, strdupf("Frequency of %gHz out of range with "
-					"sampling rate of %gHz", f1*rate, rate));
-	 
-	 // Okay we now have a successful spec-match to filter[sp.fi], and sp.n_arg
-	 // args are now in sp.argarr[]
-	 
-	 // Generate the filter
-	 if (!sp.adj)
-	    ff= (filter[sp.fi].rout)(this,rate, f0, f1, sp.order, sp.n_arg, sp.argarr);
-	 else if (strstr(filter[sp.fi].fmt, "#R"))
-	    ff= auto_adjust_dual(&sp, rate, f0, f1);
-	 else 
-	    ff= auto_adjust_single(&sp, rate, f0);
+        // Parse the filter-spec
+        memset(&sp, 0, sizeof(sp));
+        sp.spec= buf;
+        sp.in_f0= sp.in_f1= -1;
+        if ((err= parse_spec(&sp))) ERR(rew, err);
+        f0= sp.f0;
+        f1= sp.f1;
+        
+        // Adjust frequencies to range 0-0.5, and check them
+        f0 /= rate;
+        if (f0 > 0.5) ERR(rew, strdupf("Frequency of %gHz out of range with "
+                        "sampling rate of %gHz", f0*rate, rate));
+        f1 /= rate;
+        if (f1 > 0.5) ERR(rew, strdupf("Frequency of %gHz out of range with "
+                        "sampling rate of %gHz", f1*rate, rate));
+        
+        // Okay we now have a successful spec-match to filter[sp.fi], and sp.n_arg
+        // args are now in sp.argarr[]
+        
+        // Generate the filter
+        if (!sp.adj)
+            ff= (filter[sp.fi].rout)(this,rate, f0, f1, sp.order, sp.n_arg, sp.argarr);
+        else if (strstr(filter[sp.fi].fmt, "#R"))
+            ff= auto_adjust_dual(&sp, rate, f0, f1);
+        else 
+            ff= auto_adjust_single(&sp, rate, f0);
 
-	 // Append it to our FidFilter to return
-	 for (ff1= ff; ff1->typ; ff1= FFNEXT(ff1)) ;
-	 len= ((char*)ff1-(char*)ff);
-	 while (rvp + len + xtra >= rvend) INCBUF;
-	 memcpy(rvp, ff, len); rvp += len;
-	 free(ff);
-	 typ= 0;
-	 continue;
-      }
+        // Append it to our FidFilter to return
+        for (ff1= ff; ff1->typ; ff1= FFNEXT(ff1)) ;
+        len= ((char*)ff1-(char*)ff);
+        while (rvp + len + xtra >= rvend) INCBUF;
+        memcpy(rvp, ff, len); rvp += len;
+        free(ff);
+        typ= 0;
+        continue;
+        }
 
       // Must be a list of coefficients
       curr= (FidFilter*)rvp;
@@ -1858,52 +1803,47 @@ Fid::parse(double rate, char **pp, FidFilter **ffp) {
       curr->len= 1;
       *(double*)rvp= val;
       rvp += sizeof(double);
-
       // See how many more coefficients we can pick up
       while (1) {
-	 rew= p;
-	 if (!grabWord(&p, buf, sizeof(buf))) {
-	    if (*p) ERR(p, strdupf("Filter element unexpectedly long -- syntax error?"));
-	    buf[0]= 0;
-	 }
-	 if (1 != sscanf(buf, "%lf %c", &val, &dmy)) {
-	    p= rew;
-	    break;
-	 }
-	 while (rvp + sizeof(double) >= rvend) INCBUF;
-	 curr->len++;
-	 *(double*)rvp= val;
-	 rvp += sizeof(double);
-      }
+        rew= p;
+        if (!grabWord(&p, buf, sizeof(buf))) {
+            if (*p) ERR(p, strdupf("Filter element unexpectedly long -- syntax error?"));
+            buf[0]= 0;
+        }
+        if (1 != sscanf(buf, "%lf %c", &val, &dmy)) {
+            p= rew;
+            break;
+        }
+        while (rvp + sizeof(double) >= rvend) INCBUF;
+        curr->len++;
+        *(double*)rvp= val;
+        rvp += sizeof(double);
+        }
       typ= 0;
       continue;
    }
-
 #undef INCBUF
 #undef ERR
-
    return strdupf("Internal error, shouldn't reach here");
 }
-
 void 
 Fid::expand_spec(char *buf, char *bufend, const char *str) {
    int ch;
    char *p= buf;
-
    while ((ch= *str++)) {
       if (p + 10 >= bufend) 
-	 error("Buffer overflow in fidlib expand_spec()");
+        error("Buffer overflow in fidlib expand_spec()");
       if (ch == '#') {
-	 switch (*str++) {
-	  case 'o': p += sprintf(p, "<optional-order>"); break;
-	  case 'O': p += sprintf(p, "<order>"); break;
-	  case 'F': p += sprintf(p, "<freq>"); break;
-	  case 'R': p += sprintf(p, "<range>"); break;
-	  case 'V': p += sprintf(p, "<value>"); break;
-	  default: p += sprintf(p, "<%c>", str[-1]); break;
-	 }
+        switch (*str++) {
+            case 'o': p += sprintf(p, "<optional-order>"); break;
+            case 'O': p += sprintf(p, "<order>"); break;
+            case 'F': p += sprintf(p, "<freq>"); break;
+            case 'R': p += sprintf(p, "<range>"); break;
+            case 'V': p += sprintf(p, "<value>"); break;
+            default: p += sprintf(p, "<%c>", str[-1]); break;
+        }
       } else {
-	 *p++= ch;
+        *p++= ch;
       }
    }
    *p= 0;
@@ -1925,10 +1865,9 @@ Fid::list_filters(FILE *out) {
 //
 int 
 Fid::list_filters_buf(char *buf, char *bufend) {
-   int a, cnt;
+   int cnt;
    char tmp[4096];
-
-   for (a= 0; filter[a].fmt; a++) {
+   for (auto a= 0; filter[a].fmt; a++) {
       expand_spec(tmp, tmp+sizeof(tmp), filter[a].fmt);
       buf += (cnt= snprintf(buf, bufend-buf, "%s\n    ", tmp));
       if (cnt < 0 || buf >= bufend) return 0;
@@ -1941,16 +1880,15 @@ Fid::list_filters_buf(char *buf, char *bufend) {
 int
 Fid::convolve(double *dst, int n_dst, double *src, int n_src) {
    int len= n_dst + n_src - 1;
-   int a, b;
+   int b;
 
-   for (a= len-1; a>=0; a--) {
-      double val= 0;
-      for (b= 0; b<n_src; b++)
+   for (auto a= len-1; a>=0; a--) {
+      auto val= 0.0;
+      for (auto b= 0; b<n_src; b++)
          if (a-b >= 0 && a-b < n_dst)
             val += src[b] * dst[a-b];
       dst[a]= val;
    }
-
    return len;
 }
 const char *

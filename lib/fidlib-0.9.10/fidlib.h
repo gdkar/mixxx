@@ -26,6 +26,11 @@
 //	
 _Pragma("once")
 #include <vector>
+#include <memory>
+#include <iterator>
+#include <initializer_list>
+#include <utility>
+#include <functional>
 #include <limits>
 #include <cmath>
 #include <complex>
@@ -38,6 +43,44 @@ _Pragma("once")
 #include <cstring>
 #include <ctype.h>
 
+struct FidFilterItem {
+    std::vector<double>     val;
+             FidFilterItem() = default;
+    template<class... Args>
+             FidFilterItem(const Args&... args)
+             : val(args...)
+    { }
+    template<class... Args>
+             FidFilterItem(Args&&... args)
+             : val(std::forward(args...))
+    { }
+    virtual ~FidFilterItem() = default;
+    virtual void process(double *dst, const double *const src, size_t len) = 0;
+    virtual void process(double *dst, const double *const src, size_t len, size_t stride) = 0;
+};
+struct FidIIRItem : public FidFilterItem {
+             FidIIRItem() = default;
+    virtual ~FidIIRItem() = default;
+    virtual void process(double *dst, const double *const src, size_t len);
+    virtual void process(double *dst, const double *const src, size_t len, size_t stride);
+};
+struct FidFIRItem : public FidFilterItem {
+             FidFIRItem() = default;
+    virtual ~FidFIRItem() = default;
+    virtual void process(double *dst, const double *const src, size_t len);
+    virtual void process(double *dst, const double *const src, size_t len, size_t stride);
+};
+struct FidFilt{
+    std::vector<std::unique_ptr<FidFilterItem> > m_items;
+    FidFilt() = default;
+    FidFilt(std::initializer_list<std::unique_ptr<FidFilterItem>&> l);
+    FidFilt(FidFilt&&) = default;
+    FidFilt&operator=(FidFilt&&) = default;
+
+    virtual void process(double *dst, const double *const src, size_t len);
+    virtual void process(double *dst, const double *const src, size_t len, size_t stride);
+    FidFilt *flatten() const;
+};
 struct FidFilter {
    short typ;		// Type of filter element 'I' IIR, 'F' FIR, or 0 for end of list
    short cbm;
@@ -246,7 +289,6 @@ Alloc(int size);
 //
 //	'mkfilter'-derived code
 //
-
 struct Run {
    int magic;		// Magic: 0x64966325
    double *fir;         // FIR parameters
@@ -256,18 +298,14 @@ struct Run {
    int   n_buf;           // Number of entries in buffer
    FidFilter *filt;	// Combined filter
 } ;
-
 struct RunBuf {
    Run *run;
    double buf[0];
 };
-
 //
 //	Stack a number of identical filters, generating the required
 //	FidFilter* return value
 //
-
-
 class Fid {
 public:
     static constexpr const size_t MAXPZ = 64;
@@ -347,7 +385,7 @@ public:
     //	pairs (whether pairs of real poles/zeros, or conjugate pairs).
     //
     FidFilter*
-    z2fidfilter(double gain);
+    z2fidfilter(double gain,int cbm);
     //
     //	Setup poles/zeros for a band-pass resonator.  'qfact' gives
     //	the Q-factor; 0 is a special value indicating +infinity,
