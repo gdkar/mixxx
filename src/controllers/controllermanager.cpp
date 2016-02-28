@@ -16,19 +16,6 @@
 #include "util/cmdlineargs.h"
 #include "util/time.h"
 
-#include "controllers/midi/portmidienumerator.h"
-#ifdef __HSS1394__
-#include "controllers/midi/hss1394enumerator.h"
-#endif
-
-#ifdef __HID__
-#include "controllers/hid/hidenumerator.h"
-#endif
-
-#ifdef __BULK__
-#include "controllers/bulk/bulkenumerator.h"
-#endif
-
 namespace {
 // http://developer.qt.nokia.com/wiki/Threads_Events_QObjects
 
@@ -85,7 +72,6 @@ ControllerManager::ControllerManager(UserSettingsPointer pConfig)
     presetSearchPaths << userPresetsPath(m_pConfig) << resourcePresetsPath(m_pConfig);
     m_pMainThreadPresetEnumerator = std::make_unique<PresetInfoEnumerator>(presetSearchPaths);
     // Instantiate all enumerators
-
     m_pollTimer.setInterval(kPollIntervalMillis);
     connect(&m_pollTimer, SIGNAL(timeout()),this, SLOT(pollDevices()));
     m_pThread = std::make_unique<QThread>();
@@ -113,30 +99,21 @@ void ControllerManager::slotShutdown()
     stopPolling();
     // Clear m_enumerators before deleting the enumerators to prevent other code
     // paths from accessing them.
-    
-    QMutexLocker locker(&m_mutex);
-    m_enumerators.clear();
-    locker.unlock();
+    {    
+        QMutexLocker locker(&m_mutex);
+        auto enumerators = decltype(m_enumerators){};
+        std::swap(m_enumerators,enumerators);
+    }
     // Stop the processor after the enumerators since the engines live in it
     m_pThread->quit();
 }
 void ControllerManager::updateControllerList()
 {
     QMutexLocker locker(&m_mutex);
-
     if (m_enumerators.empty()) {
-        for(auto f = m_factories.load(); f; f = f->next()) {
-            qDebug() << "EnumeratorFactory " << f;
-            auto e = f->create();
-            qDebug() << "ControllerEnumerator " << e << " of type " << e->metaObject()->className();
-            m_enumerators.emplace_back(e);
-        }
-        if(m_enumerators.empty()) {
-            qWarning() << "updateControllerList called but no enumerators have been added!";
-            return;
-        }
+        qWarning() << "updateControllerList called but no enumerators have been added!";
+        return;
     }
-//    locker.unlock();
     QList<Controller*> newDeviceList;
     for(auto &e : m_enumerators) {
         qDebug() << "ControllerManager::updateControllerList: " << e->metaObject()->className();
@@ -144,7 +121,6 @@ void ControllerManager::updateControllerList()
         qDebug() << "Got " << devs.size() << " devices.";
         newDeviceList.append(e->queryDevices());
     }
-//    locker.relock();
     if (newDeviceList != m_controllers) {
         m_controllers = newDeviceList;
         locker.unlock();
@@ -318,7 +294,6 @@ void ControllerManager::slotSavePresets(bool onlyActive)
 {
     QList<Controller*> deviceList = getControllerList(false, true);
     QSet<QString> filenames;
-
     // TODO(rryan): This should be split up somehow but the filename selection
     // is dependent on all of the controllers to prevent over-writing each
     // other. We need a better solution.

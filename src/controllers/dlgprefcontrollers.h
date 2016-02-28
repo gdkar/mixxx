@@ -1,6 +1,4 @@
-#ifndef DLGPREFCONTROLLERS_H
-#define DLGPREFCONTROLLERS_H
-
+_Pragma("once")
 #include <QTreeWidgetItem>
 #include <QSignalMapper>
 
@@ -45,5 +43,3 @@ class DlgPrefControllers : public DlgPreferencePage, public Ui::DlgPrefControlle
     QList<QTreeWidgetItem*> m_controllerTreeItems;
     QSignalMapper m_buttonMapper;
 };
-
-#endif /* DLGPREFCONTROLLERS_H */
