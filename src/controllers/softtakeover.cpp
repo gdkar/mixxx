@@ -15,14 +15,8 @@
 //  but not cause an audibly noticeable jump, determined experimentally with
 //  slow-refresh controllers.
 const double SoftTakeover::kDefaultTakeoverThreshold = 3.0 / 128;
-
-const mixxx::Duration SoftTakeover::kSubsequentValueOverrideTime =
-        mixxx::Duration::fromMillis(50);
-
-SoftTakeoverCtrl::SoftTakeoverCtrl() {
-
-}
-
+const mixxx::Duration SoftTakeover::kSubsequentValueOverrideTime = mixxx::Duration::fromMillis(50);
+SoftTakeoverCtrl::SoftTakeoverCtrl() = delete;
 SoftTakeoverCtrl::~SoftTakeoverCtrl() {
     QHashIterator<ControlObject*, SoftTakeover*> i(m_softTakeoverHash);
     while (i.hasNext()) {
@@ -30,66 +24,52 @@ SoftTakeoverCtrl::~SoftTakeoverCtrl() {
         delete i.value();
     }
 }
-
 void SoftTakeoverCtrl::enable(ControlObject* control) {
     ControlPotmeter* cpo = dynamic_cast<ControlPotmeter*>(control);
-    if (cpo == NULL) {
+    if (cpo == NULL)
         // softtakecover works only for continuous ControlPotmeter based COs
         return;
-    }
-
     // Initialize times
-    if (!m_softTakeoverHash.contains(control)) {
+    if (!m_softTakeoverHash.contains(control))
         m_softTakeoverHash.insert(control, new SoftTakeover());
-    }
 }
-
 void SoftTakeoverCtrl::disable(ControlObject* control) {
-    if (control == NULL) {
+    if (!control)
         return;
-    }
-    SoftTakeover* pSt = m_softTakeoverHash.take(control);
-    if (pSt) {
+    auto pSt = m_softTakeoverHash.take(control);
+    if (pSt)
         delete pSt;
-    }
 }
-
-bool SoftTakeoverCtrl::ignore(ControlObject* control, double newParameter) {
-    if (control == NULL) {
+bool SoftTakeoverCtrl::ignore(ControlObject* control, double newParameter)
+{
+    if (!control)
         return false;
-    }
-    bool ignore = false;
-    SoftTakeover* pSt = m_softTakeoverHash.value(control);
-    if (pSt) {
+    auto ignore = false;
+    auto pSt = m_softTakeoverHash.value(control);
+    if (pSt)
         ignore = pSt->ignore(control, newParameter);
-    }
     return ignore;
 }
-
-void SoftTakeoverCtrl::ignoreNext(ControlObject* control) {
-    if (control == NULL) {
+void SoftTakeoverCtrl::ignoreNext(ControlObject* control)
+{
+    if (!control)
         return;
-    }
-
-    SoftTakeover* pSt = m_softTakeoverHash.value(control);
-    if (pSt == NULL) {
+    auto pSt = m_softTakeoverHash.value(control);
+    if (!pSt)
         return;
-    }
-
     pSt->ignoreNext();
 }
-
 SoftTakeover::SoftTakeover()
     : m_prevParameter(0),
-      m_dThreshold(kDefaultTakeoverThreshold) {
-}
-
-void SoftTakeover::setThreshold(double threshold) {
+      m_dThreshold(kDefaultTakeoverThreshold)
+{}
+void SoftTakeover::setThreshold(double threshold)
+{
     m_dThreshold = threshold;
 }
-
-bool SoftTakeover::ignore(ControlObject* control, double newParameter) {
-    bool ignore = false;
+bool SoftTakeover::ignore(ControlObject* control, double newParameter)
+{
+    auto ignore = false;
     /*
      * We only want to ignore the controller when:
      * - its new value is far away from the current value of the ControlObject
@@ -115,29 +95,23 @@ bool SoftTakeover::ignore(ControlObject* control, double newParameter) {
      *
      *      Don't ignore in every other case.
      */
-
-    mixxx::Duration currentTime = Time::elapsed();
+    auto currentTime = Time::elapsed();
     // We will get a sudden jump if we don't ignore the first value.
     if (m_time == mixxx::Duration::fromMillis(0)) {
         ignore = true;
         // Change the stored time (but keep it far away from the current time)
         //  so this block doesn't run again.
         m_time = mixxx::Duration::fromMillis(1);
-//         qDebug() << "SoftTakeover::ignore: ignoring the first value"
-//                  << newParameter;
     } else if (currentTime - m_time > kSubsequentValueOverrideTime) {
         // don't ignore value if a previous one was not ignored in time
-        const double currentParameter = control->getParameter();
-        const double difference = currentParameter - newParameter;
-        const double prevDiff = currentParameter - m_prevParameter;
-        if ((prevDiff < 0 && difference < 0) ||
-                (prevDiff > 0 && difference > 0)) {
+        const auto currentParameter = control->getParameter();
+        const auto  difference = currentParameter - newParameter;
+        const auto prevDiff = currentParameter - m_prevParameter;
+        if ((prevDiff < 0 && difference < 0) || (prevDiff > 0 && difference > 0)) {
             // On same side of the current parameter value
             if (fabs(difference) > m_dThreshold && fabs(prevDiff) > m_dThreshold) {
                 // differences are above threshold
                 ignore = true;
-//                 qDebug() << "SoftTakeover::ignore: ignoring, not near"
-//                          << newParameter << m_prevParameter << currentParameter;
             }
         }
     }
@@ -148,10 +122,9 @@ bool SoftTakeover::ignore(ControlObject* control, double newParameter) {
     }
     // Update the previous value every time
     m_prevParameter = newParameter;
-
     return ignore;
 }
-
-void SoftTakeover::ignoreNext() {
+void SoftTakeover::ignoreNext()
+{
     m_time = mixxx::Duration::fromMillis(0);
 }

@@ -238,9 +238,8 @@ void MidiController::receive(unsigned char status, unsigned char control,
         }
     }
     auto it = m_preset.inputMappings.find(mappingKey.key);
-    for (; it != m_preset.inputMappings.end() && it.key() == mappingKey.key; ++it) {
+    for (; it != m_preset.inputMappings.end() && it.key() == mappingKey.key; ++it)
         processInputMapping(it.value(), status, control, value, timestamp);
-    }
 }
 void MidiController::processInputMapping(const MidiInputMapping& mapping,
                                          unsigned char status,
