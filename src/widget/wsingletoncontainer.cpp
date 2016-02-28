@@ -17,13 +17,13 @@ void WSingletonContainer::setup(QDomNode node, const SkinContext& context) {
     m_pLayout->setContentsMargins(0, 0, 0, 0);
     setLayout(m_pLayout);
 
-    QDomElement containerNode = node.toElement();
+    auto containerNode = node.toElement();
     if (!context.hasNode(node, "ObjectName")) {
         SKIN_WARNING(node, context)
                 << "Need objectName attribute for Singleton tag";
         return;
     }
-    QString objectName = context.selectString(node, "ObjectName");
+    auto objectName = context.selectString(node, "ObjectName");
     if (objectName.isEmpty()) {
         SKIN_WARNING(node, context)
                 << "Singleton tag's ObjectName is empty";
@@ -45,7 +45,7 @@ void WSingletonContainer::showEvent(QShowEvent* event) {
         // the place it was defined).
         // First confirm that the parentage is valid, and then
         // reparent the widget to our container.
-        QWidget* parent = m_pWidget->parentWidget();
+        auto parent = m_pWidget->parentWidget();
         if (parent == this) {
             // The widget is already owned by us, no need to reparent.
             return;
@@ -57,8 +57,8 @@ void WSingletonContainer::showEvent(QShowEvent* event) {
         }
     }
 }
-
-void SingletonMap::insertSingleton(QString objectName, QWidget* widget) {
+void SingletonMap::insertSingleton(QString objectName, QWidget* widget)
+{
     if (m_singletons.contains(objectName)){
         qWarning() << "ERROR: Tried to insert a singleton with a name that has"
                    << "already been inserted:" << objectName;
@@ -66,7 +66,7 @@ void SingletonMap::insertSingleton(QString objectName, QWidget* widget) {
     }
     m_singletons.insert(objectName, widget);
 }
-
-QWidget* SingletonMap::getSingletonWidget(QString objectName) const {
+QWidget* SingletonMap::getSingletonWidget(QString objectName) const
+{
     return m_singletons.value(objectName, NULL);
 }

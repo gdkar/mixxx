@@ -48,8 +48,7 @@ WPushButton::WPushButton(QWidget* pParent, ControlPushButton::ButtonMode leftBut
     setStates(0);
 }
 
-WPushButton::~WPushButton() {
-}
+WPushButton::~WPushButton() = default;
 
 void WPushButton::setup(QDomNode node, const SkinContext& context) {
     // Number of states
@@ -413,8 +412,7 @@ void WPushButton::mouseReleaseEvent(QMouseEvent * e) {
         // This is the secondary clickButton function,
         // due the leak of visual feedback we do not allow a toggle
         // function
-        if (m_rightButtonMode == ControlPushButton::PUSH
-                || m_iNoStates == 1) {
+        if (m_rightButtonMode == ControlPushButton::PUSH || m_iNoStates == 1) {
             m_bPressed = false;
             setControlParameterRightUp(0.0);
             restyleAndRepaint();

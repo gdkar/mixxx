@@ -77,8 +77,7 @@ WSizeAwareStack::WSizeAwareStack(QWidget* parent)
     setLayout(m_layout);
 }
 
-WSizeAwareStack::~WSizeAwareStack() {
-}
+WSizeAwareStack::~WSizeAwareStack() = default;
 
 int WSizeAwareStack::addWidget(QWidget *widget) {
     // smallest widgets should be added first

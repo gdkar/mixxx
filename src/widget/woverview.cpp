@@ -50,27 +50,20 @@ WOverview::WOverview(const char *pGroup, UserSettingsPointer pConfig, QWidget* p
         m_dAnalyzerProgress(-1.0),
         m_bAnalyzerFinalizing(false),
         m_trackLoaded(false) {
-    m_endOfTrackControl = new ControlObjectSlave(
-            m_group, "end_of_track", this);
-    m_endOfTrackControl->connectValueChanged(
-             SLOT(onEndOfTrackChange(double)));
-    m_trackSamplesControl =
-            new ControlObjectSlave(m_group, "track_samples", this);
+    m_endOfTrackControl = new ControlObjectSlave(m_group, "end_of_track", this);
+    m_endOfTrackControl->connectValueChanged( SLOT(onEndOfTrackChange(double)));
+    m_trackSamplesControl = new ControlObjectSlave(m_group, "track_samples", this);
     m_playControl = new ControlObjectSlave(m_group, "play", this);
     setAcceptDrops(true);
 }
-
 WOverview::~WOverview() {
     if (m_pWaveformSourceImage) {
         delete m_pWaveformSourceImage;
     }
 }
-
 void WOverview::setup(QDomNode node, const SkinContext& context) {
     m_signalColors.setup(node, context);
-
     m_qColorBackground = m_signalColors.getBgColor();
-
     // Clear the background pixmap, if it exists.
     m_backgroundPixmap = QPixmap();
     m_backgroundPixmapPath = context.selectString(node, "BgPixmap");

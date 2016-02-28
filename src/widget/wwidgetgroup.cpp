@@ -17,8 +17,7 @@ WWidgetGroup::WWidgetGroup(QWidget* pParent)
     setObjectName("WidgetGroup");
 }
 
-WWidgetGroup::~WWidgetGroup() {
-}
+WWidgetGroup::~WWidgetGroup() = default;
 
 int WWidgetGroup::layoutSpacing() const {
     QLayout* pLayout = layout();
