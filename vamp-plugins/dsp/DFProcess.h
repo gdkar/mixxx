@@ -13,10 +13,8 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef CDFPROCESS_H
-#define CDFPROCESS_H
-
-#include <stdio.h>
+_Pragma("once")
+#include <cstdio>
 #include "FiltFilt.h"
 
 struct DFProcConfig{
@@ -65,5 +63,3 @@ private:
 
     bool m_isMedianPositive;
 };
-
-#endif

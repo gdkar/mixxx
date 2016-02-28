@@ -13,9 +13,7 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef CORRELATION_H
-#define CORRELATION_H
-
+_Pragma("once")
 #define  EPS  2.2204e-016
 
 class Correlation  
@@ -24,7 +22,4 @@ public:
     void doAutoUnBiased( double* src, double* dst, unsigned int length );
     Correlation();
     virtual ~Correlation();
-
 };
-
-#endif // 

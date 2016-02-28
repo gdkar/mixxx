@@ -12,9 +12,7 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef _BEAT_TRACK_PLUGIN_H_
-#define _BEAT_TRACK_PLUGIN_H_
-
+_Pragma("once")
 #include <vamp-sdk/Plugin.h>
 
 class BeatTrackerData;
@@ -60,6 +58,3 @@ protected:
     FeatureSet beatTrackOld();
     FeatureSet beatTrackNew();
 };
-
-
-#endif

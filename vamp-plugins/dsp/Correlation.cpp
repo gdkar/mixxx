@@ -19,16 +19,8 @@
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-Correlation::Correlation()
-{
-
-}
-
-Correlation::~Correlation()
-{
-
-}
-
+Correlation::Correlation() = default;
+Correlation::~Correlation() = default;
 void Correlation::doAutoUnBiased(double *src, double *dst, unsigned int length)
 {
     double tmp = 0.0;

@@ -13,9 +13,7 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef _TCSGram_
-#define _TCSGram_
-
+_Pragma("once")
 #include <vector>
 #include <valarray>
 #include <utility>
@@ -45,5 +43,3 @@ protected:
 	unsigned int m_uNumBins;
 	double m_dFrameDurationMS;
 };
-
-#endif

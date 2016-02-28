@@ -13,41 +13,29 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef FILTER_H
-#define FILTER_H
-
-#ifndef NULL
-#define NULL 0
-#endif
+_Pragma("once")
+#include <memory>
 
 struct FilterConfig{
     unsigned int ord;
     double* ACoeffs;
     double* BCoeffs;
 };
-
 class Filter  
 {
 public:
     Filter( FilterConfig Config );
     virtual ~Filter();
-
     void reset();
-
     void process( double *src, double *dst, unsigned int length );
-	
-
 private:
     void initialise( FilterConfig Config );
     void deInitialise();
 
-    unsigned int m_ord;
-
-    double* m_inBuffer;
-    double* m_outBuffer;
-
+    unsigned int m_ord{0};
+    std::unique_ptr<double[]> m_inBuffer;
+    std::unique_ptr<double[]> m_outBuffer;
+    
     double* m_ACoeffs;
     double* m_BCoeffs;
 };
-
-#endif

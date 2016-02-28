@@ -21,8 +21,8 @@
 
 FiltFilt::FiltFilt( FiltFiltConfig Config )
 {
-    m_filtScratchIn = NULL;
-    m_filtScratchOut = NULL;
+    m_filtScratchIn = nullptr;
+    m_filtScratchOut = nullptr;
     m_ord = 0;
 	
     initialise( Config );

@@ -20,20 +20,8 @@
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-Framer::Framer()
-{
-    m_dataFrame = NULL;
-    m_strideFrame = NULL;
-}
-
-Framer::~Framer()
-{
-    if( m_dataFrame != NULL )
-	delete [] m_dataFrame;
-
-    if( m_strideFrame != NULL )
-	delete [] m_strideFrame;
-}
+Framer::Framer() = default;
+Framer::~Framer() = default;
 
 void Framer::configure( unsigned int frameLength, unsigned int hop )
 {
@@ -41,51 +29,28 @@ void Framer::configure( unsigned int frameLength, unsigned int hop )
     m_stepSize = hop;
 
     resetCounters();
-
-    if( m_dataFrame != NULL )
-    {
-	delete [] m_dataFrame;	
-	m_dataFrame = NULL;
-    }
-    m_dataFrame = new double[ m_frameLength ];
-
-    if( m_strideFrame != NULL )
-    {
-	delete [] m_strideFrame;	
-	m_strideFrame = NULL;
-    }
-    m_strideFrame = new double[ m_stepSize ];
+    m_dataFrame = std::make_unique<double[]>(m_frameLength);
+    m_strideFrame = std::make_unique<double[]>(m_stepSize);
 }
 
 void Framer::getFrame(double *dst)
 {
-
-    if( (m_ulSrcIndex + ( m_frameLength) ) < m_ulSampleLen )
-    {
-	for( unsigned int u = 0; u < m_frameLength; u++)
-	{
+    
+    if( (m_ulSrcIndex + ( m_frameLength) ) < m_ulSampleLen ) {
+	for( unsigned int u = 0; u < m_frameLength; u++){
 	    dst[ u ] = m_srcBuffer[ m_ulSrcIndex++ ]; 
 	}	
 	m_ulSrcIndex -= ( m_frameLength - m_stepSize );
-    }
-    else
-    {
+    }else{
 	unsigned int rem = (m_ulSampleLen - m_ulSrcIndex );
 	unsigned int zero = m_frameLength - rem;
-
-	for( unsigned int u = 0; u < rem; u++ )
-	{
+        auto u = 0;
+	for( ; u < rem; u++ )
 	    dst[ u ] = m_srcBuffer[ m_ulSrcIndex++ ];
-	}
-		
-	for( unsigned int u = 0; u < zero; u++ )
-	{
-	    dst[ rem + u ] = 0;
-	}
-
+        for( ; u < m_frameLength; u++)
+            dst[ u ] = 0;
 	m_ulSrcIndex -= (( rem - m_stepSize ) );
     }
-
     m_framesRead++;
 }
 

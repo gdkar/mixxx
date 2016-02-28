@@ -13,14 +13,9 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef DOWNBEAT_H
-#define DOWNBEAT_H
-
+_Pragma("once")
 #include <vector>
-
-#ifdef __LINUX__
-#include <stddef.h>  //resolves size_t compile error on Ubuntu 11.10
-#endif
+#include <cstddef>  //resolves size_t compile error on Ubuntu 11.10
 
 #include "Decimator.h"
 
@@ -135,5 +130,3 @@ private:
     double *m_fftImagOut;
     d_vec_t m_beatsd;
 };
-
-#endif

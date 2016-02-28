@@ -12,9 +12,7 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef DECIMATOR_H
-#define DECIMATOR_H
-
+_Pragma("once")
 class Decimator  
 {
 public:
@@ -58,5 +56,3 @@ private:
 	
     double* decBuffer;
 };
-
-#endif // 

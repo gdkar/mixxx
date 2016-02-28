@@ -13,9 +13,7 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef KLDIVERGENCE_H
-#define KLDIVERGENCE_H
-
+_Pragma("once")
 #include <vector>
 
 using std::vector;
@@ -49,6 +47,3 @@ public:
                                 const vector<double> &d2,
                                 bool symmetrised);
 };
-
-#endif
-

@@ -13,8 +13,9 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef PHASEVOCODER_H
-#define PHASEVOCODER_H
+_Pragma("once")
+#include <memory>
+#include <algorithm>
 
 class FFTReal;
 
@@ -38,5 +39,3 @@ protected:
     double *m_realOut;
 
 };
-
-#endif

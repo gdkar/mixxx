@@ -13,9 +13,7 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef _CHANGEDETECTIONFUNCTION_
-#define _CHANGEDETECTIONFUNCTION_
-
+_Pragma("once")
 //#define DEBUG_CHANGE_DETECTION_FUNCTION 1
 
 #include "TCSgram.h"
@@ -33,16 +31,13 @@ struct ChangeDFConfig
 class ChangeDetectionFunction
 {
 public:
-	ChangeDetectionFunction(ChangeDFConfig);
-	~ChangeDetectionFunction();
-	ChangeDistance process(const TCSGram& rTCSGram);
+         ChangeDetectionFunction(ChangeDFConfig);
+        ~ChangeDetectionFunction();
+         ChangeDistance process(const TCSGram& rTCSGram);
 private:
-	void setFilterWidth(const int iWidth);
-	
+         void setFilterWidth(const int iWidth);
 private:
-	valarray<double> m_vaGaussian;
-	double m_dFilterSigma;
-	int m_iFilterWidth;
+         valarray<double> m_vaGaussian;
+         double m_dFilterSigma;
+         int m_iFilterWidth;
 };
-
-#endif // _CHANGDETECTIONFUNCTION_

@@ -13,9 +13,7 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef DETECTIONFUNCTION_H
-#define DETECTIONFUNCTION_H
-
+_Pragma("once")
 #include "MathUtilities.h"
 #include "MathAliases.h"
 #include "PhaseVocoder.h"
@@ -81,5 +79,3 @@ private:
     Window<double> *m_window;
     PhaseVocoder* m_phaseVoc;	// Phase Vocoder
 };
-
-#endif 

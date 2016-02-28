@@ -1,8 +1,7 @@
 /* -*- c-basic-offset: 4 indent-tabs-mode: nil -*-  vi:set ts=8 sts=4 sw=4: */
 //---------------------------------------------------------------------------
 
-#ifndef PolyfitHPP
-#define PolyfitHPP
+_Pragma("once")
 //---------------------------------------------------------------------------
 // Least-squares curve fitting class for arbitrary data types
 /*
@@ -41,7 +40,7 @@ E-mail:    davidtaylor@writeme.com
  ///////////////////////////////////////////////////////////////////////////////
 
 #include <iostream>
-
+#include <vector>
 using std::vector;
 
 class TPolyFit
@@ -58,26 +57,21 @@ private:
     TPolyFit &operator = (const TPolyFit &);   // disable assignment
     TPolyFit();                                // and instantiation
     TPolyFit(const TPolyFit&);                 // and copying
-
-  
     static void Square (const Matrix &x,              // Matrix multiplication routine
 			const vector<double> &y,
 			Matrix &a,                    // A = transpose X times X
 			vector<double> &g,         // G = Y times X
 			const int nrow, const int ncol);
     // Forms square coefficient matrix
-
     static bool GaussJordan (Matrix &b,                  // square matrix of coefficients
 			     const vector<double> &y, // constant vector
 			     vector<double> &coef);   // solution vector
     // returns false if matrix singular
-
     static bool GaussJordan2(Matrix &b,
 			     const vector<double> &y,
 			     Matrix &w,
 			     vector<vector<int> > &index);
 };
-
 // some utility functions
 
 namespace NSUtility
@@ -95,7 +89,6 @@ namespace NSUtility
 //---------------------------------------------------------------------------
 using namespace NSUtility;
 //------------------------------------------------------------------------------------------
-
 
 // main PolyFit routine
 
@@ -401,7 +394,3 @@ void NSUtility::zeroise(vector<vector<int> > &matrix, int m, int n)
 	matrix.push_back(zero);
 }
 //--------------------------------------------------------------------------
-
-
-#endif
- 

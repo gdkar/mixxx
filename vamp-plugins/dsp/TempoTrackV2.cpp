@@ -484,5 +484,3 @@ TempoTrackV2::calculateBeats(const vector<double> &df,
         beats.push_back( static_cast<double>(ibeats[ibeats.size()-i-1]) );
     }
 }
-
-

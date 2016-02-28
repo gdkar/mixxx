@@ -26,11 +26,7 @@ ChangeDetectionFunction::ChangeDetectionFunction(ChangeDFConfig config) :
 {
 	setFilterWidth(config.smoothingWidth);
 }
-
-ChangeDetectionFunction::~ChangeDetectionFunction()
-{
-}
-
+ChangeDetectionFunction::~ChangeDetectionFunction() = default;
 void ChangeDetectionFunction::setFilterWidth(const int iWidth)
 {
 	m_iFilterWidth = iWidth*2+1;

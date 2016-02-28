@@ -13,13 +13,11 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef FRAMER_H
-#define FRAMER_H
-
+_Pragma("once")
 //#include <io.h>
 #include <fcntl.h>
-#include <stdio.h>
-
+#include <cstdio>
+#include <memory>
 
 class Framer  
 {
@@ -39,8 +37,8 @@ private:
     unsigned int	m_framesRead;		// Read Frames Index
 
     double*			m_srcBuffer;
-    double*			m_dataFrame;		// Analysis Frame Buffer
-    double*			m_strideFrame;		// Stride Frame Buffer
+    std::unique_ptr<double[]>   m_dataFrame; // Analysis Frame Buffer
+    std::unique_ptr<double[]>   m_strideFrame;	// Stride Frame Buffer
     unsigned int	m_frameLength;		// Analysis Frame Length
     unsigned int	m_stepSize;		// Analysis Frame Stride
 
@@ -48,5 +46,3 @@ private:
 
     unsigned long	m_ulSrcIndex;
 };
-
-#endif
