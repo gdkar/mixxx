@@ -15,9 +15,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef CONTROLPUSHBUTTON_H
-#define CONTROLPUSHBUTTON_H
-
+_Pragma("once")
 #include "controlobject.h"
 #include "controllers/midi/midimessage.h"
 
@@ -66,5 +64,3 @@ class ControlPushButton : public ControlObject {
     enum ButtonMode m_buttonMode;
     int m_iNoStates;
 };
-
-#endif

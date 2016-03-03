@@ -13,9 +13,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef SOUNDMANAGERCONFIG_H
-#define SOUNDMANAGERCONFIG_H
-
+_Pragma("once")
 #ifndef SOUNDMANAGERCONFIG_FILENAME
 #define SOUNDMANAGERCONFIG_FILENAME "soundconfig.xml"
 #endif
@@ -93,4 +91,3 @@ private:
     QMultiHash<QString, AudioOutput> m_outputs;
     QMultiHash<QString, AudioInput> m_inputs;
 };
-#endif

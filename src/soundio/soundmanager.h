@@ -14,9 +14,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef SOUNDMANAGER_H
-#define SOUNDMANAGER_H
-
+_Pragma("once")
 #include <QObject>
 #include <QString>
 #include <QList>
@@ -143,5 +141,3 @@ class SoundManager : public QObject {
 
     QSharedPointer<EngineNetworkStream> m_pNetworkStream;
 };
-
-#endif

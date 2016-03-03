@@ -246,14 +246,13 @@ EngineBuffer::EngineBuffer(QString group, UserSettingsPointer _config,
     m_pCueControl = new CueControl(group, _config);
     addControl(m_pCueControl);
 
-    m_pReadAheadManager = new ReadAheadManager(m_pReader,
-                                               m_pLoopingControl);
+    m_pReadAheadManager = new ReadAheadManager(m_pReader,m_pLoopingControl,this);
     m_pReadAheadManager->addRateControl(m_pRateControl);
 
     // Construct scaling objects
-    m_pScaleLinear = new EngineBufferScaleLinear(m_pReadAheadManager);
-    m_pScaleST = new EngineBufferScaleST(m_pReadAheadManager);
-    m_pScaleRB = new EngineBufferScaleRubberBand(m_pReadAheadManager);
+    m_pScaleLinear = new EngineBufferScaleLinear(this);
+    m_pScaleST = new EngineBufferScaleST(this);
+    m_pScaleRB = new EngineBufferScaleRubberBand(this);
     if (m_pKeylockEngine->get() == SOUNDTOUCH) {
         m_pScaleKeylock = m_pScaleST;
     } else {
@@ -286,7 +285,6 @@ EngineBuffer::~EngineBuffer() {
     //close the writer
     df.close();
 #endif
-    delete m_pReadAheadManager;
     delete m_pReader;
 
     delete m_playButton;
@@ -306,10 +304,6 @@ EngineBuffer::~EngineBuffer() {
 
     delete m_pTrackSamples;
     delete m_pTrackSampleRate;
-
-    delete m_pScaleLinear;
-    delete m_pScaleST;
-    delete m_pScaleRB;
 
     delete m_pKeylock;
     delete m_pEject;

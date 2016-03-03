@@ -46,5 +46,8 @@ Result SoundSource::writeTrackMetadata(
         const TrackMetadata& trackMetadata) const {
     return writeTrackMetadataIntoFile(trackMetadata, getLocalFileName());
 }
-
+QString SoundSource::getType() const
+{
+    return m_type;
+}
 } //namespace Mixxx

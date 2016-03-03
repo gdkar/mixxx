@@ -7,43 +7,34 @@
 #include "util/math.h"
 #include "util/sample.h"
 
-EngineBufferScaleLinear::EngineBufferScaleLinear(ReadAheadManager *pReadAheadManager)
-    : EngineBufferScale(),
-      m_bClear(false),
-      m_dRate(1.0),
-      m_dOldRate(1.0),
-      m_pReadAheadManager(pReadAheadManager),
-      m_dCurrentFrame(0.0),
-      m_dNextFrame(0.0) {
-    for (int i = 0; i < 2; i++) {
-        m_floorSampleOld[i] = 0.0f;
-    }
-
-    m_bufferInt = new CSAMPLE[kiLinearScaleReadAheadLength];
-    m_bufferIntSize = 0;
-
+EngineBufferScaleLinear::EngineBufferScaleLinear(ReadAheadManager *pReadAheadManager, QObject *pParent)
+    : EngineBufferScale(pReadAheadManager,pParent),
+      m_bufferInt(std::make_unique<CSAMPLE[]>(kiLinearScaleReadAheadLength))
+{
     /*df.setFileName("mixxx-debug-scaler.csv");
     df.open(QIODevice::WriteOnly | QIODevice::Text);
     writer.setDevice(&df);
     buffer_count=0;*/
-    SampleUtil::clear(m_bufferInt, kiLinearScaleReadAheadLength);
+    SampleUtil::clear(&m_bufferInt[0], kiLinearScaleReadAheadLength);
 }
-
-EngineBufferScaleLinear::~EngineBufferScaleLinear()
+EngineBufferScaleLinear::EngineBufferScaleLinear(QObject *pParent)
+    : EngineBufferScale(pParent),
+      m_bufferInt(std::make_unique<CSAMPLE[]>(kiLinearScaleReadAheadLength))
 {
-    //df.close();
-    delete [] m_bufferInt;
+    /*df.setFileName("mixxx-debug-scaler.csv");
+    df.open(QIODevice::WriteOnly | QIODevice::Text);
+    writer.setDevice(&df);
+    buffer_count=0;*/
+    SampleUtil::clear(&m_bufferInt[0], kiLinearScaleReadAheadLength);
 }
-
+EngineBufferScaleLinear::~EngineBufferScaleLinear() = default;
 void EngineBufferScaleLinear::setScaleParameters(double base_rate,
                                                  double* pTempoRatio,
                                                  double* pPitchRatio) {
     Q_UNUSED(pPitchRatio);
-
     m_dOldRate = m_dRate;
     m_dRate = base_rate * *pTempoRatio;
 }
-
 void EngineBufferScaleLinear::clear() {
     m_bClear = true;
     // Clear out buffer and saved sample data
@@ -52,7 +43,6 @@ void EngineBufferScaleLinear::clear() {
     m_floorSampleOld[0] = 0;
     m_floorSampleOld[1] = 0;
 }
-
 // laurent de soras - punked from musicdsp.org (mad props)
 inline float hermite4(float frac_pos, float xm1, float x0, float x1, float x2)
 {
@@ -108,8 +98,7 @@ double EngineBufferScaleLinear::getScaled(CSAMPLE* pOutput,
             }
             //qDebug() << "extra samples" << extra_samples;
 
-            samples_read += m_pReadAheadManager->getNextSamples(
-                    rate_add_new, m_bufferInt, extra_samples);
+            samples_read += m_pReadAheadManager->getNextSamples(rate_add_new, &m_bufferInt[0], extra_samples);
         }
         // force a buffer read:
         m_bufferIntSize = 0;
@@ -295,7 +284,7 @@ int EngineBufferScaleLinear::do_scale(CSAMPLE* buf,
 
                 m_bufferIntSize = m_pReadAheadManager->getNextSamples(
                         rate_new == 0 ? rate_old : rate_new,
-                        m_bufferInt, samples_to_read);
+                        &m_bufferInt[0], samples_to_read);
 
                 if (m_bufferIntSize == 0) {
                     if(++read_failed_count > 1) {

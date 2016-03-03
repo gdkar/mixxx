@@ -16,7 +16,7 @@
 //  slow-refresh controllers.
 const double SoftTakeover::kDefaultTakeoverThreshold = 3.0 / 128;
 const mixxx::Duration SoftTakeover::kSubsequentValueOverrideTime = mixxx::Duration::fromMillis(50);
-SoftTakeoverCtrl::SoftTakeoverCtrl() = delete;
+SoftTakeoverCtrl::SoftTakeoverCtrl() = default;
 SoftTakeoverCtrl::~SoftTakeoverCtrl() {
     QHashIterator<ControlObject*, SoftTakeover*> i(m_softTakeoverHash);
     while (i.hasNext()) {

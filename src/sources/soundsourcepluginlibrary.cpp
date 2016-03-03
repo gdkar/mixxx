@@ -3,13 +3,21 @@
 #include <QMutexLocker>
 
 namespace Mixxx {
+QString SoundSourcePluginLibrary::getFilePath() const
+{
+    return m_library.fileName();
+}
+int SoundSourcePluginLibrary::getApiVersion() const
+{
+    return m_apiVersion;
+}
 
 /*static*/ QMutex SoundSourcePluginLibrary::s_loadedPluginLibrariesMutex;
 /*static*/ QMap<QString, SoundSourcePluginLibraryPointer> SoundSourcePluginLibrary::s_loadedPluginLibraries;
 
 /*static*/ SoundSourcePluginLibraryPointer SoundSourcePluginLibrary::load(
         const QString& libFilePath) {
-    const QMutexLocker mutexLocker(&s_loadedPluginLibrariesMutex);
+    QMutexLocker mutexLocker(&s_loadedPluginLibrariesMutex);
 
     if (s_loadedPluginLibraries.contains(libFilePath)) {
         return s_loadedPluginLibraries.value(libFilePath);
@@ -24,17 +32,13 @@ namespace Mixxx {
         }
     }
 }
-
 SoundSourcePluginLibrary::SoundSourcePluginLibrary(const QString& libFilePath)
     : m_library(libFilePath),
       m_apiVersion(0),
       m_createSoundSourceProviderFunc(nullptr),
       m_destroySoundSourceProviderFunc(nullptr){
 }
-
-SoundSourcePluginLibrary::~SoundSourcePluginLibrary() {
-}
-
+SoundSourcePluginLibrary::~SoundSourcePluginLibrary() = default;
 bool SoundSourcePluginLibrary::init() {
     DEBUG_ASSERT(!m_library.isLoaded());
     if (!m_library.load()) {
@@ -80,8 +84,7 @@ bool SoundSourcePluginLibrary::init() {
     if (getVersionFunc && m_createSoundSourceProviderFunc && m_destroySoundSourceProviderFunc) {
         return true;
     } else {
-        qWarning() << "Incompatible SoundSource plugin"
-                << m_library.fileName();
+        qWarning() << "Incompatible SoundSource plugin" << m_library.fileName();
         return false;
     }
 }

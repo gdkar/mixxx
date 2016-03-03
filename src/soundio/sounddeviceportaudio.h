@@ -15,9 +15,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef SOUNDDEVICEPORTAUDIO_H
-#define SOUNDDEVICEPORTAUDIO_H
-
+_Pragma("once")
 #include <portaudio.h>
 
 #include <QString>
@@ -108,5 +106,3 @@ class SoundDevicePortAudio : public SoundDevice {
     bool m_invalidTimeInfoWarned;
     PerformanceTimer m_clkRefTimer;
 };
-
-#endif

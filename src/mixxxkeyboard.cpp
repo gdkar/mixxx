@@ -32,11 +32,9 @@ MixxxKeyboard::MixxxKeyboard(ConfigObject<ConfigValueKbd>* pKbdConfigObject,
     setObjectName(name);
     setKeyboardConfig(pKbdConfigObject);
 }
-
-MixxxKeyboard::~MixxxKeyboard() {
-}
-
-bool MixxxKeyboard::eventFilter(QObject*, QEvent* e) {
+MixxxKeyboard::~MixxxKeyboard() = default;
+bool MixxxKeyboard::eventFilter(QObject*, QEvent* e)
+{
     if (e->type() == QEvent::FocusOut) {
         // If we lose focus, we need to clear out the active key list
         // because we might not get Key Release events.
@@ -63,18 +61,18 @@ bool MixxxKeyboard::eventFilter(QObject*, QEvent* e) {
             }
         }
 
-        QKeySequence ks = getKeySeq(ke);
+        auto ks = getKeySeq(ke);
         if (!ks.isEmpty()) {
             ConfigValueKbd ksv(ks);
             // Check if a shortcut is defined
             bool result = false;
             // using const_iterator here is faster than QMultiHash::values()
-            for (QMultiHash<ConfigValueKbd, ConfigKey>::const_iterator it =
+            for (auto it =
                          m_keySequenceToControlHash.find(ksv);
                  it != m_keySequenceToControlHash.end() && it.key() == ksv; ++it) {
                 const ConfigKey& configKey = it.value();
                 if (configKey.group != "[KeyboardShortcuts]") {
-                    ControlObject* control = ControlObject::getControl(configKey);
+                    auto control = ControlObject::getControl(configKey);
                     if (control) {
                         //qDebug() << configKey << "MIDI_NOTE_ON" << 1;
                         // Add key to active key list
@@ -94,7 +92,7 @@ bool MixxxKeyboard::eventFilter(QObject*, QEvent* e) {
             return result;
         }
     } else if (e->type()==QEvent::KeyRelease) {
-        QKeyEvent* ke = (QKeyEvent*)e;
+        auto ke = (QKeyEvent*)e;
 
 #ifdef __APPLE__
         // On Mac OSX the nativeScanCode is empty
@@ -141,41 +139,33 @@ bool MixxxKeyboard::eventFilter(QObject*, QEvent* e) {
     }
     return false;
 }
-
-QKeySequence MixxxKeyboard::getKeySeq(QKeyEvent* e) {
+QKeySequence MixxxKeyboard::getKeySeq(QKeyEvent* e)
+{
     QString modseq;
     QKeySequence k;
-
     // TODO(XXX) check if we may simply return QKeySequence(e->modifiers()+e->key())
-
     if (e->modifiers() & Qt::ShiftModifier)
         modseq += "Shift+";
-
     if (e->modifiers() & Qt::ControlModifier)
         modseq += "Ctrl+";
-
     if (e->modifiers() & Qt::AltModifier)
         modseq += "Alt+";
-
     if (e->modifiers() & Qt::MetaModifier)
         modseq += "Meta+";
-
     if (e->key() >= 0x01000020 && e->key() <= 0x01000023) {
         // Do not act on Modifier only
         // avoid returning "khmer vowel sign ie (U+17C0)"
         return k;
     }
-
-    QString keyseq = QKeySequence(e->key()).toString();
+    auto keyseq = QKeySequence(e->key()).toString();
     k = QKeySequence(modseq + keyseq);
-
     if (CmdlineArgs::Instance().getDeveloper()) {
         qDebug() << "keyboard press: " << k.toString();
     }
     return k;
 }
-
-void MixxxKeyboard::setKeyboardConfig(ConfigObject<ConfigValueKbd>* pKbdConfigObject) {
+void MixxxKeyboard::setKeyboardConfig(ConfigObject<ConfigValueKbd>* pKbdConfigObject)
+{
     // Keyboard configs are a surjection from ConfigKey to key sequence. We
     // invert the mapping to create an injection from key sequence to
     // ConfigKey. This allows a key sequence to trigger multiple controls in
@@ -184,6 +174,7 @@ void MixxxKeyboard::setKeyboardConfig(ConfigObject<ConfigValueKbd>* pKbdConfigOb
     m_pKbdConfigObject = pKbdConfigObject;
 }
 
-ConfigObject<ConfigValueKbd>* MixxxKeyboard::getKeyboardConfig() {
+ConfigObject<ConfigValueKbd>* MixxxKeyboard::getKeyboardConfig()
+{
     return m_pKbdConfigObject;
 }

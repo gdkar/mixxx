@@ -1,4 +1,6 @@
-#include "controllerpreset.h"
+#include "controllers/controller.h"
+#include "controllers/controllerpreset.h"
+#include "controllers/controllerpresetvisitor.h"
 
 ControllerPreset::ControllerPreset() = default;
 ControllerPreset::~ControllerPreset() = default;
@@ -85,4 +87,18 @@ QString ControllerPreset::mixxxVersion() const {
 
 void ControllerPreset::addProductMatch(QHash<QString,QString> match) {
     m_productMatches.append(match);
+}
+void ControllerPreset::accept(ControllerPresetVisitor* visitor)
+{
+    if(visitor)
+        visitor->visit(this);
+}
+void ControllerPreset::accept(ConstControllerPresetVisitor* visitor) const
+{
+    if(visitor)
+        visitor->visit(this);
+};
+bool ControllerPreset::isMappable() const
+{
+    return false;
 }

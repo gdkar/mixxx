@@ -79,7 +79,8 @@ const int MixxxMainWindow::kMicrophoneCount = 4;
 const int MixxxMainWindow::kAuxiliaryCount = 4;
 
 MixxxMainWindow::MixxxMainWindow(QApplication* pApp, const CmdlineArgs& args)
-        : m_pWidgetParent(nullptr),
+        : m_pQmlEngine(new QQmlEngine(this)),
+          m_pWidgetParent(nullptr),
           m_pLaunchImage(nullptr),
           m_pSettingsManager(nullptr),
           m_pEffectsManager(nullptr),
@@ -103,7 +104,7 @@ MixxxMainWindow::MixxxMainWindow(QApplication* pApp, const CmdlineArgs& args)
           m_pPrefDlg(nullptr),
           m_pKbdConfig(nullptr),
           m_pKbdConfigEmpty(nullptr),
-          m_toolTipsCfg(mixxx::TooltipsPreference::TOOLTIPS_ON),
+          m_toolTipsCfg(mixxx::TooltipsPreference::ON),
           m_runtime_timer("MixxxMainWindow::runtime"),
           m_cmdLineArgs(args),
           m_pTouchShift(nullptr) {
@@ -1008,11 +1009,11 @@ bool MixxxMainWindow::eventFilter(QObject* obj, QEvent* event) {
     if (event->type() == QEvent::ToolTip) {
         // return true for no tool tips
         switch (m_toolTipsCfg) {
-            case mixxx::TooltipsPreference::TOOLTIPS_ONLY_IN_LIBRARY:
+            case mixxx::TooltipsPreference::ONLY_IN_LIBRARY:
                 return dynamic_cast<WBaseWidget*>(obj) != nullptr;
-            case mixxx::TooltipsPreference::TOOLTIPS_ON:
+            case mixxx::TooltipsPreference::ON:
                 return false;
-            case mixxx::TooltipsPreference::TOOLTIPS_OFF:
+            case mixxx::TooltipsPreference::OFF:
                 return true;
             default:
                 DEBUG_ASSERT(!"m_toolTipsCfg value unknown");

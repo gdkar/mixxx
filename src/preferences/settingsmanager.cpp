@@ -61,3 +61,16 @@ void SettingsManager::initializeDefaults() {
     }
 
 }
+UserSettingsPointer SettingsManager::settings() const
+{
+    return m_pSettings;
+}
+void SettingsManager::save()
+{
+    m_pSettings->save();
+}
+bool SettingsManager::shouldRescanLibrary()
+{
+    return m_bShouldRescanLibrary;
+}
+

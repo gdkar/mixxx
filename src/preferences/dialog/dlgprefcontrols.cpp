@@ -311,13 +311,13 @@ DlgPrefControls::DlgPrefControls(QWidget * parent, MixxxMainWindow * mixxx,
     // Initialize checkboxes to match config
     mixxx::TooltipsPreference configTooltips = m_mixxx->getToolTipsCfg();
     switch (configTooltips) {
-        case mixxx::TooltipsPreference::TOOLTIPS_OFF:
+        case mixxx::TooltipsPreference::OFF:
             radioButtonTooltipsOff->setChecked(true);
             break;
-        case mixxx::TooltipsPreference::TOOLTIPS_ON:
+        case mixxx::TooltipsPreference::ON:
             radioButtonTooltipsLibraryAndSkin->setChecked(true);
             break;
-        case mixxx::TooltipsPreference::TOOLTIPS_ONLY_IN_LIBRARY:
+        case mixxx::TooltipsPreference::ONLY_IN_LIBRARY:
             radioButtonTooltipsLibrary->setChecked(true);
             break;
     }
@@ -569,11 +569,11 @@ void DlgPrefControls::slotSetStartInFullScreen(bool b) {
 
 void DlgPrefControls::slotSetTooltips() {
     //0=OFF, 1=ON, 2=ON (only in Library)
-    mixxx::TooltipsPreference valueToSet = mixxx::TooltipsPreference::TOOLTIPS_ON;
+    mixxx::TooltipsPreference valueToSet = mixxx::TooltipsPreference::ON;
     if (radioButtonTooltipsOff->isChecked()) {
-        valueToSet = mixxx::TooltipsPreference::TOOLTIPS_OFF;
+        valueToSet = mixxx::TooltipsPreference::OFF;
     } else if (radioButtonTooltipsLibrary->isChecked()) {
-        valueToSet = mixxx::TooltipsPreference::TOOLTIPS_ONLY_IN_LIBRARY;
+        valueToSet = mixxx::TooltipsPreference::ONLY_IN_LIBRARY;
     }
     m_mixxx->setToolTipsCfg(valueToSet);
 }

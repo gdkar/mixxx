@@ -1,6 +1,4 @@
-#ifndef POSITIONSCRATCHCONTROLLER_H
-#define POSITIONSCRATCHCONTROLLER_H
-
+_Pragma("once")
 #include <QObject>
 #include <QString>
 
@@ -37,5 +35,3 @@ class PositionScratchController : public QObject {
     double m_dMoveDelay;
     double m_dMouseSampeTime;
 };
-
-#endif /* POSITIONSCRATCHCONTROLLER_H */

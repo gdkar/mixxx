@@ -1,7 +1,5 @@
 
-#ifndef CONTROLAUDIOTAPERPOT_H
-#define CONTROLAUDIOTAPERPOT_H
-
+_Pragma("once")
 #include "controlpotmeter.h"
 #include "preferences/usersettings.h"
 
@@ -14,5 +12,3 @@ class ControlAudioTaperPot : public ControlPotmeter {
     // neutralParameter is a knob position between 0 and 1 where the gain is 1 (0dB)
     ControlAudioTaperPot(ConfigKey key, double minDB, double maxDB, double neutralParameter);
 };
-
-#endif // CONTROLAUDIOTAPERPOT_H

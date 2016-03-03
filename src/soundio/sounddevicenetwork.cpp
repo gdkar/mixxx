@@ -16,8 +16,8 @@ SoundDeviceNetwork::SoundDeviceNetwork(UserSettingsPointer config,
                                        QSharedPointer<EngineNetworkStream> pNetworkStream)
         : SoundDevice(config, sm),
           m_pNetworkStream(pNetworkStream),
-          m_outputFifo(NULL),
-          m_inputFifo(NULL),
+          m_outputFifo(nullptr),
+          m_inputFifo(nullptr),
           m_outputDrift(false),
           m_inputDrift(false) {
     // Setting parent class members:
@@ -29,8 +29,7 @@ SoundDeviceNetwork::SoundDeviceNetwork(UserSettingsPointer config,
     m_iNumOutputChannels = pNetworkStream->getNumOutputChannels();
 }
 
-SoundDeviceNetwork::~SoundDeviceNetwork() {
-}
+SoundDeviceNetwork::~SoundDeviceNetwork() = default;
 
 Result SoundDeviceNetwork::open(bool isClkRefDevice, int syncBuffers) {
     Q_UNUSED(syncBuffers);
@@ -72,7 +71,7 @@ Result SoundDeviceNetwork::open(bool isClkRefDevice, int syncBuffers) {
 }
 
 bool SoundDeviceNetwork::isOpen() const {
-    return (m_inputFifo != NULL || m_outputFifo != NULL);
+    return (m_inputFifo != nullptr || m_outputFifo != nullptr);
 }
 
 Result SoundDeviceNetwork::close() {
@@ -80,11 +79,11 @@ Result SoundDeviceNetwork::close() {
     m_pNetworkStream->stopStream();
     if (m_outputFifo) {
         delete m_outputFifo;
-        m_outputFifo = NULL;
+        m_outputFifo = nullptr;
     }
     if (m_inputFifo) {
         delete m_inputFifo;
-        m_inputFifo = NULL;
+        m_inputFifo = nullptr;
     }
     return OK;
 }

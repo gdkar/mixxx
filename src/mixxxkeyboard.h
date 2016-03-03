@@ -15,9 +15,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef MIXXXKEYBOARD_H
-#define MIXXXKEYBOARD_H
-
+_Pragma("once")
 #include <QObject>
 #include <QEvent>
 #include <QKeyEvent>
@@ -64,5 +62,3 @@ class MixxxKeyboard : public QObject {
     // Multi-hash of key sequence to
     QMultiHash<ConfigValueKbd, ConfigKey> m_keySequenceToControlHash;
 };
-
-#endif

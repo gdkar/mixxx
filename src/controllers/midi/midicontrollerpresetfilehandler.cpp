@@ -16,31 +16,23 @@
 
 ControllerPresetPointer MidiControllerPresetFileHandler::load(const QDomElement root,
                                                               const QString deviceName) {
-    if (root.isNull()) {
+    if (root.isNull())
         return ControllerPresetPointer();
-    }
-
-    QDomElement controller = getControllerNode(root, deviceName);
-    if (controller.isNull()) {
+    auto controller = getControllerNode(root, deviceName);
+    if (controller.isNull())
         return ControllerPresetPointer();
-    }
-
-    MidiControllerPreset* preset = new MidiControllerPreset();
-
+    auto preset = new MidiControllerPreset();
     // Superclass handles parsing <info> tag and script files
     parsePresetInfo(root, preset);
     addScriptFilesToPreset(controller, preset);
-
-    QDomElement control = controller.firstChildElement("controls").firstChildElement("control");
-
+    auto control = controller.firstChildElement("controls").firstChildElement("control");
     // Iterate through each <control> block in the XML
     while (!control.isNull()) {
-
         //Unserialize these objects from the XML
-        QString strMidiStatus = control.firstChildElement("status").text();
-        QString midiNo = control.firstChildElement("midino").text();
+        auto strMidiStatus = control.firstChildElement("status").text();
+        auto midiNo = control.firstChildElement("midino").text();
 
-        bool ok = false;
+        auto ok = false;
 
         // Allow specifying hex, octal, or decimal.
         unsigned char midiStatusByte = strMidiStatus.toInt(&ok, 0);
@@ -50,16 +42,16 @@ ControllerPresetPointer MidiControllerPresetFileHandler::load(const QDomElement 
         unsigned char midiControl = midiNo.toInt(&ok, 0);
         if (!ok) midiControl = 0x00;
 
-        QDomElement groupNode = control.firstChildElement("group");
-        QDomElement keyNode = control.firstChildElement("key");
-        QDomElement descriptionNode = control.firstChildElement("description");
+        auto groupNode = control.firstChildElement("group");
+        auto keyNode = control.firstChildElement("key");
+        auto descriptionNode = control.firstChildElement("description");
 
-        QString controlGroup = groupNode.text();
-        QString controlKey = keyNode.text();
-        QString controlDescription = descriptionNode.text();
+        auto controlGroup = groupNode.text();
+        auto controlKey = keyNode.text();
+        auto controlDescription = descriptionNode.text();
 
         // Get options
-        QDomElement optionsNode = control.firstChildElement("options").firstChildElement();
+        auto optionsNode = control.firstChildElement("options").firstChildElement();
 
         MidiOptions options;
 
@@ -109,30 +101,30 @@ ControllerPresetPointer MidiControllerPresetFileHandler::load(const QDomElement 
 
     // Parse static output mappings
 
-    QDomElement output = controller.firstChildElement("outputs").firstChildElement("output");
+    auto output = controller.firstChildElement("outputs").firstChildElement("output");
 
     // Iterate through each <control> block in the XML
     while (!output.isNull()) {
         // Deserialize the control components from the XML
-        QDomElement groupNode = output.firstChildElement("group");
-        QDomElement keyNode = output.firstChildElement("key");
-        QDomElement descriptionNode = output.firstChildElement("description");
+        auto groupNode = output.firstChildElement("group");
+        auto keyNode = output.firstChildElement("key");
+        auto descriptionNode = output.firstChildElement("description");
 
-        QString controlGroup = groupNode.text();
-        QString controlKey = keyNode.text();
-        QString controlDescription = descriptionNode.text();
+        auto controlGroup = groupNode.text();
+        auto controlKey = keyNode.text();
+        auto controlDescription = descriptionNode.text();
 
         // Unserialize output message from the XML
         MidiOutputMapping mapping;
         mapping.controlKey = ConfigKey(controlGroup, controlKey);
         mapping.description = controlDescription;
 
-        QString midiStatus = output.firstChildElement("status").text();
-        QString midiNo = output.firstChildElement("midino").text();
-        QString midiOn = output.firstChildElement("on").text();
-        QString midiOff = output.firstChildElement("off").text();
+        auto midiStatus = output.firstChildElement("status").text();
+        auto midiNo = output.firstChildElement("midino").text();
+        auto midiOn = output.firstChildElement("on").text();
+        auto midiOff = output.firstChildElement("off").text();
 
-        bool ok = false;
+        auto ok = false;
 
         //Use QString with toInt base of 0 to auto convert hex values
         mapping.output.status = midiStatus.toInt(&ok, 0);
@@ -147,8 +139,8 @@ ControllerPresetPointer MidiControllerPresetFileHandler::load(const QDomElement 
         mapping.output.off = midiOff.toInt(&ok, 0);
         if (!ok) mapping.output.off = DEFAULT_OUTPUT_OFF;
 
-        QDomElement minNode = output.firstChildElement("minimum");
-        QDomElement maxNode = output.firstChildElement("maximum");
+        auto minNode = output.firstChildElement("minimum");
+        auto maxNode = output.firstChildElement("maximum");
 
         ok = false;
         if (!minNode.isNull()) {
@@ -182,28 +174,24 @@ ControllerPresetPointer MidiControllerPresetFileHandler::load(const QDomElement 
         // Use insertMulti because we support multiple outputs from the same
         // control.
         preset->outputMappings.insertMulti(mapping.controlKey, mapping);
-
         output = output.nextSiblingElement("output");
     }
-
     qDebug() << "MidiPresetFileHandler: Output mapping parsing complete.";
-
     return ControllerPresetPointer(preset);
 }
-
 bool MidiControllerPresetFileHandler::save(const MidiControllerPreset& preset,
                                            const QString deviceName,
                                            const QString fileName) const {
     qDebug() << "Saving preset for" << deviceName << "to" << fileName;
-    QDomDocument doc = buildRootWithScripts(preset, deviceName);
+    auto doc = buildRootWithScripts(preset, deviceName);
     addControlsToDocument(preset, &doc);
     return writeDocument(doc, fileName);
 }
 
 void MidiControllerPresetFileHandler::addControlsToDocument(const MidiControllerPreset& preset,
                                                             QDomDocument* doc) const {
-    QDomElement controller = doc->documentElement().firstChildElement("controller");
-    QDomElement controls = doc->createElement("controls");
+    auto controller = doc->documentElement().firstChildElement("controller");
+    auto controls = doc->createElement("controls");
 
     // Iterate over all of the command/control pairs in the input mapping
     QHashIterator<uint16_t, MidiInputMapping> it(preset.inputMappings);
@@ -219,15 +207,14 @@ void MidiControllerPresetFileHandler::addControlsToDocument(const MidiController
     }
     controller.appendChild(controls);
 
-    QDomElement outputs = doc->createElement("outputs");
+    auto outputs = doc->createElement("outputs");
 
     //Iterate over all of the command/control pairs in the OUTPUT mapping
     QHashIterator<ConfigKey, MidiOutputMapping> outIt(preset.outputMappings);
     while (outIt.hasNext()) {
         outIt.next();
-
-        const MidiOutputMapping& mapping = outIt.value();
-        QDomElement outputNode = outputMappingToXML(doc, mapping);
+        const auto & mapping = outIt.value();
+        auto outputNode = outputMappingToXML(doc, mapping);
 
         // Add the control node we just created to the XML document in the
         // proper spot.
@@ -239,15 +226,15 @@ void MidiControllerPresetFileHandler::addControlsToDocument(const MidiController
 QDomElement MidiControllerPresetFileHandler::makeTextElement(QDomDocument* doc,
                                                              const QString& elementName,
                                                              const QString& text) const {
-    QDomElement tagNode = doc->createElement(elementName);
-    QDomText textNode = doc->createTextNode(text);
+    auto tagNode = doc->createElement(elementName);
+    auto textNode = doc->createTextNode(text);
     tagNode.appendChild(textNode);
     return tagNode;
 }
 
 QDomElement MidiControllerPresetFileHandler::inputMappingToXML(
         QDomDocument* doc, const MidiInputMapping& mapping) const {
-    QDomElement controlNode = doc->createElement("control");
+    auto controlNode = doc->createElement("control");
 
     controlNode.appendChild(makeTextElement(doc, "group", mapping.control.group));
     controlNode.appendChild(makeTextElement(doc, "key", mapping.control.item));
@@ -255,83 +242,80 @@ QDomElement MidiControllerPresetFileHandler::inputMappingToXML(
         controlNode.appendChild(
             makeTextElement(doc, "description", mapping.description));
     }
-
     // MIDI status byte
     controlNode.appendChild(makeTextElement(
         doc, "status", MidiUtils::formatByteAsHex(mapping.key.status)));
-
     if (mapping.key.control != 0xFF) {
         //MIDI control number
         controlNode.appendChild(makeTextElement(
             doc, "midino", MidiUtils::formatByteAsHex(mapping.key.control)));
     }
-
     //Midi options
-    QDomElement optionsNode = doc->createElement("options");
+    auto optionsNode = doc->createElement("options");
 
     // "normal" is no options
     if (mapping.options.all == 0) {
-        QDomElement singleOption = doc->createElement("normal");
+        auto singleOption = doc->createElement("normal");
             optionsNode.appendChild(singleOption);
     } else {
         if (mapping.options.invert) {
-            QDomElement singleOption = doc->createElement("invert");
+            auto singleOption = doc->createElement("invert");
             optionsNode.appendChild(singleOption);
         }
         if (mapping.options.rot64) {
-            QDomElement singleOption = doc->createElement("rot64");
+            auto singleOption = doc->createElement("rot64");
             optionsNode.appendChild(singleOption);
         }
         if (mapping.options.rot64_inv) {
-            QDomElement singleOption = doc->createElement("rot64inv");
+            auto singleOption = doc->createElement("rot64inv");
             optionsNode.appendChild(singleOption);
         }
         if (mapping.options.rot64_fast) {
-            QDomElement singleOption = doc->createElement("rot64fast");
+            auto singleOption = doc->createElement("rot64fast");
             optionsNode.appendChild(singleOption);
         }
         if (mapping.options.diff) {
-            QDomElement singleOption = doc->createElement("diff");
+            auto singleOption = doc->createElement("diff");
             optionsNode.appendChild(singleOption);
         }
         if (mapping.options.button) {
-            QDomElement singleOption = doc->createElement("button");
+            auto singleOption = doc->createElement("button");
             optionsNode.appendChild(singleOption);
         }
         if (mapping.options.sw) {
-            QDomElement singleOption = doc->createElement("switch");
+            auto singleOption = doc->createElement("switch");
             optionsNode.appendChild(singleOption);
         }
         if (mapping.options.herc_jog) {
-            QDomElement singleOption = doc->createElement("hercjog");
+            auto singleOption = doc->createElement("hercjog");
             optionsNode.appendChild(singleOption);
         }
         if (mapping.options.herc_jog_fast) {
-            QDomElement singleOption = doc->createElement("hercjogfast");
+            auto singleOption = doc->createElement("hercjogfast");
             optionsNode.appendChild(singleOption);
         }
         if (mapping.options.spread64) {
-            QDomElement singleOption = doc->createElement("spread64");
+            auto singleOption = doc->createElement("spread64");
             optionsNode.appendChild(singleOption);
         }
         if (mapping.options.selectknob) {
-            QDomElement singleOption = doc->createElement("selectknob");
+            auto singleOption = doc->createElement("selectknob");
             optionsNode.appendChild(singleOption);
         }
         if (mapping.options.soft_takeover) {
-            QDomElement singleOption = doc->createElement("soft-takeover");
+            auto singleOption = doc->createElement("soft-takeover");
             optionsNode.appendChild(singleOption);
         }
         if (mapping.options.script) {
-            QDomElement singleOption = doc->createElement("script-binding");
+            auto singleOption = doc->createElement("script-binding");
             optionsNode.appendChild(singleOption);
         }
         if (mapping.options.fourteen_bit_msb) {
-            QDomElement singleOption = doc->createElement("fourteen-bit-msb");
+            auto singleOption = doc->createElement("fourteen-bit-msb");
             optionsNode.appendChild(singleOption);
         }
         if (mapping.options.fourteen_bit_lsb) {
-            QDomElement singleOption = doc->createElement("fourteen-bit-lsb");
+            auto singleOption = doc->createElement("fourteen-bit-lsb");
             optionsNode.appendChild(singleOption);
         }
     }
@@ -342,7 +326,7 @@ QDomElement MidiControllerPresetFileHandler::inputMappingToXML(
 
 QDomElement MidiControllerPresetFileHandler::outputMappingToXML(
         QDomDocument* doc, const MidiOutputMapping& mapping) const {
-    QDomElement outputNode = doc->createElement("output");
+    auto outputNode = doc->createElement("output");
 
     outputNode.appendChild(makeTextElement(doc, "group", mapping.controlKey.group));
     outputNode.appendChild(makeTextElement(doc, "key", mapping.controlKey.item));
@@ -350,42 +334,35 @@ QDomElement MidiControllerPresetFileHandler::outputMappingToXML(
         outputNode.appendChild(
             makeTextElement(doc, "description", mapping.description));
     }
-
     // MIDI status byte
     outputNode.appendChild(makeTextElement(
         doc, "status", MidiUtils::formatByteAsHex(mapping.output.status)));
-
     if (mapping.output.control != 0xFF) {
         //MIDI control number
         outputNode.appendChild(makeTextElement(
             doc, "midino", MidiUtils::formatByteAsHex(mapping.output.control)));
     }
-
     // Third MIDI byte for turning on the LED
     if (mapping.output.on != DEFAULT_OUTPUT_ON) {
         outputNode.appendChild(makeTextElement(
             doc, "on", MidiUtils::formatByteAsHex(mapping.output.on)));
     }
-
     // Third MIDI byte for turning off the LED
     if (mapping.output.off != DEFAULT_OUTPUT_OFF) {
         outputNode.appendChild(makeTextElement(
             doc, "off", MidiUtils::formatByteAsHex(mapping.output.off)));
     }
-
     // Upper value, above which the 'off' value is sent
     //  (We don't bother writing it if it's the default value.)
     if (mapping.output.max != DEFAULT_OUTPUT_MAX) {
         outputNode.appendChild(makeTextElement(
             doc, "maximum", QString::number(mapping.output.max)));
     }
-
     // Lower value, below which the 'off' value is sent
     //  (We don't bother writing it if it's the default value.)
     if (mapping.output.min != DEFAULT_OUTPUT_MIN) {
         outputNode.appendChild(makeTextElement(
             doc, "minimum", QString::number(mapping.output.min)));
     }
-
     return outputNode;
 }

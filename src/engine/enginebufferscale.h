@@ -15,12 +15,11 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef ENGINEBUFFERSCALE_H
-#define ENGINEBUFFERSCALE_H
-
+_Pragma("once")
 #include <QObject>
 
 #include "util/types.h"
+#include "engine/readaheadmanager.h"
 
 // MAX_SEEK_SPEED needs to be good and high to allow room for the very high
 //  instantaneous velocities of advanced scratching (Uzi) and spin-backs.
@@ -36,13 +35,13 @@
 /**
   *@author Tue & Ken Haste Andersen
   */
-
+class ReadAheadManager;
 class EngineBufferScale : public QObject {
     Q_OBJECT
   public:
-    EngineBufferScale();
+    EngineBufferScale(QObject *pParent = nullptr);
+    EngineBufferScale(ReadAheadManager * pRAMan, QObject *pParent);
     virtual ~EngineBufferScale();
-
     // Sets the scaling parameters.
     // * The base rate (ratio of track sample rate to output sample rate).
     // * The tempoRatio describes the tempo change in fraction of
@@ -63,23 +62,19 @@ class EngineBufferScale : public QObject {
         m_dTempoRatio = *pTempoRatio;
         m_dPitchRatio = *pPitchRatio;
     }
-
     // Set the desired output sample rate.
     virtual void setSampleRate(int iSampleRate) {
         m_iSampleRate = iSampleRate;
     }
-
     // Called from EngineBuffer when seeking, to ensure the buffers are flushed */
     virtual void clear() = 0;
     // Scale buffer
     virtual double getScaled(CSAMPLE* pOutput, const int iBufferSize) = 0;
-
   protected:
-    int m_iSampleRate;
-    double m_dBaseRate;
-    bool m_bSpeedAffectsPitch;
-    double m_dTempoRatio;
-    double m_dPitchRatio;
+    int m_iSampleRate{44100};
+    double m_dBaseRate{1.0};
+    bool m_bSpeedAffectsPitch{false};
+    double m_dTempoRatio{1.0};
+    double m_dPitchRatio{1.0};
+    ReadAheadManager *m_pReadAheadManager{nullptr};
 };
-
-#endif

@@ -12,10 +12,9 @@ ControllerMappingTableModel::~ControllerMappingTableModel() {
 
 void ControllerMappingTableModel::setPreset(ControllerPresetPointer pPreset) {
     m_pPreset = pPreset;
-    if (m_pPreset) {
+    if (m_pPreset)
         // This immediately calls one of the two visit() methods below.
         m_pPreset->accept(this);
-    }
 
     // Notify the child class a preset was loaded.
     onPresetLoaded();

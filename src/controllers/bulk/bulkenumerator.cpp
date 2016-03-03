@@ -13,15 +13,13 @@
 
 BulkEnumerator::BulkEnumerator()
         : ControllerEnumerator(),
-          m_context(NULL) {
+          m_context(nullptr) {
     libusb_init(&m_context);
 }
-
 BulkEnumerator::~BulkEnumerator() {
     qDebug() << "Deleting USB Bulk devices...";
-    while (m_devices.size() > 0) {
+    while (m_devices.size() > 0)
         delete m_devices.takeLast();
-    }
     libusb_exit(m_context);
 }
 

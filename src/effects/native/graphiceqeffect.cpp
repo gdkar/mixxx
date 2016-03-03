@@ -95,25 +95,19 @@ GraphicEQEffectGroupState::GraphicEQEffectGroupState() {
     m_low = new EngineFilterBiquad1LowShelving(44100, m_centerFrequencies[0], Q);
     m_high = new EngineFilterBiquad1HighShelving(44100, m_centerFrequencies[7], Q);
     for (int i = 1; i < 7; i++) {
-        m_bands.append(new EngineFilterBiquad1Peaking(44100,
-                                                      m_centerFrequencies[i],
-                                                      Q));
+        m_bands.append(new EngineFilterBiquad1Peaking(44100,m_centerFrequencies[i],Q));
     }
 }
-
 GraphicEQEffectGroupState::~GraphicEQEffectGroupState() {
     foreach (EngineFilterBiquad1Peaking* filter, m_bands) {
         delete filter;
     }
-
     delete m_low;
     delete m_high;
-
     foreach(CSAMPLE* buf, m_pBufs) {
         SampleUtil::free(buf);
     }
 }
-
 void GraphicEQEffectGroupState::setFilters(int sampleRate) {
     m_low->setFrequencyCorners(sampleRate, m_centerFrequencies[0], Q,
                                m_oldLow);
@@ -135,10 +129,7 @@ GraphicEQEffect::GraphicEQEffect(EngineEffect* pEffect,
     }
     m_pPotHigh = pEffect->getParameterById("high");
 }
-
-GraphicEQEffect::~GraphicEQEffect() {
-}
-
+GraphicEQEffect::~GraphicEQEffect() = default;
 void GraphicEQEffect::processChannel(const ChannelHandle& handle,
                                      GraphicEQEffectGroupState* pState,
                                      const CSAMPLE* pInput, CSAMPLE* pOutput,

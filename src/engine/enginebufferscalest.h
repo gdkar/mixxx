@@ -22,9 +22,7 @@
   *@author Tue Haste Andersen
 */
 
-#ifndef ENGINEBUFFERSCALEST_H
-#define ENGINEBUFFERSCALEST_H
-
+_Pragma("once")
 #include "engine/enginebufferscale.h"
 
 // Number of samples to read ahead. Setting this too high (10000) causes
@@ -40,33 +38,22 @@ class SoundTouch;
 class EngineBufferScaleST : public EngineBufferScale {
     Q_OBJECT
   public:
-    EngineBufferScaleST(ReadAheadManager* pReadAheadManager);
-    ~EngineBufferScaleST() override;
-
+    EngineBufferScaleST(ReadAheadManager* pReadAheadManager, QObject *pParent);
+    EngineBufferScaleST(QObject *pParent = nullptr);
+    virtual ~EngineBufferScaleST() override;
     void setScaleParameters(double base_rate,
                             double* pTempoRatio,
                             double* pPitchRatio) override;
-
     void setSampleRate(int iSampleRate) override;
-
     // Scale buffer.
     double getScaled(CSAMPLE* pOutput, const int iBufferSize) override;
-
     // Flush buffer.
     void clear() override;
-
   private:
     // Holds the playback direction.
-    bool m_bBackwards;
-
+    bool m_bBackwards{false};
     // Temporary buffer for reading from the RAMAN.
-    CSAMPLE* buffer_back;
-
+    std::unique_ptr<CSAMPLE[]> buffer_back;
     // SoundTouch time/pitch scaling lib
-    soundtouch::SoundTouch* m_pSoundTouch;
-
-    // The read-ahead manager that we use to fetch samples
-    ReadAheadManager* m_pReadAheadManager;
+    std::unique_ptr<soundtouch::SoundTouch> m_pSoundTouch;
 };
-
-#endif

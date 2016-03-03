@@ -211,7 +211,7 @@ class Qt(Dependence):
             'QtTest', 'QtScriptTools'
         ]
         if qt5:
-            qt_modules.extend(['QtWidgets', 'QtConcurrent'])
+            qt_modules.extend(['QtWidgets', 'QtConcurrent','QtQml','QtQuick'])
         return qt_modules
 
     @staticmethod
@@ -304,6 +304,8 @@ class Qt(Dependence):
                 'QtXml'      : ['QT_XML_LIB'],
                 'QtOpenGL'   : ['QT_OPENGL_LIB'],
                 'QtGui'      : ['QT_GUI_LIB'],
+                'QtQml'      : ['QT_QML_LIB'],
+                'QtQuick'    : ['QT_QUICK_LIB'],
                 'QtNetwork'  : ['QT_NETWORK_LIB'],
                 'QtCore'     : ['QT_CORE_LIB'],
                 'QtWidgets'  : ['QT_WIDGETS_LIB'],

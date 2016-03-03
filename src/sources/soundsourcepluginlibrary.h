@@ -1,6 +1,4 @@
-#ifndef MIXXX_SOUNDSOURCEPLUGINLIBRARY_H
-#define MIXXX_SOUNDSOURCEPLUGINLIBRARY_H
-
+_Pragma("once")
 #include "sources/soundsourcepluginapi.h"
 
 #include <QMap>
@@ -19,37 +17,20 @@ typedef QSharedPointer<SoundSourceProvider> SoundSourceProviderPointer;
 class SoundSourcePluginLibrary {
 public:
     static SoundSourcePluginLibraryPointer load(const QString& libFilePath);
-
     virtual ~SoundSourcePluginLibrary();
-
-    QString getFilePath() const {
-        return m_library.fileName();
-    }
-
-    int getApiVersion() const {
-        return m_apiVersion;
-    }
-
+    QString getFilePath() const;
+    int getApiVersion() const;
     SoundSourceProviderPointer createSoundSourceProvider() const;
-
 protected:
     explicit SoundSourcePluginLibrary(const QString& libFilePath);
-
     virtual bool init();
-
 private:
     static QMutex s_loadedPluginLibrariesMutex;
     static QMap<QString, Mixxx::SoundSourcePluginLibraryPointer> s_loadedPluginLibraries;
-
     QLibrary m_library;
-
     int m_apiVersion;
     QStringList m_supportedFileExtensions;
-
     SoundSourcePluginAPI_createSoundSourceProviderFunc m_createSoundSourceProviderFunc;
     SoundSourcePluginAPI_destroySoundSourceProviderFunc m_destroySoundSourceProviderFunc;
 };
-
 } // namespace Mixxx
-
-#endif // MIXXX_SOUNDSOURCEPLUGINLIBRARY_H

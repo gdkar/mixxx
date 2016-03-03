@@ -1,6 +1,4 @@
-#ifndef MIXXX_SOUNDSOURCEPROVIDER_H
-#define MIXXX_SOUNDSOURCEPROVIDER_H
-
+_Pragma("once")
 #include <QString>
 #include <QStringList>
 #include <QUrl>
@@ -24,14 +22,11 @@ enum class SoundSourceProviderPriority {
 // Factory interface for SoundSources
 class SoundSourceProvider {
 public:
-    virtual ~SoundSourceProvider() {}
-
+    virtual ~SoundSourceProvider() = default;
     // A user-readable name that identifies this provider.
     virtual QString getName() const = 0;
-
     // A list of supported file extensions in any order.
     virtual QStringList getSupportedFileExtensions() const = 0;
-
     // The default cooperative priority of this provider compared to
     // others supporting the same file extension(s). Please note that
     // an application may override the returned value to support
@@ -44,14 +39,10 @@ public:
         Q_UNUSED(supportedFileExtension);
         return SoundSourceProviderPriority::DEFAULT;
     }
-
     // Creates a new SoundSource for the file referenced by the URL.
     // This function should return a NULL pointer if it is already
     // able to decide that the file is not supported even though it
     // has one of the supported file extensions.
     virtual SoundSourcePointer newSoundSource(const QUrl& url) = 0;
 };
-
 } // namespace Mixxx
-
-#endif // MIXXX_SOUNDSOURCEPROVIDER_H

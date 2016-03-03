@@ -16,17 +16,18 @@
 ***************************************************************************/
 
 #include "engine/enginebufferscale.h"
-
 #include "util/defs.h"
 #include "util/sample.h"
 
-EngineBufferScale::EngineBufferScale()
-        : m_iSampleRate(44100),
-          m_dBaseRate(1.0),
-          m_bSpeedAffectsPitch(false),
-          m_dTempoRatio(1.0),
-          m_dPitchRatio(1.0) {
+EngineBufferScale::EngineBufferScale(QObject *pParent )
+        : QObject(pParent)
+{
+    if(pParent)
+        m_pReadAheadManager = pParent->findChild<ReadAheadManager*>();
 }
-
-EngineBufferScale::~EngineBufferScale() {
+EngineBufferScale::EngineBufferScale(ReadAheadManager *pRAMan, QObject *pParent)
+    : QObject(pParent)
+    , m_pReadAheadManager(pRAMan)
+{
 }
+EngineBufferScale::~EngineBufferScale() = default;

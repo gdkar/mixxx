@@ -14,8 +14,8 @@ template <class DataType>
 class FIFO {
   public:
     explicit FIFO(int size)
-            : m_data(NULL) {
-        size = roundUpToPowerOf2(size);
+            : m_data(nullptr) {
+        size = roundup(size);
         // If we can't represent the next higher power of 2 then bail.
         if (size < 0) {
             return;

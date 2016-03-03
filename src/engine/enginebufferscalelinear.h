@@ -15,9 +15,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef ENGINEBUFFERSCALELINEAR_H
-#define ENGINEBUFFERSCALELINEAR_H
-
+_Pragma("once")
 #include "engine/enginebufferscale.h"
 #include "engine/readaheadmanager.h"
 
@@ -31,33 +29,30 @@ const int kiLinearScaleReadAheadLength = 10240;
 
 
 class EngineBufferScaleLinear : public EngineBufferScale  {
+    Q_OBJECT;
   public:
-    EngineBufferScaleLinear(ReadAheadManager *pReadAheadManager);
-    ~EngineBufferScaleLinear() override;
+    EngineBufferScaleLinear(QObject *pParent = nullptr);
+    EngineBufferScaleLinear(ReadAheadManager *pReadAheadManager, QObject *pParent);
+    virtual ~EngineBufferScaleLinear() override;
 
     double getScaled(CSAMPLE* pOutput, const int iBufferSize) override;
     void clear() override;
 
-    void setScaleParameters(double base_rate,
-                            double* pTempoRatio,
-                             double* pPitchRatio) override;
+    void setScaleParameters(double base_rate,double* pTempoRatio,double* pPitchRatio) override;
 
   private:
     int do_scale(CSAMPLE* buf, const int buf_size);
     int do_copy(CSAMPLE* buf, const int buf_size);
 
-    bool m_bClear;
-    double m_dRate;
-    double m_dOldRate;
+    bool m_bClear{false};
+    double m_dRate{1.0};
+    double m_dOldRate{1.0};
 
     // Buffer for handling calls to ReadAheadManager
-    CSAMPLE* m_bufferInt;
-    int m_bufferIntSize;
-    CSAMPLE m_floorSampleOld[2];
+    std::unique_ptr<CSAMPLE[]> m_bufferInt;
+    int m_bufferIntSize{0};
+    CSAMPLE m_floorSampleOld[2] = { 0.f, 0.f};
     // The read-ahead manager that we use to fetch samples
-    ReadAheadManager* m_pReadAheadManager;
-    double m_dCurrentFrame;
-    double m_dNextFrame;
+    double m_dCurrentFrame{0.0};
+    double m_dNextFrame{0.0};
 };
-
-#endif

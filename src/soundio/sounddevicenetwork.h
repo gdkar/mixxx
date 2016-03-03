@@ -1,6 +1,4 @@
-#ifndef SOUNDDEVICENETWORK_H
-#define SOUNDDEVICENETWORK_H
-
+_Pragma("once")
 #include <QString>
 
 #include "soundio/sounddevice.h"
@@ -37,5 +35,3 @@ class SoundDeviceNetwork : public SoundDevice {
     bool m_inputDrift;
     static volatile int m_underflowHappened;
 };
-
-#endif // SOUNDDEVICENETWORK_H

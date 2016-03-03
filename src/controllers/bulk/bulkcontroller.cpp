@@ -21,14 +21,11 @@ BulkReader::BulkReader(libusb_device_handle *handle, unsigned char in_epaddr)
           m_stop(0),
           m_in_epaddr(in_epaddr) {
 }
-
 BulkReader::~BulkReader() = default;
-
 void BulkReader::stop()
 {
     m_stop = 1;
 }
-
 void BulkReader::run()
 {
     m_stop = 0;
@@ -77,15 +74,11 @@ BulkController::BulkController(libusb_context* context,
 {
     vendor_id = desc->idVendor;
     product_id = desc->idProduct;
-
     manufacturer = get_string(handle, desc->iManufacturer);
     product = get_string(handle, desc->iProduct);
     m_sUID = get_string(handle, desc->iSerialNumber);
-
     setDeviceCategory(tr("USB Controller"));
-
     setDeviceName(QString("%1 %2").arg(product).arg(m_sUID));
-
     setInputDevice(true);
     setOutputDevice(true);
     m_pReader = nullptr;
@@ -132,7 +125,6 @@ bool BulkController::matchProductInfo(QHash <QString, QString> info)
     if (!ok || vendor_id!=value) return false;
     value = info["product_id"].toInt(&ok,16);
     if (!ok || product_id!=value) return false;
-
     // Match found
     return true;
 }
@@ -142,7 +134,6 @@ int BulkController::open()
         qDebug() << "USB Bulk device" << getName() << "already open";
         return -1;
     }
-
     /* Look up endpoint addresses in supported database */
     int i;
     for (i = 0; bulk_supported[i].vendor_id; ++i) {
@@ -189,15 +180,12 @@ int BulkController::open()
 
     return 0;
 }
-
 int BulkController::close() {
     if (!isOpen()) {
         qDebug() << " device" << getName() << "already closed";
         return -1;
     }
-
     qDebug() << "Shutting down USB Bulk device" << getName();
-
     // Stop the reading thread
     if (m_pReader == nullptr) {
         qWarning() << "BulkReader not present for" << getName()
@@ -228,10 +216,8 @@ void BulkController::send(QList<int> data, unsigned int length)
 {
     Q_UNUSED(length);
     QByteArray temp;
-
-    for(auto datum: data) {
+    for(auto datum: data)
         temp.append(datum);
-    }
     send(temp);
 }
 

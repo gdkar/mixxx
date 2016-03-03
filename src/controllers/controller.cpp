@@ -171,12 +171,12 @@ void Controller::setPreset(const ControllerPreset& preset) {
     // the preset to call our visitor methods with its type.
     preset.accept(this);
 }
-bool Controller::poll()
-{
-    return false;
-}
-void Controller::accept(ControllerVisitor*visitor)
+void Controller::accept(ControllerVisitor* visitor)
 {
     if(visitor)
         visitor->visit(this);
+}
+bool Controller::poll()
+{
+    return false;
 }

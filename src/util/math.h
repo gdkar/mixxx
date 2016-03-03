@@ -36,26 +36,25 @@ template <typename T>
 inline bool even(T value) {
     return value % 2 == 0;
 }
-
-inline int roundUpToPowerOf2(int v) {
-    int power = 1;
-    while (power < v && power > 0) {
-        power *= 2;
+namespace {
+    template<typename T>
+    inline constexpr T roundup_(T x, size_t shift)
+    {
+        return (shift < sizeof(T) * 8) ? roundup_(x|(x>>shift),shift<<1) : x;
     }
-    // There is not a power of 2 higher than v representable by our
-    // architecture's integer size.
-    if (power < 0) {
-        return -1;
-    }
-    return power;
+};
+template<typename T>
+constexpr T roundup(T x)
+{
+    return roundup_(x - T{1}, size_t{1}) + T{1};
 }
 
 template <typename T>
 inline const T ratio2db(const T a) {
-    return log10(a) * 20;
+    return std::log10(a) * 20;
 }
 
 template <typename T>
 inline const T db2ratio(const T a) {
-    return pow(10, a / 20);
+    return std::pow(10, a / 20);
 }

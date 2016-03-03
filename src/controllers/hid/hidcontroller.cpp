@@ -21,10 +21,7 @@ HidReader::HidReader(hid_device* device)
         : QThread(),
           m_pHidDevice(device) {
 }
-
-HidReader::~HidReader() {
-}
-
+HidReader::~HidReader() = default;
 void HidReader::run() {
     m_stop = 0;
     unsigned char *data = new unsigned char[255];
@@ -47,9 +44,8 @@ void HidReader::run() {
     }
     delete [] data;
 }
-
 HidController::HidController(const hid_device_info deviceInfo)
-        : m_pHidDevice(NULL) {
+        : m_pHidDevice(nullptr) {
     // Copy required variables from deviceInfo, which will be freed after
     // this class is initialized by caller.
     hid_vendor_id = deviceInfo.vendor_id;
@@ -65,7 +61,6 @@ HidController::HidController(const hid_device_info deviceInfo)
         hid_usage_page = 0;
         hid_usage = 0;
     }
-
     // Don't trust path to be null terminated.
     hid_path = new char[PATH_MAX + 1];
     strncpy(hid_path, deviceInfo.path, PATH_MAX);
@@ -78,16 +73,12 @@ HidController::HidController(const hid_device_info deviceInfo)
         wcsncpy(hid_serial_raw, deviceInfo.serial_number, serial_max_length);
         hid_serial_raw[serial_max_length] = 0;
     }
-
     hid_serial = safeDecodeWideString(deviceInfo.serial_number, 512);
     hid_manufacturer = safeDecodeWideString(deviceInfo.manufacturer_string, 512);
     hid_product = safeDecodeWideString(deviceInfo.product_string, 512);
-
     guessDeviceCategory();
-
     // Set the Unique Identifier to the serial_number
     m_sUID = hid_serial;
-
     //Note: We include the last 4 digits of the serial number and the
     // interface number to allow the user (and Mixxx!) to keep track of
     // which is which
@@ -102,22 +93,20 @@ HidController::HidController(const hid_device_info deviceInfo)
             .arg(QString::number(hid_interface_number)));
         m_sUID.append(QString::number(hid_interface_number));
     }
-
     // All HID devices are full-duplex
     setInputDevice(true);
     setOutputDevice(true);
     m_pReader = NULL;
 }
-
-HidController::~HidController() {
-    if (isOpen()) {
+HidController::~HidController()
+{
+    if (isOpen())
         close();
-    }
     delete [] hid_path;
     delete [] hid_serial_raw;
 }
-
-QString HidController::presetExtension() {
+QString HidController::presetExtension()
+{
     return HID_PRESET_EXTENSION;
 }
 void HidController::visit(const ControllerPreset* preset)
@@ -208,28 +197,24 @@ void HidController::guessDeviceCategory() {
     }
     setDeviceCategory(info);
 }
-
-int HidController::open() {
+int HidController::open()
+{
     if (isOpen()) {
         qDebug() << "HID device" << getName() << "already open";
         return -1;
     }
-
     // Open device by path
     controllerDebug("Opening HID device" << getName() << "by HID path" << hid_path);
-
     m_pHidDevice = hid_open_path(hid_path);
-
     // If that fails, try to open device with vendor/product/serial #
-    if (m_pHidDevice == NULL) {
+    if (m_pHidDevice == nullptr) {
         controllerDebug("Failed. Trying to open with make, model & serial no:"
                 << hid_vendor_id << hid_product_id << hid_serial);
         m_pHidDevice = hid_open(hid_vendor_id, hid_product_id, hid_serial_raw);
     }
-
     // If it does fail, try without serial number WARNING: This will only open
     // one of multiple identical devices
-    if (m_pHidDevice == NULL) {
+    if (m_pHidDevice == nullptr) {
         qWarning() << "Unable to open specific HID device" << getName()
                    << "Trying now with just make and model."
                    << "(This may only open the first of multiple identical devices.)";
@@ -261,17 +246,15 @@ int HidController::open() {
 
     return 0;
 }
-
-int HidController::close() {
+int HidController::close()
+{
     if (!isOpen()) {
         qDebug() << "HID device" << getName() << "already closed";
         return -1;
     }
-
     qDebug() << "Shutting down HID device" << getName();
-
     // Stop the reading thread
-    if (m_pReader == NULL) {
+    if (m_pReader == nullptr) {
         qWarning() << "HidReader not present for" << getName()
                    << "yet the device is open!";
     } else {
@@ -303,11 +286,10 @@ void HidController::send(QList<int> data, unsigned int length, unsigned int repo
         temp.append(datum);
     send(temp, reportID);
 }
-
-void HidController::send(QByteArray data) {
+void HidController::send(QByteArray data)
+{
     send(data, 0);
 }
-
 void HidController::send(QByteArray data, unsigned int reportID) {
     // Append the Report ID to the beginning of data[] per the API..
     data.prepend(reportID);

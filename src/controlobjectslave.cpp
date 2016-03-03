@@ -105,3 +105,98 @@ bool ControlObjectSlave::connectValueChanged(
     DEBUG_ASSERT(parent() != NULL);
     return connectValueChanged(parent(), method, type);
 }
+
+ConfigKey ControlObjectSlave::getKey() const
+{
+    return m_key;
+}
+
+void ControlObjectSlave::emitValueChanged()
+{
+    emit(valueChanged(get()));
+}
+
+bool ControlObjectSlave::valid() const
+{
+    return m_pControl != NULL;
+}
+double ControlObjectSlave::get() const
+{
+    return m_pControl ? m_pControl->get() : 0.0;
+}
+
+// Returns the bool interpretation of the value
+bool ControlObjectSlave::toBool() const
+{
+    return get() > 0.0;
+}
+
+// Returns the parameterized value of the object. Thread safe, non-blocking.
+double ControlObjectSlave::getParameter() const
+{
+    return m_pControl ? m_pControl->getParameter() : 0.0;
+}
+// Returns the parameterized value of the object. Thread safe, non-blocking.
+double ControlObjectSlave::getParameterForValue(double value) const
+{
+    return m_pControl ? m_pControl->getParameterForValue(value) : 0.0;
+}
+
+// Returns the normalized parameter of the object. Thread safe, non-blocking.
+double ControlObjectSlave::getDefault() const {
+    return m_pControl ? m_pControl->defaultValue() : 0.0;
+}
+
+// Set the control to a new value. Non-blocking.
+void ControlObjectSlave::slotSet(double v)
+{
+    set(v);
+}
+// Sets the control value to v. Thread safe, non-blocking.
+void ControlObjectSlave::set(double v)
+{
+    if (m_pControl) {
+        m_pControl->set(v, this);
+    }
+}
+// Sets the control parameterized value to v. Thread safe, non-blocking.
+void ControlObjectSlave::setParameter(double v)
+{
+    if (m_pControl) {
+        m_pControl->setParameter(v, this);
+    }
+}
+// Resets the control to its default value. Thread safe, non-blocking.
+void ControlObjectSlave::reset() {
+    if (m_pControl) {
+        // NOTE(rryan): This is important. The originator of this action does
+        // not know the resulting value so it makes sense that we should emit a
+        // general valueChanged() signal even though the change originated from
+        // us. For this reason, we provide NULL here so that the change is
+        // not filtered in valueChanged()
+        m_pControl->reset();
+    }
+}
+void ControlObjectSlave::slotValueChangedDirect(double v, QObject* pSetter) {
+    if (pSetter != this) {
+        // This is base implementation of this function without scaling
+        emit(valueChanged(v));
+    }
+}
+
+// Receives the value from the master control by a unique auto connection
+void ControlObjectSlave::slotValueChangedAuto(double v, QObject* pSetter) {
+    if (pSetter != this) {
+        // This is base implementation of this function without scaling
+        emit(valueChanged(v));
+    }
+}
+
+// Receives the value from the master control by a unique Queued connection
+void ControlObjectSlave::slotValueChangedQueued(double v, QObject* pSetter) {
+    if (pSetter != this) {
+        // This is base implementation of this function without scaling
+        emit(valueChanged(v));
+    }
+}
+

@@ -1,6 +1,4 @@
-#ifndef GRAPHICEQEFFECT_H
-#define GRAPHICEQEFFECT_H
-
+_Pragma("once")
 #include <QMap>
 
 #include "controlobjectslave.h"
@@ -18,9 +16,7 @@ class GraphicEQEffectGroupState {
   public:
     GraphicEQEffectGroupState();
     virtual ~GraphicEQEffectGroupState();
-
     void setFilters(int sampleRate);
-
     EngineFilterBiquad1LowShelving* m_low;
     QList<EngineFilterBiquad1Peaking*> m_bands;
     EngineFilterBiquad1HighShelving* m_high;
@@ -30,15 +26,12 @@ class GraphicEQEffectGroupState {
     double m_oldHigh;
     float m_centerFrequencies[8];
 };
-
 class GraphicEQEffect : public PerChannelEffectProcessor<GraphicEQEffectGroupState> {
   public:
     GraphicEQEffect(EngineEffect* pEffect, const EffectManifest& manifest);
     virtual ~GraphicEQEffect();
-
     static QString getId();
     static EffectManifest getManifest();
-
     // See effectprocessor.h
     void processChannel(const ChannelHandle& handle,
                         GraphicEQEffectGroupState* pState,
@@ -52,13 +45,9 @@ class GraphicEQEffect : public PerChannelEffectProcessor<GraphicEQEffectGroupSta
     QString debugString() const {
         return getId();
     }
-
     EngineEffectParameter* m_pPotLow;
     QList<EngineEffectParameter*> m_pPotMid;
     EngineEffectParameter* m_pPotHigh;
     unsigned int m_oldSampleRate;
-
     DISALLOW_COPY_AND_ASSIGN(GraphicEQEffect);
 };
-
-#endif // GRAPHICEQEFFECT_H

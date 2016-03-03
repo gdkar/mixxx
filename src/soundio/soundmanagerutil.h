@@ -13,9 +13,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef SOUNDMANAGERUTIL_U
-#define SOUNDMANAGERUTIL_U
-
+_Pragma("once")
 #include <QString>
 #include <QMutex>
 #include <QDomElement>
@@ -163,12 +161,10 @@ class AudioInputBuffer : public AudioInput {
 class AudioSource {
 public:
     virtual const CSAMPLE* buffer(AudioOutput output) const = 0;
-
     // This is called by SoundManager whenever an output is connected for this
     // source. When this is called it is guaranteed that no callback is
     // active.
     virtual void onOutputConnected(AudioOutput output) { Q_UNUSED(output); };
-
     // This is called by SoundManager whenever an output is disconnected for
     // this source. When this is called it is guaranteed that no callback is
     // active.
@@ -182,12 +178,10 @@ public:
     // callback thread
     virtual void receiveBuffer(AudioInput input, const CSAMPLE* pBuffer,
                                unsigned int iNumFrames) = 0;
-
     // This is called by SoundManager whenever an input is configured for this
     // destination. When this is called it is guaranteed that no callback is
     // active.
     virtual void onInputConfigured(AudioInput input) { Q_UNUSED(input); };
-
     // This is called by SoundManager whenever an input is unconfigured for this
     // destination. When this is called it is guaranteed that no callback is
     // active.
@@ -200,5 +194,3 @@ typedef AudioPath::AudioPathType AudioPathType;
 unsigned int qHash(const ChannelGroup &group);
 unsigned int qHash(const AudioOutput &output);
 unsigned int qHash(const AudioInput &input);
-
-#endif

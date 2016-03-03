@@ -5,35 +5,20 @@
  * @brief Handles loading and saving of MIDI controller presets.
  */
 
-#ifndef MIDICONTROLLERPRESETFILEHANDLER_H
-#define MIDICONTROLLERPRESETFILEHANDLER_H
-
+_Pragma("once")
 #include "controllers/controllerpresetfilehandler.h"
 #include "controllers/midi/midicontrollerpreset.h"
 
 class MidiControllerPresetFileHandler : public ControllerPresetFileHandler {
   public:
-    MidiControllerPresetFileHandler() {};
-    virtual ~MidiControllerPresetFileHandler() {};
-
+    MidiControllerPresetFileHandler() = default;
+    virtual ~MidiControllerPresetFileHandler() = default;
     bool save(const MidiControllerPreset& preset,
               const QString deviceName, const QString fileName) const;
-
   private:
     virtual ControllerPresetPointer load(const QDomElement root, const QString deviceName);
-
-    void addControlsToDocument(const MidiControllerPreset& preset,
-                               QDomDocument* doc) const;
-
-    QDomElement makeTextElement(QDomDocument* doc,
-                                const QString& elementName,
-                                const QString& text) const;
-
-    QDomElement inputMappingToXML(QDomDocument* doc,
-                                  const MidiInputMapping& mapping) const;
-
-    QDomElement outputMappingToXML(QDomDocument* doc,
-                                   const MidiOutputMapping& mapping) const;
+    void addControlsToDocument(const MidiControllerPreset& preset,QDomDocument* doc) const;
+    QDomElement makeTextElement(QDomDocument* doc,const QString& elementName,const QString& text) const;
+    QDomElement inputMappingToXML(QDomDocument* doc,const MidiInputMapping& mapping) const;
+    QDomElement outputMappingToXML(QDomDocument* doc,const MidiOutputMapping& mapping) const;
 };
-
-#endif

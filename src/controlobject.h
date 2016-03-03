@@ -15,9 +15,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef CONTROLOBJECT_H
-#define CONTROLOBJECT_H
-
+_Pragma("once")
 #include <QObject>
 #include <QEvent>
 #include <QMutex>
@@ -41,83 +39,30 @@ class ControlObject : public QObject {
 
     // Returns a pointer to the ControlObject matching the given ConfigKey
     static ControlObject* getControl(const ConfigKey& key, bool warn = true);
-    static inline ControlObject* getControl(const QString& group, const QString& item, bool warn = true) {
-        ConfigKey key(group, item);
-        return getControl(key, warn);
-    }
-    static inline ControlObject* getControl(const char* group, const char* item, bool warn = true) {
-        ConfigKey key(group, item);
-        return getControl(key, warn);
-    }
-
-    QString name() const {
-        return m_pControl ?  m_pControl->name() : QString();
-    }
-
-    void setName(const QString& name) {
-        if (m_pControl) {
-            m_pControl->setName(name);
-        }
-    }
-
-    const QString description() const {
-        return m_pControl ?  m_pControl->description() : QString();
-    }
-
-    void setDescription(const QString& description) {
-        if (m_pControl) {
-            m_pControl->setDescription(description);
-        }
-    }
-
+    static ControlObject* getControl(const QString& group, const QString& item, bool warn = true);
+    static ControlObject* getControl(const char* group, const char* item, bool warn = true);
+    QString name() const;
+    void setName(const QString& name);
+    QString description() const;
+    void setDescription(const QString& description);
     // Return the key of the object
-    inline ConfigKey getKey() const {
-        return m_key;
-    }
-
+    ConfigKey getKey() const;
     // Returns the value of the ControlObject
-    inline double get() const {
-        return m_pControl ? m_pControl->get() : 0.0;
-    }
-
+    double get() const;
     // Returns the bool interpretation of the ControlObject
-    inline bool toBool() const {
-        return get() > 0.0;
-    }
-
+    bool toBool() const;
     // Instantly returns the value of the ControlObject
     static double get(const ConfigKey& key);
-
     // Sets the ControlObject value. May require confirmation by owner.
-    inline void set(double value) {
-        if (m_pControl) {
-            m_pControl->set(value, this);
-        }
-    }
+    void set(double value);
     // Sets the ControlObject value and confirms it.
-    inline void setAndConfirm(double value) {
-        if (m_pControl) {
-            m_pControl->setAndConfirm(value, this);
-        }
-    }
+    void setAndConfirm(double value);
     // Instantly sets the value of the ControlObject
     static void set(const ConfigKey& key, const double& value);
-
     // Sets the default value
-    inline void reset() {
-        if (m_pControl) {
-            m_pControl->reset();
-        }
-    }
-
-    inline void setDefaultValue(double dValue) {
-        if (m_pControl) {
-            m_pControl->setDefaultValue(dValue);
-        }
-    }
-    inline double defaultValue() const {
-        return m_pControl ? m_pControl->defaultValue() : 0.0;
-    }
+    void reset();
+    void setDefaultValue(double dValue);
+    double defaultValue() const;
 
     // Returns the parameterized value of the object. Thread safe, non-blocking.
     virtual double getParameter() const;
@@ -153,21 +98,13 @@ class ControlObject : public QObject {
     // subsystem.
     virtual void setValueFromMidi(MidiOpCode o, double v);
     virtual double getMidiParameter() const;
-
   protected:
     // Key of the object
     ConfigKey m_key;
     QSharedPointer<ControlDoublePrivate> m_pControl;
-
   private slots:
     void privateValueChanged(double value, QObject* pSetter);
-
   private:
-    void initialize(ConfigKey key, bool bIgnoreNops, bool bTrack,
-                    bool bPersist);
-    inline bool ignoreNops() const {
-        return m_pControl ? m_pControl->ignoreNops() : true;
-    }
+    void initialize(ConfigKey key, bool bIgnoreNops, bool bTrack,bool bPersist);
+    bool ignoreNops() const;
 };
-
-#endif

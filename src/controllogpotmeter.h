@@ -15,9 +15,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef CONTROLLOGPOTMETER_H
-#define CONTROLLOGPOTMETER_H
-
+_Pragma("once")
 #include "controlpotmeter.h"
 #include "preferences/usersettings.h"
 
@@ -30,5 +28,3 @@ class ControlLogpotmeter : public ControlPotmeter {
   public:
     ControlLogpotmeter(ConfigKey key, double dMaxValue, double minDB);
 };
-
-#endif

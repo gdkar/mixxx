@@ -44,3 +44,8 @@ void ControlObjectScript::slotValueChanged(double value, QObject*) {
         }
     }
 }
+void ControlObjectScript::emitValueChanged()
+{
+    emit(trigger(get(), this));
+}
+

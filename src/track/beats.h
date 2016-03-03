@@ -13,7 +13,7 @@ typedef QSharedPointer<Beats> BeatsPointer;
 
 class BeatIterator {
   public:
-    virtual ~BeatIterator() {}
+    virtual ~BeatIterator() = default;
     virtual bool hasNext() const = 0;
     virtual double next() = 0;
 };
@@ -23,8 +23,8 @@ class BeatIterator {
 // well as a capability model for representing optional features.
 class Beats {
   public:
-    Beats() { }
-    virtual ~Beats() { }
+    Beats() = default;
+    virtual ~Beats() = default;
 
     enum Capabilities {
         BEATSCAP_NONE          = 0x0000,

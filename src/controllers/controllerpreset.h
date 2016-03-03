@@ -32,8 +32,7 @@ class ControllerPreset {
      * @param filename Name of the XML file to add
      * @param functionprefix Function prefix to add
      */
-    void addScriptFile(QString filename, QString functionprefix,
-                       bool builtin=false);
+    void addScriptFile(QString filename, QString functionprefix,bool builtin=false);
     void setDeviceId(const QString id);
     QString deviceId() const;
     void setFilePath(const QString filePath);
@@ -53,9 +52,9 @@ class ControllerPreset {
     void setMixxxVersion(const QString mixxxVersion);
     QString mixxxVersion() const;
     void addProductMatch(QHash<QString,QString> match);
-    virtual void accept(ControllerPresetVisitor* visitor) = 0;
-    virtual void accept(ConstControllerPresetVisitor* visitor) const = 0;
-    virtual bool isMappable() const = 0;
+    virtual void accept(ControllerPresetVisitor* visitor);
+    virtual void accept(ConstControllerPresetVisitor* visitor) const;
+    virtual bool isMappable() const;
     QList<ScriptFileInfo> scripts;
     // Optional list of controller device match details
     QList< QHash<QString,QString> > m_productMatches;

@@ -15,9 +15,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef SOUNDDEVICE_H
-#define SOUNDDEVICE_H
-
+_Pragma("once")
 #include <QString>
 #include <QList>
 
@@ -111,5 +109,3 @@ class SoundDevice {
     QList<AudioOutputBuffer> m_audioOutputs;
     QList<AudioInputBuffer> m_audioInputs;
 };
-
-#endif

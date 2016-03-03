@@ -40,54 +40,65 @@ using namespace soundtouch;
 static const int kSeekOffsetFrames = 519;
 
 static const int kNumChannels = 2;
-
-EngineBufferScaleST::EngineBufferScaleST(ReadAheadManager *pReadAheadManager)
-    : EngineBufferScale(),
-      m_bBackwards(false),
-      m_pReadAheadManager(pReadAheadManager) {
-    m_pSoundTouch = new soundtouch::SoundTouch();
+EngineBufferScaleST::EngineBufferScaleST(QObject *pParent)
+    : EngineBufferScale(pParent),
+      buffer_back(std::make_unique<CSAMPLE[]>(kiSoundTouchReadAheadLength*2)),
+      m_pSoundTouch(std::make_unique<soundtouch::SoundTouch>())
+{
     m_pSoundTouch->setChannels(kNumChannels);
     m_pSoundTouch->setRate(m_dBaseRate);
     m_pSoundTouch->setPitch(1.0);
     m_pSoundTouch->setSetting(SETTING_USE_QUICKSEEK, 1);
     m_pSoundTouch->setSampleRate(m_iSampleRate > 0 ? m_iSampleRate : 44100);
 
-    buffer_back = new CSAMPLE[kiSoundTouchReadAheadLength*2];
+    // Setting the tempo to a very low value will force SoundTouch
+    // to preallocate buffers large enough to (almost certainly)
+    // avoid memory reallocations during playback.
+    m_pSoundTouch->setTempo(0.1);
+    m_pSoundTouch->putSamples(&buffer_back[0], kiSoundTouchReadAheadLength);
+    m_pSoundTouch->clear();
+    m_pSoundTouch->setTempo(m_dTempoRatio);
+}
+EngineBufferScaleST::EngineBufferScaleST(ReadAheadManager *pReadAheadManager, QObject *pParent)
+    : EngineBufferScale(pReadAheadManager,pParent),
+      m_pSoundTouch(std::make_unique<soundtouch::SoundTouch>()),
+      buffer_back(std::make_unique<CSAMPLE[]>(kiSoundTouchReadAheadLength*2))
+{
+    m_pSoundTouch->setChannels(kNumChannels);
+    m_pSoundTouch->setRate(m_dBaseRate);
+    m_pSoundTouch->setPitch(1.0);
+    m_pSoundTouch->setSetting(SETTING_USE_QUICKSEEK, 1);
+    m_pSoundTouch->setSampleRate(m_iSampleRate > 0 ? m_iSampleRate : 44100);
 
     // Setting the tempo to a very low value will force SoundTouch
     // to preallocate buffers large enough to (almost certainly)
     // avoid memory reallocations during playback.
     m_pSoundTouch->setTempo(0.1);
-    m_pSoundTouch->putSamples(buffer_back, kiSoundTouchReadAheadLength);
+    m_pSoundTouch->putSamples(&buffer_back[0], kiSoundTouchReadAheadLength);
     m_pSoundTouch->clear();
     m_pSoundTouch->setTempo(m_dTempoRatio);
 }
 
-EngineBufferScaleST::~EngineBufferScaleST() {
-    delete m_pSoundTouch;
-    delete [] buffer_back;
-}
+EngineBufferScaleST::~EngineBufferScaleST() = default;
 
 void EngineBufferScaleST::setScaleParameters(double base_rate,
                                              double* pTempoRatio,
-                                             double* pPitchRatio) {
+                                             double* pPitchRatio)
+{
 
     // Negative speed means we are going backwards. pitch does not affect
     // the playback direction.
     m_bBackwards = *pTempoRatio < 0;
-
     // It's an error to pass a rate or tempo smaller than MIN_SEEK_SPEED to
     // SoundTouch (see definition of MIN_SEEK_SPEED for more details).
-    double speed_abs = fabs(*pTempoRatio);
+    auto speed_abs = std::abs(*pTempoRatio);
     if (speed_abs > MAX_SEEK_SPEED) {
         speed_abs = MAX_SEEK_SPEED;
     } else if (speed_abs < MIN_SEEK_SPEED) {
         speed_abs = 0;
     }
-
     // Let the caller know if we clamped their value.
     *pTempoRatio = m_bBackwards ? -speed_abs : speed_abs;
-
     // Include baserate in rate_abs so that we do samplerate conversion as part
     // of rate adjustment.
     if (speed_abs != m_dTempoRatio) {
@@ -123,8 +134,8 @@ void EngineBufferScaleST::clear() {
     m_pSoundTouch->clear();
 
     // compensate seek offset for a rate of 1.0
-    SampleUtil::clear(buffer_back, kSeekOffsetFrames * kNumChannels);
-    m_pSoundTouch->putSamples(buffer_back, kSeekOffsetFrames);
+    SampleUtil::clear(&buffer_back[0], kSeekOffsetFrames * kNumChannels);
+    m_pSoundTouch->putSamples(&buffer_back[0], kSeekOffsetFrames);
 }
 
 double EngineBufferScaleST::getScaled(CSAMPLE* pOutput, const int buf_size) {
@@ -154,14 +165,14 @@ double EngineBufferScaleST::getScaled(CSAMPLE* pOutput, const int buf_size) {
                         // The value doesn't matter here. All that matters is we
                         // are going forward or backward.
                         (m_bBackwards ? -1.0 : 1.0) * m_dBaseRate * m_dTempoRatio,
-                        buffer_back,
+                        &buffer_back[0],
                         iLenFrames * kNumChannels);
             unsigned int iAvailFrames = iAvailSamples / kNumChannels;
 
             if (iAvailFrames > 0) {
                 last_read_failed = false;
                 total_read_frames += iAvailFrames;
-                m_pSoundTouch->putSamples(buffer_back, iAvailFrames);
+                m_pSoundTouch->putSamples(&buffer_back[0], iAvailFrames);
             } else {
                 if (last_read_failed) {
                     m_pSoundTouch->flush();

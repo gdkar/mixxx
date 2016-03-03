@@ -9,8 +9,7 @@
 #include "controllers/midi/hss1394controller.h"
 #include "controllers/midi/hss1394enumerator.h"
 
-Hss1394Enumerator::Hss1394Enumerator() : MidiEnumerator() {
-}
+Hss1394Enumerator::Hss1394Enumerator() : MidiEnumerator() = default;
 
 Hss1394Enumerator::~Hss1394Enumerator() {
     qDebug() << "Deleting HSS1394 devices...";

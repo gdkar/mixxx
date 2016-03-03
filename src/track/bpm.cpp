@@ -56,5 +56,41 @@ void Bpm::normalizeValue() {
         m_value = normalizedValue;
     }
 }
-
+Bpm::Bpm() = default;
+Bpm::Bpm(double value)
+    :m_value(value)
+{
+}
+bool Bpm::isValidValue(double value)
+{
+    return kValueMin < value;
+}
+bool Bpm::hasValue() const
+{
+    return isValidValue(m_value);
+}
+double Bpm::getValue() const
+{
+    return m_value;
+}
+void Bpm::setValue(double value)
+{
+    m_value = value;
+}
+void Bpm::resetValue()
+{
+    m_value = kValueUndefined;
+}
+int Bpm::valueToInteger(double value)
+{
+    return std::round(value);
+}
+bool operator==(const Bpm& lhs, const Bpm& rhs)
+{
+    return lhs.getValue() == rhs.getValue();
+}
+bool operator!=(const Bpm& lhs, const Bpm& rhs)
+{
+    return !(lhs == rhs);
+}
 } //namespace Mixxx

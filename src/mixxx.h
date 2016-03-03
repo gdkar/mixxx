@@ -15,11 +15,10 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef MIXXX_H
-#define MIXXX_H
-
+_Pragma("once")
 #include <QMainWindow>
 #include <QString>
+#include <QtQml>
 
 #include "configobject.h"
 #include "preferences/usersettings.h"
@@ -123,7 +122,8 @@ class MixxxMainWindow : public QMainWindow {
     int noOutputDlg(bool* continueClicked);
 
     // Pointer to the root GUI widget
-    QWidget* m_pWidgetParent;
+    QQmlEngine *m_pQmlEngine{nullptr};
+    QWidget* m_pWidgetParent{nullptr};
     LaunchImage* m_pLaunchImage;
 
     SettingsManager* m_pSettingsManager;
@@ -179,5 +179,3 @@ class MixxxMainWindow : public QMainWindow {
     static const int kMicrophoneCount;
     static const int kAuxiliaryCount;
 };
-
-#endif

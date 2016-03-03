@@ -116,7 +116,7 @@ void ControllerManager::updateControllerList()
         qWarning() << "updateControllerList called but no enumerators have been added!";
         return;
     }
-    QList<Controller*> newDeviceList;
+    auto newDeviceList = QList<Controller*>{};
     for(auto &e : m_enumerators) {
         qDebug() << "ControllerManager::updateControllerList: " << e->metaObject()->className();
         auto devs = e->queryDevices();
@@ -138,7 +138,7 @@ QList<Controller*> ControllerManager::getControllerList(bool bOutputDevices, boo
 {
     qDebug() << "ControllerManager::getControllerList";
     QMutexLocker locker(&m_mutex);
-    QList<Controller*> controllers = m_controllers;
+    auto controllers = m_controllers;
     locker.unlock();
     // Create a list of controllers filtered to match the given input/output
     // options.
@@ -153,7 +153,7 @@ void ControllerManager::slotSetUpDevices()
 {
     qDebug() << "ControllerManager: Setting up devices";
     updateControllerList();
-    QList<Controller*> deviceList = getControllerList(false, true);
+    auto deviceList = getControllerList(false, true);
     QSet<QString> filenames;
     for(auto pController: deviceList) {
         auto name = pController->getName();
@@ -191,7 +191,7 @@ void ControllerManager::slotSetUpDevices()
 void ControllerManager::maybeStartOrStopPolling()
 {
     QMutexLocker locker(&m_mutex);
-    QList<Controller*> controllers = m_controllers;
+    auto controllers = m_controllers;
     locker.unlock();
     auto shouldPoll = false;
     for(auto pController: controllers) {

@@ -11,9 +11,7 @@ class ControlObjectScript : public ControlObjectSlave {
     void connectScriptFunction(const ControllerEngineConnection& conn);
     bool disconnectScriptFunction(const ControllerEngineConnection& conn);
     // Called from update();
-    void emitValueChanged() override {
-        emit(trigger(get(), this));
-    }
+    void emitValueChanged() override;
   signals:
     // It will connect to the slotValueChanged as well
     void trigger(double, QObject*);

@@ -14,9 +14,7 @@ class BulkEnumerator : public ControllerEnumerator {
   public:
     BulkEnumerator();
     virtual ~BulkEnumerator();
-
     QList<Controller*> queryDevices();
-
   private:
     QList<Controller*> m_devices;
     libusb_context* m_context;

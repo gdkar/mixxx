@@ -1,6 +1,4 @@
-#ifndef PREFERENCES_SETTINGSMANAGER_H
-#define PREFERENCES_SETTINGSMANAGER_H
-
+_Pragma("once")
 #include <QObject>
 #include <QString>
 
@@ -11,25 +9,11 @@ class SettingsManager : public QObject {
   public:
     SettingsManager(QObject* pParent, const QString& settingsPath);
     virtual ~SettingsManager();
-
-    UserSettingsPointer settings() const {
-        return m_pSettings;
-    }
-
-    void save() {
-        m_pSettings->save();
-    }
-
-    bool shouldRescanLibrary() {
-        return m_bShouldRescanLibrary;
-    }
-
+    UserSettingsPointer settings() const;
+    void save();
+    bool shouldRescanLibrary();
   private:
     void initializeDefaults();
-
     UserSettingsPointer m_pSettings;
     bool m_bShouldRescanLibrary;
 };
-
-
-#endif /* PREFERENCES_SETTINGSMANAGER_H */

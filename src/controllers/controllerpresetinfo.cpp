@@ -30,7 +30,8 @@ QString PresetInfo::getAuthor() const { return m_author; };
 
 QList<QHash<QString,QString> > PresetInfo::getProducts() const { return m_products; };
 PresetInfo::PresetInfo(const QString preset_path)
-        : m_valid(false) {
+        : m_valid(false)
+{
     // Parse <info> header section from a controller description XML file
     // Contents parsed by xml path:
     // info.name        Preset name, used for drop down menus in dialogs
@@ -46,12 +47,12 @@ PresetInfo::PresetInfo(const QString preset_path)
     m_forumlink = "";
     m_wikilink = "";
 
-    QDomElement root = XmlParse::openXMLFile(m_path, "controller");
+    auto root = XmlParse::openXMLFile(m_path, "controller");
     if (root.isNull()) {
         qDebug() << "ERROR parsing" << m_path;
         return;
     }
-    QDomElement info = root.firstChildElement("info");
+    auto info = root.firstChildElement("info");
     if (info.isNull()) {
         qDebug() << "MISSING <info> ELEMENT: " << m_path;
         return;
@@ -59,26 +60,26 @@ PresetInfo::PresetInfo(const QString preset_path)
 
     m_valid = true;
 
-    QDomElement dom_name = info.firstChildElement("name");
+    auto dom_name = info.firstChildElement("name");
     if (!dom_name.isNull()) m_name = dom_name.text();
 
-    QDomElement dom_author = info.firstChildElement("author");
+    auto dom_author = info.firstChildElement("author");
     if (!dom_author.isNull()) m_author = dom_author.text();
 
-    QDomElement dom_description = info.firstChildElement("description");
+    auto dom_description = info.firstChildElement("description");
     if (!dom_description.isNull()) m_description = dom_description.text();
 
-    QDomElement dom_forums = info.firstChildElement("forums");
+    auto dom_forums = info.firstChildElement("forums");
     if (!dom_forums.isNull()) m_forumlink = dom_forums.text();
 
-    QDomElement dom_wiki = info.firstChildElement("wiki");
+    auto dom_wiki = info.firstChildElement("wiki");
     if (!dom_wiki.isNull()) m_wikilink = dom_wiki.text();
 
-    QDomElement devices = info.firstChildElement("devices");
+    auto devices = info.firstChildElement("devices");
     if (!devices.isNull()) {
-        QDomElement product = devices.firstChildElement("product");
+        auto product = devices.firstChildElement("product");
         while (!product.isNull()) {
-            QString protocol = product.attribute("protocol","");
+            auto protocol = product.attribute("protocol","");
             if (protocol=="hid") {
                 m_products.append(parseHIDProduct(product));
             } else if (protocol=="bulk") {

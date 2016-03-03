@@ -175,7 +175,8 @@ void DlgControllerLearning::slotChooseControlPressed() {
     startListening();
 }
 
-void DlgControllerLearning::startListening() {
+void DlgControllerLearning::startListening()
+{
     // Start listening as soon as we're on this page -- that way advanced
     // users don't have to specifically click the "Learn" button.
     // Get the underlying type of the Controller. This will call
@@ -185,9 +186,8 @@ void DlgControllerLearning::startListening() {
 }
 
 void DlgControllerLearning::slotStartLearningPressed() {
-    if (m_currentControl.isNull()) {
+    if (m_currentControl.isNull())
         return;
-    }
     m_firstMessageTimer.start();
     stackedWidget->setCurrentWidget(page2Learn);
 }

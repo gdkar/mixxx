@@ -58,7 +58,6 @@ bool isDeviceBlacklisted(struct hid_device_info* cur_dev) {
     }
     return false;
 }
-
 QList<Controller*> HidEnumerator::queryDevices() {
     qDebug() << "Scanning HID devices:";
 

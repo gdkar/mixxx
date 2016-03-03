@@ -59,8 +59,7 @@ bool MidiController::applyPreset(QList<QString> scriptPaths, bool initializeScri
     auto result = Controller::applyPreset(scriptPaths, initializeScripts);
     // Only execute this code if this is an output device
     if (isOutputDevice()) {
-        if (m_outputs.count() > 0)
-            destroyOutputHandlers();
+        destroyOutputHandlers();
         createOutputHandlers();
         updateAllOutputs();
     }
@@ -83,7 +82,6 @@ void MidiController::createOutputHandlers()
         auto off = mapping.output.off;
         auto min = mapping.output.min;
         auto max = mapping.output.max;
-
         controllerDebug(QString(
                 "Creating output handler for %1,%2 between %3 and %4 to MIDI out: 0x%5 0x%6, on: 0x%7 off: 0x%8")
                         .arg(group, key,
@@ -111,7 +109,7 @@ void MidiController::createOutputHandlers()
             delete moh;
             continue;
         }
-        m_outputs.append(moh);
+        m_outputs.emplace_back(moh);
     }
     if (!failures.isEmpty()) {
         auto props = ErrorDialogHandler::instance()->newDialogProperties();
@@ -133,13 +131,12 @@ void MidiController::createOutputHandlers()
 }
 void MidiController::updateAllOutputs()
 {
-    for(auto  pOutput: m_outputs)
+    for(auto  &pOutput: m_outputs)
         pOutput->update();
 }
 void MidiController::destroyOutputHandlers()
 {
-    while (m_outputs.size() > 0)
-        delete m_outputs.takeLast();
+    m_outputs = decltype(m_outputs){};
 }
 QString formatMidiMessage(const QString& controllerName,
                           unsigned char status, unsigned char control,
@@ -328,7 +325,7 @@ void MidiController::processInputMapping(const MidiInputMapping& mapping,
         auto currControlValue = pCO->getMidiParameter();
         newValue = computeValue(mapping.options, currControlValue, value);
     }
-    // ControlPushButton ControlObjects only accept NOTE_ON, so if the midi
+    // ControlPushButton ControlObjects only ccept NOTE_ON, so if the midi
     // mapping is <button> we override the Midi 'status' appropriately.
     if (mapping.options.button || mapping.options.sw)
         opCode = MIDI_NOTE_ON;

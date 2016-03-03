@@ -1,6 +1,4 @@
-#ifndef DLGDEVELOPERTOOLS_H
-#define DLGDEVELOPERTOOLS_H
-
+_Pragma("once")
 #include <QDialog>
 #include <QSortFilterProxyModel>
 #include <QTimerEvent>
@@ -38,5 +36,3 @@ class DlgDeveloperTools : public QDialog, public Ui::DlgDeveloperTools {
     QTextCursor m_logCursor;
 
 };
-
-#endif /* DLGDEVELOPERTOOLS_H */

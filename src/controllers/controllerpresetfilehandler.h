@@ -5,9 +5,7 @@
 * @brief Handles loading and saving of Controller presets.
 *
 */
-#ifndef CONTROLLERPRESETFILEHANDLER_H
-#define CONTROLLERPRESETFILEHANDLER_H
-
+_Pragma("once")
 #include "util/xml.h"
 #include "controllers/controllerpreset.h"
 
@@ -59,5 +57,3 @@ class ControllerPresetFileHandler {
     // Sub-classes implement this.
     virtual ControllerPresetPointer load(const QDomElement root, const QString deviceName) = 0;
 };
-
-#endif

@@ -14,15 +14,10 @@ DeviceChannelListener::DeviceChannelListener(QObject* pParent, QString name)
           hss1394::ChannelListener(),
           m_sName(name) {
 }
-
-DeviceChannelListener::~DeviceChannelListener() {
-}
-
+DeviceChannelListener::~DeviceChannelListener() = default;
 void DeviceChannelListener::Process(const hss1394::uint8 *pBuffer, hss1394::uint uBufferSize) {
     unsigned int i = 0;
-
-    mixxx::Duration timestamp = Time::elapsed();
-
+    auto timestamp = Time::elapsed();
     // If multiple three-byte messages arrive right next to each other, handle them all
     while (i < uBufferSize) {
         unsigned char status = pBuffer[i];
@@ -58,11 +53,9 @@ void DeviceChannelListener::Process(const hss1394::uint8 *pBuffer, hss1394::uint
 void DeviceChannelListener::Disconnected() {
     qDebug() << "HSS1394 device" << m_sName << "disconnected";
 }
-
 void DeviceChannelListener::Reconnected() {
     qDebug() << "HSS1394 device" << m_sName << "re-connected";
 }
-
 Hss1394Controller::Hss1394Controller(const hss1394::TNodeInfo deviceInfo,
                                      int deviceIndex)
         : MidiController(),

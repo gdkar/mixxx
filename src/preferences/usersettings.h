@@ -1,6 +1,4 @@
-#ifndef PREFERENCES_USERSETTINGS_H
-#define PREFERENCES_USERSETTINGS_H
-
+_Pragma("once")
 #include <QSharedPointer>
 #include <QWeakPointer>
 
@@ -9,5 +7,3 @@
 typedef ConfigObject<ConfigValue> UserSettings;
 typedef QSharedPointer<UserSettings> UserSettingsPointer;
 typedef QWeakPointer<UserSettings> UserSettingsWeakPointer;
-
-#endif /* PREFERENCES_USERSETTINGS_H */

@@ -1,10 +1,8 @@
-#ifndef MIXXX_AUDIOSOURCE_H
-#define MIXXX_AUDIOSOURCE_H
-
+_Pragma("once")
 #include <QSharedPointer>
-
-#include "sources/urlresource.h"
+#include <QUrl>
 #include "util/audiosignal.h"
+#include "util/assert.h"
 #include "util/result.h"
 #include "util/samplebuffer.h"
 
@@ -29,62 +27,36 @@ class AudioSourceConfig;
 //
 // Audio sources are implicitly opened upon creation and
 // closed upon destruction.
-class AudioSource: public UrlResource, public AudioSignal {
+class AudioSource: public AudioSignal {
+  const QUrl m_url;
   public:
+    QUrl getUrl() const;
+    QString getUrlString() const;
+    bool    isLocalFile() const;
+    QString getLocalFileName() const;
     static const SampleLayout kSampleLayout = SampleLayout::Interleaved;
-
     // Returns the total number of sample frames.
-    inline SINT getFrameCount() const {
-        return m_frameCount;
-    }
-
-    inline bool isEmpty() const {
-        return kFrameCountZero >= getFrameCount();
-    }
-
+    SINT getFrameCount() const;
+    bool isEmpty() const;
     // The actual duration in seconds.
     // Well defined only for valid files!
-    inline bool hasDuration() const {
-        return isValid();
-    }
-    inline SINT getDuration() const {
-        DEBUG_ASSERT(hasDuration()); // prevents division by zero
-        return getFrameCount() / getSamplingRate();
-    }
-
+    bool hasDuration() const;
+    SINT getDuration() const;
     // The bitrate is measured in kbit/s (kbps).
-    inline static bool isValidBitrate(SINT bitrate) {
-        return kBitrateZero < bitrate;
-    }
-    inline bool hasBitrate() const {
-        return isValidBitrate(m_bitrate);
-    }
+    static bool isValidBitrate(SINT bitrate);
+    bool hasBitrate() const;
     // Setting the bitrate is optional when opening a file.
     // The bitrate is not needed for decoding, it is only used
     // for informational purposes.
-    inline SINT getBitrate() const {
-        DEBUG_ASSERT(hasBitrate()); // prevents reading an invalid bitrate
-        return m_bitrate;
-    }
-
+    SINT getBitrate() const;
     // Index of the first sample frame.
-    inline static SINT getMinFrameIndex() {
-        return kFrameIndexMin;
-    }
-
+    static SINT getMinFrameIndex();
     // Index of the sample frame following the last
     // sample frame.
-    inline SINT getMaxFrameIndex() const {
-        return getMinFrameIndex() + getFrameCount();
-    }
-
+    SINT getMaxFrameIndex() const;
     // The sample frame index is valid in the range
     // [getMinFrameIndex(), getMaxFrameIndex()].
-    inline bool isValidFrameIndex(SINT frameIndex) const {
-        return (getMinFrameIndex() <= frameIndex) &&
-                (getMaxFrameIndex() >= frameIndex);
-    }
-
+    bool isValidFrameIndex(SINT frameIndex) const;
     // Adjusts the current frame seek index:
     // - Precondition: isValidFrameIndex(frameIndex) == true
     //   - Index of first frame: frameIndex = 0
@@ -110,21 +82,8 @@ class AudioSource: public UrlResource, public AudioSignal {
             SINT numberOfFrames,
             CSAMPLE* sampleBuffer) = 0;
 
-    inline SINT skipSampleFrames(
-            SINT numberOfFrames) {
-        return readSampleFrames(numberOfFrames, static_cast<CSAMPLE*>(NULL));
-    }
-
-    inline SINT readSampleFrames(
-            SINT numberOfFrames,
-            SampleBuffer* pSampleBuffer) {
-        if (pSampleBuffer) {
-            DEBUG_ASSERT(frames2samples(numberOfFrames) <= pSampleBuffer->size());
-            return readSampleFrames(numberOfFrames, pSampleBuffer->data());
-        } else {
-            return skipSampleFrames(numberOfFrames);
-        }
-    }
+    SINT skipSampleFrames(SINT numberOfFrames);
+    SINT readSampleFrames(SINT numberOfFrames,SampleBuffer* pSampleBuffer);
 
     // Specialized function for explicitly reading stereo (= 2 channels)
     // frames from an AudioSource. This is the preferred method in Mixxx
@@ -162,16 +121,7 @@ class AudioSource: public UrlResource, public AudioSignal {
             CSAMPLE* sampleBuffer,
             SINT sampleBufferSize);
 
-    inline SINT readSampleFramesStereo(
-            SINT numberOfFrames,
-            SampleBuffer* pSampleBuffer) {
-        if (pSampleBuffer) {
-            return readSampleFramesStereo(numberOfFrames,
-                    pSampleBuffer->data(), pSampleBuffer->size());
-        } else {
-            return skipSampleFrames(numberOfFrames);
-        }
-    }
+    SINT readSampleFramesStereo(SINT numberOfFrames,SampleBuffer* pSampleBuffer);
 
     // Utility function to clamp the frame index interval
     // [*pMinFrameIndexOfInterval, *pMaxFrameIndexOfInterval)
@@ -185,18 +135,15 @@ class AudioSource: public UrlResource, public AudioSignal {
   protected:
     explicit AudioSource(const QUrl& url);
     explicit AudioSource(const AudioSource& other) = default;
-
+    explicit AudioSource(AudioSource&& outer) = default;
     inline static bool isValidFrameCount(SINT frameCount) {
         return kFrameCountZero <= frameCount;
     }
     void setFrameCount(SINT frameCount);
-
     void setBitrate(SINT bitrate);
-
     SINT getSampleBufferSize(
             SINT numberOfFrames,
             bool readStereoSamples = false) const;
-
   private:
     friend class AudioSourceConfig;
 
@@ -234,5 +181,3 @@ class AudioSourceConfig : public AudioSignal {
 typedef QSharedPointer<AudioSource> AudioSourcePointer;
 
 } // namespace Mixxx
-
-#endif // MIXXX_AUDIOSOURCE_H

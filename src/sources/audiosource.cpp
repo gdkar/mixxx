@@ -3,7 +3,22 @@
 #include "util/sample.h"
 
 namespace Mixxx {
-
+QUrl AudioSource::getUrl() const
+{
+    return m_url;
+}
+QString AudioSource::getUrlString() const
+{
+    return m_url.toString();
+}
+bool AudioSource::isLocalFile() const
+{
+    return getUrl().isLocalFile();
+}
+QString AudioSource::getLocalFileName() const
+{
+    return getUrl().toLocalFile();
+}
 void AudioSource::clampFrameInterval(
         SINT* pMinFrameIndexOfInterval,
         SINT* pMaxFrameIndexOfInterval,
@@ -20,8 +35,8 @@ void AudioSource::clampFrameInterval(
 }
 
 AudioSource::AudioSource(const QUrl& url)
-        : UrlResource(url),
-          AudioSignal(kSampleLayout),
+        : AudioSignal(kSampleLayout),
+          m_url(url),
           m_frameCount(kFrameCountDefault),
           m_bitrate(kBitrateDefault) {
 }
@@ -91,5 +106,76 @@ SINT AudioSource::readSampleFramesStereo(
         }
     }
 }
+SINT AudioSource::getFrameCount() const
+{
+    return m_frameCount;
+}
+bool AudioSource::isEmpty() const
+{
+    return getFrameCount() > 0;
+}
+bool AudioSource::hasDuration() const
+{
+    return isValid();
+}
+SINT AudioSource::getDuration() const
+{
+    DEBUG_ASSERT(hasDuration()); // prevents division by zero
+    return getFrameCount() / getSamplingRate();
+}
+/* static */ bool AudioSource::isValidBitrate(SINT bitrate)
+{
+    return bitrate > 0;
+}
+bool AudioSource::hasBitrate() const
+{
+    return m_bitrate > 0;
+}
+SINT AudioSource::getBitrate() const {
+    DEBUG_ASSERT(hasBitrate()); // prevents reading an invalid bitrate
+    return m_bitrate;
+}
 
+// Index of the first sample frame.
+SINT AudioSource::getMinFrameIndex() {
+    return kFrameIndexMin;
+}
+
+// Index of the sample frame following the last
+// sample frame.
+SINT AudioSource::getMaxFrameIndex() const {
+    return getMinFrameIndex() + getFrameCount();
+}
+
+// The sample frame index is valid in the range
+// [getMinFrameIndex(), getMaxFrameIndex()].
+bool AudioSource::isValidFrameIndex(SINT frameIndex) const {
+    return (getMinFrameIndex() <= frameIndex) &&
+            (getMaxFrameIndex() >= frameIndex);
+}
+SINT AudioSource::skipSampleFrames(
+        SINT numberOfFrames) {
+    return readSampleFrames(numberOfFrames, static_cast<CSAMPLE*>(NULL));
+}
+
+SINT AudioSource::readSampleFrames(
+        SINT numberOfFrames,
+        SampleBuffer* pSampleBuffer) {
+    if (pSampleBuffer) {
+        DEBUG_ASSERT(frames2samples(numberOfFrames) <= pSampleBuffer->size());
+        return readSampleFrames(numberOfFrames, pSampleBuffer->data());
+    } else {
+        return skipSampleFrames(numberOfFrames);
+    }
+}
+SINT AudioSource::readSampleFramesStereo(
+        SINT numberOfFrames,
+        SampleBuffer* pSampleBuffer) {
+    if (pSampleBuffer) {
+        return readSampleFramesStereo(numberOfFrames,
+                pSampleBuffer->data(), pSampleBuffer->size());
+    } else {
+        return skipSampleFrames(numberOfFrames);
+    }
+}
 }

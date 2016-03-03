@@ -1,6 +1,4 @@
-#ifndef MIXXX_SOUNDSOURCEPLUGINAPI_H
-#define MIXXX_SOUNDSOURCEPLUGINAPI_H
-
+_Pragma("once")
 #define MIXXX_SOUNDSOURCEPLUGINAPI_VERSION 11
 // SoundSource Plugin API version history:
 //  11 - Mixxx 2.1.0 - Add function for writing metadata to SoundSource
@@ -46,5 +44,3 @@ typedef void (*SoundSourcePluginAPI_destroySoundSourceProviderFunc)(SoundSourceP
 const char* const SoundSourcePluginAPI_destroySoundSourceProviderFuncName = "Mixxx_SoundSourcePluginAPI_destroySoundSourceProvider";
 
 } // Mixxx
-
-#endif // MIXXX_SOUNDSOURCEPLUGINAPI_H
