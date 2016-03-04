@@ -32,6 +32,8 @@ _Pragma("once")
 #include <utility>
 #include <functional>
 #include <limits>
+#include <algorithm>
+#include <numeric>
 #include <cmath>
 #include <complex>
 #include <cstring>
@@ -43,72 +45,50 @@ _Pragma("once")
 #include <cstring>
 #include <ctype.h>
 
-struct FidFilterItem {
-    std::vector<double>     val;
-             FidFilterItem() = default;
-    template<class... Args>
-             FidFilterItem(const Args&... args)
-             : val(args...)
-    { }
-    template<class... Args>
-             FidFilterItem(Args&&... args)
-             : val(std::forward(args...))
-    { }
-    virtual ~FidFilterItem() = default;
-    virtual void process(double *dst, const double *const src, size_t len) = 0;
-    virtual void process(double *dst, const double *const src, size_t len, size_t stride) = 0;
-};
-struct FidIIRItem : public FidFilterItem {
-             FidIIRItem() = default;
-    virtual ~FidIIRItem() = default;
-    virtual void process(double *dst, const double *const src, size_t len);
-    virtual void process(double *dst, const double *const src, size_t len, size_t stride);
-};
-struct FidFIRItem : public FidFilterItem {
-             FidFIRItem() = default;
-    virtual ~FidFIRItem() = default;
-    virtual void process(double *dst, const double *const src, size_t len);
-    virtual void process(double *dst, const double *const src, size_t len, size_t stride);
-};
-struct FidFilt{
-    std::vector<std::unique_ptr<FidFilterItem> > m_items;
-    FidFilt() = default;
-    FidFilt(std::initializer_list<std::unique_ptr<FidFilterItem>&> l);
-    FidFilt(FidFilt&&) = default;
-    FidFilt&operator=(FidFilt&&) = default;
-
-    virtual void process(double *dst, const double *const src, size_t len);
-    virtual void process(double *dst, const double *const src, size_t len, size_t stride);
-    FidFilt *flatten() const;
-};
 struct FidFilter {
-   short typ;		// Type of filter element 'I' IIR, 'F' FIR, or 0 for end of list
-   short cbm;
-   			//   is a constant across changes in frequency for this filter type
-   			//   Bit 15, if set, indicates that val[15..inf] are constant.
-   int len;		// Number of doubles stored in val[], or 0 for end of list
-   double val[1];
+    int typ{0};
+    int cbm{0};
+    std::vector<double> val;
+    std::unique_ptr<FidFilter> m_next;
+    void resize(size_t sz)
+    {
+        val.resize(sz);
+    }
+    void clear()
+    {
+        val.clear();
+    }
+    size_t size() const
+    {
+       return val.size();
+    }
+    FidFilter *next() const
+    {
+        return m_next.get();
+    }
+    FidFilter *grow()
+    {
+        if(!next())
+            m_next = std::make_unique<FidFilter>();
+        return next();
+    }
+    FidFilter &back()
+    {
+        auto ff = this;
+        while(ff->next())
+            ff = ff->next();
+        return *ff;
+    }
+    FidFilter &front()
+    {
+        return *this;
+    }
 };
-
-// Lets you write: for (; ff->typ; ff= FFNEXT(ff)) { ... }
-#define FFNEXT(ff) ((FidFilter*)((ff)->val + (ff)->len))
-
-// Size of a sub-filter with 'cnt' double values attached
-#define FFSIZE(cnt) (sizeof(FidFilter) + ((cnt)-1)*sizeof(double))
-
-// Size required for the memory chunk to contain the given number
-// headers and values, plus termination
-#define FFCSIZE(n_head,n_val) ((sizeof(FidFilter)-sizeof(double))*((n_head)+1) + sizeof(double)*(n_val))
-
-// Allocate the chunk of memory to hold a list of FidFilters, with
-// n_head FidFilters and n_val total double values in the whole list.
-// Includes space for the final termination, and zeros the memory.
-#define FFALLOC(n_head,n_val) (FidFilter*)Alloc(FFCSIZE(n_head, n_val))
-
+FidFilter *flatten(FidFilter*);
 // These are so you can use easier names to refer to running filters
-typedef void FidRun;
-typedef double (FidFunc)(void*, double);
+template<class F>
 struct Run;
+template<class F>
 struct RunBuf;
 //
 //	Filter specification string
@@ -289,18 +269,164 @@ Alloc(int size);
 //
 //	'mkfilter'-derived code
 //
+/*
+template<class T>
+struct BiQuad {
+    T   iir[3];
+    T   fir[3];
+    std::unique_ptr<BiQuad<T> > m_next;
+    void resize(size_t sz)
+    {
+        val.resize(sz);
+    }
+    void clear()
+    {
+        val.clear();
+    }
+    size_t size() const
+    {
+       return val.size();
+    }
+    BiQuad *next() const
+    {
+        return m_next.get();
+    }
+    virtual BiQuad *grow()
+    {
+        if(!next())
+            m_next = std::make_unique<BiQuad>();
+        return next();
+    }
+    BiQuad&back()
+    {
+        auto ff = this;
+        while(ff->next())
+            ff = ff->next();
+        return *ff;
+    }
+    BiQuad&front()
+    {
+        return *this;
+    }
+    BiQuad () = default;
+    virtual ~BiQuad() = default;
+    virtual void processMono(T *dst, const T*src, T *buf, int count);
+    virtual void processStereo(T *dst, const T*src, T *buf, int count);
+    virtual void processQuad(T *dst, const T*src, T *buf, int count);
+};*/
+
+template<class F = double>
 struct Run {
-   int magic;		// Magic: 0x64966325
-   double *fir;         // FIR parameters
-   int   n_fir;           // Number of FIR parameters
-   double *iir;         // IIR parameters
-   int   n_iir;           // Number of IIR parameters
-   int   n_buf;           // Number of entries in buffer
-   FidFilter *filt;	// Combined filter
-} ;
+    std::vector<F>  fir;
+    std::vector<F>  iir;
+    size_t             n_buf{0};
+    std::unique_ptr<FidFilter> m_ff;
+    Run(FidFilter *ff)
+    : m_ff(flatten(ff))
+    {
+        ff = m_ff.get();
+        if(!ff || ff->typ != 'I')
+            throw std::bad_alloc();
+        iir.resize(ff->val.size());
+        std::copy(ff->val.begin(),ff->val.end(),iir.begin());
+        ff=ff->next();
+        if(!ff || ff->typ != 'F')
+            throw std::bad_alloc();
+        fir.resize(ff->val.size());
+        std::copy(ff->val.begin(),ff->val.end(),fir.begin());
+        ff=ff->next();
+        if(ff && ff->size())
+            throw std::bad_alloc();
+        n_buf = std::max(fir.size(),iir.size());
+    }
+    Run(const std::unique_ptr<FidFilter> &ff)
+        :Run(ff.get())
+    { }
+};
+template<class F = double>
 struct RunBuf {
-   Run *run;
-   double buf[0];
+   Run<F> *run;
+   std::vector<F> buf;
+   RunBuf(Run<F> *rr)
+    :run(rr),buf(rr->n_buf)
+   { }
+   RunBuf(const std::unique_ptr<Run<F>>  &rr)
+   :RunBuf(rr.get()) { }
+   F step(F val)
+   {
+        std::move(buf.begin(), buf.end() - 1,buf.begin() + 1);
+        buf[0] = val - std::inner_product(run->iir.begin() + 1,run->iir.end(),buf.begin() + 1, 0);
+        return std::inner_product(run->fir.begin(),run->fir.end(),buf.begin(),0);
+   }
+   void   process(F*dst, const F*src, int count)
+   {
+        auto ibeg = &run->iir[1];
+        auto iend = ibeg + run->iir.size() - 1;
+        auto fbeg = &run->fir[0];
+        auto fend = fbeg + run->fir.size();
+        auto bbeg = buf.begin();
+        auto bprv = buf.end() - 1;
+        auto bnxt = bbeg + 1;
+        for(auto i = 0; i < count; i++) {
+            std::move(bbeg, bprv,bnxt);
+            buf[0] = src[i] - std::inner_product(ibeg, iend,bnxt);
+            dst[i] = std::inner_product(fbeg, fend, bbeg);
+        }
+   }
+   void   zap ()
+   {
+        std::fill(buf.begin(),buf.end(),0);
+   }
+};
+template<class F = double>
+struct RunBufX2 {
+   Run<F> *run;
+   std::vector<F> buf;
+   RunBufX2(Run<F> *rr)
+    :run(rr),buf(rr->n_buf * 2)
+   { }
+   RunBufX2(const std::unique_ptr<Run<F>>  &rr)
+   :RunBufX2(rr.get()) { }
+   F step(F val)
+   {
+        std::move(buf.begin(), buf.end() - 1,buf.begin() + 1);
+        buf[0] = val - std::inner_product(run->iir.begin() + 1,run->iir.end(),buf.begin() + 1, 0);
+        return std::inner_product(run->fir.begin(),run->fir.end(),buf.begin(),0);
+   }
+   void   process(F*dst, const F*src, int count)
+   {
+        auto niir = run->iir.size();
+        auto iirp = &run->iir[0];
+        auto nfir = run->fir.size();
+        auto firp = &run->fir[0];
+        for(auto i = 0; i < count; i+= 2) {
+            std::move(buf.begin(), buf.end() - 2,buf.begin() + 2);
+            {
+                auto acc0 = src[i + 0];
+                auto acc1 = src[i + 1];
+                for(auto j = 1; j < niir; j++) {
+                    acc0 -= buf[ 2 * j + 0] * iirp[j];
+                    acc1 -= buf[ 2 * j + 1] * iirp[j];
+                }
+                buf[0] = acc0;
+                buf[1] = acc1;
+            }
+            {
+                auto acc0 = F{0};
+                auto acc1 = F{0};
+                for(auto j = 0; j < nfir; j++) {
+                    acc0 += buf[2 * j + 0] * firp[j];
+                    acc1 += buf[2 * j + 1] * firp[j];
+                }
+                dst[i + 0] = acc0;
+                dst[i + 1] = acc1;
+            }
+        }
+   }
+   void   zap ()
+   {
+        std::fill(buf.begin(),buf.end(),0);
+   }
 };
 //
 //	Stack a number of identical filters, generating the required
@@ -532,15 +658,11 @@ public:
     //
     //      Do a convolution of parameters in place
     //
-    int
-    convolve(double *dst, int n_dst, double *src, int n_src);
     //
     //	Generate a combined filter -- merge all the IIR/FIR
     //	sub-filters into a single IIR/FIR pair, and make sure the IIR
     //	first coefficient is 1.0.
     //
-    FidFilter *
-    flatten(FidFilter *filt);
     //	Parse a filter-spec and freq0/freq1 arguments.  Returns a
     //	strdup'd error string on error, or else 0.
     //
@@ -600,14 +722,11 @@ public:
     //
     char *
     parse(double rate, char **pp, FidFilter **ffp);
-    void *
-    run_new(FidFilter *filt, double (**funcpp)(void *,double));
-    void *
-    run_newbuf(void *run);
-    void
-    run_zapbuf(void *buf);
-    void 
-    run_freebuf(void *runbuf);
-    void 
-    run_free(void *run);
+
 };
+FidFilter *
+flatten(FidFilter *filt);
+int
+convolve(double *dst, int n_dst, double *src, int n_src);
+
+
