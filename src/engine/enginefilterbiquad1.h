@@ -1,6 +1,4 @@
-#ifndef ENGINEFILTERBIQUAD1_H
-#define ENGINEFILTERBIQUAD1_H
-
+_Pragma("once")
 #include "engine/enginefilteriir.h"
 
 #ifdef _MSC_VER
@@ -10,7 +8,7 @@
     #define format_fidspec snprintf
 #endif
 
-class EngineFilterBiquad1LowShelving : public EngineFilterIIR<5, IIR_BP> {
+class EngineFilterBiquad1LowShelving : public EngineFilterIIR{
     Q_OBJECT
   public:
     EngineFilterBiquad1LowShelving(int sampleRate, double centerFreq, double Q);
@@ -21,7 +19,7 @@ class EngineFilterBiquad1LowShelving : public EngineFilterIIR<5, IIR_BP> {
     char m_spec[FIDSPEC_LENGTH];
 };
 
-class EngineFilterBiquad1Peaking : public EngineFilterIIR<5, IIR_BP> {
+class EngineFilterBiquad1Peaking : public EngineFilterIIR{
     Q_OBJECT
   public:
     EngineFilterBiquad1Peaking(int sampleRate, double centerFreq, double Q);
@@ -32,7 +30,7 @@ class EngineFilterBiquad1Peaking : public EngineFilterIIR<5, IIR_BP> {
     char m_spec[FIDSPEC_LENGTH];
 };
 
-class EngineFilterBiquad1HighShelving : public EngineFilterIIR<5, IIR_BP> {
+class EngineFilterBiquad1HighShelving : public EngineFilterIIR{
     Q_OBJECT
   public:
     EngineFilterBiquad1HighShelving(int sampleRate, double centerFreq, double Q);
@@ -43,7 +41,7 @@ class EngineFilterBiquad1HighShelving : public EngineFilterIIR<5, IIR_BP> {
     char m_spec[FIDSPEC_LENGTH];
 };
 
-class EngineFilterBiquad1Low : public EngineFilterIIR<2, IIR_LP> {
+class EngineFilterBiquad1Low : public EngineFilterIIR{
     Q_OBJECT
   public:
     EngineFilterBiquad1Low(int sampleRate, double centerFreq, double Q,
@@ -54,7 +52,7 @@ class EngineFilterBiquad1Low : public EngineFilterIIR<2, IIR_LP> {
     char m_spec[FIDSPEC_LENGTH];
 };
 
-class EngineFilterBiquad1Band : public EngineFilterIIR<2, IIR_BP> {
+class EngineFilterBiquad1Band : public EngineFilterIIR{
     Q_OBJECT
   public:
     EngineFilterBiquad1Band(int sampleRate, double centerFreq, double Q);
@@ -64,7 +62,7 @@ class EngineFilterBiquad1Band : public EngineFilterIIR<2, IIR_BP> {
     char m_spec[FIDSPEC_LENGTH];
 };
 
-class EngineFilterBiquad1High : public EngineFilterIIR<2, IIR_HP> {
+class EngineFilterBiquad1High : public EngineFilterIIR{
     Q_OBJECT
   public:
     EngineFilterBiquad1High(int sampleRate, double centerFreq, double Q,
@@ -74,5 +72,3 @@ class EngineFilterBiquad1High : public EngineFilterIIR<2, IIR_HP> {
   private:
     char m_spec[FIDSPEC_LENGTH];
 };
-
-#endif // ENGINEFILTERBIQUAD1_H

@@ -4,4 +4,147 @@ EngineFilterIIRBase::EngineFilterIIRBase(QObject *p)
     :EngineObjectConstIn(p)
 { }
 EngineFilterIIRBase::~EngineFilterIIRBase() = default;
-
+namespace {
+    void processBQ(const CSAMPLE * pIn, CSAMPLE *pOut, CSAMPLE *coef, CSAMPLE mcoef, CSAMPLE *buf, const int count)
+    {
+        for(auto i = 0; i < count; i += 2) {
+            auto iir0   = pIn[i + 0] - buf[0] * coef[0] - buf[2] * coef[1];
+            auto iir1   = pIn[i + 1] - buf[1] * coef[0] - buf[3] * coef[1];
+            pOut[i + 0] = iir0       + buf[2] * mcoef   + buf[0];
+            pOut[i + 1] = iir1       + buf[3] * mcoef   + buf[1];
+            buf[0] = buf[2];
+            buf[1] = buf[3];
+            buf[2] = iir0;
+            buf[3] = iir1;
+        }
+    }
+};
+void EngineFilterIIR::processAndPauseFilter(const CSAMPLE* pIn, CSAMPLE* pOutput,const int iBufferSize) {
+    process(pIn, pOutput, iBufferSize);
+    SampleUtil::applyRampingGain(pOutput,1,0,iBufferSize);
+    if(m_startFromDry)
+        SampleUtil::addWithRampingGain(pOutput,pIn, 0, 1 , iBufferSize);
+    pauseFilterInner();
+}
+void EngineFilterIIR::initBuffers() {
+    // Copy the current buffers into the old buffers
+    m_oldBuf = m_buf;
+    std::fill(m_buf.begin(),m_buf.end(), 0);
+    // Set the current buffers to 0
+    m_doRamping = true;
+}
+void EngineFilterIIR::setCoefs(double sampleRate, size_t n_coef1, QString spec, double freq0, double freq1, int adj)
+{
+    // Copy to dynamic-ish memory to prevent fidlib API breakage.
+    // Copy the old coefficients into m_oldCoef
+    m_oldCoef = m_coef;
+    SIZE = n_coef1;
+    auto coef = std::vector<double>(SIZE + 1);
+    coef[0] = m_fid.design_coef(&coef [1], SIZE,spec.toLatin1().constData(), sampleRate, freq0, freq1, adj);
+    std::copy(coef.begin(),coef.end(),m_coef.begin());
+    initBuffers();
+    m_buf.resize(2 * SIZE);
+}
+void EngineFilterIIR::setCoefs2(double sampleRate,
+        size_t n_coef1, const char* spec1, double freq01, double freq11, int adj1,
+        size_t n_coef2, const char* spec2, double freq02, double freq12, int adj2) {
+    char spec1_d[FIDSPEC_LENGTH];
+    char spec2_d[FIDSPEC_LENGTH];
+    if (strlen(spec1) < sizeof(spec1_d) &&
+            strlen(spec2) < sizeof(spec2_d)) {
+        // Copy to dynamic-ish memory to prevent fidlib API breakage.
+        strcpy(spec1_d, spec1);
+        strcpy(spec2_d, spec2);
+        // Copy the old coefficients into m_oldCoef
+        m_oldCoef = m_coef;
+        SIZE = n_coef1 + n_coef2;
+        auto coef = std::vector<double>(SIZE + 1);
+        m_coef.resize(SIZE + 1);
+        coef[0] = m_fid.design_coef(&coef[1], n_coef1,
+                spec1, sampleRate, freq01, freq11, adj1) *
+                    m_fid.design_coef(&coef[1 + n_coef1], SIZE - n_coef1,
+                spec2, sampleRate, freq02, freq12, adj2);
+        std::copy(coef.begin(),coef.end(),m_coef.begin());
+        initBuffers();
+        m_buf.resize(2 * SIZE);
+    }
+}
+void EngineFilterIIR::assumeSettled() {
+    m_doRamping = false;
+    m_doStart = false;
+}
+void EngineFilterIIR::processBuffer(const CSAMPLE *pIn, CSAMPLE *pOut, CSAMPLE *coef, CSAMPLE *buf, size_t size, const int count)
+{
+// IIR_LP and IIR_HP use the same processSample routine
+   if(size == 5) {
+        for(auto i = 0; i < count; i+=2) {
+            auto iir0 = pIn[i + 0]* coef[0] - buf[0] * coef[1] - buf[2] * coef[3];
+            auto iir1 = pIn[i + 1]* coef[0] - buf[1] * coef[1] - buf[3] * coef[3];
+            pOut[i + 0] = iir0 * coef[5] + buf[2] * coef[4] + buf[0] * coef[2];
+            pOut[i + 1] = iir1 * coef[5] + buf[3] * coef[4] + buf[1] * coef[2];
+            buf[0] = buf[2];
+            buf[1] = buf[3];
+            buf[2] = iir0;
+            buf[3] = iir1;
+        }
+   } else {
+        auto mcoef = (PASS == IIR_BP && size == 2) ? 0.f : ((PASS == IIR_LP) ? 2.f : -2.f);
+        processBQ(pIn,pOut,&coef[1], mcoef, &buf[0], count);
+        for(auto i = size_t{2}; i < size; i += 2) {
+            if(PASS == IIR_BP && i == (size/2))
+                mcoef = 2.f;
+            processBQ(pOut,pOut,&coef[1 + i], mcoef, &buf[i * 2], count);
+        }
+        SampleUtil::applyGain(pOut, coef[0], count);
+    }
+}
+void EngineFilterIIR::process(const CSAMPLE* pIn, CSAMPLE* pOutput,const int iBufferSize) {
+    processBuffer(pIn, pOutput, &m_coef[0], &m_buf[0], m_coef.size() - 1, iBufferSize);
+    if(m_doRamping) {
+        if(!m_doStart) {
+            auto pTmp = reinterpret_cast<CSAMPLE*>(alloca(sizeof(CSAMPLE) * iBufferSize));
+            processBuffer(pIn, pTmp, &m_oldCoef[0], &m_oldBuf[0],m_oldCoef.size() - 1, iBufferSize);
+            SampleUtil::copy(pOutput, pTmp, iBufferSize/2);
+            SampleUtil::applyRampingGain(&pOutput[iBufferSize/2], 0.f, 1.f, iBufferSize/2);
+            SampleUtil::addWithRampingGain(&pOutput[iBufferSize/2], &pTmp[iBufferSize/2], 1.f, 0.f, iBufferSize/2);
+        } else {
+            if(m_startFromDry) {
+                SampleUtil::copy(pOutput, pIn, iBufferSize/2);
+                SampleUtil::applyRampingGain(&pOutput[iBufferSize/2], 0.f, 1.f, iBufferSize/2);
+                SampleUtil::addWithRampingGain(&pOutput[iBufferSize/2], &pIn[iBufferSize/2], 1.f, 0.f, iBufferSize/2);
+            } else {
+                SampleUtil::fill(pOutput, 0, iBufferSize/2);
+                SampleUtil::applyRampingGain(&pOutput[iBufferSize/2], 0.f, 1.f, iBufferSize/2);
+            }
+        }
+        m_doRamping = false;
+        m_doStart = false;
+    }
+}
+void EngineFilterIIR::pauseFilter()
+{
+    if(!m_doStart)
+        pauseFilterInner();
+}
+void EngineFilterIIR::pauseFilterInner()
+{
+    // Set the current buffers to 0
+    std::fill(m_buf.begin(),m_buf.end(),0.f);
+    m_doRamping = true;
+    m_doStart = true;
+}
+EngineFilterIIR::EngineFilterIIR(QObject *pParent, size_t _SIZE, IIRPass _PASS)
+    : EngineFilterIIRBase(pParent)
+    , SIZE     (_SIZE)
+    , PASS     (_PASS)
+    , m_coef   (SIZE + 1)
+    , m_buf    (SIZE * 2)
+    , m_oldCoef(SIZE + 1)
+    , m_oldBuf (SIZE * 2)
+{
+    pauseFilter();
+}
+EngineFilterIIR::EngineFilterIIR(size_t _SIZE, IIRPass _PASS)
+    : EngineFilterIIR(nullptr, _SIZE, _PASS)
+{ }
+EngineFilterIIR::~EngineFilterIIR() = default;

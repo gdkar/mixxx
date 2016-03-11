@@ -3,14 +3,16 @@
 
 
 EngineFilterBessel4Low::EngineFilterBessel4Low(int sampleRate,
-                                               double freqCorner1) {
+                                               double freqCorner1)
+    : EngineFilterIIR(nullptr, 4, IIR_LP)
+{
+    m_spec = "LpBe4";
     setFrequencyCorners(sampleRate, freqCorner1);
 }
 
-void EngineFilterBessel4Low::setFrequencyCorners(int sampleRate,
-                                                 double freqCorner1) {
+void EngineFilterBessel4Low::setFrequencyCorners(int sampleRate,double freqCorner1) {
     // Copy the old coefficients into m_oldCoef
-    setCoefs("LpBe4", sampleRate, freqCorner1);
+    setCoefs(sampleRate, 4, "LpBe4", freqCorner1);
 }
 
 int EngineFilterBessel4Low::setFrequencyCornersForIntDelay(
@@ -38,44 +40,45 @@ int EngineFilterBessel4Low::setFrequencyCornersForIntDelay(
             0.030497945,  // delay 11
             0.027964718,  // delay 12
     };
-
-
-    double dDelay = kDelayFactor1 / desiredCorner1Ratio - kDelayFactor2 * desiredCorner1Ratio;
-    int iDelay =  math_clamp((int)(dDelay + 0.5), 0, maxDelay);
+    auto dDelay = kDelayFactor1 / desiredCorner1Ratio - kDelayFactor2 * desiredCorner1Ratio;
+    auto iDelay =  static_cast<int>(math_clamp((int)(dDelay + 0.5), 0, maxDelay));
 
     double quantizedRatio;
     if (iDelay >= (int)(sizeof(delayRatioTable) / sizeof(double))) {
         // pq formula, only valid for low frequencies
-        quantizedRatio = (-(iDelay / kDelayFactor2 / 2)) +
-                sqrt((iDelay / kDelayFactor2 / 2)*(iDelay / kDelayFactor2 / 2)
-                                       + kDelayFactor1 / kDelayFactor2);
+        quantizedRatio = (-iDelay + std::sqrt(iDelay*iDelay + 4.0 * kDelayFactor1*kDelayFactor2)) / (2 * kDelayFactor2);
     } else {
         quantizedRatio = delayRatioTable[iDelay];
     }
-
-    setCoefs("LpBe4", 1, quantizedRatio);
+    setCoefs(1.,4,  "LpBe4", quantizedRatio);
     return iDelay;
 }
 
 EngineFilterBessel4Band::EngineFilterBessel4Band(int sampleRate,
                                                  double freqCorner1,
-                                                 double freqCorner2) {
+                                                 double freqCorner2) 
+    : EngineFilterIIR(nullptr, 8, IIR_BP)
+{
+    m_spec = "BpBe4";
     setFrequencyCorners(sampleRate, freqCorner1, freqCorner2);
 }
 
 void EngineFilterBessel4Band::setFrequencyCorners(int sampleRate,
                                                   double freqCorner1,
                                                   double freqCorner2) {
-    setCoefs("BpBe4", sampleRate, freqCorner1, freqCorner2);
+    setCoefs(sampleRate,8, "BpBe4", freqCorner1, freqCorner2);
 }
 
 
 EngineFilterBessel4High::EngineFilterBessel4High(int sampleRate,
-                                                 double freqCorner1) {
+                                                 double freqCorner1)
+    : EngineFilterIIR(nullptr, 4, IIR_HP)
+{
+    m_spec = "HpBe4";
     setFrequencyCorners(sampleRate, freqCorner1);
 }
 
 void EngineFilterBessel4High::setFrequencyCorners(int sampleRate,
                                                   double freqCorner1) {
-    setCoefs("HpBe4", sampleRate, freqCorner1);
+    setCoefs(sampleRate,4,  "HpBe4", freqCorner1);
 }

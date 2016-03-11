@@ -1,4 +1,8 @@
 #include <cstring>
+#include <exception>
+#include <system_error>
+#include <cerrno>
+#include <stdexcept>
 #include <cstdlib>
 #include <cstddef>
 #include <cstdint>
@@ -458,10 +462,10 @@ namespace{
         va_list ap;
         va_start(ap, fmt);
         vsnprintf(buf, sizeof(buf), fmt, ap);	// Ignore overflow
+        va_end(ap);
         buf[sizeof(buf)-1]= 0;
         // If error handler routine returns, we dump to STDERR and exit anyway
-        fprintf(stderr, "fidlib error: %s\n", buf);
-        exit(1);
+        throw std::runtime_error("FidLib Error: " + std::string(buf));
     }
     std::complex<double> evaluate( double *coef, int n_coef, std::complex<double> in) {
         auto rv = std::complex<double>(*coef++);

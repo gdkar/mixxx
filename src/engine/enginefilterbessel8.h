@@ -3,7 +3,7 @@
 
 #include "engine/enginefilteriir.h"
 
-class EngineFilterBessel8Low : public EngineFilterIIR<8, IIR_LP> {
+class EngineFilterBessel8Low : public EngineFilterIIR{
     Q_OBJECT
   public:
     EngineFilterBessel8Low(int sampleRate, double freqCorner1);
@@ -15,7 +15,7 @@ class EngineFilterBessel8Low : public EngineFilterIIR<8, IIR_LP> {
     int setFrequencyCornersForIntDelay(double desiredCorner1Ratio, int maxDelay);
 };
 
-class EngineFilterBessel8Band : public EngineFilterIIR<16, IIR_BP> {
+class EngineFilterBessel8Band : public EngineFilterIIR{
     Q_OBJECT
   public:
     EngineFilterBessel8Band(int sampleRate, double freqCorner1,
@@ -24,7 +24,7 @@ class EngineFilterBessel8Band : public EngineFilterIIR<16, IIR_BP> {
             double freqCorner2);
 };
 
-class EngineFilterBessel8High : public EngineFilterIIR<8, IIR_HP> {
+class EngineFilterBessel8High : public EngineFilterIIR{
     Q_OBJECT
   public:
     EngineFilterBessel8High(int sampleRate, double freqCorner1);
