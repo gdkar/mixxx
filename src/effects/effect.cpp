@@ -33,7 +33,7 @@ Effect::~Effect() {
     //qDebug() << debugString() << "destroyed" << this;
     m_parametersById.clear();
     for (int i = 0; i < m_parameters.size(); ++i) {
-        EffectParameter* pParameter = m_parameters.at(i);
+        auto pParameter = m_parameters.at(i);
         m_parameters[i] = NULL;
         delete pParameter;
     }
@@ -46,7 +46,7 @@ void Effect::addToEngine(EngineEffectChain* pChain, int iIndex) {
     m_pEngineEffect = new EngineEffect(m_manifest,
             m_pEffectsManager->registeredChannels(),
             m_pInstantiator);
-    EffectsRequest* request = new EffectsRequest();
+    auto request = new EffectsRequest();
     request->type = EffectsRequest::ADD_EFFECT_TO_CHAIN;
     request->pTargetChain = pChain;
     request->AddEffectToChain.pEffect = m_pEngineEffect;
@@ -58,7 +58,7 @@ void Effect::removeFromEngine(EngineEffectChain* pChain, int iIndex) {
     if (!m_pEngineEffect) {
         return;
     }
-    EffectsRequest* request = new EffectsRequest();
+    auto request = new EffectsRequest();
     request->type = EffectsRequest::REMOVE_EFFECT_FROM_CHAIN;
     request->pTargetChain = pChain;
     request->RemoveEffectFromChain.pEffect = m_pEngineEffect;
@@ -72,7 +72,7 @@ void Effect::updateEngineState() {
         return;
     }
     sendParameterUpdate();
-    foreach (EffectParameter* pParameter, m_parameters) {
+    for(auto pParameter: m_parameters) {
         pParameter->updateEngineState();
     }
 }
@@ -101,7 +101,7 @@ void Effect::sendParameterUpdate() {
     if (!m_pEngineEffect) {
         return;
     }
-    EffectsRequest* pRequest = new EffectsRequest();
+    auto pRequest = new EffectsRequest();
     pRequest->type = EffectsRequest::SET_EFFECT_PARAMETERS;
     pRequest->pTargetEffect = m_pEngineEffect;
     pRequest->SetEffectParameters.enabled = m_bEnabled;
@@ -109,8 +109,8 @@ void Effect::sendParameterUpdate() {
 }
 
 unsigned int Effect::numKnobParameters() const {
-    unsigned int num = 0;
-    foreach(const EffectParameter* parameter, m_parameters) {
+    auto num = 0u;
+    for(auto parameter: m_parameters) {
         if (parameter->manifest().controlHint() != EffectManifestParameter::CONTROL_TOGGLE_STEPPING) {
             ++num;
         }
@@ -129,7 +129,7 @@ unsigned int Effect::numButtonParameters() const {
 }
 
 EffectParameter* Effect::getParameterById(const QString& id) const {
-    EffectParameter* pParameter = m_parametersById.value(id, NULL);
+    auto pParameter = m_parametersById.value(id, NULL);
     if (pParameter == NULL) {
         qWarning() << debugString() << "getParameterById"
                    << "WARNING: parameter for id does not exist:" << id;
@@ -152,8 +152,8 @@ EffectParameter* Effect::getFilteredParameterForSlot(ParameterFilterFnc filterFn
                                                      unsigned int slotNumber) {
     // It's normal to ask for a parameter that doesn't exist. Callers must check
     // for NULL.
-    unsigned int num = 0;
-    foreach(EffectParameter* parameter, m_parameters) {
+    auto num = 0u;
+    for(auto parameter: m_parameters) {
         if (parameter->manifest().showInParameterSlot() && filterFnc(parameter)) {
             if(num == slotNumber) {
                 return parameter;
@@ -173,15 +173,14 @@ EffectParameter* Effect::getButtonParameterForSlot(unsigned int slotNumber) {
 }
 
 QDomElement Effect::toXML(QDomDocument* doc) const {
-    QDomElement element = doc->createElement("Effect");
+    auto element = doc->createElement("Effect");
     XmlParse::addElement(*doc, element, "Id", m_manifest.id());
     XmlParse::addElement(*doc, element, "Version", m_manifest.version());
 
-    QDomElement parameters = doc->createElement("Parameters");
-    foreach (EffectParameter* pParameter, m_parameters) {
-        const EffectManifestParameter& parameterManifest =
-                pParameter->manifest();
-        QDomElement parameter = doc->createElement("Parameter");
+    auto parameters = doc->createElement("Parameters");
+    for(auto pParameter: m_parameters) {
+        const auto& parameterManifest = pParameter->manifest();
+        auto parameter = doc->createElement("Parameter");
         XmlParse::addElement(*doc, parameter, "Id", parameterManifest.id());
         // TODO(rryan): Do smarter QVariant formatting?
         XmlParse::addElement(*doc, parameter, "Value", QString::number(pParameter->getValue()));
@@ -189,15 +188,13 @@ QDomElement Effect::toXML(QDomDocument* doc) const {
         parameters.appendChild(parameter);
     }
     element.appendChild(parameters);
-
     return element;
 }
-
 // static
 EffectPointer Effect::fromXML(EffectsManager* pEffectsManager,
                               const QDomElement& element) {
-    QString effectId = XmlParse::selectNodeQString(element, "Id");
-    EffectPointer pEffect = pEffectsManager->instantiateEffect(effectId);
+    auto effectId = XmlParse::selectNodeQString(element, "Id");
+    auto pEffect = pEffectsManager->instantiateEffect(effectId);
     // TODO(rryan): Load parameter values / etc. from element.
     return pEffect;
 }

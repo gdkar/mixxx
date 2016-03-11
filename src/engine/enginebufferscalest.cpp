@@ -61,8 +61,8 @@ EngineBufferScaleST::EngineBufferScaleST(QObject *pParent)
 }
 EngineBufferScaleST::EngineBufferScaleST(ReadAheadManager *pReadAheadManager, QObject *pParent)
     : EngineBufferScale(pReadAheadManager,pParent),
-      m_pSoundTouch(std::make_unique<soundtouch::SoundTouch>()),
-      buffer_back(std::make_unique<CSAMPLE[]>(kiSoundTouchReadAheadLength*2))
+      buffer_back(std::make_unique<CSAMPLE[]>(kiSoundTouchReadAheadLength*2)),
+      m_pSoundTouch(std::make_unique<soundtouch::SoundTouch>())
 {
     m_pSoundTouch->setChannels(kNumChannels);
     m_pSoundTouch->setRate(m_dBaseRate);
