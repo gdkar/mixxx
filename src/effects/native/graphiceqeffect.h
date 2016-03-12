@@ -12,19 +12,19 @@ _Pragma("once")
 #include "util/sample.h"
 #include "util/types.h"
 
+#include <memory>
+#include <utility>
+#include <vector>
+
 class GraphicEQEffectGroupState {
   public:
     GraphicEQEffectGroupState();
     virtual ~GraphicEQEffectGroupState();
-    void setFilters(int sampleRate);
-    EngineFilterBiquad1LowShelving* m_low;
-    QList<EngineFilterBiquad1Peaking*> m_bands;
-    EngineFilterBiquad1HighShelving* m_high;
-    QList<CSAMPLE*> m_pBufs;
-    QList<double> m_oldMid;
-    double m_oldLow;
-    double m_oldHigh;
-    float m_centerFrequencies[8];
+    void setFilters(int sampleRate, double mid[8]);
+    std::unique_ptr<EngineFilterIIR>    m_bands[8];
+    double m_oldGain[8] = { 0. };
+    int    m_oldSampleRate{44100};
+    double m_centerFrequencies[8] = { 0.};
 };
 class GraphicEQEffect : public PerChannelEffectProcessor<GraphicEQEffectGroupState> {
   public:
@@ -42,12 +42,8 @@ class GraphicEQEffect : public PerChannelEffectProcessor<GraphicEQEffectGroupSta
                         const GroupFeatureState& groupFeatureState);
 
   private:
-    QString debugString() const {
-        return getId();
-    }
-    EngineEffectParameter* m_pPotLow;
-    QList<EngineEffectParameter*> m_pPotMid;
-    EngineEffectParameter* m_pPotHigh;
-    unsigned int m_oldSampleRate;
+    QString debugString() const;
+    EngineEffectParameter* m_pPotGain[8];
+    unsigned int m_oldSampleRate{44100};
     DISALLOW_COPY_AND_ASSIGN(GraphicEQEffect);
 };

@@ -1,6 +1,4 @@
-#ifndef ENGINEFILTERMOOGLADDER4_H
-#define ENGINEFILTERMOOGLADDER4_H
-
+_Pragma("once")
 // Filter based on the text "Non linear digital implementation of the moog ladder filter"
 // by Antti Houvilainen
 // This implementation is probably a more accurate digital representation of the original analogue filter.
@@ -11,8 +9,8 @@
 // Based on C Source from R. Lindner published at public domain
 // http://musicdsp.org/showArchiveComment.php?ArchiveID=196
 
-#include <memory.h>
-#include <stdio.h>
+#include <memory>
+#include <cstdio>
 
 #include <QDebug>
 
@@ -34,7 +32,6 @@ enum MoogMode {
     LP_OVERS,
     HP_OVERS,
 };
-
 template<enum MoogMode MODE>
 class EngineFilterMoogLadderBase : public EngineObjectConstIn {
 
@@ -228,5 +225,3 @@ class EngineFilterMoogLadder4High : public EngineFilterMoogLadderBase<HP_OVERS> 
   public:
     EngineFilterMoogLadder4High(int sampleRate, double freqCorner1, double resonance);
 };
-
-#endif // ENGINEFILTERMOOGLADDER4_H
