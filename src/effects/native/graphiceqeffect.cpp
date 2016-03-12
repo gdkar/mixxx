@@ -165,26 +165,17 @@ void GraphicEQEffect::processChannel(const ChannelHandle& handle,
             fMid[i] = m_pPotMid[i]->value();
         }
     }
-
-
     if (fLow != pState->m_oldLow) {
-        pState->m_low->setFrequencyCorners(sampleRate,
-                                           pState->m_centerFrequencies[0], Q,
-                                           fLow);
+        pState->m_low->setFrequencyCorners(sampleRate,pState->m_centerFrequencies[0], Q,fLow);
     }
     if (fHigh != pState->m_oldHigh) {
-        pState->m_high->setFrequencyCorners(sampleRate,
-                                            pState->m_centerFrequencies[7], Q,
-                                            fHigh);
+        pState->m_high->setFrequencyCorners(sampleRate,pState->m_centerFrequencies[7], Q,fHigh);
     }
     for (int i = 0; i < 6; i++) {
         if (fMid[i] != pState->m_oldMid[i]) {
-            pState->m_bands[i]->setFrequencyCorners(sampleRate,
-                                                    pState->m_centerFrequencies[i + 1],
-                                                    Q, fMid[i]);
+            pState->m_bands[i]->setFrequencyCorners(sampleRate,pState->m_centerFrequencies[i + 1],Q, fMid[i]);
         }
     }
-
     int bufIndex = 0;
     if (fLow) {
         pState->m_low->process(pInput, pState->m_pBufs[1 - bufIndex], numSamples);
@@ -193,33 +184,26 @@ void GraphicEQEffect::processChannel(const ChannelHandle& handle,
         pState->m_low->pauseFilter();
         SampleUtil::copy(pState->m_pBufs[bufIndex], pInput, numSamples);
     }
-
     for (int i = 0; i < 6; i++) {
         if (fMid[i]) {
-            pState->m_bands[i]->process(pState->m_pBufs[bufIndex],
-                                        pState->m_pBufs[1 - bufIndex], numSamples);
+            pState->m_bands[i]->process(pState->m_pBufs[bufIndex],pState->m_pBufs[1 - bufIndex], numSamples);
             bufIndex = 1 - bufIndex;
         } else {
             pState->m_bands[i]->pauseFilter();
         }
     }
-
     if (fHigh) {
-        pState->m_high->process(pState->m_pBufs[bufIndex],
-                                pOutput, numSamples);
+        pState->m_high->process(pState->m_pBufs[bufIndex],pOutput, numSamples);
         bufIndex = 1 - bufIndex;
     } else {
         SampleUtil::copy(pOutput, pState->m_pBufs[bufIndex], numSamples);
         pState->m_high->pauseFilter();
     }
-
-
     pState->m_oldLow = fLow;
     pState->m_oldHigh = fHigh;
     for (int i = 0; i < 6; i++) {
         pState->m_oldMid[i] = fMid[i];
     }
-
     if (enableState == EffectProcessor::DISABLING) {
         pState->m_low->pauseFilter();
         pState->m_high->pauseFilter();

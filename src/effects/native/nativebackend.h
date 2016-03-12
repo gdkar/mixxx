@@ -1,6 +1,4 @@
-#ifndef NATIVEBACKEND_H
-#define NATIVEBACKEND_H
-
+_Pragma("once")
 #include "effects/effectsbackend.h"
 
 class NativeBackend : public EffectsBackend {
@@ -14,5 +12,3 @@ class NativeBackend : public EffectsBackend {
         return "NativeBackend";
     }
 };
-
-#endif /* NATIVEBACKEND_H */

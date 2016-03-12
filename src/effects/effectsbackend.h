@@ -44,8 +44,7 @@ class EffectsBackend : public QObject {
         registerEffect(
                 EffectProcessorImpl::getId(),
                 EffectProcessorImpl::getManifest(),
-                EffectInstantiatorPointer(
-                            new EffectProcessorInstantiator<EffectProcessorImpl>()));
+                EffectInstantiatorPointer(new EffectProcessorInstantiator<EffectProcessorImpl>()));
     }
 
   private:

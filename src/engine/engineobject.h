@@ -15,41 +15,28 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef ENGINEOBJECT_H
-#define ENGINEOBJECT_H
-
+_Pragma("once")
 #include <QObject>
 
 #include "util/types.h"
 #include "engine/effects/groupfeaturestate.h"
-
 /**
   *@author Tue and Ken Haste Andersen
   */
-
 class EngineObject : public QObject {
     Q_OBJECT
   public:
     EngineObject(QObject *pParent = nullptr);
     virtual ~EngineObject();
-    virtual void process(CSAMPLE* pInOut,
-                         const int iBufferSize) = 0;
-
+    virtual void process(CSAMPLE* pInOut,const int iBufferSize) = 0;
     // Sub-classes re-implement and populate GroupFeatureState with the features
     // they extract.
-    virtual void collectFeatures(GroupFeatureState* pGroupFeatures) const {
-        Q_UNUSED(pGroupFeatures);
-    }
+    virtual void collectFeatures(GroupFeatureState* pGroupFeatures) const;
 };
-
 class EngineObjectConstIn : public QObject {
     Q_OBJECT
   public:
     EngineObjectConstIn(QObject *pParent = nullptr);
     virtual ~EngineObjectConstIn();
-
-    virtual void process(const CSAMPLE* pIn, CSAMPLE* pOut,
-                         const int iBufferSize) = 0;
+    virtual void process(const CSAMPLE* pIn, CSAMPLE* pOut,const int iBufferSize) = 0;
 };
-
-#endif

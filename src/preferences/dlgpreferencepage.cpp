@@ -1,8 +1,6 @@
 #include "preferences/dlgpreferencepage.h"
 
 DlgPreferencePage::DlgPreferencePage(QWidget* pParent)
-        : QWidget(pParent) {
-}
-
-DlgPreferencePage::~DlgPreferencePage() {
-}
+        : QWidget(pParent)
+{ }
+DlgPreferencePage::~DlgPreferencePage() = default;

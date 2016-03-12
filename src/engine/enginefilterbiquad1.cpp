@@ -1,101 +1,69 @@
 #include <stdio.h>
 #include "engine/enginefilterbiquad1.h"
 
-EngineFilterBiquad1LowShelving::EngineFilterBiquad1LowShelving(int sampleRate,
-                                                               double centerFreq,
-                                                               double Q)
-:EngineFilterIIR(nullptr,5,IIR_LP){
+EngineFilterBiquad1LowShelving::EngineFilterBiquad1LowShelving(double sampleRate,double centerFreq,double Q)
+:EngineFilterIIR(nullptr,5,IIR_LP, "LsBq/%1/%2")
+{
     m_startFromDry = true;
     setFrequencyCorners(sampleRate, centerFreq, Q, 0);
 }
-
-void EngineFilterBiquad1LowShelving::setFrequencyCorners(int sampleRate,
-                                                         double centerFreq,
-                                                         double Q,
-                                                         double dBgain) {
-    format_fidspec(m_spec, sizeof(m_spec), "LsBq/%.10f/%.10f", Q, dBgain);
-    setCoefs(sampleRate, 5, m_spec, centerFreq);
+void EngineFilterBiquad1LowShelving::setFrequencyCorners(double sampleRate,double centerFreq,double Q,double dBgain)
+{
+    auto ptr = m_spec.arg(Q).arg(dBgain);
+    setCoefs(sampleRate, 5, ptr.toLocal8Bit().constData(), centerFreq);
 }
-
-EngineFilterBiquad1Peaking::EngineFilterBiquad1Peaking(int sampleRate,
-                                                       double centerFreq, double Q)
-
-:EngineFilterIIR(nullptr,5,IIR_BP)
+EngineFilterBiquad1Peaking::EngineFilterBiquad1Peaking(double sampleRate,double centerFreq, double Q)
+:EngineFilterIIR(nullptr,5,IIR_BP, "PkBq/%1/%2")
+{
+    m_startFromDry = true;
+    setFrequencyCorners(sampleRate, centerFreq, Q, 0);
+}
+void EngineFilterBiquad1Peaking::setFrequencyCorners(double sampleRate,double centerFreq,double Q,double dBgain)
+{
+    auto ptr = m_spec.arg(Q).arg(dBgain);
+    setCoefs(sampleRate, 5, ptr, centerFreq);
+}
+EngineFilterBiquad1HighShelving::EngineFilterBiquad1HighShelving(double sampleRate,double centerFreq,double Q)
+:EngineFilterIIR(nullptr,5,IIR_HP, "HsBq/%1/%2")
 {
     m_startFromDry = true;
     setFrequencyCorners(sampleRate, centerFreq, Q, 0);
 }
 
-void EngineFilterBiquad1Peaking::setFrequencyCorners(int sampleRate,
-                                                     double centerFreq,
-                                                     double Q,
-                                                     double dBgain) {
-    format_fidspec(m_spec, sizeof(m_spec), "PkBq/%.10f/%.10f", Q, dBgain);
-    setCoefs(sampleRate, 5, m_spec, centerFreq);
-}
-
-EngineFilterBiquad1HighShelving::EngineFilterBiquad1HighShelving(int sampleRate,
-                                                                 double centerFreq,
-                                                                 double Q)
-:EngineFilterIIR(nullptr,5,IIR_HP)
+void EngineFilterBiquad1HighShelving::setFrequencyCorners(double sampleRate,double centerFreq,double Q,double dBgain)
 {
-    m_startFromDry = true;
-    setFrequencyCorners(sampleRate, centerFreq, Q, 0);
+    auto ptr = m_spec.arg(Q).arg(dBgain);
+    setCoefs(sampleRate, 5, ptr.toLocal8Bit().constData(), centerFreq);
 }
-
-void EngineFilterBiquad1HighShelving::setFrequencyCorners(int sampleRate,
-                                                          double centerFreq,
-                                                          double Q,
-                                                          double dBgain) {
-    format_fidspec(m_spec, sizeof(m_spec), "HsBq/%.10f/%.10f", Q, dBgain);
-    setCoefs(sampleRate, 5, m_spec, centerFreq);
-}
-
-EngineFilterBiquad1Low::EngineFilterBiquad1Low(int sampleRate,
-                                               double centerFreq,
-                                               double Q,
-                                               bool startFromDry)
-:EngineFilterIIR(nullptr,2,IIR_LP)
+EngineFilterBiquad1Low::EngineFilterBiquad1Low(double sampleRate,double centerFreq,double Q,bool startFromDry)
+:EngineFilterIIR(nullptr,2,IIR_LP, "LpBq/%1")
 {
     m_startFromDry = startFromDry;
     setFrequencyCorners(sampleRate, centerFreq, Q);
 }
-
-void EngineFilterBiquad1Low::setFrequencyCorners(int sampleRate,
-                                                 double centerFreq,
-                                                 double Q) {
-    format_fidspec(m_spec, sizeof(m_spec), "LpBq/%.10f", Q);
-    setCoefs(sampleRate, 2, m_spec, centerFreq);
+void EngineFilterBiquad1Low::setFrequencyCorners(double sampleRate,double centerFreq,double Q)
+{
+    auto ptr = m_spec.arg(Q);
+    setCoefs(sampleRate, 2, ptr, centerFreq);
 }
-
-EngineFilterBiquad1Band::EngineFilterBiquad1Band(int sampleRate,
-                                                 double centerFreq,
-                                                 double Q)
-:EngineFilterIIR(nullptr, 2,IIR_BP)
+EngineFilterBiquad1Band::EngineFilterBiquad1Band(double sampleRate,double centerFreq,double Q)
+:EngineFilterIIR(nullptr, 2,IIR_BP, "BpBq/%1")
 {
     setFrequencyCorners(sampleRate, centerFreq, Q);
 }
-
-void EngineFilterBiquad1Band::setFrequencyCorners(int sampleRate,
-                                                  double centerFreq,
-                                                  double Q) {
-    format_fidspec(m_spec, sizeof(m_spec), "BpBq/%.10f", Q);
-    setCoefs(sampleRate, 2, m_spec, centerFreq);
+void EngineFilterBiquad1Band::setFrequencyCorners(double sampleRate,double centerFreq,double Q)
+{
+    auto ptr = m_spec.arg(Q);
+    setCoefs(sampleRate, 2, ptr, centerFreq);
 }
-
-EngineFilterBiquad1High::EngineFilterBiquad1High(int sampleRate,
-                                                 double centerFreq,
-                                                 double Q,
-                                                 bool startFromDry)
-:EngineFilterIIR(nullptr,2,IIR_HP)
+EngineFilterBiquad1High::EngineFilterBiquad1High(double sampleRate,double centerFreq,double Q,bool startFromDry)
+:EngineFilterIIR(nullptr,2,IIR_HP, "HpBq/%1")
 {
     m_startFromDry = startFromDry;
     setFrequencyCorners(sampleRate, centerFreq, Q);
 }
-
-void EngineFilterBiquad1High::setFrequencyCorners(int sampleRate,
-                                                  double centerFreq,
-                                                  double Q) {
-    format_fidspec(m_spec, sizeof(m_spec), "HpBq/%.10f", Q);
-    setCoefs(sampleRate, 2, m_spec, centerFreq);
+void EngineFilterBiquad1High::setFrequencyCorners(double sampleRate,double centerFreq,double Q)
+{
+    auto ptr = m_spec.arg(Q);
+    setCoefs(sampleRate, 2, ptr, centerFreq);
 }

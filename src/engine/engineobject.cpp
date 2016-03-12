@@ -19,5 +19,9 @@
 
 EngineObject::EngineObject(QObject *p) :QObject(p) { }
 EngineObject::~EngineObject() = default;
+void EngineObject::collectFeatures(GroupFeatureState* pGroupFeatures) const
+{
+    Q_UNUSED(pGroupFeatures);
+}
 EngineObjectConstIn::EngineObjectConstIn(QObject *p):QObject(p) { }
 EngineObjectConstIn::~EngineObjectConstIn() = default;

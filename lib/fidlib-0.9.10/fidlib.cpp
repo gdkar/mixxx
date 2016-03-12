@@ -950,7 +950,6 @@ Fid::z2fidfilter(double gain, int cbm) {
     ff->resize(1);
     ff->val[0]= gain;
     ff=ff->grow();
-
     // Output as much as possible as 2x2 IIR/FIR filters
     for (a= 0; a <= n_pol-2 && a <= n_zer-2; a += 2) {
         // Look for a pair of values for an IIR
@@ -1386,7 +1385,6 @@ char *
 Fid::parse_spec(Spec *sp) {
    double *arg;
    int a;
-
    arg= sp->argarr;
    sp->n_arg= 0;
    sp->order= 0;
@@ -1395,7 +1393,6 @@ Fid::parse_spec(Spec *sp) {
    sp->adj= 0;
    sp->minlen= -1;
    sp->n_freq= 0;
-   
    for (a= 0; 1; a++) {
       auto fmt= filter[a].fmt;
       auto p= sp->spec;
@@ -1464,9 +1461,7 @@ Fid::parse_spec(Spec *sp) {
             p= q; break;
         }
       }
-
       if (p == 0) continue;
-
       if (fmt[0] == '/' && fmt[1] == '#' && fmt[2] == 'F') {
         sp->minlen= p-sp->spec;
         sp->n_freq= 1;
@@ -1616,39 +1611,40 @@ Fid::parse(double rate, char **pp, FidFilter **ffp) {
    while (1) {
       rew= p;
       if (!grabWord(&p, buf, sizeof(buf))) {
-        if (*p) ERR(p, strdupf("Filter element unexpectedly long -- syntax error?"));
-        buf[0]= 0;
+            if (*p)
+                ERR(p, "Filter element unexpectedly long -- syntax error?");
+            buf[0]= 0;
       }
-      if (!buf[0] || !buf[1]) switch (buf[0]) {
-       default:
-	  break;
-       case 0:
-       case ',':
-       case ';':
-       case ')':
-       case ']':
-       case '}':
-	  // End of filter, return it
-	  curr->typ= 0;
-      curr->resize(0);
-	  *pp = buf[0] ? (p-1) : p;
-	  *ffp= rv.release();
-	  return 0;
-       case '/':
-	  if (typ > 0)
-          ERR(rew, strdupf("Filter syntax error; unexpected '/'"));
-	  typ= 'I';
-	  continue;
-       case 'x':
-	  if (typ > 0)
-          ERR(rew, strdupf("Filter syntax error; unexpected 'x'"));
-	  typ= 'F';
-	  continue;
-      }
+    if (!buf[0] || !buf[1]) switch (buf[0]) {
+        default:
+            break;
+        case 0:
+        case ',':
+        case ';':
+        case ')':
+        case ']':
+        case '}':
+            // End of filter, return it
+            curr->typ= 0;
+            curr->resize(0);
+            *pp = buf[0] ? (p-1) : p;
+            *ffp= rv.release();
+            return 0;
+        case '/':
+            if (typ > 0)
+                ERR(rew, "Filter syntax error; unexpected '/'");
+            typ= 'I';
+            continue;
+        case 'x':
+            if (typ > 0)
+                ERR(rew, "Filter syntax error; unexpected 'x'");
+            typ= 'F';
+            continue;
+    }
       if (typ < 0)
           typ= 'F';		// Assume 'x' if missing
       if (!typ)
-          ERR(p, strdupf("Expecting a 'x' or '/' before this"));
+          ERR(p, "Expecting a 'x' or '/' before this");
       if (1 != sscanf(buf, "%lf %c", &val, &dmy)) {
         // Must be a predefined filter
         FidFilter *ff;
@@ -1656,7 +1652,7 @@ Fid::parse(double rate, char **pp, FidFilter **ffp) {
         double f0, f1;
         char *err;
         if (typ != 'F')
-            ERR(rew, strdupf("Predefined filters cannot be used with '/'"));
+            ERR(rew, "Predefined filters cannot be used with '/'");
         // Parse the filter-spec
         memset(&sp, 0, sizeof(sp));
         sp.spec= buf;
@@ -1665,7 +1661,6 @@ Fid::parse(double rate, char **pp, FidFilter **ffp) {
             ERR(rew, err);
         f0= sp.f0;
         f1= sp.f1;
-        
         // Adjust frequencies to range 0-0.5, and check them
         f0 /= rate;
         if (f0 > 0.5) ERR(rew, strdupf("Frequency of %gHz out of range with "

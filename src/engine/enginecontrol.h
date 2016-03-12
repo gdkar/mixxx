@@ -1,9 +1,7 @@
 // enginecontrol.h
 // Created 7/5/2009 by RJ Ryan (rryan@mit.edu)
 
-#ifndef ENGINECONTROL_H
-#define ENGINECONTROL_H
-
+_Pragma("once")
 #include <QObject>
 #include <QList>
 
@@ -34,10 +32,9 @@ const double kNoTrigger = -1;
 class EngineControl : public QObject {
     Q_OBJECT
   public:
-    EngineControl(QString group,
-                  UserSettingsPointer _config);
+    EngineControl(QString group,UserSettingsPointer _config);
+    EngineControl(QObject *pParent, QString group,UserSettingsPointer _config);
     virtual ~EngineControl();
-
     // Called by EngineBuffer::process every latency period. See the above
     // comments for information about guarantees that hold during this call. An
     // EngineControl can perform any upkeep operations that are necessary during
@@ -63,7 +60,6 @@ class EngineControl : public QObject {
     // indicate that the given portion of a song is a potential imminent seek
     // target.
     virtual void hintReader(HintVector* pHintList);
-
     virtual void setEngineMaster(EngineMaster* pEngineMaster);
     void setEngineBuffer(EngineBuffer* pEngineBuffer);
     virtual void setCurrentSample(const double dCurrentSample, const double dTotalSamples);
@@ -71,15 +67,10 @@ class EngineControl : public QObject {
     double getTotalSamples() const;
     bool atEndPosition() const;
     QString getGroup() const;
-
     // Called to collect player features for effects processing.
-    virtual void collectFeatureState(GroupFeatureState* pGroupFeatures) const {
-        Q_UNUSED(pGroupFeatures);
-    }
-
+    virtual void collectFeatureState(GroupFeatureState* pGroupFeatures) const ;
     // Called whenever a seek occurs to allow the EngineControl to respond.
     virtual void notifySeek(double dNewPlaypo);
-
   public slots:
     virtual void trackLoaded(TrackPointer pTrack);
     virtual void trackUnloaded(TrackPointer pTrack);
@@ -103,10 +94,7 @@ class EngineControl : public QObject {
         double current;
         double total;
     };
-
     ControlValueAtomic<SampleOfTrack> m_sampleOfTrack;
-    EngineMaster* m_pEngineMaster;
-    EngineBuffer* m_pEngineBuffer;
+    EngineMaster* m_pEngineMaster{nullptr};
+    EngineBuffer* m_pEngineBuffer{nullptr};
 };
-
-#endif /* ENGINECONTROL_H */

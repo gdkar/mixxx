@@ -1,6 +1,4 @@
-#ifndef BESSEL4LVMIXEQEFFECT_H
-#define BESSEL4LVMIXEQEFFECT_H
-
+_Pragma("once")
 #include <QMap>
 
 #include "controlobjectslave.h"
@@ -9,14 +7,17 @@
 #include "effects/native/lvmixeqbase.h"
 #include "engine/effects/engineeffect.h"
 #include "engine/effects/engineeffectparameter.h"
-#include "engine/enginefilterbessel4.h"
-#include "engine/enginefilterdelay.h"
 #include "util/class.h"
 #include "util/types.h"
 #include "util/defs.h"
 
 class Bessel4LVMixEQEffectGroupState :
-        public LVMixEQEffectGroupState<EngineFilterBessel4Low> {
+        public LVMixEQEffectGroupState
+{
+    public:
+        Bessel4LVMixEQEffectGroupState()
+            : LVMixEQEffectGroupState(4)
+        { }
 };
 
 class Bessel4LVMixEQEffect : public PerChannelEffectProcessor<Bessel4LVMixEQEffectGroupState> {
@@ -26,7 +27,6 @@ class Bessel4LVMixEQEffect : public PerChannelEffectProcessor<Bessel4LVMixEQEffe
 
     static QString getId();
     static EffectManifest getManifest();
-
     // See effectprocessor.h
     void processChannel(const ChannelHandle& handle,
                         Bessel4LVMixEQEffectGroupState* pState,
@@ -54,5 +54,3 @@ class Bessel4LVMixEQEffect : public PerChannelEffectProcessor<Bessel4LVMixEQEffe
 
     DISALLOW_COPY_AND_ASSIGN(Bessel4LVMixEQEffect);
 };
-
-#endif /* BESSEL4LVMIXEQEFFECT_H */

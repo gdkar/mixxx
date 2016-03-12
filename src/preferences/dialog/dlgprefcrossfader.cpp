@@ -1,7 +1,7 @@
 #include <QtDebug>
 
 #include "preferences/dialog/dlgprefcrossfader.h"
-#include "engine/enginefilterbessel4.h"
+#include "engine/enginefilteriir.h"
 #include "controlobject.h"
 #include "engine/enginexfader.h"
 #include "util/rescaler.h"
