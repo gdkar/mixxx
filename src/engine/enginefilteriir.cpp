@@ -137,3 +137,19 @@ EngineFilterIIR::EngineFilterIIR(size_t _SIZE, IIRPass _PASS, QString spec)
     : EngineFilterIIR(nullptr, _SIZE, _PASS, spec)
 { }
 EngineFilterIIR::~EngineFilterIIR() = default;
+void EngineFilterIIR::setStartFromDry(bool sfd)
+{
+    m_startFromDry = sfd;
+}
+bool EngineFilterIIR::getStartFromDry() const
+{
+    return m_startFromDry;
+}
+void EngineFilterIIR::setSpec(QString s)
+{
+    m_spec = s;
+}
+QString EngineFilterIIR::getSpec() const
+{
+    return m_spec;
+}

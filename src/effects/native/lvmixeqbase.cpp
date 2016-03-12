@@ -46,7 +46,7 @@ namespace {
             0.027964718,  // delay 12
     };
     const double * drTab[] = {nullptr, nullptr, nullptr, nullptr, dr4Tab, nullptr, nullptr, nullptr, dr8Tab};
-    const size_t   drTabSize[] = { 0, 0, 0, 0, sizeof(dr4Tab)/sizeof(dr4Tab[0]), 0, 0, 0, sizeof(dr8Tab)/sizeof(dr8Tab[0])};
+    const int drTabSize[] = { 0, 0, 0, 0, sizeof(dr4Tab)/sizeof(dr4Tab[0]), 0, 0, 0, sizeof(dr8Tab)/sizeof(dr8Tab[0])};
     int setFrequencyCornersForIntDelay(std::unique_ptr<EngineFilterIIR> &filt, size_t size, double desiredCorner1Ratio, int maxDelay)
     {
         

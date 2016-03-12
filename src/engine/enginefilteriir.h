@@ -47,6 +47,10 @@ protected:
     EngineFilterIIR(QObject *pParent, size_t _SIZE, IIRPass _PASS, QString spec);
     EngineFilterIIR(size_t _SIZE, IIRPass _PASS, QString spec);
     virtual ~EngineFilterIIR() ;
+    void setStartFromDry(bool sfd);
+    bool getStartFromDry() const;
+    void setSpec(QString _sp);
+    QString getSpec() const;
     // this can be called continuously for Filters that have own ramping
     // or need no fade when disabling
     virtual void pauseFilter();

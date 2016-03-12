@@ -628,7 +628,6 @@ class MixxxCore(Feature):
                    "engine/enginebufferscale.cpp",
                    "engine/enginebufferscalelinear.cpp",
                    "engine/enginefilterdelay.cpp",
-                   "engine/enginefilterbiquad1.cpp",
                    "engine/enginefiltermoogladder4.cpp",
                    "engine/enginefilteriir.cpp",
                    "engine/engineobject.cpp",
