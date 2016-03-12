@@ -30,8 +30,12 @@ class EngineFilterIIRBase : public EngineObjectConstIn {
 class EngineFilterIIR : public EngineFilterIIRBase {
     Q_OBJECT;
 protected:
+    Fid m_fid;
     size_t                    SIZE;
     IIRPass                   PASS;
+    IIRPass                   m_oldPASS;
+    double                    m_freq0;
+    double                    m_freq1;
     QString                   m_spec;
     std::vector<CSAMPLE>      m_coef;
     std::vector<CSAMPLE>      m_buf;
@@ -51,6 +55,10 @@ protected:
     bool getStartFromDry() const;
     void setSpec(QString _sp);
     QString getSpec() const;
+    size_t getSize() const;
+    IIRPass getPass() const;
+    IIRPass setPass(IIRPass _pass);
+    
     // this can be called continuously for Filters that have own ramping
     // or need no fade when disabling
     virtual void pauseFilter();

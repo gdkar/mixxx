@@ -598,7 +598,7 @@ class MixxxCore(Feature):
                    "effects/effectsbackend.cpp",
 
                    "effects/native/nativebackend.cpp",
-                   "effects/native/bitcrushereffect.cpp",
+
                    "effects/native/linkwitzriley8eqeffect.cpp",
                    "effects/native/lvmixeqbase.cpp",
                    "effects/native/bessel4lvmixeqeffect.cpp",
@@ -606,7 +606,6 @@ class MixxxCore(Feature):
                    "effects/native/graphiceqeffect.cpp",
                    "effects/native/flangereffect.cpp",
                    "effects/native/filtereffect.cpp",
-                   "effects/native/moogladder4filtereffect.cpp",
                    "effects/native/reverbeffect.cpp",
                    "effects/native/echoeffect.cpp",
                    "effects/native/autopaneffect.cpp",

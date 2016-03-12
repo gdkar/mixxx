@@ -39,17 +39,23 @@ void EngineFilterIIR::setCoefs(double sampleRate, size_t n_coef1, QString spec, 
 {
     // Copy to dynamic-ish memory to prevent fidlib API breakage.
     // Copy the old coefficients into m_oldCoef
+    if(n_coef1 == getSize() && freq0 == m_freq0 && freq1 == m_freq1 && spec == getSpec())
+        return;
+
     if(!m_doRamping) {
         m_oldCoef   = m_coef;
+        m_oldPASS   = PASS;
         m_oldBuf    = m_buf;
         m_doRamping = true;
     }
     SIZE = n_coef1;
-    auto coef = std::vector<double>(SIZE + 1);
-    coef[0] = m_fid.design_coef(&coef [1], SIZE,spec.toLocal8Bit().constData(), sampleRate, freq0, freq1, adj);
+    auto coef = std::vector<double>(n_coef1 + 1);
+    coef[0] = m_fid.design_coef(&coef [1], n_coef1 ,spec.toLocal8Bit().constData(), sampleRate, freq0, freq1, adj);
     std::copy(coef.begin(),coef.end(),m_coef.begin());
-    initBuffers();
     m_buf.resize(2 * SIZE);
+    std::fill(m_buf.begin(),m_buf.end(), 0);
+    m_freq0 = freq0;
+    m_freq1 = freq1;
 }
 void EngineFilterIIR::assumeSettled()
 {
@@ -87,7 +93,9 @@ void EngineFilterIIR::process(const CSAMPLE* pIn, CSAMPLE* pOutput,const int iBu
     if(m_doRamping) {
         if(!m_doStart) {
             auto pTmp = reinterpret_cast<CSAMPLE*>(alloca(sizeof(CSAMPLE) * iBufferSize));
+            std::swap(PASS,m_oldPASS);
             processBuffer(pIn, pTmp, &m_oldCoef[0], &m_oldBuf[0],m_oldCoef.size() - 1, iBufferSize);
+            std::swap(PASS,m_oldPASS);
             SampleUtil::copy(pOutput, pTmp, iBufferSize/2);
             SampleUtil::applyRampingGain(&pOutput[iBufferSize/2], 0.f, 1.f, iBufferSize/2);
             SampleUtil::addWithRampingGain(&pOutput[iBufferSize/2], &pTmp[iBufferSize/2], 1.f, 0.f, iBufferSize/2);
@@ -152,4 +160,24 @@ void EngineFilterIIR::setSpec(QString s)
 QString EngineFilterIIR::getSpec() const
 {
     return m_spec;
+}
+size_t EngineFilterIIR::getSize() const
+{
+    return SIZE;
+}
+IIRPass EngineFilterIIR::getPass() const
+{
+    return PASS;
+}
+void EngineFilterIIR::setPass(IIRPass _pass)
+{
+    if(_pass != getPass()) {
+        if(!m_doRamping) {
+            m_oldCoef   = m_coef;
+            m_oldBuf    = m_buf;
+            m_oldPASS   = PASS;
+            m_doRamping = true;
+        }
+        PASS = _pass;
+    }
 }
