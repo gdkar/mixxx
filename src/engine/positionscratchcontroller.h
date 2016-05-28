@@ -8,14 +8,14 @@ class VelocityController;
 class RateIIFilter;
 
 class PositionScratchController : public QObject {
+    Q_OBJECT
   public:
-    PositionScratchController(QString group);
+    PositionScratchController(QObject *pPrent, QString group);
     virtual ~PositionScratchController();
-
-    void process(double currentSample, double releaseRate,
-                 int iBufferSize, double baserate);
     bool isEnabled();
     double getRate();
+  public slots:
+    void process(double currentSample, double releaseRate,int iBufferSize, double baserate);
     void notifySeek(double currentSample);
 
   private:

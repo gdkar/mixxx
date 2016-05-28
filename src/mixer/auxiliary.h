@@ -1,6 +1,4 @@
-#ifndef MIXER_AUXILIARY_H
-#define MIXER_AUXILIARY_H
-
+_Pragma("once")
 #include <QObject>
 #include <QString>
 
@@ -21,5 +19,3 @@ class Auxiliary : public BasePlayer {
               EffectsManager* pEffectsManager);
     virtual ~Auxiliary();
 };
-
-#endif /* MIXER_AUXILIARY_H */

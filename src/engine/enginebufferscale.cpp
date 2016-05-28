@@ -31,3 +31,14 @@ EngineBufferScale::EngineBufferScale(ReadAheadManager *pRAMan, QObject *pParent)
 {
 }
 EngineBufferScale::~EngineBufferScale() = default;
+void EngineBufferScale::setScaleParameters(double base_rate,
+                                double* pTempoRatio,
+                                double* pPitchRatio) {
+    m_dBaseRate = base_rate;
+    m_dTempoRatio = *pTempoRatio;
+    m_dPitchRatio = *pPitchRatio;
+}
+// Set the desired output sample rate.
+void EngineBufferScale::setSampleRate(int iSampleRate) {
+    m_iSampleRate = iSampleRate;
+}

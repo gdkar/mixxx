@@ -48,4 +48,3 @@ void ControlObjectScript::emitValueChanged()
 {
     emit(trigger(get(), this));
 }
-

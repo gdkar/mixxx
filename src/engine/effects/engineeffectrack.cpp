@@ -7,13 +7,8 @@ EngineEffectRack::EngineEffectRack(int iRackNumber)
     // Try to prevent memory allocation.
     m_chains.reserve(256);
 }
-
-EngineEffectRack::~EngineEffectRack() {
-    //qDebug() << "EngineEffectRack::~EngineEffectRack()" << this;
-}
-
-bool EngineEffectRack::processEffectsRequest(const EffectsRequest& message,
-                                             EffectsResponsePipe* pResponsePipe) {
+EngineEffectRack::~EngineEffectRack() = default;
+bool EngineEffectRack::processEffectsRequest(const EffectsRequest& message,EffectsResponsePipe* pResponsePipe) {
     EffectsResponse response(message);
     switch (message.type) {
         case EffectsRequest::ADD_CHAIN_TO_RACK:
@@ -46,13 +41,11 @@ void EngineEffectRack::process(const ChannelHandle& handle,
                                const unsigned int numSamples,
                                const unsigned int sampleRate,
                                const GroupFeatureState& groupFeatures) {
-    foreach (EngineEffectChain* pChain, m_chains) {
-        if (pChain != NULL) {
+    for(auto  pChain: m_chains) {
+        if (pChain != NULL)
             pChain->process(handle, pInOut, numSamples, sampleRate, groupFeatures);
-        }
     }
 }
-
 bool EngineEffectRack::addEffectChain(EngineEffectChain* pChain, int iIndex) {
     if (iIndex < 0) {
         if (kEffectDebugOutput) {

@@ -67,10 +67,12 @@ FilterGroupState::FilterGroupState()
           m_q(0.707106781),
           m_hiFreq(kMinCorner) {
     m_pBuf = SampleUtil::alloc(MAX_BUFFER_LEN);
-    m_pLowFilter = std::make_unique<EngineFilterIIR>(2, IIR_LP, QString{"LpBq/%1"}.arg(m_q));
+    m_pLowFilter = std::make_unique<EngineFilterIIR>(2, IIR_LP, QString{"LpBq/%1"}.arg(m_q),
+            QString{"LpBq/%1"});
     m_pLowFilter->setFrequencyCorners(1., m_loFreq);
     m_pLowFilter->setStartFromDry(true);
-    m_pHighFilter = std::make_unique<EngineFilterIIR>(2, IIR_HP, QString{"HpBq/%1"}.arg(m_q));
+    m_pHighFilter = std::make_unique<EngineFilterIIR>(2, IIR_HP, QString{"HpBq/%1"}.arg(m_q),
+            QString{"HpBq/%1"});
     m_pHighFilter->setFrequencyCorners(1., m_hiFreq);
     m_pHighFilter->setStartFromDry(true);
 }
@@ -126,9 +128,9 @@ void FilterEffect::processChannel(const ChannelHandle& handle,
             auto qmax = 4 - 2 / 0.6 * ratio;
             clampedQ = math_min(q, qmax);
         }
-        pState->m_pLowFilter->setSpec(QString{"LpBq/%1"}.arg(clampedQ));
+        pState->m_pLowFilter->setSpec(pState->m_pLowFilter->getTemplate().arg(clampedQ));
         pState->m_pLowFilter->setFrequencyCorners(1, lpf, clampedQ);
-        pState->m_pHighFilter->setSpec(QString{"HpBq/%1"}.arg(clampedQ));
+        pState->m_pHighFilter->setSpec(pState->m_pHighFilter->getTemplate().arg(clampedQ));
         pState->m_pHighFilter->setFrequencyCorners(1, hpf, clampedQ);
     }
     const auto *pLpfInput = pState->m_pBuf;

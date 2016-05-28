@@ -25,8 +25,8 @@ EffectManifest GraphicEQEffect::getManifest() {
     manifest.setIsMasterEQ(true);
 
     // Display rounded center frequencies for each filter
-    float centerFrequencies[8] = {45, 100, 220, 500, 1100, 2500,5500, 12000};
-    for (auto i = 0; i < 8; i++) {
+    float centerFrequencies[] = {45, 100, 220, 500, 1100, 2500,5500, 12000};
+    for(auto i =  0; i < sizeof(centerFrequencies)/sizeof(centerFrequencies[0]);i++) {
         auto paramName = QString{};
         if (centerFrequencies[i ] < 1000) {
             paramName = QString("%1 Hz").arg(centerFrequencies[i ]);
@@ -42,8 +42,8 @@ EffectManifest GraphicEQEffect::getManifest() {
         band->setUnitsHint(EffectManifestParameter::UNITS_UNKNOWN);
         band->setNeutralPointOnScale(0.5);
         band->setDefault(0);
-        band->setMinimum(-24);
-        band->setMaximum(24);
+        band->setMinimum(-12);
+        band->setMaximum(12);
     }
     return manifest;
 }
@@ -51,47 +51,49 @@ EffectManifest GraphicEQEffect::getManifest() {
 GraphicEQEffectGroupState::GraphicEQEffectGroupState()
 {
     // Initialize the default center frequencies
-    m_centerFrequencies[0] = 81.;
-    m_centerFrequencies[1] = 100.;
-    m_centerFrequencies[2] = 222.;
-    m_centerFrequencies[3] = 494.;
-    m_centerFrequencies[4] = 1097.;
-    m_centerFrequencies[5] = 2437.;
-    m_centerFrequencies[6] = 5416.;
-    m_centerFrequencies[7] = 9828.;
+    m_centerFrequencies = std::vector<double>{45, 100, 220, 500, 1100, 2500,5500, 12000};
+    m_size = m_centerFrequencies.size();
+    m_oldGain.resize(m_size);
+    m_bands.resize(m_size);
 
     // Initialize the filters with default parameters
     m_bands[0] = std::make_unique<EngineFilterIIR>(5,IIR_LP,  QString{"LsBq/%1/%2"}.arg(Q).arg(0));//44100, m_centerFrequencies[0], Q);
+    m_bands[0]->setStartFromDry(true);
     m_bands[0]->setCoefs(44100., 5, QString{"LsBq/%1/%2"}.arg(Q).arg(0),m_centerFrequencies[0]);
-    for (int i = 1; i < 8; i++) {
+    auto i = 1u;
+    for (; i < m_size - 1; i++) {
         m_bands[i] = std::make_unique<EngineFilterIIR>(5,IIR_BP, QString{"PkBq/%1/%2"}.arg(Q).arg(0));
+        m_bands[i]->setStartFromDry(true);
         m_bands[i]->setCoefs(44100., 5, QString{"PkBq/%1/%2"}.arg(Q).arg(0),m_centerFrequencies[i]);
     }
-    m_bands[7] = std::make_unique<EngineFilterIIR>(5,IIR_HP,  QString{"HsBq/%1/%2"}.arg(Q).arg(0));
-    m_bands[7]->setCoefs(44100., 5, QString{"HsBq/%1/%2"}.arg(Q).arg(0),m_centerFrequencies[7]);
+    m_bands[i] = std::make_unique<EngineFilterIIR>(5,IIR_BP, QString{"HsBq/%1/%2"}.arg(Q).arg(0));
+    m_bands[i]->setStartFromDry(true);
+    m_bands[i]->setCoefs(44100., 5, QString{"HsBq/%1/%2"}.arg(Q).arg(0),m_centerFrequencies[i]);
 }
 GraphicEQEffectGroupState::~GraphicEQEffectGroupState() = default;
-void GraphicEQEffectGroupState::setFilters(int sampleRate, double gain[8])
+void GraphicEQEffectGroupState::setFilters(int sampleRate, std::vector<double> &gain)
 {
     if(m_oldSampleRate != sampleRate || m_oldGain[0] != gain[0])
         m_bands[0]->setCoefs(sampleRate, 5, QString{"LsBq/%1/%2"}.arg(Q).arg(gain[0]),m_centerFrequencies[0]);
     m_oldGain[0] = gain[0];
-    for (auto i = 1; i < 8; i++) {
+    auto i = 1u;
+    for (; i < m_size - 1; i++) {
         if(sampleRate != m_oldSampleRate || gain[i] != m_oldGain[i])
             m_bands[i]->setCoefs(sampleRate, 5, QString{"PkBq/%1/%2"}.arg(Q).arg(gain[i]),m_centerFrequencies[i]);
-        m_oldGain [i] = gain[i+1];
+        m_oldGain [i] = gain[i];
     }
-    if(m_oldSampleRate != sampleRate || m_oldGain[7] != gain[7])
-        m_bands[7]->setCoefs(sampleRate, 5, QString{"HsBq/%1/%2"}.arg(Q).arg(gain[7]),m_centerFrequencies[7]);
-    m_oldGain[7] = gain[7];
+    if(m_oldSampleRate != sampleRate || m_oldGain[i] != gain[i])
+        m_bands[i]->setCoefs(sampleRate, 5, QString{"HsBq/%1/%2"}.arg(Q).arg(gain[i]),m_centerFrequencies[i]);
+    m_oldGain[i] = gain[i];
     m_oldSampleRate = sampleRate;
 }
 GraphicEQEffect::GraphicEQEffect(EngineEffect* pEffect,const EffectManifest& manifest)
         : m_oldSampleRate(44100)
 {
     Q_UNUSED(manifest);
+    m_pPotGain.clear();
     for (auto i = 0; i < 8; i++)
-        m_pPotGain[i] = pEffect->getParameterById(QString("band%1").arg(i));
+        m_pPotGain.push_back(pEffect->getParameterById(QString("band%1").arg(i)));
 }
 GraphicEQEffect::~GraphicEQEffect() = default;
 void GraphicEQEffect::processChannel(const ChannelHandle& handle,
@@ -106,20 +108,31 @@ void GraphicEQEffect::processChannel(const ChannelHandle& handle,
     Q_UNUSED(groupFeatures);
     // If the sample rate has changed, initialize the filters using the new
     // sample rate
-    double fGain[8] = { 0.};
+    auto fGain = std::vector<double>(pState->m_size, 0.);
     if (enableState == EffectProcessor::DISABLING) {
          // Ramp to dry, when disabling, this will ramp from dry when enabling as well
-        std::fill_n(fGain,8,1.);
+        std::fill(fGain.begin(),fGain.end(), 0);
     } else {
-        for(auto i = 0; i < 8; i++)
+        for(auto i = 0u; i < fGain.size() && i < m_pPotGain.size(); i++) {
             fGain[i] = m_pPotGain[i]->value();
+        }
     }
     pState->setFilters(sampleRate, fGain);
-    pState->m_bands[0]->process(pIn,pOut,numSamples);
-    for (auto i = 1; i < 6; i++)
-        pState->m_bands[i]->process(pOut,pOut, numSamples);
+    auto pFrom = pIn;
+    auto pTo   = pOut;
+    for (auto i = 0u; i < fGain.size() && i < pState->m_size; i++) {
+        if(fGain[i] || pState->m_oldGain[i]) {
+            pState->m_bands[i]->process(pFrom,pTo, numSamples);
+            pFrom = pTo;
+        }
+    }
+    if(pFrom != pTo)
+        SampleUtil::copy(pTo, pFrom, numSamples);
+
     if (enableState == EffectProcessor::DISABLING) {
-        for (auto i = 0; i < 8; i++)
+        for (auto i = 0; i < 8; i++) {
             pState->m_bands[i]->pauseFilter();
+            pState->m_oldGain[i] = 0.;
+        }
     }
 }

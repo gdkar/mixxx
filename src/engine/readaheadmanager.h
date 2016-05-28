@@ -27,7 +27,7 @@ class ReadAheadManager : public QObject{
     Q_OBJECT
   public:
     explicit ReadAheadManager(); // Only for testing: ReadAheadManagerMock
-    explicit ReadAheadManager(CachingReader* reader, LoopingControl* pLoopingControl, QObject *pParent);
+    explicit ReadAheadManager(QObject *pParent, CachingReader* reader, LoopingControl* pLoopingControl);
     virtual ~ReadAheadManager();
     // Call this method to fill buffer with requested_samples out of the
     // lookahead buffer. Provide rate as dRate so that the manager knows the
@@ -41,7 +41,8 @@ class ReadAheadManager : public QObject{
     void addRateControl(RateControl* pRateControl);
     // Get the current read-ahead position in samples.
     virtual int getPlaypos() const;
-    virtual void notifySeek(int iSeekPosition);
+  public slots:
+    virtual void notifySeek(double dSeekPosition);
     // hintReader allows the ReadAheadManager to provide hints to the reader to
     // indicate that the given portion of a song is about to be read.
     virtual void hintReader(double dRate, HintVector* hintList);

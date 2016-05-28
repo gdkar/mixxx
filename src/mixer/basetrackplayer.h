@@ -1,6 +1,4 @@
-#ifndef MIXER_BASETRACKPLAYER_H
-#define MIXER_BASETRACKPLAYER_H
-
+_Pragma("once")
 #include <QObject>
 #include <QScopedPointer>
 #include <QString>
@@ -28,15 +26,11 @@ class BaseTrackPlayer : public BasePlayer {
         RESET_PITCH_AND_SPEED,
         RESET_SPEED
     };
-
     BaseTrackPlayer(QObject* pParent, const QString& group);
-    virtual ~BaseTrackPlayer() {}
-
+    virtual ~BaseTrackPlayer() = default;
     virtual TrackPointer getLoadedTrack() const = 0;
-
   public slots:
     virtual void slotLoadTrack(TrackPointer pTrack, bool bPlay=false) = 0;
-
   signals:
     void loadTrack(TrackPointer pTrack, bool bPlay=false);
     void loadTrackFailed(TrackPointer pTrack);
@@ -45,7 +39,6 @@ class BaseTrackPlayer : public BasePlayer {
     void noPassthroughInputConfigured();
     void noVinylControlInputConfigured();
 };
-
 class BaseTrackPlayerImpl : public BaseTrackPlayer {
     Q_OBJECT
   public:
@@ -58,15 +51,11 @@ class BaseTrackPlayerImpl : public BaseTrackPlayer {
                         bool defaultMaster,
                         bool defaultHeadphones);
     virtual ~BaseTrackPlayerImpl();
-
     TrackPointer getLoadedTrack() const;
-
     // TODO(XXX): Only exposed to let the passthrough AudioInput get
     // connected. Delete me when EngineMaster supports AudioInput assigning.
     EngineDeck* getEngineDeck() const;
-
     void setupEqControls();
-
   public slots:
     void slotLoadTrack(TrackPointer track, bool bPlay=false);
     void slotFinishLoading(TrackPointer pTrackInfoObject);
@@ -115,5 +104,3 @@ class BaseTrackPlayerImpl : public BaseTrackPlayer {
 
     bool m_replaygainPending;
 };
-
-#endif // MIXER_BASETRACKPLAYER_H

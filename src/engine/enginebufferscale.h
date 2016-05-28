@@ -57,15 +57,9 @@ class EngineBufferScale : public QObject {
     // be set to the value it was clamped to.
     virtual void setScaleParameters(double base_rate,
                                     double* pTempoRatio,
-                                    double* pPitchRatio) {
-        m_dBaseRate = base_rate;
-        m_dTempoRatio = *pTempoRatio;
-        m_dPitchRatio = *pPitchRatio;
-    }
+                                    double* pPitchRatio);
     // Set the desired output sample rate.
-    virtual void setSampleRate(int iSampleRate) {
-        m_iSampleRate = iSampleRate;
-    }
+    virtual void setSampleRate(int iSampleRate);
     // Called from EngineBuffer when seeking, to ensure the buffers are flushed */
     virtual void clear() = 0;
     // Scale buffer

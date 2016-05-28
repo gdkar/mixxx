@@ -31,30 +31,27 @@ PlayerInfo::PlayerInfo()
           m_currentlyPlayingDeck(-1) {
     startTimer(kPlayingDeckUpdateIntervalMillis);
 }
-
-PlayerInfo::~PlayerInfo() {
+PlayerInfo::~PlayerInfo()
+{
     m_loadedTrackMap.clear();
     clearControlCache();
 }
-
 // static
-PlayerInfo& PlayerInfo::instance() {
-    if (!m_pPlayerInfo) {
+PlayerInfo& PlayerInfo::instance()
+{
+    if (!m_pPlayerInfo)
         m_pPlayerInfo = new PlayerInfo();
-    }
     return *m_pPlayerInfo;
 }
-
 // static
-void PlayerInfo::destroy() {
+void PlayerInfo::destroy()
+{
     delete m_pPlayerInfo;
 }
-
 TrackPointer PlayerInfo::getTrackInfo(const QString& group) {
     QMutexLocker locker(&m_mutex);
     return m_loadedTrackMap.value(group);
 }
-
 void PlayerInfo::setTrackInfo(const QString& group, const TrackPointer& track) {
     TrackPointer pOld;
     { // Scope
@@ -62,12 +59,10 @@ void PlayerInfo::setTrackInfo(const QString& group, const TrackPointer& track) {
         pOld = m_loadedTrackMap.value(group);
         m_loadedTrackMap.insert(group, track);
     }
-    if (pOld) {
+    if (pOld)
         emit(trackUnloaded(group, pOld));
-    }
     emit(trackLoaded(group, track));
 }
-
 bool PlayerInfo::isTrackLoaded(const TrackPointer& pTrack) const {
     QMutexLocker locker(&m_mutex);
     QMapIterator<QString, TrackPointer> it(m_loadedTrackMap);
@@ -91,7 +86,7 @@ bool PlayerInfo::isFileLoaded(const QString& track_location) const {
     QMapIterator<QString, TrackPointer> it(m_loadedTrackMap);
     while (it.hasNext()) {
         it.next();
-        TrackPointer pTrack = it.value();
+        auto pTrack = it.value();
         if (pTrack) {
             if (pTrack->getLocation() == track_location) {
                 return true;
@@ -100,34 +95,25 @@ bool PlayerInfo::isFileLoaded(const QString& track_location) const {
     }
     return false;
 }
-
 void PlayerInfo::timerEvent(QTimerEvent* pTimerEvent) {
     Q_UNUSED(pTimerEvent);
     updateCurrentPlayingDeck();
 }
-
 void PlayerInfo::updateCurrentPlayingDeck() {
     QMutexLocker locker(&m_mutex);
-
     double maxVolume = 0;
     int maxDeck = -1;
-
     for (int i = 0; i < (int)PlayerManager::numDecks(); ++i) {
-        DeckControls* pDc = getDeckControls(i);
-
+        auto  pDc = getDeckControls(i);
         if (pDc->m_play.get() == 0.0) {
             continue;
         }
-
         if (pDc->m_pregain.get() <= 0.5) {
             continue;
         }
-
         double fvol = pDc->m_volume.get();
-        if (fvol == 0.0) {
+        if (fvol == 0.0)
             continue;
-        }
-
         double xfl, xfr;
         EngineXfader::getXfadeGains(m_pCOxfader->get(), 1.0, 0.0, false, false,
                                     &xfl, &xfr);
@@ -141,14 +127,12 @@ void PlayerInfo::updateCurrentPlayingDeck() {
         } else {
             xfvol = 1.0;
         }
-
-        double dvol = fvol * xfvol;
+        auto dvol = fvol * xfvol;
         if (dvol > maxVolume) {
             maxDeck = i;
             maxVolume = dvol;
         }
     }
-
     if (maxDeck != m_currentlyPlayingDeck) {
         m_currentlyPlayingDeck = maxDeck;
         locker.unlock();
@@ -163,24 +147,20 @@ int PlayerInfo::getCurrentPlayingDeck() {
 }
 
 TrackPointer PlayerInfo::getCurrentPlayingTrack() {
-    int deck = getCurrentPlayingDeck();
-    if (deck >= 0) {
+    auto deck = getCurrentPlayingDeck();
+    if (deck >= 0)
         return getTrackInfo(PlayerManager::groupForDeck(deck));
-    }
     return TrackPointer();
 }
-
 PlayerInfo::DeckControls* PlayerInfo::getDeckControls(int i) {
     if (m_deckControlList.count() == i) {
-        QString group = PlayerManager::groupForDeck(i);
+        auto group = PlayerManager::groupForDeck(i);
         m_deckControlList.append(new DeckControls(group));
     }
     return m_deckControlList[i];
 }
-
 void PlayerInfo::clearControlCache() {
-    for (int i = 0; i < m_deckControlList.count(); ++i) {
+    for (int i = 0; i < m_deckControlList.count(); ++i)
         delete m_deckControlList[i];
-    }
     m_deckControlList.clear();
 }

@@ -29,6 +29,7 @@ class LoopingControl : public EngineControl {
     LoopingControl(QString group, UserSettingsPointer _config);
     virtual ~LoopingControl();
 
+  public slots:
     // process() updates the internal state of the LoopingControl to reflect the
     // correct current sample. If a loop should be taken LoopingControl returns
     // the sample that should be seeked to. Otherwise it returns currentSample.
@@ -57,7 +58,6 @@ class LoopingControl : public EngineControl {
 
     virtual void notifySeek(double dNewPlaypos);
 
-  public slots:
     void slotLoopIn(double);
     void slotLoopOut(double);
     void slotLoopExit(double);

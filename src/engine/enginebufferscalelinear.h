@@ -22,11 +22,8 @@ _Pragma("once")
 /**
   *@author Tue & Ken Haste Andersen
   */
-
-
 /** Number of samples to read ahead */
 const int kiLinearScaleReadAheadLength = 10240;
-
 
 class EngineBufferScaleLinear : public EngineBufferScale  {
     Q_OBJECT;
@@ -37,9 +34,7 @@ class EngineBufferScaleLinear : public EngineBufferScale  {
 
     double getScaled(CSAMPLE* pOutput, const int iBufferSize) override;
     void clear() override;
-
     void setScaleParameters(double base_rate,double* pTempoRatio,double* pPitchRatio) override;
-
   private:
     int do_scale(CSAMPLE* buf, const int buf_size);
     int do_copy(CSAMPLE* buf, const int buf_size);

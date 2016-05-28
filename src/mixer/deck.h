@@ -1,6 +1,4 @@
-#ifndef MIXER_DECK_H
-#define MIXER_DECK_H
-
+_Pragma("once")
 #include <QObject>
 
 #include "mixer/basetrackplayer.h"
@@ -16,5 +14,3 @@ class Deck : public BaseTrackPlayerImpl {
          const QString& group);
     virtual ~Deck();
 };
-
-#endif // MIXER_DECK_H

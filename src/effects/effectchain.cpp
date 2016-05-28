@@ -1,5 +1,8 @@
 #include "effects/effectchain.h"
-
+#include <QMetaType>
+#include <QMetaEnum>
+#include <QMetaObject>
+#include <QObject>
 #include "effects/effectchainmanager.h"
 #include "effects/effectsmanager.h"
 #include "engine/effects/engineeffectchain.h"
@@ -281,10 +284,10 @@ QDomElement EffectChain::toXML(QDomDocument* doc) const {
     XmlParse::addElement(*doc, element, "InsertionType",
                          insertionTypeToString(m_insertionType));
 
-    QDomElement effectsNode = doc->createElement("Effects");
+    auto effectsNode = doc->createElement("Effects");
     foreach (EffectPointer pEffect, m_effects) {
         if (pEffect) {
-            QDomElement effectNode = pEffect->toXML(doc);
+            auto effectNode = pEffect->toXML(doc);
             effectsNode.appendChild(effectNode);
         }
     }
@@ -296,29 +299,31 @@ QDomElement EffectChain::toXML(QDomDocument* doc) const {
 // static
 EffectChainPointer EffectChain::fromXML(EffectsManager* pEffectsManager,
                                         const QDomElement& element) {
-    QString id = XmlParse::selectNodeQString(element, "Id");
-    QString name = XmlParse::selectNodeQString(element, "Name");
-    QString description = XmlParse::selectNodeQString(element, "Description");
-    QString insertionTypeStr = XmlParse::selectNodeQString(element, "InsertionType");
+    auto id = XmlParse::selectNodeQString(element, "Id");
+    auto name = XmlParse::selectNodeQString(element, "Name");
+    auto description = XmlParse::selectNodeQString(element, "Description");
+    auto insertionTypeStr = XmlParse::selectNodeQString(element, "InsertionType");
 
-    EffectChain* pChain = new EffectChain(pEffectsManager, id);
+    auto pChain = new EffectChain(pEffectsManager, id);
     pChain->setName(name);
     pChain->setDescription(description);
-    InsertionType insertionType = insertionTypeFromString(insertionTypeStr);
-    if (insertionType != NUM_INSERTION_TYPES) {
+    auto qme = QMetaEnum::fromType<InsertionType>();
+    auto ok = false;
+    auto insertionType = static_cast<InsertionType>(
+            qme.keyToValue(insertionTypeStr.toLocal8Bit().constData(),&ok));
+    if(ok)
         pChain->setInsertionType(insertionType);
-    }
 
-    EffectChainPointer pChainWrapped(pChain);
+    auto pChainWrapped = EffectChainPointer (pChain);
     pEffectsManager->getEffectChainManager()->addEffectChain(pChainWrapped);
 
-    QDomElement effects = XmlParse::selectElement(element, "Effects");
-    QDomNodeList effectChildren = effects.childNodes();
+    auto effects = XmlParse::selectElement(element, "Effects");
+    auto effectChildren = effects.childNodes();
 
-    for (int i = 0; i < effectChildren.count(); ++i) {
-        QDomNode effect = effectChildren.at(i);
+    for (auto i = 0; i < effectChildren.count(); ++i) {
+        auto effect = effectChildren.at(i);
         if (effect.isElement()) {
-            EffectPointer pEffect = Effect::fromXML(
+            auto pEffect = Effect::fromXML(
                 pEffectsManager, effect.toElement());
             if (pEffect) {
                 pChain->addEffect(pEffect);

@@ -1,6 +1,4 @@
-#ifndef ENGINEEFFECTSMANAGER_H
-#define ENGINEEFFECTSMANAGER_H
-
+_Pragma("once")
 #include <QScopedPointer>
 
 #include "util/types.h"
@@ -17,9 +15,7 @@ class EngineEffectsManager : public EffectsRequestHandler {
   public:
     EngineEffectsManager(EffectsResponsePipe* pResponsePipe);
     virtual ~EngineEffectsManager();
-
     void onCallbackStart();
-
     // Take a buffer of numSamples samples of audio from a channel, provided as
     // pInput, and apply each EffectChain enabled for this channel to it,
     // putting the resulting output in pOutput. If pInput is equal to pOutput,
@@ -33,12 +29,10 @@ class EngineEffectsManager : public EffectsRequestHandler {
                          const unsigned int sampleRate,
                          const GroupFeatureState& groupFeatures);
 
-    bool processEffectsRequest(
-        const EffectsRequest& message,
-        EffectsResponsePipe* pResponsePipe);
-
+    bool processEffectsRequest(const EffectsRequest& message,EffectsResponsePipe* pResponsePipe);
   private:
-    QString debugString() const {
+    QString debugString() const
+    {
         return QString("EngineEffectsManager");
     }
 
@@ -50,6 +44,3 @@ class EngineEffectsManager : public EffectsRequestHandler {
     QList<EngineEffectChain*> m_chains;
     QList<EngineEffect*> m_effects;
 };
-
-
-#endif /* ENGINEEFFECTSMANAGER_H */

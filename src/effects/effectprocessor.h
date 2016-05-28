@@ -1,6 +1,4 @@
-#ifndef EFFECTPROCESSOR_H
-#define EFFECTPROCESSOR_H
-
+_Pragma("once")
 #include <QString>
 #include <QHash>
 #include <QPair>
@@ -86,4 +84,3 @@ class PerChannelEffectProcessor : public EffectProcessor {
     }
     ChannelHandleMap<ChannelStateHolder> m_channelState;
 };
-#endif /* EFFECTPROCESSOR_H */

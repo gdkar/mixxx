@@ -60,8 +60,8 @@ class EffectChain : public QObject {
         INSERT = 0,
         SEND,
         // The number of insertion types. Also used to represent "unknown".
-        NUM_INSERTION_TYPES
     };
+    Q_ENUM(InsertionType);
     static QString insertionTypeToString(InsertionType type) {
         switch (type) {
             case INSERT:
@@ -78,7 +78,7 @@ class EffectChain : public QObject {
         } else if (typeStr == "SEND") {
             return SEND;
         } else {
-            return NUM_INSERTION_TYPES;
+            return static_cast<InsertionType>(-1);
         }
     }
 

@@ -7,8 +7,7 @@ Deck::Deck(QObject* pParent,
            EngineChannel::ChannelOrientation defaultOrientation,
            const QString& group) :
         BaseTrackPlayerImpl(pParent, pConfig, pMixingEngine, pEffectsManager,
-                            defaultOrientation, group, true, false) {
+                            defaultOrientation, group, true, false)
+{
 }
-
-Deck::~Deck() {
-}
+Deck::~Deck() = default;

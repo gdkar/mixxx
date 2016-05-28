@@ -1,6 +1,4 @@
-#ifndef EFFECTRACK_H
-#define EFFECTRACK_H
-
+_Pragma("once")
 #include <QObject>
 #include <QString>
 #include <QSharedPointer>
@@ -151,14 +149,11 @@ class QuickEffectRack : public PerGroupRack {
         return QString("[QuickEffectRack%1]")
                 .arg(QString::number(iRackNumber + 1));
     }
-
-    static QString formatEffectChainSlotGroupString(const unsigned int iRackNumber,
-                                                    const QString& group) {
+    static QString formatEffectChainSlotGroupString(const unsigned int iRackNumber,const QString& group) {
         return QString("[QuickEffectRack%1_%2]")
                 .arg(QString::number(iRackNumber + 1))
                 .arg(group);
     }
-
     static QString formatEffectSlotGroupString(const unsigned int iRackNumber,
                                                const unsigned int iEffectSlotNumber,
                                                const QString& group) {
@@ -167,13 +162,10 @@ class QuickEffectRack : public PerGroupRack {
                 .arg(group)
                 .arg(QString::number(iEffectSlotNumber + 1));
     }
-
     QString formatEffectSlotGroupString(const unsigned int iEffectSlotNumber,
                                         const QString& group) const {
-        return formatEffectSlotGroupString(getRackNumber(), iEffectSlotNumber,
-                                           group);
+        return formatEffectSlotGroupString(getRackNumber(), iEffectSlotNumber,group);
     }
-
   protected:
     virtual void configureEffectChainSlotForGroup(EffectChainSlotPointer pSlot,
                                                   const ChannelHandleAndGroup& handle_group);
@@ -191,22 +183,18 @@ class EqualizerRack : public PerGroupRack {
     EqualizerRack(EffectsManager* pEffectsManager,
                   EffectChainManager* pChainManager,
                   const unsigned int iRackNumber);
-    virtual ~EqualizerRack() {}
-
+    virtual ~EqualizerRack() = default;
     bool loadEffectToGroup(const QString& group, EffectPointer pEffect);
-
     static QString formatGroupString(const unsigned int iRackNumber) {
         return QString("[EqualizerRack%1]")
                 .arg(QString::number(iRackNumber + 1));
     }
-
     static QString formatEffectChainSlotGroupString(const unsigned int iRackNumber,
                                                     const QString& group) {
         return QString("[EqualizerRack%1_%2]")
                 .arg(QString::number(iRackNumber + 1))
                 .arg(group);
     }
-
     static QString formatEffectSlotGroupString(const unsigned int iRackNumber,
                                                const unsigned int iEffectSlotNumber,
                                                const QString& group) {
@@ -215,16 +203,11 @@ class EqualizerRack : public PerGroupRack {
                 .arg(group)
                 .arg(QString::number(iEffectSlotNumber + 1));
     }
-
-    QString formatEffectSlotGroupString(const unsigned int iEffectSlotNumber,
-                                        const QString& group) const {
-        return formatEffectSlotGroupString(getRackNumber(), iEffectSlotNumber,
-                                           group);
+    QString formatEffectSlotGroupString(const unsigned int iEffectSlotNumber,const QString& group) const {
+        return formatEffectSlotGroupString(getRackNumber(), iEffectSlotNumber,group);
     }
-
   protected:
-    virtual void configureEffectChainSlotForGroup(EffectChainSlotPointer pSlot,
-                                                  const ChannelHandleAndGroup& handle_group);
+    virtual void configureEffectChainSlotForGroup(EffectChainSlotPointer pSlot,const ChannelHandleAndGroup& handle_group);
     virtual QString formatEffectChainSlotGroupForGroup(const unsigned int iRackNumber,
                                                        const unsigned int iChainSlotNumber,
                                                        const QString& group) const {
@@ -232,5 +215,3 @@ class EqualizerRack : public PerGroupRack {
         return formatEffectChainSlotGroupString(iRackNumber, group);
     }
 };
-
-#endif /* EFFECTRACK_H */

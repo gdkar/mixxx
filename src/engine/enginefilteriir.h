@@ -37,6 +37,7 @@ protected:
     double                    m_freq0;
     double                    m_freq1;
     QString                   m_spec;
+    QString                   m_tmpl;
     std::vector<CSAMPLE>      m_coef;
     std::vector<CSAMPLE>      m_buf;
     std::vector<CSAMPLE>      m_oldCoef;
@@ -48,16 +49,18 @@ protected:
     // Flag set to true if this is a chained filter
     bool m_startFromDry= false;
   public:
-    EngineFilterIIR(QObject *pParent, size_t _SIZE, IIRPass _PASS, QString spec);
-    EngineFilterIIR(size_t _SIZE, IIRPass _PASS, QString spec);
+    EngineFilterIIR(QObject *pParent, size_t _SIZE, IIRPass _PASS, QString spec, QString tmpl = QString{});
+    EngineFilterIIR(size_t _SIZE, IIRPass _PASS, QString spec, QString tmpl = QString{});
     virtual ~EngineFilterIIR() ;
     void setStartFromDry(bool sfd);
     bool getStartFromDry() const;
     void setSpec(QString _sp);
     QString getSpec() const;
+    void setTemplate(QString _tmpl);
+    QString getTemplate() const;
     size_t getSize() const;
     IIRPass getPass() const;
-    IIRPass setPass(IIRPass _pass);
+    void setPass(IIRPass _pass);
     
     // this can be called continuously for Filters that have own ramping
     // or need no fade when disabling

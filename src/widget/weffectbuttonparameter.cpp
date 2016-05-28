@@ -8,20 +8,14 @@ WEffectButtonParameter::WEffectButtonParameter(QWidget* pParent, EffectsManager*
         : WEffectParameterBase(pParent, pEffectsManager) {
 }
 
-WEffectButtonParameter::~WEffectButtonParameter() {
-}
+WEffectButtonParameter::~WEffectButtonParameter() = default;
 
 void WEffectButtonParameter::setup(QDomNode node, const SkinContext& context) {
     // EffectWidgetUtils propagates NULLs so this is all safe.
-    EffectRackPointer pRack = EffectWidgetUtils::getEffectRackFromNode(
-            node, context, m_pEffectsManager);
-    EffectChainSlotPointer pChainSlot = EffectWidgetUtils::getEffectChainSlotFromNode(
-            node, context, pRack);
-    EffectSlotPointer pEffectSlot = EffectWidgetUtils::getEffectSlotFromNode(
-            node, context, pChainSlot);
-    EffectParameterSlotBasePointer pParameterSlot =
-            EffectWidgetUtils::getButtonParameterSlotFromNode(
-                    node, context, pEffectSlot);
+    auto pRack = EffectWidgetUtils::getEffectRackFromNode(node, context, m_pEffectsManager);
+    auto pChainSlot = EffectWidgetUtils::getEffectChainSlotFromNode(node, context, pRack);
+    auto pEffectSlot = EffectWidgetUtils::getEffectSlotFromNode(node, context, pChainSlot);
+    auto pParameterSlot =EffectWidgetUtils::getButtonParameterSlotFromNode(node, context, pEffectSlot);
     if (pParameterSlot) {
         setEffectParameterSlot(pParameterSlot);
     } else {

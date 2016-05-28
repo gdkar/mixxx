@@ -1,6 +1,4 @@
-#ifndef AUTOPANEFFECT_H
-#define AUTOPANEFFECT_H
-
+_Pragma("once")
 #include <QMap>
 
 #include "effects/effectprocessor.h"
@@ -110,5 +108,3 @@ class AutoPanEffect : public PerChannelEffectProcessor<PanGroupState> {
 
     DISALLOW_COPY_AND_ASSIGN(AutoPanEffect);
 };
-
-#endif /* AUTOPANEFFECT_H */

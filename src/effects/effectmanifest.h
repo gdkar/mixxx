@@ -1,6 +1,4 @@
-#ifndef EFFECTMANIFEST_H
-#define EFFECTMANIFEST_H
-
+_Pragma("once")
 #include <QList>
 #include <QString>
 #include <QtDebug>
@@ -125,5 +123,3 @@ class EffectManifest {
     QList<EffectManifestParameter> m_parameters;
     bool m_effectRampsFromDry;
 };
-
-#endif /* EFFECTMANIFEST_H */

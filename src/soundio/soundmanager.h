@@ -55,29 +55,22 @@ class SoundManager : public QObject {
     // filterApi, and have at least one output or input channel if the
     // bOutputDevices or bInputDevices are set, respectively.
     QList<SoundDevice*> getDeviceList(QString filterAPI, bool bOutputDevices, bool bInputDevices);
-
     // Creates a list of sound devices
     void clearAndQueryDevices();
     void queryDevices();
     void queryDevicesPortaudio();
     void queryDevicesMixxx();
-
     // Opens all the devices chosen by the user in the preferences dialog, and
     // establishes the proper connections between them and the mixing engine.
     Result setupDevices();
-
     // Playermanager will notify us when the number of decks changes.
     void setConfiguredDeckCount(int count);
     int getConfiguredDeckCount() const;
-
     SoundDevice* getErrorDevice() const;
-
     // Returns a list of samplerates we will attempt to support for a given API.
     QList<unsigned int> getSampleRates(QString api) const;
-
     // Convenience overload for SoundManager::getSampleRates(QString)
     QList<unsigned int> getSampleRates() const;
-
     // Get a list of host APIs supported by PortAudio.
     QList<QString> getHostAPIList() const;
     SoundManagerConfig getConfig() const;
@@ -88,22 +81,16 @@ class SoundManager : public QObject {
 
     // Used by SoundDevices to "push" any audio from their inputs that they have
     // into the mixing engine.
-    void pushInputBuffers(const QList<AudioInputBuffer>& inputs,
-                          const unsigned int iFramesPerBuffer);
-
-
+    void pushInputBuffers(const QList<AudioInputBuffer>& inputs,const unsigned int iFramesPerBuffer);
     void writeProcess();
     void readProcess();
-
     void registerOutput(AudioOutput output, AudioSource *src);
     void registerInput(AudioInput input, AudioDestination *dest);
     QList<AudioOutput> registeredOutputs() const;
     QList<AudioInput> registeredInputs() const;
-
     QSharedPointer<EngineNetworkStream> getNetworkStream() const {
         return m_pNetworkStream;
     }
-
   signals:
     void devicesUpdated(); // emitted when pointers to SoundDevices go stale
     void devicesSetup(); // emitted when the sound devices have been set up
@@ -119,9 +106,7 @@ class SoundManager : public QObject {
     // (from PortAudio) and attempts to close them all. Closing a soundcard that
     // isn't open is safe.
     void closeDevices(bool sleepAfterClosing);
-
     void setJACKName() const;
-
     EngineMaster *m_pMaster;
     UserSettingsPointer m_pConfig;
 #ifdef __PORTAUDIO__
@@ -131,7 +116,6 @@ class SoundManager : public QObject {
     QList<SoundDevice*> m_devices;
     QList<unsigned int> m_samplerates;
     QList<CSAMPLE*> m_inputBuffers;
-
     SoundManagerConfig m_config;
     SoundDevice* m_pErrorDevice;
     QHash<AudioOutput, AudioSource*> m_registeredSources;

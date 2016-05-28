@@ -1,9 +1,7 @@
 // Ported from CAPS Reverb.
 // This effect is GPL code.
 
-#ifndef REVERBEFFECT_H
-#define REVERBEFFECT_H
-
+_Pragma("once")
 #include <QMap>
 
 #include <Reverb.h>
@@ -57,11 +55,7 @@ class ReverbEffect : public PerChannelEffectProcessor<ReverbGroupState> {
     QString debugString() const {
         return getId();
     }
-
     EngineEffectParameter* m_pBandWidthParameter;
     EngineEffectParameter* m_pDampingParameter;
-
     DISALLOW_COPY_AND_ASSIGN(ReverbEffect);
 };
-
-#endif /* REVERBEFFECT_H */

@@ -81,18 +81,13 @@ PlayerManager::PlayerManager(UserSettingsPointer pConfig,
     Q_UNUSED(pSamplerBank);
 
     // register the engine's outputs
-    m_pSoundManager->registerOutput(AudioOutput(AudioOutput::MASTER),
-                                    m_pEngine);
-    m_pSoundManager->registerOutput(AudioOutput(AudioOutput::HEADPHONES),
-                                    m_pEngine);
+    m_pSoundManager->registerOutput(AudioOutput(AudioOutput::MASTER),m_pEngine);
+    m_pSoundManager->registerOutput(AudioOutput(AudioOutput::HEADPHONES),m_pEngine);
     for (int o = EngineChannel::LEFT; o <= EngineChannel::RIGHT; o++) {
-        m_pSoundManager->registerOutput(AudioOutput(AudioOutput::BUS, 0, 0, o),
-                                        m_pEngine);
+        m_pSoundManager->registerOutput(AudioOutput(AudioOutput::BUS, 0, 0, o),m_pEngine);
     }
-    m_pSoundManager->registerOutput(AudioOutput(AudioOutput::SIDECHAIN),
-                                    m_pEngine);
+    m_pSoundManager->registerOutput(AudioOutput(AudioOutput::SIDECHAIN),m_pEngine);
 }
-
 PlayerManager::~PlayerManager() {
     QMutexLocker locker(&m_mutex);
     // No need to delete anything because they are all parented to us and will
@@ -122,31 +117,27 @@ void PlayerManager::bindToLibrary(Library* pLibrary) {
     connect(this, SIGNAL(loadLocationToPlayer(QString, QString)),
             pLibrary, SLOT(slotLoadLocationToPlayer(QString, QString)));
 
-    m_pAnalyzerQueue = AnalyzerQueue::createDefaultAnalyzerQueue(m_pConfig,
-            pLibrary->getTrackCollection());
-
+    m_pAnalyzerQueue = AnalyzerQueue::createDefaultAnalyzerQueue(m_pConfig,pLibrary->getTrackCollection());
     // Connect the player to the analyzer queue so that loaded tracks are
     // analysed.
-    foreach(Deck* pDeck, m_decks) {
+    for(auto  pDeck: m_decks) {
         connect(pDeck, SIGNAL(newTrackLoaded(TrackPointer)),
                 m_pAnalyzerQueue, SLOT(slotAnalyseTrack(TrackPointer)));
     }
-
     // Connect the player to the analyzer queue so that loaded tracks are
     // analysed.
-    foreach(Sampler* pSampler, m_samplers) {
+    for(auto pSampler: m_samplers) {
         connect(pSampler, SIGNAL(newTrackLoaded(TrackPointer)),
                 m_pAnalyzerQueue, SLOT(slotAnalyseTrack(TrackPointer)));
     }
 
     // Connect the player to the analyzer queue so that loaded tracks are
     // analysed.
-    foreach(PreviewDeck* pPreviewDeck, m_preview_decks) {
+    for(auto  pPreviewDeck: m_preview_decks) {
         connect(pPreviewDeck, SIGNAL(newTrackLoaded(TrackPointer)),
                 m_pAnalyzerQueue, SLOT(slotAnalyseTrack(TrackPointer)));
     }
 }
-
 // static
 unsigned int PlayerManager::numDecks() {
     // We do this to cache the control once it is created so callers don't incur
@@ -161,43 +152,35 @@ unsigned int PlayerManager::numDecks() {
     }
     return pNumCO ? pNumCO->get() : 0;
 }
-
 // static
 bool PlayerManager::isDeckGroup(const QString& group, int* number) {
-    if (!group.startsWith("[Channel")) {
+    if (!group.startsWith("[Channel"))
         return false;
-    }
 
-    bool ok = false;
-    int deckNum = group.mid(8,group.lastIndexOf("]")-8).toInt(&ok);
+    auto ok = false;
+    auto deckNum = group.mid(8,group.lastIndexOf("]")-8).toInt(&ok);
     if (!ok || deckNum <= 0) {
         return false;
     }
-    if (number != NULL) {
+    if (number)
         *number = deckNum;
-    }
     return true;
 }
-
 // static
 bool PlayerManager::isPreviewDeckGroup(const QString& group, int* number) {
-    if (!group.startsWith("[PreviewDeck")) {
+    if (!group.startsWith("[PreviewDeck"))
         return false;
-    }
-
-    bool ok = false;
-    int deckNum = group.mid(12,group.lastIndexOf("]")-12).toInt(&ok);
-    if (!ok || deckNum <= 0) {
+    auto ok = false;
+    auto deckNum = group.mid(12,group.lastIndexOf("]")-12).toInt(&ok);
+    if (!ok || deckNum <= 0)
         return false;
-    }
-    if (number != NULL) {
+    if (number)
         *number = deckNum;
-    }
     return true;
 }
-
 // static
-unsigned int PlayerManager::numSamplers() {
+unsigned int PlayerManager::numSamplers()
+{
     // We do this to cache the control once it is created so callers don't incur
     // a hashtable lookup every time they call this.
     static ControlObjectSlave* pNumCO = NULL;

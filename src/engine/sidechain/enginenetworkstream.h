@@ -1,6 +1,4 @@
-#ifndef ENGINENETWORKSTREAM_H_
-#define ENGINENETWORKSTREAM_H_
-
+_Pragma("once")
 #include "util/types.h"
 #include "util/fifo.h"
 #include "engine/sidechain/networkstreamworker.h"
@@ -50,5 +48,3 @@ class EngineNetworkStream {
     QSharedPointer<NetworkStreamWorker> m_pWorker;
     int m_writeOverflowCount;
 };
-
-#endif /* ENGINENETWORKSTREAM_H_ */

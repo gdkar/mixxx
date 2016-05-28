@@ -1,6 +1,4 @@
-#ifndef ENGINEEFFECTPARAMETER_H
-#define ENGINEEFFECTPARAMETER_H
-
+_Pragma("once")
 #include <QString>
 #include <QVariant>
 
@@ -22,7 +20,7 @@ class EngineEffectParameter {
         m_defaultValue = m_parameter.getDefault();
         m_value = m_defaultValue;
     }
-    virtual ~EngineEffectParameter() { }
+    virtual ~EngineEffectParameter() = default;
 
     ///////////////////////////////////////////////////////////////////////////
     // Parameter Information
@@ -85,5 +83,3 @@ class EngineEffectParameter {
 
     DISALLOW_COPY_AND_ASSIGN(EngineEffectParameter);
 };
-
-#endif /* ENGINEEFFECTPARAMETER_H */

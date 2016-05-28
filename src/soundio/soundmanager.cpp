@@ -76,18 +76,14 @@ SoundManager::SoundManager(UserSettingsPointer pConfig,
     m_samplerates.push_back(48000);
     m_samplerates.push_back(96000);
 
-    m_pNetworkStream = QSharedPointer<EngineNetworkStream>(
-            new EngineNetworkStream(2, 0));
-
+    m_pNetworkStream = QSharedPointer<EngineNetworkStream>( new EngineNetworkStream(2, 0));
     queryDevices();
-
     if (!m_config.readFromDisk()) {
         m_config.loadDefaults(this, SoundManagerConfig::ALL);
     }
     checkConfig();
     m_config.writeToDisk(); // in case anything changed by applying defaults
 }
-
 SoundManager::~SoundManager() {
     // Clean up devices.
     const bool sleepAfterClosing = false;
@@ -119,7 +115,7 @@ QList<SoundDevice*> SoundManager::getDeviceList(
     // input/output.
     QList<SoundDevice*> filteredDeviceList;
 
-    foreach (SoundDevice* device, m_devices) {
+    for(auto device: m_devices) {
         // Skip devices that don't match the API, don't have input channels when
         // we want input devices, or don't have output channels when we want
         // output devices.
@@ -362,12 +358,11 @@ Result SoundManager::setupDevices() {
         device->clearInputs();
         device->clearOutputs();
         m_pErrorDevice = device;
-        foreach (AudioInput in,
-                 m_config.getInputs().values(device->getInternalName())) {
+        for(auto in: m_config.getInputs().values(device->getInternalName())) {
             mode.isInput = true;
             // TODO(bkgood) look into allocating this with the frames per
             // buffer value from SMConfig
-            AudioInputBuffer aib(in, SampleUtil::alloc(MAX_BUFFER_LEN));
+            auto aib = AudioInputBuffer(in, SampleUtil::alloc(MAX_BUFFER_LEN));
             err = device->addInput(aib) != SOUNDDEVICE_ERROR_OK ? ERR : OK;
             if (err != OK) {
                 delete [] aib.getBuffer();
@@ -378,35 +373,32 @@ Result SoundManager::setupDevices() {
 
             // Check if any AudioDestination is registered for this AudioInput
             // and call the onInputConnected method.
-            for (QHash<AudioInput, AudioDestination*>::const_iterator it =
-                         m_registeredDestinations.find(in);
+            for (auto it = m_registeredDestinations.find(in);
                  it != m_registeredDestinations.end() && it.key() == in; ++it) {
                 it.value()->onInputConfigured(in);
             }
         }
-        QList<AudioOutput> outputs =
-                m_config.getOutputs().values(device->getInternalName());
-
+        auto outputs = m_config.getOutputs().values(device->getInternalName());
         // Statically connect the Network Device to the Sidechain
         if (device->getInternalName() == kNetworkDeviceInternalName) {
-            AudioOutput out(AudioPath::SIDECHAIN, 0, 2, 0);
+            auto out = AudioOutput(AudioPath::SIDECHAIN, 0, 2, 0);
             outputs.append(out);
         }
 
-        foreach (AudioOutput out, outputs) {
+        for(auto out: outputs) {
             mode.isOutput = true;
             if (device->getInternalName() != kNetworkDeviceInternalName) {
                 haveOutput = true;
             }
             // following keeps us from asking for a channel buffer EngineMaster
             // doesn't have -- bkgood
-            const CSAMPLE* pBuffer = m_registeredSources.value(out)->buffer(out);
+            const auto* pBuffer = m_registeredSources.value(out)->buffer(out);
             if (pBuffer == NULL) {
                 qDebug() << "AudioSource returned null for" << out.getString();
                 continue;
             }
 
-            AudioOutputBuffer aob(out, pBuffer);
+            auto aob = AudioOutputBuffer(out, pBuffer);
             err = device->addOutput(aob) != SOUNDDEVICE_ERROR_OK ? ERR : OK;
             if (err != OK) goto closeAndError;
             if (out.getType() == AudioOutput::MASTER) {

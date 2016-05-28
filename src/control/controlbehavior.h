@@ -1,6 +1,4 @@
-#ifndef CONTROLBEHAVIOR_H
-#define CONTROLBEHAVIOR_H
-
+_Pragma("once")
 #include <QTimer>
 
 #include "controllers/midi/midimessage.h"
@@ -110,15 +108,11 @@ class ControlPushButtonBehavior : public ControlNumericBehavior {
          POWERWINDOW,
          LONGPRESSLATCHING,
     };
-
     ControlPushButtonBehavior(ButtonMode buttonMode, int iNumStates);
     virtual void setValueFromMidiParameter(MidiOpCode o, double dParam,
                                            ControlDoublePrivate* pControl);
-
   private:
     ButtonMode m_buttonMode;
     int m_iNumStates;
     QTimer m_pushTimer;
 };
-
-#endif /* CONTROLBEHAVIOR_H */

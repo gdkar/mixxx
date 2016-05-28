@@ -30,12 +30,14 @@ EngineBufferScaleLinear::EngineBufferScaleLinear(QObject *pParent)
 EngineBufferScaleLinear::~EngineBufferScaleLinear() = default;
 void EngineBufferScaleLinear::setScaleParameters(double base_rate,
                                                  double* pTempoRatio,
-                                                 double* pPitchRatio) {
+                                                 double* pPitchRatio)
+{
     Q_UNUSED(pPitchRatio);
     m_dOldRate = m_dRate;
     m_dRate = base_rate * *pTempoRatio;
 }
-void EngineBufferScaleLinear::clear() {
+void EngineBufferScaleLinear::clear()
+{
     m_bClear = true;
     // Clear out buffer and saved sample data
     m_bufferIntSize = 0;
@@ -46,18 +48,17 @@ void EngineBufferScaleLinear::clear() {
 // laurent de soras - punked from musicdsp.org (mad props)
 inline float hermite4(float frac_pos, float xm1, float x0, float x1, float x2)
 {
-    const float c = (x1 - xm1) * 0.5f;
-    const float v = x0 - x1;
-    const float w = c + v;
-    const float a = w + v + (x2 - x0) * 0.5f;
-    const float b_neg = w + a;
+    auto c = (x1 - xm1) * 0.5f;
+    auto v = x0 - x1;
+    auto w = c + v;
+    auto a = w + v + (x2 - x0) * 0.5f;
+    auto b_neg = w + a;
     return ((((a * frac_pos) - b_neg) * frac_pos + c) * frac_pos + x0);
 }
 
 // Determine if we're changing directions (scratching) and then perform
 // a stretch
-double EngineBufferScaleLinear::getScaled(CSAMPLE* pOutput,
-                                          const int buf_size) {
+double EngineBufferScaleLinear::getScaled(CSAMPLE* pOutput,const int buf_size) {
     if (buf_size == 0) {
         return 0.0;
     }
@@ -66,9 +67,9 @@ double EngineBufferScaleLinear::getScaled(CSAMPLE* pOutput,
         m_dOldRate = m_dRate;  // If cleared, don't interpolate rate.
         m_bClear = false;
     }
-    float rate_add_old = m_dOldRate;  // Smoothly interpolate to new playback rate
-    float rate_add_new = m_dRate;
-    int samples_read = 0;
+    auto rate_add_old = m_dOldRate;  // Smoothly interpolate to new playback rate
+    auto rate_add_new = m_dRate;
+    auto samples_read = 0;
 
     if (rate_add_new * rate_add_old < 0) {
         // Direction has changed!
@@ -82,7 +83,7 @@ double EngineBufferScaleLinear::getScaled(CSAMPLE* pOutput,
 
         // reset m_floorSampleOld in a way as we were coming from
         // the other direction
-        int iNextSample = static_cast<int>(ceil(m_dNextFrame)) * 2;
+        auto iNextSample = static_cast<int>(ceil(m_dNextFrame)) * 2;
         if (iNextSample + 1 < m_bufferIntSize) {
             m_floorSampleOld[0] = m_bufferInt[iNextSample];
             m_floorSampleOld[1] = m_bufferInt[iNextSample + 1];
@@ -90,8 +91,8 @@ double EngineBufferScaleLinear::getScaled(CSAMPLE* pOutput,
 
         // if the buffer has extra samples, do a read so RAMAN ends up back where
         // it should be
-        int iCurSample = static_cast<int>(ceil(m_dCurrentFrame)) * 2;
-        int extra_samples = m_bufferIntSize - iCurSample - 2;
+        auto iCurSample = static_cast<int>(ceil(m_dCurrentFrame)) * 2;
+        auto extra_samples = m_bufferIntSize - iCurSample - 2;
         if (extra_samples > 0) {
             if (extra_samples % 2 != 0) {
                 extra_samples++;
@@ -118,12 +119,13 @@ double EngineBufferScaleLinear::getScaled(CSAMPLE* pOutput,
     return samples_read;
 }
 
-int EngineBufferScaleLinear::do_copy(CSAMPLE* buf, const int buf_size) {
-    int samples_needed = buf_size;
-    CSAMPLE* write_buf = buf;
+int EngineBufferScaleLinear::do_copy(CSAMPLE* buf, const int buf_size)
+{
+    auto samples_needed = buf_size;
+    auto write_buf = buf;
     // Use up what's left of the internal buffer.
-    int iNextSample = math_max<int>(static_cast<int>(ceil(m_dNextFrame)) * 2, 0);
-    int readSize = math_min<int>(m_bufferIntSize - iNextSample, samples_needed);
+    auto iNextSample = math_max<int>(static_cast<int>(ceil(m_dNextFrame)) * 2, 0);
+    auto readSize = math_min<int>(m_bufferIntSize - iNextSample, samples_needed);
     if (readSize > 0) {
         SampleUtil::copy(write_buf, &m_bufferInt[iNextSample], readSize);
         samples_needed -= readSize;
@@ -131,14 +133,13 @@ int EngineBufferScaleLinear::do_copy(CSAMPLE* buf, const int buf_size) {
     }
     // Protection against infinite read loops when (for example) we are
     // reading from a broken file.
-    int read_failed_count = 0;
+    auto read_failed_count = 0;
     // We need to repeatedly call the RAMAN because the RAMAN does not bend
     // over backwards to satisfy our request. It assumes you will continue
     // to call getNextSamples until you receive the number of samples you
     // wanted.
     while (samples_needed > 0) {
-        int read_size = m_pReadAheadManager->getNextSamples(m_dRate, write_buf,
-                samples_needed);
+        auto read_size = m_pReadAheadManager->getNextSamples(m_dRate, write_buf,samples_needed);
         if (read_size == 0) {
             if(++read_failed_count > 1) {
                 break;
@@ -153,7 +154,7 @@ int EngineBufferScaleLinear::do_copy(CSAMPLE* buf, const int buf_size) {
     // Instead of counting how many samples we got from the internal buffer
     // and the RAMAN calls, just measure the difference between what we
     // requested and what we still need.
-    int read_samples = buf_size - samples_needed;
+    auto read_samples = buf_size - samples_needed;
     // Zero the remaining samples if we didn't fill them.
     SampleUtil::clear(write_buf, samples_needed);
     // update our class members so next time we need to scale it's ok. we do
@@ -168,11 +169,10 @@ int EngineBufferScaleLinear::do_copy(CSAMPLE* buf, const int buf_size) {
 }
 
 // Stretch a specified buffer worth of audio using linear interpolation
-int EngineBufferScaleLinear::do_scale(CSAMPLE* buf,
-                                      const int buf_size) {
-    float rate_old = m_dOldRate;
-    const float rate_new = m_dRate;
-    const float rate_diff = rate_new - rate_old;
+int EngineBufferScaleLinear::do_scale(CSAMPLE* buf,const int buf_size) {
+    auto rate_old = m_dOldRate;
+    auto rate_new = m_dRate;
+    auto rate_diff = rate_new - rate_old;
 
     // Update the old base rate because we only need to
     // interpolate/ramp up the pitch changes once.
@@ -195,10 +195,10 @@ int EngineBufferScaleLinear::do_scale(CSAMPLE* buf,
     }
 
     // Simulate the loop to estimate how many frames we need
-    double frames = 0;
+    auto frames = 0.0;
     // We're calculating frames = 2 samples, so divide remaining buffer by 2;
-    const int bufferSizeFrames = buf_size / 2;
-    const double rate_delta = rate_diff / bufferSizeFrames;
+    auto bufferSizeFrames = buf_size / 2;
+    auto rate_delta = rate_diff / bufferSizeFrames;
     // use Gaussian sum formula (n(n+1))/2 for
     //for (int j = 0; j < bufferSizeFrames; ++j) {
     //    frames += (j * rate_delta) + rate_old;
@@ -215,22 +215,17 @@ int EngineBufferScaleLinear::do_scale(CSAMPLE* buf,
 
     // Multiply by 2 because it is predicting frame rates, while we want a
     // number of samples.
-    int unscaled_samples_needed = unscaled_frames_needed * 2;
+    auto unscaled_samples_needed = unscaled_frames_needed * 2;
 
-    int read_failed_count = 0;
-    CSAMPLE floor_sample[2];
-    CSAMPLE ceil_sample[2];
+    auto read_failed_count = 0;
+    CSAMPLE floor_sample[2] = { 0.f, 0.f};
+    CSAMPLE ceil_sample[2] = { 0.f, 0.f};
 
-    floor_sample[0] = 0;
-    floor_sample[1] = 0;
-    ceil_sample[0] = 0;
-    ceil_sample[1] = 0;
-
-    int samples_read = 0;
-    int i = 0;
+    auto samples_read = 0;
+    auto i = 0;
     //int screwups_debug = 0;
 
-    double rate_add = fabs(rate_old);
+    auto rate_add = std::abs(rate_old);
     const double rate_delta_abs = rate_old > 0 ? rate_delta : -rate_delta;
 
     // Hot frame loop
@@ -244,9 +239,7 @@ int EngineBufferScaleLinear::do_scale(CSAMPLE* buf,
         // -.999 and 0), load it from the saved globals.
 
         // The first bounds check (< m_bufferIntSize) is probably not needed.
-
-        int currentFrameFloor = static_cast<int>(floor(m_dCurrentFrame));
-
+        auto currentFrameFloor = static_cast<int>(floor(m_dCurrentFrame));
         if (currentFrameFloor < 0) {
             // we have advanced to a new buffer in the previous run,
             // but the floor still points to the old buffer
@@ -271,7 +264,7 @@ int EngineBufferScaleLinear::do_scale(CSAMPLE* buf,
             }
 
             do {
-                int old_bufsize = m_bufferIntSize;
+                auto old_bufsize = m_bufferIntSize;
                 if (unscaled_samples_needed == 0) {
                     // protection against infinite loop
                     // This may happen due to double precision issues
@@ -279,7 +272,7 @@ int EngineBufferScaleLinear::do_scale(CSAMPLE* buf,
                     //screwups_debug++;
                 }
 
-                int samples_to_read = math_min<int>(kiLinearScaleReadAheadLength,
+                auto samples_to_read = math_min<int>(kiLinearScaleReadAheadLength,
                                                     unscaled_samples_needed);
 
                 m_bufferIntSize = m_pReadAheadManager->getNextSamples(
@@ -323,23 +316,19 @@ int EngineBufferScaleLinear::do_scale(CSAMPLE* buf,
         CSAMPLE frac = static_cast<CSAMPLE>(m_dCurrentFrame) - currentFrameFloor;
 
         // Perform linear interpolation
-        buf[i] = floor_sample[0] + frac * (ceil_sample[0] - floor_sample[0]);
+        buf[i] = floor_sample[0]     + frac * (ceil_sample[0] - floor_sample[0]);
         buf[i + 1] = floor_sample[1] + frac * (ceil_sample[1] - floor_sample[1]);
 
         m_floorSampleOld[0] = floor_sample[0];
         m_floorSampleOld[1] = floor_sample[1];
-
         // increment the index for the next loop
         m_dNextFrame = m_dCurrentFrame + rate_add;
-
         // Smooth any changes in the playback rate over one buf_size
         // samples. This prevents the change from being discontinuous and helps
         // improve sound quality.
         rate_add += rate_delta_abs;
         i += 2 ;
     }
-
     SampleUtil::clear(&buf[i], buf_size - i);
-
     return samples_read;
 }

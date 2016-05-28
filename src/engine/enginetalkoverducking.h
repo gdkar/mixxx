@@ -1,3 +1,4 @@
+_Pragma("once")
 #include "engine/enginesidechaincompressor.h"
 #include "controlpotmeter.h"
 #include "controlpushbutton.h"

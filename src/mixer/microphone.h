@@ -1,6 +1,4 @@
-#ifndef MIXER_MICROPHONE_H
-#define MIXER_MICROPHONE_H
-
+_Pragma("once")
 #include <QObject>
 #include <QScopedPointer>
 #include <QString>
@@ -22,16 +20,11 @@ class Microphone : public BasePlayer {
                EngineMaster* pMixingEngine,
                EffectsManager* pEffectsManager);
     virtual ~Microphone();
-
   signals:
     void noMicrophoneInputConfigured();
-
   private slots:
     void slotTalkoverEnabled(double v);
-
   private:
     QScopedPointer<ControlObjectSlave> m_pInputConfigured;
     QScopedPointer<ControlObjectSlave> m_pTalkoverEnabled;
 };
-
-#endif /* MIXER_MICROPHONE_H */

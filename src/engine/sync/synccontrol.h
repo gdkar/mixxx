@@ -1,6 +1,4 @@
-#ifndef SYNCCONTROL_H
-#define SYNCCONTROL_H
-
+_Pragma("once")
 #include <QScopedPointer>
 #include <gtest/gtest_prod.h>
 
@@ -138,6 +136,3 @@ class SyncControl : public EngineControl, public Syncable {
     ControlObjectSlave* m_pEjectButton;
     ControlObjectSlave* m_pSyncPhaseButton;
 };
-
-
-#endif /* SYNCCONTROL_H */

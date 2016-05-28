@@ -31,49 +31,14 @@ const double kNoTrigger = -1;
  */
 class EngineControl : public QObject {
     Q_OBJECT
-  public:
-    EngineControl(QString group,UserSettingsPointer _config);
-    EngineControl(QObject *pParent, QString group,UserSettingsPointer _config);
-    virtual ~EngineControl();
-    // Called by EngineBuffer::process every latency period. See the above
-    // comments for information about guarantees that hold during this call. An
-    // EngineControl can perform any upkeep operations that are necessary during
-    // this call. If the EngineControl would like to request the playback
-    // position to be altered, it should return the sample to seek to from this
-    // method. Otherwise it should return kNoTrigger.
-    virtual double process(const double dRate,
-                           const double dCurrentSample,
-                           const double dTotalSamples,
-                           const int iBufferSize);
 
-    virtual double nextTrigger(const double dRate,
-                               const double dCurrentSample,
-                               const double dTotalSamples,
-                               const int iBufferSize);
-
-    virtual double getTrigger(const double dRate,
-                              const double dCurrentSample,
-                              const double dTotalSamples,
-                              const int iBufferSize);
-
-    // hintReader allows the EngineControl to provide hints to the reader to
-    // indicate that the given portion of a song is a potential imminent seek
-    // target.
-    virtual void hintReader(HintVector* pHintList);
-    virtual void setEngineMaster(EngineMaster* pEngineMaster);
-    void setEngineBuffer(EngineBuffer* pEngineBuffer);
-    virtual void setCurrentSample(const double dCurrentSample, const double dTotalSamples);
-    double getCurrentSample() const;
-    double getTotalSamples() const;
-    bool atEndPosition() const;
-    QString getGroup() const;
-    // Called to collect player features for effects processing.
-    virtual void collectFeatureState(GroupFeatureState* pGroupFeatures) const ;
-    // Called whenever a seek occurs to allow the EngineControl to respond.
-    virtual void notifySeek(double dNewPlaypo);
-  public slots:
-    virtual void trackLoaded(TrackPointer pTrack);
-    virtual void trackUnloaded(TrackPointer pTrack);
+    struct SampleOfTrack {
+        double current;
+        double total;
+    };
+    ControlValueAtomic<SampleOfTrack> m_sampleOfTrack;
+    EngineMaster* m_pEngineMaster{nullptr};
+    EngineBuffer* m_pEngineBuffer{nullptr};
 
   protected:
     void seek(double fractionalPosition);
@@ -88,13 +53,48 @@ class EngineControl : public QObject {
 
     QString m_group;
     UserSettingsPointer m_pConfig;
+  public:
+    EngineControl(QString group,UserSettingsPointer _config);
+    EngineControl(QObject *pParent, QString group,UserSettingsPointer _config);
+    virtual ~EngineControl();
+    // Called by EngineBuffer::process every latency period. See the above
+    // comments for information about guarantees that hold during this call. An
+    // EngineControl can perform any upkeep operations that are necessary during
+    // this call. If the EngineControl would like to request the playback
+    // position to be altered, it should return the sample to seek to from this
+    // method. Otherwise it should return kNoTrigger.
+  public slots:
+    virtual double process(const double dRate,
+                           const double dCurrentSample,
+                           const double dTotalSamples,
+                           const int iBufferSize);
 
-  private:
-    struct SampleOfTrack {
-        double current;
-        double total;
-    };
-    ControlValueAtomic<SampleOfTrack> m_sampleOfTrack;
-    EngineMaster* m_pEngineMaster{nullptr};
-    EngineBuffer* m_pEngineBuffer{nullptr};
+    virtual double nextTrigger(const double dRate,
+                               const double dCurrentSample,
+                               const double dTotalSamples,
+                               const int iBufferSize);
+
+    virtual double getTrigger(const double dRate,
+                              const double dCurrentSample,
+                              const double dTotalSamples,
+                              const int iBufferSize);
+  public:
+    // hintReader allows the EngineControl to provide hints to the reader to
+    // indicate that the given portion of a song is a potential imminent seek
+    // target.
+    virtual void setEngineMaster(EngineMaster* pEngineMaster);
+    void setEngineBuffer(EngineBuffer* pEngineBuffer);
+    virtual void setCurrentSample(const double dCurrentSample, const double dTotalSamples);
+    double getCurrentSample() const;
+    double getTotalSamples() const;
+    bool atEndPosition() const;
+    QString getGroup() const;
+    // Called whenever a seek occurs to allow the EngineControl to respond.
+  public slots:
+    // Called to collect player features for effects processing.
+    virtual void collectFeatureState(GroupFeatureState* pGroupFeatures) const ;
+    virtual void notifySeek(double dNewPlaypo);
+    virtual void trackLoaded(TrackPointer pTrack);
+    virtual void trackUnloaded(TrackPointer pTrack);
+    virtual void hintReader(HintVector* pHintList);
 };

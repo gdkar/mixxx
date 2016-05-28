@@ -94,7 +94,7 @@ class ControlValueAtomicBase {
     {
         // NOTE(rryan): Wrapping max with parentheses avoids conflict with the
         // max macro defined in windows.h.
-        DEBUG_ASSERT(((std::numeric_limits<size_t>::max)() & cRingSize-1) == (cRingSize - 1));
+        DEBUG_ASSERT(((std::numeric_limits<size_t>::max)() & (cRingSize-1)) == (cRingSize - 1));
     }
   private:
     // In worst case, each reader can consume a reader slot from a different ring element.

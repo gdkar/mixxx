@@ -1,6 +1,4 @@
-#ifndef WEFFECTBUTTONPARAMETER_H
-#define WEFFECTBUTTONPARAMETER_H
-
+_Pragma("once")
 #include <QDomNode>
 
 #include "widget/wlabel.h"
@@ -17,6 +15,3 @@ class WEffectButtonParameter : public WEffectParameterBase {
 
     void setup(QDomNode node, const SkinContext& context);
 };
-
-
-#endif /* WEFFECTBUTTONPARAMETER_H */

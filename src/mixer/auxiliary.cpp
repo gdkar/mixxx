@@ -15,5 +15,4 @@ Auxiliary::Auxiliary(QObject* pParent, const QString& group, int index,
     AudioInput auxInput = AudioInput(AudioPath::AUXILIARY, 0, 0, index);
     pSoundManager->registerInput(auxInput, pAuxiliary);
 }
-
 Auxiliary::~Auxiliary() = default;

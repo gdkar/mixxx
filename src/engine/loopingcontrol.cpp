@@ -587,18 +587,18 @@ void LoopingControl::slotLoopEndPos(double pos) {
     m_pCOLoopEndPosition->set(newpos);
 }
 
-void LoopingControl::notifySeek(double dNewPlaypos) {
+void LoopingControl::notifySeek(double dNewPlaypos)
+{
     if (m_bLoopingEnabled) {
         if (dNewPlaypos < m_iLoopStartSample || dNewPlaypos > m_iLoopEndSample) {
             setLoopingEnabled(false);
         }
     }
 }
-
 void LoopingControl::setLoopingEnabled(bool enabled) {
     m_bLoopingEnabled = enabled;
     m_pCOLoopEnabled->set(enabled);
-    if (m_pActiveBeatLoop != NULL) {
+    if (m_pActiveBeatLoop) {
         if (enabled) {
             m_pActiveBeatLoop->activate();
         } else {

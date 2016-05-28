@@ -1,4 +1,4 @@
-_Pragma("oncee")
+_Pragma("once")
 #include <QSharedPointer>
 
 #include "effects/effectmanifest.h"

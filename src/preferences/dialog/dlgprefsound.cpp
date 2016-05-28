@@ -14,6 +14,10 @@
  ***************************************************************************/
 
 #include <QtDebug>
+#include <QMetaType>
+#include <QMetaEnum>
+#include <QMetaObject>
+#include <QObject>
 #include <QMessageBox>
 #include "preferences/dialog/dlgprefsound.h"
 #include "preferences/dialog/dlgprefsounditem.h"
@@ -71,31 +75,23 @@ DlgPrefSound::DlgPrefSound(QWidget* pParent, SoundManager* pSoundManager,
     deviceSyncComboBox->setCurrentIndex(2);
     connect(deviceSyncComboBox, SIGNAL(currentIndexChanged(int)),
             this, SLOT(syncBuffersChanged(int)));
-
     keylockComboBox->clear();
-    for (int i = 0; i < EngineBuffer::KEYLOCK_ENGINE_COUNT; ++i) {
-        keylockComboBox->addItem(
-                EngineBuffer::getKeylockEngineName(
-                        static_cast<EngineBuffer::KeylockEngine>(i)));
+    {
+        auto qme = QMetaEnum::fromType<EngineBuffer::KeylockEngine>();
+        for(auto i = decltype(qme.keyCount()){0}; i < qme.keyCount();i++) {
+            keylockComboBox->addItem(
+                    qme.key(i),static_cast<EngineBuffer::KeylockEngine>(qme.value(i)));
+        }
     }
-
     initializePaths();
     loadSettings();
+    connect(apiComboBox, SIGNAL(currentIndexChanged(int)),this, SLOT(settingChanged()));
+    connect(sampleRateComboBox, SIGNAL(currentIndexChanged(int)),this, SLOT(settingChanged()));
+    connect(audioBufferComboBox, SIGNAL(currentIndexChanged(int)),this, SLOT(settingChanged()));
+    connect(deviceSyncComboBox, SIGNAL(currentIndexChanged(int)),this, SLOT(settingChanged()));
+    connect(keylockComboBox, SIGNAL(currentIndexChanged(int)),this, SLOT(settingChanged()));
 
-    connect(apiComboBox, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(settingChanged()));
-    connect(sampleRateComboBox, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(settingChanged()));
-    connect(audioBufferComboBox, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(settingChanged()));
-    connect(deviceSyncComboBox, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(settingChanged()));
-    connect(keylockComboBox, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(settingChanged()));
-
-    connect(queryButton, SIGNAL(clicked()),
-            this, SLOT(queryClicked()));
-
+    connect(queryButton, SIGNAL(clicked()),this, SLOT(queryClicked()));
     connect(m_pSoundManager, SIGNAL(outputRegistered(AudioOutput, AudioSource*)),
             this, SLOT(addPath(AudioOutput)));
     connect(m_pSoundManager, SIGNAL(outputRegistered(AudioOutput, AudioSource*)),
@@ -112,7 +108,6 @@ DlgPrefSound::DlgPrefSound(QWidget* pParent, SoundManager* pSoundManager,
 
     m_pMasterLatency = new ControlObjectSlave("[Master]", "latency", this);
     m_pMasterLatency->connectValueChanged(SLOT(masterLatencyChanged(double)));
-
 
     m_pHeadDelay = new ControlObjectSlave("[Master]", "headDelay", this);
     m_pMasterDelay = new ControlObjectSlave("[Master]", "delay", this);
@@ -144,7 +139,6 @@ DlgPrefSound::DlgPrefSound(QWidget* pParent, SoundManager* pSoundManager,
             this, SLOT(talkoverMixComboBoxChanged(int)));
     m_pMasterTalkoverMix->connectValueChanged(SLOT(talkoverMixChanged(double)));
 
-
     m_pKeylockEngine =
             new ControlObjectSlave("[Master]", "keylock_engine", this);
 
@@ -152,25 +146,18 @@ DlgPrefSound::DlgPrefSound(QWidget* pParent, SoundManager* pSoundManager,
             this, SLOT(headDelayChanged(double)));
     connect(masterDelaySpinBox, SIGNAL(valueChanged(double)),
             this, SLOT(masterDelayChanged(double)));
-
-
 #ifdef __LINUX__
     qDebug() << "RLimit Cur " << RLimit::getCurRtPrio();
     qDebug() << "RLimit Max " << RLimit::getMaxRtPrio();
-
-    if (RLimit::isRtPrioAllowed()) {
+    if (RLimit::isRtPrioAllowed())
         limitsHint->hide();
-    }
 #else
     // the limits warning is a Linux only thing
     limitsHint->hide();
 #endif // __LINUX__
 
 }
-
-DlgPrefSound::~DlgPrefSound() {
-}
-
+DlgPrefSound::~DlgPrefSound() = default;
 /**
  * Slot called when the preferences dialog  is opened or this pane is
  * selected.
@@ -187,11 +174,10 @@ void DlgPrefSound::slotUpdate() {
 /**
  * Slot called when the Apply or OK button is pressed.
  */
-void DlgPrefSound::slotApply() {
-    if (!m_settingsModified) {
+void DlgPrefSound::slotApply()
+{
+    if (!m_settingsModified)
         return;
-    }
-
     int err = OK;
     {
         ScopedWaitCursor cursor;

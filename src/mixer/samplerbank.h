@@ -1,6 +1,4 @@
-#ifndef MIXER_SAMPLERBANK_H
-#define MIXER_SAMPLERBANK_H
-
+_Pragma("once")
 #include <QObject>
 
 class ControlObject;
@@ -21,5 +19,3 @@ class SamplerBank : public QObject {
     ControlObject* m_pLoadControl;
     ControlObject* m_pSaveControl;
 };
-
-#endif /* MIXER_SAMPLERBANK_H */

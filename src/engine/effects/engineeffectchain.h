@@ -1,6 +1,4 @@
-#ifndef ENGINEEFFECTCHAIN_H
-#define ENGINEEFFECTCHAIN_H
-
+_Pragma("once")
 #include <QString>
 #include <QList>
 #include <QLinkedList>
@@ -66,8 +64,5 @@ class EngineEffectChain : public EffectsRequestHandler {
     QList<EngineEffect*> m_effects;
     CSAMPLE* m_pBuffer;
     ChannelHandleMap<ChannelStatus> m_channelStatus;
-
     DISALLOW_COPY_AND_ASSIGN(EngineEffectChain);
 };
-
-#endif /* ENGINEEFFECTCHAIN_H */

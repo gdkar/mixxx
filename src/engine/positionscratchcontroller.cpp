@@ -62,8 +62,9 @@ class RateIIFilter {
     double m_last_rate;
 };
 
-PositionScratchController::PositionScratchController(QString group)
-    : m_group(group),
+PositionScratchController::PositionScratchController(QObject *pParent, QString group)
+    : QObject(pParent),
+      m_group(group),
       m_bScratching(false),
       m_bEnableInertia(false),
       m_dLastPlaypos(0),
@@ -72,7 +73,9 @@ PositionScratchController::PositionScratchController(QString group)
       m_dStartScratchPosition(0),
       m_dRate(0),
       m_dMoveDelay(0),
-      m_dMouseSampeTime(0) {
+      m_dMouseSampeTime(0)
+{
+    connect(parent()->parent(),SIGNAL(positionChanged(double)), this, SLOT(notifySeeked(double)));    
     m_pScratchEnable = new ControlObject(ConfigKey(group, "scratch_position_enable"));
     m_pScratchPosition = new ControlObject(ConfigKey(group, "scratch_position"));
     m_pMasterSampleRate = ControlObject::getControl(ConfigKey("[Master]", "samplerate"));

@@ -1,6 +1,4 @@
-#ifndef FLANGEREFFECT_H
-#define FLANGEREFFECT_H
-
+_Pragma("once")
 #include <QMap>
 
 #include "effects/effectprocessor.h"
@@ -23,15 +21,12 @@ struct FlangerGroupState {
     unsigned int delayPos;
     unsigned int time;
 };
-
 class FlangerEffect : public PerChannelEffectProcessor<FlangerGroupState> {
   public:
     FlangerEffect(EngineEffect* pEffect, const EffectManifest& manifest);
     virtual ~FlangerEffect();
-
     static QString getId();
     static EffectManifest getManifest();
-
     // See effectprocessor.h
     void processChannel(const ChannelHandle& handle,
                         FlangerGroupState* pState,
@@ -40,17 +35,12 @@ class FlangerEffect : public PerChannelEffectProcessor<FlangerGroupState> {
                         const unsigned int sampleRate,
                         const EffectProcessor::EnableState enableState,
                         const GroupFeatureState& groupFeatures);
-
   private:
     QString debugString() const {
         return getId();
     }
-
     EngineEffectParameter* m_pPeriodParameter;
     EngineEffectParameter* m_pDepthParameter;
     EngineEffectParameter* m_pDelayParameter;
-
     DISALLOW_COPY_AND_ASSIGN(FlangerEffect);
 };
-
-#endif /* FLANGEREFFECT_H */

@@ -29,6 +29,7 @@ class EffectManifestParameter {
         UNITS_HERTZ,
         UNITS_SAMPLERATE, // fraction of the samplerate
         UNITS_BEATS, // multiples of a beat
+        UNITS_DB,
     };
 
     enum LinkType {

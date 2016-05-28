@@ -20,11 +20,12 @@ class GraphicEQEffectGroupState {
   public:
     GraphicEQEffectGroupState();
     virtual ~GraphicEQEffectGroupState();
-    void setFilters(int sampleRate, double mid[8]);
-    std::unique_ptr<EngineFilterIIR>    m_bands[8];
-    double m_oldGain[8] = { 0. };
-    int    m_oldSampleRate{44100};
-    double m_centerFrequencies[8] = { 0.};
+    size_t m_size{8};
+    void setFilters(int sampleRate, std::vector<double>& );
+    std::vector<std::unique_ptr<EngineFilterIIR> > m_bands{8};
+    std::vector<double> m_oldGain{8};
+    std::vector<double> m_centerFrequencies{8};
+    unsigned int m_oldSampleRate{44100};
 };
 class GraphicEQEffect : public PerChannelEffectProcessor<GraphicEQEffectGroupState> {
   public:
@@ -43,7 +44,7 @@ class GraphicEQEffect : public PerChannelEffectProcessor<GraphicEQEffectGroupSta
 
   private:
     QString debugString() const;
-    EngineEffectParameter* m_pPotGain[8];
+    std::vector<EngineEffectParameter*> m_pPotGain{8};
     unsigned int m_oldSampleRate{44100};
     DISALLOW_COPY_AND_ASSIGN(GraphicEQEffect);
 };

@@ -129,11 +129,12 @@ void EngineFilterIIR::setFrequencyCorners(double rate, double freq0, double freq
 {
     setCoefs(rate, SIZE, m_spec, freq0, freq1);
 }
-EngineFilterIIR::EngineFilterIIR(QObject *pParent, size_t _SIZE, IIRPass _PASS, QString spec)
+EngineFilterIIR::EngineFilterIIR(QObject *pParent, size_t _SIZE, IIRPass _PASS, QString spec, QString tmpl)
     : EngineFilterIIRBase(pParent)
     , SIZE     (_SIZE)
     , PASS     (_PASS)
     , m_spec(spec)
+    , m_tmpl(tmpl)
     , m_coef   (SIZE + 1)
     , m_buf    (SIZE * 2)
     , m_oldCoef(SIZE + 1)
@@ -141,8 +142,8 @@ EngineFilterIIR::EngineFilterIIR(QObject *pParent, size_t _SIZE, IIRPass _PASS, 
 {
     pauseFilter();
 }
-EngineFilterIIR::EngineFilterIIR(size_t _SIZE, IIRPass _PASS, QString spec)
-    : EngineFilterIIR(nullptr, _SIZE, _PASS, spec)
+EngineFilterIIR::EngineFilterIIR(size_t _SIZE, IIRPass _PASS, QString spec, QString tmpl)
+    : EngineFilterIIR(nullptr, _SIZE, _PASS, spec, tmpl)
 { }
 EngineFilterIIR::~EngineFilterIIR() = default;
 void EngineFilterIIR::setStartFromDry(bool sfd)
@@ -160,6 +161,14 @@ void EngineFilterIIR::setSpec(QString s)
 QString EngineFilterIIR::getSpec() const
 {
     return m_spec;
+}
+void EngineFilterIIR::setTemplate(QString t)
+{
+    m_tmpl = t;
+}
+QString EngineFilterIIR::getTemplate() const
+{
+    return m_tmpl;
 }
 size_t EngineFilterIIR::getSize() const
 {

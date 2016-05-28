@@ -1,6 +1,4 @@
-#ifndef ENGINEEFFECTRACK_H
-#define ENGINEEFFECTRACK_H
-
+_Pragma("once")
 #include <QList>
 
 #include "engine/channelhandle.h"
@@ -35,11 +33,7 @@ class EngineEffectRack : public EffectsRequestHandler {
     QString debugString() const {
         return QString("EngineEffectRack%1").arg(m_iRackNumber);
     }
-
     int m_iRackNumber;
     QList<EngineEffectChain*> m_chains;
-
     DISALLOW_COPY_AND_ASSIGN(EngineEffectRack);
 };
-
-#endif /* ENGINEEFFECTRACK_H */

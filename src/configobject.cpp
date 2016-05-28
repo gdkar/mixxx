@@ -74,7 +74,6 @@ QString computeResourcePath() {
     } else {
         //qDebug() << "Setting qResourcePath from location in resourcePath commandline arg:" << qResourcePath;
     }
-
     if (qResourcePath.isEmpty()) {
         reportCriticalErrorAndQuit("qConfigPath is empty, this can not be so -- did our developer forget to define one of __UNIX__, __WINDOWS__, __APPLE__??");
     }
@@ -161,7 +160,8 @@ bool operator==(const ConfigValueKbd& s1, const ConfigValueKbd& s2) {
 
 template <class ValueType> ConfigObject<ValueType>::ConfigObject(const QString& file)
         : m_resourcePath(computeResourcePath()),
-          m_settingsPath(computeSettingsPath(file)) {
+          m_settingsPath(computeSettingsPath(file))
+{
     reopen(file);
 }
 
@@ -195,14 +195,14 @@ QString ConfigObject<ValueType>::getValueString(const ConfigKey& k) const {
 template <class ValueType>
 QString ConfigObject<ValueType>::getValueString(const ConfigKey& k,
                                                 const QString& default_string) const {
-    QString ret = getValueString(k);
-    if (ret.isEmpty()) {
+    auto ret = getValueString(k);
+    if (ret.isEmpty())
         return default_string;
-    }
     return ret;
 }
 
-template <class ValueType> bool ConfigObject<ValueType>::parse() {
+template <class ValueType> bool ConfigObject<ValueType>::parse()
+{
     // Open file for reading
     QFile configfile(m_filename);
     if (m_filename.length() < 1 || !configfile.open(QIODevice::ReadOnly)) {
@@ -211,8 +211,8 @@ template <class ValueType> bool ConfigObject<ValueType>::parse() {
     } else {
         //qDebug() << "ConfigObject: Parse" << m_filename;
         // Parse the file
-        int group = 0;
-        QString groupStr, line;
+        auto group = 0;
+        auto groupStr = QString{}, line = QString{};
         QTextStream text(&configfile);
         text.setCodec("UTF-8");
 
@@ -224,9 +224,9 @@ template <class ValueType> bool ConfigObject<ValueType>::parse() {
                     groupStr = line;
                     //qDebug() << "Group :" << groupStr;
                 } else if (group > 0) {
-                    QString key;
+                    auto key = QString{};
                     QTextStream(&line) >> key;
-                    QString val = line.right(line.length() - key.length()); // finds the value string
+                    auto val = line.right(line.length() - key.length()); // finds the value string
                     val = val.trimmed();
                     //qDebug() << "control:" << key << "value:" << val;
                     ConfigKey k(groupStr, key);
@@ -246,7 +246,6 @@ template <class ValueType> void ConfigObject<ValueType>::reopen(const QString& f
         parse();
     }
 }
-
 template <class ValueType> void ConfigObject<ValueType>::save() {
     QReadLocker lock(&m_valuesLock); // we only read the m_values here.
     QFile file(m_filename);
@@ -261,31 +260,28 @@ template <class ValueType> void ConfigObject<ValueType>::save() {
         stream.setCodec("UTF-8");
 
         QString grp = "";
-
-        typename QMap<ConfigKey, ValueType>::const_iterator i;
-        for (i = m_values.begin(); i != m_values.end(); ++i) {
-            //qDebug() << "group:" << it.key().group << "item" << it.key().item << "val" << it.value()->value;
-            if (i.key().group != grp) {
-                grp = i.key().group;
-                stream << "\n" << grp << "\n";
+        auto split_map = QMap<QString, QMap<QString,ValueType> >{};
+        for ( auto i = m_values.cbegin(),e=m_values.cend(); i != e; ++i) {
+            split_map[i.key().group][i.key().item] = i.value();
+        }
+        for(auto git = split_map.cbegin(),gend = split_map.cend() ; git != gend; ++git) {
+            stream << "\n" << git.key() << "\n";
+            for(auto vit = git.value().cbegin(), vend = git.value().cend(); vit != vend; ++vit) {
+                stream << vit.key() << " " << vit.value().value << "\n";
             }
-            stream << i.key().item << " " << i.value().value << "\n";
         }
         file.close();
-        if (file.error()!=QFile::NoError) { //could be better... should actually say what the error was..
+        if (file.error()!=QFile::NoError) //could be better... should actually say what the error was..
             qDebug() << "Error while writing configuration file:" << file.errorString();
-        }
     }
 }
-
 template <class ValueType> ConfigObject<ValueType>::ConfigObject(const QDomNode& node) {
     if (!node.isNull() && node.isElement()) {
-        QDomNode ctrl = node.firstChild();
-
+        auto ctrl = node.firstChild();
         while (!ctrl.isNull()) {
             if(ctrl.nodeName() == "control") {
-                QString group = XmlParse::selectNodeQString(ctrl, "group");
-                QString key = XmlParse::selectNodeQString(ctrl, "key");
+                auto group = XmlParse::selectNodeQString(ctrl, "group");
+                auto key = XmlParse::selectNodeQString(ctrl, "key");
                 ConfigKey k(group, key);
                 ValueType m(ctrl);
                 set(k, m);
@@ -294,14 +290,12 @@ template <class ValueType> ConfigObject<ValueType>::ConfigObject(const QDomNode&
         }
     }
 }
-
 template <class ValueType>
-QMultiHash<ValueType, ConfigKey> ConfigObject<ValueType>::transpose() const {
+QMultiHash<ValueType, ConfigKey> ConfigObject<ValueType>::transpose() const
+{
     QReadLocker lock(&m_valuesLock);
-
     QMultiHash<ValueType, ConfigKey> transposedHash;
-    for (typename QMap<ConfigKey, ValueType>::const_iterator it =
-            m_values.begin(); it != m_values.end(); ++it) {
+    for (auto it = m_values.begin(); it != m_values.end(); ++it) {
         transposedHash.insert(it.value(), it.key());
     }
     return transposedHash;

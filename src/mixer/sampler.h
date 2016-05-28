@@ -1,6 +1,4 @@
-#ifndef MIXER_SAMPLER_H
-#define MIXER_SAMPLER_H
-
+_Pragma("once")
 #include "mixer/basetrackplayer.h"
 
 class Sampler : public BaseTrackPlayerImpl {
@@ -14,5 +12,3 @@ class Sampler : public BaseTrackPlayerImpl {
             QString group);
     virtual ~Sampler();
 };
-
-#endif /* MIXER_SAMPLER_H */

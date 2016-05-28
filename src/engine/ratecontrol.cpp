@@ -30,9 +30,8 @@ const double RateControl::kWheelMultiplier = 40.0;
 const double RateControl::kPausedJogMultiplier = 18.0;
 enum RateControl::RATERAMP_MODE RateControl::m_eRateRampMode = RateControl::RATERAMP_STEP;
 
-RateControl::RateControl(QString group,
-                         UserSettingsPointer _config)
-    : EngineControl(group, _config),
+RateControl::RateControl(QObject *pParent, QString group,UserSettingsPointer _config)
+    : EngineControl(pParent, group, _config),
       m_pBpmControl(NULL),
       m_ePbCurrent(0),
       m_ePbPressed(0),
@@ -40,31 +39,27 @@ RateControl::RateControl(QString group,
       m_dTempRateChange(0.0),
       m_dRateTemp(0.0),
       m_eRampBackMode(RATERAMP_RAMPBACK_NONE),
-      m_dRateTempRampbackChange(0.0) {
-    m_pScratchController = new PositionScratchController(group);
-
+      m_dRateTempRampbackChange(0.0)
+{
+    connect(pParent, SIGNAL(positionChanged(double)), this, SLOT(notifySeeked(double)));
+    m_pScratchController = new PositionScratchController(this, group);
     m_pRateDir = new ControlObject(ConfigKey(group, "rate_dir"));
     m_pRateRange = new ControlObject(ConfigKey(group, "rateRange"));
     // Allow rate slider to go out of bounds so that master sync rate
     // adjustments are not capped.
-    m_pRateSlider = new ControlPotmeter(ConfigKey(group, "rate"),
-                                        -1.0, 1.0, true);
-
+    m_pRateSlider = new ControlPotmeter(ConfigKey(group, "rate"),-1.0, 1.0, true);
     // Search rate. Rate used when searching in sound. This overrules the
     // playback rate
     m_pRateSearch = new ControlPotmeter(ConfigKey(group, "rateSearch"), -300., 300.);
-
     // Reverse button
     m_pReverseButton = new ControlPushButton(ConfigKey(group, "reverse"));
     m_pReverseButton->set(0);
-
     // Forward button
     m_pForwardButton = new ControlPushButton(ConfigKey(group, "fwd"));
     connect(m_pForwardButton, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlFastForward(double)),
             Qt::DirectConnection);
     m_pForwardButton->set(0);
-
     // Back button
     m_pBackButton = new ControlPushButton(ConfigKey(group, "back"));
     connect(m_pBackButton, SIGNAL(valueChanged(double)),
@@ -556,11 +551,8 @@ double RateControl::process(const double rate,
                 qDebug() << "Avoiding a Division by Zero in RATERAMP_STEP code";
                 return kNoTrigger;
             }
-
-            double change = m_pRateDir->get() * m_dTemp /
-                                    (100. * range);
-            double csmall = m_pRateDir->get() * m_dTempSmall /
-                                    (100. * range);
+            double change = m_pRateDir->get() * m_dTemp / (100. * range);
+            double csmall = m_pRateDir->get() * m_dTempSmall / (100. * range);
 
             if (buttonRateTempUp->get())
                 addRateTemp(change);
@@ -579,7 +571,6 @@ double RateControl::process(const double rate,
         }
 
     }
-
     if (m_eRateRampMode == RATERAMP_LINEAR) {
         if (m_ePbCurrent) {
             // apply ramped pitchbending
@@ -652,12 +643,11 @@ void RateControl::subRateTemp(double v)
 {
     setRateTemp(m_dRateTemp - v);
 }
-
 void RateControl::resetRateTemp(void)
 {
     setRateTemp(0.0);
 }
-
-void RateControl::notifySeek(double playPos) {
-    m_pScratchController->notifySeek(playPos);
+void RateControl::notifySeek(double playPos)
+{
+//    m_pScratchController->notifySeek(playPos);
 }

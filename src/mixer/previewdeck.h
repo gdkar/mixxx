@@ -1,6 +1,4 @@
-#ifndef MIXER_PREVIEWDECK_H
-#define MIXER_PREVIEWDECK_H
-
+_Pragma("once")
 #include "mixer/basetrackplayer.h"
 
 class PreviewDeck : public BaseTrackPlayerImpl {
@@ -14,5 +12,3 @@ class PreviewDeck : public BaseTrackPlayerImpl {
                 QString group);
     virtual ~PreviewDeck();
 };
-
-#endif /* MIXER_PREVIEWDECK_H */

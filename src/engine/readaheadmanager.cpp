@@ -17,14 +17,14 @@ ReadAheadManager::ReadAheadManager()
 {
 }
 
-ReadAheadManager::ReadAheadManager(CachingReader* pReader,
-                                   LoopingControl* pLoopingControl,
-                                   QObject *pParent)
+ReadAheadManager::ReadAheadManager(QObject *pParent, CachingReader* pReader,
+                                   LoopingControl* pLoopingControl)
         : QObject(pParent),
           m_pLoopingControl(pLoopingControl),
           m_pReader(pReader),
           m_pCrossFadeBuffer(std::make_unique<CSAMPLE[]>(MAX_BUFFER_LEN))
 {
+    connect(parent(), SIGNAL(positionChanged(double)),this,SLOT(notifySeek(double)));
     DEBUG_ASSERT(m_pLoopingControl != nullptr);
     DEBUG_ASSERT(m_pReader != nullptr);
     SampleUtil::clear(&m_pCrossFadeBuffer[0], MAX_BUFFER_LEN);
@@ -110,23 +110,17 @@ int ReadAheadManager::getNextSamples(double dRate, CSAMPLE* buffer,
     //qDebug() << "read" << m_iCurrentPosition << samples_read;
     return samples_read;
 }
-
-void ReadAheadManager::addRateControl(RateControl* pRateControl) {
+void ReadAheadManager::addRateControl(RateControl* pRateControl)
+{
     m_pRateControl = pRateControl;
 }
-
 // Not thread-save, call from engine thread only
-void ReadAheadManager::notifySeek(int iSeekPosition) {
-    m_iCurrentPosition = iSeekPosition;
-    m_readAheadLog.clear();
-
-    // TODO(XXX) notifySeek on the engine controls. EngineBuffer currently does
-    // a fine job of this so it isn't really necessary but eventually I think
-    // RAMAN should do this job. rryan 11/2011
-
-    // foreach (EngineControl* pControl, m_sEngineControls) {
-    //     pControl->notifySeek(iSeekPosition);
-    // }
+void ReadAheadManager::notifySeek(double dSeekPosition)
+{
+    if(m_iCurrentPosition != static_cast<int>(dSeekPosition)) {
+        m_iCurrentPosition = static_cast<int>(dSeekPosition);
+        m_readAheadLog.clear();
+    }
 }
 
 void ReadAheadManager::hintReader(double dRate, HintVector* pHintList) {

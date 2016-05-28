@@ -1,5 +1,8 @@
 #include "effects/effectchainslot.h"
 
+#include <QMetaType>
+#include <QMetaEnum>
+#include <QMetaObject>
 #include "effects/effectrack.h"
 #include "controlpotmeter.h"
 #include "controlpushbutton.h"
@@ -49,18 +52,16 @@ EffectChainSlot::EffectChainSlot(EffectRack* pRack, const QString& group,
 
     m_pControlChainInsertionType = new ControlPushButton(ConfigKey(m_group, "insertion_type"));
     m_pControlChainInsertionType->setButtonMode(ControlPushButton::TOGGLE);
-    m_pControlChainInsertionType->setStates(EffectChain::NUM_INSERTION_TYPES);
+    auto qme = QMetaEnum::fromType<EffectChain::InsertionType>();
+    m_pControlChainInsertionType->setStates(qme.keyCount());
     connect(m_pControlChainInsertionType, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlChainInsertionType(double)));
-
     m_pControlChainNextPreset = new ControlPushButton(ConfigKey(m_group, "next_chain"));
     connect(m_pControlChainNextPreset, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlChainNextPreset(double)));
-
     m_pControlChainPrevPreset = new ControlPushButton(ConfigKey(m_group, "prev_chain"));
     connect(m_pControlChainPrevPreset, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlChainPrevPreset(double)));
-
     // Ignoring no-ops is important since this is for +/- tickers.
     m_pControlChainSelector = new ControlObject(ConfigKey(m_group, "chain_selector"), false);
     connect(m_pControlChainSelector, SIGNAL(valueChanged(double)),
@@ -195,7 +196,7 @@ void EffectChainSlot::loadEffectChain(EffectChainPointer pEffectChain) {
                 this, SLOT(slotChainChannelStatusChanged(const QString&, bool)));
 
         m_pControlChainLoaded->setAndConfirm(true);
-        m_pControlChainInsertionType->set(m_pEffectChain->insertionType());
+        m_pControlChainInsertionType->set(static_cast<int>(m_pEffectChain->insertionType()));
 
         // Mix and enabled channels are persistent properties of the chain slot,
         // not of the chain. Propagate the current settings to the chain.
@@ -234,7 +235,7 @@ void EffectChainSlot::clear() {
     }
     m_pControlNumEffects->setAndConfirm(0.0);
     m_pControlChainLoaded->setAndConfirm(0.0);
-    m_pControlChainInsertionType->set(EffectChain::INSERT);
+    m_pControlChainInsertionType->set(static_cast<int>(EffectChain::InsertionType::INSERT));
     emit(updated());
 }
 
@@ -366,15 +367,13 @@ void EffectChainSlot::slotControlChainSuperParameter(double v) {
 
 void EffectChainSlot::slotControlChainInsertionType(double v) {
     // Intermediate cast to integer is needed for VC++.
-    EffectChain::InsertionType type = static_cast<EffectChain::InsertionType>(int(v));
+    auto type = static_cast<EffectChain::InsertionType>(static_cast<int>(v));
     (void)v; // this avoids a false warning with g++ 4.8.1
-    if (m_pEffectChain && type >= 0 &&
-            type < EffectChain::NUM_INSERTION_TYPES) {
+    if (m_pEffectChain)
         m_pEffectChain->setInsertionType(type);
-    }
 }
-
-void EffectChainSlot::slotControlChainSelector(double v) {
+void EffectChainSlot::slotControlChainSelector(double v)
+{
     //qDebug() << debugString() << "slotControlChainSelector" << v;
     if (v > 0) {
         emit(nextChain(m_iChainSlotNumber, m_pEffectChain));
@@ -383,25 +382,23 @@ void EffectChainSlot::slotControlChainSelector(double v) {
     }
 }
 
-void EffectChainSlot::slotControlChainNextPreset(double v) {
+void EffectChainSlot::slotControlChainNextPreset(double v)
+{
     //qDebug() << debugString() << "slotControlChainNextPreset" << v;
-    if (v > 0) {
+    if (v > 0)
         slotControlChainSelector(1);
-    }
 }
-
-void EffectChainSlot::slotControlChainPrevPreset(double v) {
+void EffectChainSlot::slotControlChainPrevPreset(double v)
+{
     //qDebug() << debugString() << "slotControlChainPrevPreset" << v;
-    if (v > 0) {
+    if (v > 0)
         slotControlChainSelector(-1);
-    }
 }
-
 void EffectChainSlot::slotChannelStatusChanged(const QString& group) {
     if (m_pEffectChain) {
-        ChannelInfo* pChannelInfo = m_channelInfoByName.value(group, NULL);
+        auto  pChannelInfo = m_channelInfoByName.value(group, NULL);
         if (pChannelInfo != NULL && pChannelInfo->pEnabled != NULL) {
-            bool bEnable = pChannelInfo->pEnabled->toBool();
+            auto bEnable = pChannelInfo->pEnabled->toBool();
             if (bEnable) {
                 m_pEffectChain->enableForChannel(pChannelInfo->handle_group);
             } else {

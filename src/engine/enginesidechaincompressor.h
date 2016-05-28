@@ -1,6 +1,4 @@
-#ifndef ENGINECOMPRESSOR_H
-#define ENGINECOMPRESSOR_H
-
+_Pragma("once")
 #include "util/types.h"
 
 class EngineSideChainCompressor {
@@ -83,5 +81,3 @@ class EngineSideChainCompressor {
     CSAMPLE m_attackPerFrame;
     CSAMPLE m_decayPerFrame;
 };
-
-#endif
