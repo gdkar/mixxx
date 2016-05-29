@@ -2,6 +2,9 @@
 #include <QTime>
 #include <QTimer>
 #include <QWidget>
+#include <QSurfaceFormat>
+#include <QOpenGLContext>
+#include <QOpenGLShaderProgram>
 #include <QtDebug>
 #include <QGLFormat>
 #include <QGLShaderProgram>
@@ -76,102 +79,30 @@ WaveformWidgetFactory::WaveformWidgetFactory() :
     m_visualGain[Low] = 1.0;
     m_visualGain[Mid] = 1.0;
     m_visualGain[High] = 1.0;
-
-    if (QGLFormat::hasOpenGL()) {
-        QGLFormat glFormat;
-        glFormat.setDirectRendering(true);
-        glFormat.setDoubleBuffer(true);
-        glFormat.setDepth(false);
-        // Disable waiting for vertical Sync
-        // This can be enabled when using a single Threads for each QGLContext
-        // Setting 1 causes QGLContext::swapBuffer to sleep until the next VSync
-#if defined(__APPLE__)
-        // On OS X, syncing to vsync has good performance FPS-wise and
-        // eliminates tearing.
-        glFormat.setSwapInterval(1);
-#else
-        // Otherwise, turn VSync off because it could cause horrible FPS on
-        // Linux.
-        // TODO(XXX): Make this configurable.
-        // TOOD(XXX): What should we do on Windows?
-        glFormat.setSwapInterval(0);
-#endif
+    auto glFormat = QSurfaceFormat::defaultFormat();
+    glFormat.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
+    glFormat.setDepthBufferSize(0);
+    glFormat.setAlphaBufferSize(32);
+    glFormat.setRedBufferSize(32);
+    glFormat.setGreenBufferSize(32);
+    glFormat.setBlueBufferSize(32);
+    glFormat.setSwapInterval(1);
+    glFormat.setMajorVersion(3);
+    glFormat.setMinorVersion(3);
+    glFormat.setProfile(QSurfaceFormat::CoreProfile);
+    QSurfaceFormat::setDefaultFormat(glFormat);
 
 
-        glFormat.setRgba(true);
-        QGLFormat::setDefaultFormat(glFormat);
-
-        QGLFormat::OpenGLVersionFlags version = QGLFormat::openGLVersionFlags();
-
-        int majorVersion = 0;
-        int minorVersion = 0;
-        if (version == QGLFormat::OpenGL_Version_None) {
-            m_openGLVersion = "None";
-// Flags introduced in Qt 5.2.
-#if QT_VERSION >= QT_VERSION_CHECK(5, 2, 0)
-        } else if (version & QGLFormat::OpenGL_Version_4_3) {
-            majorVersion = 4;
-            minorVersion = 3;
-        } else if (version & QGLFormat::OpenGL_Version_4_2) {
-            majorVersion = 4;
-            minorVersion = 2;
-        } else if (version & QGLFormat::OpenGL_Version_4_1) {
-            majorVersion = 4;
-            minorVersion = 1;
-#endif
-// Flags introduced in Qt 4.7.
-#if QT_VERSION >= QT_VERSION_CHECK(4, 7, 0)
-        } else if (version & QGLFormat::OpenGL_Version_4_0) {
-            majorVersion = 4;
-            minorVersion = 0;
-        } else if (version & QGLFormat::OpenGL_Version_3_3) {
-            majorVersion = 3;
-            minorVersion = 3;
-        } else if (version & QGLFormat::OpenGL_Version_3_2) {
-            majorVersion = 3;
-            minorVersion = 2;
-        } else if (version & QGLFormat::OpenGL_Version_3_1) {
-            majorVersion = 3;
-            minorVersion = 1;
-#endif
-        } else if (version & QGLFormat::OpenGL_Version_3_0) {
-            majorVersion = 3;
-        } else if (version & QGLFormat::OpenGL_Version_2_1) {
-            majorVersion = 2;
-            minorVersion = 1;
-        } else if (version & QGLFormat::OpenGL_Version_2_0) {
-            majorVersion = 2;
-            minorVersion = 0;
-        } else if (version & QGLFormat::OpenGL_Version_1_5) {
-            majorVersion = 1;
-            minorVersion = 5;
-        } else if (version & QGLFormat::OpenGL_Version_1_4) {
-            majorVersion = 1;
-            minorVersion = 4;
-        } else if (version & QGLFormat::OpenGL_Version_1_3) {
-            majorVersion = 1;
-            minorVersion = 3;
-        } else if (version & QGLFormat::OpenGL_Version_1_2) {
-            majorVersion = 1;
-            minorVersion = 2;
-        } else if (version & QGLFormat::OpenGL_Version_1_1) {
-            majorVersion = 1;
-            minorVersion = 1;
-        }
-
-        if (majorVersion != 0) {
-            m_openGLVersion = QString::number(majorVersion) + "." +
-                    QString::number(minorVersion);
-        }
-
-        m_openGLAvailable = true;
-
-        QGLWidget* glWidget = new QGLWidget(); // create paint device
-        // QGLShaderProgram::hasOpenGLShaderPrograms(); valgind error
-        m_openGLShaderAvailable = QGLShaderProgram::hasOpenGLShaderPrograms(glWidget->context());
-        delete glWidget;
+    {
+        QOpenGLContext glw{this};
+        glw.create();
+        auto recvFormat = glw.format();
+    m_openGLVersion = QString{"%1.%2 %3"}.arg(recvFormat.majorVersion()).arg(recvFormat.minorVersion())
+        .arg(recvFormat.profile() == QSurfaceFormat::CoreProfile ? "Core" : 
+                recvFormat.profile() == QSurfaceFormat::CompatibilityProfile ? "Compat" : "No Profile");
     }
-
+    m_openGLAvailable = true;
+    m_openGLShaderAvailable = true;
     evaluateWidgets();
     m_time.start();
 }

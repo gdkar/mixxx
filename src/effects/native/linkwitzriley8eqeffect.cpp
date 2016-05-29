@@ -183,30 +183,22 @@ void LinkwitzRiley8EQEffect::processChannel(const ChannelHandle& handle,
 
     if (fMid != pState->old_mid ||
             fHigh != pState->old_high) {
-        SampleUtil::copy2WithRampingGain(pState->m_pHighBuf,
-                pState->m_pHighBuf, pState->old_high, fHigh,
-                pState->m_pLowBuf, pState->old_mid, fMid,
-                numSamples);
+        SampleUtil::applyRampingGain(pState->m_pHighBuf,pState->old_high,fHigh,numSamples);
+        SampleUtil::addWithRampingGain(pState->m_pHighBuf, pState->m_pLowBuf,pState->old_mid,fMid,numSamples);
     } else {
-        SampleUtil::copy2WithGain(pState->m_pHighBuf,
-                pState->m_pHighBuf, fHigh,
-                pState->m_pLowBuf, fMid,
-                numSamples);
+        SampleUtil::applyGain(pState->m_pHighBuf, fHigh, numSamples);
+        SampleUtil::addWithGain(pState->m_pHighBuf,pState->m_pLowBuf,fMid,numSamples);
     }
 
     pState->m_high1->process(pState->m_pHighBuf, pState->m_pBandBuf, numSamples); // HighPass + BandPass second run
     pState->m_low1->process(pState->m_pLowBuf, pState->m_pLowBuf, numSamples); // LowPass second run
 
     if (fLow != pState->old_low) {
-        SampleUtil::copy2WithRampingGain(pOutput,
-                pState->m_pLowBuf, pState->old_low, fLow,
-                pState->m_pBandBuf, 1, 1,
-                numSamples);
+        SampleUtil::copyWithGain(pOutput, pState->m_pBandBuf,1.0,numSamples);
+        SampleUtil::addWithRampingGain(pOutput,pState->m_pLowBuf,pState->old_low,fLow,numSamples);
     } else {
-        SampleUtil::copy2WithGain(pOutput,
-                pState->m_pLowBuf, fLow,
-                pState->m_pBandBuf, 1,
-                numSamples);
+        SampleUtil::copyWithGain(pOutput,pState->m_pLowBuf,fLow,numSamples);
+        SampleUtil::addWithGain(pOutput,pState->m_pBandBuf, 1., numSamples);
     }
 
     if (enableState == EffectProcessor::DISABLING) {

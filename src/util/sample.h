@@ -1,13 +1,11 @@
-#ifndef MIXXX_UTIL_SAMPLE_H
-#define MIXXX_UTIL_SAMPLE_H
-
+_Pragma("once")
 #include <algorithm>
 #include <cstring> // memset
 
 #include <QFlags>
 
 #include "util/types.h"
-#include "util/platform.h"
+
 
 // A group of utilities for working with samples.
 class SampleUtil {
@@ -46,7 +44,7 @@ class SampleUtil {
 
     // Copies every sample from pSrc to pDest
     inline
-    static void copy(CSAMPLE* M_RESTRICT pDest, const CSAMPLE* M_RESTRICT pSrc,
+    static void copy(CSAMPLE*  pDest, const CSAMPLE*  pSrc,
             int iNumSamples) {
         // Benchmark results on 32 bit SSE2 Atom Cpu (Linux)
         // memcpy 7263 ns
@@ -222,15 +220,23 @@ class SampleUtil {
     static void reverse(CSAMPLE* pBuffer, int iNumSamples);
 
     // copy pSrc to pDest and reverses stereo sample order (backward)
-    static void copyReverse(CSAMPLE* M_RESTRICT pDest,
-            const CSAMPLE* M_RESTRICT pSrc, int iNumSamples);
+    static void copyReverse(CSAMPLE*  pDest,
+            const CSAMPLE*  pSrc, int iNumSamples);
 
 
-    // Include auto-generated methods (e.g. copyXWithGain, copyXWithRampingGain,
-    // etc.)
-#include "util/sample_autogen.h"
+    static void addWithGain(
+            CSAMPLE**     pDest,
+    const CSAMPLE**     pSrc,
+            CSAMPLE_GAIN* gain,
+            int           num,
+            int           bands);
+
+    static void addWithRampingGain(
+            CSAMPLE**     pDest,
+    const CSAMPLE**     pSrc,
+            CSAMPLE_GAIN* gain_pre,
+            CSAMPLE_GAIN* gain_post,
+            int           num,
+            int           bands);
 };
-
 Q_DECLARE_OPERATORS_FOR_FLAGS(SampleUtil::CLIP_STATUS);
-
-#endif /* MIXXX_UTIL_SAMPLE_H */
