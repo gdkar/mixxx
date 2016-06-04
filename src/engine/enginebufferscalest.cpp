@@ -20,7 +20,7 @@
 // Fixes redefinition warnings from SoundTouch.
 #undef TRUE
 #undef FALSE
-#include <SoundTouch.h>
+#include "SoundTouch.h"
 
 #include "control/controlobject.h"
 #include "engine/engineobject.h"

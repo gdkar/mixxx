@@ -137,17 +137,13 @@ class MixxxBuild(object):
         toolpath = ['#build/']
         extra_arguments = {}
         import depends
-        if int(Script.ARGUMENTS.get('qt5', 0)):
-            tools.append('qt5')
-            if self.machine_is_64bit:
-                default_qtdir = depends.Qt.DEFAULT_QT5DIRS64.get(
-                    self.platform, '')
-            else:
-                default_qtdir = depends.Qt.DEFAULT_QT5DIRS32.get(
-                    self.platform, '')
+        tools.append('qt5')
+        if self.machine_is_64bit:
+            default_qtdir = depends.Qt.DEFAULT_QT5DIRS64.get(
+                self.platform, '')
         else:
-            tools.append('qt4')
-            default_qtdir = depends.Qt.DEFAULT_QT4DIRS.get(self.platform, '')
+            default_qtdir = depends.Qt.DEFAULT_QT5DIRS32.get(
+                self.platform, '')
         tools.append('protoc')
 
         # Try fallback to pkg-config on Linux
@@ -165,14 +161,11 @@ class MixxxBuild(object):
 
         # Validate the specified qtdir exists
         if not os.path.isdir(qtdir):
-            logging.error("QT path does not exist or QT4 is not installed.")
+            logging.error("QT path does not exist or QT5 is not installed.")
             logging.error(
                 "Please specify your QT path by running 'scons qtdir=[path]'")
             Script.Exit(1)
-        # And that it doesn't contain qt3
-        elif qtdir.find("qt3") != -1 or qtdir.find("qt/3") != -1:
-            logging.error("Mixxx now requires QT4 instead of QT3 - please use your QT4 path with the qtdir build flag.")
-            Script.Exit(1)
+
         logging.info("Qt path: %s" % qtdir)
 
         # Previously this wasn't done for OSX, but I'm not sure why
@@ -411,7 +404,7 @@ class MixxxBuild(object):
         vars.Add('prefix', 'Set to your install prefix', '/usr/local')
         vars.Add('virtualize',
                  'Dynamically swap out the build directory when switching Git branches.', 1)
-        vars.Add('qtdir', 'Set to your QT4 directory', '/usr/share/qt4')
+        vars.Add('qtdir', 'Set to your QT5 directory', '/usr/share/qt5')
         vars.Add('qt_sqlite_plugin', 'Set to 1 to package the Qt SQLite plugin.'
                  '\n           Set to 0 if SQLite support is compiled into QtSQL.', 0)
         vars.Add('target',

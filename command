@@ -1,1 +1,4 @@
-CFLAGS="$CFLAGS -fPIC -DPIC " CCFLAGS=' -fPIC -D__PIC__=1 -O3 -Ofast -g -ggdb -march=native ' CXXFLAGS=' -fPIC -DPIC  -Wno-error -U__PIE__ -O3 -Ofast -g  -ggdb -march=native ' LDFLAGS=' -L/usr/local/lib -L/usr/lib -L/usr/lib/x87_64-linux-gnu ' scons optimize=native qt5=1 qdebug=1 localecompare=0 opengles=0 $@
+#! /usr/bin/env sh
+export CFLAGS='$CFLAGS -fPIC -O3 -Ofast -g -ggdb -march=native -std=gnu11 ' 
+export CXXFLAGS='$CXXFLAGS -fPIC -Wno-error -O3 -Ofast -g  -ggdb -march=native -std=gnu++14 '
+scons optimize=native qt5=1 qdebug=1 localecompare=0 opengles=0 $@ ffmpeg=0

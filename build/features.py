@@ -710,13 +710,6 @@ class Verbose(Feature):
             build.env['LDMODULECOMSTR'] = '[LD] $TARGET'
             build.env['LINKCOMSTR'] = '[LD] $TARGET'
 
-            build.env['QT4_LUPDATECOMSTR'] = '[LUPDATE] $SOURCE'
-            build.env['QT4_LRELEASECOMSTR'] = '[LRELEASE] $SOURCE'
-            build.env['QT4_QRCCOMSTR'] = '[QRC] $SOURCE'
-            build.env['QT4_UICCOMSTR'] = '[UIC4] $SOURCE'
-            build.env['QT4_MOCFROMHCOMSTR'] = '[MOC] $SOURCE'
-            build.env['QT4_MOCFROMCXXCOMSTR'] = '[MOC] $SOURCE'
-
             build.env['QT5_LUPDATECOMSTR'] = '[LUPDATE] $SOURCE'
             build.env['QT5_LRELEASECOMSTR'] = '[LRELEASE] $SOURCE'
             build.env['QT5_QRCCOMSTR'] = '[QRC] $SOURCE'
@@ -920,11 +913,6 @@ class FFMPEG(Feature):
                                 'It can be separated from main package so'
                                 'check your operating system packages.')
 
-            # Needed to build new FFmpeg
-            build.env.Append(CCFLAGS='-D__STDC_CONSTANT_MACROS')
-            build.env.Append(CCFLAGS='-D__STDC_LIMIT_MACROS')
-            build.env.Append(CCFLAGS='-D__STDC_FORMAT_MACROS')
-
             # Grabs the libs and cflags for FFmpeg
             build.env.ParseConfig('pkg-config libavcodec --silence-errors \
                                   --cflags --libs')
@@ -940,10 +928,6 @@ class FFMPEG(Feature):
             # aptitude install libavcodec-dev libavformat-dev liba52-0.7.4-dev
             # libdts-dev
             # Append some stuff to CFLAGS in Windows also
-            build.env.Append(CCFLAGS='-D__STDC_CONSTANT_MACROS')
-            build.env.Append(CCFLAGS='-D__STDC_LIMIT_MACROS')
-            build.env.Append(CCFLAGS='-D__STDC_FORMAT_MACROS')
-
             build.env.Append(LIBS='avcodec')
             build.env.Append(LIBS='avformat')
             build.env.Append(LIBS='avutil')
@@ -967,13 +951,15 @@ class FFMPEG(Feature):
                 and build.toolchain_is_gnu:
             build.env.Append(CPPPATH=os.path.join(build.crosscompile_root,
                                                   'include', 'ffmpeg'))
+        build.env.Append(CPPPPATH='#/lib/libff')
 
     def sources(self, build):
         return ['sources/soundsourceffmpeg.cpp',
-                'encoder/encoderffmpegresample.cpp',
-                'encoder/encoderffmpegcore.cpp',
-                'encoder/encoderffmpegmp3.cpp',
-                'encoder/encoderffmpegvorbis.cpp']
+#                'encoder/encoderffmpegresample.cpp',
+#                'encoder/encoderffmpegcore.cpp',
+#                'encoder/encoderffmpegmp3.cpp',
+#                'encoder/encoderffmpegvorbis.cpp'
+                ]
 
 
 class Optimize(Feature):

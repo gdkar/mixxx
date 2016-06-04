@@ -180,11 +180,6 @@ class FLAC(Dependence):
 
 
 class Qt(Dependence):
-    DEFAULT_QT4DIRS = {'linux': '/usr/share/qt4',
-                       'bsd': '/usr/local/lib/qt4',
-                       'osx': '/Library/Frameworks',
-                       'windows': 'C:\\qt\\4.6.0'}
-
     DEFAULT_QT5DIRS64 = {'linux': '/usr/lib/x86_64-linux-gnu/qt5',
                          'osx': '/Library/Frameworks',
                          'windows': 'C:\\qt\\5.0.1'}
@@ -261,9 +256,8 @@ class Qt(Dependence):
         else:
             build.env.Append(CPPDEFINES='QT_SHARED')
         
-        if qt5:
-            # Enable qt4 support.
-            build.env.Append(CPPDEFINES='QT_DISABLE_DEPRECATED_BEFORE')
+        build.env.Append(CPPDEFINES=['QT_SHARED','QT_TABLET_SUPPORT'])
+        build.env.Append(CPPDEFINES='QT_DISABLE_DEPRECATED_BEFORE')
 
         # Set qt_sqlite_plugin flag if we should package the Qt SQLite plugin.
         build.flags['qt_sqlite_plugin'] = util.get_flags(
@@ -276,21 +270,14 @@ class Qt(Dependence):
 
         # Enable Qt include paths
         if build.platform_is_linux:
-            if qt5 and not conf.CheckForPKG('Qt5Core', '5.0'):
+            if not conf.CheckForPKG('Qt5Core', '5.0'):
                 raise Exception('Qt >= 5.0 not found')
-            elif not qt5 and not conf.CheckForPKG('QtCore', '4.6'):
-                raise Exception('QT >= 4.6 not found')
 
             # This automatically converts QtXXX to Qt5XXX where appropriate.
-            if qt5:
-                build.env.EnableQt5Modules(qt_modules, debug=False)
-            else:
-                build.env.EnableQt4Modules(qt_modules, debug=False)
+            build.env.EnableQt5Modules(qt_modules, debug=False)
 
-            if qt5:
-                # Note that -reduce-relocations is enabled by default in Qt5.
-                # So we must build the code with position independent code
-                build.env.Append(CCFLAGS='-fPIC')
+
+            build.env.Append(CCFLAGS='-fPIC')
 
         elif build.platform_is_bsd:
             build.env.Append(LIBS=qt_modules)
@@ -315,50 +302,35 @@ class Qt(Dependence):
             build.env.Append(CCFLAGS=['-F%s' % os.path.join(framework_path)])
             build.env.Append(LINKFLAGS=['-F%s' % os.path.join(framework_path)])
 
-            # Copied verbatim from qt4.py and qt5.py.
-            # TODO(rryan): Get our fixes merged upstream so we can use qt4.py
-            # and qt5.py for OS X.
-            qt4_module_defines = {
-                'QtScript'   : ['QT_SCRIPT_LIB'],
-                'QtSvg'      : ['QT_SVG_LIB'],
-                'Qt3Support' : ['QT_QT3SUPPORT_LIB','QT3_SUPPORT'],
-                'QtSql'      : ['QT_SQL_LIB'],
-                'QtXml'      : ['QT_XML_LIB'],
-                'QtOpenGL'   : ['QT_OPENGL_LIB'],
-                'QtGui'      : ['QT_GUI_LIB'],
-                'QtNetwork'  : ['QT_NETWORK_LIB'],
-                'QtCore'     : ['QT_CORE_LIB'],
-            }
             qt5_module_defines = {
                 'QtScript'   : ['QT_SCRIPT_LIB'],
                 'QtSvg'      : ['QT_SVG_LIB'],
                 'QtSql'      : ['QT_SQL_LIB'],
                 'QtXml'      : ['QT_XML_LIB'],
                 'QtOpenGL'   : ['QT_OPENGL_LIB'],
+                'QtQml'      : ['QT_QML_LIB'],
+                'QtConcurrent'      : ['QT_CONCURRENT_LIB'],
+                'QtQuick'   : ['QT_QUICK_LIB'],
+                'QtQuickControls'   : ['QT_QUICK_CONTROLS_LIB'],
+                'QtQmlDevTools':['QT_QML_DEV_TOOLS_LIB'],
+                'QtMultimedia':['QT_MULTIMEDIA_LIB'],
                 'QtGui'      : ['QT_GUI_LIB'],
                 'QtNetwork'  : ['QT_NETWORK_LIB'],
                 'QtCore'     : ['QT_CORE_LIB'],
                 'QtWidgets'  : ['QT_WIDGETS_LIB'],
             }
 
-            module_defines = qt5_module_defines if qt5 else qt4_module_defines
+            module_defines = qt5_module_defines
             for module in qt_modules:
                 build.env.AppendUnique(CPPDEFINES=module_defines.get(module, []))
 
-            if qt5:
-                build.env["QT5_MOCCPPPATH"] = build.env["CPPPATH"]
-            else:
-                build.env["QT4_MOCCPPPATH"] = build.env["CPPPATH"]
+            build.env["QT5_MOCCPPPATH"] = build.env["CPPPATH"]
         elif build.platform_is_windows:
             # This automatically converts QtCore to QtCore[45][d] where
             # appropriate.
-            if qt5:
-                build.env.EnableQt5Modules(qt_modules,
-                                           staticdeps=build.static_qt,
-                                           debug=build.build_is_debug)
-            else:
-                build.env.EnableQt4Modules(qt_modules,
-                                           staticdeps=build.static_qt,
+            build.env.EnableQt5Modules(qt_modules,
+                                        staticdeps=build.static_qt,
+                                        debug=build.build_is_debug)
                                            debug=build.build_is_debug)
 
             if build.static_qt:
@@ -493,10 +465,9 @@ class SoundTouch(Dependence):
 
         if build.platform_is_linux:
             # Try using system lib
-            if conf.CheckForPKG('soundtouch', '1.8.0'):
+            if conf.CheckForPKG('soundtouch', '1.9.2'):
                 # System Lib found
-                build.env.ParseConfig('pkg-config soundtouch --silence-errors \
-                                      --cflags --libs')
+                build.env.ParseConfig('pkg-config soundtouch --silence-errors --cflags --libs')
                 self.INTERNAL_LINK = False
 
         if self.INTERNAL_LINK:
