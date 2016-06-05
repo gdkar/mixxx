@@ -758,7 +758,7 @@ vector<int> TempoTrack::process( vector <double> DF,
 
 	m_DFConditioning->process( m_rawDFFrame, m_smoothDFFrame );
 
-	m_correlator.doAutoUnBiased( m_smoothDFFrame, m_frameACF, m_winLength );
+        Correlation::UnbiasedAutoCorrelate( m_smoothDFFrame, m_smoothDFFrame + m_winLength, m_frameACF);
 		
 	periodP[ TTLoopIndex ] = tempoMM( m_frameACF, RW, 0 );
 

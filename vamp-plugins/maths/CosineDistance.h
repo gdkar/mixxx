@@ -16,22 +16,24 @@
 #ifndef COSINEDISTANCE_H
 #define COSINEDISTANCE_H
 
-#include <vector>
-#include <math.h>
+#include <cmath>
+#include <limits>
+#include <utility>
+#include <numeric>
+#include <iterator>
+#include <algorithm>
 
-using std::vector;
-
-class CosineDistance
+template<class ForwardIt>
+std::iterator_traits<ForwardIt>::value_type CosineDistance(ForwardIt beg0,ForwardIt end0, ForwardIt beg1)
 {
-public:
-    CosineDistance() { }
-    ~CosineDistance() { }
+    using restype = std::iterator_traits<ForwardIt>::value_type;
+    auto acc0 = restype(0), acc1 = restype(0), accp = restype(0);
+    for(auto cur0 = beg0, cur1 = beg1; cur0 != end0; cur0++,cur1++)
+        accp += cur0 * cur1; acc0 += cur0 * cur0; acc1 += cur1 * cur1;
 
-    double distance(const vector<double> &v1, const vector<double> &v2);
-
-protected:
-    double dist, dDenTot, dDen1, dDen2, dSum1;
-};
+    return restype(1) - accp
+        / std::sqrt(std::abs(acc0 * acc1) + std::numeric_limits<restype>::epsilon());
+}
 
 #endif
 

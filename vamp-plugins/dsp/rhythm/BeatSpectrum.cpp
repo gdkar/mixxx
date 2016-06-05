@@ -29,7 +29,6 @@ vector<double> BeatSpectrum::process(const vector<vector<double> > &m)
     vector<double> v(sz);
     for (i = 0; i < sz; ++i) v[i] = 0.0;
 
-    CosineDistance cd;
 
     for (i = origin; i < origin + sz; ++i) {
 
@@ -37,7 +36,7 @@ vector<double> BeatSpectrum::process(const vector<vector<double> > &m)
 
         for (j = i + 1; j < i + sz + 1; ++j) {
 
-            v[k++] += cd.distance(m[i], m[j]);
+            v[k++] += CosineDistance(m[i].begin(),m[i].end(),m[j].begin());
         }
     }
 
