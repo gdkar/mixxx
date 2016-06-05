@@ -27,7 +27,8 @@ static inline bool useAlignedAlloc() {
 }
 
 // static
-CSAMPLE* SampleUtil::alloc(int size) {
+CSAMPLE* SampleUtil::alloc(int size)
+{
     // To speed up vectorization we align our sample buffers to 16-byte (128
     // bit) boundaries so that vectorized loops doesn't have to do a serial
     // ramp-up before going parallel.
@@ -47,7 +48,8 @@ CSAMPLE* SampleUtil::alloc(int size) {
     return new CSAMPLE[size];
 }
 
-void SampleUtil::free(CSAMPLE* pBuffer) {
+void SampleUtil::free(CSAMPLE* pBuffer)
+{
     delete[] pBuffer;
 }
 
@@ -101,14 +103,14 @@ void SampleUtil::applyRampingGain(CSAMPLE *pBuffer, CSAMPLE_GAIN gain_pre, CSAMP
 }
 // static
 void SampleUtil::applyAlternatingGain(CSAMPLE* pBuffer, CSAMPLE gain1,
-        CSAMPLE gain2, int iNumSamples) {
+        CSAMPLE gain2, int iNumSamples)
+{
     // This handles gain1 == CSAMPLE_GAIN_ONE && gain2 == CSAMPLE_GAIN_ONE as well.
-    if (gain1 == gain2) {
+    if (gain1 == gain2)
         return applyGain(pBuffer, gain1, iNumSamples);
-    }
     // note: LOOP VECTORIZED.
     for (int i = 0; i < iNumSamples / 2; ++i) {
-        pBuffer[i * 2] *= gain1;
+        pBuffer[i * 2]     *= gain1;
         pBuffer[i * 2 + 1] *= gain2;
     }
 }
@@ -136,9 +138,8 @@ void SampleUtil::convertS16ToFloat32(CSAMPLE*  pDest, const SAMPLE*  pSrc,
     DEBUG_ASSERT(-SAMPLE_MIN >= SAMPLE_MAX);
     const CSAMPLE kConversionFactor = -SAMPLE_MIN;
     // note: LOOP VECTORIZED.
-    for (int i = 0; i < iNumSamples; ++i) {
+    for (int i = 0; i < iNumSamples; ++i)
         pDest[i] = CSAMPLE(pSrc[i]) / kConversionFactor;
-    }
 }
 
 //static
@@ -146,9 +147,8 @@ void SampleUtil::convertFloat32ToS16(SAMPLE* pDest, const CSAMPLE* pSrc,
         unsigned int iNumSamples) {
     DEBUG_ASSERT(-SAMPLE_MIN >= SAMPLE_MAX);
     const CSAMPLE kConversionFactor = -SAMPLE_MIN;
-    for (unsigned int i = 0; i < iNumSamples; ++i) {
+    for (unsigned int i = 0; i < iNumSamples; ++i)
         pDest[i] = SAMPLE(pSrc[i] * kConversionFactor);
-    }
 }
 
 // static
@@ -173,12 +173,10 @@ SampleUtil::CLIP_STATUS SampleUtil::sumAbsPerChannel(CSAMPLE* pfAbsL, CSAMPLE* p
     *pfAbsL = fAbsL;
     *pfAbsR = fAbsR;
     SampleUtil::CLIP_STATUS clipping = SampleUtil::NO_CLIPPING;
-    if (clippedL > 0) {
+    if (clippedL > 0)
         clipping |= SampleUtil::CLIPPING_LEFT;
-    }
-    if (clippedR > 0) {
+    if (clippedR > 0)
         clipping |= SampleUtil::CLIPPING_RIGHT;
-    }
     return clipping;
 }
 
@@ -186,9 +184,8 @@ SampleUtil::CLIP_STATUS SampleUtil::sumAbsPerChannel(CSAMPLE* pfAbsL, CSAMPLE* p
 void SampleUtil::copyClampBuffer(CSAMPLE*  pDest, const  CSAMPLE* pSrc,
         int iNumSamples) {
     // note: LOOP VECTORIZED.
-    for (int i = 0; i < iNumSamples; ++i) {
+    for (int i = 0; i < iNumSamples; ++i)
         pDest[i] = clampSample(pSrc[i]);
-    }
 }
 
 // static

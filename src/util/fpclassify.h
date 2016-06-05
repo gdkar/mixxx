@@ -1,15 +1,6 @@
 #ifndef UTIL_FPCLASSIFY_H
 #define UTIL_FPCLASSIFY_H
 
-#ifdef _MSC_VER
-
-// VC++ uses _isnan() instead of isnan() and !_finite instead of isinf.
-#include <float.h>
-#define isnan(x) _isnan(x)
-#define isinf(x) (!_finite(x))
-
-#else
-
 // We define 
 // these as macros to prevent clashing with c++11 built-ins in the global
 // namespace. If you say "using std::isnan;" then this will fail to build with
@@ -19,19 +10,11 @@
 #include <cmath>
 #include <limits>
 
-#if 0
-#define isnan util_isnan
-#define isinf util_isinf
-#define isnormal util_isnormal
-#define fpclassify util_fpclassify
-#define isfinite util_isfinite
-#endif
+
 using std::isfinite;
 using std::isnormal;
 using std::isnan;
 using std::fpclassify;
 using std::isinf;
-
-#endif
 
 #endif // UTIL_FPCLASSIFY_H

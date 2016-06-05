@@ -28,24 +28,23 @@ class SampleUtil {
 
     // Sets every sample in pBuffer to zero
     inline
-    static void clear(CSAMPLE* pBuffer, int iNumSamples) {
+    static void clear(CSAMPLE* pBuffer, int iNumSamples)
+    {
         // Special case: This works, because the binary representation
         // of 0.0f is 0!
-        memset(pBuffer, 0, sizeof(*pBuffer) * iNumSamples);
-        //fill(pBuffer, CSAMPLE_ZERO, iNumSamples);
+        std::fill(pBuffer, pBuffer + iNumSamples, 0);
     }
-
     // Sets every sample in pBuffer to value
     inline
-    static void fill(CSAMPLE* pBuffer, CSAMPLE value,
-            int iNumSamples) {
+    static void fill(CSAMPLE* pBuffer, CSAMPLE value, int iNumSamples)
+    {
         std::fill(pBuffer, pBuffer + iNumSamples, value);
     }
 
     // Copies every sample from pSrc to pDest
     inline
-    static void copy(CSAMPLE*  pDest, const CSAMPLE*  pSrc,
-            int iNumSamples) {
+    static void copy(CSAMPLE*  pDest, const CSAMPLE*  pSrc, int iNumSamples)
+    {
         // Benchmark results on 32 bit SSE2 Atom Cpu (Linux)
         // memcpy 7263 ns
         // std::copy 9289 ns
@@ -63,26 +62,18 @@ class SampleUtil {
         // requires some checks that can be omitted when inlining the
         // following vectorized loop. Btw.: memcpy() calls from the Qt
         // library are not using SSE istructions.
-#ifdef __SSE__
-        if (sizeof(void*) == 4) { // 32 bit
-            // note: LOOP VECTORIZED.
-            for (int i = 0; i < iNumSamples; ++i) { // 571 ns
-                pDest[i] = pSrc[i];
-            }
-        } else
-#endif
-        {
-            memcpy(pDest, pSrc, iNumSamples * sizeof(CSAMPLE));
-        }
+        std::copy(pSrc, pSrc + iNumSamples, pDest);
     }
 
     // Limits a CSAMPLE value to the valid range [-CSAMPLE_PEAK, CSAMPLE_PEAK]
-    inline static CSAMPLE clampSample(CSAMPLE in) {
+    inline static CSAMPLE clampSample(CSAMPLE in)
+    {
         return CSAMPLE_clamp(in);
     }
 
     // Limits a CSAMPLE_GAIN value to the valid range [CSAMPLE_GAIN_MIN, CSAMPLE_GAIN_MAX]
-    inline static CSAMPLE clampGain(CSAMPLE_GAIN in) {
+    inline static CSAMPLE clampGain(CSAMPLE_GAIN in)
+    {
         return CSAMPLE_GAIN_clamp(in);
     }
 
