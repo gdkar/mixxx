@@ -24,7 +24,8 @@
 #include "errordialoghandler.h"
 
 EncoderMp3::EncoderMp3(EncoderCallback* pCallback)
-  : m_lameFlags(NULL),
+  : Encoder(pCallback),
+    m_lameFlags(NULL),
     m_metaDataTitle(NULL),
     m_metaDataArtist(NULL),
     m_metaDataAlbum(NULL),
@@ -47,7 +48,6 @@ EncoderMp3::EncoderMp3(EncoderCallback* pCallback)
      *
      */
     m_bufferInSize(0),
-    m_pCallback(pCallback),
     m_library(NULL) {
     m_bufferIn[0] = NULL;
     m_bufferIn[1] = NULL;
@@ -279,8 +279,7 @@ void EncoderMp3::flush() {
     if (rc < 0) {
         return;
     }
-    //end encoded audio to broadcast or file
-    m_pCallback->write(NULL, m_bufferOut, 0, rc);
+    write(m_bufferOut,rc);
 }
 
 void EncoderMp3::encodeBuffer(const CSAMPLE *samples, const int size) {
@@ -306,8 +305,7 @@ void EncoderMp3::encodeBuffer(const CSAMPLE *samples, const int size) {
     if (rc < 0) {
         return;
     }
-    //write encoded audio to broadcast stream or file
-    m_pCallback->write(NULL, m_bufferOut, 0, rc);
+    write(m_bufferOut, rc);
 }
 
 void EncoderMp3::initStream() {

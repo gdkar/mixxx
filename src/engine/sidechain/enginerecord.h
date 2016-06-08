@@ -47,7 +47,7 @@ class EngineRecord : public QObject, public EncoderCallback, public SideChainWor
     void shutdown() {}
 
     // writes compressed audio to file
-    void write(unsigned char *header, unsigned char *body, int headerLen, int bodyLen);
+    void write(const uint8_t *buf, size_t buflen);
     // creates or opens an audio file
     bool openFile();
     // closes the audio file

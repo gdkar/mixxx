@@ -554,25 +554,16 @@ void EngineBroadcast::processDisconnect() {
     }
 }
 
-void EngineBroadcast::write(unsigned char *header, unsigned char *body,
-                            int headerLen, int bodyLen) {
+void EngineBroadcast::write(const uint8_t *buf, size_t buflen)
+{
     setFunctionCode(7);
-    if (!m_pShout) {
+    if (!m_pShout)
         return;
-    }
 
     if (m_iShoutStatus == SHOUTERR_CONNECTED) {
         // Send header if there is one
-        if (headerLen > 0) {
-            if(!writeSingle(header, headerLen)) {
-                return;
-            }
-        }
-
-        if(!writeSingle(body, bodyLen)) {
+        if(!writeSingle(buf, buflen))
             return;
-        }
-
         ssize_t queuelen = shout_queuelen(m_pShout);
         if (queuelen > 0) {
             qDebug() << "shout_queuelen" << queuelen;

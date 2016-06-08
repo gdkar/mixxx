@@ -37,10 +37,10 @@ extern "C" {
 #include <libavutil/mathematics.h>
 #include <libavutil/opt.h>
 }
+#include <tinyav/tinyav.hpp>
 
 #include <QByteArray>
 #include <QBuffer>
-
 #include <QLibrary>
 
 #include "util/types.h"
@@ -51,13 +51,8 @@ class EncoderCallback;
 
 class EncoderFfmpegCore : public Encoder {
 public:
-#if LIBAVCODEC_VERSION_INT > 3544932
     EncoderFfmpegCore(EncoderCallback* pCallback=NULL,
                       AVCodecID codec = AV_CODEC_ID_MP2);
-#else
-    EncoderFfmpegCore(EncoderCallback* pCallback=NULL,
-                      CodecID codec = CODEC_ID_MP2);
-#endif
     ~EncoderFfmpegCore();
     int initEncoder(int bitrate, int samplerate);
     void encodeBuffer(const CSAMPLE *samples, const int size);
@@ -74,13 +69,8 @@ private:
     int writeAudioFrame(AVFormatContext *oc, AVStream *st);
     void closeAudio(AVStream *st);
     void openAudio(AVCodec *codec, AVStream *st);
-#if LIBAVCODEC_VERSION_INT > 3544932
     AVStream *addStream(AVFormatContext *oc, AVCodec **codec,
                         enum AVCodecID codec_id);
-#else
-    AVStream *addStream(AVFormatContext *oc, AVCodec **codec,
-                        enum CodecID codec_id);
-#endif
     bool m_bStreamInitialized;
 
     EncoderCallback* m_pCallback;

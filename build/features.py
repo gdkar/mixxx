@@ -961,6 +961,55 @@ class FFMPEG(Feature):
 #                'encoder/encoderffmpegvorbis.cpp'
                 ]
 
+class TinyAV(Feature):
+    def description(self):
+        return "TinyAV decoding / encoding library ( using ffmpeg. )"
+    def enabled(self, build):
+        build.flags['tinyav'] = util.get_flags(build.env, 'tinyav', 1)
+        if int(build.flags['tinyav']):
+            return True
+        return False
+
+    def add_options(self, build, vars):
+        vars.Add('tinyav', 'Set to 1 to enable the TinyAV ffmpeg wrapper.')
+
+    def configure(self, build, conf):
+        if not self.enabled(build):
+            return
+        # Supported version are FFmpeg 0.11-2.x and Avconv 0.8.x-11.x
+        # FFmpeg is multimedia library that can be found http://ffmpeg.org/
+        # Avconv is fork of FFmpeg that is used mainly in Debian and Ubuntu
+        # that can be found http://libav.org
+        if build.platform_is_linux or build.platform_is_osx \
+                or build.platform_is_bsd:
+            # Check for libavcodec, libavformat
+            # I just randomly picked version numbers lower than mine for this
+            if not conf.CheckForPKG('libavcodec', '53.35.0'):
+                raise Exception('Missing libavcodec or it\'s too old! It can'
+                                'be separated from main package so check your'
+                                'operating system packages.')
+            if not conf.CheckForPKG('libavformat', '53.21.0'):
+                raise Exception('Missing libavformat  or it\'s too old!'
+                                'It can be separated from main package so'
+                                'check your operating system packages.')
+
+            # Grabs the libs and cflags for FFmpeg
+            build.env.ParseConfig('pkg-config libavcodec --silence-errors \
+                                  --cflags --libs')
+            build.env.ParseConfig('pkg-config libavformat --silence-errors \
+                                   --cflags --libs')
+            build.env.ParseConfig('pkg-config libavutil --silence-errors \
+                                   --cflags --libs')
+            build.env.ParseConfig('pkg-config libavfilter --silence-errors \
+                                   --cflags --libs')
+            build.env.ParseConfig('pkg-config libswresample--silence-errors \
+                                   --cflags --libs')
+            build.env.ParseConfig('pkg-config libavdevice --silence-errors \
+                                   --cflags --libs')
+
+            build.env.Append(CPPDEFINES='__HAVE_TINYAV__')
+            build.env.Append(CPPPPATH='#/lib/tinyav/')
+            self.status = "Enabled"
 
 class Optimize(Feature):
     LEVEL_OFF = 'off'

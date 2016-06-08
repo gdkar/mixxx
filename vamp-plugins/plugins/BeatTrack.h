@@ -38,8 +38,8 @@ public:
     std::string getCopyright() const;
 
     ParameterList getParameterDescriptors() const;
-    float getParameter(std::string) const;
-    void setParameter(std::string, float);
+    float  getParameter(std::string) const;
+    void   setParameter(std::string, float);
 
     size_t getPreferredStepSize() const;
     size_t getPreferredBlockSize() const;
@@ -67,6 +67,5 @@ protected:
     FeatureSet beatTrackOld();
     FeatureSet beatTrackNew();
 };
-
 
 #endif

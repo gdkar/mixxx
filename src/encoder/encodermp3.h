@@ -28,7 +28,7 @@ class EncoderCallback;
 
 class EncoderMp3 : public Encoder {
   public:
-    EncoderMp3(EncoderCallback* callback=NULL);
+    EncoderMp3(EncoderCallback* callback=nullptr);
     virtual ~EncoderMp3();
 
     int initEncoder(int bitrate, int samplerate);
@@ -113,7 +113,6 @@ class EncoderMp3 : public Encoder {
     float *m_bufferIn[2];
     int m_bufferInSize;
 
-    EncoderCallback* m_pCallback;
     TrackPointer m_pMetaData;
     QLibrary* m_library;
     QFile m_mp3file;

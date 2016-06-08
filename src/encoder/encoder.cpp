@@ -16,12 +16,15 @@
 
 #include "encoder/encoder.h"
 
-Encoder::Encoder() {
+Encoder::Encoder(EncoderCallback *cb )
+: m_pCallback(cb)
+{ }
+Encoder::~Encoder() = default;
+void Encoder::write(const uint8_t* buf, size_t buflen)
+{
+    if(m_pCallback)
+        m_pCallback->write(buf,buflen);
 }
-
-Encoder::~Encoder() {
-}
-
 int Encoder::convertToBitrate(int quality) {
     switch(quality)
     {

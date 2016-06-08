@@ -42,14 +42,14 @@ TempoTrackV2::filter_df(d_vec_t &df)
     b[1] = 0.4131;
     b[2] = 0.2066;
 
-    double inp1 = 0.;
-    double inp2 = 0.;
-    double out1 = 0.;
-    double out2 = 0.;
+    auto inp1 = 0.;
+    auto inp2 = 0.;
+    auto out1 = 0.;
+    auto out2 = 0.;
 
 
     // forwards filtering
-    for (unsigned int i = 0;i < df.size();i++)
+    for (auto i = 0ul;i < df.size();i++)
     {
         lp_df[i] =  b[0]*df[i] + b[1]*inp1 + b[2]*inp2 - a[1]*out1 - a[2]*out2;
         inp2 = inp1;
@@ -60,7 +60,7 @@ TempoTrackV2::filter_df(d_vec_t &df)
 
     // copy forwards filtering to df...
     // but, time-reversed, ready for backwards filtering
-    for (unsigned int i = 0;i < df.size();i++)
+    for (auto i = 0ul;i < df.size();i++)
     {
         df[i] = lp_df[df.size()-i-1];
     }

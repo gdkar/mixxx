@@ -138,7 +138,7 @@ void EncoderFfmpegCore::encodeBuffer(const CSAMPLE *samples, const int size) {
         l_iBufferLen = avio_close_dyn_buf(m_pEncodeFormatCtx->pb,
                                           (uint8_t**)(&l_strBuffer));
         m_pCallback->write(NULL, l_strBuffer, 0, l_iBufferLen);
-        av_free(l_strBuffer);
+        av_freep(&l_strBuffer);
     }
 
     while (l_iLeft > (m_iFltAudioCpyLen / 4)) {

@@ -22,6 +22,7 @@
 #include <vorbis/vorbisenc.h>
 
 #include "util/types.h"
+#include "util/random.h"
 #include "encoder/encoder.h"
 #include "track/track.h"
 
@@ -55,12 +56,12 @@ class EncoderVorbis : public Encoder {
     vorbis_comment m_vcomment;  /* stores all user comments */
     bool m_header_write;
 
-    EncoderCallback* m_pCallback;
     TrackPointer m_pMetaData;
     char* m_metaDataTitle;
     char* m_metaDataArtist;
     char* m_metaDataAlbum;
     QFile m_file;
+    XorShift128Plus m_rand;
 };
 
 #endif

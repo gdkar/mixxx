@@ -17,13 +17,13 @@
 #ifndef ENCODER_H
 #define ENCODER_H
 
+#include "encoder/encodercallback.h"
 #include "util/types.h"
 
 class Encoder {
   public:
-    Encoder();
+    Encoder(EncoderCallback * cb = nullptr);
     virtual ~Encoder();
-
     virtual int initEncoder(int bitrate, int samplerate) = 0;
     // encodes the provided buffer of audio.
     virtual void encodeBuffer(const CSAMPLE *samples, const int size) = 0;
@@ -34,6 +34,9 @@ class Encoder {
     virtual void flush() = 0;
     /**converts an OGG quality measure from 1..10 to a bitrate **/
     static int convertToBitrate(int quality);
+  protected:
+    void write(const uint8_t *buf, size_t buflen);
+    EncoderCallback *m_pCallback{nullptr};
 };
 
 #endif // ENCODER_H

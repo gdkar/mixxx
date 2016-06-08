@@ -51,8 +51,7 @@ class EngineBroadcast
 
     // Called by the encoder in method 'encodebuffer()' to flush the stream to
     // the server.
-    void write(unsigned char *header, unsigned char *body,
-               int headerLen, int bodyLen);
+    void write(const uint8_t *buf,size_t buflen);
     /** connects to server **/
     bool serverConnect();
     bool serverDisconnect();

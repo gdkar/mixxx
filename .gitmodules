@@ -1,0 +1,3 @@
+[submodule "lib/tinyav"]
+	path = lib/tinyav
+	url = git@github.com:gdkar/tinyav.git

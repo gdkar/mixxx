@@ -261,22 +261,17 @@ void EngineRecord::writeCueLine() {
 }
 
 // Encoder calls this method to write compressed audio
-void EngineRecord::write(unsigned char *header, unsigned char *body,
-                         int headerLen, int bodyLen) {
-    if (!fileOpen()) {
+void EngineRecord::write(const uint8_t *buf, size_t buflen)
+{
+    if (!fileOpen())
         return;
-    }
-    // Relevant for OGG
-    if (headerLen > 0) {
-        m_dataStream.writeRawData((const char*) header, headerLen);
-    }
     // Always write body
-    m_dataStream.writeRawData((const char*) body, bodyLen);
-    emit(bytesRecorded((headerLen+bodyLen)));
+    m_dataStream.writeRawData((const char*) buf, buflen);
+    emit(bytesRecorded(buflen));
 
 }
-
-bool EngineRecord::fileOpen() {
+bool EngineRecord::fileOpen()
+{
     // Both encoder and file must be initialized.
     if (m_encoding == ENCODING_WAVE || m_encoding == ENCODING_AIFF) {
         return (m_pSndfile != NULL);
@@ -284,8 +279,8 @@ bool EngineRecord::fileOpen() {
         return (m_file.handle() != -1);
     }
 }
-
-bool EngineRecord::openFile() {
+bool EngineRecord::openFile()
+{
     // Unfortunately, we cannot use QFile for writing WAV and AIFF audio.
     if (m_encoding == ENCODING_WAVE || m_encoding == ENCODING_AIFF) {
         // set sfInfo
@@ -378,7 +373,7 @@ bool EngineRecord::openCueFile() {
 
 void EngineRecord::closeFile() {
     if (m_encoding == ENCODING_WAVE || m_encoding == ENCODING_AIFF) {
-        if (m_pSndfile != NULL) {
+        if (m_pSndfile ) {
             sf_close(m_pSndfile);
             m_pSndfile = NULL;
         }
@@ -394,7 +389,6 @@ void EngineRecord::closeFile() {
 }
 
 void EngineRecord::closeCueFile() {
-    if (m_cueFile.handle() != -1) {
+    if (m_cueFile.handle() != -1)
         m_cueFile.close();
-    }
 }

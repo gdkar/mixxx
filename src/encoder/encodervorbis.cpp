@@ -34,14 +34,16 @@ http://svn.xiph.org/trunk/vorbis/examples/encoder_example.c
 #include "encoder/encodervorbis.h"
 #include "encoder/encodercallback.h"
 #include "errordialoghandler.h"
-
+#include "util/random.h"
 EncoderVorbis::EncoderVorbis(EncoderCallback* pCallback)
-        : m_bStreamInitialized(false),
+        : Encoder(pCallback),
+          m_bStreamInitialized(false),
           m_header_write(false),
-          m_pCallback(pCallback),
-          m_metaDataTitle(NULL),
-          m_metaDataArtist(NULL),
-          m_metaDataAlbum(NULL){
+          m_metaDataTitle(nullptr),
+          m_metaDataArtist(nullptr),
+          m_metaDataAlbum(nullptr),
+          m_rand(rand(),rand())
+{
     m_vdsp.pcm_returned = 0;
     m_vdsp.preextrapolate = 0;
     m_vdsp.eofflag = 0;
@@ -55,7 +57,7 @@ EncoderVorbis::EncoderVorbis(EncoderCallback* pCallback)
     m_vdsp.time_bits = 0;
     m_vdsp.floor_bits = 0;
     m_vdsp.res_bits = 0;
-    m_vdsp.backend_state = NULL;
+    m_vdsp.backend_state = nullptr;
 
     m_vinfo.version = 0;
     m_vinfo.channels = 0;
@@ -64,12 +66,12 @@ EncoderVorbis::EncoderVorbis(EncoderCallback* pCallback)
     m_vinfo.bitrate_nominal = 0;
     m_vinfo.bitrate_lower = 0;
     m_vinfo.bitrate_window = 0;
-    m_vinfo.codec_setup = NULL;
+    m_vinfo.codec_setup = nullptr;
 
-    m_vcomment.user_comments = NULL;
-    m_vcomment.comment_lengths = NULL;
+    m_vcomment.user_comments = nullptr;
+    m_vcomment.comment_lengths = nullptr;
     m_vcomment.comments = 0;
-    m_vcomment.vendor = NULL;
+    m_vcomment.vendor = nullptr;
 }
 
 EncoderVorbis::~EncoderVorbis() {
@@ -83,7 +85,8 @@ EncoderVorbis::~EncoderVorbis() {
 }
 
 // call sendPackages() or write() after 'flush()' as outlined in enginebroadcast.cpp
-void EncoderVorbis::flush() {
+void EncoderVorbis::flush()
+{
     vorbis_analysis_wrote(&m_vdsp, 0);
     writePage();
 }
@@ -92,19 +95,10 @@ void EncoderVorbis::flush() {
   Get new random serial number
   -> returns random number
 */
-int EncoderVorbis::getSerial()
+int EncoderVorbis::getSerial() { return m_rand(); }
+
+void EncoderVorbis::writePage()
 {
-    static int prevSerial = 0;
-    int serial = rand();
-    while (prevSerial == serial)
-        serial = rand();
-    prevSerial = serial;
-    qDebug() << "RETURNING SERIAL " << serial;
-    return serial;
-}
-
-void EncoderVorbis::writePage() {
-
     /*
      * Vorbis streams begin with three headers; the initial header (with
      * most of the codec setup parameters) which is mandated by the Ogg
@@ -116,17 +110,16 @@ void EncoderVorbis::writePage() {
 
 
     // Write header only once after stream has been initialized
-    int result;
+    auto result = 0;
     if (m_header_write) {
-        while (true) {
-            result = ogg_stream_flush(&m_oggs, &m_oggpage);
-            if (result == 0)
-                break;
-            m_pCallback->write(m_oggpage.header, m_oggpage.body, m_oggpage.header_len, m_oggpage.body_len);
-        }
+        do{
+            if((result = ogg_stream_flush(&m_oggs, &m_oggpage))) {
+                write(m_oggpage.header, m_oggpage.header_len);
+                write(m_oggpage.body,   m_oggpage.body_len);
+            }
+        }while(result);
         m_header_write = false;
     }
-
     while (vorbis_analysis_blockout(&m_vdsp, &m_vblock) == 1) {
         vorbis_analysis(&m_vblock, 0);
         vorbis_bitrate_addblock(&m_vblock);
@@ -134,27 +127,26 @@ void EncoderVorbis::writePage() {
             // weld packet into bitstream
             ogg_stream_packetin(&m_oggs, &m_oggpacket);
             // write out pages
-            bool eos = false;
+            auto eos = false;
             while (!eos) {
-                int result = ogg_stream_pageout(&m_oggs, &m_oggpage);
+                auto result = ogg_stream_pageout(&m_oggs, &m_oggpage);
                 if (result == 0)
                     break;
-                m_pCallback->write(m_oggpage.header, m_oggpage.body,
-                                   m_oggpage.header_len, m_oggpage.body_len);
+                write(m_oggpage.header, m_oggpage.header_len);
+                write(m_oggpage.body,    m_oggpage.body_len);
                 if (ogg_page_eos(&m_oggpage))
                     eos = true;
             }
         }
     }
 }
-
-void EncoderVorbis::encodeBuffer(const CSAMPLE *samples, const int size) {
-    float **buffer = vorbis_analysis_buffer(&m_vdsp, size);
-
+void EncoderVorbis::encodeBuffer(const CSAMPLE *samples, const int size)
+{
+    auto buffer = vorbis_analysis_buffer(&m_vdsp, size);
     // Deinterleave samples. We use normalized floats in the engine [-1.0, 1.0]
     // and libvorbis expects samples in the range [-1.0, 1.0] so no conversion
     // is required.
-    for (int i = 0; i < size/2; ++i) {
+    for (auto i = 0; i < size/2; ++i) {
         buffer[0][i] = samples[i*2];
         buffer[1][i] = samples[i*2+1];
     }
@@ -174,28 +166,24 @@ void EncoderVorbis::updateMetaData(char* artist, char* title, char* album) {
     m_metaDataArtist = artist;
     m_metaDataAlbum = album;
 }
-
-void EncoderVorbis::initStream() {
+void EncoderVorbis::initStream()
+{
     // set up analysis state and auxiliary encoding storage
     vorbis_analysis_init(&m_vdsp, &m_vinfo);
     vorbis_block_init(&m_vdsp, &m_vblock);
-
     // set up packet-to-stream encoder; attach a random serial number
-    srand(time(0));
+    m_rand.s[0] ^= time(0);
+    (void)m_rand();
     ogg_stream_init(&m_oggs, getSerial());
-
     // add comment
     vorbis_comment_init(&m_vcomment);
     vorbis_comment_add_tag(&m_vcomment, "ENCODER", "mixxx/libvorbis");
-    if (m_metaDataArtist != NULL) {
+    if (m_metaDataArtist )
         vorbis_comment_add_tag(&m_vcomment, "ARTIST", m_metaDataArtist);
-    }
-    if (m_metaDataTitle != NULL) {
+    if (m_metaDataTitle )
         vorbis_comment_add_tag(&m_vcomment, "TITLE", m_metaDataTitle);
-    }
-    if (m_metaDataAlbum != NULL) {
+    if (m_metaDataAlbum )
         vorbis_comment_add_tag(&m_vcomment, "ALBUM", m_metaDataAlbum);
-    }
 
     // set up the vorbis headers
     ogg_packet headerInit;
@@ -212,16 +200,14 @@ void EncoderVorbis::initStream() {
     m_bStreamInitialized = true;
 }
 
-int EncoderVorbis::initEncoder(int bitrate, int samplerate) {
+int EncoderVorbis::initEncoder(int bitrate, int samplerate)
+{
     vorbis_info_init(&m_vinfo);
-
     // initialize VBR quality based mode
-    int ret = vorbis_encode_init(&m_vinfo, 2, samplerate, -1, bitrate*1000, -1);
-
+    auto ret = vorbis_encode_init(&m_vinfo, 2, samplerate, -1, bitrate*1000, -1);
     if (ret == 0) {
         initStream();
-    } else {
-        ret = -1;
-    };
-    return ret;
+        return 0;
+    }
+    return -1;
 }
