@@ -18,8 +18,6 @@
 
 #include <cmath>
 #include <limits>
-#include <climits>
-#include <cfloat>
 #include <numeric>
 #include <algorithm>
 

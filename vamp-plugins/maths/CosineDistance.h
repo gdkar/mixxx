@@ -27,10 +27,9 @@ template<class ForwardIt>
 std::iterator_traits<ForwardIt>::value_type CosineDistance(ForwardIt beg0,ForwardIt end0, ForwardIt beg1)
 {
     using restype = std::iterator_traits<ForwardIt>::value_type;
-    auto acc0 = restype(0), acc1 = restype(0), accp = restype(0);
-    for(auto cur0 = beg0, cur1 = beg1; cur0 != end0; cur0++,cur1++)
-        accp += cur0 * cur1; acc0 += cur0 * cur0; acc1 += cur1 * cur1;
-
+    auto acc0 = std::inner_product(beg0, end0, beg0 restype{0});
+    auto acc1 = std::inner_product(beg1, beg1 + std::distance(beg0,end0), beg1, restype{0});
+    auto accp = std::inner_product(beg0, end0, beg1, restype{0});
     return restype(1) - accp
         / std::sqrt(std::abs(acc0 * acc1) + std::numeric_limits<restype>::epsilon());
 }
