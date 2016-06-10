@@ -398,7 +398,6 @@ class Vamp(Feature):
             # For header includes
             build.env.Append(CPPPATH=[self.INTERNAL_VAMP_PATH])
             self.INTERNAL_LINK = True
-
         # Needed on Linux at least. Maybe needed elsewhere?
         if build.platform_is_linux:
             # Optionally link libdl Required for some distros.
@@ -904,14 +903,6 @@ class FFMPEG(Feature):
                 or build.platform_is_bsd:
             # Check for libavcodec, libavformat
             # I just randomly picked version numbers lower than mine for this
-            if not conf.CheckForPKG('libavcodec', '53.35.0'):
-                raise Exception('Missing libavcodec or it\'s too old! It can'
-                                'be separated from main package so check your'
-                                'operating system packages.')
-            if not conf.CheckForPKG('libavformat', '53.21.0'):
-                raise Exception('Missing libavformat  or it\'s too old!'
-                                'It can be separated from main package so'
-                                'check your operating system packages.')
 
             # Grabs the libs and cflags for FFmpeg
             build.env.ParseConfig('pkg-config libavcodec --silence-errors \
@@ -951,7 +942,7 @@ class FFMPEG(Feature):
                 and build.toolchain_is_gnu:
             build.env.Append(CPPPATH=os.path.join(build.crosscompile_root,
                                                   'include', 'ffmpeg'))
-        build.env.Append(CPPPPATH='#/lib/libff')
+        build.env.Append(CPPPATH='#/lib/libff')
 
     def sources(self, build):
         return ['sources/soundsourceffmpeg.cpp',
@@ -971,7 +962,7 @@ class TinyAV(Feature):
         return False
 
     def add_options(self, build, vars):
-        vars.Add('tinyav', 'Set to 1 to enable the TinyAV ffmpeg wrapper.')
+        vars.Add('tinyav', 'Set to 1 to enable the TinyAV ffmpeg wrapper.',0)
 
     def configure(self, build, conf):
         if not self.enabled(build):
@@ -984,15 +975,6 @@ class TinyAV(Feature):
                 or build.platform_is_bsd:
             # Check for libavcodec, libavformat
             # I just randomly picked version numbers lower than mine for this
-            if not conf.CheckForPKG('libavcodec', '53.35.0'):
-                raise Exception('Missing libavcodec or it\'s too old! It can'
-                                'be separated from main package so check your'
-                                'operating system packages.')
-            if not conf.CheckForPKG('libavformat', '53.21.0'):
-                raise Exception('Missing libavformat  or it\'s too old!'
-                                'It can be separated from main package so'
-                                'check your operating system packages.')
-
             # Grabs the libs and cflags for FFmpeg
             build.env.ParseConfig('pkg-config libavcodec --silence-errors \
                                   --cflags --libs')
@@ -1002,13 +984,13 @@ class TinyAV(Feature):
                                    --cflags --libs')
             build.env.ParseConfig('pkg-config libavfilter --silence-errors \
                                    --cflags --libs')
-            build.env.ParseConfig('pkg-config libswresample--silence-errors \
+            build.env.ParseConfig('pkg-config libswresample --silence-errors \
                                    --cflags --libs')
             build.env.ParseConfig('pkg-config libavdevice --silence-errors \
                                    --cflags --libs')
 
             build.env.Append(CPPDEFINES='__HAVE_TINYAV__')
-            build.env.Append(CPPPPATH='#/lib/tinyav/')
+            build.env.Append(CPPPATH='#/lib/tinyav/')
             self.status = "Enabled"
 
 class Optimize(Feature):

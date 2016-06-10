@@ -56,6 +56,7 @@ available_features = [features.Mad,
                       features.AddressSanitizer,
                       features.LocaleCompare,
                       features.Battery,
+                      features.TinyAV,
 
                       # "Features" of dubious quality
                       features.PerfTools,
