@@ -39,8 +39,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <math.h>
-#include <assert.h>
+#include <cmath>
+#include <numeric>
+#include <algorithm>
+#include <cassert>
 
 #include "PeakFinder.h"
 
@@ -50,42 +52,29 @@ using namespace soundtouch;
 
 
 PeakFinder::PeakFinder()
-{
-    minPos = maxPos = 0;
-}
+    :minPos(0)
+    ,maxPos(0)
+{ }
 
 
 // Finds real 'top' of a peak hump from neighnourhood of the given 'peakpos'.
 int PeakFinder::findTop(const float *data, int peakpos) const
 {
-    int i;
-    int start, end;
-    float refvalue;
-
-    refvalue = data[peakpos];
-
+    auto refvalue = data[peakpos];
     // seek within ±10 points
-    start = peakpos - 10;
-    if (start < minPos) start = minPos;
-    end = peakpos + 10;
-    if (end > maxPos) end = maxPos;
-
-    for (i = start; i <= end; i ++)
-    {
-        if (data[i] > refvalue)
-        {
-            peakpos = i;
-            refvalue = data[i];
-        }
-    }
-
+    auto start = peakpos - 10;
+    if (start < minPos)
+        start = minPos;
+    auto end = peakpos + 10;
+    if (end > maxPos)
+        end = maxPos;
+    auto it = std::max_element(&data[start],&data[end]);
+    peakpos = std::distance(data,it);
     // failure if max value is at edges of seek range => it's not peak, it's at slope.
-    if ((peakpos == start) || (peakpos == end)) return 0;
-
+    if ((peakpos == start) || (peakpos == end))
+        return 0;
     return peakpos;
 }
-
-
 // Finds 'ground level' of a peak hump by starting from 'peakpos' and proceeding
 // to direction defined by 'direction' until next 'hump' after minimum value will 
 // begin
@@ -100,85 +89,61 @@ int PeakFinder::findGround(const float *data, int peakpos, int direction) const
     climb_count = 0;
     refvalue = data[peakpos];
     lowpos = peakpos;
-
     pos = peakpos;
-
-    while ((pos > minPos+1) && (pos < maxPos-1))
-    {
-        int prevpos;
-
-        prevpos = pos;
+    while ((pos > minPos+1) && (pos < maxPos-1)) {
+        auto prevpos = pos;
         pos += direction;
-
         // calculate derivate
         delta = data[pos] - data[prevpos];
-        if (delta <= 0)
-        {
+        if (delta <= 0) {
             // going downhill, ok
             if (climb_count)
-            {
                 climb_count --;  // decrease climb count
-            }
-
             // check if new minimum found
-            if (data[pos] < refvalue)
-            {
+            if (data[pos] < refvalue) {
                 // new minimum found
                 lowpos = pos;
                 refvalue = data[pos];
             }
-        }
-        else
-        {
+        } else {
             // going uphill, increase climbing counter
             climb_count ++;
-            if (climb_count > 5) break;    // we've been climbing too long => it's next uphill => quit
+            if (climb_count > 5)
+                break;    // we've been climbing too long => it's next uphill => quit
         }
     }
     return lowpos;
 }
 
-
 // Find offset where the value crosses the given level, when starting from 'peakpos' and
 // proceeds to direction defined in 'direction'
 int PeakFinder::findCrossingLevel(const float *data, float level, int peakpos, int direction) const
 {
-    float peaklevel;
-    int pos;
-
-    peaklevel = data[peakpos];
+    auto peaklevel = data[peakpos];
     assert(peaklevel >= level);
-    pos = peakpos;
-    while ((pos >= minPos) && (pos < maxPos))
-    {
-        if (data[pos + direction] < level) return pos;   // crossing found
+    auto pos = peakpos;
+
+    while ((pos >= minPos) && (pos < maxPos)) {
+        if (data[pos + direction] < level)
+            return pos;   // crossing found
         pos += direction;
     }
     return -1;  // not found
 }
-
-
 // Calculates the center of mass location of 'data' array items between 'firstPos' and 'lastPos'
 double PeakFinder::calcMassCenter(const float *data, int firstPos, int lastPos) const
 {
     int i;
-    float sum;
-    float wsum;
-
-    sum = 0;
-    wsum = 0;
-    for (i = firstPos; i <= lastPos; i ++)
-    {
+    auto sum = 0.f;
+    auto wsum = 0.f;
+    for (i = firstPos; i <= lastPos; i ++) {
         sum += (float)i * data[i];
         wsum += data[i];
     }
-
-    if (wsum < 1e-6) return 0;
+    if (wsum < 1e-6)
+        return 0;
     return sum / wsum;
 }
-
-
-
 /// get exact center of peak near given position by calculating local mass of center
 double PeakFinder::getPeakCenter(const float *data, int peakpos) const
 {

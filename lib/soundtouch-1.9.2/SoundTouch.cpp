@@ -124,25 +124,17 @@ SoundTouch::~SoundTouch()
     delete pRateTransposer;
     delete pTDStretch;
 }
-
-
-
 /// Get SoundTouch library version string
 const char *SoundTouch::getVersionString()
 {
     static const char *_version = SOUNDTOUCH_VERSION;
-
     return _version;
 }
-
-
 /// Get SoundTouch library version Id
 uint SoundTouch::getVersionId()
 {
     return SOUNDTOUCH_VERSION_ID;
 }
-
-
 // Sets the number of channels, 1 = mono, 2 = stereo
 void SoundTouch::setChannels(uint numChannels)
 {
@@ -299,9 +291,7 @@ void SoundTouch::putSamples(const SAMPLETYPE *samples, uint nSamples)
     if (bSrateSet == false) 
     {
         ST_THROW_RT_ERROR("SoundTouch : Sample rate not defined");
-    } 
-    else if (channels == 0) 
-    {
+    } else if (channels == 0)  {
         ST_THROW_RT_ERROR("SoundTouch : Number of channels not defined");
     }
 
@@ -353,44 +343,32 @@ void SoundTouch::putSamples(const SAMPLETYPE *samples, uint nSamples)
 // in the middle of a sound stream.
 void SoundTouch::flush()
 {
-    int i;
-	int numStillExpected;
-    SAMPLETYPE *buff = new SAMPLETYPE[128 * channels];
-
+    auto *buff = new SAMPLETYPE[128 * channels];
 	// how many samples are still expected to output
-	numStillExpected = (int)((long)(samplesExpectedOut + 0.5) - samplesOutput);
-
+	auto numStillExpected = (int)((long)(samplesExpectedOut + 0.5) - samplesOutput);
     memset(buff, 0, 128 * channels * sizeof(SAMPLETYPE));
     // "Push" the last active samples out from the processing pipeline by
     // feeding blank samples into the processing pipeline until new, 
     // processed samples appear in the output (not however, more than 
     // 24ksamples in any case)
-	for (i = 0; (numStillExpected > (int)numSamples()) && (i < 200); i ++)
-	{
+	for (auto i = 0; (numStillExpected > (int)numSamples()) && (i < 200); i ++) {
 		putSamples(buff, 128);
 	}
-
 	adjustAmountOfSamples(numStillExpected);
-
     delete[] buff;
-
     // Clear input buffers
  //   pRateTransposer->clearInput();
     pTDStretch->clearInput();
     // yet leave the output intouched as that's where the
     // flushed samples are!
 }
-
-
 // Changes a setting controlling the processing system behaviour. See the
 // 'SETTING_...' defines for available setting ID's.
 bool SoundTouch::setSetting(int settingId, int value)
 {
     int sampleRate, sequenceMs, seekWindowMs, overlapMs;
-
     // read current tdstretch routine parameters
     pTDStretch->getParameters(&sampleRate, &sequenceMs, &seekWindowMs, &overlapMs);
-
     switch (settingId) 
     {
         case SETTING_USE_AA_FILTER :
@@ -486,20 +464,12 @@ void SoundTouch::clear()
 /// Returns number of samples currently unprocessed.
 uint SoundTouch::numUnprocessedSamples() const
 {
-    FIFOSamplePipe * psp;
-    if (pTDStretch)
-    {
-        psp = pTDStretch->getInput();
-        if (psp)
-        {
+    if (pTDStretch) {
+        if(auto psp = pTDStretch->getInput())
             return psp->numSamples();
-        }
     }
     return 0;
 }
-
-
-
 /// Output samples from beginning of the sample buffer. Copies requested samples to 
 /// output buffer and removes them from the sample buffer. If there are less than 
 /// 'numsample' samples in the buffer, returns all that available.
@@ -507,12 +477,10 @@ uint SoundTouch::numUnprocessedSamples() const
 /// \return Number of samples returned.
 uint SoundTouch::receiveSamples(SAMPLETYPE *output, uint maxSamples)
 {
-	uint ret = FIFOProcessor::receiveSamples(output, maxSamples);
+	auto ret = FIFOProcessor::receiveSamples(output, maxSamples);
 	samplesOutput += (long)ret;
 	return ret;
 }
-
-
 /// Adjusts book-keeping so that given number of samples are removed from beginning of the 
 /// sample buffer without copying them anywhere. 
 ///
@@ -520,7 +488,7 @@ uint SoundTouch::receiveSamples(SAMPLETYPE *output, uint maxSamples)
 /// with 'ptrBegin' function.
 uint SoundTouch::receiveSamples(uint maxSamples)
 {
-	uint ret = FIFOProcessor::receiveSamples(maxSamples);
+	auto ret = FIFOProcessor::receiveSamples(maxSamples);
 	samplesOutput += (long)ret;
 	return ret;
 }

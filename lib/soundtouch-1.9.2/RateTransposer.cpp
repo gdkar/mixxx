@@ -198,13 +198,9 @@ void RateTransposer::clear()
 
 
 // Returns nonzero if there aren't any samples available for outputting.
-int RateTransposer::isEmpty() const
+bool RateTransposer::isEmpty() const
 {
-    int res;
-
-    res = FIFOProcessor::isEmpty();
-    if (res == 0) return 0;
-    return inputBuffer.isEmpty();
+    return !(!FIFOProcessor::isEmpty() && !inputBuffer.isEmpty());
 }
 
 
