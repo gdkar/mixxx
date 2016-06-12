@@ -39,7 +39,7 @@ public:
     BarBeatTrackerData(float rate, const DFConfig &config) : dfConfig(config) {
     df = new DetectionFunction(config);
         // decimation factor aims at resampling to c. 3KHz; must be power of 2
-        int factor = MathUtilities::nextPowerOfTwo(rate / 3000);
+        int factor = MathUtilities::nextPowerOfTwo(int(rate / 3000));
 //        std::cerr << "BarBeatTrackerData: factor = " << factor << std::endl;
         downBeat = new DownBeat(rate, factor, config.stepSize);
     }

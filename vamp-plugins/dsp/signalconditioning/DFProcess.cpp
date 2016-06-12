@@ -192,7 +192,7 @@ void DFProcess::removeDCNormalize( double *src, double*dst )
 
     MathUtilities::getFrameMinMax( src, m_length, &DFMin, &DFmax );
 
-    MathUtilities::getAlphaNorm( src, m_length, m_alphaNormParam, &DFAlphaNorm );
+    DFAlphaNorm = MathUtilities::getAlphaNorm( src, m_length, m_alphaNormParam);
 
     for( unsigned int i = 0; i< m_length; i++)
     {

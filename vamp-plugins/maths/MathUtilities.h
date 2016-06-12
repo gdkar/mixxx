@@ -17,7 +17,12 @@
 #define MATHUTILITIES_H
 
 #include <vector>
-
+#include <type_traits>
+#include <algorithm>
+#include <iterator>
+#include <numeric>
+#include <utility>
+#include <cmath>
 #include "nan-inf.h"
 
 /**
@@ -30,54 +35,68 @@ public:
      * Round x to the nearest integer.
      */
     static double round( double x );
-
     /**
      * Return through min and max pointers the highest and lowest
      * values in the given array of the given length.
      */
     static void	  getFrameMinMax( const double* data, unsigned int len,  double* min, double* max );
-
-    /**
-     * Return the mean of the given array of the given length.
-     */
-    static double mean( const double* src, unsigned int len );
-
-    /**
-     * Return the mean of the subset of the given vector identified by
-     * start and count.
-     */
-    static double mean( const std::vector<double> &data,
-                        unsigned int start, unsigned int count );
-    
     /**
      * Return the sum of the values in the given array of the given
      * length.
      */
-    static double sum( const double* src, unsigned int len );
-
+    template<class Iter>
+    static typename std::iterator_traits<Iter>::value_type  sum(Iter src, unsigned int len)
+    {
+        using value_type = typename std::iterator_traits<Iter>::value_type;
+        return std::accumulate(src,std::next(src,len),value_type(0));
+    }
+    template<class Iter>
+    static typename std::iterator_traits<Iter>::value_type sum(Iter start, Iter stop)
+    {
+        using value_type = typename std::iterator_traits<Iter>::value_type;
+        return std::accumulate(start,stop,value_type{0});
+    }
+    template<class Iter>
+    static typename std::iterator_traits<Iter>::value_type mean(Iter start, Iter stop)
+    {
+        return sum(start,stop) / std::distance(start,stop);
+    }
+    template<class Iter>
+    static typename std::iterator_traits<Iter>::value_type mean(Iter src, unsigned int len)
+    {
+        return mean(&src[0],&src[len]);
+    }
     /**
      * Return the median of the values in the given array of the given
      * length. If the array is even in length, the returned value will
      * be half-way between the two values adjacent to median.
      */
     static double median( const double* src, unsigned int len );
-
-    /**
-     * The principle argument function. Map the phase angle ang into
-     * the range [-pi,pi).
-     */
-    static double princarg( double ang );
-
     /**
      * Floating-point division modulus: return x % y.
      */
-    static double mod( double x, double y);
+    template<class T>
+    static constexpr T mod(T x, T y) { return x - (std::floor(x/y) * y);}
+    template<class T>
+    static constexpr T princarg(T ang)
+    {
+        return mod<T>(ang + T(M_PI), T(-2*M_PI)) + T(M_PI);
+    }
+    template<class Iter>
+    static typename std::iterator_traits<Iter>::value_type getAlphaNorm(Iter start, Iter stop, unsigned int alpha)
+    {
+        using value_type = typename std::iterator_traits<Iter>::value_type;
+        return std::pow(std::accumulate(start,stop,value_type(0),[=](auto lhs, auto rhs){
+            return lhs + std::pow(std::abs(rhs),alpha);
+            }) / std::distance(start,stop), value_type(1) / value_type(alpha));
 
-    static void	  getAlphaNorm(const double *data, unsigned int len, unsigned int alpha, double* ANorm);
-    static double getAlphaNorm(const std::vector <double> &data, unsigned int alpha );
-
+    }
+    template<class Iter>
+    static typename std::iterator_traits<Iter>::value_type getAlphaNorm(Iter start, unsigned int len, unsigned int alpha)
+    {
+        return getAlphaNorm(start,std::next(start,len),alpha);
+    }
     static void   circShift( double* data, int length, int shift);
-
     static int	  getMax( double* data, unsigned int length, double* max = 0 );
     static int	  getMax( const std::vector<double> &data, double* max = 0 );
     static int    compareInt(const void * a, const void * b);
@@ -87,51 +106,56 @@ public:
         NormaliseUnitSum,
         NormaliseUnitMax
     };
-
     static void normalise(double *data, int length,
                           NormaliseType n = NormaliseUnitMax);
-
     static void normalise(std::vector<double> &data,
                           NormaliseType n = NormaliseUnitMax);
-
     /**
      * Threshold the input/output vector data against a moving-mean
      * average filter.
      */
     static void adaptiveThreshold(std::vector<double> &data);
-
     /** 
      * Return true if x is 2^n for some integer n >= 0.
      */
-    static bool isPowerOfTwo(int x);
-
-    /**
-     * Return the next higher integer power of two from x, e.g. 1300
-     * -> 2048, 2048 -> 2048.
-     */
-    static int nextPowerOfTwo(int x);
-
-    /**
-     * Return the next lower integer power of two from x, e.g. 1300 ->
-     * 1024, 2048 -> 2048.
-     */
-    static int previousPowerOfTwo(int x);
-
-    /**
-     * Return the nearest integer power of two to x, e.g. 1300 -> 1024,
-     * 12 -> 16 (not 8; if two are equidistant, the higher is returned).
-     */
-    static int nearestPowerOfTwo(int x);
-
-    /**
-     * Return x!
-     */
-    static double factorial(int x); // returns double in case it is large
-
-    /**
-     * Return the greatest common divisor of natural numbers a and b.
-     */
-    static int gcd(int a, int b);
+    template<class T>
+    static constexpr typename std::enable_if<std::is_integral<T>::value,bool>::type isPowerOfTwo(T x)
+    {
+        return (x && !(x & (x-1)));
+    }
+    template<class T>
+    static constexpr T nextPowerOfTwoHelper(T x, int i = 1)
+    {
+        return (i < (sizeof(T) * 4)) ? nextPowerOfTwoHelper<T>( x | (x>>i), (i<<1)) : (x | (x>>i));
+    }
+    template<class T>
+    static constexpr typename std::enable_if<std::is_integral<T>::value,T>::type 
+    nextPowerOfTwo(T x)
+    {
+        using UT = typename std::make_unsigned<T>::type;
+        return T(nextPowerOfTwoHelper<UT>(UT(x)-UT(1)) + 1);
+    }
+    template<class T>
+    static constexpr typename std::enable_if<std::is_integral<T>::value,T>::type
+    previousPowerOfTwo(T x)
+    {
+        return (isPowerOfTwo(x) ? x : ((nextPowerOfTwo(x) >> 1)));
+    }
+    template<class T>
+    static constexpr T rec_factorial(T x, T f = T{1}) { return x ? rec_factorial(x - T{1}, f * x) : f;}
+    template<class T>
+    static constexpr T factorial(T x)
+    {
+        auto f = 1;
+        return (f < 22) ? rec_factorial(f) : T{0};
+    }
+    template<class T>
+    static constexpr T gcd(T a, T b)
+    {
+        auto c = (a > b) ? a % b : b % a;
+        auto d = std::min(a,b);
+        return  c ? gcd(d, c) : d;
+    }
 };
 
 #endif
