@@ -96,29 +96,11 @@ int Chromagram::deInitialise()
 
 //----------------------------------------------------------------------------------
 // returns the absolute value of complex number xx + i*yy
-double Chromagram::kabs(double xx, double yy)
-{
-    double ab = sqrt(xx*xx + yy*yy);
-    return(ab);
-}
+double Chromagram::kabs(double xx, double yy) { return std::hypot(xx,yy); }
 //-----------------------------------------------------------------------------------
 
 
-void Chromagram::unityNormalise(double *src)
-{
-    double min, max;
-
-    double val = 0;
-
-    MathUtilities::getFrameMinMax( src, m_BPO, & min, &max );
-
-    for( unsigned int i = 0; i < m_BPO; i++ )
-    {
-	val = src[ i ] / max;
-
-	src[ i ] = val;
-    }
-}
+void Chromagram::unityNormalise(double *src) { MathUtilities::normalize_max(src,std::next(src,m_BPO)); }
 
 
 double* Chromagram::process( const double *data )
@@ -128,19 +110,15 @@ double* Chromagram::process( const double *data )
         m_ConstantQ->sparsekernel();
         m_skGenerated = true;
     }
-
     if (!m_window) {
         m_window = new Window<double>(HammingWindow, m_frameSize);
         m_windowbuf = new double[m_frameSize];
     }
-
     for (int i = 0; i < m_frameSize; ++i) {
         m_windowbuf[i] = data[i];
     }
     m_window->cut(m_windowbuf);
-
     m_FFT->forward(m_windowbuf, m_FFTRe, m_FFTIm);
-
     return process(m_FFTRe, m_FFTIm);
 }
 
@@ -151,15 +129,11 @@ double* Chromagram::process( const double *real, const double *imag )
         m_ConstantQ->sparsekernel();
         m_skGenerated = true;
     }
-
     // initialise chromadata to 0
-    for (unsigned i = 0; i < m_BPO; i++) m_chromadata[i] = 0;
-
-    double cmax = 0.0;
-    double cval = 0;
+    for (unsigned i = 0; i < m_BPO; i++)
+        m_chromadata[i] = 0;
     // Calculate ConstantQ frame
     m_ConstantQ->process( real, imag, m_CQRe, m_CQIm );
-	
     // add each octave of cq data into Chromagram
     const unsigned octaves = (int)floor(double( m_uK/m_BPO))-1;
     for (unsigned octave = 0; octave <= octaves; octave++) 
@@ -170,10 +144,6 @@ double* Chromagram::process( const double *real, const double *imag )
 	    m_chromadata[i] += kabs( m_CQRe[ firstBin + i ], m_CQIm[ firstBin + i ]);
 	}
     }
-
-    MathUtilities::normalise(m_chromadata, m_BPO, m_normalise);
-
+    MathUtilities::normalize_max(m_chromadata, std::next(m_chromadata,m_BPO));
     return m_chromadata;
 }
-
-

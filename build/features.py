@@ -390,7 +390,7 @@ class Vamp(Feature):
             return
 
         build.env.Append(CPPDEFINES='__VAMP__')
-        build.env.Append(CPPDEFINES='kiss_fft_scalar=double')
+        build.env.Append(CPPDEFINES='kiss_fft_scalar=float')
 
         # If there is no system vamp-hostdk installed, then we'll directly link
         # the vamp-hostsdk.

@@ -19,7 +19,8 @@
 #include <dsp/tempotracking/TempoTrackV2.h>
 #include <dsp/tempotracking/DownBeat.h>
 #include <maths/MathUtilities.h>
-
+#include <memory>
+#include <utility>
 using std::string;
 using std::vector;
 using std::cerr;
@@ -36,28 +37,25 @@ float BarBeatTracker::m_stepSecs = 0.01161; // 512 samples at 44100
 class BarBeatTrackerData
 {
 public:
-    BarBeatTrackerData(float rate, const DFConfig &config) : dfConfig(config) {
-    df = new DetectionFunction(config);
+    BarBeatTrackerData(float rate, const DFConfig &config) : dfConfig(config)
+    {
+        df = std::make_unique<DetectionFunction<double>>(config);
         // decimation factor aims at resampling to c. 3KHz; must be power of 2
         int factor = MathUtilities::nextPowerOfTwo(int(rate / 3000));
 //        std::cerr << "BarBeatTrackerData: factor = " << factor << std::endl;
-        downBeat = new DownBeat(rate, factor, config.stepSize);
+        downBeat = std::make_unique<DownBeat>(rate, factor, config.stepSize);
     }
-    ~BarBeatTrackerData() {
-    delete df;
-        delete downBeat;
-    }
+    ~BarBeatTrackerData() = default;
     void reset() {
-    delete df;
-    df = new DetectionFunction(dfConfig);
-    dfOutput.clear();
+        df =std::make_unique<DetectionFunction<double> > (dfConfig);
+        dfOutput.clear();
         downBeat->resetAudioBuffer();
         origin = Vamp::RealTime::zeroTime;
     }
 
     DFConfig dfConfig;
-    DetectionFunction *df;
-    DownBeat *downBeat;
+    std::unique_ptr<DetectionFunction<double> > df;
+    std::unique_ptr<DownBeat> downBeat;
     vector<double> dfOutput;
     Vamp::RealTime origin;
 };
@@ -71,44 +69,36 @@ BarBeatTracker::BarBeatTracker(float inputSampleRate) :
     m_tightness(4.),		// changes are as per the BeatTrack.cpp
     m_inputtempo(120.),		// changes are as per the BeatTrack.cpp
     m_constraintempo(false) // changes are as per the BeatTrack.cpp
-{
-}
-
+{ }
 BarBeatTracker::~BarBeatTracker()
 {
     delete m_d;
 }
-
 string
 BarBeatTracker::getIdentifier() const
 {
     return "qm-barbeattracker";
 }
-
 string
 BarBeatTracker::getName() const
 {
     return "Bar and Beat Tracker";
 }
-
 string
 BarBeatTracker::getDescription() const
 {
     return "Estimate bar and beat locations";
 }
-
 string
 BarBeatTracker::getMaker() const
 {
     return "Queen Mary, University of London";
 }
-
 int
 BarBeatTracker::getPluginVersion() const
 {
     return 3;
 }
-
 string
 BarBeatTracker::getCopyright() const
 {

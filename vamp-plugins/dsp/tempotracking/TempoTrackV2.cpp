@@ -193,7 +193,7 @@ TempoTrackV2::get_rcf(const d_vec_t &dfframe_in, const d_vec_t &wv, d_vec_t &rcf
 
     d_vec_t dfframe(dfframe_in);
 
-    MathUtilities::adaptiveThreshold(dfframe);
+    MathUtilities::adaptiveThreshold(dfframe.begin(),dfframe.end());
 
     d_vec_t acf(dfframe.size());
 
@@ -224,11 +224,9 @@ TempoTrackV2::get_rcf(const d_vec_t &dfframe_in, const d_vec_t &wv, d_vec_t &rcf
             }
         }
     }
-
     // apply adaptive threshold to rcf
-    MathUtilities::adaptiveThreshold(rcf);
-
-    double rcfsum =0.;
+    MathUtilities::adaptiveThreshold(rcf.begin(),rcf.end());
+    auto rcfsum =0.;
     for (unsigned int i=0; i<rcf.size(); i++)
     {
         rcf[i] += EPS ;

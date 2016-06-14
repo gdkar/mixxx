@@ -182,7 +182,7 @@ int GetKeyMode::process(double *PCMData)
     // middle of its three bins :
     // Added 21.11.07 by Chris Sutton based on debugging with Katy
     // Noland + comparison with Matlab equivalent.
-    MathUtilities::circShift( m_ChrPointer, m_BPO, 1);
+    std::rotate(m_ChrPointer,m_ChrPointer + 1,m_ChrPointer + m_BPO);
 /*
     std::cout << "raw chroma: ";
     for (int ii = 0; ii < m_BPO; ++ii) {
@@ -225,10 +225,9 @@ int GetKeyMode::process(double *PCMData)
         m_MajCorr[k] = krumCorr( m_MeanHPCP, MajProfile, m_BPO );
         m_MinCorr[k] = krumCorr( m_MeanHPCP, MinProfile, m_BPO );
 
-        MathUtilities::circShift( MajProfile, m_BPO, 1 );
-        MathUtilities::circShift( MinProfile, m_BPO, 1 );
+        std::rotate(MajProfile, MajProfile + 1,MajProfile + m_BPO);
+        std::rotate(MinProfile, MinProfile + 1,MinProfile + m_BPO);
     }
-	
     for( k = 0; k < m_BPO; k++ )
     {
         m_Keys[k] = m_MajCorr[k];
@@ -266,8 +265,8 @@ int GetKeyMode::process(double *PCMData)
   std::cout << std::endl;
 */
     double dummy;
+    key = 1 + (int)std::ceil(std::distance(&m_Keys[0],std::max_element(&m_Keys[0],&m_Keys[2*m_BPO])) * (1./3));
     // '1 +' because we number keys 1-24, not 0-23.
-    key = 1 + (int)ceil( (double)MathUtilities::getMax( m_Keys, 2* m_BPO, &dummy )/3 );
 
 //    std::cout << "key pre-sorting: " << key << std::endl;
 

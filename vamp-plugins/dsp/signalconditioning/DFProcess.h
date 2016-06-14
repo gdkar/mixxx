@@ -24,7 +24,7 @@
 #ifndef CDFPROCESS_H
 #define CDFPROCESS_H
 
-#include <stdio.h>
+#include <cstdio>
 #include "FiltFilt.h"
 
 struct DFProcConfig{

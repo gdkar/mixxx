@@ -36,17 +36,17 @@ class BeatTrackerData
 public:
     BeatTrackerData(const DFConfig &config)
         : dfConfig(config)
-        , df(std::make_unique<DetectionFunction>(config))
+        , df(std::make_unique<DetectionFunction<double> >(config))
         , origin(Vamp::RealTime::zeroTime)
     { }
     ~BeatTrackerData() = default;
     void reset() {
-        df = std::make_unique<DetectionFunction>(dfConfig);
+        df = std::make_unique<DetectionFunction<double> >(dfConfig);
         dfOutput.clear();
         origin = Vamp::RealTime::zeroTime;
     }
     DFConfig dfConfig;
-    std::unique_ptr<DetectionFunction> df;
+    std::unique_ptr<DetectionFunction<double> > df;
     vector<double> dfOutput;
     Vamp::RealTime origin;
 };

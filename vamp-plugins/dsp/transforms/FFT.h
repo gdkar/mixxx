@@ -9,6 +9,18 @@
 #ifndef FFT_H
 #define FFT_H
 
+#include <memory>
+#include <algorithm>
+#include <iterator>
+#include <utility>
+#include <numeric>
+#include <cmath>
+#include <cstdint>
+#include <cstddef>
+#include <cstdio>
+extern "C" {
+#   include <fftw3.h>
+};
 class FFT  
 {
 public:
