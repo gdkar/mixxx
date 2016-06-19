@@ -21,15 +21,11 @@
 #include <vector>
 
 enum WindowType {
-    RectangularWindow,
-    BartlettWindow,
-    HammingWindow,
+    FirstWindow,
+    HammingWindow = FirstWindow,
     HanningWindow,
-    BlackmanWindow,
     BlackmanHarrisWindow,
-
-    FirstWindow = RectangularWindow,
-    LastWindow = BlackmanHarrisWindow
+    LastWindow = BlackmanHarrisWindow,
 };
 
 /**
@@ -40,6 +36,12 @@ template <typename T>
 class Window
 {
 public:
+    using iterator = typename std::vector<T>::iterator;
+    using const_iterator = typename std::vector<T>::const_iterator;
+    using reference = typename std::vector<T>::reference;
+    using const_reference = typename std::vector<T>::const_reference;
+    using difference_type = typename std::vector<T>::difference_type;
+    using size_type =typename std::vector<T>::size_type;
     /**
      * Construct a windower of the given type and size. 
      *
@@ -47,109 +49,99 @@ public:
      * than symmetrical. (A window of size N is equivalent to a
      * symmetrical window of size N+1 with the final element missing.)
      */
-    Window(WindowType type, int size) : m_type(type), m_size(size) { encache(); }
-    Window(const Window &w) : m_type(w.m_type), m_size(w.m_size) { encache(); }
-    Window &operator=(const Window &w) {
-	if (&w == this) return *this;
+    Window(WindowType type, size_type size) : m_type(type), m_cache(size) { encache(); }
+    Window(const Window &w) : m_type(w.m_type),m_cache(w.m_cache) {}
+    template<typename U>
+    Window(const Window<U> &w) : m_type(w.m_type),m_cache(w.getSize()) {encache();}
+    Window(Window &&w) noexcept
+    {
+        swap(w);
+    }
+    Window &operator=(Window<T> &&w) noexcept
+    {
+        swap(w);
+    }
+    template<typename U>
+    Window &operator=(const Window<U> &w)
+    {
+        m_type = w.m_type;
+        m_cache.resize(w.getSize());
+        encache();
+        return *this;
+    }
+    Window &operator=(const Window<T> &w)
+    {
+	if (&w == this)
+            return *this;
 	m_type = w.m_type;
-	m_size = w.m_size;
-	encache();
+        m_cache= w.m_cache;
 	return *this;
     }
-    virtual ~Window() { delete[] m_cache; }
-    
-    void cut(T *src) const { cut(src, src); }
-    void cut(const T *src, T *dst) const {
-	for (int i = 0; i < m_size; ++i) dst[i] = src[i] * m_cache[i];
+    void swap(Window<T> &w) noexcept
+    {
+        std::swap(m_cache,w.m_cache);
+        std::swap(m_type, w.m_type );
     }
-
+    virtual ~Window() = default;
+    template<typename Iter>
+    void cut(Iter src) const
+    {
+        cut(src, src);
+    }
+    template<typename InputIt, typename OutputIt>
+    void cut(InputIt src, OutputIt dst) const
+    {
+        std::transform(m_cache.cbegin(),m_cache.cend(),src,dst,
+                [](auto x, auto y){return x*y;}
+            );
+    }
     WindowType getType() const { return m_type; }
-    int getSize() const { return m_size; }
-
-    std::vector<T> getWindowData() const {
-        std::vector<T> d;
-        for (int i = 0; i < m_size; ++i) {
-            d.push_back(m_cache[i]);
-        }
-        return d;
+    size_type getSize() const { return m_cache.size(); }
+    std::vector<T> getWindowData() const { return m_cache; }
+    template<typename OutputIt>
+    void getWindowData(OutputIt it) const
+    {
+        std::copy(m_cache.cbegin(),m_cache.cend(),it);
     }
-
+    const T &operator[](difference_type x){return m_cache[x];}
+    T at(difference_type x) const { return m_cache.at(x);}
 protected:
     WindowType m_type;
-    int m_size;
-    T *m_cache;
-    
+    std::vector<T> m_cache;
     void encache();
 };
-
 template <typename T>
 void Window<T>::encache()
 {
-    int n = m_size;
-    T *mult = new T[n];
-    int i;
-    for (i = 0; i < n; ++i) mult[i] = 1.0;
-
-    switch (m_type) {
-		
-    case RectangularWindow:
-        for (i = 0; i < n; ++i) {
-            mult[i] = mult[i] * 0.5;
-	}
-	break;
-	    
-    case BartlettWindow:
-        if (n == 2) {
-            mult[0] = mult[1] = 0; // "matlab compatible"
-        } else if (n == 3) {
-            mult[0] = 0;
-            mult[1] = mult[2] = 2./3.;
-        } else if (n > 3) {
-            for (i = 0; i < n/2; ++i) {
-                mult[i] = mult[i] * (i / T(n/2));
-                mult[i + n - n/2] = mult[i + n - n/2] * (1.0 - (i / T(n/2)));
-            }
-	}
-	break;
-	    
-    case HammingWindow:
-        if (n > 1) {
-            for (i = 0; i < n; ++i) {
-                mult[i] = mult[i] * (0.54 - 0.46 * cos(2 * M_PI * i / n));
-            }
-	}
-	break;
-	    
-    case HanningWindow:
-        if (n > 1) {
-            for (i = 0; i < n; ++i) {
-                mult[i] = mult[i] * (0.50 - 0.50 * cos(2 * M_PI * i / n));
-            }
-	}
-	break;
-	    
-    case BlackmanWindow:
-        if (n > 1) {
-            for (i = 0; i < n; ++i) {
-                mult[i] = mult[i] * (0.42 - 0.50 * cos(2 * M_PI * i / n)
-                                     + 0.08 * cos(4 * M_PI * i / n));
-            }
-	}
-	break;
-	    
-    case BlackmanHarrisWindow:
-        if (n > 1) {
-            for (i = 0; i < n; ++i) {
-                mult[i] = mult[i] * (0.35875
-                                     - 0.48829 * cos(2 * M_PI * i / n)
-                                     + 0.14128 * cos(4 * M_PI * i / n)
-                                     - 0.01168 * cos(6 * M_PI * i / n));
-            }
-	}
-	break;
-    }
-	   
-    m_cache = mult;
+    auto f = static_cast<T>(2 * M_PI / m_cache.size());
+    switch(m_type) {
+        case HammingWindow:
+            std::generate(m_cache.begin(),m_cache.end(),
+                [f = f, i = 0]() mutable
+                {
+                    return T(0.54) - T(0.46) * std::cos((i++) * f);
+                }
+            );
+        break;
+        case HanningWindow:
+            std::generate(m_cache.begin(),m_cache.end(),
+                [f = f, i = 0]() mutable
+                {
+                    return T(0.5) - T(0.5) * std::cos((i++) * f);
+                }
+            );
+        break;
+        case BlackmanHarrisWindow:
+            std::generate(m_cache.begin(),m_cache.end(),
+                [f = f, i = 0]() mutable
+                {
+                    return T(0.35874) - T(0.48829 * std::cos( 1 * i * f))
+                                      + T(0.14128 * std::cos( 2 * i * f))
+                                      - T(0.01168 * std::cos( 3 * i * f));
+                }
+            );
+        break;
+    };
 }
 
 #endif

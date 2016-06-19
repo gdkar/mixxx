@@ -179,6 +179,29 @@ class Bulk(Feature):
                 'controllers/hid/hidcontrollerpresetfilehandler.cpp')
         return sources
 
+class Mpg123(Feature):
+    def description(self):
+        return "libmpg123"
+
+    def default(self, build):
+        return 1
+
+    def enabled(self, build):
+        build.flags['mpg123'] = util.get_flags(build.env, 'mpg123',self.default(build))
+        if int(build.flags['mpg123']):
+            return True
+        return False
+
+    def add_options(self, build, vars):
+        vars.Add('mpg123', 'Set to 1 to enable libmpg123 MP3 decoder support.',self.default(build))
+
+    def configure(self, build, conf):
+        if not self.enabled(build):
+            return
+        build.env.ParseConfig('pkg-config libmpg123 --silence-errors --cflags --libs')
+        if (not conf.CheckLib(['libmpg123','mpg123']) or not conf.CheckHeader('mpg123.h')):
+            raise Exception("Could not find libmpg123.")
+        build.env.Append(CPPDEFINES='__MPG123__')
 
 class Mad(Feature):
     def description(self):
@@ -905,12 +928,9 @@ class FFMPEG(Feature):
             # I just randomly picked version numbers lower than mine for this
 
             # Grabs the libs and cflags for FFmpeg
-            build.env.ParseConfig('pkg-config libavcodec --silence-errors \
-                                  --cflags --libs')
-            build.env.ParseConfig('pkg-config libavformat --silence-errors \
-                                   --cflags --libs')
-            build.env.ParseConfig('pkg-config libavutil --silence-errors \
-                                   --cflags --libs')
+            build.env.ParseConfig('pkg-config libavcodec --silence-errors --cflags --libs')
+            build.env.ParseConfig('pkg-config libavformat --silence-errors --cflags --libs')
+            build.env.ParseConfig('pkg-config libavutil --silence-errors --cflags --libs')
 
             build.env.Append(CPPDEFINES='__FFMPEGFILE__')
             self.status = "Enabled"

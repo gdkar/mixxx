@@ -13,6 +13,7 @@
     COPYING included with this distribution for more information.
 */
 _Pragma("once")
+
 #include <memory>
 #include <utility>
 #include <functional>
@@ -55,13 +56,14 @@ public:
      * enough space for size/2 + 1 values. The redundant conjugate
      * half of the output is not returned.
      */
-    template<typename U>
-    void processTimeDomain(const U *src,
-                                        U  *mag, U *theta,
-                                        U *unwrapped)
+    template<typename InputIt, typename OutputIt = InputIt>
+    void processTimeDomain(
+        InputIt src
+      , OutputIt mag
+      , OutputIt theta
+      , OutputIt unwrapped)
     {
-        std::copy(&src[0],&src[m_n],&m_time[0]);
-        FFTShift(m_time.get());
+        std::rotate_copy(src,std::next(src,m_n/2),std::next(src,m_n),m_time.get());
         m_fft->forward(m_time.get(), m_real.get(), m_imag.get());
         getMagnitudes(mag);
         getPhases(theta);
@@ -78,15 +80,16 @@ public:
      * mag, phase, and unwrapped must each be non-NULL and point to
      * enough space for size/2+1 values.
      */
-    template<typename U>
-    void processFrequencyDomain(const U *reals, 
-                                const U *imags,
-                                U *mag,
-                                U *theta,
-                                U *unwrapped)
+    template<typename InputIt, typename OutputIt>
+    void processFrequencyDomain(
+        InputIt reals,
+        InputIt imags,
+        OutputIt mag,
+        OutputIt theta,
+        OutputIt unwrapped)
     {
-        std::copy(&reals[0],&reals[m_n/2+1],&m_real[0]);
-        std::copy(&imags[0],&imags[m_n/2+1],&m_imag[0]);
+        std::copy_n(reals,m_n/2+1,m_real.get());
+        std::copy_n(imags,m_n/2+1,m_imag.get());
         getMagnitudes(mag);
         getPhases(theta);
         unwrapPhases(theta, unwrapped);
@@ -101,42 +104,46 @@ public:
     {
         auto i = 0;
         auto inc = T(2*M_PI) * m_hop  / m_n;
-        std::generate(&m_phase[0],&m_phase[m_n/2+1],[&](){ return i += inc;});
-        std::copy(&m_phase[0],&m_phase[m_n/2+1],&m_unwrapped[i]);
+        std::generate(m_phase.get(),std::next(m_phase.get(),m_n/2+1),[&](){ auto r = i; i+= inc; return r;});
+        std::copy_n(m_phase.get(),m_n/2+1,m_unwrapped.get());
     }
 protected:
-    template<typename U>
-    void FFTShift(U *src) { std::rotate(&src[0],&src[m_n/2],&src[m_n]); }
-
-    template<typename U>
-    void getMagnitudes(U *mag)
+    template<typename OutputIt>
+    void getMagnitudes(OutputIt mag)
     {   
-        std::transform(&m_imag[0],&m_imag[m_n/2+1],&m_real[0],&mag[0],[](auto x, auto y){return std::hypot(x,y);});
+        std::transform(
+                m_imag.get()
+                , std::next(m_imag.get(),m_n/2+1)
+                , m_real.get()
+                , mag,
+                [](auto x, auto y) { return std::hypot(x,y); }
+            );
     }
-    template<typename U>
-    void getPhases(U *theta)
+    template<typename OutputIt>
+    void getPhases(OutputIt theta)
     {
-        std::transform(&m_imag[0],&m_imag[m_n/2+1],&m_real[0],&theta[0],[](auto x, auto y){return std::atan2(x,y);});
+        std::transform(m_imag.get(),std::next(m_imag.get(),m_n/2+1),m_real.get(),theta,
+                [](auto x, auto y){ return std::atan2(x,y); }
+            );
     }
-    template<typename U>
-    void unwrapPhases(U *theta, U *unwrapped)
+    template<typename OutputIt>
+    void unwrapPhases(OutputIt theta, OutputIt unwrapped)
     {
+        auto omega = (T(2 * M_PI) * m_hop) / m_n;
         for (int i = 0; i < m_n/2 + 1; ++i) {
-            auto omega = (T(2 * M_PI) * m_hop * i) / m_n;
-            auto expected = m_phase[i] + omega;
-            auto error = MathUtilities::princarg(theta[i] - expected);
-            unwrapped[i] = m_unwrapped[i] + omega + error;
-            m_phase[i] = theta[i];
+            auto expected  = m_phase[i] + omega * i;
+            auto error     = MathUtilities::princarg(theta[i] - expected);
+            unwrapped[i]   = m_unwrapped[i] + omega + error;
+            m_phase[i]     = theta[i];
             m_unwrapped[i] = unwrapped[i];
         }
     }
     int m_n;
     int m_hop;
-    std::unique_ptr<FFTReal > m_fft;
+    std::unique_ptr<FFTReal> m_fft;
     std::unique_ptr<T[]>     m_time;
-    std::unique_ptr<T[]>m_imag;
-    std::unique_ptr<T[]>m_real;
-    std::unique_ptr<T[]>m_phase;
-    std::unique_ptr<T[]>m_unwrapped;
-
+    std::unique_ptr<T[]>     m_imag;
+    std::unique_ptr<T[]>     m_real;
+    std::unique_ptr<T[]>     m_phase;
+    std::unique_ptr<T[]>     m_unwrapped;
 };

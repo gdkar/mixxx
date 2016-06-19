@@ -1,5 +1,4 @@
 /* -*- c-basic-offset: 4 indent-tabs-mode: nil -*-  vi:set ts=8 sts=4 sw=4: */
-
 /*
     QM DSP Library
 
@@ -138,22 +137,19 @@ namespace MathUtilities
         return (x && !(x & (x-1)));
     }
     template<class T>
-    constexpr T nextPowerOfTwoHelper(T x, uint32_t i = 1)
-    {
-        return (i < (sizeof(T) * 4)) ? nextPowerOfTwoHelper<T>( x | (x>>i), (i<<1)) : (x | (x>>i));
-    }
-    template<class T>
     constexpr typename std::enable_if<std::is_integral<T>::value,T>::type 
     nextPowerOfTwo(T x)
     {
         using UT = typename std::make_unsigned<T>::type;
-        return T(nextPowerOfTwoHelper<UT>(UT(x)-UT(1)) + 1);
+        auto y = static_cast<UT>(x) - UT{1};
+        for(auto i = 1u; i < sizeof(UT) * 8u; i <<= 1) y |= (y>>i);
+        return static_cast<T>(y + UT{1});
     }
     template<class T>
     typename std::enable_if<std::is_floating_point<T>::value,T>::type
     nextPowerOfTwo(T x)
     {
-        return std::ceil(std::log(x));
+        return std::exp2(std::ceil(std::log(x)));
     }
     template<class T>
     constexpr typename std::enable_if<std::is_integral<T>::value,T>::type
@@ -165,15 +161,14 @@ namespace MathUtilities
     typename std::enable_if<std::is_floating_point<T>::value,T>::type
     previousPowerOfTwo(T x)
     {
-        return std::floor(std::log(x));
+        return std::exp2(std::floor(std::log(x)));
     }
-    template<class T>
-    constexpr T rec_factorial(T x, T f = T{1}) { return x ? rec_factorial(x - T{1}, f * x) : f;}
     template<class T>
     constexpr T factorial(T x)
     {
-        auto f = 1;
-        return (f < 22) ? rec_factorial(f) : T{0};
+        auto r = x;
+        while(--x) r *= x;
+        return r;
     }
     template<class T>
     constexpr T gcd(T a, T b)
