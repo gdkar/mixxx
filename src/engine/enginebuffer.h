@@ -141,14 +141,7 @@ class EngineBuffer : public EngineObject {
 
     // For dependency injection of readers.
     //void setReader(CachingReader* pReader);
-
-    // For dependency injection of scalers.
-    void setScalerForTest(EngineBufferScale* pScaleVinyl,
-                          EngineBufferScale* pScaleKeylock);
-
     // For dependency injection of fake tracks, with an optional filebpm value.
-    TrackPointer loadFakeTrack(double filebpm = 0);
-
     static QString getKeylockEngineName(KeylockEngine engine) {
         switch (engine) {
         case SOUNDTOUCH:

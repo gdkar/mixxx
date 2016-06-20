@@ -15,22 +15,24 @@
 using RubberBand::RubberBandStretcher;
 
 // This is the default increment from RubberBand 1.8.1.
-static size_t kRubberBandBlockSize = 256;
+static size_t kRubberBandBlockSize = 512 ;
 
 EngineBufferScaleRubberBand::EngineBufferScaleRubberBand(
-    ReadAheadManager* pReadAheadManager)
-        : m_bBackwards(false),
+    ReadAheadManager* pReadAheadManager,
+    QObject *pParent)
+        : EngineBufferScale(pReadAheadManager,pParent),
+          m_bBackwards(false),
           m_buffer_back(SampleUtil::alloc(MAX_BUFFER_LEN)),
-          m_pRubberBand(NULL),
-          m_pReadAheadManager(pReadAheadManager) {
+          m_pRubberBand(nullptr)
+{
     m_retrieve_buffer[0] = SampleUtil::alloc(MAX_BUFFER_LEN);
     m_retrieve_buffer[1] = SampleUtil::alloc(MAX_BUFFER_LEN);
 
     // m_iSampleRate defaults to 44100.
     initializeRubberBand(m_iSampleRate);
 }
-
-EngineBufferScaleRubberBand::~EngineBufferScaleRubberBand() {
+EngineBufferScaleRubberBand::~EngineBufferScaleRubberBand()
+{
     SampleUtil::free(m_buffer_back);
     SampleUtil::free(m_retrieve_buffer[0]);
     SampleUtil::free(m_retrieve_buffer[1]);
@@ -71,17 +73,15 @@ void EngineBufferScaleRubberBand::setScaleParameters(double base_rate,
     // References:
     // https://bugs.launchpad.net/ubuntu/+bug/1263233
     // https://bitbucket.org/breakfastquay/rubberband/issue/4/sigfpe-zero-division-with-high-time-ratios
-    const double kMinSeekSpeed = 1.0 / 128.0;
-    double speed_abs = fabs(*pTempoRatio);
+    const double kMinSeekSpeed = 1.0 / 1024.0;
+    double speed_abs = std::abs(*pTempoRatio);
     if (speed_abs < kMinSeekSpeed) {
         // Let the caller know we ignored their speed.
         speed_abs = *pTempoRatio = 0;
     }
-
     // RubberBand handles checking for whether the change in pitchScale is a
     // no-op.
-    double pitchScale = fabs(base_rate * *pPitchRatio);
-
+    auto pitchScale = std::abs(base_rate * *pPitchRatio);
     if (pitchScale > 0) {
         //qDebug() << "EngineBufferScaleRubberBand setPitchScale" << *pitch << pitchScale;
         m_pRubberBand->setPitchScale(pitchScale);

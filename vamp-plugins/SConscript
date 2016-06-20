@@ -30,7 +30,6 @@ mixxxminimal_sources = [
 	"ext/kissfft/kiss_fft.c",
 	"ext/kissfft/kiss_fftr.c",
 	"maths/KLDivergence.cpp",
-	"maths/MathUtilities.cpp",
 	"plugins/BarBeatTrack.cpp",
 	"plugins/KeyDetect.cpp",
 	"plugins/BeatTrack.cpp",

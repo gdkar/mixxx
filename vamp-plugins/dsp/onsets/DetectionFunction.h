@@ -15,10 +15,10 @@
 _Pragma("once")
 
 #include "maths/MathUtilities.h"
-#include "maths/MathAliases.h"
 #include "dsp/phasevocoder/PhaseVocoder.h"
 #include "base/Window.h"
 
+using namespace std;
 #define DF_HFC (1)
 #define DF_SPECDIFF (2)
 #define DF_PHASEDEV (3)
@@ -173,19 +173,17 @@ public:
     T  complexSD(unsigned int length, T *srcMagnitude, T *srcPhase)
     {
         auto val = T{0};
-        ComplexData meas = ComplexData( 0, 0 );
-        ComplexData j = ComplexData( 0, 1 );
+        auto meas = std::complex<double>( 0, 0 );
+        auto j = std::complex<double>   ( 0, 1 );
 
         for( auto i = 0u; i < length; i++)
         {
             auto tmpPhase = (srcPhase[ i ]- 2*m_phaseHistory[ i ]+m_phaseHistoryOld[ i ]);
             auto dev= MathUtilities::princarg( tmpPhase );
                     
-            meas = m_magHistory[i] - ( srcMagnitude[ i ] * exp( j * dev) );
-            auto tmpReal = real( meas );
-            auto tmpImag = imag( meas );
+            meas = m_magHistory[i] - ( srcMagnitude[ i ] * std::exp( j * dev) );
 
-            val += std::sqrt( (tmpReal * tmpReal) + (tmpImag * tmpImag) );
+            val += std::abs(meas);
                     
             m_phaseHistoryOld[ i ] = m_phaseHistory[ i ] ;
             m_phaseHistory[ i ] = srcPhase[ i ];

@@ -20,13 +20,13 @@
 #include "util/defs.h"
 #include "util/sample.h"
 
-EngineBufferScale::EngineBufferScale()
-        : m_iSampleRate(44100),
+EngineBufferScale::EngineBufferScale(ReadAheadManager *raman, QObject *pParent)
+        : QObject(pParent)
+        , m_pReadAheadManager(raman),
+          m_iSampleRate(44100),
           m_dBaseRate(1.0),
           m_bSpeedAffectsPitch(false),
           m_dTempoRatio(1.0),
           m_dPitchRatio(1.0) {
 }
-
-EngineBufferScale::~EngineBufferScale() {
-}
+EngineBufferScale::~EngineBufferScale() = default;

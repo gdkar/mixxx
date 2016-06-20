@@ -47,10 +47,10 @@ const int kBackBufferSize = kSeekOffsetFrames * kNumChannels;
 
 }  // namespace
 
-EngineBufferScaleST::EngineBufferScaleST(ReadAheadManager *pReadAheadManager)
-    : EngineBufferScale(),
-      m_bBackwards(false),
-      m_pReadAheadManager(pReadAheadManager) {
+EngineBufferScaleST::EngineBufferScaleST(ReadAheadManager *pReadAheadManager, QObject *pParent)
+    : EngineBufferScale(pReadAheadManager,pParent),
+      m_bBackwards(false)
+{
     m_pSoundTouch = new soundtouch::SoundTouch();
     m_pSoundTouch->setChannels(kNumChannels);
     m_pSoundTouch->setRate(m_dBaseRate);

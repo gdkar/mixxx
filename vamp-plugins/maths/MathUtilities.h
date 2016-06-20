@@ -16,13 +16,24 @@
 #define MATHUTILITIES_H
 
 #include <vector>
+#include <complex>
+#include <limits>
+#include <functional>
+#include <tuple>
+#include <climits>
+#include <cfloat>
+#include <cstdio>
+#include <cstdlib>
+#include <cstddef>
+#include <cstdint>
+#include <cstdarg>
+#include <iostream>
 #include <type_traits>
 #include <algorithm>
 #include <iterator>
 #include <numeric>
 #include <utility>
 #include <cmath>
-#include "nan-inf.h"
 
 /**
  * helper functions for simple mathematical calculations.
@@ -98,7 +109,6 @@ namespace MathUtilities
     {
         return std::distance(start,std::max_element(start,stop));
     }
-    int    compareInt(const void * a, const void * b);
     enum NormaliseType {
         NormaliseNone,
         NormaliseUnitSum,

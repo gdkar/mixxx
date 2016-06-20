@@ -7,12 +7,11 @@
 #include "util/math.h"
 #include "util/sample.h"
 
-EngineBufferScaleLinear::EngineBufferScaleLinear(ReadAheadManager *pReadAheadManager)
-    : EngineBufferScale(),
+EngineBufferScaleLinear::EngineBufferScaleLinear(ReadAheadManager *pReadAheadManager, QObject *pParent)
+    : EngineBufferScale(pReadAheadManager,pParent),
       m_bClear(false),
       m_dRate(1.0),
       m_dOldRate(1.0),
-      m_pReadAheadManager(pReadAheadManager),
       m_dCurrentFrame(0.0),
       m_dNextFrame(0.0) {
     for (int i = 0; i < 2; i++) {

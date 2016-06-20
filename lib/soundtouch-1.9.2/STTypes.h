@@ -42,6 +42,15 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstddef>
+#include <cmath>
+#include <cstdlib>
+#include <cstring>
+#include <algorithm>
+#include <iterator>
+#include <utility>
+#include <memory>
+#include <functional>
+#include <tuple>
 
 typedef uint32_t uint;
 typedef uint64_t ulong;
@@ -77,7 +86,6 @@ namespace soundtouch
         #undef  SOUNDTOUCH_FLOAT_SAMPLES
         #define SOUNDTOUCH_INTEGER_SAMPLES      1
     #endif
-
     #if !(SOUNDTOUCH_INTEGER_SAMPLES || SOUNDTOUCH_FLOAT_SAMPLES)
        
         /// Choose either 32bit floating point or 16bit integer sampletype
@@ -132,7 +140,6 @@ namespace soundtouch
         typedef int16_t SAMPLETYPE;
         // data type for sample accumulation: Use 32bit integer to prevent overflows
         typedef int32_t LONG_SAMPLETYPE;
-
         #ifdef SOUNDTOUCH_FLOAT_SAMPLES
             // check that only one sample type is defined
             #error "conflicting sample types defined"

@@ -13,7 +13,7 @@ class ReadAheadManager;
 class EngineBufferScaleRubberBand : public EngineBufferScale {
     Q_OBJECT
   public:
-    EngineBufferScaleRubberBand(ReadAheadManager* pReadAheadManager);
+    EngineBufferScaleRubberBand(ReadAheadManager* pReadAheadManager, QObject *pParent =nullptr);
     ~EngineBufferScaleRubberBand() override;
 
     void setScaleParameters(double base_rate,
@@ -41,9 +41,6 @@ class EngineBufferScaleRubberBand : public EngineBufferScale {
     CSAMPLE* m_buffer_back;
 
     RubberBand::RubberBandStretcher* m_pRubberBand;
-
-    // The read-ahead manager that we use to fetch samples
-    ReadAheadManager* m_pReadAheadManager;
 };
 
 

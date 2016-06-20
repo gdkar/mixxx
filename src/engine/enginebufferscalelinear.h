@@ -31,8 +31,9 @@ const int kiLinearScaleReadAheadLength = 10240;
 
 
 class EngineBufferScaleLinear : public EngineBufferScale  {
+    Q_OBJECT
   public:
-    EngineBufferScaleLinear(ReadAheadManager *pReadAheadManager);
+    EngineBufferScaleLinear(ReadAheadManager *pReadAheadManager, QObject *pParent);
     ~EngineBufferScaleLinear() override;
 
     double getScaled(CSAMPLE* pOutput, const int iBufferSize) override;
@@ -55,7 +56,6 @@ class EngineBufferScaleLinear : public EngineBufferScale  {
     int m_bufferIntSize;
     CSAMPLE m_floorSampleOld[2];
     // The read-ahead manager that we use to fetch samples
-    ReadAheadManager* m_pReadAheadManager;
     double m_dCurrentFrame;
     double m_dNextFrame;
 };

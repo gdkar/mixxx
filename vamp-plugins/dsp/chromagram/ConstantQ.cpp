@@ -48,17 +48,6 @@ static bool push_precalculated(int uk, int fftlength,
 }
 #endif
 
-//---------------------------------------------------------------------------
-// nextpow2 returns the smallest integer n such that 2^n >= x.
-static double nextpow2(double x) {
-    double y = ceil(log(x)/log(2.0));
-    return(y);
-}
-
-static double squaredModule(const double & xx, const double & yy) {
-    return xx*xx + yy*yy;
-}
-
 //----------------------------------------------------------------------------
 
 ConstantQ::ConstantQ( CQConfig Config ) :
@@ -132,7 +121,7 @@ void ConstantQ::sparsekernel()
 
 	for (unsigned i=0; i<hammingLength; i++) 
 	{
-	    const double angle = 2*PI*m_dQ*i/hammingLength;
+	    const double angle = 2*M_PI*m_dQ*i/hammingLength;
 	    const double real = cos(angle);
 	    const double imag = sin(angle);
 	    const double absol = hamming(hammingLength, i)/hammingLength;
@@ -295,7 +284,7 @@ void ConstantQ::initialise( CQConfig Config )
 //    std::cerr << "ConstantQ::initialise: rate = " << m_FS << ", fmin = " << m_FMin << ", fmax = " << m_FMax << ", bpo = " << m_BPO << ", K = " << m_uK << ", Q = " << m_dQ << std::endl;
 
     // work out length of fft required for this constant Q Filter bank
-    m_FFTLength = (int) pow(2, nextpow2(ceil( m_dQ*m_FS/m_FMin )));
+    m_FFTLength = MathUtilities::nextPowerOfTwo(static_cast<int>(m_dQ*m_FS/m_FMin));
 
     m_hop = m_FFTLength/8; // <------ hop size is window length divided by 32
 

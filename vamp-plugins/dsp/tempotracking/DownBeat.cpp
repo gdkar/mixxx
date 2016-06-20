@@ -15,14 +15,13 @@
 
 #include "DownBeat.h"
 
-#include "maths/MathAliases.h"
 #include "maths/MathUtilities.h"
 #include "maths/KLDivergence.h"
 #include "dsp/transforms/FFT.h"
 
 #include <iostream>
 #include <cstdlib>
-
+using namespace std;
 DownBeat::DownBeat(float originalSampleRate,
                    size_t decimationFactor,
                    size_t dfIncrement) :
@@ -182,7 +181,7 @@ DownBeat::findDownBeats(const float *audio,
 //        std::cerr << "beatlen = " << beatlen << std::endl;
 //        float rms = 0;
         for (size_t j = 0; j < beatlen && j < m_beatframesize; ++j) {
-            auto mul = 0.5 * (1.0 - std::cos(TWO_PI * (double(j) / double(beatlen))));
+            auto mul = 0.5 * (1.0 - std::cos(2 * M_PI* (double(j) / double(beatlen))));
             m_beatframe[j] = audio[beatstart + j] * mul;
 //            rms += m_beatframe[j] * m_beatframe[j];
         }
@@ -250,8 +249,8 @@ DownBeat::measureSpecDiff(d_vec_t oldspec, d_vec_t newspec)
   
     for (auto i = 0u;i < SPECSIZE;i++)
     {
-        newspec[i] +=EPS;
-        oldspec[i] +=EPS;
+        newspec[i] +=std::numeric_limits<double>::epsilon();
+        oldspec[i] +=std::numeric_limits<double>::epsilon();
         sumnew+=newspec[i];
         sumold+=oldspec[i];
     } 

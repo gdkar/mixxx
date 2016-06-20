@@ -23,10 +23,4 @@ soundsourcemediafoundation = SConscript(
     duplicate=0, exports=['build'])
 plugins.extend(soundsourcemediafoundation)
 
-soundsourcempg123 = SConscript(
-        File("soundsourcempg123/SConscript"),
-        variant_dir=Dir(build.build_dir+"/mpg123"),
-        duplicate=0,exports=["build"])
-plugins.extend(soundsourcempg123)
-
 Return("plugins")

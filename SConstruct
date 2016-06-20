@@ -33,6 +33,7 @@ build_type = ARGUMENTS.get('build', None)
 toolchain = ARGUMENTS.get('toolchain', None)
 
 available_features = [features.Mad,
+                      features.Mpg123,
                       features.CoreAudio,
                       features.MediaFoundation,
                       features.HSS1394,

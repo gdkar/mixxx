@@ -43,11 +43,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <stdlib.h>
-#include <memory.h>
-#include <string.h>
-#include <assert.h>
-
 #include "FIFOSampleBuffer.h"
 
 using namespace soundtouch;
@@ -57,58 +52,42 @@ FIFOSampleBuffer::FIFOSampleBuffer(int numChannels)
 {
     assert(numChannels > 0);
     sizeInBytes = 0; // reasonable initial value
-    buffer = nullptr;
-    bufferUnaligned = nullptr;
-    samplesInBuffer = 0;
     bufferPos = 0;
     channels = (uint)numChannels;
     ensureCapacity(32);     // allocate initial capacity 
 }
-
-
 // destructor
-FIFOSampleBuffer::~FIFOSampleBuffer()
-{
-    delete[] bufferUnaligned;
-    bufferUnaligned = nullptr;
-    buffer = nullptr;
-}
-
-
+FIFOSampleBuffer::~FIFOSampleBuffer() = default;
 // Sets number of channels, 1 = mono, 2 = stereo
 void FIFOSampleBuffer::setChannels(int numChannels)
 {
-    uint usedBytes;
-
-    assert(numChannels > 0);
-    usedBytes = channels * samplesInBuffer;
-    channels = (uint)numChannels;
-    samplesInBuffer = usedBytes / channels;
+    if(numChannels = channels)
+        return;
+    auto _buffer = std::vector<SAPLETYPE>(numChannels * buffer.size() / channels);
+    auto to_copy = std::min(numChannels,channels);
+    for(auto ii = 0,io = 0, e = buffer.size(); ii < e; ii+= channels, io += numChannels) {
+        for(auto j = 0; j < to_copy; j++)
+            _buffer[io + j] = buffer[ii + j];
+    }
+    std::swap(buffer,_buffer);
 }
-
-
 // if output location pointer 'bufferPos' isn't zero, 'rewinds' the buffer and
 // zeroes this pointer by copying samples from the 'bufferPos' pointer 
 // location on to the beginning of the buffer.
 void FIFOSampleBuffer::rewind()
 {
-    if (buffer && bufferPos) 
-    {
-        memmove(buffer, ptrBegin(), sizeof(SAMPLETYPE) * channels * samplesInBuffer);
+    if (buffer && bufferPos)  {
+        std::copy_n(buffer,channels * samplesInBuffer,ptrBegin());
         bufferPos = 0;
     }
 }
-
-
 // Adds 'numSamples' pcs of samples from the 'samples' memory position to 
 // the sample buffer.
 void FIFOSampleBuffer::putSamples(const SAMPLETYPE *samples, uint nSamples)
 {
-    memcpy(ptrEnd(nSamples), samples, sizeof(SAMPLETYPE) * nSamples * channels);
+    std::copy_n(samples,nSamples * channels, ptrEnd(nSamples));
     samplesInBuffer += nSamples;
 }
-
-
 // Increases the number of samples in the buffer without copying any actual
 // samples.
 //
@@ -117,14 +96,9 @@ void FIFOSampleBuffer::putSamples(const SAMPLETYPE *samples, uint nSamples)
 // careful though!
 void FIFOSampleBuffer::putSamples(uint nSamples)
 {
-    uint req;
-
-    req = samplesInBuffer + nSamples;
-    ensureCapacity(req);
+    ensureCapacity(samplesInBuffer + nSamples);
     samplesInBuffer += nSamples;
 }
-
-
 // Returns a pointer to the end of the used part of the sample buffer (i.e. 
 // where the new samples are to be inserted). This function may be used for 
 // inserting new samples into the sample buffer directly. Please be careful! 
@@ -152,8 +126,6 @@ SAMPLETYPE *FIFOSampleBuffer::ptrEnd(uint slackCapacity)
 // outputted samples from the buffer by calling the 
 // 'receiveSamples(numSamples)' function
 SAMPLETYPE *FIFOSampleBuffer::ptrBegin() { return buffer + bufferPos * channels; }
-
-
 // Ensures that the buffer has enought capacity, i.e. space for _at least_
 // 'capacityRequirement' number of samples. The buffer is grown in steps of
 // 4 kilobytes to eliminate the need for frequently growing up the buffer,
@@ -161,20 +133,17 @@ SAMPLETYPE *FIFOSampleBuffer::ptrBegin() { return buffer + bufferPos * channels;
 void FIFOSampleBuffer::ensureCapacity(uint capacityRequirement)
 {
     SAMPLETYPE *tempUnaligned, *temp;
-    if (capacityRequirement > getCapacity()) 
-    {
+    if (capacityRequirement > getCapacity())  {
         // enlarge the buffer in 4kbyte steps (round up to next 4k boundary)
         sizeInBytes = (capacityRequirement * channels * sizeof(SAMPLETYPE) + 4095) & (uint)-4096;
         assert(sizeInBytes % 2 == 0);
         tempUnaligned = new SAMPLETYPE[sizeInBytes / sizeof(SAMPLETYPE) + 16 / sizeof(SAMPLETYPE)];
-        if (tempUnaligned == nullptr)
-        {
+        if (tempUnaligned == nullptr) {
             ST_THROW_RT_ERROR("Couldn't allocate memory!\n");
         }
         // Align the buffer to begin at 16byte cache line boundary for optimal performance
         temp = (SAMPLETYPE *)SOUNDTOUCH_ALIGN_POINTER_16(tempUnaligned);
-        if (samplesInBuffer)
-        {
+        if (samplesInBuffer) {
             ::memcpy(temp, ptrBegin(), samplesInBuffer * channels * sizeof(SAMPLETYPE));
         }
         delete[] bufferUnaligned;

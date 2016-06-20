@@ -10,54 +10,56 @@
 #include "util/math.h"
 #include "util/sample.h"
 
-ReadAheadManager::ReadAheadManager()
-        : m_pLoopingControl(NULL),
-          m_pRateControl(NULL),
+ReadAheadManager::ReadAheadManager(QObject *pParent)
+        : QObject(pParent),
+          m_pLoopingControl(nullptr),
+          m_pRateControl(nullptr),
           m_iCurrentPosition(0),
-          m_pReader(NULL),
+          m_pReader(nullptr),
           m_pCrossFadeBuffer(SampleUtil::alloc(MAX_BUFFER_LEN)) {
     // For testing only: ReadAheadManagerMock
 }
 
 ReadAheadManager::ReadAheadManager(CachingReader* pReader,
-                                   LoopingControl* pLoopingControl)
-        : m_pLoopingControl(pLoopingControl),
-          m_pRateControl(NULL),
+                                   LoopingControl* pLoopingControl, QObject *pParent)
+        : QObject(pParent),
+          m_pLoopingControl(pLoopingControl),
+          m_pRateControl(nullptr),
           m_iCurrentPosition(0),
           m_pReader(pReader),
           m_pCrossFadeBuffer(SampleUtil::alloc(MAX_BUFFER_LEN)) {
-    DEBUG_ASSERT(m_pLoopingControl != NULL);
-    DEBUG_ASSERT(m_pReader != NULL);
+    DEBUG_ASSERT(m_pLoopingControl != nullptr);
+    DEBUG_ASSERT(m_pReader != nullptr);
     SampleUtil::clear(m_pCrossFadeBuffer, MAX_BUFFER_LEN);
 }
-
-ReadAheadManager::~ReadAheadManager() {
+ReadAheadManager::~ReadAheadManager()
+{
     SampleUtil::free(m_pCrossFadeBuffer);
 }
-
 int ReadAheadManager::getNextSamples(double dRate, CSAMPLE* buffer,
-                                     int requested_samples) {
+                                     int requested_samples)
+{
     if (!even(requested_samples)) {
         qDebug() << "ERROR: Non-even requested_samples to ReadAheadManager::getNextSamples";
         requested_samples--;
     }
-    bool in_reverse = dRate < 0;
-    int start_sample = m_iCurrentPosition;
+    auto in_reverse = dRate < 0;
+    auto start_sample = m_iCurrentPosition;
     //qDebug() << "start" << start_sample << requested_samples;
-    int samples_needed = requested_samples;
+    auto samples_needed = requested_samples;
     CSAMPLE* base_buffer = buffer;
 
     // A loop will only limit the amount we can read in one shot.
 
-    const double loop_trigger = m_pLoopingControl->nextTrigger(
+    auto loop_trigger = m_pLoopingControl->nextTrigger(
             dRate, m_iCurrentPosition, 0, 0);
-    bool loop_active = loop_trigger != kNoTrigger;
-    int preloop_samples = 0;
+    auto loop_active = loop_trigger != kNoTrigger;
+    auto preloop_samples = 0;
 
     if (loop_active) {
-        int samples_available = in_reverse ?
+        auto samples_available = static_cast<int>(in_reverse ?
                 m_iCurrentPosition - loop_trigger :
-                loop_trigger - m_iCurrentPosition;
+                loop_trigger - m_iCurrentPosition);
         if (samples_available < 0) {
             samples_needed = 0;
         } else {
@@ -167,9 +169,9 @@ void ReadAheadManager::hintReader(double dRate, HintVector* pHintList) {
 
 // Not thread-save, call from engine thread only
 void ReadAheadManager::addReadLogEntry(double virtualPlaypositionStart,
-                                       double virtualPlaypositionEndNonInclusive) {
+                                       double virtualPlaypositionEnd) {
     ReadLogEntry newEntry(virtualPlaypositionStart,
-                          virtualPlaypositionEndNonInclusive);
+                          virtualPlaypositionEnd);
     if (m_readAheadLog.size() > 0) {
         ReadLogEntry& last = m_readAheadLog.last();
         if (last.merge(newEntry)) {

@@ -8,17 +8,16 @@
 #include "mixer/playermanager.h"
 
 EngineControl::EngineControl(QString group,
-                             UserSettingsPointer pConfig)
-        : m_group(group),
+                             UserSettingsPointer pConfig, QObject *pParent)
+        : QObject(pParent),
+          m_group(group),
           m_pConfig(pConfig),
-          m_pEngineMaster(NULL),
-          m_pEngineBuffer(NULL) {
+          m_pEngineMaster(nullptr),
+          m_pEngineBuffer(nullptr)
+{
     setCurrentSample(0.0, 0.0);
 }
-
-EngineControl::~EngineControl() {
-}
-
+EngineControl::~EngineControl() = default;
 double EngineControl::process(const double,
                               const double,
                               const double,
@@ -39,20 +38,14 @@ double EngineControl::getTrigger(const double,
                                  const int) {
     return kNoTrigger;
 }
-
-void EngineControl::trackLoaded(TrackPointer pNewTrack, TrackPointer pOldTrack) {
-    Q_UNUSED(pNewTrack);
-    Q_UNUSED(pOldTrack);
-}
-
-void EngineControl::hintReader(HintVector*) {
-}
-
-void EngineControl::setEngineMaster(EngineMaster* pEngineMaster) {
+void EngineControl::trackLoaded(TrackPointer , TrackPointer ) { }
+void EngineControl::hintReader(HintVector*) { }
+void EngineControl::setEngineMaster(EngineMaster* pEngineMaster)
+{
     m_pEngineMaster = pEngineMaster;
 }
-
-void EngineControl::setEngineBuffer(EngineBuffer* pEngineBuffer) {
+void EngineControl::setEngineBuffer(EngineBuffer* pEngineBuffer)
+{
     m_pEngineBuffer = pEngineBuffer;
 }
 
@@ -83,15 +76,8 @@ QString EngineControl::getGroup() const {
 UserSettingsPointer EngineControl::getConfig() {
     return m_pConfig;
 }
-
-EngineMaster* EngineControl::getEngineMaster() {
-    return m_pEngineMaster;
-}
-
-EngineBuffer* EngineControl::getEngineBuffer() {
-    return m_pEngineBuffer;
-}
-
+EngineMaster* EngineControl::getEngineMaster() { return m_pEngineMaster; }
+EngineBuffer* EngineControl::getEngineBuffer() { return m_pEngineBuffer; }
 void EngineControl::seekAbs(double playPosition) {
     if (m_pEngineBuffer) {
         m_pEngineBuffer->slotControlSeekAbs(playPosition);
@@ -113,21 +99,15 @@ void EngineControl::seek(double sample) {
 void EngineControl::notifySeek(double dNewPlaypos) {
     Q_UNUSED(dNewPlaypos);
 }
-
-EngineBuffer* EngineControl::pickSyncTarget() {
-    EngineMaster* pMaster = getEngineMaster();
-    if (!pMaster) {
-        return NULL;
+EngineBuffer* EngineControl::pickSyncTarget()
+{
+    if(auto pMaster = getEngineMaster()) {
+        if(auto pEngineSync = pMaster->getEngineSync()) {
+            // TODO(rryan): Remove. This is a linear search over groups in
+            // EngineMaster. We should pass the EngineChannel into EngineControl.
+            auto pThisChannel = pMaster->getChannel(getGroup());
+            auto pChannel = pEngineSync->pickNonSyncSyncTarget(pThisChannel);
+            return pChannel ? pChannel->getEngineBuffer() : nullptr;
+        }
     }
-
-    EngineSync* pEngineSync = pMaster->getEngineSync();
-    if (pEngineSync == NULL) {
-        return NULL;
-    }
-
-    // TODO(rryan): Remove. This is a linear search over groups in
-    // EngineMaster. We should pass the EngineChannel into EngineControl.
-    EngineChannel* pThisChannel = pMaster->getChannel(getGroup());
-    EngineChannel* pChannel = pEngineSync->pickNonSyncSyncTarget(pThisChannel);
-    return pChannel ? pChannel->getEngineBuffer() : NULL;
 }

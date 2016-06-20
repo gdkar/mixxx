@@ -295,15 +295,7 @@ int GetKeyMode::process(double *PCMData)
         ijx++;
     }
 
-    qsort(m_SortedBuffer, m_MedianBufferFilling, sizeof(unsigned int),
-          MathUtilities::compareInt);
-/*
-  std::cout << "sorted: ";
-  for (int ii = 0; ii < m_MedianBufferFilling; ++ii) {
-  std::cout << m_SortedBuffer[ii] << " ";
-  }
-  std::cout << std::endl;
-*/
+    std::sort(m_SortedBuffer, m_SortedBuffer + m_MedianBufferFilling);
     int sortlength = m_MedianBufferFilling;
     int midpoint = (int)ceil((double)sortlength/2);
 

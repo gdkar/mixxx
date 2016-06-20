@@ -15,12 +15,12 @@
 
 #include "TempoTrack.h"
 
-#include "maths/MathAliases.h"
 #include "maths/MathUtilities.h"
 
 #include <iostream>
 
 #include <cassert>
+using namespace std;
 
 //#define DEBUG_TEMPO_TRACK 1
 
@@ -137,7 +137,7 @@ void TempoTrack::createCombFilter(double* Filter, unsigned int winLength, unsign
 	for( i = 0; i < winLength; i++ )
 	{
 	    double dlag = (double)(i+1) - beatLag;
-	    Filter[ i ] =  exp(-0.5 * pow(( dlag / m_sigma), 2.0) ) / (sqrt( 2 * PI) * m_sigma);
+	    Filter[ i ] =  exp(-0.5 * pow(( dlag / m_sigma), 2.0) ) / (sqrt( 2 * M_PI) * m_sigma);
 	}
     }
 }
@@ -587,7 +587,7 @@ void TempoTrack::createPhaseExtractor(double *Filter, unsigned int winLength, do
 
 	for(  int i = 0; i < scratchLength; i++ )
 	{
-	    phaseScratch[ i ] = exp( -0.5 * pow( ( i - mu ) / sigma, 2 ) ) / ( sqrt( 2*PI ) *sigma );
+	    phaseScratch[ i ] = exp( -0.5 * pow( ( i - mu ) / sigma, 2 ) ) / ( sqrt( 2*M_PI ) *sigma );
 	}
         auto it = std::minmax_element(phaseScratch,std::next(phaseScratch,scratchLength));
         auto phaseMin = *it.first;

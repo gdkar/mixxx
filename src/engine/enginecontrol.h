@@ -35,7 +35,8 @@ class EngineControl : public QObject {
     Q_OBJECT
   public:
     EngineControl(QString group,
-                  UserSettingsPointer pConfig);
+                  UserSettingsPointer pConfig,
+                  QObject *pParent = nullptr);
     virtual ~EngineControl();
 
     // Called by EngineBuffer::process every latency period. See the above
