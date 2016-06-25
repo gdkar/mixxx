@@ -157,6 +157,7 @@ class EngineBuffer : public EngineObject {
     // asynchronous, EngineBuffer will emit a trackLoaded signal when the load
     // has completed.
     void loadTrack(TrackPointer pTrack, bool play);
+    void addControl(EngineControl* pControl);
 
   public slots:
     void slotControlPlayRequest(double);
@@ -189,7 +190,6 @@ class EngineBuffer : public EngineObject {
   private:
     // Add an engine control to the EngineBuffer
     // must not be called outside the Constructor
-    void addControl(EngineControl* pControl);
 
     void enableIndependentPitchTempoScaling(bool bEnable,
                                             const int iBufferSize);
@@ -336,20 +336,16 @@ class EngineBuffer : public EngineObject {
     // Object used to perform waveform scaling (sample rate conversion).  These
     // three pointers may be reassigned depending on configuration and tests.
     EngineBufferScale* m_pScale;
-    FRIEND_TEST(EngineBufferTest, SlowRubberBand);
-    FRIEND_TEST(EngineBufferTest, ResetPitchAdjustUsesLinear);
-    FRIEND_TEST(EngineBufferTest, VinylScalerRampZero);
-    FRIEND_TEST(EngineBufferTest, ReadFadeOut);
     EngineBufferScale* m_pScaleVinyl;
     // The keylock engine is configurable, so it could flip flop between
     // ScaleST and ScaleRB during a single callback.
     EngineBufferScale* volatile m_pScaleKeylock;
 
     // Object used for vinyl-style interpolation scaling of the audio
-    EngineBufferScaleLinear* m_pScaleLinear;
+//    EngineBufferScaleLinear* m_pScaleLinear;
     // Objects used for pitch-indep time stretch (key lock) scaling of the audio
-    EngineBufferScaleST* m_pScaleST;
-    EngineBufferScaleRubberBand* m_pScaleRB;
+//    EngineBufferScaleST* m_pScaleST;
+//    EngineBufferScaleRubberBand* m_pScaleRB;
 
     // Indicates whether the scaler has changed since the last process()
     bool m_bScalerChanged;

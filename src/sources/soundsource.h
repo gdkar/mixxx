@@ -10,18 +10,11 @@ namespace mixxx {
 class SoundSource: public MetadataSource, public AudioSource {
 public:
     static QString getFileExtensionFromUrl(const QUrl& url);
-
-    const QString& getType() const {
-        return m_type;
-    }
+    const QString& getType() const { return m_type; }
 
     // Default implementations for reading/writing track metadata.
-    Result parseTrackMetadataAndCoverArt(
-            TrackMetadata* pTrackMetadata,
-            QImage* pCoverArt) const override;
-    Result writeTrackMetadata(
-            const TrackMetadata& trackMetadata) const override;
-
+    Result parseTrackMetadataAndCoverArt(TrackMetadata* pTrackMetadata,QImage* pCoverArt) const override;
+    Result writeTrackMetadata(const TrackMetadata& trackMetadata) const override;
     enum class OpenResult {
         SUCCEEDED,
         FAILED,
@@ -31,7 +24,6 @@ public:
         // only indicates a lack of functionality.
         UNSUPPORTED_FORMAT
     };
-
     // Opens the AudioSource for reading audio data.
     //
     // Since reopening is not supported close() will be called
@@ -42,19 +34,16 @@ public:
     // the number of channels or do resampling on the fly while decoding
     // the input data.
     OpenResult open(const AudioSourceConfig& audioSrcCfg = AudioSourceConfig());
-
     // Closes the AudioSource and frees all resources.
     //
     // Might be called even if the AudioSource has never been
     // opened, has already been closed, or if opening has failed.
     virtual void close() = 0;
-
 protected:
     // If no type is provided the file extension of the file referred
     // by the URL will be used as the type of the SoundSource.
     explicit SoundSource(const QUrl& url);
     SoundSource(const QUrl& url, const QString& type);
-
 private:
     // Tries to open the AudioSource for reading audio data according
     // to the "Template Method" design pattern.
@@ -71,10 +60,8 @@ private:
     // Exceptions should be handled internally by implementations to
     // avoid warning messages about unexpected or unknown exceptions.
     virtual OpenResult tryOpen(const AudioSourceConfig& audioSrcCfg) = 0;
-
     const QString m_type;
 };
-
 typedef QSharedPointer<SoundSource> SoundSourcePointer;
 
 } //namespace mixxx

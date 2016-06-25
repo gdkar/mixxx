@@ -20,8 +20,8 @@ static const double CUE_MODE_NUMARK = 3.0;
 static const double CUE_MODE_MIXXX_NO_BLINK = 4.0;
 
 CueControl::CueControl(QString group,
-                       UserSettingsPointer pConfig) :
-        EngineControl(group, pConfig),
+                       UserSettingsPointer pConfig, QObject *pParent) :
+        EngineControl(group, pConfig, pParent),
         m_bPreviewing(false),
         m_pPlayButton(ControlObject::getControl(ConfigKey(group, "play"))),
         m_pStopButton(ControlObject::getControl(ConfigKey(group, "stop"))),
@@ -116,7 +116,7 @@ CueControl::~CueControl() {
 
 void CueControl::createControls() {
     for (int i = 0; i < m_iNumHotCues; ++i) {
-        HotcueControl* pControl = new HotcueControl(getGroup(), i);
+        auto  pControl = new HotcueControl(getGroup(), i, this);
 
         connect(pControl, SIGNAL(hotcuePositionChanged(HotcueControl*, double)),
                 this, SLOT(hotcuePositionChanged(HotcueControl*, double)),
@@ -168,7 +168,7 @@ void CueControl::attachCue(CuePointer pCue, int hotCue) {
 }
 
 void CueControl::detachCue(int hotCue) {
-    HotcueControl* pControl = m_hotcueControl.value(hotCue, NULL);
+    auto  pControl = m_hotcueControl.value(hotCue, NULL);
     if (pControl == NULL) {
         return;
     }
@@ -297,7 +297,7 @@ void CueControl::trackCuesUpdated() {
 
         int hotcue = pCue->getHotCue();
         if (hotcue != -1) {
-            HotcueControl* pControl = m_hotcueControl.value(hotcue, NULL);
+            auto pControl = m_hotcueControl.value(hotcue, NULL);
 
             // Cue's hotcue doesn't have a hotcue control.
             if (pControl == NULL) {
@@ -582,10 +582,9 @@ void CueControl::hintReader(HintVector* pHintList) {
     // this is called from the engine thread
     // it is no locking required, because m_hotcueControl is filled during the
     // constructor and getPosition()->get() is a ControlObject
-    for (QList<HotcueControl*>::const_iterator it = m_hotcueControl.constBegin();
-         it != m_hotcueControl.constEnd(); ++it) {
-        HotcueControl* pControl = *it;
-        double position = pControl->getPosition()->get();
+    for (auto it = m_hotcueControl.constBegin(); it != m_hotcueControl.constEnd(); ++it) {
+        auto pControl = *it;
+        auto position = pControl->getPosition()->get();
         if (position != -1) {
             cue_hint.sample = position;
             if (cue_hint.sample % 2 != 0)
@@ -681,10 +680,8 @@ void CueControl::cuePreview(double v)
     } else {
         return;
     }
-
     // Need to unlock before emitting any signals to prevent deadlock.
     lock.unlock();
-
     seekAbs(m_pCuePoint->get());
 }
 
@@ -725,7 +722,6 @@ void CueControl::cueCDJ(double v) {
             cueSet(v);
             // Just in case.
             m_bPreviewing = false;
-
             // If quantize is enabled, jump to the cue point since it's not
             // necessarily where we currently are
             if (m_pQuantizeEnabled->get() > 0.0) {
@@ -809,7 +805,6 @@ void CueControl::cueDefault(double v) {
         cueCDJ(v);
     }
 }
-
 void CueControl::pause(double v) {
     QMutexLocker lock(&m_mutex);
     //qDebug() << "CueControl::pause()" << v;
@@ -817,7 +812,6 @@ void CueControl::pause(double v) {
         m_pPlayButton->set(0.0);
     }
 }
-
 void CueControl::playStutter(double v) {
     QMutexLocker lock(&m_mutex);
     //qDebug() << "playStutter" << v;
@@ -829,7 +823,6 @@ void CueControl::playStutter(double v) {
         }
     }
 }
-
 bool CueControl::updateIndicatorsAndModifyPlay(bool newPlay, bool playPossible) {
     //qDebug() << "updateIndicatorsAndModifyPlay" << newPlay << playPossible
     //        << m_iCurrentlyPreviewingHotcues << m_bPreviewing;
@@ -979,8 +972,9 @@ ConfigKey HotcueControl::keyForControl(int hotcue, const char* name) {
     return key;
 }
 
-HotcueControl::HotcueControl(QString group, int i)
-        : m_group(group),
+HotcueControl::HotcueControl(QString group, int i, QObject *p)
+        : QObject(p),
+          m_group(group),
           m_iHotcueNumber(i),
           m_pCue(NULL),
           m_bPreviewing(false),

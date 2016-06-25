@@ -1,106 +1,56 @@
-#ifndef MIXXX_SOUNDSOURCEFFMPEG_H
-#define MIXXX_SOUNDSOURCEFFMPEG_H
-
-extern "C" {
-
-#include <libavcodec/avcodec.h>
-#include <libavformat/avformat.h>
-
-#ifndef __FFMPEGOLDAPI__
-#include <libavutil/avutil.h>
-#include <libavutil/opt.h>
-#endif
-
-// Compatibility
-#include <libavutil/mathematics.h>
-#include <libavutil/opt.h>
-
-} // extern "C"
-
-#include <QVector>
-
+_Pragma("once")
 #include "sources/soundsourceprovider.h"
 
-#include "util/memory.h" // std::unique_ptr<> + std::make_unique()
+#include <encoder/encoderffmpegresample.h>
 
-// forward declaration
-class EncoderFfmpegResample;
+// Needed to ensure that macros in <stdint.h> get defined.
+
+#include <cstdint>
+#include <vector>
+#include <atomic>
+extern "C"{
+#include <libavcodec/avcodec.h>
+#include <libavformat/avformat.h>
+#include <libavcodec/avcodec.h>
+#include <libswresample/swresample.h>
+#include <libavdevice/avdevice.h>
+#include <libavutil/avutil.h>
+};
+//#include <libavutil/opt.h>
+//#include <libavutil/mathematics.h>
+
 
 namespace mixxx {
 
-struct ffmpegLocationObject {
-    SINT pos;
-    SINT pts;
-    SINT startFrame;
-};
-
-struct ffmpegCacheObject {
-    SINT startFrame;
-    SINT length;
-    quint8 *bytes;
-};
-
 class SoundSourceFFmpeg : public SoundSource {
   public:
-    explicit SoundSourceFFmpeg(const QUrl& url);
-    ~SoundSourceFFmpeg() override;
+    explicit SoundSourceFFmpeg(QUrl url);
+    virtual ~SoundSourceFFmpeg();
 
     void close() override;
-
-    SINT seekSampleFrame(SINT frameIndex) override;
-
-    SINT readSampleFrames(SINT numberOfFrames, CSAMPLE* sampleBuffer) override;
-
+    virtual SINT seekSampleFrame(SINT frameIndex) override;
+    virtual SINT readSampleFrames(SINT numberOfFrames, CSAMPLE* sampleBuffer) override;
   private:
-    OpenResult tryOpen(const AudioSourceConfig& audioSrcCfg) override;
+    Result tryOpen(const AudioSourceConfig& audioSrcCfg) override;
 
-    bool readFramesToCache(unsigned int count, SINT offset);
-    bool getBytesFromCache(CSAMPLE* buffer, SINT offset, SINT size);
-    SINT getSizeofCache();
-    void clearCache();
-
-    unsigned int read(unsigned long size, SAMPLE*);
-
-    AVFormatContext *m_pFormatCtx;
-    int m_iAudioStream;
-    AVCodecContext *m_pCodecCtx;
-    AVCodec *m_pCodec;
-
-    std::unique_ptr<EncoderFfmpegResample> m_pResample;
-
-    SINT m_currentMixxxFrameIndex;
-
-    bool m_bIsSeeked;
-
-    SINT m_lCacheFramePos;
-    SINT m_lCacheStartFrame;
-    SINT m_lCacheEndFrame;
-    SINT m_lCacheLastPos;
-    QVector<struct ffmpegCacheObject  *> m_SCache;
-    QVector<struct ffmpegLocationObject  *> m_SJumpPoints;
-    SINT m_lLastStoredPos;
-    SINT m_lStoreCount;
-    SINT m_lStoredSeekPoint;
-    struct ffmpegLocationObject *m_SStoredJumpPoint;
+    bool getNextFrame( );
+    AVFormatContext      *m_fmt_ctx    = nullptr;
+    AVCodecContext       *m_dec_ctx    = nullptr;
+    AVCodec              *m_dec        = nullptr;
+    AVStream             *m_stream     = nullptr;
+    int                   m_stream_idx = -1;
+    AVRational            m_stream_tb  { 0, 1 };
+    SwrContext           *m_swr        = nullptr;
+    AVFrame              *m_frame  = nullptr;
+    AVPacket              m_packet;
+    AVPacket              m_packet_free;
+    SINT                  m_offset_base = 0;
+    SINT                  m_offset_cur  = 0;
 };
-
 class SoundSourceProviderFFmpeg: public SoundSourceProvider {
   public:
-    SoundSourceProviderFFmpeg();
-
-    QString getName() const override {
-        return "FFmpeg";
-    }
-
-    SoundSourceProviderPriority getPriorityHint(
-            const QString& supportedFileExtension) const override {
-        Q_UNUSED(supportedFileExtension);
-        // FFmpeg will only be used as the last resort
-        return SoundSourceProviderPriority::LOWEST;
-    }
-
+    QString getName() const override {return "FFmpeg";}
     QStringList getSupportedFileExtensions() const override;
-
     SoundSourcePointer newSoundSource(const QUrl& url) override {
         return SoundSourcePointer(new SoundSourceFFmpeg(url));
     }

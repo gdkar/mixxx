@@ -183,32 +183,27 @@ EngineBuffer::EngineBuffer(QString group, UserSettingsPointer pConfig,
     // Quantization Controller for enabling and disabling the
     // quantization (alignment) of loop in/out positions and (hot)cues with
     // beats.
-    QuantizeControl* quantize_control = new QuantizeControl(group, pConfig);
 
     // Create the Loop Controller
-    m_pLoopingControl = new LoopingControl(group, pConfig);
-    addControl(m_pLoopingControl);
+    m_pLoopingControl = new LoopingControl(group, pConfig, this);
 
-    addControl(quantize_control);
+    QuantizeControl* quantize_control = new QuantizeControl(group, pConfig, this);
     m_pQuantize = ControlObject::getControl(ConfigKey(group, "quantize"));
 
     m_pEngineSync = pMixingEngine->getEngineSync();
 
-    m_pSyncControl = new SyncControl(group, pConfig, pChannel, m_pEngineSync);
-    addControl(m_pSyncControl);
+    m_pSyncControl = new SyncControl(group, pConfig, this, pChannel, m_pEngineSync);
+    m_pSyncControl->setParent(this);
 
 #ifdef __VINYLCONTROL__
-    m_pVinylControlControl = new VinylControlControl(group, pConfig);
-    addControl(m_pVinylControlControl);
+    m_pVinylControlControl = new VinylControlControl(group, pConfig, this);
 #endif
 
-    m_pRateControl = new RateControl(group, pConfig);
+    m_pRateControl = new RateControl(group, pConfig, this);
     // Add the Rate Controller
-    addControl(m_pRateControl);
 
     // Create the BPM Controller
-    m_pBpmControl = new BpmControl(group, pConfig);
-    addControl(m_pBpmControl);
+    m_pBpmControl = new BpmControl(group, pConfig, this);
 
     // TODO(rryan) remove this dependence?
     m_pRateControl->setBpmControl(m_pBpmControl);
@@ -218,29 +213,30 @@ EngineBuffer::EngineBuffer(QString group, UserSettingsPointer pConfig,
     m_fwdButton = ControlObject::getControl(ConfigKey(group, "fwd"));
     m_backButton = ControlObject::getControl(ConfigKey(group, "back"));
 
-    m_pKeyControl = new KeyControl(group, pConfig);
-    addControl(m_pKeyControl);
+    m_pKeyControl = new KeyControl(group, pConfig, this);
 
     // Create the clock controller
-    m_pClockControl = new ClockControl(group, pConfig);
-    addControl(m_pClockControl);
+    m_pClockControl = new ClockControl(group, pConfig, this);
 
     // Create the cue controller
-    m_pCueControl = new CueControl(group, pConfig);
-    addControl(m_pCueControl);
+    m_pCueControl = new CueControl(group, pConfig, this);
 
     m_pReadAheadManager = new ReadAheadManager(m_pReader,m_pLoopingControl,this);
     m_pReadAheadManager->addRateControl(m_pRateControl);
     // Construct scaling objects
-    m_pScaleLinear = new EngineBufferScaleLinear(m_pReadAheadManager, this);
-    m_pScaleST = new EngineBufferScaleST(m_pReadAheadManager, this);
-    m_pScaleRB = new EngineBufferScaleRubberBand(m_pReadAheadManager, this);
+//    m_pScaleLinear = new EngineBufferScaleLinear(m_pReadAheadManager, this);
+//    m_pScaleST = new EngineBufferScaleST(m_pReadAheadManager, this);
+//    m_pScaleRB = new EngineBufferScaleRubberBand(m_pReadAheadManager, this);
+    new EngineBufferScaleLinear(m_pReadAheadManager, this);
+    new EngineBufferScaleST(m_pReadAheadManager, this);
+    new EngineBufferScaleRubberBand(m_pReadAheadManager, this);
+
     if (m_pKeylockEngine->get() == SOUNDTOUCH) {
-        m_pScaleKeylock = m_pScaleST;
+        m_pScaleKeylock = findChild<EngineBufferScaleST*>();
     } else {
-        m_pScaleKeylock = m_pScaleRB;
+        m_pScaleKeylock = findChild<EngineBufferScaleRubberBand*>();
     }
-    m_pScaleVinyl = m_pScaleLinear;
+    m_pScaleVinyl = findChild<EngineBufferScaleLinear*>();
     m_pScale = m_pScaleVinyl;
     m_pScale->clear();
     m_bScalerChanged = true;
@@ -282,8 +278,6 @@ EngineBuffer::~EngineBuffer()
     delete m_pEject;
 
     SampleUtil::free(m_pCrossfadeBuffer);
-
-    qDeleteAll(m_engineControls);
 }
 
 double EngineBuffer::fractionalPlayposFromAbsolute(double absolutePlaypos) {
@@ -305,8 +299,8 @@ void EngineBuffer::enableIndependentPitchTempoScaling(bool bEnable,
 
     // m_pScaleKeylock and m_pScaleVinyl could change out from under us,
     // so cache it.
-    EngineBufferScale* keylock_scale = m_pScaleKeylock;
-    EngineBufferScale* vinyl_scale = m_pScaleVinyl;
+    auto keylock_scale = m_pScaleKeylock;
+    auto vinyl_scale   = m_pScaleVinyl;
 
     if (bEnable && m_pScale != keylock_scale) {
         if (m_speed_old != 0.0) {
@@ -336,7 +330,7 @@ void EngineBuffer::setEngineMaster(EngineMaster* pEngineMaster) {
     for (auto  pControl: m_engineControls)
         pControl->setEngineMaster(pEngineMaster);
 }
-void EngineBuffer::queueNewPlaypos(double newpos, enum SeekRequest seekType) {
+void EngineBuffer::queueNewPlaypos(double newpos,  SeekRequest seekType) {
     // All seeks need to be done in the Engine thread so queue it up.
     // Write the position before the seek type, to reduce a possible race
     // condition effect
@@ -413,17 +407,11 @@ void EngineBuffer::setNewPlaypos(double newpos) {
         m_pReadAheadManager->notifySeek(m_filepos_play);
     }
     m_pScale->clear();
-
     // Ensures that the playpos slider gets updated in next process call
     m_iSamplesCalculated = 1000000;
-
     // Must hold the engineLock while using m_engineControls
-    for (QList<EngineControl*>::iterator it = m_engineControls.begin();
-         it != m_engineControls.end(); ++it) {
-        EngineControl *pControl = *it;
+    for (auto &pControl :  m_engineControls)
         pControl->notifySeek(m_filepos_play);
-    }
-
     verifyPlay(); // verify or update play button and indicator
 }
 QString EngineBuffer::getGroup() { return m_group; }
@@ -567,7 +555,6 @@ bool EngineBuffer::updateIndicatorsAndModifyPlay(bool newPlay) {
 
     return m_pCueControl->updateIndicatorsAndModifyPlay(newPlay, playPossible);
 }
-
 void EngineBuffer::verifyPlay() {
     bool play = m_playButton->toBool();
     bool verifiedPlay = updateIndicatorsAndModifyPlay(play);
@@ -575,7 +562,6 @@ void EngineBuffer::verifyPlay() {
         m_playButton->setAndConfirm(verifiedPlay ? 1.0 : 0.0);
     }
 }
-
 void EngineBuffer::slotControlPlayRequest(double v) {
     bool verifiedPlay = updateIndicatorsAndModifyPlay(v > 0.0);
     // set and confirm must be called here in any case to update the widget toggle state
@@ -624,25 +610,25 @@ void EngineBuffer::slotControlSlip(double v)
     m_slipEnabled = static_cast<int>(v > 0.0);
 }
 
-void EngineBuffer::slotKeylockEngineChanged(double dIndex) {
-    if (m_bScalerOverride) {
-        return;
-    }
+void EngineBuffer::slotKeylockEngineChanged(double dIndex)
+{
     // static_cast<KeylockEngine>(dIndex); direct cast produces a "not used" warning with gcc
     int iEngine = static_cast<int>(dIndex);
-    KeylockEngine engine = static_cast<KeylockEngine>(iEngine);
+    auto engine = static_cast<KeylockEngine>(iEngine);
     if (engine == SOUNDTOUCH) {
-        m_pScaleKeylock = m_pScaleST;
+        if(auto lock = findChild<EngineBufferScaleST*>())
+            m_pScaleKeylock = lock;
     } else {
-        m_pScaleKeylock = m_pScaleRB;
+        if(auto lock = findChild<EngineBufferScaleRubberBand*>())
+            m_pScaleKeylock = lock;
     }
 }
 
-void EngineBuffer::process(CSAMPLE* pOutput, const int iBufferSize) {
+void EngineBuffer::process(CSAMPLE* pOutput, const int iBufferSize)
+{
     // Bail if we receive a non-even buffer size. Assert in debug builds.
-    DEBUG_ASSERT_AND_HANDLE(even(iBufferSize)) {
+    DEBUG_ASSERT_AND_HANDLE(even(iBufferSize))
         return;
-    }
     m_pReader->process();
     // Steps:
     // - Lookup new reader information
@@ -662,33 +648,28 @@ void EngineBuffer::process(CSAMPLE* pOutput, const int iBufferSize) {
     // it doesn't reallocate when the user engages keylock during playback.
     // We do this even if rubberband is not active.
     if (sample_rate != m_iSampleRate) {
-        m_pScaleLinear->setSampleRate(sample_rate);
-        m_pScaleST->setSampleRate(sample_rate);
-        m_pScaleRB->setSampleRate(sample_rate);
+        for(auto &lock : findChildren<EngineBufferScale*>())
+            lock->setSampleRate(sample_rate);
         m_iSampleRate = sample_rate;
     }
-
     bool bTrackLoading = load_atomic(m_iTrackLoading) != 0;
     if (!bTrackLoading && m_pause.tryLock()) {
         ScopedTimer t("EngineBuffer::process_pauselock");
-
-        double baserate = 0.0;
+        auto baserate = 0.0;
         if (sample_rate > 0) {
             baserate = ((double)m_trackSampleRateOld / sample_rate);
         }
-
         // Note: play is also active during cue preview
-        bool paused = !m_playButton->toBool();
-        KeyControl::PitchTempoRatio pitchTempoRatio = m_pKeyControl->getPitchTempoRatio();
-
+        auto paused = !m_playButton->toBool();
+        auto pitchTempoRatio = m_pKeyControl->getPitchTempoRatio();
         // The pitch adjustment in Ratio (1.0 being normal
         // pitch. 2.0 is a full octave shift up).
-        double pitchRatio = pitchTempoRatio.pitchRatio;
-        double tempoRatio = pitchTempoRatio.tempoRatio;
-        const bool keylock_enabled = pitchTempoRatio.keylock;
+        auto pitchRatio = pitchTempoRatio.pitchRatio;
+        auto tempoRatio = pitchTempoRatio.tempoRatio;
+        auto keylock_enabled = pitchTempoRatio.keylock;
 
-        bool is_scratching = false;
-        bool is_reverse = false;
+        auto is_scratching = false;
+        auto is_reverse = false;
 
         // Update the slipped position and seek if it was disabled.
         processSlip(iBufferSize);
@@ -701,11 +682,10 @@ void EngineBuffer::process(CSAMPLE* pOutput, const int iBufferSize) {
         // (1.0 being normal rate. 2.0 plays at 2x speed -- 2 track seconds
         // pass for every 1 real second). Depending on whether
         // keylock is enabled, this is applied to either the rate or the tempo.
-        double speed = m_pRateControl->calculateSpeed(
+        auto speed = m_pRateControl->calculateSpeed(
                 baserate, tempoRatio, paused, iBufferSize, &is_scratching, &is_reverse);
 
-        bool useIndependentPitchAndTempoScaling = false;
-
+        auto useIndependentPitchAndTempoScaling = false;
         // TODO(owen): Maybe change this so that rubberband doesn't disable
         // keylock on scratch. (just check m_pScaleKeylock == m_pScaleST)
         if (is_scratching || (qobject_cast<EngineBufferScaleST*>(m_pScaleKeylock)&& std::abs(speed) > 1.9)) {
@@ -744,7 +724,7 @@ void EngineBuffer::process(CSAMPLE* pOutput, const int iBufferSize) {
             // independent from speed) to determine if the keylock scaler
             // should be used even though keylock is disabled.
             if (speed != 0.0) {
-                double offlinear = pitchRatio / speed;
+                auto offlinear = pitchRatio / speed;
                 if (offlinear > kLinearScalerElipsis ||
                         offlinear < 1 / kLinearScalerElipsis) {
                     // only enable keylock scaler if pitch adjustment is at
@@ -831,7 +811,6 @@ void EngineBuffer::process(CSAMPLE* pOutput, const int iBufferSize) {
                 // Clear the scaler information
                 m_pScale->clear();
             }
-
             m_baserate_old = baserate;
             m_speed_old    = speed;
             m_pitch_old    = pitchRatio;
@@ -843,7 +822,6 @@ void EngineBuffer::process(CSAMPLE* pOutput, const int iBufferSize) {
             // the deck speed should affect the pitch.
 
             m_pScale->setScaleParameters(baserate,&speed,&pitchRatio);
-
             // The way we treat rate inside of EngineBuffer is actually a
             // description of "sample consumption rate" or percentage of samples
             // consumed relative to playing back the track at its native sample
@@ -861,7 +839,6 @@ void EngineBuffer::process(CSAMPLE* pOutput, const int iBufferSize) {
         auto at_start = m_filepos_play <= 0;
         auto at_end = m_filepos_play >= m_trackSamplesOld;
         auto backwards = rate < 0;
-
         if (at_end && !backwards) {
             // do not play past end
             bCurBufferPaused = true;
@@ -894,10 +871,6 @@ void EngineBuffer::process(CSAMPLE* pOutput, const int iBufferSize) {
             //         << ", play " << filepos_play
             //         << " bufferlen " << iBufferSize;
 
-            if (m_bScalerOverride) {
-                // If testing, we don't have a real log so we fake the position.
-                m_filepos_play += samplesRead;
-            } else {
                 // Adjust filepos_play by the amount we processed. TODO(XXX) what
                 // happens if samplesRead is a fraction ?
                 m_filepos_play = m_pReadAheadManager->getEffectiveVirtualPlaypositionFromLog(
@@ -935,10 +908,9 @@ void EngineBuffer::process(CSAMPLE* pOutput, const int iBufferSize) {
         auto end_of_track = //(at_start && backwards) ||
             (at_end && !backwards);
         // If playbutton is pressed, check if we are at start or end of track
-        if ((m_playButton->get() || (m_fwdButton->get() || m_backButton->get()))
-                && end_of_track) {
+        if ((m_playButton->get() || (m_fwdButton->get() || m_backButton->get())) && end_of_track) {
             if (repeat_enabled) {
-                double fractionalPos = at_start ? 1.0 : 0;
+                auto fractionalPos = at_start ? 1.0 : 0.0;
                 doSeekFractional(fractionalPos, SEEK_STANDARD);
             } else {
                 m_playButton->set(0.);
@@ -985,7 +957,7 @@ void EngineBuffer::process(CSAMPLE* pOutput, const int iBufferSize) {
 
 void EngineBuffer::processSlip(int iBufferSize) {
     // Do a single read from m_bSlipEnabled so we don't run in to race conditions.
-    bool enabled = static_cast<bool>(load_atomic(m_slipEnabled));
+    auto enabled = static_cast<bool>(load_atomic(m_slipEnabled));
     if (enabled != m_bSlipEnabledProcessing) {
         m_bSlipEnabledProcessing = enabled;
         if (enabled) {
@@ -993,13 +965,12 @@ void EngineBuffer::processSlip(int iBufferSize) {
             m_dSlipRate = m_rate_old;
         } else {
             // TODO(owen) assuming that looping will get canceled properly
-            double newPlayFrame = m_dSlipPosition / kSamplesPerFrame;
-            double roundedSlip = round(newPlayFrame) * kSamplesPerFrame;
+            auto newPlayFrame = m_dSlipPosition / kSamplesPerFrame;
+            auto roundedSlip = round(newPlayFrame) * kSamplesPerFrame;
             slotControlSeekExact(roundedSlip);
             m_dSlipPosition = 0;
         }
     }
-
     // Increment slip position even if it was just toggled -- this ensures the position is correct.
     if (enabled) {
         m_dSlipPosition += static_cast<double>(iBufferSize) * m_dSlipRate;
@@ -1031,7 +1002,6 @@ void EngineBuffer::processSyncRequests() {
                                        static_cast<SyncMode>(mode_request));
     }
 }
-
 void EngineBuffer::processSeek(bool paused) {
     // We need to read position just after reading seekType, to ensure that we
     // read the matching position to seek_typ or a position from a new (second)
@@ -1039,13 +1009,12 @@ void EngineBuffer::processSeek(bool paused) {
     // The later case is ok, because we will process the new seek in the next
     // call anyway again.
 
-    SeekRequests seekType = static_cast<SeekRequest>(
+    auto seekType = static_cast<SeekRequests>(
             m_iSeekQueued.fetchAndStoreRelease(SEEK_NONE));
-    double position = m_queuedSeekPosition.getValue();
-
+    auto position = m_queuedSeekPosition.getValue();
     // Add SEEK_PHASE bit, if any
     if (m_iSeekPhaseQueued.fetchAndStoreRelease(0)) {
-        seekType |= SEEK_PHASE;
+        seekType |= (SeekRequests)SEEK_PHASE;
     }
 
     switch (seekType) {
@@ -1079,9 +1048,9 @@ void EngineBuffer::postProcess(const int iBufferSize) {
     // The order of events here is very delicate.  It's necessary to update
     // some values before others, because the later updates may require
     // values from the first update.
-    double local_bpm = m_pBpmControl->updateLocalBpm();
-    double beat_distance = m_pBpmControl->updateBeatDistance();
-    SyncMode mode = m_pSyncControl->getSyncMode();
+    auto local_bpm = m_pBpmControl->updateLocalBpm();
+    auto beat_distance = m_pBpmControl->updateBeatDistance();
+    auto mode = m_pSyncControl->getSyncMode();
     if (mode == SYNC_MASTER) {
         m_pSyncControl->setLocalBpm(local_bpm);
         m_pEngineSync->notifyBeatDistanceChanged(m_pSyncControl, beat_distance);
@@ -1091,18 +1060,15 @@ void EngineBuffer::postProcess(const int iBufferSize) {
         m_pSyncControl->reportPlayerSpeed(m_speed_old, m_scratching_old);
         m_pSyncControl->setBeatDistance(beat_distance);
     }
-
     // Update all the indicators that EngineBuffer publishes to allow
     // external parts of Mixxx to observe its status.
     updateIndicators(m_speed_old, iBufferSize);
 }
-
-void EngineBuffer::updateIndicators(double speed, int iBufferSize) {
-
+void EngineBuffer::updateIndicators(double speed, int iBufferSize)
+{
     // Increase samplesCalculated by the buffer size
     m_iSamplesCalculated += iBufferSize;
-
-    double fFractionalPlaypos = fractionalPlayposFromAbsolute(m_filepos_play);
+    auto fFractionalPlaypos = fractionalPlayposFromAbsolute(m_filepos_play);
     if(speed > 0 && fFractionalPlaypos == 1.0) {
         speed = 0;
     }
@@ -1175,18 +1141,8 @@ void EngineBuffer::addControl(EngineControl* pControl) {
             pControl, SLOT(trackLoaded(TrackPointer, TrackPointer)),
             Qt::DirectConnection);
 }
-
-void EngineBuffer::bindWorkers(EngineWorkerScheduler* pWorkerScheduler) {
-    m_pReader->setScheduler(pWorkerScheduler);
-}
-
-bool EngineBuffer::isTrackLoaded() {
-    if (m_pCurrentTrack) {
-        return true;
-    }
-    return false;
-}
-
+void EngineBuffer::bindWorkers(EngineWorkerScheduler* pWorkerScheduler) { m_pReader->setScheduler(pWorkerScheduler); }
+bool EngineBuffer::isTrackLoaded() { return !!m_pCurrentTrack; }
 void EngineBuffer::slotEjectTrack(double v) {
     if (v > 0) {
         // Don't allow rejections while playing a track. We don't need to lock to
@@ -1202,9 +1158,6 @@ void EngineBuffer::collectFeatures(GroupFeatureState* pGroupFeatures) const
 {
     pGroupFeatures->has_current_position = true;
     pGroupFeatures->current_position = m_filepos_play;
-
-    if (m_pBpmControl)
-        m_pBpmControl->collectFeatures(pGroupFeatures);
-    if (m_pKeyControl)
-        m_pKeyControl->collectFeatures(pGroupFeatures);
+    for(auto &pControl: m_engineControls)
+        pControl->collectFeatureState(pGroupFeatures);
 }

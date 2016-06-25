@@ -18,40 +18,36 @@ void AudioSource::clampFrameInterval(
         *pMaxFrameIndexOfInterval = *pMinFrameIndexOfInterval;
     }
 }
-
 AudioSource::AudioSource(const QUrl& url)
         : UrlResource(url),
           AudioSignal(kSampleLayout),
           m_frameCount(kFrameCountDefault),
-          m_bitrate(kBitrateDefault) {
-}
-
+          m_bitrate(kBitrateDefault)
+{ }
 void AudioSource::setFrameCount(SINT frameCount) {
     DEBUG_ASSERT(isValidFrameCount(frameCount));
     m_frameCount = frameCount;
 }
-
 void AudioSource::setBitrate(SINT bitrate) {
     DEBUG_ASSERT(isValidBitrate(bitrate));
     m_bitrate = bitrate;
 }
-
 SINT AudioSource::getSampleBufferSize(
         SINT numberOfFrames,
-        bool readStereoSamples) const {
+        bool readStereoSamples) const
+{
     if (readStereoSamples) {
         return numberOfFrames * kChannelCountStereo;
     } else {
         return frames2samples(numberOfFrames);
     }
 }
-
 SINT AudioSource::readSampleFramesStereo(
         SINT numberOfFrames,
         CSAMPLE* sampleBuffer,
-        SINT sampleBufferSize) {
+        SINT sampleBufferSize)
+{
     DEBUG_ASSERT(getSampleBufferSize(numberOfFrames, true) <= sampleBufferSize);
-
     switch (getChannelCount()) {
         case 1: // mono channel
         {

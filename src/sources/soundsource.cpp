@@ -4,23 +4,23 @@
 
 namespace mixxx {
 
-/*static*/ QString SoundSource::getFileExtensionFromUrl(const QUrl& url) {
+/*static*/ QString SoundSource::getFileExtensionFromUrl(const QUrl& url)
+{
     return url.toString().section(".", -1).toLower().trimmed();
 }
-
 SoundSource::SoundSource(const QUrl& url)
         : AudioSource(url),
           // simply use the file extension as the type
-          m_type(getFileExtensionFromUrl(url)) {
+          m_type(getFileExtensionFromUrl(url))
+{
     DEBUG_ASSERT(getUrl().isValid());
 }
-
 SoundSource::SoundSource(const QUrl& url, const QString& type)
         : AudioSource(url),
-          m_type(type) {
+          m_type(type)
+{
     DEBUG_ASSERT(getUrl().isValid());
 }
-
 SoundSource::OpenResult SoundSource::open(const AudioSourceConfig& audioSrcCfg) {
     close(); // reopening is not supported
 
@@ -39,16 +39,15 @@ SoundSource::OpenResult SoundSource::open(const AudioSourceConfig& audioSrcCfg) 
     }
     return result;
 }
-
 Result SoundSource::parseTrackMetadataAndCoverArt(
         TrackMetadata* pTrackMetadata,
-        QImage* pCoverArt) const {
+        QImage* pCoverArt) const
+{
     return readTrackMetadataAndCoverArtFromFile(pTrackMetadata, pCoverArt, getLocalFileName());
 }
-
 Result SoundSource::writeTrackMetadata(
-        const TrackMetadata& trackMetadata) const {
+        const TrackMetadata& trackMetadata) const
+{
     return writeTrackMetadataIntoFile(trackMetadata, getLocalFileName());
 }
-
-} //namespace mixxx
+} //namespace Mixxx

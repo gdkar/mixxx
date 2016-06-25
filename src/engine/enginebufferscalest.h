@@ -37,7 +37,7 @@ class SoundTouch;
 class EngineBufferScaleST : public EngineBufferScale {
     Q_OBJECT
   public:
-    EngineBufferScaleST(ReadAheadManager* pReadAheadManager, QObject *pParent = nullptr);
+    EngineBufferScaleST(ReadAheadManager* pReadAheadManager, QObject *pParent );
    ~EngineBufferScaleST() override;
     void setScaleParameters(double base_rate,
                             double* pTempoRatio,

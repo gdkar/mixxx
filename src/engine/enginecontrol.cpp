@@ -16,6 +16,9 @@ EngineControl::EngineControl(QString group,
           m_pEngineBuffer(nullptr)
 {
     setCurrentSample(0.0, 0.0);
+    if(auto p = qobject_cast<EngineBuffer*>(parent())) {
+        p->addControl(this);
+    }
 }
 EngineControl::~EngineControl() = default;
 double EngineControl::process(const double,
@@ -110,4 +113,5 @@ EngineBuffer* EngineControl::pickSyncTarget()
             return pChannel ? pChannel->getEngineBuffer() : nullptr;
         }
     }
+    return nullptr;
 }

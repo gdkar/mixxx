@@ -21,7 +21,7 @@ class ControlIndicator;
 class HotcueControl : public QObject {
     Q_OBJECT
   public:
-    HotcueControl(QString group, int hotcueNumber);
+    HotcueControl(QString group, int hotcueNumber, QObject *pParent);
     virtual ~HotcueControl();
 
     inline int getHotcueNumber() { return m_iHotcueNumber; }
@@ -84,7 +84,7 @@ class CueControl : public EngineControl {
     Q_OBJECT
   public:
     CueControl(QString group,
-               UserSettingsPointer pConfig);
+               UserSettingsPointer pConfig, QObject *p);
     virtual ~CueControl();
 
     virtual void hintReader(HintVector* pHintList);

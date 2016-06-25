@@ -37,8 +37,8 @@ QList<double> LoopingControl::getBeatSizes() {
 }
 
 LoopingControl::LoopingControl(QString group,
-                               UserSettingsPointer pConfig)
-        : EngineControl(group, pConfig) {
+                               UserSettingsPointer pConfig, QObject *p)
+        : EngineControl(group, pConfig,p) {
     m_bLoopingEnabled = false;
     m_bLoopRollActive = false;
     LoopSamples loopSamples = { kNoTrigger, kNoTrigger };

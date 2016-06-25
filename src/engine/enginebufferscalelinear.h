@@ -34,7 +34,7 @@ class EngineBufferScaleLinear : public EngineBufferScale  {
     Q_OBJECT
   public:
     EngineBufferScaleLinear(ReadAheadManager *pReadAheadManager, QObject *pParent);
-    ~EngineBufferScaleLinear() override;
+   ~EngineBufferScaleLinear() override;
 
     double getScaled(CSAMPLE* pOutput, const int iBufferSize) override;
     void clear() override;
