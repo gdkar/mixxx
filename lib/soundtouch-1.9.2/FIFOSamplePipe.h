@@ -60,7 +60,9 @@ class FIFOSamplePipe
 {
 public:
     // virtual default destructor
-    virtual ~FIFOSamplePipe() = default;
+    virtual ~FIFOSamplePipe() {}
+
+
     /// Returns a pointer to the beginning of the output samples. 
     /// This function is provided for accessing the output samples directly. 
     /// Please be careful for not to corrupt the book-keeping!
@@ -69,19 +71,24 @@ public:
     /// output samples from the buffer by calling the 
     /// 'receiveSamples(numSamples)' function
     virtual SAMPLETYPE *ptrBegin() = 0;
+
     /// Adds 'numSamples' pcs of samples from the 'samples' memory position to
     /// the sample buffer.
     virtual void putSamples(const SAMPLETYPE *samples,  ///< Pointer to samples.
                             uint numSamples             ///< Number of samples to insert.
                             ) = 0;
+
+
     // Moves samples from the 'other' pipe instance to this instance.
     void moveSamples(FIFOSamplePipe &other  ///< Other pipe instance where from the receive the data.
          )
     {
-        auto oNumSamples = other.numSamples();
+        int oNumSamples = other.numSamples();
+
         putSamples(other.ptrBegin(), oNumSamples);
         other.receiveSamples(oNumSamples);
     };
+
     /// Output samples from beginning of the sample buffer. Copies requested samples to 
     /// output buffer and removes them from the sample buffer. If there are less than 
     /// 'numsample' samples in the buffer, returns all that available.
@@ -90,6 +97,7 @@ public:
     virtual uint receiveSamples(SAMPLETYPE *output, ///< Buffer where to copy output samples.
                                 uint maxSamples                 ///< How many samples to receive at max.
                                 ) = 0;
+
     /// Adjusts book-keeping so that given number of samples are removed from beginning of the 
     /// sample buffer without copying them anywhere. 
     ///
@@ -97,12 +105,16 @@ public:
     /// with 'ptrBegin' function.
     virtual uint receiveSamples(uint maxSamples   ///< Remove this many samples from the beginning of pipe.
                                 ) = 0;
+
     /// Returns number of samples currently available.
     virtual uint numSamples() const = 0;
+
     // Returns nonzero if there aren't any samples available for outputting.
-    virtual bool isEmpty() const = 0;
+    virtual int isEmpty() const = 0;
+
     /// Clears all the samples.
     virtual void clear() = 0;
+
     /// allow trimming (downwards) amount of samples in pipeline.
     /// Returns adjusted amount of samples
     virtual uint adjustAmountOfSamples(uint numSamples) = 0;
@@ -123,17 +135,24 @@ class FIFOProcessor :public FIFOSamplePipe
 {
 protected:
     /// Internal pipe where processed samples are put.
-    FIFOSamplePipe *output{nullptr};
+    FIFOSamplePipe *output;
+
     /// Sets output pipe.
     void setOutPipe(FIFOSamplePipe *pOutput)
     {
-        assert(!output);
-        assert(pOutput);
+        assert(output == NULL);
+        assert(pOutput != NULL);
         output = pOutput;
     }
+
+
     /// Constructor. Doesn't define output pipe; it has to be set be 
     /// 'setOutPipe' function.
-    FIFOProcessor() = default;
+    FIFOProcessor()
+    {
+        output = NULL;
+    }
+
 
     /// Constructor. Configures output pipe.
     FIFOProcessor(FIFOSamplePipe *pOutput   ///< Output pipe.
@@ -141,8 +160,14 @@ protected:
     {
         output = pOutput;
     }
+
+
     /// Destructor.
-    virtual ~FIFOProcessor() = default;
+    virtual ~FIFOProcessor()
+    {
+    }
+
+
     /// Returns a pointer to the beginning of the output samples. 
     /// This function is provided for accessing the output samples directly. 
     /// Please be careful for not to corrupt the book-keeping!
@@ -150,8 +175,13 @@ protected:
     /// When using this function to output samples, also remember to 'remove' the
     /// output samples from the buffer by calling the 
     /// 'receiveSamples(numSamples)' function
-    virtual SAMPLETYPE *ptrBegin() { return output->ptrBegin(); }
+    virtual SAMPLETYPE *ptrBegin()
+    {
+        return output->ptrBegin();
+    }
+
 public:
+
     /// Output samples from beginning of the sample buffer. Copies requested samples to 
     /// output buffer and removes them from the sample buffer. If there are less than 
     /// 'numsample' samples in the buffer, returns all that available.
@@ -163,6 +193,8 @@ public:
     {
         return output->receiveSamples(outBuffer, maxSamples);
     }
+
+
     /// Adjusts book-keeping so that given number of samples are removed from beginning of the 
     /// sample buffer without copying them anywhere. 
     ///
@@ -173,16 +205,28 @@ public:
     {
         return output->receiveSamples(maxSamples);
     }
+
+
     /// Returns number of samples currently available.
-    virtual uint numSamples() const { return output->numSamples(); }
+    virtual uint numSamples() const
+    {
+        return output->numSamples();
+    }
+
+
     /// Returns nonzero if there aren't any samples available for outputting.
-    virtual bool isEmpty() const { return output->isEmpty(); }
+    virtual int isEmpty() const
+    {
+        return output->isEmpty();
+    }
+
     /// allow trimming (downwards) amount of samples in pipeline.
     /// Returns adjusted amount of samples
     virtual uint adjustAmountOfSamples(uint numSamples)
     {
         return output->adjustAmountOfSamples(numSamples);
     }
+
 };
 
 }

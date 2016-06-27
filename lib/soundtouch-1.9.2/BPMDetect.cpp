@@ -54,12 +54,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <cmath>
-#include <cassert>
-#include <cstring>
-#include <cstdio>
-#include <algorithm>
-#include <numeric>
+#include <math.h>
+#include <assert.h>
+#include <string.h>
+#include <stdio.h>
 #include "FIFOSampleBuffer.h"
 #include "PeakFinder.h"
 #include "BPMDetect.h"
@@ -111,8 +109,8 @@ const float avgnorm = (1 - avgdecay);
 
 BPMDetect::BPMDetect(int numChannels, int aSampleRate)
 {
-    sampleRate = aSampleRate;
-    channels = numChannels;
+    this->sampleRate = aSampleRate;
+    this->channels = numChannels;
 
     decimateSum = 0;
     decimateCount = 0;
@@ -175,61 +173,110 @@ BPMDetect::~BPMDetect()
 /// narrow band)
 int BPMDetect::decimate(SAMPLETYPE *dest, const SAMPLETYPE *src, int numsamples)
 {
+    int count, outcount;
     LONG_SAMPLETYPE out;
+
     assert(channels > 0);
     assert(decimateBy > 0);
-    auto outcount = 0;
-    auto count = 0;
+    outcount = 0;
     for (count = 0; count < numsamples; count ++) 
     {
+        int j;
+
         // convert to mono and accumulate
-        decimateSum += std::accumulate(&src[0],&src[channels],decltype(decimateSum){0});
-        src += channels;
+        for (j = 0; j < channels; j ++)
+        {
+            decimateSum += src[j];
+        }
+        src += j;
+
         decimateCount ++;
-        if (decimateCount >= decimateBy)  {
+        if (decimateCount >= decimateBy) 
+        {
             // Store every Nth sample only
             out = (LONG_SAMPLETYPE)(decimateSum / (decimateBy * channels));
             decimateSum = 0;
             decimateCount = 0;
 #ifdef SOUNDTOUCH_INTEGER_SAMPLES
             // check ranges for sure (shouldn't actually be necessary)
-            dest[outcount++] = std::min<LONG_SAMPLETYPE>(std::max<LONG_SAMPLETYPE>(out, -32768),32767);
-#else
-            dest[outcount++] = out;
+            if (out > 32767) 
+            {
+                out = 32767;
+            } 
+            else if (out < -32768) 
+            {
+                out = -32768;
+            }
 #endif // SOUNDTOUCH_INTEGER_SAMPLES
+            dest[outcount] = (SAMPLETYPE)out;
+            outcount ++;
         }
     }
     return outcount;
 }
+
+
+
 // Calculates autocorrelation function of the sample history buffer
 void BPMDetect::updateXCorr(int process_samples)
 {
+    int offs;
+    SAMPLETYPE *pBuffer;
+    
     assert(buffer->numSamples() >= (uint)(process_samples + windowLen));
-    auto pBuffer = buffer->ptrBegin();
+
+    pBuffer = buffer->ptrBegin();
     #pragma omp parallel for
-    for (auto offs = windowStart; offs < windowLen; offs ++)  {
-        xcorr[offs] = std::inner_product(pBuffer,pBuffer + process_samples,pBuffer + offs, SAMPLETYPE{0});
+    for (offs = windowStart; offs < windowLen; offs ++) 
+    {
+        LONG_SAMPLETYPE sum;
+        int i;
+
+        sum = 0;
+        for (i = 0; i < process_samples; i ++) 
+        {
+            sum += pBuffer[i] * pBuffer[i + offs];    // scaling the sub-result shouldn't be necessary
+        }
+//        xcorr[offs] *= xcorr_decay;   // decay 'xcorr' here with suitable coefficients 
+                                        // if it's desired that the system adapts automatically to
+                                        // various bpms, e.g. in processing continouos music stream.
+                                        // The 'xcorr_decay' should be a value that's smaller than but 
+                                        // close to one, and should also depend on 'process_samples' value.
+
+        xcorr[offs] += (float)sum;
     }
 }
+
+
 // Calculates envelope of the sample data
 void BPMDetect::calcEnvelope(SAMPLETYPE *samples, int numsamples) 
 {
-    const static auto decay = 0.7f;               // decay constant for smoothing the envelope
-    const static auto norm = (1 - decay);
+    const static double decay = 0.7f;               // decay constant for smoothing the envelope
+    const static double norm = (1 - decay);
+
     int i;
     LONG_SAMPLETYPE out;
-    for (i = 0; i < numsamples; i ++)  {
+    double val;
+
+    for (i = 0; i < numsamples; i ++) 
+    {
         // calc average RMS volume
         RMSVolumeAccu *= avgdecay;
-        auto val = std::abs(samples[i]);
+        val = (float)fabs((float)samples[i]);
         RMSVolumeAccu += val * val;
+
         // cut amplitudes that are below cutoff ~2 times RMS volume
         // (we're interested in peak values, not the silent moments)
-        if (val < 0.5 * sqrt(RMSVolumeAccu * avgnorm)) { val = 0; }
+        if (val < 0.5 * sqrt(RMSVolumeAccu * avgnorm))
+        {
+            val = 0;
+        }
+
         // smooth amplitude envelope
         envelopeAccu *= decay;
         envelopeAccu += val;
         out = (LONG_SAMPLETYPE)(envelopeAccu * norm);
+
 #ifdef SOUNDTOUCH_INTEGER_SAMPLES
         // cut peaks (shouldn't be necessary though)
         if (out > 32767) out = 32767;
@@ -237,48 +284,88 @@ void BPMDetect::calcEnvelope(SAMPLETYPE *samples, int numsamples)
         samples[i] = (SAMPLETYPE)out;
     }
 }
+
+
+
 void BPMDetect::inputSamples(const SAMPLETYPE *samples, int numSamples)
 {
     SAMPLETYPE decimated[DECIMATED_BLOCK_SAMPLES];
+
     // iterate so that max INPUT_BLOCK_SAMPLES processed per iteration
-    while (numSamples > 0) {
-        auto block = (numSamples > INPUT_BLOCK_SAMPLES) ? INPUT_BLOCK_SAMPLES : numSamples;
+    while (numSamples > 0)
+    {
+        int block;
+        int decSamples;
+
+        block = (numSamples > INPUT_BLOCK_SAMPLES) ? INPUT_BLOCK_SAMPLES : numSamples;
+
         // decimate. note that converts to mono at the same time
-        auto decSamples = decimate(decimated, samples, block);
+        decSamples = decimate(decimated, samples, block);
         samples += block * channels;
         numSamples -= block;
+
         // envelope new samples and add them to buffer
         calcEnvelope(decimated, decSamples);
         buffer->putSamples(decimated, decSamples);
     }
+
     // when the buffer has enought samples for processing...
-    if ((int)buffer->numSamples() > windowLen)  {
+    if ((int)buffer->numSamples() > windowLen) 
+    {
+        int processLength;
+
         // how many samples are processed
-        auto processLength = (int)buffer->numSamples() - windowLen;
+        processLength = (int)buffer->numSamples() - windowLen;
+
         // ... calculate autocorrelations for oldest samples...
         updateXCorr(processLength);
         // ... and remove them from the buffer
         buffer->receiveSamples(processLength);
     }
 }
+
+
+
 void BPMDetect::removeBias()
 {
-    auto minval = *std::min_element(&xcorr[0],&xcorr[windowLen]);
-    std::transform(&xcorr[0],&xcorr[windowLen],&xcorr[0],[=](auto val){return val - minval;});
+    int i;
+    float minval = 1e12f;   // arbitrary large number
+
+    for (i = windowStart; i < windowLen; i ++)
+    {
+        if (xcorr[i] < minval)
+        {
+            minval = xcorr[i];
+        }
+    }
+
+    for (i = windowStart; i < windowLen; i ++)
+    {
+        xcorr[i] -= minval;
+    }
 }
+
+
 float BPMDetect::getBpm()
 {
+    double peakPos;
+    double coeff;
     PeakFinder peakFinder;
-    auto coeff = 60.0 * ((double)sampleRate / (double)decimateBy);
+
+    coeff = 60.0 * ((double)sampleRate / (double)decimateBy);
+
     // save bpm debug analysis data if debug data enabled
     _SaveDebugData(xcorr, windowStart, windowLen, coeff);
+
     // remove bias from xcorr data
     removeBias();
+
     // find peak position
-    auto peakPos = peakFinder.detectPeak(xcorr, windowStart, windowLen);
+    peakPos = peakFinder.detectPeak(xcorr, windowStart, windowLen);
+
     assert(decimateBy != 0);
-    if (peakPos < 1e-9)
-        return 0.0; // detection failed.
+    if (peakPos < 1e-9) return 0.0; // detection failed.
+
     // calculate BPM
     return (float) (coeff / peakPos);
 }

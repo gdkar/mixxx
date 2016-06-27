@@ -39,25 +39,20 @@
 #ifndef STTypes_H
 #define STTypes_H
 
-#include <cstdint>
-#include <cstdio>
-#include <cstddef>
-#include <cmath>
-#include <cstdlib>
-#include <cstring>
-#include <algorithm>
-#include <iterator>
-#include <utility>
-#include <memory>
-#include <functional>
-#include <tuple>
+typedef unsigned int    uint;
+typedef unsigned long   ulong;
 
-typedef uint32_t uint;
-typedef uint64_t ulong;
-typedef uintptr_t ulongptr;
+// Patch for MinGW: on Win64 long is 32-bit
+#ifdef _WIN64
+    typedef unsigned long long ulongptr;
+#else
+    typedef ulong ulongptr;
+#endif
+
 
 // Helper macro for aligning pointer up to next 16-byte boundary
 #define SOUNDTOUCH_ALIGN_POINTER_16(x)      ( ( (ulongptr)(x) + 15 ) & ~(ulongptr)15 )
+
 
 #if (defined(__GNUC__) && !defined(ANDROID))
     // In GCC, include soundtouch_config.h made by config scritps.
@@ -86,6 +81,7 @@ namespace soundtouch
         #undef  SOUNDTOUCH_FLOAT_SAMPLES
         #define SOUNDTOUCH_INTEGER_SAMPLES      1
     #endif
+
     #if !(SOUNDTOUCH_INTEGER_SAMPLES || SOUNDTOUCH_FLOAT_SAMPLES)
        
         /// Choose either 32bit floating point or 16bit integer sampletype
@@ -137,9 +133,10 @@ namespace soundtouch
 
     #ifdef SOUNDTOUCH_INTEGER_SAMPLES
         // 16bit integer sample type
-        typedef int16_t SAMPLETYPE;
+        typedef short SAMPLETYPE;
         // data type for sample accumulation: Use 32bit integer to prevent overflows
-        typedef int32_t LONG_SAMPLETYPE;
+        typedef long  LONG_SAMPLETYPE;
+
         #ifdef SOUNDTOUCH_FLOAT_SAMPLES
             // check that only one sample type is defined
             #error "conflicting sample types defined"
@@ -149,17 +146,23 @@ namespace soundtouch
             // Allow MMX optimizations
             #define SOUNDTOUCH_ALLOW_MMX   1
         #endif
+
     #else
+
         // floating point samples
         typedef float  SAMPLETYPE;
         // data type for sample accumulation: Use double to utilize full precision.
         typedef double LONG_SAMPLETYPE;
+
         #ifdef SOUNDTOUCH_ALLOW_X86_OPTIMIZATIONS
             // Allow SSE optimizations
             #define SOUNDTOUCH_ALLOW_SSE       1
         #endif
+
     #endif  // SOUNDTOUCH_INTEGER_SAMPLES
+
 };
+
 // define ST_NO_EXCEPTION_HANDLING switch to disable throwing std exceptions:
 // #define ST_NO_EXCEPTION_HANDLING    1
 #ifdef ST_NO_EXCEPTION_HANDLING
@@ -172,9 +175,11 @@ namespace soundtouch
     #include <string>
     #define ST_THROW_RT_ERROR(x)    {throw std::runtime_error(x);}
 #endif
+
 // When this #define is active, eliminates a clicking sound when the "rate" or "pitch" 
 // parameter setting crosses from value <1 to >=1 or vice versa during processing. 
 // Default is off as such crossover is untypical case and involves a slight sound 
 // quality compromise.
 //#define SOUNDTOUCH_PREVENT_CLICK_AT_RATE_CROSSOVER   1
+
 #endif
