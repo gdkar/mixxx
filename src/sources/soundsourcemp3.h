@@ -1,13 +1,16 @@
 #ifndef MIXXX_SOUNDSOURCEMP3_H
 #define MIXXX_SOUNDSOURCEMP3_H
-
-#include "sources/soundsourceprovider.h"
 extern "C" {
 #   include <mpg123.h>
-}
-namespace Mixxx {
+};
+#include "sources/soundsource.h"
+#include "sources/soundsourceprovider.h"
 
-class SoundSourceMp3: public SoundSource {
+
+
+namespace mixxx {
+
+class SoundSourceMp3 : public SoundSource {
 public:
     explicit SoundSourceMp3(const QUrl& url);
     ~SoundSourceMp3() override;

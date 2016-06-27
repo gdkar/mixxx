@@ -263,13 +263,7 @@ void readAudioProperties(TrackMetadata* pTrackMetadata,
     pTrackMetadata->setChannels(audioProperties.channels());
     pTrackMetadata->setSampleRate(audioProperties.sampleRate());
     pTrackMetadata->setBitrate(audioProperties.bitrate());
-#if TAGLIB_HAS_LENGTH_IN_MILLISECONDS
-    // Cast to double is required for duration with sub-second precision
-    const double dLengthInMilliseconds = audioProperties.lengthInMilliseconds();
-    const double duration = dLengthInMilliseconds / mixxx::Duration::kMillisPerSecond;
-#else
     const double duration = audioProperties.length();
-#endif
     pTrackMetadata->setDuration(duration);
 }
 

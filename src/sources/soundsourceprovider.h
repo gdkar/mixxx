@@ -24,7 +24,7 @@ enum class SoundSourceProviderPriority {
 // Factory interface for SoundSources
 class SoundSourceProvider {
 public:
-    virtual ~SoundSourceProvider() {}
+    virtual ~SoundSourceProvider() = default;
 
     // A user-readable name that identifies this provider.
     virtual QString getName() const = 0;

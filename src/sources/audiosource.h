@@ -5,7 +5,6 @@
 
 #include "sources/urlresource.h"
 #include "util/audiosignal.h"
-#include "util/result.h"
 #include "util/samplebuffer.h"
 
 namespace mixxx {
@@ -33,15 +32,19 @@ class AudioSource: public UrlResource, public AudioSignal {
   public:
     static const SampleLayout kSampleLayout = SampleLayout::Interleaved;
     // Returns the total number of sample frames.
-    inline SINT getFrameCount() const { return m_frameCount; }
-    inline bool isEmpty() const { return kFrameCountZero >= getFrameCount(); }
+    SINT getFrameCount() const { return m_frameCount; }
+    bool isEmpty() const { return kFrameCountZero >= getFrameCount(); }
     // The actual duration in seconds.
     // Well defined only for valid files!
     inline bool hasDuration() const {
         return hasValidSamplingRate();
     }
-    inline double getDuration() const {
-        DEBUG_ASSERT(hasDuration()); // prevents division by zero
+    bool hasDuration() const
+    {
+        return isValid();
+    }
+    double getDuration() const
+    {
         return double(getFrameCount()) / double(getSamplingRate());
     }
 
@@ -52,22 +55,23 @@ class AudioSource: public UrlResource, public AudioSignal {
         return kBitrateZero < m_bitrate;
     }
     inline SINT getBitrate() const {
+
         return m_bitrate;
     }
     // Index of the first sample frame.
-    inline static SINT getMinFrameIndex()
+    static SINT getMinFrameIndex()
     {
         return kFrameIndexMin;
     }
     // Index of the sample frame following the last
     // sample frame.
-    inline SINT getMaxFrameIndex() const
+    SINT getMaxFrameIndex() const
     {
         return getMinFrameIndex() + getFrameCount();
     }
     // The sample frame index is valid in the range
     // [getMinFrameIndex(), getMaxFrameIndex()].
-    inline bool isValidFrameIndex(SINT frameIndex) const
+    bool isValidFrameIndex(SINT frameIndex) const
     {
         return (getMinFrameIndex() <= frameIndex) &&
                 (getMaxFrameIndex() >= frameIndex);
@@ -93,7 +97,7 @@ class AudioSource: public UrlResource, public AudioSignal {
     // of the audio stream has been reached. The current frame seek
     // position is moved forward towards the next unread frame.
     virtual SINT readSampleFrames( SINT numberOfFrames, CSAMPLE* sampleBuffer) = 0;
-    inline SINT skipSampleFrames( SINT numberOfFrames)
+    SINT skipSampleFrames( SINT numberOfFrames)
     {
         return readSampleFrames(numberOfFrames, static_cast<CSAMPLE*>(nullptr));
     }
@@ -144,7 +148,7 @@ class AudioSource: public UrlResource, public AudioSignal {
             CSAMPLE* sampleBuffer,
             SINT sampleBufferSize);
 
-    inline SINT readSampleFramesStereo(
+    SINT readSampleFramesStereo(
             SINT numberOfFrames,
             SampleBuffer* pSampleBuffer) {
         if (pSampleBuffer) {
@@ -167,7 +171,7 @@ class AudioSource: public UrlResource, public AudioSignal {
   protected:
     explicit AudioSource(const QUrl& url);
     explicit AudioSource(const AudioSource& other) = default;
-    inline static bool isValidFrameCount(SINT frameCount) { return kFrameCountZero <= frameCount; }
+    static bool isValidFrameCount(SINT frameCount) { return kFrameCountZero <= frameCount; }
     void setFrameCount(SINT frameCount);
 
     inline static bool isValidBitrate(SINT bitrate) {
@@ -199,11 +203,9 @@ class AudioSource: public UrlResource, public AudioSignal {
 class AudioSourceConfig : public AudioSignal {
   public:
     AudioSourceConfig()
-        : AudioSignal(AudioSource::kSampleLayout) {
-    }
+        : AudioSignal(AudioSource::kSampleLayout) {}
     AudioSourceConfig(SINT channelCount, SINT samplingRate)
-        : AudioSignal(AudioSource::kSampleLayout, channelCount, samplingRate) {
-    }
+        : AudioSignal(AudioSource::kSampleLayout, channelCount, samplingRate) {}
 
     using AudioSignal::setChannelCount;
     using AudioSignal::resetChannelCount;
