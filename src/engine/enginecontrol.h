@@ -34,11 +34,8 @@ const int kNoTrigger = -1;
 class EngineControl : public QObject {
     Q_OBJECT
   public:
-    EngineControl(QString group,
-                  UserSettingsPointer pConfig,
-                  QObject *pParent = nullptr);
+    EngineControl(QString group,UserSettingsPointer pConfig,QObject *pParent = nullptr);
     virtual ~EngineControl();
-
     // Called by EngineBuffer::process every latency period. See the above
     // comments for information about guarantees that hold during this call. An
     // EngineControl can perform any upkeep operations that are necessary during
@@ -71,19 +68,14 @@ class EngineControl : public QObject {
     double getCurrentSample() const;
     double getTotalSamples() const;
     bool atEndPosition() const;
+
     QString getGroup() const;
-
     // Called to collect player features for effects processing.
-    virtual void collectFeatureState(GroupFeatureState* pGroupFeatures) const {
-        Q_UNUSED(pGroupFeatures);
-    }
-
+    virtual void collectFeatureState(GroupFeatureState* pGroupFeatures) const;
     // Called whenever a seek occurs to allow the EngineControl to respond.
     virtual void notifySeek(double dNewPlaypo);
-
   public slots:
     virtual void trackLoaded(TrackPointer pNewTrack, TrackPointer pOldTrack);
-
   protected:
     void seek(double fractionalPosition);
     void seekAbs(double sample);
@@ -103,7 +95,6 @@ class EngineControl : public QObject {
         double current;
         double total;
     };
-
     ControlValueAtomic<SampleOfTrack> m_sampleOfTrack;
     EngineMaster* m_pEngineMaster;
     EngineBuffer* m_pEngineBuffer;

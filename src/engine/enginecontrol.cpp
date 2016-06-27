@@ -21,6 +21,10 @@ EngineControl::EngineControl(QString group,
     }
 }
 EngineControl::~EngineControl() = default;
+void EngineControl::collectFeatureState(GroupFeatureState* pGroupFeatures) const
+{
+    Q_UNUSED(pGroupFeatures);
+}
 double EngineControl::process(const double,
                               const double,
                               const double,
