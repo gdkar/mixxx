@@ -22,10 +22,7 @@ namespace {
 }
 SoundSourceMp3::SoundSourceMp3(const QUrl&url)
 : SoundSource(url)
-, m_h(nullptr)
-{
-    mpg123_init();
-}
+, m_h(nullptr) { mpg123_init(); }
 SoundSourceMp3::~SoundSourceMp3()
 {
     close();

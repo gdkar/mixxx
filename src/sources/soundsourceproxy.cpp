@@ -3,9 +3,9 @@
 
 #include "sources/soundsourceproxy.h"
 
-#ifdef __MAD__
+#include "sources/soundsourceffmpeg.h"
 #include "sources/soundsourcemp3.h"
-#endif
+
 #include "sources/soundsourceoggvorbis.h"
 #ifdef __OPUS__
 #include "sources/soundsourceopus.h"
@@ -15,9 +15,6 @@
 #endif
 #ifdef __SNDFILE__
 #include "sources/soundsourcesndfile.h"
-#endif
-#ifdef __FFMPEGFILE__
-#include "sources/soundsourceffmpeg.h"
 #endif
 #ifdef __MODPLUG__
 #include "sources/soundsourcemodplug.h"
@@ -143,37 +140,25 @@ void SoundSourceProxy::loadPlugins() {
     // providers to ensure that they are only after the specialized
     // provider failed to open a file. But the order of registration
     // only matters among providers with equal priority.
-#ifdef __FFMPEGFILE__
     // Use FFmpeg as the last resort.
-    s_soundSourceProviders.registerProvider(mixxx::SoundSourceProviderPointer(
-            new mixxx::SoundSourceProviderFFmpeg));
-#endif
+    s_soundSourceProviders.registerProvider(mixxx::SoundSourceProviderPointer(new mixxx::SoundSourceProviderFFmpeg));
 #ifdef __SNDFILE__
     // libsndfile is another fallback
-    s_soundSourceProviders.registerProvider(mixxx::SoundSourceProviderPointer(
-            new mixxx::SoundSourceProviderSndFile));
+    s_soundSourceProviders.registerProvider(mixxx::SoundSourceProviderPointer(new mixxx::SoundSourceProviderSndFile));
 #endif
-    s_soundSourceProviders.registerProvider(mixxx::SoundSourceProviderPointer(
-            new mixxx::SoundSourceProviderFLAC));
-    s_soundSourceProviders.registerProvider(mixxx::SoundSourceProviderPointer(
-            new mixxx::SoundSourceProviderOggVorbis));
+    s_soundSourceProviders.registerProvider(mixxx::SoundSourceProviderPointer(new mixxx::SoundSourceProviderFLAC));
+    s_soundSourceProviders.registerProvider(mixxx::SoundSourceProviderPointer(new mixxx::SoundSourceProviderOggVorbis));
 #ifdef __OPUS__
-    s_soundSourceProviders.registerProvider(mixxx::SoundSourceProviderPointer(
-            new mixxx::SoundSourceProviderOpus));
+    s_soundSourceProviders.registerProvider(mixxx::SoundSourceProviderPointer(new mixxx::SoundSourceProviderOpus));
 #endif
-#ifdef __MAD__
-    s_soundSourceProviders.registerProvider(mixxx::SoundSourceProviderPointer(
-            new mixxx::SoundSourceProviderMp3));
-#endif
+    s_soundSourceProviders.registerProvider(mixxx::SoundSourceProviderPointer(new mixxx::SoundSourceProviderMp3));
 #ifdef __MODPLUG__
     s_soundSourceProviders.registerProvider(mixxx::SoundSourceProviderPointer(
             new mixxx::SoundSourceProviderModPlug));
 #endif
 #ifdef __COREAUDIO__
-    s_soundSourceProviders.registerProvider(mixxx::SoundSourceProviderPointer(
-            new mixxx::SoundSourceProviderCoreAudio));
+    s_soundSourceProviders.registerProvider(mixxx::SoundSourceProviderPointer(new mixxx::SoundSourceProviderCoreAudio));
 #endif
-
     // Scan for and initialize all plugins.
     // Loaded plugins will replace any built-in providers
     // that have been registered before (see above)!
@@ -195,14 +180,11 @@ void SoundSourceProxy::loadPlugins() {
             }
         }
     }
-
-    const QStringList supportedFileExtensions(
-            s_soundSourceProviders.getRegisteredFileExtensions());
+    const auto supportedFileExtensions =  s_soundSourceProviders.getRegisteredFileExtensions();
     for (const auto &supportedFileExtension: supportedFileExtensions) {
         qDebug() << "SoundSource providers for file extension" << supportedFileExtension;
-        const QList<mixxx::SoundSourceProviderRegistration> registrationsForFileExtension(
-                s_soundSourceProviders.getRegistrationsForFileExtension(
-                        supportedFileExtension));
+        auto registrationsForFileExtension = 
+                s_soundSourceProviders.getRegistrationsForFileExtension(supportedFileExtension);
         for (const auto& registration: registrationsForFileExtension) {
             if (registration.getPluginLibrary()) {
                 qDebug() << " " << static_cast<int>(registration.getProviderPriority())

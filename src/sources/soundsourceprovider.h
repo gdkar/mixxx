@@ -39,12 +39,10 @@ public:
     //
     // The priority may vary with the file type that is currently
     // represented by the file extension.
-    virtual SoundSourceProviderPriority getPriorityHint(
-            const QString& supportedFileExtension) const {
+    virtual SoundSourceProviderPriority getPriorityHint(const QString& supportedFileExtension) const {
         Q_UNUSED(supportedFileExtension);
         return SoundSourceProviderPriority::DEFAULT;
     }
-
     // Creates a new SoundSource for the file referenced by the URL.
     // This function should return a nullptr pointer if it is already
     // able to decide that the file is not supported even though it

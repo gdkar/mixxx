@@ -104,8 +104,7 @@ void SoundSourceProviderRegistry::insertRegistration(
 
 void SoundSourceProviderRegistry::deregisterProvider(
         const SoundSourceProviderPointer& pProvider) {
-    const QStringList supportedFileExtensions(
-            pProvider->getSupportedFileExtensions());
+    const QStringList supportedFileExtensions(pProvider->getSupportedFileExtensions());
     for (const auto& fileExt: supportedFileExtensions) {
         deregisterProviderForFileExtension(fileExt, pProvider);
     }

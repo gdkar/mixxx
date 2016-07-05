@@ -3,95 +3,96 @@
 extern "C"{
   #include <libswresample/swresample.h>
 }
-#define AUDIOSOURCEFFMPEG_CACHESIZE 1000
-#define AUDIOSOURCEFFMPEG_MIXXXFRAME_TO_BYTEOFFSET (sizeof(CSAMPLE) * getChannelCount())
-#define AUDIOSOURCEFFMPEG_FILL_FROM_CURRENTPOS -1
 
 namespace mixxx {
 
-QStringList SoundSourceProviderFFmpeg::getSupportedFileExtensions() const {
+QStringList SoundSourceProviderFFmpeg::getSupportedFileExtensions() const
+{
+    av_register_all();
+    avformat_network_init();
+    avdevice_register_all();
     QStringList list;
-    AVInputFormat *l_SInputFmt  = NULL;
-
+    AVInputFormat *l_SInputFmt  = nullptr;
     while ((l_SInputFmt = av_iformat_next(l_SInputFmt))) {
-        if (l_SInputFmt->name == NULL) {break;}
-        if (!strcmp(l_SInputFmt->name, "flac")) {
-            list.append("flac");
-        } else if (!strcmp(l_SInputFmt->name, "ogg")) {
-            list.append("ogg");
-        } else if (!strcmp(l_SInputFmt->name, "mov,mp4,m4a,3gp,3g2,mj2")) {
-            list.append("m4a");
-            list.append("mp4");
-        } else if (!strcmp(l_SInputFmt->name, "mp4")) {
-            list.append("mp4");
-        } else if (!strcmp(l_SInputFmt->name, "mp3")) {
-            list.append("mp3");
-        } else if (!strcmp(l_SInputFmt->name, "aac")) {
-            list.append("aac");
-        } else if (!strcmp(l_SInputFmt->name, "opus") ||
-                   !strcmp(l_SInputFmt->name, "libopus")) {
-            list.append("opus");
-        } else if (!strcmp(l_SInputFmt->name, "wma") or
-                   !strcmp(l_SInputFmt->name, "xwma")) {
-            list.append("wma");
-        }else{
-          auto names = QString(l_SInputFmt->name).split(",");
-          for( auto &name : names ){
-            if(!list.contains(name)) list.append(name);
-          }
-        }
+        if (!l_SInputFmt->name)
+            continue;
+        auto names = QString(l_SInputFmt->name).split(",");
+        qDebug() << "Found names " << names;
+        for( const auto &name : names )
+            if(!list.contains(name))
+                list.append(name);
     }
-
     return list;
 }
-
 SoundSourceFFmpeg::SoundSourceFFmpeg(QUrl url)
     : SoundSource(url)
-{}
 
-SoundSourceFFmpeg::~SoundSourceFFmpeg() { close(); }
-Result SoundSourceFFmpeg::tryOpen(const AudioSourceConfig& /*audioSrcCfg*/) {
-    auto l_format_opts = (AVDictionary *)nullptr;
-    const auto qBAFilename = getLocalFileNameBytes();
-    qDebug() << "New SoundSourceFFmpeg :" << qBAFilename;
-    // Open file and make m_pFormatCtx
+{
+    av_register_all();
+    avformat_network_init();
+}
+SoundSourceFFmpeg::~SoundSourceFFmpeg()
+{
+    close();
+}
+int64_t SoundSourceFFmpeg::getChannelLayout() const
+{
+    return av_get_default_channel_layout(getChannelCount());
+}
+SoundSource::OpenResult SoundSourceFFmpeg::tryOpen(const AudioSourceConfig& audioSrcCfg)
+{
+    auto qBAFilename = getLocalFileName().toLocal8Bit();
     m_fmt_ctx = avformat_alloc_context();
+    m_swr = swr_alloc();
+    if(!m_packet || !m_frame_dec || !m_frame_swr || !m_swr || !m_fmt_ctx)
+        return OpenResult::FAILED;
+    // Open file and make m_pFormatCtx
     if (avformat_open_input(&m_fmt_ctx, qBAFilename.constData(), nullptr,nullptr)) {
         qDebug() << "SoundSourceFFmpeg::tryOpen: cannot open" << qBAFilename;
-        return ERR;
+        return OpenResult::FAILED;
     }
     // Retrieve stream information
     if (avformat_find_stream_info(m_fmt_ctx, nullptr) < 0) {
         qDebug() << "SoundSourceFFmpeg::tryOpen: cannot open" << qBAFilename;
-        return ERR;
+        return OpenResult::FAILED;
     }
+    std::for_each(&m_fmt_ctx->streams[0],&m_fmt_ctx->streams[m_fmt_ctx->nb_streams],[](auto *stream){
+            stream->discard = AVDISCARD_ALL;
+        });
+    auto stream_idx = -1;
     //debug only (Enable if needed)
-    //av_dump_format(m_pFormatCtx, 0, qBAFilename.constData(), false);
-    if((m_stream_idx=av_find_best_stream(m_fmt_ctx,AVMEDIA_TYPE_AUDIO,-1,-1,&m_dec,0))<0){
+    av_dump_format(m_fmt_ctx, 0, qBAFilename.constData(), false);
+    if((stream_idx=av_find_best_stream(m_fmt_ctx,AVMEDIA_TYPE_AUDIO,-1,-1,&m_codec,0))<0){
       qDebug() << "SoundSourceFFmpeg::tryOpen: cannot find audio stream in" << qBAFilename;
-      return ERR;
+      return OpenResult::FAILED;
     }
-    auto m_stream    = m_fmt_ctx->streams[m_stream_idx];
-    if(!m_dec && !(m_dec = avcodec_find_decoder(m_stream->codec->codec_id))){
-      qDebug() << "SoundSourceFFmpeg::tryOpen: cannot find decoder for audio stream in" << qBAFilename;
-    }
-
-    m_dec_ctx    = avcodec_alloc_context3 ( m_dec );
-    av_opt_set_int(m_dec_ctx,"refcounted_frames",1,0);
-    avcodec_copy_context ( m_dec_ctx, stream->codec );
-    if(avcodec_open2(m_dec_ctx, m_dec,nullptr)<0){
-      qDebug() << "SoundSourceFFmpeg::tryOpen: cannot open codec for" << qBAFilename;
-    }
-
+    m_stream = m_fmt_ctx->streams[stream_idx];
+    m_stream->discard = AVDISCARD_NONE;
     m_stream_tb = m_stream->time_base;
-    setChannelCount(m_dec_ctx->channels);
-    setFrameRate(m_dec_ctx->sample_rate);
-    setFrameCount(static_cast<qint64>(static_cast<double>(m_fmt_ctx->duration) * getFrameRate() / AV_TIME_BASE));
-    qDebug() << "SoundSourceFFmpeg::tryOpen: Samplerate: " << getFrameRate() << ", Channels: " << getChannelCount() << "\n";
+    if(!m_codec && !(m_codec = avcodec_find_decoder(m_stream->codecpar->codec_id))){
+      qDebug() << "SoundSourceFFmpeg::tryOpen: cannot find decoder for audio stream in" << qBAFilename;
+      return OpenResult::FAILED;
+    }
+    m_codec_ctx    = avcodec_alloc_context3 ( m_codec );
+    if(!m_codec_ctx) {
+      qDebug() << "SoundSourceFFmpeg::tryOpen: cannot alloc codec context for" << qBAFilename;
+      return OpenResult::FAILED;
+    }
+    avcodec_parameters_to_context( m_codec_ctx, m_stream->codecpar );
+    if(avcodec_open2(m_codec_ctx, m_codec,nullptr)<0){
+      qDebug() << "SoundSourceFFmpeg::tryOpen: cannot open codec for" << qBAFilename;
+      return OpenResult::FAILED;
+    }
+//    setChannelCount(m_codec_ctx->channels);
+    setChannelCount(2);
+    setSamplingRate(m_codec_ctx->sample_rate);
+    m_output_tb = AVRational{1,getSamplingRate()};
+    setFrameCount(av_rescale_q(m_fmt_ctx->duration),m_output_tb,AV_TIME_BASE_Q));
+    qDebug() << "SoundSourceFFmpeg::tryOpen: Samplerate: " << getSamplingRate() << ", Channels: " << getChannelCount() << "\n";
     m_swr = swr_alloc_set_opts(m_swr, 
-                               AV_CH_LAYOUT_STEREO,
+                               getChannelLayout(),
                                AV_SAMPLE_FMT_FLT,
-                               getFrameRate(),
+                               getSamplingRate(),
                                m_codec_ctx->channel_layout,
                                m_codec_ctx->sample_fmt,
                                m_codec_ctx->sample_rate,
@@ -100,113 +101,119 @@ Result SoundSourceFFmpeg::tryOpen(const AudioSourceConfig& /*audioSrcCfg*/) {
       );
     if(swr_init(m_swr)<0){
       qDebug() << "SoundSourceFFmpeg::tryOpen: failed to initialize resampler for " << qBAFilename;
-      return ERR;
+      return OpenResult::FAILED;
     }
-    if(!(m_frame = av_frame_alloc ())){
-      qDebug() << "SoundSourceFFmpeg::tryOpen: failed to allocate frame when opening " << qBAFilename;
-    }
-    m_frame->format         = AV_SAMPLE_FMT_FLT;
-    m_frame->channel_layout = AV_CH_LAYOUT_STEREO;
-    m_frame->nb_samples     = 0;
-
-    m_packet.data = nullptr;
-    m_packet.size = 0;
-    av_init_packet(&m_packet);
-    m_packet_free = m_packet;
-    return OK;
+    m_frame_swr.unref();
+    m_frame_swr->format         = AV_SAMPLE_FMT_FLT;
+    m_frame_swr->channels       = getChannelCount();
+    m_frame_swr->channel_layout = getChannelLayout();
+    m_frame_swr->rate           = getSamplingRate();
+    m_frame_swr->nb_samples     = 0;
+    next();
+    m_sample_now = m_sample_frame;
+    return OpenResult::SUCCEEDED;
 }
-void SoundSourceFFmpeg::close() {
-    avformat_close_input( &m_fmt_ctx );
-    avcodec_close(m_dec_ctx);
-    av_freep(&m_dec_ctx);
+void SoundSourceFFmpeg::close()
+{
+    avformat_close_input(&m_fmt_ctx);
+    if(avcodec_is_open(m_codec_ctx))
+        avcodec_close(m_codec_ctx);
+    avcodec_free_context(&m_codec_ctx);
     swr_free(&m_swr);
-    if ( m_packet_free.data || m_packet_free.size ) av_free_packet ( &m_packet_free );
-    av_frame_free (&m_frame);
 }
-bool SoundSourceFFmpeg::getNextFrame(){
-  auto ret = 0;
-  while ((! m_packet.size || !m_packet.data) && ret == 0){
-    ret = av_read_frame ( m_fmt_ctx, &m_packet_free );
-    if ( ret < 0 || m_packet_free->stream_index != m_stream_idx){
-      av_free_packet ( & m_packet_free );
-    }else{
-      m_packet      = m_packet_free;
-      if ( m_packet.pts != AV_NOPTS_VALUE ){
-        m_offset_base = av_rescale_q ( m_packet.pts, AV_TIME_BASE_Q, AVRational { 1, getFrameRate()});
-      }
+bool SoundSourceFFmpeg::next()
+{
+    auto ret = 0;
+    av_frame_unref(m_frame_dec);
+    while((ret = avcodec_receive_frame(m_codec_ctx, m_frame_dec)) < 0) {
+        if(ret != AVERROR(EAGAIN))
+            return false;
+        av_packet_unref(m_packet);
+        if((ret = av_read_frame(m_fmt_ctx, m_packet)) < 0) {
+            if(ret == AVERROR_EOF) {
+                eof = true;
+                if((ret = avcodec_send_packet(m_codec_ctx, nullptr)) < 0)
+                    return false;
+                continue;
+            }else{
+                return false;
+            }
+        }
+        if(m_packet->stream_index != m_stream->index)
+            continue;
+        if((ret = avcodec_send_packet(m_codec_ctx, m_packet )) < 0) {
+            if(ret == AVERROR_EOF) {
+                avcodec_flush_buffers(m_codec_ctx);
+                if((ret = avcodec_send_packet(m_codec_ctx, m_packet))>=0)
+                    continue;
+            }
+            if(ret != AVERROR(EAGAIN))
+                return false;
+        }
     }
-  }
-  if ( ret < 0 ) return false;
-  auto got_frame = 0;
-  auto dec_frame = av_frame_alloc ();
-  ret = av_decode_audio4 ( m_dec_ctx, dec_frame, &got_frame, &m_packet );
-  if ( ret <= 0 ){ret = m_packet.size;}
-  m_packet.size -= ret;
-  m_packet.data += ret;
-  if ( m_packet.size <= 0 ){
-    av_free_packet ( &m_packet_free );
-    m_packet.size = 0;
-    m_packet.data = nullptr;
-  }
-  if ( got_frame ){
-    dec_frame->pts = av_get_best_effort_timestamp ( dec_frame );
-    m_offset_base += m_frame->nb_samples;
-    av_frame_unref ( &m_frame );
-    m_frame->nb_samples = 0;
-    m_frame->format = AV_SAMPLE_FMT_FLT;
-    m_frame->channel_layout = AV_CH_LAYOUT_STEREO;
-    if ( swr_convert_frame ( m_swr, m_frame, dec_frame ) < 0 ){
-      if ( swr_config_frame ( m_swr, m_frame, dec_frame ) < 0 
-      ||   swr_convert_frame ( m_swr, m_frame, dec_frame ) < 0 ){
+    m_frame_dec->pts = av_frame_get_best_effort_timestamp(m_frame_dec);
+    m_sample_frame += m_frame_swr->nb_samples;
+    m_frame_swr.unref();
+    m_frame_swr->nb_samples = 0;
+    m_frame_swr->format = AV_SAMPLE_FMT_FLT;
+    m_frame_swr->channel_layout = getChannelLayout();
+    m_frame_swr->channels = getChannelCount();
+    m_frame_swr->sample_rate = getSamplingRate();
+    auto delay = swr_get_delay(m_swr, getSamplingRate());
+    m_frame_swr->pts = m_frame_dec->pts - av_rescale_q(delay, m_output_tb, m_stream_tb);
+    if ( swr_convert_frame ( m_swr, m_frame_swr, m_frame_dec) < 0 ){
+      if ( swr_config_frame ( m_swr, m_frame_swr, m_frame_dec ) < 0 
+      ||   swr_convert_frame ( m_swr, m_frame_swr, m_frame_dec ) < 0 ){
         return false;
       }
     }
-    if ( dec_frame->pts != AV_NOPTS_VALUE ){
-      m_offset_base = av_rescale_q ( dec_frame->pts, AV_TIME_BASE_Q,AVRational{1,getFrameRate()});
-    }
-    av_frame_free ( & dec_frame );
+    m_sample_frame = av_rescale_q(m_frame_swr->pts, m_stream_tb, m_output_tb);
     return true;
-  }
-  return false;
 }
-SINT SoundSourceFFmpeg::seekSampleFrame(SINT frameIndex) {
-    DEBUG_ASSERT(isValidFrameIndex(frameIndex));
-    if ( frameIndex >= m_offset_base && frameIndex < m_offset_base + m_frame->nb_samples * 4 ){
-      while ( frameIndex > m_offset_base + m_frame->nb_samples && getNextFrame())
+SINT SoundSourceFFmpeg::seekSampleFrame(SINT frameIndex)
+{
+    if ( frameIndex >= m_sample_frame && frameIndex < m_sample_frame + m_frame_swr->nb_samples * 4 ){
+      while ( frameIndex > m_sample_frame + m_frame_swr->nb_samples && next())
       {}
     }
-    if ( frameIndex >= m_offset_base && frameIndex < m_offset_base + m_frame->nb_samples){
-      m_offset_cur = frameIndex;
+    if ( frameIndex >= m_sample_frame && frameIndex < m_sample_now + m_frame_swr->nb_samples){
+      m_sample_now = frameIndex;
     }else{
-      auto framePts = av_rescale_q ( frameIndex, AVRational{1,(int)getFrameRate()},AV_TIME_BASE_Q);
-      av_seek_frame ( m_fmt_ctx, -1, framePts, 0 );
-      m_packet.size = 0;
-      m_packet.data = nullptr;
-      if(getNextFrame()){
-        if ( m_offset_base > frameIndex ) m_offset_cur = m_offset_base;
-        else if ( m_offset_base + m_frame->nb_samples <= frameIndex ) m_offset_cur = m_offset_base + m_frame->nb_samples;
-        else m_offset_cur = frameIndex;
+      auto framePts = av_rescale_q ( frameIndex, AVRational{1,(int)getSamplingRate()},AV_TIME_BASE_Q);
+      avformat_seek_file( m_fmt_ctx, -1, INT64_MIN,framePts, framePts, 0 );
+      avcodec_flush_buffers(m_codec_ctx);
+      av_packet_unref(m_packet);
+      if(next()){
+        if ( m_sample_frame> frameIndex )
+            m_sample_now = m_sample_frame;
+        else 
+            m_sample_now = frameIndex;
       }else{
-        m_offet_cur = m_offset_base;
+        m_sample_now = m_sample_frame;
       }
     }
-    return m_offset_cur;
+    return m_sample_now;
 }
-SINT SoundSourceFFmpeg::readSampleFrames(SINT numberOfFrames,CSAMPLE* sampleBuffer) {
-    if(!numberOfFrames) return 0;
+SINT SoundSourceFFmpeg::readSampleFrames(SINT numberOfFrames,CSAMPLE* sampleBuffer)
+{
+    if(!numberOfFrames)
+        return 0;
     auto numberLeft = numberOfFrames;
-    while(numberLeft){
-      auto offset_here = m_offset_cur - m_offset_base;
-      auto count_here  = std::min(m_frame->nb_samples - offset_here, numberLeft);
-      if ( count_here > 0 ){
-        std::memmove ( sampleBuffer, m_frame->extended_data[0] + ( getChannelCount() * sizeof(CSAMPLE) * offset_here ),
-            getChannelCount() * sizeof(CSAMPLE) * count_here );
+    while(m_sample_now - m_sample_frame > m_frame_swr->nb_samples){
+        if(!next())
+            return 0;
+    }
+    while(numberLeft) {
+      auto offset_here = m_sample_now - m_sample_frame;
+      auto count_here  = std::min(m_frame_swr->nb_samples - offset_here, numberLeft);
+      if ( count_here > 0 ) {
+          uint8_t *tmp = reinterpret_cast<uint8_t*>(sampleBuffer);
+          av_samples_copy(&tmp, m_frame_swr->extended_data, 0, offset_here, count_here, getChannelCount(), static_cast<AVSampleFormat>(m_frame_swr->format));
         sampleBuffer += getChannelCount() * count_here;
-        m_offset_cur += count_here;
+        m_sample_now += count_here;
         numberLeft   -= count_here;
-      }else if (!getNextFrame()){break;}
+      }else if (!next()){break;}
     }
     return numberOfFrames - numberLeft;
 }
-
 } // namespace mixxx

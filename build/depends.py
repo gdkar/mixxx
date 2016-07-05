@@ -752,6 +752,7 @@ class MixxxCore(Feature):
                    "sources/soundsourcepluginlibrary.cpp",
                    "sources/soundsourceproviderregistry.cpp",
                    "sources/soundsourceproxy.cpp",
+                   "sources/soundsourceffmpeg.cpp",
 
                    "widget/controlwidgetconnection.cpp",
                    "widget/wbasewidget.cpp",

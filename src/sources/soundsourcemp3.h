@@ -16,11 +16,8 @@ public:
     ~SoundSourceMp3() override;
 
     void close() override;
-
     SINT seekSampleFrame(SINT frameIndex) override;
-    SINT readSampleFrames(
-            SINT numberOfFrames,
-            CSAMPLE* sampleBuffer) override;
+    SINT readSampleFrames(SINT numberOfFrames,CSAMPLE* sampleBuffer) override;
 private:
     OpenResult tryOpen(const AudioSourceConfig& audioSrcCfg) override;
     mpg123_handle *m_h{nullptr};
