@@ -32,8 +32,7 @@ machine = ARGUMENTS.get('machine', None)
 build_type = ARGUMENTS.get('build', None)
 toolchain = ARGUMENTS.get('toolchain', None)
 
-available_features = [features.Mad,
-                      features.Mpg123,
+available_features = [features.Mpg123,
                       features.CoreAudio,
                       features.MediaFoundation,
                       features.HSS1394,
@@ -48,9 +47,6 @@ available_features = [features.Mad,
                       features.QDebug,
                       features.Verbose,
                       features.Optimize,
-                      features.FAAD,
-                      features.WavPack,
-                      features.ModPlug,
                       features.TestSuite,
                       features.Vamp,
                       features.ColorDiagnostics,
@@ -58,16 +54,16 @@ available_features = [features.Mad,
                       features.LocaleCompare,
                       features.Battery,
                       features.TinyAV,
+                      features.FAAD,
+                      features.FFMPEG,
 
                       # "Features" of dubious quality
                       features.PerfTools,
                       features.AsmLib,
-                      features.IPod,
-                      features.FFMPEG,
 
 		     # Experimental features
-		     features.OpenGLES
-                      ]
+		      features.OpenGLES
+                    ]
 
 build = mixxx.MixxxBuild(target, machine, build_type,
                          toolchain, available_features)
@@ -84,7 +80,6 @@ Import('sources')
 # SoundSourceM4A can get at sounddevice.cpp, which it needs to build
 # and link properly. This sucks but it's the best way I can find -- bkgood
 VariantDir("plugins/soundsourcem4a", "src", duplicate=0)
-VariantDir("plugins/soundsourcewv", "src", duplicate=0)
 VariantDir("plugins/soundsourcemediafoundation", "src", duplicate=0)
 
 # Build our soundsource plugins

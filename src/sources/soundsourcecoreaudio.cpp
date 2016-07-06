@@ -1,9 +1,9 @@
 #include "sources/soundsourcecoreaudio.h"
-#include "sources/mp3decoding.h"
 
 #include "util/math.h"
 
 namespace mixxx {
+static const int64_t kMp3SeekFramePrefetchCount = 29;
 
 namespace {
 

@@ -63,6 +63,13 @@ SoundSource::OpenResult SoundSourceFFmpeg::tryOpen(const AudioSourceConfig& audi
     std::for_each(&m_fmt_ctx->streams[0],&m_fmt_ctx->streams[m_fmt_ctx->nb_streams],[](auto *stream){
             stream->discard = AVDISCARD_ALL;
         });
+    std::for_each(&m_fmt_ctx->streams[0],&m_fmt_ctx->streams[m_fmt_ctx->nb_streams],[&, this](auto *stream){
+            if(stream->disposition & AV_DISPOSITION_ATTACHED_PIC) {
+                qDebug() << "Found an attached picture stream: " << stream->index;
+                av_dump_format(m_fmt_ctx, stream->index, qBAFilename.constData(), false);
+                stream->discard = AVDISCARD_NONE;
+            }
+        });
     auto stream_idx = -1;
     //debug only (Enable if needed)
     av_dump_format(m_fmt_ctx, 0, qBAFilename.constData(), false);
@@ -115,6 +122,8 @@ SoundSource::OpenResult SoundSourceFFmpeg::tryOpen(const AudioSourceConfig& audi
     m_frame_swr->nb_samples     = 0;
     next();
     m_sample_now = m_sample_frame;
+    m_sample_origin = 0;
+    m_sample_origin = seekSampleFrame(0);
     return OpenResult::SUCCEEDED;
 }
 void SoundSourceFFmpeg::close()
@@ -144,8 +153,10 @@ bool SoundSourceFFmpeg::next()
                 return false;
             }
         }
-        if(m_packet->stream_index != m_stream->index)
+        if(m_packet->stream_index != m_stream->index) {
+            m_packet.unref();
             continue;
+        }
         if((ret = avcodec_send_packet(m_codec_ctx, m_packet )) < 0) {
             if(ret == AVERROR_EOF) {
                 avcodec_flush_buffers(m_codec_ctx);
@@ -178,6 +189,7 @@ bool SoundSourceFFmpeg::next()
 int64_t SoundSourceFFmpeg::seekSampleFrame(int64_t frameIndex)
 {
     ScopedTimer _t("SoundSourceFFmpeg::seekSampleFrame");
+    frameIndex += m_sample_origin;
     if ( frameIndex >= m_sample_frame && frameIndex < m_sample_frame + m_frame_swr->nb_samples * 4 ){
       while ( frameIndex > m_sample_frame + m_frame_swr->nb_samples && next())
       {}

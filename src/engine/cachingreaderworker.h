@@ -35,7 +35,7 @@ enum ReaderStatus {
 typedef struct ReaderStatusUpdate {
     ReaderStatus status;
     CachingReaderChunk* chunk;
-    SINT maxReadableFrameIndex;
+    int64_t maxReadableFrameIndex;
     ReaderStatusUpdate()
         : status(INVALID)
         , chunk(nullptr)
@@ -44,7 +44,7 @@ typedef struct ReaderStatusUpdate {
     ReaderStatusUpdate(
             ReaderStatus statusArg,
             CachingReaderChunk* chunkArg,
-            SINT maxReadableFrameIndexArg)
+            int64_t maxReadableFrameIndexArg)
         : status(statusArg)
         , chunk(chunkArg)
         , maxReadableFrameIndex(maxReadableFrameIndexArg) {
@@ -104,7 +104,7 @@ class CachingReaderWorker : public EngineWorker {
     // the same chunk(s) over and over again.
     // This frame index references the frame that follows the
     // last frame with readable sample data.
-    SINT m_maxReadableFrameIndex;
+    int64_t m_maxReadableFrameIndex;
 
     QAtomicInt m_stop;
 };

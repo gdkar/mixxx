@@ -53,18 +53,10 @@ class SoundSourceProxy {
     }
     // Parse only the metadata from the file without modifying
     // the referenced track.
-    Result parseTrackMetadata(mixxx::TrackMetadata* pTrackMetadata) const;
+    bool parseTrackMetadata(mixxx::TrackMetadata* pTrackMetadata) const;
     // Parse only the cover image from the file without modifying
     // the referenced track.
     QImage parseCoverImage() const;
-    enum class SaveTrackMetadataResult {
-        SUCCEEDED,
-        FAILED,
-        SKIPPED
-    };
-    static SaveTrackMetadataResult saveTrackMetadata(
-            const Track* pTrack,
-            bool evenIfNeverParsedFromFileBefore = false);
     // Opening the audio data through the proxy will
     // update the some metadata of the track object.
     // Returns a null pointer on failure.

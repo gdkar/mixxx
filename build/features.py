@@ -203,39 +203,6 @@ class Mpg123(Feature):
             raise Exception("Could not find libmpg123.")
         build.env.Append(CPPDEFINES='__MPG123__')
 
-class Mad(Feature):
-    def description(self):
-        return "MAD MP3 Decoder"
-
-    def default(self, build):
-        return 0 if build.platform_is_osx else 1
-
-    def enabled(self, build):
-        build.flags['mad'] = util.get_flags(build.env, 'mad',
-                                            self.default(build))
-        if int(build.flags['mad']):
-            return True
-        return False
-
-    def add_options(self, build, vars):
-        vars.Add('mad', 'Set to 1 to enable MAD MP3 decoder support.',
-                 self.default(build))
-
-    def configure(self, build, conf):
-        if not self.enabled(build):
-            return
-        if not conf.CheckLib(['libmad', 'mad']):
-            raise Exception(
-                'Did not find libmad.a, libmad.lib, or the libmad development header files - exiting!')
-        if not conf.CheckLib(['libid3tag', 'id3tag', 'libid3tag-release']):
-            raise Exception(
-                'Did not find libid3tag.a, libid3tag.lib, or the libid3tag development header files - exiting!')
-        build.env.Append(CPPDEFINES='__MAD__')
-
-    def sources(self, build):
-        return ['sources/soundsourcemp3.cpp']
-
-
 class CoreAudio(Feature):
 
     def description(self):
@@ -457,40 +424,6 @@ class Vamp(Feature):
         return sources
 
 
-class ModPlug(Feature):
-    def description(self):
-        return "Modplug module decoder plugin"
-
-    def enabled(self, build):
-        build.flags['modplug'] = util.get_flags(build.env, 'modplug', 0)
-        if int(build.flags['modplug']):
-            return True
-        return False
-
-    def add_options(self, build, vars):
-        vars.Add('modplug',
-                 'Set to 1 to enable libmodplug based module tracker support.', 0)
-
-    def configure(self, build, conf):
-        if not self.enabled(build):
-            return
-
-        build.env.Append(CPPDEFINES='__MODPLUG__')
-
-        have_modplug_h = conf.CheckHeader('libmodplug/modplug.h')
-        have_modplug = conf.CheckLib(['modplug', 'libmodplug'], autoadd=True)
-
-        if not have_modplug_h:
-            raise Exception('Could not find libmodplug development headers.')
-
-        if not have_modplug:
-            raise Exception('Could not find libmodplug shared library.')
-
-    def sources(self, build):
-        depends.Qt.uic(build)('preferences/dialog/dlgprefmodplugdlg.ui')
-        return ['sources/soundsourcemodplug.cpp', 'preferences/dialog/dlgprefmodplug.cpp']
-
-
 class FAAD(Feature):
     def description(self):
         return "FAAD AAC audio file decoder plugin"
@@ -526,30 +459,6 @@ class FAAD(Feature):
         if not have_faad:
             raise Exception(
                 'Could not find libfaad or the libfaad development headers.')
-
-
-class WavPack(Feature):
-    def description(self):
-        return "WavPack audio file support plugin"
-
-    def enabled(self, build):
-        build.flags['wv'] = util.get_flags(build.env, 'wv', 0)
-        if int(build.flags['wv']):
-            return True
-        return False
-
-    def add_options(self, build, vars):
-        vars.Add('wv',
-                 'Set to 1 to enable building the WavPack support plugin.', 0)
-
-    def configure(self, build, conf):
-        if not self.enabled(build):
-            return
-        have_wv = conf.CheckLib(['wavpack', 'wv'], autoadd=True)
-        if not have_wv:
-            raise Exception(
-                'Could not find libwavpack, libwv or its development headers.')
-
 
 class ColorDiagnostics(Feature):
     def description(self):

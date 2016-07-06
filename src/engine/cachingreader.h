@@ -71,12 +71,9 @@ class CachingReader : public QObject {
 
   public:
     // Construct a CachingReader with the given group.
-    CachingReader(QString group,
-                  UserSettingsPointer _config);
+    CachingReader(QString group,UserSettingsPointer _config);
     virtual ~CachingReader();
-
     virtual void process();
-
     // Read num_samples from the SoundSource starting with sample into
     // buffer. Returns the total number of samples actually written to buffer
     // support reading stereo samples in reverse (backward) order
@@ -92,13 +89,11 @@ class CachingReader : public QObject {
     // processed in the work thread, so the reader must be woken up via wake()
     // for this to take effect.
     virtual void newTrack(TrackPointer pTrack);
-
-    void setScheduler(EngineWorkerScheduler* pScheduler) {
+    void setScheduler(EngineWorkerScheduler* pScheduler)
+    {
         m_worker.setScheduler(pScheduler);
     }
-
     const static int maximumCachingReaderChunksInMemory;
-
   signals:
     // Emitted once a new track is loaded and ready to be read from.
     void trackLoading();
@@ -116,11 +111,11 @@ class CachingReader : public QObject {
     // Looks for the provided chunk number in the index of in-memory chunks and
     // returns it if it is present. If not, returns nullptr. If it is present then
     // freshenChunk is called on the chunk to make it the MRU chunk.
-    CachingReaderChunkForOwner* lookupChunkAndFreshen(SINT chunkIndex);
+    CachingReaderChunkForOwner* lookupChunkAndFreshen(int64_t chunkIndex);
 
     // Looks for the provided chunk number in the index of in-memory chunks and
     // returns it if it is present. If not, returns nullptr.
-    CachingReaderChunkForOwner* lookupChunk(SINT chunkIndex);
+    CachingReaderChunkForOwner* lookupChunk(int64_t chunkIndex);
 
     // Moves the provided chunk to the MRU position.
     void freshenChunk(CachingReaderChunkForOwner* pChunk);
@@ -132,10 +127,10 @@ class CachingReader : public QObject {
     void freeAllChunks();
 
     // Gets a chunk from the free list. Returns nullptr if none available.
-    CachingReaderChunkForOwner* allocateChunk(SINT chunkIndex);
+    CachingReaderChunkForOwner* allocateChunk(int64_t chunkIndex);
 
     // Gets a chunk from the free list, frees the LRU CachingReaderChunk if none available.
-    CachingReaderChunkForOwner* allocateChunkExpireLRU(SINT chunkIndex);
+    CachingReaderChunkForOwner* allocateChunkExpireLRU(int64_t chunkIndex);
 
     ReaderStatus m_readerStatus;
 
@@ -160,7 +155,7 @@ class CachingReader : public QObject {
     // The maximum readable frame index as reported by the worker.
     // This frame index references the frame that follows the last
     // frame with sample data.
-    SINT m_maxReadableFrameIndex;
+    int64_t m_maxReadableFrameIndex;
 
     CachingReaderWorker m_worker;
 };

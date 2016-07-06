@@ -72,8 +72,8 @@ class SoundSourceFFmpeg : public SoundSource {
 
     bool next( );
     AVFormatContext      *m_fmt_ctx    = nullptr;
-    AVCodecContext       *m_codec_ctx    = nullptr;
-    AVCodec              *m_codec        = nullptr;
+    AVCodecContext       *m_codec_ctx  = nullptr;
+    AVCodec              *m_codec      = nullptr;
     AVStream             *m_stream     = nullptr;
     SwrContext           *m_swr        = nullptr;
     frame                 m_frame_dec{};

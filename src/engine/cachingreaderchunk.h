@@ -16,30 +16,30 @@
 // and the worker.
 class CachingReaderChunk {
 public:
-    static const SINT kInvalidIndex;
-    static const SINT kChannels;
-    static const SINT kFrames;
-    static const SINT kSamples;
+    static const int64_t kInvalidIndex;
+    static const int64_t kChannels;
+    static const int64_t kFrames;
+    static const int64_t kSamples;
 
     // Returns the corresponding chunk index for a frame index
-    inline static SINT indexForFrame(SINT frameIndex) {
+    inline static int64_t indexForFrame(int64_t frameIndex) {
         DEBUG_ASSERT(mixxx::AudioSource::getMinFrameIndex() <= frameIndex);
-        const SINT chunkIndex = frameIndex / kFrames;
+        const int64_t chunkIndex = frameIndex / kFrames;
         return chunkIndex;
     }
 
     // Returns the corresponding chunk index for a frame index
-    inline static SINT frameForIndex(SINT chunkIndex) {
+    inline static int64_t frameForIndex(int64_t chunkIndex) {
         DEBUG_ASSERT(0 <= chunkIndex);
         return chunkIndex * kFrames;
     }
 
     // Converts frames to samples
-    inline static SINT frames2samples(SINT frames) {
+    inline static int64_t frames2samples(int64_t frames) {
         return frames * kChannels;
     }
     // Converts samples to frames
-    inline static SINT samples2frames(SINT samples) {
+    inline static int64_t samples2frames(int64_t samples) {
         DEBUG_ASSERT(0 == (samples % kChannels));
         return samples / kChannels;
     }
@@ -48,7 +48,7 @@ public:
     CachingReaderChunk(const CachingReaderChunk&) = delete;
     CachingReaderChunk(CachingReaderChunk&&) = delete;
 
-    SINT getIndex() const {
+    int64_t getIndex() const {
         return m_index;
     }
 
@@ -56,7 +56,7 @@ public:
         return 0 <= getIndex();
     }
 
-    SINT getFrameCount() const {
+    int64_t getFrameCount() const {
         return m_frameCount;
     }
 
@@ -64,42 +64,42 @@ public:
     // for this chunk.
     bool isReadable(
             const mixxx::AudioSourcePointer& pAudioSource,
-            SINT maxReadableFrameIndex) const;
+            int64_t maxReadableFrameIndex) const;
 
     // Read sample frames from the audio source and return the
     // number of frames that have been read. The in/out parameter
     // pMaxReadableFrameIndex is adjusted if reading fails.
-    SINT readSampleFrames(
+    int64_t readSampleFrames(
             const mixxx::AudioSourcePointer& pAudioSource,
-            SINT* pMaxReadableFrameIndex);
+            int64_t* pMaxReadableFrameIndex);
 
     // Copy sampleCount samples starting at sampleOffset from
     // the chunk's internal buffer into sampleBuffer.
     void copySamples(
             CSAMPLE* sampleBuffer,
-            SINT sampleOffset,
-            SINT sampleCount) const;
+            int64_t sampleOffset,
+            int64_t sampleCount) const;
 
     // Copy sampleCount samples in reverse order starting at sampleOffset from
     // the chunk's internal buffer into sampleBuffer.
     void copySamplesReverse(
             CSAMPLE* sampleBuffer,
-            SINT sampleOffset,
-            SINT sampleCount) const;
+            int64_t sampleOffset,
+            int64_t sampleCount) const;
 
 protected:
     explicit CachingReaderChunk(CSAMPLE* sampleBuffer);
     virtual ~CachingReaderChunk();
 
-    void init(SINT index);
+    void init(int64_t index);
 
 private:
-    volatile SINT m_index;
+    volatile int64_t m_index;
 
     // The worker thread will fill the sample buffer and
     // set the frame count.
     CSAMPLE* const m_sampleBuffer;
-    volatile SINT m_frameCount;
+    volatile int64_t m_frameCount;
 };
 
 // This derived class is only accessible for the cache as the owner,
@@ -110,7 +110,7 @@ public:
     explicit CachingReaderChunkForOwner(CSAMPLE* sampleBuffer);
     virtual ~CachingReaderChunkForOwner();
 
-    void init(SINT index);
+    void init(int64_t index);
     void free();
 
     enum State {

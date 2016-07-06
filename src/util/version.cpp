@@ -22,7 +22,6 @@
 #undef WIN32
 #endif
 
-#include <FLAC/format.h>
 #include <chromaprint.h>
 #include <rubberband/RubberBandStretcher.h>
 #include <taglib/taglib.h>
@@ -96,14 +95,13 @@ QString Version::buildFlags() {
 }
 
 QStringList Version::dependencyVersions() {
-    char sndfile_version[128];
+    char sndfile_version[128] = { 0 };
     sf_command(nullptr, SFC_GET_LIB_VERSION, sndfile_version, sizeof(sndfile_version));
     // Null-terminate just in case.
     sndfile_version[sizeof(sndfile_version) - 1] = '\0';
     // WARNING: may be inaccurate since some come from compile-time header
     // definitions instead of the actual dynamically loaded library).
-    QStringList result;
-    result
+    return (QStringList()
             // Should be accurate.
             << QString("Qt: %1").arg(qVersion())
 #ifdef __BROADCAST__
@@ -128,26 +126,20 @@ QStringList Version::dependencyVersions() {
             // Should be accurate.
             << QString("Vorbis: %1").arg(vorbis_version_string())
             // Should be accurate.
-            << QString("libsndfile: %1").arg(sndfile_version)
-            // The version of the FLAC headers Mixxx was compiled with.
-            << QString("FLAC: %1").arg(FLAC__VERSION_STRING);
-
-    return result;
+            << QString("libsndfile: %1").arg(sndfile_version));
 }
 
 void Version::logBuildDetails() {
-    QString version = Version::version();
-    QString buildBranch = developmentBranch();
-    QString buildRevision = developmentRevision();
-    QString buildFlags = Version::buildFlags();
+    auto version = Version::version();
+    auto buildBranch = developmentBranch();
+    auto buildRevision = developmentRevision();
+    auto buildFlags = Version::buildFlags();
 
     QStringList buildInfo;
     if (!buildBranch.isEmpty() && !buildRevision.isEmpty()) {
-        buildInfo.append(
-            QString("git %1 r%2").arg(buildBranch, buildRevision));
+        buildInfo.append(QString("git %1 r%2").arg(buildBranch, buildRevision));
     } else if (!buildRevision.isEmpty()) {
-        buildInfo.append(
-            QString("git r%2").arg(buildRevision));
+        buildInfo.append(QString("git r%2").arg(buildRevision));
     }
 #ifndef DISABLE_BUILDTIME // buildtime=1, on by default
     buildInfo.append("built on: " __DATE__ " @ " __TIME__);
@@ -155,16 +147,15 @@ void Version::logBuildDetails() {
     if (!buildFlags.isEmpty()) {
         buildInfo.append(QString("flags: %1").arg(buildFlags.trimmed()));
     }
-    QString buildInfoFormatted = QString("(%1)").arg(buildInfo.join("; "));
+    auto buildInfoFormatted = QString("(%1)").arg(buildInfo.join("; "));
 
     // This is the first line in mixxx.log
     qDebug() << applicationName() << version << buildInfoFormatted << "is starting...";
 
     QStringList depVersions = dependencyVersions();
     qDebug() << "Compile time library versions:";
-    foreach (const QString& depVersion, depVersions) {
+    for(auto depVersion: depVersions)
         qDebug() << qPrintable(depVersion);
-    }
 
     qDebug() << "QDesktopServices::storageLocation(HomeLocation):"
              << QDesktopServices::storageLocation(QDesktopServices::HomeLocation);

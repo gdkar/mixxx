@@ -2,6 +2,19 @@
 
 #include "track/tracknumbers.h"
 
+#include <cstdint>
+#include <vector>
+#include <deque>
+#include <atomic>
+
+extern "C"{
+#   include <libavcodec/avcodec.h>
+#   include <libavformat/avformat.h>
+#   include <libavcodec/avcodec.h>
+#   include <libswresample/swresample.h>
+#   include <libavdevice/avdevice.h>
+#   include <libavutil/avutil.h>
+}
 #include "util/assert.h"
 #include "util/duration.h"
 #include "util/memory.h"
@@ -69,7 +82,7 @@ const QString kFileTypeWAV("wav");
 const QString kFileTypeWavPack("wv");
 
 
-inline bool hasID3v2Tag(TagLib::MPEG::File& file) {
+ bool hasID3v2Tag(TagLib::MPEG::File& file) {
 #if TAGLIB_HAS_TAG_CHECK
     return file.hasID3v2Tag();
 #else
@@ -77,7 +90,7 @@ inline bool hasID3v2Tag(TagLib::MPEG::File& file) {
 #endif
 }
 
-inline bool hasAPETag(TagLib::MPEG::File& file) {
+ bool hasAPETag(TagLib::MPEG::File& file) {
 #if TAGLIB_HAS_TAG_CHECK
     return file.hasAPETag();
 #else
@@ -85,7 +98,7 @@ inline bool hasAPETag(TagLib::MPEG::File& file) {
 #endif
 }
 
-inline bool hasID3v2Tag(TagLib::FLAC::File& file) {
+ bool hasID3v2Tag(TagLib::FLAC::File& file) {
 #if TAGLIB_HAS_TAG_CHECK
     return file.hasID3v2Tag();
 #else
@@ -93,7 +106,7 @@ inline bool hasID3v2Tag(TagLib::FLAC::File& file) {
 #endif
 }
 
-inline bool hasXiphComment(TagLib::FLAC::File& file) {
+ bool hasXiphComment(TagLib::FLAC::File& file) {
 #if TAGLIB_HAS_TAG_CHECK
     return file.hasXiphComment();
 #else
@@ -101,7 +114,7 @@ inline bool hasXiphComment(TagLib::FLAC::File& file) {
 #endif
 }
 
-inline bool hasAPETag(TagLib::WavPack::File& file) {
+ bool hasAPETag(TagLib::WavPack::File& file) {
 #if TAGLIB_HAS_TAG_CHECK
     return file.hasAPETag();
 #else
@@ -136,7 +149,7 @@ const QString ID3V2_TDAT_FORMAT("ddMM");
 
 // Taglib strings can be nullptr and using it could cause some segfaults,
 // so in this case it will return a QString()
-inline QString toQString(const TagLib::String& tString) {
+QString toQString(const TagLib::String& tString) {
     if (tString.isNull()) {
         return QString();
     } else {
@@ -155,7 +168,7 @@ QString toQStringFirstNotEmpty(const TagLib::StringList& strList) {
 }
 
 // Returns the text of an ID3v2 frame as a string.
-inline QString toQString(const TagLib::ID3v2::Frame& frame) {
+QString toQString(const TagLib::ID3v2::Frame& frame) {
     return toQString(frame.toString());
 }
 
@@ -174,20 +187,20 @@ QString toQStringFirstNotEmpty(
 }
 
 // Returns the first non-empty value of an MP4 item as a string.
-inline QString toQStringFirstNotEmpty(const TagLib::MP4::Item& mp4Item) {
+QString toQStringFirstNotEmpty(const TagLib::MP4::Item& mp4Item) {
     return toQStringFirstNotEmpty(mp4Item.toStringList());
 }
 
-inline TagLib::String toTagLibString(const QString& str) {
+ TagLib::String toTagLibString(const QString& str) {
     const QByteArray qba(str.toUtf8());
     return TagLib::String(qba.constData(), TagLib::String::UTF8);
 }
 
-inline QString formatBpm(const TrackMetadata& trackMetadata) {
+QString formatBpm(const TrackMetadata& trackMetadata) {
     return Bpm::valueToString(trackMetadata.getBpm().getValue());
 }
 
-inline QString formatBpmInteger(const TrackMetadata& trackMetadata) {
+QString formatBpmInteger(const TrackMetadata& trackMetadata) {
     return QString::number(Bpm::valueToInteger(trackMetadata.getBpm().getValue()));
 }
 
@@ -202,7 +215,7 @@ bool parseBpm(TrackMetadata* pTrackMetadata, QString sBpm) {
     return isBpmValid;
 }
 
-inline QString formatTrackGain(const TrackMetadata& trackMetadata) {
+QString formatTrackGain(const TrackMetadata& trackMetadata) {
     const double trackGainRatio(trackMetadata.getReplayGain().getRatio());
     return ReplayGain::ratioToString(trackGainRatio);
 }
@@ -231,7 +244,7 @@ bool parseTrackGain(
     return isRatioValid;
 }
 
-inline QString formatTrackPeak(const TrackMetadata& trackMetadata) {
+QString formatTrackPeak(const TrackMetadata& trackMetadata) {
     const CSAMPLE trackGainPeak(trackMetadata.getReplayGain().getPeak());
     return ReplayGain::peakToString(trackGainPeak);
 }
@@ -310,7 +323,7 @@ void readTrackMetadataFromTag(TrackMetadata* pTrackMetadata, const TagLib::Tag& 
 }
 
 // Workaround for missing const member function in TagLib
-inline const TagLib::MP4::ItemListMap& getItemListMap(const TagLib::MP4::Tag& tag) {
+ const TagLib::MP4::ItemListMap& getItemListMap(const TagLib::MP4::Tag& tag) {
     return const_cast<TagLib::MP4::Tag&>(tag).itemListMap();
 }
 
@@ -482,156 +495,6 @@ TagLib::ID3v2::UserTextIdentificationFrame* findFirstUserTextIdentificationFrame
     return pFirstFrame;
 }
 
-void writeID3v2TextIdentificationFrame(
-        TagLib::ID3v2::Tag* pTag,
-        const TagLib::ByteVector &id,
-        const QString& text,
-        bool isNumericOrURL = false) {
-    DEBUG_ASSERT(pTag);
-
-    // Remove all existing frames before adding a new one
-    pTag->removeFrames(id);
-    if (!text.isEmpty()) {
-        // Only add non-empty frames
-        const TagLib::String::Type stringType =
-                getID3v2StringType(*pTag, isNumericOrURL);
-        auto pFrame =
-                std::make_unique<TagLib::ID3v2::TextIdentificationFrame>(id, stringType);
-        pFrame->setText(toTagLibString(text));
-        pTag->addFrame(pFrame.get());
-        // Now that the plain pointer in pFrame is owned and managed by
-        // pTag we need to release the ownership to avoid double deletion!
-        pFrame.release();
-    }
-}
-
-void writeID3v2CommentsFrame(
-        TagLib::ID3v2::Tag* pTag,
-        const QString& text,
-        const QString& description = QString(),
-        bool isNumericOrURL = false) {
-    TagLib::ID3v2::CommentsFrame* pFrame =
-            findFirstCommentsFrame(*pTag, description);
-    if (nullptr != pFrame) {
-        // Modify existing frame
-        if (text.isEmpty()) {
-            // Purge empty frames
-            pTag->removeFrame(pFrame);
-        } else {
-            pFrame->setDescription(toTagLibString(description));
-            pFrame->setText(toTagLibString(text));
-        }
-    } else {
-        // Add a new (non-empty) frame
-        if (!text.isEmpty()) {
-            const TagLib::String::Type stringType =
-                    getID3v2StringType(*pTag, isNumericOrURL);
-            auto pFrame =
-                    std::make_unique<TagLib::ID3v2::CommentsFrame>(stringType);
-            pFrame->setDescription(toTagLibString(description));
-            pFrame->setText(toTagLibString(text));
-            pTag->addFrame(pFrame.get());
-            // Now that the plain pointer in pFrame is owned and managed by
-            // pTag we need to release the ownership to avoid double deletion!
-            pFrame.release();
-        }
-    }
-}
-
-void writeID3v2UserTextIdentificationFrame(
-        TagLib::ID3v2::Tag* pTag,
-        const QString& text,
-        const QString& description,
-        bool isNumericOrURL = false) {
-    TagLib::ID3v2::UserTextIdentificationFrame* pFrame =
-            findFirstUserTextIdentificationFrame(*pTag, description);
-    if (nullptr != pFrame) {
-        // Modify existing frame
-        if (text.isEmpty()) {
-            // Purge empty frames
-            pTag->removeFrame(pFrame);
-        } else {
-            pFrame->setDescription(toTagLibString(description));
-            pFrame->setText(toTagLibString(text));
-        }
-    } else {
-        // Add a new (non-empty) frame
-        if (!text.isEmpty()) {
-            const TagLib::String::Type stringType =
-                    getID3v2StringType(*pTag, isNumericOrURL);
-            auto pFrame =
-                    std::make_unique<TagLib::ID3v2::UserTextIdentificationFrame>(stringType);
-            pFrame->setDescription(toTagLibString(description));
-            pFrame->setText(toTagLibString(text));
-            pTag->addFrame(pFrame.get());
-            // Now that the plain pointer in pFrame is owned and managed by
-            // pTag we need to release the ownership to avoid double deletion!
-            pFrame.release();
-        }
-    }
-}
-
-// Bitmask of optional tag fields that should NOT be written into the
-// common part of the tag through TagLib::Tag. For future extension
-// it is safer to explicitly specify these exceptions!
-// Usage: The write functions for ID3v2, MP4, APE and XiphComment tags
-// have specialized code for some or all of the corresponding tag fields
-// and it is not needed or even dangerous to use the common setters of
-// TagLib::Tag.
-enum WriteTagMask {
-    WRITE_TAG_OMIT_NONE         = 0x00,
-    WRITE_TAG_OMIT_TRACK_NUMBER = 0x01,
-    WRITE_TAG_OMIT_YEAR         = 0x02,
-    WRITE_TAG_OMIT_COMMENT      = 0x04,
-};
-
-void writeTrackMetadataIntoTag(
-        TagLib::Tag* pTag,
-        const TrackMetadata& trackMetadata,
-        int writeMask) {
-    DEBUG_ASSERT(pTag); // already validated before
-
-    pTag->setArtist(toTagLibString(trackMetadata.getArtist()));
-    pTag->setTitle(toTagLibString(trackMetadata.getTitle()));
-    pTag->setAlbum(toTagLibString(trackMetadata.getAlbum()));
-    pTag->setGenre(toTagLibString(trackMetadata.getGenre()));
-
-    // Using setComment() from TagLib::Tag might have undesirable
-    // effects if the tag type supports multiple comment fields for
-    // different purposes, e.g. ID3v2. In this case setting the
-    // comment here should be omitted.
-    if (0 == (writeMask & WRITE_TAG_OMIT_COMMENT)) {
-        pTag->setComment(toTagLibString(trackMetadata.getComment()));
-    }
-
-    // Specialized write functions for tags derived from Taglib::Tag might
-    // be able to write the complete string from trackMetadata.getYear()
-    // into the corresponding field. In this case parsing the year string
-    // here should be omitted.
-    if (0 == (writeMask & WRITE_TAG_OMIT_YEAR)) {
-        // Set the numeric year if available
-        const QDate yearDate(
-                TrackMetadata::parseDateTime(trackMetadata.getYear()).date());
-        if (yearDate.isValid()) {
-            pTag->setYear(yearDate.year());
-        }
-    }
-
-    // The numeric track number in TagLib::Tag does not reflect the total
-    // number of tracks! Specialized write functions for tags derived from
-    // Taglib::Tag might be able to handle both trackMetadata.getTrackNumber()
-    // and trackMetadata.getTrackTotal(). In this case parsing the track
-    // number string here is useless and should be omitted.
-    if (0 == (writeMask & WRITE_TAG_OMIT_TRACK_NUMBER)) {
-        // Set the numeric track number if available
-        TrackNumbers parsedTrackNumbers;
-        const TrackNumbers::ParseResult parseResult =
-                TrackNumbers::parseFromString(trackMetadata.getTrackNumber(), &parsedTrackNumbers);
-        if (TrackNumbers::ParseResult::VALID == parseResult) {
-            pTag->setTrack(parsedTrackNumbers.getActual());
-        }
-    }
-}
 
 bool readMP4Atom(
         const TagLib::MP4::Tag& tag,
@@ -649,29 +512,6 @@ bool readMP4Atom(
     }
 }
 
-// Unconditionally write the atom
-void writeMP4Atom(
-        TagLib::MP4::Tag* pTag,
-        const TagLib::String& key,
-        const TagLib::String& value) {
-    if (value.isEmpty()) {
-        // Purge empty atoms
-        pTag->itemListMap().erase(key);
-    } else {
-        TagLib::StringList strList(value);
-        pTag->itemListMap()[key] = std::move(strList);
-    }
-}
-
-// Conditionally write the atom if it already exists
-void updateMP4Atom(
-        TagLib::MP4::Tag* pTag,
-        const TagLib::String& key,
-        const TagLib::String& value) {
-    if (readMP4Atom(*pTag, key)) {
-        writeMP4Atom(pTag, key, value);
-    }
-}
 
 bool readAPEItem(
         const TagLib::APE::Tag& tag,
@@ -689,19 +529,6 @@ bool readAPEItem(
     }
 }
 
-void writeAPEItem(
-        TagLib::APE::Tag* pTag,
-        const TagLib::String& key,
-        const TagLib::String& value) {
-    if (value.isEmpty()) {
-        // Purge empty items
-        pTag->removeItem(key);
-    } else {
-        const bool replace = true;
-        pTag->addValue(key, value, replace);
-    }
-}
-
 bool readXiphCommentField(
         const TagLib::Ogg::XiphComment& tag,
         const TagLib::String& key,
@@ -715,30 +542,6 @@ bool readXiphCommentField(
         return true;
     } else {
         return false;
-    }
-}
-
-// Unconditionally write the field
-void writeXiphCommentField(
-        TagLib::Ogg::XiphComment* pTag,
-        const TagLib::String& key,
-        const TagLib::String& value) {
-    if (value.isEmpty()) {
-        // Purge empty fields
-        pTag->removeField(key);
-    } else {
-        const bool replace = true;
-        pTag->addField(key, value, replace);
-    }
-}
-
-// Conditionally write the field if it already exists
-void updateXiphCommentField(
-        TagLib::Ogg::XiphComment* pTag,
-        const TagLib::String& key,
-        const TagLib::String& value) {
-    if (readXiphCommentField(*pTag, key)) {
-        writeXiphCommentField(pTag, key, value);
     }
 }
 
@@ -1069,239 +872,8 @@ void readTrackMetadataFromMP4Tag(TrackMetadata* pTrackMetadata, const TagLib::MP
     }
 }
 
-bool writeTrackMetadataIntoID3v2Tag(TagLib::ID3v2::Tag* pTag,
-        const TrackMetadata& trackMetadata) {
-    if (!pTag) {
-        return false;
-    }
 
-    const TagLib::ID3v2::Header* pHeader = pTag->header();
-    if (!pHeader || (3 > pHeader->majorVersion())) {
-        // only ID3v2.3.x and higher (currently only ID3v2.4.x) are supported
-        return false;
-    }
-
-    // NOTE(uklotzde): Setting the comment for ID3v2 tags does
-    // not work as expected when using TagLib 1.9.1 and must
-    // be skipped! Otherwise special purpose comment fields
-    // with a description like "iTunSMPB" might be overwritten.
-    // Mixxx implements a special case handling for ID3v2 comment
-    // frames (see below)
-    writeTrackMetadataIntoTag(pTag, trackMetadata,
-            WRITE_TAG_OMIT_TRACK_NUMBER | WRITE_TAG_OMIT_YEAR | WRITE_TAG_OMIT_COMMENT);
-
-    // Writing the common comments frame has been omitted (see above)
-    writeID3v2CommentsFrame(pTag, trackMetadata.getComment());
-
-    writeID3v2TextIdentificationFrame(pTag, "TRCK",
-            TrackNumbers::joinStrings(
-                    trackMetadata.getTrackNumber(),
-                    trackMetadata.getTrackTotal()));
-
-    // NOTE(uklotz): Need to overwrite the TDRC frame if it
-    // already exists. TagLib (1.9.x) writes a TDRC frame
-    // even for ID3v2.3.0 tags if the numeric year is set.
-    if ((4 <= pHeader->majorVersion()) || !pTag->frameList("TDRC").isEmpty()) {
-        writeID3v2TextIdentificationFrame(pTag, "TDRC",
-                trackMetadata.getYear());
-    }
-    if (4 > pHeader->majorVersion()) {
-        // Fallback to TYER + TDAT
-        const QDate date(TrackMetadata::parseDate(trackMetadata.getYear()));
-        if (date.isValid()) {
-            // Valid date
-            writeID3v2TextIdentificationFrame(pTag, "TYER", date.toString(ID3V2_TYER_FORMAT), true);
-            writeID3v2TextIdentificationFrame(pTag, "TDAT", date.toString(ID3V2_TDAT_FORMAT), true);
-        } else {
-            // Fallback to calendar year
-            bool calendarYearValid = false;
-            const QString calendarYear(TrackMetadata::formatCalendarYear(trackMetadata.getYear(), &calendarYearValid));
-            if (calendarYearValid) {
-                writeID3v2TextIdentificationFrame(pTag, "TYER", calendarYear, true);
-            }
-        }
-    }
-
-    writeID3v2TextIdentificationFrame(pTag, "TPE2",
-            trackMetadata.getAlbumArtist());
-    writeID3v2TextIdentificationFrame(pTag, "TCOM",
-            trackMetadata.getComposer());
-    writeID3v2TextIdentificationFrame(pTag, "TIT1",
-            trackMetadata.getGrouping());
-
-    // According to the specification "The 'TBPM' frame contains the number
-    // of beats per minute in the mainpart of the audio. The BPM is an
-    // integer and represented as a numerical string."
-    // Reference: http://id3.org/id3v2.3.0
-    writeID3v2TextIdentificationFrame(pTag, "TBPM",
-            formatBpmInteger(trackMetadata), true);
-
-    writeID3v2TextIdentificationFrame(pTag, "TKEY", trackMetadata.getKey());
-
-    // Only write track gain (not album gain)
-    writeID3v2UserTextIdentificationFrame(
-            pTag,
-            formatTrackGain(trackMetadata),
-            "REPLAYGAIN_TRACK_GAIN",
-            true);
-    writeID3v2UserTextIdentificationFrame(
-            pTag,
-            formatTrackPeak(trackMetadata),
-            "REPLAYGAIN_TRACK_PEAK",
-            true);
-
-    return true;
-}
-
-bool writeTrackMetadataIntoAPETag(TagLib::APE::Tag* pTag, const TrackMetadata& trackMetadata) {
-    if (!pTag) {
-        return false;
-    }
-
-    writeTrackMetadataIntoTag(pTag, trackMetadata,
-            WRITE_TAG_OMIT_TRACK_NUMBER | WRITE_TAG_OMIT_YEAR);
-
-    // NOTE(uklotzde): Overwrite the numeric track number in the common
-    // part of the tag with the custom string from the track metadata
-    // (pass-through without any further validation)
-    writeAPEItem(pTag, "Track",
-            toTagLibString(TrackNumbers::joinStrings(
-                    trackMetadata.getTrackNumber(),
-                    trackMetadata.getTrackTotal())));
-
-    writeAPEItem(pTag, "Year",
-            toTagLibString(trackMetadata.getYear()));
-
-    writeAPEItem(pTag, "Album Artist",
-            toTagLibString(trackMetadata.getAlbumArtist()));
-    writeAPEItem(pTag, "Composer",
-            toTagLibString(trackMetadata.getComposer()));
-    writeAPEItem(pTag, "Grouping",
-            toTagLibString(trackMetadata.getGrouping()));
-
-    writeAPEItem(pTag, "BPM",
-            toTagLibString(formatBpm(trackMetadata)));
-    writeAPEItem(pTag, "REPLAYGAIN_TRACK_GAIN",
-            toTagLibString(formatTrackGain(trackMetadata)));
-    writeAPEItem(pTag, "REPLAYGAIN_TRACK_PEAK",
-            toTagLibString(formatTrackPeak(trackMetadata)));
-
-    return true;
-}
-
-bool writeTrackMetadataIntoXiphComment(TagLib::Ogg::XiphComment* pTag,
-        const TrackMetadata& trackMetadata) {
-    if (!pTag) {
-        return false;
-    }
-
-    writeTrackMetadataIntoTag(pTag, trackMetadata,
-            WRITE_TAG_OMIT_TRACK_NUMBER | WRITE_TAG_OMIT_YEAR);
-
-    // Write unambiguous fields
-    writeXiphCommentField(pTag, "DATE",
-            toTagLibString(trackMetadata.getYear()));
-    writeXiphCommentField(pTag, "COMPOSER",
-            toTagLibString(trackMetadata.getComposer()));
-    writeXiphCommentField(pTag, "GROUPING",
-            toTagLibString(trackMetadata.getGrouping()));
-    writeXiphCommentField(pTag, "TRACKNUMBER",
-            toTagLibString(trackMetadata.getTrackNumber()));
-    writeXiphCommentField(pTag, "REPLAYGAIN_TRACK_GAIN",
-            toTagLibString(formatTrackGain(trackMetadata)));
-    writeXiphCommentField(pTag, "REPLAYGAIN_TRACK_PEAK",
-            toTagLibString(formatTrackPeak(trackMetadata)));
-
-    // According to https://wiki.xiph.org/Field_names "TRACKTOTAL" is
-    // the proposed field name, but some applications use "TOTALTRACKS".
-    const TagLib::String trackTotal(
-            toTagLibString(trackMetadata.getTrackTotal()));
-    writeXiphCommentField(pTag, "TRACKTOTAL", trackTotal); // recommended field
-    updateXiphCommentField(pTag, "TOTALTRACKS", trackTotal); // alternative field
-
-    const TagLib::String albumArtist(
-            toTagLibString(trackMetadata.getAlbumArtist()));
-    writeXiphCommentField(pTag, "ALBUMARTIST", albumArtist); // recommended field
-    updateXiphCommentField(pTag, "ALBUM_ARTIST", albumArtist); // alternative field
-    updateXiphCommentField(pTag, "ALBUM ARTIST", albumArtist); // alternative field
-    updateXiphCommentField(pTag, "ENSEMBLE", albumArtist); // alternative field
-
-    const TagLib::String bpm(
-            toTagLibString(formatBpm(trackMetadata)));
-    writeXiphCommentField(pTag, "TEMPO", bpm); // recommended field
-    updateXiphCommentField(pTag, "BPM", bpm); // alternative field
-
-    // Write both INITIALKEY and KEY
-    const TagLib::String key(
-            toTagLibString(trackMetadata.getKey()));
-    writeXiphCommentField(pTag, "INITIALKEY", key); // recommended field
-    updateXiphCommentField(pTag, "KEY", key); // alternative field
-
-    return true;
-}
-
-bool writeTrackMetadataIntoMP4Tag(TagLib::MP4::Tag* pTag, const TrackMetadata& trackMetadata) {
-    if (!pTag) {
-        return false;
-    }
-
-    writeTrackMetadataIntoTag(pTag, trackMetadata,
-            WRITE_TAG_OMIT_TRACK_NUMBER | WRITE_TAG_OMIT_YEAR);
-
-    // Write track number/total pair
-    QString trackNumberText;
-    QString trackTotalText;
-    TrackNumbers parsedTrackNumbers;
-    const TrackNumbers::ParseResult parseResult =
-            TrackNumbers::parseFromStrings(
-                    trackMetadata.getTrackNumber(),
-                    trackMetadata.getTrackTotal(),
-                    &parsedTrackNumbers);
-    switch (parseResult) {
-    case TrackNumbers::ParseResult::EMPTY:
-        pTag->itemListMap().erase("trkn");
-        break;
-    case TrackNumbers::ParseResult::VALID:
-        pTag->itemListMap()["trkn"] = TagLib::MP4::Item(
-                parsedTrackNumbers.getActual(),
-                parsedTrackNumbers.getTotal());
-        break;
-    default:
-        qWarning() << "Invalid track numbers:"
-            << TrackNumbers::joinStrings(trackMetadata.getTrackNumber(), trackMetadata.getTrackTotal());
-    }
-
-    writeMP4Atom(pTag, "\251day", toTagLibString(trackMetadata.getYear()));
-
-    writeMP4Atom(pTag, "aART", toTagLibString(trackMetadata.getAlbumArtist()));
-    writeMP4Atom(pTag, "\251wrt", toTagLibString(trackMetadata.getComposer()));
-    writeMP4Atom(pTag, "\251grp", toTagLibString(trackMetadata.getGrouping()));
-
-    // Write both BPM fields (just in case)
-    if (trackMetadata.getBpm().hasValue()) {
-        // 16-bit integer value
-        const int tmpoValue =
-                mixxx::Bpm::valueToInteger(trackMetadata.getBpm().getValue());
-        pTag->itemListMap()["tmpo"] = tmpoValue;
-    } else {
-        pTag->itemListMap().erase("tmpo");
-    }
-    writeMP4Atom(pTag, "----:com.apple.iTunes:BPM",
-            toTagLibString(formatBpm(trackMetadata)));
-
-    writeMP4Atom(pTag, "----:com.apple.iTunes:replaygain_track_gain",
-            toTagLibString(formatTrackGain(trackMetadata)));
-    writeMP4Atom(pTag, "----:com.apple.iTunes:replaygain_track_peak",
-            toTagLibString(formatTrackPeak(trackMetadata)));
-
-    const TagLib::String key(toTagLibString(trackMetadata.getKey()));
-    writeMP4Atom(pTag, "----:com.apple.iTunes:initialkey", key); // preferred
-    updateMP4Atom(pTag, "----:com.apple.iTunes:KEY", key); // alternative
-
-    return true;
-}
-
-Result readTrackMetadataAndCoverArtFromFile(TrackMetadata* pTrackMetadata, QImage* pCoverArt, QString fileName) {
+bool readTrackMetadataAndCoverArtFromFile(TrackMetadata* pTrackMetadata, QImage* pCoverArt, QString fileName) {
     const QString fileType(getFileTypeFromFileName(fileName));
 
     qDebug() << "Reading tags from file" << fileName << "of type" << fileType
@@ -1322,20 +894,20 @@ Result readTrackMetadataAndCoverArtFromFile(TrackMetadata* pTrackMetadata, QImag
             if (pID3v2Tag) {
                 readTrackMetadataFromID3v2Tag(pTrackMetadata, *pID3v2Tag);
                 readCoverArtFromID3v2Tag(pCoverArt, *pID3v2Tag);
-                return OK;
+                return true;
             } else {
                 const TagLib::APE::Tag* pAPETag =
                         hasAPETag(file) ? file.APETag() : nullptr;
                 if (pAPETag) {
                     readTrackMetadataFromAPETag(pTrackMetadata, *pAPETag);
                     readCoverArtFromAPETag(pCoverArt, *pAPETag);
-                    return OK;
+                    return true;
                 } else {
                     // fallback
                     const TagLib::Tag* pTag(file.tag());
                     if (pTag) {
                         readTrackMetadataFromTag(pTrackMetadata, *pTag);
-                        return OK;
+                        return true;
                     }
                 }
             }
@@ -1347,13 +919,13 @@ Result readTrackMetadataAndCoverArtFromFile(TrackMetadata* pTrackMetadata, QImag
             if (pMP4Tag) {
                 readTrackMetadataFromMP4Tag(pTrackMetadata, *pMP4Tag);
                 readCoverArtFromMP4Tag(pCoverArt, *pMP4Tag);
-                return OK;
+                return true;
             } else {
                 // fallback
                 const TagLib::Tag* pTag(file.tag());
                 if (pTag) {
                     readTrackMetadataFromTag(pTrackMetadata, *pTag);
-                    return OK;
+                    return true;
                 }
             }
         }
@@ -1377,20 +949,20 @@ Result readTrackMetadataAndCoverArtFromFile(TrackMetadata* pTrackMetadata, QImag
             if (pXiphComment) {
                 readTrackMetadataFromXiphComment(pTrackMetadata, *pXiphComment);
                 readCoverArtFromXiphComment(pCoverArt, *pXiphComment);
-                return OK;
+                return true;
             } else {
                 const TagLib::ID3v2::Tag* pID3v2Tag =
                         hasID3v2Tag(file) ? file.ID3v2Tag() : nullptr;
                 if (pID3v2Tag) {
                     readTrackMetadataFromID3v2Tag(pTrackMetadata, *pID3v2Tag);
                     readCoverArtFromID3v2Tag(pCoverArt, *pID3v2Tag);
-                    return OK;
+                    return true;
                 } else {
                     // fallback
                     const TagLib::Tag* pTag(file.tag());
                     if (pTag) {
                         readTrackMetadataFromTag(pTrackMetadata, *pTag);
-                        return OK;
+                        return true;
                     }
                 }
             }
@@ -1402,13 +974,13 @@ Result readTrackMetadataAndCoverArtFromFile(TrackMetadata* pTrackMetadata, QImag
             if (pXiphComment) {
                 readTrackMetadataFromXiphComment(pTrackMetadata, *pXiphComment);
                 readCoverArtFromXiphComment(pCoverArt, *pXiphComment);
-                return OK;
+                return true;
             } else {
                 // fallback
                 const TagLib::Tag* pTag(file.tag());
                 if (pTag) {
                     readTrackMetadataFromTag(pTrackMetadata, *pTag);
-                    return OK;
+                    return true;
                 }
             }
         }
@@ -1420,13 +992,13 @@ Result readTrackMetadataAndCoverArtFromFile(TrackMetadata* pTrackMetadata, QImag
             if (pXiphComment) {
                 readTrackMetadataFromXiphComment(pTrackMetadata, *pXiphComment);
                 readCoverArtFromXiphComment(pCoverArt, *pXiphComment);
-                 return OK;
+                 return true;
             } else {
                 // fallback
                 const TagLib::Tag* pTag(file.tag());
                 if (pTag) {
                     readTrackMetadataFromTag(pTrackMetadata, *pTag);
-                    return OK;
+                    return true;
                 }
             }
         }
@@ -1439,13 +1011,13 @@ Result readTrackMetadataAndCoverArtFromFile(TrackMetadata* pTrackMetadata, QImag
             if (pAPETag) {
                 readTrackMetadataFromAPETag(pTrackMetadata, *pAPETag);
                 readCoverArtFromAPETag(pCoverArt, *pAPETag);
-                return OK;
+                return true;
             } else {
                 // fallback
                 const TagLib::Tag* pTag(file.tag());
                 if (pTag) {
                     readTrackMetadataFromTag(pTrackMetadata, *pTag);
-                    return OK;
+                    return true;
                 }
             }
         }
@@ -1462,13 +1034,13 @@ Result readTrackMetadataAndCoverArtFromFile(TrackMetadata* pTrackMetadata, QImag
             if (pID3v2Tag) {
                 readTrackMetadataFromID3v2Tag(pTrackMetadata, *pID3v2Tag);
                 readCoverArtFromID3v2Tag(pCoverArt, *pID3v2Tag);
-                return OK;
+                return true;
             } else {
                 // fallback
                 const TagLib::Tag* pTag(file.tag());
                 if (pTag) {
                     readTrackMetadataFromTag(pTrackMetadata, *pTag);
-                    return OK;
+                    return true;
                 }
             }
         }
@@ -1479,120 +1051,20 @@ Result readTrackMetadataAndCoverArtFromFile(TrackMetadata* pTrackMetadata, QImag
             if (pID3v2Tag) {
                 readTrackMetadataFromID3v2Tag(pTrackMetadata, *pID3v2Tag);
                 readCoverArtFromID3v2Tag(pCoverArt, *pID3v2Tag);
-                return OK;
+                return true;
             } else {
                 // fallback
                 const TagLib::Tag* pTag(file.tag());
                 if (pTag) {
                     readTrackMetadataFromTag(pTrackMetadata, *pTag);
-                    return OK;
+                    return true;
                 }
             }
         }
     } else {
         qWarning() << "Unsupported file type" << fileType;
     }
-
     qWarning() << "Failed to read track metadata from file" << fileName;
-    return ERR;
+    return false;
 }
-
-Result writeTrackMetadataIntoFile(const TrackMetadata& trackMetadata, QString fileName) {
-    const QString fileType(getFileTypeFromFileName(fileName));
-
-    qDebug() << "Writing track metadata into file" << fileName << "of type" << fileType;
-
-    std::unique_ptr<TagLib::File> pFile;
-    bool anyTagsWritten = false;
-
-    if (kFileTypeMP3 == fileType) {
-        auto pMPEGFile =
-                std::make_unique<TagLib::MPEG::File>(
-                        TAGLIB_FILENAME_FROM_QSTRING(fileName));
-        bool defaultID3V2 = true;
-        if (hasAPETag(*pMPEGFile)) {
-            anyTagsWritten |= writeTrackMetadataIntoAPETag(pMPEGFile->APETag(), trackMetadata);
-            // Only write ID3v2 tag if it already exists
-            defaultID3V2 = false;
-        }
-        if (defaultID3V2 || hasID3v2Tag(*pMPEGFile)) {
-            anyTagsWritten |= writeTrackMetadataIntoID3v2Tag(pMPEGFile->ID3v2Tag(defaultID3V2), trackMetadata);
-        }
-        pFile = std::move(pMPEGFile); // transfer ownership
-    } else if (kFileTypeMP4 == fileType) {
-        auto pMP4File =
-                std::make_unique<TagLib::MP4::File>(
-                        TAGLIB_FILENAME_FROM_QSTRING(fileName));
-        anyTagsWritten |= writeTrackMetadataIntoMP4Tag(pMP4File->tag(), trackMetadata);
-        pFile = std::move(pMP4File); // transfer ownership
-    } else if (kFileTypeFLAC == fileType) {
-        auto pFLACFile =
-                std::make_unique<TagLib::FLAC::File>(
-                        TAGLIB_FILENAME_FROM_QSTRING(fileName));
-        bool defaultXiphComment = true;
-        if (hasID3v2Tag(*pFLACFile)) {
-            anyTagsWritten |= writeTrackMetadataIntoID3v2Tag(pFLACFile->ID3v2Tag(), trackMetadata);
-            // Only write Xiph Comment if it already exists
-            defaultXiphComment = false;
-        }
-        if (defaultXiphComment || hasXiphComment(*pFLACFile)) {
-            anyTagsWritten |= writeTrackMetadataIntoXiphComment(pFLACFile->xiphComment(defaultXiphComment), trackMetadata);
-        }
-        pFile = std::move(pFLACFile); // transfer ownership
-    } else if (kFileTypeOggVorbis == fileType) {
-        auto pOggVorbisFile =
-                std::make_unique<TagLib::Ogg::Vorbis::File>(
-                        TAGLIB_FILENAME_FROM_QSTRING(fileName));
-        anyTagsWritten |= writeTrackMetadataIntoXiphComment(pOggVorbisFile->tag(), trackMetadata);
-        pFile = std::move(pOggVorbisFile); // transfer ownership
-#if TAGLIB_HAS_OPUSFILE
-    } else if (kFileTypeOggOpus == fileType) {
-        auto pOggOpusFile =
-                std::make_unique<TagLib::Ogg::Opus::File>(
-                        TAGLIB_FILENAME_FROM_QSTRING(fileName));
-        anyTagsWritten |= writeTrackMetadataIntoXiphComment(pOggOpusFile->tag(), trackMetadata);
-        pFile = std::move(pOggOpusFile); // transfer ownership
-#endif // TAGLIB_HAS_OPUSFILE
-    } else if (kFileTypeWavPack == fileType) {
-        auto pWavPackFile =
-                std::make_unique<TagLib::WavPack::File>(
-                        TAGLIB_FILENAME_FROM_QSTRING(fileName));
-        anyTagsWritten |= writeTrackMetadataIntoAPETag(pWavPackFile->APETag(true), trackMetadata);
-        pFile = std::move(pWavPackFile); // transfer ownership
-    } else if (kFileTypeWAV == fileType) {
-        auto pWAVFile =
-                std::make_unique<TagLib::RIFF::WAV::File>(
-                        TAGLIB_FILENAME_FROM_QSTRING(fileName));
-#if TAGLIB_HAS_WAV_ID3V2TAG
-        anyTagsWritten |= writeTrackMetadataIntoID3v2Tag(pWAVFile->ID3v2Tag(), trackMetadata);
-#else
-        anyTagsWritten |= writeTrackMetadataIntoID3v2Tag(pWAVFile->tag(), trackMetadata);
-#endif
-        pFile = std::move(pWAVFile); // transfer ownership
-    } else if (kFileTypeAIFF == fileType) {
-        auto pAIFFFile =
-                std::make_unique<TagLib::RIFF::AIFF::File>(
-                        TAGLIB_FILENAME_FROM_QSTRING(fileName));
-        anyTagsWritten |= writeTrackMetadataIntoID3v2Tag(pAIFFFile->tag(), trackMetadata);
-        pFile = std::move(pAIFFFile); // transfer ownership
-    }
-
-    if (!pFile) {
-        qWarning() << "Failed to write track metadata into file" << fileName
-                << ": Unsupported file type" << fileType;
-        return ERR;
-    }
-    if (!anyTagsWritten) {
-        qWarning() << "Failed to write track metadata into file" << fileName
-                << ": Inaccessible tags";
-        return ERR;
-    }
-    if (!pFile->save()) {
-        qWarning() << "Failed to save file" << fileName;
-        return ERR;
-    }
-
-    return OK;
-}
-
 } //namespace mixxx

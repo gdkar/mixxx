@@ -244,45 +244,36 @@ Qt::ItemFlags BrowseTableModel::flags(const QModelIndex &index) const {
         return defaultFlags | Qt::ItemIsEditable;
     }
 }
-
-bool BrowseTableModel::isTrackInUse(const QString& track_location) const {
-    if (PlayerInfo::instance().isFileLoaded(track_location)) {
+bool BrowseTableModel::isTrackInUse(const QString& track_location) const
+{
+    if (PlayerInfo::instance().isFileLoaded(track_location))
         return true;
-    }
-
-    if (m_pRecordingManager->getRecordingLocation() == track_location) {
+    if (m_pRecordingManager->getRecordingLocation() == track_location)
         return true;
-    }
-
     return false;
 }
 
-bool BrowseTableModel::setData(const QModelIndex &index, const QVariant &value,
-                               int role) {
+bool BrowseTableModel::setData(const QModelIndex &_index, const QVariant &value,int role)
+{
     Q_UNUSED(role);
-
-    if (!index.isValid()) {
+    if (!_index.isValid())
         return false;
-    }
-    qDebug() << "BrowseTableModel::setData(" << index.data() << ")";
-    int row = index.row();
-    int col = index.column();
-
+    qDebug() << "BrowseTableModel::setData(" << _index.data() << ")";
+    auto row = _index.row(), col = _index.column();
     mixxx::TrackMetadata trackMetadata;
-
     // set tagger information
-    trackMetadata.setArtist(this->index(row, COLUMN_ARTIST).data().toString());
-    trackMetadata.setTitle(this->index(row, COLUMN_TITLE).data().toString());
-    trackMetadata.setAlbum(this->index(row, COLUMN_ALBUM).data().toString());
-    trackMetadata.setKey(this->index(row, COLUMN_KEY).data().toString());
-    trackMetadata.setBpm(mixxx::Bpm(this->index(row, COLUMN_BPM).data().toDouble()));
-    trackMetadata.setComment(this->index(row, COLUMN_COMMENT).data().toString());
-    trackMetadata.setTrackNumber(this->index(row, COLUMN_TRACK_NUMBER).data().toString());
-    trackMetadata.setYear(this->index(row, COLUMN_YEAR).data().toString());
-    trackMetadata.setGenre(this->index(row, COLUMN_GENRE).data().toString());
-    trackMetadata.setComposer(this->index(row, COLUMN_COMPOSER).data().toString());
-    trackMetadata.setAlbumArtist(this->index(row, COLUMN_ALBUMARTIST).data().toString());
-    trackMetadata.setGrouping(this->index(row, COLUMN_GROUPING).data().toString());
+    trackMetadata.setArtist(index(row, COLUMN_ARTIST).data().toString());
+    trackMetadata.setTitle(index(row, COLUMN_TITLE).data().toString());
+    trackMetadata.setAlbum(index(row, COLUMN_ALBUM).data().toString());
+    trackMetadata.setKey(index(row, COLUMN_KEY).data().toString());
+    trackMetadata.setBpm(mixxx::Bpm(index(row, COLUMN_BPM).data().toDouble()));
+    trackMetadata.setComment(index(row, COLUMN_COMMENT).data().toString());
+    trackMetadata.setTrackNumber(index(row, COLUMN_TRACK_NUMBER).data().toString());
+    trackMetadata.setYear(index(row, COLUMN_YEAR).data().toString());
+    trackMetadata.setGenre(index(row, COLUMN_GENRE).data().toString());
+    trackMetadata.setComposer(index(row, COLUMN_COMPOSER).data().toString());
+    trackMetadata.setAlbumArtist(index(row, COLUMN_ALBUMARTIST).data().toString());
+    trackMetadata.setGrouping(index(row, COLUMN_GROUPING).data().toString());
 
     // check if one the item were edited
     if (col == COLUMN_ARTIST) {
@@ -314,40 +305,30 @@ bool BrowseTableModel::setData(const QModelIndex &index, const QVariant &value,
         return false;
     }
 
-    QStandardItem* item = itemFromIndex(index);
-    QString track_location(getTrackLocation(index));
-    if (OK == writeTrackMetadataIntoFile(trackMetadata, track_location)) {
-        // Modify underlying interalPointer object
-        item->setText(value.toString());
-        item->setToolTip(item->text());
-        return true;
-    } else {
+    auto item = itemFromIndex(_index);
+    auto track_location = QString(getTrackLocation(_index));
         // reset to old value in error
-        item->setText(index.data().toString());
-        item->setToolTip(item->text());
-        QMessageBox::critical(
-            0, tr("Mixxx Library"),
-            tr("Could not update file metadata.")
-            + "\n" +track_location);
-        return false;
-    }
+    item->setText(_index.data().toString());
+    item->setToolTip(item->text());
+    QMessageBox::critical(0, tr("Mixxx Library"),tr("Could not update file metadata.") + "\n" +track_location);
+    return false;
 }
-
-void BrowseTableModel::trackLoaded(QString group, TrackPointer pTrack) {
+void BrowseTableModel::trackLoaded(QString group, TrackPointer pTrack)
+{
     if (group == m_previewDeckGroup) {
-        for (int row = 0; row < rowCount(); ++row) {
-            QModelIndex i = index(row, COLUMN_PREVIEW);
+        for (auto row = 0; row < rowCount(); ++row) {
+            auto i = index(row, COLUMN_PREVIEW);
             if (i.data().toBool()) {
-                QStandardItem* item = itemFromIndex(i);
+                auto item = itemFromIndex(i);
                 item->setText("0");
             }
         }
         if (pTrack) {
-            for (int row = 0; row < rowCount(); ++row) {
-                QModelIndex i = index(row, COLUMN_PREVIEW);
-                QString location = index(row, COLUMN_LOCATION).data().toString();
+            for (auto row = 0; row < rowCount(); ++row) {
+                auto i = index(row, COLUMN_PREVIEW);
+                auto location = index(row, COLUMN_LOCATION).data().toString();
                 if (location == pTrack->getLocation()) {
-                    QStandardItem* item = itemFromIndex(i);
+                    auto  item = itemFromIndex(i);
                     item->setText("1");
                     break;
                 }
@@ -355,15 +336,14 @@ void BrowseTableModel::trackLoaded(QString group, TrackPointer pTrack) {
         }
     }
 }
-
-bool BrowseTableModel::isColumnSortable(int column) {
-    if (COLUMN_PREVIEW == column) {
+bool BrowseTableModel::isColumnSortable(int column)
+{
+    if (COLUMN_PREVIEW == column)
         return false;
-    }
     return true;
 }
-
-QAbstractItemDelegate* BrowseTableModel::delegateForColumn(const int i, QObject* pParent) {
+QAbstractItemDelegate* BrowseTableModel::delegateForColumn(const int i, QObject* pParent)
+{
     if (PlayerManager::numPreviewDecks() > 0 && i == COLUMN_PREVIEW) {
         return new PreviewButtonDelegate(pParent, i);
     }

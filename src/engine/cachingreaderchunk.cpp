@@ -5,7 +5,7 @@
 #include "util/math.h"
 #include "util/sample.h"
 
-const SINT CachingReaderChunk::kInvalidIndex = -1;
+const int64_t CachingReaderChunk::kInvalidIndex = -1;
 
 // One chunk should contain 1/2 - 1/4th of a second of audio.
 // 8192 frames contain about 170 ms of audio at 48 kHz, which
@@ -15,55 +15,44 @@ const SINT CachingReaderChunk::kInvalidIndex = -1;
 // easier memory alignment.
 // TODO(XXX): The optimum value of the "constant" kFrames depends
 // on the properties of the AudioSource as the remarks above suggest!
-const SINT CachingReaderChunk::kChannels = mixxx::AudioSource::kChannelCountStereo;
-const SINT CachingReaderChunk::kFrames = 8192; // ~ 170 ms at 48 kHz
-const SINT CachingReaderChunk::kSamples =
-        CachingReaderChunk::frames2samples(CachingReaderChunk::kFrames);
+const int64_t CachingReaderChunk::kChannels = mixxx::AudioSource::kChannelCountStereo;
+const int64_t CachingReaderChunk::kFrames = 4096; // ~ 170 ms at 48 kHz
+const int64_t CachingReaderChunk::kSamples = CachingReaderChunk::frames2samples(CachingReaderChunk::kFrames);
 
 CachingReaderChunk::CachingReaderChunk(
         CSAMPLE* sampleBuffer)
         : m_index(kInvalidIndex),
           m_sampleBuffer(sampleBuffer),
-          m_frameCount(0) {
-}
-
-CachingReaderChunk::~CachingReaderChunk() {
-}
-
-void CachingReaderChunk::init(SINT index) {
+          m_frameCount(0)
+{ }
+CachingReaderChunk::~CachingReaderChunk() = default;
+void CachingReaderChunk::init(int64_t index)
+{
     m_index = index;
     m_frameCount = 0;
 }
-
 bool CachingReaderChunk::isReadable(
         const mixxx::AudioSourcePointer& pAudioSource,
-        SINT maxReadableFrameIndex) const {
+        int64_t maxReadableFrameIndex) const {
     DEBUG_ASSERT(mixxx::AudioSource::getMinFrameIndex() <= maxReadableFrameIndex);
 
     if (!isValid() || pAudioSource.isNull()) {
         return false;
     }
-    const SINT frameIndex = frameForIndex(getIndex());
-    const SINT maxFrameIndex = math_min(
-            maxReadableFrameIndex, pAudioSource->getMaxFrameIndex());
+    auto frameIndex = frameForIndex(getIndex());
+    auto maxFrameIndex = math_min(maxReadableFrameIndex, pAudioSource->getMaxFrameIndex());
     return frameIndex <= maxFrameIndex;
 }
 
-SINT CachingReaderChunk::readSampleFrames(
+int64_t CachingReaderChunk::readSampleFrames(
         const mixxx::AudioSourcePointer& pAudioSource,
-        SINT* pMaxReadableFrameIndex) {
+        int64_t* pMaxReadableFrameIndex) {
     DEBUG_ASSERT(pMaxReadableFrameIndex);
-
-    const SINT frameIndex = frameForIndex(getIndex());
-    const SINT maxFrameIndex = math_min(
-            *pMaxReadableFrameIndex, pAudioSource->getMaxFrameIndex());
-    const SINT framesRemaining =
-            *pMaxReadableFrameIndex - frameIndex;
-    const SINT framesToRead =
-            math_min(kFrames, framesRemaining);
-
-    SINT seekFrameIndex =
-            pAudioSource->seekSampleFrame(frameIndex);
+    auto frameIndex = frameForIndex(getIndex());
+    auto maxFrameIndex = math_min(*pMaxReadableFrameIndex, pAudioSource->getMaxFrameIndex());
+    auto framesRemaining = *pMaxReadableFrameIndex - frameIndex;
+    auto framesToRead = math_min(kFrames, framesRemaining);
+    auto seekFrameIndex = pAudioSource->seekSampleFrame(frameIndex);
     if (frameIndex != seekFrameIndex) {
         // Failed to seek to the requested index. The file might
         // be corrupt and decoding should be aborted.
@@ -77,7 +66,7 @@ SINT CachingReaderChunk::readSampleFrames(
             // seek position. But only skip twice as many frames/samples
             // as have been requested to avoid decoding great portions of
             // the file for small read requests on seek errors.
-            const SINT framesToSkip = frameIndex - seekFrameIndex;
+            auto framesToSkip = frameIndex - seekFrameIndex;
             if (framesToSkip <= (2 * framesToRead)) {
                 seekFrameIndex += pAudioSource->skipSampleFrames(framesToSkip);
             }
@@ -110,7 +99,7 @@ SINT CachingReaderChunk::readSampleFrames(
 }
 
 void CachingReaderChunk::copySamples(
-        CSAMPLE* sampleBuffer, SINT sampleOffset, SINT sampleCount) const {
+        CSAMPLE* sampleBuffer, int64_t sampleOffset, int64_t sampleCount) const {
     DEBUG_ASSERT(0 <= sampleOffset);
     DEBUG_ASSERT(0 <= sampleCount);
     DEBUG_ASSERT((sampleOffset + sampleCount) <= frames2samples(m_frameCount));
@@ -118,7 +107,7 @@ void CachingReaderChunk::copySamples(
 }
 
 void CachingReaderChunk::copySamplesReverse(
-        CSAMPLE* sampleBuffer, SINT sampleOffset, SINT sampleCount) const {
+        CSAMPLE* sampleBuffer, int64_t sampleOffset, int64_t sampleCount) const {
     DEBUG_ASSERT(0 <= sampleOffset);
     DEBUG_ASSERT(0 <= sampleCount);
     DEBUG_ASSERT((sampleOffset + sampleCount) <= frames2samples(m_frameCount));
@@ -136,7 +125,7 @@ CachingReaderChunkForOwner::CachingReaderChunkForOwner(
 CachingReaderChunkForOwner::~CachingReaderChunkForOwner() {
 }
 
-void CachingReaderChunkForOwner::init(SINT index) {
+void CachingReaderChunkForOwner::init(int64_t index) {
     DEBUG_ASSERT(READ_PENDING != m_state);
     CachingReaderChunk::init(index);
     m_state = READY;

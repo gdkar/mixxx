@@ -12,8 +12,7 @@ public:
     static QString getFileExtensionFromUrl(const QUrl& url);
     const QString& getType() const { return m_type; }
     // Default implementations for reading/writing track metadata.
-    Result parseTrackMetadataAndCoverArt(TrackMetadata* pTrackMetadata,QImage* pCoverArt) const override;
-    Result writeTrackMetadata(const TrackMetadata& trackMetadata) const override;
+    bool parseTrackMetadataAndCoverArt(TrackMetadata* pTrackMetadata,QImage* pCoverArt) const override;
     enum class OpenResult {
         SUCCEEDED,
         FAILED,

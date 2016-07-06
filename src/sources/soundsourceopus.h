@@ -13,7 +13,7 @@ public:
     explicit SoundSourceOpus(const QUrl& url);
     ~SoundSourceOpus() override;
 
-    Result parseTrackMetadataAndCoverArt(
+    bool parseTrackMetadataAndCoverArt(
             TrackMetadata* pTrackMetadata,
             QImage* pCoverArt) const override;
 

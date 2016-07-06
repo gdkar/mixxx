@@ -280,9 +280,7 @@ void TrackDAO::saveTrack(Track* pTrack) {
         // Instead of another flag that needs to be managed we
         // could alternatively store a second copy of TrackMetadata
         // in Track.
-        if (m_pConfig && m_pConfig->getValueString(ConfigKey("[Library]","WriteAudioTags")).toInt() == 1) {
-            SoundSourceProxy::saveTrackMetadata(pTrack);
-        }
+
     }
 }
 

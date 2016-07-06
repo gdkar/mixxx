@@ -43,14 +43,13 @@ SoundSourceOpus::~SoundSourceOpus() {
     close();
 }
 
-Result SoundSourceOpus::parseTrackMetadataAndCoverArt(
+bool SoundSourceOpus::parseTrackMetadataAndCoverArt(
         TrackMetadata* pTrackMetadata,
         QImage* pCoverArt) const {
-    if (OK == SoundSource::parseTrackMetadataAndCoverArt(
-            pTrackMetadata, pCoverArt)) {
+    if (SoundSource::parseTrackMetadataAndCoverArt( pTrackMetadata, pCoverArt)) {
         // Done if the default implementation in the base class
         // supports Opus files.
-        return OK;
+        return true;
     }
 
     // Beginning with version 1.9.0 TagLib supports the Opus format.
@@ -131,7 +130,7 @@ Result SoundSourceOpus::parseTrackMetadataAndCoverArt(
         //" (" << l_ptrOpusTags->user_comments[i] << ")" << l_STag << "*" << l_SPayload;
     }
 
-    return OK;
+    return true;
 }
 
 SoundSource::OpenResult SoundSourceOpus::tryOpen(const AudioSourceConfig& /*audioSrcCfg*/) {
