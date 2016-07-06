@@ -8,7 +8,7 @@ namespace mixxx {
 namespace {
 
 // The maximum number of samples per MP3 frame
-const SINT kMp3MaxFrameSize = 1152;
+const int64_t kMp3MaxFrameSize = 1152;
 
 // NOTE(rryan): For every MP3 seek we jump back kStabilizationFrames frames from
 // the seek position and read forward to allow the decoder to stabilize. The
@@ -17,7 +17,7 @@ const SINT kMp3MaxFrameSize = 1152;
 // appropriate amount to pre-fetch from the ExtAudioFile API. Oddly, the "prime"
 // information -- which AIUI is supposed to tell us this information -- is zero
 // for this file. We use the same frame pre-fetch count from SoundSourceMp3.
-const SINT kMp3StabilizationFrames =
+const int64_t kMp3StabilizationFrames =
         kMp3SeekFramePrefetchCount * kMp3MaxFrameSize;
 
 static CSAMPLE kMp3StabilizationScratchBuffer[kMp3StabilizationFrames *
@@ -144,12 +144,12 @@ void SoundSourceCoreAudio::close() {
     ExtAudioFileDispose(m_audioFile);
 }
 
-SINT SoundSourceCoreAudio::seekSampleFrame(SINT frameIndex) {
+int64_t SoundSourceCoreAudio::seekSampleFrame(int64_t frameIndex) {
     DEBUG_ASSERT(isValidFrameIndex(frameIndex));
 
     // See comments above on kMp3StabilizationFrames.
-    const SINT stabilization_frames = m_bFileIsMp3 ? math_min(
-            kMp3StabilizationFrames, SINT(frameIndex + m_headerFrames)) : 0;
+    const int64_t stabilization_frames = m_bFileIsMp3 ? math_min(
+            kMp3StabilizationFrames, int64_t(frameIndex + m_headerFrames)) : 0;
     OSStatus err = ExtAudioFileSeek(
             m_audioFile, frameIndex + m_headerFrames - stabilization_frames);
     if (stabilization_frames > 0) {
@@ -165,13 +165,13 @@ SINT SoundSourceCoreAudio::seekSampleFrame(SINT frameIndex) {
     return frameIndex;
 }
 
-SINT SoundSourceCoreAudio::readSampleFrames(
-        SINT numberOfFrames, CSAMPLE* sampleBuffer) {
+int64_t SoundSourceCoreAudio::readSampleFrames(
+        int64_t numberOfFrames, CSAMPLE* sampleBuffer) {
     //if (!m_decoder) return 0;
-    SINT numFramesRead = 0;
+    int64_t numFramesRead = 0;
 
     while (numFramesRead < numberOfFrames) {
-        SINT numFramesToRead = numberOfFrames - numFramesRead;
+        int64_t numFramesToRead = numberOfFrames - numFramesRead;
 
         AudioBufferList fillBufList;
         fillBufList.mNumberBuffers = 1;

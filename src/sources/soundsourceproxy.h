@@ -51,15 +51,12 @@ class SoundSourceProxy {
     void loadTrackMetadataAndCoverArt(bool reloadFromFile = false) const {
         return loadTrackMetadataAndCoverArt(true, reloadFromFile);
     }
-
     // Parse only the metadata from the file without modifying
     // the referenced track.
     Result parseTrackMetadata(mixxx::TrackMetadata* pTrackMetadata) const;
-
     // Parse only the cover image from the file without modifying
     // the referenced track.
     QImage parseCoverImage() const;
-
     enum class SaveTrackMetadataResult {
         SUCCEEDED,
         FAILED,
@@ -68,7 +65,6 @@ class SoundSourceProxy {
     static SaveTrackMetadataResult saveTrackMetadata(
             const Track* pTrack,
             bool evenIfNeverParsedFromFileBefore = false);
-
     // Opening the audio data through the proxy will
     // update the some metadata of the track object.
     // Returns a null pointer on failure.
@@ -102,11 +98,9 @@ class SoundSourceProxy {
     void initSoundSource();
 
     void loadTrackMetadataAndCoverArt(bool withCoverArt, bool reloadFromFile) const;
-
     // This pointer must stay in this class together with
     // the corresponding track pointer. Don't pass it around!!
     mixxx::SoundSourcePointer m_pSoundSource;
-
     // Keeps track of opening and closing the corresponding
     // SoundSource. This pointer can safely be passed around,
     // because internally it contains a reference to the TIO

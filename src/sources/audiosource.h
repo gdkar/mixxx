@@ -32,7 +32,7 @@ class AudioSource: public UrlResource, public AudioSignal {
   public:
     static const SampleLayout kSampleLayout = SampleLayout::Interleaved;
     // Returns the total number of sample frames.
-    SINT getFrameCount() const { return m_frameCount; }
+    int64_t getFrameCount() const { return m_frameCount; }
     bool isEmpty() const { return kFrameCountZero >= getFrameCount(); }
     // The actual duration in seconds.
     // Well defined only for valid files!
@@ -47,7 +47,6 @@ class AudioSource: public UrlResource, public AudioSignal {
     {
         return double(getFrameCount()) / double(getSamplingRate());
     }
-
     // The bitrate is optional and measured in kbit/s (kbps).
     // It depends on the metadata and decoder if a value for the
     // bitrate is available.
@@ -56,25 +55,25 @@ class AudioSource: public UrlResource, public AudioSignal {
     }
     inline SINT getBitrate() const {
 
+
         return m_bitrate;
     }
     // Index of the first sample frame.
-    static SINT getMinFrameIndex()
+    static int64_t getMinFrameIndex()
     {
         return kFrameIndexMin;
     }
     // Index of the sample frame following the last
     // sample frame.
-    SINT getMaxFrameIndex() const
+    int64_t getMaxFrameIndex() const
     {
         return getMinFrameIndex() + getFrameCount();
     }
     // The sample frame index is valid in the range
     // [getMinFrameIndex(), getMaxFrameIndex()].
-    bool isValidFrameIndex(SINT frameIndex) const
+    bool isValidFrameIndex(int64_t frameIndex) const
     {
-        return (getMinFrameIndex() <= frameIndex) &&
-                (getMaxFrameIndex() >= frameIndex);
+        return (getMinFrameIndex() <= frameIndex) && (getMaxFrameIndex() >= frameIndex);
     }
     // Adjusts the current frame seek index:
     // - Precondition: isValidFrameIndex(frameIndex) == true
@@ -83,7 +82,7 @@ class AudioSource: public UrlResource, public AudioSignal {
     // - The seek position in seconds is frameIndex / getSamplingRate()
     // Returns the actual current frame index which may differ from the
     // requested index if the source does not support accurate seeking.
-    virtual SINT seekSampleFrame(SINT frameIndex) = 0;
+    virtual int64_t seekSampleFrame(int64_t frameIndex) = 0;
     // Fills the buffer with samples from each channel starting
     // at the current frame seek position.
     //
@@ -96,14 +95,12 @@ class AudioSource: public UrlResource, public AudioSignal {
     // might be lower than the requested number of frames when the end
     // of the audio stream has been reached. The current frame seek
     // position is moved forward towards the next unread frame.
-    virtual SINT readSampleFrames( SINT numberOfFrames, CSAMPLE* sampleBuffer) = 0;
-    SINT skipSampleFrames( SINT numberOfFrames)
+    virtual int64_t readSampleFrames( int64_t numberOfFrames, CSAMPLE* sampleBuffer) = 0;
+    int64_t skipSampleFrames( int64_t numberOfFrames)
     {
         return readSampleFrames(numberOfFrames, static_cast<CSAMPLE*>(nullptr));
     }
-    SINT readSampleFrames(
-            SINT numberOfFrames,
-            SampleBuffer* pSampleBuffer)
+    int64_t readSampleFrames(int64_t numberOfFrames,SampleBuffer* pSampleBuffer)
     {
         if (pSampleBuffer) {
             DEBUG_ASSERT(frames2samples(numberOfFrames) <= pSampleBuffer->size());
@@ -143,13 +140,13 @@ class AudioSource: public UrlResource, public AudioSignal {
     // They may also have reduced space requirements on sampleBuffer,
     // i.e. only the minimum size is required for an in-place
     // transformation without temporary allocations.
-    virtual SINT readSampleFramesStereo(
-            SINT numberOfFrames,
+    virtual int64_t readSampleFramesStereo(
+            int64_t numberOfFrames,
             CSAMPLE* sampleBuffer,
-            SINT sampleBufferSize);
+            int64_t sampleBufferSize);
 
-    SINT readSampleFramesStereo(
-            SINT numberOfFrames,
+    int64_t readSampleFramesStereo(
+            int64_t numberOfFrames,
             SampleBuffer* pSampleBuffer) {
         if (pSampleBuffer) {
             return readSampleFramesStereo(numberOfFrames,pSampleBuffer->data(), pSampleBuffer->size());
@@ -185,18 +182,18 @@ class AudioSource: public UrlResource, public AudioSignal {
   private:
     friend class AudioSourceConfig;
 
-    static const SINT kFrameCountZero = 0;
-    static const SINT kFrameCountDefault = kFrameCountZero;
+    static const int64_t kFrameCountZero = 0;
+    static const int64_t kFrameCountDefault = kFrameCountZero;
 
     // 0-based indexing of sample frames
-    static const SINT kFrameIndexMin = 0;
+    static const int64_t kFrameIndexMin = 0;
 
-    static const SINT kBitrateZero = 0;
-    static const SINT kBitrateDefault = kBitrateZero;
+    static const int64_t kBitrateZero = 0;
+    static const int64_t kBitrateDefault = kBitrateZero;
 
-    SINT m_frameCount;
+    int64_t m_frameCount;
 
-    SINT m_bitrate;
+    int64_t m_bitrate;
 };
 
 // Parameters for configuring audio sources
@@ -204,7 +201,7 @@ class AudioSourceConfig : public AudioSignal {
   public:
     AudioSourceConfig()
         : AudioSignal(AudioSource::kSampleLayout) {}
-    AudioSourceConfig(SINT channelCount, SINT samplingRate)
+    AudioSourceConfig(int64_t channelCount, int64_t samplingRate)
         : AudioSignal(AudioSource::kSampleLayout, channelCount, samplingRate) {}
 
     using AudioSignal::setChannelCount;

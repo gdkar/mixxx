@@ -18,12 +18,12 @@ public:
 
     void close() override;
 
-    SINT seekSampleFrame(SINT frameIndex) override;
+    int64_t seekSampleFrame(int64_t frameIndex) override;
 
-    SINT readSampleFrames(SINT numberOfFrames,
+    int64_t readSampleFrames(int64_t numberOfFrames,
             CSAMPLE* sampleBuffer) override;
-    SINT readSampleFramesStereo(SINT numberOfFrames,
-            CSAMPLE* sampleBuffer, SINT sampleBufferSize) override;
+    int64_t readSampleFramesStereo(int64_t numberOfFrames,
+            CSAMPLE* sampleBuffer, int64_t sampleBufferSize) override;
 
     // callback methods
     FLAC__StreamDecoderReadStatus flacRead(FLAC__byte buffer[], size_t* bytes);
@@ -39,8 +39,8 @@ public:
 private:
     OpenResult tryOpen(const AudioSourceConfig& audioSrcCfg) override;
 
-    SINT readSampleFrames(SINT numberOfFrames,
-            CSAMPLE* sampleBuffer, SINT sampleBufferSize,
+    int64_t readSampleFrames(int64_t numberOfFrames,
+            CSAMPLE* sampleBuffer, int64_t sampleBufferSize,
             bool readStereoSamples);
 
     QFile m_file;
@@ -51,14 +51,14 @@ private:
     // subblocks (one for each chan)
     // flac stores in 'frames', each of which has a header and a certain number
     // of subframes (one for each channel)
-    SINT m_maxBlocksize; // in time samples (audio samples = time samples * chanCount)
-    SINT m_bitsPerSample;
+    int64_t m_maxBlocksize; // in time samples (audio samples = time samples * chanCount)
+    int64_t m_bitsPerSample;
 
     CSAMPLE m_sampleScaleFactor;
 
     SingularSampleBuffer m_sampleBuffer;
 
-    SINT m_curFrameIndex;
+    int64_t m_curFrameIndex;
 };
 
 class SoundSourceProviderFLAC: public SoundSourceProvider {

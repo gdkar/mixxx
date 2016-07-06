@@ -27,9 +27,9 @@ public:
 
     void close() override;
 
-    SINT seekSampleFrame(SINT frameIndex) override;
+    int64_t seekSampleFrame(int64_t frameIndex) override;
 
-    SINT readSampleFrames(SINT numberOfFrames,
+    int64_t readSampleFrames(int64_t numberOfFrames,
             CSAMPLE* sampleBuffer) override;
 
 private:

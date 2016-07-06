@@ -1,5 +1,9 @@
 
 #include "sources/soundsourceffmpeg.h"
+#include "util/performancetimer.h"
+#include "util/timer.h"
+#include "util/trace.h"
+#include "util/math.h"
 extern "C"{
   #include <libswresample/swresample.h>
 }
@@ -86,8 +90,8 @@ SoundSource::OpenResult SoundSourceFFmpeg::tryOpen(const AudioSourceConfig& audi
 //    setChannelCount(m_codec_ctx->channels);
     setChannelCount(2);
     setSamplingRate(m_codec_ctx->sample_rate);
-    m_output_tb = AVRational{1,getSamplingRate()};
-    setFrameCount(av_rescale_q(m_fmt_ctx->duration),m_output_tb,AV_TIME_BASE_Q));
+    m_output_tb = AVRational{1,(int)getSamplingRate()};
+    setFrameCount(av_rescale_q(m_fmt_ctx->duration,AV_TIME_BASE_Q,m_output_tb));
     qDebug() << "SoundSourceFFmpeg::tryOpen: Samplerate: " << getSamplingRate() << ", Channels: " << getChannelCount() << "\n";
     m_swr = swr_alloc_set_opts(m_swr, 
                                getChannelLayout(),
@@ -107,7 +111,7 @@ SoundSource::OpenResult SoundSourceFFmpeg::tryOpen(const AudioSourceConfig& audi
     m_frame_swr->format         = AV_SAMPLE_FMT_FLT;
     m_frame_swr->channels       = getChannelCount();
     m_frame_swr->channel_layout = getChannelLayout();
-    m_frame_swr->rate           = getSamplingRate();
+    m_frame_swr->sample_rate    = getSamplingRate();
     m_frame_swr->nb_samples     = 0;
     next();
     m_sample_now = m_sample_frame;
@@ -116,9 +120,11 @@ SoundSource::OpenResult SoundSourceFFmpeg::tryOpen(const AudioSourceConfig& audi
 void SoundSourceFFmpeg::close()
 {
     avformat_close_input(&m_fmt_ctx);
-    if(avcodec_is_open(m_codec_ctx))
-        avcodec_close(m_codec_ctx);
-    avcodec_free_context(&m_codec_ctx);
+    if(m_codec_ctx) {
+        if(avcodec_is_open(m_codec_ctx))
+            avcodec_close(m_codec_ctx);
+        avcodec_free_context(&m_codec_ctx);
+    }
     swr_free(&m_swr);
 }
 bool SoundSourceFFmpeg::next()
@@ -131,7 +137,6 @@ bool SoundSourceFFmpeg::next()
         av_packet_unref(m_packet);
         if((ret = av_read_frame(m_fmt_ctx, m_packet)) < 0) {
             if(ret == AVERROR_EOF) {
-                eof = true;
                 if((ret = avcodec_send_packet(m_codec_ctx, nullptr)) < 0)
                     return false;
                 continue;
@@ -170,8 +175,9 @@ bool SoundSourceFFmpeg::next()
     m_sample_frame = av_rescale_q(m_frame_swr->pts, m_stream_tb, m_output_tb);
     return true;
 }
-SINT SoundSourceFFmpeg::seekSampleFrame(SINT frameIndex)
+int64_t SoundSourceFFmpeg::seekSampleFrame(int64_t frameIndex)
 {
+    ScopedTimer _t("SoundSourceFFmpeg::seekSampleFrame");
     if ( frameIndex >= m_sample_frame && frameIndex < m_sample_frame + m_frame_swr->nb_samples * 4 ){
       while ( frameIndex > m_sample_frame + m_frame_swr->nb_samples && next())
       {}
@@ -179,13 +185,17 @@ SINT SoundSourceFFmpeg::seekSampleFrame(SINT frameIndex)
     if ( frameIndex >= m_sample_frame && frameIndex < m_sample_now + m_frame_swr->nb_samples){
       m_sample_now = frameIndex;
     }else{
-      auto framePts = av_rescale_q ( frameIndex, AVRational{1,(int)getSamplingRate()},AV_TIME_BASE_Q);
+      auto delay = 0;
+      if(m_swr && swr_is_initialized(m_swr)) {
+        delay = swr_get_delay(m_swr, getSamplingRate());
+      }
+      auto framePts = av_rescale_q ( frameIndex - delay, m_output_tb,AV_TIME_BASE_Q);
       avformat_seek_file( m_fmt_ctx, -1, INT64_MIN,framePts, framePts, 0 );
       avcodec_flush_buffers(m_codec_ctx);
       av_packet_unref(m_packet);
       if(next()){
-        if ( m_sample_frame> frameIndex )
-            m_sample_now = m_sample_frame;
+        if ( m_sample_frame + delay > frameIndex )
+            m_sample_now = m_sample_frame + delay;
         else 
             m_sample_now = frameIndex;
       }else{
@@ -194,8 +204,9 @@ SINT SoundSourceFFmpeg::seekSampleFrame(SINT frameIndex)
     }
     return m_sample_now;
 }
-SINT SoundSourceFFmpeg::readSampleFrames(SINT numberOfFrames,CSAMPLE* sampleBuffer)
+int64_t SoundSourceFFmpeg::readSampleFrames(int64_t numberOfFrames,CSAMPLE* sampleBuffer)
 {
+    ScopedTimer _t("SoundSourceFFmpeg::readSampleFrames");
     if(!numberOfFrames)
         return 0;
     auto numberLeft = numberOfFrames;

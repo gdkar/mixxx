@@ -30,8 +30,8 @@ class SoundSourceFFmpeg : public SoundSource {
     virtual ~SoundSourceFFmpeg() override;
 
     void close() override;
-    SINT seekSampleFrame(SINT frameIndex) override;
-    SINT readSampleFrames(SINT numberOfFrames, CSAMPLE* sampleBuffer) override;
+    int64_t seekSampleFrame(int64_t frameIndex) override;
+    int64_t readSampleFrames(int64_t numberOfFrames, CSAMPLE* sampleBuffer) override;
     int64_t getChannelLayout() const;
   private:
     struct packet {
@@ -46,11 +46,11 @@ class SoundSourceFFmpeg : public SoundSource {
         bool operator !() const { return !m_d;}
         packet() : m_d{av_packet_alloc()}{}
         packet(packet && o) noexcept { swap(o);}
-        packet &operator =(packet && o) noexcept { swap(o);}
+        packet &operator =(packet && o) noexcept { swap(o);return *this;}
        ~packet() { av_packet_free(&m_d);}
         void swap(packet &o) noexcept { std::swap(m_d, o.m_d);}
         void unref() { av_packet_unref(m_d);}
-    }
+    };
     struct frame{
         AVFrame *m_d{nullptr};
         AVFrame *operator ->()       { return m_d;}
@@ -63,11 +63,11 @@ class SoundSourceFFmpeg : public SoundSource {
         bool operator !() const { return !m_d;}
         frame() : m_d{av_frame_alloc()}{}
         frame(frame && o) noexcept { swap(o);}
-        frame &operator =(frame && o) noexcept { swap(o);}
+        frame &operator =(frame && o) noexcept { swap(o);return *this;}
        ~frame() { av_frame_free(&m_d);}
         void swap(frame &o) noexcept { std::swap(m_d, o.m_d);}
         void unref() { av_frame_unref(m_d);}
-    }
+    };
     OpenResult tryOpen(const AudioSourceConfig& audioSrcCfg) override;
 
     bool next( );

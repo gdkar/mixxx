@@ -9,7 +9,7 @@ namespace mixxx {
 // for accurate seeking:
 // http://www.mars.org/mailman/public/mad-dev/2002-May/000634.html
 // Used by both SoundSourceMp3 and SoundSourceCoreAudio.
-static const SINT kMp3SeekFramePrefetchCount = 29;
+static const int64_t kMp3SeekFramePrefetchCount = 29;
 
 } // namespace mixxx
 

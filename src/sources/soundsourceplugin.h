@@ -20,8 +20,7 @@ protected:
 // into a SoundSourcePointer that ensures that the managed
 // object will deleted from within the external library (DLL)
 // eventually.
-SoundSourcePointer exportSoundSourcePlugin(
-        SoundSourcePlugin* pSoundSourcePlugin);
+SoundSourcePointer exportSoundSourcePlugin(SoundSourcePlugin* pSoundSourcePlugin);
 
 } // namespace mixxx
 

@@ -16,9 +16,9 @@ namespace mixxx {
 // in RAM to allow seeking and smooth operation in Mixxx.
 class SoundSourceModPlug: public mixxx::SoundSource {
 public:
-    static const SINT kChannelCount;
-    static const SINT kSamplingRate;
-    static const SINT kBitsPerSample;
+    static const int64_t kChannelCount;
+    static const int64_t kSamplingRate;
+    static const int64_t kBitsPerSample;
 
     // apply settings for decoding
     static void configure(unsigned int bufferSizeLimit,
@@ -33,9 +33,9 @@ public:
 
     void close() override;
 
-    SINT seekSampleFrame(SINT frameIndex) override;
+    int64_t seekSampleFrame(int64_t frameIndex) override;
 
-    SINT readSampleFrames(SINT numberOfFrames,
+    int64_t readSampleFrames(int64_t numberOfFrames,
             CSAMPLE* sampleBuffer) override;
 
 private:
@@ -49,7 +49,7 @@ private:
     typedef std::vector<SAMPLE> SampleBuffer;
     SampleBuffer m_sampleBuf;
 
-    SINT m_seekPos; // current read position
+    int64_t m_seekPos; // current read position
 };
 
 class SoundSourceProviderModPlug: public SoundSourceProvider {

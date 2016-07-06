@@ -72,8 +72,8 @@ void SoundSourceSndFile::close() {
     }
 }
 
-SINT SoundSourceSndFile::seekSampleFrame(
-        SINT frameIndex) {
+int64_t SoundSourceSndFile::seekSampleFrame(
+        int64_t frameIndex) {
     DEBUG_ASSERT(isValidFrameIndex(frameIndex));
 
     const sf_count_t seekResult = sf_seek(m_pSndFile, frameIndex, SEEK_SET);
@@ -86,8 +86,8 @@ SINT SoundSourceSndFile::seekSampleFrame(
     }
 }
 
-SINT SoundSourceSndFile::readSampleFrames(
-        SINT numberOfFrames, CSAMPLE* sampleBuffer) {
+int64_t SoundSourceSndFile::readSampleFrames(
+        int64_t numberOfFrames, CSAMPLE* sampleBuffer) {
     const sf_count_t readCount =
             sf_readf_float(m_pSndFile, sampleBuffer, numberOfFrames);
     if (0 <= readCount) {

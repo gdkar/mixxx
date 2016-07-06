@@ -5,7 +5,7 @@ namespace mixxx {
 namespace {
 
 // Decoded output of opusfile has a fixed sample rate of 48 kHz
-const SINT kSamplingRate = 48000;
+const int64_t kSamplingRate = 48000;
 
 // Parameter for op_channel_count()
 // See also: https://mf4.xiph.org/jenkins/view/opus/job/opusfile-unix/ws/doc/html/group__stream__info.html
@@ -202,7 +202,7 @@ void SoundSourceOpus::close() {
     }
 }
 
-SINT SoundSourceOpus::seekSampleFrame(SINT frameIndex) {
+int64_t SoundSourceOpus::seekSampleFrame(int64_t frameIndex) {
     DEBUG_ASSERT(isValidFrameIndex(m_curFrameIndex));
     DEBUG_ASSERT(isValidFrameIndex(frameIndex));
 
@@ -224,15 +224,15 @@ SINT SoundSourceOpus::seekSampleFrame(SINT frameIndex) {
     return m_curFrameIndex;
 }
 
-SINT SoundSourceOpus::readSampleFrames(
-        SINT numberOfFrames, CSAMPLE* sampleBuffer) {
+int64_t SoundSourceOpus::readSampleFrames(
+        int64_t numberOfFrames, CSAMPLE* sampleBuffer) {
     DEBUG_ASSERT(isValidFrameIndex(m_curFrameIndex));
 
-    const SINT numberOfFramesTotal = math_min(
+    const int64_t numberOfFramesTotal = math_min(
             numberOfFrames, getMaxFrameIndex() - m_curFrameIndex);
 
     CSAMPLE* pSampleBuffer = sampleBuffer;
-    SINT numberOfFramesRemaining = numberOfFramesTotal;
+    int64_t numberOfFramesRemaining = numberOfFramesTotal;
     while (0 < numberOfFramesRemaining) {
         int readResult = op_read_float(m_pOggOpusFile,
                 pSampleBuffer,
@@ -253,17 +253,17 @@ SINT SoundSourceOpus::readSampleFrames(
     return numberOfFramesTotal - numberOfFramesRemaining;
 }
 
-SINT SoundSourceOpus::readSampleFramesStereo(
-        SINT numberOfFrames, CSAMPLE* sampleBuffer,
-        SINT sampleBufferSize) {
+int64_t SoundSourceOpus::readSampleFramesStereo(
+        int64_t numberOfFrames, CSAMPLE* sampleBuffer,
+        int64_t sampleBufferSize) {
     DEBUG_ASSERT(isValidFrameIndex(m_curFrameIndex));
     DEBUG_ASSERT(getSampleBufferSize(numberOfFrames, true) <= sampleBufferSize);
 
-    const SINT numberOfFramesTotal = math_min(
+    const int64_t numberOfFramesTotal = math_min(
             numberOfFrames, getMaxFrameIndex() - m_curFrameIndex);
 
     CSAMPLE* pSampleBuffer = sampleBuffer;
-    SINT numberOfFramesRemaining = numberOfFramesTotal;
+    int64_t numberOfFramesRemaining = numberOfFramesTotal;
     while (0 < numberOfFramesRemaining) {
         int readResult = op_read_float_stereo(m_pOggOpusFile,
                 pSampleBuffer,

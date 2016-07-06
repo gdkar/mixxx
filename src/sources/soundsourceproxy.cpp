@@ -513,23 +513,23 @@ public:
                 new AudioSourceProxy(pTrack, pAudioSource));
     }
 
-    SINT seekSampleFrame(SINT frameIndex) override {
+    int64_t seekSampleFrame(int64_t frameIndex) override {
         return m_pAudioSource->seekSampleFrame(
                 frameIndex);
     }
 
-    SINT readSampleFrames(
-            SINT numberOfFrames,
+    int64_t readSampleFrames(
+            int64_t numberOfFrames,
             CSAMPLE* sampleBuffer) override {
         return m_pAudioSource->readSampleFrames(
                 numberOfFrames,
                 sampleBuffer);
     }
 
-    SINT readSampleFramesStereo(
-            SINT numberOfFrames,
+    int64_t readSampleFramesStereo(
+            int64_t numberOfFrames,
             CSAMPLE* sampleBuffer,
-            SINT sampleBufferSize) override {
+            int64_t sampleBufferSize) override {
         return m_pAudioSource->readSampleFramesStereo(
                 numberOfFrames,
                 sampleBuffer,

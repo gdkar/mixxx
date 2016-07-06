@@ -14,7 +14,7 @@ namespace mixxx {
 namespace {
 
 /* read files in 512k chunks */
-const SINT kChunkSizeInBytes = SINT(1) << 19;
+const int64_t kChunkSizeInBytes = int64_t(1) << 19;
 
 QString getModPlugTypeFromUrl(QUrl url) {
     const QString fileExtension(SoundSource::getFileExtensionFromUrl(url));
@@ -39,9 +39,9 @@ QString getModPlugTypeFromUrl(QUrl url) {
 
 } // anonymous namespace
 
-const SINT SoundSourceModPlug::kChannelCount = AudioSource::kChannelCountStereo;
-const SINT SoundSourceModPlug::kBitsPerSample = 16;
-const SINT SoundSourceModPlug::kSamplingRate = 44100; // 44.1 kHz
+const int64_t SoundSourceModPlug::kChannelCount = AudioSource::kChannelCountStereo;
+const int64_t SoundSourceModPlug::kBitsPerSample = 16;
+const int64_t SoundSourceModPlug::kSamplingRate = 44100; // 44.1 kHz
 
 unsigned int SoundSourceModPlug::s_bufferSizeLimit = 0;
 
@@ -107,7 +107,7 @@ SoundSource::OpenResult SoundSourceModPlug::tryOpen(const AudioSourceConfig& /*a
     }
 
     DEBUG_ASSERT(0 == (kChunkSizeInBytes % sizeof(m_sampleBuf[0])));
-    const SINT chunkSizeInSamples = kChunkSizeInBytes / sizeof(m_sampleBuf[0]);
+    const int64_t chunkSizeInSamples = kChunkSizeInBytes / sizeof(m_sampleBuf[0]);
 
     const SampleBuffer::size_type bufferSizeLimitInSamples = s_bufferSizeLimit / sizeof(m_sampleBuf[0]);
 
@@ -165,21 +165,21 @@ void SoundSourceModPlug::close() {
     }
 }
 
-SINT SoundSourceModPlug::seekSampleFrame(
-        SINT frameIndex) {
+int64_t SoundSourceModPlug::seekSampleFrame(
+        int64_t frameIndex) {
     DEBUG_ASSERT(isValidFrameIndex(frameIndex));
 
     return m_seekPos = frameIndex;
 }
 
-SINT SoundSourceModPlug::readSampleFrames(
-        SINT numberOfFrames, CSAMPLE* sampleBuffer) {
+int64_t SoundSourceModPlug::readSampleFrames(
+        int64_t numberOfFrames, CSAMPLE* sampleBuffer) {
     DEBUG_ASSERT(0 <= numberOfFrames);
     DEBUG_ASSERT(isValidFrameIndex(m_seekPos));
-    const SINT readFrames = math_min(getFrameCount() - m_seekPos, numberOfFrames);
+    const int64_t readFrames = math_min(getFrameCount() - m_seekPos, numberOfFrames);
 
-    const SINT readSamples = frames2samples(readFrames);
-    const SINT readOffset = frames2samples(m_seekPos);
+    const int64_t readSamples = frames2samples(readFrames);
+    const int64_t readOffset = frames2samples(m_seekPos);
     SampleUtil::convertS16ToFloat32(sampleBuffer, &m_sampleBuf[readOffset], readSamples);
     m_seekPos += readFrames;
 

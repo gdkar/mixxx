@@ -108,8 +108,8 @@ void SoundSourceOggVorbis::close() {
     m_pFile.reset();
 }
 
-SINT SoundSourceOggVorbis::seekSampleFrame(
-        SINT frameIndex) {
+int64_t SoundSourceOggVorbis::seekSampleFrame(
+        int64_t frameIndex) {
     DEBUG_ASSERT(isValidFrameIndex(m_curFrameIndex));
     DEBUG_ASSERT(isValidFrameIndex(frameIndex));
 
@@ -131,30 +131,30 @@ SINT SoundSourceOggVorbis::seekSampleFrame(
     return m_curFrameIndex;
 }
 
-SINT SoundSourceOggVorbis::readSampleFrames(
-        SINT numberOfFrames, CSAMPLE* sampleBuffer) {
+int64_t SoundSourceOggVorbis::readSampleFrames(
+        int64_t numberOfFrames, CSAMPLE* sampleBuffer) {
     return readSampleFrames(numberOfFrames, sampleBuffer,
             frames2samples(numberOfFrames), false);
 }
 
-SINT SoundSourceOggVorbis::readSampleFramesStereo(
-        SINT numberOfFrames, CSAMPLE* sampleBuffer,
-        SINT sampleBufferSize) {
+int64_t SoundSourceOggVorbis::readSampleFramesStereo(
+        int64_t numberOfFrames, CSAMPLE* sampleBuffer,
+        int64_t sampleBufferSize) {
     return readSampleFrames(numberOfFrames, sampleBuffer, sampleBufferSize,
             true);
 }
 
-SINT SoundSourceOggVorbis::readSampleFrames(
-        SINT numberOfFrames, CSAMPLE* sampleBuffer,
-        SINT sampleBufferSize, bool readStereoSamples) {
+int64_t SoundSourceOggVorbis::readSampleFrames(
+        int64_t numberOfFrames, CSAMPLE* sampleBuffer,
+        int64_t sampleBufferSize, bool readStereoSamples) {
     DEBUG_ASSERT(isValidFrameIndex(m_curFrameIndex));
     DEBUG_ASSERT(getSampleBufferSize(numberOfFrames, readStereoSamples) <= sampleBufferSize);
 
-    const SINT numberOfFramesTotal = math_min(
+    const int64_t numberOfFramesTotal = math_min(
             numberOfFrames, getMaxFrameIndex() - m_curFrameIndex);
 
     CSAMPLE* pSampleBuffer = sampleBuffer;
-    SINT numberOfFramesRemaining = numberOfFramesTotal;
+    int64_t numberOfFramesRemaining = numberOfFramesTotal;
     while (0 < numberOfFramesRemaining) {
         float** pcmChannels;
         int currentSection;
@@ -184,7 +184,7 @@ SINT SoundSourceOggVorbis::readSampleFrames(
                 }
             } else {
                 for (long i = 0; i < readResult; ++i) {
-                    for (SINT j = 0; j < getChannelCount(); ++j) {
+                    for (int64_t j = 0; j < getChannelCount(); ++j) {
                         *pSampleBuffer++ = pcmChannels[j][i];
                     }
                 }

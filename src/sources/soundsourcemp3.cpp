@@ -11,13 +11,13 @@ namespace mixxx {
 namespace {
 
     // MP3 does only support 1 or 2 channels
-    const SINT kChannelCountMax = AudioSource::kChannelCountStereo;
+    const int64_t kChannelCountMax = AudioSource::kChannelCountStereo;
 
     // Optimization: Reserve initial capacity for seek frame list
-    const SINT kMinutesPerFile = 10; // enough for the majority of files (tunable)
-    const SINT kSecondsPerMinute = 60; // fixed
-    const SINT kMaxMp3FramesPerSecond = 39; // fixed: 1 MP3 frame = 26 ms -> ~ 1000 / 26
-    const SINT kSeekFrameListCapacity = kMinutesPerFile
+    const int64_t kMinutesPerFile = 10; // enough for the majority of files (tunable)
+    const int64_t kSecondsPerMinute = 60; // fixed
+    const int64_t kMaxMp3FramesPerSecond = 39; // fixed: 1 MP3 frame = 26 ms -> ~ 1000 / 26
+    const int64_t kSeekFrameListCapacity = kMinutesPerFile
             * kSecondsPerMinute * kMaxMp3FramesPerSecond;
 }
 SoundSourceMp3::SoundSourceMp3(const QUrl&url)
@@ -39,8 +39,6 @@ SoundSource::OpenResult SoundSourceMp3::tryOpen(const AudioSourceConfig& /*audio
 
     DEBUG_ASSERT(!hasValidChannelCount());
     DEBUG_ASSERT(!hasValidSamplingRate());
-
-    auto maxChannelCount = getChannelCount();
 
     if(mpg123_param(
         m_h
@@ -85,13 +83,13 @@ void SoundSourceMp3::close()
         m_h = nullptr;
     }
 }
-SINT SoundSourceMp3::seekSampleFrame(SINT frameIndex)
+int64_t SoundSourceMp3::seekSampleFrame(int64_t frameIndex)
 {
     mpg123_seek(m_h, frameIndex,SEEK_SET);
     return mpg123_tell(m_h);
 }
-SINT SoundSourceMp3::readSampleFrames(
-        SINT numberOfFrames, CSAMPLE* sampleBuffer)
+int64_t SoundSourceMp3::readSampleFrames(
+        int64_t numberOfFrames, CSAMPLE* sampleBuffer)
 {
     auto done = size_t{0};
     auto ret  = 0;
