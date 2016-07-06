@@ -1102,23 +1102,13 @@ QWidget* LegacySkinParser::parseSpinny(const QDomElement& node) {
         dummy->setText(tr("Safe Mode Enabled"));
         return dummy;
     }
-    WSpinny* spinny = new WSpinny(m_pParent, channelStr, m_pConfig,
-                                  m_pVCManager);
-    if (!spinny->isValid()) {
-        delete spinny;
-        WLabel* dummy = new WLabel(m_pParent);
-        //: Shown when Spinny can not be displayed. Please keep \n unchanged
-        dummy->setText(tr("No OpenGL\nsupport."));
-        return dummy;
-    }
+    auto spinny = new WSpinny(m_pParent, channelStr, m_pConfig,m_pVCManager);
     commonWidgetSetup(node, spinny);
-
     WaveformWidgetFactory::instance()->addTimerListener(spinny);
     connect(spinny, SIGNAL(trackDropped(QString, QString)),
             m_pPlayerManager, SLOT(slotLoadToPlayer(QString, QString)));
-
-    BaseTrackPlayer* pPlayer = m_pPlayerManager->getPlayer(channelStr);
-    if (pPlayer != NULL) {
+    auto pPlayer = m_pPlayerManager->getPlayer(channelStr);
+    if (pPlayer) {
         connect(pPlayer, SIGNAL(newTrackLoaded(TrackPointer)),
                 spinny, SLOT(slotLoadTrack(TrackPointer)));
         connect(pPlayer, SIGNAL(loadingTrack(TrackPointer, TrackPointer)),

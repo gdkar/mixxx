@@ -16,7 +16,7 @@
 #include "util/performancetimer.h"
 
 QtSimpleWaveformWidget::QtSimpleWaveformWidget(const char* group, QWidget* parent)
-        : QGLWidget(parent, SharedGLContext::getWidget()),
+        : QWidget(parent),
           WaveformWidgetAbstract(group) {
     addRenderer<WaveformRenderBackground>();
     addRenderer<WaveformRendererEndOfTrack>();
@@ -28,26 +28,13 @@ QtSimpleWaveformWidget::QtSimpleWaveformWidget(const char* group, QWidget* paren
 
     setAttribute(Qt::WA_NoSystemBackground);
     setAttribute(Qt::WA_OpaquePaintEvent);
-
-    setAutoBufferSwap(false);
-
-    qDebug() << "Created QGLWidget. Context"
-             << "Valid:" << context()->isValid()
-             << "Sharing:" << context()->isSharing();
-    if (QGLContext::currentContext() != context()) {
-        makeCurrent();
-    }
     m_initSuccess = init();
 }
 
-QtSimpleWaveformWidget::~QtSimpleWaveformWidget() {
-    if (QGLContext::currentContext() != context()) {
-        makeCurrent();
-    }
-}
+QtSimpleWaveformWidget::~QtSimpleWaveformWidget() = default;
 
 void QtSimpleWaveformWidget::castToQWidget() {
-    m_widget = static_cast<QWidget*>(static_cast<QGLWidget*>(this));
+    m_widget = qobject_cast<QWidget*>(this);
 }
 
 void QtSimpleWaveformWidget::paintEvent(QPaintEvent* event) {
