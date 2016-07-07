@@ -11,8 +11,9 @@ class ControlObject;
 class GuiTick : public QObject {
     Q_OBJECT
   public:
-    GuiTick(QObject* pParent = NULL);
-    ~GuiTick();
+    GuiTick(QObject* pParent = nullptr);
+   ~GuiTick();
+  public slots:
     void process();
 
   private:
