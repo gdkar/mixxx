@@ -15,11 +15,11 @@ class VinylControlManager;
 class EffectsManager;
 class LaunchImage;
 
-class SkinLoader {
+class SkinLoader : public QObject{
+    Q_OBJECT
   public:
-    SkinLoader(UserSettingsPointer pConfig);
+    SkinLoader(UserSettingsPointer pConfig, QObject *pParent);
     virtual ~SkinLoader();
-
     QWidget* loadDefaultSkin(QWidget* pParent,
                              KeyboardEventFilter* pKeyboard,
                              PlayerManager* pPlayerManager,
@@ -29,10 +29,8 @@ class SkinLoader {
                              EffectsManager* pEffectsManager);
 
     LaunchImage* loadLaunchImage(QWidget* pParent);
-
     QString getSkinPath();
     QList<QDir> getSkinSearchPaths();
-
   private:
     QString getConfiguredSkinPath();
     QString getDefaultSkinName() const;
