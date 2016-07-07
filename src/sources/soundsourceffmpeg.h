@@ -79,7 +79,6 @@ class SoundSourceFFmpeg : public SoundSource {
     frame                 m_frame_dec{};
     frame                 m_frame_swr{};
     packet                m_packet{};
-    std::vector<packet>   m_first_packets{};
     AVRational            m_stream_tb  { 0, 1 };
     AVRational            m_output_tb  { 0, 1 };
     int64_t               m_pts_origin    = AV_NOPTS_VALUE;
