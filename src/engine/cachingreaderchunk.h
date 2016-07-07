@@ -14,52 +14,39 @@
 //
 // This is the common (abstract) base class for both the cache (as the owner)
 // and the worker.
+//
+// One chunk should contain 1/2 - 1/4th of a second of audio.
+// 8192 frames contain about 170 ms of audio at 48 kHz, which
+// is well above (hopefully) the latencies people are seeing.
+// At 10 ms latency one chunk is enough for 17 callbacks.
+// Additionally the chunk size should be a power of 2 for
+// easier memory alignment.
+// TODO(XXX): The optimum value of the "constant" kFrames depends
+// on the properties of the AudioSource as the remarks above suggest!
+
 class CachingReaderChunk {
 public:
-    static const int64_t kInvalidIndex;
-    static const int64_t kChannels;
-    static const int64_t kFrames;
-    static const int64_t kSamples;
+    static constexpr int64_t kInvalidIndex = -1;
+    static constexpr int64_t kChannels = 2;
+    static constexpr int64_t kFrames = 8192;
+    constexpr static int64_t kSamples = kFrames * kChannels;
 
     // Returns the corresponding chunk index for a frame index
-    inline static int64_t indexForFrame(int64_t frameIndex) {
-        DEBUG_ASSERT(mixxx::AudioSource::getMinFrameIndex() <= frameIndex);
-        const int64_t chunkIndex = frameIndex / kFrames;
-        return chunkIndex;
-    }
-
+    constexpr static int64_t indexForFrame(int64_t frameIndex) { return frameIndex / kFrames; }
     // Returns the corresponding chunk index for a frame index
-    inline static int64_t frameForIndex(int64_t chunkIndex) {
-        DEBUG_ASSERT(0 <= chunkIndex);
-        return chunkIndex * kFrames;
-    }
-
+    constexpr static int64_t frameForIndex(int64_t chunkIndex) { return chunkIndex * kFrames;}
     // Converts frames to samples
-    inline static int64_t frames2samples(int64_t frames) {
-        return frames * kChannels;
-    }
+    constexpr static int64_t frames2samples(int64_t frames) { return frames * kChannels;}
     // Converts samples to frames
-    inline static int64_t samples2frames(int64_t samples) {
-        DEBUG_ASSERT(0 == (samples % kChannels));
-        return samples / kChannels;
-    }
+    constexpr static int64_t samples2frames(int64_t samples) { return samples / kChannels;}
 
     // Disable copy and move constructors
     CachingReaderChunk(const CachingReaderChunk&) = delete;
     CachingReaderChunk(CachingReaderChunk&&) = delete;
 
-    int64_t getIndex() const {
-        return m_index;
-    }
-
-    bool isValid() const {
-        return 0 <= getIndex();
-    }
-
-    int64_t getFrameCount() const {
-        return m_frameCount;
-    }
-
+    int64_t getIndex() const { return m_index; }
+    bool isValid() const { return 0 <= getIndex(); }
+    int64_t getFrameCount() const { return m_frameCount; }
     // Check if the audio source has sample data available
     // for this chunk.
     bool isReadable(
@@ -86,22 +73,17 @@ public:
             CSAMPLE* sampleBuffer,
             int64_t sampleOffset,
             int64_t sampleCount) const;
-
 protected:
     explicit CachingReaderChunk(CSAMPLE* sampleBuffer);
     virtual ~CachingReaderChunk();
-
     void init(int64_t index);
-
 private:
-    volatile int64_t m_index;
-
+    int64_t m_index;
     // The worker thread will fill the sample buffer and
     // set the frame count.
     CSAMPLE* const m_sampleBuffer;
-    volatile int64_t m_frameCount;
+    int64_t m_frameCount;
 };
-
 // This derived class is only accessible for the cache as the owner,
 // but not the worker thread. The state READ_PENDING indicates that
 // the worker thread is in control.

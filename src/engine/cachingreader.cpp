@@ -22,17 +22,16 @@ namespace {
 // constant. 2048 is a pretty good number of samples because 25ms
 // latency corresponds to 1102.5 mono samples and we need double
 // that for stereo samples.
-const int64_t kDefaultHintSamples = 1024 * CachingReaderChunk::kChannels;
+const int64_t kDefaultHintSamples = CachingReaderChunk::kSamples / 4;
 
 } // anonymous namespace
 
 // currently CachingReaderWorker::kCachingReaderChunkLength is 65536 (0x10000);
 // For 80 chunks we need 5242880 (0x500000) bytes (5 MiB) of Memory
 //static
-const int CachingReader::maximumCachingReaderChunksInMemory = 80;
+const int CachingReader::maximumCachingReaderChunksInMemory = (1<<24) / (CachingReaderChunk::kSamples * sizeof(CSAMPLE));
 
-CachingReader::CachingReader(QString group,
-                             UserSettingsPointer config)
+CachingReader::CachingReader(QString group,UserSettingsPointer config)
         : m_pConfig(config),
           m_chunkReadRequestFIFO(1024),
           m_readerStatusFIFO(1024),
@@ -41,16 +40,14 @@ CachingReader::CachingReader(QString group,
           m_lruCachingReaderChunk(nullptr),
           m_sampleBuffer(CachingReaderChunk::kSamples * maximumCachingReaderChunksInMemory),
           m_maxReadableFrameIndex(mixxx::AudioSource::getMinFrameIndex()),
-          m_worker(group, &m_chunkReadRequestFIFO, &m_readerStatusFIFO) {
-
+          m_worker(group, &m_chunkReadRequestFIFO, &m_readerStatusFIFO)
+{
     m_allocatedCachingReaderChunks.reserve(maximumCachingReaderChunksInMemory);
-
-    CSAMPLE* bufferStart = m_sampleBuffer.data();
-
+    auto bufferStart = m_sampleBuffer.data();
     // Divide up the allocated raw memory buffer into total_chunks
     // chunks. Initialize each chunk to hold nothing and add it to the free
     // list.
-    for (int i = 0; i < maximumCachingReaderChunksInMemory; ++i) {
+    for (auto i = 0; i < maximumCachingReaderChunksInMemory; ++i) {
         auto  c = new CachingReaderChunkForOwner(bufferStart);
         m_chunks.push_back(c);
         m_freeChunks.push_back(c);

@@ -5,19 +5,6 @@
 #include "util/math.h"
 #include "util/sample.h"
 
-const int64_t CachingReaderChunk::kInvalidIndex = -1;
-
-// One chunk should contain 1/2 - 1/4th of a second of audio.
-// 8192 frames contain about 170 ms of audio at 48 kHz, which
-// is well above (hopefully) the latencies people are seeing.
-// At 10 ms latency one chunk is enough for 17 callbacks.
-// Additionally the chunk size should be a power of 2 for
-// easier memory alignment.
-// TODO(XXX): The optimum value of the "constant" kFrames depends
-// on the properties of the AudioSource as the remarks above suggest!
-const int64_t CachingReaderChunk::kChannels = mixxx::AudioSource::kChannelCountStereo;
-const int64_t CachingReaderChunk::kFrames = 4096; // ~ 170 ms at 48 kHz
-const int64_t CachingReaderChunk::kSamples = CachingReaderChunk::frames2samples(CachingReaderChunk::kFrames);
 
 CachingReaderChunk::CachingReaderChunk(
         CSAMPLE* sampleBuffer)
