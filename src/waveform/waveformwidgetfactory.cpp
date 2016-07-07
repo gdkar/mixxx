@@ -400,7 +400,7 @@ void WaveformWidgetFactory::render() {
             // next rendered frame is displayed after next buffer swap and than after VSync
             for (int i = 0; i < m_waveformWidgetHolders.size(); i++) {
                 // Calculate play position for the new Frame in following run
-                m_waveformWidgetHolders[i].m_waveformWidget->preRender(m_vsyncThread);
+                m_waveformWidgetHolders[i].m_waveformWidget->preRender();
             }
             //qDebug() << "prerender" << m_vsyncThread->elapsed();
 
