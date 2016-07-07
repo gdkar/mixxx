@@ -17,7 +17,6 @@
 class Track;
 class ControlProxy;
 class VisualPlayPosition;
-class VSyncThread;
 
 class WaveformWidgetRenderer {
   public:
@@ -32,7 +31,7 @@ class WaveformWidgetRenderer {
     virtual bool onInit() {return true;}
 
     void setup(const QDomNode& node, const SkinContext& context);
-    void onPreRender(VSyncThread* vsyncThread);
+    void onPreRender();
     void draw(QPainter* painter, QPaintEvent* event);
 
     inline const char* getGroup() const { return m_group;}
@@ -75,13 +74,12 @@ class WaveformWidgetRenderer {
     int getWidth() const { return m_width;}
     const WaveformSignalColors* getWaveformSignalColors() const { return &m_colors; };
 
-    template< class T_Renderer>
-    inline T_Renderer* addRenderer() {
-        T_Renderer* renderer = new T_Renderer(this);
+    template< class T>
+    T* addRenderer() {
+        auto renderer = new T(this);
         m_rendererStack.push_back(renderer);
         return renderer;
     }
-
     void setTrack(TrackPointer track);
 
   protected:

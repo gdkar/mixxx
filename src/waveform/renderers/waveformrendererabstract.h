@@ -22,14 +22,10 @@ class WaveformRendererAbstract {
     virtual void onSetTrack() {}
 
   protected:
-    bool isDirty() const {
-        return m_dirty;
-    }
-    void setDirty(bool dirty = true) {
-        m_dirty = dirty;
-    }
-    WaveformWidgetRenderer* m_waveformRenderer;
-    bool m_dirty;
+    bool isDirty() const {return m_dirty;}
+    void setDirty(bool dirty = true) {m_dirty = dirty;}
+    WaveformWidgetRenderer* m_waveformRenderer{nullptr};
+    bool m_dirty{false};
 
     friend class WaveformWidgetRenderer;
 };

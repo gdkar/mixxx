@@ -98,7 +98,8 @@ bool WaveformWidgetRenderer::init() {
     return true;
 }
 
-void WaveformWidgetRenderer::onPreRender(VSyncThread* vsyncThread) {
+void WaveformWidgetRenderer::onPreRender()
+{
     // For a valid track to render we need
     m_trackSamples = m_pTrackSamplesControlObject->get();
     if (m_trackSamples <= 0.0) {
@@ -119,21 +120,18 @@ void WaveformWidgetRenderer::onPreRender(VSyncThread* vsyncThread) {
     //rate adjust may have change sampling per
     //vRince for the moment only more than one sample per pixel is supported
     //due to the fact we play the visual play pos modulo floor m_visualSamplePerPixel ...
-    double visualSamplePerPixel = m_zoomFactor * (1.0 + m_rateAdjust);
+    auto visualSamplePerPixel = m_zoomFactor * (1.0 + m_rateAdjust);
     m_visualSamplePerPixel = math_max(1.0, visualSamplePerPixel);
 
-    TrackPointer pTrack(m_pTrack);
-    ConstWaveformPointer pWaveform = pTrack ? pTrack->getWaveform() : ConstWaveformPointer();
+    auto pTrack = TrackPointer(m_pTrack);
+    auto pWaveform = pTrack ? pTrack->getWaveform() : ConstWaveformPointer();
     if (pWaveform) {
         m_audioSamplePerPixel = m_visualSamplePerPixel * pWaveform->getAudioVisualRatio();
     } else {
         m_audioSamplePerPixel = 0.0;
     }
-
-
-    double truePlayPos = m_visualPlayPosition->getAtNextVSync(vsyncThread);
+    auto truePlayPos = m_visualPlayPosition->getEnginePlayPos();
     // m_playPos = -1 happens, when a new track is in buffer but m_visualPlayPosition was not updated
-
     if (m_audioSamplePerPixel && truePlayPos != -1) {
         // Track length in pixels.
         m_trackPixelCount = static_cast<double>(m_trackSamples) / 2.0 / m_audioSamplePerPixel;

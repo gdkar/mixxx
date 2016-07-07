@@ -7,12 +7,10 @@
 
 WaveformWidgetAbstract::WaveformWidgetAbstract(const char* group)
     : WaveformWidgetRenderer(group),
-      m_initSuccess(false) {
-    m_widget = NULL;
-}
+      m_initSuccess(false)
+{ }
 
-WaveformWidgetAbstract::~WaveformWidgetAbstract() {
-}
+WaveformWidgetAbstract::~WaveformWidgetAbstract() { }
 
 void WaveformWidgetAbstract::hold() {
     if (m_widget) {
@@ -25,9 +23,9 @@ void WaveformWidgetAbstract::release() {
         m_widget->show();
     }
 }
-
-void WaveformWidgetAbstract::preRender(VSyncThread* vsyncThread) {
-    WaveformWidgetRenderer::onPreRender(vsyncThread);
+void WaveformWidgetAbstract::preRender()
+{
+    WaveformWidgetRenderer::onPreRender();
 }
 
 mixxx::Duration WaveformWidgetAbstract::render() {

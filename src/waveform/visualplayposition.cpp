@@ -41,26 +41,6 @@ void VisualPlayPosition::set(double playPos, double rate,
     m_valid = true;
 }
 
-double VisualPlayPosition::getAtNextVSync(VSyncThread* vsyncThread) {
-    //static double testPos = 0;
-    //testPos += 0.000017759; //0.000016608; //  1.46257e-05;
-    //return testPos;
-
-    if (m_valid) {
-        VisualPlayPositionData data = m_data.getValue();
-        int usRefToVSync = vsyncThread->usFromTimerToNextSync(data.m_referenceTime);
-        int offset = usRefToVSync - data.m_callbackEntrytoDac;
-        double playPos = data.m_enginePlayPos;  // load playPos for the first sample in Buffer
-        // add the offset for the position of the sample that will be transfered to the DAC
-        // When the next display frame is displayed
-        playPos += data.m_positionStep * offset * data.m_rate / m_dAudioBufferSize / 1000;
-        //qDebug() << "delta Pos" << playPos - m_playPosOld << offset;
-        //m_playPosOld = playPos;
-        return playPos;
-    }
-    return -1;
-}
-
 void VisualPlayPosition::getPlaySlipAt(int usFromNow, double* playPosition, double* slipPosition) {
     //static double testPos = 0;
     //testPos += 0.000017759; //0.000016608; //  1.46257e-05;

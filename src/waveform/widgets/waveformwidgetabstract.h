@@ -9,11 +9,9 @@
 #include "track/track.h"
 #include "util/duration.h"
 
-class VSyncThread;
-
 // NOTE(vRince) This class represent objects the waveformwidgetfactory can
 // holds, IMPORTANT all WaveformWidgetAbstract MUST inherist QWidget too !!  we
-// can't do it here because QWidget and QGLWidget are both QWidgets so they
+// can't do it here because QWidget and QOpenGLWidget are both QWidgets so they
 // already have a common QWidget base class (ambigous polymorphism)
 
 class WaveformWidgetAbstract : public WaveformWidgetRenderer {
@@ -30,18 +28,16 @@ class WaveformWidgetAbstract : public WaveformWidgetRenderer {
     void hold();
     void release();
 
-    virtual void preRender(VSyncThread* vsyncThread);
+    virtual void preRender();
     virtual mixxx::Duration render();
 
     virtual void resize(int width, int height);
 
   protected:
-    QWidget* m_widget;
-    bool m_initSuccess;
-
+    QWidget* m_widget{nullptr};
+    bool m_initSuccess{false};
     //this is the factory resposability to trigger QWidget casting after constructor
     virtual void castToQWidget() = 0;
-
     friend class WaveformWidgetFactory;
 };
 
