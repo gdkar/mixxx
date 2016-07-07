@@ -3,7 +3,6 @@
 #include <QPainter>
 #include <QtDebug>
 
-#include "waveform/sharedglcontext.h"
 #include "waveform/renderers/waveformwidgetrenderer.h"
 #include "waveform/renderers/waveformrenderbackground.h"
 #include "waveform/renderers/qtwaveformrenderersimplesignal.h"

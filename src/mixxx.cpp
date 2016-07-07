@@ -46,7 +46,6 @@
 #include "sources/soundsourceproxy.h"
 #include "track/track.h"
 #include "waveform/waveformwidgetfactory.h"
-#include "waveform/sharedglcontext.h"
 #include "util/debug.h"
 #include "util/statsmanager.h"
 #include "util/timer.h"

@@ -8,7 +8,6 @@
 #include "control/controlproxy.h"
 #include "library/coverartcache.h"
 #include "util/dnd.h"
-#include "waveform/sharedglcontext.h"
 #include "util/math.h"
 #include "waveform/visualplayposition.h"
 #include "vinylcontrol/vinylcontrol.h"
