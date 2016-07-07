@@ -10,7 +10,6 @@
 #include "control/controlvalue.h"
 
 class ControlProxy;
-class VSyncThread;
 
 // This class is for synchronizing the sound device DAC time with the waveforms, displayed on the
 // graphic device, using the CPU time
