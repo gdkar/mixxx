@@ -19,6 +19,8 @@
 // after our fpclassify hack 
 
 #include <algorithm>
+#include <type_traits>
+#include <utility>
 
 #include "util/assert.h"
 #include "util/fpclassify.h"
@@ -33,54 +35,32 @@ using std::fabs;
 
 // Restrict value to the range [min, max]. Undefined behavior if min > max.
 template <typename T>
-inline T math_clamp(T value, T min, T max) {
-    // DEBUG_ASSERT compiles out in release builds so it does not affect
-    // vectorization or pipelining of clamping in tight loops.
-    DEBUG_ASSERT(min <= max);
-    return math_max(min, math_min(max, value));
-}
+constexpr T math_clamp(T midv, T minv, T maxv) { return std::max(std::min(midv,maxv),minv); }
 
 // NOTE(rryan): It is an error to call even() on a floating point number. Do not
 // hack this to support floating point values! The programmer should be required
 // to manually convert so they are aware of the conversion.
 template <typename T>
-inline bool even(T value) {
-    return value % 2 == 0;
+constexpr std::enable_if_t<std::is_integral<T>::value,bool>
+even(T value) { return !(value & T{1}); }
+
+template<class T>
+constexpr std::enable_if_t<std::is_integral<T>::value,T>
+roundUpToPowerOf2( T v)
+{
+    using U = std::make_unsigned_t<T>;
+    auto u = static_cast<U>(v) - U{1};
+    for(auto i = 1u; i < CHAR_BIT * sizeof(u); i <<= 1)
+        u |= (u>>i);
+    return static_cast<T>(u + U{1});
+
 }
 
-#ifdef _MSC_VER
-// Ask VC++ to emit an intrinsic for fabs instead of calling std::fabs.
-#pragma intrinsic(fabs)
-#endif
-
-inline int roundUpToPowerOf2(int v) {
-    int power = 1;
-    while (power < v && power > 0) {
-        power *= 2;
-    }
-    // There is not a power of 2 higher than v representable by our
-    // architecture's integer size.
-    if (power < 0) {
-        return -1;
-    }
-    return power;
-}
-
-// MSVS 2013 (_MSC_VER 1800) introduced C99 support.
-#if defined(__WINDOWS__) &&  _MSC_VER < 1800
-inline int round(double x) {
-    return x < 0.0 ? ceil(x - 0.5) : floor(x + 0.5);
-}
-#endif
 
 template <typename T>
-inline const T ratio2db(const T a) {
-    return log10(a) * 20;
-}
+constexpr const T ratio2db(const T a) { return std::log10(a) * T{20}; }
 
 template <typename T>
-inline const T db2ratio(const T a) {
-    return pow(10, a / 20);
-}
+constexpr const T db2ratio(const T a) { return std::pow(T{10}, a * T(1./ 20)); }
 
 #endif /* MATH_H */
