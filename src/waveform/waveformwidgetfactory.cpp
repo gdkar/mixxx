@@ -16,13 +16,9 @@
 #include "waveform/widgets/softwarewaveformwidget.h"
 #include "waveform/widgets/hsvwaveformwidget.h"
 #include "waveform/widgets/rgbwaveformwidget.h"
-#include "waveform/widgets/glrgbwaveformwidget.h"
-#include "waveform/widgets/glwaveformwidget.h"
-#include "waveform/widgets/glsimplewaveformwidget.h"
 #include "waveform/widgets/qtwaveformwidget.h"
 #include "waveform/widgets/qtsimplewaveformwidget.h"
 #include "waveform/widgets/glslwaveformwidget.h"
-#include "waveform/widgets/glvsynctestwidget.h"
 #include "waveform/widgets/waveformwidgetabstract.h"
 #include "widget/wwaveformviewer.h"
 #include "waveform/guitick.h"
@@ -473,9 +469,9 @@ WaveformWidgetType::Type WaveformWidgetFactory::autoChooseWidgetType() const {
     //default selection
     if (m_openGLAvailable) {
         if (m_openGLShaderAvailable) {
-            return WaveformWidgetType::GLSLRGBWaveform;
+            return WaveformWidgetType::GLSLFilteredWaveform;
         } else {
-            return WaveformWidgetType::GLRGBWaveform;
+            return WaveformWidgetType::QtWaveform;
         }
     }
     return WaveformWidgetType::SoftwareWaveform;
@@ -528,18 +524,6 @@ void WaveformWidgetFactory::evaluateWidgets() {
             useOpenGLShaders = QtWaveformWidget::useOpenGLShaders();
             developerOnly = QtWaveformWidget::developerOnly();
             break;
-        case WaveformWidgetType::GLSimpleWaveform:
-            widgetName = GLSimpleWaveformWidget::getWaveformWidgetName();
-            useOpenGl = GLSimpleWaveformWidget::useOpenGl();
-            useOpenGLShaders = GLSimpleWaveformWidget::useOpenGLShaders();
-            developerOnly = GLSimpleWaveformWidget::developerOnly();
-            break;
-        case WaveformWidgetType::GLFilteredWaveform:
-            widgetName = GLWaveformWidget::getWaveformWidgetName();
-            useOpenGl = GLWaveformWidget::useOpenGl();
-            useOpenGLShaders = GLWaveformWidget::useOpenGLShaders();
-            developerOnly = GLWaveformWidget::developerOnly();
-            break;
         case WaveformWidgetType::GLSLFilteredWaveform:
             widgetName = GLSLFilteredWaveformWidget::getWaveformWidgetName();
             useOpenGl = GLSLFilteredWaveformWidget::useOpenGl();
@@ -551,18 +535,6 @@ void WaveformWidgetFactory::evaluateWidgets() {
             useOpenGl = GLSLRGBWaveformWidget::useOpenGl();
             useOpenGLShaders = GLSLRGBWaveformWidget::useOpenGLShaders();
             developerOnly = GLSLRGBWaveformWidget::developerOnly();
-            break;
-        case WaveformWidgetType::GLVSyncTest:
-            widgetName = GLVSyncTestWidget::getWaveformWidgetName();
-            useOpenGl = GLVSyncTestWidget::useOpenGl();
-            useOpenGLShaders = GLVSyncTestWidget::useOpenGLShaders();
-            developerOnly = GLVSyncTestWidget::developerOnly();
-            break;
-        case WaveformWidgetType::GLRGBWaveform:
-            widgetName = GLRGBWaveformWidget::getWaveformWidgetName();
-            useOpenGl = GLRGBWaveformWidget::useOpenGl();
-            useOpenGLShaders = GLRGBWaveformWidget::useOpenGLShaders();
-            developerOnly = GLRGBWaveformWidget::developerOnly();
             break;
         default:
             continue;
@@ -620,23 +592,11 @@ WaveformWidgetAbstract* WaveformWidgetFactory::createWaveformWidget(
         case WaveformWidgetType::QtWaveform:
             widget = new QtWaveformWidget(viewer->getGroup(), viewer);
             break;
-        case WaveformWidgetType::GLSimpleWaveform:
-            widget = new GLSimpleWaveformWidget(viewer->getGroup(), viewer);
-            break;
-        case WaveformWidgetType::GLFilteredWaveform:
-            widget = new GLWaveformWidget(viewer->getGroup(), viewer);
-            break;
-        case WaveformWidgetType::GLRGBWaveform:
-            widget = new GLRGBWaveformWidget(viewer->getGroup(), viewer);
-            break;
         case WaveformWidgetType::GLSLFilteredWaveform:
             widget = new GLSLFilteredWaveformWidget(viewer->getGroup(), viewer);
             break;
         case WaveformWidgetType::GLSLRGBWaveform:
             widget = new GLSLRGBWaveformWidget(viewer->getGroup(), viewer);
-            break;
-        case WaveformWidgetType::GLVSyncTest:
-            widget = new GLVSyncTestWidget(viewer->getGroup(), viewer);
             break;
         default:
         //case WaveformWidgetType::SoftwareSimpleWaveform: TODO: (vrince)
@@ -673,10 +633,8 @@ void WaveformWidgetFactory::startVSync(GuiTick* pGuiTick) {
     m_vsyncThread = new VSyncThread(this, pGuiTick);
     m_vsyncThread->start(QThread::NormalPriority);
 
-    connect(m_vsyncThread, SIGNAL(vsyncRender()),
-            this, SLOT(render()));
-    connect(m_vsyncThread, SIGNAL(vsyncSwap()),
-            this, SLOT(swap()));
+    connect(m_vsyncThread, SIGNAL(vsyncRender()),this, SLOT(render()));
+    connect(m_vsyncThread, SIGNAL(vsyncSwap()),this, SLOT(swap()));
 }
 
 void WaveformWidgetFactory::getAvailableVSyncTypes(QList<QPair<int, QString > >* pList) {

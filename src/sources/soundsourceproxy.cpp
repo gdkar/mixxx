@@ -2,16 +2,16 @@
 #include <QDesktopServices>
 
 #include "sources/soundsourceproxy.h"
-
 #include "sources/soundsourceffmpeg.h"
-#include "sources/soundsourcemp3.h"
-
+#ifdef __MPG123__
+#   include "sources/soundsourcemp3.h"
+#endif
 #include "sources/soundsourceoggvorbis.h"
 #ifdef __OPUS__
-#include "sources/soundsourceopus.h"
+#   include "sources/soundsourceopus.h"
 #endif
 #ifdef __COREAUDIO__
-#include "sources/soundsourcecoreaudio.h"
+#   include "sources/soundsourcecoreaudio.h"
 #endif
 
 #include "library/coverartutils.h"
@@ -140,21 +140,23 @@ void SoundSourceProxy::loadPlugins()
 #ifdef __OPUS__
     s_soundSourceProviders.registerProvider(SoundSourceProviderPointer(new SoundSourceProviderOpus));
 #endif
+#ifdef __MPG123__
     s_soundSourceProviders.registerProvider(SoundSourceProviderPointer(new SoundSourceProviderMp3));
+#endif
 #ifdef __COREAUDIO__
     s_soundSourceProviders.registerProvider(mixxx::SoundSourceProviderPointer(new mixxx::SoundSourceProviderCoreAudio));
 #endif
     // Scan for and initialize all plugins.
     // Loaded plugins will replace any built-in providers
     // that have been registered before (see above)!
-    const QList<QDir> pluginDirs(getSoundSourcePluginDirectories());
-    for (const auto& pluginDir: pluginDirs) {
+    auto pluginDirs = getSoundSourcePluginDirectories();
+    for (auto pluginDir: pluginDirs) {
         qDebug() << "Loading SoundSource plugins" << pluginDir.path();
-        const QStringList files(pluginDir.entryList(
+        auto files = pluginDir.entryList(
                 SOUND_SOURCE_PLUGIN_FILENAME_PATTERN,
-                QDir::Files | QDir::NoDotAndDotDot));
+                QDir::Files | QDir::NoDotAndDotDot);
         for (const auto& file: files) {
-            const QString libFilePath(pluginDir.filePath(file));
+            auto libFilePath = pluginDir.filePath(file);
             mixxx::SoundSourcePluginLibraryPointer pPluginLibrary(
                     mixxx::SoundSourcePluginLibrary::load(libFilePath));
             if (pPluginLibrary) {
@@ -186,7 +188,7 @@ void SoundSourceProxy::loadPlugins()
         s_supportedFileNamePatterns += QString("*.%1").arg(supportedFileExtension);
     }
     // Build regular expression of supported file extensions
-    QString supportedFileExtensionsRegex(RegexUtils::fileExtensionsRegex(supportedFileExtensions));
+    auto supportedFileExtensionsRegex = QString(RegexUtils::fileExtensionsRegex(supportedFileExtensions));
     s_supportedFileNamesRegex = QRegExp(supportedFileExtensionsRegex, Qt::CaseInsensitive);
 }
 // static

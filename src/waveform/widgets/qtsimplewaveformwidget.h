@@ -12,7 +12,7 @@ class QtSimpleWaveformWidget : public QWidget, public WaveformWidgetAbstract {
     virtual ~QtSimpleWaveformWidget();
 
 
-    virtual WaveformWidgetType::Type getType() const { return WaveformWidgetType::GLSimpleWaveform; }
+    virtual WaveformWidgetType::Type getType() const { return WaveformWidgetType::QtSimpleWaveform; }
 
     static inline QString getWaveformWidgetName() { return tr("Simple") + " - Qt"; }
     static inline bool useOpenGl() { return true; }

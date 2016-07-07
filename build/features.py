@@ -202,6 +202,8 @@ class Mpg123(Feature):
         if (not conf.CheckLib(['libmpg123','mpg123']) or not conf.CheckHeader('mpg123.h')):
             raise Exception("Could not find libmpg123.")
         build.env.Append(CPPDEFINES='__MPG123__')
+    def sources(self,build):
+        return ['sources/soundsourcemp3.cpp']
 
 class CoreAudio(Feature):
 

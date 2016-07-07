@@ -155,28 +155,9 @@ class SndFile(Dependence):
             raise Exception(
                 "Did not find libsndfile or it\'s development headers")
         build.env.Append(CPPDEFINES='__SNDFILE__')
-        
         if build.platform_is_windows and build.static_dependencies:
             build.env.Append(CPPDEFINES='FLAC__NO_DLL')
             conf.CheckLib('g72x')
-
-    def sources(self, build):
-        return ['sources/soundsourcesndfile.cpp']
-
-
-class FLAC(Dependence):
-    def configure(self, build, conf):
-        if not conf.CheckHeader('FLAC/stream_decoder.h'):
-            raise Exception('Did not find libFLAC development headers')
-        libs = ['libFLAC', 'FLAC']
-        if not conf.CheckLib(libs):
-            raise Exception('Did not find libFLAC development libraries')
-
-        if build.platform_is_windows and build.static_dependencies:
-            build.env.Append(CPPDEFINES='FLAC__NO_DLL')
-
-    def sources(self, build):
-        return ['sources/soundsourceflac.cpp',]
 
 
 class Qt(Dependence):
@@ -946,11 +927,7 @@ class MixxxCore(Feature):
                    "waveform/renderers/waveformmark.cpp",
                    "waveform/renderers/waveformmarkset.cpp",
                    "waveform/renderers/waveformmarkrange.cpp",
-                   "waveform/renderers/glwaveformrenderersimplesignal.cpp",
-                   "waveform/renderers/glwaveformrendererrgb.cpp",
-                   "waveform/renderers/glwaveformrendererfilteredsignal.cpp",
-                   "waveform/renderers/glslwaveformrenderersignal.cpp",
-                   "waveform/renderers/glvsynctestrenderer.cpp",
+		   "waveform/renderers/glslwaveformrenderersignal.cpp",
 
                    "waveform/widgets/waveformwidgetabstract.cpp",
                    "waveform/widgets/emptywaveformwidget.cpp",
@@ -959,13 +936,7 @@ class MixxxCore(Feature):
                    "waveform/widgets/rgbwaveformwidget.cpp",
                    "waveform/widgets/qtwaveformwidget.cpp",
                    "waveform/widgets/qtsimplewaveformwidget.cpp",
-                   "waveform/widgets/glwaveformwidget.cpp",
-                   "waveform/widgets/glsimplewaveformwidget.cpp",
-                   "waveform/widgets/glvsynctestwidget.cpp",
-
                    "waveform/widgets/glslwaveformwidget.cpp",
-
-                   "waveform/widgets/glrgbwaveformwidget.cpp",
 
                    "skin/imginvert.cpp",
                    "skin/imgloader.cpp",
@@ -1173,8 +1144,7 @@ class MixxxCore(Feature):
                 Script.Exit(1)
 
             # Set include and library paths to work with this
-            build.env.Append(CPPPATH=[mixxx_lib_path,
-                                      os.path.join(mixxx_lib_path, 'include')])
+            build.env.Append(CPPPATH=[mixxx_lib_path,os.path.join(mixxx_lib_path, 'include')])
             build.env.Append(LIBPATH=[mixxx_lib_path, os.path.join(mixxx_lib_path, 'lib')])
 
             # Find executables (e.g. protoc) in the winlib path
@@ -1321,7 +1291,7 @@ class MixxxCore(Feature):
 
     def depends(self, build):
         return [SoundTouch, ReplayGain, Ebur128Mit, PortAudio, PortMIDI, Qt, TestHeaders,
-                FidLib, SndFile, FLAC, OggVorbis, OpenGL, TagLib, ProtoBuf,
+                FidLib, SndFile, OggVorbis, OpenGL, TagLib, ProtoBuf,
                 Chromaprint, RubberBand, SecurityFramework, CoreServices,
                 QtScriptByteArray, Reverb, FpClassify, PortAudioRingBuffer]
 
