@@ -74,7 +74,8 @@ const int MixxxMainWindow::kMicrophoneCount = 4;
 const int MixxxMainWindow::kAuxiliaryCount = 4;
 
 MixxxMainWindow::MixxxMainWindow(QApplication* pApp, const CmdlineArgs& args)
-        : m_pWidgetParent(nullptr),
+        : QMainWindow(pApp),
+          m_pWidgetParent(nullptr),
           m_pLaunchImage(nullptr),
           m_pSettingsManager(nullptr),
           m_pEffectsManager(nullptr),
@@ -103,6 +104,7 @@ MixxxMainWindow::MixxxMainWindow(QApplication* pApp, const CmdlineArgs& args)
           m_cmdLineArgs(args),
           m_pTouchShift(nullptr)
 {
+    setSurfaceFormat(QWindow::OpenGLSurface);
     m_runtime_timer.start();
     mixxx::Time::start();
 
