@@ -18,13 +18,14 @@ class Track;
 class ControlProxy;
 class VisualPlayPosition;
 
-class WaveformWidgetRenderer {
+class WaveformWidgetRenderer : public QWidget {
+    Q_OBJECT
   public:
     static const int s_waveformMinZoom;
     static const int s_waveformMaxZoom;
 
   public:
-    explicit WaveformWidgetRenderer(const char* group);
+    explicit WaveformWidgetRenderer(const char* group, QObject*p);
     virtual ~WaveformWidgetRenderer();
 
     bool init();

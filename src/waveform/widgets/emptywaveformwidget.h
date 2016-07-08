@@ -8,11 +8,10 @@
 // This class can be used as a template file to create new WaveformWidgets it
 // contain minimal set of method to re-implement
 
-class EmptyWaveformWidget : public QWidget, public WaveformWidgetAbstract {
+class EmptyWaveformWidget : public WaveformWidgetAbstract {
     Q_OBJECT
   public:
     virtual ~EmptyWaveformWidget();
-
     virtual WaveformWidgetType::Type getType() const { return WaveformWidgetType::EmptyWaveform; }
 
     static inline QString getWaveformWidgetName() { return tr("Empty"); }
@@ -21,8 +20,6 @@ class EmptyWaveformWidget : public QWidget, public WaveformWidgetAbstract {
     static inline bool developerOnly() { return false; }
 
   protected:
-    virtual void castToQWidget();
-    virtual void paintEvent(QPaintEvent* event);
     virtual mixxx::Duration render();
 
   private:

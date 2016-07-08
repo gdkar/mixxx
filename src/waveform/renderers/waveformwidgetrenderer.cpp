@@ -12,8 +12,9 @@
 const int WaveformWidgetRenderer::s_waveformMinZoom = 1;
 const int WaveformWidgetRenderer::s_waveformMaxZoom = 6;
 
-WaveformWidgetRenderer::WaveformWidgetRenderer(const char* group)
-    : m_group(group),
+WaveformWidgetRenderer::WaveformWidgetRenderer(const char* group, QObject *p)
+    : QWidget(p),
+      m_group(group),
       m_height(-1),
       m_width(-1),
 

@@ -15,8 +15,9 @@
 // already have a common QWidget base class (ambigous polymorphism)
 
 class WaveformWidgetAbstract : public WaveformWidgetRenderer {
+    Q_OBJECT
   public:
-    WaveformWidgetAbstract(const char* group);
+    WaveformWidgetAbstract(const char* group, QObject *p);
     virtual ~WaveformWidgetAbstract();
 
     //Type is use by the factory to safely up-cast waveform widgets
@@ -37,7 +38,6 @@ class WaveformWidgetAbstract : public WaveformWidgetRenderer {
     QWidget* m_widget{nullptr};
     bool m_initSuccess{false};
     //this is the factory resposability to trigger QWidget casting after constructor
-    virtual void castToQWidget() = 0;
     friend class WaveformWidgetFactory;
 };
 

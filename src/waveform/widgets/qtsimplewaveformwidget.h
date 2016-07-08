@@ -5,7 +5,7 @@
 
 #include "waveformwidgetabstract.h"
 
-class QtSimpleWaveformWidget : public QWidget, public WaveformWidgetAbstract {
+class QtSimpleWaveformWidget : public WaveformWidgetAbstract {
     Q_OBJECT
   public:
     QtSimpleWaveformWidget(const char* group, QWidget* parent);
@@ -18,11 +18,6 @@ class QtSimpleWaveformWidget : public QWidget, public WaveformWidgetAbstract {
     static inline bool useOpenGl() { return false; }
     static inline bool useOpenGLShaders() { return false; }
     static inline bool developerOnly() { return false; }
-
-  protected:
-    virtual void castToQWidget();
-    virtual void paintEvent(QPaintEvent* event);
-
   private:
     friend class WaveformWidgetFactory;
 };

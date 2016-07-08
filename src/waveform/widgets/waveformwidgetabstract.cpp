@@ -5,12 +5,12 @@
 #include <QWidget>
 
 
-WaveformWidgetAbstract::WaveformWidgetAbstract(const char* group)
-    : WaveformWidgetRenderer(group),
+WaveformWidgetAbstract::WaveformWidgetAbstract(const char* group, QObject *p)
+    : WaveformWidgetRenderer(group, p),
       m_initSuccess(false)
 { }
 
-WaveformWidgetAbstract::~WaveformWidgetAbstract() { }
+WaveformWidgetAbstract::~WaveformWidgetAbstract() = default;c
 
 void WaveformWidgetAbstract::hold() {
     if (m_widget) {

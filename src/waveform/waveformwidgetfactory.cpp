@@ -14,8 +14,6 @@
 #include "control/controlpotmeter.h"
 #include "waveform/widgets/emptywaveformwidget.h"
 #include "waveform/widgets/softwarewaveformwidget.h"
-#include "waveform/widgets/hsvwaveformwidget.h"
-#include "waveform/widgets/rgbwaveformwidget.h"
 #include "waveform/widgets/qtwaveformwidget.h"
 #include "waveform/widgets/qtsimplewaveformwidget.h"
 #include "waveform/widgets/glslwaveformwidget.h"
@@ -500,18 +498,6 @@ void WaveformWidgetFactory::evaluateWidgets() {
             useOpenGLShaders = SoftwareWaveformWidget::useOpenGLShaders();
             developerOnly = SoftwareWaveformWidget::developerOnly();
             break;
-        case WaveformWidgetType::HSVWaveform:
-            widgetName = HSVWaveformWidget::getWaveformWidgetName();
-            useOpenGl = HSVWaveformWidget::useOpenGl();
-            useOpenGLShaders = HSVWaveformWidget::useOpenGLShaders();
-            developerOnly = HSVWaveformWidget::developerOnly();
-            break;
-        case WaveformWidgetType::RGBWaveform:
-            widgetName = RGBWaveformWidget::getWaveformWidgetName();
-            useOpenGl = RGBWaveformWidget::useOpenGl();
-            useOpenGLShaders = RGBWaveformWidget::useOpenGLShaders();
-            developerOnly = RGBWaveformWidget::developerOnly();
-            break;
         case WaveformWidgetType::QtSimpleWaveform:
             widgetName = QtSimpleWaveformWidget::getWaveformWidgetName();
             useOpenGl = QtSimpleWaveformWidget::useOpenGl();
@@ -529,12 +515,6 @@ void WaveformWidgetFactory::evaluateWidgets() {
             useOpenGl = GLSLFilteredWaveformWidget::useOpenGl();
             useOpenGLShaders = GLSLFilteredWaveformWidget::useOpenGLShaders();
             developerOnly = GLSLFilteredWaveformWidget::developerOnly();
-            break;
-        case WaveformWidgetType::GLSLRGBWaveform:
-            widgetName = GLSLRGBWaveformWidget::getWaveformWidgetName();
-            useOpenGl = GLSLRGBWaveformWidget::useOpenGl();
-            useOpenGLShaders = GLSLRGBWaveformWidget::useOpenGLShaders();
-            developerOnly = GLSLRGBWaveformWidget::developerOnly();
             break;
         default:
             continue;
@@ -580,12 +560,6 @@ WaveformWidgetAbstract* WaveformWidgetFactory::createWaveformWidget(
         case WaveformWidgetType::SoftwareWaveform:
             widget = new SoftwareWaveformWidget(viewer->getGroup(), viewer);
             break;
-        case WaveformWidgetType::HSVWaveform:
-            widget = new HSVWaveformWidget(viewer->getGroup(), viewer);
-            break;
-        case WaveformWidgetType::RGBWaveform:
-            widget = new RGBWaveformWidget(viewer->getGroup(), viewer);
-            break;
         case WaveformWidgetType::QtSimpleWaveform:
             widget = new QtSimpleWaveformWidget(viewer->getGroup(), viewer);
             break;
@@ -594,9 +568,6 @@ WaveformWidgetAbstract* WaveformWidgetFactory::createWaveformWidget(
             break;
         case WaveformWidgetType::GLSLFilteredWaveform:
             widget = new GLSLFilteredWaveformWidget(viewer->getGroup(), viewer);
-            break;
-        case WaveformWidgetType::GLSLRGBWaveform:
-            widget = new GLSLRGBWaveformWidget(viewer->getGroup(), viewer);
             break;
         default:
         //case WaveformWidgetType::SoftwareSimpleWaveform: TODO: (vrince)

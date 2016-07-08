@@ -10,9 +10,6 @@ class WaveformWidgetType {
         QtSimpleWaveform,
         QtWaveform,
         GLSLFilteredWaveform,
-        HSVWaveform,
-        RGBWaveform,
-        GLSLRGBWaveform,
         Count_WaveformwidgetType // Also used as invalid value
     };
 };
