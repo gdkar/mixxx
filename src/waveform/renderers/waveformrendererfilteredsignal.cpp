@@ -13,11 +13,9 @@ WaveformRendererFilteredSignal::WaveformRendererFilteredSignal(
         WaveformWidgetRenderer* waveformWidgetRenderer)
     : WaveformRendererSignalBase(waveformWidgetRenderer) {
 }
-
-WaveformRendererFilteredSignal::~WaveformRendererFilteredSignal() {
-}
-
-void WaveformRendererFilteredSignal::onResize() {
+WaveformRendererFilteredSignal::~WaveformRendererFilteredSignal() = default;
+void WaveformRendererFilteredSignal::onResize()
+{
     m_lowLines.resize(m_waveformRenderer->getWidth());
     m_midLines.resize(m_waveformRenderer->getWidth());
     m_highLines.resize(m_waveformRenderer->getWidth());

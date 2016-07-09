@@ -17,7 +17,7 @@
 #include "waveform/widgets/qtwaveformwidget.h"
 #include "waveform/widgets/qtsimplewaveformwidget.h"
 #include "waveform/widgets/glslwaveformwidget.h"
-#include "waveform/widgets/waveformwidgetabstract.h"
+#include "waveform/renderers/waveformwidgetrenderer.h"
 #include "widget/wwaveformviewer.h"
 #include "waveform/guitick.h"
 #include "waveform/vsyncthread.h"
@@ -28,7 +28,7 @@
 
 ///////////////////////////////////////////
 
-WaveformWidgetAbstractHandle::WaveformWidgetAbstractHandle()
+WaveformWidgetRendererHandle::WaveformWidgetRendererHandle()
     : m_active(true),
       m_type(WaveformWidgetType::Count_WaveformwidgetType) {
 }
@@ -41,7 +41,7 @@ WaveformWidgetHolder::WaveformWidgetHolder()
       m_skinContextCache(UserSettingsPointer(), QString()) {
 }
 
-WaveformWidgetHolder::WaveformWidgetHolder(WaveformWidgetAbstract* waveformWidget,
+WaveformWidgetHolder::WaveformWidgetHolder(WaveformWidgetRenderer* waveformWidget,
                                            WWaveformViewer* waveformViewer,
                                            const QDomNode& node,
                                            const SkinContext& skinContext)
@@ -176,7 +176,7 @@ bool WaveformWidgetFactory::setConfig(UserSettingsPointer config) {
 
 void WaveformWidgetFactory::destroyWidgets() {
     for (int i = 0; i < m_waveformWidgetHolders.size(); i++) {
-        WaveformWidgetAbstract* pWidget = m_waveformWidgetHolders[i].m_waveformWidget;;
+        auto pWidget = m_waveformWidgetHolders[i].m_waveformWidget;;
         m_waveformWidgetHolders[i].m_waveformWidget = NULL;
         delete pWidget;
     }
@@ -204,18 +204,16 @@ bool WaveformWidgetFactory::setWaveformWidget(WWaveformViewer* viewer,
 
     // Cast to widget done just after creation because it can't be perform in
     // constructor (pure virtual)
-    WaveformWidgetAbstract* waveformWidget = createWaveformWidget(m_type, viewer);
+    auto waveformWidget = createWaveformWidget(m_type, viewer);
     viewer->setWaveformWidget(waveformWidget);
     viewer->setup(node, context);
 
     // create new holder
     if (index == -1) {
-        m_waveformWidgetHolders.push_back(
-            WaveformWidgetHolder(waveformWidget, viewer, node, context));
+        m_waveformWidgetHolders.push_back(WaveformWidgetHolder(waveformWidget, viewer, node, context));
         index = m_waveformWidgetHolders.size() - 1;
     } else { //update holder
-        m_waveformWidgetHolders[index] =
-                WaveformWidgetHolder(waveformWidget, viewer, node, context);
+        m_waveformWidgetHolders[index] = WaveformWidgetHolder(waveformWidget, viewer, node, context);
     }
 
     viewer->setZoom(m_defaultZoom);
@@ -260,7 +258,7 @@ bool WaveformWidgetFactory::setWidgetType(WaveformWidgetType::Type type) {
 
     // check if type is acceptable
     for (int i = 0; i < m_waveformWidgetHandles.size(); i++) {
-        WaveformWidgetAbstractHandle& handle = m_waveformWidgetHandles[i];
+        auto& handle = m_waveformWidgetHandles[i];
         if (handle.m_type == type) {
             // type is acceptable
             m_type = type;
@@ -286,8 +284,7 @@ bool WaveformWidgetFactory::setWidgetTypeFromHandle(int handleIndex) {
         setWidgetType(WaveformWidgetType::EmptyWaveform);
         return false;
     }
-
-    WaveformWidgetAbstractHandle& handle = m_waveformWidgetHandles[handleIndex];
+    auto& handle = m_waveformWidgetHandles[handleIndex];
     if (handle.m_type == m_type) {
         qDebug() << "WaveformWidgetFactory::setWidgetType - type already in use";
         return true;
@@ -301,14 +298,14 @@ bool WaveformWidgetFactory::setWidgetTypeFromHandle(int handleIndex) {
 
     //re-create/setup all waveform widgets
     for (int i = 0; i < m_waveformWidgetHolders.size(); i++) {
-        WaveformWidgetHolder& holder = m_waveformWidgetHolders[i];
-        WaveformWidgetAbstract* previousWidget = holder.m_waveformWidget;
-        TrackPointer pTrack = previousWidget->getTrackInfo();
+        auto& holder = m_waveformWidgetHolders[i];
+        auto previousWidget = holder.m_waveformWidget;
+        auto pTrack = previousWidget->getTrackInfo();
         //previousWidget->hold();
-        int previousZoom = previousWidget->getZoomFactor();
+        auto previousZoom = previousWidget->getZoomFactor();
         delete previousWidget;
-        WWaveformViewer* viewer = holder.m_waveformViewer;
-        WaveformWidgetAbstract* widget = createWaveformWidget(m_type, holder.m_waveformViewer);
+        auto viewer = holder.m_waveformViewer;
+        auto widget = createWaveformWidget(m_type, holder.m_waveformViewer);
         holder.m_waveformWidget = widget;
         viewer->setWaveformWidget(widget);
         viewer->setup(holder.m_skinNodeCache, holder.m_skinContextCache);
@@ -318,16 +315,16 @@ bool WaveformWidgetFactory::setWidgetTypeFromHandle(int handleIndex) {
         //viewer->resize(viewer->size());
         widget->resize(viewer->width(), viewer->height());
         widget->setTrack(pTrack);
-        widget->getWidget()->show();
+        widget->show();
         viewer->update();
     }
-
     m_skipRender = false;
     //qDebug() << "recreate done";
     return true;
 }
 
-void WaveformWidgetFactory::setDefaultZoom(int zoom) {
+void WaveformWidgetFactory::setDefaultZoom(int zoom)
+{
     m_defaultZoom = math_clamp(zoom, WaveformWidgetRenderer::s_waveformMinZoom,
                                WaveformWidgetRenderer::s_waveformMaxZoom);
     if (m_config) {
@@ -373,13 +370,12 @@ void WaveformWidgetFactory::setOverviewNormalized(bool normalize) {
 }
 
 void WaveformWidgetFactory::notifyZoomChange(WWaveformViewer* viewer) {
-    WaveformWidgetAbstract* pWaveformWidget = viewer->getWaveformWidget();
+    auto pWaveformWidget = viewer->getWaveformWidget();
     if (pWaveformWidget != NULL && isZoomSync()) {
         //qDebug() << "WaveformWidgetFactory::notifyZoomChange";
-        int refZoom = pWaveformWidget->getZoomFactor();
-
+        auto refZoom = pWaveformWidget->getZoomFactor();
         for (int i = 0; i < m_waveformWidgetHolders.size(); ++i) {
-            WaveformWidgetHolder& holder = m_waveformWidgetHolders[i];
+            auto& holder = m_waveformWidgetHolders[i];
             if (holder.m_waveformViewer != viewer) {
                 holder.m_waveformViewer->setZoom(refZoom);
             }
@@ -396,33 +392,28 @@ void WaveformWidgetFactory::render() {
     if (!m_skipRender) {
         if (m_type) {   // no regular updates for an empty waveform
             // next rendered frame is displayed after next buffer swap and than after VSync
-            for (int i = 0; i < m_waveformWidgetHolders.size(); i++) {
-                // Calculate play position for the new Frame in following run
-                m_waveformWidgetHolders[i].m_waveformWidget->preRender();
+            for(auto &holder : m_waveformWidgetHolders) {
+                if(auto widget = holder.m_waveformWidget)
+                    widget->onPreRender();
             }
             //qDebug() << "prerender" << m_vsyncThread->elapsed();
-
             // It may happen that there is an artificially delayed due to
             // anti tearing driver settings
             // all render commands are delayed until the swap from the previous run is executed
-            for (int i = 0; i < m_waveformWidgetHolders.size(); i++) {
-                WaveformWidgetAbstract* pWaveformWidget = m_waveformWidgetHolders[i].m_waveformWidget;
-                if (pWaveformWidget->getWidth() > 0 &&
-                        pWaveformWidget->getWidget()->isVisible()) {
-                    (void)pWaveformWidget->render();
+            for(auto &holder : m_waveformWidgetHolders) {
+                if(auto widget = holder.m_waveformWidget) {
+                    widget->update();
                 }
                 // qDebug() << "render" << i << m_vsyncThread->elapsed();
             }
         }
-
         // Notify all other waveform-like widgets (e.g. WSpinny's) that they should
         // update.
         //int t1 = m_vsyncThread->elapsed();
         emit(waveformUpdateTick());
         //qDebug() << "emit" << m_vsyncThread->elapsed() - t1;
-
         m_frameCnt += 1.0;
-        mixxx::Duration timeCnt = m_time.elapsed();
+        auto timeCnt = m_time.elapsed();
         if (timeCnt > mixxx::Duration::fromSeconds(1)) {
             m_time.start();
             m_frameCnt = m_frameCnt * 1000 / timeCnt.toIntegerMillis(); // latency correction
@@ -433,36 +424,12 @@ void WaveformWidgetFactory::render() {
     //qDebug() << "refresh end" << m_vsyncThread->elapsed();
     m_vsyncThread->vsyncSlotFinished();
 }
-
-void WaveformWidgetFactory::swap() {
+void WaveformWidgetFactory::swap()
+{
     ScopedTimer t("WaveformWidgetFactory::swap() %1waveforms", m_waveformWidgetHolders.size());
-
-    // Do this in an extra slot to be sure to hit the desired interval
-    if (!m_skipRender) {
-        if (m_type) {   // no regular updates for an empty waveform
-            // Show rendered buffer from last render() run
-            //qDebug() << "swap() start" << m_vsyncThread->elapsed();
-            for (int i = 0; i < m_waveformWidgetHolders.size(); i++) {
-                WaveformWidgetAbstract* pWaveformWidget = m_waveformWidgetHolders[i].m_waveformWidget;
-                if (pWaveformWidget->getWidth() > 0) {
-                    QGLWidget* glw = dynamic_cast<QGLWidget*>(pWaveformWidget->getWidget());
-                    // Don't swap invalid or invisible widgets. Prevents
-                    // continuous log spew of "QOpenGLContext::swapBuffers()
-                    // called with non-exposed window, behavior is undefined" on
-                    // Qt5.
-                    if (glw && glw->isValid() && glw->isVisible()) {
-                        VSyncThread::swapGl(glw, i);
-                    }
-                }
-
-                //qDebug() << "swap x" << m_vsyncThread->elapsed();
-            }
-        }
-    }
     //qDebug() << "swap end" << m_vsyncThread->elapsed();
     m_vsyncThread->vsyncSlotFinished();
 }
-
 WaveformWidgetType::Type WaveformWidgetFactory::autoChooseWidgetType() const {
     //default selection
     if (m_openGLAvailable) {
@@ -477,11 +444,11 @@ WaveformWidgetType::Type WaveformWidgetFactory::autoChooseWidgetType() const {
 
 void WaveformWidgetFactory::evaluateWidgets() {
     m_waveformWidgetHandles.clear();
-    for (int type = 0; type < WaveformWidgetType::Count_WaveformwidgetType; type++) {
-        QString widgetName;
-        bool useOpenGl;
-        bool useOpenGLShaders;
-        bool developerOnly;
+    for (auto type = 0; type < WaveformWidgetType::Count_WaveformwidgetType; type++) {
+        auto widgetName = QString{};
+        auto useOpenGl = false;
+        auto useOpenGLShaders = false;
+        auto developerOnly = false;
 
         switch(type) {
         case WaveformWidgetType::EmptyWaveform:
@@ -527,7 +494,7 @@ void WaveformWidgetFactory::evaluateWidgets() {
         }
 
         // add new handle for each available widget type
-        WaveformWidgetAbstractHandle handle;
+        WaveformWidgetRendererHandle handle;
         handle.m_displayString = widgetName;
         handle.m_type = (WaveformWidgetType::Type)type;
 
@@ -548,9 +515,9 @@ void WaveformWidgetFactory::evaluateWidgets() {
     }
 }
 
-WaveformWidgetAbstract* WaveformWidgetFactory::createWaveformWidget(
+WaveformWidgetRenderer * WaveformWidgetFactory::createWaveformWidget(
         WaveformWidgetType::Type type, WWaveformViewer* viewer) {
-    WaveformWidgetAbstract* widget = NULL;
+    WaveformWidgetRenderer* widget = NULL;
     if (viewer) {
         if (CmdlineArgs::Instance().getSafeMode()) {
             type = WaveformWidgetType::EmptyWaveform;
@@ -575,12 +542,10 @@ WaveformWidgetAbstract* WaveformWidgetFactory::createWaveformWidget(
             widget = new EmptyWaveformWidget(viewer->getGroup(), viewer);
             break;
         }
-        widget->castToQWidget();
         if (!widget->isValid()) {
             qWarning() << "failed to init WafeformWidget" << type << "fall back to \"Empty\"";
             delete widget;
             widget = new EmptyWaveformWidget(viewer->getGroup(), viewer);
-            widget->castToQWidget();
             if (!widget->isValid()) {
                 qWarning() << "failed to init EmptyWaveformWidget";
                 delete widget;

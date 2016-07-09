@@ -12,7 +12,8 @@ class BroadcastManager : public QObject {
     Q_OBJECT
   public:
     BroadcastManager(UserSettingsPointer pConfig,
-                     SoundManager* pSoundManager);
+                     SoundManager* pSoundManager,
+                     QObject *pParent);
     virtual ~BroadcastManager();
 
     // Returns true if the broadcast connection is enabled. Note this only

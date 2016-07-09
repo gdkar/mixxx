@@ -23,19 +23,9 @@ void WaveformRenderMark::setup(const QDomNode& node, const SkinContext& context)
 
 void WaveformRenderMark::draw(QPainter* painter, QPaintEvent* /*event*/) {
     painter->save();
-
-    /*
-    //DEBUG
-    for (int i = 0; i < m_markPoints.size(); i++) {
-        if (m_waveformWidget->getTrackSamples())
-            painter->drawText(40*i,12+12*(i%3),QString::number(m_markPoints[i]->get() / (double)m_waveformWidget->getTrackSamples()));
-    }
-    */
-
     painter->setWorldMatrixEnabled(false);
-
     for (int i = 0; i < m_marks.size(); i++) {
-        WaveformMark& mark = m_marks[i];
+        auto& mark = m_marks[i];
 
         if (!mark.m_pPointCos)
             continue;

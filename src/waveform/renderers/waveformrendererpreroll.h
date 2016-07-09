@@ -8,6 +8,7 @@
 #include "waveform/renderers/waveformrendererabstract.h"
 
 class WaveformRendererPreroll : public WaveformRendererAbstract {
+    Q_OBJECT
   public:
     explicit WaveformRendererPreroll(WaveformWidgetRenderer* waveformWidgetRenderer);
     virtual ~WaveformRendererPreroll();

@@ -7,6 +7,7 @@
 #include "waveform/renderers/waveformrendererabstract.h"
 
 class WaveformRenderMark : public WaveformRendererAbstract {
+    Q_OBJECT
   public:
     explicit WaveformRenderMark(WaveformWidgetRenderer* waveformWidgetRenderer);
 

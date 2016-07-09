@@ -56,7 +56,7 @@ int main(int argc, char * argv[])
 
     QCoreApplication::setApplicationName(Version::applicationName());
     QCoreApplication::setApplicationVersion(Version::version());
-//    QGuiApplication::setAttribute(Qt::AA_ShareOpenGLContexts,true);
+    QGuiApplication::setAttribute(Qt::AA_ShareOpenGLContexts,true);
     QGuiApplication::setAttribute(Qt::AA_UseDesktopOpenGL,true);
 
     // Construct a list of strings based on the command line arguments

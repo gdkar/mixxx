@@ -19,8 +19,8 @@ DlgPrefWaveform::DlgPrefWaveform(QWidget* pParent, MixxxMainWindow* pMixxx,
     waveformOverviewComboBox->addItem(tr("RGB")); // "2"
 
     // Populate waveform options.
-    WaveformWidgetFactory* factory = WaveformWidgetFactory::instance();
-    QVector<WaveformWidgetAbstractHandle> handles = factory->getAvailableTypes();
+    auto factory = WaveformWidgetFactory::instance();
+    auto handles = factory->getAvailableTypes();
     for (int i = 0; i < handles.size(); ++i) {
         waveformTypeComboBox->addItem(handles[i].getDisplayName(),
                                       handles[i].getType());

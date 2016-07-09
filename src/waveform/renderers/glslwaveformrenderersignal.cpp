@@ -1,4 +1,4 @@
-#include <QGLFramebufferObject>
+#include <QOpenGLFramebufferObject>
 
 #include "waveform/renderers/glslwaveformrenderersignal.h"
 #include "waveform/renderers/waveformwidgetrenderer.h"
@@ -6,41 +6,112 @@
 #include "waveform/waveform.h"
 #include "waveform/waveformwidgetfactory.h"
 
-GLSLWaveformRendererSignal::GLSLWaveformRendererSignal(WaveformWidgetRenderer* waveformWidgetRenderer,
-                                                       bool rgbShader)
+GLSLWaveformRendererFilteredSignal::GLSLWaveformRendererFilteredSignal(WaveformWidgetRenderer* waveformWidgetRenderer)
         : WaveformRendererSignalBase(waveformWidgetRenderer),
           m_unitQuadListId(-1),
           m_textureId(0),
           m_loadedWaveform(0),
           m_frameBuffersValid(false),
           m_framebuffer(NULL),
-          m_bDumpPng(false),
           m_shadersValid(false),
-          m_rgbShader(rgbShader),
-          m_frameShaderProgram(NULL) {
+          m_frameShaderProgram(NULL)
+{
+    if(auto share = QOpenGLContext::globalShareContext()){
+        m_format = share->format();
+    }else{
+        m_format.setMajorVersion(3);
+        m_format.setMinorVersion(3);
+        m_format.setProfile(QSurfaceFormat::CoreProfile);
+    }
 }
-
-GLSLWaveformRendererSignal::~GLSLWaveformRendererSignal() {
+GLSLWaveformRendererFilteredSignal::~GLSLWaveformRendererFilteredSignal()
+{
+    makeCurrent();
     if (m_textureId) {
         glDeleteTextures(1,&m_textureId);
     }
-
     if (m_frameShaderProgram) {
         m_frameShaderProgram->removeAllShaders();
         delete m_frameShaderProgram;
     }
-
-    if (m_framebuffer) {
+    if (m_framebuffer)
         delete m_framebuffer;
-    }
+    doneCurrent();
+    destroy();
 }
-
-void GLSLWaveformRendererSignal::debugClick() {
+void GLSLWaveformRendererFilteredSignal::debugClick()
+{
+    if(!isValid())
+        return;
+    makeCurrent();
     loadShaders();
+    doneCurrent();
     m_bDumpPng = true;
 }
+void GLSLWaveformRendererFilteredSignal::setFormat(QSurfaceFormat fmt)
+{
+    m_format = fmt;
+}
+bool GLSLWaveformRendererFilteredSignal::isValid() const
+{
+    return (m_context && m_context->isValid());
+}
+void GLSLWaveformRendererFilteredSignal::destroy()
+{
+    doneCurrent();
+    if(m_context)
+        delete m_context;
+    m_context = nullptr;
+    m_window.destroy();
+}
+void GLSLWaveformRendererFilteredSignal::create()
+{
+    if(m_context)
+        destroy();
 
-bool GLSLWaveformRendererSignal::loadShaders() {
+    m_window.destroy();
+    m_window.setSurfaceType(QWindow::OpenGLSurface);
+    m_window.setFormat(m_format);
+    m_window.create();
+
+    m_context = new QOpenGLContext( this );
+    if(auto share = QOpenGLContext::globalShareContext())
+        m_context->setShareContext(share);
+
+    m_context->setFormat(m_format);
+    m_context->create();
+    makeCurrent();
+    initializeOpenGLFunctions();
+    doneCurrent();
+}
+QOpenGLContext *GLSLWaveformRendererFilteredSignal::context() const
+{
+    return m_context;
+}
+QSurface       *GLSLWaveformRendererFilteredSignal::surface() const
+{
+    if(m_context)
+        return m_context->surface();
+}
+void GLSLWaveformRendererFilteredSignal::makeCurrent()
+{
+    if(m_context){
+        m_context->makeCurrent(&m_window);
+    }
+}
+void GLSLWaveformRendererFilteredSignal::doneCurrent()
+{
+    if(m_context)
+        m_context->doneCurrent();
+}
+bool GLSLWaveformRendererFilteredSignal::loadShaders()
+{
+    if(!isValid())
+        create();
+    if(!isValid())
+        return false;
+
+    makeCurrent();
     qDebug() << "GLWaveformRendererSignalShader::loadShaders";
     m_shadersValid = false;
 
@@ -51,16 +122,13 @@ bool GLSLWaveformRendererSignal::loadShaders() {
     m_frameShaderProgram->removeAllShaders();
 
     if (!m_frameShaderProgram->addShaderFromSourceFile(
-            QGLShader::Vertex, ":shaders/passthrough.vert")) {
+            QOpenGLShader::Vertex, ":shaders/passthrough.vert")) {
         qDebug() << "GLWaveformRendererSignalShader::loadShaders - "
                  << m_frameShaderProgram->log();
         return false;
     }
-    QString fragmentShader = m_rgbShader ?
-            ":/shaders/rgbsignal.frag" :
-            ":/shaders/filteredsignal.frag";
     if (!m_frameShaderProgram->addShaderFromSourceFile(
-            QGLShader::Fragment, fragmentShader)) {
+            QOpenGLShader::Fragment, ":/shaders/filteredsignal.frag")) {
         qDebug() << "GLWaveformRendererSignalShader::loadShaders - "
                  << m_frameShaderProgram->log();
         return false;
@@ -79,9 +147,16 @@ bool GLSLWaveformRendererSignal::loadShaders() {
 
     m_shadersValid = true;
     return true;
+    doneCurrent();
 }
 
-bool GLSLWaveformRendererSignal::loadTexture() {
+bool GLSLWaveformRendererFilteredSignal::loadTexture()
+{
+    if(!isValid())
+        create();
+    if(!isValid())
+        return false;
+    makeCurrent();
     TrackPointer trackInfo = m_waveformRenderer->getTrackInfo();
     ConstWaveformPointer waveform;
     int dataSize = 0;
@@ -133,12 +208,14 @@ bool GLSLWaveformRendererSignal::loadTexture() {
     }
 
     glDisable(GL_TEXTURE_2D);
-
+    doneCurrent();
     return true;
 }
 
-void GLSLWaveformRendererSignal::createGeometry() {
+void GLSLWaveformRendererFilteredSignal::createGeometry()
+{
 
+#if 0
     if (m_unitQuadListId != -1)
         return;
 
@@ -172,10 +249,16 @@ void GLSLWaveformRendererSignal::createGeometry() {
     glEndList();
 
 #endif
+#endif
 }
 
-void GLSLWaveformRendererSignal::createFrameBuffers()
+void GLSLWaveformRendererFilteredSignal::createFrameBuffers()
 {
+    if(!isValid())
+        create();
+    if(!isValid())
+        return;
+    makeCurrent();
     m_frameBuffersValid = false;
 
     int bufferWidth = m_waveformRenderer->getWidth();
@@ -185,49 +268,56 @@ void GLSLWaveformRendererSignal::createFrameBuffers()
         delete m_framebuffer;
 
     //should work with any version of OpenGl
-    m_framebuffer = new QGLFramebufferObject(bufferWidth * 4, bufferHeight * 4);
+    m_framebuffer = new QOpenGLFramebufferObject(bufferWidth * 4, bufferHeight * 4);
 
     if (!m_framebuffer->isValid())
         qWarning() << "GLSLWaveformRendererSignal::createFrameBuffer - frame buffer not valid";
 
     m_frameBuffersValid = m_framebuffer->isValid();
-
+    doneCurrent();
     //qDebug() << m_waveformRenderer->getWidth();
     //qDebug() << m_waveformRenderer->getWidth()*3;
     //qDebug() << bufferWidth;
 }
 
-bool GLSLWaveformRendererSignal::onInit() {
-    m_loadedWaveform = 0;
-
-    if (!m_frameShaderProgram)
-        m_frameShaderProgram = new QGLShaderProgram();
-
-    if (!loadShaders()) {
-        return false;
-    }
-    createGeometry();
-    if (!loadTexture()) {
-        return false;
-    }
-
-    return true;
+bool GLSLWaveformRendererFilteredSignal::onInit()
+{
+    create();
+    makeCurrent();
+    auto ret = false;
+    do{
+        m_loadedWaveform = 0;
+        if (!m_frameShaderProgram)
+            m_frameShaderProgram = new QOpenGLShaderProgram();
+        if (!loadShaders())
+            break;
+        createGeometry();
+        if (!loadTexture())
+            break;
+        ret = true;
+    }while(false);
+    doneCurrent();
+    return ret;
 }
 
-void GLSLWaveformRendererSignal::onSetup(const QDomNode& node) {
+void GLSLWaveformRendererFilteredSignal::onSetup(const QDomNode& node) {
     Q_UNUSED(node);
 }
-
-void GLSLWaveformRendererSignal::onSetTrack() {
+void GLSLWaveformRendererFilteredSignal::onSetTrack()
+{
     m_loadedWaveform = 0;
     loadTexture();
 }
-
-void GLSLWaveformRendererSignal::onResize() {
+void GLSLWaveformRendererFilteredSignal::onResize() {
+    makeCurrent();
     createFrameBuffers();
+    doneCurrent();
 }
-
-void GLSLWaveformRendererSignal::draw(QPainter* painter, QPaintEvent* /*event*/) {
+void GLSLWaveformRendererFilteredSignal::draw(QPainter* painter, QPaintEvent* /*event*/)
+{
+    if(!isValid())
+        return;
+    makeCurrent();
     if (!m_frameBuffersValid || !m_shadersValid) {
         return;
     }
@@ -428,4 +518,5 @@ void GLSLWaveformRendererSignal::draw(QPainter* painter, QPaintEvent* /*event*/)
 #endif
 
     painter->endNativePainting();
+    doneCurrent();
 }

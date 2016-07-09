@@ -11,6 +11,19 @@
 #include "waveform/renderers/waveformrendererabstract.h"
 #include "waveform/renderers/waveformsignalcolors.h"
 #include "util/performancetimer.h"
+class WaveformWidgetType {
+  public:
+    enum Type {
+        EmptyWaveform = 0,
+        SoftwareSimpleWaveform, //TODO
+        SoftwareWaveform,
+        QtSimpleWaveform,
+        QtWaveform,
+        GLSLFilteredWaveform,
+        Count_WaveformwidgetType // Also used as invalid value
+    };
+};
+
 
 //#define WAVEFORMWIDGETRENDERER_DEBUG
 
@@ -25,7 +38,7 @@ class WaveformWidgetRenderer : public QWidget {
     static const int s_waveformMaxZoom;
 
   public:
-    explicit WaveformWidgetRenderer(const char* group, QObject*p);
+    explicit WaveformWidgetRenderer(const char* group, QWidget *p);
     virtual ~WaveformWidgetRenderer();
 
     bool init();
@@ -69,7 +82,12 @@ class WaveformWidgetRenderer : public QWidget {
     double getRateAdjust() const { return m_rateAdjust;}
     double getGain() const { return m_gain;}
     int getTrackSamples() const { return m_trackSamples;}
-
+    virtual void resizeEvent(QResizeEvent *event) override
+    {
+        auto size = event->size();
+        resize(size.width(),size.height());
+        QWidget::resizeEvent(event);
+    }
     void resize(int width, int height);
     int getHeight() const { return m_height;}
     int getWidth() const { return m_width;}
@@ -82,7 +100,13 @@ class WaveformWidgetRenderer : public QWidget {
         return renderer;
     }
     void setTrack(TrackPointer track);
-
+    virtual void paintEvent(QPaintEvent *event) override
+    {
+        QPainter painter(this);
+        draw(&painter, event);
+        QWidget::paintEvent(event);
+    }
+    bool isValid() const;
   protected:
     const char* m_group;
     TrackPointer m_pTrack;
@@ -116,17 +140,8 @@ class WaveformWidgetRenderer : public QWidget {
     ControlProxy* m_pTrackSamplesControlObject;
     int m_trackSamples;
 
-#ifdef WAVEFORMWIDGETRENDERER_DEBUG
-    PerformanceTimer* m_timer;
-    int m_lastFrameTime;
-    int m_lastFramesTime[100];
-    int m_lastSystemFrameTime;
-    int m_lastSystemFramesTime[100];
-    int currentFrame;
-#endif
-
+    bool m_initSuccess{false};
 private:
-    DISALLOW_COPY_AND_ASSIGN(WaveformWidgetRenderer);
     friend class WaveformWidgetFactory;
 };
 

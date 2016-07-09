@@ -48,11 +48,13 @@ WaveformRendererSignalBase::WaveformRendererSignalBase(
       m_rgbHighColor_b(0) {
 }
 
-WaveformRendererSignalBase::~WaveformRendererSignalBase() {
+WaveformRendererSignalBase::~WaveformRendererSignalBase()
+{
     deleteControls();
 }
 
-void WaveformRendererSignalBase::deleteControls() {
+void WaveformRendererSignalBase::deleteControls()
+{
     if (m_pEQEnabled)
         delete m_pEQEnabled;
     if (m_pLowFilterControlObject)
@@ -69,9 +71,9 @@ void WaveformRendererSignalBase::deleteControls() {
         delete m_pHighKillControlObject;
 }
 
-bool WaveformRendererSignalBase::init() {
+bool WaveformRendererSignalBase::init()
+{
     deleteControls();
-
     //create controls
     m_pEQEnabled = new ControlProxy(
             m_waveformRenderer->getGroup(), "filterWaveformEnable");
@@ -91,8 +93,8 @@ bool WaveformRendererSignalBase::init() {
     return onInit();
 }
 
-void WaveformRendererSignalBase::setup(const QDomNode& node,
-                                       const SkinContext& context) {
+void WaveformRendererSignalBase::setup(const QDomNode& node,const SkinContext& context)
+{
     QString alignString = context.selectString(node, "Align").toLower();
     if (alignString == "bottom") {
         m_alignment = Qt::AlignBottom;
@@ -133,8 +135,9 @@ void WaveformRendererSignalBase::setup(const QDomNode& node,
 }
 
 void WaveformRendererSignalBase::getGains(float* pAllGain, float* pLowGain,
-                                          float* pMidGain, float* pHighGain) {
-    WaveformWidgetFactory* factory = WaveformWidgetFactory::instance();
+                                          float* pMidGain, float* pHighGain)
+{
+    auto factory = WaveformWidgetFactory::instance();
     if (pAllGain != NULL) {
         float allGain = m_waveformRenderer->getGain();
         allGain *= factory->getVisualGain(::WaveformWidgetFactory::All);

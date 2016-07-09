@@ -1646,17 +1646,16 @@ void LegacySkinParser::setupSize(const QDomNode& node, QWidget* pWidget) {
         }
     }
 
-
     if (m_pContext->hasNodeSelectString(node, "MaximumSize", &size)) {
-        int comma = size.indexOf(",");
-        QString xs = size.left(comma);
-        QString ys = size.mid(comma+1);
+        auto comma = size.indexOf(",");
+        auto xs = size.left(comma);
+        auto ys = size.mid(comma+1);
 
-        bool widthOk = false;
-        int x = xs.toInt(&widthOk);
+        auto widthOk = false;
+        auto x = xs.toInt(&widthOk);
 
-        bool heightOk = false;
-        int y = ys.toInt(&heightOk);
+        auto heightOk = false;
+        auto y = ys.toInt(&heightOk);
 
         // -1 means do not set.
         if (widthOk && heightOk && x >= 0 && y >= 0) {

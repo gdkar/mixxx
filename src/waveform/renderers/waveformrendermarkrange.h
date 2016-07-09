@@ -19,6 +19,7 @@ class ConfigKey;
 class ControlObject;
 
 class WaveformRenderMarkRange : public WaveformRendererAbstract {
+    Q_OBJECT
   public:
     explicit WaveformRenderMarkRange(WaveformWidgetRenderer* waveformWidgetRenderer);
     virtual ~WaveformRenderMarkRange();

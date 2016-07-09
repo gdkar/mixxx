@@ -8,6 +8,7 @@
 #include "waveform/renderers/waveformrenderersignalbase.h"
 
 class WaveformRendererFilteredSignal : public WaveformRendererSignalBase {
+    Q_OBJECT
   public:
     explicit WaveformRendererFilteredSignal(
         WaveformWidgetRenderer* waveformWidget);

@@ -7,10 +7,11 @@
 #include "soundio/soundmanager.h"
 
 BroadcastManager::BroadcastManager(UserSettingsPointer pConfig,
-                                   SoundManager* pSoundManager)
-        : m_pConfig(pConfig) {
-    QSharedPointer<EngineNetworkStream> pNetworkStream =
-            pSoundManager->getNetworkStream();
+                                   SoundManager* pSoundManager,
+                                   QObject *pParent)
+        : QObject(pParent),
+            m_pConfig(pConfig) {
+    auto pNetworkStream =pSoundManager->getNetworkStream();
     if (!pNetworkStream.isNull()) {
         m_pBroadcast = QSharedPointer<EngineBroadcast>(new EngineBroadcast(pConfig));
         pNetworkStream->addWorker(m_pBroadcast);

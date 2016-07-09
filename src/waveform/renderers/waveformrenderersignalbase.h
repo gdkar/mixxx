@@ -9,6 +9,7 @@ class ControlObject;
 class ControlProxy;
 
 class WaveformRendererSignalBase : public WaveformRendererAbstract {
+    Q_OBJECT
 public:
     explicit WaveformRendererSignalBase(WaveformWidgetRenderer* waveformWidgetRenderer);
     virtual ~WaveformRendererSignalBase();

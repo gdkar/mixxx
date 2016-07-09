@@ -2,13 +2,12 @@
 #define EMPTYWAVEFORM_H
 
 #include <QWidget>
-
-#include "waveform/widgets/waveformwidgetabstract.h"
+#include "waveform/renderers/waveformwidgetrenderer.h"
 
 // This class can be used as a template file to create new WaveformWidgets it
 // contain minimal set of method to re-implement
 
-class EmptyWaveformWidget : public WaveformWidgetAbstract {
+class EmptyWaveformWidget : public WaveformWidgetRenderer {
     Q_OBJECT
   public:
     virtual ~EmptyWaveformWidget();

@@ -15,7 +15,7 @@
 #include "util/performancetimer.h"
 
 QtWaveformWidget::QtWaveformWidget(const char* group, QWidget* parent)
-        : WaveformWidgetAbstract(group, parent)
+        : WaveformWidgetRenderer(group, parent)
 {
     addRenderer<WaveformRenderBackground>();
     addRenderer<WaveformRendererEndOfTrack>();
@@ -24,9 +24,6 @@ QtWaveformWidget::QtWaveformWidget(const char* group, QWidget* parent)
     addRenderer<QtWaveformRendererFilteredSignal>();
     addRenderer<WaveformRenderBeat>();
     addRenderer<WaveformRenderMark>();
-
-    setAttribute(Qt::WA_NoSystemBackground);
-    setAttribute(Qt::WA_OpaquePaintEvent);
     m_initSuccess = init();
 }
 QtWaveformWidget::~QtWaveformWidget() = default;

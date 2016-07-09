@@ -8,6 +8,7 @@
 #include "waveform/renderers/waveformrendererabstract.h"
 
 class WaveformRenderBeat : public WaveformRendererAbstract {
+    Q_OBJECT
   public:
     explicit WaveformRenderBeat(WaveformWidgetRenderer* waveformWidgetRenderer);
     virtual ~WaveformRenderBeat();

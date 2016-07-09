@@ -6,11 +6,9 @@
 #include "waveform/renderers/waveformrenderbackground.h"
 
 EmptyWaveformWidget::EmptyWaveformWidget(const char* group, QWidget* parent)
-        :WaveformWidgetAbstract(group, parent) {
+        :WaveformWidgetRenderer(group, parent) {
     //Empty means just a background ;)
     addRenderer<WaveformRenderBackground>();
-    setAttribute(Qt::WA_NoSystemBackground);
-    setAttribute(Qt::WA_OpaquePaintEvent);
     m_initSuccess = init();
 }
 EmptyWaveformWidget::~EmptyWaveformWidget() = default;

@@ -590,8 +590,9 @@ void DlgPrefControls::slotSetScheme(int) {
     m_mixxx->rebootMixxxView();
 }
 
-void DlgPrefControls::slotSetSkin(int) {
-    ComboBoxSkinconf->repaint(); // without it the combobox sticks to the old value until
+void DlgPrefControls::slotSetSkin(int)
+{
+    ComboBoxSkinconf->update(); // without it the combobox sticks to the old value until
                                  // the new Skin is fully loaded
     m_pConfig->set(ConfigKey("[Config]", "ResizableSkin"), ComboBoxSkinconf->currentText());
     m_mixxx->rebootMixxxView();

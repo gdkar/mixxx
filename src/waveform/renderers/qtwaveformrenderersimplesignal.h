@@ -11,6 +11,7 @@
 class ControlObject;
 
 class QtWaveformRendererSimpleSignal : public WaveformRendererSignalBase {
+    Q_OBJECT
 public:
     explicit QtWaveformRendererSimpleSignal(WaveformWidgetRenderer* waveformWidgetRenderer);
     virtual ~QtWaveformRendererSimpleSignal();

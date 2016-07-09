@@ -18,7 +18,7 @@ WaveformMark::~WaveformMark() {
 void WaveformMark::setup(const QString& group, const QDomNode& node,
                          const SkinContext& context,
                          const WaveformSignalColors& signalColors) {
-    QString item = context.selectString(node, "Control");
+    auto item = context.selectString(node, "Control");
     if (!item.isEmpty()) {
         m_pPointCos = new ControlProxy(group, item);
     }
@@ -39,7 +39,7 @@ void WaveformMark::setup(const QString& group, const QDomNode& node,
         qDebug() << "Didn't get mark <TextColor>, using parent's <BgColor>:" << m_textColor;
     }
 
-    QString markAlign = context.selectString(node, "Align");
+    auto markAlign = context.selectString(node, "Align");
     if (markAlign.contains("bottom", Qt::CaseInsensitive)) {
         m_align = Qt::AlignBottom;
     } else {

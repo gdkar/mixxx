@@ -196,14 +196,16 @@ void Waveform::readByteArray(const QByteArray& data) {
     m_bDirty = false;
 }
 
-void Waveform::resize(int size) {
+void Waveform::resize(int size)
+{
     m_dataSize = size;
     m_textureStride = computeTextureStride(size);
     m_data.resize(m_textureStride * m_textureStride);
     m_bDirty = true;
 }
 
-void Waveform::assign(int size, int value) {
+void Waveform::assign(int size, int value)
+{
     m_dataSize = size;
     m_textureStride = computeTextureStride(size);
     m_data.assign(m_textureStride * m_textureStride, value);

@@ -10,10 +10,10 @@ GuiTick::GuiTick(QObject* pParent)
 {
     m_pCOGuiTickTime->setParent(this);
     m_pCOGuiTick50ms->setParent(this);
-     m_cpuTimer.start();
+    m_cpuTimer.start();
 }
 
-GuiTick::~GuiTick() { }
+GuiTick::~GuiTick() = default;
 
 // this is called from the VSyncThread
 // with the configured waveform frame rate

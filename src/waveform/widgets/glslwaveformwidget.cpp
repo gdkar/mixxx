@@ -14,84 +14,17 @@
 
 #include "util/performancetimer.h"
 
-GLSLFilteredWaveformWidget::GLSLFilteredWaveformWidget(const char* group,
-                                                       QWidget* parent)
-        : GLSLWaveformWidget(group, parent, false) {
-}
-
-GLSLRGBWaveformWidget::GLSLRGBWaveformWidget(const char* group, QWidget* parent)
-        : GLSLWaveformWidget(group, parent, true) {
-}
-
-GLSLWaveformWidget::GLSLWaveformWidget(const char* group, QWidget* parent,
-                                       bool rgbRenderer)
-        : QGLWidget(parent),
-          WaveformWidgetAbstract(group) {
+GLSLFilteredWaveformWidget::GLSLFilteredWaveformWidget(const char* group, QWidget* parent)
+        : WaveformWidgetRenderer(group,parent)
+{
     addRenderer<WaveformRenderBackground>();
     addRenderer<WaveformRendererEndOfTrack>();
     addRenderer<WaveformRendererPreroll>();
     addRenderer<WaveformRenderMarkRange>();
-    if (rgbRenderer) {
-        signalRenderer_ = addRenderer<GLSLWaveformRendererRGBSignal>();
-    } else {
-        signalRenderer_ = addRenderer<GLSLWaveformRendererFilteredSignal>();
-    }
+    addRenderer<GLSLWaveformRendererFilteredSignal>();
     addRenderer<WaveformRenderBeat>();
     addRenderer<WaveformRenderMark>();
 
-    setAttribute(Qt::WA_NoSystemBackground);
-    setAttribute(Qt::WA_OpaquePaintEvent);
-
-    qDebug() << "Created QGLWidget. Context"
-             << "Valid:" << context()->isValid()
-             << "Sharing:" << context()->isSharing();
-
-    // Initialization requires activating our context.
-    if (QGLContext::currentContext() != context()) {
-        makeCurrent();
-    }
     m_initSuccess = init();
 }
-
-GLSLWaveformWidget::~GLSLWaveformWidget() {
-    makeCurrent();
-}
-
-void GLSLWaveformWidget::castToQWidget() {
-    m_widget = static_cast<QWidget*>(static_cast<QGLWidget*>(this));
-}
-
-void GLSLWaveformWidget::paintEvent(QPaintEvent* event) {
-    Q_UNUSED(event);
-}
-
-mixxx::Duration GLSLWaveformWidget::render() {
-    PerformanceTimer timer;
-    mixxx::Duration t1;
-    //mixxx::Duration t2, t3;
-    timer.start();
-    // QPainter makes QGLContext::currentContext() == context()
-    // this may delayed until previous buffer swap finished
-    QPainter painter(this);
-    t1 = timer.restart();
-    draw(&painter, NULL);
-    //t2 = timer.restart();
-    //glFinish();
-    //t3 = timer.restart();
-    //qDebug() << "GLVSyncTestWidget "<< t1 << t2 << t3;
-    return t1; // return timer for painter setup
-}
-
-void GLSLWaveformWidget::resize(int width, int height) {
-    //NOTE: (vrince) this is needed since we allocation buffer on resize
-    //ans the Gl Context should be properly setted
-    makeCurrent();
-    WaveformWidgetAbstract::resize(width,height);
-}
-
-void GLSLWaveformWidget::mouseDoubleClickEvent(QMouseEvent *event) {
-    if (event->button() == Qt::RightButton) {
-        makeCurrent();
-        signalRenderer_->debugClick();
-    }
-}
+GLSLFilteredWaveformWidget::~GLSLFilteredWaveformWidget() { }

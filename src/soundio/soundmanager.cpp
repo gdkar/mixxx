@@ -57,8 +57,10 @@ const unsigned int kSleepSecondsAfterClosingDevice = 5;
 } // anonymous namespace
 
 SoundManager::SoundManager(UserSettingsPointer pConfig,
-                           EngineMaster *pMaster)
-        : m_pMaster(pMaster),
+                           EngineMaster *pMaster,
+                           QObject *pParent)
+        : QObject(pParent),
+          m_pMaster(pMaster),
           m_pConfig(pConfig),
 #ifdef __PORTAUDIO__
           m_paInitialized(false),

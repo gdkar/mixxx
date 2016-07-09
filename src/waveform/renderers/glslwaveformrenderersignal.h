@@ -1,17 +1,19 @@
 #ifndef GLWAVEFORMRENDERERSIGNALSHADER_H
 #define GLWAVEFORMRENDERERSIGNALSHADER_H
 
-#include <QGLFramebufferObject>
-#include <QGLShaderProgram>
+#include <QOpenGLFramebufferObject>
+#include <QOpenGLShaderProgram>
+#include <QOpenGLFunctions>
 #include <QtOpenGL>
 
 #include "waveformrenderersignalbase.h"
 
-class GLSLWaveformRendererSignal : public WaveformRendererSignalBase {
+class GLSLWaveformRendererFilteredSignal : public WaveformRendererSignalBase, public QOpenGLFunctions {
+    Q_OBJECT
   public:
-    explicit GLSLWaveformRendererSignal(
-            WaveformWidgetRenderer* waveformWidgetRenderer, bool rgbShader);
-    virtual ~GLSLWaveformRendererSignal();
+    explicit GLSLWaveformRendererFilteredSignal(
+            WaveformWidgetRenderer* waveformWidgetRenderer);
+    virtual ~GLSLWaveformRendererFilteredSignal();
 
     virtual bool onInit();
     virtual void onSetup(const QDomNode& node);
@@ -23,8 +25,19 @@ class GLSLWaveformRendererSignal : public WaveformRendererSignalBase {
     void debugClick();
     bool loadShaders();
     bool loadTexture();
-
+   
+    bool isValid() const;
+    void setFormat(QSurfaceFormat fmt);
+    void makeCurrent();
+    void doneCurrent();
+    QOpenGLContext *context() const;
+    QSurface       *surface() const;
+    void destroy();
+    void create();
   private:
+    QSurfaceFormat  m_format{};
+    QWindow         m_window;
+    QOpenGLContext *m_context{nullptr};
     void createGeometry();
     void createFrameBuffers();
 
@@ -35,30 +48,14 @@ class GLSLWaveformRendererSignal : public WaveformRendererSignalBase {
 
     //Frame buffer for two pass rendering
     bool m_frameBuffersValid;
-    QGLFramebufferObject* m_framebuffer;
+    QOpenGLFramebufferObject* m_framebuffer;
 
     bool m_bDumpPng;
 
     // shaders
     bool m_shadersValid;
     bool m_rgbShader;
-    QGLShaderProgram* m_frameShaderProgram;
-};
-
-class GLSLWaveformRendererFilteredSignal : public GLSLWaveformRendererSignal {
-  public:
-    GLSLWaveformRendererFilteredSignal(
-        WaveformWidgetRenderer* waveformWidgetRenderer)
-        : GLSLWaveformRendererSignal(waveformWidgetRenderer, false) {}
-    virtual ~GLSLWaveformRendererFilteredSignal() {}
-};
-
-class GLSLWaveformRendererRGBSignal : public GLSLWaveformRendererSignal {
-  public:
-    GLSLWaveformRendererRGBSignal(
-        WaveformWidgetRenderer* waveformWidgetRenderer)
-        : GLSLWaveformRendererSignal(waveformWidgetRenderer, true) {}
-    virtual ~GLSLWaveformRendererRGBSignal() {}
+    QOpenGLShaderProgram* m_frameShaderProgram;
 };
 
 #endif // GLWAVEFORMRENDERERSIGNALSHADER_H

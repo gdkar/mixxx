@@ -13,8 +13,9 @@
 #include "recording/defs_recording.h"
 #include "recording/recordingmanager.h"
 
-RecordingManager::RecordingManager(UserSettingsPointer pConfig, EngineMaster* pEngine)
-        : m_pConfig(pConfig),
+RecordingManager::RecordingManager(UserSettingsPointer pConfig, EngineMaster* pEngine, QObject *pParent)
+        : QObject(pParent),
+          m_pConfig(pConfig),
           m_recordingDir(""),
           m_recording_base_file(""),
           m_recordingFile(""),

@@ -12,7 +12,7 @@
 #include "waveform/renderers/waveformrenderbeat.h"
 
 SoftwareWaveformWidget::SoftwareWaveformWidget(const char* group, QWidget* parent)
-    : WaveformWidgetAbstract(group, parent)
+    : WaveformWidgetRenderer(group, parent)
 {
     addRenderer<WaveformRenderBackground>();
     addRenderer<WaveformRendererEndOfTrack>();
@@ -21,10 +21,6 @@ SoftwareWaveformWidget::SoftwareWaveformWidget(const char* group, QWidget* paren
     addRenderer<WaveformRendererFilteredSignal>();
     addRenderer<WaveformRenderBeat>();
     addRenderer<WaveformRenderMark>();
-
-    setAttribute(Qt::WA_NoSystemBackground);
-    setAttribute(Qt::WA_OpaquePaintEvent);
-
     m_initSuccess = init();
 }
 SoftwareWaveformWidget::~SoftwareWaveformWidget() = default;

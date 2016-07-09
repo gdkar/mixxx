@@ -2,10 +2,9 @@
 #define QTSIMPLEWAVEFORMWIDGET_H
 
 #include <QWidget>
+#include "waveform/renderers/waveformwidgetrenderer.h"
 
-#include "waveformwidgetabstract.h"
-
-class QtSimpleWaveformWidget : public WaveformWidgetAbstract {
+class QtSimpleWaveformWidget : public WaveformWidgetRenderer {
     Q_OBJECT
   public:
     QtSimpleWaveformWidget(const char* group, QWidget* parent);

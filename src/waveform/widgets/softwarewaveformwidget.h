@@ -3,9 +3,9 @@
 
 #include <QWidget>
 
-#include "waveformwidgetabstract.h"
+#include "waveform/renderers/waveformwidgetrenderer.h"
 
-class SoftwareWaveformWidget : public WaveformWidgetAbstract {
+class SoftwareWaveformWidget : public WaveformWidgetRenderer {
     Q_OBJECT
   public:
     virtual ~SoftwareWaveformWidget();

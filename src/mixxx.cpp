@@ -17,6 +17,10 @@
 
 #include "mixxx.h"
 
+#include <QWindow>
+#include <QSurface>
+#include <QMainWindow>
+#include <QOpenGLWindow>
 #include <QDesktopServices>
 #include <QDesktopWidget>
 #include <QFileDialog>
@@ -74,8 +78,7 @@ const int MixxxMainWindow::kMicrophoneCount = 4;
 const int MixxxMainWindow::kAuxiliaryCount = 4;
 
 MixxxMainWindow::MixxxMainWindow(QApplication* pApp, const CmdlineArgs& args)
-        : QMainWindow(pApp),
-          m_pWidgetParent(nullptr),
+        : m_pWidgetParent(nullptr),
           m_pLaunchImage(nullptr),
           m_pSettingsManager(nullptr),
           m_pEffectsManager(nullptr),
@@ -104,10 +107,17 @@ MixxxMainWindow::MixxxMainWindow(QApplication* pApp, const CmdlineArgs& args)
           m_cmdLineArgs(args),
           m_pTouchShift(nullptr)
 {
-    setSurfaceFormat(QWindow::OpenGLSurface);
+    auto window = windowHandle();
+    if(!window) {
+        auto wid = winId();
+        window = windowHandle();
+    }
+    if(window) {
+        window->setSurfaceType(QWindow::OpenGLSurface);
+        create();
+    }
     m_runtime_timer.start();
     mixxx::Time::start();
-
     Version::logBuildDetails();
 
     // Only record stats in developer mode.
@@ -125,7 +135,7 @@ MixxxMainWindow::MixxxMainWindow(QApplication* pApp, const CmdlineArgs& args)
     // First load launch image to show a the user a quick responds
     m_pSkinLoader = new SkinLoader(m_pSettingsManager->settings(), this);
     m_pLaunchImage = m_pSkinLoader->loadLaunchImage(this);
-    m_pWidgetParent = (QWidget*)m_pLaunchImage;
+    m_pWidgetParent = m_pLaunchImage;
     setCentralWidget(m_pWidgetParent);
     show();
 #if defined(Q_WS_X11)
@@ -182,15 +192,14 @@ void MixxxMainWindow::initialize(QApplication* pApp, const CmdlineArgs& args)
     // while this is created here, setupDevices needs to be called sometime
     // after the players are added to the engine (as is done currently) -- bkgood
     // (long)
-    m_pSoundManager = new SoundManager(pConfig, m_pEngine);
-    m_pRecordingManager = new RecordingManager(pConfig, m_pEngine);
-
+    m_pSoundManager = new SoundManager(pConfig, m_pEngine, this);
+    m_pRecordingManager = new RecordingManager(pConfig, m_pEngine, this);
 #ifdef __BROADCAST__
-    m_pBroadcastManager = new BroadcastManager(pConfig, m_pSoundManager);
+    m_pBroadcastManager = new BroadcastManager(pConfig, m_pSoundManager, this);
 #endif
     launchProgress(11);
     // Needs to be created before CueControl (decks) and WTrackTableView.
-    m_pGuiTick = new GuiTick();
+    m_pGuiTick = new GuiTick(this);
 #ifdef __VINYLCONTROL__
     m_pVCManager = new VinylControlManager(this, pConfig, m_pSoundManager);
 #else

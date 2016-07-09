@@ -13,7 +13,7 @@
 #include "skin/skincontext.h"
 
 class ControlProxy;
-class WaveformWidgetAbstract;
+class WaveformWidgetRenderer;
 class ControlPotmeter;
 
 class WWaveformViewer : public WWidget {
@@ -48,15 +48,13 @@ private slots:
     void slotWidgetDead() {
         m_waveformWidget = nullptr;
     }
-
 private:
-    void setWaveformWidget(WaveformWidgetAbstract* waveformWidget);
-    WaveformWidgetAbstract* getWaveformWidget() {
+    void setWaveformWidget(WaveformWidgetRenderer * waveformWidget);
+    WaveformWidgetRenderer * getWaveformWidget() {
         return m_waveformWidget;
     }
     //direct access to let factory sync/set default zoom
     void setZoom(int zoom);
-
 private:
     const char* m_pGroup;
     UserSettingsPointer m_pConfig;
@@ -69,7 +67,7 @@ private:
     bool m_bBending;
     QPoint m_mouseAnchor;
 
-    WaveformWidgetAbstract* m_waveformWidget;
+    WaveformWidgetRenderer* m_waveformWidget;
 
     friend class WaveformWidgetFactory;
 };

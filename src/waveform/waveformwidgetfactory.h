@@ -7,20 +7,19 @@
 
 #include "util/singleton.h"
 #include "preferences/usersettings.h"
-#include "waveform/widgets/waveformwidgettype.h"
+#include "waveform/renderers/waveformwidgetrenderer.h"
 #include "waveform/waveform.h"
 #include "skin/skincontext.h"
 #include "util/performancetimer.h"
 
 class WWaveformViewer;
-class WaveformWidgetAbstract;
 class QTimer;
 class VSyncThread;
 class GuiTick;
 
-class WaveformWidgetAbstractHandle {
+class WaveformWidgetRendererHandle {
   public:
-    WaveformWidgetAbstractHandle();
+    WaveformWidgetRendererHandle();
 
     WaveformWidgetType::Type getType() const { return m_type;}
     QString getDisplayName() const { return m_displayString;}
@@ -38,12 +37,12 @@ class WaveformWidgetHolder {
   public:
     WaveformWidgetHolder();
   private:
-    WaveformWidgetHolder(WaveformWidgetAbstract* waveformWidget,
+    WaveformWidgetHolder(WaveformWidgetRenderer * waveformWidget,
                          WWaveformViewer* waveformViewer,
                          const QDomNode& skinNode,
                          const SkinContext& skinContext);
 
-    WaveformWidgetAbstract* m_waveformWidget;
+    WaveformWidgetRenderer * m_waveformWidget;
     WWaveformViewer* m_waveformViewer;
     QDomNode m_skinNodeCache;
     SkinContext m_skinContextCache;
@@ -93,7 +92,7 @@ class WaveformWidgetFactory : public QObject, public Singleton<WaveformWidgetFac
     void setOverviewNormalized(bool normalize);
     int isOverviewNormalized() const { return m_overviewNormalized;}
 
-    const QVector<WaveformWidgetAbstractHandle> getAvailableTypes() const { return m_waveformWidgetHandles;}
+    const QVector<WaveformWidgetRendererHandle> getAvailableTypes() const { return m_waveformWidgetHandles;}
     void getAvailableVSyncTypes(QList<QPair<int, QString > >* list);
     void destroyWidgets();
 
@@ -123,12 +122,12 @@ class WaveformWidgetFactory : public QObject, public Singleton<WaveformWidgetFac
 
   private:
     void evaluateWidgets();
-    WaveformWidgetAbstract* createWaveformWidget(WaveformWidgetType::Type type, WWaveformViewer* viewer);
+    WaveformWidgetRenderer * createWaveformWidget(WaveformWidgetType::Type type, WWaveformViewer* viewer);
     int findIndexOf(WWaveformViewer* viewer) const;
 
     //All type of available widgets
 
-    QVector<WaveformWidgetAbstractHandle> m_waveformWidgetHandles;
+    QVector<WaveformWidgetRendererHandle> m_waveformWidgetHandles;
 
     //Currently in use widgets/visual/node
     QVector<WaveformWidgetHolder> m_waveformWidgetHolders;

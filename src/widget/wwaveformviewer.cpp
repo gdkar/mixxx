@@ -10,7 +10,7 @@
 #include "control/controlobject.h"
 #include "control/controlproxy.h"
 #include "track/track.h"
-#include "waveform/widgets/waveformwidgetabstract.h"
+#include "waveform/renderers/waveformwidgetrenderer.h"
 #include "widget/wwaveformviewer.h"
 #include "waveform/waveformwidgetfactory.h"
 #include "util/dnd.h"
@@ -23,20 +23,15 @@ WWaveformViewer::WWaveformViewer(const char *group, UserSettingsPointer pConfig,
           m_zoomZoneWidth(20),
           m_bScratching(false),
           m_bBending(false),
-          m_waveformWidget(nullptr) {
+          m_waveformWidget(nullptr)
+{
     setAcceptDrops(true);
-
     m_pZoom = new ControlProxy(group, "waveform_zoom", this);
     m_pZoom->connectValueChanged(SLOT(onZoomChange(double)));
 
-    m_pScratchPositionEnable = new ControlProxy(
-            group, "scratch_position_enable", this);
-    m_pScratchPosition = new ControlProxy(
-            group, "scratch_position", this);
-    m_pWheel = new ControlProxy(
-            group, "wheel", this);
-
-    setAttribute(Qt::WA_OpaquePaintEvent);
+    m_pScratchPositionEnable = new ControlProxy(group, "scratch_position_enable", this);
+    m_pScratchPosition = new ControlProxy(group, "scratch_position", this);
+    m_pWheel = new ControlProxy(group, "wheel", this);
 }
 
 WWaveformViewer::~WWaveformViewer() {
@@ -49,16 +44,15 @@ void WWaveformViewer::setup(const QDomNode& node, const SkinContext& context) {
         m_waveformWidget->setup(node, context);
     }
 }
-
-void WWaveformViewer::resizeEvent(QResizeEvent* /*event*/) {
+void WWaveformViewer::resizeEvent(QResizeEvent* event)
+{
     if (m_waveformWidget) {
         m_waveformWidget->resize(width(), height());
     }
 }
-
-void WWaveformViewer::mousePressEvent(QMouseEvent* event) {
+void WWaveformViewer::mousePressEvent(QMouseEvent* event)
+{
     m_mouseAnchor = event->pos();
-
     if (event->button() == Qt::LeftButton && m_waveformWidget) {
         // If we are pitch-bending then disable and reset because the two
         // shouldn't be used at once.
@@ -85,8 +79,8 @@ void WWaveformViewer::mousePressEvent(QMouseEvent* event) {
     // Set the cursor to a hand while the mouse is down.
     setCursor(Qt::ClosedHandCursor);
 }
-
-void WWaveformViewer::mouseMoveEvent(QMouseEvent* event) {
+void WWaveformViewer::mouseMoveEvent(QMouseEvent* event)
+{
     // Only send signals for mouse moving if the left button is pressed
     if (m_bScratching && m_waveformWidget) {
         // Adjusts for one-to-one movement.
@@ -110,7 +104,8 @@ void WWaveformViewer::mouseMoveEvent(QMouseEvent* event) {
     }
 }
 
-void WWaveformViewer::mouseReleaseEvent(QMouseEvent* /*event*/) {
+void WWaveformViewer::mouseReleaseEvent(QMouseEvent* /*event*/)
+{
     if (m_bScratching) {
         m_pScratchPositionEnable->set(0.0);
         m_bScratching = false;
@@ -120,7 +115,6 @@ void WWaveformViewer::mouseReleaseEvent(QMouseEvent* /*event*/) {
         m_bBending = false;
     }
     m_mouseAnchor = QPoint();
-
     // Set the cursor back to an arrow.
     setCursor(Qt::ArrowCursor);
 }
@@ -139,7 +133,6 @@ void WWaveformViewer::wheelEvent(QWheelEvent *event) {
         //}
     }
 }
-
 void WWaveformViewer::dragEnterEvent(QDragEnterEvent* event) {
     if (DragAndDropHelper::allowLoadToPlayer(m_pGroup, m_pConfig) &&
             DragAndDropHelper::dragEnterAccept(*event->mimeData(), m_pGroup,
@@ -149,10 +142,10 @@ void WWaveformViewer::dragEnterEvent(QDragEnterEvent* event) {
         event->ignore();
     }
 }
-
-void WWaveformViewer::dropEvent(QDropEvent* event) {
+void WWaveformViewer::dropEvent(QDropEvent* event)
+{
     if (DragAndDropHelper::allowLoadToPlayer(m_pGroup, m_pConfig)) {
-        QList<QFileInfo> files = DragAndDropHelper::dropEventFiles(
+        auto files = DragAndDropHelper::dropEventFiles(
                 *event->mimeData(), m_pGroup, true, false);
         if (!files.isEmpty()) {
             event->accept();
@@ -162,7 +155,6 @@ void WWaveformViewer::dropEvent(QDropEvent* event) {
     }
     event->ignore();
 }
-
 void WWaveformViewer::slotTrackLoaded(TrackPointer track) {
     if (m_waveformWidget) {
         m_waveformWidget->setTrack(track);
@@ -176,15 +168,15 @@ void WWaveformViewer::slotLoadingTrack(TrackPointer pNewTrack, TrackPointer pOld
         m_waveformWidget->setTrack(TrackPointer());
     }
 }
-
-void WWaveformViewer::onZoomChange(double zoom) {
+void WWaveformViewer::onZoomChange(double zoom)
+{
     //qDebug() << "WaveformWidgetRenderer::onZoomChange" << this << zoom;
     setZoom(zoom);
     // notify back the factory to sync zoom if needed
     WaveformWidgetFactory::instance()->notifyZoomChange(this);
 }
-
-void WWaveformViewer::setZoom(int zoom) {
+void WWaveformViewer::setZoom(int zoom)
+{
     //qDebug() << "WaveformWidgetRenderer::setZoom" << zoom;
     if (m_waveformWidget) {
         m_waveformWidget->setZoom(zoom);
@@ -201,17 +193,16 @@ void WWaveformViewer::setZoom(int zoom) {
         m_pZoom->set(zoom);
     }
 }
-
-void WWaveformViewer::setWaveformWidget(WaveformWidgetAbstract* waveformWidget) {
+void WWaveformViewer::setWaveformWidget(WaveformWidgetRenderer * waveformWidget)
+{
     if (m_waveformWidget) {
-        QWidget* pWidget = m_waveformWidget->getWidget();
-        disconnect(pWidget, SIGNAL(destroyed()),
-                   this, SLOT(slotWidgetDead()));
+        auto pWidget = static_cast<QWidget*>(m_waveformWidget);
+        disconnect(pWidget, SIGNAL(destroyed()),this, SLOT(slotWidgetDead()));
     }
     m_waveformWidget = waveformWidget;
+    m_waveformWidget->setParent(this);
     if (m_waveformWidget) {
-        QWidget* pWidget = m_waveformWidget->getWidget();
-        connect(pWidget, SIGNAL(destroyed()),
-                this, SLOT(slotWidgetDead()));
+        auto pWidget = static_cast<QWidget*>(m_waveformWidget);
+        connect(pWidget, SIGNAL(destroyed()),this, SLOT(slotWidgetDead()));
     }
 }

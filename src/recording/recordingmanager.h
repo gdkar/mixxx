@@ -28,7 +28,7 @@ class RecordingManager : public QObject
 {
     Q_OBJECT
   public:
-    RecordingManager(UserSettingsPointer pConfig, EngineMaster* pEngine);
+    RecordingManager(UserSettingsPointer pConfig, EngineMaster* pEngine, QObject *pParent);
     virtual ~RecordingManager();
 
 

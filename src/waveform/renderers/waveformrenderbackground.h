@@ -13,6 +13,7 @@
 class WaveformWidgetRenderer;
 
 class WaveformRenderBackground : public WaveformRendererAbstract {
+    Q_OBJECT
   public:
     explicit WaveformRenderBackground(WaveformWidgetRenderer* waveformWidgetRenderer);
     virtual ~WaveformRenderBackground();

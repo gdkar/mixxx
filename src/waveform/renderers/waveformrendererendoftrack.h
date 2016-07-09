@@ -15,6 +15,7 @@ class ControlObject;
 class ControlProxy;
 
 class WaveformRendererEndOfTrack : public WaveformRendererAbstract {
+    Q_OBJECT
   public:
     static const int s_maxAlpha = 125;
     explicit WaveformRendererEndOfTrack(

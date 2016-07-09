@@ -18,14 +18,12 @@ WaveformRenderMarkRange::WaveformRenderMarkRange(WaveformWidgetRenderer* wavefor
     WaveformRendererAbstract(waveformWidgetRenderer) {
 }
 
-WaveformRenderMarkRange::~WaveformRenderMarkRange() {
-}
-
+WaveformRenderMarkRange::~WaveformRenderMarkRange() = default;
 void WaveformRenderMarkRange::setup(const QDomNode& node, const SkinContext& context) {
     m_markRanges.clear();
     m_markRanges.reserve(1);
 
-    QDomNode child = node.firstChild();
+    auto child = node.firstChild();
     while (!child.isNull()) {
         if (child.nodeName() == "MarkRange") {
             m_markRanges.push_back(WaveformMarkRange());
@@ -36,30 +34,26 @@ void WaveformRenderMarkRange::setup(const QDomNode& node, const SkinContext& con
     }
 }
 
-void WaveformRenderMarkRange::draw(QPainter *painter, QPaintEvent * /*event*/) {
+void WaveformRenderMarkRange::draw(QPainter *painter, QPaintEvent * /*event*/)
+{
     painter->save();
-
     painter->setWorldMatrixEnabled(false);
-
     if (isDirty()) {
         generateImages();
     }
-
     for (unsigned int i = 0; i < m_markRanges.size(); i++) {
-        WaveformMarkRange& markRange = m_markRanges[i];
-
+        auto& markRange = m_markRanges[i];
         // If the mark range is not active we should not draw it.
         if (!markRange.active()) {
             continue;
         }
-
         // Active mark ranges by definition have starts/ends that are not
         // disabled so no need to check.
-        int startSample = markRange.start();
-        int endSample = markRange.end();
+        auto startSample = markRange.start();
+        auto endSample = markRange.end();
 
-        double startPosition = m_waveformRenderer->transformSampleIndexInRendererWorld(startSample);
-        double endPosition = m_waveformRenderer->transformSampleIndexInRendererWorld(endSample);
+        auto startPosition = m_waveformRenderer->transformSampleIndexInRendererWorld(startSample);
+        auto endPosition = m_waveformRenderer->transformSampleIndexInRendererWorld(endSample);
 
         //range not in the current display
         if (startPosition > m_waveformRenderer->getWidth() || endPosition < 0)

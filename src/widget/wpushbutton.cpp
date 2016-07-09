@@ -273,7 +273,7 @@ void WPushButton::restyleAndRepaint() {
     style()->polish(this);
 
     // These calls don't always trigger the repaint, so call it explicitly.
-    repaint();
+    update();
 }
 
 void WPushButton::onConnectedControlChanged(double dParameter, double dValue) {
