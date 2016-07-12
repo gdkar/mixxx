@@ -36,6 +36,7 @@
 WOverview::WOverview(const char *pGroup, UserSettingsPointer pConfig, QWidget* parent) :
         WWidget(parent),
         m_pWaveformSourceImage(nullptr),
+        m_signalColors{this},
         m_actualCompletion(0),
         m_pixmapDone(false),
         m_waveformPeak(-1.0),

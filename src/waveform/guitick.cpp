@@ -15,8 +15,6 @@ GuiTick::GuiTick(QObject* pParent)
 
 GuiTick::~GuiTick() = default;
 
-// this is called from the VSyncThread
-// with the configured waveform frame rate
 void GuiTick::process()
 {
     m_cpuTimeLastTick += m_cpuTimer.restart();

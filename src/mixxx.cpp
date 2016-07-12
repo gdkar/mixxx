@@ -107,14 +107,12 @@ MixxxMainWindow::MixxxMainWindow(QApplication* pApp, const CmdlineArgs& args)
           m_cmdLineArgs(args),
           m_pTouchShift(nullptr)
 {
-    auto window = windowHandle();
-    if(!window) {
-        auto wid = winId();
-        window = windowHandle();
-    }
-    if(window) {
-        window->setSurfaceType(QWindow::OpenGLSurface);
-        create();
+    if(auto _window = window()){
+        if(!_window->windowHandle())
+            (void)_window->winId();
+        if(auto _qwindow = _window->windowHandle()) {
+            _qwindow->setSurfaceType(QWindow::OpenGLSurface);
+        }
     }
     m_runtime_timer.start();
     mixxx::Time::start();
@@ -309,7 +307,6 @@ void MixxxMainWindow::initialize(QApplication* pApp, const CmdlineArgs& args)
     // This allows us to turn off tooltips.
     pApp->installEventFilter(this); // The eventfilter is located in this
                                     // Mixxx class as a callback.
-
     // If we were told to start in fullscreen mode on the command-line or if
     // user chose always starts in fullscreen mode, then turn on fullscreen
     // mode.
@@ -378,7 +375,6 @@ void MixxxMainWindow::initialize(QApplication* pApp, const CmdlineArgs& args)
     setCentralWidget(m_pWidgetParent);
     // The old central widget is automatically disposed.
 }
-
 void MixxxMainWindow::finalize()
 {
     Timer t("MixxxMainWindow::~finalize");
@@ -673,8 +669,7 @@ void MixxxMainWindow::createMenuBar()
 {
     ScopedTimer t("MixxxMainWindow::createMenuBar");
     DEBUG_ASSERT(m_pKbdConfig != nullptr);
-    m_pMenuBar = new WMainMenuBar(this, m_pSettingsManager->settings(),
-                                  m_pKbdConfig);
+    m_pMenuBar = new WMainMenuBar(this, m_pSettingsManager->settings(),m_pKbdConfig);
     setMenuBar(m_pMenuBar);
 }
 void MixxxMainWindow::connectMenuBar()
@@ -921,7 +916,6 @@ void MixxxMainWindow::rebootMixxxView()
     }
     setCentralWidget(m_pWidgetParent);
     adjustSize();
-
     if (wasFullScreen) {
         slotViewFullScreen(true);
     } else {
@@ -975,45 +969,12 @@ void MixxxMainWindow::closeEvent(QCloseEvent *event)
 {
     if (!confirmExit()) {
         event->ignore();
-        return;
-    }
-    finalize();
-    QMainWindow::closeEvent(event);
-}
-
-
-void MixxxMainWindow::checkDirectRendering()
-{
-    // IF
-    //  * A waveform viewer exists
-    // AND
-    //  * The waveform viewer is an OpenGL waveform viewer
-    // AND
-    //  * The waveform viewer does not have direct rendering enabled.
-    // THEN
-    //  * Warn user
-
-    auto factory = WaveformWidgetFactory::instance();
-    if (!factory)
-        return;
-
-    auto pConfig = m_pSettingsManager->settings();
-    if (!factory->isOpenGLAvailable() &&
-        pConfig->getValueString(ConfigKey("[Direct Rendering]", "Warned")) != QString("yes")) {
-        QMessageBox::warning(
-            0, tr("OpenGL Direct Rendering"),
-            tr("Direct rendering is not enabled on your machine.<br><br>"
-               "This means that the waveform displays will be very<br>"
-               "<b>slow and may tax your CPU heavily</b>. Either update your<br>"
-               "configuration to enable direct rendering, or disable<br>"
-               "the waveform displays in the Mixxx preferences by selecting<br>"
-               "\"Empty\" as the waveform display in the 'Interface' section.<br><br>"
-               "NOTE: If you use NVIDIA hardware,<br>"
-               "direct rendering may not be present, but you should<br>"
-               "not experience degraded performance."));
-        pConfig->set(ConfigKey("[Direct Rendering]", "Warned"), QString("yes"));
+    }else{
+        finalize();
+        QMainWindow::closeEvent(event);
     }
 }
+void MixxxMainWindow::checkDirectRendering() { }
 bool MixxxMainWindow::confirmExit()
 {
     auto playing = false;

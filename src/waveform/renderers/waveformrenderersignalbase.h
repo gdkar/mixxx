@@ -22,9 +22,7 @@ public:
 
   protected:
     void deleteControls();
-
-    void getGains(float* pAllGain, float* pLowGain, float* pMidGain,
-                  float* highGain);
+    void getGains(float* pAllGain, float* pLowGain, float* pMidGain,float* highGain);
 
   protected:
     ControlProxy* m_pEQEnabled;
@@ -37,7 +35,7 @@ public:
 
     Qt::Alignment m_alignment;
 
-    const WaveformSignalColors* m_pColors;
+    const WaveformSignalColors* m_pColors{nullptr};
     qreal m_axesColor_r, m_axesColor_g, m_axesColor_b, m_axesColor_a;
     qreal m_signalColor_r, m_signalColor_g, m_signalColor_b;
     qreal m_lowColor_r, m_lowColor_g, m_lowColor_b;

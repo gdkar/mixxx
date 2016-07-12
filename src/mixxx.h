@@ -66,9 +66,9 @@ class MixxxMainWindow : public QMainWindow {
     void connectMenuBar();
 
     void setToolTipsCfg(mixxx::TooltipsPreference tt);
-    inline mixxx::TooltipsPreference getToolTipsCfg() { return m_toolTipsCfg; }
+    mixxx::TooltipsPreference getToolTipsCfg() { return m_toolTipsCfg; }
 
-    inline GuiTick* getGuiTick() { return m_pGuiTick; };
+    GuiTick* getGuiTick() { return m_pGuiTick; };
 
   public slots:
     void rebootMixxxView();

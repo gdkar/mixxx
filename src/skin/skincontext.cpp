@@ -237,7 +237,7 @@ const QSharedPointer<QScriptEngine> SkinContext::getScriptEngine() const {
 }
 
 void SkinContext::enableDebugger(bool state) const {
-    if (CmdlineArgs::Instance().getDeveloper() && m_pConfig != NULL &&
+    if (CmdlineArgs::Instance().getDeveloper() && m_pConfig &&
             m_pConfig->getValueString(ConfigKey("[ScriptDebugger]", "Enabled")) == "1") {
         if (state) {
             m_pScriptDebugger->attachTo(m_pScriptEngine.data());

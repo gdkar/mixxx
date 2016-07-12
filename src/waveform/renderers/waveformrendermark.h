@@ -9,7 +9,7 @@
 class WaveformRenderMark : public WaveformRendererAbstract {
     Q_OBJECT
   public:
-    explicit WaveformRenderMark(WaveformWidgetRenderer* waveformWidgetRenderer);
+    Q_INVOKABLE explicit WaveformRenderMark(WaveformWidgetRenderer* waveformWidgetRenderer);
 
     virtual void setup(const QDomNode& node, const SkinContext& context);
     virtual void draw(QPainter* painter, QPaintEvent* event);

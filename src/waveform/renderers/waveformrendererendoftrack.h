@@ -18,7 +18,7 @@ class WaveformRendererEndOfTrack : public WaveformRendererAbstract {
     Q_OBJECT
   public:
     static const int s_maxAlpha = 125;
-    explicit WaveformRendererEndOfTrack(
+    Q_INVOKABLE explicit WaveformRendererEndOfTrack(
             WaveformWidgetRenderer* waveformWidgetRenderer);
     virtual ~WaveformRendererEndOfTrack();
 

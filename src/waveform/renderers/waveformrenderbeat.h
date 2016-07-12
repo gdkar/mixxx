@@ -10,7 +10,7 @@
 class WaveformRenderBeat : public WaveformRendererAbstract {
     Q_OBJECT
   public:
-    explicit WaveformRenderBeat(WaveformWidgetRenderer* waveformWidgetRenderer);
+    Q_INVOKABLE explicit WaveformRenderBeat(WaveformWidgetRenderer* waveformWidgetRenderer);
     virtual ~WaveformRenderBeat();
 
     virtual void setup(const QDomNode& node, const SkinContext& context);

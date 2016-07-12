@@ -10,7 +10,7 @@
 class WaveformRendererFilteredSignal : public WaveformRendererSignalBase {
     Q_OBJECT
   public:
-    explicit WaveformRendererFilteredSignal(
+    Q_INVOKABLE explicit WaveformRendererFilteredSignal(
         WaveformWidgetRenderer* waveformWidget);
     virtual ~WaveformRendererFilteredSignal();
 

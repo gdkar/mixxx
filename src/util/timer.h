@@ -111,7 +111,7 @@ class ScopedTimer {
 };
 
 // A timer that provides a similar API to QTimer but uses the GuiTick 50ms
-// signal provided by the VsyncThread.
+// signal provided by the .... wherever..
 class GuiTickTimer : public QObject {
     Q_OBJECT
   public:

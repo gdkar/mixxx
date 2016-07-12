@@ -21,7 +21,7 @@ class ControlObject;
 class WaveformRenderMarkRange : public WaveformRendererAbstract {
     Q_OBJECT
   public:
-    explicit WaveformRenderMarkRange(WaveformWidgetRenderer* waveformWidgetRenderer);
+    Q_INVOKABLE explicit WaveformRenderMarkRange(WaveformWidgetRenderer* waveformWidgetRenderer);
     virtual ~WaveformRenderMarkRange();
 
     virtual void setup(const QDomNode& node, const SkinContext& context);

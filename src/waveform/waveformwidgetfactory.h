@@ -2,6 +2,7 @@
 #define WAVEFORMWIDGETFACTORY_H
 
 #include <QObject>
+#include <QTimer>
 #include <QTime>
 #include <QVector>
 
@@ -14,7 +15,6 @@
 
 class WWaveformViewer;
 class QTimer;
-class VSyncThread;
 class GuiTick;
 
 class WaveformWidgetRendererHandle {
@@ -55,16 +55,15 @@ class WaveformWidgetHolder {
 class WaveformWidgetFactory : public QObject, public Singleton<WaveformWidgetFactory> {
     Q_OBJECT
   public:
+    using WaveformWidgetType = typename WaveformWidgetRenderer::WaveformWidgetType;
     //TODO merge this enum with the waveform analyzer one
     enum FilterIndex { All = 0, Low = 1, Mid = 2, High = 3, FilterCount = 4};
 
     bool setConfig(UserSettingsPointer config);
-
     //creates the waveform widget and bind it to the viewer
     //clean-up every thing if needed
     bool setWaveformWidget(WWaveformViewer* viewer,
                            const QDomElement &node, const SkinContext& context);
-
     void setFrameRate(int frameRate);
     int getFrameRate() const { return m_frameRate;}
 //    bool getVSync() const { return m_vSyncType;}
@@ -76,9 +75,9 @@ class WaveformWidgetFactory : public QObject, public Singleton<WaveformWidgetFac
 
     bool isOpenGlShaderAvailable() const { return m_openGLShaderAvailable;}
 
-    bool setWidgetType(WaveformWidgetType::Type type);
+    bool setWidgetType(WaveformWidgetType type);
     bool setWidgetTypeFromHandle(int handleIndex);
-    WaveformWidgetType::Type getType() const { return m_type;}
+    WaveformWidgetType getType() const { return m_type;}
 
     void setDefaultZoom(int zoom);
     int getDefaultZoom() const { return m_defaultZoom;}
@@ -93,19 +92,14 @@ class WaveformWidgetFactory : public QObject, public Singleton<WaveformWidgetFac
     int isOverviewNormalized() const { return m_overviewNormalized;}
 
     const QVector<WaveformWidgetRendererHandle> getAvailableTypes() const { return m_waveformWidgetHandles;}
-    void getAvailableVSyncTypes(QList<QPair<int, QString > >* list);
     void destroyWidgets();
 
     void addTimerListener(QWidget* pWidget);
 
     void startVSync(GuiTick* pGuiTick);
-    void setVSyncType(int vsType);
-    int getVSyncType();
-
     void notifyZoomChange(WWaveformViewer *viewer);
 
-    WaveformWidgetType::Type autoChooseWidgetType() const;
-
+    WaveformWidgetType autoChooseWidgetType() const;
   signals:
     void waveformUpdateTick();
     void waveformMeasured(float frameRate, int droppedFrames);
@@ -131,9 +125,7 @@ class WaveformWidgetFactory : public QObject, public Singleton<WaveformWidgetFac
 
     //Currently in use widgets/visual/node
     QVector<WaveformWidgetHolder> m_waveformWidgetHolders;
-
     WaveformWidgetType::Type m_type;
-
     UserSettingsPointer m_config;
 
     bool m_skipRender;
@@ -148,7 +140,7 @@ class WaveformWidgetFactory : public QObject, public Singleton<WaveformWidgetFac
     QString m_openGLVersion;
     bool m_openGLShaderAvailable;
 
-    VSyncThread* m_vsyncThread;
+    QTimer       m_frameTimer{};
 
     //Debug
     PerformanceTimer m_time;

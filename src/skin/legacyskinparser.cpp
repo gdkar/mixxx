@@ -922,15 +922,15 @@ QWidget* LegacySkinParser::parseOverview(const QDomElement& node) {
 }
 
 QWidget* LegacySkinParser::parseVisual(const QDomElement& node) {
-    QString channelStr = lookupNodeGroup(node);
-    BaseTrackPlayer* pPlayer = m_pPlayerManager->getPlayer(channelStr);
+    auto channelStr = lookupNodeGroup(node);
+    auto pPlayer = m_pPlayerManager->getPlayer(channelStr);
 
     const char* pSafeChannelStr = safeChannelString(channelStr);
 
     if (pPlayer == NULL)
         return NULL;
 
-    WWaveformViewer* viewer = new WWaveformViewer(pSafeChannelStr, m_pConfig, m_pParent);
+    auto viewer = new WWaveformViewer(pSafeChannelStr, m_pConfig, m_pParent);
     viewer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     WaveformWidgetFactory* factory = WaveformWidgetFactory::instance();
     factory->setWaveformWidget(viewer, node, *m_pContext);

@@ -13,7 +13,7 @@ class ControlObject;
 class QtWaveformRendererSimpleSignal : public WaveformRendererSignalBase {
     Q_OBJECT
 public:
-    explicit QtWaveformRendererSimpleSignal(WaveformWidgetRenderer* waveformWidgetRenderer);
+    Q_INVOKABLE explicit QtWaveformRendererSimpleSignal(WaveformWidgetRenderer* waveformWidgetRenderer);
     virtual ~QtWaveformRendererSimpleSignal();
 
     virtual void onSetup(const QDomNode &node);

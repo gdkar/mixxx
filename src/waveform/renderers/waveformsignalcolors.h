@@ -6,23 +6,24 @@
 
 #include "skin/skincontext.h"
 
-class WaveformSignalColors {
+class WaveformSignalColors : public QObject {
+    Q_OBJECT
   public:
-    WaveformSignalColors();
-    virtual ~WaveformSignalColors() {}
+    WaveformSignalColors( QObject *pParent);
+    virtual ~WaveformSignalColors() = default;
 
     bool setup(const QDomNode &node, const SkinContext& context);
 
-    inline const QColor& getSignalColor() const { return m_signalColor; }
-    inline const QColor& getLowColor() const { return m_lowColor; }
-    inline const QColor& getMidColor() const { return m_midColor; }
-    inline const QColor& getHighColor() const { return m_highColor; }
-    inline const QColor& getRgbLowColor() const { return m_rgbLowColor; }
-    inline const QColor& getRgbMidColor() const { return m_rgbMidColor; }
-    inline const QColor& getRgbHighColor() const { return m_rgbHighColor; }
-    inline const QColor& getAxesColor() const { return m_axesColor; }
-    inline const QColor& getPlayPosColor() const { return m_playPosColor; }
-    inline const QColor& getBgColor() const { return m_bgColor; }
+    QColor getSignalColor() const { return m_signalColor; }
+    QColor getLowColor() const { return m_lowColor; }
+    QColor getMidColor() const { return m_midColor; }
+    QColor getHighColor() const { return m_highColor; }
+    QColor getRgbLowColor() const { return m_rgbLowColor; }
+    QColor getRgbMidColor() const { return m_rgbMidColor; }
+    QColor getRgbHighColor() const { return m_rgbHighColor; }
+    QColor getAxesColor() const { return m_axesColor; }
+    QColor getPlayPosColor() const { return m_playPosColor; }
+    QColor getBgColor() const { return m_bgColor; }
 
   protected:
     void fallBackFromSignalColor();

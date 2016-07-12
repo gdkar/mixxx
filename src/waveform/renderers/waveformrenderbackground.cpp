@@ -43,10 +43,11 @@ void WaveformRenderBackground::draw(QPainter* painter,
     // Intel i915 driver and has peroformance issues on other setups. See lp:981210
     //painter->drawPixmap(QPoint(0, 0), m_backgroundPixmap);
 }
-void WaveformRenderBackground::generateImage() {
+void WaveformRenderBackground::generateImage()
+{
     m_backgroundImage = QImage();
     if (!m_backgroundPixmapPath.isEmpty()) {
-        QImage backgroundImage(m_backgroundPixmapPath);
+        auto backgroundImage = QImage(m_backgroundPixmapPath);
         if (!backgroundImage.isNull()) {
             if (backgroundImage.width() == m_waveformRenderer->getWidth() &&
                     backgroundImage.height() == m_waveformRenderer->getHeight()) {
@@ -57,8 +58,7 @@ void WaveformRenderBackground::generateImage() {
                                            QImage::Format_RGB32);
                 QPainter painter(&m_backgroundImage);
                 painter.setRenderHint(QPainter::SmoothPixmapTransform);
-                painter.drawImage(m_backgroundImage.rect(),
-                                  backgroundImage, backgroundImage.rect());
+                painter.drawImage(m_backgroundImage.rect(),backgroundImage, backgroundImage.rect());
             }
         }
     }

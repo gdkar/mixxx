@@ -1,13 +1,12 @@
 #include <QStringList>
 #include <QTime>
 #include <QTimer>
+#include <QTimer>
 #include <QWidget>
 #include <QSurfaceFormat>
 #include <QOpenGLContext>
 #include <QOpenGLShaderProgram>
 #include <QtDebug>
-#include <QGLFormat>
-#include <QGLShaderProgram>
 
 #include "waveform/waveformwidgetfactory.h"
 
@@ -20,7 +19,6 @@
 #include "waveform/renderers/waveformwidgetrenderer.h"
 #include "widget/wwaveformviewer.h"
 #include "waveform/guitick.h"
-#include "waveform/vsyncthread.h"
 #include "util/cmdlineargs.h"
 #include "util/performancetimer.h"
 #include "util/timer.h"
@@ -64,7 +62,6 @@ WaveformWidgetFactory::WaveformWidgetFactory() :
         m_overviewNormalized(false),
         m_openGLAvailable(false),
         m_openGLShaderAvailable(false),
-        m_vsyncThread(NULL),
         m_frameCnt(0),
         m_actualFrameRate(0),
         m_vSyncType(0) {
@@ -73,21 +70,7 @@ WaveformWidgetFactory::WaveformWidgetFactory() :
     m_visualGain[Low] = 1.0;
     m_visualGain[Mid] = 1.0;
     m_visualGain[High] = 1.0;
-    auto glFormat = QSurfaceFormat::defaultFormat();
-    glFormat.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
-    glFormat.setDepthBufferSize(0);
-    glFormat.setAlphaBufferSize(32);
-    glFormat.setRedBufferSize(32);
-    glFormat.setGreenBufferSize(32);
-    glFormat.setBlueBufferSize(32);
-    glFormat.setSwapInterval(1);
-    glFormat.setMajorVersion(3);
-    glFormat.setMinorVersion(3);
-    glFormat.setProfile(QSurfaceFormat::CoreProfile);
-    QSurfaceFormat::setDefaultFormat(glFormat);
-
-
-    {
+   {
         QOpenGLContext glw{this};
         glw.create();
         auto recvFormat = glw.format();
@@ -101,11 +84,7 @@ WaveformWidgetFactory::WaveformWidgetFactory() :
     m_time.start();
 }
 
-WaveformWidgetFactory::~WaveformWidgetFactory() {
-    if (m_vsyncThread) {
-        delete m_vsyncThread;
-    }
-}
+WaveformWidgetFactory::~WaveformWidgetFactory() { }
 
 bool WaveformWidgetFactory::setConfig(UserSettingsPointer config) {
     m_config = config;
@@ -128,9 +107,6 @@ bool WaveformWidgetFactory::setConfig(UserSettingsPointer config) {
     } else {
         m_config->set(ConfigKey("[Waveform]","EndOfTrackWarningTime"), ConfigValue(m_endOfTrackWarningTime));
     }
-
-    int vsync = m_config->getValueString(ConfigKey("[Waveform]","VSync"),"0").toInt();
-    setVSyncType(vsync);
 
     int defaultZoom = m_config->getValueString(ConfigKey("[Waveform]","DefaultZoom")).toInt(&ok);
     if (ok) {
@@ -187,9 +163,7 @@ void WaveformWidgetFactory::addTimerListener(QWidget* pWidget) {
     // Do not hold the pointer to of timer listeners since they may be deleted.
     // We don't activate update() or repaint() directly so listener widgets
     // can decide whether to paint or not.
-    connect(this, SIGNAL(waveformUpdateTick()),
-            pWidget, SLOT(maybeUpdate()),
-            Qt::DirectConnection);
+    connect(this, SIGNAL(waveformUpdateTick()),pWidget, SLOT(maybeUpdate()));
 }
 
 bool WaveformWidgetFactory::setWaveformWidget(WWaveformViewer* viewer,
@@ -229,7 +203,7 @@ void WaveformWidgetFactory::setFrameRate(int frameRate) {
     if (m_config) {
         m_config->set(ConfigKey("[Waveform]","FrameRate"), ConfigValue(m_frameRate));
     }
-    m_vsyncThread->setUsSyncIntervalTime(1e6 / m_frameRate);
+    m_frameTimer.setInterval(1e3/m_frameRate);
 }
 
 void WaveformWidgetFactory::setEndOfTrackWarningTime(int endTime) {
@@ -238,21 +212,7 @@ void WaveformWidgetFactory::setEndOfTrackWarningTime(int endTime) {
         m_config->set(ConfigKey("[Waveform]","EndOfTrackWarningTime"), ConfigValue(m_endOfTrackWarningTime));
     }
 }
-
-void WaveformWidgetFactory::setVSyncType(int type) {
-    if (m_config) {
-        m_config->set(ConfigKey("[Waveform]","VSync"), ConfigValue((int)type));
-    }
-
-    m_vSyncType = type;
-    m_vsyncThread->setVSyncType(type);
-}
-
-int WaveformWidgetFactory::getVSyncType() {
-    return m_vSyncType;
-}
-
-bool WaveformWidgetFactory::setWidgetType(WaveformWidgetType::Type type) {
+bool WaveformWidgetFactory::setWidgetType(WaveformWidgetType type) {
     if (type == m_type)
         return true;
 
@@ -382,8 +342,8 @@ void WaveformWidgetFactory::notifyZoomChange(WWaveformViewer* viewer) {
         }
     }
 }
-
-void WaveformWidgetFactory::render() {
+void WaveformWidgetFactory::render()
+{
     ScopedTimer t("WaveformWidgetFactory::render() %1waveforms", m_waveformWidgetHolders.size());
 
     //int paintersSetupTime0 = 0;
@@ -392,11 +352,7 @@ void WaveformWidgetFactory::render() {
     if (!m_skipRender) {
         if (m_type) {   // no regular updates for an empty waveform
             // next rendered frame is displayed after next buffer swap and than after VSync
-            for(auto &holder : m_waveformWidgetHolders) {
-                if(auto widget = holder.m_waveformWidget)
-                    widget->onPreRender();
-            }
-            //qDebug() << "prerender" << m_vsyncThread->elapsed();
+            //qDebug() << "prerender" << ->elapsed();
             // It may happen that there is an artificially delayed due to
             // anti tearing driver settings
             // all render commands are delayed until the swap from the previous run is executed
@@ -404,42 +360,29 @@ void WaveformWidgetFactory::render() {
                 if(auto widget = holder.m_waveformWidget) {
                     widget->update();
                 }
-                // qDebug() << "render" << i << m_vsyncThread->elapsed();
+                // qDebug() << "render" << i << m_->elapsed();
             }
         }
         // Notify all other waveform-like widgets (e.g. WSpinny's) that they should
         // update.
-        //int t1 = m_vsyncThread->elapsed();
+        //int t1 = m_();
         emit(waveformUpdateTick());
-        //qDebug() << "emit" << m_vsyncThread->elapsed() - t1;
-        m_frameCnt += 1.0;
-        auto timeCnt = m_time.elapsed();
-        if (timeCnt > mixxx::Duration::fromSeconds(1)) {
-            m_time.start();
-            m_frameCnt = m_frameCnt * 1000 / timeCnt.toIntegerMillis(); // latency correction
-            emit(waveformMeasured(m_frameCnt, m_vsyncThread->droppedFrames()));
-            m_frameCnt = 0.0;
-        }
     }
-    //qDebug() << "refresh end" << m_vsyncThread->elapsed();
-    m_vsyncThread->vsyncSlotFinished();
+    //qDebug() << "refresh end" << ();
 }
 void WaveformWidgetFactory::swap()
 {
     ScopedTimer t("WaveformWidgetFactory::swap() %1waveforms", m_waveformWidgetHolders.size());
-    //qDebug() << "swap end" << m_vsyncThread->elapsed();
-    m_vsyncThread->vsyncSlotFinished();
+    //qDebug() << "swap end" << m_->elapsed();
 }
-WaveformWidgetType::Type WaveformWidgetFactory::autoChooseWidgetType() const {
+WaveformWidgetType::Type WaveformWidgetTypeWaveformWidgetFactory::autoChooseWidgetType() const
+{
     //default selection
-    if (m_openGLAvailable) {
-        if (m_openGLShaderAvailable) {
-            return WaveformWidgetType::GLSLFilteredWaveform;
-        } else {
-            return WaveformWidgetType::QtWaveform;
-        }
+    if (m_openGLShaderAvailable) {
+        return WaveformWidgetType::GLSLFilteredWaveform;
+    } else {
+        return WaveformWidgetType::QtWaveform;
     }
-    return WaveformWidgetType::SoftwareWaveform;
 }
 
 void WaveformWidgetFactory::evaluateWidgets() {
@@ -477,7 +420,7 @@ void WaveformWidgetFactory::evaluateWidgets() {
             useOpenGLShaders = QtWaveformWidget::useOpenGLShaders();
             developerOnly = QtWaveformWidget::developerOnly();
             break;
-        case WaveformWidgetType::GLSLFilteredWaveform:
+        case WaveformWidgetRederer::GLSLFilteredWaveform:
             widgetName = GLSLFilteredWaveformWidget::getWaveformWidgetName();
             useOpenGl = GLSLFilteredWaveformWidget::useOpenGl();
             useOpenGLShaders = GLSLFilteredWaveformWidget::useOpenGLShaders();
@@ -522,7 +465,6 @@ WaveformWidgetRenderer * WaveformWidgetFactory::createWaveformWidget(
         if (CmdlineArgs::Instance().getSafeMode()) {
             type = WaveformWidgetType::EmptyWaveform;
         }
-
         switch(type) {
         case WaveformWidgetType::SoftwareWaveform:
             widget = new SoftwareWaveformWidget(viewer->getGroup(), viewer);
@@ -565,14 +507,11 @@ int WaveformWidgetFactory::findIndexOf(WWaveformViewer* viewer) const {
     return -1;
 }
 
-void WaveformWidgetFactory::startVSync(GuiTick* pGuiTick) {
-    m_vsyncThread = new VSyncThread(this, pGuiTick);
-    m_vsyncThread->start(QThread::NormalPriority);
-
-    connect(m_vsyncThread, SIGNAL(vsyncRender()),this, SLOT(render()));
-    connect(m_vsyncThread, SIGNAL(vsyncSwap()),this, SLOT(swap()));
-}
-
-void WaveformWidgetFactory::getAvailableVSyncTypes(QList<QPair<int, QString > >* pList) {
-    m_vsyncThread->getAvailableVSyncTypes(pList);
+void WaveformWidgetFactory::startVSync(GuiTick* pGuiTick)
+{
+    m_frameTimer.setTimerType(Qt::PreciseTimer);
+    m_frameTimer.start(1000. / m_frameRate);
+    QObject::connect(&m_frameTimer, SIGNAL(timeout()),this, SLOT(render()));
+    QObject::connect(&m_frameTimer, SIGNAL(timeout()),pGuiTick, SLOT(process()));
+    QObject::connect(&m_frameTimer, SIGNAL(timeout()),this,SIGNAL(waveformUpdateTick()));
 }

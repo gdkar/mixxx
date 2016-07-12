@@ -36,37 +36,7 @@ class WOverview : public WWidget {
     WOverview(const char* pGroup, UserSettingsPointer pConfig, QWidget* parent=nullptr);
     ~WOverview() override;
 
-    void setup(const QDomNode& node, const SkinContext& context);
-
-  public slots:
-    void onConnectedControlChanged(double dParameter, double dValue) override;
-    void slotTrackLoaded(TrackPointer pTrack);
-    void slotLoadingTrack(TrackPointer pNewTrack, TrackPointer pOldTrack);
-
-  signals:
-    void trackDropped(QString filename, QString group);
-
-  protected:
-    void mouseMoveEvent(QMouseEvent *e) override;
-    void mouseReleaseEvent(QMouseEvent *e) override;
-    void mousePressEvent(QMouseEvent *e) override;
-    void paintEvent(QPaintEvent * /*unused*/) override;
-    void resizeEvent(QResizeEvent * /*unused*/) override;
-    void dragEnterEvent(QDragEnterEvent* event) override;
-    void dropEvent(QDropEvent* event) override;
-
-    ConstWaveformPointer getWaveform() const {
-        return m_pWaveform;
-    }
-
-    QImage* m_pWaveformSourceImage;
-    QImage m_waveformImageScaled;
-
-    WaveformSignalColors m_signalColors;
-
-    // Hold the last visual sample processed to generate the pixmap
-    int m_actualCompletion;
-
+    void setup(const QDomNod
     bool m_pixmapDone;
     float m_waveformPeak;
 

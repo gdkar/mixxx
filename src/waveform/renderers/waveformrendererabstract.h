@@ -6,9 +6,7 @@
 #include <QPainter>
 
 #include "skin/skincontext.h"
-
 class WaveformWidgetRenderer;
-
 class WaveformRendererAbstract : public QObject {
     Q_OBJECT
   public:

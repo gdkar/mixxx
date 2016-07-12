@@ -10,7 +10,7 @@
 class WaveformRendererPreroll : public WaveformRendererAbstract {
     Q_OBJECT
   public:
-    explicit WaveformRendererPreroll(WaveformWidgetRenderer* waveformWidgetRenderer);
+    Q_INVOKABLE explicit WaveformRendererPreroll(WaveformWidgetRenderer* waveformWidgetRenderer);
     virtual ~WaveformRendererPreroll();
 
     virtual void setup(const QDomNode& node, const SkinContext& context);

@@ -48,16 +48,36 @@ int main(int argc, char * argv[])
 #endif
     // These need to be set early on (not sure how early) in order to trigger
     // logic in the OS X appstore support patch from QTBUG-16549.
-    QCoreApplication::setOrganizationDomain("mixxx.org");
     // Setting the organization name results in a QDesktopStorage::DataLocation
     // of "$HOME/Library/Application Support/Mixxx/Mixxx" on OS X. Leave the
     // organization name blank.
     //QCoreApplication::setOrganizationName("Mixxx");
 
+    {
+        auto format = QSurfaceFormat::defaultFormat();
+        format.setVersion(3,3);
+        format.setProfile(QSurfaceFormat::CoreProfile);
+        format.setSwapInterval(0);
+
+        format.setRedBufferSize(8);
+        format.setGreenBufferSize(8);
+        format.setBlueBufferSize(8);
+        format.setAlphaBufferSize(8);
+
+        format.setDepthBufferSize(24);
+        format.setStencilBufferSize(8);
+
+        format.setRenderableType(QSurfaceFormat::OpenGL);
+
+        format.setSamples(4);
+
+        format.setSwapBehavior(QSurfaceFormat::DefaultSwapBehavior);
+        QSurfaceFormat::setDefaultFormat(format);
+    }
+    QCoreApplication::setOrganizationDomain("mixxx.org");
     QCoreApplication::setApplicationName(Version::applicationName());
     QCoreApplication::setApplicationVersion(Version::version());
     QGuiApplication::setAttribute(Qt::AA_ShareOpenGLContexts,true);
-    QGuiApplication::setAttribute(Qt::AA_UseDesktopOpenGL,true);
 
     // Construct a list of strings based on the command line arguments
     auto& args = CmdlineArgs::Instance();
@@ -69,14 +89,7 @@ int main(int argc, char * argv[])
     // ErrorDialogHandler::errorDialog(). TODO(XXX): Remove this hack.
     QThread::currentThread()->setObjectName("Main");
     mixxx::Logging::initialize();
-    {
-        auto format = QSurfaceFormat::defaultFormat();
-        format.setVersion(3,3);
-        format.setProfile(QSurfaceFormat::CoreProfile);
-        format.setSwapInterval(1);
-        format.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
-        QSurfaceFormat::setDefaultFormat(format);
-    }
+
 
     auto result = -1;
     {

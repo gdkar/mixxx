@@ -1,18 +1,13 @@
 #ifndef GLWAVEFORMWIDGETSHADER_H
 #define GLWAVEFORMWIDGETSHADER_H
 
-#include <QGLWidget>
-
 #include "waveform/renderers/waveformwidgetrenderer.h"
-
-class GLSLWaveformRendererSignal;
 
 class GLSLFilteredWaveformWidget : public WaveformWidgetRenderer {
     Q_OBJECT
   public:
     GLSLFilteredWaveformWidget(const char* group, QWidget* parent);
     virtual ~GLSLFilteredWaveformWidget();
-
   protected:
     virtual WaveformWidgetType::Type getType() const { return WaveformWidgetType::GLSLFilteredWaveform; }
     static inline QString getWaveformWidgetName() { return tr("Filtered"); }
@@ -20,7 +15,6 @@ class GLSLFilteredWaveformWidget : public WaveformWidgetRenderer {
     static inline bool useOpenGLShaders() { return true; }
     static inline bool developerOnly() { return false; }
   private:
-    GLSLWaveformRendererSignal* m_signalRenderer;
     friend class WaveformWidgetFactory;
 };
 #endif // GLWAVEFORMWIDGETSHADER_H

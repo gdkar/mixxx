@@ -1,166 +1,145 @@
 #include <QOpenGLFramebufferObject>
-
+#include <QOpenGLShaderProgram>
+#include <QOpenGLContext>
+#include <QWindow>
+#include <QSurfaceFormat>
+#include <QSurface>
 #include "waveform/renderers/glslwaveformrenderersignal.h"
 #include "waveform/renderers/waveformwidgetrenderer.h"
-
+#include "util/cmdlineargs.h"
 #include "waveform/waveform.h"
 #include "waveform/waveformwidgetfactory.h"
 
 GLSLWaveformRendererFilteredSignal::GLSLWaveformRendererFilteredSignal(WaveformWidgetRenderer* waveformWidgetRenderer)
         : WaveformRendererSignalBase(waveformWidgetRenderer),
-          m_unitQuadListId(-1),
-          m_textureId(0),
-          m_loadedWaveform(0),
-          m_frameBuffersValid(false),
-          m_framebuffer(NULL),
-          m_shadersValid(false),
-          m_frameShaderProgram(NULL)
+          m_context{this}
 {
-    if(auto share = QOpenGLContext::globalShareContext()){
-        m_format = share->format();
-    }else{
-        m_format.setMajorVersion(3);
-        m_format.setMinorVersion(3);
-        m_format.setProfile(QSurfaceFormat::CoreProfile);
-    }
+    m_surface.setFormat(QSurfaceFormat::defaultFormat());
+    m_surface.create();
+
+//    m_context = new QOpenGLContext(this);
+    m_context.setShareContext(QOpenGLContext::globalShareContext());
+    m_context.setFormat(QSurfaceFormat::defaultFormat());
+    m_context.create();
+    makeCurrent();
+    m_funcs = context()->versionFunctions<QOpenGLFunctions_3_3_Core>();
+    gl()->initializeOpenGLFunctions();
+    doneCurrent();
+
 }
 GLSLWaveformRendererFilteredSignal::~GLSLWaveformRendererFilteredSignal()
 {
     makeCurrent();
-    if (m_textureId) {
-        glDeleteTextures(1,&m_textureId);
-    }
     if (m_frameShaderProgram) {
+        m_frameShaderProgram->release();
         m_frameShaderProgram->removeAllShaders();
-        delete m_frameShaderProgram;
     }
-    if (m_framebuffer)
-        delete m_framebuffer;
-    doneCurrent();
-    destroy();
-}
-void GLSLWaveformRendererFilteredSignal::debugClick()
-{
-    if(!isValid())
-        return;
-    makeCurrent();
-    loadShaders();
-    doneCurrent();
-    m_bDumpPng = true;
-}
-void GLSLWaveformRendererFilteredSignal::setFormat(QSurfaceFormat fmt)
-{
-    m_format = fmt;
-}
-bool GLSLWaveformRendererFilteredSignal::isValid() const
-{
-    return (m_context && m_context->isValid());
-}
-void GLSLWaveformRendererFilteredSignal::destroy()
-{
-    doneCurrent();
-    if(m_context)
-        delete m_context;
-    m_context = nullptr;
-    m_window.destroy();
-}
-void GLSLWaveformRendererFilteredSignal::create()
-{
-    if(m_context)
-        destroy();
-
-    m_window.destroy();
-    m_window.setSurfaceType(QWindow::OpenGLSurface);
-    m_window.setFormat(m_format);
-    m_window.create();
-
-    m_context = new QOpenGLContext( this );
-    if(auto share = QOpenGLContext::globalShareContext())
-        m_context->setShareContext(share);
-
-    m_context->setFormat(m_format);
-    m_context->create();
-    makeCurrent();
-    initializeOpenGLFunctions();
+    delete m_frameShaderProgram;
+    m_frameShaderProgram = nullptr;
+    delete m_framebuffer;
+    m_framebuffer = nullptr;
+    gl()->glDeleteTextures(1,&m_tex);
+    m_tex = 0;
+    gl()->glDeleteBuffers(1, &m_vbo);
+    m_vbo = 0;
+    gl()->glDeleteVertexArrays(1,&m_vao);
+    m_vao = 0;
     doneCurrent();
 }
-QOpenGLContext *GLSLWaveformRendererFilteredSignal::context() const
+QOpenGLContext *GLSLWaveformRendererFilteredSignal::context()
 {
-    return m_context;
+    return &m_context;
 }
-QSurface       *GLSLWaveformRendererFilteredSignal::surface() const
+QSurface       *GLSLWaveformRendererFilteredSignal::surface()
 {
-    if(m_context)
-        return m_context->surface();
+    return &m_surface;
 }
 void GLSLWaveformRendererFilteredSignal::makeCurrent()
 {
-    if(m_context){
-        m_context->makeCurrent(&m_window);
+    if(!(m_refcnt++)) {
+        if(auto _context = QOpenGLContext::currentContext()) {
+            m_prev_context = _context;
+            m_prev_surface = _context->surface();
+        }else{
+            m_prev_context = nullptr;
+            m_prev_surface = nullptr;
+        }
+        if(m_prev_context != context()|| m_prev_surface != surface())
+            context()->makeCurrent(surface());
     }
 }
 void GLSLWaveformRendererFilteredSignal::doneCurrent()
 {
-    if(m_context)
-        m_context->doneCurrent();
+    if(!(--m_refcnt)) {
+        if(m_prev_context) {
+            if(m_prev_context != context() || m_prev_surface != surface())
+                m_prev_context->makeCurrent(m_prev_surface);
+        }else{
+            context()->doneCurrent();
+        }
+        m_prev_context = nullptr;
+        m_prev_surface = nullptr;
+    }
 }
 bool GLSLWaveformRendererFilteredSignal::loadShaders()
 {
-    if(!isValid())
-        create();
-    if(!isValid())
-        return false;
-
-    makeCurrent();
-    qDebug() << "GLWaveformRendererSignalShader::loadShaders";
-    m_shadersValid = false;
-
-    if (m_frameShaderProgram->isLinked()) {
+    if(m_frameShaderProgram) {
         m_frameShaderProgram->release();
+        m_frameShaderProgram->removeAllShaders();
+    } else {
+        m_frameShaderProgram = new QOpenGLShaderProgram(this);
     }
+    qDebug() << "GLSLWaveformRendererSignal::loadShaders";
+    m_shadersValid = false;
+    qDebug() << "GLSLWaveformRendererSignal::loadShaders - create the program";
+    do{
+        auto path_prefix = QString{":/"};
+        if(auto config = m_waveformRenderer->getConfig()) { path_prefix= config->getResourcePath(); }
+        QDir resource_dir(path_prefix);
+        resource_dir.cd("shaders");
+        auto src = QString{":/shaders/passthrough.vert"};;
+        if(resource_dir.exists("passthrough.vert")) {
+            src = resource_dir.absoluteFilePath("passthrough.vert");
+        }
 
-    m_frameShaderProgram->removeAllShaders();
+        qDebug() << "GLSLWaveformRendererSignal::loadShaders - add the vertex shader";
 
-    if (!m_frameShaderProgram->addShaderFromSourceFile(
-            QOpenGLShader::Vertex, ":shaders/passthrough.vert")) {
-        qDebug() << "GLWaveformRendererSignalShader::loadShaders - "
-                 << m_frameShaderProgram->log();
-        return false;
-    }
-    if (!m_frameShaderProgram->addShaderFromSourceFile(
-            QOpenGLShader::Fragment, ":/shaders/filteredsignal.frag")) {
-        qDebug() << "GLWaveformRendererSignalShader::loadShaders - "
-                 << m_frameShaderProgram->log();
-        return false;
-    }
+        if (!m_frameShaderProgram->addShaderFromSourceFile(QOpenGLShader::Vertex, src)) {
+            qDebug() << "GLSLWaveformRendererSignal::loadShaders - " << m_frameShaderProgram->log();
+            break;
+        }
+        src = QString{":/shaders/filteredsignal.frag"};;
 
-    if (!m_frameShaderProgram->link()) {
-        qDebug() << "GLWaveformRendererSignalShader::loadShaders - "
-                 << m_frameShaderProgram->log();
-        return false;
-    }
+        if(resource_dir.exists("filteredsignal.frag")) {
+            src = resource_dir.absoluteFilePath("filteredsignal.frag");
+        }
 
-    if (!m_frameShaderProgram->bind()) {
-        qDebug() << "GLWaveformRendererSignalShader::loadShaders - shaders binding failed";
-        return false;
-    }
+        qDebug() << "GLSLWaveformRendererSignal::loadShaders - add the fragment shader";
+        if (!m_frameShaderProgram->addShaderFromSourceFile(QOpenGLShader::Fragment, src)) {
+            qDebug() << "GLSLWaveformRendererSignalShader::loadShaders - " << m_frameShaderProgram->log();
+            break;
+        }
 
-    m_shadersValid = true;
-    return true;
-    doneCurrent();
+        m_frameShaderProgram->bindAttributeLocation("a_position",0);
+
+        qDebug() << "GLSLWaveformRendererSignal::loadShaders - link the program";
+
+        if (!m_frameShaderProgram->link()) {
+            qDebug() << "GLSLWaveformRendererSignal::loadShaders - " << m_frameShaderProgram->log();
+            break;
+        }
+        return true;
+    }while(false);
+    delete m_frameShaderProgram;
+    m_frameShaderProgram = nullptr;
+    return false;
 }
-
 bool GLSLWaveformRendererFilteredSignal::loadTexture()
 {
-    if(!isValid())
-        create();
-    if(!isValid())
-        return false;
-    makeCurrent();
-    TrackPointer trackInfo = m_waveformRenderer->getTrackInfo();
+    auto trackInfo = m_waveformRenderer->getTrackInfo();
     ConstWaveformPointer waveform;
-    int dataSize = 0;
-    const WaveformData* data = NULL;
+    auto dataSize = 0;
+    const WaveformData* data = nullptr;
 
     if (trackInfo) {
         waveform = trackInfo->getWaveform();
@@ -171,194 +150,228 @@ bool GLSLWaveformRendererFilteredSignal::loadTexture()
             }
         }
     }
-
-    glEnable(GL_TEXTURE_2D);
-
-    if (m_textureId == 0) {
-        glGenTextures(1, &m_textureId);
-
-        int error = glGetError();
-        if (error)
-            qDebug() << "GLSLWaveformRendererSignal::loadTexture - m_textureId" << m_textureId << "error" << error;
+    (void)gl()->glGetError();
+    gl()->glActiveTexture(GL_TEXTURE0);
+    if(auto err = gl()->glGetError()) {
+        qDebug() << __LINE__ <<  "Error setting active texture: " << err ;
     }
-
-    glBindTexture(GL_TEXTURE_2D, m_textureId);
-
-    int error = glGetError();
-    if (error)
-        qDebug() << "GLSLWaveformRendererSignal::loadTexture - bind error" << error;
-
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
-    if (waveform != NULL && data != NULL) {
+    if(!m_tex) {
+        gl()->glGenTextures(1,&m_tex);
+        if(auto err = gl()->glGetError()) {
+            qDebug() << __LINE__ << "Error generating texture: " << err;
+            m_tex= 0;
+            return false;
+        }else{
+            qDebug() << __LINE__ << "Created texture: " << m_tex;
+        }
+        gl()->glBindTexture(GL_TEXTURE_2D, m_tex);
+        if(auto err = gl()->glGetError()) {
+            qDebug()<<__LINE__ << "Error binding texture : " << m_tex << " error: " << err;
+            return false;
+        }
+        gl()->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        gl()->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        gl()->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        gl()->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        if(auto err = gl()->glGetError()) {
+            qDebug() << "Error setting parameters on texture : " << m_tex << " error: " << err;
+            return false;
+        }
+    }else{
+        gl()->glBindTexture(GL_TEXTURE_2D, m_tex);
+        if(auto err = gl()->glGetError()) {
+            qDebug()<<__LINE__ << "Error binding texture : " << m_tex << " error: " << err;
+            return false;
+        }
+    }
+    if (waveform && data && waveform->getTextureSize()) {
         // Waveform ensures that getTextureSize is a multiple of
         // getTextureStride so there is no rounding here.
-        int textureWidth = waveform->getTextureStride();
-        int textureHeigth = waveform->getTextureSize() / waveform->getTextureStride();
-
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureWidth, textureHeigth, 0,
-                     GL_RGBA, GL_UNSIGNED_BYTE, data);
-        int error = glGetError();
-        if (error)
-            qDebug() << "GLSLWaveformRendererSignal::loadTexture - glTexImage2D error" << error;
-    } else {
-        glDeleteTextures(1,&m_textureId);
-        m_textureId = 0;
+        auto textureWidth  = waveform->getTextureStride();
+        auto textureHeight = waveform->getTextureSize() / waveform->getTextureStride();
+        if(m_loadedWaveform) {
+            gl()->glTexSubImage2D(GL_TEXTURE_2D, 0,0,0,textureWidth,textureHeight, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        }else{
+            gl()->glTexImage2D(GL_TEXTURE_2D, 0,GL_RGBA, textureWidth, textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+        }
+        if(auto err = gl()->glGetError()) {
+            qDebug() << "Error filling texture : " << m_tex << " error: " << err;
+            return false;
+        }
+    }else{
+        gl()->glTexImage2D(GL_TEXTURE_2D, 0,GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+        if(auto err = gl()->glGetError()) {
+            qDebug() << "Error filling texture : " << m_tex << " error: " << err;
+            return false;
+        }
     }
-
-    glDisable(GL_TEXTURE_2D);
-    doneCurrent();
+    gl()->glBindTexture(GL_TEXTURE_2D, 0);
     return true;
 }
-
 void GLSLWaveformRendererFilteredSignal::createGeometry()
 {
-
-#if 0
-    if (m_unitQuadListId != -1)
-        return;
-
-#ifndef __OPENGLES__
-
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glOrtho(-1.0, 1.0, -1.0, 1.0, -10.0, 10.0);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-
-    m_unitQuadListId = glGenLists(1);
-    glNewList(m_unitQuadListId, GL_COMPILE);
-    {
-        glBegin(GL_QUADS);
-        {
-            glTexCoord2f(0.0,0.0);
-            glVertex3f(-1.0f,-1.0f,0.0f);
-
-            glTexCoord2f(1.0, 0.0);
-            glVertex3f(1.0f,-1.0f,0.0f);
-
-            glTexCoord2f(1.0,1.0);
-            glVertex3f(1.0f,1.0f, 0.0f);
-
-            glTexCoord2f(0.0,1.0);
-            glVertex3f(-1.0f,1.0f,0.0f);
+    (void)gl()->glGetError();
+    if(!m_vbo) {
+        gl()->glGenBuffers(1,&m_vbo);
+        if(auto err = gl()->glGetError()) {
+            qDebug() << "Error generating vbo: " << err;
+            m_vbo = 0;
+            return;
+        }else{
+            qDebug() << "Created vbo: " << m_vbo;
         }
-        glEnd();
     }
-    glEndList();
+    gl()->glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+    if(auto err = gl()->glGetError()) {
+        qDebug() << "Error binding vbo: " << m_vbo << " error: " << err;
+    }
 
-#endif
-#endif
+
+    GLfloat data[] = { -1.0f, 1.0f,
+                       -1.0f,-1.0f,
+                        1.0f, 1.0f,
+                        1.0f,-1.0f };
+
+    gl()->glBufferData(GL_ARRAY_BUFFER, sizeof(data), data, GL_STATIC_DRAW);
+    if(auto err = gl()->glGetError()) {
+        qDebug() << "Error filling vbo: " << m_vbo << " error: " << err;
+    }else{
+        qDebug() << "Filled vbo " << m_vbo << " with " << sizeof(data) << "bytes.";
+    }
+    if(!m_vao) {
+        gl()->glGenVertexArrays(1,&m_vao);
+        if(auto err = gl()->glGetError()) {
+            qDebug() << "Error generating vao : " << err;
+            m_vao = 0;
+            return;
+        }else{
+            qDebug() << "Created vao: " << m_vao;
+        }
+    }
+    gl()->glBindVertexArray(m_vao);
+    if(auto err = gl()->glGetError()) {
+        qDebug() << "Error binding vao: " << m_vao << " error: " << err;
+    }
+    gl()->glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+    if(auto err = gl()->glGetError()) {
+        qDebug() << "Error specifying vertex attrib pointer for vao " << m_vao << " error: " << err;
+    }
+    gl()->glEnableVertexAttribArray(0);
+    if(auto err = gl()->glGetError()) {
+        qDebug() << "Error enable attribute 0 for vao " << m_vao << " error: " << err;
+    }
+    gl()->glBindVertexArray(0);
+    gl()->glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
-
 void GLSLWaveformRendererFilteredSignal::createFrameBuffers()
 {
-    if(!isValid())
-        create();
-    if(!isValid())
-        return;
-    makeCurrent();
-    m_frameBuffersValid = false;
-
-    int bufferWidth = m_waveformRenderer->getWidth();
-    int bufferHeight = m_waveformRenderer->getHeight();
-
-    if (m_framebuffer)
+    auto bufferWidth = m_waveformRenderer->getWidth();
+    auto bufferHeight = m_waveformRenderer->getHeight();
+    auto newWidth = bufferWidth;
+    auto newHeight = bufferHeight;
+    if (m_framebuffer && m_framebuffer->isValid()) {
+        if(m_framebuffer->width() == newWidth
+        && m_framebuffer->height() == newHeight
+        && m_framebuffer->isValid()) {
+            return;
+        }
         delete m_framebuffer;
-
+        m_framebuffer = nullptr;
+    }
     //should work with any version of OpenGl
-    m_framebuffer = new QOpenGLFramebufferObject(bufferWidth * 4, bufferHeight * 4);
-
-    if (!m_framebuffer->isValid())
+    auto fbo_format = QOpenGLFramebufferObjectFormat{};
+    fbo_format.setMipmap(false);
+    fbo_format.setTextureTarget(GL_TEXTURE_2D);
+    fbo_format.setTextureTarget(GL_TEXTURE_2D);
+    fbo_format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
+    fbo_format.setInternalTextureFormat(GL_RGBA);
+    m_framebuffer = new QOpenGLFramebufferObject(QSize(newWidth, newHeight), fbo_format);
+    if (!m_framebuffer->isValid()) {
         qWarning() << "GLSLWaveformRendererSignal::createFrameBuffer - frame buffer not valid";
-
-    m_frameBuffersValid = m_framebuffer->isValid();
-    doneCurrent();
-    //qDebug() << m_waveformRenderer->getWidth();
-    //qDebug() << m_waveformRenderer->getWidth()*3;
-    //qDebug() << bufferWidth;
+        delete m_framebuffer;
+        m_framebuffer = nullptr;
+    }else{
+        qWarning() << "GLSLWaveformRendererSignal::createFrameBuffer - frame buffer createdsuccessfully";
+    }
 }
 
 bool GLSLWaveformRendererFilteredSignal::onInit()
 {
-    create();
     makeCurrent();
-    auto ret = false;
-    do{
-        m_loadedWaveform = 0;
-        if (!m_frameShaderProgram)
-            m_frameShaderProgram = new QOpenGLShaderProgram();
-        if (!loadShaders())
-            break;
-        createGeometry();
-        if (!loadTexture())
-            break;
-        ret = true;
-    }while(false);
+    m_loadedWaveform = 0;
+    createGeometry();
     doneCurrent();
-    return ret;
+    return true;
 }
-
-void GLSLWaveformRendererFilteredSignal::onSetup(const QDomNode& node) {
+void GLSLWaveformRendererFilteredSignal::onSetup(const QDomNode& node)
+{
     Q_UNUSED(node);
+    makeCurrent();
+    loadShaders();
+    doneCurrent();
 }
 void GLSLWaveformRendererFilteredSignal::onSetTrack()
 {
     m_loadedWaveform = 0;
+    makeCurrent();
     loadTexture();
+    doneCurrent();
 }
-void GLSLWaveformRendererFilteredSignal::onResize() {
+void GLSLWaveformRendererFilteredSignal::onResize()
+{
     makeCurrent();
     createFrameBuffers();
     doneCurrent();
 }
 void GLSLWaveformRendererFilteredSignal::draw(QPainter* painter, QPaintEvent* /*event*/)
 {
-    if(!isValid())
+    auto trackInfo = m_waveformRenderer->getTrackInfo();
+    if (!trackInfo)
         return;
-    makeCurrent();
-    if (!m_frameBuffersValid || !m_shadersValid) {
+    auto waveform = trackInfo->getWaveform();
+    if (waveform.isNull())
         return;
-    }
-
-    TrackPointer trackInfo = m_waveformRenderer->getTrackInfo();
-    if (!trackInfo) {
+    auto dataSize = waveform->getDataSize();
+    if (dataSize <= 1)
         return;
-    }
-
-    ConstWaveformPointer waveform = trackInfo->getWaveform();
-    if (waveform.isNull()) {
+    auto data = waveform->data();
+    if (!data )
         return;
-    }
-
-    int dataSize = waveform->getDataSize();
-    if (dataSize <= 1) {
-        return;
-    }
-
-    const WaveformData* data = waveform->data();
-    if (data == NULL) {
-        return;
-    }
-
     // save the GL state set for QPainter
+    painter->save();
     painter->beginNativePainting();
+    makeCurrent();
+    if(!m_frameShaderProgram)
+        loadShaders();
 
+    if(!m_framebuffer)
+        createFrameBuffers();
+
+    if (!m_framebuffer || !m_frameShaderProgram) {
+        doneCurrent();
+        painter->endNativePainting();
+        painter->restore();
+        return;
+    }
     //NOTE: (vRince) completion can change during loadTexture
     //do not remove currenCompletion temp variable !
-    const int currentCompletion = waveform->getCompletion();
-    if (m_loadedWaveform < currentCompletion) {
-        loadTexture();
-        m_loadedWaveform = currentCompletion;
-    }
+    auto currentCompletion = waveform->getCompletion();
 
+    if (m_loadedWaveform != currentCompletion) {
+        if(loadTexture())
+            m_loadedWaveform = currentCompletion;
+    }else if(!m_loadedWaveform) {
+        doneCurrent();
+        painter->endNativePainting();
+        painter->restore();
+        return;
+    }
     // Per-band gain from the EQ knobs.
     float lowGain(1.0), midGain(1.0), highGain(1.0), allGain(1.0);
     getGains(&allGain, &lowGain, &midGain, &highGain);
 
-    double firstVisualIndex = m_waveformRenderer->getFirstDisplayedPosition() * dataSize/2.0;
-    double lastVisualIndex = m_waveformRenderer->getLastDisplayedPosition() * dataSize/2.0;
+    auto firstVisualIndex = m_waveformRenderer->getFirstDisplayedPosition() * dataSize/2.0;
+    auto lastVisualIndex = m_waveformRenderer->getLastDisplayedPosition() * dataSize/2.0;
 
     // const int firstIndex = int(firstVisualIndex+0.5);
     // firstVisualIndex = firstIndex - firstIndex%2;
@@ -369,154 +382,58 @@ void GLSLWaveformRendererFilteredSignal::draw(QPainter* painter, QPaintEvent* /*
     //qDebug() << "GAIN" << allGain << lowGain << midGain << highGain;
 
 #ifndef __OPENGLES__
-
     //paint into frame buffer
-    {
-        glMatrixMode(GL_PROJECTION);
-        glPushMatrix();
-        glLoadIdentity();
-        glOrtho(firstVisualIndex, lastVisualIndex, -1.0, 1.0, -10.0, 10.0);
+    m_framebuffer->bind();
+    gl()->glViewport(0, 0, m_framebuffer->width(), m_framebuffer->height());
+    gl()->glClearColor(0.,0.,0.,0.);
+    gl()->glClear(GL_COLOR_BUFFER_BIT |GL_DEPTH_BUFFER_BIT );
 
-        glMatrixMode(GL_MODELVIEW);
-        glPushMatrix();
-        glLoadIdentity();
-        glTranslatef(.0f,.0f,.0f);
+    gl()->glUseProgram(m_frameShaderProgram->programId());
 
-        m_frameShaderProgram->bind();
+    m_frameShaderProgram->setUniformValue("firstVisualIndex", (float)firstVisualIndex);
+    m_frameShaderProgram->setUniformValue("lastVisualIndex", (float)lastVisualIndex);
 
-        glViewport(0, 0, m_framebuffer->width(), m_framebuffer->height());
+    m_frameShaderProgram->setUniformValue("allGain", allGain);
+    m_frameShaderProgram->setUniformValue("lowGain", lowGain);
+    m_frameShaderProgram->setUniformValue("midGain", midGain);
+    m_frameShaderProgram->setUniformValue("highGain", highGain);
+    m_frameShaderProgram->setUniformValue("framebufferSize", QVector2D(m_framebuffer->width(), m_framebuffer->height()));
+    m_frameShaderProgram->bind();
+    m_frameShaderProgram->setUniformValue("waveformLength", dataSize);
+    m_frameShaderProgram->setUniformValue("textureSize",    waveform->getTextureSize());
+    m_frameShaderProgram->setUniformValue("textureStride",  waveform->getTextureStride());
+    m_frameShaderProgram->release();
 
-        m_frameShaderProgram->setUniformValue("framebufferSize", QVector2D(
-            m_framebuffer->width(), m_framebuffer->height()));
-        m_frameShaderProgram->setUniformValue("waveformLength", dataSize);
-        m_frameShaderProgram->setUniformValue("textureSize", waveform->getTextureSize());
-        m_frameShaderProgram->setUniformValue("textureStride", waveform->getTextureStride());
+    m_frameShaderProgram->setUniformValue("axesColor",
+            QVector4D(m_axesColor_r, m_axesColor_g,m_axesColor_b, m_axesColor_a));
 
-        m_frameShaderProgram->setUniformValue("firstVisualIndex", (float)firstVisualIndex);
-        m_frameShaderProgram->setUniformValue("lastVisualIndex", (float)lastVisualIndex);
+    auto lowColor  = QVector4D(m_lowColor_r, m_lowColor_g, m_lowColor_b, 1.0);
+    auto midColor  = QVector4D(m_midColor_r, m_midColor_g, m_midColor_b, 1.0);
+    auto highColor = QVector4D(m_highColor_r, m_highColor_g, m_highColor_b, 1.0);
+    m_frameShaderProgram->setUniformValue("lowColor", lowColor);
+    m_frameShaderProgram->setUniformValue("midColor", midColor);
+    m_frameShaderProgram->setUniformValue("highColor", highColor);
+    m_frameShaderProgram->setUniformValue("waveformDataTexture", GL_TEXTURE0);
 
-        m_frameShaderProgram->setUniformValue("allGain", allGain);
-        m_frameShaderProgram->setUniformValue("lowGain", lowGain);
-        m_frameShaderProgram->setUniformValue("midGain", midGain);
-        m_frameShaderProgram->setUniformValue("highGain", highGain);
+    m_frameShaderProgram->bind();
+    gl()->glBindVertexArray(m_vao);
+    gl()->glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+    gl()->glActiveTexture(GL_TEXTURE0);
+    gl()->glBindTexture(GL_TEXTURE_2D, m_tex);
 
-        m_frameShaderProgram->setUniformValue("axesColor", QVector4D(m_axesColor_r, m_axesColor_g,
-                                                                     m_axesColor_b, m_axesColor_a));
+    gl()->glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
-        QVector4D lowColor = m_rgbShader ?
-                QVector4D(m_rgbLowColor_r, m_rgbLowColor_g, m_rgbLowColor_b, 1.0) :
-                QVector4D(m_lowColor_r, m_lowColor_g, m_lowColor_b, 1.0);
-        QVector4D midColor = m_rgbShader ?
-                QVector4D(m_rgbMidColor_r, m_rgbMidColor_g, m_rgbMidColor_b, 1.0) :
-                QVector4D(m_midColor_r, m_midColor_g, m_midColor_b, 1.0);
-        QVector4D highColor = m_rgbShader ?
-                QVector4D(m_rgbHighColor_r, m_rgbHighColor_g, m_rgbHighColor_b, 1.0) :
-                QVector4D(m_highColor_r, m_highColor_g, m_highColor_b, 1.0);
-        m_frameShaderProgram->setUniformValue("lowColor", lowColor);
-        m_frameShaderProgram->setUniformValue("midColor", midColor);
-        m_frameShaderProgram->setUniformValue("highColor", highColor);
+    gl()->glBindBuffer(GL_ARRAY_BUFFER, 0);
+    gl()->glBindTexture(GL_TEXTURE_2D,  0);
+    gl()->glBindVertexArray(0);
+    m_frameShaderProgram->release();
+    gl()->glUseProgram(0);
+    m_framebuffer->bindDefault();
 
-        glEnable(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, m_textureId);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-        m_framebuffer->bind();
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        //glCallList(m_unitQuadListId);
-
-        glBegin(GL_QUADS);
-        {
-            glTexCoord2f(0.0,0.0);
-            glVertex3f(firstVisualIndex, -1.0f, 0.0f);
-
-            glTexCoord2f(1.0, 0.0);
-            glVertex3f(lastVisualIndex, -1.0f, 0.0f);
-
-            glTexCoord2f(1.0,1.0);
-            glVertex3f(lastVisualIndex, 1.0f, 0.0f);
-
-            glTexCoord2f(0.0,1.0);
-            glVertex3f(firstVisualIndex, 1.0f, 0.0f);
-        }
-        glEnd();
-
-        m_framebuffer->release();
-
-        m_frameShaderProgram->release();
-
-        glPopMatrix();
-        glMatrixMode(GL_PROJECTION);
-        glPopMatrix();
-
-        if (m_bDumpPng) {
-            m_framebuffer->toImage().save("m_framebuffer.png");
-            m_bDumpPng = false;
-        }
-    }
-
-    glMatrixMode(GL_PROJECTION);
-    glPushMatrix();
-    glLoadIdentity();
-    glOrtho(-1.0, 1.0, -1.0, 1.0, -10.0, 10.0);
-
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-    glLoadIdentity();
-
-    glTranslatef(0.0, 0.0, 0.0);
-
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glEnable(GL_TEXTURE_2D);
-
-    //paint buffer into viewport
-    {
-        glViewport(0, 0, m_waveformRenderer->getWidth(), m_waveformRenderer->getHeight());
-        glBindTexture(GL_TEXTURE_2D, m_framebuffer->texture());
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-        glBegin(GL_QUADS);
-        {
-            glTexCoord2f(0.0, 0.0);
-            glVertex3f(-1.0f, -1.0f, 0.0f);
-
-            glTexCoord2f(1.0, 0.0);
-            glVertex3f(1.0f, -1.0f, 0.0f);
-
-            glTexCoord2f(1.0, 1.0);
-            glVertex3f(1.0f, 1.0f, 0.0f);
-
-            glTexCoord2f(0.0, 1.0);
-            glVertex3f(-1.0f, 1.0f, 0.0f);
-        }
-        glEnd();
-
-    }
-
-    glDisable(GL_TEXTURE_2D);
-    glDisable(GL_ALPHA_TEST);
-
-    //DEBUG
-    /*
-    glBegin(GL_LINE_LOOP);
-    {
-        glColor4f(0.5,1.0,0.5,0.75);
-        glVertex3f(-1.0f,-1.0f, 0.0f);
-        glVertex3f(1.0f, 1.0f, 0.0f);
-        glVertex3f(1.0f,-1.0f, 0.0f);
-        glVertex3f(-1.0f, 1.0f, 0.0f);
-    }
-    glEnd();
-    */
-
-    glPopMatrix();
-    glMatrixMode(GL_PROJECTION);
-    glPopMatrix();
-
+    auto image = QImage{m_framebuffer->toImage()};
 #endif
-
-    painter->endNativePainting();
     doneCurrent();
+    painter->endNativePainting();
+    painter->restore();
+    painter->drawImage(QRectF(0.f, 0.f, m_waveformRenderer->width(), m_waveformRenderer->height()), image);
 }
