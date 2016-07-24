@@ -65,8 +65,8 @@ void QuantizeControl::slotBeatsUpdated() {
     }
 }
 
-void QuantizeControl::setCurrentSample(const double dCurrentSample,
-                                       const double dTotalSamples) {
+void QuantizeControl::setCurrentSample(double dCurrentSample,
+                                       double dTotalSamples) {
     if (dCurrentSample == getCurrentSample()) {
         // No need to recalculate.
         return;

@@ -29,7 +29,7 @@ class EngineDelay : public EngineObject {
     EngineDelay(const char* group, ConfigKey delayControl);
     virtual ~EngineDelay();
 
-    void process(CSAMPLE* pInOut, const int iBufferSize);
+    void process(CSAMPLE* pInOut, int iBufferSize);
 
   public slots:
     void slotDelayChanged();

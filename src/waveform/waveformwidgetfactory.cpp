@@ -212,7 +212,7 @@ void WaveformWidgetFactory::setEndOfTrackWarningTime(int endTime) {
         m_config->set(ConfigKey("[Waveform]","EndOfTrackWarningTime"), ConfigValue(m_endOfTrackWarningTime));
     }
 }
-bool WaveformWidgetFactory::setWidgetType(WaveformWidgetType type) {
+bool WaveformWidgetFactory::setWidgetType(WaveformWidgetType::Type type) {
     if (type == m_type)
         return true;
 
@@ -375,7 +375,7 @@ void WaveformWidgetFactory::swap()
     ScopedTimer t("WaveformWidgetFactory::swap() %1waveforms", m_waveformWidgetHolders.size());
     //qDebug() << "swap end" << m_->elapsed();
 }
-WaveformWidgetType::Type WaveformWidgetTypeWaveformWidgetFactory::autoChooseWidgetType() const
+WaveformWidgetType::Type WaveformWidgetFactory::autoChooseWidgetType() const
 {
     //default selection
     if (m_openGLShaderAvailable) {
@@ -420,7 +420,7 @@ void WaveformWidgetFactory::evaluateWidgets() {
             useOpenGLShaders = QtWaveformWidget::useOpenGLShaders();
             developerOnly = QtWaveformWidget::developerOnly();
             break;
-        case WaveformWidgetRederer::GLSLFilteredWaveform:
+        case WaveformWidgetType::GLSLFilteredWaveform:
             widgetName = GLSLFilteredWaveformWidget::getWaveformWidgetName();
             useOpenGl = GLSLFilteredWaveformWidget::useOpenGl();
             useOpenGLShaders = GLSLFilteredWaveformWidget::useOpenGLShaders();

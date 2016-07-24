@@ -3,13 +3,16 @@
 
 ScannerTask::ScannerTask(LibraryScanner* pScanner,
                          const ScannerGlobalPointer scannerGlobal)
-        : m_pScanner(pScanner),
+        : QObject(pScanner),
+          m_pScanner(pScanner),
           m_scannerGlobal(scannerGlobal),
-          m_success(false) {
+          m_success(false)
+{
     setAutoDelete(true);
 }
 
-ScannerTask::~ScannerTask() {
+ScannerTask::~ScannerTask()
+{
     if (!m_success) {
     	m_scannerGlobal->clearScanFinishedCleanly();
     }

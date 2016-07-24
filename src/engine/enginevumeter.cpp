@@ -55,7 +55,7 @@ EngineVuMeter::~EngineVuMeter()
     delete m_ctrlPeakIndicatorR;
 }
 
-void EngineVuMeter::process(CSAMPLE* pIn, const int iBufferSize) {
+void EngineVuMeter::process(CSAMPLE* pIn, int iBufferSize) {
     CSAMPLE fVolSumL, fVolSumR;
 
     int sampleRate = (int)m_pSampleRate->get();
@@ -76,7 +76,7 @@ void EngineVuMeter::process(CSAMPLE* pIn, const int iBufferSize) {
                 log10(SHRT_MAX * m_fRMSvolumeSumR
                                 / (m_iSamplesCalculated * 1000) + 1));
 
-        const double epsilon = .0001;
+        double epsilon = .0001;
 
         // Since VU meters are a rolling sum of audio, the no-op checks in
         // ControlObject will not prevent us from causing tons of extra

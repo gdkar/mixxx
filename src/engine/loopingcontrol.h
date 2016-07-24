@@ -33,32 +33,30 @@ class LoopingControl : public EngineControl {
     // process() updates the internal state of the LoopingControl to reflect the
     // correct current sample. If a loop should be taken LoopingControl returns
     // the sample that should be seeked to. Otherwise it returns currentSample.
-    virtual double process(const double dRate,
-                   const double currentSample,
-                   const double totalSamples,
-                   const int iBufferSize);
+    virtual double process(double dRate,
+                   double currentSample,
+                   double totalSamples,
+                   int iBufferSize);
 
     // nextTrigger returns the sample at which the engine will be triggered to
     // take a loop, given the value of currentSample and dRate.
-    virtual double nextTrigger(const double dRate,
-                       const double currentSample,
-                       const double totalSamples,
-                       const int iBufferSize);
+    virtual double nextTrigger(double dRate,
+                       double currentSample,
+                       double totalSamples,
+                       int iBufferSize);
 
     // getTrigger returns the sample that the engine will next be triggered to
     // loop to, given the value of currentSample and dRate.
-    virtual double getTrigger(const double dRate,
-                      const double currentSample,
-                      const double totalSamples,
-                      const int iBufferSize);
+    virtual double getTrigger(double dRate,
+                      double currentSample,
+                      double totalSamples,
+                      int iBufferSize);
 
     // hintReader will add to hintList hints both the loop in and loop out
     // sample, if set.
     virtual void hintReader(HintVector* pHintList);
-
-    virtual void notifySeek(double dNewPlaypos);
-
   public slots:
+    void onNotifySeek(double dNewPlaypos) override;
     void slotLoopIn(double);
     void slotLoopOut(double);
     void slotLoopExit(double);
@@ -126,7 +124,7 @@ class LoopingControl : public EngineControl {
     // Base BeatLoop Control Object.
     ControlObject* m_pCOBeatLoop;
     // Different sizes for Beat Loops/Seeks.
-    static double s_dBeatSizes[];
+    static const double s_dBeatSizes[];
     // Array of BeatLoopingControls, one for each size.
     QList<BeatLoopingControl*> m_beatLoops;
 

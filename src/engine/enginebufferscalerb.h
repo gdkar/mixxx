@@ -10,11 +10,11 @@ class RubberBandStretcher;
 class ReadAheadManager;
 
 // Uses librubberband to scale audio.  This class is not thread safe.
-class EngineBufferScaleRubberBand : public EngineBufferScale {
+class EngineBufferScaleRB : public EngineBufferScale {
     Q_OBJECT
   public:
-    EngineBufferScaleRubberBand(ReadAheadManager* pReadAheadManager, QObject *pParent );
-    ~EngineBufferScaleRubberBand() override;
+    EngineBufferScaleRB(ReadAheadManager* pReadAheadManager, QObject *pParent );
+    ~EngineBufferScaleRB() override;
 
     void setScaleParameters(double base_rate,
                             double* pTempoRatio,
@@ -23,7 +23,7 @@ class EngineBufferScaleRubberBand : public EngineBufferScale {
     void setSampleRate(int iSampleRate) override;
 
     // Read and scale buf_size samples from the provided RAMAN.
-    double getScaled(CSAMPLE* pOutput, const int iBufferSize) override;
+    double getScaled(CSAMPLE* pOutput, int iBufferSize) override;
 
     // Flush buffer.
     void clear() override;

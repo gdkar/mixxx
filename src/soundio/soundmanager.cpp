@@ -350,7 +350,7 @@ Result SoundManager::setupDevices() {
     //
     // If you want to solve this issue, you should start by separating the PA
     // callback from the logic in SoundDevicePortAudio. They should communicate
-    // via message passing over a request/response FIFO.
+    // via message passing over a request/response fifo.
 
     // Instead of clearing m_pClkRefDevice and then assigning it directly,
     // compute the new one then atomically hand off below.

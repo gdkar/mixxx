@@ -27,6 +27,7 @@ EngineBufferScale::EngineBufferScale(ReadAheadManager *raman, QObject *pParent)
           m_dBaseRate(1.0),
           m_bSpeedAffectsPitch(false),
           m_dTempoRatio(1.0),
-          m_dPitchRatio(1.0) {
+          m_dPitchRatio(1.0)
+{
 }
 EngineBufferScale::~EngineBufferScale() = default;

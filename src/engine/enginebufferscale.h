@@ -72,7 +72,7 @@ class EngineBufferScale : public QObject {
     // Called from EngineBuffer when seeking, to ensure the buffers are flushed */
     virtual void clear() = 0;
     // Scale buffer
-    virtual double getScaled(CSAMPLE* pOutput, const int iBufferSize) = 0;
+    virtual double getScaled(CSAMPLE* pOutput, int iBufferSize) = 0;
 
   protected:
     ReadAheadManager *m_pReadAheadManager{nullptr};

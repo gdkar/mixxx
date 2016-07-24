@@ -42,7 +42,7 @@ RateControl::RateControl(QString group,
       m_eRampBackMode(RATERAMP_RAMPBACK_NONE),
       m_dRateTempRampbackChange(0.0) {
     m_pScratchController = new PositionScratchController(group);
-
+    connect(this, SIGNAL(notifySeek(double)),m_pScratchController,SLOT(onNotifySeek(double)));
     m_pRateDir = new ControlObject(ConfigKey(group, "rate_dir"));
     m_pRateRange = new ControlObject(ConfigKey(group, "rateRange"));
     // Allow rate slider to go out of bounds so that master sync rate
@@ -389,7 +389,7 @@ double RateControl::getWheelFactor() const {
 
 double RateControl::getJogFactor() const {
     // FIXME: Sensitivity should be configurable separately?
-    const double jogSensitivity = 0.1;  // Nudges during playback
+    double jogSensitivity = 0.1;  // Nudges during playback
     double jogValue = m_pJog->get();
 
     // Since m_pJog is an accumulator, reset it since we've used its value.
@@ -512,10 +512,10 @@ double RateControl::calculateSpeed(double baserate, double speed, bool paused,
     return rate;
 }
 
-double RateControl::process(const double rate,
-                            const double currentSample,
-                            const double totalSamples,
-                            const int bufferSamples)
+double RateControl::process(double rate,
+                            double currentSample,
+                            double totalSamples,
+                            int bufferSamples)
 {
     Q_UNUSED(rate);
     Q_UNUSED(currentSample);
@@ -649,8 +649,4 @@ void RateControl::subRateTemp(double v)
 void RateControl::resetRateTemp(void)
 {
     setRateTemp(0.0);
-}
-
-void RateControl::notifySeek(double playPos) {
-    m_pScratchController->notifySeek(playPos);
 }

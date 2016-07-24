@@ -10,10 +10,10 @@
 #include "engine/enginecontrol.h"
 #include "engine/sync/syncable.h"
 
-const int RATE_TEMP_STEP = 500;
-const int RATE_TEMP_STEP_SMALL = RATE_TEMP_STEP * 10.;
-const int RATE_SENSITIVITY_MIN = 100;
-const int RATE_SENSITIVITY_MAX = 2500;
+constexpr const int RATE_TEMP_STEP = 500;
+constexpr const int RATE_TEMP_STEP_SMALL = RATE_TEMP_STEP * 10.;
+constexpr const int RATE_SENSITIVITY_MIN = 100;
+constexpr const int RATE_SENSITIVITY_MAX = 2500;
 
 class BpmControl;
 class Rotary;
@@ -37,10 +37,10 @@ public:
     void setBpmControl(BpmControl* bpmcontrol);
     // Must be called during each callback of the audio thread so that
     // RateControl has a chance to update itself.
-    double process(const double dRate,
-                   const double currentSample,
-                   const double totalSamples,
-                   const int bufferSamples);
+    double process(double dRate,
+                   double currentSample,
+                   double totalSamples,
+                   int bufferSamples);
     // Returns the current engine rate.  "reportScratching" is used to tell
     // the caller that the user is currently scratching, and this is used to
     // disable keylock.
@@ -61,7 +61,6 @@ public:
     static void setRateRamp(bool);
     // Set Rate Ramp Sensitivity
     static void setRateRampSensitivity(int);
-    virtual void notifySeek(double dNewPlaypos);
 
   public slots:
     void slotReverseRollActivate(double);

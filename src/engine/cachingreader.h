@@ -93,70 +93,53 @@ class CachingReader : public QObject {
     {
         m_worker.setScheduler(pScheduler);
     }
-    const static int maximumCachingReaderChunksInMemory;
+    static const int maximumCachingReaderChunksInMemory;
   signals:
     // Emitted once a new track is loaded and ready to be read from.
     void trackLoading();
     void trackLoaded(TrackPointer pTrack, int iSampleRate, int iNumSamples);
     void trackLoadFailed(TrackPointer pTrack, QString reason);
-
   private:
     const UserSettingsPointer m_pConfig;
-
     // Thread-safe FIFOs for communication between the engine callback and
     // reader thread.
     FIFO<CachingReaderChunkReadRequest> m_chunkReadRequestFIFO;
     FIFO<ReaderStatusUpdate> m_readerStatusFIFO;
-
     // Looks for the provided chunk number in the index of in-memory chunks and
     // returns it if it is present. If not, returns nullptr. If it is present then
     // freshenChunk is called on the chunk to make it the MRU chunk.
-    CachingReaderChunkForOwner* lookupChunkAndFreshen(int64_t chunkIndex);
-
+    CachingReaderChunk* lookupChunkAndFreshen(int64_t chunkIndex);
     // Looks for the provided chunk number in the index of in-memory chunks and
     // returns it if it is present. If not, returns nullptr.
-    CachingReaderChunkForOwner* lookupChunk(int64_t chunkIndex);
-
+    CachingReaderChunk* lookupChunk(int64_t chunkIndex);
     // Moves the provided chunk to the MRU position.
-    void freshenChunk(CachingReaderChunkForOwner* pChunk);
-
+    void freshenChunk(CachingReaderChunk* pChunk);
     // Returns a CachingReaderChunk to the free list
-    void freeChunk(CachingReaderChunkForOwner* pChunk);
-
+    void freeChunk(CachingReaderChunk* pChunk);
     // Returns all allocated chunks to the free list
     void freeAllChunks();
-
     // Gets a chunk from the free list. Returns nullptr if none available.
-    CachingReaderChunkForOwner* allocateChunk(int64_t chunkIndex);
-
+    CachingReaderChunk* allocateChunk(int64_t chunkIndex);
     // Gets a chunk from the free list, frees the LRU CachingReaderChunk if none available.
-    CachingReaderChunkForOwner* allocateChunkExpireLRU(int64_t chunkIndex);
-
+    CachingReaderChunk* allocateChunkExpireLRU(int64_t chunkIndex);
     ReaderStatus m_readerStatus;
-
     // Keeps track of all CachingReaderChunks we've allocated.
-    QVector<CachingReaderChunkForOwner*> m_chunks;
-
+    QVector<CachingReaderChunk*> m_chunks;
     // List of free chunks. Linked list so that we have constant time insertions
     // and deletions. Iteration is not necessary.
-    QLinkedList<CachingReaderChunkForOwner*> m_freeChunks;
-
+    QLinkedList<CachingReaderChunk*> m_freeChunks;
     // Keeps track of what CachingReaderChunks we've allocated and indexes them based on what
     // chunk number they are allocated to.
-    QHash<int, CachingReaderChunkForOwner*> m_allocatedCachingReaderChunks;
-
+    QHash<int64_t, CachingReaderChunk*> m_allocatedCachingReaderChunks;
     // The linked list of recently-used chunks.
-    CachingReaderChunkForOwner* m_mruCachingReaderChunk;
-    CachingReaderChunkForOwner* m_lruCachingReaderChunk;
-
+    CachingReaderChunk* m_mruCachingReaderChunk{nullptr};
+    CachingReaderChunk* m_lruCachingReaderChunk{nullptr};
     // The raw memory buffer which is divided up into chunks.
     SampleBuffer m_sampleBuffer;
-
     // The maximum readable frame index as reported by the worker.
     // This frame index references the frame that follows the last
     // frame with sample data.
     int64_t m_maxReadableFrameIndex;
-
     CachingReaderWorker m_worker;
 };
 

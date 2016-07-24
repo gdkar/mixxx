@@ -37,7 +37,7 @@ class EngineVuMeter : public EngineObject {
     EngineVuMeter(QString group);
     virtual ~EngineVuMeter();
 
-    virtual void process(CSAMPLE* pInOut, const int iBufferSize);
+    virtual void process(CSAMPLE* pInOut, int iBufferSize);
 
     virtual void collectFeatures(GroupFeatureState* pGroupFeatures) const;
 

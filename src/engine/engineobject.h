@@ -33,7 +33,7 @@ class EngineObject : public QObject {
     EngineObject();
     virtual ~EngineObject();
     virtual void process(CSAMPLE* pInOut,
-                         const int iBufferSize) = 0;
+                         int iBufferSize) = 0;
 
     // Sub-classes re-implement and populate GroupFeatureState with the features
     // they extract.
@@ -49,7 +49,7 @@ class EngineObjectConstIn : public QObject {
     virtual ~EngineObjectConstIn();
 
     virtual void process(const CSAMPLE* pIn, CSAMPLE* pOut,
-                         const int iBufferSize) = 0;
+                         int iBufferSize) = 0;
 };
 
 #endif

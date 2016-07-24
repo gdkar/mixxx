@@ -4,20 +4,10 @@
 #include "engine/engineworker.h"
 #include "engine/engineworkerscheduler.h"
 
-EngineWorker::EngineWorker()
-    : m_pScheduler(NULL) {
-}
-
-EngineWorker::~EngineWorker() {
-}
-
-void EngineWorker::run() {
-}
-
-void EngineWorker::setScheduler(EngineWorkerScheduler* pScheduler) {
-    m_pScheduler = pScheduler;
-}
-
+EngineWorker::EngineWorker(QObject *pParent) : QThread(pParent), m_pScheduler(nullptr) { }
+EngineWorker::~EngineWorker() { }
+void EngineWorker::run() { }
+void EngineWorker::setScheduler(EngineWorkerScheduler* pScheduler) { m_pScheduler = pScheduler; }
 bool EngineWorker::workReady() {
     if (m_pScheduler) {
         m_pScheduler->workerReady(this);

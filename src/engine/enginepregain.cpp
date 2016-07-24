@@ -55,7 +55,7 @@ void EnginePregain::setScratching(bool scratching) {
     m_scratching = scratching;
 }
 
-void EnginePregain::process(CSAMPLE* pInOut, const int iBufferSize) {
+void EnginePregain::process(CSAMPLE* pInOut, int iBufferSize) {
     const float fReplayGain = m_pCOReplayGain->get();
     float fReplayGainCorrection;
     if (!s_pEnableReplayGain->toBool() || m_pPassthroughEnabled->toBool()) {
@@ -84,7 +84,7 @@ void EnginePregain::process(CSAMPLE* pInOut, const int iBufferSize) {
 
         // This means that a ReplayGain value has been calculated after the
         // track has been loaded
-        const double kFadeSeconds = 1.0;
+        double kFadeSeconds = 1.0;
 
         if (m_bSmoothFade) {
             double seconds = m_timer.elapsed().toDoubleSeconds();

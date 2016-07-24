@@ -5,11 +5,11 @@
 
 ImportFilesTask::ImportFilesTask(LibraryScanner* pScanner,
                                  const ScannerGlobalPointer scannerGlobal,
-                                 const QString& dirPath,
-                                 const bool prevHashExists,
-                                 const int newHash,
-                                 const QLinkedList<QFileInfo>& filesToImport,
-                                 const QLinkedList<QFileInfo>& possibleCovers,
+                                 QString dirPath,
+                                 bool prevHashExists,
+                                 int newHash,
+                                 QLinkedList<QFileInfo> filesToImport,
+                                 QLinkedList<QFileInfo> possibleCovers,
                                  SecurityTokenPointer pToken)
         : ScannerTask(pScanner, scannerGlobal),
           m_dirPath(dirPath),
@@ -17,19 +17,19 @@ ImportFilesTask::ImportFilesTask(LibraryScanner* pScanner,
           m_newHash(newHash),
           m_filesToImport(filesToImport),
           m_possibleCovers(possibleCovers),
-          m_pToken(pToken) {
-}
+          m_pToken(pToken)
+{ }
 
 void ImportFilesTask::run() {
     ScopedTimer timer("ImportFilesTask::run");
-    for (const QFileInfo& fileInfo: m_filesToImport) {
+    for (const auto& fileInfo: m_filesToImport)
+    {
         // If a flag was raised telling us to cancel the library scan then stop.
         if (m_scannerGlobal->shouldCancel()) {
             setSuccess(false);
             return;
         }
-
-        const QString filePath(fileInfo.filePath());
+        auto filePath = fileInfo.filePath();
         //qDebug() << "ImportFilesTask::run" << filePath;
 
         // If the file does not exist in the database then add it. If it

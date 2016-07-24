@@ -26,7 +26,7 @@ class EnginePregain : public EngineObject {
     // reversed without a ramp to zero.
     void setScratching(bool scratching);
 
-    void process(CSAMPLE* pInOut, const int iBufferSize);
+    void process(CSAMPLE* pInOut, int iBufferSize);
 
   private:
     double m_dSpeed;

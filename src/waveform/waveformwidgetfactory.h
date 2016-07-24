@@ -55,7 +55,6 @@ class WaveformWidgetHolder {
 class WaveformWidgetFactory : public QObject, public Singleton<WaveformWidgetFactory> {
     Q_OBJECT
   public:
-    using WaveformWidgetType = typename WaveformWidgetRenderer::WaveformWidgetType;
     //TODO merge this enum with the waveform analyzer one
     enum FilterIndex { All = 0, Low = 1, Mid = 2, High = 3, FilterCount = 4};
 
@@ -75,9 +74,9 @@ class WaveformWidgetFactory : public QObject, public Singleton<WaveformWidgetFac
 
     bool isOpenGlShaderAvailable() const { return m_openGLShaderAvailable;}
 
-    bool setWidgetType(WaveformWidgetType type);
+    bool setWidgetType(WaveformWidgetType::Type type);
     bool setWidgetTypeFromHandle(int handleIndex);
-    WaveformWidgetType getType() const { return m_type;}
+    WaveformWidgetType::Type getType() const { return m_type;}
 
     void setDefaultZoom(int zoom);
     int getDefaultZoom() const { return m_defaultZoom;}
@@ -99,7 +98,7 @@ class WaveformWidgetFactory : public QObject, public Singleton<WaveformWidgetFac
     void startVSync(GuiTick* pGuiTick);
     void notifyZoomChange(WWaveformViewer *viewer);
 
-    WaveformWidgetType autoChooseWidgetType() const;
+    WaveformWidgetType::Type autoChooseWidgetType() const;
   signals:
     void waveformUpdateTick();
     void waveformMeasured(float frameRate, int droppedFrames);

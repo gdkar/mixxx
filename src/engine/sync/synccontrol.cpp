@@ -418,7 +418,7 @@ void SyncControl::setLocalBpm(double local_bpm) {
     m_prevLocalBpm = local_bpm;
 
     // FIXME: This recalculating of the rate is duplicated in bpmcontrol.
-    const double rateRatio = calcRateRatio();
+    double rateRatio = calcRateRatio();
     double bpm = local_bpm * rateRatio;
     m_pBpm->set(bpm);
     m_pEngineSync->notifyBpmChanged(this, bpm, true);
@@ -432,7 +432,7 @@ void SyncControl::slotFileBpmChanged() {
 
 void SyncControl::slotRateChanged() {
     // This slot is fired by rate, rate_dir, and rateRange changes.
-    const double rateRatio = calcRateRatio();
+    double rateRatio = calcRateRatio();
     double bpm = m_pLocalBpm ? m_pLocalBpm->get() * rateRatio : 0.0;
     //qDebug() << getGroup() << "SyncControl::slotRateChanged" << rate << bpm;
     if (bpm > 0) {

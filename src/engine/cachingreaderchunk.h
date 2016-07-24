@@ -2,7 +2,7 @@
 #define ENGINE_CACHINGREADERCHUNK_H
 
 #include "sources/audiosource.h"
-
+#include <atomic>
 // A Chunk is a memory-resident section of audio that has been cached.
 // Each chunk holds a fixed number kFrames of frames with samples for
 // kChannels.
@@ -26,10 +26,10 @@
 
 class CachingReaderChunk {
 public:
-    static constexpr int64_t kInvalidIndex = -1;
-    static constexpr int64_t kChannels = 2;
-    static constexpr int64_t kFrames = 8192;
-    constexpr static int64_t kSamples = kFrames * kChannels;
+    static constexpr const int64_t kInvalidIndex = -1;
+    static constexpr const int64_t kChannels = 2;
+    static constexpr const int64_t kFrames = 8192;
+    static constexpr const int64_t kSamples = kFrames * kChannels;
 
     // Returns the corresponding chunk index for a frame index
     constexpr static int64_t indexForFrame(int64_t frameIndex) { return frameIndex / kFrames; }
@@ -39,10 +39,40 @@ public:
     constexpr static int64_t frames2samples(int64_t frames) { return frames * kChannels;}
     // Converts samples to frames
     constexpr static int64_t samples2frames(int64_t samples) { return samples / kChannels;}
-
     // Disable copy and move constructors
+    constexpr CachingReaderChunk(CSAMPLE *pBuffer)
+    : m_sampleBuffer(pBuffer){}
     CachingReaderChunk(const CachingReaderChunk&) = delete;
     CachingReaderChunk(CachingReaderChunk&&) = delete;
+    void init(int64_t index);
+    void free();
+    enum State {
+        FREE,
+        READY,
+        READ_PENDING
+    };
+    State getState() const { return m_state; }
+    // The state is controlled by the cache as the owner of each chunk!
+    void giveToWorker() {
+        DEBUG_ASSERT(READY == m_state);
+        m_state = READ_PENDING;
+    }
+    void takeFromWorker() {
+        DEBUG_ASSERT(READ_PENDING == m_state);
+        m_state = READY;
+    }
+    // Inserts a chunk into the double-linked list before the
+    // given chunk. If the list is currently empty simply pass
+    // pBefore = nullptr. Please note that if pBefore points to
+    // the head of the current list this chunk becomes the new
+    // head of the list.
+    void insertIntoListBefore(CachingReaderChunk* pBefore);
+    // Removes a chunk from the double-linked list and optionally
+    // adjusts head/tail pointers. Pass ppHead/ppTail = nullptr if
+    // you prefer to adjust those pointers manually.
+    void removeFromList(
+            CachingReaderChunk** ppHead,
+            CachingReaderChunk** ppTail);
 
     int64_t getIndex() const { return m_index; }
     bool isValid() const { return 0 <= getIndex(); }
@@ -73,68 +103,16 @@ public:
             CSAMPLE* sampleBuffer,
             int64_t sampleOffset,
             int64_t sampleCount) const;
-protected:
-    explicit CachingReaderChunk(CSAMPLE* sampleBuffer);
-    virtual ~CachingReaderChunk();
-    void init(int64_t index);
 private:
-    int64_t m_index;
+    int64_t              m_index{-1};
     // The worker thread will fill the sample buffer and
     // set the frame count.
-    CSAMPLE* const m_sampleBuffer;
-    int64_t m_frameCount;
+    CSAMPLE* const       m_sampleBuffer;
+    std::atomic<int64_t> m_frameCount{0};
+    std::atomic<int64_t> m_frameOffset{0};
+    std::atomic<State>   m_state{FREE};
+
+    CachingReaderChunk* m_pPrev{nullptr}; // previous item in double-linked list
+    CachingReaderChunk* m_pNext{nullptr}; // next item in double-linked list
 };
-// This derived class is only accessible for the cache as the owner,
-// but not the worker thread. The state READ_PENDING indicates that
-// the worker thread is in control.
-class CachingReaderChunkForOwner: public CachingReaderChunk {
-public:
-    explicit CachingReaderChunkForOwner(CSAMPLE* sampleBuffer);
-    virtual ~CachingReaderChunkForOwner();
-
-    void init(int64_t index);
-    void free();
-
-    enum State {
-        FREE,
-        READY,
-        READ_PENDING
-    };
-
-    State getState() const {
-        return m_state;
-    }
-
-    // The state is controlled by the cache as the owner of each chunk!
-    void giveToWorker() {
-        DEBUG_ASSERT(READY == m_state);
-        m_state = READ_PENDING;
-    }
-    void takeFromWorker() {
-        DEBUG_ASSERT(READ_PENDING == m_state);
-        m_state = READY;
-    }
-
-    // Inserts a chunk into the double-linked list before the
-    // given chunk. If the list is currently empty simply pass
-    // pBefore = nullptr. Please note that if pBefore points to
-    // the head of the current list this chunk becomes the new
-    // head of the list.
-    void insertIntoListBefore(
-            CachingReaderChunkForOwner* pBefore);
-    // Removes a chunk from the double-linked list and optionally
-    // adjusts head/tail pointers. Pass ppHead/ppTail = nullptr if
-    // you prefer to adjust those pointers manually.
-    void removeFromList(
-            CachingReaderChunkForOwner** ppHead,
-            CachingReaderChunkForOwner** ppTail);
-
-private:
-    State m_state;
-
-    CachingReaderChunkForOwner* m_pPrev; // previous item in double-linked list
-    CachingReaderChunkForOwner* m_pNext; // next item in double-linked list
-};
-
-
 #endif // ENGINE_CACHINGREADERCHUNK_H

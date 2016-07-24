@@ -27,7 +27,7 @@
 
 
 /** Number of samples to read ahead */
-const int kiLinearScaleReadAheadLength = 10240;
+static constexpr const int kiLinearScaleReadAheadLength = 10240;
 
 
 class EngineBufferScaleLinear : public EngineBufferScale  {
@@ -36,7 +36,7 @@ class EngineBufferScaleLinear : public EngineBufferScale  {
     EngineBufferScaleLinear(ReadAheadManager *pReadAheadManager, QObject *pParent);
    ~EngineBufferScaleLinear() override;
 
-    double getScaled(CSAMPLE* pOutput, const int iBufferSize) override;
+    double getScaled(CSAMPLE* pOutput, int iBufferSize) override;
     void clear() override;
 
     void setScaleParameters(double base_rate,
@@ -44,8 +44,8 @@ class EngineBufferScaleLinear : public EngineBufferScale  {
                              double* pPitchRatio) override;
 
   private:
-    int do_scale(CSAMPLE* buf, const int buf_size);
-    int do_copy(CSAMPLE* buf, const int buf_size);
+    int do_scale(CSAMPLE* buf, int buf_size);
+    int do_copy(CSAMPLE* buf, int buf_size);
 
     bool m_bClear;
     double m_dRate;

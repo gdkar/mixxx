@@ -5,8 +5,7 @@
 #include "widget/wskincolor.h"
 #include "widget/wwidget.h"
 
-WaveformSignalColors::WaveformSignalColors() {
-}
+WaveformSignalColors::WaveformSignalColors(QObject *p):QObject(p) { }
 
 bool WaveformSignalColors::setup(const QDomNode &node, const SkinContext& context) {
     // NOTE(rryan): It is critical that every color is converted to RGB with

@@ -13,11 +13,11 @@
 
 // TODO: Convert these doubles to a standard enum
 // and convert elseif logic to switch statements
-static const double CUE_MODE_MIXXX = 0.0;
-static const double CUE_MODE_PIONEER = 1.0;
-static const double CUE_MODE_DENON = 2.0;
-static const double CUE_MODE_NUMARK = 3.0;
-static const double CUE_MODE_MIXXX_NO_BLINK = 4.0;
+static constexpr const double CUE_MODE_MIXXX = 0.0;
+static constexpr const double CUE_MODE_PIONEER = 1.0;
+static constexpr const double CUE_MODE_DENON = 2.0;
+static constexpr const double CUE_MODE_NUMARK = 3.0;
+static constexpr const double CUE_MODE_MIXXX_NO_BLINK = 4.0;
 
 CueControl::CueControl(QString group,
                        UserSettingsPointer pConfig, QObject *pParent) :

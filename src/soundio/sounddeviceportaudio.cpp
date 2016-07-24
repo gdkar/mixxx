@@ -50,6 +50,8 @@ const int kDriftReserve = 1;
 
 // Buffer for drift correction 1 full, 1 for r/w, 1 empty
 const int kFifoSize = 2 * kDriftReserve + 1;
+using fifo_pointer   = typename FIFO<CSAMPLE>::pointer;
+using fifo_size_type = typename FIFO<CSAMPLE>::size_type;
 
 // We warn only at invalid timing 3, since the first two
 // callbacks can be always wrong due to a setup/open jitter
@@ -269,7 +271,7 @@ Result SoundDevicePortAudio::open(bool isClkRefDevice, int syncBuffers) {
             // Clear first 1.5 chunks on for the required artificial delaly to
             // a allow jitter and a half, because we can't predict which
             // callback fires first.
-            m_outputFifo->releaseWriteRegions(
+            m_outputFifo->commit_write(
                     m_outputParams.channelCount * m_framesPerBuffer * kFifoSize
                             / 2);
         }
@@ -277,7 +279,7 @@ Result SoundDevicePortAudio::open(bool isClkRefDevice, int syncBuffers) {
             m_inputFifo = new FIFO<CSAMPLE>(
                     m_inputParams.channelCount * m_framesPerBuffer * kFifoSize);
             // Clear first two 1.5 chunks (see above)
-            m_inputFifo->releaseWriteRegions(
+            m_inputFifo->commit_write(
                     m_inputParams.channelCount * m_framesPerBuffer * kFifoSize
                             / 2);
         }
@@ -456,11 +458,9 @@ void SoundDevicePortAudio::readProcess() {
             int writeAvailable = m_inputFifo->writeAvailable();
             int copyCount = qMin(writeAvailable, readAvailable);
             if (copyCount > 0) {
-                CSAMPLE* dataPtr1;
-                ring_buffer_size_t size1;
-                CSAMPLE* dataPtr2;
-                ring_buffer_size_t size2;
-                (void)m_inputFifo->aquireWriteRegions(copyCount,
+                fifo_pointer dataPtr1, dataPtr2;
+                fifo_size_type size1, size2;
+                (void)m_inputFifo->get_write_regions(copyCount,
                         &dataPtr1, &size1, &dataPtr2, &size2);
                 // Fetch fresh samples and write to the the input buffer
                 PaError err = Pa_ReadStream(pStream, dataPtr1,
@@ -479,7 +479,7 @@ void SoundDevicePortAudio::readProcess() {
                         m_underflowHappened = 1;
                     }
                 }
-                m_inputFifo->releaseWriteRegions(copyCount);
+                m_inputFifo->commit_write(copyCount);
 
                 if (readAvailable > writeAvailable + inChunkSize / 2) {
                     // we are not able to consume all frames
@@ -503,12 +503,12 @@ void SoundDevicePortAudio::readProcess() {
                         // duplicate one frame
                         //qDebug() << "SoundDevicePortAudio::readProcess() duplicate one frame"
                         //        << (float)writeAvailable / inChunkSize << (float)readAvailable / inChunkSize;
-                        (void) m_inputFifo->aquireWriteRegions(
+                        (void) m_inputFifo->get_write_regions(
                                 m_inputParams.channelCount, &dataPtr1, &size1,
                                 &dataPtr2, &size2);
                         if (size1) {
                             SampleUtil::copy(dataPtr1, lastFrame, size1);
-                            m_inputFifo->releaseWriteRegions(size1);
+                            m_inputFifo->commit_write(size1);
                         }
                     } else {
                         m_inputDrift = true;
@@ -527,12 +527,10 @@ void SoundDevicePortAudio::readProcess() {
             //qDebug() << "readProcess()" << (float)readAvailable / inChunkSize << "underflow";
         }
         if (readCount) {
-            CSAMPLE* dataPtr1;
-            ring_buffer_size_t size1;
-            CSAMPLE* dataPtr2;
-            ring_buffer_size_t size2;
+            fifo_pointer dataPtr1, dataPtr2;
+            fifo_size_type size1, size2;
             // We use size1 and size2, so we can ignore the return value
-            (void) m_inputFifo->aquireReadRegions(readCount, &dataPtr1, &size1,
+            (void) m_inputFifo->get_read_regions(readCount, &dataPtr1, &size1,
                     &dataPtr2, &size2);
             // Fetch fresh samples and write to the the output buffer
             composeInputBuffer(dataPtr1,
@@ -544,7 +542,7 @@ void SoundDevicePortAudio::readProcess() {
                         size1 / m_inputParams.channelCount,
                         m_inputParams.channelCount);
             }
-            m_inputFifo->releaseReadRegions(readCount);
+            m_inputFifo->commit_read(readCount);
         }
         if (readCount < inChunkSize) {
             // Fill remaining buffers with zeros
@@ -568,12 +566,11 @@ void SoundDevicePortAudio::writeProcess() {
             //qDebug() << "writeProcess():" << (float) writeAvailable / outChunkSize << "Overflow";
         }
         if (writeCount) {
-            CSAMPLE* dataPtr1;
-            ring_buffer_size_t size1;
-            CSAMPLE* dataPtr2;
-            ring_buffer_size_t size2;
+            fifo_pointer dataPtr1, dataPtr2;
+            fifo_size_type size1, size2;
+
             // We use size1 and size2, so we can ignore the return value
-            (void) m_outputFifo->aquireWriteRegions(writeCount, &dataPtr1,
+            (void) m_outputFifo->get_write_regions(writeCount, &dataPtr1,
                     &size1, &dataPtr2, &size2);
             // Fetch fresh samples and write to the the output buffer
             composeOutputBuffer(dataPtr1, size1 / m_outputParams.channelCount, 0,
@@ -584,7 +581,7 @@ void SoundDevicePortAudio::writeProcess() {
                         size1 / m_outputParams.channelCount,
                         static_cast<unsigned int>(m_outputParams.channelCount));
             }
-            m_outputFifo->releaseWriteRegions(writeCount);
+            m_outputFifo->commit_write(writeCount);
         }
 
         if (m_syncBuffers == 0) { // "Experimental (no delay)"
@@ -595,11 +592,9 @@ void SoundDevicePortAudio::writeProcess() {
             int copyCount = qMin(readAvailable, writeAvailable);
             //qDebug() << "SoundDevicePortAudio::writeProcess()" << toRead << writeAvailable;
             if (copyCount > 0) {
-                CSAMPLE* dataPtr1;
-                ring_buffer_size_t size1;
-                CSAMPLE* dataPtr2;
-                ring_buffer_size_t size2;
-                m_outputFifo->aquireReadRegions(copyCount,
+                fifo_pointer dataPtr1, dataPtr2;
+                fifo_size_type size1, size2;
+                m_outputFifo->get_read_regions(copyCount,
                         &dataPtr1, &size1, &dataPtr2, &size2);
                 if (writeAvailable == outChunkSize * 2) {
                     // Underflow
@@ -651,7 +646,7 @@ void SoundDevicePortAudio::writeProcess() {
                         m_underflowHappened = 1;
                     }
                 }
-                m_outputFifo->releaseReadRegions(copyCount);
+                m_outputFifo->commit_read(copyCount);
             }
         }
     }
@@ -747,7 +742,7 @@ int SoundDevicePortAudio::callbackProcessDrift(
             m_outputFifo->read(out, outChunkSize);
             if (m_outputDrift) {
                 // Risk of overflow, skip one frame
-                m_outputFifo->releaseReadRegions(m_outputParams.channelCount);
+                m_outputFifo->commit_read(m_outputParams.channelCount);
                 //qDebug() << "callbackProcessDrift read:" << (float)readAvailable / outChunkSize << "Skip";
             } else {
                 m_outputDrift = true;

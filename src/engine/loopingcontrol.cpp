@@ -15,7 +15,7 @@
 #include "track/track.h"
 #include "track/beats.h"
 
-double LoopingControl::s_dBeatSizes[] = { 0.03125, 0.0625, 0.125, 0.25, 0.5,
+const double LoopingControl::s_dBeatSizes[] = { 0.03125, 0.0625, 0.125, 0.25, 0.5,
                                           1, 2, 4, 8, 16, 32, 64 };
 
 // Used to generate the beatloop_%SIZE, beatjump_%SIZE, and loop_move_%SIZE CO
@@ -306,10 +306,10 @@ void LoopingControl::slotLoopDouble(double v) {
     }
 }
 
-double LoopingControl::process(const double dRate,
-                               const double currentSample,
-                               const double totalSamples,
-                               const int iBufferSize) {
+double LoopingControl::process(double dRate,
+                               double currentSample,
+                               double totalSamples,
+                               int iBufferSize) {
     Q_UNUSED(totalSamples);
     Q_UNUSED(iBufferSize);
 
@@ -336,10 +336,10 @@ double LoopingControl::process(const double dRate,
     return retval;
 }
 
-double LoopingControl::nextTrigger(const double dRate,
-                                   const double currentSample,
-                                   const double totalSamples,
-                                   const int iBufferSize) {
+double LoopingControl::nextTrigger(double dRate,
+                                   double currentSample,
+                                   double totalSamples,
+                                   int iBufferSize) {
     Q_UNUSED(currentSample);
     Q_UNUSED(totalSamples);
     Q_UNUSED(iBufferSize);
@@ -356,10 +356,10 @@ double LoopingControl::nextTrigger(const double dRate,
     return kNoTrigger;
 }
 
-double LoopingControl::getTrigger(const double dRate,
-                                  const double currentSample,
-                                  const double totalSamples,
-                                  const int iBufferSize) {
+double LoopingControl::getTrigger(double dRate,
+                                  double currentSample,
+                                  double totalSamples,
+                                  int iBufferSize) {
     Q_UNUSED(currentSample);
     Q_UNUSED(totalSamples);
     Q_UNUSED(iBufferSize);
@@ -620,12 +620,11 @@ void LoopingControl::slotLoopEndPos(double pos) {
     m_loopSamples.setValue(loopSamples);
 }
 
-void LoopingControl::notifySeek(double dNewPlaypos) {
-    LoopSamples loopSamples = m_loopSamples.getValue();
+void LoopingControl::onNotifySeek(double dNewPlaypos) {
+    auto loopSamples = m_loopSamples.getValue();
     if (m_bLoopingEnabled) {
-        if (dNewPlaypos < loopSamples.start || dNewPlaypos > loopSamples.end) {
+        if (dNewPlaypos < loopSamples.start || dNewPlaypos > loopSamples.end)
             setLoopingEnabled(false);
-        }
     }
 }
 

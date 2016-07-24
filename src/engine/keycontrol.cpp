@@ -9,8 +9,8 @@
 #include "engine/enginebuffer.h"
 #include "track/keyutils.h"
 
-static const double kLockOriginalKey = 0;
-static const double kLockCurrentKey = 1;
+static constexpr const double kLockOriginalKey = 0;
+static constexpr const double kLockCurrentKey = 1;
 
 KeyControl::KeyControl(QString group,
                        UserSettingsPointer pConfig, QObject *p)

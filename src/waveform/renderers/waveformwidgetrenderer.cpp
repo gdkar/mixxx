@@ -143,6 +143,7 @@ void WaveformWidgetRenderer::draw(QPainter* painter, QPaintEvent* event)
     //timer.start();
     // not ready to display need to wait until track initialization is done
     // draw only first is stack (background)
+    onPreRender();
     auto stackSize = m_rendererStack.size();
     if (m_trackSamples <= 0.0 || m_playPos == -1) {
         if (stackSize) {
@@ -175,6 +176,7 @@ void WaveformWidgetRenderer::resize(int width, int height)
 void WaveformWidgetRenderer::setup(const QDomNode& node, const SkinContext& context)
 {
     m_colors.setup(node, context);
+    m_pConfig = context.getConfig();
     for(auto &renderer : m_rendererStack)
         renderer->setup(node,context);
 }

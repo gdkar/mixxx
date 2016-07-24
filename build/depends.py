@@ -312,7 +312,6 @@ class Qt(Dependence):
             build.env.EnableQt5Modules(qt_modules,
                                         staticdeps=build.static_qt,
                                         debug=build.build_is_debug)
-                                           debug=build.build_is_debug)
 
             if build.static_qt:
                 # Pulled from qt-4.8.2-source\mkspecs\win32-msvc2010\qmake.conf
@@ -465,7 +464,7 @@ class SoundTouch(Dependence):
 
 class RubberBand(Dependence):
     def sources(self, build):
-        sources = ['engine/enginebufferscalerubberband.cpp', ]
+        sources = ['engine/enginebufferscalerb.cpp', ]
         return sources
 
     def configure(self, build, conf, env=None):
@@ -988,7 +987,6 @@ class MixxxCore(Feature):
                    "util/time.cpp",
                    "util/timer.cpp",
                    "util/performancetimer.cpp",
-                   "util/threadcputimer.cpp",
                    "util/version.cpp",
                    "util/rlimit.cpp",
                    "util/battery/battery.cpp",

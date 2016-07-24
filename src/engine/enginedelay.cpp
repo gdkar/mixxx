@@ -21,8 +21,8 @@
 #include "util/assert.h"
 #include "util/sample.h"
 
-const int kiMaxDelay = 40000; // 208 ms @ 96 kb/s
-const double kdMaxDelayPot = 200; // 200 ms
+int kiMaxDelay = 40000; // 208 ms @ 96 kb/s
+double kdMaxDelayPot = 200; // 200 ms
 
 EngineDelay::EngineDelay(const char* group, ConfigKey delayControl)
         : m_iDelayPos(0),
@@ -59,7 +59,7 @@ void EngineDelay::slotDelayChanged() {
 }
 
 
-void EngineDelay::process(CSAMPLE* pInOut, const int iBufferSize) {
+void EngineDelay::process(CSAMPLE* pInOut, int iBufferSize) {
     if (m_iDelay > 0) {
         int iDelaySourcePos = (m_iDelayPos + kiMaxDelay - m_iDelay) % kiMaxDelay;
 

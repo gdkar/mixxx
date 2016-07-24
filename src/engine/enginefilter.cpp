@@ -70,7 +70,7 @@ EngineFilter::~EngineFilter()
 
 
 
-void EngineFilter::process(CSAMPLE* pInOut, const int iBufferSize)
+void EngineFilter::process(CSAMPLE* pInOut, int iBufferSize)
 {
     int i;
     for(i = 0; i < iBufferSize; i += 2)
@@ -82,7 +82,7 @@ void EngineFilter::process(CSAMPLE* pInOut, const int iBufferSize)
 
 
 // 250Hz-3Khz Butterworth
-double processSampleBp(void *bufIn, const double sample)
+double processSampleBp(void *bufIn, double sample)
 {
     double *buf = (double*) bufIn;
     double val = sample;
@@ -133,7 +133,7 @@ double processSampleBp(void *bufIn, const double sample)
 }
 
 //3Khz butterworth
-double processSampleHp(void *bufIn, const double sample)
+double processSampleHp(void *bufIn, double sample)
 {
     double *buf = (double*) bufIn;
     double val = sample;
@@ -162,7 +162,7 @@ double processSampleHp(void *bufIn, const double sample)
    buf[7]= iir; val= fir;
    return val;
 }
-double processSampleLp(void *bufIn, const double sample)
+double processSampleLp(void *bufIn, double sample)
 {
     double *buf = (double*) bufIn;
     double val = sample;

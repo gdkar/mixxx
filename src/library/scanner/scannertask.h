@@ -15,9 +15,7 @@ class ScannerTask : public QObject, public QRunnable {
     ScannerTask(LibraryScanner* pScanner,
                 const ScannerGlobalPointer scannerGlobal);
     virtual ~ScannerTask();
-
     virtual void run() = 0;
-
   signals:
     void taskDone(bool success);
     void queueTask(ScannerTask* pTask);

@@ -82,7 +82,7 @@ void EngineAux::receiveBuffer(AudioInput input, const CSAMPLE* pBuffer,
     m_sampleBuffer = pBuffer;
 }
 
-void EngineAux::process(CSAMPLE* pOut, const int iBufferSize) {
+void EngineAux::process(CSAMPLE* pOut, int iBufferSize) {
     const CSAMPLE* sampleBuffer = m_sampleBuffer; // save pointer on stack
     double pregain =  m_pPregain->get();
     if (sampleBuffer) {

@@ -68,6 +68,15 @@ SoundSource::OpenResult SoundSourceFFmpeg::tryOpen(const AudioSourceConfig& audi
                 qDebug() << "Found an attached picture stream: " << stream->index;
                 av_dump_format(m_fmt_ctx, stream->index, qBAFilename.constData(), false);
                 stream->discard = AVDISCARD_NONE;
+                auto ctx = avcodec_alloc_context3(avcodec_find_decoder(stream->codecpar->codec_id));
+                avcodec_parameters_to_context(ctx, stream->codecpar);
+                avcodec_open2(ctx,nullptr,nullptr);
+                char buf[4096];
+                avcodec_string(buf, sizeof(buf), ctx, false);
+                avcodec_close(ctx);
+                avcodec_free_context(&ctx);
+                qDebug() << "Attached pictures have associated codec\n" 
+                    << buf;
             }
         });
     auto stream_idx = -1;

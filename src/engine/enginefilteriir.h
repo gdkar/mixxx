@@ -57,7 +57,7 @@ class EngineFilterIIR : public EngineFilterIIRBase {
     // It fades to dry or 0 according to the m_startFromDry parameter
     // it is an alternative for using pauseFillter() calls
     void processAndPauseFilter(const CSAMPLE* pIn, CSAMPLE* pOutput,
-                       const int iBufferSize) {
+                       int iBufferSize) {
         process(pIn, pOutput, iBufferSize);
         SampleUtil::applyRampingGain(pOutput,1.0, 0.0, iBufferSize);
         if(m_startFromDry)
@@ -187,7 +187,7 @@ class EngineFilterIIR : public EngineFilterIIRBase {
     }
 
     virtual void process(const CSAMPLE* pIn, CSAMPLE* pOutput,
-                         const int iBufferSize) {
+                         int iBufferSize) {
         if (!m_doRamping) {
             for (int i = 0; i < iBufferSize; i += 2) {
                 pOutput[i] = processSample(m_coef, m_buf1, pIn[i]);

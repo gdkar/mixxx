@@ -19,7 +19,6 @@
 #include "engine/enginedelay.h"
 #include "engine/enginetalkoverducking.h"
 #include "engine/enginevumeter.h"
-#include "engine/engineworkerscheduler.h"
 #include "engine/enginexfader.h"
 #include "engine/sidechain/enginesidechain.h"
 #include "engine/sync/enginesync.h"
@@ -48,8 +47,6 @@ EngineMaster::EngineMaster(UserSettingsPointer pConfig,
     m_bBusOutputConnected[EngineChannel::LEFT] = false;
     m_bBusOutputConnected[EngineChannel::CENTER] = false;
     m_bBusOutputConnected[EngineChannel::RIGHT] = false;
-    m_pWorkerScheduler = new EngineWorkerScheduler(this);
-    m_pWorkerScheduler->start(QThread::HighPriority);
 
     if (pEffectsManager) {
         pEffectsManager->registerChannel(m_masterHandle);
@@ -207,8 +204,6 @@ EngineMaster::~EngineMaster() {
         SampleUtil::free(m_pOutputBusBuffers[o]);
     }
 
-    delete m_pWorkerScheduler;
-
     for (int i = 0; i < m_channels.size(); ++i) {
         ChannelInfo* pChannelInfo = m_channels[i];
         SampleUtil::free(pChannelInfo->m_pBuffer);
@@ -328,7 +323,7 @@ void EngineMaster::processChannels(int iBufferSize) {
     }
 }
 
-void EngineMaster::process(const int iBufferSize) {
+void EngineMaster::process(int iBufferSize) {
     static bool haveSetName = false;
     if (!haveSetName) {
         QThread::currentThread()->setObjectName("Engine");
@@ -575,7 +570,7 @@ void EngineMaster::process(const int iBufferSize) {
 
     // We're close to the end of the callback. Wake up the engine worker
     // scheduler so that it runs the workers.
-    m_pWorkerScheduler->runWorkers();
+    m_workerScheduler.runWorkers();
 }
 
 void EngineMaster::addChannel(EngineChannel* pChannel) {
@@ -608,9 +603,9 @@ void EngineMaster::addChannel(EngineChannel* pChannel) {
     m_activeHeadphoneChannels.reserve(m_channels.size());
     m_activeTalkoverChannels.reserve(m_channels.size());
 
-    EngineBuffer* pBuffer = pChannelInfo->m_pChannel->getEngineBuffer();
-    if (pBuffer != NULL) {
-        pBuffer->bindWorkers(m_pWorkerScheduler);
+    auto pBuffer = pChannelInfo->m_pChannel->getEngineBuffer();
+    if (pBuffer) {
+        pBuffer->bindWorkers(&m_workerScheduler);
     }
 }
 

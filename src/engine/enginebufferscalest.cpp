@@ -39,11 +39,11 @@ namespace {
 // 0.918 (upscaling 44.1 kHz to 48 kHz) will produce an additional offset of 3 Frames
 // 0.459 (upscaling 44.1 kHz to 96 kHz) will produce an additional offset of 18 Frames
 // (Rubberband does not suffer this issue)
-const int kSeekOffsetFrames = 519;
+int kSeekOffsetFrames = 519;
 
-const int kNumChannels = 2;
+int kNumChannels = 2;
 
-const int kBackBufferSize = kSeekOffsetFrames * kNumChannels;
+int kBackBufferSize = kSeekOffsetFrames * kNumChannels;
 
 }  // namespace
 
@@ -133,7 +133,7 @@ void EngineBufferScaleST::clear() {
     m_pSoundTouch->putSamples(buffer_back, kSeekOffsetFrames);
 }
 
-double EngineBufferScaleST::getScaled(CSAMPLE* pOutput, const int buf_size) {
+double EngineBufferScaleST::getScaled(CSAMPLE* pOutput, int buf_size) {
     double samplesRead = 0.0;
 
     if (m_dBaseRate == 0 || m_dTempoRatio == 0 || m_dPitchRatio == 0) {

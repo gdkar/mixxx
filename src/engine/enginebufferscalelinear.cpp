@@ -66,7 +66,7 @@ inline float hermite4(float frac_pos, float xm1, float x0, float x1, float x2)
 // Determine if we're changing directions (scratching) and then perform
 // a stretch
 double EngineBufferScaleLinear::getScaled(CSAMPLE* pOutput,
-                                          const int buf_size) {
+                                          int buf_size) {
     if (buf_size == 0) {
         return 0.0;
     }
@@ -128,7 +128,7 @@ double EngineBufferScaleLinear::getScaled(CSAMPLE* pOutput,
     return samples_read;
 }
 
-int EngineBufferScaleLinear::do_copy(CSAMPLE* buf, const int buf_size) {
+int EngineBufferScaleLinear::do_copy(CSAMPLE* buf, int buf_size) {
     int samples_needed = buf_size;
     CSAMPLE* write_buf = buf;
     // Use up what's left of the internal buffer.
@@ -147,8 +147,7 @@ int EngineBufferScaleLinear::do_copy(CSAMPLE* buf, const int buf_size) {
     // to call getNextSamples until you receive the number of samples you
     // wanted.
     while (samples_needed > 0) {
-        int read_size = m_pReadAheadManager->getNextSamples(m_dRate, write_buf,
-                samples_needed);
+        int read_size = m_pReadAheadManager->getNextSamples(m_dRate, write_buf,samples_needed);
         if (read_size == 0) {
             if(++read_failed_count > 1) {
                 break;
@@ -179,7 +178,7 @@ int EngineBufferScaleLinear::do_copy(CSAMPLE* buf, const int buf_size) {
 
 // Stretch a specified buffer worth of audio using linear interpolation
 int EngineBufferScaleLinear::do_scale(CSAMPLE* buf,
-                                      const int buf_size) {
+                                      int buf_size) {
     float rate_old = m_dOldRate;
     const float rate_new = m_dRate;
     const float rate_diff = rate_new - rate_old;
@@ -207,8 +206,8 @@ int EngineBufferScaleLinear::do_scale(CSAMPLE* buf,
     // Simulate the loop to estimate how many frames we need
     double frames = 0;
     // We're calculating frames = 2 samples, so divide remaining buffer by 2;
-    const int bufferSizeFrames = buf_size / 2;
-    const double rate_delta = rate_diff / bufferSizeFrames;
+    int bufferSizeFrames = buf_size / 2;
+    double rate_delta = rate_diff / bufferSizeFrames;
     // use Gaussian sum formula (n(n+1))/2 for
     //for (int j = 0; j < bufferSizeFrames; ++j) {
     //    frames += (j * rate_delta) + rate_old;
@@ -241,7 +240,7 @@ int EngineBufferScaleLinear::do_scale(CSAMPLE* buf,
     //int screwups_debug = 0;
 
     double rate_add = fabs(rate_old);
-    const double rate_delta_abs =
+    double rate_delta_abs =
             rate_old < 0 || rate_new < 0 ? -rate_delta : rate_delta;
 
     // Hot frame loop

@@ -11,11 +11,14 @@ EngineControl::EngineControl(QString group,
                              UserSettingsPointer pConfig, QObject *pParent)
         : QObject(pParent),
           m_group(group),
-          m_pConfig(pConfig),
-          m_pEngineMaster(nullptr),
-          m_pEngineBuffer(nullptr)
+          m_pConfig(pConfig)
 {
+    connect(
+        this,SIGNAL(notifySeek(double)),
+        this,SLOT(onNotifySeek(double)),
+        static_cast<Qt::ConnectionType>(Qt::AutoConnection|Qt::UniqueConnection));
     setCurrentSample(0.0, 0.0);
+
     if(auto p = qobject_cast<EngineBuffer*>(parent())) {
         p->addControl(this);
     }
@@ -25,24 +28,24 @@ void EngineControl::collectFeatureState(GroupFeatureState* pGroupFeatures) const
 {
     Q_UNUSED(pGroupFeatures);
 }
-double EngineControl::process(const double,
-                              const double,
-                              const double,
-                              const int) {
+double EngineControl::process(double,
+                              double,
+                              double,
+                              int) {
     return kNoTrigger;
 }
 
-double EngineControl::nextTrigger(const double,
-                                  const double,
-                                  const double,
-                                  const int) {
+double EngineControl::nextTrigger(double,
+                                  double,
+                                  double,
+                                  int) {
     return kNoTrigger;
 }
 
-double EngineControl::getTrigger(const double,
-                                 const double,
-                                 const double,
-                                 const int) {
+double EngineControl::getTrigger(double,
+                                 double,
+                                 double,
+                                 int) {
     return kNoTrigger;
 }
 void EngineControl::trackLoaded(TrackPointer , TrackPointer ) { }
@@ -53,59 +56,68 @@ void EngineControl::setEngineMaster(EngineMaster* pEngineMaster)
 }
 void EngineControl::setEngineBuffer(EngineBuffer* pEngineBuffer)
 {
+    if(m_pEngineBuffer == pEngineBuffer)
+        return;
+    if(m_pEngineBuffer) {
+    disconnect(this,
+            SIGNAL(seekAbs(double)),
+            pEngineBuffer,
+            SLOT(slotControlSeekAbs(double))
+           );
+    disconnect(this,
+            SIGNAL(seekExact(double)),
+            pEngineBuffer,
+            SLOT(slotControlSeekExact(double))
+           );
+    disconnect(this,
+            SIGNAL(seek(double)),
+            pEngineBuffer,
+            SLOT(slotControlSeek(double))
+           );
+
+    }
     m_pEngineBuffer = pEngineBuffer;
+    connect(this,
+            SIGNAL(seekAbs(double)),
+            pEngineBuffer,
+            SLOT(slotControlSeekAbs(double)),
+            static_cast<Qt::ConnectionType>(Qt::DirectConnection|Qt::AutoConnection)
+           );
+    connect(this,
+            SIGNAL(seekExact(double)),
+            pEngineBuffer,
+            SLOT(slotControlSeekExact(double)),
+            static_cast<Qt::ConnectionType>(Qt::DirectConnection|Qt::AutoConnection)
+           );
+    connect(this,
+            SIGNAL(seek(double)),
+            pEngineBuffer,
+            SLOT(slotControlSeek(double)),
+            static_cast<Qt::ConnectionType>(Qt::DirectConnection|Qt::AutoConnection)
+           );
 }
 
-void EngineControl::setCurrentSample(const double dCurrentSample, const double dTotalSamples) {
-    SampleOfTrack sot;
-    sot.current = dCurrentSample;
-    sot.total = dTotalSamples;
-    m_sampleOfTrack.setValue(sot);
+void EngineControl::setCurrentSample(double dCurrentSample, double dTotalSamples) {
+    m_sampleOfTrack.store(sot{ dCurrentSample,dTotalSamples});
 }
 
 double EngineControl::getCurrentSample() const {
-    return m_sampleOfTrack.getValue().current;
+    return m_sampleOfTrack.load().current;
 }
 
 double EngineControl::getTotalSamples() const {
-    return m_sampleOfTrack.getValue().total;
+    return m_sampleOfTrack.load().total;
 }
-
 bool EngineControl::atEndPosition() const {
-    SampleOfTrack sot = m_sampleOfTrack.getValue();
-    return (sot.current >= sot.total);
+    auto sot = m_sampleOfTrack.load();
+    return (sot.current>= sot.total);
 }
-
-QString EngineControl::getGroup() const {
-    return m_group;
-}
-
+QString EngineControl::getGroup() const { return m_group; }
 UserSettingsPointer EngineControl::getConfig() {
     return m_pConfig;
 }
 EngineMaster* EngineControl::getEngineMaster() { return m_pEngineMaster; }
 EngineBuffer* EngineControl::getEngineBuffer() { return m_pEngineBuffer; }
-void EngineControl::seekAbs(double playPosition) {
-    if (m_pEngineBuffer) {
-        m_pEngineBuffer->slotControlSeekAbs(playPosition);
-    }
-}
-
-void EngineControl::seekExact(double playPosition) {
-    if (m_pEngineBuffer) {
-        m_pEngineBuffer->slotControlSeekExact(playPosition);
-    }
-}
-
-void EngineControl::seek(double sample) {
-    if (m_pEngineBuffer) {
-        m_pEngineBuffer->slotControlSeek(sample);
-    }
-}
-
-void EngineControl::notifySeek(double dNewPlaypos) {
-    Q_UNUSED(dNewPlaypos);
-}
 EngineBuffer* EngineControl::pickSyncTarget()
 {
     if(auto pMaster = getEngineMaster()) {

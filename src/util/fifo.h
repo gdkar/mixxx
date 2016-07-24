@@ -3,81 +3,202 @@
 
 #include <QtDebug>
 #include <QMutex>
+#include <QThread>
 #include <QScopedPointer>
 #include <QSharedPointer>
+#include <atomic>
+#include <memory>
+#include <utility>
+#include <iterator>
+#include <algorithm>
+#include <functional>
+#include <type_traits>
 
-#include "pa_ringbuffer.h"
 #include "util/class.h"
 #include "util/math.h"
 #include "util/reference.h"
+#include "util/semaphore.hpp"
 
-template <class DataType>
+template<class T>
 class FIFO {
-  public:
-    explicit FIFO(int size)
-            : m_data(NULL) {
-        size = roundUpToPowerOf2(size);
-        // If we can't represent the next higher power of 2 then bail.
-        if (size < 0) {
-            return;
+protected:
+    int64_t                 m_size{0};
+    int64_t                 m_mask{0};
+    std::atomic<int64_t>    m_ridx{0};
+    std::atomic<int64_t>    m_widx{0};
+    std::unique_ptr<T[]>    m_data{};
+public:
+    using value_type      = T;
+    using size_type       = int;
+    using difference_type = int64_t;
+    using reference       = T&;
+    using const_reference = const T&;
+    using pointer         = T*;
+    using const_pointer   = const T*;
+    static constexpr const size_type npos = std::numeric_limits<size_type>::max() / 8;
+    FIFO() = default;
+    FIFO(FIFO && o) noexcept
+      : m_size(std::exchange(o.m_size,0))
+      , m_mask(std::exchange(o.m_mask,0))
+      , m_ridx(o.m_ridx.exchange(0))
+      , m_widx(o.m_widx.exchange(0))
+      , m_data(std::move(o.m_data)) { }
+    FIFO&operator = (FIFO && o) noexcept
+    {
+       m_size=std::exchange(o.m_size,0);
+       m_mask=std::exchange(o.m_mask,0);
+       m_ridx=o.m_ridx.exchange(0);
+       m_widx=o.m_widx.exchange(0);
+       m_data.swap(o.m_data);
+    }
+    FIFO(size_type _size)
+    : m_size(roundUpToPowerOf2(_size))
+    , m_mask(m_size - 1)
+    , m_data(std::make_unique<T[]>(m_size)){}
+   ~FIFO() = default;
+    size_type readAvailable() const
+    {
+        auto widx = m_widx.load();auto ridx = m_ridx.load();
+        return widx - ridx;
+    }
+    size_type writeAvailable() const
+    {
+        auto widx = m_widx.load();auto ridx = m_ridx.load();
+        return m_size - (widx - ridx);
+    }
+    bool full() const  { return (m_ridx.load() + m_size) == m_widx.load();}
+    bool empty() const { return m_ridx.load() == m_widx.load();}
+    std::pair<T*, T*> read_contig(size_type count = npos,size_type offset = 0)
+    {
+        auto widx = m_widx.load();auto ridx = m_ridx.load() + offset;
+        if(offset < 0 || widx - ridx < 0)
+            return std::make_pair(static_cast<T*>(nullptr),0);
+        auto rpos = ridx & m_mask;
+        count     = std::min<size_type>(count,std::min<difference_type>(m_size - rpos, widx - ridx));
+        return std::make_pair(m_data.get() + rpos, m_data.get() + rpos + count);
+    }
+    std::pair<pointer, size_type> read_contig_n(size_type count = npos, difference_type offset = 0)
+    {
+        auto widx = m_widx.load();auto ridx = m_ridx.load() + offset;
+        if(offset < 0 || widx - ridx < 0)
+            return std::make_pair(static_cast<T*>(nullptr),0);
+        auto rpos = ridx & m_mask;
+        count     = std::min<size_type>(count,std::min<difference_type>(m_size - rpos, widx - ridx));
+        return std::make_pair(m_data.get() + rpos, count);
+    }
+    std::pair<pointer, pointer> write_contig(size_type count = npos, difference_type offset = 0)
+    {
+        auto widx = m_widx.load() + offset;auto ridx = m_ridx.load();
+        if(offset < 0 || ridx + m_size - widx < 0)
+            return std::make_pair(static_cast<T*>(nullptr),0);
+        auto wpos = widx & m_mask;
+        count     = std::min<size_type>(count,std::min<difference_type>(m_size - wpos, m_size + ridx - widx));
+        return std::make_pair(m_data.get() + wpos, m_data.get() + wpos + count);
+    }
+    std::pair<pointer, size_type> write_contig_n(size_type count = npos, size_type offset = 0)
+    {
+        auto widx = m_widx.load() + offset;auto ridx = m_ridx.load();
+        if(offset < 0 || ridx + m_size - widx < 0)
+            return std::make_pair(static_cast<T*>(nullptr),0);
+        auto wpos = widx & m_mask;
+        count     = std::min<size_type>(count,std::min<difference_type>(m_size - wpos, m_size + ridx - widx));
+        return std::make_pair(m_data.get() + wpos, count);
+    }
+    template<class Iter>
+    size_type read(Iter pData, size_type count)
+    {
+        auto total = count;
+        for(auto i = 0; i < 2 && count > 0; i++) {
+            auto region = read_contig_n(count);
+            pData = std::copy_n(region.first,region.second,pData);
+            count -= region.second;
+            m_ridx.fetch_add(region.second);
         }
-        m_data = new DataType[size];
-        memset(m_data, 0, sizeof(DataType) * size);
-        PaUtil_InitializeRingBuffer(
-                &m_ringBuffer, sizeof(DataType), size, m_data);
+        return total - count;
     }
-    virtual ~FIFO() {
-        delete [] m_data;
+    template<class Iter>
+    size_type write(Iter pData, size_type count)
+    {
+        auto total = count;
+        for(auto i = 0; i < 2 && count > 0; i++) {
+            auto region = write_contig_n(count);
+            pData = std::copy_n(pData,region.second,region.first);
+            count -= region.second;
+            m_widx.fetch_add(region.second);
+        }
+        return total - count;
     }
-    int readAvailable() const {
-        return PaUtil_GetRingBufferReadAvailable(&m_ringBuffer);
+    size_type get_write_regions(size_type count,
+        pointer* dataPtr1, size_type * sizePtr1,
+        pointer* dataPtr2, size_type * sizePtr2) {
+        size_type s1, s2;
+        if(!sizePtr1) sizePtr1 = &s1;
+        if(!sizePtr2) sizePtr2 = &s2;
+        std::tie(*dataPtr1, *sizePtr1) = write_contig_n(count);
+        std::tie(*dataPtr2, *sizePtr2) = write_contig_n(count - *sizePtr1, *sizePtr1);
+        return *sizePtr1 + *sizePtr2;
     }
-    int writeAvailable() const {
-        return PaUtil_GetRingBufferWriteAvailable(&m_ringBuffer);
+    size_type get_read_regions(size_type  count,
+        pointer* dataPtr1, size_type* sizePtr1,
+        pointer* dataPtr2, size_type* sizePtr2) {
+        size_type s1, s2;
+        if(!sizePtr1) sizePtr1 = &s1;
+        if(!sizePtr2) sizePtr2 = &s2;
+        std::tie(*dataPtr1, *sizePtr1) = read_contig_n(count);
+        std::tie(*dataPtr2, *sizePtr2) = read_contig_n(count - *sizePtr1, *sizePtr1);
+        return *sizePtr1 + *sizePtr2;
     }
-    int read(DataType* pData, int count) {
-        return PaUtil_ReadRingBuffer(&m_ringBuffer, pData, count);
+    size_type commit_write(size_type count)
+    {
+        auto widx = m_widx.load();auto ridx = m_ridx.load();
+        count = std::min<size_type>(count, ridx + m_size - widx);
+        m_widx.fetch_add(count);
+        return count;
     }
-    int write(const DataType* pData, int count) {
-        return PaUtil_WriteRingBuffer(&m_ringBuffer, pData, count);
+    size_type commit_read(size_type count)
+    {
+        auto widx = m_widx.load();auto ridx = m_ridx.load();
+        count = std::min<size_type>(count, widx - ridx);
+        m_ridx.fetch_add(count);
+        return count;
     }
-    void writeBlocking(const DataType* pData, int count) {
-        int written = 0;
-        while (written != count) {
-            int i = write(pData, count);
-            pData += i;
-            written += i;
+    template<class Iter>
+    void write_blocking(Iter it, size_type count) {
+        auto total = 0;
+        while(total != count) {
+            auto partial = write(it,count - total);
+            std::advance(it, partial);
+            total += partial;
         }
     }
-    int aquireWriteRegions(int count,
-            DataType** dataPtr1, ring_buffer_size_t* sizePtr1,
-            DataType** dataPtr2, ring_buffer_size_t* sizePtr2) {
-        return PaUtil_GetRingBufferWriteRegions(&m_ringBuffer, count,
-                (void**)dataPtr1, sizePtr1, (void**)dataPtr2, sizePtr2);
+    void write_blocking(const T&item)
+    {
+        while(!push_back(item))
+            QThread::yieldCurrentThread();
     }
-    int releaseWriteRegions(int count) {
-        return PaUtil_AdvanceRingBufferWriteIndex(&m_ringBuffer, count);
-    }
-    int aquireReadRegions(int count,
-            DataType** dataPtr1, ring_buffer_size_t* sizePtr1,
-            DataType** dataPtr2, ring_buffer_size_t* sizePtr2) {
-        return PaUtil_GetRingBufferReadRegions(&m_ringBuffer, count,
-                (void**)dataPtr1, sizePtr1, (void**)dataPtr2, sizePtr2);
-    }
-    int releaseReadRegions(int count) {
-        return PaUtil_AdvanceRingBufferReadIndex(&m_ringBuffer, count);
-    }
-    int flushReadData(int count) {
-        int flush = math_min(readAvailable(), count);
-        return PaUtil_AdvanceRingBufferReadIndex(&m_ringBuffer, flush);
-    }
+    T &front() { return m_data[m_ridx.load()&m_mask]; }
+    const T &front() const { return m_data[m_ridx.load()&m_mask]; }
+    T &back() { return m_data[(m_widx.load() - 1) & m_mask]; }
+    const T &back() const { return m_data[(m_widx.load() -1)&m_mask]; }
+    T &wback() { return m_data[(m_widx.load()) & m_mask]; }
+    const T &wback() const { return m_data[(m_widx.load())&m_mask]; }
 
-  private:
-    DataType* m_data;
-    PaUtilRingBuffer m_ringBuffer;
-    DISALLOW_COPY_AND_ASSIGN(FIFO<DataType>);
+    void pop_front() { if(!empty()) m_ridx.fetch_add(1);}
+    bool push_back(const T &t) { 
+        if(full()){
+            return false;
+        }else{
+            wback() = t;
+            m_widx.fetch_add(1);
+            return true;
+        }
+    }
+    difference_type read_index() const { return m_ridx.load(); }
+    difference_type write_index() const { return m_widx.load(); }
+    size_type       read_offset() const { return static_cast<size_type>(read_index() & m_mask); }
+    size_type       write_offset() const { return static_cast<size_type>(write_index() & m_mask); }
+    void reset() { m_ridx.store(0); m_widx.store(0);}
 };
-
 // MessagePipe represents one side of a TwoWayMessagePipe. The direction of the
 // pipe is with respect to the owner so sender and receiver are
 // perspective-dependent. If serializeWrites is true then calls to writeMessages

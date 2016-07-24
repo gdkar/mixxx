@@ -18,8 +18,8 @@ class ClockControl: public EngineControl {
 
     virtual ~ClockControl();
 
-    double process(const double dRate, const double currentSample,
-                   const double totalSamples, const int iBufferSize);
+    double process(double dRate, double currentSample,
+                   double totalSamples, int iBufferSize);
 
   public slots:
     void trackLoaded(TrackPointer pNewTrack, TrackPointer pOldTrack) override;

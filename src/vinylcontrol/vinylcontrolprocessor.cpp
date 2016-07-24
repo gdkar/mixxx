@@ -115,8 +115,10 @@ void VinylControlProcessor::run() {
                 VinylSignalQualityReport report;
                 if (pProcessor->writeQualityReport(&report)) {
                     report.processor = i;
-                    if (m_signalQualityFifo.write(&report, 1) != 1) {
+                    if (m_signalQualityFifo.full()) {
                         qWarning() << "VinylControlProcessor could not write signal quality report for VC index:" << i;
+                    }else{
+                        m_signalQualityFifo.push_back(report);
                     }
                 }
             }

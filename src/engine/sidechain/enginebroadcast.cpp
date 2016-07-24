@@ -28,6 +28,9 @@ static const int kConnectRetries = 30;
 static const int kMaxNetworkCache = 491520;  // 10 s mp3 @ 192 kbit/s
 static const int kMaxShoutFailures = 3;
 
+using fifo_pointer   = typename FIFO<CSAMPLE>::pointer;
+using fifo_size_type = typename FIFO<CSAMPLE>::size_type;
+
 EngineBroadcast::EngineBroadcast(UserSettingsPointer pConfig)
         : m_pTextCodec(nullptr),
           m_pMetaData(),
@@ -500,7 +503,7 @@ bool EngineBroadcast::processConnect() {
             infoDialog(tr("Mixxx has successfully connected to the streaming server"), "");
 
             if (m_pOutputFifo->readAvailable()) {
-                m_pOutputFifo->flushReadData(m_pOutputFifo->readAvailable());
+                m_pOutputFifo->commit_read(m_pOutputFifo->readAvailable());
             }
             m_threadWaiting = true;
             m_pStatusCO->setAndConfirm(STATUSCO_CONNECTED);
@@ -842,18 +845,16 @@ void EngineBroadcast::run() {
         int readAvailable = m_pOutputFifo->readAvailable();
         if (readAvailable) {
             setFunctionCode(3);
-            CSAMPLE* dataPtr1;
-            ring_buffer_size_t size1;
-            CSAMPLE* dataPtr2;
-            ring_buffer_size_t size2;
+            fifo_pointer dataPtr1, dataPtr2;
+            fifo_size_type size1,size2;
             // We use size1 and size2, so we can ignore the return value
-            (void)m_pOutputFifo->aquireReadRegions(readAvailable, &dataPtr1, &size1,
+            (void)m_pOutputFifo->get_read_regions(readAvailable, &dataPtr1, &size1,
                     &dataPtr2, &size2);
             process(dataPtr1, size1);
             if (size2 > 0) {
                 process(dataPtr2, size2);
             }
-            m_pOutputFifo->releaseReadRegions(readAvailable);
+            m_pOutputFifo->commit_read(readAvailable);
         }
     }
 }

@@ -44,7 +44,7 @@ class EngineBufferScaleST : public EngineBufferScale {
                             double* pPitchRatio) override;
     void setSampleRate(int iSampleRate) override;
     // Scale buffer.
-    double getScaled(CSAMPLE* pOutput, const int iBufferSize) override;
+    double getScaled(CSAMPLE* pOutput, int iBufferSize) override;
     // Flush buffer.
     void clear() override;
   private:

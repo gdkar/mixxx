@@ -45,7 +45,7 @@ class EngineEffectParameter {
     inline double value() const {
         return m_value;
     }
-    inline void setValue(const double value) {
+    inline void setValue(double value) {
         m_value = value;
     }
     inline int toInt() const {
@@ -58,21 +58,21 @@ class EngineEffectParameter {
     inline double defaultValue() const {
         return m_defaultValue;
     }
-    inline void setDefaultValue(const double default_value) {
+    inline void setDefaultValue(double default_value) {
         m_defaultValue = default_value;
     }
 
     inline double minimum() const {
         return m_minimum;
     }
-    inline void setMinimum(const double minimum) {
+    inline void setMinimum(double minimum) {
         m_minimum = minimum;
     }
 
     inline double maximum() const {
         return m_maximum;
     }
-    inline void setMaximum(const double maximum) {
+    inline void setMaximum(double maximum) {
         m_maximum = maximum;
     }
 

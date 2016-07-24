@@ -50,7 +50,7 @@ class EngineSideChainCompressor {
     // multiple times for multiple keys, however they will not be summed together
     // so compression will not be triggered unless at least one buffer would
     // have triggered alone.
-    void processKey(const CSAMPLE* pIn, const int iBufferSize);
+    void processKey(const CSAMPLE* pIn, int iBufferSize);
 
     // Calculates a new gain value based on the current compression ratio
     // over the given number of frames and whether the current input is above threshold.

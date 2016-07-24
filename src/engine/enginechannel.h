@@ -60,8 +60,8 @@ class EngineChannel : public EngineObject {
     void setTalkover(bool enabled);
     virtual bool isTalkoverEnabled() const;
 
-    virtual void process(CSAMPLE* pOut, const int iBufferSize) = 0;
-    virtual void postProcess(const int iBuffersize) = 0;
+    virtual void process(CSAMPLE* pOut, int iBufferSize) = 0;
+    virtual void postProcess(int iBuffersize) = 0;
 
     // TODO(XXX) This hack needs to be removed.
     virtual EngineBuffer* getEngineBuffer() {

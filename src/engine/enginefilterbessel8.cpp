@@ -20,11 +20,11 @@ int EngineFilterBessel8Low::setFrequencyCornersForIntDelay(
     // fid_response_pha() at corner / 20
 
     // group delay at 1 Hz freqCorner1 and 1 Hz Samplerate
-    const double kDelayFactor1 = 0.506051799;
+    double kDelayFactor1 = 0.506051799;
     // Factor, required to hit the end of the quadratic curve
-    const double kDelayFactor2 = 1.661247;
+    double kDelayFactor2 = 1.661247;
     // Table for the non quadratic, high part near the sample rate
-    const double delayRatioTable[] = {
+    double delayRatioTable[] = {
             0.500000000,  // delay 0
             0.321399282,  // delay 1
             0.213843537,  // delay 2

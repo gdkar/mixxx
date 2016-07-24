@@ -27,17 +27,17 @@ ReadAheadManager::ReadAheadManager(CachingReader* pReader,
           m_pRateControl(nullptr),
           m_iCurrentPosition(0),
           m_pReader(pReader),
-          m_pCrossFadeBuffer(SampleUtil::alloc(MAX_BUFFER_LEN)) {
+          m_pCrossFadeBuffer(SampleUtil::alloc(MAX_BUFFER_LEN))
+{
     DEBUG_ASSERT(m_pLoopingControl != nullptr);
     DEBUG_ASSERT(m_pReader != nullptr);
+    connect(this,SIGNAL(notifySeek(double)),pLoopingControl,SIGNAL(notifySeek(double)));
+    connect(this,SIGNAL(notifySeek(double)),this,SLOT(onNotifySeek(double)));
     SampleUtil::clear(m_pCrossFadeBuffer, MAX_BUFFER_LEN);
 }
-ReadAheadManager::~ReadAheadManager()
-{
-    SampleUtil::free(m_pCrossFadeBuffer);
-}
-int ReadAheadManager::getNextSamples(double dRate, CSAMPLE* buffer,
-                                     int requested_samples)
+ReadAheadManager::~ReadAheadManager() { SampleUtil::free(m_pCrossFadeBuffer); }
+int64_t ReadAheadManager::getNextSamples(double dRate, CSAMPLE* buffer,
+                                     int64_t requested_samples)
 {
     if (!even(requested_samples)) {
         qDebug() << "ERROR: Non-even requested_samples to ReadAheadManager::getNextSamples";
@@ -47,30 +47,26 @@ int ReadAheadManager::getNextSamples(double dRate, CSAMPLE* buffer,
     auto start_sample = m_iCurrentPosition;
     //qDebug() << "start" << start_sample << requested_samples;
     auto samples_needed = requested_samples;
-    CSAMPLE* base_buffer = buffer;
+    auto base_buffer = buffer;
 
     // A loop will only limit the amount we can read in one shot.
 
-    auto loop_trigger = m_pLoopingControl->nextTrigger(
-            dRate, m_iCurrentPosition, 0, 0);
+    auto loop_trigger = m_pLoopingControl->nextTrigger(dRate, m_iCurrentPosition, 0, 0);
     auto loop_active = loop_trigger != kNoTrigger;
     auto preloop_samples = 0;
-
     if (loop_active) {
-        auto samples_available = static_cast<int>(in_reverse ?
+        auto samples_available = static_cast<int64_t>(in_reverse ?
                 m_iCurrentPosition - loop_trigger :
                 loop_trigger - m_iCurrentPosition);
         if (samples_available < 0) {
             samples_needed = 0;
         } else {
             preloop_samples = samples_available;
-            samples_needed = math_clamp(samples_needed, 0, samples_available);
+            samples_needed = math_clamp<int64_t>(samples_needed, 0, samples_available);
         }
     }
-
-    if (in_reverse) {
+    if (in_reverse) 
         start_sample = m_iCurrentPosition - samples_needed;
-    }
 
     // Sanity checks.
     if (samples_needed < 0) {
@@ -102,7 +98,7 @@ int ReadAheadManager::getNextSamples(double dRate, CSAMPLE* buffer,
                 qDebug() << "ERROR: Couldn't get all needed samples for crossfade.";
             }
             // do crossfade from the current buffer into the new loop beginning
-            if (samples_read != 0) { // avoid division by zero
+            if (samples_read) { // avoid division by zero
                 SampleUtil::linearCrossfadeBuffers(base_buffer, base_buffer, m_pCrossFadeBuffer, samples_read);
             }
         }
@@ -112,12 +108,15 @@ int ReadAheadManager::getNextSamples(double dRate, CSAMPLE* buffer,
 }
 void ReadAheadManager::addRateControl(RateControl* pRateControl)
 {
+    disconnect(this,SIGNAL(notifySeek(double)),m_pRateControl,SIGNAL(notifySeek(double)));
     m_pRateControl = pRateControl;
+    connect(this,SIGNAL(notifySeek(double)),m_pRateControl,SIGNAL(notifySeek(double)));
+
 }
 // Not thread-save, call from engine thread only
-void ReadAheadManager::notifySeek(int iSeekPosition)
+void ReadAheadManager::onNotifySeek(double dSeekPosition)
 {
-    m_iCurrentPosition = iSeekPosition;
+    m_iCurrentPosition = static_cast<int64_t>(dSeekPosition);
     m_readAheadLog.clear();
 }
 void ReadAheadManager::hintReader(double dRate, HintVector* pHintList)
@@ -141,23 +140,20 @@ void ReadAheadManager::hintReader(double dRate, HintVector* pHintList)
 // Not thread-save, call from engine thread only
 void ReadAheadManager::addReadLogEntry(double virtualPlaypositionStart,
                                        double virtualPlaypositionEnd) {
-    ReadLogEntry newEntry(virtualPlaypositionStart,
-                          virtualPlaypositionEnd);
+    auto newEntry = ReadLogEntry(virtualPlaypositionStart,virtualPlaypositionEnd);
     if (m_readAheadLog.size() > 0) {
-        ReadLogEntry& last = m_readAheadLog.last();
-        if (last.merge(newEntry)) {
+        auto& last = m_readAheadLog.last();
+        if (last.merge(newEntry))
             return;
-        }
     }
     m_readAheadLog.append(newEntry);
 }
 
 // Not thread-save, call from engine thread only
-int ReadAheadManager::getEffectiveVirtualPlaypositionFromLog(double currentVirtualPlayposition,
-                                                             double numConsumedSamples) {
-    if (numConsumedSamples == 0) {
+int64_t ReadAheadManager::getEffectiveVirtualPlaypositionFromLog(double currentVirtualPlayposition,double numConsumedSamples)
+{
+    if (numConsumedSamples == 0)
         return currentVirtualPlayposition;
-    }
     if (m_readAheadLog.size() == 0) {
         // No log entries to read from.
         qDebug() << this << "No read ahead log entries to read from. Case not currently handled.";
@@ -172,10 +168,7 @@ int ReadAheadManager::getEffectiveVirtualPlaypositionFromLog(double currentVirtu
         direction = entry.direction();
         // Notify EngineControls that we have taken a seek.
         if (shouldNotifySeek) {
-            m_pLoopingControl->notifySeek(entry.virtualPlaypositionStart);
-            if (m_pRateControl) {
-                m_pRateControl->notifySeek(entry.virtualPlaypositionStart);
-            }
+            emit notifySeek(entry.virtualPlaypositionStart);
         }
         auto consumed = entry.consume(numConsumedSamples);
         numConsumedSamples -= consumed;
@@ -190,15 +183,13 @@ int ReadAheadManager::getEffectiveVirtualPlaypositionFromLog(double currentVirtu
     }
     auto result = 0;
     if (direction) {
-        result = static_cast<int>(std::floor(virtualPlayposition));
-        if (!even(result)) {
+        result = static_cast<int64_t>(std::floor(virtualPlayposition));
+        if (!even(result))
             result--;
-        }
     } else {
-        result = static_cast<int>(std::ceil(virtualPlayposition));
-        if (!even(result)) {
+        result = static_cast<int64_t>(std::ceil(virtualPlayposition));
+        if (!even(result))
             result++;
-        }
     }
     return result;
 }

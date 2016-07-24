@@ -19,7 +19,9 @@
 #define ENGINEBUFFER_H
 
 #include <QMutex>
-#include <QAtomicInt>
+#include <QMetaEnum>
+#include <QMetaType>
+#include <QtGlobal>
 #include <gtest/gtest_prod.h>
 
 #include "engine/cachingreader.h"
@@ -58,7 +60,7 @@ class ControlPotmeter;
 class EngineBufferScale;
 class EngineBufferScaleLinear;
 class EngineBufferScaleST;
-class EngineBufferScaleRubberBand;
+class EngineBufferScaleRB;
 class EngineSync;
 class EngineWorkerScheduler;
 class VisualPlayPosition;
@@ -69,40 +71,53 @@ class EngineMaster;
 */
 
 // Length of audio beat marks in samples
-const int audioBeatMarkLen = 40;
+static constexpr const int audioBeatMarkLen = 40;
 
 // Temporary buffer length
-const int kiTempLength = 200000;
+static constexpr const int kiTempLength = 200000;
 
 // Rate at which the playpos slider is updated
-const int kiPlaypositionUpdateRate = 10; // updates per second
+static constexpr const int kiPlaypositionUpdateRate = 10; // updates per second
 // Number of kiUpdateRates that go by before we update BPM.
-const int kiBpmUpdateCnt = 4; // about 2.5 updates per sec
+static constexpr const int kiBpmUpdateCnt = 4; // about 2.5 updates per sec
+
+// End of track mode constants
+static constexpr const int TRACK_END_MODE_STOP = 0;
+static constexpr const int TRACK_END_MODE_NEXT = 1;
+static constexpr const int TRACK_END_MODE_LOOP = 2;
+static constexpr const int TRACK_END_MODE_PING = 3;
+
+static constexpr const int ENGINE_RAMP_DOWN = -1;
+static constexpr const int ENGINE_RAMP_NONE = 0;
+static constexpr const int ENGINE_RAMP_UP = 1;
+
+//int kiRampLength = 3;
 
 class EngineBuffer : public EngineObject {
      Q_OBJECT
-  private:
-    enum SyncRequestQueued {
-        SYNC_REQUEST_NONE,
-        SYNC_REQUEST_ENABLE,
-        SYNC_REQUEST_DISABLE,
-        SYNC_REQUEST_ENABLEDISABLE,
-    };
   public:
+    enum class SyncRequest{
+        None          = 0x00,
+        Enable        = 0x01,
+        Disable       = 0x02,
+        EnableDisable = 0x03,
+    };
     enum SeekRequest {
-        SEEK_NONE = 0x00,
-        SEEK_PHASE = 0x01,
-        SEEK_EXACT = 0x02,
-        SEEK_STANDARD = 0x03, // = (SEEK_EXACT | SEEK_PHASE)
+        SeekNone = 0x00,
+        SeekPhase = 0x01,
+        SeekExact = 0x02,
+        SeekStandard = 0x03, // = (SEEK_EXACT | SEEK_PHASE)
     };
+    Q_ENUM(SyncRequest);
+    Q_ENUM(SeekRequest);
     Q_DECLARE_FLAGS(SeekRequests, SeekRequest);
+    Q_FLAG(SeekRequests);
 
-    enum KeylockEngine {
-        SOUNDTOUCH,
-        RUBBERBAND,
-        KEYLOCK_ENGINE_COUNT,
+    enum class KeylockEngine {
+        SoundTouch,
+        RubberBand,
     };
-
+    Q_ENUM(KeylockEngine);
     EngineBuffer(QString _group, UserSettingsPointer pConfig,
                  EngineChannel* pChannel, EngineMaster* pMixingEngine);
     virtual ~EngineBuffer();
@@ -126,9 +141,9 @@ class EngineBuffer : public EngineObject {
     void requestSyncMode(SyncMode mode);
 
     // The process methods all run in the audio callback.
-    void process(CSAMPLE* pOut, const int iBufferSize);
+    void process(CSAMPLE* pOut, int iBufferSize);
     void processSlip(int iBufferSize);
-    void postProcess(const int iBufferSize);
+    void postProcess(int iBufferSize);
 
     QString getGroup();
     bool isTrackLoaded();
@@ -142,23 +157,14 @@ class EngineBuffer : public EngineObject {
     // For dependency injection of readers.
     //void setReader(CachingReader* pReader);
     // For dependency injection of fake tracks, with an optional filebpm value.
-    static QString getKeylockEngineName(KeylockEngine engine) {
-        switch (engine) {
-        case SOUNDTOUCH:
-            return tr("Soundtouch (faster)");
-        case RUBBERBAND:
-            return tr("Rubberband (better)");
-        default:
-            return tr("Unknown (bad value)");
-        }
-    }
-
+    static QString getKeylockEngineName(KeylockEngine engine);
     // Request that the EngineBuffer load a track. Since the process is
     // asynchronous, EngineBuffer will emit a trackLoaded signal when the load
     // has completed.
     void loadTrack(TrackPointer pTrack, bool play);
     void addControl(EngineControl* pControl);
-
+  signals:
+    void notifySeek(double);
   public slots:
     void slotControlPlayRequest(double);
     void slotControlPlayFromStart(double);
@@ -171,9 +177,6 @@ class EngineBuffer : public EngineObject {
     void slotControlSeekExact(double);
     void slotControlSlip(double);
     void slotKeylockEngineChanged(double);
-
-    void slotEjectTrack(double);
-
   signals:
     void trackLoaded(TrackPointer pNewTrack, TrackPointer pOldTrack);
     void trackLoadFailed(TrackPointer pTrack, QString reason);
@@ -192,11 +195,11 @@ class EngineBuffer : public EngineObject {
     // must not be called outside the Constructor
 
     void enableIndependentPitchTempoScaling(bool bEnable,
-                                            const int iBufferSize);
+                                            int iBufferSize);
 
     void updateIndicators(double rate, int iBufferSize);
 
-    void hintReader(const double rate);
+    void hintReader(double rate);
 
     void ejectTrack();
 
@@ -208,7 +211,7 @@ class EngineBuffer : public EngineObject {
     // Read one buffer from the current scaler into the crossfade buffer.  Used
     // for transitioning from one scaler to another, or reseeking a scaler
     // to prevent pops.
-    void readToCrossfadeBuffer(const int iBufferSize);
+    void readToCrossfadeBuffer(int iBufferSize);
 
     // Reset buffer playpos and set file playpos.
     void setNewPlaypos(double playpos);
@@ -294,7 +297,7 @@ class EngineBuffer : public EngineObject {
     // Saved value of rate for slip mode
     double m_dSlipRate;
     // m_slipEnabled is a boolean accessed from multiple threads, so we use an atomic int.
-    QAtomicInt m_slipEnabled;
+    std::atomic<bool> m_slipEnabled;
     // m_bSlipEnabledProcessing is only used by the engine processing thread.
     bool m_bSlipEnabledProcessing;
 
@@ -345,21 +348,21 @@ class EngineBuffer : public EngineObject {
 //    EngineBufferScaleLinear* m_pScaleLinear;
     // Objects used for pitch-indep time stretch (key lock) scaling of the audio
 //    EngineBufferScaleST* m_pScaleST;
-//    EngineBufferScaleRubberBand* m_pScaleRB;
+//    EngineBufferScaleRB* m_pScaleRB;
 
     // Indicates whether the scaler has changed since the last process()
     bool m_bScalerChanged;
     // Indicates that dependency injection has taken place.
     bool m_bScalerOverride;
 
-    QAtomicInt m_iSeekQueued;
-    QAtomicInt m_iSeekPhaseQueued;
-    QAtomicInt m_iEnableSyncQueued;
-    QAtomicInt m_iSyncModeQueued;
-    ControlValueAtomic<double> m_queuedSeekPosition;
+    std::atomic<SeekRequests>  m_iSeekQueued;
+    std::atomic<bool>          m_iSeekPhaseQueued;
+    std::atomic<SyncRequest>   m_iEnableSyncQueued;
+    std::atomic<SyncMode>      m_iSyncModeQueued;
+    std::atomic<double>        m_queuedSeekPosition;
 
     // Is true if the previous buffer was silent due to pausing
-    QAtomicInt m_iTrackLoading;
+    std::atomic<bool> m_iTrackLoading;
     bool m_bPlayAfterLoading;
     // Records the sample rate so we can detect when it changes. Initialized to
     // 0 to guarantee we see a change on the first callback.

@@ -35,7 +35,7 @@ class EngineFilterDelay : public EngineObjectConstIn {
     }
 
     virtual void process(const CSAMPLE* pIn, CSAMPLE* pOutput,
-                         const int iBufferSize) {
+                         int iBufferSize) {
         if (!m_doRamping) {
             int delaySourcePos = (m_delayPos + SIZE - m_delaySamples) % SIZE;
 

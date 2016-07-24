@@ -28,6 +28,8 @@ const int kBufferFrames = kNetworkLatencyFrames * 4; // 743 ms @ 44100 Hz
 // normally * 2 is sufficient.
 // We allow to buffer two extra chunks for a CPU overload case, when
 // the broadcast thread is not scheduled in time.
+using fifo_pointer   = typename FIFO<CSAMPLE>::pointer;
+using fifo_size_type = typename FIFO<CSAMPLE>::size_type;
 
 EngineNetworkStream::EngineNetworkStream(int numOutputChannels,
                                          int numInputChannels)
@@ -139,17 +141,15 @@ void EngineNetworkStream::writeSilence(int frames) {
     }
     int clearCount = math_min(writeAvailable, writeRequired);
     if (clearCount > 0) {
-        CSAMPLE* dataPtr1;
-        ring_buffer_size_t size1;
-        CSAMPLE* dataPtr2;
-        ring_buffer_size_t size2;
-        (void)m_pOutputFifo->aquireWriteRegions(clearCount,
+        fifo_pointer dataPtr1, dataPtr2;
+        fifo_size_type size1,size2;
+        (void)m_pOutputFifo->get_write_regions(clearCount,
                 &dataPtr1, &size1, &dataPtr2, &size2);
         SampleUtil::clear(dataPtr1,size1);
         if (size2 > 0) {
             SampleUtil::clear(dataPtr2,size2);
         }
-        m_pOutputFifo->releaseWriteRegions(clearCount);
+        m_pOutputFifo->commit_write(clearCount);
 
         // we advance the frame only by the samples we have actually cleared
         m_streamFramesWritten += clearCount / m_numOutputChannels;

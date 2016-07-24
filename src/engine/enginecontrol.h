@@ -6,6 +6,11 @@
 
 #include <QObject>
 #include <QList>
+#include <atomic>
+#include <utility>
+#include <memory>
+#include <algorithm>
+#include <iterator>
 
 #include "preferences/usersettings.h"
 #include "track/track.h"
@@ -16,7 +21,7 @@
 class EngineMaster;
 class EngineBuffer;
 
-const int kNoTrigger = -1;
+constexpr int kNoTrigger = -1;
 
 /**
  * EngineControl is an abstract base class for objects which implement
@@ -42,20 +47,20 @@ class EngineControl : public QObject {
     // this call. If the EngineControl would like to request the playback
     // position to be altered, it should return the sample to seek to from this
     // method. Otherwise it should return kNoTrigger.
-    virtual double process(const double dRate,
-                           const double dCurrentSample,
-                           const double dTotalSamples,
-                           const int iBufferSize);
+    virtual double process(double dRate,
+                           double dCurrentSample,
+                           double dTotalSamples,
+                           int iBufferSize);
 
-    virtual double nextTrigger(const double dRate,
-                               const double dCurrentSample,
-                               const double dTotalSamples,
-                               const int iBufferSize);
+    virtual double nextTrigger(double dRate,
+                               double dCurrentSample,
+                               double dTotalSamples,
+                               int iBufferSize);
 
-    virtual double getTrigger(const double dRate,
-                              const double dCurrentSample,
-                              const double dTotalSamples,
-                              const int iBufferSize);
+    virtual double getTrigger(double dRate,
+                              double dCurrentSample,
+                              double dTotalSamples,
+                              int iBufferSize);
 
     // hintReader allows the EngineControl to provide hints to the reader to
     // indicate that the given portion of a song is a potential imminent seek
@@ -64,7 +69,7 @@ class EngineControl : public QObject {
 
     virtual void setEngineMaster(EngineMaster* pEngineMaster);
     void setEngineBuffer(EngineBuffer* pEngineBuffer);
-    virtual void setCurrentSample(const double dCurrentSample, const double dTotalSamples);
+    virtual void setCurrentSample(double dCurrentSample, double dTotalSamples);
     double getCurrentSample() const;
     double getTotalSamples() const;
     bool atEndPosition() const;
@@ -73,14 +78,16 @@ class EngineControl : public QObject {
     // Called to collect player features for effects processing.
     virtual void collectFeatureState(GroupFeatureState* pGroupFeatures) const;
     // Called whenever a seek occurs to allow the EngineControl to respond.
+  signals:
     virtual void notifySeek(double dNewPlaypo);
-  public slots:
-    virtual void trackLoaded(TrackPointer pNewTrack, TrackPointer pOldTrack);
-  protected:
     void seek(double fractionalPosition);
     void seekAbs(double sample);
     // Seek to an exact sample and don't allow quantizing adjustment.
     void seekExact(double sample);
+  public slots:
+    virtual void trackLoaded(TrackPointer pNewTrack, TrackPointer pOldTrack);
+    virtual void onNotifySeek(double){}
+  protected:
     EngineBuffer* pickSyncTarget();
 
     UserSettingsPointer getConfig();
@@ -89,15 +96,14 @@ class EngineControl : public QObject {
 
     QString m_group;
     UserSettingsPointer m_pConfig;
-
   private:
-    struct alignas(16) SampleOfTrack {
+    struct sot{
         double current;
         double total;
     };
-    ControlValueAtomic<SampleOfTrack> m_sampleOfTrack;
-    EngineMaster* m_pEngineMaster;
-    EngineBuffer* m_pEngineBuffer;
+    std::atomic<sot> m_sampleOfTrack;
+    EngineMaster* m_pEngineMaster{nullptr};
+    EngineBuffer* m_pEngineBuffer{nullptr};
 };
 
 #endif /* ENGINECONTROL_H */

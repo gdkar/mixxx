@@ -40,7 +40,7 @@ CachingReader::CachingReader(QString group,UserSettingsPointer config)
           m_lruCachingReaderChunk(nullptr),
           m_sampleBuffer(CachingReaderChunk::kSamples * maximumCachingReaderChunksInMemory),
           m_maxReadableFrameIndex(mixxx::AudioSource::getMinFrameIndex()),
-          m_worker(group, &m_chunkReadRequestFIFO, &m_readerStatusFIFO)
+          m_worker(this, group, &m_chunkReadRequestFIFO, &m_readerStatusFIFO)
 {
     m_allocatedCachingReaderChunks.reserve(maximumCachingReaderChunksInMemory);
     auto bufferStart = m_sampleBuffer.data();
@@ -48,7 +48,7 @@ CachingReader::CachingReader(QString group,UserSettingsPointer config)
     // chunks. Initialize each chunk to hold nothing and add it to the free
     // list.
     for (auto i = 0; i < maximumCachingReaderChunksInMemory; ++i) {
-        auto  c = new CachingReaderChunkForOwner(bufferStart);
+        auto  c = new CachingReaderChunk(bufferStart);
         m_chunks.push_back(c);
         m_freeChunks.push_back(c);
         bufferStart += CachingReaderChunk::kSamples;
@@ -63,7 +63,6 @@ CachingReader::CachingReader(QString group,UserSettingsPointer config)
     connect(&m_worker, SIGNAL(trackLoadFailed(TrackPointer, QString)),
             this, SIGNAL(trackLoadFailed(TrackPointer, QString)),
             Qt::DirectConnection);
-
     m_worker.start(QThread::HighPriority);
 }
 CachingReader::~CachingReader()
@@ -71,10 +70,10 @@ CachingReader::~CachingReader()
     m_worker.quitWait();
     qDeleteAll(m_chunks);
 }
-void CachingReader::freeChunk(CachingReaderChunkForOwner* pChunk)
+void CachingReader::freeChunk(CachingReaderChunk* pChunk)
 {
     DEBUG_ASSERT(pChunk != nullptr);
-    DEBUG_ASSERT(pChunk->getState() != CachingReaderChunkForOwner::READ_PENDING);
+    DEBUG_ASSERT(pChunk->getState() != CachingReaderChunk::READ_PENDING);
     const auto removed = m_allocatedCachingReaderChunks.remove(pChunk->getIndex());
     // We'll tolerate not being in allocatedCachingReaderChunks,
     // because sometime you free a chunk right after you allocated it.
@@ -88,9 +87,9 @@ void CachingReader::freeAllChunks()
     for (auto pChunk: m_chunks) {
         // We will receive CHUNK_READ_INVALID for all pending chunk reads
         // which should free the chunks individually.
-        if (pChunk->getState() == CachingReaderChunkForOwner::READ_PENDING)
+        if (pChunk->getState() == CachingReaderChunk::READ_PENDING)
             continue;
-        if (pChunk->getState() != CachingReaderChunkForOwner::FREE)
+        if (pChunk->getState() != CachingReaderChunk::FREE)
         {
             pChunk->removeFromList(&m_mruCachingReaderChunk, &m_lruCachingReaderChunk);
             pChunk->free();
@@ -101,19 +100,17 @@ void CachingReader::freeAllChunks()
     m_allocatedCachingReaderChunks.clear();
     m_mruCachingReaderChunk = nullptr;
 }
-CachingReaderChunkForOwner* CachingReader::allocateChunk(int64_t chunkIndex)
+CachingReaderChunk* CachingReader::allocateChunk(int64_t chunkIndex)
 {
-    if (m_freeChunks.isEmpty()) {
+    if (m_freeChunks.isEmpty())
         return nullptr;
-    }
     auto pChunk = m_freeChunks.takeFirst();
     pChunk->init(chunkIndex);
     //qDebug() << "Allocating chunk" << pChunk << pChunk->getIndex();
     m_allocatedCachingReaderChunks.insert(chunkIndex, pChunk);
     return pChunk;
 }
-
-CachingReaderChunkForOwner* CachingReader::allocateChunkExpireLRU(int64_t chunkIndex)
+CachingReaderChunk* CachingReader::allocateChunkExpireLRU(int64_t chunkIndex)
 {
     auto pChunk = allocateChunk(chunkIndex);
     if (pChunk == nullptr) {
@@ -127,7 +124,7 @@ CachingReaderChunkForOwner* CachingReader::allocateChunkExpireLRU(int64_t chunkI
     //qDebug() << "allocateChunkExpireLRU" << chunk << pChunk;
     return pChunk;
 }
-CachingReaderChunkForOwner* CachingReader::lookupChunk(int64_t chunkIndex)
+CachingReaderChunk* CachingReader::lookupChunk(int64_t chunkIndex)
 {
     // Defaults to nullptr if it's not in the hash.
     auto chunk = m_allocatedCachingReaderChunks.value(chunkIndex, nullptr);
@@ -135,10 +132,10 @@ CachingReaderChunkForOwner* CachingReader::lookupChunk(int64_t chunkIndex)
     DEBUG_ASSERT(chunk == nullptr || chunkIndex == chunk->getIndex());
     return chunk;
 }
-void CachingReader::freshenChunk(CachingReaderChunkForOwner* pChunk)
+void CachingReader::freshenChunk(CachingReaderChunk* pChunk)
 {
     DEBUG_ASSERT(pChunk != nullptr);
-    DEBUG_ASSERT(pChunk->getState() != CachingReaderChunkForOwner::READ_PENDING);
+    DEBUG_ASSERT(pChunk->getState() != CachingReaderChunk::READ_PENDING);
     // Remove the chunk from the LRU list
     pChunk->removeFromList(&m_mruCachingReaderChunk, &m_lruCachingReaderChunk);
     // Adjust the least-recently-used item before inserting the
@@ -150,15 +147,14 @@ void CachingReader::freshenChunk(CachingReaderChunkForOwner* pChunk)
             m_lruCachingReaderChunk = m_mruCachingReaderChunk;
         }
     }
-
     // Insert the chunk as the new most-recently-used item.
     pChunk->insertIntoListBefore(m_mruCachingReaderChunk);
     m_mruCachingReaderChunk = pChunk;
 }
-CachingReaderChunkForOwner* CachingReader::lookupChunkAndFreshen(int64_t chunkIndex)
+CachingReaderChunk* CachingReader::lookupChunkAndFreshen(int64_t chunkIndex)
 {
     auto pChunk = lookupChunk(chunkIndex);
-    if ((pChunk != nullptr) && (pChunk->getState() != CachingReaderChunkForOwner::READ_PENDING)) {
+    if ((pChunk != nullptr) && (pChunk->getState() != CachingReaderChunk::READ_PENDING)) {
         freshenChunk(pChunk);
     }
     return pChunk;
@@ -170,10 +166,10 @@ void CachingReader::newTrack(TrackPointer pTrack)
 }
 void CachingReader::process()
 {
-    ReaderStatusUpdate status;
-    while (m_readerStatusFIFO.read(&status, 1) == 1) {
-        auto pChunk = static_cast<CachingReaderChunkForOwner*>(status.chunk);
-        if (pChunk) {
+    while (!m_readerStatusFIFO.empty()) {
+        auto status = m_readerStatusFIFO.front();
+        m_readerStatusFIFO.pop_front();
+        if(auto pChunk = status.chunk) {
             // Take over control of the chunk from the worker.
             // This has to be done before freeing all chunks
             // after a new track has been loaded (see below)!
@@ -198,7 +194,7 @@ void CachingReader::process()
         }
         // Adjust the max. readable frame index
         if (m_readerStatus == TRACK_LOADED) {
-            m_maxReadableFrameIndex = math_min(status.maxReadableFrameIndex, m_maxReadableFrameIndex);
+            m_maxReadableFrameIndex = std::min(status.maxReadableFrameIndex, m_maxReadableFrameIndex);
         } else {
             m_maxReadableFrameIndex = mixxx::AudioSource::getMinFrameIndex();
         }
@@ -220,13 +216,11 @@ int CachingReader::read(int sample, bool reverse, int numSamples, CSAMPLE* buffe
                  << "numSamples:" << numSamples << "buffer:" << buffer;
         return 0;
     }
-
     // If asked to read 0 samples, don't do anything. (this is a perfectly
     // reasonable request that happens sometimes. If no track is loaded, don't
     // do anything.
-    if (numSamples == 0 || m_readerStatus != TRACK_LOADED) {
+    if (numSamples == 0 || m_readerStatus != TRACK_LOADED)
         return 0;
-    }
     // Process messages from the reader thread.
     process();
     auto samplesRead = int64_t{0};
@@ -245,12 +239,10 @@ int CachingReader::read(int sample, bool reverse, int numSamples, CSAMPLE* buffe
             SampleUtil::clear(buffer, prerollSamples);
             buffer += prerollSamples;
         }
-
         samplesRead += prerollSamples;
         frameIndex += prerollFrames;
         numFrames -= prerollFrames;
     }
-
     // Read the actual samples from the audio source into the
     // buffer. The buffer will be filled with silence for every
     // unreadable sample or samples outside of the track region
@@ -268,7 +260,7 @@ int CachingReader::read(int sample, bool reverse, int numSamples, CSAMPLE* buffe
             for (auto chunkIndex = firstCachingReaderChunkIndex; chunkIndex <= lastCachingReaderChunkIndex; ++chunkIndex) {
                 auto pChunk = lookupChunkAndFreshen(chunkIndex);
                 // If the chunk is not in cache, then we must return an error.
-                if (!pChunk || (pChunk->getState() != CachingReaderChunkForOwner::READY)) {
+                if (!pChunk || (pChunk->getState() != CachingReaderChunk::READY)) {
                     Counter("CachingReader::read(): Failed to read chunk on cache miss")++;
                     // Exit the loop and fill the remaining buffer with silence
                     break;
@@ -313,7 +305,6 @@ int CachingReader::read(int sample, bool reverse, int numSamples, CSAMPLE* buffe
             }
         }
     }
-
     // Finally fill the remaining buffer with silence.
     DEBUG_ASSERT(numSamples >= samplesRead);
     SampleUtil::clear(buffer, numSamples - samplesRead);
@@ -322,16 +313,12 @@ int CachingReader::read(int sample, bool reverse, int numSamples, CSAMPLE* buffe
 
 void CachingReader::hintAndMaybeWake(const HintVector& hintList) {
     // If no file is loaded, skip.
-    if (m_readerStatus != TRACK_LOADED) {
-        return;
-    }
-
+    if (m_readerStatus != TRACK_LOADED) {return;}
     // For every chunk that the hints indicated, check if it is in the cache. If
     // any are not, then wake.
     auto shouldWake = false;
-    for (auto it = hintList.constBegin();it != hintList.constEnd(); ++it) {
+    for (auto hint : hintList) {
         // Copy, don't use reference.
-        auto hint = *it;
 
         // Handle some special length values
         if (hint.length == 0) {
@@ -359,7 +346,6 @@ void CachingReader::hintAndMaybeWake(const HintVector& hintList) {
             // skip empty frame interval silently
             continue;
         }
-
         auto firstCachingReaderChunkIndex = CachingReaderChunk::indexForFrame(minReadableFrameIndex);
         auto lastCachingReaderChunkIndex = CachingReaderChunk::indexForFrame(maxReadableFrameIndex - 1);
         for (auto chunkIndex = firstCachingReaderChunkIndex; chunkIndex <= lastCachingReaderChunkIndex; ++chunkIndex) {
@@ -377,24 +363,21 @@ void CachingReader::hintAndMaybeWake(const HintVector& hintList) {
                 pChunk->giveToWorker();
                 // qDebug() << "Requesting read of chunk" << current << "into" << pChunk;
                 // qDebug() << "Requesting read into " << request.chunk->data;
-                if (m_chunkReadRequestFIFO.write(&request, 1) != 1) {
-                    qWarning() << "ERROR: Could not submit read request for "
-                             << chunkIndex;
+                if (!m_chunkReadRequestFIFO.push_back(request)) {
+                    qWarning() << "ERROR: Could not submit read request for " << chunkIndex;
                     // Revoke the chunk from the worker and free it
                     pChunk->takeFromWorker();
                     freeChunk(pChunk);
                 }
                 //qDebug() << "Checking chunk " << current << " shouldWake:" << shouldWake << " chunksToRead" << m_chunksToRead.size();
-            } else if (pChunk->getState() == CachingReaderChunkForOwner::READY) {
+            } else if (pChunk->getState() == CachingReaderChunk::READY) {
                 // This will cause the chunk to be 'freshened' in the cache. The
                 // chunk will be moved to the end of the LRU list.
                 freshenChunk(pChunk);
             }
         }
     }
-
     // If there are chunks to be read, wake up.
-    if (shouldWake) {
+    if (shouldWake)
         m_worker.workReady();
-    }
 }

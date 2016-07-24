@@ -15,12 +15,11 @@
 
 
 typedef struct CachingReaderChunkReadRequest {
-    CachingReaderChunk* chunk;
-
-    explicit CachingReaderChunkReadRequest(
-            CachingReaderChunk* chunkArg = nullptr)
-        : chunk(chunkArg) {
-    }
+    CachingReaderChunk* chunk{nullptr};
+    constexpr CachingReaderChunkReadRequest() = default;
+    explicit constexpr CachingReaderChunkReadRequest(
+            CachingReaderChunk* chunkArg )
+        : chunk(chunkArg) {}
 } CachingReaderChunkReadRequest;
 
 enum ReaderStatus {
@@ -36,12 +35,12 @@ typedef struct ReaderStatusUpdate {
     ReaderStatus status;
     CachingReaderChunk* chunk;
     int64_t maxReadableFrameIndex;
-    ReaderStatusUpdate()
+    constexpr ReaderStatusUpdate()
         : status(INVALID)
         , chunk(nullptr)
-        , maxReadableFrameIndex(mixxx::AudioSource::getMinFrameIndex()) {
-    }
-    ReaderStatusUpdate(
+        , maxReadableFrameIndex(0)
+    { }
+    constexpr ReaderStatusUpdate(
             ReaderStatus statusArg,
             CachingReaderChunk* chunkArg,
             int64_t maxReadableFrameIndexArg)
@@ -53,10 +52,10 @@ typedef struct ReaderStatusUpdate {
 
 class CachingReaderWorker : public EngineWorker {
     Q_OBJECT
-
   public:
     // Construct a CachingReader with the given group.
-    CachingReaderWorker(QString group,
+    CachingReaderWorker(QObject *pParent,
+            QString group,
             FIFO<CachingReaderChunkReadRequest>* pChunkReadRequestFIFO,
             FIFO<ReaderStatusUpdate>* pReaderStatusFIFO);
     virtual ~CachingReaderWorker();

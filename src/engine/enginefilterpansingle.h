@@ -13,7 +13,7 @@
 #include "engine/engineobject.h"
 #include "util/assert.h"
 
-static const int numChannels = 2;
+static constexpr const int numChannels = 2;
 
 template<unsigned int SIZE>
 class EngineFilterPanSingle {

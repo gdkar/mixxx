@@ -107,13 +107,17 @@ class WaveformWidgetRenderer : public QWidget {
         QWidget::paintEvent(event);
     }
     bool isValid() const;
+    UserSettingsPointer getConfig() const
+    {
+        return m_pConfig;
+    }
   protected:
     const char* m_group;
     TrackPointer m_pTrack;
     QList<WaveformRendererAbstract*> m_rendererStack;
     int m_height;
     int m_width;
-    WaveformSignalColors m_colors;
+    WaveformSignalColors m_colors{this};
 
     double m_firstDisplayedPosition;
     double m_lastDisplayedPosition;
@@ -126,6 +130,7 @@ class WaveformWidgetRenderer : public QWidget {
 
     //TODO: vRince create some class to manage control/value
     //ControlConnection
+    UserSettingsPointer m_pConfig;
     QSharedPointer<VisualPlayPosition> m_visualPlayPosition;
     double m_playPos;
     int m_playPosVSample;

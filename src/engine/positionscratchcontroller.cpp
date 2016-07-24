@@ -102,7 +102,7 @@ void PositionScratchController::process(double currentSample, double releaseRate
     }
 
     // The latency or time difference between process calls.
-    const double dt = static_cast<double>(iBufferSize)
+    double dt = static_cast<double>(iBufferSize)
             / m_pMasterSampleRate->get() / 2;
 
     // Sample Mouse with fixed timing intervals to iron out significant jitters
@@ -110,8 +110,8 @@ void PositionScratchController::process(double currentSample, double releaseRate
     // Normaly the Mouse is sampled every 8 ms so with this 16 ms window we
     // have 0 ... 3 samples. The remaining jitter is ironed by the following IIR
     // lowpass filter
-    const double m_dMouseSampeIntervall = 0.016;
-    const int callsPerDt = ceil(m_dMouseSampeIntervall/dt);
+    double m_dMouseSampeIntervall = 0.016;
+    int callsPerDt = ceil(m_dMouseSampeIntervall/dt);
     double scratchPosition = 0;
     m_dMouseSampeTime += dt;
     if (m_dMouseSampeTime >= m_dMouseSampeIntervall || !m_bScratching) {
@@ -145,9 +145,9 @@ void PositionScratchController::process(double currentSample, double releaseRate
             }
 
             // Max velocity we would like to stop in a given time period.
-            const double kMaxVelocity = 100;
+            double kMaxVelocity = 100;
             // Seconds to stop a throw at the max velocity.
-            const double kTimeToStop = 1.0;
+            double kTimeToStop = 1.0;
 
             // We calculate the exponential decay constant based on the above
             // constants. Roughly we backsolve what the decay should be if we want to
@@ -156,7 +156,7 @@ void PositionScratchController::process(double currentSample, double releaseRate
             // kMaxVelocity * alpha ^ (# callbacks to stop in) = decayThreshold
             // # callbacks = kTimeToStop / dt
             // alpha = (decayThreshold / kMaxVelocity) ^ (dt / kTimeToStop)
-            const double kExponentialDecay = pow(decayThreshold / kMaxVelocity, dt / kTimeToStop);
+            double kExponentialDecay = pow(decayThreshold / kMaxVelocity, dt / kTimeToStop);
 
             m_dRate *= kExponentialDecay;
 
@@ -239,7 +239,7 @@ void PositionScratchController::process(double currentSample, double releaseRate
 
             // The rate threshold above which disabling position scratching will enable
             // an 'inertia' mode.
-            const double kThrowThreshold = 2.5;
+            double kThrowThreshold = 2.5;
 
             if (fabs(m_dRate) > kThrowThreshold) {
                 m_bEnableInertia = true;
@@ -265,16 +265,17 @@ void PositionScratchController::process(double currentSample, double releaseRate
     m_dLastPlaypos = currentSample;
 }
 
-bool PositionScratchController::isEnabled() {
+bool PositionScratchController::isEnabled()
+{
     // return true only if m_dRate is valid.
     return m_bScratching;
 }
-
-double PositionScratchController::getRate() {
+double PositionScratchController::getRate()
+{
     return m_dRate;
 }
-
-void PositionScratchController::notifySeek(double currentSample) {
+void PositionScratchController::onNotifySeek(double currentSample)
+{
     // scratching continues after seek due to calculating the relative distance traveled
     // in m_dPositionDeltaSum
     m_dLastPlaypos = currentSample;

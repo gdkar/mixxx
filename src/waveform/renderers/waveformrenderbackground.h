@@ -15,7 +15,7 @@ class WaveformWidgetRenderer;
 class WaveformRenderBackground : public WaveformRendererAbstract {
     Q_OBJECT
   public:
-    Q_INVOKBLE explicit WaveformRenderBackground(WaveformWidgetRenderer* waveformWidgetRenderer);
+    Q_INVOKABLE explicit WaveformRenderBackground(WaveformWidgetRenderer* waveformWidgetRenderer);
     virtual ~WaveformRenderBackground();
 
     virtual void setup(const QDomNode& node, const SkinContext& context);

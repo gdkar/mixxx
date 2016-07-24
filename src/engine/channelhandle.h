@@ -151,7 +151,7 @@ class ChannelHandleFactory {
 // integer value.
 template <class T>
 class ChannelHandleMap {
-    static const int kMaxExpectedGroups = 256;
+    static constexpr const int kMaxExpectedGroups = 256;
     typedef QVarLengthArray<T, kMaxExpectedGroups> container_type;
   public:
     typedef typename QVarLengthArray<T, kMaxExpectedGroups>::const_iterator const_iterator;

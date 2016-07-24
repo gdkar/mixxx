@@ -41,11 +41,9 @@ class EngineRecord : public QObject, public EncoderCallback, public SideChainWor
     Q_OBJECT
   public:
     EngineRecord(UserSettingsPointer pConfig);
-    virtual ~EngineRecord();
-
+   ~EngineRecord();
     void process(const CSAMPLE* pBuffer, const int iBufferSize);
     void shutdown() {}
-
     // writes compressed audio to file
     void write(const uint8_t *buf, size_t buflen);
     // creates or opens an audio file
@@ -56,11 +54,9 @@ class EngineRecord : public QObject, public EncoderCallback, public SideChainWor
     bool fileOpen();
     bool openCueFile();
     void closeCueFile();
-
   signals:
     // emitted to notify RecordingManager
     void bytesRecorded(int bytes);
-
     // Emitted when recording state changes. 'recording' represents whether
     // recording is active and 'error' is true if an error occurred. Currently
     // only one error can occur: the specified file was unable to be opened for

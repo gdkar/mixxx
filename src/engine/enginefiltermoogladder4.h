@@ -98,7 +98,7 @@ class EngineFilterMoogLadderBase : public EngineObjectConstIn {
     // It fades to dry or 0 according to the m_startFromDry parameter
     // it is an alternative for using pauseFillter() calls
     void processAndPauseFilter(const CSAMPLE* pIn, CSAMPLE* pOutput,
-                       const int iBufferSize) {
+                       int iBufferSize) {
         process(pIn, pOutput, iBufferSize);
         SampleUtil::applyRampingGain(pOutput,1.0,0.0,iBufferSize);
         SampleUtil::addWithRampingGain(pOutput,pIn,0.0,1.0,iBufferSize);
@@ -106,7 +106,7 @@ class EngineFilterMoogLadderBase : public EngineObjectConstIn {
     }
 
     virtual void process(const CSAMPLE* pIn, CSAMPLE* pOutput,
-                         const int iBufferSize) {
+                         int iBufferSize) {
         if (!m_buffersClear) {
             for (int i = 0; i < iBufferSize; i += 2) {
                 pOutput[i] = processSample(pIn[i], &m_buf[0]);

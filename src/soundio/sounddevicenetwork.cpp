@@ -11,6 +11,10 @@
 // static
 volatile int SoundDeviceNetwork::m_underflowHappened = 0;
 
+using fifo_pointer   = typename FIFO<CSAMPLE>::pointer;
+using fifo_size_type = typename FIFO<CSAMPLE>::size_type;
+
+
 SoundDeviceNetwork::SoundDeviceNetwork(UserSettingsPointer config,
                                        SoundManager *sm,
                                        QSharedPointer<EngineNetworkStream> pNetworkStream)
@@ -102,11 +106,9 @@ void SoundDeviceNetwork::readProcess() {
     int writeAvailable = m_inputFifo->writeAvailable();
     int copyCount = qMin(writeAvailable, readAvailable);
     if (copyCount > 0) {
-        CSAMPLE* dataPtr1;
-        ring_buffer_size_t size1;
-        CSAMPLE* dataPtr2;
-        ring_buffer_size_t size2;
-        (void)m_inputFifo->aquireWriteRegions(copyCount,
+        fifo_pointer dataPtr1,dataPtr2;
+        fifo_size_type size1, size2;
+        (void)m_inputFifo->get_write_regions(copyCount,
                 &dataPtr1, &size1, &dataPtr2, &size2);
         // Fetch fresh samples and write to the the input buffer
         m_pNetworkStream->read(dataPtr1,
@@ -117,7 +119,7 @@ void SoundDeviceNetwork::readProcess() {
                     size2 / m_iNumInputChannels);
             lastFrame = &dataPtr2[size2 - m_iNumInputChannels];
         }
-        m_inputFifo->releaseWriteRegions(copyCount);
+        m_inputFifo->commit_write(copyCount);
 
         if (readAvailable > writeAvailable + inChunkSize / 2) {
             // we are not able to consume all frames
@@ -135,12 +137,12 @@ void SoundDeviceNetwork::readProcess() {
                 // duplicate one frame
                 //qDebug() << "SoundDevicePortAudio::readProcess() duplicate one frame"
                 //        << (float)writeAvailable / inChunkSize << (float)readAvailable / inChunkSize;
-                (void) m_inputFifo->aquireWriteRegions(
+                (void) m_inputFifo->get_write_regions(
                         m_iNumInputChannels, &dataPtr1, &size1,
                         &dataPtr2, &size2);
                 if (size1) {
                     SampleUtil::copy(dataPtr1, lastFrame, size1);
-                    m_inputFifo->releaseWriteRegions(size1);
+                    m_inputFifo->commit_write(size1);
                 }
             } else {
                 m_inputDrift = true;
@@ -158,12 +160,10 @@ void SoundDeviceNetwork::readProcess() {
         //qDebug() << "readProcess()" << (float)readAvailable / inChunkSize << "underflow";
     }
     if (readCount) {
-        CSAMPLE* dataPtr1;
-        ring_buffer_size_t size1;
-        CSAMPLE* dataPtr2;
-        ring_buffer_size_t size2;
+        fifo_pointer dataPtr1,dataPtr2;
+        fifo_size_type size1, size2;
         // We use size1 and size2, so we can ignore the return value
-        (void) m_inputFifo->aquireReadRegions(readCount, &dataPtr1, &size1,
+        (void) m_inputFifo->get_read_regions(readCount, &dataPtr1, &size1,
                 &dataPtr2, &size2);
         // Fetch fresh samples and write to the the output buffer
         composeInputBuffer(dataPtr1,
@@ -175,7 +175,7 @@ void SoundDeviceNetwork::readProcess() {
                     size1 / m_iNumInputChannels,
                     m_iNumInputChannels);
         }
-        m_inputFifo->releaseReadRegions(readCount);
+        m_inputFifo->commit_read(readCount);
     }
     if (readCount < inChunkSize) {
         // Fill remaining buffers with zeros
@@ -198,12 +198,10 @@ void SoundDeviceNetwork::writeProcess() {
     }
     //qDebug() << "writeProcess():" << (float) writeAvailable / outChunkSize;
     if (writeCount) {
-        CSAMPLE* dataPtr1;
-        ring_buffer_size_t size1;
-        CSAMPLE* dataPtr2;
-        ring_buffer_size_t size2;
+        fifo_pointer dataPtr1,dataPtr2;
+        fifo_size_type size1, size2;
         // We use size1 and size2, so we can ignore the return value
-        (void)m_outputFifo->aquireWriteRegions(writeCount, &dataPtr1,
+        (void)m_outputFifo->get_write_regions(writeCount, &dataPtr1,
                 &size1, &dataPtr2, &size2);
         // Fetch fresh samples and write to the the output buffer
         composeOutputBuffer(dataPtr1, size1 / m_iNumOutputChannels, 0,
@@ -214,7 +212,7 @@ void SoundDeviceNetwork::writeProcess() {
                     size1 / m_iNumOutputChannels,
                     static_cast<unsigned int>(m_iNumOutputChannels));
         }
-        m_outputFifo->releaseWriteRegions(writeCount);
+        m_outputFifo->commit_write(writeCount);
     }
     writeAvailable = m_pNetworkStream->getWriteExpected()
             * m_iNumOutputChannels;
@@ -222,11 +220,9 @@ void SoundDeviceNetwork::writeProcess() {
     int copyCount = qMin(readAvailable, writeAvailable);
     //qDebug() << "SoundDevicePortAudio::writeProcess()" << toRead << writeAvailable;
     if (copyCount > 0) {
-        CSAMPLE* dataPtr1;
-        ring_buffer_size_t size1;
-        CSAMPLE* dataPtr2;
-        ring_buffer_size_t size2;
-        m_outputFifo->aquireReadRegions(copyCount,
+        fifo_pointer dataPtr1,dataPtr2;
+        fifo_size_type size1, size2;
+        m_outputFifo->get_read_regions(copyCount,
                 &dataPtr1, &size1, &dataPtr2, &size2);
         if (writeAvailable >= outChunkSize * 2) {
             // Underflow
@@ -263,6 +259,6 @@ void SoundDeviceNetwork::writeProcess() {
             m_pNetworkStream->write(dataPtr2,
                     size2 / m_iNumOutputChannels);
         }
-        m_outputFifo->releaseReadRegions(copyCount);
+        m_outputFifo->commit_read(copyCount);
     }
 }

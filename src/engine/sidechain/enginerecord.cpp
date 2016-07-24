@@ -90,9 +90,7 @@ void EngineRecord::updateFromPreferences() {
         m_pEncoder = new EncoderMp3(this);
 #endif
         m_pEncoder->updateMetaData(m_baAuthor.data(),m_baTitle.data(),m_baAlbum.data());
-
-        if(m_pEncoder->initEncoder(Encoder::convertToBitrate(m_MP3quality.toInt()),
-                                   m_sampleRate) < 0) {
+        if(m_pEncoder->initEncoder(Encoder::convertToBitrate(m_MP3quality.toInt()),m_sampleRate) < 0) {
             delete m_pEncoder;
             m_pEncoder = NULL;
 #ifdef __FFMPEGFILE__
@@ -108,9 +106,7 @@ void EngineRecord::updateFromPreferences() {
         m_pEncoder = new EncoderVorbis(this);
 #endif
         m_pEncoder->updateMetaData(m_baAuthor.data(),m_baTitle.data(),m_baAlbum.data());
-
-        if (m_pEncoder->initEncoder(Encoder::convertToBitrate(m_OGGquality.toInt()),
-                                   m_sampleRate) < 0) {
+        if (m_pEncoder->initEncoder(Encoder::convertToBitrate(m_OGGquality.toInt()),m_sampleRate) < 0) {
             delete m_pEncoder;
             m_pEncoder = NULL;
 #ifdef __FFMPEGFILE__
@@ -130,11 +126,9 @@ bool EngineRecord::metaDataHasChanged()
         return false;
     }
     m_iMetaDataLife = 0;
-
-    TrackPointer pTrack = PlayerInfo::instance().getCurrentPlayingTrack();
+    auto pTrack = PlayerInfo::instance().getCurrentPlayingTrack();
     if (!pTrack)
         return false;
-
     if (m_pCurrentTrack) {
         if (!pTrack->getId().isValid() || !m_pCurrentTrack->getId().isValid()) {
             if ((pTrack->getArtist() == m_pCurrentTrack->getArtist()) &&
@@ -153,8 +147,7 @@ bool EngineRecord::metaDataHasChanged()
 
 void EngineRecord::process(const CSAMPLE* pBuffer, const int iBufferSize) {
 
-    float recordingStatus = m_pRecReady->get();
-
+    auto recordingStatus = m_pRecReady->get();
     if (recordingStatus == RECORD_OFF) {
         //qDebug("Setting record flag to: OFF");
         if (fileOpen()) {

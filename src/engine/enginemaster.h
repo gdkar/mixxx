@@ -29,8 +29,8 @@
 #include "engine/channelhandle.h"
 #include "soundio/soundmanagerutil.h"
 #include "recording/recordingmanager.h"
+#include "engine/engineworkerscheduler.h"
 
-class EngineWorkerScheduler;
 class EngineBuffer;
 class EngineChannel;
 class EngineDeck;
@@ -49,7 +49,7 @@ class EngineDelay;
 
 // The number of channels to pre-allocate in various structures in the
 // engine. Prevents memory allocation in EngineMaster::addChannel.
-static const int kPreallocatedChannels = 64;
+static constexpr const int kPreallocatedChannels = 64;
 
 class EngineMaster : public QObject, public AudioSource {
     Q_OBJECT
@@ -98,7 +98,7 @@ class EngineMaster : public QObject, public AudioSource {
     virtual void onOutputConnected(AudioOutput output);
     virtual void onOutputDisconnected(AudioOutput output);
 
-    void process(const int iBufferSize);
+    void process(int iBufferSize);
 
     // Add an EngineChannel to the mixing engine. This is not thread safe --
     // only call it before the engine has started mixing.
@@ -190,8 +190,8 @@ class EngineMaster : public QObject, public AudioSource {
         }
 
         inline double getGain(ChannelInfo* pChannelInfo) const {
-            const double channelVolume = pChannelInfo->m_pVolumeControl->get();
-            const double orientationGain = EngineMaster::gainForOrientation(
+            double channelVolume = pChannelInfo->m_pVolumeControl->get();
+            double orientationGain = EngineMaster::gainForOrientation(
                     pChannelInfo->m_pChannel->getOrientation(),
                     m_dLeftGain, m_dCenterGain, m_dRightGain);
             return m_dVolume * channelVolume * orientationGain;
@@ -295,7 +295,7 @@ class EngineMaster : public QObject, public AudioSource {
 
     CSAMPLE** m_ppSidechain; // points to master or to talkover buffer
 
-    EngineWorkerScheduler* m_pWorkerScheduler;
+    EngineWorkerScheduler m_workerScheduler{};
     EngineSync* m_pMasterSync;
 
     ControlObject* m_pMasterGain;

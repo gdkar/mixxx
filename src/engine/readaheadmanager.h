@@ -36,20 +36,23 @@ class ReadAheadManager : public QObject{
     // direction the audio is progressing in. Returns the total number of
     // samples read into buffer. Note that it is very common that the total
     // samples read is less than the requested number of samples.
-    virtual int getNextSamples(double dRate, CSAMPLE* buffer, int requested_samples);
+    virtual int64_t getNextSamples(double dRate, CSAMPLE* buffer, int64_t requested_samples);
     // Used to add a new EngineControls that ReadAheadManager will use to decide
     // which samples to return.
     void addLoopingControl();
     void addRateControl(RateControl* pRateControl);
     // Get the current read-ahead position in samples.
-    virtual int getPlaypos() const { return m_iCurrentPosition; }
-    virtual void notifySeek(int iSeekPosition);
+    virtual int64_t getPlaypos() const { return m_iCurrentPosition; }
     // hintReader allows the ReadAheadManager to provide hints to the reader to
     // indicate that the given portion of a song is about to be read.
     virtual void hintReader(double dRate, HintVector* hintList);
-    virtual int getEffectiveVirtualPlaypositionFromLog(double currentVirtualPlayposition,
+    virtual int64_t getEffectiveVirtualPlaypositionFromLog(double currentVirtualPlayposition,
                                                        double numConsumedSamples);
     virtual void setReader(CachingReader* pReader) { m_pReader = pReader; }
+  public slots:
+      void onNotifySeek(double);
+  signals:
+    virtual void notifySeek(double dSeekPosition);
   private:
     // An entry in the read log indicates the virtual playposition the read
     // began at and the virtual playposition it ended at.
@@ -99,7 +102,7 @@ class ReadAheadManager : public QObject{
     LoopingControl* m_pLoopingControl = nullptr;
     RateControl* m_pRateControl = nullptr;
     QLinkedList<ReadLogEntry> m_readAheadLog;
-    int m_iCurrentPosition{0};
+    int64_t m_iCurrentPosition{0};
     CachingReader* m_pReader{nullptr};
     CSAMPLE* m_pCrossFadeBuffer{nullptr};
 };

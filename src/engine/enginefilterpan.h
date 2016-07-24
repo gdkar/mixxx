@@ -6,7 +6,7 @@
 #include "engine/engineobject.h"
 #include "util/assert.h"
 
-static const int numChannels = 2;
+static constexpr const int numChannels = 2;
 
 template<unsigned int SIZE>
 class EngineFilterPan : public EngineObjectConstIn {
@@ -40,7 +40,7 @@ class EngineFilterPan : public EngineObjectConstIn {
     }
 
     virtual void process(const CSAMPLE* pIn, CSAMPLE* pOutput,
-                         const int iBufferSize) {
+                         int iBufferSize) {
         int delayLeftSourceFrame;
         int delayRightSourceFrame;
         if (m_leftDelayFrames > 0) {
