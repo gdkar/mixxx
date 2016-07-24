@@ -28,11 +28,11 @@ class ControlProxy;
 class VisualPlayPositionData {
   public:
     PerformanceTimer m_referenceTime;
-    int m_callbackEntrytoDac; // Time from Audio Callback Entry to first sample of Buffer is transfered to DAC
     double m_enginePlayPos; // Play position of fist Sample in Buffer
     double m_rate;
     double m_positionStep;
     double m_pSlipPosition;
+    int    m_callbackEntrytoDac; // Time from Audio Callback Entry to first sample of Buffer is transfered to DAC
 };
 
 

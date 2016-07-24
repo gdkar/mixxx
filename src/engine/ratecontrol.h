@@ -33,7 +33,6 @@ class RateControl : public EngineControl {
 public:
     RateControl(QString group, UserSettingsPointer pConfig, QObject *);
     virtual ~RateControl();
-
     void setBpmControl(BpmControl* bpmcontrol);
     // Must be called during each callback of the audio thread so that
     // RateControl has a chance to update itself.
@@ -61,26 +60,12 @@ public:
     static void setRateRamp(bool);
     // Set Rate Ramp Sensitivity
     static void setRateRampSensitivity(int);
-
   public slots:
-    void slotReverseRollActivate(double);
-    void slotControlRatePermDown(double);
-    void slotControlRatePermDownSmall(double);
-    void slotControlRatePermUp(double);
-    void slotControlRatePermUpSmall(double);
-    void slotControlRateTempDown(double);
-    void slotControlRateTempDownSmall(double);
-    void slotControlRateTempUp(double);
-    void slotControlRateTempUpSmall(double);
-    void slotControlFastForward(double);
-    void slotControlFastBack(double);
     void trackLoaded(TrackPointer pNewTrack, TrackPointer pOldTrack) override;
-
   private:
     double getJogFactor() const;
     double getWheelFactor() const;
     SyncMode getSyncMode() const;
-
     // Set rate change of the temporary pitch rate
     void setRateTemp(double v);
     // Add a value to the temporary pitch rate
@@ -95,10 +80,8 @@ public:
     // Values used when temp and perm rate buttons are pressed
     static double m_dTemp, m_dTempSmall, m_dPerm, m_dPermSmall;
 
-    ControlPushButton *buttonRateTempDown, *buttonRateTempDownSmall,
-        *buttonRateTempUp, *buttonRateTempUpSmall;
-    ControlPushButton *buttonRatePermDown, *buttonRatePermDownSmall,
-        *buttonRatePermUp, *buttonRatePermUpSmall;
+    ControlPushButton *buttonRateTempDown, *buttonRateTempDownSmall, *buttonRateTempUp, *buttonRateTempUpSmall;
+    ControlPushButton *buttonRatePermDown, *buttonRatePermDownSmall, *buttonRatePermUp, *buttonRatePermUpSmall;
     ControlObject *m_pRateDir, *m_pRateRange;
     ControlPotmeter* m_pRateSlider;
     ControlPotmeter* m_pRateSearch;

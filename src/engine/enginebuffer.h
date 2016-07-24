@@ -367,7 +367,6 @@ class EngineBuffer : public EngineObject {
     // Records the sample rate so we can detect when it changes. Initialized to
     // 0 to guarantee we see a change on the first callback.
     int m_iSampleRate;
-
     TrackPointer m_pCurrentTrack;
 #ifdef __SCALER_DEBUG__
     QFile df;
@@ -377,8 +376,8 @@ class EngineBuffer : public EngineObject {
     // Certain operations like seeks and engine changes need to be crossfaded
     // to eliminate clicks and pops.
     CSAMPLE* m_pCrossfadeBuffer;
-    bool m_bCrossfadeReady;
-    int m_iLastBufferSize;
+    bool     m_bCrossfadeReady;
+    int      m_iLastBufferSize;
 
     QSharedPointer<VisualPlayPosition> m_visualPlayPos;
 };
