@@ -539,13 +539,6 @@ class QtScriptByteArray(Dependence):
         return ['#lib/qtscript-bytearray/bytearrayclass.cpp',
                 '#lib/qtscript-bytearray/bytearrayprototype.cpp']
 
-class PortAudioRingBuffer(Dependence):
-    def configure(self, build, conf):
-        build.env.Append(CPPPATH='#lib/portaudio')
-
-    def sources(self, build):
-        return ['#lib/portaudio/pa_ringbuffer.c']
-
 class Reverb(Dependence):
     def configure(self, build, conf):
         build.env.Append(CPPPATH='#lib/reverb')
@@ -1003,8 +996,6 @@ class MixxxCore(Feature):
                    "util/dbid.cpp",
                    "util/sample.cpp",
                    "util/samplebuffer.cpp",
-                   "util/singularsamplebuffer.cpp",
-                   "util/circularsamplebuffer.cpp",
                    "util/rotary.cpp",
                    "util/logging.cpp",
                    "util/cmdlineargs.cpp",
@@ -1284,7 +1275,7 @@ class MixxxCore(Feature):
         return [SoundTouch, ReplayGain, Ebur128Mit, PortAudio, PortMIDI, Qt, TestHeaders,
                 FidLib, SndFile, OggVorbis, OpenGL, TagLib, ProtoBuf,
                 Chromaprint, RubberBand, SecurityFramework, CoreServices,
-                QtScriptByteArray, Reverb, FpClassify, PortAudioRingBuffer]
+                QtScriptByteArray, Reverb, FpClassify]
 
     def post_dependency_check_configure(self, build, conf):
         """Sets up additional things in the Environment that must happen
