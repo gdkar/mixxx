@@ -18,6 +18,10 @@
 #include <cmath>
 #include <iostream>
 
+#ifndef PI
+#define PI (3.14159265358979232846)
+#endif
+
 TonalEstimator::TonalEstimator()
 {
 	m_Basis.resize(6);
@@ -29,7 +33,7 @@ TonalEstimator::TonalEstimator()
 	m_Basis[i].resize(12);
 	for (int iP = 0; iP < 12; iP++)
 	{
-		m_Basis[i][iP] = std::sin( (7.0 / 6.0) * iP * M_PI);
+		m_Basis[i][iP] = std::sin( (7.0 / 6.0) * iP * PI);
 	}
 	
 	i++;
@@ -37,7 +41,7 @@ TonalEstimator::TonalEstimator()
 	m_Basis[i].resize(12);
 	for (int iP = 0; iP < 12; iP++)
 	{
-		m_Basis[i][iP] = std::cos( (7.0 / 6.0) * iP * M_PI);
+		m_Basis[i][iP] = std::cos( (7.0 / 6.0) * iP * PI);
 	}
 	
 	i++;
@@ -47,7 +51,7 @@ TonalEstimator::TonalEstimator()
 	m_Basis[i].resize(12);
 	for (int iP = 0; iP < 12; iP++)
 	{
-		m_Basis[i][iP] = 0.6 * std::sin( (2.0 / 3.0) * iP * M_PI);
+		m_Basis[i][iP] = 0.6 * std::sin( (2.0 / 3.0) * iP * PI);
 	}
 	
 	i++;
@@ -55,7 +59,7 @@ TonalEstimator::TonalEstimator()
 	m_Basis[i].resize(12);
 	for (int iP = 0; iP < 12; iP++)
 	{
-		m_Basis[i][iP] = 0.6 * std::cos( (2.0 / 3.0) * iP * M_PI);
+		m_Basis[i][iP] = 0.6 * std::cos( (2.0 / 3.0) * iP * PI);
 	}
 
 	i++;
@@ -65,7 +69,7 @@ TonalEstimator::TonalEstimator()
 	m_Basis[i].resize(12);
 	for (int iP = 0; iP < 12; iP++)
 	{
-		m_Basis[i][iP] = 1.1 * std::sin( (3.0 / 2.0) * iP * M_PI);
+		m_Basis[i][iP] = 1.1 * std::sin( (3.0 / 2.0) * iP * PI);
 	}
 	
 	i++;
@@ -73,7 +77,7 @@ TonalEstimator::TonalEstimator()
 	m_Basis[i].resize(12);
 	for (int iP = 0; iP < 12; iP++)
 	{
-		m_Basis[i][iP] = 1.1 * std::cos( (3.0 / 2.0) * iP * M_PI);
+		m_Basis[i][iP] = 1.1 * std::cos( (3.0 / 2.0) * iP * PI);
 	}
 
 }

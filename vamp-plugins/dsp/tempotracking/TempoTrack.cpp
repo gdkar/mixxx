@@ -15,12 +15,12 @@
 
 #include "TempoTrack.h"
 
+#include "maths/MathAliases.h"
 #include "maths/MathUtilities.h"
 
 #include <iostream>
 
 #include <cassert>
-using namespace std;
 
 //#define DEBUG_TEMPO_TRACK 1
 
@@ -137,7 +137,7 @@ void TempoTrack::createCombFilter(double* Filter, unsigned int winLength, unsign
 	for( i = 0; i < winLength; i++ )
 	{
 	    double dlag = (double)(i+1) - beatLag;
-	    Filter[ i ] =  exp(-0.5 * pow(( dlag / m_sigma), 2.0) ) / (sqrt( 2 * M_PI) * m_sigma);
+	    Filter[ i ] =  exp(-0.5 * pow(( dlag / m_sigma), 2.0) ) / (sqrt( 2 * PI) * m_sigma);
 	}
     }
 }
@@ -479,7 +479,7 @@ void TempoTrack::constDetect( double* periodP, int currentIdx, int* flag )
 int TempoTrack::findMeter(double *ACF, unsigned int len, double period)
 {
     int i;
-    int p = (int)std::round( period );
+    int p = (int)MathUtilities::round( period );
     int tsig;
 
     double Energy_3 = 0.0;
@@ -550,7 +550,7 @@ int TempoTrack::findMeter(double *ACF, unsigned int len, double period)
 
 void TempoTrack::createPhaseExtractor(double *Filter, unsigned int winLength, double period, unsigned int fsp, unsigned int lastBeat)
 {	
-    int p = (int)std::round( period );
+    int p = (int)MathUtilities::round( period );
     int predictedOffset = 0;
 
 #ifdef DEBUG_TEMPO_TRACK
@@ -568,7 +568,7 @@ void TempoTrack::createPhaseExtractor(double *Filter, unsigned int winLength, do
 	
     if( lastBeat != 0 )
     {
-	lastBeat = (int)std::round((double)lastBeat );///(double)winLength);
+	lastBeat = (int)MathUtilities::round((double)lastBeat );///(double)winLength);
 
         predictedOffset = lastBeat + p - fsp;
 
@@ -582,36 +582,52 @@ void TempoTrack::createPhaseExtractor(double *Filter, unsigned int winLength, do
     {
 	int mu = p;
 	double sigma = (double)p/8;
+	double PhaseMin = 0.0;
+	double PhaseMax = 0.0;
 	unsigned int scratchLength = p*2;
 	double temp = 0.0;
 
 	for(  int i = 0; i < scratchLength; i++ )
 	{
-	    phaseScratch[ i ] = exp( -0.5 * pow( ( i - mu ) / sigma, 2 ) ) / ( sqrt( 2*M_PI ) *sigma );
+	    phaseScratch[ i ] = exp( -0.5 * pow( ( i - mu ) / sigma, 2 ) ) / ( sqrt( 2*PI ) *sigma );
 	}
-        auto it = std::minmax_element(phaseScratch,std::next(phaseScratch,scratchLength));
-        auto phaseMin = *it.first;
-        auto phaseMax = 1./ *it.second;
-        std::transform(phaseScratch,std::next(phaseScratch,scratchLength),phaseScratch,
-                [=](auto x){return (x - phaseMin) * phaseMax;});
+
+	MathUtilities::getFrameMinMax( phaseScratch, scratchLength, &PhaseMin, &PhaseMax );
+			
+	for(int i = 0; i < scratchLength; i ++)
+	{
+	    temp = phaseScratch[ i ];
+	    phaseScratch[ i ] = (temp - PhaseMin)/PhaseMax;
+	}
+
+#ifdef DEBUG_TEMPO_TRACK
+        std::cerr << "predictedOffset = " << predictedOffset << std::endl;
+#endif
 
 	unsigned int index = 0;
 	for (int i = p - ( predictedOffset - 1); i < p + ( p - predictedOffset) + 1; i++)
 	{
+#ifdef DEBUG_TEMPO_TRACK
+            std::cerr << "assigning to filter index " << index << " (size = " << p*2 << ")" << " value " << phaseScratch[i] << " from scratch index " << i << std::endl;
+#endif
 	    Filter[ index++ ] = phaseScratch[ i ];
 	}
     }
     else
     {
-        std::fill_n(Filter,p,1);
+	for( int i = 0; i < p; i ++)
+	{
+	    Filter[ i ] = 1;
+	}
     }
+	
     delete [] phaseScratch;
 }
 
 int TempoTrack::phaseMM(double *DF, double *weighting, unsigned int winLength, double period)
 {
     int alignment = 0;
-    int p = (int)std::round( period );
+    int p = (int)MathUtilities::round( period );
 
     double temp = 0.0;
 
@@ -655,9 +671,9 @@ int TempoTrack::beatPredict(unsigned int FSP0, double alignment, double period, 
 {
     int beat = 0;
 
-    int p = (int)std::round( period );
-    int align = (int)std::round( alignment );
-    int FSP = (int)std::round( FSP0 );
+    int p = (int)MathUtilities::round( period );
+    int align = (int)MathUtilities::round( alignment );
+    int FSP = (int)MathUtilities::round( FSP0 );
 
     int FEP = FSP + ( step );
 
@@ -742,7 +758,7 @@ vector<int> TempoTrack::process( vector <double> DF,
 
 	m_DFConditioning->process( m_rawDFFrame, m_smoothDFFrame );
 
-        Correlation::UnbiasedAutoCorrelate( m_smoothDFFrame, m_smoothDFFrame + m_winLength, m_frameACF);
+	m_correlator.doAutoUnBiased( m_smoothDFFrame, m_frameACF, m_winLength );
 		
 	periodP[ TTLoopIndex ] = tempoMM( m_frameACF, RW, 0 );
 

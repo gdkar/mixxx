@@ -15,13 +15,14 @@
 
 #include "DownBeat.h"
 
+#include "maths/MathAliases.h"
 #include "maths/MathUtilities.h"
 #include "maths/KLDivergence.h"
 #include "dsp/transforms/FFT.h"
 
 #include <iostream>
 #include <cstdlib>
-using namespace std;
+
 DownBeat::DownBeat(float originalSampleRate,
                    size_t decimationFactor,
                    size_t dfIncrement) :
@@ -179,90 +180,116 @@ DownBeat::findDownBeats(const float *audio,
         // our Window abstraction.)
 
 //        std::cerr << "beatlen = " << beatlen << std::endl;
+
 //        float rms = 0;
         for (size_t j = 0; j < beatlen && j < m_beatframesize; ++j) {
-            auto mul = 0.5 * (1.0 - std::cos(2 * M_PI* (double(j) / double(beatlen))));
+            double mul = 0.5 * (1.0 - cos(TWO_PI * (double(j) / double(beatlen))));
             m_beatframe[j] = audio[beatstart + j] * mul;
 //            rms += m_beatframe[j] * m_beatframe[j];
         }
 //        rms = sqrt(rms);
 //        std::cerr << "beat " << i << ": audio rms " << rms << std::endl;
+
         for (size_t j = beatlen; j < m_beatframesize; ++j) {
             m_beatframe[j] = 0.0;
         }
+
         // Now FFT beat frame
+        
         m_fft->forward(m_beatframe, m_fftRealOut, m_fftImagOut);
+        
         // Calculate magnitudes
+
         for (size_t j = 0; j < m_beatframesize/2; ++j) {
             newspec[j] = sqrt(m_fftRealOut[j] * m_fftRealOut[j] +
                               m_fftImagOut[j] * m_fftImagOut[j]);
         }
+
         // Preserve peaks by applying adaptive threshold
-        MathUtilities::adaptiveThreshold(newspec.begin(),newspec.end());
+
+        MathUtilities::adaptiveThreshold(newspec);
+
         // Calculate JS divergence between new and old spectral frames
+
         if (i > 0) { // otherwise we have no previous frame
             m_beatsd.push_back(measureSpecDiff(oldspec, newspec));
 //            std::cerr << "specdiff: " << m_beatsd[m_beatsd.size()-1] << std::endl;
         }
+
         // Copy newspec across to old
+
         for (size_t j = 0; j < m_beatframesize/2; ++j) {
             oldspec[j] = newspec[j];
         }
     }
+
     // We now have all spectral difference measures in specdiff
-    auto timesig = m_bpb;
-    if (timesig == 0)
-        timesig = 4;
+
+    int timesig = m_bpb;
+    if (timesig == 0) timesig = 4;
+
     d_vec_t dbcand(timesig); // downbeat candidates
-    std::fill(dbcand.begin(),dbcand.end(),0);
+
+    for (int beat = 0; beat < timesig; ++beat) {
+        dbcand[beat] = 0;
+    }
+
    // look for beat transition which leads to greatest spectral change
-   for (auto beat = 0; beat < timesig; ++beat) {
-       auto count = 0;
-       for (auto example = beat-1; example < (int)m_beatsd.size(); example += timesig) {
-           if (example < 0)
-               continue;
+   for (int beat = 0; beat < timesig; ++beat) {
+       int count = 0;
+       for (int example = beat-1; example < (int)m_beatsd.size(); example += timesig) {
+           if (example < 0) continue;
            dbcand[beat] += (m_beatsd[example]) / timesig;
            ++count;
        }
        if (count > 0) dbcand[beat] /= count;
 //        std::cerr << "dbcand[" << beat << "] = " << dbcand[beat] << std::endl;
    }
+
     // first downbeat is beat at index of maximum value of dbcand
-    auto dbind = MathUtilities::getMax(dbcand.cbegin(),dbcand.cend());
+    int dbind = MathUtilities::getMax(dbcand);
+
     // remaining downbeats are at timesig intervals from the first
-    for (auto i = dbind; i < (int)beats.size(); i += timesig)
+    for (int i = dbind; i < (int)beats.size(); i += timesig) {
         downbeats.push_back(i);
+    }
 }
+
 double
 DownBeat::measureSpecDiff(d_vec_t oldspec, d_vec_t newspec)
 {
     // JENSEN-SHANNON DIVERGENCE BETWEEN SPECTRAL FRAMES
 
     unsigned int SPECSIZE = 512;   // ONLY LOOK AT FIRST 512 SAMPLES OF SPECTRUM. 
-    if (SPECSIZE > oldspec.size()/4)
+    if (SPECSIZE > oldspec.size()/4) {
         SPECSIZE = oldspec.size()/4;
-    auto SD = 0.;
-    auto sd1 = 0.;
+    }
+    double SD = 0.;
+    double sd1 = 0.;
 
-    auto sumnew = 0.;
-    auto sumold = 0.;
+    double sumnew = 0.;
+    double sumold = 0.;
   
-    for (auto i = 0u;i < SPECSIZE;i++)
+    for (unsigned int i = 0;i < SPECSIZE;i++)
     {
-        newspec[i] +=std::numeric_limits<double>::epsilon();
-        oldspec[i] +=std::numeric_limits<double>::epsilon();
+        newspec[i] +=EPS;
+        oldspec[i] +=EPS;
+        
         sumnew+=newspec[i];
         sumold+=oldspec[i];
     } 
+    
     for (unsigned int i = 0;i < SPECSIZE;i++)
     {
         newspec[i] /= (sumnew);
         oldspec[i] /= (sumold);
+        
         // IF ANY SPECTRAL VALUES ARE 0 (SHOULDN'T BE ANY!) SET THEM TO 1
         if (newspec[i] == 0)
         {
             newspec[i] = 1.;
         }
+        
         if (oldspec[i] == 0)
         {
             oldspec[i] = 1.;
@@ -275,8 +302,10 @@ DownBeat::measureSpecDiff(d_vec_t oldspec, d_vec_t newspec)
     
     return SD;
 }
+
 void
 DownBeat::getBeatSD(vector<double> &beatsd) const
 {
     for (int i = 0; i < (int)m_beatsd.size(); ++i) beatsd.push_back(m_beatsd[i]);
 }
+

@@ -19,8 +19,6 @@
 #include <dsp/tempotracking/TempoTrack.h>
 #include <dsp/tempotracking/TempoTrackV2.h>
 
-#include <memory>
-#include <utility>
 using std::string;
 using std::vector;
 using std::cerr;
@@ -34,57 +32,75 @@ float BeatTracker::m_stepSecs = 0.01161; // 512 samples at 44100
 class BeatTrackerData
 {
 public:
-    BeatTrackerData(const DFConfig &config)
-        : dfConfig(config)
-        , df(std::make_unique<DetectionFunction<double> >(config))
-        , origin(Vamp::RealTime::zeroTime)
-    { }
-    ~BeatTrackerData() = default;
+    BeatTrackerData(const DFConfig &config) : dfConfig(config) {
+    df = new DetectionFunction(config);
+    }
+    ~BeatTrackerData() {
+    delete df;
+    }
     void reset() {
-        df = std::make_unique<DetectionFunction<double> >(dfConfig);
-        dfOutput.clear();
+    delete df;
+    df = new DetectionFunction(dfConfig);
+    dfOutput.clear();
         origin = Vamp::RealTime::zeroTime;
     }
+
     DFConfig dfConfig;
-    std::unique_ptr<DetectionFunction<double> > df;
+    DetectionFunction *df;
     vector<double> dfOutput;
     Vamp::RealTime origin;
 };
 
 
-BeatTracker::BeatTracker(float inputSampleRate)
-    : Vamp::Plugin(inputSampleRate)
-    , m_d(0)
-    , m_method(METHOD_NEW)
-    , m_dfType(DF_COMPLEXSD)
-    , m_whiten(false)
-    , m_alpha(0.9)  			// MEPD new exposed parameter for beat tracker, default value = 0.9 (as old version)
-    , m_tightness(4.)
-    , m_inputtempo(120.) 	// MEPD new exposed parameter for beat tracker, default value = 120. (as old version)
-    , m_constraintempo(false) // MEPD new exposed parameter for beat tracker, default value = false (as old version)
+BeatTracker::BeatTracker(float inputSampleRate) :
+    Vamp::Plugin(inputSampleRate),
+    m_d(0),
+    m_method(METHOD_NEW),
+    m_dfType(DF_COMPLEXSD),
+    m_whiten(false),
+    m_alpha(0.9),  			// MEPD new exposed parameter for beat tracker, default value = 0.9 (as old version)
+    m_tightness(4.),
+    m_inputtempo(120.), 	// MEPD new exposed parameter for beat tracker, default value = 120. (as old version)
+    m_constraintempo(false) // MEPD new exposed parameter for beat tracker, default value = false (as old version)
     // calling the beat tracker with these default parameters will give the same output as the previous existing version
 
-{ }
+{
+}
+
 BeatTracker::~BeatTracker()
 {
     delete m_d;
 }
 
 string
-BeatTracker::getIdentifier() const { return "qm-tempotracker"; }
+BeatTracker::getIdentifier() const
+{
+    return "qm-tempotracker";
+}
 
 string
-BeatTracker::getName() const { return "Tempo and Beat Tracker"; }
+BeatTracker::getName() const
+{
+    return "Tempo and Beat Tracker";
+}
 
 string
-BeatTracker::getDescription() const { return "Estimate beat locations and tempo"; }
+BeatTracker::getDescription() const
+{
+    return "Estimate beat locations and tempo";
+}
 
 string
 BeatTracker::getMaker() const
-{ return "Queen Mary, University of London"; }
+{
+    return "Queen Mary, University of London";
+}
 
 int
-BeatTracker::getPluginVersion() const { return 6; }
+BeatTracker::getPluginVersion() const
+{
+    return 6;
+}
 
 string
 BeatTracker::getCopyright() const
@@ -271,23 +287,28 @@ BeatTracker::initialise(size_t channels, size_t stepSize, size_t blockSize)
 }
 
 void
-BeatTracker::reset() { if (m_d) m_d->reset(); }
+BeatTracker::reset()
+{
+    if (m_d) m_d->reset();
+}
 
 size_t
 BeatTracker::getPreferredStepSize() const
 {
-    return  static_cast<size_t>(m_inputSampleRate * m_stepSecs + 0.0001);
+    size_t step = size_t(m_inputSampleRate * m_stepSecs + 0.0001);
 //    std::cerr << "BeatTracker::getPreferredStepSize: input sample rate is " << m_inputSampleRate << ", step size is " << step << std::endl;
+    return step;
 }
 
 size_t
 BeatTracker::getPreferredBlockSize() const
 {
-    return getPreferredStepSize() * 2;
+    size_t theoretical = getPreferredStepSize() * 2;
 
     // I think this is not necessarily going to be a power of two, and
     // the host might have a problem with that, but I'm not sure we
     // can do much about it here
+    return theoretical;
 }
 
 BeatTracker::OutputList

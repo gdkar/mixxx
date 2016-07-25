@@ -16,19 +16,15 @@
 #ifndef CORRELATION_H
 #define CORRELATION_H
 
-#include <cmath>
-#include <limits>
-#include <numeric>
-#include <algorithm>
+#define  EPS  2.2204e-016
 
-namespace Correlation {
-    template<class ForwardIt >
-    void UnbiasedAutoCorrelate(ForwardIt sbeg, ForwardIt send, ForwardIt dst)
-    {
-        using restype = typename std::remove_reference<decltype(*sbeg)>::type;
-        for(auto curr = sbeg; curr != send; curr++,dst++)
-            *dst= std::max(std::numeric_limits<restype>::epsilon(),std::inner_product(curr, send, sbeg, restype{0}) / std::distance(curr,send));
-    }
+class Correlation  
+{
+public:
+    void doAutoUnBiased( double* src, double* dst, unsigned int length );
+    Correlation();
+    virtual ~Correlation();
+
 };
 
 #endif // 

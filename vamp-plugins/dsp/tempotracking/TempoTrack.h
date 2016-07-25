@@ -95,6 +95,7 @@ private:
     // Objetcs/operators declaration
     Framer m_DFFramer;
     DFProcess* m_DFConditioning;
+    Correlation m_correlator;
     // Config structure for DFProcess
     DFProcConfig m_DFPParams;
 

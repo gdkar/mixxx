@@ -29,8 +29,9 @@
 #define PEAKPICKING_H
 
 #include "maths/MathUtilities.h"
+#include "maths/MathAliases.h"
 #include "dsp/signalconditioning/DFProcess.h"
-using namespace std;
+
 
 struct PPWinThresh
 {

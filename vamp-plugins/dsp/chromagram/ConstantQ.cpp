@@ -48,6 +48,17 @@ static bool push_precalculated(int uk, int fftlength,
 }
 #endif
 
+//---------------------------------------------------------------------------
+// nextpow2 returns the smallest integer n such that 2^n >= x.
+static double nextpow2(double x) {
+    double y = ceil(log(x)/log(2.0));
+    return(y);
+}
+
+static double squaredModule(const double & xx, const double & yy) {
+    return xx*xx + yy*yy;
+}
+
 //----------------------------------------------------------------------------
 
 ConstantQ::ConstantQ( CQConfig Config ) :
@@ -121,7 +132,7 @@ void ConstantQ::sparsekernel()
 
 	for (unsigned i=0; i<hammingLength; i++) 
 	{
-	    const double angle = 2*M_PI*m_dQ*i/hammingLength;
+	    const double angle = 2*PI*m_dQ*i/hammingLength;
 	    const double real = cos(angle);
 	    const double imag = sin(angle);
 	    const double absol = hamming(hammingLength, i)/hammingLength;
@@ -141,26 +152,29 @@ void ConstantQ::sparsekernel()
 	//do fft of hammingWindow
 	m_FFT.process( 0, hammingWindowRe, hammingWindowIm, transfHammingWindowRe, transfHammingWindowIm );
 
-	auto mag_sqr = [](auto x, auto y){return x*x+y*y;};
+		
 	for (unsigned j=0; j<( m_FFTLength ); j++) 
 	{
 	    // perform thresholding
-	    const auto squaredBin = mag_sqr( transfHammingWindowRe[ j ], transfHammingWindowIm[ j ]);
-	    if (squaredBin <= squareThreshold)
-                continue;
+	    const double squaredBin = squaredModule( transfHammingWindowRe[ j ], transfHammingWindowIm[ j ]);
+	    if (squaredBin <= squareThreshold) continue;
+		
 	    // Insert non-zero position indexes, doubled because they are floats
 	    sk->is.push_back(j);
 	    sk->js.push_back(k);
+
 	    // take conjugate, normalise and add to array sparkernel
 	    sk->real.push_back( transfHammingWindowRe[ j ]/m_FFTLength);
 	    sk->imag.push_back(-transfHammingWindowIm[ j ]/m_FFTLength);
 	}
 
     }
+
     delete [] hammingWindowRe;
     delete [] hammingWindowIm;
     delete [] transfHammingWindowRe;
     delete [] transfHammingWindowIm;
+
 /*
     using std::cout;
     using std::endl;
@@ -247,20 +261,20 @@ double* ConstantQ::process( const double* fftdata )
 	m_CQdata[ row ] = 0;
 	m_CQdata[ row+1 ] = 0;
     }
-    const auto *fftbin = &(sk->is[0]);
-    const auto *cqbin  = &(sk->js[0]);
-    const auto *real   = &(sk->real[0]);
-    const auto   *imag   = &(sk->imag[0]);
-    const auto sparseCells = sk->real.size();
+    const unsigned *fftbin = &(sk->is[0]);
+    const unsigned *cqbin  = &(sk->js[0]);
+    const double   *real   = &(sk->real[0]);
+    const double   *imag   = &(sk->imag[0]);
+    const unsigned int sparseCells = sk->real.size();
 	
-    for (auto i = 0u; i<sparseCells; i++)
+    for (unsigned i = 0; i<sparseCells; i++)
     {
-	auto row = cqbin[i];
-	auto col = fftbin[i];
-	auto  r1  = real[i];
-	auto  i1  = imag[i];
-	auto  r2  = fftdata[ (2*m_FFTLength) - 2*col - 2 ];
-	auto  i2  = fftdata[ (2*m_FFTLength) - 2*col - 2 + 1 ];
+	const unsigned row = cqbin[i];
+	const unsigned col = fftbin[i];
+	const double & r1  = real[i];
+	const double & i1  = imag[i];
+	const double & r2  = fftdata[ (2*m_FFTLength) - 2*col - 2 ];
+	const double & i2  = fftdata[ (2*m_FFTLength) - 2*col - 2 + 1 ];
 	// add the multiplication
 	m_CQdata[ 2*row  ] += (r1*r2 - i1*i2);
 	m_CQdata[ 2*row+1] += (r1*i2 + i1*r2);
@@ -284,7 +298,7 @@ void ConstantQ::initialise( CQConfig Config )
 //    std::cerr << "ConstantQ::initialise: rate = " << m_FS << ", fmin = " << m_FMin << ", fmax = " << m_FMax << ", bpo = " << m_BPO << ", K = " << m_uK << ", Q = " << m_dQ << std::endl;
 
     // work out length of fft required for this constant Q Filter bank
-    m_FFTLength = MathUtilities::nextPowerOfTwo(static_cast<int>(m_dQ*m_FS/m_FMin));
+    m_FFTLength = (int) pow(2, nextpow2(ceil( m_dQ*m_FS/m_FMin )));
 
     m_hop = m_FFTLength/8; // <------ hop size is window length divided by 32
 

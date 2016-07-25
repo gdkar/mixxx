@@ -19,25 +19,24 @@
 #include "plugins/KeyDetect.h"
 #include "plugins/MixxxBpmDetection.h"
 
-namespace {
-    Vamp::PluginAdapter<KeyDetector>       keyDetectorPluginAdapter;
-    Vamp::PluginAdapter<BeatTracker>       beatTrackerAdapter;
-    Vamp::PluginAdapter<BarBeatTracker>    barBeatTrackPluginAdapter;
-    Vamp::PluginAdapter<MixxxBpmDetection> mixxxBpmDetection;
-}
+static Vamp::PluginAdapter<KeyDetector> keyDetectorPluginAdapter;
+static Vamp::PluginAdapter<BeatTracker> beatTrackerAdapter;
+static Vamp::PluginAdapter<BarBeatTracker> barBeatTrackPluginAdapter;
+static Vamp::PluginAdapter<MixxxBpmDetection> MixxxBpmDetection;
+
 const VampPluginDescriptor *vampGetPluginDescriptor(unsigned int vampApiVersion,
                                                     unsigned int index)
 {
-    if (vampApiVersion < 1)
-        return nullptr;
+    if (vampApiVersion < 1) return 0;
+
     switch (index) {
-        // cases have to start at 0, to have mixxxbpmdetection as a fallback
-        // it should always be the first one, kain88 12/2012
-        case  0: return mixxxBpmDetection.getDescriptor();
-        case  1: return beatTrackerAdapter.getDescriptor();
-        case  2: return barBeatTrackPluginAdapter.getDescriptor();
-        case  3: return keyDetectorPluginAdapter.getDescriptor();
-        default: return 0;
+    // cases have to start at 0, to have mixxxbpmdetection as a fallback
+    // it should always be the first one, kain88 12/2012
+    case  0: return MixxxBpmDetection.getDescriptor();
+    case  1: return beatTrackerAdapter.getDescriptor();
+    case  2: return barBeatTrackPluginAdapter.getDescriptor();
+    case  3: return keyDetectorPluginAdapter.getDescriptor();
+    default: return 0;
     }
 }
 
