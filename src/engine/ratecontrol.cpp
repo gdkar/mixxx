@@ -298,14 +298,10 @@ double RateControl::getJogFactor() const {
     // Since m_pJog is an accumulator, reset it since we've used its value.
     if(jogValue != 0.)
         m_pJog->set(0.);
-
-    double jogValueFiltered = m_pJogFilter->filter(jogValue);
-    double jogFactor = jogValueFiltered * jogSensitivity;
-
-    if (isnan(jogValue) || isnan(jogFactor)) {
+    auto jogValueFiltered = m_pJogFilter->filter(jogValue);
+    auto jogFactor = jogValueFiltered * jogSensitivity;
+    if (isnan(jogValue) || isnan(jogFactor))
         jogFactor = 0.0;
-    }
-
     return jogFactor;
 }
 
@@ -337,11 +333,9 @@ double RateControl::calculateSpeed(double baserate, double speed, bool paused,
         if (useScratch2Value && m_pScratch2Scratching->get()) {
             *pReportScratching = true;
         }
-
         if (bVinylControlEnabled) {
-            if (m_pVCScratching->toBool()) {
+            if (m_pVCScratching->toBool())
                 *pReportScratching = true;
-            }
             rate = speed;
         } else {
             double scratchFactor = m_pScratch2->get();
@@ -375,10 +369,7 @@ double RateControl::calculateSpeed(double baserate, double speed, bool paused,
                 rate += jogFactor;
             }
         }
-
-        double currentSample = getCurrentSample();
-        m_pScratchController->process(currentSample, rate, iSamplesPerBuffer, baserate);
-
+        auto currentSample = getCurrentSample();
         // If waveform scratch is enabled, override all other controls
         if (m_pScratchController->isEnabled()) {
             rate = m_pScratchController->getRate();
@@ -436,36 +427,23 @@ double RateControl::process(double rate,
      * the troublesome Latency ControlObject... Either the Master or Soundcard
      * one.
      */
-
-    double latrate = ((double)bufferSamples / (double)m_pSampleRate->get());
-
-
+    auto latrate = ((double)bufferSamples / (double)m_pSampleRate->get());
     if ((m_ePbPressed) && (!m_bTempStarted)) {
         m_bTempStarted = true;
-
         if (m_eRateRampMode == RATERAMP_STEP) {
             // old temporary pitch shift behavior
-            double range = m_pRateRange->get();
-
+            auto range = m_pRateRange->get();
             // Avoid Division by Zero
             if (range == 0) {
                 qDebug() << "Avoiding a Division by Zero in RATERAMP_STEP code";
                 return kNoTrigger;
             }
-
-            double change = m_pRateDir->get() * m_dTemp /
-                                    (100. * range);
-            double csmall = m_pRateDir->get() * m_dTempSmall /
-                                    (100. * range);
-
-            if (buttonRateTempUp->get())
-                addRateTemp(change);
-            else if (buttonRateTempDown->get())
-                subRateTemp(change);
-            else if (buttonRateTempUpSmall->get())
-                addRateTemp(csmall);
-            else if (buttonRateTempDownSmall->get())
-                subRateTemp(csmall);
+            auto change = m_pRateDir->get() * m_dTemp / (100. * range);
+            auto csmall = m_pRateDir->get() * m_dTempSmall / (100. * range);
+            if (buttonRateTempUp->get())                addRateTemp(change);
+            else if (buttonRateTempDown->get())         subRateTemp(change);
+            else if (buttonRateTempUpSmall->get())      addRateTemp(csmall);
+            else if (buttonRateTempDownSmall->get())    subRateTemp(csmall);
         } else {
             // m_eRateRampMode == RATERAMP_LINEAR
             m_dTempRateChange = ((double)latrate / ((double)m_iRateRampSensitivity / 100.));
@@ -473,9 +451,7 @@ double RateControl::process(double rate,
             if (m_eRampBackMode == RATERAMP_RAMPBACK_PERIOD)
                 m_dRateTempRampbackChange = 0.0;
         }
-
     }
-
     if (m_eRateRampMode == RATERAMP_LINEAR) {
         if (m_ePbCurrent) {
             // apply ramped pitchbending
@@ -489,12 +465,10 @@ double RateControl::process(double rate,
                         && (m_dRateTemp != 0.0))) {
             // No buttons pressed, so time to deinitialize
             m_bTempStarted = false;
-
             if ((m_eRampBackMode == RATERAMP_RAMPBACK_PERIOD)
                     && (m_dRateTempRampbackChange == 0.0)) {
                 int period = 2;
-                m_dRateTempRampbackChange = fabs(
-                        m_dRateTemp / period);
+                m_dRateTempRampbackChange = std::abs(m_dRateTemp / period);
             } else if ((m_eRampBackMode != RATERAMP_RAMPBACK_NONE)
                     && (m_dRateTempRampbackChange == 0.0)) {
                 if (fabs(m_dRateTemp) < m_dRateTempRampbackChange) {
@@ -514,36 +488,24 @@ double RateControl::process(double rate,
             resetRateTemp();
         }
     }
-
     return kNoTrigger;
 }
-
 double RateControl::getTempRate() {
     return (m_pRateDir->get() * (m_dRateTemp * m_pRateRange->get()));
 }
-
 void RateControl::setRateTemp(double v)
 {
     // Do not go backwards
-    if ((calcRateRatio() + v) < 0) {
-        return;
-    }
-
+    if ((calcRateRatio() + v) < 0) { return; }
     m_dRateTemp = v;
-    if (m_dRateTemp < -1.0) {
-        m_dRateTemp = -1.0;
-    } else if (m_dRateTemp > 1.0) {
-        m_dRateTemp = 1.0;
-    } else if (isnan(m_dRateTemp)) {
-        m_dRateTemp = 0;
-    }
+    if (m_dRateTemp < -1.0) { m_dRateTemp = -1.0;
+    } else if (m_dRateTemp > 1.0) { m_dRateTemp = 1.0;
+    } else if (isnan(m_dRateTemp)) { m_dRateTemp = 0; }
 }
-
 void RateControl::addRateTemp(double v)
 {
     setRateTemp(m_dRateTemp + v);
 }
-
 void RateControl::subRateTemp(double v)
 {
     setRateTemp(m_dRateTemp - v);

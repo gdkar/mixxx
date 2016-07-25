@@ -77,7 +77,7 @@ static constexpr const int audioBeatMarkLen = 40;
 static constexpr const int kiTempLength = 200000;
 
 // Rate at which the playpos slider is updated
-static constexpr const int kiPlaypositionUpdateRate = 10; // updates per second
+static constexpr const int kiPlaypositionUpdateRate = 60; // updates per second
 // Number of kiUpdateRates that go by before we update BPM.
 static constexpr const int kiBpmUpdateCnt = 4; // about 2.5 updates per sec
 

@@ -681,10 +681,8 @@ void EngineBuffer::process(CSAMPLE* pOutput, int iBufferSize)
         // Update the slipped position and seek if it was disabled.
         processSlip(iBufferSize);
         processSyncRequests();
-
         // Note: This may effects the m_filepos_play, play, scaler and crossfade buffer
         processSeek(paused);
-
         // speed is the ratio between track-time and real-time
         // (1.0 being normal rate. 2.0 plays at 2x speed -- 2 track seconds
         // pass for every 1 real second). Depending on whether
@@ -822,12 +820,10 @@ void EngineBuffer::process(CSAMPLE* pOutput, int iBufferSize)
             m_speed_old    = speed;
             m_pitch_old    = pitchRatio;
             m_reverse_old  = is_reverse;
-
             // Now we need to update the scaler with the master sample rate, the
             // base rate (ratio between sample rate of the source audio and the
             // master samplerate), the deck speed, the pitch shift, and whether
             // the deck speed should affect the pitch.
-
             m_pScale->setScaleParameters(baserate,&speed,&pitchRatio);
             // The way we treat rate inside of EngineBuffer is actually a
             // description of "sample consumption rate" or percentage of samples
@@ -835,7 +831,6 @@ void EngineBuffer::process(CSAMPLE* pOutput, int iBufferSize)
             // rate and normal speed. pitch_adjust does not change the playback
             // rate.
             rate = baserate * speed;
-
             // Scaler is up to date now.
             m_bScalerChanged = false;
         } else {
@@ -878,14 +873,12 @@ void EngineBuffer::process(CSAMPLE* pOutput, int iBufferSize)
             //         << ", play " << filepos_play
             //         << " bufferlen " << iBufferSize;
 
-                // Adjust filepos_play by the amount we processed. TODO(XXX) what
-                // happens if samplesRead is a fraction ?
-                m_filepos_play = m_pReadAheadManager->getEffectiveVirtualPlaypositionFromLog(
-                                static_cast<int>(m_filepos_play), samplesRead);
-            }
+            // Adjust filepos_play by the amount we processed. TODO(XXX) what
+            // happens if samplesRead is a fraction ?
+            m_filepos_play = m_pReadAheadManager->getEffectiveVirtualPlaypositionFromLog(
+                            static_cast<int>(m_filepos_play), samplesRead);
             if (m_bCrossfadeReady) {
-                SampleUtil::linearCrossfadeBuffers(
-                        pOutput, m_pCrossfadeBuffer, pOutput, iBufferSize);
+                SampleUtil::linearCrossfadeBuffers(pOutput, m_pCrossfadeBuffer, pOutput, iBufferSize);
             }
             // Note: we do not fade here if we pass the end or the start of
             // the track in reverse direction
@@ -958,6 +951,7 @@ void EngineBuffer::process(CSAMPLE* pOutput, int iBufferSize)
         // Report our speed to SyncControl immediately instead of waiting
         // for postProcess so we can broadcast this update to followers.
         m_pSyncControl->reportPlayerSpeed(m_speed_old, m_scratching_old);
+    }
     m_iLastBufferSize = iBufferSize;
     m_bCrossfadeReady = false;
 }

@@ -20,7 +20,7 @@ const mixxx::Duration kMaxInterval = mixxx::Duration::fromMillis(1000.0 * (60.0 
 int kFilterLength = 5;
 // The local_bpm is calculated forward and backward this number of beats, so
 // the actual number of beats is this x2.
-int kLocalBpmSpan = 4;
+int kLocalBpmSpan = 16;
 
 BpmControl::BpmControl(QString group,
                        UserSettingsPointer pConfig, QObject *p) :
@@ -34,19 +34,15 @@ BpmControl::BpmControl(QString group,
         m_tapFilter(this, kFilterLength, kMaxInterval),
         m_sGroup(group) {
     m_pPlayButton = new ControlProxy(group, "play", this);
-    m_pPlayButton->connectValueChanged(SLOT(slotControlPlay(double)),
-            Qt::DirectConnection);
+    m_pPlayButton->connectValueChanged(SLOT(slotControlPlay(double)),Qt::DirectConnection);
     m_pReverseButton = new ControlProxy(group, "reverse", this);
     m_pRateSlider = new ControlProxy(group, "rate", this);
-    m_pRateSlider->connectValueChanged(SLOT(slotAdjustRateSlider()),
-            Qt::DirectConnection);
+    m_pRateSlider->connectValueChanged(SLOT(slotAdjustRateSlider()),Qt::DirectConnection);
     m_pQuantize = ControlObject::getControl(group, "quantize");
     m_pRateRange = new ControlProxy(group, "rateRange", this);
-    m_pRateRange->connectValueChanged(SLOT(slotAdjustRateSlider()),
-            Qt::DirectConnection);
+    m_pRateRange->connectValueChanged(SLOT(slotAdjustRateSlider()),Qt::DirectConnection);
     m_pRateDir = new ControlProxy(group, "rate_dir", this);
-    m_pRateDir->connectValueChanged(SLOT(slotAdjustRateSlider()),
-            Qt::DirectConnection);
+    m_pRateDir->connectValueChanged(SLOT(slotAdjustRateSlider()),Qt::DirectConnection);
 
     m_pPrevBeat.reset(new ControlProxy(group, "beat_prev"));
     m_pNextBeat.reset(new ControlProxy(group, "beat_next"));
@@ -157,8 +153,7 @@ void BpmControl::slotFileBpmChanged(double bpm) {
     // set our BPM if the file BPM changes. See SyncControl::fileBpmChanged().
     if (m_pBeats) {
         double beats_bpm =
-                m_pBeats->getBpmAroundPosition(getCurrentSample(),
-                                               kLocalBpmSpan);
+                m_pBeats->getBpmAroundPosition(getCurrentSample(),kLocalBpmSpan);
         if (beats_bpm != -1) {
             m_pLocalBpm->set(beats_bpm);
         } else {
@@ -345,14 +340,11 @@ bool BpmControl::syncTempo() {
         if (desiredRateShift < 1.0 && desiredRateShift > -0.5)
         {
             m_pEngineBpm->set(m_pLocalBpm->get() * desiredRate);
-
-
             // Adjust the rateScale. We have to divide by the range and
             // direction to get the correct rateScale.
             double desiredRateSlider = desiredRateShift / (m_pRateRange->get() * m_pRateDir->get());
             // And finally, set the slider
             m_pRateSlider->set(desiredRateSlider);
-
             return true;
         }
     }
