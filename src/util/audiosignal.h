@@ -31,39 +31,39 @@ public:
         Interleaved
     };
 
-    static const SINT kChannelCountZero    = 0;
-    static const SINT kChannelCountDefault = kChannelCountZero;
-    static const SINT kChannelCountMono    = 1;
-    static const SINT kChannelCountMin     = kChannelCountMono; // lower bound
-    static const SINT kChannelCountStereo  = 2;
-    static const SINT kChannelCountMax     = 256; // upper bound (8-bit unsigned integer)
+    static constexpr const SINT kChannelCountZero    = 0;
+    static constexpr const SINT kChannelCountDefault = kChannelCountZero;
+    static constexpr const SINT kChannelCountMono    = 1;
+    static constexpr const SINT kChannelCountMin     = kChannelCountMono; // lower bound
+    static constexpr const SINT kChannelCountStereo  = 2;
+    static constexpr const SINT kChannelCountMax     = 256; // upper bound (8-bit unsigned integer)
 
-    static bool isValidChannelCount(SINT channelCount) {
+    static constexpr bool isValidChannelCount(SINT channelCount) {
         return (kChannelCountMin <= channelCount) && (kChannelCountMax >= channelCount);
     }
 
-    static const SINT kSamplingRateZero    = 0;
-    static const SINT kSamplingRateDefault = kSamplingRateZero;
-    static const SINT kSamplingRateMin     = 8000; // lower bound (= minimum MP3 sampling rate)
-    static const SINT kSamplingRate32kHz   = 32000;
-    static const SINT kSamplingRateCD      = 44100;
-    static const SINT kSamplingRate48kHz   = 48000;
-    static const SINT kSamplingRate96kHz   = 96000;
-    static const SINT kSamplingRate192kHz  = 192000;
-    static const SINT kSamplingRateMax     = kSamplingRate192kHz; // upper bound
+    static constexpr const SINT kSamplingRateZero    = 0;
+    static constexpr const SINT kSamplingRateDefault = kSamplingRateZero;
+    static constexpr const SINT kSamplingRateMin     = 8000; // lower bound (= minimum MP3 sampling rate)
+    static constexpr const SINT kSamplingRate32kHz   = 32000;
+    static constexpr const SINT kSamplingRateCD      = 44100;
+    static constexpr const SINT kSamplingRate48kHz   = 48000;
+    static constexpr const SINT kSamplingRate96kHz   = 96000;
+    static constexpr const SINT kSamplingRate192kHz  = 192000;
+    static constexpr const SINT kSamplingRateMax     = kSamplingRate192kHz; // upper bound
 
-    static bool isValidSamplingRate(SINT samplingRate) {
+    static constexpr bool isValidSamplingRate(SINT samplingRate) {
         return (kSamplingRateMin <= samplingRate) && (kSamplingRateMax >= samplingRate);
     }
 
-    explicit AudioSignal(SampleLayout sampleLayout)
+    constexpr explicit AudioSignal(SampleLayout sampleLayout)
         : m_sampleLayout(sampleLayout),
           m_channelCount(kChannelCountDefault),
           m_samplingRate(kSamplingRateDefault) {
         DEBUG_ASSERT(!hasValidChannelCount());
         DEBUG_ASSERT(!hasValidSamplingRate());
     }
-    AudioSignal(SampleLayout sampleLayout, SINT channelCount, SINT samplingRate)
+    constexpr AudioSignal(SampleLayout sampleLayout, SINT channelCount, SINT samplingRate)
         : m_sampleLayout(sampleLayout),
           m_channelCount(channelCount),
           m_samplingRate(samplingRate) {
@@ -98,7 +98,6 @@ public:
     bool hasValidSamplingRate() const {
         return isValidSamplingRate(getSamplingRate());
     }
-
     // Verifies various properties to ensure that the audio data is
     // actually readable. Warning messages are logged for properties
     // with invalid values for diagnostic purposes.
@@ -119,19 +118,17 @@ public:
 
     // Conversion: #samples / sample offset -> #frames / frame offset
     template<typename T>
-    inline T samples2frames(T samples) const {
+    T samples2frames(T samples) const {
         DEBUG_ASSERT(hasValidChannelCount());
         DEBUG_ASSERT(0 == (samples % getChannelCount()));
         return samples / getChannelCount();
     }
-
     // Conversion: #frames / frame offset -> #samples / sample offset
     template<typename T>
-    inline T frames2samples(T frames) const {
+    T frames2samples(T frames) const {
         DEBUG_ASSERT(hasValidChannelCount());
         return frames * getChannelCount();
     }
-
 protected:
     void setChannelCount(SINT channelCount) {
         DEBUG_ASSERT(kChannelCountZero <= m_channelCount); // unsigned value
@@ -140,7 +137,6 @@ protected:
     void resetChannelCount() {
         m_channelCount = kChannelCountDefault;
     }
-
     void setSamplingRate(SINT samplingRate) {
         DEBUG_ASSERT(kSamplingRateZero <= m_samplingRate); // unsigned value
         m_samplingRate = samplingRate;
@@ -148,7 +144,6 @@ protected:
     void resetSamplingRate() {
         m_samplingRate = kSamplingRateDefault;
     }
-
 private:
     SampleLayout m_sampleLayout;
     SINT m_channelCount;
