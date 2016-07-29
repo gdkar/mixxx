@@ -1,20 +1,3 @@
-/***************************************************************************
-                          enginebufferscale.h  -  description
-                             -------------------
-    begin                : Sun Apr 13 2003
-    copyright            : (C) 2003 by Tue & Ken Haste Andersen
-    email                : haste@diku.dk
- ***************************************************************************/
-
-/***************************************************************************
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************/
-
 #ifndef ENGINEBUFFERSCALE_H
 #define ENGINEBUFFERSCALE_H
 
@@ -22,6 +5,8 @@
 
 #include "util/types.h"
 #include "engine/readaheadmanager.h"
+#include "util/audiosignal.h"
+
 // MAX_SEEK_SPEED needs to be good and high to allow room for the very high
 //  instantaneous velocities of advanced scratching (Uzi) and spin-backs.
 //  (Yes, I can actually spin the SCS.1d faster than 15x nominal.
@@ -65,18 +50,28 @@ class EngineBufferScale : public QObject {
     }
 
     // Set the desired output sample rate.
-    virtual void setSampleRate(int iSampleRate) {
-        m_iSampleRate = iSampleRate;
+    virtual void setSampleRate(SINT iSampleRate);
+
+    const mixxx::AudioSignal& getAudioSignal() const {
+        return m_audioSignal;
     }
 
     // Called from EngineBuffer when seeking, to ensure the buffers are flushed */
     virtual void clear() = 0;
     // Scale buffer
-    virtual double getScaled(CSAMPLE* pOutput, int iBufferSize) = 0;
+    // Returns the number of frames that have bean read from the unscaled
+    // input buffer The number of frames copied to the output buffer is always
+    // an integer value, while the number of frames read from the unscaled
+    // input buffer might be partial number!
+    // The size of the output buffer is given in samples, i.e. twice the number
+    // of frames for an interleaved stereo signal.
+    virtual double scaleBuffer(
+            CSAMPLE* pOutputBuffer,
+            SINT iOutputBufferSize) = 0;
 
   protected:
+    mixxx::AudioSignal m_audioSignal;
     ReadAheadManager *m_pReadAheadManager{nullptr};
-    int m_iSampleRate;
     double m_dBaseRate;
     bool m_bSpeedAffectsPitch;
     double m_dTempoRatio;

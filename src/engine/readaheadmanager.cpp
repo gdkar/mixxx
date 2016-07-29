@@ -35,34 +35,41 @@ ReadAheadManager::ReadAheadManager(CachingReader* pReader,
     connect(this,SIGNAL(notifySeek(double)),this,SLOT(onNotifySeek(double)));
     SampleUtil::clear(m_pCrossFadeBuffer, MAX_BUFFER_LEN);
 }
-ReadAheadManager::~ReadAheadManager() { SampleUtil::free(m_pCrossFadeBuffer); }
-int64_t ReadAheadManager::getNextSamples(double dRate, CSAMPLE* buffer,
-                                     int64_t requested_samples)
-{
+
+ReadAheadManager::~ReadAheadManager() {
+    SampleUtil::free(m_pCrossFadeBuffer);
+}
+
+SINT ReadAheadManager::getNextSamples(double dRate, CSAMPLE* buffer,
+        SINT requested_samples) {
+    // TODO(XXX): Remove implicit assumption of 2 channels
     if (!even(requested_samples)) {
         qDebug() << "ERROR: Non-even requested_samples to ReadAheadManager::getNextSamples";
         requested_samples--;
     }
-    auto in_reverse = dRate < 0;
-    auto start_sample = m_iCurrentPosition;
+
+    bool in_reverse = dRate < 0;
+    SINT start_sample = m_iCurrentPosition;
     //qDebug() << "start" << start_sample << requested_samples;
-    auto samples_needed = requested_samples;
-    auto base_buffer = buffer;
+    SINT samples_needed = requested_samples;
+    CSAMPLE* base_buffer = buffer;
 
     // A loop will only limit the amount we can read in one shot.
 
-    auto loop_trigger = m_pLoopingControl->nextTrigger(dRate, m_iCurrentPosition, 0, 0);
-    auto loop_active = loop_trigger != kNoTrigger;
-    auto preloop_samples = 0;
+    const double loop_trigger = m_pLoopingControl->nextTrigger(
+            dRate, m_iCurrentPosition, 0, 0);
+    bool loop_active = loop_trigger != kNoTrigger;
+    SINT preloop_samples = 0;
+
     if (loop_active) {
-        auto samples_available = static_cast<int64_t>(in_reverse ?
+        SINT samples_available = (in_reverse ?
                 m_iCurrentPosition - loop_trigger :
                 loop_trigger - m_iCurrentPosition);
         if (samples_available < 0) {
             samples_needed = 0;
         } else {
             preloop_samples = samples_available;
-            samples_needed = math_clamp<int64_t>(samples_needed, 0, samples_available);
+            samples_needed = math_clamp<SINT>(samples_needed, 0, samples_available);
         }
     }
     if (in_reverse) 
@@ -73,7 +80,9 @@ int64_t ReadAheadManager::getNextSamples(double dRate, CSAMPLE* buffer,
         qDebug() << "Need negative samples in ReadAheadManager::getNextSamples. Ignoring read";
         return 0;
     }
-    auto samples_read = m_pReader->read(start_sample, in_reverse, samples_needed,base_buffer);
+    SINT samples_read = m_pReader->read(start_sample, in_reverse, samples_needed,
+                                       base_buffer);
+
     if (samples_read != samples_needed) {
         qDebug() << "didn't get what we wanted" << samples_read << samples_needed;
     }
@@ -114,9 +123,8 @@ void ReadAheadManager::addRateControl(RateControl* pRateControl)
 
 }
 // Not thread-save, call from engine thread only
-void ReadAheadManager::onNotifySeek(double dSeekPosition)
-{
-    m_iCurrentPosition = static_cast<int64_t>(dSeekPosition);
+void ReadAheadManager::notifySeek(SINT iSeekPosition) {
+    m_iCurrentPosition = iSeekPosition;
     m_readAheadLog.clear();
 }
 void ReadAheadManager::hintReader(double dRate, HintVector* pHintList)
@@ -125,7 +133,8 @@ void ReadAheadManager::hintReader(double dRate, HintVector* pHintList)
     Hint current_position;
     // SoundTouch can read up to 2 chunks ahead. Always keep 2 chunks ahead in
     // cache.
-    auto length_to_cache = 2 * CachingReaderChunk::kSamples;
+    SINT length_to_cache = 2 * CachingReaderChunk::kSamples;
+
     current_position.length = length_to_cache;
     current_position.sample = in_reverse ? m_iCurrentPosition - length_to_cache : m_iCurrentPosition;
     // If we are trying to cache before the start of the track,
@@ -150,9 +159,9 @@ void ReadAheadManager::addReadLogEntry(double virtualPlaypositionStart,
 }
 
 // Not thread-save, call from engine thread only
-int64_t ReadAheadManager::getEffectiveVirtualPlaypositionFromLog(double currentVirtualPlayposition,double numConsumedSamples)
-{
-    if (numConsumedSamples == 0)
+SINT ReadAheadManager::getEffectiveVirtualPlaypositionFromLog(double currentVirtualPlayposition,
+                                                             double numConsumedSamples) {
+    if (numConsumedSamples == 0) {
         return currentVirtualPlayposition;
     if (m_readAheadLog.size() == 0) {
         // No log entries to read from.
@@ -181,14 +190,16 @@ int64_t ReadAheadManager::getEffectiveVirtualPlaypositionFromLog(double currentV
         }
         shouldNotifySeek = true;
     }
-    auto result = 0;
+    SINT result = 0;
     if (direction) {
-        result = static_cast<int64_t>(std::floor(virtualPlayposition));
-        if (!even(result))
+        result = static_cast<SINT>(floor(virtualPlayposition));
+        // TODO(XXX): Remove implicit assumption of 2 channels
+        if (!even(result)) {
             result--;
     } else {
-        result = static_cast<int64_t>(std::ceil(virtualPlayposition));
-        if (!even(result))
+        result = static_cast<SINT>(ceil(virtualPlayposition));
+        // TODO(XXX): Remove implicit assumption of 2 channels
+        if (!even(result)) {
             result++;
     }
     return result;

@@ -36,17 +36,25 @@ class ReadAheadManager : public QObject{
     // direction the audio is progressing in. Returns the total number of
     // samples read into buffer. Note that it is very common that the total
     // samples read is less than the requested number of samples.
-    virtual int64_t getNextSamples(double dRate, CSAMPLE* buffer, int64_t requested_samples);
+    virtual SINT getNextSamples(double dRate, CSAMPLE* buffer, SINT requested_samples);
+
+
     // Used to add a new EngineControls that ReadAheadManager will use to decide
     // which samples to return.
     void addLoopingControl();
     void addRateControl(RateControl* pRateControl);
     // Get the current read-ahead position in samples.
-    virtual int64_t getPlaypos() const { return m_iCurrentPosition; }
+    virtual inline SINT getPlaypos() const {
+        return m_iCurrentPosition;
+    }
+
+    virtual void notifySeek(SINT iSeekPosition);
+
     // hintReader allows the ReadAheadManager to provide hints to the reader to
     // indicate that the given portion of a song is about to be read.
     virtual void hintReader(double dRate, HintVector* hintList);
-    virtual int64_t getEffectiveVirtualPlaypositionFromLog(double currentVirtualPlayposition,
+
+    virtual SINT getEffectiveVirtualPlaypositionFromLog(double currentVirtualPlayposition,
                                                        double numConsumedSamples);
     virtual void setReader(CachingReader* pReader) { m_pReader = pReader; }
   public slots:
@@ -102,9 +110,9 @@ class ReadAheadManager : public QObject{
     LoopingControl* m_pLoopingControl = nullptr;
     RateControl* m_pRateControl = nullptr;
     QLinkedList<ReadLogEntry> m_readAheadLog;
-    int64_t m_iCurrentPosition{0};
-    CachingReader* m_pReader{nullptr};
-    CSAMPLE* m_pCrossFadeBuffer{nullptr};
+    SINT m_iCurrentPosition;
+    CachingReader* m_pReader;
+    CSAMPLE* m_pCrossFadeBuffer;
 };
 
 #endif // READAHEADMANGER_H

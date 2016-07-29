@@ -2,6 +2,7 @@
 #define ENGINEBUFFERSCALERUBBERBAND_H
 
 #include "engine/enginebufferscale.h"
+#include "util/memory.h"
 
 namespace RubberBand {
 class RubberBandStretcher;
@@ -13,34 +14,39 @@ class ReadAheadManager;
 class EngineBufferScaleRB : public EngineBufferScale {
     Q_OBJECT
   public:
-    EngineBufferScaleRB(ReadAheadManager* pReadAheadManager, QObject *pParent );
-    ~EngineBufferScaleRB() override;
+    explicit EngineBufferScaleRubberBand(
+            ReadAheadManager* pReadAheadManager, QObject *pParent);
+    ~EngineBufferScaleRubberBand() override;
 
     void setScaleParameters(double base_rate,
                             double* pTempoRatio,
                             double* pPitchRatio) override;
 
-    void setSampleRate(int iSampleRate) override;
+    void setSampleRate(SINT iSampleRate) override;
 
-    // Read and scale buf_size samples from the provided RAMAN.
-    double getScaled(CSAMPLE* pOutput, int iBufferSize) override;
+    double scaleBuffer(
+            CSAMPLE* pOutputBuffer,
+            SINT iOutputBufferSize) override;
 
     // Flush buffer.
     void clear() override;
 
-    // Reset RubberBand library with new samplerate.
-    void initializeRubberBand(int iSampleRate);
   private:
-    void deinterleaveAndProcess(const CSAMPLE* pBuffer, size_t frames, bool flush);
-    size_t retrieveAndDeinterleave(CSAMPLE* pBuffer, size_t frames);
+    // Reset RubberBand library with new audio signal
+    void initRubberBand();
 
-    // Holds the playback direction
-    bool m_bBackwards;
+    void deinterleaveAndProcess(const CSAMPLE* pBuffer, SINT frames, bool flush);
+    SINT retrieveAndDeinterleave(CSAMPLE* pBuffer, SINT frames);
+
+    // The read-ahead manager that we use to fetch samples
+    ReadAheadManager* m_pReadAheadManager;
+
+    std::unique_ptr<RubberBand::RubberBandStretcher> m_pRubberBand;
 
     CSAMPLE* m_retrieve_buffer[2];
     CSAMPLE* m_buffer_back;
-
-    RubberBand::RubberBandStretcher* m_pRubberBand;
+    // Holds the playback direction
+    bool m_bBackwards;
 };
 
 

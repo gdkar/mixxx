@@ -41,8 +41,13 @@
 #include "engine/vinylcontrolcontrol.h"
 #endif
 
-double kLinearScalerElipsis = 1.00058; // 2^(0.01/12): changes < 1 cent allows a linear scaler
-int kSamplesPerFrame = 2; // Engine buffer uses Stereo frames only
+namespace {
+
+const double kLinearScalerElipsis = 1.00058; // 2^(0.01/12): changes < 1 cent allows a linear scaler
+
+const SINT kSamplesPerFrame = 2; // Engine buffer uses Stereo frames only
+
+} // anonymous namespace
 
 EngineBuffer::EngineBuffer(QString group, UserSettingsPointer pConfig,
                            EngineChannel* pChannel, EngineMaster* pMixingEngine)
@@ -394,9 +399,9 @@ void EngineBuffer::readToCrossfadeBuffer(int iBufferSize) {
     if (!m_bCrossfadeReady) {
         // Read buffer, as if there where no parameter change
         // (Must be called only once per callback)
-        m_pScale->getScaled(m_pCrossfadeBuffer, iBufferSize);
+        m_pScale->scaleBuffer(m_pCrossfadeBuffer, iBufferSize);
         // Restore the original position that was lost due to getScaled() above
-        notifySeek((double)m_filepos_play);
+        notifySeek(m_filepos_play);
         m_bCrossfadeReady = true;
      }
 }
@@ -535,9 +540,10 @@ void EngineBuffer::doSeekFractional(double fractionalPos, SeekRequest seekType) 
 
 void EngineBuffer::doSeekPlayPos(double new_playpos, SeekRequest seekType) {
     // Don't allow the playposition to go past the end.
-    if (new_playpos > m_trackSamplesOld) new_playpos = m_trackSamplesOld;
-    // Ensure that the file position is even (remember, stereo channel files...)
-    if (!even(static_cast<int>(new_playpos))) new_playpos--;
+    if (new_playpos > m_trackSamplesOld) {
+        new_playpos = m_trackSamplesOld;
+    }
+
 #ifdef __VINYLCONTROL__
     // Notify the vinyl control that a seek has taken place in case it is in
     // absolute mode and needs be switched to relative.
@@ -631,10 +637,10 @@ void EngineBuffer::slotKeylockEngineChanged(double dIndex)
             m_pScaleKeylock = lock;
     }
 }
-void EngineBuffer::process(CSAMPLE* pOutput, int iBufferSize)
-{
-    // Bail if we receive a non-even buffer size. Assert in debug builds.
-    DEBUG_ASSERT_AND_HANDLE(even(iBufferSize))
+
+void EngineBuffer::process(CSAMPLE* pOutput, const int iBufferSize) {
+    // Bail if we receive a buffer size with incomplete sample frames. Assert in debug builds.
+    DEBUG_ASSERT_AND_HANDLE((iBufferSize % kSamplesPerFrame) == 0) {
         return;
     m_pReader->process();
     // Steps:
@@ -857,26 +863,25 @@ void EngineBuffer::process(CSAMPLE* pOutput, int iBufferSize)
             //    qDebug() << "ramp to rate 0";
             //}
 
-            // The fileposition should be: (why is this thing a double anyway!?
-            // Integer valued.
-            auto playFrame = m_filepos_play / kSamplesPerFrame;
-            auto filepos_play_rounded = round(playFrame) * kSamplesPerFrame;
-            DEBUG_ASSERT_AND_HANDLE(filepos_play_rounded == m_filepos_play) {
-                qWarning() << __FILE__ << __LINE__ << "ERROR: filepos_play is not at an even integer sample:" << m_filepos_play;
-                m_filepos_play = filepos_play_rounded;
-            }
             // Perform scaling of Reader buffer into buffer.
-            auto samplesRead = m_pScale->getScaled(pOutput, iBufferSize);
-            //qDebug() << "sourceSamples used " << iSourceSamples
-            //         <<" samplesRead " << samplesRead
-            //         << ", buffer pos " << iBufferStartSample
-            //         << ", play " << filepos_play
-            //         << " bufferlen " << iBufferSize;
+            double framesRead =
+                    m_pScale->scaleBuffer(pOutput, iBufferSize);
+            // TODO(XXX): The result framesRead might not be an integer value.
+            // Converting to samples here does not make sense. All positional
+            // calculations should be done in frames instead of samples! Otherwise
+            // rounding errors might occur when converting from samples back to
+            // frames later.
+            double samplesRead = framesRead * kSamplesPerFrame;
 
-            // Adjust filepos_play by the amount we processed. TODO(XXX) what
-            // happens if samplesRead is a fraction ?
-            m_filepos_play = m_pReadAheadManager->getEffectiveVirtualPlaypositionFromLog(
-                            static_cast<int>(m_filepos_play), samplesRead);
+            if (m_bScalerOverride) {
+                // If testing, we don't have a real log so we fake the position.
+                m_filepos_play += samplesRead;
+            } else {
+                // Adjust filepos_play by the amount we processed.
+                m_filepos_play =
+                        m_pReadAheadManager->getEffectiveVirtualPlaypositionFromLog(
+                                m_filepos_play, samplesRead);
+            }
             if (m_bCrossfadeReady) {
                 SampleUtil::linearCrossfadeBuffers(pOutput, m_pCrossfadeBuffer, pOutput, iBufferSize);
             }
