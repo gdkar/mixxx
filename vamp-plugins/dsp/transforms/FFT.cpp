@@ -14,7 +14,10 @@
 #include "ext/kissfft/kiss_fftr.h"
 
 #include <cmath>
-
+#include <memory>
+#include <utility>
+#include <numeric>
+#include <algorithm>
 #include <iostream>
 
 #include <stdexcept>
@@ -22,18 +25,16 @@
 class FFT::D
 {
 public:
-    D(int n) : m_n(n) {
-        m_planf = kiss_fft_alloc(m_n, 0, NULL, NULL);
-        m_plani = kiss_fft_alloc(m_n, 1, NULL, NULL);
-        m_kin = new kiss_fft_cpx[m_n];
-        m_kout = new kiss_fft_cpx[m_n];
-    }
+    D(int n) : m_n(n),
+        m_planf(kiss_fft_alloc(m_n,0,nullptr,nullptr)),
+        m_plani(kiss_fft_alloc(m_n,1,nullptr,nullptr)),
+        m_kin(std::make_unique<kiss_fft_cpx[]>(m_n)),
+        m_kout(std::make_unique<kiss_fft_cpx[]>(m_n))
+    { }
 
     ~D() {
         kiss_fft_free(m_planf);
         kiss_fft_free(m_plani);
-        delete[] m_kin;
-        delete[] m_kout;
     }
 
     void process(bool inverse,
@@ -49,7 +50,7 @@ public:
 
         if (!inverse) {
 
-            kiss_fft(m_planf, m_kin, m_kout);
+            kiss_fft(m_planf, m_kin.get(), m_kout.get());
 
             for (int i = 0; i < m_n; ++i) {
                 ro[i] = m_kout[i].r;
@@ -58,9 +59,9 @@ public:
 
         } else {
 
-            kiss_fft(m_plani, m_kin, m_kout);
+            kiss_fft(m_plani, m_kin.get(), m_kout.get());
 
-            double scale = 1.0 / m_n;
+            auto scale = 1.0 / m_n;
 
             for (int i = 0; i < m_n; ++i) {
                 ro[i] = m_kout[i].r * scale;
@@ -73,8 +74,8 @@ private:
     int m_n;
     kiss_fft_cfg m_planf;
     kiss_fft_cfg m_plani;
-    kiss_fft_cpx *m_kin;
-    kiss_fft_cpx *m_kout;
+    std::unique_ptr<kiss_fft_cpx[]> m_kin;
+    std::unique_ptr<kiss_fft_cpx[]> m_kout;
 };        
 
 FFT::FFT(int n) :
@@ -100,25 +101,26 @@ FFT::process(bool inverse,
 class FFTReal::D
 {
 public:
-    D(int n) : m_n(n) {
+    D(int n) : m_n(n),m_r(std::make_unique<float[]>(n))
+                     ,m_c(std::make_unique<kiss_fft_cpx[]>(n)){
         if (n % 2) {
             throw std::invalid_argument
                 ("nsamples must be even in FFTReal constructor");
         }
         m_planf = kiss_fftr_alloc(m_n, 0, NULL, NULL);
         m_plani = kiss_fftr_alloc(m_n, 1, NULL, NULL);
-        m_c = new kiss_fft_cpx[m_n];
     }
 
     ~D() {
         kiss_fftr_free(m_planf);
         kiss_fftr_free(m_plani);
-        delete[] m_c;
     }
 
-    void forward(const double *ri, double *ro, double *io) {
+    void forward(const double *ri, double *ro, double *io)
+    {
+        std::copy_n(ri, m_n, m_r.get());
 
-        kiss_fftr(m_planf, ri, m_c);
+        kiss_fftr(m_planf, m_r.get(), m_c.get());
 
         for (int i = 0; i <= m_n/2; ++i) {
             ro[i] = m_c[i].r;
@@ -132,18 +134,14 @@ public:
     }
 
     void forwardMagnitude(const double *ri, double *mo) {
-
-        double *io = new double[m_n];
-
-        forward(ri, mo, io);
-
-        for (int i = 0; i < m_n; ++i) {
-            mo[i] = sqrt(mo[i] * mo[i] + io[i] * io[i]);
+        std::copy_n(ri, m_n, m_r.get());
+        kiss_fftr(m_planf, m_r.get(), m_c.get());
+        for (int i = 0; i <= m_n/2; ++i) {
+            auto val = std::hypot(m_c[i].r,m_c[i].i);
+            mo[i] = val;
+            mo[m_n - i - 1] = val;
         }
-
-        delete[] io;
     }
-
     void inverse(const double *ri, const double *ii, double *ro) {
 
         // kiss_fftr.h says
@@ -154,20 +152,19 @@ public:
             m_c[i].i = ii[i];
         }
         
-        kiss_fftri(m_plani, m_c, ro);
+        kiss_fftri(m_plani, m_c.get(), m_r.get());
 
-        double scale = 1.0 / m_n;
-
-        for (int i = 0; i < m_n; ++i) {
-            ro[i] *= scale;
-        }
+        auto scale = 1.0 / m_n;
+        
+        std::transform(m_r.get(),m_r.get() + m_n, ro, [=](auto in){return in * scale;});
     }
 
 private:
     int m_n;
     kiss_fftr_cfg m_planf;
     kiss_fftr_cfg m_plani;
-    kiss_fft_cpx *m_c;
+    std::unique_ptr<float[]> m_r;
+    std::unique_ptr<kiss_fft_cpx[]> m_c;
 };
 
 FFTReal::FFTReal(int n) :
