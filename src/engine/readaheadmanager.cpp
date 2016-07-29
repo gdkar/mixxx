@@ -163,6 +163,7 @@ SINT ReadAheadManager::getEffectiveVirtualPlaypositionFromLog(double currentVirt
                                                              double numConsumedSamples) {
     if (numConsumedSamples == 0) {
         return currentVirtualPlayposition;
+    }
     if (m_readAheadLog.size() == 0) {
         // No log entries to read from.
         qDebug() << this << "No read ahead log entries to read from. Case not currently handled.";
@@ -196,11 +197,13 @@ SINT ReadAheadManager::getEffectiveVirtualPlaypositionFromLog(double currentVirt
         // TODO(XXX): Remove implicit assumption of 2 channels
         if (!even(result)) {
             result--;
+        }
     } else {
         result = static_cast<SINT>(ceil(virtualPlayposition));
         // TODO(XXX): Remove implicit assumption of 2 channels
         if (!even(result)) {
             result++;
+        }
     }
     return result;
 }

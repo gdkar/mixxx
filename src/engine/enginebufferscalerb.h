@@ -14,9 +14,9 @@ class ReadAheadManager;
 class EngineBufferScaleRB : public EngineBufferScale {
     Q_OBJECT
   public:
-    explicit EngineBufferScaleRubberBand(
+    explicit EngineBufferScaleRB(
             ReadAheadManager* pReadAheadManager, QObject *pParent);
-    ~EngineBufferScaleRubberBand() override;
+    ~EngineBufferScaleRB() override;
 
     void setScaleParameters(double base_rate,
                             double* pTempoRatio,

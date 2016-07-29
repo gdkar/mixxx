@@ -31,13 +31,14 @@ class EngineBufferScaleST : public EngineBufferScale {
     // Flush buffer.
     void clear() override;
   private:
-    // Holds the playback direction.
-    bool m_bBackwards;
+
     // Temporary buffer for reading from the RAMAN.
     SINT buffer_back_size;
-    CSAMPLE* buffer_back;
+    std::unique_ptr<CSAMPLE[]> buffer_back;
     // SoundTouch time/pitch scaling lib
     std::unique_ptr<soundtouch::SoundTouch> m_pSoundTouch;
+    // Holds the playback direction.
+    bool m_bBackwards;
 };
 
 #endif

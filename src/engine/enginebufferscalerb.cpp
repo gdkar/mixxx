@@ -21,7 +21,7 @@ size_t kRubberBandBlockSize = 256;
 
 }  // namespace
 
-EngineBufferScaleRubberBand::EngineBufferScaleRubberBand(
+EngineBufferScaleRB::EngineBufferScaleRB(
         ReadAheadManager* pReadAheadManager,
         QObject *pParent)
         : EngineBufferScale(pReadAheadManager,pParent),
@@ -38,7 +38,7 @@ EngineBufferScaleRB::~EngineBufferScaleRB()
     SampleUtil::free(m_retrieve_buffer[1]);
 }
 
-void EngineBufferScaleRubberBand::initRubberBand() {
+void EngineBufferScaleRB::initRubberBand() {
     m_pRubberBand = std::make_unique<RubberBandStretcher>(
             getAudioSignal().getSamplingRate(),
             getAudioSignal().getChannelCount(),
@@ -110,7 +110,7 @@ void EngineBufferScaleRB::setScaleParameters(double base_rate,
     m_dPitchRatio = *pPitchRatio;
 }
 
-void EngineBufferScaleRubberBand::setSampleRate(SINT iSampleRate) {
+void EngineBufferScaleRB::setSampleRate(SINT iSampleRate) {
     EngineBufferScale::setSampleRate(iSampleRate);
     initRubberBand();
 }
@@ -119,7 +119,7 @@ void EngineBufferScaleRB::clear() {
     m_pRubberBand->reset();
 }
 
-SINT EngineBufferScaleRubberBand::retrieveAndDeinterleave(
+SINT EngineBufferScaleRB::retrieveAndDeinterleave(
         CSAMPLE* pBuffer,
         SINT frames) {
     SINT frames_available = m_pRubberBand->available();
@@ -135,7 +135,7 @@ SINT EngineBufferScaleRubberBand::retrieveAndDeinterleave(
     return received_frames;
 }
 
-void EngineBufferScaleRubberBand::deinterleaveAndProcess(
+void EngineBufferScaleRB::deinterleaveAndProcess(
     const CSAMPLE* pBuffer,
     SINT frames,
     bool flush) {
@@ -149,7 +149,7 @@ void EngineBufferScaleRubberBand::deinterleaveAndProcess(
                            frames, flush);
 }
 
-double EngineBufferScaleRubberBand::scaleBuffer(
+double EngineBufferScaleRB::scaleBuffer(
         CSAMPLE* pOutputBuffer,
         SINT iOutputBufferSize) {
     if (m_dBaseRate == 0.0 || m_dTempoRatio == 0.0) {
@@ -227,7 +227,7 @@ double EngineBufferScaleRubberBand::scaleBuffer(
 
     if (remaining_frames > 0) {
         SampleUtil::clear(read, getAudioSignal().frames2samples(remaining_frames));
-        Counter counter("EngineBufferScaleRubberBand::getScaled underflow");
+        Counter counter("EngineBufferScaleRB::getScaled underflow");
         counter.increment();
     }
 
