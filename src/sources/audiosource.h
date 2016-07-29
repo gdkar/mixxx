@@ -39,10 +39,6 @@ class AudioSource: public UrlResource, public AudioSignal {
     inline bool hasDuration() const {
         return hasValidSamplingRate();
     }
-    bool hasDuration() const
-    {
-        return isValid();
-    }
     double getDuration() const
     {
         return double(getFrameCount()) / double(getSamplingRate());

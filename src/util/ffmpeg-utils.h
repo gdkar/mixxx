@@ -182,13 +182,13 @@ struct format_context{
         }
         return res;
     }
-    int seek_frame(int stream_ix, int64_t ts, int flags)
+    int seek_frame(int stream_idx, int64_t ts, int flags)
     {
         return av_seek_frame(m_d, stream_idx, ts, flags);
     }
     int seek_file(int stream_idx, int64_t min_pts, int64_t ts, int64_t max_pts, int flags = 0)
     {
-        return avformat_seek_file(m_d, stream_idx, min_pts, pts, max_pts, flags);
+        return avformat_seek_file(m_d, stream_idx, min_pts, ts, max_pts, flags);
     }
     bool is_input() const { return m_d && !!m_d->iformat;}
     bool is_output() const { return m_d && !!m_d->oformat;}
@@ -222,8 +222,8 @@ struct codec_context{
         avcodec_free_context(&m_d);
     }
     bool is_open()  const {return avcodec_is_open(m_d);}
-    bool is_input() const { return avcodec_is_decoder(m_d->codec);}
-    bool is_output()const { return avcodec_is_encoer(m_d->codec);}
+    bool is_input() const { return av_codec_is_decoder(m_d->codec);}
+    bool is_output()const { return av_codec_is_encoer(m_d->codec);}
 
     int send_frame(AVFrame *frm) { return avcodec_receive_frame(m_d,frm);}
     int receive_packet(AVPacket *pkt) { return avcodec_send_packet(m_d,pkt); }
