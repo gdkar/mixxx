@@ -31,12 +31,13 @@ ReadAheadManager::ReadAheadManager(CachingReader* pReader,
 {
     DEBUG_ASSERT(m_pLoopingControl != nullptr);
     DEBUG_ASSERT(m_pReader != nullptr);
-    connect(this,SIGNAL(notifySeek(double)),pLoopingControl,SIGNAL(notifySeek(double)));
-    connect(this,SIGNAL(notifySeek(double)),this,SLOT(onNotifySeek(double)));
+    connect(this,&ReadAheadManager::notifySeek,this,&ReadAheadManager::onNotifySeek);
+    connect(this,&ReadAheadManager::notifySeek,pLoopingControl,&LoopingControl::notifySeek);
     SampleUtil::clear(m_pCrossFadeBuffer, MAX_BUFFER_LEN);
 }
 
-ReadAheadManager::~ReadAheadManager() {
+ReadAheadManager::~ReadAheadManager()
+{
     SampleUtil::free(m_pCrossFadeBuffer);
 }
 
@@ -49,17 +50,17 @@ SINT ReadAheadManager::getNextSamples(double dRate, CSAMPLE* buffer,
     }
 
     bool in_reverse = dRate < 0;
-    SINT start_sample = m_iCurrentPosition;
+    auto start_sample = m_iCurrentPosition;
     //qDebug() << "start" << start_sample << requested_samples;
-    SINT samples_needed = requested_samples;
-    CSAMPLE* base_buffer = buffer;
+    auto samples_needed = requested_samples;
+    auto base_buffer = buffer;
 
     // A loop will only limit the amount we can read in one shot.
 
     const double loop_trigger = m_pLoopingControl->nextTrigger(
             dRate, m_iCurrentPosition, 0, 0);
-    bool loop_active = loop_trigger != kNoTrigger;
-    SINT preloop_samples = 0;
+    auto loop_active = loop_trigger != kNoTrigger;
+    auto preloop_samples = SINT{0};
 
     if (loop_active) {
         SINT samples_available = (in_reverse ?
@@ -80,7 +81,7 @@ SINT ReadAheadManager::getNextSamples(double dRate, CSAMPLE* buffer,
         qDebug() << "Need negative samples in ReadAheadManager::getNextSamples. Ignoring read";
         return 0;
     }
-    SINT samples_read = m_pReader->read(start_sample, in_reverse, samples_needed,
+    auto samples_read = m_pReader->read(start_sample, in_reverse, samples_needed,
                                        base_buffer);
 
     if (samples_read != samples_needed) {
@@ -117,13 +118,13 @@ SINT ReadAheadManager::getNextSamples(double dRate, CSAMPLE* buffer,
 }
 void ReadAheadManager::addRateControl(RateControl* pRateControl)
 {
-    disconnect(this,SIGNAL(notifySeek(double)),m_pRateControl,SIGNAL(notifySeek(double)));
+    disconnect(this,&ReadAheadManager::notifySeek,m_pRateControl,&RateControl::notifySeek);
     m_pRateControl = pRateControl;
-    connect(this,SIGNAL(notifySeek(double)),m_pRateControl,SIGNAL(notifySeek(double)));
+    connect(this,&ReadAheadManager::notifySeek,m_pRateControl,&RateControl::notifySeek);
 
 }
 // Not thread-save, call from engine thread only
-void ReadAheadManager::notifySeek(SINT iSeekPosition) {
+void ReadAheadManager::onNotifySeek(double iSeekPosition) {
     m_iCurrentPosition = iSeekPosition;
     m_readAheadLog.clear();
 }

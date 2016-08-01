@@ -10,9 +10,6 @@
 #ifdef __OPUS__
 #   include "sources/soundsourceopus.h"
 #endif
-#ifdef __COREAUDIO__
-#   include "sources/soundsourcecoreaudio.h"
-#endif
 
 #include "library/coverartutils.h"
 #include "util/cmdlineargs.h"
@@ -142,9 +139,6 @@ void SoundSourceProxy::loadPlugins()
 #endif
 #ifdef __MPG123__
     s_soundSourceProviders.registerProvider(SoundSourceProviderPointer(new SoundSourceProviderMp3));
-#endif
-#ifdef __COREAUDIO__
-    s_soundSourceProviders.registerProvider(mixxx::SoundSourceProviderPointer(new mixxx::SoundSourceProviderCoreAudio));
 #endif
     // Scan for and initialize all plugins.
     // Loaded plugins will replace any built-in providers

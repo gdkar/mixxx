@@ -36,7 +36,7 @@ class AudioSource: public UrlResource, public AudioSignal {
     bool isEmpty() const { return kFrameCountZero >= getFrameCount(); }
     // The actual duration in seconds.
     // Well defined only for valid files!
-    inline bool hasDuration() const {
+    bool hasDuration() const {
         return hasValidSamplingRate();
     }
     double getDuration() const
@@ -46,10 +46,10 @@ class AudioSource: public UrlResource, public AudioSignal {
     // The bitrate is optional and measured in kbit/s (kbps).
     // It depends on the metadata and decoder if a value for the
     // bitrate is available.
-    inline bool hasBitrate() const {
+    bool hasBitrate() const {
         return kBitrateZero < m_bitrate;
     }
-    inline SINT getBitrate() const {
+    SINT getBitrate() const {
 
 
         return m_bitrate;
@@ -167,7 +167,7 @@ class AudioSource: public UrlResource, public AudioSignal {
     static bool isValidFrameCount(SINT frameCount) { return kFrameCountZero <= frameCount; }
     void setFrameCount(SINT frameCount);
 
-    inline static bool isValidBitrate(SINT bitrate) {
+    static bool isValidBitrate(SINT bitrate) {
         return kBitrateZero <= bitrate;
     }
     void setBitrate(SINT bitrate);

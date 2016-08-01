@@ -321,10 +321,10 @@ double RateControl::calculateSpeed(double baserate, double speed, bool paused,
         // If searching is in progress, it overrides everything else
         rate = searching;
     } else {
-        double wheelFactor = getWheelFactor();
-        double jogFactor = getJogFactor();
-        bool bVinylControlEnabled = m_pVCEnabled && m_pVCEnabled->toBool();
-        bool useScratch2Value = m_pScratch2Enable->get() != 0;
+        auto wheelFactor = getWheelFactor();
+        auto jogFactor = getJogFactor();
+        auto bVinylControlEnabled = m_pVCEnabled && m_pVCEnabled->toBool();
+        auto useScratch2Value = m_pScratch2Enable->get() != 0;
 
         // By default scratch2_enable is enough to determine if the user is
         // scratching or not. Moving platter controllers have to disable
@@ -338,7 +338,7 @@ double RateControl::calculateSpeed(double baserate, double speed, bool paused,
                 *pReportScratching = true;
             rate = speed;
         } else {
-            double scratchFactor = m_pScratch2->get();
+            auto scratchFactor = m_pScratch2->get();
             // Don't trust values from m_pScratch2
             if (isnan(scratchFactor)) {
                 scratchFactor = 0.0;
@@ -382,7 +382,6 @@ double RateControl::calculateSpeed(double baserate, double speed, bool paused,
                     qDebug() << "ERROR: calculateRate m_pBpmControl is null during master sync";
                     return 1.0;
                 }
-
                 double userTweak = 0.0;
                 if (!*pReportScratching) {
                     // Only report user tweak if the user is not scratching.

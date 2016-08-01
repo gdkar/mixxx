@@ -25,7 +25,7 @@
 class EngineBufferScale : public QObject {
     Q_OBJECT
   public:
-    EngineBufferScale(ReadAheadManager *, QObject *pParent = nullptr);
+    EngineBufferScale(ReadAheadManager *, QObject *pParent );
     virtual ~EngineBufferScale();
 
     // Sets the scaling parameters.
@@ -48,14 +48,11 @@ class EngineBufferScale : public QObject {
         m_dTempoRatio = *pTempoRatio;
         m_dPitchRatio = *pPitchRatio;
     }
-
     // Set the desired output sample rate.
     virtual void setSampleRate(SINT iSampleRate);
-
     const mixxx::AudioSignal& getAudioSignal() const {
         return m_audioSignal;
     }
-
     // Called from EngineBuffer when seeking, to ensure the buffers are flushed */
     virtual void clear() = 0;
     // Scale buffer
@@ -70,12 +67,12 @@ class EngineBufferScale : public QObject {
             SINT iOutputBufferSize) = 0;
 
   protected:
-    mixxx::AudioSignal m_audioSignal;
+    mixxx::AudioSignal m_audioSignal{};
     ReadAheadManager *m_pReadAheadManager{nullptr};
-    double m_dBaseRate;
-    bool m_bSpeedAffectsPitch;
-    double m_dTempoRatio;
-    double m_dPitchRatio;
+    double m_dBaseRate{1.0};
+    bool m_bSpeedAffectsPitch{false};
+    double m_dTempoRatio{1.0};
+    double m_dPitchRatio{1.0};
 };
 
 #endif

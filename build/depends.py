@@ -144,7 +144,7 @@ class OggVorbis(Dependence):
                     'Did not find libvorbisenc.a, libvorbisenc.lib, or the libvorbisenc development headers.')
 
     def sources(self, build):
-        return ['sources/soundsourceoggvorbis.cpp']
+        return ["sources/soundsourceoggvorbis.cpp"]
 
 class SndFile(Dependence):
 
@@ -516,20 +516,6 @@ class ProtoBuf(Dependence):
             raise Exception(
                 "Could not find libprotobuf or its development headers.")
 
-class FpClassify(Dependence):
-
-    def enabled(self, build):
-        return build.toolchain_is_gnu
-
-    # This is a wrapper arround the fpclassify function that pevents inlining
-    # It is compiled without optimization and allows to use these function
-    # from -ffast-math optimized objects
-    def sources(self, build):
-        # add this file without fast-math flag
-        env = build.env.Clone()
-        if '-ffast-math' in env['CCFLAGS']:
-                env['CCFLAGS'].remove('-ffast-math')
-        return env.Object('util/fpclassify.cpp')
 
 class QtScriptByteArray(Dependence):
     def configure(self, build, conf):
@@ -1275,7 +1261,7 @@ class MixxxCore(Feature):
         return [SoundTouch, ReplayGain, Ebur128Mit, PortAudio, PortMIDI, Qt, TestHeaders,
                 FidLib, SndFile, OggVorbis, OpenGL, TagLib, ProtoBuf,
                 Chromaprint, RubberBand, SecurityFramework, CoreServices,
-                QtScriptByteArray, Reverb, FpClassify]
+                QtScriptByteArray, Reverb,]
 
     def post_dependency_check_configure(self, build, conf):
         """Sets up additional things in the Environment that must happen

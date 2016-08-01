@@ -28,11 +28,10 @@ public:
     // Interleaved layout: LRLRLRLRLRLRLRLRLRLR
     enum class SampleLayout {
         Planar,
-        Interleaved
+        Interleaved,
+        Default = Interleaved,
     };
-
     static constexpr const SINT kChannelCountZero    = 0;
-    static constexpr const SINT kChannelCountDefault = kChannelCountZero;
     static constexpr const SINT kChannelCountMono    = 1;
     static constexpr const SINT kChannelCountMin     = kChannelCountMono; // lower bound
     static constexpr const SINT kChannelCountStereo  = 2;
@@ -43,7 +42,6 @@ public:
     }
 
     static constexpr const SINT kSamplingRateZero    = 0;
-    static constexpr const SINT kSamplingRateDefault = kSamplingRateZero;
     static constexpr const SINT kSamplingRateMin     = 8000; // lower bound (= minimum MP3 sampling rate)
     static constexpr const SINT kSamplingRate32kHz   = 32000;
     static constexpr const SINT kSamplingRateCD      = 44100;
@@ -52,39 +50,36 @@ public:
     static constexpr const SINT kSamplingRate192kHz  = 192000;
     static constexpr const SINT kSamplingRateMax     = kSamplingRate192kHz; // upper bound
 
+    static constexpr const SINT kChannelCountDefault = kChannelCountZero;
+    static constexpr const SINT kSamplingRateDefault = kSamplingRateZero;
+
     static constexpr bool isValidSamplingRate(SINT samplingRate) {
         return (kSamplingRateMin <= samplingRate) && (kSamplingRateMax >= samplingRate);
     }
-
+    
+    constexpr AudioSignal() noexcept = default;
+    constexpr AudioSignal(AudioSignal &&o) noexcept = default;
+    constexpr AudioSignal(const AudioSignal &o) = default;
+    AudioSignal &operator=(AudioSignal &&o) noexcept = default;
+    AudioSignal &operator=(const AudioSignal &o) = default;
     constexpr explicit AudioSignal(SampleLayout sampleLayout)
         : m_sampleLayout(sampleLayout),
           m_channelCount(kChannelCountDefault),
-          m_samplingRate(kSamplingRateDefault) {
-        DEBUG_ASSERT(!hasValidChannelCount());
-        DEBUG_ASSERT(!hasValidSamplingRate());
-    }
+          m_samplingRate(kSamplingRateDefault)
+    { }
     constexpr AudioSignal(SampleLayout sampleLayout, SINT channelCount, SINT samplingRate)
         : m_sampleLayout(sampleLayout),
           m_channelCount(channelCount),
           m_samplingRate(samplingRate) {
-        DEBUG_ASSERT(kChannelCountZero <= m_channelCount); // unsigned value
-        DEBUG_ASSERT(kSamplingRateZero <= m_samplingRate); // unsigned value
     }
-    virtual ~AudioSignal() {}
-
+    virtual ~AudioSignal() = default;
     // Returns the ordering of samples in contiguous buffers
-    SampleLayout getSampleLayout() const {
-        return m_sampleLayout;
-    }
-
+    SampleLayout getSampleLayout() const {return m_sampleLayout; }
     // Returns the number of channels.
-    SINT getChannelCount() const {
-        return m_channelCount;
-    }
+    SINT getChannelCount() const { return m_channelCount; }
     bool hasValidChannelCount() const {
         return isValidChannelCount(getChannelCount());
     }
-
     // Returns the sampling rate in Hz. The sampling rate is defined as the
     // number of samples per second for each channel. Please not that this
     // does not equal the total number of samples per second in the stream!
@@ -92,9 +87,7 @@ public:
     // NOTE(uklotzde): I consciously avoided the term "sample rate", because
     // that sounds like "number of samples per second" which is wrong for
     // signals with more than a single channel and might be misleading!
-    SINT getSamplingRate() const {
-        return m_samplingRate;
-    }
+    SINT getSamplingRate() const { return m_samplingRate; }
     bool hasValidSamplingRate() const {
         return isValidSamplingRate(getSamplingRate());
     }
@@ -115,7 +108,6 @@ public:
     //     return result;
     // }
     virtual bool verifyReadable() const;
-
     // Conversion: #samples / sample offset -> #frames / frame offset
     template<typename T>
     T samples2frames(T samples) const {
@@ -145,11 +137,9 @@ protected:
         m_samplingRate = kSamplingRateDefault;
     }
 private:
-    SampleLayout m_sampleLayout;
-    SINT m_channelCount;
-    SINT m_samplingRate;
+    SampleLayout m_sampleLayout{SampleLayout::Interleaved};
+    SINT m_channelCount        {kChannelCountDefault};
+    SINT m_samplingRate        {kSamplingRateDefault};
 };
-
 }
-
 #endif // MIXXX_AUDIOSIGNAL_H

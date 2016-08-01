@@ -34,15 +34,11 @@ class EngineBufferScaleRB : public EngineBufferScale {
   private:
     // Reset RubberBand library with new audio signal
     void initRubberBand();
-
     void deinterleaveAndProcess(const CSAMPLE* pBuffer, SINT frames, bool flush);
     SINT retrieveAndDeinterleave(CSAMPLE* pBuffer, SINT frames);
 
     // The read-ahead manager that we use to fetch samples
-    ReadAheadManager* m_pReadAheadManager;
-
     std::unique_ptr<RubberBand::RubberBandStretcher> m_pRubberBand;
-
     CSAMPLE* m_retrieve_buffer[2];
     CSAMPLE* m_buffer_back;
     // Holds the playback direction

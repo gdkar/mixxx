@@ -15,23 +15,19 @@ class EngineBufferScaleST : public EngineBufferScale {
     Q_OBJECT
   public:
     EngineBufferScaleST(ReadAheadManager* pReadAheadManager, QObject *pParent );
-    ~EngineBufferScaleST() override;
-
+   ~EngineBufferScaleST() override;
     void setScaleParameters(double base_rate,
                             double* pTempoRatio,
                             double* pPitchRatio) override;
 
     void setSampleRate(SINT iSampleRate) override;
-
     // Scale buffer.
     double scaleBuffer(
             CSAMPLE* pOutputBuffer,
             SINT iOutputBufferSize) override;
-
     // Flush buffer.
     void clear() override;
   private:
-
     // Temporary buffer for reading from the RAMAN.
     SINT buffer_back_size;
     std::unique_ptr<CSAMPLE[]> buffer_back;

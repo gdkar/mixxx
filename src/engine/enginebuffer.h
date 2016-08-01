@@ -24,6 +24,9 @@
 #include <QtGlobal>
 #include <gtest/gtest_prod.h>
 
+#include <atomic>
+#include <thread>
+
 #include "engine/cachingreader.h"
 #include "preferences/usersettings.h"
 #include "control/controlvalue.h"
@@ -58,9 +61,6 @@ class ControlBeat;
 class ControlTTRotary;
 class ControlPotmeter;
 class EngineBufferScale;
-class EngineBufferScaleLinear;
-class EngineBufferScaleST;
-class EngineBufferScaleRB;
 class EngineSync;
 class EngineWorkerScheduler;
 class VisualPlayPosition;
@@ -342,7 +342,7 @@ class EngineBuffer : public EngineObject {
     EngineBufferScale* m_pScaleVinyl;
     // The keylock engine is configurable, so it could flip flop between
     // ScaleST and ScaleRB during a single callback.
-    EngineBufferScale* volatile m_pScaleKeylock;
+    std::atomic<EngineBufferScale*> m_pScaleKeylock;
 
     // Object used for vinyl-style interpolation scaling of the audio
 //    EngineBufferScaleLinear* m_pScaleLinear;

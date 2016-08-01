@@ -282,13 +282,7 @@ void readAudioProperties(TrackMetadata* pTrackMetadata,
     pTrackMetadata->setChannels(audioProperties.channels());
     pTrackMetadata->setSampleRate(audioProperties.sampleRate());
     pTrackMetadata->setBitrate(audioProperties.bitrate());
-#if (TAGLIB_HAS_LENGTH_IN_MILLISECONDS)
-    // Cast to double is required for duration with sub-second precision
-    const double dLengthInMilliseconds = audioProperties.lengthInMilliseconds();
-    const double duration = dLengthInMilliseconds / mixxx::Duration::kMillisPerSecond;
-#else
-    const double duration = audioProperties.length();
-#endif
+    const auto duration = audioProperties.length();
     pTrackMetadata->setDuration(duration);
 }
 
@@ -1494,7 +1488,7 @@ bool writeTrackMetadataIntoMP4Tag(TagLib::MP4::Tag* pTag, const TrackMetadata& t
     return true;
 }
 
-Result readTrackMetadataAndCoverArtFromFile(TrackMetadata* pTrackMetadata, QImage* pCoverArt, QString fileName) {
+bool readTrackMetadataAndCoverArtFromFile(TrackMetadata* pTrackMetadata, QImage* pCoverArt, QString fileName) {
     const QString fileType(getFileTypeFromFileName(fileName));
 
     qDebug() << "Reading tags from file" << fileName << "of type" << fileType
@@ -1515,20 +1509,20 @@ Result readTrackMetadataAndCoverArtFromFile(TrackMetadata* pTrackMetadata, QImag
             if (pID3v2Tag) {
                 readTrackMetadataFromID3v2Tag(pTrackMetadata, *pID3v2Tag);
                 readCoverArtFromID3v2Tag(pCoverArt, *pID3v2Tag);
-                return OK;
+                return true;
             } else {
                 const TagLib::APE::Tag* pAPETag =
                         hasAPETag(file) ? file.APETag() : nullptr;
                 if (pAPETag) {
                     readTrackMetadataFromAPETag(pTrackMetadata, *pAPETag);
                     readCoverArtFromAPETag(pCoverArt, *pAPETag);
-                    return OK;
+                    return true;
                 } else {
                     // fallback
                     const TagLib::Tag* pTag(file.tag());
                     if (pTag) {
                         readTrackMetadataFromTag(pTrackMetadata, *pTag);
-                        return OK;
+                        return true;
                     }
                 }
             }
@@ -1540,13 +1534,13 @@ Result readTrackMetadataAndCoverArtFromFile(TrackMetadata* pTrackMetadata, QImag
             if (pMP4Tag) {
                 readTrackMetadataFromMP4Tag(pTrackMetadata, *pMP4Tag);
                 readCoverArtFromMP4Tag(pCoverArt, *pMP4Tag);
-                return OK;
+                return true;
             } else {
                 // fallback
                 const TagLib::Tag* pTag(file.tag());
                 if (pTag) {
                     readTrackMetadataFromTag(pTrackMetadata, *pTag);
-                    return OK;
+                    return true;
                 }
             }
         }
@@ -1564,20 +1558,20 @@ Result readTrackMetadataAndCoverArtFromFile(TrackMetadata* pTrackMetadata, QImag
             if (pXiphComment) {
                 readTrackMetadataFromVorbisCommentTag(pTrackMetadata, *pXiphComment);
                 readCoverArtFromVorbisCommentTag(pCoverArt, *pXiphComment);
-                return OK;
+                return true;
             } else {
                 const TagLib::ID3v2::Tag* pID3v2Tag =
                         hasID3v2Tag(file) ? file.ID3v2Tag() : nullptr;
                 if (pID3v2Tag) {
                     readTrackMetadataFromID3v2Tag(pTrackMetadata, *pID3v2Tag);
                     readCoverArtFromID3v2Tag(pCoverArt, *pID3v2Tag);
-                    return OK;
+                    return true;
                 } else {
                     // fallback
                     const TagLib::Tag* pTag(file.tag());
                     if (pTag) {
                         readTrackMetadataFromTag(pTrackMetadata, *pTag);
-                        return OK;
+                        return true;
                     }
                 }
             }
@@ -1589,13 +1583,13 @@ Result readTrackMetadataAndCoverArtFromFile(TrackMetadata* pTrackMetadata, QImag
             if (pXiphComment) {
                 readTrackMetadataFromVorbisCommentTag(pTrackMetadata, *pXiphComment);
                 readCoverArtFromVorbisCommentTag(pCoverArt, *pXiphComment);
-                return OK;
+                return true;
             } else {
                 // fallback
                 const TagLib::Tag* pTag(file.tag());
                 if (pTag) {
                     readTrackMetadataFromTag(pTrackMetadata, *pTag);
-                    return OK;
+                    return true;
                 }
             }
         }
@@ -1607,13 +1601,13 @@ Result readTrackMetadataAndCoverArtFromFile(TrackMetadata* pTrackMetadata, QImag
             if (pXiphComment) {
                 readTrackMetadataFromVorbisCommentTag(pTrackMetadata, *pXiphComment);
                 readCoverArtFromVorbisCommentTag(pCoverArt, *pXiphComment);
-                 return OK;
+                 return true;
             } else {
                 // fallback
                 const TagLib::Tag* pTag(file.tag());
                 if (pTag) {
                     readTrackMetadataFromTag(pTrackMetadata, *pTag);
-                    return OK;
+                    return true;
                 }
             }
         }
@@ -1626,13 +1620,13 @@ Result readTrackMetadataAndCoverArtFromFile(TrackMetadata* pTrackMetadata, QImag
             if (pAPETag) {
                 readTrackMetadataFromAPETag(pTrackMetadata, *pAPETag);
                 readCoverArtFromAPETag(pCoverArt, *pAPETag);
-                return OK;
+                return true;
             } else {
                 // fallback
                 const TagLib::Tag* pTag(file.tag());
                 if (pTag) {
                     readTrackMetadataFromTag(pTrackMetadata, *pTag);
-                    return OK;
+                    return true;
                 }
             }
         }
@@ -1649,13 +1643,13 @@ Result readTrackMetadataAndCoverArtFromFile(TrackMetadata* pTrackMetadata, QImag
             if (pID3v2Tag) {
                 readTrackMetadataFromID3v2Tag(pTrackMetadata, *pID3v2Tag);
                 readCoverArtFromID3v2Tag(pCoverArt, *pID3v2Tag);
-                return OK;
+                return true;
             } else {
                 // fallback
                 const TagLib::Tag* pTag(file.tag());
                 if (pTag) {
                     readTrackMetadataFromTag(pTrackMetadata, *pTag);
-                    return OK;
+                    return true;
                 }
             }
         }
@@ -1666,13 +1660,13 @@ Result readTrackMetadataAndCoverArtFromFile(TrackMetadata* pTrackMetadata, QImag
             if (pID3v2Tag) {
                 readTrackMetadataFromID3v2Tag(pTrackMetadata, *pID3v2Tag);
                 readCoverArtFromID3v2Tag(pCoverArt, *pID3v2Tag);
-                return OK;
+                return true;
             } else {
                 // fallback
                 const TagLib::Tag* pTag(file.tag());
                 if (pTag) {
                     readTrackMetadataFromTag(pTrackMetadata, *pTag);
-                    return OK;
+                    return true;
                 }
             }
         }
@@ -1681,10 +1675,10 @@ Result readTrackMetadataAndCoverArtFromFile(TrackMetadata* pTrackMetadata, QImag
     }
 
     qWarning() << "Failed to read track metadata from file" << fileName;
-    return ERR;
+    return false;
 }
 
-Result writeTrackMetadataIntoFile(const TrackMetadata& trackMetadata, QString fileName) {
+bool writeTrackMetadataIntoFile(const TrackMetadata& trackMetadata, QString fileName) {
     const QString fileType(getFileTypeFromFileName(fileName));
 
     qDebug() << "Writing track metadata into file" << fileName << "of type" << fileType;
@@ -1767,19 +1761,19 @@ Result writeTrackMetadataIntoFile(const TrackMetadata& trackMetadata, QString fi
     if (!pFile) {
         qWarning() << "Failed to write track metadata into file" << fileName
                 << ": Unsupported file type" << fileType;
-        return ERR;
+        return false;
     }
     if (!anyTagsWritten) {
         qWarning() << "Failed to write track metadata into file" << fileName
                 << ": Inaccessible tags";
-        return ERR;
+        return false;
     }
     if (!pFile->save()) {
         qWarning() << "Failed to save file" << fileName;
-        return ERR;
+        return false;
     }
 
-    return OK;
+    return true;
 }
 
 } //namespace mixxx

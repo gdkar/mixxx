@@ -313,7 +313,7 @@ void EngineBuffer::enableIndependentPitchTempoScaling(bool bEnable,
 
     // m_pScaleKeylock and m_pScaleVinyl could change out from under us,
     // so cache it.
-    auto keylock_scale = m_pScaleKeylock;
+    auto keylock_scale = m_pScaleKeylock.load();
     auto vinyl_scale   = m_pScaleVinyl;
 
     if (bEnable && m_pScale != keylock_scale) {

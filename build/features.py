@@ -179,99 +179,32 @@ class Bulk(Feature):
                 'controllers/hid/hidcontrollerpresetfilehandler.cpp')
         return sources
 
-class Mpg123(Feature):
-    def description(self):
-        return "libmpg123"
+#class Mpg123(Feature):
+#    def description(self):
+#        return "libmpg123"
+#
+#    def default(self, build):
+#        return 1
+#
+#    def enabled(self, build):
+#        build.flags['mpg123'] = util.get_flags(build.env, 'mpg123',self.default(build))
+#        if int(build.flags['mpg123']):
+#            return True
+#        return False
+#
+#    def add_options(self, build, vars):
+#        vars.Add('mpg123', 'Set to 1 to enable libmpg123 MP3 decoder support.',self.default(build))
+#
+#    def configure(self, build, conf):
+#        if not self.enabled(build):
+#            return
+#        build.env.ParseConfig('pkg-config libmpg123 --silence-errors --cflags --libs')
+#        if (not conf.CheckLib(['libmpg123','mpg123']) or not conf.CheckHeader('mpg123.h')):
+#            raise Exception("Could not find libmpg123.")
+#        build.env.Append(CPPDEFINES='__MPG123__')
+#    def sources(self,build):
+#        return ['sources/soundsourcemp3.cpp']
 
-    def default(self, build):
-        return 1
-
-    def enabled(self, build):
-        build.flags['mpg123'] = util.get_flags(build.env, 'mpg123',self.default(build))
-        if int(build.flags['mpg123']):
-            return True
-        return False
-
-    def add_options(self, build, vars):
-        vars.Add('mpg123', 'Set to 1 to enable libmpg123 MP3 decoder support.',self.default(build))
-
-    def configure(self, build, conf):
-        if not self.enabled(build):
-            return
-        build.env.ParseConfig('pkg-config libmpg123 --silence-errors --cflags --libs')
-        if (not conf.CheckLib(['libmpg123','mpg123']) or not conf.CheckHeader('mpg123.h')):
-            raise Exception("Could not find libmpg123.")
-        build.env.Append(CPPDEFINES='__MPG123__')
-    def sources(self,build):
-        return ['sources/soundsourcemp3.cpp']
-
-class CoreAudio(Feature):
-
-    def description(self):
-        return "CoreAudio MP3/AAC Decoder"
-
-    def default(self, build):
-        return 1 if build.platform_is_osx else 0
-
-    def enabled(self, build):
-        build.flags['coreaudio'] = util.get_flags(
-            build.env, 'coreaudio', self.default(build))
-        if int(build.flags['coreaudio']):
-            return True
-        return False
-
-    def add_options(self, build, vars):
-        vars.Add(
-            'coreaudio', 'Set to 1 to enable CoreAudio MP3/AAC decoder support.',
-            self.default(build))
-
-    def configure(self, build, conf):
-        if not self.enabled(build):
-            return
-
-        if not build.platform_is_osx:
-            raise Exception('CoreAudio is only supported on OS X!')
-
-        build.env.Append(CPPPATH='#lib/apple/')
-        build.env.AppendUnique(FRAMEWORKS=['AudioToolbox', 'CoreFoundation'])
-        build.env.Append(CPPDEFINES='__COREAUDIO__')
-
-    def sources(self, build):
-        return ['sources/soundsourcecoreaudio.cpp',
-                '#lib/apple/CAStreamBasicDescription.cpp']
-
-
-class MediaFoundation(Feature):
-    FLAG = 'mediafoundation'
-
-    def description(self):
-        return "Media Foundation AAC Decoder Plugin"
-
-    def enabled(self, build):
-        build.flags[self.FLAG] = util.get_flags(build.env, self.FLAG, 0)
-        if int(build.flags[self.FLAG]):
-            return True
-        return False
-
-    def add_options(self, build, vars):
-        if build.platform_is_windows:
-            vars.Add(
-                self.FLAG, "Set to 1 to enable the Media Foundation AAC decoder plugin (Windows Vista with KB2117917 or Windows 7 required)", 0)
-
-    def configure(self, build, conf):
-        if not self.enabled(build):
-            return
-        if not build.platform_is_windows:
-            raise Exception("Media Foundation is only supported on Windows!")
-        if not conf.CheckLib('Ole32'):
-            raise Exception('Did not find Ole32.lib - exiting!')
-        if not conf.CheckLib(['Mfuuid']):
-            raise Exception('Did not find Mfuuid.lib - exiting!')
-        if not conf.CheckLib(['Mfplat']):
-            raise Exception('Did not find Mfplat.lib - exiting!')
-        if not conf.CheckLib(['Mfreadwrite']):  # Only available on Windows 7 and up, or properly updated Vista
-            raise Exception('Did not find Mfreadwrite.lib - exiting!')
-        build.env.Append(CPPDEFINES='__MEDIAFOUNDATION__')
 
 
 class IPod(Feature):
@@ -426,41 +359,6 @@ class Vamp(Feature):
         return sources
 
 
-class FAAD(Feature):
-    def description(self):
-        return "FAAD AAC audio file decoder plugin"
-
-    def enabled(self, build):
-        build.flags['faad'] = util.get_flags(build.env, 'faad', 0)
-        if int(build.flags['faad']):
-            return True
-        return False
-
-    def add_options(self, build, vars):
-        vars.Add('faad',
-                 'Set to 1 to enable building the FAAD AAC decoder plugin.', 0)
-
-    def configure(self, build, conf):
-        if not self.enabled(build):
-            return
-
-        have_mp4v2_h = conf.CheckHeader('mp4v2/mp4v2.h')
-        have_mp4v2 = conf.CheckLib(['mp4v2', 'libmp4v2'], autoadd=False)
-        have_mp4_h = conf.CheckHeader('mp4.h')
-        have_mp4 = conf.CheckLib('mp4', autoadd=False)
-
-        # Either mp4 or mp4v2 works
-        have_mp4 = (have_mp4v2_h or have_mp4_h) and (have_mp4v2 or have_mp4)
-
-        if not have_mp4:
-            raise Exception(
-                'Could not find libmp4, libmp4v2 or the libmp4v2 development headers.')
-
-        have_faad = conf.CheckLib(['faad', 'libfaad'], autoadd=False)
-
-        if not have_faad:
-            raise Exception(
-                'Could not find libfaad or the libfaad development headers.')
 
 class ColorDiagnostics(Feature):
     def description(self):
@@ -767,48 +665,6 @@ class LiveBroadcasting(Feature):
                 'broadcast/broadcastmanager.cpp',
                 'engine/sidechain/enginebroadcast.cpp']
 
-
-class Opus(Feature):
-    def description(self):
-        return "Opus (RFC 6716) support"
-
-    def enabled(self, build):
-        # Default Opus to on but only throw an error if it was explicitly
-        # requested.
-        if 'opus' in build.flags:
-            return int(build.flags['opus']) > 0
-        build.flags['opus'] = util.get_flags(build.env, 'opus', 1)
-        if int(build.flags['opus']):
-            return True
-        return False
-
-    def add_options(self, build, vars):
-        vars.Add('opus', 'Set to 1 to enable Opus (RFC 6716) support \
-                           (supported are Opus 1.0 and above and Opusfile 0.2 and above)', 1)
-
-    def configure(self, build, conf):
-        if not self.enabled(build):
-            return
-
-        # Only block the configure if opus was explicitly requested.
-        explicit = 'opus' in SCons.ARGUMENTS
-
-        # Support for Opus (RFC 6716)
-        # More info http://http://www.opus-codec.org/
-        if not conf.CheckLib(['opusfile', 'libopusfile']):
-            if explicit:
-                raise Exception('Could not find libopusfile.')
-            else:
-                build.flags['opus'] = 0
-            return
-
-        build.env.Append(CPPDEFINES='__OPUS__')
-
-        if build.platform_is_linux or build.platform_is_bsd:
-            build.env.ParseConfig('pkg-config opusfile opus --silence-errors --cflags --libs')
-
-    def sources(self, build):
-        return ['sources/soundsourceopus.cpp']
 
 
 class FFMPEG(Feature):

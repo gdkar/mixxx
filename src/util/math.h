@@ -23,7 +23,6 @@
 #include <utility>
 
 #include "util/assert.h"
-#include "util/fpclassify.h"
 
 // If we don't do this then we get the C90 fabs from the global namespace which
 // is only defined for double.

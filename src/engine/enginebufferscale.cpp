@@ -8,16 +8,17 @@ EngineBufferScale::EngineBufferScale(ReadAheadManager *raman, QObject *pParent)
         , m_audioSignal(
                 mixxx::AudioSignal::SampleLayout::Interleaved,
                 mixxx::AudioSignal::kChannelCountStereo,
-                mixxx::AudioSignal::kSamplingRateCD),
-          m_dBaseRate(1.0),
-          m_bSpeedAffectsPitch(false),
-          m_dTempoRatio(1.0),
-          m_dPitchRatio(1.0) {
+                mixxx::AudioSignal::kSamplingRateCD
+            )
+        , m_pReadAheadManager(raman)
+        , m_dBaseRate(1.0)
+        , m_bSpeedAffectsPitch(false)
+        , m_dTempoRatio(1.0)
+        , m_dPitchRatio(1.0)
+{
     DEBUG_ASSERT(m_audioSignal.verifyReadable());
 }
-
-EngineBufferScale::~EngineBufferScale() = default;
-
+EngineBufferScale::~EngineBufferScale(){};
 void EngineBufferScale::setSampleRate(SINT iSampleRate)
 {
     m_audioSignal = mixxx::AudioSignal(

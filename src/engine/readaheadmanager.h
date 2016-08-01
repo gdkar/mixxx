@@ -48,7 +48,7 @@ class ReadAheadManager : public QObject{
         return m_iCurrentPosition;
     }
 
-    virtual void notifySeek(SINT iSeekPosition);
+//    virtual void notifySeek(double iSeekPosition);
 
     // hintReader allows the ReadAheadManager to provide hints to the reader to
     // indicate that the given portion of a song is about to be read.
@@ -60,7 +60,7 @@ class ReadAheadManager : public QObject{
   public slots:
       void onNotifySeek(double);
   signals:
-    virtual void notifySeek(double dSeekPosition);
+    void notifySeek(double dSeekPosition);
   private:
     // An entry in the read log indicates the virtual playposition the read
     // began at and the virtual playposition it ended at.
