@@ -49,17 +49,13 @@ available_features = [features.HSS1394,
                       features.AddressSanitizer,
                       features.LocaleCompare,
                       features.Battery,
-                      features.TinyAV,
-                      features.FFMPEG,
                       # "Features" of dubious quality
                       features.PerfTools,
-                      features.AsmLib,
 		     # Experimental features
 		      features.OpenGLES
                     ]
 
-build = mixxx.MixxxBuild(target, machine, build_type,
-                         toolchain, available_features)
+build = mixxx.MixxxBuild(target, machine, build_type,toolchain, available_features)
 Export('build')
 
 # Run our configuration stuff to setup our build environment (detect
@@ -72,8 +68,8 @@ Import('sources')
 # Make the main src directory accessible to the SoundSourceM4A, so
 # SoundSourceM4A can get at sounddevice.cpp, which it needs to build
 # and link properly. This sucks but it's the best way I can find -- bkgood
-VariantDir("plugins/soundsourcem4a", "src", duplicate=0)
-VariantDir("plugins/soundsourcemediafoundation", "src", duplicate=0)
+#VariantDir("plugins/soundsourcem4a", "src", duplicate=0)
+#VariantDir("plugins/soundsourcemediafoundation", "src", duplicate=0)
 
 # Build our soundsource plugins
 soundsource_plugins = SConscript(

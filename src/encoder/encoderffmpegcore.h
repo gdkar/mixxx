@@ -20,29 +20,14 @@
 #define ENCODERFFMPEGCORE_H
 
 #include <encoder/encoderffmpegresample.h>
-
-extern "C" {
-#include <libavutil/opt.h>
-#include <libavcodec/avcodec.h>
-#include <libavformat/avformat.h>
-#include <libavutil/common.h>
-#include <libavutil/mathematics.h>
-#include <libavutil/samplefmt.h>
-
-#ifndef __FFMPEGOLDAPI__
-#include <libavutil/avutil.h>
-#endif
-
 // Compability
-#include <libavutil/mathematics.h>
-#include <libavutil/opt.h>
-}
-#include <tinyav/tinyav.hpp>
 
 #include <QByteArray>
 #include <QBuffer>
 #include <QLibrary>
 
+#include "util/ffmpeg-utils.h"
+#include "util/math.h"
 #include "util/types.h"
 #include "encoder/encoder.h"
 #include "track/track.h"
@@ -51,8 +36,7 @@ class EncoderCallback;
 
 class EncoderFfmpegCore : public Encoder {
 public:
-    EncoderFfmpegCore(EncoderCallback* pCallback=NULL,
-                      AVCodecID codec = AV_CODEC_ID_MP2);
+    EncoderFfmpegCore(EncoderCallback* pCallback=nullptr,AVCodecID codec = AV_CODEC_ID_MP2);
     ~EncoderFfmpegCore();
     int initEncoder(int bitrate, int samplerate);
     void encodeBuffer(const CSAMPLE *samples, const int size);
@@ -60,8 +44,6 @@ public:
     void flush();
 protected:
     unsigned int reSample(AVFrame *inframe);
-
-
 private:
     int getSerial();
     bool metaDataHasChanged();
@@ -69,8 +51,7 @@ private:
     int writeAudioFrame(AVFormatContext *oc, AVStream *st);
     void closeAudio(AVStream *st);
     void openAudio(AVCodec *codec, AVStream *st);
-    AVStream *addStream(AVFormatContext *oc, AVCodec **codec,
-                        enum AVCodecID codec_id);
+    AVStream *addStream(AVFormatContext *oc, AVCodec **codec,AVCodecID codec_id);
     bool m_bStreamInitialized;
 
     EncoderCallback* m_pCallback;

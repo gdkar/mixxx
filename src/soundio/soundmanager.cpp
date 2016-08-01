@@ -78,8 +78,7 @@ SoundManager::SoundManager(UserSettingsPointer pConfig,
     m_samplerates.push_back(48000);
     m_samplerates.push_back(96000);
 
-    m_pNetworkStream = QSharedPointer<EngineNetworkStream>(
-            new EngineNetworkStream(2, 0));
+    m_pNetworkStream = QSharedPointer<EngineNetworkStream>(new EngineNetworkStream(2, 0));
 
     queryDevices();
 
@@ -160,65 +159,47 @@ void SoundManager::closeDevices(bool sleepAfterClosing) {
             closed = true;
         }
     }
-
-    if (closed && sleepAfterClosing) {
-#ifdef __LINUX__
-        // Sleep for 5 sec to allow asynchronously sound APIs like "pulse" to free
-        // its resources as well
-        sleep(kSleepSecondsAfterClosingDevice);
-#endif
-    }
-
-    m_pErrorDevice = NULL;
-
+//    for(auto && pDevice : m_devices) {
+//        pDevice->waitToFinish();
+//    }
+    m_pErrorDevice = nullptr;
     // TODO(rryan): Should we do this before SoundDevice::close()? No! Because
     // then the callback may be running when we call
     // onInputDisconnected/onOutputDisconnected.
-    foreach (SoundDevice* pDevice, m_devices) {
-        foreach (AudioInput in, pDevice->inputs()) {
+    for(auto pDevice: m_devices) {
+        for(auto in : pDevice->inputs()) {
             // Need to tell all registered AudioDestinations for this AudioInput
             // that the input was disconnected.
-            for (QHash<AudioInput, AudioDestination*>::const_iterator it =
-                         m_registeredDestinations.find(in);
-                 it != m_registeredDestinations.end() && it.key() == in; ++it) {
-                it.value()->onInputUnconfigured(in);
-            }
+            for (auto && dest : m_registeredDestinations.values(in))
+                dest->onInputUnconfigured(in);
         }
-        foreach (AudioOutput out, pDevice->outputs()) {
+        for(auto out: pDevice->outputs()) {
             // Need to tell all registered AudioSources for this AudioOutput
             // that the output was disconnected.
-            for (QHash<AudioOutput, AudioSource*>::const_iterator it =
-                         m_registeredSources.find(out);
-                 it != m_registeredSources.end() && it.key() == out; ++it) {
-                it.value()->onOutputDisconnected(out);
-            }
+            for(auto &&dest : m_registeredSources.values(out))
+                dest->onOutputDisconnected(out);
         }
     }
-
     while (!m_inputBuffers.isEmpty()) {
-        CSAMPLE* pBuffer = m_inputBuffers.takeLast();
-        if (pBuffer != NULL) {
+        auto pBuffer = m_inputBuffers.takeLast();
+        if (pBuffer)
             SampleUtil::free(pBuffer);
-        }
     }
-    m_inputBuffers.clear();
-
     // Indicate to the rest of Mixxx that sound is disconnected.
     m_pControlObjectSoundStatusCO->set(SOUNDMANAGER_DISCONNECTED);
 }
 
-void SoundManager::clearDeviceList(bool sleepAfterClosing) {
+void SoundManager::clearDeviceList(bool sleepAfterClosing)
+{
     //qDebug() << "SoundManager::clearDeviceList()";
 
     // Close the devices first.
     closeDevices(sleepAfterClosing);
-
     // Empty out the list of devices we currently have.
     while (!m_devices.empty()) {
-        SoundDevice* dev = m_devices.takeLast();
+        auto dev = m_devices.takeLast();
         delete dev;
     }
-
 #ifdef __PORTAUDIO__
     if (m_paInitialized) {
         Pa_Terminate();
@@ -239,27 +220,25 @@ QList<unsigned int> SoundManager::getSampleRates(QString api) const {
 #endif
     return m_samplerates;
 }
-
-QList<unsigned int> SoundManager::getSampleRates() const {
+QList<unsigned int> SoundManager::getSampleRates() const
+{
     return getSampleRates("");
 }
-
-void SoundManager::queryDevices() {
+void SoundManager::queryDevices()
+{
     //qDebug() << "SoundManager::queryDevices()";
     queryDevicesPortaudio();
     queryDevicesMixxx();
-
     // now tell the prefs that we updated the device list -- bkgood
     emit(devicesUpdated());
 }
-
 void SoundManager::clearAndQueryDevices() {
     const bool sleepAfterClosing = true;
     clearDeviceList(sleepAfterClosing);
     queryDevices();
 }
-
-void SoundManager::queryDevicesPortaudio() {
+void SoundManager::queryDevicesPortaudio()
+{
 #ifdef __PORTAUDIO__
     PaError err = paNoError;
     if (!m_paInitialized) {
@@ -274,8 +253,7 @@ void SoundManager::queryDevicesPortaudio() {
         m_paInitialized = false;
         return;
     }
-
-    int iNumDevices = Pa_GetDeviceCount();
+    auto iNumDevices = Pa_GetDeviceCount();
     if (iNumDevices < 0) {
         qDebug() << "ERROR: Pa_CountDevices returned" << iNumDevices;
         return;
@@ -299,24 +277,20 @@ void SoundManager::queryDevicesPortaudio() {
             PaTime  defaultHighOutputLatency
             double  defaultSampleRate
          */
-        SoundDevicePortAudio* currentDevice = new SoundDevicePortAudio(
-                m_pConfig, this, deviceInfo, i);
+        auto currentDevice = new SoundDevicePortAudio(m_pConfig, this, deviceInfo, i);
         m_devices.push_back(currentDevice);
-        if (!strcmp(Pa_GetHostApiInfo(deviceInfo->hostApi)->name,
-                    MIXXX_PORTAUDIO_JACK_STRING)) {
+        if (QString{Pa_GetHostApiInfo(deviceInfo->hostApi)->name} == MIXXX_PORTAUDIO_JACK_STRING)
             m_jackSampleRate = deviceInfo->defaultSampleRate;
-        }
     }
 #endif
 }
-
-void SoundManager::queryDevicesMixxx() {
-    SoundDeviceNetwork* currentDevice = new SoundDeviceNetwork(
-            m_pConfig, this, m_pNetworkStream);
+void SoundManager::queryDevicesMixxx()
+{
+    auto currentDevice = new SoundDeviceNetwork(m_pConfig, this, m_pNetworkStream);
     m_devices.push_back(currentDevice);
 }
-
-Result SoundManager::setupDevices() {
+Result SoundManager::setupDevices()
+{
     // NOTE(rryan): Big warning: This function is concurrent with calls to
     // pushBuffer and onDeviceOutputCallback until closeDevices() below.
 
@@ -355,17 +329,15 @@ Result SoundManager::setupDevices() {
     // Instead of clearing m_pClkRefDevice and then assigning it directly,
     // compute the new one then atomically hand off below.
     SoundDevice* pNewMasterClockRef = NULL;
-
     // pair is isInput, isOutput
     QList<DeviceMode> toOpen;
     bool haveOutput = false;
-    foreach (SoundDevice* device, m_devices) {
-        DeviceMode mode = {device, false, false};
+    for(auto && device: m_devices) {
+        auto mode = DeviceMode{device, false, false};
         device->clearInputs();
         device->clearOutputs();
         m_pErrorDevice = device;
-        foreach (AudioInput in,
-                 m_config.getInputs().values(device->getInternalName())) {
+        for(auto && in : m_config.getInputs().values(device->getInternalName())) {
             mode.isInput = true;
             // TODO(bkgood) look into allocating this with the frames per
             // buffer value from SMConfig
@@ -377,17 +349,13 @@ Result SoundManager::setupDevices() {
             }
 
             m_inputBuffers.append(aib.getBuffer());
-
             // Check if any AudioDestination is registered for this AudioInput
             // and call the onInputConnected method.
-            for (QHash<AudioInput, AudioDestination*>::const_iterator it =
-                         m_registeredDestinations.find(in);
-                 it != m_registeredDestinations.end() && it.key() == in; ++it) {
-                it.value()->onInputConfigured(in);
+            for (auto &&dest : m_registeredDestinations.values(in)) {
+                dest->onInputConfigured(in);
             }
         }
-        QList<AudioOutput> outputs =
-                m_config.getOutputs().values(device->getInternalName());
+        auto outputs = m_config.getOutputs().values(device->getInternalName());
 
         // Statically connect the Network Device to the Sidechain
         if (device->getInternalName() == kNetworkDeviceInternalName) {
@@ -395,19 +363,18 @@ Result SoundManager::setupDevices() {
             outputs.append(out);
         }
 
-        foreach (AudioOutput out, outputs) {
+        for(auto && out: outputs) {
             mode.isOutput = true;
             if (device->getInternalName() != kNetworkDeviceInternalName) {
                 haveOutput = true;
             }
             // following keeps us from asking for a channel buffer EngineMaster
             // doesn't have -- bkgood
-            const CSAMPLE* pBuffer = m_registeredSources.value(out)->buffer(out);
+            auto pBuffer = m_registeredSources.value(out)->buffer(out);
             if (pBuffer == NULL) {
                 qDebug() << "AudioSource returned null for" << out.getString();
                 continue;
             }
-
             AudioOutputBuffer aob(out, pBuffer);
             err = device->addOutput(aob) != SOUNDDEVICE_ERROR_OK ? ERR : OK;
             if (err != OK) goto closeAndError;
@@ -421,7 +388,7 @@ Result SoundManager::setupDevices() {
 
             // Check if any AudioSource is registered for this AudioOutput and
             // call the onOutputConnected method.
-            for (QHash<AudioOutput, AudioSource*>::const_iterator it =
+            for (auto it =
                          m_registeredSources.find(out);
                  it != m_registeredSources.end() && it.key() == out; ++it) {
                 it.value()->onOutputConnected(out);

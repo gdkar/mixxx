@@ -163,7 +163,7 @@ class Bulk(Feature):
             return
 
         build.env.ParseConfig(
-            'pkg-config libusb-1.0 --silence-errors --cflags --libs')
+'pkg-config libusb-1.0 --silence-errors --cflags --libs')
         if (not conf.CheckLib(['libusb-1.0', 'usb-1.0']) or
                 not conf.CheckHeader('libusb-1.0/libusb.h')):
             raise Exception(
@@ -178,34 +178,6 @@ class Bulk(Feature):
             sources.append(
                 'controllers/hid/hidcontrollerpresetfilehandler.cpp')
         return sources
-
-#class Mpg123(Feature):
-#    def description(self):
-#        return "libmpg123"
-#
-#    def default(self, build):
-#        return 1
-#
-#    def enabled(self, build):
-#        build.flags['mpg123'] = util.get_flags(build.env, 'mpg123',self.default(build))
-#        if int(build.flags['mpg123']):
-#            return True
-#        return False
-#
-#    def add_options(self, build, vars):
-#        vars.Add('mpg123', 'Set to 1 to enable libmpg123 MP3 decoder support.',self.default(build))
-#
-#    def configure(self, build, conf):
-#        if not self.enabled(build):
-#            return
-#        build.env.ParseConfig('pkg-config libmpg123 --silence-errors --cflags --libs')
-#        if (not conf.CheckLib(['libmpg123','mpg123']) or not conf.CheckHeader('mpg123.h')):
-#            raise Exception("Could not find libmpg123.")
-#        build.env.Append(CPPDEFINES='__MPG123__')
-#    def sources(self,build):
-#        return ['sources/soundsourcemp3.cpp']
-
-
 
 class IPod(Feature):
     def description(self):
@@ -230,21 +202,13 @@ class IPod(Feature):
             # You must check v-this-v directory out from
             # http://publicsvn.songbirdnest.com/vendor-
             # binaries/trunk/windows-i686-msvc8/libgpod/
-            build.env.Append(
-                LIBPATH='../../../windows-i686-msvc8/libgpod/release/lib')
-            # Following building the following must be added to the dist folder in order for mixxx to run with ipod support on Windows
-            # \windows-i686-msvc8\libgpod\release\lib\libgpod.dll
-            # \windows-i686-msvc8\glib\release\bin\libgobject-2.0-0.dll
-            # \windows-i686-msvc8\glib\release\bin\libglib-2.0-0.dll
-            # \windows-i686-msvc8\libiconv\release\bin\iconv.dll
-            # \windows-i686-msvc8\gettext\release\binintl.dll
+            build.env.Append(LIBPATH='../../../windows-i686-msvc8/libgpod/release/lib')
+
         if build.platform_is_linux or build.platform_is_osx:
             # env.Append(LIBS = 'libgpod-1.0')
             # env.Append(LIBS = 'glib-2.0')
-            build.env.ParseConfig(
-                'pkg-config libgpod-1.0 --silence-errors --cflags --libs')
-            build.env.ParseConfig(
-                'pkg-config glib-2.0 --silence-errors --cflags --libs')
+            build.env.ParseConfig( 'pkg-config libgpod-1.0 --silence-errors --cflags --libs')
+            build.env.ParseConfig( 'pkg-config glib-2.0 --silence-errors --cflags --libs')
 
     def sources(self, build):
         return ['wipodtracksmodel.cpp']
@@ -303,20 +267,16 @@ class Vamp(Feature):
 
     def enabled(self, build):
         build.flags['vamp'] = util.get_flags(build.env, 'vamp', 1)
-        if int(build.flags['vamp']):
-            return True
+        if int(build.flags['vamp']):return True
         return False
 
     def add_options(self, build, vars):
         vars.Add('vamp', 'Set to 1 to enable vamp analysers', 1)
 
     def configure(self, build, conf):
-        if not self.enabled(build):
-            return
-
+        if not self.enabled(build): return
         build.env.Append(CPPDEFINES='__VAMP__')
         build.env.Append(CPPDEFINES='kiss_fft_scalar=float')
-
         # If there is no system vamp-hostdk installed, then we'll directly link
         # the vamp-hostsdk.
         if not conf.CheckLib(['vamp-hostsdk']):
@@ -327,14 +287,12 @@ class Vamp(Feature):
         if build.platform_is_linux:
             # Optionally link libdl Required for some distros.
             conf.CheckLib(['dl', 'libdl'])
-
         # FFTW3 support
         have_fftw3_h = conf.CheckHeader('fftw3.h')
-        have_fftw3 = conf.CheckLib('fftw3', autoadd=False)
+        have_fftw3 = (conf.CheckLib('fftw3f', autoadd=False) and conf.CheckLib('fftw3', autoadd=False))
         if have_fftw3_h and have_fftw3 and build.platform_is_linux:
             build.env.Append(CPPDEFINES='HAVE_FFTW3')
-            build.env.ParseConfig(
-                'pkg-config fftw3 --silence-errors --cflags --libs')
+            build.env.ParseConfig( 'pkg-config fftw3 fftw3f --silence-errors --cflags --libs')
 
     def sources(self, build):
         sources = ['analyzer/vamp/vampanalyzer.cpp',
@@ -345,20 +303,18 @@ class Vamp(Feature):
                    'preferences/dialog/dlgprefkey.cpp']
 
         if self.INTERNAL_LINK:
-            hostsdk_src_path = '%s/src/vamp-hostsdk' % self.INTERNAL_VAMP_PATH
-            sources.extend(path % hostsdk_src_path for path in
-                           ['%s/Files.cpp',
-                            '%s/PluginBufferingAdapter.cpp',
-                            '%s/PluginChannelAdapter.cpp',
-                            '%s/PluginHostAdapter.cpp',
-                            '%s/PluginInputDomainAdapter.cpp',
-                            '%s/PluginLoader.cpp',
-                            '%s/PluginSummarisingAdapter.cpp',
-                            '%s/PluginWrapper.cpp',
-                            '%s/RealTime.cpp'])
+            hostsdk_src_path = '{}/src/vamp-hostsdk'.format( self.INTERNAL_VAMP_PATH)
+            sources.extend(path.format( hostsdk_src_path) for path in
+                           ['{}/Files.cpp',
+                            '{}/PluginBufferingAdapter.cpp',
+                            '{}/PluginChannelAdapter.cpp',
+                            '{}/PluginHostAdapter.cpp',
+                            '{}/PluginInputDomainAdapter.cpp',
+                            '{}/PluginLoader.cpp',
+                            '{}/PluginSummarisingAdapter.cpp',
+                            '{}/PluginWrapper.cpp',
+                            '{}/RealTime.cpp'])
         return sources
-
-
 
 class ColorDiagnostics(Feature):
     def description(self):
@@ -410,10 +366,8 @@ class PerfTools(Feature):
 
     def enabled(self, build):
         build.flags['perftools'] = util.get_flags(build.env, 'perftools', 0)
-        build.flags['perftools_profiler'] = util.get_flags(
-            build.env, 'perftools_profiler', 0)
-        if int(build.flags['perftools']):
-            return True
+        build.flags['perftools_profiler'] = util.get_flags(build.env, 'perftools_profiler', 0)
+        if int(build.flags['perftools']): return True
         return False
 
     def add_options(self, build, vars):
@@ -422,51 +376,10 @@ class PerfTools(Feature):
         vars.Add("perftools_profiler", "Set to 1 to enable linking against libprofiler, Google's CPU profiler. You must install libprofiler from google-perftools to use this option.", 0)
 
     def configure(self, build, conf):
-        if not self.enabled(build):
-            return
-
+        if not self.enabled(build): return
         build.env.Append(LIBS="tcmalloc")
-
         if int(build.flags['perftools_profiler']):
             build.env.Append(LIBS="profiler")
-
-
-class AsmLib(Feature):
-    def description(self):
-        return "Agner Fog\'s ASMLIB"
-
-    def enabled(self, build):
-        if build.build_is_debug:
-            return False
-        build.flags['asmlib'] = util.get_flags(build.env, 'asmlib', 0)
-        if int(build.flags['asmlib']):
-            return True
-        return False
-
-    def add_options(self, build, vars):
-        vars.Add(
-            'asmlib', 'Set to 1 to enable linking against Agner Fog\'s hand-optimized asmlib, found at http://www.agner.org/optimize/', 0)
-
-    def configure(self, build, conf):
-        if build.build_is_debug:
-            self.status = "Disabled (due to debug build)"
-            return
-        if not self.enabled(build):
-            return
-
-        build.env.Append(LIBPATH='#/../asmlib')
-        if build.platform_is_linux:
-            #Use ASMLIB's functions instead of the compiler's
-            build.env.Append(CCFLAGS='-fno-builtin')
-            build.env.Prepend(LIBS='":libaelf%so.a"' % build.bitwidth)
-        elif build.platform_is_osx:
-            #Use ASMLIB's functions instead of the compiler's
-            build.env.Append(CCFLAGS='-fno-builtin')
-            build.env.Prepend(LIBS='":libamac%so.a"' % build.bitwidth)
-        elif build.platform_is_windows:
-            #Use ASMLIB's functions instead of the compiler's
-            build.env.Append(CCFLAGS='/Oi-')
-            build.env.Prepend(LIBS='libacof%so' % build.bitwidth)
 
 
 class BuildTime(Feature):
@@ -480,8 +393,7 @@ class BuildTime(Feature):
         return False
 
     def add_options(self, build, vars):
-        vars.Add(
-            'buildtime', 'Set to 0 to disable build time (__DATE__ and __TIME__) usage.', 1)
+        vars.Add('buildtime', 'Set to 0 to disable build time (__DATE__ and __TIME__) usage.', 1)
 
     def configure(self, build, conf):
         # Distributions like openSUSE use tools (e. g. build-compare) to detect
@@ -510,8 +422,7 @@ class QDebug(Feature):
         return False
 
     def add_options(self, build, vars):
-        vars.Add(
-            'qdebug', 'Set to 1 to enable verbose console debug output.', 1)
+        vars.Add('qdebug', 'Set to 1 to enable verbose console debug output.', 1)
 
     def configure(self, build, conf):
         if not self.enabled(build):
@@ -667,126 +578,13 @@ class LiveBroadcasting(Feature):
 
 
 
-class FFMPEG(Feature):
-    def description(self):
-        return "FFmpeg/Avconv support"
-
-    def enabled(self, build):
-        build.flags['ffmpeg'] = util.get_flags(build.env, 'ffmpeg', 0)
-        if int(build.flags['ffmpeg']):
-            return True
-        return False
-
-    def add_options(self, build, vars):
-        vars.Add('ffmpeg', 'Set to 1 to enable FFmpeg/Avconv support \
-                           (supported FFmpeg 0.11-2.x and Avconv 0.8.x-11.x)', 0)
-
-    def configure(self, build, conf):
-        if not self.enabled(build):
-            return
-
-        # Supported version are FFmpeg 0.11-2.x and Avconv 0.8.x-11.x
-        # FFmpeg is multimedia library that can be found http://ffmpeg.org/
-        # Avconv is fork of FFmpeg that is used mainly in Debian and Ubuntu
-        # that can be found http://libav.org
-        if build.platform_is_linux or build.platform_is_osx \
-                or build.platform_is_bsd:
-            # Check for libavcodec, libavformat
-            # I just randomly picked version numbers lower than mine for this
-
-            # Grabs the libs and cflags for FFmpeg
-            build.env.ParseConfig('pkg-config libavcodec --silence-errors --cflags --libs')
-            build.env.ParseConfig('pkg-config libavformat --silence-errors --cflags --libs')
-            build.env.ParseConfig('pkg-config libavutil --silence-errors --cflags --libs')
-
-            build.env.Append(CPPDEFINES='__FFMPEGFILE__')
-            self.status = "Enabled"
-
-        else:
-            # aptitude install libavcodec-dev libavformat-dev liba52-0.7.4-dev
-            # libdts-dev
-            # Append some stuff to CFLAGS in Windows also
-            build.env.Append(LIBS='avcodec')
-            build.env.Append(LIBS='avformat')
-            build.env.Append(LIBS='avutil')
-            build.env.Append(LIBS='z')
-            build.env.Append(LIBS='swresample')
-            # build.env.Append(LIBS = 'a52')
-            # build.env.Append(LIBS = 'dts')
-            build.env.Append(LIBS='gsm')
-            # build.env.Append(LIBS = 'dc1394_control')
-            # build.env.Append(LIBS = 'dl')
-            build.env.Append(LIBS='vorbisenc')
-            # build.env.Append(LIBS = 'raw1394')
-            build.env.Append(LIBS='vorbis')
-            build.env.Append(LIBS='m')
-            build.env.Append(LIBS='ogg')
-            build.env.Append(CPPDEFINES='__FFMPEGFILE__')
-
-        # Add new path for FFmpeg header files.
-        # Non-crosscompiled builds need this too, don't they?
-        if build.crosscompile and build.platform_is_windows \
-                and build.toolchain_is_gnu:
-            build.env.Append(CPPPATH=os.path.join(build.crosscompile_root,
-                                                  'include', 'ffmpeg'))
-        build.env.Append(CPPPATH='#/lib/libff')
-
-    def sources(self, build):
-        return ['sources/soundsourceffmpeg.cpp',
-#                'encoder/encoderffmpegresample.cpp',
-#                'encoder/encoderffmpegcore.cpp',
-#                'encoder/encoderffmpegmp3.cpp',
-#                'encoder/encoderffmpegvorbis.cpp'
-                ]
-
-class TinyAV(Feature):
-    def description(self):
-        return "TinyAV decoding / encoding library ( using ffmpeg. )"
-    def enabled(self, build):
-        build.flags['tinyav'] = util.get_flags(build.env, 'tinyav', 1)
-        if int(build.flags['tinyav']):
-            return True
-        return False
-
-    def add_options(self, build, vars):
-        vars.Add('tinyav', 'Set to 1 to enable the TinyAV ffmpeg wrapper.',0)
-
-    def configure(self, build, conf):
-        if not self.enabled(build):
-            return
-        # Supported version are FFmpeg 0.11-2.x and Avconv 0.8.x-11.x
-        # FFmpeg is multimedia library that can be found http://ffmpeg.org/
-        # Avconv is fork of FFmpeg that is used mainly in Debian and Ubuntu
-        # that can be found http://libav.org
-        if build.platform_is_linux or build.platform_is_osx \
-                or build.platform_is_bsd:
-            # Check for libavcodec, libavformat
-            # I just randomly picked version numbers lower than mine for this
-            # Grabs the libs and cflags for FFmpeg
-            build.env.ParseConfig('pkg-config libavcodec --silence-errors \
-                                  --cflags --libs')
-            build.env.ParseConfig('pkg-config libavformat --silence-errors \
-                                   --cflags --libs')
-            build.env.ParseConfig('pkg-config libavutil --silence-errors \
-                                   --cflags --libs')
-            build.env.ParseConfig('pkg-config libavfilter --silence-errors \
-                                   --cflags --libs')
-            build.env.ParseConfig('pkg-config libswresample --silence-errors \
-                                   --cflags --libs')
-            build.env.ParseConfig('pkg-config libavdevice --silence-errors \
-                                   --cflags --libs')
-
-            build.env.Append(CPPDEFINES='__HAVE_TINYAV__')
-            build.env.Append(CPPPATH='#/lib/tinyav/')
-            self.status = "Enabled"
-
 class Optimize(Feature):
     LEVEL_OFF = 'off'
     LEVEL_PORTABLE = 'portable'
     LEVEL_NATIVE = 'native'
     LEVEL_LEGACY = 'legacy'
 
-    LEVEL_DEFAULT = LEVEL_PORTABLE
+    LEVEL_DEFAULT = LEVEL_NATIVE
 
     def description(self):
         return "Optimization and Tuning"
@@ -795,9 +593,7 @@ class Optimize(Feature):
     def get_optimization_level(build):
         optimize_level = build.env.get('optimize', None)
         if optimize_level is None:
-            optimize_level = SCons.ARGUMENTS.get('optimize',
-                                                 Optimize.LEVEL_DEFAULT)
-
+            optimize_level = SCons.ARGUMENTS.get('optimize',Optimize.LEVEL_DEFAULT)
         try:
             optimize_integer = int(optimize_level)
             if optimize_integer == 0:
@@ -910,9 +706,9 @@ class Optimize(Feature):
             # the following optimisation flags makes the engine code ~3 times
             # faster, measured on a Atom CPU.
             build.env.Append(CCFLAGS='-O3')
+            build.env.Append(CCFLAGS='-Ofast')
             build.env.Append(CCFLAGS='-ffast-math')
             build.env.Append(CCFLAGS='-funroll-loops')
-
             # set -fomit-frame-pointer when we don't profile.
             # Note: It is only included in -O on machines where it does not
             # interfere with debugging
@@ -947,8 +743,9 @@ class Optimize(Feature):
                 # -- rryan 2/2011
                 # Note: SSE2 is a core part of x64 CPUs
             elif optimize_level == Optimize.LEVEL_NATIVE:
-                self.status = "native: tuned for this CPU (%s)" % build.machine
+                self.status = "native: tuned for this CPU ({})" .format(build.machine)
                 build.env.Append(CCFLAGS='-march=native')
+                build.env.Append(CXXFLAGS='-march=native')
                 # http://en.chys.info/2010/04/what-exactly-marchnative-means/
                 # Note: requires gcc >= 4.2.0
                 # macros like __SSE2_MATH__ __SSE_MATH__ __SSE2__ __SSE__
@@ -974,14 +771,12 @@ class Optimize(Feature):
                 raise Exception("optimize={} is not supported. "
                                 "Use portable, native, legacy or off"
                                 .format(optimize_level))
-
             # what others do:
             # soundtouch uses just -O3 and -msse in Ubuntu Trusty
             # rubberband uses just -O2 in Ubuntu Trusty
             # fftw3 (used by rubberband) in Ubuntu Trusty
             # -O3 -fomit-frame-pointer -mtune=native -malign-double
             # -fstrict-aliasing -fno-schedule-insns -ffast-math
-
 
 class MacAppStoreException(Feature):
     def description(self):
@@ -1044,24 +839,17 @@ class Battery(Feature):
         return False
 
     def add_options(self, build, vars):
-        vars.Add('battery',
-                 'Set to 1 to enable battery meter support.')
+        vars.Add('battery','Set to 1 to enable battery meter support.')
 
     def configure(self, build, conf):
-        if not self.enabled(build):
-            return
-
+        if not self.enabled(build): return
         build.env.Append(CPPDEFINES='__BATTERY__')
 
     def sources(self, build):
-        if build.platform_is_windows:
-            return ["util/battery/batterywindows.cpp"]
-        elif build.platform_is_osx:
-            return ["util/battery/batterymac.cpp"]
-        elif build.platform_is_linux:
-            return ["util/battery/batterylinux.cpp"]
-        else:
-            raise Exception('Battery support is not implemented for the target platform.')
+        if build.platform_is_windows:   return ["util/battery/batterywindows.cpp"]
+        elif build.platform_is_osx:     return ["util/battery/batterymac.cpp"]
+        elif build.platform_is_linux:   return ["util/battery/batterylinux.cpp"]
+        else: raise Exception('Battery support is not implemented for the target platform.')
 
     def depends(self, build):
         return [depends.IOKit, depends.UPower]

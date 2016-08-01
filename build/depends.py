@@ -56,6 +56,56 @@ class PortMIDI(Dependence):
     def sources(self, build):
         return ['controllers/midi/portmidienumerator.cpp', 'controllers/midi/portmidicontroller.cpp']
 
+class FFMPEG(Dependence):
+
+    def configure(self, build, conf):
+        # Supported version are FFmpeg 0.11-2.x and Avconv 0.8.x-11.x
+        # FFmpeg is multimedia library that can be found http://ffmpeg.org/
+        # Avconv is fork of FFmpeg that is used mainly in Debian and Ubuntu
+        # that can be found http://libav.org
+        if build.platform_is_linux or build.platform_is_osx or build.platform_is_bsd:
+            # Check for libavcodec, libavformat
+            # I just randomly picked version numbers lower than mine for this
+
+            # Grabs the libs and cflags for FFmpeg
+            build.env.ParseConfig('pkg-config libavcodec --silence-errors --cflags --libs')
+            build.env.ParseConfig('pkg-config libavformat --silence-errors --cflags --libs')
+            build.env.ParseConfig('pkg-config libavutil --silence-errors --cflags --libs')
+            build.env.ParseConfig('pkg-config libavdevice --silence-errors --cflags --libs')
+            build.env.ParseConfig('pkg-config libavfilter --silence-errors --cflags --libs')
+            build.env.ParseConfig('pkg-config libswresample --silence-errors --cflags --libs')
+
+            build.env.Append(CPPDEFINES='__FFMPEGFILE__')
+            self.status = "Enabled"
+
+        else:
+            # aptitude install libavcodec-dev libavformat-dev liba52-0.7.4-dev
+            # libdts-dev
+            # Append some stuff to CFLAGS in Windows also
+            build.env.Append(LIBS='avcodec')
+            build.env.Append(LIBS='avformat')
+            build.env.Append(LIBS='avutil')
+            build.env.Append(LIBS='z')
+            build.env.Append(LIBS='swresample')
+            # build.env.Append(LIBS = 'a52')
+            # build.env.Append(LIBS = 'dts')
+            build.env.Append(LIBS='gsm')
+            # build.env.Append(LIBS = 'dc1394_control')
+            # build.env.Append(LIBS = 'dl')
+            build.env.Append(LIBS='vorbisenc')
+            # build.env.Append(LIBS = 'raw1394')
+            build.env.Append(LIBS='vorbis')
+            build.env.Append(LIBS='m')
+            build.env.Append(LIBS='ogg')
+            build.env.Append(CPPDEFINES='__FFMPEGFILE__')
+
+        # Add new path for FFmpeg header files.
+        # Non-crosscompiled builds need this too, don't they?
+        if build.crosscompile and build.platform_is_windows and build.toolchain_is_gnu:
+            build.env.Append(CPPPATH=os.path.join(build.crosscompile_root,'include', 'ffmpeg'))
+        build.env.Append(CPPPATH='#/lib/libff')
+
+
 
 class OpenGL(Dependence):
 
@@ -144,7 +194,7 @@ class OggVorbis(Dependence):
                     'Did not find libvorbisenc.a, libvorbisenc.lib, or the libvorbisenc development headers.')
 
     def sources(self, build):
-        return ["sources/soundsourceoggvorbis.cpp"]
+        return []
 
 class SndFile(Dependence):
 
@@ -1259,7 +1309,7 @@ class MixxxCore(Feature):
 
     def depends(self, build):
         return [SoundTouch, ReplayGain, Ebur128Mit, PortAudio, PortMIDI, Qt, TestHeaders,
-                FidLib, SndFile, OggVorbis, OpenGL, TagLib, ProtoBuf,
+                FidLib, SndFile,FFMPEG, OggVorbis, OpenGL, TagLib, ProtoBuf,
                 Chromaprint, RubberBand, SecurityFramework, CoreServices,
                 QtScriptByteArray, Reverb,]
 

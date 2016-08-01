@@ -3,13 +3,6 @@
 
 #include "sources/soundsourceproxy.h"
 #include "sources/soundsourceffmpeg.h"
-#ifdef __MPG123__
-#   include "sources/soundsourcemp3.h"
-#endif
-#include "sources/soundsourceoggvorbis.h"
-#ifdef __OPUS__
-#   include "sources/soundsourceopus.h"
-#endif
 
 #include "library/coverartutils.h"
 #include "util/cmdlineargs.h"
@@ -133,13 +126,6 @@ void SoundSourceProxy::loadPlugins()
     // only matters among providers with equal priority.
     // Use FFmpeg as the last resort.
     s_soundSourceProviders.registerProvider(SoundSourceProviderPointer(new SoundSourceProviderFFmpeg));
-    s_soundSourceProviders.registerProvider(SoundSourceProviderPointer(new SoundSourceProviderOggVorbis));
-#ifdef __OPUS__
-    s_soundSourceProviders.registerProvider(SoundSourceProviderPointer(new SoundSourceProviderOpus));
-#endif
-#ifdef __MPG123__
-    s_soundSourceProviders.registerProvider(SoundSourceProviderPointer(new SoundSourceProviderMp3));
-#endif
     // Scan for and initialize all plugins.
     // Loaded plugins will replace any built-in providers
     // that have been registered before (see above)!

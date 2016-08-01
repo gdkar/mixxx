@@ -37,14 +37,10 @@ SoundDevice::SoundDevice(UserSettingsPointer config, SoundManager* sm)
           m_hostAPI("Unknown API"),
           m_framesPerBuffer(0) {
 }
-
-SoundDevice::~SoundDevice() {
-}
-
+SoundDevice::~SoundDevice() = default;
 int SoundDevice::getNumInputChannels() const {
     return m_iNumInputChannels;
 }
-
 int SoundDevice::getNumOutputChannels() const {
     return m_iNumOutputChannels;
 }

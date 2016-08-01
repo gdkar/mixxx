@@ -23,6 +23,7 @@
 
 #include "soundio/soundmanager.h"
 #include "util/result.h"
+#include "util/semaphore.hpp"
 
 //Forward declarations
 class SoundDevice;
@@ -75,6 +76,7 @@ class SoundDevice {
 
     void clearOutputs();
     void clearInputs();
+    void waitToFinish() { m_finished_sem.wait();}
     bool operator==(const SoundDevice &other) const;
     bool operator==(const QString &other) const;
 
@@ -110,6 +112,7 @@ class SoundDevice {
     unsigned int m_framesPerBuffer;
     QList<AudioOutputBuffer> m_audioOutputs;
     QList<AudioInputBuffer> m_audioInputs;
+    mixxx::MixxxSemaphore   m_finished_sem{};
 };
 
 #endif

@@ -87,6 +87,10 @@ int paV19CallbackClkRef(const void *inputBuffer, void *outputBuffer,
             (const CSAMPLE*) inputBuffer, timeInfo, statusFlags);
 }
 
+void paV19FinishedCallback(void *opaque)
+{
+    static_cast<SoundDevicePortAudio*>(opaque)->finishedCallback();
+}
 } // anonymous namespace
 
 
@@ -138,6 +142,10 @@ SoundDevicePortAudio::SoundDevicePortAudio(UserSettingsPointer config,
     m_outputParams.hostApiSpecificStreamInfo = NULL;
 }
 
+void SoundDevicePortAudio::finishedCallback()
+{
+    m_finished_sem.post();
+}
 SoundDevicePortAudio::~SoundDevicePortAudio() {
     delete m_pMasterAudioLatencyOverloadCount;
     delete m_pMasterAudioLatencyUsage;
@@ -344,6 +352,7 @@ Result SoundDevicePortAudio::open(bool isClkRefDevice, int syncBuffers) {
 #endif
 
     // Start stream
+    Pa_SetStreamFinishedCallback(pStream, &paV19FinishedCallback);
     err = Pa_StartStream(pStream);
     if (err != paNoError) {
         qWarning() << "PortAudio: Start stream error:" << Pa_GetErrorText(err);

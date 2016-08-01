@@ -32,10 +32,7 @@ SoundDeviceNetwork::SoundDeviceNetwork(UserSettingsPointer config,
     m_iNumInputChannels = pNetworkStream->getNumInputChannels();
     m_iNumOutputChannels = pNetworkStream->getNumOutputChannels();
 }
-
-SoundDeviceNetwork::~SoundDeviceNetwork() {
-}
-
+SoundDeviceNetwork::~SoundDeviceNetwork() = default;
 Result SoundDeviceNetwork::open(bool isClkRefDevice, int syncBuffers) {
     Q_UNUSED(syncBuffers);
     qDebug() << "SoundDeviceNetwork::open()" << getInternalName();
@@ -69,9 +66,7 @@ Result SoundDeviceNetwork::open(bool isClkRefDevice, int syncBuffers) {
                     m_iNumInputChannels * m_framesPerBuffer * 2);
         }
     }
-
     m_pNetworkStream->startStream(m_dSampleRate);
-
     return OK;
 }
 
@@ -90,6 +85,7 @@ Result SoundDeviceNetwork::close() {
         delete m_inputFifo;
         m_inputFifo = NULL;
     }
+    m_finished_sem.post();
     return OK;
 }
 

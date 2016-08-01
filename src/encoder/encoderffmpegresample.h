@@ -2,7 +2,7 @@
 #define ENCODERFFMPEGRESAMPLE_H
 
 #include <QtDebug>
-
+#include "util/ffmpeg-utils.h"
 class EncoderFfmpegResample {
   public:
     explicit EncoderFfmpegResample(AVCodecContext *codecCtx);

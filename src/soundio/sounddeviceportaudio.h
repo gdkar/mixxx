@@ -68,7 +68,7 @@ class SoundDevicePortAudio : public SoundDevice {
                         CSAMPLE *output, const CSAMPLE* in,
                         const PaStreamCallbackTimeInfo *timeInfo,
                         PaStreamCallbackFlags statusFlags);
-
+    void finishedCallback();
     virtual unsigned int getDefaultSampleRate() const {
         return m_deviceInfo ? static_cast<unsigned int>(
             m_deviceInfo->defaultSampleRate) : 44100;

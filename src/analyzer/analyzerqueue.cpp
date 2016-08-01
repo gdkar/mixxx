@@ -57,32 +57,29 @@ AnalyzerQueue::~AnalyzerQueue() {
     stop();
     m_progressInfo.sema.release();
     wait(); //Wait until thread has actually stopped before proceeding.
-
-    QListIterator<Analyzer*> it(m_aq);
-    while (it.hasNext()) {
-        Analyzer* an = it.next();
-        //qDebug() << "AnalyzerQueue: deleting " << typeid(an).name();
+    for(auto &&an : m_aq)
         delete an;
-    }
+    m_aq.clear();
     //qDebug() << "AnalyzerQueue::~AnalyzerQueue()";
 }
 
-void AnalyzerQueue::addAnalyzer(Analyzer* an) {
+void AnalyzerQueue::addAnalyzer(Analyzer* an)
+{
     m_aq.push_back(an);
 }
 
 // This is called from the AnalyzerQueue thread
 bool AnalyzerQueue::isLoadedTrackWaiting(TrackPointer analysingTrack) {
-    const PlayerInfo& info = PlayerInfo::instance();
+    auto& info = PlayerInfo::instance();
     TrackPointer pTrack;
-    bool trackWaiting = false;
+    auto trackWaiting = false;
     QList<TrackPointer> progress100List;
     QList<TrackPointer> progress0List;
 
     m_qm.lock();
     QMutableListIterator<TrackPointer> it(m_tioq);
     while (it.hasNext()) {
-        TrackPointer& pTrack = it.next();
+        auto pTrack = it.next();
         if (!pTrack) {
             it.remove();
             continue;
@@ -93,16 +90,15 @@ bool AnalyzerQueue::isLoadedTrackWaiting(TrackPointer analysingTrack) {
         // try to load waveforms for all new tracks first
         // and remove them from queue if already analysed
         // This avoids waiting for a running analysis for those tracks.
-        int progress = pTrack->getAnalyzerProgress();
+        auto progress = pTrack->getAnalyzerProgress();
         if (progress < 0) {
             // Load stored analysis
             QListIterator<Analyzer*> ita(m_aq);
-            bool processTrack = false;
-            while (ita.hasNext()) {
-                if (!ita.next()->isDisabledOrLoadStoredSuccess(pTrack)) {
-                    processTrack = true;
-                }
-            }
+            auto processTrack = false;
+            processTrack = std::any_of(m_aq.constBegin(),m_aq.constEnd(),
+                    [&](auto &&an) {
+                        return !an->isDisabledOrLoadStoredSuccess(pTrack);
+                    });
             if (!processTrack) {
                 progress100List.append(pTrack);
                 it.remove(); // since pTrack is a reference it is invalid now.
@@ -117,13 +113,12 @@ bool AnalyzerQueue::isLoadedTrackWaiting(TrackPointer analysingTrack) {
     m_qm.unlock();
 
     // update progress after unlock to avoid a deadlock
-    foreach (TrackPointer pTrack, progress100List) {
+    for(auto pTrack: progress100List) {
         emitUpdateProgress(pTrack, 1000);
     }
-    foreach (TrackPointer pTrack, progress0List) {
+    for(auto pTrack: progress0List) {
         emitUpdateProgress(pTrack, 0);
     }
-
     if (info.isTrackLoaded(analysingTrack)) {
         return false;
     }
@@ -143,8 +138,7 @@ TrackPointer AnalyzerQueue::dequeueNextBlocking() {
             return TrackPointer();
         }
     }
-
-    const PlayerInfo& info = PlayerInfo::instance();
+    const auto& info = PlayerInfo::instance();
     TrackPointer pLoadTrack;
     QMutableListIterator<TrackPointer> it(m_tioq);
     while (it.hasNext()) {
@@ -182,9 +176,9 @@ bool AnalyzerQueue::doAnalysis(TrackPointer tio, mixxx::AudioSourcePointer pAudi
     QTime progressUpdateInhibitTimer;
     progressUpdateInhibitTimer.start(); // Inhibit Updates for 60 milliseconds
 
-    SINT frameIndex = pAudioSource->getMinFrameIndex();
-    bool dieflag = false;
-    bool cancelled = false;
+    auto frameIndex = pAudioSource->getMinFrameIndex();
+    auto dieflag = false;
+    auto cancelled = false;
     do {
         ScopedTimer t("AnalyzerQueue::doAnalysis block");
 
@@ -194,7 +188,6 @@ bool AnalyzerQueue::doAnalysis(TrackPointer tio, mixxx::AudioSourcePointer pAudi
         const SINT framesToRead =
                 math_min(kAnalysisFramesPerBlock, framesRemaining);
         DEBUG_ASSERT(0 < framesToRead);
-
         const SINT framesRead =
                 pAudioSource->readSampleFramesStereo(
                         kAnalysisFramesPerBlock,
@@ -207,9 +200,7 @@ bool AnalyzerQueue::doAnalysis(TrackPointer tio, mixxx::AudioSourcePointer pAudi
         // the full block size.
         if (kAnalysisFramesPerBlock == framesRead) {
             // Complete analysis block of audio samples has been read.
-            QListIterator<Analyzer*> it(m_aq);
-            while (it.hasNext()) {
-                Analyzer* an =  it.next();
+            for(auto && an : m_aq){
                 //qDebug() << typeid(*an).name() << ".process()";
                 an->process(m_sampleBuffer.data(), m_sampleBuffer.size());
                 //qDebug() << "Done " << typeid(*an).name() << ".process()";
@@ -231,16 +222,13 @@ bool AnalyzerQueue::doAnalysis(TrackPointer tio, mixxx::AudioSourcePointer pAudi
                 }
             }
         }
-
         // emit progress updates
         // During the doAnalysis function it goes only to 100% - FINALIZE_PERCENT
         // because the finalize functions will take also some time
         //fp div here prevents insane signed overflow
         DEBUG_ASSERT(pAudioSource->isValidFrameIndex(frameIndex));
-        const double frameProgress =
-                double(frameIndex) / double(pAudioSource->getMaxFrameIndex());
-        int progressPromille = frameProgress * (1000 - FINALIZE_PROMILLE);
-
+        const auto frameProgress = double(frameIndex) / double(pAudioSource->getMaxFrameIndex());
+        auto progressPromille = static_cast<int>(frameProgress * (1000 - FINALIZE_PROMILLE));
         if (m_progressInfo.track_progress != progressPromille) {
             if (progressUpdateInhibitTimer.elapsed() > 60) {
                 // Inhibit Updates for 60 milliseconds
@@ -248,7 +236,6 @@ bool AnalyzerQueue::doAnalysis(TrackPointer tio, mixxx::AudioSourcePointer pAudi
                 progressUpdateInhibitTimer.start();
             }
         }
-
         // Since this is a background analysis queue, we should co-operatively
         // yield every now and then to try and reduce CPU contention. The
         // analyzer queue is CPU intensive so we want to get out of the way of
@@ -264,12 +251,10 @@ bool AnalyzerQueue::doAnalysis(TrackPointer tio, mixxx::AudioSourcePointer pAudi
                 cancelled = true;
             }
         }
-
         if (m_exit) {
             dieflag = true;
             cancelled = true;
         }
-
         // Ignore blocks in which we decided to bail for stats purposes.
         if (dieflag || cancelled) {
             t.cancel();
@@ -300,7 +285,7 @@ void AnalyzerQueue::run() {
     m_progressInfo.sema.release(); // Initialize with one
 
     while (!m_exit) {
-        TrackPointer nextTrack = dequeueNextBlocking();
+        auto nextTrack = dequeueNextBlocking();
 
         // It's important to check for m_exit here in case we decided to exit
         // while blocking for a new track.
@@ -322,13 +307,12 @@ void AnalyzerQueue::run() {
         SoundSourceProxy soundSourceProxy(nextTrack);
         mixxx::AudioSourceConfig audioSrcCfg;
         audioSrcCfg.setChannelCount(kAnalysisChannels);
-        mixxx::AudioSourcePointer pAudioSource(soundSourceProxy.openAudioSource(audioSrcCfg));
+        auto pAudioSource(soundSourceProxy.openAudioSource(audioSrcCfg));
         if (!pAudioSource) {
             qWarning() << "Failed to open file for analyzing:" << nextTrack->getLocation();
             emptyCheck();
             continue;
         }
-
         QListIterator<Analyzer*> it(m_aq);
         bool processTrack = false;
         while (it.hasNext()) {
@@ -341,7 +325,6 @@ void AnalyzerQueue::run() {
         m_qm.lock();
         m_queue_size = m_tioq.size();
         m_qm.unlock();
-
         if (processTrack) {
             emitUpdateProgress(nextTrack, 0);
             bool completed = doAnalysis(nextTrack, pAudioSource);
@@ -381,7 +364,6 @@ void AnalyzerQueue::emptyCheck() {
         emit(queueEmpty()); // emit asynchrony for no deadlock
     }
 }
-
 // This is called from the AnalyzerQueue thread
 void AnalyzerQueue::emitUpdateProgress(TrackPointer track, int progress) {
     if (!m_exit) {
@@ -403,12 +385,10 @@ void AnalyzerQueue::emitUpdateProgress(TrackPointer track, int progress) {
         emit(updateProgress());
     }
 }
-
 //slot
 void AnalyzerQueue::slotUpdateProgress() {
     if (m_progressInfo.current_track) {
-        m_progressInfo.current_track->setAnalyzerProgress(
-        		m_progressInfo.track_progress);
+        m_progressInfo.current_track->setAnalyzerProgress(m_progressInfo.track_progress);
         m_progressInfo.current_track.clear();
     }
     emit(trackProgress(m_progressInfo.track_progress / 10));
@@ -423,7 +403,6 @@ void AnalyzerQueue::slotAnalyseTrack(TrackPointer tio) {
     queueAnalyseTrack(tio);
     m_aiCheckPriorities = true;
 }
-
 // This is called from the GUI and from the AnalyzerQueue thread
 void AnalyzerQueue::queueAnalyseTrack(TrackPointer tio) {
     m_qm.lock();
@@ -437,8 +416,7 @@ void AnalyzerQueue::queueAnalyseTrack(TrackPointer tio) {
 // static
 AnalyzerQueue* AnalyzerQueue::createDefaultAnalyzerQueue(
         UserSettingsPointer pConfig, TrackCollection* pTrackCollection) {
-    AnalyzerQueue* ret = new AnalyzerQueue(pTrackCollection);
-
+    auto ret = new AnalyzerQueue(pTrackCollection);
     ret->addAnalyzer(new AnalyzerWaveform(pConfig));
     ret->addAnalyzer(new AnalyzerGain(pConfig));
     ret->addAnalyzer(new AnalyzerEbur128(pConfig));
@@ -447,7 +425,6 @@ AnalyzerQueue* AnalyzerQueue::createDefaultAnalyzerQueue(
     ret->addAnalyzer(new AnalyzerBeats(pConfig));
     ret->addAnalyzer(new AnalyzerKey(pConfig));
 #endif
-
     ret->start(QThread::LowPriority);
     return ret;
 }
@@ -455,8 +432,7 @@ AnalyzerQueue* AnalyzerQueue::createDefaultAnalyzerQueue(
 // static
 AnalyzerQueue* AnalyzerQueue::createAnalysisFeatureAnalyzerQueue(
         UserSettingsPointer pConfig, TrackCollection* pTrackCollection) {
-    AnalyzerQueue* ret = new AnalyzerQueue(pTrackCollection);
-
+    auto ret = new AnalyzerQueue(pTrackCollection);
     ret->addAnalyzer(new AnalyzerGain(pConfig));
     ret->addAnalyzer(new AnalyzerEbur128(pConfig));
 #ifdef __VAMP__
@@ -464,7 +440,6 @@ AnalyzerQueue* AnalyzerQueue::createAnalysisFeatureAnalyzerQueue(
     ret->addAnalyzer(new AnalyzerBeats(pConfig));
     ret->addAnalyzer(new AnalyzerKey(pConfig));
 #endif
-
     ret->start(QThread::LowPriority);
     return ret;
 }
