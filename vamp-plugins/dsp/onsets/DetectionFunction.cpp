@@ -232,6 +232,7 @@ double DetectionFunction::phaseDev(unsigned int length, double *srcPhase)
 
 double DetectionFunction::complexSD(unsigned int length, double *srcMagnitude, double *srcPhase)
 {
+    using MathUtilities::ComplexData;
     unsigned int i;
     double val = 0;
     double tmpPhase = 0;

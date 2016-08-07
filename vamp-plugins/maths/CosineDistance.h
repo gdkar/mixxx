@@ -25,7 +25,7 @@ class CosineDistance
 {
 public:
     CosineDistance() { }
-    ~CosineDistance() { }
+   ~CosineDistance() { }
 
     double distance(const vector<double> &v1, const vector<double> &v2);
 

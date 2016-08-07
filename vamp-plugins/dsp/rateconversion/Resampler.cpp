@@ -73,8 +73,7 @@ Resampler::initialise(double snr, double bandwidth)
         m_peakToPole = m_peakToPole / (1.0 - bandwidth/2.0);
     }
 
-    KaiserWindow::Parameters params =
-	KaiserWindow::parametersForBandwidth(snr, bandwidth, higher / m_gcd);
+    auto params = KaiserWindow::parametersForBandwidth(snr, bandwidth, higher / m_gcd);
 
     params.length =
 	(params.length % 2 == 0 ? params.length + 1 : params.length);

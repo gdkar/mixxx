@@ -15,7 +15,6 @@
 
 #include "DownBeat.h"
 
-#include "maths/MathAliases.h"
 #include "maths/MathUtilities.h"
 #include "maths/KLDivergence.h"
 #include "dsp/transforms/FFT.h"

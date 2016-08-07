@@ -15,7 +15,6 @@
 
 #include "TempoTrack.h"
 
-#include "maths/MathAliases.h"
 #include "maths/MathUtilities.h"
 
 #include <iostream>
