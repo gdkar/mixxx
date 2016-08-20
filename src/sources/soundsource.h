@@ -62,6 +62,11 @@ private:
 };
 typedef QSharedPointer<SoundSource> SoundSourcePointer;
 
+template<typename T>
+SoundSourcePointer newSoundSourceFromUrl(const QUrl& url) {
+    return SoundSourcePointer(new T(url));
+}
+
 } //namespace mixxx
 
 #endif // MIXXX_SOUNDSOURCE_H

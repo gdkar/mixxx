@@ -44,8 +44,8 @@ class SoundSourceProviderFFmpeg: public SoundSourceProvider {
   public:
     QString getName() const override {return "FFmpeg";}
     QStringList getSupportedFileExtensions() const override;
-    SoundSourcePointer newSoundSource(const QUrl &url) override {
-        return SoundSourcePointer(new SoundSourceFFmpeg(url));
+    SoundSourcePointer newSoundSource(const QUrl& url) override {
+        return newSoundSourceFromUrl<SoundSourceFFmpeg>(url);
     }
 };
 } // namespace mixxx

@@ -28,7 +28,7 @@ public:
     QString getName() const override;
     QStringList getSupportedFileExtensions() const override;
     SoundSourcePointer newSoundSource(const QUrl& url) override {
-        return SoundSourcePointer(new SoundSourceMp3(url));
+        return newSoundSourceFromUrl<SoundSourceMp3>(url);
     }
 };
 

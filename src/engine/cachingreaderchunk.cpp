@@ -15,7 +15,8 @@ bool CachingReaderChunk::isReadable(
         int64_t maxReadableFrameIndex) const
 {
     DEBUG_ASSERT(mixxx::AudioSource::getMinFrameIndex() <= maxReadableFrameIndex);
-    if (!isValid() || pAudioSource.isNull())
+
+    if (!isValid() || !pAudioSource)
         return false;
     auto frameIndex = frameForIndex(getIndex());
     auto maxFrameIndex = math_min(maxReadableFrameIndex, pAudioSource->getMaxFrameIndex());

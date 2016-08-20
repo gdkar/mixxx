@@ -1935,7 +1935,7 @@ struct TrackWithoutCover {
     QString trackAlbum;
 };
 
-void TrackDAO::detectCoverArtForUnknownTracks(volatile const bool* pCancel,
+void TrackDAO::detectCoverArtForTracksWithoutCover(volatile const bool* pCancel,
                                               QSet<TrackId>* pTracksChanged) {
     // WARNING TO ANYONE TOUCHING THIS IN THE FUTURE
     // The library contains user selected cover art. There is nothing worse than
@@ -1983,8 +1983,8 @@ void TrackDAO::detectCoverArtForUnknownTracks(volatile const bool* pCancel,
 
         CoverInfo::Source source = static_cast<CoverInfo::Source>(
             query.value(4).toInt());
-        if (source == CoverInfo::USER_SELECTED) {
-            qWarning() << "PROGRAMMING ERROR! detectCoverArtForUnknownTracks"
+        DEBUG_ASSERT_AND_HANDLE(source != CoverInfo::USER_SELECTED) {
+            qWarning() << "PROGRAMMING ERROR! detectCoverArtForTracksWithoutCover()"
                        << "got a USER_SELECTED track. Skipping.";
             continue;
         }
@@ -2027,6 +2027,7 @@ void TrackDAO::detectCoverArtForUnknownTracks(volatile const bool* pCancel,
                                   static_cast<int>(CoverInfo::METADATA));
             updateQuery.bindValue(":coverart_source",
                                   static_cast<int>(CoverInfo::GUESSED));
+            // TODO() here we may introduce a duplicate hash code
             updateQuery.bindValue(":coverart_hash",
                                   CoverArtUtils::calculateHash(image));
             updateQuery.bindValue(":coverart_location", "");
