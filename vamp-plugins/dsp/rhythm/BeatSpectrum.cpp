@@ -19,12 +19,6 @@
 
 using std::vector;
 
-template<class Iter>
-std::result_of_t<std::cos(typename Iter::value_type)
-cosine_distance(Iter beg0, Iter end0, Iter beg1)
-{
-    auto n = std;:distance(beg0, end0);
-}
 vector<double> BeatSpectrum::process(const vector<vector<double> > &m)
 {
     int origin = 0;

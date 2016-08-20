@@ -29,6 +29,7 @@
 #define PEAKPICKING_H
 
 #include "maths/MathUtilities.h"
+#include "maths/MathAliases.h"
 #include "dsp/signalconditioning/DFProcess.h"
 
 
@@ -92,13 +93,13 @@ public:
     PeakPicking( PPickParams Config );
     virtual ~PeakPicking();
 	
-    void process( double* src, unsigned int len, std::vector<int> &onsets  );
+    void process( double* src, unsigned int len, vector<int> &onsets  );
 
 
 private:
     void initialise( PPickParams Config  );
     void deInitialise();
-    int  quadEval( std::vector<double> &src, vector<int> &idx );
+    int  quadEval( vector<double> &src, vector<int> &idx );
 	
     DFProcConfig m_DFProcessingParams;
 

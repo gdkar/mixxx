@@ -17,6 +17,7 @@
 #define CONSTANTQ_H
 
 #include <vector>
+#include "maths/MathAliases.h"
 #include "maths/MathUtilities.h"
 
 struct CQConfig{
@@ -42,7 +43,7 @@ public:
     void sparsekernel();
 
     double hamming(int len, int n) {
-	double out = 0.54 - 0.46*cos(2*M_PI*n/len);
+	double out = 0.54 - 0.46*cos(2*PI*n/len);
 	return(out);
     }
 	

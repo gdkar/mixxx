@@ -73,11 +73,11 @@ void PeakPicking::deInitialise()
     m_workBuffer = NULL;
 }
 
-void PeakPicking::process( double* src, unsigned int len, std::vector<int> &onsets )
+void PeakPicking::process( double* src, unsigned int len, vector<int> &onsets )
 {
     if (len < 4) return;
 
-    std::vector <double> m_maxima;	
+    vector <double> m_maxima;	
 
     // Signal conditioning 
     m_DFSmoothing->process( src, m_workBuffer );
@@ -95,16 +95,16 @@ void PeakPicking::process( double* src, unsigned int len, std::vector<int> &onse
     }
 }
 
-int PeakPicking::quadEval( std::vector<double> &src, std::vector<int> &idx )
+int PeakPicking::quadEval( vector<double> &src, vector<int> &idx )
 {
     unsigned int maxLength;
 
-    std::vector <int> m_maxIndex;
-    std::vector <int> m_onsetPosition;
+    vector <int> m_maxIndex;
+    vector <int> m_onsetPosition;
 	
-    std::vector <double> m_maxFit;
-    std::vector <double> m_poly;
-    std::vector <double> m_err;
+    vector <double> m_maxFit;
+    vector <double> m_poly;
+    vector <double> m_err;
 
     m_poly.push_back(0);
     m_poly.push_back(0);
