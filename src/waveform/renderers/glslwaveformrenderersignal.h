@@ -1,7 +1,7 @@
 #ifndef GLWAVEFORMRENDERERSIGNALSHADER_H
 #define GLWAVEFORMRENDERERSIGNALSHADER_H
 
-#include <QOpenGLFunctions_3_3_Core>
+#include <QOpenGLFunctions_4_3_Core>
 #include <QOffscreenSurface>
 #include <QOpenGLFramebufferObject>
 #include <QOpenGLShaderProgram>
@@ -34,11 +34,11 @@ class GLSLWaveformRendererFilteredSignal : public WaveformRendererSignalBase {
     void doneCurrent();
     QOpenGLContext *context();
     QSurface       *surface();
-    QOpenGLFunctions_3_3_Core *gl() const { return m_funcs;}
+    QOpenGLFunctions_4_3_Core *gl() const { return m_funcs;}
   private:
     QOffscreenSurface m_surface{};
     QOpenGLContext    m_context{};
-    QOpenGLFunctions_3_3_Core *m_funcs{nullptr};
+    QOpenGLFunctions_4_3_Core *m_funcs{nullptr};
     UserSettingsPointer m_pConfig{nullptr};
 
     QOpenGLFramebufferObject* m_framebuffer{nullptr};
@@ -51,7 +51,7 @@ class GLSLWaveformRendererFilteredSignal : public WaveformRendererSignalBase {
 
     GLuint m_vao{0};
     GLuint m_vbo{0};
-    GLuint m_tex{0};
+    GLuint m_ssbo{0};
 
     int m_loadedWaveform{0};
 

@@ -1127,7 +1127,7 @@ void EngineBuffer::hintReader(double dRate) {
 
 // WARNING: This method runs in the GUI thread
 void EngineBuffer::loadTrack(TrackPointer pTrack, bool play) {
-    if (pTrack.isNull()) {
+    if (!pTrack) {
         // Loading a null track means "eject"
         ejectTrack();
     } else {

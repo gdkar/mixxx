@@ -1,4 +1,4 @@
-#version 150
+#version 430
 
 in vec4 v_position;
 in vec2 v_texcoord;
@@ -10,8 +10,6 @@ uniform vec4 midColor;
 uniform vec4 highColor;
 
 uniform int waveformLength;
-uniform int textureSize;
-uniform int textureStride;
 
 uniform float allGain;
 uniform float lowGain;
@@ -20,19 +18,27 @@ uniform float highGain;
 uniform float firstVisualIndex;
 uniform float lastVisualIndex;
 
-uniform sampler2D waveformDataTexture;
 
-vec4 getWaveformData(float index) {
-    vec2 uv_data;
-    uv_data.y = floor(index / float(textureStride));
-    uv_data.x = floor(index - uv_data.y * float(textureStride));
-    // Divide again to convert to normalized UV coordinates.
-    return texture2D(waveformDataTexture, uv_data / float(textureStride));
+layout(std430, binding = 1) readonly buffer waveformData {
+    uint data[];
+};
+
+out layout(location = 0) vec4 f_color0;
+// Alpha-compsite two colors, putting one on top of the other
+vec4 composite(vec4 under, vec4 over) {
+    float a_out = 1. - (1. - over.a) * (1. - under.a);
+    return clamp(vec4((over.rgb * over.a  + under.rgb * under.a * (1. - over.a)) / a_out, a_out), vec4(0.), vec4(1.));
+}
+
+
+vec4 getWaveformData(uint idx)
+{
+    return unpackUnorm4x8(data[uint(idx)]);
 }
 
 void main(void) {
-    gl_FragColor = vec4(0.,0.,0.,1.);
-    vec4 pixel = gl_FragCoord;
+    f_color0 = vec4(0.);
+    vec2 pixel = gl_FragCoord.xy;
     float new_currentIndex = mix(firstVisualIndex,lastVisualIndex, v_texcoord.x);
     vec4 outputColor = vec4(0.0,0.0,0.0,0.0);
     bool lowShowing = false;
@@ -44,8 +50,23 @@ void main(void) {
     // We don't exit early if the waveform data is not valid because we may want
     // to show other things (e.g. the axes lines) even when we are on a pixel
     // that does not have valid waveform data.
+    f_color0 = composite(f_color0, vec4(axesColor.rgb, (smoothstep(-3./framebufferSize.y,-2./framebufferSize.y,v_texcoord.y)
+                                                      - smoothstep(2./framebufferSize.y,3./framebufferSize.y,v_texcoord.y))));
+
     if (new_currentIndex >= 0 && new_currentIndex < waveformLength || true) {
-      vec4 new_currentDataUnscaled = getWaveformData(new_currentIndex) * allGain;
+
+      float mag = abs(v_texcoord.y * .9);
+      vec4 wav = getWaveformData(uint(new_currentIndex)) * allGain * vec4(lowGain,midGain,highGain,1.);;
+      vec3 wf = (wav.rgb - mag) ;
+           wf = smoothstep(0.,1.,wf);
+      float level = (wav.a - mag);
+            level = (smoothstep(-5.,0.,level) - smoothstep(0.,5.,level));
+      f_color0 = composite(f_color0, vec4(lowColor.rgb,wf.b));
+      f_color0 = composite(f_color0, vec4(midColor.rgb, wf.g));
+      f_color0 = composite(f_color0, vec4(highColor.rgb, wf.r));
+      f_color0 = composite(f_color0, vec4(0.7, 0.7, 0.7, level * 0.5));
+/*
+      vec4 new_currentDataUnscaled = getWaveformData(uint(floor(new_currentIndex))) * allGain;
       vec4 new_currentData         = new_currentDataUnscaled;
 
       new_currentData.x *= lowGain;
@@ -53,8 +74,8 @@ void main(void) {
       new_currentData.z *= highGain;
 
       //(vrince) debug see pre-computed signal
-      gl_FragColor = new_currentData;
-      gl_FragColor.a = 1.0;
+      f_color0 = new_currentData;
+      f_color0.a = 1.0;
 
       // Represents the [-1, 1] distance of this pixel. Subtracting this from
       // the signal data in new_currentData, we can tell if a signal band should
@@ -71,14 +92,14 @@ void main(void) {
       vec4 signalDistanceUnscaled = new_currentDataUnscaled - ourDistance;
       lowShowingUnscaled = signalDistanceUnscaled.x >= 0.0;
       midShowingUnscaled = signalDistanceUnscaled.y >= 0.0;
-      highShowingUnscaled = signalDistanceUnscaled.z >= 0.0;
+      highShowingUnscaled = signalDistanceUnscaled.z >= 0.0;*/
     }
 
     // Draw the axes color as the lowest item on the screen.
     // TODO(owilliams): The "4" in this line makes sure the axis gets
     // rendered even when the waveform is fairly short.  Really this
     // value should be based on the size of the widget.
-    if (abs(framebufferSize.y / 2 - pixel.y) <= 1) {
+/*    if (abs(framebufferSize.y / 2 - pixel.y) <= 1) {
       outputColor.xyz = mix(outputColor.xyz, axesColor.xyz, axesColor.w);
       outputColor.w = 1.0;
     }
@@ -117,5 +138,5 @@ void main(void) {
       outputColor.w = 1.0;
     }
 
-    gl_FragColor = outputColor;
+    f_color0 = outputColor;*/
 }

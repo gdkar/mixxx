@@ -240,7 +240,7 @@ bool SoundSourceFFmpeg::decode_next_frame(){
     m_frame->sample_rate    = getSamplingRate();
     auto delay = 0;
     if(!m_swr.initialized() && (m_swr.config(m_frame,m_orig_frame) < 0
-        || !m_swr.init())) {
+        || m_swr.init() < 0)) {
         qDebug() << __FUNCTION__ << "error initializing SwrContext" << av_strerror ( ret );
     }else{
         delay = swr_get_delay ( m_swr, getSamplingRate( ) );

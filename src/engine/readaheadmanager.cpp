@@ -134,7 +134,7 @@ void ReadAheadManager::hintReader(double dRate, HintVector* pHintList)
     Hint current_position;
     // SoundTouch can read up to 2 chunks ahead. Always keep 2 chunks ahead in
     // cache.
-    SINT length_to_cache = 2 * CachingReaderChunk::kSamples;
+    auto length_to_cache = 2 * CachingReaderChunk::kSamples;
 
     current_position.length = length_to_cache;
     current_position.sample = in_reverse ? m_iCurrentPosition - length_to_cache : m_iCurrentPosition;
@@ -151,9 +151,9 @@ void ReadAheadManager::hintReader(double dRate, HintVector* pHintList)
 void ReadAheadManager::addReadLogEntry(double virtualPlaypositionStart,
                                        double virtualPlaypositionEnd) {
     auto newEntry = ReadLogEntry(virtualPlaypositionStart,virtualPlaypositionEnd);
-    if (m_readAheadLog.size() > 0) {
-        auto& last = m_readAheadLog.last();
-        if (last.merge(newEntry))
+    if (!m_readAheadLog.empty()) {
+        auto& back= m_readAheadLog.back();
+        if (back.merge(newEntry))
             return;
     }
     m_readAheadLog.append(newEntry);
@@ -165,7 +165,7 @@ SINT ReadAheadManager::getEffectiveVirtualPlaypositionFromLog(double currentVirt
     if (numConsumedSamples == 0) {
         return currentVirtualPlayposition;
     }
-    if (m_readAheadLog.size() == 0) {
+    if (m_readAheadLog.empty()) {
         // No log entries to read from.
         qDebug() << this << "No read ahead log entries to read from. Case not currently handled.";
         // TODO(rryan) log through a stats pipe eventually
@@ -174,8 +174,8 @@ SINT ReadAheadManager::getEffectiveVirtualPlaypositionFromLog(double currentVirt
     auto virtualPlayposition = 0.;
     auto shouldNotifySeek = false;
     auto direction = true;
-    while (m_readAheadLog.size() > 0 && numConsumedSamples > 0) {
-        auto& entry = m_readAheadLog.first();
+    while (!m_readAheadLog.empty() && numConsumedSamples > 0) {
+        auto& entry = m_readAheadLog.front();
         direction = entry.direction();
         // Notify EngineControls that we have taken a seek.
         if (shouldNotifySeek) {
@@ -192,15 +192,15 @@ SINT ReadAheadManager::getEffectiveVirtualPlaypositionFromLog(double currentVirt
         }
         shouldNotifySeek = true;
     }
-    SINT result = 0;
+    auto result = SINT{};
     if (direction) {
-        result = static_cast<SINT>(floor(virtualPlayposition));
+        result = static_cast<SINT>(std::floor(virtualPlayposition));
         // TODO(XXX): Remove implicit assumption of 2 channels
         if (!even(result)) {
             result--;
         }
     } else {
-        result = static_cast<SINT>(ceil(virtualPlayposition));
+        result = static_cast<SINT>(std::ceil(virtualPlayposition));
         // TODO(XXX): Remove implicit assumption of 2 channels
         if (!even(result)) {
             result++;

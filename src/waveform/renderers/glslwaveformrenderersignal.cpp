@@ -22,7 +22,7 @@ GLSLWaveformRendererFilteredSignal::GLSLWaveformRendererFilteredSignal(WaveformW
     m_context.setFormat(QSurfaceFormat::defaultFormat());
     m_context.create();
     makeCurrent();
-    m_funcs = context()->versionFunctions<QOpenGLFunctions_3_3_Core>();
+    m_funcs = context()->versionFunctions<QOpenGLFunctions_4_3_Core>();
     gl()->initializeOpenGLFunctions();
     doneCurrent();
 
@@ -38,8 +38,8 @@ GLSLWaveformRendererFilteredSignal::~GLSLWaveformRendererFilteredSignal()
     m_frameShaderProgram = nullptr;
     delete m_framebuffer;
     m_framebuffer = nullptr;
-    gl()->glDeleteTextures(1,&m_tex);
-    m_tex = 0;
+    gl()->glDeleteBuffers(1,&m_ssbo);
+    m_ssbo = 0;
     gl()->glDeleteBuffers(1, &m_vbo);
     m_vbo = 0;
     gl()->glDeleteVertexArrays(1,&m_vao);
@@ -155,55 +155,44 @@ bool GLSLWaveformRendererFilteredSignal::loadTexture()
     if(auto err = gl()->glGetError()) {
         qDebug() << __LINE__ <<  "Error setting active texture: " << err ;
     }
-    if(!m_tex) {
-        gl()->glGenTextures(1,&m_tex);
-        if(auto err = gl()->glGetError()) {
-            qDebug() << __LINE__ << "Error generating texture: " << err;
-            m_tex= 0;
-            return false;
-        }else{
-            qDebug() << __LINE__ << "Created texture: " << m_tex;
-        }
-        gl()->glBindTexture(GL_TEXTURE_2D, m_tex);
-        if(auto err = gl()->glGetError()) {
-            qDebug()<<__LINE__ << "Error binding texture : " << m_tex << " error: " << err;
-            return false;
-        }
-        gl()->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        gl()->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        gl()->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        gl()->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        if(auto err = gl()->glGetError()) {
-            qDebug() << "Error setting parameters on texture : " << m_tex << " error: " << err;
-            return false;
-        }
+    if(!m_ssbo) {
+        gl()->glGenBuffers(1, &m_ssbo);
+        gl()->glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_ssbo);
     }else{
-        gl()->glBindTexture(GL_TEXTURE_2D, m_tex);
-        if(auto err = gl()->glGetError()) {
-            qDebug()<<__LINE__ << "Error binding texture : " << m_tex << " error: " << err;
-            return false;
-        }
+//        gl()->glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_ssbo);
+//        if(auto err = gl()->glGetError()) {
+//            qDebug()<<__LINE__ << "Error binding texture : " << m_tex << " error: " << err;
+//            return false;
+//        }
     }
     if (waveform && data && waveform->getTextureSize()) {
+        gl()->glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_ssbo);
+        gl()->glBufferData(
+            GL_SHADER_STORAGE_BUFFER
+          , waveform->getDataSize() *sizeof(waveform->data()[0])
+          , waveform->data(),
+            GL_DYNAMIC_DRAW
+            );
         // Waveform ensures that getTextureSize is a multiple of
         // getTextureStride so there is no rounding here.
-        auto textureWidth  = waveform->getTextureStride();
-        auto textureHeight = waveform->getTextureSize() / waveform->getTextureStride();
-        if(m_loadedWaveform) {
-            gl()->glTexSubImage2D(GL_TEXTURE_2D, 0,0,0,textureWidth,textureHeight, GL_RGBA, GL_UNSIGNED_BYTE, data);
-        }else{
-            gl()->glTexImage2D(GL_TEXTURE_2D, 0,GL_RGBA, textureWidth, textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-        }
+//        auto textureWidth  = waveform->getTextureStride();
+//        auto textureHeight = waveform->getTextureSize() / waveform->getTextureStride();
+//        if(m_loadedWaveform) {
+//            gl()->glTexSubImage2D(GL_TEXTURE_2D, 0,0,0,textureWidth,textureHeight, GL_RGBA, GL_UNSIGNED_BYTE, data);
+//        }else{
+//            gl()->glTexImage2D(GL_TEXTURE_2D, 0,GL_RGBA, textureWidth, textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+//        }
         if(auto err = gl()->glGetError()) {
-            qDebug() << "Error filling texture : " << m_tex << " error: " << err;
+            qDebug() << "Error filling ssbo : " << m_ssbo << " error: " << err;
             return false;
         }
     }else{
-        gl()->glTexImage2D(GL_TEXTURE_2D, 0,GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-        if(auto err = gl()->glGetError()) {
-            qDebug() << "Error filling texture : " << m_tex << " error: " << err;
-            return false;
-        }
+          gl()->glBufferData(GL_SHADER_STORAGE_BUFFER, 0, NULL, GL_DYNAMIC_DRAW);
+//        gl()->glTexImage2D(GL_TEXTURE_2D, 0,GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+//        if(auto err = gl()->glGetError()) {
+//            qDebug() << "Error filling texture : " << m_tex << " error: " << err;
+//            return false;
+//        }
     }
     gl()->glBindTexture(GL_TEXTURE_2D, 0);
     return true;
@@ -385,6 +374,7 @@ void GLSLWaveformRendererFilteredSignal::draw(QPainter* painter, QPaintEvent* /*
     //paint into frame buffer
     m_framebuffer->bind();
     gl()->glViewport(0, 0, m_framebuffer->width(), m_framebuffer->height());
+//    m_framebuffer->bindDefault();
     gl()->glClearColor(0.,0.,0.,0.);
     gl()->glClear(GL_COLOR_BUFFER_BIT |GL_DEPTH_BUFFER_BIT );
 
@@ -397,11 +387,10 @@ void GLSLWaveformRendererFilteredSignal::draw(QPainter* painter, QPaintEvent* /*
     m_frameShaderProgram->setUniformValue("lowGain", lowGain);
     m_frameShaderProgram->setUniformValue("midGain", midGain);
     m_frameShaderProgram->setUniformValue("highGain", highGain);
-    m_frameShaderProgram->setUniformValue("framebufferSize", QVector2D(m_framebuffer->width(), m_framebuffer->height()));
+    m_frameShaderProgram->setUniformValue("framebufferSize", QVector2D(
+        m_framebuffer->width(), m_framebuffer->height()));
     m_frameShaderProgram->bind();
     m_frameShaderProgram->setUniformValue("waveformLength", dataSize);
-    m_frameShaderProgram->setUniformValue("textureSize",    waveform->getTextureSize());
-    m_frameShaderProgram->setUniformValue("textureStride",  waveform->getTextureStride());
     m_frameShaderProgram->release();
 
     m_frameShaderProgram->setUniformValue("axesColor",
@@ -419,12 +408,12 @@ void GLSLWaveformRendererFilteredSignal::draw(QPainter* painter, QPaintEvent* /*
     gl()->glBindVertexArray(m_vao);
     gl()->glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
     gl()->glActiveTexture(GL_TEXTURE0);
-    gl()->glBindTexture(GL_TEXTURE_2D, m_tex);
+    gl()->glBindBufferBase(GL_SHADER_STORAGE_BUFFER,1,m_ssbo);
 
     gl()->glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
     gl()->glBindBuffer(GL_ARRAY_BUFFER, 0);
-    gl()->glBindTexture(GL_TEXTURE_2D,  0);
+    gl()->glBindBufferBase(GL_SHADER_STORAGE_BUFFER,1,  0);
     gl()->glBindVertexArray(0);
     m_frameShaderProgram->release();
     gl()->glUseProgram(0);

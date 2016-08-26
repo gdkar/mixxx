@@ -1,7 +1,5 @@
-#version 150
+#version 430
 
-#extension GL_ARB_explicit_attrib_location : enable 
-#
 layout ( location = 0 ) in vec2 a_position;
 out vec4 v_position;
 out vec2 v_texcoord;

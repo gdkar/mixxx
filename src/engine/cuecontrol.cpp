@@ -219,9 +219,7 @@ void CueControl::trackLoaded(TrackPointer pNewTrack, TrackPointer pOldTrack) {
         m_pCuePoint->set(-1.0);
         m_pLoadedTrack.clear();
     }
-
-
-    if (pNewTrack.isNull()) {
+    if (!pNewTrack) {
         return;
     }
 

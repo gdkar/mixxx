@@ -136,6 +136,7 @@ void WaveformWidgetRenderer::onPreRender()
     } else {
         m_playPos = -1; // disable renderers
     }
+    update();
 }
 void WaveformWidgetRenderer::draw(QPainter* painter, QPaintEvent* event)
 {
@@ -143,7 +144,6 @@ void WaveformWidgetRenderer::draw(QPainter* painter, QPaintEvent* event)
     //timer.start();
     // not ready to display need to wait until track initialization is done
     // draw only first is stack (background)
-    onPreRender();
     auto stackSize = m_rendererStack.size();
     if (m_trackSamples <= 0.0 || m_playPos == -1) {
         if (stackSize) {

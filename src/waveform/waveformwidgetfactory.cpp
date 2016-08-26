@@ -358,7 +358,7 @@ void WaveformWidgetFactory::render()
             // all render commands are delayed until the swap from the previous run is executed
             for(auto &holder : m_waveformWidgetHolders) {
                 if(auto widget = holder.m_waveformWidget) {
-                    widget->update();
+                    widget->onPreRender();
                 }
                 // qDebug() << "render" << i << m_->elapsed();
             }

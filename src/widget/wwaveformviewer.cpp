@@ -84,12 +84,12 @@ void WWaveformViewer::mouseMoveEvent(QMouseEvent* event)
     // Only send signals for mouse moving if the left button is pressed
     if (m_bScratching && m_waveformWidget) {
         // Adjusts for one-to-one movement.
-        double audioSamplePerPixel = m_waveformWidget->getAudioSamplePerPixel();
-        double targetPosition = -1.0 * event->pos().x() * audioSamplePerPixel * 2;
+        auto audioSamplePerPixel = m_waveformWidget->getAudioSamplePerPixel();
+        auto targetPosition = -1.0 * event->pos().x() * audioSamplePerPixel * 2;
         //qDebug() << "Target:" << targetPosition;
         m_pScratchPosition->set(targetPosition);
     } else if (m_bBending) {
-        QPoint diff = event->pos() - m_mouseAnchor;
+        auto diff = event->pos() - m_mouseAnchor;
         // Start at the middle of [0.0, 1.0], and emit values based on how far
         // the mouse has traveled horizontally. Note, for legacy (MIDI) reasons,
         // this is tuned to 127.
@@ -97,7 +97,7 @@ void WWaveformViewer::mouseMoveEvent(QMouseEvent* event)
         // control since we manually connect it in LegacySkinParser regardless
         // of whether the skin specifies it. See ControlTTRotaryBehavior to see
         // where this value is handled.
-        double v = 0.5 + (diff.x() / 1270.0);
+        auto v = 0.5 + (diff.x() / 1270.0);
         // clamp to [0.0, 1.0]
         v = math_clamp(v, 0.0, 1.0);
         m_pWheel->setParameter(v);
@@ -135,8 +135,7 @@ void WWaveformViewer::wheelEvent(QWheelEvent *event) {
 }
 void WWaveformViewer::dragEnterEvent(QDragEnterEvent* event) {
     if (DragAndDropHelper::allowLoadToPlayer(m_pGroup, m_pConfig) &&
-            DragAndDropHelper::dragEnterAccept(*event->mimeData(), m_pGroup,
-                                               true, false)) {
+            DragAndDropHelper::dragEnterAccept(*event->mimeData(), m_pGroup,true, false)) {
         event->acceptProposedAction();
     } else {
         event->ignore();

@@ -102,9 +102,10 @@ void CachingReader::freeAllChunks()
 }
 CachingReaderChunk* CachingReader::allocateChunk(int64_t chunkIndex)
 {
-    if (m_freeChunks.isEmpty())
+    if (m_freeChunks.empty())
         return nullptr;
-    auto pChunk = m_freeChunks.takeFirst();
+    auto pChunk = m_freeChunks.front();
+    m_freeChunks.pop_front();
     pChunk->init(chunkIndex);
     //qDebug() << "Allocating chunk" << pChunk << pChunk->getIndex();
     m_allocatedCachingReaderChunks.insert(chunkIndex, pChunk);
@@ -159,7 +160,7 @@ CachingReaderChunk* CachingReader::lookupChunkAndFreshen(int64_t chunkIndex)
     }
     return pChunk;
 }
-void CachingReader::newTrack(TrackPointer pTrack) 
+void CachingReader::newTrack(TrackPointer pTrack)
 {
     m_worker.newTrack(pTrack);
     m_worker.workReady();
