@@ -180,34 +180,33 @@ class Bulk(Feature):
         return sources
 
 
-class Mad(Feature):
+class Mpg123(Feature):
     def description(self):
-        return "MAD MP3 Decoder"
+        return "libmpg123 MP3 Decoder"
 
     def default(self, build):
         return 0 if build.platform_is_osx else 1
 
     def enabled(self, build):
-        build.flags['mad'] = util.get_flags(build.env, 'mad',
+        build.flags['mpg123'] = util.get_flags(build.env, 'mpg123',
                                             self.default(build))
-        if int(build.flags['mad']):
+        if int(build.flags['mpg123']):
             return True
         return False
 
     def add_options(self, build, vars):
-        vars.Add('mad', 'Set to 1 to enable MAD MP3 decoder support.',
+        vars.Add('mpg123', 'Set to 1 to enable libmpg123 MP3 decoder support.',
                  self.default(build))
 
     def configure(self, build, conf):
         if not self.enabled(build):
             return
-        if not conf.CheckLib(['libmad', 'mad']):
+        build.env.ParseConfig('pkg-config libmpg123 --silence-errors --cflags --libs')
+
+        if not conf.CheckLib(['libmpg123', 'mpg123']):
             raise Exception(
-                'Did not find libmad.a, libmad.lib, or the libmad development header files - exiting!')
-        if not conf.CheckLib(['libid3tag', 'id3tag', 'libid3tag-release']):
-            raise Exception(
-                'Did not find libid3tag.a, libid3tag.lib, or the libid3tag development header files - exiting!')
-        build.env.Append(CPPDEFINES='__MAD__')
+                'Did not find libmpg123.a, libmpg123.lib, or the mpg123 development header files - exiting!')
+        build.env.Append(CPPDEFINES='__MPG123__')
 
     def sources(self, build):
         return ['sources/soundsourcemp3.cpp']
@@ -931,6 +930,11 @@ class FFMPEG(Feature):
             build.env.ParseConfig('pkg-config libavformat --silence-errors \
                                    --cflags --libs')
             build.env.ParseConfig('pkg-config libavutil --silence-errors \
+                                   --cflags --libs')
+            build.env.ParseConfig('pkg-config libavfilter --silence-errors \
+                                   --cflags --libs')
+
+            build.env.ParseConfig('pkg-config libswresample --silence-errors \
                                    --cflags --libs')
 
             build.env.Append(CPPDEFINES='__FFMPEGFILE__')
