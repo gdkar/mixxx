@@ -8,8 +8,25 @@
 
 #ifndef FFT_H
 #define FFT_H
+#include "maths/MathUtilities.h"
 
-class FFT  
+#include "ext/kissfft/kiss_fft.h"
+#include "ext/kissfft/kiss_fftr.h"
+
+#include <cmath>
+
+#include <iostream>
+#include <memory>
+#include <algorithm>
+#include <iterator>
+#include <numeric>
+#include <cmath>
+#include <utility>
+#include <functional>
+#include <type_traits>
+#include <stdexcept>
+
+class FFT
 {
 public:
     /**
@@ -34,15 +51,15 @@ public:
      *
      * The inverse transform is scaled by 1/nsamples.
      */
+    template<class T>
     void process(bool inverse,
-                 const double *realIn, const double *imagIn,
-                 double *realOut, double *imagOut);
-    
+                 const T*realIn, const T*imagIn,
+                 T*realOut, T*imagOut);
+
 private:
     class D;
     D *m_d;
 };
-
 class FFTReal
 {
 public:
@@ -65,8 +82,9 @@ public:
      * compatibility with existing code, the conjugate half of the
      * output is returned even though it is redundant.
      */
-    void forward(const double *realIn,
-                 double *realOut, double *imagOut);
+template<class T>
+    void forward(const T*realIn,
+                 T*realOut, T*imagOut);
 
     /**
      * Carry out a forward real-to-complex transform of size nsamples,
@@ -78,7 +96,8 @@ public:
      * compatibility with existing code, the conjugate half of the
      * output is returned even though it is redundant.
      */
-    void forwardMagnitude(const double *realIn, double *magOut);
+template<class T>
+    void forwardMagnitude(const T*realIn, T*magOut);
 
     /**
      * Carry out an inverse real transform (i.e. complex-to-real) of
@@ -94,12 +113,165 @@ public:
      *
      * The inverse transform is scaled by 1/nsamples.
      */
-    void inverse(const double *realIn, const double *imagIn,
-                 double *realOut);
+template<class T>
+    void inverse(const T*realIn, const T*imagIn,
+                 T*realOut);
 
 private:
     class D;
     D *m_d;
-};    
+};
+class FFT::D
+{
+public:
+    D(int n) : m_n(n) {
+        m_planf = kiss_fft_alloc(m_n, 0, NULL, NULL);
+        m_plani = kiss_fft_alloc(m_n, 1, NULL, NULL);
+        m_kin = new kiss_fft_cpx[m_n];
+        m_kout = new kiss_fft_cpx[m_n];
+    }
 
+    ~D() {
+        kiss_fft_free(m_planf);
+        kiss_fft_free(m_plani);
+        delete[] m_kin;
+        delete[] m_kout;
+    }
+
+    template<class T>
+    void process(bool inverse,
+                 const T *ri,
+                 const T *ii,
+                 T *ro,
+                 T *io) {
+
+        for (int i = 0; i < m_n; ++i) {
+            m_kin[i].r = ri[i];
+            m_kin[i].i = (ii ? ii[i] : 0.0);
+        }
+
+        if (!inverse) {
+
+            kiss_fft(m_planf, m_kin, m_kout);
+
+            for (int i = 0; i < m_n; ++i) {
+                ro[i] = m_kout[i].r;
+                io[i] = m_kout[i].i;
+            }
+
+        } else {
+
+            kiss_fft(m_plani, m_kin, m_kout);
+
+            auto  scale = T(1.0) / m_n;
+
+            for (int i = 0; i < m_n; ++i) {
+                ro[i] = m_kout[i].r * scale;
+                io[i] = m_kout[i].i * scale;
+            }
+        }
+    }
+private:
+    int m_n;
+    kiss_fft_cfg m_planf;
+    kiss_fft_cfg m_plani;
+    kiss_fft_cpx *m_kin;
+    kiss_fft_cpx *m_kout;
+};
+template<class T>
+void
+FFT::process(bool inverse,
+             const T *p_lpRealIn, const T*p_lpImagIn,
+             T *p_lpRealOut, T *p_lpImagOut)
+{
+    m_d->process(inverse,
+                 p_lpRealIn, p_lpImagIn,
+                 p_lpRealOut, p_lpImagOut);
+}
+class FFTReal::D
+{
+public:
+    D(int n) : m_n(n) {
+        if (n % 2) {
+            throw std::invalid_argument
+                ("nsamples must be even in FFTReal constructor");
+        }
+        m_planf = kiss_fftr_alloc(m_n, 0, NULL, NULL);
+        m_plani = kiss_fftr_alloc(m_n, 1, NULL, NULL);
+        m_c = new kiss_fft_cpx[m_n];
+        m_r = new kiss_fft_scalar[m_n];
+    }
+
+    ~D() {
+        kiss_fftr_free(m_planf);
+        kiss_fftr_free(m_plani);
+        delete[] m_c;
+    }
+    template<class T>
+    void forward(const T *ri, T *ro, T *io) {
+        std::copy_n(ri, m_n, m_r);
+        kiss_fftr(m_planf, m_r, m_c);
+
+        for (int i = 0; i <= m_n/2; ++i) {
+            ro[i] = m_c[i].r;
+            io[i] = m_c[i].i;
+        }
+
+        for (int i = 0; i + 1 < m_n/2; ++i) {
+            ro[m_n - i - 1] =  ro[i + 1];
+            io[m_n - i - 1] = -io[i + 1];
+        }
+    }
+    template<class T>
+    void forwardMagnitude(const T *ri, T *mo) {
+        auto io = std::make_unique<T[]>(m_n);
+        forward(ri, mo, io.get());
+        for (int i = 0; i < m_n; ++i) {
+            mo[i] = std::hypot(mo[i],io[i]);
+        }
+    }
+    template<class T>
+    void inverse(const T *ri, const T *ii, T *ro) {
+
+        // kiss_fftr.h says
+        // "input freqdata has nfft/2+1 complex points"
+
+        for (int i = 0; i < m_n/2 + 1; ++i) {
+            m_c[i].r = ri[i];
+            m_c[i].i = ii[i];
+        }
+        kiss_fftri(m_plani, m_c, ro);
+
+        auto scale = T(1) / m_n;
+
+        for (int i = 0; i < m_n; ++i) {
+            ro[i] *= scale;
+        }
+    }
+
+private:
+    int m_n;
+    kiss_fftr_cfg m_planf;
+    kiss_fftr_cfg m_plani;
+    kiss_fft_cpx *m_c;
+    kiss_fft_scalar *m_r;
+};
+template<class T>
+void
+FFTReal::forward(const T *ri, T *ro, T *io)
+{
+    m_d->forward(ri, ro, io);
+}
+template<class T>
+void
+FFTReal::forwardMagnitude(const T *ri, T *mo)
+{
+    m_d->forwardMagnitude(ri, mo);
+}
+template<class T>
+void
+FFTReal::inverse(const T*ri, const T*ii, T*ro)
+{
+    m_d->inverse(ri, ii, ro);
+}
 #endif

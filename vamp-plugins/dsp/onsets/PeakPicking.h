@@ -47,11 +47,11 @@ struct PPWinThresh
 
 struct QFitThresh
 {
-    double a;
-    double b;
-    double c;
+    float a;
+    float b;
+    float c;
 
-    QFitThresh(double x, double y, double z) :
+    QFitThresh(float x, float y, float z) :
         a(x),
         b(y),
         c(z)
@@ -62,12 +62,12 @@ struct QFitThresh
 struct PPickParams
 {
     unsigned int length; //Detection FunctionLength
-    double tau; // time resolution of the detection function
+    float tau; // time resolution of the detection function
     unsigned int alpha; //alpha-norm parameter
-    double cutoff;//low-pass Filter cutoff freq
+    float cutoff;//low-pass Filter cutoff freq
     unsigned int LPOrd; // low-pass Filter order
-    double* LPACoeffs; //low pass Filter den coefficients
-    double* LPBCoeffs; //low pass Filter num coefficients
+    float* LPACoeffs; //low pass Filter den coefficients
+    float* LPBCoeffs; //low pass Filter num coefficients
     PPWinThresh WinT;//window size in frames for adaptive thresholding [pre post]:
     QFitThresh QuadThresh;
     float delta; //delta threshold used as an offset when computing the smoothed detection function
@@ -87,30 +87,30 @@ struct PPickParams
     }
 };
 
-class PeakPicking  
+class PeakPicking
 {
 public:
     PeakPicking( PPickParams Config );
     virtual ~PeakPicking();
-	
-    void process( double* src, unsigned int len, vector<int> &onsets  );
+
+    void process( float* src, unsigned int len, vector<int> &onsets  );
 
 
 private:
     void initialise( PPickParams Config  );
     void deInitialise();
-    int  quadEval( vector<double> &src, vector<int> &idx );
-	
+    int  quadEval( vector<float> &src, vector<int> &idx );
+
     DFProcConfig m_DFProcessingParams;
 
     unsigned int m_DFLength ;
-    double Qfilta ;
-    double Qfiltb;
-    double Qfiltc;
+    float Qfilta ;
+    float Qfiltb;
+    float Qfiltc;
 
 
-    double* m_workBuffer;
-	
+    float* m_workBuffer;
+
     DFProcess*	m_DFSmoothing;
 };
 

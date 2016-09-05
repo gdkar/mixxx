@@ -39,7 +39,7 @@ public:
     BarBeatTrackerData(float rate, const DFConfig &config) : dfConfig(config) {
     df = new DetectionFunction(config);
         // decimation factor aims at resampling to c. 3KHz; must be power of 2
-        int factor = MathUtilities::nextPowerOfTwo(rate / 3000);
+        int factor = MathUtilities::nextPowerOfTwo(int(rate / 3000));
 //        std::cerr << "BarBeatTrackerData: factor = " << factor << std::endl;
         downBeat = new DownBeat(rate, factor, config.stepSize);
     }
@@ -58,7 +58,7 @@ public:
     DFConfig dfConfig;
     DetectionFunction *df;
     DownBeat *downBeat;
-    vector<double> dfOutput;
+    vector<float> dfOutput;
     Vamp::RealTime origin;
 };
 
@@ -344,13 +344,13 @@ BarBeatTracker::process(const float *const *inputBuffers,
 
     const int fl = m_d->dfConfig.frameLength;
 #ifndef __GNUC__
-    double *dfinput = (double *)alloca(fl * sizeof(double));
+    auto dfinput = (float*)alloca(fl * sizeof(float));
 #else
-    double dfinput[fl];
+    float dfinput[fl];
 #endif
     for (int i = 0; i < fl; ++i) dfinput[i] = inputBuffers[0][i];
 
-    double output = m_d->df->processTimeDomain(dfinput);
+    auto output = m_d->df->processTimeDomain(dfinput);
 
     if (m_d->dfOutput.empty()) m_d->origin = timestamp;
 
@@ -385,9 +385,9 @@ BarBeatTracker::getRemainingFeatures()
 BarBeatTracker::FeatureSet
 BarBeatTracker::barBeatTrack()
 {
-    vector<double> df;
-    vector<double> beatPeriod;
-    vector<double> tempi;
+    vector<float> df;
+    vector<float> beatPeriod;
+    vector<float> tempi;
 
     for (size_t i = 2; i < m_d->dfOutput.size(); ++i) { // discard first two elts
         df.push_back(m_d->dfOutput[i]);
@@ -400,7 +400,7 @@ BarBeatTracker::barBeatTrack()
     // changes are as per the BeatTrack.cpp - allow m_inputtempo and m_constraintempo to be set be the user
     tt.calculateBeatPeriod(df, beatPeriod, tempi, m_inputtempo, m_constraintempo);
 
-    vector<double> beats;
+    vector<float> beats;
     // changes are as per the BeatTrack.cpp - allow m_alpha and m_tightness to be set be the user
     tt.calculateBeats(df, beatPeriod, beats, m_alpha, m_tightness);
 
@@ -414,7 +414,7 @@ BarBeatTracker::barBeatTrack()
     const float *downsampled = m_d->downBeat->getBufferedAudio(downLength);
     m_d->downBeat->findDownBeats(downsampled, downLength, beats, downbeats);
 
-    vector<double> beatsd;
+    vector<float> beatsd;
     m_d->downBeat->getBeatSD(beatsd);
 
 //    std::cerr << "BarBeatTracker: found downbeats at: ";

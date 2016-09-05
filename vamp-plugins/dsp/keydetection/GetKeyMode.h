@@ -17,34 +17,34 @@
 #include "dsp/chromagram/Chromagram.h"
 
 
-class GetKeyMode  
+class GetKeyMode
 {
 public:
 	GetKeyMode( int sampleRate, float tuningFrequency,
-		    double hpcpAverage, double medianAverage );
+		    float hpcpAverage, float medianAverage );
 
 	virtual ~GetKeyMode();
 
-	int process( double* PCMData );
+	int process( float* PCMData );
 
-	double krumCorr( double* pData1, double* pData2, unsigned int length );
+	float krumCorr( float* pData1, float* pData2, unsigned int length );
 
 	unsigned int getBlockSize() { return m_ChromaFrameSize*m_DecimationFactor; }
 	unsigned int getHopSize() { return m_ChromaHopSize*m_DecimationFactor; }
 
-	double* getChroma() { return m_ChrPointer; }
+	float* getChroma() { return m_ChrPointer; }
 	unsigned int getChromaSize() { return m_BPO; }
 
-	double* getMeanHPCP() { return m_MeanHPCP; }
+	float* getMeanHPCP() { return m_MeanHPCP; }
 
-	double *getKeyStrengths() { return m_keyStrengths; }
+	float *getKeyStrengths() { return m_keyStrengths; }
 
-	bool isModeMinor( int key ); 
+	bool isModeMinor( int key );
 
 protected:
 
-	double m_hpcpAverage;
-	double m_medianAverage;
+	float m_hpcpAverage;
+	float m_medianAverage;
 	unsigned int m_DecimationFactor;
 
 	//Decimator (fixed)
@@ -57,7 +57,7 @@ protected:
 	Chromagram* m_Chroma;
 
 	//Chromagram output pointer
-	double* m_ChrPointer;
+	float* m_ChrPointer;
 
 	//Framesize
 	unsigned int m_ChromaFrameSize;
@@ -69,23 +69,23 @@ protected:
 
 	unsigned int m_ChromaBuffersize;
 	unsigned int m_MedianWinsize;
-	
+
 	unsigned int m_bufferindex;
 	unsigned int m_ChromaBufferFilling;
 	unsigned int m_MedianBufferFilling;
-	
 
-	double* m_DecimatedBuffer;
-	double* m_ChromaBuffer;
-	double* m_MeanHPCP;
 
-	double* m_MajCorr;
-	double* m_MinCorr;
-	double* m_Keys;
+	float* m_DecimatedBuffer;
+	float* m_ChromaBuffer;
+	float* m_MeanHPCP;
+
+	float* m_MajCorr;
+	float* m_MinCorr;
+	float* m_Keys;
 	int* m_MedianFilterBuffer;
 	int* m_SortedBuffer;
 
-	double *m_keyStrengths;
+	float *m_keyStrengths;
 };
 
 #endif // !defined GETKEYMODE_H

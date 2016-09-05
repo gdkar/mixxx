@@ -23,14 +23,14 @@
  * through a filter specified by the given FilterConfig structure (see
  * Filter) and then processing it again in reverse.
  */
-class FiltFilt  
+class FiltFilt
 {
 public:
     FiltFilt( FilterConfig Config );
     virtual ~FiltFilt();
 
     void reset();
-    void process( double* src, double* dst, unsigned int length );
+    void process( float* src, float* dst, unsigned int length );
 
 private:
     void initialise( FilterConfig Config );
@@ -40,8 +40,8 @@ private:
 
     Filter* m_filter;
 
-    double* m_filtScratchIn;
-    double* m_filtScratchOut;
+    float* m_filtScratchIn;
+    float* m_filtScratchOut;
 
     FilterConfig m_filterConfig;
 };

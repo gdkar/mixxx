@@ -28,14 +28,14 @@
  */
 struct FilterConfig{
     unsigned int ord;
-    double* ACoeffs;
-    double* BCoeffs;
+    float* ACoeffs;
+    float* BCoeffs;
 };
 
 /**
  * Digital filter specified through FilterConfig structure.
  */
-class Filter  
+class Filter
 {
 public:
     Filter( FilterConfig Config );
@@ -43,7 +43,7 @@ public:
 
     void reset();
 
-    void process( double *src, double *dst, unsigned int length );
+    void process( float *src, float *dst, unsigned int length );
 
 private:
     void initialise( FilterConfig Config );
@@ -51,11 +51,11 @@ private:
 
     unsigned int m_ord;
 
-    double* m_inBuffer;
-    double* m_outBuffer;
+    float* m_inBuffer;
+    float* m_outBuffer;
 
-    double* m_ACoeffs;
-    double* m_BCoeffs;
+    float* m_ACoeffs;
+    float* m_BCoeffs;
 };
 
 #endif

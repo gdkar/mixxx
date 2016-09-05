@@ -22,27 +22,27 @@
 
 struct ChromaConfig{
     unsigned int FS;
-    double min;
-    double max;
+    float min;
+    float max;
     unsigned int BPO;
-    double CQThresh;
+    float CQThresh;
     MathUtilities::NormaliseType normalise;
 };
 
-class Chromagram 
+class Chromagram
 {
 
-public:	
+public:
     Chromagram( ChromaConfig Config );
     ~Chromagram();
-	
-    double* process( const double *data ); // time domain
-    double* process( const double *real, const double *imag ); // frequency domain
-    void unityNormalise( double* src );
+
+    float* process( const float *data ); // time domain
+    float* process( const float *real, const float *imag ); // frequency domain
+    void unityNormalise( float* src );
 
     // Complex arithmetic
-    double kabs( double real, double imag );
-	
+    float kabs( float real, float imag );
+
     // Results
     unsigned int getK() { return m_uK;}
     unsigned int getFrameSize() { return m_frameSize; }
@@ -52,12 +52,12 @@ private:
     int initialise( ChromaConfig Config );
     int deInitialise();
 
-    Window<double> *m_window;
-    double *m_windowbuf;
-	
-    double* m_chromadata;
-    double m_FMin;
-    double m_FMax;
+    Window<float> *m_window;
+    float *m_windowbuf;
+
+    float* m_chromadata;
+    float m_FMin;
+    float m_FMax;
     unsigned int m_BPO;
     unsigned int m_uK;
 
@@ -69,10 +69,10 @@ private:
     FFTReal* m_FFT;
     ConstantQ* m_ConstantQ;
 
-    double* m_FFTRe;
-    double* m_FFTIm;
-    double* m_CQRe;
-    double* m_CQIm;
+    float* m_FFTRe;
+    float* m_FFTIm;
+    float* m_CQRe;
+    float* m_CQIm;
 
     bool m_skGenerated;
 };

@@ -41,39 +41,47 @@ E-mail:    davidtaylor@writeme.com
  ///////////////////////////////////////////////////////////////////////////////
 
 #include <iostream>
+#include <utility>
+#include <numeric>
+#include <vector>
+#include <cmath>
+#include <algorithm>
+#include <functional>
+#include <type_traits>
 
 using std::vector;
 
+template<class T>
 class TPolyFit
 {
-    typedef vector<vector<double> > Matrix;
+    using Matrix = vector<vector<T> >;
 public:
 
-    static double PolyFit2 (const vector<double> &x,  // does the work
-			    const vector<double> &y,
-			    vector<double> &coef);
+    static T PolyFit2 (const vector<T> &x,  // does the work
+			    const vector<T> &y,
+			    vector<T> &coef);
 
-                   
+
 private:
     TPolyFit &operator = (const TPolyFit &);   // disable assignment
     TPolyFit();                                // and instantiation
     TPolyFit(const TPolyFit&);                 // and copying
 
-  
+
     static void Square (const Matrix &x,              // Matrix multiplication routine
-			const vector<double> &y,
+			const vector<T> &y,
 			Matrix &a,                    // A = transpose X times X
-			vector<double> &g,         // G = Y times X
+			vector<T> &g,         // G = Y times X
 			const int nrow, const int ncol);
     // Forms square coefficient matrix
 
     static bool GaussJordan (Matrix &b,                  // square matrix of coefficients
-			     const vector<double> &y, // constant vector
-			     vector<double> &coef);   // solution vector
+			     const vector<T> &y, // constant vector
+			     vector<T> &coef);   // solution vector
     // returns false if matrix singular
 
     static bool GaussJordan2(Matrix &b,
-			     const vector<double> &y,
+			     const vector<T> &y,
 			     Matrix &w,
 			     vector<vector<int> > &index);
 };
@@ -82,37 +90,37 @@ private:
 
 namespace NSUtility
 {
-    inline void swap(double &a, double &b) {double t = a; a = b; b = t;}
-    void zeroise(vector<double> &array, int n);
-    void zeroise(vector<int> &array, int n);
-    void zeroise(vector<vector<double> > &matrix, int m, int n);
-    void zeroise(vector<vector<int> > &matrix, int m, int n);
-    inline double sqr(const double &x) {return x * x;}
+
+    using std::swap;
+    template<class T>
+    void zeroise(vector<T> &array, int n);
+    template<class T>
+    void zeroise(vector<vector<T> > &matrix, int m, int n);
+    auto sqr(auto x) { return x * x;}
 };
+using namespace NSUtility;
 
 //---------------------------------------------------------------------------
 // Implementation
 //---------------------------------------------------------------------------
-using namespace NSUtility;
-//------------------------------------------------------------------------------------------
 
 
 // main PolyFit routine
-
-double TPolyFit::PolyFit2 (const vector<double> &x,
-			   const vector<double> &y,
-			   vector<double> &coefs)
+template<class T>
+T TPolyFit<T>::PolyFit2 (const vector<T> &x,
+			   const vector<T> &y,
+			   vector<T> &coefs)
 // nterms = coefs.size()
 // npoints = x.size()
 {
     int i, j;
-    double xi, yi, yc, srs, sum_y, sum_y2;
+    T xi, yi, yc, srs, sum_y, sum_y2;
     Matrix xmatr;        // Data matrix
     Matrix a;
-    vector<double> g;      // Constant vector
+    vector<T> g;      // Constant vector
     const int npoints(x.size());
     const int nterms(coefs.size());
-    double correl_coef;
+    T correl_coef;
     zeroise(g, nterms);
     zeroise(a, nterms, nterms);
     zeroise(xmatr, npoints, nterms);
@@ -173,21 +181,20 @@ double TPolyFit::PolyFit2 (const vector<double> &x,
 // G = Y times X
 
 // Form square coefficient matrix
-
-void TPolyFit::Square (const Matrix &x,
-		       const vector<double> &y,
+template<class T>
+void TPolyFit<T>::Square (const Matrix &x,
+		       const vector<T> &y,
 		       Matrix &a,
-		       vector<double> &g,
+		       vector<T> &g,
 		       const int nrow,
 		       const int ncol)
 {
-    int i, k, l;
-    for(k = 0; k < ncol; ++k)
+    for(auto k = 0; k < ncol; ++k)
     {
-	for(l = 0; l < k + 1; ++l)
+	for(auto l = 0; l < k + 1; ++l)
 	{
 	    a [k][l] = 0.0;
-	    for(i = 0; i < nrow; ++i)
+	    for(auto i = 0; i < nrow; ++i)
 	    {
 		a[k][l] += x[i][l] * x [i][k];
 		if(k != l)
@@ -195,16 +202,16 @@ void TPolyFit::Square (const Matrix &x,
 	    }
 	}
 	g[k] = 0.0;
-	for(i = 0; i < nrow; ++i)
+	for(auto i = 0; i < nrow; ++i)
 	    g[k] += y[i] * x[i][k];
     }
 }
 //---------------------------------------------------------------------------------
 
-
-bool TPolyFit::GaussJordan (Matrix &b,
-			    const vector<double> &y,
-			    vector<double> &coef)
+template<class T>
+bool TPolyFit<T>::GaussJordan (Matrix &b,
+			    const vector<T> &y,
+			    vector<T> &coef)
 //b square matrix of coefficients
 //y constant vector
 //coef solution vector
@@ -223,7 +230,7 @@ bool TPolyFit::GaussJordan (Matrix &b,
   { INDEX (n, 3) }
   { NV is number of constant vectors }
 */
-
+    using std::swap;
     int ncol(b.size());
     int irow, icol;
     vector<vector<int> >index;
@@ -260,24 +267,24 @@ bool TPolyFit::GaussJordan (Matrix &b,
 
     for( int i = 0; i < ncol; ++i)
 	coef[i] = w[i][0];
- 
- 
+
+
     return true;
 }   // end;	{ procedure GaussJordan }
 //----------------------------------------------------------------------------------------------
 
-
-bool TPolyFit::GaussJordan2(Matrix &b,
-			    const vector<double> &y,
+template<class T>
+bool TPolyFit<T>::GaussJordan2(Matrix &b,
+			    const vector<T> &y,
 			    Matrix &w,
 			    vector<vector<int> > &index)
 {
     //GaussJordan2;         // first half of GaussJordan
     // actual start of gaussj
- 
-    double big, t;
-    double pivot;
-    double determ;
+
+    T big, t;
+    T pivot;
+    T determ;
     int irow, icol;
     int ncol(b.size());
     int nv = 1;                  // single constant vector
@@ -363,45 +370,20 @@ bool TPolyFit::GaussJordan2(Matrix &b,
 //--------------------------------------------------------------------------
 
 // fills a vector with zeros.
-void NSUtility::zeroise(vector<double> &array, int n)
+template<class T>
+void NSUtility::zeroise(vector<T> &array, int n)
 {
-    array.clear();
-    for(int j = 0; j < n; ++j)
-	array.push_back(0);
+    array = std::vector<T>(n, T{0});
 }
-//--------------------------------------------------------------------------
 
-// fills a vector with zeros.
-void NSUtility::zeroise(vector<int> &array, int n)
-{
-    array.clear();
-    for(int j = 0; j < n; ++j)
-	array.push_back(0);
-}
 //--------------------------------------------------------------------------
 
 // fills a (m by n) matrix with zeros.
-void NSUtility::zeroise(vector<vector<double> > &matrix, int m, int n)
+template<class T>
+void NSUtility::zeroise(vector<vector<T> > &matrix, int m, int n)
 {
-    vector<double> zero;
-    zeroise(zero, n);
-    matrix.clear();
-    for(int j = 0; j < m; ++j)
-	matrix.push_back(zero);
+    matrix = std::vector<std::vector<T> >(m, std::vector<T>(n, T{0}));
 }
 //--------------------------------------------------------------------------
-
-// fills a (m by n) matrix with zeros.
-void NSUtility::zeroise(vector<vector<int> > &matrix, int m, int n)
-{
-    vector<int> zero;
-    zeroise(zero, n);
-    matrix.clear();
-    for(int j = 0; j < m; ++j)
-	matrix.push_back(zero);
-}
-//--------------------------------------------------------------------------
-
-
 #endif
- 
+

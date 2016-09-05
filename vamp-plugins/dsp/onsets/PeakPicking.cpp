@@ -18,7 +18,7 @@
     modify it under the terms of the GNU General Public License as
     published by the Free Software Foundation; either version 2 of the
     License, or (at your option) any later version.  See the file
-    COPYING included with this distribution for more information.    
+    COPYING included with this distribution for more information.
 */
 
 #include "PeakPicking.h"
@@ -49,21 +49,21 @@ void PeakPicking::initialise( PPickParams Config )
     Qfilta = Config.QuadThresh.a ;
     Qfiltb = Config.QuadThresh.b ;
     Qfiltc = Config.QuadThresh.c ;
-	
-    m_DFProcessingParams.length = m_DFLength; 
-    m_DFProcessingParams.LPOrd = Config.LPOrd; 
-    m_DFProcessingParams.LPACoeffs = Config.LPACoeffs; 
-    m_DFProcessingParams.LPBCoeffs = Config.LPBCoeffs; 
+
+    m_DFProcessingParams.length = m_DFLength;
+    m_DFProcessingParams.LPOrd = Config.LPOrd;
+    m_DFProcessingParams.LPACoeffs = Config.LPACoeffs;
+    m_DFProcessingParams.LPBCoeffs = Config.LPBCoeffs;
     m_DFProcessingParams.winPre  = Config.WinT.pre;
-    m_DFProcessingParams.winPost = Config.WinT.post; 
+    m_DFProcessingParams.winPost = Config.WinT.post;
     m_DFProcessingParams.AlphaNormParam = Config.alpha;
     m_DFProcessingParams.isMedianPositive = false;
     m_DFProcessingParams.delta = Config.delta; //add the delta threshold as an adjustable parameter
 
     m_DFSmoothing = new DFProcess( m_DFProcessingParams );
 
-    m_workBuffer = new double[ m_DFLength ];
-    memset( m_workBuffer, 0, sizeof(double)*m_DFLength);
+    m_workBuffer = new float[ m_DFLength ];
+    memset( m_workBuffer, 0, sizeof(float)*m_DFLength);
 }
 
 void PeakPicking::deInitialise()
@@ -73,20 +73,20 @@ void PeakPicking::deInitialise()
     m_workBuffer = NULL;
 }
 
-void PeakPicking::process( double* src, unsigned int len, vector<int> &onsets )
+void PeakPicking::process( float* src, unsigned int len, vector<int> &onsets )
 {
     if (len < 4) return;
 
-    vector <double> m_maxima;	
+    vector <float> m_maxima;
 
-    // Signal conditioning 
+    // Signal conditioning
     m_DFSmoothing->process( src, m_workBuffer );
-	
+
     for( unsigned int u = 0; u < len; u++)
     {
-	m_maxima.push_back( m_workBuffer[ u ] );		
+	m_maxima.push_back( m_workBuffer[ u ] );
     }
-	
+
     quadEval( m_maxima, onsets );
 
     for( int b = 0; b <  (int)m_maxima.size(); b++)
@@ -95,16 +95,16 @@ void PeakPicking::process( double* src, unsigned int len, vector<int> &onsets )
     }
 }
 
-int PeakPicking::quadEval( vector<double> &src, vector<int> &idx )
+int PeakPicking::quadEval( vector<float> &src, vector<int> &idx )
 {
     unsigned int maxLength;
 
     vector <int> m_maxIndex;
     vector <int> m_onsetPosition;
-	
-    vector <double> m_maxFit;
-    vector <double> m_poly;
-    vector <double> m_err;
+
+    vector <float> m_maxFit;
+    vector <float> m_poly;
+    vector <float> m_err;
 
     m_poly.push_back(0);
     m_poly.push_back(0);
@@ -112,7 +112,7 @@ int PeakPicking::quadEval( vector<double> &src, vector<int> &idx )
 
     for(  int t = -2; t < 3; t++)
     {
-	m_err.push_back( (double)t );
+	m_err.push_back( (float)t );
     }
     for( unsigned int i = 2; i < src.size() - 2; i++)
     {
@@ -125,26 +125,26 @@ int PeakPicking::quadEval( vector<double> &src, vector<int> &idx )
 
     maxLength = m_maxIndex.size();
 
-    double selMax = 0;
+    float selMax = 0;
 
     for( unsigned int j = 0; j < maxLength ; j++)
     {
         for (int k = -2; k <= 2; ++k)
 	{
 	    selMax = src[ m_maxIndex[j] + k ] ;
-	    m_maxFit.push_back(selMax);			
+	    m_maxFit.push_back(selMax);
 	}
 
-	TPolyFit::PolyFit2(m_err, m_maxFit, m_poly);
+	TPolyFit<float>::PolyFit2(m_err, m_maxFit, m_poly);
 
-	double f = m_poly[0];
-	double h = m_poly[2];
+	float f = m_poly[0];
+	float h = m_poly[2];
 
 	if (h < -Qfilta || f > Qfiltc)
 	{
 	    idx.push_back(m_maxIndex[j]);
 	}
-		
+
 	m_maxFit.clear();
     }
 

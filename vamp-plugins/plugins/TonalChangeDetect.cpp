@@ -290,7 +290,7 @@ TonalChangeDetect::OutputList TonalChangeDetect::getOutputDescriptors() const
     d.hasKnownExtents = false;
     d.isQuantized = false;
     d.sampleType = OutputDescriptor::VariableSampleRate;
-    double dStepSecs = double(getPreferredStepSize()) / m_inputSampleRate;
+    auto dStepSecs = float (getPreferredStepSize()) / m_inputSampleRate;
     d.sampleRate = 1.0f / dStepSecs;
 	
     OutputDescriptor changes;
@@ -326,12 +326,12 @@ TonalChangeDetect::process(const float *const *inputBuffers,
     if (!m_haveOrigin) m_origin = timestamp;
 
     // convert float* to double*
-    double *tempBuffer = new double[m_block];
+    auto tempBuffer = new float[m_block];
     for (size_t i = 0; i < m_block; ++i) {
         tempBuffer[i] = inputBuffers[0][i];
     }
 
-    double *output = m_chromagram->process(tempBuffer);
+    auto output = m_chromagram->process(tempBuffer);
     delete[] tempBuffer;
 
     for (size_t i = 0; i < 12; i++)
