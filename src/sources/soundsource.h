@@ -1,6 +1,7 @@
 #ifndef MIXXX_SOUNDSOURCE_H
 #define MIXXX_SOUNDSOURCE_H
 
+#include <QUrl>
 #include "sources/metadatasource.h"
 #include "sources/audiosource.h"
 
@@ -9,6 +10,8 @@ namespace mixxx {
 // Base class for sound sources.
 class SoundSource: public MetadataSource, public AudioSource {
 public:
+    QUrl getUrl() const { return m_url;}
+    QString getUrlString() const { return m_url.toString();}
     static QString getFileExtensionFromUrl(const QUrl& url);
 
     const QString& getType() const {
@@ -54,7 +57,8 @@ protected:
     // by the URL will be used as the type of the SoundSource.
     explicit SoundSource(const QUrl& url);
     SoundSource(const QUrl& url, const QString& type);
-
+    bool isLocalFile() const { return getUrl().isLocalFile();}
+    QString getLocalFileName() const { return getUrl().toLocalFile();}
 private:
     // Tries to open the AudioSource for reading audio data according
     // to the "Template Method" design pattern.
@@ -72,6 +76,7 @@ private:
     // avoid warning messages about unexpected or unknown exceptions.
     virtual OpenResult tryOpen(const AudioSourceConfig& audioSrcCfg) = 0;
 
+    const QUrl m_url;
     const QString m_type;
 };
 

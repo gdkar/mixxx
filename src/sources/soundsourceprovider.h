@@ -27,14 +27,11 @@ enum class SoundSourceProviderPriority {
 // a single instance might be accessed concurrently from different threads.
 class SoundSourceProvider {
 public:
-    virtual ~SoundSourceProvider() {}
-
+    virtual ~SoundSourceProvider() = default;
     // A user-readable name that identifies this provider.
     virtual QString getName() const = 0;
-
     // A list of supported file extensions in any order.
     virtual QStringList getSupportedFileExtensions() const = 0;
-
     // The default cooperative priority of this provider compared to
     // others supporting the same file extension(s). Please note that
     // an application may override the returned value to support

@@ -204,7 +204,6 @@ SINT SoundSourceFFmpeg::seekSampleFrame(SINT frameIndex)
 }
 bool SoundSourceFFmpeg::decode_next_frame(){
     auto ret = 0;
-    auto decoding_errors = 0;
     while ((m_orig_frame.unref(),(ret = m_codec_ctx.receive_frame(m_orig_frame))) < 0) {
         if(ret == AVERROR_EOF) {
             if(m_pkt_index> m_pkt_array.size()) {

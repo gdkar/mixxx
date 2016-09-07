@@ -97,20 +97,20 @@ class MessagePipe {
 
     // Returns the number of ReceiverMessageType messages waiting to be read by
     // the receiver. Non-blocking.
-    inline int messageCount() const {
+    int messageCount() const {
         return m_sender_messages.readAvailable();
     }
 
     // Read a ReceiverMessageType written by the receiver addressed to the
     // sender. Non-blocking.
-    inline int readMessages(ReceiverMessageType* messages, int count) {
+    int readMessages(ReceiverMessageType* messages, int count) {
         return m_sender_messages.read(messages, count);
     }
 
     // Writes up to 'count' messages from the 'message' array to the receiver
     // and returns the number of successfully written messages. If
     // serializeWrites is active, this method is blocking.
-    inline int writeMessages(const SenderMessageType* messages, int count) {
+    int writeMessages(const SenderMessageType* messages, int count) {
         if (m_bSerializeWrites) {
             m_serializationMutex.lock();
         }

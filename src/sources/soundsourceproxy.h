@@ -14,33 +14,26 @@ class SoundSourceProxy {
     // function is not thread-safe and must be called only once
     // upon startup of the application.
     static void loadPlugins();
-
     static QStringList getSupportedFileExtensions() {
         return s_soundSourceProviders.getRegisteredFileExtensions();
     }
-    static QStringList getSupportedFileExtensionsByPlugins();
     static const QStringList& getSupportedFileNamePatterns() {
         return s_supportedFileNamePatterns;
     }
     static const QRegExp& getSupportedFileNamesRegex() {
         return s_supportedFileNamesRegex;
     }
-
     static bool isUrlSupported(const QUrl& url);
     static bool isFileSupported(const QFileInfo& fileInfo);
     static bool isFileNameSupported(const QString& fileName);
     static bool isFileExtensionSupported(const QString& fileExtension);
-
     explicit SoundSourceProxy(const TrackPointer& pTrack);
-
     const TrackPointer& getTrack() const {
         return m_pTrack;
     }
-
     const QUrl& getUrl() const {
         return m_url;
     }
-
     // Load track metadata and (optionally) cover art from the file
     // if it has not already been parsed. With reloadFromFile = true
     // metadata and cover art will be reloaded from the file regardless
@@ -51,15 +44,12 @@ class SoundSourceProxy {
     void loadTrackMetadataAndCoverArt(bool reloadFromFile = false) const {
         return loadTrackMetadataAndCoverArt(true, reloadFromFile);
     }
-
     // Parse only the metadata from the file without modifying
     // the referenced track.
     Result parseTrackMetadata(mixxx::TrackMetadata* pTrackMetadata) const;
-
     // Parse only the cover image from the file without modifying
     // the referenced track.
     QImage parseCoverImage() const;
-
     enum class SaveTrackMetadataResult {
         SUCCEEDED,
         FAILED,
@@ -68,15 +58,12 @@ class SoundSourceProxy {
     static SaveTrackMetadataResult saveTrackMetadata(
             const Track* pTrack,
             bool evenIfNeverParsedFromFileBefore = false);
-
     // Opening the audio data through the proxy will
     // update the some metadata of the track object.
     // Returns a null pointer on failure.
     mixxx::AudioSourcePointer openAudioSource(
             const mixxx::AudioSourceConfig& audioSrcCfg = mixxx::AudioSourceConfig());
-
     void closeAudioSource();
-
   private:
     static mixxx::SoundSourceProviderRegistry s_soundSourceProviders;
     static QStringList s_supportedFileNamePatterns;
@@ -95,23 +82,17 @@ class SoundSourceProxy {
 
     const QList<mixxx::SoundSourceProviderRegistration> m_soundSourceProviderRegistrations;
     int m_soundSourceProviderRegistrationIndex;
-
     mixxx::SoundSourceProviderPointer getSoundSourceProvider() const;
     void nextSoundSourceProvider();
-
     void initSoundSource();
-
     void loadTrackMetadataAndCoverArt(bool withCoverArt, bool reloadFromFile) const;
-
     // This pointer must stay in this class together with
     // the corresponding track pointer. Don't pass it around!!
     mixxx::SoundSourcePointer m_pSoundSource;
-
     // Keeps track of opening and closing the corresponding
     // SoundSource. This pointer can safely be passed around,
     // because internally it contains a reference to the TIO
     // that keeps it alive.
     mixxx::AudioSourcePointer m_pAudioSource;
 };
-
 #endif // MIXXX_SOURCES_SOUNDSOURCEPROXY_H

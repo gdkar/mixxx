@@ -17,9 +17,9 @@ class CAPABILITY("mutex") MMutex {
             : m_mutex(mode) {
     }
 
-    inline void lock() ACQUIRE() { m_mutex.lock(); }
-    inline void unlock() RELEASE() { m_mutex.unlock(); }
-    inline bool tryLock() TRY_ACQUIRE(true) {
+    void lock() ACQUIRE() { m_mutex.lock(); }
+    void unlock() RELEASE() { m_mutex.unlock(); }
+    bool tryLock() TRY_ACQUIRE(true) {
         return m_mutex.tryLock();
     }
 
@@ -44,7 +44,7 @@ class CAPABILITY("mutex") MReadWriteLock {
         return m_lock.tryLockForWrite();
     }
 
-    inline void unlock() RELEASE() { m_lock.unlock(); }
+    void unlock() RELEASE() { m_lock.unlock(); }
 
   private:
     QReadWriteLock m_lock;
@@ -57,7 +57,7 @@ class SCOPED_CAPABILITY MMutexLocker {
     MMutexLocker(MMutex* mu) ACQUIRE(mu) : m_locker(&mu->m_mutex) {}
     ~MMutexLocker() RELEASE() {}
 
-    inline void unlock() RELEASE() { m_locker.unlock(); }
+    void unlock() RELEASE() { m_locker.unlock(); }
 
   private:
     QMutexLocker m_locker;
@@ -68,7 +68,7 @@ class SCOPED_CAPABILITY MWriteLocker {
     MWriteLocker(MReadWriteLock* mu) ACQUIRE(mu) : m_locker(&mu->m_lock) {}
     ~MWriteLocker() RELEASE() {}
 
-    inline void unlock() RELEASE() { m_locker.unlock(); }
+    void unlock() RELEASE() { m_locker.unlock(); }
 
   private:
     QWriteLocker m_locker;
@@ -80,7 +80,7 @@ class SCOPED_CAPABILITY MReadLocker {
             : m_locker(&mu->m_lock) {}
     ~MReadLocker() RELEASE() {}
 
-    inline void unlock() RELEASE() { m_locker.unlock(); }
+    void unlock() RELEASE() { m_locker.unlock(); }
 
   private:
     QReadLocker m_locker;

@@ -22,7 +22,6 @@
 #undef WIN32
 #endif
 
-#include <FLAC/format.h>
 #include <chromaprint.h>
 #include <rubberband/RubberBandStretcher.h>
 #include <taglib/taglib.h>
@@ -128,9 +127,7 @@ QStringList Version::dependencyVersions() {
             // Should be accurate.
             << QString("Vorbis: %1").arg(vorbis_version_string())
             // Should be accurate.
-            << QString("libsndfile: %1").arg(sndfile_version)
-            // The version of the FLAC headers Mixxx was compiled with.
-            << QString("FLAC: %1").arg(FLAC__VERSION_STRING);
+            << QString("libsndfile: %1").arg(sndfile_version);
 
     return result;
 }

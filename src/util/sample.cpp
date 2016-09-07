@@ -16,15 +16,6 @@ typedef qint32 int32_t;
 // This also utilizes AVX registers wehn compiled for a recent 64 bit CPU
 // using scons optimize=native.
 
-// TODO() Check if uintptr_t is available on all our build targets and use that
-// instead of size_t, we can remove the sizeof(size_t) check than
-static inline bool useAlignedAlloc() {
-    // This will work on all targets and compilers.
-    // It will return true on MSVC 32 bit builds and false for
-    // Linux 32 and 64 bit builds
-    return (sizeof(long double) == 8 && sizeof(CSAMPLE*) <= 8 &&
-            sizeof(CSAMPLE*) == sizeof(size_t));
-}
 // static
 CSAMPLE* SampleUtil::alloc(int size)
 {

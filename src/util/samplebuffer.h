@@ -51,7 +51,7 @@ class SampleBuffer {
     SINT size() const {
         return m_size;
     }
-
+    bool isEmpty() const { return !size();}
     CSAMPLE* data(SINT offset = 0) {
         DEBUG_ASSERT(0 <= offset);
         // >=: allow access to one element behind allocated memory
@@ -76,9 +76,10 @@ class SampleBuffer {
     // implementation of all STL containers. Required for exception
     // safe programming and as a workaround for the missing resize
     // operation.
-    void swap(SampleBuffer& other) {
-        std::swap(m_data, other.m_data);
-        std::swap(m_size, other.m_size);
+    void swap(SampleBuffer& other) noexcept {
+        using std::swap;
+        swap(m_data, other.m_data);
+        swap(m_size, other.m_size);
     }
 
     // Fills the whole buffer with zeroes
@@ -134,20 +135,10 @@ class SampleBuffer {
         CSAMPLE* m_data;
         SINT m_size;
     };
-
+    friend void swap(SampleBuffer &lhs, SampleBuffer &rhs) noexcept { lhs.swap(rhs); }
   private:
     CSAMPLE* m_data;
     SINT m_size;
 };
-
-namespace std {
-
-// Template specialization of std::swap for SampleBuffer.
-template<>
-inline void swap(SampleBuffer& lhs, SampleBuffer& rhs) {
-    lhs.swap(rhs);
-}
-
-}  // namespace std
 
 #endif // MIXXX_UTIL_SAMPLEBUFFER_H

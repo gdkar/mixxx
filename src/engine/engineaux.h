@@ -11,7 +11,6 @@
 #include "control/controlpushbutton.h"
 #include "engine/enginechannel.h"
 #include "engine/enginevumeter.h"
-#include "util/circularbuffer.h"
 #include "soundio/soundmanagerutil.h"
 
 class EffectsManager;

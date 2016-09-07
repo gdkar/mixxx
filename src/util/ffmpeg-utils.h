@@ -104,7 +104,7 @@ struct swr_context {
     int drop_output(int count) { return swr_drop_output(m_d,count);}
     int inject_silence(int count) { return swr_inject_silence(m_d,count);}
     int out_samples(int in_samples) { return swr_get_out_samples(m_d, in_samples);}
-    friend inline void swap(swr_context &lhs, swr_context &rhs) noexcept { lhs.swap(rhs);}
+    friend void swap(swr_context &lhs, swr_context &rhs) noexcept { lhs.swap(rhs);}
 };
 struct avpacket {
     AVPacket *m_d{nullptr};
@@ -131,7 +131,7 @@ struct avpacket {
             av_packet_ref(m_d, pkt);
         }
     }
-    friend inline void swap(avpacket &lhs, avpacket &rhs) noexcept { lhs.swap(rhs);}
+    friend void swap(avpacket &lhs, avpacket &rhs) noexcept { lhs.swap(rhs);}
 };
 struct avframe{
     AVFrame *m_d{nullptr};
@@ -176,7 +176,7 @@ struct avframe{
     int64_t pkt_duration() const { return m_d->pkt_duration;}
     int64_t channel_layout() const { return m_d->channel_layout;}
     uint8_t * const *data() const { return m_d->extended_data;}
-    friend inline void swap(avframe &lhs, avframe &rhs) noexcept { lhs.swap(rhs);}
+    friend void swap(avframe &lhs, avframe &rhs) noexcept { lhs.swap(rhs);}
 };
 struct format_context{
     AVFormatContext  *m_d{nullptr};
@@ -244,7 +244,7 @@ struct format_context{
     {
         av_dump_format(m_d, index, filename, is_output());
     }
-    friend inline void swap(format_context &lhs, format_context &rhs) noexcept { lhs.swap(rhs);}
+    friend void swap(format_context &lhs, format_context &rhs) noexcept { lhs.swap(rhs);}
 };
 struct codec_context{
     AVCodecContext *m_d{nullptr};
@@ -287,7 +287,7 @@ struct codec_context{
     int receive_frame(AVFrame *frm) { return avcodec_receive_frame(m_d,frm);}
     void flush_buffers() { avcodec_flush_buffers(m_d);}
     void swap(codec_context &o) noexcept { using std::swap;swap(m_d, o.m_d);}
-    friend inline void swap(codec_context &lhs, codec_context &rhs) noexcept { lhs.swap(rhs);}
+    friend void swap(codec_context &lhs, codec_context &rhs) noexcept { lhs.swap(rhs);}
 };
 
 inline AVRational operator *(const AVRational &a, const AVRational &b) { return av_mul_q(a,b); }

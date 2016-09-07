@@ -1,7 +1,7 @@
 #ifndef MIXXX_SOUNDSOURCEPROVIDERREGISTRY_H
 #define MIXXX_SOUNDSOURCEPROVIDERREGISTRY_H
 
-#include "sources/soundsourcepluginlibrary.h"
+#include "sources/soundsourceprovider.h"
 
 #include <QMap>
 
@@ -9,9 +9,6 @@ namespace mixxx {
 
 class SoundSourceProviderRegistration {
 public:
-    const SoundSourcePluginLibraryPointer& getPluginLibrary() const {
-        return m_pPluginLibrary;
-    }
     const SoundSourceProviderPointer& getProvider() const {
         return m_pProvider;
     }
@@ -22,15 +19,12 @@ public:
 private:
     friend class SoundSourceProviderRegistry;
     SoundSourceProviderRegistration(
-            SoundSourcePluginLibraryPointer pPluginLibrary,
             SoundSourceProviderPointer pProvider,
             SoundSourceProviderPriority providerPriority)
-        : m_pPluginLibrary(pPluginLibrary),
-          m_pProvider(pProvider),
+        : m_pProvider(pProvider),
           m_providerPriority(providerPriority) {
     }
 
-    SoundSourcePluginLibraryPointer m_pPluginLibrary;
     SoundSourceProviderPointer m_pProvider;
     SoundSourceProviderPriority m_providerPriority;
 };
@@ -42,24 +36,11 @@ public:
     // with their cooperative priority hint.
     void registerProvider(
             const SoundSourceProviderPointer& pProvider);
-    // Registers a provider from a plugin library for all supported
-    // file extensions with their cooperative priority hint.
-    void registerPluginLibrary(
-            const SoundSourcePluginLibraryPointer& pPluginLibrary);
-
     // Registers a provider for a single file extension with an
     // explicitly specified priority. The provider must support
     // the given file extension.
     void registerProviderForFileExtension(
             const QString& fileExtension,
-            const SoundSourceProviderPointer& pProvider,
-            SoundSourceProviderPriority providerPriority);
-    // Registers a provider from a plugin library for a single file
-    // extension with an explicitly specified priority. The provider
-    // must support the given file extension.
-    void registerPluginProviderForFileExtension(
-            const QString& fileExtension,
-            const SoundSourcePluginLibraryPointer& pPluginLibrary,
             const SoundSourceProviderPointer& pProvider,
             SoundSourceProviderPriority providerPriority);
 
@@ -70,10 +51,6 @@ public:
     void deregisterProviderForFileExtension(
             const QString& fileExtension,
             const SoundSourceProviderPointer& pProvider);
-
-    // Deregisters all providers from a plugin library.
-    void deregisterPluginLibrary(
-            const SoundSourcePluginLibraryPointer& pPluginLibrary);
 
     QStringList getRegisteredFileExtensions() const {
         return m_registry.keys();

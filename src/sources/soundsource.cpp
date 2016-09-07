@@ -9,14 +9,16 @@ namespace mixxx {
 }
 
 SoundSource::SoundSource(const QUrl& url)
-        : AudioSource(url),
+        : AudioSource(),
+          m_url(url),
           // simply use the file extension as the type
           m_type(getFileExtensionFromUrl(url)) {
     DEBUG_ASSERT(getUrl().isValid());
 }
 
 SoundSource::SoundSource(const QUrl& url, const QString& type)
-        : AudioSource(url),
+        : AudioSource(),
+          m_url(url),
           m_type(type) {
     DEBUG_ASSERT(getUrl().isValid());
 }

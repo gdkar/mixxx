@@ -158,7 +158,7 @@ class OggVorbis(Dependence):
                     'Did not find libvorbisenc.a, libvorbisenc.lib, or the libvorbisenc development headers.')
 
     def sources(self, build):
-        return ['sources/soundsourceoggvorbis.cpp']
+        return []
 
 class SndFile(Dependence):
 
@@ -169,29 +169,13 @@ class SndFile(Dependence):
             raise Exception(
                 "Did not find libsndfile or it\'s development headers")
         build.env.Append(CPPDEFINES='__SNDFILE__')
-        
+
         if build.platform_is_windows and build.static_dependencies:
             build.env.Append(CPPDEFINES='FLAC__NO_DLL')
             conf.CheckLib('g72x')
 
     def sources(self, build):
-        return ['sources/soundsourcesndfile.cpp']
-
-
-class FLAC(Dependence):
-    def configure(self, build, conf):
-        if not conf.CheckHeader('FLAC/stream_decoder.h'):
-            raise Exception('Did not find libFLAC development headers')
-        libs = ['libFLAC', 'FLAC']
-        if not conf.CheckLib(libs):
-            raise Exception('Did not find libFLAC development libraries')
-
-        if build.platform_is_windows and build.static_dependencies:
-            build.env.Append(CPPDEFINES='FLAC__NO_DLL')
-
-    def sources(self, build):
-        return ['sources/soundsourceflac.cpp',]
-
+        return []
 
 class Qt(Dependence):
     DEFAULT_QT4DIRS = {'linux': '/usr/share/qt4',
@@ -793,8 +777,6 @@ class MixxxCore(Feature):
 
                    "sources/audiosource.cpp",
                    "sources/soundsource.cpp",
-                   "sources/soundsourceplugin.cpp",
-                   "sources/soundsourcepluginlibrary.cpp",
                    "sources/soundsourceproviderregistry.cpp",
                    "sources/soundsourceproxy.cpp",
 
@@ -1087,7 +1069,6 @@ class MixxxCore(Feature):
                    "util/sample.cpp",
                    "util/samplebuffer.cpp",
                    "util/singularsamplebuffer.cpp",
-                   "util/circularsamplebuffer.cpp",
                    "util/rotary.cpp",
                    "util/logging.cpp",
                    "util/cmdlineargs.cpp",
@@ -1366,7 +1347,7 @@ class MixxxCore(Feature):
 
     def depends(self, build):
         return [SoundTouch, ReplayGain, Ebur128Mit, PortAudio, PortMIDI, RtMidi, Qt, TestHeaders,
-                FidLib, SndFile, FLAC, OggVorbis, OpenGL, TagLib, ProtoBuf,
+                FidLib, SndFile, OggVorbis, OpenGL, TagLib, ProtoBuf,
                 Chromaprint, RubberBand, SecurityFramework, CoreServices,
                 QtScriptByteArray, Reverb, FpClassify, PortAudioRingBuffer]
 

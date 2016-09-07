@@ -3,7 +3,6 @@
 
 #define RECORDING_PREF_KEY "[Recording]"
 #define ENCODING_WAVE "WAV"
-#define ENCODING_FLAC "FLAC"
 #define ENCODING_AIFF "AIFF"
 #define ENCODING_OGG  "OGG"
 #define ENCODING_MP3 "MP3"

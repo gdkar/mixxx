@@ -32,7 +32,6 @@ DlgPrefRecord::DlgPrefRecord(QWidget* parent, UserSettingsPointer pConfig)
           m_pRadioOgg(NULL),
           m_pRadioMp3(NULL),
           m_pRadioAiff(NULL),
-          m_pRadioFlac(NULL),
           m_pRadioWav(NULL) {
     setupUi(this);
 
@@ -75,12 +74,6 @@ DlgPrefRecord::DlgPrefRecord(QWidget* parent, UserSettingsPointer pConfig)
     connect(m_pRadioAiff, SIGNAL(clicked()), this, SLOT(slotApply()));
     horizontalLayout->addWidget(m_pRadioAiff);
 
-#ifdef SF_FORMAT_FLAC
-    m_pRadioFlac = new QRadioButton(ENCODING_FLAC);
-    connect(m_pRadioFlac, SIGNAL(clicked()), this, SLOT(slotApply()));
-    horizontalLayout->addWidget(m_pRadioFlac);
-#endif
-
     // Read config and check radio button.
     QString format = m_pConfig->getValueString(ConfigKey(RECORDING_PREF_KEY, "Encoding"));
     if (format == ENCODING_WAVE) {
@@ -91,10 +84,6 @@ DlgPrefRecord::DlgPrefRecord(QWidget* parent, UserSettingsPointer pConfig)
         m_pRadioMp3->setChecked(true);
     } else if (format == ENCODING_AIFF) {
         m_pRadioAiff->setChecked(true);
-#ifdef SF_FORMAT_FLAC
-    } else if (format == ENCODING_FLAC) {
-        m_pRadioFlac->setChecked(true);
-#endif
     } else {
         // Invalid, so set default and save.
         // If no config was available, set to WAVE as default.
@@ -169,9 +158,6 @@ void DlgPrefRecord::slotEncoding() {
     if (m_pRadioWav && m_pRadioWav->isChecked()) {
         m_pConfig->set(ConfigKey(RECORDING_PREF_KEY, "Encoding"), ConfigValue(ENCODING_WAVE));
         groupBoxQuality->setEnabled(false);
-    } else if (m_pRadioFlac && m_pRadioFlac->isChecked()) {
-        m_pConfig->set(ConfigKey(RECORDING_PREF_KEY, "Encoding"), ConfigValue(ENCODING_FLAC));
-        groupBoxQuality->setEnabled(false);
     } else if (m_pRadioAiff && m_pRadioAiff->isChecked()) {
         m_pConfig->set(ConfigKey(RECORDING_PREF_KEY, "Encoding"), ConfigValue(ENCODING_AIFF));
         groupBoxQuality->setEnabled(false);
@@ -241,8 +227,6 @@ void DlgPrefRecord::slotUpdate() {
         m_pConfig->set(ConfigKey(RECORDING_PREF_KEY, "Encoding"), ConfigValue(ENCODING_WAVE));
     } else if (m_pRadioAiff && m_pRadioAiff->isChecked()) {
         m_pConfig->set(ConfigKey(RECORDING_PREF_KEY, "Encoding"), ConfigValue(ENCODING_AIFF));
-    } else if (m_pRadioFlac && m_pRadioFlac->isChecked()) {
-        m_pConfig->set(ConfigKey(RECORDING_PREF_KEY, "Encoding"), ConfigValue(ENCODING_FLAC));
     } else if (m_pRadioOgg && m_pRadioOgg->isChecked()) {
         m_pConfig->set(ConfigKey(RECORDING_PREF_KEY, "Encoding"), ConfigValue(ENCODING_OGG));
     } else if (m_pRadioMp3 && m_pRadioMp3->isChecked()) {
