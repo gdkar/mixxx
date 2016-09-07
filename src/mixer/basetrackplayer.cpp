@@ -44,9 +44,9 @@ BaseTrackPlayerImpl::BaseTrackPlayerImpl(QObject* pParent,
           m_pRateSlider(NULL),
           m_pPitchAdjust(NULL),
           m_replaygainPending(false) {
-    ChannelHandleAndGroup channelGroup =
+    auto channelGroup =
             pMixingEngine->registerChannelGroup(group);
-    m_pChannel = new EngineDeck(channelGroup, pConfig, pMixingEngine,
+    m_pChannel = new EngineDeck(pMixingEngine, channelGroup, pConfig, pMixingEngine,
                                 pEffectsManager, defaultOrientation);
 
     m_pInputConfigured.reset(new ControlProxy(group, "input_configured", this));
@@ -58,7 +58,7 @@ BaseTrackPlayerImpl::BaseTrackPlayerImpl(QObject* pParent,
     m_pVinylControlStatus.reset(new ControlProxy(group, "vinylcontrol_status", this));
 #endif
 
-    EngineBuffer* pEngineBuffer = m_pChannel->getEngineBuffer();
+    auto pEngineBuffer = m_pChannel->getEngineBuffer();
     pMixingEngine->addChannel(m_pChannel);
 
     // Set the routing option defaults for the master and headphone mixes.

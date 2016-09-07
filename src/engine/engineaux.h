@@ -23,7 +23,7 @@ class ControlAudioTaperPot;
 class EngineAux : public EngineChannel, public AudioDestination {
     Q_OBJECT
   public:
-    EngineAux(const ChannelHandleAndGroup& handle_group, EffectsManager* pEffectsManager);
+    EngineAux(QObject *p, const ChannelHandleAndGroup& handle_group, EffectsManager* pEffectsManager);
     virtual ~EngineAux();
 
     bool isActive();

@@ -2,32 +2,33 @@
 #define ENGINEFILTERDELAY_H
 
 #include "engine/engineobject.h"
+#include <memory>
+#include <utility>
 #include "util/assert.h"
 #include "util/sample.h"
 
-template<unsigned int SIZE>
 class EngineFilterDelay : public EngineObjectConstIn {
   public:
-    EngineFilterDelay()
-            : m_delaySamples(0),
+    EngineFilterDelay(QObject *p,size_t _SIZE)
+            : EngineObjectConstIn(p),
+              SIZE(_SIZE),
+              m_buf(std::make_unique<CSAMPLE[]>(SIZE)),
+              m_delaySamples(0),
               m_oldDelaySamples(0),
               m_delayPos(0),
               m_doRamping(false),
               m_doStart(false) {
         // Set the current buffers to 0
-        memset(m_buf, 0, sizeof(m_buf));
+        std::fill_n(&m_buf[0],SIZE, 0);
     }
-
     virtual ~EngineFilterDelay() {};
-
     void pauseFilter() {
         // Set the current buffers to 0
         if (!m_doStart) {
-            memset(m_buf, 0, sizeof(m_buf));
+            std::fill_n(&m_buf[0],SIZE, 0);
             m_doStart = true;
         }
     }
-
     void setDelay(unsigned int delaySamples) {
         m_oldDelaySamples = m_delaySamples;
         m_delaySamples = delaySamples;
@@ -78,8 +79,8 @@ class EngineFilterDelay : public EngineObjectConstIn {
                 return;
             }
 
-            double cross_mix = 0.0;
-            double cross_inc = 2 / static_cast<double>(iBufferSize);
+            CSAMPLE cross_mix = 0.0;
+            CSAMPLE cross_inc = 2 / static_cast<CSAMPLE>(iBufferSize);
 
             for (int i = 0; i < iBufferSize; ++i) {
                 // put sample into delay buffer:
@@ -106,10 +107,11 @@ class EngineFilterDelay : public EngineObjectConstIn {
     }
 
   protected:
+    size_t SIZE;
+    std::unique_ptr<CSAMPLE[]> m_buf;
     int m_delaySamples;
     int m_oldDelaySamples;
     int m_delayPos;
-    double m_buf[SIZE];
     bool m_doRamping;
     bool m_doStart;
 };

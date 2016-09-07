@@ -24,7 +24,11 @@ enum IIRPass {
 
 
 class EngineFilterIIRBase : public EngineObjectConstIn {
+    Q_OBJECT
   public:
+    EngineFilterIIRBase(QObject *p)
+    : EngineObjectConstIn(p){}
+    virtual ~EngineFilterIIRBase();
     virtual void assumeSettled() = 0;
 };
 
@@ -36,7 +40,8 @@ template<unsigned int SIZE, enum IIRPass PASS>
 class EngineFilterIIR : public EngineFilterIIRBase {
   public:
     EngineFilterIIR()
-            : m_doRamping(false),
+            : EngineFilterIIRBase(nullptr),
+              m_doRamping(false),
               m_doStart(false),
               m_startFromDry(false) {
         memset(m_coef, 0, sizeof(m_coef));

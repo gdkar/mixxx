@@ -14,7 +14,7 @@ class ControlObject;
 // adjustments in volume relative to playback speed.
 class EnginePregain : public EngineObject {
   public:
-    EnginePregain(QString group);
+    EnginePregain(QObject *p, QString group);
     virtual ~EnginePregain();
 
     void setSpeed(double speed);

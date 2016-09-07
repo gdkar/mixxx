@@ -49,7 +49,9 @@ class EngineFilterMoogLadderBase : public EngineObjectConstIn {
     };
 
   public:
-    EngineFilterMoogLadderBase(unsigned int sampleRate, float cutoff, float resonance) {
+    EngineFilterMoogLadderBase(unsigned int sampleRate, float cutoff, float resonance)
+    : EngineObjectConstIn(nullptr)
+    {
         setParameter(sampleRate, cutoff, resonance);
         initBuffers();
     }

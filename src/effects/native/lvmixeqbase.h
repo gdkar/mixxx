@@ -31,8 +31,8 @@ class LVMixEQEffectGroupState {
 
         m_low1 = new LPF(kStartupSamplerate, kStartupLoFreq);
         m_low2 = new LPF(kStartupSamplerate, kStartupHiFreq);
-        m_delay2 = new EngineFilterDelay<kMaxDelay>();
-        m_delay3 = new EngineFilterDelay<kMaxDelay>();
+        m_delay2 = new EngineFilterDelay(nullptr,kMaxDelay);
+        m_delay3 = new EngineFilterDelay(nullptr,kMaxDelay);
         setFilters(kStartupSamplerate, kStartupLoFreq, kStartupHiFreq);
     }
 
@@ -152,8 +152,8 @@ class LVMixEQEffectGroupState {
   private:
     LPF* m_low1;
     LPF* m_low2;
-    EngineFilterDelay<kMaxDelay>* m_delay2;
-    EngineFilterDelay<kMaxDelay>* m_delay3;
+    EngineFilterDelay* m_delay2;
+    EngineFilterDelay* m_delay3;
 
     double m_oldLow;
     double m_oldMid;

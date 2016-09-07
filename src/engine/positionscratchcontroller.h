@@ -10,6 +10,7 @@ class VelocityController;
 class RateIIFilter;
 
 class PositionScratchController : public QObject {
+    Q_OBJECT
   public:
     PositionScratchController(QString group);
     virtual ~PositionScratchController();

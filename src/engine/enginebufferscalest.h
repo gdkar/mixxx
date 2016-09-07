@@ -19,8 +19,8 @@ class EngineBufferScaleST : public EngineBufferScale {
     ~EngineBufferScaleST() override;
 
     void setScaleParameters(double base_rate,
-                            double* pTempoRatio,
-                            double* pPitchRatio) override;
+                            double& pTempoRatio,
+                            double& pPitchRatio) override;
 
     void setSampleRate(SINT iSampleRate) override;
 

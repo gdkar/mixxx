@@ -53,16 +53,16 @@ EngineBufferScaleST::~EngineBufferScaleST() {
 }
 
 void EngineBufferScaleST::setScaleParameters(double base_rate,
-                                             double* pTempoRatio,
-                                             double* pPitchRatio) {
+                                             double& pTempoRatio,
+                                             double& pPitchRatio) {
 
     // Negative speed means we are going backwards. pitch does not affect
     // the playback direction.
-    m_bBackwards = *pTempoRatio < 0;
+    m_bBackwards = pTempoRatio < 0;
 
     // It's an error to pass a rate or tempo smaller than MIN_SEEK_SPEED to
     // SoundTouch (see definition of MIN_SEEK_SPEED for more details).
-    double speed_abs = fabs(*pTempoRatio);
+    auto speed_abs = std::abs(pTempoRatio);
     if (speed_abs > MAX_SEEK_SPEED) {
         speed_abs = MAX_SEEK_SPEED;
     } else if (speed_abs < MIN_SEEK_SPEED) {
@@ -70,7 +70,7 @@ void EngineBufferScaleST::setScaleParameters(double base_rate,
     }
 
     // Let the caller know if we clamped their value.
-    *pTempoRatio = m_bBackwards ? -speed_abs : speed_abs;
+    pTempoRatio = m_bBackwards ? -speed_abs : speed_abs;
 
     // Include baserate in rate_abs so that we do samplerate conversion as part
     // of rate adjustment.
@@ -85,13 +85,13 @@ void EngineBufferScaleST::setScaleParameters(double base_rate,
         m_dBaseRate = base_rate;
     }
 
-    if (*pPitchRatio != m_dPitchRatio) {
+    if (pPitchRatio != m_dPitchRatio) {
         // Note: pitch ratio must be positive
-        double pitch = fabs(*pPitchRatio);
+        auto pitch = std::abs(pPitchRatio);
         if (pitch > 0.0) {
             m_pSoundTouch->setPitch(pitch);
         }
-        m_dPitchRatio = *pPitchRatio;
+        m_dPitchRatio = pPitchRatio;
     }
 
     // NOTE(rryan) : There used to be logic here that clear()'d when the player
@@ -121,14 +121,14 @@ double EngineBufferScaleST::scaleBuffer(
         return 0.0;
     }
 
-    SINT total_received_frames = 0;
-    SINT total_read_frames = 0;
+    auto total_received_frames = SINT{0};
+    auto total_read_frames = SINT{0};
 
-    SINT remaining_frames = getAudioSignal().samples2frames(iOutputBufferSize);
-    CSAMPLE* read = pOutputBuffer;
-    bool last_read_failed = false;
+    auto remaining_frames = getAudioSignal().samples2frames(iOutputBufferSize);
+    auto read = pOutputBuffer;
+    auto last_read_failed = false;
     while (remaining_frames > 0) {
-        SINT received_frames = m_pSoundTouch->receiveSamples(
+        auto received_frames = m_pSoundTouch->receiveSamples(
                 read, remaining_frames);
         DEBUG_ASSERT(remaining_frames >= received_frames);
         remaining_frames -= received_frames;
@@ -136,13 +136,13 @@ double EngineBufferScaleST::scaleBuffer(
         read += getAudioSignal().frames2samples(received_frames);
 
         if (remaining_frames > 0) {
-            SINT iAvailSamples = m_pReadAheadManager->getNextSamples(
+            auto iAvailSamples = m_pReadAheadManager->getNextSamples(
                         // The value doesn't matter here. All that matters is we
                         // are going forward or backward.
                         (m_bBackwards ? -1.0 : 1.0) * m_dBaseRate * m_dTempoRatio,
                         buffer_back,
                         buffer_back_size);
-            SINT iAvailFrames = getAudioSignal().samples2frames(iAvailSamples);
+            auto iAvailFrames = getAudioSignal().samples2frames(iAvailSamples);
 
             if (iAvailFrames > 0) {
                 last_read_failed = false;
@@ -166,7 +166,5 @@ double EngineBufferScaleST::scaleBuffer(
     // NOTE(rryan): Why no m_dPitchAdjust here? SoundTouch implements pitch
     // shifting as a tempo shift of (1/m_dPitchAdjust) and a rate shift of
     // (*m_dPitchAdjust) so these two cancel out.
-    double framesRead = m_dBaseRate * m_dTempoRatio * total_received_frames;
-
-    return framesRead;
+    return m_dBaseRate * m_dTempoRatio * total_received_frames;
 }

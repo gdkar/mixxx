@@ -101,9 +101,7 @@ int main(int argc, char * argv[]) {
 
     // When the last window is closed, terminate the Qt event loop.
     QObject::connect(&a, SIGNAL(lastWindowClosed()), &a, SLOT(quit()));
-
     int result = -1;
-
     // If startup produced a fatal error, then don't even start the Qt event
     // loop.
     if (ErrorDialogHandler::instance()->checkError()) {
@@ -115,12 +113,8 @@ int main(int argc, char * argv[]) {
         qDebug() << "Running Mixxx";
         result = a.exec();
     }
-
     delete mixxx;
-
     qDebug() << "Mixxx shutdown complete with code" << result;
-
     mixxx::Logging::shutdown();
-
     return result;
 }

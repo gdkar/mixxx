@@ -8,29 +8,32 @@
 #ifndef ENGINEFILTERPANSINGLE_H
 #define ENGINEFILTERPANSINGLE_H
 
-#include <string.h>
-
+#include <cstring>
+#include <memory>
+#include <utility>
+#include <cstdio>
 #include "engine/engineobject.h"
 #include "util/assert.h"
 
-static const int numChannels = 2;
 
-template<unsigned int SIZE>
 class EngineFilterPanSingle {
+    static const int numChannels = 2;
   public:
-    EngineFilterPanSingle()
-            : m_delayFrame(0),
+    EngineFilterPanSingle(size_t _SIZE)
+            : SIZE(_SIZE),
+              m_buf(std::make_unique<CSAMPLE[]>(_SIZE*numChannels)),
+              m_delayFrame(0),
               m_doStart(false) {
         // Set the current buffers to 0
-        memset(m_buf, 0, sizeof(m_buf));
+        std::fill_n(&m_buf[0], SIZE * numChannels * SIZE, 0);
     }
 
-    virtual ~EngineFilterPanSingle() {};
+    virtual ~EngineFilterPanSingle();
 
     void pauseFilter() {
         // Set the current buffers to 0
         if (!m_doStart) {
-            memset(m_buf, 0, sizeof(m_buf));
+            std::fill_n(&m_buf[0], SIZE * numChannels * SIZE, 0);
             m_doStart = true;
         }
     }
@@ -68,8 +71,9 @@ class EngineFilterPanSingle {
     }
 
   protected:
+    size_t SIZE;
+    std::unique_ptr<CSAMPLE[]> m_buf;
     int m_delayFrame;
-    CSAMPLE m_buf[SIZE * numChannels];
     bool m_doStart;
 };
 

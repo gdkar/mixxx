@@ -17,17 +17,7 @@
 
 #include "engineobject.h"
 
-EngineObject::EngineObject() {
-}
-
-EngineObject::~EngineObject() {
-}
-
-EngineObjectConstIn::EngineObjectConstIn() {
-}
-
-EngineObjectConstIn::~EngineObjectConstIn() {
-}
-
-
-
+EngineObject::EngineObject(QObject *p) : QObject(p){};
+EngineObject::~EngineObject()               = default;
+EngineObjectConstIn::EngineObjectConstIn(QObject *p) : QObject(p){};
+EngineObjectConstIn::~EngineObjectConstIn() = default;

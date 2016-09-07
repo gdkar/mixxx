@@ -64,7 +64,7 @@ static const int panMaxDelay = 3300; // allows a 30 Hz filter at 97346;
 struct PanGroupState {
     PanGroupState() {
         time = 0;
-        delay = new EngineFilterPanSingle<panMaxDelay>();
+        delay = new EngineFilterPanSingle(panMaxDelay);
         m_pDelayBuf = SampleUtil::alloc(MAX_BUFFER_LEN);
         m_dPreviousPeriod = -1.0;
     }
@@ -73,7 +73,7 @@ struct PanGroupState {
     }
     unsigned int time;
     RampedSample frac;
-    EngineFilterPanSingle<panMaxDelay>* delay;
+    EngineFilterPanSingle* delay;
     CSAMPLE* m_pDelayBuf;
     double m_dPreviousPeriod;
 };

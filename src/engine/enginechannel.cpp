@@ -20,9 +20,9 @@
 #include "control/controlobject.h"
 #include "control/controlpushbutton.h"
 
-EngineChannel::EngineChannel(const ChannelHandleAndGroup& handle_group,
+EngineChannel::EngineChannel(QObject *p, const ChannelHandleAndGroup& handle_group,
                              EngineChannel::ChannelOrientation defaultOrientation)
-        : m_group(handle_group) {
+        : EngineObject(p),m_group(handle_group) {
     m_pPFL = new ControlPushButton(ConfigKey(getGroup(), "pfl"));
     m_pPFL->setButtonMode(ControlPushButton::TOGGLE);
     m_pMaster = new ControlPushButton(ConfigKey(getGroup(), "master"));

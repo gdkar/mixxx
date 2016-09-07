@@ -26,15 +26,16 @@ EngineBufferScaleLinear::~EngineBufferScaleLinear() {
 }
 
 void EngineBufferScaleLinear::setScaleParameters(double base_rate,
-                                                 double* pTempoRatio,
-                                                 double* pPitchRatio) {
+                                                 double &pTempoRatio,
+                                                 double &pPitchRatio) {
     Q_UNUSED(pPitchRatio);
 
     m_dOldRate = m_dRate;
-    m_dRate = base_rate * *pTempoRatio;
+    m_dRate = base_rate * pTempoRatio;
 }
 
-void EngineBufferScaleLinear::clear() {
+void EngineBufferScaleLinear::clear()
+{
     m_bClear = true;
     // Clear out buffer and saved sample data
     m_bufferIntSize = 0;
@@ -46,11 +47,11 @@ void EngineBufferScaleLinear::clear() {
 // laurent de soras - punked from musicdsp.org (mad props)
 inline float hermite4(float frac_pos, float xm1, float x0, float x1, float x2)
 {
-    const float c = (x1 - xm1) * 0.5f;
-    const float v = x0 - x1;
-    const float w = c + v;
-    const float a = w + v + (x2 - x0) * 0.5f;
-    const float b_neg = w + a;
+    auto c = (x1 - xm1) * 0.5f;
+    auto v = x0 - x1;
+    auto w = c + v;
+    auto a = w + v + (x2 - x0) * 0.5f;
+    auto b_neg = w + a;
     return ((((a * frac_pos) - b_neg) * frac_pos + c) * frac_pos + x0);
 }
 
@@ -67,9 +68,9 @@ double EngineBufferScaleLinear::scaleBuffer(
         m_dOldRate = m_dRate;  // If cleared, don't interpolate rate.
         m_bClear = false;
     }
-    float rate_add_old = m_dOldRate;  // Smoothly interpolate to new playback rate
-    float rate_add_new = m_dRate;
-    SINT frames_read = 0;
+    auto rate_add_old = float(m_dOldRate);  // Smoothly interpolate to new playback rate
+    auto rate_add_new = float(m_dRate);
+    auto frames_read = SINT{0};
 
     if (rate_add_new * rate_add_old < 0) {
         // Direction has changed!
@@ -83,7 +84,7 @@ double EngineBufferScaleLinear::scaleBuffer(
 
         // reset m_floorSampleOld in a way as we were coming from
         // the other direction
-        SINT iNextSample = getAudioSignal().frames2samples(static_cast<SINT>(ceil(m_dNextFrame)));
+        auto iNextSample = getAudioSignal().frames2samples(static_cast<SINT>(ceil(m_dNextFrame)));
         if (iNextSample + 1 < m_bufferIntSize) {
             m_floorSampleOld[0] = m_bufferInt[iNextSample];
             m_floorSampleOld[1] = m_bufferInt[iNextSample + 1];
@@ -91,8 +92,8 @@ double EngineBufferScaleLinear::scaleBuffer(
 
         // if the buffer has extra samples, do a read so RAMAN ends up back where
         // it should be
-        SINT iCurSample = getAudioSignal().frames2samples(static_cast<SINT>(ceil(m_dCurrentFrame)));
-        SINT extra_samples = m_bufferIntSize - iCurSample - getAudioSignal().getChannelCount();
+        auto iCurSample = getAudioSignal().frames2samples(static_cast<SINT>(ceil(m_dCurrentFrame)));
+        auto extra_samples = m_bufferIntSize - iCurSample - getAudioSignal().getChannelCount();
         if (extra_samples > 0) {
             if (extra_samples % getAudioSignal().getChannelCount() != 0) {
                 // extra samples should include the whole frame
@@ -101,7 +102,7 @@ double EngineBufferScaleLinear::scaleBuffer(
             }
             //qDebug() << "extra samples" << extra_samples;
 
-            SINT next_samples_read = m_pReadAheadManager->getNextSamples(
+            auto next_samples_read = m_pReadAheadManager->getNextSamples(
                     rate_add_new, m_bufferInt, extra_samples);
             frames_read += getAudioSignal().samples2frames(next_samples_read);
         }
@@ -116,8 +117,8 @@ double EngineBufferScaleLinear::scaleBuffer(
         m_dOldRate = 0.0;
         m_dRate = rate_add_new;
         // pass the address of the frame at the halfway point
-        SINT frameOffset =  getAudioSignal().samples2frames(iOutputBufferSize) / 2;
-        SINT sampleOffset = getAudioSignal().frames2samples(frameOffset);
+        auto frameOffset =  getAudioSignal().samples2frames(iOutputBufferSize) / 2;
+        auto sampleOffset = getAudioSignal().frames2samples(frameOffset);
         frames_read += do_scale(pOutputBuffer + sampleOffset, iOutputBufferSize - sampleOffset);
     } else {
         frames_read += do_scale(pOutputBuffer, iOutputBufferSize);
@@ -129,9 +130,9 @@ SINT EngineBufferScaleLinear::do_copy(CSAMPLE* buf, SINT buf_size) {
     SINT samples_needed = buf_size;
     CSAMPLE* write_buf = buf;
     // Use up what's left of the internal buffer.
-    SINT iNextFrame = static_cast<SINT>(ceil(m_dNextFrame));
-    SINT iNextSample = math_max<SINT>(getAudioSignal().frames2samples(iNextFrame), 0);
-    SINT readSize = math_min<SINT>(m_bufferIntSize - iNextSample, samples_needed);
+    auto iNextFrame = static_cast<SINT>(ceil(m_dNextFrame));
+    auto iNextSample = math_max<SINT>(getAudioSignal().frames2samples(iNextFrame), 0);
+    auto readSize = math_min<SINT>(m_bufferIntSize - iNextSample, samples_needed);
     if (readSize > 0) {
         SampleUtil::copy(write_buf, &m_bufferInt[iNextSample], readSize);
         samples_needed -= readSize;
@@ -139,13 +140,13 @@ SINT EngineBufferScaleLinear::do_copy(CSAMPLE* buf, SINT buf_size) {
     }
     // Protection against infinite read loops when (for example) we are
     // reading from a broken file.
-    int read_failed_count = 0;
+    auto read_failed_count = 0;
     // We need to repeatedly call the RAMAN because the RAMAN does not bend
     // over backwards to satisfy our request. It assumes you will continue
     // to call getNextSamples until you receive the number of samples you
     // wanted.
     while (samples_needed > 0) {
-        SINT read_size = m_pReadAheadManager->getNextSamples(m_dRate, write_buf,
+        auto read_size = m_pReadAheadManager->getNextSamples(m_dRate, write_buf,
                 samples_needed);
         if (read_size == 0) {
             if (++read_failed_count > 1) {
@@ -161,7 +162,7 @@ SINT EngineBufferScaleLinear::do_copy(CSAMPLE* buf, SINT buf_size) {
     // Instead of counting how many samples we got from the internal buffer
     // and the RAMAN calls, just measure the difference between what we
     // requested and what we still need.
-    SINT read_samples = buf_size - samples_needed;
+    auto read_samples = buf_size - samples_needed;
     // Zero the remaining samples if we didn't fill them.
     SampleUtil::clear(write_buf, samples_needed);
     // update our class members so next time we need to scale it's ok. we do
@@ -177,10 +178,9 @@ SINT EngineBufferScaleLinear::do_copy(CSAMPLE* buf, SINT buf_size) {
 
 // Stretch a specified buffer worth of audio using linear interpolation
 SINT EngineBufferScaleLinear::do_scale(CSAMPLE* buf, SINT buf_size) {
-    float rate_old = m_dOldRate;
-    const float rate_new = m_dRate;
-    const float rate_diff = rate_new - rate_old;
-
+    auto rate_old = float(m_dOldRate);
+    auto rate_new = float(m_dRate);
+    auto rate_diff = rate_new - rate_old;
     // Update the old base rate because we only need to
     // interpolate/ramp up the pitch changes once.
     m_dOldRate = m_dRate;
@@ -202,9 +202,9 @@ SINT EngineBufferScaleLinear::do_scale(CSAMPLE* buf, SINT buf_size) {
     }
 
     // Simulate the loop to estimate how many frames we need
-    double frames = 0;
-    const SINT bufferSizeFrames = getAudioSignal().samples2frames(buf_size);
-    const double rate_delta = rate_diff / bufferSizeFrames;
+    auto frames = 0.;
+    auto bufferSizeFrames = getAudioSignal().samples2frames(buf_size);
+    auto rate_delta = rate_diff / bufferSizeFrames;
     // use Gaussian sum formula (n(n+1))/2 for
     //for (int j = 0; j < bufferSizeFrames; ++j) {
     //    frames += (j * rate_delta) + rate_old;
@@ -216,10 +216,10 @@ SINT EngineBufferScaleLinear::do_scale(CSAMPLE* buf, SINT buf_size) {
 
     // Intentional integer rounding: increases by one if the fractional part of
     // m_dNextFrame and frames are greater than one"
-    SINT unscaled_frames_needed = static_cast<SINT>(frames +
+    auto unscaled_frames_needed = static_cast<SINT>(frames +
             m_dNextFrame - floor(m_dNextFrame));
 
-    int read_failed_count = 0;
+    auto read_failed_count = 0;
     CSAMPLE floor_sample[2];
     CSAMPLE ceil_sample[2];
 
@@ -228,12 +228,12 @@ SINT EngineBufferScaleLinear::do_scale(CSAMPLE* buf, SINT buf_size) {
     ceil_sample[0] = 0;
     ceil_sample[1] = 0;
 
-    SINT frames_read = 0;
-    SINT i = 0;
+    auto frames_read = SINT{0};
+    auto i = SINT{0};
     //int screwups_debug = 0;
 
-    double rate_add = fabs(rate_old);
-    const double rate_delta_abs =
+    auto rate_add = std::abs(rate_old);
+    auto rate_delta_abs =
             rate_old < 0 || rate_new < 0 ? -rate_delta : rate_delta;
 
     // Hot frame loop
@@ -248,7 +248,7 @@ SINT EngineBufferScaleLinear::do_scale(CSAMPLE* buf, SINT buf_size) {
 
         // The first bounds check (< m_bufferIntSize) is probably not needed.
 
-        SINT currentFrameFloor = static_cast<SINT>(floor(m_dCurrentFrame));
+        auto currentFrameFloor = static_cast<SINT>(floor(m_dCurrentFrame));
 
         if (currentFrameFloor < 0) {
             // we have advanced to a new buffer in the previous run,
@@ -274,14 +274,14 @@ SINT EngineBufferScaleLinear::do_scale(CSAMPLE* buf, SINT buf_size) {
             }
 
             do {
-                SINT old_bufsize = m_bufferIntSize;
+                auto old_bufsize = m_bufferIntSize;
                 if (unscaled_frames_needed == 0) {
                     // protection against infinite loop
                     // This may happen due to double precision issues
                     ++unscaled_frames_needed;
                 }
 
-                SINT samples_to_read = math_min<SINT>(
+                auto samples_to_read = math_min<SINT>(
                         kiLinearScaleReadAheadLength,
                         getAudioSignal().frames2samples(unscaled_frames_needed));
 
@@ -323,26 +323,21 @@ SINT EngineBufferScaleLinear::do_scale(CSAMPLE* buf, SINT buf_size) {
 
         // For the current index, what percentage is it
         // between the previous and the next?
-        CSAMPLE frac = static_cast<CSAMPLE>(m_dCurrentFrame) - currentFrameFloor;
-
+        auto frac = static_cast<CSAMPLE>(m_dCurrentFrame) - currentFrameFloor;
         // Perform linear interpolation
         buf[i] = floor_sample[0] + frac * (ceil_sample[0] - floor_sample[0]);
         buf[i + 1] = floor_sample[1] + frac * (ceil_sample[1] - floor_sample[1]);
 
         m_floorSampleOld[0] = floor_sample[0];
         m_floorSampleOld[1] = floor_sample[1];
-
         // increment the index for the next loop
         m_dNextFrame = m_dCurrentFrame + rate_add;
-
         // Smooth any changes in the playback rate over one buf_size
         // samples. This prevents the change from being discontinuous and helps
         // improve sound quality.
         rate_add += rate_delta_abs;
         i += getAudioSignal().getChannelCount();
     }
-
     SampleUtil::clear(&buf[i], buf_size - i);
-
     return frames_read;
 }

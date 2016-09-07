@@ -20,8 +20,8 @@ class EngineBufferScaleLinear : public EngineBufferScale  {
     void clear() override;
 
     void setScaleParameters(double base_rate,
-                            double* pTempoRatio,
-                             double* pPitchRatio) override;
+                            double &pTempoRatio,
+                             double &pPitchRatio) override;
 
   private:
     SINT do_scale(CSAMPLE* buf, SINT buf_size);

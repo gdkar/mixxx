@@ -163,14 +163,9 @@ WaveformWidgetFactory::WaveformWidgetFactory() :
             m_openGLVersion = QString::number(majorVersion) + "." +
                     QString::number(minorVersion);
         }
-
-        m_openGLAvailable = true;
-
-        QGLWidget* glWidget = new QGLWidget(); // create paint device
-        // QGLShaderProgram::hasOpenGLShaderPrograms(); valgind error
-        m_openGLShaderAvailable = QGLShaderProgram::hasOpenGLShaderPrograms(glWidget->context());
-        delete glWidget;
     }
+    m_openGLAvailable = true;
+    m_openGLShaderAvailable = true;
 
     evaluateWidgets();
     m_time.start();

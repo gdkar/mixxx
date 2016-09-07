@@ -184,8 +184,7 @@ void MixxxMainWindow::initialize(QApplication* pApp, const CmdlineArgs& args) {
     m_pEffectsManager = new EffectsManager(this, pConfig);
 
     // Starting the master (mixing of the channels and effects):
-    m_pEngine = new EngineMaster(pConfig, "[Master]", m_pEffectsManager,
-                                 true, true);
+    m_pEngine = new EngineMaster(pConfig, "[Master]", m_pEffectsManager,true, true);
 
     // Create effect backends. We do this after creating EngineMaster to allow
     // effect backends to refer to controls that are produced by the engine.
@@ -440,7 +439,8 @@ void MixxxMainWindow::initialize(QApplication* pApp, const CmdlineArgs& args) {
     // The old central widget is automatically disposed.
 }
 
-void MixxxMainWindow::finalize() {
+void MixxxMainWindow::finalize()
+{
     Timer t("MixxxMainWindow::~finalize");
     t.start();
 
@@ -465,48 +465,37 @@ void MixxxMainWindow::finalize() {
     DEBUG_ASSERT_AND_HANDLE(pMenuBar.isNull()) {
         qWarning() << "WMainMenuBar was not deleted by our sendPostedEvents trick.";
     }
-
     qDebug() << "Destroying MixxxMainWindow";
-
     qDebug() << t.elapsed(false).debugMillisWithUnit() << "saving configuration";
     m_pSettingsManager->save();
-
     // SoundManager depend on Engine and Config
     qDebug() << t.elapsed(false).debugMillisWithUnit() << "deleting SoundManager";
     delete m_pSoundManager;
-
     // GUI depends on KeyboardEventFilter, PlayerManager, Library
     qDebug() << t.elapsed(false).debugMillisWithUnit() << "deleting Skin";
     delete m_pWidgetParent;
-
     // ControllerManager depends on Config
     qDebug() << t.elapsed(false).debugMillisWithUnit() << "deleting ControllerManager";
     delete m_pControllerManager;
-
 #ifdef __VINYLCONTROL__
     // VinylControlManager depends on a CO the engine owns
     // (vinylcontrol_enabled in VinylControlControl)
     qDebug() << t.elapsed(false).debugMillisWithUnit() << "deleting VinylControlManager";
     delete m_pVCManager;
 #endif
-
     // CoverArtCache is fairly independent of everything else.
     CoverArtCache::destroy();
-
     // Delete the library after the view so there are no dangling pointers to
     // the data models.
     // Depends on RecordingManager and PlayerManager
     qDebug() << t.elapsed(false).debugMillisWithUnit() << "deleting Library";
     delete m_pLibrary;
-
     // PlayerManager depends on Engine, SoundManager, VinylControlManager, and Config
     qDebug() << t.elapsed(false).debugMillisWithUnit() << "deleting PlayerManager";
     delete m_pPlayerManager;
-
     // RecordingManager depends on config, engine
     qDebug() << t.elapsed(false).debugMillisWithUnit() << "deleting RecordingManager";
     delete m_pRecordingManager;
-
 #ifdef __BROADCAST__
     // BroadcastManager depends on config, engine
     qDebug() << t.elapsed(false).debugMillisWithUnit() << "deleting BroadcastManager";

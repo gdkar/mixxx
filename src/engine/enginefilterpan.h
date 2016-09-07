@@ -1,32 +1,38 @@
 #ifndef ENGINEFILTERPAN_H
 #define ENGINEFILTERPAN_H
 
-#include <string.h>
-
+#include <cstring>
+#include <utility>
+#include <algorithm>
+#include <memory>
+#include <cstdint>
 #include "engine/engineobject.h"
 #include "util/assert.h"
+#include "util/sample.h"
 
-static const int numChannels = 2;
 
-template<unsigned int SIZE>
 class EngineFilterPan : public EngineObjectConstIn {
+  static const int numChannels = 2;
   public:
-    EngineFilterPan()
-            : m_leftDelayFrames(0),
+    EngineFilterPan(QObject *p, size_t _SIZE)
+            : EngineObjectConstIn(p),
+              SIZE(_SIZE),
+              m_buf(std::make_unique<CSAMPLE[]>(SIZE * numChannels)),
+              m_leftDelayFrames(0),
               m_oldLeftDelayFrames(0),
               m_delayFrame(0),
               m_doRamping(false),
               m_doStart(false) {
         // Set the current buffers to 0
-        memset(m_buf, 0, sizeof(m_buf));
+        std::fill_n(&m_buf[0], SIZE, 0);
     }
 
-    virtual ~EngineFilterPan() {};
+    virtual ~EngineFilterPan();
 
     void pauseFilter() {
         // Set the current buffers to 0
         if (!m_doStart) {
-            memset(m_buf, 0, sizeof(m_buf));
+        std::fill_n(&m_buf[0], SIZE, 0);
             m_doStart = true;
         }
     }
@@ -121,10 +127,11 @@ class EngineFilterPan : public EngineObjectConstIn {
     }
 
   protected:
+    size_t SIZE;
     int m_leftDelayFrames;
     int m_oldLeftDelayFrames;
     int m_delayFrame;
-    CSAMPLE m_buf[SIZE * numChannels];
+    std::unique_ptr<CSAMPLE[]> m_buf;
     bool m_doRamping;
     bool m_doStart;
 };

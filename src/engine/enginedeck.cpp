@@ -26,12 +26,12 @@
 #include "engine/enginevumeter.h"
 #include "util/sample.h"
 
-EngineDeck::EngineDeck(const ChannelHandleAndGroup& handle_group,
+EngineDeck::EngineDeck(QObject *p, const ChannelHandleAndGroup& handle_group,
                        UserSettingsPointer pConfig,
                        EngineMaster* pMixingEngine,
                        EffectsManager* pEffectsManager,
                        EngineChannel::ChannelOrientation defaultOrientation)
-        : EngineChannel(handle_group, defaultOrientation),
+        : EngineChannel(p, handle_group, defaultOrientation),
           m_pConfig(pConfig),
           m_pEngineEffectsManager(pEffectsManager ? pEffectsManager->getEngineEffectsManager() : NULL),
           m_pInputConfigured(new ControlObject(ConfigKey(getGroup(), "input_configured"))),
@@ -62,9 +62,9 @@ EngineDeck::EngineDeck(const ChannelHandleAndGroup& handle_group,
     m_pSampleRate = new ControlProxy("[Master]", "samplerate");
 
     // Set up additional engines
-    m_pPregain = new EnginePregain(getGroup());
-    m_pVUMeter = new EngineVuMeter(getGroup());
-    m_pBuffer = new EngineBuffer(getGroup(), pConfig, this, pMixingEngine);
+    m_pPregain = new EnginePregain(this,getGroup());
+    m_pVUMeter = new EngineVuMeter(this,getGroup());
+    m_pBuffer = new EngineBuffer(this,getGroup(), pConfig, this, pMixingEngine);
 }
 
 EngineDeck::~EngineDeck() {

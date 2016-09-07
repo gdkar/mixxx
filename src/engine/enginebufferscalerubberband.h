@@ -19,18 +19,14 @@ class EngineBufferScaleRubberBand : public EngineBufferScale {
     ~EngineBufferScaleRubberBand() override;
 
     void setScaleParameters(double base_rate,
-                            double* pTempoRatio,
-                            double* pPitchRatio) override;
-
+                            double& pTempoRatio,
+                            double& pPitchRatio) override;
     void setSampleRate(SINT iSampleRate) override;
-
     double scaleBuffer(
             CSAMPLE* pOutputBuffer,
             SINT iOutputBufferSize) override;
-
     // Flush buffer.
     void clear() override;
-
   private:
     // Reset RubberBand library with new audio signal
     void initRubberBand();

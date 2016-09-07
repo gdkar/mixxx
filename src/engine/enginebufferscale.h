@@ -41,11 +41,11 @@ class EngineBufferScale : public QObject {
     // If parameter settings are outside of acceptable limits, each setting will
     // be set to the value it was clamped to.
     virtual void setScaleParameters(double base_rate,
-                                    double* pTempoRatio,
-                                    double* pPitchRatio) {
+                                    double &pTempoRatio,
+                                    double &pPitchRatio) {
         m_dBaseRate = base_rate;
-        m_dTempoRatio = *pTempoRatio;
-        m_dPitchRatio = *pPitchRatio;
+        m_dTempoRatio = pTempoRatio;
+        m_dPitchRatio = pPitchRatio;
     }
 
     // Set the desired output sample rate.

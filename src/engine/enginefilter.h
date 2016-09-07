@@ -32,7 +32,7 @@
 class EngineFilter : public EngineObject {
     Q_OBJECT
   public:
-    EngineFilter(char* conf, int predefinedType = 0);
+    EngineFilter(QObject *pParent, char* conf, int predefinedType = 0);
     virtual ~EngineFilter();
 
     void process(CSAMPLE* pInOut, const int iBufferSize);

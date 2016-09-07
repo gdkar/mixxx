@@ -93,10 +93,10 @@ EngineMaster::EngineMaster(UserSettingsPointer pConfig,
                                       ConfigKey(group, "gain"));
 
     // VU meter:
-    m_pVumeter = new EngineVuMeter(group);
+    m_pVumeter = new EngineVuMeter(this, group);
 
-    m_pMasterDelay = new EngineDelay(group, ConfigKey(group, "delay"));
-    m_pHeadDelay = new EngineDelay(group, ConfigKey(group, "headDelay"));
+    m_pMasterDelay = new EngineDelay(this, group, ConfigKey(group, "delay"));
+    m_pHeadDelay = new EngineDelay(this,group, ConfigKey(group, "headDelay"));
 
     // Headphone volume
     m_pHeadGain = new ControlAudioTaperPot(ConfigKey(group, "headGain"), -14, 14, 0.5);
@@ -206,16 +206,15 @@ EngineMaster::~EngineMaster() {
     for (int o = EngineChannel::LEFT; o <= EngineChannel::RIGHT; o++) {
         SampleUtil::free(m_pOutputBusBuffers[o]);
     }
-
     delete m_pWorkerScheduler;
-
     for (int i = 0; i < m_channels.size(); ++i) {
-        ChannelInfo* pChannelInfo = m_channels[i];
-        SampleUtil::free(pChannelInfo->m_pBuffer);
-        delete pChannelInfo->m_pChannel;
-        delete pChannelInfo->m_pVolumeControl;
-        delete pChannelInfo->m_pMuteControl;
-        delete pChannelInfo;
+        if(auto pChannelInfo = m_channels[i]) {
+            SampleUtil::free(pChannelInfo->m_pBuffer);
+            delete pChannelInfo->m_pChannel;
+            delete pChannelInfo->m_pVolumeControl;
+            delete pChannelInfo->m_pMuteControl;
+            delete pChannelInfo;
+        }
     }
 }
 
@@ -579,7 +578,7 @@ void EngineMaster::process(const int iBufferSize) {
 }
 
 void EngineMaster::addChannel(EngineChannel* pChannel) {
-    ChannelInfo* pChannelInfo = new ChannelInfo(m_channels.size());
+    auto pChannelInfo = new ChannelInfo(m_channels.size());
     pChannelInfo->m_pChannel = pChannel;
     const QString& group = pChannel->getGroup();
     pChannelInfo->m_handle = m_channelHandleFactory.getOrCreateHandle(group);

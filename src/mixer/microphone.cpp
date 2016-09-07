@@ -10,11 +10,11 @@ Microphone::Microphone(QObject* pParent, const QString& group, int index,
                        SoundManager* pSoundManager, EngineMaster* pEngine,
                        EffectsManager* pEffectsManager)
         : BasePlayer(pParent, group) {
-    ChannelHandleAndGroup channelGroup = pEngine->registerChannelGroup(group);
-    EngineMicrophone* pMicrophone =
-            new EngineMicrophone(channelGroup, pEffectsManager);
+    auto channelGroup = pEngine->registerChannelGroup(group);
+    auto  pMicrophone =
+            new EngineMicrophone(pEngine, channelGroup, pEffectsManager);
     pEngine->addChannel(pMicrophone);
-    AudioInput micInput = AudioInput(AudioPath::MICROPHONE, 0, 2, index);
+    auto micInput = AudioInput(AudioPath::MICROPHONE, 0, 2, index);
     pSoundManager->registerInput(micInput, pMicrophone);
 
     m_pInputConfigured.reset(new ControlProxy(group, "input_configured", this));
@@ -26,8 +26,8 @@ Microphone::~Microphone() {
 }
 
 void Microphone::slotTalkoverEnabled(double v) {
-    bool configured = m_pInputConfigured->toBool();
-    bool talkover = v > 0.0;
+    auto configured = m_pInputConfigured->toBool();
+    auto talkover = v > 0.0;
 
     // Warn the user if they try to enable talkover on a microphone with no
     // configured input.

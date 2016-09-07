@@ -52,11 +52,11 @@ void EngineBufferScaleRubberBand::initRubberBand() {
 }
 
 void EngineBufferScaleRubberBand::setScaleParameters(double base_rate,
-                                                     double* pTempoRatio,
-                                                     double* pPitchRatio) {
+                                                     double& pTempoRatio,
+                                                     double& pPitchRatio) {
     // Negative speed means we are going backwards. pitch does not affect
     // the playback direction.
-    m_bBackwards = *pTempoRatio < 0;
+    m_bBackwards = pTempoRatio < 0;
 
     // Due to a bug in RubberBand, setting the timeRatio to a large value can
     // cause division-by-zero SIGFPEs. We limit the minimum seek speed to
@@ -65,15 +65,15 @@ void EngineBufferScaleRubberBand::setScaleParameters(double base_rate,
     // References:
     // https://bugs.launchpad.net/ubuntu/+bug/1263233
     // https://bitbucket.org/breakfastquay/rubberband/issue/4/sigfpe-zero-division-with-high-time-ratios
-    const double kMinSeekSpeed = 1.0 / 128.0;
-    double speed_abs = std::abs(*pTempoRatio);
+    auto kMinSeekSpeed = 1.0 / 128.0;
+    auto speed_abs = std::abs(pTempoRatio);
     if (speed_abs < kMinSeekSpeed) {
         // Let the caller know we ignored their speed.
-        speed_abs = *pTempoRatio = 0;
+        speed_abs = pTempoRatio = 0;
     }
     // RubberBand handles checking for whether the change in pitchScale is a
     // no-op.
-    auto pitchScale = std::abs(base_rate * *pPitchRatio);
+    auto pitchScale = std::abs(base_rate * pPitchRatio);
     if (pitchScale > 0) {
         //qDebug() << "EngineBufferScaleRubberBand setPitchScale" << *pitch << pitchScale;
         m_pRubberBand->setPitchScale(pitchScale);
@@ -99,33 +99,33 @@ void EngineBufferScaleRubberBand::setScaleParameters(double base_rate,
             m_pRubberBand->setTimeRatio(1.0 / timeRatioInverse);
         }
         speed_abs = timeRatioInverse / base_rate;
-        *pTempoRatio = m_bBackwards ? -speed_abs : speed_abs;
+        pTempoRatio = m_bBackwards ? -speed_abs : speed_abs;
     }
 
     // Used by other methods so we need to keep them up to date.
     m_dBaseRate = base_rate;
     m_dTempoRatio = speed_abs;
-    m_dPitchRatio = *pPitchRatio;
+    m_dPitchRatio = pPitchRatio;
 }
 
-void EngineBufferScaleRubberBand::setSampleRate(SINT iSampleRate) {
+void EngineBufferScaleRubberBand::setSampleRate(SINT iSampleRate)
+{
     EngineBufferScale::setSampleRate(iSampleRate);
     initRubberBand();
 }
-
-void EngineBufferScaleRubberBand::clear() {
+void EngineBufferScaleRubberBand::clear()
+{
     m_pRubberBand->reset();
 }
-
 SINT EngineBufferScaleRubberBand::retrieveAndDeinterleave(
         CSAMPLE* pBuffer,
         SINT frames) {
-    SINT frames_available = m_pRubberBand->available();
-    SINT frames_to_read = math_min(frames_available, frames);
-    SINT received_frames = m_pRubberBand->retrieve(
-        (float* const*)m_retrieve_buffer, frames_to_read);
+    auto frames_available = SINT(m_pRubberBand->available());
+    auto frames_to_read = math_min<SINT>(frames_available, frames);
+    auto received_frames = SINT(m_pRubberBand->retrieve(
+        (float* const*)m_retrieve_buffer, frames_to_read));
 
-    for (SINT i = 0; i < received_frames; ++i) {
+    for (auto i = SINT{0}; i < received_frames; ++i) {
         pBuffer[i*2] = m_retrieve_buffer[0][i];
         pBuffer[i*2+1] = m_retrieve_buffer[1][i];
     }
@@ -136,13 +136,12 @@ SINT EngineBufferScaleRubberBand::retrieveAndDeinterleave(
 void EngineBufferScaleRubberBand::deinterleaveAndProcess(
     const CSAMPLE* pBuffer,
     SINT frames,
-    bool flush) {
-
-    for (SINT i = 0; i < frames; ++i) {
+    bool flush)
+{
+    for (auto i = SINT{0}; i < frames; ++i) {
         m_retrieve_buffer[0][i] = pBuffer[i*2];
         m_retrieve_buffer[1][i] = pBuffer[i*2+1];
     }
-
     m_pRubberBand->process((const float* const*)m_retrieve_buffer,frames, flush);
 }
 double EngineBufferScaleRubberBand::scaleBuffer(
@@ -172,7 +171,6 @@ double EngineBufferScaleRubberBand::scaleBuffer(
         remaining_frames -= received_frames;
         total_received_frames += received_frames;
         read += getAudioSignal().frames2samples(received_frames);
-
         if (break_out_after_retrieve_and_reset_rubberband) {
             //qDebug() << "break_out_after_retrieve_and_reset_rubberband";
             // If we break out early then we have flushed RubberBand and need to
@@ -203,7 +201,6 @@ double EngineBufferScaleRubberBand::scaleBuffer(
                         m_buffer_back,
                         getAudioSignal().frames2samples(iLenFramesRequired));
             auto iAvailFrames = getAudioSignal().samples2frames(iAvailSamples);
-
             if (iAvailFrames > 0) {
                 last_read_failed = false;
                 total_read_frames += iAvailFrames;
@@ -220,13 +217,11 @@ double EngineBufferScaleRubberBand::scaleBuffer(
             }
         }
     }
-
     if (remaining_frames > 0) {
         SampleUtil::clear(read, getAudioSignal().frames2samples(remaining_frames));
         Counter counter("EngineBufferScaleRubberBand::getScaled underflow");
         counter.increment();
     }
-
     // framesRead is interpreted as the total number of virtual sample frames
     // consumed to produce the scaled buffer. Due to this, we do not take into
     // account directionality or starting point.

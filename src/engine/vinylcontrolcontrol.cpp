@@ -11,7 +11,7 @@ VinylControlControl::VinylControlControl(QString group, UserSettingsPointer pCon
     m_pControlVinylSpeedType = new ControlObject(ConfigKey(group, "vinylcontrol_speed_type"));
 
     //Convert the ConfigKey's value into a double for the CO (for fast reads).
-    QString strVinylSpeedType = pConfig->getValueString(ConfigKey(group,
+    auto strVinylSpeedType = pConfig->getValueString(ConfigKey(group,
                                                       "vinylcontrol_speed_type"));
     if (strVinylSpeedType == MIXXX_VINYL_SPEED_33) {
         m_pControlVinylSpeedType->set(MIXXX_VINYL_SPEED_33_NUM);

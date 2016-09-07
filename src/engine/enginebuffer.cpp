@@ -49,9 +49,10 @@ const SINT kSamplesPerFrame = 2; // Engine buffer uses Stereo frames only
 
 } // anonymous namespace
 
-EngineBuffer::EngineBuffer(QString group, UserSettingsPointer pConfig,
+EngineBuffer::EngineBuffer(QObject *p, QString group, UserSettingsPointer pConfig,
                            EngineChannel* pChannel, EngineMaster* pMixingEngine)
-        : m_group(group),
+        : EngineObject(p),
+          m_group(group),
           m_pConfig(pConfig),
           m_pLoopingControl(NULL),
           m_pSyncControl(NULL),
@@ -908,8 +909,8 @@ void EngineBuffer::process(CSAMPLE* pOutput, const int iBufferSize) {
             // the deck speed should affect the pitch.
 
             m_pScale->setScaleParameters(baserate,
-                                         &speed,
-                                         &pitchRatio);
+                                         speed,
+                                         pitchRatio);
 
             // The way we treat rate inside of EngineBuffer is actually a
             // description of "sample consumption rate" or percentage of samples
