@@ -2,13 +2,15 @@
 #define MIXXX_SOUNDSOURCE_H
 
 #include <QUrl>
-#include "sources/metadatasource.h"
+#include <QImage>
+#include "util/result.h"
 #include "sources/audiosource.h"
+#include "track/trackmetadata.h"
 
 namespace mixxx {
 
 // Base class for sound sources.
-class SoundSource: public MetadataSource, public AudioSource {
+class SoundSource: public AudioSource {
 public:
     QUrl getUrl() const { return m_url;}
     QString getUrlString() const { return m_url.toString();}
@@ -21,9 +23,9 @@ public:
     // Default implementations for reading/writing track metadata.
     Result parseTrackMetadataAndCoverArt(
             TrackMetadata* pTrackMetadata,
-            QImage* pCoverArt) const override;
+            QImage* pCoverArt) const ;
     Result writeTrackMetadata(
-            const TrackMetadata& trackMetadata) const override;
+            const TrackMetadata& trackMetadata) const ;
 
     enum class OpenResult {
         SUCCEEDED,
