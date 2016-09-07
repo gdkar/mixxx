@@ -22,13 +22,10 @@ class MidiOutputHandler : QObject {
     MidiOutputHandler(MidiController* controller,
                       const MidiOutputMapping& mapping);
     virtual ~MidiOutputHandler();
-
     bool validate();
     void update();
-
   public slots:
     void controlChanged(double value);
-
   private:
     MidiController* m_pController;
     const MidiOutputMapping m_mapping;

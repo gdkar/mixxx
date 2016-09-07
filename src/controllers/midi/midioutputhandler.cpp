@@ -39,25 +39,21 @@ void MidiOutputHandler::update() {
 void MidiOutputHandler::controlChanged(double value) {
     // Don't update with out of date messages.
     value = m_cos.get();
-
-    unsigned char byte3 = m_mapping.output.off;
+    auto byte3 = m_mapping.output.off;
     if (value >= m_mapping.output.min && value <= m_mapping.output.max) {
         byte3 = m_mapping.output.on;
     }
-
     if (static_cast<int>(byte3) == m_lastVal) {
         // Don't send redundant messages.
         return;
     }
-
     if (!m_pController->isOpen()) {
         qWarning() << "MIDI device" << m_pController->getName() << "not open for output!";
     } else if (byte3 != 0xFF) {
         controllerDebug("sending MIDI bytes:" << m_mapping.output.status
                      << "," << m_mapping.output.control << ","
                      << byte3);
-        m_pController->sendShortMsg(m_mapping.output.status,
-                                    m_mapping.output.control, byte3);
+        m_pController->sendShortMsg(m_mapping.output.status,m_mapping.output.control, byte3);
         m_lastVal = static_cast<int>(byte3);
     }
 }

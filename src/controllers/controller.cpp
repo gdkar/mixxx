@@ -92,7 +92,8 @@ void Controller::send(QList<int> data, unsigned int length) {
     send(msg);
 }
 
-void Controller::receive(const QByteArray data, mixxx::Duration timestamp) {
+void Controller::receive(const QByteArray data, mixxx::Duration timestamp)
+{
     if (m_pEngine == NULL) {
         //qWarning() << "Controller::receive called with no active engine!";
         // Don't complain, since this will always show after closing a device as
@@ -115,7 +116,6 @@ void Controller::receive(const QByteArray data, mixxx::Duration timestamp) {
         }
         controllerDebug(message);
     }
-
     foreach (QString function, m_pEngine->getScriptFunctionPrefixes()) {
         if (function == "") {
             continue;

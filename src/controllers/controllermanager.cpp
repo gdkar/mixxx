@@ -15,6 +15,7 @@
 #include "util/time.h"
 
 #include "controllers/midi/portmidienumerator.h"
+#include "controllers/midi/rtmidienumerator.h"
 #ifdef __HSS1394__
 #include "controllers/midi/hss1394enumerator.h"
 #endif
@@ -122,6 +123,7 @@ void ControllerManager::slotInitialize() {
     // Instantiate all enumerators. Enumerators can take a long time to
     // construct since they interact with host MIDI APIs.
     m_enumerators.append(new PortMidiEnumerator());
+    m_enumerators.append(new RtMidiEnumerator());
 #ifdef __HSS1394__
     m_enumerators.append(new Hss1394Enumerator());
 #endif
@@ -255,12 +257,12 @@ void ControllerManager::slotSetUpDevices() {
     maybeStartOrStopPolling();
 }
 
-void ControllerManager::maybeStartOrStopPolling() {
+void ControllerManager::maybeStartOrStopPolling()
+{
     QMutexLocker locker(&m_mutex);
-    QList<Controller*> controllers = m_controllers;
+    auto controllers = m_controllers;
     locker.unlock();
-
-    bool shouldPoll = false;
+    auto shouldPoll = false;
     foreach (Controller* pController, controllers) {
         if (pController->isOpen() && pController->isPolling()) {
             shouldPoll = true;
@@ -272,20 +274,19 @@ void ControllerManager::maybeStartOrStopPolling() {
         stopPolling();
     }
 }
-
-void ControllerManager::startPolling() {
+void ControllerManager::startPolling()
+{
     // Start the polling timer.
     if (!m_pollTimer.isActive()) {
         m_pollTimer.start();
         qDebug() << "Controller polling started.";
     }
 }
-
-void ControllerManager::stopPolling() {
+void ControllerManager::stopPolling()
+{
     m_pollTimer.stop();
     qDebug() << "Controller polling stopped.";
 }
-
 void ControllerManager::pollDevices() {
     // Note: this function is called from a high priority thread which
     // may stall the GUI or may reduce the available CPU time for other
@@ -313,55 +314,49 @@ void ControllerManager::pollDevices() {
         //qDebug() << "ControllerManager::pollDevices() skip";
         return;
     }
-
-    mixxx::Duration start = mixxx::Time::elapsed();
+    auto start = mixxx::Time::elapsed();
     foreach (Controller* pDevice, m_controllers) {
-        if (pDevice->isOpen() && pDevice->isPolling()) {
+        if (pDevice->isOpen() && pDevice->isPolling())
             pDevice->poll();
-        }
     }
-
-    mixxx::Duration duration = mixxx::Time::elapsed() - start;
+    auto duration = mixxx::Time::elapsed() - start;
     if (duration > mixxx::Duration::fromMillis(kPollIntervalMillis)) {
         m_skipPoll = true;
     }
     //qDebug() << "ControllerManager::pollDevices()" << duration << start;
 }
-
-void ControllerManager::openController(Controller* pController) {
-    if (!pController) {
+void ControllerManager::openController(Controller* pController)
+{
+    if (!pController)
         return;
-    }
-    if (pController->isOpen()) {
+    if (pController->isOpen())
         pController->close();
-    }
-    int result = pController->open();
-    maybeStartOrStopPolling();
 
+    auto result = pController->open();
+    maybeStartOrStopPolling();
     // If successfully opened the device, apply the preset and save the
     // preference setting.
-    if (result == 0) {
+    if (result == 0)
+    {
         pController->applyPreset(getPresetPaths(m_pConfig), true);
-
         // Update configuration to reflect controller is enabled.
         m_pConfig->setValue(ConfigKey(
             "[Controller]", presetFilenameFromName(pController->getName())), 1);
     }
 }
-
-void ControllerManager::closeController(Controller* pController) {
-    if (!pController) {
+void ControllerManager::closeController(Controller* pController)
+{
+    if (!pController)
         return;
-    }
     pController->close();
     maybeStartOrStopPolling();
     // Update configuration to reflect controller is disabled.
     m_pConfig->setValue(ConfigKey(
         "[Controller]", presetFilenameFromName(pController->getName())), 0);
 }
-
 bool ControllerManager::loadPreset(Controller* pController,
-                                   ControllerPresetPointer preset) {
+                                   ControllerPresetPointer preset)
+{
     if (!preset) {
         return false;
     }
@@ -374,9 +369,9 @@ bool ControllerManager::loadPreset(Controller* pController,
         preset->filePath());
     return true;
 }
-
-void ControllerManager::slotSavePresets(bool onlyActive) {
-    QList<Controller*> deviceList = getControllerList(false, true);
+void ControllerManager::slotSavePresets(bool onlyActive)
+{
+    auto deviceList = getControllerList(false, true);
     QSet<QString> filenames;
 
     // TODO(rryan): This should be split up somehow but the filename selection
@@ -386,10 +381,10 @@ void ControllerManager::slotSavePresets(bool onlyActive) {
         if (onlyActive && !pController->isOpen()) {
             continue;
         }
-        QString name = pController->getName();
-        QString filename = firstAvailableFilename(
+        auto name = pController->getName();
+        auto filename = firstAvailableFilename(
             filenames, presetFilenameFromName(name));
-        QString presetPath = userPresetsPath(m_pConfig) + filename
+        auto presetPath = userPresetsPath(m_pConfig) + filename
                 + pController->presetExtension();
         if (!pController->savePreset(presetPath)) {
             qWarning() << "Failed to write preset for device"
@@ -399,29 +394,26 @@ void ControllerManager::slotSavePresets(bool onlyActive) {
 }
 
 // static
-QList<QString> ControllerManager::getPresetPaths(UserSettingsPointer pConfig) {
+QList<QString> ControllerManager::getPresetPaths(UserSettingsPointer pConfig)
+{
     QList<QString> scriptPaths;
     scriptPaths.append(userPresetsPath(pConfig));
     scriptPaths.append(resourcePresetsPath(pConfig));
     return scriptPaths;
 }
-
 // static
-bool ControllerManager::checksumFile(const QString& filename,
-                                     quint16* pChecksum) {
+bool ControllerManager::checksumFile(const QString& filename,quint16* pChecksum)
+{
     QFile file(filename);
     if (!file.open(QIODevice::ReadOnly)) {
         return false;
     }
-
-    qint64 fileSize = file.size();
-    const char* pFile = reinterpret_cast<char*>(file.map(0, fileSize));
-
+    auto fileSize = file.size();
+    auto pFile = reinterpret_cast<const char*>(file.map(0, fileSize));
     if (pFile == NULL) {
         file.close();
         return false;
     }
-
     *pChecksum = qChecksum(pFile, fileSize);
     file.close();
     return true;
@@ -434,10 +426,8 @@ QString ControllerManager::getAbsolutePath(const QString& pathOrFilename,
     if (fileInfo.isAbsolute()) {
         return pathOrFilename;
     }
-
     foreach (const QString& path, paths) {
         QDir pathDir(path);
-
         if (pathDir.exists(pathOrFilename)) {
             return pathDir.absoluteFilePath(pathOrFilename);
         }
@@ -449,38 +439,30 @@ QString ControllerManager::getAbsolutePath(const QString& pathOrFilename,
 bool ControllerManager::importScript(const QString& scriptPath,
                                      QString* newScriptFileName) {
     QDir userPresets(userPresetsPath(m_pConfig));
-
     qDebug() << "ControllerManager::importScript importing script" << scriptPath
              << "to" << userPresets.absolutePath();
-
     QFile scriptFile(scriptPath);
     QFileInfo script(scriptFile);
-
     if (!script.exists() || !script.isReadable()) {
         qWarning() << "ControllerManager::importScript script does not exist"
                    << "or is unreadable:" << scriptPath;
         return false;
     }
-
     // Not fatal if we can't checksum but still warn about it.
     quint16 scriptChecksum = 0;
-    bool scriptChecksumGood = checksumFile(scriptPath, &scriptChecksum);
+    auto scriptChecksumGood = checksumFile(scriptPath, &scriptChecksum);
     if (!scriptChecksumGood) {
-        qWarning() << "ControllerManager::importScript could not checksum file:"
-                   << scriptPath;
+        qWarning() << "ControllerManager::importScript could not checksum file:" << scriptPath;
     }
-
     // The name we will save this file as in our local script repository. The
     // conflict resolution logic below will mutate this variable if the name is
     // already taken.
-    QString scriptFileName = script.fileName();
-
+    auto scriptFileName = script.fileName();
     // For a file like "myfile.foo.bar.js", scriptBaseName is "myfile.foo.bar"
     // and scriptSuffix is "js".
-    QString scriptBaseName = script.completeBaseName();
-    QString scriptSuffix = script.suffix();
-    int conflictNumber = 1;
-
+    auto scriptBaseName = script.completeBaseName();
+    auto scriptSuffix = script.suffix();
+    auto conflictNumber = 1;
     // This script exists.
     while (userPresets.exists(scriptFileName)) {
         // If the two files are identical. We're done.
@@ -493,7 +475,6 @@ bool ControllerManager::importScript(const QString& scriptPath,
                      << "Skipping import.";
             return true;
         }
-
         // Otherwise, we need to rename the file to a non-conflicting
         // name. Insert a .X where X is a counter that we count up until we find
         // a filename that does not exist.
@@ -502,14 +483,12 @@ bool ControllerManager::importScript(const QString& scriptPath,
             QString::number(conflictNumber++),
             scriptSuffix);
     }
-
-    QString destinationPath = userPresets.filePath(scriptFileName);
+    auto destinationPath = userPresets.filePath(scriptFileName);
     if (!scriptFile.copy(destinationPath)) {
         qDebug() << "ControllerManager::importScript could not copy script to"
                  << "local preset path:" << destinationPath;
         return false;
     }
-
     *newScriptFileName = scriptFileName;
     return true;
 }

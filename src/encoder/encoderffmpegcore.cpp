@@ -212,11 +212,7 @@ int EncoderFfmpegCore::initEncoder(int bitrate, int samplerate) {
     m_lBitrate = bitrate * 1000;
     m_lSampleRate = samplerate;
 
-#if LIBAVCODEC_VERSION_INT > 3544932
     if (m_SCcodecId == AV_CODEC_ID_MP3) {
-#else
-    if (m_SCcodecId == CODEC_ID_MP3) {
-#endif // LIBAVCODEC_VERSION_INT > 3544932
         qDebug() << "EncoderFfmpegCore::initEncoder: Codec MP3";
 #ifdef avformat_alloc_output_context2
         avformat_alloc_output_context2(&m_pEncodeFormatCtx, NULL, NULL, "output.mp3");
@@ -224,11 +220,7 @@ int EncoderFfmpegCore::initEncoder(int bitrate, int samplerate) {
         m_pEncoderFormat = av_guess_format(NULL, "output.mp3", NULL);
 #endif // avformat_alloc_output_context2
 
-#if LIBAVCODEC_VERSION_INT > 3544932
     } else if (m_SCcodecId == AV_CODEC_ID_AAC) {
-#else
-    } else if (m_SCcodecId == CODEC_ID_AAC) {
-#endif // LIBAVCODEC_VERSION_INT > 3544932
         qDebug() << "EncoderFfmpegCore::initEncoder: Codec M4A";
 #ifdef avformat_alloc_output_context2
         avformat_alloc_output_context2(&m_pEncodeFormatCtx, NULL, NULL, "output.m4a");
@@ -243,14 +235,9 @@ int EncoderFfmpegCore::initEncoder(int bitrate, int samplerate) {
         m_pEncodeFormatCtx->oformat->audio_codec=AV_CODEC_ID_VORBIS;
 #else
         m_pEncoderFormat = av_guess_format(NULL, "output.ogg", NULL);
-#if LIBAVCODEC_VERSION_INT > 3544932
         m_pEncoderFormat->audio_codec=AV_CODEC_ID_VORBIS;
-#else
-        m_pEncoderFormat->audio_codec=CODEC_ID_VORBIS;
-#endif // LIBAVCODEC_VERSION_INT > 3544932
 #endif // avformat_alloc_output_context2
     }
-
 #ifdef avformat_alloc_output_context2
     m_pEncoderFormat = m_pEncodeFormatCtx->oformat;
 #else
@@ -259,35 +246,22 @@ int EncoderFfmpegCore::initEncoder(int bitrate, int samplerate) {
 
     m_pEncoderAudioStream = addStream(m_pEncodeFormatCtx, &m_pEncoderAudioCodec,
                                       m_pEncoderFormat->audio_codec);
-
     openAudio(m_pEncoderAudioCodec, m_pEncoderAudioStream);
-
     // qDebug() << "jepusti";
-
     return 0;
 }
-
 // Private methods
-
 int EncoderFfmpegCore::writeAudioFrame(AVFormatContext *formatctx,
                                        AVStream *stream) {
     AVCodecContext *l_SCodecCtx = NULL;;
-    AVPacket l_SPacket;
-#if LIBAVCODEC_VERSION_INT < 3617792
-    AVFrame *l_SFrame = avcodec_alloc_frame();
-#else
-    AVFrame *l_SFrame = av_frame_alloc();
-#endif
+    auto l_SPacket = av_packet_alloc();
+    auto l_SFrame = av_frame_alloc();
     int l_iGotPacket;
     int l_iRet;
     uint8_t *l_iOut = NULL;
 #ifdef av_make_error_string
     char l_strErrorBuff[256];
 #endif // av_make_error_string
-
-    av_init_packet(&l_SPacket);
-    l_SPacket.size = 0;
-    l_SPacket.data = NULL;
 
     // Calculate correct DTS for FFMPEG
     m_lDts = round(((double)m_lRecordedBytes / (double)44100 / (double)2. *
@@ -302,10 +276,7 @@ int EncoderFfmpegCore::writeAudioFrame(AVFormatContext *formatctx,
     l_SFrame->nb_samples = m_iAudioInputFrameSize;
     // Mixxx uses float (32 bit) samples..
     l_SFrame->format = AV_SAMPLE_FMT_FLT;
-#ifndef __FFMPEGOLDAPI__
     l_SFrame->channel_layout = l_SCodecCtx->channel_layout;
-#endif // __FFMPEGOLDAPI__
-
     l_iRet = avcodec_fill_audio_frame(l_SFrame,
                                       l_SCodecCtx->channels,
                                       AV_SAMPLE_FMT_FLT,
@@ -325,34 +296,19 @@ int EncoderFfmpegCore::writeAudioFrame(AVFormatContext *formatctx,
 
     // If we have something else than AV_SAMPLE_FMT_FLT we have to convert it
     // to something that fits..
-    if (l_SCodecCtx->sample_fmt != AV_SAMPLE_FMT_FLT) {
-
+    if (l_SCodecCtx->sample_fmt != AV_SAMPLE_FMT_FLT)
+    {
         m_pResample->reSampleMixxx(l_SFrame, &l_iOut);
         // After we have turned our samples to destination
         // Format we must re-alloc l_SFrame.. it easier like this..
         // FFMPEG 2.2 3561060 anb beyond
-#if LIBAVCODEC_VERSION_INT >= 3561060
-        av_frame_unref(l_SFrame);
         av_frame_free(&l_SFrame);
-// FFMPEG 0.11 and below
-#elif LIBAVCODEC_VERSION_INT <= 3544932
-        av_free(l_SFrame);
-// FFMPEG 1.0 - 2.1
-#else
-        avcodec_free_frame(&l_SFrame);
-#endif
         l_SFrame = NULL;
 
-#if LIBAVCODEC_VERSION_INT < 3617792
-        l_SFrame = avcodec_alloc_frame();
-#else
         l_SFrame = av_frame_alloc();
-#endif
         l_SFrame->nb_samples = m_iAudioInputFrameSize;
         l_SFrame->format = l_SCodecCtx->sample_fmt;
-#ifndef __FFMPEGOLDAPI__
         l_SFrame->channel_layout = m_pEncoderAudioStream->codec->channel_layout;
-#endif // __FFMPEGOLDAPI__
 
         l_iRet = avcodec_fill_audio_frame(l_SFrame, l_SCodecCtx->channels,
                                           l_SCodecCtx->sample_fmt,
@@ -380,7 +336,7 @@ int EncoderFfmpegCore::writeAudioFrame(AVFormatContext *formatctx,
     }
 
     //qDebug() << "!!" << l_iRet;
-    l_iRet = avcodec_encode_audio2(l_SCodecCtx, &l_SPacket, l_SFrame,
+    l_iRet = avcodec_encode_audio2(l_SCodecCtx, l_SPacket, l_SFrame,
                                    &l_iGotPacket);
 
     if (l_iRet < 0) {
@@ -393,37 +349,23 @@ int EncoderFfmpegCore::writeAudioFrame(AVFormatContext *formatctx,
         return -1;
     }
 
-    l_SPacket.stream_index = stream->index;
+    l_SPacket->stream_index = stream->index;
 
     // Let's calculate DTS/PTS and give it to FFMPEG..
     // THEN codecs like OGG/Voris works ok!!
-    l_SPacket.dts = m_lDts;
-    l_SPacket.pts = m_lDts;
-
-#if LIBAVCODEC_VERSION_INT < 3617792
-    // Some times den is zero.. so 0 dived by 0 is
-    // Something?
-    if (m_pEncoderAudioStream->pts.den == 0) {
-        qDebug() << "Time hack!";
-        m_pEncoderAudioStream->pts.den = 1;
-    }
-#endif
+    l_SPacket->dts = m_lDts;
+    l_SPacket->pts = m_lDts;
 
     // Write the compressed frame to the media file. */
-    l_iRet = av_interleaved_write_frame(formatctx, &l_SPacket);
+    l_iRet = av_interleaved_write_frame(formatctx, l_SPacket);
 
     if (l_iRet != 0) {
         qDebug() << "Error while writing audio frame";
         return -1;
     }
 
-    av_free_packet(&l_SPacket);
-#if LIBAVCODEC_VERSION_INT < 3617792
-    av_destruct_packet(&l_SPacket);
-#else
-    av_free_packet(&l_SPacket);
-#endif
-    av_free(l_SFrame);
+    av_packet_free(&l_SPacket);
+    av_frame_free(&l_SFrame);
 
     return 0;
 }

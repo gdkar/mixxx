@@ -54,9 +54,7 @@ class HidController : public Controller {
 
     virtual bool savePreset(const QString fileName) const;
 
-    virtual void visit(const MidiControllerPreset* preset);
-    virtual void visit(const HidControllerPreset* preset);
-
+    virtual void visit(const ControllerPreset* preset);
     virtual void accept(ControllerVisitor* visitor) {
         if (visitor) {
             visitor->visit(this);

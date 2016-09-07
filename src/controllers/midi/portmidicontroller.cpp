@@ -27,14 +27,14 @@ PortMidiController::PortMidiController(const PmDeviceInfo* inputDeviceInfo,
     // duplicate devices from causing mayhem.
     //setDeviceName(QString("%1. %2").arg(QString::number(m_iInputDeviceIndex), inputDeviceInfo->name));
     if (inputDeviceInfo) {
-        setDeviceName(QString("%1").arg(inputDeviceInfo->name));
+        setDeviceName(QString("PortMidi: %1").arg(inputDeviceInfo->name));
         setInputDevice(inputDeviceInfo->input);
         m_pInputDevice.reset(new PortMidiDevice(
             inputDeviceInfo, inputDeviceIndex));
     }
     if (outputDeviceInfo) {
         if (inputDeviceInfo == NULL) {
-            setDeviceName(QString("%1").arg(outputDeviceInfo->name));
+            setDeviceName(QString("PortMidi: %1").arg(outputDeviceInfo->name));
         }
         setOutputDevice(outputDeviceInfo->output);
         m_pOutputDevice.reset(new PortMidiDevice(

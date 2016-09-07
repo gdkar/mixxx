@@ -13,6 +13,7 @@
 #include "controllers/midi/portmidicontroller.h"
 #include "util/cmdlineargs.h"
 
+namespace {
 bool shouldBlacklistDevice(const PmDeviceInfo* device) {
     QString deviceName = device->name;
     // In developer mode we show the MIDI Through Port, otherwise blacklist it
@@ -20,28 +21,6 @@ bool shouldBlacklistDevice(const PmDeviceInfo* device) {
     return !CmdlineArgs::Instance().getDeveloper() &&
             deviceName.startsWith("Midi Through Port", Qt::CaseInsensitive);
 }
-
-PortMidiEnumerator::PortMidiEnumerator() : MidiEnumerator() {
-    PmError err = Pm_Initialize();
-    // Based on reading the source, it's not possible for this to fail.
-    if (err != pmNoError) {
-        qWarning() << "PortMidi error:" << Pm_GetErrorText(err);
-    }
-}
-
-PortMidiEnumerator::~PortMidiEnumerator() {
-    qDebug() << "Deleting PortMIDI devices...";
-    QListIterator<Controller*> dev_it(m_devices);
-    while (dev_it.hasNext()) {
-        delete dev_it.next();
-    }
-    PmError err = Pm_Terminate();
-    // Based on reading the source, it's not possible for this to fail.
-    if (err != pmNoError) {
-        qWarning() << "PortMidi error:" << Pm_GetErrorText(err);
-    }
-}
-
 bool namesMatchMidiPattern(const QString input_name,
                            const QString output_name) {
     // Some platforms format MIDI device names as "deviceName MIDI ###" where
@@ -114,6 +93,29 @@ bool namesMatchPattern(const QString input_name,
     }
     return false;
 }
+
+}
+PortMidiEnumerator::PortMidiEnumerator() : MidiEnumerator() {
+    PmError err = Pm_Initialize();
+    // Based on reading the source, it's not possible for this to fail.
+    if (err != pmNoError) {
+        qWarning() << "PortMidi error:" << Pm_GetErrorText(err);
+    }
+}
+
+PortMidiEnumerator::~PortMidiEnumerator() {
+    qDebug() << "Deleting PortMIDI devices...";
+    QListIterator<Controller*> dev_it(m_devices);
+    while (dev_it.hasNext()) {
+        delete dev_it.next();
+    }
+    PmError err = Pm_Terminate();
+    // Based on reading the source, it's not possible for this to fail.
+    if (err != pmNoError) {
+        qWarning() << "PortMidi error:" << Pm_GetErrorText(err);
+    }
+}
+
 
 bool shouldLinkInputToOutput(const QString input_name,
                              const QString output_name) {

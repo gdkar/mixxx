@@ -31,22 +31,19 @@ QString MidiController::presetExtension() {
     return MIDI_PRESET_EXTENSION;
 }
 
-void MidiController::visit(const MidiControllerPreset* preset) {
-    m_preset = *preset;
-    emit(presetLoaded(getPreset()));
+void MidiController::visit(const ControllerPreset* preset) {
+    if(auto midi_preset = dynamic_cast<const MidiControllerPreset*>(preset)){
+        m_preset = *midi_preset;
+        emit(presetLoaded(getPreset()));
+    }else{
+        qWarning() << "ERROR: Attempting to load an unsupported preset type.";
+    }
 }
 
 int MidiController::close() {
     destroyOutputHandlers();
     return 0;
 }
-
-void MidiController::visit(const HidControllerPreset* preset) {
-    Q_UNUSED(preset);
-    qWarning() << "ERROR: Attempting to load an HidControllerPreset to a MidiController!";
-    // TODO(XXX): throw a hissy fit.
-}
-
 bool MidiController::matchPreset(const PresetInfo& preset) {
     // Product info mapping not implemented for MIDI devices yet
     Q_UNUSED(preset);
@@ -554,10 +551,8 @@ void MidiController::processInputMapping(const MidiInputMapping& mapping,
     qWarning() << "MidiController: No script function specified for"
                << formatSysexMessage(getName(), data, timestamp);
 }
-
 void MidiController::sendShortMsg(unsigned char status, unsigned char byte1,
                                   unsigned char byte2) {
-    unsigned int word = (((unsigned int)byte2) << 16) |
-            (((unsigned int)byte1) << 8) | status;
+    unsigned int word = (((unsigned int)byte2) << 16) | (((unsigned int)byte1) << 8) | status;
     sendWord(word);
 }

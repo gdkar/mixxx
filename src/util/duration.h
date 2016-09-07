@@ -23,43 +23,43 @@ class DurationBase {
     };
 
     // Returns the duration as an integer number of seconds (rounded-down).
-    inline qint64 toIntegerSeconds() const {
+    qint64 toIntegerSeconds() const {
         return m_durationNanos / kNanosPerSecond;
     }
 
     // Returns the duration as a floating point number of seconds.
-    inline double toDoubleSeconds() const {
+    double toDoubleSeconds() const {
         return static_cast<double>(m_durationNanos) / kNanosPerSecond;
     }
 
     // Returns the duration as an integer number of milliseconds (rounded-down).
-    inline qint64 toIntegerMillis() const {
+    qint64 toIntegerMillis() const {
         return m_durationNanos / kNanosPerMilli;
     }
 
     // Returns the duration as a floating point number of milliseconds.
-    inline qint64 toDoubleMillis() const {
+    qint64 toDoubleMillis() const {
         return static_cast<double>(m_durationNanos) / kNanosPerMilli;
     }
 
     // Returns the duration as an integer number of microseconds (rounded-down).
-    inline qint64 toIntegerMicros() const {
+    qint64 toIntegerMicros() const {
         return m_durationNanos / kNanosPerMicro;
     }
 
     // Returns the duration as a floating point number of microseconds.
-    inline qint64 toDoubleMicros() const {
+    qint64 toDoubleMicros() const {
         return static_cast<double>(m_durationNanos) / kNanosPerMicro;
     }
 
     // Returns the duration as an integer number of nanoseconds. The duration is
     // represented internally as nanoseconds so no rounding occurs.
-    inline qint64 toIntegerNanos() const {
+    qint64 toIntegerNanos() const {
         return m_durationNanos;
     }
 
     // Returns the duration as an integer number of nanoseconds.
-    inline qint64 toDoubleNanos() const {
+    qint64 toDoubleNanos() const {
         return static_cast<double>(m_durationNanos);
     }
 
@@ -223,7 +223,7 @@ class Duration : public DurationBase {
     }
 
     // Formats the duration as a two's-complement hexadecimal string.
-    inline DurationDebug debugHex() const {
+    DurationDebug debugHex() const {
         return debug(HEX);
     }
 
