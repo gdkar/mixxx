@@ -3,7 +3,7 @@
 
 #include "sources/soundsourceproxy.h"
 
-#ifdef __MAD__
+#ifdef __MPG123__
 #include "sources/soundsourcemp3.h"
 #endif
 #include "sources/soundsourceoggvorbis.h"
@@ -162,7 +162,7 @@ void SoundSourceProxy::loadPlugins() {
     s_soundSourceProviders.registerProvider(
             mixxx::newSoundSourceProvider<mixxx::SoundSourceProviderOpus>());
 #endif
-#ifdef __MAD__
+#ifdef __MPG123__
     s_soundSourceProviders.registerProvider(
             mixxx::newSoundSourceProvider<mixxx::SoundSourceProviderMp3>());
 #endif
