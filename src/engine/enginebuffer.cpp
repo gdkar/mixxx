@@ -239,9 +239,9 @@ EngineBuffer::EngineBuffer(QString group, UserSettingsPointer pConfig,
     m_pReadAheadManager->addRateControl(m_pRateControl);
 
     // Construct scaling objects
-    m_pScaleLinear = new EngineBufferScaleLinear(m_pReadAheadManager);
-    m_pScaleST = new EngineBufferScaleST(m_pReadAheadManager);
-    m_pScaleRB = new EngineBufferScaleRubberBand(m_pReadAheadManager);
+    m_pScaleLinear = new EngineBufferScaleLinear(m_pReadAheadManager,this);
+    m_pScaleST = new EngineBufferScaleST(m_pReadAheadManager, this);
+    m_pScaleRB = new EngineBufferScaleRubberBand(m_pReadAheadManager, this);
     if (m_pKeylockEngine->get() == SOUNDTOUCH) {
         m_pScaleKeylock = m_pScaleST;
     } else {
@@ -326,8 +326,8 @@ void EngineBuffer::enableIndependentPitchTempoScaling(bool bEnable,
 
     // m_pScaleKeylock and m_pScaleVinyl could change out from under us,
     // so cache it.
-    EngineBufferScale* keylock_scale = m_pScaleKeylock;
-    EngineBufferScale* vinyl_scale = m_pScaleVinyl;
+    auto keylock_scale = m_pScaleKeylock;
+    auto vinyl_scale = m_pScaleVinyl;
 
     if (bEnable && m_pScale != keylock_scale) {
         if (m_speed_old != 0.0) {
@@ -361,9 +361,8 @@ double EngineBuffer::getLocalBpm() {
 }
 
 void EngineBuffer::setEngineMaster(EngineMaster* pEngineMaster) {
-    foreach (EngineControl* pControl, m_engineControls) {
+    for(auto &&pControl : m_engineControls)
         pControl->setEngineMaster(pEngineMaster);
-    }
 }
 
 void EngineBuffer::queueNewPlaypos(double newpos, enum SeekRequest seekType) {
@@ -375,7 +374,7 @@ void EngineBuffer::queueNewPlaypos(double newpos, enum SeekRequest seekType) {
         // use SEEK_STANDARD for that
         seekType = SEEK_STANDARD;
     }
-    m_queuedSeekPosition.setValue(newpos);
+    m_queuedSeekPosition.store(newpos);
     // set m_queuedPosition valid
     m_iSeekQueued = seekType;
 }
@@ -392,7 +391,7 @@ void EngineBuffer::requestEnableSync(bool enabled) {
         return;
     }
     SyncRequestQueued enable_request =
-            static_cast<SyncRequestQueued>(load_atomic(m_iEnableSyncQueued));
+            static_cast<SyncRequestQueued>(m_iEnableSyncQueued.load());
     if (enabled) {
         m_iEnableSyncQueued = SYNC_REQUEST_ENABLE;
     } else {
@@ -450,12 +449,8 @@ void EngineBuffer::setNewPlaypos(double newpos) {
     m_iSamplesCalculated = 1000000;
 
     // Must hold the engineLock while using m_engineControls
-    for (QList<EngineControl*>::iterator it = m_engineControls.begin();
-         it != m_engineControls.end(); ++it) {
-        EngineControl *pControl = *it;
+    for(auto && pControl : m_engineControls)
         pControl->notifySeek(m_filepos_play);
-    }
-
     verifyPlay(); // verify or update play button and indicator
 }
 
@@ -621,10 +616,10 @@ bool EngineBuffer::updateIndicatorsAndModifyPlay(bool newPlay) {
     // allow the set since it might apply to a track we are loading due to the
     // asynchrony.
     bool playPossible = true;
-    if ((!m_pCurrentTrack && load_atomic(m_iTrackLoading) == 0) ||
-            (m_pCurrentTrack && load_atomic(m_iTrackLoading) == 0 &&
+    if ((!m_pCurrentTrack && m_iTrackLoading.load() == 0) ||
+            (m_pCurrentTrack && m_iTrackLoading.load() == 0 &&
              m_filepos_play >= m_trackSamplesOld &&
-             !load_atomic(m_iSeekQueued))) {
+             !m_iSeekQueued.load())) {
         // play not possible
         playPossible = false;
     }
@@ -732,7 +727,7 @@ void EngineBuffer::process(CSAMPLE* pOutput, const int iBufferSize) {
         m_iSampleRate = sample_rate;
     }
 
-    bool bTrackLoading = load_atomic(m_iTrackLoading) != 0;
+    bool bTrackLoading = m_iTrackLoading.load() != 0;
     if (!bTrackLoading && m_pause.tryLock()) {
         ScopedTimer t("EngineBuffer::process_pauselock");
 
@@ -992,16 +987,11 @@ void EngineBuffer::process(CSAMPLE* pOutput, const int iBufferSize) {
                 SampleUtil::clear(pOutput, iBufferSize);
             }
         }
-
-        QListIterator<EngineControl*> it(m_engineControls);
-        while (it.hasNext()) {
-            EngineControl* pControl = it.next();
+        for(auto && pControl : m_engineControls) {
             pControl->setCurrentSample(m_filepos_play, m_trackSamplesOld);
             pControl->process(rate, m_filepos_play, m_trackSamplesOld, iBufferSize);
         }
-
         m_scratching_old = is_scratching;
-
         // Handle repeat mode
         at_start = m_filepos_play <= 0;
         at_end = m_filepos_play >= m_trackSamplesOld;
@@ -1071,7 +1061,7 @@ void EngineBuffer::process(CSAMPLE* pOutput, const int iBufferSize) {
 
 void EngineBuffer::processSlip(int iBufferSize) {
     // Do a single read from m_bSlipEnabled so we don't run in to race conditions.
-    bool enabled = static_cast<bool>(load_atomic(m_slipEnabled));
+    bool enabled = static_cast<bool>(m_slipEnabled.load());
     if (enabled != m_bSlipEnabledProcessing) {
         m_bSlipEnabledProcessing = enabled;
         if (enabled) {
@@ -1095,9 +1085,9 @@ void EngineBuffer::processSlip(int iBufferSize) {
 void EngineBuffer::processSyncRequests() {
     SyncRequestQueued enable_request =
             static_cast<SyncRequestQueued>(
-                    m_iEnableSyncQueued.fetchAndStoreRelease(SYNC_REQUEST_NONE));
+                    m_iEnableSyncQueued.exchange(SYNC_REQUEST_NONE,std::memory_order_release));
     SyncMode mode_request =
-            static_cast<SyncMode>(m_iSyncModeQueued.fetchAndStoreRelease(SYNC_INVALID));
+            static_cast<SyncMode>(m_iSyncModeQueued.exchange(SYNC_INVALID,std::memory_order_release));
     switch (enable_request) {
     case SYNC_REQUEST_ENABLE:
         m_pEngineSync->requestEnableSync(m_pSyncControl, true);
@@ -1126,11 +1116,11 @@ void EngineBuffer::processSeek(bool paused) {
     // call anyway again.
 
     SeekRequests seekType = static_cast<SeekRequest>(
-            m_iSeekQueued.fetchAndStoreRelease(SEEK_NONE));
-    double position = m_queuedSeekPosition.getValue();
+            m_iSeekQueued.exchange(SEEK_NONE,std::memory_order_release));
+    auto position = m_queuedSeekPosition.load();
 
     // Add SEEK_PHASE bit, if any
-    if (m_iSeekPhaseQueued.fetchAndStoreRelease(0)) {
+    if (m_iSeekPhaseQueued.exchange(0,std::memory_order_release)) {
         seekType |= SEEK_PHASE;
     }
 
@@ -1235,12 +1225,8 @@ void EngineBuffer::hintReader(const double dRate) {
         hint.priority = 1;
         m_hintList.append(hint);
     }
-
-    QListIterator<EngineControl*> it(m_engineControls);
-    while (it.hasNext()) {
-        EngineControl* pControl = it.next();
+    for(auto && pControl : m_engineControls)
         pControl->hintReader(&m_hintList);
-    }
     m_pReader->hintAndMaybeWake(m_hintList);
 }
 
@@ -1257,7 +1243,8 @@ void EngineBuffer::loadTrack(TrackPointer pTrack, bool play) {
     }
 }
 
-void EngineBuffer::addControl(EngineControl* pControl) {
+void EngineBuffer::addControl(EngineControl* pControl)
+{
     // Connect to signals from EngineControl here...
     m_engineControls.push_back(pControl);
     pControl->setEngineBuffer(this);
@@ -1313,9 +1300,7 @@ void EngineBuffer::setReader(CachingReader* pReader) {
             Qt::DirectConnection);
 }
 */
-
-void EngineBuffer::setScalerForTest(EngineBufferScale* pScaleVinyl,
-                                    EngineBufferScale* pScaleKeylock) {
+void EngineBuffer::setScalerForTest(EngineBufferScale* pScaleVinyl,EngineBufferScale* pScaleKeylock) {
     m_pScaleVinyl = pScaleVinyl;
     m_pScaleKeylock = pScaleKeylock;
     m_pScale = m_pScaleVinyl;

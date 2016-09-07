@@ -50,7 +50,7 @@
 #define MIXXX_PORTMIDI_BUFFER_LEN 1024
 
 // Length of SysEx buffer in byte
-#define MIXXX_SYSEX_BUFFER_LEN 1024 
+#define MIXXX_SYSEX_BUFFER_LEN 1024
 
 // String to display for no MIDI devices present
 #define MIXXX_PORTMIDI_NO_DEVICE_STRING "None"
@@ -75,18 +75,11 @@ class PortMidiController : public MidiController {
     // The sysex data must already contain the start byte 0xf0 and the end byte
     // 0xf7.
     void send(QByteArray data);
-
-    virtual bool isPolling() const {
-        return true;
-    }
+    bool isPolling() const override { return true; }
 
     // For testing only so that test fixtures can install mock PortMidiDevices.
-    void setPortMidiInputDevice(PortMidiDevice* device) {
-        m_pInputDevice.reset(device);
-    }
-    void setPortMidiOutputDevice(PortMidiDevice* device) {
-        m_pOutputDevice.reset(device);
-    }
+    void setPortMidiInputDevice(PortMidiDevice* device) { m_pInputDevice.reset(device); }
+    void setPortMidiOutputDevice(PortMidiDevice* device) { m_pOutputDevice.reset(device); }
 
     QScopedPointer<PortMidiDevice> m_pInputDevice;
     QScopedPointer<PortMidiDevice> m_pOutputDevice;
@@ -100,5 +93,4 @@ class PortMidiController : public MidiController {
 
     friend class PortMidiControllerTest;
 };
-
 #endif

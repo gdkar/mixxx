@@ -3,7 +3,7 @@
 
 #include <QTime>
 #include <QThread>
-#include <QSemaphore>
+#include "util/semaphore.hpp"
 #include <QPair>
 #include <QGLWidget>
 
@@ -110,7 +110,7 @@ class VSyncThread : public QThread {
     int m_droppedFrames;
     int m_swapWait;
     PerformanceTimer m_timer;
-    QSemaphore m_semaVsyncSlot;
+    mixxx::MSemaphore m_semaVsyncSlot;
     double m_displayFrameRate;
     int m_vSyncPerRendering;
 

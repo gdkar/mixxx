@@ -208,7 +208,7 @@ void DlgPrefSound::slotApply() {
         QString error;
         QString deviceName(tr("a device"));
         QString detailedError(tr("An unknown error occurred"));
-        SoundDevice *device = m_pSoundManager->getErrorDevice();
+        auto device = m_pSoundManager->getErrorDevice();
         if (device != NULL) {
             deviceName = tr("sound device \"%1\"").arg(device->getDisplayName());
             detailedError = device->getError();

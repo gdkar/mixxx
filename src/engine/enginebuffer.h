@@ -18,8 +18,8 @@
 #ifndef ENGINEBUFFER_H
 #define ENGINEBUFFER_H
 
+#include <atomic>
 #include <QMutex>
-#include <QAtomicInt>
 #include <gtest/gtest_prod.h>
 
 #include "engine/cachingreader.h"
@@ -301,7 +301,7 @@ class EngineBuffer : public EngineObject {
     // Saved value of rate for slip mode
     double m_dSlipRate;
     // m_slipEnabled is a boolean accessed from multiple threads, so we use an atomic int.
-    QAtomicInt m_slipEnabled;
+    std::atomic<int> m_slipEnabled;
     // m_bSlipEnabledProcessing is only used by the engine processing thread.
     bool m_bSlipEnabledProcessing;
 
@@ -363,14 +363,14 @@ class EngineBuffer : public EngineObject {
     // Indicates that dependency injection has taken place.
     bool m_bScalerOverride;
 
-    QAtomicInt m_iSeekQueued;
-    QAtomicInt m_iSeekPhaseQueued;
-    QAtomicInt m_iEnableSyncQueued;
-    QAtomicInt m_iSyncModeQueued;
-    ControlValueAtomic<double> m_queuedSeekPosition;
+    std::atomic<int>    m_iSeekQueued;
+    std::atomic<int>    m_iSeekPhaseQueued;
+    std::atomic<int>    m_iEnableSyncQueued;
+    std::atomic<int>    m_iSyncModeQueued;
+    std::atomic<double> m_queuedSeekPosition;
 
     // Is true if the previous buffer was silent due to pausing
-    QAtomicInt m_iTrackLoading;
+    std::atomic<int> m_iTrackLoading;
     bool m_bPlayAfterLoading;
     // Records the sample rate so we can detect when it changes. Initialized to
     // 0 to guarantee we see a change on the first callback.

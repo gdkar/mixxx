@@ -19,11 +19,12 @@
 /**
   *@author Tue & Ken Haste Andersen
   */
+class ReadAheadManager;
 
 class EngineBufferScale : public QObject {
     Q_OBJECT
   public:
-    EngineBufferScale();
+    EngineBufferScale( ReadAheadManager *raman, QObject *pParent);
     virtual ~EngineBufferScale();
 
     // Sets the scaling parameters.
@@ -71,6 +72,7 @@ class EngineBufferScale : public QObject {
     mixxx::AudioSignal m_audioSignal;
 
   protected:
+    ReadAheadManager *m_pReadAheadManager{};
     double m_dBaseRate;
     bool m_bSpeedAffectsPitch;
     double m_dTempoRatio;

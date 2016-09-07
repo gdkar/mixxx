@@ -437,7 +437,7 @@ void AnalyzerQueue::queueAnalyseTrack(TrackPointer tio) {
 // static
 AnalyzerQueue* AnalyzerQueue::createDefaultAnalyzerQueue(
         UserSettingsPointer pConfig, TrackCollection* pTrackCollection) {
-    AnalyzerQueue* ret = new AnalyzerQueue(pTrackCollection);
+    auto ret = new AnalyzerQueue(pTrackCollection);
 
     ret->addAnalyzer(new AnalyzerWaveform(pConfig));
     ret->addAnalyzer(new AnalyzerGain(pConfig));
@@ -467,7 +467,6 @@ AnalyzerQueue* AnalyzerQueue::createAnalysisFeatureAnalyzerQueue(
     ret->addAnalyzer(new AnalyzerBeats(pConfig));
     ret->addAnalyzer(new AnalyzerKey(pConfig));
 #endif
-
     ret->start(QThread::LowPriority);
     return ret;
 }

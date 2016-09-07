@@ -5,7 +5,7 @@
 #include <QThread>
 #include <QQueue>
 #include <QWaitCondition>
-#include <QSemaphore>
+#include "util/semaphore.hpp"
 
 #include <vector>
 
@@ -52,7 +52,7 @@ class AnalyzerQueue : public QThread {
         TrackPointer current_track;
         int track_progress; // in 0.1 %
         int queue_size;
-        QSemaphore sema;
+        mixxx::MSemaphore sema;
     };
 
     void addAnalyzer(Analyzer* an);

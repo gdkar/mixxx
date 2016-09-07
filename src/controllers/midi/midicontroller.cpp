@@ -60,24 +60,21 @@ bool MidiController::savePreset(const QString fileName) const {
 
 bool MidiController::applyPreset(QList<QString> scriptPaths, bool initializeScripts) {
     // Handles the engine
-    bool result = Controller::applyPreset(scriptPaths, initializeScripts);
+    auto result = Controller::applyPreset(scriptPaths, initializeScripts);
 
     // Only execute this code if this is an output device
     if (isOutputDevice()) {
-        if (m_outputs.count() > 0) {
+        if (m_outputs.count() > 0)
             destroyOutputHandlers();
-        }
         createOutputHandlers();
         updateAllOutputs();
     }
     return result;
 }
-
 void MidiController::createOutputHandlers() {
     if (m_preset.outputMappings.isEmpty()) {
         return;
     }
-
     QHashIterator<ConfigKey, MidiOutputMapping> outIt(m_preset.outputMappings);
     QStringList failures;
     while (outIt.hasNext()) {

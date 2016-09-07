@@ -3,7 +3,7 @@
 
 #include <QtDebug>
 #include <QMutex>
-#include <QSemaphore>
+#include "util/semaphore.hpp"
 #include <QThread>
 #include <QString>
 
@@ -108,6 +108,5 @@ class CachingReaderWorker : public EngineWorker {
 
     QAtomicInt m_stop;
 };
-
 
 #endif /* ENGINE_CACHINGREADERWORKER_H */

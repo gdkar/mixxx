@@ -51,9 +51,6 @@ struct DeviceMode {
     bool isOutput;
 };
 
-#ifdef __LINUX__
-const unsigned int kSleepSecondsAfterClosingDevice = 5;
-#endif
 } // anonymous namespace
 
 SoundManager::SoundManager(UserSettingsPointer pConfig,
@@ -90,8 +87,7 @@ SoundManager::SoundManager(UserSettingsPointer pConfig,
 
 SoundManager::~SoundManager() {
     // Clean up devices.
-    const bool sleepAfterClosing = false;
-    clearDeviceList(sleepAfterClosing);
+    clearDeviceList();
 
 #ifdef __PORTAUDIO__
     if (m_paInitialized) {
@@ -146,7 +142,7 @@ QList<QString> SoundManager::getHostAPIList() const {
     return apiList;
 }
 
-void SoundManager::closeDevices(bool sleepAfterClosing) {
+void SoundManager::closeDevices() {
     //qDebug() << "SoundManager::closeDevices()";
 
     bool closed = false;
@@ -157,14 +153,6 @@ void SoundManager::closeDevices(bool sleepAfterClosing) {
             pDevice->close();
             closed = true;
         }
-    }
-
-    if (closed && sleepAfterClosing) {
-#ifdef __LINUX__
-        // Sleep for 5 sec to allow asynchronously sound APIs like "pulse" to free
-        // its resources as well
-        sleep(kSleepSecondsAfterClosingDevice);
-#endif
     }
 
     // TODO(rryan): Should we do this before SoundDevice::close()? No! Because
@@ -203,11 +191,11 @@ void SoundManager::closeDevices(bool sleepAfterClosing) {
     m_pControlObjectSoundStatusCO->set(SOUNDMANAGER_DISCONNECTED);
 }
 
-void SoundManager::clearDeviceList(bool sleepAfterClosing) {
+void SoundManager::clearDeviceList() {
     //qDebug() << "SoundManager::clearDeviceList()";
 
     // Close the devices first.
-    closeDevices(sleepAfterClosing);
+    closeDevices();
 
     // Empty out the list of devices we currently have.
     while (!m_devices.empty()) {
@@ -251,8 +239,7 @@ void SoundManager::queryDevices() {
 }
 
 void SoundManager::clearAndQueryDevices() {
-    const bool sleepAfterClosing = true;
-    clearDeviceList(sleepAfterClosing);
+    clearDeviceList();
     queryDevices();
 }
 
@@ -489,8 +476,7 @@ Result SoundManager::setupDevices() {
     return ERR;
 
 closeAndError:
-    const bool sleepAfterClosing = false;
-    closeDevices(sleepAfterClosing);
+    closeDevices();
     return err;
 }
 
@@ -510,8 +496,7 @@ Result SoundManager::setConfig(SoundManagerConfig config) {
     // Close open devices. After this call we will not get any more
     // onDeviceOutputCallback() or pushBuffer() calls because all the
     // SoundDevices are closed. closeDevices() blocks and can take a while.
-    const bool sleepAfterClosing = true;
-    closeDevices(sleepAfterClosing);
+    closeDevices();
 
     // certain parts of mixxx rely on this being here, for the time being, just
     // letting those be -- bkgood

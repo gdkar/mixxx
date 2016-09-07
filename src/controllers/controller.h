@@ -44,23 +44,23 @@ class Controller : public QObject, ConstControllerPresetVisitor {
     // Returns a clone of the Controller's loaded preset.
     virtual ControllerPresetPointer getPreset() const = 0;
 
-    inline bool isOpen() const {
+    bool isOpen() const {
         return m_bIsOpen;
     }
-    inline bool isOutputDevice() const {
+    bool isOutputDevice() const {
         return m_bIsOutputDevice;
     }
-    inline bool isInputDevice() const {
+    bool isInputDevice() const {
         return m_bIsInputDevice;
     }
-    inline const QString& getName() const {
+    const QString& getName() const {
         return m_sDeviceName;
     }
-    inline const QString& getCategory() const {
+    const QString& getCategory() const {
         return m_sDeviceCategory;
     }
     virtual bool isMappable() const = 0;
-    inline bool isLearning() const {
+    bool isLearning() const {
         return m_bLearning;
     }
 
@@ -97,22 +97,22 @@ class Controller : public QObject, ConstControllerPresetVisitor {
     // polling/processing but before closing the device.
     void stopEngine();
 
-    inline ControllerEngine* getEngine() const {
+    ControllerEngine* getEngine() const {
         return m_pEngine;
     }
-    inline void setDeviceName(QString deviceName) {
+    void setDeviceName(QString deviceName) {
         m_sDeviceName = deviceName;
     }
-    inline void setDeviceCategory(QString deviceCategory) {
+    void setDeviceCategory(QString deviceCategory) {
         m_sDeviceCategory = deviceCategory;
     }
-    inline void setOutputDevice(bool outputDevice) {
+    void setOutputDevice(bool outputDevice) {
         m_bIsOutputDevice = outputDevice;
     }
-    inline void setInputDevice(bool inputDevice) {
+    void setInputDevice(bool inputDevice) {
         m_bIsInputDevice = inputDevice;
     }
-    inline void setOpen(bool open) {
+    void setOpen(bool open) {
         m_bIsOpen = open;
     }
 
@@ -126,15 +126,15 @@ class Controller : public QObject, ConstControllerPresetVisitor {
   private:
     // This must be reimplemented by sub-classes desiring to send raw bytes to a
     // controller.
-    virtual void send(QByteArray data) = 0;
+    virtual void send(QByteArray data) { void(sizeof(data));};
 
     // Returns true if this device should receive polling signals via calls to
     // its poll() method.
-    virtual bool isPolling() const = 0;
+    virtual bool isPolling() const { return false;};
 
     // Returns a pointer to the currently loaded controller preset. For internal
     // use only.
-    virtual ControllerPreset* preset() = 0;
+    virtual ControllerPreset* preset() { return nullptr;};
     ControllerEngine* m_pEngine;
 
     // Verbose and unique device name suitable for display.

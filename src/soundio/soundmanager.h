@@ -114,13 +114,13 @@ class SoundManager : public QObject {
 
   private:
     // Closes all the devices and empties the list of devices we have.
-    void clearDeviceList(bool sleepAfterClosing);
+    void clearDeviceList();
 
     // Closes all the open sound devices. Because multiple soundcards might be
     // open, this method simply runs through the list of all known soundcards
     // (from PortAudio) and attempts to close them all. Closing a soundcard that
     // isn't open is safe.
-    void closeDevices(bool sleepAfterClosing);
+    void closeDevices();
 
     void setJACKName() const;
 

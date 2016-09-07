@@ -104,14 +104,11 @@ class LVMixEQEffectGroupState {
         if (fLow == m_oldLow &&
                 fMid == m_oldMid &&
                 fHigh == m_oldHigh) {
-            SampleUtil::copy3WithGain(pOutput,
-                    m_pLowBuf, fLow,
-                    m_pBandBuf, fMid,
-                    m_pHighBuf, fHigh,
-                    numSamples);
+            SampleUtil::copyWithGain(pOutput,m_pLowBuf,fLow,numSamples);
+            SampleUtil::add2WithGain(pOutput,m_pBandBuf,fMid,m_pHighBuf,fHigh,numSamples);
         } else {
-            int copySamples = 0;
-            int rampingSamples = numSamples;
+            auto copySamples = 0;
+            auto rampingSamples = numSamples;
             if ((fLow && !m_oldLow) ||
                     (fMid && !m_oldMid) ||
                     (fHigh && !m_oldHigh)) {
@@ -134,21 +131,15 @@ class LVMixEQEffectGroupState {
                 copySamples = math_min<int>(m_rampHoldOff, numSamples);
                 m_rampHoldOff -= copySamples;
                 rampingSamples = numSamples - copySamples;
+                SampleUtil::copyWithGain(pOutput,m_pLowBuf,m_oldLow,copySamples);
+                SampleUtil::add2WithGain(pOutput,m_pBandBuf,m_oldMid,m_pHighBuf,m_oldHigh,copySamples);
 
-                SampleUtil::copy3WithGain(pOutput,
-                        m_pLowBuf, m_oldLow,
-                        m_pBandBuf, m_oldMid,
-                        m_pHighBuf, m_oldHigh,
-                        copySamples);
             }
 
             if (rampingSamples) {
-                SampleUtil::copy3WithRampingGain(&pOutput[copySamples],
-                        &m_pLowBuf[copySamples], m_oldLow, fLow,
-                        &m_pBandBuf[copySamples], m_oldMid, fMid,
-                        &m_pHighBuf[copySamples], m_oldHigh, fHigh,
-                        rampingSamples);
-
+                SampleUtil::copyWithRampingGain(&pOutput[copySamples],&m_pLowBuf[copySamples],m_oldLow,fLow,rampingSamples);
+                SampleUtil::addWithRampingGain(&pOutput[copySamples],&m_pBandBuf[copySamples],m_oldMid,fMid,rampingSamples);
+                SampleUtil::addWithRampingGain(&pOutput[copySamples],&m_pHighBuf[copySamples],m_oldHigh,fHigh,rampingSamples);
                 m_oldLow = fLow;
                 m_oldMid = fMid;
                 m_oldHigh = fHigh;

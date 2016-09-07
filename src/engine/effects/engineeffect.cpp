@@ -106,16 +106,10 @@ void EngineEffect::process(const ChannelHandle& handle,
         // the effect does not fade, so we care for it
         if (effectiveEnableState == EffectProcessor::DISABLING) {
             // Fade out (fade to dry signal)
-            SampleUtil::copy2WithRampingGain(pOutput,
-                    pInput, 0.0, 1.0,
-                    pOutput, 1.0, 0.0,
-                    numSamples);
+            SampleUtil::linearCrossfadeBuffers(pOutput,pOutput,pInput,numSamples);
         } else if (effectiveEnableState == EffectProcessor::ENABLING) {
             // Fade in (fade to wet signal)
-            SampleUtil::copy2WithRampingGain(pOutput,
-                    pInput, 1.0, 0.0,
-                    pOutput, 0.0, 1.0,
-                    numSamples);
+            SampleUtil::linearCrossfadeBuffers(pOutput,pInput,pOutput,numSamples);
         }
     }
 

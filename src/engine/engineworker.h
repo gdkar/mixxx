@@ -6,7 +6,7 @@
 
 #include <QAtomicInt>
 #include <QObject>
-#include <QSemaphore>
+#include "util/semaphore.hpp"
 #include <QThread>
 
 // EngineWorker is an interface for running background processing work when the
@@ -26,12 +26,9 @@ class EngineWorker : public QThread {
 
     void setScheduler(EngineWorkerScheduler* pScheduler);
     bool workReady();
-    void wake() {
-        m_semaRun.release();
-    }
-
+    void wake() { m_semaRun.release(); }
   protected:
-    QSemaphore m_semaRun;
+    mixxx::MSemaphore m_semaRun;
 
   private:
     EngineWorkerScheduler* m_pScheduler;

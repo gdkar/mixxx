@@ -4,7 +4,7 @@
 #include <QMessageBox>
 #include <QMutex>
 #include <QObject>
-#include <QSemaphore>
+#include "util/semaphore.hpp"
 #include <QTextCodec>
 #include <QThread>
 #include <QVector>
@@ -131,7 +131,7 @@ class EngineBroadcast
     bool m_protocol_is_shoutcast;
     bool m_ogg_dynamic_update;
     QAtomicInt m_threadWaiting;
-    QSemaphore m_readSema;
+    mixxx::MSemaphore m_readSema;
     FIFO<CSAMPLE>* m_pOutputFifo;
     QString m_lastErrorStr;
 };

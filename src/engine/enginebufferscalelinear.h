@@ -11,7 +11,7 @@ const int kiLinearScaleReadAheadLength = 10240;
 class EngineBufferScaleLinear : public EngineBufferScale  {
   public:
     explicit EngineBufferScaleLinear(
-            ReadAheadManager *pReadAheadManager);
+            ReadAheadManager *pReadAheadManager, QObject *pParent);
     ~EngineBufferScaleLinear() override;
 
     double scaleBuffer(
@@ -26,9 +26,6 @@ class EngineBufferScaleLinear : public EngineBufferScale  {
   private:
     SINT do_scale(CSAMPLE* buf, SINT buf_size);
     SINT do_copy(CSAMPLE* buf, SINT buf_size);
-
-    // The read-ahead manager that we use to fetch samples
-    ReadAheadManager* m_pReadAheadManager;
 
     // Buffer for handling calls to ReadAheadManager
     CSAMPLE* m_bufferInt;
