@@ -196,8 +196,7 @@ class UPower(Dependence):
     def configure(self, build, conf):
         if not build.platform_is_linux:
             return
-        build.env.ParseConfig(
-                'pkg-config upower-glib --silence-errors --cflags --libs')
+        build.env.ParseConfig( 'pkg-config upower-glib --silence-errors --cflags --libs')
 
 class OggVorbis(Dependence):
 
@@ -211,8 +210,7 @@ class OggVorbis(Dependence):
 #        else:
         libs = ['libvorbisfile', 'vorbisfile']
         if not conf.CheckLib(libs):
-            Exception('Did not find libvorbisfile.a, libvorbisfile.lib, '
-                      'or the libvorbisfile development headers.')
+            Exception('Did not find libvorbisfile.a, libvorbisfile.lib, or the libvorbisfile development headers.')
 
         libs = ['libvorbis', 'vorbis']
         if not conf.CheckLib(libs):
@@ -237,24 +235,19 @@ class OggVorbis(Dependence):
         return []
 
 class SndFile(Dependence):
-
     def configure(self, build, conf):
         # if not conf.CheckLibWithHeader(['sndfile', 'libsndfile', 'libsndfile-1'], 'sndfile.h', 'C'):
         # TODO: check for debug version on Windows when one is available
         if not conf.CheckLib(['sndfile', 'libsndfile', 'libsndfile-1']):
-            raise Exception(
-                "Did not find libsndfile or it\'s development headers")
+            raise Exception("Did not find libsndfile or it\'s development headers")
         build.env.Append(CPPDEFINES='__SNDFILE__')
-
         if build.platform_is_windows and build.static_dependencies:
             build.env.Append(CPPDEFINES='FLAC__NO_DLL')
             conf.CheckLib('g72x')
-
     def sources(self, build):
         return []
 
 class Qt(Dependence):
-
     DEFAULT_QT5DIRS64 = {'linux': '/usr/lib/x86_64-linux-gnu/qt5',
                          'osx': '/Library/Frameworks',
                          'windows': 'C:\\qt\\5.0.1'}
@@ -262,15 +255,9 @@ class Qt(Dependence):
     DEFAULT_QT5DIRS32 = {'linux': '/usr/lib/i386-linux-gnu/qt5',
                          'osx': '/Library/Frameworks',
                          'windows': 'C:\\qt\\5.0.1'}
-
-    @staticmethod
-    def qt5_enabled(build):
-        return 1
-
     @staticmethod
     def uic(build):
         return build.env.Uic5
-
     @staticmethod
     def find_framework_libdir(qtdir):
         # Try pkg-config on Linux
@@ -289,21 +276,22 @@ class Qt(Dependence):
             if os.path.isdir(core):
                 return d
         return None
-
     @staticmethod
     def enabled_modules(build):
         qt_modules = [
             'QtCore', 'QtGui', 'QtOpenGL', 'QtXml', 'QtSvg',
             'QtSql', 'QtScript', 'QtXmlPatterns', 'QtNetwork',
-            'QtTest', 'QtScriptTools',
-            'QtWidgets', 'QtConcurrent']
+            'QtTest', 'QtScriptTools','QtWidgets', 'QtConcurrent',
+            'QtMultimedia','QtQuick','QtQml',
+            ]
         return qt_modules
 
     @staticmethod
     def enabled_imageformats(build):
         qt_imageformats = [
             'qgif', 'qico', 'qjpeg',  'qmng', 'qtga', 'qtiff', 'qsvg',
-             'qdds', 'qicns', 'qjp2', 'qwbmp', 'qwebp']
+             'qdds', 'qicns', 'qjp2', 'qwbmp', 'qwebp',
+             ]
         return qt_imageformats
 
     def satisfy(self):
@@ -332,10 +320,11 @@ class Qt(Dependence):
 
             # This automatically converts QtXXX to Qt5XXX where appropriate.
             build.env.EnableQt5Modules(qt_modules, debug=False)
-
                 # Note that -reduce-relocations is enabled by default in Qt5.
                 # So we must build the code with position independent code
             build.env.Append(CCFLAGS='-fPIC')
+            build.env.Append(LINKFLAGS='-fPIC')
+            build.env.Append(LIBS=['dl','rt','m'])
 
         elif build.platform_is_bsd:
             build.env.Append(LIBS=qt_modules)
@@ -374,6 +363,10 @@ class Qt(Dependence):
                 'QtNetwork'  : ['QT_NETWORK_LIB'],
                 'QtCore'     : ['QT_CORE_LIB'],
                 'QtWidgets'  : ['QT_WIDGETS_LIB'],
+                'QtQml'      : ['QT_QML_LIB'],
+                'QtQuick'    : ['QT_QUICK_LIB'],
+                'QtMultimedia':['QT_MULTIMEDIA_LIB'],
+                'QtQmlDevTools':['QT_QML_DEV_TOOLS_LIB'],
             }
             module_defines = qt5_module_defines
             for module in qt_modules:
@@ -425,14 +418,13 @@ class Qt(Dependence):
         # Mixxx requires C++11 support. Windows enables C++11 features by
         # default but Clang/GCC require a flag.
         if not build.platform_is_windows:
-            build.env.Append(CXXFLAGS='-std=c++14')
+            build.env.Append(CXXFLAGS='-std=gnu++14')
 
 class TestHeaders(Dependence):
     def configure(self, build, conf):
         build.env.Append(CPPPATH="#lib/gtest-1.7.0/include")
 
 class FidLib(Dependence):
-
     def sources(self, build):
         symbol = None
         if build.platform_is_windows:
@@ -446,13 +438,10 @@ class FidLib(Dependence):
                 symbol = 'T_MINGW'
         else:
             symbol = 'T_LINUX'
-
-        return [build.env.StaticObject('#lib/fidlib-0.9.10/fidlib.c',
-                                       CPPDEFINES=symbol)]
+        return [build.env.StaticObject('#lib/fidlib-0.9.10/fidlib.c',CPPDEFINES=symbol)]
 
     def configure(self, build, conf):
         build.env.Append(CPPPATH='#lib/fidlib-0.9.10/')
-
 
 class ReplayGain(Dependence):
     def sources(self, build):
@@ -537,7 +526,6 @@ class RubberBand(Dependence):
             raise Exception(
                 "Could not find librubberband or its development headers.")
 
-
 class TagLib(Dependence):
     def configure(self, build, conf):
         libs = ['tag']
@@ -566,7 +554,6 @@ class Chromaprint(Dependence):
                 raise Exception(
                     "Could not find fftw3 or its development headers.")
 
-
 class ProtoBuf(Dependence):
     def configure(self, build, conf):
         libs = ['libprotobuf-lite', 'protobuf-lite', 'libprotobuf', 'protobuf']
@@ -578,7 +565,6 @@ class ProtoBuf(Dependence):
                 "Could not find libprotobuf or its development headers.")
 
 class FpClassify(Dependence):
-
     def enabled(self, build):
         return build.toolchain_is_gnu
 
@@ -595,7 +581,6 @@ class FpClassify(Dependence):
 class QtScriptByteArray(Dependence):
     def configure(self, build, conf):
         build.env.Append(CPPPATH='#lib/qtscript-bytearray')
-
     def sources(self, build):
         return ['#lib/qtscript-bytearray/bytearrayclass.cpp',
                 '#lib/qtscript-bytearray/bytearrayprototype.cpp']
@@ -733,6 +718,7 @@ class MixxxCore(Feature):
                    "engine/enginesidechaincompressor.cpp",
                    "engine/sidechain/enginesidechain.cpp",
                    "engine/sidechain/networkstreamworker.cpp",
+                   "engine/sidechain/enginerecord.cpp",
                    "engine/enginexfader.cpp",
                    "engine/enginemicrophone.cpp",
                    "engine/enginedeck.cpp",
@@ -817,6 +803,7 @@ class MixxxCore(Feature):
                    "widget/weffectpushbutton.cpp",
                    "widget/wslidercomposed.cpp",
                    "widget/wstatuslight.cpp",
+                   "widget/wwaveformviewer.cpp",
                    "widget/woverview.cpp",
                    "widget/woverviewlmh.cpp",
                    "widget/woverviewhsv.cpp",
@@ -860,6 +847,7 @@ class MixxxCore(Feature):
                    "widget/wlibrarytableview.cpp",
                    "widget/wanalysislibrarytableview.cpp",
                    "widget/wlibrarytextbrowser.cpp",
+
                    "library/trackcollection.cpp",
                    "library/basesqltablemodel.cpp",
                    "library/basetrackcache.cpp",
@@ -905,7 +893,6 @@ class MixxxCore(Feature):
                    "library/recording/recordingfeature.cpp",
                    "library/recording/dlgrecording.cpp",
                    "recording/recordingmanager.cpp",
-                   "engine/sidechain/enginerecord.cpp",
 
                    # External Library Features
                    "library/baseexternallibraryfeature.cpp",
@@ -959,7 +946,6 @@ class MixxxCore(Feature):
                    "library/parserm3u.cpp",
                    "library/parsercsv.cpp",
 
-                   "widget/wwaveformviewer.cpp",
 
                    "waveform/sharedglcontext.cpp",
                    "waveform/waveform.cpp",
@@ -1210,7 +1196,7 @@ class MixxxCore(Feature):
             mixxx_lib_path = SCons.ARGUMENTS.get(
                 'winlib', '..\\..\\..\\mixxx-win32lib-msvc100-release')
             if not os.path.exists(mixxx_lib_path):
-                print mixxx_lib_path
+                print (mixxx_lib_path)
                 raise Exception("Winlib path does not exist! Please specify your winlib directory"
                                 "path by running 'scons winlib=[path]'")
                 Script.Exit(1)
@@ -1261,15 +1247,13 @@ class MixxxCore(Feature):
             # Restrict ATL to XP-compatible SDK functions.
             # TODO(rryan): Remove once we ditch XP support.
             build.env.Append(CPPDEFINES='_ATL_XP_TARGETING')
-            build.env.Append(
-                CPPDEFINES='_ATL_MIN_CRT')  # Helps prevent duplicate symbols
+            build.env.Append(CPPDEFINES='_ATL_MIN_CRT')  # Helps prevent duplicate symbols
             # Need this on Windows until we have UTF16 support in Mixxx
             # use stl min max defines
             # http://connect.microsoft.com/VisualStudio/feedback/details/553420/std-cpp-max-and-std-cpp-min-not-available-in-visual-c-2010
             build.env.Append(CPPDEFINES='NOMINMAX')
             build.env.Append(CPPDEFINES='UNICODE')
-            build.env.Append(
-                CPPDEFINES='WIN%s' % build.bitwidth)  # WIN32 or WIN64
+            build.env.Append(CPPDEFINES='WIN%s' % build.bitwidth)  # WIN32 or WIN64
             # Tobias: Don't remove this line
             # I used the Windows API in foldertreemodel.cpp
             # to quickly test if a folder has subfolders
@@ -1338,11 +1322,9 @@ class MixxxCore(Feature):
                 ('SETTINGS_PATH', '.mixxx/'),
                 ('SETTINGS_FILE', 'mixxx.cfg')]
         elif build.platform_is_osx:
-            mixxx_files = [
-                ('SETTINGS_FILE', 'mixxx.cfg')]
+            mixxx_files = [('SETTINGS_FILE', 'mixxx.cfg')]
         elif build.platform_is_windows:
-            mixxx_files = [
-                ('SETTINGS_FILE', 'mixxx.cfg')]
+            mixxx_files = [('SETTINGS_FILE', 'mixxx.cfg')]
 
         # Escape the filenames so they don't end up getting screwed up in the
         # shell.

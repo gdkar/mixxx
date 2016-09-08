@@ -37,7 +37,6 @@ class KeyboardEventFilter : public QObject {
         int modifiers;
         ControlObject* pControl;
     };
-
     // Returns a valid QString with modifier keys from a QKeyEvent
     QKeySequence getKeySeq(QKeyEvent *e);
     // List containing keys which is currently pressed

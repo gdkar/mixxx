@@ -16,8 +16,8 @@
 #include "mixer/playermanager.h"
 #include "util/math.h"
 
-MidiController::MidiController()
-        : Controller() {
+MidiController::MidiController(QObject *p)
+        : Controller(p) {
     setDeviceCategory(tr("MIDI Controller"));
 }
 
@@ -27,7 +27,7 @@ MidiController::~MidiController() {
     // destructors.
 }
 
-QString MidiController::presetExtension() {
+QString MidiController::presetExtension() const {
     return MIDI_PRESET_EXTENSION;
 }
 
@@ -313,8 +313,7 @@ void MidiController::processInputMapping(const MidiInputMapping& mapping,
 
     if (mapping_is_14bit) {
         bool found = false;
-        for (QList<QPair<MidiInputMapping, unsigned char> >::iterator it =
-                     m_fourteen_bit_queued_mappings.begin();
+        for (auto it = m_fourteen_bit_queued_mappings.begin();
              it != m_fourteen_bit_queued_mappings.end(); ++it) {
             if (it->first.control == mapping.control) {
                 if ((it->first.options.fourteen_bit_lsb && mapping.options.fourteen_bit_lsb) ||
@@ -324,7 +323,6 @@ void MidiController::processInputMapping(const MidiInputMapping& mapping,
                     m_fourteen_bit_queued_mappings.erase(it);
                     return;
                 }
-
                 int iValue = 0;
                 if (mapping.options.fourteen_bit_msb) {
                     iValue = (value << 7) | it->second;
@@ -357,7 +355,7 @@ void MidiController::processInputMapping(const MidiInputMapping& mapping,
         if (!found) {
             // Queue this mapping and value for processing once we receive the next
             // message.
-            m_fourteen_bit_queued_mappings.append(qMakePair(mapping, value));
+            m_fourteen_bit_queued_mappings.append(std::make_pair(mapping, value));
             return;
         }
     } else if (opCode == MIDI_PITCH_BEND) {

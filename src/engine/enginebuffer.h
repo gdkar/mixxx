@@ -23,6 +23,7 @@
 #include <gtest/gtest_prod.h>
 
 #include "engine/cachingreader.h"
+#include "engine/scaledreader.h"
 #include "preferences/usersettings.h"
 #include "control/controlvalue.h"
 #include "engine/engineobject.h"

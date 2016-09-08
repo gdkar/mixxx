@@ -1,5 +1,7 @@
 #include <QtDebug>
-#include <QPair>
+#include <functional>
+#include <tuple>
+#include <utility>
 
 #include "engine/keycontrol.h"
 
@@ -242,8 +244,7 @@ void KeyControl::updateKeyCOs(double fileKeyNumeric, double pitchOctaves) {
     mixxx::track::io::key::ChromaticKey fileKey =
             KeyUtils::keyFromNumericValue(fileKeyNumeric);
 
-    QPair<mixxx::track::io::key::ChromaticKey, double> adjusted =
-            KeyUtils::scaleKeyOctaves(fileKey, pitchOctaves);
+    auto adjusted = KeyUtils::scaleKeyOctaves(fileKey, pitchOctaves);
     m_pEngineKey->set(KeyUtils::keyToNumericValue(adjusted.first));
     double diff_to_nearest_full_key = adjusted.second;
     m_pEngineKeyDistance->set(diff_to_nearest_full_key);
@@ -262,18 +263,14 @@ void KeyControl::slotSetEngineKeyDistance(double key_distance) {
 }
 
 void KeyControl::setEngineKey(double key, double key_distance) {
-    mixxx::track::io::key::ChromaticKey thisFileKey =
-            KeyUtils::keyFromNumericValue(m_pFileKey->get());
-    mixxx::track::io::key::ChromaticKey newKey =
-            KeyUtils::keyFromNumericValue(key);
-
+    auto thisFileKey = KeyUtils::keyFromNumericValue(m_pFileKey->get());
+    auto newKey = KeyUtils::keyFromNumericValue(key);
     if (thisFileKey == mixxx::track::io::key::INVALID ||
         newKey == mixxx::track::io::key::INVALID) {
         return;
     }
-
-    int stepsToTake = KeyUtils::shortestStepsToKey(thisFileKey, newKey);
-    double pitchToTakeOctaves = (stepsToTake + key_distance) / 12.0;
+    auto stepsToTake = KeyUtils::shortestStepsToKey(thisFileKey, newKey);
+    auto pitchToTakeOctaves = (stepsToTake + key_distance) / 12.0;
 
     m_pPitch->set(pitchToTakeOctaves * 12);
     slotPitchChanged(pitchToTakeOctaves * 12);

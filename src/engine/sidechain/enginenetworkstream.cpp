@@ -139,10 +139,8 @@ void EngineNetworkStream::writeSilence(int frames) {
     }
     int clearCount = math_min(writeAvailable, writeRequired);
     if (clearCount > 0) {
-        CSAMPLE* dataPtr1;
-        ring_buffer_size_t size1;
-        CSAMPLE* dataPtr2;
-        ring_buffer_size_t size2;
+        FIFO<CSAMPLE>::pointer dataPtr1, dataPtr2;
+        FIFO<CSAMPLE>::size_type size1, size2;
         (void)m_pOutputFifo->acquireWriteRegions(clearCount,
                 &dataPtr1, &size1, &dataPtr2, &size2);
         SampleUtil::clear(dataPtr1,size1);

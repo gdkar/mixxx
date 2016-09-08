@@ -46,25 +46,21 @@ class BulkController : public Controller {
                    struct libusb_device_descriptor *desc);
     virtual ~BulkController();
 
-    virtual QString presetExtension();
+    QString presetExtension() const override;
 
     virtual ControllerPresetPointer getPreset() const {
-        HidControllerPreset* pClone = new HidControllerPreset();
+        auto pClone = new HidControllerPreset();
         *pClone = m_preset;
         return ControllerPresetPointer(pClone);
     }
-
-    virtual bool savePreset(const QString fileName) const;
-
-    virtual void visit(const ControllerPreset* preset);
-
-    virtual void accept(ControllerVisitor* visitor) {
+    bool savePreset(const QString fileName) const override;
+    void visit(const ControllerPreset* preset) override;
+    void accept(ControllerVisitor* visitor) override {
         if (visitor) {
             visitor->visit(this);
         }
     }
-
-    virtual bool isMappable() const {
+    bool isMappable() const override {
         return m_preset.isMappable();
     }
 

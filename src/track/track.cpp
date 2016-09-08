@@ -693,7 +693,7 @@ void Track::setAnalyzerProgress(int progress) {
 
 int Track::getAnalyzerProgress() const {
     // QAtomicInt so no need for lock.
-    return load_atomic(m_analyzerProgress);
+    return m_analyzerProgress.load();
 }
 
 void Track::setCuePoint(float cue) {

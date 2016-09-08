@@ -33,7 +33,7 @@ void BulkReader::run() {
     m_stop = 0;
     unsigned char data[255];
 
-    while (load_atomic(m_stop) == 0) {
+    while (m_stop.load() == 0) {
         // Blocked polling: The only problem with this is that we can't close
         // the device until the block is released, which means the controller
         // has to send more data
@@ -100,7 +100,7 @@ BulkController::~BulkController() {
     }
 }
 
-QString BulkController::presetExtension() {
+QString BulkController::presetExtension() const {
     return BULK_PRESET_EXTENSION;
 }
 

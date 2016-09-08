@@ -22,14 +22,24 @@
 
 class Controller : public QObject, ConstControllerPresetVisitor {
     Q_OBJECT
+    Q_PROPERTY(bool isOpen READ isOpen WRITE setOpen NOTIFY isOpenChanged);
+    Q_PROPERTY(bool isOutputDevice READ isOutputDevice WRITE setOutputDevice NOTIFY isOutputDeviceChanged);
+    Q_PROPERTY(bool isInputDevice READ isInputDevice WRITE setInputDevice NOTIFY isInputDeviceChanged);
+    Q_PROPERTY(QString presetExtension READ presetExtension CONSTANT);
+    Q_PROPERTY(QString deviceName READ getName WRITE setDeviceName NOTIFY deviceNameChanged);
+    Q_PROPERTY(QString deviceCategory READ getCategory WRITE setDeviceCategory NOTIFY deviceCategoryChanged);
+    Q_PROPERTY(bool mappable READ isMappable CONSTANT);
+    Q_PROPERTY(bool learning READ isLearning WRITE setLearning NOTIFY learningChanged);
+    Q_PROPERTY(ControllerEngine* engine READ getEngine NOTIFY engineChanged);
   public:
-    Controller();
+    Controller(QObject *p=nullptr);
     virtual ~Controller();  // Subclass should call close() at minimum.
     // Returns the extension for the controller (type) preset files.  This is
     // used by the ControllerManager to display only relevant preset files for
     // the controller (type.)
-    virtual QString presetExtension() = 0;
-    void setPreset(const ControllerPreset& preset) {
+    virtual QString presetExtension() const = 0;
+    void setPreset(const ControllerPreset& preset)
+    {
         // We don't know the specific type of the preset so we need to ask
         // the preset to call our visitor methods with its type.
         preset.accept(this);
@@ -47,6 +57,13 @@ class Controller : public QObject, ConstControllerPresetVisitor {
     bool isLearning() const { return m_bLearning; }
     virtual bool matchPreset(const PresetInfo& preset) { void(sizeof(preset));return false;}
   signals:
+    void isOpenChanged(bool);
+    void isOutputDeviceChanged(bool);
+    void isInputDeviceChanged(bool);
+    void deviceNameChanged(QString);
+    void deviceCategoryChanged(QString);
+    void learningChanged(bool);
+    void engineChanged(ControllerEngine*);
     // Emitted when a new preset is loaded. pPreset is a /clone/ of the loaded
     // preset, not a pointer to the preset itself.
     void presetLoaded(ControllerPresetPointer pPreset);
@@ -62,6 +79,7 @@ class Controller : public QObject, ConstControllerPresetVisitor {
     // Puts the controller in and out of learning mode.
     void startLearning();
     void stopLearning();
+    void setLearning(bool);
   protected:
     Q_INVOKABLE void send(QList<int> data, unsigned int length);
     // To be called in sub-class' open() functions after opening the device but
@@ -71,13 +89,13 @@ class Controller : public QObject, ConstControllerPresetVisitor {
     // polling/processing but before closing the device.
     void stopEngine();
     ControllerEngine* getEngine() const { return m_pEngine; }
-    void setDeviceName(QString deviceName) { m_sDeviceName = deviceName; }
-    void setDeviceCategory(QString deviceCategory) { m_sDeviceCategory = deviceCategory; }
-    void setOutputDevice(bool outputDevice) { m_bIsOutputDevice = outputDevice; }
-    void setInputDevice(bool inputDevice) { m_bIsInputDevice = inputDevice; }
-    void setOpen(bool open) { m_bIsOpen = open; }
+    void setDeviceName(QString deviceName) { if(m_sDeviceName != deviceName) deviceNameChanged(m_sDeviceName = deviceName); }
+    void setDeviceCategory(QString deviceCategory) { if(getCategory() != deviceCategory) deviceCategoryChanged(m_sDeviceCategory = deviceCategory); }
+    void setOutputDevice(bool outputDevice) { if(outputDevice != isOutputDevice()) isOutputDeviceChanged(m_bIsOutputDevice = outputDevice);}
+    void setInputDevice(bool inputDevice) { if(inputDevice != isInputDevice()) isInputDeviceChanged(m_bIsInputDevice = inputDevice);}
+    void setOpen(bool open) { if(isOpen()!=open) isOpenChanged(m_bIsOpen = open);}
   private slots:
-    virtual int open() { return -1;};
+    virtual int open()  { return -1;};
     virtual int close() { return -1;};
     // Requests that the device poll if it is a polling device. Returns true
     // if events were handled.

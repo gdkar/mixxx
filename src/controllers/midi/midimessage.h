@@ -4,6 +4,8 @@
 #include <QList>
 #include <QPair>
 #include <QMetaType>
+#include <cstdint>
+#include <cstddef>
 
 #include "preferences/usersettings.h"
 
@@ -37,9 +39,6 @@ typedef enum {
     MIDI_ACTIVE_SENSE   = 0xFE,
     MIDI_SYSTEM_RESET   = 0xFF,
 } MidiOpCode;
-
-typedef unsigned int    uint32_t;
-typedef unsigned short  uint16_t;
 
 typedef enum {
     MIDI_OPTION_NONE          = 0x0000,

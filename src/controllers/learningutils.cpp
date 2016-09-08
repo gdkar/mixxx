@@ -6,7 +6,7 @@
 #include "controllers/midi/midiutils.h"
 #include "control/controlobject.h"
 
-typedef QPair<MidiKey, unsigned char> MidiKeyAndValue;
+typedef std::pair<MidiKey, unsigned char> MidiKeyAndValue;
 
 struct MessageStats {
     MessageStats()
@@ -49,7 +49,7 @@ struct MessageStats {
 // static
 MidiInputMappings LearningUtils::guessMidiInputMappings(
         const ConfigKey& control,
-        const QList<QPair<MidiKey, unsigned char> >& messages) {
+        const QList<std::pair<MidiKey, unsigned char> >& messages) {
     QMap<unsigned char, MessageStats> stats_by_control;
     MessageStats stats;
 

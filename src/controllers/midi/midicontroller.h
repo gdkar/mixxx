@@ -24,25 +24,25 @@
 class MidiController : public Controller {
     Q_OBJECT
   public:
-    MidiController();
+    MidiController(QObject *p = nullptr);
     virtual ~MidiController();
 
-    virtual QString presetExtension();
+    QString presetExtension() const override;
     virtual ControllerPresetPointer getPreset() const {
         auto pClone = new MidiControllerPreset();
         *pClone = m_preset;
         return ControllerPresetPointer(pClone);
     }
 
-    virtual bool savePreset(const QString fileName) const;
-    virtual void visit(const ControllerPreset* preset);
+    bool savePreset(const QString fileName) const override;
+    void visit(const ControllerPreset* preset) override;
 
-    virtual void accept(ControllerVisitor* visitor) {
+    void accept(ControllerVisitor* visitor) override {
         if (visitor) {
             visitor->visit(this);
         }
     }
-    virtual bool isMappable() const {
+    bool isMappable() const override {
         return m_preset.isMappable();
     }
     virtual bool matchPreset(const PresetInfo& preset);
@@ -94,7 +94,7 @@ class MidiController : public Controller {
     QList<MidiOutputHandler*> m_outputs;
     MidiControllerPreset m_preset;
     SoftTakeoverCtrl m_st;
-    QList<QPair<MidiInputMapping, unsigned char> > m_fourteen_bit_queued_mappings;
+    QList<std::pair<MidiInputMapping, unsigned char> > m_fourteen_bit_queued_mappings;
 
     // So it can access sendShortMsg()
     friend class MidiOutputHandler;

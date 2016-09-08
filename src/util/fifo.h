@@ -3,79 +3,146 @@
 
 #include <QtDebug>
 #include <QMutex>
-#include <QScopedPointer>
-#include <QSharedPointer>
+#include <memory>
+#include <utility>
+#include <functional>
+#include <tuple>
+#include <atomic>
 
-#include "pa_ringbuffer.h"
+//#include "pa_ringbuffer.h"
 #include "util/class.h"
 #include "util/math.h"
-#include "util/reference.h"
 
-template <class DataType>
+template <class T>
 class FIFO {
   public:
-    explicit FIFO(int size)
-            : m_data(NULL) {
-        size = roundUpToPowerOf2(size);
-        // If we can't represent the next higher power of 2 then bail.
-        if (size < 0) {
-            return;
+    using value_type      = T;
+    using size_type       = std::size_t;
+    using difference_type = std::int64_t;
+    using reference       = T&;
+    using pointer         = T*;
+
+  protected:
+    size_type        bufferSize;
+    difference_type  bigMask;
+    difference_type  smallMask;
+    std::unique_ptr<T[]> m_data{};
+    std::atomic<difference_type> readIndex;
+    std::atomic<difference_type> writeIndex;
+
+  public:
+    explicit FIFO(size_type size)
+    : bufferSize(roundUpToPowerOf2(size))
+    , bigMask   ((bufferSize * 2) - 1)
+    , smallMask ( bufferSize - 1)
+    , m_data    ( std::make_unique<T[]>(bufferSize))
+    { }
+    virtual ~FIFO() = default;
+    size_type capacity() const
+    {
+        return bufferSize;
+    }
+    size_type readAvailable() const
+    {
+        auto ridx = readIndex.load(std::memory_order_acquire);
+        auto widx = writeIndex.load(std::memory_order_acquire);
+        return (widx - ridx) & bigMask;
+    }
+    size_type writeAvailable() const
+    {
+        return bufferSize - readAvailable();
+    }
+    size_type read(T* pData, size_type count)
+    {
+        auto data0 = pointer{},data1=pointer{};
+        auto size0 = size_type{}, size1=size_type{};
+        count = acquireReadRegions(count, &data0, &size0, &data1, &size1);
+        if(size0) {
+            pData = std::copy_n(data0, size0, pData);
+            if(size1) {
+                std::copy_n(data1, size1, pData);
+            }
         }
-        m_data = new DataType[size];
-        memset(m_data, 0, sizeof(DataType) * size);
-        PaUtil_InitializeRingBuffer(
-                &m_ringBuffer, sizeof(DataType), size, m_data);
+        return releaseReadRegions(count);
     }
-    virtual ~FIFO() {
-        delete [] m_data;
+    size_type write(const T* pData, size_type count)
+    {
+        auto data0 = pointer{},data1=pointer{};
+        auto size0 = size_type{}, size1=size_type{};
+        count = acquireWriteRegions(count, &data0, &size0, &data1, &size1);
+        if(size0) {
+            std::copy_n(pData, size0, data0);
+            std::advance(pData,size0);
+            if(size1) {
+                std::copy_n(pData, size1, data1);
+            }
+        }
+        return releaseWriteRegions(count);
     }
-    int readAvailable() const {
-        return PaUtil_GetRingBufferReadAvailable(&m_ringBuffer);
-    }
-    int writeAvailable() const {
-        return PaUtil_GetRingBufferWriteAvailable(&m_ringBuffer);
-    }
-    int read(DataType* pData, int count) {
-        return PaUtil_ReadRingBuffer(&m_ringBuffer, pData, count);
-    }
-    int write(const DataType* pData, int count) {
-        return PaUtil_WriteRingBuffer(&m_ringBuffer, pData, count);
-    }
-    void writeBlocking(const DataType* pData, int count) {
-        int written = 0;
+    void writeBlocking(const T* pData, size_type count) {
+        auto written = size_type{0};
         while (written != count) {
-            int i = write(pData, count);
-            pData += i;
+            auto i = write(pData, count);
+            pData   += i;
             written += i;
         }
     }
-    int acquireWriteRegions(int count,
-            DataType** dataPtr1, ring_buffer_size_t* sizePtr1,
-            DataType** dataPtr2, ring_buffer_size_t* sizePtr2) {
-        return PaUtil_GetRingBufferWriteRegions(&m_ringBuffer, count,
-                (void**)dataPtr1, sizePtr1, (void**)dataPtr2, sizePtr2);
+    size_type acquireWriteRegions(size_type count,
+            pointer* dataPtr1, size_type *sizePtr1,
+            pointer* dataPtr2, size_type* sizePtr2)
+    {
+        auto ridx = readIndex.load(std::memory_order_acquire);
+        auto widx = writeIndex.load(std::memory_order_acquire);
+        count = std::min<size_type>(count, bufferSize - ((widx-ridx)&bigMask));
+        auto woff = widx & smallMask;
+        auto size1 = std::min<size_type>(count, bufferSize - woff);
+        *sizePtr1 = size1;
+        *dataPtr1 = &m_data[woff];
+        *sizePtr2 = count - size1;
+        *dataPtr2 = &m_data[0];
+        if(count)
+            std::atomic_thread_fence(std::memory_order_acquire);
+        return count;
     }
-    int releaseWriteRegions(int count) {
-        return PaUtil_AdvanceRingBufferWriteIndex(&m_ringBuffer, count);
+    size_type releaseWriteRegions(size_type count)
+    {
+        auto ridx = readIndex.load(std::memory_order_acquire);
+        auto widx = writeIndex.load(std::memory_order_acquire);
+        count = std::min<size_type>(count, bufferSize - ((widx-ridx)&bigMask));
+        std::atomic_thread_fence(std::memory_order_release);
+        writeIndex.fetch_add(count,std::memory_order_release);
+        return count;
     }
-    int acquireReadRegions(int count,
-            DataType** dataPtr1, ring_buffer_size_t* sizePtr1,
-            DataType** dataPtr2, ring_buffer_size_t* sizePtr2) {
-        return PaUtil_GetRingBufferReadRegions(&m_ringBuffer, count,
-                (void**)dataPtr1, sizePtr1, (void**)dataPtr2, sizePtr2);
+    size_type acquireReadRegions(size_type count,
+            pointer* dataPtr1, size_type* sizePtr1,
+            pointer* dataPtr2, size_type* sizePtr2)
+    {
+        auto ridx = readIndex.load(std::memory_order_acquire);
+        auto widx = writeIndex.load(std::memory_order_acquire);
+        count = std::min<size_type>(count, (widx-ridx)&bigMask);
+        auto roff = ridx & smallMask;
+        auto size1 = std::min<size_type>(count, bufferSize - roff);
+        *sizePtr1 = size1;
+        *dataPtr1 = &m_data[roff];
+        *sizePtr2 = count - size1;
+        *dataPtr2 = &m_data[0];
+        if(count)
+            std::atomic_thread_fence(std::memory_order_acquire);
+        return count;
     }
-    int releaseReadRegions(int count) {
-        return PaUtil_AdvanceRingBufferReadIndex(&m_ringBuffer, count);
+    size_type releaseReadRegions(size_type count)
+    {
+        auto ridx = readIndex.load(std::memory_order_acquire);
+        auto widx = writeIndex.load(std::memory_order_acquire);
+        count = std::min<size_type>(count, (widx-ridx)&bigMask);
+        std::atomic_thread_fence(std::memory_order_release);
+        readIndex.fetch_add(count,std::memory_order_release);
+        return count;
     }
-    int flushReadData(int count) {
-        int flush = math_min(readAvailable(), count);
-        return PaUtil_AdvanceRingBufferReadIndex(&m_ringBuffer, flush);
+    size_type flushReadData(size_type count)
+    {
+        return releaseReadRegions(count);
     }
-
-  private:
-    DataType* m_data;
-    PaUtilRingBuffer m_ringBuffer;
-    DISALLOW_COPY_AND_ASSIGN(FIFO<DataType>);
 };
 
 // MessagePipe represents one side of a TwoWayMessagePipe. The direction of the
@@ -85,52 +152,44 @@ class FIFO {
 template <class SenderMessageType, class ReceiverMessageType>
 class MessagePipe {
   public:
+    using size_type  = std::size_t;
+    using difference_type = std::ptrdiff_t;
+
     MessagePipe(FIFO<SenderMessageType>& receiver_messages,
                 FIFO<ReceiverMessageType>& sender_messages,
-                BaseReferenceHolder* pTwoWayMessagePipeReference,
+                std::shared_ptr<void> pTwoWayMessagePipeReference,
                 bool serialize_writes)
             : m_receiver_messages(receiver_messages),
               m_sender_messages(sender_messages),
               m_pTwoWayMessagePipeReference(pTwoWayMessagePipeReference),
               m_bSerializeWrites(serialize_writes) {
     }
-
     // Returns the number of ReceiverMessageType messages waiting to be read by
     // the receiver. Non-blocking.
-    int messageCount() const {
+    size_type messageCount() const {
         return m_sender_messages.readAvailable();
     }
-
     // Read a ReceiverMessageType written by the receiver addressed to the
     // sender. Non-blocking.
-    int readMessages(ReceiverMessageType* messages, int count) {
+    size_type readMessages(ReceiverMessageType* messages, size_type count) {
         return m_sender_messages.read(messages, count);
     }
-
     // Writes up to 'count' messages from the 'message' array to the receiver
     // and returns the number of successfully written messages. If
     // serializeWrites is active, this method is blocking.
-    int writeMessages(const SenderMessageType* messages, int count) {
-        if (m_bSerializeWrites) {
-            m_serializationMutex.lock();
-        }
-        int result = m_receiver_messages.write(messages, count);
-        if (m_bSerializeWrites) {
-            m_serializationMutex.unlock();
-        }
+    size_type writeMessages(const SenderMessageType* messages, size_type count)
+    {
+        if (m_bSerializeWrites) m_serializationMutex.lock();
+        auto result = m_receiver_messages.write(messages, count);
+        if (m_bSerializeWrites) m_serializationMutex.unlock();
         return result;
     }
-
   private:
     QMutex m_serializationMutex;
     FIFO<SenderMessageType>& m_receiver_messages;
     FIFO<ReceiverMessageType>& m_sender_messages;
-    QScopedPointer<BaseReferenceHolder> m_pTwoWayMessagePipeReference;
+    std::shared_ptr<void> m_pTwoWayMessagePipeReference;
     bool m_bSerializeWrites;
-
-#define COMMA ,
-    DISALLOW_COPY_AND_ASSIGN(MessagePipe<SenderMessageType COMMA ReceiverMessageType>);
-#undef COMMA
 };
 
 // TwoWayMessagePipe is a bare-bones wrapper around the above FIFO class that
@@ -152,44 +211,36 @@ class TwoWayMessagePipe {
     // the first is the sender's pipe (sends SenderMessageType and receives
     // ReceiverMessageType messages) and the second is the receiver's pipe
     // (sends ReceiverMessageType and receives SenderMessageType messages).
-    static QPair<MessagePipe<SenderMessageType, ReceiverMessageType>*,
+
+    static std::pair<MessagePipe<SenderMessageType, ReceiverMessageType>*,
                  MessagePipe<ReceiverMessageType, SenderMessageType>*> makeTwoWayMessagePipe(
-                     int sender_fifo_size,
-                     int receiver_fifo_size,
+                     std::size_t  sender_fifo_size,
+                     std::size_t receiver_fifo_size,
                      bool serialize_sender_writes,
                      bool serialize_receiver_writes) {
-        QSharedPointer<TwoWayMessagePipe<SenderMessageType, ReceiverMessageType> > pipe(
-            new TwoWayMessagePipe<SenderMessageType, ReceiverMessageType>(
-                sender_fifo_size, receiver_fifo_size));
-
-        return QPair<MessagePipe<SenderMessageType, ReceiverMessageType>*,
-                     MessagePipe<ReceiverMessageType, SenderMessageType>*>(
-                         new MessagePipe<SenderMessageType, ReceiverMessageType>(
+        auto pipe = create(sender_fifo_size,receiver_fifo_size);
+        return std::make_pair(new MessagePipe<SenderMessageType, ReceiverMessageType>(
                              pipe->m_receiver_messages, pipe->m_sender_messages,
-                             new ReferenceHolder<TwoWayMessagePipe<SenderMessageType, ReceiverMessageType> >(pipe),
+                             pipe,
                              serialize_sender_writes),
                          new MessagePipe<ReceiverMessageType, SenderMessageType>(
                              pipe->m_sender_messages, pipe->m_receiver_messages,
-                             new ReferenceHolder<TwoWayMessagePipe<SenderMessageType, ReceiverMessageType> >(pipe),
+                             pipe,
                              serialize_receiver_writes));
     }
 
   private:
-    TwoWayMessagePipe(int sender_fifo_size, int receiver_fifo_size)
-            : m_receiver_messages(receiver_fifo_size),
-              m_sender_messages(sender_fifo_size) {
+    static std::shared_ptr<TwoWayMessagePipe> create(std::size_t sfifo_size, std::size_t rfifo_size)
+    {
+        return std::shared_ptr<TwoWayMessagePipe>(new TwoWayMessagePipe(sfifo_size,rfifo_size));
     }
-
+    TwoWayMessagePipe(std::size_t sender_fifo_size, std::size_t receiver_fifo_size)
+            : m_receiver_messages(receiver_fifo_size),
+              m_sender_messages(sender_fifo_size)
+    { }
     // Messages waiting to be delivered to the receiver.
     FIFO<SenderMessageType> m_receiver_messages;
     // Messages waiting to be delivered to the sender.
     FIFO<ReceiverMessageType> m_sender_messages;
-
-    // This #define is because the macro gets confused by the template
-    // parameters.
-#define COMMA ,
-    DISALLOW_COPY_AND_ASSIGN(TwoWayMessagePipe<SenderMessageType COMMA ReceiverMessageType>);
-#undef COMMA
 };
-
 #endif /* FIFO_H */

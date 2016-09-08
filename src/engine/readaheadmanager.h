@@ -6,7 +6,8 @@
 
 #include <QLinkedList>
 #include <QList>
-#include <QPair>
+#include <functional>
+#include <tuple>
 
 #include "util/types.h"
 #include "util/math.h"
@@ -45,7 +46,7 @@ class ReadAheadManager {
     void addRateControl(RateControl* pRateControl);
 
     // Get the current read-ahead position in samples.
-    virtual inline SINT getPlaypos() const {
+    virtual SINT getPlaypos() const {
         return m_iCurrentPosition;
     }
 

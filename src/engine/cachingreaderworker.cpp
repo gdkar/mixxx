@@ -74,7 +74,7 @@ void CachingReaderWorker::run() {
     CachingReaderChunkReadRequest request;
 
     Event::start(m_tag);
-    while (!load_atomic(m_stop)) {
+    while (!m_stop.load()) {
         if (m_newTrack) {
             TrackPointer pLoadTrack;
             { // locking scope

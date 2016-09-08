@@ -19,7 +19,7 @@
 #define SOUNDDEVICEPORTAUDIO_H
 
 #include <portaudio.h>
-
+#include <atomic>
 #include <QString>
 #include "util/performancetimer.h"
 
@@ -79,7 +79,7 @@ class SoundDevicePortAudio : public SoundDevice {
     void updateAudioLatencyUsage(const unsigned int framesPerBuffer);
 
     // PortAudio stream for this device.
-    PaStream* volatile m_pStream;
+    std::atomic<PaStream*> m_pStream;
     // PortAudio device index for this device.
     PaDeviceIndex m_devId;
     // Struct containing information about this device. Don't free() it, it
@@ -102,7 +102,7 @@ class SoundDevicePortAudio : public SoundDevice {
     ControlProxy* m_pMasterAudioLatencyUsage;
     ControlProxy* m_pMasterAudioLatencyOverload;
     int m_underflowUpdateCount;
-    static volatile int m_underflowHappened;
+    static std::atomic<int> m_underflowHappened;
     mixxx::Duration m_timeInAudioCallback;
     int m_framesSinceAudioLatencyUsageUpdate;
     int m_syncBuffers;

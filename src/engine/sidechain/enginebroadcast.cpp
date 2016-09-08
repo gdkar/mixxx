@@ -851,10 +851,8 @@ void EngineBroadcast::run() {
         int readAvailable = m_pOutputFifo->readAvailable();
         if (readAvailable) {
             setFunctionCode(3);
-            CSAMPLE* dataPtr1;
-            ring_buffer_size_t size1;
-            CSAMPLE* dataPtr2;
-            ring_buffer_size_t size2;
+            FIFO<CSAMPLE>::pointer dataPtr1, dataPtr2;
+            FIFO<CSAMPLE>::size_type size1, size2;
             // We use size1 and size2, so we can ignore the return value
             (void)m_pOutputFifo->acquireReadRegions(readAvailable, &dataPtr1, &size1,
                     &dataPtr2, &size2);

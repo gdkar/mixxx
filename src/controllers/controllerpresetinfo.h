@@ -40,22 +40,16 @@ class PresetInfo {
   public:
     PresetInfo();
     PresetInfo(const QString& path);
-
-
-    inline bool isValid() const {
+    bool isValid() const {
         return m_valid;
     }
-
-    inline const QString getPath() const { return m_path; }
-
-    inline const QString getName() const { return m_name; }
-    inline const QString getDescription() const { return m_description; }
-    inline const QString getForumLink() const { return m_forumlink; }
-    inline const QString getWikiLink() const { return m_wikilink; }
-    inline const QString getAuthor() const { return m_author; }
-
-    inline const QList<ProductInfo>& getProducts() const { return m_products; }
-
+    const QString getPath() const { return m_path; }
+    const QString getName() const { return m_name; }
+    const QString getDescription() const { return m_description; }
+    const QString getForumLink() const { return m_forumlink; }
+    const QString getWikiLink() const { return m_wikilink; }
+    const QString getAuthor() const { return m_author; }
+    const QList<ProductInfo>& getProducts() const { return m_products; }
   private:
     ProductInfo parseBulkProduct(const QDomElement& element) const;
     ProductInfo parseHIDProduct(const QDomElement& element) const;

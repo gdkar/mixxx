@@ -96,7 +96,7 @@ class DlgControllerLearning : public QDialog,
     bool m_messagesLearned;
     QTimer m_firstMessageTimer;
     QTimer m_lastMessageTimer;
-    QList<QPair<MidiKey, unsigned char> > m_messages;
+    QList<std::pair<MidiKey, unsigned char> > m_messages;
     MidiInputMappings m_mappings;
 };
 

@@ -718,8 +718,8 @@ class Optimize(Feature):
     LEVEL_PORTABLE = 'portable'
     LEVEL_NATIVE = 'native'
     LEVEL_LEGACY = 'legacy'
-
-    LEVEL_DEFAULT = LEVEL_PORTABLE
+    LEVEL_EXCESSIVE = 'excessive'
+    LEVEL_DEFAULT = LEVEL_NATIVE
 
     def description(self):
         return "Optimization and Tuning"
@@ -728,9 +728,7 @@ class Optimize(Feature):
     def get_optimization_level(build):
         optimize_level = build.env.get('optimize', None)
         if optimize_level is None:
-            optimize_level = SCons.ARGUMENTS.get('optimize',
-                                                 Optimize.LEVEL_DEFAULT)
-
+            optimize_level = SCons.ARGUMENTS.get('optimize',Optimize.LEVEL_DEFAULT)
         try:
             optimize_integer = int(optimize_level)
             if optimize_integer == 0:
@@ -738,21 +736,21 @@ class Optimize(Feature):
             elif optimize_integer == 1:
                 # Level 1 was a legacy (compiler optimizations only) build.
                 optimize_level = Optimize.LEVEL_LEGACY
-            elif optimize_integer in xrange(2, 10):
+            elif optimize_integer == 2:
                 # Levels 2 through 9 map to portable.
                 optimize_level = Optimize.LEVEL_PORTABLE
+            elif optimize_integer in xrange(3,10):
+                optimize_level = Optimize.LEVEL_NATIVE
+            else:
+                optimize_level = Optimize.LEVEL_EXCESSIVE
         except:
             pass
-
         # Support common aliases for off.
         if optimize_level in ('none', 'disable', 'disabled'):
             optimize_level = Optimize.LEVEL_OFF
-
         if optimize_level not in (Optimize.LEVEL_OFF, Optimize.LEVEL_PORTABLE,
-                                  Optimize.LEVEL_NATIVE, Optimize.LEVEL_LEGACY):
-            raise Exception("optimize={} is not supported. "
-                            "Use portable, native, legacy or off"
-                            .format(optimize_level))
+                                  Optimize.LEVEL_NATIVE, Optimize.LEVEL_LEGACY, Optimize.LEVEL_EXCESSIVE):
+            raise Exception("optimize={} is not supported. Use portable, native, legacy or off".format(optimize_level))
         return optimize_level
 
     def enabled(self, build):
@@ -769,11 +767,8 @@ class Optimize(Feature):
                         , Optimize.LEVEL_DEFAULT)
 
     def configure(self, build, conf):
-        if not self.enabled(build):
-            return
-
+        if not self.enabled(build): return
         optimize_level = build.flags['optimize']
-
         if optimize_level == Optimize.LEVEL_OFF:
             self.status = "off: no optimization"
             return
@@ -782,12 +777,10 @@ class Optimize(Feature):
             # /GL : http://msdn.microsoft.com/en-us/library/0zza0de8.aspx
             # !!! /GL is incompatible with /ZI, which is set by mscvdebug
             build.env.Append(CCFLAGS='/GL')
-
             # Use the fastest floating point math library
             # http://msdn.microsoft.com/en-us/library/e7s85ffb.aspx
             # http://msdn.microsoft.com/en-us/library/ms235601.aspx
             build.env.Append(CCFLAGS='/fp:fast')
-
             # Do link-time code generation (and don't show a progress indicator
             # -- this relies on ANSI control characters and tends to overwhelm
             # Jenkins logs) Should we turn on PGO ?
@@ -833,7 +826,6 @@ class Optimize(Feature):
             # SSE and SSE2 are core instructions on x64
             if build.machine_is_64bit:
                 build.env.Append(CPPDEFINES=['__SSE__', '__SSE2__'])
-
         elif build.toolchain_is_gnu:
             # Common flags to all optimizations.
             # -ffast-math will pevent a performance penalty by denormals
@@ -843,6 +835,7 @@ class Optimize(Feature):
             # the following optimisation flags makes the engine code ~3 times
             # faster, measured on a Atom CPU.
             build.env.Append(CCFLAGS='-O3')
+            build.env.Append(CCFLAGS='-Ofast')
             build.env.Append(CCFLAGS='-ffast-math')
             build.env.Append(CCFLAGS='-funroll-loops')
 
@@ -851,7 +844,6 @@ class Optimize(Feature):
             # interfere with debugging
             if not int(build.flags['profiling']):
                 build.env.Append(CCFLAGS='-fomit-frame-pointer')
-
             if optimize_level == Optimize.LEVEL_PORTABLE:
                 # portable: sse2 CPU (>= Pentium 4)
                 if build.architecture_is_x86:
@@ -893,6 +885,27 @@ class Optimize(Feature):
                 elif build.architecture_is_arm:
                     self.status = "portable"
                     build.env.Append(CCFLAGS='-mfloat-abi=hard -mfpu=neon')
+            elif optimize_level == Optimize.LEVEL_EXCESSIVE:
+                self.status = "excessive: just go all the fuckin' way, whatever."
+                build.env.Append(CCFLAGS='-march=native')
+                build.env.Append(CCFLAGS='-flto')
+                build.env.Append(CCFLAGS='-ffat-lto-objects')
+                build.env.Append(CCFLAGS='-fuse-linker-plugin')
+                build.env.Append(LINKFLAGS='-flto')
+                build.env.Append(LINKFLAGS='-ffat-lto-objects')
+                build.env.Append(LINKFLAGS='-fuse-linker-plugin')
+                # http://en.chys.info/2010/04/what-exactly-marchnative-means/
+                # Note: requires gcc >= 4.2.0
+                # macros like __SSE2_MATH__ __SSE_MATH__ __SSE2__ __SSE__
+                # are set automaticaly
+
+                if build.architecture_is_x86 and not build.machine_is_64bit:
+                    # the sse flags are not set by default on 32 bit builds
+                    # but are not supported on arm builds
+                    build.env.Append(CCFLAGS='-msse2 -mfpmath=sse')
+                elif build.architecture_is_arm:
+                    self.status = "portable"
+                    build.env.Append(CCFLAGS='-mfloat-abi=hard -mfpu=neon')
             elif optimize_level == Optimize.LEVEL_LEGACY:
                 if build.architecture_is_x86:
                     self.status = "legacy: pure i386 code"
@@ -904,10 +917,8 @@ class Optimize(Feature):
             else:
                 # Not possible to reach this code if enabled is written
                 # correctly.
-                raise Exception("optimize={} is not supported. "
-                                "Use portable, native, legacy or off"
+                raise Exception("optimize={} is not supported. Use portable, native, legacy or off"
                                 .format(optimize_level))
-
             # what others do:
             # soundtouch uses just -O3 and -msse in Ubuntu Trusty
             # rubberband uses just -O2 in Ubuntu Trusty
@@ -915,24 +926,19 @@ class Optimize(Feature):
             # -O3 -fomit-frame-pointer -mtune=native -malign-double
             # -fstrict-aliasing -fno-schedule-insns -ffast-math
 
-
 class MacAppStoreException(Feature):
     def description(self):
         return "Build for Mac App Store"
-
     def enabled(self, build):
-        build.flags['macappstore'] = util.get_flags(build.env,
-                                                    'macappstore', 0)
+        build.flags['macappstore'] = util.get_flags(build.env,'macappstore', 0)
         if int(build.flags['macappstore']):
             # Existence of the macappstore option forces vinylcontrol off due to
             # licensing issues.
             build.flags['vinylcontrol'] = 0
             return True
         return False
-
     def add_options(self, build, vars):
         vars.Add('macappstore', 'Set to 1 to indicate the build is for the Mac App Store', 0)
-
     def configure(self, build, conf):
         if not self.enabled(build):
             return
@@ -975,17 +981,13 @@ class Battery(Feature):
         if int(build.flags['battery']):
             return True
         return False
-
     def add_options(self, build, vars):
-        vars.Add('battery',
-                 'Set to 1 to enable battery meter support.')
+        vars.Add('battery','Set to 1 to enable battery meter support.')
 
     def configure(self, build, conf):
         if not self.enabled(build):
             return
-
         build.env.Append(CPPDEFINES='__BATTERY__')
-
     def sources(self, build):
         if build.platform_is_windows:
             return ["util/battery/batterywindows.cpp"]
@@ -995,6 +997,5 @@ class Battery(Feature):
             return ["util/battery/batterylinux.cpp"]
         else:
             raise Exception('Battery support is not implemented for the target platform.')
-
     def depends(self, build):
         return [depends.IOKit, depends.UPower]

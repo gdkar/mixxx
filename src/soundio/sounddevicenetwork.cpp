@@ -102,15 +102,11 @@ void SoundDeviceNetwork::readProcess() {
     int writeAvailable = m_inputFifo->writeAvailable();
     int copyCount = qMin(writeAvailable, readAvailable);
     if (copyCount > 0) {
-        CSAMPLE* dataPtr1;
-        ring_buffer_size_t size1;
-        CSAMPLE* dataPtr2;
-        ring_buffer_size_t size2;
-        (void)m_inputFifo->acquireWriteRegions(copyCount,
-                &dataPtr1, &size1, &dataPtr2, &size2);
+        FIFO<CSAMPLE>::pointer dataPtr1, dataPtr2;
+        FIFO<CSAMPLE>::size_type size1, size2;
+        (void)m_inputFifo->acquireWriteRegions(copyCount,&dataPtr1, &size1, &dataPtr2, &size2);
         // Fetch fresh samples and write to the the input buffer
-        m_pNetworkStream->read(dataPtr1,
-                size1 / m_iNumInputChannels);
+        m_pNetworkStream->read(dataPtr1,size1 / m_iNumInputChannels);
         CSAMPLE* lastFrame = &dataPtr1[size1 - m_iNumInputChannels];
         if (size2 > 0) {
             m_pNetworkStream->read(dataPtr2,
@@ -158,10 +154,9 @@ void SoundDeviceNetwork::readProcess() {
         //qDebug() << "readProcess()" << (float)readAvailable / inChunkSize << "underflow";
     }
     if (readCount) {
-        CSAMPLE* dataPtr1;
-        ring_buffer_size_t size1;
-        CSAMPLE* dataPtr2;
-        ring_buffer_size_t size2;
+        FIFO<CSAMPLE>::pointer dataPtr1, dataPtr2;
+        FIFO<CSAMPLE>::size_type size1, size2;
+
         // We use size1 and size2, so we can ignore the return value
         (void) m_inputFifo->acquireReadRegions(readCount, &dataPtr1, &size1,
                 &dataPtr2, &size2);
@@ -198,10 +193,8 @@ void SoundDeviceNetwork::writeProcess() {
     }
     //qDebug() << "writeProcess():" << (float) writeAvailable / outChunkSize;
     if (writeCount) {
-        CSAMPLE* dataPtr1;
-        ring_buffer_size_t size1;
-        CSAMPLE* dataPtr2;
-        ring_buffer_size_t size2;
+        FIFO<CSAMPLE>::pointer dataPtr1, dataPtr2;
+        FIFO<CSAMPLE>::size_type size1, size2;
         // We use size1 and size2, so we can ignore the return value
         (void)m_outputFifo->acquireWriteRegions(writeCount, &dataPtr1,
                 &size1, &dataPtr2, &size2);
@@ -222,10 +215,8 @@ void SoundDeviceNetwork::writeProcess() {
     int copyCount = qMin(readAvailable, writeAvailable);
     //qDebug() << "SoundDevicePortAudio::writeProcess()" << toRead << writeAvailable;
     if (copyCount > 0) {
-        CSAMPLE* dataPtr1;
-        ring_buffer_size_t size1;
-        CSAMPLE* dataPtr2;
-        ring_buffer_size_t size2;
+        FIFO<CSAMPLE>::pointer dataPtr1, dataPtr2;
+        FIFO<CSAMPLE>::size_type size1, size2;
         m_outputFifo->acquireReadRegions(copyCount,
                 &dataPtr1, &size1, &dataPtr2, &size2);
         if (writeAvailable >= outChunkSize * 2) {

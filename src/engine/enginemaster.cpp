@@ -2,7 +2,8 @@
 
 #include <QtDebug>
 #include <QList>
-#include <QPair>
+#include <functional>
+#include <tuple>
 
 #include "preferences/usersettings.h"
 #include "control/controlaudiotaperpot.h"

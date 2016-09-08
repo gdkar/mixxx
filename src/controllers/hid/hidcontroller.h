@@ -44,7 +44,7 @@ class HidController : public Controller {
     HidController(const hid_device_info deviceInfo);
     virtual ~HidController();
 
-    virtual QString presetExtension();
+    QString presetExtension() const override;
 
     virtual ControllerPresetPointer getPreset() const {
         HidControllerPreset* pClone = new HidControllerPreset();
@@ -52,20 +52,20 @@ class HidController : public Controller {
         return ControllerPresetPointer(pClone);
     }
 
-    virtual bool savePreset(const QString fileName) const;
+    bool savePreset(const QString fileName) const override;
 
-    virtual void visit(const ControllerPreset* preset);
-    virtual void accept(ControllerVisitor* visitor) {
+    void visit(const ControllerPreset* preset) override;
+    void accept(ControllerVisitor* visitor) override {
         if (visitor) {
             visitor->visit(this);
         }
     }
 
-    virtual bool isMappable() const {
+    bool isMappable() const override {
         return m_preset.isMappable();
     }
 
-    virtual bool matchPreset(const PresetInfo& preset);
+    bool matchPreset(const PresetInfo& preset) override ;
     virtual bool matchProductInfo(const ProductInfo& product);
     virtual void guessDeviceCategory();
 
@@ -84,7 +84,7 @@ class HidController : public Controller {
     virtual void send(QByteArray data);
     virtual void send(QByteArray data, unsigned int reportID);
 
-    virtual bool isPolling() const {
+    bool isPolling() const override {
         return false;
     }
 

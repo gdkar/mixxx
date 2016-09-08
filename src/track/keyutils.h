@@ -48,12 +48,8 @@ class KeyUtils {
             KeyNotation notation = CUSTOM);
 
     static mixxx::track::io::key::ChromaticKey keyFromNumericValue(double value);
-
     static double keyToNumericValue(mixxx::track::io::key::ChromaticKey key);
-
-    static QPair<mixxx::track::io::key::ChromaticKey, double> scaleKeyOctaves(
-        mixxx::track::io::key::ChromaticKey key, double scale);
-
+    static std::pair<mixxx::track::io::key::ChromaticKey, double> scaleKeyOctaves(mixxx::track::io::key::ChromaticKey key, double scale);
     static mixxx::track::io::key::ChromaticKey scaleKeySteps(
         mixxx::track::io::key::ChromaticKey key, int steps);
 

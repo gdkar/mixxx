@@ -51,26 +51,25 @@ class ChannelHandle {
     int m_iHandle;
 
     friend class ChannelHandleFactory;
+    friend bool operator==(const ChannelHandle& h1, const ChannelHandle& h2) {
+        return h1.handle() == h2.handle();
+    }
+
+    friend bool operator!=(const ChannelHandle& h1, const ChannelHandle& h2) {
+        return h1.handle() != h2.handle();
+    }
+
+    friend QDebug operator<<(QDebug stream, const ChannelHandle& h) {
+        stream << "ChannelHandle(" << h.handle() << ")";
+        return stream;
+    }
+    friend uint qHash(const ChannelHandle& handle) {
+        return qHash(handle.handle());
+    }
 };
 
-inline bool operator==(const ChannelHandle& h1, const ChannelHandle& h2) {
-    return h1.handle() == h2.handle();
-}
 
-inline bool operator!=(const ChannelHandle& h1, const ChannelHandle& h2) {
-    return h1.handle() != h2.handle();
-}
-
-inline QDebug operator<<(QDebug stream, const ChannelHandle& h) {
-    stream << "ChannelHandle(" << h.handle() << ")";
-    return stream;
-}
-
-inline uint qHash(const ChannelHandle& handle) {
-    return qHash(handle.handle());
-}
-
-// Convenience class that mimics QPair<ChannelHandle, QString> except with
+// Convenience class that mimics std::pair<ChannelHandle, QString> except with
 // custom equality and hash methods that save the cost of touching the QString.
 class ChannelHandleAndGroup {
   public:
@@ -78,12 +77,10 @@ class ChannelHandleAndGroup {
             : m_handle(handle),
               m_name(name) {
     }
-
-    inline const QString& name() const {
+    const QString& name() const {
         return m_name;
     }
-
-    inline const ChannelHandle& handle() const {
+    const ChannelHandle& handle() const {
         return m_handle;
     }
 

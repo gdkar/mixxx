@@ -242,16 +242,15 @@ void StatsManager::run() {
         // want to print the most accurate stat report on shutdown.
         processIncomingStatReports();
         m_statsPipeLock.unlock();
-
-        if (load_atomic(m_emitAllStats) == 1) {
-            for (QMap<QString, Stat>::const_iterator it = m_stats.begin();
-                 it != m_stats.end(); ++it) {
+        if (m_emitAllStats.load() == 1) {
+            for (auto it = m_stats.cbegin();
+                 it != m_stats.cend(); ++it) {
                 emit(statUpdated(it.value()));
             }
             m_emitAllStats = 0;
         }
 
-        if (load_atomic(m_quit) == 1) {
+        if (m_quit.load() == 1) {
             qDebug() << "StatsManager thread shutting down.";
             break;
         }
