@@ -553,27 +553,17 @@ void EngineBroadcast::processDisconnect() {
         m_encoder = nullptr;
     }
 }
-
-void EngineBroadcast::write(unsigned char *header, unsigned char *body,
-                            int headerLen, int bodyLen) {
+void EngineBroadcast::write(unsigned char *header, unsigned char *body,int headerLen, int bodyLen)
+{
     setFunctionCode(7);
-    if (!m_pShout) {
+    if (!m_pShout)
         return;
-    }
-
     if (m_iShoutStatus == SHOUTERR_CONNECTED) {
         // Send header if there is one
-        if (headerLen > 0) {
-            if(!writeSingle(header, headerLen)) {
-                return;
-            }
-        }
+        if (headerLen > 0 && !writeSingle(header, headerLen)) return;
+        if (bodyLen   > 0 && !writeSingle(body, bodyLen))     return;
 
-        if(!writeSingle(body, bodyLen)) {
-            return;
-        }
-
-        ssize_t queuelen = shout_queuelen(m_pShout);
+        auto queuelen = shout_queuelen(m_pShout);
         if (queuelen > 0) {
             qDebug() << "shout_queuelen" << queuelen;
             NetworkStreamWorker::debugState();
@@ -589,15 +579,14 @@ void EngineBroadcast::write(unsigned char *header, unsigned char *body,
         }
     }
 }
-
-bool EngineBroadcast::writeSingle(const unsigned char* data, size_t len) {
+bool EngineBroadcast::writeSingle(const unsigned char* data, size_t len)
+{
     // We are already synced by EngineNetworkstream
     setFunctionCode(8);
-    int ret = shout_send_raw(m_pShout, data, len);
+    auto ret = shout_send_raw(m_pShout, data, len);
     if (ret < SHOUTERR_SUCCESS && ret != SHOUTERR_BUSY) {
         // in case of bussy, frames are queued and queue is checked below
-        qDebug() << "EngineBroadcast::write() header error:"
-                 << ret << shout_get_error(m_pShout);
+        qDebug() << "EngineBroadcast::write() header error:" << ret << shout_get_error(m_pShout);
         NetworkStreamWorker::debugState();
         if (m_iShoutFailures > kMaxShoutFailures) {
             m_pStatusCO->setAndConfirm(STATUSCO_FAILURE);
@@ -617,9 +606,9 @@ bool EngineBroadcast::writeSingle(const unsigned char* data, size_t len) {
     return true;
 }
 
-void EngineBroadcast::process(const CSAMPLE* pBuffer, const int iBufferSize) {
+void EngineBroadcast::process(const CSAMPLE* pBuffer, const int iBufferSize)
+{
     setFunctionCode(4);
-
     setState(NETWORKSTREAMWORKER_STATE_BUSY);
     // If we are here then the user wants to be connected (broadcast is enabled
     // in the preferences).
@@ -627,34 +616,27 @@ void EngineBroadcast::process(const CSAMPLE* pBuffer, const int iBufferSize) {
     // If we aren't connected, bail.
     if (m_iShoutStatus != SHOUTERR_CONNECTED)
         return;
-
     // If we are connected, encode the samples.
     if (iBufferSize > 0 && m_encoder) {
         setFunctionCode(6);
         m_encoder->encodeBuffer(pBuffer, iBufferSize);
         // the encoded frames are received by the write() callback.
     }
-
     // Check if track metadata has changed and if so, update.
-    if (metaDataHasChanged()) {
+    if (metaDataHasChanged())
         updateMetaData();
-    }
     setState(NETWORKSTREAMWORKER_STATE_READY);
 }
-
-bool EngineBroadcast::metaDataHasChanged() {
-    TrackPointer pTrack;
-
+bool EngineBroadcast::metaDataHasChanged()
+{
     // TODO(rryan): This is latency and buffer size dependent. Should be based
     // on time.
     if (m_iMetaDataLife < 16) {
         m_iMetaDataLife++;
         return false;
     }
-
     m_iMetaDataLife = 0;
-
-    pTrack = PlayerInfo::instance().getCurrentPlayingTrack();
+    auto pTrack = PlayerInfo::instance().getCurrentPlayingTrack();
     if (!pTrack)
         return false;
 
@@ -671,12 +653,10 @@ bool EngineBroadcast::metaDataHasChanged() {
     m_pMetaData = pTrack;
     return true;
 }
-
 void EngineBroadcast::updateMetaData() {
     setFunctionCode(5);
     if (!m_pShout || !m_pShoutMetaData)
         return;
-
     /**
      * If track has changed and static metadata is disabled
      * Send new metadata to broadcast!
@@ -696,8 +676,8 @@ void EngineBroadcast::updateMetaData() {
     if (!m_custom_metadata && (m_format_is_mp3 || m_ogg_dynamic_update)) {
         if (m_pMetaData != nullptr) {
 
-            QString artist = m_pMetaData->getArtist();
-            QString title = m_pMetaData->getTitle();
+            auto artist = m_pMetaData->getArtist();
+            auto title = m_pMetaData->getTitle();
 
             // shoutcast uses only "song" as field for "artist - title".
             // icecast2 supports separate fields for "artist" and "title",
@@ -724,14 +704,10 @@ void EngineBroadcast::updateMetaData() {
                 QString metadataFinal = m_metadataFormat;
                 do {
                     // find the next occurrence
-                    replaceIndex = metadataFinal.indexOf(
-                                      QRegExp("\\$artist|\\$title"),
-                                      replaceIndex);
+                    replaceIndex = metadataFinal.indexOf(QRegExp("\\$artist|\\$title"),replaceIndex);
 
                     if (replaceIndex != -1) {
-                        if (metadataFinal.indexOf(
-                                          QRegExp("\\$artist"), replaceIndex)
-                                          == replaceIndex) {
+                        if (metadataFinal.indexOf(QRegExp("\\$artist"), replaceIndex) == replaceIndex) {
                             metadataFinal.replace(replaceIndex, 7, artist);
                             // skip to the end of the replacement
                             replaceIndex += artist.length();
@@ -742,7 +718,7 @@ void EngineBroadcast::updateMetaData() {
                     }
                 } while (replaceIndex != -1);
 
-                QByteArray baSong = encodeString(metadataFinal);
+                auto baSong = encodeString(metadataFinal);
                 setFunctionCode(10);
                 shout_metadata_add(m_pShoutMetaData, "song",  baSong.constData());
             }
@@ -758,24 +734,20 @@ void EngineBroadcast::updateMetaData() {
             // see comment above...
             if (!m_format_is_mp3 && m_protocol_is_icecast2) {
                 setFunctionCode(12);
-                shout_metadata_add(
-                        m_pShoutMetaData,"artist",encodeString(m_customArtist).constData());
-
-                shout_metadata_add(
-                        m_pShoutMetaData,"title",encodeString(m_customTitle).constData());
+                shout_metadata_add(m_pShoutMetaData,"artist",encodeString(m_customArtist).constData());
+                shout_metadata_add(m_pShoutMetaData,"title",encodeString(m_customTitle).constData());
             } else {
-                QByteArray baCustomSong = encodeString(m_customArtist.isEmpty() ? m_customTitle : m_customArtist + " - " + m_customTitle);
+                auto baCustomSong = encodeString(m_customArtist.isEmpty() ? m_customTitle : m_customArtist + " - " + m_customTitle);
                 shout_metadata_add(m_pShoutMetaData, "song", baCustomSong.constData());
             }
-
             setFunctionCode(13);
             shout_set_metadata(m_pShout, m_pShoutMetaData);
             m_firstCall = true;
         }
     }
 }
-
-void EngineBroadcast::errorDialog(QString text, QString detailedError) {
+void EngineBroadcast::errorDialog(QString text, QString detailedError)
+{
     qWarning() << "Streaming error: " << detailedError;
     NetworkStreamWorker::debugState();
     ErrorDialogProperties* props = ErrorDialogHandler::instance()->newDialogProperties();
@@ -789,8 +761,8 @@ void EngineBroadcast::errorDialog(QString text, QString detailedError) {
     ErrorDialogHandler::instance()->requestErrorDialog(props);
     setState(NETWORKSTREAMWORKER_STATE_ERROR);
 }
-
-void EngineBroadcast::infoDialog(QString text, QString detailedInfo) {
+void EngineBroadcast::infoDialog(QString text, QString detailedInfo)
+{
     ErrorDialogProperties* props = ErrorDialogHandler::instance()->newDialogProperties();
     props->setType(DLG_INFO);
     props->setTitle(tr("Live broadcasting"));
@@ -802,31 +774,29 @@ void EngineBroadcast::infoDialog(QString text, QString detailedInfo) {
     ErrorDialogHandler::instance()->requestErrorDialog(props);
     NetworkStreamWorker::debugState();
 }
-
 // Is called from the Mixxx engine thread
-void EngineBroadcast::outputAvailable() {
+void EngineBroadcast::outputAvailable()
+{
     m_readSema.release();
 }
-
 // Is called from the Mixxx engine thread
-void EngineBroadcast::setOutputFifo(FIFO<CSAMPLE>* pOutputFifo) {
+void EngineBroadcast::setOutputFifo(FIFO<CSAMPLE>* pOutputFifo)
+{
     m_pOutputFifo = pOutputFifo;
 }
-
-void EngineBroadcast::run() {
-    unsigned static id = 0;
+void EngineBroadcast::run()
+{
+    static auto id = 0u;
     QThread::currentThread()->setObjectName(QString("EngineBroadcast %1").arg(++id));
     qDebug() << "EngineBroadcast::run: starting thread";
     NetworkStreamWorker::debugState();
 #ifndef __WINDOWS__
     ignoreSigpipe();
 #endif
-
     DEBUG_ASSERT_AND_HANDLE(m_pOutputFifo) {
         qDebug() << "EngineBroadcast::run: Broadcast FIFO handle is not available. Aborting";
         return;
     }
-
     setState(NETWORKSTREAMWORKER_STATE_BUSY);
     if (!processConnect()) {
         errorDialog(tr("Can't connect to streaming server"),
@@ -854,8 +824,7 @@ void EngineBroadcast::run() {
             FIFO<CSAMPLE>::pointer dataPtr1, dataPtr2;
             FIFO<CSAMPLE>::size_type size1, size2;
             // We use size1 and size2, so we can ignore the return value
-            (void)m_pOutputFifo->acquireReadRegions(readAvailable, &dataPtr1, &size1,
-                    &dataPtr2, &size2);
+            (void)m_pOutputFifo->acquireReadRegions(readAvailable, &dataPtr1, &size1,&dataPtr2, &size2);
             process(dataPtr1, size1);
             if (size2 > 0) {
                 process(dataPtr2, size2);
@@ -864,11 +833,10 @@ void EngineBroadcast::run() {
         }
     }
 }
-
-bool EngineBroadcast::threadWaiting() {
+bool EngineBroadcast::threadWaiting()
+{
     return m_threadWaiting;
 }
-
 #ifndef __WINDOWS__
 void EngineBroadcast::ignoreSigpipe()
 {
@@ -886,15 +854,15 @@ void EngineBroadcast::ignoreSigpipe()
     }
 }
 #endif
-
-void EngineBroadcast::slotStatusCO(double v) {
+void EngineBroadcast::slotStatusCO(double v)
+{
     // Ignore external sets "status"
     Q_UNUSED(v);
     qWarning() << "WARNING:"
             << BROADCAST_PREF_KEY << "\"status\" is a read-only control, ignoring";
 }
-
-void EngineBroadcast::slotEnableCO(double v) {
+void EngineBroadcast::slotEnableCO(double v)
+{
     if (v > 1.0) {
         // Wrap around manually .
         // Wrapping around in WPushbutton does not work

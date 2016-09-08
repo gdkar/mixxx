@@ -96,10 +96,11 @@ class FFMPEG(Dependence):
 
     def sources(self, build):
         return ['sources/soundsourceffmpeg.cpp',
-                'encoder/encoderffmpegresample.cpp',
-                'encoder/encoderffmpegcore.cpp',
-                'encoder/encoderffmpegmp3.cpp',
-                'encoder/encoderffmpegvorbis.cpp']
+#                'encoder/encoderffmpegresample.cpp',
+#                'encoder/encoderffmpegcore.cpp',
+#                'encoder/encoderffmpegmp3.cpp',
+#                'encoder/encoderffmpegvorbis.cpp'
+    ]
 class PortMIDI(Dependence):
     def configure(self, build, conf):
         # Check for PortTime

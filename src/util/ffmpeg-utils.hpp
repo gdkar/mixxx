@@ -14,8 +14,13 @@ extern "C"{
 #   include <libavformat/avformat.h>
 #   include <libavcodec/avcodec.h>
 #   include <libswresample/swresample.h>
+#   include <libavfilter/avfilter.h>
 #   include <libavdevice/avdevice.h>
 #   include <libavutil/avutil.h>
+#   include <libavutil/mathematics.h>
+#   include <libavutil/common.h>
+#   include <libavutil/dict.h>
+#   include <libavutil/opt.h>
 };
 namespace mixxx {
 
@@ -159,6 +164,42 @@ struct avframe{
             av_frame_ref(m_d, frm);
         }
     }
+    int  get_buffer(int _align = 32)
+    {
+        auto _samples = m_d->nb_samples;
+        auto _layout  = m_d->channel_layout;
+        auto _channels= m_d->channels;
+
+        auto _width   = m_d->width;
+        auto _height  = m_d->height;
+
+        auto _format  = m_d->format;
+
+        unref();
+        m_d->nb_samples = _samples;
+        m_d->channel_layout = _layout;
+        m_d->channels = _channels;
+        m_d->height = _height;
+        m_d->width = _width;
+        m_d->format = _format;
+        return av_frame_get_buffer(m_d, _align);
+    }
+    int get_audio_buffer(AVSampleFormat _format, int _channels, int _samples, int _align = 32)
+    {
+        unref();
+        m_d->format = static_cast<int>(_format);
+        m_d->channels = _channels;
+        m_d->nb_samples = _samples;
+        return av_frame_get_buffer(m_d, _align);
+    }
+    int get_vidio_buffer(AVPixelFormat _format, int _width, int _height, int _align = 32)
+    {
+        unref();
+        m_d->format = static_cast<int>(_format);
+        m_d->width = _width;
+        m_d->height = _height;
+        return av_frame_get_buffer(m_d, _align);
+    }
     bool writable() const { return av_frame_is_writable(m_d);}
     bool make_writable() { return !av_frame_make_writable(m_d);}
     int64_t best_effort_timestamp() const {
@@ -178,7 +219,7 @@ struct avframe{
     uint8_t * const *data() const { return m_d->extended_data;}
     friend void swap(avframe &lhs, avframe &rhs) noexcept { lhs.swap(rhs);}
 };
-struct format_context{
+struct format_context {
     AVFormatContext  *m_d{nullptr};
     AVFormatContext *operator ->()       { return m_d;}
     const AVFormatContext *operator ->() const { return m_d;}
@@ -188,6 +229,11 @@ struct format_context{
     operator       AVFormatContext *  ()      { return m_d;}
     operator bool() const { return !!m_d;}
     bool operator !() const { return !m_d;}
+
+    AVStream *new_stream(const AVCodec *_c)
+    {
+        return avformat_new_stream(m_d, _c);
+    }
     format_context() : m_d{avformat_alloc_context()}{}
     format_context(format_context && o) noexcept: format_context() { swap(o);}
     format_context &operator =(format_context && o) noexcept { swap(o);return *this;}
@@ -216,6 +262,14 @@ struct format_context{
                     { stream->discard = AVDISCARD_ALL;});
         }
         return err;
+    }
+    int alloc_output(AVOutputFormat *oformat, const char *format_name, const char *filename)
+    {
+        if(is_input())
+            avformat_close_input(&m_d);
+        avformat_free_context(m_d);
+        m_d = nullptr;
+        return avformat_alloc_output_context2(&m_d, oformat, format_name, filename);
     }
     std::pair<AVStream*, AVCodec*> find_best_stream(AVMediaType type)
     {
@@ -260,6 +314,14 @@ struct codec_context{
     explicit codec_context(AVCodecParameters *par) : codec_context(avcodec_find_decoder(par->codec_id))
     {
         avcodec_parameters_to_context(m_d,par);
+    }
+    void extract_parameters(AVCodecParameters *par)
+    {
+        avcodec_parameters_from_context(par, m_d);
+    }
+    void apply_parameters(AVCodecParameters *par)
+    {
+        avcodec_parameters_to_context(m_d, par);
     }
     int open( AVCodec *codec = nullptr)
     {

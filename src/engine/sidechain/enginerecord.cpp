@@ -275,17 +275,17 @@ void EngineRecord::write(unsigned char *header, unsigned char *body,
     emit(bytesRecorded((headerLen+bodyLen)));
 
 }
-
-bool EngineRecord::fileOpen() {
+bool EngineRecord::fileOpen()
+{
     // Both encoder and file must be initialized.
     if (m_encoding == ENCODING_WAVE || m_encoding == ENCODING_AIFF) {
-        return (m_pSndfile != NULL);
+        return (m_pSndfile);
     } else {
         return (m_file.handle() != -1);
     }
 }
-
-bool EngineRecord::openFile() {
+bool EngineRecord::openFile()
+{
     // Unfortunately, we cannot use QFile for writing WAV and AIFF audio.
     if (m_encoding == ENCODING_WAVE || m_encoding == ENCODING_AIFF) {
         // set sfInfo

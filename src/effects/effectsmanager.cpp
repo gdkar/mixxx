@@ -286,7 +286,6 @@ bool EffectsManager::writeRequest(EffectsRequest* request) {
         delete request;
         return false;
     }
-
     if (m_pRequestPipe.isNull()) {
         delete request;
         return false;
@@ -305,17 +304,14 @@ bool EffectsManager::writeRequest(EffectsRequest* request) {
     delete request;
     return false;
 }
-
-void EffectsManager::processEffectsResponses() {
+void EffectsManager::processEffectsResponses()
+{
     if (m_pRequestPipe.isNull()) {
         return;
     }
-
     EffectsResponse response;
     while (m_pRequestPipe->readMessages(&response, 1) == 1) {
-        QHash<qint64, EffectsRequest*>::iterator it =
-                m_activeRequests.find(response.request_id);
-
+        auto it = m_activeRequests.find(response.request_id);
         if (it == m_activeRequests.end()) {
             qWarning() << debugString()
                        << "WARNING: EffectsResponse with an inactive request_id:"

@@ -19,16 +19,19 @@ class FIFO {
     using value_type      = T;
     using size_type       = std::size_t;
     using difference_type = std::int64_t;
+    using const_reference = const T&;
+    using const_pointer   = const T*;
+
     using reference       = T&;
     using pointer         = T*;
 
   protected:
-    size_type        bufferSize;
-    difference_type  bigMask;
-    difference_type  smallMask;
+    size_type        bufferSize{};
+    difference_type  bigMask{};
+    difference_type  smallMask{};
     std::unique_ptr<T[]> m_data{};
-    std::atomic<difference_type> readIndex;
-    std::atomic<difference_type> writeIndex;
+    std::atomic<difference_type> readIndex{0};
+    std::atomic<difference_type> writeIndex{0};
 
   public:
     explicit FIFO(size_type size)
@@ -38,6 +41,59 @@ class FIFO {
     , m_data    ( std::make_unique<T[]>(bufferSize))
     { }
     virtual ~FIFO() = default;
+    bool empty() const
+    {
+        auto ridx = readIndex.load(std::memory_order_acquire);
+        auto widx = writeIndex.load(std::memory_order_acquire);
+        return ridx == widx;
+    }
+    bool full() const
+    {
+        auto ridx = readIndex.load(std::memory_order_acquire);
+        auto widx = writeIndex.load(std::memory_order_acquire);
+        return size_type((widx - ridx) & bigMask) == bufferSize;
+    }
+    reference front()
+    {
+        auto ridx = readIndex.load(std::memory_order_relaxed);
+        std::atomic_thread_fence(std::memory_order_acquire);
+        return &m_data[ridx & smallMask];
+    }
+    const_reference front() const
+    {
+        auto ridx = readIndex.load(std::memory_order_relaxed);
+        std::atomic_thread_fence(std::memory_order_acquire);
+        return &m_data[ridx & smallMask];
+    }
+    reference back()
+    {
+        auto widx = writeIndex.load(std::memory_order_relaxed);
+        return &m_data[widx & smallMask];
+    }
+    void pop_front()
+    {
+        readIndex.fetch_add(1,std::memory_order_release);
+    }
+    void push_back(const_reference item)
+    {
+        back() = item;
+        std::atomic_thread_fence(std::memory_order_release);
+        writeIndex.fetch_add(1,std::memory_order_release);
+    }
+    void push_back(T &&item)
+    {
+        back() = std::forward<item>(item);
+        std::atomic_thread_fence(std::memory_order_release);
+        writeIndex.fetch_add(1,std::memory_order_release);
+    }
+    template<class... Args>
+    void emplace_back(Args && ...args)
+    {
+        back().~T();
+        ::new( &back() ) T (std::forward<Args>(args)...);
+        std::atomic_thread_fence(std::memory_order_release);
+        writeIndex.fetch_add(1,std::memory_order_release);
+    }
     size_type capacity() const
     {
         return bufferSize;
@@ -58,9 +114,9 @@ class FIFO {
         auto size0 = size_type{}, size1=size_type{};
         count = acquireReadRegions(count, &data0, &size0, &data1, &size1);
         if(size0) {
-            pData = std::copy_n(data0, size0, pData);
+            pData = std::move_n(data0, size0, pData);
             if(size1) {
-                std::copy_n(data1, size1, pData);
+                std::move_n(data1, size1, pData);
             }
         }
         return releaseReadRegions(count);
@@ -154,7 +210,6 @@ class MessagePipe {
   public:
     using size_type  = std::size_t;
     using difference_type = std::ptrdiff_t;
-
     MessagePipe(FIFO<SenderMessageType>& receiver_messages,
                 FIFO<ReceiverMessageType>& sender_messages,
                 std::shared_ptr<void> pTwoWayMessagePipeReference,
@@ -221,12 +276,10 @@ class TwoWayMessagePipe {
         auto pipe = create(sender_fifo_size,receiver_fifo_size);
         return std::make_pair(new MessagePipe<SenderMessageType, ReceiverMessageType>(
                              pipe->m_receiver_messages, pipe->m_sender_messages,
-                             pipe,
-                             serialize_sender_writes),
+                             pipe, serialize_sender_writes),
                          new MessagePipe<ReceiverMessageType, SenderMessageType>(
                              pipe->m_sender_messages, pipe->m_receiver_messages,
-                             pipe,
-                             serialize_receiver_writes));
+                             pipe, serialize_receiver_writes));
     }
 
   private:
