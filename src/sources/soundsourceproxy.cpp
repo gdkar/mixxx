@@ -3,12 +3,10 @@
 
 #include "sources/soundsourceproxy.h"
 
-#ifdef __MPG123__
+#if 0 && defined(__MPG123__)
 #include "sources/soundsourcemp3.h"
 #endif
-#ifdef __FFMPEGFILE__
 #include "sources/soundsourceffmpeg.h"
-#endif
 
 #include "library/coverartutils.h"
 #include "library/coverartcache.h"
@@ -51,9 +49,8 @@ void SoundSourceProxy::loadPlugins() {
     // provider failed to open a file. But the order of registration
     // only matters among providers with equal priority.
     // Use FFmpeg as the last resort.
-    s_soundSourceProviders.registerProvider(
-            mixxx::newSoundSourceProvider<mixxx::SoundSourceProviderFFmpeg>());
-#ifdef __MPG123__
+    s_soundSourceProviders.registerProvider(mixxx::newSoundSourceProvider<mixxx::SoundSourceProviderFFmpeg>());
+#if 0 && defined(__MPG123__)
     s_soundSourceProviders.registerProvider(
             mixxx::newSoundSourceProvider<mixxx::SoundSourceProviderMp3>());
 #endif

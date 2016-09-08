@@ -21,10 +21,86 @@ class PortAudio(Dependence):
 
     def sources(self, build):
         return ['soundio/sounddeviceportaudio.cpp']
+class FFMPEG(Dependence):
+    def description(self):
+        return "FFmpeg/Avconv support"
 
+    def configure(self, build, conf):
 
+        # Supported version are FFmpeg 0.11-2.x and Avconv 0.8.x-11.x
+        # FFmpeg is multimedia library that can be found http://ffmpeg.org/
+        # Avconv is fork of FFmpeg that is used mainly in Debian and Ubuntu
+        # that can be found http://libav.org
+        if build.platform_is_linux or build.platform_is_osx or build.platform_is_bsd:
+            # Check for libavcodec, libavformat
+            # I just randomly picked version numbers lower than mine for this
+            if not conf.CheckForPKG('libavcodec', '53.35.0'):
+                raise Exception('Missing libavcodec or it\'s too old! It can'
+                                'be separated from main package so check your'
+                                'operating system packages.')
+            if not conf.CheckForPKG('libavformat', '53.21.0'):
+                raise Exception('Missing libavformat  or it\'s too old!'
+                                'It can be separated from main package so'
+                                'check your operating system packages.')
+
+            # Needed to build new FFmpeg
+            build.env.Append(CCFLAGS='-D__STDC_CONSTANT_MACROS')
+            build.env.Append(CCFLAGS='-D__STDC_LIMIT_MACROS')
+            build.env.Append(CCFLAGS='-D__STDC_FORMAT_MACROS')
+
+            # Grabs the libs and cflags for FFmpeg
+            build.env.ParseConfig('pkg-config libavcodec --silence-errors \
+                                  --cflags --libs')
+            build.env.ParseConfig('pkg-config libavformat --silence-errors \
+                                   --cflags --libs')
+            build.env.ParseConfig('pkg-config libavutil --silence-errors \
+                                   --cflags --libs')
+            build.env.ParseConfig('pkg-config libavfilter --silence-errors \
+                                   --cflags --libs')
+
+            build.env.ParseConfig('pkg-config libswresample --silence-errors \
+                                   --cflags --libs')
+
+            build.env.Append(CPPDEFINES='__FFMPEGFILE__')
+            self.status = "Enabled"
+
+        else:
+            # aptitude install libavcodec-dev libavformat-dev liba52-0.7.4-dev
+            # libdts-dev
+            # Append some stuff to CFLAGS in Windows also
+            build.env.Append(CCFLAGS='-D__STDC_CONSTANT_MACROS')
+            build.env.Append(CCFLAGS='-D__STDC_LIMIT_MACROS')
+            build.env.Append(CCFLAGS='-D__STDC_FORMAT_MACROS')
+
+            build.env.Append(LIBS='avcodec')
+            build.env.Append(LIBS='avformat')
+            build.env.Append(LIBS='avutil')
+            build.env.Append(LIBS='z')
+            build.env.Append(LIBS='swresample')
+            # build.env.Append(LIBS = 'a52')
+            # build.env.Append(LIBS = 'dts')
+            build.env.Append(LIBS='gsm')
+            # build.env.Append(LIBS = 'dc1394_control')
+            # build.env.Append(LIBS = 'dl')
+            build.env.Append(LIBS='vorbisenc')
+            # build.env.Append(LIBS = 'raw1394')
+            build.env.Append(LIBS='vorbis')
+            build.env.Append(LIBS='m')
+            build.env.Append(LIBS='ogg')
+            build.env.Append(CPPDEFINES='__FFMPEGFILE__')
+
+        # Add new path for FFmpeg header files.
+        # Non-crosscompiled builds need this too, don't they?
+        if build.crosscompile and build.platform_is_windows and build.toolchain_is_gnu:
+            build.env.Append(CPPPATH=os.path.join(build.crosscompile_root,'include', 'ffmpeg'))
+
+    def sources(self, build):
+        return ['sources/soundsourceffmpeg.cpp',
+                'encoder/encoderffmpegresample.cpp',
+                'encoder/encoderffmpegcore.cpp',
+                'encoder/encoderffmpegmp3.cpp',
+                'encoder/encoderffmpegvorbis.cpp']
 class PortMIDI(Dependence):
-
     def configure(self, build, conf):
         # Check for PortTime
         libs = ['porttime', 'libporttime']
@@ -178,10 +254,6 @@ class SndFile(Dependence):
         return []
 
 class Qt(Dependence):
-    DEFAULT_QT4DIRS = {'linux': '/usr/share/qt4',
-                       'bsd': '/usr/local/lib/qt4',
-                       'osx': '/Library/Frameworks',
-                       'windows': 'C:\\qt\\4.6.0'}
 
     DEFAULT_QT5DIRS64 = {'linux': '/usr/lib/x86_64-linux-gnu/qt5',
                          'osx': '/Library/Frameworks',
@@ -193,25 +265,21 @@ class Qt(Dependence):
 
     @staticmethod
     def qt5_enabled(build):
-        return int(util.get_flags(build.env, 'qt5', 0))
+        return 1
 
     @staticmethod
     def uic(build):
-        qt5 = Qt.qt5_enabled(build)
-        return build.env.Uic5 if qt5 else build.env.Uic4
+        return build.env.Uic5
 
     @staticmethod
-    def find_framework_libdir(qtdir, qt5):
+    def find_framework_libdir(qtdir):
         # Try pkg-config on Linux
         import sys
         if sys.platform.startswith('linux'):
             if any(os.access(os.path.join(path, 'pkg-config'), os.X_OK) for path in os.environ["PATH"].split(os.pathsep)):
                 import subprocess
                 try:
-                    if qt5:
-                        core = subprocess.Popen(["pkg-config", "--variable=libdir", "Qt5Core"], stdout = subprocess.PIPE).communicate()[0].rstrip()
-                    else:
-                        core = subprocess.Popen(["pkg-config", "--variable=libdir", "QtCore"], stdout = subprocess.PIPE).communicate()[0].rstrip()
+                    core = subprocess.Popen(["pkg-config", "--variable=libdir", "Qt5Core"], stdout = subprocess.PIPE).communicate()[0].rstrip()
                 finally:
                     if os.path.isdir(core):
                         return core
@@ -224,49 +292,34 @@ class Qt(Dependence):
 
     @staticmethod
     def enabled_modules(build):
-        qt5 = Qt.qt5_enabled(build)
         qt_modules = [
             'QtCore', 'QtGui', 'QtOpenGL', 'QtXml', 'QtSvg',
             'QtSql', 'QtScript', 'QtXmlPatterns', 'QtNetwork',
-            'QtTest', 'QtScriptTools'
-        ]
-        if qt5:
-            qt_modules.extend(['QtWidgets', 'QtConcurrent'])
+            'QtTest', 'QtScriptTools',
+            'QtWidgets', 'QtConcurrent']
         return qt_modules
 
     @staticmethod
     def enabled_imageformats(build):
-        qt5 = Qt.qt5_enabled(build)
         qt_imageformats = [
-            'qgif', 'qico', 'qjpeg',  'qmng', 'qtga', 'qtiff', 'qsvg'
-        ]
-        if qt5:
-            qt_imageformats.extend(['qdds', 'qicns', 'qjp2', 'qwbmp', 'qwebp'])
+            'qgif', 'qico', 'qjpeg',  'qmng', 'qtga', 'qtiff', 'qsvg',
+             'qdds', 'qicns', 'qjp2', 'qwbmp', 'qwebp']
         return qt_imageformats
 
     def satisfy(self):
         pass
-
     def configure(self, build, conf):
         qt_modules = Qt.enabled_modules(build)
-
-        qt5 = Qt.qt5_enabled(build)
         # Emit various Qt defines
         build.env.Append(CPPDEFINES=['QT_TABLET_SUPPORT'])
-        
         if build.static_qt:
             build.env.Append(CPPDEFINES='QT_NODLL')
         else:
             build.env.Append(CPPDEFINES='QT_SHARED')
-        
-        if qt5:
-            # Enable qt4 support.
-            build.env.Append(CPPDEFINES='QT_DISABLE_DEPRECATED_BEFORE')
-
+        build.env.Append(CPPDEFINES='QT_DISABLE_DEPRECATED_BEFORE')
         # Set qt_sqlite_plugin flag if we should package the Qt SQLite plugin.
         build.flags['qt_sqlite_plugin'] = util.get_flags(
             build.env, 'qt_sqlite_plugin', 0)
-            
         # Link in SQLite library if Qt is compiled statically
         if build.platform_is_windows and build.static_dependencies \
            and build.flags['qt_sqlite_plugin'] == 0 :
@@ -274,21 +327,15 @@ class Qt(Dependence):
 
         # Enable Qt include paths
         if build.platform_is_linux:
-            if qt5 and not conf.CheckForPKG('Qt5Core', '5.0'):
+            if not conf.CheckForPKG('Qt5Core', '5.0'):
                 raise Exception('Qt >= 5.0 not found')
-            elif not qt5 and not conf.CheckForPKG('QtCore', '4.6'):
-                raise Exception('QT >= 4.6 not found')
 
             # This automatically converts QtXXX to Qt5XXX where appropriate.
-            if qt5:
-                build.env.EnableQt5Modules(qt_modules, debug=False)
-            else:
-                build.env.EnableQt4Modules(qt_modules, debug=False)
+            build.env.EnableQt5Modules(qt_modules, debug=False)
 
-            if qt5:
                 # Note that -reduce-relocations is enabled by default in Qt5.
                 # So we must build the code with position independent code
-                build.env.Append(CCFLAGS='-fPIC')
+            build.env.Append(CCFLAGS='-fPIC')
 
         elif build.platform_is_bsd:
             build.env.Append(LIBS=qt_modules)
@@ -300,7 +347,7 @@ class Qt(Dependence):
             build.env.Append(
                 LINKFLAGS=' '.join('-framework %s' % m for m in qt_modules)
             )
-            framework_path = Qt.find_framework_libdir(qtdir, qt5)
+            framework_path = Qt.find_framework_libdir(qtdir)
             if not framework_path:
                 raise Exception(
                     'Could not find frameworks in Qt directory: %s' % qtdir)
@@ -313,20 +360,10 @@ class Qt(Dependence):
             build.env.Append(CCFLAGS=['-F%s' % os.path.join(framework_path)])
             build.env.Append(LINKFLAGS=['-F%s' % os.path.join(framework_path)])
 
-            # Copied verbatim from qt4.py and qt5.py.
-            # TODO(rryan): Get our fixes merged upstream so we can use qt4.py
-            # and qt5.py for OS X.
-            qt4_module_defines = {
-                'QtScript'   : ['QT_SCRIPT_LIB'],
-                'QtSvg'      : ['QT_SVG_LIB'],
-                'Qt3Support' : ['QT_QT3SUPPORT_LIB','QT3_SUPPORT'],
-                'QtSql'      : ['QT_SQL_LIB'],
-                'QtXml'      : ['QT_XML_LIB'],
-                'QtOpenGL'   : ['QT_OPENGL_LIB'],
-                'QtGui'      : ['QT_GUI_LIB'],
-                'QtNetwork'  : ['QT_NETWORK_LIB'],
-                'QtCore'     : ['QT_CORE_LIB'],
-            }
+            # Copied verbatim from qt5.py.
+            # TODO(rryan): Get our fixes merged upstream so we can use 
+            # qt5.py for OS X.
+
             qt5_module_defines = {
                 'QtScript'   : ['QT_SCRIPT_LIB'],
                 'QtSvg'      : ['QT_SVG_LIB'],
@@ -338,24 +375,15 @@ class Qt(Dependence):
                 'QtCore'     : ['QT_CORE_LIB'],
                 'QtWidgets'  : ['QT_WIDGETS_LIB'],
             }
-
-            module_defines = qt5_module_defines if qt5 else qt4_module_defines
+            module_defines = qt5_module_defines
             for module in qt_modules:
                 build.env.AppendUnique(CPPDEFINES=module_defines.get(module, []))
 
-            if qt5:
-                build.env["QT5_MOCCPPPATH"] = build.env["CPPPATH"]
-            else:
-                build.env["QT4_MOCCPPPATH"] = build.env["CPPPATH"]
+            build.env["QT5_MOCCPPPATH"] = build.env["CPPPATH"]
         elif build.platform_is_windows:
             # This automatically converts QtCore to QtCore[45][d] where
             # appropriate.
-            if qt5:
-                build.env.EnableQt5Modules(qt_modules,
-                                           staticdeps=build.static_qt,
-                                           debug=build.build_is_debug)
-            else:
-                build.env.EnableQt4Modules(qt_modules,
+            build.env.EnableQt5Modules(qt_modules,
                                            staticdeps=build.static_qt,
                                            debug=build.build_is_debug)
 
@@ -389,7 +417,7 @@ class Qt(Dependence):
                 os.popen('sw_vers').readlines()[1].find('10.4') >= 0)
         if not build.platform_is_windows and not (using_104_sdk or compiling_on_104):
             qtdir = build.env['QTDIR']
-            framework_path = Qt.find_framework_libdir(qtdir, qt5)
+            framework_path = Qt.find_framework_libdir(qtdir)
             if os.path.isdir(framework_path):
                 build.env.Append(LINKFLAGS="-Wl,-rpath," + framework_path)
                 build.env.Append(LINKFLAGS="-L" + framework_path)
@@ -398,7 +426,6 @@ class Qt(Dependence):
         # default but Clang/GCC require a flag.
         if not build.platform_is_windows:
             build.env.Append(CXXFLAGS='-std=c++14')
-
 
 class TestHeaders(Dependence):
     def configure(self, build, conf):
@@ -428,13 +455,10 @@ class FidLib(Dependence):
 
 
 class ReplayGain(Dependence):
-
     def sources(self, build):
         return ["#lib/replaygain/replaygain.cpp"]
-
     def configure(self, build, conf):
         build.env.Append(CPPPATH="#lib/replaygain")
-
 
 class Ebur128Mit(Dependence):
     INTERNAL_PATH = '#lib/libebur128-1.1.0'
@@ -453,7 +477,6 @@ class Ebur128Mit(Dependence):
             #env.Append(CPPDEFINES='USE_SPEEX_RESAMPLER') # Required for unused EBUR128_MODE_TRUE_PEAK
             if not conf.CheckHeader('sys/queue.h'):
                 env.Append(CPPPATH=['%s/ebur128/queue' % self.INTERNAL_PATH])
-
 
 class SoundTouch(Dependence):
     SOUNDTOUCH_INTERNAL_PATH = '#lib/soundtouch-1.9.2'
@@ -486,21 +509,16 @@ class SoundTouch(Dependence):
     def configure(self, build, conf, env=None):
         if env is None:
             env = build.env
-
         if build.platform_is_linux:
             # Try using system lib
             if conf.CheckForPKG('soundtouch', '1.8.0'):
                 # System Lib found
-                build.env.ParseConfig('pkg-config soundtouch --silence-errors \
-                                      --cflags --libs')
+                build.env.ParseConfig('pkg-config soundtouch --silence-errors --cflags --libs')
                 self.INTERNAL_LINK = False
-
         if self.INTERNAL_LINK:
             env.Append(CPPPATH=[self.SOUNDTOUCH_INTERNAL_PATH])
-
             # Prevents circular import.
             from features import Optimize
-
             # If we do not want optimizations then disable them.
             optimize = (build.flags['optimize'] if 'optimize' in build.flags
                         else Optimize.get_optimization_level(build))
@@ -532,10 +550,8 @@ class TagLib(Dependence):
         # it, though might cause issues. This is safe to remove once we
         # deprecate Karmic support. rryan 2/2011
         build.env.Append(CPPPATH='/usr/include/taglib/')
-
         if build.platform_is_windows and build.static_dependencies:
             build.env.Append(CPPDEFINES='TAGLIB_STATIC')
-
 
 class Chromaprint(Dependence):
     def configure(self, build, conf):
@@ -695,6 +711,7 @@ class MixxxCore(Feature):
                    "engine/engineworkerscheduler.cpp",
                    "engine/enginebuffer.cpp",
                    "engine/enginebufferscale.cpp",
+                   "engine/scaledreader.cpp",
                    "engine/enginebufferscalelinear.cpp",
                    "engine/enginefilterbiquad1.cpp",
                    "engine/enginefiltermoogladder4.cpp",
@@ -1346,7 +1363,7 @@ class MixxxCore(Feature):
                 CPPDEFINES=('UNIX_LIB_PATH', r'\"%s\"' % lib_path))
 
     def depends(self, build):
-        return [SoundTouch, ReplayGain, Ebur128Mit, PortAudio, PortMIDI, RtMidi, Qt, TestHeaders,
+        return [SoundTouch, ReplayGain, Ebur128Mit, PortAudio, PortMIDI, FFMPEG, RtMidi, Qt, TestHeaders,
                 FidLib, SndFile, OggVorbis, OpenGL, TagLib, ProtoBuf,
                 Chromaprint, RubberBand, SecurityFramework, CoreServices,
                 QtScriptByteArray, Reverb, FpClassify, PortAudioRingBuffer]

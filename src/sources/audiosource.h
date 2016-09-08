@@ -205,9 +205,7 @@ class AudioSource: public AudioSignal {
 
     static const SINT kBitrateZero = 0;
     static const SINT kBitrateDefault = kBitrateZero;
-
     SINT m_frameCount;
-
     SINT m_bitrate;
 };
 

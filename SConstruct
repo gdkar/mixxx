@@ -32,7 +32,7 @@ machine = ARGUMENTS.get('machine', None)
 build_type = ARGUMENTS.get('build', None)
 toolchain = ARGUMENTS.get('toolchain', None)
 
-available_features = [features.Mpg123,
+available_features = [#features.Mpg123,
                       features.CoreAudio,
                       features.HSS1394,
                       features.HID,
@@ -56,7 +56,7 @@ available_features = [features.Mpg123,
                       features.PerfTools,
                       features.AsmLib,
                       features.IPod,
-                      features.FFMPEG,
+#                      features.FFMPEG,
 
 		     # Experimental features
 		     features.OpenGLES

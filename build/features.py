@@ -180,36 +180,36 @@ class Bulk(Feature):
         return sources
 
 
-class Mpg123(Feature):
-    def description(self):
-        return "libmpg123 MP3 Decoder"
-
-    def default(self, build):
-        return 0 if build.platform_is_osx else 1
-
-    def enabled(self, build):
-        build.flags['mpg123'] = util.get_flags(build.env, 'mpg123',
-                                            self.default(build))
-        if int(build.flags['mpg123']):
-            return True
-        return False
-
-    def add_options(self, build, vars):
-        vars.Add('mpg123', 'Set to 1 to enable libmpg123 MP3 decoder support.',
-                 self.default(build))
-
-    def configure(self, build, conf):
-        if not self.enabled(build):
-            return
-        build.env.ParseConfig('pkg-config libmpg123 --silence-errors --cflags --libs')
-
-        if not conf.CheckLib(['libmpg123', 'mpg123']):
-            raise Exception(
-                'Did not find libmpg123.a, libmpg123.lib, or the mpg123 development header files - exiting!')
-        build.env.Append(CPPDEFINES='__MPG123__')
-
-    def sources(self, build):
-        return ['sources/soundsourcemp3.cpp']
+#class Mpg123(Feature):
+#    def description(self):
+#        return "libmpg123 MP3 Decoder"
+#
+#    def default(self, build):
+#        return 0 if build.platform_is_osx else 1
+#
+#    def enabled(self, build):
+#        build.flags['mpg123'] = util.get_flags(build.env, 'mpg123',
+#                                            self.default(build))
+#        if int(build.flags['mpg123']):
+#            return True
+#        return False
+#
+#    def add_options(self, build, vars):
+#        vars.Add('mpg123', 'Set to 1 to enable libmpg123 MP3 decoder support.',
+#                 self.default(build))
+#
+#    def configure(self, build, conf):
+#        if not self.enabled(build):
+#            return
+#        build.env.ParseConfig('pkg-config libmpg123 --silence-errors --cflags --libs')
+#
+#        if not conf.CheckLib(['libmpg123', 'mpg123']):
+#            raise Exception(
+#                'Did not find libmpg123.a, libmpg123.lib, or the mpg123 development header files - exiting!')
+#        build.env.Append(CPPDEFINES='__MPG123__')
+#
+#    def sources(self, build):
+#        return ['sources/soundsourcemp3.cpp']
 
 
 class CoreAudio(Feature):
@@ -711,100 +711,6 @@ class LiveBroadcasting(Feature):
                 'broadcast/broadcastmanager.cpp',
                 'engine/sidechain/enginebroadcast.cpp']
 
-class FFMPEG(Feature):
-    def description(self):
-        return "FFmpeg/Avconv support"
-
-    def enabled(self, build):
-        build.flags['ffmpeg'] = util.get_flags(build.env, 'ffmpeg', 0)
-        if int(build.flags['ffmpeg']):
-            return True
-        return False
-
-    def add_options(self, build, vars):
-        vars.Add('ffmpeg', 'Set to 1 to enable FFmpeg/Avconv support \
-                           (supported FFmpeg 0.11-2.x and Avconv 0.8.x-11.x)', 0)
-
-    def configure(self, build, conf):
-        if not self.enabled(build):
-            return
-
-        # Supported version are FFmpeg 0.11-2.x and Avconv 0.8.x-11.x
-        # FFmpeg is multimedia library that can be found http://ffmpeg.org/
-        # Avconv is fork of FFmpeg that is used mainly in Debian and Ubuntu
-        # that can be found http://libav.org
-        if build.platform_is_linux or build.platform_is_osx \
-                or build.platform_is_bsd:
-            # Check for libavcodec, libavformat
-            # I just randomly picked version numbers lower than mine for this
-            if not conf.CheckForPKG('libavcodec', '53.35.0'):
-                raise Exception('Missing libavcodec or it\'s too old! It can'
-                                'be separated from main package so check your'
-                                'operating system packages.')
-            if not conf.CheckForPKG('libavformat', '53.21.0'):
-                raise Exception('Missing libavformat  or it\'s too old!'
-                                'It can be separated from main package so'
-                                'check your operating system packages.')
-
-            # Needed to build new FFmpeg
-            build.env.Append(CCFLAGS='-D__STDC_CONSTANT_MACROS')
-            build.env.Append(CCFLAGS='-D__STDC_LIMIT_MACROS')
-            build.env.Append(CCFLAGS='-D__STDC_FORMAT_MACROS')
-
-            # Grabs the libs and cflags for FFmpeg
-            build.env.ParseConfig('pkg-config libavcodec --silence-errors \
-                                  --cflags --libs')
-            build.env.ParseConfig('pkg-config libavformat --silence-errors \
-                                   --cflags --libs')
-            build.env.ParseConfig('pkg-config libavutil --silence-errors \
-                                   --cflags --libs')
-            build.env.ParseConfig('pkg-config libavfilter --silence-errors \
-                                   --cflags --libs')
-
-            build.env.ParseConfig('pkg-config libswresample --silence-errors \
-                                   --cflags --libs')
-
-            build.env.Append(CPPDEFINES='__FFMPEGFILE__')
-            self.status = "Enabled"
-
-        else:
-            # aptitude install libavcodec-dev libavformat-dev liba52-0.7.4-dev
-            # libdts-dev
-            # Append some stuff to CFLAGS in Windows also
-            build.env.Append(CCFLAGS='-D__STDC_CONSTANT_MACROS')
-            build.env.Append(CCFLAGS='-D__STDC_LIMIT_MACROS')
-            build.env.Append(CCFLAGS='-D__STDC_FORMAT_MACROS')
-
-            build.env.Append(LIBS='avcodec')
-            build.env.Append(LIBS='avformat')
-            build.env.Append(LIBS='avutil')
-            build.env.Append(LIBS='z')
-            build.env.Append(LIBS='swresample')
-            # build.env.Append(LIBS = 'a52')
-            # build.env.Append(LIBS = 'dts')
-            build.env.Append(LIBS='gsm')
-            # build.env.Append(LIBS = 'dc1394_control')
-            # build.env.Append(LIBS = 'dl')
-            build.env.Append(LIBS='vorbisenc')
-            # build.env.Append(LIBS = 'raw1394')
-            build.env.Append(LIBS='vorbis')
-            build.env.Append(LIBS='m')
-            build.env.Append(LIBS='ogg')
-            build.env.Append(CPPDEFINES='__FFMPEGFILE__')
-
-        # Add new path for FFmpeg header files.
-        # Non-crosscompiled builds need this too, don't they?
-        if build.crosscompile and build.platform_is_windows \
-                and build.toolchain_is_gnu:
-            build.env.Append(CPPPATH=os.path.join(build.crosscompile_root,
-                                                  'include', 'ffmpeg'))
-
-    def sources(self, build):
-        return ['sources/soundsourceffmpeg.cpp',
-                'encoder/encoderffmpegresample.cpp',
-                'encoder/encoderffmpegcore.cpp',
-                'encoder/encoderffmpegmp3.cpp',
-                'encoder/encoderffmpegvorbis.cpp']
 
 
 class Optimize(Feature):

@@ -156,7 +156,6 @@ SINT SoundSourceFFmpeg::seekSampleFrame(SINT frameIndex)
       return frameIndex;
     }
     auto hindex = m_pkt_array.size() - 1;
-    auto hpts   = m_pkt_array.at(hindex)->pts - m_first_pts;
     auto lindex = decltype(hindex){0};
     auto lpts   = m_pkt_array.at(lindex)->pts - m_first_pts;
     auto bail   = false;
@@ -180,15 +179,13 @@ SINT SoundSourceFFmpeg::seekSampleFrame(SINT frameIndex)
       auto npts = m_pkt_array.at(mindex+1)->pts - m_first_pts;
       if ( mpts > frame_pts ) {
         hindex = mindex;
-        hpts   = mpts; }
-      else if ( npts <= frame_pts ) {
+      }else if ( npts <= frame_pts ) {
         lindex = mindex + 1;
         lpts   = npts;
       } else {
         lindex = mindex;
         lpts   = mpts;
         hindex = mindex + 1;
-        hpts   = npts;
       }
     }
     m_pkt_index = lindex;
@@ -206,9 +203,9 @@ bool SoundSourceFFmpeg::decode_next_frame(){
     auto ret = 0;
     while ((m_orig_frame.unref(),(ret = m_codec_ctx.receive_frame(m_orig_frame))) < 0) {
         if(ret == AVERROR_EOF) {
-            if(m_pkt_index> m_pkt_array.size()) {
+            if(m_pkt_index> int64_t(m_pkt_array.size())) {
                 return false;
-            }else if(m_pkt_index == m_pkt_array.size()) {
+            }else if(m_pkt_index == int64_t(m_pkt_array.size())) {
                 m_codec_ctx.send_packet(nullptr);
                 m_pkt_index++;
             } else {
@@ -217,7 +214,7 @@ bool SoundSourceFFmpeg::decode_next_frame(){
         }else if(ret != AVERROR(EAGAIN)) {
             return false;
         }
-        if(m_pkt_index == m_pkt_array.size()) {
+        if(m_pkt_index == int64_t(m_pkt_array.size())) {
             m_pkt_index++;
             if((ret = m_codec_ctx.send_packet(nullptr)) < 0)
                 return false;
