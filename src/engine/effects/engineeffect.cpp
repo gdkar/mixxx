@@ -7,37 +7,36 @@ EngineEffect::EngineEffect(const EffectManifest& manifest,
                            EffectInstantiatorPointer pInstantiator)
         : m_manifest(manifest),
           m_enableState(EffectProcessor::ENABLING),
-          m_parameters(manifest.parameters().size()) {
-    const QList<EffectManifestParameter>& parameters = m_manifest.parameters();
+          m_parameters(manifest.parameters().size())
+{
+    auto && parameters = m_manifest.parameters();
     for (int i = 0; i < parameters.size(); ++i) {
-        const EffectManifestParameter& parameter = parameters.at(i);
-        EngineEffectParameter* pParameter =
-                new EngineEffectParameter(parameter);
+        auto && parameter = parameters.at(i);
+        auto pParameter = new EngineEffectParameter(parameter);
         m_parameters[i] = pParameter;
         m_parametersById[parameter.id()] = pParameter;
     }
-
     // Creating the processor must come last.
     m_pProcessor = pInstantiator->instantiate(this, manifest);
     m_pProcessor->initialize(registeredChannels);
     m_effectRampsFromDry = manifest.effectRampsFromDry();
 }
-
-EngineEffect::~EngineEffect() {
+EngineEffect::~EngineEffect()
+{
     if (kEffectDebugOutput) {
         qDebug() << debugString() << "destroyed";
     }
     delete m_pProcessor;
     m_parametersById.clear();
     for (int i = 0; i < m_parameters.size(); ++i) {
-        EngineEffectParameter* pParameter = m_parameters.at(i);
+        auto pParameter = m_parameters.at(i);
         m_parameters[i] = NULL;
         delete pParameter;
     }
 }
-
 bool EngineEffect::processEffectsRequest(const EffectsRequest& message,
-                                         EffectsResponsePipe* pResponsePipe) {
+                                         EffectsResponsePipe* pResponsePipe)
+{
     EngineEffectParameter* pParameter = NULL;
     EffectsResponse response(message);
 
@@ -53,9 +52,8 @@ bool EngineEffect::processEffectsRequest(const EffectsRequest& message,
             } else if (m_enableState == EffectProcessor::DISABLED && message.SetEffectParameters.enabled) {
                 m_enableState = EffectProcessor::ENABLING;
             }
-
             response.success = true;
-            pResponsePipe->writeMessages(&response, 1);
+            pResponsePipe->writeMessage(response);
             return true;
             break;
         case EffectsRequest::SET_PARAMETER_PARAMETERS:
@@ -79,7 +77,7 @@ bool EngineEffect::processEffectsRequest(const EffectsRequest& message,
                 response.success = false;
                 response.status = EffectsResponse::NO_SUCH_PARAMETER;
             }
-            pResponsePipe->writeMessages(&response, 1);
+            pResponsePipe->writeMessage(response);
             return true;
         default:
             break;

@@ -23,11 +23,9 @@ QList<PresetInfo> PresetInfoEnumerator::getPresetsByExtension(const QString& ext
     } else if (extension == BULK_PRESET_EXTENSION) {
         return m_bulkPresets;
     }
-
     qDebug() << "Extension not registered to presetinfo" << extension;
     return QList<PresetInfo>();
 }
-
 void PresetInfoEnumerator::loadSupportedPresets() {
     for (const QString& dirPath : m_controllerDirPaths) {
         QDirIterator it(dirPath);

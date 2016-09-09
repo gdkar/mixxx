@@ -37,7 +37,7 @@ bool EngineEffectRack::processEffectsRequest(const EffectsRequest& message,
         default:
             return false;
     }
-    pResponsePipe->writeMessages(&response, 1);
+    pResponsePipe->writeMessage(response);
     return true;
 }
 
@@ -47,12 +47,11 @@ void EngineEffectRack::process(const ChannelHandle& handle,
                                const unsigned int sampleRate,
                                const GroupFeatureState& groupFeatures) {
     foreach (EngineEffectChain* pChain, m_chains) {
-        if (pChain != NULL) {
+        if (pChain) {
             pChain->process(handle, pInOut, numSamples, sampleRate, groupFeatures);
         }
     }
 }
-
 bool EngineEffectRack::addEffectChain(EngineEffectChain* pChain, int iIndex) {
     if (iIndex < 0) {
         if (kEffectDebugOutput) {
@@ -75,7 +74,6 @@ bool EngineEffectRack::addEffectChain(EngineEffectChain* pChain, int iIndex) {
     m_chains.replace(iIndex, pChain);
     return true;
 }
-
 bool EngineEffectRack::removeEffectChain(EngineEffectChain* pChain, int iIndex) {
     if (iIndex < 0) {
         if (kEffectDebugOutput) {

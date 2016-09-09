@@ -154,18 +154,15 @@ void EngineNetworkStream::writeSilence(int frames) {
     }
     scheduleWorker();
 }
-
-void EngineNetworkStream::scheduleWorker() {
-    if (m_pWorker.isNull()) {
+void EngineNetworkStream::scheduleWorker()
+{
+    if (m_pWorker.isNull())
         return;
-    }
-    if (m_pOutputFifo->readAvailable()
-            >= m_numOutputChannels * kNetworkLatencyFrames) {
+    if (m_pOutputFifo->readAvailable() >= static_cast<size_t>(m_numOutputChannels * kNetworkLatencyFrames))
         m_pWorker->outputAvailable();
-    }
 }
-
-void EngineNetworkStream::read(CSAMPLE* buffer, int frames) {
+void EngineNetworkStream::read(CSAMPLE* buffer, int frames)
+{
     int readAvailable = m_pOutputFifo->readAvailable();
     int readRequired = frames * m_numInputChannels;
     int copyCount = math_min(readAvailable, readRequired);
@@ -181,17 +178,17 @@ void EngineNetworkStream::read(CSAMPLE* buffer, int frames) {
         SampleUtil::clear(buffer, silenceCount);
     }
 }
-
-qint64 EngineNetworkStream::getStreamTimeFrames() {
+qint64 EngineNetworkStream::getStreamTimeFrames()
+{
     return static_cast<double>(getStreamTimeUs()) * m_sampleRate / 1000000.0;
 }
-
-qint64 EngineNetworkStream::getStreamTimeUs() {
+qint64 EngineNetworkStream::getStreamTimeUs()
+{
     return getNetworkTimeUs() - m_streamStartTimeUs;
 }
-
 // static
-qint64 EngineNetworkStream::getNetworkTimeUs() {
+qint64 EngineNetworkStream::getNetworkTimeUs()
+{
     // This matches the GPL2 implementation found in
     // https://github.com/codders/libshout/blob/a17fb84671d3732317b0353d7281cc47e2df6cf6/src/timing/timing.c
     // Instead of ms resolution we use a us resolution to allow low latency settings
@@ -241,10 +238,9 @@ qint64 EngineNetworkStream::getNetworkTimeUs() {
     return ts.tv_sec * 1000000LL + ts.tv_nsec / 1000;
 #endif
 }
-
-void EngineNetworkStream::addWorker(QSharedPointer<NetworkStreamWorker> pWorker) {
+void EngineNetworkStream::addWorker(QSharedPointer<NetworkStreamWorker> pWorker)
+{
     m_pWorker = pWorker;
-    if (m_pWorker) {
+    if (m_pWorker)
         m_pWorker->setOutputFifo(m_pOutputFifo);
-    }
 }

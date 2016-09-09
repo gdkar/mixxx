@@ -46,8 +46,11 @@ SoundSource::OpenResult SoundSourceFFmpeg::tryOpen(const AudioSourceConfig &conf
     }
 
     //debug only (Enable if needed)
-    for ( unsigned i = 0; i < m_format_ctx->nb_streams; i++) {
-      m_format_ctx->streams[i]->discard = AVDISCARD_ALL;
+    for ( auto i = 0u; i < m_format_ctx->nb_streams; i++) {
+        if(m_format_ctx->streams[i]->disposition &AV_DISPOSITION_ATTACHED_PIC)
+            m_format_ctx->streams[i]->discard = AVDISCARD_NONE;
+        else
+            m_format_ctx->streams[i]->discard = AVDISCARD_ALL;
     }
     std::tie(m_stream, m_codec) = m_format_ctx.find_best_stream(AVMEDIA_TYPE_AUDIO);
     if(!m_codec || !m_stream)
@@ -108,10 +111,17 @@ SoundSource::OpenResult SoundSourceFFmpeg::tryOpen(const AudioSourceConfig &conf
 
     qDebug() << __FUNCTION__ << QString{": demuxing results for %1"}.arg(getLocalFileName()) << "\n"
                              << QString{"  frameRate = %1"}.arg(getSamplingRate()) << "\n"
-                             << QString{", channelCount = %L1"}.arg(getChannelCount()) << "\n"
-                             << QString{", frameCount = %L1"}.arg(getFrameCount()) << "\n"
-                             << QString{", total packets = %L1"}.arg(m_pkt_array.size()) << "\n"
-                             << QString{", total demuxed size = %L1 bytes"}.arg(total_size) << "\n" ;
+                             << QString{"  channelCount = %L1"}.arg(getChannelCount()) << "\n"
+                             << QString{"  frameCount = %L1"}.arg(getFrameCount()) << "\n"
+                             << QString{"  total packets = %L1"}.arg(m_pkt_array.size()) << "\n"
+                             << QString{"  total demuxed size = %L1 bytes"}.arg(total_size) << "\n\n" ;
+    {
+        auto tag = static_cast<AVDictionaryEntry*>(nullptr);
+        auto tags = m_format_ctx->metadata;
+        while((tag = av_dict_get(tags,"",tag,AV_DICT_IGNORE_SUFFIX))) {
+            qDebug() << QString{"[%1] = %2"}.arg(QString{tag->key},QString{tag->value});
+        }
+    }
     decode_next_frame ();
     return OpenResult::SUCCEEDED;
 }

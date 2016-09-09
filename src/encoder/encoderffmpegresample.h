@@ -3,16 +3,7 @@
 
 #include <QtDebug>
 
-extern "C" {
-
-#include <libavcodec/avcodec.h>
-#include <libavformat/avformat.h>
-
-// Compatibility
-#include <libavutil/mathematics.h>
-#include <libavutil/opt.h>
-
-}
+#include "util/ffmpeg-utils.hpp"
 
 class EncoderFfmpegResample {
   public:

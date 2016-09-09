@@ -124,47 +124,43 @@ bool EngineEffectChain::processEffectsRequest(const EffectsRequest& message,
         default:
             return false;
     }
-    pResponsePipe->writeMessages(&response, 1);
+    pResponsePipe->writeMessage(response);
     return true;
 }
-
-bool EngineEffectChain::enableForChannel(const ChannelHandle& handle) {
-    ChannelStatus& status = getChannelStatus(handle);
+bool EngineEffectChain::enableForChannel(const ChannelHandle& handle)
+{
+    auto && status = getChannelStatus(handle);
     if (status.enable_state != EffectProcessor::ENABLED) {
         status.enable_state = EffectProcessor::ENABLING;
     }
     return true;
 }
-
-bool EngineEffectChain::disableForChannel(const ChannelHandle& handle) {
-    ChannelStatus& status = getChannelStatus(handle);
+bool EngineEffectChain::disableForChannel(const ChannelHandle& handle)
+{
+    auto && status = getChannelStatus(handle);
     if (status.enable_state != EffectProcessor::DISABLED) {
         status.enable_state = EffectProcessor::DISABLING;
     }
     return true;
 }
-
-EngineEffectChain::ChannelStatus& EngineEffectChain::getChannelStatus(
-        const ChannelHandle& handle) {
+EngineEffectChain::ChannelStatus& EngineEffectChain::getChannelStatus(const ChannelHandle& handle)
+{
     return m_channelStatus[handle];
 }
-
 void EngineEffectChain::process(const ChannelHandle& handle,
                                 CSAMPLE* pInOut,
                                 const unsigned int numSamples,
                                 const unsigned int sampleRate,
-                                const GroupFeatureState& groupFeatures) {
-    ChannelStatus& channel_info = getChannelStatus(handle);
-
+                                const GroupFeatureState& groupFeatures)
+{
+    auto && channel_info = getChannelStatus(handle);
     if (m_enableState == EffectProcessor::DISABLED
             || channel_info.enable_state == EffectProcessor::DISABLED) {
         // If the chain is not enabled and the channel is not enabled and we are not
         // ramping out then do nothing.
         return;
     }
-
-    EffectProcessor::EnableState effectiveEnableState = channel_info.enable_state;
-
+    auto effectiveEnableState = channel_info.enable_state;
     if (m_enableState == EffectProcessor::DISABLING) {
         effectiveEnableState = EffectProcessor::DISABLING;
     } else if (m_enableState == EffectProcessor::ENABLING) {

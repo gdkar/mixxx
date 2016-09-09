@@ -18,7 +18,9 @@
 #define ENGINESIDECHAIN_H
 
 #include <QThread>
+#include <atomic>
 #include <QMutex>
+#include "util/semaphore.hpp"
 #include <QWaitCondition>
 #include <QList>
 
@@ -33,30 +35,23 @@ class EngineSideChain : public QThread {
   public:
     EngineSideChain(UserSettingsPointer pConfig);
     virtual ~EngineSideChain();
-
     // Not thread-safe, wait-free. Submit buffer of samples to the sidechain for
     // processing. Should only be called from a single writer thread (typically
     // the engine callback).
     void writeSamples(const CSAMPLE* buffer, int buffer_size);
-
     // Thread-safe, blocking.
     void addSideChainWorker(SideChainWorker* pWorker);
-
   private:
     void run();
-
     UserSettingsPointer m_pConfig;
     // Indicates that the thread should exit.
-    volatile bool m_bStopThread;
-
+    std::atomic<bool> m_bStopThread{false};
     FIFO<CSAMPLE> m_sampleFifo;
     CSAMPLE* m_pWorkBuffer;
-
     // Provides thread safety around the wait condition below.
     QMutex m_waitLock;
     // Allows sleeping until we have samples to process.
     QWaitCondition m_waitForSamples;
-
     // Sidechain workers registered with EngineSideChain.
     MMutex m_workerLock;
     QList<SideChainWorker*> m_workers GUARDED_BY(m_workerLock);

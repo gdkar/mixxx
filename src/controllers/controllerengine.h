@@ -34,8 +34,8 @@ class ControllerEngineConnection {
     ControllerEngine *ce;
     QScriptValue context;
 };
-
-class ControllerEngineConnectionScriptValue : public QObject {
+class ControllerEngineConnectionScriptValue : public QObject
+{
     Q_OBJECT
     Q_PROPERTY(QString id READ readId)
     // We cannot expose ConfigKey directly since it's not a
@@ -201,5 +201,4 @@ class ControllerEngine : public QObject {
 
     friend class ControllerEngineTest;
 };
-
 #endif

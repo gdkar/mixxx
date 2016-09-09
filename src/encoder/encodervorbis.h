@@ -30,12 +30,12 @@ class EncoderCallback;
 class EncoderVorbis : public Encoder {
   public:
     EncoderVorbis(EncoderCallback* pCallback=NULL);
-    virtual ~EncoderVorbis();
+   ~EncoderVorbis();
 
-    int initEncoder(int bitrate, int samplerate);
-    void encodeBuffer(const CSAMPLE *samples, const int size);
-    void updateMetaData(char* artist, char* title, char* album);
-    void flush();
+    int initEncoder(int bitrate, int samplerate) override;
+    void encodeBuffer(const CSAMPLE *samples, const int size) override;
+    void updateMetaData(char* artist, char* title, char* album) override;
+    void flush() override;
 
   private:
     int getSerial();

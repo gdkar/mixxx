@@ -209,12 +209,9 @@ EncoderMp3::~EncoderMp3() {
         m_library = NULL;
     }
     //free requested buffers
-    if (m_bufferIn[0] != NULL)
-        delete m_bufferIn[0];
-    if (m_bufferIn[1] != NULL)
-        delete m_bufferIn[1];
-    if (m_bufferOut != NULL)
-        delete m_bufferOut;
+    delete m_bufferIn[0];
+    delete m_bufferIn[1];
+    delete m_bufferOut;
 
     lame_init =  0;
     lame_set_num_channels = 0;
@@ -239,7 +236,8 @@ EncoderMp3::~EncoderMp3() {
  * Grow the outBuffer if needed.
  */
 
-int EncoderMp3::bufferOutGrow(int size) {
+int EncoderMp3::bufferOutGrow(int size)
+{
     if (m_bufferOutSize >= size)
         return 0;
 
@@ -319,7 +317,8 @@ void EncoderMp3::initStream() {
     return;
 }
 
-int EncoderMp3::initEncoder(int bitrate, int samplerate) {
+int EncoderMp3::initEncoder(int bitrate, int samplerate)
+{
     if (m_library == NULL || !m_library->isLoaded())
         return -1;
 
@@ -362,7 +361,8 @@ int EncoderMp3::initEncoder(int bitrate, int samplerate) {
     return 0;
 }
 
-void EncoderMp3::updateMetaData(char* artist, char* title, char* album) {
+void EncoderMp3::updateMetaData(char* artist, char* title, char* album)
+{
     m_metaDataTitle = title;
     m_metaDataArtist = artist;
     m_metaDataAlbum = album;

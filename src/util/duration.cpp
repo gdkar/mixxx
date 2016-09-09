@@ -48,5 +48,22 @@ QString DurationBase::formatSeconds(double dSeconds, Precision precision) {
 
     return durationString;
 }
+    // Formats the duration as a two's-complement hexadecimal string.
+QString Duration::formatHex() const {
+    // Format as fixed-width (8 digits).
+    return QString("0x%1").arg(m_durationNanos, 16, 16, QLatin1Char('0'));
+}
+QString Duration::formatNanosWithUnit() const {
+    return QString("%1 ns").arg(toIntegerNanos());
+}
+QString Duration::formatMicrosWithUnit() const {
+    return QString("%1 us").arg(toIntegerMicros());
+}
+QString Duration::formatMillisWithUnit() const {
+    return QString("%1 ms").arg(toIntegerMillis());
+}
+QString Duration::formatSecondsWithUnit() const {
+    return QString("%1 s").arg(toIntegerSeconds());
+}
 
 } // namespace mixxx

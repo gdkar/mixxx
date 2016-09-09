@@ -47,7 +47,6 @@ class RecordingManager : public QObject
     // Returns the currently recording file
     QString& getRecordingFile();
     QString& getRecordingLocation();
-
   signals:
     // Emits the cumulative number of bytes currently recorded.
     void bytesRecorded(long);
@@ -87,5 +86,4 @@ class RecordingManager : public QObject
     int m_iNumberSplits;
     QString m_durationRecorded;
 };
-
 #endif // RECORDINGMANAGER_H

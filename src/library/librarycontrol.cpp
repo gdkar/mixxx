@@ -19,34 +19,32 @@ LoadToGroupController::LoadToGroupController(QObject* pParent, const QString& gr
         : QObject(pParent),
           m_group(group) {
     m_pLoadControl = new ControlPushButton(ConfigKey(group, "LoadSelectedTrack"));
+    m_pLoadControl->setParent(this);
     connect(m_pLoadControl, SIGNAL(valueChanged(double)),
             this, SLOT(slotLoadToGroup(double)));
 
     m_pLoadAndPlayControl = new ControlPushButton(ConfigKey(group, "LoadSelectedTrackAndPlay"));
+    m_pLoadAndPlayControl->setParent(this);
     connect(m_pLoadAndPlayControl, SIGNAL(valueChanged(double)),
             this, SLOT(slotLoadToGroupAndPlay(double)));
-
     connect(this, SIGNAL(loadToGroup(QString, bool)),
             pParent, SLOT(slotLoadSelectedTrackToGroup(QString, bool)));
 }
 
-LoadToGroupController::~LoadToGroupController() {
-    delete m_pLoadControl;
-    delete m_pLoadAndPlayControl;
-}
+LoadToGroupController::~LoadToGroupController() = default;
 
-void LoadToGroupController::slotLoadToGroup(double v) {
+void LoadToGroupController::slotLoadToGroup(double v)
+{
     if (v > 0) {
         emit(loadToGroup(m_group, false));
     }
 }
-
-void LoadToGroupController::slotLoadToGroupAndPlay(double v) {
+void LoadToGroupController::slotLoadToGroupAndPlay(double v)
+{
     if (v > 0) {
         emit(loadToGroup(m_group, true));
     }
 }
-
 LibraryControl::LibraryControl(Library* pLibrary)
         : QObject(pLibrary),
           m_pLibrary(pLibrary),
@@ -54,7 +52,8 @@ LibraryControl::LibraryControl(Library* pLibrary)
           m_pSidebarWidget(NULL),
           m_numDecks("[Master]", "num_decks", this),
           m_numSamplers("[Master]", "num_samplers", this),
-          m_numPreviewDecks("[Master]", "num_preview_decks", this) {
+          m_numPreviewDecks("[Master]", "num_preview_decks", this)
+{
 
     slotNumDecksChanged(m_numDecks.get());
     slotNumSamplersChanged(m_numSamplers.get());
@@ -141,144 +140,125 @@ LibraryControl::~LibraryControl() {
    deleteMapValues(&m_loadToGroupControllers);
 }
 
-void LibraryControl::maybeCreateGroupController(const QString& group) {
-    LoadToGroupController* pGroup = m_loadToGroupControllers.value(group, NULL);
-    if (pGroup == NULL) {
+void LibraryControl::maybeCreateGroupController(const QString& group)
+{
+    auto pGroup = m_loadToGroupControllers.value(group, nullptr);
+    if (!pGroup) {
         pGroup = new LoadToGroupController(this, group);
         m_loadToGroupControllers[group] = pGroup;
     }
 }
-
-void LibraryControl::slotNumDecksChanged(double v) {
+void LibraryControl::slotNumDecksChanged(double v)
+{
     int iNumDecks = v;
-
-    if (iNumDecks < 0) {
+    if (iNumDecks < 0)
         return;
-    }
-
-    for (int i = 0; i < iNumDecks; ++i) {
+    for (auto i = 0; i < iNumDecks; ++i) {
         maybeCreateGroupController(PlayerManager::groupForDeck(i));
     }
 }
-
-void LibraryControl::slotNumSamplersChanged(double v) {
+void LibraryControl::slotNumSamplersChanged(double v)
+{
     int iNumSamplers = v;
-
     if (iNumSamplers < 0) {
         return;
     }
-
-    for (int i = 0; i < iNumSamplers; ++i) {
+    for (auto i = 0; i < iNumSamplers; ++i) {
         maybeCreateGroupController(PlayerManager::groupForSampler(i));
     }
 }
-
-void LibraryControl::slotNumPreviewDecksChanged(double v) {
+void LibraryControl::slotNumPreviewDecksChanged(double v)
+{
     int iNumPreviewDecks = v;
-
-    if (iNumPreviewDecks < 0) {
+    if (iNumPreviewDecks < 0)
         return;
-    }
-
-    for (int i = 0; i < iNumPreviewDecks; ++i) {
+    for (auto i = 0; i < iNumPreviewDecks; ++i) {
         maybeCreateGroupController(PlayerManager::groupForPreviewDeck(i));
     }
 }
-
-void LibraryControl::bindSidebarWidget(WLibrarySidebar* pSidebarWidget) {
+void LibraryControl::bindSidebarWidget(WLibrarySidebar* pSidebarWidget)
+{
     if (m_pSidebarWidget != NULL) {
         disconnect(m_pSidebarWidget, 0, this, 0);
     }
     m_pSidebarWidget = pSidebarWidget;
-    connect(m_pSidebarWidget, SIGNAL(destroyed()),
-            this, SLOT(sidebarWidgetDeleted()));
+    connect(m_pSidebarWidget, SIGNAL(destroyed()),this, SLOT(sidebarWidgetDeleted()));
 }
-
-void LibraryControl::bindWidget(WLibrary* pLibraryWidget, KeyboardEventFilter* pKeyboard) {
+void LibraryControl::bindWidget(WLibrary* pLibraryWidget, KeyboardEventFilter* pKeyboard)
+{
     Q_UNUSED(pKeyboard);
-    if (m_pLibraryWidget != NULL) {
+    if (m_pLibraryWidget)
         disconnect(m_pLibraryWidget, 0, this, 0);
-    }
     m_pLibraryWidget = pLibraryWidget;
-    connect(m_pLibraryWidget, SIGNAL(destroyed()),
-            this, SLOT(libraryWidgetDeleted()));
+    connect(m_pLibraryWidget, SIGNAL(destroyed()),this, SLOT(libraryWidgetDeleted()));
 }
-
-void LibraryControl::libraryWidgetDeleted() {
-    m_pLibraryWidget = NULL;
+void LibraryControl::libraryWidgetDeleted()
+{
+    m_pLibraryWidget = nullptr;
 }
-
-void LibraryControl::sidebarWidgetDeleted() {
-    m_pSidebarWidget = NULL;
+void LibraryControl::sidebarWidgetDeleted()
+{
+    m_pSidebarWidget = nullptr;
 }
-
-void LibraryControl::slotLoadSelectedTrackToGroup(QString group, bool play) {
-    if (m_pLibraryWidget == NULL) {
+void LibraryControl::slotLoadSelectedTrackToGroup(QString group, bool play)
+{
+    if (!m_pLibraryWidget)
         return;
-    }
 
-    LibraryView* activeView = m_pLibraryWidget->getActiveView();
-    if (!activeView) {
+    auto activeView = m_pLibraryWidget->getActiveView();
+    if (!activeView)
         return;
-    }
     activeView->loadSelectedTrackToGroup(group, play);
 }
-
-void LibraryControl::slotLoadSelectedIntoFirstStopped(double v) {
-    if (m_pLibraryWidget == NULL) {
+void LibraryControl::slotLoadSelectedIntoFirstStopped(double v)
+{
+    if (!m_pLibraryWidget)
         return;
-    }
 
     if (v > 0) {
-        LibraryView* activeView = m_pLibraryWidget->getActiveView();
-        if (!activeView) {
+        auto activeView = m_pLibraryWidget->getActiveView();
+        if (!activeView)
             return;
-        }
         activeView->loadSelectedTrack();
     }
 }
-
-void LibraryControl::slotAutoDjAddTop(double v) {
-    if (m_pLibraryWidget == NULL) {
+void LibraryControl::slotAutoDjAddTop(double v)
+{
+    if (!m_pLibraryWidget)
         return;
-    }
 
     if (v > 0) {
-        LibraryView* activeView = m_pLibraryWidget->getActiveView();
-        if (!activeView) {
+        auto activeView = m_pLibraryWidget->getActiveView();
+        if (!activeView)
             return;
-        }
         activeView->slotSendToAutoDJTop();
     }
 }
-
-void LibraryControl::slotAutoDjAddBottom(double v) {
-    if (m_pLibraryWidget == NULL) {
+void LibraryControl::slotAutoDjAddBottom(double v)
+{
+    if (!m_pLibraryWidget)
         return;
-    }
-
     if (v > 0) {
-        LibraryView* activeView = m_pLibraryWidget->getActiveView();
-        if (!activeView) {
+        auto activeView = m_pLibraryWidget->getActiveView();
+        if (!activeView)
             return;
-        }
         activeView->slotSendToAutoDJ();
     }
 }
-
-void LibraryControl::slotSelectNextTrack(double v) {
+void LibraryControl::slotSelectNextTrack(double v)
+{
     if (v > 0) {
         slotSelectTrack(1);
     }
 }
-
-void LibraryControl::slotSelectPrevTrack(double v) {
+void LibraryControl::slotSelectPrevTrack(double v)
+{
     if (v > 0) {
         slotSelectTrack(-1);
     }
 }
-
-void LibraryControl::slotSelectTrack(double v) {
+void LibraryControl::slotSelectTrack(double v)
+{
     if (m_pLibraryWidget == NULL) {
         return;
     }
@@ -291,8 +271,8 @@ void LibraryControl::slotSelectTrack(double v) {
     }
     activeView->moveSelection(i);
 }
-
-void LibraryControl::slotSelectSidebarItem(double v) {
+void LibraryControl::slotSelectSidebarItem(double v)
+{
     if (m_pSidebarWidget == NULL) {
         return;
     }
@@ -312,41 +292,42 @@ void LibraryControl::slotSelectSidebarItem(double v) {
             (int)Qt::Key_Up, Qt::NoModifier, QString(), true));
     }
 }
-
-void LibraryControl::slotSelectNextSidebarItem(double v) {
+void LibraryControl::slotSelectNextSidebarItem(double v)
+{
     if (v > 0) {
         slotSelectSidebarItem(1);
     }
 }
-
-void LibraryControl::slotSelectPrevSidebarItem(double v) {
+void LibraryControl::slotSelectPrevSidebarItem(double v)
+{
     if (v > 0) {
         slotSelectSidebarItem(-1);
     }
 }
-
-void LibraryControl::slotToggleSelectedSidebarItem(double v) {
-    if (m_pSidebarWidget != NULL && v > 0) {
+void LibraryControl::slotToggleSelectedSidebarItem(double v)
+{
+    if (m_pSidebarWidget && v > 0) {
         m_pSidebarWidget->toggleSelectedItem();
     }
 }
 
-void LibraryControl::slotFontSize(double v) {
+void LibraryControl::slotFontSize(double v)
+{
     if (v == 0.0) {
         return;
     }
-    QFont font = m_pLibrary->getTrackTableFont();
+    auto font = m_pLibrary->getTrackTableFont();
     font.setPointSizeF(font.pointSizeF() + v);
     m_pLibrary->slotSetTrackTableFont(font);
 }
-
-void LibraryControl::slotIncrementFontSize(double v) {
+void LibraryControl::slotIncrementFontSize(double v)
+{
     if (v > 0.0) {
         slotFontSize(1);
     }
 }
-
-void LibraryControl::slotDecrementFontSize(double v) {
+void LibraryControl::slotDecrementFontSize(double v)
+{
     if (v > 0.0) {
         slotFontSize(-1);
     }

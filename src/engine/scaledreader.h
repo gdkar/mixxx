@@ -31,65 +31,13 @@ class ScaledReader : public QObject {
     Q_PROPERTY(double position READ position WRITE setPosition NOTIFY positionChanged);
     Q_PROPERTY(bool   reverse READ reverse NOTIFY reverseChanged);
     Q_PROPERTY(mixxx::AudioSourcePointer audioSource READ audioSource WRITE setAudioSource NOTIFY audioSourceChanged);
+  protected:
     static const SINT kForwardBlockSize = 1024u;
     static const SINT kReverseBlockSize = 16384u;
-    SINT block_size() const
-    {
-        return reverse() ? kReverseBlockSize : kForwardBlockSize;
-    }
+    SINT block_size() const;
+    bool decode_next();
     bool retrieve();
     SINT retrieve_drop(SINT count);
-  public:
-    ScaledReader( QObject *pParent);
-    virtual ~ScaledReader();
-
-    // Sets the scaling parameters.
-    // * The base rate (ratio of track sample rate to output sample rate).
-    // * The tempoRatio describes the tempo change in fraction of
-    //   original tempo. Put another way, it is the ratio of track seconds to
-    //   real second. For example, a tempo of 1.0 is no change. A
-    //   tempo of 2 is a 2x speedup (2 track seconds pass for every 1
-    //   real second).
-    // * The pitchRatio describes the pitch adjustment in fraction of
-    //   the original pitch. For example, a pitch adjustment of 1.0 is no change and a
-    //   pitch adjustment of 2.0 is a full octave shift up.
-    //
-    // If parameter settings are outside of acceptable limits, each setting will
-    // be set to the value it was clamped to.
-    virtual void setScaleParameters(double pitch_ratio,
-                                    double tempo_ratio,
-                                    double pos);
-    // Called from EngineBuffer when seeking, to ensure the buffers are flushed */
-    virtual void clear() ;
-    // Scale buffer
-    // Returns the number of frames that have bean read from the unscaled
-    // input buffer The number of frames copied to the output buffer is always
-    // an integer value, while the number of frames read from the unscaled
-    // input buffer might be partial number!
-    // The size of the output buffer is given in samples, i.e. twice the number
-    // of frames for an interleaved stereo signal.
-    virtual SINT readSampleFrames(SINT count, CSAMPLE *data);
-    virtual SINT skipSampleFrames(SINT count);
-    virtual double tempoRatio() const { return m_tempoRatio;}
-    virtual double pitchRatio() const { return m_pitchRatio;}
-    virtual SINT   sampleRate() const { return m_sampleRate;}
-    virtual bool   reverse()    const { return tempoRatio() < 0; }
-    virtual double position()   const { return m_position;}
-    mixxx::AudioSourcePointer audioSource() const { return m_audioSource;}
-    void setAudioSource(mixxx::AudioSourcePointer _src);
-    void setSampleRate(SINT _rate);
-    virtual void setTempoRatio(double);
-    virtual void setPitchRatio(double);
-    virtual void setPosition  (double);
-  signals:
-    void tempoRatioChanged(double);
-    void pitchRatioChanged(double);
-    void positionChanged  (double);
-    void sampleRateChanged(SINT);
-    void reverseChanged(bool);
-    void audioSourceChanged(mixxx::AudioSourcePointer);
-  protected:
-    bool decode_next();
 
     mixxx::AudioSourcePointer   m_audioSource{};
     SINT                        m_src_pos{};
@@ -107,6 +55,56 @@ class ScaledReader : public QObject {
     double m_pitchRatio{1.0};
     double m_position{};
     std::unique_ptr<RubberBand::RubberBandStretcher> m_rb{};
+
+  public:
+    Q_INVOKABLE ScaledReader( QObject *pParent);
+    virtual ~ScaledReader();
+
+    // Sets the scaling parameters.
+    // * The base rate (ratio of track sample rate to output sample rate).
+    // * The tempoRatio describes the tempo change in fraction of
+    //   original tempo. Put another way, it is the ratio of track seconds to
+    //   real second. For example, a tempo of 1.0 is no change. A
+    //   tempo of 2 is a 2x speedup (2 track seconds pass for every 1
+    //   real second).
+    // * The pitchRatio describes the pitch adjustment in fraction of
+    //   the original pitch. For example, a pitch adjustment of 1.0 is no change and a
+    //   pitch adjustment of 2.0 is a full octave shift up.
+    //
+    // If parameter settings are outside of acceptable limits, each setting will
+    // be set to the value it was clamped to.
+    Q_INVOKABLE virtual void setScaleParameters(double pitch_ratio,
+                                    double tempo_ratio,
+                                    double pos);
+    // Called from EngineBuffer when seeking, to ensure the buffers are flushed */
+    Q_INVOKABLE virtual void clear() ;
+    // Scale buffer
+    // Returns the number of frames that have bean read from the unscaled
+    // input buffer The number of frames copied to the output buffer is always
+    // an integer value, while the number of frames read from the unscaled
+    // input buffer might be partial number!
+    // The size of the output buffer is given in samples, i.e. twice the number
+    // of frames for an interleaved stereo signal.
+    virtual double tempoRatio() const { return m_tempoRatio;}
+    virtual double pitchRatio() const { return m_pitchRatio;}
+    virtual SINT   sampleRate() const { return m_sampleRate;}
+    virtual bool   reverse()    const { return tempoRatio() < 0; }
+    virtual double position()   const { return m_position;}
+    virtual mixxx::AudioSourcePointer audioSource() const;
+    Q_INVOKABLE virtual SINT readSampleFrames(SINT count, CSAMPLE *data);
+    Q_INVOKABLE virtual SINT skipSampleFrames(SINT count);
+    virtual void setAudioSource(mixxx::AudioSourcePointer _src);
+    virtual void setSampleRate(SINT _rate);
+    virtual void setTempoRatio(double);
+    virtual void setPitchRatio(double);
+    virtual void setPosition  (double);
+  signals:
+    void tempoRatioChanged(double);
+    void pitchRatioChanged(double);
+    void positionChanged  (double);
+    void sampleRateChanged(SINT);
+    void reverseChanged(bool);
+    void audioSourceChanged(mixxx::AudioSourcePointer);
 
 };
 

@@ -20,24 +20,11 @@
 #define ENCODERFFMPEGCORE_H
 
 #include <encoder/encoderffmpegresample.h>
+#include "util/ffmpeg-utils.hpp"
 
-extern "C" {
-#include <libavutil/opt.h>
-#include <libavcodec/avcodec.h>
-#include <libavformat/avformat.h>
-#include <libavutil/common.h>
-#include <libavutil/mathematics.h>
-#include <libavutil/samplefmt.h>
 
-#ifndef __FFMPEGOLDAPI__
-#include <libavutil/avutil.h>
-#endif
 
 // Compability
-#include <libavutil/mathematics.h>
-#include <libavutil/opt.h>
-}
-
 #include <QByteArray>
 #include <QBuffer>
 
@@ -51,75 +38,51 @@ class EncoderCallback;
 
 class EncoderFfmpegCore : public Encoder {
 public:
-#if LIBAVCODEC_VERSION_INT > 3544932
-    EncoderFfmpegCore(EncoderCallback* pCallback=NULL,
-                      AVCodecID codec = AV_CODEC_ID_MP2);
-#else
-    EncoderFfmpegCore(EncoderCallback* pCallback=NULL,
-                      CodecID codec = CODEC_ID_MP2);
-#endif
-    ~EncoderFfmpegCore();
-    int initEncoder(int bitrate, int samplerate);
-    void encodeBuffer(const CSAMPLE *samples, const int size);
-    void updateMetaData(char* artist, char* title, char* album);
-    void flush();
+    EncoderFfmpegCore(EncoderCallback* pCallback=nullptr, AVCodecID codec = AV_CODEC_ID_MP3, const char *example_filename = "output.mp3");
+   ~EncoderFfmpegCore();
+    int initEncoder(int bitrate, int samplerate) override;
+    void encodeBuffer(const CSAMPLE *samples, const int size) override;
+    void updateMetaData(char* artist, char* title, char* album) override;
+    void flush() override;
 protected:
     unsigned int reSample(AVFrame *inframe);
-
-
 private:
-    int getSerial();
+    int  getSerial();
     bool metaDataHasChanged();
     //Call this method in conjunction with broadcast streaming
-    int writeAudioFrame(AVFormatContext *oc, AVStream *st);
-    void closeAudio(AVStream *st);
-    void openAudio(AVCodec *codec, AVStream *st);
-#if LIBAVCODEC_VERSION_INT > 3544932
-    AVStream *addStream(AVFormatContext *oc, AVCodec **codec,
-                        enum AVCodecID codec_id);
-#else
-    AVStream *addStream(AVFormatContext *oc, AVCodec **codec,
-                        enum CodecID codec_id);
-#endif
-    bool m_bStreamInitialized;
+    int  writeAudioFrame(const CSAMPLE *samples, int size);
 
-    EncoderCallback* m_pCallback;
-    TrackPointer m_pMetaData;
+    EncoderCallback* m_callback{};
+    TrackPointer     m_pMetaData;
 
-    char *m_strMetaDataTitle;
-    char *m_strMetaDataArtist;
-    char *m_strMetaDataAlbum;
-    QFile m_pFile;
+    char  *m_strMetaDataTitle{};
+    char  *m_strMetaDataArtist{};
+    char  *m_strMetaDataAlbum{};
+    QFile  m_file;
 
-    QByteArray m_strReadByteArray;
-    CSAMPLE m_SBuffer[65535];
-    unsigned long m_lBufferSize;
+    AVCodecID      m_codec_id{};
+    AVCodec       *m_codec{};;
+    codec_context  m_cocec_ctx{};
+    AVOutputFormat*m_output_fmt{};;
 
-    AVFormatContext *m_pEncodeFormatCtx;
-    AVStream *m_pEncoderAudioStream;
-    AVCodec *m_pEncoderAudioCodec;
-    AVOutputFormat *m_pEncoderFormat;
+    avframe        m_frame_orig{};
+    avframe        m_frame_swr{};
+    swr_context    m_swr{};
 
-    uint8_t *m_pSamples;
-    float *m_pFltSamples;
-    int m_iAudioInputFrameSize;
+    uint64_t       m_next_dts;
+    uint64_t       m_next_pts;
+    avpacket       m_pkt{};
 
-    unsigned int m_iFltAudioCpyLen;
-    unsigned int m_iAudioCpyLen;
+    AVStream      *m_stream{};
+    bool           m_stream_initialized{false};
 
-    uint32_t m_lBitrate;
-    uint32_t m_lSampleRate;
-    uint64_t m_lRecordedBytes;
-    uint64_t m_lDts;
-    uint64_t m_lPts;
-#if LIBAVCODEC_VERSION_INT > 3544932
-    enum AVCodecID m_SCcodecId;
-#else
-    enum CodecID m_SCcodecId;
-#endif
+    format_context m_format_ctx{};
 
-    EncoderFfmpegResample *m_pResample;
-    AVStream *m_pStream;
+    int m_frame_size{};
+
+    uint32_t m_bitrate{};
+    uint32_t m_sampleRate{};
+    uint64_t m_recordedBytes{};
 };
 
 #endif

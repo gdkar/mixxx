@@ -29,11 +29,11 @@ class EncoderCallback;
 class EncoderMp3 : public Encoder {
   public:
     EncoderMp3(EncoderCallback* callback=NULL);
-    virtual ~EncoderMp3();
+   ~EncoderMp3();
 
-    int initEncoder(int bitrate, int samplerate);
-    void encodeBuffer(const CSAMPLE *samples, const int size);
-    void updateMetaData(char* artist, char* title, char* album);
+    int initEncoder(int bitrate, int samplerate) override;
+    void encodeBuffer(const CSAMPLE *samples, const int size) override;
+    void updateMetaData(char* artist, char* title, char* album) override;
     void flush();
 
   private:

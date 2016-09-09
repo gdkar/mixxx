@@ -220,4 +220,12 @@ void ScaledReader::setPitchRatio(double pr)
 {
     setScaleParameters(tempoRatio(), pr, position());
 }
+SINT ScaledReader::block_size() const
+{
+    return reverse() ? kReverseBlockSize : kForwardBlockSize;
+}
+mixxx::AudioSourcePointer ScaledReader::audioSource() const
+{
+    return m_audioSource;
+}
 ScaledReader::~ScaledReader() = default;

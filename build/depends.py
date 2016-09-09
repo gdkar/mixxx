@@ -591,7 +591,7 @@ class PortAudioRingBuffer(Dependence):
         build.env.Append(CPPPATH='#lib/portaudio')
 
     def sources(self, build):
-        return ['#lib/portaudio/pa_ringbuffer.c']
+        return []
 
 class Reverb(Dependence):
     def configure(self, build, conf):

@@ -5,19 +5,20 @@
 #include "engine/effects/engineeffect.h"
 
 EngineEffectsManager::EngineEffectsManager(EffectsResponsePipe* pResponsePipe)
-        : m_pResponsePipe(pResponsePipe) {
+        : m_pResponsePipe(pResponsePipe)
+{
     // Try to prevent memory allocation.
     m_racks.reserve(256);
     m_chains.reserve(256);
     m_effects.reserve(256);
 }
-
-EngineEffectsManager::~EngineEffectsManager() {
+EngineEffectsManager::~EngineEffectsManager()
+{
 }
-
-void EngineEffectsManager::onCallbackStart() {
-    EffectsRequest* request = NULL;
-    while (m_pResponsePipe->readMessages(&request, 1) > 0) {
+void EngineEffectsManager::onCallbackStart()
+{
+    while (!m_pResponsePipe->empty()) {
+        auto request = m_pResponsePipe->readMessage();
         EffectsResponse response(*request);
         bool processed = false;
         switch (request->type) {
@@ -40,7 +41,6 @@ void EngineEffectsManager::onCallbackStart() {
                 } else {
                     processed = request->pTargetRack->processEffectsRequest(
                         *request, m_pResponsePipe.data());
-
                     if (processed) {
                         // When an effect-chain becomes active (part of a rack), keep
                         // it in our master list so that we can respond to
@@ -76,7 +76,6 @@ void EngineEffectsManager::onCallbackStart() {
                 } else {
                     processed = request->pTargetChain->processEffectsRequest(
                         *request, m_pResponsePipe.data());
-
                     if (processed) {
                         // When an effect becomes active (part of a chain), keep
                         // it in our master list so that we can respond to
@@ -125,7 +124,7 @@ void EngineEffectsManager::onCallbackStart() {
         }
 
         if (!processed) {
-            m_pResponsePipe->writeMessages(&response, 1);
+            m_pResponsePipe->writeMessage(response);
         }
     }
 }
@@ -177,6 +176,6 @@ bool EngineEffectsManager::processEffectsRequest(const EffectsRequest& message,
         default:
             return false;
     }
-    pResponsePipe->writeMessages(&response, 1);
+    pResponsePipe->writeMessage(response);
     return true;
 }

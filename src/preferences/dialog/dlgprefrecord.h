@@ -66,9 +66,6 @@ class DlgPrefRecord : public DlgPreferencePage, public Ui::DlgPrefRecordDlg  {
     QString fileTypeExtension;
     QRadioButton* m_pRadioOgg;
     QRadioButton* m_pRadioMp3;
-    QRadioButton* m_pRadioAiff;
-    QRadioButton* m_pRadioFlac;
-    QRadioButton* m_pRadioWav;
 };
 
 #endif
