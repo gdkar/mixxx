@@ -8,7 +8,8 @@
 
 DlgDeveloperTools::DlgDeveloperTools(QWidget* pParent,
                                      UserSettingsPointer pConfig)
-        : QDialog(pParent) {
+        : QDialog(pParent)
+{
     Q_UNUSED(pConfig);
     setupUi(this);
 
@@ -17,14 +18,13 @@ DlgDeveloperTools::DlgDeveloperTools(QWidget* pParent,
     QHash<ConfigKey, ConfigKey> controlAliases =
             ControlDoublePrivate::getControlAliases();
 
-    for (QList<QSharedPointer<ControlDoublePrivate> >::const_iterator it = controlsList.begin();
-            it != controlsList.end(); ++it) {
-        const QSharedPointer<ControlDoublePrivate>& pControl = *it;
+    for (auto it = controlsList.begin(); it != controlsList.end(); ++it) {
+        auto pControl = *it;
         if (pControl) {
             m_controlModel.addControl(pControl->getKey(), pControl->name(),
                                       pControl->description());
 
-            ConfigKey aliasKey = controlAliases[pControl->getKey()];
+            auto aliasKey = controlAliases[pControl->getKey()];
             if (!aliasKey.isNull()) {
                 m_controlModel.addControl(aliasKey, pControl->name(),
                                           "Alias for " + pControl->getKey().group + pControl->getKey().item);
@@ -40,7 +40,7 @@ DlgDeveloperTools::DlgDeveloperTools(QWidget* pParent,
     controlsTable->hideColumn(ControlModel::CONTROL_COLUMN_DESCRIPTION);
     controlsTable->hideColumn(ControlModel::CONTROL_COLUMN_FILTER);
 
-    StatsManager* pManager = StatsManager::instance();
+    auto  pManager = StatsManager::instance();
     if (pManager) {
         connect(pManager, SIGNAL(statUpdated(const Stat&)),
                 &m_statModel, SLOT(statUpdated(const Stat&)));
@@ -79,49 +79,48 @@ DlgDeveloperTools::DlgDeveloperTools(QWidget* pParent,
     setAttribute(Qt::WA_DeleteOnClose);
 }
 
-void DlgDeveloperTools::timerEvent(QTimerEvent* pEvent) {
+void DlgDeveloperTools::timerEvent(QTimerEvent* pEvent)
+{
     Q_UNUSED(pEvent);
     if (m_logFile.isOpen()) {
         QStringList newLines;
 
         while (true) {
-            QByteArray line = m_logFile.readLine();
+            auto line = m_logFile.readLine();
             if (line.isEmpty()) {
                 break;
             }
             newLines.append(QString::fromLocal8Bit(line));
         }
-
         if (!newLines.isEmpty()) {
             logTextView->append(newLines.join(""));
         }
     }
-
     // To save on CPU, only update the models when they are visible.
     if (toolTabWidget->currentWidget() == controlsTab) {
         //m_controlModel.updateDirtyRows();
         controlsTable->update();
     } else if (toolTabWidget->currentWidget() == statsTab) {
-        StatsManager* pManager = StatsManager::instance();
+        auto pManager = StatsManager::instance();
         if (pManager) {
             pManager->updateStats();
         }
     }
 }
 
-void DlgDeveloperTools::slotControlSearch(const QString& search) {
+void DlgDeveloperTools::slotControlSearch(const QString& search)
+{
     m_controlProxyModel.setFilterFixedString(search);
 }
-
-void DlgDeveloperTools::slotControlSearchClear() {
+void DlgDeveloperTools::slotControlSearchClear()
+{
     m_controlProxyModel.setFilterFixedString(QString());
 }
-
-void DlgDeveloperTools::slotControlDump() {
-
-    QString timestamp = QDateTime::currentDateTime()
+void DlgDeveloperTools::slotControlDump()
+{
+    auto timestamp = QDateTime::currentDateTime()
             .toString("yyyy-MM-dd_hh'h'mm'm'ss's'");
-    QString dumpFileName = CmdlineArgs::Instance().getSettingsPath() +
+    auto dumpFileName = CmdlineArgs::Instance().getSettingsPath() +
             "/co_dump_" + timestamp + ".csv";
     QFile dumpFile;
     // Note: QFile is closed if it falls out of scope
@@ -133,20 +132,20 @@ void DlgDeveloperTools::slotControlDump() {
 
     QList<QSharedPointer<ControlDoublePrivate> > controlsList;
     ControlDoublePrivate::getControls(&controlsList);
-    for (QList<QSharedPointer<ControlDoublePrivate> >::const_iterator it =
-            controlsList.begin(); it != controlsList.end(); ++it) {
-        const QSharedPointer<ControlDoublePrivate>& pControl = *it;
+    for (auto it =
+            controlsList.constBegin(); it != controlsList.constEnd(); ++it) {
+        auto pControl = *it;
         if (pControl) {
-            QString line = pControl->getKey().group + "," +
+            auto line = pControl->getKey().group + "," +
                            pControl->getKey().item + "," +
                            QString::number(pControl->get()) + "\n";
             dumpFile.write(line.toLocal8Bit());
         }
     }
 }
-
-void DlgDeveloperTools::slotLogSearch() {
-    QString textToFind = logSearch->text();
+void DlgDeveloperTools::slotLogSearch()
+{
+    auto textToFind = logSearch->text();
     m_logCursor = logTextView->document()->find(textToFind, m_logCursor);
     logTextView->setTextCursor(m_logCursor);
 }
