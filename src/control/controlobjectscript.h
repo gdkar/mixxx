@@ -10,7 +10,6 @@ class ControlObjectScript : public ControlProxy {
     Q_OBJECT
   public:
     explicit ControlObjectScript(const ConfigKey& key, QObject* pParent = nullptr);
-
     void connectScriptFunction(
             const ControllerEngineConnection& conn);
 
