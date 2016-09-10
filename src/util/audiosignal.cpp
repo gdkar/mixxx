@@ -16,13 +16,13 @@ bool AudioSignal::verifyReadable() const {
                 << "]";
         result = false;
     }
-    if (!hasValidSamplingRate()) {
+    if (!hasValidSampleRate()) {
         qWarning() << "Invalid sampling rate [Hz]:"
-                << getSamplingRate()
+                << getSampleRate()
                 << "is out of range ["
-                << kSamplingRateMin
+                << kSampleRateMin
                 << ","
-                << kSamplingRateMax
+                << kSampleRateMax
                 << "]";
         result = false;
     }

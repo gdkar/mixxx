@@ -30,16 +30,16 @@ EngineBufferScaleRubberBand::EngineBufferScaleRubberBand(
     m_retrieve_buffer[1] = SampleUtil::alloc(MAX_BUFFER_LEN);
     initRubberBand();
 }
-
-EngineBufferScaleRubberBand::~EngineBufferScaleRubberBand() {
+EngineBufferScaleRubberBand::~EngineBufferScaleRubberBand()
+{
     SampleUtil::free(m_buffer_back);
     SampleUtil::free(m_retrieve_buffer[0]);
     SampleUtil::free(m_retrieve_buffer[1]);
 }
-
-void EngineBufferScaleRubberBand::initRubberBand() {
+void EngineBufferScaleRubberBand::initRubberBand()
+{
     m_pRubberBand = std::make_unique<RubberBandStretcher>(
-            getAudioSignal().getSamplingRate(),
+            getAudioSignal().getSampleRate(),
             getAudioSignal().getChannelCount(),
             RubberBandStretcher::OptionProcessRealTime);
     m_pRubberBand->setMaxProcessSize(kRubberBandBlockSize);
@@ -53,11 +53,11 @@ void EngineBufferScaleRubberBand::initRubberBand() {
 
 void EngineBufferScaleRubberBand::setScaleParameters(double base_rate,
                                                      double& pTempoRatio,
-                                                     double& pPitchRatio) {
+                                                     double& pPitchRatio)
+{
     // Negative speed means we are going backwards. pitch does not affect
     // the playback direction.
     m_bBackwards = pTempoRatio < 0;
-
     // Due to a bug in RubberBand, setting the timeRatio to a large value can
     // cause division-by-zero SIGFPEs. We limit the minimum seek speed to
     // prevent exceeding RubberBand's limits.
@@ -119,7 +119,8 @@ void EngineBufferScaleRubberBand::clear()
 }
 SINT EngineBufferScaleRubberBand::retrieveAndDeinterleave(
         CSAMPLE* pBuffer,
-        SINT frames) {
+        SINT frames)
+{
     auto frames_available = SINT(m_pRubberBand->available());
     auto frames_to_read = math_min<SINT>(frames_available, frames);
     auto received_frames = SINT(m_pRubberBand->retrieve(
@@ -146,7 +147,8 @@ void EngineBufferScaleRubberBand::deinterleaveAndProcess(
 }
 double EngineBufferScaleRubberBand::scaleBuffer(
         CSAMPLE* pOutputBuffer,
-        SINT iOutputBufferSize) {
+        SINT iOutputBufferSize)
+{
     if (m_dBaseRate == 0.0 || m_dTempoRatio == 0.0) {
         SampleUtil::clear(pOutputBuffer, iOutputBufferSize);
         // No actual samples/frames have been read from the

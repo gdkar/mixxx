@@ -24,9 +24,8 @@ class ReadAheadManager;
 class EngineBufferScale : public QObject {
     Q_OBJECT
   public:
-    EngineBufferScale( ReadAheadManager *raman, QObject *pParent);
+    Q_INVOKABLE EngineBufferScale( ReadAheadManager *raman, QObject *pParent);
     virtual ~EngineBufferScale();
-
     // Sets the scaling parameters.
     // * The base rate (ratio of track sample rate to output sample rate).
     // * The tempoRatio describes the tempo change in fraction of
@@ -50,13 +49,13 @@ class EngineBufferScale : public QObject {
 
     // Set the desired output sample rate.
     virtual void setSampleRate(SINT iSampleRate);
-
+    virtual SINT getSampleRate() const;
     const mixxx::AudioSignal& getAudioSignal() const {
         return m_audioSignal;
     }
 
     // Called from EngineBuffer when seeking, to ensure the buffers are flushed */
-    virtual void clear() = 0;
+    virtual void clear() {};
     // Scale buffer
     // Returns the number of frames that have bean read from the unscaled
     // input buffer The number of frames copied to the output buffer is always
@@ -66,7 +65,12 @@ class EngineBufferScale : public QObject {
     // of frames for an interleaved stereo signal.
     virtual double scaleBuffer(
             CSAMPLE* pOutputBuffer,
-            SINT iOutputBufferSize) = 0;
+            SINT iOutputBufferSize)
+    {
+        Q_UNUSED(pOutputBuffer);
+        Q_UNUSED(iOutputBufferSize);
+        return 0;
+    };
 
   private:
     mixxx::AudioSignal m_audioSignal;
@@ -78,5 +82,4 @@ class EngineBufferScale : public QObject {
     double m_dTempoRatio;
     double m_dPitchRatio;
 };
-
 #endif

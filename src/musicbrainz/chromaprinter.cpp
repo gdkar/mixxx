@@ -22,7 +22,7 @@ namespace
     QString calcFingerprint(const mixxx::AudioSourcePointer& pAudioSource) {
 
         SINT numFrames =
-                kFingerprintDuration * pAudioSource->getSamplingRate();
+                kFingerprintDuration * pAudioSource->getSampleRate();
         // check that the song is actually longer then the amount of audio we use
         if (numFrames > pAudioSource->getFrameCount()) {
             numFrames = pAudioSource->getFrameCount();
@@ -55,7 +55,7 @@ namespace
         qDebug() << "reading file took" << timerReadingFile.elapsed().debugMillisWithUnit();
 
         ChromaprintContext* ctx = chromaprint_new(CHROMAPRINT_ALGORITHM_DEFAULT);
-        chromaprint_start(ctx, pAudioSource->getSamplingRate(), kFingerprintChannels);
+        chromaprint_start(ctx, pAudioSource->getSampleRate(), kFingerprintChannels);
 
         PerformanceTimer timerGeneratingFingerprint;
         timerGeneratingFingerprint.start();

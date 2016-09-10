@@ -53,9 +53,6 @@ class SkinLoader;
 class PlayerManager;
 class Library;
 class VinylControlManager;
-#ifdef __MODPLUG__
-class DlgPrefModplug;
-#endif
 
 class DlgPreferences : public QDialog, public Ui::DlgPreferencesDlg {
     Q_OBJECT
@@ -116,9 +113,6 @@ class DlgPreferences : public QDialog, public Ui::DlgPreferencesDlg {
     DlgPrefNoVinyl* m_wnovinylcontrol;
     DlgPrefBroadcast* m_wbroadcast;
     DlgPrefReplayGain* m_wreplaygain;
-#ifdef __MODPLUG__
-    DlgPrefModplug* m_wmodplug;
-#endif
 
     QTreeWidgetItem* m_pSoundButton;
     QTreeWidgetItem* m_pLibraryButton;
@@ -134,9 +128,6 @@ class DlgPreferences : public QDialog, public Ui::DlgPreferencesDlg {
     QTreeWidgetItem* m_pVinylControlButton;
     QTreeWidgetItem* m_pBroadcastButton;
     QTreeWidgetItem* m_pReplayGainButton;
-#ifdef __MODPLUG__
-    QTreeWidgetItem* m_pModplugButton;
-#endif
     QTreeWidgetItem* m_pControllerTreeItem;
 
     QSize m_pageSizeHint;

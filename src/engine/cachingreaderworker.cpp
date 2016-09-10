@@ -165,7 +165,7 @@ void CachingReaderWorker::loadTrack(const TrackPointer& pTrack) {
     const SINT sampleCount =
             CachingReaderChunk::frames2samples(
                     m_pAudioSource->getFrameCount());
-    emit(trackLoaded(pTrack, m_pAudioSource->getSamplingRate(), sampleCount));
+    emit(trackLoaded(pTrack, m_pAudioSource->getSampleRate(), sampleCount));
 }
 
 void CachingReaderWorker::quitWait() {

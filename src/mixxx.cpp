@@ -69,10 +69,6 @@
 #include "vinylcontrol/vinylcontrolmanager.h"
 #endif
 
-#ifdef __MODPLUG__
-#include "preferences/dialog/dlgprefmodplug.h"
-#endif
-
 // static
 const int MixxxMainWindow::kMicrophoneCount = 4;
 // static
@@ -106,7 +102,8 @@ MixxxMainWindow::MixxxMainWindow(QApplication* pApp, const CmdlineArgs& args)
           m_toolTipsCfg(mixxx::TooltipsPreference::TOOLTIPS_ON),
           m_runtime_timer("MixxxMainWindow::runtime"),
           m_cmdLineArgs(args),
-          m_pTouchShift(nullptr) {
+          m_pTouchShift(nullptr)
+{
     m_runtime_timer.start();
     mixxx::Time::start();
 
@@ -152,7 +149,8 @@ MixxxMainWindow::~MixxxMainWindow() {
     delete m_pSkinLoader;
 }
 
-void MixxxMainWindow::initialize(QApplication* pApp, const CmdlineArgs& args) {
+void MixxxMainWindow::initialize(QApplication* pApp, const CmdlineArgs& args)
+{
     ScopedTimer t("MixxxMainWindow::initialize");
 
     // Register custom data types for signal processing
@@ -167,7 +165,7 @@ void MixxxMainWindow::initialize(QApplication* pApp, const CmdlineArgs& args) {
 
     Sandbox::initialize(QDir(pConfig->getSettingsPath()).filePath("sandbox.cfg"));
 
-    QString resourcePath = pConfig->getResourcePath();
+    auto resourcePath = pConfig->getResourcePath();
 
     FontUtils::initializeFonts(resourcePath); // takes a long time
 
@@ -188,7 +186,7 @@ void MixxxMainWindow::initialize(QApplication* pApp, const CmdlineArgs& args) {
 
     // Create effect backends. We do this after creating EngineMaster to allow
     // effect backends to refer to controls that are produced by the engine.
-    NativeBackend* pNativeBackend = new NativeBackend(m_pEffectsManager);
+    auto pNativeBackend = new NativeBackend(m_pEffectsManager);
     m_pEffectsManager->addEffectsBackend(pNativeBackend);
 
     // Sets up the default EffectChains and EffectRacks (long)
@@ -251,28 +249,18 @@ void MixxxMainWindow::initialize(QApplication* pApp, const CmdlineArgs& args) {
     m_pVCManager->init();
 #endif
 
-#ifdef __MODPLUG__
-    // restore the configuration for the modplug library before trying to load a module
-    DlgPrefModplug* pModplugPrefs = new DlgPrefModplug(0, pConfig);
-    pModplugPrefs->loadSettings();
-    pModplugPrefs->applySettings();
-    delete pModplugPrefs; // not needed anymore
-#endif
-
     CoverArtCache::create();
 
     // (long)
-    m_pLibrary = new Library(this, pConfig,
-                             m_pPlayerManager,
-                             m_pRecordingManager);
+    m_pLibrary = new Library(this, pConfig,m_pPlayerManager,m_pRecordingManager);
     m_pPlayerManager->bindToLibrary(m_pLibrary);
 
     launchProgress(35);
 
     // Get Music dir
-    bool hasChanged_MusicDir = false;
+    auto hasChanged_MusicDir = false;
 
-    QStringList dirs = m_pLibrary->getDirs();
+    auto dirs = m_pLibrary->getDirs();
     if (dirs.size() < 1) {
         // TODO(XXX) this needs to be smarter, we can't distinguish between an empty
         // path return value (not sure if this is normally possible, but it is
@@ -281,7 +269,7 @@ void MixxxMainWindow::initialize(QApplication* pApp, const CmdlineArgs& args) {
         // resolves to) and a user hitting 'cancel'. If we get a blank return
         // but the user didn't hit cancel, we need to know this and let the
         // user take some course of action -- bkgood
-        QString fd = QFileDialog::getExistingDirectory(
+        auto fd = QFileDialog::getExistingDirectory(
             this, tr("Choose music library directory"),
             QDesktopServices::storageLocation(QDesktopServices::MusicLocation));
         if (!fd.isEmpty()) {

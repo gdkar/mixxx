@@ -28,12 +28,8 @@ class SoundSourceProxy {
     static bool isFileNameSupported(const QString& fileName);
     static bool isFileExtensionSupported(const QString& fileExtension);
     explicit SoundSourceProxy(const TrackPointer& pTrack);
-    const TrackPointer& getTrack() const {
-        return m_pTrack;
-    }
-    const QUrl& getUrl() const {
-        return m_url;
-    }
+    const TrackPointer& getTrack() const { return m_pTrack; }
+    const QUrl& getUrl() const { return m_url; }
     // Load track metadata and (optionally) cover art from the file
     // if it has not already been parsed. With reloadFromFile = true
     // metadata and cover art will be reloaded from the file regardless
@@ -71,15 +67,11 @@ class SoundSourceProxy {
 
     // Special case: Construction from a plain TIO pointer is needed
     // for writing metadata immediately before the TIO is destroyed.
-    explicit SoundSourceProxy(
-            const Track* pTrack);
+    explicit SoundSourceProxy(const Track* pTrack);
 
     const TrackPointer m_pTrack;
-
     const QUrl m_url;
-
     static QList<mixxx::SoundSourceProviderRegistration> findSoundSourceProviderRegistrations(const QUrl& url);
-
     const QList<mixxx::SoundSourceProviderRegistration> m_soundSourceProviderRegistrations;
     int m_soundSourceProviderRegistrationIndex;
     mixxx::SoundSourceProviderPointer getSoundSourceProvider() const;

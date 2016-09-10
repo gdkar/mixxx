@@ -44,11 +44,11 @@ class AudioSource: public AudioSignal {
     // The actual duration in seconds.
     // Well defined only for valid files!
     bool hasDuration() const {
-        return hasValidSamplingRate();
+        return hasValidSampleRate();
     }
     double getDuration() const {
         DEBUG_ASSERT(hasDuration()); // prevents division by zero
-        return double(getFrameCount()) / double(getSamplingRate());
+        return double(getFrameCount()) / double(getSampleRate());
     }
 
     // The bitrate is optional and measured in kbit/s (kbps).
@@ -83,7 +83,7 @@ class AudioSource: public AudioSignal {
     // - Precondition: isValidFrameIndex(frameIndex) == true
     //   - Index of first frame: frameIndex = 0
     //   - Index of last frame: frameIndex = getFrameCount() - 1
-    // - The seek position in seconds is frameIndex / getSamplingRate()
+    // - The seek position in seconds is frameIndex / getSampleRate()
     // Returns the actual current frame index which may differ from the
     // requested index if the source does not support accurate seeking.
     virtual SINT seekSampleFrame(SINT frameIndex) = 0;
@@ -222,8 +222,8 @@ class AudioSourceConfig : public AudioSignal {
     using AudioSignal::setChannelCount;
     using AudioSignal::resetChannelCount;
 
-    using AudioSignal::setSamplingRate;
-    using AudioSignal::resetSamplingRate;
+    using AudioSignal::setSampleRate;
+    using AudioSignal::resetSampleRate;
 };
 
 typedef QSharedPointer<AudioSource> AudioSourcePointer;

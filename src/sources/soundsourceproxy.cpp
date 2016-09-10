@@ -395,7 +395,7 @@ mixxx::AudioSourcePointer SoundSourceProxy::openAudioSource(const mixxx::AudioSo
                 // Overwrite metadata with actual audio properties
                 if (m_pTrack) {
                     m_pTrack->setChannels(m_pAudioSource->getChannelCount());
-                    m_pTrack->setSampleRate(m_pAudioSource->getSamplingRate());
+                    m_pTrack->setSampleRate(m_pAudioSource->getSampleRate());
                     if (m_pAudioSource->hasDuration()) {
                         m_pTrack->setDuration(m_pAudioSource->getDuration());
                     }

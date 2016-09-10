@@ -15,7 +15,8 @@ EngineBufferScaleLinear::EngineBufferScaleLinear(ReadAheadManager *pReadAheadMan
       m_dRate(1.0),
       m_dOldRate(1.0),
       m_dCurrentFrame(0.0),
-      m_dNextFrame(0.0) {
+      m_dNextFrame(0.0)
+{
     m_floorSampleOld[0] = 0.0;
     m_floorSampleOld[1] = 0.0;
     SampleUtil::clear(m_bufferInt, kiLinearScaleReadAheadLength);
@@ -158,7 +159,6 @@ SINT EngineBufferScaleLinear::do_copy(CSAMPLE* buf, SINT buf_size) {
         samples_needed -= read_size;
         write_buf += read_size;
     }
-
     // Instead of counting how many samples we got from the internal buffer
     // and the RAMAN calls, just measure the difference between what we
     // requested and what we still need.
@@ -177,14 +177,14 @@ SINT EngineBufferScaleLinear::do_copy(CSAMPLE* buf, SINT buf_size) {
 }
 
 // Stretch a specified buffer worth of audio using linear interpolation
-SINT EngineBufferScaleLinear::do_scale(CSAMPLE* buf, SINT buf_size) {
+SINT EngineBufferScaleLinear::do_scale(CSAMPLE* buf, SINT buf_size)
+{
     auto rate_old = float(m_dOldRate);
     auto rate_new = float(m_dRate);
     auto rate_diff = rate_new - rate_old;
     // Update the old base rate because we only need to
     // interpolate/ramp up the pitch changes once.
     m_dOldRate = m_dRate;
-
     // Determine position in read_buffer to start from. (This is always 0 with
     // the new EngineBuffer implementation)
 
@@ -195,12 +195,10 @@ SINT EngineBufferScaleLinear::do_scale(CSAMPLE* buf, SINT buf_size) {
         qDebug() << "EBSL::do_scale() can't change direction";
         rate_old = 0;
     }
-
     // Special case -- no scaling needed!
     if (rate_diff == 0 && (rate_new == 1.0 || rate_new == -1.0)) {
         return do_copy(buf, buf_size);
     }
-
     // Simulate the loop to estimate how many frames we need
     auto frames = 0.;
     auto bufferSizeFrames = getAudioSignal().samples2frames(buf_size);

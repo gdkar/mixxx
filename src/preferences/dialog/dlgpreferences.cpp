@@ -37,10 +37,6 @@
 #include "preferences/dialog/dlgprefbeats.h"
 #include "preferences/dialog/dlgprefkey.h"
 
-#ifdef __MODPLUG__
-#include "preferences/dialog/dlgprefmodplug.h"
-#endif
-
 #include "preferences/dialog/dlgpreferences.h"
 #include "preferences/dialog/dlgprefsound.h"
 #include "controllers/dlgprefcontrollers.h"
@@ -126,12 +122,7 @@ DlgPreferences::DlgPreferences(MixxxMainWindow * mixxx, SkinLoader* pSkinLoader,
     m_wbroadcast = new DlgPrefBroadcast(this, m_pConfig);
     addPageWidget(m_wbroadcast);
 #endif
-#ifdef __MODPLUG__
-    m_wmodplug = new DlgPrefModplug(this, m_pConfig);
-    addPageWidget(m_wmodplug);
-#endif
-    m_wcontrollers = new DlgPrefControllers(this, m_pConfig, controllers,
-                                            m_pControllerTreeItem);
+    m_wcontrollers = new DlgPrefControllers(this, m_pConfig, controllers,m_pControllerTreeItem);
     addPageWidget(m_wcontrollers);
 
     // Install event handler to generate closeDlg signal
@@ -261,14 +252,6 @@ void DlgPreferences::createIcons() {
     m_pBroadcastButton->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
 #endif
 
-#ifdef __MODPLUG__
-    m_pModplugButton = new QTreeWidgetItem(contentsTreeWidget, QTreeWidgetItem::Type);
-    m_pModplugButton->setIcon(0, QIcon(":/images/preferences/ic_preferences_modplug.png"));
-    m_pModplugButton->setText(0, tr("Modplug Decoder"));
-    m_pModplugButton->setTextAlignment(0, Qt::AlignLeft | Qt::AlignVCenter);
-    m_pModplugButton->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-#endif
-
     connect(contentsTreeWidget,
             SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)),
             this, SLOT(changePage(QTreeWidgetItem*, QTreeWidgetItem*)));
@@ -312,10 +295,6 @@ void DlgPreferences::changePage(QTreeWidgetItem* current, QTreeWidgetItem* previ
 #ifdef __BROADCAST__
     } else if (current == m_pBroadcastButton) {
         switchToPage(m_wbroadcast);
-#endif
-#ifdef __MODPLUG__
-    } else if (current == m_pModplugButton) {
-        switchToPage(m_wmodplug);
 #endif
     } else if (m_wcontrollers->handleTreeItemClick(current)) {
         // Do nothing. m_wcontrollers handled this click.

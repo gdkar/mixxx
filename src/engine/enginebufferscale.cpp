@@ -9,7 +9,7 @@ EngineBufferScale::EngineBufferScale(ReadAheadManager *raman, QObject *pParent)
         , m_audioSignal(
                 mixxx::AudioSignal::SampleLayout::Interleaved,
                 mixxx::AudioSignal::kChannelCountStereo,
-                mixxx::AudioSignal::kSamplingRateCD)
+                mixxx::AudioSignal::kSampleRateCD)
         , m_pReadAheadManager(raman)
         , m_dBaseRate(1.0)
         , m_bSpeedAffectsPitch(false)
@@ -21,6 +21,10 @@ EngineBufferScale::EngineBufferScale(ReadAheadManager *raman, QObject *pParent)
 
 EngineBufferScale::~EngineBufferScale() = default;
 
+SINT EngineBufferScale::getSampleRate() const
+{
+    return m_audioSignal.getSampleRate();
+}
 void EngineBufferScale::setSampleRate(SINT iSampleRate)
 {
     m_audioSignal = mixxx::AudioSignal(

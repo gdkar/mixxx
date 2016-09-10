@@ -10,13 +10,14 @@ const int kiLinearScaleReadAheadLength = 10240;
 
 class EngineBufferScaleLinear : public EngineBufferScale  {
   public:
-    explicit EngineBufferScaleLinear(
+    Q_INVOKABLE explicit EngineBufferScaleLinear(
             ReadAheadManager *pReadAheadManager, QObject *pParent);
     ~EngineBufferScaleLinear() override;
 
     double scaleBuffer(
             CSAMPLE* pOutputBuffer,
             SINT iOutputBufferSize) override;
+
     void clear() override;
 
     void setScaleParameters(double base_rate,

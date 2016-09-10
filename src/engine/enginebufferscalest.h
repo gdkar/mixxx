@@ -14,7 +14,7 @@ class SoundTouch;
 class EngineBufferScaleST : public EngineBufferScale {
     Q_OBJECT
   public:
-    explicit EngineBufferScaleST(
+    Q_INVOKABLE explicit EngineBufferScaleST(
             ReadAheadManager* pReadAheadManager, QObject *pParent);
     ~EngineBufferScaleST() override;
 

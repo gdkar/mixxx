@@ -34,7 +34,7 @@ EngineBufferScaleST::EngineBufferScaleST(ReadAheadManager *pReadAheadManager, QO
       m_bBackwards(false) {
     DEBUG_ASSERT(getAudioSignal().verifyReadable());
     m_pSoundTouch->setChannels(getAudioSignal().getChannelCount());
-    m_pSoundTouch->setSampleRate(getAudioSignal().getSamplingRate());
+    m_pSoundTouch->setSampleRate(getAudioSignal().getSampleRate());
     m_pSoundTouch->setRate(m_dBaseRate);
     m_pSoundTouch->setPitch(1.0);
     m_pSoundTouch->setSetting(SETTING_USE_QUICKSEEK, 1);

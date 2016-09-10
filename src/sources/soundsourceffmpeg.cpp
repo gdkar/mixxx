@@ -74,14 +74,14 @@ SoundSource::OpenResult SoundSourceFFmpeg::tryOpen(const AudioSourceConfig &conf
     }
     if ( config.getChannelCount() <= 0 ) setChannelCount( m_codec_ctx->channels );
     else                                setChannelCount( config.getChannelCount());
-    if ( config.getSamplingRate() < 8000 )  setSamplingRate( m_codec_ctx->sample_rate );
-    else                                setSamplingRate( config.getSamplingRate());
+    if ( config.getSampleRate() < 8000 )  setSampleRate( m_codec_ctx->sample_rate );
+    else                                setSampleRate( config.getSampleRate());
 
-    m_output_tb = AVRational{1,static_cast<int>(getSamplingRate())};
+    m_output_tb = AVRational{1,static_cast<int>(getSampleRate())};
     setFrameCount ( av_rescale_q( m_format_ctx->duration, m_stream_tb, m_output_tb ) );
     m_frame->channel_layout = av_get_default_channel_layout ( getChannelCount() );
     m_frame->format         = AV_SAMPLE_FMT_FLT;
-    m_frame->sample_rate    = getSamplingRate();
+    m_frame->sample_rate    = getSampleRate();
     auto discarded = size_t{0};
     auto total_size= size_t{0};
     do {
@@ -110,7 +110,7 @@ SoundSource::OpenResult SoundSourceFFmpeg::tryOpen(const AudioSourceConfig &conf
     setFrameCount ( av_rescale_q ( m_pkt_array.back()->pts + m_pkt_array.back()->duration - m_first_pts, m_stream_tb, m_output_tb ) );
 
     qDebug() << __FUNCTION__ << QString{": demuxing results for %1"}.arg(getLocalFileName()) << "\n"
-                             << QString{"  frameRate = %1"}.arg(getSamplingRate()) << "\n"
+                             << QString{"  frameRate = %1"}.arg(getSampleRate()) << "\n"
                              << QString{"  channelCount = %L1"}.arg(getChannelCount()) << "\n"
                              << QString{"  frameCount = %L1"}.arg(getFrameCount()) << "\n"
                              << QString{"  total packets = %L1"}.arg(m_pkt_array.size()) << "\n"
@@ -243,13 +243,13 @@ bool SoundSourceFFmpeg::decode_next_frame(){
     m_frame.unref();
     m_frame->format         = AV_SAMPLE_FMT_FLT;
     m_frame->channel_layout = av_get_default_channel_layout ( getChannelCount() );
-    m_frame->sample_rate    = getSamplingRate();
+    m_frame->sample_rate    = getSampleRate();
     auto delay = 0;
     if(!m_swr.initialized() && (m_swr.config(m_frame,m_orig_frame) < 0
         || m_swr.init() < 0)) {
         qDebug() << __FUNCTION__ << "error initializing SwrContext" << av_strerror ( ret );
     }else{
-        delay = swr_get_delay ( m_swr, getSamplingRate( ) );
+        delay = swr_get_delay ( m_swr, getSampleRate( ) );
     }
     m_frame->pts     = m_orig_frame->pts - av_rescale_q ( delay, m_output_tb, m_stream_tb ) ;
     m_frame->pkt_pts = m_orig_frame->pkt_pts;

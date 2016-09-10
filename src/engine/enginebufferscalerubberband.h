@@ -14,7 +14,7 @@ class ReadAheadManager;
 class EngineBufferScaleRubberBand : public EngineBufferScale {
     Q_OBJECT
   public:
-    explicit EngineBufferScaleRubberBand(
+    Q_INVOKABLE explicit EngineBufferScaleRubberBand(
             ReadAheadManager* pReadAheadManager, QObject *pParent);
     ~EngineBufferScaleRubberBand() override;
 

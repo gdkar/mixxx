@@ -29,14 +29,18 @@ class ScaledReader : public QObject {
     Q_PROPERTY(double pitch READ pitchRatio WRITE setPitchRatio NOTIFY pitchRatioChanged);
     Q_PROPERTY(double tempo READ tempoRatio WRITE setTempoRatio NOTIFY tempoRatioChanged);
     Q_PROPERTY(double position READ position WRITE setPosition NOTIFY positionChanged);
-    Q_PROPERTY(bool   reverse READ reverse NOTIFY reverseChanged);
+    Q_PROPERTY(bool   reverse READ reverse NOTIFY reverseChanged STORED false);
     Q_PROPERTY(mixxx::AudioSourcePointer audioSource READ audioSource WRITE setAudioSource NOTIFY audioSourceChanged);
+    Q_PROPERTY(SINT forwardBlock MEMBER m_forward_block NOTIFY parametersChanged);
+    Q_PROPERTY(SINT reverseBlock MEMBER m_reverse_block NOTIFY parametersChanged);
+    Q_PROPERTY(SINT seekPreroll  MEMBER m_seek_preroll NOTIFY  parametersChanged);
   protected:
-    static const SINT kForwardBlockSize = 1024u;
-    static const SINT kReverseBlockSize = 16384u;
+    SINT m_forward_block{1024u };
+    SINT m_reverse_block{16384u};
+    SINT m_seek_preroll  {512  };
     SINT block_size() const;
     bool decode_next();
-    bool retrieve();
+    bool retrieve_keep();
     SINT retrieve_drop(SINT count);
 
     mixxx::AudioSourcePointer   m_audioSource{};
@@ -53,7 +57,7 @@ class ScaledReader : public QObject {
     double m_baseRate  {1.0};
     double m_tempoRatio{1.0};
     double m_pitchRatio{1.0};
-    double m_position{};
+    double m_position  {};
     std::unique_ptr<RubberBand::RubberBandStretcher> m_rb{};
 
   public:
@@ -105,6 +109,7 @@ class ScaledReader : public QObject {
     void sampleRateChanged(SINT);
     void reverseChanged(bool);
     void audioSourceChanged(mixxx::AudioSourcePointer);
+    void parametersChanged();
 
 };
 
