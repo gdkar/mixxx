@@ -49,7 +49,6 @@ class ControllerEngineConnectionScriptValue : public QObject
     }
     const QString& readId() const { return m_conn.id; }
     Q_INVOKABLE void disconnect();
-
   private:
     ControllerEngineConnection m_conn;
 };

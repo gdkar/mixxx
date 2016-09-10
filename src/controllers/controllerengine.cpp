@@ -714,11 +714,10 @@ QScriptValue ControllerEngine::connectControl(
             return QScriptValue(false);
         } else {
             // Do not allow multiple connections to named functions
-            QHash<ConfigKey, ControllerEngineConnection>::const_iterator i =
-                    m_connectedControls.find(key);
+            auto i = m_connectedControls.find(key);
             if (i != m_connectedControls.end()) {
                 // Return a wrapper to the conn
-                ControllerEngineConnection conn = i.value();
+                auto conn = i.value();
                 return m_pEngine->newQObject(
                         new ControllerEngineConnectionScriptValue(conn),
                         QScriptEngine::ScriptOwnership);
@@ -733,8 +732,7 @@ QScriptValue ControllerEngine::connectControl(
 
         if (!strcmp(qmeta->className(),
                 "ControllerEngineConnectionScriptValue")) {
-            ControllerEngineConnectionScriptValue* proxy =
-                    (ControllerEngineConnectionScriptValue*)qobject;
+            auto  proxy = qobject_cast<ControllerEngineConnectionScriptValue*>(qobject);
             proxy->disconnect();
         }
     } else {
@@ -899,18 +897,14 @@ bool ControllerEngine::evaluate(const QString& scriptName, QList<QString> script
     }
     return true;
 }
-
 bool ControllerEngine::hasErrors(const QString& filename)
 {
     return m_scriptErrors.contains(filename);
 }
-
 const QStringList ControllerEngine::getErrors(const QString& filename)
 {
     return  m_scriptErrors.value(filename, QStringList());
 }
-
-
 /* -------- ------------------------------------------------------
    Purpose: Creates & starts a timer that runs some script code
                 on timeout
@@ -1008,41 +1002,33 @@ void ControllerEngine::timerEvent(QTimerEvent *event)
 double ControllerEngine::getDeckRate(const QString& group)
 {
     auto rate = 0.0;
-    auto  pRate = getControlObjectScript(group, "rate");
-    if (pRate != nullptr) {
+    if(auto  pRate = getControlObjectScript(group, "rate"))
         rate = pRate->get();
-    }
-    auto  pRateDir = getControlObjectScript(group, "rate_dir");
-    if (pRateDir != nullptr) {
+
+    if(auto  pRateDir = getControlObjectScript(group, "rate_dir"))
         rate *= pRateDir->get();
-    }
-    auto pRateRange = getControlObjectScript(group, "rateRange");
-    if (pRateRange != nullptr) {
+    if(auto pRateRange = getControlObjectScript(group, "rateRange"))
         rate *= pRateRange->get();
-    }
 
     // Add 1 since the deck is playing
     rate += 1.0;
 
     // See if we're in reverse play
-    auto pReverse = getControlObjectScript(group, "reverse");
-    if (pReverse != nullptr && pReverse->get() == 1) {
-        rate = -rate;
+    if(auto pReverse = getControlObjectScript(group, "reverse")) {
+        if(pReverse->get() == 1)
+            rate = -rate;
     }
     return rate;
 }
-
 bool ControllerEngine::isDeckPlaying(const QString& group)
 {
-    auto pPlay = getControlObjectScript(group, "play");
-
-    if (pPlay == nullptr) {
+    if(auto pPlay = getControlObjectScript(group, "play")){
+        return pPlay->get() > 0.0;
+    }else{
       auto error = QString("Could not getControlObjectScript()");
       scriptErrorDialog(error);
       return false;
     }
-
-    return pPlay->get() > 0.0;
 }
 
 /* -------- ------------------------------------------------------
