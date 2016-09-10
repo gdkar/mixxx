@@ -18,7 +18,7 @@ class Counter {
         this->increment(by);
         return *this;
     }
-    inline Counter operator++(int) { // postfix
+    Counter operator++(int) { // postfix
         Counter result = *this;
         increment(1);
         return result;

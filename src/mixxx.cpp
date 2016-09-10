@@ -768,8 +768,7 @@ void MixxxMainWindow::slotUpdateWindowTitle(TrackPointer pTrack) {
 void MixxxMainWindow::createMenuBar() {
     ScopedTimer t("MixxxMainWindow::createMenuBar");
     DEBUG_ASSERT(m_pKbdConfig != nullptr);
-    m_pMenuBar = new WMainMenuBar(this, m_pSettingsManager->settings(),
-                                  m_pKbdConfig);
+    m_pMenuBar = new WMainMenuBar(this, m_pSettingsManager->settings(),m_pKbdConfig);
     setMenuBar(m_pMenuBar);
 }
 
@@ -804,6 +803,8 @@ void MixxxMainWindow::connectMenuBar() {
             this, SLOT(rebootMixxxView()));
     connect(m_pMenuBar, SIGNAL(toggleDeveloperTools(bool)),
             this, SLOT(slotDeveloperTools(bool)));
+    connect(m_pMenuBar, SIGNAL(resetStats()),
+            StatsManager::instance(),SLOT(resetStats()));
 
     if (m_pRecordingManager) {
         connect(m_pRecordingManager, SIGNAL(isRecording(bool)),

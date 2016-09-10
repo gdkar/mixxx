@@ -36,17 +36,17 @@ StatsManager::StatsManager()
     start(QThread::LowPriority);
 }
 
-StatsManager::~StatsManager() {
+StatsManager::~StatsManager()
+{
     s_bStatsManagerEnabled = false;
     m_quit = 1;
-    m_statsPipeCondition.wakeAll();
+    m_statsSema.release();
     wait();
     qDebug() << "StatsManager shutdown report:";
     qDebug() << "=====================================";
     qDebug() << "ALL STATS";
     qDebug() << "=====================================";
-    for (QMap<QString, Stat>::const_iterator it = m_stats.begin();
-         it != m_stats.end(); ++it) {
+    for (auto it = m_stats.begin(); it != m_stats.end(); ++it) {
         qDebug() << it.value();
     }
 
@@ -172,32 +172,34 @@ StatsPipe* StatsManager::getStatsPipeForThread() {
     if (m_threadStatsPipes.hasLocalData()) {
         return m_threadStatsPipes.localData();
     }
-    StatsPipe* pResult = new StatsPipe(this);
+    auto pResult = new StatsPipe(this);
     m_threadStatsPipes.setLocalData(pResult);
     QMutexLocker locker(&m_statsPipeLock);
     m_statsPipes.push_back(pResult);
     return pResult;
 }
 
-bool StatsManager::maybeWriteReport(const StatReport& report) {
-    StatsPipe* pStatsPipe = getStatsPipeForThread();
+bool StatsManager::maybeWriteReport(const StatReport& report)
+{
+    auto pStatsPipe = getStatsPipeForThread();
     if (pStatsPipe == NULL) {
         return false;
     }
-    bool success = pStatsPipe->write(&report, 1) == 1;
-    int space = pStatsPipe->writeAvailable();
+    auto success = pStatsPipe->write(&report, 1) == 1;
+    auto space = pStatsPipe->writeAvailable();
     if (space < kProcessLength) {
-        m_statsPipeCondition.wakeAll();
+        m_statsSema.release();
     }
     return success;
 }
 
-void StatsManager::processIncomingStatReports() {
+void StatsManager::processIncomingStatReports()
+{
     StatReport report;
-    foreach (StatsPipe* pStatsPipe, m_statsPipes) {
+    for(auto  pStatsPipe: m_statsPipes) {
         while (pStatsPipe->read(&report, 1) == 1) {
-            QString tag = QString::fromUtf8(report.tag);
-            Stat& info = m_stats[tag];
+            auto tag = QString::fromUtf8(report.tag);
+            auto& info = m_stats[tag];
             info.m_tag = tag;
             info.m_type = report.type;
             info.m_compute = report.compute;
@@ -205,7 +207,7 @@ void StatsManager::processIncomingStatReports() {
             emit(statUpdated(info));
 
             if (report.compute & Stat::STATS_EXPERIMENT) {
-                Stat& experiment = m_experimentStats[tag];
+                auto& experiment = m_experimentStats[tag];
                 experiment.m_tag = tag;
                 experiment.m_type = report.type;
                 experiment.m_compute = report.compute;
@@ -233,23 +235,27 @@ void StatsManager::processIncomingStatReports() {
     }
 }
 
-void StatsManager::run() {
+void StatsManager::run()
+{
     qDebug() << "StatsManager thread starting up.";
     while (true) {
-        m_statsPipeLock.lock();
-        m_statsPipeCondition.wait(&m_statsPipeLock);
+        m_statsSema.acquire();
+        {
+            QMutexLocker _lock(&m_statsPipeLock);
         // We want to process reports even when we are about to quit since we
         // want to print the most accurate stat report on shutdown.
-        processIncomingStatReports();
-        m_statsPipeLock.unlock();
-        if (m_emitAllStats.load() == 1) {
-            for (auto it = m_stats.cbegin();
-                 it != m_stats.cend(); ++it) {
+            processIncomingStatReports();
+        }
+        if (m_resetStats.exchange(0) == 1) {
+            for(auto it = m_stats.begin(); it != m_stats.end(); ++it) {
+                it.value().clear();
+            }
+        }
+        if (m_emitAllStats.exchange(0) == 1) {
+            for (auto it = m_stats.cbegin(); it != m_stats.cend(); ++it) {
                 emit(statUpdated(it.value()));
             }
-            m_emitAllStats = 0;
         }
-
         if (m_quit.load() == 1) {
             qDebug() << "StatsManager thread shutting down.";
             break;

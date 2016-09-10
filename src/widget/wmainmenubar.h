@@ -57,6 +57,7 @@ class WMainMenuBar : public QMenuBar {
     void rescanLibrary();
     void showAbout();
     void showPreferences();
+    void resetStats();
     void toggleDeveloperTools(bool toggle);
     void toggleFullScreen(bool toggle);
     void toggleKeyboardShortcuts(bool toggle);
@@ -75,6 +76,7 @@ class WMainMenuBar : public QMenuBar {
     void internalOnNewSkinAboutToLoad();
 
   private slots:
+   void slotStatsReset();
     void slotDeveloperStatsExperiment(bool enable);
     void slotDeveloperStatsBase(bool enable);
     void slotDeveloperDebugger(bool toggle);

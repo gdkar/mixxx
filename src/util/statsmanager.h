@@ -14,6 +14,7 @@
 
 #include "util/fifo.h"
 #include "util/singleton.h"
+#include "util/semaphore.hpp"
 #include "util/stat.h"
 #include "util/event.h"
 
@@ -32,21 +33,24 @@ class StatsManager : public QThread, public Singleton<StatsManager> {
   public:
     explicit StatsManager();
     virtual ~StatsManager();
-
     // Returns true if write succeeds.
     bool maybeWriteReport(const StatReport& report);
-
     static bool s_bStatsManagerEnabled;
-
     // Tell the StatsManager to emit statUpdated for every stat that exists.
-    void emitAllStats() {
+  public slots:
+    void emitAllStats()
+    {
         m_emitAllStats = 1;
     }
-
-    void updateStats() {
-        m_statsPipeCondition.wakeAll();
+    void updateStats()
+    {
+        m_statsSema.release();
     }
-
+    void resetStats()
+    {
+        m_resetStats.store(1);
+        m_statsSema.release();
+    }
   signals:
     void statUpdated(const Stat& stat);
 
@@ -58,15 +62,15 @@ class StatsManager : public QThread, public Singleton<StatsManager> {
     StatsPipe* getStatsPipeForThread();
     void onStatsPipeDestroyed(StatsPipe* pPipe);
     void writeTimeline(const QString& filename);
-
-    QAtomicInt m_emitAllStats;
-    QAtomicInt m_quit;
+    std::atomic<int> m_resetStats{0};
+    std::atomic<int> m_emitAllStats{0};
+    std::atomic<int> m_quit{-1};
     QMap<QString, Stat> m_stats;
     QMap<QString, Stat> m_baseStats;
     QMap<QString, Stat> m_experimentStats;
     QList<Event> m_events;
 
-    QWaitCondition m_statsPipeCondition;
+    mixxx::MSemaphore m_statsSema;
     QMutex m_statsPipeLock;
     QList<StatsPipe*> m_statsPipes;
     QThreadStorage<StatsPipe*> m_threadStatsPipes;

@@ -105,7 +105,12 @@ class Stat {
     double variance() const {
         return m_report_count > 1 ? m_variance_sk / (m_report_count - 1) : 0.0;
     }
-
+    void clear()
+    {
+        m_report_count = m_sum = m_min = m_max = m_variance_mk = m_variance_sk = 0.;
+        m_histogram.clear();
+        m_values.clear();
+    }
     QString m_tag;
     StatType m_type;
     ComputeFlags m_compute;

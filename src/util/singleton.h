@@ -27,8 +27,8 @@ class Singleton {
     }
 
   protected:
-    Singleton() {}
-    virtual ~Singleton() {}
+    Singleton() = default;
+    virtual ~Singleton() = default;
 
   private:
     // hide copy constructor and assign operator

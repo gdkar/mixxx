@@ -8,6 +8,7 @@
 #include "mixer/playermanager.h"
 #include "util/cmdlineargs.h"
 #include "util/experiment.h"
+#include "util/statsmanager.h"
 #include "vinylcontrol/defs_vinylcontrol.h"
 
 namespace {
@@ -491,6 +492,17 @@ void WMainMenuBar::initialize() {
                 this, SLOT(slotDeveloperStatsBase(bool)));
         pDeveloperMenu->addAction(pDeveloperStatsBase);
 
+        auto resetStatsTitle = tr("Stats: Reset");
+        auto resetStatsToolsText = tr("Resets the stats collected so far.");
+        auto resetStats = new QAction(resetStatsTitle, this);
+        resetStats->setStatusTip(resetStatsToolsText);
+        resetStats->setWhatsThis(buildWhatsThis(resetStatsTitle,resetStatsToolsText));
+        resetStats->setCheckable(false);
+        pDeveloperMenu->addAction(resetStats);
+        connect(resetStats,SIGNAL(triggered()),
+            this, SIGNAL(resetStats()));
+        connect(resetStats,SIGNAL(triggered()),
+            this, SLOT(slotStatsReset()));
         // "D" cannont be used with Alt here as it is already by the Developer menu
         QString scriptDebuggerTitle = tr("Deb&ugger Enabled");
         QString scriptDebuggerText = tr("Enables the debugger during skin parsing");
@@ -602,6 +614,12 @@ void WMainMenuBar::initialize() {
     addMenu(pHelpMenu);
 }
 
+void WMainMenuBar::slotStatsReset()
+{
+    if(auto manager = StatsManager::instance()) {
+        manager->resetStats();
+    }
+}
 void WMainMenuBar::onLibraryScanStarted() {
     emit(internalLibraryScanActive(true));
 }

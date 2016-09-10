@@ -36,7 +36,8 @@ QString Stat::valueUnits() const {
     }
 }
 
-void Stat::processReport(const StatReport& report) {
+void Stat::processReport(const StatReport& report)
+{
     m_report_count++;
     if (m_compute & (Stat::SUM | Stat::AVERAGE)) {
         m_sum += report.value;
@@ -72,7 +73,8 @@ void Stat::processReport(const StatReport& report) {
 
 QDebug operator<<(QDebug dbg, const Stat &stat) {
     QStringList stats;
-    if (stat.m_compute & Stat::COUNT) {
+    if (stat.m_compute & Stat::COUNT)
+{
         stats << "count=" + QString::number(stat.m_report_count);
     }
 
@@ -140,7 +142,8 @@ QDebug operator<<(QDebug dbg, const Stat &stat) {
 bool Stat::track(const QString& tag,
                  Stat::StatType type,
                  Stat::ComputeFlags compute,
-                 double value) {
+                 double value)
+{
     if (!StatsManager::s_bStatsManagerEnabled) {
         return false;
     }
@@ -150,6 +153,6 @@ bool Stat::track(const QString& tag,
     report.compute = compute;
     report.time = mixxx::Time::elapsed().toIntegerNanos();
     report.value = value;
-    StatsManager* pManager = StatsManager::instance();
+    auto pManager = StatsManager::instance();
     return pManager && pManager->maybeWriteReport(report);
 }
