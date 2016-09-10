@@ -43,7 +43,6 @@ void RecursiveScanDirectoryTask::run()
 
     // TODO(rryan) benchmark QRegExp copy versus QMutex/QRegExp in ScannerGlobal
     // versus slicing the extension off and checking for set/list containment.
-    QRegExp supportedExtensionsRegex = m_scannerGlobal->supportedExtensionsRegex();
     QRegExp supportedCoverExtensionsRegex = m_scannerGlobal->supportedCoverExtensionsRegex();
 
     while (it.hasNext())

@@ -364,5 +364,4 @@ inline bool operator <=(const AVRational &a, const AVRational &b) { return av_cm
 inline bool operator >=(const AVRational &a, const AVRational &b) { return av_cmp_q(a,b)>= 0; }
 inline int64_t operator *(int64_t a, const AVRational &q) { return av_rescale(a, q.num, q.den); }
 inline int64_t operator *(const AVRational &q, int64_t a) { return av_rescale(a, q.num, q.den); }
-
 }

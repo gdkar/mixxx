@@ -77,7 +77,7 @@ void CmdlineArgs::printUsage() {
                         Each must be one of the following file types:\n\
                         ", stdout);
 
-    fputs(SoundSourceProxy::getSupportedFileNamePatterns().join(" ")
+    fputs(mixxx::SoundSourceProxy::getSupportedFileNamePatterns().join(" ")
           .toLocal8Bit().constData(), stdout);
     fputs("\n\n", stdout);
     fputs("\

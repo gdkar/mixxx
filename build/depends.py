@@ -781,7 +781,7 @@ class MixxxCore(Feature):
 
                    "sources/audiosource.cpp",
                    "sources/soundsource.cpp",
-                   "sources/soundsourceproviderregistry.cpp",
+#                   "sources/soundsourceproviderregistry.cpp",
                    "sources/soundsourceproxy.cpp",
 
                    "widget/controlwidgetconnection.cpp",

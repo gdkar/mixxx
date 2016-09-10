@@ -19,7 +19,7 @@ public:
     // Default implementations for reading/writing track metadata.
     virtual Result parseTrackMetadataAndCoverArt(
             TrackMetadata* pTrackMetadata,
-            QImage* pCoverArt) const ;
+            QImage* pCoverArt) const = 0;
     virtual Result writeTrackMetadata(
             const TrackMetadata& trackMetadata) const;
 

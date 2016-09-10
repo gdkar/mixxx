@@ -28,15 +28,16 @@ static QMutex s_Mutex;
  * make sense to use this class in non-GUI threads
  */
 BrowseThread::BrowseThread(QObject *parent)
-        : QThread(parent) {
+        : QThread(parent)
+{
     m_bStopThread = false;
     m_model_observer = NULL;
     //start Thread
     start(QThread::LowPriority);
 
 }
-
-BrowseThread::~BrowseThread() {
+BrowseThread::~BrowseThread()
+{
     qDebug() << "Wait to finish browser background thread";
     m_bStopThread = true;
     //wake up thread since it might wait for user input
@@ -48,8 +49,9 @@ BrowseThread::~BrowseThread() {
 }
 
 // static
-BrowseThreadPointer BrowseThread::getInstanceRef() {
-    BrowseThreadPointer strong = m_weakInstanceRef.toStrongRef();
+BrowseThreadPointer BrowseThread::getInstanceRef()
+{
+    auto strong = m_weakInstanceRef.toStrongRef();
     if (!strong) {
         s_Mutex.lock();
         strong = m_weakInstanceRef.toStrongRef();
@@ -62,7 +64,8 @@ BrowseThreadPointer BrowseThread::getInstanceRef() {
     return strong;
 }
 
-void BrowseThread::executePopulation(const MDir& path, BrowseTableModel* client) {
+void BrowseThread::executePopulation(const MDir& path, BrowseTableModel* client)
+{
     m_path_mutex.lock();
     m_path = path;
     m_model_observer = client;
@@ -70,7 +73,8 @@ void BrowseThread::executePopulation(const MDir& path, BrowseTableModel* client)
     m_locationUpdated.wakeAll();
 }
 
-void BrowseThread::run() {
+void BrowseThread::run()
+{
     QThread::currentThread()->setObjectName("BrowseThread");
     m_mutex.lock();
 
@@ -112,26 +116,23 @@ public:
 
 }
 
-void BrowseThread::populateModel() {
+void BrowseThread::populateModel()
+{
     m_path_mutex.lock();
     MDir thisPath = m_path;
     BrowseTableModel* thisModelObserver = m_model_observer;
     m_path_mutex.unlock();
 
     // Refresh the name filters in case we loaded new SoundSource plugins.
-    QStringList nameFilters(SoundSourceProxy::getSupportedFileNamePatterns());
-
-    QDirIterator fileIt(thisPath.dir().absolutePath(), nameFilters,
+    QDirIterator fileIt(thisPath.dir().absolutePath(),
                         QDir::Files | QDir::NoDotAndDotDot);
 
     // remove all rows
     // This is a blocking operation
     // see signal/slot connection in BrowseTableModel
     emit(clearModel(thisModelObserver));
-
     QList< QList<QStandardItem*> > rows;
-
-    int row = 0;
+    auto row = 0;
     // Iterate over the files
     while (fileIt.hasNext()) {
         // If a user quickly jumps through the folders
@@ -145,13 +146,13 @@ void BrowseThread::populateModel() {
             return populateModel();
         }
 
-        QString filepath = fileIt.next();
-        TrackPointer pTrack(Track::newTemporary(filepath, thisPath.token()));
+        auto filepath = fileIt.next();
+        auto pTrack = Track::newTemporary(filepath, thisPath.token());
         SoundSourceProxy(pTrack).loadTrackMetadata();
 
         QList<QStandardItem*> row_data;
 
-        QStandardItem* item = new QStandardItem("0");
+        auto item = new QStandardItem("0");
         item->setData("0", Qt::UserRole);
         row_data.insert(COLUMN_PREVIEW, item);
 
@@ -185,7 +186,7 @@ void BrowseThread::populateModel() {
         item->setData(item->text().toInt(), Qt::UserRole);
         row_data.insert(COLUMN_TRACK_NUMBER, item);
 
-        const QString year(pTrack->getYear());
+        auto year = pTrack->getYear();
         item = new YearItem(year);
         item->setToolTip(year);
         // The year column is sorted according to the numeric calendar year
@@ -212,7 +213,7 @@ void BrowseThread::populateModel() {
         item->setData(item->text(), Qt::UserRole);
         row_data.insert(COLUMN_COMMENT, item);
 
-        QString duration = pTrack->getDurationText(mixxx::Duration::Precision::SECONDS);
+        auto duration = pTrack->getDurationText(mixxx::Duration::Precision::SECONDS);
         item = new QStandardItem(duration);
         item->setToolTip(item->text());
         item->setData(item->text(), Qt::UserRole);
@@ -255,7 +256,7 @@ void BrowseThread::populateModel() {
         item->setData(creationTime, Qt::UserRole);
         row_data.insert(COLUMN_FILE_CREATION_TIME, item);
 
-        const mixxx::ReplayGain replayGain(pTrack->getReplayGain());
+        auto replayGain = pTrack->getReplayGain();
         item = new QStandardItem(
                 mixxx::ReplayGain::ratioToString(replayGain.getRatio()));
         item->setToolTip(item->text());

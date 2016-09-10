@@ -179,6 +179,7 @@ bool AnalysisFeature::dropAccept(QList<QUrl> urls, QObject* pSource) {
     return trackIds.size() > 0;
 }
 
-bool AnalysisFeature::dragMoveAccept(QUrl url) {
-    return SoundSourceProxy::isUrlSupported(url);
+bool AnalysisFeature::dragMoveAccept(QUrl url)
+{
+    return mixxx::SoundSourceProxy::isUrlSupported(url);
 }

@@ -172,14 +172,13 @@ void LibraryScanner::slotStartScan() {
 
     auto trackLocations = m_trackDao.getTrackLocations();
     auto directoryHashes = m_libraryHashDao.getDirectoryHashes();
-    QRegExp extensionFilter(SoundSourceProxy::getSupportedFileNamesRegex());
     QRegExp coverExtensionFilter =
             QRegExp(CoverArtUtils::supportedCoverArtExtensionsRegex(),
                     Qt::CaseInsensitive);
     auto directoryBlacklist = ScannerUtil::getDirectoryBlacklist();
 
     m_scannerGlobal = ScannerGlobalPointer(
-            new ScannerGlobal(trackLocations, directoryHashes, extensionFilter,
+            new ScannerGlobal(trackLocations, directoryHashes,
                               coverExtensionFilter, directoryBlacklist));
 
     m_scannerGlobal->startTimer();

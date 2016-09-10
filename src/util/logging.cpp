@@ -24,41 +24,35 @@ QMutex mutexLogfile;
 
 // Debug message handler which outputs to both a logfile and prepends the thread
 // the message came from.
-void MessageHandler(QtMsgType type,
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-                    const char* input) {
-#else
-                    const QMessageLogContext&, const QString& input) {
-#endif
-
+void MessageHandler(
+    QtMsgType type
+  , const QMessageLogContext&
+  , const QString& input)
+{
     // It's possible to deadlock if any method in this function can
     // qDebug/qWarning/etc. Writing to a closed QFile, for example, produces a
     // qWarning which causes a deadlock. That's why every use of Logfile is
     // wrapped with isOpen() checks.
     QMutexLocker locker(&mutexLogfile);
     QByteArray ba;
-    QThread* thread = QThread::currentThread();
+    auto thread = QThread::currentThread();
     if (thread) {
         ba = "[" + QThread::currentThread()->objectName().toLocal8Bit() + "]: ";
     } else {
         ba = "[?]: ";
     }
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-    ba += input;
-#else
     ba += input.toLocal8Bit();
-#endif
     ba += "\n";
 
     if (!Logfile.isOpen()) {
         // This Must be done in the Message Handler itself, to guarantee that the
         // QApplication is initialized
-        QString logLocation = CmdlineArgs::Instance().getSettingsPath();
-        QString logFileName;
+        auto logLocation = CmdlineArgs::Instance().getSettingsPath();
+        auto logFileName = QString{};
 
         // Rotate old logfiles
         //FIXME: cerr << doesn't get printed until after mixxx quits (???)
-        for (int i = 9; i >= 0; --i) {
+        for (auto i = 9; i >= 0; --i) {
             if (i == 0) {
                 logFileName = QDir(logLocation).filePath("mixxx.log");
             } else {
@@ -132,21 +126,15 @@ void MessageHandler(QtMsgType type,
 }  // namespace
 
 // static
-void Logging::initialize() {
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-    qInstallMsgHandler(MessageHandler);
-#else
+void Logging::initialize()
+{
     qInstallMessageHandler(MessageHandler);
-#endif
 }
 
 // static
-void Logging::shutdown() {
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-    qInstallMsgHandler(NULL);  // Reset to default.
-#else
-    qInstallMessageHandler(NULL);  // Reset to default.
-#endif
+void Logging::shutdown()
+{
+    qInstallMessageHandler(nullptr);  // Reset to default.
 
     // Don't make any more output after this
     //    or mixxx.log will get clobbered!

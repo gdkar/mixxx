@@ -48,12 +48,6 @@ SoundSource::OpenResult SoundSource::open(const AudioSourceConfig& audioSrcCfg)
     }
     return result;
 }
-Result SoundSource::parseTrackMetadataAndCoverArt(
-        TrackMetadata* pTrackMetadata,
-        QImage* pCoverArt) const
-{
-    return taglib::readTrackMetadataAndCoverArtFromFile(pTrackMetadata, pCoverArt, getLocalFileName());
-}
 Result SoundSource::writeTrackMetadata(
         const TrackMetadata& trackMetadata) const
 {

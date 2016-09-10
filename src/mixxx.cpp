@@ -854,13 +854,14 @@ void MixxxMainWindow::connectMenuBar() {
 
 }
 
-void MixxxMainWindow::slotFileLoadSongPlayer(int deck) {
-    QString group = m_pPlayerManager->groupForDeck(deck-1);
+void MixxxMainWindow::slotFileLoadSongPlayer(int deck)
+{
+    auto group = m_pPlayerManager->groupForDeck(deck-1);
 
-    QString loadTrackText = tr("Load track to Deck %1").arg(QString::number(deck));
-    QString deckWarningMessage = tr("Deck %1 is currently playing a track.")
+    auto loadTrackText = tr("Load track to Deck %1").arg(QString::number(deck));
+    auto deckWarningMessage = tr("Deck %1 is currently playing a track.")
             .arg(QString::number(deck));
-    QString areYouSure = tr("Are you sure you want to load a new track?");
+    auto areYouSure = tr("Are you sure you want to load a new track?");
 
     if (ControlObject::get(ConfigKey(group, "play")) > 0.0) {
         int ret = QMessageBox::warning(this, Version::applicationName(),
@@ -872,15 +873,13 @@ void MixxxMainWindow::slotFileLoadSongPlayer(int deck) {
             return;
     }
 
-    UserSettingsPointer pConfig = m_pSettingsManager->settings();
-    QString trackPath =
-        QFileDialog::getOpenFileName(
+    auto pConfig = m_pSettingsManager->settings();
+    auto trackPath = QFileDialog::getOpenFileName(
             this,
             loadTrackText,
             pConfig->getValueString(PREF_LEGACY_LIBRARY_DIR),
-            QString("Audio (%1)")
-                .arg(SoundSourceProxy::getSupportedFileNamePatterns().join(" ")));
-
+            QString("Audio files (%1)").arg(SoundSourceProxy::getSupportedFileNamePatterns().join(" "))
+            );
 
     if (!trackPath.isNull()) {
         // The user has picked a file via a file dialog. This means the system
@@ -896,8 +895,9 @@ void MixxxMainWindow::slotFileLoadSongPlayer(int deck) {
 }
 
 
-void MixxxMainWindow::slotOptionsKeyboard(bool toggle) {
-    UserSettingsPointer pConfig = m_pSettingsManager->settings();
+void MixxxMainWindow::slotOptionsKeyboard(bool toggle)
+{
+    auto pConfig = m_pSettingsManager->settings();
     if (toggle) {
         //qDebug() << "Enable keyboard shortcuts/mappings";
         m_pKeyboard->setKeyboardConfig(m_pKbdConfig);
@@ -909,7 +909,8 @@ void MixxxMainWindow::slotOptionsKeyboard(bool toggle) {
     }
 }
 
-void MixxxMainWindow::slotDeveloperTools(bool visible) {
+void MixxxMainWindow::slotDeveloperTools(bool visible)
+{
     if (visible) {
         if (m_pDeveloperToolsDlg == nullptr) {
             UserSettingsPointer pConfig = m_pSettingsManager->settings();
@@ -929,11 +930,12 @@ void MixxxMainWindow::slotDeveloperTools(bool visible) {
     }
 }
 
-void MixxxMainWindow::slotDeveloperToolsClosed() {
+void MixxxMainWindow::slotDeveloperToolsClosed()
+{
     m_pDeveloperToolsDlg = NULL;
 }
-
-void MixxxMainWindow::slotViewFullScreen(bool toggle) {
+void MixxxMainWindow::slotViewFullScreen(bool toggle)
+{
     if (isFullScreen() == toggle) {
         return;
     }
@@ -960,7 +962,8 @@ void MixxxMainWindow::slotViewFullScreen(bool toggle) {
     emit(fullScreenChanged(toggle));
 }
 
-void MixxxMainWindow::slotOptionsPreferences() {
+void MixxxMainWindow::slotOptionsPreferences()
+{
     m_pPrefDlg->setHidden(false);
     m_pPrefDlg->activateWindow();
 }
@@ -1126,11 +1129,11 @@ void MixxxMainWindow::checkDirectRendering() {
     // THEN
     //  * Warn user
 
-    WaveformWidgetFactory* factory = WaveformWidgetFactory::instance();
+    auto factory = WaveformWidgetFactory::instance();
     if (!factory)
         return;
 
-    UserSettingsPointer pConfig = m_pSettingsManager->settings();
+    auto pConfig = m_pSettingsManager->settings();
 
     if (!factory->isOpenGLAvailable() &&
         pConfig->getValueString(ConfigKey("[Direct Rendering]", "Warned")) != QString("yes")) {

@@ -41,7 +41,7 @@ QImage CoverArtUtils::extractEmbeddedCover(
     // to avoid accessing reading the file while it is written.
     TrackPointer pTrack(
             Track::newTemporary(fileInfo, pToken));
-    return SoundSourceProxy(pTrack).parseCoverImage();
+    return mixxx::SoundSourceProxy(pTrack).parseCoverImage();
 }
 
 //static

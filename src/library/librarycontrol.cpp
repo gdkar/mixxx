@@ -13,7 +13,6 @@
 #include "widget/wlibrarysidebar.h"
 #include "library/library.h"
 #include "library/libraryview.h"
-#include "util/container.h"
 
 LoadToGroupController::LoadToGroupController(QObject* pParent, const QString& group)
         : QObject(pParent),
@@ -123,7 +122,8 @@ LibraryControl::LibraryControl(Library* pLibrary)
             this, SLOT(slotIncrementFontSize(double)));
 }
 
-LibraryControl::~LibraryControl() {
+LibraryControl::~LibraryControl()
+{
    delete m_pSelectNextTrack;
    delete m_pSelectPrevTrack;
    delete m_pSelectTrack;
@@ -137,7 +137,6 @@ LibraryControl::~LibraryControl() {
    delete m_pFontSizeKnob;
    delete m_pFontSizeDecrement;
    delete m_pFontSizeIncrement;
-   deleteMapValues(&m_loadToGroupControllers);
 }
 
 void LibraryControl::maybeCreateGroupController(const QString& group)

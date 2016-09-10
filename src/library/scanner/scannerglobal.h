@@ -38,43 +38,37 @@ class ScannerGlobal {
   public:
     ScannerGlobal(const QSet<QString>& trackLocations,
                   const QHash<QString, int>& directoryHashes,
-                  const QRegExp& supportedExtensionsMatcher,
                   const QRegExp& supportedCoverExtensionsMatcher,
                   const QStringList& directoriesBlacklist)
             : m_trackLocations(trackLocations),
               m_directoryHashes(directoryHashes),
-              m_supportedExtensionsMatcher(supportedExtensionsMatcher),
               m_supportedCoverExtensionsMatcher(supportedCoverExtensionsMatcher),
               m_directoriesBlacklist(directoriesBlacklist),
               // Unless marked un-clean, we assume it will finish cleanly.
               m_scanFinishedCleanly(true),
               m_shouldCancel(false),
-              m_numScannedDirectories(0) {
-    }
+              m_numScannedDirectories(0)
+    { }
 
     TaskWatcher& getTaskWatcher() {
         return m_watcher;
     }
 
     // Returns whether the track already exists in the database.
-    inline bool trackExistsInDatabase(const QString& trackLocation) const {
+    bool trackExistsInDatabase(const QString& trackLocation) const {
         return m_trackLocations.contains(trackLocation);
     }
 
     // Returns the directory hash if it exists or -1 if it doesn't.
-    inline int directoryHashInDatabase(const QString& directoryPath) const {
+    int directoryHashInDatabase(const QString& directoryPath) const {
         return m_directoryHashes.value(directoryPath, -1);
     }
 
-    inline bool directoryBlacklisted(const QString& directoryPath) const {
+    bool directoryBlacklisted(const QString& directoryPath) const {
         return m_directoriesBlacklist.contains(directoryPath);
     }
 
-    const QRegExp& supportedExtensionsRegex() const {
-        return m_supportedExtensionsMatcher;
-    }
-
-    inline bool testAndMarkDirectoryScanned(const QDir& dir) {
+    bool testAndMarkDirectoryScanned(const QDir& dir) {
         const QString canonicalPath(dir.canonicalPath());
         QMutexLocker locker(&m_directoriesScannedMutex);
         if (m_directoriesScanned.contains(canonicalPath)) {
@@ -85,22 +79,24 @@ class ScannerGlobal {
         }
     }
 
-    inline void addUnhashedDir(const QDir& dir,
+    void addUnhashedDir(const QDir& dir,
                                const SecurityTokenPointer& token) {
         QMutexLocker locker(&m_directoriesUnhashedMutex);
         m_directoriesUnhashed.append(DirInfo(dir, token));
     }
 
-    inline QList<DirInfo>& unhashedDirs() {
+    QList<DirInfo>& unhashedDirs() {
         // no need for locking here, because it is only used
         // when only one using thread is around.
         return m_directoriesUnhashed;
     }
 
     // TODO(rryan) test whether tasks should create their own QRegExp.
-    inline bool isAudioFileSupported(const QString& fileName) const {
-        QMutexLocker locker(&m_supportedExtensionsMatcherMutex);
-        return m_supportedExtensionsMatcher.indexIn(fileName) != -1;
+    bool isAudioFileSupported(const QString& fileName) const
+    {
+        void(sizeof(fileName));
+        //return SoundSourceProxy::isFilenameSupported(fileName);
+        return true;
     }
 
     const QRegExp& supportedCoverExtensionsRegex() const {
@@ -108,24 +104,20 @@ class ScannerGlobal {
     }
 
     // TODO(rryan) test whether tasks should create their own QRegExp.
-    inline bool isCoverFileSupported(const QString& fileName) const {
+    bool isCoverFileSupported(const QString& fileName) const {
         QMutexLocker locker(&m_supportedCoverExtensionsMatcherMutex);
         return m_supportedCoverExtensionsMatcher.indexIn(fileName) != -1;
     }
-
-    inline bool shouldCancel() const {
+    bool shouldCancel() const {
         return m_shouldCancel;
     }
-
-    inline volatile const bool* shouldCancelPointer() const {
+    volatile const bool* shouldCancelPointer() const {
         return &m_shouldCancel;
     }
-
     void cancel() {
         m_shouldCancel = true;
     }
-
-    inline bool scanFinishedCleanly() const {
+    bool scanFinishedCleanly() const {
         return m_scanFinishedCleanly;
     }
 
@@ -179,8 +171,6 @@ class ScannerGlobal {
     QSet<QString> m_trackLocations;
     QHash<QString, int> m_directoryHashes;
 
-    mutable QMutex m_supportedExtensionsMatcherMutex;
-    QRegExp m_supportedExtensionsMatcher;
 
     mutable QMutex m_supportedCoverExtensionsMatcherMutex;
     QRegExp m_supportedCoverExtensionsMatcher;

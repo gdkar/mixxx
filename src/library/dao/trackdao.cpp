@@ -281,7 +281,7 @@ void TrackDAO::saveTrack(Track* pTrack) {
         // could alternatively store a second copy of TrackMetadata
         // in Track.
         if (m_pConfig && m_pConfig->getValueString(ConfigKey("[Library]","WriteAudioTags")).toInt() == 1) {
-            SoundSourceProxy::saveTrackMetadata(pTrack);
+            mixxx::SoundSourceProxy::saveTrackMetadata(pTrack);
         }
     }
 }
@@ -690,7 +690,7 @@ TrackPointer TrackDAO::addTracksAddFile(const QFileInfo& fileInfo, bool unremove
     // TODO(uklotzde): The following check can be skipped if
     // the track is already in the library. A refactoring is
     // needed to detect this before calling addTracksAddTrack().
-    if (!SoundSourceProxy::isFileSupported(fileInfo)) {
+    if (!mixxx::SoundSourceProxy::isFileSupported(fileInfo)) {
         qWarning() << "TrackDAO::addTracksAddFile:"
                 << "Unsupported file type"
                 << pTrack->getLocation();
@@ -702,7 +702,7 @@ TrackPointer TrackDAO::addTracksAddFile(const QFileInfo& fileInfo, bool unremove
     // TODO(uklotzde): Loading of metadata can be skipped if
     // the track is already in the library. A refactoring is
     // needed to detect this before calling addTracksAddTrack().
-    SoundSourceProxy(pTrack).loadTrackMetadata();
+    mixxx::SoundSourceProxy(pTrack).loadTrackMetadata();
     if (!pTrack->isHeaderParsed()) {
         qWarning() << "TrackDAO::addTracksAddFile:"
                 << "Failed to parse track metadata from file"
@@ -1382,10 +1382,10 @@ TrackPointer TrackDAO::getTrackFromDB(TrackId trackId) const {
                 Track::newTemporary(
                         pTrack->getFileInfo(),
                         pTrack->getSecurityToken()));
-        SoundSourceProxy proxy(pTempTrack);
+        mixxx::SoundSourceProxy proxy(pTempTrack);
         // The metadata for the newly created track object has
         // not been parsed from the file, until we explicitly
-        // (re-)load it through the SoundSourceProxy.
+        // (re-)load it through the mixxx::SoundSourceProxy.
         DEBUG_ASSERT(!pTempTrack->isHeaderParsed());
         proxy.loadTrackMetadata();
         if (pTempTrack->isHeaderParsed()) {
