@@ -80,11 +80,13 @@ DlgPrefLibrary::DlgPrefLibrary(QWidget * parent,
 
 DlgPrefLibrary::~DlgPrefLibrary() = default;
 
-void DlgPrefLibrary::slotShow() {
+void DlgPrefLibrary::slotShow()
+{
     m_baddedDirectory = false;
 }
 
-void DlgPrefLibrary::slotHide() {
+void DlgPrefLibrary::slotHide()
+{
     if (!m_baddedDirectory) {
         return;
     }
@@ -95,7 +97,7 @@ void DlgPrefLibrary::slotHide() {
     msgBox.setText(tr("You added one or more music directories. The tracks in "
                       "these directories won't be available until you rescan "
                       "your library. Would you like to rescan now?"));
-    QPushButton* scanButton = msgBox.addButton(
+    auto scanButton = msgBox.addButton(
         tr("Scan"), QMessageBox::AcceptRole);
     msgBox.addButton(QMessageBox::Cancel);
     msgBox.setDefaultButton(scanButton);
@@ -112,15 +114,15 @@ void DlgPrefLibrary::initializeDirList() {
     const QString selected = dirList->currentIndex().data().toString();
     // clear and fill model
     m_dirListModel.clear();
-    QStringList dirs = m_pLibrary->getDirs();
+    auto dirs = m_pLibrary->getDirs();
     foreach (QString dir, dirs) {
         m_dirListModel.appendRow(new QStandardItem(dir));
     }
     dirList->setModel(&m_dirListModel);
     dirList->setCurrentIndex(m_dirListModel.index(0, 0));
     // reselect index if it still exists
-    for (int i=0 ; i<m_dirListModel.rowCount() ; ++i) {
-        const QModelIndex index = m_dirListModel.index(i, 0);
+    for (auto i=0 ; i<m_dirListModel.rowCount() ; ++i) {
+        auto index = m_dirListModel.index(i, 0);
         if (index.data().toString() == selected) {
             dirList->setCurrentIndex(index);
             break;
@@ -128,11 +130,13 @@ void DlgPrefLibrary::initializeDirList() {
     }
 }
 
-void DlgPrefLibrary::slotExtraPlugins() {
+void DlgPrefLibrary::slotExtraPlugins()
+{
     QDesktopServices::openUrl(QUrl(MIXXX_ADDONS_URL));
 }
 
-void DlgPrefLibrary::slotResetToDefaults() {
+void DlgPrefLibrary::slotResetToDefaults()
+{
     checkBox_library_scan->setChecked(false);
     checkbox_ID3_sync->setChecked(false);
     checkBox_use_relative_path->setChecked(false);
@@ -147,7 +151,8 @@ void DlgPrefLibrary::slotResetToDefaults() {
     setLibraryFont(QApplication::font());
 }
 
-void DlgPrefLibrary::slotUpdate() {
+void DlgPrefLibrary::slotUpdate()
+{
     initializeDirList();
     checkBox_library_scan->setChecked((bool)m_pconfig->getValueString(
             ConfigKey("[Library]","RescanOnStartup")).toInt());
@@ -183,14 +188,15 @@ void DlgPrefLibrary::slotUpdate() {
     setLibraryFont(m_originalTrackTableFont);
 }
 
-void DlgPrefLibrary::slotCancel() {
+void DlgPrefLibrary::slotCancel()
+{
     // Undo any changes in the library font or row height.
     emit(setTrackTableRowHeight(m_iOriginalTrackTableRowHeight));
     emit(setTrackTableFont(m_originalTrackTableFont));
 }
-
-void DlgPrefLibrary::slotAddDir() {
-    QString fd = QFileDialog::getExistingDirectory(
+void DlgPrefLibrary::slotAddDir()
+{
+    auto fd = QFileDialog::getExistingDirectory(
         this, tr("Choose a music directory"),
         QDesktopServices::storageLocation(QDesktopServices::MusicLocation));
     if (!fd.isEmpty()) {
@@ -200,7 +206,8 @@ void DlgPrefLibrary::slotAddDir() {
     }
 }
 
-void DlgPrefLibrary::slotRemoveDir() {
+void DlgPrefLibrary::slotRemoveDir()
+{
     QModelIndex index = dirList->currentIndex();
     QString fd = index.data().toString();
     QMessageBox removeMsgBox;
@@ -256,7 +263,8 @@ void DlgPrefLibrary::slotRemoveDir() {
     slotUpdate();
 }
 
-void DlgPrefLibrary::slotRelocateDir() {
+void DlgPrefLibrary::slotRelocateDir()
+{
     QModelIndex index = dirList->currentIndex();
     QString currentFd = index.data().toString();
 

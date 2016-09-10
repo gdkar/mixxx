@@ -15,6 +15,7 @@
 
 namespace {
 
+/* static */
 SecurityTokenPointer openSecurityToken(
         const QFileInfo& fileInfo,
         const SecurityTokenPointer& pSecurityToken = SecurityTokenPointer()) {

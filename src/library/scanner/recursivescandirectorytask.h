@@ -20,8 +20,7 @@ class RecursiveScanDirectoryTask : public ScannerTask {
                                const QDir& dir,
                                SecurityTokenPointer pToken,
                                bool scanUnhashed);
-    virtual ~RecursiveScanDirectoryTask() {}
-
+    virtual ~RecursiveScanDirectoryTask() = default;
     virtual void run();
 
   private:

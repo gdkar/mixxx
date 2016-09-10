@@ -127,7 +127,8 @@ double EngineBufferScaleLinear::scaleBuffer(
     return frames_read;
 }
 
-SINT EngineBufferScaleLinear::do_copy(CSAMPLE* buf, SINT buf_size) {
+SINT EngineBufferScaleLinear::do_copy(CSAMPLE* buf, SINT buf_size)
+{
     SINT samples_needed = buf_size;
     CSAMPLE* write_buf = buf;
     // Use up what's left of the internal buffer.
@@ -323,9 +324,10 @@ SINT EngineBufferScaleLinear::do_scale(CSAMPLE* buf, SINT buf_size)
         // between the previous and the next?
         auto frac = static_cast<CSAMPLE>(m_dCurrentFrame) - currentFrameFloor;
         // Perform linear interpolation
-        buf[i] = floor_sample[0] + frac * (ceil_sample[0] - floor_sample[0]);
-        buf[i + 1] = floor_sample[1] + frac * (ceil_sample[1] - floor_sample[1]);
-
+        if(buf) {
+            buf[i] = floor_sample[0] + frac * (ceil_sample[0] - floor_sample[0]);
+            buf[i + 1] = floor_sample[1] + frac * (ceil_sample[1] - floor_sample[1]);
+        }
         m_floorSampleOld[0] = floor_sample[0];
         m_floorSampleOld[1] = floor_sample[1];
         // increment the index for the next loop
@@ -336,6 +338,7 @@ SINT EngineBufferScaleLinear::do_scale(CSAMPLE* buf, SINT buf_size)
         rate_add += rate_delta_abs;
         i += getAudioSignal().getChannelCount();
     }
-    SampleUtil::clear(&buf[i], buf_size - i);
+    if(buf)
+        SampleUtil::clear(&buf[i], buf_size - i);
     return frames_read;
 }

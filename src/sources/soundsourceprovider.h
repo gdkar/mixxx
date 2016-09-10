@@ -44,18 +44,20 @@ public:
         Q_UNUSED(supportedFileExtension);
         return SoundSourceProviderPriority::DEFAULT;
     }
-
     // Creates a new SoundSource for the file referenced by the URL.
     // This function should return a nullptr pointer if it is already
     // able to decide that the file is not supported even though it
     // has one of the supported file extensions.
     virtual SoundSourcePointer newSoundSource(const QUrl& url) = 0;
+    virtual bool canOpen(QUrl url) = 0;
+    virtual bool canOpen(QString url) = 0;
 };
 
 typedef QSharedPointer<SoundSourceProvider> SoundSourceProviderPointer;
 
 template<typename T>
-static SoundSourceProviderPointer newSoundSourceProvider() {
+static SoundSourceProviderPointer newSoundSourceProvider()
+{
     return SoundSourceProviderPointer(new T);
 }
 

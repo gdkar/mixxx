@@ -104,21 +104,12 @@ class AudioSource: public AudioSignal {
             SINT numberOfFrames,
             CSAMPLE* sampleBuffer) = 0;
 
-    SINT skipSampleFrames(
-            SINT numberOfFrames) {
-        return readSampleFrames(numberOfFrames, static_cast<CSAMPLE*>(nullptr));
-    }
+    SINT skipSampleFrames(SINT numberOfFrames);
 
     SINT readSampleFrames(
             SINT numberOfFrames,
-            SampleBuffer* pSampleBuffer) {
-        if (pSampleBuffer) {
-            DEBUG_ASSERT(frames2samples(numberOfFrames) <= pSampleBuffer->size());
-            return readSampleFrames(numberOfFrames, pSampleBuffer->data());
-        } else {
-            return skipSampleFrames(numberOfFrames);
-        }
-    }
+            SampleBuffer* pSampleBuffer
+            );
 
     // Specialized function for explicitly reading stereo (= 2 channels)
     // frames from an AudioSource. This is the preferred method in Mixxx
@@ -158,14 +149,8 @@ class AudioSource: public AudioSignal {
 
     SINT readSampleFramesStereo(
             SINT numberOfFrames,
-            SampleBuffer* pSampleBuffer) {
-        if (pSampleBuffer) {
-            return readSampleFramesStereo(numberOfFrames,
-                    pSampleBuffer->data(), pSampleBuffer->size());
-        } else {
-            return skipSampleFrames(numberOfFrames);
-        }
-    }
+            SampleBuffer* pSampleBuffer
+        );
 
     // Utility function to clamp the frame index interval
     // [*pMinFrameIndexOfInterval, *pMaxFrameIndexOfInterval)

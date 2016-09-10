@@ -7,25 +7,32 @@ namespace mixxx {
 /*static*/ QString SoundSource::getFileExtensionFromUrl(const QUrl& url) {
     return url.toString().section(".", -1).toLower().trimmed();
 }
+bool SoundSource::isLocalFile() const { return getUrl().isLocalFile();}
+QString SoundSource::getLocalFileName() const { return getUrl().toLocalFile();}
+QUrl SoundSource::getUrl() const { return m_url;}
+QString SoundSource::getUrlString() const { return m_url.toString();}
+const QString& SoundSource::getType() const { return m_type; }
 
 SoundSource::SoundSource(const QUrl& url)
         : AudioSource(),
           m_url(url),
           // simply use the file extension as the type
-          m_type(getFileExtensionFromUrl(url)) {
+          m_type(getFileExtensionFromUrl(url))
+{
     DEBUG_ASSERT(getUrl().isValid());
 }
 
 SoundSource::SoundSource(const QUrl& url, const QString& type)
         : AudioSource(),
           m_url(url),
-          m_type(type) {
+          m_type(type)
+{
     DEBUG_ASSERT(getUrl().isValid());
 }
 
-SoundSource::OpenResult SoundSource::open(const AudioSourceConfig& audioSrcCfg) {
+SoundSource::OpenResult SoundSource::open(const AudioSourceConfig& audioSrcCfg)
+{
     close(); // reopening is not supported
-
     OpenResult result;
     try {
         result = tryOpen(audioSrcCfg);
@@ -41,16 +48,15 @@ SoundSource::OpenResult SoundSource::open(const AudioSourceConfig& audioSrcCfg) 
     }
     return result;
 }
-
 Result SoundSource::parseTrackMetadataAndCoverArt(
         TrackMetadata* pTrackMetadata,
-        QImage* pCoverArt) const {
+        QImage* pCoverArt) const
+{
     return taglib::readTrackMetadataAndCoverArtFromFile(pTrackMetadata, pCoverArt, getLocalFileName());
 }
-
 Result SoundSource::writeTrackMetadata(
-        const TrackMetadata& trackMetadata) const {
+        const TrackMetadata& trackMetadata) const
+{
     return taglib::writeTrackMetadataIntoFile(trackMetadata, getLocalFileName());
 }
-
 } //namespace mixxx

@@ -125,12 +125,12 @@ SINT EngineBufferScaleRubberBand::retrieveAndDeinterleave(
     auto frames_to_read = math_min<SINT>(frames_available, frames);
     auto received_frames = SINT(m_pRubberBand->retrieve(
         (float* const*)m_retrieve_buffer, frames_to_read));
-
-    for (auto i = SINT{0}; i < received_frames; ++i) {
-        pBuffer[i*2] = m_retrieve_buffer[0][i];
-        pBuffer[i*2+1] = m_retrieve_buffer[1][i];
+    if(pBuffer) {
+        for (auto i = SINT{0}; i < received_frames; ++i) {
+            pBuffer[i*2] = m_retrieve_buffer[0][i];
+            pBuffer[i*2+1] = m_retrieve_buffer[1][i];
+        }
     }
-
     return received_frames;
 }
 
@@ -168,11 +168,12 @@ double EngineBufferScaleRubberBand::scaleBuffer(
         // enough calls to retrieveAndDeinterleave because CachingReader returns
         // zeros for reads that are not in cache. So it's safe to loop here
         // without any checks for failure in retrieveAndDeinterleave.
-        auto received_frames = retrieveAndDeinterleave(
-                read, remaining_frames);
+        auto received_frames = retrieveAndDeinterleave(read, remaining_frames);
         remaining_frames -= received_frames;
         total_received_frames += received_frames;
-        read += getAudioSignal().frames2samples(received_frames);
+        if(read) {
+            read += getAudioSignal().frames2samples(received_frames);
+        }
         if (break_out_after_retrieve_and_reset_rubberband) {
             //qDebug() << "break_out_after_retrieve_and_reset_rubberband";
             // If we break out early then we have flushed RubberBand and need to

@@ -12,16 +12,16 @@ namespace mixxx {
 // Base class for sound sources.
 class SoundSource: public AudioSource {
 public:
-    QUrl getUrl() const { return m_url;}
-    QString getUrlString() const { return m_url.toString();}
-    static QString getFileExtensionFromUrl(const QUrl& url);
-    const QString& getType() const { return m_type; }
+    static QString getFileExtensionFromUrl(const QUrl &url);
+    QUrl getUrl() const;
+    QString getUrlString() const;
+    const QString& getType() const;
     // Default implementations for reading/writing track metadata.
-    Result parseTrackMetadataAndCoverArt(
+    virtual Result parseTrackMetadataAndCoverArt(
             TrackMetadata* pTrackMetadata,
             QImage* pCoverArt) const ;
-    Result writeTrackMetadata(
-            const TrackMetadata& trackMetadata) const ;
+    virtual Result writeTrackMetadata(
+            const TrackMetadata& trackMetadata) const;
 
     enum class OpenResult {
         SUCCEEDED,
@@ -52,8 +52,8 @@ protected:
     // by the URL will be used as the type of the SoundSource.
     explicit SoundSource(const QUrl& url);
     SoundSource(const QUrl& url, const QString& type);
-    bool isLocalFile() const { return getUrl().isLocalFile();}
-    QString getLocalFileName() const { return getUrl().toLocalFile();}
+    bool isLocalFile() const;
+    QString getLocalFileName() const;
 private:
     // Tries to open the AudioSource for reading audio data according
     // to the "Template Method" design pattern.
@@ -77,7 +77,8 @@ private:
 using SoundSourcePointer = QSharedPointer<SoundSource>;
 
 template<typename T>
-SoundSourcePointer newSoundSourceFromUrl(const QUrl& url) {
+SoundSourcePointer newSoundSourceFromUrl(const QUrl& url)
+{
     return SoundSourcePointer(new T(url));
 }
 

@@ -18,7 +18,7 @@
 #include "soundio/sounddeviceportaudio.h"
 
 #include <portaudio.h>
-#include <float.h>
+#include <cfloat>
 
 #include <QtDebug>
 #include <QThread>

@@ -117,19 +117,14 @@ class LibraryScanner : public QThread {
     // every state can change to CANCELING
     // CANCELING -> IDLE
     bool changeScannerState(LibraryScanner::ScannerState newState);
-
     void cleanUpScan();
-
     // The library trackcollection. Do not touch this from the library scanner
     // thread.
     TrackCollection* m_pCollection;
-
     // The library scanner thread's database connection.
     QSqlDatabase m_database;
-
     // The pool of threads used for worker tasks.
     QThreadPool m_pool;
-
     // The library scanner thread's DAOs.
     LibraryHashDAO m_libraryHashDao;
     CueDAO m_cueDao;

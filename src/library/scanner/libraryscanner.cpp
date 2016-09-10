@@ -31,7 +31,7 @@
 #include "library/scanner/scannerutil.h"
 
 // TODO(rryan) make configurable
-const int kScannerThreadPoolSize = 1;
+const int kScannerThreadPoolSize = 4;
 
 LibraryScanner::LibraryScanner(TrackCollection* collection,
                                UserSettingsPointer pConfig)
@@ -46,7 +46,8 @@ LibraryScanner::LibraryScanner(TrackCollection* collection,
                            m_crateDao, m_analysisDao, m_libraryHashDao,
                            pConfig),
                 m_stateSema(1), // only one transaction is possible at a time
-                m_state(IDLE) {
+                m_state(IDLE)
+{
     // Don't initialize m_database here, we need to do it in run() so the DB
     // conn is in the right thread.
     qDebug() << "Starting LibraryScanner thread.";
@@ -71,7 +72,7 @@ LibraryScanner::LibraryScanner(TrackCollection* collection,
     // when we detected moved files, and the TIOs corresponding to the moved
     // files would then have the wrong track location.
     if (collection != NULL) { // false only during test
-        TrackDAO* dao = &(collection->getTrackDAO());
+        auto dao = &(collection->getTrackDAO());
         connect(this, SIGNAL(scanFinished()), dao, SLOT(clearCache()));
         connect(this, SIGNAL(trackAdded(TrackPointer)),
                 dao, SLOT(databaseTrackAdded(TrackPointer)));
@@ -100,9 +101,9 @@ LibraryScanner::LibraryScanner(TrackCollection* collection,
     start();
 }
 
-LibraryScanner::~LibraryScanner() {
+LibraryScanner::~LibraryScanner()
+{
     cancelAndQuit();
-
     // There should never be an outstanding transaction when this code is
     // called. If there is, it means we probably aren't committing a transaction
     // somewhere that should be.
@@ -120,13 +121,13 @@ LibraryScanner::~LibraryScanner() {
     qDebug() << "LibraryScanner destroyed";
 }
 
-void LibraryScanner::run() {
+void LibraryScanner::run()
+{
     Trace trace("LibraryScanner");
     if (m_pCollection != NULL) { // false only during tests
         if (!m_database.isValid()) {
             m_database = QSqlDatabase::cloneDatabase(m_pCollection->getDatabase(), "LIBRARY_SCANNER");
         }
-
         if (!m_database.isOpen()) {
             // Open the database connection in this thread.
             if (!m_database.open()) {
@@ -134,7 +135,6 @@ void LibraryScanner::run() {
                 return;
             }
         }
-
         m_libraryHashDao.setDatabase(m_database);
         m_cueDao.setDatabase(m_database);
         m_trackDao.setDatabase(m_database);
@@ -170,39 +170,34 @@ void LibraryScanner::slotStartScan() {
     }
     changeScannerState(SCANNING);
 
-    QSet<QString> trackLocations = m_trackDao.getTrackLocations();
-    QHash<QString, int> directoryHashes = m_libraryHashDao.getDirectoryHashes();
+    auto trackLocations = m_trackDao.getTrackLocations();
+    auto directoryHashes = m_libraryHashDao.getDirectoryHashes();
     QRegExp extensionFilter(SoundSourceProxy::getSupportedFileNamesRegex());
     QRegExp coverExtensionFilter =
             QRegExp(CoverArtUtils::supportedCoverArtExtensionsRegex(),
                     Qt::CaseInsensitive);
-    QStringList directoryBlacklist = ScannerUtil::getDirectoryBlacklist();
+    auto directoryBlacklist = ScannerUtil::getDirectoryBlacklist();
 
     m_scannerGlobal = ScannerGlobalPointer(
             new ScannerGlobal(trackLocations, directoryHashes, extensionFilter,
                               coverExtensionFilter, directoryBlacklist));
 
     m_scannerGlobal->startTimer();
-
     emit(scanStarted());
-
     // First, we're going to mark all the directories that we've previously
     // hashed as needing verification. As we search through the directory tree
     // when we rescan, we'll mark any directory that does still exist as
     // verified.
     m_libraryHashDao.invalidateAllDirectories();
-
     // Mark all the tracks in the library as needing verification of their
     // existence. (ie. we want to check they're still on your hard drive where
     // we think they are)
     m_trackDao.invalidateTrackLocationsInLibrary();
-
     qDebug() << "Recursively scanning library.";
 
     // Start scanning the library. This prepares insertion queries in TrackDAO
     // (must be called before calling addTracksAdd) and begins a transaction.
     m_trackDao.addTracksPrepare();
-
     // First Scan all known directories we have a hash for.
     // In a second stage, we scan all new directories. This guarantees,
     // that we discover always the same folder, in case of duplicated folders
@@ -210,12 +205,12 @@ void LibraryScanner::slotStartScan() {
 
     // Queue up recursive scan tasks for every hashed directory. When all tasks
     // are done, TaskWatcher will signal slotFinishHashedScan.
-    TaskWatcher* pWatcher = &m_scannerGlobal->getTaskWatcher();
+    auto pWatcher = &m_scannerGlobal->getTaskWatcher();
     pWatcher->watchTask();
     connect(pWatcher, SIGNAL(allTasksDone()),
             this, SLOT(slotFinishHashedScan()));
 
-    foreach (const QString& dirPath, m_libraryRootDirs) {
+    for(auto && dirPath: m_libraryRootDirs) {
         // Acquire a security bookmark for this directory if we are in a
         // sandbox. For speed we avoid opening security bookmarks when recursive
         // scanning so that relies on having an open bookmark for the containing
@@ -239,10 +234,9 @@ void LibraryScanner::slotFinishHashedScan() {
         return;
     }
 
-    TaskWatcher* pWatcher = &m_scannerGlobal->getTaskWatcher();
+    auto pWatcher = &m_scannerGlobal->getTaskWatcher();
     disconnect(pWatcher, SIGNAL(allTasksDone()),
             this, SLOT(slotFinishHashedScan()));
-
     if (m_scannerGlobal->unhashedDirs().empty()) {
         // bypass the second stage
         slotFinishUnhashedScan();
@@ -255,8 +249,7 @@ void LibraryScanner::slotFinishHashedScan() {
     pWatcher->watchTask();
     connect(pWatcher, SIGNAL(allTasksDone()),
             this, SLOT(slotFinishUnhashedScan()));
-
-    foreach (const DirInfo& dirInfo, m_scannerGlobal->unhashedDirs()) {
+    for(auto && dirInfo: m_scannerGlobal->unhashedDirs()) {
         // no testAndMarkDirectoryScanned() here, because all unhashedDirs()
         // are already tracked
         queueTask(new RecursiveScanDirectoryTask(this, m_scannerGlobal,
@@ -267,7 +260,8 @@ void LibraryScanner::slotFinishHashedScan() {
     pWatcher->taskDone();
 }
 
-void LibraryScanner::cleanUpScan() {
+void LibraryScanner::cleanUpScan()
+{
     // At the end of a scan, mark all tracks and directories that weren't
     // "verified" as "deleted" (as long as the scan wasn't canceled half way
     // through). This condition is important because our rescanning algorithm
@@ -346,36 +340,31 @@ void LibraryScanner::cleanUpScan() {
 
 
 // is called when all tasks of the second stage are done (threads are finished)
-void LibraryScanner::slotFinishUnhashedScan() {
+void LibraryScanner::slotFinishUnhashedScan()
+{
     qDebug() << "LibraryScanner::slotFinishUnhashedScan";
     DEBUG_ASSERT_AND_HANDLE(!m_scannerGlobal.isNull()) {
         qWarning() << "No scanner global state exists in LibraryScanner::slotFinishUnhashedScan";
         return;
     }
-
-    bool bScanFinishedCleanly = m_scannerGlobal->scanFinishedCleanly();
-
+    auto bScanFinishedCleanly = m_scannerGlobal->scanFinishedCleanly();
     if (bScanFinishedCleanly) {
         qDebug() << "Recursive scanning finished cleanly.";
     } else {
         qDebug() << "Recursive scanning interrupted by the user.";
     }
-
     // Finish adding the tracks -- rollback the transaction if the scan did not
     // finish cleanly and the user did not cancel the transaction.
     m_trackDao.addTracksFinish(!m_scannerGlobal->shouldCancel() &&
                                !bScanFinishedCleanly);
-
     if (!m_scannerGlobal->shouldCancel() && bScanFinishedCleanly) {
         cleanUpScan();
     }
-
     if (!m_scannerGlobal->shouldCancel() && bScanFinishedCleanly) {
         qDebug() << "Scan finished cleanly";
     } else {
         qDebug() << "Scan cancelled";
     }
-
     // TODO(XXX) doesn't take into account verifyRemainingTracks.
     qDebug("Scan took: %s. "
            "%d unchanged directories. "
@@ -395,15 +384,16 @@ void LibraryScanner::slotFinishUnhashedScan() {
     emit(scanFinished());
 }
 
-void LibraryScanner::scan() {
-    if (changeScannerState(STARTING)) {
+void LibraryScanner::scan()
+{
+    if (changeScannerState(STARTING))
         emit(startScan());
-    }
 }
 
 // this is called after pressing the cancel button in the scanner
 // progress dialog
-void LibraryScanner::slotCancel() {
+void LibraryScanner::slotCancel()
+{
     // Wait until there is no scan starting.
     // All pending scan start request are canceled
     // as well until the scanner is idle again.
@@ -412,7 +402,8 @@ void LibraryScanner::slotCancel() {
     changeScannerState(IDLE);
 }
 
-void LibraryScanner::cancelAndQuit() {
+void LibraryScanner::cancelAndQuit()
+{
     changeScannerState(CANCELING);
     cancel();
     // Quit the event loop gracefully and stay in CANCELING state until all
@@ -423,25 +414,24 @@ void LibraryScanner::cancelAndQuit() {
 }
 
 // be sure we hold the m_stateSema and we are in CANCELING state
-void LibraryScanner::cancel() {
+void LibraryScanner::cancel()
+{
     DEBUG_ASSERT(m_state == CANCELING);
-
-
     // we need to make a local copy because cancel is called
     // from any thread  but m_scannerGlobal may be cleared
     // in the LibraryScanner thread in the meanwhile
-    ScannerGlobalPointer scanner = m_scannerGlobal;
+    auto scanner = m_scannerGlobal;
     if (scanner) {
         scanner->cancel();
     }
-
     // Wait for the thread pool to empty. This is important because ScannerTasks
     // have pointers to the LibraryScanner and can cause a segfault if they run
     // after the LibraryScanner has been destroyed.
     m_pool.waitForDone();
 }
 
-void LibraryScanner::queueTask(ScannerTask* pTask) {
+void LibraryScanner::queueTask(ScannerTask* pTask)
+{
     //qDebug() << "LibraryScanner::queueTask" << pTask;
     ScopedTimer timer("LibraryScanner::queueTask");
     if (m_scannerGlobal.isNull() || m_scannerGlobal->shouldCancel()) {
@@ -469,17 +459,19 @@ void LibraryScanner::queueTask(ScannerTask* pTask) {
     m_pool.start(pTask);
 }
 
-void LibraryScanner::slotDirectoryHashedAndScanned(const QString& directoryPath,
-                                               bool newDirectory, int hash) {
+void LibraryScanner::slotDirectoryHashedAndScanned(
+    const QString& directoryPath,
+    bool newDirectory,
+    int hash)
+{
     ScopedTimer timer("LibraryScanner::slotDirectoryHashedAndScanned");
     //qDebug() << "LibraryScanner::sloDirectoryHashedAndScanned" << directoryPath
     //          << newDirectory << hash;
 
     // For statistics tracking -- if we hashed a directory then we scanned it
     // (it was changed or new).
-    if (m_scannerGlobal) {
+    if (m_scannerGlobal)
         m_scannerGlobal->directoryScanned();
-    }
 
     if (newDirectory) {
         m_libraryHashDao.saveDirectoryHash(directoryPath, hash);
@@ -489,28 +481,28 @@ void LibraryScanner::slotDirectoryHashedAndScanned(const QString& directoryPath,
     emit(progressHashing(directoryPath));
 }
 
-void LibraryScanner::slotDirectoryUnchanged(const QString& directoryPath) {
+void LibraryScanner::slotDirectoryUnchanged(const QString& directoryPath)
+{
     ScopedTimer timer("LibraryScanner::slotDirectoryUnchanged");
     //qDebug() << "LibraryScanner::slotDirectoryUnchanged" << directoryPath;
-    if (m_scannerGlobal) {
+    if (m_scannerGlobal)
         m_scannerGlobal->addVerifiedDirectory(directoryPath);
-    }
     emit(progressHashing(directoryPath));
 }
 
-void LibraryScanner::slotTrackExists(const QString& trackPath) {
+void LibraryScanner::slotTrackExists(const QString& trackPath)
+{
     //qDebug() << "LibraryScanner::slotTrackExists" << trackPath;
     ScopedTimer timer("LibraryScanner::slotTrackExists");
-    if (m_scannerGlobal) {
+    if (m_scannerGlobal)
         m_scannerGlobal->addVerifiedTrack(trackPath);
-    }
 }
-
-void LibraryScanner::slotAddNewTrack(const QString& trackPath) {
+void LibraryScanner::slotAddNewTrack(const QString& trackPath)
+{
     //qDebug() << "LibraryScanner::slotAddNewTrack" << trackPath;
     ScopedTimer timer("LibraryScanner::addNewTrack");
     // For statistics tracking and to detect moved tracks
-    TrackPointer pTrack(m_trackDao.addTracksAddFile(trackPath, false));
+    auto pTrack = m_trackDao.addTracksAddFile(trackPath, false);
     if (pTrack.isNull()) {
         // Acknowledge failed track addition
         // TODO(XXX): Is it really intended to acknowledge a failed
@@ -536,7 +528,8 @@ void LibraryScanner::slotAddNewTrack(const QString& trackPath) {
     }
 }
 
-bool LibraryScanner::changeScannerState(ScannerState newState) {
+bool LibraryScanner::changeScannerState(ScannerState newState)
+{
     switch (newState) {
     case IDLE:
         // we are leaving STARTING  or CANCELING state

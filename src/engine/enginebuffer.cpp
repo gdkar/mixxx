@@ -318,7 +318,8 @@ double EngineBuffer::fractionalPlayposFromAbsolute(double absolutePlaypos) {
 }
 
 void EngineBuffer::enableIndependentPitchTempoScaling(bool bEnable,
-                                                      const int iBufferSize) {
+                                                      const int iBufferSize)
+{
     // MUST ACQUIRE THE PAUSE MUTEX BEFORE CALLING THIS METHOD
 
     // When no time-stretching or pitch-shifting is needed we use our own linear
@@ -419,50 +420,74 @@ void EngineBuffer::requestSyncMode(SyncMode mode) {
     }
 }
 
-void EngineBuffer::readToCrossfadeBuffer(const int iBufferSize) {
+void EngineBuffer::readToCrossfadeBuffer(const int iBufferSize)
+{
     if (!m_bCrossfadeReady) {
         // Read buffer, as if there where no parameter change
         // (Must be called only once per callback)
         m_pScale->scaleBuffer(m_pCrossfadeBuffer, iBufferSize);
-        // Restore the original position that was lost due to scaleBuffer() above
-        m_pReadAheadManager->notifySeek(m_filepos_play);
         m_bCrossfadeReady = true;
+        // Restore the original position that was lost due to scaleBuffer() above
+//        m_pReadAheadManager->notifySeek(m_filepos_play);
+        clearAndPreroll(m_filepos_play, 256);
      }
 }
-
+void EngineBuffer::clearAndPreroll(double playpos, double preroll)
+{
+    if(!m_rate_old) {
+        m_filepos_play = playpos;
+        m_pReadAheadManager->notifySeek(size_t(m_filepos_play)&(~1ul));
+        return;
+    }
+    auto target = playpos - preroll / m_rate_old;
+    if(target < 0) {
+        preroll += target * m_rate_old;
+        target = 0;
+    }
+    target = size_t(target) & ~1ul;
+    m_filepos_play = target;
+    m_pScale->clear();
+    CSAMPLE dump[2038];
+    m_pReadAheadManager->notifySeek(m_filepos_play);
+    while(preroll >= 1.) {
+        auto chunk = std::min(1024, int(preroll));
+        chunk = m_pScale->scaleBuffer(dump, 2 * chunk);
+        preroll -= chunk;
+        if(!chunk)
+            break;
+    }
+}
 // WARNING: This method is not thread safe and must not be called from outside
 // the engine callback!
-void EngineBuffer::setNewPlaypos(double newpos) {
+void EngineBuffer::setNewPlaypos(double newpos)
+{
     //qDebug() << m_group << "engine new pos " << newpos;
-
     m_filepos_play = newpos;
-
     if (m_rate_old != 0.0) {
         // Before seeking, read extra buffer for crossfading
         // (calls notifySeek())
         readToCrossfadeBuffer(m_iLastBufferSize);
     } else {
-        m_pReadAheadManager->notifySeek(m_filepos_play);
+        clearAndPreroll(m_filepos_play,256);
+//        m_pReadAheadManager->notifySeek(m_filepos_play);
     }
-    m_pScale->clear();
-
+//    m_pScale->clear();
     // Ensures that the playpos slider gets updated in next process call
     m_iSamplesCalculated = 1000000;
-
     // Must hold the engineLock while using m_engineControls
     for(auto && pControl : m_engineControls)
         pControl->notifySeek(m_filepos_play);
+
     verifyPlay(); // verify or update play button and indicator
 }
-
-QString EngineBuffer::getGroup() {
+QString EngineBuffer::getGroup()
+{
     return m_group;
 }
-
-double EngineBuffer::getSpeed() {
+double EngineBuffer::getSpeed()
+{
     return m_speed_old;
 }
-
 bool EngineBuffer::getScratching() {
     return m_scratching_old;
 }
@@ -698,7 +723,8 @@ void EngineBuffer::slotKeylockEngineChanged(double dIndex) {
     }
 }
 
-void EngineBuffer::process(CSAMPLE* pOutput, const int iBufferSize) {
+void EngineBuffer::process(CSAMPLE* pOutput, const int iBufferSize)
+{
     // Bail if we receive a buffer size with incomplete sample frames. Assert in debug builds.
     DEBUG_ASSERT_AND_HANDLE((iBufferSize % kSamplesPerFrame) == 0) {
         return;

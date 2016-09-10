@@ -55,7 +55,20 @@ void SoundSourceProviderRegistry::insertRegistration(
         pRegistrations->append(std::move(registration));
     }
 }
-
+QList<SoundSourceProviderPointer>
+SoundSourceProviderRegistry::getRegisteredProviders() const
+{
+    auto ret = QList<SoundSourceProviderPointer>{};
+    for(auto it = m_registry.constBegin(); it != m_registry.constEnd(); ++it) {
+        for(auto && reg : it.value()) {
+            auto provider = reg.getProvider();
+            if(!ret.contains(provider)) {
+                ret.append(provider);
+            }
+        }
+    }
+    return ret;
+}
 void SoundSourceProviderRegistry::deregisterProvider(
         const SoundSourceProviderPointer& pProvider) {
     const QStringList supportedFileExtensions(

@@ -258,7 +258,8 @@ bool BrowseTableModel::isTrackInUse(const QString& track_location) const {
 }
 
 bool BrowseTableModel::setData(const QModelIndex &index, const QVariant &value,
-                               int role) {
+                               int role)
+{
     Q_UNUSED(role);
 
     if (!index.isValid()) {
@@ -314,8 +315,8 @@ bool BrowseTableModel::setData(const QModelIndex &index, const QVariant &value,
         return false;
     }
 
-    QStandardItem* item = itemFromIndex(index);
-    QString track_location(getTrackLocation(index));
+    auto item = itemFromIndex(index);
+    auto track_location = getTrackLocation(index);
     if (OK == mixxx::taglib::writeTrackMetadataIntoFile(trackMetadata, track_location)) {
         // Modify underlying interalPointer object
         item->setText(value.toString());
@@ -333,7 +334,8 @@ bool BrowseTableModel::setData(const QModelIndex &index, const QVariant &value,
     }
 }
 
-void BrowseTableModel::trackLoaded(QString group, TrackPointer pTrack) {
+void BrowseTableModel::trackLoaded(QString group, TrackPointer pTrack)
+{
     if (group == m_previewDeckGroup) {
         for (int row = 0; row < rowCount(); ++row) {
             QModelIndex i = index(row, COLUMN_PREVIEW);

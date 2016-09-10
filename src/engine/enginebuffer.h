@@ -220,7 +220,7 @@ class EngineBuffer : public EngineObject {
 
     // Reset buffer playpos and set file playpos.
     void setNewPlaypos(double playpos);
-
+    void clearAndPreroll(double playpos, double preroll);
     void processSyncRequests();
     void processSeek(bool paused);
 

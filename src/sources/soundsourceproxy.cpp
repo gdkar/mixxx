@@ -13,18 +13,20 @@
 #include "util/cmdlineargs.h"
 #include "util/regex.h"
 
+using namespace mixxx;
+
 //Static memory allocation
-/*static*/ mixxx::SoundSourceProviderRegistry SoundSourceProxy::s_soundSourceProviders;
+/*static*/ SoundSourceProviderRegistry SoundSourceProxy::s_soundSourceProviders;
 /*static*/ QStringList SoundSourceProxy::s_supportedFileNamePatterns;
 /*static*/ QRegExp SoundSourceProxy::s_supportedFileNamesRegex;
 
 namespace {
 QUrl getCanonicalUrlForTrack(const Track* pTrack)
 {
-    if (pTrack == nullptr) {
+    if (pTrack == nullptr)
         // Missing track
         return QUrl();
-    }
+
     auto canonicalLocation = pTrack->getCanonicalLocation();
     if (canonicalLocation.isEmpty()) {
         // Corresponding file is missing or inaccessible
@@ -42,14 +44,17 @@ QUrl getCanonicalUrlForTrack(const Track* pTrack)
 }
 } // anonymous namespace
 // static
-void SoundSourceProxy::loadPlugins() {
+void SoundSourceProxy::loadPlugins()
+{
     // Initialize built-in file types.
     // Fallback providers should be registered before specialized
     // providers to ensure that they are only after the specialized
     // provider failed to open a file. But the order of registration
     // only matters among providers with equal priority.
     // Use FFmpeg as the last resort.
-    s_soundSourceProviders.registerProvider(mixxx::newSoundSourceProvider<mixxx::SoundSourceProviderFFmpeg>());
+    s_soundSourceProviders.registerProvider(
+        newSoundSourceProvider<SoundSourceProviderFFmpeg>()
+        );
 #if 0 && defined(__MPG123__)
     s_soundSourceProviders.registerProvider(
             mixxx::newSoundSourceProvider<mixxx::SoundSourceProviderMp3>());
@@ -74,12 +79,22 @@ void SoundSourceProxy::loadPlugins() {
     s_supportedFileNamesRegex = QRegExp(supportedFileExtensionsRegex, Qt::CaseInsensitive);
 }
 // static
-bool SoundSourceProxy::isUrlSupported(const QUrl& url) {
+bool SoundSourceProxy::isUrlSupported(const QUrl& url)
+{
+    for(auto && provider : s_soundSourceProviders.getRegisteredProviders()) {
+        if(provider->canOpen(url))
+            return true;
+    }
     const QFileInfo fileInfo(url.toLocalFile());
     return isFileSupported(fileInfo);
 }
 // static
-bool SoundSourceProxy::isFileSupported(const QFileInfo& fileInfo) {
+bool SoundSourceProxy::isFileSupported(const QFileInfo& fileInfo)
+{
+    for(auto && provider : s_soundSourceProviders.getRegisteredProviders()) {
+        if(provider->canOpen(fileInfo.canonicalFilePath()))
+            return true;
+    }
     return isFileNameSupported(fileInfo.fileName());
 }
 // static
@@ -91,7 +106,7 @@ bool SoundSourceProxy::isFileExtensionSupported(const QString& fileExtension) {
     return !s_soundSourceProviders.getRegistrationsForFileExtension(fileExtension).isEmpty();
 }
 // static
-QList<mixxx::SoundSourceProviderRegistration>
+QList<SoundSourceProviderRegistration>
 SoundSourceProxy::findSoundSourceProviderRegistrations(
         const QUrl& url) {
     if (url.isEmpty()) {
@@ -243,9 +258,9 @@ namespace {
 
 void SoundSourceProxy::loadTrackMetadataAndCoverArt(
         bool withCoverArt,
-        bool reloadFromFile) const {
+        bool reloadFromFile) const
+{
     DEBUG_ASSERT(m_pTrack);
-
     if (!m_pSoundSource) {
         // Silently ignore requests for unsupported files
         qDebug() << "Unable to parse file tags without a SoundSource"
@@ -265,7 +280,6 @@ void SoundSourceProxy::loadTrackMetadataAndCoverArt(
                  << getUrl().toString();
         return; // do not reload from file
     }
-
     // If parsing of the cover art image should be omitted the
     // 2nd output parameter must be set to nullptr. Cover art
     // is not reloaded from file once the metadata has been parsed!
@@ -296,7 +310,6 @@ void SoundSourceProxy::loadTrackMetadataAndCoverArt(
             return;
         }
     }
-
     // If Artist or title fields are blank try to parse them
     // from the file name.
     // TODO(rryan): Should we re-visit this decision?
@@ -309,14 +322,16 @@ void SoundSourceProxy::loadTrackMetadataAndCoverArt(
         m_pTrack->setCoverInfo(coverInfoRelative);
     }
 }
-Result SoundSourceProxy::parseTrackMetadata(mixxx::TrackMetadata* pTrackMetadata) const {
+Result SoundSourceProxy::parseTrackMetadata(mixxx::TrackMetadata* pTrackMetadata) const
+{
     if (m_pSoundSource) {
         return m_pSoundSource->parseTrackMetadataAndCoverArt(pTrackMetadata, nullptr);
     } else {
         return ERR;
     }
 }
-QImage SoundSourceProxy::parseCoverImage() const {
+QImage SoundSourceProxy::parseCoverImage() const
+{
     QImage coverImg;
     if (m_pSoundSource) {
         m_pSoundSource->parseTrackMetadataAndCoverArt(nullptr, &coverImg);
@@ -342,13 +357,15 @@ public:
         DEBUG_ASSERT(pAudioSource);
         return mixxx::AudioSourcePointer(new AudioSourceProxy(pTrack, pAudioSource));
     }
-    SINT seekSampleFrame(SINT frameIndex) override {
+    SINT seekSampleFrame(SINT frameIndex) override
+    {
         return m_pAudioSource->seekSampleFrame(
                 frameIndex);
     }
     SINT readSampleFrames(
             SINT numberOfFrames,
-            CSAMPLE* sampleBuffer) override {
+            CSAMPLE* sampleBuffer) override
+    {
         return m_pAudioSource->readSampleFrames(
                 numberOfFrames,
                 sampleBuffer);
@@ -356,7 +373,8 @@ public:
     SINT readSampleFramesStereo(
             SINT numberOfFrames,
             CSAMPLE* sampleBuffer,
-            SINT sampleBufferSize) override {
+            SINT sampleBufferSize) override
+    {
         return m_pAudioSource->readSampleFramesStereo(
                 numberOfFrames,
                 sampleBuffer,

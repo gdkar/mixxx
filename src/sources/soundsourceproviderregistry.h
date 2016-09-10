@@ -22,8 +22,8 @@ private:
             SoundSourceProviderPointer pProvider,
             SoundSourceProviderPriority providerPriority)
         : m_pProvider(pProvider),
-          m_providerPriority(providerPriority) {
-    }
+          m_providerPriority(providerPriority)
+    { }
 
     SoundSourceProviderPointer m_pProvider;
     SoundSourceProviderPriority m_providerPriority;
@@ -61,7 +61,7 @@ public:
     // an empty list will be returned.
     QList<SoundSourceProviderRegistration> getRegistrationsForFileExtension(
             const QString& fileExtension) const;
-
+    QList<SoundSourceProviderPointer> getRegisteredProviders() const;
 private:
     void addRegistrationForFileExtension(
             const QString& fileExtension,

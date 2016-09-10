@@ -16,10 +16,14 @@ namespace mixxx {
 class SoundSourceFFmpeg : public SoundSource {
   public:
     explicit SoundSourceFFmpeg(QUrl url);
-    virtual ~SoundSourceFFmpeg();
-    virtual void close() override;
-    virtual int64_t seekSampleFrame(int64_t frameIndex) override;
-    virtual int64_t readSampleFrames(int64_t numberOfFrames, CSAMPLE* sampleBuffer) override;
+   ~SoundSourceFFmpeg();
+    void close() override;
+    int64_t seekSampleFrame(int64_t frameIndex) override;
+    int64_t readSampleFrames(int64_t numberOfFrames, CSAMPLE* sampleBuffer) override;
+    Result parseTrackMetadataAndCoverArt(
+            TrackMetadata* pTrackMetadata,
+            QImage* pCoverArt) const override;
+
   private:
     OpenResult tryOpen(const AudioSourceConfig &audioSrcCfg) override;
     bool    decode_next_frame();
@@ -42,10 +46,10 @@ class SoundSourceFFmpeg : public SoundSource {
 };
 class SoundSourceProviderFFmpeg: public SoundSourceProvider {
   public:
-    QString getName() const override {return "FFmpeg";}
+    QString getName() const override;
     QStringList getSupportedFileExtensions() const override;
-    SoundSourcePointer newSoundSource(const QUrl& url) override {
-        return newSoundSourceFromUrl<SoundSourceFFmpeg>(url);
-    }
+    bool canOpen(QUrl url) override;
+    bool canOpen(QString path) override;
+    SoundSourcePointer newSoundSource(const QUrl& url) override;
 };
 } // namespace mixxx

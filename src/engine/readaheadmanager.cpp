@@ -129,7 +129,8 @@ void ReadAheadManager::addRateControl(RateControl* pRateControl) {
 }
 
 // Not thread-save, call from engine thread only
-void ReadAheadManager::notifySeek(SINT iSeekPosition) {
+void ReadAheadManager::notifySeek(SINT iSeekPosition)
+{
     m_iCurrentPosition = iSeekPosition;
     m_readAheadLog.clear();
 

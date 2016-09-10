@@ -23,15 +23,18 @@ DlgTrackInfo::DlgTrackInfo(QWidget* parent)
               m_pLoadedTrack(NULL),
               m_pTapFilter(new TapFilter(this, kFilterLength, kMaxInterval)),
               m_dLastTapedBpm(-1.),
-              m_pWCoverArtLabel(new WCoverArtLabel(this)) {
+              m_pWCoverArtLabel(new WCoverArtLabel(this))
+{
     init();
 }
 
-DlgTrackInfo::~DlgTrackInfo() {
+DlgTrackInfo::~DlgTrackInfo()
+{
     unloadTrack(false);
 }
 
-void DlgTrackInfo::init() {
+void DlgTrackInfo::init()
+{
     setupUi(this);
 
     cueTable->hideColumn(0);
@@ -341,7 +344,8 @@ void DlgTrackInfo::populateCues(TrackPointer pTrack) {
     cueTable->horizontalHeader()->setStretchLastSection(true);
 }
 
-void DlgTrackInfo::saveTrack() {
+void DlgTrackInfo::saveTrack()
+{
     if (!m_pLoadedTrack)
         return;
 
@@ -384,14 +388,12 @@ void DlgTrackInfo::saveTrack() {
             continue;
 
         int oldRow = rowItem->data(Qt::DisplayRole).toInt();
-        CuePointer pCue(m_cueMap.value(oldRow, CuePointer()));
+        auto pCue = m_cueMap.value(oldRow, CuePointer());
         if (!pCue) {
             continue;
         }
-
         updatedRows.insert(oldRow);
-
-        QVariant vHotcue = hotcueItem->data(Qt::DisplayRole);
+        auto vHotcue = hotcueItem->data(Qt::DisplayRole);
         if (vHotcue.canConvert<int>()) {
             int iTableHotcue = vHotcue.toInt();
             // The GUI shows hotcues as 1-indexed, but they are actually
@@ -401,7 +403,7 @@ void DlgTrackInfo::saveTrack() {
             pCue->setHotCue(-1);
         }
 
-        QString label = labelItem->data(Qt::DisplayRole).toString();
+        auto label = labelItem->data(Qt::DisplayRole).toString();
         pCue->setLabel(label);
     }
 
@@ -416,7 +418,7 @@ void DlgTrackInfo::saveTrack() {
         if (updatedRows.contains(oldRow)) {
             continue;
         }
-        CuePointer pCue(it.value());
+        auto pCue = it.value();
         it.remove();
         qDebug() << "Deleting cue" << pCue->getId() << pCue->getHotCue();
         m_pLoadedTrack->removeCue(pCue);
@@ -428,8 +430,8 @@ void DlgTrackInfo::saveTrack() {
     connect(m_pLoadedTrack.data(), SIGNAL(changed(Track*)),
             this, SLOT(updateTrackMetadata()));
 }
-
-void DlgTrackInfo::unloadTrack(bool save) {
+void DlgTrackInfo::unloadTrack(bool save)
+{
     if (!m_pLoadedTrack)
         return;
 
@@ -440,7 +442,8 @@ void DlgTrackInfo::unloadTrack(bool save) {
     clear();
 }
 
-void DlgTrackInfo::clear() {
+void DlgTrackInfo::clear()
+{
 
     disconnect(this, SLOT(updateTrackMetadata()));
     m_pLoadedTrack.clear();
@@ -513,7 +516,8 @@ void DlgTrackInfo::slotBpmClear() {
     bpmTap->setEnabled(true);
 }
 
-void DlgTrackInfo::slotBpmConstChanged(int state) {
+void DlgTrackInfo::slotBpmConstChanged(int state)
+{
     if (state != Qt::Unchecked) {
         // const beatgrid requested
         if (spinBpm->value() > 0) {
@@ -523,7 +527,7 @@ void DlgTrackInfo::slotBpmConstChanged(int state) {
             // almost all cases.
             // The cue point should be set on a beat, so this seams
             // to be a good alternative
-            double cue = m_pLoadedTrack->getCuePoint();
+            auto cue = m_pLoadedTrack->getCuePoint();
             m_pBeatsClone = BeatFactory::makeBeatGrid(m_pLoadedTrack.data(),
                     spinBpm->value(), cue);
         } else {
@@ -537,7 +541,8 @@ void DlgTrackInfo::slotBpmConstChanged(int state) {
     }
 }
 
-void DlgTrackInfo::slotBpmTap(double averageLength, int numSamples) {
+void DlgTrackInfo::slotBpmTap(double averageLength, int numSamples)
+{
     Q_UNUSED(numSamples);
     if (averageLength == 0) {
         return;
@@ -550,7 +555,8 @@ void DlgTrackInfo::slotBpmTap(double averageLength, int numSamples) {
     }
 }
 
-void DlgTrackInfo::slotSpinBpmValueChanged(double value) {
+void DlgTrackInfo::slotSpinBpmValueChanged(double value)
+{
     if (value <= 0) {
         m_pBeatsClone.clear();
         return;
@@ -576,12 +582,13 @@ void DlgTrackInfo::slotSpinBpmValueChanged(double value) {
     spinBpm->setValue(newValue);
 }
 
-void DlgTrackInfo::slotKeyTextChanged() {
+void DlgTrackInfo::slotKeyTextChanged()
+{
     // Try to parse the user's input as a key.
     const QString newKeyText = txtKey->text();
     Keys newKeys = KeyFactory::makeBasicKeysFromText(newKeyText,
                                                      mixxx::track::io::key::USER);
-    const mixxx::track::io::key::ChromaticKey globalKey(newKeys.getGlobalKey());
+    auto globalKey = newKeys.getGlobalKey();
 
     // If the new key string is invalid and not empty them reject the new key.
     if (globalKey == mixxx::track::io::key::INVALID && !newKeyText.isEmpty()) {
@@ -604,22 +611,22 @@ void DlgTrackInfo::reloadTrackMetadata() {
         // We cannot reuse m_pLoadedTrack, because it might already been
         // modified and we want to read fresh metadata directly from the
         // file. Otherwise the changes in m_pLoadedTrack would be lost.
-        TrackPointer pTrack(Track::newTemporary(
+        auto pTrack = Track::newTemporary(
                 m_pLoadedTrack->getFileInfo(),
-                m_pLoadedTrack->getSecurityToken()));
+                m_pLoadedTrack->getSecurityToken());
         SoundSourceProxy(pTrack).loadTrackMetadata();
         if (!pTrack.isNull()) {
             populateFields(*pTrack);
         }
     }
 }
-
-void DlgTrackInfo::updateTrackMetadata() {
+void DlgTrackInfo::updateTrackMetadata()
+{
     if (!m_pLoadedTrack.isNull()) {
         populateFields(*m_pLoadedTrack);
     }
 }
-
-void DlgTrackInfo::fetchTag() {
+void DlgTrackInfo::fetchTag()
+{
     emit(showTagFetcher(m_pLoadedTrack));
 }

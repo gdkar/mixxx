@@ -22,8 +22,7 @@ CachingReaderWorker::CachingReaderWorker(
           m_stop(0) {
 }
 
-CachingReaderWorker::~CachingReaderWorker() {
-}
+CachingReaderWorker::~CachingReaderWorker() { }
 
 ReaderStatusUpdate CachingReaderWorker::processReadRequest(
         const CachingReaderChunkReadRequest& request) {
@@ -39,7 +38,7 @@ ReaderStatusUpdate CachingReaderWorker::processReadRequest(
 
     // Try to read the data required for the chunk from the audio source
     // and adjust the max. readable frame index if decoding errors occur.
-    const SINT framesRead = pChunk->readSampleFrames(
+    auto framesRead = pChunk->readSampleFrames(
             m_pAudioSource, &m_maxReadableFrameIndex);
 
     ReaderStatus status;
@@ -62,12 +61,14 @@ ReaderStatusUpdate CachingReaderWorker::processReadRequest(
 }
 
 // WARNING: Always called from a different thread (GUI)
-void CachingReaderWorker::newTrack(TrackPointer pTrack) {
+void CachingReaderWorker::newTrack(TrackPointer pTrack)
+{
     QMutexLocker locker(&m_newTrackMutex);
     m_newTrack = pTrack;
 }
 
-void CachingReaderWorker::run() {
+void CachingReaderWorker::run()
+{
     unsigned static id = 0; //the id of this thread, for debugging purposes
     QThread::currentThread()->setObjectName(QString("CachingReaderWorker %1").arg(++id));
 

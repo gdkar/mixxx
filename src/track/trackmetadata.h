@@ -9,7 +9,27 @@
 namespace mixxx {
 
 // DTO for track metadata properties. Must not be subclassed (no virtual destructor)!
-class TrackMetadata {
+class TrackMetadata
+{
+    Q_GADGET
+
+    Q_PROPERTY(QString artist READ getArtist WRITE setArtist)
+    Q_PROPERTY(QString title READ getTitle WRITE setTitle)
+    Q_PROPERTY(QString album READ getAlbum WRITE setAlbum)
+    Q_PROPERTY(QString album_artist READ getAlbumArtist WRITE setAlbumArtist)
+    Q_PROPERTY(QString genre READ getGenre WRITE setGenre)
+    Q_PROPERTY(QString composer READ getComposer WRITE setComposer)
+    Q_PROPERTY(QString grouping READ getGrouping WRITE setGrouping)
+    Q_PROPERTY(QString date READ getYear WRITE setYear)
+    Q_PROPERTY(QString track_number READ getTrackNumber WRITE setTrackNumber)
+    Q_PROPERTY(QString track_total READ getTrackTotal WRITE setTrackTotal)
+    Q_PROPERTY(QString comment READ getComment WRITE setComment)
+    Q_PROPERTY(QString key READ getKey WRITE setKey )
+    Q_PROPERTY(double duration READ getDuration WRITE setDuration)
+    Q_PROPERTY(int channels READ getChannels WRITE setChannels)
+    Q_PROPERTY(int sample_rate READ getSampleRate WRITE setSampleRate);
+    Q_PROPERTY(int bitrate READ getBitrate WRITE setBitrate)
+
 public:
     TrackMetadata();
 
@@ -196,15 +216,13 @@ private:
     int m_bitrate; // kbit/s
     int m_channels;
     int m_sampleRate; // Hz
+    friend bool operator==(const TrackMetadata& lhs, const TrackMetadata& rhs);
+
+    friend bool operator!=(const TrackMetadata& lhs, const TrackMetadata& rhs) {
+        return !(lhs == rhs);
+    }
 };
 
-bool operator==(const TrackMetadata& lhs, const TrackMetadata& rhs);
-
-inline
-bool operator!=(const TrackMetadata& lhs, const TrackMetadata& rhs) {
-    return !(lhs == rhs);
 }
-
-}
-
+Q_DECLARE_METATYPE(mixxx::TrackMetadata);
 #endif // MIXXX_TRACKMETADATA_H

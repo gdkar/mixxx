@@ -14,7 +14,7 @@ class ScannerTask : public QObject, public QRunnable {
   public:
     ScannerTask(LibraryScanner* pScanner,
                 const ScannerGlobalPointer scannerGlobal);
-    virtual ~ScannerTask();
+   ~ScannerTask();
 
     virtual void run() = 0;
 

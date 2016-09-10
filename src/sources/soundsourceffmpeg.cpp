@@ -1,5 +1,10 @@
-#include "sources/soundsourceffmpeg.h"
+#include <QMetaObject>
+#include <QMetaType>
+#include <QMetaEnum>
+#include <QObject>
 
+#include "sources/soundsourceffmpeg.h"
+#include "util/timer.h"
 namespace mixxx {
 QStringList SoundSourceProviderFFmpeg::getSupportedFileExtensions() const {
     av_register_all();
@@ -38,7 +43,6 @@ SoundSource::OpenResult SoundSourceFFmpeg::tryOpen(const AudioSourceConfig &conf
 {
     const auto filename = getLocalFileName().toLocal8Bit();
     auto ret = 0;
-    qDebug() << __FUNCTION__  << "(" << filename << ")";
     // Open file and make m_pFormatCtx
     if (( ret = m_format_ctx.open_input(filename.constData()))<0) {
         qDebug() << __FUNCTION__ << "cannot open" << filename << av_strerror ( ret );
@@ -56,7 +60,7 @@ SoundSource::OpenResult SoundSourceFFmpeg::tryOpen(const AudioSourceConfig &conf
     if(!m_codec || !m_stream)
         return OpenResult::FAILED;
 
-    m_format_ctx.dump( m_stream->index, filename.constData());
+//    m_format_ctx.dump( m_stream->index, filename.constData());
     m_stream->discard = AVDISCARD_NONE;
     m_codec_ctx = codec_context(m_stream->codecpar);
     if(m_codec_ctx.open() < 0)
@@ -109,23 +113,11 @@ SoundSource::OpenResult SoundSourceFFmpeg::tryOpen(const AudioSourceConfig &conf
         m_packet = m_pkt_array.at(m_pkt_index);
     setFrameCount ( av_rescale_q ( m_pkt_array.back()->pts + m_pkt_array.back()->duration - m_first_pts, m_stream_tb, m_output_tb ) );
 
-    qDebug() << __FUNCTION__ << QString{": demuxing results for %1"}.arg(getLocalFileName()) << "\n"
-                             << QString{"  frameRate = %1"}.arg(getSampleRate()) << "\n"
-                             << QString{"  channelCount = %L1"}.arg(getChannelCount()) << "\n"
-                             << QString{"  frameCount = %L1"}.arg(getFrameCount()) << "\n"
-                             << QString{"  total packets = %L1"}.arg(m_pkt_array.size()) << "\n"
-                             << QString{"  total demuxed size = %L1 bytes"}.arg(total_size) << "\n\n" ;
-    {
-        auto tag = static_cast<AVDictionaryEntry*>(nullptr);
-        auto tags = m_format_ctx->metadata;
-        while((tag = av_dict_get(tags,"",tag,AV_DICT_IGNORE_SUFFIX))) {
-            qDebug() << QString{"[%1] = %2"}.arg(QString{tag->key},QString{tag->value});
-        }
-    }
     decode_next_frame ();
     return OpenResult::SUCCEEDED;
 }
-void SoundSourceFFmpeg::close() {
+void SoundSourceFFmpeg::close()
+{
     m_swr.close();
     m_codec_ctx.close();
     m_format_ctx.close();
@@ -140,6 +132,7 @@ void SoundSourceFFmpeg::close() {
 }
 SINT SoundSourceFFmpeg::seekSampleFrame(SINT frameIndex)
 {
+    ScopedTimer top(__PRETTY_FUNCTION__);
     DEBUG_ASSERT(isValidFrameIndex(frameIndex));
     if ( m_frame->pts == AV_NOPTS_VALUE && !decode_next_frame ( ) )
         return -1;
@@ -165,71 +158,86 @@ SINT SoundSourceFFmpeg::seekSampleFrame(SINT frameIndex)
       m_offset     = frameIndex - first_sample;
       return frameIndex;
     }
-    auto hindex = m_pkt_array.size() - 1;
-    auto lindex = decltype(hindex){0};
-    auto lpts   = m_pkt_array.at(lindex)->pts - m_first_pts;
-    auto bail   = false;
-    m_pkt_index = -1;
-    while ( hindex > lindex + 1) {
-      auto pts_dist   = m_pkt_array.at(hindex)->pts - m_pkt_array.at(lindex)->pts;
-      auto idx_dist   = hindex - lindex;
-      auto target_dist= frame_pts - ( lpts );
-      auto mindex = lindex + (( target_dist * idx_dist ) / pts_dist);
-      if ( mindex >= hindex ) mindex = hindex - 1;
-      if ( mindex <= lindex ) {
-        if ( bail ) mindex = ( idx_dist / 2 ) + lindex;
-        else {
-          mindex = lindex + 1;
-          bail = true;
+    {
+        auto hindex = m_pkt_array.size() - 1;
+        auto lindex = decltype(hindex){0};
+        auto lpts   = m_pkt_array.at(lindex)->pts - m_first_pts;
+        auto bail   = false;
+        m_pkt_index = -1;
+        ScopedTimer t("prop search for packet.");
+        while ( hindex > lindex + 1) {
+            auto pts_dist   = m_pkt_array.at(hindex)->pts - m_pkt_array.at(lindex)->pts;
+            auto idx_dist   = hindex - lindex;
+            auto target_dist= frame_pts - ( lpts );
+            auto mindex = lindex + (( target_dist * idx_dist ) / pts_dist);
+            if ( mindex >= hindex )
+                mindex = hindex - 1;
+            if ( mindex <= lindex ) {
+                if ( bail )
+                    mindex = ( idx_dist / 2 ) + lindex;
+                else {
+                    mindex = lindex + 1;
+                    bail = true;
+                }
+            } else {
+                bail = false;
+            }
+            auto mpts = m_pkt_array.at(mindex  )->pts - m_first_pts;
+            auto npts = m_pkt_array.at(mindex+1)->pts - m_first_pts;
+            if ( mpts > frame_pts ) {
+                hindex = mindex;
+            }else if ( npts <= frame_pts ) {
+                lindex = mindex + 1;
+                lpts   = npts;
+            } else {
+                lindex = mindex;
+                lpts   = mpts;
+                hindex = mindex + 1;
+            }
         }
-      } else {
-        bail = false;
-      }
-      auto mpts = m_pkt_array.at(mindex  )->pts - m_first_pts;
-      auto npts = m_pkt_array.at(mindex+1)->pts - m_first_pts;
-      if ( mpts > frame_pts ) {
-        hindex = mindex;
-      }else if ( npts <= frame_pts ) {
-        lindex = mindex + 1;
-        lpts   = npts;
-      } else {
-        lindex = mindex;
-        lpts   = mpts;
-        hindex = mindex + 1;
-      }
+        m_pkt_index = lindex;
     }
-    m_pkt_index = lindex;
     if ( m_pkt_index > 0 )
         m_pkt_index--;
-    if ( m_pkt_index > 0 )
-        m_pkt_index--;
-    avcodec_flush_buffers(m_codec_ctx);
-    decode_next_frame ();
+    {
+        ScopedTimer t("decode after seek.");
+        avcodec_flush_buffers(m_codec_ctx);
+        decode_next_frame ();
+    }
     first_sample = av_rescale_q ( m_frame->pts - m_first_pts, m_stream_tb, m_output_tb );
     m_offset = frameIndex - first_sample;
+    Stat::track("Actual seek preroll.",
+        Stat::UNSPECIFIED,
+        Stat::COUNT|Stat::AVERAGE|Stat::MIN|Stat::MAX|Stat::SAMPLE_VARIANCE,
+        m_offset);
     return     frameIndex;
 }
-bool SoundSourceFFmpeg::decode_next_frame(){
+bool SoundSourceFFmpeg::decode_next_frame()
+{
+    ScopedTimer top(__PRETTY_FUNCTION__);
     auto ret = 0;
-    while ((m_orig_frame.unref(),(ret = m_codec_ctx.receive_frame(m_orig_frame))) < 0) {
-        if(ret == AVERROR_EOF) {
-            if(m_pkt_index> int64_t(m_pkt_array.size())) {
+    {
+        ScopedTimer t("decodinga packet.");
+        while ((m_orig_frame.unref(),(ret = m_codec_ctx.receive_frame(m_orig_frame))) < 0) {
+            if(ret == AVERROR_EOF) {
+                if(m_pkt_index> int64_t(m_pkt_array.size())) {
+                    return false;
+                }else if(m_pkt_index == int64_t(m_pkt_array.size())) {
+                    m_codec_ctx.send_packet(nullptr);
+                    m_pkt_index++;
+                } else {
+                    m_codec_ctx.flush_buffers();
+                }
+            }else if(ret != AVERROR(EAGAIN)) {
                 return false;
-            }else if(m_pkt_index == int64_t(m_pkt_array.size())) {
-                m_codec_ctx.send_packet(nullptr);
-                m_pkt_index++;
-            } else {
-                m_codec_ctx.flush_buffers();
             }
-        }else if(ret != AVERROR(EAGAIN)) {
-            return false;
-        }
-        if(m_pkt_index == int64_t(m_pkt_array.size())) {
-            m_pkt_index++;
-            if((ret = m_codec_ctx.send_packet(nullptr)) < 0)
+            if(m_pkt_index == int64_t(m_pkt_array.size())) {
+                m_pkt_index++;
+                if((ret = m_codec_ctx.send_packet(nullptr)) < 0)
+                    return false;
+            }else if((ret = m_codec_ctx.send_packet(m_pkt_array.at(m_pkt_index++))) < 0)
                 return false;
-        }else if((ret = m_codec_ctx.send_packet(m_pkt_array.at(m_pkt_index++))) < 0)
-            return false;
+        }
     }
     if ( !m_orig_frame->sample_rate    )
         m_orig_frame->sample_rate    = m_codec_ctx->sample_rate;
@@ -244,6 +252,7 @@ bool SoundSourceFFmpeg::decode_next_frame(){
     m_frame->format         = AV_SAMPLE_FMT_FLT;
     m_frame->channel_layout = av_get_default_channel_layout ( getChannelCount() );
     m_frame->sample_rate    = getSampleRate();
+
     auto delay = 0;
     if(!m_swr.initialized() && (m_swr.config(m_frame,m_orig_frame) < 0
         || m_swr.init() < 0)) {
@@ -254,17 +263,30 @@ bool SoundSourceFFmpeg::decode_next_frame(){
     m_frame->pts     = m_orig_frame->pts - av_rescale_q ( delay, m_output_tb, m_stream_tb ) ;
     m_frame->pkt_pts = m_orig_frame->pkt_pts;
     m_frame->pkt_dts = m_orig_frame->pkt_dts;
-    if((ret = m_swr.convert(m_frame,m_orig_frame)) < 0) {
-        qDebug() << __FUNCTION__ << "error converting frame for" << getLocalFileName()<< av_strerror(ret);
-        return false;
+    {
+        if((ret = m_swr.convert(m_frame,m_orig_frame)) < 0) {
+            qDebug() << __FUNCTION__ << "error converting frame for" << getLocalFileName()<< av_strerror(ret);
+            return false;
+        }
     }
     return true;
 }
-SINT SoundSourceFFmpeg::readSampleFrames(SINT numberOfFrames,CSAMPLE* sampleBuffer) {
+SINT SoundSourceFFmpeg::readSampleFrames(SINT numberOfFrames,CSAMPLE* sampleBuffer)
+{
+    ScopedTimer top(__PRETTY_FUNCTION__);
+    Stat::track("readSampleFrames count",
+        Stat::UNSPECIFIED,
+        Stat::COUNT|Stat::AVERAGE|Stat::MIN|Stat::MAX|Stat::SAMPLE_VARIANCE,
+        numberOfFrames);
+    Stat::track("readSampleFrames start skip",
+        Stat::UNSPECIFIED,
+        Stat::COUNT|Stat::AVERAGE|Stat::MIN|Stat::MAX|Stat::SAMPLE_VARIANCE,
+        m_offset);
     auto number_done   = decltype(numberOfFrames){0};
     uint8_t *dst[] = {reinterpret_cast<uint8_t*>(sampleBuffer)};
     while ( number_done < numberOfFrames) {
       if ( m_offset >= m_frame->nb_samples ) {
+        ScopedTimer dec("readSampleFrames() decode");
         m_offset -= m_frame->nb_samples;
         if ( !decode_next_frame() )
             break;
@@ -289,5 +311,135 @@ SINT SoundSourceFFmpeg::readSampleFrames(SINT numberOfFrames,CSAMPLE* sampleBuff
       }
     }
     return number_done;
+}
+
+QString SoundSourceProviderFFmpeg::getName() const
+{
+    return "FFmpeg";
+}
+bool SoundSourceProviderFFmpeg::canOpen(QString path)
+{
+    auto path_ba = path.toLocal8Bit();
+    auto fmt_ctx = format_context();
+    auto err = fmt_ctx.open_input(path_ba.constData());
+    if(err < 0) {
+        qDebug() << " error opening file " << path
+                   << " returned error \"" << av_strerror(err);
+        return false;
+    }
+    auto stream = static_cast<AVStream*>(nullptr);
+    auto codec  = static_cast<AVCodec*> (nullptr);
+    std::tie(stream,codec) = fmt_ctx.find_best_stream(AVMEDIA_TYPE_AUDIO);
+    if(!stream) {
+        qDebug() << " failed to find an audio stream in " << path;
+        return false;
+    }
+    return true;
+}
+
+bool SoundSourceProviderFFmpeg::canOpen(QUrl url)
+{
+    if(!url.isValid()) {
+        qWarning() << " request to probe invalid url" << url;
+        return false;
+    }
+    auto url_str = url.toString(
+        QUrl::NormalizePathSegments
+       |QUrl::PrettyDecoded);
+    auto url_ba = url_str.toLocal8Bit();
+    auto url_c_str = url_ba.constData();
+    auto fmt_ctx = format_context();
+    auto err = fmt_ctx.open_input(url_c_str);
+    if(err < 0) {
+        qDebug() << " error opening file " << url
+                   << " returned error \"" << av_strerror(err);
+        return false;
+    }
+    auto stream = static_cast<AVStream*>(nullptr);
+    auto codec  = static_cast<AVCodec*> (nullptr);
+    std::tie(stream,codec) = fmt_ctx.find_best_stream(AVMEDIA_TYPE_AUDIO);
+    if(!stream) {
+        qDebug() << " failed to find an audio stream in " << url;
+        return false;
+    }
+    return true;
+}
+SoundSourcePointer SoundSourceProviderFFmpeg::newSoundSource(const QUrl& url)
+{
+    return newSoundSourceFromUrl<SoundSourceFFmpeg>(url);
+}
+Result SoundSourceFFmpeg::parseTrackMetadataAndCoverArt(
+        TrackMetadata* pTrackMetadata,
+        QImage* pCoverArt) const
+{
+    const auto filename = getLocalFileName().toLocal8Bit();
+    auto ret = 0;
+    auto fmt_ctx = format_context();
+    // Open file and make m_pFormatCtx
+    if (( ret = fmt_ctx.open_input(filename.constData()))<0) {
+        qDebug() << __FUNCTION__ << "cannot open" << filename << av_strerror ( ret );
+        return ERR;
+    }
+    //debug only (Enable if needed)
+    for ( auto i = 0u; i < fmt_ctx->nb_streams; i++) {
+        if(fmt_ctx->streams[i]->disposition &AV_DISPOSITION_ATTACHED_PIC)
+            fmt_ctx->streams[i]->discard = AVDISCARD_NONE;
+        else
+            fmt_ctx->streams[i]->discard = AVDISCARD_ALL;
+    }
+    auto stream_and_codec = fmt_ctx.find_best_stream(AVMEDIA_TYPE_AUDIO);
+    if(!stream_and_codec.first || !stream_and_codec.second)
+        return ERR;
+
+//    fmt_ctx.dump( stream_and_codec.first->index, filename.constData());
+    stream_and_codec.first->discard = AVDISCARD_NONE;
+    auto dec_ctx = codec_context(stream_and_codec.first->codecpar);
+    if(dec_ctx.open() < 0)
+        return ERR;
+
+    auto stream_tb = stream_and_codec.first->time_base;
+    auto codec_tb  = dec_ctx->time_base;
+    if ( !dec_ctx->channel_layout ) {
+      dec_ctx->channel_layout = av_get_default_channel_layout(dec_ctx->channels);
+    } else if ( !dec_ctx->channels ) {
+      dec_ctx->channels = av_get_channel_layout_nb_channels ( dec_ctx->channel_layout );
+    } if ( !dec_ctx->channel_layout || !dec_ctx->channels ) {
+      dec_ctx->channels = 2;
+      dec_ctx->channel_layout = av_get_default_channel_layout(dec_ctx->channels);
+    }
+    if(pTrackMetadata) {
+        pTrackMetadata->setChannels( dec_ctx->channels );
+        pTrackMetadata->setSampleRate( dec_ctx->sample_rate );
+
+        auto output_tb = AVRational{1,static_cast<int>(getSampleRate())};
+        pTrackMetadata->setDuration( av_rescale_q( fmt_ctx->duration, stream_tb, output_tb)*1./pTrackMetadata->getSampleRate() );
+//    SoundSource::parseTrackMetadataAndCoverArt(pTrackMetadata, pCoverArt);;
+        {
+            auto tag = static_cast<AVDictionaryEntry*>(nullptr);
+            auto tags = fmt_ctx->metadata;
+            const auto &mo = TrackMetadata::staticMetaObject;
+            while((tag = av_dict_get(tags,"",tag,AV_DICT_IGNORE_SUFFIX))) {
+                auto prop_id = mo.indexOfProperty(tag->key);
+                if(prop_id >= 0) {
+                    const auto &prop = mo.property(prop_id);
+                    prop.writeOnGadget(pTrackMetadata,QString(tag->value));
+                }
+            }
+        }
+    }
+    if(pCoverArt) {
+        for(auto i = 0u; i < fmt_ctx->nb_streams; ++i) {
+            auto stream = fmt_ctx->streams[i];
+            if(stream->disposition & AV_DISPOSITION_ATTACHED_PIC
+            && stream->attached_pic.size > 0) {
+                if(pCoverArt->loadFromData(
+                    stream->attached_pic.data
+                    , stream->attached_pic.size)) {
+                    break;
+                }
+            }
+        }
+    }
+    return OK;
 }
 } // namespace Mixxx

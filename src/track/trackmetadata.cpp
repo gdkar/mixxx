@@ -4,7 +4,8 @@ namespace mixxx {
 
 /*static*/ const int TrackMetadata::kCalendarYearInvalid = 0;
 
-int TrackMetadata::parseCalendarYear(QString year, bool* pValid) {
+int TrackMetadata::parseCalendarYear(QString year, bool* pValid)
+{
     const QDateTime dateTime(parseDateTime(year));
     if (0 < dateTime.date().year()) {
         if (pValid) {
@@ -70,8 +71,8 @@ TrackMetadata::TrackMetadata()
     : m_duration(0.0),
       m_bitrate(0),
       m_channels(0),
-      m_sampleRate(0) {
-}
+      m_sampleRate(0)
+{ }
 
 bool operator==(const TrackMetadata& lhs, const TrackMetadata& rhs) {
     // Compare the integer and double fields 1st for maximum efficiency
