@@ -21,9 +21,12 @@
 #include <QMutex>
 #include <QMap>
 #include <QTimerEvent>
-
 #include "control/controlproxy.h"
 #include "track/track.h"
+#include "util/memory.h"
+#include <memory>
+#include <utility>
+#include <deque>
 
 class PlayerInfo : public QObject {
     Q_OBJECT
@@ -46,12 +49,12 @@ class PlayerInfo : public QObject {
   private:
     class DeckControls {
         public:
-            DeckControls(QString& group)
-                    : m_play(group, "play"),
-                      m_pregain(group, "pregain"),
-                      m_volume(group, "volume"),
-                      m_orientation(group, "orientation") {
-            }
+            DeckControls(QString group)
+                    : m_play(group, "play", nullptr),
+                      m_pregain(group, "pregain", nullptr),
+                      m_volume(group, "volume", nullptr),
+                      m_orientation(group, "orientation", nullptr)
+            { }
 
             ControlProxy m_play;
             ControlProxy m_pregain;
@@ -73,7 +76,7 @@ class PlayerInfo : public QObject {
     // QMap is faster than QHash for small count of elements < 50
     QMap<QString, TrackPointer> m_loadedTrackMap;
     int m_currentlyPlayingDeck;
-    QList<DeckControls*> m_deckControlList;
+    std::deque<std::unique_ptr<DeckControls> > m_deckControlList;
 
     static PlayerInfo* m_pPlayerinfo;
 };

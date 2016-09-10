@@ -22,10 +22,10 @@ Microphone::Microphone(QObject* pParent, const QString& group, int index,
     m_pTalkoverEnabled->connectValueChanged(SLOT(slotTalkoverEnabled(double)));
 }
 
-Microphone::~Microphone() {
-}
+Microphone::~Microphone() = default;
 
-void Microphone::slotTalkoverEnabled(double v) {
+void Microphone::slotTalkoverEnabled(double v)
+{
     auto configured = m_pInputConfigured->toBool();
     auto talkover = v > 0.0;
 

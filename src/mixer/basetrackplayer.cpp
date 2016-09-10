@@ -19,19 +19,16 @@
 #include "vinylcontrol/defs_vinylcontrol.h"
 #include "engine/sync/enginesync.h"
 
-BaseTrackPlayer::BaseTrackPlayer(QObject* pParent, const QString& group)
-        : BasePlayer(pParent, group) {
-}
-
-BaseTrackPlayerImpl::BaseTrackPlayerImpl(QObject* pParent,
-                                         UserSettingsPointer pConfig,
-                                         EngineMaster* pMixingEngine,
-                                         EffectsManager* pEffectsManager,
-                                         EngineChannel::ChannelOrientation defaultOrientation,
-                                         const QString& group,
-                                         bool defaultMaster,
-                                         bool defaultHeadphones)
-        : BaseTrackPlayer(pParent, group),
+BaseTrackPlayer::BaseTrackPlayer(
+    QObject* pParent,
+    UserSettingsPointer pConfig,
+    EngineMaster* pMixingEngine,
+    EffectsManager* pEffectsManager,
+    EngineChannel::ChannelOrientation defaultOrientation,
+    const QString& group,
+    bool defaultMaster,
+    bool defaultHeadphones)
+        : BasePlayer(pParent, group),
           m_pConfig(pConfig),
           m_pEngineMaster(pMixingEngine),
           m_pLoadedTrack(),
@@ -74,10 +71,8 @@ BaseTrackPlayerImpl::BaseTrackPlayerImpl(QObject* pParent,
             this, SLOT(slotLoadFailed(TrackPointer, QString)));
 
     // Get loop point control objects
-    m_pLoopInPoint = new ControlProxy(
-            getGroup(),"loop_start_position", this);
-    m_pLoopOutPoint = new ControlProxy(
-            getGroup(),"loop_end_position", this);
+    m_pLoopInPoint = new ControlProxy( getGroup(),"loop_start_position", this);
+    m_pLoopOutPoint = new ControlProxy( getGroup(),"loop_end_position", this);
 
     // Duration of the current song, we create this one because nothing else does.
     m_pDuration = new ControlObject(ConfigKey(getGroup(), "duration"));
@@ -105,7 +100,8 @@ BaseTrackPlayerImpl::BaseTrackPlayerImpl(QObject* pParent,
     m_pPlay->connectValueChanged(SLOT(slotPlayToggled(double)));
 }
 
-BaseTrackPlayerImpl::~BaseTrackPlayerImpl() {
+BaseTrackPlayer::~BaseTrackPlayer()
+{
     if (m_pLoadedTrack) {
         emit(loadingTrack(TrackPointer(), m_pLoadedTrack));
         disconnect(m_pLoadedTrack.data(), 0, m_pBPM, 0);
@@ -119,8 +115,9 @@ BaseTrackPlayerImpl::~BaseTrackPlayerImpl() {
     delete m_pEndOfTrack;
 }
 
-void BaseTrackPlayerImpl::slotLoadTrack(TrackPointer pNewTrack, bool bPlay) {
-    qDebug() << "BaseTrackPlayerImpl::slotLoadTrack";
+void BaseTrackPlayer::slotLoadTrack(TrackPointer pNewTrack, bool bPlay)
+{
+    qDebug() << "BaseTrackPlayer::slotLoadTrack";
     // Before loading the track, ensure we have access. This uses lazy
     // evaluation to make sure track isn't NULL before we dereference it.
     if (!pNewTrack.isNull() && !Sandbox::askForAccess(pNewTrack->getCanonicalLocation())) {
@@ -191,7 +188,7 @@ void BaseTrackPlayerImpl::slotLoadTrack(TrackPointer pNewTrack, bool bPlay) {
     emit(loadingTrack(pNewTrack, pOldTrack));
 }
 
-void BaseTrackPlayerImpl::slotLoadFailed(TrackPointer track, QString reason) {
+void BaseTrackPlayer::slotLoadFailed(TrackPointer track, QString reason) {
     // Note: This slot can be a load failure from the current track or a
     // a delayed signal from a previous load.
     // We have probably received a slotTrackLoaded signal, of an old track that
@@ -209,9 +206,9 @@ void BaseTrackPlayerImpl::slotLoadFailed(TrackPointer track, QString reason) {
     QMessageBox::warning(NULL, tr("Couldn't load track."), reason);
 }
 
-void BaseTrackPlayerImpl::slotTrackLoaded(TrackPointer pNewTrack,
+void BaseTrackPlayer::slotTrackLoaded(TrackPointer pNewTrack,
                                           TrackPointer pOldTrack) {
-    qDebug() << "BaseTrackPlayerImpl::slotTrackLoaded";
+    qDebug() << "BaseTrackPlayer::slotTrackLoaded";
     if (pNewTrack.isNull() &&
             !pOldTrack.isNull() &&
             pOldTrack == m_pLoadedTrack) {
@@ -310,7 +307,7 @@ void BaseTrackPlayerImpl::slotTrackLoaded(TrackPointer pNewTrack,
         // this is the result from an outdated load or unload signal
         // A new load is already pending
         // Ignore this signal and wait for the new one
-        qDebug() << "stray BaseTrackPlayerImpl::slotTrackLoaded()";
+        qDebug() << "stray BaseTrackPlayer::slotTrackLoaded()";
     }
 
     // Update the PlayerInfo class that is used in EngineBroadcast to replace
@@ -318,11 +315,11 @@ void BaseTrackPlayerImpl::slotTrackLoaded(TrackPointer pNewTrack,
     PlayerInfo::instance().setTrackInfo(getGroup(), m_pLoadedTrack);
 }
 
-TrackPointer BaseTrackPlayerImpl::getLoadedTrack() const {
+TrackPointer BaseTrackPlayer::getLoadedTrack() const {
     return m_pLoadedTrack;
 }
 
-void BaseTrackPlayerImpl::slotSetReplayGain(mixxx::ReplayGain replayGain) {
+void BaseTrackPlayer::slotSetReplayGain(mixxx::ReplayGain replayGain) {
     // Do not change replay gain when track is playing because
     // this may lead to an unexpected volume change
     if (m_pPlay->get() == 0.0) {
@@ -332,17 +329,17 @@ void BaseTrackPlayerImpl::slotSetReplayGain(mixxx::ReplayGain replayGain) {
     }
 }
 
-void BaseTrackPlayerImpl::slotPlayToggled(double v) {
+void BaseTrackPlayer::slotPlayToggled(double v) {
     if (!v && m_replaygainPending) {
         setReplayGain(m_pLoadedTrack->getReplayGain().getRatio());
     }
 }
 
-EngineDeck* BaseTrackPlayerImpl::getEngineDeck() const {
+EngineDeck* BaseTrackPlayer::getEngineDeck() const {
     return m_pChannel;
 }
 
-void BaseTrackPlayerImpl::setupEqControls() {
+void BaseTrackPlayer::setupEqControls() {
     const QString group = getGroup();
     m_pLowFilter = new ControlProxy(group, "filterLow", this);
     m_pMidFilter = new ControlProxy(group, "filterMid", this);
@@ -354,7 +351,7 @@ void BaseTrackPlayerImpl::setupEqControls() {
     m_pPitchAdjust = new ControlProxy(group, "pitch_adjust", this);
 }
 
-void BaseTrackPlayerImpl::slotPassthroughEnabled(double v) {
+void BaseTrackPlayer::slotPassthroughEnabled(double v) {
     bool configured = m_pInputConfigured->toBool();
     bool passthrough = v > 0.0;
 
@@ -366,7 +363,7 @@ void BaseTrackPlayerImpl::slotPassthroughEnabled(double v) {
     }
 }
 
-void BaseTrackPlayerImpl::slotVinylControlEnabled(double v) {
+void BaseTrackPlayer::slotVinylControlEnabled(double v) {
 #ifdef __VINYLCONTROL__
     bool configured = m_pInputConfigured->toBool();
     bool vinylcontrol_enabled = v > 0.0;
@@ -381,7 +378,7 @@ void BaseTrackPlayerImpl::slotVinylControlEnabled(double v) {
 #endif
 }
 
-void BaseTrackPlayerImpl::setReplayGain(double value) {
+void BaseTrackPlayer::setReplayGain(double value) {
     m_pReplayGain->set(value);
     m_replaygainPending = false;
 }

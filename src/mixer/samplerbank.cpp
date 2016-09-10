@@ -5,7 +5,7 @@
 
 #include "control/controlpushbutton.h"
 #include "mixer/playermanager.h"
-#include "mixer/sampler.h"
+#include "mixer/basetrackplayer.h"
 #include "track/track.h"
 #include "util/assert.h"
 
@@ -21,7 +21,8 @@ SamplerBank::SamplerBank(PlayerManager* pPlayerManager)
             this, SLOT(slotSaveSamplerBank(double)));
 }
 
-SamplerBank::~SamplerBank() {
+SamplerBank::~SamplerBank()
+{
     delete m_pLoadControl;
     delete m_pSaveControl;
 }
@@ -69,7 +70,7 @@ void SamplerBank::slotSaveSamplerBank(double v) {
     doc.appendChild(root);
 
     for (unsigned int i = 0; i < m_pPlayerManager->numSamplers(); ++i) {
-        Sampler* pSampler = m_pPlayerManager->getSampler(i + 1);
+        auto pSampler = m_pPlayerManager->getSampler(i + 1);
         if (pSampler == NULL) {
             continue;
         }

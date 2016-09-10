@@ -16,15 +16,13 @@ class AnalyzerQueue;
 class Auxiliary;
 class BaseTrackPlayer;
 class ControlObject;
-class Deck;
 class EffectsManager;
 class EngineMaster;
 class Library;
 class Microphone;
-class PreviewDeck;
-class Sampler;
 class SoundManager;
 class TrackCollection;
+
 
 // For mocking PlayerManager.
 class PlayerManagerInterface {
@@ -33,20 +31,20 @@ class PlayerManagerInterface {
     virtual BaseTrackPlayer* getPlayer(QString group) const = 0;
 
     // Get the deck by its deck number. Decks are numbered starting with 1.
-    virtual Deck* getDeck(unsigned int player) const = 0;
+    virtual BaseTrackPlayer* getDeck(unsigned int player) const = 0;
 
     // Returns the number of decks.
     virtual unsigned int numberOfDecks() const = 0;
 
     // Get the preview deck by its deck number. Preview decks are numbered
     // starting with 1.
-    virtual PreviewDeck* getPreviewDeck(unsigned int libPreviewPlayer) const = 0;
+    virtual BaseTrackPlayer* getPreviewDeck(unsigned int libPreviewPlayer) const = 0;
 
     // Returns the number of preview decks.
     virtual unsigned int numberOfPreviewDecks() const = 0;
 
     // Get the sampler by its number. Samplers are numbered starting with 1.
-    virtual Sampler* getSampler(unsigned int sampler) const = 0;
+    virtual BaseTrackPlayer* getSampler(unsigned int sampler) const = 0;
 
     // Returns the number of sampler decks.
     virtual unsigned int numberOfSamplers() const = 0;
@@ -113,12 +111,12 @@ class PlayerManager : public QObject, public PlayerManagerInterface {
     BaseTrackPlayer* getPlayer(QString group) const;
 
     // Get the deck by its deck number. Decks are numbered starting with 1.
-    Deck* getDeck(unsigned int player) const;
+    BaseTrackPlayer* getDeck(unsigned int player) const;
 
-    PreviewDeck* getPreviewDeck(unsigned int libPreviewPlayer) const;
+    BaseTrackPlayer* getPreviewDeck(unsigned int libPreviewPlayer) const;
 
     // Get the sampler by its number. Samplers are numbered starting with 1.
-    Sampler* getSampler(unsigned int sampler) const;
+    BaseTrackPlayer* getSampler(unsigned int sampler) const;
 
     // Get the microphone by its number. Microphones are numbered starting with 1.
     Microphone* getMicrophone(unsigned int microphone) const;
@@ -235,9 +233,9 @@ class PlayerManager : public QObject, public PlayerManagerInterface {
     ControlObject* m_pCONumMicrophones;
     ControlObject* m_pCONumAuxiliaries;
 
-    QList<Deck*> m_decks;
-    QList<Sampler*> m_samplers;
-    QList<PreviewDeck*> m_preview_decks;
+    QList<BaseTrackPlayer*> m_decks;
+    QList<BaseTrackPlayer*> m_samplers;
+    QList<BaseTrackPlayer*> m_preview_decks;
     QList<Microphone*> m_microphones;
     QList<Auxiliary*> m_auxiliaries;
     QMap<QString, BaseTrackPlayer*> m_players;
