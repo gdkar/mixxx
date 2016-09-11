@@ -40,7 +40,7 @@ PlayerInfo::~PlayerInfo()
 
 // static
 PlayerInfo& PlayerInfo::instance()
-
+{
     if (!m_pPlayerInfo) {
         m_pPlayerInfo = new PlayerInfo();
     }
@@ -77,7 +77,7 @@ bool PlayerInfo::isTrackLoaded(const TrackPointer& pTrack) const
     QMutexLocker locker(&m_mutex);
     QMapIterator<QString, TrackPointer> it(m_loadedTrackMap);
     for(auto && itp : m_loadedTrackMap) {
-        if (itp.second == pTrack) {
+        if (itp == pTrack) {
             return true;
         }
     }
@@ -94,12 +94,9 @@ QMap<QString, TrackPointer> PlayerInfo::getLoadedTracks()
 bool PlayerInfo::isFileLoaded(const QString& track_location) const
 {
     QMutexLocker locker(&m_mutex);
-    for(auto && itp : m_loadedTrackMap){
-        auto pTrack = it.second;
-        if (pTrack) {
-            if (pTrack->getLocation() == track_location) {
+    for(auto && pTrack: m_loadedTrackMap){
+        if (pTrack && pTrack->getLocation() == track_location) {
                 return true;
-            }
         }
     }
     return false;
@@ -172,7 +169,7 @@ int PlayerInfo::getCurrentPlayingDeck()
 }
 
 TrackPointer PlayerInfo::getCurrentPlayingTrack()
-
+{
     auto deck = getCurrentPlayingDeck();
     if (deck >= 0) {
         return getTrackInfo(PlayerManager::groupForDeck(deck));
@@ -182,7 +179,7 @@ TrackPointer PlayerInfo::getCurrentPlayingTrack()
 
 PlayerInfo::DeckControls* PlayerInfo::getDeckControls(int i)
 {
-    if (m_deckControlList.count() == i) {
+    if (m_deckControlList.size() == i) {
         auto group = PlayerManager::groupForDeck(i);
         m_deckControlList.push_back(std::make_unique<DeckControls>(group));
     }
