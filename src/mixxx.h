@@ -28,7 +28,7 @@
 #include "util/cmdlineargs.h"
 #include "util/timer.h"
 
-class ControlPushButton;
+class ControlObject;
 class ControllerManager;
 class DlgDeveloperTools;
 class DlgPreferences;
@@ -169,7 +169,7 @@ class MixxxMainWindow : public QMainWindow {
 
     const CmdlineArgs& m_cmdLineArgs;
 
-    ControlPushButton* m_pTouchShift;
+    ControlObject* m_pTouchShift;
 
     static const int kMicrophoneCount;
     static const int kAuxiliaryCount;
