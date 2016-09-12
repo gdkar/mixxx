@@ -20,7 +20,6 @@
 #include "track/track.h"
 #include "util/assert.h"
 #include "util/stat.h"
-#include "util/sleepableqthread.h"
 
 PlayerManager::PlayerManager(UserSettingsPointer pConfig,
                              SoundManager* pSoundManager,
@@ -555,7 +554,8 @@ void PlayerManager::slotLoadToSampler(QString location, int sampler) {
     slotLoadToPlayer(location, groupForSampler(sampler-1));
 }
 
-void PlayerManager::slotLoadTrackIntoNextAvailableDeck(TrackPointer pTrack) {
+void PlayerManager::slotLoadTrackIntoNextAvailableDeck(TrackPointer pTrack)
+{
     QMutexLocker locker(&m_mutex);
     auto it = m_decks.begin();
     while (it != m_decks.end()) {
@@ -565,16 +565,14 @@ void PlayerManager::slotLoadTrackIntoNextAvailableDeck(TrackPointer pTrack) {
         if (playControl && playControl->get() != 1.) {
             locker.unlock();
             pDeck->slotLoadTrack(pTrack, false);
-            // Test for a fixed race condition with fast loads
-            //SleepableQThread::sleep(1);
-            //pDeck->slotLoadTrack(TrackPointer(), false);
             return;
         }
         ++it;
     }
 }
 
-void PlayerManager::slotLoadTrackIntoNextAvailableSampler(TrackPointer pTrack) {
+void PlayerManager::slotLoadTrackIntoNextAvailableSampler(TrackPointer pTrack)
+{
     QMutexLocker locker(&m_mutex);
     auto it = m_samplers.begin();
     while (it != m_samplers.end()) {

@@ -31,7 +31,7 @@
 #include "library/scanner/scannerutil.h"
 
 // TODO(rryan) make configurable
-const int kScannerThreadPoolSize = 4;
+const int kScannerThreadPoolSize = 2;
 
 LibraryScanner::LibraryScanner(TrackCollection* collection,
                                UserSettingsPointer pConfig)

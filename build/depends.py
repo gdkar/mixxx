@@ -1044,7 +1044,6 @@ class MixxxCore(Feature):
                    "encoder/encodermp3.cpp",
                    "encoder/encodervorbis.cpp",
 
-                   "util/sleepableqthread.cpp",
                    "util/statsmanager.cpp",
                    "util/stat.cpp",
                    "util/statmodel.cpp",

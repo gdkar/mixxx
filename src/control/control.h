@@ -4,11 +4,10 @@
 #include <QHash>
 #include <QString>
 #include <QObject>
-#include <QSharedPointer>
-
-#include <atomic>
+#include <QAtomicPointer>
 
 #include "control/controlbehavior.h"
+#include "control/controlvalue.h"
 #include "preferences/usersettings.h"
 #include "util/mutex.h"
 
@@ -22,7 +21,10 @@ class ControlDoublePrivate : public QObject {
     // Used to implement control persistence. All controls that are marked
     // "persist in user config" get and set their value on creation/deletion
     // using this UserSettings.
-    static void setUserConfig(UserSettingsPointer pConfig);
+    static void setUserConfig(UserSettingsPointer pConfig) {
+        s_pUserConfig = pConfig;
+    }
+
     // Adds a ConfigKey for 'alias' to the control for 'key'. Can be used for
     // supporting a legacy / deprecated control. The 'key' control must exist
     // for this to work.
@@ -41,17 +43,31 @@ class ControlDoublePrivate : public QObject {
 
     static QHash<ConfigKey, ConfigKey> getControlAliases();
 
-    const QString& name() const;
-    void setName(const QString& name);
-    const QString& description() const;
-    void setDescription(const QString& description);
+    const QString& name() const {
+        return m_name;
+    }
+
+    void setName(const QString& name) {
+        m_name = name;
+    }
+
+    const QString& description() const {
+        return m_description;
+    }
+
+    void setDescription(const QString& description) {
+        m_description = description;
+    }
+
     // Sets the control value.
     void set(double value, QObject* pSender);
     // directly sets the control value. Must be used from and only from the
     // ValueChangeRequest slot.
     void setAndConfirm(double value, QObject* pSender);
     // Gets the control value.
-    double get() const;
+    inline double get() const {
+        return m_value.getValue();
+    }
     // Resets the control value to its default.
     void reset();
 
@@ -69,13 +85,30 @@ class ControlDoublePrivate : public QObject {
     void setMidiParameter(MidiOpCode opcode, double dParam);
     double getMidiParameter() const;
 
-    bool ignoreNops() const;
+    inline bool ignoreNops() const {
+        return m_bIgnoreNops;
+    }
 
-    void setDefaultValue(double dValue);
-    double defaultValue() const;
-    ControlObject* getCreatorCO() const;
-    void removeCreatorCO();
-    ConfigKey getKey() const;
+    inline void setDefaultValue(double dValue) {
+        m_defaultValue.setValue(dValue);
+    }
+
+    inline double defaultValue() const {
+        return m_defaultValue.getValue();
+    }
+
+    inline ControlObject* getCreatorCO() const {
+        return m_pCreatorCO;
+    }
+
+    inline void removeCreatorCO() {
+        m_pCreatorCO = NULL;
+    }
+
+    inline ConfigKey getKey() {
+        return m_key;
+    }
+
     // Connects a slot to the ValueChange request for CO validation. All change
     // requests issued by set are routed though the connected slot. This can
     // decide with its own thread safe solution if the requested value can be
@@ -121,9 +154,9 @@ class ControlDoublePrivate : public QObject {
     bool m_confirmRequired;
 
     // The control value.
-    std::atomic<double> m_value;
+    ControlValueAtomic<double> m_value;
     // The default control value.
-    std::atomic<double> m_defaultValue;
+    ControlValueAtomic<double> m_defaultValue;
 
     QSharedPointer<ControlNumericBehavior> m_pBehavior;
 
