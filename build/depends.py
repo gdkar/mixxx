@@ -1074,7 +1074,7 @@ class MixxxCore(Feature):
                    "util/logging.cpp",
                    "util/cmdlineargs.cpp",
                    "util/audiosignal.cpp",
-
+                   "util/intrusive_fifo.cpp",
                    '#res/mixxx.qrc'
                    ]
 
