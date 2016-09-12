@@ -6,7 +6,6 @@
 
 #include "engine/cachingreaderworker.h"
 #include "sources/soundsourceproxy.h"
-#include "util/compatibility.h"
 #include "util/event.h"
 
 
@@ -22,7 +21,8 @@ CachingReaderWorker::CachingReaderWorker(
           m_stop(0) {
 }
 
-CachingReaderWorker::~CachingReaderWorker() { }
+CachingReaderWorker::~CachingReaderWorker() {
+}
 
 ReaderStatusUpdate CachingReaderWorker::processReadRequest(
         const CachingReaderChunkReadRequest& request) {
@@ -38,7 +38,7 @@ ReaderStatusUpdate CachingReaderWorker::processReadRequest(
 
     // Try to read the data required for the chunk from the audio source
     // and adjust the max. readable frame index if decoding errors occur.
-    auto framesRead = pChunk->readSampleFrames(
+    const SINT framesRead = pChunk->readSampleFrames(
             m_pAudioSource, &m_maxReadableFrameIndex);
 
     ReaderStatus status;
@@ -61,14 +61,12 @@ ReaderStatusUpdate CachingReaderWorker::processReadRequest(
 }
 
 // WARNING: Always called from a different thread (GUI)
-void CachingReaderWorker::newTrack(TrackPointer pTrack)
-{
+void CachingReaderWorker::newTrack(TrackPointer pTrack) {
     QMutexLocker locker(&m_newTrackMutex);
     m_newTrack = pTrack;
 }
 
-void CachingReaderWorker::run()
-{
+void CachingReaderWorker::run() {
     unsigned static id = 0; //the id of this thread, for debugging purposes
     QThread::currentThread()->setObjectName(QString("CachingReaderWorker %1").arg(++id));
 
@@ -99,7 +97,7 @@ void CachingReaderWorker::run()
 namespace
 {
     mixxx::AudioSourcePointer openAudioSourceForReading(const TrackPointer& pTrack, const mixxx::AudioSourceConfig& audioSrcCfg) {
-        mixxx::SoundSourceProxy soundSourceProxy(pTrack);
+        SoundSourceProxy soundSourceProxy(pTrack);
         mixxx::AudioSourcePointer pAudioSource(soundSourceProxy.openAudioSource(audioSrcCfg));
         if (!pAudioSource) {
             qWarning() << "Failed to open file:" << pTrack->getLocation();
@@ -119,7 +117,7 @@ void CachingReaderWorker::loadTrack(const TrackPointer& pTrack) {
     ReaderStatusUpdate status;
     status.status = TRACK_NOT_LOADED;
 
-    auto filename = pTrack->getLocation();
+    QString filename = pTrack->getLocation();
     if (filename.isEmpty() || !pTrack->exists()) {
         // Must unlock before emitting to avoid deadlock
         qDebug() << m_group << "CachingReaderWorker::loadTrack() load failed for\""

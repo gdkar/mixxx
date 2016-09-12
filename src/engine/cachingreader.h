@@ -154,9 +154,6 @@ class CachingReader : public QObject {
     CachingReaderChunkForOwner* m_mruCachingReaderChunk;
     CachingReaderChunkForOwner* m_lruCachingReaderChunk;
 
-    // The raw memory buffer which is divided up into chunks.
-    SampleBuffer m_sampleBuffer;
-
     // The maximum readable frame index as reported by the worker.
     // This frame index references the frame that follows the last
     // frame with sample data.

@@ -25,7 +25,8 @@ EngineBufferScaleRubberBand::EngineBufferScaleRubberBand(
         ReadAheadManager* pReadAheadManager, QObject *pParent)
         : EngineBufferScale(pReadAheadManager,pParent),
           m_buffer_back(SampleUtil::alloc(MAX_BUFFER_LEN)),
-          m_bBackwards(false) {
+          m_bBackwards(false)
+{
     m_retrieve_buffer[0] = SampleUtil::alloc(MAX_BUFFER_LEN);
     m_retrieve_buffer[1] = SampleUtil::alloc(MAX_BUFFER_LEN);
     initRubberBand();

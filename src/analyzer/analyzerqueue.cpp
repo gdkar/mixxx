@@ -47,13 +47,15 @@ AnalyzerQueue::AnalyzerQueue(TrackCollection* pTrackCollection)
           m_tioq(),
           m_qm(),
           m_qwait(),
-          m_queue_size(0) {
+          m_queue_size(0)
+{
     Q_UNUSED(pTrackCollection);
     connect(this, SIGNAL(updateProgress()),
             this, SLOT(slotUpdateProgress()));
 }
 
-AnalyzerQueue::~AnalyzerQueue() {
+AnalyzerQueue::~AnalyzerQueue()
+{
     stop();
     m_progressInfo.sema.release();
     wait(); //Wait until thread has actually stopped before proceeding.
@@ -67,12 +69,14 @@ AnalyzerQueue::~AnalyzerQueue() {
     //qDebug() << "AnalyzerQueue::~AnalyzerQueue()";
 }
 
-void AnalyzerQueue::addAnalyzer(Analyzer* an) {
+void AnalyzerQueue::addAnalyzer(Analyzer* an)
+{
     m_aq.push_back(an);
 }
 
 // This is called from the AnalyzerQueue thread
-bool AnalyzerQueue::isLoadedTrackWaiting(TrackPointer analysingTrack) {
+bool AnalyzerQueue::isLoadedTrackWaiting(TrackPointer analysingTrack)
+{
     const PlayerInfo& info = PlayerInfo::instance();
     TrackPointer pTrack;
     bool trackWaiting = false;
@@ -131,7 +135,8 @@ bool AnalyzerQueue::isLoadedTrackWaiting(TrackPointer analysingTrack) {
 }
 
 // This is called from the AnalyzerQueue thread
-TrackPointer AnalyzerQueue::dequeueNextBlocking() {
+TrackPointer AnalyzerQueue::dequeueNextBlocking()
+{
     m_qm.lock();
     if (m_tioq.isEmpty()) {
         Event::end("AnalyzerQueue process");
@@ -177,7 +182,8 @@ TrackPointer AnalyzerQueue::dequeueNextBlocking() {
 }
 
 // This is called from the AnalyzerQueue thread
-bool AnalyzerQueue::doAnalysis(TrackPointer tio, mixxx::AudioSourcePointer pAudioSource) {
+bool AnalyzerQueue::doAnalysis(TrackPointer tio, mixxx::AudioSourcePointer pAudioSource)
+{
 
     QTime progressUpdateInhibitTimer;
     progressUpdateInhibitTimer.start(); // Inhibit Updates for 60 milliseconds
@@ -257,7 +263,7 @@ bool AnalyzerQueue::doAnalysis(TrackPointer tio, mixxx::AudioSourcePointer pAudi
         //QThread::usleep(10);
 
         // has something new entered the queue?
-        if (m_aiCheckPriorities.fetchAndStoreAcquire(false)) {
+        if (m_aiCheckPriorities.exchange(false)) {
             if (isLoadedTrackWaiting(tio)) {
                 qDebug() << "Interrupting analysis to give preference to a loaded track.";
                 dieflag = true;
@@ -279,14 +285,16 @@ bool AnalyzerQueue::doAnalysis(TrackPointer tio, mixxx::AudioSourcePointer pAudi
     return !cancelled; //don't return !dieflag or we might reanalyze over and over
 }
 
-void AnalyzerQueue::stop() {
+void AnalyzerQueue::stop()
+{
     m_exit = true;
     m_qm.lock();
     m_qwait.wakeAll();
     m_qm.unlock();
 }
 
-void AnalyzerQueue::run() {
+void AnalyzerQueue::run()
+{
     unsigned static id = 0; // the id of this thread, for debugging purposes
     QThread::currentThread()->setObjectName(QString("AnalyzerQueue %1").arg(++id));
 
@@ -373,7 +381,8 @@ void AnalyzerQueue::run() {
     emit(queueEmpty()); // emit in case of exit;
 }
 
-void AnalyzerQueue::emptyCheck() {
+void AnalyzerQueue::emptyCheck()
+{
     m_qm.lock();
     m_queue_size = m_tioq.size();
     m_qm.unlock();
@@ -383,7 +392,8 @@ void AnalyzerQueue::emptyCheck() {
 }
 
 // This is called from the AnalyzerQueue thread
-void AnalyzerQueue::emitUpdateProgress(TrackPointer track, int progress) {
+void AnalyzerQueue::emitUpdateProgress(TrackPointer track, int progress)
+{
     if (!m_exit) {
         // First tryAcqire will have always success because sema is initialized with on
         // The following tries will success if the previous signal was processed in the GUI Thread
@@ -405,7 +415,8 @@ void AnalyzerQueue::emitUpdateProgress(TrackPointer track, int progress) {
 }
 
 //slot
-void AnalyzerQueue::slotUpdateProgress() {
+void AnalyzerQueue::slotUpdateProgress()
+{
     if (m_progressInfo.current_track) {
         m_progressInfo.current_track->setAnalyzerProgress(
         		m_progressInfo.track_progress);
@@ -418,14 +429,16 @@ void AnalyzerQueue::slotUpdateProgress() {
     m_progressInfo.sema.release();
 }
 
-void AnalyzerQueue::slotAnalyseTrack(TrackPointer tio) {
+void AnalyzerQueue::slotAnalyseTrack(TrackPointer tio)
+{
     // This slot is called from the decks and and samplers when the track was loaded.
     queueAnalyseTrack(tio);
-    m_aiCheckPriorities = true;
+    m_aiCheckPriorities.store(true);
 }
 
 // This is called from the GUI and from the AnalyzerQueue thread
-void AnalyzerQueue::queueAnalyseTrack(TrackPointer tio) {
+void AnalyzerQueue::queueAnalyseTrack(TrackPointer tio)
+{
     m_qm.lock();
     if (!m_tioq.contains(tio)) {
         m_tioq.enqueue(tio);
@@ -436,7 +449,8 @@ void AnalyzerQueue::queueAnalyseTrack(TrackPointer tio) {
 
 // static
 AnalyzerQueue* AnalyzerQueue::createDefaultAnalyzerQueue(
-        UserSettingsPointer pConfig, TrackCollection* pTrackCollection) {
+        UserSettingsPointer pConfig, TrackCollection* pTrackCollection)
+{
     auto ret = new AnalyzerQueue(pTrackCollection);
 
     ret->addAnalyzer(new AnalyzerWaveform(pConfig));
@@ -454,8 +468,9 @@ AnalyzerQueue* AnalyzerQueue::createDefaultAnalyzerQueue(
 
 // static
 AnalyzerQueue* AnalyzerQueue::createAnalysisFeatureAnalyzerQueue(
-        UserSettingsPointer pConfig, TrackCollection* pTrackCollection) {
-    AnalyzerQueue* ret = new AnalyzerQueue(pTrackCollection);
+        UserSettingsPointer pConfig, TrackCollection* pTrackCollection)
+{
+    auto ret = new AnalyzerQueue(pTrackCollection);
 
     if (pConfig->getValue<bool>(ConfigKey("[Library]", "EnableWaveformGenerationWithAnalysis"))) {
         ret->addAnalyzer(new AnalyzerWaveform(pConfig));

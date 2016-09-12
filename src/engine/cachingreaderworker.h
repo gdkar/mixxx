@@ -3,9 +3,10 @@
 
 #include <QtDebug>
 #include <QMutex>
-#include "util/semaphore.hpp"
+#include <QSemaphore>
 #include <QThread>
 #include <QString>
+#include <atomic>
 
 #include "engine/cachingreaderchunk.h"
 #include "track/track.h"
@@ -106,7 +107,8 @@ class CachingReaderWorker : public EngineWorker {
     // last frame with readable sample data.
     SINT m_maxReadableFrameIndex;
 
-    QAtomicInt m_stop;
+    std::atomic<bool> m_stop;
 };
+
 
 #endif /* ENGINE_CACHINGREADERWORKER_H */

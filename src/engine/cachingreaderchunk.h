@@ -2,7 +2,8 @@
 #define ENGINE_CACHINGREADERCHUNK_H
 
 #include "sources/audiosource.h"
-
+#include <utility>
+#include <memory>
 // A Chunk is a memory-resident section of audio that has been cached.
 // Each chunk holds a fixed number kFrames of frames with samples for
 // kChannels.
@@ -22,24 +23,24 @@ public:
     static const SINT kSamples;
 
     // Returns the corresponding chunk index for a frame index
-    inline static SINT indexForFrame(SINT frameIndex) {
+    static SINT indexForFrame(SINT frameIndex) {
         DEBUG_ASSERT(mixxx::AudioSource::getMinFrameIndex() <= frameIndex);
         const SINT chunkIndex = frameIndex / kFrames;
         return chunkIndex;
     }
 
     // Returns the corresponding chunk index for a frame index
-    inline static SINT frameForIndex(SINT chunkIndex) {
+    static SINT frameForIndex(SINT chunkIndex) {
         DEBUG_ASSERT(0 <= chunkIndex);
         return chunkIndex * kFrames;
     }
 
     // Converts frames to samples
-    inline static SINT frames2samples(SINT frames) {
+    static SINT frames2samples(SINT frames) {
         return frames * kChannels;
     }
     // Converts samples to frames
-    inline static SINT samples2frames(SINT samples) {
+    static SINT samples2frames(SINT samples) {
         DEBUG_ASSERT(0 == (samples % kChannels));
         return samples / kChannels;
     }
@@ -88,18 +89,18 @@ public:
             SINT sampleCount) const;
 
 protected:
-    explicit CachingReaderChunk(CSAMPLE* sampleBuffer);
+    explicit CachingReaderChunk();
     virtual ~CachingReaderChunk();
 
     void init(SINT index);
 
 private:
-    volatile SINT m_index;
+    std::atomic<SINT> m_index;
+    std::atomic<SINT> m_frameCount;
+    std::unique_ptr<CSAMPLE[]> m_sampleBuffer{};
 
     // The worker thread will fill the sample buffer and
     // set the frame count.
-    CSAMPLE* const m_sampleBuffer;
-    volatile SINT m_frameCount;
 };
 
 // This derived class is only accessible for the cache as the owner,
@@ -107,7 +108,7 @@ private:
 // the worker thread is in control.
 class CachingReaderChunkForOwner: public CachingReaderChunk {
 public:
-    explicit CachingReaderChunkForOwner(CSAMPLE* sampleBuffer);
+    explicit CachingReaderChunkForOwner();
     virtual ~CachingReaderChunkForOwner();
 
     void init(SINT index);

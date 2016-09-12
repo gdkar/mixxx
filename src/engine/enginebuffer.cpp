@@ -90,7 +90,8 @@ EngineBuffer::EngineBuffer(QObject *p, QString group, UserSettingsPointer pConfi
           m_iSampleRate(0),
           m_pCrossfadeBuffer(SampleUtil::alloc(MAX_BUFFER_LEN)),
           m_bCrossfadeReady(false),
-          m_iLastBufferSize(0) {
+          m_iLastBufferSize(0)
+{
     // zero out crossfade buffer
     SampleUtil::clear(m_pCrossfadeBuffer, MAX_BUFFER_LEN);
 
@@ -434,27 +435,29 @@ void EngineBuffer::readToCrossfadeBuffer(const int iBufferSize)
 }
 void EngineBuffer::clearAndPreroll(double playpos, double preroll)
 {
-    if(!m_rate_old) {
+    if(!m_rate_old || playpos < 0.) {
         m_filepos_play = playpos;
         m_pReadAheadManager->notifySeek(size_t(m_filepos_play)&(~1ul));
         return;
-    }
-    auto target = playpos - preroll / m_rate_old;
-    if(target < 0) {
-        preroll += target * m_rate_old;
-        target = 0;
-    }
-    target = size_t(target) & ~1ul;
-    m_filepos_play = target;
-    m_pScale->clear();
-    CSAMPLE dump[2038];
-    m_pReadAheadManager->notifySeek(m_filepos_play);
-    while(preroll >= 1.) {
-        auto chunk = std::min(1024, int(preroll));
-        chunk = m_pScale->scaleBuffer(dump, 2 * chunk);
-        preroll -= chunk;
-        if(!chunk)
-            break;
+    }else{
+        auto target = playpos - preroll / m_rate_old;
+        if(target < 0) {
+            preroll += target * m_rate_old;
+            target = 0;
+        }
+        target = size_t(target) & ~1ul;
+        m_filepos_play = target;
+        preroll = (playpos - m_filepos_play) / m_rate_old;
+        m_pReadAheadManager->notifySeek(m_filepos_play);
+        m_pScale->clear();
+        CSAMPLE dump[512];
+        while(preroll >= 1.) {
+            auto chunk = std::min(256, int(preroll));
+            chunk = m_pScale->scaleBuffer(dump, 2 * chunk);
+            preroll -= chunk;
+            if(chunk < 1.)
+                break;
+        }
     }
 }
 // WARNING: This method is not thread safe and must not be called from outside
@@ -469,9 +472,9 @@ void EngineBuffer::setNewPlaypos(double newpos)
         readToCrossfadeBuffer(m_iLastBufferSize);
     } else {
         clearAndPreroll(m_filepos_play,256);
-//        m_pReadAheadManager->notifySeek(m_filepos_play);
+        m_pReadAheadManager->notifySeek(m_filepos_play);
     }
-//    m_pScale->clear();
+    m_pScale->clear();
     // Ensures that the playpos slider gets updated in next process call
     m_iSamplesCalculated = 1000000;
     // Must hold the engineLock while using m_engineControls

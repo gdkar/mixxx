@@ -39,24 +39,19 @@ CachingReader::CachingReader(QString group,
           m_readerStatus(INVALID),
           m_mruCachingReaderChunk(nullptr),
           m_lruCachingReaderChunk(nullptr),
-          m_sampleBuffer(CachingReaderChunk::kSamples * maximumCachingReaderChunksInMemory),
           m_maxReadableFrameIndex(mixxx::AudioSource::getMinFrameIndex()),
           m_worker(group, &m_chunkReadRequestFIFO, &m_readerStatusFIFO) {
 
     m_allocatedCachingReaderChunks.reserve(maximumCachingReaderChunksInMemory);
 
-    CSAMPLE* bufferStart = m_sampleBuffer.data();
-
     // Divide up the allocated raw memory buffer into total_chunks
     // chunks. Initialize each chunk to hold nothing and add it to the free
     // list.
     for (int i = 0; i < maximumCachingReaderChunksInMemory; ++i) {
-        CachingReaderChunkForOwner* c = new CachingReaderChunkForOwner(bufferStart);
+        CachingReaderChunkForOwner* c = new CachingReaderChunkForOwner();
 
         m_chunks.push_back(c);
         m_freeChunks.push_back(c);
-
-        bufferStart += CachingReaderChunk::kSamples;
     }
 
     // Forward signals from worker
