@@ -670,7 +670,7 @@ void ControllerEngine::trigger(QString group, QString name)
 {
     auto  coScript = getControlObjectScript(group, name);
     if (coScript != nullptr) {
-        coScript->emitValueChanged();
+        coScript->valueChanged(coScript->get());
     }
 }
 
