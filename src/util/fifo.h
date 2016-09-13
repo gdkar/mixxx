@@ -13,8 +13,13 @@
 #include "util/class.h"
 #include "util/math.h"
 
-template <class T>
-class FIFO {
+namespace detail {
+
+template <class T, bool trivial>
+class fifo{ };
+
+template<class T>
+class fifo<T,true> {
   public:
     using value_type      = T;
     using size_type       = std::size_t;
@@ -34,13 +39,13 @@ class FIFO {
     std::atomic<difference_type> m_widx{0};
 
   public:
-    explicit FIFO(size_type size)
+    explicit fifo(size_type size)
     : bufferSize(roundUpToPowerOf2(size))
     , bigMask   ((bufferSize * 2) - 1)
     , smallMask ( bufferSize - 1)
     , m_data    ( std::make_unique<T[]>(bufferSize))
     { }
-    virtual ~FIFO() = default;
+    virtual ~fifo() = default;
     bool empty() const
     {
         auto ridx = m_ridx.load(std::memory_order_relaxed);
@@ -236,6 +241,252 @@ class FIFO {
     {
         return m_widx.load(std::memory_order_acquire);
     }
+};
+template<class T>
+class fifo<T,false> {
+    using storage_type = std::aligned_storage_t<
+        sizeof(T),
+        std::alignment_of<T>::value
+        >;
+    static T& t_cast(storage_type &x) { return *reinterpret_cast<T*>(&x);}
+    static const T& t_cast(const storage_type &x) { return *reinterpret_cast<const T*>(&x);}
+  public:
+    using value_type      = T;
+    using size_type       = std::size_t;
+    using difference_type = std::int64_t;
+    using const_reference = const T&;
+    using const_pointer   = const T*;
+
+    using reference       = T&;
+    using pointer         = T*;
+
+  protected:
+    size_type        bufferSize{};
+    difference_type  bigMask{};
+    difference_type  smallMask{};
+    std::unique_ptr<storage_type[]> m_data{};
+    std::atomic<difference_type> m_ridx{0};
+    std::atomic<difference_type> m_widx{0};
+
+  public:
+    explicit fifo(size_type size)
+    : bufferSize(roundUpToPowerOf2(size))
+    , bigMask   ((bufferSize * 2) - 1)
+    , smallMask ( bufferSize - 1)
+    , m_data    ( std::make_unique<storage_type[]>(bufferSize))
+    { }
+    bool empty() const
+    {
+        auto ridx = m_ridx.load(std::memory_order_relaxed);
+        auto widx = m_widx.load(std::memory_order_relaxed);
+        std::atomic_thread_fence(std::memory_order_acquire);
+        return ridx == widx;
+    }
+    bool full() const
+    {
+        auto ridx = m_ridx.load(std::memory_order_relaxed);
+        auto widx = m_widx.load(std::memory_order_relaxed);
+        std::atomic_thread_fence(std::memory_order_acquire);
+        return size_type((widx - ridx) & bigMask) == bufferSize;
+    }
+    reference front()
+    {
+        auto ridx = m_ridx.load(std::memory_order_relaxed);
+        std::atomic_thread_fence(std::memory_order_acquire);
+        return t_cast(m_data[ridx & smallMask]);
+    }
+    reference operator[](difference_type x)
+    {
+        auto idx = ((x>=0)?m_ridx:m_widx).load(std::memory_order_relaxed);
+        auto off  = (idx + x) & smallMask;
+        std::atomic_thread_fence(std::memory_order_acquire);
+        return t_cast(m_data[off]);
+    }
+    const_reference operator[](difference_type x) const
+    {
+        auto idx = ((x>=0)?m_ridx:m_widx).load(std::memory_order_relaxed);
+        auto off  = (idx + x) & smallMask;
+        std::atomic_thread_fence(std::memory_order_acquire);
+        return t_cast(m_data[off]);
+    }
+    const_reference front() const
+    {
+        auto ridx = m_ridx.load(std::memory_order_relaxed);
+        std::atomic_thread_fence(std::memory_order_acquire);
+        return t_cast(m_data[ridx & smallMask]);
+    }
+    reference back()
+    {
+        auto widx = m_widx.load(std::memory_order_relaxed);
+        return t_cast(m_data[widx & smallMask]);
+    }
+    void pop_front()
+    {
+        front().~T();
+        m_ridx.fetch_add(1,std::memory_order_release);
+    }
+    void push_back(const_reference item)
+    {
+        ::new( &back()) T (item);
+//        back() = item;
+        std::atomic_thread_fence(std::memory_order_release);
+        m_widx.fetch_add(1,std::memory_order_release);
+    }
+    void push_back(T &&item)
+    {
+        ::new(&back()) T (std::forward<item>(item));
+        std::atomic_thread_fence(std::memory_order_release);
+        m_widx.fetch_add(1,std::memory_order_release);
+    }
+    template<class... Args>
+    void emplace_back(Args && ...args)
+    {
+        ::new( &back() ) T (std::forward<Args>(args)...);
+        std::atomic_thread_fence(std::memory_order_release);
+        m_widx.fetch_add(1,std::memory_order_release);
+    }
+    size_type capacity() const
+    {
+        return bufferSize;
+    }
+    size_type readAvailable() const
+    {
+        auto ridx = m_ridx.load(std::memory_order_relaxed);
+        auto widx = m_widx.load(std::memory_order_relaxed);
+        std::atomic_thread_fence(std::memory_order_acquire);
+        return (widx - ridx) & bigMask;
+    }
+    size_type writeAvailable() const
+    {
+        return bufferSize - readAvailable();
+    }
+    size_type read(T* pData, size_type count)
+    {
+        auto data0 = pointer{},data1=pointer{};
+        auto size0 = size_type{}, size1=size_type{};
+        count = acquireReadRegions(count, &data0, &size0, &data1, &size1);
+        if(size0) {
+            pData = std::move(data0, data0 + size0, pData);
+            for(auto ptr = data0; ptr < data0 + size0; ++ptr)
+                ptr->~T();
+            if(size1) {
+                std::copy_n(data1, size1, pData);
+                for(auto ptr = data1; ptr < data1 + size1; ++ptr)
+                    ptr->~T();
+            }
+        }
+        return releaseReadRegions(count);
+    }
+    size_type write(const T* pData, size_type count)
+    {
+        auto data0 = pointer{},data1=pointer{};
+        auto size0 = size_type{}, size1=size_type{};
+        count = acquireWriteRegions(count, &data0, &size0, &data1, &size1);
+        if(size0) {
+            for(auto ptr = data0; ptr != (data0+size0); (++ptr),(++pData))
+                ::new(ptr) T (*pData);
+            if(size1) {
+                for(auto ptr = data1; ptr != (data1+size1); ++ptr,++pData)
+                    ::new(ptr) T(*pData);
+            }
+        }
+        return releaseWriteRegions(count);
+    }
+    void writeBlocking(const T* pData, size_type count) {
+        auto written = size_type{0};
+        while (written != count) {
+            auto i = write(pData, count);
+            pData   += i;
+            written += i;
+        }
+    }
+    size_type acquireWriteRegions(size_type count,
+            pointer* dataPtr1, size_type *sizePtr1,
+            pointer* dataPtr2, size_type* sizePtr2)
+    {
+        auto ridx = m_ridx.load(std::memory_order_acquire);
+        auto widx = m_widx.load(std::memory_order_acquire);
+        if((count = std::min<size_type>(count, bufferSize - ((widx-ridx)&bigMask)))) {
+            auto woff = widx & smallMask;
+            auto size1 = std::min<size_type>(count, bufferSize - woff);
+           *sizePtr1 = size1;
+           *dataPtr1 = reinterpret_cast<T*>(&m_data[woff]);
+           *sizePtr2 = count - size1;
+           *dataPtr2 = reinterpret_cast<T*>(&m_data[0]);
+            std::atomic_thread_fence(std::memory_order_acquire);
+        }else{
+            *dataPtr1 = *dataPtr2 = nullptr;
+            *sizePtr1 = *sizePtr2 = 0;
+        }
+        return count;
+    }
+    size_type releaseWriteRegions(size_type count)
+    {
+        auto ridx = m_ridx.load(std::memory_order_acquire);
+        auto widx = m_widx.load(std::memory_order_acquire);
+        count = std::min<size_type>(count, bufferSize - ((widx-ridx)&bigMask));
+        std::atomic_thread_fence(std::memory_order_release);
+        m_widx.fetch_add(count,std::memory_order_release);
+        return count;
+    }
+    size_type acquireReadRegions(size_type count,
+            pointer* dataPtr1, size_type* sizePtr1,
+            pointer* dataPtr2, size_type* sizePtr2)
+    {
+        auto ridx = m_ridx.load(std::memory_order_acquire);
+        auto widx = m_widx.load(std::memory_order_acquire);
+        if((count = std::min<size_type>(count, (widx-ridx)&bigMask))){
+            auto roff = ridx & smallMask;
+            auto size1 = std::min<size_type>(count, bufferSize - roff);
+           *sizePtr1 = size1;
+           *dataPtr1 = reinterpret_cast<T*>(&m_data[roff]);
+           *sizePtr2 = count - size1;
+           *dataPtr2 = reinterpret_cast<T*>(&m_data[0]);
+            std::atomic_thread_fence(std::memory_order_acquire);
+        }else{
+            *dataPtr1 = *dataPtr2 = nullptr;
+            *sizePtr1 = *sizePtr2 = 0;
+        }
+        return count;
+    }
+    size_type releaseReadRegions(size_type count)
+    {
+        auto ridx = m_ridx.load(std::memory_order_acquire);
+        auto widx = m_widx.load(std::memory_order_acquire);
+        count = std::min<size_type>(count, (widx-ridx)&bigMask);
+        if(count){
+            for(auto idx = ridx; idx < difference_type(ridx + count); ++idx)
+                t_cast(m_data[idx&smallMask]).~T();
+            std::atomic_thread_fence(std::memory_order_release);
+            m_ridx.fetch_add(count,std::memory_order_relaxed);
+        }
+        return count;
+    }
+    size_type flushReadData(size_type count)
+    {
+        return releaseReadRegions(count);
+    }
+    void clear()
+    {
+        while(!empty()){
+            flushReadData(readAvailable());
+        }
+    }
+    difference_type read_index() const
+    {
+        return m_ridx.load(std::memory_order_acquire);
+    }
+    difference_type write_index() const
+    {
+        return m_widx.load(std::memory_order_acquire);
+    }
+};
+}
+template<class T>
+class FIFO : public detail::fifo<T, std::is_trivial<T>::value> {
+public:
+    using super = detail::fifo<T,std::is_trivial<T>::value >;
+    using super::super;
 };
 
 // MessagePipe represents one side of a TwoWayMessagePipe. The direction of the
