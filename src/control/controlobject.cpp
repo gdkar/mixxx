@@ -25,8 +25,13 @@
 #include "util/stat.h"
 #include "util/timer.h"
 
-ControlObject::ControlObject() {
+ControlObject::ControlObject(QObject *p) : QObject(p) { }
+ControlObject::ControlObject(ConfigKey key, QObject *p)
+: ControlObject(p)
+{
+    initialize(key, true,false,false);
 }
+
 
 ControlObject::ControlObject(ConfigKey key, bool bIgnoreNops, bool bTrack,
                              bool bPersist) {
@@ -38,7 +43,11 @@ ControlObject::~ControlObject() {
         m_pControl->removeCreatorCO();
     }
 }
-
+void ControlObject::trigger()
+{
+    if(m_pControl)
+        m_pControl->trigger();
+}
 void ControlObject::initialize(ConfigKey key, bool bIgnoreNops, bool bTrack,
                                bool bPersist) {
     m_key = key;
@@ -55,11 +64,21 @@ void ControlObject::initialize(ConfigKey key, bool bIgnoreNops, bool bTrack,
         connect(m_pControl.data(), SIGNAL(valueChanged(double, QObject*)),
                 this, SLOT(privateValueChanged(double, QObject*)),
                 Qt::DirectConnection);
+        connect(
+            m_pControl.data()
+            ,&ControlDoublePrivate::trigger
+            , this
+            ,&ControlObject::triggered
+            , static_cast<Qt::ConnectionType>(
+                Qt::DirectConnection
+              | Qt::UniqueConnection
+                )
+            );
     }
 }
-
 // slot
-void ControlObject::privateValueChanged(double dValue, QObject* pSender) {
+void ControlObject::privateValueChanged(double dValue, QObject* pSender)
+{
     // Only emit valueChanged() if we did not originate this change.
     if (pSender != this) {
         emit(valueChanged(dValue));
@@ -69,7 +88,8 @@ void ControlObject::privateValueChanged(double dValue, QObject* pSender) {
 }
 
 // static
-ControlObject* ControlObject::getControl(const ConfigKey& key, bool warn) {
+ControlObject* ControlObject::getControl(const ConfigKey& key, bool warn)
+{
     //qDebug() << "ControlObject::getControl for (" << key.group << "," << key.item << ")";
     QSharedPointer<ControlDoublePrivate> pCDP = ControlDoublePrivate::getControl(key, warn);
     if (pCDP) {

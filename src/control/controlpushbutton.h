@@ -35,7 +35,7 @@ class ControlPushButton : public ControlObject {
          LONGPRESSLATCHING,
          TRIGGER,
     };
-
+    Q_ENUM(ButtonMode);
     static QString buttonModeToString(int mode) {
         switch(mode) {
             case ControlPushButton::PUSH:

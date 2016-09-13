@@ -91,7 +91,7 @@ class ControlDoublePrivate : public QObject {
     // pointer to the setter of the value (potentially NULL).
     void valueChanged(double value, QObject* pSender);
     void valueChangeRequest(double value);
-
+    void trigger();
   private:
     ControlDoublePrivate(ConfigKey key, ControlObject* pCreatorCO,
                          bool bIgnoreNops, bool bTrack, bool bPersist);

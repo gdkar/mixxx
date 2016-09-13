@@ -40,36 +40,36 @@ class ControlProxy : public QObject {
         emit(valueChanged(get()));
     }
 
-    inline bool valid() const { return m_pControl != NULL; }
+    bool valid() const { return m_pControl != NULL; }
 
     // Returns the value of the object. Thread safe, non-blocking.
-    inline double get() const {
+    double get() const {
         return m_pControl ? m_pControl->get() : 0.0;
     }
 
     // Returns the bool interpretation of the value
-    inline bool toBool() const {
+    bool toBool() const {
         return get() > 0.0;
     }
 
     // Returns the parameterized value of the object. Thread safe, non-blocking.
-    inline double getParameter() const {
+    double getParameter() const {
         return m_pControl ? m_pControl->getParameter() : 0.0;
     }
 
     // Returns the parameterized value of the object. Thread safe, non-blocking.
-    inline double getParameterForValue(double value) const {
+    double getParameterForValue(double value) const {
         return m_pControl ? m_pControl->getParameterForValue(value) : 0.0;
     }
 
     // Returns the normalized parameter of the object. Thread safe, non-blocking.
-    inline double getDefault() const {
+    double getDefault() const {
         return m_pControl ? m_pControl->defaultValue() : 0.0;
     }
 
   public slots:
     // Set the control to a new value. Non-blocking.
-    inline void slotSet(double v) {
+    void slotSet(double v) {
         set(v);
     }
     // Sets the control value to v. Thread safe, non-blocking.
@@ -95,12 +95,12 @@ class ControlProxy : public QObject {
             m_pControl->reset();
         }
     }
-
+    void trigger();
   signals:
     // This signal must not connected by connect(). Use connectValueChanged()
     // instead. It will connect to the base ControlDoublePrivate as well.
     void valueChanged(double);
-
+    void triggered();
   protected slots:
     // Receives the value from the master control by a unique direct connection
     void slotValueChangedDirect(double v, QObject* pSetter) {

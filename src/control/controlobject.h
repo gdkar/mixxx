@@ -29,8 +29,8 @@
 class ControlObject : public QObject {
     Q_OBJECT
   public:
-    ControlObject();
-
+    ControlObject(QObject *p = nullptr);
+    ControlObject(ConfigKey key, QObject *p);
     // bIgnoreNops: Don't emit a signal if the CO is set to its current value.
     // bTrack: Record statistics about this control.
     // bPersist: Store value on exit, load on startup.
@@ -143,11 +143,11 @@ class ControlObject : public QObject {
     // ref: http://qt-project.org/doc/qt-4.8/qt.html#ConnectionType-enum
     bool connectValueChangeRequest(const QObject* receiver,
                                    const char* method, Qt::ConnectionType type = Qt::AutoConnection);
-
+    virtual void trigger();
   signals:
     void valueChanged(double);
     void valueChangedFromEngine(double);
-
+    void triggered();
   public:
     // DEPRECATED: Called to set the control value from the controller
     // subsystem.

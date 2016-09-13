@@ -29,9 +29,25 @@ void ControlProxy::initialize(const ConfigKey& key) {
     // Don't bother looking up the control if key is NULL. Prevents log spew.
     if (!key.isNull()) {
         m_pControl = ControlDoublePrivate::getControl(key);
+        if(m_pControl){
+            connect(
+                m_pControl.data()
+              ,&ControlDoublePrivate::trigger
+              , this
+              ,&ControlProxy::triggered
+              , static_cast<Qt::ConnectionType>(
+                    Qt::AutoConnection
+                  | Qt::UniqueConnection
+                    )
+                );
+        }
     }
 }
-
+void ControlProxy::trigger()
+{
+    if(m_pControl)
+        m_pControl->trigger();
+}
 ControlProxy::~ControlProxy() {
     //qDebug() << "ControlProxy::~ControlProxy()";
 }
