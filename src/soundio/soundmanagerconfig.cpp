@@ -22,14 +22,14 @@
 #include "util/math.h"
 
 // this (7) represents latency values from 1 ms to about 80 ms -- bkgood
-const unsigned int SoundManagerConfig::kMaxAudioBufferSizeIndex = 7;
+const unsigned int SoundManagerConfig::kMaxAudioBufferSizeIndex = 12;
 
 const QString SoundManagerConfig::kDefaultAPI = QString("None");
 // Sample Rate even the cheap sound Devices will support most likely
 const unsigned int SoundManagerConfig::kFallbackSampleRate = 48000;
 const unsigned int SoundManagerConfig::kDefaultDeckCount = 2;
 // audioBufferSizeIndex=5 means about 21 ms of latency which is default in trunk r2453 -- bkgood
-const int SoundManagerConfig::kDefaultAudioBufferSizeIndex = 5;
+const int SoundManagerConfig::kDefaultAudioBufferSizeIndex = 6;
 
 const int SoundManagerConfig::kDefaultSyncBuffers = 2;
 
@@ -38,7 +38,8 @@ SoundManagerConfig::SoundManagerConfig()
       m_sampleRate(kFallbackSampleRate),
       m_deckCount(kDefaultDeckCount),
       m_audioBufferSizeIndex(kDefaultAudioBufferSizeIndex),
-      m_syncBuffers(2) {
+      m_syncBuffers(2)
+{
     m_configFile = QFileInfo(QDir(CmdlineArgs::Instance().getSettingsPath()).filePath(SOUNDMANAGERCONFIG_FILENAME));
 }
 
@@ -52,10 +53,10 @@ SoundManagerConfig::~SoundManagerConfig() {
  * path
  * @returns false if the file can't be read or is invalid XML, true otherwise
  */
-bool SoundManagerConfig::readFromDisk() {
+bool SoundManagerConfig::readFromDisk()
+{
     QFile file(m_configFile.absoluteFilePath());
     QDomDocument doc;
-    QDomElement rootElement;
     if (!file.open(QIODevice::ReadOnly)) {
         return false;
     }
@@ -64,7 +65,7 @@ bool SoundManagerConfig::readFromDisk() {
         return false;
     }
     file.close();
-    rootElement = doc.documentElement();
+    auto rootElement = doc.documentElement();
     setAPI(rootElement.attribute("api"));
     setSampleRate(rootElement.attribute("samplerate", "0").toUInt());
     // audioBufferSizeIndex is refereed as "latency" in the config file
@@ -118,9 +119,10 @@ bool SoundManagerConfig::readFromDisk() {
     return true;
 }
 
-bool SoundManagerConfig::writeToDisk() const {
+bool SoundManagerConfig::writeToDisk() const
+{
     QDomDocument doc("SoundManagerConfig");
-    QDomElement docElement(doc.createElement("SoundManagerConfig"));
+    auto docElement = doc.createElement("SoundManagerConfig");
     docElement.setAttribute("api", m_api);
     docElement.setAttribute("samplerate", m_sampleRate);
     // audioBufferSizeIndex is refereed as "latency" in the config file
@@ -202,22 +204,26 @@ void SoundManagerConfig::setSyncBuffers(unsigned int syncBuffers) {
  * @returns false if the sample rate is not found in SoundManager's list,
  *          otherwise true
  */
-bool SoundManagerConfig::checkSampleRate(const SoundManager &soundManager) {
+bool SoundManagerConfig::checkSampleRate(const SoundManager &soundManager)
+{
     if (!soundManager.getSampleRates(m_api).contains(m_sampleRate)) {
         return false;
     }
     return true;
 }
 
-unsigned int SoundManagerConfig::getDeckCount() const {
+unsigned int SoundManagerConfig::getDeckCount() const
+{
     return m_deckCount;
 }
 
-void SoundManagerConfig::setDeckCount(unsigned int deckCount) {
+void SoundManagerConfig::setDeckCount(unsigned int deckCount)
+{
     m_deckCount = deckCount;
 }
 
-void SoundManagerConfig::setCorrectDeckCount(int configuredDeckCount) {
+void SoundManagerConfig::setCorrectDeckCount(int configuredDeckCount)
+{
     int minimum_deck_count = 0;
 
     foreach (QString device, m_outputs.keys().toSet().unite(m_inputs.keys().toSet())) {
@@ -246,11 +252,13 @@ void SoundManagerConfig::setCorrectDeckCount(int configuredDeckCount) {
     }
 }
 
-unsigned int SoundManagerConfig::getAudioBufferSizeIndex() const {
+unsigned int SoundManagerConfig::getAudioBufferSizeIndex() const
+{
     return m_audioBufferSizeIndex;
 }
 
-unsigned int SoundManagerConfig::getFramesPerBuffer() const {
+unsigned int SoundManagerConfig::getFramesPerBuffer() const
+{
     // endless loop otherwise
     unsigned int audioBufferSizeIndex = m_audioBufferSizeIndex;
     DEBUG_ASSERT_AND_HANDLE(audioBufferSizeIndex > 0) {
@@ -259,11 +267,13 @@ unsigned int SoundManagerConfig::getFramesPerBuffer() const {
     unsigned int framesPerBuffer = 1;
     double sampleRate = m_sampleRate; // need this to avoid int division
     // first, get to the framesPerBuffer value corresponding to latency index 1
-    for (; framesPerBuffer / sampleRate * 1000 < 1.0; framesPerBuffer *= 2) {
-    }
-    // then, keep going until we get to our desired latency index (if not 1)
-    for (unsigned int latencyIndex = 1; latencyIndex < audioBufferSizeIndex; ++latencyIndex) {
-        framesPerBuffer <<= 1; // *= 2
+    for (; framesPerBuffer / sampleRate * 1000 < 1.0; framesPerBuffer *= 2) { }
+    auto framesIncrement = framesPerBuffer;
+    for (auto i = 0u; i < audioBufferSizeIndex - 1; ++i) {
+        // i + 1 in the next line is a latency index as described in SSConfig
+        framesPerBuffer += framesIncrement;
+        if(!(framesPerBuffer&(framesPerBuffer-1)) && (framesPerBuffer >= 4*framesIncrement))
+            framesIncrement <<= 1;
     }
     return framesPerBuffer;
 }
@@ -329,7 +339,8 @@ void SoundManagerConfig::filterOutputs(SoundManager *soundManager) {
  * Removes any inputs with devices that do not exist in the given
  * SoundManager.
  */
-void SoundManagerConfig::filterInputs(SoundManager *soundManager) {
+void SoundManagerConfig::filterInputs(SoundManager *soundManager)
+{
     QSet<QString> deviceNames;
     QSet<QString> toDelete;
     foreach (SoundDevice *device, soundManager->getDeviceList(m_api, false, true)) {

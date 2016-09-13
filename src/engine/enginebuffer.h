@@ -20,6 +20,10 @@
 
 #include <atomic>
 #include <QMutex>
+#include <QObject>
+#include <QMetaObject>
+#include <QMetaType>
+#include <QMetaEnum>
 #include <gtest/gtest_prod.h>
 
 #include "engine/cachingreader.h"
@@ -32,11 +36,6 @@
 #include "util/rotary.h"
 #include "util/types.h"
 
-//for the writer
-#ifdef __SCALER_DEBUG__
-#include <QFile>
-#include <QTextStream>
-#endif
 
 class EngineChannel;
 class EngineControl;
@@ -82,27 +81,27 @@ const int kiBpmUpdateCnt = 4; // about 2.5 updates per sec
 
 class EngineBuffer : public EngineObject {
      Q_OBJECT
-  private:
-    enum SyncRequestQueued {
-        SYNC_REQUEST_NONE,
-        SYNC_REQUEST_ENABLE,
-        SYNC_REQUEST_DISABLE,
-        SYNC_REQUEST_ENABLEDISABLE,
-    };
   public:
-    enum SeekRequest {
-        SEEK_NONE = 0x00,
-        SEEK_PHASE = 0x01,
-        SEEK_EXACT = 0x02,
-        SEEK_STANDARD = 0x03, // = (SEEK_EXACT | SEEK_PHASE)
+    enum SyncRequest{
+        None,
+        Enable,
+        Disable,
+        Enable_Disable,
+    };
+    Q_ENUM(SyncRequest)
+    enum class SeekRequest {
+        None     = 0x00,
+        Phase    = 0x01,
+        Exact    = 0x02,
+        Standard = 0x03, // = (SEEK_EXACT | SEEK_PHASE)
     };
     Q_DECLARE_FLAGS(SeekRequests, SeekRequest);
 
-    enum KeylockEngine {
-        SOUNDTOUCH,
-        RUBBERBAND,
-        KEYLOCK_ENGINE_COUNT,
+    enum class KeylockEngine {
+        SoundTouch,
+        RubberBand,
     };
+    Q_ENUM(KeylockEngine);
 
     EngineBuffer(QObject *p, QString _group, UserSettingsPointer pConfig,
                  EngineChannel* pChannel, EngineMaster* pMixingEngine);
@@ -140,26 +139,7 @@ class EngineBuffer : public EngineObject {
 
     void collectFeatures(GroupFeatureState* pGroupFeatures) const;
 
-    // For dependency injection of readers.
-    //void setReader(CachingReader* pReader);
-
-    // For dependency injection of scalers.
-    void setScalerForTest(EngineBufferScale* pScaleVinyl,
-                          EngineBufferScale* pScaleKeylock);
-
     // For dependency injection of fake tracks, with an optional filebpm value.
-    TrackPointer loadFakeTrack(double filebpm = 0);
-
-    static QString getKeylockEngineName(KeylockEngine engine) {
-        switch (engine) {
-        case SOUNDTOUCH:
-            return tr("Soundtouch (faster)");
-        case RUBBERBAND:
-            return tr("Rubberband (better)");
-        default:
-            return tr("Unknown (bad value)");
-        }
-    }
 
     // Request that the EngineBuffer load a track. Since the process is
     // asynchronous, EngineBuffer will emit a trackLoaded signal when the load
@@ -361,14 +341,12 @@ class EngineBuffer : public EngineObject {
 
     // Indicates whether the scaler has changed since the last process()
     bool m_bScalerChanged;
-    // Indicates that dependency injection has taken place.
-    bool m_bScalerOverride;
 
-    std::atomic<int>    m_iSeekQueued;
-    std::atomic<int>    m_iSeekPhaseQueued;
-    std::atomic<int>    m_iEnableSyncQueued;
-    std::atomic<int>    m_iSyncModeQueued;
-    std::atomic<double> m_queuedSeekPosition;
+    std::atomic<SeekRequest>    m_iSeekQueued;
+    std::atomic<bool>           m_iSeekPhaseQueued;
+    std::atomic<SyncRequest>    m_iEnableSyncQueued;
+    std::atomic<SyncMode>       m_iSyncModeQueued;
+    std::atomic<double>         m_queuedSeekPosition;
 
     // Is true if the previous buffer was silent due to pausing
     std::atomic<int> m_iTrackLoading;
@@ -378,10 +356,6 @@ class EngineBuffer : public EngineObject {
     int m_iSampleRate;
 
     TrackPointer m_pCurrentTrack;
-#ifdef __SCALER_DEBUG__
-    QFile df;
-    QTextStream writer;
-#endif
 
     // Certain operations like seeks and engine changes need to be crossfaded
     // to eliminate clicks and pops.
