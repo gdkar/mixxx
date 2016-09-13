@@ -11,7 +11,6 @@
 #include "mixer/playerinfo.h"
 #include "control/controlobject.h"
 #include "library/dao/trackdao.h"
-#include "track/trackmetadatataglib.h"
 #include "util/dnd.h"
 
 BrowseTableModel::BrowseTableModel(QObject* parent,
@@ -317,7 +316,7 @@ bool BrowseTableModel::setData(const QModelIndex &index, const QVariant &value,
 
     auto item = itemFromIndex(index);
     auto track_location = getTrackLocation(index);
-    if (OK == mixxx::taglib::writeTrackMetadataIntoFile(trackMetadata, track_location)) {
+    if (false){
         // Modify underlying interalPointer object
         item->setText(value.toString());
         item->setToolTip(item->text());

@@ -527,21 +527,6 @@ class RubberBand(Dependence):
             raise Exception(
                 "Could not find librubberband or its development headers.")
 
-class TagLib(Dependence):
-    def configure(self, build, conf):
-        libs = ['tag']
-        if not conf.CheckLib(libs):
-            raise Exception(
-                "Could not find libtag or its development headers.")
-
-        # Karmic seems to have an issue with mp4tag.h where they don't include
-        # the files correctly. Adding this folder ot the include path should fix
-        # it, though might cause issues. This is safe to remove once we
-        # deprecate Karmic support. rryan 2/2011
-        build.env.Append(CPPPATH='/usr/include/taglib/')
-        if build.platform_is_windows and build.static_dependencies:
-            build.env.Append(CPPDEFINES='TAGLIB_STATIC')
-
 class Chromaprint(Dependence):
     def configure(self, build, conf):
         if not conf.CheckLib(['chromaprint', 'libchromaprint', 'chromaprint_p', 'libchromaprint_p']):
@@ -1022,7 +1007,6 @@ class MixxxCore(Feature):
                    "track/replaygain.cpp",
                    "track/track.cpp",
                    "track/trackmetadata.cpp",
-                   "track/trackmetadatataglib.cpp",
                    "track/tracknumbers.cpp",
 
                    "mixer/auxiliary.cpp",
@@ -1343,7 +1327,7 @@ class MixxxCore(Feature):
 
     def depends(self, build):
         return [SoundTouch, ReplayGain, Ebur128Mit, PortAudio, PortMIDI, FFMPEG, RtMidi, Qt, TestHeaders,
-                FidLib, SndFile, OggVorbis, OpenGL, TagLib, ProtoBuf,
+                FidLib, SndFile, OggVorbis, OpenGL, ProtoBuf,
                 Chromaprint, RubberBand, SecurityFramework, CoreServices,
                 QtScriptByteArray, Reverb, FpClassify, PortAudioRingBuffer]
 

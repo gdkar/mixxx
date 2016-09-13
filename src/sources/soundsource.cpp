@@ -1,7 +1,5 @@
 #include "sources/soundsource.h"
 
-#include "track/trackmetadatataglib.h"
-
 namespace mixxx {
 
 /*static*/ QString SoundSource::getFileExtensionFromUrl(const QUrl& url) {
@@ -51,6 +49,7 @@ SoundSource::OpenResult SoundSource::open(const AudioSourceConfig& audioSrcCfg)
 Result SoundSource::writeTrackMetadata(
         const TrackMetadata& trackMetadata) const
 {
-    return taglib::writeTrackMetadataIntoFile(trackMetadata, getLocalFileName());
+    return ERR;
+//    return taglib::writeTrackMetadataIntoFile(trackMetadata, getLocalFileName());
 }
 } //namespace mixxx

@@ -102,19 +102,24 @@ SoundSource::OpenResult SoundSourceFFmpeg::tryOpen(const AudioSourceConfig &conf
         m_packet.unref();
       }
     }while ( ret >= 0 );
+
     if ( discarded )
         qDebug() << __FUNCTION__ << "discarded" << discarded << "packets from other streams when demuxing" << filename;
     if ( m_stream->start_time != AV_NOPTS_VALUE )
         m_first_pts = m_stream->start_time;
     else if ( m_pkt_array.size() )
         m_first_pts = m_pkt_array.front()->pts;
-    m_pkt_index = 0;
-    if ( m_pkt_index < decltype(m_pkt_index)(m_pkt_array.size() ) )
-        m_packet = m_pkt_array.at(m_pkt_index);
-    setFrameCount ( av_rescale_q ( m_pkt_array.back()->pts + m_pkt_array.back()->duration - m_first_pts, m_stream_tb, m_output_tb ) );
 
-    decode_next_frame ();
-    return OpenResult::SUCCEEDED;
+    m_pkt_index = 0;
+    if(m_pkt_array.empty()){
+        setFrameCount(0);
+        return OpenResult::SUCCEEDED;
+    }else{
+        m_packet = m_pkt_array.at(m_pkt_index);
+        setFrameCount ( av_rescale_q ( m_pkt_array.back()->pts + m_pkt_array.back()->duration - m_first_pts, m_stream_tb, m_output_tb ) );
+        decode_next_frame ();
+        return OpenResult::SUCCEEDED;
+    }
 }
 void SoundSourceFFmpeg::close()
 {
@@ -134,6 +139,8 @@ SINT SoundSourceFFmpeg::seekSampleFrame(SINT frameIndex)
 {
     ScopedTimer top(__PRETTY_FUNCTION__);
     DEBUG_ASSERT(isValidFrameIndex(frameIndex));
+    if(!m_pkt_array.size())
+        return 0;
     if ( m_frame->pts == AV_NOPTS_VALUE && !decode_next_frame ( ) )
         return -1;
     auto first_sample = av_rescale_q ( m_frame->pts-m_first_pts, m_stream_tb, m_output_tb );
@@ -142,6 +149,7 @@ SINT SoundSourceFFmpeg::seekSampleFrame(SINT frameIndex)
       m_offset = frameIndex - first_sample;
       return     frameIndex;
     }
+
     if ( frame_pts < ( m_pkt_array.front()->pts - m_first_pts ) ){
       m_pkt_index =  0;
       m_codec_ctx.flush_buffers();
@@ -201,7 +209,7 @@ SINT SoundSourceFFmpeg::seekSampleFrame(SINT frameIndex)
         m_pkt_index--;
     {
         ScopedTimer t("decode after seek.");
-        avcodec_flush_buffers(m_codec_ctx);
+        m_codec_ctx.flush_buffers();
         decode_next_frame ();
     }
     first_sample = av_rescale_q ( m_frame->pts - m_first_pts, m_stream_tb, m_output_tb );
@@ -434,7 +442,7 @@ Result SoundSourceFFmpeg::parseTrackMetadataAndCoverArt(
             && stream->attached_pic.size > 0) {
                 if(pCoverArt->loadFromData(
                     stream->attached_pic.data
-                    , stream->attached_pic.size)) {
+                  , stream->attached_pic.size)) {
                     break;
                 }
             }
