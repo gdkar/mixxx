@@ -24,7 +24,6 @@
 
 #include <chromaprint.h>
 #include <rubberband/RubberBandStretcher.h>
-#include <taglib/taglib.h>
 #include <sndfile.h>
 #include <vorbis/codec.h>
 #ifdef __PORTAUDIO__
@@ -116,10 +115,6 @@ QStringList Version::dependencyVersions() {
             << QString("RubberBand: %1").arg(RUBBERBAND_VERSION)
             // The version of the SoundTouch headers Mixxx was compiled with.
             << QString("SoundTouch: %1").arg(SOUNDTOUCH_VERSION)
-            // The version of the TagLib headers Mixxx was compiled with.
-            << QString("TagLib: %1.%2.%3").arg(QString::number(TAGLIB_MAJOR_VERSION),
-                                               QString::number(TAGLIB_MINOR_VERSION),
-                                               QString::number(TAGLIB_PATCH_VERSION))
             // The version of the ChromaPrint headers Mixxx was compiled with.
             << QString("ChromaPrint: %1.%2.%3").arg(QString::number(CHROMAPRINT_VERSION_MAJOR),
                                                     QString::number(CHROMAPRINT_VERSION_MINOR),
