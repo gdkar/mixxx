@@ -1,6 +1,6 @@
 #include "util/logging.h"
 
-#include <stdio.h>
+#include <cstdio>
 #include <iostream>
 
 #include <QByteArray>
@@ -43,13 +43,11 @@ void MessageHandler(
     }
     ba += input.toLocal8Bit();
     ba += "\n";
-
     if (!Logfile.isOpen()) {
         // This Must be done in the Message Handler itself, to guarantee that the
         // QApplication is initialized
         auto logLocation = CmdlineArgs::Instance().getSettingsPath();
         auto logFileName = QString{};
-
         // Rotate old logfiles
         //FIXME: cerr << doesn't get printed until after mixxx quits (???)
         for (auto i = 9; i >= 0; --i) {
@@ -71,7 +69,6 @@ void MessageHandler(
                 }
             }
         }
-
         // WARNING(XXX) getSettingsPath() may not be ready yet. This causes
         // Logfile writes below to print qWarnings which in turn recurse into
         // MessageHandler -- potentially deadlocking.
@@ -143,7 +140,6 @@ void FFmpegMessageHandler(void * avcl, int level, const char *fmt, va_list vi)
 //        qDebug(fmt,vi);
 }
 }  // namespace
-
 // static
 void Logging::initialize()
 {
@@ -152,7 +148,6 @@ void Logging::initialize()
     av_log_set_callback(&FFmpegMessageHandler);
     av_log_set_level(AV_LOG_FATAL);
 }
-
 // static
 void Logging::shutdown()
 {
