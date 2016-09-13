@@ -15,7 +15,7 @@
 #include <QtGlobal>
 
 #include "util/cmdlineargs.h"
-
+#include "util/ffmpeg-utils.hpp"
 namespace mixxx {
 namespace {
 
@@ -89,6 +89,14 @@ void MessageHandler(
             Logfile.write(ba);
         }
         break;
+    case QtInfoMsg:
+        fprintf(stderr, "Info %s", ba.constData());
+        if (Logfile.isOpen()) {
+            Logfile.write("Info ");
+            Logfile.write(ba);
+        }
+        break;
+
     case QtWarningMsg:
         fprintf(stderr, "Warning %s", ba.constData());
         if (Logfile.isOpen()) {
@@ -123,17 +131,32 @@ void MessageHandler(
     }
 }
 
+void FFmpegMessageHandler(void * avcl, int level, const char *fmt, va_list vi)
+{
+    if(level == AV_LOG_PANIC)
+        qFatal(fmt, vi);
+    else if(level == AV_LOG_FATAL)
+        qCritical(fmt,vi);
+//    else if(level == AV_LOG_INFO)
+//        qInfo(fmt,vi);
+//    else if(level == AV_LOG_DEBUG || level == AV_LOG_VERBOSE)
+//        qDebug(fmt,vi);
+}
 }  // namespace
 
 // static
 void Logging::initialize()
 {
     qInstallMessageHandler(MessageHandler);
+    av_register_all();
+    av_log_set_callback(&FFmpegMessageHandler);
+    av_log_set_level(AV_LOG_FATAL);
 }
 
 // static
 void Logging::shutdown()
 {
+    av_log_set_callback(av_log_default_callback);
     qInstallMessageHandler(nullptr);  // Reset to default.
 
     // Don't make any more output after this
@@ -143,5 +166,4 @@ void Logging::shutdown()
         Logfile.close();
     }
 }
-
 }  // namespace mixxx
