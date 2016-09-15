@@ -180,12 +180,12 @@ void SoundSourceProxy::initSoundSource()
             DEBUG_ASSERT(!m_pSoundSource);
         } else {
             auto trackType = m_pSoundSource->getType();
-            qDebug() << "SoundSourceProvider"
+/*            qDebug() << "SoundSourceProvider"
                      << pProvider->getName()
                      << "created a SoundSource for file"
                      << getUrl().toString()
                      << "of type"
-                     << trackType;
+                     << trackType;*/
             if (m_pTrack) {
                 m_pTrack->setType(trackType);
             }

@@ -67,7 +67,7 @@ SoundSource::OpenResult SoundSourceFFmpeg::tryOpen(const AudioSourceConfig &conf
         return OpenResult::FAILED;
 
     m_stream_tb = m_stream->time_base;
-    m_codec_tb  = m_codec_ctx->time_base;
+//    m_codec_tb  = m_codec_ctx->time_base;
     if ( !m_codec_ctx->channel_layout ) {
       m_codec_ctx->channel_layout = av_get_default_channel_layout(m_codec_ctx->channels);
     } else if ( !m_codec_ctx->channels ) {

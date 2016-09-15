@@ -50,6 +50,5 @@ Result SoundSource::writeTrackMetadata(
         const TrackMetadata& trackMetadata) const
 {
     return ERR;
-//    return taglib::writeTrackMetadataIntoFile(trackMetadata, getLocalFileName());
 }
 } //namespace mixxx
