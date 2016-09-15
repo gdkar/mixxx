@@ -11,7 +11,7 @@
 #include "controllers/hid/hidenumerator.h"
 #include "controllers/hid/hidblacklist.h"
 
-HidEnumerator::HidEnumerator() : ControllerEnumerator() {
+HidEnumerator::HidEnumerator(QObject *p) : ControllerEnumerator(p) {
 }
 
 HidEnumerator::~HidEnumerator() {

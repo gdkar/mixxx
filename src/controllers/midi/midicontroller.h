@@ -28,23 +28,11 @@ class MidiController : public Controller {
     virtual ~MidiController();
 
     QString presetExtension() const override;
-    virtual ControllerPresetPointer getPreset() const {
-        auto pClone = new MidiControllerPreset();
-        *pClone = m_preset;
-        return ControllerPresetPointer(pClone);
-    }
-
-    bool savePreset(const QString fileName) const override;
+    virtual ControllerPresetPointer getPreset() const;
+    bool savePreset(QString fileName) const override;
     void visit(const ControllerPreset* preset) override;
 
-    void accept(ControllerVisitor* visitor) override {
-        if (visitor) {
-            visitor->visit(this);
-        }
-    }
-    bool isMappable() const override {
-        return m_preset.isMappable();
-    }
+    bool isMappable() const override;
     virtual bool matchPreset(const PresetInfo& preset);
   signals:
     void messageReceived(unsigned char status, unsigned char control,
@@ -52,15 +40,13 @@ class MidiController : public Controller {
   protected:
     Q_INVOKABLE void sendShortMsg(unsigned char status, unsigned char byte1, unsigned char byte2);
     // Alias for send()
-    Q_INVOKABLE inline void sendSysexMsg(QList<int> data, unsigned int length) {
-        send(data, length);
-    }
+    Q_INVOKABLE void sendSysexMsg(QList<int> data, unsigned int length);
   protected slots:
     virtual void receive(unsigned char status, unsigned char control,
                          unsigned char value, mixxx::Duration timestamp);
     // For receiving System Exclusive messages
-    virtual void receive(const QByteArray data, mixxx::Duration timestamp);
-    virtual int close();
+    void receive(QVariant data, mixxx::Duration timestamp) override;
+    int close() override;
 
   private slots:
     // Initializes the engine and static output mappings.
@@ -76,6 +62,7 @@ class MidiController : public Controller {
                              unsigned char control,
                              unsigned char value,
                              mixxx::Duration timestamp);
+
     void processInputMapping(const MidiInputMapping& mapping,
                              const QByteArray& data,
                              mixxx::Duration timestamp);
@@ -88,7 +75,7 @@ class MidiController : public Controller {
 
     // Returns a pointer to the currently loaded controller preset. For internal
     // use only.
-    virtual ControllerPreset* preset() { return &m_preset; }
+    virtual ControllerPreset* preset();
 
     QHash<uint16_t, MidiInputMapping> m_temporaryInputMappings;
     QList<MidiOutputHandler*> m_outputs;

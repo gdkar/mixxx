@@ -24,6 +24,7 @@ HidReader::HidReader(hid_device* device)
 
 HidReader::~HidReader() {
 }
+void HidReader::stop() { m_stop.store(true);}
 
 void HidReader::run() {
     m_stop = 0;
@@ -131,7 +132,7 @@ void HidController::visit(const ControllerPreset* preset) {
     }
 }
 
-bool HidController::savePreset(const QString fileName) const {
+bool HidController::savePreset(QString fileName) const {
     HidControllerPresetFileHandler handler;
     return handler.save(m_preset, getName(), fileName);
 }
@@ -260,7 +261,8 @@ int HidController::open() {
     return 0;
 }
 
-int HidController::close() {
+int HidController::close()
+{
     if (!isOpen()) {
         qDebug() << "HID device" << getName() << "already closed";
         return -1;
@@ -293,8 +295,8 @@ int HidController::close() {
     setOpen(false);
     return 0;
 }
-
-void HidController::send(QList<int> data, unsigned int length, unsigned int reportID) {
+void HidController::send(QList<int> data, unsigned int length, unsigned int reportID)
+{
     Q_UNUSED(length);
     QByteArray temp;
     foreach (int datum, data) {
@@ -302,12 +304,12 @@ void HidController::send(QList<int> data, unsigned int length, unsigned int repo
     }
     send(temp, reportID);
 }
-
-void HidController::send(QByteArray data) {
+void HidController::send(QByteArray data)
+{
     send(data, 0);
 }
-
-void HidController::send(QByteArray data, unsigned int reportID) {
+void HidController::send(QByteArray data, unsigned int reportID)
+{
     // Append the Report ID to the beginning of data[] per the API..
     data.prepend(reportID);
 
@@ -327,9 +329,9 @@ void HidController::send(QByteArray data, unsigned int reportID) {
                  << "(including report ID of" << reportID << ")");
     }
 }
-
 //static
-QString HidController::safeDecodeWideString(const wchar_t* pStr, size_t max_length) {
+QString HidController::safeDecodeWideString(const wchar_t* pStr, size_t max_length)
+{
     if (pStr == NULL) {
         return QString();
     }
@@ -348,3 +350,19 @@ QString HidController::safeDecodeWideString(const wchar_t* pStr, size_t max_leng
         return QString::fromUcs4((uint *)pStr, size);
     }
 }
+ControllerPresetPointer HidController::getPreset() const
+{
+    return QSharedPointer<HidControllerPreset>::create(m_preset);
+}
+bool HidController::isMappable() const
+{
+    return m_preset.isMappable();
+}
+bool HidController::isPolling() const
+{
+    return false;
+}
+ControllerPreset* HidController::preset() {
+    return &m_preset;
+}
+

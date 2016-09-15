@@ -8,13 +8,12 @@
 #ifndef BULKCONTROLLER_H
 #define BULKCONTROLLER_H
 
-#include <QAtomicInt>
+#include <atomic>
 
 #include "controllers/controller.h"
 #include "controllers/hid/hidcontrollerpreset.h"
 #include "controllers/hid/hidcontrollerpresetfilehandler.h"
 #include "util/duration.h"
-
 struct libusb_device_handle;
 struct libusb_context;
 struct libusb_device_descriptor;
@@ -35,7 +34,7 @@ class BulkReader : public QThread {
 
   private:
     libusb_device_handle* m_phandle;
-    QAtomicInt m_stop;
+    std::atomic<bool> m_stop;
     unsigned char m_in_epaddr;
 };
 
@@ -48,23 +47,11 @@ class BulkController : public Controller {
 
     QString presetExtension() const override;
 
-    virtual ControllerPresetPointer getPreset() const {
-        auto pClone = new HidControllerPreset();
-        *pClone = m_preset;
-        return ControllerPresetPointer(pClone);
-    }
-    bool savePreset(const QString fileName) const override;
+    ControllerPresetPointer getPreset() const override;
+    bool savePreset(QString fileName) const override;
     void visit(const ControllerPreset* preset) override;
-    void accept(ControllerVisitor* visitor) override {
-        if (visitor) {
-            visitor->visit(this);
-        }
-    }
-    bool isMappable() const override {
-        return m_preset.isMappable();
-    }
-
-    virtual bool matchPreset(const PresetInfo& preset);
+    bool isMappable() const override;
+    bool matchPreset(const PresetInfo& preset) override;
     virtual bool matchProductInfo(const ProductInfo& product);
 
   protected:
@@ -73,21 +60,14 @@ class BulkController : public Controller {
   private slots:
     int open();
     int close();
-
   private:
     // For devices which only support a single report, reportID must be set to
     // 0x0.
-    virtual void send(QByteArray data);
-
-    virtual bool isPolling() const {
-        return false;
-    }
-
+    void send(QByteArray data) override;
+    bool isPolling() const override;
     // Returns a pointer to the currently loaded controller preset. For internal
     // use only.
-    virtual ControllerPreset* preset() {
-        return &m_preset;
-    }
+    ControllerPreset* preset() override;
 
     libusb_context* m_context;
     libusb_device_handle *m_phandle;

@@ -11,8 +11,8 @@
 #include "controllers/bulk/bulkenumerator.h"
 #include "controllers/bulk/bulksupported.h"
 
-BulkEnumerator::BulkEnumerator()
-        : ControllerEnumerator(),
+BulkEnumerator::BulkEnumerator(QObject *p)
+        : ControllerEnumerator(p),
           m_context(NULL) {
     libusb_init(&m_context);
 }

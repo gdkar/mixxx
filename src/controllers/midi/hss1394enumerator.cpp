@@ -9,7 +9,7 @@
 #include "controllers/midi/hss1394controller.h"
 #include "controllers/midi/hss1394enumerator.h"
 
-Hss1394Enumerator::Hss1394Enumerator() : MidiEnumerator() {
+Hss1394Enumerator::Hss1394Enumerator(QObject *p) : MidiEnumerator(p) {
 }
 
 Hss1394Enumerator::~Hss1394Enumerator() {

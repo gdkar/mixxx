@@ -17,6 +17,9 @@
 // Parent it to the the creating object to achieve this.
 class ControlProxy : public QObject {
     Q_OBJECT
+    Q_PROPERTY(ConfigKey key READ getKey CONSTANT)
+    Q_PROPERTY(double value READ get WRITE set RESET reset NOTIFY valueChanged)
+    Q_PROPERTY(double defaultValue READ getDefault NOTIFY defaultValueChanged)
   public:
     ControlProxy(QObject* pParent = NULL);
     ControlProxy(const QString& g, const QString& i, QObject* pParent = NULL);
@@ -35,13 +38,10 @@ class ControlProxy : public QObject {
     bool connectValueChanged(
             const char* method, Qt::ConnectionType type = Qt::AutoConnection);
 
-    // Called from update();
-    virtual void emitValueChanged() {
-        emit(valueChanged(get()));
-    }
 
     bool valid() const { return m_pControl != NULL; }
 
+  public slots:
     // Returns the value of the object. Thread safe, non-blocking.
     double get() const {
         return m_pControl ? m_pControl->get() : 0.0;
@@ -67,7 +67,6 @@ class ControlProxy : public QObject {
         return m_pControl ? m_pControl->defaultValue() : 0.0;
     }
 
-  public slots:
     // Set the control to a new value. Non-blocking.
     void slotSet(double v) {
         set(v);
@@ -100,6 +99,7 @@ class ControlProxy : public QObject {
     // This signal must not connected by connect(). Use connectValueChanged()
     // instead. It will connect to the base ControlDoublePrivate as well.
     void valueChanged(double);
+    void defaultValueChanged(double);
     void triggered();
   protected slots:
     // Receives the value from the master control by a unique direct connection

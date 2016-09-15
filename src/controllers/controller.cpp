@@ -24,7 +24,114 @@ Controller::Controller(QObject *p)
 Controller::~Controller() = default;
     // Don't close the device here. Sub-classes should close the device in their
     // destructors.
+void Controller::accept(ControllerVisitor* visitor)
+{
+    if(visitor)
+        visitor->visit(this);
+}
 
+bool Controller::matchPreset(const PresetInfo& preset)
+{
+    void(sizeof(preset));
+    return false;
+}
+bool Controller::isOpen() const
+{
+    return m_bIsOpen;
+}
+bool Controller::isOutputDevice() const
+{
+    return m_bIsOutputDevice;
+}
+bool Controller::isInputDevice() const
+{
+    return m_bIsInputDevice;
+}
+QString Controller::getName() const
+{
+    return m_sDeviceName;
+    }
+QString Controller::getCategory() const
+{
+    return m_sDeviceCategory;
+}
+bool Controller::isMappable() const
+{
+    return false;
+}
+bool Controller::isLearning() const
+{
+    return m_bLearning;
+}
+
+ControllerEngine* Controller::getEngine() const
+{
+    return m_pEngine;
+}
+void Controller::setDeviceName(QString deviceName)
+{
+    if(m_sDeviceName != deviceName)
+        deviceNameChanged(m_sDeviceName = deviceName);
+}
+void Controller::setDeviceCategory(QString deviceCategory)
+{
+    if(getCategory() != deviceCategory)
+        deviceCategoryChanged(m_sDeviceCategory = deviceCategory);
+}
+void Controller::setOutputDevice(bool outputDevice)
+{
+    if(outputDevice != isOutputDevice())
+        isOutputDeviceChanged(m_bIsOutputDevice = outputDevice);
+}
+void Controller::setInputDevice(bool inputDevice)
+{
+    if(inputDevice != isInputDevice())
+        isInputDeviceChanged(m_bIsInputDevice = inputDevice);
+}
+void Controller::setOpen(bool open)
+{
+    if(isOpen()!=open)
+        isOpenChanged(m_bIsOpen = open);
+}
+
+int Controller::open()
+{
+    return -1;
+}
+int Controller::close()
+{
+    setOpen(false);
+    return -1;
+}
+// Requests that the device poll if it is a polling device. Returns true
+// if events were handled.
+bool Controller::poll()
+{
+    return false;
+}
+
+void Controller::send(QByteArray data)
+{
+    void(sizeof(data));
+}
+// Returns true if this device should receive polling signals via calls to
+// its poll() method.
+bool Controller::isPolling() const
+{
+    return false;
+}
+// Returns a pointer to the currently loaded controller preset. For internal
+// use only.
+ControllerPreset* Controller::preset()
+{
+    return nullptr;
+}
+void Controller::setPreset(const ControllerPreset& preset)
+{
+    // We don't know the specific type of the preset so we need to ask
+    // the preset to call our visitor methods with its type.
+    preset.accept(this);
+}
 void Controller::startEngine()
 {
     controllerDebug("  Starting engine");
@@ -95,7 +202,7 @@ void Controller::send(QList<int> data, unsigned int length)
         msg[i] = data.at(i);
     send(msg);
 }
-void Controller::receive(const QByteArray data, mixxx::Duration timestamp)
+void Controller::receive(QVariant data, mixxx::Duration timestamp)
 {
     if (!m_pEngine) {
         //qWarning() << "Controller::receive called with no active engine!";
@@ -103,22 +210,30 @@ void Controller::receive(const QByteArray data, mixxx::Duration timestamp)
         //  queued signals flush out
         return;
     }
-    auto length = data.size();
+/*    auto length = data.size();
     if (ControllerDebug::enabled()) {
         // Formatted packet display
         auto message = QString("%1: t:%2, %3 bytes:\n")
                 .arg(m_sDeviceName).arg(timestamp.formatMillisWithUnit()).arg(length);
         for(auto i=0; i<length; i++) {
             QString spacer=" ";
-            if ((i+1) % 4 == 0) spacer="  ";
-            if ((i+1) % 16 == 0) spacer="\n";
+            if ((i+1) % 4 == 0)
+                spacer="  ";
+            if ((i+1) % 16 == 0)
+                spacer="\n";
             message += QString("%1%2")
-                        .arg((unsigned char)(data.at(i)), 2, 16, QChar('0')).toUpper()
+                        .arg((uint8_t)(data.at(i)), 2, 16, QChar('0')).toUpper()
                         .arg(spacer);
         }
         controllerDebug(message);
     }
-    for(auto function: m_pEngine->getScriptFunctionPrefixes()) {
+    auto arg = m_pEngine->newArray();
+    for(auto i = 0u; i < data.size(); ++i)
+        arg.setProperty(i, int(data[i]));
+*/
+    auto args = QJSValueList{} << m_pEngine->toScriptValue(data);
+    m_pEngine->receive(args, timestamp);
+/*    for(auto function: m_pEngine->getScriptFunctionPrefixes()) {
         if (function == "")
             continue;
         function.append(".incomingData");
@@ -126,5 +241,18 @@ void Controller::receive(const QByteArray data, mixxx::Duration timestamp)
         if (!m_pEngine->execute(incomingData, data, timestamp)) {
             qWarning() << "Controller: Invalid script function" << function;
         }
-    }
+    }*/
+}
+QString Controller::presetExtension() const
+{
+    return QString{};
+}
+bool Controller::savePreset(QString filename) const
+{
+    Q_UNUSED(filename);
+    return false;
+}
+ControllerPresetPointer Controller::getPreset() const
+{
+    return ControllerPresetPointer{};
 }

@@ -14,8 +14,8 @@
 #include "controllers/midi/rtmidicontroller.h"
 #include "util/cmdlineargs.h"
 
-RtMidiEnumerator::RtMidiEnumerator()
-try : MidiEnumerator()
+RtMidiEnumerator::RtMidiEnumerator(QObject *p)
+try : MidiEnumerator(p)
     , m_midiIn{std::make_unique<RtMidiIn>()}
     , m_midiOut{std::make_unique<RtMidiOut>()}
     { }
@@ -46,8 +46,8 @@ QList<Controller*> RtMidiEnumerator::queryDevices()
         dev = nullptr;
     }
     m_devices.clear();
-    auto num_inputs = m_midiIn->getPortCount() ;
-    auto num_outputs= m_midiOut->getPortCount() ;
+    auto num_inputs = int(m_midiIn->getPortCount());
+    auto num_outputs= int(m_midiOut->getPortCount());
 
     auto inputDevIndex = -1;
     auto outputDevIndex = -1;

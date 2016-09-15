@@ -16,7 +16,7 @@
 class ControllerEnumerator : public QObject {
     Q_OBJECT
   public:
-    ControllerEnumerator();
+    ControllerEnumerator(QObject *pParent);
     // In this function, the inheriting class must delete the Controllers it
     // creates
     virtual ~ControllerEnumerator();

@@ -10,61 +10,41 @@
 
 #include <hidapi.h>
 
-#include <QAtomicInt>
+#include <atomic>
 
 #include "controllers/controller.h"
 #include "controllers/hid/hidcontrollerpreset.h"
 #include "controllers/hid/hidcontrollerpresetfilehandler.h"
 #include "util/duration.h"
-
 class HidReader : public QThread {
     Q_OBJECT
   public:
     HidReader(hid_device* device);
     virtual ~HidReader();
 
-    void stop() {
-        m_stop = 1;
-    }
-
+    void stop();
   signals:
     void incomingData(QByteArray data, mixxx::Duration timestamp);
-
   protected:
     void run();
-
   private:
     hid_device* m_pHidDevice;
-    QAtomicInt m_stop;
+    std::atomic<bool> m_stop{false};
 };
 
 class HidController : public Controller {
     Q_OBJECT
   public:
     HidController(const hid_device_info deviceInfo);
-    virtual ~HidController();
+   ~HidController();
 
     QString presetExtension() const override;
 
-    virtual ControllerPresetPointer getPreset() const {
-        HidControllerPreset* pClone = new HidControllerPreset();
-        *pClone = m_preset;
-        return ControllerPresetPointer(pClone);
-    }
-
-    bool savePreset(const QString fileName) const override;
+    ControllerPresetPointer getPreset() const override;
+    bool savePreset(QString fileName) const override;
 
     void visit(const ControllerPreset* preset) override;
-    void accept(ControllerVisitor* visitor) override {
-        if (visitor) {
-            visitor->visit(this);
-        }
-    }
-
-    bool isMappable() const override {
-        return m_preset.isMappable();
-    }
-
+    bool isMappable() const override;
     bool matchPreset(const PresetInfo& preset) override ;
     virtual bool matchProductInfo(const ProductInfo& product);
     virtual void guessDeviceCategory();
@@ -75,8 +55,8 @@ class HidController : public Controller {
     Q_INVOKABLE void send(QList<int> data, unsigned int length, unsigned int reportID = 0);
 
   private slots:
-    int open();
-    int close();
+    int open() override;
+    int close() override;
 
   private:
     // For devices which only support a single report, reportID must be set to
@@ -84,16 +64,10 @@ class HidController : public Controller {
     virtual void send(QByteArray data);
     virtual void send(QByteArray data, unsigned int reportID);
 
-    bool isPolling() const override {
-        return false;
-    }
-
+    bool isPolling() const override;
     // Returns a pointer to the currently loaded controller preset. For internal
     // use only.
-    virtual ControllerPreset* preset() {
-        return &m_preset;
-    }
-
+    ControllerPreset* preset()override;
 
     // Local copies of things we need from hid_device_info
     int hid_interface_number;

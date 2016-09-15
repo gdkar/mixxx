@@ -56,8 +56,8 @@ ControllerPresetPointer ControllerPresetFileHandler::loadPreset(const QString& p
     return pHandler->load(scriptPath, QString());
 }
 
-ControllerPresetPointer ControllerPresetFileHandler::load(const QString path,
-                                                          const QString deviceName) {
+ControllerPresetPointer ControllerPresetFileHandler::load(QString path,
+                                                          QString deviceName) {
     qDebug() << "Loading controller preset from" << path;
     ControllerPresetPointer pPreset = load(XmlParse::openXMLFile(path, "controller"),
                                            deviceName);
@@ -95,7 +95,7 @@ void ControllerPresetFileHandler::parsePresetInfo(const QDomElement& root,
 }
 
 QDomElement ControllerPresetFileHandler::getControllerNode(const QDomElement& root,
-                                                           const QString deviceName) {
+                                                           QString deviceName) {
     Q_UNUSED(deviceName);
     if (root.isNull()) {
         return QDomElement();
@@ -132,7 +132,7 @@ void ControllerPresetFileHandler::addScriptFilesToPreset(
 }
 
 bool ControllerPresetFileHandler::writeDocument(QDomDocument root,
-                                                const QString fileName) const {
+                                                QString fileName) const {
     // Need to do this on Windows
     QDir directory;
     if (!directory.mkpath(fileName.left(fileName.lastIndexOf("/")))) {
@@ -165,7 +165,7 @@ void addTextTag(QDomDocument& doc, QDomElement& holder,
 }
 
 QDomDocument ControllerPresetFileHandler::buildRootWithScripts(const ControllerPreset& preset,
-                                                               const QString deviceName) const {
+                                                               QString deviceName) const {
     QDomDocument doc("Preset");
     QString blank = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
         "<MixxxControllerPreset>\n"

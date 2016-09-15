@@ -154,3 +154,16 @@ void RtMidiController::send(QByteArray data)
     auto message = std::vector<unsigned char>(data.constBegin(),data.constEnd());
     m_midiOut->sendMessage(&message);
 }
+
+bool RtMidiController::poll(){return false;}
+bool RtMidiController::isPolling() const { return false; }
+
+void RtMidiController::trampoline(
+    double deltatime
+  , std::vector<unsigned char> * message
+  , void *opaque)
+{
+    if(message && opaque)
+        static_cast<RtMidiController*>(opaque)->callback(deltatime, *message);
+}
+

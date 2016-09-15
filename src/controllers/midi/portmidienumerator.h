@@ -13,17 +13,17 @@
 class PortMidiEnumerator : public MidiEnumerator {
     Q_OBJECT
   public:
-    PortMidiEnumerator();
+    PortMidiEnumerator(QObject *p);
     virtual ~PortMidiEnumerator();
 
-    QList<Controller*> queryDevices();
+    QList<Controller*> queryDevices() override;
 
   private:
     QList<Controller*> m_devices;
 };
 
 // For testing.
-bool shouldLinkInputToOutput(const QString input_name,
-                             const QString output_name);
+bool shouldLinkInputToOutput(QString input_name,
+                             QString output_name);
 
 #endif

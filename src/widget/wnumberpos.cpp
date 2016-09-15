@@ -13,11 +13,10 @@ WNumberPos::WNumberPos(const char* group, QWidget* parent)
           m_dOldValue(0.0),
           m_dTrackSamples(0.0),
           m_dTrackSampleRate(0.0),
-          m_bRemain(false) {
-    m_pShowTrackTimeRemaining = new ControlProxy(
-            "[Controls]", "ShowDurationRemaining", this);
-    m_pShowTrackTimeRemaining->connectValueChanged(
-            SLOT(slotSetRemain(double)));
+          m_bRemain(false)
+{
+    m_pShowTrackTimeRemaining = new ControlProxy("[Controls]", "ShowDurationRemaining", this);
+    m_pShowTrackTimeRemaining->connectValueChanged(SLOT(slotSetRemain(double)));
     slotSetRemain(m_pShowTrackTimeRemaining->get());
 
     // We use the engine's playposition value directly because the parameter
@@ -28,27 +27,24 @@ WNumberPos::WNumberPos(const char* group, QWidget* parent)
     m_pVisualPlaypos = new ControlProxy(group, "playposition", this);
     m_pVisualPlaypos->connectValueChanged(SLOT(slotSetValue(double)));
 
-    m_pTrackSamples = new ControlProxy(
-            group, "track_samples", this);
+    m_pTrackSamples = new ControlProxy( group, "track_samples", this);
     m_pTrackSamples->connectValueChanged(SLOT(slotSetTrackSamples(double)));
 
     // Tell the CO to re-emit its value since we could be created after it was
     // set to a valid value.
-    m_pTrackSamples->emitValueChanged();
+    m_pTrackSamples->valueChanged(m_pTrackSamples->get());
 
-    m_pTrackSampleRate = new ControlProxy(
-            group, "track_samplerate", this);
-    m_pTrackSampleRate->connectValueChanged(
-            SLOT(slotSetTrackSampleRate(double)));
+    m_pTrackSampleRate = new ControlProxy( group, "track_samplerate", this);
+    m_pTrackSampleRate->connectValueChanged(SLOT(slotSetTrackSampleRate(double)));
 
     // Tell the CO to re-emit its value since we could be created after it was
     // set to a valid value.
-    m_pTrackSampleRate->emitValueChanged();
-
+    m_pTrackSampleRate->valueChanged(m_pTrackSampleRate->get());
     slotSetValue(m_pVisualPlaypos->get());
 }
 
-void WNumberPos::mousePressEvent(QMouseEvent* pEvent) {
+void WNumberPos::mousePressEvent(QMouseEvent* pEvent)
+{
     bool leftClick = pEvent->buttons() & Qt::LeftButton;
 
     if (leftClick) {
@@ -57,17 +53,20 @@ void WNumberPos::mousePressEvent(QMouseEvent* pEvent) {
     }
 }
 
-void WNumberPos::slotSetTrackSamples(double dSamples) {
+void WNumberPos::slotSetTrackSamples(double dSamples)
+{
     m_dTrackSamples = dSamples;
     slotSetValue(m_dOldValue);
 }
 
-void WNumberPos::slotSetTrackSampleRate(double dSampleRate) {
+void WNumberPos::slotSetTrackSampleRate(double dSampleRate)
+{
     m_dTrackSampleRate = dSampleRate;
     slotSetValue(m_dOldValue);
 }
 
-void WNumberPos::setValue(double dValue) {
+void WNumberPos::setValue(double dValue)
+{
     // Ignore midi-scaled signals from the skin connection.
     Q_UNUSED(dValue);
     // Update our value with the old value.

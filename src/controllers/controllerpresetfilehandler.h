@@ -24,7 +24,7 @@ class ControllerPresetFileHandler {
      * @param path The path to a controller preset XML file.
      * @param deviceName The name/id of the controller
      */
-    ControllerPresetPointer load(const QString path, const QString deviceName);
+    ControllerPresetPointer load(QString path, QString deviceName);
 
     // Returns just the name of a given device (everything before the first
     // space)
@@ -34,7 +34,7 @@ class ControllerPresetFileHandler {
 
   protected:
     QDomElement getControllerNode(const QDomElement& root,
-                                  const QString deviceName);
+                                  QString deviceName);
 
     void parsePresetInfo(const QDomElement& root,
                          ControllerPreset* preset) const;
@@ -52,13 +52,13 @@ class ControllerPresetFileHandler {
     // Creates the XML document and includes what script files are currently
     // loaded. Sub-classes need to call this before adding any other items.
     QDomDocument buildRootWithScripts(const ControllerPreset& preset,
-                                      const QString deviceName) const;
+                                      QString deviceName) const;
 
-    bool writeDocument(QDomDocument root, const QString fileName) const;
+    bool writeDocument(QDomDocument root, QString fileName) const;
 
   private:
     // Sub-classes implement this.
-    virtual ControllerPresetPointer load(const QDomElement root, const QString deviceName) = 0;
+    virtual ControllerPresetPointer load(const QDomElement root, QString deviceName) = 0;
 };
 
 #endif

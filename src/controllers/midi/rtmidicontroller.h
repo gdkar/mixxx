@@ -29,23 +29,24 @@ class RtMidiController : public MidiController {
   public:
     RtMidiController(int inputDeviceIndex, const std::string &inputDeviceName,
                      int outputDeviceIndex,const std::string &outputDeviceName);
-    virtual ~RtMidiController();
+   ~RtMidiController();
   public slots:
-    virtual int open();
-    virtual int close();
-    virtual bool poll(){return false;}
+    int open() override;
+    int close() override;
+    bool poll() override;
   protected:
-    static void trampoline(double deltatime, std::vector<unsigned char> * message, void *opaque)
-    {
-        if(message && opaque)
-            static_cast<RtMidiController*>(opaque)->callback(deltatime, *message);
-    }
-    void callback(double deltatime, std::vector<unsigned char>&message);
+    static void trampoline(
+        double deltatime
+      , std::vector<uint8_t> * message
+      , void *opaque);
+
+    void callback(double deltatime, std::vector<uint8_t>&message);
     // The sysex data must already contain the start byte 0xf0 and the end byte
     // 0xf7.
-    void sendWord(unsigned int word) override;
-    void send(QByteArray data);
-    bool isPolling() const override { return false; }
+    void sendWord(uint32_t word) override;
+    void send(QByteArray data) override;
+    bool isPolling() const override;
+
     int in_index{-1};
     std::string in_name{};
     int out_index{-1};
@@ -55,6 +56,6 @@ class RtMidiController : public MidiController {
 
     // Storage for SysEx messages
     std::vector<unsigned char> m_sysex{};
-    bool          m_bInSysex{false};
+    bool m_bInSysex{false};
 };
 #endif

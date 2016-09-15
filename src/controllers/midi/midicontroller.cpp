@@ -17,7 +17,8 @@
 #include "util/math.h"
 
 MidiController::MidiController(QObject *p)
-        : Controller(p) {
+        : Controller(p)
+{
     setDeviceCategory(tr("MIDI Controller"));
 }
 
@@ -25,6 +26,20 @@ MidiController::~MidiController() {
     destroyOutputHandlers();
     // Don't close the device here. Sub-classes should close the device in their
     // destructors.
+}
+bool MidiController::isMappable() const
+{
+    return m_preset.isMappable();
+}
+ControllerPresetPointer MidiController::getPreset() const
+{
+    auto pClone = new MidiControllerPreset();
+    *pClone = m_preset;
+    return ControllerPresetPointer(pClone);
+}
+Q_INVOKABLE void MidiController::sendSysexMsg(QList<int> data, unsigned int length)
+{
+    send(data, length);
 }
 
 QString MidiController::presetExtension() const {
@@ -50,7 +65,7 @@ bool MidiController::matchPreset(const PresetInfo& preset) {
     return false;
 }
 
-bool MidiController::savePreset(const QString fileName) const {
+bool MidiController::savePreset(QString fileName) const {
     MidiControllerPresetFileHandler handler;
     return handler.save(m_preset, getName(), fileName);
 }
@@ -239,7 +254,8 @@ void MidiController::commitTemporaryInputMappings() {
 }
 
 void MidiController::receive(unsigned char status, unsigned char control,
-                             unsigned char value, mixxx::Duration timestamp) {
+                             unsigned char value, mixxx::Duration timestamp)
+{
     unsigned char channel = MidiUtils::channelFromStatus(status);
     unsigned char opCode = MidiUtils::opCodeFromStatus(status);
 
@@ -250,20 +266,23 @@ void MidiController::receive(unsigned char status, unsigned char control,
     if (isLearning()) {
         emit(messageReceived(status, control, value));
 
-        QHash<uint16_t, MidiInputMapping>::const_iterator it =
-                m_temporaryInputMappings.find(mappingKey.key);
-        if (it != m_temporaryInputMappings.end()) {
+        auto it = m_temporaryInputMappings.constFind(mappingKey.key);
+        if (it != m_temporaryInputMappings.cend()) {
             for (; it != m_temporaryInputMappings.end() && it.key() == mappingKey.key; ++it) {
                 processInputMapping(it.value(), status, control, value, timestamp);
             }
             return;
         }
     }
-
-    QHash<uint16_t, MidiInputMapping>::const_iterator it =
-            m_preset.inputMappings.find(mappingKey.key);
-    for (; it != m_preset.inputMappings.end() && it.key() == mappingKey.key; ++it) {
-        processInputMapping(it.value(), status, control, value, timestamp);
+    if(auto engine = getEngine()){
+        auto obj = engine->newObject();
+        obj.setProperty("status",status);
+        obj.setProperty("control",control);
+        obj.setProperty("value",value);
+        engine->receive((QJSValueList{}<< obj), timestamp);
+    }
+    for(auto && mapping : m_preset.inputMappings.values(mappingKey.key)){
+        processInputMapping(mapping, status, control, value, timestamp);
     }
 }
 
@@ -271,7 +290,8 @@ void MidiController::processInputMapping(const MidiInputMapping& mapping,
                                          unsigned char status,
                                          unsigned char control,
                                          unsigned char value,
-                                         mixxx::Duration timestamp) {
+                                         mixxx::Duration timestamp)
+{
     Q_UNUSED(timestamp);
     unsigned char channel = MidiUtils::channelFromStatus(status);
     unsigned char opCode = MidiUtils::opCodeFromStatus(status);
@@ -282,7 +302,7 @@ void MidiController::processInputMapping(const MidiInputMapping& mapping,
             return;
         }
 
-        QScriptValue function = pEngine->wrapFunctionCode(mapping.control.item, 5);
+        auto function = pEngine->wrapFunctionCode(mapping.control.item, 5);
         if (!pEngine->execute(function, channel, control, value, status,
                               mapping.control.group, timestamp)) {
             qDebug() << "MidiController: Invalid script function"
@@ -502,44 +522,49 @@ QString formatSysexMessage(const QString& controllerName, const QByteArray& data
     return message;
 }
 
-void MidiController::receive(QByteArray data, mixxx::Duration timestamp) {
-    controllerDebug(formatSysexMessage(getName(), data, timestamp));
+void MidiController::receive(QVariant vdata, mixxx::Duration timestamp)
+{
+    auto data = vdata.value<QByteArray>();
+    if(data.size()){
+        controllerDebug(formatSysexMessage(getName(), data, timestamp));
 
-    MidiKey mappingKey(data.at(0), 0xFF);
+        MidiKey mappingKey(data.at(0), 0xFF);
 
-    // TODO(rryan): Need to review how MIDI learn works with sysex messages. I
-    // don't think this actually does anything useful.
-    if (isLearning()) {
-        // TODO(rryan): Fake a one value?
-        emit(messageReceived(mappingKey.status, mappingKey.control, 0x7F));
+        // TODO(rryan): Need to review how MIDI learn works with sysex messages. I
+        // don't think this actually does anything useful.
+        if (isLearning()) {
+            // TODO(rryan): Fake a one value?
+            emit(messageReceived(mappingKey.status, mappingKey.control, 0x7F));
 
-        QHash<uint16_t, MidiInputMapping>::const_iterator it =
-                m_temporaryInputMappings.find(mappingKey.key);
-        if (it != m_temporaryInputMappings.end()) {
-            for (; it != m_temporaryInputMappings.end() && it.key() == mappingKey.key; ++it) {
-                processInputMapping(it.value(), data, timestamp);
+            auto it = m_temporaryInputMappings.find(mappingKey.key);
+            if (it != m_temporaryInputMappings.end()) {
+                for (; it != m_temporaryInputMappings.end() && it.key() == mappingKey.key; ++it) {
+                    processInputMapping(it.value(), data, timestamp);
+                }
+                return;
             }
-            return;
+        }
+        auto it = m_preset.inputMappings.find(mappingKey.key);
+        for (; it != m_preset.inputMappings.end() && it.key() == mappingKey.key; ++it) {
+            processInputMapping(it.value(), data, timestamp);
         }
     }
-
-    QHash<uint16_t, MidiInputMapping>::const_iterator it =
-            m_preset.inputMappings.find(mappingKey.key);
-    for (; it != m_preset.inputMappings.end() && it.key() == mappingKey.key; ++it) {
-        processInputMapping(it.value(), data, timestamp);
+    if(auto engine = getEngine()) {
+        engine->receive((QJSValueList{}<<engine->toScriptValue(vdata)), timestamp);
     }
 }
 
 void MidiController::processInputMapping(const MidiInputMapping& mapping,
                                          const QByteArray& data,
-                                         mixxx::Duration timestamp) {
+                                         mixxx::Duration timestamp)
+{
     // Custom script handler
     if (mapping.options.script) {
         ControllerEngine* pEngine = getEngine();
         if (pEngine == NULL) {
             return;
         }
-        QScriptValue function = pEngine->wrapFunctionCode(mapping.control.item, 2);
+        auto function = pEngine->wrapFunctionCode(mapping.control.item, 2);
         if (!pEngine->execute(function, data, timestamp)) {
             qDebug() << "MidiController: Invalid script function"
                      << mapping.control.item;
@@ -554,3 +579,5 @@ void MidiController::sendShortMsg(unsigned char status, unsigned char byte1,
     unsigned int word = (((unsigned int)byte2) << 16) | (((unsigned int)byte1) << 8) | status;
     sendWord(word);
 }
+
+ControllerPreset* MidiController::preset() { return &m_preset; }

@@ -26,8 +26,13 @@
 #include "controllers/midi/midimessage.h"
 #include "control/control.h"
 
-class ControlObject : public QObject {
+class ControlObject : public QObject, public QEnableSharedFromThis<ControlObject> {
     Q_OBJECT
+    Q_PROPERTY(ConfigKey key READ getKey CONSTANT)
+    Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
+    Q_PROPERTY(QString description READ description WRITE setDescription NOTIFY descriptionChanged)
+    Q_PROPERTY(double value READ get WRITE set RESET reset NOTIFY valueChanged)
+    Q_PROPERTY(double defaultValue READ defaultValue WRITE setDefaultValue NOTIFY defaultValueChanged)
   public:
     ControlObject(QObject *p = nullptr);
     ControlObject(ConfigKey key, QObject *p);
@@ -41,11 +46,11 @@ class ControlObject : public QObject {
 
     // Returns a pointer to the ControlObject matching the given ConfigKey
     static ControlObject* getControl(const ConfigKey& key, bool warn = true);
-    static inline ControlObject* getControl(const QString& group, const QString& item, bool warn = true) {
+    static ControlObject* getControl(const QString& group, const QString& item, bool warn = true) {
         ConfigKey key(group, item);
         return getControl(key, warn);
     }
-    static inline ControlObject* getControl(const char* group, const char* item, bool warn = true) {
+    static ControlObject* getControl(const char* group, const char* item, bool warn = true) {
         ConfigKey key(group, item);
         return getControl(key, warn);
     }
@@ -71,17 +76,17 @@ class ControlObject : public QObject {
     }
 
     // Return the key of the object
-    inline ConfigKey getKey() const {
+    ConfigKey getKey() const {
         return m_key;
     }
 
     // Returns the value of the ControlObject
-    inline double get() const {
+    double get() const {
         return m_pControl ? m_pControl->get() : 0.0;
     }
 
     // Returns the bool interpretation of the ControlObject
-    inline bool toBool() const {
+    bool toBool() const {
         return get() > 0.0;
     }
 
@@ -89,13 +94,13 @@ class ControlObject : public QObject {
     static double get(const ConfigKey& key);
 
     // Sets the ControlObject value. May require confirmation by owner.
-    inline void set(double value) {
+    void set(double value) {
         if (m_pControl) {
             m_pControl->set(value, this);
         }
     }
     // Sets the ControlObject value and confirms it.
-    inline void setAndConfirm(double value) {
+    void setAndConfirm(double value) {
         if (m_pControl) {
             m_pControl->setAndConfirm(value, this);
         }
@@ -104,18 +109,18 @@ class ControlObject : public QObject {
     static void set(const ConfigKey& key, const double& value);
 
     // Sets the default value
-    inline void reset() {
+    void reset() {
         if (m_pControl) {
             m_pControl->reset();
         }
     }
 
-    inline void setDefaultValue(double dValue) {
+    void setDefaultValue(double dValue) {
         if (m_pControl) {
             m_pControl->setDefaultValue(dValue);
         }
     }
-    inline double defaultValue() const {
+    double defaultValue() const {
         return m_pControl ? m_pControl->defaultValue() : 0.0;
     }
 
@@ -145,7 +150,10 @@ class ControlObject : public QObject {
                                    const char* method, Qt::ConnectionType type = Qt::AutoConnection);
     virtual void trigger();
   signals:
+    void nameChanged();
+    void descriptionChanged();
     void valueChanged(double);
+    void defaultValueChanged(double);
     void valueChangedFromEngine(double);
     void triggered();
   public:
@@ -165,7 +173,7 @@ class ControlObject : public QObject {
   private:
     void initialize(ConfigKey key, bool bIgnoreNops, bool bTrack,
                     bool bPersist);
-    inline bool ignoreNops() const {
+    bool ignoreNops() const {
         return m_pControl ? m_pControl->ignoreNops() : true;
     }
 };

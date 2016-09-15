@@ -95,7 +95,8 @@ bool namesMatchPattern(const QString input_name,
 }
 
 }
-PortMidiEnumerator::PortMidiEnumerator() : MidiEnumerator() {
+PortMidiEnumerator::PortMidiEnumerator(QObject *p) : MidiEnumerator(p)
+{
     PmError err = Pm_Initialize();
     // Based on reading the source, it's not possible for this to fail.
     if (err != pmNoError) {

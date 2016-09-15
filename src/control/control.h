@@ -13,8 +13,13 @@
 
 class ControlObject;
 
-class ControlDoublePrivate : public QObject {
+class ControlDoublePrivate : public QObject, public QEnableSharedFromThis<ControlDoublePrivate> {
     Q_OBJECT
+    Q_PROPERTY(ConfigKey key READ getKey CONSTANT)
+    Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
+    Q_PROPERTY(QString description READ description WRITE setDescription NOTIFY descriptionChanged)
+    Q_PROPERTY(double value READ get WRITE set RESET reset NOTIFY valueChanged)
+    Q_PROPERTY(double defaultValue READ defaultValue WRITE setDefaultValue NOTIFY defaultValueChanged)
   public:
     virtual ~ControlDoublePrivate();
 
@@ -47,10 +52,10 @@ class ControlDoublePrivate : public QObject {
     void setDescription(const QString& description);
 
     // Sets the control value.
-    void set(double value, QObject* pSender);
+    void set(double value, QObject* pSender = nullptr);
     // directly sets the control value. Must be used from and only from the
     // ValueChangeRequest slot.
-    void setAndConfirm(double value, QObject* pSender);
+    void setAndConfirm(double value, QObject* pSender = nullptr);
     // Gets the control value.
     double get() const;
     // Resets the control value to its default.
@@ -90,13 +95,15 @@ class ControlDoublePrivate : public QObject {
     // Emitted when the ControlDoublePrivate value changes. pSender is a
     // pointer to the setter of the value (potentially NULL).
     void valueChanged(double value, QObject* pSender);
+    void defaultValueChanged(double);
     void valueChangeRequest(double value);
     void trigger();
+    void nameChanged();
+    void descriptionChanged();
   private:
     ControlDoublePrivate(ConfigKey key, ControlObject* pCreatorCO,
                          bool bIgnoreNops, bool bTrack, bool bPersist);
     void initialize();
-    void setInner(double value, QObject* pSender);
 
     ConfigKey m_key;
 
@@ -146,6 +153,7 @@ class ControlDoublePrivate : public QObject {
 
     // Mutex guarding access to s_qCOHash and s_qCOAliasHash.
     static MMutex s_qCOHashMutex;
+    friend class QSharedPointer<ControlDoublePrivate>;
 };
 
 

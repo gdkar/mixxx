@@ -15,9 +15,9 @@
 class RtMidiEnumerator : public MidiEnumerator {
     Q_OBJECT
   public:
-    RtMidiEnumerator();
+    RtMidiEnumerator(QObject *p);
     virtual ~RtMidiEnumerator();
-    QList<Controller*> queryDevices();
+    QList<Controller*> queryDevices() override;
   private:
     std::unique_ptr<RtMidiIn>   m_midiIn{};
     std::unique_ptr<RtMidiOut>  m_midiOut{};

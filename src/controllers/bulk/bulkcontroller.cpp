@@ -114,7 +114,7 @@ void BulkController::visit(const ControllerPreset* preset) {
     }
 }
 
-bool BulkController::savePreset(const QString fileName) const {
+bool BulkController::savePreset(QString fileName) const {
     HidControllerPresetFileHandler handler;
     return handler.save(m_preset, getName(), fileName);
 }
@@ -255,3 +255,25 @@ void BulkController::send(QByteArray data) {
                  << "serial #" << m_sUID);
     }
 }
+ControllerPresetPointer BulkController::getPreset() const
+{
+    auto pClone = new HidControllerPreset();
+    *pClone = m_preset;
+    return ControllerPresetPointer(pClone);
+}
+bool BulkController::isMappable() const
+{
+    return m_preset.isMappable();
+}
+bool BulkController::isPolling() const
+{
+    return false;
+}
+
+// Returns a pointer to the currently loaded controller preset. For internal
+// use only.
+ControllerPreset* BulkController::preset()
+{
+    return &m_preset;
+}
+

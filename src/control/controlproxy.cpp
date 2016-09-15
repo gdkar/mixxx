@@ -40,6 +40,16 @@ void ControlProxy::initialize(const ConfigKey& key) {
                   | Qt::UniqueConnection
                     )
                 );
+            connect(
+                m_pControl.data()
+              ,&ControlDoublePrivate::defaultValueChanged
+              , this
+              ,&ControlProxy::defaultValueChanged
+              , static_cast<Qt::ConnectionType>(
+                    Qt::AutoConnection
+                  | Qt::UniqueConnection
+                    )
+                );
         }
     }
 }
@@ -53,7 +63,8 @@ ControlProxy::~ControlProxy() {
 }
 
 bool ControlProxy::connectValueChanged(const QObject* receiver,
-        const char* method, Qt::ConnectionType requestedConnectionType) {
+        const char* method, Qt::ConnectionType requestedConnectionType)
+{
 
     if (!m_pControl) {
         return false;

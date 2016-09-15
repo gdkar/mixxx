@@ -61,14 +61,38 @@ void ControlObject::initialize(ConfigKey key, bool bIgnoreNops, bool bTrack,
 
     // getControl can fail and return a NULL control even with the create flag.
     if (m_pControl) {
-        connect(m_pControl.data(), SIGNAL(valueChanged(double, QObject*)),
-                this, SLOT(privateValueChanged(double, QObject*)),
+        connect(m_pControl.data(), &ControlDoublePrivate::valueChanged,
+                this, &ControlObject::privateValueChanged,
                 Qt::DirectConnection);
+        connect(m_pControl.data(), &ControlDoublePrivate::defaultValueChanged,
+                this, &ControlObject::defaultValueChanged,
+                Qt::DirectConnection);
+
         connect(
             m_pControl.data()
             ,&ControlDoublePrivate::trigger
             , this
             ,&ControlObject::triggered
+            , static_cast<Qt::ConnectionType>(
+                Qt::DirectConnection
+              | Qt::UniqueConnection
+                )
+            );
+        connect(
+            m_pControl.data()
+            ,&ControlDoublePrivate::nameChanged
+            , this
+            ,&ControlObject::nameChanged
+            , static_cast<Qt::ConnectionType>(
+                Qt::DirectConnection
+              | Qt::UniqueConnection
+                )
+            );
+        connect(
+            m_pControl.data()
+            ,&ControlDoublePrivate::descriptionChanged
+            , this
+            ,&ControlObject::descriptionChanged
             , static_cast<Qt::ConnectionType>(
                 Qt::DirectConnection
               | Qt::UniqueConnection

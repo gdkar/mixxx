@@ -7,5 +7,5 @@
 */
 
 #include "controllers/midi/midienumerator.h"
-MidiEnumerator::MidiEnumerator() : ControllerEnumerator() {}
+MidiEnumerator::MidiEnumerator(QObject *p) : ControllerEnumerator(p) {}
 MidiEnumerator::~MidiEnumerator() = default;

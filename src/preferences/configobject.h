@@ -14,50 +14,64 @@
 // Class for the key for a specific configuration element. A key consists of a
 // group and an item.
 class ConfigKey {
+    Q_GADGET
+    Q_PROPERTY(QString group MEMBER group);
+    Q_PROPERTY(QString item MEMBER item);
   public:
     ConfigKey(); // is required for qMetaTypeConstructHelper()
     ConfigKey(const ConfigKey& key);
     ConfigKey(const QString& g, const QString& i);
     static ConfigKey parseCommaSeparated(const QString& key);
 
-    inline bool isEmpty() const {
+    bool isEmpty() const {
         return group.isEmpty() && item.isEmpty();
     }
 
-    inline bool isNull() const {
+    bool isNull() const {
         return group.isNull() && item.isNull();
     }
-
-    // comparison function for ConfigKeys. Used by a QHash in ControlObject
-    friend inline bool operator==(const ConfigKey& lhs, const ConfigKey& rhs) {
-        return lhs.group == rhs.group && lhs.item == rhs.item;
+    operator std::tuple<QString&,QString&> ()
+    {
+        return {group,item};
     }
-
+    operator std::tuple<QString,QString> () const
+    {
+        return {group,item};
+    }
+    // comparison function for ConfigKeys. Used by a QHash in ControlObject
+    friend bool operator==(const ConfigKey& lhs, const ConfigKey& rhs)
+    {
+        return static_cast<const std::tuple<QString,QString> >(lhs) ==
+            static_cast<const std::tuple<QString,QString> >(rhs);
+    }
     // comparison function for ConfigKeys. Used by a QMap in ControlObject
-    friend inline bool operator<(const ConfigKey& lhs, const ConfigKey& rhs) {
-        int groupResult = lhs.group.compare(rhs.group);
-        if (groupResult == 0) {
-            return lhs.item < rhs.item;
-        }
-        return (groupResult < 0);
+    friend bool operator<(const ConfigKey& lhs, const ConfigKey& rhs)
+    {
+        return static_cast<const std::tuple<QString,QString> >(lhs) <
+            static_cast<const std::tuple<QString,QString> >(rhs);
+    }
+    friend QDebug operator<<(QDebug stream, const ConfigKey& c1)
+    {
+        return stream << "["<< c1.group << "," << c1.item <<"]";
+    }
+    friend uint qHash(const ConfigKey& key)
+    {
+        return qHash(key.group) ^ qHash(key.item);
     }
     QString group, item;
 };
+
 Q_DECLARE_METATYPE(ConfigKey);
 
 
 // stream operator function for trivial qDebug()ing of ConfigKeys
-inline QDebug operator<<(QDebug stream, const ConfigKey& c1) {
-    stream << c1.group << "," << c1.item;
-    return stream;
-}
+
 
 // QHash hash function for ConfigKey objects.
-inline uint qHash(const ConfigKey& key) {
-    return qHash(key.group) ^ qHash(key.item);
-}
 
-inline uint qHash(const QKeySequence& key) {
+
+inline uint qHash(const QKeySequence& key)
+{
     return qHash(key.toString());
 }
 
