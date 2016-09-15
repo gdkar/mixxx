@@ -103,7 +103,7 @@ class fifo<T,true> {
     }
     void push_back(T &&item)
     {
-        back() = std::forward<item>(item);
+        back() = std::forward<T>(item);
         std::atomic_thread_fence(std::memory_order_release);
         m_widx.fetch_add(1,std::memory_order_release);
     }
@@ -334,7 +334,7 @@ class fifo<T,false> {
     }
     void push_back(T &&item)
     {
-        ::new(&back()) T (std::forward<item>(item));
+        ::new(&back()) T (std::forward<T>(item));
         std::atomic_thread_fence(std::memory_order_release);
         m_widx.fetch_add(1,std::memory_order_release);
     }
