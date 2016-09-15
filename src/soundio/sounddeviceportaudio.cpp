@@ -410,7 +410,6 @@ void SoundDevicePortAudio::readProcess()
                         size1 / m_inputParams.channelCount);
                 CSAMPLE* lastFrame = &dataPtr1[size1 - m_inputParams.channelCount];
                 if (err == paInputOverflowed) {
-                    //qDebug() << "SoundDevicePortAudio::readProcess() Pa_ReadStream paInputOverflowed" << getInternalName();
                     m_underflowHappened = 1;
                 }
                 if (size2 > 0) {
@@ -418,7 +417,6 @@ void SoundDevicePortAudio::readProcess()
                             size2 / m_inputParams.channelCount);
                     lastFrame = &dataPtr2[size2 - m_inputParams.channelCount];
                     if (err == paInputOverflowed) {
-                        //qDebug() << "SoundDevicePortAudio::readProcess() Pa_ReadStream paInputOverflowed" << getInternalName();
                         m_underflowHappened = 1;
                     }
                 }
@@ -428,11 +426,9 @@ void SoundDevicePortAudio::readProcess()
                     // we are not able to consume all frames
                     if (m_inputDrift) {
                         // Skip one frame
-                        //qDebug() << "SoundDevicePortAudio::readProcess() skip one frame"
                         //        << (float)writeAvailable / inChunkSize << (float)readAvailable / inChunkSize;
                         PaError err = Pa_ReadStream(pStream, dataPtr1, 1);
                         if (err == paInputOverflowed) {
-                            //qDebug()
                             //        << "SoundDevicePortAudio::readProcess() Pa_ReadStream paInputOverflowed"
                             //        << getInternalName();
                             m_underflowHappened = 1;
@@ -444,8 +440,6 @@ void SoundDevicePortAudio::readProcess()
                     // We should read at least inChunkSize
                     if (m_inputDrift) {
                         // duplicate one frame
-                        //qDebug() << "SoundDevicePortAudio::readProcess() duplicate one frame"
-                        //        << (float)writeAvailable / inChunkSize << (float)readAvailable / inChunkSize;
                         (void) m_inputFifo->acquireWriteRegions(
                                 m_inputParams.channelCount, &dataPtr1, &size1,
                                 &dataPtr2, &size2);
@@ -467,7 +461,6 @@ void SoundDevicePortAudio::readProcess()
         if (inChunkSize > readAvailable) {
             readCount = readAvailable;
             m_underflowHappened = 1;
-            //qDebug() << "readProcess()" << (float)readAvailable / inChunkSize << "underflow";
         }
         if (readCount) {
             FIFO<CSAMPLE>::pointer dataPtr1, dataPtr2;
