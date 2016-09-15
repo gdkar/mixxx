@@ -208,7 +208,7 @@ TreeItemModel* BrowseFeature::getChildModel() {
 }
 
 void BrowseFeature::bindWidget(WLibrary* libraryWidget,
-                               KeyboardEventFilter* keyboard) {
+                               QObject* keyboard) {
     Q_UNUSED(keyboard);
     WLibraryTextBrowser* edit = new WLibraryTextBrowser(libraryWidget);
     edit->setHtml(getRootViewHtml());

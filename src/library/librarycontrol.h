@@ -10,7 +10,6 @@ class ControlPushButton;
 class Library;
 class WLibrary;
 class WLibrarySidebar;
-class KeyboardEventFilter;
 
 class LoadToGroupController : public QObject {
     Q_OBJECT
@@ -37,7 +36,7 @@ class LibraryControl : public QObject {
     LibraryControl(Library* pLibrary);
     virtual ~LibraryControl();
 
-    void bindWidget(WLibrary* pLibrary, KeyboardEventFilter* pKeyboard);
+    void bindWidget(WLibrary* pLibrary, QObject* pKeyboard);
     void bindSidebarWidget(WLibrarySidebar* pLibrarySidebar);
 
   private slots:

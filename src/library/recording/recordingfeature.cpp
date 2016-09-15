@@ -8,7 +8,6 @@
 #include "library/library.h"
 #include "library/trackcollection.h"
 #include "widget/wlibrary.h"
-#include "controllers/keyboard/keyboardeventfilter.h"
 
 const QString RecordingFeature::m_sRecordingViewName = QString("Recording");
 
@@ -38,10 +37,10 @@ QIcon RecordingFeature::getIcon() {
 TreeItemModel* RecordingFeature::getChildModel() {
     return &m_childModel;
 }
-void RecordingFeature::bindWidget(WLibrary* pLibraryWidget,
-                                  KeyboardEventFilter *keyboard) {
+void RecordingFeature::bindWidget(WLibrary* pLibraryWidget,QObject *keyboard)
+{
     //The view will be deleted by LibraryWidget
-    DlgRecording* pRecordingView = new DlgRecording(pLibraryWidget,
+    auto pRecordingView = new DlgRecording(pLibraryWidget,
                                                     m_pConfig,
                                                     m_pLibrary,
                                                     m_pTrackCollection,

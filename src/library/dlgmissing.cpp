@@ -6,7 +6,7 @@
 
 DlgMissing::DlgMissing(QWidget* parent, UserSettingsPointer pConfig,
                        Library* pLibrary,
-                       TrackCollection* pTrackCollection, KeyboardEventFilter* pKeyboard)
+                       TrackCollection* pTrackCollection, QObject* pKeyboard)
          : QWidget(parent),
            Ui::DlgMissing(),
            m_pTrackTableView(
@@ -15,7 +15,7 @@ DlgMissing::DlgMissing(QWidget* parent, UserSettingsPointer pConfig,
     m_pTrackTableView->installEventFilter(pKeyboard);
 
     // Install our own trackTable
-    QBoxLayout* box = dynamic_cast<QBoxLayout*>(layout());
+    auto box = qobject_cast<QBoxLayout*>(layout());
     DEBUG_ASSERT_AND_HANDLE(box) { //Assumes the form layout is a QVBox/QHBoxLayout!
     } else {
         box->removeWidget(m_pTrackTablePlaceholder);

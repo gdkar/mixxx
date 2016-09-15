@@ -9,7 +9,6 @@
 #include "library/trackcollection.h"
 #include "library/dlganalysis.h"
 #include "widget/wlibrary.h"
-#include "controllers/keyboard/keyboardeventfilter.h"
 #include "analyzer/analyzerqueue.h"
 #include "sources/soundsourceproxy.h"
 #include "util/dnd.h"
@@ -58,8 +57,8 @@ QIcon AnalysisFeature::getIcon() {
     return QIcon(":/images/library/ic_library_prepare.png");
 }
 
-void AnalysisFeature::bindWidget(WLibrary* libraryWidget,
-                                 KeyboardEventFilter* keyboard) {
+void AnalysisFeature::bindWidget(WLibrary* libraryWidget,QObject* keyboard)
+{
     m_pAnalysisView = new DlgAnalysis(libraryWidget,
                                       m_pConfig,
                                       m_pTrackCollection);

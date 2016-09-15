@@ -23,7 +23,6 @@
 class TrackModel;
 class WLibrarySidebar;
 class WLibrary;
-class KeyboardEventFilter;
 
 // pure virtual (abstract) class to provide an interface for libraryfeatures
 class LibraryFeature : public QObject {
@@ -62,7 +61,7 @@ class LibraryFeature : public QObject {
 
     // Reimplement this to register custom views with the library widget.
     virtual void bindWidget(WLibrary* /* libraryWidget */,
-                            KeyboardEventFilter* /* keyboard */) {}
+                            QObject* /* keyboard */) {}
     virtual TreeItemModel* getChildModel() = 0;
 
   protected:

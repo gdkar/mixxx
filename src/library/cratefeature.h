@@ -36,8 +36,7 @@ class CrateFeature : public LibraryFeature {
                          QObject* pSource);
     bool dragMoveAcceptChild(const QModelIndex& index, QUrl url);
 
-    void bindWidget(WLibrary* libraryWidget,
-                    KeyboardEventFilter* keyboard);
+    void bindWidget(WLibrary* libraryWidget,QObject* keyboard);
 
     TreeItemModel* getChildModel();
 

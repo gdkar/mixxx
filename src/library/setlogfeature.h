@@ -24,7 +24,7 @@ public:
     QIcon getIcon();
 
     virtual void bindWidget(WLibrary* libraryWidget,
-                            KeyboardEventFilter* keyboard);
+                            QObject* keyboard);
 
   public slots:
     void onRightClick(const QPoint& globalPos);

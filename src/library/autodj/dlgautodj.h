@@ -11,7 +11,6 @@
 #include "library/library.h"
 #include "library/trackcollection.h"
 #include "library/autodj/autodjprocessor.h"
-#include "controllers/keyboard/keyboardeventfilter.h"
 
 class PlaylistTableModel;
 class WTrackTableView;
@@ -22,7 +21,7 @@ class DlgAutoDJ : public QWidget, public Ui::DlgAutoDJ, public LibraryView {
     DlgAutoDJ(QWidget* parent, UserSettingsPointer pConfig,
               Library* pLibrary,
               AutoDJProcessor* pProcessor, TrackCollection* pTrackCollection,
-              KeyboardEventFilter* pKeyboard);
+              QObject* pKeyboard);
     virtual ~DlgAutoDJ();
 
     void onShow();

@@ -10,7 +10,7 @@
 
 DlgRecording::DlgRecording(QWidget* parent, UserSettingsPointer pConfig,
                            Library* pLibrary, TrackCollection* pTrackCollection,
-                           RecordingManager* pRecordingManager, KeyboardEventFilter* pKeyboard)
+                           RecordingManager* pRecordingManager, QObject* pKeyboard)
         : QWidget(parent),
           m_pConfig(pConfig),
           m_pTrackCollection(pTrackCollection),
@@ -18,7 +18,8 @@ DlgRecording::DlgRecording(QWidget* parent, UserSettingsPointer pConfig,
           m_proxyModel(&m_browseModel),
           m_bytesRecordedStr("--"),
           m_durationRecordedStr("--:--"),
-          m_pRecordingManager(pRecordingManager) {
+          m_pRecordingManager(pRecordingManager)
+{
     setupUi(this);
     m_pTrackTableView = new WTrackTableView(this, pConfig, m_pTrackCollection, false); // No sorting
     m_pTrackTableView->installEventFilter(pKeyboard);
@@ -39,7 +40,7 @@ DlgRecording::DlgRecording(QWidget* parent, UserSettingsPointer pConfig,
     connect(m_pRecordingManager, SIGNAL(durationRecorded(QString)),
             this, SLOT(slotDurationRecorded(QString)));
 
-    QBoxLayout* box = dynamic_cast<QBoxLayout*>(layout());
+    auto box = dynamic_cast<QBoxLayout*>(layout());
     DEBUG_ASSERT_AND_HANDLE(box) { //Assumes the form layout is a QVBox/QHBoxLayout!
     } else {
         box->removeWidget(m_pTrackTablePlaceholder);

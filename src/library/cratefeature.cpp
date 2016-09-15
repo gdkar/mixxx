@@ -19,7 +19,6 @@
 #include "library/queryutil.h"
 #include "widget/wlibrarytextbrowser.h"
 #include "widget/wlibrary.h"
-#include "controllers/keyboard/keyboardeventfilter.h"
 #include "treeitem.h"
 #include "sources/soundsourceproxy.h"
 #include "util/dnd.h"
@@ -178,8 +177,7 @@ bool CrateFeature::dragMoveAcceptChild(const QModelIndex& index, QUrl url) {
     return !locked && formatSupported;
 }
 
-void CrateFeature::bindWidget(WLibrary* libraryWidget,
-                              KeyboardEventFilter* keyboard) {
+void CrateFeature::bindWidget(WLibrary* libraryWidget,QObject* keyboard) {
     Q_UNUSED(keyboard);
     WLibraryTextBrowser* edit = new WLibraryTextBrowser(libraryWidget);
     edit->setHtml(getRootViewHtml());

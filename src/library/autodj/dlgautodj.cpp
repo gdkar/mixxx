@@ -12,7 +12,7 @@ DlgAutoDJ::DlgAutoDJ(QWidget* parent,
                      Library* pLibrary,
                      AutoDJProcessor* pProcessor,
                      TrackCollection* pTrackCollection,
-                     KeyboardEventFilter* pKeyboard)
+                     QObject* pKeyboard)
         : QWidget(parent),
           Ui::DlgAutoDJ(),
           m_pAutoDJProcessor(pProcessor),

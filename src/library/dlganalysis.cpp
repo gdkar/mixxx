@@ -179,7 +179,8 @@ void DlgAnalysis::showAllSongs() {
     m_pAnalysisLibraryTableModel->showAllSongs();
 }
 
-void DlgAnalysis::installEventFilter(QObject* pFilter) {
+void DlgAnalysis::installEventFilter(QObject* pFilter)
+{
     QWidget::installEventFilter(pFilter);
     m_pAnalysisLibraryTableView->installEventFilter(pFilter);
 }

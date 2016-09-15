@@ -202,7 +202,6 @@ void WOverview::slotTrackLoaded(TrackPointer pTrack)
 
 void WOverview::slotLoadingTrack(TrackPointer pNewTrack, TrackPointer pOldTrack)
 {
-    qDebug() << this << "WOverview::slotLoadingTrack" << pNewTrack << pOldTrack;
     if (m_pCurrentTrack != nullptr && pOldTrack == m_pCurrentTrack) {
         disconnect(m_pCurrentTrack.data(), SIGNAL(waveformSummaryUpdated()),
                    this, SLOT(slotWaveformSummaryUpdated()));

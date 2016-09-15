@@ -33,8 +33,6 @@
 #include "widget/wlibrary.h"
 #include "widget/wlibrarysidebar.h"
 
-#include "controllers/keyboard/keyboardeventfilter.h"
-
 // This is is the name which we use to register the WTrackTableView with the
 // WLibrary
 const QString Library::m_sTrackViewName = QString("WTrackTableView");
@@ -177,8 +175,8 @@ void Library::bindSidebarWidget(WLibrarySidebar* pSidebarWidget) {
             pSidebarWidget, SLOT(slotSetFont(QFont)));
 }
 
-void Library::bindWidget(WLibrary* pLibraryWidget,
-                         KeyboardEventFilter* pKeyboard) {
+void Library::bindWidget(WLibrary* pLibraryWidget,QObject* pKeyboard)
+{
     WTrackTableView* pTrackTableView =
             new WTrackTableView(pLibraryWidget, m_pConfig, m_pTrackCollection);
     pTrackTableView->installEventFilter(pKeyboard);
