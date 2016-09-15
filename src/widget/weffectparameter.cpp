@@ -10,13 +10,13 @@ WEffectParameter::WEffectParameter(QWidget* pParent, EffectsManager* pEffectsMan
 
 void WEffectParameter::setup(const QDomNode& node, const SkinContext& context) {
     // EffectWidgetUtils propagates NULLs so this is all safe.
-    EffectRackPointer pRack = EffectWidgetUtils::getEffectRackFromNode(
+    auto pRack = EffectWidgetUtils::getEffectRackFromNode(
             node, context, m_pEffectsManager);
-    EffectChainSlotPointer pChainSlot = EffectWidgetUtils::getEffectChainSlotFromNode(
+    auto pChainSlot = EffectWidgetUtils::getEffectChainSlotFromNode(
             node, context, pRack);
-    EffectSlotPointer pEffectSlot = EffectWidgetUtils::getEffectSlotFromNode(
+    auto pEffectSlot = EffectWidgetUtils::getEffectSlotFromNode(
             node, context, pChainSlot);
-    EffectParameterSlotBasePointer pParameterSlot =
+    auto pParameterSlot =
             EffectWidgetUtils::getParameterSlotFromNode(
                     node, context, pEffectSlot);
     if (pParameterSlot) {

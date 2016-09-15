@@ -8,10 +8,12 @@
 
 WBaseWidget::WBaseWidget(QWidget* pWidget)
         : m_pDisplayConnection(nullptr),
-          m_pWidget(pWidget) {
+          m_pWidget(pWidget)
+{
 }
 
-WBaseWidget::~WBaseWidget() {
+WBaseWidget::~WBaseWidget()
+{
     m_pDisplayConnection = nullptr;
     while (!m_leftConnections.isEmpty()) {
         delete m_leftConnections.takeLast();
@@ -27,41 +29,49 @@ WBaseWidget::~WBaseWidget() {
     }
 }
 
-void WBaseWidget::Init() {
+void WBaseWidget::Init()
+{
     if (m_pDisplayConnection) {
         m_pDisplayConnection->Init();
     }
 }
 
-void WBaseWidget::setDisplayConnection(ControlParameterWidgetConnection* pConnection) {
+void WBaseWidget::setDisplayConnection(ControlParameterWidgetConnection* pConnection)
+{
     //qDebug() << "WBaseWidget::setDisplayConnection()" << pConnection->toDebugString();
     m_pDisplayConnection = pConnection;
 }
 
-void WBaseWidget::addConnection(ControlParameterWidgetConnection* pConnection) {
+void WBaseWidget::addConnection(ControlParameterWidgetConnection* pConnection)
+{
     m_connections.append(pConnection);
 }
 
-void WBaseWidget::addLeftConnection(ControlParameterWidgetConnection* pConnection) {
+void WBaseWidget::addLeftConnection(ControlParameterWidgetConnection* pConnection)
+{
     m_leftConnections.append(pConnection);
 }
 
-void WBaseWidget::addRightConnection(ControlParameterWidgetConnection* pConnection) {
+void WBaseWidget::addRightConnection(ControlParameterWidgetConnection* pConnection)
+{
     m_rightConnections.append(pConnection);
 }
 
-void WBaseWidget::addPropertyConnection(ControlWidgetPropertyConnection* pConnection) {
+void WBaseWidget::addPropertyConnection(ControlWidgetPropertyConnection* pConnection)
+{
     m_propertyConnections.append(pConnection);
 }
 
-double WBaseWidget::getControlParameter() const {
+double WBaseWidget::getControlParameter() const
+{
     if (!m_connections.isEmpty()) {
         return m_connections.at(0)->getControlParameter();
     }
     return 0.0;
 }
 
-double WBaseWidget::getControlParameterLeft() const {
+double WBaseWidget::getControlParameterLeft() const
+{
     if (!m_leftConnections.isEmpty()) {
         return m_leftConnections.at(0)->getControlParameter();
     }
@@ -86,36 +96,36 @@ double WBaseWidget::getControlParameterDisplay() const {
 }
 
 void WBaseWidget::resetControlParameter() {
-    for (ControlParameterWidgetConnection* pControlConnection : m_connections) {
+    for (auto pControlConnection : m_connections) {
         pControlConnection->resetControl();
     }
 }
 
 void WBaseWidget::setControlParameter(double v) {
-    for (ControlParameterWidgetConnection* pControlConnection : m_connections) {
+    for (auto  pControlConnection : m_connections) {
         pControlConnection->setControlParameter(v);
     }
 }
 
 void WBaseWidget::setControlParameterUp(double v) {
-    for (ControlParameterWidgetConnection* pControlConnection : m_connections) {
+    for (auto pControlConnection : m_connections) {
         pControlConnection->setControlParameterUp(v);
     }
 }
 
 void WBaseWidget::setControlParameterDown(double v) {
-    for (ControlParameterWidgetConnection* pControlConnection : m_connections) {
+    for (auto pControlConnection : m_connections) {
         pControlConnection->setControlParameterDown(v);
     }
 }
 
 void WBaseWidget::setControlParameterLeftDown(double v) {
     if (!m_leftConnections.isEmpty()) {
-        for (ControlParameterWidgetConnection* pControlConnection : m_leftConnections) {
+        for (auto  pControlConnection : m_leftConnections) {
             pControlConnection->setControlParameterDown(v);
         }
     } else {
-        for (ControlParameterWidgetConnection* pControlConnection : m_connections) {
+        for (auto pControlConnection : m_connections) {
             pControlConnection->setControlParameterDown(v);
         }
     }
@@ -123,24 +133,24 @@ void WBaseWidget::setControlParameterLeftDown(double v) {
 
 void WBaseWidget::setControlParameterLeftUp(double v) {
     if (!m_leftConnections.isEmpty()) {
-        for (ControlParameterWidgetConnection* pControlConnection : m_leftConnections) {
+        for (auto pControlConnection : m_leftConnections) {
             pControlConnection->setControlParameterUp(v);
         }
     } else {
-        for (ControlParameterWidgetConnection* pControlConnection : m_connections) {
+        for (auto pControlConnection : m_connections) {
             pControlConnection->setControlParameterUp(v);
         }
     }
 }
 
 void WBaseWidget::setControlParameterRightDown(double v) {
-    for (ControlParameterWidgetConnection* pControlConnection : m_rightConnections) {
+    for (auto pControlConnection : m_rightConnections) {
         pControlConnection->setControlParameterDown(v);
     }
 }
 
 void WBaseWidget::setControlParameterRightUp(double v) {
-    for (ControlParameterWidgetConnection* pControlConnection : m_rightConnections) {
+    for (auto pControlConnection : m_rightConnections) {
         pControlConnection->setControlParameterUp(v);
     }
 }
@@ -193,13 +203,13 @@ void WBaseWidget::fillDebugTooltip(QStringList* debug) {
            << QString("SizeHint: %1").arg(toDebugString(m_pWidget->sizeHint()))
            << QString("MinimumSizeHint: %1").arg(toDebugString(m_pWidget->minimumSizeHint()));
 
-    for (ControlParameterWidgetConnection* pControlConnection : m_leftConnections) {
+    for (auto pControlConnection : m_leftConnections) {
         *debug << QString("LeftConnection: %1").arg(pControlConnection->toDebugString());
     }
-    for (ControlParameterWidgetConnection* pControlConnection : m_rightConnections) {
+    for (auto pControlConnection : m_rightConnections) {
         *debug << QString("RightConnection: %1").arg(pControlConnection->toDebugString());
     }
-    for (ControlParameterWidgetConnection* pControlConnection : m_connections) {
+    for (auto pControlConnection : m_connections) {
         *debug << QString("Connection: %1").arg(pControlConnection->toDebugString());
     }
     if (m_pDisplayConnection) {

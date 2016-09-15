@@ -7,18 +7,20 @@
 
 WEffect::WEffect(QWidget* pParent, EffectsManager* pEffectsManager)
         : WLabel(pParent),
-          m_pEffectsManager(pEffectsManager) {
+          m_pEffectsManager(pEffectsManager)
+{
     effectUpdated();
 }
 
-void WEffect::setup(const QDomNode& node, const SkinContext& context) {
+void WEffect::setup(const QDomNode& node, const SkinContext& context)
+{
     WLabel::setup(node, context);
     // EffectWidgetUtils propagates NULLs so this is all safe.
-    EffectRackPointer pRack = EffectWidgetUtils::getEffectRackFromNode(
+    auto pRack = EffectWidgetUtils::getEffectRackFromNode(
             node, context, m_pEffectsManager);
-    EffectChainSlotPointer pChainSlot = EffectWidgetUtils::getEffectChainSlotFromNode(
+    auto pChainSlot = EffectWidgetUtils::getEffectChainSlotFromNode(
             node, context, pRack);
-    EffectSlotPointer pEffectSlot = EffectWidgetUtils::getEffectSlotFromNode(
+    auto pEffectSlot = EffectWidgetUtils::getEffectSlotFromNode(
             node, context, pChainSlot);
     if (pEffectSlot) {
         setEffectSlot(pEffectSlot);
@@ -28,7 +30,8 @@ void WEffect::setup(const QDomNode& node, const SkinContext& context) {
     }
 }
 
-void WEffect::setEffectSlot(EffectSlotPointer pEffectSlot) {
+void WEffect::setEffectSlot(EffectSlotPointer pEffectSlot)
+{
     if (pEffectSlot) {
         m_pEffectSlot = pEffectSlot;
         connect(pEffectSlot.data(), SIGNAL(updated()),
@@ -37,13 +40,13 @@ void WEffect::setEffectSlot(EffectSlotPointer pEffectSlot) {
     }
 }
 
-void WEffect::effectUpdated() {
+void WEffect::effectUpdated()
+{
     QString name;
     QString description;
     if (m_pEffectSlot) {
-        EffectPointer pEffect = m_pEffectSlot->getEffect();
-        if (pEffect) {
-            const EffectManifest& manifest = pEffect->getManifest();
+        if(auto pEffect = m_pEffectSlot->getEffect()){
+            auto && manifest = pEffect->getManifest();
             name = manifest.name();
             description = manifest.description();
         }

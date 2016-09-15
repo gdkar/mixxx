@@ -50,23 +50,22 @@ WOverview::WOverview(const char *pGroup, UserSettingsPointer pConfig, QWidget* p
         m_dAnalyzerProgress(1.0),
         m_bAnalyzerFinalizing(false),
         m_trackLoaded(false) {
-    m_endOfTrackControl = new ControlProxy(
-            m_group, "end_of_track", this);
-    m_endOfTrackControl->connectValueChanged(
-             SLOT(onEndOfTrackChange(double)));
-    m_trackSamplesControl =
-            new ControlProxy(m_group, "track_samples", this);
+    m_endOfTrackControl = new ControlProxy(m_group, "end_of_track", this);
+    m_endOfTrackControl->connectValueChanged(SLOT(onEndOfTrackChange(double)));
+    m_trackSamplesControl = new ControlProxy(m_group, "track_samples", this);
     m_playControl = new ControlProxy(m_group, "play", this);
     setAcceptDrops(true);
 }
 
-WOverview::~WOverview() {
+WOverview::~WOverview()
+{
     if (m_pWaveformSourceImage) {
         delete m_pWaveformSourceImage;
     }
 }
 
-void WOverview::setup(const QDomNode& node, const SkinContext& context) {
+void WOverview::setup(const QDomNode& node, const SkinContext& context)
+{
     m_signalColors.setup(node, context);
 
     m_qColorBackground = m_signalColors.getBgColor();
@@ -93,14 +92,15 @@ void WOverview::setup(const QDomNode& node, const SkinContext& context) {
     m_marks.setup(m_group, node, context, m_signalColors);
 
     for (int i = 0; i < m_marks.size(); ++i) {
-        const WaveformMarkPointer& mark = m_marks[i];
-        if (mark->m_pPointCos) {
-            mark->m_pPointCos->connectValueChanged(this,
-                    SLOT(onMarkChanged(double)));
+        if(auto mark = m_marks[i]){
+            if (mark->m_pPointCos) {
+                mark->m_pPointCos->connectValueChanged(this,
+                        SLOT(onMarkChanged(double)));
+            }
         }
     }
 
-    QDomNode child = node.firstChild();
+    auto child = node.firstChild();
     while (!child.isNull()) {
         if (child.nodeName() == "MarkRange") {
             m_markRanges.push_back(WaveformMarkRange());
@@ -133,19 +133,18 @@ void WOverview::setup(const QDomNode& node, const SkinContext& context) {
     //qDebug() << "WOverview : m_marks" << m_marks.size();
     //qDebug() << "WOverview : m_markRanges" << m_markRanges.size();
     if (!m_connections.isEmpty()) {
-        ControlParameterWidgetConnection* defaultConnection = m_connections.at(0);
-        if (defaultConnection) {
+        if(auto  defaultConnection = m_connections.at(0)){
             if (defaultConnection->getEmitOption() &
                     ControlParameterWidgetConnection::EMIT_DEFAULT) {
                 // ON_PRESS means here value change on mouse move during press
-                defaultConnection->setEmitOption(
-                        ControlParameterWidgetConnection::EMIT_ON_RELEASE);
+                defaultConnection->setEmitOption(ControlParameterWidgetConnection::EMIT_ON_RELEASE);
             }
         }
     }
 }
 
-void WOverview::onConnectedControlChanged(double dParameter, double dValue) {
+void WOverview::onConnectedControlChanged(double dParameter, double dValue)
+{
     Q_UNUSED(dValue);
     if (!m_bDrag) {
         // Calculate handle position. Clamp the value within 0-1 because that's
@@ -163,29 +162,28 @@ void WOverview::onConnectedControlChanged(double dParameter, double dValue) {
 
 void WOverview::slotWaveformSummaryUpdated() {
     //qDebug() << "WOverview::slotWaveformSummaryUpdated()";
-    TrackPointer pTrack(m_pCurrentTrack);
-    if (!pTrack) {
-        return;
-    }
-    m_pWaveform = pTrack->getWaveformSummary();
-    // If the waveform is already complete, just draw it.
-    if (m_pWaveform && m_pWaveform->getCompletion() == m_pWaveform->getDataSize()) {
-        m_actualCompletion = 0;
-        if (drawNextPixmapPart()) {
-            update();
+    if(auto pTrack = m_pCurrentTrack){
+        m_pWaveform = pTrack->getWaveformSummary();
+        // If the waveform is already complete, just draw it.
+        if (m_pWaveform && m_pWaveform->getCompletion() == m_pWaveform->getDataSize()) {
+            m_actualCompletion = 0;
+            if (drawNextPixmapPart()) {
+                update();
+            }
         }
     }
 }
 
-void WOverview::slotAnalyzerProgress(int progress) {
+void WOverview::slotAnalyzerProgress(int progress)
+{
     if (!m_pCurrentTrack) {
         return;
     }
 
-    double analyzerProgress = progress / 1000.0;
-    bool finalizing = progress == 999;
+    auto analyzerProgress = progress / 1000.0;
+    auto finalizing = progress == 999;
 
-    bool updateNeeded = drawNextPixmapPart();
+    auto updateNeeded = drawNextPixmapPart();
     // progress 0 .. 1000
     if (updateNeeded || (m_dAnalyzerProgress != analyzerProgress)) {
         m_dAnalyzerProgress = analyzerProgress;
@@ -194,14 +192,16 @@ void WOverview::slotAnalyzerProgress(int progress) {
     }
 }
 
-void WOverview::slotTrackLoaded(TrackPointer pTrack) {
+void WOverview::slotTrackLoaded(TrackPointer pTrack)
+{
     if (m_pCurrentTrack == pTrack) {
         m_trackLoaded = true;
         update();
     }
 }
 
-void WOverview::slotLoadingTrack(TrackPointer pNewTrack, TrackPointer pOldTrack) {
+void WOverview::slotLoadingTrack(TrackPointer pNewTrack, TrackPointer pOldTrack)
+{
     qDebug() << this << "WOverview::slotLoadingTrack" << pNewTrack << pOldTrack;
     if (m_pCurrentTrack != nullptr && pOldTrack == m_pCurrentTrack) {
         disconnect(m_pCurrentTrack.data(), SIGNAL(waveformSummaryUpdated()),
@@ -280,7 +280,8 @@ void WOverview::mousePressEvent(QMouseEvent* e) {
     m_bDrag = true;
 }
 
-void WOverview::paintEvent(QPaintEvent * /*unused*/) {
+void WOverview::paintEvent(QPaintEvent * /*unused*/)
+{
     //qDebug() << "WOverview::paintEvent";
     ScopedTimer t("WOverview::paintEvent");
 
@@ -312,7 +313,7 @@ void WOverview::paintEvent(QPaintEvent * /*unused*/) {
         }
 
         // Draw waveform pixmap
-        WaveformWidgetFactory* widgetFactory = WaveformWidgetFactory::instance();
+        auto widgetFactory = WaveformWidgetFactory::instance();
         if (m_pWaveformSourceImage) {
             int diffGain;
             bool normalize = widgetFactory->isOverviewNormalized();
@@ -518,7 +519,8 @@ void WOverview::paintEvent(QPaintEvent * /*unused*/) {
     painter.end();
 }
 
-void WOverview::paintText(const QString &text, QPainter *painter) {
+void WOverview::paintText(const QString &text, QPainter *painter)
+{
     QColor lowColor = m_signalColors.getLowColor();
     lowColor.setAlphaF(0.5);
     QPen lowColorPen(QBrush(lowColor), 1.25, Qt::SolidLine, Qt::RoundCap);
@@ -542,7 +544,8 @@ void WOverview::paintText(const QString &text, QPainter *painter) {
     painter->resetTransform();
 }
 
-void WOverview::resizeEvent(QResizeEvent * /*unused*/) {
+void WOverview::resizeEvent(QResizeEvent * /*unused*/)
+{
     // Play-position potmeters range from 0 to 1 but they allow out-of-range
     // sets. This is to give VC access to the pre-roll area.
     const double kMaxPlayposRange = 1.0;
@@ -561,23 +564,23 @@ void WOverview::resizeEvent(QResizeEvent * /*unused*/) {
     m_diffGain = 0;
 }
 
-void WOverview::dragEnterEvent(QDragEnterEvent* event) {
+void WOverview::dragEnterEvent(QDragEnterEvent* event)
+{
     if (DragAndDropHelper::allowLoadToPlayer(m_group,
                                              m_playControl->get() > 0.0,
                                              m_pConfig) &&
-            DragAndDropHelper::dragEnterAccept(*event->mimeData(), m_group,
-                                               true, false)) {
+            DragAndDropHelper::dragEnterAccept(*event->mimeData(), m_group,true, false)) {
         event->acceptProposedAction();
     } else {
         event->ignore();
     }
 }
 
-void WOverview::dropEvent(QDropEvent* event) {
+void WOverview::dropEvent(QDropEvent* event)
+{
     if (DragAndDropHelper::allowLoadToPlayer(m_group, m_playControl->get() > 0.0,
                                              m_pConfig)) {
-        QList<QFileInfo> files = DragAndDropHelper::dropEventFiles(
-                *event->mimeData(), m_group, true, false);
+        auto files = DragAndDropHelper::dropEventFiles(*event->mimeData(), m_group, true, false);
         if (!files.isEmpty()) {
             event->accept();
             emit(trackDropped(files.at(0).absoluteFilePath(), m_group));

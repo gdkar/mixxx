@@ -5,12 +5,14 @@
 
 WEffectParameterBase::WEffectParameterBase(QWidget* pParent, EffectsManager* pEffectsManager)
         : WLabel(pParent),
-          m_pEffectsManager(pEffectsManager) {
+          m_pEffectsManager(pEffectsManager)
+{
     parameterUpdated();
 }
 
 void WEffectParameterBase::setEffectParameterSlot(
-        EffectParameterSlotBasePointer pEffectParameterSlot) {
+        EffectParameterSlotBasePointer pEffectParameterSlot)
+    {
     m_pEffectParameterSlot = pEffectParameterSlot;
     if (m_pEffectParameterSlot) {
         connect(m_pEffectParameterSlot.data(), SIGNAL(updated()),
@@ -19,7 +21,8 @@ void WEffectParameterBase::setEffectParameterSlot(
     parameterUpdated();
 }
 
-void WEffectParameterBase::parameterUpdated() {
+void WEffectParameterBase::parameterUpdated()
+{
     if (m_pEffectParameterSlot) {
         setText(m_pEffectParameterSlot->name());
         setBaseTooltip(m_pEffectParameterSlot->description());
