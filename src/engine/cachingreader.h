@@ -11,6 +11,9 @@
 #include <QHash>
 #include <QVarLengthArray>
 
+#include <functional>
+#include <utility>
+
 #include "util/types.h"
 #include "preferences/usersettings.h"
 #include "track/track.h"
@@ -110,7 +113,7 @@ class CachingReader : public QObject {
 
     // Thread-safe FIFOs for communication between the engine callback and
     // reader thread.
-    FIFO<CachingReaderChunkReadRequest> m_chunkReadRequestFIFO;
+    FIFO<CachingReaderChunk*> m_chunkReadRequestFIFO;
     FIFO<ReaderStatusUpdate> m_readerStatusFIFO;
 
     // Looks for the provided chunk number in the index of in-memory chunks and

@@ -14,16 +14,6 @@
 #include "sources/audiosource.h"
 #include "util/fifo.h"
 
-
-typedef struct CachingReaderChunkReadRequest {
-    CachingReaderChunk* chunk;
-
-    explicit CachingReaderChunkReadRequest(
-            CachingReaderChunk* chunkArg = nullptr)
-        : chunk(chunkArg) {
-    }
-} CachingReaderChunkReadRequest;
-
 enum ReaderStatus {
     INVALID,
     TRACK_NOT_LOADED,
@@ -58,7 +48,7 @@ class CachingReaderWorker : public EngineWorker {
   public:
     // Construct a CachingReader with the given group.
     CachingReaderWorker(QString group,
-            FIFO<CachingReaderChunkReadRequest>* pChunkReadRequestFIFO,
+            FIFO<CachingReaderChunk*>* pChunkReadRequestFIFO,
             FIFO<ReaderStatusUpdate>* pReaderStatusFIFO);
     virtual ~CachingReaderWorker();
 
@@ -83,7 +73,7 @@ class CachingReaderWorker : public EngineWorker {
 
     // Thread-safe FIFOs for communication between the engine callback and
     // reader thread.
-    FIFO<CachingReaderChunkReadRequest>* m_pChunkReadRequestFIFO;
+    FIFO<CachingReaderChunk*>* m_pChunkReadRequestFIFO;
     FIFO<ReaderStatusUpdate>* m_pReaderStatusFIFO;
 
     // Queue of Tracks to load, and the corresponding lock. Must acquire the
@@ -94,8 +84,7 @@ class CachingReaderWorker : public EngineWorker {
     // Internal method to load a track. Emits trackLoaded when finished.
     void loadTrack(const TrackPointer& pTrack);
 
-    ReaderStatusUpdate processReadRequest(
-            const CachingReaderChunkReadRequest& request);
+    ReaderStatusUpdate processReadRequest(CachingReaderChunk* request);
 
     // The current audio source of the track loaded
     mixxx::AudioSourcePointer m_pAudioSource;

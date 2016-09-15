@@ -4,7 +4,7 @@
 #ifndef ENGINEWORKER_H
 #define ENGINEWORKER_H
 
-#include <QAtomicInt>
+#include <atomic>
 #include <QObject>
 #include "util/semaphore.hpp"
 #include <QThread>

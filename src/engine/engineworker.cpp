@@ -8,17 +8,17 @@ EngineWorker::EngineWorker()
     : m_pScheduler(NULL) {
 }
 
-EngineWorker::~EngineWorker() {
-}
+EngineWorker::~EngineWorker() { }
 
-void EngineWorker::run() {
-}
+void EngineWorker::run() { }
 
-void EngineWorker::setScheduler(EngineWorkerScheduler* pScheduler) {
+void EngineWorker::setScheduler(EngineWorkerScheduler* pScheduler)
+{
     m_pScheduler = pScheduler;
 }
 
-bool EngineWorker::workReady() {
+bool EngineWorker::workReady()
+{
     if (m_pScheduler) {
         m_pScheduler->workerReady(this);
         return true;

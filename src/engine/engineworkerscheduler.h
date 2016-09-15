@@ -5,6 +5,7 @@
 #include <QThreadPool>
 #include <QWaitCondition>
 
+#include "util/semaphore.hpp"
 #include "util/fifo.h"
 
 // The max engine workers that can be expected to run within a callback
@@ -28,12 +29,11 @@ class EngineWorkerScheduler : public QThread {
   private:
     // Indicates whether workerReady has been called since the last time
     // runWorkers was run. This should only be touched from the engine callback.
-    bool m_bWakeScheduler;
+    std::atomic<bool> m_bWakeScheduler{false};
 
     FIFO<EngineWorker*> m_scheduleFIFO;
-    QWaitCondition m_waitCondition;
-    QMutex m_mutex;
-    volatile bool m_bQuit;
+    mixxx::MSemaphore m_waitSema{};
+    std::atomic<bool> m_bQuit{false};
 };
 
 #endif /* ENGINEWORKERSCHEDULER_H */
