@@ -281,8 +281,8 @@ class Qt(Dependence):
     def enabled_modules(build):
         qt_modules = [
             'QtCore', 'QtGui', 'QtOpenGL', 'QtXml', 'QtSvg',
-            'QtSql', 'QtScript', 'QtXmlPatterns', 'QtNetwork',
-            'QtTest', 'QtScriptTools','QtWidgets', 'QtConcurrent',
+            'QtSql', 'QtXmlPatterns', 'QtNetwork',
+            'QtTest', 'QtWidgets', 'QtConcurrent',
             'QtMultimedia','QtQuick','QtQml',
             ]
         return qt_modules
@@ -355,7 +355,6 @@ class Qt(Dependence):
             # qt5.py for OS X.
 
             qt5_module_defines = {
-                'QtScript'   : ['QT_SCRIPT_LIB'],
                 'QtSvg'      : ['QT_SVG_LIB'],
                 'QtSql'      : ['QT_SQL_LIB'],
                 'QtXml'      : ['QT_XML_LIB'],
@@ -563,13 +562,6 @@ class FpClassify(Dependence):
         if '-ffast-math' in env['CCFLAGS']:
                 env['CCFLAGS'].remove('-ffast-math')
         return env.Object('util/fpclassify.cpp')
-
-class QtScriptByteArray(Dependence):
-    def configure(self, build, conf):
-        build.env.Append(CPPPATH='#lib/qtscript-bytearray')
-    def sources(self, build):
-        return ['#lib/qtscript-bytearray/bytearrayclass.cpp',
-                '#lib/qtscript-bytearray/bytearrayprototype.cpp']
 
 class PortAudioRingBuffer(Dependence):
     def configure(self, build, conf):
@@ -1329,7 +1321,7 @@ class MixxxCore(Feature):
         return [SoundTouch, ReplayGain, Ebur128Mit, PortAudio, PortMIDI, FFMPEG, RtMidi, Qt, TestHeaders,
                 FidLib, SndFile, OggVorbis, OpenGL, ProtoBuf,
                 Chromaprint, RubberBand, SecurityFramework, CoreServices,
-                QtScriptByteArray, Reverb, FpClassify, PortAudioRingBuffer]
+                Reverb, FpClassify, PortAudioRingBuffer]
 
     def post_dependency_check_configure(self, build, conf):
         """Sets up additional things in the Environment that must happen

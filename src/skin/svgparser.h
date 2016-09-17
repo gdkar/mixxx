@@ -1,6 +1,7 @@
 #ifndef SVGPARSER_H
 #define SVGPARSER_H
 
+#include <QRegularExpression>
 #include <QString>
 #include <QDomNode>
 #include <QDomElement>
@@ -21,7 +22,8 @@ class SvgParser {
     QByteArray saveToQByteArray(const QDomNode& svgNode) const;
 
   private:
-    const SkinContext& lazyChildContext() const {
+    const SkinContext& lazyChildContext() const
+    {
         if (m_pLazyContext.isNull()) {
             m_pLazyContext.reset(new SkinContext(m_parentContext));
         }
@@ -30,13 +32,12 @@ class SvgParser {
     void scanTree(QDomElement* node) const;
     void parseElement(QDomElement* svgNode) const;
     void parseAttributes(QDomElement* element) const;
-    QScriptValue evaluateTemplateExpression(const QString& expression,
-                                            int lineNumber) const;
+    QJSValue evaluateTemplateExpression(const QString& expression,int lineNumber) const;
 
     const SkinContext& m_parentContext;
     mutable QScopedPointer<SkinContext> m_pLazyContext;
     mutable QString m_currentFile;
-    mutable QRegExp m_hookRx;
+    mutable QRegularExpression m_hookRx;
 };
 
 #endif /* SVGPARSER_H */

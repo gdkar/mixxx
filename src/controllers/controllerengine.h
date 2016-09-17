@@ -19,7 +19,6 @@
 #include <QJSValueList>
 #include <QJSValueIterator>
 
-#include "bytearrayclass.h"
 #include "preferences/usersettings.h"
 #include "controllers/controllerpreset.h"
 #include "controllers/softtakeover.h"
@@ -205,7 +204,6 @@ class ControllerEngine : public QObject {
     };
     QHash<int, TimerInfo> m_timers;
     SoftTakeoverCtrl m_st;
-    ByteArrayClass* m_pBaClass;
     // 256 (default) available virtual decks is enough I would think.
     //  If more are needed at run-time, these will move to the heap automatically
     QVarLengthArray<int> m_intervalAccumulator;

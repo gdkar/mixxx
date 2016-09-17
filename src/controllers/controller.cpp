@@ -6,7 +6,11 @@
 */
 
 #include <QApplication>
-#include <QScriptValue>
+#include <QJSValue>
+#include <QQmlEngine>
+#include <QQmlContext>
+#include <QQmlComponent>
+#include <QtQml>
 
 #include "controllers/controller.h"
 #include "controllers/controllerdebug.h"
