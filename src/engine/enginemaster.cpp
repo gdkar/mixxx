@@ -75,9 +75,8 @@ EngineMaster::EngineMaster(UserSettingsPointer pConfig,
     m_pMasterSync = new EngineSync(pConfig);
 
     // The last-used bpm value is saved in the destructor of EngineSync.
-    double default_bpm = pConfig->getValueString(ConfigKey("[InternalClock]", "bpm"),
-                                                 "124.0").toDouble();
-    ControlObject::getControl(ConfigKey("[InternalClock]","bpm"))->set(default_bpm);
+    double default_bpm = pConfig->getValueString(ConfigKey("[InternalClock]", "bpm"),"124.0").toDouble();
+    ControlObject::set(ConfigKey("[InternalClock]","bpm"),default_bpm);
 
     // Crossfader
     m_pCrossfader = new ControlPotmeter(ConfigKey(group, "crossfader"), -1., 1.);

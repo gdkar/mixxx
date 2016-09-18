@@ -80,13 +80,10 @@ class ControllerEngine : public QObject {
     void setPopups(bool bPopups) {
         m_bPopups = bPopups;
     }
-
     // Wrap a snippet of JS code in an anonymous function
     QJSValue wrapFunctionCode(QString codeSnippet, int numberOfArgs);
-
     // Look up registered script function prefixes
     QStringList getScriptFunctionPrefixes() { return m_scriptFunctionPrefixes; };
-
     // Disconnect a ControllerEngineConnection
     void disconnectControl(const ControllerEngineConnection conn);
     template<class T>
@@ -148,6 +145,7 @@ class ControllerEngine : public QObject {
                  mixxx::Duration timestamp);
     QJSValue newArray(uint32_t length);
     QJSValue newObject();
+    QJSValue newQObject(QObject *p);
     // Execute a byte array callback.
     bool execute(QJSValue function, QByteArray data,mixxx::Duration timestamp);
 
@@ -155,9 +153,10 @@ class ControllerEngine : public QObject {
     // occurred while evaluating them.
     bool loadScriptFiles(QStringList scriptPaths,
                          const QList<ControllerPreset::ScriptFileInfo>& scripts);
-    void initializeScripts(const QList<ControllerPreset::ScriptFileInfo>& scripts);
+    void initializeScripts();
     void gracefulShutdown();
     void scriptHasChanged(QString);
+    ControlObjectScript* getControlObjectScript(QString group, QString name);
 
   signals:
     void initialized();
@@ -181,9 +180,7 @@ class ControllerEngine : public QObject {
 
     void callFunctionOnObjects(QStringList, QString, QJSValueList args = QJSValueList());
     bool checkException(QJSValue);
-    QJSEngine *m_pEngine;
-
-    ControlObjectScript* getControlObjectScript(QString group, QString name);
+    QQmlEngine *m_pEngine;
 
     // Scratching functions & variables
     void scratchProcess(int timerId);
@@ -212,9 +209,11 @@ class ControllerEngine : public QObject {
     QVarLengthArray<bool> m_ramp, m_brakeActive;
     QVarLengthArray<AlphaBetaFilter*> m_scratchFilters;
     QHash<int, int> m_scratchTimers;
-    QHash<QString, QJSValue> m_scriptWrappedFunctionCache;
-    QList<QJSValue>                               m_prefixObjects;
-    QList<std::pair<QJSValue,QJSValue> >          m_receiveCallbacks;
+    QJSValue                             m_globalObject;
+    QHash<QString, QJSValue>             m_scriptWrappedFunctionCache;
+    QHash<QString, QJSValue>             m_scriptModules;
+    QList<QJSValue>                      m_scriptObjects;
+    QList<std::pair<QJSValue,QJSValue> > m_receiveCallbacks;
     // Filesystem watcher for script auto-reload
     QFileSystemWatcher m_scriptWatcher;
     QStringList m_lastScriptPaths;

@@ -56,7 +56,7 @@ void WTrackText::dragEnterEvent(QDragEnterEvent *event) {
 
 void WTrackText::dropEvent(QDropEvent *event) {
     if (DragAndDropHelper::allowLoadToPlayer(m_pGroup, m_pConfig)) {
-        QList<QFileInfo> files = DragAndDropHelper::dropEventFiles(
+        auto files = DragAndDropHelper::dropEventFiles(
                 *event->mimeData(), m_pGroup, true, false);
         if (!files.isEmpty()) {
             event->accept();

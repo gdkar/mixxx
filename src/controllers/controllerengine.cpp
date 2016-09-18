@@ -65,9 +65,10 @@ ControllerEngine::~ControllerEngine() {
 
     // Delete the script engine, first clearing the pointer so that
     // other threads will not get the dead pointer after we delete it.
-    auto engine = std::exchange(m_pEngine,nullptr);
-    if(engine)
+    if(auto engine = std::exchange(m_pEngine,nullptr)) {
+        engine->collectGarbage();
         engine->deleteLater();
+    }
 }
 
 /* -------- ------------------------------------------------------
@@ -144,27 +145,40 @@ void ControllerEngine::gracefulShutdown()
     // Stop all timers
     stopAllTimers();
     // Call each script's shutdown function if it exists
-    callFunctionOnObjects(m_scriptFunctionPrefixes, "shutdown");
+    if(isReady()){
+        for(auto && object : m_scriptObjects) {
+            auto shutdown = object.property("shutdown");
+            if(shutdown.isCallable()) {
+                shutdown.callWithInstance(object,{});
+            }
+        }
+    }
+    m_scriptObjects.clear();
+    m_scriptModules.clear();
+    m_receiveCallbacks.clear();
     // Prevents leaving decks in an unstable state
     //  if the controller is shut down while scratching
-    QHashIterator<int, int> i(m_scratchTimers);
-    while (i.hasNext()) {
-        i.next();
-        qDebug() << "Aborting scratching on deck" << i.value();
+    for(auto && timer : m_scratchTimers) {
+        qDebug() << "Aborting scratching on deck" << timer;
         // Clear scratch2_enable. PlayerManager::groupForDeck is 0-indexed.
-        auto group = PlayerManager::groupForDeck(i.value() - 1);
+        auto group = PlayerManager::groupForDeck(timer - 1);
         if(auto  pScratch2Enable = getControlObjectScript(group, "scratch2_enable"))
             pScratch2Enable->set(0);
     }
+    m_scratchTimers.clear();
     // Clear the cache of function wrappers
     m_scriptWrappedFunctionCache.clear();
     // Free all the control object threads
     {
-        auto keys = m_controlCache.keys();
-        for(auto key : keys){
-            delete m_controlCache.take(key);
+        auto values = m_controlCache.values();
+        m_controlCache.clear();
+        for(auto value: values) {
+            delete value;
         }
     }
+    m_globalObject = QJSValue{};
+    if(isReady())
+        m_pEngine->collectGarbage();
 }
 bool ControllerEngine::isReady()
 {
@@ -173,17 +187,17 @@ bool ControllerEngine::isReady()
 void ControllerEngine::initializeScriptEngine()
 {
     // Create the Script Engine
-    m_pEngine = new QJSEngine(this);
+    m_pEngine = new QQmlEngine(this);
     // Make this ControllerEngine instance available to scripts as 'engine'.
-    auto engineGlobalObject = m_pEngine->globalObject();
-    engineGlobalObject.setProperty("engine", m_pEngine->newQObject(this));
+    m_globalObject = m_pEngine->globalObject();
+    m_globalObject.setProperty("engine", newQObject(this));
 
     if (m_pController) {
         qDebug() << "Controller in script engine is:" << m_pController->getName();
         // Make the Controller instance available to scripts
-        engineGlobalObject.setProperty("controller", m_pEngine->newQObject(m_pController));
+        m_globalObject.setProperty("controller", newQObject(m_pController));
         // ...under the legacy name as well
-        engineGlobalObject.setProperty("midi", m_pEngine->newQObject(m_pController));
+        m_globalObject.setProperty("midi", newQObject(m_pController));
     }
 }
 /* -------- ------------------------------------------------------
@@ -198,17 +212,26 @@ bool ControllerEngine::loadScriptFiles(QStringList scriptPaths,
     // scriptPaths holds the paths to search in when we're looking for scripts
     auto result = true;
     for (auto && script : scripts) {
-        if (!evaluate(script.name, scriptPaths).toBool())
+        auto module = evaluate(script.name, scriptPaths);
+        if(module.isError()) {
+            if (m_scriptErrors.contains(script.name))
+                qWarning() << "Errors occurred while loading" << script.name;
             result = false;
-
-        if (m_scriptErrors.contains(script.name))
-            qWarning() << "Errors occurred while loading" << script.name;
+            continue;
+        }
+        if(script.functionPrefix.isEmpty())
+            continue;
+        if(module.isCallable()) {
+            m_scriptModules.insert(script.functionPrefix, module);
+        }else if(module.isObject()) {
+            m_scriptObjects.append(module);
+            m_globalObject.setProperty(script.functionPrefix, module);
+        }
     }
     connect(&m_scriptWatcher, SIGNAL(fileChanged(QString)),
             this, SLOT(scriptHasChanged(QString)));
 
     emit(initialized());
-
     return result && m_scriptErrors.isEmpty();
 }
 // Slot to run when a script file has changed
@@ -216,7 +239,7 @@ void ControllerEngine::scriptHasChanged(QString scriptFilename)
 {
     Q_UNUSED(scriptFilename);
     qDebug() << "ControllerEngine: Reloading Scripts";
-    ControllerPresetPointer pPreset = m_pController->getPreset();
+    auto pPreset = m_pController->getPreset();
 
     disconnect(&m_scriptWatcher, SIGNAL(fileChanged(QString)),
                this, SLOT(scriptHasChanged(QString)));
@@ -233,7 +256,7 @@ void ControllerEngine::scriptHasChanged(QString scriptFilename)
     loadScriptFiles(m_lastScriptPaths, pPreset->scripts);
 
     qDebug() << "Re-initializing scripts";
-    initializeScripts(pPreset->scripts);
+    initializeScripts();
 }
 /* -------- ------------------------------------------------------
    Purpose: Run the initialization function for each loaded script
@@ -241,28 +264,38 @@ void ControllerEngine::scriptHasChanged(QString scriptFilename)
    Input:   -
    Output:  -
    -------- ------------------------------------------------------ */
-void ControllerEngine::initializeScripts(const QList<ControllerPreset::ScriptFileInfo>& scripts)
+void ControllerEngine::initializeScripts()
 {
-    m_scriptFunctionPrefixes.clear();
-    for (auto && script : scripts) {
-        // Skip empty prefixes.
-        if (!script.functionPrefix.isEmpty()) {
-            m_scriptFunctionPrefixes.append(script.functionPrefix);
-        }
-    }
     auto args = (QJSValueList{}
                 << m_pController->getName()
                 << ControllerDebug::enabled());
-    // Call the init method for all the prefixes.
-    callFunctionOnObjects(m_scriptFunctionPrefixes, "init", args);
-    for(auto && prefix : m_scriptFunctionPrefixes) {
-        auto obj = m_pEngine->evaluate(prefix);
-        if(obj.isObject()) {
-            m_prefixObjects.append(obj);
-            auto incomingData = obj.property("incomingData");
-            if(incomingData.isCallable())
-                m_receiveCallbacks.append(std::make_pair(obj,incomingData));
+    for (auto it = m_scriptModules.cbegin();
+              it != m_scriptModules.cend();
+              ++it) {
+        auto mod = it.value();
+        auto obj = mod.callAsConstructor(args);
+        if(!obj.isError() && obj.isObject()) {
+            m_globalObject.setProperty(it.key(), obj);
+            m_scriptObjects.append(mod);
         }
+    }
+    for(auto it = m_scriptObjects.begin();
+                it!= m_scriptObjects.end();
+                ){
+        auto obj = *it;
+        auto init = obj.property("init");
+        if(init.isCallable()) {
+            auto res = init.callWithInstance(obj,args);
+            if(res.isError()) {
+                it = m_scriptObjects.erase(it);
+                continue;
+            }
+        }
+        auto incomingData = obj.property("incomingData");
+        if(incomingData.isCallable()) {
+            m_receiveCallbacks.append(std::make_pair(obj, incomingData));
+        }
+        ++it;
     }
     emit(initialized());
 }
@@ -333,6 +366,14 @@ QJSValue ControllerEngine::newArray(uint32_t length)
         return QJSValue{};
     return m_pEngine->newArray(length);
 }
+QJSValue ControllerEngine::newQObject(QObject *p)
+{
+    if(!isReady())
+        return {};
+    QQmlEngine::setObjectOwnership(p,QQmlEngine::CppOwnership);
+    return m_pEngine->newQObject(p);
+
+}
 QJSValue ControllerEngine::newObject()
 {
     if(!isReady())
@@ -343,8 +384,8 @@ void ControllerEngine::receive(QJSValueList data, mixxx::Duration timestamp)
 {
     if(!isReady())
         return;
-    data.prepend(m_pEngine->toScriptValue(timestamp));
-    for(auto && obj : m_prefixObjects) {
+    data.prepend(m_pEngine->toScriptValue(timestamp.toDoubleSeconds()));
+    for(auto && obj : m_scriptObjects) {
         if(obj.isObject()){
             auto cb = obj.property("incomingData");
             if(cb.isCallable()){
@@ -405,8 +446,7 @@ bool ControllerEngine::checkException(QJSValue result)
             errorText = tr("Uncaught exception at line %1 in passed code: %2")
                     .arg(line, errorMessage);
 
-        scriptErrorDialog(ControllerDebug::enabled() ?
-                QString("%1\nBacktrace:\n%2").arg(errorText, backtrace): errorText);
+        scriptErrorDialog(QString("%1\nBacktrace:\n%2").arg(errorText, backtrace));
 
         return true;
     }
@@ -469,16 +509,20 @@ void ControllerEngine::errorDialogButton(QString key, QMessageBox::StandardButto
 ControlObjectScript* ControllerEngine::getControlObjectScript(QString group, QString name)
 {
     auto key = ConfigKey(group, name);
-    auto coScript = m_controlCache.value(key, nullptr);
-    if (coScript == nullptr) {
-        // create COT
-        coScript = new ControlObjectScript(key, this);
-        if (coScript->valid()) {
-            m_controlCache.insert(key, coScript);
-        } else {
-            delete coScript;
-            coScript = nullptr;
+    {
+        auto it = m_controlCache.constFind(key);
+        if(it != m_controlCache.constEnd()) {
+            return it.value();
         }
+    }
+    // create COT
+    auto coScript = new ControlObjectScript(key, this);
+    if (coScript->valid()) {
+        m_controlCache.insert(key, coScript);
+    } else {
+        delete coScript;
+        coScript = nullptr;
+        m_controlCache.insert(key, coScript);
     }
     return coScript;
 }
@@ -533,7 +577,6 @@ double ControllerEngine::getParameter(QString group, QString name)
         return 0.0;
     }
 }
-
 /* -------- ------------------------------------------------------
    Purpose: Sets new normalized parameter of a Mixxx control (for scripts)
    Input:   Control group, Key name, new value
@@ -829,9 +872,8 @@ QJSValue ControllerEngine::evaluate(QString scriptName, QStringList scriptPaths)
         return false;
     }else{
     // Evaluate the code
-        auto scriptFunction = result;
+        return  result;
     }
-    return true;
 }
 bool ControllerEngine::hasErrors(QString filename)
 {

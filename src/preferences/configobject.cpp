@@ -13,9 +13,10 @@
 // TODO(rryan): Move to a utility file.
 namespace {
 
-QString computeResourcePath() {
+QString computeResourcePath()
+{
     // Try to read in the resource directory from the command line
-    QString qResourcePath = CmdlineArgs::Instance().getResourcePath();
+    auto qResourcePath = CmdlineArgs::Instance().getResourcePath();
 
     if (qResourcePath.isEmpty()) {
         QDir mixxxDir(QCoreApplication::applicationDirPath());
@@ -58,16 +59,13 @@ QString computeResourcePath() {
     } else {
         //qDebug() << "Setting qResourcePath from location in resourcePath commandline arg:" << qResourcePath;
     }
-
     if (qResourcePath.isEmpty()) {
         reportCriticalErrorAndQuit("qConfigPath is empty, this can not be so -- did our developer forget to define one of __UNIX__, __WINDOWS__, __APPLE__??");
     }
-
     // If the directory does not end with a "/", add one
     if (!qResourcePath.endsWith("/")) {
         qResourcePath.append("/");
     }
-
     qDebug() << "Loading resources from " << qResourcePath;
     return qResourcePath;
 }
@@ -172,14 +170,13 @@ bool ConfigObject<ValueType>::exists(const ConfigKey& k) const {
 
 template <class ValueType>
 QString ConfigObject<ValueType>::getValueString(const ConfigKey& k) const {
-    ValueType v = get(k);
-    return v.value;
+    return get(k).value;
 }
 
 template <class ValueType>
 QString ConfigObject<ValueType>::getValueString(const ConfigKey& k,
                                                 const QString& default_string) const {
-    QString ret = getValueString(k);
+    auto ret = getValueString(k);
     if (ret.isEmpty()) {
         return default_string;
     }
@@ -210,7 +207,7 @@ template <class ValueType> bool ConfigObject<ValueType>::parse() {
                 } else if (group > 0) {
                     QString key;
                     QTextStream(&line) >> key;
-                    QString val = line.right(line.length() - key.length()); // finds the value string
+                    auto val = line.right(line.length() - key.length()); // finds the value string
                     val = val.trimmed();
                     //qDebug() << "control:" << key << "value:" << val;
                     ConfigKey k(groupStr, key);
@@ -246,14 +243,13 @@ template <class ValueType> void ConfigObject<ValueType>::save() {
 
         QString grp = "";
 
-        typename QMap<ConfigKey, ValueType>::const_iterator i;
-        for (i = m_values.begin(); i != m_values.end(); ++i) {
+        for (auto i = m_values.constBegin(); i != m_values.constEnd(); ++i) {
             //qDebug() << "group:" << it.key().group << "item" << it.key().item << "val" << it.value()->value;
-            if (i.key().group != grp) {
-                grp = i.key().group;
+            if (i.key().group.trimmed() != grp) {
+                grp = i.key().group.trimmed();
                 stream << "\n" << grp << "\n";
             }
-            stream << i.key().item << " " << i.value().value << "\n";
+            stream << i.key().item << " " << i.value().value.trimmed() << "\n";
         }
         file.close();
         if (file.error()!=QFile::NoError) { //could be better... should actually say what the error was..
@@ -262,14 +258,15 @@ template <class ValueType> void ConfigObject<ValueType>::save() {
     }
 }
 
-template <class ValueType> ConfigObject<ValueType>::ConfigObject(const QDomNode& node) {
+template <class ValueType> ConfigObject<ValueType>::ConfigObject(const QDomNode& node)
+{
     if (!node.isNull() && node.isElement()) {
-        QDomNode ctrl = node.firstChild();
+        auto ctrl = node.firstChild();
 
         while (!ctrl.isNull()) {
             if(ctrl.nodeName() == "control") {
-                QString group = XmlParse::selectNodeQString(ctrl, "group");
-                QString key = XmlParse::selectNodeQString(ctrl, "key");
+                auto group = XmlParse::selectNodeQString(ctrl, "group");
+                auto key = XmlParse::selectNodeQString(ctrl, "key");
                 ConfigKey k(group, key);
                 ValueType m(ctrl);
                 set(k, m);
@@ -284,8 +281,7 @@ QMultiHash<ValueType, ConfigKey> ConfigObject<ValueType>::transpose() const {
     QReadLocker lock(&m_valuesLock);
 
     QMultiHash<ValueType, ConfigKey> transposedHash;
-    for (typename QMap<ConfigKey, ValueType>::const_iterator it =
-            m_values.begin(); it != m_values.end(); ++it) {
+    for (auto it = m_values.begin(); it != m_values.end(); ++it) {
         transposedHash.insert(it.value(), it.key());
     }
     return transposedHash;
@@ -312,7 +308,7 @@ void ConfigObject<ConfigValue>::setValue(const ConfigKey& key, const int& value)
 template <> template <>
 bool ConfigObject<ConfigValue>::getValue(const ConfigKey& key,
                                          const bool& default_value) const {
-    const ConfigValue value = get(key);
+    auto value = get(key);
     if (value.isNull()) {
         return default_value;
     }
@@ -322,7 +318,7 @@ bool ConfigObject<ConfigValue>::getValue(const ConfigKey& key,
 template <> template <>
 int ConfigObject<ConfigValue>::getValue(const ConfigKey& key,
                                         const int& default_value) const {
-    const ConfigValue value = get(key);
+    auto value = get(key);
     if (value.isNull()) {
         return default_value;
     }
@@ -332,7 +328,7 @@ int ConfigObject<ConfigValue>::getValue(const ConfigKey& key,
 template <> template <>
 QString ConfigObject<ConfigValue>::getValue(const ConfigKey& key,
                                             const QString& default_value) const {
-    const ConfigValue value = get(key);
+    auto value = get(key);
     if (value.isNull()) {
         return default_value;
     }

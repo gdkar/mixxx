@@ -22,7 +22,7 @@
    Input:   key - Key for the configuration file
    -------- ------------------------------------------------------ */
 ControlPushButton::ControlPushButton(ConfigKey key, bool bPersist)
-        : ControlObject(key, false, false, bPersist),
+        : ControlObject(key, true, false, bPersist),
           m_buttonMode(PUSH),
           m_iNoStates(2) {
     if (m_pControl) {

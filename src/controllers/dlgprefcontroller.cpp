@@ -491,12 +491,9 @@ void DlgPrefController::slotPresetLoaded(ControllerPresetPointer preset)
     // Populate the script tab with the scripts this preset uses.
     m_ui.m_pScriptsTableWidget->setRowCount(preset->scripts.length());
     m_ui.m_pScriptsTableWidget->setColumnCount(3);
-    m_ui.m_pScriptsTableWidget->setHorizontalHeaderItem(
-        0, new QTableWidgetItem(tr("Filename")));
-    m_ui.m_pScriptsTableWidget->setHorizontalHeaderItem(
-        1, new QTableWidgetItem(tr("Function Prefix")));
-    m_ui.m_pScriptsTableWidget->setHorizontalHeaderItem(
-        2, new QTableWidgetItem(tr("Built-in")));
+    m_ui.m_pScriptsTableWidget->setHorizontalHeaderItem(0, new QTableWidgetItem(tr("Filename")));
+    m_ui.m_pScriptsTableWidget->setHorizontalHeaderItem(1, new QTableWidgetItem(tr("Function Prefix")));
+    m_ui.m_pScriptsTableWidget->setHorizontalHeaderItem(2, new QTableWidgetItem(tr("Built-in")));
     m_ui.m_pScriptsTableWidget->horizontalHeader()
             ->setResizeMode(QHeaderView::Stretch);
 

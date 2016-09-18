@@ -7,7 +7,7 @@
 #include "util/assert.h"
 
 ControlWidgetConnection::ControlWidgetConnection(WBaseWidget* pBaseWidget,
-                                                 const ConfigKey& key,
+                                                 ConfigKey key,
                                                  ValueTransformer* pTransformer)
         : m_pWidget(pBaseWidget),
           m_pValueTransformer(pTransformer) {
@@ -23,7 +23,7 @@ void ControlWidgetConnection::setControlParameter(double parameter) {
 }
 
 double ControlWidgetConnection::getControlParameter() const {
-    double parameter = m_pControl->getParameter();
+    auto parameter = m_pControl->getParameter();
     if (m_pValueTransformer != nullptr) {
         parameter = m_pValueTransformer->transform(parameter);
     }
@@ -31,7 +31,7 @@ double ControlWidgetConnection::getControlParameter() const {
 }
 
 double ControlWidgetConnection::getControlParameterForValue(double value) const {
-    double parameter = m_pControl->getParameterForValue(value);
+    auto parameter = m_pControl->getParameterForValue(value);
     if (m_pValueTransformer != nullptr) {
         parameter = m_pValueTransformer->transform(parameter);
     }
@@ -39,7 +39,7 @@ double ControlWidgetConnection::getControlParameterForValue(double value) const 
 }
 
 ControlParameterWidgetConnection::ControlParameterWidgetConnection(WBaseWidget* pBaseWidget,
-                                                                   const ConfigKey& key,
+                                                                   ConfigKey key,
                                                                    ValueTransformer* pTransformer,
                                                                    DirectionOption directionOption,
                                                                    EmitOption emitOption)
@@ -53,7 +53,7 @@ void ControlParameterWidgetConnection::Init() {
 }
 
 QString ControlParameterWidgetConnection::toDebugString() const {
-    const ConfigKey& key = getKey();
+    auto key = getKey();
     return QString("%1,%2 Parameter: %3 Direction: %4 Emit: %5")
             .arg(key.group, key.item,
                  QString::number(m_pControl->getParameter()),
@@ -93,16 +93,16 @@ void ControlParameterWidgetConnection::setControlParameterUp(double v) {
 }
 
 ControlWidgetPropertyConnection::ControlWidgetPropertyConnection(WBaseWidget* pBaseWidget,
-                                                                 const ConfigKey& key,
+                                                                 ConfigKey key,
                                                                  ValueTransformer* pTransformer,
-                                                                 const QString& propertyName)
+                                                                 QString propertyName)
         : ControlWidgetConnection(pBaseWidget, key, pTransformer),
-          m_propertyName(propertyName.toAscii()) {
+          m_propertyName(propertyName.toAscii())
+{
     slotControlValueChanged(m_pControl->get());
 }
-
 QString ControlWidgetPropertyConnection::toDebugString() const {
-    const ConfigKey& key = getKey();
+    auto key = getKey();
     return QString("%1,%2 Parameter: %3 Property: %4 Value: %5").arg(
         key.group, key.item, QString::number(m_pControl->getParameter()), m_propertyName,
         m_pWidget->toQWidget()->property(
@@ -111,14 +111,13 @@ QString ControlWidgetPropertyConnection::toDebugString() const {
 
 void ControlWidgetPropertyConnection::slotControlValueChanged(double v) {
     QVariant parameter;
-    QWidget* pWidget = m_pWidget->toQWidget();
-    QVariant property = pWidget->property(m_propertyName.constData());
+    auto pWidget = m_pWidget->toQWidget();
+    auto property = pWidget->property(m_propertyName.constData());
     if (property.type() == QVariant::Bool) {
         parameter = getControlParameterForValue(v) > 0;
     } else {
         parameter = getControlParameterForValue(v);
     }
-
     if (!pWidget->setProperty(m_propertyName.constData(),parameter)) {
         qDebug() << "Setting property" << m_propertyName
                 << "to widget failed. Value:" << parameter;

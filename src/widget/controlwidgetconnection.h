@@ -17,14 +17,14 @@ class ControlWidgetConnection : public QObject {
   public:
     // Takes ownership of pControl and pTransformer.
     ControlWidgetConnection(WBaseWidget* pBaseWidget,
-                            const ConfigKey& key,
+                            ConfigKey key,
                             ValueTransformer* pTransformer);
 
     double getControlParameter() const;
     double getControlParameterForValue(double value) const;
 
-    const ConfigKey& getKey() const {
-        return m_pControl->getKey();
+    ConfigKey getKey() const {
+        return m_pControl ? m_pControl->getKey() : ConfigKey();
     }
 
     virtual QString toDebugString() const = 0;
@@ -96,7 +96,7 @@ class ControlParameterWidgetConnection : public ControlWidgetConnection {
     }
 
     ControlParameterWidgetConnection(WBaseWidget* pBaseWidget,
-                                     const ConfigKey& key,
+                                     ConfigKey key,
                                      ValueTransformer* pTransformer,
                                      DirectionOption directionOption,
                                      EmitOption emitOption);
@@ -128,9 +128,9 @@ class ControlWidgetPropertyConnection : public ControlWidgetConnection {
     Q_OBJECT
   public:
     ControlWidgetPropertyConnection(WBaseWidget* pBaseWidget,
-                                    const ConfigKey& key,
+                                    ConfigKey key,
                                     ValueTransformer* pTransformer,
-                                    const QString& propertyName);
+                                    QString propertyName);
 
     QString toDebugString() const override;
 

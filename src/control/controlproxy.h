@@ -17,85 +17,45 @@
 // Parent it to the the creating object to achieve this.
 class ControlProxy : public QObject {
     Q_OBJECT
-    Q_PROPERTY(ConfigKey key READ getKey CONSTANT)
+    Q_PROPERTY(ConfigKey key READ getKey NOTIFY keyChanged)
     Q_PROPERTY(double value READ get WRITE set RESET reset NOTIFY valueChanged)
     Q_PROPERTY(double defaultValue READ getDefault NOTIFY defaultValueChanged)
   public:
-    ControlProxy(QObject* pParent = NULL);
-    ControlProxy(const QString& g, const QString& i, QObject* pParent = NULL);
-    ControlProxy(const char* g, const char* i, QObject* pParent = NULL);
-    ControlProxy(const ConfigKey& key, QObject* pParent = NULL);
+    Q_INVOKABLE ControlProxy(QObject* pParent = nullptr);
+    ControlProxy(QString g, QString i, QObject* pParent = nullptr);
+    ControlProxy(const char* g, const char* i, QObject* pParent = nullptr);
+    ControlProxy(ConfigKey key, QObject* pParent = nullptr);
     virtual ~ControlProxy();
-
-    void initialize(const ConfigKey& key);
-
-    const ConfigKey& getKey() const {
-        return m_key;
-    }
-
+    void initialize(ConfigKey key);
+    ConfigKey getKey() const;
     bool connectValueChanged(const QObject* receiver,
             const char* method, Qt::ConnectionType type = Qt::AutoConnection);
     bool connectValueChanged(
             const char* method, Qt::ConnectionType type = Qt::AutoConnection);
 
 
-    bool valid() const { return m_pControl != NULL; }
+    bool valid() const;
 
   public slots:
     // Returns the value of the object. Thread safe, non-blocking.
-    double get() const {
-        return m_pControl ? m_pControl->get() : 0.0;
-    }
-
+    double get() const;
     // Returns the bool interpretation of the value
-    bool toBool() const {
-        return get() > 0.0;
-    }
-
+    bool toBool() const;
     // Returns the parameterized value of the object. Thread safe, non-blocking.
-    double getParameter() const {
-        return m_pControl ? m_pControl->getParameter() : 0.0;
-    }
-
+    double getParameter() const;
     // Returns the parameterized value of the object. Thread safe, non-blocking.
-    double getParameterForValue(double value) const {
-        return m_pControl ? m_pControl->getParameterForValue(value) : 0.0;
-    }
-
-    // Returns the normalized parameter of the object. Thread safe, non-blocking.
-    double getDefault() const {
-        return m_pControl ? m_pControl->defaultValue() : 0.0;
-    }
-
-    // Set the control to a new value. Non-blocking.
-    void slotSet(double v) {
-        set(v);
-    }
+    double getParameterForValue(double value) const;
+    double getDefault() const;
+    void slotSet(double v);
     // Sets the control value to v. Thread safe, non-blocking.
-    void set(double v) {
-        if (m_pControl) {
-            m_pControl->set(v, this);
-        }
-    }
+    void set(double v);
     // Sets the control parameterized value to v. Thread safe, non-blocking.
-    void setParameter(double v) {
-        if (m_pControl) {
-            m_pControl->setParameter(v, this);
-        }
-    }
+    void setParameter(double v);
     // Resets the control to its default value. Thread safe, non-blocking.
-    void reset() {
-        if (m_pControl) {
-            // NOTE(rryan): This is important. The originator of this action does
-            // not know the resulting value so it makes sense that we should emit a
-            // general valueChanged() signal even though the change originated from
-            // us. For this reason, we provide NULL here so that the change is
-            // not filtered in valueChanged()
-            m_pControl->reset();
-        }
-    }
+    void reset();
     void trigger();
   signals:
+    void keyChanged(ConfigKey);
     // This signal must not connected by connect(). Use connectValueChanged()
     // instead. It will connect to the base ControlDoublePrivate as well.
     void valueChanged(double);
@@ -103,29 +63,11 @@ class ControlProxy : public QObject {
     void triggered();
   protected slots:
     // Receives the value from the master control by a unique direct connection
-    void slotValueChangedDirect(double v, QObject* pSetter) {
-        if (pSetter != this) {
-            // This is base implementation of this function without scaling
-            emit(valueChanged(v));
-        }
-    }
-
+    void slotValueChangedDirect(double v, QObject* pSetter);
     // Receives the value from the master control by a unique auto connection
-    void slotValueChangedAuto(double v, QObject* pSetter) {
-        if (pSetter != this) {
-            // This is base implementation of this function without scaling
-            emit(valueChanged(v));
-        }
-    }
-
+    void slotValueChangedAuto(double v, QObject* pSetter);
     // Receives the value from the master control by a unique Queued connection
-    void slotValueChangedQueued(double v, QObject* pSetter) {
-        if (pSetter != this) {
-            // This is base implementation of this function without scaling
-            emit(valueChanged(v));
-        }
-    }
-
+    void slotValueChangedQueued(double v, QObject* pSetter);
   protected:
     ConfigKey m_key;
     // Pointer to connected control.

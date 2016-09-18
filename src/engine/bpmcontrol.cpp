@@ -40,7 +40,7 @@ BpmControl::BpmControl(QString group,
     m_pRateSlider = new ControlProxy(group, "rate", this);
     m_pRateSlider->connectValueChanged(SLOT(slotAdjustRateSlider()),
             Qt::DirectConnection);
-    m_pQuantize = ControlObject::getControl(group, "quantize");
+    m_pQuantize = new ControlObject({group, "quantize"},this);
     m_pRateRange = new ControlProxy(group, "rateRange", this);
     m_pRateRange->connectValueChanged(SLOT(slotAdjustRateSlider()),
             Qt::DirectConnection);
@@ -127,7 +127,7 @@ BpmControl::BpmControl(QString group,
 
     // Measures distance from last beat in percentage: 0.5 = half-beat away.
     m_pThisBeatDistance = new ControlProxy(group, "beat_distance", this);
-    m_pSyncMode = ControlObject::getControl(ConfigKey(group, "sync_mode"));
+    m_pSyncMode = new ControlObject(ConfigKey(group, "sync_mode"),this);
 }
 
 BpmControl::~BpmControl() {
@@ -641,8 +641,8 @@ double BpmControl::getPhaseOffset(double dThisPosition) {
             return 0;
         }
 
-        double dOtherLength = ControlObject::getControl(
-                ConfigKey(pOtherEngineBuffer->getGroup(), "track_samples"))->get();
+        double dOtherLength = ControlObject::get(
+                ConfigKey(pOtherEngineBuffer->getGroup(), "track_samples"));
         double dOtherEnginePlayPos = pOtherEngineBuffer->getVisualPlayPos();
         double dOtherPosition = dOtherLength * dOtherEnginePlayPos;
 

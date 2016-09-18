@@ -141,7 +141,7 @@ class Duration : public DurationBase {
     }
     const constexpr Duration operator+(const Duration& other) const
     {
-        Duration result = *this;
+        auto result = *this;
         result += other;
         return result;
     }
@@ -150,7 +150,7 @@ class Duration : public DurationBase {
         return *this;
     }
     constexpr Duration operator-(const Duration& other) const {
-        Duration result = *this;
+        auto result = *this;
         result -= other;
         return result;
     }
@@ -159,7 +159,7 @@ class Duration : public DurationBase {
         return *this;
     }
     friend constexpr Duration operator*(const Duration& duration, int scalar) {
-        Duration result = duration;
+        auto result = duration;
         result.m_durationNanos *= scalar;
         return result;
     }

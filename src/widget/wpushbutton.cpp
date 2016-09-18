@@ -138,8 +138,7 @@ void WPushButton::setup(const QDomNode& node, const SkinContext& context) {
         m_leftButtonMode = ControlPushButton::PUSH;
         if (!leftClickForcePush) {
             const ConfigKey& configKey = leftConnection->getKey();
-            ControlPushButton* p = dynamic_cast<ControlPushButton*>(
-                    ControlObject::getControl(configKey));
+            auto p = qobject_cast<ControlPushButton*>(ControlObject::getControl(configKey));
             if (p) {
                 m_leftButtonMode = p->getButtonMode();
             }
@@ -181,7 +180,7 @@ void WPushButton::setup(const QDomNode& node, const SkinContext& context) {
         m_rightButtonMode = ControlPushButton::PUSH;
         if (!rightClickForcePush) {
             const ConfigKey configKey = rightConnection->getKey();
-            ControlPushButton* p = dynamic_cast<ControlPushButton*>(
+            ControlPushButton* p = qobject_cast<ControlPushButton*>(
                     ControlObject::getControl(configKey));
             if (p) {
                 m_rightButtonMode = p->getButtonMode();

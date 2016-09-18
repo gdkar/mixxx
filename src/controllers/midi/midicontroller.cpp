@@ -49,7 +49,7 @@ QString MidiController::presetExtension() const {
 void MidiController::visit(const ControllerPreset* preset) {
     if(auto midi_preset = dynamic_cast<const MidiControllerPreset*>(preset)){
         m_preset = *midi_preset;
-        emit(presetLoaded(getPreset()));
+        emit(presetLoaded(getPreset));
     }else{
         qWarning() << "ERROR: Attempting to load an unsupported preset type.";
     }
@@ -241,8 +241,7 @@ void MidiController::commitTemporaryInputMappings() {
     // We want to replace duplicates that exist in m_preset but allow duplicates
     // in m_temporaryInputMappings. To do this, we first remove every key in
     // m_temporaryInputMappings from m_preset.inputMappings.
-    for (QHash<uint16_t, MidiInputMapping>::const_iterator it =
-                 m_temporaryInputMappings.begin();
+    for (auto it = m_temporaryInputMappings.begin();
          it != m_temporaryInputMappings.end(); ++it) {
         m_preset.inputMappings.remove(it.key());
     }
@@ -256,8 +255,8 @@ void MidiController::commitTemporaryInputMappings() {
 void MidiController::receive(unsigned char status, unsigned char control,
                              unsigned char value, mixxx::Duration timestamp)
 {
-    unsigned char channel = MidiUtils::channelFromStatus(status);
-    unsigned char opCode = MidiUtils::opCodeFromStatus(status);
+    auto channel = MidiUtils::channelFromStatus(status);
+    auto opCode = MidiUtils::opCodeFromStatus(status);
 
     controllerDebug(formatMidiMessage(getName(), status, control, value,
                                       channel, opCode, timestamp));
@@ -312,104 +311,102 @@ void MidiController::processInputMapping(const MidiInputMapping& mapping,
     }
 
     // Only pass values on to valid ControlObjects.
-    ControlObject* pCO = ControlObject::getControl(mapping.control);
-    if (pCO == NULL) {
-        return;
-    }
+    if(auto pCO = ControlObject::getControl(mapping.control)) {
 
-    double newValue = value;
+        double newValue = value;
 
 
-    bool mapping_is_14bit = mapping.options.fourteen_bit_msb ||
-            mapping.options.fourteen_bit_lsb;
-    if (!mapping_is_14bit && !m_fourteen_bit_queued_mappings.isEmpty()) {
-        qWarning() << "MidiController was waiting for the MSB/LSB of a 14-bit"
-                   << "message but the next message received was not mapped as 14-bit."
-                   << "Ignoring the original message.";
-        m_fourteen_bit_queued_mappings.clear();
-    }
+        bool mapping_is_14bit = mapping.options.fourteen_bit_msb ||
+                mapping.options.fourteen_bit_lsb;
+        if (!mapping_is_14bit && !m_fourteen_bit_queued_mappings.isEmpty()) {
+            qWarning() << "MidiController was waiting for the MSB/LSB of a 14-bit"
+                    << "message but the next message received was not mapped as 14-bit."
+                    << "Ignoring the original message.";
+            m_fourteen_bit_queued_mappings.clear();
+        }
 
-    //qDebug() << "MIDI Options" << QString::number(mapping.options.all, 2).rightJustified(16,'0');
+        //qDebug() << "MIDI Options" << QString::number(mapping.options.all, 2).rightJustified(16,'0');
 
-    if (mapping_is_14bit) {
-        bool found = false;
-        for (auto it = m_fourteen_bit_queued_mappings.begin();
-             it != m_fourteen_bit_queued_mappings.end(); ++it) {
-            if (it->first.control == mapping.control) {
-                if ((it->first.options.fourteen_bit_lsb && mapping.options.fourteen_bit_lsb) ||
-                    (it->first.options.fourteen_bit_msb && mapping.options.fourteen_bit_msb)) {
-                    qWarning() << "MidiController: 14-bit MIDI mapping has mis-matched LSB/MSB options."
-                               << "Ignoring both messages.";
+        if (mapping_is_14bit) {
+            bool found = false;
+            for (auto it = m_fourteen_bit_queued_mappings.begin();
+                it != m_fourteen_bit_queued_mappings.end(); ++it) {
+                if (it->first.control == mapping.control) {
+                    if ((it->first.options.fourteen_bit_lsb && mapping.options.fourteen_bit_lsb) ||
+                        (it->first.options.fourteen_bit_msb && mapping.options.fourteen_bit_msb)) {
+                        qWarning() << "MidiController: 14-bit MIDI mapping has mis-matched LSB/MSB options."
+                                << "Ignoring both messages.";
+                        m_fourteen_bit_queued_mappings.erase(it);
+                        return;
+                    }
+                    int iValue = 0;
+                    if (mapping.options.fourteen_bit_msb) {
+                        iValue = (value << 7) | it->second;
+                        // qDebug() << "MSB" << value
+                        //          << "LSB" << it->second
+                        //          << "Joint:" << iValue;
+                    } else if (mapping.options.fourteen_bit_lsb) {
+                        iValue = (it->second << 7) | value;
+                        // qDebug() << "MSB" << it->second
+                        //          << "LSB" << value
+                        //          << "Joint:" << iValue;
+                    }
+
+                    // NOTE(rryan): The 14-bit message ranges from 0x0000 to
+                    // 0x3FFF. Dividing by 0x81 maps this onto the range of 0 to
+                    // 127. However, some controllers map the center to MSB 64
+                    // (0x40) and LSB 0. Dividing by 128 (0x80) maps 0x2000
+                    // directly to 0x40. See ControlLinPotmeterBehavior and
+                    // ControlPotmeterBehavior for more fun of this variety :).
+                    newValue = static_cast<double>(iValue) / 128.0;
+                    newValue = math_min(newValue, 127.0);
+
+                    // Erase the queued message since we processed it.
                     m_fourteen_bit_queued_mappings.erase(it);
-                    return;
+
+                    found = true;
+                    break;
                 }
-                int iValue = 0;
-                if (mapping.options.fourteen_bit_msb) {
-                    iValue = (value << 7) | it->second;
-                    // qDebug() << "MSB" << value
-                    //          << "LSB" << it->second
-                    //          << "Joint:" << iValue;
-                } else if (mapping.options.fourteen_bit_lsb) {
-                    iValue = (it->second << 7) | value;
-                    // qDebug() << "MSB" << it->second
-                    //          << "LSB" << value
-                    //          << "Joint:" << iValue;
-                }
+            }
+            if (!found) {
+                // Queue this mapping and value for processing once we receive the next
+                // message.
+                m_fourteen_bit_queued_mappings.append(std::make_pair(mapping, value));
+                return;
+            }
+        } else if (opCode == MIDI_PITCH_BEND) {
+            // compute 14-bit value for pitch bend messages
+            int iValue;
+            iValue = (value << 7) | control;
 
-                // NOTE(rryan): The 14-bit message ranges from 0x0000 to
-                // 0x3FFF. Dividing by 0x81 maps this onto the range of 0 to
-                // 127. However, some controllers map the center to MSB 64
-                // (0x40) and LSB 0. Dividing by 128 (0x80) maps 0x2000
-                // directly to 0x40. See ControlLinPotmeterBehavior and
-                // ControlPotmeterBehavior for more fun of this variety :).
-                newValue = static_cast<double>(iValue) / 128.0;
-                newValue = math_min(newValue, 127.0);
+            // NOTE(rryan): The 14-bit message ranges from 0x0000 to
+            // 0x3FFF. Dividing by 0x81 maps this onto the range of 0 to
+            // 127. However, some controllers map the center to MSB 64
+            // (0x40) and LSB 0. Dividing by 128 (0x80) maps 0x2000
+            // directly to 0x40. See ControlLinPotmeterBehavior and
+            // ControlPotmeterBehavior for more fun of this variety :).
+            newValue = static_cast<double>(iValue) / 128.0;
+            newValue = math_min(newValue, 127.0);
+        } else {
+            double currControlValue = pCO->getMidiParameter();
+            newValue = computeValue(mapping.options, currControlValue, value);
+        }
 
-                // Erase the queued message since we processed it.
-                m_fourteen_bit_queued_mappings.erase(it);
+        // ControlPushButton ControlObjects only accept NOTE_ON, so if the midi
+        // mapping is <button> we override the Midi 'status' appropriately.
+        if (mapping.options.button || mapping.options.sw) {
+            opCode = MIDI_NOTE_ON;
+        }
 
-                found = true;
-                break;
+        if (mapping.options.soft_takeover) {
+            // This is the only place to enable it if it isn't already.
+            m_st.enable(pCO);
+            if (m_st.ignore(pCO, pCO->getParameterForMidiValue(newValue))) {
+                return;
             }
         }
-        if (!found) {
-            // Queue this mapping and value for processing once we receive the next
-            // message.
-            m_fourteen_bit_queued_mappings.append(std::make_pair(mapping, value));
-            return;
-        }
-    } else if (opCode == MIDI_PITCH_BEND) {
-        // compute 14-bit value for pitch bend messages
-        int iValue;
-        iValue = (value << 7) | control;
-
-        // NOTE(rryan): The 14-bit message ranges from 0x0000 to
-        // 0x3FFF. Dividing by 0x81 maps this onto the range of 0 to
-        // 127. However, some controllers map the center to MSB 64
-        // (0x40) and LSB 0. Dividing by 128 (0x80) maps 0x2000
-        // directly to 0x40. See ControlLinPotmeterBehavior and
-        // ControlPotmeterBehavior for more fun of this variety :).
-        newValue = static_cast<double>(iValue) / 128.0;
-        newValue = math_min(newValue, 127.0);
-    } else {
-        double currControlValue = pCO->getMidiParameter();
-        newValue = computeValue(mapping.options, currControlValue, value);
+        pCO->setValueFromMidi(static_cast<MidiOpCode>(opCode), newValue);
     }
-
-    // ControlPushButton ControlObjects only accept NOTE_ON, so if the midi
-    // mapping is <button> we override the Midi 'status' appropriately.
-    if (mapping.options.button || mapping.options.sw) {
-        opCode = MIDI_NOTE_ON;
-    }
-
-    if (mapping.options.soft_takeover) {
-        // This is the only place to enable it if it isn't already.
-        m_st.enable(pCO);
-        if (m_st.ignore(pCO, pCO->getParameterForMidiValue(newValue))) {
-            return;
-        }
-    }
-    pCO->setValueFromMidi(static_cast<MidiOpCode>(opCode), newValue);
 }
 
 double MidiController::computeValue(MidiOptions options, double _prevmidivalue, double _newmidivalue) {

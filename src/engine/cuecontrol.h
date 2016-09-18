@@ -12,7 +12,7 @@
 #include "control/controlproxy.h"
 #include "track/track.h"
 
-#define NUM_HOT_CUES 37
+#define NUM_HOT_CUES 8
 
 class ControlObject;
 class ControlPushButton;

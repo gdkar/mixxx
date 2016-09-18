@@ -75,7 +75,7 @@ KeyControl::KeyControl(QString group,
     m_keylockMode->setButtonMode(ControlPushButton::TOGGLE);
 
     // In case of vinyl control "rate" is a filtered mean value for display
-    m_pRateSlider = ControlObject::getControl(ConfigKey(group, "rate"));
+    m_pRateSlider = new ControlObject(ConfigKey(group, "rate"),this);
     connect(m_pRateSlider, SIGNAL(valueChanged(double)),
             this, SLOT(slotRateChanged()),
             Qt::DirectConnection);
@@ -83,7 +83,7 @@ KeyControl::KeyControl(QString group,
             this, SLOT(slotRateChanged()),
             Qt::DirectConnection);
 
-    m_pRateRange = ControlObject::getControl(ConfigKey(group, "rateRange"));
+    m_pRateRange = new ControlObject(ConfigKey(group, "rateRange"),this);
     connect(m_pRateRange, SIGNAL(valueChanged(double)),
             this, SLOT(slotRateChanged()),
             Qt::DirectConnection);
@@ -91,7 +91,7 @@ KeyControl::KeyControl(QString group,
             this, SLOT(slotRateChanged()),
             Qt::DirectConnection);
 
-    m_pRateDir = ControlObject::getControl(ConfigKey(group, "rate_dir"));
+    m_pRateDir = new ControlObject(ConfigKey(group, "rate_dir"),this);
     connect(m_pRateDir, SIGNAL(valueChanged(double)),
             this, SLOT(slotRateChanged()),
             Qt::DirectConnection);
@@ -99,7 +99,7 @@ KeyControl::KeyControl(QString group,
             this, SLOT(slotRateChanged()),
             Qt::DirectConnection);
 
-    m_pVCEnabled = ControlObject::getControl(ConfigKey(group, "vinylcontrol_enabled"));
+    m_pVCEnabled = new ControlObject(ConfigKey(group, "vinylcontrol_enabled"),this);
     if (m_pVCEnabled) {
         connect(m_pVCEnabled, SIGNAL(valueChanged(double)),
                 this, SLOT(slotRateChanged()),
@@ -109,7 +109,7 @@ KeyControl::KeyControl(QString group,
                 Qt::DirectConnection);
     }
 
-    m_pVCRate = ControlObject::getControl(ConfigKey(group, "vinylcontrol_rate"));
+    m_pVCRate = new ControlObject(ConfigKey(group, "vinylcontrol_rate"),this);
     if (m_pVCRate) {
         connect(m_pVCRate, SIGNAL(valueChanged(double)),
                 this, SLOT(slotRateChanged()),
@@ -119,7 +119,7 @@ KeyControl::KeyControl(QString group,
                 Qt::DirectConnection);
     }
 
-    m_pKeylock = ControlObject::getControl(ConfigKey(group, "keylock"));
+    m_pKeylock = new ControlObject(ConfigKey(group, "keylock"),this);
     connect(m_pKeylock, SIGNAL(valueChanged(double)),
             this, SLOT(slotRateChanged()),
             Qt::DirectConnection);

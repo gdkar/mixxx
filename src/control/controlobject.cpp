@@ -25,57 +25,24 @@
 #include "util/stat.h"
 #include "util/timer.h"
 
-ControlObject::ControlObject(QObject *p) : QObject(p) { }
-ControlObject::ControlObject(ConfigKey key, QObject *p)
-: ControlObject(p)
-{
-    initialize(key, true,false,false);
-}
-
-
-ControlObject::ControlObject(ConfigKey key, bool bIgnoreNops, bool bTrack,
-                             bool bPersist) {
-    initialize(key, bIgnoreNops, bTrack, bPersist);
-}
-
-ControlObject::~ControlObject() {
-    if (m_pControl) {
-        m_pControl->removeCreatorCO();
-    }
-}
-void ControlObject::trigger()
-{
-    if(m_pControl)
-        m_pControl->trigger();
-}
-void ControlObject::initialize(ConfigKey key, bool bIgnoreNops, bool bTrack,
-                               bool bPersist) {
-    m_key = key;
-
-    // Don't bother looking up the control if key is NULL. Prevents log spew.
-    if (!m_key.isNull()) {
-        m_pControl = ControlDoublePrivate::getControl(m_key, true, this,
-                                                      bIgnoreNops, bTrack,
-                                                      bPersist);
-    }
-
-    // getControl can fail and return a NULL control even with the create flag.
-    if (m_pControl) {
+ControlObject::ControlObject(QObject *p) : QObject(p) {
+    if(auto pControl = qobject_cast<ControlDoublePrivate*>(p)) {
+        m_pControl = pControl->sharedFromThis();
         connect(m_pControl.data(), &ControlDoublePrivate::valueChanged,
                 this, &ControlObject::privateValueChanged,
-                Qt::DirectConnection);
+                static_cast<Qt::ConnectionType>(Qt::DirectConnection| Qt::UniqueConnection)
+                );
         connect(m_pControl.data(), &ControlDoublePrivate::defaultValueChanged,
                 this, &ControlObject::defaultValueChanged,
-                Qt::DirectConnection);
+                static_cast<Qt::ConnectionType>(Qt::DirectConnection| Qt::UniqueConnection)
+                );
 
         connect(
             m_pControl.data()
             ,&ControlDoublePrivate::trigger
             , this
             ,&ControlObject::triggered
-            , static_cast<Qt::ConnectionType>(
-                Qt::DirectConnection
-              | Qt::UniqueConnection
+            , static_cast<Qt::ConnectionType>(Qt::DirectConnection| Qt::UniqueConnection
                 )
             );
         connect(
@@ -84,9 +51,7 @@ void ControlObject::initialize(ConfigKey key, bool bIgnoreNops, bool bTrack,
             , this
             ,&ControlObject::nameChanged
             , static_cast<Qt::ConnectionType>(
-                Qt::DirectConnection
-              | Qt::UniqueConnection
-                )
+                Qt::DirectConnection | Qt::UniqueConnection)
             );
         connect(
             m_pControl.data()
@@ -94,10 +59,83 @@ void ControlObject::initialize(ConfigKey key, bool bIgnoreNops, bool bTrack,
             , this
             ,&ControlObject::descriptionChanged
             , static_cast<Qt::ConnectionType>(
-                Qt::DirectConnection
-              | Qt::UniqueConnection
-                )
+                Qt::DirectConnection | Qt::UniqueConnection)
             );
+        m_key = m_pControl->getKey();
+        m_wControl = m_pControl.toWeakRef();
+//        m_pControl.reset();
+    }
+}
+ControlObject::ControlObject(ConfigKey key, QObject *p)
+: ControlObject(p)
+{
+    initialize(key, true,false,false);
+}
+
+QSharedPointer<ControlDoublePrivate> ControlObject::control() const
+{
+    if(m_pControl)
+        return m_pControl;
+    return m_wControl.lock();
+}
+ControlObject::ControlObject(ConfigKey key, bool bIgnoreNops, bool bTrack,
+                             bool bPersist) {
+    initialize(key, bIgnoreNops, bTrack, bPersist);
+}
+
+ControlObject::~ControlObject() { }
+void ControlObject::trigger()
+{
+    if(auto co = control())
+        co->trigger();
+}
+void ControlObject::initialize(ConfigKey key, bool bIgnoreNops, bool bTrack,
+                               bool bPersist)
+{
+    m_key = key;
+
+    // Don't bother looking up the control if key is NULL. Prevents log spew.
+    if (!m_key.isNull()) {
+            m_pControl = ControlDoublePrivate::getControl(m_key, true,
+                                                        bIgnoreNops, bTrack,
+                                                        bPersist);
+
+        // getControl can fail and return a NULL control even with the create flag.
+        if (m_pControl) {
+            connect(m_pControl.data(), &ControlDoublePrivate::valueChanged,
+                    this, &ControlObject::privateValueChanged,
+                    static_cast<Qt::ConnectionType>(Qt::DirectConnection| Qt::UniqueConnection)
+                    );
+            connect(m_pControl.data(), &ControlDoublePrivate::defaultValueChanged,
+                    this, &ControlObject::defaultValueChanged,
+                    static_cast<Qt::ConnectionType>(Qt::DirectConnection| Qt::UniqueConnection)
+                    );
+
+            connect(
+                m_pControl.data()
+                ,&ControlDoublePrivate::trigger
+                , this
+                ,&ControlObject::triggered
+                , static_cast<Qt::ConnectionType>(Qt::DirectConnection| Qt::UniqueConnection
+                    )
+                );
+            connect(
+                m_pControl.data()
+                ,&ControlDoublePrivate::nameChanged
+                , this
+                ,&ControlObject::nameChanged
+                , static_cast<Qt::ConnectionType>(
+                    Qt::DirectConnection | Qt::UniqueConnection)
+                );
+            connect(
+                m_pControl.data()
+                ,&ControlDoublePrivate::descriptionChanged
+                , this
+                ,&ControlObject::descriptionChanged
+                , static_cast<Qt::ConnectionType>(
+                    Qt::DirectConnection | Qt::UniqueConnection)
+                );
+        }
     }
 }
 // slot
@@ -112,70 +150,170 @@ void ControlObject::privateValueChanged(double dValue, QObject* pSender)
 }
 
 // static
-ControlObject* ControlObject::getControl(const ConfigKey& key, bool warn)
+ControlObject* ControlObject::getControl(ConfigKey key, bool warn)
 {
     //qDebug() << "ControlObject::getControl for (" << key.group << "," << key.item << ")";
-    QSharedPointer<ControlDoublePrivate> pCDP = ControlDoublePrivate::getControl(key, warn);
-    if (pCDP) {
-        return pCDP->getCreatorCO();
+    if(!warn) {
+        if(auto pCDP = ControlDoublePrivate::getIfExists(key)) {
+            return pCDP->getCreatorCO();
+        }
+    }else{
+        if(auto pCDP = ControlDoublePrivate::getControl(key)) {
+            return pCDP->getCreatorCO();
+        }
     }
     return NULL;
 }
 
-void ControlObject::setValueFromMidi(MidiOpCode o, double v) {
-    if (m_pControl) {
-        m_pControl->setMidiParameter(o, v);
+void ControlObject::setValueFromMidi(MidiOpCode o, double v)
+{
+    if (auto co = control()) {
+        co->setMidiParameter(o, v);
     }
 }
 
 double ControlObject::getMidiParameter() const {
-    return m_pControl ? m_pControl->getMidiParameter() : 0.0;
+    if(auto co = control())
+        return co->getMidiParameter();
+    return 0.;
 }
 
 // static
-double ControlObject::get(const ConfigKey& key) {
-    QSharedPointer<ControlDoublePrivate> pCop = ControlDoublePrivate::getControl(key);
-    return pCop ? pCop->get() : 0.0;
+double ControlObject::get(ConfigKey key) {
+    if(auto pCop = ControlDoublePrivate::getIfExists(key))
+        return pCop->get();
+    else
+        return 0.0;
 }
 
-double ControlObject::getParameter() const {
-    return m_pControl ? m_pControl->getParameter() : 0.0;
+double ControlObject::getParameter() const
+{
+    if(auto co = control())
+        return co->getParameter();
+    return 0.0;
 }
 
-double ControlObject::getParameterForValue(double value) const {
+double ControlObject::getParameterForValue(double value) const
+{
+    if(auto co = control())
+        return co->getParameterForValue(value);
+    return 0;
     return m_pControl ? m_pControl->getParameterForValue(value) : 0.0;
 }
 
 double ControlObject::getParameterForMidiValue(double midiValue) const {
-    return m_pControl ? m_pControl->getParameterForMidiValue(midiValue) : 0.0;
+    if(auto co = control())
+        co->getParameterForMidiValue(midiValue);
+    return 0.0;
 }
 
 void ControlObject::setParameter(double v) {
-    if (m_pControl) {
-        m_pControl->setParameter(v, this);
+    if (auto co = control()) {
+        co->setParameter(v, this);
     }
 }
 
 void ControlObject::setParameterFrom(double v, QObject* pSender) {
-    if (m_pControl) {
-        m_pControl->setParameter(v, pSender);
+    if (auto co = control()) {
+        co->setParameter(v, pSender);
     }
 }
 
 // static
-void ControlObject::set(const ConfigKey& key, const double& value) {
-    QSharedPointer<ControlDoublePrivate> pCop = ControlDoublePrivate::getControl(key);
-    if (pCop) {
+void ControlObject::set(ConfigKey key, double value) {
+    if(auto pCop = ControlDoublePrivate::getIfExists(key)) {
         pCop->set(value, NULL);
     }
 }
 
 bool ControlObject::connectValueChangeRequest(const QObject* receiver,
                                               const char* method,
-                                              Qt::ConnectionType type) {
+                                              Qt::ConnectionType type)
+{
     bool ret = false;
     if (m_pControl) {
         ret = m_pControl->connectValueChangeRequest(receiver, method, type);
     }
     return ret;
 }
+ControlObject* ControlObject::getControl(QString group, QString item, bool warn ) {
+    ConfigKey key(group, item);
+    return getControl(key, warn);
+}
+ControlObject* ControlObject::getControl(const char* group, const char* item, bool warn ) {
+    ConfigKey key(group, item);
+    return getControl(key, warn);
+}
+
+QString ControlObject::name() const {
+    return m_pControl ?  m_pControl->name() : QString();
+}
+
+void ControlObject::setName(QString name) {
+    if (auto co = control()) {
+        co->setName(name);
+    }
+}
+
+QString ControlObject::description() const
+{
+    if(auto co = control())
+        return co->description();
+    else
+        return QString{};
+}
+
+void ControlObject::setDescription(QString description) {
+    if (auto co = control()) {
+        co->setDescription(description);
+    }
+}
+
+// Return the key of the object
+ConfigKey ControlObject::getKey() const {
+    return m_key;
+}
+
+// Returns the value of the ControlObject
+double ControlObject::get() const {
+    if(auto co = control())
+        return co->get();
+    return 0;
+}
+
+// Returns the bool interpretation of the ControlObject
+bool ControlObject::toBool() const {
+    return get() > 0.0;
+}
+void ControlObject::set(double value) {
+    if(auto co = control())
+        co->set(value,this);
+}
+// Sets the ControlObject value and confirms it.
+void ControlObject::setAndConfirm(double value) {
+    if (auto co = control()) {
+        co->setAndConfirm(value, this);
+    }
+}
+void ControlObject::reset() {
+    if (auto co = control()) {
+        co->reset();
+    }
+}
+void ControlObject::setDefaultValue(double dValue)
+{
+    if (auto co = control()) {
+        co->setDefaultValue(dValue);
+    }
+}
+double ControlObject::defaultValue() const
+{
+    if(auto co = control()) return co->defaultValue();
+    return 0;
+}
+bool ControlObject::ignoreNops() const
+{
+    if(auto co = control()) return co->ignoreNops();
+    return true;
+}
+

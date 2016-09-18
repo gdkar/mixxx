@@ -1,7 +1,8 @@
 #include <QtDebug>
 #include <QSharedPointer>
-
+#include <initializer_list>
 #include "control/control.h"
+#include "control/controlobject.h"
 
 #include "util/stat.h"
 #include "util/timer.h"
@@ -30,8 +31,8 @@ ControlDoublePrivate::ControlDoublePrivate()
 */
 
 ControlDoublePrivate::ControlDoublePrivate(ConfigKey key,
-                                           ControlObject* pCreatorCO,
-                                           bool bIgnoreNops, bool bTrack,
+                                           bool bIgnoreNops,
+                                           bool bTrack,
                                            bool bPersist)
         : QObject(nullptr),
           m_key(key),
@@ -42,7 +43,7 @@ ControlDoublePrivate::ControlDoublePrivate(ConfigKey key,
           m_trackFlags(Stat::COUNT | Stat::SUM | Stat::AVERAGE |
                        Stat::SAMPLE_VARIANCE | Stat::MIN | Stat::MAX),
           m_confirmRequired(false),
-          m_pCreatorCO(pCreatorCO)
+          m_pCreatorCO(nullptr)
 {
     initialize();
 }
@@ -74,8 +75,13 @@ ControlDoublePrivate::~ControlDoublePrivate()
 {
     {
         MMutexLocker locker(&s_qCOHashMutex);
-    //qDebug() << "ControlDoublePrivate::s_qCOHash.remove(" << m_key.group << "," << m_key.item << ")";
-        s_qCOHash.remove(m_key);
+        auto it = s_qCOHash.constFind(m_key);
+        if(it != s_qCOHash.constEnd()) {
+            auto pControl = it.value().lock();
+            if(pControl == this || !pControl) {
+                s_qCOHash.erase(it);
+            }
+        }
     }
     if (m_bPersistInConfiguration) {
         if(auto pConfig = ControlDoublePrivate::s_pUserConfig)
@@ -84,7 +90,7 @@ ControlDoublePrivate::~ControlDoublePrivate()
 }
 
 // static
-void ControlDoublePrivate::insertAlias(const ConfigKey& alias, const ConfigKey& key)
+void ControlDoublePrivate::insertAlias(ConfigKey alias, ConfigKey key)
 {
     MMutexLocker locker(&s_qCOHashMutex);
 
@@ -94,7 +100,7 @@ void ControlDoublePrivate::insertAlias(const ConfigKey& alias, const ConfigKey& 
         return;
     }
 
-    auto pControl = it.value();
+    auto pControl = it.value().lock();
     if (pControl.isNull()) {
         qWarning() << "WARNING: ControlDoublePrivate::insertAlias called for expired control" << key;
         return;
@@ -103,11 +109,23 @@ void ControlDoublePrivate::insertAlias(const ConfigKey& alias, const ConfigKey& 
     s_qCOAliasHash.insert(key, alias);
     s_qCOHash.insert(alias, pControl);
 }
-
+// static
+QSharedPointer<ControlDoublePrivate> ControlDoublePrivate::getIfExists(ConfigKey key)
+{
+    // Scope for MMutexLocker.
+    if(!key.isEmpty()){
+        MMutexLocker locker(&s_qCOHashMutex);
+        auto it = s_qCOHash.find(key);
+        if (it != s_qCOHash.end()) {
+            return it.value().lock();
+//            }
+        }
+    }
+    return QSharedPointer<ControlDoublePrivate>{};
+}
 // static
 QSharedPointer<ControlDoublePrivate> ControlDoublePrivate::getControl(
-        const ConfigKey& key, bool warn, ControlObject* pCreatorCO,
-        bool bIgnoreNops, bool bTrack, bool bPersist)
+        ConfigKey key, bool warn, bool bIgnoreNops, bool bTrack, bool bPersist)
 {
     if (key.isEmpty()) {
         if (warn) {
@@ -122,44 +140,41 @@ QSharedPointer<ControlDoublePrivate> ControlDoublePrivate::getControl(
         MMutexLocker locker(&s_qCOHashMutex);
         auto it = s_qCOHash.find(key);
         if (it != s_qCOHash.end()) {
-            if (pCreatorCO) {
-                if (warn) {
-                    qDebug() << "ControlObject" << key.group << key.item << "already created";
-                }
-            } else {
-                pControl = it.value();
+            if (warn) {
+                qDebug() << "ControlObject" << key.group << key.item << "already created";
             }
+            pControl = it.value().lock();
+//            }
         }
     }
-
     if (pControl == NULL) {
-        if (pCreatorCO) {
-            pControl = QSharedPointer<ControlDoublePrivate>::create(
-                key
-              , pCreatorCO
-              , bIgnoreNops
-              , bTrack
-              , bPersist
-                );
+        pControl = QSharedPointer<ControlDoublePrivate>::create(
+            key
+            , bIgnoreNops
+            , bTrack
+            , bPersist
+            );
+        {
+        pControl->m_pCreatorCO = new ControlObject(pControl.data());
+            MMutexLocker locker(&s_qCOHashMutex);
             {
-                MMutexLocker locker(&s_qCOHashMutex);
-                {
-                    auto it = s_qCOHash.constFind(key);
-                    if(it != s_qCOHash.constEnd()) {
-                        if(auto oControl = it.value().lock()) {
-                            return oControl;
-                        }else{
-                            s_qCOHash.erase(it);
-                        }
+                auto it = s_qCOHash.constFind(key);
+                if(it != s_qCOHash.constEnd()) {
+                    if(auto oControl = it.value().lock()) {
+                        locker.unlock();
+                        return oControl;
+                    }else{
+                        s_qCOHash.erase(it);
                     }
                 }
-                //qDebug() << "ControlDoublePrivate::s_qCOHash.insert(" << key.group << "," << key.item << ")";
-                s_qCOHash.insert(key, pControl);
             }
-        } else if (warn) {
-            qWarning() << "ControlDoublePrivate::getControl returning NULL for ("
-                       << key.group << "," << key.item << ")";
+            //qDebug() << "ControlDoublePrivate::s_qCOHash.insert(" << key.group << "," << key.item << ")";
+            s_qCOHash.insert(key, pControl);
         }
+//        } else if (warn) {
+//            qWarning() << "ControlDoublePrivate::getControl returning NULL for ("
+//                       << key.group << "," << key.item << ")";
+//        }
     }
     return pControl;
 }
@@ -178,7 +193,6 @@ void ControlDoublePrivate::getControls(
         if(auto pControl = wControl.lock())
             pControlList->push_back(pControl);
     }
-    s_qCOHashMutex.unlock();
 }
 
 // static
@@ -239,18 +253,21 @@ void ControlDoublePrivate::setParameter(double dParam, QObject* pSender)
     }
 }
 
-double ControlDoublePrivate::getParameter() const {
+double ControlDoublePrivate::getParameter() const
+{
     return getParameterForValue(get());
 }
 
-double ControlDoublePrivate::getParameterForValue(double value) const {
+double ControlDoublePrivate::getParameterForValue(double value) const
+{
     if(auto pBehavior = m_pBehavior) {
         value = pBehavior->valueToParameter(value);
     }
     return value;
 }
 
-double ControlDoublePrivate::getParameterForMidiValue(double midiValue) const {
+double ControlDoublePrivate::getParameterForMidiValue(double midiValue) const
+{
     if(auto pBehavior = m_pBehavior) {
         return pBehavior->midiValueToParameter(midiValue);
     }
@@ -288,12 +305,12 @@ void ControlDoublePrivate::setUserConfig(UserSettingsPointer pConfig)
 {
     s_pUserConfig = pConfig;
 }
-const QString& ControlDoublePrivate::name() const
+QString ControlDoublePrivate::name() const
 {
     return m_name;
 }
 
-void ControlDoublePrivate::setName(const QString& name)
+void ControlDoublePrivate::setName(QString name)
 {
     if(m_name != name) {
         m_name = name;
@@ -301,12 +318,12 @@ void ControlDoublePrivate::setName(const QString& name)
     }
 }
 
-const QString& ControlDoublePrivate::description() const
+QString ControlDoublePrivate::description() const
 {
     return m_description;
 }
 
-void ControlDoublePrivate::setDescription(const QString& description)
+void ControlDoublePrivate::setDescription(QString description)
 {
     if(m_description != description) {
         m_description = description;
@@ -337,11 +354,6 @@ double ControlDoublePrivate::defaultValue() const
 ControlObject* ControlDoublePrivate::getCreatorCO() const
 {
     return m_pCreatorCO;
-}
-
-void ControlDoublePrivate::removeCreatorCO()
-{
-    m_pCreatorCO = NULL;
 }
 ConfigKey ControlDoublePrivate::getKey()
 {

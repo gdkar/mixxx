@@ -24,8 +24,8 @@
 WLabel::WLabel(QWidget* pParent)
         : QLabel(pParent),
           WBaseWidget(this),
-          m_skinText(),
-          m_longText(),
+          m_skinText(""),
+          m_longText(""),
           m_elideMode(Qt::ElideNone) {
 }
 
@@ -34,7 +34,7 @@ void WLabel::setup(const QDomNode& node, const SkinContext& context) {
     QPalette pal = palette(); //we have to copy out the palette to edit it since it's const (probably for threadsafety)
 
 
-    QDomElement bgColor = context.selectElement(node, "BgColor");
+    auto bgColor = context.selectElement(node, "BgColor");
     if (!bgColor.isNull()) {
         m_qBgColor.setNamedColor(context.nodeToString(bgColor));
         pal.setColor(this->backgroundRole(), WSkinColor::getCorrectColor(m_qBgColor));
@@ -106,7 +106,7 @@ void WLabel::setText(const QString& text) {
         // (Tested on Ubuntu Trusty)
         // TODO(lp#:1434865): Fix elide width calculation for cases where
         // this text is next to an expanding widget.
-        QString elidedText = metrics.elidedText(m_longText, m_elideMode, width() - 2);
+        auto elidedText = metrics.elidedText(m_longText, m_elideMode, width() - 2);
         QLabel::setText(elidedText);
     } else {
         QLabel::setText(m_longText);

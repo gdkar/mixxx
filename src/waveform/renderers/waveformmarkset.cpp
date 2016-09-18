@@ -23,23 +23,22 @@ void WaveformMarkSet::setup(const QString& group, const QDomNode& node,
 #if QT_VERSION >= 0x040700
     m_marks.reserve(NUM_HOT_CUES);
 #endif
-
     std::set<QString> controlItemSet;
-    bool hasDefaultMark = false;
+    auto hasDefaultMark = false;
 
-    QDomNode child = node.firstChild();
+    auto child = node.firstChild();
     while (!child.isNull()) {
         if (child.nodeName() == "DefaultMark") {
             m_defaultMark.setup(group, child, context, signalColors);
             hasDefaultMark = true;
         } else if (child.nodeName() == "Mark") {
-            WaveformMarkPointer pMark(new WaveformMark());
+            auto pMark = WaveformMarkPointer::create();
             pMark->setup(group, child, context, signalColors);
 
-            bool uniqueMark = true;
+            auto uniqueMark = true;
             if (pMark->m_pPointCos) {
                 // guarantee uniqueness even if there is a misdesigned skin
-                QString item = pMark->m_pPointCos->getKey().item;
+                auto item = pMark->m_pPointCos->getKey().item;
                 if (!controlItemSet.insert(item).second) {
                     qWarning() << "WaveformRenderMark::setup - redefinition of" << item;
                     uniqueMark = false;
@@ -60,19 +59,17 @@ void WaveformMarkSet::setup(const QString& group, const QDomNode& node,
     // and to create all missing hot_cues
     if (hasDefaultMark) {
         for (int i = 1; i <= NUM_HOT_CUES; ++i) {
-            QString hotCueControlItem = "hotcue_" + QString::number(i) + "_position";
-            ControlObject* pHotcue = ControlObject::getControl(
-                    ConfigKey(group, hotCueControlItem));
+            auto hotCueControlItem = "hotcue_" + QString::number(i) + "_position";
+            auto pHotcue = ControlObject::getControl(ConfigKey(group, hotCueControlItem),false);
             if (pHotcue == NULL) {
                 continue;
             }
-
             if (controlItemSet.insert(hotCueControlItem).second) {
                 //qDebug() << "WaveformRenderMark::setup - Automatic mark" << hotCueControlItem;
-                WaveformMarkPointer pMark(new WaveformMark(i));
-                WaveformMarkProperties defaultProperties = m_defaultMark.getProperties();
+                auto pMark = WaveformMarkPointer::create(i);
+                auto defaultProperties = m_defaultMark.getProperties();
                 pMark->setProperties(defaultProperties);
-                pMark->m_pPointCos = std::make_unique<ControlProxy>(pHotcue->getKey());
+                pMark->m_pPointCos = std::make_unique<ControlProxy>(group,hotCueControlItem);
                 m_marks.push_back(pMark);
             }
         }

@@ -11,7 +11,7 @@
 #include "util/cmdlineargs.h"
 
 SkinContext::SkinContext(UserSettingsPointer pConfig,
-                         const QString& xmlPath)
+                         QString xmlPath)
         : m_xmlPath(xmlPath),
           m_pConfig(pConfig),
           m_pScriptEngine(new QJSEngine()),
@@ -52,22 +52,22 @@ SkinContext::~SkinContext()
     // Pop the context only if we're a child.
 }
 
-QString SkinContext::variable(const QString& name) const
+QString SkinContext::variable(QString name) const
 {
     return m_context.property(name).toString();
 }
 
-void SkinContext::setVariable(const QString& name, const QString& value)
+void SkinContext::setVariable(QString name, QString value)
 {
     m_context.setProperty(name,value);
 }
 
-void SkinContext::setXmlPath(const QString& xmlPath)
+void SkinContext::setXmlPath(QString xmlPath)
 {
     m_xmlPath = xmlPath;
 }
 
-bool SkinContext::hasVariableUpdates(const QDomNode& node) const
+bool SkinContext::hasVariableUpdates(QDomNode node) const
 {
     auto child = node.firstChildElement();
     while (!child.isNull()) {
@@ -78,7 +78,7 @@ bool SkinContext::hasVariableUpdates(const QDomNode& node) const
     return false;
 }
 
-void SkinContext::updateVariables(const QDomNode& node)
+void SkinContext::updateVariables(QDomNode node)
 {
     auto child = node.firstChildElement();
     while (!child.isNull()) {
@@ -89,7 +89,7 @@ void SkinContext::updateVariables(const QDomNode& node)
     }
 }
 
-void SkinContext::updateVariable(const QDomElement& element)
+void SkinContext::updateVariable(QDomElement element)
 {
     if (!element.hasAttribute("name")) {
         qDebug() << "Can't update variable without name:" << element.text();
@@ -100,7 +100,7 @@ void SkinContext::updateVariable(const QDomElement& element)
     setVariable(name, value);
 }
 
-QString SkinContext::variableNodeToText(const QDomElement& variableNode) const
+QString SkinContext::variableNodeToText(QDomElement variableNode) const
 {
     auto expression = variableNode.attribute("expression");
     if (!expression.isNull()) {
@@ -125,7 +125,7 @@ QString SkinContext::variableNodeToText(const QDomElement& variableNode) const
     return nodeToString(variableNode);
 }
 
-QString SkinContext::nodeToString(const QDomNode& node) const
+QString SkinContext::nodeToString(QDomNode node) const
 {
     QString result;
     auto child = node.firstChild();
@@ -145,7 +145,7 @@ QString SkinContext::nodeToString(const QDomNode& node) const
     return result;
 }
 
-PixmapSource SkinContext::getPixmapSource(const QDomNode& pixmapNode) const
+PixmapSource SkinContext::getPixmapSource(QDomNode pixmapNode) const
 {
     PixmapSource source;
 
@@ -164,13 +164,13 @@ PixmapSource SkinContext::getPixmapSource(const QDomNode& pixmapNode) const
     }
     return source;
 }
-PixmapSource SkinContext::getPixmapSource(const QString& filename) const
+PixmapSource SkinContext::getPixmapSource(QString filename) const
 {
     const SvgParser svgParser(*this);
     return getPixmapSourceInner(filename, svgParser);
 }
 
-QDomElement SkinContext::loadSvg(const QString& filename) const {
+QDomElement SkinContext::loadSvg(QString filename) const {
     auto & cachedSvg = (*m_pSvgCache)[filename];
     if (cachedSvg.isNull()) {
         QFile file(filename);
@@ -186,7 +186,7 @@ QDomElement SkinContext::loadSvg(const QString& filename) const {
     return cachedSvg;
 }
 
-PixmapSource SkinContext::getPixmapSourceInner(const QString& filename,
+PixmapSource SkinContext::getPixmapSourceInner(QString filename,
                                                const SvgParser& svgParser) const
 {
     PixmapSource source;
@@ -205,14 +205,14 @@ PixmapSource SkinContext::getPixmapSourceInner(const QString& filename,
  * All the methods below exist to access some of the scriptEngine features
  * from the svgParser.
  */
-QJSValue SkinContext::evaluateScript(const QString& expression,
-                                         const QString& filename,
+QJSValue SkinContext::evaluateScript(QString expression,
+                                         QString filename,
                                          int lineNumber)
 {
     return m_pScriptEngine->evaluate(expression, filename, lineNumber);
 }
 
-QJSValue SkinContext::importScriptExtension(const QString& extensionName)
+QJSValue SkinContext::importScriptExtension(QString extensionName)
 {
 
     return {};
@@ -228,7 +228,7 @@ const QSharedPointer<QJSEngine> SkinContext::getScriptEngine() const
     return m_pScriptEngine;
 }
 QDebug SkinContext::logWarning(const char* file, const int line,
-                               const QDomNode& node) const
+                               QDomNode node) const
 {
     return qWarning() << QString("%1:%2 SKIN ERROR at %3:%4 <%5>:")
                              .arg(file, QString::number(line), m_xmlPath,

@@ -31,25 +31,26 @@ class ControlDoublePrivate : public QObject, public QEnableSharedFromThis<Contro
     // Adds a ConfigKey for 'alias' to the control for 'key'. Can be used for
     // supporting a legacy / deprecated control. The 'key' control must exist
     // for this to work.
-    static void insertAlias(const ConfigKey& alias, const ConfigKey& key);
+    static void insertAlias(ConfigKey alias, ConfigKey key);
 
     // Gets the ControlDoublePrivate matching the given ConfigKey. If pCreatorCO
     // is non-NULL, allocates a new ControlDoublePrivate for the ConfigKey if
     // one does not exist.
     static QSharedPointer<ControlDoublePrivate> getControl(
-            const ConfigKey& key, bool warn = true,
-            ControlObject* pCreatorCO = NULL, bool bIgnoreNops = true, bool bTrack = false,
+            ConfigKey key, bool warn = false, bool bIgnoreNops = true, bool bTrack = false,
             bool bPersist = false);
+    static QSharedPointer<ControlDoublePrivate> getIfExists(ConfigKey key);
 
     // Adds all ControlDoublePrivate that currently exist to pControlList
     static void getControls(QList<QSharedPointer<ControlDoublePrivate> >* pControlsList);
 
     static QHash<ConfigKey, ConfigKey> getControlAliases();
 
-    const QString& name() const;
-    void setName(const QString& name);
-    const QString& description() const;
-    void setDescription(const QString& description);
+  public slots:
+    QString name() const;
+    void setName(QString name);
+    QString description() const;
+    void setDescription(QString description);
 
     // Sets the control value.
     void set(double value, QObject* pSender = nullptr);
@@ -79,7 +80,6 @@ class ControlDoublePrivate : public QObject, public QEnableSharedFromThis<Contro
     void setDefaultValue(double dValue);
     double defaultValue() const;
     ControlObject* getCreatorCO() const;
-    void removeCreatorCO();
     ConfigKey getKey();
 
     // Connects a slot to the ValueChange request for CO validation. All change
@@ -101,7 +101,7 @@ class ControlDoublePrivate : public QObject, public QEnableSharedFromThis<Contro
     void nameChanged();
     void descriptionChanged();
   private:
-    ControlDoublePrivate(ConfigKey key, ControlObject* pCreatorCO,
+    ControlDoublePrivate(ConfigKey key,
                          bool bIgnoreNops, bool bTrack, bool bPersist);
     void initialize();
 
@@ -135,7 +135,7 @@ class ControlDoublePrivate : public QObject, public QEnableSharedFromThis<Contro
 
     QSharedPointer<ControlNumericBehavior> m_pBehavior;
 
-    ControlObject* m_pCreatorCO;
+    ControlObject* m_pCreatorCO{};
 
     // Hack to implement persistent controls. This is a pointer to the current
     // user configuration object (if one exists). In general, we do not want the
@@ -144,13 +144,11 @@ class ControlDoublePrivate : public QObject, public QEnableSharedFromThis<Contro
     // pervasive that updating every control creation to include the
     // configuration object would be arduous.
     static UserSettingsPointer s_pUserConfig;
-
     // Hash of ControlDoublePrivate instantiations.
     static QHash<ConfigKey, QWeakPointer<ControlDoublePrivate> > s_qCOHash;
     // Hash of aliases between ConfigKeys. Solely used for looking up the first
     // alias associated with a key.
     static QHash<ConfigKey, ConfigKey> s_qCOAliasHash;
-
     // Mutex guarding access to s_qCOHash and s_qCOAliasHash.
     static MMutex s_qCOHashMutex;
     friend class QSharedPointer<ControlDoublePrivate>;

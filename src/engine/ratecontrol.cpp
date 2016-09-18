@@ -79,9 +79,9 @@ RateControl::RateControl(QString group,
 
     m_pSlipEnabled = new ControlProxy(group, "slip_enabled", this);
 
-    m_pVCEnabled = ControlObject::getControl(ConfigKey(getGroup(), "vinylcontrol_enabled"));
-    m_pVCScratching = ControlObject::getControl(ConfigKey(getGroup(), "vinylcontrol_scratching"));
-    m_pVCMode = ControlObject::getControl(ConfigKey(getGroup(), "vinylcontrol_mode"));
+    m_pVCEnabled = new ControlObject(ConfigKey(getGroup(), "vinylcontrol_enabled"),this);
+    m_pVCScratching = new ControlObject(ConfigKey(getGroup(), "vinylcontrol_scratching"),this);
+    m_pVCMode = new ControlObject(ConfigKey(getGroup(), "vinylcontrol_mode"),this);
 
     // Permanent rate-change buttons
     buttonRatePermDown =
@@ -135,7 +135,7 @@ RateControl::RateControl(QString group,
 
     // We need the sample rate so we can guesstimate something close
     // what latency is.
-    m_pSampleRate = ControlObject::getControl(ConfigKey("[Master]","samplerate"));
+    m_pSampleRate = new ControlObject(ConfigKey("[Master]","samplerate"),this);
 
     // Wheel to control playback position/speed
     m_pWheel = new ControlTTRotary(ConfigKey(group, "wheel"));

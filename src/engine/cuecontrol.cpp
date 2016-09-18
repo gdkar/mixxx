@@ -24,8 +24,8 @@ CueControl::CueControl(QString group,
                        UserSettingsPointer pConfig) :
         EngineControl(group, pConfig),
         m_bPreviewing(false),
-        m_pPlayButton(ControlObject::getControl(ConfigKey(group, "play"))),
-        m_pStopButton(ControlObject::getControl(ConfigKey(group, "stop"))),
+        m_pPlayButton(new ControlObject(ConfigKey(group, "play"),this)),
+        m_pStopButton(new ControlObject(ConfigKey(group, "stop"),this)),
         m_iCurrentlyPreviewingHotcues(0),
         m_bypassCueSetByPlay(false),
         m_iNumHotCues(NUM_HOT_CUES),
@@ -35,17 +35,17 @@ CueControl::CueControl(QString group,
     Q_UNUSED(CUE_MODE_PIONEER);
     createControls();
 
-    m_pTrackSamples = ControlObject::getControl(ConfigKey(group, "track_samples"));
+    m_pTrackSamples = new ControlObject(ConfigKey(group, "track_samples"),this);
 
-    m_pQuantizeEnabled = ControlObject::getControl(ConfigKey(group, "quantize"));
+    m_pQuantizeEnabled = new ControlObject(ConfigKey(group, "quantize"),this);
 
-    m_pNextBeat = ControlObject::getControl(ConfigKey(group, "beat_next"));
-    m_pClosestBeat = ControlObject::getControl(ConfigKey(group, "beat_closest"));
+    m_pNextBeat = new ControlObject(ConfigKey(group, "beat_next"),this);
+    m_pClosestBeat = new ControlObject(ConfigKey(group, "beat_closest"),this);
 
     m_pCuePoint = new ControlObject(ConfigKey(group, "cue_point"));
     m_pCuePoint->set(-1.0);
 
-    m_pCueMode = new ControlObject(ConfigKey(group, "cue_mode"));
+    m_pCueMode = new ControlObject(ConfigKey(group, "cue_mode"),this);
 
     m_pCueSet = new ControlPushButton(ConfigKey(group, "cue_set"));
     m_pCueSet->setButtonMode(ControlPushButton::TRIGGER);

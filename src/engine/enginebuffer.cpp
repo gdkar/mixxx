@@ -193,7 +193,7 @@ EngineBuffer::EngineBuffer(QObject *p, QString group, UserSettingsPointer pConfi
     addControl(m_pLoopingControl);
 
     addControl(quantize_control);
-    m_pQuantize = ControlObject::getControl(ConfigKey(group, "quantize"));
+    m_pQuantize = new ControlObject(ConfigKey(group,"quantize"),this);
 
     m_pEngineSync = pMixingEngine->getEngineSync();
 
@@ -218,8 +218,8 @@ EngineBuffer::EngineBuffer(QObject *p, QString group, UserSettingsPointer pConfi
     m_pSyncControl->setEngineControls(m_pRateControl, m_pBpmControl);
     pMixingEngine->getEngineSync()->addSyncableDeck(m_pSyncControl);
 
-    m_fwdButton = ControlObject::getControl(ConfigKey(group, "fwd"));
-    m_backButton = ControlObject::getControl(ConfigKey(group, "back"));
+    m_fwdButton = new ControlObject(ConfigKey(group, "fwd"),this);
+    m_backButton = new ControlObject(ConfigKey(group, "back"),this);
 
     m_pKeyControl = new KeyControl(group, pConfig);
     addControl(m_pKeyControl);
@@ -232,8 +232,7 @@ EngineBuffer::EngineBuffer(QObject *p, QString group, UserSettingsPointer pConfi
     m_pCueControl = new CueControl(group, pConfig);
     addControl(m_pCueControl);
 
-    m_pReadAheadManager = new ReadAheadManager(m_pReader,
-                                               m_pLoopingControl);
+    m_pReadAheadManager = new ReadAheadManager(m_pReader,m_pLoopingControl);
     m_pReadAheadManager->addRateControl(m_pRateControl);
 
     // Construct scaling objects
@@ -417,9 +416,9 @@ void EngineBuffer::readToCrossfadeBuffer(const int iBufferSize)
         m_pScale->scaleBuffer(m_pCrossfadeBuffer, iBufferSize);
         m_bCrossfadeReady = true;
         // Restore the original position that was lost due to scaleBuffer() above
-//        m_pReadAheadManager->notifySeek(m_filepos_play);
-        clearAndPreroll(m_filepos_play, 256);
-     }
+//        clearAndPreroll(m_filepos_play, 256);
+    }
+    m_pReadAheadManager->notifySeek(m_filepos_play);
 }
 void EngineBuffer::clearAndPreroll(double playpos, double preroll)
 {
@@ -438,6 +437,7 @@ void EngineBuffer::clearAndPreroll(double playpos, double preroll)
         preroll = (playpos - m_filepos_play) / m_rate_old;
         m_pReadAheadManager->notifySeek(m_filepos_play);
         m_pScale->clear();
+        m_filepos_play = playpos;
         CSAMPLE dump[512];
         while(preroll >= 1.) {
             auto chunk = std::min(256, int(preroll));
@@ -458,8 +458,10 @@ void EngineBuffer::setNewPlaypos(double newpos)
         // Before seeking, read extra buffer for crossfading
         // (calls notifySeek())
         readToCrossfadeBuffer(m_iLastBufferSize);
-    } else {
         clearAndPreroll(m_filepos_play,256);
+//        readToCrossfadeBuffer(m_iLastBufferSize);
+    } else {
+//        clearAndPreroll(m_filepos_play,256);
         m_pReadAheadManager->notifySeek(m_filepos_play);
     }
     m_pScale->clear();
@@ -494,7 +496,8 @@ void EngineBuffer::slotTrackLoading()
     m_pause.unlock();
 
     // Set play here, to signal the user that the play command is adopted
-    m_playButton->set((double)m_bPlayAfterLoading);
+    if(m_playButton->toBool() != m_bPlayAfterLoading)
+        m_playButton->set((double)m_bPlayAfterLoading);
     m_pTrackSamples->set(0); // Stop renderer
 }
 
@@ -504,7 +507,7 @@ void EngineBuffer::slotTrackLoaded(TrackPointer pTrack,
                                    int iTrackNumSamples)
                                    {
     //qDebug() << getGroup() << "EngineBuffer::slotTrackLoaded";
-    TrackPointer pOldTrack = m_pCurrentTrack;
+    auto pOldTrack = m_pCurrentTrack;
 
     m_pause.lock();
     m_visualPlayPos->setInvalid();
@@ -599,7 +602,7 @@ void EngineBuffer::doSeekFractional(double fractionalPos, SeekRequest seekType)
         return;
     }
     // Find new play frame, restrict to valid ranges.
-    double newPlayFrame = round(fractionalPos * m_trackSamplesOld / kSamplesPerFrame);
+    auto newPlayFrame = round(fractionalPos * m_trackSamplesOld / kSamplesPerFrame);
     doSeekPlayPos(newPlayFrame * kSamplesPerFrame, seekType);
 }
 
@@ -625,7 +628,7 @@ bool EngineBuffer::updateIndicatorsAndModifyPlay(bool newPlay) {
     // If no track is currently loaded, turn play off. If a track is loading
     // allow the set since it might apply to a track we are loading due to the
     // asynchrony.
-    bool playPossible = true;
+    auto playPossible = true;
     if ((!m_pCurrentTrack && m_iTrackLoading.load() == 0) ||
             (m_pCurrentTrack && m_iTrackLoading.load() == 0 &&
              m_filepos_play >= m_trackSamplesOld &&
@@ -668,7 +671,8 @@ void EngineBuffer::slotControlPlayFromStart(double v)
 {
     if (v > 0.0) {
         doSeekFractional(0., SeekRequest::Exact);
-        m_playButton->set(1);
+        if(!m_playButton->get())
+            m_playButton->set(1);
     }
 }
 
@@ -676,14 +680,16 @@ void EngineBuffer::slotControlJumpToStartAndStop(double v)
 {
     if (v > 0.0) {
         doSeekFractional(0., SeekRequest::Exact);
-        m_playButton->set(0);
+        if(m_playButton->get())
+            m_playButton->set(0);
     }
 }
 
 void EngineBuffer::slotControlStop(double v)
 {
     if (v > 0.0) {
-        m_playButton->set(0);
+        if(m_playButton->get())
+            m_playButton->set(0);
     }
 }
 
@@ -696,7 +702,7 @@ void EngineBuffer::slotKeylockEngineChanged(double dIndex)
 {
     // static_cast<KeylockEngine>(dIndex); direct cast produces a "not used" warning with gcc
     int iEngine = static_cast<int>(dIndex);
-    KeylockEngine engine = static_cast<KeylockEngine>(iEngine);
+    auto engine = static_cast<KeylockEngine>(iEngine);
     if (engine == KeylockEngine::SoundTouch) {
         m_pScaleKeylock = m_pScaleST;
     } else if(engine == KeylockEngine::RubberBand){
@@ -1011,7 +1017,8 @@ void EngineBuffer::process(CSAMPLE* pOutput, const int iBufferSize)
                 double fractionalPos = at_start ? 1.0 : 0;
                 doSeekFractional(fractionalPos, SeekRequest::Standard);
             } else {
-                m_playButton->set(0.);
+                if(m_playButton->get())
+                    m_playButton->set(0.);
             }
         }
 

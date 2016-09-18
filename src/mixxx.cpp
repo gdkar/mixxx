@@ -515,14 +515,12 @@ void MixxxMainWindow::finalize()
     ControlDoublePrivate::getControls(&leakedControls);
 
     if (leakedControls.size() > 0) {
-        qDebug() << "WARNING: The following" << leakedControls.size()
+        qDebug() << "WARNING: " << leakedControls.size()
                  << "controls were leaked:";
-        foreach (QSharedPointer<ControlDoublePrivate> pCDP, leakedControls) {
-            if (pCDP.isNull()) {
+        for(auto pCDP: leakedControls) {
+            if (pCDP.isNull())
                 continue;
-            }
-            ConfigKey key = pCDP->getKey();
-            qDebug() << key.group << key.item << pCDP->getCreatorCO();
+            auto key = pCDP->getKey();
             leakedConfigKeys.append(key);
         }
 
@@ -531,14 +529,11 @@ void MixxxMainWindow::finalize()
         // we thought was leaked is triggered after this one exits.
         // So, only delete so if developer mode is on.
         if (CmdlineArgs::Instance().getDeveloper()) {
-            foreach (ConfigKey key, leakedConfigKeys) {
+            for(auto && key: leakedConfigKeys) {
                 // A deletion early in the list may trigger a destructor
                 // for a control later in the list, so we check for a null
                 // pointer each time.
-                ControlObject* pCo = ControlObject::getControl(key, false);
-                if (pCo) {
-                    delete pCo;
-                }
+                delete ControlObject::getControl(key, false);
             }
         }
         leakedControls.clear();
@@ -599,7 +594,7 @@ void MixxxMainWindow::initializeKeyboard() {
 
     // Read keyboard configuration and set kdbConfig object in WWidget
     // Check first in user's Mixxx directory
-    QString userKeyboard = QDir(m_cmdLineArgs.getSettingsPath()).filePath("Custom.kbd.cfg");
+    auto userKeyboard = QDir(m_cmdLineArgs.getSettingsPath()).filePath("Custom.kbd.cfg");
 
     // Empty keyboard configuration
     m_pKbdConfigEmpty = new ConfigObject<ConfigValueKbd>(QString());
@@ -609,10 +604,10 @@ void MixxxMainWindow::initializeKeyboard() {
         m_pKbdConfig = new ConfigObject<ConfigValueKbd>(userKeyboard);
     } else {
         // Default to the locale for the main input method (e.g. keyboard).
-        QLocale locale = inputLocale();
+        auto locale = inputLocale();
 
         // check if a default keyboard exists
-        QString defaultKeyboard = QString(resourcePath).append("keyboard/");
+        auto defaultKeyboard = QString(resourcePath).append("keyboard/");
         defaultKeyboard += locale.name();
         defaultKeyboard += ".kbd.cfg";
 
@@ -661,13 +656,13 @@ int MixxxMainWindow::noSoundDlg(void) {
         "</ul></html>"
     );
 
-    QPushButton *retryButton = msgBox.addButton(tr("Retry"),
+    auto retryButton = msgBox.addButton(tr("Retry"),
         QMessageBox::ActionRole);
-    QPushButton *reconfigureButton = msgBox.addButton(tr("Reconfigure"),
+    auto reconfigureButton = msgBox.addButton(tr("Reconfigure"),
         QMessageBox::ActionRole);
-    QPushButton *wikiButton = msgBox.addButton(tr("Help"),
+    auto wikiButton = msgBox.addButton(tr("Help"),
         QMessageBox::ActionRole);
-    QPushButton *exitButton = msgBox.addButton(tr("Exit"),
+    auto exitButton = msgBox.addButton(tr("Exit"),
         QMessageBox::ActionRole);
 
     while (true)
@@ -719,9 +714,9 @@ int MixxxMainWindow::noOutputDlg(bool *continueClicked) {
                     "</ul></html>"
     );
 
-    QPushButton *continueButton = msgBox.addButton(tr("Continue"), QMessageBox::ActionRole);
-    QPushButton *reconfigureButton = msgBox.addButton(tr("Reconfigure"), QMessageBox::ActionRole);
-    QPushButton *exitButton = msgBox.addButton(tr("Exit"), QMessageBox::ActionRole);
+    auto continueButton = msgBox.addButton(tr("Continue"), QMessageBox::ActionRole);
+    auto reconfigureButton = msgBox.addButton(tr("Reconfigure"), QMessageBox::ActionRole);
+    auto exitButton = msgBox.addButton(tr("Exit"), QMessageBox::ActionRole);
 
     while (true)
     {
@@ -749,13 +744,13 @@ int MixxxMainWindow::noOutputDlg(bool *continueClicked) {
 }
 
 void MixxxMainWindow::slotUpdateWindowTitle(TrackPointer pTrack) {
-    QString appTitle = Version::applicationTitle();
+    auto appTitle = Version::applicationTitle();
 
     // If we have a track, use getInfo() to format a summary string and prepend
     // it to the title.
     // TODO(rryan): Does this violate Mac App Store policies?
     if (pTrack) {
-        QString trackInfo = pTrack->getInfo();
+        auto trackInfo = pTrack->getInfo();
         if (!trackInfo.isEmpty()) {
             appTitle = QString("%1 | %2")
                     .arg(trackInfo)
@@ -913,7 +908,7 @@ void MixxxMainWindow::slotDeveloperTools(bool visible)
 {
     if (visible) {
         if (m_pDeveloperToolsDlg == nullptr) {
-            UserSettingsPointer pConfig = m_pSettingsManager->settings();
+            auto pConfig = m_pSettingsManager->settings();
             m_pDeveloperToolsDlg = new DlgDeveloperTools(this, pConfig);
             connect(m_pDeveloperToolsDlg, SIGNAL(destroyed()),
                     this, SLOT(slotDeveloperToolsClosed()));
@@ -1007,7 +1002,7 @@ void MixxxMainWindow::slotHelpAbout() {
 }
 
 void MixxxMainWindow::setToolTipsCfg(mixxx::TooltipsPreference tt) {
-    UserSettingsPointer pConfig = m_pSettingsManager->settings();
+    auto pConfig = m_pSettingsManager->settings();
     pConfig->set(ConfigKey("[Controls]","Tooltips"),
                  ConfigValue(static_cast<int>(tt)));
     m_toolTipsCfg = tt;
@@ -1016,8 +1011,8 @@ void MixxxMainWindow::setToolTipsCfg(mixxx::TooltipsPreference tt) {
 void MixxxMainWindow::rebootMixxxView() {
     qDebug() << "Now in rebootMixxxView...";
 
-    QPoint initPosition = pos();
-    QSize initSize = size();
+    auto initPosition = pos();
+    auto initSize = size();
 
     // We need to tell the menu bar that we are about to delete the old skin and
     // create a new one. It holds "visibility" controls (e.g. "Show Samplers")

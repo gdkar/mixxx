@@ -88,11 +88,11 @@ LoopingControl::LoopingControl(QString group,
             this, SLOT(slotLoopEndPos(double)),
             Qt::DirectConnection);
 
-    m_pQuantizeEnabled = ControlObject::getControl(ConfigKey(group, "quantize"));
-    m_pNextBeat = ControlObject::getControl(ConfigKey(group, "beat_next"));
-    m_pClosestBeat = ControlObject::getControl(ConfigKey(group, "beat_closest"));
-    m_pTrackSamples = ControlObject::getControl(ConfigKey(group, "track_samples"));
-    m_pSlipEnabled = ControlObject::getControl(ConfigKey(group, "slip_enabled"));
+    m_pQuantizeEnabled = new ControlObject(ConfigKey(group, "quantize"),this);
+    m_pNextBeat = new ControlObject(ConfigKey(group, "beat_next"),this);
+    m_pClosestBeat = new ControlObject(ConfigKey(group, "beat_closest"),this);
+    m_pTrackSamples = new ControlObject(ConfigKey(group, "track_samples"),this);
+    m_pSlipEnabled = new ControlObject(ConfigKey(group, "slip_enabled"),this);
 
     // Connect beatloop, which can flexibly handle different values.
     // Using this CO directly is meant to be used internally and by scripts,

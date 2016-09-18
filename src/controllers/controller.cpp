@@ -172,7 +172,7 @@ bool Controller::applyPreset(QList<QString> scriptPaths, bool initializeScripts)
     }
     auto success = m_pEngine->loadScriptFiles(scriptPaths, pPreset->scripts);
     if (initializeScripts) {
-        m_pEngine->initializeScripts(pPreset->scripts);
+        m_pEngine->initializeScripts();
     }
     return success;
 }
@@ -215,37 +215,12 @@ void Controller::receive(QVariant data, mixxx::Duration timestamp)
         return;
     }
 /*    auto length = data.size();
-    if (ControllerDebug::enabled()) {
-        // Formatted packet display
-        auto message = QString("%1: t:%2, %3 bytes:\n")
-                .arg(m_sDeviceName).arg(timestamp.formatMillisWithUnit()).arg(length);
-        for(auto i=0; i<length; i++) {
-            QString spacer=" ";
-            if ((i+1) % 4 == 0)
-                spacer="  ";
-            if ((i+1) % 16 == 0)
-                spacer="\n";
-            message += QString("%1%2")
-                        .arg((uint8_t)(data.at(i)), 2, 16, QChar('0')).toUpper()
-                        .arg(spacer);
-        }
-        controllerDebug(message);
-    }
     auto arg = m_pEngine->newArray();
     for(auto i = 0u; i < data.size(); ++i)
         arg.setProperty(i, int(data[i]));
 */
     auto args = QJSValueList{} << m_pEngine->toScriptValue(data);
     m_pEngine->receive(args, timestamp);
-/*    for(auto function: m_pEngine->getScriptFunctionPrefixes()) {
-        if (function == "")
-            continue;
-        function.append(".incomingData");
-        auto incomingData = m_pEngine->wrapFunctionCode(function, 2);
-        if (!m_pEngine->execute(incomingData, data, timestamp)) {
-            qWarning() << "Controller: Invalid script function" << function;
-        }
-    }*/
 }
 QString Controller::presetExtension() const
 {

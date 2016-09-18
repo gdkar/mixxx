@@ -15,6 +15,7 @@ WNumberPos::WNumberPos(const char* group, QWidget* parent)
           m_dTrackSampleRate(0.0),
           m_bRemain(false)
 {
+    m_skinText = "";
     m_pShowTrackTimeRemaining = new ControlProxy("[Controls]", "ShowDurationRemaining", this);
     m_pShowTrackTimeRemaining->connectValueChanged(SLOT(slotSetRemain(double)));
     slotSetRemain(m_pShowTrackTimeRemaining->get());
@@ -45,8 +46,7 @@ WNumberPos::WNumberPos(const char* group, QWidget* parent)
 
 void WNumberPos::mousePressEvent(QMouseEvent* pEvent)
 {
-    bool leftClick = pEvent->buttons() & Qt::LeftButton;
-
+    auto leftClick = pEvent->buttons() & Qt::LeftButton;
     if (leftClick) {
         setRemain(!m_bRemain);
         m_pShowTrackTimeRemaining->set(m_bRemain ? 1.0 : 0.0);
@@ -72,11 +72,10 @@ void WNumberPos::setValue(double dValue)
     // Update our value with the old value.
     slotSetValue(m_dOldValue);
 }
-
 void WNumberPos::slotSetValue(double dValue) {
     m_dOldValue = dValue;
 
-    double dPosSeconds = 0.0;
+    auto dPosSeconds = 0.0;
     if (m_dTrackSamples > 0 && m_dTrackSampleRate > 0) {
         double dDurationSeconds = (m_dTrackSamples / 2.0) / m_dTrackSampleRate;
         double dDurationMillis = dDurationSeconds * 1000.0;
@@ -87,24 +86,25 @@ void WNumberPos::slotSetValue(double dValue) {
         dPosSeconds = dPosMillis / 1000.0;
     }
 
-    QString sPosText;
+    auto sPosText = QString{""};
     if (dPosSeconds >= 0.0) {
-        sPosText = m_skinText % mixxx::Duration::formatSeconds(
+        sPosText = m_skinText + mixxx::Duration::formatSeconds(
                 dPosSeconds, mixxx::Duration::Precision::CENTISECONDS);
     } else {
-        sPosText = m_skinText % QLatin1String("-") % mixxx::Duration::formatSeconds(
+        sPosText = m_skinText + QLatin1String("-") + mixxx::Duration::formatSeconds(
                 -dPosSeconds, mixxx::Duration::Precision::CENTISECONDS);
     }
     setText(sPosText);
 }
 
-void WNumberPos::slotSetRemain(double remain) {
+void WNumberPos::slotSetRemain(double remain)
+{
     setRemain(remain > 0.0);
 }
 
-void WNumberPos::setRemain(bool bRemain) {
+void WNumberPos::setRemain(bool bRemain)
+{
     m_bRemain = bRemain;
-
     // Shift display state between showing position and remaining
     if (m_bRemain) {
         m_skinText = "-";

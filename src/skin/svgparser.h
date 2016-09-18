@@ -17,9 +17,9 @@ class SvgParser {
     SvgParser(const SkinContext& parent);
     virtual ~SvgParser();
 
-    QDomNode parseSvgTree(const QDomNode& svgSkinNode,
-                          const QString& sourcePath) const;
-    QByteArray saveToQByteArray(const QDomNode& svgNode) const;
+    QDomNode parseSvgTree(QDomNode svgSkinNode,
+                          QString sourcePath) const;
+    QByteArray saveToQByteArray(QDomNode svgNode) const;
 
   private:
     const SkinContext& lazyChildContext() const
@@ -32,7 +32,7 @@ class SvgParser {
     void scanTree(QDomElement* node) const;
     void parseElement(QDomElement* svgNode) const;
     void parseAttributes(QDomElement* element) const;
-    QJSValue evaluateTemplateExpression(const QString& expression,int lineNumber) const;
+    QJSValue evaluateTemplateExpression(QString expression,int lineNumber) const;
 
     const SkinContext& m_parentContext;
     mutable QScopedPointer<SkinContext> m_pLazyContext;
