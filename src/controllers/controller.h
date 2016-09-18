@@ -123,4 +123,5 @@ class Controller : public QObject, ConstControllerPresetVisitor {
     // For testing.
     friend class ControllerPresetValidationTest;
 };
+QML_DECLARE_TYPE(Controller);
 #endif

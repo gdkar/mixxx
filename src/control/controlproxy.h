@@ -17,44 +17,69 @@
 // Parent it to the the creating object to achieve this.
 class ControlProxy : public QObject {
     Q_OBJECT
-    Q_PROPERTY(ConfigKey key READ getKey NOTIFY keyChanged)
+    Q_PROPERTY(ConfigKey key READ key WRITE setKey NOTIFY keyChanged )
+    Q_PROPERTY(bool valid READ valid NOTIFY validChanged)
+    Q_PROPERTY(QString   group READ group WRITE setGroup NOTIFY groupChanged )
+    Q_PROPERTY(QString   item READ item WRITE setItem NOTIFY itemChanged     )
     Q_PROPERTY(double value READ get WRITE set RESET reset NOTIFY valueChanged)
     Q_PROPERTY(double defaultValue READ getDefault NOTIFY defaultValueChanged)
   public:
     Q_INVOKABLE ControlProxy(QObject* pParent = nullptr);
-    ControlProxy(QString g, QString i, QObject* pParent = nullptr);
-    ControlProxy(const char* g, const char* i, QObject* pParent = nullptr);
-    ControlProxy(ConfigKey key, QObject* pParent = nullptr);
+    Q_INVOKABLE ControlProxy(QString g, QString i, QObject* pParent = nullptr);
+    Q_INVOKABLE ControlProxy(ConfigKey key, QObject* pParent = nullptr);
     virtual ~ControlProxy();
     void initialize(ConfigKey key);
-    ConfigKey getKey() const;
     bool connectValueChanged(const QObject* receiver,
             const char* method, Qt::ConnectionType type = Qt::AutoConnection);
     bool connectValueChanged(
             const char* method, Qt::ConnectionType type = Qt::AutoConnection);
 
 
-    bool valid() const;
+    virtual bool valid() const;
 
-  public slots:
-    // Returns the value of the object. Thread safe, non-blocking.
-    double get() const;
     // Returns the bool interpretation of the value
     bool toBool() const;
     // Returns the parameterized value of the object. Thread safe, non-blocking.
     double getParameter() const;
-    // Returns the parameterized value of the object. Thread safe, non-blocking.
-    double getParameterForValue(double value) const;
-    double getDefault() const;
-    void slotSet(double v);
-    // Sets the control value to v. Thread safe, non-blocking.
-    void set(double v);
-    // Sets the control parameterized value to v. Thread safe, non-blocking.
     void setParameter(double v);
+    double getParameterForValue(double value) const;
+    // Returns the parameterized value of the object. Thread safe, non-blocking.
+    double getDefault() const;
+
+    virtual ConfigKey key() const;
+    virtual void      setKey(ConfigKey key);
+    ConfigKey getKey() const;
+
+    virtual QString group() const;
+    virtual void    setGroup(QString);
+    virtual QString item()  const;
+    virtual void    setItem(QString);
+
+    virtual double operator += (double incr);
+    virtual double operator -= (double incr);
+    virtual double operator ++ ();
+    virtual double operator -- ();
+    virtual double operator ++ (int);
+    virtual double operator -- (int);
+    Q_INVOKABLE virtual double fetch_add(double val);
+    Q_INVOKABLE virtual double fetch_sub(double val);
+    Q_INVOKABLE virtual double exchange (double with);
+    Q_INVOKABLE virtual double fetch_mul(double by);
+    Q_INVOKABLE virtual double fetch_div(double by);
+    Q_INVOKABLE virtual double fetch_toggle();
+    // Sets the control value to v. Thread safe, non-blocking.
+    //    // Returns the value of the object. Thread safe, non-blocking.
+  public slots:
+    double get() const;
+    void   set(double v);
+    void   reset();
+    // Sets the control parameterized value to v. Thread safe, non-blocking.
     // Resets the control to its default value. Thread safe, non-blocking.
-    void reset();
     void trigger();
   signals:
+    void validChanged(bool);
+    void groupChanged(QString);
+    void itemChanged (QString);
     void keyChanged(ConfigKey);
     // This signal must not connected by connect(). Use connectValueChanged()
     // instead. It will connect to the base ControlDoublePrivate as well.

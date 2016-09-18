@@ -28,40 +28,8 @@
 // Forward declaration(s)
 class Controller;
 class ControlObjectScript;
+class ControlProxy;
 class ControllerEngine;
-
-// ControllerEngineConnection class for closure-compatible engine.connectControl
-class ControllerEngineConnection {
-  public:
-    ConfigKey key;
-    QString id;
-    QJSValue function;
-    ControllerEngine *ce;
-    QJSValue context;
-};
-class ControllerEngineConnectionScriptValue : public QObject
-{
-    Q_OBJECT
-    Q_PROPERTY(QString id READ readId)
-    // We cannot expose ConfigKey directly since it's not a
-    // QObject
-    //Q_PROPERTY(ConfigKey key READ key)
-    // There's little use in exposing the function...
-    //Q_PROPERTY(QJSValue function READ function)
-  public:
-    ControllerEngineConnectionScriptValue(ControllerEngineConnection conn) {
-        m_conn = conn;
-    }
-    QString readId() const { return m_conn.id; }
-    Q_INVOKABLE void disconnect();
-  private:
-    ControllerEngineConnection m_conn;
-};
-
-/* comparison function for ControllerEngineConnection */
-inline bool operator==(const ControllerEngineConnection &c1, const ControllerEngineConnection &c2) {
-    return c1.id == c2.id && c1.key.group == c2.key.group && c1.key.item == c2.key.item;
-}
 
 class ControllerEngine : public QObject {
     Q_OBJECT
@@ -85,7 +53,6 @@ class ControllerEngine : public QObject {
     // Look up registered script function prefixes
     QStringList getScriptFunctionPrefixes() { return m_scriptFunctionPrefixes; };
     // Disconnect a ControllerEngineConnection
-    void disconnectControl(const ControllerEngineConnection conn);
     template<class T>
     QJSValue toScriptValue(T&& val)
     {
@@ -95,6 +62,7 @@ class ControllerEngine : public QObject {
             return QJSValue{};
         }
     }
+    QJSValue findObject(QString name);
   protected:
     Q_INVOKABLE double getValue(QString group, QString name);
     Q_INVOKABLE void setValue(QString group, QString name, double newValue);
@@ -126,7 +94,6 @@ class ControllerEngine : public QObject {
     Q_INVOKABLE void softTakeoverIgnoreNextValue(QString group, QString name);
     Q_INVOKABLE void brake(int deck, bool activate, double factor=0.9, double rate=1.0);
     Q_INVOKABLE void spinback(int deck, bool activate, double factor=1.8, double rate=-10.0);
-
   public slots:
     virtual void receive(QJSValueList args, mixxx::Duration timestamp = mixxx::Duration{});
      // Handler for timers that scripts set.
@@ -157,7 +124,7 @@ class ControllerEngine : public QObject {
     void gracefulShutdown();
     void scriptHasChanged(QString);
     ControlObjectScript* getControlObjectScript(QString group, QString name);
-
+    Q_INVOKABLE QJSValue getControl(QString, QString);
   signals:
     void initialized();
     void resetController();
@@ -190,7 +157,7 @@ class ControllerEngine : public QObject {
 
     Controller* m_pController;
     bool m_bPopups;
-    QMultiHash<ConfigKey, ControllerEngineConnection> m_connectedControls;
+    QMultiHash<ConfigKey, ControlObjectScript*> m_connectedControls;
     QStringList m_scriptFunctionPrefixes;
     QMap<QString, QStringList> m_scriptErrors;
     QHash<ConfigKey, ControlObjectScript*> m_controlCache;

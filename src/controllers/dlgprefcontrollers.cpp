@@ -106,7 +106,7 @@ void DlgPrefControllers::destroyControllerWidgets() {
 void DlgPrefControllers::setupControllerWidgets() {
     // For each controller, create a dialog and put a little link to it in the
     // treepane on the left.
-    controllerList = m_pControllerManager->getControllerList(false, true);
+    auto controllerList = m_pControllerManager->getControllerList(false, true);
     qSort(controllerList.begin(), controllerList.end(), controllerCompare);
 
     for(auto && pController: controllerList) {

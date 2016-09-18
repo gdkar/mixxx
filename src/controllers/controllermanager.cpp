@@ -70,7 +70,6 @@ ControllerManager::ControllerManager(UserSettingsPointer pConfig)
         qDebug() << "Creating user controller presets directory:" << userPresets;
         QDir().mkpath(userPresets);
     }
-
     m_pollTimer.setInterval(kPollIntervalMillis);
     connect(&m_pollTimer, &QTimer::timeout,this, &ControllerManager::pollDevices);
 
@@ -79,19 +78,14 @@ ControllerManager::ControllerManager(UserSettingsPointer pConfig)
 
     // Moves all children (including the poll timer) to m_pThread
     moveToThread(m_pThread);
-
     // Controller processing needs to be prioritized since it can affect the
     // audio directly, like when scratching
     m_pThread->start(QThread::HighPriority);
 
-    connect(this, &ControllerManager::requestInitialize,
-            this, &ControllerManager::slotInitialize);
-    connect(this, &ControllerManager::requestSetUpDevices,
-            this, &ControllerManager::slotSetUpDevices);
-    connect(this, &ControllerManager::requestShutdown,
-            this, &ControllerManager::slotShutdown);
-    connect(this, &ControllerManager::requestSave,
-            this, &ControllerManager::slotSavePresets);
+    connect(this, &ControllerManager::requestInitialize,   this, &ControllerManager::slotInitialize);
+    connect(this, &ControllerManager::requestSetUpDevices, this, &ControllerManager::slotSetUpDevices);
+    connect(this, &ControllerManager::requestShutdown,     this, &ControllerManager::slotShutdown);
+    connect(this, &ControllerManager::requestSave,         this, &ControllerManager::slotSavePresets);
 
     // Signal that we should run slotInitialize once our event loop has started
     // up.
@@ -134,6 +128,7 @@ void ControllerManager::slotInitialize()
 #ifdef __HID__
     m_enumerators.append(new HidEnumerator(this));
 #endif
+//    m_pQmlEngine = new QQmlEngine(this);
 }
 
 void ControllerManager::slotShutdown()

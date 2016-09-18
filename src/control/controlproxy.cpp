@@ -6,15 +6,10 @@
 
 ControlProxy::ControlProxy(QObject* pParent)
         : QObject(pParent),
-          m_pControl(NULL) {
-}
+          m_pControl(nullptr)
+{ }
 
 ControlProxy::ControlProxy(QString g, QString i, QObject* pParent)
-        : QObject(pParent) {
-    initialize(ConfigKey(g, i));
-}
-
-ControlProxy::ControlProxy(const char* g, const char* i, QObject* pParent)
         : QObject(pParent) {
     initialize(ConfigKey(g, i));
 }
@@ -28,7 +23,13 @@ void ControlProxy::initialize(ConfigKey key) {
     m_key = key;
     // Don't bother looking up the control if key is NULL. Prevents log spew.
     if (!key.isNull()) {
-        m_pControl = ControlDoublePrivate::getControl(key);
+        auto _valid = valid();
+        auto _val = get();
+        auto _def = getDefault();
+        if(m_pControl) {
+            disconnect(m_pControl.data(),nullptr, this, nullptr);
+        }
+        m_pControl = ControlDoublePrivate::getIfExists(key);
         if(m_pControl){
             connect(
                 m_pControl.data()
@@ -36,7 +37,7 @@ void ControlProxy::initialize(ConfigKey key) {
               , this
               ,&ControlProxy::triggered
               , static_cast<Qt::ConnectionType>(
-                    Qt::AutoConnection
+                    Qt::QueuedConnection
                   | Qt::UniqueConnection
                     )
                 );
@@ -46,11 +47,27 @@ void ControlProxy::initialize(ConfigKey key) {
               , this
               ,&ControlProxy::defaultValueChanged
               , static_cast<Qt::ConnectionType>(
-                    Qt::AutoConnection
+                    Qt::QueuedConnection
+                  | Qt::UniqueConnection
+                    )
+                );
+            connect(
+                m_pControl.data()
+              ,&ControlDoublePrivate::valueChanged
+              , this
+              ,&ControlProxy::valueChanged
+              , static_cast<Qt::ConnectionType>(
+                    Qt::QueuedConnection
                   | Qt::UniqueConnection
                     )
                 );
         }
+        if(valid() != _valid)
+            emit validChanged(valid());
+        if(_val != get())
+            emit valueChanged(get());
+        if(_def != getDefault())
+            emit defaultValueChanged(getDefault());
     }
 }
 void ControlProxy::trigger()
@@ -127,8 +144,8 @@ bool ControlProxy::connectValueChanged(const QObject* receiver,
 }
 
 // connect to parent object
-bool ControlProxy::connectValueChanged(
-        const char* method, Qt::ConnectionType type) {
+bool ControlProxy::connectValueChanged(const char* method, Qt::ConnectionType type)
+{
     DEBUG_ASSERT(parent() != NULL);
     return connectValueChanged(parent(), method, type);
 }
@@ -164,10 +181,7 @@ double ControlProxy::getDefault() const {
     return m_pControl ? m_pControl->defaultValue() : 0.0;
 }
 
-// Set the control to a new value. Non-blocking.
-void ControlProxy::slotSet(double v) {
-    set(v);
-}
+
 // Sets the control value to v. Thread safe, non-blocking.
 void ControlProxy::set(double v) {
     if (m_pControl) {
@@ -213,4 +227,105 @@ void ControlProxy::slotValueChangedQueued(double v, QObject* pSetter) {
         emit(valueChanged(v));
     }
 }
+ConfigKey ControlProxy::key() const
+{
+    return m_key;
+}
+void ControlProxy::setKey(ConfigKey new_key)
+{
+    if(new_key != key()) {
+        auto group_changed = new_key.group != group();
+        auto item_changed  = new_key.item  != item();
+        QObject::disconnect(m_pControl.data(), 0, this, 0);
+        auto _value = get();
+        auto _default = getDefault();
+        initialize(new_key);
 
+        emit keyChanged(key());
+        if(group_changed)
+            emit groupChanged(group());
+        if(item_changed)
+            emit itemChanged(item());
+    }
+}
+void ControlProxy::setGroup(QString _group)
+{
+    if(_group != group()) {
+        setKey({_group,item()});
+    }
+}
+void ControlProxy::setItem(QString _item)
+{
+    if(_item != item()) {
+        setKey({group(),_item});
+    }
+}
+QString ControlProxy::group() const
+{
+    return m_key.group;
+}
+QString ControlProxy::item() const
+{
+    return m_key.item;
+}
+double ControlProxy::operator += ( double incr)
+{
+    if(m_pControl) {
+        return m_pControl->updateAtomically([incr](double x){return x + incr;});
+    }
+    return 0;
+}
+double ControlProxy::operator -= ( double incr)
+{
+    if(m_pControl) {
+        return m_pControl->updateAtomically([incr](double x){return x - incr;});
+    }
+    return 0;
+}
+double ControlProxy::operator ++ (int)
+{
+    if(m_pControl) {
+        return m_pControl->updateAtomically([](double x){return x + 1;});
+    }
+    return 0;
+}
+double ControlProxy::operator -- (int)
+{
+    if(m_pControl) {
+        return m_pControl->updateAtomically([](double x){return x - 1;});
+    }
+    return 0;
+}
+double ControlProxy::operator ++ ()
+{
+    return (++(*this))+1;
+}
+double ControlProxy::operator -- ()
+{
+    return (--(*this))-1;
+}
+
+double ControlProxy::fetch_add(double val)
+{
+    return m_pControl ? m_pControl->updateAtomically([val](double x){return x + val;}) : 0.0;
+}
+double ControlProxy::fetch_sub(double val)
+{
+    return m_pControl ? m_pControl->updateAtomically([val](double x){return x - val;}) : 0.0;
+}
+double ControlProxy::exchange(double val)
+{
+    return m_pControl ? m_pControl->updateAtomically([val](double ){return val;}) : 0.0;
+}
+double ControlProxy::fetch_mul(double val)
+{
+    return m_pControl ? m_pControl->updateAtomically([val](double x){return val * x;}) : 0.0;
+}
+double ControlProxy::fetch_div(double val)
+{
+    return m_pControl ? m_pControl->updateAtomically([val](double x){return val / x;}) : 0.0;
+}
+double ControlProxy::fetch_toggle()
+{
+    return m_pControl ? m_pControl->updateAtomically([](double x){return !x;}) : 0.0;
+}

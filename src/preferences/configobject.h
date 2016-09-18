@@ -44,11 +44,30 @@ class ConfigKey {
         return static_cast<const std::tuple<QString,QString> >(lhs) ==
             static_cast<const std::tuple<QString,QString> >(rhs);
     }
+    friend bool operator!=(const ConfigKey &lhs, const ConfigKey& rhs)
+    {
+        return !(lhs==rhs);
+    }
     // comparison function for ConfigKeys. Used by a QMap in ControlObject
     friend bool operator<(const ConfigKey& lhs, const ConfigKey& rhs)
     {
         return static_cast<const std::tuple<QString,QString> >(lhs) <
             static_cast<const std::tuple<QString,QString> >(rhs);
+    }
+    // comparison function for ConfigKeys. Used by a QMap in ControlObject
+    friend bool operator>(const ConfigKey& lhs, const ConfigKey& rhs)
+    {
+        return (rhs<lhs);
+    }
+    // comparison function for ConfigKeys. Used by a QMap in ControlObject
+    friend bool operator<=(const ConfigKey& lhs, const ConfigKey& rhs)
+    {
+        return !(rhs<lhs);
+    }
+    // comparison function for ConfigKeys. Used by a QMap in ControlObject
+    friend bool operator>=(const ConfigKey& lhs, const ConfigKey& rhs)
+    {
+        return !(lhs<rhs);
     }
     friend QDebug operator<<(QDebug stream, const ConfigKey& c1)
     {

@@ -26,14 +26,31 @@
 // A PortMidi-based implementation of MidiController
 class RtMidiController : public MidiController {
     Q_OBJECT
+    Q_PROPERTY(int inputIndex READ inputIndex WRITE setInputIndex NOTIFY inputIndexChanged)
+    Q_PROPERTY(int outputIndex READ outputIndex WRITE setOutputIndex NOTIFY outputIndexChanged)
+    Q_PROPERTY(QString inputName READ inputName NOTIFY inputNameChanged)
+    Q_PROPERTY(QString outputName READ outputName NOTIFY outputNameChanged)
   public:
-    RtMidiController(int inputDeviceIndex, const std::string &inputDeviceName,
-                     int outputDeviceIndex,const std::string &outputDeviceName);
+    Q_INVOKABLE RtMidiController(QObject *p = nullptr);
+    RtMidiController(int inputDeviceIndex, QString inputDeviceName,
+                     int outputDeviceIndex,QString outputDeviceName, QObject *p = nullptr);
    ~RtMidiController();
+
   public slots:
     int open() override;
     int close() override;
     bool poll() override;
+    QString inputName() const;
+    QString outputName() const;
+    int inputIndex() const;
+    int outputIndex() const;
+    void setInputIndex(int);
+    void setOutputIndex(int);
+  signals:
+    void inputIndexChanged(int);
+    void outputIndexChanged(int);
+    void inputNameChanged(QString);
+    void outputNameChanged(QString);
   protected:
     static void trampoline(
         double deltatime
@@ -48,9 +65,9 @@ class RtMidiController : public MidiController {
     bool isPolling() const override;
 
     int in_index{-1};
-    std::string in_name{};
+    QString in_name{};
     int out_index{-1};
-    std::string out_name{};
+    QString out_name{};
     std::unique_ptr<RtMidiIn>  m_midiIn{};
     std::unique_ptr<RtMidiOut> m_midiOut{};
 

@@ -316,4 +316,47 @@ bool ControlObject::ignoreNops() const
     if(auto co = control()) return co->ignoreNops();
     return true;
 }
-
+double ControlObject::operator += ( double incr)
+{
+    if(m_pControl) {
+        return m_pControl->updateAtomically([incr](double x){return x + incr;});
+    }
+    return 0;
+}
+double ControlObject::operator -= ( double incr)
+{
+    if(m_pControl) {
+        return m_pControl->updateAtomically([incr](double x){return x - incr;});
+    }
+    return 0;
+}
+double ControlObject::operator ++ (int)
+{
+    if(m_pControl) {
+        return m_pControl->updateAtomically([](double x){return x + 1;});
+    }
+    return 0;
+}
+double ControlObject::operator -- (int)
+{
+    if(m_pControl) {
+        return m_pControl->updateAtomically([](double x){return x - 1;});
+    }
+    return 0;
+}
+double ControlObject::operator ++ ()
+{
+    return (++(*this))+1;
+}
+double ControlObject::operator -- ()
+{
+    return (--(*this))-1;
+}
+double ControlObject::increment(double x)
+{
+    return (((*this)+=x));
+}
+double ControlObject::decrement(double x)
+{
+    return (((*this)-=x));
+}

@@ -77,7 +77,7 @@ VinylControlXwax::VinylControlXwax(UserSettingsPointer pConfig, QString group)
           m_dUiUpdateTime(-1.0) {
     // TODO(rryan): Should probably live in VinylControlManager since it's not
     // specific to a VC deck.
-    signalenabled->slotSet(m_pConfig->getValueString(
+    signalenabled->set(m_pConfig->getValueString(
         ConfigKey(VINYL_PREF_KEY, "show_signal_quality")).toInt());
 
     // Get the vinyl type and speed.
@@ -313,7 +313,7 @@ void VinylControlXwax::analyzeSamples(CSAMPLE* pSamples, size_t nFrames) {
         //to absolute mode (would cause sudden track skip)
         if (reportedPlayButton && reportedMode == MIXXX_VCMODE_ABSOLUTE) {
             m_iVCMode = MIXXX_VCMODE_RELATIVE;
-            mode->slotSet((double)m_iVCMode);
+            mode->set((double)m_iVCMode);
         } else {
             // go ahead and switch
             m_iVCMode = reportedMode;
@@ -325,14 +325,14 @@ void VinylControlXwax::analyzeSamples(CSAMPLE* pSamples, size_t nFrames) {
         //if we are out of error mode...
         if (vinylStatus->get() == VINYL_STATUS_ERROR &&
                 m_iVCMode == MIXXX_VCMODE_RELATIVE) {
-            vinylStatus->slotSet(VINYL_STATUS_OK);
+            vinylStatus->set(VINYL_STATUS_OK);
         }
     }
 
     //if looping has been enabled, don't allow absolute mode
     if (loopEnabled->get() && m_iVCMode == MIXXX_VCMODE_ABSOLUTE) {
         m_iVCMode = MIXXX_VCMODE_RELATIVE;
-        mode->slotSet((double)m_iVCMode);
+        mode->set((double)m_iVCMode);
     }
 
     // Don't allow cueing mode to be enabled in absolute mode.
@@ -378,9 +378,9 @@ void VinylControlXwax::analyzeSamples(CSAMPLE* pSamples, size_t nFrames) {
             //ok, it's still valid, blink
             if ((reportedPlayButton && (int)(filePosition * 2.0) % 2) ||
                 (!reportedPlayButton && (int)(m_iPosition / 500.0) % 2))
-                vinylStatus->slotSet(VINYL_STATUS_WARNING);
+                vinylStatus->set(VINYL_STATUS_WARNING);
             else
-                vinylStatus->slotSet(VINYL_STATUS_DISABLED);
+                vinylStatus->set(VINYL_STATUS_DISABLED);
         }
     }
 
@@ -430,8 +430,8 @@ void VinylControlXwax::analyzeSamples(CSAMPLE* pSamples, size_t nFrames) {
                             m_group, "LoadSelectedTrack", this);
                 }
 
-                m_pControlTrackLoader->slotSet(1.0);
-                m_pControlTrackLoader->slotSet(0.0); // I think I have to do this...
+                m_pControlTrackLoader->set(1.0);
+                m_pControlTrackLoader->set(0.0); // I think I have to do this...
 
                 // if position is known and safe then no track select mode
                 m_bTrackSelectMode = false;
@@ -655,14 +655,14 @@ void VinylControlXwax::analyzeSamples(CSAMPLE* pSamples, size_t nFrames) {
             m_iQualPos = 0;
             m_iQualFilled = 0;
             m_bForceResync = true;
-            vinylStatus->slotSet(VINYL_STATUS_OK);
+            vinylStatus->set(VINYL_STATUS_OK);
         }
     }
 }
 
 void VinylControlXwax::enableRecordEndMode() {
     qDebug() << "record end, setting constant mode";
-    vinylStatus->slotSet(VINYL_STATUS_WARNING);
+    vinylStatus->set(VINYL_STATUS_WARNING);
     enableConstantMode();
     m_bAtRecordEnd = true;
 }
@@ -670,7 +670,7 @@ void VinylControlXwax::enableRecordEndMode() {
 void VinylControlXwax::enableConstantMode() {
     m_iOldVCMode = m_iVCMode;
     m_iVCMode = MIXXX_VCMODE_CONSTANT;
-    mode->slotSet((double)m_iVCMode);
+    mode->set((double)m_iVCMode);
     togglePlayButton(true);
     double rate = m_pVCRate->get();
     m_pRateSlider->set(m_pRateDir->get() * (fabs(rate) - 1.0) / m_pRateRange->get());
@@ -680,22 +680,22 @@ void VinylControlXwax::enableConstantMode() {
 void VinylControlXwax::enableConstantMode(double rate) {
     m_iOldVCMode = m_iVCMode;
     m_iVCMode = MIXXX_VCMODE_CONSTANT;
-    mode->slotSet((double)m_iVCMode);
+    mode->set((double)m_iVCMode);
     togglePlayButton(true);
     m_pRateSlider->set(m_pRateDir->get() * (fabs(rate) - 1.0) / m_pRateRange->get());
     m_pVCRate->set(rate);
 }
 
 void VinylControlXwax::disableRecordEndMode() {
-    vinylStatus->slotSet(VINYL_STATUS_OK);
+    vinylStatus->set(VINYL_STATUS_OK);
     m_bAtRecordEnd = false;
     m_iVCMode = MIXXX_VCMODE_RELATIVE;
-    mode->slotSet((double)m_iVCMode);
+    mode->set((double)m_iVCMode);
 }
 
 void VinylControlXwax::togglePlayButton(bool on) {
     if (m_bIsEnabled && (playButton->get() > 0) != on) {
-        playButton->slotSet((float)on);  //and we all float on all right
+        playButton->set((float)on);  //and we all float on all right
     }
 }
 
@@ -756,9 +756,9 @@ double VinylControlXwax::checkSteadyPitch(double pitch, double time) {
         return 0;
     }
     if (m_pSteadyGross->check(pitch, time) < 0.5) {
-        scratching->slotSet(1.0);
+        scratching->set(1.0);
     } else {
-        scratching->slotSet(0.0);
+        scratching->set(0.0);
     }
     return m_pSteadySubtle->check(pitch, time);
 }
@@ -767,15 +767,15 @@ double VinylControlXwax::checkSteadyPitch(double pitch, double time) {
 void VinylControlXwax::syncPosition() {
     //qDebug() << "sync position" << m_dVinylPosition / m_dOldDuration;
     // VinylPos in seconds / total length of song.
-    vinylSeek->slotSet(m_dVinylPosition / m_dOldDuration);
+    vinylSeek->set(m_dVinylPosition / m_dOldDuration);
 }
 
 bool VinylControlXwax::checkEnabled(bool was, bool is) {
     // if we're not enabled, but the last object was, try turning ourselves on
     // XXX: is this just a race that's working right now?
     if (!is && wantenabled->get() > 0) {
-        enabled->slotSet(true);
-        wantenabled->slotSet(false); //don't try to do this over and over
+        enabled->set(true);
+        wantenabled->set(false); //don't try to do this over and over
         return true; //optimism!
     }
 
@@ -796,9 +796,9 @@ bool VinylControlXwax::checkEnabled(bool was, bool is) {
     }
 
     if (is && !was) {
-        vinylStatus->slotSet(VINYL_STATUS_OK);
+        vinylStatus->set(VINYL_STATUS_OK);
     } else if (!is) {
-        vinylStatus->slotSet(VINYL_STATUS_DISABLED);
+        vinylStatus->set(VINYL_STATUS_DISABLED);
     }
 
     return is;

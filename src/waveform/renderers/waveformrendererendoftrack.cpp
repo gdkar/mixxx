@@ -38,7 +38,7 @@ bool WaveformRendererEndOfTrack::init() {
 
     m_pEndOfTrackControl = new ControlProxy(
             m_waveformRenderer->getGroup(), "end_of_track");
-    m_pEndOfTrackControl->slotSet(0.);
+    m_pEndOfTrackControl->set(0.);
     m_endOfTrackEnabled = false;
 
     m_pTrackSampleRate = new ControlProxy(
@@ -108,7 +108,7 @@ void WaveformRendererEndOfTrack::draw(QPainter* painter,
 
     // end of track is on
     if (!m_endOfTrackEnabled) {
-        m_pEndOfTrackControl->slotSet(1.);
+        m_pEndOfTrackControl->set(1.);
         m_endOfTrackEnabled = true;
 
         //qDebug() << "EndOfTrack ON";

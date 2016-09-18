@@ -49,7 +49,7 @@ QString MidiController::presetExtension() const {
 void MidiController::visit(const ControllerPreset* preset) {
     if(auto midi_preset = dynamic_cast<const MidiControllerPreset*>(preset)){
         m_preset = *midi_preset;
-        emit(presetLoaded(getPreset));
+        emit(presetLoaded(getPreset()));
     }else{
         qWarning() << "ERROR: Attempting to load an unsupported preset type.";
     }
@@ -300,13 +300,38 @@ void MidiController::processInputMapping(const MidiInputMapping& mapping,
         if (pEngine == NULL) {
             return;
         }
-
-        auto function = pEngine->wrapFunctionCode(mapping.control.item, 5);
+        auto parts = mapping.control.item.split(".");
+        auto object = pEngine->findObject(parts[0]);
+        auto function = QJSValue{};
+        if(!object.isCallable() && object.isObject() && parts.size() > 1) {
+            function = object.property(parts[1]);
+        }else if(object.isCallable()) {
+            function = object;
+            object = QJSValue{};
+        }
+        if(function.isCallable()) {
+            auto result = function.callWithInstance(object,
+                (QJSValueList{} << channel
+                               << control
+                               << value
+                               << status
+                               << mapping.control.group
+                               << timestamp.toDoubleSeconds()));
+            if(result.isError()) {
+                qDebug() << "MidiController: Error in script function"
+                     << mapping.control.item
+                     << result.toString() << "\n\n" << result.property("stack").toString();
+            }
+            return;
+        }
+/*        auto function = pEngine->wrapFunctionCode(mapping.control.item, 5);
         if (!pEngine->execute(function, channel, control, value, status,
                               mapping.control.group, timestamp)) {
             qDebug() << "MidiController: Invalid script function"
                      << mapping.control.item;
-        }
+        }*/
+        qDebug() << "MidiController: Invalid script function"
+                    << mapping.control.item;
         return;
     }
 

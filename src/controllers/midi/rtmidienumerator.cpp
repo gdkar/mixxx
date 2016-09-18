@@ -77,11 +77,11 @@ QList<Controller*> RtMidiEnumerator::queryDevices()
                 break;
             }
         }
-        auto currentDevice = new RtMidiController(inputDevIndex, deviceName, outputDevIndex, outputName);
+        auto currentDevice = new RtMidiController(inputDevIndex, QString::fromStdString(deviceName), outputDevIndex, QString::fromStdString(outputName));
         m_devices.push_back(currentDevice);
     }
     for(auto it = unassignedOutputDevices.begin(); it != unassignedOutputDevices.end(); ++it) {
-        m_devices.push_back(new RtMidiController(-1, std::string{}, it->first, it->second));
+        m_devices.push_back(new RtMidiController(-1, QString{},it->first, QString::fromStdString(it->second)));
     }
     return m_devices;
 }

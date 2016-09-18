@@ -97,6 +97,7 @@ class ControllerManager : public QObject {
     QList<ControllerEnumerator*> m_enumerators;
     QList<Controller*> m_controllers;
     QThread* m_pThread;
+    QQmlEngine *m_pQmlEngine;
     QSharedPointer<PresetInfoEnumerator> m_pMainThreadPresetEnumerator;
     bool m_skipPoll;
 };

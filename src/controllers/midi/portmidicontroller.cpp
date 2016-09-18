@@ -10,6 +10,9 @@
 #include "controllers/midi/portmidicontroller.h"
 #include "controllers/controllerdebug.h"
 
+PortMidiController::PortMidiController(QObject *p )
+: MidiController(p)
+{}
 PortMidiController::PortMidiController(const PmDeviceInfo* inputDeviceInfo,
                                        const PmDeviceInfo* outputDeviceInfo,
                                        int inputDeviceIndex,

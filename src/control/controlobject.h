@@ -47,6 +47,14 @@ class ControlObject : public QObject, public QEnableSharedFromThis<ControlObject
     static ControlObject* getControl(ConfigKey key, bool warn = false);
     static ControlObject* getControl(QString group, QString item, bool warn = false);
     static ControlObject* getControl(const char* group, const char* item, bool warn = false);
+
+    virtual double operator += (double incr);
+    virtual double operator -= (double incr);
+    virtual double operator ++ ();
+    virtual double operator -- ();
+    virtual double operator ++ (int);
+    virtual double operator -- (int);
+
   public slots:
     QString name() const;
     void setName(QString name);
@@ -80,6 +88,8 @@ class ControlObject : public QObject, public QEnableSharedFromThis<ControlObject
     virtual void setParameter(double v);
     // Sets the control parameterized value to v. Thread safe, non-blocking.
     virtual void setParameterFrom(double v, QObject* pSender = nullptr);
+    virtual double increment(double x);
+    virtual double decrement(double x);
     // Connects a Qt slot to a signal that is delivered when a new value change
     // request arrives for this control.
     // Qt::AutoConnection: Qt ensures that the signal slot is called from the

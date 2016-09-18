@@ -10,8 +10,13 @@
 #include "controllers/midi/rtmidicontroller.h"
 #include "controllers/controllerdebug.h"
 
-RtMidiController::RtMidiController(int inIndex, const std::string &inName, int outIndex, const std::string &outName)
-        : MidiController(),
+
+RtMidiController::RtMidiController(QObject *p)
+: MidiController(p)
+{ }
+
+RtMidiController::RtMidiController(int inIndex, QString inName, int outIndex, QString outName, QObject *p)
+        : MidiController(p),
           in_index(inIndex),
           in_name(inName),
           out_index(outIndex),
@@ -19,10 +24,54 @@ RtMidiController::RtMidiController(int inIndex, const std::string &inName, int o
 {
     setInputDevice(in_index >= 0);
     setOutputDevice(out_index >= 0);
-    if(!outName.empty()) {
-        setDeviceName("RtMidi: " + QString::fromStdString(outName));
-    }else if(!inName.empty()) {
-        setDeviceName("RtMidi: " + QString::fromStdString(inName));
+    if(!outName.isEmpty()) {
+        setDeviceName("RtMidi: " + outName);
+    }else if(!inName.isEmpty()) {
+        setDeviceName("RtMidi: " + inName);
+    }
+}
+int RtMidiController::inputIndex() const
+{
+    return in_index;
+}
+int RtMidiController::outputIndex() const
+{
+    return out_index;
+}
+QString RtMidiController::inputName() const
+{
+    return in_name;
+}
+QString RtMidiController::outputName() const
+{
+    return out_name;
+}
+void RtMidiController::setInputIndex(int _index)
+{
+    if(_index != in_index) {
+        auto _open = isOpen();
+        if(isOpen()){
+            close();
+        }
+        in_index = _index;
+        in_name.clear();
+        emit(inputIndexChanged(_index));
+        if(_open)
+            open();
+    }
+}
+void RtMidiController::setOutputIndex(int _index)
+{
+    if(_index != out_index) {
+        auto _open = isOpen();
+        if(isOpen()){
+            close();
+        }
+        out_index = _index;
+        out_name.clear();
+        emit(outputIndexChanged(_index));
+        if(_open)
+            open();
     }
 }
 RtMidiController::~RtMidiController()
@@ -41,8 +90,14 @@ int RtMidiController::open()
     if(in_index>= 0) {
         try {
             m_midiIn = std::make_unique<RtMidiIn>();
+            if(in_name.isEmpty()){
+                in_name = QString::fromStdString(m_midiIn->getPortName(in_index));
+                emit(inputNameChanged(in_name));
+            }
+            if(!in_name.isEmpty())
+                setDeviceName("RtMidi: " + in_name);
             m_midiIn->setCallback(&RtMidiController::trampoline, this);
-            m_midiIn->openPort(in_index, in_name);
+            m_midiIn->openPort(in_index, in_name.toStdString());
         }catch(const RtMidiError &error) {
             qDebug() << error.what();
         }
@@ -50,7 +105,14 @@ int RtMidiController::open()
     if(out_index>= 0) {
         try {
             m_midiOut = std::make_unique<RtMidiOut>();
-            m_midiOut->openPort(out_index,out_name);
+            if(out_name.isEmpty()){
+                out_name = QString::fromStdString(m_midiOut->getPortName(out_index));
+                emit(outputNameChanged(out_name));
+            }
+            if(!out_name.isEmpty())
+                setDeviceName("RtMidi: " + out_name);
+
+            m_midiOut->openPort(out_index,out_name.toStdString());
         }catch(const RtMidiError &error) {
             qDebug() << error.what();
         }

@@ -36,6 +36,10 @@
 #include "library/library.h"
 #include "library/library_preferences.h"
 #include "controllers/controllermanager.h"
+#include "controllers/controller.h"
+#include "controllers/midi/midicontroller.h"
+#include "controllers/midi/rtmidicontroller.h"
+#include "controllers/midi/portmidicontroller.h"
 #include "controllers/keyboard/keyboardeventfilter.h"
 #include "mixer/playermanager.h"
 #include "recording/recordingmanager.h"
@@ -53,6 +57,7 @@
 #include "util/time.h"
 #include "util/version.h"
 #include "control/controlpushbutton.h"
+#include "control/controlobjectscript.h"
 #include "util/compatibility.h"
 #include "util/sandbox.h"
 #include "mixer/playerinfo.h"
@@ -160,8 +165,14 @@ void MixxxMainWindow::initialize(QApplication* pApp, const CmdlineArgs& args)
     qRegisterMetaType<mixxx::ReplayGain>("mixxx::ReplayGain");
     qRegisterMetaType<mixxx::Bpm>("mixxx::Bpm");
     qRegisterMetaType<mixxx::Duration>("mixxx::Duration");
+    qmlRegisterType<Controller>("org.mixxx.qml", 0, 1, "Controller");
+    qmlRegisterType<MidiController>();
+    qmlRegisterType<RtMidiController>("org.mixxx.qml", 0, 1, "RtMidiController");
+    qmlRegisterType<PortMidiController>("org.mixxx.qml", 0, 1, "PortMidiController");
+    qmlRegisterType<ControlProxy>("org.mixxx.qml", 0, 1, "ControlProxy");
+    qmlRegisterType<ControlObjectScript>("org.mixxx.qml", 0, 1, "ControlObjectScript");
 
-    UserSettingsPointer pConfig = m_pSettingsManager->settings();
+    auto pConfig = m_pSettingsManager->settings();
 
     Sandbox::initialize(QDir(pConfig->getSettingsPath()).filePath("sandbox.cfg"));
 

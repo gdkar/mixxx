@@ -45,7 +45,23 @@ class ControlDoublePrivate : public QObject, public QEnableSharedFromThis<Contro
     static void getControls(QList<QSharedPointer<ControlDoublePrivate> >* pControlsList);
 
     static QHash<ConfigKey, ConfigKey> getControlAliases();
-
+    template<class Func>
+    double updateAtomically(Func &&func)
+    {
+        auto expected = m_value.load(std::memory_order_acquire);
+        auto desired  = expected;
+        do {
+            desired = func(expected);
+            if(desired == expected)
+                return desired;
+        }while(!m_value.compare_exchange_strong(
+            expected,
+            desired,
+            std::memory_order_acq_rel,
+            std::memory_order_acquire));
+        emit valueChanged(desired,nullptr);
+        return desired;
+    }
   public slots:
     QString name() const;
     void setName(QString name);

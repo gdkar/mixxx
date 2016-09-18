@@ -59,6 +59,7 @@
 class PortMidiController : public MidiController {
     Q_OBJECT
   public:
+    PortMidiController(QObject *p = nullptr);
     PortMidiController(const PmDeviceInfo* inputDeviceInfo,
                        const PmDeviceInfo* outputDeviceInfo,
                        int inputDeviceIndex,

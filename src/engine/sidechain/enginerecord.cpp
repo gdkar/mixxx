@@ -176,7 +176,7 @@ void EngineRecord::process(const CSAMPLE* pBuffer, const int iBufferSize) {
         } else {  // Maybe the encoder could not be initialized
             qDebug() << "Could not open" << m_fileName << "for writing.";
             qDebug("Setting record flag to: OFF");
-            m_pRecReady->slotSet(RECORD_OFF);
+            m_pRecReady->set(RECORD_OFF);
             // An error occurred.
             emit(isRecording(false, true));
         }
