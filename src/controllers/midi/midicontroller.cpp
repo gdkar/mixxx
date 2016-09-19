@@ -330,13 +330,9 @@ void MidiController::processInputMapping(const MidiInputMapping& mapping,
         }
         return;
     }
-
     // Only pass values on to valid ControlObjects.
     if(auto pCO = ControlObject::getControl(mapping.control)) {
-
         auto newValue = double(value);
-
-
         auto mapping_is_14bit = mapping.options.fourteen_bit_msb || mapping.options.fourteen_bit_lsb;
         if (!mapping_is_14bit && !m_fourteen_bit_queued_mappings.isEmpty()) {
             qWarning() << "MidiController was waiting for the MSB/LSB of a 14-bit"
@@ -344,9 +340,7 @@ void MidiController::processInputMapping(const MidiInputMapping& mapping,
                     << "Ignoring the original message.";
             m_fourteen_bit_queued_mappings.clear();
         }
-
         //qDebug() << "MIDI Options" << QString::number(mapping.options.all, 2).rightJustified(16,'0');
-
         if (mapping_is_14bit) {
             auto found = false;
             for (auto it = m_fourteen_bit_queued_mappings.begin();
@@ -428,7 +422,8 @@ void MidiController::processInputMapping(const MidiInputMapping& mapping,
     }
 }
 
-double MidiController::computeValue(MidiOptions options, double _prevmidivalue, double _newmidivalue) {
+double MidiController::computeValue(MidiOptions options, double _prevmidivalue, double _newmidivalue)
+{
     double tempval = 0.;
     double diff = 0.;
 
@@ -439,7 +434,6 @@ double MidiController::computeValue(MidiOptions options, double _prevmidivalue, 
     if (options.invert) {
         return 127. - _newmidivalue;
     }
-
     if (options.rot64 || options.rot64_inv) {
         tempval = _prevmidivalue;
         diff = _newmidivalue - 64.;
@@ -590,10 +584,13 @@ void MidiController::processInputMapping(const MidiInputMapping& mapping,
     qWarning() << "MidiController: No script function specified for"
                << formatSysexMessage(getName(), data, timestamp);
 }
-void MidiController::sendShortMsg(unsigned char status, unsigned char byte1,
-                                  unsigned char byte2) {
+void MidiController::sendShortMsg(unsigned char status, unsigned char byte1, unsigned char byte2)
+{
     unsigned int word = (((unsigned int)byte2) << 16) | (((unsigned int)byte1) << 8) | status;
     sendWord(word);
 }
 
-ControllerPreset* MidiController::preset() { return &m_preset; }
+ControllerPreset* MidiController::preset()
+{
+    return &m_preset;
+}

@@ -41,7 +41,7 @@ class ControllerManager : public QObject {
     void setUpDevices() { emit(requestSetUpDevices()); };
     void savePresets(bool onlyActive=false) { emit(requestSave(onlyActive)); };
 
-    static QList<QString> getPresetPaths(UserSettingsPointer pConfig);
+    static QStringList getPresetPaths(UserSettingsPointer pConfig);
 
     // If pathOrFilename is an absolute path, returns it. If it is a relative
     // path and it is contained within any of the directories in presetPaths,

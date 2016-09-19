@@ -50,11 +50,10 @@ QString firstAvailableFilename(QSet<QString>& filenames,QString originalFilename
     filenames.insert(filename);
     return filename;
 }
-
-bool controllerCompare(Controller *a,Controller *b) {
+bool controllerCompare(Controller *a,Controller *b)
+{
     return a->getName() < b->getName();
 }
-
 ControllerManager::ControllerManager(UserSettingsPointer pConfig)
         : QObject(),
           m_pConfig(pConfig),
@@ -111,11 +110,11 @@ ControllerLearningEventFilter* ControllerManager::getControllerLearningEventFilt
 void ControllerManager::slotInitialize()
 {
     qDebug() << "ControllerManager:slotInitialize";
-
     // Initialize preset info parsers. This object is only for use in the main
     // thread. Do not touch it from within ControllerManager.
     auto presetSearchPaths = QStringList{}<< userPresetsPath(m_pConfig)
-                      << resourcePresetsPath(m_pConfig);
+                      << resourcePresetsPath(m_pConfig)
+                      << resourceQmlPath(m_pConfig);
     m_pMainThreadPresetEnumerator = QSharedPointer<PresetInfoEnumerator>::create(presetSearchPaths);
 
     // Instantiate all enumerators. Enumerators can take a long time to
@@ -140,7 +139,9 @@ void ControllerManager::slotInitialize()
     QObject *instance{};
     m_pQmlEngine->installExtensions(QQmlEngine::AllExtensions);
     m_baseContext = new QQmlContext(m_pQmlEngine->rootContext(),m_pQmlEngine);
-    m_baseComponent = new QQmlComponent(m_pQmlEngine,QString{"./main.qml"},m_pQmlEngine);
+    auto mainPath = getAbsolutePath("main.qml", presetSearchPaths);
+//    m_scriptWatcher.addPath(mainPath);
+    m_baseComponent = new QQmlComponent(m_pQmlEngine,mainPath,m_pQmlEngine);
     auto continueLoading = [&,this]()
         {
             qDebug() << m_baseComponent->status();
@@ -199,18 +200,15 @@ QList<Controller*> ControllerManager::getControllers() const
     return m_controllers;
 }
 
-QList<Controller*> ControllerManager::getControllerList(bool bOutputDevices, bool bInputDevices) {
+QList<Controller*> ControllerManager::getControllerList(bool bOutputDevices, bool bInputDevices)
+{
     qDebug() << "ControllerManager::getControllerList";
-
-    QMutexLocker locker(&m_mutex);
-    auto controllers = m_controllers;
-    locker.unlock();
-
+    auto controllers = getControllers();
     // Create a list of controllers filtered to match the given input/output
     // options.
     QList<Controller*> filteredDeviceList;
 
-    foreach (Controller* device, controllers) {
+    for(auto && device: controllers) {
         if ((bOutputDevices == device->isOutputDevice()) ||
             (bInputDevices == device->isInputDevice())) {
             filteredDeviceList.push_back(device);
@@ -224,12 +222,12 @@ void ControllerManager::slotSetUpDevices()
     qDebug() << "ControllerManager: Setting up devices";
 
     updateControllerList();
-    QList<Controller*> deviceList = getControllerList(false, true);
+    auto deviceList = getControllerList(false, true);
 
     QSet<QString> filenames;
 
-    foreach (Controller* pController, deviceList) {
-        QString name = pController->getName();
+    for(auto && pController: deviceList) {
+        auto name = pController->getName();
 
         if (pController->isOpen()) {
             pController->close();
@@ -338,7 +336,7 @@ void ControllerManager::pollDevices() {
 }
 void ControllerManager::openController(Controller* pController)
 {
-    if (!pController)
+/*    if (!pController)
         return;
     if (pController->isOpen())
         pController->close();
@@ -353,22 +351,22 @@ void ControllerManager::openController(Controller* pController)
         // Update configuration to reflect controller is enabled.
         m_pConfig->setValue(ConfigKey(
             "[Controller]", presetFilenameFromName(pController->getName())), 1);
-    }
+    }*/
 }
 void ControllerManager::closeController(Controller* pController)
 {
     if (!pController)
         return;
-    pController->close();
+/*    pController->close();
     maybeStartOrStopPolling();
     // Update configuration to reflect controller is disabled.
     m_pConfig->setValue(ConfigKey(
-        "[Controller]", presetFilenameFromName(pController->getName())), 0);
+        "[Controller]", presetFilenameFromName(pController->getName())), 0);*/
 }
 bool ControllerManager::loadPreset(Controller* pController,
                                    ControllerPresetPointer preset)
 {
-    if (!preset) {
+/*    if (!preset) {
         return false;
     }
     pController->setPreset(*preset.data());
@@ -376,12 +374,12 @@ bool ControllerManager::loadPreset(Controller* pController,
     // startup next time
     m_pConfig->set(
         ConfigKey("[ControllerPreset]",presetFilenameFromName(pController->getName())),
-        preset->filePath());
+        preset->filePath());*/
     return true;
 }
 void ControllerManager::slotSavePresets(bool onlyActive)
 {
-    auto deviceList = getControllerList(false, true);
+/*    auto deviceList = getControllerList(false, true);
     QSet<QString> filenames;
 
     // TODO(rryan): This should be split up somehow but the filename selection
@@ -400,15 +398,16 @@ void ControllerManager::slotSavePresets(bool onlyActive)
             qWarning() << "Failed to write preset for device"
                        << name << "to" << presetPath;
         }
-    }
+    }*/
 }
 
 // static
-QList<QString> ControllerManager::getPresetPaths(UserSettingsPointer pConfig)
+QStringList ControllerManager::getPresetPaths(UserSettingsPointer pConfig)
 {
-    QList<QString> scriptPaths;
+    auto scriptPaths = QStringList{};
     scriptPaths.append(userPresetsPath(pConfig));
     scriptPaths.append(resourcePresetsPath(pConfig));
+    scriptPaths.append(resourceQmlPath(pConfig));
     return scriptPaths;
 }
 // static
@@ -434,10 +433,9 @@ QString ControllerManager::getAbsolutePath(const QString& pathOrFilename,
                                            const QStringList& paths)
 {
     QFileInfo fileInfo(pathOrFilename);
-    if (fileInfo.isAbsolute()) {
+    if (fileInfo.isAbsolute())
         return pathOrFilename;
-    }
-    foreach (const QString& path, paths) {
+    for(auto &&path: paths) {
         QDir pathDir(path);
         if (pathDir.exists(pathOrFilename)) {
             return pathDir.absoluteFilePath(pathOrFilename);

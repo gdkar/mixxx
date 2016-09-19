@@ -15,10 +15,11 @@ Item {
     property string item
     property Controller source: parent.controller
     property var proxy: source.getBindingFor(prefix)
+    property real transformed: (proxy.value - 64)/64.
     ControlProxy {
         id: co
         group: root.group
         item: root.item
-        value: (proxy.value - 64)/64.
+        value:transformed
     }
 }

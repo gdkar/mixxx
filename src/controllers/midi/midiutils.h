@@ -41,7 +41,7 @@ class MidiUtils {
                 break;
             case 0xe:
                 prefix = QString(strbuf, 2);
-                val = (((uint32_t(value)<<7)|uint32_t(control)) - 0x2000)/double(0x4000);
+                val = (((uint32_t(value)<<7)|uint32_t(control)))/128.;
                 break;
             default:
                 break;

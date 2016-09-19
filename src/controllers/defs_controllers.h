@@ -12,20 +12,25 @@
 #include "preferences/usersettings.h"
 
 inline QString resourcePresetsPath(UserSettingsPointer pConfig) {
-    QString presetsPath = pConfig->getResourcePath();
+    auto presetsPath = pConfig->getResourcePath();
     QDir dir(presetsPath.append("/controllers/"));
     return dir.absolutePath().append("/");
 }
 
+inline QString resourceQmlPath(UserSettingsPointer pConfig) {
+    auto presetsPath = pConfig->getResourcePath();
+    QDir dir(presetsPath.append("/qml/"));
+    return dir.absolutePath().append("/");
+}
 // Prior to Mixxx 1.11.0 presets were stored in ${SETTINGS_PATH}/midi.
 inline QString legacyUserPresetsPath(UserSettingsPointer pConfig) {
-    QString presetsPath = pConfig->getSettingsPath();
+    auto presetsPath = pConfig->getSettingsPath();
     QDir dir(presetsPath.append("/midi/"));
     return dir.absolutePath().append("/");
 }
 
 inline QString userPresetsPath(UserSettingsPointer pConfig) {
-    QString presetsPath = pConfig->getSettingsPath();
+    auto presetsPath = pConfig->getSettingsPath();
     QDir dir(presetsPath.append("/controllers/"));
     return dir.absolutePath().append("/");
 }
