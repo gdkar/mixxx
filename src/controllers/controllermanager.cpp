@@ -8,6 +8,9 @@
 #include <QSet>
 #include <QStringList>
 #include "util/trace.h"
+#include "control/controlobjectscript.h"
+#include "control/controlproxy.h"
+#include "control/controlobject.h"
 #include "controllers/controllermanager.h"
 #include "controllers/defs_controllers.h"
 #include "controllers/controllerlearningeventfilter.h"
@@ -117,7 +120,7 @@ void ControllerManager::slotInitialize()
 
     // Instantiate all enumerators. Enumerators can take a long time to
     // construct since they interact with host MIDI APIs.
-    m_enumerators.append(new PortMidiEnumerator(this));
+/*    m_enumerators.append(new PortMidiEnumerator(this));
     m_enumerators.append(new RtMidiEnumerator(this));
 #ifdef __HSS1394__
     m_enumerators.append(new Hss1394Enumerator(this));
@@ -128,7 +131,28 @@ void ControllerManager::slotInitialize()
 #ifdef __HID__
     m_enumerators.append(new HidEnumerator(this));
 #endif
-//    m_pQmlEngine = new QQmlEngine(this);
+*/
+
+    m_pQmlEngine = new QQmlEngine(this);
+    for(auto && path : getPresetPaths(m_pConfig)) {
+        m_pQmlEngine->addImportPath(path);
+    }
+    QObject *instance{};
+    m_pQmlEngine->installExtensions(QQmlEngine::AllExtensions);
+    m_baseContext = new QQmlContext(m_pQmlEngine->rootContext(),m_pQmlEngine);
+    m_baseComponent = new QQmlComponent(m_pQmlEngine,QString{"./main.qml"},m_pQmlEngine);
+    auto continueLoading = [&,this]()
+        {
+            qDebug() << m_baseComponent->status();
+            if(m_baseComponent->isError())
+                qWarning() << m_baseComponent->errors();
+            else if(m_baseComponent->isReady()) {
+                if(!instance)
+                    instance = m_baseComponent->create(m_baseContext);
+            }
+        };
+    connect(m_baseComponent, &QQmlComponent::statusChanged, this, continueLoading);
+    continueLoading();
 }
 
 void ControllerManager::slotShutdown()

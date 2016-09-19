@@ -208,6 +208,12 @@ void ControllerEngine::initializeScriptEngine()
 bool ControllerEngine::loadScriptFiles(QStringList scriptPaths,
                                        const QList<ControllerPreset::ScriptFileInfo>& scripts)
 {
+    if(!isReady())
+        return false;
+    for(auto && path : scriptPaths)
+        m_pEngine->addImportPath(path);
+
+    qDebug() << m_pEngine->importPathList();
     m_lastScriptPaths = scriptPaths;
     m_scriptModules.clear();
     m_scriptObjects.clear();
@@ -279,7 +285,6 @@ void ControllerEngine::initializeScripts()
         if(mod.isCallable()) {
             auto obj = mod.callAsConstructor(args);
             if(!obj.isError() && obj.isObject()) {
-                qDebug() << obj.toString();
                 m_globalObject.setProperty(it.key(), obj);
                 m_scriptObjects.append(mod);
             }

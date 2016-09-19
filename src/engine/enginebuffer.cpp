@@ -105,43 +105,70 @@ EngineBuffer::EngineBuffer(QObject *p, QString group, UserSettingsPointer pConfi
             this, SLOT(slotTrackLoadFailed(TrackPointer, QString)),
             Qt::DirectConnection);
 
+    m_playing = new ControlObject(ConfigKey(m_group, "playing"),this);
+    connect(m_playing, &ControlObject::valueChanged, this, &EngineBuffer::playingChanged);
+
     // Play button
     m_playButton = new ControlPushButton(ConfigKey(m_group, "play"));
     m_playButton->setButtonMode(ControlPushButton::TOGGLE);
-    m_playButton->connectValueChangeRequest(
-            this, SLOT(slotControlPlayRequest(double)),
-            Qt::DirectConnection);
+    connect(m_playButton, &ControlObject::valueChanged
+      , this, [this](double v) {  setPlaying(v);});
+//    m_playButton->connectValueChangeRequest(
+//            this, SLOT(slotControlPlayRequest(double)),
+//            Qt::DirectConnection);
 
     //Play from Start Button (for sampler)
     m_playStartButton = new ControlPushButton(ConfigKey(m_group, "start_play"));
-    connect(m_playStartButton, SIGNAL(valueChanged(double)),
+    connect(m_playStartButton, &ControlObject::valueChanged
+      , this, [this](double v) {
+        if(v) {
+            doSeekFractional(0., SeekRequest::Exact);
+            setPlaying(true);
+        }
+      });
+
+/*    connect(m_playStartButton, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlPlayFromStart(double)),
-            Qt::DirectConnection);
+            Qt::DirectConnection);*/
 
     // Jump to start and stop button
     m_stopStartButton = new ControlPushButton(ConfigKey(m_group, "start_stop"));
-    connect(m_stopStartButton, SIGNAL(valueChanged(double)),
+    connect(m_stopStartButton, &ControlObject::valueChanged
+      , this, [this](double v) {
+        if(v) {
+            doSeekFractional(0., SeekRequest::Exact);
+            setPlaying(false);
+        }
+      });
+/*    connect(m_stopStartButton, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlJumpToStartAndStop(double)),
-            Qt::DirectConnection);
+            Qt::DirectConnection);*/
 
     //Stop playback (for sampler)
     m_stopButton = new ControlPushButton(ConfigKey(m_group, "stop"));
-    connect(m_stopButton, SIGNAL(valueChanged(double)),
+/*    connect(m_stopButton, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlStop(double)),
-            Qt::DirectConnection);
+            Qt::DirectConnection);*/
+    connect(m_stopButton,&ControlObject::valueChanged
+      , this, [this](double v) { setPlaying(!v);});
 
     // Start button
     m_startButton = new ControlPushButton(ConfigKey(m_group, "start"));
     m_startButton->setButtonMode(ControlPushButton::TRIGGER);
-    connect(m_startButton, SIGNAL(valueChanged(double)),
+    connect(m_startButton, &ControlObject::valueChanged
+      , this, [this](double v) { if(v){doSeekFractional(0., SeekRequest::Exact);}});
+/*    connect(m_startButton, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlStart(double)),
-            Qt::DirectConnection);
+            Qt::DirectConnection);*/
 
     // End button
     m_endButton = new ControlPushButton(ConfigKey(m_group, "end"));
-    connect(m_endButton, SIGNAL(valueChanged(double)),
+    connect(m_endButton, &ControlObject::valueChanged
+      , this, [this](double v) { if(v){doSeekFractional(1., SeekRequest::Exact);}});
+
+/*    connect(m_endButton, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlEnd(double)),
-            Qt::DirectConnection);
+            Qt::DirectConnection);*/
 
     m_pSlipButton = new ControlPushButton(ConfigKey(m_group, "slip_enabled"));
     m_pSlipButton->setButtonMode(ControlPushButton::TOGGLE);
@@ -150,11 +177,10 @@ EngineBuffer::EngineBuffer(QObject *p, QString group, UserSettingsPointer pConfi
             Qt::DirectConnection);
 
     // BPM to display in the UI (updated more slowly than the actual bpm)
-    m_visualBpm = new ControlObject(ConfigKey(m_group, "visual_bpm"));
-    m_visualKey = new ControlObject(ConfigKey(m_group, "visual_key"));
+    m_visualBpm = new ControlObject(ConfigKey(m_group, "visual_bpm"), this);
+    m_visualKey = new ControlObject(ConfigKey(m_group, "visual_key"), this);
 
-    m_playposSlider = new ControlLinPotmeter(
-        ConfigKey(m_group, "playposition"), 0.0, 1.0, 0, 0, true);
+    m_playposSlider = new ControlObject(ConfigKey(m_group, "playposition"),this);// 0.0, 1.0, 0, 0, true);
     connect(m_playposSlider, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlSeek(double)),
             Qt::DirectConnection);
@@ -251,8 +277,7 @@ EngineBuffer::EngineBuffer(QObject *p, QString group, UserSettingsPointer pConfi
     m_bScalerChanged = true;
 
     m_pPassthroughEnabled = new ControlProxy(group, "passthrough", this);
-    m_pPassthroughEnabled->connectValueChanged(SLOT(slotPassthroughChanged(double)),
-                                               Qt::DirectConnection);
+    m_pPassthroughEnabled->connectValueChanged(SLOT(slotPassthroughChanged(double)),Qt::DirectConnection);
 
 
     // Now that all EngineControls have been created call setEngineMaster.
@@ -376,7 +401,7 @@ void EngineBuffer::requestSyncPhase() {
 
 void EngineBuffer::requestEnableSync(bool enabled) {
     // If we're not playing, the queued event won't get processed so do it now.
-    if (m_playButton->get() == 0.0) {
+    if (!playing()){//m_playButton->get() == 0.0) {
         m_pEngineSync->requestEnableSync(m_pSyncControl, enabled);
         return;
     }
@@ -401,7 +426,7 @@ void EngineBuffer::requestEnableSync(bool enabled) {
 void EngineBuffer::requestSyncMode(SyncMode mode)
 {
     // If we're not playing, the queued event won't get processed so do it now.
-    if (m_playButton->get() == 0.0) {
+    if (playing()) {//m_playButton->get() == 0.0) {
         m_pEngineSync->requestSyncMode(m_pSyncControl, mode);
     } else {
         m_iSyncModeQueued = mode;
@@ -496,8 +521,10 @@ void EngineBuffer::slotTrackLoading()
     m_pause.unlock();
 
     // Set play here, to signal the user that the play command is adopted
-    if(m_playButton->toBool() != m_bPlayAfterLoading)
-        m_playButton->set((double)m_bPlayAfterLoading);
+    if(playing() != m_bPlayAfterLoading) {//m_playButton->toBool() != m_bPlayAfterLoading)
+        setPlaying(m_bPlayAfterLoading);
+    }
+//        m_playButton->set((double)m_bPlayAfterLoading);
     m_pTrackSamples->set(0); // Stop renderer
 }
 
@@ -559,6 +586,7 @@ void EngineBuffer::ejectTrack()
     m_pCurrentTrack.clear();
     m_trackSampleRateOld = 0;
     m_trackSamplesOld = 0;
+    setPlaying(false);
     m_playButton->set(0.0);
     m_visualBpm->set(0.0);
     m_visualKey->set(0.0);
@@ -640,17 +668,27 @@ bool EngineBuffer::updateIndicatorsAndModifyPlay(bool newPlay) {
 }
 void EngineBuffer::verifyPlay()
 {
-    auto play = m_playButton->toBool();
+    auto play = playing();//m_playButton->toBool();
     auto verifiedPlay = updateIndicatorsAndModifyPlay(play);
     if (play != verifiedPlay) {
-        m_playButton->setAndConfirm(verifiedPlay ? 1.0 : 0.0);
+//        m_playButton->setAndConfirm(verifiedPlay ? 1.0 : 0.0);
+        m_playing->set(verifiedPlay);
     }
 }
-
-void EngineBuffer::slotControlPlayRequest(double v) {
-    bool verifiedPlay = updateIndicatorsAndModifyPlay(v > 0.0);
+bool EngineBuffer::playing() const
+{
+    return m_playing->toBool();
+}
+void EngineBuffer::setPlaying(bool _playing)
+{
+    m_playing->set(updateIndicatorsAndModifyPlay(_playing));
+}
+void EngineBuffer::slotControlPlayRequest(double v)
+{
+    setPlaying(v);
+//    bool verifiedPlay = updateIndicatorsAndModifyPlay(v > 0.0);
     // set and confirm must be called here in any case to update the widget toggle state
-    m_playButton->setAndConfirm(verifiedPlay ? 1.0 : 0.0);
+//    m_playButton->setAndConfirm(verifiedPlay ? 1.0 : 0.0);
 }
 
 void EngineBuffer::slotControlStart(double v)
@@ -671,8 +709,8 @@ void EngineBuffer::slotControlPlayFromStart(double v)
 {
     if (v > 0.0) {
         doSeekFractional(0., SeekRequest::Exact);
-        if(!m_playButton->get())
-            m_playButton->set(1);
+        setPlaying(true);
+//        m_playButton->set(1);
     }
 }
 
@@ -680,16 +718,16 @@ void EngineBuffer::slotControlJumpToStartAndStop(double v)
 {
     if (v > 0.0) {
         doSeekFractional(0., SeekRequest::Exact);
-        if(m_playButton->get())
-            m_playButton->set(0);
+        setPlaying(false);
+//        m_playButton->set(0);
     }
 }
 
 void EngineBuffer::slotControlStop(double v)
 {
     if (v > 0.0) {
-        if(m_playButton->get())
-            m_playButton->set(0);
+//        m_playButton->set(0);
+        setPlaying(false);
     }
 }
 
@@ -751,7 +789,7 @@ void EngineBuffer::process(CSAMPLE* pOutput, const int iBufferSize)
         }
 
         // Note: play is also active during cue preview
-        bool paused = !m_playButton->toBool();
+        bool paused = !playing();//m_playButton->toBool();
         KeyControl::PitchTempoRatio pitchTempoRatio = m_pKeyControl->getPitchTempoRatio();
 
         // The pitch adjustment in Ratio (1.0 being normal
@@ -1011,14 +1049,15 @@ void EngineBuffer::process(CSAMPLE* pOutput, const int iBufferSize)
             (at_end && !backwards);
 
         // If playbutton is pressed, check if we are at start or end of track
-        if ((m_playButton->get() || (m_fwdButton->get() || m_backButton->get()))
+        if ((playing()//m_playButton->get()
+            || (m_fwdButton->get() || m_backButton->get()))
                 && end_of_track) {
             if (repeat_enabled) {
                 double fractionalPos = at_start ? 1.0 : 0;
                 doSeekFractional(fractionalPos, SeekRequest::Standard);
             } else {
-                if(m_playButton->get())
-                    m_playButton->set(0.);
+                setPlaying(false);
+//                    m_playButton->set(0.);
             }
         }
 
@@ -1182,7 +1221,7 @@ void EngineBuffer::updateIndicators(double speed, int iBufferSize)
     // Increase samplesCalculated by the buffer size
     m_iSamplesCalculated += iBufferSize;
 
-    double fFractionalPlaypos = fractionalPlayposFromAbsolute(m_filepos_play);
+    auto fFractionalPlaypos = fractionalPlayposFromAbsolute(m_filepos_play);
     if(speed > 0 && fFractionalPlaypos == 1.0) {
         speed = 0;
     }
@@ -1271,10 +1310,11 @@ void EngineBuffer::slotEjectTrack(double v) {
     if (v > 0) {
         // Don't allow rejections while playing a track. We don't need to lock to
         // call ControlObject::get() so this is fine.
-        if (m_playButton->get() > 0) {
-            return;
-        }
-        ejectTrack();
+        if(!playing())
+//J        if (m_playButton->get() > 0) {
+//            return;
+//        }
+           ejectTrack();
     }
 }
 

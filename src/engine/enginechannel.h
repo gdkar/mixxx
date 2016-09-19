@@ -21,30 +21,45 @@
 #include "engine/engineobject.h"
 #include "engine/channelhandle.h"
 #include "preferences/usersettings.h"
+#include "soundio/soundmanagerutil.h"
 
+class EffectsManager;
 class ControlObject;
+class ControlProxy;
 class EngineBuffer;
 class EnginePregain;
 class EngineFilterBlock;
+class EngineEffectsManager;
 class EngineVuMeter;
 class ControlPushButton;
 
 class EngineChannel : public EngineObject {
     Q_OBJECT
+    Q_PROPERTY(bool active READ isActive NOTIFY activeChanged)
+    Q_PROPERTY(bool input_configure READ isActive NOTIFY activeChanged)
+    Q_PROPERTY(bool pflEnabled READ isPflEnabled WRITE setPfl NOTIFY pflEnabledChanged)
+    Q_PROPERTY(bool masterEnabled READ isMasterEnabled WRITE setMaster NOTIFY masterEnabledChanged)
+    Q_PROPERTY(bool talkoverEnabled READ isTalkoverEnabled WRITE setTalkover NOTIFY talkoverEnabledChanged)
+    Q_PROPERTY(ChannelOrientation orientation
+        READ getOrientation
+        WRITE setOrientation
+        NOTIFY orientationChanged);
   public:
     enum ChannelOrientation {
         LEFT = 0,
         CENTER,
         RIGHT,
     };
+    Q_ENUM(ChannelOrientation);
 
     EngineChannel(QObject *p, const ChannelHandleAndGroup& handle_group,
-                  ChannelOrientation defaultOrientation = CENTER);
+                  ChannelOrientation defaultOrientation = CENTER, EffectsManager *pEffectsManager = nullptr);
     virtual ~EngineChannel();
+    virtual void setOrientation(ChannelOrientation o);
 
     virtual ChannelOrientation getOrientation() const;
 
-    inline const ChannelHandle& getHandle() const {
+    const ChannelHandle& getHandle() const {
         return m_group.handle();
     }
 
@@ -67,11 +82,33 @@ class EngineChannel : public EngineObject {
     virtual EngineBuffer* getEngineBuffer() {
         return NULL;
     }
+  public slots:
+    // Called by SoundManager whenever the passthrough input is connected to a
+    // soundcard input.
+    virtual void onInputConfigured(AudioInput input) = 0;
 
+    // Called by SoundManager whenever the passthrough input is disconnected
+    // from a soundcard input.
+    virtual void onInputUnconfigured(AudioInput input) = 0;
+
+    // Return whether or not passthrough is active
+
+  signals:
+    void activeChanged(bool);
+    void pflEnabledChanged(bool);
+    void masterEnabledChanged(bool);
+    void talkoverEnabledChanged(bool);
+    void orientationChanged();
   private slots:
     void slotOrientationLeft(double v);
     void slotOrientationRight(double v);
     void slotOrientationCenter(double v);
+  protected:
+    EngineEffectsManager* m_pEngineEffectsManager;
+    ControlObject* m_pInputConfigured;
+    ControlProxy* m_pSampleRate;
+    EngineVuMeter* m_pVUMeter;
+    bool m_wasActive;
 
   private:
     const ChannelHandleAndGroup m_group;

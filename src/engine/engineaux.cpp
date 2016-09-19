@@ -14,29 +14,20 @@
 #include "util/sample.h"
 
 EngineAux::EngineAux(QObject *p, const ChannelHandleAndGroup& handle_group, EffectsManager* pEffectsManager)
-        : EngineChannel(p, handle_group, EngineChannel::CENTER),
-          m_pEngineEffectsManager(pEffectsManager ? pEffectsManager->getEngineEffectsManager() : NULL),
-          m_vuMeter(nullptr, getGroup()),
-          m_pInputConfigured(new ControlObject(ConfigKey(getGroup(), "input_configured"))),
+        : EngineChannel(p, handle_group, EngineChannel::CENTER, pEffectsManager),
           m_pPregain(new ControlAudioTaperPot(ConfigKey(getGroup(), "pregain"), -12, 12, 0.5)),
-          m_sampleBuffer(NULL),
-          m_wasActive(false) {
-    if (pEffectsManager != NULL) {
-        pEffectsManager->registerChannel(handle_group);
-    }
-
+          m_sampleBuffer(NULL)
+{
     // Make input_configured read-only.
-    m_pInputConfigured->connectValueChangeRequest(
+/*    m_pInputConfigured->connectValueChangeRequest(
         this, SLOT(slotInputConfiguredChangeRequest(double)),
-        Qt::DirectConnection);
+        Qt::DirectConnection);*/
     ControlDoublePrivate::insertAlias(ConfigKey(getGroup(), "enabled"),
                                       ConfigKey(getGroup(), "input_configured"));
 
     // by default Aux is enabled on the master and disabled on PFL. User
     // can over-ride by setting the "pfl" or "master" controls.
     setMaster(true);
-
-    m_pSampleRate = new ControlProxy("[Master]", "samplerate");
 }
 
 EngineAux::~EngineAux() {
@@ -45,11 +36,11 @@ EngineAux::~EngineAux() {
 }
 
 bool EngineAux::isActive() {
-    bool enabled = m_pInputConfigured->toBool();
+    auto enabled = m_pInputConfigured->toBool();
     if (enabled && m_sampleBuffer) {
         m_wasActive = true;
     } else if (m_wasActive) {
-        m_vuMeter.reset();
+        m_pVUMeter->reset();
         m_wasActive = false;
     }
     return m_wasActive;
@@ -61,7 +52,7 @@ void EngineAux::onInputConfigured(AudioInput input) {
         qDebug() << "WARNING: EngineAux connected to AudioInput for a non-auxiliary type!";
         return;
     }
-    m_sampleBuffer = NULL;
+    m_sampleBuffer = nullptr;
     m_pInputConfigured->setAndConfirm(1.0);
 }
 
@@ -75,16 +66,17 @@ void EngineAux::onInputUnconfigured(AudioInput input) {
     m_pInputConfigured->setAndConfirm(0.0);
 }
 
-void EngineAux::receiveBuffer(AudioInput input, const CSAMPLE* pBuffer,
-                              unsigned int nFrames) {
+void EngineAux::receiveBuffer(AudioInput input, const CSAMPLE* pBuffer,unsigned int nFrames)
+                              {
     Q_UNUSED(input);
     Q_UNUSED(nFrames);
     m_sampleBuffer = pBuffer;
 }
 
-void EngineAux::process(CSAMPLE* pOut, const int iBufferSize) {
-    const CSAMPLE* sampleBuffer = m_sampleBuffer; // save pointer on stack
-    double pregain =  m_pPregain->get();
+void EngineAux::process(CSAMPLE* pOut, const int iBufferSize)
+{
+    auto sampleBuffer = m_sampleBuffer; // save pointer on stack
+    auto pregain =  m_pPregain->get();
     if (sampleBuffer) {
         SampleUtil::copyWithGain(pOut, sampleBuffer, pregain, iBufferSize);
         m_sampleBuffer = NULL;
@@ -96,11 +88,10 @@ void EngineAux::process(CSAMPLE* pOut, const int iBufferSize) {
         GroupFeatureState features;
         // This is out of date by a callback but some effects will want the RMS
         // volume.
-        m_vuMeter.collectFeatures(&features);
+        m_pVUMeter->collectFeatures(&features);
         // Process effects enabled for this channel
-        m_pEngineEffectsManager->process(getHandle(), pOut, iBufferSize,
-                                         m_pSampleRate->get(), features);
+        m_pEngineEffectsManager->process(getHandle(), pOut, iBufferSize,m_pSampleRate->get(), features);
     }
     // Update VU meter
-    m_vuMeter.process(pOut, iBufferSize);
+    m_pVUMeter->process(pOut, iBufferSize);
 }

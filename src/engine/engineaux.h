@@ -25,40 +25,35 @@ class EngineAux : public EngineChannel, public AudioDestination {
     EngineAux(QObject *p, const ChannelHandleAndGroup& handle_group, EffectsManager* pEffectsManager);
     virtual ~EngineAux();
 
-    bool isActive();
+    bool isActive() override;
 
     // Called by EngineMaster whenever is requesting a new buffer of audio.
-    virtual void process(CSAMPLE* pOutput, const int iBufferSize);
-    virtual void postProcess(const int iBufferSize) { Q_UNUSED(iBufferSize) }
+    void process(CSAMPLE* pOutput, const int iBufferSize) override;
+    void postProcess(const int iBufferSize) override { Q_UNUSED(iBufferSize) }
 
     // This is called by SoundManager whenever there are new samples from the
     // configured input to be processed. This is run in the callback thread of
     // the soundcard this AudioDestination was registered for! Beware, in the
     // case of multiple soundcards, this method is not re-entrant but it may be
     // concurrent with EngineMaster processing.
-    virtual void receiveBuffer(AudioInput input, const CSAMPLE* pBuffer,
-                               unsigned int nFrames);
+    void receiveBuffer(AudioInput input, const CSAMPLE* pBuffer,
+                               unsigned int nFrames) override;
 
     // Called by SoundManager whenever the aux input is connected to a
     // soundcard input.
-    virtual void onInputConfigured(AudioInput input);
+    void onInputConfigured(AudioInput input) override;
 
     // Called by SoundManager whenever the aux input is disconnected from
     // a soundcard input.
-    virtual void onInputUnconfigured(AudioInput input);
+    void onInputUnconfigured(AudioInput input) override;
 
   private slots:
     // Reject all change requests for input configured.
     void slotInputConfiguredChangeRequest(double) {}
 
   private:
-    EngineEffectsManager* m_pEngineEffectsManager;
-    EngineVuMeter m_vuMeter;
-    QScopedPointer<ControlObject> m_pInputConfigured;
     ControlAudioTaperPot* m_pPregain;
-    ControlProxy* m_pSampleRate;
     const CSAMPLE* volatile m_sampleBuffer;
-    bool m_wasActive;
 };
 
 #endif // ENGINEAUX_H

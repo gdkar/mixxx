@@ -92,17 +92,17 @@ void MidiController::createOutputHandlers() {
     while (outIt.hasNext()) {
         outIt.next();
 
-        const MidiOutputMapping& mapping = outIt.value();
+        auto && mapping = outIt.value();
 
-        QString group = mapping.controlKey.group;
-        QString key = mapping.controlKey.item;
+        auto group = mapping.controlKey.group;
+        auto key   = mapping.controlKey.item;
 
-        unsigned char status = mapping.output.status;
-        unsigned char control = mapping.output.control;
-        unsigned char on = mapping.output.on;
-        unsigned char off = mapping.output.off;
-        double min = mapping.output.min;
-        double max = mapping.output.max;
+        auto status = mapping.output.status;
+        auto control = mapping.output.control;
+        auto on = mapping.output.on;
+        auto off = mapping.output.off;
+        auto  min = mapping.output.min;
+        auto max = mapping.output.max;
 
         controllerDebug(QString(
                 "Creating output handler for %1,%2 between %3 and %4 to MIDI out: 0x%5 0x%6, on: 0x%7 off: 0x%8")
@@ -255,6 +255,20 @@ void MidiController::commitTemporaryInputMappings() {
 void MidiController::receive(unsigned char status, unsigned char control,
                              unsigned char value, mixxx::Duration timestamp)
 {
+
+    {
+        auto parts = MidiUtils::prefixFromMessage(status,control,value);
+        auto pre = parts.first;
+        auto val = parts.second;
+        qDebug() << " prefix: " << std::showbase << std::hex << status << control << value << " value: " << val;
+        if(!pre.isEmpty()) {
+            if(auto prox = m_dispatch.value(pre,nullptr)) {
+                qDebug() << " chaning value from " << prox->value() << " to " << val;
+                prox->setValue(val);
+            }
+        }
+    }
+    emit messageReceived(status,control,value,timestamp.toDoubleSeconds());
     auto channel = MidiUtils::channelFromStatus(status);
     auto opCode = MidiUtils::opCodeFromStatus(status);
 
@@ -263,7 +277,7 @@ void MidiController::receive(unsigned char status, unsigned char control,
     MidiKey mappingKey(status, control);
 
     if (isLearning()) {
-        emit(messageReceived(status, control, value));
+        emit(messageReceived(status, control, value,timestamp.toDoubleSeconds()));
 
         auto it = m_temporaryInputMappings.constFind(mappingKey.key);
         if (it != m_temporaryInputMappings.cend()) {
@@ -272,13 +286,6 @@ void MidiController::receive(unsigned char status, unsigned char control,
             }
             return;
         }
-    }
-    if(auto engine = getEngine()){
-        auto obj = engine->newObject();
-        obj.setProperty("status",status);
-        obj.setProperty("control",control);
-        obj.setProperty("value",value);
-        engine->receive((QJSValueList{}<< obj), timestamp);
     }
     for(auto && mapping : m_preset.inputMappings.values(mappingKey.key)){
         processInputMapping(mapping, status, control, value, timestamp);
@@ -296,53 +303,41 @@ void MidiController::processInputMapping(const MidiInputMapping& mapping,
     unsigned char opCode = MidiUtils::opCodeFromStatus(status);
 
     if (mapping.options.script) {
-        ControllerEngine* pEngine = getEngine();
-        if (pEngine == NULL) {
-            return;
-        }
-        auto parts = mapping.control.item.split(".");
-        auto object = pEngine->findObject(parts[0]);
-        auto function = QJSValue{};
-        if(!object.isCallable() && object.isObject() && parts.size() > 1) {
-            function = object.property(parts[1]);
-        }else if(object.isCallable()) {
-            function = object;
-            object = QJSValue{};
-        }
-        if(function.isCallable()) {
-            auto result = function.callWithInstance(object,
-                (QJSValueList{} << channel
-                               << control
-                               << value
-                               << status
-                               << mapping.control.group
-                               << timestamp.toDoubleSeconds()));
-            if(result.isError()) {
-                qDebug() << "MidiController: Error in script function"
-                     << mapping.control.item
-                     << result.toString() << "\n\n" << result.property("stack").toString();
+        if(auto pEngine = getEngine()) {
+            auto parts = mapping.control.item.split(".");
+            auto object = pEngine->findObject(parts[0]);
+            auto function = QJSValue{};
+            if(!object.isCallable() && object.isObject() && parts.size() > 1) {
+                function = object.property(parts[1]);
+            }else if(object.isCallable()) {
+                function = object;
+                object = QJSValue{};
             }
-            return;
+            if(function.isCallable()) {
+                auto result = function.callWithInstance(object,
+                    (QJSValueList{} << channel
+                                    << control
+                                    << value
+                                    << status
+                                    << mapping.control.group
+                                    << timestamp.toDoubleSeconds()));
+                if(result.isError()) {
+                    qDebug() << "MidiController: Error in script function"
+                        << mapping.control.item
+                        << result.toString() << "\n\n" << result.property("stack").toString();
+                }
+            }
         }
-/*        auto function = pEngine->wrapFunctionCode(mapping.control.item, 5);
-        if (!pEngine->execute(function, channel, control, value, status,
-                              mapping.control.group, timestamp)) {
-            qDebug() << "MidiController: Invalid script function"
-                     << mapping.control.item;
-        }*/
-        qDebug() << "MidiController: Invalid script function"
-                    << mapping.control.item;
         return;
     }
 
     // Only pass values on to valid ControlObjects.
     if(auto pCO = ControlObject::getControl(mapping.control)) {
 
-        double newValue = value;
+        auto newValue = double(value);
 
 
-        bool mapping_is_14bit = mapping.options.fourteen_bit_msb ||
-                mapping.options.fourteen_bit_lsb;
+        auto mapping_is_14bit = mapping.options.fourteen_bit_msb || mapping.options.fourteen_bit_lsb;
         if (!mapping_is_14bit && !m_fourteen_bit_queued_mappings.isEmpty()) {
             qWarning() << "MidiController was waiting for the MSB/LSB of a 14-bit"
                     << "message but the next message received was not mapped as 14-bit."
@@ -353,7 +348,7 @@ void MidiController::processInputMapping(const MidiInputMapping& mapping,
         //qDebug() << "MIDI Options" << QString::number(mapping.options.all, 2).rightJustified(16,'0');
 
         if (mapping_is_14bit) {
-            bool found = false;
+            auto found = false;
             for (auto it = m_fourteen_bit_queued_mappings.begin();
                 it != m_fourteen_bit_queued_mappings.end(); ++it) {
                 if (it->first.control == mapping.control) {
@@ -364,7 +359,7 @@ void MidiController::processInputMapping(const MidiInputMapping& mapping,
                         m_fourteen_bit_queued_mappings.erase(it);
                         return;
                     }
-                    int iValue = 0;
+                    auto iValue = 0;
                     if (mapping.options.fourteen_bit_msb) {
                         iValue = (value << 7) | it->second;
                         // qDebug() << "MSB" << value
@@ -376,7 +371,6 @@ void MidiController::processInputMapping(const MidiInputMapping& mapping,
                         //          << "LSB" << value
                         //          << "Joint:" << iValue;
                     }
-
                     // NOTE(rryan): The 14-bit message ranges from 0x0000 to
                     // 0x3FFF. Dividing by 0x81 maps this onto the range of 0 to
                     // 127. However, some controllers map the center to MSB 64
@@ -556,7 +550,7 @@ void MidiController::receive(QVariant vdata, mixxx::Duration timestamp)
         // don't think this actually does anything useful.
         if (isLearning()) {
             // TODO(rryan): Fake a one value?
-            emit(messageReceived(mappingKey.status, mappingKey.control, 0x7F));
+            emit(messageReceived(mappingKey.status, mappingKey.control, 0x7F,timestamp.toDoubleSeconds()));
 
             auto it = m_temporaryInputMappings.find(mappingKey.key);
             if (it != m_temporaryInputMappings.end()) {

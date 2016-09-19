@@ -31,19 +31,13 @@ EngineDeck::EngineDeck(QObject *p, const ChannelHandleAndGroup& handle_group,
                        EngineMaster* pMixingEngine,
                        EffectsManager* pEffectsManager,
                        EngineChannel::ChannelOrientation defaultOrientation)
-        : EngineChannel(p, handle_group, defaultOrientation),
+        : EngineChannel(p, handle_group, defaultOrientation, pEffectsManager),
           m_pConfig(pConfig),
-          m_pEngineEffectsManager(pEffectsManager ? pEffectsManager->getEngineEffectsManager() : NULL),
-          m_pInputConfigured(new ControlObject(ConfigKey(getGroup(), "input_configured"))),
           m_pPassing(new ControlPushButton(ConfigKey(getGroup(), "passthrough"))),
           // Need a +1 here because the CircularBuffer only allows its size-1
           // items to be held at once (it keeps a blank spot open persistently)
-          m_sampleBuffer(NULL),
-          m_wasActive(false) {
-    if (pEffectsManager != NULL) {
-        pEffectsManager->registerChannel(handle_group);
-    }
-
+          m_sampleBuffer(NULL)
+{
     // Make input_configured read-only.
     m_pInputConfigured->connectValueChangeRequest(
         this, SLOT(slotInputConfiguredChangeRequest(double)),
@@ -59,11 +53,8 @@ EngineDeck::EngineDeck(QObject *p, const ChannelHandleAndGroup& handle_group,
             this, SLOT(slotPassingToggle(double)),
             Qt::DirectConnection);
 
-    m_pSampleRate = new ControlProxy("[Master]", "samplerate");
-
     // Set up additional engines
     m_pPregain = new EnginePregain(this,getGroup());
-    m_pVUMeter = new EngineVuMeter(this,getGroup());
     m_pBuffer = new EngineBuffer(this,getGroup(), pConfig, this, pMixingEngine);
 }
 
@@ -72,8 +63,6 @@ EngineDeck::~EngineDeck() {
 
     delete m_pBuffer;
     delete m_pPregain;
-    delete m_pVUMeter;
-    delete m_pSampleRate;
 }
 
 void EngineDeck::process(CSAMPLE* pOut, const int iBufferSize) {

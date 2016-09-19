@@ -165,6 +165,7 @@ void MixxxMainWindow::initialize(QApplication* pApp, const CmdlineArgs& args)
     qRegisterMetaType<mixxx::ReplayGain>("mixxx::ReplayGain");
     qRegisterMetaType<mixxx::Bpm>("mixxx::Bpm");
     qRegisterMetaType<mixxx::Duration>("mixxx::Duration");
+    qmlRegisterType<BindingProxy>("org.mixxx.qml", 0, 1, "BindingProxy");
     qmlRegisterType<Controller>("org.mixxx.qml", 0, 1, "Controller");
     qmlRegisterType<MidiController>();
     qmlRegisterType<RtMidiController>("org.mixxx.qml", 0, 1, "RtMidiController");

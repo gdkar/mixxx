@@ -1,5 +1,5 @@
 ((function(){
-    function HerculesAir () {
+    var herc = function HerculesAir () {
         this.beatStepDeckA1 = 0
         this.beatStepDeckA2 = 0x44
         this.beatStepDeckB1 = 0
@@ -15,7 +15,8 @@
 
         this.wheel_multiplier = 0.4
     }
-HerculesAir.prototype = {
+herc.prototype = {
+    constructor: herc,
     init : function(id) {
     this.id = id;
 
@@ -131,7 +132,7 @@ beatProgressDeckA : function() {
     var newValue=(value==0x01 ? 1: -1);
     // See if we're scratching. If not, do wheel jog.
     if (!engine.isScratching(deck)) {
-        engine.setValue(group, "jog", newValue* HerculesAir.wheel_multiplier);
+        engine.setValue(group, "jog", newValue* this.wheel_multiplier);
         return;
     }
 
@@ -181,5 +182,5 @@ scratch_enable : function(midino, control, value, status, group) {
     }
 }
 };
-return HerculesAir;
+return herc;
 })())

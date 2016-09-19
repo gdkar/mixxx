@@ -20,6 +20,29 @@
 #include "controllers/controllerpresetfilehandler.h"
 #include "util/duration.h"
 
+
+class BindingProxy : public QObject {
+    Q_OBJECT
+    Q_PROPERTY(double value READ value WRITE setValue NOTIFY valueChanged)
+    Q_PROPERTY(QString prefix READ prefix WRITE setPrefix NOTIFY prefixChanged)
+public:
+    Q_INVOKABLE BindingProxy(QObject *p = nullptr);
+    Q_INVOKABLE BindingProxy(QString prefix, QObject *p);
+   ~BindingProxy();
+    double value() const;
+    void setValue(double);
+    QString prefix() const;
+    void setPrefix(QString);
+signals:
+    void valueChanged(double);
+    void messageReceived(double, double = 0);
+    void prefixChanged(QVariant);
+
+protected:
+    QString m_prefix{};
+    double   m_value{};
+};
+QML_DECLARE_TYPE(BindingProxy)
 class Controller : public QObject, ConstControllerPresetVisitor {
     Q_OBJECT
 
@@ -66,6 +89,7 @@ class Controller : public QObject, ConstControllerPresetVisitor {
   // Making these slots protected/private ensures that other parts of Mixxx can
   // only signal them which allows us to use no locks.
   protected slots:
+    virtual BindingProxy *getBindingFor(QString prefix);
     // Handles packets of raw bytes and passes them to an ".incomingData" script
     // function that is assumed to exist. (Sub-classes may want to reimplement
     // this if they have an alternate way of handling such data.)
@@ -96,6 +120,8 @@ class Controller : public QObject, ConstControllerPresetVisitor {
     // Requests that the device poll if it is a polling device. Returns true
     // if events were handled.
     virtual bool poll();
+  protected:
+    QHash<QString, BindingProxy*> m_dispatch;
   private:
     // This must be reimplemented by sub-classes desiring to send raw bytes to a
     // controller.
@@ -122,6 +148,7 @@ class Controller : public QObject, ConstControllerPresetVisitor {
     friend class ControllerManager; // accesses lots of our stuff, but in the same thread
     // For testing.
     friend class ControllerPresetValidationTest;
+
 };
 QML_DECLARE_TYPE(Controller);
 #endif

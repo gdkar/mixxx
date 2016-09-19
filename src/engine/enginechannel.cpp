@@ -16,12 +16,16 @@
 ***************************************************************************/
 
 #include "engine/enginechannel.h"
-
+#include "engine/enginevumeter.h"
+#include "effects/effectsmanager.h"
 #include "control/controlobject.h"
+#include "control/controlproxy.h"
 #include "control/controlpushbutton.h"
+#include "engine/effects/engineeffectsmanager.h"
 
 EngineChannel::EngineChannel(QObject *p, const ChannelHandleAndGroup& handle_group,
-                             EngineChannel::ChannelOrientation defaultOrientation)
+                             EngineChannel::ChannelOrientation defaultOrientation,
+                             EffectsManager *pEffectsManager)
         : EngineObject(p),m_group(handle_group) {
     m_pPFL = new ControlPushButton(ConfigKey(getGroup(), "pfl"));
     m_pPFL->setButtonMode(ControlPushButton::TOGGLE);
@@ -42,6 +46,18 @@ EngineChannel::EngineChannel(QObject *p, const ChannelHandleAndGroup& handle_gro
             this, SLOT(slotOrientationCenter(double)), Qt::DirectConnection);
     m_pTalkover = new ControlPushButton(ConfigKey(getGroup(), "talkover"));
     m_pTalkover->setButtonMode(ControlPushButton::POWERWINDOW);
+    m_pVUMeter = new EngineVuMeter(this,getGroup());
+    if(pEffectsManager)
+        pEffectsManager->registerChannel(handle_group);
+    m_pEngineEffectsManager = pEffectsManager ? pEffectsManager->getEngineEffectsManager() : nullptr;
+    m_pSampleRate = new ControlProxy(ConfigKey("[Master]","samplerate"),this);
+    m_pInputConfigured = new ControlObject(ConfigKey(getGroup(),"input_configured"),this);
+    m_wasActive = false;
+    connect(m_pPFL, &ControlObject::valueChanged , this, &EngineChannel::pflEnabledChanged);
+    connect(m_pMaster, &ControlObject::valueChanged, this, &EngineChannel::masterEnabledChanged);
+    connect(m_pTalkover, &ControlObject::valueChanged, this, &EngineChannel::talkoverEnabledChanged);
+    connect(m_pOrientation, &ControlObject::valueChanged, this, &EngineChannel::orientationChanged);
+    connect(m_pInputConfigured,&ControlObject::valueChanged, this, &EngineChannel::activeChanged);
 }
 
 EngineChannel::~EngineChannel() {
@@ -53,7 +69,10 @@ EngineChannel::~EngineChannel() {
     delete m_pOrientationCenter;
     delete m_pTalkover;
 }
-
+void EngineChannel::setOrientation(ChannelOrientation o)
+{
+    m_pOrientation->set(o);
+}
 void EngineChannel::setPfl(bool enabled) {
     m_pPFL->set(enabled ? 1.0 : 0.0);
 }

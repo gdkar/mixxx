@@ -138,7 +138,7 @@ script.absoluteLin = function (value, low, high, min, max) {
     if (!max) {
         max = 127;
     }
-    
+
     if (value <= min) {
         return low;
     } else if (value >= max) {
@@ -218,7 +218,7 @@ script.absoluteNonLinInverse = function (value, low, mid, high, min, max) {
     }
     var center = (max-min)/2;
     var result;
-    
+
     if (value==mid) {
         return center;
     } else if (value<mid) {
@@ -226,7 +226,7 @@ script.absoluteNonLinInverse = function (value, low, mid, high, min, max) {
     } else {
         result = center + (center/(high-mid)) * (value-mid);
     }
-    
+
     if (result < min) {
         return min;
     } else if (result > max) {

@@ -90,16 +90,23 @@ int RtMidiController::open()
     if(in_index>= 0) {
         try {
             m_midiIn = std::make_unique<RtMidiIn>();
+            m_midiIn->setCallback(&RtMidiController::trampoline, this);
             if(in_name.isEmpty()){
                 in_name = QString::fromStdString(m_midiIn->getPortName(in_index));
                 emit(inputNameChanged(in_name));
             }
-            if(!in_name.isEmpty())
+            if(!in_name.isEmpty()) {
                 setDeviceName("RtMidi: " + in_name);
-            m_midiIn->setCallback(&RtMidiController::trampoline, this);
+            }
             m_midiIn->openPort(in_index, in_name.toStdString());
+            setInputDevice(true);
         }catch(const RtMidiError &error) {
             qDebug() << error.what();
+            in_index = -1;
+            in_name.clear();
+            setInputDevice(false);
+            emit inputIndexChanged(-1);
+            emit inputNameChanged(in_name);
         }
     }
     if(out_index>= 0) {
@@ -113,8 +120,15 @@ int RtMidiController::open()
                 setDeviceName("RtMidi: " + out_name);
 
             m_midiOut->openPort(out_index,out_name.toStdString());
+            setOutputDevice(true);
         }catch(const RtMidiError &error) {
             qDebug() << error.what();
+            out_index = -1;
+            out_name.clear();
+            setOutputDevice(false);
+            emit outputIndexChanged(-1);
+            emit outputNameChanged(out_name);
+
         }
     }
 
@@ -163,6 +177,7 @@ void RtMidiController::callback(double deltatime, std::vector<unsigned char> &me
             auto velocity = message[2];
 
         QMetaObject::invokeMethod(this,"receive",Qt::QueuedConnection,Q_ARG(unsigned char, status), Q_ARG(unsigned char, note), Q_ARG(unsigned char, velocity), Q_ARG(mixxx::Duration,timestamp));
+        return;
         }
     }
     if (m_bInSysex) {
@@ -195,6 +210,7 @@ void RtMidiController::callback(double deltatime, std::vector<unsigned char> &me
                     Q_ARG(QByteArray,QByteArray::fromRawData(reinterpret_cast<const char *>(m_sysex.data()), m_sysex.size())),Q_ARG(mixxx::Duration,timestamp));
                 m_sysex.clear();
                 m_bInSysex = false;
+                return;
             }else{
                 m_sysex.push_back(data);
             }

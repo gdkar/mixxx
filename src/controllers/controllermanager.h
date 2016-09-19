@@ -19,7 +19,7 @@
 //Forward declaration(s)
 class Controller;
 class ControllerLearningEventFilter;
-
+class ComponentEnumerator;
 // Function to sort controllers by name
 bool controllerCompare(Controller *a, Controller *b);
 
@@ -96,8 +96,14 @@ class ControllerManager : public QObject {
     mutable QMutex m_mutex;
     QList<ControllerEnumerator*> m_enumerators;
     QList<Controller*> m_controllers;
+    ComponentEnumerator *m_componentEnumerator{};
+    QMap<Controller*, QQmlContext*> m_deviceContexts{};
+    QMap<Controller*, QObject*>     m_deviceObjects{};
+    QList<QQmlComponent *> m_components{};
     QThread* m_pThread;
-    QQmlEngine *m_pQmlEngine;
+    QQmlEngine    *m_pQmlEngine;
+    QQmlContext   *m_baseContext{};
+    QQmlComponent *m_baseComponent{};
     QSharedPointer<PresetInfoEnumerator> m_pMainThreadPresetEnumerator;
     bool m_skipPoll;
 };

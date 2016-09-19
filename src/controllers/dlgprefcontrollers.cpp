@@ -33,47 +33,49 @@ DlgPrefControllers::DlgPrefControllers(DlgPreferences* pPreferences,
             this, SLOT(rescanControllers()));
 }
 
-DlgPrefControllers::~DlgPrefControllers() {
+DlgPrefControllers::~DlgPrefControllers()
+{
     destroyControllerWidgets();
 }
 
-void DlgPrefControllers::slotOpenLocalFile(const QString& file) {
+void DlgPrefControllers::slotOpenLocalFile(const QString& file)
+{
     QDesktopServices::openUrl(QUrl::fromLocalFile(file));
 }
 
-void DlgPrefControllers::slotUpdate() {
+void DlgPrefControllers::slotUpdate()
+{
     // Update our sub-windows.
-    foreach (DlgPrefController* pControllerWindows, m_controllerWindows) {
+    for(auto && pControllerWindows: m_controllerWindows)
         pControllerWindows->slotUpdate();
-    }
 }
 
-void DlgPrefControllers::slotCancel() {
+void DlgPrefControllers::slotCancel()
+{
     // Update our sub-windows.
-    foreach (DlgPrefController* pControllerWindows, m_controllerWindows) {
+    for(auto && pControllerWindows: m_controllerWindows)
         pControllerWindows->slotCancel();
-    }
 }
 
-void DlgPrefControllers::slotApply() {
+void DlgPrefControllers::slotApply()
+{
     // Update our sub-windows.
-    foreach (DlgPrefController* pControllerWindows, m_controllerWindows) {
+    for(auto && pControllerWindows: m_controllerWindows)
         pControllerWindows->slotApply();
-    }
-
     // Save all controller presets.
     // TODO(rryan): Get rid of this and make DlgPrefController do this for each
     // preset.
-    m_pControllerManager->savePresets();
+//    m_pControllerManager->savePresets();
 }
 
-bool DlgPrefControllers::handleTreeItemClick(QTreeWidgetItem* clickedItem) {
-    int controllerIndex = m_controllerTreeItems.indexOf(clickedItem);
+bool DlgPrefControllers::handleTreeItemClick(QTreeWidgetItem* clickedItem)
+{
+    auto controllerIndex = m_controllerTreeItems.indexOf(clickedItem);
     if (controllerIndex >= 0) {
-        DlgPrefController* controllerWidget = m_controllerWindows.value(controllerIndex);
-        if (controllerWidget) {
+        auto controllerWidget = m_controllerWindows.value(controllerIndex);
+        if (controllerWidget)
             m_pDlgPreferences->switchToPage(controllerWidget);
-        }
+
         return true;
     } else if (clickedItem == m_pControllerTreeItem) {
         // Switch to the root page and expand the controllers tree item.
@@ -84,26 +86,29 @@ bool DlgPrefControllers::handleTreeItemClick(QTreeWidgetItem* clickedItem) {
     return false;
 }
 
-void DlgPrefControllers::rescanControllers() {
+void DlgPrefControllers::rescanControllers()
+{
     destroyControllerWidgets();
     setupControllerWidgets();
 }
 
-void DlgPrefControllers::destroyControllerWidgets() {
+void DlgPrefControllers::destroyControllerWidgets()
+{
     while (!m_controllerWindows.isEmpty()) {
-        DlgPrefController* controllerDlg = m_controllerWindows.takeLast();
+        auto controllerDlg = m_controllerWindows.takeLast();
         m_pDlgPreferences->removePageWidget(controllerDlg);
         delete controllerDlg;
     }
 
     m_controllerTreeItems.clear();
     while(m_pControllerTreeItem->childCount() > 0) {
-        QTreeWidgetItem* controllerWindowLink = m_pControllerTreeItem->takeChild(0);
+        auto controllerWindowLink = m_pControllerTreeItem->takeChild(0);
         delete controllerWindowLink;
     }
 }
 
-void DlgPrefControllers::setupControllerWidgets() {
+void DlgPrefControllers::setupControllerWidgets()
+{
     // For each controller, create a dialog and put a little link to it in the
     // treepane on the left.
     auto controllerList = m_pControllerManager->getControllerList(false, true);
@@ -143,16 +148,15 @@ void DlgPrefControllers::setupControllerWidgets() {
     txtNoControllersAvailable->setVisible(controllerList.empty());
 }
 
-void DlgPrefControllers::slotHighlightDevice(DlgPrefController* dialog, bool enabled) {
-    int dialogIndex = m_controllerWindows.indexOf(dialog);
+void DlgPrefControllers::slotHighlightDevice(DlgPrefController* dialog, bool enabled)
+{
+    auto dialogIndex = m_controllerWindows.indexOf(dialog);
     if (dialogIndex < 0) {
         return;
     }
-    auto controllerWindowLink = m_controllerTreeItems.at(dialogIndex);
-    if (!controllerWindowLink) {
-        return;
+    if(auto controllerWindowLink = m_controllerTreeItems.at(dialogIndex)){
+        auto temp = controllerWindowLink->font(0);
+        temp.setBold(enabled);
+        controllerWindowLink->setFont(0,temp);
     }
-    auto temp = controllerWindowLink->font(0);
-    temp.setBold(enabled);
-    controllerWindowLink->setFont(0,temp);
 }

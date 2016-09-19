@@ -75,12 +75,14 @@ const int audioBeatMarkLen = 40;
 const int kiTempLength = 200000;
 
 // Rate at which the playpos slider is updated
-const int kiPlaypositionUpdateRate = 10; // updates per second
+const int kiPlaypositionUpdateRate = 30; // updates per second
 // Number of kiUpdateRates that go by before we update BPM.
-const int kiBpmUpdateCnt = 4; // about 2.5 updates per sec
+const int kiBpmUpdateCnt = 16; // about 2.5 updates per sec
 
 class EngineBuffer : public EngineObject {
      Q_OBJECT
+     Q_PROPERTY(bool playing READ playing WRITE setPlaying NOTIFY playingChanged)
+
   public:
     enum SyncRequest{
         None,
@@ -147,6 +149,8 @@ class EngineBuffer : public EngineObject {
     void loadTrack(TrackPointer pTrack, bool play);
 
   public slots:
+    bool playing() const;
+    void setPlaying(bool);
     void slotControlPlayRequest(double);
     void slotControlPlayFromStart(double);
     void slotControlJumpToStartAndStop(double);
@@ -162,6 +166,7 @@ class EngineBuffer : public EngineObject {
     void slotEjectTrack(double);
 
   signals:
+    void playingChanged(bool);
     void trackLoaded(TrackPointer pNewTrack, TrackPointer pOldTrack);
     void trackLoadFailed(TrackPointer pTrack, QString reason);
 
@@ -286,6 +291,7 @@ class EngineBuffer : public EngineObject {
     // m_bSlipEnabledProcessing is only used by the engine processing thread.
     bool m_bSlipEnabledProcessing;
 
+    ControlObject *m_playing;
     ControlObject* m_pTrackSamples;
     ControlObject* m_pTrackSampleRate;
 
@@ -302,7 +308,7 @@ class EngineBuffer : public EngineObject {
     ControlObject* m_visualKey;
     ControlObject* m_pQuantize;
     ControlObject* m_pMasterRate;
-    ControlPotmeter* m_playposSlider;
+    ControlObject* m_playposSlider;
     ControlProxy* m_pSampleRate;
     ControlProxy* m_pKeylockEngine;
     ControlPushButton* m_pKeylock;

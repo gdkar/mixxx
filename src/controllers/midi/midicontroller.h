@@ -35,8 +35,7 @@ class MidiController : public Controller {
     bool isMappable() const override;
     virtual bool matchPreset(const PresetInfo& preset);
   signals:
-    void messageReceived(unsigned char status, unsigned char control,
-                         unsigned char value);
+    void messageReceived(unsigned char status, unsigned char control,unsigned char value, double timestamp);
   protected:
     Q_INVOKABLE void sendShortMsg(unsigned char status, unsigned char byte1, unsigned char byte2);
     // Alias for send()

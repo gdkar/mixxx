@@ -24,6 +24,7 @@ CueControl::CueControl(QString group,
                        UserSettingsPointer pConfig) :
         EngineControl(group, pConfig),
         m_bPreviewing(false),
+        m_playing(new ControlObject(ConfigKey(group, "playing"),this)),
         m_pPlayButton(new ControlObject(ConfigKey(group, "play"),this)),
         m_pStopButton(new ControlObject(ConfigKey(group, "stop"),this)),
         m_iCurrentlyPreviewingHotcues(0),
@@ -375,7 +376,7 @@ void CueControl::hotcueSet(HotcueControl* pControl, double v) {
     // If quantize is enabled and we are not playing, jump to the cue point
     // since it's not necessarily where we currently are. TODO(XXX) is this
     // potentially invalid for vinyl control?
-    bool playing = m_pPlayButton->toBool();
+    bool playing = m_playing->toBool();//m_pPlayButton->toBool();
     if (!playing && m_pQuantizeEnabled->get() > 0.0) {
         lock.unlock();  // prevent deadlock.
         // Enginebuffer will quantize more exactly than we can.
@@ -648,7 +649,7 @@ void CueControl::cueGotoAndPlay(double v)
     cueGoto(v);
     QMutexLocker lock(&m_mutex);
     // Start playing if not already
-    if (!m_pPlayButton->toBool()) {
+    if (!m_playing->toBool()){//m_pPlayButton->toBool()) {
         // cueGoto is processed asynchrony.
         // avoid a wrong cue set if seek by cueGoto is still pending
         m_bypassCueSetByPlay = true;
@@ -704,7 +705,7 @@ void CueControl::cueCDJ(double v) {
     // If play is pressed while holding cue, the deck is now playing. (Handled in playFromCuePreview().)
 
     QMutexLocker lock(&m_mutex);
-    bool playing = m_pPlayButton->toBool();
+    bool playing = m_playing->toBool();//m_pPlayButton->toBool();
 
     if (v) {
         if (m_iCurrentlyPreviewingHotcues) {
@@ -769,7 +770,7 @@ void CueControl::cueDenon(double v) {
     // Cue Point is moved by play from pause
 
     QMutexLocker lock(&m_mutex);
-    bool playing = (m_pPlayButton->toBool());
+    bool playing = m_playing->toBool();//(m_pPlayButton->toBool());
 
     if (v) {
         if (m_iCurrentlyPreviewingHotcues) {
@@ -813,7 +814,7 @@ void CueControl::cuePlay(double v) {
 
 
     QMutexLocker lock(&m_mutex);
-    bool playing = (m_pPlayButton->toBool());
+    bool playing = m_playing->toBool();//(m_pPlayButton->toBool());
 
     // pressed
     if (v) {
@@ -866,7 +867,7 @@ void CueControl::playStutter(double v) {
     QMutexLocker lock(&m_mutex);
     //qDebug() << "playStutter" << v;
     if (v != 0.0) {
-        if (m_pPlayButton->toBool()) {
+        if (m_playing->toBool()){//m_pPlayButton->toBool()) {
             cueGoto(1.0);
         } else {
             m_pPlayButton->set(1.0);
@@ -881,7 +882,8 @@ bool CueControl::updateIndicatorsAndModifyPlay(bool newPlay, bool playPossible) 
     double cueMode = m_pCueMode->get();
     if ((cueMode == CUE_MODE_DENON || cueMode == CUE_MODE_NUMARK) &&
         newPlay && playPossible &&
-        !m_pPlayButton->toBool() &&
+//        !m_pPlayButton->toBool() &&
+        !m_playing->toBool() &&
         !m_bypassCueSetByPlay) {
         // in Denon mode each play from pause moves the cue point
         // if not previewing
@@ -962,7 +964,7 @@ void CueControl::updateIndicators() {
 
     if (cueMode == CUE_MODE_DENON || cueMode == CUE_MODE_NUMARK) {
         // Cue button is only lit at cue point
-        bool playing = m_pPlayButton->toBool();
+        bool playing = m_playing->toBool();//m_pPlayButton->toBool();
         if (isTrackAtCue()) {
             // at cue point
             if (!playing) {
@@ -985,7 +987,7 @@ void CueControl::updateIndicators() {
         // Here we have CUE_MODE_PIONEER or CUE_MODE_MIXXX
         // default to Pioneer mode
         if (!m_bPreviewing) {
-            bool playing = m_pPlayButton->toBool();
+            bool playing = m_playing->toBool();//m_pPlayButton->toBool();
             if (!playing) {
                 if (!isTrackAtCue()) {
                     if (!atEndPosition()) {
