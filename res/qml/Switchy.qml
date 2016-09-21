@@ -4,24 +4,16 @@ import QtQuick.Extras 1.4
 import QtQuick.Window 2.2
 import QtQuick.Controls 1.5
 
-
-Item {
-    id: root
+ControlProxy {
+    id: co
     property string prefix
-    property string group
-    property string item
     property Controller source: parent.controller
     property var proxy: source.getBindingFor(prefix)
-    ControlProxy {
-        id: co
-        group: root.group
-        item: root.item
-        function toggle() {
-            co.store(1.)
-            co.valueChanged(1.);
-        }
-        Component.onCompleted: {
-            proxy.messageReceived.connect(toggle)
-        }
+    function toggle() {
+        co.store(1.)
+        co.valueChanged(1.);
+    }
+    Component.onCompleted: {
+        proxy.messageReceived.connect(toggle)
     }
 }

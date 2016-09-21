@@ -23,7 +23,6 @@ class PortMidiEnumerator : public MidiEnumerator {
 };
 
 // For testing.
-bool shouldLinkInputToOutput(QString input_name,
-                             QString output_name);
+bool shouldLinkInputToOutput(QString input_name,QString output_name);
 
 #endif

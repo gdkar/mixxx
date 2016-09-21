@@ -26,7 +26,7 @@
 #ifdef __LINUX__
 #include <QLibrary>
 #endif
-
+#include <initializer_list>
 #include "control/controlobject.h"
 #include "control/controlproxy.h"
 #include "soundio/sounddevice.h"
@@ -109,9 +109,9 @@ SoundDevicePortAudio::SoundDevicePortAudio(UserSettingsPointer config,
     m_iNumInputChannels = m_deviceInfo->maxInputChannels;
     m_iNumOutputChannels = m_deviceInfo->maxOutputChannels;
 
-    m_pMasterAudioLatencyOverloadCount = new ControlProxy("[Master]","audio_latency_overload_count");
-    m_pMasterAudioLatencyUsage = new ControlProxy("[Master]","audio_latency_usage");
-    m_pMasterAudioLatencyOverload = new ControlProxy("[Master]","audio_latency_overload");
+    m_pMasterAudioLatencyOverloadCount = new ControlProxy({"[Master]","audio_latency_overload_count"},this);
+    m_pMasterAudioLatencyUsage = new ControlProxy({"[Master]","audio_latency_usage"},this);
+    m_pMasterAudioLatencyOverload = new ControlProxy({"[Master]","audio_latency_overload"},this);
 
     m_inputParams.device = 0;
     m_inputParams.channelCount = 0;
@@ -127,9 +127,8 @@ SoundDevicePortAudio::SoundDevicePortAudio(UserSettingsPointer config,
 }
 SoundDevicePortAudio::~SoundDevicePortAudio()
 {
-    delete m_pMasterAudioLatencyOverloadCount;
-    delete m_pMasterAudioLatencyUsage;
-    delete m_pMasterAudioLatencyOverload;
+    if(isOpen())
+        close();
 }
 Result SoundDevicePortAudio::open(bool isClkRefDevice, int syncBuffers)
 {
@@ -335,11 +334,10 @@ Result SoundDevicePortAudio::open(bool isClkRefDevice, int syncBuffers)
     m_pStream = pStream;
     return OK;
 }
-
-bool SoundDevicePortAudio::isOpen() const {
+bool SoundDevicePortAudio::isOpen() const
+{
     return m_pStream.load();
 }
-
 Result SoundDevicePortAudio::close()
 {
     //qDebug() << "SoundDevicePortAudio::close()" << getInternalName();
@@ -386,8 +384,8 @@ Result SoundDevicePortAudio::close()
     m_bSetThreadPriority = false;
     return OK;
 }
-
-QString SoundDevicePortAudio::getError() const {
+QString SoundDevicePortAudio::getError() const
+{
     return m_lastError;
 }
 void SoundDevicePortAudio::readProcess()
@@ -397,9 +395,9 @@ void SoundDevicePortAudio::readProcess()
         int inChunkSize = m_framesPerBuffer * m_inputParams.channelCount;
         if (m_syncBuffers == 0) { // "Experimental (no delay)"
             // Polling mode
-            signed int readAvailable = Pa_GetStreamReadAvailable(pStream) * m_inputParams.channelCount;
+            auto readAvailable = Pa_GetStreamReadAvailable(pStream) * m_inputParams.channelCount;
             int writeAvailable = m_inputFifo->writeAvailable();
-            int copyCount = qMin(writeAvailable, readAvailable);
+            int copyCount = qMin<int>(writeAvailable, readAvailable);
             if (copyCount > 0) {
                 FIFO<CSAMPLE>::pointer dataPtr1, dataPtr2;
                 FIFO<CSAMPLE>::size_type size1, size2;
@@ -523,7 +521,7 @@ void SoundDevicePortAudio::writeProcess()
             // Polling
             int writeAvailable = Pa_GetStreamWriteAvailable(pStream) * m_outputParams.channelCount;
             int readAvailable = m_outputFifo->readAvailable();
-            int copyCount = qMin(readAvailable, writeAvailable);
+            int copyCount = qMin<int>(readAvailable, writeAvailable);
             //qDebug() << "SoundDevicePortAudio::writeProcess()" << toRead << writeAvailable;
             if (copyCount > 0) {
                 FIFO<CSAMPLE>::pointer dataPtr1, dataPtr2;
@@ -884,7 +882,7 @@ void SoundDevicePortAudio::updateCallbackEntryToDacTime(
     //
     // SLC2 + CED2 = CED1 + DAC  -> 8 + 14 = 12 + 10
 
-    PaTime callbackEntrytoDacSecs = timeInfo->outputBufferDacTime - timeInfo->currentTime;
+    auto callbackEntrytoDacSecs = timeInfo->outputBufferDacTime - timeInfo->currentTime;
     auto bufferSizeSec = m_framesPerBuffer / m_dSampleRate;
 
 

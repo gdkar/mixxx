@@ -27,7 +27,8 @@
 #include "util/sample.h"
 
 SoundDevice::SoundDevice(UserSettingsPointer config, SoundManager* sm)
-        : m_pConfig(config),
+        : QObject(sm),
+          m_pConfig(config),
           m_pSoundManager(sm),
           m_strInternalName("Unknown Soundcard"),
           m_strDisplayName("Unknown Soundcard"),
@@ -38,8 +39,7 @@ SoundDevice::SoundDevice(UserSettingsPointer config, SoundManager* sm)
           m_framesPerBuffer(0) {
 }
 
-SoundDevice::~SoundDevice() {
-}
+SoundDevice::~SoundDevice() { }
 
 int SoundDevice::getNumInputChannels() const {
     return m_iNumInputChannels;

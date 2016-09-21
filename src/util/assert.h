@@ -3,7 +3,7 @@
 
 #include <QtDebug>
 
-inline void mixxx_noop(void) {}
+constexpr void mixxx_noop(void) {}
 
 inline void mixxx_debug_assert(const char* assertion, const char* file, int line) {
 #ifdef MIXXX_DEBUG_ASSERTIONS_FATAL

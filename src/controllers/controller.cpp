@@ -16,29 +16,6 @@
 #include "controllers/controllerdebug.h"
 #include "controllers/defs_controllers.h"
 
-BindingProxy::BindingProxy(QObject *p)
-: QObject(p) {}
-
-BindingProxy::BindingProxy(QString pre,  QObject *p)
-: QObject(p)
-, m_prefix(pre){}
-
-BindingProxy::~BindingProxy() = default;
-double BindingProxy::value() const { return m_value;}
-QString BindingProxy::prefix() const { return m_prefix;}
-void BindingProxy::setValue(double val)
-{
-    auto changed = val != m_value;
-    m_value = val;
-    messageReceived(val);
-    if(changed) valueChanged(val);
-}
-void BindingProxy::setPrefix(QString pre)
-{
-    if(pre != m_prefix)
-        prefixChanged(m_prefix = pre);
-}
-
 Controller::Controller(QObject *p)
         : QObject(p),
           m_pEngine(nullptr),
@@ -74,11 +51,11 @@ bool Controller::isInputDevice() const
 {
     return m_bIsInputDevice;
 }
-QString Controller::getName() const
+QString Controller::getDeviceName() const
 {
     return m_sDeviceName;
     }
-QString Controller::getCategory() const
+QString Controller::getDeviceCategory() const
 {
     return m_sDeviceCategory;
 }
@@ -90,7 +67,6 @@ bool Controller::isLearning() const
 {
     return m_bLearning;
 }
-
 ControllerEngine* Controller::getEngine() const
 {
     return m_pEngine;
@@ -102,7 +78,7 @@ void Controller::setDeviceName(QString deviceName)
 }
 void Controller::setDeviceCategory(QString deviceCategory)
 {
-    if(getCategory() != deviceCategory)
+    if(getDeviceCategory() != deviceCategory)
         deviceCategoryChanged(m_sDeviceCategory = deviceCategory);
 }
 void Controller::setOutputDevice(bool outputDevice)
@@ -120,7 +96,6 @@ void Controller::setOpen(bool open)
     if(isOpen()!=open)
         isOpenChanged(m_bIsOpen = open);
 }
-
 int Controller::open()
 {
     return -1;
@@ -136,7 +111,6 @@ bool Controller::poll()
 {
     return false;
 }
-
 void Controller::send(QByteArray data)
 {
     void(sizeof(data));
@@ -199,7 +173,6 @@ bool Controller::applyPreset(QList<QString> scriptPaths, bool initializeScripts)
     }
     return success;
 }
-
 void Controller::startLearning()
 {
     if(!m_bLearning) {

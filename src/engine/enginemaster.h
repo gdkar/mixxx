@@ -51,7 +51,7 @@ class EngineDelay;
 // engine. Prevents memory allocation in EngineMaster::addChannel.
 static const int kPreallocatedChannels = 64;
 
-class EngineMaster : public QObject, public AudioSource {
+class EngineMaster : public QObject, public AudioOrigin {
     Q_OBJECT
   public:
     EngineMaster(UserSettingsPointer pConfig,
@@ -65,23 +65,23 @@ class EngineMaster : public QObject, public AudioSource {
     // be called by SoundManager.
     const CSAMPLE* buffer(AudioOutput output) const;
 
-    inline const QString& getMasterGroup() const {
+    const QString& getMasterGroup() const {
         return m_masterHandle.name();
     }
 
-    inline const QString& getHeadphoneGroup() const {
+    const QString& getHeadphoneGroup() const {
         return m_headphoneHandle.name();
     }
 
-    inline const QString& getBusLeftGroup() const {
+    const QString& getBusLeftGroup() const {
         return m_busLeftHandle.name();
     }
 
-    inline const QString& getBusCenterGroup() const {
+    const QString& getBusCenterGroup() const {
         return m_busCenterHandle.name();
     }
 
-    inline const QString& getBusRightGroup() const {
+    const QString& getBusRightGroup() const {
         return m_busRightHandle.name();
     }
 
@@ -104,7 +104,7 @@ class EngineMaster : public QObject, public AudioSource {
     // only call it before the engine has started mixing.
     void addChannel(EngineChannel* pChannel);
     EngineChannel* getChannel(const QString& group);
-    static inline double gainForOrientation(EngineChannel::ChannelOrientation orientation,
+    static double gainForOrientation(EngineChannel::ChannelOrientation orientation,
                                             double leftGain,
                                             double centerGain,
                                             double rightGain) {
@@ -163,11 +163,11 @@ class EngineMaster : public QObject, public AudioSource {
     };
     class PflGainCalculator : public GainCalculator {
       public:
-        inline double getGain(ChannelInfo* pChannelInfo) const {
+        double getGain(ChannelInfo* pChannelInfo) const {
             Q_UNUSED(pChannelInfo);
             return m_dGain;
         }
-        inline void setGain(double dGain) {
+        void setGain(double dGain) {
             m_dGain = dGain;
         }
       private:
@@ -175,7 +175,7 @@ class EngineMaster : public QObject, public AudioSource {
     };
     class TalkoverGainCalculator : public GainCalculator {
       public:
-        inline double getGain(ChannelInfo* pChannelInfo) const {
+        double getGain(ChannelInfo* pChannelInfo) const {
             Q_UNUSED(pChannelInfo);
             return 1.0;
         }
@@ -189,7 +189,7 @@ class EngineMaster : public QObject, public AudioSource {
                   m_dRightGain(1.0) {
         }
 
-        inline double getGain(ChannelInfo* pChannelInfo) const {
+        double getGain(ChannelInfo* pChannelInfo) const {
             const double channelVolume = pChannelInfo->m_pVolumeControl->get();
             const double orientationGain = EngineMaster::gainForOrientation(
                     pChannelInfo->m_pChannel->getOrientation(),
@@ -197,7 +197,7 @@ class EngineMaster : public QObject, public AudioSource {
             return m_dVolume * channelVolume * orientationGain;
         }
 
-        inline void setGains(double dVolume, double leftGain,
+        void setGains(double dVolume, double leftGain,
                 double centerGain, double rightGain) {
             m_dVolume = dVolume;
             m_dLeftGain = leftGain;
@@ -214,35 +214,35 @@ class EngineMaster : public QObject, public AudioSource {
     template<typename T, unsigned int CAPACITY>
     class FastVector {
       public:
-        inline FastVector() : m_size(0), m_data((T*)((void *)m_buffer)) {};
-        inline ~FastVector() {
+        FastVector() : m_size(0), m_data((T*)((void *)m_buffer)) {};
+        ~FastVector() {
             if (QTypeInfo<T>::isComplex) {
                 for (int i = 0; i < m_size; ++i) {
                     m_data[i].~T();
                 }
             }
         }
-        inline void append(const T& t) {
+        void append(const T& t) {
             if (QTypeInfo<T>::isComplex) {
                 new (&m_data[m_size++]) T(t);
             } else {
                 m_data[m_size++] = t;
             }
         };
-        inline const T& operator[](unsigned int i) const {
+        const T& operator[](unsigned int i) const {
             return m_data[i];
         }
-        inline T& operator[](unsigned int i) {
+        T& operator[](unsigned int i) {
             return m_data[i];
         }
-        inline const T& at(unsigned int i) const {
+        const T& at(unsigned int i) const {
             return m_data[i];
         }
-        inline void replace(unsigned int i, const T& t) {
+        void replace(unsigned int i, const T& t) {
             T copy(t);
             m_data[i] = copy;
         }
-        inline int size () const {
+        int size () const {
             return m_size;
         }
       private:

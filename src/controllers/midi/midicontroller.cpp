@@ -67,7 +67,7 @@ bool MidiController::matchPreset(const PresetInfo& preset) {
 
 bool MidiController::savePreset(QString fileName) const {
     MidiControllerPresetFileHandler handler;
-    return handler.save(m_preset, getName(), fileName);
+    return handler.save(m_preset, getDeviceName(), fileName);
 }
 
 bool MidiController::applyPreset(QList<QString> scriptPaths, bool initializeScripts) {
@@ -272,7 +272,7 @@ void MidiController::receive(unsigned char status, unsigned char control,
     auto channel = MidiUtils::channelFromStatus(status);
     auto opCode = MidiUtils::opCodeFromStatus(status);
 
-    controllerDebug(formatMidiMessage(getName(), status, control, value,
+    controllerDebug(formatMidiMessage(getDeviceName(), status, control, value,
                                       channel, opCode, timestamp));
     MidiKey mappingKey(status, control);
 
@@ -536,7 +536,7 @@ void MidiController::receive(QVariant vdata, mixxx::Duration timestamp)
 {
     auto data = vdata.value<QByteArray>();
     if(data.size()){
-        controllerDebug(formatSysexMessage(getName(), data, timestamp));
+        controllerDebug(formatSysexMessage(getDeviceName(), data, timestamp));
 
         MidiKey mappingKey(data.at(0), 0xFF);
 
@@ -582,7 +582,7 @@ void MidiController::processInputMapping(const MidiInputMapping& mapping,
         return;
     }
     qWarning() << "MidiController: No script function specified for"
-               << formatSysexMessage(getName(), data, timestamp);
+               << formatSysexMessage(getDeviceName(), data, timestamp);
 }
 void MidiController::sendShortMsg(unsigned char status, unsigned char byte1, unsigned char byte2)
 {

@@ -19,8 +19,8 @@
 
 #include <portmidi.h>
 
-#include <QScopedPointer>
-
+#include <memory>
+#include <utility>
 #include "controllers/midi/midicontroller.h"
 #include "controllers/midi/portmididevice.h"
 
@@ -48,13 +48,10 @@
 // A midi message contains 1 .. 4 bytes.
 // a 1024 messages buffer will buffer ~327 ms Midi-Stream
 #define MIXXX_PORTMIDI_BUFFER_LEN 1024
-
 // Length of SysEx buffer in byte
 #define MIXXX_SYSEX_BUFFER_LEN 1024
-
 // String to display for no MIDI devices present
 #define MIXXX_PORTMIDI_NO_DEVICE_STRING "None"
-
 // A PortMidi-based implementation of MidiController
 class PortMidiController : public MidiController {
     Q_OBJECT
@@ -82,15 +79,14 @@ class PortMidiController : public MidiController {
     void setPortMidiInputDevice(PortMidiDevice* device) { m_pInputDevice.reset(device); }
     void setPortMidiOutputDevice(PortMidiDevice* device) { m_pOutputDevice.reset(device); }
 
-    QScopedPointer<PortMidiDevice> m_pInputDevice;
-    QScopedPointer<PortMidiDevice> m_pOutputDevice;
+    std::unique_ptr<PortMidiDevice> m_pInputDevice;
+    std::unique_ptr<PortMidiDevice> m_pOutputDevice;
 
     PmEvent m_midiBuffer[MIXXX_PORTMIDI_BUFFER_LEN];
 
     // Storage for SysEx messages
-    unsigned char m_cReceiveMsg[MIXXX_SYSEX_BUFFER_LEN];
-    int m_cReceiveMsg_index;
-    bool m_bInSysex;
+    std::vector<unsigned char> m_sysex{};
+    bool m_bInSysex{false};
 
     friend class PortMidiControllerTest;
 };

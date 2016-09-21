@@ -30,34 +30,25 @@ RtMidiController::RtMidiController(int inIndex, QString inName, int outIndex, QS
         setDeviceName("RtMidi: " + inName);
     }
 }
-int RtMidiController::inputIndex() const
-{
-    return in_index;
-}
-int RtMidiController::outputIndex() const
-{
-    return out_index;
-}
-QString RtMidiController::inputName() const
-{
-    return in_name;
-}
-QString RtMidiController::outputName() const
-{
-    return out_name;
-}
+int RtMidiController::inputIndex() const { return in_index; }
+int RtMidiController::outputIndex() const { return out_index; }
+QString RtMidiController::inputName() const { return in_name; }
+QString RtMidiController::outputName() const { return out_name; }
 void RtMidiController::setInputIndex(int _index)
 {
     if(_index != in_index) {
         auto _open = isOpen();
-        if(isOpen()){
+
+        if(_open)
             close();
-        }
+
         in_index = _index;
         in_name.clear();
-        emit(inputIndexChanged(_index));
+
         if(_open)
             open();
+
+        emit(inputIndexChanged(_index));
     }
 }
 void RtMidiController::setOutputIndex(int _index)
@@ -82,56 +73,58 @@ RtMidiController::~RtMidiController()
 int RtMidiController::open()
 {
     if (isOpen()) {
-        qDebug() << "RtMidiDevice" << getName() << "already open";
+        qDebug() << "RtMidiDevice" << getDeviceName() << "already open";
         return -1;
     }else{
-        qDebug() << "opening RtMidiDevice" << getName();
+        qDebug() << "opening RtMidiDevice" << getDeviceName();
     }
     if(in_index>= 0) {
+        auto _iindex = in_index;
+        auto _iname  = in_name;
         try {
             m_midiIn = std::make_unique<RtMidiIn>();
             m_midiIn->setCallback(&RtMidiController::trampoline, this);
-            if(in_name.isEmpty()){
-                in_name = QString::fromStdString(m_midiIn->getPortName(in_index));
-                emit(inputNameChanged(in_name));
-            }
-            if(!in_name.isEmpty()) {
+            auto _in_name = QString::fromStdString(m_midiIn->getPortName(in_index));
+            m_midiIn->openPort(in_index, in_name.toStdString());
+            if(in_name.isEmpty()) {
                 setDeviceName("RtMidi: " + in_name);
             }
-            m_midiIn->openPort(in_index, in_name.toStdString());
+            in_name = _in_name;
             setInputDevice(true);
         }catch(const RtMidiError &error) {
             qDebug() << error.what();
             in_index = -1;
             in_name.clear();
             setInputDevice(false);
-            emit inputIndexChanged(-1);
-            emit inputNameChanged(in_name);
         }
+        if(_iindex != in_index)
+            emit inputIndexChanged(in_index);
+        if(_iname != in_name)
+            emit inputNameChanged(in_name);
     }
     if(out_index>= 0) {
+        auto _oindex = out_index;
+        auto _oname  = out_name;
         try {
             m_midiOut = std::make_unique<RtMidiOut>();
-            if(out_name.isEmpty()){
-                out_name = QString::fromStdString(m_midiOut->getPortName(out_index));
-                emit(outputNameChanged(out_name));
-            }
+            auto _out_name = QString::fromStdString(m_midiOut->getPortName(out_index));
+            m_midiOut->openPort(out_index,out_name.toStdString());
             if(!out_name.isEmpty())
                 setDeviceName("RtMidi: " + out_name);
-
-            m_midiOut->openPort(out_index,out_name.toStdString());
+            out_name = _out_name;
             setOutputDevice(true);
         }catch(const RtMidiError &error) {
             qDebug() << error.what();
             out_index = -1;
             out_name.clear();
             setOutputDevice(false);
-            emit outputIndexChanged(-1);
+        }
+        if(_oindex != out_index)
+            emit outputIndexChanged(out_index);
+        if(_oname != out_name)
             emit outputNameChanged(out_name);
 
-        }
     }
-
     m_bInSysex = false;
     m_sysex.clear();;
     setOpen(true);
@@ -142,7 +135,7 @@ int RtMidiController::open()
 int RtMidiController::close()
 {
     if (!isOpen()) {
-        qDebug() << "RtMIDI device" << getName() << "already closed";
+        qDebug() << "RtMIDI device" << getDeviceName() << "already closed";
         return -1;
     }
 
@@ -154,7 +147,7 @@ int RtMidiController::close()
     return 0;
 }
 
-void RtMidiController::callback(double deltatime, std::vector<unsigned char> &message)
+void RtMidiController::callback(double deltatime, std::vector<uint8_t> &message)
 {
     auto timestamp = mixxx::Duration::fromNanos(qint64(deltatime * 1e9));
     if(message.size() < 1)
@@ -205,8 +198,7 @@ void RtMidiController::callback(double deltatime, std::vector<unsigned char> &me
             auto data = message.at(i);
             // End System Exclusive message if the EOX byte was received
             if(data == MIDI_EOX) {
-                receive( QByteArray::fromRawData(reinterpret_cast<const char *>(m_sysex.data()),
-                    m_sysex.size(),
+                receive( QByteArray::fromRawData(reinterpret_cast<const char *>(m_sysex.data()),m_sysex.size()),
                     timestamp);
                 m_sysex.clear();
                 m_bInSysex = false;
@@ -220,7 +212,7 @@ void RtMidiController::callback(double deltatime, std::vector<unsigned char> &me
 void RtMidiController::sendWord(unsigned int word)
 {
     if(m_midiOut) {
-        auto message = std::vector<unsigned char>{uint8_t(word),uint8_t(word>>8),uint8_t(word>>16)};
+        auto message = std::vector<uint8_t>{uint8_t(word),uint8_t(word>>8),uint8_t(word>>16)};
         m_midiOut->sendMessage(&message);
     }
 
@@ -229,19 +221,17 @@ void RtMidiController::send(QByteArray data)
 {
     if(!m_midiOut)
         return;
-    auto message = std::vector<unsigned char>(data.constBegin(),data.constEnd());
+    auto message = std::vector<uint8_t>(data.constBegin(),data.constEnd());
     m_midiOut->sendMessage(&message);
 }
-
 bool RtMidiController::poll(){return false;}
 bool RtMidiController::isPolling() const { return false; }
 
 void RtMidiController::trampoline(
     double deltatime
-  , std::vector<unsigned char> * message
+  , std::vector<uint8_t> * message
   , void *opaque)
 {
     if(message && opaque)
         static_cast<RtMidiController*>(opaque)->callback(deltatime, *message);
 }
-

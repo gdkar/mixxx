@@ -140,9 +140,6 @@ QSharedPointer<ControlDoublePrivate> ControlDoublePrivate::getControl(
         MMutexLocker locker(&s_qCOHashMutex);
         auto it = s_qCOHash.find(key);
         if (it != s_qCOHash.end()) {
-            if (warn) {
-                qDebug() << "ControlObject" << key.group << key.item << "already created";
-            }
             pControl = it.value().lock();
 //            }
         }

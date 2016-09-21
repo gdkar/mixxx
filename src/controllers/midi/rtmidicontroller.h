@@ -68,11 +68,10 @@ class RtMidiController : public MidiController {
     QString in_name{};
     int out_index{-1};
     QString out_name{};
-    std::unique_ptr<RtMidiIn>  m_midiIn{};
+    std::unique_ptr<RtMidiIn>  m_midiIn {};
     std::unique_ptr<RtMidiOut> m_midiOut{};
-
     // Storage for SysEx messages
-    std::vector<unsigned char> m_sysex{};
+    std::vector<uint8_t> m_sysex{};
     bool m_bInSysex{false};
 };
 #endif

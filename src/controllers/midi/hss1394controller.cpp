@@ -86,41 +86,41 @@ Hss1394Controller::~Hss1394Controller() {
 
 int Hss1394Controller::open() {
     if (isOpen()) {
-        qDebug() << "HSS1394 device" << getName() << "already open";
+        qDebug() << "HSS1394 device" << getDeviceName() << "already open";
         return -1;
     }
 
-    if (getName() == MIXXX_HSS1394_NO_DEVICE_STRING) {
+    if (getDeviceName() == MIXXX_HSS1394_NO_DEVICE_STRING) {
         return -1;
     }
 
-    controllerDebug("Hss1394Controller: Opening" << getName() << "index"
+    controllerDebug("Hss1394Controller: Opening" << getDeviceName() << "index"
                     << m_iDeviceIndex);
 
     using namespace hss1394;
 
     m_pChannel = Node::Instance()->OpenChannel(m_iDeviceIndex);
     if (m_pChannel == NULL) {
-        qDebug() << "HSS1394 device" << getName() << "could not be opened";
+        qDebug() << "HSS1394 device" << getDeviceName() << "could not be opened";
         m_pChannelListener = NULL;
         return -1;
     }
 
-    m_pChannelListener = new DeviceChannelListener(this, getName());
+    m_pChannelListener = new DeviceChannelListener(this, getDeviceName());
     connect(m_pChannelListener, SIGNAL(incomingData(QByteArray, mixxx::Duration)),
             this, SLOT(receive(QByteArray, mixxx::Duration)));
     connect(m_pChannelListener, SIGNAL(incomingData(unsigned char, unsigned char, unsigned char, mixxx::Duration)),
             this, SLOT(receive(unsigned char, unsigned char, unsigned char, mixxx::Duration)));
 
     if (!m_pChannel->InstallChannelListener(m_pChannelListener)) {
-        qDebug() << "HSS1394 channel listener could not be installed for device" << getName();
+        qDebug() << "HSS1394 channel listener could not be installed for device" << getDeviceName();
         delete m_pChannelListener;
         m_pChannelListener = NULL;
         m_pChannel = NULL;
     }
 
     // TODO(XXX): Should be done in script, not in Mixxx
-    if (getName().contains("SCS.1d",Qt::CaseInsensitive)) {
+    if (getDeviceName().contains("SCS.1d",Qt::CaseInsensitive)) {
         // If we are an SCS.1d, set the record encoder event timer to fire at 1ms intervals
         //  to match the 1ms scratch timer in the controller engine
         //
@@ -141,7 +141,7 @@ int Hss1394Controller::open() {
 
 int Hss1394Controller::close() {
     if (!isOpen()) {
-        qDebug() << "HSS1394 device" << getName() << "already closed";
+        qDebug() << "HSS1394 device" << getDeviceName() << "already closed";
         return -1;
     }
 
@@ -156,7 +156,7 @@ int Hss1394Controller::close() {
     // Clean up the HSS1394Node
     using namespace hss1394;
     if (!Node::Instance()->ReleaseChannel(m_pChannel)) {
-        qDebug() << "HSS1394 device" << getName() << "could not be released";
+        qDebug() << "HSS1394 device" << getDeviceName() << "could not be released";
         return -1;
     }
     if (m_pChannelListener != NULL) {

@@ -15,11 +15,10 @@
 
 namespace {
 bool shouldBlacklistDevice(const PmDeviceInfo* device) {
-    QString deviceName = device->name;
+    auto deviceName = QString{device->name};
     // In developer mode we show the MIDI Through Port, otherwise blacklist it
     // since it routinely causes trouble.
-    return !CmdlineArgs::Instance().getDeveloper() &&
-            deviceName.startsWith("Midi Through Port", Qt::CaseInsensitive);
+    return !CmdlineArgs::Instance().getDeveloper() && deviceName.startsWith("Midi Through Port", Qt::CaseInsensitive);
 }
 bool namesMatchMidiPattern(const QString input_name,
                            const QString output_name) {
@@ -28,14 +27,14 @@ bool namesMatchMidiPattern(const QString input_name,
     // devices that have an equivalent "deviceName" and ### section.
     QRegExp deviceNamePattern("^(.*) MIDI (\\d+)( .*)?$");
 
-    int inputMatch = deviceNamePattern.indexIn(input_name);
+    auto inputMatch = deviceNamePattern.indexIn(input_name);
     if (inputMatch == 0) {
-        QString inputDeviceName = deviceNamePattern.cap(1);
-        QString inputDeviceIndex = deviceNamePattern.cap(2);
-        int outputMatch = deviceNamePattern.indexIn(output_name);
+        auto inputDeviceName = deviceNamePattern.cap(1);
+        auto inputDeviceIndex = deviceNamePattern.cap(2);
+        auto outputMatch = deviceNamePattern.indexIn(output_name);
         if (outputMatch == 0) {
-            QString outputDeviceName = deviceNamePattern.cap(1);
-            QString outputDeviceIndex = deviceNamePattern.cap(2);
+            auto outputDeviceName = deviceNamePattern.cap(1);
+            auto outputDeviceIndex = deviceNamePattern.cap(2);
             if (outputDeviceName.compare(inputDeviceName, Qt::CaseInsensitive) == 0 &&
                 outputDeviceIndex == inputDeviceIndex) {
                 return true;
@@ -53,12 +52,12 @@ bool namesMatchInOutPattern(const QString input_name,
 
     int inputMatch = inputPattern.indexIn(input_name);
     if (inputMatch == 0) {
-        QString inputDeviceName = inputPattern.cap(1);
-        QString inputDeviceIndex = inputPattern.cap(2);
+        auto inputDeviceName = inputPattern.cap(1);
+        auto inputDeviceIndex = inputPattern.cap(2);
         int outputMatch = outputPattern.indexIn(output_name);
         if (outputMatch == 0) {
-            QString outputDeviceName = outputPattern.cap(1);
-            QString outputDeviceIndex = outputPattern.cap(2);
+            auto outputDeviceName = outputPattern.cap(1);
+            auto outputDeviceIndex = outputPattern.cap(2);
             if (outputDeviceName.compare(inputDeviceName, Qt::CaseInsensitive) == 0 &&
                 outputDeviceIndex == inputDeviceIndex) {
                 return true;
@@ -77,14 +76,14 @@ bool namesMatchPattern(const QString input_name,
     // the ordinal index of the device.
     QRegExp deviceNamePattern("^(.*) (\\d+)( [^0-9]+)?$");
 
-    int inputMatch = deviceNamePattern.indexIn(input_name);
+    auto inputMatch = deviceNamePattern.indexIn(input_name);
     if (inputMatch == 0) {
-        QString inputDeviceName = deviceNamePattern.cap(1);
-        QString inputDeviceIndex = deviceNamePattern.cap(2);
-        int outputMatch = deviceNamePattern.indexIn(output_name);
+        auto inputDeviceName = deviceNamePattern.cap(1);
+        auto inputDeviceIndex = deviceNamePattern.cap(2);
+        auto outputMatch = deviceNamePattern.indexIn(output_name);
         if (outputMatch == 0) {
-            QString outputDeviceName = deviceNamePattern.cap(1);
-            QString outputDeviceIndex = deviceNamePattern.cap(2);
+            auto outputDeviceName = deviceNamePattern.cap(1);
+            auto outputDeviceIndex = deviceNamePattern.cap(2);
             if (outputDeviceName.compare(inputDeviceName, Qt::CaseInsensitive) == 0 &&
                 outputDeviceIndex == inputDeviceIndex) {
                 return true;
@@ -110,7 +109,7 @@ PortMidiEnumerator::~PortMidiEnumerator() {
     while (dev_it.hasNext()) {
         delete dev_it.next();
     }
-    PmError err = Pm_Terminate();
+    auto err = Pm_Terminate();
     // Based on reading the source, it's not possible for this to fail.
     if (err != pmNoError) {
         qWarning() << "PortMidi error:" << Pm_GetErrorText(err);
@@ -130,13 +129,13 @@ bool shouldLinkInputToOutput(const QString input_name,
     // trimming those words from the start, and seeing if they then match.
 
     // Ignore "From" text in the beginning of device input name.
-    QString input_name_stripped = input_name;
+    auto input_name_stripped = input_name;
     if (input_name.indexOf("from", 0, Qt::CaseInsensitive) == 0) {
         input_name_stripped = input_name.right(input_name.length() - 4);
     }
 
     // Ignore "To" text in the beginning of device output name.
-    QString output_name_stripped = output_name;
+    auto output_name_stripped = output_name;
     if (output_name.indexOf("to", 0, Qt::CaseInsensitive) == 0) {
         output_name_stripped = output_name.right(output_name.length() - 2);
     }

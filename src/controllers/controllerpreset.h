@@ -12,12 +12,10 @@
 #define CONTROLLERPRESET_H
 
 #include <QHash>
+#include "controllers/controllerpresetvisitor.h"
 #include <QSharedPointer>
 #include <QString>
 #include <QList>
-
-class ControllerPresetVisitor;
-class ConstControllerPresetVisitor;
 
 class ControllerPreset {
   public:
@@ -37,8 +35,7 @@ class ControllerPreset {
      * @param filename Name of the XML file to add
      * @param functionprefix Function prefix to add
      */
-    void addScriptFile(QString filename, QString functionprefix,
-                       bool builtin=false) {
+    void addScriptFile(QString filename, QString functionprefix, bool builtin=false) {
         ScriptFileInfo info;
         info.name = filename;
         info.functionPrefix = functionprefix;
@@ -122,9 +119,15 @@ class ControllerPreset {
         m_productMatches.append(match);
     }
 
-    virtual void accept(ControllerPresetVisitor* visitor) = 0;
-    virtual void accept(ConstControllerPresetVisitor* visitor) const = 0;
-    virtual bool isMappable() const = 0;
+    virtual void accept(ControllerPresetVisitor* visitor)  {
+        if(visitor) visitor->visit(this);
+    }
+    virtual void accept(ConstControllerPresetVisitor* visitor) const {
+        if(visitor) visitor->visit(this);
+    }
+    virtual bool isMappable() const {
+        return false;
+    }
 
     QList<ScriptFileInfo> scripts;
     // Optional list of controller device match details

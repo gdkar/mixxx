@@ -12,6 +12,7 @@
 #ifndef CONTROLLER_H
 #define CONTROLLER_H
 
+#include "controllers/bindingproxy.h"
 #include "controllers/controllerengine.h"
 #include "controllers/controllervisitor.h"
 #include "controllers/controllerpreset.h"
@@ -21,28 +22,6 @@
 #include "util/duration.h"
 
 
-class BindingProxy : public QObject {
-    Q_OBJECT
-    Q_PROPERTY(double value READ value WRITE setValue NOTIFY valueChanged)
-    Q_PROPERTY(QString prefix READ prefix WRITE setPrefix NOTIFY prefixChanged)
-public:
-    Q_INVOKABLE BindingProxy(QObject *p = nullptr);
-    Q_INVOKABLE BindingProxy(QString prefix, QObject *p);
-   ~BindingProxy();
-    double value() const;
-    void setValue(double);
-    QString prefix() const;
-    void setPrefix(QString);
-signals:
-    void valueChanged(double);
-    void messageReceived(double, double = 0);
-    void prefixChanged(QVariant);
-
-protected:
-    QString m_prefix{};
-    double   m_value{};
-};
-QML_DECLARE_TYPE(BindingProxy)
 class Controller : public QObject, ConstControllerPresetVisitor {
     Q_OBJECT
 
@@ -50,8 +29,8 @@ class Controller : public QObject, ConstControllerPresetVisitor {
     Q_PROPERTY(bool isOutputDevice READ isOutputDevice WRITE setOutputDevice NOTIFY isOutputDeviceChanged);
     Q_PROPERTY(bool isInputDevice READ isInputDevice WRITE setInputDevice NOTIFY isInputDeviceChanged);
     Q_PROPERTY(QString presetExtension READ presetExtension CONSTANT);
-    Q_PROPERTY(QString deviceName READ getName WRITE setDeviceName NOTIFY deviceNameChanged);
-    Q_PROPERTY(QString deviceCategory READ getCategory WRITE setDeviceCategory NOTIFY deviceCategoryChanged);
+    Q_PROPERTY(QString deviceName READ getDeviceName WRITE setDeviceName NOTIFY deviceNameChanged);
+    Q_PROPERTY(QString deviceCategory READ getDeviceCategory WRITE setDeviceCategory NOTIFY deviceCategoryChanged);
     Q_PROPERTY(bool mappable READ isMappable CONSTANT);
     Q_PROPERTY(bool learning READ isLearning WRITE setLearning NOTIFY learningChanged);
     Q_PROPERTY(ControllerEngine* engine READ getEngine NOTIFY engineChanged);
@@ -70,8 +49,8 @@ class Controller : public QObject, ConstControllerPresetVisitor {
     bool isOpen() const;
     bool isOutputDevice() const;
     bool isInputDevice() const;
-    QString getName() const;
-    QString getCategory() const;
+    QString getDeviceName() const;
+    QString getDeviceCategory() const;
     virtual bool isMappable() const;
     bool isLearning() const;
     virtual bool matchPreset(const PresetInfo& preset);
@@ -148,7 +127,6 @@ class Controller : public QObject, ConstControllerPresetVisitor {
     friend class ControllerManager; // accesses lots of our stuff, but in the same thread
     // For testing.
     friend class ControllerPresetValidationTest;
-
 };
 QML_DECLARE_TYPE(Controller);
 #endif

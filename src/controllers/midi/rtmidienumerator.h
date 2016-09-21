@@ -23,7 +23,6 @@ class RtMidiEnumerator : public MidiEnumerator {
     std::unique_ptr<RtMidiOut>  m_midiOut{};
     QList<Controller *> m_devices;
 };
-bool shouldLinkInputToOutput(QString input_name,
-                             QString output_name);
+bool shouldLinkInputToOutput(QString input_name,QString output_name);
 
 #endif

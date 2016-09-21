@@ -54,6 +54,12 @@ class ControlObject : public QObject, public QEnableSharedFromThis<ControlObject
     virtual double operator -- ();
     virtual double operator ++ (int);
     virtual double operator -- (int);
+    Q_INVOKABLE virtual double fetch_add(double val);
+    Q_INVOKABLE virtual double fetch_sub(double val);
+    Q_INVOKABLE virtual double exchange (double with);
+    Q_INVOKABLE virtual double fetch_mul(double by);
+    Q_INVOKABLE virtual double fetch_div(double by);
+    Q_INVOKABLE virtual double fetch_toggle();
 
   public slots:
     QString name() const;

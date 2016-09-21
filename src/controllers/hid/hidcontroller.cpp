@@ -134,7 +134,7 @@ void HidController::visit(const ControllerPreset* preset) {
 
 bool HidController::savePreset(QString fileName) const {
     HidControllerPresetFileHandler handler;
-    return handler.save(m_preset, getName(), fileName);
+    return handler.save(m_preset, getDeviceName(), fileName);
 }
 
 bool HidController::matchPreset(const PresetInfo& preset) {
@@ -210,12 +210,12 @@ void HidController::guessDeviceCategory() {
 
 int HidController::open() {
     if (isOpen()) {
-        qDebug() << "HID device" << getName() << "already open";
+        qDebug() << "HID device" << getDeviceName() << "already open";
         return -1;
     }
 
     // Open device by path
-    controllerDebug("Opening HID device" << getName() << "by HID path" << hid_path);
+    controllerDebug("Opening HID device" << getDeviceName() << "by HID path" << hid_path);
 
     m_pHidDevice = hid_open_path(hid_path);
 
@@ -229,7 +229,7 @@ int HidController::open() {
     // If it does fail, try without serial number WARNING: This will only open
     // one of multiple identical devices
     if (m_pHidDevice == NULL) {
-        qWarning() << "Unable to open specific HID device" << getName()
+        qWarning() << "Unable to open specific HID device" << getDeviceName()
                    << "Trying now with just make and model."
                    << "(This may only open the first of multiple identical devices.)";
         m_pHidDevice = hid_open(hid_vendor_id, hid_product_id, NULL);
@@ -237,7 +237,7 @@ int HidController::open() {
 
     // If that fails, we give up!
     if (m_pHidDevice == NULL) {
-        qWarning()  << "Unable to open HID device" << getName();
+        qWarning()  << "Unable to open HID device" << getDeviceName();
         return -1;
     }
 
@@ -245,10 +245,10 @@ int HidController::open() {
     startEngine();
 
     if (m_pReader != NULL) {
-        qWarning() << "HidReader already present for" << getName();
+        qWarning() << "HidReader already present for" << getDeviceName();
     } else {
         m_pReader = new HidReader(m_pHidDevice);
-        m_pReader->setObjectName(QString("HidReader %1").arg(getName()));
+        m_pReader->setObjectName(QString("HidReader %1").arg(getDeviceName()));
 
         connect(m_pReader, SIGNAL(incomingData(QByteArray, mixxx::Duration)),
                 this, SLOT(receive(QByteArray, mixxx::Duration)));
@@ -264,15 +264,15 @@ int HidController::open() {
 int HidController::close()
 {
     if (!isOpen()) {
-        qDebug() << "HID device" << getName() << "already closed";
+        qDebug() << "HID device" << getDeviceName() << "already closed";
         return -1;
     }
 
-    qDebug() << "Shutting down HID device" << getName();
+    qDebug() << "Shutting down HID device" << getDeviceName();
 
     // Stop the reading thread
     if (m_pReader == NULL) {
-        qWarning() << "HidReader not present for" << getName()
+        qWarning() << "HidReader not present for" << getDeviceName()
                    << "yet the device is open!";
     } else {
         disconnect(m_pReader, SIGNAL(incomingData(QByteArray, mixxx::Duration)),
@@ -316,15 +316,15 @@ void HidController::send(QByteArray data, unsigned int reportID)
     int result = hid_write(m_pHidDevice, (unsigned char*)data.constData(), data.size());
     if (result == -1) {
         if (ControllerDebug::enabled()) {
-            qWarning() << "Unable to send data to" << getName()
+            qWarning() << "Unable to send data to" << getDeviceName()
                        << "serial #" << hid_serial << ":"
                        << safeDecodeWideString(hid_error(m_pHidDevice), 512);
         } else {
-            qWarning() << "Unable to send data to" << getName() << ":"
+            qWarning() << "Unable to send data to" << getDeviceName() << ":"
                        << safeDecodeWideString(hid_error(m_pHidDevice), 512);
         }
     } else {
-        controllerDebug(result << "bytes sent to" << getName()
+        controllerDebug(result << "bytes sent to" << getDeviceName()
                  << "serial #" << hid_serial
                  << "(including report ID of" << reportID << ")");
     }

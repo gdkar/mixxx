@@ -130,7 +130,7 @@ void DlgPrefControllers::setupControllerWidgets()
 
         auto controllerWindowLink = new QTreeWidgetItem(QTreeWidgetItem::Type);
         controllerWindowLink->setIcon(0, QIcon(":/images/preferences/ic_preferences_controllers.png"));
-        auto curDeviceName = pController->getName();
+        auto curDeviceName = pController->getDeviceName();
         controllerWindowLink->setText(0, curDeviceName);
         controllerWindowLink->setTextAlignment(0, Qt::AlignLeft | Qt::AlignVCenter);
         controllerWindowLink->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);

@@ -193,7 +193,7 @@ void ControllerEngine::initializeScriptEngine()
     m_globalObject.setProperty("engine", newQObject(this));
 
     if (m_pController) {
-        qDebug() << "Controller in script engine is:" << m_pController->getName();
+        qDebug() << "Controller in script engine is:" << m_pController->getDeviceName();
         // Make the Controller instance available to scripts
         m_globalObject.setProperty("controller", newQObject(m_pController));
         // ...under the legacy name as well
@@ -276,7 +276,7 @@ void ControllerEngine::scriptHasChanged(QString scriptFilename)
 void ControllerEngine::initializeScripts()
 {
     auto args = (QJSValueList{}
-                << m_pController->getName()
+                << m_pController->getDeviceName()
                 << ControllerDebug::enabled());
     for (auto it = m_scriptModules.cbegin();
               it != m_scriptModules.cend();

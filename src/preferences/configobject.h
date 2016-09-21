@@ -8,7 +8,7 @@
 #include <QHash>
 #include <QMetaType>
 #include <QReadWriteLock>
-
+#include <initializer_list>
 #include "util/debug.h"
 
 // Class for the key for a specific configuration element. A key consists of a
@@ -21,6 +21,7 @@ class ConfigKey {
     ConfigKey(); // is required for qMetaTypeConstructHelper()
     ConfigKey(const ConfigKey& key);
     ConfigKey(const QString& g, const QString& i);
+    explicit ConfigKey(std::tuple<QString,QString> lst);
     static ConfigKey parseCommaSeparated(const QString& key);
 
     bool isEmpty() const {

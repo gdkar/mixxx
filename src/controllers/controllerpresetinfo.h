@@ -44,7 +44,7 @@ class PresetInfo {
         return m_valid;
     }
     QString getPath() const { return m_path; }
-    QString getName() const { return m_name; }
+    QString getDeviceName() const { return m_name; }
     QString getDescription() const { return m_description; }
     QString getForumLink() const { return m_forumlink; }
     QString getWikiLink() const { return m_wikilink; }

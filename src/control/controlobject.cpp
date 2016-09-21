@@ -360,3 +360,27 @@ double ControlObject::decrement(double x)
 {
     return (((*this)-=x));
 }
+double ControlObject::fetch_add(double val)
+{
+    return m_pControl ? m_pControl->updateAtomically([val](double x){return x + val;}) : 0.0;
+}
+double ControlObject::fetch_sub(double val)
+{
+    return m_pControl ? m_pControl->updateAtomically([val](double x){return x - val;}) : 0.0;
+}
+double ControlObject::exchange(double val)
+{
+    return m_pControl ? m_pControl->updateAtomically([val](double ){return val;}) : 0.0;
+}
+double ControlObject::fetch_mul(double val)
+{
+    return m_pControl ? m_pControl->updateAtomically([val](double x){return val * x;}) : 0.0;
+}
+double ControlObject::fetch_div(double val)
+{
+    return m_pControl ? m_pControl->updateAtomically([val](double x){return val / x;}) : 0.0;
+}
+double ControlObject::fetch_toggle()
+{
+    return m_pControl ? m_pControl->updateAtomically([](double x){return !x;}) : 0.0;
+}

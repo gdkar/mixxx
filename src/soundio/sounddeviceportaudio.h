@@ -39,6 +39,7 @@ class ControlProxy;
 typedef int (*EnableAlsaRT)(PaStream* s, int enable);
 
 class SoundDevicePortAudio : public SoundDevice {
+    Q_OBJECT
   public:
     SoundDevicePortAudio(UserSettingsPointer config,
                          SoundManager *sm, const PaDeviceInfo *deviceInfo,

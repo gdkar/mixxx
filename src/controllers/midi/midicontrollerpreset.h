@@ -20,25 +20,12 @@
 
 class MidiControllerPreset : public ControllerPreset {
   public:
-    MidiControllerPreset() {}
-    virtual ~MidiControllerPreset() {}
-
-    virtual void accept(ControllerPresetVisitor* visitor) {
-        if (visitor) {
-            visitor->visit(this);
-        }
-    }
-
-    virtual void accept(ConstControllerPresetVisitor* visitor) const {
-        if (visitor) {
-            visitor->visit(this);
-        }
-    }
-
-    virtual bool isMappable() const {
+    MidiControllerPreset() = default;
+    virtual ~MidiControllerPreset() = default;
+    virtual bool isMappable() const
+    {
         return true;
     }
-
     // MIDI input and output mappings.
     QHash<uint16_t, MidiInputMapping> inputMappings;
     QHash<ConfigKey, MidiOutputMapping> outputMappings;

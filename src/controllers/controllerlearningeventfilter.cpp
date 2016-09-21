@@ -10,39 +10,40 @@
 
 ControllerLearningEventFilter::ControllerLearningEventFilter(QObject* pParent)
         : QObject(pParent),
-          m_bListening(false) {
-}
+          m_bListening(false)
+{ }
 
-ControllerLearningEventFilter::~ControllerLearningEventFilter() {
-}
+ControllerLearningEventFilter::~ControllerLearningEventFilter() = default;
 
-bool ControllerLearningEventFilter::eventFilter(QObject* pObject, QEvent* pEvent) {
+bool ControllerLearningEventFilter::eventFilter(QObject* pObject, QEvent* pEvent)
+{
     //qDebug() << "ControllerLearningEventFilter::eventFilter" << pObject << pEvent;
 
-    WWidget* pWidget = dynamic_cast<WWidget*>(pObject);
+    auto pWidget = qobject_cast<WWidget*>(pObject);
     if (!pWidget || !m_bListening) {
         return false;
     }
 
-    WKnob* pKnob = dynamic_cast<WKnob*>(pObject);
-    WKnobComposed* pKnobComposed = dynamic_cast<WKnobComposed*>(pObject);
-    WSliderComposed* pSlider = dynamic_cast<WSliderComposed*>(pObject);
-    bool has_right_click_reset = pKnob || pKnobComposed || pSlider;
+    auto pKnob = qobject_cast<WKnob*>(pObject);
+    auto pKnobComposed = qobject_cast<WKnobComposed*>(pObject);
+
+    auto pSlider = qobject_cast<WSliderComposed*>(pObject);
+    auto has_right_click_reset = pKnob || pKnobComposed || pSlider;
 
     if (pEvent->type() == QEvent::KeyPress) {
         // TODO(XXX): handle keypresses?
     } else if (pEvent->type() == QEvent::MouseButtonPress) {
-        QMouseEvent* mouseEvent = reinterpret_cast<QMouseEvent*>(pEvent);
+        auto mouseEvent = static_cast<QMouseEvent*>(pEvent);
         qDebug() << "MouseButtonPress" << pWidget;
 
-        const ControlInfo& info = m_widgetControlInfo[pWidget];
+        auto& info = m_widgetControlInfo[pWidget];
         if (mouseEvent->button() & Qt::LeftButton) {
             if (info.leftClickControl) {
-                ConfigKey key = info.leftClickControl->getKey();
+                auto key = info.leftClickControl->getKey();
                 qDebug() << "Left-click maps MIDI to:" << key.group << key.item;
                 emit(controlClicked(info.leftClickControl));
             } else if (info.clickControl) {
-                ConfigKey key = info.clickControl->getKey();
+                auto key = info.clickControl->getKey();
                 emit(controlClicked(info.clickControl));
                 qDebug() << "Default-click maps MIDI to:" << key.group << key.item;
             } else {
@@ -51,7 +52,7 @@ bool ControllerLearningEventFilter::eventFilter(QObject* pObject, QEvent* pEvent
         }
         if (mouseEvent->button() & Qt::RightButton) {
             if (info.rightClickControl) {
-                ConfigKey key = info.rightClickControl->getKey();
+                auto key = info.rightClickControl->getKey();
                 qDebug() << "Right-click maps MIDI to:" << key.group << key.item;
                 emit(controlClicked(info.rightClickControl));
             } else if (has_right_click_reset && (info.leftClickControl || info.clickControl)) {
@@ -59,19 +60,19 @@ bool ControllerLearningEventFilter::eventFilter(QObject* pObject, QEvent* pEvent
                 // right-click. For controls that are derived from
                 // ControlPotmeter, we can hack this by appending "_set_default"
                 // to the ConfigKey item.
-                ControlObject* pControl = info.leftClickControl;
+                auto pControl = info.leftClickControl;
                 if (!pControl) {
                     pControl = info.clickControl;
                 }
-                ConfigKey key = pControl->getKey();
+                auto key = pControl->getKey();
                 key.item = key.item + "_set_default";
-                ControlObject* pResetControl = ControlObject::getControl(key);
+                auto pResetControl = ControlObject::getControl(key);
                 if (pResetControl) {
                     qDebug() << "Right-click reset maps MIDI to:" << key.group << key.item;
                     emit(controlClicked(pResetControl));
                 }
             } else if (info.clickControl) {
-                ConfigKey key = info.clickControl->getKey();
+                auto key = info.clickControl->getKey();
                 qDebug() << "Default-click maps MIDI to:" << key.group << key.item;
                 emit(controlClicked(info.clickControl));
             } else {
@@ -90,7 +91,7 @@ void ControllerLearningEventFilter::addWidgetClickInfo(
         QWidget* pWidget, Qt::MouseButton buttonState,
         ControlObject* pControl,
         ControlParameterWidgetConnection::EmitOption emitOption) {
-    ControlInfo& info = m_widgetControlInfo[pWidget];
+    auto& info = m_widgetControlInfo[pWidget];
 
     if (buttonState == Qt::LeftButton) {
         info.leftClickControl = pControl;
@@ -103,11 +104,11 @@ void ControllerLearningEventFilter::addWidgetClickInfo(
         info.emitOption = emitOption;
     }
 }
-
-void ControllerLearningEventFilter::startListening() {
+void ControllerLearningEventFilter::startListening()
+{
     m_bListening = true;
 }
-
-void ControllerLearningEventFilter::stopListening() {
+void ControllerLearningEventFilter::stopListening()
+{
     m_bListening = false;
 }

@@ -236,7 +236,8 @@ void ControlProxy::setKey(ConfigKey new_key)
     if(new_key != key()) {
         auto group_changed = new_key.group != group();
         auto item_changed  = new_key.item  != item();
-        QObject::disconnect(m_pControl.data(), 0, this, 0);
+        if(m_pControl)
+            QObject::disconnect(m_pControl.data(), 0, this, 0);
         auto _value = get();
         auto _default = getDefault();
         initialize(new_key);
@@ -246,6 +247,10 @@ void ControlProxy::setKey(ConfigKey new_key)
             emit groupChanged(group());
         if(item_changed)
             emit itemChanged(item());
+        if(_value != get())
+            emit valueChanged(get());
+        if(_default != getDefault())
+            emit defaultValueChanged(getDefault());
     }
 }
 void ControlProxy::setGroup(QString _group)

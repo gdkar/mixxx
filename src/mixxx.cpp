@@ -165,13 +165,6 @@ void MixxxMainWindow::initialize(QApplication* pApp, const CmdlineArgs& args)
     qRegisterMetaType<mixxx::ReplayGain>("mixxx::ReplayGain");
     qRegisterMetaType<mixxx::Bpm>("mixxx::Bpm");
     qRegisterMetaType<mixxx::Duration>("mixxx::Duration");
-    qmlRegisterType<BindingProxy>("org.mixxx.qml", 0, 1, "BindingProxy");
-    qmlRegisterType<Controller>("org.mixxx.qml", 0, 1, "Controller");
-    qmlRegisterType<MidiController>();
-    qmlRegisterType<RtMidiController>("org.mixxx.qml", 0, 1, "RtMidiController");
-    qmlRegisterType<PortMidiController>("org.mixxx.qml", 0, 1, "PortMidiController");
-    qmlRegisterType<ControlProxy>("org.mixxx.qml", 0, 1, "ControlProxy");
-    qmlRegisterType<ControlObjectScript>("org.mixxx.qml", 0, 1, "ControlObjectScript");
 
     auto pConfig = m_pSettingsManager->settings();
 
@@ -211,16 +204,13 @@ void MixxxMainWindow::initialize(QApplication* pApp, const CmdlineArgs& args)
     // after the players are added to the engine (as is done currently) -- bkgood
     // (long)
     m_pSoundManager = new SoundManager(pConfig, m_pEngine);
-
     m_pRecordingManager = new RecordingManager(pConfig, m_pEngine);
-
 
 #ifdef __BROADCAST__
     m_pBroadcastManager = new BroadcastManager(pConfig, m_pSoundManager);
 #endif
 
     launchProgress(11);
-
     // Needs to be created before CueControl (decks) and WTrackTableView.
     m_pGuiTick = new GuiTick();
 
@@ -231,8 +221,7 @@ void MixxxMainWindow::initialize(QApplication* pApp, const CmdlineArgs& args)
 #endif
 
     // Create the player manager. (long)
-    m_pPlayerManager = new PlayerManager(pConfig, m_pSoundManager,
-                                         m_pEffectsManager, m_pEngine);
+    m_pPlayerManager = new PlayerManager(pConfig, m_pSoundManager,m_pEffectsManager, m_pEngine);
     connect(m_pPlayerManager, SIGNAL(noMicrophoneInputConfigured()),
             this, SLOT(slotNoMicrophoneInputConfigured()));
     connect(m_pPlayerManager, SIGNAL(noDeckPassthroughInputConfigured()),

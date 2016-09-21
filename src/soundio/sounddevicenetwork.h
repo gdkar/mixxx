@@ -12,6 +12,7 @@ class SoundManager;
 class EngineNetworkStream;
 
 class SoundDeviceNetwork : public SoundDevice {
+    Q_OBJECT
   public:
     SoundDeviceNetwork(UserSettingsPointer config,
                        SoundManager *sm,

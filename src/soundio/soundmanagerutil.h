@@ -159,8 +159,7 @@ class AudioInputBuffer : public AudioInput {
     CSAMPLE* m_pBuffer;
 };
 
-
-class AudioSource {
+class AudioOrigin {
 public:
     virtual const CSAMPLE* buffer(AudioOutput output) const = 0;
 

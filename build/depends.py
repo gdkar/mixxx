@@ -724,7 +724,8 @@ class MixxxCore(Feature):
                    "analyzer/analyzerebur128.cpp",
 
                    "controllers/controller.cpp",
-                   "controllers/controllercomponent.cpp",
+                   "controllers/bindingproxy.cpp",
+                   "controllers/qmlcontrollerenumerator.cpp",
                    "controllers/controllervisitor.cpp",
                    "controllers/controllerengine.cpp",
                    "controllers/controllerenumerator.cpp",

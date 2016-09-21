@@ -11,6 +11,7 @@
 #include <QSharedPointer>
 
 #include "controllers/controllerenumerator.h"
+#include "controllers/qmlcontrollerenumerator.h"
 #include "controllers/controllerpreset.h"
 #include "controllers/controllerpresetinfo.h"
 #include "controllers/controllerpresetinfoenumerator.h"
@@ -46,11 +47,10 @@ class ControllerManager : public QObject {
     // If pathOrFilename is an absolute path, returns it. If it is a relative
     // path and it is contained within any of the directories in presetPaths,
     // returns the path to the first file in the path that exists.
-    static QString getAbsolutePath(const QString& pathOrFilename,
-                                   const QStringList& presetPaths);
+    static QString getAbsolutePath(QString pathOrFilename,QStringList presetPaths);
 
-    bool importScript(const QString& scriptPath, QString* newScriptFileName);
-    static bool checksumFile(const QString& filename, quint16* pChecksum);
+    bool importScript(QString scriptPath, QString* newScriptFileName);
+    static bool checksumFile(QString filename, quint16* pChecksum);
 
   signals:
     void devicesChanged();
@@ -66,17 +66,17 @@ class ControllerManager : public QObject {
     void closeController(Controller* pController);
 
     // Writes out presets for currently connected input devices
-    void slotSavePresets(bool onlyActive=false);
+    void onSavePresets(bool onlyActive=false);
 
   private slots:
     // Perform initialization that should be delayed until the ControllerManager
     // thread is started.
-    void slotInitialize();
+    void onInitialize();
     // Open whatever controllers are selected in the preferences. This currently
     // only runs on start-up but maybe should instead be signaled by the
     // preferences dialog on apply, and only open/close changed devices
-    void slotSetUpDevices();
-    void slotShutdown();
+    void onSetUpDevices();
+    void onShutdown();
     bool loadPreset(Controller* pController,
                     ControllerPresetPointer preset);
     // Calls poll() on all devices that have isPolling() true.
@@ -96,14 +96,15 @@ class ControllerManager : public QObject {
     mutable QMutex m_mutex;
     QList<ControllerEnumerator*> m_enumerators;
     QList<Controller*> m_controllers;
-    ComponentEnumerator *m_componentEnumerator{};
+    QmlControllerEnumerator *m_qmlEnumerator{};
     QMap<Controller*, QQmlContext*> m_deviceContexts{};
     QMap<Controller*, QObject*>     m_deviceObjects{};
     QList<QQmlComponent *> m_components{};
     QThread* m_pThread;
     QQmlEngine    *m_pQmlEngine;
-    QQmlContext   *m_baseContext{};
-    QQmlComponent *m_baseComponent{};
+    QQmlContext   *m_mainContext{};
+    QQmlComponent *m_mainComponent{};
+    QObject       *m_mainInstance{};
     QSharedPointer<PresetInfoEnumerator> m_pMainThreadPresetEnumerator;
     bool m_skipPoll;
 };

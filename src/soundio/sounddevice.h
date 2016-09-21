@@ -39,7 +39,8 @@ enum SoundDeviceError {
 
 const QString kNetworkDeviceInternalName = "Network stream";
 
-class SoundDevice {
+class SoundDevice : public QObject {
+    Q_OBJECT
   public:
     SoundDevice(UserSettingsPointer config, SoundManager* sm);
     virtual ~SoundDevice();

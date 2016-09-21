@@ -51,8 +51,8 @@ DlgPrefController::DlgPrefController(QWidget* parent, Controller* controller,
     ControllerPresetPointer pPreset = m_pController->getPreset();
     slotPresetLoaded(pPreset);
 
-    m_ui.labelDeviceName->setText(m_pController->getName());
-    QString category = m_pController->getCategory();
+    m_ui.labelDeviceName->setText(m_pController->getDeviceName());
+    QString category = m_pController->getDeviceCategory();
     if (!category.isEmpty()) {
         m_ui.labelDeviceCategory->setText(category);
     } else {
@@ -228,7 +228,7 @@ void DlgPrefController::slotDirty() {
 }
 
 QString nameForPreset(const PresetInfo& preset) {
-    QString name = preset.getName();
+    QString name = preset.getDeviceName();
     if (name.length() == 0) {
         QFileInfo file(preset.getPath());
         name = file.baseName();
@@ -239,7 +239,7 @@ QString nameForPreset(const PresetInfo& preset) {
 void DlgPrefController::enumeratePresets()
 {
     m_ui.comboBoxPreset->clear();
-    // qDebug() << "Enumerating presets for controller" << m_pController->getName();
+    // qDebug() << "Enumerating presets for controller" << m_pController->getDeviceName();
 
     // Insert a dummy "..." item at the top to try to make it less confusing.
     // (We don't want the first found file showing up as the default item when a

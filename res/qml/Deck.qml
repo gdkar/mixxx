@@ -20,9 +20,7 @@ QtObject {
             if(component.status == Component.Ready) {
                 var ncontrols = new Array(controls.length)
                 for(var i = 0; i < controls.length; ++i) {
-                    var obj = component.createObject(root, {'group' : root.group, 'item': root.controls[i]})
-                    console.log(obj)
-                    ncontrols[i] = obj;
+                    ncontrols[i] = component.createObject(root, {'group' : root.group, 'item': root.controls[i]})
                 }
                 root.controls = ncontrols;
             }else if (component.status == Component.Error) {
