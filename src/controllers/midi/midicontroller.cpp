@@ -263,7 +263,7 @@ void MidiController::receive(unsigned char status, unsigned char control,
         qDebug() << " prefix: " << std::showbase << std::hex << status << control << value << " value: " << val;
         if(!pre.isEmpty()) {
             if(auto prox = m_dispatch.value(pre,nullptr)) {
-                qDebug() << " chaning value from " << prox->value() << " to " << val;
+                qDebug() << " changing value from " << prox->value() << " to " << val;
                 prox->setValue(val);
             }
         }
@@ -272,8 +272,7 @@ void MidiController::receive(unsigned char status, unsigned char control,
     auto channel = MidiUtils::channelFromStatus(status);
     auto opCode = MidiUtils::opCodeFromStatus(status);
 
-    controllerDebug(formatMidiMessage(getDeviceName(), status, control, value,
-                                      channel, opCode, timestamp));
+    controllerDebug(formatMidiMessage(getDeviceName(), status, control, value,channel, opCode, timestamp));
     MidiKey mappingKey(status, control);
 
     if (isLearning()) {
@@ -303,7 +302,7 @@ void MidiController::processInputMapping(const MidiInputMapping& mapping,
     unsigned char opCode = MidiUtils::opCodeFromStatus(status);
 
     if (mapping.options.script) {
-        if(auto pEngine = getEngine()) {
+/*        if(auto pEngine = getEngine()) {
             auto parts = mapping.control.item.split(".");
             auto object = pEngine->findObject(parts[0]);
             auto function = QJSValue{};
@@ -329,6 +328,7 @@ void MidiController::processInputMapping(const MidiInputMapping& mapping,
             }
         }
         return;
+        */
     }
     // Only pass values on to valid ControlObjects.
     if(auto pCO = ControlObject::getControl(mapping.control)) {
@@ -559,9 +559,9 @@ void MidiController::receive(QVariant vdata, mixxx::Duration timestamp)
             processInputMapping(it.value(), data, timestamp);
         }
     }
-    if(auto engine = getEngine()) {
+/*    if(auto engine = getEngine()) {
         engine->receive((QJSValueList{}<<engine->toScriptValue(vdata)), timestamp);
-    }
+    }*/
 }
 
 void MidiController::processInputMapping(const MidiInputMapping& mapping,
@@ -570,7 +570,7 @@ void MidiController::processInputMapping(const MidiInputMapping& mapping,
 {
     // Custom script handler
     if (mapping.options.script) {
-        ControllerEngine* pEngine = getEngine();
+/*        ControllerEngine* pEngine = getEngine();
         if (pEngine == NULL) {
             return;
         }
@@ -578,7 +578,7 @@ void MidiController::processInputMapping(const MidiInputMapping& mapping,
         if (!pEngine->execute(function, data, timestamp)) {
             qDebug() << "MidiController: Invalid script function"
                      << mapping.control.item;
-        }
+        }*/
         return;
     }
     qWarning() << "MidiController: No script function specified for"

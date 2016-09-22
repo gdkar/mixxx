@@ -5,26 +5,26 @@
 #include <QtQuick>
 #include <QObject>
 #include <QString>
+
 class BindingProxy : public QObject {
     Q_OBJECT
-    Q_PROPERTY(double value READ value WRITE setValue NOTIFY valueChanged)
-    Q_PROPERTY(QString prefix READ prefix WRITE setPrefix NOTIFY prefixChanged)
+    Q_PROPERTY(QVariant value READ value WRITE setValue NOTIFY valueChanged)
+    Q_PROPERTY(QVariant prefix READ prefix WRITE setPrefix NOTIFY prefixChanged)
 public:
     Q_INVOKABLE BindingProxy(QObject *p = nullptr);
-    Q_INVOKABLE BindingProxy(QString prefix, QObject *p);
+    Q_INVOKABLE BindingProxy(QVarinat prefix, QObject *p);
    ~BindingProxy();
-    double value() const;
-    void setValue(double);
-    QString prefix() const;
-    void setPrefix(QString);
+    QVariant value() const;
+    void setValue(QVariant);
+    QVariant prefix() const;
+    void setPrefix(QVariant );
 signals:
-    void valueChanged(double);
-    void messageReceived(double, double = 0);
+    void valueChanged(QVariant);
+    void messageReceived(QVariant);
     void prefixChanged(QVariant);
-
 protected:
-    QString  m_prefix{};
-    double   m_value{};
+    QVariant m_prefix{};
+    QVariant m_value{};
 };
 QML_DECLARE_TYPE(BindingProxy)
 

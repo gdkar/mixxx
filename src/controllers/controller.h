@@ -13,7 +13,7 @@
 #define CONTROLLER_H
 
 #include "controllers/bindingproxy.h"
-#include "controllers/controllerengine.h"
+//#include "controllers/controllerengine.h"
 #include "controllers/controllervisitor.h"
 #include "controllers/controllerpreset.h"
 #include "controllers/controllerpresetinfo.h"
@@ -33,7 +33,7 @@ class Controller : public QObject, ConstControllerPresetVisitor {
     Q_PROPERTY(QString deviceCategory READ getDeviceCategory WRITE setDeviceCategory NOTIFY deviceCategoryChanged);
     Q_PROPERTY(bool mappable READ isMappable CONSTANT);
     Q_PROPERTY(bool learning READ isLearning WRITE setLearning NOTIFY learningChanged);
-    Q_PROPERTY(ControllerEngine* engine READ getEngine NOTIFY engineChanged);
+//    Q_PROPERTY(ControllerEngine* engine READ getEngine NOTIFY engineChanged);
   public:
     Q_INVOKABLE Controller(QObject *p=nullptr);
     virtual ~Controller();  // Subclass should call close() at minimum.
@@ -61,7 +61,7 @@ class Controller : public QObject, ConstControllerPresetVisitor {
     void deviceNameChanged(QString);
     void deviceCategoryChanged(QString);
     void learningChanged(bool);
-    void engineChanged(ControllerEngine*);
+//    void engineChanged(ControllerEngine*);
     // Emitted when a new preset is loaded. pPreset is a /clone/ of the loaded
     // preset, not a pointer to the preset itself.
     void presetLoaded(ControllerPresetPointer pPreset);
@@ -83,11 +83,11 @@ class Controller : public QObject, ConstControllerPresetVisitor {
     Q_INVOKABLE void send(QList<int> data, unsigned int length);
     // To be called in sub-class' open() functions after opening the device but
     // before starting any input polling/processing.
-    void startEngine();
+//    void startEngine();
     // To be called in sub-class' close() functions after stopping any input
     // polling/processing but before closing the device.
-    void stopEngine();
-    ControllerEngine* getEngine() const;
+//    void stopEngine();
+//    ControllerEngine* getEngine() const;
     void setDeviceName(QString deviceName);
     void setDeviceCategory(QString deviceCategory);
     void setOutputDevice(bool outputDevice);
@@ -111,7 +111,7 @@ class Controller : public QObject, ConstControllerPresetVisitor {
     // Returns a pointer to the currently loaded controller preset. For internal
     // use only.
     virtual ControllerPreset* preset();
-    ControllerEngine* m_pEngine{};
+//    ControllerEngine* m_pEngine{};
     // Verbose and unique device name suitable for display.
     QString m_sDeviceName;
     // Verbose and unique description of device type, defaults to empty

@@ -18,7 +18,7 @@
 
 Controller::Controller(QObject *p)
         : QObject(p),
-          m_pEngine(nullptr),
+//          m_pEngine(nullptr),
           m_bIsOutputDevice(false),
           m_bIsInputDevice(false),
           m_bIsOpen(false),
@@ -67,10 +67,10 @@ bool Controller::isLearning() const
 {
     return m_bLearning;
 }
-ControllerEngine* Controller::getEngine() const
+/*ControllerEngine* Controller::getEngine() const
 {
     return m_pEngine;
-}
+}*/
 void Controller::setDeviceName(QString deviceName)
 {
     if(m_sDeviceName != deviceName)
@@ -133,7 +133,7 @@ void Controller::setPreset(const ControllerPreset& preset)
     // the preset to call our visitor methods with its type.
     preset.accept(this);
 }
-void Controller::startEngine()
+/*void Controller::startEngine()
 {
     controllerDebug("  Starting engine");
     if (m_pEngine) {
@@ -153,11 +153,11 @@ void Controller::stopEngine()
     m_pEngine->gracefulShutdown();
     delete m_pEngine;
     engineChanged(m_pEngine = nullptr);
-}
+}*/
 bool Controller::applyPreset(QList<QString> scriptPaths, bool initializeScripts)
 {
     qDebug() << "Applying controller preset...";
-    auto pPreset = preset();
+/*    auto pPreset = preset();
     // Load the script code into the engine
     if (!m_pEngine) {
         qWarning() << "Controller::applyPreset(): No engine exists!";
@@ -166,12 +166,13 @@ bool Controller::applyPreset(QList<QString> scriptPaths, bool initializeScripts)
     if (pPreset->scripts.isEmpty()) {
         qWarning() << "No script functions available! Did the XML file(s) load successfully? See above for any errors.";
         return true;
-    }
-    auto success = m_pEngine->loadScriptFiles(scriptPaths, pPreset->scripts);
-    if (initializeScripts) {
+    }*/
+    return false;
+//    auto success = m_pEngine->loadScriptFiles(scriptPaths, pPreset->scripts);
+/*    if (initializeScripts) {
         m_pEngine->initializeScripts();
     }
-    return success;
+    return success;*/
 }
 void Controller::startLearning()
 {
@@ -204,19 +205,20 @@ void Controller::send(QList<int> data, unsigned int length)
 }
 void Controller::receive(QVariant data, mixxx::Duration timestamp)
 {
-    if (!m_pEngine) {
+    return;
+/*    if (!m_pEngine) {
         //qWarning() << "Controller::receive called with no active engine!";
         // Don't complain, since this will always show after closing a device as
         //  queued signals flush out
         return;
-    }
+    }*/
 /*    auto length = data.size();
     auto arg = m_pEngine->newArray();
     for(auto i = 0u; i < data.size(); ++i)
         arg.setProperty(i, int(data[i]));
 */
-    auto args = QJSValueList{} << m_pEngine->toScriptValue(data);
-    m_pEngine->receive(args, timestamp);
+/*    auto args = QJSValueList{} << m_pEngine->toScriptValue(data);
+    m_pEngine->receive(args, timestamp);*/
 }
 QString Controller::presetExtension() const
 {

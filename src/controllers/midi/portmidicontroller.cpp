@@ -83,7 +83,7 @@ int PortMidiController::open() {
     }
 
     setOpen(true);
-    startEngine();
+//    startEngine();
     return 0;
 }
 
@@ -93,7 +93,7 @@ int PortMidiController::close() {
         return -1;
     }
 
-    stopEngine();
+//    stopEngine();
     MidiController::close();
 
     int result = 0;

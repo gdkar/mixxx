@@ -128,7 +128,7 @@ int RtMidiController::open()
     m_bInSysex = false;
     m_sysex.clear();;
     setOpen(true);
-    startEngine();
+//    startEngine();
     return 0;
 }
 
@@ -139,7 +139,7 @@ int RtMidiController::close()
         return -1;
     }
 
-    stopEngine();
+//    stopEngine();
     MidiController::close();
     m_midiIn.reset();
     m_midiOut.reset();

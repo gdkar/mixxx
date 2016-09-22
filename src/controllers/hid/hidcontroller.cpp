@@ -242,7 +242,7 @@ int HidController::open() {
     }
 
     setOpen(true);
-    startEngine();
+//    startEngine();
 
     if (m_pReader != NULL) {
         qWarning() << "HidReader already present for" << getDeviceName();
@@ -287,7 +287,7 @@ int HidController::close()
 
     // Stop controller engine here to ensure it's done before the device is closed
     //  incase it has any final parting messages
-    stopEngine();
+//    stopEngine();
 
     // Close device
     controllerDebug("  Closing device");
