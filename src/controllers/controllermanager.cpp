@@ -86,14 +86,14 @@ ControllerManager::ControllerManager(UserSettingsPointer pConfig)
 
     m_pThread = new QThread{};
     m_pThread->setObjectName("Controller");
-
     // Moves all children (including the poll timer) to m_pThread
     moveToThread(m_pThread);
     // Controller processing needs to be prioritized since it can affect the
     // audio directly, like when scratching
     m_pThread->start(QThread::HighPriority);
     m_pollTimer.setInterval(kPollIntervalMillis);
-    connect(&m_pollTimer, &QTimer::timeout,this, &ControllerManager::pollDevices);
+    m_pollTimer.setTimerType(Qt::PreciseTimer);
+//    connect(&m_pollTimer, &QTimer::timeout,this, &ControllerManager::pollDevices);
 
     connect(this, &ControllerManager::requestInitialize,   this, &ControllerManager::onInitialize);
     connect(this, &ControllerManager::requestSetUpDevices, this, &ControllerManager::onSetUpDevices);
@@ -110,7 +110,7 @@ ControllerManager::~ControllerManager()
     requestShutdown();
     m_pThread->wait();
     delete m_pThread;
-    delete m_pControllerLearningEventFilter;
+    m_pControllerLearningEventFilter->deleteLater();
 }
 
 ControllerLearningEventFilter* ControllerManager::getControllerLearningEventFilter() const
@@ -128,7 +128,7 @@ void ControllerManager::onInitialize()
         << resourcePresetsPath(m_pConfig);
 
     m_pMainThreadPresetEnumerator = QSharedPointer<PresetInfoEnumerator>::create(presetSearchPaths);
-    m_qmlEnumerator = new QmlControllerEnumerator(presetSearchPaths, this);
+//    m_qmlEnumerator = new QmlControllerEnumerator(presetSearchPaths, this);
 
     auto qmlSearchPaths = presetSearchPaths << resourceQmlPath(m_pConfig);
     // Instantiate all enumerators. Enumerators can take a long time to
@@ -281,7 +281,7 @@ void ControllerManager::startPolling()
 {
     // Start the polling timer.
     if (!m_pollTimer.isActive()) {
-        m_pollTimer.start();
+//        m_pollTimer.start();
         qDebug() << "Controller polling started.";
     }
 }

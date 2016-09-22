@@ -35,18 +35,18 @@ BpmControl::BpmControl(QString group,
         m_sGroup(group) {
     m_pPlayButton = new ControlProxy(group, "play", this);
     m_pPlayButton->connectValueChanged(SLOT(slotControlPlay(double)),
-            Qt::DirectConnection);
+            Qt::AutoConnection);
     m_pReverseButton = new ControlProxy(group, "reverse", this);
     m_pRateSlider = new ControlProxy(group, "rate", this);
     m_pRateSlider->connectValueChanged(SLOT(slotAdjustRateSlider()),
-            Qt::DirectConnection);
+            Qt::AutoConnection);
     m_pQuantize = new ControlObject({group, "quantize"},this);
     m_pRateRange = new ControlProxy(group, "rateRange", this);
     m_pRateRange->connectValueChanged(SLOT(slotAdjustRateSlider()),
-            Qt::DirectConnection);
+            Qt::AutoConnection);
     m_pRateDir = new ControlProxy(group, "rate_dir", this);
     m_pRateDir->connectValueChanged(SLOT(slotAdjustRateSlider()),
-            Qt::DirectConnection);
+            Qt::AutoConnection);
 
     m_pPrevBeat.reset(new ControlProxy(group, "beat_prev"));
     m_pNextBeat.reset(new ControlProxy(group, "beat_next"));
@@ -61,24 +61,24 @@ BpmControl::BpmControl(QString group,
     m_pFileBpm = new ControlObject(ConfigKey(group, "file_bpm"));
     connect(m_pFileBpm, SIGNAL(valueChanged(double)),
             this, SLOT(slotFileBpmChanged(double)),
-            Qt::DirectConnection);
+            Qt::AutoConnection);
     m_pLocalBpm = new ControlObject(ConfigKey(group, "local_bpm"));
     m_pAdjustBeatsFaster = new ControlPushButton(ConfigKey(group, "beats_adjust_faster"), false);
     connect(m_pAdjustBeatsFaster, SIGNAL(valueChanged(double)),
             this, SLOT(slotAdjustBeatsFaster(double)),
-            Qt::DirectConnection);
+            Qt::AutoConnection);
     m_pAdjustBeatsSlower = new ControlPushButton(ConfigKey(group, "beats_adjust_slower"), false);
     connect(m_pAdjustBeatsSlower, SIGNAL(valueChanged(double)),
             this, SLOT(slotAdjustBeatsSlower(double)),
-            Qt::DirectConnection);
+            Qt::AutoConnection);
     m_pTranslateBeatsEarlier = new ControlPushButton(ConfigKey(group, "beats_translate_earlier"), false);
     connect(m_pTranslateBeatsEarlier, SIGNAL(valueChanged(double)),
             this, SLOT(slotTranslateBeatsEarlier(double)),
-            Qt::DirectConnection);
+            Qt::AutoConnection);
     m_pTranslateBeatsLater = new ControlPushButton(ConfigKey(group, "beats_translate_later"), false);
     connect(m_pTranslateBeatsLater, SIGNAL(valueChanged(double)),
             this, SLOT(slotTranslateBeatsLater(double)),
-            Qt::DirectConnection);
+            Qt::AutoConnection);
 
     // Pick a wide range (1 to 200) and allow out of bounds sets. This lets you
     // map a soft-takeover MIDI knob to the BPM. This also creates bpm_up and
@@ -88,42 +88,42 @@ BpmControl::BpmControl(QString group,
     m_pEngineBpm = new ControlLinPotmeter(ConfigKey(group, "bpm"), 1, 200, 1, 0.1, true);
     connect(m_pEngineBpm, SIGNAL(valueChanged(double)),
             this, SLOT(slotSetEngineBpm(double)),
-            Qt::DirectConnection);
+            Qt::AutoConnection);
 
     m_pButtonTap = new ControlPushButton(ConfigKey(group, "bpm_tap"));
     connect(m_pButtonTap, SIGNAL(valueChanged(double)),
             this, SLOT(slotBpmTap(double)),
-            Qt::DirectConnection);
+            Qt::AutoConnection);
 
     // Beat sync (scale buffer tempo relative to tempo of other buffer)
     m_pButtonSync = new ControlPushButton(ConfigKey(group, "beatsync"));
     connect(m_pButtonSync, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlBeatSync(double)),
-            Qt::DirectConnection);
+            Qt::AutoConnection);
 
     m_pButtonSyncPhase = new ControlPushButton(ConfigKey(group, "beatsync_phase"));
     connect(m_pButtonSyncPhase, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlBeatSyncPhase(double)),
-            Qt::DirectConnection);
+            Qt::AutoConnection);
 
     m_pButtonSyncTempo = new ControlPushButton(ConfigKey(group, "beatsync_tempo"));
     connect(m_pButtonSyncTempo, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlBeatSyncTempo(double)),
-            Qt::DirectConnection);
+            Qt::AutoConnection);
 
     m_pTranslateBeats = new ControlPushButton(ConfigKey(group, "beats_translate_curpos"));
     connect(m_pTranslateBeats, SIGNAL(valueChanged(double)),
             this, SLOT(slotBeatsTranslate(double)),
-            Qt::DirectConnection);
+            Qt::AutoConnection);
 
     m_pBeatsTranslateMatchAlignment = new ControlPushButton(ConfigKey(group, "beats_translate_match_alignment"));
     connect(m_pBeatsTranslateMatchAlignment, SIGNAL(valueChanged(double)),
             this, SLOT(slotBeatsTranslateMatchAlignment(double)),
-            Qt::DirectConnection);
+            Qt::AutoConnection);
 
     connect(&m_tapFilter, SIGNAL(tapped(double,int)),
             this, SLOT(slotTapFilter(double,int)),
-            Qt::DirectConnection);
+            Qt::AutoConnection);
 
     // Measures distance from last beat in percentage: 0.5 = half-beat away.
     m_pThisBeatDistance = new ControlProxy(group, "beat_distance", this);

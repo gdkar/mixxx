@@ -135,6 +135,7 @@ void Controller::setPreset(const ControllerPreset& preset)
 }
 /*void Controller::startEngine()
 {
+    return;
     controllerDebug("  Starting engine");
     if (m_pEngine) {
         qWarning() << "Controller: Engine already exists! Restarting:";

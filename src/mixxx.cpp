@@ -434,12 +434,10 @@ void MixxxMainWindow::finalize()
     t.start();
 
     // Save the current window state (position, maximized, etc)
-    m_pSettingsManager->settings()->set(ConfigKey("[MainWindow]", "geometry"),
-        QString(saveGeometry().toBase64()));
-    m_pSettingsManager->settings()->set(ConfigKey("[MainWindow]", "state"),
-        QString(saveState().toBase64()));
+    m_pSettingsManager->settings()->set(ConfigKey("[MainWindow]", "geometry"),QString(saveGeometry().toBase64()));
+    m_pSettingsManager->settings()->set(ConfigKey("[MainWindow]", "state"),QString(saveState().toBase64()));
 
-    setCentralWidget(NULL);
+    setCentralWidget(nullptr);
 
     // TODO(rryan): WMainMenuBar holds references to controls so we need to delete it
     // before MixxxMainWindow is destroyed. QMainWindow calls deleteLater() in
@@ -449,6 +447,7 @@ void MixxxMainWindow::finalize()
     // the WMainMenuBar and this will no longer be a problem.
     QPointer<QWidget> pMenuBar(menuBar());
     setMenuBar(new QMenuBar());
+
     QCoreApplication::sendPostedEvents(pMenuBar, QEvent::DeferredDelete);
     // Our main menu is now deleted.
     DEBUG_ASSERT_AND_HANDLE(pMenuBar.isNull()) {

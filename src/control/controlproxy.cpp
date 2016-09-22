@@ -37,7 +37,7 @@ void ControlProxy::initialize(ConfigKey key) {
               , this
               ,&ControlProxy::triggered
               , static_cast<Qt::ConnectionType>(
-                    Qt::QueuedConnection
+                    Qt::AutoConnection
                   | Qt::UniqueConnection
                     )
                 );
@@ -47,7 +47,7 @@ void ControlProxy::initialize(ConfigKey key) {
               , this
               ,&ControlProxy::defaultValueChanged
               , static_cast<Qt::ConnectionType>(
-                    Qt::QueuedConnection
+                    Qt::AutoConnection
                   | Qt::UniqueConnection
                     )
                 );
@@ -57,7 +57,7 @@ void ControlProxy::initialize(ConfigKey key) {
               , this
               ,&ControlProxy::valueChanged
               , static_cast<Qt::ConnectionType>(
-                    Qt::QueuedConnection
+                    Qt::AutoConnection
                   | Qt::UniqueConnection
                     )
                 );

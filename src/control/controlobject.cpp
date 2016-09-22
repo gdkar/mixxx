@@ -30,11 +30,11 @@ ControlObject::ControlObject(QObject *p) : QObject(p) {
         m_pControl = pControl->sharedFromThis();
         connect(m_pControl.data(), &ControlDoublePrivate::valueChanged,
                 this, &ControlObject::privateValueChanged,
-                static_cast<Qt::ConnectionType>(Qt::DirectConnection| Qt::UniqueConnection)
+                static_cast<Qt::ConnectionType>(Qt::AutoConnection| Qt::UniqueConnection)
                 );
         connect(m_pControl.data(), &ControlDoublePrivate::defaultValueChanged,
                 this, &ControlObject::defaultValueChanged,
-                static_cast<Qt::ConnectionType>(Qt::DirectConnection| Qt::UniqueConnection)
+                static_cast<Qt::ConnectionType>(Qt::AutoConnection| Qt::UniqueConnection)
                 );
 
         connect(
@@ -42,7 +42,7 @@ ControlObject::ControlObject(QObject *p) : QObject(p) {
             ,&ControlDoublePrivate::trigger
             , this
             ,&ControlObject::triggered
-            , static_cast<Qt::ConnectionType>(Qt::DirectConnection| Qt::UniqueConnection
+            , static_cast<Qt::ConnectionType>(Qt::AutoConnection| Qt::UniqueConnection
                 )
             );
         connect(
@@ -51,7 +51,7 @@ ControlObject::ControlObject(QObject *p) : QObject(p) {
             , this
             ,&ControlObject::nameChanged
             , static_cast<Qt::ConnectionType>(
-                Qt::DirectConnection | Qt::UniqueConnection)
+                Qt::AutoConnection | Qt::UniqueConnection)
             );
         connect(
             m_pControl.data()
@@ -59,7 +59,7 @@ ControlObject::ControlObject(QObject *p) : QObject(p) {
             , this
             ,&ControlObject::descriptionChanged
             , static_cast<Qt::ConnectionType>(
-                Qt::DirectConnection | Qt::UniqueConnection)
+                Qt::AutoConnection | Qt::UniqueConnection)
             );
         m_key = m_pControl->getKey();
         m_wControl = m_pControl.toWeakRef();
@@ -104,11 +104,11 @@ void ControlObject::initialize(ConfigKey key, bool bIgnoreNops, bool bTrack,
         if (m_pControl) {
             connect(m_pControl.data(), &ControlDoublePrivate::valueChanged,
                     this, &ControlObject::privateValueChanged,
-                    static_cast<Qt::ConnectionType>(Qt::DirectConnection| Qt::UniqueConnection)
+                    static_cast<Qt::ConnectionType>(Qt::AutoConnection| Qt::UniqueConnection)
                     );
             connect(m_pControl.data(), &ControlDoublePrivate::defaultValueChanged,
                     this, &ControlObject::defaultValueChanged,
-                    static_cast<Qt::ConnectionType>(Qt::DirectConnection| Qt::UniqueConnection)
+                    static_cast<Qt::ConnectionType>(Qt::AutoConnection| Qt::UniqueConnection)
                     );
 
             connect(
@@ -116,7 +116,7 @@ void ControlObject::initialize(ConfigKey key, bool bIgnoreNops, bool bTrack,
                 ,&ControlDoublePrivate::trigger
                 , this
                 ,&ControlObject::triggered
-                , static_cast<Qt::ConnectionType>(Qt::DirectConnection| Qt::UniqueConnection
+                , static_cast<Qt::ConnectionType>(Qt::AutoConnection| Qt::UniqueConnection
                     )
                 );
             connect(
@@ -125,7 +125,7 @@ void ControlObject::initialize(ConfigKey key, bool bIgnoreNops, bool bTrack,
                 , this
                 ,&ControlObject::nameChanged
                 , static_cast<Qt::ConnectionType>(
-                    Qt::DirectConnection | Qt::UniqueConnection)
+                    Qt::AutoConnection | Qt::UniqueConnection)
                 );
             connect(
                 m_pControl.data()
@@ -133,7 +133,7 @@ void ControlObject::initialize(ConfigKey key, bool bIgnoreNops, bool bTrack,
                 , this
                 ,&ControlObject::descriptionChanged
                 , static_cast<Qt::ConnectionType>(
-                    Qt::DirectConnection | Qt::UniqueConnection)
+                    Qt::AutoConnection | Qt::UniqueConnection)
                 );
         }
     }
@@ -313,7 +313,8 @@ double ControlObject::defaultValue() const
 }
 bool ControlObject::ignoreNops() const
 {
-    if(auto co = control()) return co->ignoreNops();
+    if(auto co = control())
+        return co->ignoreNops();
     return true;
 }
 double ControlObject::operator += ( double incr)

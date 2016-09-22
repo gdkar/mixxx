@@ -47,14 +47,14 @@ void ControlObjectScript::connectControl(QJSValue _callback, QJSValue _context)
         m_context  = _context;
 
         constexpr const auto conn_type = static_cast<Qt::ConnectionType>(
-            Qt::QueuedConnection |Qt::UniqueConnection);
+            Qt::AutoConnection |Qt::UniqueConnection);
 
         connect(m_pControl.data(), &ControlDoublePrivate::valueChanged,
                 this, &ControlProxy::valueChanged,conn_type);
         connect(this, &ControlObjectScript::valueChanged,
                 this, &ControlObjectScript::onValueChanged,
                 static_cast<Qt::ConnectionType>(
-                    Qt::DirectConnection | Qt::UniqueConnection)
+                    Qt::AutoConnection | Qt::UniqueConnection)
                 );
         if(callback_changed)
             emit callbackChanged(callback());

@@ -1,11 +1,9 @@
 import org.mixxx.qml 0.1
+import QtQml 2.2
 import QtQuick 2.7
-import QtQuick.Extras 1.4
-import QtQuick.Window 2.2
-import QtQuick.Controls 1.5
-
 Item {
     id: root
+
     Deck {
         id: channel1
         group: "[Channel1]"
@@ -59,12 +57,8 @@ Item {
         group:"[Channel1]"
         item:"quantize"
     }
-    Pushy {
-        source:air;id:keylock1
-        prefix:"\u0090\u0004"
-        group:"[Channel1]"
-        item:"keylock"
-    }
+    Toggle {source:air;id:keylock1;prefix:"\u0090\u0004";group:"[Channel1]";item:"keylock";}
+    Toggle {source:air;id:keylock2;prefix:"\u0090\u001a";group:"[Channel2]";item:"keylock";}
 
     Pushy     { source:air;id: beat_align2;prefix:"\u0090\u0018";group : "[Channel2]";item: "beat_translate_curpos"; }
     Toggle    { source:air;id: quantize2;prefix:"\u0090\u0019";group : "[Channel2]";item: "quantize"; }
@@ -78,7 +72,6 @@ Item {
         item: "volume";
         value: proxy.value / 128
     }
-
     property Controller controller: RtMidiController {
         id: air
         inputIndex: 1

@@ -97,13 +97,13 @@ EngineBuffer::EngineBuffer(QObject *p, QString group, UserSettingsPointer pConfi
     m_pReader = new CachingReader(group, pConfig);
     connect(m_pReader, SIGNAL(trackLoading()),
             this, SLOT(slotTrackLoading()),
-            Qt::DirectConnection);
+            Qt::AutoConnection);
     connect(m_pReader, SIGNAL(trackLoaded(TrackPointer, int, int)),
             this, SLOT(slotTrackLoaded(TrackPointer, int, int)),
-            Qt::DirectConnection);
+            Qt::AutoConnection);
     connect(m_pReader, SIGNAL(trackLoadFailed(TrackPointer, QString)),
             this, SLOT(slotTrackLoadFailed(TrackPointer, QString)),
-            Qt::DirectConnection);
+            Qt::AutoConnection);
 
     m_playing = new ControlObject(ConfigKey(m_group, "playing"),this);
     connect(m_playing, &ControlObject::valueChanged, this, &EngineBuffer::playingChanged);
@@ -115,7 +115,7 @@ EngineBuffer::EngineBuffer(QObject *p, QString group, UserSettingsPointer pConfi
       , this, [this](double v) {  setPlaying(v);});
 //    m_playButton->connectValueChangeRequest(
 //            this, SLOT(slotControlPlayRequest(double)),
-//            Qt::DirectConnection);
+//            Qt::AutoConnection);
 
     //Play from Start Button (for sampler)
     m_playStartButton = new ControlPushButton(ConfigKey(m_group, "start_play"));
@@ -129,7 +129,7 @@ EngineBuffer::EngineBuffer(QObject *p, QString group, UserSettingsPointer pConfi
 
 /*    connect(m_playStartButton, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlPlayFromStart(double)),
-            Qt::DirectConnection);*/
+            Qt::AutoConnection);*/
 
     // Jump to start and stop button
     m_stopStartButton = new ControlPushButton(ConfigKey(m_group, "start_stop"));
@@ -142,13 +142,13 @@ EngineBuffer::EngineBuffer(QObject *p, QString group, UserSettingsPointer pConfi
       });
 /*    connect(m_stopStartButton, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlJumpToStartAndStop(double)),
-            Qt::DirectConnection);*/
+            Qt::AutoConnection);*/
 
     //Stop playback (for sampler)
     m_stopButton = new ControlPushButton(ConfigKey(m_group, "stop"));
 /*    connect(m_stopButton, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlStop(double)),
-            Qt::DirectConnection);*/
+            Qt::AutoConnection);*/
     connect(m_stopButton,&ControlObject::valueChanged
       , this, [this](double v) { setPlaying(!v);});
 
@@ -159,7 +159,7 @@ EngineBuffer::EngineBuffer(QObject *p, QString group, UserSettingsPointer pConfi
       , this, [this](double v) { if(v){doSeekFractional(0., SeekRequest::Exact);}});
 /*    connect(m_startButton, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlStart(double)),
-            Qt::DirectConnection);*/
+            Qt::AutoConnection);*/
 
     // End button
     m_endButton = new ControlPushButton(ConfigKey(m_group, "end"));
@@ -168,13 +168,13 @@ EngineBuffer::EngineBuffer(QObject *p, QString group, UserSettingsPointer pConfi
 
 /*    connect(m_endButton, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlEnd(double)),
-            Qt::DirectConnection);*/
+            Qt::AutoConnection);*/
 
     m_pSlipButton = new ControlPushButton(ConfigKey(m_group, "slip_enabled"));
     m_pSlipButton->setButtonMode(ControlPushButton::TOGGLE);
     connect(m_pSlipButton, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlSlip(double)),
-            Qt::DirectConnection);
+            Qt::AutoConnection);
 
     // BPM to display in the UI (updated more slowly than the actual bpm)
     m_visualBpm = new ControlObject(ConfigKey(m_group, "visual_bpm"), this);
@@ -183,7 +183,7 @@ EngineBuffer::EngineBuffer(QObject *p, QString group, UserSettingsPointer pConfi
     m_playposSlider = new ControlObject(ConfigKey(m_group, "playposition"),this);// 0.0, 1.0, 0, 0, true);
     connect(m_playposSlider, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlSeek(double)),
-            Qt::DirectConnection);
+            Qt::AutoConnection);
 
     // Control used to communicate ratio playpos to GUI thread
     m_visualPlayPos = VisualPlayPosition::getVisualPlayPosition(m_group);
@@ -196,7 +196,7 @@ EngineBuffer::EngineBuffer(QObject *p, QString group, UserSettingsPointer pConfi
 
     m_pKeylockEngine = new ControlProxy("[Master]", "keylock_engine", this);
     m_pKeylockEngine->connectValueChanged(SLOT(slotKeylockEngineChanged(double)),
-                                          Qt::DirectConnection);
+                                          Qt::AutoConnection);
 
     m_pTrackSamples = new ControlObject(ConfigKey(m_group, "track_samples"));
     m_pTrackSampleRate = new ControlObject(ConfigKey(m_group, "track_samplerate"));
@@ -207,7 +207,7 @@ EngineBuffer::EngineBuffer(QObject *p, QString group, UserSettingsPointer pConfi
     m_pEject = new ControlPushButton(ConfigKey(m_group, "eject"));
     connect(m_pEject, SIGNAL(valueChanged(double)),
             this, SLOT(slotEjectTrack(double)),
-            Qt::DirectConnection);
+            Qt::AutoConnection);
 
     // Quantization Controller for enabling and disabling the
     // quantization (alignment) of loop in/out positions and (hot)cues with
@@ -277,7 +277,7 @@ EngineBuffer::EngineBuffer(QObject *p, QString group, UserSettingsPointer pConfi
     m_bScalerChanged = true;
 
     m_pPassthroughEnabled = new ControlProxy(group, "passthrough", this);
-    m_pPassthroughEnabled->connectValueChanged(SLOT(slotPassthroughChanged(double)),Qt::DirectConnection);
+    m_pPassthroughEnabled->connectValueChanged(SLOT(slotPassthroughChanged(double)),Qt::AutoConnection);
 
 
     // Now that all EngineControls have been created call setEngineMaster.
@@ -1292,7 +1292,7 @@ void EngineBuffer::addControl(EngineControl* pControl)
     pControl->setEngineBuffer(this);
     connect(this, SIGNAL(trackLoaded(TrackPointer, TrackPointer)),
             pControl, SLOT(trackLoaded(TrackPointer, TrackPointer)),
-            Qt::DirectConnection);
+            Qt::AutoConnection);
 }
 
 void EngineBuffer::bindWorkers(EngineWorkerScheduler* pWorkerScheduler) {
@@ -1334,13 +1334,13 @@ void EngineBuffer::setReader(CachingReader* pReader) {
     m_pReadAheadManager->setReader(pReader);
     connect(m_pReader, SIGNAL(trackLoading()),
             this, SLOT(slotTrackLoading()),
-            Qt::DirectConnection);
+            Qt::AutoConnection);
     connect(m_pReader, SIGNAL(trackLoaded(TrackPointer, int, int)),
             this, SLOT(slotTrackLoaded(TrackPointer, int, int)),
-            Qt::DirectConnection);
+            Qt::AutoConnection);
     connect(m_pReader, SIGNAL(trackLoadFailed(TrackPointer, QString)),
             this, SLOT(slotTrackLoadFailed(TrackPointer, QString)),
-            Qt::DirectConnection);
+            Qt::AutoConnection);
 }
 */
 void EngineBuffer::collectFeatures(GroupFeatureState* pGroupFeatures) const {

@@ -223,7 +223,7 @@ void ControlDoublePrivate::set(double value, QObject* pSender)
 
 void ControlDoublePrivate::setAndConfirm(double value, QObject* pSender)
 {
-    if ( m_value.exchange(value) == value && ignoreNops())
+    if ( m_value.exchange(value) == value)
         return;
 
     valueChanged(value, pSender);
