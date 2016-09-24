@@ -28,7 +28,7 @@
 #define ATTACK_SMOOTHING 1. // .85
 #define DECAY_SMOOTHING .1  //.16//.4
 
-class ControlPotmeter;
+class ControlObject;
 class ControlProxy;
 
 class EngineVuMeter : public EngineObject {
@@ -37,27 +37,23 @@ class EngineVuMeter : public EngineObject {
     EngineVuMeter(QObject *p,QString group);
     virtual ~EngineVuMeter();
 
-    virtual void process(CSAMPLE* pInOut, const int iBufferSize);
-
-    virtual void collectFeatures(GroupFeatureState* pGroupFeatures) const;
-
+    virtual void process(CSAMPLE* pInOut, int iBufferSize) override;
+    virtual void collectFeatures(GroupFeatureState* pGroupFeatures) const override;
     void reset();
-
   private:
     void doSmooth(CSAMPLE &currentVolume, CSAMPLE newVolume);
-
-    ControlPotmeter* m_ctrlVuMeter;
-    ControlPotmeter* m_ctrlVuMeterL;
-    ControlPotmeter* m_ctrlVuMeterR;
+    ControlObject * m_ctrlVuMeter;
+    ControlObject * m_ctrlVuMeterL;
+    ControlObject * m_ctrlVuMeterR;
     CSAMPLE m_fRMSvolumeL;
     CSAMPLE m_fRMSvolumeSumL;
     CSAMPLE m_fRMSvolumeR;
     CSAMPLE m_fRMSvolumeSumR;
     int m_iSamplesCalculated;
 
-    ControlPotmeter* m_ctrlPeakIndicator;
-    ControlPotmeter* m_ctrlPeakIndicatorL;
-    ControlPotmeter* m_ctrlPeakIndicatorR;
+    ControlObject * m_ctrlPeakIndicator;
+    ControlObject * m_ctrlPeakIndicatorL;
+    ControlObject * m_ctrlPeakIndicatorR;
     int m_peakDurationL;
     int m_peakDurationR;
 

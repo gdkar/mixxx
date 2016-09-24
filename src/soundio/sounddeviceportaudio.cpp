@@ -45,12 +45,12 @@ std::atomic<int> SoundDevicePortAudio::m_underflowHappened {0};
 
 namespace {
 // Buffer for drift correction 1 full, 1 for r/w, 1 empty
-const int kDriftReserve = 2;
+constexpr int kDriftReserve = 2;
 // Buffer for drift correction 1 full, 1 for r/w, 1 empty
-const int kFifoSize = 2 * kDriftReserve + 1;
+constexpr int kFifoSize = 2 * kDriftReserve + 1;
 // We warn only at invalid timing 3, since the first two
 // callbacks can be always wrong due to a setup/open jitter
-const int m_invalidTimeInfoWarningCount = 3;
+constexpr int m_invalidTimeInfoWarningCount = 3;
 
 int paV19Callback(const void *inputBuffer, void *outputBuffer,
                   unsigned long framesPerBuffer,
@@ -581,7 +581,7 @@ void SoundDevicePortAudio::writeProcess()
     }
 }
 int SoundDevicePortAudio::callbackProcessDrift(
-        const unsigned int framesPerBuffer, CSAMPLE *out, const CSAMPLE *in,
+        unsigned int framesPerBuffer, CSAMPLE *out, const CSAMPLE *in,
         const PaStreamCallbackTimeInfo *timeInfo,
         PaStreamCallbackFlags statusFlags)
 {
@@ -705,7 +705,7 @@ int SoundDevicePortAudio::callbackProcessDrift(
     return paContinue;
 }
 
-int SoundDevicePortAudio::callbackProcess(const unsigned int framesPerBuffer,
+int SoundDevicePortAudio::callbackProcess(unsigned int framesPerBuffer,
         CSAMPLE *out, const CSAMPLE *in,
         const PaStreamCallbackTimeInfo *timeInfo,
         PaStreamCallbackFlags statusFlags)
@@ -753,7 +753,7 @@ int SoundDevicePortAudio::callbackProcess(const unsigned int framesPerBuffer,
     return paContinue;
 }
 int SoundDevicePortAudio::callbackProcessClkRef(
-        const unsigned int framesPerBuffer, CSAMPLE *out, const CSAMPLE *in,
+        unsigned int framesPerBuffer, CSAMPLE *out, const CSAMPLE *in,
         const PaStreamCallbackTimeInfo *timeInfo,
         PaStreamCallbackFlags statusFlags)
 {
@@ -913,8 +913,7 @@ void SoundDevicePortAudio::updateCallbackEntryToDacTime(
 
     //qDebug() << callbackEntrytoDacSecs << timeSinceLastCbSecs;
 }
-void SoundDevicePortAudio::updateAudioLatencyUsage(
-        const unsigned int framesPerBuffer)
+void SoundDevicePortAudio::updateAudioLatencyUsage(unsigned int framesPerBuffer)
 {
     m_framesSinceAudioLatencyUsageUpdate += framesPerBuffer;
     if (m_framesSinceAudioLatencyUsageUpdate

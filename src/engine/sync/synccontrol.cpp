@@ -17,7 +17,7 @@ const double SyncControl::kBpmHalve = 0.5;
 const double SyncControl::kBpmDouble = 2.0;
 
 SyncControl::SyncControl(const QString& group, UserSettingsPointer pConfig,
-                         EngineChannel* pChannel, SyncableListener* pEngineSync)
+                         EngineChannel* pChannel, EngineSync * pEngineSync)
         : EngineControl(group, pConfig),
           m_sGroup(group),
           m_pChannel(pChannel),
@@ -42,41 +42,36 @@ SyncControl::SyncControl(const QString& group, UserSettingsPointer pConfig,
     m_pPlayButton = new ControlProxy(group, "play", this);
     m_pPlayButton->connectValueChanged(SLOT(slotControlPlay(double)),
                                        Qt::DirectConnection);
+    auto button = new ControlPushButton(ConfigKey(group, "sync_mode"),this);
+    m_pSyncMode = button;
+    button->setButtonMode(ControlPushButton::TOGGLE);
+    button->setStates(SYNC_NUM_MODES);
+    button->connectValueChangeRequest(this, SLOT(slotSyncModeChangeRequest(double)), Qt::DirectConnection);
 
-    m_pSyncMode.reset(new ControlPushButton(ConfigKey(group, "sync_mode"),this));
-    m_pSyncMode->setButtonMode(ControlPushButton::TOGGLE);
-    m_pSyncMode->setStates(SYNC_NUM_MODES);
-    m_pSyncMode->connectValueChangeRequest(
-            this, SLOT(slotSyncModeChangeRequest(double)), Qt::DirectConnection);
-
-    m_pSyncMasterEnabled.reset(
-            new ControlPushButton(ConfigKey(group, "sync_master"),this));
-    m_pSyncMasterEnabled->setButtonMode(ControlPushButton::TOGGLE);
-    m_pSyncMasterEnabled->connectValueChangeRequest(
+    m_pSyncMasterEnabled = button = 
+            new ControlPushButton(ConfigKey(group, "sync_master"),this);
+    button->setButtonMode(ControlPushButton::TOGGLE);
+    button->connectValueChangeRequest(
             this, SLOT(slotSyncMasterEnabledChangeRequest(double)), Qt::DirectConnection);
 
-    m_pSyncEnabled.reset(
-            new ControlPushButton(ConfigKey(group, "sync_enabled"),this));
-    m_pSyncEnabled->setButtonMode(ControlPushButton::LONGPRESSLATCHING);
-    m_pSyncEnabled->connectValueChangeRequest(
+    m_pSyncEnabled = button = 
+            new ControlPushButton(ConfigKey(group, "sync_enabled"),this);
+    button->setButtonMode(ControlPushButton::LONGPRESSLATCHING);
+    button->connectValueChangeRequest(
             this, SLOT(slotSyncEnabledChangeRequest(double)), Qt::DirectConnection);
 
-    m_pSyncBeatDistance.reset(
-            new ControlObject(ConfigKey(group, "beat_distance"),this));
+    m_pSyncBeatDistance = new ControlObject(ConfigKey(group, "beat_distance"),this);
 
     m_pPassthroughEnabled = new ControlProxy(group, "passthrough", this);
     m_pPassthroughEnabled->connectValueChanged(
             SLOT(slotPassthroughChanged(double)), Qt::DirectConnection);
 
     m_pEjectButton = new ControlProxy(group, "eject", this);
-    m_pEjectButton->connectValueChanged(
-            SLOT(slotEjectPushed(double)), Qt::DirectConnection);
 
     // BPMControl and RateControl will be initialized later.
 }
 
-SyncControl::~SyncControl() {
-}
+SyncControl::~SyncControl() = default;
 
 void SyncControl::setEngineControls(RateControl* pRateControl,
                                     BpmControl* pBpmControl) {
@@ -91,40 +86,28 @@ void SyncControl::setEngineControls(RateControl* pRateControl,
     m_pLocalBpm = new ControlProxy(getGroup(), "local_bpm", this);
 
     m_pFileBpm = new ControlProxy(getGroup(), "file_bpm", this);
-    m_pFileBpm->connectValueChanged(SLOT(slotFileBpmChanged()),
-                                    Qt::DirectConnection);
+    m_pFileBpm->connectValueChanged(SLOT(slotFileBpmChanged()),Qt::DirectConnection);
 
     m_pRateSlider = new ControlProxy(getGroup(), "rate", this);
-    m_pRateSlider->connectValueChanged(SLOT(slotRateChanged()),
-                                       Qt::DirectConnection);
+    m_pRateSlider->connectValueChanged(SLOT(slotRateChanged()),Qt::DirectConnection);
 
     m_pRateDirection = new ControlProxy(getGroup(), "rate_dir", this);
-    m_pRateDirection->connectValueChanged(SLOT(slotRateChanged()),
-                                          Qt::DirectConnection);
-
+    m_pRateDirection->connectValueChanged(SLOT(slotRateChanged()),Qt::DirectConnection);
     m_pRateRange = new ControlProxy(getGroup(), "rateRange", this);
-    m_pRateRange->connectValueChanged(SLOT(slotRateChanged()),
-                                      Qt::DirectConnection);
-
+    m_pRateRange->connectValueChanged(SLOT(slotRateChanged()),Qt::DirectConnection);
     m_pSyncPhaseButton = new ControlProxy(getGroup(), "beatsync_phase", this);
-
 #ifdef __VINYLCONTROL__
-    m_pVCEnabled = new ControlProxy(
-            getGroup(), "vinylcontrol_enabled", this);
-
+    m_pVCEnabled = new ControlProxy(getGroup(), "vinylcontrol_enabled", this);
     // Throw a hissy fit if somebody moved us such that the vinylcontrol_enabled
     // control doesn't exist yet. This will blow up immediately, won't go unnoticed.
     DEBUG_ASSERT(m_pVCEnabled->valid());
-
-    m_pVCEnabled->connectValueChanged(SLOT(slotVinylControlChanged(double)),
-                                      Qt::DirectConnection);
+    m_pVCEnabled->connectValueChanged(SLOT(slotVinylControlChanged(double)),Qt::DirectConnection);
 #endif
 }
-
-SyncMode SyncControl::getSyncMode() const {
+SyncMode SyncControl::getSyncMode() const
+{
     return syncModeFromDouble(m_pSyncMode->get());
 }
-
 void SyncControl::notifySyncModeChanged(SyncMode mode) {
     //qDebug() << "SyncControl::notifySyncModeChanged" << getGroup() << mode;
     // SyncControl has absolutely no say in the matter. This is what EngineSync
@@ -154,23 +137,23 @@ void SyncControl::notifySyncModeChanged(SyncMode mode) {
         m_pBpm->set(m_pLocalBpm->get() * rateRatio);
     }
 }
-
-void SyncControl::notifyOnlyPlayingSyncable() {
+void SyncControl::notifyOnlyPlayingSyncable()
+{
     // If we are the only remaining playing sync deck, we can reset the user
     // tweak info.
     m_pBpmControl->resetSyncAdjustment();
 }
-
-void SyncControl::requestSyncPhase() {
+void SyncControl::requestSyncPhase()
+{
     m_pChannel->getEngineBuffer()->requestSyncPhase();
 }
-
-bool SyncControl::isPlaying() const {
+bool SyncControl::isPlaying() const
+{
     return m_pPlayButton->get() > 0.0;
 }
-
-double SyncControl::getBeatDistance() const {
-    double beatDistance = m_pSyncBeatDistance->get();
+double SyncControl::getBeatDistance() const
+{
+    auto beatDistance = m_pSyncBeatDistance->get();
     // Similar to adjusting the target beat distance, when we report our beat
     // distance we need to adjust it by the master bpm adjustment factor.  If
     // we've been doubling the master bpm, we need to divide it in half.  If
@@ -191,18 +174,18 @@ double SyncControl::getBeatDistance() const {
     }
     return beatDistance;
 }
-
-double SyncControl::getBaseBpm() const {
+double SyncControl::getBaseBpm() const
+{
     return m_pLocalBpm->get();
 }
-
-void SyncControl::setBeatDistance(double beatDistance) {
+void SyncControl::setBeatDistance(double beatDistance)
+{
     m_beatDistance = beatDistance;
     // The target distance may change based on our beat distance.
     updateTargetBeatDistance();
 }
-
-void SyncControl::setMasterBeatDistance(double beatDistance) {
+void SyncControl::setMasterBeatDistance(double beatDistance)
+{
     // Set the BpmControl target beat distance to beatDistance, adjusted by
     // the multiplier if in effect.  This way all of the multiplier logic
     // is contained in this single class.
@@ -210,31 +193,26 @@ void SyncControl::setMasterBeatDistance(double beatDistance) {
     // Update the target beat distance based on the multiplier.
     updateTargetBeatDistance();
 }
-
-void SyncControl::setMasterBaseBpm(double bpm) {
+void SyncControl::setMasterBaseBpm(double bpm)
+{
     m_masterBpmAdjustFactor = determineBpmMultiplier(m_pFileBpm->get(), bpm);
     // Update the target beat distance in case the multiplier changed.
     updateTargetBeatDistance();
 }
-
-void SyncControl::setMasterBpm(double bpm) {
+void SyncControl::setMasterBpm(double bpm)
+{
     //qDebug() << "SyncControl::setMasterBpm" << getGroup() << bpm;
-
     if (getSyncMode() == SYNC_NONE) {
         qDebug() << "WARNING: Logic Error: setBpm called on SYNC_NONE syncable.";
         return;
     }
-
     // Vinyl Control overrides.
     if (m_pVCEnabled && m_pVCEnabled->get() > 0.0) {
         return;
     }
-
-    double localBpm = m_pLocalBpm->get();
+    auto localBpm = m_pLocalBpm->get();
     if (localBpm > 0.0) {
-        double newRate = m_pRateDirection->get() *
-                ((bpm * m_masterBpmAdjustFactor / localBpm) - 1.0) /
-                m_pRateRange->get();
+        auto newRate = m_pRateDirection->get() * ((bpm * m_masterBpmAdjustFactor / localBpm) - 1.0) / m_pRateRange->get();
         m_pRateSlider->set(newRate);
     } else {
         m_pRateSlider->set(0);
@@ -247,19 +225,18 @@ void SyncControl::setMasterParams(double beatDistance, double baseBpm, double bp
     setMasterBpm(bpm);
     updateTargetBeatDistance();
 }
+double SyncControl::determineBpmMultiplier(double myBpm, double targetBpm) const
+{
+    auto multiplier = kBpmUnity;
+    auto best_margin = std::abs((targetBpm / myBpm) - 1.0);
 
-double SyncControl::determineBpmMultiplier(double myBpm, double targetBpm) const {
-    double multiplier = kBpmUnity;
-    double best_margin = fabs((targetBpm / myBpm) - 1.0);
-
-    double try_margin = fabs((targetBpm * kBpmHalve / myBpm) - 1.0);
+    auto try_margin = fabs((targetBpm * kBpmHalve / myBpm) - 1.0);
     // We really want to prefer unity, so use a float compare with high tolerance.
     if (best_margin - try_margin > .0001) {
         multiplier = kBpmHalve;
         best_margin = try_margin;
     }
-
-    try_margin = fabs((targetBpm * kBpmDouble / myBpm) - 1.0);
+    try_margin = std::abs((targetBpm * kBpmDouble / myBpm) - 1.0);
     if (best_margin - try_margin > .0001) {
         multiplier = kBpmDouble;
     }
@@ -306,7 +283,6 @@ void SyncControl::reportTrackPosition(double fractionalPlaypos) {
         m_pChannel->getEngineBuffer()->requestSyncMode(SYNC_NONE);
     }
 }
-
 void SyncControl::trackLoaded(TrackPointer pNewTrack, TrackPointer pOldTrack) {
     Q_UNUSED(pOldTrack);
     //qDebug() << getGroup() << "SyncControl::trackLoaded";
@@ -330,45 +306,35 @@ void SyncControl::trackLoaded(TrackPointer pNewTrack, TrackPointer pOldTrack) {
         }
     }
 }
-
-void SyncControl::slotControlPlay(double play) {
+void SyncControl::slotControlPlay(double play)
+{
     m_pEngineSync->notifyPlaying(this, play > 0.0);
 }
-
 void SyncControl::slotVinylControlChanged(double enabled) {
     if (enabled && getSyncMode() == SYNC_FOLLOWER) {
         // If vinyl control was enabled and we're a follower, disable sync mode.
         m_pChannel->getEngineBuffer()->requestSyncMode(SYNC_NONE);
     }
 }
-
-void SyncControl::slotPassthroughChanged(double enabled) {
+void SyncControl::slotPassthroughChanged(double enabled)
+{
     if (enabled && getSyncMode() != SYNC_NONE) {
         // If passthrough was enabled and sync was on, disable it.
         m_pChannel->getEngineBuffer()->requestSyncMode(SYNC_NONE);
     }
 }
-
-void SyncControl::slotEjectPushed(double enabled) {
-    Q_UNUSED(enabled);
-    // We can't eject tracks if the decks is playing back, so if we are master
-    // and eject was pushed the deck must be stopped.  Handing off in this case
-    // actually causes the other decks to start playing, so not doing anything
-    // is preferred.
-}
-
-void SyncControl::slotSyncModeChangeRequest(double state) {
-    SyncMode mode(syncModeFromDouble(state));
+void SyncControl::slotSyncModeChangeRequest(double state)
+{
+    auto mode = syncModeFromDouble(state);
     if (m_pPassthroughEnabled->get() && mode != SYNC_NONE) {
         qDebug() << "Disallowing enabling of sync mode when passthrough active";
     } else {
         m_pChannel->getEngineBuffer()->requestSyncMode(mode);
     }
 }
-
-void SyncControl::slotSyncMasterEnabledChangeRequest(double state) {
-    bool currentlyMaster = getSyncMode() == SYNC_MASTER;
-
+void SyncControl::slotSyncMasterEnabledChangeRequest(double state)
+{
+    auto currentlyMaster = getSyncMode() == SYNC_MASTER;
     if (state > 0.0) {
         if (currentlyMaster) {
             // Already master.
@@ -388,10 +354,9 @@ void SyncControl::slotSyncMasterEnabledChangeRequest(double state) {
         m_pChannel->getEngineBuffer()->requestSyncMode(SYNC_FOLLOWER);
     }
 }
-
-void SyncControl::slotSyncEnabledChangeRequest(double enabled) {
-    bool bEnabled = enabled > 0.0;
-
+void SyncControl::slotSyncEnabledChangeRequest(double enabled)
+{
+    auto bEnabled = enabled > 0.0;
     // Allow a request for state change even if it's the same as the current
     // state.  We might have toggled on and off in the space of one buffer.
     if (bEnabled && m_pPassthroughEnabled->get()) {
@@ -401,7 +366,8 @@ void SyncControl::slotSyncEnabledChangeRequest(double enabled) {
     m_pChannel->getEngineBuffer()->requestEnableSync(bEnabled);
 }
 
-void SyncControl::setLocalBpm(double local_bpm) {
+void SyncControl::setLocalBpm(double local_bpm)
+{
     if (getSyncMode() == SYNC_NONE) {
         return;
     }
@@ -418,22 +384,23 @@ void SyncControl::setLocalBpm(double local_bpm) {
     m_prevLocalBpm = local_bpm;
 
     // FIXME: This recalculating of the rate is duplicated in bpmcontrol.
-    const double rateRatio = calcRateRatio();
-    double bpm = local_bpm * rateRatio;
+    auto rateRatio = calcRateRatio();
+    auto bpm = local_bpm * rateRatio;
     m_pBpm->set(bpm);
     m_pEngineSync->notifyBpmChanged(this, bpm, true);
 }
 
-void SyncControl::slotFileBpmChanged() {
+void SyncControl::slotFileBpmChanged()
+{
     // This slot is fired by file_bpm changes.
-    double file_bpm = m_pFileBpm ? m_pFileBpm->get() : 0.0;
+    auto file_bpm = m_pFileBpm ? m_pFileBpm->get() : 0.0;
     setLocalBpm(file_bpm);
 }
-
-void SyncControl::slotRateChanged() {
+void SyncControl::slotRateChanged()
+{
     // This slot is fired by rate, rate_dir, and rateRange changes.
-    const double rateRatio = calcRateRatio();
-    double bpm = m_pLocalBpm ? m_pLocalBpm->get() * rateRatio : 0.0;
+    auto rateRatio = calcRateRatio();
+    auto bpm = m_pLocalBpm ? m_pLocalBpm->get() * rateRatio : 0.0;
     //qDebug() << getGroup() << "SyncControl::slotRateChanged" << rate << bpm;
     if (bpm > 0) {
         // When reporting our bpm, remove the multiplier so the masters all
@@ -441,7 +408,6 @@ void SyncControl::slotRateChanged() {
         m_pEngineSync->notifyBpmChanged(this, bpm / m_masterBpmAdjustFactor, false);
     }
 }
-
 void SyncControl::reportPlayerSpeed(double speed, bool scratching) {
     if (m_bOldScratching ^ scratching) {
         m_pEngineSync->notifyScratching(this, scratching);
@@ -451,12 +417,10 @@ void SyncControl::reportPlayerSpeed(double speed, bool scratching) {
     }
     // When reporting our speed, remove the multiplier so the masters all
     // think the followers have the same bpm.
-    double instantaneous_bpm = m_pLocalBpm->get() * speed / m_masterBpmAdjustFactor;
+    auto instantaneous_bpm = m_pLocalBpm->get() * speed / m_masterBpmAdjustFactor;
     m_pEngineSync->notifyInstantaneousBpmChanged(this, instantaneous_bpm);
 }
-
 double SyncControl::calcRateRatio() {
-    double rateRatio = 1.0 + m_pRateDirection->get() * m_pRateRange->get() *
-            m_pRateSlider->get();
+    auto rateRatio = 1.0 + m_pRateDirection->get() * m_pRateRange->get() * m_pRateSlider->get();
     return rateRatio;
 }

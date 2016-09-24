@@ -11,17 +11,23 @@ class RateIIFilter;
 
 class PositionScratchController : public QObject {
     Q_OBJECT
+    Q_PROPERTY(double rate READ getRate WRITE setRate NOTIFY rateChanged)
+    Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled NOTIFY enabledChanged);
   public:
     PositionScratchController(QString group);
     virtual ~PositionScratchController();
 
     void process(double currentSample, double releaseRate,
                  int iBufferSize, double baserate);
-    bool isEnabled();
-    double getRate();
+    bool   isEnabled() const;
+    void   setEnabled(bool);
+    double getRate() const;
+    void   setRate(double);
   public slots:
     void notifySeek(double currentSample);
-
+  signals:
+    void rateChanged(double);
+    void enabledChanged(bool);
   private:
     const QString m_group;
     ControlObject* m_pScratchEnable;

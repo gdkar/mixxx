@@ -31,11 +31,11 @@ class ChannelHandle {
     ChannelHandle() : m_iHandle(-1) {
     }
 
-    inline bool valid() const {
+    bool valid() const {
         return m_iHandle >= 0;
     }
 
-    inline int handle() const {
+    int handle() const {
         return m_iHandle;
     }
 
@@ -86,15 +86,16 @@ class ChannelHandleAndGroup {
 
     const ChannelHandle m_handle;
     const QString m_name;
+
+    friend bool operator==(const ChannelHandleAndGroup& g1, const ChannelHandleAndGroup& g2) {
+        return g1.handle() == g2.handle();
+    }
+
+    friend bool operator!=(const ChannelHandleAndGroup& g1, const ChannelHandleAndGroup& g2) {
+        return g1.handle() != g2.handle();
+    }
 };
 
-inline bool operator==(const ChannelHandleAndGroup& g1, const ChannelHandleAndGroup& g2) {
-    return g1.handle() == g2.handle();
-}
-
-inline bool operator!=(const ChannelHandleAndGroup& g1, const ChannelHandleAndGroup& g2) {
-    return g1.handle() != g2.handle();
-}
 
 inline QDebug operator<<(QDebug stream, const ChannelHandleAndGroup& g) {
     stream << "ChannelHandleAndGroup(" << g.name() << "," << g.handle() << ")";
@@ -112,9 +113,7 @@ inline uint qHash(const ChannelHandleAndGroup& handle_group) {
 // EngineMaster.
 class ChannelHandleFactory {
   public:
-    ChannelHandleFactory() : m_iNextHandle(0) {
-    }
-
+    ChannelHandleFactory() : m_iNextHandle(0) { }
     ChannelHandle getOrCreateHandle(const QString& group) {
         ChannelHandle& handle = m_groupToHandle[group];
         if (!handle.valid()) {
@@ -133,7 +132,6 @@ class ChannelHandleFactory {
     QString groupForHandle(const ChannelHandle& handle) const {
         return m_handleToGroup.value(handle, QString());
     }
-
   private:
     int m_iNextHandle;
     QHash<QString, ChannelHandle> m_groupToHandle;
@@ -151,63 +149,48 @@ class ChannelHandleMap {
     static const int kMaxExpectedGroups = 256;
     typedef QVarLengthArray<T, kMaxExpectedGroups> container_type;
   public:
-    typedef typename QVarLengthArray<T, kMaxExpectedGroups>::const_iterator const_iterator;
-    typedef typename QVarLengthArray<T, kMaxExpectedGroups>::iterator iterator;
+    using const_iterator = typename QVarLengthArray<T, kMaxExpectedGroups>::const_iterator;
+    using iterator = typename QVarLengthArray<T, kMaxExpectedGroups>::iterator;
+    using value_type = T;
+    using reference = T&;
+    using const_reference = const T&;
 
-    const T& at(const ChannelHandle& handle) const {
-        if (!handle.valid()) {
-            return m_dummy;
-        }
+    const_reference at(const ChannelHandle& handle) const {
+        if (!handle.valid())
+            throw std::out_of_range("attempt to access nonexistent Channelhandle");
         return m_data.at(handle.handle());
     }
-
-    void insert(const ChannelHandle& handle, const T& value) {
+    void insert(const ChannelHandle& handle, const_reference  value) {
         if (!handle.valid()) {
             return;
         }
-
-        int iHandle = handle.handle();
+        auto iHandle = handle.handle();
         maybeExpand(iHandle + 1);
         m_data[iHandle] = value;
     }
-
-    T& operator[](const ChannelHandle& handle) {
-        if (!handle.valid()) {
-            return m_dummy;
-        }
-        int iHandle = handle.handle();
+    reference  operator[](const ChannelHandle& handle)
+    {
+        if (!handle.valid())
+            throw std::out_of_range("attempt to access nonexistent Channelhandle");
+        auto iHandle = handle.handle();
         maybeExpand(iHandle + 1);
         return m_data[iHandle];
     }
-
     void clear() {
         m_data.clear();
     }
-
-    typename container_type::iterator begin() {
-        return m_data.begin();
-    }
-
-    typename container_type::const_iterator begin() const {
-        return m_data.begin();
-    }
-
-    typename container_type::iterator end() {
-        return m_data.end();
-    }
-
-    typename container_type::const_iterator end() const {
-        return m_data.end();
-    }
-
+    iterator begin() { return m_data.begin(); }
+    const_iterator begin() const { return m_data.begin(); }
+    const_iterator cbegin() const { return m_data.begin(); }
+    iterator end() { return m_data.end(); }
+    const_iterator end() const { return m_data.end();}
+    const_iterator cend() const { return m_data.end();}
   private:
-    inline void maybeExpand(int iSize) {
-        if (m_data.size() < iSize) {
+    void maybeExpand(int iSize) {
+        if (m_data.size() < iSize)
             m_data.resize(iSize);
-        }
     }
     container_type m_data;
-    T m_dummy;
 };
 
 #endif /* CHANNELHANDLE,_H */

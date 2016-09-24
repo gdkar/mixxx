@@ -45,13 +45,13 @@ class SoundDevice : public QObject {
     SoundDevice(UserSettingsPointer config, SoundManager* sm);
     virtual ~SoundDevice();
 
-    inline const QString& getInternalName() const {
+    const QString& getInternalName() const {
         return m_strInternalName;
     }
-    inline const QString& getDisplayName() const {
+    const QString& getDisplayName() const {
         return m_strDisplayName;
     }
-    inline const QString& getHostAPI() const {
+    const QString& getHostAPI() const {
         return m_hostAPI;
     }
     void setSampleRate(double sampleRate);
@@ -67,10 +67,10 @@ class SoundDevice : public QObject {
     int getNumInputChannels() const;
     SoundDeviceError addOutput(const AudioOutputBuffer& out);
     SoundDeviceError addInput(const AudioInputBuffer& in);
-    const QList<AudioInputBuffer>& inputs() const {
+    QList<AudioInputBuffer> inputs() const {
         return m_audioInputs;
     }
-    const QList<AudioOutputBuffer>& outputs() const {
+    QList<AudioOutputBuffer> outputs() const {
         return m_audioOutputs;
     }
 
@@ -81,17 +81,17 @@ class SoundDevice : public QObject {
 
   protected:
     void composeOutputBuffer(CSAMPLE* outputBuffer,
-                             const unsigned int iFramesPerBuffer,
-                             const unsigned int readOffset,
-                             const unsigned int iFrameSize);
+                            unsigned int iFramesPerBuffer,
+                            unsigned int readOffset,
+                            unsigned int iFrameSize);
 
     void composeInputBuffer(const CSAMPLE* inputBuffer,
-                            const unsigned int framesToPush,
-                            const unsigned int framesWriteOffset,
-                            const unsigned int iFrameSize);
+                            unsigned int framesToPush,
+                            unsigned int framesWriteOffset,
+                            unsigned int iFrameSize);
 
-    void clearInputBuffer(const unsigned int framesToPush,
-                          const unsigned int framesWriteOffset);
+    void clearInputBuffer(unsigned int framesToPush,
+                          unsigned int framesWriteOffset);
 
     UserSettingsPointer m_pConfig;
     // Pointer to the SoundManager object which we'll request audio from.

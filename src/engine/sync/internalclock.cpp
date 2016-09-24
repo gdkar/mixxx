@@ -8,59 +8,52 @@
 #include "control/controlpushbutton.h"
 #include "preferences/usersettings.h"
 
-InternalClock::InternalClock(const char* pGroup, SyncableListener* pEngineSync)
+InternalClock::InternalClock(const char* pGroup, EngineSync * pEngineSync)
         : m_group(pGroup),
           m_pEngineSync(pEngineSync),
           m_mode(SYNC_NONE),
           m_iOldSampleRate(44100),
           m_dOldBpm(124.0),
           m_dBeatLength(m_iOldSampleRate * 60.0 / m_dOldBpm),
-          m_dClockPosition(0) {
+          m_dClockPosition(0)
+{
     // Pick a wide range (1 to 200) and allow out of bounds sets. This lets you
     // map a soft-takeover MIDI knob to the master BPM. This also creates bpm_up
     // and bpm_down controls.
     // bpm_up / bpm_down steps by 1
     // bpm_up_small / bpm_down_small steps by 0.1
-    m_pClockBpm = new ControlLinPotmeter(ConfigKey(m_group, "bpm"),this,
-                                          1, 200, 1, 0.1, true);
-    connect(m_pClockBpm, &ControlObject::valueChanged,
-            this, &InternalClock::slotBpmChanged,
-            Qt::AutoConnection);
+    m_pClockBpm = new ControlLinPotmeter(ConfigKey(m_group, "bpm"),this, 1, 200, 1, 0.1, true);
+    connect(m_pClockBpm, &ControlObject::valueChanged,this, &InternalClock::slotBpmChanged,Qt::AutoConnection);
 
     m_pClockBeatDistance = new ControlObject(ConfigKey(m_group, "beat_distance"),this);
-    connect(m_pClockBeatDistance, &ControlObject::valueChanged,
-            this, &InternalClock::slotBeatDistanceChanged,
-            Qt::AutoConnection);
+    connect(m_pClockBeatDistance, &ControlObject::valueChanged,this, &InternalClock::slotBeatDistanceChanged,Qt::AutoConnection);
 
     auto button = new ControlPushButton(ConfigKey(pGroup, "sync_master"),this);
     m_pSyncMasterEnabled = button;
     button->setButtonMode(ControlPushButton::TOGGLE);
-    button->connectValueChangeRequest(
-        this, SLOT(slotSyncMasterEnabledChangeRequest(double)),
-        Qt::DirectConnection);
+    button->connectValueChangeRequest(this, SLOT(slotSyncMasterEnabledChangeRequest(double)),Qt::DirectConnection);
 }
 
 InternalClock::~InternalClock() = default;
 
-void InternalClock::notifySyncModeChanged(SyncMode mode) {
+void InternalClock::notifySyncModeChanged(SyncMode mode)
+{
     // Syncable has absolutely no say in the matter. This is what EngineSync
     // requires. Bypass confirmation by using setAndConfirm.
     m_mode = mode;
     m_pSyncMasterEnabled->setAndConfirm(mode == SYNC_MASTER);
 }
-
-void InternalClock::notifyOnlyPlayingSyncable() {
+void InternalClock::notifyOnlyPlayingSyncable()
+{
     // No action necessary.
 }
-
-void InternalClock::requestSyncPhase() {
+void InternalClock::requestSyncPhase()
+{
     // TODO(owilliams): This should probably be how we reset the internal beat distance.
 }
-
 void InternalClock::slotSyncMasterEnabledChangeRequest(double state)
 {
     auto currentlyMaster = getSyncMode() == SYNC_MASTER;
-
     if (state > 0.0) {
         if (currentlyMaster) {
             // Already master.
@@ -85,28 +78,28 @@ double InternalClock::getBeatDistance() const
     }
     return m_dClockPosition / m_dBeatLength;
 }
-
-void InternalClock::setMasterBeatDistance(double beatDistance) {
+void InternalClock::setMasterBeatDistance(double beatDistance)
+{
     //qDebug() << "InternalClock::setBeatDistance" << beatDistance;
     m_dClockPosition = beatDistance * m_dBeatLength;
     m_pClockBeatDistance->set(beatDistance);
     // Make sure followers have an up-to-date beat distance.
     m_pEngineSync->notifyBeatDistanceChanged(this, beatDistance);
 }
-
-double InternalClock::getBaseBpm() const {
+double InternalClock::getBaseBpm() const
+{
     return m_dOldBpm;
 }
-
-void InternalClock::setMasterBaseBpm(double bpm) {
+void InternalClock::setMasterBaseBpm(double bpm)
+{
     Q_UNUSED(bpm)
 }
-
-double InternalClock::getBpm() const {
+double InternalClock::getBpm() const
+{
     return m_pClockBpm->get();
 }
-
-void InternalClock::setMasterBpm(double bpm) {
+void InternalClock::setMasterBpm(double bpm)
+{
     //qDebug() << "InternalClock::setBpm" << bpm;
     if (bpm == 0) {
         return;

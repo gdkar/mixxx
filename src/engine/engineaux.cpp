@@ -37,7 +37,7 @@ EngineAux::~EngineAux() {
 
 bool EngineAux::isActive() {
     auto enabled = m_pInputConfigured->toBool();
-    if (enabled && m_sampleBuffer) {
+    if (enabled && m_sampleBuffer.load()) {
         m_wasActive = true;
     } else if (m_wasActive) {
         m_pVUMeter->reset();
@@ -73,9 +73,9 @@ void EngineAux::receiveBuffer(AudioInput input, const CSAMPLE* pBuffer,unsigned 
     m_sampleBuffer = pBuffer;
 }
 
-void EngineAux::process(CSAMPLE* pOut, const int iBufferSize)
+void EngineAux::process(CSAMPLE* pOut, int iBufferSize)
 {
-    auto sampleBuffer = m_sampleBuffer; // save pointer on stack
+    auto sampleBuffer = m_sampleBuffer.load(); // save pointer on stack
     auto pregain =  m_pPregain->get();
     if (sampleBuffer) {
         SampleUtil::copyWithGain(pOut, sampleBuffer, pregain, iBufferSize);

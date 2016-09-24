@@ -19,14 +19,14 @@ class SoundDeviceNetwork : public SoundDevice {
                        QSharedPointer<EngineNetworkStream> pNetworkStream);
     virtual ~SoundDeviceNetwork();
 
-    virtual Result open(bool isClkRefDevice, int syncBuffers);
-    virtual bool isOpen() const;
-    virtual Result close();
-    virtual void readProcess();
-    virtual void writeProcess();
-    virtual QString getError() const;
+    virtual Result open(bool isClkRefDevice, int syncBuffers) override;
+    virtual bool isOpen() const override ;
+    virtual Result close() override;
+    virtual void readProcess() override;
+    virtual void writeProcess() override;
+    virtual QString getError() const override;
 
-    virtual unsigned int getDefaultSampleRate() const {
+    virtual unsigned int getDefaultSampleRate() const override{
         return 44100;
     }
 
@@ -36,7 +36,7 @@ class SoundDeviceNetwork : public SoundDevice {
     FIFO<CSAMPLE>* m_inputFifo;
     bool m_outputDrift;
     bool m_inputDrift;
-    static volatile int m_underflowHappened;
+    static std::atomic<int> m_underflowHappened;
 };
 
 #endif // SOUNDDEVICENETWORK_H

@@ -140,7 +140,7 @@ bool EngineRecord::metaDataHasChanged()
     return true;
 }
 
-void EngineRecord::process(const CSAMPLE* pBuffer, const int iBufferSize) {
+void EngineRecord::process(const CSAMPLE* pBuffer, int iBufferSize) {
 
     float recordingStatus = m_pRecReady->get();
 

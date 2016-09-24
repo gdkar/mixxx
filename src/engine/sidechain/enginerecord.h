@@ -40,7 +40,7 @@ class EngineRecord : public QObject, public EncoderCallback, public SideChainWor
     EngineRecord(UserSettingsPointer pConfig);
     virtual ~EngineRecord();
 
-    void process(const CSAMPLE* pBuffer, const int iBufferSize);
+    void process(const CSAMPLE* pBuffer, int iBufferSize);
     void shutdown() {}
 
     // writes compressed audio to file

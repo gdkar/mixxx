@@ -17,7 +17,7 @@
 #include "enginedelay.h"
 
 #include "control/controlproxy.h"
-#include "control/controlpotmeter.h"
+#include "control/controlobject.h"
 #include "util/assert.h"
 #include "util/sample.h"
 
@@ -30,23 +30,21 @@ EngineDelay::EngineDelay(QObject *p, const char* group, ConfigKey delayControl)
           m_iDelay(0) {
     m_pDelayBuffer = SampleUtil::alloc(kiMaxDelay);
     SampleUtil::clear(m_pDelayBuffer, kiMaxDelay);
-    m_pDelayPot = new ControlPotmeter(delayControl, 0, kdMaxDelayPot, false, true, false, true);
+    m_pDelayPot = new ControlObject(delayControl,this);
     m_pDelayPot->setDefaultValue(0);
-    connect(m_pDelayPot, SIGNAL(valueChanged(double)), this,
-            SLOT(slotDelayChanged()), Qt::DirectConnection);
-
+    connect(m_pDelayPot, &ControlObject::valueChanged, this,
+            &EngineDelay::onDelayChanged, Qt::AutoConnection);
     m_pSampleRate = new ControlProxy(group, "samplerate", this);
-    m_pSampleRate->connectValueChanged(SLOT(slotDelayChanged()), Qt::DirectConnection);
+    m_pSampleRate->connectValueChanged(SLOT(slotDelayChanged()), Qt::AutoConnection);
 }
 
-EngineDelay::~EngineDelay() {
+EngineDelay::~EngineDelay()
+{
     SampleUtil::free(m_pDelayBuffer);
-    delete m_pDelayPot;
 }
-
-void EngineDelay::slotDelayChanged() {
-    double newDelay = m_pDelayPot->get();
-    double sampleRate = m_pSampleRate->get();
+void EngineDelay::onDelayChanged() {
+    auto newDelay = m_pDelayPot->get();
+    auto sampleRate = m_pSampleRate->get();
 
     m_iDelay = (int)(sampleRate * newDelay / 1000);
     m_iDelay *= 2;
@@ -60,22 +58,20 @@ void EngineDelay::slotDelayChanged() {
 }
 
 
-void EngineDelay::process(CSAMPLE* pInOut, const int iBufferSize) {
+void EngineDelay::process(CSAMPLE* pInOut, const int iBufferSize)
+{
     if (m_iDelay > 0) {
-        int iDelaySourcePos = (m_iDelayPos + kiMaxDelay - m_iDelay) % kiMaxDelay;
-
+        auto iDelaySourcePos = (m_iDelayPos + kiMaxDelay - m_iDelay) % kiMaxDelay;
         DEBUG_ASSERT_AND_HANDLE(iDelaySourcePos >= 0) {
             return;
         }
         DEBUG_ASSERT_AND_HANDLE(iDelaySourcePos <= kiMaxDelay) {
             return;
         }
-
         for (int i = 0; i < iBufferSize; ++i) {
             // put sample into delay buffer:
             m_pDelayBuffer[m_iDelayPos] = pInOut[i];
             m_iDelayPos = (m_iDelayPos + 1) % kiMaxDelay;
-
             // Take delayed sample from delay buffer and copy it to dest buffer:
             pInOut[i] = m_pDelayBuffer[iDelaySourcePos];
             iDelaySourcePos = (iDelaySourcePos + 1) % kiMaxDelay;

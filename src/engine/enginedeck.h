@@ -45,8 +45,8 @@ class EngineDeck : public EngineChannel, public AudioDestination {
                EngineChannel::ChannelOrientation defaultOrientation = CENTER);
     virtual ~EngineDeck();
 
-    void process(CSAMPLE* pOutput, const int iBufferSize) override;
-    void postProcess(const int iBufferSize) override;
+    void process(CSAMPLE* pOutput, int iBufferSize) override;
+    void postProcess(int iBufferSize) override;
 
     // TODO(XXX) This hack needs to be removed.
     virtual EngineBuffer* getEngineBuffer();

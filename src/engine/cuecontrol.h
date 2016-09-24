@@ -24,17 +24,17 @@ class HotcueControl : public QObject {
     HotcueControl(QString group, int hotcueNumber);
     virtual ~HotcueControl();
 
-    inline int getHotcueNumber() { return m_iHotcueNumber; }
-    inline CuePointer getCue() { return m_pCue; }
-    inline void setCue(CuePointer pCue) { m_pCue = pCue; }
-    inline ControlObject* getPosition() { return m_hotcuePosition; }
-    inline ControlObject* getEnabled() { return m_hotcueEnabled; }
+    int getHotcueNumber() { return m_iHotcueNumber; }
+    CuePointer getCue() { return m_pCue; }
+    void setCue(CuePointer pCue) { m_pCue = pCue; }
+    ControlObject* getPosition() { return m_hotcuePosition; }
+    ControlObject* getEnabled() { return m_hotcueEnabled; }
 
     // Used for caching the preview state of this hotcue control.
-    inline bool isPreviewing() { return m_bPreviewing; }
-    inline void setPreviewing(bool bPreviewing) { m_bPreviewing = bPreviewing; }
-    inline int getPreviewingPosition() { return m_iPreviewingPosition; }
-    inline void setPreviewingPosition(int iPosition) { m_iPreviewingPosition = iPosition; }
+    bool isPreviewing() { return m_bPreviewing; }
+    void setPreviewing(bool bPreviewing) { m_bPreviewing = bPreviewing; }
+    int getPreviewingPosition() { return m_iPreviewingPosition; }
+    void setPreviewingPosition(int iPosition) { m_iPreviewingPosition = iPosition; }
 
   private slots:
     void slotHotcueSet(double v);

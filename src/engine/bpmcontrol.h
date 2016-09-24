@@ -37,11 +37,11 @@ class BpmControl : public EngineControl {
     double getBeatDistance(double dThisPosition) const;
     double getPreviousSample() const { return m_dPreviousSample; }
 
-    void setCurrentSample(const double dCurrentSample, const double dTotalSamples);
-    double process(const double dRate,
-                   const double dCurrentSample,
-                   const double dTotalSamples,
-                   const int iBufferSize);
+    void setCurrentSample(double dCurrentSample, double dTotalSamples);
+    double process(double dRate,
+                   double dCurrentSample,
+                   double dTotalSamples,
+                   int iBufferSize);
     void setTargetBeatDistance(double beatDistance);
     void setInstantaneousBpm(double instantaneousBpm);
     void resetSyncAdjustment();
@@ -55,7 +55,7 @@ class BpmControl : public EngineControl {
     // lies within the current beat). Returns false if a previous or next beat
     // does not exist. NULL arguments are safe and ignored.
     static bool getBeatContext(const BeatsPointer& pBeats,
-                               const double dPosition,
+                               double dPosition,
                                double* dpPrevBeat,
                                double* dpNextBeat,
                                double* dpBeatLength,
@@ -64,17 +64,17 @@ class BpmControl : public EngineControl {
     // Alternative version that works if the next and previous beat positions
     // are already known.
     static bool getBeatContextNoLookup(
-                               const double dPosition,
-                               const double dPrevBeat,
-                               const double dNextBeat,
+                               double dPosition,
+                               double dPrevBeat,
+                               double dNextBeat,
                                double* dpBeatLength,
                                double* dpBeatPercentage);
 
     // Returns the shortest change in percentage needed to achieve
     // target_percentage.
     // Example: shortestPercentageChange(0.99, 0.01) == 0.02
-    static double shortestPercentageChange(const double& current_percentage,
-                                           const double& target_percentage);
+    static double shortestPercentageChange(double current_percentage,
+                                           double target_percentage);
 
   public slots:
     void trackLoaded(TrackPointer pNewTrack, TrackPointer pOldTrack) override;

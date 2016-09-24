@@ -22,10 +22,10 @@ Item {
         PushKey   { item: "loop_in";key:"2"}
         PushKey   { item: "loop_out";key:"3"}
         PushKey   { item: "reloop_exit";key:"4"}
-        Add       { item: "rate";amount: -0.5e-2;key:"F1";min:0;max:3}
-        Add       { item: "rate";amount:  0.5e-2;key:"F2";min:0;max:3}
-        Add       { item: "rate";amount: -0.1e-2;key:"Shift+F1";min:0;max:3}
-        Add       { item: "rate";amount:  0.1e-2;key:"Shift+F2";min:0;max:3}
+        Add       { item: "rate";amount: -0.5e-2;key:"F1";min:-3;max:3}
+        Add       { item: "rate";amount:  0.5e-2;key:"F2";min:-3;max:3}
+        Add       { item: "rate";amount: -0.1e-2;key:"Shift+F1";min:-3;max:3}
+        Add       { item: "rate";amount:  0.1e-2;key:"Shift+F2";min:-3;max:3}
         IncDec    { item: "rate";amount: -2.e-2;key:"F3"}
         IncDec    { item: "rate";amount:  2.e-2;key:"F4"}
         IncDec    { item: "rate";amount: -0.5e-2;key:"Shift+F3"}
@@ -69,10 +69,10 @@ Item {
         PushKey   { item: "loop_out";key:"8"}
         PushKey   { item: "reloop_exit";key:"9"}
 
-        Add       { item: "rate";amount: -0.5e-2;key:"F5";min:0;max:3}
-        Add       { item: "rate";amount:  0.5e-2;key:"F6";min:0;max:3}
-        Add       { item: "rate";amount: -0.1e-2;key:"Shift+F5";min:0;max:3}
-        Add       { item: "rate";amount:  0.1e-2;key:"Shift+F6";min:0;max:3}
+        Add       { item: "rate";amount: -0.5e-2;key:"F5";min:-3;max:3}
+        Add       { item: "rate";amount:  0.5e-2;key:"F6";min:-3;max:3}
+        Add       { item: "rate";amount: -0.1e-2;key:"Shift+F5";min:-3;max:3}
+        Add       { item: "rate";amount:  0.1e-2;key:"Shift+F6";min:-3;max:3}
         IncDec    { item: "rate";amount: -2.e-2;key:"F7"}
         IncDec    { item: "rate";amount:  2.e-2;key:"F8"}
         IncDec    { item: "rate";amount: -0.5e-2;key:"Shift+F7"}

@@ -19,10 +19,9 @@ void EngineXfader::getXfadeGains(
     if (gain1 == NULL || gain2 == NULL) {
         return;
     }
-
     // Slow-fade/fast-cut
-    double xfadePositionLeft = xfadePosition;
-    double xfadePositionRight = xfadePosition;
+    auto xfadePositionLeft = xfadePosition;
+    auto xfadePositionRight = xfadePosition;
 
     if (curve == MIXXX_XFADER_CONSTPWR) {
         // Apply Calibration
@@ -67,13 +66,12 @@ void EngineXfader::getXfadeGains(
         // with one exception of mixing two parts of the same track, which resulted in 0.66.
         // Based on the testing, we normalize the gain as if the signals were uncorrelated. The
         // correction on the following lines ensures that  gain1^2 + gain2^2 == 1.
-        double gain = sqrt(*gain1 * *gain1 + *gain2 * *gain2);
+        auto gain = sqrt(*gain1 * *gain1 + *gain2 * *gain2);
         *gain1 = *gain1 / gain;
         *gain2 = *gain2 / gain;
     }
-
     if (reverse) {
-        double gain_temp = *gain1;
+        auto gain_temp = *gain1;
         *gain1 = *gain2;
         *gain2 = gain_temp;
     }

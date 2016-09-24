@@ -13,12 +13,12 @@
 
 // TODO: Convert these doubles to a standard enum
 // and convert elseif logic to switch statements
-static const double CUE_MODE_MIXXX = 0.0;
-static const double CUE_MODE_PIONEER = 1.0;
-static const double CUE_MODE_DENON = 2.0;
-static const double CUE_MODE_NUMARK = 3.0;
-static const double CUE_MODE_MIXXX_NO_BLINK = 4.0;
-static const double CUE_MODE_CUP = 5.0;
+static constexpr double CUE_MODE_MIXXX = 0.0;
+static constexpr double CUE_MODE_PIONEER = 1.0;
+static constexpr double CUE_MODE_DENON = 2.0;
+static constexpr double CUE_MODE_NUMARK = 3.0;
+static constexpr double CUE_MODE_MIXXX_NO_BLINK = 4.0;
+static constexpr double CUE_MODE_CUP = 5.0;
 
 CueControl::CueControl(QString group,
                        UserSettingsPointer pConfig) :
@@ -207,10 +207,10 @@ void CueControl::trackLoaded(TrackPointer pNewTrack, TrackPointer pOldTrack) {
 
         if (cuePoint != -1 && cuePoint != 0.0) {
             CuePointer loadCue;
-            const QList<CuePointer> cuePoints(m_pLoadedTrack->getCuePoints());
+            auto cuePoints = m_pLoadedTrack->getCuePoints();
             QListIterator<CuePointer> it(cuePoints);
             while (it.hasNext()) {
-                CuePointer pCue(it.next());
+                auto pCue = it.next();
                 if (pCue->getType() == Cue::LOAD) {
                     loadCue = pCue;
                     break;
@@ -240,7 +240,7 @@ void CueControl::trackLoaded(TrackPointer pNewTrack, TrackPointer pOldTrack) {
             Qt::AutoConnection);
 
     CuePointer loadCue;
-    const QList<CuePointer> cuePoints(pNewTrack->getCuePoints());
+    auto cuePoints = pNewTrack->getCuePoints();
     QListIterator<CuePointer> it(cuePoints);
     while (it.hasNext()) {
         CuePointer pCue(it.next());
@@ -296,7 +296,7 @@ void CueControl::trackCuesUpdated() {
     if (!m_pLoadedTrack)
         return;
 
-    const QList<CuePointer> cuePoints(m_pLoadedTrack->getCuePoints());
+    auto cuePoints = m_pLoadedTrack->getCuePoints();
     QListIterator<CuePointer> it(cuePoints);
     while (it.hasNext()) {
         CuePointer pCue(it.next());
@@ -591,10 +591,10 @@ void CueControl::hintReader(HintVector* pHintList) {
     // this is called from the engine thread
     // it is no locking required, because m_hotcueControl is filled during the
     // constructor and getPosition()->get() is a ControlObject
-    for (QList<HotcueControl*>::const_iterator it = m_hotcueControl.constBegin();
+    for (auto it = m_hotcueControl.constBegin();
          it != m_hotcueControl.constEnd(); ++it) {
-        HotcueControl* pControl = *it;
-        double position = pControl->getPosition()->get();
+        auto pControl = *it;
+        auto position = pControl->getPosition()->get();
         if (position != -1) {
             cue_hint.sample = position;
             if (cue_hint.sample % 2 != 0)

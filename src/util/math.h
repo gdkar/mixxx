@@ -37,6 +37,7 @@ using std::fabs;
 #define math_max std::max
 #define math_min std::min
 #define math_maxn(...) std::max({ __VA_ARGS__})
+#define math_minn(...) std::max({ __VA_ARGS__})
 #define math_max3(a,b,c) math_maxn((a),(b),(c))
 
 // Restrict value to the range [min, max]. Undefined behavior if min > max.

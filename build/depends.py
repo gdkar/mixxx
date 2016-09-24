@@ -667,7 +667,7 @@ class MixxxCore(Feature):
                    "engine/effects/engineeffectchain.cpp",
                    "engine/effects/engineeffect.cpp",
 
-                   "engine/sync/basesyncablelistener.cpp",
+#                   "engine/sync/basesyncablelistener.cpp",
                    "engine/sync/enginesync.cpp",
                    "engine/sync/synccontrol.cpp",
                    "engine/sync/internalclock.cpp",
@@ -686,7 +686,6 @@ class MixxxCore(Feature):
                    "engine/enginefilterbutterworth8.cpp",
                    "engine/enginefilterlinkwitzriley4.cpp",
                    "engine/enginefilterlinkwitzriley8.cpp",
-                   "engine/enginefilter.cpp",
                    "engine/enginefilterpan.cpp",
                    "engine/enginefilteriir.cpp",
                    "engine/engineobject.cpp",

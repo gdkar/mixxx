@@ -65,10 +65,10 @@ EngineDeck::~EngineDeck() {
     delete m_pPregain;
 }
 
-void EngineDeck::process(CSAMPLE* pOut, const int iBufferSize) {
+void EngineDeck::process(CSAMPLE* pOut, int iBufferSize) {
     GroupFeatureState features;
     // Feed the incoming audio through if passthrough is active
-    const CSAMPLE* sampleBuffer = m_sampleBuffer; // save pointer on stack
+    auto sampleBuffer = m_sampleBuffer; // save pointer on stack
     if (isPassthroughActive() && sampleBuffer) {
         SampleUtil::copy(pOut, sampleBuffer, iBufferSize);
         m_bPassthroughWasActive = true;
@@ -106,7 +106,7 @@ void EngineDeck::process(CSAMPLE* pOut, const int iBufferSize) {
     m_pVUMeter->process(pOut, iBufferSize);
 }
 
-void EngineDeck::postProcess(const int iBufferSize) {
+void EngineDeck::postProcess(int iBufferSize) {
     m_pBuffer->postProcess(iBufferSize);
 }
 

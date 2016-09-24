@@ -23,36 +23,29 @@ constexpr SyncMode syncModeFromDouble(double value) {
 
 class Syncable {
   public:
-    virtual ~Syncable() { }
+    virtual ~Syncable() {}
+//    virtual ~Syncable() { }
     virtual const QString& getGroup() const = 0;
     virtual EngineChannel* getChannel() const = 0;
-
     // Notify a Syncable that their mode has changed. The Syncable must record
     // this mode and return the latest mode received via notifySyncModeChanged
     // in response to getMode().
     virtual void notifySyncModeChanged(SyncMode mode) = 0;
-
     // Notify a Syncable that it is now the only currently-playing syncable.
     virtual void notifyOnlyPlayingSyncable() = 0;
-
     // Notify a Syncable that they should sync phase.
     virtual void requestSyncPhase() = 0;
-
     // Must NEVER return a mode that was not set directly via
     // notifySyncModeChanged.
     virtual SyncMode getSyncMode() const = 0;
-
     // Only relevant for player Syncables.
     virtual bool isPlaying() const = 0;
-
     // Gets the current speed of the syncable in bpm (bpm * rate slider), doesn't
     // include scratch or FF/REW values.
     virtual double getBpm() const = 0;
-
     virtual double getBeatDistance() const = 0;
     // Gets the speed of the syncable if it was playing at 1.0 rate.
     virtual double getBaseBpm() const = 0;
-
     // The following functions are used to tell syncables about the state of the
     // current Sync Master.
     // Must never result in a call to
@@ -66,43 +59,15 @@ class Syncable {
     // Must never result in a call to SyncableListener::notifyBpmChanged or
     // signal loops could occur.
     virtual void setMasterBpm(double bpm) = 0;
-
     // Combines the above three calls into one, since they are often set
     // simultaneously.  Avoids redundant recalculation that would occur by
     // using the three calls separately.
     virtual void setMasterParams(double beatDistance, double baseBpm, double bpm) = 0;
-
     // Must never result in a call to
     // SyncableListener::notifyInstantaneousBpmChanged or signal loops could
     // occur.
     virtual void setInstantaneousBpm(double bpm) = 0;
 };
-
-class SyncableListener {
-  public:
-    virtual void requestSyncMode(Syncable* pSyncable, SyncMode mode) = 0;
-    virtual void requestEnableSync(Syncable* pSyncable, bool enabled) = 0;
-
-    // A Syncable must never call notifyBpmChanged in response to a setMasterBpm()
-    // call.
-    virtual void notifyBpmChanged(Syncable* pSyncable, double bpm,
-                                  bool fileChanged=false) = 0;
-    virtual void notifyInstantaneousBpmChanged(Syncable* pSyncable, double bpm) = 0;
-
-    // Notify Syncable that the Syncable's scratching state changed.
-    virtual void notifyScratching(Syncable* pSyncable, bool scratching) = 0;
-
-    // A Syncable must never call notifyBeatDistanceChanged in respnse to a
-    // setBeatDistance() call.
-    virtual void notifyBeatDistanceChanged(
-        Syncable* pSyncable, double beatDistance) = 0;
-
-    virtual void notifyPlaying(Syncable* pSyncable, bool playing) = 0;
-    // A syncable can notify that a track has been loaded, and passes in the bpm
-    // that it would be set at if the rate slider were left alone.  This allows
-    // the master sync engine to either use that rate, if it pleases, or sets
-    // the syncable to the existing master bpm.
-    virtual void notifyTrackLoaded(Syncable* pSyncable, double suggested_bpm) = 0;
-};
+Q_DECLARE_INTERFACE(Syncable, "org.mixxx.interfaces.syncable/0.1");
 
 #endif /* SYNCABLE_H */

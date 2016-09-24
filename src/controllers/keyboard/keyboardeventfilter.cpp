@@ -7,13 +7,6 @@
 #include "control/controlobject.h"
 #include "util/cmdlineargs.h"
 
-/*KeyboardEventFilter::KeyboardEventFilter(ConfigObject<ConfigValueKbd>* pKbdConfigObject,
-                                         QObject* parent, const char* name)
-        : QObject(parent),
-          m_pKbdConfigObject(nullptr) {
-    setObjectName(name);
-    setKeyboardConfig(pKbdConfigObject);
-}*/
 KeyboardEventFilter::KeyboardEventFilter(QObject *pParent)
 :QObject(pParent) {}
 KeyboardEventFilter::~KeyboardEventFilter() = default;
@@ -23,7 +16,6 @@ bool KeyboardEventFilter::eventFilter(QObject*, QEvent* e)
         case QEvent::FocusOut:{
             // If we lose focus, we need to clear out the active key list
             // because we might not get Key Release events.
-            m_qActiveKeyList.clear();
             m_activeKeys.clear();
             return false;
         }
@@ -37,15 +29,8 @@ bool KeyboardEventFilter::eventFilter(QObject*, QEvent* e)
                 auto ks = getKeySeq(ke);
                 if(!ke->isAutoRepeat()) {
                     auto info = m_activeKeys.take(keyId);
-                    if(info.proxy) {
-                        auto kue = QKeyEvent(QEvent::KeyRelease,
-                            info.key,
-                            info.modifiers,
-                            info.text,
-                            false,
-                            info.count);
-                        QCoreApplication::sendEvent(info.proxy,&kue);
-                    }
+                    if(info.proxy)
+                        QCoreApplication::sendEvent(info.proxy,&info.event);
                 }
                 if(auto obj = m_dispatchBySequence.value(ks,nullptr)) {
                     if(QCoreApplication::sendEvent(obj, e)) {
@@ -76,14 +61,17 @@ bool KeyboardEventFilter::eventFilter(QObject*, QEvent* e)
                 }
 #endif
                 auto ks = getKeySeq(ke);
-                auto done = m_activeKeys.take(keyId);
                 auto handled = false;
-                if(done.proxy) {
-                    if(QCoreApplication::sendEvent(done.proxy, ke))
-                        handled = true;
+                auto proxy = static_cast<KeyProxy*>(nullptr);
+                if(!autoRepeat) {
+                    auto done = m_activeKeys.take(keyId);
+                    if((proxy = done.proxy)) {
+                        if(QCoreApplication::sendEvent(proxy, ke))
+                            handled = true;
+                    }
                 }
                 if(auto obj = m_dispatchBySequence.value(ks,nullptr)) {
-                    if(obj != done.proxy) {
+                    if(obj != proxy) {
                         if(QCoreApplication::sendEvent(obj, e))
                             handled = true;
                     }

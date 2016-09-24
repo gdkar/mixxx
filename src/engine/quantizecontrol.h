@@ -18,8 +18,8 @@ class QuantizeControl : public EngineControl {
     QuantizeControl(QString group, UserSettingsPointer pConfig);
     virtual ~QuantizeControl();
 
-    virtual void setCurrentSample(const double dCurrentSample,
-                                  const double dTotalSamples);
+    virtual void setCurrentSample(double dCurrentSample,
+                                  double dTotalSamples) override;
 
   public slots:
     void trackLoaded(TrackPointer pNewTrack, TrackPointer pOldTrack) override;

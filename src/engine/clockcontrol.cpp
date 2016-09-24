@@ -1,53 +1,40 @@
 #include "engine/clockcontrol.h"
 
-#include "control/controlobject.h"
 #include "preferences/usersettings.h"
 #include "engine/enginecontrol.h"
 #include "control/controlproxy.h"
 
 ClockControl::ClockControl(QString group, UserSettingsPointer pConfig)
         : EngineControl(group, pConfig) {
-    m_pCOBeatActive = new ControlObject(ConfigKey(group, "beat_active"),this);
+    m_pCOBeatActive = new ControlProxy(ConfigKey(group, "beat_active"),this);
     m_pCOBeatActive->set(0.0);
     m_pCOSampleRate = new ControlProxy("[Master]","samplerate",this);
 }
-
-ClockControl::~ClockControl() {
-    delete m_pCOBeatActive;
-    delete m_pCOSampleRate;
-}
-
+ClockControl::~ClockControl() { }
 void ClockControl::trackLoaded(TrackPointer pNewTrack, TrackPointer pOldTrack)
 {
     Q_UNUSED(pOldTrack);
-
     // Clear on-beat control
     m_pCOBeatActive->set(0.0);
-
     // Disconnect any previously loaded track/beats
     if (m_pTrack) {
-        disconnect(m_pTrack.data(), SIGNAL(beatsUpdated()),this, SLOT(slotBeatsUpdated()));
+        disconnect(m_pTrack.data(), nullptr,this, nullptr);
     }
     if (pNewTrack) {
         m_pTrack = pNewTrack;
+        connect(m_pTrack.data(), &Track::beatsUpdated, this,
+            [pNewTrack,this]() { m_pBeats = pNewTrack->getBeats();});
         m_pBeats = m_pTrack->getBeats();
-        connect(m_pTrack.data(), SIGNAL(beatsUpdated()),this, SLOT(slotBeatsUpdated()));
     } else {
         m_pBeats.clear();
         m_pTrack.clear();
     }
 
 }
-void ClockControl::slotBeatsUpdated()
-{
-    if(m_pTrack) {
-        m_pBeats = m_pTrack->getBeats();
-    }
-}
-double ClockControl::process(const double dRate,
-                             const double currentSample,
-                             const double totalSamples,
-                             const int iBuffersize)
+double ClockControl::process(double dRate,
+                             double currentSample,
+                             double totalSamples,
+                             int iBuffersize)
 {
     Q_UNUSED(totalSamples);
     Q_UNUSED(iBuffersize);

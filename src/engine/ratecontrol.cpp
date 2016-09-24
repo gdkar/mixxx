@@ -502,10 +502,10 @@ double RateControl::calculateSpeed(double baserate, double speed, bool paused,
     return rate;
 }
 
-double RateControl::process(const double rate,
-                            const double currentSample,
-                            const double totalSamples,
-                            const int bufferSamples)
+double RateControl::process(double rate,
+                            double currentSample,
+                            double totalSamples,
+                            int bufferSamples)
 {
     Q_UNUSED(rate);
     Q_UNUSED(currentSample);

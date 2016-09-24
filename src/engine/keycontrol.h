@@ -1,17 +1,15 @@
 #ifndef KEYCONTROL_H
 #define KEYCONTROL_H
 
+#include <atomic>
 #include "engine/enginecontrol.h"
 #include "control/controlvalue.h"
 
 class ControlObject;
-class ControlPotmeter;
-class ControlPushButton;
 
 class KeyControl : public EngineControl {
     Q_OBJECT
   public:
-
     struct PitchTempoRatio {
         // this is the calculated value used by engine buffer for pitch
         // by default is is equal to the tempoRatio set by the speed slider
@@ -23,17 +21,12 @@ class KeyControl : public EngineControl {
         double pitchTweakRatio;
         bool keylock;
     };
-
     KeyControl(QString group, UserSettingsPointer pConfig);
     virtual ~KeyControl();
-
     // Returns a struct, with the results of the last pitch and tempo calculations
     KeyControl::PitchTempoRatio getPitchTempoRatio();
-
     double getKey();
-
-    void collectFeatures(GroupFeatureState* pGroupFeatures) const;
-
+    void collectFeatures(GroupFeatureState* pGroupFeatures) const override;
   private slots:
     void slotSetEngineKey(double);
     void slotSetEngineKeyDistance(double);
@@ -61,24 +54,24 @@ class KeyControl : public EngineControl {
     ControlObject* m_pVCEnabled;
 
     ControlObject* m_pKeylock;
-    ControlPotmeter* m_pPitch;
-    ControlPotmeter* m_pPitchAdjust;
-    ControlPushButton* m_pButtonSyncKey;
-    ControlPushButton* m_pButtonResetKey;
-    ControlPushButton* m_keylockMode;
+    ControlObject* m_pPitch;
+    ControlObject* m_pPitchAdjust;
+    ControlObject* m_pButtonSyncKey;
+    ControlObject* m_pButtonResetKey;
+    ControlObject* m_keylockMode;
 
     /** The current loaded file's detected key */
     ControlObject* m_pFileKey;
 
     /** The current effective key of the engine */
     ControlObject* m_pEngineKey;
-    ControlPotmeter* m_pEngineKeyDistance;
+    ControlObject* m_pEngineKeyDistance;
 
     TrackPointer m_pTrack;
     struct PitchTempoRatio m_pitchRateInfo;
-    QAtomicInt m_updatePitchRequest;
-    QAtomicInt m_updatePitchAdjustRequest;
-    QAtomicInt m_updateRateRequest;
+    std::atomic<bool>m_updatePitchRequest;
+    std::atomic<bool>m_updatePitchAdjustRequest;
+    std::atomic<bool>m_updateRateRequest;
 };
 
 #endif // KEYCONTROL_H

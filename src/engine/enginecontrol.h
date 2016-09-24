@@ -43,20 +43,20 @@ class EngineControl : public QObject {
     // this call. If the EngineControl would like to request the playback
     // position to be altered, it should return the sample to seek to from this
     // method. Otherwise it should return kNoTrigger.
-    virtual double process(const double dRate,
-                           const double dCurrentSample,
-                           const double dTotalSamples,
-                           const int iBufferSize);
+    virtual double process(double dRate,
+                           double dCurrentSample,
+                           double dTotalSamples,
+                           int iBufferSize);
 
-    virtual double nextTrigger(const double dRate,
-                               const double dCurrentSample,
-                               const double dTotalSamples,
-                               const int iBufferSize);
+    virtual double nextTrigger(double dRate,
+                               double dCurrentSample,
+                               double dTotalSamples,
+                               int iBufferSize);
 
-    virtual double getTrigger(const double dRate,
-                              const double dCurrentSample,
-                              const double dTotalSamples,
-                              const int iBufferSize);
+    virtual double getTrigger(double dRate,
+                              double dCurrentSample,
+                              double dTotalSamples,
+                              int iBufferSize);
 
     // hintReader allows the EngineControl to provide hints to the reader to
     // indicate that the given portion of a song is a potential imminent seek
@@ -64,14 +64,14 @@ class EngineControl : public QObject {
     virtual void hintReader(HintVector* pHintList);
 
     virtual void setEngineMaster(EngineMaster* pEngineMaster);
-    virtual void setCurrentSample(const double dCurrentSample, const double dTotalSamples);
+    virtual void setCurrentSample(double dCurrentSample, double dTotalSamples);
     double getCurrentSample() const;
     double getTotalSamples() const;
     bool atEndPosition() const;
     QString getGroup() const;
 
     // Called to collect player features for effects processing.
-    virtual void collectFeatureState(GroupFeatureState* pGroupFeatures) const {
+    virtual void collectFeatures(GroupFeatureState* pGroupFeatures) const {
         Q_UNUSED(pGroupFeatures);
     }
     // Called whenever a seek occurs to allow the EngineControl to respond.

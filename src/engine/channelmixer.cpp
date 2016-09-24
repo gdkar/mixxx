@@ -9,7 +9,7 @@ void ChannelMixer::mixChannels(
         unsigned int num)
 {
     SampleUtil::clear(dst,num);
-    
+
     for(auto pChannel : *activeChannels){
         CSAMPLE_GAIN newGain = 0;
         auto &gCache  = (*gainCache)[pChannel->m_index];

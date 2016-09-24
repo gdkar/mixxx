@@ -128,9 +128,9 @@ class EngineBuffer : public EngineObject {
     void requestSyncMode(SyncMode mode);
 
     // The process methods all run in the audio callback.
-    void process(CSAMPLE* pOut, const int iBufferSize);
+    void process(CSAMPLE* pOut, int iBufferSize) override;
     void processSlip(int iBufferSize);
-    void postProcess(const int iBufferSize);
+    void postProcess(int iBufferSize);
 
     QString getGroup();
     bool isTrackLoaded();
@@ -139,7 +139,7 @@ class EngineBuffer : public EngineObject {
     double getVisualPlayPos();
     double getTrackSamples();
 
-    void collectFeatures(GroupFeatureState* pGroupFeatures) const;
+    void collectFeatures(GroupFeatureState* pGroupFeatures) const override;
 
     // For dependency injection of fake tracks, with an optional filebpm value.
 
@@ -172,10 +172,8 @@ class EngineBuffer : public EngineObject {
 
   private slots:
     void slotTrackLoading();
-    void slotTrackLoaded(TrackPointer pTrack,
-                         int iSampleRate, int iNumSamples);
-    void slotTrackLoadFailed(TrackPointer pTrack,
-                             QString reason);
+    void slotTrackLoaded(TrackPointer pTrack,int iSampleRate, int iNumSamples);
+    void slotTrackLoadFailed(TrackPointer pTrack,QString reason);
     // Fired when passthrough mode is enabled or disabled.
     void slotPassthroughChanged(double v);
 
@@ -183,26 +181,18 @@ class EngineBuffer : public EngineObject {
     // Add an engine control to the EngineBuffer
     // must not be called outside the Constructor
     void addControl(EngineControl* pControl);
-
-    void enableIndependentPitchTempoScaling(bool bEnable,
-                                            const int iBufferSize);
-
+    void enableIndependentPitchTempoScaling(bool bEnable,int iBufferSize);
     void updateIndicators(double rate, int iBufferSize);
-
-    void hintReader(const double rate);
-
+    void hintReader(double rate);
     void ejectTrack();
-
     double fractionalPlayposFromAbsolute(double absolutePlaypos);
 
-    void doSeekFractional(double fractionalPos, enum SeekRequest seekType);
-    void doSeekPlayPos(double playpos, enum SeekRequest seekType);
-
+    void doSeekFractional(double fractionalPos, SeekRequest seekType);
+    void doSeekPlayPos(double playpos, SeekRequest seekType);
     // Read one buffer from the current scaler into the crossfade buffer.  Used
     // for transitioning from one scaler to another, or reseeking a scaler
     // to prevent pops.
-    void readToCrossfadeBuffer(const int iBufferSize);
-
+    void readToCrossfadeBuffer(int iBufferSize);
     // Reset buffer playpos and set file playpos.
     void setNewPlaypos(double playpos);
     void clearAndPreroll(double playpos, double preroll);

@@ -6,22 +6,23 @@
 
 #include "engine/enginecontrol.h"
 #include "engine/sync/syncable.h"
+#include "engine/sync/enginesync.h"
 
 class EngineChannel;
 class BpmControl;
 class RateControl;
 class ControlObject;
 class ControlProxy;
-class ControlPushButton;
 
 class SyncControl : public EngineControl, public Syncable {
     Q_OBJECT
+    Q_INTERFACES(Syncable)
   public:
     static const double kBpmUnity;
     static const double kBpmHalve;
     static const double kBpmDouble;
     SyncControl(const QString& group, UserSettingsPointer pConfig,
-                EngineChannel* pChannel, SyncableListener* pEngineSync);
+                EngineChannel* pChannel, EngineSync* pEngineSync);
     virtual ~SyncControl();
 
     const QString& getGroup() const { return m_sGroup; }
@@ -40,16 +41,13 @@ class SyncControl : public EngineControl, public Syncable {
     void setLocalBpm(double local_bpm);
 
     // Must never result in a call to
-    // SyncableListener::notifyBeatDistanceChanged or signal loops could occur.
     void setMasterBeatDistance(double beatDistance);
     void setMasterBaseBpm(double);
     // Must never result in a call to
-    // SyncableListener::notifyBpmChanged or signal loops could occur.
     void setMasterBpm(double bpm);
     void setMasterParams(double beatDistance, double baseBpm, double bpm);
 
     // Must never result in a call to
-    // SyncableListener::notifyInstantaneousBpmChanged or signal loops could
     // occur.
     void setInstantaneousBpm(double bpm);
 
@@ -64,22 +62,14 @@ class SyncControl : public EngineControl, public Syncable {
   private slots:
     // Fired by changes in play.
     void slotControlPlay(double v);
-
     // Fired by changes in vinyl control status.
     void slotVinylControlChanged(double v);
-
     // Fired when passthrough mode is enabled or disabled.
     void slotPassthroughChanged(double v);
-
-    // Fired when a track is ejected.
-    void slotEjectPushed(double v);
-
     // Fired by changes in rate, rate_dir, rateRange.
     void slotRateChanged();
-
     // Fired by changes in file_bpm.
     void slotFileBpmChanged();
-
     // Change request handlers for sync properties.
     void slotSyncModeChangeRequest(double state);
     void slotSyncEnabledChangeRequest(double enabled);
@@ -100,7 +90,7 @@ class SyncControl : public EngineControl, public Syncable {
     // EngineSync can ask us what our EngineChannel is. EngineMaster in turn
     // asks EngineSync what EngineChannel is the "master" channel.
     EngineChannel* m_pChannel;
-    SyncableListener* m_pEngineSync;
+    EngineSync   * m_pEngineSync;
     BpmControl* m_pBpmControl;
     RateControl* m_pRateControl;
     bool m_bOldScratching;
@@ -117,10 +107,10 @@ class SyncControl : public EngineControl, public Syncable {
     double m_beatDistance;
     double m_prevLocalBpm;
 
-    QScopedPointer<ControlPushButton> m_pSyncMode;
-    QScopedPointer<ControlPushButton> m_pSyncMasterEnabled;
-    QScopedPointer<ControlPushButton> m_pSyncEnabled;
-    QScopedPointer<ControlObject> m_pSyncBeatDistance;
+    ControlObject* m_pSyncMode;
+    ControlObject* m_pSyncMasterEnabled;
+    ControlObject* m_pSyncEnabled;
+    ControlObject* m_pSyncBeatDistance;
 
     // These ControlProxys are created as parent to this and deleted by
     // the Qt object tree. This helps that they are deleted by the creating

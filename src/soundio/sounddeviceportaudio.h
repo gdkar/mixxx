@@ -55,17 +55,17 @@ class SoundDevicePortAudio : public SoundDevice {
 
     // This callback function gets called everytime the sound device runs out of
     // samples (ie. when it needs more sound to play)
-    int callbackProcess(const unsigned int framesPerBuffer,
+    int callbackProcess(unsigned int framesPerBuffer,
                         CSAMPLE *output, const CSAMPLE* in,
                         const PaStreamCallbackTimeInfo *timeInfo,
                         PaStreamCallbackFlags statusFlags);
     // Same as above but with drift correction
-    int callbackProcessDrift(const unsigned int framesPerBuffer,
+    int callbackProcessDrift(unsigned int framesPerBuffer,
                         CSAMPLE *output, const CSAMPLE* in,
                         const PaStreamCallbackTimeInfo *timeInfo,
                         PaStreamCallbackFlags statusFlags);
     // The same as above but drives the MixxEngine
-    int callbackProcessClkRef(const unsigned int framesPerBuffer,
+    int callbackProcessClkRef(unsigned int framesPerBuffer,
                         CSAMPLE *output, const CSAMPLE* in,
                         const PaStreamCallbackTimeInfo *timeInfo,
                         PaStreamCallbackFlags statusFlags);
@@ -77,7 +77,7 @@ class SoundDevicePortAudio : public SoundDevice {
 
   private:
     void updateCallbackEntryToDacTime(const PaStreamCallbackTimeInfo* timeInfo);
-    void updateAudioLatencyUsage(const unsigned int framesPerBuffer);
+    void updateAudioLatencyUsage(unsigned int framesPerBuffer);
 
     // PortAudio stream for this device.
     std::atomic<PaStream*> m_pStream;

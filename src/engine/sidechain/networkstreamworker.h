@@ -44,7 +44,7 @@ class NetworkStreamWorker {
     NetworkStreamWorker();
     virtual ~NetworkStreamWorker();
 
-    virtual void process(const CSAMPLE* pBuffer, const int iBufferSize) = 0;
+    virtual void process(const CSAMPLE* pBuffer, int iBufferSize) = 0;
     virtual void shutdown() = 0;
 
     virtual void outputAvailable();
@@ -62,7 +62,7 @@ protected:
     void setState(int state);
     void setFunctionCode(int code);
     void incRunCount();
-    
+
 private:
     static int s_networkStreamWorkerState;
     static int s_functionCode;

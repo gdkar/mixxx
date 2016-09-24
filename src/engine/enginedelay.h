@@ -20,7 +20,7 @@
 #include "engine/engineobject.h"
 #include "preferences/usersettings.h"
 
-class ControlPotmeter;
+class ControlObject;
 class ControlProxy;
 
 class EngineDelay : public EngineObject {
@@ -32,11 +32,11 @@ class EngineDelay : public EngineObject {
     void process(CSAMPLE* pInOut, const int iBufferSize);
 
   public slots:
-    void slotDelayChanged();
+    void onDelayChanged();
 
   private:
-    ControlPotmeter* m_pDelayPot;
-    ControlProxy* m_pSampleRate;
+    ControlObject* m_pDelayPot;
+    ControlProxy*  m_pSampleRate;
     CSAMPLE* m_pDelayBuffer;
     int m_iDelayPos;
     int m_iDelay;

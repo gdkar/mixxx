@@ -42,12 +42,6 @@
 #ifdef __PORTAUDIO__
 typedef PaError (*SetJackClientName)(const char *name);
 #endif
-template<class T>
-constexpr std::add_const_t<T>& as_const(T & t) noexcept
-{
-    return t;
-}
-
 namespace {
 
 struct DeviceMode {
@@ -159,14 +153,14 @@ void SoundManager::closeDevices() {
     // then the callback may be running when we call
     // onInputDisconnected/onOutputDisconnected.
     for(auto && pDevice: as_const(m_devices)) {
-        for(auto && in: as_const(pDevice->inputs())) {
+        for(auto && in: pDevice->inputs()) {
             // Need to tell all registered AudioDestinations for this AudioInput
             // that the input was disconnected.
             for (auto && dest : m_registeredDestinations.values(in)){
                 dest->onInputUnconfigured(in);
             }
         }
-        for (auto && out : as_const(pDevice->outputs())){
+        for (auto && out : pDevice->outputs()){
             for (auto && src : m_registeredSources.values(out)) {
             // Need to tell all registered AudioOrigins for this AudioOutput
             // that the output was disconnected.
@@ -503,14 +497,14 @@ void SoundManager::checkConfig()
     m_config.setCorrectDeckCount(getConfiguredDeckCount());
     // latency checks itself for validity on SMConfig::setLatency()
 }
-void SoundManager::onDeviceOutputCallback(const unsigned int iFramesPerBuffer)
+void SoundManager::onDeviceOutputCallback(unsigned int iFramesPerBuffer)
 {
     // Produce a block of samples for output. EngineMaster expects stereo
     // samples so multiply iFramesPerBuffer by 2.
     m_pMaster->process(iFramesPerBuffer*2);
 }
 void SoundManager::pushInputBuffers(const QList<AudioInputBuffer>& inputs,
-                                    const unsigned int iFramesPerBuffer)
+                                    unsigned int iFramesPerBuffer)
 {
    for (auto i = inputs.begin(), e = inputs.end(); i != e; ++i) {
         auto && in = *i;

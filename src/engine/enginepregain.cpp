@@ -55,8 +55,8 @@ void EnginePregain::setScratching(bool scratching) {
     m_scratching = scratching;
 }
 
-void EnginePregain::process(CSAMPLE* pInOut, const int iBufferSize) {
-    const float fReplayGain = m_pCOReplayGain->get();
+void EnginePregain::process(CSAMPLE* pInOut, int iBufferSize) {
+    auto fReplayGain = float(m_pCOReplayGain->get());
     float fReplayGainCorrection;
     if (!s_pEnableReplayGain->toBool() || m_pPassthroughEnabled->toBool()) {
         // Override replaygain value if passing through
@@ -79,18 +79,18 @@ void EnginePregain::process(CSAMPLE* pInOut, const int iBufferSize) {
         // full process for one second.
         // So we need to alter gain each time ::process is called.
 
-        const float fullReplayGainBoost = fReplayGain *
+        auto fullReplayGainBoost = fReplayGain *
                 (float)s_pReplayGainBoost->get();
 
         // This means that a ReplayGain value has been calculated after the
         // track has been loaded
-        const double kFadeSeconds = 1.0;
+        auto kFadeSeconds = 1.0;
 
         if (m_bSmoothFade) {
-            double seconds = m_timer.elapsed().toDoubleSeconds();
+            auto seconds = m_timer.elapsed().toDoubleSeconds();
             if (seconds < kFadeSeconds) {
                 // Fade smoothly
-                double fadeFrac = seconds / kFadeSeconds;
+                auto fadeFrac = seconds / kFadeSeconds;
                 fReplayGainCorrection = m_fPrevGain * (1.0 - fadeFrac) +
                         fadeFrac * fullReplayGainBoost;
             } else {
@@ -106,7 +106,7 @@ void EnginePregain::process(CSAMPLE* pInOut, const int iBufferSize) {
     // Clamp gain to within [0, 10.0] to prevent insane gains. This can happen
     // (some corrupt files get really high replay gain values).
     // 10 allows a maximum replay Gain Boost * calculated replay gain of ~2
-    float totalGain = (float)m_pPotmeterPregain->get() *
+    auto totalGain = (float)m_pPotmeterPregain->get() *
             math_clamp(fReplayGainCorrection, 0.0f, 10.0f);
 
     m_pTotalGain->set(totalGain);
@@ -116,11 +116,10 @@ void EnginePregain::process(CSAMPLE* pInOut, const int iBufferSize) {
     // is distracting and doesn't mimic the way that vinyl sounds when played slowly.
     // Instead, reduce gain to provide a soft rolloff.
     // This is also applied for for fading from and to pause
-    const float kThresholdSpeed = 0.070; // Scale volume if playback speed is below 7%.
+    auto kThresholdSpeed = 0.070f; // Scale volume if playback speed is below 7%.
     if (fabs(m_dSpeed) < kThresholdSpeed) {
         totalGain *= fabs(m_dSpeed) / kThresholdSpeed;
     }
-
     if ((m_dSpeed * m_dOldSpeed < 0) && m_scratching) {
         // direction changed, go though zero if scratching
         SampleUtil::applyRampingGain(&pInOut[0], m_fPrevGain, 0, iBufferSize / 2);

@@ -120,17 +120,13 @@ void EngineControl::notifySeek(double dNewPlaypos)
 EngineBuffer* EngineControl::pickSyncTarget()
 {
     if(auto pMaster = getEngineMaster()) {
-
-        EngineSync* pEngineSync = pMaster->getEngineSync();
-        if (pEngineSync == NULL) {
-            return NULL;
+        if(auto pEngineSync = pMaster->getEngineSync()) {
+            // TODO(rryan): Remove. This is a linear search over groups in
+            // EngineMaster. We should pass the EngineChannel into EngineControl.
+            auto pThisChannel = pMaster->getChannel(getGroup());
+            auto pChannel     = pEngineSync->pickNonSyncSyncTarget(pThisChannel);
+            return pChannel ? pChannel->getEngineBuffer() : NULL;
         }
-
-        // TODO(rryan): Remove. This is a linear search over groups in
-        // EngineMaster. We should pass the EngineChannel into EngineControl.
-        auto pThisChannel = pMaster->getChannel(getGroup());
-        auto pChannel = pEngineSync->pickNonSyncSyncTarget(pThisChannel);
-        return pChannel ? pChannel->getEngineBuffer() : NULL;
     }
     return nullptr;
 }

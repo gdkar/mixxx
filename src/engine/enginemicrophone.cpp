@@ -69,11 +69,11 @@ void EngineMicrophone::receiveBuffer(AudioInput input, const CSAMPLE* pBuffer,
     m_sampleBuffer = pBuffer;
 }
 
-void EngineMicrophone::process(CSAMPLE* pOut, const int iBufferSize) {
+void EngineMicrophone::process(CSAMPLE* pOut, int iBufferSize) {
     // If configured read into the output buffer.
     // Otherwise, skip the appropriate number of samples to throw them away.
-    const CSAMPLE* sampleBuffer = m_sampleBuffer; // save pointer on stack
-    double pregain =  m_pPregain->get();
+     auto sampleBuffer = m_sampleBuffer; // save pointer on stack
+    auto pregain =  m_pPregain->get();
     if (sampleBuffer) {
         SampleUtil::copyWithGain(pOut, sampleBuffer, pregain, iBufferSize);
     } else {

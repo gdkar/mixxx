@@ -306,10 +306,10 @@ void LoopingControl::slotLoopDouble(double v) {
     }
 }
 
-double LoopingControl::process(const double dRate,
-                               const double currentSample,
-                               const double totalSamples,
-                               const int iBufferSize) {
+double LoopingControl::process(double dRate,
+                               double currentSample,
+                               double totalSamples,
+                               int iBufferSize) {
     Q_UNUSED(totalSamples);
     Q_UNUSED(iBufferSize);
 
@@ -336,10 +336,10 @@ double LoopingControl::process(const double dRate,
     return retval;
 }
 
-double LoopingControl::nextTrigger(const double dRate,
-                                   const double currentSample,
-                                   const double totalSamples,
-                                   const int iBufferSize) {
+double LoopingControl::nextTrigger(double dRate,
+                                   double currentSample,
+                                   double totalSamples,
+                                   int iBufferSize) {
     Q_UNUSED(currentSample);
     Q_UNUSED(totalSamples);
     Q_UNUSED(iBufferSize);
@@ -356,10 +356,10 @@ double LoopingControl::nextTrigger(const double dRate,
     return kNoTrigger;
 }
 
-double LoopingControl::getTrigger(const double dRate,
-                                  const double currentSample,
-                                  const double totalSamples,
-                                  const int iBufferSize) {
+double LoopingControl::getTrigger(double dRate,
+                                  double currentSample,
+                                  double totalSamples,
+                                  int iBufferSize) {
     Q_UNUSED(currentSample);
     Q_UNUSED(totalSamples);
     Q_UNUSED(iBufferSize);

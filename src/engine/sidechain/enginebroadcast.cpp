@@ -606,7 +606,7 @@ bool EngineBroadcast::writeSingle(const unsigned char* data, size_t len)
     return true;
 }
 
-void EngineBroadcast::process(const CSAMPLE* pBuffer, const int iBufferSize)
+void EngineBroadcast::process(const CSAMPLE* pBuffer, int iBufferSize)
 {
     setFunctionCode(4);
     setState(NETWORKSTREAMWORKER_STATE_BUSY);

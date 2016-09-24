@@ -9,7 +9,7 @@
 #include "util/sample.h"
 
 // static
-volatile int SoundDeviceNetwork::m_underflowHappened = 0;
+std::atomic<int> SoundDeviceNetwork::m_underflowHappened { 0};
 
 SoundDeviceNetwork::SoundDeviceNetwork(UserSettingsPointer config,
                                        SoundManager *sm,

@@ -24,38 +24,26 @@
 EngineVuMeter::EngineVuMeter(QObject *p, QString group) :EngineObject(p) {
     // The VUmeter widget is controlled via a controlpotmeter, which means
     // that it should react on the setValue(int) signal.
-    m_ctrlVuMeter = new ControlPotmeter(ConfigKey(group, "VuMeter"), 0., 1.);
+    m_ctrlVuMeter = new ControlObject(ConfigKey(group, "VuMeter"),this);
     // left channel VU meter
-    m_ctrlVuMeterL = new ControlPotmeter(ConfigKey(group, "VuMeterL"), 0., 1.);
+    m_ctrlVuMeterL = new ControlObject(ConfigKey(group, "VuMeterL"),this);
     // right channel VU meter
-    m_ctrlVuMeterR = new ControlPotmeter(ConfigKey(group, "VuMeterR"), 0., 1.);
+    m_ctrlVuMeterR = new ControlObject(ConfigKey(group, "VuMeterR"),this);
 
     // Used controlpotmeter as the example used it :/ perhaps someone with more
     // knowledge could use something more suitable...
-    m_ctrlPeakIndicator = new ControlPotmeter(ConfigKey(group, "PeakIndicator"),
-                                              0., 1.);
-    m_ctrlPeakIndicatorL = new ControlPotmeter(ConfigKey(group, "PeakIndicatorL"),
-                                              0., 1.);
-    m_ctrlPeakIndicatorR = new ControlPotmeter(ConfigKey(group, "PeakIndicatorR"),
-                                              0., 1.);
-
+    m_ctrlPeakIndicator = new ControlObject(ConfigKey(group, "PeakIndicator"),this);
+    m_ctrlPeakIndicatorL = new ControlObject(ConfigKey(group, "PeakIndicatorL"),this);
+    m_ctrlPeakIndicatorR = new ControlObject(ConfigKey(group, "PeakIndicatorR"),this);
     m_pSampleRate = new ControlProxy("[Master]", "samplerate", this);
 
     // Initialize the calculation:
     reset();
 }
 
-EngineVuMeter::~EngineVuMeter()
-{
-    delete m_ctrlVuMeter;
-    delete m_ctrlVuMeterL;
-    delete m_ctrlVuMeterR;
-    delete m_ctrlPeakIndicator;
-    delete m_ctrlPeakIndicatorL;
-    delete m_ctrlPeakIndicatorR;
-}
+EngineVuMeter::~EngineVuMeter() { }
 
-void EngineVuMeter::process(CSAMPLE* pIn, const int iBufferSize) {
+void EngineVuMeter::process(CSAMPLE* pIn, int iBufferSize) {
     CSAMPLE fVolSumL, fVolSumR;
 
     int sampleRate = (int)m_pSampleRate->get();
@@ -64,19 +52,15 @@ void EngineVuMeter::process(CSAMPLE* pIn, const int iBufferSize) {
             &fVolSumR, pIn, iBufferSize);
     m_fRMSvolumeSumL += fVolSumL;
     m_fRMSvolumeSumR += fVolSumR;
-
     m_iSamplesCalculated += iBufferSize / 2;
-
     // Are we ready to update the VU meter?:
     if (m_iSamplesCalculated > (sampleRate / VU_UPDATE_RATE)) {
-        doSmooth(m_fRMSvolumeL,
-                log10(SHRT_MAX * m_fRMSvolumeSumL
+        doSmooth(m_fRMSvolumeL, log10(SHRT_MAX * m_fRMSvolumeSumL
                                 / (m_iSamplesCalculated * 1000) + 1));
         doSmooth(m_fRMSvolumeR,
-                log10(SHRT_MAX * m_fRMSvolumeSumR
-                                / (m_iSamplesCalculated * 1000) + 1));
+                log10(SHRT_MAX * m_fRMSvolumeSumR/ (m_iSamplesCalculated * 1000) + 1));
 
-        const double epsilon = .0001;
+        auto epsilon = .0001;
 
         // Since VU meters are a rolling sum of audio, the no-op checks in
         // ControlObject will not prevent us from causing tons of extra
@@ -87,7 +71,7 @@ void EngineVuMeter::process(CSAMPLE* pIn, const int iBufferSize) {
         if (std::abs(m_fRMSvolumeR - m_ctrlVuMeterR->get()) > epsilon)
             m_ctrlVuMeterR->set(m_fRMSvolumeR);
 
-        double fRMSvolume = (m_fRMSvolumeL + m_fRMSvolumeR) / 2.0;
+        auto fRMSvolume = (m_fRMSvolumeL + m_fRMSvolumeR) / 2.0;
         if (std::abs(fRMSvolume - m_ctrlVuMeter->get()) > epsilon)
             m_ctrlVuMeter->set(fRMSvolume);
 
@@ -117,12 +101,11 @@ void EngineVuMeter::process(CSAMPLE* pIn, const int iBufferSize) {
 
     m_ctrlPeakIndicator->set(m_ctrlPeakIndicatorR->get() || m_ctrlPeakIndicatorL->get());
 }
-
-void EngineVuMeter::collectFeatures(GroupFeatureState* pGroupFeatures) const {
+void EngineVuMeter::collectFeatures(GroupFeatureState* pGroupFeatures) const
+{
     pGroupFeatures->rms_volume_sum = (m_fRMSvolumeL + m_fRMSvolumeR) / 2.0;
     pGroupFeatures->has_rms_volume_sum = true;
 }
-
 void EngineVuMeter::doSmooth(CSAMPLE &currentVolume, CSAMPLE newVolume)
 {
     if (currentVolume > newVolume)

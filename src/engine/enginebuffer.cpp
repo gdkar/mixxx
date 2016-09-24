@@ -202,7 +202,6 @@ EngineBuffer::EngineBuffer(QObject *p, QString group, UserSettingsPointer pConfi
     m_pQuantize = new ControlObject(ConfigKey(group,"quantize"),this);
 
     m_pEngineSync = pMixingEngine->getEngineSync();
-
     m_pSyncControl = new SyncControl(group, pConfig, pChannel, m_pEngineSync);
     addControl(m_pSyncControl);
 
@@ -210,7 +209,6 @@ EngineBuffer::EngineBuffer(QObject *p, QString group, UserSettingsPointer pConfi
     m_pVinylControlControl = new VinylControlControl(group, pConfig);
     addControl(m_pVinylControlControl);
 #endif
-
     m_pRateControl = new RateControl(group, pConfig);
     // Add the Rate Controller
     addControl(m_pRateControl);
@@ -312,7 +310,7 @@ double EngineBuffer::fractionalPlayposFromAbsolute(double absolutePlaypos)
 }
 
 void EngineBuffer::enableIndependentPitchTempoScaling(bool bEnable,
-                                                      const int iBufferSize)
+                                                      int iBufferSize)
 {
     // MUST ACQUIRE THE PAUSE MUTEX BEFORE CALLING THIS METHOD
 
@@ -725,7 +723,7 @@ void EngineBuffer::slotKeylockEngineChanged(double dIndex)
     }
 }
 
-void EngineBuffer::process(CSAMPLE* pOutput, const int iBufferSize)
+void EngineBuffer::process(CSAMPLE* pOutput, int iBufferSize)
 {
     // Bail if we receive a buffer size with incomplete sample frames. Assert in debug builds.
     DEBUG_ASSERT_AND_HANDLE((iBufferSize % kSamplesPerFrame) == 0) {
@@ -756,24 +754,24 @@ void EngineBuffer::process(CSAMPLE* pOutput, const int iBufferSize)
         m_iSampleRate = sample_rate;
     }
 
-    bool bTrackLoading = m_iTrackLoading.load() != 0;
+    auto bTrackLoading = m_iTrackLoading.load() != 0;
     if (!bTrackLoading && m_pause.tryLock()) {
         ScopedTimer t("EngineBuffer::process_pauselock");
 
-        double baserate = 0.0;
+        auto baserate = 0.0;
         if (sample_rate > 0) {
             baserate = ((double)m_trackSampleRateOld / sample_rate);
         }
 
         // Note: play is also active during cue preview
-        bool paused = !playing();//m_playButton->toBool();
-        KeyControl::PitchTempoRatio pitchTempoRatio = m_pKeyControl->getPitchTempoRatio();
+        auto  paused = !playing();//m_playButton->toBool();
+        auto pitchTempoRatio = m_pKeyControl->getPitchTempoRatio();
 
         // The pitch adjustment in Ratio (1.0 being normal
         // pitch. 2.0 is a full octave shift up).
-        double pitchRatio = pitchTempoRatio.pitchRatio;
-        double tempoRatio = pitchTempoRatio.tempoRatio;
-        const bool keylock_enabled = pitchTempoRatio.keylock;
+        auto pitchRatio = pitchTempoRatio.pitchRatio;
+        auto tempoRatio = pitchTempoRatio.tempoRatio;
+        auto keylock_enabled = pitchTempoRatio.keylock;
 
         bool is_scratching = false;
         bool is_reverse = false;
@@ -1171,7 +1169,7 @@ void EngineBuffer::processSeek(bool paused) {
     }
 }
 
-void EngineBuffer::postProcess(const int iBufferSize)
+void EngineBuffer::postProcess(int iBufferSize)
 {
     // The order of events here is very delicate.  It's necessary to update
     // some values before others, because the later updates may require
@@ -1231,7 +1229,7 @@ void EngineBuffer::updateIndicators(double speed, int iBufferSize)
             fractionalPlayposFromAbsolute(m_dSlipPosition));
 }
 
-void EngineBuffer::hintReader(const double dRate)
+void EngineBuffer::hintReader(double dRate)
 {
     m_hintList.clear();
     m_pReadAheadManager->hintReader(dRate, &m_hintList);

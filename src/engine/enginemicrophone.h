@@ -29,8 +29,8 @@ class EngineMicrophone : public EngineChannel, public AudioDestination {
     bool isActive() override;
 
     // Called by EngineMaster whenever is requesting a new buffer of audio.
-    void process(CSAMPLE* pOutput, const int iBufferSize) override;
-    void postProcess(const int iBufferSize) override { Q_UNUSED(iBufferSize) }
+    void process(CSAMPLE* pOutput, int iBufferSize) override;
+    void postProcess(int iBufferSize) override { Q_UNUSED(iBufferSize) }
 
     // This is called by SoundManager whenever there are new samples from the
     // configured input to be processed. This is run in the callback thread of

@@ -53,7 +53,6 @@ class EngineBufferScale : public QObject {
     const mixxx::AudioSignal& getAudioSignal() const {
         return m_audioSignal;
     }
-
     // Called from EngineBuffer when seeking, to ensure the buffers are flushed */
     virtual void clear() {};
     // Scale buffer

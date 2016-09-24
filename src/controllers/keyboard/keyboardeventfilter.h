@@ -2,6 +2,7 @@
 #define CONTROLLERS_KEYBOARD_KEYBOARDEVENTFILTER_H
 
 #include <QObject>
+#include <QtGlobal>
 #include <QEvent>
 #include <QKeyEvent>
 #include <QMultiHash>
@@ -11,21 +12,14 @@
 class ControlObject;
 struct KeyDownInformation {
     KeyDownInformation() = default;
-    KeyDownInformation(int key, int modifiers, KeyProxy *proxy)
-            : key(key),
-                modifiers(modifiers),
-                proxy(proxy)
-    { }
-    KeyDownInformation(QKeyEvent *evt, KeyProxy *proxy)
-    : key(evt->key())
-    , modifiers(evt->modifiers())
-    , text(evt->text())
-    , count(evt->count())
-    , proxy(proxy) {}
-    int key;
-    Qt::KeyboardModifiers modifiers{};
-    QString               text {};
-    uint16_t              count{0};
+    KeyDownInformation(QKeyEvent *evt, KeyProxy *prox)
+    : event{
+          QEvent::KeyRelease, evt->key() , evt->modifiers()
+        , evt->nativeScanCode() , evt->nativeVirtualKey() , evt->nativeModifiers()
+        , evt->text() , evt->isAutoRepeat() , ushort(evt->count())}
+    , proxy(prox)
+    {}
+    QKeyEvent             event{QEvent::KeyRelease,Qt::Key_unknown,Qt::NoModifier};
     KeyProxy             *proxy{};
 };
 Q_DECLARE_METATYPE(KeyDownInformation);
