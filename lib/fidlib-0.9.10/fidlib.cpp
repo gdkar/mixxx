@@ -11,7 +11,7 @@
 #include <cmath>
 #include <complex>
 
-#include "fidlib.h"
+#include "fidlib.hpp"
 namespace{
     const char * VERSION = "0.0.0-FUCKIT";
     inline double prewarp(double val) {
