@@ -131,7 +131,8 @@ class PortMIDI(Dependence):
             raise Exception("Did not find PortMidi or its development headers.")
 
     def sources(self, build):
-        return ['controllers/midi/portmidienumerator.cpp', 'controllers/midi/portmidicontroller.cpp']
+        return [#'controllers/midi/portmidienumerator.cpp',
+        'controllers/midi/portmidicontroller.cpp']
 
 class RtMidi(Dependence):
 
@@ -146,7 +147,8 @@ class RtMidi(Dependence):
             raise Exception("Did not find RtMidi or its development headers.")
 
     def sources(self, build):
-        return ['controllers/midi/rtmidienumerator.cpp', 'controllers/midi/rtmidicontroller.cpp']
+        return [#'controllers/midi/rtmidienumerator.cpp',
+            'controllers/midi/rtmidicontroller.cpp']
 
 class OpenGL(Dependence):
 
@@ -602,9 +604,9 @@ class MixxxCore(Feature):
                    "control/controlpushbutton.cpp",
                    "control/controlttrotary.cpp",
 
-                   "controllers/dlgcontrollerlearning.cpp",
-                   "controllers/dlgprefcontroller.cpp",
-                   "controllers/dlgprefcontrollers.cpp",
+#                   "controllers/dlgcontrollerlearning.cpp",
+#                   "controllers/dlgprefcontroller.cpp",
+#                   "controllers/dlgprefcontrollers.cpp",
                    "dialog/dlgabout.cpp",
                    "dialog/dlgdevelopertools.cpp",
 
@@ -616,7 +618,7 @@ class MixxxCore(Feature):
                    "preferences/dialog/dlgprefeq.cpp",
                    "preferences/dialog/dlgpreferences.cpp",
                    "preferences/dialog/dlgpreflibrary.cpp",
-                   "preferences/dialog/dlgprefnovinyl.cpp",
+#                   "preferences/dialog/dlgprefnovinyl.cpp",
                    "preferences/dialog/dlgprefrecord.cpp",
                    "preferences/dialog/dlgprefreplaygain.cpp",
                    "preferences/dialog/dlgprefsound.cpp",
@@ -724,31 +726,32 @@ class MixxxCore(Feature):
                    "analyzer/analyzerebur128.cpp",
 
                    "controllers/controller.cpp",
-                   "controllers/bindingproxy.cpp",
+                   "controllers/bindproxy.cpp",
+                   "controllers/keyproxy.cpp",
                    "controllers/qmlcontrollerenumerator.cpp",
-                   "controllers/controllervisitor.cpp",
-                   "controllers/controllerengine.cpp",
-                   "controllers/controllerenumerator.cpp",
+#                   "controllers/controllervisitor.cpp",
+#                   "controllers/controllerengine.cpp",
+#                   "controllers/controllerenumerator.cpp",
                    "controllers/controllerlearningeventfilter.cpp",
                    "controllers/controllermanager.cpp",
-                   "controllers/controllerpresetfilehandler.cpp",
-                   "controllers/controllerpresetinfo.cpp",
-                   "controllers/controllerpresetinfoenumerator.cpp",
+#                   "controllers/controllerpresetfilehandler.cpp",
+#                   "controllers/controllerpresetinfo.cpp",
+#                   "controllers/controllerpresetinfoenumerator.cpp",
                    "controllers/controlpickermenu.cpp",
-                   "controllers/controllermappingtablemodel.cpp",
-                   "controllers/controllerinputmappingtablemodel.cpp",
-                   "controllers/controlleroutputmappingtablemodel.cpp",
-                   "controllers/delegates/controldelegate.cpp",
-                   "controllers/delegates/midichanneldelegate.cpp",
-                   "controllers/delegates/midiopcodedelegate.cpp",
-                   "controllers/delegates/midibytedelegate.cpp",
-                   "controllers/delegates/midioptionsdelegate.cpp",
+#                   "controllers/controllermappingtablemodel.cpp",
+#                   "controllers/controllerinputmappingtablemodel.cpp",
+#                   "controllers/controlleroutputmappingtablemodel.cpp",
+#                   "controllers/delegates/controldelegate.cpp",
+#                   "controllers/delegates/midichanneldelegate.cpp",
+#                   "controllers/delegates/midiopcodedelegate.cpp",
+#                   "controllers/delegates/midibytedelegate.cpp",
+#                   "controllers/delegates/midioptionsdelegate.cpp",
                    "controllers/learningutils.cpp",
                    "controllers/midi/midimessage.cpp",
                    "controllers/midi/midiutils.cpp",
                    "controllers/midi/midicontroller.cpp",
-                   "controllers/midi/midicontrollerpresetfilehandler.cpp",
-                   "controllers/midi/midienumerator.cpp",
+#                   "controllers/midi/midicontrollerpresetfilehandler.cpp",
+#                   "controllers/midi/midienumerator.cpp",
                    "controllers/midi/midioutputhandler.cpp",
                    "controllers/softtakeover.cpp",
                    "controllers/keyboard/keyboardeventfilter.cpp",
@@ -1070,9 +1073,9 @@ class MixxxCore(Feature):
         # Uic these guys (they're moc'd automatically after this) - Generates
         # the code for the QT UI forms.
         ui_files = [
-            'controllers/dlgcontrollerlearning.ui',
-            'controllers/dlgprefcontrollerdlg.ui',
-            'controllers/dlgprefcontrollersdlg.ui',
+#            'controllers/dlgcontrollerlearning.ui',
+#            'controllers/dlgprefcontrollerdlg.ui',
+#            'controllers/dlgprefcontrollersdlg.ui',
             'dialog/dlgaboutdlg.ui',
             'dialog/dlgdevelopertoolsdlg.ui',
             'library/autodj/dlgautodj.ui',
@@ -1093,12 +1096,12 @@ class MixxxCore(Feature):
             'preferences/dialog/dlgpreferencesdlg.ui',
             'preferences/dialog/dlgprefkeydlg.ui',
             'preferences/dialog/dlgpreflibrarydlg.ui',
-            'preferences/dialog/dlgprefnovinyldlg.ui',
+#            'preferences/dialog/dlgprefnovinyldlg.ui',
             'preferences/dialog/dlgprefrecorddlg.ui',
             'preferences/dialog/dlgprefreplaygaindlg.ui',
             'preferences/dialog/dlgprefsounddlg.ui',
             'preferences/dialog/dlgprefsounditem.ui',
-            'preferences/dialog/dlgprefvinyldlg.ui',
+#            'preferences/dialog/dlgprefvinyldlg.ui',
             'preferences/dialog/dlgprefwaveformdlg.ui',
         ]
         map(Qt.uic(build), ui_files)

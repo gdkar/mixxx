@@ -1,11 +1,12 @@
 
 import org.mixxx.qml 0.1
 import QtQml 2.2
-
-QtObject {
+import QtQuick 2.7
+Item {
     id: root
     property string group
     property var controls
+    property var bindings
     Component.onCompleted: {
         var component = Qt.createComponent("ControlObject.qml")
         if(component.status == Component.Ready) {

@@ -21,21 +21,6 @@
 #include "controllers/controllerpreset.h"
 #include "controllers/controllerpresetfilehandler.h"
 
-struct ProductInfo {
-    QString protocol;
-    QString vendor_id;
-    QString product_id;
-
-    // HID-specific
-    QString in_epaddr;
-    QString out_epaddr;
-
-    // Bulk-specific
-    QString usage_page;
-    QString usage;
-    QString interface_number;
-};
-
 class PresetInfo {
   public:
     PresetInfo();

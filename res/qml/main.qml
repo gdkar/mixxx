@@ -1,19 +1,11 @@
 import org.mixxx.qml 0.1
+import "./keybindings"
 import QtQml 2.2
 import QtQuick 2.7
 Item {
-    id: root
 
-    Deck {
-        id: channel1
-        group: "[Channel1]"
-        controls: ["rate","volume","playposition","jog","play","playing"]
-    }
-    Deck {
-        id: channel2
-        group: "[Channel2]"
-        controls: ["rate","volume","playposition","jog","play","playing"]
-    }
+    id: root
+    focus: true
 /*    ApplicationWindow{
         id: consoleWindow
         width: 640
@@ -24,58 +16,69 @@ Item {
             anchors.fill: parent
         }
     }*/
-    Pushy     { source:air;id: load1;prefix:"\u0090\u0015"; group : "[Channel1]";item: "LoadSelectedTrack"; }
-    Toggle    { source:air;id: pfl1; prefix:"\u0090\u0014"; group : "[Channel1]";item: "pfl"; }
-    Toggle    { source:air;id: sync1;prefix:"\u0090\u0013"; group : "[Channel1]";item: "beatsync"; }
-    Toggle    { source:air;id: play1;prefix:"\u0090\u0012"; group : "[Channel1]";item: "play"; }
-    Toggle    { source:air;id: cue1; prefix:"\u0090\u0011"; group : "[Channel1]";item: "cue";  }
-    Pushy     { source:air;id: fwd1; prefix:"\u0090\u0010"; group : "[Channel1]";item: "fwd";  }
-    Pushy     { source:air;id: back1;prefix:"\u0090\u000f"; group : "[Channel1]";item: "back";  }
-    BindValue { source:air;id:rate1; prefix:"\u00b0\u0034"; group : "[Channel1]";item: "rate";  }
-    BindValue {
-        source:air;id:xfade
-        prefix:"\u00b0\u003a"
-        group:"[Master]"
-        item:"crossfader"
+    Kbd { }
+    DeckControls {
+        id: ch1
+        group: "[Channel1]"
+        bindings: { 'fwd':'\u0010',
+                    'cue':'\u0011',
+                    'play':'\u0012',
+                    'beatsync':'\u0013',
+                    'pfl':'\u0014',
+                    'loadSelected':'\u0015',
+                    'back':'\u000f',
+                    'rate':'\u0034',
+                    'keylock':'\u0004',
+                    'volume':'\u0036',
+                    'beat_trans_curpos':'\u0002',
+                    'quantize':'\u0003',
+                    'jog':'\u0030',
+                    'stepStart':0x44,
+                    'stepStop':0x47
+        }
     }
-    BindValue {
-        source:air;id:vol1
-        prefix:"\u00b0\u0036"
-        group : "[Channel1]"
-        item: "volume";
-        value: proxy.value / 128
-    }
-    Pushy {
-        source:air;id:beat_align1
-        prefix:"\u0090\u0002";
-        group:"[Channel1]";
-        item:"beat_translate_curpos";
-    }
-    Pushy {
-        source:air;id:quantize1
-        prefix:"\u0090\u0003"
-        group:"[Channel1]"
-        item:"quantize"
-    }
-    Toggle {source:air;id:keylock1;prefix:"\u0090\u0004";group:"[Channel1]";item:"keylock";}
-    Toggle {source:air;id:keylock2;prefix:"\u0090\u001a";group:"[Channel2]";item:"keylock";}
-
-    Pushy     { source:air;id: beat_align2;prefix:"\u0090\u0018";group : "[Channel2]";item: "beat_translate_curpos"; }
-    Toggle    { source:air;id: quantize2;prefix:"\u0090\u0019";group : "[Channel2]";item: "quantize"; }
-    Toggle    { source:air;id:play2;prefix:"\u0090(";      group : "[Channel2]";item: "play"; }
-    Toggle    { source:air;id:cue2;prefix:"\u0090'";       group : "[Channel2]";item: "cue";  }
-    BindValue { source:air;id:rate2;prefix:"\u00b0\u0035"; group : "[Channel2]";item: "rate";  }
-    BindValue {
-        source:air;id:vol2
-        prefix:"\u00b0\u003b"
-        group : "[Channel2]"
-        item: "volume";
-        value: proxy.value / 128
+    DeckControls {
+        id: ch2
+        group: "[Channel2]"
+        bindings: { 'fwd':'\u0026',
+                    'cue':'\u0027',
+                    'play':'\u0028',
+                    'beatsync':'\u0029',
+                    'pfl':'\u002a',
+                    'loadSelected':'\u002b',
+                    'back':'\u002d',
+                    'rate':'\u0035',
+                    'keylock':'\u001a',
+                    'volume':'\u003b',
+                    'beat_trans_curpos':'\u0018',
+                    'quantize':'\u0019',
+                    'jog':'\u0031',
+                    'stepStart':0x4c,
+                    'stepStop':0x4f
+        }
     }
     property Controller controller: RtMidiController {
         id: air
         inputIndex: 1
-        outputIndex: -1
-        Component.onCompleted: { air.open() }
+        outputIndex: 1
+        Component.onCompleted: {
+            for(var i = 0; i < air.inputPortCount;++i) {
+                    if(String.prototype.indexOf(air.inputPortName(i), "DJ Control Air")>=0) {
+                        air.in_index = i
+                        break;
+                    }
+            }
+            for(var i = 0; i < air.outputPortCount;++i) {
+                    if(String.prototype.indexOf(air.outputPortName(i), "DJ Control Air")>=0) {
+                        out_index = i;
+                        break;
+                    }
+            }
+            air.open()
+            for(var i = 0; i < 79; ++i)
+                air.sendShortMsg(0x90,i,0x00);
+            air.sendShortMsg(0x90,0x3b,0x7f);air.sendShortMsg(0x90,0x3a,0x7f);
+            console.log(JSON.stringify(air))
+        }
     }
 }

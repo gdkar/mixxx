@@ -90,7 +90,8 @@ bool ControllerLearningEventFilter::eventFilter(QObject* pObject, QEvent* pEvent
 void ControllerLearningEventFilter::addWidgetClickInfo(
         QWidget* pWidget, Qt::MouseButton buttonState,
         ControlObject* pControl,
-        ControlParameterWidgetConnection::EmitOption emitOption) {
+        ControlParameterWidgetConnection::EmitOption emitOption)
+{
     auto& info = m_widgetControlInfo[pWidget];
 
     if (buttonState == Qt::LeftButton) {

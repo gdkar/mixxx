@@ -46,7 +46,6 @@ class WMainMenuBar : public QMenuBar {
     void onDeveloperToolsHidden();
     void onDeveloperToolsShown();
     void onFullScreenStateChange(bool fullscreen);
-    void onVinylControlDeckEnabledStateChange(int deck, bool enabled);
     void onNumberOfDecksChanged(int decks);
 
   signals:
@@ -63,7 +62,6 @@ class WMainMenuBar : public QMenuBar {
     void toggleKeyboardShortcuts(bool toggle);
     void toggleBroadcasting(bool toggle);
     void toggleRecording(bool enabled);
-    void toggleVinylControl(int deck);
     void visitUrl(QString url);
     void quit();
 
@@ -91,8 +89,6 @@ class WMainMenuBar : public QMenuBar {
     QSignalMapper m_loadToDeckMapper;
     QSignalMapper m_visitUrlMapper;
     QList<QAction*> m_loadToDeckActions;
-    QSignalMapper m_vinylControlEnabledMapper;
-    QList<QAction*> m_vinylControlEnabledActions;
 };
 
 #endif /* WIDGET_WMAINMENUBAR */

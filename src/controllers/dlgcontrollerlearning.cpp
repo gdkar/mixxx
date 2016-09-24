@@ -27,8 +27,8 @@ DlgControllerLearning::DlgControllerLearning(QWidget * parent,
           m_pController(controller),
           m_pMidiController(NULL),
           m_controlPickerMenu(this),
-          m_messagesLearned(false) {
-    qRegisterMetaType<MidiInputMappings>("MidiInputMappings");
+          m_messagesLearned(false)
+{
 
     setupUi(this);
     labelMappedTo->setText("");
@@ -38,6 +38,7 @@ DlgControllerLearning::DlgControllerLearning(QWidget * parent,
                         "to teach it that control.  You can also type in the "
                         "box to search for a control by name, or click the "
                         "Choose Control button to select from a list."));
+#if 0
     labelMappingHelp->setTextFormat(Qt::RichText);
     labelMappingHelp->setText(QString(
             "<p><span style=\"font-weight:600;\">%1</span></p>"
@@ -54,7 +55,7 @@ DlgControllerLearning::DlgControllerLearning(QWidget * parent,
             "If the mapping is not working try enabling an advanced option "
             "below and then try the control again. Or click Retry to redetect "
             "the midi control."));
-
+#endif
     labelNextHelp->setTextFormat(Qt::RichText);
     labelNextHelp->setText(QString(
             "<p><span style=\"font-weight:600;\">%1</span></p>"
@@ -143,7 +144,6 @@ void DlgControllerLearning::populateComboBox() {
 void DlgControllerLearning::resetWizard(bool keepCurrentControl) {
     m_firstMessageTimer.stop();
     m_lastMessageTimer.stop();
-    emit(clearTemporaryInputMappings());
 
     if (!keepCurrentControl) {
         m_currentControl = ConfigKey();
@@ -170,9 +170,6 @@ void DlgControllerLearning::resetWizard(bool keepCurrentControl) {
 
 void DlgControllerLearning::slotChooseControlPressed() {
     // If we learned messages, commit them.
-    if (m_messagesLearned) {
-        commitMapping();
-    }
     resetWizard();
     stackedWidget->setCurrentWidget(page1Choose);
     startListening();
@@ -281,9 +278,6 @@ void DlgControllerLearning::slotFirstMessageTimeout() {
 void DlgControllerLearning::slotTimerExpired() {
     // It's been a timer interval since we last got a message. Let's try to
     // detect mappings.
-    MidiInputMappings mappings =
-            LearningUtils::guessMidiInputMappings(m_currentControl, m_messages);
-
     if (mappings.isEmpty()) {
         labelErrorText->setText(tr("Unable to detect a mapping -- please try again. Be sure to only touch one control at once."));
         m_messages.clear();
@@ -296,39 +290,8 @@ void DlgControllerLearning::slotTimerExpired() {
     m_messagesLearned = true;
     m_mappings = mappings;
     pushButtonRetry->setEnabled(true);
-    emit(learnTemporaryInputMappings(m_mappings));
 
     QString midiControl = "";
-    bool first = true;
-    foreach (const MidiInputMapping& mapping, m_mappings) {
-        unsigned char opCode = MidiUtils::opCodeFromStatus(mapping.key.status);
-        bool twoBytes = MidiUtils::isMessageTwoBytes(opCode);
-        QString mappingStr = twoBytes ? QString("Status: 0x%1 Control: 0x%2 Options: 0x%03")
-                .arg(QString::number(mapping.key.status, 16).toUpper(),
-                     QString::number(mapping.key.control, 16).toUpper()
-                     .rightJustified(2, '0'),
-                     QString::number(mapping.options.all, 16).toUpper()
-                     .rightJustified(2, '0')) :
-                QString("0x%1 0x%2")
-                .arg(QString::number(mapping.key.status, 16).toUpper(),
-                     QString::number(mapping.options.all, 16).toUpper()
-                     .rightJustified(2, '0'));
-
-        // Set the debug string and "Advanced MIDI Options" group using the
-        // first mapping.
-        if (first) {
-            midiControl = mappingStr;
-            MidiOptions options = mapping.options;
-            midiOptionInvert->setChecked(options.invert);
-            midiOptionSelectKnob->setChecked(options.selectknob);
-            midiOptionSoftTakeover->setChecked(options.soft_takeover);
-            midiOptionSwitchMode->setChecked(options.sw);
-            first = false;
-        }
-
-        qDebug() << "DlgControllerLearning learned input mapping:" << mappingStr;
-    }
-
     QString mapMessage = QString("<i>%1 %2</i>").arg(
             tr("Successfully mapped control:"), midiControl);
     labelMappedTo->setText(mapMessage);
@@ -349,58 +312,9 @@ void DlgControllerLearning::slotMidiOptionsChanged() {
         return;
     }
 
-    emit(clearTemporaryInputMappings());
-
     // Go over every mapping and set its MIDI options to match the user's
     // choices.
-    for (MidiInputMappings::iterator it = m_mappings.begin();
-         it != m_mappings.end(); ++it) {
-        MidiOptions& options = it->options;
-        options.sw = midiOptionSwitchMode->isChecked();
-        options.soft_takeover = midiOptionSoftTakeover->isChecked();
-        options.invert = midiOptionInvert->isChecked();
-        options.selectknob = midiOptionSelectKnob->isChecked();
-    }
-
-    emit(learnTemporaryInputMappings(m_mappings));
 }
-
-void DlgControllerLearning::commitMapping() {
-    emit(commitTemporaryInputMappings());
-    emit(inputMappingsLearned(m_mappings));
-}
-
-void DlgControllerLearning::visit(MidiController* pMidiController) {
-    m_pMidiController = pMidiController;
-
-    connect(m_pMidiController, SIGNAL(messageReceived(unsigned char, unsigned char, unsigned char)),
-            this, SLOT(slotMessageReceived(unsigned char, unsigned char, unsigned char)));
-
-    connect(this, SIGNAL(learnTemporaryInputMappings(MidiInputMappings)),
-            m_pMidiController, SLOT(learnTemporaryInputMappings(MidiInputMappings)));
-    connect(this, SIGNAL(clearTemporaryInputMappings()),
-            m_pMidiController, SLOT(clearTemporaryInputMappings()));
-
-    connect(this, SIGNAL(commitTemporaryInputMappings()),
-            m_pMidiController, SLOT(commitTemporaryInputMappings()));
-    connect(this, SIGNAL(startLearning()),
-            m_pMidiController, SLOT(startLearning()));
-    connect(this, SIGNAL(stopLearning()),
-            m_pMidiController, SLOT(stopLearning()));
-
-    emit(startLearning());
-}
-
-void DlgControllerLearning::visit(HidController* pHidController) {
-    qWarning() << "ERROR: DlgControllerLearning does not support HID devices.";
-    Q_UNUSED(pHidController);
-}
-
-void DlgControllerLearning::visit(BulkController* pBulkController) {
-    qWarning() << "ERROR: DlgControllerLearning does not support Bulk devices.";
-    Q_UNUSED(pBulkController);
-}
-
 DlgControllerLearning::~DlgControllerLearning() {
     // If the user hit done, we should save any pending mappings.
     if (m_messagesLearned) {

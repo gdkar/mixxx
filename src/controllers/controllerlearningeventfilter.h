@@ -8,6 +8,7 @@
 #include "widget/controlwidgetconnection.h"
 
 struct ControlInfo {
+    using EmitOption = ControlParameterWidgetConnection::EmitOption;
     ControlInfo()
             : clickControl(nullptr),
               emitOption(ControlParameterWidgetConnection::EMIT_ON_PRESS_AND_RELEASE),
@@ -17,12 +18,12 @@ struct ControlInfo {
               rightEmitOption(ControlParameterWidgetConnection::EMIT_ON_PRESS_AND_RELEASE) {
     }
 
-    ControlObject* clickControl;
-    ControlParameterWidgetConnection::EmitOption emitOption;
-    ControlObject* leftClickControl;
-    ControlParameterWidgetConnection::EmitOption leftEmitOption;
-    ControlObject* rightClickControl;
-    ControlParameterWidgetConnection::EmitOption rightEmitOption;
+    ControlObject* clickControl{};
+    EmitOption emitOption;
+    ControlObject* leftClickControl{};
+    EmitOption leftEmitOption;
+    ControlObject* rightClickControl{};
+    EmitOption rightEmitOption;
 };
 
 class ControllerLearningEventFilter : public QObject {

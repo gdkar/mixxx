@@ -13,8 +13,6 @@
 
 #include "controllers/controllerinputmappingtablemodel.h"
 #include "controllers/controlleroutputmappingtablemodel.h"
-#include "controllers/controllerpreset.h"
-#include "controllers/controllerpresetinfo.h"
 #include "controllers/dlgcontrollerlearning.h"
 #include "controllers/ui_dlgprefcontrollerdlg.h"
 #include "preferences/usersettings.h"
@@ -42,7 +40,6 @@ class DlgPrefController : public DlgPreferencePage {
     // Called when the user toggles the enabled checkbox.
     void slotEnableDevice(bool enable);
     // Called when the user selects a preset from the combobox.
-    void slotLoadPreset(int index);
     // Mark that we need to apply the settings.
     void slotDirty();
 
@@ -50,45 +47,32 @@ class DlgPrefController : public DlgPreferencePage {
     void controllerEnabled(DlgPrefController*, bool);
     void openController(Controller* pController);
     void closeController(Controller* pController);
-    void loadPreset(Controller* pController, QString controllerName);
-    void loadPreset(Controller* pController, ControllerPresetPointer pPreset);
-    void mappingStarted();
-    void mappingEnded();
+//    void mappingStarted();
+//    void mappingEnded();
 
   private slots:
-    void slotPresetLoaded(ControllerPresetPointer preset);
-
     // Input mappings
-    void addInputMapping();
+//    void addInputMapping();
     void showLearningWizard();
-    void removeInputMappings();
-    void clearAllInputMappings();
+//    void removeInputMappings();
+//    void clearAllInputMappings();
 
     // Output mappings
-    void addOutputMapping();
-    void removeOutputMappings();
-    void clearAllOutputMappings();
+//    void addOutputMapping();
+//    void removeOutputMappings();
+//    void clearAllOutputMappings();
 
     // Scripts
     void addScript();
     void removeScript();
     void openScript();
 
-    void midiInputMappingsLearned(const MidiInputMappings& mappings);
+//    void midiInputMappingsLearned(const MidiInputMappings& mappings);
 
   private:
-    QString presetShortName(const ControllerPresetPointer pPreset) const;
-    QString presetName(const ControllerPresetPointer pPreset) const;
-    QString presetAuthor(const ControllerPresetPointer pPreset) const;
-    QString presetDescription(const ControllerPresetPointer pPreset) const;
-    QString presetForumLink(const ControllerPresetPointer pPreset) const;
-    QString presetWikiLink(const ControllerPresetPointer pPreset) const;
-    void savePreset(QString path);
     void initTableView(QTableView* pTable);
 
     // Reload the mappings in the dropdown dialog
-    void enumeratePresets();
-
     void enableDevice();
     void disableDevice();
 
@@ -97,10 +81,9 @@ class DlgPrefController : public DlgPreferencePage {
     ControllerManager* m_pControllerManager;
     Controller* m_pController;
     DlgControllerLearning* m_pDlgControllerLearning;
-    ControllerPresetPointer m_pPreset;
-    ControllerInputMappingTableModel* m_pInputTableModel;
+//    ControllerInputMappingTableModel* m_pInputTableModel;
     QSortFilterProxyModel* m_pInputProxyModel;
-    ControllerOutputMappingTableModel* m_pOutputTableModel;
+//    ControllerOutputMappingTableModel* m_pOutputTableModel;
     QSortFilterProxyModel* m_pOutputProxyModel;
     bool m_bDirty;
 };

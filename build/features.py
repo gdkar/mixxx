@@ -59,8 +59,8 @@ class HSS1394(Feature):
             conf.CheckLib('user32')
 
     def sources(self, build):
-        return ['controllers/midi/hss1394controller.cpp',
-                'controllers/midi/hss1394enumerator.cpp']
+        return ['controllers/midi/hss1394controller.cpp']
+#                'controllers/midi/hss1394enumerator.cpp']
 
 
 class HID(Feature):
@@ -119,9 +119,9 @@ class HID(Feature):
                  CPPPATH=[os.path.join(self.HIDAPI_INTERNAL_PATH, 'hidapi')])
 
     def sources(self, build):
-        sources = ['controllers/hid/hidcontroller.cpp',
-                   'controllers/hid/hidenumerator.cpp',
-                   'controllers/hid/hidcontrollerpresetfilehandler.cpp']
+        sources = ['controllers/hid/hidcontroller.cpp',]
+#                   'controllers/hid/hidenumerator.cpp',
+#                   'controllers/hid/hidcontrollerpresetfilehandler.cpp']
 
         if self.INTERNAL_LINK:
             if build.platform_is_windows:
@@ -172,11 +172,11 @@ class Bulk(Feature):
         build.env.Append(CPPDEFINES='__BULK__')
 
     def sources(self, build):
-        sources = ['controllers/bulk/bulkcontroller.cpp',
-                   'controllers/bulk/bulkenumerator.cpp']
-        if not int(build.flags['hid']):
-            sources.append(
-                'controllers/hid/hidcontrollerpresetfilehandler.cpp')
+        sources = ['controllers/bulk/bulkcontroller.cpp',]
+#                   'controllers/bulk/bulkenumerator.cpp']
+#        if not int(build.flags['hid']):
+#            sources.append(
+#                'controllers/hid/hidcontrollerpresetfilehandler.cpp')
         return sources
 
 
@@ -318,7 +318,7 @@ class VinylControl(Feature):
     def sources(self, build):
         sources = ['vinylcontrol/vinylcontrol.cpp',
                    'vinylcontrol/vinylcontrolxwax.cpp',
-                   'preferences/dialog/dlgprefvinyl.cpp',
+#                   'preferences/dialog/dlgprefvinyl.cpp',
                    'vinylcontrol/vinylcontrolsignalwidget.cpp',
                    'vinylcontrol/vinylcontrolmanager.cpp',
                    'vinylcontrol/vinylcontrolprocessor.cpp',

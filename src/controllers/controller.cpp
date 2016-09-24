@@ -28,17 +28,6 @@ Controller::Controller(QObject *p)
 Controller::~Controller() = default;
     // Don't close the device here. Sub-classes should close the device in their
     // destructors.
-void Controller::accept(ControllerVisitor* visitor)
-{
-    if(visitor)
-        visitor->visit(this);
-}
-
-bool Controller::matchPreset(const PresetInfo& preset)
-{
-    void(sizeof(preset));
-    return false;
-}
 bool Controller::isOpen() const
 {
     return m_bIsOpen;
@@ -121,60 +110,6 @@ bool Controller::isPolling() const
 {
     return false;
 }
-// Returns a pointer to the currently loaded controller preset. For internal
-// use only.
-ControllerPreset* Controller::preset()
-{
-    return nullptr;
-}
-void Controller::setPreset(const ControllerPreset& preset)
-{
-    // We don't know the specific type of the preset so we need to ask
-    // the preset to call our visitor methods with its type.
-    preset.accept(this);
-}
-/*void Controller::startEngine()
-{
-    return;
-    controllerDebug("  Starting engine");
-    if (m_pEngine) {
-        qWarning() << "Controller: Engine already exists! Restarting:";
-        stopEngine();
-    }
-    engineChanged(m_pEngine = new ControllerEngine(this));
-}
-
-void Controller::stopEngine()
-{
-    controllerDebug("  Shutting down engine");
-    if (!m_pEngine) {
-        qWarning() << "Controller::stopEngine(): No engine exists!";
-        return;
-    }
-    m_pEngine->gracefulShutdown();
-    delete m_pEngine;
-    engineChanged(m_pEngine = nullptr);
-}*/
-bool Controller::applyPreset(QList<QString> scriptPaths, bool initializeScripts)
-{
-    qDebug() << "Applying controller preset...";
-/*    auto pPreset = preset();
-    // Load the script code into the engine
-    if (!m_pEngine) {
-        qWarning() << "Controller::applyPreset(): No engine exists!";
-        return false;
-    }
-    if (pPreset->scripts.isEmpty()) {
-        qWarning() << "No script functions available! Did the XML file(s) load successfully? See above for any errors.";
-        return true;
-    }*/
-    return false;
-//    auto success = m_pEngine->loadScriptFiles(scriptPaths, pPreset->scripts);
-/*    if (initializeScripts) {
-        m_pEngine->initializeScripts();
-    }
-    return success;*/
-}
 void Controller::startLearning()
 {
     if(!m_bLearning) {
@@ -207,40 +142,17 @@ void Controller::send(QList<int> data, unsigned int length)
 void Controller::receive(QVariant data, mixxx::Duration timestamp)
 {
     return;
-/*    if (!m_pEngine) {
-        //qWarning() << "Controller::receive called with no active engine!";
-        // Don't complain, since this will always show after closing a device as
-        //  queued signals flush out
-        return;
-    }*/
-/*    auto length = data.size();
-    auto arg = m_pEngine->newArray();
-    for(auto i = 0u; i < data.size(); ++i)
-        arg.setProperty(i, int(data[i]));
-*/
-/*    auto args = QJSValueList{} << m_pEngine->toScriptValue(data);
-    m_pEngine->receive(args, timestamp);*/
 }
 QString Controller::presetExtension() const
 {
     return QString{};
 }
-bool Controller::savePreset(QString filename) const
-{
-    Q_UNUSED(filename);
-    return false;
-}
-ControllerPresetPointer Controller::getPreset() const
-{
-    return ControllerPresetPointer{};
-}
-BindingProxy *Controller::getBindingFor(QString prefix)
+BindProxy *Controller::getBindingFor(QString prefix)
 {
     if(auto b = m_dispatch.value(prefix, nullptr)) {
         return b;
     }
-    auto b = new BindingProxy(prefix, this);
+    auto b = new BindProxy(prefix, this);
     m_dispatch.insert(prefix, b);
     return b;
 }
-

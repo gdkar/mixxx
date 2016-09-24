@@ -13,6 +13,9 @@
 
 RtMidiController::RtMidiController(QObject *p)
 : MidiController(p)
+, m_midiIn(std::make_unique<RtMidiIn>())
+, m_midiOut(std::make_unique<RtMidiOut>())
+
 { }
 
 RtMidiController::RtMidiController(int inIndex, QString inName, int outIndex, QString outName, QObject *p)
@@ -20,18 +23,55 @@ RtMidiController::RtMidiController(int inIndex, QString inName, int outIndex, QS
           in_index(inIndex),
           in_name(inName),
           out_index(outIndex),
-          out_name(outName)
+          out_name(outName),
+          m_midiIn(std::make_unique<RtMidiIn>()),
+          m_midiOut(std::make_unique<RtMidiOut>())
 {
     setInputDevice(in_index >= 0);
     setOutputDevice(out_index >= 0);
+
     if(!outName.isEmpty()) {
         setDeviceName("RtMidi: " + outName);
     }else if(!inName.isEmpty()) {
         setDeviceName("RtMidi: " + inName);
     }
 }
+int RtMidiController::inputPortCount() const
+{
+    try {
+        return m_midiIn->getPortCount();
+    }catch(...) {
+        return 0;
+    }
+}
+int RtMidiController::outputPortCount() const
+{
+    try {
+        return m_midiOut->getPortCount();
+    }catch(...) {
+        return 0;
+    }
+}
+QString RtMidiController::inputPortName(int index) const
+{
+    try {
+        return QString::fromStdString(m_midiIn->getPortName(index));
+    }catch(...) {
+        return QString{};
+    }
+}
+QString RtMidiController::outputPortName(int index) const
+{
+    try {
+        return QString::fromStdString(m_midiOut->getPortName(index));
+    }catch(...) {
+        return QString{};
+    }
+}
+
 int RtMidiController::inputIndex() const { return in_index; }
 int RtMidiController::outputIndex() const { return out_index; }
+
 QString RtMidiController::inputName() const { return in_name; }
 QString RtMidiController::outputName() const { return out_name; }
 void RtMidiController::setInputIndex(int _index)

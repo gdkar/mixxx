@@ -48,7 +48,7 @@ void HidReader::run() {
     }
     delete [] data;
 }
-
+HidController::HidController(QObject*p) : Controller(p){}
 HidController::HidController(const hid_device_info deviceInfo)
         : m_pHidDevice(NULL) {
     // Copy required variables from deviceInfo, which will be freed after
@@ -120,30 +120,6 @@ HidController::~HidController() {
 
 QString HidController::presetExtension() const {
     return HID_PRESET_EXTENSION;
-}
-
-void HidController::visit(const ControllerPreset* preset) {
-    if(auto pre = dynamic_cast<const HidControllerPreset*>(preset)) {
-        m_preset = *pre;
-        // Emit presetLoaded with a clone of the preset.
-        emit(presetLoaded(getPreset()));
-    }else{
-        qWarning() << "ERROR: Attempting to load an unsupported preset type.";
-    }
-}
-
-bool HidController::savePreset(QString fileName) const {
-    HidControllerPresetFileHandler handler;
-    return handler.save(m_preset, getDeviceName(), fileName);
-}
-
-bool HidController::matchPreset(const PresetInfo& preset) {
-    const QList<ProductInfo>& products = preset.getProducts();
-    for (const auto& product : products) {
-        if (matchProductInfo(product))
-            return true;
-    }
-    return false;
 }
 
 bool HidController::matchProductInfo(const ProductInfo& product) {
@@ -313,7 +289,7 @@ void HidController::send(QByteArray data, unsigned int reportID)
     // Append the Report ID to the beginning of data[] per the API..
     data.prepend(reportID);
 
-    int result = hid_write(m_pHidDevice, (unsigned char*)data.constData(), data.size());
+    auto result = hid_write(m_pHidDevice, (unsigned char*)data.constData(), data.size());
     if (result == -1) {
         if (ControllerDebug::enabled()) {
             qWarning() << "Unable to send data to" << getDeviceName()
@@ -350,19 +326,7 @@ QString HidController::safeDecodeWideString(const wchar_t* pStr, size_t max_leng
         return QString::fromUcs4((uint *)pStr, size);
     }
 }
-ControllerPresetPointer HidController::getPreset() const
-{
-    return QSharedPointer<HidControllerPreset>::create(m_preset);
-}
-bool HidController::isMappable() const
-{
-    return m_preset.isMappable();
-}
 bool HidController::isPolling() const
 {
     return false;
 }
-ControllerPreset* HidController::preset() {
-    return &m_preset;
-}
-

@@ -369,6 +369,11 @@ double ControlObject::fetch_sub(double val)
 {
     return m_pControl ? m_pControl->updateAtomically([val](double x){return x - val;}) : 0.0;
 }
+bool ControlObject::compare_exchange(double &expected, double desired)
+{
+    return m_pControl ? m_pControl->compare_exchange_strong(expected,desired) : false;
+}
+
 double ControlObject::exchange(double val)
 {
     return m_pControl ? m_pControl->updateAtomically([val](double ){return val;}) : 0.0;

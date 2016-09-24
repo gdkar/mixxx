@@ -318,6 +318,15 @@ double ControlProxy::fetch_sub(double val)
 {
     return m_pControl ? m_pControl->updateAtomically([val](double x){return x - val;}) : 0.0;
 }
+double ControlProxy::compare_exchange(double expected, double desired)
+{
+    if(m_pControl) {
+        m_pControl->compare_exchange_strong(expected,desired);
+        return expected;
+    }else{
+        return 0.0;
+    }
+}
 double ControlProxy::exchange(double val)
 {
     return m_pControl ? m_pControl->updateAtomically([val](double ){return val;}) : 0.0;

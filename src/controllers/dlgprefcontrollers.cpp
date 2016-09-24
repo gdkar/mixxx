@@ -23,10 +23,10 @@ DlgPrefControllers::DlgPrefControllers(DlgPreferences* pPreferences,
     connect(&m_buttonMapper, SIGNAL(mapped(QString)),
             this, SLOT(slotOpenLocalFile(QString)));
 
-    connect(btnOpenUserPresets, SIGNAL(clicked()),
-            &m_buttonMapper, SLOT(map()));
+//    connect(btnOpenUserPresets, SIGNAL(clicked()),
+//            &m_buttonMapper, SLOT(map()));
 
-    m_buttonMapper.setMapping(btnOpenUserPresets, userPresetsPath(m_pConfig));
+//    m_buttonMapper.setMapping(btnOpenUserPresets, userPresetsPath(m_pConfig));
 
     // Connections
     connect(m_pControllerManager, SIGNAL(devicesChanged()),
@@ -62,10 +62,6 @@ void DlgPrefControllers::slotApply()
     // Update our sub-windows.
     for(auto && pControllerWindows: m_controllerWindows)
         pControllerWindows->slotApply();
-    // Save all controller presets.
-    // TODO(rryan): Get rid of this and make DlgPrefController do this for each
-    // preset.
-//    m_pControllerManager->savePresets();
 }
 
 bool DlgPrefControllers::handleTreeItemClick(QTreeWidgetItem* clickedItem)

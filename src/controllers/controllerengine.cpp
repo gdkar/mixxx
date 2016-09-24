@@ -205,7 +205,7 @@ void ControllerEngine::initializeScriptEngine()
    Input:   List of script paths and file names to load
    Output:  Returns true if no errors occurred.
    -------- ------------------------------------------------------ */
-bool ControllerEngine::loadScriptFiles(QStringList scriptPaths,
+/*bool ControllerEngine::loadScriptFiles(QStringList scriptPaths,
                                        const QList<ControllerPreset::ScriptFileInfo>& scripts)
 {
     if(!isReady())
@@ -242,7 +242,7 @@ bool ControllerEngine::loadScriptFiles(QStringList scriptPaths,
 
     emit(initialized());
     return result && m_scriptErrors.isEmpty();
-}
+}*/
 // Slot to run when a script file has changed
 void ControllerEngine::scriptHasChanged(QString scriptFilename)
 {
@@ -980,15 +980,14 @@ void ControllerEngine::scratchEnable(int deck, int intervalsPerRev, double rpm,
         qWarning() << "Invalid rpm or intervalsPerRev supplied to scratchEnable. Ignoring request.";
         return;
     }
-    m_dx[deck] = 1.0 / intervalsPerSecond;
+    m_dx[deck]                  = 1.0 / intervalsPerSecond;
     m_intervalAccumulator[deck] = 0.0;
-    m_ramp[deck] = false;
-    m_rampFactor[deck] = 0.001;
-    m_brakeActive[deck] = false;
+    m_ramp[deck]                = false;
+    m_rampFactor[deck]          = 0.001;
+    m_brakeActive[deck]         = false;
 
     // PlayerManager::groupForDeck is 0-indexed.
     auto group = PlayerManager::groupForDeck(deck - 1);
-
     // Ramp velocity, default to stopped.
     auto initVelocity = 0.0;
     auto  pScratch2Enable = getControlObjectScript(group, "scratch2_enable");
@@ -1042,13 +1041,12 @@ void ControllerEngine::scratchTick(int deck, int interval)
     -------- ------------------------------------------------------ */
 void ControllerEngine::scratchProcess(int timerId)
 {
-    int deck = m_scratchTimers[timerId];
+    auto deck = m_scratchTimers[timerId];
     // PlayerManager::groupForDeck is 0-indexed.
     auto group = PlayerManager::groupForDeck(deck - 1);
     if(auto filter = m_scratchFilters[deck]){
         auto oldRate = filter->predictedVelocity();
         // Give the filter a data point:
-
         // If we're ramping to end scratching and the wheel hasn't been turned very
         // recently (spinback after lift-off,) feed fixed data
         if (m_ramp[deck] &&
@@ -1098,7 +1096,6 @@ void ControllerEngine::scratchProcess(int timerId)
         qWarning() << "Scratch filter pointer is null on deck" << deck;
     }
 }
-
 /* -------- ------------------------------------------------------
     Purpose: Stops scratching the specified virtual deck
     Input:   Virtual deck to stop scratching
@@ -1125,7 +1122,6 @@ void ControllerEngine::scratchDisable(int deck, bool ramp)
     m_lastMovement[deck] = mixxx::Time::elapsed();
     m_ramp[deck] = true;    // Activate the ramping in scratchProcess()
 }
-
 /* -------- ------------------------------------------------------
     Purpose: Tells if the specified deck is currently scratching
              (Scripts need this to implement spinback-after-lift-off)
@@ -1158,7 +1154,6 @@ void ControllerEngine::softTakeover(QString group, QString name, bool set)
         m_st.disable(pControl);
     }
 }
-
 /*  -------- ------------------------------------------------------
      Purpose: Ignores the next value for the given ControlObject
                 This should be called before or after an absolute physical
@@ -1174,7 +1169,6 @@ void ControllerEngine::softTakeoverIgnoreNextValue(QString group, const QString 
         m_st.ignoreNext(pControl);
     }
 }
-
 /*  -------- ------------------------------------------------------
     Purpose: [En/dis]ables spinback effect for the channel
     Input:   deck, activate/deactivate, factor (optional),
@@ -1186,7 +1180,6 @@ void ControllerEngine::spinback(int deck, bool activate, double factor, double r
     // defaults for args set in header file
     brake(deck, activate, factor, rate);
 }
-
 /*  -------- ------------------------------------------------------
     Purpose: [En/dis]ables brake/spinback effect for the channel
     Input:   deck, activate/deactivate, factor (optional),
@@ -1197,7 +1190,6 @@ void ControllerEngine::brake(int deck, bool activate, double factor, double rate
 {
     // PlayerManager::groupForDeck is 0-indexed.
     auto group = PlayerManager::groupForDeck(deck - 1);
-
     // kill timer when both enabling or disabling
     auto timerId = m_scratchTimers.key(deck);
     killTimer(timerId);

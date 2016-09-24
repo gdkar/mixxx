@@ -206,7 +206,14 @@ void ControlDoublePrivate::reset()
     // general valueChanged() signal even though we know the originator.
     set(defaultValue(), nullptr);
 }
-
+bool ControlDoublePrivate::compare_exchange_strong(double &expected, double desired)
+{
+    if(m_value.compare_exchange_strong(expected,desired)){
+        emit valueChanged(desired, nullptr);
+        return true;
+    }
+    return false;
+}
 void ControlDoublePrivate::set(double value, QObject* pSender)
 {
     // If the behavior says to ignore the set, ignore it.

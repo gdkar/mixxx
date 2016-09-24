@@ -34,7 +34,7 @@ class ControlObject : public QObject, public QEnableSharedFromThis<ControlObject
     Q_PROPERTY(double value READ get WRITE set RESET reset NOTIFY valueChanged)
     Q_PROPERTY(double defaultValue READ defaultValue WRITE setDefaultValue NOTIFY defaultValueChanged)
   public:
-    ControlObject(QObject *p = nullptr);
+    Q_INVOKABLE ControlObject(QObject *p = nullptr);
     ControlObject(ConfigKey key, QObject *p);
     // bIgnoreNops: Don't emit a signal if the CO is set to its current value.
     // bTrack: Record statistics about this control.
@@ -57,6 +57,7 @@ class ControlObject : public QObject, public QEnableSharedFromThis<ControlObject
     Q_INVOKABLE virtual double fetch_add(double val);
     Q_INVOKABLE virtual double fetch_sub(double val);
     Q_INVOKABLE virtual double exchange (double with);
+    Q_INVOKABLE virtual bool   compare_exchange(double &expected, double desired);
     Q_INVOKABLE virtual double fetch_mul(double by);
     Q_INVOKABLE virtual double fetch_div(double by);
     Q_INVOKABLE virtual double fetch_toggle();

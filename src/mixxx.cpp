@@ -122,21 +122,16 @@ MixxxMainWindow::MixxxMainWindow(QApplication* pApp, const CmdlineArgs& args)
     m_pSettingsManager = new SettingsManager(this, args.getSettingsPath());
 
     initializeKeyboard();
-
     // Menubar depends on translations.
     mixxx::Translations::initializeTranslations(
         m_pSettingsManager->settings(), pApp, args.getLocale());
-
     createMenuBar();
-
     initializeWindow();
-
     // First load launch image to show a the user a quick responds
     m_pSkinLoader = new SkinLoader(m_pSettingsManager->settings());
     m_pLaunchImage = m_pSkinLoader->loadLaunchImage(this);
     m_pWidgetParent = (QWidget*)m_pLaunchImage;
     setCentralWidget(m_pWidgetParent);
-
     show();
 #if defined(Q_WS_X11)
     // In asynchronous X11, the window will be mapped to screen
@@ -145,11 +140,11 @@ MixxxMainWindow::MixxxMainWindow(QApplication* pApp, const CmdlineArgs& args)
     qt_x11_wait_for_window_manager(this);
 #endif
     pApp->processEvents();
-
     initialize(pApp, args);
 }
 
-MixxxMainWindow::~MixxxMainWindow() {
+MixxxMainWindow::~MixxxMainWindow()
+{
     // SkinLoader depends on Config;
     delete m_pSkinLoader;
 }
@@ -549,8 +544,8 @@ void MixxxMainWindow::finalize()
 
     qDebug() << t.elapsed(false).debugMillisWithUnit() << "deleting SettingsManager";
     delete m_pSettingsManager;
-
-    delete m_pKeyboard;
+    KeyboardEventFilter::destroy();
+//    delete m_pKeyboard;
     delete m_pKbdConfig;
     delete m_pKbdConfigEmpty;
 
@@ -627,7 +622,8 @@ void MixxxMainWindow::initializeKeyboard() {
     // Workaround for today: KeyboardEventFilter calls delete
     bool keyboardShortcutsEnabled = pConfig->getValueString(
         ConfigKey("[Keyboard]", "Enabled")) == "1";
-    m_pKeyboard = new KeyboardEventFilter(keyboardShortcutsEnabled ? m_pKbdConfig : m_pKbdConfigEmpty);
+    m_pKeyboard = KeyboardEventFilter::create();
+    m_pKeyboard->setKeyboardConfig(keyboardShortcutsEnabled ? m_pKbdConfig : m_pKbdConfigEmpty);
 }
 
 int MixxxMainWindow::noSoundDlg(void) {

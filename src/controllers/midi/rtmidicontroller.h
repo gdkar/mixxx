@@ -26,8 +26,12 @@
 // A PortMidi-based implementation of MidiController
 class RtMidiController : public MidiController {
     Q_OBJECT
+    Q_PROPERTY(int inputPortCount READ inputPortCount NOTIFY inputPortCountChanged)
+    Q_PROPERTY(int outputPortCount READ outputPortCount NOTIFY outputPortCountChanged)
+
     Q_PROPERTY(int inputIndex READ inputIndex WRITE setInputIndex NOTIFY inputIndexChanged)
     Q_PROPERTY(int outputIndex READ outputIndex WRITE setOutputIndex NOTIFY outputIndexChanged)
+
     Q_PROPERTY(QString inputName READ inputName NOTIFY inputNameChanged)
     Q_PROPERTY(QString outputName READ outputName NOTIFY outputNameChanged)
   public:
@@ -42,11 +46,18 @@ class RtMidiController : public MidiController {
     bool poll() override;
     QString inputName() const;
     QString outputName() const;
+    int inputPortCount() const;
+    int outputPortCount() const;
     int inputIndex() const;
     int outputIndex() const;
     void setInputIndex(int);
     void setOutputIndex(int);
+    Q_INVOKABLE QString inputPortName(int index) const;
+    Q_INVOKABLE QString outputPortName(int index) const;
   signals:
+    void inputPortCountChanged(int);
+    void outputPortCountChanged(int);
+
     void inputIndexChanged(int);
     void outputIndexChanged(int);
     void inputNameChanged(QString);

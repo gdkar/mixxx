@@ -69,7 +69,8 @@ static QString get_string(libusb_device_handle *handle, u_int8_t id) {
     return QString::fromAscii((char*)buf);
 }
 
-
+BulkController::BulkController(QObject *pParent)
+: Controller(pParent){}
 BulkController::BulkController(libusb_context* context,
                                libusb_device_handle *handle,
                                struct libusb_device_descriptor *desc)
@@ -102,31 +103,6 @@ BulkController::~BulkController() {
 
 QString BulkController::presetExtension() const {
     return BULK_PRESET_EXTENSION;
-}
-
-void BulkController::visit(const ControllerPreset* preset) {
-    if(auto pre = dynamic_cast<const HidControllerPreset*>(preset)) {
-        m_preset = *pre;
-        // Emit presetLoaded with a clone of the preset.
-        emit(presetLoaded(getPreset()));
-    }else{
-        qWarning() << "ERROR: Attempting to load an unsupported preset type.";
-    }
-}
-
-bool BulkController::savePreset(QString fileName) const {
-    HidControllerPresetFileHandler handler;
-    return handler.save(m_preset, getDeviceName(), fileName);
-}
-
-bool BulkController::matchPreset(const PresetInfo& preset) {
-    const QList<ProductInfo>& products = preset.getProducts();
-    for (const auto& product : products) {
-        if (matchProductInfo(product)) {
-            return true;
-        }
-    }
-    return false;
 }
 
 bool BulkController::matchProductInfo(const ProductInfo& product) {
@@ -255,25 +231,7 @@ void BulkController::send(QByteArray data) {
                  << "serial #" << m_sUID);
     }
 }
-ControllerPresetPointer BulkController::getPreset() const
-{
-    auto pClone = new HidControllerPreset();
-    *pClone = m_preset;
-    return ControllerPresetPointer(pClone);
-}
-bool BulkController::isMappable() const
-{
-    return m_preset.isMappable();
-}
 bool BulkController::isPolling() const
 {
     return false;
 }
-
-// Returns a pointer to the currently loaded controller preset. For internal
-// use only.
-ControllerPreset* BulkController::preset()
-{
-    return &m_preset;
-}
-

@@ -62,6 +62,7 @@ class ControlDoublePrivate : public QObject, public QEnableSharedFromThis<Contro
         emit valueChanged(desired,nullptr);
         return desired;
     }
+    bool compare_exchange_strong(double &expected, double desired);
   public slots:
     QString name() const;
     void setName(QString name);

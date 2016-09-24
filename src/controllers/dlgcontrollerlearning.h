@@ -25,8 +25,6 @@
 #include "controllers/controllervisitor.h"
 #include "preferences/usersettings.h"
 
-class ControllerPreset;
-
 //#define CONTROLLERLESSTESTING
 
 class DlgControllerLearning : public QDialog,
@@ -37,20 +35,9 @@ class DlgControllerLearning : public QDialog,
   public:
     DlgControllerLearning(QWidget *parent, Controller *controller);
     virtual ~DlgControllerLearning();
-
-    void visit(MidiController* pController);
-    void visit(HidController* pController);
-    void visit(BulkController* pController);
-
   signals:
-    void learnTemporaryInputMappings(const MidiInputMappings& mappings);
-    void clearTemporaryInputMappings();
-    void commitTemporaryInputMappings();
-
     // Used to notify DlgPrefController that we have learned some new input
     // mappings.
-    void inputMappingsLearned(const MidiInputMappings& mappings);
-
     void startLearning();
     void stopLearning();
     void listenForClicks();
@@ -85,7 +72,6 @@ class DlgControllerLearning : public QDialog,
   private:
     void loadControl(const ConfigKey& key, QString title, QString description);
     void startListening();
-    void commitMapping();
     void resetWizard(bool keepCurrentControl = false);
     void populateComboBox();
 
@@ -97,7 +83,6 @@ class DlgControllerLearning : public QDialog,
     QTimer m_firstMessageTimer;
     QTimer m_lastMessageTimer;
     QList<std::pair<MidiKey, unsigned char> > m_messages;
-    MidiInputMappings m_mappings;
 };
 
 #endif

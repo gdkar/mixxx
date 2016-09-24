@@ -20,7 +20,6 @@
 #include <QJSValueIterator>
 
 #include "preferences/usersettings.h"
-#include "controllers/controllerpreset.h"
 #include "controllers/softtakeover.h"
 #include "util/alphabetafilter.h"
 #include "util/duration.h"
@@ -118,8 +117,8 @@ class ControllerEngine : public QObject {
 
     // Evaluates all provided script files and returns true if no script errors
     // occurred while evaluating them.
-    bool loadScriptFiles(QStringList scriptPaths,
-                         const QList<ControllerPreset::ScriptFileInfo>& scripts);
+/*    bool loadScriptFiles(QStringList scriptPaths,
+                         const QList<ControllerPreset::ScriptFileInfo>& scripts);*/
     void initializeScripts();
     void gracefulShutdown();
     void scriptHasChanged(QString);

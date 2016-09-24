@@ -11,8 +11,6 @@
 #include <atomic>
 
 #include "controllers/controller.h"
-#include "controllers/hid/hidcontrollerpreset.h"
-#include "controllers/hid/hidcontrollerpresetfilehandler.h"
 #include "util/duration.h"
 struct libusb_device_handle;
 struct libusb_context;
@@ -41,17 +39,13 @@ class BulkReader : public QThread {
 class BulkController : public Controller {
     Q_OBJECT
   public:
+        Q_INVOKABLE BulkController(QObject *pParent=nullptr);
     BulkController(libusb_context* context, libusb_device_handle *handle,
                    struct libusb_device_descriptor *desc);
     virtual ~BulkController();
 
     QString presetExtension() const override;
 
-    ControllerPresetPointer getPreset() const override;
-    bool savePreset(QString fileName) const override;
-    void visit(const ControllerPreset* preset) override;
-    bool isMappable() const override;
-    bool matchPreset(const PresetInfo& preset) override;
     virtual bool matchProductInfo(const ProductInfo& product);
 
   protected:
@@ -67,8 +61,6 @@ class BulkController : public Controller {
     bool isPolling() const override;
     // Returns a pointer to the currently loaded controller preset. For internal
     // use only.
-    ControllerPreset* preset() override;
-
     libusb_context* m_context;
     libusb_device_handle *m_phandle;
 
@@ -83,7 +75,6 @@ class BulkController : public Controller {
 
     QString m_sUID;
     BulkReader* m_pReader;
-    HidControllerPreset m_preset;
 };
 
 #endif

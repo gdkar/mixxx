@@ -19,20 +19,6 @@ QString buildWhatsThis(const QString& title, const QString& text) {
     QString preparedTitle = title;
     return QString("%1\n\n%2").arg(preparedTitle.remove("&"), text);
 }
-
-QString vinylControlDefaultKeyBinding(int deck) {
-    // More bindings need to be defined if you increment
-    // kMaximumVinylControlInputs.
-    DEBUG_ASSERT(deck < kMaximumVinylControlInputs);
-    switch (deck) {
-        case 0: return QObject::tr("Ctrl+t");
-        case 1: return QObject::tr("Ctrl+y");
-        case 2: return QObject::tr("Ctrl+u");
-        case 3: return QObject::tr("Ctrl+i");
-        default: return QString();
-    }
-}
-
 QString loadToDeckDefaultKeyBinding(int deck) {
     switch (deck) {
         case 0: return QObject::tr("Ctrl+o");
@@ -69,8 +55,6 @@ WMainMenuBar::WMainMenuBar(QWidget* pParent, UserSettingsPointer pConfig,
             this, SIGNAL(loadTrackToDeck(int)));
     connect(&m_visitUrlMapper, SIGNAL(mapped(QString)),
             this, SLOT(slotVisitUrl(QString)));
-    connect(&m_vinylControlEnabledMapper, SIGNAL(mapped(int)),
-            this, SIGNAL(toggleVinylControl(int)));
 }
 
 void WMainMenuBar::initialize() {
@@ -202,22 +186,6 @@ void WMainMenuBar::initialize() {
     createVisibilityControl(pViewShowMicrophone, ConfigKey("[Microphone]", "show_microphone"));
     pViewMenu->addAction(pViewShowMicrophone);
 
-#ifdef __VINYLCONTROL__
-    QString showVinylControlTitle = tr("Show Vinyl Control Section");
-    QString showVinylControlText = tr("Show the vinyl control section of the Mixxx interface.") +
-            " " + mayNotBeSupported;
-    auto pViewVinylControl = new QAction(showVinylControlTitle, this);
-    pViewVinylControl->setCheckable(true);
-    pViewVinylControl->setShortcut(
-        QKeySequence(m_pKbdConfig->getValueString(
-            ConfigKey("[KeyboardShortcuts]", "ViewMenu_ShowVinylControl"),
-            tr("Ctrl+3", "Menubar|View|Show Vinyl Control Section"))));
-    pViewVinylControl->setStatusTip(showVinylControlText);
-    pViewVinylControl->setWhatsThis(buildWhatsThis(showVinylControlTitle, showVinylControlText));
-    createVisibilityControl(pViewVinylControl, ConfigKey(VINYL_PREF_KEY, "show_vinylcontrol"));
-    pViewMenu->addAction(pViewVinylControl);
-#endif
-
     QString showPreviewDeckTitle = tr("Show Preview Deck");
     QString showPreviewDeckText = tr("Show the preview deck in the Mixxx interface.") +
             " " + mayNotBeSupported;
@@ -237,10 +205,6 @@ void WMainMenuBar::initialize() {
     " " + mayNotBeSupported;
     auto pViewShowEffects = new QAction(showEffectsTitle, this);
     pViewShowEffects->setCheckable(true);
-    pViewShowEffects->setShortcut(
-        QKeySequence(m_pKbdConfig->getValueString(ConfigKey("[KeyboardShortcuts]",
-                                                  "ViewMenu_ShowEffects"),
-                                                  tr("Ctrl+5", "Menubar|View|Show Effect Rack"))));
     pViewShowEffects->setStatusTip(showEffectsText);
     pViewShowEffects->setWhatsThis(buildWhatsThis(showEffectsTitle, showEffectsText));
     createVisibilityControl(pViewShowEffects, ConfigKey("[EffectRack1]", "show"));
@@ -252,10 +216,6 @@ void WMainMenuBar::initialize() {
             " " + mayNotBeSupported;
     auto pViewShowCoverArt = new QAction(showCoverArtTitle, this);
     pViewShowCoverArt->setCheckable(true);
-    pViewShowCoverArt->setShortcut(
-        QKeySequence(m_pKbdConfig->getValueString(ConfigKey("[KeyboardShortcuts]",
-                                                  "ViewMenu_ShowCoverArt"),
-                                                  tr("Ctrl+6", "Menubar|View|Show Cover Art"))));
     pViewShowCoverArt->setStatusTip(showCoverArtText);
     pViewShowCoverArt->setWhatsThis(buildWhatsThis(showCoverArtTitle, showCoverArtText));
     createVisibilityControl(pViewShowCoverArt, ConfigKey("[Library]", "show_coverart"));
@@ -267,10 +227,6 @@ void WMainMenuBar::initialize() {
             " " + mayNotBeSupported;
     auto pViewMaximizeLibrary = new QAction(maximizeLibraryTitle, this);
     pViewMaximizeLibrary->setCheckable(true);
-    pViewMaximizeLibrary->setShortcut(
-        QKeySequence(m_pKbdConfig->getValueString(ConfigKey("[KeyboardShortcuts]",
-                                                  "ViewMenu_MaximizeLibrary"),
-                                                  tr("Space", "Menubar|View|Maximize Library"))));
     pViewMaximizeLibrary->setStatusTip(maximizeLibraryText);
     pViewMaximizeLibrary->setWhatsThis(buildWhatsThis(maximizeLibraryTitle, maximizeLibraryText));
     createVisibilityControl(pViewMaximizeLibrary, ConfigKey("[Master]", "maximize_library"));
@@ -283,10 +239,6 @@ void WMainMenuBar::initialize() {
     QString fullScreenTitle = tr("&Full Screen");
     QString fullScreenText = tr("Display Mixxx using the full screen");
     auto pViewFullScreen = new QAction(fullScreenTitle, this);
-    pViewFullScreen->setShortcut(
-        QKeySequence(m_pKbdConfig->getValueString(ConfigKey("[KeyboardShortcuts]",
-                                                  "ViewMenu_Fullscreen"),
-                                                  fullScreenDefaultKeyBinding())));
     pViewFullScreen->setShortcutContext(Qt::ApplicationShortcut);
     pViewFullScreen->setCheckable(true);
     pViewFullScreen->setChecked(false);
@@ -303,52 +255,9 @@ void WMainMenuBar::initialize() {
     // OPTIONS MENU
     QMenu* pOptionsMenu = new QMenu(tr("&Options"));
 
-#ifdef __VINYLCONTROL__
-    QMenu* pVinylControlMenu = new QMenu(tr("&Vinyl Control"));
-    QString vinylControlText = tr(
-            "Use timecoded vinyls on external turntables to control Mixxx");
-
-    for (int i = 0; i < kMaximumVinylControlInputs; ++i) {
-        QString vinylControlTitle = tr("Enable Vinyl Control &%1").arg(i + 1);
-        auto vc_checkbox = new QAction(vinylControlTitle, this);
-        m_vinylControlEnabledActions.push_back(vc_checkbox);
-
-        QString binding = m_pKbdConfig->getValueString(
-            ConfigKey("[KeyboardShortcuts]",
-                      QString("OptionsMenu_EnableVinyl%1").arg(i + 1)),
-            vinylControlDefaultKeyBinding(i));
-        if (!binding.isEmpty()) {
-            vc_checkbox->setShortcut(QKeySequence(binding));
-            vc_checkbox->setShortcutContext(Qt::ApplicationShortcut);
-        }
-
-        // Either check or uncheck the vinyl control menu item depending on what
-        // it was saved as.
-        vc_checkbox->setCheckable(true);
-        vc_checkbox->setChecked(false);
-        // The visibility of these actions is set in
-        // WMainMenuBar::onNumberOfDecksChanged.
-        vc_checkbox->setVisible(false);
-        vc_checkbox->setStatusTip(vinylControlText);
-        vc_checkbox->setWhatsThis(buildWhatsThis(vinylControlTitle,
-                                                 vinylControlText));
-
-        m_vinylControlEnabledMapper.setMapping(vc_checkbox, i);
-        connect(vc_checkbox, SIGNAL(triggered(bool)),
-                &m_vinylControlEnabledMapper, SLOT(map()));
-        pVinylControlMenu->addAction(vc_checkbox);
-    }
-    pOptionsMenu->addMenu(pVinylControlMenu);
-    pOptionsMenu->addSeparator();
-#endif
-
     QString recordTitle = tr("&Record Mix");
     QString recordText = tr("Record your mix to a file");
     auto pOptionsRecord = new QAction(recordTitle, this);
-    pOptionsRecord->setShortcut(
-        QKeySequence(m_pKbdConfig->getValueString(ConfigKey("[KeyboardShortcuts]",
-                                                  "OptionsMenu_RecordMix"),
-                                                  tr("Ctrl+R"))));
     pOptionsRecord->setShortcutContext(Qt::ApplicationShortcut);
     pOptionsRecord->setCheckable(true);
     pOptionsRecord->setStatusTip(recordText);
@@ -363,11 +272,6 @@ void WMainMenuBar::initialize() {
     QString broadcastingTitle = tr("Enable Live &Broadcasting");
     QString broadcastingText = tr("Stream your mixes to a shoutcast or icecast server");
     auto pOptionsBroadcasting = new QAction(broadcastingTitle, this);
-    pOptionsBroadcasting->setShortcut(
-            QKeySequence(m_pKbdConfig->getValueString(
-                    ConfigKey("[KeyboardShortcuts]",
-                              "OptionsMenu_EnableLiveBroadcasting"),
-                    tr("Ctrl+L"))));
     pOptionsBroadcasting->setShortcutContext(Qt::ApplicationShortcut);
     pOptionsBroadcasting->setCheckable(true);
     pOptionsBroadcasting->setStatusTip(broadcastingText);
@@ -387,11 +291,6 @@ void WMainMenuBar::initialize() {
     bool keyboardShortcutsEnabled = m_pConfig->getValueString(
         ConfigKey("[Keyboard]", "Enabled")) == "1";
     auto pOptionsKeyboard = new QAction(keyboardShortcutTitle, this);
-    pOptionsKeyboard->setShortcut(
-        QKeySequence(m_pKbdConfig->getValueString(ConfigKey("[KeyboardShortcuts]",
-                                                  "OptionsMenu_EnableShortcuts"),
-                                                  tr("Ctrl+`"))));
-    pOptionsKeyboard->setShortcutContext(Qt::ApplicationShortcut);
     pOptionsKeyboard->setCheckable(true);
     pOptionsKeyboard->setChecked(keyboardShortcutsEnabled);
     pOptionsKeyboard->setStatusTip(keyboardShortcutText);
@@ -427,11 +326,6 @@ void WMainMenuBar::initialize() {
         QString reloadSkinTitle = tr("&Reload Skin");
         QString reloadSkinText = tr("Reload the skin");
         auto pDeveloperReloadSkin = new QAction(reloadSkinTitle, this);
-        pDeveloperReloadSkin->setShortcut(
-            QKeySequence(m_pKbdConfig->getValueString(ConfigKey("[KeyboardShortcuts]",
-                                                                "OptionsMenu_ReloadSkin"),
-                                                      tr("Ctrl+Shift+R"))));
-        pDeveloperReloadSkin->setShortcutContext(Qt::ApplicationShortcut);
         pDeveloperReloadSkin->setStatusTip(reloadSkinText);
         pDeveloperReloadSkin->setWhatsThis(buildWhatsThis(reloadSkinTitle, reloadSkinText));
         connect(pDeveloperReloadSkin, SIGNAL(triggered()),
@@ -655,15 +549,6 @@ void WMainMenuBar::onDeveloperToolsHidden() {
 void WMainMenuBar::onFullScreenStateChange(bool fullscreen) {
     emit(internalFullScreenStateChange(fullscreen));
 }
-
-void WMainMenuBar::onVinylControlDeckEnabledStateChange(int deck, bool enabled) {
-    if (deck < 0 || deck >= m_vinylControlEnabledActions.size()) {
-        DEBUG_ASSERT(false);
-        return;
-    }
-    m_vinylControlEnabledActions.at(deck)->setChecked(enabled);
-}
-
 void WMainMenuBar::slotDeveloperStatsBase(bool enable) {
     if (enable) {
         Experiment::setBase();
@@ -700,9 +585,6 @@ void WMainMenuBar::createVisibilityControl(QAction* pAction,
 
 void WMainMenuBar::onNumberOfDecksChanged(int decks) {
     int deck = 0;
-    for (QAction* pVinylControlEnabled : m_vinylControlEnabledActions) {
-        pVinylControlEnabled->setVisible(deck++ < decks);
-    }
     deck = 0;
     for (QAction* pLoadToDeck : m_loadToDeckActions) {
         pLoadToDeck->setVisible(deck++ < decks);

@@ -136,15 +136,12 @@ RateControl::RateControl(QString group,
     // We need the sample rate so we can guesstimate something close
     // what latency is.
     m_pSampleRate = new ControlObject(ConfigKey("[Master]","samplerate"),this);
-
     // Wheel to control playback position/speed
     m_pWheel = new ControlTTRotary(ConfigKey(group, "wheel"));
-
     // Scratch controller, this is an accumulator which is useful for
     // controllers that return individiual +1 or -1s, these get added up and
     // cleared when we read
     m_pScratch2 = new ControlObject(ConfigKey(group, "scratch2"));
-
     // Scratch enable toggle
     m_pScratch2Enable = new ControlPushButton(ConfigKey(group, "scratch2_enable"));
     m_pScratch2Enable->set(0);
@@ -278,38 +275,32 @@ void RateControl::slotControlFastBack(double v)
         m_pRateSearch->set(-4.);
 }
 
-void RateControl::slotControlRatePermDown(double)
+void RateControl::slotControlRatePermDown(double v)
 {
     // Adjusts temp rate down if button pressed
-    if (buttonRatePermDown->get()) {
-        m_pRateSlider->set(m_pRateSlider->get() -
-                           m_pRateDir->get() * m_dPerm / (100 * m_pRateRange->get()));
-    }
+    if (v)
+        m_pRateSlider->fetch_add(-m_pRateDir->get() * m_dPerm / (100 * m_pRateRange->get()));
 }
 
-void RateControl::slotControlRatePermDownSmall(double)
+void RateControl::slotControlRatePermDownSmall(double v)
 {
     // Adjusts temp rate down if button pressed
-    if (buttonRatePermDownSmall->get())
-        m_pRateSlider->set(m_pRateSlider->get() -
-                           m_pRateDir->get() * m_dPermSmall / (100. * m_pRateRange->get()));
+    if (v)
+        m_pRateSlider->fetch_add(-m_pRateDir->get() * m_dPermSmall / (100. * m_pRateRange->get()));
 }
 
-void RateControl::slotControlRatePermUp(double)
+void RateControl::slotControlRatePermUp(double v)
 {
     // Adjusts temp rate up if button pressed
-    if (buttonRatePermUp->get()) {
-        m_pRateSlider->set(m_pRateSlider->get() +
-                           m_pRateDir->get() * m_dPerm / (100. * m_pRateRange->get()));
-    }
+    if (v)
+        m_pRateSlider->fetch_add(+m_pRateDir->get() * m_dPerm / (100. * m_pRateRange->get()));
 }
 
-void RateControl::slotControlRatePermUpSmall(double)
+void RateControl::slotControlRatePermUpSmall(double v)
 {
     // Adjusts temp rate up if button pressed
-    if (buttonRatePermUpSmall->get())
-        m_pRateSlider->set(m_pRateSlider->get() +
-                           m_pRateDir->get() * m_dPermSmall / (100. * m_pRateRange->get()));
+    if (v)
+        m_pRateSlider->fetch_add(+m_pRateDir->get() * m_dPermSmall / (100. * m_pRateRange->get()));
 }
 
 void RateControl::slotControlRateTempDown(double)
@@ -422,10 +413,10 @@ double RateControl::calculateSpeed(double baserate, double speed, bool paused,
         // If searching is in progress, it overrides everything else
         rate = searching;
     } else {
-        double wheelFactor = getWheelFactor();
-        double jogFactor = getJogFactor();
-        bool bVinylControlEnabled = m_pVCEnabled && m_pVCEnabled->toBool();
-        bool useScratch2Value = m_pScratch2Enable->get() != 0;
+        auto wheelFactor = getWheelFactor();
+        auto jogFactor = getJogFactor();
+        auto bVinylControlEnabled = m_pVCEnabled && m_pVCEnabled->toBool();
+        auto useScratch2Value = m_pScratch2Enable->get() != 0;
 
         // By default scratch2_enable is enough to determine if the user is
         // scratching or not. Moving platter controllers have to disable
@@ -441,7 +432,7 @@ double RateControl::calculateSpeed(double baserate, double speed, bool paused,
             }
             rate = speed;
         } else {
-            double scratchFactor = m_pScratch2->get();
+            auto scratchFactor = m_pScratch2->get();
             // Don't trust values from m_pScratch2
             if (isnan(scratchFactor)) {
                 scratchFactor = 0.0;
@@ -488,8 +479,7 @@ double RateControl::calculateSpeed(double baserate, double speed, bool paused,
                     qDebug() << "ERROR: calculateRate m_pBpmControl is null during master sync";
                     return 1.0;
                 }
-
-                double userTweak = 0.0;
+                auto userTweak = 0.0;
                 if (!*pReportScratching) {
                     // Only report user tweak if the user is not scratching.
                     userTweak = getTempRate() + wheelFactor + jogFactor;
@@ -534,7 +524,7 @@ double RateControl::process(const double rate,
      * one.
      */
 
-    double latrate = ((double)bufferSamples / (double)m_pSampleRate->get());
+    auto latrate = ((double)bufferSamples / (double)m_pSampleRate->get());
 
 
     if ((m_ePbPressed) && (!m_bTempStarted)) {
@@ -550,10 +540,8 @@ double RateControl::process(const double rate,
                 return kNoTrigger;
             }
 
-            double change = m_pRateDir->get() * m_dTemp /
-                                    (100. * range);
-            double csmall = m_pRateDir->get() * m_dTempSmall /
-                                    (100. * range);
+            auto change = m_pRateDir->get() * m_dTemp / (100. * range);
+            auto csmall = m_pRateDir->get() * m_dTempSmall / (100. * range);
 
             if (buttonRateTempUp->get())
                 addRateTemp(change);
@@ -590,11 +578,11 @@ double RateControl::process(const double rate,
             if ((m_eRampBackMode == RATERAMP_RAMPBACK_PERIOD)
                     && (m_dRateTempRampbackChange == 0.0)) {
                 int period = 2;
-                m_dRateTempRampbackChange = fabs(
+                m_dRateTempRampbackChange = std::abs(
                         m_dRateTemp / period);
             } else if ((m_eRampBackMode != RATERAMP_RAMPBACK_NONE)
                     && (m_dRateTempRampbackChange == 0.0)) {
-                if (fabs(m_dRateTemp) < m_dRateTempRampbackChange) {
+                if (std::abs(m_dRateTemp) < m_dRateTempRampbackChange) {
                     resetRateTemp();
                 } else if (m_dRateTemp > 0) {
                     subRateTemp(m_dRateTempRampbackChange);
@@ -625,7 +613,6 @@ void RateControl::setRateTemp(double v)
     if ((calcRateRatio() + v) < 0) {
         return;
     }
-
     m_dRateTemp = v;
     if (m_dRateTemp < -1.0) {
         m_dRateTemp = -1.0;
@@ -650,7 +637,7 @@ void RateControl::resetRateTemp(void)
 {
     setRateTemp(0.0);
 }
-
-void RateControl::notifySeek(double playPos) {
+void RateControl::notifySeek(double playPos)
+{
     m_pScratchController->notifySeek(playPos);
 }

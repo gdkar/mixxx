@@ -24,12 +24,6 @@
 #include <QMoveEvent>
 #include <QResizeEvent>
 
-#ifdef __VINYLCONTROL__
-#include "preferences/dialog/dlgprefvinyl.h"
-#else
-#include "preferences/dialog/dlgprefnovinyl.h"
-#endif
-
 #ifdef __BROADCAST__
 #include "preferences/dialog/dlgprefbroadcast.h"
 #endif
@@ -78,16 +72,6 @@ DlgPreferences::DlgPreferences(MixxxMainWindow * mixxx, SkinLoader* pSkinLoader,
     }
 
     // Construct widgets for use in tabs.
-
-#ifdef __VINYLCONTROL__
-    // It's important for this to be before the connect for wsound.
-    // TODO(rryan) determine why/if this is still true
-    m_wvinylcontrol = new DlgPrefVinyl(this, pVCManager, m_pConfig);
-    addPageWidget(m_wvinylcontrol);
-#else
-    m_wnovinylcontrol = new DlgPrefNoVinyl(this, soundman, m_pConfig);
-    addPageWidget(m_wnovinylcontrol);
-#endif
     m_wsound = new DlgPrefSound(this, soundman, pPlayerManager, m_pConfig);
     addPageWidget(m_wsound);
     m_wlibrary = new DlgPrefLibrary(this, m_pConfig, pLibrary);
@@ -122,8 +106,8 @@ DlgPreferences::DlgPreferences(MixxxMainWindow * mixxx, SkinLoader* pSkinLoader,
     m_wbroadcast = new DlgPrefBroadcast(this, m_pConfig);
     addPageWidget(m_wbroadcast);
 #endif
-    m_wcontrollers = new DlgPrefControllers(this, m_pConfig, controllers,m_pControllerTreeItem);
-    addPageWidget(m_wcontrollers);
+//    m_wcontrollers = new DlgPrefControllers(this, m_pConfig, controllers,m_pControllerTreeItem);
+//    addPageWidget(m_wcontrollers);
 
     // Install event handler to generate closeDlg signal
     installEventFilter(this);
@@ -135,14 +119,12 @@ DlgPreferences::DlgPreferences(MixxxMainWindow * mixxx, SkinLoader* pSkinLoader,
 
 DlgPreferences::~DlgPreferences() {
     // store last geometry in mixxx.cfg
-    m_pConfig->set(ConfigKey("[Preferences]","geometry"),
-                   m_geometry.join(","));
+    m_pConfig->set(ConfigKey("[Preferences]","geometry"),m_geometry.join(","));
 
     // Need to explicitly delete rather than relying on child auto-deletion
     // because otherwise the QStackedWidget will delete the controller
     // preference pages (and DlgPrefControllers dynamically generates and
     // deletes them).
-    delete m_wcontrollers;
 }
 
 void DlgPreferences::createIcons() {
@@ -170,11 +152,11 @@ void DlgPreferences::createIcons() {
     m_pLibraryButton->setTextAlignment(0, Qt::AlignLeft | Qt::AlignVCenter);
     m_pLibraryButton->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
 
-    m_pControllerTreeItem = new QTreeWidgetItem(contentsTreeWidget, QTreeWidgetItem::Type);
-    m_pControllerTreeItem->setIcon(0, QIcon(":/images/preferences/ic_preferences_controllers.png"));
-    m_pControllerTreeItem->setText(0, tr("Controllers"));
-    m_pControllerTreeItem->setTextAlignment(0, Qt::AlignLeft | Qt::AlignVCenter);
-    m_pControllerTreeItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+//    m_pControllerTreeItem = new QTreeWidgetItem(contentsTreeWidget, QTreeWidgetItem::Type);
+//    m_pControllerTreeItem->setIcon(0, QIcon(":/images/preferences/ic_preferences_controllers.png"));
+//    m_pControllerTreeItem->setText(0, tr("Controllers"));
+//    m_pControllerTreeItem->setTextAlignment(0, Qt::AlignLeft | Qt::AlignVCenter);
+//    m_pControllerTreeItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
 
     m_pAutoDJButton = new QTreeWidgetItem(contentsTreeWidget, QTreeWidgetItem::Type);
     m_pAutoDJButton->setIcon(0, QIcon(":/images/preferences/ic_preferences_autodj.png"));
@@ -226,24 +208,6 @@ void DlgPreferences::createIcons() {
     m_pReplayGainButton->setTextAlignment(0, Qt::AlignLeft | Qt::AlignVCenter);
     m_pReplayGainButton->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
 
-#ifdef __VINYLCONTROL__
-    m_pVinylControlButton = new QTreeWidgetItem(contentsTreeWidget, QTreeWidgetItem::Type);
-    //QT screws up my nice vinyl svg for some reason, so we'll use a PNG version
-    //instead...
-    m_pVinylControlButton->setIcon(0, QIcon(":/images/preferences/ic_preferences_vinyl.png"));
-    m_pVinylControlButton->setText(0, tr("Vinyl Control"));
-    m_pVinylControlButton->setTextAlignment(0, Qt::AlignLeft | Qt::AlignVCenter);
-    m_pVinylControlButton->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-#else
-    m_pVinylControlButton = new QTreeWidgetItem(contentsTreeWidget, QTreeWidgetItem::Type);
-    //QT screws up my nice vinyl svg for some reason, so we'll use a PNG version
-    //instead...
-    m_pVinylControlButton->setIcon(0, QIcon(":/images/preferences/ic_preferences_vinyl.png"));
-    m_pVinylControlButton->setText(0, tr("Vinyl Control"));
-    m_pVinylControlButton->setTextAlignment(0, Qt::AlignLeft | Qt::AlignVCenter);
-    m_pVinylControlButton->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-#endif
-
 #ifdef __BROADCAST__
     m_pBroadcastButton = new QTreeWidgetItem(contentsTreeWidget, QTreeWidgetItem::Type);
     m_pBroadcastButton->setIcon(0, QIcon(":/images/preferences/ic_preferences_broadcast.png"));
@@ -285,27 +249,17 @@ void DlgPreferences::changePage(QTreeWidgetItem* current, QTreeWidgetItem* previ
         switchToPage(m_wkey);
     } else if (current == m_pReplayGainButton) {
         switchToPage(m_wreplaygain);
-#ifdef __VINYLCONTROL__
-    } else if (current == m_pVinylControlButton) {
-        switchToPage(m_wvinylcontrol);
-#else
-    } else if (current == m_pVinylControlButton) {
-        switchToPage(m_wnovinylcontrol);
-#endif
 #ifdef __BROADCAST__
     } else if (current == m_pBroadcastButton) {
         switchToPage(m_wbroadcast);
 #endif
-    } else if (m_wcontrollers->handleTreeItemClick(current)) {
-        // Do nothing. m_wcontrollers handled this click.
     }
 }
-
-void DlgPreferences::showSoundHardwarePage() {
+void DlgPreferences::showSoundHardwarePage()
+{
     switchToPage(m_wsound);
     contentsTreeWidget->setCurrentItem(m_pSoundButton);
 }
-
 bool DlgPreferences::eventFilter(QObject* o, QEvent* e) {
     // Send a close signal if dialog is closing
     if (e->type() == QEvent::Hide) {

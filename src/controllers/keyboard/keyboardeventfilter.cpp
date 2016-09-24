@@ -7,13 +7,15 @@
 #include "control/controlobject.h"
 #include "util/cmdlineargs.h"
 
-KeyboardEventFilter::KeyboardEventFilter(ConfigObject<ConfigValueKbd>* pKbdConfigObject,
+/*KeyboardEventFilter::KeyboardEventFilter(ConfigObject<ConfigValueKbd>* pKbdConfigObject,
                                          QObject* parent, const char* name)
         : QObject(parent),
           m_pKbdConfigObject(nullptr) {
     setObjectName(name);
     setKeyboardConfig(pKbdConfigObject);
-}
+}*/
+KeyboardEventFilter::KeyboardEventFilter(QObject *pParent)
+:QObject(pParent) {}
 KeyboardEventFilter::~KeyboardEventFilter() = default;
 bool KeyboardEventFilter::eventFilter(QObject*, QEvent* e)
 {
@@ -21,25 +23,60 @@ bool KeyboardEventFilter::eventFilter(QObject*, QEvent* e)
         // If we lose focus, we need to clear out the active key list
         // because we might not get Key Release events.
         m_qActiveKeyList.clear();
+        m_activeKeys.clear();
     } else if (e->type() == QEvent::KeyPress) {
-        auto ke = (QKeyEvent *)e;
-#ifdef __APPLE__
+        auto ke = static_cast<QKeyEvent *>(e);
+//        if(auto obj = keyboardHandler()){
+//#ifdef __APPLE__
         // On Mac OSX the nativeScanCode is empty (const 1) http://doc.qt.nokia.com/4.7/qkeyevent.html#nativeScanCode
         // We may loose the release event if a the shift key is pressed later
         // and there is character shift like "1" -> "!"
+#ifdef __APPLE__
         int keyId = ke->key();
 #else
         int keyId = ke->nativeScanCode();
 #endif
+        auto ks = getKeySeq(ke);
+        if(!ke->isAutoRepeat()) {
+            auto info = m_activeKeys.take(keyId);
+            if(info.proxy) {
+                auto kue = QKeyEvent(QEvent::KeyRelease,
+                    info.key,
+                    info.modifiers,
+                    info.text,
+                    false,
+                    info.count);
+                QCoreApplication::sendEvent(info.proxy,&kue);
+            }
+        }
+        if(auto obj = m_dispatchBySequence.value(ks,nullptr)) {
+            if(QCoreApplication::sendEvent(obj, e)) {
+                m_activeKeys.insert(keyId, KeyDownInformation(ke,obj));
+                return true;
+            }
+        }
+//        }
+
         //qDebug() << "KeyPress event =" << ke->key() << "KeyId =" << keyId;
         // Run through list of active keys to see if the pressed key is already active
         // Just for returning true if we are consuming this key event
-        for(auto && keyDownInfo: m_qActiveKeyList) {
+/*        for(auto && keyDownInfo: m_qActiveKeyList) {
             if (keyDownInfo.keyId == keyId)
                 return true;
         }
-        auto ks = getKeySeq(ke);
-        if (!ks.isEmpty()) {
+        if(auto proxy = m_dispatchBySequence.value(ks,nullptr)) {
+            m_activeKeys.insert(keyId, proxy);
+            proxy->pressed(ke);
+            proxy->keyReceived(ke);
+            proxy->setValue(1.);
+        }
+        if(auto proxy = m_dispatchByScanCode.value(keyId,nullptr)) {
+            m_activeKeys.insert(keyId, proxy);
+            proxy->pressed(ke);
+            proxy->keyReceived(ke);
+            proxy->setValue(1.);
+        }*/
+/*        if (!ks.isEmpty()) {
             ConfigValueKbd ksv(ks);
             // Check if a shortcut is defined
             auto result = false;
@@ -63,9 +100,10 @@ bool KeyboardEventFilter::eventFilter(QObject*, QEvent* e)
                 }
             }
             return result;
-        }
+        }*/
+        return false;
     } else if (e->type()==QEvent::KeyRelease) {
-        auto ke = (QKeyEvent*)e;
+        auto ke = static_cast<QKeyEvent*>(e);
 #ifdef __APPLE__
         // On Mac OSX the nativeScanCode is empty
         auto keyId = ke->key();
@@ -84,9 +122,34 @@ bool KeyboardEventFilter::eventFilter(QObject*, QEvent* e)
             clearModifiers = Qt::ControlModifier;
         }
 #endif
-        auto matched = false;
+        auto ks = getKeySeq(ke);
+        auto handled = false;
+
+        for(auto obj : m_activeKeys.values(keyId)) {
+            if(QCoreApplication::sendEvent(obj.proxy, ke))
+                handled = true;
+        }
+        m_activeKeys.remove(keyId);
+/*        if(auto obj = m_dispatchBySequence.value(ks,nullptr)){
+            if(QCoreApplication::sendEvent(obj, e))
+                handled = true;;
+        }*/
+        if(handled) {
+            return true;
+        }
+        return false;
+/*        if(auto obj = keyboardHandler()){
+            if(QCoreApplication::sendEvent(obj, e))
+                return true;
+        }*/
+/*        auto matched = false;
+        for(auto && proxy : m_activeKeys.values(keyId)) {
+            proxy->released(*ke);
+            proxy->setValue(0.);
+        }
+        m_activeKeys.remove(keyId);*/
         // Run through list of active keys to see if the released key is active
-        for (auto i = m_qActiveKeyList.size(); i-- > 0; ) {
+/*        for (auto i = m_qActiveKeyList.size(); i-- > 0; ) {
             const auto& keyDownInfo = m_qActiveKeyList[i];
             auto pControl = keyDownInfo.pControl;
             if (keyDownInfo.keyId == keyId || (clearModifiers > 0 && keyDownInfo.modifiers == clearModifiers)) {
@@ -99,8 +162,8 @@ bool KeyboardEventFilter::eventFilter(QObject*, QEvent* e)
                 // release.
                 matched = true;
             }
-        }
-        return matched;
+        }*/
+//        return matched;
     } else if (e->type() == QEvent::KeyboardLayoutChange) {
         // This event is not fired on ubunty natty, why?
         // TODO(XXX): find a way to support KeyboardLayoutChange Bug #997811
@@ -110,26 +173,10 @@ bool KeyboardEventFilter::eventFilter(QObject*, QEvent* e)
 }
 QKeySequence KeyboardEventFilter::getKeySeq(QKeyEvent* e)
 {
-    auto modseq = QString{};
-    QKeySequence k;
-    // TODO(XXX) check if we may simply return QKeySequence(e->modifiers()+e->key())
-    if (e->modifiers() & Qt::ShiftModifier)     modseq += "Shift+";
-    if (e->modifiers() & Qt::ControlModifier)   modseq += "Ctrl+";
-    if (e->modifiers() & Qt::AltModifier)       modseq += "Alt+";
-    if (e->modifiers() & Qt::MetaModifier)      modseq += "Meta+";
-    if (e->key() >= 0x01000020 && e->key() <= 0x01000023) {
-        // Do not act on Modifier only
-        // avoid returning "khmer vowel sign ie (U+17C0)"
-        return k;
-    }
-    auto keyseq = QKeySequence(e->key()).toString();
-    k = QKeySequence(modseq + keyseq);
-    if (CmdlineArgs::Instance().getDeveloper()) {
-        qDebug() << "keyboard press: " << k.toString();
-    }
-    return k;
+    return QKeySequence(e->modifiers() + e->key());
 }
-void KeyboardEventFilter::setKeyboardConfig(ConfigObject<ConfigValueKbd>* pKbdConfigObject) {
+void KeyboardEventFilter::setKeyboardConfig(ConfigObject<ConfigValueKbd>* pKbdConfigObject)
+{
     // Keyboard configs are a surjection from ConfigKey to key sequence. We
     // invert the mapping to create an injection from key sequence to
     // ConfigKey. This allows a key sequence to trigger multiple controls in
@@ -137,6 +184,40 @@ void KeyboardEventFilter::setKeyboardConfig(ConfigObject<ConfigValueKbd>* pKbdCo
     m_keySequenceToControlHash = pKbdConfigObject->transpose();
     m_pKbdConfigObject = pKbdConfigObject;
 }
-ConfigObject<ConfigValueKbd>* KeyboardEventFilter::getKeyboardConfig() {
+ConfigObject<ConfigValueKbd>* KeyboardEventFilter::getKeyboardConfig()
+{
     return m_pKbdConfigObject;
+}
+
+KeyProxy *KeyboardEventFilter::getBindingFor(QString _prefix)
+{
+    auto seq = QKeySequence::fromString(_prefix);
+    if(auto b = m_dispatchBySequence.value(seq,nullptr)) {
+        return b;
+    }
+    auto b = new KeyProxy(seq);
+    QQmlEngine::setObjectOwnership(b, QQmlEngine::JavaScriptOwnership);
+    m_dispatchBySequence.insert(seq, b);
+    return b;
+}
+KeyProxy *KeyboardEventFilter::getBindingFor(int _prefix)
+{
+    if(auto b = m_dispatchByScanCode.value(_prefix,nullptr)) {
+        return b;
+    }
+    auto b = new KeyProxy(_prefix);
+    QQmlEngine::setObjectOwnership(b, QQmlEngine::JavaScriptOwnership);
+    m_dispatchByScanCode.insert(_prefix, b);
+    return b;
+}
+
+QObject *KeyboardEventFilter::keyboardHandler() const
+{
+    return m_keyboardHandler;
+}
+void KeyboardEventFilter::setKeyboardHandler(QObject *p)
+{
+    if(p != m_keyboardHandler) {
+        emit(keyboardHandlerChanged(m_keyboardHandler = p));
+    }
 }

@@ -64,6 +64,7 @@ class ControlProxy : public QObject {
     Q_INVOKABLE virtual double fetch_add(double val);
     Q_INVOKABLE virtual double fetch_sub(double val);
     Q_INVOKABLE virtual double exchange (double with);
+    Q_INVOKABLE virtual double compare_exchange(double expected, double desired);
     Q_INVOKABLE virtual double fetch_mul(double by);
     Q_INVOKABLE virtual double fetch_div(double by);
     Q_INVOKABLE virtual double fetch_toggle();
@@ -71,20 +72,20 @@ class ControlProxy : public QObject {
     //    // Returns the value of the object. Thread safe, non-blocking.
   public slots:
     double get() const;
-    void   set(double v);
+    void   set(double val);
     void   reset();
     // Sets the control parameterized value to v. Thread safe, non-blocking.
     // Resets the control to its default value. Thread safe, non-blocking.
     void trigger();
   signals:
-    void validChanged(bool);
-    void groupChanged(QString);
-    void itemChanged (QString);
-    void keyChanged(ConfigKey);
+    void validChanged(bool valid);
+    void groupChanged(QString group);
+    void itemChanged (QString item);
+    void keyChanged(ConfigKey key);
     // This signal must not connected by connect(). Use connectValueChanged()
     // instead. It will connect to the base ControlDoublePrivate as well.
-    void valueChanged(double);
-    void defaultValueChanged(double);
+    void valueChanged(double val);
+    void defaultValueChanged(double defaultVal);
     void triggered();
   protected slots:
     // Receives the value from the master control by a unique direct connection

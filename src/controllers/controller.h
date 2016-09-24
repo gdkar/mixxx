@@ -12,23 +12,32 @@
 #ifndef CONTROLLER_H
 #define CONTROLLER_H
 
-#include "controllers/bindingproxy.h"
+#include "controllers/bindproxy.h"
 //#include "controllers/controllerengine.h"
-#include "controllers/controllervisitor.h"
-#include "controllers/controllerpreset.h"
-#include "controllers/controllerpresetinfo.h"
-#include "controllers/controllerpresetvisitor.h"
-#include "controllers/controllerpresetfilehandler.h"
 #include "util/duration.h"
 
+struct ProductInfo {
+    QString protocol;
+    QString vendor_id;
+    QString product_id;
 
-class Controller : public QObject, ConstControllerPresetVisitor {
+    // HID-specific
+    QString in_epaddr;
+    QString out_epaddr;
+
+    // Bulk-specific
+    QString usage_page;
+    QString usage;
+    QString interface_number;
+};
+
+
+class Controller : public QObject {
     Q_OBJECT
 
     Q_PROPERTY(bool isOpen READ isOpen WRITE setOpen NOTIFY isOpenChanged);
     Q_PROPERTY(bool isOutputDevice READ isOutputDevice WRITE setOutputDevice NOTIFY isOutputDeviceChanged);
     Q_PROPERTY(bool isInputDevice READ isInputDevice WRITE setInputDevice NOTIFY isInputDeviceChanged);
-    Q_PROPERTY(QString presetExtension READ presetExtension CONSTANT);
     Q_PROPERTY(QString deviceName READ getDeviceName WRITE setDeviceName NOTIFY deviceNameChanged);
     Q_PROPERTY(QString deviceCategory READ getDeviceCategory WRITE setDeviceCategory NOTIFY deviceCategoryChanged);
     Q_PROPERTY(bool mappable READ isMappable CONSTANT);
@@ -41,11 +50,7 @@ class Controller : public QObject, ConstControllerPresetVisitor {
     // used by the ControllerManager to display only relevant preset files for
     // the controller (type.)
     virtual QString presetExtension() const ;
-    void setPreset(const ControllerPreset& preset);
-    virtual void accept(ControllerVisitor* visitor);
-    virtual bool savePreset(const QString filename) const ;
     // Returns a clone of the Controller's loaded preset.
-    virtual ControllerPresetPointer getPreset() const;
     bool isOpen() const;
     bool isOutputDevice() const;
     bool isInputDevice() const;
@@ -53,7 +58,6 @@ class Controller : public QObject, ConstControllerPresetVisitor {
     QString getDeviceCategory() const;
     virtual bool isMappable() const;
     bool isLearning() const;
-    virtual bool matchPreset(const PresetInfo& preset);
   signals:
     void isOpenChanged(bool);
     void isOutputDeviceChanged(bool);
@@ -61,33 +65,22 @@ class Controller : public QObject, ConstControllerPresetVisitor {
     void deviceNameChanged(QString);
     void deviceCategoryChanged(QString);
     void learningChanged(bool);
-//    void engineChanged(ControllerEngine*);
     // Emitted when a new preset is loaded. pPreset is a /clone/ of the loaded
     // preset, not a pointer to the preset itself.
-    void presetLoaded(ControllerPresetPointer pPreset);
-  // Making these slots protected/private ensures that other parts of Mixxx can
-  // only signal them which allows us to use no locks.
+    // Making these slots protected/private ensures that other parts of Mixxx can
+    // only signal them which allows us to use no locks.
   protected slots:
-    virtual BindingProxy *getBindingFor(QString prefix);
+    virtual BindProxy *getBindingFor(QString prefix);
     // Handles packets of raw bytes and passes them to an ".incomingData" script
     // function that is assumed to exist. (Sub-classes may want to reimplement
     // this if they have an alternate way of handling such data.)
     virtual void receive(QVariant data, mixxx::Duration timestamp);
-    // Initializes the controller engine and returns whether it was successful.
-    virtual bool applyPreset(QList<QString> scriptPaths, bool initializeScripts);
     // Puts the controller in and out of learning mode.
     void startLearning();
     void stopLearning();
     void setLearning(bool);
   protected:
     Q_INVOKABLE void send(QList<int> data, unsigned int length);
-    // To be called in sub-class' open() functions after opening the device but
-    // before starting any input polling/processing.
-//    void startEngine();
-    // To be called in sub-class' close() functions after stopping any input
-    // polling/processing but before closing the device.
-//    void stopEngine();
-//    ControllerEngine* getEngine() const;
     void setDeviceName(QString deviceName);
     void setDeviceCategory(QString deviceCategory);
     void setOutputDevice(bool outputDevice);
@@ -100,7 +93,7 @@ class Controller : public QObject, ConstControllerPresetVisitor {
     // if events were handled.
     virtual bool poll();
   protected:
-    QHash<QString, BindingProxy*> m_dispatch;
+    QHash<QString, BindProxy*> m_dispatch;
   private:
     // This must be reimplemented by sub-classes desiring to send raw bytes to a
     // controller.
@@ -108,10 +101,6 @@ class Controller : public QObject, ConstControllerPresetVisitor {
     // Returns true if this device should receive polling signals via calls to
     // its poll() method.
     virtual bool isPolling() const;
-    // Returns a pointer to the currently loaded controller preset. For internal
-    // use only.
-    virtual ControllerPreset* preset();
-//    ControllerEngine* m_pEngine{};
     // Verbose and unique device name suitable for display.
     QString m_sDeviceName;
     // Verbose and unique description of device type, defaults to empty
@@ -125,8 +114,6 @@ class Controller : public QObject, ConstControllerPresetVisitor {
     bool m_bIsOpen{false};
     bool m_bLearning{false};
     friend class ControllerManager; // accesses lots of our stuff, but in the same thread
-    // For testing.
-    friend class ControllerPresetValidationTest;
 };
 QML_DECLARE_TYPE(Controller);
 #endif

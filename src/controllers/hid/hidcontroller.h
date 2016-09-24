@@ -13,8 +13,6 @@
 #include <atomic>
 
 #include "controllers/controller.h"
-#include "controllers/hid/hidcontrollerpreset.h"
-#include "controllers/hid/hidcontrollerpresetfilehandler.h"
 #include "util/duration.h"
 class HidReader : public QThread {
     Q_OBJECT
@@ -35,17 +33,12 @@ class HidReader : public QThread {
 class HidController : public Controller {
     Q_OBJECT
   public:
+    Q_INVOKABLE HidController(QObject *p = nullptr);
     HidController(const hid_device_info deviceInfo);
    ~HidController();
 
     QString presetExtension() const override;
 
-    ControllerPresetPointer getPreset() const override;
-    bool savePreset(QString fileName) const override;
-
-    void visit(const ControllerPreset* preset) override;
-    bool isMappable() const override;
-    bool matchPreset(const PresetInfo& preset) override ;
     virtual bool matchProductInfo(const ProductInfo& product);
     virtual void guessDeviceCategory();
 
@@ -67,7 +60,6 @@ class HidController : public Controller {
     bool isPolling() const override;
     // Returns a pointer to the currently loaded controller preset. For internal
     // use only.
-    ControllerPreset* preset()override;
 
     // Local copies of things we need from hid_device_info
     int hid_interface_number;
@@ -84,7 +76,6 @@ class HidController : public Controller {
     QString m_sUID;
     hid_device* m_pHidDevice;
     HidReader* m_pReader;
-    HidControllerPreset m_preset;
 };
 
 #endif
