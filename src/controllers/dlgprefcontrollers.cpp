@@ -1,7 +1,7 @@
 #include <QDesktopServices>
 
 #include "controllers/dlgprefcontrollers.h"
-
+#include "controllers/controller.h"
 #include "preferences/dialog/dlgpreferences.h"
 #include "controllers/controllermanager.h"
 #include "controllers/dlgprefcontroller.h"
@@ -19,9 +19,8 @@ DlgPrefControllers::DlgPrefControllers(DlgPreferences* pPreferences,
 {
     setupUi(this);
     setupControllerWidgets();
-
-    connect(&m_buttonMapper, SIGNAL(mapped(QString)),
-            this, SLOT(slotOpenLocalFile(QString)));
+    connect(&m_buttonMapper, qOverload<const QString&>(&QSignalMapper::mapped),
+            this, &DlgPrefControllers::onOpenLocalFile);
 
 //    connect(btnOpenUserPresets, SIGNAL(clicked()),
 //            &m_buttonMapper, SLOT(map()));
@@ -29,41 +28,18 @@ DlgPrefControllers::DlgPrefControllers(DlgPreferences* pPreferences,
 //    m_buttonMapper.setMapping(btnOpenUserPresets, userPresetsPath(m_pConfig));
 
     // Connections
-    connect(m_pControllerManager, SIGNAL(devicesChanged()),
-            this, SLOT(rescanControllers()));
+    connect(m_pControllerManager, &ControllerManager::devicesChanged,
+            this, &DlgPrefControllers::rescanControllers);
 }
 
 DlgPrefControllers::~DlgPrefControllers()
 {
     destroyControllerWidgets();
 }
-
-void DlgPrefControllers::slotOpenLocalFile(const QString& file)
+void DlgPrefControllers::onOpenLocalFile(const QString& file)
 {
     QDesktopServices::openUrl(QUrl::fromLocalFile(file));
 }
-
-void DlgPrefControllers::slotUpdate()
-{
-    // Update our sub-windows.
-    for(auto && pControllerWindows: m_controllerWindows)
-        pControllerWindows->slotUpdate();
-}
-
-void DlgPrefControllers::slotCancel()
-{
-    // Update our sub-windows.
-    for(auto && pControllerWindows: m_controllerWindows)
-        pControllerWindows->slotCancel();
-}
-
-void DlgPrefControllers::slotApply()
-{
-    // Update our sub-windows.
-    for(auto && pControllerWindows: m_controllerWindows)
-        pControllerWindows->slotApply();
-}
-
 bool DlgPrefControllers::handleTreeItemClick(QTreeWidgetItem* clickedItem)
 {
     auto controllerIndex = m_controllerTreeItems.indexOf(clickedItem);
@@ -71,7 +47,6 @@ bool DlgPrefControllers::handleTreeItemClick(QTreeWidgetItem* clickedItem)
         auto controllerWidget = m_controllerWindows.value(controllerIndex);
         if (controllerWidget)
             m_pDlgPreferences->switchToPage(controllerWidget);
-
         return true;
     } else if (clickedItem == m_pControllerTreeItem) {
         // Switch to the root page and expand the controllers tree item.
@@ -81,13 +56,11 @@ bool DlgPrefControllers::handleTreeItemClick(QTreeWidgetItem* clickedItem)
     }
     return false;
 }
-
 void DlgPrefControllers::rescanControllers()
 {
     destroyControllerWidgets();
     setupControllerWidgets();
 }
-
 void DlgPrefControllers::destroyControllerWidgets()
 {
     while (!m_controllerWindows.isEmpty()) {
@@ -102,7 +75,6 @@ void DlgPrefControllers::destroyControllerWidgets()
         delete controllerWindowLink;
     }
 }
-
 void DlgPrefControllers::setupControllerWidgets()
 {
     // For each controller, create a dialog and put a little link to it in the
@@ -111,18 +83,18 @@ void DlgPrefControllers::setupControllerWidgets()
     qSort(controllerList.begin(), controllerList.end(), controllerCompare);
 
     for(auto && pController: controllerList) {
-        auto controllerDlg = new DlgPrefController(
-            this, pController, m_pControllerManager, m_pConfig);
-        connect(controllerDlg, SIGNAL(mappingStarted()),
-                m_pDlgPreferences, SLOT(hide()));
-        connect(controllerDlg, SIGNAL(mappingEnded()),
-                m_pDlgPreferences, SLOT(show()));
+        auto controllerDlg = new DlgPrefController(this, pController, m_pControllerManager, m_pConfig);
+        connect(this,&DlgPrefControllers::onUpdate,controllerDlg,&DlgPrefController::onUpdate);
+        connect(this,&DlgPrefControllers::onApply,controllerDlg,&DlgPrefController::onApply);
+        connect(this,&DlgPrefControllers::onCancel,controllerDlg,&DlgPrefController::onCancel);
+//        connect(controllerDlg, &DlgPrefController::mappingStarted,m_pDlgPreferences, &DlgPreferences::hide);
+//        connect(controllerDlg, &DlgPrefController::mappingEnded,m_pDlgPreferences, &DlgPreferences::show);
 
         m_controllerWindows.append(controllerDlg);
         m_pDlgPreferences->addPageWidget(controllerDlg);
 
-        connect(controllerDlg, SIGNAL(controllerEnabled(DlgPrefController*, bool)),
-                this, SLOT(slotHighlightDevice(DlgPrefController*, bool)));
+        connect(controllerDlg, &DlgPrefController::controllerEnabled,
+                this, &DlgPrefControllers::onHighlightDevice);
 
         auto controllerWindowLink = new QTreeWidgetItem(QTreeWidgetItem::Type);
         controllerWindowLink->setIcon(0, QIcon(":/images/preferences/ic_preferences_controllers.png"));
@@ -144,12 +116,11 @@ void DlgPrefControllers::setupControllerWidgets()
     txtNoControllersAvailable->setVisible(controllerList.empty());
 }
 
-void DlgPrefControllers::slotHighlightDevice(DlgPrefController* dialog, bool enabled)
+void DlgPrefControllers::onHighlightDevice(DlgPrefController* dialog, bool enabled)
 {
     auto dialogIndex = m_controllerWindows.indexOf(dialog);
-    if (dialogIndex < 0) {
+    if (dialogIndex < 0)
         return;
-    }
     if(auto controllerWindowLink = m_controllerTreeItems.at(dialogIndex)){
         auto temp = controllerWindowLink->font(0);
         temp.setBold(enabled);

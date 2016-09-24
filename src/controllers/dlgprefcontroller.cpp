@@ -14,7 +14,7 @@
 #include <QtAlgorithms>
 
 #include "controllers/dlgprefcontroller.h"
-#include "controllers/controllerlearningeventfilter.h"
+//#include "controllers/controllerlearningeventfilter.h"
 #include "controllers/controller.h"
 #include "controllers/controllermanager.h"
 #include "controllers/defs_controllers.h"
@@ -28,10 +28,7 @@ DlgPrefController::DlgPrefController(QWidget* parent, Controller* controller,
           m_pConfig(pConfig),
           m_pControllerManager(controllerManager),
           m_pController(controller),
-          m_pDlgControllerLearning(nullptr),
-          m_pInputTableModel(nullptr),
           m_pInputProxyModel(nullptr),
-          m_pOutputTableModel(nullptr),
           m_pOutputProxyModel(nullptr),
           m_bDirty(false)
 {
@@ -61,7 +58,7 @@ DlgPrefController::DlgPrefController(QWidget* parent, Controller* controller,
 
     // When the user toggles the Enabled checkbox, toggle.
     connect(m_ui.chkEnabledDevice, SIGNAL(clicked(bool)),
-            this, SLOT(slotEnableDevice(bool)));
+            this, SLOT(onEnableDevice(bool)));
 
     // Connect our signals to controller manager.
     connect(this, SIGNAL(openController(Controller*)),
@@ -70,7 +67,7 @@ DlgPrefController::DlgPrefController(QWidget* parent, Controller* controller,
             m_pControllerManager, SLOT(closeController(Controller*)));
     // Scripts
     connect(m_ui.m_pScriptsTableWidget, SIGNAL(cellChanged(int, int)),
-            this, SLOT(slotDirty()));
+            this, SLOT(onDirty()));
     connect(m_ui.btnAddScript, SIGNAL(clicked()),
             this, SLOT(addScript()));
     connect(m_ui.btnRemoveScript, SIGNAL(clicked()),
@@ -79,15 +76,15 @@ DlgPrefController::DlgPrefController(QWidget* parent, Controller* controller,
             this, SLOT(openScript()));
 }
 
-DlgPrefController::~DlgPrefController() {
-}
+DlgPrefController::~DlgPrefController() = default;
 
-void DlgPrefController::showLearningWizard() {
+void DlgPrefController::showLearningWizard()
+{
     // If the user has checked the "Enabled" checkbox but they haven't hit OK to
     // apply it yet, prompt them to apply the settings before we open the
     // learning dialog. If we don't apply the settings first and open the
     // device, the dialog won't react to controller messages.
-    if (m_ui.chkEnabledDevice->isChecked() && !m_pController->isOpen()) {
+/*    if (m_ui.chkEnabledDevice->isChecked() && !m_pController->isOpen()) {
         auto result = QMessageBox::question(
             this,
             tr("Apply device settings?"),
@@ -101,32 +98,29 @@ void DlgPrefController::showLearningWizard() {
             return;
         }
     }
-    slotApply();
-
+    onApply();
     // After this point we consider the mapping wizard as dirtying the preset.
-    slotDirty();
-
+    onDirty();
     // Note that DlgControllerLearning is set to delete itself on close using
     // the Qt::WA_DeleteOnClose attribute (so this "new" doesn't leak memory)
-    m_pDlgControllerLearning = new DlgControllerLearning(this, m_pController);
+   m_pDlgControllerLearning = new DlgControllerLearning(this, m_pController);
     m_pDlgControllerLearning->show();
-    ControllerLearningEventFilter* pControllerLearning =
-            m_pControllerManager->getControllerLearningEventFilter();
+    auto  pControllerLearning = m_pControllerManager->getControllerLearningEventFilter();
     pControllerLearning->startListening();
     connect(pControllerLearning, SIGNAL(controlClicked(ControlObject*)),
             m_pDlgControllerLearning, SLOT(controlClicked(ControlObject*)));
     connect(m_pDlgControllerLearning, SIGNAL(listenForClicks()),
             pControllerLearning, SLOT(startListening()));
     connect(m_pDlgControllerLearning, SIGNAL(stopListeningForClicks()),
-            pControllerLearning, SLOT(stopListening()));
+            pControllerLearning, SLOT(stopListening()));*/
 //    connect(m_pDlgControllerLearning, SIGNAL(stopLearning()),this, SLOT(show()));
 //    connect(m_pDlgControllerLearning, SIGNAL(stopLearning()),this, SIGNAL(mappingEnded()));
 }
-void DlgPrefController::slotDirty() {
+void DlgPrefController::onDirty()
+{
     m_bDirty = true;
 }
-
-void DlgPrefController::slotUpdate()
+void DlgPrefController::onUpdate()
 {
     // Check if the controller is open.
     auto deviceOpen = m_pController->isOpen();
@@ -135,8 +129,7 @@ void DlgPrefController::slotUpdate()
     // If the controller is not mappable, disable the input and output mapping
     // sections and the learning wizard button.
 }
-
-void DlgPrefController::slotCancel()
+void DlgPrefController::onCancel()
 {
 /*    if (m_pInputTableModel)
         m_pInputTableModel->cancel();
@@ -144,7 +137,7 @@ void DlgPrefController::slotCancel()
     if (m_pOutputTableModel)
         m_pOutputTableModel->cancel();*/
 }
-void DlgPrefController::slotApply()
+void DlgPrefController::onApply()
 {
     if (m_bDirty) {
         // Apply the presets and load the resulting preset.
@@ -157,14 +150,11 @@ void DlgPrefController::slotApply()
         // Load script info from the script table.
         for (auto i = 0; i < m_ui.m_pScriptsTableWidget->rowCount(); ++i) {
             auto scriptFile = m_ui.m_pScriptsTableWidget->item(i, 0)->text();
-
             // Skip empty rows.
-            if (scriptFile.isEmpty()) {
+            if (scriptFile.isEmpty())
                 continue;
-            }
             auto scriptPrefix = m_ui.m_pScriptsTableWidget->item(i, 1)->text();
             auto builtin = m_ui.m_pScriptsTableWidget->item(i, 2)->checkState() == Qt::Checked;
-
         }
         // Load the resulting preset (which has been mutated by the input/output
         // table models). The controller clones the preset so we aren't touching
@@ -178,7 +168,6 @@ void DlgPrefController::slotApply()
         } else if (!wantEnabled && enabled) {
             disableDevice();
         }
-
         m_bDirty = false;
     }
 }
@@ -202,9 +191,9 @@ void DlgPrefController::initTableView(QTableView* pTable)
     pTable->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     pTable->setAlternatingRowColors(true);
 }
-void DlgPrefController::slotEnableDevice(bool enable)
+void DlgPrefController::onEnableDevice(bool enable)
 {
-    slotDirty();
+    onDirty();
     // Set tree item text to normal/bold.
     emit(controllerEnabled(this, enable));
 }
@@ -224,16 +213,15 @@ void DlgPrefController::addScript()
         this, tr("Add Script"),
         QDesktopServices::storageLocation(QDesktopServices::DocumentsLocation),
         tr("Controller Script Files (*.js)"));
-
     if (scriptFile.isNull()) {
         return;
     }
     auto importedScriptFileName = QString{};;
-    if (!m_pControllerManager->importScript(scriptFile, &importedScriptFileName)) {
+/*    if (!m_pControllerManager->importScript(scriptFile, &importedScriptFileName)) {
         QMessageBox::warning(this, tr("Add Script"),
                              tr("Could not add script file: '%s'"));
         return;
-    }
+    }*/
     // Don't allow duplicate entries in the table. This could happen if the file
     // is missing (and the user added it to try and fix this) or if the file is
     // already in the presets directory with an identical checksum.
@@ -255,7 +243,7 @@ void DlgPrefController::addScript()
     pScriptBuiltin->setCheckState(Qt::Unchecked);
     pScriptBuiltin->setFlags(pScriptBuiltin->flags() & ~(Qt::ItemIsEditable | Qt::ItemIsUserCheckable));
     m_ui.m_pScriptsTableWidget->setItem(newRow, 2, pScriptBuiltin);
-    slotDirty();
+    onDirty();
 }
 
 void DlgPrefController::removeScript()
@@ -283,7 +271,7 @@ void DlgPrefController::removeScript()
         lastRow = row;
         m_ui.m_pScriptsTableWidget->removeRow(row);
     }
-    slotDirty();
+    onDirty();
 }
 
 void DlgPrefController::openScript()
@@ -302,10 +290,8 @@ void DlgPrefController::openScript()
         selectedRows.insert(index.row());
 
     auto scriptPaths = ControllerManager::getScriptPaths(m_pConfig);
-
     for(auto row: selectedRows) {
         auto scriptName = m_ui.m_pScriptsTableWidget->item(row, 0)->text();
-
         auto scriptPath = ControllerManager::getAbsolutePath(scriptName, scriptPaths);
         if (!scriptPath.isEmpty()) {
             QDesktopServices::openUrl(QUrl::fromLocalFile(scriptPath));

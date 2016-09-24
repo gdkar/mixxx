@@ -123,7 +123,6 @@ bool shouldLinkInputToOutput(const QString input_name,
     if (input_name == output_name) {
         return true;
     }
-
     // Some device drivers prepend "To" and "From" to the names of their MIDI
     // ports. If the output and input device names don't match, let's try
     // trimming those words from the start, and seeing if they then match.
@@ -147,15 +146,12 @@ bool shouldLinkInputToOutput(const QString input_name,
         if (offset != -1) {
             input_name_stripped = input_name_stripped.replace(offset, 7, " ");
         }
-
         // Ignore " output " text in the device names
-        offset = output_name_stripped.indexOf(" output ", 0,
-                                              Qt::CaseInsensitive);
+        offset = output_name_stripped.indexOf(" output ", 0,Qt::CaseInsensitive);
         if (offset != -1) {
             output_name_stripped = output_name_stripped.replace(offset, 8, " ");
         }
     }
-
     if (input_name_stripped == output_name_stripped ||
         namesMatchMidiPattern(input_name_stripped, output_name_stripped) ||
         namesMatchMidiPattern(input_name, output_name) ||

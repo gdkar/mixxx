@@ -99,7 +99,7 @@ class DlgPreferences : public QDialog, public Ui::DlgPreferencesDlg {
     UserSettingsPointer m_pConfig;
     DlgPrefSound* m_wsound;
     DlgPrefLibrary* m_wlibrary;
-//    DlgPrefControllers *m_wcontrollers;
+    DlgPrefControllers *m_wcontrollers;
     DlgPrefControls* m_wcontrols;
     DlgPrefWaveform* m_wwaveform;
     DlgPrefAutoDJ* m_wautodj;
@@ -128,7 +128,7 @@ class DlgPreferences : public QDialog, public Ui::DlgPreferencesDlg {
 //    QTreeWidgetItem* m_pVinylControlButton;
     QTreeWidgetItem* m_pBroadcastButton;
     QTreeWidgetItem* m_pReplayGainButton;
-//    QTreeWidgetItem* m_pControllerTreeItem;
+    QTreeWidgetItem* m_pControllerTreeItem;
 
     QSize m_pageSizeHint;
 

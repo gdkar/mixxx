@@ -605,8 +605,8 @@ class MixxxCore(Feature):
                    "control/controlttrotary.cpp",
 
 #                   "controllers/dlgcontrollerlearning.cpp",
-#                   "controllers/dlgprefcontroller.cpp",
-#                   "controllers/dlgprefcontrollers.cpp",
+                   "controllers/dlgprefcontroller.cpp",
+                   "controllers/dlgprefcontrollers.cpp",
                    "dialog/dlgabout.cpp",
                    "dialog/dlgdevelopertools.cpp",
 

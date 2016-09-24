@@ -55,29 +55,21 @@ DlgPreferences::DlgPreferences(MixxxMainWindow * mixxx, SkinLoader* pSkinLoader,
                                UserSettingsPointer pConfig, Library *pLibrary)
         : m_pConfig(pConfig),
           m_pageSizeHint(QSize(0, 0)),
-          m_preferencesUpdated(ConfigKey("[Preferences]", "updated"), this,false) {
+          m_preferencesUpdated(ConfigKey("[Preferences]", "updated"), this,false)
+{
     setupUi(this);
-#if QT_VERSION >= 0x040400 //setHeaderHidden is a qt4.4 addition so having it in the .ui file breaks the build on OpenBSD4.4 (FIXME: revisit this when OpenBSD4.5 comes out?)
     contentsTreeWidget->setHeaderHidden(true);
-#endif
-
-    connect(buttonBox, SIGNAL(clicked(QAbstractButton*)),
-            this, SLOT(slotButtonPressed(QAbstractButton*)));
-
-
+    connect(buttonBox, SIGNAL(clicked(QAbstractButton*)), this, SLOT(slotButtonPressed(QAbstractButton*)));
     createIcons();
-
     while (pagesWidget->count() > 0) {
         pagesWidget->removeWidget(pagesWidget->currentWidget());
     }
-
     // Construct widgets for use in tabs.
     m_wsound = new DlgPrefSound(this, soundman, pPlayerManager, m_pConfig);
     addPageWidget(m_wsound);
     m_wlibrary = new DlgPrefLibrary(this, m_pConfig, pLibrary);
     addPageWidget(m_wlibrary);
-    connect(m_wlibrary, SIGNAL(scanLibrary()),
-            pLibrary, SLOT(scan()));
+    connect(m_wlibrary, SIGNAL(scanLibrary()), pLibrary, SLOT(scan()));
     m_wcontrols = new DlgPrefControls(this, mixxx, pSkinLoader, pPlayerManager, m_pConfig);
     addPageWidget(m_wcontrols);
     m_wwaveform = new DlgPrefWaveform(this, mixxx, m_pConfig, pLibrary);
@@ -106,18 +98,16 @@ DlgPreferences::DlgPreferences(MixxxMainWindow * mixxx, SkinLoader* pSkinLoader,
     m_wbroadcast = new DlgPrefBroadcast(this, m_pConfig);
     addPageWidget(m_wbroadcast);
 #endif
-//    m_wcontrollers = new DlgPrefControllers(this, m_pConfig, controllers,m_pControllerTreeItem);
-//    addPageWidget(m_wcontrollers);
-
+    m_wcontrollers = new DlgPrefControllers(this, m_pConfig, controllers,m_pControllerTreeItem);
+    addPageWidget(m_wcontrollers);
     // Install event handler to generate closeDlg signal
     installEventFilter(this);
-
     // If we don't call this explicitly, then we default to showing the sound
     // hardware page but the tree item is not selected.
     showSoundHardwarePage();
 }
-
-DlgPreferences::~DlgPreferences() {
+DlgPreferences::~DlgPreferences()
+{
     // store last geometry in mixxx.cfg
     m_pConfig->set(ConfigKey("[Preferences]","geometry"),m_geometry.join(","));
 
@@ -127,7 +117,8 @@ DlgPreferences::~DlgPreferences() {
     // deletes them).
 }
 
-void DlgPreferences::createIcons() {
+void DlgPreferences::createIcons()
+{
     m_pSoundButton = new QTreeWidgetItem(contentsTreeWidget, QTreeWidgetItem::Type);
     m_pSoundButton->setIcon(0, QIcon(":/images/preferences/ic_preferences_soundhardware.png"));
     m_pSoundButton->setText(0, tr("Sound Hardware"));
@@ -152,11 +143,11 @@ void DlgPreferences::createIcons() {
     m_pLibraryButton->setTextAlignment(0, Qt::AlignLeft | Qt::AlignVCenter);
     m_pLibraryButton->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
 
-//    m_pControllerTreeItem = new QTreeWidgetItem(contentsTreeWidget, QTreeWidgetItem::Type);
-//    m_pControllerTreeItem->setIcon(0, QIcon(":/images/preferences/ic_preferences_controllers.png"));
-//    m_pControllerTreeItem->setText(0, tr("Controllers"));
-//    m_pControllerTreeItem->setTextAlignment(0, Qt::AlignLeft | Qt::AlignVCenter);
-//    m_pControllerTreeItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+    m_pControllerTreeItem = new QTreeWidgetItem(contentsTreeWidget, QTreeWidgetItem::Type);
+    m_pControllerTreeItem->setIcon(0, QIcon(":/images/preferences/ic_preferences_controllers.png"));
+    m_pControllerTreeItem->setText(0, tr("Controllers"));
+    m_pControllerTreeItem->setTextAlignment(0, Qt::AlignLeft | Qt::AlignVCenter);
+    m_pControllerTreeItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
 
     m_pAutoDJButton = new QTreeWidgetItem(contentsTreeWidget, QTreeWidgetItem::Type);
     m_pAutoDJButton->setIcon(0, QIcon(":/images/preferences/ic_preferences_autodj.png"));
@@ -215,13 +206,12 @@ void DlgPreferences::createIcons() {
     m_pBroadcastButton->setTextAlignment(0, Qt::AlignLeft | Qt::AlignVCenter);
     m_pBroadcastButton->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
 #endif
-
     connect(contentsTreeWidget,
             SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)),
             this, SLOT(changePage(QTreeWidgetItem*, QTreeWidgetItem*)));
 }
-
-void DlgPreferences::changePage(QTreeWidgetItem* current, QTreeWidgetItem* previous) {
+void DlgPreferences::changePage(QTreeWidgetItem* current, QTreeWidgetItem* previous)
+{
     if (!current)
         current = previous;
 
@@ -253,6 +243,8 @@ void DlgPreferences::changePage(QTreeWidgetItem* current, QTreeWidgetItem* previ
     } else if (current == m_pBroadcastButton) {
         switchToPage(m_wbroadcast);
 #endif
+    }else if(m_wcontrollers->handleTreeItemClick(current)) {
+        /* nothing */
     }
 }
 void DlgPreferences::showSoundHardwarePage()
@@ -260,30 +252,29 @@ void DlgPreferences::showSoundHardwarePage()
     switchToPage(m_wsound);
     contentsTreeWidget->setCurrentItem(m_pSoundButton);
 }
-bool DlgPreferences::eventFilter(QObject* o, QEvent* e) {
+bool DlgPreferences::eventFilter(QObject* o, QEvent* e)
+{
     // Send a close signal if dialog is closing
-    if (e->type() == QEvent::Hide) {
+    if (e->type() == QEvent::Hide)
         onHide();
-    }
 
-    if (e->type() == QEvent::Show) {
+    if (e->type() == QEvent::Show)
         onShow();
-    }
 
     // Standard event processing
     return QWidget::eventFilter(o,e);
 }
-
-void DlgPreferences::onHide() {
+void DlgPreferences::onHide()
+{
     // Notify children that we are about to hide.
     emit(closeDlg());
-
     // Notify other parts of Mixxx that the preferences window just saved and so
     // preferences are likely changed.
     m_preferencesUpdated.set(1);
 }
 
-void DlgPreferences::onShow() {
+void DlgPreferences::onShow()
+{
     //
     // Read last geometry (size and position) of preferences panel
     // Bug#1299949
@@ -291,8 +282,8 @@ void DlgPreferences::onShow() {
     // init m_geometry
     if (m_geometry.length() < 4) {
         // load default values (optimum size)
-        QRect defaultGeometry = getDefaultGeometry();
-        QString defaultGeometryStr = QString("%1,%2,%3,%4")
+        auto defaultGeometry = getDefaultGeometry();
+        auto defaultGeometryStr = QString("%1,%2,%3,%4")
                                           .arg(defaultGeometry.left())
                                             .arg(defaultGeometry.top())
                                             .arg(defaultGeometry.width())
@@ -303,7 +294,6 @@ void DlgPreferences::onShow() {
                     ConfigKey("[Preferences]", "geometry"),
                     defaultGeometryStr).split(",");
     }
-
     // Update geometry with last values
     setGeometry(m_geometry[0].toInt(),  // x position
                 m_geometry[1].toInt(),  // y position
@@ -314,21 +304,20 @@ void DlgPreferences::onShow() {
     emit(showDlg());
 }
 
-void DlgPreferences::slotButtonPressed(QAbstractButton* pButton) {
-    QDialogButtonBox::ButtonRole role = buttonBox->buttonRole(pButton);
-    DlgPreferencePage* pCurrentPage = currentPage();
+void DlgPreferences::slotButtonPressed(QAbstractButton* pButton)
+{
+    auto role = buttonBox->buttonRole(pButton);
+    auto pCurrentPage = currentPage();
     switch (role) {
         case QDialogButtonBox::ResetRole:
             // Only reset to defaults on the current page.
-            if (pCurrentPage != NULL) {
+            if (pCurrentPage)
                 pCurrentPage->slotResetToDefaults();
-            }
             break;
         case QDialogButtonBox::ApplyRole:
             // Only apply settings on the current page.
-            if (pCurrentPage != NULL) {
+            if (pCurrentPage)
                 pCurrentPage->slotApply();
-            }
             break;
         case QDialogButtonBox::AcceptRole:
             emit(applyPreferences());
@@ -343,53 +332,45 @@ void DlgPreferences::slotButtonPressed(QAbstractButton* pButton) {
     }
 }
 
-void DlgPreferences::addPageWidget(DlgPreferencePage* pWidget) {
-    connect(this, SIGNAL(showDlg()),
-            pWidget, SLOT(slotShow()));
-    connect(this, SIGNAL(closeDlg()),
-            pWidget, SLOT(slotHide()));
-    connect(this, SIGNAL(showDlg()),
-            pWidget, SLOT(slotUpdate()));
+void DlgPreferences::addPageWidget(DlgPreferencePage* pWidget)
+{
+    connect(this, SIGNAL(showDlg()), pWidget, SLOT(slotShow()));
+    connect(this, SIGNAL(closeDlg()),pWidget, SLOT(slotHide()));
+    connect(this, SIGNAL(showDlg()), pWidget, SLOT(slotUpdate()));
 
-    connect(this, SIGNAL(applyPreferences()),
-            pWidget, SLOT(slotApply()));
-    connect(this, SIGNAL(cancelPreferences()),
-            pWidget, SLOT(slotCancel()));
-    connect(this, SIGNAL(resetToDefaults()),
-            pWidget, SLOT(slotResetToDefaults()));
+    connect(this, SIGNAL(applyPreferences()),   pWidget, SLOT(slotApply()));
+    connect(this, SIGNAL(cancelPreferences()),  pWidget, SLOT(slotCancel()));
+    connect(this, SIGNAL(resetToDefaults()),    pWidget, SLOT(slotResetToDefaults()));
 
-    QScrollArea* sa = new QScrollArea(pagesWidget);
+    auto sa = new QScrollArea(pagesWidget);
     sa->setWidgetResizable(true);
 
     sa->setWidget(pWidget);
     pagesWidget->addWidget(sa);
 
-    int iframe = 2 * sa->frameWidth();
-    m_pageSizeHint = m_pageSizeHint.expandedTo(
-            pWidget->sizeHint()+QSize(iframe, iframe));
+    auto iframe = 2 * sa->frameWidth();
+    m_pageSizeHint = m_pageSizeHint.expandedTo(pWidget->sizeHint()+QSize(iframe, iframe));
 
 }
 
-DlgPreferencePage* DlgPreferences::currentPage() {
-    QObject* pObject = pagesWidget->currentWidget();
-    for (int i = 0; i < 2; ++i) {
-        if (pObject == NULL) {
-            return NULL;
-        }
-        QObjectList children = pObject->children();
-        if (children.isEmpty()) {
-            return NULL;
-        }
-        pObject = children[0];
+DlgPreferencePage* DlgPreferences::currentPage()
+{
+    auto pObject = pagesWidget->currentWidget();
+    for (auto i : { 0, 1 }){
+        if (!pObject) return nullptr;
+        auto children = pObject->children();
+        if (children.isEmpty())
+            return nullptr;
+        pObject = qobject_cast<QWidget*>(children[0]);
     }
-    return dynamic_cast<DlgPreferencePage*>(pObject);
+    return qobject_cast<DlgPreferencePage*>(pObject);
 }
-
-void DlgPreferences::removePageWidget(DlgPreferencePage* pWidget) {
+void DlgPreferences::removePageWidget(DlgPreferencePage* pWidget)
+{
     pagesWidget->removeWidget(pWidget->parentWidget()->parentWidget());
 }
-
-void DlgPreferences::expandTreeItem(QTreeWidgetItem* pItem) {
+void DlgPreferences::expandTreeItem(QTreeWidgetItem* pItem)
+{
     contentsTreeWidget->expandItem(pItem);
 }
 
@@ -410,11 +391,10 @@ void DlgPreferences::resizeEvent(QResizeEvent* e) {
         m_geometry[3] = QString::number(e->size().height());
     }
 }
-
-QRect DlgPreferences::getDefaultGeometry() {
-    QSize optimumSize;
+QRect DlgPreferences::getDefaultGeometry()
+{
     adjustSize();
-    optimumSize = qApp->desktop()->availableGeometry(this).size();
+    auto optimumSize = qApp->desktop()->availableGeometry(this).size();
 
     if (frameSize() == size()) {
         // This code is reached in Gnome 2.3
@@ -424,11 +404,10 @@ QRect DlgPreferences::getDefaultGeometry() {
         optimumSize -= (frameSize() - size());
     }
 
-    QSize staticSize = size() - pagesWidget->size();
+    auto staticSize = size() - pagesWidget->size();
     optimumSize = optimumSize.boundedTo(staticSize + m_pageSizeHint);
 
-    QRect optimumRect = geometry();
+    auto optimumRect = geometry();
     optimumRect.setSize(optimumSize);
-
     return optimumRect;
 }

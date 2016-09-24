@@ -11,9 +11,7 @@
 #include <QHash>
 #include <QSortFilterProxyModel>
 
-#include "controllers/controllerinputmappingtablemodel.h"
-#include "controllers/controlleroutputmappingtablemodel.h"
-#include "controllers/dlgcontrollerlearning.h"
+//#include "controllers/dlgcontrollerlearning.h"
 #include "controllers/ui_dlgprefcontrollerdlg.h"
 #include "preferences/usersettings.h"
 #include "preferences/dlgpreferencepage.h"
@@ -32,16 +30,16 @@ class DlgPrefController : public DlgPreferencePage {
 
   public slots:
     // Called when we should apply / save our changes.
-    void slotApply();
+    void onApply();
     // Called when we should cancel the changes made.
-    void slotCancel();
+    void onCancel();
     // Called when preference dialog (not this dialog) is displayed.
-    void slotUpdate();
+    void onUpdate();
     // Called when the user toggles the enabled checkbox.
-    void slotEnableDevice(bool enable);
+    void onEnableDevice(bool enable);
     // Called when the user selects a preset from the combobox.
     // Mark that we need to apply the settings.
-    void slotDirty();
+    void onDirty();
 
   signals:
     void controllerEnabled(DlgPrefController*, bool);
@@ -80,12 +78,11 @@ class DlgPrefController : public DlgPreferencePage {
     UserSettingsPointer m_pConfig;
     ControllerManager* m_pControllerManager;
     Controller* m_pController;
-    DlgControllerLearning* m_pDlgControllerLearning;
+//    DlgControllerLearning* m_pDlgControllerLearning;
 //    ControllerInputMappingTableModel* m_pInputTableModel;
     QSortFilterProxyModel* m_pInputProxyModel;
 //    ControllerOutputMappingTableModel* m_pOutputTableModel;
     QSortFilterProxyModel* m_pOutputProxyModel;
     bool m_bDirty;
 };
-
 #endif /*DLGPREFCONTROLLER_H*/
