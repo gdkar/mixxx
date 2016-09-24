@@ -12,12 +12,12 @@ EffectButtonParameterSlot::EffectButtonParameterSlot(const QString& group,
                                   iParameterSlotNumber) {
     QString itemPrefix = formatItemPrefix(iParameterSlotNumber);
     m_pControlLoaded = new ControlObject(
-            ConfigKey(m_group, itemPrefix + QString("_loaded")));
+            ConfigKey(m_group, itemPrefix + QString("_loaded")),this);
     m_pControlValue = new ControlPushButton(
-            ConfigKey(m_group, itemPrefix));
+            ConfigKey(m_group, itemPrefix),this);
     m_pControlValue->setButtonMode(ControlPushButton::POWERWINDOW);
     m_pControlType = new ControlObject(
-            ConfigKey(m_group, itemPrefix + QString("_type")));
+            ConfigKey(m_group, itemPrefix + QString("_type")),this);
 
     connect(m_pControlValue, SIGNAL(valueChanged(double)),
             this, SLOT(slotValueChanged(double)));
@@ -31,10 +31,7 @@ EffectButtonParameterSlot::EffectButtonParameterSlot(const QString& group,
     clear();
 }
 
-EffectButtonParameterSlot::~EffectButtonParameterSlot() {
-    //qDebug() << debugString() << "destroyed";
-    delete m_pControlValue;
-}
+EffectButtonParameterSlot::~EffectButtonParameterSlot() = default;
 
 void EffectButtonParameterSlot::loadEffect(EffectPointer pEffect) {
     //qDebug() << debugString() << "loadEffect" << (pEffect ? pEffect->getManifest().name() : "(null)");

@@ -10,18 +10,18 @@ EffectParameterSlot::EffectParameterSlot(const QString& group, const unsigned in
         : EffectParameterSlotBase(group, iParameterSlotNumber) {
     QString itemPrefix = formatItemPrefix(iParameterSlotNumber);
     m_pControlLoaded = new ControlObject(
-            ConfigKey(m_group, itemPrefix + QString("_loaded")));
+            ConfigKey(m_group, itemPrefix + QString("_loaded")),this);
     m_pControlLinkType = new ControlPushButton(
-            ConfigKey(m_group, itemPrefix + QString("_link_type")));
+            ConfigKey(m_group, itemPrefix + QString("_link_type")),this);
     m_pControlLinkType->setButtonMode(ControlPushButton::TOGGLE);
     m_pControlLinkType->setStates(EffectManifestParameter::NUM_LINK_TYPES);
     m_pControlLinkInverse = new ControlPushButton(
-            ConfigKey(m_group, itemPrefix + QString("_link_inverse")));
+            ConfigKey(m_group, itemPrefix + QString("_link_inverse")),this);
     m_pControlLinkInverse->setButtonMode(ControlPushButton::TOGGLE);
     m_pControlValue = new ControlEffectKnob(
             ConfigKey(m_group, itemPrefix));
     m_pControlType = new ControlObject(
-            ConfigKey(m_group, itemPrefix + QString("_type")));
+            ConfigKey(m_group, itemPrefix + QString("_type")),this);
 
     m_pControlLinkType->connectValueChangeRequest(
             this, SLOT(slotLinkTypeChanging(double)));

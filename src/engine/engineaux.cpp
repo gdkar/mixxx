@@ -15,7 +15,7 @@
 
 EngineAux::EngineAux(QObject *p, const ChannelHandleAndGroup& handle_group, EffectsManager* pEffectsManager)
         : EngineChannel(p, handle_group, EngineChannel::CENTER, pEffectsManager),
-          m_pPregain(new ControlAudioTaperPot(ConfigKey(getGroup(), "pregain"), -12, 12, 0.5)),
+          m_pPregain(new ControlAudioTaperPot(ConfigKey(getGroup(), "pregain"),this, -12, 12, 0.5)),
           m_sampleBuffer(NULL)
 {
     // Make input_configured read-only.

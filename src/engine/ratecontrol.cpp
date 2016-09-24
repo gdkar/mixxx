@@ -43,36 +43,36 @@ RateControl::RateControl(QString group,
       m_dRateTempRampbackChange(0.0) {
     m_pScratchController = new PositionScratchController(group);
 
-    m_pRateDir = new ControlObject(ConfigKey(group, "rate_dir"));
-    m_pRateRange = new ControlObject(ConfigKey(group, "rateRange"));
+    m_pRateDir = new ControlObject(ConfigKey(group, "rate_dir"),this);
+    m_pRateRange = new ControlObject(ConfigKey(group, "rateRange"),this);
     // Allow rate slider to go out of bounds so that master sync rate
     // adjustments are not capped.
-    m_pRateSlider = new ControlPotmeter(ConfigKey(group, "rate"),
+    m_pRateSlider = new ControlPotmeter(ConfigKey(group, "rate"),this,
                                         -1.0, 1.0, true);
 
     // Search rate. Rate used when searching in sound. This overrules the
     // playback rate
-    m_pRateSearch = new ControlPotmeter(ConfigKey(group, "rateSearch"), -300., 300.);
+    m_pRateSearch = new ControlPotmeter(ConfigKey(group, "rateSearch"),this,  -300., 300.);
 
     // Reverse button
-    m_pReverseButton = new ControlPushButton(ConfigKey(group, "reverse"));
+    m_pReverseButton = new ControlPushButton(ConfigKey(group, "reverse"),this);
     m_pReverseButton->set(0);
 
     // Forward button
-    m_pForwardButton = new ControlPushButton(ConfigKey(group, "fwd"));
+    m_pForwardButton = new ControlPushButton(ConfigKey(group, "fwd"),this);
     connect(m_pForwardButton, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlFastForward(double)),
             Qt::DirectConnection);
     m_pForwardButton->set(0);
 
     // Back button
-    m_pBackButton = new ControlPushButton(ConfigKey(group, "back"));
+    m_pBackButton = new ControlPushButton(ConfigKey(group, "back"),this);
     connect(m_pBackButton, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlFastBack(double)),
             Qt::DirectConnection);
     m_pBackButton->set(0);
 
-    m_pReverseRollButton = new ControlPushButton(ConfigKey(group, "reverseroll"));
+    m_pReverseRollButton = new ControlPushButton(ConfigKey(group, "reverseroll"),this);
     connect(m_pReverseRollButton, SIGNAL(valueChanged(double)),
             this, SLOT(slotReverseRollActivate(double)),
             Qt::DirectConnection);
@@ -85,50 +85,50 @@ RateControl::RateControl(QString group,
 
     // Permanent rate-change buttons
     buttonRatePermDown =
-        new ControlPushButton(ConfigKey(group,"rate_perm_down"));
+        new ControlPushButton(ConfigKey(group,"rate_perm_down"),this);
     connect(buttonRatePermDown, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlRatePermDown(double)),
             Qt::DirectConnection);
 
     buttonRatePermDownSmall =
-        new ControlPushButton(ConfigKey(group,"rate_perm_down_small"));
+        new ControlPushButton(ConfigKey(group,"rate_perm_down_small"),this);
     connect(buttonRatePermDownSmall, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlRatePermDownSmall(double)),
             Qt::DirectConnection);
 
     buttonRatePermUp =
-        new ControlPushButton(ConfigKey(group,"rate_perm_up"));
+        new ControlPushButton(ConfigKey(group,"rate_perm_up"),this);
     connect(buttonRatePermUp, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlRatePermUp(double)),
             Qt::DirectConnection);
 
     buttonRatePermUpSmall =
-        new ControlPushButton(ConfigKey(group,"rate_perm_up_small"));
+        new ControlPushButton(ConfigKey(group,"rate_perm_up_small"),this);
     connect(buttonRatePermUpSmall, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlRatePermUpSmall(double)),
             Qt::DirectConnection);
 
     // Temporary rate-change buttons
     buttonRateTempDown =
-        new ControlPushButton(ConfigKey(group,"rate_temp_down"));
+        new ControlPushButton(ConfigKey(group,"rate_temp_down"),this);
     connect(buttonRateTempDown, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlRateTempDown(double)),
             Qt::DirectConnection);
 
     buttonRateTempDownSmall =
-        new ControlPushButton(ConfigKey(group,"rate_temp_down_small"));
+        new ControlPushButton(ConfigKey(group,"rate_temp_down_small"),this);
     connect(buttonRateTempDownSmall, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlRateTempDownSmall(double)),
             Qt::DirectConnection);
 
     buttonRateTempUp =
-        new ControlPushButton(ConfigKey(group,"rate_temp_up"));
+        new ControlPushButton(ConfigKey(group,"rate_temp_up"),this);
     connect(buttonRateTempUp, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlRateTempUp(double)),
             Qt::DirectConnection);
 
     buttonRateTempUpSmall =
-        new ControlPushButton(ConfigKey(group,"rate_temp_up_small"));
+        new ControlPushButton(ConfigKey(group,"rate_temp_up_small"),this);
     connect(buttonRateTempUpSmall, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlRateTempUpSmall(double)),
             Qt::DirectConnection);
@@ -137,23 +137,23 @@ RateControl::RateControl(QString group,
     // what latency is.
     m_pSampleRate = new ControlObject(ConfigKey("[Master]","samplerate"),this);
     // Wheel to control playback position/speed
-    m_pWheel = new ControlTTRotary(ConfigKey(group, "wheel"));
+    m_pWheel = new ControlTTRotary(ConfigKey(group, "wheel"),this);
     // Scratch controller, this is an accumulator which is useful for
     // controllers that return individiual +1 or -1s, these get added up and
     // cleared when we read
-    m_pScratch2 = new ControlObject(ConfigKey(group, "scratch2"));
+    m_pScratch2 = new ControlObject(ConfigKey(group, "scratch2"),this);
     // Scratch enable toggle
-    m_pScratch2Enable = new ControlPushButton(ConfigKey(group, "scratch2_enable"));
+    m_pScratch2Enable = new ControlPushButton(ConfigKey(group, "scratch2_enable"),this);
     m_pScratch2Enable->set(0);
 
     m_pScratch2Scratching = new ControlPushButton(ConfigKey(group,
-                                                            "scratch2_indicates_scratching"));
+                                                            "scratch2_indicates_scratching"),this);
     // Enable by default, because it was always scratching before introducing
     // this control.
     m_pScratch2Scratching->set(1.0);
 
 
-    m_pJog = new ControlObject(ConfigKey(group, "jog"));
+    m_pJog = new ControlObject(ConfigKey(group, "jog"),this);
     m_pJogFilter = new Rotary();
     // FIXME: This should be dependent on sample rate/block size or something
     m_pJogFilter->setFilterLength(25);

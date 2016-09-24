@@ -33,7 +33,7 @@ EngineDeck::EngineDeck(QObject *p, const ChannelHandleAndGroup& handle_group,
                        EngineChannel::ChannelOrientation defaultOrientation)
         : EngineChannel(p, handle_group, defaultOrientation, pEffectsManager),
           m_pConfig(pConfig),
-          m_pPassing(new ControlPushButton(ConfigKey(getGroup(), "passthrough"))),
+          m_pPassing(new ControlPushButton(ConfigKey(getGroup(), "passthrough"),this)),
           // Need a +1 here because the CircularBuffer only allows its size-1
           // items to be held at once (it keeps a blank spot open persistently)
           m_sampleBuffer(NULL)

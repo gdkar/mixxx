@@ -15,10 +15,10 @@ double VisualPlayPosition::m_dCallbackEntryToDacSecs = 0;
 VisualPlayPosition::VisualPlayPosition(const QString& key)
         : m_valid(false),
           m_key(key) {
-    m_audioBufferSize = new ControlProxy(
-            "[Master]", "audio_buffer_size", this);
-    m_audioBufferSize->connectValueChanged(
-            SLOT(slotAudioBufferSizeChanged(double)));
+    m_audioBufferSize = new ControlProxy("[Master]", "audio_buffer_size", this);
+    connect(m_audioBufferSize, &ControlProxy::valueChanged,
+        this, &VisualPlayPosition::onAudioBufferSizeChanged,
+        Qt::AutoConnection);
     m_dAudioBufferSize = m_audioBufferSize->get();
 }
 
@@ -47,10 +47,10 @@ double VisualPlayPosition::getAtNextVSync(VSyncThread* vsyncThread) {
     //return testPos;
 
     if (m_valid) {
-        VisualPlayPositionData data = m_data.getValue();
-        int usRefToVSync = vsyncThread->usFromTimerToNextSync(data.m_referenceTime);
-        int offset = usRefToVSync - data.m_callbackEntrytoDac;
-        double playPos = data.m_enginePlayPos;  // load playPos for the first sample in Buffer
+        auto data = m_data.getValue();
+        auto usRefToVSync = vsyncThread->usFromTimerToNextSync(data.m_referenceTime);
+        auto offset = usRefToVSync - data.m_callbackEntrytoDac;
+        auto playPos = data.m_enginePlayPos;  // load playPos for the first sample in Buffer
         // add the offset for the position of the sample that will be transfered to the DAC
         // When the next display frame is displayed
         playPos += data.m_positionStep * offset * data.m_rate / m_dAudioBufferSize / 1000;
@@ -87,22 +87,23 @@ double VisualPlayPosition::getEnginePlayPos() {
     }
 }
 
-void VisualPlayPosition::slotAudioBufferSizeChanged(double size) {
+void VisualPlayPosition::onAudioBufferSizeChanged(double size) {
     m_dAudioBufferSize = size;
 }
 
 //static
-QSharedPointer<VisualPlayPosition> VisualPlayPosition::getVisualPlayPosition(QString group) {
-    QSharedPointer<VisualPlayPosition> vpp = m_listVisualPlayPosition.value(group);
+QSharedPointer<VisualPlayPosition> VisualPlayPosition::getVisualPlayPosition(QString group)
+{
+    auto vpp = m_listVisualPlayPosition.value(group).lock();
     if (vpp.isNull()) {
         vpp = QSharedPointer<VisualPlayPosition>(new VisualPlayPosition(group));
         m_listVisualPlayPosition.insert(group, vpp);
     }
     return vpp;
 }
-
 //static
-void VisualPlayPosition::setCallbackEntryToDacSecs(double secs, const PerformanceTimer& time) {
+void VisualPlayPosition::setCallbackEntryToDacSecs(double secs, const PerformanceTimer& time)
+{
     // the time is valid only just NOW, so measure the time from NOW for
     // later correction
     m_timeInfoTime = time;

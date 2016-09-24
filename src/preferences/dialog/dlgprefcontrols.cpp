@@ -62,7 +62,7 @@ DlgPrefControls::DlgPrefControls(QWidget * parent, MixxxMainWindow * mixxx,
 
     // Track time display configuration
     m_pControlTrackTimeDisplay = new ControlObject(
-            ConfigKey("[Controls]", "ShowDurationRemaining"));
+            ConfigKey("[Controls]", "ShowDurationRemaining"),this);
     connect(m_pControlTrackTimeDisplay, SIGNAL(valueChanged(double)),
             this, SLOT(slotSetTrackTimeDisplay(double)));
 
@@ -740,15 +740,15 @@ void DlgPrefControls::slotNumDecksChanged(double new_count) {
     for (int i = m_iNumConfiguredDecks; i < numdecks; ++i) {
         QString group = PlayerManager::groupForDeck(i);
         m_rateControls.push_back(new ControlProxy(
-                group, "rate"));
+                group, "rate",this));
         m_rateRangeControls.push_back(new ControlProxy(
-                group, "rateRange"));
+                group, "rateRange",this));
         m_rateDirControls.push_back(new ControlProxy(
-                group, "rate_dir"));
+                group, "rate_dir",this));
         m_cueControls.push_back(new ControlProxy(
-                group, "cue_mode"));
+                group, "cue_mode",this));
         m_keylockModeControls.push_back(new ControlProxy(
-                        group, "keylockMode"));
+                        group, "keylockMode",this));
         m_keylockModeControls.last()->set(m_keylockMode);
     }
 
@@ -766,15 +766,15 @@ void DlgPrefControls::slotNumSamplersChanged(double new_count) {
     for (int i = m_iNumConfiguredSamplers; i < numsamplers; ++i) {
         QString group = PlayerManager::groupForSampler(i);
         m_rateControls.push_back(new ControlProxy(
-                group, "rate"));
+                group, "rate",this));
         m_rateRangeControls.push_back(new ControlProxy(
-                group, "rateRange"));
+                group, "rateRange",this));
         m_rateDirControls.push_back(new ControlProxy(
-                group, "rate_dir"));
+                group, "rate_dir",this));
         m_cueControls.push_back(new ControlProxy(
-                group, "cue_mode"));
+                group, "cue_mode",this));
         m_keylockModeControls.push_back(new ControlProxy(
-                        group, "keylockMode"));
+                        group, "keylockMode",this));
         m_keylockModeControls.last()->set(m_keylockMode);
     }
 

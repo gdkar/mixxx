@@ -13,10 +13,10 @@ SamplerBank::SamplerBank(PlayerManager* pPlayerManager)
         : QObject(pPlayerManager),
           m_pPlayerManager(pPlayerManager) {
     DEBUG_ASSERT(m_pPlayerManager);
-    m_pLoadControl = new ControlPushButton(ConfigKey("[Sampler]", "LoadSamplerBank"));
+    m_pLoadControl = new ControlPushButton(ConfigKey("[Sampler]", "LoadSamplerBank"),this);
     connect(m_pLoadControl, SIGNAL(valueChanged(double)),
             this, SLOT(slotLoadSamplerBank(double)));
-    m_pSaveControl = new ControlPushButton(ConfigKey("[Sampler]", "SaveSamplerBank"));
+    m_pSaveControl = new ControlPushButton(ConfigKey("[Sampler]", "SaveSamplerBank"),this);
     connect(m_pSaveControl, SIGNAL(valueChanged(double)),
             this, SLOT(slotSaveSamplerBank(double)));
 }

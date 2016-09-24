@@ -18,13 +18,18 @@
 #include "control/controlpushbutton.h"
 #include "control/controlpotmeter.h"
 #include "control/controlproxy.h"
-
-ControlPotmeter::ControlPotmeter(ConfigKey key, double dMinValue, double dMaxValue,
+ControlPotmeter::ControlPotmeter(ConfigKey key,double dMinValue, double dMaxValue,
                                  bool bClampValue,
                                  bool bIgnoreNops,
                                  bool bTrack,
                                  bool bPersist)
-        : ControlObject(key, bIgnoreNops, bTrack, bPersist),
+:ControlPotmeter(key,nullptr,dMinValue,dMaxValue,bClampValue,bIgnoreNops,bTrack,bPersist){}
+ControlPotmeter::ControlPotmeter(ConfigKey key,QObject *p,  double dMinValue, double dMaxValue,
+                                 bool bClampValue,
+                                 bool bIgnoreNops,
+                                 bool bTrack,
+                                 bool bPersist)
+        : ControlObject(key, p, bIgnoreNops, bTrack, bPersist),
           m_controls(key)
 {
     setRange(dMinValue, dMaxValue, bClampValue);
@@ -35,7 +40,7 @@ ControlPotmeter::ControlPotmeter(ConfigKey key, double dMinValue, double dMaxVal
     }
     //qDebug() << "" << this << ", min " << m_dMinValue << ", max " << m_dMaxValue << ", range " << m_dValueRange << ", val " << m_dValue;
 }
-ControlPotmeter::~ControlPotmeter() { }
+ControlPotmeter::~ControlPotmeter() = default;
 
 void ControlPotmeter::setStepCount(int count)
 {
@@ -47,13 +52,11 @@ void ControlPotmeter::setSmallStepCount(int count)
     m_controls.setSmallStepCount(count);
 }
 
-void ControlPotmeter::setRange(double dMinValue, double dMaxValue,
-                               bool allowOutOfBounds) {
+void ControlPotmeter::setRange(double dMinValue, double dMaxValue,bool allowOutOfBounds)
+{
     m_bAllowOutOfBounds = allowOutOfBounds;
-
     if (m_pControl) {
-        m_pControl->setBehavior(
-                new ControlPotmeterBehavior(dMinValue, dMaxValue, allowOutOfBounds));
+        m_pControl->setBehavior(new ControlPotmeterBehavior(dMinValue, dMaxValue, allowOutOfBounds));
     }
 }
 
@@ -66,34 +69,28 @@ PotmeterControls::PotmeterControls(const ConfigKey& key)
     // and the push-button controls are parented to the PotmeterControls.
 
     auto controlUp = new ControlPushButton(
-        ConfigKey(key.group, QString(key.item) + "_up"));
-    controlUp->setParent(this);
+        ConfigKey(key.group, QString(key.item) + "_up"),this);
     connect(controlUp, &ControlObject::valueChanged,this, &PotmeterControls::incValue);
 
     auto controlDown = new ControlPushButton(
-        ConfigKey(key.group, QString(key.item) + "_down"));
-    controlDown->setParent(this);
+        ConfigKey(key.group, QString(key.item) + "_down"),this);
     connect(controlDown, &ControlObject::valueChanged,this, &PotmeterControls::decValue);
 
     auto controlUpSmall = new ControlPushButton(
-        ConfigKey(key.group, QString(key.item) + "_up_small"));
-    controlUpSmall->setParent(this);
+        ConfigKey(key.group, QString(key.item) + "_up_small"),this);
     connect(controlUpSmall, &ControlObject::valueChanged,this, &PotmeterControls::incSmallValue);
 
     auto controlDownSmall = new ControlPushButton(
-        ConfigKey(key.group, QString(key.item) + "_down_small"));
-    controlDownSmall->setParent(this);
+        ConfigKey(key.group, QString(key.item) + "_down_small"),this);
     connect(controlDownSmall, &ControlObject::valueChanged,this, &PotmeterControls::decSmallValue);
 
     auto controlDefault = new ControlPushButton(
-        ConfigKey(key.group, QString(key.item) + "_set_default"));
-    controlDefault->setParent(this);
+        ConfigKey(key.group, QString(key.item) + "_set_default"),this);
     connect(controlDefault, &ControlObject::valueChanged,
             this, &PotmeterControls::setToDefault);
 
     auto controlToggle = new ControlPushButton(
-        ConfigKey(key.group, QString(key.item) + "_toggle"));
-    controlToggle->setParent(this);
+        ConfigKey(key.group, QString(key.item) + "_toggle"),this);
     connect(controlToggle, &ControlObject::valueChanged,
             this, &PotmeterControls::toggleValue);
 

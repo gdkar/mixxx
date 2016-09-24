@@ -5,16 +5,13 @@
 #include <QString>
 #include <QScopedPointer>
 
-#include "engine/sync/clock.h"
 #include "engine/sync/syncable.h"
 #include "engine/enginechannel.h"
 
 class ControlObject;
-class ControlLinPotmeter;
-class ControlPushButton;
 class EngineSync;
 
-class InternalClock : public QObject, public Clock, public Syncable {
+class InternalClock : public QObject, public Syncable {
     Q_OBJECT
   public:
     InternalClock(const char* pGroup, SyncableListener* pEngineSync);
@@ -41,7 +38,7 @@ class InternalClock : public QObject, public Clock, public Syncable {
     }
 
     double getBeatDistance() const;
-    void setMasterBeatDistance(double beatDistance);
+    void   setMasterBeatDistance(double beatDistance);
 
     double getBaseBpm() const;
     void setMasterBaseBpm(double);
@@ -63,18 +60,15 @@ class InternalClock : public QObject, public Clock, public Syncable {
 
     QString m_group;
     SyncableListener* m_pEngineSync;
-    QScopedPointer<ControlLinPotmeter> m_pClockBpm;
-    QScopedPointer<ControlObject> m_pClockBeatDistance;
-    QScopedPointer<ControlPushButton> m_pSyncMasterEnabled;
+    ControlObject* m_pClockBpm;
+    ControlObject* m_pClockBeatDistance;
+    ControlObject * m_pSyncMasterEnabled;
     SyncMode m_mode;
-
     int m_iOldSampleRate;
     double m_dOldBpm;
-
     // The internal clock rate is stored in terms of samples per beat.
     // Fractional values are allowed.
     double m_dBeatLength;
-
     // The current number of frames accumulated since the last beat (e.g. beat
     // distance is m_dClockPosition / m_dBeatLength).
     double m_dClockPosition;

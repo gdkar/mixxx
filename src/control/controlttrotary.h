@@ -23,7 +23,7 @@
 class ControlTTRotary : public ControlObject {
     Q_OBJECT
   public:
-    ControlTTRotary(ConfigKey key);
+    ControlTTRotary(ConfigKey key, QObject *pParent = nullptr);
 };
 
 #endif

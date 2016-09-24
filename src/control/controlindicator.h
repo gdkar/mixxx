@@ -15,7 +15,7 @@ class ControlIndicator : public ControlObject {
         RATIO1TO1_250MS = 3, // used for Pioneer cue
     };
 
-    ControlIndicator(ConfigKey key);
+    ControlIndicator(ConfigKey key, QObject *pParent = nullptr);
     virtual ~ControlIndicator();
 
     void setBlinkValue(enum BlinkValue bv);

@@ -21,9 +21,11 @@
 #include <QDesktopWidget>
 #include <QFileDialog>
 #include <QGLWidget>
+#include <QOpenGLWidget>
+#include <QOpenGLContext>
 #include <QUrl>
 #include <QtDebug>
-
+#include "waveform/sharedglcontext.h"
 #include "analyzer/analyzerqueue.h"
 #include "dialog/dlgabout.h"
 #include "preferences/dialog/dlgpreferences.h"
@@ -50,7 +52,6 @@
 #include "sources/soundsourceproxy.h"
 #include "track/track.h"
 #include "waveform/waveformwidgetfactory.h"
-#include "waveform/sharedglcontext.h"
 #include "util/debug.h"
 #include "util/statsmanager.h"
 #include "util/timer.h"
@@ -170,7 +171,7 @@ void MixxxMainWindow::initialize(QApplication* pApp, const CmdlineArgs& args)
         pConfig->getValueString(ConfigKey("[Controls]", "Tooltips"), "1").toInt());
 
     setAttribute(Qt::WA_AcceptTouchEvents);
-    m_pTouchShift = new ControlPushButton(ConfigKey("[Controls]", "touch_shift"));
+    m_pTouchShift = new ControlPushButton(ConfigKey("[Controls]", "touch_shift"),this);
 
     // Create the Effects subsystem.
     m_pEffectsManager = new EffectsManager(this, pConfig);
@@ -291,13 +292,13 @@ void MixxxMainWindow::initialize(QApplication* pApp, const CmdlineArgs& args)
 
     // Before creating the first skin we need to create a QGLWidget so that all
     // the QGLWidget's we create can use it as a shared QGLContext.
-    QGLWidget* pContextWidget = new QGLWidget(this);
+    auto pContextWidget = new QGLWidget(this);
     pContextWidget->hide();
     SharedGLContext::setWidget(pContextWidget);
-
+//    pContextWidget->hide();
     launchProgress(63);
 
-    QWidget* oldWidget = m_pWidgetParent;
+    auto oldWidget = m_pWidgetParent;
 
     // Load skin to a QWidget that we set as the central widget. Assignment
     // intentional in next line.

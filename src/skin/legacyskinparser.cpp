@@ -109,7 +109,7 @@ ControlObject* controlFromConfigKey(const ConfigKey& key, bool bPersist,
     }
     // Since the usual behavior here is to create a skin-defined push
     // button, actually make it a push button and set it to toggle.
-    auto controlButton = new ControlPushButton(key, bPersist);
+    auto controlButton = new ControlPushButton(key,nullptr, bPersist);
     controlButton->setButtonMode(ControlPushButton::TOGGLE);
     if (created) {
         *created = true;
@@ -1094,15 +1094,7 @@ QWidget* LegacySkinParser::parseSpinny(QDomElement node) {
         dummy->setText(tr("Safe Mode Enabled"));
         return dummy;
     }
-    auto spinny = new WSpinny(m_pParent, channelStr, m_pConfig,
-                                  m_pVCManager);
-    if (!spinny->isValid()) {
-        delete spinny;
-        WLabel* dummy = new WLabel(m_pParent);
-        //: Shown when Spinny can not be displayed. Please keep \n unchanged
-        dummy->setText(tr("No OpenGL\nsupport."));
-        return dummy;
-    }
+    auto spinny = new WSpinny(m_pParent, channelStr, m_pConfig,m_pVCManager);
     commonWidgetSetup(node, spinny);
 
     WaveformWidgetFactory::instance()->addTimerListener(spinny);

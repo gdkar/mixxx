@@ -26,20 +26,20 @@
 #include "util/assert.h"
 
 EngineSync::EngineSync(UserSettingsPointer pConfig)
-        : BaseSyncableListener(pConfig) {
-}
+        : BaseSyncableListener(pConfig)
+{ }
 
-EngineSync::~EngineSync() {
-}
+EngineSync::~EngineSync() = default;
 
-void EngineSync::requestSyncMode(Syncable* pSyncable, SyncMode mode) {
+void EngineSync::requestSyncMode(Syncable* pSyncable, SyncMode mode)
+{
     //qDebug() << "EngineSync::requestSyncMode" << pSyncable->getGroup() << mode;
     // Based on the call hierarchy I don't think this is possible. (Famous last words.)
     DEBUG_ASSERT_AND_HANDLE(pSyncable) {
         return;
     }
 
-    const bool channelIsMaster = m_pMasterSyncable == pSyncable;
+    auto channelIsMaster = m_pMasterSyncable == pSyncable;
 
     if (mode == SYNC_MASTER) {
         activateMaster(pSyncable);
@@ -92,25 +92,26 @@ void EngineSync::requestSyncMode(Syncable* pSyncable, SyncMode mode) {
     checkUniquePlayingSyncable();
 }
 
-void EngineSync::requestEnableSync(Syncable* pSyncable, bool bEnabled) {
+void EngineSync::requestEnableSync(Syncable* pSyncable, bool bEnabled)
+{
     //qDebug() << "EngineSync::requestEnableSync" << pSyncable->getGroup() << bEnabled;
     if (bEnabled) {
         // Already enabled?  Do nothing.
         if (pSyncable->getSyncMode() != SYNC_NONE) {
             return;
         }
-        bool foundPlayingDeck = false;
+        auto foundPlayingDeck = false;
         if (m_pMasterSyncable == NULL) {
             // There is no master. If any other deck is playing we will match
             // the first available bpm -- sync won't be enabled on these decks,
             // otherwise there would have been a master.
 
-            bool foundTargetBpm = false;
-            double targetBpm = 0.0;
-            double targetBeatDistance = 0.0;
-            double targetBaseBpm = 0.0;
+            auto foundTargetBpm = false;
+            auto targetBpm = 0.0;
+            auto targetBeatDistance = 0.0;
+            auto targetBaseBpm = 0.0;
 
-            foreach (const Syncable* other_deck, m_syncables) {
+            for(auto other_deck: m_syncables) {
                 if (other_deck == pSyncable) {
                     // skip this deck
                     continue;
@@ -120,7 +121,7 @@ void EngineSync::requestEnableSync(Syncable* pSyncable, bool bEnabled) {
                     continue;
                 }
 
-                double otherDeckBpm = other_deck->getBpm();
+                auto otherDeckBpm = other_deck->getBpm();
                 if (otherDeckBpm > 0.0) {
                     // If the requesting deck is playing, but the other deck
                     // is not, do not sync.
@@ -227,8 +228,8 @@ void EngineSync::notifyTrackLoaded(Syncable* pSyncable, double suggested_bpm) {
         return;
     }
 
-    bool sync_deck_exists = false;
-    foreach (const Syncable* pOtherSyncable, m_syncables) {
+    auto sync_deck_exists = false;
+    for(auto pOtherSyncable: m_syncables) {
         if (pOtherSyncable == pSyncable) {
             continue;
         }
@@ -251,21 +252,21 @@ void EngineSync::notifyScratching(Syncable* pSyncable, bool scratching) {
     Q_UNUSED(scratching);
 }
 
-void EngineSync::notifyBpmChanged(Syncable* pSyncable, double bpm, bool fileChanged) {
+void EngineSync::notifyBpmChanged(Syncable* pSyncable, double bpm, bool fileChanged)
+{
     //qDebug() << "EngineSync::notifyBpmChanged" << pSyncable->getGroup() << bpm
     //         << fileChanged;
 
-    SyncMode syncMode = pSyncable->getSyncMode();
+    auto syncMode = pSyncable->getSyncMode();
     if (syncMode == SYNC_NONE) {
         return;
     }
-
     // EngineSyncTest.FollowerRateChange dictates this must not happen in general,
     // but it is required when the file BPM changes because it's not a true BPM
     // change, so we set the follower back to the master BPM.
     if (syncMode == SYNC_FOLLOWER && fileChanged) {
-        double mbaseBpm = masterBaseBpm();
-        double mbpm = masterBpm();
+        auto mbaseBpm = masterBaseBpm();
+        auto mbpm = masterBpm();
         // TODO(owilliams): Figure out why the master bpm is getting set to
         // zero in the first place, that's the real bug that's being worked
         // around.
@@ -281,7 +282,8 @@ void EngineSync::notifyBpmChanged(Syncable* pSyncable, double bpm, bool fileChan
     setMasterBpm(pSyncable, bpm);
 }
 
-void EngineSync::notifyInstantaneousBpmChanged(Syncable* pSyncable, double bpm) {
+void EngineSync::notifyInstantaneousBpmChanged(Syncable* pSyncable, double bpm)
+{
     //qDebug() << "EngineSync::notifyInstantaneousBpmChanged" << pSyncable->getGroup() << bpm;
     if (pSyncable->getSyncMode() != SYNC_MASTER) {
         return;
@@ -327,7 +329,7 @@ void EngineSync::activateMaster(Syncable* pSyncable) {
     }
 
     // If a channel is master, disable it.
-    Syncable* pOldChannelMaster = m_pMasterSyncable;
+    auto  pOldChannelMaster = m_pMasterSyncable;
 
     m_pMasterSyncable = NULL;
     if (pOldChannelMaster) {
@@ -342,8 +344,9 @@ void EngineSync::activateMaster(Syncable* pSyncable) {
     // if necessary.
 }
 
-void EngineSync::deactivateSync(Syncable* pSyncable) {
-    bool wasMaster = pSyncable->getSyncMode() == SYNC_MASTER;
+void EngineSync::deactivateSync(Syncable* pSyncable)
+{
+    auto wasMaster = pSyncable->getSyncMode() == SYNC_MASTER;
     if (wasMaster) {
         m_pMasterSyncable = NULL;
     }
@@ -351,7 +354,7 @@ void EngineSync::deactivateSync(Syncable* pSyncable) {
     // Notifications happen after-the-fact.
     pSyncable->notifySyncModeChanged(SYNC_NONE);
 
-    bool bSyncDeckExists = syncDeckExists();
+    auto bSyncDeckExists = syncDeckExists();
 
     if (pSyncable != m_pInternalClock) {
         if (bSyncDeckExists) {
@@ -368,20 +371,19 @@ void EngineSync::deactivateSync(Syncable* pSyncable) {
 }
 
 EngineChannel* EngineSync::pickNonSyncSyncTarget(EngineChannel* pDontPick) const {
-    EngineChannel* pFirstNonplayingDeck = NULL;
-    foreach (Syncable* pSyncable, m_syncables) {
-        EngineChannel* pChannel = pSyncable->getChannel();
+    auto pFirstNonplayingDeck = static_cast<EngineChannel*>(nullptr);
+    for(auto pSyncable: m_syncables) {
+        auto  pChannel = pSyncable->getChannel();
         if (pChannel == NULL || pChannel == pDontPick) {
             continue;
         }
-
         // Only consider channels that have a track loaded and are in the master
         // mix.
         if (pChannel->isActive() && pChannel->isMasterEnabled()) {
-            EngineBuffer* pBuffer = pChannel->getEngineBuffer();
+            auto pBuffer = pChannel->getEngineBuffer();
             if (pBuffer && pBuffer->getBpm() > 0) {
                 // If the deck is playing then go with it immediately.
-                if (fabs(pBuffer->getSpeed()) > 0) {
+                if (std::abs(pBuffer->getSpeed()) > 0) {
                     return pChannel;
                 }
                 // Otherwise hold out for a deck that might be playing but
@@ -398,16 +400,14 @@ EngineChannel* EngineSync::pickNonSyncSyncTarget(EngineChannel* pDontPick) const
     return pFirstNonplayingDeck;
 }
 
-bool EngineSync::otherSyncedPlaying(const QString& group) {
-    bool othersInSync = false;
-    for (Syncable* theSyncable : m_syncables) {
+bool EngineSync::otherSyncedPlaying(const QString& group)
+{
+    auto othersInSync = false;
+    for (auto theSyncable : m_syncables) {
         if (theSyncable->getGroup() == group) {
-            if (theSyncable->getSyncMode() == SYNC_NONE) {
+            if (theSyncable->getSyncMode() == SYNC_NONE)
                 return false;
-            }
-            continue;
-        }
-        if (theSyncable->isPlaying() && (theSyncable->getSyncMode() != SYNC_NONE)) {
+        }else if (theSyncable->isPlaying() && (theSyncable->getSyncMode() != SYNC_NONE)) {
             othersInSync = true;
         }
     }

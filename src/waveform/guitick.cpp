@@ -5,8 +5,8 @@
 
 GuiTick::GuiTick(QObject* pParent)
         : QObject(pParent) {
-     m_pCOGuiTickTime = new ControlObject(ConfigKey("[Master]", "guiTickTime"));
-     m_pCOGuiTick50ms = new ControlObject(ConfigKey("[Master]", "guiTick50ms"));
+     m_pCOGuiTickTime = new ControlObject(ConfigKey("[Master]", "guiTickTime"),this);
+     m_pCOGuiTick50ms = new ControlObject(ConfigKey("[Master]", "guiTick50ms"),this);
      m_cpuTimer.start();
 }
 

@@ -217,14 +217,6 @@ class EngineBuffer : public EngineObject {
     UserSettingsPointer m_pConfig;
 
     LoopingControl* m_pLoopingControl;
-    FRIEND_TEST(LoopingControlTest, LoopHalveButton_HalvesLoop);
-    FRIEND_TEST(LoopingControlTest, LoopMoveTest);
-    FRIEND_TEST(LoopingControlTest, LoopResizeSeek);
-    FRIEND_TEST(SyncControlTest, TestDetermineBpmMultiplier);
-    FRIEND_TEST(EngineSyncTest, HalfDoubleBpmTest);
-    FRIEND_TEST(EngineSyncTest, HalfDoubleThenPlay);
-    FRIEND_TEST(EngineSyncTest, UserTweakBeatDistance);
-    FRIEND_TEST(EngineBufferTest, ScalerNoTransport);
     EngineSync* m_pEngineSync;
     SyncControl* m_pSyncControl;
     VinylControlControl* m_pVinylControlControl;

@@ -109,7 +109,7 @@ void DlgPrefEQ::slotNumDecksChanged(double numDecks) {
                 m_deckEqEffectSelectors.size());
 
         m_filterWaveformEnableCOs.append(
-                new ControlObject(ConfigKey(group, "filterWaveformEnable")));
+                new ControlObject(ConfigKey(group, "filterWaveformEnable"),this));
         m_filterWaveformEffectLoaded.append(false);
 
         // Create the drop down list for EQs

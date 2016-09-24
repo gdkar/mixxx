@@ -11,6 +11,11 @@ class ControlLinPotmeter : public ControlPotmeter {
             double dMinValue = 0.0, double dMaxValue = 1.0,
             double dStep = 0, double dSmallStep = 0,
             bool allowOutOfBounds = false);
+    ControlLinPotmeter(ConfigKey key, QObject *pParent,
+            double dMinValue = 0.0, double dMaxValue = 1.0,
+            double dStep = 0, double dSmallStep = 0,
+            bool allowOutOfBounds = false);
+
 };
 
 #endif // CONTROLLINPOTMETER_H

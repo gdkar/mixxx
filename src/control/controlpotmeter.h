@@ -64,6 +64,12 @@ class ControlPotmeter : public ControlObject {
                     bool bIgnoreNops = true,
                     bool bTrack = false,
                     bool bPersist = false);
+
+    ControlPotmeter(ConfigKey key, QObject *p, double dMinValue = 0.0, double dMaxValue = 1.0,
+                    bool allowOutOfBounds = false,
+                    bool bIgnoreNops = true,
+                    bool bTrack = false,
+                    bool bPersist = false);
     virtual ~ControlPotmeter();
     // Sets the step count of the associated PushButtons.
     void setStepCount(int count);

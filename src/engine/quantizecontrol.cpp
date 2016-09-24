@@ -15,13 +15,13 @@ QuantizeControl::QuantizeControl(QString group,
                                  UserSettingsPointer pConfig)
         : EngineControl(group, pConfig) {
     // Turn quantize OFF by default. See Bug #898213
-    m_pCOQuantizeEnabled = new ControlPushButton(ConfigKey(group, "quantize"), true);
+    m_pCOQuantizeEnabled = new ControlPushButton(ConfigKey(group, "quantize"), this,true);
     m_pCOQuantizeEnabled->setButtonMode(ControlPushButton::TOGGLE);
-    m_pCONextBeat = new ControlObject(ConfigKey(group, "beat_next"));
+    m_pCONextBeat = new ControlObject(ConfigKey(group, "beat_next"),this);
     m_pCONextBeat->set(-1);
-    m_pCOPrevBeat = new ControlObject(ConfigKey(group, "beat_prev"));
+    m_pCOPrevBeat = new ControlObject(ConfigKey(group, "beat_prev"),this);
     m_pCOPrevBeat->set(-1);
-    m_pCOClosestBeat = new ControlObject(ConfigKey(group, "beat_closest"));
+    m_pCOClosestBeat = new ControlObject(ConfigKey(group, "beat_closest"),this);
     m_pCOClosestBeat->set(-1);
 }
 

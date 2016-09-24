@@ -48,9 +48,9 @@ BpmControl::BpmControl(QString group,
     m_pRateDir->connectValueChanged(SLOT(slotAdjustRateSlider()),
             Qt::AutoConnection);
 
-    m_pPrevBeat.reset(new ControlProxy(group, "beat_prev"));
-    m_pNextBeat.reset(new ControlProxy(group, "beat_next"));
-    m_pClosestBeat.reset(new ControlProxy(group, "beat_closest"));
+    m_pPrevBeat.reset(new ControlProxy(group, "beat_prev",this));
+    m_pNextBeat.reset(new ControlProxy(group, "beat_next",this));
+    m_pClosestBeat.reset(new ControlProxy(group, "beat_closest",this));
 
     m_pLoopEnabled = new ControlProxy(group, "loop_enabled", this);
     m_pLoopStartPosition = new ControlProxy(group, "loop_start_position", this);
@@ -58,24 +58,24 @@ BpmControl::BpmControl(QString group,
 
     m_pVCEnabled = new ControlProxy(group, "vinylcontrol_enabled", this);
 
-    m_pFileBpm = new ControlObject(ConfigKey(group, "file_bpm"));
+    m_pFileBpm = new ControlObject(ConfigKey(group, "file_bpm"),this);
     connect(m_pFileBpm, SIGNAL(valueChanged(double)),
             this, SLOT(slotFileBpmChanged(double)),
             Qt::AutoConnection);
-    m_pLocalBpm = new ControlObject(ConfigKey(group, "local_bpm"));
-    m_pAdjustBeatsFaster = new ControlPushButton(ConfigKey(group, "beats_adjust_faster"), false);
+    m_pLocalBpm = new ControlObject(ConfigKey(group, "local_bpm"),this);
+    m_pAdjustBeatsFaster = new ControlPushButton(ConfigKey(group, "beats_adjust_faster"),this, false);
     connect(m_pAdjustBeatsFaster, SIGNAL(valueChanged(double)),
             this, SLOT(slotAdjustBeatsFaster(double)),
             Qt::AutoConnection);
-    m_pAdjustBeatsSlower = new ControlPushButton(ConfigKey(group, "beats_adjust_slower"), false);
+    m_pAdjustBeatsSlower = new ControlPushButton(ConfigKey(group, "beats_adjust_slower"),this, false);
     connect(m_pAdjustBeatsSlower, SIGNAL(valueChanged(double)),
             this, SLOT(slotAdjustBeatsSlower(double)),
             Qt::AutoConnection);
-    m_pTranslateBeatsEarlier = new ControlPushButton(ConfigKey(group, "beats_translate_earlier"), false);
+    m_pTranslateBeatsEarlier = new ControlPushButton(ConfigKey(group, "beats_translate_earlier"),this, false);
     connect(m_pTranslateBeatsEarlier, SIGNAL(valueChanged(double)),
             this, SLOT(slotTranslateBeatsEarlier(double)),
             Qt::AutoConnection);
-    m_pTranslateBeatsLater = new ControlPushButton(ConfigKey(group, "beats_translate_later"), false);
+    m_pTranslateBeatsLater = new ControlPushButton(ConfigKey(group, "beats_translate_later"),this, false);
     connect(m_pTranslateBeatsLater, SIGNAL(valueChanged(double)),
             this, SLOT(slotTranslateBeatsLater(double)),
             Qt::AutoConnection);
@@ -85,38 +85,38 @@ BpmControl::BpmControl(QString group,
     // bpm_down controls.
     // bpm_up / bpm_down steps by 1
     // bpm_up_small / bpm_down_small steps by 0.1
-    m_pEngineBpm = new ControlLinPotmeter(ConfigKey(group, "bpm"), 1, 200, 1, 0.1, true);
+    m_pEngineBpm = new ControlLinPotmeter(ConfigKey(group, "bpm"), this,1, 200, 1, 0.1, true);
     connect(m_pEngineBpm, SIGNAL(valueChanged(double)),
             this, SLOT(slotSetEngineBpm(double)),
             Qt::AutoConnection);
 
-    m_pButtonTap = new ControlPushButton(ConfigKey(group, "bpm_tap"));
+    m_pButtonTap = new ControlPushButton(ConfigKey(group, "bpm_tap"),this);
     connect(m_pButtonTap, SIGNAL(valueChanged(double)),
             this, SLOT(slotBpmTap(double)),
             Qt::AutoConnection);
 
     // Beat sync (scale buffer tempo relative to tempo of other buffer)
-    m_pButtonSync = new ControlPushButton(ConfigKey(group, "beatsync"));
+    m_pButtonSync = new ControlPushButton(ConfigKey(group, "beatsync"),this);
     connect(m_pButtonSync, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlBeatSync(double)),
             Qt::AutoConnection);
 
-    m_pButtonSyncPhase = new ControlPushButton(ConfigKey(group, "beatsync_phase"));
+    m_pButtonSyncPhase = new ControlPushButton(ConfigKey(group, "beatsync_phase"),this);
     connect(m_pButtonSyncPhase, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlBeatSyncPhase(double)),
             Qt::AutoConnection);
 
-    m_pButtonSyncTempo = new ControlPushButton(ConfigKey(group, "beatsync_tempo"));
+    m_pButtonSyncTempo = new ControlPushButton(ConfigKey(group, "beatsync_tempo"),this);
     connect(m_pButtonSyncTempo, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlBeatSyncTempo(double)),
             Qt::AutoConnection);
 
-    m_pTranslateBeats = new ControlPushButton(ConfigKey(group, "beats_translate_curpos"));
+    m_pTranslateBeats = new ControlPushButton(ConfigKey(group, "beats_translate_curpos"),this);
     connect(m_pTranslateBeats, SIGNAL(valueChanged(double)),
             this, SLOT(slotBeatsTranslate(double)),
             Qt::AutoConnection);
 
-    m_pBeatsTranslateMatchAlignment = new ControlPushButton(ConfigKey(group, "beats_translate_match_alignment"));
+    m_pBeatsTranslateMatchAlignment = new ControlPushButton(ConfigKey(group, "beats_translate_match_alignment"),this);
     connect(m_pBeatsTranslateMatchAlignment, SIGNAL(valueChanged(double)),
             this, SLOT(slotBeatsTranslateMatchAlignment(double)),
             Qt::AutoConnection);

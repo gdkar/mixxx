@@ -24,7 +24,7 @@ KeyControl::KeyControl(QString group,
 
     // pitch is the distance to the original pitch in semitones
     // knob in semitones; 9.4 ct per midi step allowOutOfBounds = true;
-    m_pPitch = new ControlPotmeter(ConfigKey(group, "pitch"), -6.0, 6.0, true);
+    m_pPitch = new ControlPotmeter(ConfigKey(group, "pitch"),this, -6.0, 6.0, true);
     // Course adjust by full semitone steps.
     m_pPitch->setStepCount(12);
     // Fine adjust with semitone / 10 = 10 ct;.
@@ -36,7 +36,7 @@ KeyControl::KeyControl(QString group,
     // pitch_adjust is the distance to the linear pitch in semitones
     // set by the speed slider or to the locked key.
     // pitch_adjust knob in semitones; 4.7 ct per midi step; allowOutOfBounds = true;
-    m_pPitchAdjust = new ControlPotmeter(ConfigKey(group, "pitch_adjust"), -3.0, 3.0, true);
+    m_pPitchAdjust = new ControlPotmeter(ConfigKey(group, "pitch_adjust"),this, -3.0, 3.0, true);
     // Course adjust by full semitone steps.
     m_pPitchAdjust->setStepCount(6);
     // Fine adjust with semitone / 10 = 10 ct;.
@@ -45,33 +45,33 @@ KeyControl::KeyControl(QString group,
             this, SLOT(slotPitchAdjustChanged(double)),
             Qt::DirectConnection);
 
-    m_pButtonSyncKey = new ControlPushButton(ConfigKey(group, "sync_key"));
+    m_pButtonSyncKey = new ControlPushButton(ConfigKey(group, "sync_key"),this);
     connect(m_pButtonSyncKey, SIGNAL(valueChanged(double)),
             this, SLOT(slotSyncKey(double)),
             Qt::DirectConnection);
 
-    m_pButtonResetKey = new ControlPushButton(ConfigKey(group, "reset_key"));
+    m_pButtonResetKey = new ControlPushButton(ConfigKey(group, "reset_key"),this);
     connect(m_pButtonResetKey, SIGNAL(valueChanged(double)),
             this, SLOT(slotResetKey(double)),
             Qt::DirectConnection);
 
-    m_pFileKey = new ControlObject(ConfigKey(group, "file_key"));
+    m_pFileKey = new ControlObject(ConfigKey(group, "file_key"),this);
     connect(m_pFileKey, SIGNAL(valueChanged(double)),
             this, SLOT(slotFileKeyChanged(double)),
             Qt::DirectConnection);
 
-    m_pEngineKey = new ControlObject(ConfigKey(group, "key"));
+    m_pEngineKey = new ControlObject(ConfigKey(group, "key"),this);
     connect(m_pEngineKey, SIGNAL(valueChanged(double)),
             this, SLOT(slotSetEngineKey(double)),
             Qt::DirectConnection);
 
-    m_pEngineKeyDistance = new ControlPotmeter(ConfigKey(group, "visual_key_distance"),
+    m_pEngineKeyDistance = new ControlPotmeter(ConfigKey(group, "visual_key_distance"),this,
                                                -0.5, 0.5);
     connect(m_pEngineKeyDistance, SIGNAL(valueChanged(double)),
             this, SLOT(slotSetEngineKeyDistance(double)),
             Qt::DirectConnection);
 
-    m_keylockMode = new ControlPushButton(ConfigKey(group, "keylockMode"));
+    m_keylockMode = new ControlPushButton(ConfigKey(group, "keylockMode"),this);
     m_keylockMode->setButtonMode(ControlPushButton::TOGGLE);
 
     // In case of vinyl control "rate" is a filtered mean value for display

@@ -20,15 +20,15 @@ EnginePregain::EnginePregain(QObject *p, QString group)
           m_scratching(false),
           m_fPrevGain(1.0),
           m_bSmoothFade(false) {
-    m_pPotmeterPregain = new ControlAudioTaperPot(ConfigKey(group, "pregain"), -12, 12, 0.5);
+    m_pPotmeterPregain = new ControlAudioTaperPot(ConfigKey(group, "pregain"),this, -12, 12, 0.5);
     //Replay Gain things
     m_pCOReplayGain = new ControlObject(ConfigKey(group, "replaygain"),this);
     m_pTotalGain = new ControlObject(ConfigKey(group, "total_gain"),this);
     m_pPassthroughEnabled = new ControlObject(ConfigKey(group, "passthrough"),this);
 
     if (s_pReplayGainBoost == NULL) {
-        s_pReplayGainBoost = new ControlAudioTaperPot(ConfigKey("[ReplayGain]", "ReplayGainBoost"), -12, 12, 0.5);
-        s_pDefaultBoost = new ControlAudioTaperPot(ConfigKey("[ReplayGain]", "DefaultBoost"), -12, 12, 0.5);
+        s_pReplayGainBoost = new ControlAudioTaperPot(ConfigKey("[ReplayGain]", "ReplayGainBoost"),this, -12, 12, 0.5);
+        s_pDefaultBoost = new ControlAudioTaperPot(ConfigKey("[ReplayGain]", "DefaultBoost"),this, -12, 12, 0.5);
         s_pEnableReplayGain = new ControlObject(ConfigKey("[ReplayGain]", "ReplayGainEnabled"),this);
     }
 }

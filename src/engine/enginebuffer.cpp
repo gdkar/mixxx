@@ -109,16 +109,12 @@ EngineBuffer::EngineBuffer(QObject *p, QString group, UserSettingsPointer pConfi
     connect(m_playing, &ControlObject::valueChanged, this, &EngineBuffer::playingChanged);
 
     // Play button
-    m_playButton = new ControlPushButton(ConfigKey(m_group, "play"));
+    m_playButton = new ControlPushButton(ConfigKey(m_group, "play"),this);
     m_playButton->setButtonMode(ControlPushButton::TOGGLE);
     connect(m_playButton, &ControlObject::valueChanged
       , this, [this](double v) {  setPlaying(v);});
-//    m_playButton->connectValueChangeRequest(
-//            this, SLOT(slotControlPlayRequest(double)),
-//            Qt::AutoConnection);
-
     //Play from Start Button (for sampler)
-    m_playStartButton = new ControlPushButton(ConfigKey(m_group, "start_play"));
+    m_playStartButton = new ControlPushButton(ConfigKey(m_group, "start_play"),this);
     connect(m_playStartButton, &ControlObject::valueChanged
       , this, [this](double v) {
         if(v) {
@@ -127,12 +123,8 @@ EngineBuffer::EngineBuffer(QObject *p, QString group, UserSettingsPointer pConfi
         }
       });
 
-/*    connect(m_playStartButton, SIGNAL(valueChanged(double)),
-            this, SLOT(slotControlPlayFromStart(double)),
-            Qt::AutoConnection);*/
-
     // Jump to start and stop button
-    m_stopStartButton = new ControlPushButton(ConfigKey(m_group, "start_stop"));
+    m_stopStartButton = new ControlPushButton(ConfigKey(m_group, "start_stop"),this);
     connect(m_stopStartButton, &ControlObject::valueChanged
       , this, [this](double v) {
         if(v) {
@@ -140,37 +132,25 @@ EngineBuffer::EngineBuffer(QObject *p, QString group, UserSettingsPointer pConfi
             setPlaying(false);
         }
       });
-/*    connect(m_stopStartButton, SIGNAL(valueChanged(double)),
-            this, SLOT(slotControlJumpToStartAndStop(double)),
-            Qt::AutoConnection);*/
 
     //Stop playback (for sampler)
-    m_stopButton = new ControlPushButton(ConfigKey(m_group, "stop"));
-/*    connect(m_stopButton, SIGNAL(valueChanged(double)),
-            this, SLOT(slotControlStop(double)),
-            Qt::AutoConnection);*/
+    m_stopButton = new ControlPushButton(ConfigKey(m_group, "stop"),this);
     connect(m_stopButton,&ControlObject::valueChanged
       , this, [this](double v) { setPlaying(!v);});
 
     // Start button
-    m_startButton = new ControlPushButton(ConfigKey(m_group, "start"));
+    m_startButton = new ControlPushButton(ConfigKey(m_group, "start"),this);
     m_startButton->setButtonMode(ControlPushButton::TRIGGER);
     connect(m_startButton, &ControlObject::valueChanged
       , this, [this](double v) { if(v){doSeekFractional(0., SeekRequest::Exact);}});
-/*    connect(m_startButton, SIGNAL(valueChanged(double)),
-            this, SLOT(slotControlStart(double)),
-            Qt::AutoConnection);*/
 
     // End button
-    m_endButton = new ControlPushButton(ConfigKey(m_group, "end"));
+    m_endButton = new ControlPushButton(ConfigKey(m_group, "end"),this);
     connect(m_endButton, &ControlObject::valueChanged
       , this, [this](double v) { if(v){doSeekFractional(1., SeekRequest::Exact);}});
 
-/*    connect(m_endButton, SIGNAL(valueChanged(double)),
-            this, SLOT(slotControlEnd(double)),
-            Qt::AutoConnection);*/
 
-    m_pSlipButton = new ControlPushButton(ConfigKey(m_group, "slip_enabled"));
+    m_pSlipButton = new ControlPushButton(ConfigKey(m_group, "slip_enabled"),this);
     m_pSlipButton->setButtonMode(ControlPushButton::TOGGLE);
     connect(m_pSlipButton, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlSlip(double)),
@@ -188,7 +168,7 @@ EngineBuffer::EngineBuffer(QObject *p, QString group, UserSettingsPointer pConfi
     // Control used to communicate ratio playpos to GUI thread
     m_visualPlayPos = VisualPlayPosition::getVisualPlayPosition(m_group);
 
-    m_pRepeat = new ControlPushButton(ConfigKey(m_group, "repeat"));
+    m_pRepeat = new ControlPushButton(ConfigKey(m_group, "repeat"),this);
     m_pRepeat->setButtonMode(ControlPushButton::TOGGLE);
 
     // Sample rate
@@ -198,13 +178,13 @@ EngineBuffer::EngineBuffer(QObject *p, QString group, UserSettingsPointer pConfi
     m_pKeylockEngine->connectValueChanged(SLOT(slotKeylockEngineChanged(double)),
                                           Qt::AutoConnection);
 
-    m_pTrackSamples = new ControlObject(ConfigKey(m_group, "track_samples"));
-    m_pTrackSampleRate = new ControlObject(ConfigKey(m_group, "track_samplerate"));
+    m_pTrackSamples = new ControlObject(ConfigKey(m_group, "track_samples"),this);
+    m_pTrackSampleRate = new ControlObject(ConfigKey(m_group, "track_samplerate"),this);
 
-    m_pKeylock = new ControlPushButton(ConfigKey(m_group, "keylock"), true);
+    m_pKeylock = new ControlPushButton(ConfigKey(m_group, "keylock"), this,true);
     m_pKeylock->setButtonMode(ControlPushButton::TOGGLE);
 
-    m_pEject = new ControlPushButton(ConfigKey(m_group, "eject"));
+    m_pEject = new ControlPushButton(ConfigKey(m_group, "eject"),this);
     connect(m_pEject, SIGNAL(valueChanged(double)),
             this, SLOT(slotEjectTrack(double)),
             Qt::AutoConnection);
@@ -287,7 +267,8 @@ EngineBuffer::EngineBuffer(QObject *p, QString group, UserSettingsPointer pConfi
     setEngineMaster(pMixingEngine);
 }
 
-EngineBuffer::~EngineBuffer() {
+EngineBuffer::~EngineBuffer()
+{
     delete m_pReadAheadManager;
     delete m_pReader;
 
@@ -317,12 +298,12 @@ EngineBuffer::~EngineBuffer() {
     delete m_pEject;
 
     SampleUtil::free(m_pCrossfadeBuffer);
-
     qDeleteAll(m_engineControls);
 }
 
-double EngineBuffer::fractionalPlayposFromAbsolute(double absolutePlaypos) {
-    double fFractionalPlaypos = 0.0;
+double EngineBuffer::fractionalPlayposFromAbsolute(double absolutePlaypos)
+{
+    auto fFractionalPlaypos = 0.0;
     if (m_trackSamplesOld != 0.) {
         fFractionalPlaypos = math_min<double>(absolutePlaypos, m_trackSamplesOld);
         fFractionalPlaypos /= m_trackSamplesOld;
@@ -483,7 +464,7 @@ void EngineBuffer::setNewPlaypos(double newpos)
         // Before seeking, read extra buffer for crossfading
         // (calls notifySeek())
         readToCrossfadeBuffer(m_iLastBufferSize);
-        clearAndPreroll(m_filepos_play,256);
+//        clearAndPreroll(m_filepos_play,256);
 //        readToCrossfadeBuffer(m_iLastBufferSize);
     } else {
 //        clearAndPreroll(m_filepos_play,256);
@@ -551,14 +532,12 @@ void EngineBuffer::slotTrackLoaded(TrackPointer pTrack,
     m_dSlipRate = 0;
     // Reset the pitch value for the new track.
     m_pause.unlock();
-
     // All EngineControls are connected directly
     emit(trackLoaded(pTrack, pOldTrack));
     // Start buffer processing after all EngineContols are up to date
     // with the current track e.g track is seeked to Cue
     m_iTrackLoading = 0;
 }
-
 // WARNING: Always called from the EngineWorker thread pool
 void EngineBuffer::slotTrackLoadFailed(TrackPointer pTrack,
                                        QString reason)
@@ -604,13 +583,11 @@ void EngineBuffer::slotPassthroughChanged(double enabled) {
         slotControlStop(1.0);
     }
 }
-
 // WARNING: This method runs in both the GUI thread and the Engine Thread
 void EngineBuffer::slotControlSeek(double fractionalPos)
 {
     doSeekFractional(fractionalPos, SeekRequest::Standard);
 }
-
 // WARNING: This method runs from SyncWorker and Engine Worker
 void EngineBuffer::slotControlSeekAbs(double playPosition)
 {
@@ -1288,8 +1265,8 @@ void EngineBuffer::loadTrack(TrackPointer pTrack, bool play) {
 void EngineBuffer::addControl(EngineControl* pControl)
 {
     // Connect to signals from EngineControl here...
+    pControl->setParent(this);
     m_engineControls.push_back(pControl);
-    pControl->setEngineBuffer(this);
     connect(this, SIGNAL(trackLoaded(TrackPointer, TrackPointer)),
             pControl, SLOT(trackLoaded(TrackPointer, TrackPointer)),
             Qt::AutoConnection);

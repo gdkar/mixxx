@@ -25,7 +25,8 @@
 #include "util/stat.h"
 #include "util/timer.h"
 
-ControlObject::ControlObject(QObject *p) : QObject(p) {
+ControlObject::ControlObject(QObject *p) : QObject(p)
+{
     if(auto pControl = qobject_cast<ControlDoublePrivate*>(p)) {
         m_pControl = pControl->sharedFromThis();
         connect(m_pControl.data(), &ControlDoublePrivate::valueChanged,
@@ -66,11 +67,6 @@ ControlObject::ControlObject(QObject *p) : QObject(p) {
 //        m_pControl.reset();
     }
 }
-ControlObject::ControlObject(ConfigKey key, QObject *p)
-: ControlObject(p)
-{
-    initialize(key, true,false,false);
-}
 
 QSharedPointer<ControlDoublePrivate> ControlObject::control() const
 {
@@ -78,12 +74,14 @@ QSharedPointer<ControlDoublePrivate> ControlObject::control() const
         return m_pControl;
     return m_wControl.lock();
 }
-ControlObject::ControlObject(ConfigKey key, bool bIgnoreNops, bool bTrack,
-                             bool bPersist) {
+ControlObject::ControlObject(ConfigKey key, QObject *pParent, bool bIgnoreNops, bool bTrack,
+                             bool bPersist)
+:ControlObject(pParent)
+{
     initialize(key, bIgnoreNops, bTrack, bPersist);
 }
 
-ControlObject::~ControlObject() { }
+ControlObject::~ControlObject() = default;
 void ControlObject::trigger()
 {
     if(auto co = control())
@@ -93,12 +91,9 @@ void ControlObject::initialize(ConfigKey key, bool bIgnoreNops, bool bTrack,
                                bool bPersist)
 {
     m_key = key;
-
     // Don't bother looking up the control if key is NULL. Prevents log spew.
     if (!m_key.isNull()) {
-            m_pControl = ControlDoublePrivate::getControl(m_key, true,
-                                                        bIgnoreNops, bTrack,
-                                                        bPersist);
+            m_pControl = ControlDoublePrivate::getControl(m_key, true,bIgnoreNops, bTrack,bPersist);
 
         // getControl can fail and return a NULL control even with the create flag.
         if (m_pControl) {

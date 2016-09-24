@@ -14,27 +14,27 @@ EffectSlot::EffectSlot(const QString& group,
         : m_iChainNumber(iChainNumber),
           m_iEffectNumber(iEffectnumber),
           m_group(group) {
-    m_pControlLoaded = new ControlObject(ConfigKey(m_group, "loaded"));
+    m_pControlLoaded = new ControlObject(ConfigKey(m_group, "loaded"),this);
     m_pControlLoaded->connectValueChangeRequest(
         this, SLOT(slotLoaded(double)));
 
-    m_pControlNumParameters = new ControlObject(ConfigKey(m_group, "num_parameters"));
+    m_pControlNumParameters = new ControlObject(ConfigKey(m_group, "num_parameters"),this);
     m_pControlNumParameters->connectValueChangeRequest(
         this, SLOT(slotNumParameters(double)));
 
-    m_pControlNumParameterSlots = new ControlObject(ConfigKey(m_group, "num_parameterslots"));
+    m_pControlNumParameterSlots = new ControlObject(ConfigKey(m_group, "num_parameterslots"),this);
     m_pControlNumParameterSlots->connectValueChangeRequest(
         this, SLOT(slotNumParameterSlots(double)));
 
-    m_pControlNumButtonParameters = new ControlObject(ConfigKey(m_group, "num_button_parameters"));
+    m_pControlNumButtonParameters = new ControlObject(ConfigKey(m_group, "num_button_parameters"),this);
     m_pControlNumButtonParameters->connectValueChangeRequest(
         this, SLOT(slotNumParameters(double)));
 
-    m_pControlNumButtonParameterSlots = new ControlObject(ConfigKey(m_group, "num_button_parameterslots"));
+    m_pControlNumButtonParameterSlots = new ControlObject(ConfigKey(m_group, "num_button_parameterslots"),this);
     m_pControlNumButtonParameterSlots->connectValueChangeRequest(
         this, SLOT(slotNumParameterSlots(double)));
 
-    m_pControlEnabled = new ControlPushButton(ConfigKey(m_group, "enabled"));
+    m_pControlEnabled = new ControlPushButton(ConfigKey(m_group, "enabled"),this);
     m_pControlEnabled->setButtonMode(ControlPushButton::POWERWINDOW);
     // Default to enabled. The skin might not show these buttons.
     m_pControlEnabled->setDefaultValue(true);
@@ -42,20 +42,20 @@ EffectSlot::EffectSlot(const QString& group,
     connect(m_pControlEnabled, SIGNAL(valueChanged(double)),
             this, SLOT(slotEnabled(double)));
 
-    m_pControlNextEffect = new ControlPushButton(ConfigKey(m_group, "next_effect"));
+    m_pControlNextEffect = new ControlPushButton(ConfigKey(m_group, "next_effect"),this);
     connect(m_pControlNextEffect, SIGNAL(valueChanged(double)),
             this, SLOT(slotNextEffect(double)));
 
-    m_pControlPrevEffect = new ControlPushButton(ConfigKey(m_group, "prev_effect"));
+    m_pControlPrevEffect = new ControlPushButton(ConfigKey(m_group, "prev_effect"),this);
     connect(m_pControlPrevEffect, SIGNAL(valueChanged(double)),
             this, SLOT(slotPrevEffect(double)));
 
     // Ignoring no-ops is important since this is for +/- tickers.
-    m_pControlEffectSelector = new ControlObject(ConfigKey(m_group, "effect_selector"), false);
+    m_pControlEffectSelector = new ControlObject(ConfigKey(m_group, "effect_selector"), this,false);
     connect(m_pControlEffectSelector, SIGNAL(valueChanged(double)),
             this, SLOT(slotEffectSelector(double)));
 
-    m_pControlClear = new ControlPushButton(ConfigKey(m_group, "clear"));
+    m_pControlClear = new ControlPushButton(ConfigKey(m_group, "clear"),this);
     connect(m_pControlClear, SIGNAL(valueChanged(double)),
             this, SLOT(slotClear(double)));
 

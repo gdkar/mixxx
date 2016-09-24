@@ -7,8 +7,8 @@
 VinylControlControl::VinylControlControl(QString group, UserSettingsPointer pConfig)
         : EngineControl(group, pConfig),
           m_bSeekRequested(false) {
-    m_pControlVinylStatus = new ControlObject(ConfigKey(group, "vinylcontrol_status"));
-    m_pControlVinylSpeedType = new ControlObject(ConfigKey(group, "vinylcontrol_speed_type"));
+    m_pControlVinylStatus = new ControlObject(ConfigKey(group, "vinylcontrol_status"),this);
+    m_pControlVinylSpeedType = new ControlObject(ConfigKey(group, "vinylcontrol_speed_type"),this);
 
     //Convert the ConfigKey's value into a double for the CO (for fast reads).
     auto strVinylSpeedType = pConfig->getValueString(ConfigKey(group,
@@ -21,28 +21,28 @@ VinylControlControl::VinylControlControl(QString group, UserSettingsPointer pCon
         m_pControlVinylSpeedType->set(MIXXX_VINYL_SPEED_33_NUM);
     }
 
-    m_pControlVinylSeek = new ControlObject(ConfigKey(group, "vinylcontrol_seek"));
+    m_pControlVinylSeek = new ControlObject(ConfigKey(group, "vinylcontrol_seek"),this);
     connect(m_pControlVinylSeek, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlVinylSeek(double)),
             Qt::DirectConnection);
 
-    m_pControlVinylRate = new ControlObject(ConfigKey(group, "vinylcontrol_rate"));
-    m_pControlVinylScratching = new ControlPushButton(ConfigKey(group, "vinylcontrol_scratching"));
+    m_pControlVinylRate = new ControlObject(ConfigKey(group, "vinylcontrol_rate"),this);
+    m_pControlVinylScratching = new ControlPushButton(ConfigKey(group, "vinylcontrol_scratching"),this);
     m_pControlVinylScratching->set(0);
     m_pControlVinylScratching->setButtonMode(ControlPushButton::TOGGLE);
-    m_pControlVinylEnabled = new ControlPushButton(ConfigKey(group, "vinylcontrol_enabled"));
+    m_pControlVinylEnabled = new ControlPushButton(ConfigKey(group, "vinylcontrol_enabled"),this);
     m_pControlVinylEnabled->set(0);
     m_pControlVinylEnabled->setButtonMode(ControlPushButton::TOGGLE);
-    m_pControlVinylWantEnabled = new ControlPushButton(ConfigKey(group, "vinylcontrol_wantenabled"));
+    m_pControlVinylWantEnabled = new ControlPushButton(ConfigKey(group, "vinylcontrol_wantenabled"),this);
     m_pControlVinylWantEnabled->set(0);
     m_pControlVinylWantEnabled->setButtonMode(ControlPushButton::TOGGLE);
-    m_pControlVinylMode = new ControlPushButton(ConfigKey(group, "vinylcontrol_mode"));
+    m_pControlVinylMode = new ControlPushButton(ConfigKey(group, "vinylcontrol_mode"),this);
     m_pControlVinylMode->setStates(3);
     m_pControlVinylMode->setButtonMode(ControlPushButton::TOGGLE);
-    m_pControlVinylCueing = new ControlPushButton(ConfigKey(group, "vinylcontrol_cueing"));
+    m_pControlVinylCueing = new ControlPushButton(ConfigKey(group, "vinylcontrol_cueing"),this);
     m_pControlVinylCueing->setStates(3);
     m_pControlVinylCueing->setButtonMode(ControlPushButton::TOGGLE);
-    m_pControlVinylSignalEnabled = new ControlPushButton(ConfigKey(group, "vinylcontrol_signal_enabled"));
+    m_pControlVinylSignalEnabled = new ControlPushButton(ConfigKey(group, "vinylcontrol_signal_enabled"),this);
     m_pControlVinylSignalEnabled->set(1);
     m_pControlVinylSignalEnabled->setButtonMode(ControlPushButton::TOGGLE);
 

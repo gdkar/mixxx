@@ -75,10 +75,10 @@ BaseTrackPlayer::BaseTrackPlayer(
     m_pLoopOutPoint = new ControlProxy( getGroup(),"loop_end_position", this);
 
     // Duration of the current song, we create this one because nothing else does.
-    m_pDuration = new ControlObject(ConfigKey(getGroup(), "duration"));
+    m_pDuration = new ControlObject(ConfigKey(getGroup(), "duration"),this);
 
     // Waveform controls
-    m_pWaveformZoom = new ControlPotmeter(ConfigKey(group, "waveform_zoom"),
+    m_pWaveformZoom = new ControlPotmeter(ConfigKey(group, "waveform_zoom"),this,
                                           WaveformWidgetRenderer::s_waveformMinZoom,
                                           WaveformWidgetRenderer::s_waveformMaxZoom);
     m_pWaveformZoom->set(1.0);
@@ -87,7 +87,7 @@ BaseTrackPlayer::BaseTrackPlayer(
     m_pWaveformZoom->setSmallStepCount(WaveformWidgetRenderer::s_waveformMaxZoom -
             WaveformWidgetRenderer::s_waveformMinZoom);
 
-    m_pEndOfTrack = new ControlObject(ConfigKey(group, "end_of_track"));
+    m_pEndOfTrack = new ControlObject(ConfigKey(group, "end_of_track"),this);
     m_pEndOfTrack->set(0.);
 
     m_pPreGain = new ControlProxy(group, "pregain", this);

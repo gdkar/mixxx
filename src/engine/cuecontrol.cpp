@@ -43,56 +43,56 @@ CueControl::CueControl(QString group,
     m_pNextBeat = new ControlObject(ConfigKey(group, "beat_next"),this);
     m_pClosestBeat = new ControlObject(ConfigKey(group, "beat_closest"),this);
 
-    m_pCuePoint = new ControlObject(ConfigKey(group, "cue_point"));
+    m_pCuePoint = new ControlObject(ConfigKey(group, "cue_point"),this);
     m_pCuePoint->set(-1.0);
 
     m_pCueMode = new ControlObject(ConfigKey(group, "cue_mode"),this);
 
-    m_pCueSet = new ControlPushButton(ConfigKey(group, "cue_set"));
+    m_pCueSet = new ControlPushButton(ConfigKey(group, "cue_set"),this);
     m_pCueSet->setButtonMode(ControlPushButton::TRIGGER);
     connect(m_pCueSet, SIGNAL(valueChanged(double)),
             this, SLOT(cueSet(double)),
             Qt::AutoConnection);
 
-    m_pCueGoto = new ControlPushButton(ConfigKey(group, "cue_goto"));
+    m_pCueGoto = new ControlPushButton(ConfigKey(group, "cue_goto"),this);
     connect(m_pCueGoto, SIGNAL(valueChanged(double)),
             this, SLOT(cueGoto(double)),
             Qt::AutoConnection);
 
     m_pCueGotoAndPlay =
-            new ControlPushButton(ConfigKey(group, "cue_gotoandplay"));
+            new ControlPushButton(ConfigKey(group, "cue_gotoandplay"),this);
     connect(m_pCueGotoAndPlay, SIGNAL(valueChanged(double)),
             this, SLOT(cueGotoAndPlay(double)),
             Qt::AutoConnection);
 
     m_pCuePlay =
-            new ControlPushButton(ConfigKey(group, "cue_play"));
+            new ControlPushButton(ConfigKey(group, "cue_play"),this);
     connect(m_pCuePlay, SIGNAL(valueChanged(double)),
             this, SLOT(cuePlay(double)),
             Qt::AutoConnection);
 
     m_pCueGotoAndStop =
-            new ControlPushButton(ConfigKey(group, "cue_gotoandstop"));
+            new ControlPushButton(ConfigKey(group, "cue_gotoandstop"),this);
     connect(m_pCueGotoAndStop, SIGNAL(valueChanged(double)),
             this, SLOT(cueGotoAndStop(double)),
             Qt::AutoConnection);
 
-    m_pCuePreview = new ControlPushButton(ConfigKey(group, "cue_preview"));
+    m_pCuePreview = new ControlPushButton(ConfigKey(group, "cue_preview"),this);
     connect(m_pCuePreview, SIGNAL(valueChanged(double)),
             this, SLOT(cuePreview(double)),
             Qt::AutoConnection);
 
-    m_pCueCDJ = new ControlPushButton(ConfigKey(group, "cue_cdj"));
+    m_pCueCDJ = new ControlPushButton(ConfigKey(group, "cue_cdj"),this);
     connect(m_pCueCDJ, SIGNAL(valueChanged(double)),
             this, SLOT(cueCDJ(double)),
             Qt::AutoConnection);
 
-    m_pCueDefault = new ControlPushButton(ConfigKey(group, "cue_default"));
+    m_pCueDefault = new ControlPushButton(ConfigKey(group, "cue_default"),this);
     connect(m_pCueDefault, SIGNAL(valueChanged(double)),
             this, SLOT(cueDefault(double)),
             Qt::AutoConnection);
 
-    m_pPlayStutter = new ControlPushButton(ConfigKey(group, "play_stutter"));
+    m_pPlayStutter = new ControlPushButton(ConfigKey(group, "play_stutter"),this);
     connect(m_pPlayStutter, SIGNAL(valueChanged(double)),
             this, SLOT(playStutter(double)),
             Qt::AutoConnection);
@@ -100,8 +100,8 @@ CueControl::CueControl(QString group,
     m_pCueIndicator = new ControlIndicator(ConfigKey(group, "cue_indicator"));
     m_pPlayIndicator = new ControlIndicator(ConfigKey(group, "play_indicator"));
 
-    m_pVinylControlEnabled = new ControlProxy(group, "vinylcontrol_enabled");
-    m_pVinylControlMode = new ControlProxy(group, "vinylcontrol_mode");
+    m_pVinylControlEnabled = new ControlProxy(group, "vinylcontrol_enabled",this);
+    m_pVinylControlMode = new ControlProxy(group, "vinylcontrol_mode",this);
 }
 
 CueControl::~CueControl() {
@@ -1031,46 +1031,46 @@ HotcueControl::HotcueControl(QString group, int i)
           m_pCue(NULL),
           m_bPreviewing(false),
           m_iPreviewingPosition(-1) {
-    m_hotcuePosition = new ControlObject(keyForControl(i, "position"));
+    m_hotcuePosition = new ControlObject(keyForControl(i, "position"),this);
     connect(m_hotcuePosition, SIGNAL(valueChanged(double)),
             this, SLOT(slotHotcuePositionChanged(double)),
             Qt::AutoConnection);
     m_hotcuePosition->set(-1);
 
-    m_hotcueEnabled = new ControlObject(keyForControl(i, "enabled"));
+    m_hotcueEnabled = new ControlObject(keyForControl(i, "enabled"),this);
     m_hotcueEnabled->set(0);
 
-    m_hotcueSet = new ControlPushButton(keyForControl(i, "set"));
+    m_hotcueSet = new ControlPushButton(keyForControl(i, "set"),this);
     connect(m_hotcueSet, SIGNAL(valueChanged(double)),
             this, SLOT(slotHotcueSet(double)),
             Qt::AutoConnection);
 
-    m_hotcueGoto = new ControlPushButton(keyForControl(i, "goto"));
+    m_hotcueGoto = new ControlPushButton(keyForControl(i, "goto"),this);
     connect(m_hotcueGoto, SIGNAL(valueChanged(double)),
             this, SLOT(slotHotcueGoto(double)),
             Qt::AutoConnection);
 
-    m_hotcueGotoAndPlay = new ControlPushButton(keyForControl(i, "gotoandplay"));
+    m_hotcueGotoAndPlay = new ControlPushButton(keyForControl(i, "gotoandplay"),this);
     connect(m_hotcueGotoAndPlay, SIGNAL(valueChanged(double)),
             this, SLOT(slotHotcueGotoAndPlay(double)),
             Qt::AutoConnection);
 
-    m_hotcueGotoAndStop = new ControlPushButton(keyForControl(i, "gotoandstop"));
+    m_hotcueGotoAndStop = new ControlPushButton(keyForControl(i, "gotoandstop"),this);
     connect(m_hotcueGotoAndStop, SIGNAL(valueChanged(double)),
             this, SLOT(slotHotcueGotoAndStop(double)),
             Qt::AutoConnection);
 
-    m_hotcueActivate = new ControlPushButton(keyForControl(i, "activate"));
+    m_hotcueActivate = new ControlPushButton(keyForControl(i, "activate"),this);
     connect(m_hotcueActivate, SIGNAL(valueChanged(double)),
             this, SLOT(slotHotcueActivate(double)),
             Qt::AutoConnection);
 
-    m_hotcueActivatePreview = new ControlPushButton(keyForControl(i, "activate_preview"));
+    m_hotcueActivatePreview = new ControlPushButton(keyForControl(i, "activate_preview"),this);
     connect(m_hotcueActivatePreview, SIGNAL(valueChanged(double)),
             this, SLOT(slotHotcueActivatePreview(double)),
             Qt::AutoConnection);
 
-    m_hotcueClear = new ControlPushButton(keyForControl(i, "clear"));
+    m_hotcueClear = new ControlPushButton(keyForControl(i, "clear"),this);
     connect(m_hotcueClear, SIGNAL(valueChanged(double)),
             this, SLOT(slotHotcueClear(double)),
             Qt::AutoConnection);

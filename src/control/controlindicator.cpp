@@ -2,22 +2,20 @@
 #include "control/controlproxy.h"
 #include "util/math.h"
 
-ControlIndicator::ControlIndicator(ConfigKey key)
-        : ControlObject(key, false),
+ControlIndicator::ControlIndicator(ConfigKey key, QObject *pParent )
+        : ControlObject(key, pParent, false),
           m_blinkValue(OFF),
-          m_nextSwitchTime(0.0) {
+          m_nextSwitchTime(0.0)
+{
     // Tick time in audio buffer resolution
     m_pCOTGuiTickTime = new ControlProxy("[Master]", "guiTickTime", this);
     m_pCOTGuiTick50ms = new ControlProxy("[Master]", "guiTick50ms", this);
     m_pCOTGuiTick50ms->connectValueChanged(SLOT(slotGuiTick50ms(double)));
-    connect(this, SIGNAL(blinkValueChanged()),
-            this, SLOT(slotBlinkValueChanged()));
+    connect(this, SIGNAL(blinkValueChanged()),this, SLOT(slotBlinkValueChanged()));
 }
-
-ControlIndicator::~ControlIndicator() {
-}
-
-void ControlIndicator::setBlinkValue(enum BlinkValue bv) {
+ControlIndicator::~ControlIndicator() = default;
+void ControlIndicator::setBlinkValue(enum BlinkValue bv)
+{
     if (m_blinkValue != bv) {
         m_blinkValue = bv; // must be set at first, to avoid timer toggle
         emit(blinkValueChanged());

@@ -38,7 +38,7 @@ EngineBroadcast::EngineBroadcast(UserSettingsPointer pConfig)
           m_iShoutFailures(0),
           m_pConfig(pConfig),
           m_encoder(nullptr),
-          m_pMasterSamplerate(new ControlProxy("[Master]", "samplerate")),
+          m_pMasterSamplerate(new ControlProxy("[Master]", "samplerate",this)),
           m_custom_metadata(false),
           m_firstCall(false),
           m_format_is_mp3(false),
@@ -51,12 +51,12 @@ EngineBroadcast::EngineBroadcast(UserSettingsPointer pConfig)
           m_pOutputFifo(nullptr) {
     const bool persist = true;
     m_pBroadcastEnabled = new ControlPushButton(
-            ConfigKey(BROADCAST_PREF_KEY,"enabled"), persist);
+            ConfigKey(BROADCAST_PREF_KEY,"enabled"),this, persist);
     m_pBroadcastEnabled->setButtonMode(ControlPushButton::TOGGLE);
     connect(m_pBroadcastEnabled, SIGNAL(valueChanged(double)),
             this, SLOT(slotEnableCO(double)));
 
-    m_pStatusCO = new ControlObject(ConfigKey(BROADCAST_PREF_KEY, "status"));
+    m_pStatusCO = new ControlObject(ConfigKey(BROADCAST_PREF_KEY, "status"),this);
     m_pStatusCO->connectValueChangeRequest(
             this, SLOT(slotStatusCO(double)));
     m_pStatusCO->setAndConfirm(STATUSCO_UNCONNECTED);

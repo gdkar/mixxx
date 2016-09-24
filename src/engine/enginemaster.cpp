@@ -61,15 +61,15 @@ EngineMaster::EngineMaster(UserSettingsPointer pConfig,
     }
 
     // Master sample rate
-    m_pMasterSampleRate = new ControlObject(ConfigKey(group, "samplerate"), true, true);
+    m_pMasterSampleRate = new ControlObject(ConfigKey(group, "samplerate"),this, true, true);
     m_pMasterSampleRate->set(44100.);
 
     // Latency control
-    m_pMasterLatency = new ControlObject(ConfigKey(group, "latency"), true, true);
-    m_pMasterAudioBufferSize = new ControlObject(ConfigKey(group, "audio_buffer_size"));
-    m_pAudioLatencyOverloadCount = new ControlObject(ConfigKey(group, "audio_latency_overload_count"), true, true);
-    m_pAudioLatencyUsage = new ControlPotmeter(ConfigKey(group, "audio_latency_usage"), 0.0, 0.25);
-    m_pAudioLatencyOverload  = new ControlPotmeter(ConfigKey(group, "audio_latency_overload"), 0.0, 1.0);
+    m_pMasterLatency = new ControlObject(ConfigKey(group, "latency"),this, true, true);
+    m_pMasterAudioBufferSize = new ControlObject(ConfigKey(group, "audio_buffer_size"),this);
+    m_pAudioLatencyOverloadCount = new ControlObject(ConfigKey(group, "audio_latency_overload_count"),this, true, true);
+    m_pAudioLatencyUsage = new ControlPotmeter(ConfigKey(group, "audio_latency_usage"),this, 0.0, 0.25);
+    m_pAudioLatencyOverload  = new ControlPotmeter(ConfigKey(group, "audio_latency_overload"),this, 0.0, 1.0);
 
     // Master sync controller
     m_pMasterSync = new EngineSync(pConfig);
@@ -79,13 +79,13 @@ EngineMaster::EngineMaster(UserSettingsPointer pConfig,
     ControlObject::set(ConfigKey("[InternalClock]","bpm"),default_bpm);
 
     // Crossfader
-    m_pCrossfader = new ControlPotmeter(ConfigKey(group, "crossfader"), -1., 1.);
+    m_pCrossfader = new ControlPotmeter(ConfigKey(group, "crossfader"), this,-1., 1.);
 
     // Balance
-    m_pBalance = new ControlPotmeter(ConfigKey(group, "balance"), -1., 1.);
+    m_pBalance = new ControlPotmeter(ConfigKey(group, "balance"), this,-1., 1.);
 
     // Master gain
-    m_pMasterGain = new ControlAudioTaperPot(ConfigKey(group, "gain"), -14, 14, 0.5);
+    m_pMasterGain = new ControlAudioTaperPot(ConfigKey(group, "gain"),this, -14, 14, 0.5);
 
     // Legacy: the master "gain" control used to be named "volume" in Mixxx
     // 1.11.0 and earlier. See Bug #1306253.
@@ -99,7 +99,7 @@ EngineMaster::EngineMaster(UserSettingsPointer pConfig,
     m_pHeadDelay = new EngineDelay(this,group, ConfigKey(group, "headDelay"));
 
     // Headphone volume
-    m_pHeadGain = new ControlAudioTaperPot(ConfigKey(group, "headGain"), -14, 14, 0.5);
+    m_pHeadGain = new ControlAudioTaperPot(ConfigKey(group, "headGain"),this, -14, 14, 0.5);
 
     // Legacy: the headphone "headGain" control used to be named "headVolume" in
     // Mixxx 1.11.0 and earlier. See Bug #1306253.
@@ -107,12 +107,12 @@ EngineMaster::EngineMaster(UserSettingsPointer pConfig,
                                       ConfigKey(group, "headGain"));
 
     // Headphone mix (left/right)
-    m_pHeadMix = new ControlPotmeter(ConfigKey(group, "headMix"),-1.,1.);
+    m_pHeadMix = new ControlPotmeter(ConfigKey(group, "headMix"),this,-1.,1.);
     m_pHeadMix->setDefaultValue(-1.);
     m_pHeadMix->set(-1.);
 
     // Master / Headphone split-out mode (for devices with only one output).
-    m_pHeadSplitEnabled = new ControlPushButton(ConfigKey(group, "headSplit"));
+    m_pHeadSplitEnabled = new ControlPushButton(ConfigKey(group, "headSplit"),this);
     m_pHeadSplitEnabled->setButtonMode(ControlPushButton::TOGGLE);
     m_pHeadSplitEnabled->set(0.0);
 
@@ -137,32 +137,31 @@ EngineMaster::EngineMaster(UserSettingsPointer pConfig,
 
     // X-Fader Setup
     m_pXFaderMode = new ControlPushButton(
-            ConfigKey(EngineXfader::kXfaderConfigKey, "xFaderMode"));
+            ConfigKey(EngineXfader::kXfaderConfigKey, "xFaderMode"),this);
     m_pXFaderMode->setButtonMode(ControlPushButton::TOGGLE);
 
     m_pXFaderCurve = new ControlPotmeter(
-            ConfigKey(EngineXfader::kXfaderConfigKey, "xFaderCurve"),
+            ConfigKey(EngineXfader::kXfaderConfigKey, "xFaderCurve"),this,
             EngineXfader::kTransformMin, EngineXfader::kTransformMax);
     m_pXFaderCalibration = new ControlPotmeter(
-            ConfigKey(EngineXfader::kXfaderConfigKey, "xFaderCalibration"),
+            ConfigKey(EngineXfader::kXfaderConfigKey, "xFaderCalibration"),this,
             0.3, 1., true);
     m_pXFaderReverse = new ControlPushButton(
-            ConfigKey(EngineXfader::kXfaderConfigKey, "xFaderReverse"));
+            ConfigKey(EngineXfader::kXfaderConfigKey, "xFaderReverse"),this);
     m_pXFaderReverse->setButtonMode(ControlPushButton::TOGGLE);
 
-    m_pKeylockEngine = new ControlObject(ConfigKey(group, "keylock_engine"),
+    m_pKeylockEngine = new ControlObject(ConfigKey(group, "keylock_engine"),this,
                                          true, false, true);
-    m_pKeylockEngine->set(pConfig->getValueString(
-            ConfigKey(group, "keylock_engine")).toDouble());
+    m_pKeylockEngine->set(pConfig->getValueString(ConfigKey(group, "keylock_engine")).toDouble());
 
-    m_pMasterEnabled = new ControlObject(ConfigKey(group, "enabled"),
+    m_pMasterEnabled = new ControlObject(ConfigKey(group, "enabled"),this,
             true, false, true);  // persist = true
-    m_pMasterMonoMixdown = new ControlObject(ConfigKey(group, "mono_mixdown"),
+    m_pMasterMonoMixdown = new ControlObject(ConfigKey(group, "mono_mixdown"), this,
             true, false, true);  // persist = true
-    m_pMasterTalkoverMix = new ControlObject(ConfigKey(group, "talkover_mix"),
+    m_pMasterTalkoverMix = new ControlObject(ConfigKey(group, "talkover_mix"), this,
             true, false, true);  // persist = true
-    m_pHeadphoneEnabled = new ControlObject(ConfigKey(group, "headEnabled"));
-    m_pHeadphoneEnabled = new ControlObject(ConfigKey(group, "sidechainEnabled"));
+    m_pHeadphoneEnabled = new ControlObject(ConfigKey(group, "headEnabled"),this);
+    m_pHeadphoneEnabled = new ControlObject(ConfigKey(group, "sidechainEnabled"),this);
 
     // Note: the EQ Rack is set in EffectsManager::setupDefaults();
 }
@@ -583,11 +582,11 @@ void EngineMaster::addChannel(EngineChannel* pChannel) {
     const QString& group = pChannel->getGroup();
     pChannelInfo->m_handle = m_channelHandleFactory.getOrCreateHandle(group);
     pChannelInfo->m_pVolumeControl = new ControlAudioTaperPot(
-            ConfigKey(group, "volume"), -20, 0, 1);
+            ConfigKey(group, "volume"),this, -20, 0, 1);
     pChannelInfo->m_pVolumeControl->setDefaultValue(1.0);
     pChannelInfo->m_pVolumeControl->set(1.0);
     pChannelInfo->m_pMuteControl = new ControlPushButton(
-            ConfigKey(group, "mute"));
+            ConfigKey(group, "mute"),this);
     pChannelInfo->m_pMuteControl->setButtonMode(ControlPushButton::POWERWINDOW);
     pChannelInfo->m_pBuffer = SampleUtil::alloc(MAX_BUFFER_LEN);
     SampleUtil::clear(pChannelInfo->m_pBuffer, MAX_BUFFER_LEN);

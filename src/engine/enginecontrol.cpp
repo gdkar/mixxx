@@ -52,27 +52,23 @@ void EngineControl::setEngineMaster(EngineMaster* pEngineMaster) {
     m_pEngineMaster = pEngineMaster;
 }
 
-void EngineControl::setEngineBuffer(EngineBuffer* pEngineBuffer) {
-    m_pEngineBuffer = pEngineBuffer;
-}
-
 void EngineControl::setCurrentSample(const double dCurrentSample, const double dTotalSamples) {
     SampleOfTrack sot;
     sot.current = dCurrentSample;
     sot.total = dTotalSamples;
-    m_sampleOfTrack.setValue(sot);
+    m_sampleOfTrack = sot;
 }
 
 double EngineControl::getCurrentSample() const {
-    return m_sampleOfTrack.getValue().current;
+    return m_sampleOfTrack.current;
 }
 
 double EngineControl::getTotalSamples() const {
-    return m_sampleOfTrack.getValue().total;
+    return m_sampleOfTrack.total;
 }
 
 bool EngineControl::atEndPosition() const {
-    SampleOfTrack sot = m_sampleOfTrack.getValue();
+    auto sot = m_sampleOfTrack;
     return (sot.current >= sot.total);
 }
 
@@ -89,45 +85,52 @@ EngineMaster* EngineControl::getEngineMaster() {
 }
 
 EngineBuffer* EngineControl::getEngineBuffer() {
-    return m_pEngineBuffer;
+    if(auto buf = qobject_cast<EngineBuffer*>(parent()))
+        return buf;
+    if(auto master = getEngineMaster()) {
+        if(auto buf = master->findChild<EngineBuffer*>(getGroup()))
+            return buf;
+    }
+    return nullptr;
 }
 
 void EngineControl::seekAbs(double playPosition) {
-    if (m_pEngineBuffer) {
-        m_pEngineBuffer->slotControlSeekAbs(playPosition);
+    if (auto buf = getEngineBuffer()) {
+        buf->slotControlSeekAbs(playPosition);
     }
 }
 
-void EngineControl::seekExact(double playPosition) {
-    if (m_pEngineBuffer) {
-        m_pEngineBuffer->slotControlSeekExact(playPosition);
+void EngineControl::seekExact(double playPosition)
+{
+    if (auto buf = getEngineBuffer()) {
+        buf->slotControlSeekExact(playPosition);
     }
 }
 
-void EngineControl::seek(double sample) {
-    if (m_pEngineBuffer) {
-        m_pEngineBuffer->slotControlSeek(sample);
+void EngineControl::seek(double sample)
+{
+    if (auto buf = getEngineBuffer()) {
+        buf->slotControlSeek(sample);
     }
 }
-
-void EngineControl::notifySeek(double dNewPlaypos) {
+void EngineControl::notifySeek(double dNewPlaypos)
+{
     Q_UNUSED(dNewPlaypos);
 }
+EngineBuffer* EngineControl::pickSyncTarget()
+{
+    if(auto pMaster = getEngineMaster()) {
 
-EngineBuffer* EngineControl::pickSyncTarget() {
-    EngineMaster* pMaster = getEngineMaster();
-    if (!pMaster) {
-        return NULL;
+        EngineSync* pEngineSync = pMaster->getEngineSync();
+        if (pEngineSync == NULL) {
+            return NULL;
+        }
+
+        // TODO(rryan): Remove. This is a linear search over groups in
+        // EngineMaster. We should pass the EngineChannel into EngineControl.
+        auto pThisChannel = pMaster->getChannel(getGroup());
+        auto pChannel = pEngineSync->pickNonSyncSyncTarget(pThisChannel);
+        return pChannel ? pChannel->getEngineBuffer() : NULL;
     }
-
-    EngineSync* pEngineSync = pMaster->getEngineSync();
-    if (pEngineSync == NULL) {
-        return NULL;
-    }
-
-    // TODO(rryan): Remove. This is a linear search over groups in
-    // EngineMaster. We should pass the EngineChannel into EngineControl.
-    EngineChannel* pThisChannel = pMaster->getChannel(getGroup());
-    EngineChannel* pChannel = pEngineSync->pickNonSyncSyncTarget(pThisChannel);
-    return pChannel ? pChannel->getEngineBuffer() : NULL;
+    return nullptr;
 }

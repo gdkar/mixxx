@@ -27,24 +27,24 @@ EngineChannel::EngineChannel(QObject *p, const ChannelHandleAndGroup& handle_gro
                              EngineChannel::ChannelOrientation defaultOrientation,
                              EffectsManager *pEffectsManager)
         : EngineObject(p),m_group(handle_group) {
-    m_pPFL = new ControlPushButton(ConfigKey(getGroup(), "pfl"));
+    m_pPFL = new ControlPushButton(ConfigKey(getGroup(), "pfl"),this);
     m_pPFL->setButtonMode(ControlPushButton::TOGGLE);
-    m_pMaster = new ControlPushButton(ConfigKey(getGroup(), "master"));
+    m_pMaster = new ControlPushButton(ConfigKey(getGroup(), "master"),this);
     m_pMaster->setButtonMode(ControlPushButton::TOGGLE);
-    m_pOrientation = new ControlPushButton(ConfigKey(getGroup(), "orientation"));
+    m_pOrientation = new ControlPushButton(ConfigKey(getGroup(), "orientation"),this);
     m_pOrientation->setButtonMode(ControlPushButton::TOGGLE);
     m_pOrientation->setStates(3);
     m_pOrientation->set(defaultOrientation);
-    m_pOrientationLeft = new ControlPushButton(ConfigKey(getGroup(), "orientation_left"));
+    m_pOrientationLeft = new ControlPushButton(ConfigKey(getGroup(), "orientation_left"),this);
     connect(m_pOrientationLeft, SIGNAL(valueChanged(double)),
             this, SLOT(slotOrientationLeft(double)), Qt::DirectConnection);
-    m_pOrientationRight = new ControlPushButton(ConfigKey(getGroup(), "orientation_right"));
+    m_pOrientationRight = new ControlPushButton(ConfigKey(getGroup(), "orientation_right"),this);
     connect(m_pOrientationRight, SIGNAL(valueChanged(double)),
             this, SLOT(slotOrientationRight(double)), Qt::DirectConnection);
-    m_pOrientationCenter = new ControlPushButton(ConfigKey(getGroup(), "orientation_center"));
+    m_pOrientationCenter = new ControlPushButton(ConfigKey(getGroup(), "orientation_center"),this);
     connect(m_pOrientationCenter, SIGNAL(valueChanged(double)),
             this, SLOT(slotOrientationCenter(double)), Qt::DirectConnection);
-    m_pTalkover = new ControlPushButton(ConfigKey(getGroup(), "talkover"));
+    m_pTalkover = new ControlPushButton(ConfigKey(getGroup(), "talkover"),this);
     m_pTalkover->setButtonMode(ControlPushButton::POWERWINDOW);
     m_pVUMeter = new EngineVuMeter(this,getGroup());
     if(pEffectsManager)

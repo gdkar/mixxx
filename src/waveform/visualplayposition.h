@@ -60,7 +60,7 @@ class VisualPlayPosition : public QObject {
     void setInvalid() { m_valid = false; };
 
   private slots:
-    void slotAudioBufferSizeChanged(double size);
+    void onAudioBufferSizeChanged(double size);
 
   private:
     ControlValueAtomic<VisualPlayPositionData> m_data;

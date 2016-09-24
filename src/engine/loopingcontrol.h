@@ -6,7 +6,7 @@
 #define LOOPINGCONTROL_H
 
 #include <QObject>
-
+#include <atomic>
 #include "preferences/usersettings.h"
 #include "engine/enginecontrol.h"
 #include "track/track.h"
@@ -88,7 +88,7 @@ class LoopingControl : public EngineControl {
 
   private:
 
-    struct LoopSamples {
+    struct alignas(16) LoopSamples {
         int start;
         int end;
     };
@@ -115,13 +115,13 @@ class LoopingControl : public EngineControl {
 
     bool m_bLoopingEnabled;
     bool m_bLoopRollActive;
-    ControlValueAtomic<LoopSamples> m_loopSamples;
-    QAtomicInt m_iCurrentSample;
+    std::atomic<LoopSamples> m_loopSamples;
+    std::atomic<int> m_iCurrentSample;
     ControlObject* m_pQuantizeEnabled;
     ControlObject* m_pNextBeat;
     ControlObject* m_pClosestBeat;
     ControlObject* m_pTrackSamples;
-    QAtomicPointer<BeatLoopingControl> m_pActiveBeatLoop;
+    std::atomic<BeatLoopingControl*> m_pActiveBeatLoop;
 
     // Base BeatLoop Control Object.
     ControlObject* m_pCOBeatLoop;

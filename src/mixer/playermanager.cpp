@@ -34,15 +34,15 @@ PlayerManager::PlayerManager(UserSettingsPointer pConfig,
         // and not ControlProxies.
         m_pAnalyzerQueue(NULL),
         m_pCONumDecks(new ControlObject(
-            ConfigKey("[Master]", "num_decks"), true, true)),
+            ConfigKey("[Master]", "num_decks"),this, true, true)),
         m_pCONumSamplers(new ControlObject(
-            ConfigKey("[Master]", "num_samplers"), true, true)),
+            ConfigKey("[Master]", "num_samplers"),this, true, true)),
         m_pCONumPreviewDecks(new ControlObject(
-            ConfigKey("[Master]", "num_preview_decks"), true, true)),
+            ConfigKey("[Master]", "num_preview_decks"),this, true, true)),
         m_pCONumMicrophones(new ControlObject(
-            ConfigKey("[Master]", "num_microphones"), true, true)),
+            ConfigKey("[Master]", "num_microphones"),this, true, true)),
         m_pCONumAuxiliaries(new ControlObject(
-            ConfigKey("[Master]", "num_auxiliaries"), true, true))
+            ConfigKey("[Master]", "num_auxiliaries"),this, true, true))
 {
     connect(m_pCONumDecks, SIGNAL(valueChanged(double)),
             this, SLOT(slotNumDecksControlChanged(double)),
@@ -152,7 +152,7 @@ unsigned int PlayerManager::numDecks() {
     // a hashtable lookup every time they call this.
     static ControlProxy* pNumCO = NULL;
     if (pNumCO == NULL) {
-        pNumCO = new ControlProxy(ConfigKey("[Master]", "num_decks"));
+        pNumCO = new ControlProxy(ConfigKey("[Master]", "num_decks"),nullptr);
         if (!pNumCO->valid()) {
             delete pNumCO;
             pNumCO = NULL;
@@ -201,7 +201,7 @@ unsigned int PlayerManager::numSamplers() {
     // a hashtable lookup every time they call this.
     static ControlProxy* pNumCO = NULL;
     if (pNumCO == NULL) {
-        pNumCO = new ControlProxy(ConfigKey("[Master]", "num_samplers"));
+        pNumCO = new ControlProxy(ConfigKey("[Master]", "num_samplers"),nullptr);
         if (!pNumCO->valid()) {
             delete pNumCO;
             pNumCO = NULL;
@@ -217,7 +217,7 @@ unsigned int PlayerManager::numPreviewDecks() {
     static ControlProxy* pNumCO = NULL;
     if (pNumCO == NULL) {
         pNumCO = new ControlProxy(
-                ConfigKey("[Master]", "num_preview_decks"));
+                ConfigKey("[Master]", "num_preview_decks"),nullptr);
         if (!pNumCO->valid()) {
             delete pNumCO;
             pNumCO = NULL;

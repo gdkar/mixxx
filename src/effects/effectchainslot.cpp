@@ -12,23 +12,23 @@ EffectChainSlot::EffectChainSlot(EffectRack* pRack, const QString& group,
           // is 0-indexed.
           m_group(group),
           m_pEffectRack(pRack) {
-    m_pControlClear = new ControlPushButton(ConfigKey(m_group, "clear"));
+    m_pControlClear = new ControlPushButton(ConfigKey(m_group, "clear"),this);
     connect(m_pControlClear, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlClear(double)));
 
-    m_pControlNumEffects = new ControlObject(ConfigKey(m_group, "num_effects"));
+    m_pControlNumEffects = new ControlObject(ConfigKey(m_group, "num_effects"),this);
     m_pControlNumEffects->connectValueChangeRequest(
         this, SLOT(slotControlNumEffects(double)));
 
-    m_pControlNumEffectSlots = new ControlObject(ConfigKey(m_group, "num_effectslots"));
+    m_pControlNumEffectSlots = new ControlObject(ConfigKey(m_group, "num_effectslots"),this);
     m_pControlNumEffectSlots->connectValueChangeRequest(
         this, SLOT(slotControlNumEffectSlots(double)));
 
-    m_pControlChainLoaded = new ControlObject(ConfigKey(m_group, "loaded"));
+    m_pControlChainLoaded = new ControlObject(ConfigKey(m_group, "loaded"),this);
     m_pControlChainLoaded->connectValueChangeRequest(
         this, SLOT(slotControlChainLoaded(double)));
 
-    m_pControlChainEnabled = new ControlPushButton(ConfigKey(m_group, "enabled"));
+    m_pControlChainEnabled = new ControlPushButton(ConfigKey(m_group, "enabled"),this);
     m_pControlChainEnabled->setButtonMode(ControlPushButton::POWERWINDOW);
     // Default to enabled. The skin might not show these buttons.
     m_pControlChainEnabled->setDefaultValue(true);
@@ -36,33 +36,33 @@ EffectChainSlot::EffectChainSlot(EffectRack* pRack, const QString& group,
     connect(m_pControlChainEnabled, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlChainEnabled(double)));
 
-    m_pControlChainMix = new ControlPotmeter(ConfigKey(m_group, "mix"), 0.0, 1.0);
+    m_pControlChainMix = new ControlPotmeter(ConfigKey(m_group, "mix"), this,0.0, 1.0);
     connect(m_pControlChainMix, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlChainMix(double)));
     m_pControlChainMix->set(1.0);
 
-    m_pControlChainSuperParameter = new ControlPotmeter(ConfigKey(m_group, "super1"), 0.0, 1.0);
+    m_pControlChainSuperParameter = new ControlPotmeter(ConfigKey(m_group, "super1"),this, 0.0, 1.0);
     connect(m_pControlChainSuperParameter, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlChainSuperParameter(double)));
     m_pControlChainSuperParameter->set(0.0);
     m_pControlChainSuperParameter->setDefaultValue(0.0);
 
-    m_pControlChainInsertionType = new ControlPushButton(ConfigKey(m_group, "insertion_type"));
+    m_pControlChainInsertionType = new ControlPushButton(ConfigKey(m_group, "insertion_type"),this);
     m_pControlChainInsertionType->setButtonMode(ControlPushButton::TOGGLE);
     m_pControlChainInsertionType->setStates(EffectChain::NUM_INSERTION_TYPES);
     connect(m_pControlChainInsertionType, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlChainInsertionType(double)));
 
-    m_pControlChainNextPreset = new ControlPushButton(ConfigKey(m_group, "next_chain"));
+    m_pControlChainNextPreset = new ControlPushButton(ConfigKey(m_group, "next_chain"),this);
     connect(m_pControlChainNextPreset, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlChainNextPreset(double)));
 
-    m_pControlChainPrevPreset = new ControlPushButton(ConfigKey(m_group, "prev_chain"));
+    m_pControlChainPrevPreset = new ControlPushButton(ConfigKey(m_group, "prev_chain"),this);
     connect(m_pControlChainPrevPreset, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlChainPrevPreset(double)));
 
     // Ignoring no-ops is important since this is for +/- tickers.
-    m_pControlChainSelector = new ControlObject(ConfigKey(m_group, "chain_selector"), false);
+    m_pControlChainSelector = new ControlObject(ConfigKey(m_group, "chain_selector"),this, false);
     connect(m_pControlChainSelector, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlChainSelector(double)));
 
@@ -85,8 +85,7 @@ EffectChainSlot::~EffectChainSlot() {
     delete m_pControlChainNextPreset;
     delete m_pControlChainSelector;
 
-    for (QMap<QString, ChannelInfo*>::iterator it = m_channelInfoByName.begin();
-         it != m_channelInfoByName.end();) {
+    for (auto it = m_channelInfoByName.begin(); it != m_channelInfoByName.end();) {
         delete it.value();
         it = m_channelInfoByName.erase(it);
     }
@@ -272,7 +271,7 @@ void EffectChainSlot::registerChannel(const ChannelHandleAndGroup& handle_group)
         return;
     }
     ControlPushButton* pEnableControl = new ControlPushButton(
-            ConfigKey(m_group, QString("group_%1_enable").arg(handle_group.name())));
+            ConfigKey(m_group, QString("group_%1_enable").arg(handle_group.name())),this);
     pEnableControl->setButtonMode(ControlPushButton::POWERWINDOW);
 
     ChannelInfo* pInfo = new ChannelInfo(handle_group, pEnableControl);

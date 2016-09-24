@@ -19,6 +19,7 @@
 #include <QDir>
 #include <QtDebug>
 #include <QApplication>
+#include <QSurfaceFormat>
 #include <QStringList>
 #include <QString>
 #include <QTextCodec>
@@ -54,7 +55,17 @@ int main(int argc, char * argv[]) {
 
     QCoreApplication::setApplicationName(Version::applicationName());
     QCoreApplication::setApplicationVersion(Version::version());
-
+    QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
+    {
+        auto format = QSurfaceFormat::defaultFormat();
+        format.setRedBufferSize(8);
+        format.setGreenBufferSize(8);
+        format.setBlueBufferSize(8);
+        format.setAlphaBufferSize(8);
+        format.setStencilBufferSize(8);
+        format.setDepthBufferSize(24);
+        QSurfaceFormat::setDefaultFormat(format);
+    }
     // Construct a list of strings based on the command line arguments
     auto & args = CmdlineArgs::Instance();
     if (!args.Parse(argc, argv)) {
