@@ -203,11 +203,11 @@ EffectManifestParameter::ControlHint EffectParameter::getControlHint() const {
 }
 
 void EffectParameter::updateEngineState() {
-    EngineEffect* pEngineEffect = m_pEffect->getEngineEffect();
+    auto pEngineEffect = m_pEffect->getEngineEffect();
     if (!pEngineEffect) {
         return;
     }
-    EffectsRequest* pRequest = new EffectsRequest();
+    auto pRequest = new EffectsRequest();
     pRequest->type = EffectsRequest::SET_PARAMETER_PARAMETERS;
     pRequest->pTargetEffect = pEngineEffect;
     pRequest->SetParameterParameters.iParameter = m_iParameterNumber;

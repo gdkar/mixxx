@@ -2,7 +2,8 @@
 #include "util/math.h"
 
 // static
-QString Bessel4LVMixEQEffect::getId() {
+QString Bessel4LVMixEQEffect::getId()
+{
     return "org.mixxx.effects.bessel4lvmixeq";
 }
 
@@ -93,7 +94,7 @@ EffectManifest Bessel4LVMixEQEffect::getManifest() {
 
 Bessel4LVMixEQEffect::Bessel4LVMixEQEffect(EngineEffect* pEffect,
                                            const EffectManifest& manifest)
-        : m_pPotLow(pEffect->getParameterById("low")),
+        : m_pPotLow(pEffect->getParameterById("lo"w)),
           m_pPotMid(pEffect->getParameterById("mid")),
           m_pPotHigh(pEffect->getParameterById("high")),
           m_pKillLow(pEffect->getParameterById("killLow")),
@@ -104,7 +105,8 @@ Bessel4LVMixEQEffect::Bessel4LVMixEQEffect(EngineEffect* pEffect,
     m_pHiFreqCorner = new ControlProxy("[Mixer Profile]", "HiEQFrequency");
 }
 
-Bessel4LVMixEQEffect::~Bessel4LVMixEQEffect() {
+Bessel4LVMixEQEffect::~Bessel4LVMixEQEffect()
+{
     delete m_pLoFreqCorner;
     delete m_pHiFreqCorner;
 }
@@ -119,33 +121,25 @@ void Bessel4LVMixEQEffect::processChannel(const ChannelHandle& handle,
     Q_UNUSED(handle);
     Q_UNUSED(groupFeatures);
 
-    double fLow;
-    double fMid;
-    double fHigh;
+    auto fLow  = 0.f;
+    auto fMid  = 0.f;
+    auto fHigh = 0.f;
+
     if (enableState == EffectProcessor::DISABLING) {
         // Ramp to dry, when disabling, this will ramp from dry when enabling as well
-        fLow = 1.0;
-        fMid = 1.0;
-        fHigh = 1.0;
+        fLow = 1.f;
+        fMid = 1.f;
+        fHigh = 1.f;
     } else {
         if (!m_pKillLow->toBool()) {
             fLow = m_pPotLow->value();
-        } else {
-            fLow = 0;
         }
         if (!m_pKillMid->toBool()) {
             fMid = m_pPotMid->value();
-        } else {
-            fMid = 0;
         }
         if (!m_pKillHigh->toBool()) {
             fHigh = m_pPotHigh->value();
-        } else {
-            fHigh = 0;
         }
     }
-
-    pState->processChannel(pInput, pOutput, numSamples, sampleRate,
-                           fLow, fMid, fHigh,
-                           m_pLoFreqCorner->get(), m_pHiFreqCorner->get());
+    pState->processChannel(pInput, pOutput, numSamples, sampleRate,fLow, fMid, fHigh,m_pLoFreqCorner->get(), m_pHiFreqCorner->get());
 }

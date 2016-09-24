@@ -3,8 +3,7 @@
 #include <QtDebug>
 
 #include "engine/engineobject.h"
-#include "engine/enginefilterbutterworth8.h"
-#include "engine/enginefilterbessel4.h"
+#include "engine/enginefilteriir.h"
 #include "library/trackcollection.h"
 #include "library/dao/analysisdao.h"
 #include "track/track.h"
@@ -164,9 +163,12 @@ void AnalyzerWaveform::createFilters(int sampleRate) {
     // m_filter[Low] = new EngineFilterButterworth8(FILTER_LOWPASS, sampleRate, 200);
     // m_filter[Mid] = new EngineFilterButterworth8(FILTER_BANDPASS, sampleRate, 200, 2000);
     // m_filter[High] = new EngineFilterButterworth8(FILTER_HIGHPASS, sampleRate, 2000);
-    m_filter[Low] = new EngineFilterBessel4Low(sampleRate, 600);
-    m_filter[Mid] = new EngineFilterBessel4Band(sampleRate, 600, 4000);
-    m_filter[High] = new EngineFilterBessel4High(sampleRate, 4000);
+    m_filter[Low] = new EngineFilterIIR(4,IIR_LP, "LpBe4");
+    m_filter[Low]->setFrequencyCorners(sampleRate, 600);
+    m_filter[Mid] = new EngineFilterIIR(8,IIR_BP,"BpBe4");
+    m_filter[Mid]->setFrequencyCorners(sampleRate,600,4000);
+    m_filter[High] = new EngineFilterIIR(4, IIR_HP, "HpBe4");
+    m_filter[High]->setFrequencyCorners(sampleRate,4000);
     // settle filters for silence in preroll to avoids ramping (Bug #1406389)
     for (int i = 0; i < FilterCount; ++i) {
         m_filter[i]->assumeSettled();
@@ -200,10 +202,10 @@ void AnalyzerWaveform::process(const CSAMPLE* buffer, const int bufferLength) {
 
     for (int i = 0; i < bufferLength; i+=2) {
         // Take max value, not average of data
-        CSAMPLE cover[2] = { fabs(buffer[i]), fabs(buffer[i + 1]) };
-        CSAMPLE clow[2] =  { fabs(m_buffers[Low][i]), fabs(m_buffers[Low][i + 1]) };
-        CSAMPLE cmid[2] =  { fabs(m_buffers[Mid][i]), fabs(m_buffers[Mid][i + 1]) };
-        CSAMPLE chigh[2] = { fabs(m_buffers[High][i]), fabs(m_buffers[High][i + 1]) };
+        CSAMPLE cover[2] = { std::abs(buffer[i]), std::abs(buffer[i + 1]) };
+        CSAMPLE clow[2] =  { std::abs(m_buffers[Low][i]), std::abs(m_buffers[Low][i + 1]) };
+        CSAMPLE cmid[2] =  { std::abs(m_buffers[Mid][i]), std::abs(m_buffers[Mid][i + 1]) };
+        CSAMPLE chigh[2] = { std::abs(m_buffers[High][i]), std::abs(m_buffers[High][i + 1]) };
 
         // This is for if you want to experiment with averaging instead of
         // maxing.

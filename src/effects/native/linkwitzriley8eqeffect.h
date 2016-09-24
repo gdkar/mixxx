@@ -1,14 +1,13 @@
-#ifndef LINKWITZRILEYEQEFFECT_H
-#define LINKWITZRILEYEQEFFECT_H
-
+_Pragma("once")
 #include <QMap>
 
+#include "control/controlobject.h"
 #include "control/controlproxy.h"
 #include "effects/effect.h"
 #include "effects/effectprocessor.h"
 #include "engine/effects/engineeffect.h"
 #include "engine/effects/engineeffectparameter.h"
-#include "engine/enginefilterlinkwitzriley8.h"
+#include "engine/enginefilteriir.h"
 #include "util/class.h"
 #include "util/defs.h"
 #include "util/sample.h"
@@ -19,12 +18,16 @@ class LinkwitzRiley8EQEffectGroupState {
     LinkwitzRiley8EQEffectGroupState();
     virtual ~LinkwitzRiley8EQEffectGroupState();
 
-    void setFilters(int sampleRate, int lowFreq, int highFreq);
+    void setFilters(int sampleRate, double lowFreq, double highFreq);
 
-    EngineFilterLinkwtzRiley8Low* m_low1;
+    std::unique_ptr<EngineFilterIIR> m_low_low[2];
+    std::unique_ptr<EngineFilterIIR> m_low_high[2];
+    std::unique_ptr<EngineFilterIIR> m_high_low[2];
+    std::unique_ptr<EngineFilterIIR> m_high_high[2];
+/*    EngineFilterLinkwtzRiley8Low* m_low1;
     EngineFilterLinkwtzRiley8High* m_high1;
     EngineFilterLinkwtzRiley8Low* m_low2;
-    EngineFilterLinkwtzRiley8High* m_high2;
+    EngineFilterLinkwtzRiley8High* m_high2;*/
 
     double old_low;
     double old_mid;
@@ -34,9 +37,9 @@ class LinkwitzRiley8EQEffectGroupState {
     CSAMPLE* m_pBandBuf;
     CSAMPLE* m_pHighBuf;
 
-    unsigned int m_oldSampleRate;
-    int m_loFreq;
-    int m_hiFreq;
+    int    m_oldSampleRate;
+    double m_loFreq;
+    double m_hiFreq;
 };
 
 class LinkwitzRiley8EQEffect : public PerChannelEffectProcessor<LinkwitzRiley8EQEffectGroupState> {
@@ -57,9 +60,7 @@ class LinkwitzRiley8EQEffect : public PerChannelEffectProcessor<LinkwitzRiley8EQ
                         const GroupFeatureState& groupFeatureState);
 
   private:
-    QString debugString() const {
-        return getId();
-    }
+    QString debugString() const;
 
     EngineEffectParameter* m_pPotLow;
     EngineEffectParameter* m_pPotMid;
@@ -74,5 +75,3 @@ class LinkwitzRiley8EQEffect : public PerChannelEffectProcessor<LinkwitzRiley8EQ
 
     DISALLOW_COPY_AND_ASSIGN(LinkwitzRiley8EQEffect);
 };
-
-#endif /* LINKWITZRILEYEQEFFECT_H */

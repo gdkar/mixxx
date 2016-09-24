@@ -20,7 +20,7 @@
 #include <QHBoxLayout>
 
 #include "preferences/dialog/dlgprefeq.h"
-#include "engine/enginefilterbessel4.h"
+#include "engine/enginefilteriir.h"
 #include "control/controlobject.h"
 #include "control/controlproxy.h"
 #include "util/math.h"

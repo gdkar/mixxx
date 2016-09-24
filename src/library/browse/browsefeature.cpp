@@ -121,7 +121,7 @@ BrowseFeature::BrowseFeature(QObject* parent,
     foreach (QString quickLinkPath, m_quickLinkList) {
         auto name = extractNameFromPath(quickLinkPath);
         qDebug() << "Appending Quick Link: " << name << "---" << quickLinkPath;
-        autoitem = new TreeItem(name, quickLinkPath, this, m_pQuickLinkItem);
+        auto item = new TreeItem(name, quickLinkPath, this, m_pQuickLinkItem);
         m_pQuickLinkItem->appendChild(item);
     }
 
@@ -286,7 +286,7 @@ void BrowseFeature::onRightClickChild(const QPoint& globalPos, QModelIndex index
 // This is called whenever you double click or use the triangle symbol to expand
 // the subtree. The method will read the subfolders.
 void BrowseFeature::onLazyChildExpandation(const QModelIndex& index) {
-    autoitem = static_cast<TreeItem*>(index.internalPointer());
+    auto item = static_cast<TreeItem*>(index.internalPointer());
     if (!item) {
         return;
     }

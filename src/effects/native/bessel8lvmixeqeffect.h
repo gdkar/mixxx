@@ -1,25 +1,24 @@
-#ifndef BESSEL8LVMIXEQEFFECT_H
-#define BESSEL8LVMIXEQEFFECT_H
-
-#include "effects/native/lvmixeqbase.h"
-
+_Pragma("once")
 #include <QMap>
 
+#include "control/controlobject.h"
 #include "control/controlproxy.h"
 #include "effects/effect.h"
 #include "effects/effectprocessor.h"
+#include "effects/native/lvmixeqbase.h"
 #include "engine/effects/engineeffect.h"
 #include "engine/effects/engineeffectparameter.h"
-#include "engine/enginefilterbessel8.h"
-#include "engine/enginefilterdelay.h"
 #include "util/class.h"
-#include "util/defs.h"
-#include "util/sample.h"
 #include "util/types.h"
-
+#include "util/defs.h"
 
 class Bessel8LVMixEQEffectGroupState :
-        public LVMixEQEffectGroupState<EngineFilterBessel8Low> {
+        public LVMixEQEffectGroupState
+{
+    public:
+        Bessel8LVMixEQEffectGroupState()
+            : LVMixEQEffectGroupState(8)
+        { }
 };
 
 class Bessel8LVMixEQEffect : public PerChannelEffectProcessor<Bessel8LVMixEQEffectGroupState> {
@@ -29,7 +28,6 @@ class Bessel8LVMixEQEffect : public PerChannelEffectProcessor<Bessel8LVMixEQEffe
 
     static QString getId();
     static EffectManifest getManifest();
-
     // See effectprocessor.h
     void processChannel(const ChannelHandle& handle,
                         Bessel8LVMixEQEffectGroupState* pState,
@@ -52,10 +50,7 @@ class Bessel8LVMixEQEffect : public PerChannelEffectProcessor<Bessel8LVMixEQEffe
     EngineEffectParameter* m_pKillMid;
     EngineEffectParameter* m_pKillHigh;
 
-    ControlProxy* m_pLoFreqCorner;
-    ControlProxy* m_pHiFreqCorner;
+    ControlProxy * m_pLoFreqCorner;
+    ControlProxy * m_pHiFreqCorner;
 
-    DISALLOW_COPY_AND_ASSIGN(Bessel8LVMixEQEffect);
 };
-
-#endif /* BESSEL8LVMIXEQEFFECT_H */

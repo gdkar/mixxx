@@ -39,17 +39,29 @@ Item {
         Add       { item: "volume"; amount: 1/64; key:"Shift+%";min:0;max:1}
         Add       { item: "volume"; amount: -1/64; key:"Shift+t";min:0;max:1}
 
+        Set       { item: "filterHigh";to: 0;key:"Alt+Shift+#"}
+        Set       { item: "filterHigh";to: 1;key:"Alt+Shift+$"}
+        Add       { item: "filterHigh";amount: -1/8;key:"Alt+3";min:0;max:4}
+        Add       { item: "filterHigh";amount:  1/8;key:"Alt+4";min:0;max:4}
+
+        Set       { item: "filterMid";to: 0;key:"Alt+Shift+e"}
+        Set       { item: "filterMid";to: 1;key:"Alt+Shift+r"}
+        Add       { item: "filterMid";amount: -1/8;key:"Alt+e";min:0;max:4}
+        Add       { item: "filterMid";amount:  1/8;key:"Alt+r";min:0;max:4}
+
+        Set       { item: "filterLow";to: 0;key:"Alt+Shift+d"}
+        Set       { item: "filterLow";to: 1;key:"Alt+Shift+f"}
+        Add       { item: "filterLow";amount: -1/8;key:"Alt+d";min:0;max:4}
+        Add       { item: "filterLow";amount:  1/8;key:"Alt+f";min:0;max:4}
+
+
         PushKey   { item:"LoadSelectedTrack";key: "Shift+Left"}
         PushKey   { item:"eject";key:"Alt+Shift+Left"}
+
         PushKey   { item:"hotcue_1_activate";key:"z";}
         PushKey   { item:"hotcue_1_clear";key:"z";}
         PushKey   { item:"hotcue_2_activate";key:"x";}
         PushKey   { item:"hotcue_2_clear";key:"Shift+x";}
-        PushKey   { item:"hotcue_3_activate";key:"c";}
-        PushKey   { item:"hotcue_3_clear";key:"Shift+c";}
-        PushKey   { item:"hotcue_4_activate";key:"v";}
-        PushKey   { item:"hotcue_4_clear";key:"Shift+v";}
-
     }
     Item {
         id: channel2
@@ -82,20 +94,34 @@ Item {
 
         Set       { item: "volume"; to: 1; key: "Ctrl+6"}
         Set       { item: "volume"; to: 0; key: "Ctrl+y"}
-        Add       { item: "volume"; amount: 1/16; key:"6";min:0;max:1}
-        Add       { item: "volume"; amount: -1/16; key:"^";min:0;max:1}
+        Add       { item: "volume"; amount: 1/16.; key:"6";min:0;max:1}
+        Add       { item: "volume"; amount: -1/16.; key:"^";min:0;max:1}
         Add       { item: "volume"; amount: 1/64; key:"Shift+y";min:0;max:1}
         Add       { item: "volume"; amount: -1/64; key:"Shift+y";min:0;max:1}
+
+        Add       { item: "filterHigh";amount: -1/8;key:"Alt+7";min:0;max:4}
+        Add       { item: "filterHigh";amount:  1/8;key:"Alt+8";min:0;max:4}
+        Set       { item: "filterHigh";to: 0;key:"Alt+Shift+&"}
+        Set       { item: "filterHigh";to: 1;key:"Alt+Shift+*"}
+
+        Add       { item: "filterMid";amount: -1/8;key:"Alt+u";min:0;max:4}
+        Add       { item: "filterMid";amount:  1/8;key:"Alt+i";min:0;max:4}
+        Set       { item: "filterMid";to: 0;key:"ALt+Shift+u"}
+        Set       { item: "filterMid";to: 1;key:"Alt+Shift+i"}
+
+        Add       { item: "filterLow";amount: -1/8;key:"Alt+j"}
+        Add       { item: "filterLow";amount:  1/8;key:"Alt+k"}
+        Set       { item: "filterLow";to:0;key:"Alt+Shift+j"}
+        Set       { item: "filterLow";to:1;key:"Alt+Shift+k"}
+
+
         PushKey   { item:"LoadSelectedTrack";key: "Shift+Right";}
         PushKey   { item:"eject";key:"Alt+Shift+Right"}
+
         PushKey   { item:"hotcue_1_activate";key:"m";}
         PushKey   { item:"hotcue_1_clear";key:"Shift+m";}
         PushKey   { item:"hotcue_2_activate";key:",";}
         PushKey   { item:"hotcue_2_clear";key:"Shift+<";}
-        PushKey   { item:"hotcue_3_activate";key:".";}
-        PushKey   { item:"hotcue_3_clear";key:"Shift+>";}
-        PushKey   { item:"hotcue_4_activate";key:"/";}
-        PushKey   { item:"hotcue_4_clear";key:"Shift+?";}
     }
     Item {
         id: master
@@ -111,13 +137,13 @@ Item {
     Item {
         id: keyboardShortcuts
         property string group: "[KeyboardShortcuts]"
-        PushKey { item: "FileMenu_LoadDeck1";key:"Ctrl+o"}
-        PushKey { item: "FileMenu_LoadDeck2";key:"Ctrl+Shift+o"}
+//c        PushKey { item: "FileMenu_LoadDeck1";key:"Ctrl+o"}
+//        PushKey { item: "FileMenu_LoadDeck2";key:"Ctrl+Shift+o"}
         PushKey { item: "FileMenu_Quit";key:"Ctrl+q"}
-        PushKey { item: "ViewMenu_MaximizeLibrary";key:"Ctrl+Space"}
-        PushKey { item: "OptionsMenu_EnableLiveBroadcasting";key:"Ctrl+l"}
-        PushKey { item: "OptionsMenu_RecordMix";key:"Ctrl+r"}
-        PushKey { item: "OptionsMenu_ReloadSkin";key:"Ctrl+Shift+r"}
+//        PushKey { item: "ViewMenu_MaximizeLibrary";key:"Ctrl+Space"}
+//        PushKey { item: "OptionsMenu_EnableLiveBroadcasting";key:"Ctrl+l"}
+//        PushKey { item: "OptionsMenu_RecordMix";key:"Ctrl+r"}
+//        PushKey { item: "OptionsMenu_ReloadSkin";key:"Ctrl+Shift+r"}
 
     }
 }

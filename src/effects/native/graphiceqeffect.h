@@ -1,44 +1,39 @@
-#ifndef GRAPHICEQEFFECT_H
-#define GRAPHICEQEFFECT_H
-
+_Pragma("once")
 #include <QMap>
 
 #include "control/controlproxy.h"
+#include "control/controlobject.h"
 #include "effects/effect.h"
 #include "effects/effectprocessor.h"
 #include "engine/effects/engineeffect.h"
 #include "engine/effects/engineeffectparameter.h"
-#include "engine/enginefilterbiquad1.h"
+#include "engine/enginefilteriir.h"
 #include "util/class.h"
 #include "util/defs.h"
 #include "util/sample.h"
 #include "util/types.h"
 
+#include <memory>
+#include <utility>
+#include <vector>
+
 class GraphicEQEffectGroupState {
   public:
     GraphicEQEffectGroupState();
     virtual ~GraphicEQEffectGroupState();
-
-    void setFilters(int sampleRate);
-
-    EngineFilterBiquad1LowShelving* m_low;
-    QList<EngineFilterBiquad1Peaking*> m_bands;
-    EngineFilterBiquad1HighShelving* m_high;
-    QList<CSAMPLE*> m_pBufs;
-    QList<double> m_oldMid;
-    double m_oldLow;
-    double m_oldHigh;
-    float m_centerFrequencies[8];
+    size_t m_size{8};
+    void setFilters(int sampleRate, std::vector<double>& );
+    std::vector<std::unique_ptr<EngineFilterIIR> > m_bands{8};
+    std::vector<double> m_oldGain{8};
+    std::vector<double> m_centerFrequencies{8};
+    unsigned int m_oldSampleRate{44100};
 };
-
 class GraphicEQEffect : public PerChannelEffectProcessor<GraphicEQEffectGroupState> {
   public:
     GraphicEQEffect(EngineEffect* pEffect, const EffectManifest& manifest);
     virtual ~GraphicEQEffect();
-
     static QString getId();
     static EffectManifest getManifest();
-
     // See effectprocessor.h
     void processChannel(const ChannelHandle& handle,
                         GraphicEQEffectGroupState* pState,
@@ -49,16 +44,7 @@ class GraphicEQEffect : public PerChannelEffectProcessor<GraphicEQEffectGroupSta
                         const GroupFeatureState& groupFeatureState);
 
   private:
-    QString debugString() const {
-        return getId();
-    }
-
-    EngineEffectParameter* m_pPotLow;
-    QList<EngineEffectParameter*> m_pPotMid;
-    EngineEffectParameter* m_pPotHigh;
-    unsigned int m_oldSampleRate;
-
-    DISALLOW_COPY_AND_ASSIGN(GraphicEQEffect);
+    QString debugString() const;
+    std::vector<EngineEffectParameter*> m_pPotGain{8};
+    unsigned int m_oldSampleRate{44100};
 };
-
-#endif // GRAPHICEQEFFECT_H

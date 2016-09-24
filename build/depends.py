@@ -440,7 +440,7 @@ class FidLib(Dependence):
                 symbol = 'T_MINGW'
         else:
             symbol = 'T_LINUX'
-        return [build.env.StaticObject('#lib/fidlib-0.9.10/fidlib.c',CPPDEFINES=symbol)]
+        return [build.env.StaticObject('#lib/fidlib-0.9.10/fidlib.cpp',CPPDEFINES=symbol)]
 
     def configure(self, build, conf):
         build.env.Append(CPPPATH='#lib/fidlib-0.9.10/')
@@ -654,9 +654,10 @@ class MixxxCore(Feature):
                    "effects/native/bessel4lvmixeqeffect.cpp",
                    "effects/native/bessel8lvmixeqeffect.cpp",
                    "effects/native/graphiceqeffect.cpp",
+                   "effects/native/lvmixeqbase.cpp",
                    "effects/native/flangereffect.cpp",
                    "effects/native/filtereffect.cpp",
-                   "effects/native/moogladder4filtereffect.cpp",
+#                   "effects/native/moogladder4filtereffect.cpp",
                    "effects/native/reverbeffect.cpp",
                    "effects/native/echoeffect.cpp",
                    "effects/native/autopaneffect.cpp",
@@ -678,14 +679,14 @@ class MixxxCore(Feature):
                    "engine/enginebufferscale.cpp",
                    "engine/scaledreader.cpp",
                    "engine/enginebufferscalelinear.cpp",
-                   "engine/enginefilterbiquad1.cpp",
-                   "engine/enginefiltermoogladder4.cpp",
-                   "engine/enginefilterbessel4.cpp",
-                   "engine/enginefilterbessel8.cpp",
-                   "engine/enginefilterbutterworth4.cpp",
-                   "engine/enginefilterbutterworth8.cpp",
-                   "engine/enginefilterlinkwitzriley4.cpp",
-                   "engine/enginefilterlinkwitzriley8.cpp",
+#                   "engine/enginefilterbiquad1.cpp",
+#                   "engine/enginefiltermoogladder4.cpp",
+#                   "engine/enginefilterbessel4.cpp",
+#                   "engine/enginefilterbessel8.cpp",
+#                   "engine/enginefilterbutterworth4.cpp",
+#                   "engine/enginefilterbutterworth8.cpp",
+#                   "engine/enginefilterlinkwitzriley4.cpp",
+#                   "engine/enginefilterlinkwitzriley8.cpp",
                    "engine/enginefilterpan.cpp",
                    "engine/enginefilteriir.cpp",
                    "engine/engineobject.cpp",

@@ -1,4 +1,8 @@
 #include <cstring>
+#include <exception>
+#include <system_error>
+#include <cerrno>
+#include <stdexcept>
 #include <cstdlib>
 #include <cstddef>
 #include <cstdint>
@@ -9,6 +13,7 @@
 
 #include "fidlib.hpp"
 namespace{
+    using TransformType = Fid::TransformType;
     const char * VERSION = "0.0.0-FUCKIT";
     inline double prewarp(double val) {
         return std::tan(val * M_PI) / M_PI;
@@ -19,155 +24,142 @@ namespace{
         const char *txt;	// Human-readable description of filter
     };
     FidFilter*
-    do_highpass(Fid* fid, Fid::StoZType mz, double freq) {
+    do_highpass(Fid* fid, int mz, double freq) {
         fid->highpass(prewarp(freq));
-        switch(mz) {
-            case Fid::StoZType::MatchedZ:
-                fid->s2z_matchedZ();
-            case Fid::StoZType::Bilinear:
-                fid->s2z_bilinear();
-            default: return nullptr;
-        }
+        if (mz)
+            fid->s2z_matchedZ();
+        else
+            fid->s2z_bilinear();
         auto rv= fid->z2fidfilter(1.0, ~0);	// FIR is constant
         rv->val[0]= 1.0 / fid->response(rv, 0.5);
         return rv;
     }
-    FidFilter* do_lowpass(Fid* fid, Fid::StoZType mz, double freq) {
+    FidFilter* do_lowpass(Fid* fid, int mz, double freq) {
         fid->lowpass(prewarp(freq));
-        switch(mz) {
-            case Fid::StoZType::MatchedZ:
-                fid->s2z_matchedZ();
-            case Fid::StoZType::Bilinear:
-                fid->s2z_bilinear();
-            default: return nullptr;
-        }
+        if (mz) fid->s2z_matchedZ();
+        else fid->s2z_bilinear();
         auto rv= fid->z2fidfilter(1.0, ~0);	// FIR is constant
         rv->val[0]= 1.0 / fid->response(rv, 0);
         return rv;
     }
-    FidFilter* do_bandpass(Fid *fid, Fid::StoZType mz, double f0, double f1) {
+    FidFilter* do_bandpass(Fid *fid, int mz, double f0, double f1) {
         fid->bandpass(prewarp(f0), prewarp(f1));
-        switch(mz) {
-            case Fid::StoZType::MatchedZ:
-                fid->s2z_matchedZ();
-            case Fid::StoZType::Bilinear:
-                fid->s2z_bilinear();
-            default: return nullptr;
-        }
+        if (mz)
+            fid->s2z_matchedZ();
+        else
+            fid->s2z_bilinear();
         auto rv= fid->z2fidfilter(1.0, ~0);	// FIR is constant
         rv->val[0]= 1.0 / fid->response(rv, fid->search_peak(rv, f0, f1));
         return rv;
     }
-    FidFilter* do_bandstop(Fid *fid, Fid::StoZType mz, double f0, double f1) {
+    FidFilter* do_bandstop(Fid *fid, int mz, double f0, double f1) {
         fid->bandstop(prewarp(f0), prewarp(f1));
-        switch(mz) {
-            case Fid::StoZType::MatchedZ:
-                fid->s2z_matchedZ();
-            case Fid::StoZType::Bilinear:
-                fid->s2z_bilinear();
-            default: return nullptr;
-        }
+        if (mz)
+            fid->s2z_matchedZ();
+        else
+            fid->s2z_bilinear();
         auto rv= fid->z2fidfilter(1.0, 5);	// FIR second coefficient is *non-const* for bandstop
         rv->val[0]= 1.0 / fid->response(rv, 0.0);	// Use 0Hz response as reference
         return rv;
     }
     FidFilter* des_lpbe(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         self->bessel(order);
-        return do_lowpass(self,Fid::StoZType::Bilinear, f0);
+        return do_lowpass(self,TransformType::Bilinear, f0);
     }
     FidFilter* des_hpbe(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         self->bessel(order);
-        return do_highpass(self,Fid::StoZType::Bilinear, f0);
+        return do_highpass(self,TransformType::Bilinear, f0);
     }
     FidFilter* des_bpbe(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         self->bessel(order);
-        return do_bandpass(self,Fid::StoZType::Bilinear, f0, f1);
+        return do_bandpass(self,TransformType::Bilinear, f0, f1);
     }
     FidFilter* des_bsbe(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         self->bessel(order);
-        return do_bandstop(self,Fid::StoZType::Bilinear, f0, f1);
+        return do_bandstop(self,TransformType::Bilinear, f0, f1);
     }
     FidFilter* des_lpbez(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         self->bessel(order);
-        return do_lowpass(self,Fid::StoZType::MatchedZ, f0);
+        return do_lowpass(self,TransformType::MatchedZ, f0);
     }
     FidFilter* des_hpbez(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         self->bessel(order);
-        return do_highpass(self,Fid::StoZType::MatchedZ, f0);
+        return do_highpass(self,TransformType::MatchedZ, f0);
     }
     FidFilter* des_bpbez(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         self->bessel(order);
-        return do_bandpass(self,Fid::StoZType::MatchedZ, f0, f1);
+        return do_bandpass(self,TransformType::MatchedZ, f0, f1);
     }
     FidFilter* des_bsbez(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         self->bessel(order);
-        return do_bandstop(self,Fid::StoZType::MatchedZ, f0, f1);
+        return do_bandstop(self,TransformType::MatchedZ, f0, f1);
     }
     FidFilter* des_lpbu(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         self->butterworth(order);
-        return do_lowpass(self,Fid::StoZType::Bilinear, f0);
+        return do_lowpass(self,TransformType::Bilinear, f0);
     }
     FidFilter* des_hpbu(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         self->butterworth(order);
-        return do_highpass(self,Fid::StoZType::Bilinear, f0);
+        return do_highpass(self,TransformType::Bilinear, f0);
     }
     FidFilter* des_bpbu(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         self->butterworth(order);
-        return do_bandpass(self,Fid::StoZType::Bilinear, f0, f1);
+        return do_bandpass(self,TransformType::Bilinear, f0, f1);
     }
     FidFilter* des_bsbu(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         self->butterworth(order);
-        return do_bandstop(self,Fid::StoZType::Bilinear, f0, f1);
+        return do_bandstop(self,TransformType::Bilinear, f0, f1);
     }
     FidFilter* des_lpbuz(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         self->butterworth(order);
-        return do_lowpass(self,Fid::StoZType::MatchedZ, f0);
+        return do_lowpass(self,TransformType::MatchedZ, f0);
     }
     FidFilter* des_hpbuz(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         self->butterworth(order);
-        return do_highpass(self,Fid::StoZType::MatchedZ, f0);
+        return do_highpass(self,TransformType::MatchedZ, f0);
     }
     FidFilter* des_bpbuz(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         self->butterworth(order);
-        return do_bandpass(self,Fid::StoZType::MatchedZ, f0, f1);
+        return do_bandpass(self,TransformType::MatchedZ, f0, f1);
     }
     FidFilter* des_bsbuz(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         self->chebyshev(order, arg[0]);
-        return do_lowpass(self,Fid::StoZType::Bilinear, f0);
+        return do_lowpass(self,TransformType::Bilinear, f0);
     }
     FidFilter* des_lpch(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         self->chebyshev(order, arg[0]);
-        return do_lowpass(self,Fid::StoZType::Bilinear, f0);
+        return do_lowpass(self,TransformType::Bilinear, f0);
     }
     FidFilter* des_hpch(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         self->chebyshev(order, arg[0]);
-        return do_highpass(self,Fid::StoZType::Bilinear, f0);
+        return do_highpass(self,TransformType::Bilinear, f0);
     }
     FidFilter* des_bpch(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         self->chebyshev(order, arg[0]);
-        return do_bandpass(self,Fid::StoZType::Bilinear, f0, f1);
+        return do_bandpass(self,TransformType::Bilinear, f0, f1);
     }
     FidFilter* des_bsch(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         self->chebyshev(order, arg[0]);
-        return do_bandstop(self,Fid::StoZType::Bilinear, f0, f1);
+        return do_bandstop(self,TransformType::Bilinear, f0, f1);
     }
     FidFilter* des_lpchz(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         self->chebyshev(order, arg[0]);
-        return do_lowpass(self,Fid::StoZType::MatchedZ, f0);
+        return do_lowpass(self,TransformType::MatchedZ, f0);
     }
     FidFilter* des_hpchz(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         self->chebyshev(order, arg[0]);
-        return do_highpass(self,Fid::StoZType::MatchedZ, f0);
+        return do_highpass(self,TransformType::MatchedZ, f0);
     }
     FidFilter* des_bpchz(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         self->chebyshev(order, arg[0]);
-        return do_bandpass(self,Fid::StoZType::MatchedZ, f0, f1);
+        return do_bandpass(self,TransformType::MatchedZ, f0, f1);
     }
     FidFilter* des_bschz(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
         self->chebyshev(order, arg[0]);
-        return do_bandstop(self,Fid::StoZType::MatchedZ, f0, f1);
+        return do_bandstop(self,TransformType::MatchedZ, f0, f1);
     }
     FidFilter* des_lpbq(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
+        (void) self;(void)rate;(void)f1;(void)order;(void)n_arg;(void)arg;
         auto omega= 2 * M_PI * f0;
         auto cosv= std::cos(omega);
         auto alpha= std::sin(omega) / 2 / arg[0];
@@ -177,6 +169,7 @@ namespace{
                     'F', 0x0, 1, (1-cosv) * 0.5);
     }
     FidFilter* des_hpbq(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
+        (void) self;(void)rate;(void)f1;(void)order;(void)n_arg;(void)arg;
         auto omega= 2 * M_PI * f0;
         auto cosv= std::cos(omega);
         auto alpha= std::sin(omega) / 2 / arg[0];
@@ -186,6 +179,7 @@ namespace{
                     'F', 0x0, 1, (1+cosv) * 0.5);
     }
     FidFilter* des_bpbq(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
+        (void) self;(void)rate;(void)f1;(void)order;(void)n_arg;(void)arg;
         auto omega= 2 * M_PI * f0;
         auto cosv= std::cos(omega);
         auto alpha= std::sin(omega) / 2 / arg[0];
@@ -195,6 +189,7 @@ namespace{
                     'F', 0x0, 1, alpha);
     }
     FidFilter* des_bsbq(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
+        (void) self;(void)rate;(void)f1;(void)order;(void)n_arg;(void)arg;
         auto omega= 2 * M_PI * f0;
         auto cosv= std::cos(omega);
         auto alpha= std::sin(omega) / 2 / arg[0];
@@ -203,6 +198,7 @@ namespace{
                     'F', 0x5, 3, 1.0, -2 * cosv, 1.0);
     }
     FidFilter* des_apbq(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
+        (void) self;(void)rate;(void)f1;(void)order;(void)n_arg;(void)arg;
         auto omega= 2 * M_PI * f0;
         auto cosv = std::cos(omega);
         auto alpha= std::sin(omega) / 2 / arg[0];
@@ -211,6 +207,7 @@ namespace{
                     'F', 0x0, 3, 1 - alpha, -2 * cosv, 1 + alpha);
     }
     FidFilter* des_pkbq(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
+        (void) self;(void)rate;(void)f1;(void)order;(void)n_arg;(void)arg;
         auto omega= 2 * M_PI * f0;
         auto cosv = std::cos(omega);
         auto alpha= std::sin(omega) / 2 / arg[0];
@@ -220,45 +217,36 @@ namespace{
                     'F', 0x0, 3, 1 + alpha*A, -2 * cosv, 1 - alpha*A);
     }
     FidFilter* des_lsbq(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
+        (void) self;(void)rate;(void)f1;(void)order;(void)n_arg;(void)arg;
         auto omega= 2 * M_PI * f0;
         auto cosv= std::cos(omega);
         auto sinv= std::sin(omega);
         auto A= std::pow(10, arg[1]/40);
         auto beta= std::sqrt((A*A+1)/arg[0] - (A-1)*(A-1));
         return self->stack_filter(order, 2, 6,
-                    'I', 0x0, 3,
-                    (A+1) + (A-1)*cosv + beta*sinv,
-                    -2 * ((A-1) + (A+1)*cosv),
-                    (A+1) + (A-1)*cosv - beta*sinv,
-                    'F', 0x0, 3,
-                    A*((A+1) - (A-1)*cosv + beta*sinv),
-                    2*A*((A-1) - (A+1)*cosv),
-                    A*((A+1) - (A-1)*cosv - beta*sinv));
+                    'I', 0x0, 3,(A+1) + (A-1)*cosv + beta*sinv,-2 * ((A-1) + (A+1)*cosv),(A+1) + (A-1)*cosv - beta*sinv,
+                    'F', 0x0, 3,A*((A+1) - (A-1)*cosv + beta*sinv),2*A*((A-1) - (A+1)*cosv),A*((A+1) - (A-1)*cosv - beta*sinv));
     }
     FidFilter* des_hsbq(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
+        (void) self;(void)rate;(void)f1;(void)order;(void)n_arg;(void)arg;
         auto omega= 2 * M_PI * f0;
-        auto cosv= std::cos(omega);
-        auto sinv= std::sin(omega);
-        auto A= std::pow(10, arg[1]/40);
-        auto beta= std::sqrt((A*A+1)/arg[0] - (A-1)*(A-1));
+        auto cosv = std::cos(omega);
+        auto sinv = std::sin(omega);
+        auto A    = std::pow(10, arg[1]/40);
+        auto beta = std::sqrt((A*A+1)/arg[0] - (A-1)*(A-1));
         return self->stack_filter(order, 2, 6,
-                    'I', 0x0, 3,
-                    (A+1) - (A-1)*cosv + beta*sinv,
-                    2 * ((A-1) - (A+1)*cosv),
-                    (A+1) - (A-1)*cosv - beta*sinv,
-                    'F', 0x0, 3,
-                    A*((A+1) + (A-1)*cosv + beta*sinv),
-                    -2*A*((A-1) + (A+1)*cosv),
-                    A*((A+1) + (A-1)*cosv - beta*sinv));
+                    'I', 0x0, 3,   (A+1) - (A-1)*cosv + beta*sinv,    2*((A-1) - (A+1)*cosv),   (A+1) - (A-1)*cosv - beta*sinv,
+                    'F', 0x0, 3,A*((A+1) + (A-1)*cosv + beta*sinv),-A*2*((A-1) + (A+1)*cosv),A*((A+1) + (A-1)*cosv - beta*sinv));
     }
     FidFilter* des_lpbl(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
+        (void) self;(void)rate;(void)f1;(void)order;(void)n_arg;(void)arg;
         auto wid= 0.4109205/f0;
         auto tot = 1., adj = 0.;
         auto max= (int)floor(wid);
         auto a = 0;
-        auto ff= (FidFilter*)Alloc(FFCSIZE(1, max*2+1));
+        auto ff=std::make_unique<FidFilter>();
         ff->typ= 'F';
-        ff->len= max*2+1;
+        ff->resize( max*2+1);
         ff->val[max]= tot= 1.0;
         for (a= 1; a<=max; a++) {
             auto val= 0.42 + 0.5 * std::cos(M_PI * a / wid) +0.08 * std::cos(M_PI * 2.0 * a / wid);
@@ -269,16 +257,17 @@ namespace{
         adj= 1/tot;
         for (a= 0; a<=max*2; a++)
             ff->val[a] *= adj;
-        return ff;
+        return ff.release();
     }
     FidFilter* des_lphm(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
+        (void) self;(void)rate;(void)f1;(void)order;(void)n_arg;(void)arg;
         auto wid= 0.3262096/f0;
         auto tot = 0., adj = 0.;
         auto max= (int)floor(wid);
         auto a = 0;
-        auto ff= (FidFilter*)Alloc(FFCSIZE(1, max*2+1));
+        auto ff=std::make_unique<FidFilter>();
         ff->typ= 'F';
-        ff->len= max*2+1;
+        ff->resize( max*2+1);
         ff->val[max]= tot= 1.0;
         for (a= 1; a<=max; a++) {
             auto val= 0.54 +  0.46 * std::cos(M_PI * a / wid);
@@ -287,17 +276,19 @@ namespace{
             tot += val * 2.0;
         }
         adj= 1/tot;
-        for (a= 0; a<=max*2; a++) ff->val[a] *= adj;
-        return ff;
+        for (a= 0; a<=max*2; a++)
+            ff->val[a] *= adj;
+        return ff.release();
     }
     FidFilter* des_lphn(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
+        (void) self;(void) rate;(void) f1;(void)order;(void)n_arg;(void)arg;
         auto wid= 0.360144/f0;
         auto tot = 0., adj = 0.;
         auto max= (int)floor(wid);
         auto a = 0;
-        auto ff= (FidFilter*)Alloc(FFCSIZE(1, max*2+1));
+        auto ff= std::make_unique<FidFilter>();
         ff->typ= 'F';
-        ff->len= max*2+1;
+        ff->resize(max*2+1);
         ff->val[max]= tot= 1.0;
         for (a= 1; a<=max; a++) {
             auto val= 0.5 + 0.5 * std::cos(M_PI * a / wid);
@@ -306,17 +297,19 @@ namespace{
             tot += val * 2.0;
         }
         adj= 1/tot;
-        for (a= 0; a<=max*2; a++) ff->val[a] *= adj;
-        return ff;
+        for (a= 0; a<=max*2; a++)
+            ff->val[a] *= adj;
+        return ff.release();
     }
     FidFilter* des_lpba(Fid*self,double rate, double f0, double f1, int order, int n_arg, double *arg) {
+        (void) self;(void) rate;(void) f1;(void)order;(void)n_arg;(void)arg;
         auto wid= 0.3189435/f0;
         auto tot = 0., adj = 0.;
         auto max= (int)floor(wid);
         auto a = 0;
-        auto ff= (FidFilter*)Alloc(FFCSIZE(1, max*2+1));
+        auto ff = std::make_unique<FidFilter>();
         ff->typ= 'F';
-        ff->len= max*2+1;
+        ff->resize(max*2+1);
         ff->val[max]= tot= 1.0;
         for (a= 1; a<=max; a++) {
             auto val= 1.0 - a/wid;
@@ -325,8 +318,9 @@ namespace{
             tot += val * 2.0;
         }
         adj= 1/tot;
-        for (a= 0; a<=max*2; a++) ff->val[a] *= adj;
-        return ff;
+        for (a= 0; a<=max*2; a++)
+            ff->val[a] *= adj;
+        return ff.release();
     }
     Entry filter[] = {
     { &des_lpbe, "LpBe#O/#F",
@@ -469,10 +463,10 @@ namespace{
         va_list ap;
         va_start(ap, fmt);
         vsnprintf(buf, sizeof(buf), fmt, ap);	// Ignore overflow
+        va_end(ap);
         buf[sizeof(buf)-1]= 0;
         // If error handler routine returns, we dump to STDERR and exit anyway
-        fprintf(stderr, "fidlib error: %s\n", buf);
-        exit(1);
+        throw std::runtime_error("FidLib Error: " + std::string(buf));
     }
     std::complex<double> evaluate( double *coef, int n_coef, std::complex<double> in) {
         auto rv = std::complex<double>(*coef++);
@@ -524,10 +518,8 @@ namespace{
         auto len = q-p;
         if (len >= buflen)
             return 0;
-
         std::memcpy(buf, p, len);
         buf[len] = '\0';
-
         *pp = q;
         return 1;
     }
@@ -538,67 +530,60 @@ namespace{
 //      Coefficients are real values.
 //
 double
-Fid::response(FidFilter *filt, double freq) {
+Fid::response(FidFilter *filt, double freq)
+{
    auto top = std::complex<double>{1,0};
    auto bot = std::complex<double>{1,0};
    auto zz  = std::polar<double>( 1., freq * 2 * M_PI);
 
-   while (filt->len) {
-      auto resp = evaluate(filt->val, filt->len, zz);
+   while (filt && filt->size()) {
+      auto resp = evaluate(&filt->val[0], filt->size(), zz);
       if (filt->typ == 'I')
         bot *= resp;
       else if (filt->typ == 'F')
         top *= resp;
       else
         error("Unknown filter type %d in Fid::response()", filt->typ);
-      filt= FFNEXT(filt);
+      filt= filt->next();
    }
    return std::abs(top/bot);
 }
 int
-Fid::calc_delay(FidFilter *filt) {
-   FidRun *run;
-   FidFunc *dostep;
-   void *f1, *f2;
+Fid::calc_delay(FidFilter *filt)
+{
    double tot, tot100, tot50;
    auto cnt = 0;
-
-   run = run_new(filt, &dostep);
+   auto run = std::make_unique<Run<double> >(filt);
 
    // Run through to find at least the 99.9% point of filter; the r2
    // (tot100) filter runs at 4x the speed of the other one to act as
    // a reference point much further ahead in the impulse response.
-   f1= run_newbuf(run);
-   f2= run_newbuf(run);
+   auto f1 = std::make_unique<RunBuf<double> >(run.get());
+   auto f2 = std::make_unique<RunBuf<double> >(run.get());
 
-   tot= std::abs(dostep(f1, 1.0));
-   tot100= std::abs(dostep(f2, 1.0));
-   tot100 += std::abs(dostep(f2, 0.0));
-   tot100 += std::abs(dostep(f2, 0.0));
-   tot100 += std::abs(dostep(f2, 0.0));
+   tot     = std::abs(f1->step(1.0));
+   tot100  = std::abs(f2->step( 1.0));
+   tot100 += std::abs(f2->step( 0.0));
+   tot100 += std::abs(f2->step( 0.0));
+   tot100 += std::abs(f2->step( 0.0));
 
    for (cnt= 1; cnt < 0x1000000; cnt++) {
-      tot += std::abs(dostep(f1, 0.0));
-      tot100 += std::abs(dostep(f2, 0.0));
-      tot100 += std::abs(dostep(f2, 0.0));
-      tot100 += std::abs(dostep(f2, 0.0));
-      tot100 += std::abs(dostep(f2, 0.0));
+      tot    += std::abs(f1->step( 0.0));
+      tot100 += std::abs(f2->step( 0.0));
+      tot100 += std::abs(f2->step( 0.0));
+      tot100 += std::abs(f2->step( 0.0));
+      tot100 += std::abs(f2->step( 0.0));
 
       if (tot/tot100 >= 0.999) break;
    }
-   run_freebuf(f1);
-   run_freebuf(f2);
-
    // Now find the 50% point
    tot50= tot100/2;
-   f1= run_newbuf(run);
-   tot= std::abs(dostep(f1, 1.0));
+   f1= std::make_unique<RunBuf<double> >(run);
+   tot= std::abs(f1->step(1.0));
    for (cnt= 0; tot < tot50; cnt++)
-      tot += std::abs(dostep(f1, 0.0));
-   run_freebuf(f1);
+      tot += std::abs(f1->step( 0.0));
 
    // Clean up, return
-   run_free(run);
    return cnt;
 }
 
@@ -617,16 +602,12 @@ Fid::response_pha(FidFilter *filt, double freq, double *phase) {
    auto theta= freq * 2 * M_PI;
    auto zz  = std::polar<double>(1., theta);
 
-
-   while (filt->len) {
-      auto resp = evaluate(filt->val, filt->len, zz);
-      if (filt->typ == 'I')
-          bot *= resp;
-      else if (filt->typ == 'F')
-          top *= resp;
-      else
-          error("Unknown filter type %d in response_pha()", filt->typ);
-      filt= FFNEXT(filt);
+   while (filt && filt->size()) {
+      auto resp = evaluate(&filt->val[0], filt->size(), zz);
+      if (filt->typ == 'I')      bot *= resp;
+      else if (filt->typ == 'F') top *= resp;
+      else error("Unknown filter type %d in response_pha()", filt->typ);
+      filt= filt->next();
    }
    top /= bot;
    if (phase) {
@@ -637,7 +618,6 @@ Fid::response_pha(FidFilter *filt, double freq, double *phase) {
    }
    return std::abs(top);
 }
-
 void *
 Alloc(int size) {
    void *vp= calloc(1, size);
@@ -657,21 +637,14 @@ strdupf(const char *fmt, ...) {
    if (!rv) error("Out of memory");
    return rv;
 }
-static double
-filter_step(void *rb, double val) {
-   auto rr= ((RunBuf*)rb)->run;
-   auto buf= ((RunBuf*)rb)->buf;
-   int a;
+/*double  RunBuf::step(double val) {
    // Shift the whole internal array up one
-   memmove(buf+1, buf, (rr->n_buf-1)*sizeof(buf[0]));
+   memmove(&buf[1], &buf[0], (run->n_buf-1)*sizeof(buf[0]));
+   std::move(&buf[0],&buf[run->n_buf],&buf[1]);
    // Do IIR
-   for (a= 1; a<rr->n_iir; a++) val -= rr->iir[a] * buf[a];
-   buf[0]= val;
-   // Do FIR
-   val= 0;
-   for (a= 0; a<rr->n_fir; a++) val += rr->fir[a] * buf[a];
-   return val;
-}
+   buf[0] = val - std::inner_product(run->iir.begin() + 1,run->iir.end(),buf.begin() + 1, 0);
+   return   std::inner_product(run->fir.begin(),run->fir.end(),buf.begin(),0);
+}*/
 //
 //	Create an instance of a filter, ready to run.  This returns a
 //	void* handle, and a function to call to execute the filter.
@@ -681,78 +654,45 @@ filter_step(void *rb, double val) {
 //
 //	The returned handle must be released using run_free().
 //
-
-void *
-Fid::run_new(FidFilter *filt, double (**funcpp)(void *,double)) {
-   auto rr= ALLOC(Run);
-   rr->magic= 0x64966325;
-   rr->filt = flatten(filt);
-   auto ff = rr->filt;
-   if (ff->typ != 'I') goto bad;
-   rr->n_iir= ff->len;
-   rr->iir= ff->val;
-   ff= FFNEXT(ff);
-   if (ff->typ != 'F') goto bad;
-   rr->n_fir= ff->len;
-   rr->fir= ff->val;
-   ff= FFNEXT(ff);
-   if (ff->len) goto bad;
-   rr->n_buf= rr->n_fir > rr->n_iir ? rr->n_fir : rr->n_iir;
-   *funcpp= filter_step;
-   return rr;
- bad:
-   error("Internal error: Fid::run_new() expecting IIR+FIR in flattened filter");
-   return 0;
+/*Run::Run(const std::unique_ptr<FidFilter> &ff)
+: Run(ff.get())
+{
 }
-
+Run::Run(FidFilter *ff)
+: filt(flatten(ff))
+{
+    ff = filt.get();
+    if(!ff || ff->typ != 'I')
+        throw std::bad_alloc();
+    iir = ff->val;
+    ff=ff->next();
+    if(!ff || ff->typ != 'F')
+        throw std::bad_alloc();
+    fir = ff->val;
+    ff=ff->next();
+    if(ff && ff->size())
+        throw std::bad_alloc();
+    n_buf = std::max(fir.size(),iir.size());
+}
 //
 //	Create a new instance of the given filter
 //
-
-void *
-Fid::run_newbuf(void *run) {
-   auto rr= reinterpret_cast<Run*>(run);
-
-   if (rr->magic != 0x64966325)
-      error("Bad handle passed to Fid::run_newbuf()");
-
-   auto rb= reinterpret_cast<RunBuf*>(Alloc(sizeof(RunBuf) + rr->n_buf * sizeof(double)));
-   rb->run= rr;
-   // rb->buf[] already zerod
-
-   return rb;
+RunBuf::RunBuf(Run *rr)
+    :run(rr)
+    ,buf(rr->n_buf)
+{
 }
-
-//
-//	Reinitialise an instance ready to start afresh
-//
-
-void
-Fid::run_zapbuf(void *buf) {
-   auto rb = reinterpret_cast<RunBuf*>(buf);
-   auto rr= rb->run;
-   memset(rb->buf, 0, rr->n_buf * sizeof(double));
+RunBuf::RunBuf(const std::unique_ptr<Run> &rr)
+    :RunBuf(rr.get())
+{
 }
-
-//
-//	Delete an instance
-//
-
-void
-Fid::run_freebuf(void *runbuf) {
-   free(runbuf);
-}
-
+void RunBuf::zap()
+{
+    std::fill(buf.begin(),buf.end(),0);
+}*/
 //
 //	Delete the filter
 //
-
-void
-Fid::run_free(void *run) {
-   auto rr= reinterpret_cast<Run*>(run);
-   free(rr->filt);
-   free(rr);
-}
 void
 Fid::bessel(int order) {
     if (order > 10)
@@ -847,7 +787,6 @@ Fid::bandpass(double freq1, double freq2) {
     auto w0= (2*M_PI) * sqrt(freq1*freq2);
     auto bw= 0.5 * (2*M_PI) * (freq2-freq1);
     auto a = 0, b = 0;
-
     if (n_pol * 2 > MAXPZ)
         error("Maximum order for bandpass filters is %d", MAXPZ/2);
     // Run through the list backwards, expanding as we go
@@ -887,8 +826,8 @@ Fid::bandpass(double freq1, double freq2) {
 }
 void
 Fid::bandstop(double freq1, double freq2) {
-    double w0= (2*M_PI) * std::sqrt(freq1*freq2);
-    double bw= 0.5 * (2*M_PI) * (freq2-freq1);
+    auto w0= (2*M_PI) * std::sqrt(freq1*freq2);
+    auto bw= 0.5 * (2*M_PI) * (freq2-freq1);
     int a, b;
 
     if (n_pol * 2 > MAXPZ)
@@ -899,7 +838,6 @@ Fid::bandstop(double freq1, double freq2) {
         // temp= c_sqrt(1.0 - square(w0 / hba));
         // pole1= hba * (1.0 + temp);
         // pole2= hba * (1.0 - temp);
-
         if (poltyp[a-1] == 1) {
             a -= 1;
             b -= 2;
@@ -922,7 +860,6 @@ Fid::bandstop(double freq1, double freq2) {
         }
     }
     n_pol *= 2;
-
     // Add zeros
     n_zer= n_pol;
     for (a= 0; a<n_zer; a+=2) {
@@ -1004,40 +941,34 @@ Fid::s2z_matchedZ() {
 
 FidFilter*
 Fid::z2fidfilter(double gain, int cbm) {
-    int n_head, n_val;
     int a;
-    FidFilter *rv;
-    FidFilter *ff;
-    n_head= 1 + n_pol + n_zer;	 // Worst case: gain + 2-element IIR/FIR
-    n_val= 1 + 2 * (n_pol+n_zer); //   for each pole/zero
-    rv= ff= FFALLOC(n_head, n_val);
+    auto rv = std::make_unique<FidFilter>();
+    auto ff = rv.get();
+    auto n_head= 1 + n_pol + n_zer;	 // Worst case: gain + 2-element IIR/FIR
     ff->typ= 'F';
-    ff->len= 1;
+    ff->resize(1);
     ff->val[0]= gain;
-    ff= FFNEXT(ff);
-
+    ff=ff->grow();
     // Output as much as possible as 2x2 IIR/FIR filters
     for (a= 0; a <= n_pol-2 && a <= n_zer-2; a += 2) {
         // Look for a pair of values for an IIR
-
         if (poltyp[a] == 1 && poltyp[a+1] == 1) {
         // Two real values
             ff->typ= 'I';
-            ff->len= 3;
+            ff->resize(3);
             ff->val[0]= 1;
             ff->val[1]= -(pol[a] + pol[a+1]).real();
             ff->val[2]=  (pol[a].real() * pol[a+1].real());
-            ff= FFNEXT(ff);
+            ff= ff->grow();
         } else if (poltyp[a] == 2) {
         // A complex value and its conjugate pair
             ff->typ= 'I';
-            ff->len= 3;
+            ff->resize(3);
             ff->val[0]= 1;
             ff->val[1]= -2 * (pol[a].real());
             ff->val[2]=  std::norm(pol[a]);
-            ff= FFNEXT(ff);
+            ff= ff->grow();
         } else error("Internal error -- bad poltyp[] values for z2fidfilter()");
-
         // Look for a pair of values for an FIR
         if (zertyp[a] == 1 && zertyp[a+1] == 1) {
             // Two real values
@@ -1045,11 +976,11 @@ Fid::z2fidfilter(double gain, int cbm) {
             if (!cbm || zer[a] != 0.0 || zer[a+1] != 0.0) {
                 ff->typ= 'F';
                 ff->cbm= cbm;
-                ff->len= 3;
+                ff->resize(3);
                 ff->val[0]= 1;
                 ff->val[1]= -(zer[a].real() + zer[a+1].real());
                 ff->val[2]=  (zer[a].real() * zer[a+1].real());
-                ff= FFNEXT(ff);
+                ff= ff->grow();
             }
         } else if (zertyp[a] == 2) {
             // A complex value and its conjugate pair
@@ -1057,15 +988,14 @@ Fid::z2fidfilter(double gain, int cbm) {
             if (!cbm || zer[a] != 0.0 || zer[a+1] != 0.0) {
                 ff->typ= 'F';
                 ff->cbm= cbm;
-                ff->len= 3;
+                ff->resize(3);
                 ff->val[0]= 1;
                 ff->val[1]= - 2 * (zer[a].real());
                 ff->val[2]=  std::norm(zer[a]);
-                ff= FFNEXT(ff);
+                ff= ff->grow();
             }
         } else error("Internal error -- bad zertyp[] values");
     }
-
     // Clear up any remaining bits and pieces.  Should only be a 1x1
     // IIR/FIR.
     if (n_pol-a == 0 && n_zer-a == 0)
@@ -1074,31 +1004,24 @@ Fid::z2fidfilter(double gain, int cbm) {
         if (poltyp[a] != 1 || zertyp[a] != 1)
             error("Internal error; bad poltyp or zertyp for final pole/zero");
         ff->typ= 'I';
-        ff->len= 2;
+        ff->resize(2);
         ff->val[0]= 1;
         ff->val[1]= -pol[a].real();
-        ff= FFNEXT(ff);
-
+        ff= ff->grow();
         // Skip FIR if it is constant and zero
         if (!cbm || zer[a].real()) {
             ff->typ= 'F';
             ff->cbm= cbm;
-            ff->len= 2;
+            ff->resize(2);
             ff->val[0]= 1;
             ff->val[1]= -zer[a].real();
-            ff= FFNEXT(ff);
+            ff= ff->grow();
         }
     } else
         error("Internal error: unexpected poles/zeros at end of list");
-
     // End of list
-    ff->typ= 0;
-    ff->len= 0;
-    ff= FFNEXT(ff);
-
-    rv= (FidFilter*)realloc(rv, ((char*)ff)-((char*)rv));
-    if (!rv) error("Out of memory");
-    return rv;
+    ff->clear();
+    return rv.release();
 }
 
 double
@@ -1122,46 +1045,43 @@ Fid::search_peak(FidFilter *ff, double f0, double f3) {
 }
 FidFilter*
 Fid::stack_filter(int order, int n_head, int n_val, ...) {
-   auto rv = FFALLOC(n_head * order, n_val * order);
-   FidFilter *p, *q;
-   va_list ap;
-   int a, b, len;
-
-   if (order == 0)
-       return rv;
-
-   // Copy from ap
-   va_start(ap, n_val);
-   p= q= rv;
-   for (a= 0; a<n_head; a++) {
-      p->typ= va_arg(ap, int);
-      p->cbm= va_arg(ap, int);
-      p->len= va_arg(ap, int);
-      for (b= 0; b<p->len; b++)
-        p->val[b]= va_arg(ap, double);
-      p= FFNEXT(p);
-   }
-   order--;
-
-   // Check length
-   len= ((intptr_t)p)-((intptr_t)q);
-   if (len != FFCSIZE(n_head-1, n_val))
-      error("Internal error; bad call to stack_filter(); length mismatch (%d,%d)",
-	    len, FFCSIZE(n_head-1, n_val));
-
-   // Make as many additional copies as necessary
-   while (order-- > 0) {
-      memcpy(p, q, len);
-      p = (FidFilter*)(len + (char*)p);
-   }
-
-   // List is already terminated due to zeroed allocation
-   return rv;
+    auto rv = std::make_unique<FidFilter>();
+    va_list ap;
+    int a, b;
+    if (order == 0)
+        return rv.release();
+    // Copy from ap
+    va_start(ap, n_val);
+    auto p = rv.get();
+    for (a= 0; a<n_head; a++) {
+        p->typ= va_arg(ap, int);
+        p->cbm= va_arg(ap, int);
+        p->resize(va_arg(ap, int));
+        for (b= 0; b<p->size(); b++)
+            p->val[b]= va_arg(ap, double);
+        p = p->grow();
+    }
+    order--;
+    if(order > 0) {
+    auto wrk = std::make_unique<FidFilter>();
+    auto nxt = wrk.get();
+    while(order-- > 0) {
+            p = rv.get();
+            while(p) {
+                nxt->val = p->val;
+                nxt->cbm = p->cbm;
+                nxt->typ = p->typ;
+                nxt = nxt->grow();
+                p   = p->next();
+            }
+        }
+        rv->back().m_next.swap(wrk);
+    }
+   return rv.release();
 }
-
 FidFilter *
 Fid::design(const char *spec, double rate, double freq0, double freq1, int f_adj, char **descp) {
-   FidFilter *rv;
+   auto rv = std::unique_ptr<FidFilter>();
    Spec sp;
    double f0, f1;
    char *err;
@@ -1172,83 +1092,81 @@ Fid::design(const char *spec, double rate, double freq0, double freq1, int f_adj
    sp.in_f1= freq1;
    sp.in_adj= f_adj;
    err= parse_spec(&sp);
-   if (err) error("%s", err);
+   if (err)
+       error("%s", err);
    f0= sp.f0;
    f1= sp.f1;
-
    // Adjust frequencies to range 0-0.5, and check them
    f0 /= rate;
-   if (f0 > 0.5) error("Frequency of %gHz out of range with sampling rate of %gHz", f0*rate, rate);
+   if (f0 > 0.5)
+       error("Frequency of %gHz out of range with sampling rate of %gHz", f0*rate, rate);
    f1 /= rate;
-   if (f1 > 0.5) error("Frequency of %gHz out of range with sampling rate of %gHz", f1*rate, rate);
-
+   if (f1 > 0.5)
+       error("Frequency of %gHz out of range with sampling rate of %gHz", f1*rate, rate);
    // Okay we now have a successful spec-match to filter[sp.fi], and sp.n_arg
    // args are now in sp.argarr[]
 
    // Generate the filter
    if (!sp.adj)
-      rv= (filter[sp.fi].rout)(this,rate, f0, f1, sp.order, sp.n_arg, sp.argarr);
+      rv.reset((filter[sp.fi].rout)(this,rate, f0, f1, sp.order, sp.n_arg, sp.argarr));
    else if (strstr(filter[sp.fi].fmt, "#R"))
-      rv= auto_adjust_dual(&sp, rate, f0, f1);
+      rv.reset(auto_adjust_dual(&sp, rate, f0, f1));
    else
-      rv= auto_adjust_single(&sp, rate, f0);
-
+      rv.reset( auto_adjust_single(&sp, rate, f0));
    // Generate a long description if required
    if (descp) {
       auto fmt= filter[sp.fi].txt;
-      int max= strlen(fmt) + 60 + sp.n_arg * 20;
-      char *desc= (char*)Alloc(max);
-      char *p= desc;
+      auto max = strlen(fmt) + 60 + sp.n_arg * 20;
+      auto desc= (char*)Alloc(max);
+      auto p   = desc;
       char ch;
-      double *arg= sp.argarr;
-      int n_arg= sp.n_arg;
-
+      auto arg= sp.argarr;
+      auto n_arg= sp.n_arg;
       while ((ch= *fmt++)) {
-	 if (ch != '#') {
-	    *p++= ch;
-	    continue;
-	 }
-
-	 switch (*fmt++) {
-	  case 'O':
-	     p += sprintf(p, "%d", sp.order);
-	     break;
-	  case 'F':
-	     p += sprintf(p, "%g", f0*rate);
-	     break;
-	  case 'R':
-	     p += sprintf(p, "%g-%g", f0*rate, f1*rate);
-	     break;
-	  case 'V':
-	     if (n_arg <= 0)
-		error("Internal error -- disagreement between filter short-spec\n"
-		      " and long-description over number of arguments");
-	     n_arg--;
-	     p += sprintf(p, "%g", *arg++);
-	     break;
-	  default:
-	     error("Internal error: unknown format in long description: #%c", fmt[-1]);
-	 }
+        if (ch != '#') {
+            *p++= ch;
+            continue;
+        }
+        switch (*fmt++) {
+        case 'O':
+            p += sprintf(p, "%d", sp.order);
+            break;
+        case 'F':
+            p += sprintf(p, "%g", f0*rate);
+            break;
+        case 'R':
+            p += sprintf(p, "%g-%g", f0*rate, f1*rate);
+            break;
+        case 'V':
+            if (n_arg <= 0)
+            error("Internal error -- disagreement between filter short-spec\n"
+                " and long-description over number of arguments");
+            n_arg--;
+            p += sprintf(p, "%g", *arg++);
+            break;
+        default:
+            error("Internal error: unknown format in long description: #%c", fmt[-1]);
+        }
       }
       *p++= 0;
-      if (p-desc >= max) error("Internal error: exceeded estimated description buffer");
+      if (p-desc >= max)
+          error("Internal error: exceeded estimated description buffer");
       *descp= desc;
    }
-
-   return rv;
+   return rv.release();
 }
 FidFilter*
 Fid::auto_adjust_single(Fid::Spec *sp, double rate, double f0) {
    double a0, a1, a2;
    auto design = filter[sp->fi].rout;
-   FidFilter *rv= 0;
+   auto rv= std::unique_ptr<FidFilter>();
    double resp;
    double r0, r2;
    int incr;		// Increasing (1) or decreasing (0)
    int a;
 
 #define DESIGN(aa) ((design)(this,rate, aa, aa, sp->order, sp->n_arg, sp->argarr))
-#define TEST(aa) do{ if (rv) {free(rv);rv= 0;} rv= DESIGN(aa); resp= response(rv, f0); }while(0)
+#define TEST(aa) do{  rv.reset(DESIGN(aa)); resp= response(rv.get(), f0); }while(0)
 
    // Try and establish a range within which we can find the point
    a0= f0; TEST(a0); r0= resp;
@@ -1260,13 +1178,11 @@ Fid::auto_adjust_single(Fid::Spec *sp, double rate, double f0) {
       if (a == 32) 	// No success
 	 error("auto_adjust_single internal error -- can't establish enclosing range");
    }
-
    incr= r2 > r0;
    if (a0 > a2) {
       a1= a0; a0= a2; a2= a1;
       incr= !incr;
    }
-
    // Binary search
    while (1) {
       a1= 0.5 * (a0 + a2);
@@ -1280,29 +1196,29 @@ Fid::auto_adjust_single(Fid::Spec *sp, double rate, double f0) {
    }
 #undef TEST
 #undef DESIGN
-   return rv;
+   return rv.release();
 }
 
 
 FidFilter *
 Fid::auto_adjust_dual(Fid::Spec *sp, double rate, double f0, double f1) {
-   double mid= 0.5 * (f0+f1);
-   double wid= 0.5 * std::abs(f1-f0);
+   auto mid= 0.5 * (f0+f1);
+   auto wid= 0.5 * std::abs(f1-f0);
    auto design = filter[sp->fi].rout;
-   FidFilter *rv= 0;
-   int bpass= -1;
+   auto rv = std::unique_ptr<FidFilter>();
+   auto bpass= -1;
    double delta;
    double mid0, mid1;
    double wid0, wid1;
    double r0, r1, err0, err1;
    double perr;
-   int cnt;
-   int cnt_design= 0;
+   auto cnt = 0;
+   auto cnt_design= 0;
 
-#define DESIGN(mm,ww) { if (rv) {free(rv);rv= 0;} \
-   rv= (design)(this,rate, mm-ww, mm+ww, sp->order, sp->n_arg, sp->argarr); \
-   r0= response(rv, f0); r1= response(rv, f1); \
-   err0= std::abs(M301DB-r0); err1= std::abs(M301DB-r1); cnt_design++; }
+#define DESIGN(mm,ww) do{\
+   rv.reset( (design)(this,rate, mm-ww, mm+ww, sp->order, sp->n_arg, sp->argarr)); \
+   r0= response(rv.get(), f0); r1= response(rv.get(), f1); \
+   err0= std::abs(M301DB-r0); err1= std::abs(M301DB-r1); cnt_design++; }while(false)
 
 #define INC_WID ((r0+r1 < 1.0) == bpass)
 #define INC_MID ((r0 > r1) == bpass)
@@ -1310,7 +1226,7 @@ Fid::auto_adjust_dual(Fid::Spec *sp, double rate, double f0, double f1) {
 #define PERR (err0+err1)
 
    DESIGN(mid, wid);
-   bpass= (response(rv, 0) < 0.5);
+   bpass= (response(rv.get(), 0) < 0.5);
    delta= wid * 0.5;
 
    // Try delta changes until we get there
@@ -1328,78 +1244,70 @@ Fid::auto_adjust_dual(Fid::Spec *sp, double rate, double f0, double f1) {
         if (MATCH) break;
         if (PERR < perr) { perr= PERR; mid= mid0; wid= wid1; }
       }
-
       if (mid1 - wid0 > 0.0 && mid1 + wid0 < 0.5) {
         DESIGN(mid1, wid0);
         if (MATCH) break;
         if (PERR < perr) { perr= PERR; mid= mid1; wid= wid0; }
       }
-
       if (mid1 - wid1 > 0.0 && mid1 + wid1 < 0.5) {
         DESIGN(mid1, wid1);
         if (MATCH) break;
         if (PERR < perr) { perr= PERR; mid= mid1; wid= wid1; }
       }
-
       if (cnt > 1000)
         error("auto_adjust_dual -- design not converging");
    }
-
 #undef INC_WID
 #undef INC_MID
 #undef MATCH
 #undef PERR
 #undef DESIGN
-   return rv;
+   return rv.release();
 }
 
 double
 Fid::design_coef(double *coef, int n_coef, const char *spec, double rate,
 		double freq0, double freq1, int adj) {
-   auto filt= design(spec, rate, freq0, freq1, adj, 0);
-   auto ff = filt;
-   int a, len;
+   auto filt = std::unique_ptr<FidFilter>(design(spec, rate, freq0, freq1, adj, 0));
+   auto ff = filt.get();
+   auto a = 0, len = 0;
    auto cnt = 0;
    auto gain= 1.0;
    double *iir, *fir, iir_adj = 0;
    static double const_one= 1;
    int n_iir, n_fir;
    int iir_cbm, fir_cbm;
-
-   while (ff->typ) {
-      if (ff->typ == 'F' && ff->len == 1) {
+   while (ff  && ff->typ) {
+      if (ff->typ == 'F' && ff->size()== 1) {
         gain *= ff->val[0];
-        ff= FFNEXT(ff);
+        ff= ff->next();
         continue;
       }
       if (ff->typ != 'I' && ff->typ != 'F')
         error("Fid::design_coef can't handle FidFilter type: %c", ff->typ);
-
       // Initialise to safe defaults
       iir= fir= &const_one;
-      n_iir= n_fir= 1;
-      iir_cbm= fir_cbm= ~0;
-
+      n_iir = n_fir= 1;
+      iir_cbm = fir_cbm= ~0;
       // See if we have an IIR filter
       if (ff->typ == 'I') {
-        iir= ff->val;
-        n_iir= ff->len;
+        iir= &ff->val[0];
+        n_iir= ff->size();
         iir_cbm= ff->cbm;
         iir_adj= 1.0 / ff->val[0];
-        ff= FFNEXT(ff);
+        ff = ff->next();
         gain *= iir_adj;
       }
-
       // See if we have an FIR filter
       if (ff->typ == 'F') {
-        fir= ff->val;
-        n_fir= ff->len;
+        fir= &ff->val[0];
+        n_fir= ff->size();
         fir_cbm= ff->cbm;
-        ff= FFNEXT(ff);
+        ff = ff->next();
       }
       // Dump out all non-const coefficients in reverse order
-      len= n_fir > n_iir ? n_fir : n_iir;
-      for (a= len-1; a>=0; a--) {
+      len = n_fir > n_iir ? n_fir : n_iir;
+      for (a = len-1; a>=0; a--) {
         // Output IIR if present and non-const
         if (a < n_iir && a>0 && !(iir_cbm & (1<<(a<15?a:15)))) {
             if (cnt++ < n_coef)
@@ -1416,8 +1324,6 @@ Fid::design_coef(double *coef, int n_coef, const char *spec, double rate,
       error("Fid::design_coef called with the wrong number of coefficients.\n"
 	    "  Given %d, expecting %d: (\"%s\",%g,%g,%g,%d)",
 	    n_coef, cnt, spec, rate, freq0, freq1, adj);
-
-   free(filt);
    return gain;
 }
 //
@@ -1425,56 +1331,52 @@ Fid::design_coef(double *coef, int n_coef, const char *spec, double rate,
 //	sub-filters into a single IIR/FIR pair, and make sure the IIR
 //	first coefficient is 1.0.
 //
-FidFilter *
-Fid::flatten(FidFilter *filt) {
+FidFilter * flatten(FidFilter *filt) {
    auto m_fir= 1;	// Maximum values
    auto m_iir= 1;
    auto n_fir = 0, n_iir = 0;	// Stored counts during convolution
 
    // Find the size of the output filter
-   auto ff= filt;
-   while (ff->len) {
+   auto ff = filt;
+   while (ff && ff->size()) {
       if (ff->typ == 'I')
-        m_iir += ff->len-1;
+        m_iir += ff->size()-1;
       else if (ff->typ == 'F')
-        m_fir += ff->len-1;
+        m_fir += ff->size()-1;
       else
         error("Fid::flatten doesn't know about type %d", ff->typ);
-      ff= FFNEXT(ff);
+      ff= ff->next();
    }
-   // Setup the output array
-   auto rv= FFALLOC(2, m_iir + m_fir);
+   auto rv = std::make_unique<FidFilter>();
    rv->typ= 'I';
-   rv->len= m_iir;
-   auto iir= rv->val;
-   ff= FFNEXT(rv);
+   rv->resize(m_iir);
+   auto iir= &rv->val[0];
+   ff= rv->grow();
    ff->typ= 'F';
-   ff->len= m_fir;
-   auto fir= ff->val;
+   ff->resize(m_fir);
+   auto fir= &ff->val[0];
 
    iir[0]= 1.0; n_iir= 1;
    fir[0]= 1.0; n_fir= 1;
-
    // Do the convolution
    ff = filt;
-   while (ff->len) {
+   while (ff && ff->size()) {
       if (ff->typ == 'I')
-        n_iir= convolve(iir, n_iir, ff->val, ff->len);
+        n_iir= convolve(iir, n_iir, &ff->val[0], ff->size());
       else
-        n_fir= convolve(fir, n_fir, ff->val, ff->len);
-      ff= FFNEXT(ff);
+        n_fir= convolve(fir, n_fir, &ff->val[0], ff->size());
+      ff= ff->next();
    }
-
    // Sanity check
    if (n_iir != m_iir || n_fir != m_fir)
       error("Internal error in Fid::combine() -- array under/overflow");
-
    // Fix iir[0]
    auto adj= 1.0/iir[0];
-   for (auto a= 0; a<n_iir; a++) iir[a] *= adj;
-   for (auto a= 0; a<n_fir; a++) fir[a] *= adj;
-
-   return rv;
+   for (auto a= 0; a<n_iir; a++)
+       iir[a] *= adj;
+   for (auto a= 0; a<n_fir; a++)
+       fir[a] *= adj;
+   return rv.release();
 }
 
 
@@ -1482,7 +1384,6 @@ char *
 Fid::parse_spec(Spec *sp) {
    double *arg;
    int a;
-
    arg= sp->argarr;
    sp->n_arg= 0;
    sp->order= 0;
@@ -1491,7 +1392,6 @@ Fid::parse_spec(Spec *sp) {
    sp->adj= 0;
    sp->minlen= -1;
    sp->n_freq= 0;
-
    for (a= 0; 1; a++) {
       auto fmt= filter[a].fmt;
       auto p= sp->spec;
@@ -1518,7 +1418,8 @@ Fid::parse_spec(Spec *sp) {
         case 'O':
             sp->order= (int)strtol(p, &q, 10);
             if (p == q) {
-            if (ch == 'O') goto bad;
+            if (ch == 'O')
+                goto bad;
             sp->order= 1;
             }
             if (sp->order <= 0)
@@ -1527,7 +1428,8 @@ Fid::parse_spec(Spec *sp) {
         case 'V':
             sp->n_arg++;
             *arg++= strtod(p, &q);
-            if (p == q) goto bad;
+            if (p == q)
+                goto bad;
             p= q; break;
         case 'F':
             sp->minlen= p-1-sp->spec;
@@ -1536,7 +1438,8 @@ Fid::parse_spec(Spec *sp) {
             if (sp->adj) p++;
             sp->f0= strtod(p, &q);
             sp->f1= 0;
-            if (p == q) goto bad;
+            if (p == q)
+                goto bad;
             p= q; break;
         case 'R':
             sp->minlen= p-1-sp->spec;
@@ -1544,19 +1447,20 @@ Fid::parse_spec(Spec *sp) {
             sp->adj= (p[0] == '=');
             if (sp->adj) p++;
             sp->f0= strtod(p, &q);
-            if (p == q) goto bad;
+            if (p == q)
+                goto bad;
             p= q;
-            if (*p++ != '-') goto bad;
+            if (*p++ != '-')
+                goto bad;
             sp->f1= strtod(p, &q);
-            if (p == q) goto bad;
+            if (p == q)
+                goto bad;
             if (sp->f0 > sp->f1)
             return strdupf("Backwards frequency range in spec-string \"%s\"", sp->spec);
             p= q; break;
         }
       }
-
       if (p == 0) continue;
-
       if (fmt[0] == '/' && fmt[1] == '#' && fmt[2] == 'F') {
         sp->minlen= p-sp->spec;
         sp->n_freq= 1;
@@ -1576,7 +1480,6 @@ Fid::parse_spec(Spec *sp) {
         sp->adj= sp->in_adj;
         fmt += 3;
       }
-
       // Check for trailing unmatched format characters
       if (*fmt) {
       bad:
@@ -1596,8 +1499,7 @@ Fid::parse_spec(Spec *sp) {
 void
 Fid::rewrite_spec(const char *spec, double freq0, double freq1, int adj,
 		 char **spec1p,
-		 char **spec2p, double *freq0p, double *freq1p, int *adjp)
-{
+		 char **spec2p, double *freq0p, double *freq1p, int *adjp) {
    Spec sp;
    char *err;
    sp.spec= spec;
@@ -1633,42 +1535,35 @@ Fid::rewrite_spec(const char *spec, double freq0, double freq1, int adj,
 }
 FidFilter *
 Fid::cv_array(double *arr) {
-   double *dp;
-   FidFilter *ff, *rv;
    auto n_head= 0;
    auto n_val= 0;
-
    // Scan through for sizes
    for (auto dp = arr; *dp; ) {
-      int len, typ;
-
-      typ= (int)(*dp++);
+      auto typ = (int)(*dp++);
       if (typ != 'F' && typ != 'I')
         error("Bad type in array passed to Fid::cv_array: %g", dp[-1]);
-
-      len= (int)(*dp++);
+      auto len = (int)(*dp++);
       if (len < 1)
         error("Bad length in array passed to Fid::cv_array: %g", dp[-1]);
-
       n_head++;
       n_val += len;
       dp += len;
    }
-   rv= ff= (FidFilter*)Alloc(FFCSIZE(n_head, n_val));
+   auto rv = std::make_unique<FidFilter>();
+   auto ff = rv.get();
    // Scan through to fill in FidFilter
    for (auto dp = arr; *dp; ) {
-      int len, typ;
-      typ= (int)(*dp++);
-      len= (int)(*dp++);
+      auto typ = (int)(*dp++);
+      auto len = (int)(*dp++);
 
-      ff->typ= typ;
-      ff->len= len;
-      memcpy(ff->val, dp, len * sizeof(double));
+      ff->typ = typ;
+      ff->resize(len);
+      memcpy(&ff->val[0], dp, len * sizeof(double));
       dp += len;
-      ff= FFNEXT(ff);
+      ff = ff->grow();
    }
    // Final element already zero'd thanks to allocation
-   return rv;
+   return rv.release();
 }
 //
 //	Create a single filter from the given list of filters in
@@ -1679,176 +1574,135 @@ Fid::cv_array(double *arr) {
 //
 
 FidFilter *
-Fid::cat(int freeme, ...)
-{
+Fid::cat(int freeme, ...) {
    va_list ap;
-   FidFilter *rv, *ff, *ff0;
-   int len= 0;
-   int cnt;
-   char *dst;
-
+   auto rv = std::make_unique<FidFilter>();
+   FidFilter *ff, *ff0;
+   ff = rv.get();
    // Find the memory required to store the combined filter
    va_start(ap, freeme);
    while ((ff0= va_arg(ap, FidFilter*))) {
-      for (ff= ff0; ff->typ; ff= FFNEXT(ff))
+      for (; ff0; ff0= ff0->next()) {
+        ff->val = ff0->val;
+        ff->typ = ff0->typ;
+        ff = ff->grow();
+      }
 	 ;
-      len += ((char*)ff) - ((char*)ff0);
+     if(freeme)
+         delete ff0;
    }
    va_end(ap);
-
-   rv= (FidFilter*)Alloc(FFCSIZE(0,0) + len);
-   dst= (char*)rv;
-
-   va_start(ap, freeme);
-   while ((ff0= va_arg(ap, FidFilter*))) {
-      for (ff= ff0; ff->typ; ff= FFNEXT(ff))
-	 ;
-      cnt= ((char*)ff) - ((char*)ff0);
-      memcpy(dst, ff0, cnt);
-      dst += cnt;
-      if (freeme) free(ff0);
-   }
-   va_end(ap);
-
    // Final element already zero'd
-   return rv;
+   return rv.release();
 }
-
-
 char *
-Fid::parse(double rate, char **pp, FidFilter **ffp)
-{
+Fid::parse(double rate, char **pp, FidFilter **ffp) {
    char buf[128];
    char *p= *pp, *rew;
-#define INIT_LEN 128
-   char *rv= (char*)Alloc(INIT_LEN);
-   char *rvend= rv + INIT_LEN;
-   char *rvp= rv;
-   char *tmp;
 #undef INIT_LEN
-   FidFilter *curr;
-   int xtra= FFCSIZE(0,0);
+   auto rv = std::make_unique<FidFilter>();
+   auto curr = rv.get();
    int typ= -1;		// First time through
    double val;
    char dmy;
 
 #define ERR(ptr, msg) { *pp= ptr; *ffp= 0; return msg; }
-#define INCBUF { tmp= (char*)realloc(rv, (rvend-rv) * 2); if (!tmp) error("Out of memory"); \
- rvend= (rvend-rv) * 2 + tmp; rvp= (rvp-rv) + tmp; \
- curr= (FidFilter*)(((char*)curr) - rv + tmp); rv= tmp; }
-
    while (1) {
       rew= p;
       if (!grabWord(&p, buf, sizeof(buf))) {
-	 if (*p) ERR(p, strdupf("Filter element unexpectedly long -- syntax error?"));
-	 buf[0]= 0;
+            if (*p)
+                ERR(p, "Filter element unexpectedly long -- syntax error?");
+            buf[0]= 0;
       }
-      if (!buf[0] || !buf[1]) switch (buf[0]) {
-       default:
-	  break;
-       case 0:
-       case ',':
-       case ';':
-       case ')':
-       case ']':
-       case '}':
-	  // End of filter, return it
-	  tmp= (char*)realloc(rv, (rvp-rv) + xtra);
-	  if (!tmp) error("Out of memory");
-	  curr= (FidFilter*)((rvp-rv) + tmp);
-	  curr->typ= 0; curr->len= 0;
-	  *pp= buf[0] ? (p-1) : p;
-	  *ffp= (FidFilter*)tmp;
-	  return 0;
-       case '/':
-	  if (typ > 0) ERR(rew, strdupf("Filter syntax error; unexpected '/'"));
-	  typ= 'I';
-	  continue;
-       case 'x':
-	  if (typ > 0) ERR(rew, strdupf("Filter syntax error; unexpected 'x'"));
-	  typ= 'F';
-	  continue;
-      }
-
-      if (typ < 0) typ= 'F';		// Assume 'x' if missing
-      if (!typ) ERR(p, strdupf("Expecting a 'x' or '/' before this"));
-
+    if (!buf[0] || !buf[1]) switch (buf[0]) {
+        default:
+            break;
+        case 0:
+        case ',':
+        case ';':
+        case ')':
+        case ']':
+        case '}':
+            // End of filter, return it
+            curr->typ= 0;
+            curr->resize(0);
+            *pp = buf[0] ? (p-1) : p;
+            *ffp= rv.release();
+            return 0;
+        case '/':
+            if (typ > 0)
+                ERR(rew, "Filter syntax error; unexpected '/'");
+            typ= 'I';
+            continue;
+        case 'x':
+            if (typ > 0)
+                ERR(rew, "Filter syntax error; unexpected 'x'");
+            typ= 'F';
+            continue;
+    }
+      if (typ < 0)
+          typ= 'F';		// Assume 'x' if missing
+      if (!typ)
+          ERR(p, "Expecting a 'x' or '/' before this");
       if (1 != sscanf(buf, "%lf %c", &val, &dmy)) {
         // Must be a predefined filter
         FidFilter *ff;
-        FidFilter *ff1;
         Spec sp;
         double f0, f1;
         char *err;
-        int len;
-
-        if (typ != 'F') ERR(rew, strdupf("Predefined filters cannot be used with '/'"));
-
+        if (typ != 'F')
+            ERR(rew, "Predefined filters cannot be used with '/'");
         // Parse the filter-spec
         memset(&sp, 0, sizeof(sp));
         sp.spec= buf;
         sp.in_f0= sp.in_f1= -1;
-        if ((err= parse_spec(&sp))) ERR(rew, err);
+        if ((err= parse_spec(&sp)))
+            ERR(rew, err);
         f0= sp.f0;
         f1= sp.f1;
-
         // Adjust frequencies to range 0-0.5, and check them
         f0 /= rate;
-        if (f0 > 0.5) ERR(rew, strdupf(
-            "Frequency of %gHz out of range with sampling rate of %gHz", f0*rate, rate));
+        if (f0 > 0.5) ERR(rew, strdupf("Frequency of %gHz out of range with "
+                        "sampling rate of %gHz", f0*rate, rate));
         f1 /= rate;
-        if (f1 > 0.5) ERR(rew, strdupf(
-            "Frequency of %gHz out of range with sampling rate of %gHz", f1*rate, rate));
+        if (f1 > 0.5) ERR(rew, strdupf("Frequency of %gHz out of range with "
+                        "sampling rate of %gHz", f1*rate, rate));
 
         // Okay we now have a successful spec-match to filter[sp.fi], and sp.n_arg
         // args are now in sp.argarr[]
 
         // Generate the filter
         if (!sp.adj)
-            ff= (filter[sp.fi].rout)(this,rate, f0, f1, sp.order, sp.n_arg, sp.argarr);
+            ff = (filter[sp.fi].rout)(this,rate, f0, f1, sp.order, sp.n_arg, sp.argarr);
         else if (strstr(filter[sp.fi].fmt, "#R"))
-            ff= auto_adjust_dual(&sp, rate, f0, f1);
+            ff = auto_adjust_dual(&sp, rate, f0, f1);
         else
-            ff= auto_adjust_single(&sp, rate, f0);
-
+            ff = auto_adjust_single(&sp, rate, f0);
         // Append it to our FidFilter to return
-        for (ff1= ff; ff1->typ; ff1= FFNEXT(ff1))
-        { /* nothing */ }
-        len= ((char*)ff1-(char*)ff);
-        while (rvp + len + xtra >= rvend)
-            INCBUF;
-        memcpy(rvp, ff, len); rvp += len;
-        free(ff);
+        rv->back().m_next.reset(ff);
+        curr = ff->back().grow();
         typ= 0;
         continue;
-        }
-
+      }
       // Must be a list of coefficients
-      curr= (FidFilter*)rvp;
-      rvp += xtra;
-      while (rvp + sizeof(double) >= rvend)
-        INCBUF;
       curr->typ= typ;
-      curr->len= 1;
-      *(double*)rvp= val;
-      rvp += sizeof(double);
+      curr->resize(1);
+      curr->val[0] = val;
       // See how many more coefficients we can pick up
       while (1) {
         rew= p;
         if (!grabWord(&p, buf, sizeof(buf))) {
-            if (*p) ERR(p, strdupf("Filter element unexpectedly long -- syntax error?"));
+            if (*p)
+                ERR(p, strdupf("Filter element unexpectedly long -- syntax error?"));
             buf[0]= 0;
         }
         if (1 != sscanf(buf, "%lf %c", &val, &dmy)) {
-            p= rew;
+            p = rew;
             break;
         }
-        while (rvp + sizeof(double) >= rvend)
-            INCBUF;
-        curr->len++;
-        *(double*)rvp= val;
-        rvp += sizeof(double);
+        curr->val.push_back(val);
         }
+      curr = curr->grow();
       typ= 0;
       continue;
    }
@@ -1900,20 +1754,16 @@ Fid::list_filters_buf(char *buf, char *bufend) {
    for (auto a= 0; filter[a].fmt; a++) {
       expand_spec(tmp, tmp+sizeof(tmp), filter[a].fmt);
       buf += (cnt= snprintf(buf, bufend-buf, "%s\n    ", tmp));
-      if (cnt < 0 || buf >= bufend)
-        return 0;
+      if (cnt < 0 || buf >= bufend) return 0;
       expand_spec(tmp, tmp+sizeof(tmp), filter[a].txt);
       buf += (cnt= snprintf(buf, bufend-buf, "%s\n", tmp));
-      if (cnt < 0 || buf >= bufend)
-        return 0;
+      if (cnt < 0 || buf >= bufend) return 0;
    }
    return 1;
 }
 int
-Fid::convolve(double *dst, int n_dst, double *src, int n_src) {
+convolve(double *dst, int n_dst, double *src, int n_src) {
    int len= n_dst + n_src - 1;
-   int b;
-
    for (auto a= len-1; a>=0; a--) {
       auto val= 0.0;
       for (auto b= 0; b<n_src; b++)

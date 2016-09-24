@@ -5,8 +5,27 @@ static const unsigned int kStartupSamplerate = 44100;
 static const unsigned int kStartupLoFreq = 246;
 static const unsigned int kStartupHiFreq = 2484;
 
+namespace {
+    void processTwo(std::unique_ptr<EngineFilterIIR> filt[2],const CSAMPLE *pIn, CSAMPLE *pOut, const int count)
+    {
+        filt[0]->process(pIn,pOut,count);
+        filt[1]->process(pOut,pOut,count);
+    }
+    void setFrequencyCornersTwo(std::unique_ptr<EngineFilterIIR> filt[2], double rate, double freq0)
+    {
+        filt[0]->setFrequencyCorners(rate,freq0);
+        filt[1]->setFrequencyCorners(rate,freq0);
+    }
+    void pauseFilterTwo(std::unique_ptr<EngineFilterIIR> filt[2])
+    {
+        filt[0]->pauseFilter();
+        filt[1]->pauseFilter();
+    }
+};
+
 // static
-QString LinkwitzRiley8EQEffect::getId() {
+QString LinkwitzRiley8EQEffect::getId()
+{
     return "org.mixxx.effects.linkwitzrileyeq";
 }
 
@@ -100,44 +119,57 @@ LinkwitzRiley8EQEffectGroupState::LinkwitzRiley8EQEffectGroupState()
           old_high(1.0),
           m_oldSampleRate(kStartupSamplerate),
           m_loFreq(kStartupLoFreq),
-          m_hiFreq(kStartupHiFreq) {
+          m_hiFreq(kStartupHiFreq)
+{
 
     m_pLowBuf = SampleUtil::alloc(MAX_BUFFER_LEN);
     m_pBandBuf = SampleUtil::alloc(MAX_BUFFER_LEN);
     m_pHighBuf = SampleUtil::alloc(MAX_BUFFER_LEN);
+    for(auto i : { 0, 1 }) {
+        m_low_low[i] = std::make_unique<EngineFilterIIR>(4,IIR_LP,"LpBu4");
+        m_low_low[i]->setFrequencyCorners(kStartupSamplerate, kStartupLoFreq);
 
-    m_low1 = new EngineFilterLinkwtzRiley8Low(kStartupSamplerate, kStartupLoFreq);
-    m_high1 = new EngineFilterLinkwtzRiley8High(kStartupSamplerate, kStartupLoFreq);
-    m_low2 = new EngineFilterLinkwtzRiley8Low(kStartupSamplerate, kStartupHiFreq);
-    m_high2 = new EngineFilterLinkwtzRiley8High(kStartupSamplerate, kStartupHiFreq);
+        m_low_high[i] = std::make_unique<EngineFilterIIR>(4,IIR_HP,"HpBu4");
+        m_low_high[i]->setFrequencyCorners(kStartupSamplerate, kStartupLoFreq);
+
+        m_high_low[i] = std::make_unique<EngineFilterIIR>(4,IIR_LP,"LpBu4");
+        m_high_low[i]->setFrequencyCorners(kStartupSamplerate, kStartupHiFreq);
+
+        m_high_high[i] = std::make_unique<EngineFilterIIR>(4,IIR_HP,"HpBu4");
+        m_high_high[i]->setFrequencyCorners(kStartupSamplerate, kStartupHiFreq);
+    }
+    setFilters(kStartupSamplerate, kStartupLoFreq, kStartupHiFreq);
+
 }
-
-LinkwitzRiley8EQEffectGroupState::~LinkwitzRiley8EQEffectGroupState() {
-    delete m_low1;
-    delete m_high1;
-    delete m_low2;
-    delete m_high2;
+LinkwitzRiley8EQEffectGroupState::~LinkwitzRiley8EQEffectGroupState()
+{
     SampleUtil::free(m_pLowBuf);
     SampleUtil::free(m_pBandBuf);
     SampleUtil::free(m_pHighBuf);
 }
-
-void LinkwitzRiley8EQEffectGroupState::setFilters(int sampleRate, int lowFreq,
-                                               int highFreq) {
-    m_low1->setFrequencyCorners(sampleRate, lowFreq);
-    m_high1->setFrequencyCorners(sampleRate, lowFreq);
-    m_low2->setFrequencyCorners(sampleRate, highFreq);
-    m_high2->setFrequencyCorners(sampleRate, highFreq);
+void LinkwitzRiley8EQEffectGroupState::setFilters(int sampleRate, double lowFreq,double highFreq)
+{
+    if(sampleRate != m_oldSampleRate || lowFreq != m_loFreq) {
+        setFrequencyCornersTwo(m_low_low,  sampleRate, lowFreq);
+        setFrequencyCornersTwo(m_low_high, sampleRate, lowFreq);
+    }
+    if(sampleRate != m_oldSampleRate || highFreq != m_hiFreq) {
+        setFrequencyCornersTwo(m_high_low, sampleRate, highFreq);
+        setFrequencyCornersTwo(m_high_high,sampleRate, highFreq);
+    }
+    m_oldSampleRate = sampleRate;
+    m_loFreq = lowFreq;
+    m_hiFreq = highFreq;
 }
 
-LinkwitzRiley8EQEffect::LinkwitzRiley8EQEffect(EngineEffect* pEffect,
-                                         const EffectManifest& manifest)
+LinkwitzRiley8EQEffect::LinkwitzRiley8EQEffect(EngineEffect* pEffect, const EffectManifest& manifest)
         : m_pPotLow(pEffect->getParameterById("low")),
           m_pPotMid(pEffect->getParameterById("mid")),
           m_pPotHigh(pEffect->getParameterById("high")),
           m_pKillLow(pEffect->getParameterById("killLow")),
           m_pKillMid(pEffect->getParameterById("killMid")),
-          m_pKillHigh(pEffect->getParameterById("killHigh")) {
+          m_pKillHigh(pEffect->getParameterById("killHigh"))
+{
     Q_UNUSED(manifest);
     m_pLoFreqCorner = new ControlProxy("[Mixer Profile]", "LoEQFrequency");
     m_pHiFreqCorner = new ControlProxy("[Mixer Profile]", "HiEQFrequency");
@@ -157,55 +189,42 @@ void LinkwitzRiley8EQEffect::processChannel(const ChannelHandle& handle,
                                             const GroupFeatureState& groupFeatures) {
     Q_UNUSED(handle);
     Q_UNUSED(groupFeatures);
-
     float fLow = 0.f, fMid = 0.f, fHigh = 0.f;
-    if (!m_pKillLow->toBool()) {
+    if (!m_pKillLow->toBool())
         fLow = m_pPotLow->value();
-    }
-    if (!m_pKillMid->toBool()) {
+    if (!m_pKillMid->toBool())
         fMid = m_pPotMid->value();
-    }
-    if (!m_pKillHigh->toBool()) {
+    if (!m_pKillHigh->toBool())
         fHigh = m_pPotHigh->value();
-    }
 
-    if (pState->m_oldSampleRate != sampleRate ||
-            (pState->m_loFreq != static_cast<int>(m_pLoFreqCorner->get())) ||
-            (pState->m_hiFreq != static_cast<int>(m_pHiFreqCorner->get()))) {
-        pState->m_loFreq = static_cast<int>(m_pLoFreqCorner->get());
-        pState->m_hiFreq = static_cast<int>(m_pHiFreqCorner->get());
-        pState->m_oldSampleRate = sampleRate;
-        pState->setFilters(sampleRate, pState->m_loFreq, pState->m_hiFreq);
-    }
+    pState->setFilters(sampleRate, m_pLoFreqCorner->get(), m_pHiFreqCorner->get());
 
-    pState->m_high2->process(pInput, pState->m_pHighBuf, numSamples); // HighPass first run
-    pState->m_low2->process(pInput, pState->m_pLowBuf, numSamples); // LowPass first run for low and bandpass
+    processTwo(pState->m_high_high, pInput,             pState->m_pHighBuf, numSamples); // HighPass first run
+    processTwo(pState->m_high_low,  pInput,             pState->m_pBandBuf, numSamples); // LowPass first run for low and bandpass
+    processTwo(pState->m_low_low,   pState->m_pBandBuf, pState->m_pLowBuf,  numSamples); // LowPass first run for low and bandpass
+    processTwo(pState->m_low_high,  pState->m_pBandBuf, pState->m_pBandBuf, numSamples); // LowPass first run for low and bandpass
 
-    if (fMid != pState->old_mid ||
-            fHigh != pState->old_high) {
-        SampleUtil::applyRampingGain(pState->m_pHighBuf,pState->old_high, fHigh,
-                numSamples);
-        SampleUtil::addWithRampingGain(pState->m_pHighBuf,
-                pState->m_pLowBuf, pState->old_mid, fMid,
-                numSamples);
-    } else {
-        SampleUtil::applyGain(pState->m_pHighBuf, fHigh, numSamples);
-        SampleUtil::addWithGain(pState->m_pHighBuf, pState->m_pLowBuf, fMid, numSamples);
-    }
+    SampleUtil::copyWithRampingGain( pOutput, pState->m_pHighBuf, pState->old_high, fHigh, numSamples);
+    SampleUtil::addWithRampingGain ( pOutput, pState->m_pBandBuf, pState->old_mid,  fMid,  numSamples);
+    SampleUtil::addWithRampingGain ( pOutput, pState->m_pLowBuf,  pState->old_low,  fLow,  numSamples);
 
-    pState->m_high1->process(pState->m_pHighBuf, pState->m_pBandBuf, numSamples); // HighPass + BandPass second run
-    pState->m_low1->process(pState->m_pLowBuf, pState->m_pLowBuf, numSamples); // LowPass second run
+/*    SampleUtil::applyRampingGain(  pState->m_pHighBuf,                  pState->old_high,fHigh,numSamples);
+    SampleUtil::addWithRampingGain(pState->m_pHighBuf,pState->m_pLowBuf,pState->old_mid, fMid,numSamples);
 
-    SampleUtil::copy(pOutput,pState->m_pBandBuf, numSamples);
-    SampleUtil::addWithRampingGain(pOutput, pState->m_pLowBuf, pState->old_low, fLow, numSamples);
+    processTwo(pState->m_low_high,pState->m_pHighBuf, pState->m_pBandbuf, numSamples); // HighPass + BandPass second run
+    processTwo(pState->m_low_low, pState->m_pLowBuf,  pState->m_pLowBuf,  numSamples); // LowPass second run
+
+    SampleUtil::copyWithRampingGain(pOutput,pState->m_pLowBuf, pState->old_low,fLow,numSamples);
+    SampleUtil::addWithGain(pOutput,pState->m_pBandBuf, 1,numSamples);*/
 
     if (enableState == EffectProcessor::DISABLING) {
         // we rely on the ramping to dry in EngineEffect
         // since this EQ is not fully dry at unity
-        pState->m_low1->pauseFilter();
-        pState->m_low2->pauseFilter();
-        pState->m_high1->pauseFilter();
-        pState->m_high2->pauseFilter();
+        pauseFilterTwo(pState->m_low_low);
+        pauseFilterTwo(pState->m_low_high);
+        pauseFilterTwo(pState->m_high_low);
+        pauseFilterTwo(pState->m_high_high);
+
         pState->old_low = 1.0;
         pState->old_mid = 1.0;
         pState->old_high = 1.0;
