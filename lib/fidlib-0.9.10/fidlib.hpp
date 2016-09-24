@@ -23,7 +23,7 @@
 //
 //	Robert Bristow-Johnson's EQ cookbook formulae:
 //	  http://www.harmony-central.com/Computer/Programming/Audio-EQ-Cookbook.txt
-//	
+//
 _Pragma("once")
 #include <vector>
 #include <memory>
@@ -43,37 +43,37 @@ _Pragma("once")
 #include <cstring>
 #include <ctype.h>
 
-struct FidFilterItem {
+struct FidSubFilter{
     std::vector<double>     val;
-             FidFilterItem() = default;
+             FidSubFilter() = default;
     template<class... Args>
-             FidFilterItem(const Args&... args)
+             FidSubFilter(const Args&... args)
              : val(args...)
     { }
     template<class... Args>
-             FidFilterItem(Args&&... args)
+             FidSubFilter(Args&&... args)
              : val(std::forward(args...))
     { }
-    virtual ~FidFilterItem() = default;
+    virtual ~FidSubFilter() = default;
     virtual void process(double *dst, const double *const src, size_t len) = 0;
     virtual void process(double *dst, const double *const src, size_t len, size_t stride) = 0;
 };
-struct FidIIRItem : public FidFilterItem {
-             FidIIRItem() = default;
-    virtual ~FidIIRItem() = default;
+struct FidIIR : public FidSubFilter{
+             FidSubIIR() = default;
+    virtual ~FidSubIIR() = default;
     virtual void process(double *dst, const double *const src, size_t len);
     virtual void process(double *dst, const double *const src, size_t len, size_t stride);
 };
-struct FidFIRItem : public FidFilterItem {
-             FidFIRItem() = default;
-    virtual ~FidFIRItem() = default;
+struct FidSubFIR: public FidFilter{
+             FidSubFIR() = default;
+    virtual ~FidSubFIR() = default;
     virtual void process(double *dst, const double *const src, size_t len);
     virtual void process(double *dst, const double *const src, size_t len, size_t stride);
 };
 struct FidFilt{
-    std::vector<std::unique_ptr<FidFilterItem> > m_items;
+    std::vector<std::unique_ptr<FidSubFilter> > m_items;
     FidFilt() = default;
-    FidFilt(std::initializer_list<std::unique_ptr<FidFilterItem>&> l);
+    FidFilt(std::initializer_list<std::unique_ptr<FidSubFilter>&> l);
     FidFilt(FidFilt&&) = default;
     FidFilt&operator=(FidFilt&&) = default;
 
@@ -106,8 +106,9 @@ struct FidFilter {
 #define FFALLOC(n_head,n_val) (FidFilter*)Alloc(FFCSIZE(n_head, n_val))
 
 // These are so you can use easier names to refer to running filters
-typedef void FidRun;
+using FidRun = void;
 typedef double (FidFunc)(void*, double);
+
 struct Run;
 struct RunBuf;
 //
@@ -118,7 +119,7 @@ struct RunBuf;
 //	specify the filter, or it can be used with the frequency or
 //	frequency range missing, in which case default values are
 //	picked up from values passed directly to the routine.
-//	
+//
 //	The spec consists of a series of letters usually followed by
 //	the order of the filter and then by any other parameters
 //	required, preceded by slashes.  For example:
@@ -152,15 +153,15 @@ struct RunBuf;
 //	okay= fid_list_filters_buf(buf, buf+sizeof(buf));
 //
 //	// Calculate the response of the filter at a given frequency
-//	// (frequency is given as a proportion of the sampling rate, in 
-//	// the range 0 to 0.5).  If phase is returned, then this is 
+//	// (frequency is given as a proportion of the sampling rate, in
+//	// the range 0 to 0.5).  If phase is returned, then this is
 //	// given in the range 0 to 1 (for 0 to 2*pi).
 //	resp= fid_response(filt, freq);
 //	resp= fid_response_pha(filt, freq, &phase);
 //
 //	// Estimate the signal delay caused by a particular filter, in samples
 //	delay= fid_calc_delay(filt);
-//	
+//
 //	// Run a given filter (this will do JIT filter compilation if this is
 //	// implemented for this processor / OS)
 //	run= fid_run_new(filt, &funcp);
@@ -176,7 +177,7 @@ struct RunBuf;
 //	fid_run_freebuf(fbuf1);
 //	fid_run_free(run);
 //
-//	// If you need to allocate your own buffers separately for some 
+//	// If you need to allocate your own buffers separately for some
 //	// reason, then do it this way:
 //	run= fid_run_new(filt, &funcp);
 //	len= fid_run_bufsize(run);
@@ -192,30 +193,30 @@ struct RunBuf;
 //	free(fbuf1);
 //	fid_run_free(run);
 //
-//	// Convert an arbitrary filter into a new filter which is a single 
-//	// IIR/FIR pair.  This is done by convolving the coefficients.  This 
-//	// flattened filter will give the same result, in theory.  However, 
-//	// in practice this will be less accurate, especially in cases where 
-//	// the limits of the floating point format are being reached (e.g. 
+//	// Convert an arbitrary filter into a new filter which is a single
+//	// IIR/FIR pair.  This is done by convolving the coefficients.  This
+//	// flattened filter will give the same result, in theory.  However,
+//	// in practice this will be less accurate, especially in cases where
+//	// the limits of the floating point format are being reached (e.g.
 //	// subtracting numbers with small highly significant differences).
 //	// The routine also ensures that the IIR first coefficient is 1.0.
 //	filt2= fid_flatten(filt);
 //	free(filt);
 //
 //	// Parse an entire filter-spec string possibly containing several FIR,
-//	// IIR and predefined filters and return it as a FidFilter at the given 
+//	// IIR and predefined filters and return it as a FidFilter at the given
 //	// location.  Stops at the first ,; or unmatched )]} character, or the end
 //	// of the string.  Returns a strdup'd error string on error, or else 0.
 //	err= fid_parse(double rate, char **pp, FidFilter **ffp);
 //
-//	// Set up your own fatal-error handler (default is to dump a message 
+//	// Set up your own fatal-error handler (default is to dump a message
 //	// to STDERR and exit on fatal conditions)
 //	fid_set_error_handler(&my_error_func);
 //
 //	// Get the version number of the library as a string (e.g. "1.0.0")
 //	txt= fid_version();
 //
-//	// Design a filter and reduce it to a list of all the non-const 
+//	// Design a filter and reduce it to a list of all the non-const
 //	// coefficients, which is returned in the given double[].  The number
 //	// of coefficients expected must be provided (as a check).
 //	#define N_COEF <whatever>
@@ -231,11 +232,11 @@ struct RunBuf;
 //	free(full); free(min);
 //
 //	// Create a FidFilter based on coefficients provided in the
-//	// given double array.  
+//	// given double array.
 //	static double array[]= { 'I', 3, 1.0, 0.55, 0.77, 'F', 3, 1, -2, 1, 0 };
 //	filt= fid_cv_array(array);
 //
-//	// Join a number of filters into a single filter (and free them too, 
+//	// Join a number of filters into a single filter (and free them too,
 //	// if the first argument is 1)
 //	filt= fid_cat(0, filt1, filt2, filt3, filt4, 0);
 //
@@ -255,15 +256,15 @@ struct RunBuf;
 //	elements, or whatever).  This is followed by a short bitmap
 //	which indicates which of the coefficients are constants,
 //	aiding code-generation.  Next comes the count of the following
-//	coefficients, as an int.  (These header fields normally takes 8 
-//	bytes, the same as a double, but this might depend on the 
-//	platform).  Then follow the coefficients, as doubles.  The next 
-//	sub-filter follows on straight after that.  The end of the list 
+//	coefficients, as an int.  (These header fields normally takes 8
+//	bytes, the same as a double, but this might depend on the
+//	platform).  Then follow the coefficients, as doubles.  The next
+//	sub-filter follows on straight after that.  The end of the list
 //	is marked by 8 zero bytes, meaning typ==0, cbm==0 and len==0.
 //
 //	The filter can be read with the aid of the FidFilter structure
-//	(giving typ, cbm, len and val[] elements) and the FFNEXT() 
-//	macro: using ff= FFNEXT(ff) steps to the next FidFilter 
+//	(giving typ, cbm, len and val[] elements) and the FFNEXT()
+//	macro: using ff= FFNEXT(ff) steps to the next FidFilter
 //	structure along the chain.
 //
 //	Note that within the sub-filters, coefficients are listed in
@@ -314,59 +315,59 @@ public:
     char poltyp[MAXPZ];	// Pole value types: 1 real, 2 first of complex pair, 0 second
     int n_zer;		// Same for zeros ...
     std::complex<double> zer[MAXPZ];
-    char zertyp[MAXPZ];	
+    char zertyp[MAXPZ];
     //
     //	Pre-warp a frequency
     //
     //
     //	Generate Bessel poles for the given order.
     //
-    void 
+    void
     bessel(int order);
     //
     //	Generate Butterworth poles for the given order.  These are
     //	regularly-spaced points on the unit circle to the left of the
     //	real==0 line.
     //
-    void 
+    void
     butterworth(int order);
     //
     //	Generate Chebyshev poles for the given order and ripple.
     //
-    void 
+    void
     chebyshev(int order, double ripple);
     //
     //	Adjust raw poles to LP filter
     //
-    void 
+    void
     lowpass(double freq);
     //
     //	Adjust raw poles to HP filter
     //
-    void 
+    void
     highpass(double freq);
     //
     //	Adjust raw poles to BP filter.  The number of poles is
     //	doubled.
     //
-    void 
+    void
     bandpass(double freq1, double freq2);
     //
     //	Adjust raw poles to BS filter.  The number of poles is
     //	doubled.
     //
-    void 
+    void
     bandstop(double freq1, double freq2);
     //
     //	Convert list of poles+zeros from S to Z using bilinear
     //	transform
     //
-    void 
+    void
     s2z_bilinear();
     //
     //	Convert S to Z using matched-Z transform
     //
-    void 
+    void
     s2z_matchedZ();
     //
     //	Generate a FidFilter for the current set of poles and zeros.
@@ -391,34 +392,35 @@ public:
     //	the Q-factor; 0 is a special value indicating +infinity,
     //	giving an oscillator.
     //
-    double 
+    double
     search_peak(FidFilter *ff, double f0, double f3);
     //
     //	Setup poles/zeros for a proportional-integral filter
     //
     //
-    int 
+    int
     calc_delay(FidFilter *filt);
-    double 
+    double
     response_pha(FidFilter *filt, double freq, double *phase);
-    double 
+    double
     response(FidFilter *filt, double freq);
     FidFilter*
     stack_filter(int order, int n_head, int n_val, ...);
-
-#define BL 0
-#define MZ 1
+    enum class StoZType {
+        Bilinear = 0,
+        MatchedZ = 1,
+    };
 
     //
     //	Information passed to individual filter design routines:
     //
-    //	  double* rout(double rate, double f0, double f1, 
+    //	  double* rout(double rate, double f0, double f1,
     //		       int order, int n_arg, double *arg);
     //
     //	'rate' is the sampling rate, or 1 if not set
-    //	'f0' and 'f1' give the frequency or frequency range as a 
+    //	'f0' and 'f1' give the frequency or frequency range as a
     //	 	proportion of the sampling rate
-    //	'order' is the order of the filter (the integer passed immediately 
+    //	'order' is the order of the filter (the integer passed immediately
     //		after the name)
     //	'n_arg' is the number of additional arguments for the filter
     //	'arg' gives the additional argument values: arg[n]
@@ -428,7 +430,7 @@ public:
     //
     //	See the previous description for the required meaning of the
     //	return value FidFilter list.
-    //	
+    //
 
     //
     //	Filter design routines and supporting code
@@ -486,7 +488,7 @@ public:
     //	(~-3.01dB) point to 6 figures
     //
 #define M301DB (0.707106781186548)
-    FidFilter * auto_adjust_single(Spec *sp, double rate, double f0); 
+    FidFilter * auto_adjust_single(Spec *sp, double rate, double f0);
     //
     //	Auto-adjust input frequencies to give response of sqrt(0.5)
     //	(~-3.01dB) correct to 6sf at the given frequency-points
@@ -496,7 +498,7 @@ public:
     //	Expand a specification string to the given buffer; if out of
     //	space, drops dead
     //
-    void 
+    void
     expand_spec(char *buf, char *bufend, const char *str);
     //
     //	Design a filter and reduce it to a list of all the non-const
@@ -516,18 +518,18 @@ public:
     //	generating code, or else the coefficients won't match up.  The
     //	'n_coef' argument provides a partial safeguard.
     //
-    double 
+    double
     design_coef(double *coef, int n_coef, const char *spec, double rate, double freq0, double freq1, int adj);
     //
     //	List all the known filters to the given file handle
     //
-    void 
+    void
     list_filters(FILE *out);
     //
     //	List all the known filters to the given buffer; the buffer is
     //	NUL-terminated; returns 1 okay, 0 not enough space
     //
-    int 
+    int
     list_filters_buf(char *buf, char *bufend);
     //
     //      Do a convolution of parameters in place
@@ -555,9 +557,9 @@ public:
     //	If either of spec1p or spec2p is 0, then that particular
     //	spec-string is not generated.
     //
-    void 
+    void
     rewrite_spec(const char *spec, double freq0, double freq1, int adj,
-            char **spec1p, 
+            char **spec1p,
             char **spec2p, double *freq0p, double *freq1p, int *adjp);
     //	Create a FidFilter from the given double array.  The double[]
     //	should contain one or more sections, each starting with the
@@ -567,11 +569,11 @@ public:
     //
     //	This is really just a convenience function, allowing a filter
     //	to be conveniently dumped to C source code and then
-    //	reconstructed.  
+    //	reconstructed.
     //
     //	Note that for more general filter generation, FidFilter
     //	instances can be created simply by allocating the memory and
-    //	filling them in (see fidlib.h).  
+    //	filling them in (see fidlib.h).
     //
     FidFilter *
     cv_array(double *arr);
@@ -581,7 +583,7 @@ public:
     //	free'd once read; otherwise they are left untouched.  The
     //	newly allocated resultant filter is returned, which should be
     //	released with free() when finished with.
-    //      
+    //
     FidFilter *
     cat(int freeme, ...);
     //	Support for fid_parse
@@ -606,8 +608,8 @@ public:
     run_newbuf(void *run);
     void
     run_zapbuf(void *buf);
-    void 
+    void
     run_freebuf(void *runbuf);
-    void 
+    void
     run_free(void *run);
 };
