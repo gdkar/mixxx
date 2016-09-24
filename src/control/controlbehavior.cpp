@@ -27,7 +27,7 @@ void ControlNumericBehavior::setValueFromMidiParameter(MidiOpCode o, double dPar
                                                        ControlDoublePrivate* pControl) {
     Q_UNUSED(o);
     double dNorm = midiValueToParameter(dParam);
-    pControl->set(parameterToValue(dNorm), NULL);
+    pControl->set(parameterToValue(dNorm), nullptr);
 }
 
 ControlPotmeterBehavior::ControlPotmeterBehavior(double dMinValue, double dMaxValue,
@@ -121,14 +121,14 @@ double ControlLogPotmeterBehavior::valueToParameter(double dValue) {
     } else if (dValue < m_dMinValue) {
         dValue = m_dMinValue;
     }
-    double linPrameter = (dValue - m_dMinValue) / m_dValueRange;
-    double dbParamter = ratio2db(linPrameter + m_minOffset * (1 - linPrameter));
+    auto linPrameter = (dValue - m_dMinValue) / m_dValueRange;
+    auto dbParamter = ratio2db(linPrameter + m_minOffset * (1 - linPrameter));
     return 1 - (dbParamter / m_minDB);
 }
 
 double ControlLogPotmeterBehavior::parameterToValue(double dParam) {
-    double dbParamter = (1 - dParam) * m_minDB;
-    double linPrameter = (db2ratio(dbParamter) - m_minOffset) / (1 - m_minOffset);
+    auto dbParamter = (1 - dParam) * m_minDB;
+    auto linPrameter = (db2ratio(dbParamter) - m_minOffset) / (1 - m_minOffset);
     return m_dMinValue + (linPrameter * m_dValueRange);
 }
 
@@ -149,7 +149,7 @@ ControlAudioTaperPotBehavior::ControlAudioTaperPotBehavior(
           m_maxDB(maxDB),
           m_offset(db2ratio(m_minDB))
 {
-    m_midiCorrection = ceil(m_neutralParameter * 127) - (m_neutralParameter * 127);
+    m_midiCorrection = 0;//ceil(m_neutralParameter * 127.) - (m_neutralParameter * 127.);
 }
 
 ControlAudioTaperPotBehavior::~ControlAudioTaperPotBehavior() {
@@ -158,12 +158,12 @@ ControlAudioTaperPotBehavior::~ControlAudioTaperPotBehavior() {
 double ControlAudioTaperPotBehavior::valueToParameter(double dValue) {
     auto dParam = 1.0;
     if (dValue <= 0.0) {
-        return 0;
+        return 0.;
     } else if (dValue < 1.0) {
         // db + linear overlay to reach
         // m_minDB = 0
         // 0 dB = m_neutralParameter
-        auto overlay = m_offset * (1 - dValue);
+        auto overlay = m_offset * (1. - dValue);
         if (m_minDB) {
             dParam = (ratio2db(dValue + overlay) - m_minDB) / m_minDB * m_neutralParameter * -1;
         } else {
@@ -174,7 +174,7 @@ double ControlAudioTaperPotBehavior::valueToParameter(double dValue) {
     } else if (dValue < m_dMaxValue) {
         // m_maxDB = 1
         // 0 dB = m_neutralParameter
-        dParam = (ratio2db(dValue) / m_maxDB * (1 - m_neutralParameter)) + m_neutralParameter;
+        dParam = (ratio2db(dValue) / m_maxDB * (1. - m_neutralParameter)) + m_neutralParameter;
     }
     //qDebug() << "ControlAudioTaperPotBehavior::valueToParameter" << "value =" << dValue << "dParam =" << dParam;
     return dParam;
@@ -182,7 +182,7 @@ double ControlAudioTaperPotBehavior::valueToParameter(double dValue) {
 
 double ControlAudioTaperPotBehavior::parameterToValue(double dParam)
 {
-    auto dValue = 1;
+    auto dValue = 1.;
     if (dParam <= 0.0) {
         dValue = 0;
     } else if (dParam < m_neutralParameter) {
@@ -208,12 +208,11 @@ double ControlAudioTaperPotBehavior::parameterToValue(double dParam)
 
 double ControlAudioTaperPotBehavior::midiValueToParameter(double midiValue)
 {
-    auto dParam = 0;
+    auto dParam = 0.;
     if (m_neutralParameter && m_neutralParameter != 1.0) {
         auto neutralTest = (midiValue - m_midiCorrection) / 127.0;
         if (neutralTest < m_neutralParameter) {
-            dParam = midiValue /
-                    (127.0 + m_midiCorrection / m_neutralParameter);
+            dParam = midiValue / (127.0 + m_midiCorrection / m_neutralParameter);
         } else {
             // m_midicorrection is allways < 1, so NaN check required
             dParam = (midiValue - m_midiCorrection / m_neutralParameter) /
@@ -246,7 +245,7 @@ void ControlAudioTaperPotBehavior::setValueFromMidiParameter(MidiOpCode o, doubl
                                                            ControlDoublePrivate* pControl) {
     Q_UNUSED(o);
     double dParam = midiValueToParameter(dMidiParam);
-    pControl->set(parameterToValue(dParam), NULL);
+    pControl->set(parameterToValue(dParam), nullptr);
 }
 
 
@@ -281,26 +280,19 @@ void ControlPushButtonBehavior::setValueFromMidiParameter(
     // with a changed dParam 127 for pressed an 0 for released.
     // Other controller like the VMS4 are using MIDI_NOTE_ON
     // And MIDI_NOTE_OFF and a velocity value like a piano keyboard
-    bool pressed = true;
-    if (o == MIDI_NOTE_OFF || dParam == 0) {
-        // MIDI_NOTE_ON + 0 should be interpreted a released according to
-        // http://de.wikipedia.org/wiki/Musical_Instrument_Digital_Interface
-        // looking for MIDI_NOTE_ON doesn't seem to work...
-        pressed = false;
-    }
-
+    auto pressed = (o != MIDI_NOTE_OFF && dParam);
     // This block makes push-buttons act as power window buttons.
     if (m_buttonMode == POWERWINDOW && m_iNumStates == 2) {
-        auto* timer = getTimer();
+        auto timer = getTimer();
         if (pressed) {
             // Toggle on press
-            double value = pControl->get();
-            pControl->set(!value, NULL);
+            auto value = pControl->get();
+            pControl->set(!value, nullptr);
             timer->setSingleShot(true);
             timer->start(kPowerWindowTimeMillis);
         } else if (!timer->isActive()) {
             // Disable after releasing a long press
-            pControl->set(0., NULL);
+            pControl->set(0., nullptr);
         }
     } else if (m_buttonMode == TOGGLE || m_buttonMode == LONGPRESSLATCHING) {
         // This block makes push-buttons act as toggle buttons.
@@ -310,29 +302,24 @@ void ControlPushButtonBehavior::setValueFromMidiParameter(
                 // to change the value at the same time. We allow the race here,
                 // because this is possibly what the user expects if he changes
                 // the same control from different devices.
-                double value = pControl->get();
+                auto value = pControl->get();
                 value = (int)(value + 1.) % m_iNumStates;
-                pControl->set(value, NULL);
+                pControl->set(value, nullptr);
                 if (m_buttonMode == LONGPRESSLATCHING) {
                     auto* timer = getTimer();
                     timer->setSingleShot(true);
                     timer->start(kLongPressLatchingTimeMillis);
                 }
             } else {
-                double value = pControl->get();
-                if (m_buttonMode == LONGPRESSLATCHING &&
-                        getTimer()->isActive() && value >= 1.) {
+                auto value = pControl->get();
+                if (m_buttonMode == LONGPRESSLATCHING && getTimer()->isActive() && value >= 1.) {
                     // revert toggle if button is released too early
                     value = (int)(value - 1.) % m_iNumStates;
-                    pControl->set(value, NULL);
+                    pControl->set(value, nullptr);
                 }
             }
         }
     } else { // Not a toggle button (trigger only when button pushed)
-        if (pressed) {
-            pControl->set(1., NULL);
-        } else {
-            pControl->set(0., NULL);
-        }
+        pControl->set(double(pressed), nullptr);
     }
 }
