@@ -34,10 +34,10 @@ Item {
         ToggleKey { item: "pfl";key:"b"}
         Set       { item: "volume"; to: 1; key: "Ctrl+5"}
         Set       { item: "volume"; to: 0; key: "Ctrl+t"}
-        Add       { item: "volume"; amount: 1/8; key:"5";min:0;max:1}
-        Add       { item: "volume"; amount: -1/8; key:"t";min:0;max:1}
-        Add       { item: "volume"; amount: 1/16; key:"Shift+%";min:0;max:1}
-        Add       { item: "volume"; amount: -1/16; key:"Shift+t";min:0;max:1}
+        Add       { item: "volume"; amount: 1/16; key:"5";min:0;max:1}
+        Add       { item: "volume"; amount: -1/16; key:"t";min:0;max:1}
+        Add       { item: "volume"; amount: 1/64; key:"Shift+%";min:0;max:1}
+        Add       { item: "volume"; amount: -1/64; key:"Shift+t";min:0;max:1}
 
         PushKey   { item:"LoadSelectedTrack";key: "Shift+Left"}
         PushKey   { item:"eject";key:"Alt+Shift+Left"}
@@ -82,10 +82,10 @@ Item {
 
         Set       { item: "volume"; to: 1; key: "Ctrl+6"}
         Set       { item: "volume"; to: 0; key: "Ctrl+y"}
-        Add       { item: "volume"; amount: 1/8; key:"6";min:0;max:1}
-        Add       { item: "volume"; amount: -1/8; key:"^";min:0;max:1}
-        Add       { item: "volume"; amount: 1/16; key:"Shift+y";min:0;max:1}
-        Add       { item: "volume"; amount: -1/16; key:"Shift+y";min:0;max:1}
+        Add       { item: "volume"; amount: 1/16; key:"6";min:0;max:1}
+        Add       { item: "volume"; amount: -1/16; key:"^";min:0;max:1}
+        Add       { item: "volume"; amount: 1/64; key:"Shift+y";min:0;max:1}
+        Add       { item: "volume"; amount: -1/64; key:"Shift+y";min:0;max:1}
         PushKey   { item:"LoadSelectedTrack";key: "Shift+Right";}
         PushKey   { item:"eject";key:"Alt+Shift+Right"}
         PushKey   { item:"hotcue_1_activate";key:"m";}

@@ -91,7 +91,6 @@ class MixxxMainWindow : public QMainWindow {
     // Warn the user when inputs are not configured.
     void slotNoMicrophoneInputConfigured();
     void slotNoDeckPassthroughInputConfigured();
-    void slotNoVinylControlInputConfigured();
 
   signals:
     void newSkinLoaded();
@@ -144,19 +143,12 @@ class MixxxMainWindow : public QMainWindow {
     BroadcastManager* m_pBroadcastManager;
 #endif
     ControllerManager* m_pControllerManager;
-
     GuiTick* m_pGuiTick;
-
-    VinylControlManager* m_pVCManager;
-
     KeyboardEventFilter* m_pKeyboard;
     // The library management object
     Library* m_pLibrary;
-
     WMainMenuBar* m_pMenuBar;
-
     DlgDeveloperTools* m_pDeveloperToolsDlg;
-
     /** Pointer to preference dialog */
     DlgPreferences* m_pPrefDlg;
 

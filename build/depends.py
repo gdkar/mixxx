@@ -732,7 +732,7 @@ class MixxxCore(Feature):
 #                   "controllers/controllervisitor.cpp",
 #                   "controllers/controllerengine.cpp",
 #                   "controllers/controllerenumerator.cpp",
-                   "controllers/controllerlearningeventfilter.cpp",
+#                   "controllers/controllerlearningeventfilter.cpp",
                    "controllers/controllermanager.cpp",
 #                   "controllers/controllerpresetfilehandler.cpp",
 #                   "controllers/controllerpresetinfo.cpp",

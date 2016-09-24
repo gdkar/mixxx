@@ -21,7 +21,6 @@
 #include "mixer/basetrackplayer.h"
 #include "library/library.h"
 #include "util/xml.h"
-#include "controllers/controllerlearningeventfilter.h"
 #include "controllers/controllermanager.h"
 
 #include "skin/colorschemeparser.h"
@@ -850,8 +849,6 @@ QWidget* LegacySkinParser::parseStandardWidget(QDomElement element,
     commonWidgetSetup(element, pWidget);
     pWidget->setup(element, *m_pContext);
     pWidget->installEventFilter(m_pKeyboard);
-    pWidget->installEventFilter(
-            m_pControllerManager->getControllerLearningEventFilter());
     pWidget->Init();
     return pWidget;
 }
@@ -872,8 +869,6 @@ void LegacySkinParser::setupLabelWidget(QDomElement element, WLabel* pLabel) {
     pLabel->setup(element, *m_pContext);
     commonWidgetSetup(element, pLabel);
     pLabel->installEventFilter(m_pKeyboard);
-    pLabel->installEventFilter(
-            m_pControllerManager->getControllerLearningEventFilter());
     pLabel->Init();
 }
 
@@ -889,7 +884,7 @@ QWidget* LegacySkinParser::parseOverview(QDomElement node)
     WOverview* overviewWidget = NULL;
 
     // "RGB" = "2", "HSV" = "1" or "Filtered" = "0" (LMH) waveform overview type
-    int type = m_pConfig->getValueString(ConfigKey("[Waveform]","WaveformOverviewType"), "0").toInt();
+    auto type = m_pConfig->getValueString(ConfigKey("[Waveform]","WaveformOverviewType"), "0").toInt();
     if (type == 0) {
         overviewWidget = new WOverviewLMH(pSafeChannelStr, m_pConfig, m_pParent);
     } else if (type == 1) {
@@ -904,7 +899,6 @@ QWidget* LegacySkinParser::parseOverview(QDomElement node)
     commonWidgetSetup(node, overviewWidget);
     overviewWidget->setup(node, *m_pContext);
     overviewWidget->installEventFilter(m_pKeyboard);
-    overviewWidget->installEventFilter(m_pControllerManager->getControllerLearningEventFilter());
     overviewWidget->Init();
 
     // Connect the player's load and unload signals to the overview widget.
@@ -920,16 +914,17 @@ QWidget* LegacySkinParser::parseOverview(QDomElement node)
     return overviewWidget;
 }
 
-QWidget* LegacySkinParser::parseVisual(QDomElement node) {
-    QString channelStr = lookupNodeGroup(node);
-    BaseTrackPlayer* pPlayer = m_pPlayerManager->getPlayer(channelStr);
+QWidget* LegacySkinParser::parseVisual(QDomElement node)
+{
+    auto channelStr = lookupNodeGroup(node);
+    auto pPlayer = m_pPlayerManager->getPlayer(channelStr);
 
-    const char* pSafeChannelStr = safeChannelString(channelStr);
+    auto pSafeChannelStr = safeChannelString(channelStr);
 
     if (pPlayer == NULL)
         return NULL;
 
-    WWaveformViewer* viewer = new WWaveformViewer(pSafeChannelStr, m_pConfig, m_pParent);
+    auto viewer = new WWaveformViewer(pSafeChannelStr, m_pConfig, m_pParent);
     viewer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     WaveformWidgetFactory* factory = WaveformWidgetFactory::instance();
     factory->setWaveformWidget(viewer, node, *m_pContext);
@@ -938,7 +933,6 @@ QWidget* LegacySkinParser::parseVisual(QDomElement node) {
     //qDebug() << "::parseVisual: viewer" << viewer << viewer->size();
 
     viewer->installEventFilter(m_pKeyboard);
-    viewer->installEventFilter(m_pControllerManager->getControllerLearningEventFilter());
     commonWidgetSetup(node, viewer);
     viewer->Init();
 
@@ -967,7 +961,7 @@ QWidget* LegacySkinParser::parseText(QDomElement node)
     if (!pPlayer)
         return NULL;
 
-    WTrackText* p = new WTrackText(pSafeChannelStr, m_pConfig, m_pParent);
+    auto p = new WTrackText(pSafeChannelStr, m_pConfig, m_pParent);
     setupLabelWidget(node, p);
 
     connect(pPlayer, SIGNAL(newTrackLoaded(TrackPointer)),
@@ -1089,7 +1083,6 @@ QWidget* LegacySkinParser::parseBattery(QDomElement node) {
     p->setup(node, *m_pContext);
     setupConnections(node, p);
     p->installEventFilter(m_pKeyboard);
-    p->installEventFilter(m_pControllerManager->getControllerLearningEventFilter());
     return p;
 }
 
@@ -1128,7 +1121,6 @@ QWidget* LegacySkinParser::parseSpinny(QDomElement node) {
 
     spinny->setup(node, *m_pContext);
     spinny->installEventFilter(m_pKeyboard);
-    spinny->installEventFilter(m_pControllerManager->getControllerLearningEventFilter());
     spinny->Init();
     return spinny;
 }
@@ -1240,7 +1232,6 @@ void LegacySkinParser::parseSingletonDefinition(QDomElement node)
 QWidget* LegacySkinParser::parseLibrary(QDomElement node) {
     auto pLibraryWidget = new WLibrary(m_pParent);
     pLibraryWidget->installEventFilter(m_pKeyboard);
-    pLibraryWidget->installEventFilter(m_pControllerManager->getControllerLearningEventFilter());
 
     // Connect Library search signals to the WLibrary
     connect(m_pLibrary, SIGNAL(search(QString)),
@@ -1258,7 +1249,6 @@ QWidget* LegacySkinParser::parseLibrary(QDomElement node) {
 QWidget* LegacySkinParser::parseLibrarySidebar(QDomElement node) {
     auto  pLibrarySidebar = new WLibrarySidebar(m_pParent);
     pLibrarySidebar->installEventFilter(m_pKeyboard);
-    pLibrarySidebar->installEventFilter(m_pControllerManager->getControllerLearningEventFilter());
     m_pLibrary->bindSidebarWidget(pLibrarySidebar);
     commonWidgetSetup(node, pLibrarySidebar, false);
     return pLibrarySidebar;
@@ -1528,7 +1518,6 @@ QWidget* LegacySkinParser::parseEffectPushButton(QDomElement element) {
     commonWidgetSetup(element, pWidget);
     pWidget->setup(element, *m_pContext);
     pWidget->installEventFilter(m_pKeyboard);
-    pWidget->installEventFilter(m_pControllerManager->getControllerLearningEventFilter());
     pWidget->Init();
     return pWidget;
 }
@@ -1938,9 +1927,6 @@ void LegacySkinParser::setupConnections(QDomNode node, WBaseWidget* pWidget) {
             // We only add info for controls that this widget affects, not
             // controls that only affect the widget.
             if (directionOption & ControlParameterWidgetConnection::DIR_FROM_WIDGET) {
-                m_pControllerManager->getControllerLearningEventFilter()
-                        ->addWidgetClickInfo(pWidget->toQWidget(), state, control,
-                                static_cast<ControlParameterWidgetConnection::EmitOption>(emitOption));
 
                 // Add keyboard shortcut info to tooltip string
                 auto key = m_pContext->selectString(con, "ConfigKey");

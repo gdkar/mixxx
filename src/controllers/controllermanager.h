@@ -15,7 +15,6 @@
 
 //Forward declaration(s)
 class Controller;
-class ControllerLearningEventFilter;
 class ComponentEnumerator;
 // Function to sort controllers by name
 bool controllerCompare(Controller *a, Controller *b);
@@ -29,7 +28,6 @@ class ControllerManager : public QObject {
 
     QList<Controller*> getControllers() const;
     QList<Controller*> getControllerList(bool outputDevices=true, bool inputDevices=true);
-    ControllerLearningEventFilter* getControllerLearningEventFilter() const;
 
     // Prevent other parts of Mixxx from having to manually connect to our slots
     void setUpDevices() { emit(requestSetUpDevices()); };
@@ -78,7 +76,6 @@ class ControllerManager : public QObject {
 
   private:
     UserSettingsPointer m_pConfig;
-    ControllerLearningEventFilter* m_pControllerLearningEventFilter;
     QTimer m_pollTimer;
     mutable QMutex m_mutex;
     QList<Controller*> m_controllers;

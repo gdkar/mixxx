@@ -70,9 +70,6 @@
 #include "preferences/settingsmanager.h"
 #include "widget/wmainmenubar.h"
 
-#ifdef __VINYLCONTROL__
-#include "vinylcontrol/vinylcontrolmanager.h"
-#endif
 
 // static
 const int MixxxMainWindow::kMicrophoneCount = 4;
@@ -94,9 +91,6 @@ MixxxMainWindow::MixxxMainWindow(QApplication* pApp, const CmdlineArgs& args)
 #endif
           m_pControllerManager(nullptr),
           m_pGuiTick(nullptr),
-#ifdef __VINYLCONTROL__
-          m_pVCManager(nullptr),
-#endif
           m_pKeyboard(nullptr),
           m_pLibrary(nullptr),
           m_pMenuBar(nullptr),
@@ -209,20 +203,12 @@ void MixxxMainWindow::initialize(QApplication* pApp, const CmdlineArgs& args)
     // Needs to be created before CueControl (decks) and WTrackTableView.
     m_pGuiTick = new GuiTick();
 
-#ifdef __VINYLCONTROL__
-    m_pVCManager = new VinylControlManager(this, pConfig, m_pSoundManager);
-#else
-    m_pVCManager = NULL;
-#endif
-
     // Create the player manager. (long)
     m_pPlayerManager = new PlayerManager(pConfig, m_pSoundManager,m_pEffectsManager, m_pEngine);
     connect(m_pPlayerManager, SIGNAL(noMicrophoneInputConfigured()),
             this, SLOT(slotNoMicrophoneInputConfigured()));
     connect(m_pPlayerManager, SIGNAL(noDeckPassthroughInputConfigured()),
             this, SLOT(slotNoDeckPassthroughInputConfigured()));
-    connect(m_pPlayerManager, SIGNAL(noVinylControlInputConfigured()),
-            this, SLOT(slotNoVinylControlInputConfigured()));
 
     for (int i = 0; i < kMicrophoneCount; ++i) {
         m_pPlayerManager->addMicrophone();
@@ -240,10 +226,6 @@ void MixxxMainWindow::initialize(QApplication* pApp, const CmdlineArgs& args)
     m_pPlayerManager->addPreviewDeck();
 
     launchProgress(30);
-
-#ifdef __VINYLCONTROL__
-    m_pVCManager->init();
-#endif
 
     CoverArtCache::create();
 
@@ -296,7 +278,7 @@ void MixxxMainWindow::initialize(QApplication* pApp, const CmdlineArgs& args)
 
     // Initialize preference dialog
     m_pPrefDlg = new DlgPreferences(this, m_pSkinLoader, m_pSoundManager, m_pPlayerManager,
-                                    m_pControllerManager, m_pVCManager, m_pEffectsManager,
+                                    m_pControllerManager, nullptr, m_pEffectsManager,
                                     pConfig, m_pLibrary);
     m_pPrefDlg->setWindowIcon(QIcon(":/images/ic_mixxx_window.png"));
     m_pPrefDlg->setHidden(true);
@@ -323,7 +305,7 @@ void MixxxMainWindow::initialize(QApplication* pApp, const CmdlineArgs& args)
                                                            m_pPlayerManager,
                                                            m_pControllerManager,
                                                            m_pLibrary,
-                                                           m_pVCManager,
+                                                           nullptr,
                                                            m_pEffectsManager))) {
         reportCriticalErrorAndQuit(
                 "default skin cannot be loaded see <b>mixxx</b> trace for more information.");
@@ -460,12 +442,6 @@ void MixxxMainWindow::finalize()
     // ControllerManager depends on Config
     qDebug() << t.elapsed(false).debugMillisWithUnit() << "deleting ControllerManager";
     delete m_pControllerManager;
-#ifdef __VINYLCONTROL__
-    // VinylControlManager depends on a CO the engine owns
-    // (vinylcontrol_enabled in VinylControlControl)
-    qDebug() << t.elapsed(false).debugMillisWithUnit() << "deleting VinylControlManager";
-    delete m_pVCManager;
-#endif
     // CoverArtCache is fairly independent of everything else.
     CoverArtCache::destroy();
     // Delete the library after the view so there are no dangling pointers to
@@ -815,15 +791,6 @@ void MixxxMainWindow::connectMenuBar() {
     }
 #endif
 
-#ifdef __VINYLCONTROL__
-    if (m_pVCManager) {
-        connect(m_pMenuBar, SIGNAL(toggleVinylControl(int)),
-                m_pVCManager, SLOT(toggleVinylControl(int)));
-        connect(m_pVCManager, SIGNAL(vinylControlDeckEnabled(int, bool)),
-                m_pMenuBar, SLOT(onVinylControlDeckEnabledStateChange(int, bool)));
-    }
-#endif
-
     if (m_pPlayerManager) {
         connect(m_pPlayerManager, SIGNAL(numberOfDecksChanged(int)),
                 m_pMenuBar, SLOT(onNumberOfDecksChanged(int)));
@@ -852,6 +819,7 @@ void MixxxMainWindow::slotFileLoadSongPlayer(int deck)
     auto loadTrackText = tr("Load track to Deck %1").arg(QString::number(deck));
     auto deckWarningMessage = tr("Deck %1 is currently playing a track.")
             .arg(QString::number(deck));
+
     auto areYouSure = tr("Are you sure you want to load a new track?");
 
     if (ControlObject::get(ConfigKey(group, "play")) > 0.0) {
@@ -958,19 +926,8 @@ void MixxxMainWindow::slotOptionsPreferences()
     m_pPrefDlg->setHidden(false);
     m_pPrefDlg->activateWindow();
 }
-
-void MixxxMainWindow::slotNoVinylControlInputConfigured() {
-    QMessageBox::warning(
-        this,
-        Version::applicationName(),
-        tr("There is no input device selected for this vinyl control.\n"
-           "Please select an input device in the sound hardware preferences first."),
-        QMessageBox::Ok, QMessageBox::Ok);
-    m_pPrefDlg->show();
-    m_pPrefDlg->showSoundHardwarePage();
-}
-
-void MixxxMainWindow::slotNoDeckPassthroughInputConfigured() {
+void MixxxMainWindow::slotNoDeckPassthroughInputConfigured()
+{
     QMessageBox::warning(
         this,
         Version::applicationName(),
@@ -981,7 +938,8 @@ void MixxxMainWindow::slotNoDeckPassthroughInputConfigured() {
     m_pPrefDlg->showSoundHardwarePage();
 }
 
-void MixxxMainWindow::slotNoMicrophoneInputConfigured() {
+void MixxxMainWindow::slotNoMicrophoneInputConfigured()
+{
     QMessageBox::warning(
         this,
         Version::applicationName(),
@@ -992,12 +950,13 @@ void MixxxMainWindow::slotNoMicrophoneInputConfigured() {
     m_pPrefDlg->showSoundHardwarePage();
 }
 
-void MixxxMainWindow::slotHelpAbout() {
+void MixxxMainWindow::slotHelpAbout()
+{
     DlgAbout* about = new DlgAbout(this);
     about->show();
 }
-
-void MixxxMainWindow::setToolTipsCfg(mixxx::TooltipsPreference tt) {
+void MixxxMainWindow::setToolTipsCfg(mixxx::TooltipsPreference tt)
+{
     auto pConfig = m_pSettingsManager->settings();
     pConfig->set(ConfigKey("[Controls]","Tooltips"),
                  ConfigValue(static_cast<int>(tt)));
@@ -1037,7 +996,7 @@ void MixxxMainWindow::rebootMixxxView() {
                                                            m_pPlayerManager,
                                                            m_pControllerManager,
                                                            m_pLibrary,
-                                                           m_pVCManager,
+                                                           nullptr,
                                                            m_pEffectsManager))) {
 
         QMessageBox::critical(this,

@@ -81,7 +81,8 @@ WSpinny::WSpinny(QWidget* parent, const QString& group,
 
 WSpinny::~WSpinny() {
 #ifdef __VINYLCONTROL__
-    m_pVCManager->removeSignalQualityListener(this);
+    if(m_pVCManager)
+        m_pVCManager->removeSignalQualityListener(this);
 #endif
     WImageStore::deleteImage(m_pBgImage);
     WImageStore::deleteImage(m_pMaskImage);

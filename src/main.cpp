@@ -56,7 +56,7 @@ int main(int argc, char * argv[]) {
     QCoreApplication::setApplicationVersion(Version::version());
 
     // Construct a list of strings based on the command line arguments
-    CmdlineArgs& args = CmdlineArgs::Instance();
+    auto & args = CmdlineArgs::Instance();
     if (!args.Parse(argc, argv)) {
         args.printUsage();
         return 0;
@@ -65,11 +65,8 @@ int main(int argc, char * argv[]) {
     // If you change this here, you also need to change it in
     // ErrorDialogHandler::errorDialog(). TODO(XXX): Remove this hack.
     QThread::currentThread()->setObjectName("Main");
-
     mixxx::Logging::initialize();
-
     MixxxApplication a(argc, argv);
-
     // Support utf-8 for all translation strings. Not supported in Qt 5.
     // TODO(rryan): Is this needed when we switch to qt5? Some sources claim it
     // isn't.

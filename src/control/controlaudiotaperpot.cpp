@@ -11,8 +11,6 @@ ControlAudioTaperPot::ControlAudioTaperPot(ConfigKey key,
     set(1.0);
 
     if (m_pControl) {
-        m_pControl->setBehavior(
-                new ControlAudioTaperPotBehavior(minDB, maxDB,
-                        neutralParameter));
+        m_pControl->setBehavior(new ControlAudioTaperPotBehavior(minDB, maxDB,neutralParameter));
     }
 }

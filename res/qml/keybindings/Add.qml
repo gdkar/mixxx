@@ -7,16 +7,19 @@ KeyBinder {
     allowAuto:true
     property real amount: 1.
     property real min: -Infinity
-    property real max: -Infinity
+    property real max: +Infinity
     property alias group: cp.group
     property alias item:  cp.item
     ControlObjectScript { id: cp;group:kb.parent.group }
     Keys.onPressed: {
         if(allowAuto || !event.isAutoRepeat) {
             cp.modify(function(val) {
-                return Math.min(Math.max(kb.min,val+kb.amount),kb.max)
+                var goal = val + kb.amount
+                goal = (kb.max < goal ) ? kb.max : goal;
+                goal = (kb.min > goal ) ? kb.min : goal;
+                return goal;
             });
-            event.accepted=True
+            event.accepted=true
         }
     }
 }

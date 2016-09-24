@@ -13,7 +13,6 @@
 #include "control/controlobject.h"
 #include "controllers/controllermanager.h"
 #include "controllers/defs_controllers.h"
-#include "controllers/controllerlearningeventfilter.h"
 #include "util/cmdlineargs.h"
 #include "util/time.h"
 #include "controllers/midi/portmidicontroller.h"
@@ -57,10 +56,8 @@ bool controllerCompare(Controller *a,Controller *b)
 ControllerManager::ControllerManager(UserSettingsPointer pConfig)
         : QObject(),
           m_pConfig(pConfig),
-          // WARNING: Do not parent m_pControllerLearningEventFilter to
           // ControllerManager because the CM is moved to its own thread and runs
           // its own event loop.
-          m_pControllerLearningEventFilter(new ControllerLearningEventFilter()),
           m_pollTimer(this),
           m_skipPoll(false)
 {
@@ -82,13 +79,19 @@ ControllerManager::ControllerManager(UserSettingsPointer pConfig)
     qmlRegisterType<ControlProxy>("org.mixxx.qml", 0, 1, "ControlProxy");
     qmlRegisterType<ControlObjectScript>("org.mixxx.qml", 0, 1, "ControlObjectScript");
 
+
     // Create controller mapping paths in the user's home directory.
     auto userPresets = userPresetsPath(m_pConfig);
     if (!QDir(userPresets).exists()) {
         qDebug() << "Creating user controller presets directory:" << userPresets;
         QDir().mkpath(userPresets);
     }
-
+    {
+        auto paths = QStringList{} << userPresetsPath(pConfig)
+                                   << resourcePresetsPath(pConfig);
+        auto qmlEnumerator = new QmlControllerEnumerator(this);
+        qmlEnumerator->setSearchPaths(paths);
+    }
 //    m_pThread = new QThread{};
 //    m_pThread->setObjectName("Controller");
     // Moves all children (including the poll timer) to m_pThread
@@ -113,14 +116,7 @@ ControllerManager::~ControllerManager()
     requestShutdown();
 //    m_pThread->wait();
 //    delete m_pThread;
-    m_pControllerLearningEventFilter->deleteLater();
 }
-
-ControllerLearningEventFilter* ControllerManager::getControllerLearningEventFilter() const
-{
-    return m_pControllerLearningEventFilter;
-}
-
 void ControllerManager::onInitialize()
 {
     qDebug() << "ControllerManager:onInitialize";
