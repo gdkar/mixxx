@@ -23,7 +23,7 @@ public:
     // This function should return a nullptr pointer if it is already
     // able to decide that the file is not supported even though it
     // has one of the supported file extensions.
-    virtual SoundSourcePointer newSoundSource(const QUrl& url) = 0;
+    virtual SoundSourcePointer newSoundSource(QUrl url) = 0;
     virtual bool canOpen(QUrl url) = 0;
     virtual bool canOpen(QString url) = 0;
 };

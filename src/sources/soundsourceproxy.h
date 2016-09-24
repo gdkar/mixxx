@@ -19,13 +19,13 @@ class SoundSourceProxy {
     static QStringList getSupportedFileExtensions();
     static QStringList getSupportedFileNamePatterns();
     static const QRegExp &getSupportedFileNameRegex();
-    static bool isUrlSupported(const QUrl& url);
+    static bool isUrlSupported(QUrl url);
     static bool isFileSupported(const QFileInfo& fileInfo);
     static bool isFileNameSupported(const QString& fileName);
     static bool isFileExtensionSupported(const QString& fileExtension);
     explicit SoundSourceProxy(const TrackPointer& pTrack);
     const TrackPointer& getTrack() const { return m_pTrack; }
-    const QUrl& getUrl() const { return m_url; }
+    QUrl getUrl() const { return m_url; }
     // Load track metadata and (optionally) cover art from the file
     // if it has not already been parsed. With reloadFromFile = true
     // metadata and cover art will be reloaded from the file regardless

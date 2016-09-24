@@ -29,6 +29,7 @@ class ControlProxy : public QObject {
     Q_INVOKABLE ControlProxy(ConfigKey key, QObject* pParent = nullptr);
     virtual ~ControlProxy();
     void initialize(ConfigKey key);
+    void initialize() const;
     bool connectValueChanged(const QObject* receiver,
             const char* method, Qt::ConnectionType type = Qt::AutoConnection);
     bool connectValueChanged(
@@ -78,14 +79,14 @@ class ControlProxy : public QObject {
     // Resets the control to its default value. Thread safe, non-blocking.
     void trigger();
   signals:
-    void validChanged(bool valid);
+    void validChanged(bool valid) const;
     void groupChanged(QString group);
     void itemChanged (QString item);
     void keyChanged(ConfigKey key);
     // This signal must not connected by connect(). Use connectValueChanged()
     // instead. It will connect to the base ControlDoublePrivate as well.
-    void valueChanged(double val);
-    void defaultValueChanged(double defaultVal);
+    void valueChanged(double val) const;
+    void defaultValueChanged(double defaultVal) const;
     void triggered();
   protected slots:
     // Receives the value from the master control by a unique direct connection
@@ -94,10 +95,13 @@ class ControlProxy : public QObject {
     void slotValueChangedAuto(double v, QObject* pSetter);
     // Receives the value from the master control by a unique Queued connection
     void slotValueChangedQueued(double v, QObject* pSetter);
+  private:
+    void attach_if_available() const;
+    mutable int64_t m_last_generation{-1};
   protected:
     ConfigKey m_key;
     // Pointer to connected control.
-    QSharedPointer<ControlDoublePrivate> m_pControl;
+    mutable QSharedPointer<ControlDoublePrivate> m_pControl;
 };
 
 #endif // CONTROLPROXY_H

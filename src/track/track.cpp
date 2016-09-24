@@ -26,7 +26,8 @@ SecurityTokenPointer openSecurityToken(
 }
 
 template<typename T>
-inline bool compareAndSet(T* pField, const T& value) {
+bool compareAndSet(T* pField, const T& value)
+{
     if (*pField != value) {
         *pField = value;
         return true;
@@ -52,7 +53,8 @@ Track::Track(
           m_dateAdded(QDateTime::currentDateTime()),
           m_bHeaderParsed(false),
           m_bBpmLocked(false),
-          m_analyzerProgress(-1) {
+          m_analyzerProgress(-1)
+{
 }
 
 //static
@@ -249,7 +251,6 @@ double Track::setBpm(double bpmValue) {
         setBeats(BeatsPointer());
         return bpmValue;
     }
-
     mixxx::Bpm normalizedBpm(bpmValue);
     normalizedBpm.normalizeValue();
 
@@ -257,8 +258,8 @@ double Track::setBpm(double bpmValue) {
 
     if (!m_pBeats) {
         // No beat grid available -> create and initialize
-        double cue = getCuePoint();
-        BeatsPointer pBeats(BeatFactory::makeBeatGrid(this, bpmValue, cue));
+        auto cue = getCuePoint();
+        auto pBeats = BeatFactory::makeBeatGrid(this, bpmValue, cue);
         setBeatsAndUnlock(&lock, pBeats);
         return bpmValue;
     }
@@ -276,11 +277,13 @@ double Track::setBpm(double bpmValue) {
     return bpmValue;
 }
 
-QString Track::getBpmText() const {
+QString Track::getBpmText() const
+{
     return QString("%1").arg(getBpm(), 3,'f',1);
 }
 
-void Track::setBeats(BeatsPointer pBeats) {
+void Track::setBeats(BeatsPointer pBeats)
+{
     QMutexLocker lock(&m_qMutex);
     setBeatsAndUnlock(&lock, pBeats);
 }
@@ -298,13 +301,12 @@ void Track::setBeatsAndUnlock(QMutexLocker* pLock, BeatsPointer pBeats) {
     if (m_pBeats) {
         pObject = dynamic_cast<QObject*>(m_pBeats.data());
         if (pObject) {
-            disconnect(pObject, SIGNAL(updated()),
-                       this, SLOT(slotBeatsUpdated()));
+            disconnect(pObject, SIGNAL(updated()),this, SLOT(slotBeatsUpdated()));
         }
     }
 
     mixxx::Bpm bpm;
-    double bpmValue = bpm.getValue();
+    auto bpmValue = bpm.getValue();
 
     m_pBeats = pBeats;
     if (m_pBeats) {
@@ -685,7 +687,7 @@ void Track::setWaveformSummary(ConstWaveformPointer pWaveform) {
 
 void Track::setAnalyzerProgress(int progress) {
     // progress in 0 .. 1000. QAtomicInt so no need for lock.
-    int oldProgress = m_analyzerProgress.fetchAndStoreAcquire(progress);
+    auto oldProgress = m_analyzerProgress.fetchAndStoreAcquire(progress);
     if (progress != oldProgress) {
         emit(analyzerProgress(progress));
     }
@@ -702,41 +704,38 @@ void Track::setCuePoint(float cue) {
         markDirtyAndUnlock(&lock);
     }
 }
-
-float Track::getCuePoint() const {
+float Track::getCuePoint() const
+{
     QMutexLocker lock(&m_qMutex);
     return m_fCuePoint;
 }
-
 void Track::slotCueUpdated() {
     markDirty();
     emit(cuesUpdated());
 }
-
-CuePointer Track::addCue() {
+CuePointer Track::addCue()
+{
     QMutexLocker lock(&m_qMutex);
-    CuePointer pCue(new Cue(m_id));
-    connect(pCue.data(), SIGNAL(updated()),
-            this, SLOT(slotCueUpdated()));
+    auto pCue = CuePointer(new Cue(m_id));
+    connect(pCue.data(), SIGNAL(updated()),this, SLOT(slotCueUpdated()));
     m_cuePoints.push_back(pCue);
     markDirtyAndUnlock(&lock);
     emit(cuesUpdated());
     return pCue;
 }
-
-void Track::removeCue(const CuePointer& pCue) {
+void Track::removeCue(const CuePointer& pCue)
+{
     QMutexLocker lock(&m_qMutex);
     disconnect(pCue.data(), 0, this, 0);
     m_cuePoints.removeOne(pCue);
     markDirtyAndUnlock(&lock);
     emit(cuesUpdated());
 }
-
-QList<CuePointer> Track::getCuePoints() const {
+QList<CuePointer> Track::getCuePoints() const
+{
     QMutexLocker lock(&m_qMutex);
     return m_cuePoints;
 }
-
 void Track::setCuePoints(const QList<CuePointer>& cuePoints) {
     //qDebug() << "setCuePoints" << cuePoints.length();
     QMutexLocker lock(&m_qMutex);
@@ -746,31 +745,34 @@ void Track::setCuePoints(const QList<CuePointer>& cuePoints) {
     }
     m_cuePoints = cuePoints;
     // connect new cue points
-    for (const auto& pCue: m_cuePoints) {
-        connect(pCue.data(), SIGNAL(updated()),
-                this, SLOT(slotCueUpdated()));
+    for (auto&& pCue: as_const(m_cuePoints)) {
+        connect(pCue.data(), SIGNAL(updated()), this, SLOT(slotCueUpdated()));
     }
     markDirtyAndUnlock(&lock);
     emit(cuesUpdated());
 }
 
-void Track::markDirty() {
+void Track::markDirty()
+{
     QMutexLocker lock(&m_qMutex);
     setDirtyAndUnlock(&lock, true);
 }
 
-void Track::markClean() {
+void Track::markClean()
+{
     QMutexLocker lock(&m_qMutex);
     setDirtyAndUnlock(&lock, false);
 }
 
-void Track::markDirtyAndUnlock(QMutexLocker* pLock, bool bDirty) {
-    bool result = m_bDirty || bDirty;
+void Track::markDirtyAndUnlock(QMutexLocker* pLock, bool bDirty)
+{
+    auto result = m_bDirty || bDirty;
     setDirtyAndUnlock(pLock, result);
 }
 
-void Track::setDirtyAndUnlock(QMutexLocker* pLock, bool bDirty) {
-    const bool dirtyChanged = m_bDirty != bDirty;
+void Track::setDirtyAndUnlock(QMutexLocker* pLock, bool bDirty)
+{
+    auto dirtyChanged = m_bDirty != bDirty;
     m_bDirty = bDirty;
 
     // Unlock before emitting any signals!

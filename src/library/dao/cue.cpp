@@ -14,7 +14,18 @@ namespace {
 Cue::~Cue() {
     qDebug() << "~Cue()" << m_iId;
 }
-
+Cue::Cue(QObject *pParent)
+        : QObject(pParent),
+          m_bDirty(false),
+          m_iId(-1),
+          m_trackId(TrackId(-1)),
+          m_type(INVALID),
+          m_iPosition(-1),
+          m_iLength(0),
+          m_iHotCue(-1),
+          m_label(),
+          m_color(kDefaultColor) {
+}
 Cue::Cue(TrackId trackId)
         : m_bDirty(false),
           m_iId(-1),
@@ -38,7 +49,15 @@ Cue::Cue(int id, TrackId trackId, Cue::CueType type, int position, int length,
           m_iLength(length),
           m_iHotCue(hotCue),
           m_label(label),
-          m_color(color) {
+          m_color(color)
+{
+    connect(this, &Cue::trackIdChanged, this, &Cue::updated);
+    connect(this, &Cue::typeChanged, this, &Cue::updated);
+    connect(this, &Cue::positionChanged, this, &Cue::updated);
+    connect(this, &Cue::lengthChanged, this, &Cue::updated);
+    connect(this, &Cue::hotCueChanged, this, &Cue::updated);
+    connect(this, &Cue::labelChanged, this, &Cue::updated);
+    connect(this, &Cue::colorChanged, this, &Cue::updated);
 }
 
 int Cue::getId() const {
@@ -47,11 +66,16 @@ int Cue::getId() const {
 }
 
 void Cue::setId(int cueId) {
-    QMutexLocker lock(&m_mutex);
-    m_iId = cueId;
-    m_bDirty = true;
-    lock.unlock();
-    emit(updated());
+    auto changed = false;
+    {
+        QMutexLocker lock(&m_mutex);
+        changed = m_iId != cueId;
+        m_iId = cueId;
+    }
+    if(changed) {
+        setDirty(true);
+        emit updated();
+    }
 }
 
 TrackId Cue::getTrackId() const {
@@ -60,11 +84,16 @@ TrackId Cue::getTrackId() const {
 }
 
 void Cue::setTrackId(TrackId trackId) {
-    QMutexLocker lock(&m_mutex);
-    m_trackId = trackId;
-    m_bDirty = true;
-    lock.unlock();
-    emit(updated());
+    auto changed = false;
+    {
+        QMutexLocker lock(&m_mutex);
+        changed = (m_trackId != trackId);
+        m_trackId = trackId;
+    }
+    if(changed) {
+        setDirty(true);
+        emit trackIdChanged(trackId);
+    }
 }
 
 Cue::CueType Cue::getType() const {
@@ -73,11 +102,16 @@ Cue::CueType Cue::getType() const {
 }
 
 void Cue::setType(Cue::CueType type) {
-    QMutexLocker lock(&m_mutex);
-    m_type = type;
-    m_bDirty = true;
-    lock.unlock();
-    emit(updated());
+    auto changed = false;
+    {
+        QMutexLocker lock(&m_mutex);
+        changed = m_type != type;
+        m_type = type;
+    }
+    if(changed) {
+        setDirty(true);
+        emit typeChanged(type);
+    }
 }
 
 int Cue::getPosition() const {
@@ -89,11 +123,16 @@ void Cue::setPosition(int position) {
     DEBUG_ASSERT_AND_HANDLE(position % 2 == 0) {
         return;
     }
-    QMutexLocker lock(&m_mutex);
-    m_iPosition = position;
-    m_bDirty = true;
-    lock.unlock();
-    emit(updated());
+    auto changed = false;
+    {
+        QMutexLocker lock(&m_mutex);
+        changed = m_iPosition != position;
+        m_iPosition= position;
+    }
+    if(changed) {
+        setDirty(true);
+        emit positionChanged(position);
+    }
 }
 
 int Cue::getLength() const {
@@ -105,11 +144,16 @@ void Cue::setLength(int length) {
     DEBUG_ASSERT_AND_HANDLE(length % 2 == 0) {
         return;
     }
-    QMutexLocker lock(&m_mutex);
-    m_iLength = length;
-    m_bDirty = true;
-    lock.unlock();
-    emit(updated());
+    auto changed = false;
+    {
+        QMutexLocker lock(&m_mutex);
+        changed = m_iLength != length;
+        m_iLength= length;
+    }
+    if(changed) {
+        setDirty(true);
+        emit lengthChanged(length);
+    }
 }
 
 int Cue::getHotCue() const {
@@ -118,12 +162,16 @@ int Cue::getHotCue() const {
 }
 
 void Cue::setHotCue(int hotCue) {
-    QMutexLocker lock(&m_mutex);
-    // TODO(XXX) enforce uniqueness?
-    m_iHotCue = hotCue;
-    m_bDirty = true;
-    lock.unlock();
-    emit(updated());
+    auto changed = false;
+    {
+        QMutexLocker lock(&m_mutex);
+        changed = m_iHotCue != hotCue;
+        m_iHotCue= hotCue;
+    }
+    if(changed) {
+        setDirty(true);
+        emit hotCueChanged(hotCue);
+    }
 }
 
 QString Cue::getLabel() const {
@@ -132,12 +180,16 @@ QString Cue::getLabel() const {
 }
 
 void Cue::setLabel(const QString label) {
-    //qDebug() << "setLabel()" << m_label << "-" << label;
-    QMutexLocker lock(&m_mutex);
-    m_label = label;
-    m_bDirty = true;
-    lock.unlock();
-    emit(updated());
+    auto changed = false;
+    {
+        QMutexLocker lock(&m_mutex);
+        changed = m_label != label;
+        m_label= label;
+    }
+    if(changed) {
+        setDirty(true);
+        emit labelChanged(label);
+    }
 }
 
 QColor Cue::getColor() const {
@@ -146,19 +198,28 @@ QColor Cue::getColor() const {
 }
 
 void Cue::setColor(const QColor color) {
-    QMutexLocker lock(&m_mutex);
-    m_color = color;
-    m_bDirty = true;
-    lock.unlock();
-    emit(updated());
+    auto changed = false;
+    {
+        QMutexLocker lock(&m_mutex);
+        changed = m_color != color;
+        m_color= color;
+    }
+    if(changed) {
+        setDirty(true);
+        emit colorChanged(color);
+    }
 }
-
 bool Cue::isDirty() const {
     QMutexLocker lock(&m_mutex);
     return m_bDirty;
 }
-
 void Cue::setDirty(bool dirty) {
-    QMutexLocker lock(&m_mutex);
-    m_bDirty = dirty;
+    auto changed = false;
+    {
+        QMutexLocker lock(&m_mutex);
+        changed = m_bDirty != dirty;
+        m_bDirty = dirty;
+    }
+    if(changed)
+        emit dirtyChanged(dirty);
 }

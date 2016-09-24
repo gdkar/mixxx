@@ -17,7 +17,7 @@ void WSingletonContainer::setup(const QDomNode& node, const SkinContext& context
     m_pLayout->setContentsMargins(0, 0, 0, 0);
     setLayout(m_pLayout);
 
-    QDomElement containerNode = node.toElement();
+    auto containerNode = node.toElement();
     QString objectName;
     if (!context.hasNodeSelectString(node, "ObjectName", &objectName)) {
         SKIN_WARNING(node, context)
@@ -45,7 +45,7 @@ void WSingletonContainer::showEvent(QShowEvent* event) {
         // the place it was defined).
         // First confirm that the parentage is valid, and then
         // reparent the widget to our container.
-        QWidget* parent = m_pWidget->parentWidget();
+        auto parent = m_pWidget->parentWidget();
         if (parent == this) {
             // The widget is already owned by us, no need to reparent.
             return;

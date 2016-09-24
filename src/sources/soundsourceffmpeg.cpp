@@ -42,13 +42,13 @@ SoundSourceFFmpeg::~SoundSourceFFmpeg()
 SoundSource::OpenResult SoundSourceFFmpeg::tryOpen(const AudioSourceConfig &config)
 {
     const auto filename = getLocalFileName().toLocal8Bit();
+    auto filestr = filename.constData();
     auto ret = 0;
     // Open file and make m_pFormatCtx
-    if (( ret = m_format_ctx.open_input(filename.constData()))<0) {
+    if (( ret = m_format_ctx.open_input(filestr))<0) {
         qDebug() << __FUNCTION__ << "cannot open" << filename << av_strerror ( ret );
         return OpenResult::FAILED;
     }
-
     //debug only (Enable if needed)
     for ( auto i = 0u; i < m_format_ctx->nb_streams; i++) {
         if(m_format_ctx->streams[i]->disposition &AV_DISPOSITION_ATTACHED_PIC)
@@ -79,7 +79,6 @@ SoundSource::OpenResult SoundSourceFFmpeg::tryOpen(const AudioSourceConfig &conf
     else                                setChannelCount( config.getChannelCount());
     if ( config.getSampleRate() < 8000 )  setSampleRate( m_codec_ctx->sample_rate );
     else                                setSampleRate( config.getSampleRate());
-
     m_output_tb = AVRational{1,static_cast<int>(getSampleRate())};
     setFrameCount ( av_rescale_q( m_format_ctx->duration, m_stream_tb, m_output_tb ) );
     m_frame->channel_layout = av_get_default_channel_layout ( getChannelCount() );
@@ -382,7 +381,7 @@ bool SoundSourceProviderFFmpeg::canOpen(QUrl url)
     }
     return true;
 }
-SoundSourcePointer SoundSourceProviderFFmpeg::newSoundSource(const QUrl& url)
+SoundSourcePointer SoundSourceProviderFFmpeg::newSoundSource(QUrl url)
 {
     return newSoundSourceFromUrl<SoundSourceFFmpeg>(url);
 }
@@ -391,10 +390,11 @@ Result SoundSourceFFmpeg::parseTrackMetadataAndCoverArt(
         QImage* pCoverArt) const
 {
     const auto filename = getLocalFileName().toLocal8Bit();
+    const auto filestr = filename.constData();
     auto ret = 0;
     auto fmt_ctx = format_context();
     // Open file and make m_pFormatCtx
-    if (( ret = fmt_ctx.open_input(filename.constData()))<0) {
+    if (( ret = fmt_ctx.open_input(filestr))<0) {
         qDebug() << __FUNCTION__ << "cannot open" << filename << av_strerror ( ret );
         return ERR;
     }

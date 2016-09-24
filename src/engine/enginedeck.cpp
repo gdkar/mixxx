@@ -44,15 +44,11 @@ EngineDeck::EngineDeck(QObject *p, const ChannelHandleAndGroup& handle_group,
         Qt::DirectConnection);
 
     // Set up passthrough utilities and fields
-    m_pPassing->setButtonMode(ControlPushButton::POWERWINDOW);
+    qobject_cast<ControlPushButton*>(m_pPassing)->setButtonMode(ControlPushButton::POWERWINDOW);
     m_bPassthroughIsActive = false;
     m_bPassthroughWasActive = false;
-
     // Set up passthrough toggle button
-    connect(m_pPassing, SIGNAL(valueChanged(double)),
-            this, SLOT(slotPassingToggle(double)),
-            Qt::DirectConnection);
-
+    connect(m_pPassing, SIGNAL(valueChanged(double)),this, SLOT(slotPassingToggle(double)),Qt::DirectConnection);
     // Set up additional engines
     m_pPregain = new EnginePregain(this,getGroup());
     m_pBuffer = new EngineBuffer(this,getGroup(), pConfig, this, pMixingEngine);
@@ -65,7 +61,8 @@ EngineDeck::~EngineDeck() {
     delete m_pPregain;
 }
 
-void EngineDeck::process(CSAMPLE* pOut, int iBufferSize) {
+void EngineDeck::process(CSAMPLE* pOut, int iBufferSize)
+{
     GroupFeatureState features;
     // Feed the incoming audio through if passthrough is active
     auto sampleBuffer = m_sampleBuffer; // save pointer on stack
@@ -82,7 +79,6 @@ void EngineDeck::process(CSAMPLE* pOut, int iBufferSize) {
             m_bPassthroughWasActive = false;
             return;
         }
-
         // Process the raw audio
         m_pBuffer->process(pOut, iBufferSize);
         m_pBuffer->collectFeatures(&features);
@@ -90,7 +86,6 @@ void EngineDeck::process(CSAMPLE* pOut, int iBufferSize) {
         m_pPregain->setScratching(m_pBuffer->getScratching());
         m_bPassthroughWasActive = false;
     }
-
     // Apply pregain
     m_pPregain->process(pOut, iBufferSize);
     // Process effects enabled for this channel
@@ -106,22 +101,23 @@ void EngineDeck::process(CSAMPLE* pOut, int iBufferSize) {
     m_pVUMeter->process(pOut, iBufferSize);
 }
 
-void EngineDeck::postProcess(int iBufferSize) {
+void EngineDeck::postProcess(int iBufferSize)
+{
     m_pBuffer->postProcess(iBufferSize);
 }
-
-EngineBuffer* EngineDeck::getEngineBuffer() {
+EngineBuffer* EngineDeck::getEngineBuffer()
+{
     return m_pBuffer;
 }
 
-bool EngineDeck::isActive() {
-    bool active = false;
+bool EngineDeck::isActive()
+{
+    auto active = false;
     if (m_bPassthroughWasActive && !m_bPassthroughIsActive) {
         active = true;
     } else {
         active = m_pBuffer->isTrackLoaded() || isPassthroughActive();
     }
-
     if (!active && m_wasActive) {
         m_pVUMeter->reset();
     }
@@ -129,7 +125,8 @@ bool EngineDeck::isActive() {
     return active;
 }
 
-void EngineDeck::receiveBuffer(AudioInput input, const CSAMPLE* pBuffer, unsigned int nFrames) {
+void EngineDeck::receiveBuffer(AudioInput input, const CSAMPLE* pBuffer, unsigned int nFrames)
+{
     Q_UNUSED(input);
     Q_UNUSED(nFrames);
     // Skip receiving audio input if passthrough is not active
@@ -140,8 +137,8 @@ void EngineDeck::receiveBuffer(AudioInput input, const CSAMPLE* pBuffer, unsigne
         m_sampleBuffer = pBuffer;
     }
 }
-
-void EngineDeck::onInputConfigured(AudioInput input) {
+void EngineDeck::onInputConfigured(AudioInput input)
+{
     if (input.getType() != AudioPath::VINYLCONTROL) {
         // This is an error!
         qDebug() << "WARNING: EngineDeck connected to AudioInput for a non-vinylcontrol type!";
@@ -150,8 +147,8 @@ void EngineDeck::onInputConfigured(AudioInput input) {
     m_pInputConfigured->setAndConfirm(1.0);
     m_sampleBuffer =  NULL;
 }
-
-void EngineDeck::onInputUnconfigured(AudioInput input) {
+void EngineDeck::onInputUnconfigured(AudioInput input)
+{
     if (input.getType() != AudioPath::VINYLCONTROL) {
         // This is an error!
         qDebug() << "WARNING: EngineDeck connected to AudioInput for a non-vinylcontrol type!";
@@ -160,11 +157,11 @@ void EngineDeck::onInputUnconfigured(AudioInput input) {
     m_pInputConfigured->setAndConfirm(0.0);
     m_sampleBuffer = NULL;
 }
-
-bool EngineDeck::isPassthroughActive() const {
+bool EngineDeck::isPassthroughActive() const
+{
     return (m_bPassthroughIsActive && m_sampleBuffer);
 }
-
-void EngineDeck::slotPassingToggle(double v) {
+void EngineDeck::slotPassingToggle(double v)
+{
     m_bPassthroughIsActive = v > 0;
 }

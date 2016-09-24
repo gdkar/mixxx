@@ -61,9 +61,9 @@ void WDisplay::setup(const QDomNode& node, const SkinContext& context) {
     }
 
     // See if disabled images is defined, and load them...
-    QDomElement disabledNode = context.selectElement(node, "DisabledPath");
+    auto disabledNode = context.selectElement(node, "DisabledPath");
     if (!disabledNode.isNull()) {
-        QString disabledPath = context.nodeToString(disabledNode);
+        auto disabledPath = context.nodeToString(disabledNode);
         // The implicit default in <1.12.0 was FIXED so we keep it for
         // backwards compatibility.
         Paintable::DrawMode disabledMode =
@@ -103,15 +103,13 @@ void WDisplay::setPixmapBackground(PixmapSource source,
                  << "Error loading background pixmap:" << source.getPath();
     }
 }
-
 void WDisplay::setPixmap(QVector<PaintablePointer>* pPixmaps, int iPos,
                          const QString& filename, Paintable::DrawMode mode) {
     if (iPos < 0 || iPos >= pPixmaps->size()) {
         return;
     }
-
     PixmapSource source(filename);
-    PaintablePointer pPixmap = WPixmapStore::getPaintable(source, mode);
+    auto pPixmap = WPixmapStore::getPaintable(source, mode);
     if (pPixmap.isNull() || pPixmap->isNull()) {
         qDebug() << metaObject()->className()
                  << "Error loading pixmap:" << filename;
@@ -165,7 +163,7 @@ int WDisplay::getPixmapForParameter(double dParameter) const {
 
 void WDisplay::onConnectedControlChanged(double dParameter, double dValue) {
     Q_UNUSED(dValue);
-    int pixmap = getPixmapForParameter(dParameter);
+    auto pixmap = getPixmapForParameter(dParameter);
     if (pixmap != m_iCurrentPixmap) {
         // paintEvent updates m_iCurrentPixmap.
         update();
@@ -177,22 +175,18 @@ void WDisplay::paintEvent(QPaintEvent* /*unused*/) {
     option.initFrom(this);
     QStylePainter p(this);
     p.drawPrimitive(QStyle::PE_Widget, option);
-
     if (m_pPixmapBack) {
         m_pPixmapBack->draw(rect(), &p);
     }
-
     // If we are disabled, use the disabled pixmaps. If not, use the regular
     // pixmaps.
-    const QVector<PaintablePointer>& pixmaps = (!isEnabled() && m_bDisabledLoaded) ?
-            m_disabledPixmaps : m_pixmaps;
+    auto pixmaps = (!isEnabled() && m_bDisabledLoaded) ? m_disabledPixmaps : m_pixmaps;
 
     if (pixmaps.empty()) {
         return;
     }
 
-    int idx = getPixmapForParameter(getControlParameterDisplay());
-
+    auto idx = getPixmapForParameter(getControlParameterDisplay());
     // onConnectedControlChanged uses this to detect no-ops but it does not
     // clamp so don't clamp.
     m_iCurrentPixmap = idx;
@@ -203,8 +197,7 @@ void WDisplay::paintEvent(QPaintEvent* /*unused*/) {
     } else if (idx >= pixmaps.size()) {
         idx = pixmaps.size() - 1;
     }
-
-    PaintablePointer pPixmap = pixmaps[idx];
+    auto pPixmap = pixmaps[idx];
     if (pPixmap) {
         pPixmap->draw(rect(), &p);
     }

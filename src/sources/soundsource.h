@@ -12,7 +12,7 @@ namespace mixxx {
 // Base class for sound sources.
 class SoundSource: public AudioSource {
 public:
-    static QString getFileExtensionFromUrl(const QUrl &url);
+    static QString getFileExtensionFromUrl(QUrl url);
     QUrl getUrl() const;
     QString getUrlString() const;
     const QString& getType() const;
@@ -50,8 +50,8 @@ public:
 protected:
     // If no type is provided the file extension of the file referred
     // by the URL will be used as the type of the SoundSource.
-    explicit SoundSource(const QUrl& url);
-    SoundSource(const QUrl& url, const QString& type);
+    explicit SoundSource(QUrl url);
+    SoundSource(QUrl url, const QString& type);
     bool isLocalFile() const;
     QString getLocalFileName() const;
 private:
@@ -77,7 +77,7 @@ private:
 using SoundSourcePointer = QSharedPointer<SoundSource>;
 
 template<typename T>
-SoundSourcePointer newSoundSourceFromUrl(const QUrl& url)
+SoundSourcePointer newSoundSourceFromUrl(QUrl url)
 {
     return SoundSourcePointer(new T(url));
 }

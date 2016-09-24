@@ -109,7 +109,6 @@ class Track : public QObject {
     // Get sample rate
     int getSampleRate() const;
     // Set number of channels
-
     // Sets the bitrate
     void setBitrate(int);
     // Returns the bitrate
@@ -255,13 +254,10 @@ class Track : public QObject {
     void setCuePoints(const QList<CuePointer>& cuePoints);
 
     bool isDirty();
-
     // Get the track's Beats list
     BeatsPointer getBeats() const;
-
     // Set the track's Beats
     void setBeats(BeatsPointer beats);
-
     void resetKeys() {
         setKeys(Keys());
     }
@@ -279,9 +275,7 @@ class Track : public QObject {
     void setCoverInfo(const CoverArt& coverArt);
 
     CoverInfo getCoverInfo() const;
-
     quint16 getCoverHash() const;
-
     // Set/get track metadata and cover art (optional) all at once.
     void setTrackMetadata(
             const mixxx::TrackMetadata& trackMetadata,
@@ -294,7 +288,6 @@ class Track : public QObject {
     void markDirty();
     // Mark the track clean if it isn't already.
     void markClean();
-
     // Called when the shared pointer reference count for a library TrackPointer
     // drops to zero.
     static void onTrackReferenceExpired(Track* pTrack);

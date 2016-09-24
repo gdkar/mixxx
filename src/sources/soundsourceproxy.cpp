@@ -66,7 +66,7 @@ void SoundSourceProxy::loadPlugins()
 
 }
 // static
-bool SoundSourceProxy::isUrlSupported(const QUrl& url)
+bool SoundSourceProxy::isUrlSupported(QUrl url)
 {
     for(auto && provider : s_soundSourceProviders) {
         if(provider->canOpen(url))
@@ -201,7 +201,7 @@ namespace {
     void parseMetadataFromFileName(mixxx::TrackMetadata* pTrackMetadata, QString fileName)
     {
         fileName.replace("_", " ");
-        QString titleWithFileType;
+        auto titleWithFileType = QString{};
         if (fileName.count('-') == 1) {
             if (pTrackMetadata->getArtist().isEmpty()) {
                 auto artist = fileName.section('-', 0, 0).trimmed();

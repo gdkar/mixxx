@@ -18,8 +18,81 @@ ControlProxy::ControlProxy(ConfigKey key, QObject* pParent)
         : QObject(pParent) {
     initialize(key);
 }
+void ControlProxy::attach_if_available() const
+{
+    if(!m_pControl && !m_key.isNull()) {
+        auto now = ControlDoublePrivate::generation();
+        if(now > m_last_generation)
+            initialize();
+    }
+}
 
-void ControlProxy::initialize(ConfigKey key) {
+void ControlProxy::initialize() const
+{
+    // Don't bother looking up the control if key is NULL. Prevents log spew.
+    if (!m_key.isNull()) {
+            if(m_pControl){
+            auto _valid = false;
+            auto _val   = 0.;
+            auto _def   = 0.;
+            if(m_pControl) {
+                _val = m_pControl->get();
+                _def = m_pControl->defaultValue();
+                _valid = true;
+                disconnect(m_pControl.data(),nullptr, this, nullptr);
+            }
+            m_last_generation = ControlDoublePrivate::generation();
+            if((m_pControl = ControlDoublePrivate::getIfExists(m_key))){
+                connect(
+                    m_pControl.data()
+                ,&ControlDoublePrivate::trigger
+                , this
+                ,&ControlProxy::triggered
+                , static_cast<Qt::ConnectionType>(
+                        Qt::AutoConnection
+                    | Qt::UniqueConnection
+                        )
+                    );
+                connect(
+                    m_pControl.data()
+                ,&ControlDoublePrivate::defaultValueChanged
+                , this
+                ,&ControlProxy::defaultValueChanged
+                , static_cast<Qt::ConnectionType>(
+                        Qt::AutoConnection
+                    | Qt::UniqueConnection
+                        )
+                    );
+                connect(
+                    m_pControl.data()
+                ,&ControlDoublePrivate::valueChanged
+                , this
+                ,&ControlProxy::valueChanged
+                , static_cast<Qt::ConnectionType>(
+                        Qt::AutoConnection
+                    | Qt::UniqueConnection
+                        )
+                    );
+                if(valid() != _valid)
+                    emit validChanged(valid());
+                if(_val != get())
+                    emit valueChanged(get());
+                if(_def != getDefault())
+                    emit defaultValueChanged(getDefault());
+            }else{
+                if(_valid)
+                    emit validChanged(false);
+                if(_val)
+                    emit valueChanged(0.);
+                if(_def)
+                    emit defaultValueChanged(0.);
+            }
+        }
+    }
+}
+
+void ControlProxy::initialize(ConfigKey key)
+{
     m_key = key;
     // Don't bother looking up the control if key is NULL. Prevents log spew.
     if (!key.isNull()) {
@@ -29,6 +102,7 @@ void ControlProxy::initialize(ConfigKey key) {
         if(m_pControl) {
             disconnect(m_pControl.data(),nullptr, this, nullptr);
         }
+        m_last_generation = ControlDoublePrivate::generation();
         m_pControl = ControlDoublePrivate::getIfExists(key);
         if(m_pControl){
             connect(
@@ -72,6 +146,7 @@ void ControlProxy::initialize(ConfigKey key) {
 }
 void ControlProxy::trigger()
 {
+    attach_if_available();
     if(m_pControl)
         m_pControl->trigger();
 }
@@ -154,48 +229,58 @@ ConfigKey ControlProxy::getKey() const
     return m_key;
 }
 
-bool ControlProxy::valid() const { return m_pControl != NULL; }
-
+bool ControlProxy::valid() const
+{
+    return m_pControl != NULL;
+}
 // Returns the value of the object. Thread safe, non-blocking.
-double ControlProxy::get() const {
+double ControlProxy::get() const
+{
+    attach_if_available();
     return m_pControl ? m_pControl->get() : 0.0;
 }
-
 // Returns the bool interpretation of the value
-bool ControlProxy::toBool() const {
+bool ControlProxy::toBool() const
+{
     return get() > 0.0;
 }
-
 // Returns the parameterized value of the object. Thread safe, non-blocking.
-double ControlProxy::getParameter() const {
+double ControlProxy::getParameter() const
+{
+    attach_if_available();
     return m_pControl ? m_pControl->getParameter() : 0.0;
 }
-
 // Returns the parameterized value of the object. Thread safe, non-blocking.
 double ControlProxy::getParameterForValue(double value) const {
+    attach_if_available();
     return m_pControl ? m_pControl->getParameterForValue(value) : 0.0;
 }
-
 // Returns the normalized parameter of the object. Thread safe, non-blocking.
-double ControlProxy::getDefault() const {
+double ControlProxy::getDefault() const
+{
+    attach_if_available();
     return m_pControl ? m_pControl->defaultValue() : 0.0;
 }
-
-
 // Sets the control value to v. Thread safe, non-blocking.
-void ControlProxy::set(double v) {
+void ControlProxy::set(double v)
+{
+    attach_if_available();
     if (m_pControl) {
         m_pControl->set(v, this);
     }
 }
 // Sets the control parameterized value to v. Thread safe, non-blocking.
-void ControlProxy::setParameter(double v) {
+void ControlProxy::setParameter(double v)
+{
+    attach_if_available();
     if (m_pControl) {
         m_pControl->setParameter(v, this);
     }
 }
 // Resets the control to its default value. Thread safe, non-blocking.
-void ControlProxy::reset() {
+void ControlProxy::reset()
+{
+    attach_if_available();
     if (m_pControl) {
         // NOTE(rryan): This is important. The originator of this action does
         // not know the resulting value so it makes sense that we should emit a
@@ -211,17 +296,17 @@ void ControlProxy::slotValueChangedDirect(double v, QObject* pSetter) {
         emit(valueChanged(v));
     }
 }
-
 // Receives the value from the master control by a unique auto connection
-void ControlProxy::slotValueChangedAuto(double v, QObject* pSetter) {
+void ControlProxy::slotValueChangedAuto(double v, QObject* pSetter)
+{
     if (pSetter != this) {
         // This is base implementation of this function without scaling
         emit(valueChanged(v));
     }
 }
-
 // Receives the value from the master control by a unique Queued connection
-void ControlProxy::slotValueChangedQueued(double v, QObject* pSetter) {
+void ControlProxy::slotValueChangedQueued(double v, QObject* pSetter)
+{
     if (pSetter != this) {
         // This is base implementation of this function without scaling
         emit(valueChanged(v));
@@ -275,6 +360,7 @@ QString ControlProxy::item() const
 }
 double ControlProxy::operator += ( double incr)
 {
+    attach_if_available();
     if(m_pControl) {
         return m_pControl->updateAtomically([incr](double x){return x + incr;});
     }
@@ -283,12 +369,14 @@ double ControlProxy::operator += ( double incr)
 double ControlProxy::operator -= ( double incr)
 {
     if(m_pControl) {
+    attach_if_available();
         return m_pControl->updateAtomically([incr](double x){return x - incr;});
     }
     return 0;
 }
 double ControlProxy::operator ++ (int)
 {
+    attach_if_available();
     if(m_pControl) {
         return m_pControl->updateAtomically([](double x){return x + 1;});
     }
@@ -296,30 +384,28 @@ double ControlProxy::operator ++ (int)
 }
 double ControlProxy::operator -- (int)
 {
+    attach_if_available();
     if(m_pControl) {
         return m_pControl->updateAtomically([](double x){return x - 1;});
     }
     return 0;
 }
-double ControlProxy::operator ++ ()
-{
-    return (++(*this))+1;
-}
-double ControlProxy::operator -- ()
-{
-    return (--(*this))-1;
-}
+double ControlProxy::operator ++ () { return (++(*this))+1; }
+double ControlProxy::operator -- () { return (--(*this))-1; }
 
 double ControlProxy::fetch_add(double val)
 {
+    attach_if_available();
     return m_pControl ? m_pControl->updateAtomically([val](double x){return x + val;}) : 0.0;
 }
 double ControlProxy::fetch_sub(double val)
 {
+    attach_if_available();
     return m_pControl ? m_pControl->updateAtomically([val](double x){return x - val;}) : 0.0;
 }
 double ControlProxy::compare_exchange(double expected, double desired)
 {
+    attach_if_available();
     if(m_pControl) {
         m_pControl->compare_exchange_strong(expected,desired);
         return expected;
@@ -329,17 +415,21 @@ double ControlProxy::compare_exchange(double expected, double desired)
 }
 double ControlProxy::exchange(double val)
 {
-    return m_pControl ? m_pControl->updateAtomically([val](double ){return val;}) : 0.0;
+    attach_if_available();
+    return m_pControl ? m_pControl->exchange(val) : 0.0;
 }
 double ControlProxy::fetch_mul(double val)
 {
+    attach_if_available();
     return m_pControl ? m_pControl->updateAtomically([val](double x){return val * x;}) : 0.0;
 }
 double ControlProxy::fetch_div(double val)
 {
+    attach_if_available();
     return m_pControl ? m_pControl->updateAtomically([val](double x){return val / x;}) : 0.0;
 }
 double ControlProxy::fetch_toggle()
 {
+    attach_if_available();
     return m_pControl ? m_pControl->updateAtomically([](double x){return !x;}) : 0.0;
 }

@@ -2,6 +2,10 @@
 #define SYNCABLE_H
 
 #include <QString>
+#include <QObject>
+#include <QtGlobal>
+#include <QMetaType>
+#include <QMetaObject>
 
 class EngineChannel;
 

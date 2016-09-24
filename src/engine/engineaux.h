@@ -30,27 +30,21 @@ class EngineAux : public EngineChannel, public AudioDestination {
     // Called by EngineMaster whenever is requesting a new buffer of audio.
     void process(CSAMPLE* pOutput, int iBufferSize) override;
     void postProcess(int iBufferSize) override { Q_UNUSED(iBufferSize) }
-
     // This is called by SoundManager whenever there are new samples from the
     // configured input to be processed. This is run in the callback thread of
     // the soundcard this AudioDestination was registered for! Beware, in the
     // case of multiple soundcards, this method is not re-entrant but it may be
     // concurrent with EngineMaster processing.
-    void receiveBuffer(AudioInput input, const CSAMPLE* pBuffer,
-                               unsigned int nFrames) override;
-
+    void receiveBuffer(AudioInput input, const CSAMPLE* pBuffer,unsigned int nFrames) override;
     // Called by SoundManager whenever the aux input is connected to a
     // soundcard input.
     void onInputConfigured(AudioInput input) override;
-
     // Called by SoundManager whenever the aux input is disconnected from
     // a soundcard input.
     void onInputUnconfigured(AudioInput input) override;
-
   private slots:
     // Reject all change requests for input configured.
     void slotInputConfiguredChangeRequest(double) {}
-
   private:
     ControlAudioTaperPot* m_pPregain;
     std::atomic<const CSAMPLE*>m_sampleBuffer;

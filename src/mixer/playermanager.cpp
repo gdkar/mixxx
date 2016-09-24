@@ -32,17 +32,12 @@ PlayerManager::PlayerManager(UserSettingsPointer pConfig,
         m_pEngine(pEngine),
         // NOTE(XXX) LegacySkinParser relies on these controls being Controls
         // and not ControlProxies.
-        m_pAnalyzerQueue(NULL),
-        m_pCONumDecks(new ControlObject(
-            ConfigKey("[Master]", "num_decks"),this, true, true)),
-        m_pCONumSamplers(new ControlObject(
-            ConfigKey("[Master]", "num_samplers"),this, true, true)),
-        m_pCONumPreviewDecks(new ControlObject(
-            ConfigKey("[Master]", "num_preview_decks"),this, true, true)),
-        m_pCONumMicrophones(new ControlObject(
-            ConfigKey("[Master]", "num_microphones"),this, true, true)),
-        m_pCONumAuxiliaries(new ControlObject(
-            ConfigKey("[Master]", "num_auxiliaries"),this, true, true))
+        m_pAnalyzerQueue(nullptr),
+        m_pCONumDecks(new ControlObject(ConfigKey("[Master]", "num_decks"),this, true, true)),
+        m_pCONumSamplers(new ControlObject(ConfigKey("[Master]", "num_samplers"),this, true, true)),
+        m_pCONumPreviewDecks(new ControlObject(ConfigKey("[Master]", "num_preview_decks"),this, true, true)),
+        m_pCONumMicrophones(new ControlObject(ConfigKey("[Master]", "num_microphones"),this, true, true)),
+        m_pCONumAuxiliaries(new ControlObject(ConfigKey("[Master]", "num_auxiliaries"),this, true, true))
 {
     connect(m_pCONumDecks, SIGNAL(valueChanged(double)),
             this, SLOT(slotNumDecksControlChanged(double)),
@@ -76,23 +71,18 @@ PlayerManager::PlayerManager(UserSettingsPointer pConfig,
             Qt::DirectConnection);
 
     // This is parented to the PlayerManager so does not need to be deleted
-    SamplerBank* pSamplerBank = new SamplerBank(this);
+    auto pSamplerBank = new SamplerBank(this);
     Q_UNUSED(pSamplerBank);
-
     // register the engine's outputs
-    m_pSoundManager->registerOutput(AudioOutput(AudioOutput::MASTER, 0, 2),
-                                    m_pEngine);
-    m_pSoundManager->registerOutput(AudioOutput(AudioOutput::HEADPHONES, 0, 2),
-                                    m_pEngine);
+    m_pSoundManager->registerOutput(AudioOutput(AudioOutput::MASTER, 0, 2),m_pEngine);
+    m_pSoundManager->registerOutput(AudioOutput(AudioOutput::HEADPHONES, 0, 2),m_pEngine);
     for (int o = EngineChannel::LEFT; o <= EngineChannel::RIGHT; o++) {
-        m_pSoundManager->registerOutput(AudioOutput(AudioOutput::BUS, 0, 2, o),
-                                        m_pEngine);
+        m_pSoundManager->registerOutput(AudioOutput(AudioOutput::BUS, 0, 2, o),m_pEngine);
     }
-    m_pSoundManager->registerOutput(AudioOutput(AudioOutput::SIDECHAIN, 0, 2),
-                                    m_pEngine);
+    m_pSoundManager->registerOutput(AudioOutput(AudioOutput::SIDECHAIN, 0, 2),m_pEngine);
 }
-
-PlayerManager::~PlayerManager() {
+PlayerManager::~PlayerManager()
+{
     QMutexLocker locker(&m_mutex);
     // No need to delete anything because they are all parented to us and will
     // be destroyed when we are destroyed.
@@ -111,8 +101,8 @@ PlayerManager::~PlayerManager() {
         delete m_pAnalyzerQueue;
     }
 }
-
-void PlayerManager::bindToLibrary(Library* pLibrary) {
+void PlayerManager::bindToLibrary(Library* pLibrary)
+{
     QMutexLocker locker(&m_mutex);
     connect(pLibrary, SIGNAL(loadTrackToPlayer(TrackPointer, QString, bool)),
             this, SLOT(slotLoadTrackToPlayer(TrackPointer, QString, bool)));
@@ -145,9 +135,9 @@ void PlayerManager::bindToLibrary(Library* pLibrary) {
                 m_pAnalyzerQueue, SLOT(slotAnalyseTrack(TrackPointer)));
     }
 }
-
 // static
-unsigned int PlayerManager::numDecks() {
+unsigned int PlayerManager::numDecks()
+{
     // We do this to cache the control once it is created so callers don't incur
     // a hashtable lookup every time they call this.
     static ControlProxy* pNumCO = NULL;
@@ -177,9 +167,9 @@ bool PlayerManager::isDeckGroup(const QString& group, int* number) {
     }
     return true;
 }
-
 // static
-bool PlayerManager::isPreviewDeckGroup(const QString& group, int* number) {
+bool PlayerManager::isPreviewDeckGroup(const QString& group, int* number)
+{
     if (!group.startsWith("[PreviewDeck")) {
         return false;
     }
@@ -194,7 +184,6 @@ bool PlayerManager::isPreviewDeckGroup(const QString& group, int* number) {
     }
     return true;
 }
-
 // static
 unsigned int PlayerManager::numSamplers() {
     // We do this to cache the control once it is created so callers don't incur
@@ -211,13 +200,13 @@ unsigned int PlayerManager::numSamplers() {
 }
 
 // static
-unsigned int PlayerManager::numPreviewDecks() {
+unsigned int PlayerManager::numPreviewDecks()
+{
     // We do this to cache the control once it is created so callers don't incur
     // a hashtable lookup every time they call this.
     static ControlProxy* pNumCO = NULL;
     if (pNumCO == NULL) {
-        pNumCO = new ControlProxy(
-                ConfigKey("[Master]", "num_preview_decks"),nullptr);
+        pNumCO = new ControlProxy(ConfigKey("[Master]", "num_preview_decks"),nullptr);
         if (!pNumCO->valid()) {
             delete pNumCO;
             pNumCO = NULL;
@@ -225,15 +214,13 @@ unsigned int PlayerManager::numPreviewDecks() {
     }
     return pNumCO ? pNumCO->get() : 0;
 }
-
-void PlayerManager::slotNumDecksControlChanged(double v) {
+void PlayerManager::slotNumDecksControlChanged(double v)
+{
     QMutexLocker locker(&m_mutex);
-    int num = (int)v;
-
+    auto num = (int)v;
     // Update the soundmanager config even if the number of decks has been
     // reduced.
     m_pSoundManager->setConfiguredDeckCount(num);
-
     if (num < m_decks.size()) {
         // The request was invalid -- reset the value.
         m_pCONumDecks->set(m_decks.size());
@@ -245,10 +232,10 @@ void PlayerManager::slotNumDecksControlChanged(double v) {
         addDeckInner();
     }
 }
-
-void PlayerManager::slotNumSamplersControlChanged(double v) {
+void PlayerManager::slotNumSamplersControlChanged(double v)
+{
     QMutexLocker locker(&m_mutex);
-    int num = (int)v;
+    auto num = (int)v;
     if (num < m_samplers.size()) {
         // The request was invalid -- reset the value.
         m_pCONumSamplers->set(m_samplers.size());
@@ -260,10 +247,10 @@ void PlayerManager::slotNumSamplersControlChanged(double v) {
         addSamplerInner();
     }
 }
-
-void PlayerManager::slotNumPreviewDecksControlChanged(double v) {
+void PlayerManager::slotNumPreviewDecksControlChanged(double v)
+{
     QMutexLocker locker(&m_mutex);
-    int num = (int)v;
+    auto num = (int)v;
     if (num < m_preview_decks.size()) {
         // The request was invalid -- reset the value.
         m_pCONumPreviewDecks->set(m_preview_decks.size());
@@ -275,10 +262,10 @@ void PlayerManager::slotNumPreviewDecksControlChanged(double v) {
         addPreviewDeckInner();
     }
 }
-
-void PlayerManager::slotNumMicrophonesControlChanged(double v) {
+void PlayerManager::slotNumMicrophonesControlChanged(double v)
+{
     QMutexLocker locker(&m_mutex);
-    int num = (int)v;
+    auto num = (int)v;
     if (num < m_microphones.size()) {
         // The request was invalid -- reset the value.
         m_pCONumMicrophones->set(m_microphones.size());
@@ -291,9 +278,10 @@ void PlayerManager::slotNumMicrophonesControlChanged(double v) {
     }
 }
 
-void PlayerManager::slotNumAuxiliariesControlChanged(double v) {
+void PlayerManager::slotNumAuxiliariesControlChanged(double v)
+{
     QMutexLocker locker(&m_mutex);
-    int num = (int)v;
+    auto num = (int)v;
     if (num < m_auxiliaries.size()) {
         // The request was invalid -- reset the value.
         m_pCONumAuxiliaries->set(m_auxiliaries.size());
@@ -305,8 +293,8 @@ void PlayerManager::slotNumAuxiliariesControlChanged(double v) {
         addAuxiliaryInner();
     }
 }
-
-void PlayerManager::addDeck() {
+void PlayerManager::addDeck()
+{
     QMutexLocker locker(&m_mutex);
     addDeckInner();
     m_pCONumDecks->set((double)m_decks.count());
@@ -315,86 +303,71 @@ void PlayerManager::addDeck() {
 
 void PlayerManager::addConfiguredDecks() {
     // Cache this value in case it changes out from under us.
-    int deck_count = m_pSoundManager->getConfiguredDeckCount();
+    auto deck_count = m_pSoundManager->getConfiguredDeckCount();
     for (int i = 0; i < deck_count; ++i) {
         addDeck();
     }
 }
 
-void PlayerManager::addDeckInner() {
+void PlayerManager::addDeckInner()
+{
     // Do not lock m_mutex here.
     QString group = groupForDeck(m_decks.count());
     DEBUG_ASSERT_AND_HANDLE(!m_players.contains(group)) {
         return;
     }
+    auto number = m_decks.count() + 1;
 
-    int number = m_decks.count() + 1;
-
-    EngineChannel::ChannelOrientation orientation = EngineChannel::LEFT;
+    auto orientation = EngineChannel::LEFT;
     if (number % 2 == 0) {
         orientation = EngineChannel::RIGHT;
     }
 
     auto pDeck = makeDeck(this, m_pConfig, m_pEngine, m_pEffectsManager,orientation, group);
-    connect(pDeck, SIGNAL(noPassthroughInputConfigured()),
-            this, SIGNAL(noDeckPassthroughInputConfigured()));
-    connect(pDeck, SIGNAL(noVinylControlInputConfigured()),
-            this, SIGNAL(noVinylControlInputConfigured()));
-
+    connect(pDeck, SIGNAL(noPassthroughInputConfigured()),this, SIGNAL(noDeckPassthroughInputConfigured()));
+    connect(pDeck, SIGNAL(noVinylControlInputConfigured()),this, SIGNAL(noVinylControlInputConfigured()));
     if (m_pAnalyzerQueue) {
         connect(pDeck, SIGNAL(newTrackLoaded(TrackPointer)),
                 m_pAnalyzerQueue, SLOT(slotAnalyseTrack(TrackPointer)));
     }
-
     m_players[group] = pDeck;
     m_decks.append(pDeck);
-
     // Register the deck output with SoundManager (deck is 0-indexed to SoundManager)
     m_pSoundManager->registerOutput(
             AudioOutput(AudioOutput::DECK, 0, 2, number - 1), m_pEngine);
 
     // Register vinyl input signal with deck for passthrough support.
-    EngineDeck* pEngineDeck = pDeck->getEngineDeck();
-    m_pSoundManager->registerInput(
-            AudioInput(AudioInput::VINYLCONTROL, 0, 2, number - 1), pEngineDeck);
-
+    auto pEngineDeck = pDeck->getEngineDeck();
+    m_pSoundManager->registerInput(AudioInput(AudioInput::VINYLCONTROL, 0, 2, number - 1), pEngineDeck);
     // Setup equalizer rack for this deck.
-    EqualizerRackPointer pEqRack = m_pEffectsManager->getEqualizerRack(0);
-    if (pEqRack) {
+    if(auto pEqRack = m_pEffectsManager->getEqualizerRack(0)){
         pEqRack->addEffectChainSlotForGroup(group);
     }
-
     // BaseTrackPlayer needs to delay until we have setup the equalizer rack for
     // this deck to fetch the legacy EQ controls.
     // TODO(rryan): Find a way to remove this cruft.
     pDeck->setupEqControls();
-
     // Setup quick effect rack for this deck.
-    QuickEffectRackPointer pQuickEffectRack = m_pEffectsManager->getQuickEffectRack(0);
-    if (pQuickEffectRack) {
+    if(auto pQuickEffectRack = m_pEffectsManager->getQuickEffectRack(0)){
         pQuickEffectRack->addEffectChainSlotForGroup(group);
     }
 }
-
 void PlayerManager::addSampler() {
     QMutexLocker locker(&m_mutex);
     addSamplerInner();
     m_pCONumSamplers->set(m_samplers.count());
 }
 
-void PlayerManager::addSamplerInner() {
+void PlayerManager::addSamplerInner()
+{
     // Do not lock m_mutex here.
-    QString group = groupForSampler(m_samplers.count());
-
+    auto group = groupForSampler(m_samplers.count());
     DEBUG_ASSERT_AND_HANDLE(!m_players.contains(group)) {
         return;
     }
-
     // All samplers are in the center
     auto orientation = EngineChannel::CENTER;
-
-    auto pSampler = makeSampler(this, m_pConfig, m_pEngine,
-                                    m_pEffectsManager, orientation, group);
+    auto pSampler = makeSampler(this, m_pConfig, m_pEngine,m_pEffectsManager, orientation, group);
     if (m_pAnalyzerQueue) {
         connect(pSampler, SIGNAL(newTrackLoaded(TrackPointer)),
                 m_pAnalyzerQueue, SLOT(slotAnalyseTrack(TrackPointer)));
@@ -403,8 +376,8 @@ void PlayerManager::addSamplerInner() {
     m_players[group] = pSampler;
     m_samplers.append(pSampler);
 }
-
-void PlayerManager::addPreviewDeck() {
+void PlayerManager::addPreviewDeck()
+{
     QMutexLocker locker(&m_mutex);
     addPreviewDeckInner();
     m_pCONumPreviewDecks->set(m_preview_decks.count());
@@ -412,14 +385,12 @@ void PlayerManager::addPreviewDeck() {
 
 void PlayerManager::addPreviewDeckInner() {
     // Do not lock m_mutex here.
-    QString group = groupForPreviewDeck(m_preview_decks.count());
+    auto group = groupForPreviewDeck(m_preview_decks.count());
     DEBUG_ASSERT_AND_HANDLE(!m_players.contains(group)) {
         return;
     }
-
     // All preview decks are in the center
     auto orientation = EngineChannel::CENTER;
-
     auto pPreviewDeck = makePreviewDeck(this, m_pConfig, m_pEngine,
                                                 m_pEffectsManager, orientation,
                                                 group);
@@ -432,18 +403,19 @@ void PlayerManager::addPreviewDeckInner() {
     m_preview_decks.append(pPreviewDeck);
 }
 
-void PlayerManager::addMicrophone() {
+void PlayerManager::addMicrophone()
+{
     QMutexLocker locker(&m_mutex);
     addMicrophoneInner();
     m_pCONumMicrophones->set(m_microphones.count());
 }
 
-void PlayerManager::addMicrophoneInner() {
+void PlayerManager::addMicrophoneInner()
+{
     // Do not lock m_mutex here.
-    int index = m_microphones.count();
-    QString group = groupForMicrophone(index);
-    Microphone* pMicrophone = new Microphone(this, group, index, m_pSoundManager,
-                                             m_pEngine, m_pEffectsManager);
+    auto index = m_microphones.count();
+    auto group = groupForMicrophone(index);
+    auto pMicrophone = new Microphone(this, group, index, m_pSoundManager,m_pEngine, m_pEffectsManager);
     connect(pMicrophone, SIGNAL(noMicrophoneInputConfigured()),
             this, SIGNAL(noMicrophoneInputConfigured()));
     m_microphones.append(pMicrophone);
@@ -457,10 +429,10 @@ void PlayerManager::addAuxiliary() {
 
 void PlayerManager::addAuxiliaryInner() {
     // Do not lock m_mutex here.
-    int index = m_auxiliaries.count();
-    QString group = groupForAuxiliary(index);
+    auto index = m_auxiliaries.count();
+    auto group = groupForAuxiliary(index);
 
-    Auxiliary* pAuxiliary = new Auxiliary(this, group, index, m_pSoundManager,
+    auto pAuxiliary = new Auxiliary(this, group, index, m_pSoundManager,
                                           m_pEngine, m_pEffectsManager);
     m_auxiliaries.append(pAuxiliary);
 }

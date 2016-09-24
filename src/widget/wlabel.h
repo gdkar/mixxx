@@ -26,6 +26,8 @@
 
 class WLabel : public QLabel, public WBaseWidget {
     Q_OBJECT
+    Q_PROPERTY(QColor foreground MEMBER m_qFgColor)
+    Q_PROPERTY(QColor background MEMBER m_qFgColor)
   public:
     explicit WLabel(QWidget* pParent=nullptr);
 
@@ -33,7 +35,8 @@ class WLabel : public QLabel, public WBaseWidget {
 
     QString text() const;
     void setText(const QString& text);
-
+  signals:
+    void skinTextChanged(QString);
   protected:
     bool event(QEvent* pEvent) override;
     void resizeEvent(QResizeEvent* event) override;

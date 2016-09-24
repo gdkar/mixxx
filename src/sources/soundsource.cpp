@@ -2,7 +2,7 @@
 
 namespace mixxx {
 
-/*static*/ QString SoundSource::getFileExtensionFromUrl(const QUrl& url) {
+/*static*/ QString SoundSource::getFileExtensionFromUrl(QUrl url) {
     return url.toString().section(".", -1).toLower().trimmed();
 }
 bool SoundSource::isLocalFile() const { return getUrl().isLocalFile();}
@@ -11,7 +11,7 @@ QUrl SoundSource::getUrl() const { return m_url;}
 QString SoundSource::getUrlString() const { return m_url.toString();}
 const QString& SoundSource::getType() const { return m_type; }
 
-SoundSource::SoundSource(const QUrl& url)
+SoundSource::SoundSource(QUrl url)
         : AudioSource(),
           m_url(url),
           // simply use the file extension as the type
@@ -20,7 +20,7 @@ SoundSource::SoundSource(const QUrl& url)
     DEBUG_ASSERT(getUrl().isValid());
 }
 
-SoundSource::SoundSource(const QUrl& url, const QString& type)
+SoundSource::SoundSource(QUrl url, const QString& type)
         : AudioSource(),
           m_url(url),
           m_type(type)

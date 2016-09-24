@@ -16,19 +16,14 @@ class WBattery : public WWidget {
     Q_OBJECT
   public:
     explicit WBattery(QWidget* parent=nullptr);
-
     void setup(const QDomNode& node, const SkinContext& context);
-
   public slots:
     // gets information from battery and updates the Pixmap
     void update();
-
   protected:
     void paintEvent(QPaintEvent * /*unused*/) override;
-
   private:
-    void setPixmap(PaintablePointer* ppPixmap, const PixmapSource& source,
-                   Paintable::DrawMode mode);
+    void setPixmap(PaintablePointer* ppPixmap, const PixmapSource& source,Paintable::DrawMode mode);
 
     QScopedPointer<Battery> m_pBattery;
     PaintablePointer m_pCurrentPixmap;

@@ -14,6 +14,9 @@
 #include "library/dlgcoverartfullsize.h"
 #include "util/dnd.h"
 #include "util/math.h"
+WCoverArt::WCoverArt(QWidget* parent)
+:WCoverArt(parent,UserSettingsPointer{},QString{})
+{ }
 
 WCoverArt::WCoverArt(QWidget* parent,
                      UserSettingsPointer pConfig,
@@ -28,12 +31,10 @@ WCoverArt::WCoverArt(QWidget* parent,
     // Accept drops if we have a group to load tracks into.
     setAcceptDrops(!m_group.isEmpty());
 
-    CoverArtCache* pCache = CoverArtCache::instance();
+    auto pCache = CoverArtCache::instance();
     if (pCache != nullptr) {
-        connect(pCache, SIGNAL(coverFound(const QObject*,
-                                          const CoverInfo&, QPixmap, bool)),
-                this, SLOT(slotCoverFound(const QObject*,
-                                          const CoverInfo&, QPixmap, bool)));
+        connect(pCache, SIGNAL(coverFound(const QObject*,const CoverInfo&, QPixmap, bool)),
+                this, SLOT(slotCoverFound(const QObject*,const CoverInfo&, QPixmap, bool)));
     }
     connect(m_pMenu, SIGNAL(coverInfoSelected(const CoverInfo&)),
             this, SLOT(slotCoverInfoSelected(const CoverInfo&)));
@@ -57,7 +58,7 @@ void WCoverArt::setup(const QDomNode& node, const SkinContext& context) {
         bgc.setNamedColor(bgColorStr);
         setAutoFillBackground(true);
     }
-    QPalette pal = palette();
+    auto pal = palette();
     pal.setBrush(backgroundRole(), WSkinColor::getCorrectColor(bgc));
 
     // Foreground color

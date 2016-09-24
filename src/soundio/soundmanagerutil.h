@@ -17,6 +17,10 @@
 #define SOUNDMANAGERUTIL_U
 
 #include <QString>
+#include <QMetaEnum>
+#include <QMetaType>
+#include <QtGlobal>
+#include <QObject>
 #include <QMutex>
 #include <QDomElement>
 #include <QList>
@@ -50,10 +54,12 @@ private:
  */
 class AudioPath {
 public:
+    Q_GADGET
     // XXX if you add a new type here, be sure to add it to the various
     // methods including getStringFromType, isIndexed, getTypeFromInt,
     // channelsNeededForType (if necessary), the subclasses' getSupportedTypes
     // (if necessary), etc. -- bkgood
+    public:
     enum AudioPathType {
         MASTER,
         HEADPHONES,
@@ -65,6 +71,7 @@ public:
         SIDECHAIN,
         INVALID, // if this isn't last bad things will happen -bkgood
     };
+    Q_ENUM(AudioPathType);
     AudioPath(unsigned char channelBase, unsigned char channels);
     AudioPathType getType() const;
     ChannelGroup getChannelGroup() const;
@@ -82,11 +89,9 @@ public:
     // Returns the minimum number of channels needed on a sound device for an
     // AudioPathType.
     static unsigned char minChannelsForType(AudioPathType type);
-
     // Returns the maximum number of channels needed on a sound device for an
     // AudioPathType.
     static unsigned char maxChannelsForType(AudioPathType type);
-
 protected:
     virtual void setType(AudioPathType type) = 0;
     AudioPathType m_type;
@@ -122,7 +127,7 @@ class AudioOutputBuffer : public AudioOutput {
              m_pBuffer(pBuffer) {
 
     };
-    inline const CSAMPLE* getBuffer() const { return m_pBuffer; }
+    const CSAMPLE* getBuffer() const { return m_pBuffer; }
   private:
     const CSAMPLE* m_pBuffer;
 };
@@ -154,7 +159,7 @@ class AudioInputBuffer : public AudioInput {
               m_pBuffer(pBuffer) {
 
     }
-    inline CSAMPLE* getBuffer() const { return m_pBuffer; }
+    CSAMPLE* getBuffer() const { return m_pBuffer; }
   private:
     CSAMPLE* m_pBuffer;
 };
@@ -162,12 +167,10 @@ class AudioInputBuffer : public AudioInput {
 class AudioOrigin {
 public:
     virtual const CSAMPLE* buffer(AudioOutput output) const = 0;
-
     // This is called by SoundManager whenever an output is connected for this
     // source. When this is called it is guaranteed that no callback is
     // active.
     virtual void onOutputConnected(AudioOutput output) { Q_UNUSED(output); };
-
     // This is called by SoundManager whenever an output is disconnected for
     // this source. When this is called it is guaranteed that no callback is
     // active.
@@ -179,22 +182,18 @@ public:
     // This is called by SoundManager whenever there are new samples from the
     // configured input to be processed. This is run in the clock reference
     // callback thread
-    virtual void receiveBuffer(AudioInput input, const CSAMPLE* pBuffer,
-                               unsigned int iNumFrames) = 0;
+    virtual void receiveBuffer(AudioInput input, const CSAMPLE* pBuffer,unsigned int iNumFrames) = 0;
 
     // This is called by SoundManager whenever an input is configured for this
     // destination. When this is called it is guaranteed that no callback is
     // active.
     virtual void onInputConfigured(AudioInput input) { Q_UNUSED(input); };
-
     // This is called by SoundManager whenever an input is unconfigured for this
     // destination. When this is called it is guaranteed that no callback is
     // active.
     virtual void onInputUnconfigured(AudioInput input) { Q_UNUSED(input); };
 };
-
-typedef AudioPath::AudioPathType AudioPathType;
-
+using AudioPathType = AudioPath::AudioPathType;
 // globals for QHash
 unsigned int qHash(const ChannelGroup &group);
 unsigned int qHash(const AudioOutput &output);

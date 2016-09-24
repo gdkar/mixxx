@@ -73,9 +73,9 @@
 
 
 // static
-const int MixxxMainWindow::kMicrophoneCount = 4;
+const int MixxxMainWindow::kMicrophoneCount = 2;
 // static
-const int MixxxMainWindow::kAuxiliaryCount = 4;
+const int MixxxMainWindow::kAuxiliaryCount = 2;
 
 MixxxMainWindow::MixxxMainWindow(QApplication* pApp, const CmdlineArgs& args)
         : m_pWidgetParent(nullptr),
@@ -155,15 +155,10 @@ void MixxxMainWindow::initialize(QApplication* pApp, const CmdlineArgs& args)
     qRegisterMetaType<mixxx::ReplayGain>("mixxx::ReplayGain");
     qRegisterMetaType<mixxx::Bpm>("mixxx::Bpm");
     qRegisterMetaType<mixxx::Duration>("mixxx::Duration");
-
     auto pConfig = m_pSettingsManager->settings();
-
     Sandbox::initialize(QDir(pConfig->getSettingsPath()).filePath("sandbox.cfg"));
-
     auto resourcePath = pConfig->getResourcePath();
-
     FontUtils::initializeFonts(resourcePath); // takes a long time
-
     launchProgress(2);
 
     // Set the visibility of tooltips, default "1" = ON

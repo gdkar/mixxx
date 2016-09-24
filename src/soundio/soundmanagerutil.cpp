@@ -16,7 +16,7 @@
 #include "soundio/soundmanagerutil.h"
 
 #include "engine/enginechannel.h"
-
+#include <QMetaEnum>
 /**
  * Constructs a ChannelGroup.
  * @param channelBase the first channel in the group.
@@ -148,7 +148,9 @@ QString AudioPath::getString() const {
  * @note For user-facing usage, see getTrStringFromType
  */
 QString AudioPath::getStringFromType(AudioPathType type) {
-    switch (type) {
+    auto me = QMetaEnum::fromType<AudioPathType>();
+    return me.valueToKey(type);
+/*    switch (type) {
     case INVALID:
         // this shouldn't happen but g++ complains if I don't
         // handle this -- bkgood
@@ -170,7 +172,7 @@ QString AudioPath::getStringFromType(AudioPathType type) {
     case SIDECHAIN:
         return QString::fromAscii("Sidechain");
     }
-    return QString::fromAscii("Unknown path type %1").arg(type);
+    return QString::fromAscii("Unknown path type %1").arg(type);*/
 }
 
 /**
@@ -221,7 +223,14 @@ QString AudioPath::getTrStringFromType(AudioPathType type, unsigned char index) 
  * @note This method is static.
  */
 AudioPathType AudioPath::getTypeFromString(QString string) {
-    string = string.toLower();
+
+    auto me = QMetaEnum::fromType<AudioPathType>();
+    return static_cast<AudioPathType>(
+        me.keyToValue(
+            string.toUpper().toLocal8Bit().constData()
+            )
+        );
+/*    string = string.toLower();
     if (string == AudioPath::getStringFromType(AudioPath::MASTER).toLower()) {
         return AudioPath::MASTER;
     } else if (string == AudioPath::getStringFromType(AudioPath::HEADPHONES).toLower()) {
@@ -240,7 +249,7 @@ AudioPathType AudioPath::getTypeFromString(QString string) {
         return AudioPath::SIDECHAIN;
     } else {
         return AudioPath::INVALID;
-    }
+    }*/
 }
 
 /**
@@ -329,9 +338,9 @@ QDomElement AudioOutput::toXML(QDomElement *element) const {
  */
 AudioOutput AudioOutput::fromXML(const QDomElement &xml) {
     AudioPathType type(AudioPath::getTypeFromString(xml.attribute("type")));
-    unsigned int index(xml.attribute("index", "0").toUInt());
-    unsigned int channel(xml.attribute("channel", "0").toUInt());
-    unsigned int channels(xml.attribute("channel_count", "0").toUInt());
+    auto index = xml.attribute("index", "0").toUInt();
+    auto channel = xml.attribute("channel", "0").toUInt();
+    auto channels = xml.attribute("channel_count", "0").toUInt();
     // In Mixxx < 1.12.0 we didn't save channels to file since they directly
     // corresponded to the type. To migrate users over, use mono for all
     // microphones and stereo for everything else since previously microphone
@@ -341,23 +350,17 @@ AudioOutput AudioOutput::fromXML(const QDomElement &xml) {
     }
     return AudioOutput(type, channel, channels, index);
 }
-
 //static
 /**
  * Enumerates the AudioPathTypes supported by AudioOutput.
  * @note This method is static.
  */
-QList<AudioPathType> AudioOutput::getSupportedTypes() {
-    QList<AudioPathType> types;
-    types.append(MASTER);
-    types.append(HEADPHONES);
-    types.append(BUS);
-    types.append(DECK);
-    types.append(SIDECHAIN);
-    return types;
+QList<AudioPathType> AudioOutput::getSupportedTypes()
+{
+    return QList<AudioPathType>{} << MASTER << HEADPHONES << BUS<< DECK << SIDECHAIN;
 }
-
-bool AudioOutput::isHidden() {
+bool AudioOutput::isHidden()
+{
     return m_type == SIDECHAIN;
 }
 
@@ -412,10 +415,10 @@ QDomElement AudioInput::toXML(QDomElement *element) const {
  * @note This method is static.
  */
 AudioInput AudioInput::fromXML(const QDomElement &xml) {
-    AudioPathType type(AudioPath::getTypeFromString(xml.attribute("type")));
-    unsigned int index(xml.attribute("index", "0").toUInt());
-    unsigned int channel(xml.attribute("channel", "0").toUInt());
-    unsigned int channels(xml.attribute("channel_count", "0").toUInt());
+    auto type = AudioPath::getTypeFromString(xml.attribute("type"));
+    auto index(xml.attribute("index", "0").toUInt());
+    auto channel(xml.attribute("channel", "0").toUInt());
+    auto channels(xml.attribute("channel_count", "0").toUInt());
     // In Mixxx <1.12.0 we didn't save channels to file since they directly
     // corresponded to the type. To migrate users over, use mono for all
     // microphones and stereo for everything else since previously microphone

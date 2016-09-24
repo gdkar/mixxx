@@ -29,13 +29,13 @@ EngineAux::EngineAux(QObject *p, const ChannelHandleAndGroup& handle_group, Effe
     // can over-ride by setting the "pfl" or "master" controls.
     setMaster(true);
 }
-
-EngineAux::~EngineAux() {
+EngineAux::~EngineAux()
+{
     delete m_pPregain;
     delete m_pSampleRate;
 }
-
-bool EngineAux::isActive() {
+bool EngineAux::isActive()
+{
     auto enabled = m_pInputConfigured->toBool();
     if (enabled && m_sampleBuffer.load()) {
         m_wasActive = true;
@@ -83,8 +83,7 @@ void EngineAux::process(CSAMPLE* pOut, int iBufferSize)
     } else {
         SampleUtil::clear(pOut, iBufferSize);
     }
-
-    if (m_pEngineEffectsManager != NULL) {
+    if (m_pEngineEffectsManager) {
         GroupFeatureState features;
         // This is out of date by a callback but some effects will want the RMS
         // volume.

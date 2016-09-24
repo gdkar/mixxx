@@ -17,6 +17,7 @@ class WTrackTableView;
 
 class DlgRecording : public QWidget, public Ui::DlgRecording, public virtual LibraryView {
     Q_OBJECT
+    Q_INTERFACES(LibraryView)
   public:
     DlgRecording(QWidget *parent, UserSettingsPointer pConfig,
                  Library* pLibrary, TrackCollection* pTrackCollection,

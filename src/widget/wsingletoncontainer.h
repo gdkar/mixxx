@@ -57,12 +57,9 @@ class WSingletonContainer : public WWidgetGroup {
     // Prepares the container and remembers the widget, but does not add the
     // widget to the container.
     explicit WSingletonContainer(QWidget* pParent=nullptr);
-
     virtual void setup(const QDomNode& node, const SkinContext& context);
-
   public slots:
     void showEvent(QShowEvent* event) override;
-
   private:
     QPointer<QWidget> m_pWidget;
     QLayout* m_pLayout;
@@ -74,12 +71,10 @@ class SingletonMap {
     // singletons.  Checks that an object of that name hasn't already been
     // defined.
     void insertSingleton(QString objectName, QWidget* widget);
-
     // We don't want to end up with badly-constructed containers, so only
     // provide a factory function.  Returns NULL if the objectName is not in
     // the map.
     QWidget* getSingletonWidget(QString objectName) const;
-
   private:
     QMap<QString, QWidget*> m_singletons;
 };

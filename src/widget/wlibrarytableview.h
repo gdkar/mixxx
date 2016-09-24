@@ -16,11 +16,11 @@
 
 class WLibraryTableView : public QTableView, public virtual LibraryView {
     Q_OBJECT
-
+    Q_INTERFACES(LibraryView );
   public:
     WLibraryTableView(QWidget* parent,
-                      UserSettingsPointer pConfig,
-                      ConfigKey vScrollBarPosKey);
+                      UserSettingsPointer pConfig = UserSettingsPointer{},
+                      ConfigKey vScrollBarPosKey = ConfigKey{});
     ~WLibraryTableView() override;
     void moveSelection(int delta) override;
 

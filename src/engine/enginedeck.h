@@ -85,7 +85,7 @@ class EngineDeck : public EngineChannel, public AudioDestination {
     EnginePregain* m_pPregain;
 
     // Begin vinyl passthrough fields
-    ControlPushButton* m_pPassing;
+    ControlObject * m_pPassing;
     const CSAMPLE* volatile m_sampleBuffer;
     bool m_bPassthroughIsActive;
     bool m_bPassthroughWasActive;

@@ -835,6 +835,7 @@ class MixxxCore(Feature):
                    "library/basetrackcache.cpp",
                    "library/columncache.cpp",
                    "library/librarytablemodel.cpp",
+                   "library/libraryview.cpp",
                    "library/searchquery.cpp",
                    "library/searchqueryparser.cpp",
                    "library/analysislibrarytablemodel.cpp",

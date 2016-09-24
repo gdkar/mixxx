@@ -16,12 +16,9 @@ void WEffect::setup(const QDomNode& node, const SkinContext& context)
 {
     WLabel::setup(node, context);
     // EffectWidgetUtils propagates NULLs so this is all safe.
-    auto pRack = EffectWidgetUtils::getEffectRackFromNode(
-            node, context, m_pEffectsManager);
-    auto pChainSlot = EffectWidgetUtils::getEffectChainSlotFromNode(
-            node, context, pRack);
-    auto pEffectSlot = EffectWidgetUtils::getEffectSlotFromNode(
-            node, context, pChainSlot);
+    auto pRack = EffectWidgetUtils::getEffectRackFromNode(node, context, m_pEffectsManager);
+    auto pChainSlot = EffectWidgetUtils::getEffectChainSlotFromNode(node, context, pRack);
+    auto pEffectSlot = EffectWidgetUtils::getEffectSlotFromNode(node, context, pChainSlot);
     if (pEffectSlot) {
         setEffectSlot(pEffectSlot);
     } else {

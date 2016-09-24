@@ -17,6 +17,7 @@ class WTrackTableView;
 
 class DlgAutoDJ : public QWidget, public Ui::DlgAutoDJ, public LibraryView {
     Q_OBJECT
+    Q_INTERFACES(LibraryView)
   public:
     DlgAutoDJ(QWidget* parent, UserSettingsPointer pConfig,
               Library* pLibrary,

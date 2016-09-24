@@ -82,8 +82,9 @@ void WLibraryTableView::saveVScrollBarPosState() {
     m_pConfig->set(m_vScrollBarPosKey, ConfigValue(scrollbarPosition));
 }
 
-void WLibraryTableView::moveSelection(int delta) {
-    QAbstractItemModel* pModel = model();
+void WLibraryTableView::moveSelection(int delta)
+{
+    auto pModel = model();
 
     if (pModel == nullptr) {
         return;

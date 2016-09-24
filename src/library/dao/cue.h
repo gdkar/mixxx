@@ -14,8 +14,16 @@
 class CueDAO;
 class Track;
 
-class Cue : public QObject {
+class Cue : public QObject, public QEnableSharedFromThis<Cue> {
   Q_OBJECT
+  Q_PROPERTY(bool dirty READ isDirty WRITE setDirty NOTIFY dirtyChanged)
+  Q_PROPERTY(CueType type READ getType WRITE setType NOTIFY typeChanged)
+  Q_PROPERTY(int position READ getPosition WRITE setPosition NOTIFY positionChanged)
+  Q_PROPERTY(int length READ getLength WRITE setLength NOTIFY lengthChanged)
+  Q_PROPERTY(int hotCue READ getHotCue WRITE setHotCue NOTIFY hotCueChanged)
+  Q_PROPERTY(QString label READ getLabel WRITE setLabel NOTIFY labelChanged)
+  Q_PROPERTY(TrackId trackId READ getTrackId WRITE setTrackId NOTIFY trackIdChanged)
+  Q_PROPERTY(QColor color READ getColor WRITE setColor NOTIFY colorChanged)
   public:
     enum CueType {
         INVALID = 0,
@@ -25,6 +33,7 @@ class Cue : public QObject {
         LOOP,
         JUMP,
     };
+    Q_ENUM(CueType);
 
     virtual ~Cue();
 
@@ -52,9 +61,17 @@ class Cue : public QObject {
 
   signals:
     void updated();
-
+    void dirtyChanged(bool);
+    void typeChanged(CueType);
+    void positionChanged(int);
+    void lengthChanged(int);
+    void hotCueChanged(int);
+    void labelChanged(QString);
+    void colorChanged(QColor);
+    void trackIdChanged(TrackId);
   private:
     explicit Cue(TrackId trackId);
+    explicit Cue(QObject *pParent = nullptr);
     Cue(int id, TrackId trackId, CueType type, int position, int length,
         int hotCue, QString label, QColor color);
     void setDirty(bool dirty);

@@ -25,21 +25,13 @@ void WaveformRenderMark::setup(const QDomNode& node, const SkinContext& context)
                   *m_waveformRenderer->getWaveformSignalColors());
 }
 
-void WaveformRenderMark::draw(QPainter* painter, QPaintEvent* /*event*/) {
+void WaveformRenderMark::draw(QPainter* painter, QPaintEvent* /*event*/)
+{
     painter->save();
 
-    /*
-    //DEBUG
-    for (int i = 0; i < m_markPoints.size(); i++) {
-        if (m_waveformWidget->getTrackSamples())
-            painter->drawText(40*i,12+12*(i%3),QString::number(m_markPoints[i]->get() / (double)m_waveformWidget->getTrackSamples()));
-    }
-    */
-
     painter->setWorldMatrixEnabled(false);
-
-    for (int i = 0; i < m_marks.size(); i++) {
-        WaveformMarkPointer mark = m_marks[i];
+    for (auto i = 0; i < m_marks.size(); i++) {
+        auto mark = m_marks[i];
 
         if (!mark->m_pPointCos)
             continue;
@@ -50,21 +42,21 @@ void WaveformRenderMark::draw(QPainter* painter, QPaintEvent* /*event*/) {
             generateMarkImage(mark.data());
         }
 
-        int samplePosition = mark->m_pPointCos->get();
+        auto samplePosition = mark->m_pPointCos->get();
         if (samplePosition > 0.0) {
-            double currentMarkPoint = m_waveformRenderer->transformSampleIndexInRendererWorld(samplePosition);
+            auto currentMarkPoint = m_waveformRenderer->transformSampleIndexInRendererWorld(samplePosition);
 
             if (m_waveformRenderer->getOrientation() == Qt::Horizontal) {
                 // NOTE: vRince I guess image width is odd to display the center on the exact line !
                 // external image should respect that ...
-                const int markHalfWidth = mark->m_image.width() / 2.0;
+                auto markHalfWidth = mark->m_image.width() / 2.0;
 
                 // Check if the current point need to be displayed
                 if (currentMarkPoint > -markHalfWidth && currentMarkPoint < m_waveformRenderer->getWidth() + markHalfWidth) {
                     painter->drawImage(QPoint(currentMarkPoint - markHalfWidth,0), mark->m_image);
                 }
             } else {
-                const int markHalfHeight = mark->m_image.height() / 2.0;
+                auto markHalfHeight = mark->m_image.height() / 2.0;
 
                 if (currentMarkPoint > -markHalfHeight && currentMarkPoint < m_waveformRenderer->getHeight() + markHalfHeight) {
                     painter->drawImage(QPoint(0,currentMarkPoint - markHalfHeight), mark->m_image);
@@ -76,9 +68,10 @@ void WaveformRenderMark::draw(QPainter* painter, QPaintEvent* /*event*/) {
     painter->restore();
 }
 
-void WaveformRenderMark::onResize() {
+void WaveformRenderMark::onResize()
+{
     // Delete all marks' images. New images will be created on next paint.
-    for (int i = 0; i < m_marks.size(); i++) {
+    for (auto i = 0; i < m_marks.size(); i++) {
         m_marks[i]->m_image = QImage();
     }
 }
@@ -86,7 +79,7 @@ void WaveformRenderMark::onResize() {
 void WaveformRenderMark::onSetTrack() {
     slotCuesUpdated();
 
-    TrackPointer trackInfo = m_waveformRenderer->getTrackInfo();
+    auto trackInfo = m_waveformRenderer->getTrackInfo();
     if (!trackInfo) {
         return;
     }
@@ -95,25 +88,22 @@ void WaveformRenderMark::onSetTrack() {
 }
 
 void WaveformRenderMark::slotCuesUpdated() {
-    TrackPointer trackInfo = m_waveformRenderer->getTrackInfo();
+    auto trackInfo = m_waveformRenderer->getTrackInfo();
     if (!trackInfo){
         return;
     }
-
-    QList<CuePointer> loadedCues = trackInfo->getCuePoints();
-    for (const CuePointer pCue: loadedCues) {
+    for (auto pCue: trackInfo->getCuePoints()) {
         int hotCue = pCue->getHotCue();
         if (hotCue == -1) {
             continue;
         }
-
-        QString newLabel = pCue->getLabel();
-        QColor newColor = pCue->getColor();
+        auto newLabel = pCue->getLabel();
+        auto newColor = pCue->getColor();
 
         // Here we assume no two cues can have the same hotcue assigned,
         // because WaveformMarkSet stores one mark for each hotcue.
-        WaveformMark* pMark = m_marks.getHotCueMark(hotCue).data();
-        WaveformMarkProperties markProperties = pMark->getProperties();
+        auto pMark = m_marks.getHotCueMark(hotCue).data();
+        auto markProperties = pMark->getProperties();
         if (markProperties.m_text.isNull() || newLabel != markProperties.m_text ||
             !markProperties.m_color.isValid() || newColor != markProperties.m_color) {
             markProperties.m_text = newLabel;
@@ -124,13 +114,14 @@ void WaveformRenderMark::slotCuesUpdated() {
     }
 }
 
-void WaveformRenderMark::generateMarkImage(WaveformMark* pMark) {
-    const WaveformMarkProperties& markProperties = pMark->getProperties();
+void WaveformRenderMark::generateMarkImage(WaveformMark* pMark)
+{
+    auto && markProperties = pMark->getProperties();
 
     // Load the pixmap from file -- takes precedence over text.
     if (!markProperties.m_pixmapPath.isEmpty()) {
-        QString path = markProperties.m_pixmapPath;
-        QImage image = QImage(path);
+        auto path = markProperties.m_pixmapPath;
+        auto image = QImage(path);
         // If loading the image didn't fail, then we're done. Otherwise fall
         // through and render a label.
         if (!image.isNull()) {
@@ -145,7 +136,7 @@ void WaveformRenderMark::generateMarkImage(WaveformMark* pMark) {
     // If no text is provided, leave m_markImage as a null image
     if (!markProperties.m_text.isNull()) {
         // Determine mark text.
-        QString label = markProperties.m_text;
+        auto label = markProperties.m_text;
         if (pMark->m_iHotCue != -1) {
             if (!label.isEmpty()) {
                 label.prepend(": ");
@@ -166,19 +157,19 @@ void WaveformRenderMark::generateMarkImage(WaveformMark* pMark) {
         QFontMetrics metrics(font);
 
         //fixed margin ...
-        QRect wordRect = metrics.tightBoundingRect(label);
-        const int marginX = 1;
-        const int marginY = 1;
+        auto wordRect = metrics.tightBoundingRect(label);
+        auto marginX = 1;
+        auto marginY = 1;
         wordRect.moveTop(marginX + 1);
         wordRect.moveLeft(marginY + 1);
         wordRect.setHeight(wordRect.height() + (wordRect.height()%2));
         wordRect.setWidth(wordRect.width() + (wordRect.width())%2);
         //even wordrect to have an even Image >> draw the line in the middle !
 
-        int labelRectWidth = wordRect.width() + 2 * marginX + 4;
-        int labelRectHeight = wordRect.height() + 2 * marginY + 4 ;
+        auto labelRectWidth = wordRect.width() + 2 * marginX + 4;
+        auto labelRectHeight = wordRect.height() + 2 * marginY + 4 ;
 
-        QRectF labelRect(0, 0,
+        auto labelRect = QRectF(0, 0,
                 (float)labelRectWidth, (float)labelRectHeight);
 
         int width;
@@ -194,8 +185,8 @@ void WaveformRenderMark::generateMarkImage(WaveformMark* pMark) {
 
         pMark->m_image = QImage(width, height, QImage::Format_ARGB32_Premultiplied);
 
-        Qt::Alignment markAlignH = markProperties.m_align & Qt::AlignHorizontal_Mask;
-        Qt::Alignment markAlignV = markProperties.m_align & Qt::AlignVertical_Mask;
+        auto markAlignH = markProperties.m_align & Qt::AlignHorizontal_Mask;
+        auto markAlignV = markProperties.m_align & Qt::AlignVertical_Mask;
 
         if (markAlignH == Qt::AlignHCenter) {
             labelRect.moveLeft((width - labelRectWidth) / 2);
@@ -218,13 +209,12 @@ void WaveformRenderMark::generateMarkImage(WaveformMark* pMark) {
         painter.setWorldMatrixEnabled(false);
 
         // Prepare colors for drawing of marker lines
-        QColor lineColor = markProperties.m_color;
+        auto lineColor = markProperties.m_color;
         lineColor.setAlpha(200);
-        QColor contrastLineColor(0,0,0,120);
-
+        auto contrastLineColor = QColor(0,0,0,120);
         // Draw marker lines
         if (m_waveformRenderer->getOrientation() == Qt::Horizontal) {
-            int middle = width / 2;
+            auto middle = width / 2;
             if (markAlignH == Qt::AlignHCenter) {
                 if (labelRect.top() > 0) {
                     painter.setPen(lineColor);
@@ -252,7 +242,7 @@ void WaveformRenderMark::generateMarkImage(WaveformMark* pMark) {
                 painter.drawLine(middle + 1, 0, middle + 1, height);
             }
         } else {  // Vertical
-            int middle = height / 2;
+            auto middle = height / 2;
             if (markAlignV == Qt::AlignVCenter) {
                 if (labelRect.left() > 0) {
                     painter.setPen(lineColor);
@@ -282,7 +272,7 @@ void WaveformRenderMark::generateMarkImage(WaveformMark* pMark) {
         }
 
         // Draw the label rect
-        QColor rectColor = markProperties.m_color;
+        auto rectColor = markProperties.m_color;
         rectColor.setAlpha(200);
         painter.setPen(markProperties.m_color);
         painter.setBrush(QBrush(rectColor));
@@ -296,11 +286,11 @@ void WaveformRenderMark::generateMarkImage(WaveformMark* pMark) {
     }
     else //no text draw triangle
     {
-        float triangleSize = 9.0;
-        float markLength = triangleSize + 1.0;
-        float markBreadth = m_waveformRenderer->getBreadth();
+        auto triangleSize = 9.0f;
+        auto markLength = triangleSize + 1.0f;
+        auto markBreadth = m_waveformRenderer->getBreadth();
 
-        int width, height;
+        auto width = 0, height = 0;
 
         if (m_waveformRenderer->getOrientation() == Qt::Horizontal) {
             width = markLength;
@@ -323,7 +313,7 @@ void WaveformRenderMark::generateMarkImage(WaveformMark* pMark) {
             painter.setTransform(QTransform(0, 1, 1, 0, 0, 0));
         }
 
-        QColor triangleColor = markProperties.m_color;
+        auto triangleColor = markProperties.m_color;
         triangleColor.setAlpha(140);
         painter.setPen(QColor(0,0,0,0));
         painter.setBrush(QBrush(triangleColor));
@@ -347,14 +337,14 @@ void WaveformRenderMark::generateMarkImage(WaveformMark* pMark) {
 
         //TODO vRince duplicated code make a method
         //draw line
-        QColor lineColor = markProperties.m_color;
+        auto lineColor = markProperties.m_color;
         lineColor.setAlpha(140);
         painter.setPen(lineColor);
 
-        float middle = markLength / 2.0;
+        auto middle = markLength * 0.5f;
 
-        float lineTop = triangleSize * 0.5 + 1;
-        float lineBottom = markBreadth - triangleSize * 0.5 - 1;
+        float lineTop = triangleSize * 0.5f + 1;
+        float lineBottom = markBreadth - triangleSize * 0.5f - 1;
 
         painter.drawLine(middle, lineTop, middle, lineBottom);
 

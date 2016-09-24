@@ -24,8 +24,7 @@ void WTrackProperty::setup(const QDomNode& node, const SkinContext& context) {
 void WTrackProperty::slotTrackLoaded(TrackPointer track) {
     if (track) {
         m_pCurrentTrack = track;
-        connect(track.data(), SIGNAL(changed(Track*)),
-                this, SLOT(updateLabel(Track*)));
+        connect(track.data(), SIGNAL(changed(Track*)),this, SLOT(updateLabel(Track*)));
         updateLabel(track.data());
     }
 }
@@ -57,8 +56,7 @@ void WTrackProperty::mouseMoveEvent(QMouseEvent *event) {
 
 void WTrackProperty::dragEnterEvent(QDragEnterEvent *event) {
     if (DragAndDropHelper::allowLoadToPlayer(m_pGroup, m_pConfig) &&
-            DragAndDropHelper::dragEnterAccept(*event->mimeData(), m_pGroup,
-                                               true, false)) {
+            DragAndDropHelper::dragEnterAccept(*event->mimeData(), m_pGroup,true, false)) {
         event->acceptProposedAction();
     } else {
         event->ignore();

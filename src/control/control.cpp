@@ -15,8 +15,8 @@ GUARDED_BY(ControlDoublePrivate::s_qCOHashMutex);
 
 QHash<ConfigKey, ConfigKey> ControlDoublePrivate::s_qCOAliasHash
 GUARDED_BY(ControlDoublePrivate::s_qCOHashMutex);
-
 MMutex ControlDoublePrivate::s_qCOHashMutex;
+std::atomic<int64_t> ControlDoublePrivate::s_generation{0};
 
 /*
 ControlDoublePrivate::ControlDoublePrivate()
@@ -29,7 +29,7 @@ ControlDoublePrivate::ControlDoublePrivate()
     initialize();
 }
 */
-
+/*static */ int64_t ControlDoublePrivate::generation() { return s_generation.load();}
 ControlDoublePrivate::ControlDoublePrivate(ConfigKey key,
                                            bool bIgnoreNops,
                                            bool bTrack,
@@ -59,9 +59,7 @@ void ControlDoublePrivate::initialize()
     }
     m_defaultValue.store(0);
     m_value.store(value);
-
     //qDebug() << "Creating:" << m_trackKey << "at" << &m_value << sizeof(m_value);
-
     if (m_bTrack) {
         // TODO(rryan): Make configurable.
         m_trackKey = "control " + m_key.group + "," + m_key.item;
@@ -79,6 +77,7 @@ ControlDoublePrivate::~ControlDoublePrivate()
         if(it != s_qCOHash.constEnd()) {
             auto pControl = it.value().lock();
             if(pControl == this || !pControl) {
+                ++s_generation;
                 s_qCOHash.erase(it);
             }
         }
@@ -106,6 +105,7 @@ void ControlDoublePrivate::insertAlias(ConfigKey alias, ConfigKey key)
         return;
     }
 
+    ++s_generation;
     s_qCOAliasHash.insert(key, alias);
     s_qCOHash.insert(alias, pControl);
 }
@@ -135,13 +135,11 @@ QSharedPointer<ControlDoublePrivate> ControlDoublePrivate::getControl(
         return QSharedPointer<ControlDoublePrivate>();
     }
     QSharedPointer<ControlDoublePrivate> pControl;
-    // Scope for MMutexLocker.
     {
         MMutexLocker locker(&s_qCOHashMutex);
         auto it = s_qCOHash.find(key);
         if (it != s_qCOHash.end()) {
             pControl = it.value().lock();
-//            }
         }
     }
     if (pControl == NULL) {
@@ -154,6 +152,7 @@ QSharedPointer<ControlDoublePrivate> ControlDoublePrivate::getControl(
         {
         pControl->m_pCreatorCO = new ControlObject(pControl.data());
             MMutexLocker locker(&s_qCOHashMutex);
+            ++s_generation;
             {
                 auto it = s_qCOHash.constFind(key);
                 if(it != s_qCOHash.constEnd()) {
@@ -165,13 +164,8 @@ QSharedPointer<ControlDoublePrivate> ControlDoublePrivate::getControl(
                     }
                 }
             }
-            //qDebug() << "ControlDoublePrivate::s_qCOHash.insert(" << key.group << "," << key.item << ")";
             s_qCOHash.insert(key, pControl);
         }
-//        } else if (warn) {
-//            qWarning() << "ControlDoublePrivate::getControl returning NULL for ("
-//                       << key.group << "," << key.item << ")";
-//        }
     }
     return pControl;
 }
@@ -191,20 +185,25 @@ void ControlDoublePrivate::getControls(
             pControlList->push_back(pControl);
     }
 }
-
 // static
 QHash<ConfigKey, ConfigKey> ControlDoublePrivate::getControlAliases()
 {
     MMutexLocker locker(&s_qCOHashMutex);
     return s_qCOAliasHash;
 }
-
 void ControlDoublePrivate::reset()
 {
     // NOTE: pSender = NULL is important. The originator of this action does
     // not know the resulting value so it makes sense that we should emit a
     // general valueChanged() signal even though we know the originator.
     set(defaultValue(), nullptr);
+}
+double ControlDoublePrivate::exchange(double with)
+{
+    auto val = m_value.exchange(with);
+    if(val != with)
+        emit valueChanged(with,this);
+    return val;
 }
 bool ControlDoublePrivate::compare_exchange_strong(double &expected, double desired)
 {

@@ -22,5 +22,4 @@ public:
 
 Q_DECLARE_METATYPE(TrackId)
 
-
 #endif // TRACKID_H

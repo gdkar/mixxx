@@ -21,7 +21,7 @@ class ControlIndicator;
 class HotcueControl : public QObject {
     Q_OBJECT
   public:
-    HotcueControl(QString group, int hotcueNumber);
+    HotcueControl(QObject *pParent,QString group, int hotcueNumber);
     virtual ~HotcueControl();
 
     int getHotcueNumber() { return m_iHotcueNumber; }

@@ -18,8 +18,8 @@ class DlgCoverArtFullSize;
 class WCoverArt : public QWidget, public WBaseWidget {
     Q_OBJECT
   public:
-    WCoverArt(QWidget* parent, UserSettingsPointer pConfig,
-              const QString& group);
+    WCoverArt(QWidget*parent = nullptr);
+    WCoverArt(QWidget* parent, UserSettingsPointer pConfig, const QString& group);
     ~WCoverArt() override;
 
     void setup(const QDomNode& node, const SkinContext& context);

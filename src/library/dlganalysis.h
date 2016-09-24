@@ -14,6 +14,7 @@ class WAnalysisLibraryTableView;
 
 class DlgAnalysis : public QWidget, public Ui::DlgAnalysis, public virtual LibraryView {
     Q_OBJECT
+    Q_INTERFACES(LibraryView);
   public:
     DlgAnalysis(QWidget *parent,
                UserSettingsPointer pConfig,

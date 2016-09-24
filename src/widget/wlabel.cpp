@@ -97,7 +97,8 @@ QString WLabel::text() const {
     return m_longText;
 }
 
-void WLabel::setText(const QString& text) {
+void WLabel::setText(const QString& text)
+{
     m_longText = text;
     if (m_elideMode != Qt::ElideNone) {
         QFontMetrics metrics(font());
@@ -112,20 +113,22 @@ void WLabel::setText(const QString& text) {
         QLabel::setText(m_longText);
     }
 }
-
-bool WLabel::event(QEvent* pEvent) {
+bool WLabel::event(QEvent* pEvent)
+{
     if (pEvent->type() == QEvent::ToolTip) {
         updateTooltip();
     }
     return QLabel::event(pEvent);
 }
 
-void WLabel::resizeEvent(QResizeEvent* event) {
+void WLabel::resizeEvent(QResizeEvent* event)
+{
     QLabel::resizeEvent(event);
     setText(m_longText);
 }
 
-void WLabel::fillDebugTooltip(QStringList* debug) {
+void WLabel::fillDebugTooltip(QStringList* debug)
+{
     WBaseWidget::fillDebugTooltip(debug);
     *debug << QString("Text: \"%1\"").arg(text());
 }

@@ -10,6 +10,7 @@
 
 class WLibraryTextBrowser : public QTextBrowser, public LibraryView {
     Q_OBJECT
+    Q_INTERFACES(LibraryView );
   public:
     explicit WLibraryTextBrowser(QWidget* parent = nullptr);
 

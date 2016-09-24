@@ -12,6 +12,7 @@ class MissingTableModel;
 
 class DlgMissing : public QWidget, public Ui::DlgMissing, public LibraryView {
     Q_OBJECT
+    Q_INTERFACES(LibraryView)
   public:
     DlgMissing(QWidget* parent, UserSettingsPointer pConfig,
                Library* pLibrary, TrackCollection* pTrackCollection,
