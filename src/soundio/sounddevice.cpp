@@ -57,7 +57,7 @@ void SoundDevice::setSampleRate(double sampleRate) {
     m_dSampleRate = sampleRate;
 }
 
-void SoundDevice::setFramesPerBuffer(unsigned int framesPerBuffer) {
+void SoundDevice::setFramesPerBuffer(uint32_t framesPerBuffer) {
     if (framesPerBuffer * 2 > MAX_BUFFER_LEN) {
         // framesPerBuffer * 2 because a frame will generally end up
         // being 2 samples and MAX_BUFFER_LEN is a number of samples
@@ -112,9 +112,9 @@ bool SoundDevice::operator==(const QString &other) const {
 }
 
 void SoundDevice::composeOutputBuffer(CSAMPLE* outputBuffer,
-                                      unsigned int framesToCompose,
-                                      unsigned int framesReadOffset,
-                                      unsigned int iFrameSize) {
+                                      uint32_t framesToCompose,
+                                      uint32_t framesReadOffset,
+                                      uint32_t iFrameSize) {
     //qDebug() << "SoundDevice::composeOutputBuffer()"
     //         << device->getInternalName()
     //         << framesToCompose << iFrameSize;
@@ -181,9 +181,9 @@ void SoundDevice::composeOutputBuffer(CSAMPLE* outputBuffer,
 }
 
 void SoundDevice::composeInputBuffer(const CSAMPLE* inputBuffer,
-                                     unsigned int framesToPush,
-                                     unsigned int framesWriteOffset,
-                                     unsigned int iFrameSize) {
+                                     uint32_t framesToPush,
+                                     uint32_t framesWriteOffset,
+                                     uint32_t iFrameSize) {
     //qDebug() << "SoundManager::pushBuffer"
     //         << framesToPush << framesWriteOffset << iFrameSize;
     // This function is called a *lot* and is a big source of CPU usage.
@@ -243,8 +243,8 @@ void SoundDevice::composeInputBuffer(const CSAMPLE* inputBuffer,
         }
     }
 }
-void SoundDevice::clearInputBuffer(unsigned int framesToPush,
-                                   unsigned int framesWriteOffset) {
+void SoundDevice::clearInputBuffer(uint32_t framesToPush,
+                                   uint32_t framesWriteOffset) {
 
     for (auto i = m_audioInputs.begin(), e = m_audioInputs.end(); i != e; ++i) {
         auto && in = *i;
@@ -252,3 +252,24 @@ void SoundDevice::clearInputBuffer(unsigned int framesToPush,
         SampleUtil::clear(&pInputBuffer[framesWriteOffset * 2], framesToPush * 2);
     }
 }
+QList<AudioInputBuffer> SoundDevice::inputs() const
+{
+    return m_audioInputs;
+}
+QList<AudioOutputBuffer> SoundDevice::outputs() const
+{
+    return m_audioOutputs;
+}
+QString SoundDevice::getInternalName() const
+{
+    return m_strInternalName;
+}
+QString SoundDevice::getDisplayName() const
+{
+    return m_strDisplayName;
+}
+QString SoundDevice::getHostAPI() const
+{
+    return m_hostAPI;
+}
+

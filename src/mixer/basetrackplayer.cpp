@@ -19,7 +19,7 @@
 #include "vinylcontrol/defs_vinylcontrol.h"
 #include "engine/sync/enginesync.h"
 
-BaseTrackPlayer::BaseTrackPlayer(
+TrackPlayer::TrackPlayer(
     QObject* pParent,
     UserSettingsPointer pConfig,
     EngineMaster* pMixingEngine,
@@ -32,27 +32,27 @@ BaseTrackPlayer::BaseTrackPlayer(
           m_pConfig(pConfig),
           m_pEngineMaster(pMixingEngine),
           m_pLoadedTrack(),
-          m_pLowFilter(NULL),
-          m_pMidFilter(NULL),
-          m_pHighFilter(NULL),
-          m_pLowFilterKill(NULL),
-          m_pMidFilterKill(NULL),
-          m_pHighFilterKill(NULL),
-          m_pRateSlider(NULL),
-          m_pPitchAdjust(NULL),
-          m_replaygainPending(false) {
-    auto channelGroup =
-            pMixingEngine->registerChannelGroup(group);
+          m_pLowFilter(nullptr),
+          m_pMidFilter(nullptr),
+          m_pHighFilter(nullptr),
+          m_pLowFilterKill(nullptr),
+          m_pMidFilterKill(nullptr),
+          m_pHighFilterKill(nullptr),
+          m_pRateSlider(nullptr),
+          m_pPitchAdjust(nullptr),
+          m_replaygainPending(false)
+{
+    auto channelGroup = pMixingEngine->registerChannelGroup(group);
     m_pChannel = new EngineDeck(pMixingEngine, channelGroup, pConfig, pMixingEngine,
                                 pEffectsManager, defaultOrientation);
 
-    m_pInputConfigured.reset(new ControlProxy(group, "input_configured", this));
-    m_pPassthroughEnabled.reset(new ControlProxy(group, "passthrough", this));
+    m_pInputConfigured = new ControlProxy(group, "input_configured", this);
+    m_pPassthroughEnabled = new ControlProxy(group, "passthrough", this);
     m_pPassthroughEnabled->connectValueChanged(SLOT(slotPassthroughEnabled(double)));
 #ifdef __VINYLCONTROL__
-    m_pVinylControlEnabled.reset(new ControlProxy(group, "vinylcontrol_enabled", this));
+    m_pVinylControlEnabled = new ControlProxy(group, "vinylcontrol_enabled", this);
     m_pVinylControlEnabled->connectValueChanged(SLOT(slotVinylControlEnabled(double)));
-    m_pVinylControlStatus.reset(new ControlProxy(group, "vinylcontrol_status", this));
+    m_pVinylControlStatus = new ControlProxy(group, "vinylcontrol_status", this);
 #endif
 
     auto pEngineBuffer = m_pChannel->getEngineBuffer();
@@ -99,8 +99,7 @@ BaseTrackPlayer::BaseTrackPlayer(
     m_pPlay = new ControlProxy(group, "play", this);
     m_pPlay->connectValueChanged(SLOT(slotPlayToggled(double)));
 }
-
-BaseTrackPlayer::~BaseTrackPlayer()
+TrackPlayer::~TrackPlayer()
 {
     if (m_pLoadedTrack) {
         emit(loadingTrack(TrackPointer(), m_pLoadedTrack));
@@ -115,11 +114,11 @@ BaseTrackPlayer::~BaseTrackPlayer()
     delete m_pEndOfTrack;
 }
 
-void BaseTrackPlayer::slotLoadTrack(TrackPointer pNewTrack, bool bPlay)
+void TrackPlayer::slotLoadTrack(TrackPointer pNewTrack, bool bPlay)
 {
-    qDebug() << "BaseTrackPlayer::slotLoadTrack";
+    qDebug() << "TrackPlayer::slotLoadTrack";
     // Before loading the track, ensure we have access. This uses lazy
-    // evaluation to make sure track isn't NULL before we dereference it.
+    // evaluation to make sure track isn't nullptr before we dereference it.
     if (!pNewTrack.isNull() && !Sandbox::askForAccess(pNewTrack->getCanonicalLocation())) {
         // We don't have access.
         return;
@@ -159,9 +158,7 @@ void BaseTrackPlayer::slotLoadTrack(TrackPointer pNewTrack, bool bPlay)
     if (m_pLoadedTrack) {
         // Listen for updates to the file's BPM
         connect(m_pLoadedTrack.data(), SIGNAL(bpmUpdated(double)),m_pBPM, SLOT(set(double)));
-
         connect(m_pLoadedTrack.data(), SIGNAL(keyUpdated(double)),m_pKey, SLOT(set(double)));
-
         // Listen for updates to the file's Replay Gain
         connect(m_pLoadedTrack.data(), SIGNAL(ReplayGainUpdated(mixxx::ReplayGain)),
                 this, SLOT(slotSetReplayGain(mixxx::ReplayGain)));
@@ -175,7 +172,7 @@ void BaseTrackPlayer::slotLoadTrack(TrackPointer pNewTrack, bool bPlay)
     emit(loadingTrack(pNewTrack, pOldTrack));
 }
 
-void BaseTrackPlayer::slotLoadFailed(TrackPointer track, QString reason)
+void TrackPlayer::slotLoadFailed(TrackPointer track, QString reason)
 {
     // Note: This slot can be a load failure from the current track or a
     // a delayed signal from a previous load.
@@ -188,15 +185,15 @@ void BaseTrackPlayer::slotLoadFailed(TrackPointer track, QString reason)
     } else if (!track.isNull()) {
         qDebug() << "Stray failed to load track" << track->getLocation() << reason;
     } else {
-        qDebug() << "Failed to load track (NULL track object)" << reason;
+        qDebug() << "Failed to load track (nullptr track object)" << reason;
     }
     // Alert user.
-    QMessageBox::warning(NULL, tr("Couldn't load track."), reason);
+    QMessageBox::warning(nullptr, tr("Couldn't load track."), reason);
 }
 
-void BaseTrackPlayer::slotTrackLoaded(TrackPointer pNewTrack,
+void TrackPlayer::slotTrackLoaded(TrackPointer pNewTrack,
                                           TrackPointer pOldTrack) {
-    qDebug() << "BaseTrackPlayer::slotTrackLoaded";
+    qDebug() << "TrackPlayer::slotTrackLoaded";
     if (pNewTrack.isNull() && !pOldTrack.isNull() && pOldTrack == m_pLoadedTrack) {
         // eject Track
         // WARNING: Never. Ever. call bare disconnect() on an object. Mixxx
@@ -288,18 +285,18 @@ void BaseTrackPlayer::slotTrackLoaded(TrackPointer pNewTrack,
         // this is the result from an outdated load or unload signal
         // A new load is already pending
         // Ignore this signal and wait for the new one
-        qDebug() << "stray BaseTrackPlayer::slotTrackLoaded()";
+        qDebug() << "stray TrackPlayer::slotTrackLoaded()";
     }
 
     // Update the PlayerInfo class that is used in EngineBroadcast to replace
     // the metadata of a stream
     PlayerInfo::instance().setTrackInfo(getGroup(), m_pLoadedTrack);
 }
-TrackPointer BaseTrackPlayer::getLoadedTrack() const
+TrackPointer TrackPlayer::getLoadedTrack() const
 {
     return m_pLoadedTrack;
 }
-void BaseTrackPlayer::slotSetReplayGain(mixxx::ReplayGain replayGain)
+void TrackPlayer::slotSetReplayGain(mixxx::ReplayGain replayGain)
 {
     // Do not change replay gain when track is playing because
     // this may lead to an unexpected volume change
@@ -310,19 +307,19 @@ void BaseTrackPlayer::slotSetReplayGain(mixxx::ReplayGain replayGain)
     }
 }
 
-void BaseTrackPlayer::slotPlayToggled(double v)
+void TrackPlayer::slotPlayToggled(double v)
 {
     if (!v && m_replaygainPending) {
         setReplayGain(m_pLoadedTrack->getReplayGain().getRatio());
     }
 }
 
-EngineDeck* BaseTrackPlayer::getEngineDeck() const
+EngineDeck* TrackPlayer::getEngineDeck() const
 {
     return m_pChannel;
 }
 
-void BaseTrackPlayer::setupEqControls()
+void TrackPlayer::setupEqControls()
 {
     auto group = getGroup();
     m_pLowFilter = new ControlProxy(group, "filterLow", this);
@@ -335,7 +332,7 @@ void BaseTrackPlayer::setupEqControls()
     m_pPitchAdjust = new ControlProxy(group, "pitch_adjust", this);
 }
 
-void BaseTrackPlayer::slotPassthroughEnabled(double v)
+void TrackPlayer::slotPassthroughEnabled(double v)
 {
     auto configured = m_pInputConfigured->toBool();
     auto passthrough = v > 0.0;
@@ -348,7 +345,7 @@ void BaseTrackPlayer::slotPassthroughEnabled(double v)
     }
 }
 
-void BaseTrackPlayer::slotVinylControlEnabled(double v) {
+void TrackPlayer::slotVinylControlEnabled(double v) {
 #ifdef __VINYLCONTROL__
     auto configured = m_pInputConfigured->toBool();
     auto vinylcontrol_enabled = v > 0.0;
@@ -362,7 +359,7 @@ void BaseTrackPlayer::slotVinylControlEnabled(double v) {
     }
 #endif
 }
-void BaseTrackPlayer::setReplayGain(double value)
+void TrackPlayer::setReplayGain(double value)
 {
     m_pReplayGain->set(value);
     m_replaygainPending = false;

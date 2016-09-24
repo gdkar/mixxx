@@ -45,34 +45,25 @@ class SoundDevice : public QObject {
     SoundDevice(UserSettingsPointer config, SoundManager* sm);
     virtual ~SoundDevice();
 
-    const QString& getInternalName() const {
-        return m_strInternalName;
-    }
-    const QString& getDisplayName() const {
-        return m_strDisplayName;
-    }
-    const QString& getHostAPI() const {
-        return m_hostAPI;
-    }
+    QString getInternalName() const;
+    QString getDisplayName() const;
+    QString getHostAPI() const;
+
     void setSampleRate(double sampleRate);
-    void setFramesPerBuffer(unsigned int framesPerBuffer);
+    void setFramesPerBuffer(uint32_t framesPerBuffer);
     virtual Result open(bool isClkRefDevice, int syncBuffers) = 0;
     virtual bool isOpen() const = 0;
     virtual Result close() = 0;
     virtual void readProcess() = 0;
     virtual void writeProcess() = 0;
     virtual QString getError() const = 0;
-    virtual unsigned int getDefaultSampleRate() const = 0;
+    virtual uint32_t getDefaultSampleRate() const = 0;
     int getNumOutputChannels() const;
     int getNumInputChannels() const;
     SoundDeviceError addOutput(const AudioOutputBuffer& out);
     SoundDeviceError addInput(const AudioInputBuffer& in);
-    QList<AudioInputBuffer> inputs() const {
-        return m_audioInputs;
-    }
-    QList<AudioOutputBuffer> outputs() const {
-        return m_audioOutputs;
-    }
+    QList<AudioInputBuffer> inputs() const;
+    QList<AudioOutputBuffer> outputs() const;
 
     void clearOutputs();
     void clearInputs();
@@ -81,17 +72,17 @@ class SoundDevice : public QObject {
 
   protected:
     void composeOutputBuffer(CSAMPLE* outputBuffer,
-                            unsigned int iFramesPerBuffer,
-                            unsigned int readOffset,
-                            unsigned int iFrameSize);
+                            uint32_t iFramesPerBuffer,
+                            uint32_t readOffset,
+                            uint32_t iFrameSize);
 
     void composeInputBuffer(const CSAMPLE* inputBuffer,
-                            unsigned int framesToPush,
-                            unsigned int framesWriteOffset,
-                            unsigned int iFrameSize);
+                            uint32_t framesToPush,
+                            uint32_t framesWriteOffset,
+                            uint32_t iFrameSize);
 
-    void clearInputBuffer(unsigned int framesToPush,
-                          unsigned int framesWriteOffset);
+    void clearInputBuffer(uint32_t framesToPush,
+                          uint32_t framesWriteOffset);
 
     UserSettingsPointer m_pConfig;
     // Pointer to the SoundManager object which we'll request audio from.
@@ -108,7 +99,7 @@ class SoundDevice : public QObject {
     double m_dSampleRate;
     // The name of the audio API used by this device.
     QString m_hostAPI;
-    unsigned int m_framesPerBuffer;
+    uint32_t m_framesPerBuffer;
     QList<AudioOutputBuffer> m_audioOutputs;
     QList<AudioInputBuffer> m_audioInputs;
 };

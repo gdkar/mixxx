@@ -798,7 +798,7 @@ TEST_F(EngineSyncTest, LoadTrackResetTempoOption) {
     // the "Reset Speed/Tempo" preference is set and a track is loaded to another
     // deck with master sync enabled.
     m_pConfig->set(ConfigKey("[Controls]", "SpeedAutoReset"),
-                   ConfigValue(BaseTrackPlayer::RESET_SPEED));
+                   ConfigValue(TrackPlayer::RESET_SPEED));
 
     // Enable sync on two stopped decks
     m_pMixerDeck1->setupEqControls();
@@ -838,7 +838,7 @@ TEST_F(EngineSyncTest, LoadTrackResetTempoOption) {
 
     // Repeat with RESET_PITCH_AND_SPEED
     m_pConfig->set(ConfigKey("[Controls]", "SpeedAutoReset"),
-                   ConfigValue(BaseTrackPlayer::RESET_PITCH_AND_SPEED));
+                   ConfigValue(TrackPlayer::RESET_PITCH_AND_SPEED));
     ControlObject::getControl(ConfigKey(m_sGroup1, "play"))->set(0.0);
     ControlObject::getControl(ConfigKey(m_sGroup1, "rate"))->set(getRateSliderValue(1.0));
     m_pMixerDeck1->slotLoadTrack(track1, true);
@@ -855,7 +855,7 @@ TEST_F(EngineSyncTest, LoadTrackResetTempoOption) {
 
     // Repeat with RESET_NONE
     m_pConfig->set(ConfigKey("[Controls]", "SpeedAutoReset"),
-                   ConfigValue(BaseTrackPlayer::RESET_NONE));
+                   ConfigValue(TrackPlayer::RESET_NONE));
     ControlObject::getControl(ConfigKey(m_sGroup1, "play"))->set(0.0);
     ControlObject::getControl(ConfigKey(m_sGroup1, "rate"))->set(getRateSliderValue(1.0));
     ControlObject::getControl(ConfigKey(m_sGroup2, "rate"))->set(getRateSliderValue(1.0));
@@ -873,7 +873,7 @@ TEST_F(EngineSyncTest, LoadTrackResetTempoOption) {
 
     // Load two tracks with sync off and RESET_SPEED
     m_pConfig->set(ConfigKey("[Controls]", "SpeedAutoReset"),
-                   ConfigValue(BaseTrackPlayer::RESET_SPEED));
+                   ConfigValue(TrackPlayer::RESET_SPEED));
     ControlObject::getControl(ConfigKey(m_sGroup1, "play"))->set(0.0);
     ControlObject::getControl(ConfigKey(m_sGroup1, "rate"))->set(getRateSliderValue(1.5));
     ControlObject::getControl(ConfigKey(m_sGroup2, "rate"))->set(getRateSliderValue(1.5));
@@ -891,7 +891,7 @@ TEST_F(EngineSyncTest, LoadTrackResetTempoOption) {
 
     // Load two tracks with sync off and RESET_PITCH_AND_SPEED
     m_pConfig->set(ConfigKey("[Controls]", "SpeedAutoReset"),
-                   ConfigValue(BaseTrackPlayer::RESET_PITCH_AND_SPEED));
+                   ConfigValue(TrackPlayer::RESET_PITCH_AND_SPEED));
     ControlObject::getControl(ConfigKey(m_sGroup1, "play"))->set(0.0);
     ControlObject::getControl(ConfigKey(m_sGroup1, "rate"))->set(getRateSliderValue(1.5));
     ControlObject::getControl(ConfigKey(m_sGroup2, "rate"))->set(getRateSliderValue(1.5));

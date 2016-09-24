@@ -37,11 +37,11 @@ TEST_F(EngineBufferTest, DisableKeylockResetsPitch) {
 }
 
 // TODO(xxx) make EngineBufferTest::TrackLoadResetsPitch() work
-/* Does not work yet because we have no BaseTrackPlayerImpl in this test
+/* Does not work yet because we have no TrackPlayerImpl in this test
 TEST_F(EngineBufferTest, TrackLoadResetsPitch) {
     // When a new track is loaded, the pitch value should be reset.
     config()->set(ConfigKey("[Controls]","SpeedAutoReset"),
-            ConfigValue(BaseTrackPlayer::RESET_PITCH));
+            ConfigValue(TrackPlayer::RESET_PITCH));
     ControlObject::set(ConfigKey(m_sGroup1, "file_bpm"), 128.0);
     ControlObject::set(ConfigKey(m_sGroup1, "pitch"), 0.5);
     ProcessBuffer();

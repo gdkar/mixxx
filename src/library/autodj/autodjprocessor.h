@@ -15,13 +15,13 @@
 class ControlPushButton;
 class TrackCollection;
 class PlayerManagerInterface;
-class BaseTrackPlayer;
+class TrackPlayer;
 
 class DeckAttributes : public QObject {
     Q_OBJECT
   public:
     DeckAttributes(int index,
-                   BaseTrackPlayer* pPlayer,
+                   TrackPlayer* pPlayer,
                    EngineChannel::ChannelOrientation orientation);
     virtual ~DeckAttributes();
 
@@ -88,7 +88,7 @@ class DeckAttributes : public QObject {
     ControlProxy m_playPos;
     ControlProxy m_play;
     ControlProxy m_repeat;
-    BaseTrackPlayer* m_pPlayer;
+    TrackPlayer* m_pPlayer;
 };
 
 class AutoDJProcessor : public QObject {

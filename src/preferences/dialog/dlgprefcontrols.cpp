@@ -352,12 +352,12 @@ DlgPrefControls::DlgPrefControls(QWidget * parent, MixxxMainWindow * mixxx,
     // TODO: All defaults should only be set in slotResetToDefaults.
     int configSPAutoReset = m_pConfig->getValueString(
                     ConfigKey("[Controls]", "SpeedAutoReset"),
-                    QString("%1").arg(BaseTrackPlayer::RESET_PITCH)).toInt();
+                    QString("%1").arg(TrackPlayer::RESET_PITCH)).toInt();
 
-    m_speedAutoReset = (configSPAutoReset==BaseTrackPlayer::RESET_SPEED ||
-                        configSPAutoReset==BaseTrackPlayer::RESET_PITCH_AND_SPEED);
-    m_pitchAutoReset = (configSPAutoReset==BaseTrackPlayer::RESET_PITCH ||
-                        configSPAutoReset==BaseTrackPlayer::RESET_PITCH_AND_SPEED);
+    m_speedAutoReset = (configSPAutoReset==TrackPlayer::RESET_SPEED ||
+                        configSPAutoReset==TrackPlayer::RESET_PITCH_AND_SPEED);
+    m_pitchAutoReset = (configSPAutoReset==TrackPlayer::RESET_PITCH ||
+                        configSPAutoReset==TrackPlayer::RESET_PITCH_AND_SPEED);
 
     // Do these need to be here when slotUpdate() has them as well?
     checkBoxResetSpeed->setChecked(m_speedAutoReset);
@@ -679,13 +679,13 @@ void DlgPrefControls::slotApply() {
         m_pConfig->set(ConfigKey("[Controls]", "RateDir"), ConfigValue(1));
     }
 
-    int configSPAutoReset = BaseTrackPlayer::RESET_NONE;
+    int configSPAutoReset = TrackPlayer::RESET_NONE;
 
     if (m_speedAutoReset && m_pitchAutoReset) {
-        configSPAutoReset = BaseTrackPlayer::RESET_PITCH_AND_SPEED;
+        configSPAutoReset = TrackPlayer::RESET_PITCH_AND_SPEED;
     }
-    else if (m_speedAutoReset) configSPAutoReset = BaseTrackPlayer::RESET_SPEED;
-    else if (m_pitchAutoReset) configSPAutoReset = BaseTrackPlayer::RESET_PITCH;
+    else if (m_speedAutoReset) configSPAutoReset = TrackPlayer::RESET_SPEED;
+    else if (m_pitchAutoReset) configSPAutoReset = TrackPlayer::RESET_PITCH;
 
     m_pConfig->set(ConfigKey("[Controls]", "SpeedAutoReset"),
                    ConfigValue(configSPAutoReset));

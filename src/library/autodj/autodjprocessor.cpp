@@ -14,7 +14,7 @@ const double kTransitionPreferenceDefault = 10.0;
 static const bool sDebug = false;
 
 DeckAttributes::DeckAttributes(int index,
-                               BaseTrackPlayer* pPlayer,
+                               TrackPlayer* pPlayer,
                                EngineChannel::ChannelOrientation orientation)
         : index(index),
           group(pPlayer->getGroup()),
@@ -104,7 +104,7 @@ AutoDJProcessor::AutoDJProcessor(QObject* pParent,
     // are created.
     for (unsigned int i = 0; i < pPlayerManager->numberOfDecks(); ++i) {
         QString group = PlayerManager::groupForDeck(i);
-        BaseTrackPlayer* pPlayer = pPlayerManager->getPlayer(group);
+        TrackPlayer* pPlayer = pPlayerManager->getPlayer(group);
         // Shouldn't be possible.
         if (pPlayer == NULL) {
             qWarning() << "PROGRAMMING ERROR deck does not exist" << i;

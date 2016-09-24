@@ -14,7 +14,7 @@
 
 class AnalyzerQueue;
 class Auxiliary;
-class BaseTrackPlayer;
+class TrackPlayer;
 class ControlObject;
 class EffectsManager;
 class EngineMaster;
@@ -27,27 +27,21 @@ class TrackCollection;
 // For mocking PlayerManager.
 class PlayerManagerInterface {
   public:
-    // Get a BaseTrackPlayer (i.e. a Deck or a Sampler) by its group
-    virtual BaseTrackPlayer* getPlayer(QString group) const = 0;
-
+    // Get a TrackPlayer (i.e. a Deck or a Sampler) by its group
+    virtual TrackPlayer* getPlayer(QString group) const = 0;
     // Get the deck by its deck number. Decks are numbered starting with 1.
-    virtual BaseTrackPlayer* getDeck(unsigned int player) const = 0;
-
+    virtual TrackPlayer* getDeck(uint32_t player) const = 0;
     // Returns the number of decks.
-    virtual unsigned int numberOfDecks() const = 0;
-
+    virtual uint32_t numberOfDecks() const = 0;
     // Get the preview deck by its deck number. Preview decks are numbered
     // starting with 1.
-    virtual BaseTrackPlayer* getPreviewDeck(unsigned int libPreviewPlayer) const = 0;
-
+    virtual TrackPlayer* getPreviewDeck(uint32_t libPreviewPlayer) const = 0;
     // Returns the number of preview decks.
-    virtual unsigned int numberOfPreviewDecks() const = 0;
-
+    virtual uint32_t numberOfPreviewDecks() const = 0;
     // Get the sampler by its number. Samplers are numbered starting with 1.
-    virtual BaseTrackPlayer* getSampler(unsigned int sampler) const = 0;
-
+    virtual TrackPlayer* getSampler(uint32_t sampler) const = 0;
     // Returns the number of sampler decks.
-    virtual unsigned int numberOfSamplers() const = 0;
+    virtual uint32_t numberOfSamplers() const = 0;
 };
 
 class PlayerManager : public QObject, public PlayerManagerInterface {
@@ -58,72 +52,51 @@ class PlayerManager : public QObject, public PlayerManagerInterface {
                   EffectsManager* pEffectsManager,
                   EngineMaster* pEngine);
     virtual ~PlayerManager();
-
     // Add a deck to the PlayerManager
     void addDeck();
-
     // Add number of decks according to configuration.
     void addConfiguredDecks();
-
     // Add a sampler to the PlayerManager
     void addSampler();
-
     // Add a PreviewDeck to the PlayerManager
     void addPreviewDeck();
-
     // Add a microphone to the PlayerManager
     void addMicrophone();
-
     // Add an auxiliary input to the PlayerManager
     void addAuxiliary();
-
     // Return the number of players. Thread-safe.
-    static unsigned int numDecks();
-
-    unsigned int numberOfDecks() const {
+    static uint32_t numDecks();
+    uint32_t numberOfDecks() const {
         return numDecks();
     }
-
     // Returns true if the group is a deck group. If index is non-NULL,
     // populates it with the deck number (1-indexed).
     static bool isDeckGroup(const QString& group, int* number=NULL);
-
     // Returns true if the group is a preview deck group. If index is non-NULL,
     // populates it with the deck number (1-indexed).
     static bool isPreviewDeckGroup(const QString& group, int* number=NULL);
-
     // Return the number of samplers. Thread-safe.
-    static unsigned int numSamplers();
-
-    unsigned int numberOfSamplers() const {
+    static uint32_t numSamplers();
+    uint32_t numberOfSamplers() const {
         return numSamplers();
     }
-
     // Return the number of preview decks. Thread-safe.
-    static unsigned int numPreviewDecks();
-
-    unsigned int numberOfPreviewDecks() const {
+    static uint32_t numPreviewDecks();
+    uint32_t numberOfPreviewDecks() const {
         return numPreviewDecks();
     }
-
-    // Get a BaseTrackPlayer (i.e. a Deck, Sampler or PreviewDeck) by its
+    // Get a TrackPlayer (i.e. a Deck, Sampler or PreviewDeck) by its
     // group. Auxiliaries and microphones are not players.
-    BaseTrackPlayer* getPlayer(QString group) const;
-
+    TrackPlayer* getPlayer(QString group) const;
     // Get the deck by its deck number. Decks are numbered starting with 1.
-    BaseTrackPlayer* getDeck(unsigned int player) const;
-
-    BaseTrackPlayer* getPreviewDeck(unsigned int libPreviewPlayer) const;
-
+    TrackPlayer* getDeck(uint32_t player) const;
+    TrackPlayer* getPreviewDeck(uint32_t libPreviewPlayer) const;
     // Get the sampler by its number. Samplers are numbered starting with 1.
-    BaseTrackPlayer* getSampler(unsigned int sampler) const;
-
+    TrackPlayer* getSampler(uint32_t sampler) const;
     // Get the microphone by its number. Microphones are numbered starting with 1.
-    Microphone* getMicrophone(unsigned int microphone) const;
-
+    Microphone* getMicrophone(uint32_t microphone) const;
     // Get the auxiliary by its number. Auxiliaries are numbered starting with 1.
-    Auxiliary* getAuxiliary(unsigned int auxiliary) const;
-
+    Auxiliary* getAuxiliary(uint32_t auxiliary) const;
     // Binds signals between PlayerManager and Library. Does not store a pointer
     // to the Library.
     void bindToLibrary(Library* pLibrary);
@@ -154,22 +127,18 @@ class PlayerManager : public QObject, public PlayerManagerInterface {
         }
         return group;
     }
-
     // Returns the group for the ith Auxiliary where i is zero indexed
     static QString groupForAuxiliary(int i) {
         return QString("[Auxiliary%1]").arg(i + 1);
     }
-
   public slots:
     // Slots for loading tracks into a Player, which is either a Sampler or a Deck
     void slotLoadTrackToPlayer(TrackPointer pTrack, QString group, bool play = false);
     void slotLoadToPlayer(QString location, QString group);
-
     // Slots for loading tracks to decks
     void slotLoadTrackIntoNextAvailableDeck(TrackPointer pTrack);
     // Loads the location to the deck. deckNumber is 1-indexed
     void slotLoadToDeck(QString location, int deckNumber);
-
     // Loads the location to the preview deck. previewDeckNumber is 1-indexed
     void slotLoadToPreviewDeck(QString location, int previewDeckNumber);
     // Slots for loading tracks to samplers
@@ -218,7 +187,6 @@ class PlayerManager : public QObject, public PlayerManagerInterface {
     // Must hold m_mutex before calling this method. Internal method that
     // creates a new auxiliary.
     void addAuxiliaryInner();
-
     // Used to protect access to PlayerManager state across threads.
     mutable QMutex m_mutex;
 
@@ -233,12 +201,12 @@ class PlayerManager : public QObject, public PlayerManagerInterface {
     ControlObject* m_pCONumMicrophones;
     ControlObject* m_pCONumAuxiliaries;
 
-    QList<BaseTrackPlayer*> m_decks;
-    QList<BaseTrackPlayer*> m_samplers;
-    QList<BaseTrackPlayer*> m_preview_decks;
+    QList<TrackPlayer*> m_decks;
+    QList<TrackPlayer*> m_samplers;
+    QList<TrackPlayer*> m_preview_decks;
     QList<Microphone*> m_microphones;
     QList<Auxiliary*> m_auxiliaries;
-    QMap<QString, BaseTrackPlayer*> m_players;
+    QMap<QString, TrackPlayer*> m_players;
 };
 
 #endif // MIXER_PLAYERMANAGER_H

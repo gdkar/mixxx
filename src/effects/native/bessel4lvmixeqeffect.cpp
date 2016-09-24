@@ -94,7 +94,7 @@ EffectManifest Bessel4LVMixEQEffect::getManifest() {
 
 Bessel4LVMixEQEffect::Bessel4LVMixEQEffect(EngineEffect* pEffect,
                                            const EffectManifest& manifest)
-        : m_pPotLow(pEffect->getParameterById("lo"w)),
+        : m_pPotLow(pEffect->getParameterById("low")),
           m_pPotMid(pEffect->getParameterById("mid")),
           m_pPotHigh(pEffect->getParameterById("high")),
           m_pKillLow(pEffect->getParameterById("killLow")),

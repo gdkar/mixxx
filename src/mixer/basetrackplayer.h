@@ -18,7 +18,7 @@ class ControlProxy;
 class EffectsManager;
 
 
-class BaseTrackPlayer : public BasePlayer {
+class TrackPlayer : public BasePlayer {
     Q_OBJECT
   public:
     enum TrackLoadReset {
@@ -28,7 +28,7 @@ class BaseTrackPlayer : public BasePlayer {
         RESET_SPEED
     };
     Q_ENUM(TrackLoadReset);
-    BaseTrackPlayer(QObject* pParent,
+    TrackPlayer(QObject* pParent,
                     UserSettingsPointer pConfig,
                     EngineMaster* pMixingEngine,
                     EffectsManager* pEffectsManager,
@@ -36,7 +36,7 @@ class BaseTrackPlayer : public BasePlayer {
                     const QString& group,
                     bool defaultMaster,
                     bool defaultHeadphones);
-    virtual ~BaseTrackPlayer();
+    virtual ~TrackPlayer();
 
 
     // TODO(XXX): Only exposed to let the passthrough AudioInput get
@@ -94,16 +94,16 @@ class BaseTrackPlayer : public BasePlayer {
     ControlProxy* m_pPreGain;
     ControlProxy* m_pRateSlider;
     ControlProxy* m_pPitchAdjust;
-    QScopedPointer<ControlProxy> m_pInputConfigured;
-    QScopedPointer<ControlProxy> m_pPassthroughEnabled;
-    QScopedPointer<ControlProxy> m_pVinylControlEnabled;
-    QScopedPointer<ControlProxy> m_pVinylControlStatus;
+    ControlProxy* m_pInputConfigured;
+    ControlProxy* m_pPassthroughEnabled;
+    ControlProxy* m_pVinylControlEnabled;
+    ControlProxy* m_pVinylControlStatus;
     EngineDeck* m_pChannel;
 
     bool m_replaygainPending;
 };
 
-inline BaseTrackPlayer *makeDeck(
+inline TrackPlayer *makeDeck(
     QObject *pParent,
     UserSettingsPointer pConfig,
     EngineMaster *pMixingEngine,
@@ -111,9 +111,9 @@ inline BaseTrackPlayer *makeDeck(
     EngineChannel::ChannelOrientation defaultOrientation,
     const QString &group)
 {
-    return new BaseTrackPlayer(pParent,pConfig,pMixingEngine,pEffectsManager,defaultOrientation,group,true,false);
+    return new TrackPlayer(pParent,pConfig,pMixingEngine,pEffectsManager,defaultOrientation,group,true,false);
 }
-inline BaseTrackPlayer *makeSampler(
+inline TrackPlayer *makeSampler(
     QObject *pParent,
     UserSettingsPointer pConfig,
     EngineMaster *pMixingEngine,
@@ -121,9 +121,9 @@ inline BaseTrackPlayer *makeSampler(
     EngineChannel::ChannelOrientation defaultOrientation,
     const QString &group)
 {
-    return new BaseTrackPlayer(pParent,pConfig,pMixingEngine,pEffectsManager,defaultOrientation,group,true,false);
+    return new TrackPlayer(pParent,pConfig,pMixingEngine,pEffectsManager,defaultOrientation,group,true,false);
 }
-inline BaseTrackPlayer *makePreviewDeck(
+inline TrackPlayer *makePreviewDeck(
     QObject *pParent,
     UserSettingsPointer pConfig,
     EngineMaster *pMixingEngine,
@@ -131,6 +131,6 @@ inline BaseTrackPlayer *makePreviewDeck(
     EngineChannel::ChannelOrientation defaultOrientation,
     const QString &group)
 {
-    return new BaseTrackPlayer(pParent,pConfig,pMixingEngine,pEffectsManager,defaultOrientation,group,false,true);
+    return new TrackPlayer(pParent,pConfig,pMixingEngine,pEffectsManager,defaultOrientation,group,false,true);
 }
 #endif // MIXER_BASETRACKPLAYER_H
