@@ -4,6 +4,11 @@
 #include <QObject>
 #include <QSharedPointer>
 #include <QString>
+#include <limits>
+#include <algorithm>
+#include <utility>
+#include <functional>
+#include <tuple>
 
 #include "control/control.h"
 #include "preferences/usersettings.h"
@@ -62,8 +67,9 @@ class ControlProxy : public QObject {
     virtual double operator -- ();
     virtual double operator ++ (int);
     virtual double operator -- (int);
-    Q_INVOKABLE virtual double fetch_add(double val);
+    Q_INVOKABLE virtual double add_and_saturate(double val, double low_bar = -std::numeric_limits<double>::infinity(), double high_bar = std::numeric_limits<double>::infinity());
     Q_INVOKABLE virtual double fetch_sub(double val);
+    Q_INVOKABLE virtual double fetch_add(double val);
     Q_INVOKABLE virtual double exchange (double with);
     Q_INVOKABLE virtual double compare_exchange(double expected, double desired);
     Q_INVOKABLE virtual double fetch_mul(double by);
@@ -95,9 +101,6 @@ class ControlProxy : public QObject {
     void slotValueChangedAuto(double v, QObject* pSetter);
     // Receives the value from the master control by a unique Queued connection
     void slotValueChangedQueued(double v, QObject* pSetter);
-  private:
-    void attach_if_available() const;
-    mutable int64_t m_last_generation{-1};
   protected:
     ConfigKey m_key;
     // Pointer to connected control.

@@ -106,8 +106,8 @@ KeyProxy *KeyboardEventFilter::getBindingFor(QString _prefix)
     if(auto b = m_dispatchBySequence.value(seq,nullptr)) {
         return b;
     }
-    auto b = new KeyProxy(seq);
-    QQmlEngine::setObjectOwnership(b, QQmlEngine::JavaScriptOwnership);
+    auto b = new KeyProxy(seq, this);
+    QQmlEngine::setObjectOwnership(b, QQmlEngine::CppOwnership);
     m_dispatchBySequence.insert(seq, b);
     return b;
 }

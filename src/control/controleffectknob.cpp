@@ -14,14 +14,12 @@ void ControlEffectKnob::setBehaviour(EffectManifestParameter::ControlHint type,
     }
 
     if (type == EffectManifestParameter::CONTROL_KNOB_LINEAR) {
-            m_pControl->setBehavior(new ControlLinPotmeterBehavior(
-                    dMinValue, dMaxValue, false));
+            m_pControl->setBehavior(new ControlLinPotmeterBehavior(dMinValue, dMaxValue, false));
     } else if (type == EffectManifestParameter::CONTROL_KNOB_LOGARITHMIC) {
         if (dMinValue == 0) {
             if (dMaxValue == 1.0) {
                 // Volume like control
-                m_pControl->setBehavior(
-                        new ControlAudioTaperPotBehavior(-20, 0, 1));
+                m_pControl->setBehavior(new ControlAudioTaperPotBehavior(-20, 0, 1));
             } else if (dMaxValue > 1.0) {
                 // Gain like control
                 m_pControl->setBehavior(

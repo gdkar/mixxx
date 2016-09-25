@@ -18,11 +18,12 @@ class ConfigKey {
     Q_PROPERTY(QString group MEMBER group);
     Q_PROPERTY(QString item MEMBER item);
   public:
-    ConfigKey(); // is required for qMetaTypeConstructHelper()
-    ConfigKey(const ConfigKey& key);
-    ConfigKey(const QString& g, const QString& i);
+    Q_INVOKABLE ConfigKey(); // is required for qMetaTypeConstructHelper()
+    Q_INVOKABLE ConfigKey(const ConfigKey& key);
+    Q_INVOKABLE ConfigKey(const QString& g, const QString& i);
     explicit ConfigKey(std::tuple<QString,QString> lst);
     static ConfigKey parseCommaSeparated(const QString& key);
+    virtual ~ConfigKey() = default;
 
     bool isEmpty() const {
         return group.isEmpty() && item.isEmpty();

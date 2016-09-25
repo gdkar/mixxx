@@ -19,7 +19,8 @@ EnginePregain::EnginePregain(QObject *p, QString group)
           m_dOldSpeed(1.0),
           m_scratching(false),
           m_fPrevGain(1.0),
-          m_bSmoothFade(false) {
+          m_bSmoothFade(false)
+{
     m_pPotmeterPregain = new ControlAudioTaperPot(ConfigKey(group, "pregain"),this, -12, 12, 0.5);
     //Replay Gain things
     m_pCOReplayGain = new ControlObject(ConfigKey(group, "replaygain"),this);
@@ -33,7 +34,8 @@ EnginePregain::EnginePregain(QObject *p, QString group)
     }
 }
 
-EnginePregain::~EnginePregain() {
+EnginePregain::~EnginePregain()
+{
     delete m_pPotmeterPregain;
     delete m_pCOReplayGain;
     delete m_pTotalGain;
@@ -117,8 +119,8 @@ void EnginePregain::process(CSAMPLE* pInOut, int iBufferSize) {
     // Instead, reduce gain to provide a soft rolloff.
     // This is also applied for for fading from and to pause
     auto kThresholdSpeed = 0.070f; // Scale volume if playback speed is below 7%.
-    if (fabs(m_dSpeed) < kThresholdSpeed) {
-        totalGain *= fabs(m_dSpeed) / kThresholdSpeed;
+    if (std::abs(m_dSpeed) < kThresholdSpeed) {
+        totalGain *= std::abs(m_dSpeed) / kThresholdSpeed;
     }
     if ((m_dSpeed * m_dOldSpeed < 0) && m_scratching) {
         // direction changed, go though zero if scratching

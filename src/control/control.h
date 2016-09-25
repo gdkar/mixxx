@@ -64,7 +64,6 @@ class ControlDoublePrivate : public QObject, public QEnableSharedFromThis<Contro
         return desired;
     }
     bool compare_exchange_strong(double &expected, double desired);
-    static int64_t generation();
   public slots:
     QString name() const;
     void setName(QString name);
@@ -170,7 +169,6 @@ class ControlDoublePrivate : public QObject, public QEnableSharedFromThis<Contro
     static QHash<ConfigKey, ConfigKey> s_qCOAliasHash;
     // Mutex guarding access to s_qCOHash and s_qCOAliasHash.
     static MMutex s_qCOHashMutex;
-    static std::atomic<int64_t> s_generation;
     friend class QSharedPointer<ControlDoublePrivate>;
 };
 

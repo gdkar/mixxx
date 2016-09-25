@@ -69,14 +69,11 @@ TrackPlayer::TrackPlayer(
             this, SLOT(slotTrackLoaded(TrackPointer, TrackPointer)));
     connect(pEngineBuffer, SIGNAL(trackLoadFailed(TrackPointer, QString)),
             this, SLOT(slotLoadFailed(TrackPointer, QString)));
-
     // Get loop point control objects
     m_pLoopInPoint = new ControlProxy( getGroup(),"loop_start_position", this);
     m_pLoopOutPoint = new ControlProxy( getGroup(),"loop_end_position", this);
-
     // Duration of the current song, we create this one because nothing else does.
     m_pDuration = new ControlObject(ConfigKey(getGroup(), "duration"),this);
-
     // Waveform controls
     m_pWaveformZoom = new ControlPotmeter(ConfigKey(group, "waveform_zoom"),this,
                                           WaveformWidgetRenderer::s_waveformMinZoom,
@@ -89,12 +86,10 @@ TrackPlayer::TrackPlayer(
 
     m_pEndOfTrack = new ControlObject(ConfigKey(group, "end_of_track"),this);
     m_pEndOfTrack->set(0.);
-
-    m_pPreGain = new ControlProxy(group, "pregain", this);
+    m_pPreGain = new ControlObject(ConfigKey(group, "pregain"), this);
     //BPM of the current song
     m_pBPM = new ControlProxy(group, "file_bpm", this);
     m_pKey = new ControlProxy(group, "file_key", this);
-
     m_pReplayGain = new ControlProxy(group, "replaygain", this);
     m_pPlay = new ControlProxy(group, "play", this);
     m_pPlay->connectValueChanged(SLOT(slotPlayToggled(double)));
@@ -219,7 +214,6 @@ void TrackPlayer::slotTrackLoaded(TrackPointer pNewTrack,
         // Successful loaded a new track
         // Reload metadata from file, but only if required
         SoundSourceProxy(m_pLoadedTrack).loadTrackMetadata();
-
         // Update the BPM and duration values that are stored in ControlObjects
         m_pDuration->set(m_pLoadedTrack->getDuration());
         m_pBPM->set(m_pLoadedTrack->getBpm());
@@ -322,14 +316,14 @@ EngineDeck* TrackPlayer::getEngineDeck() const
 void TrackPlayer::setupEqControls()
 {
     auto group = getGroup();
-    m_pLowFilter = new ControlProxy(group, "filterLow", this);
-    m_pMidFilter = new ControlProxy(group, "filterMid", this);
-    m_pHighFilter = new ControlProxy(group, "filterHigh", this);
-    m_pLowFilterKill = new ControlProxy(group, "filterLowKill", this);
-    m_pMidFilterKill = new ControlProxy(group, "filterMidKill", this);
-    m_pHighFilterKill = new ControlProxy(group, "filterHighKill", this);
-    m_pRateSlider = new ControlProxy(group, "rate", this);
-    m_pPitchAdjust = new ControlProxy(group, "pitch_adjust", this);
+    m_pLowFilter = new ControlObject(ConfigKey(group, "filterLow"), this);
+    m_pMidFilter = new ControlObject(ConfigKey(group, "filterMid"), this);
+    m_pHighFilter = new ControlObject(ConfigKey(group, "filterHigh"), this);
+    m_pLowFilterKill = new ControlObject(ConfigKey(group, "filterLowKill"), this);
+    m_pMidFilterKill = new ControlObject(ConfigKey(group, "filterMidKill"), this);
+    m_pHighFilterKill = new ControlObject(ConfigKey(group, "filterHighKill"), this);
+    m_pRateSlider = new ControlObject(ConfigKey(group, "rate"), this);
+    m_pPitchAdjust = new ControlProxy(ConfigKey(group, "pitch_adjust"), this);
 }
 
 void TrackPlayer::slotPassthroughEnabled(double v)

@@ -6,7 +6,9 @@ KeyBinder {
     id: kb
     property alias group: cp.group
     property alias item:  cp.item
-    ControlProxy { id: cp; group: kb.parent.group }
+    ControlProxy {
+        property string key
+        id: cp; group: kb.parent.group }
     Keys.onPressed: {
         if(!event.isAutoRepeat) {
             cp.fetch_toggle();

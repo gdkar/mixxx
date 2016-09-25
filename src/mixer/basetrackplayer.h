@@ -74,8 +74,8 @@ class TrackPlayer : public BasePlayer {
     ControlPotmeter* m_pWaveformZoom;
     ControlObject* m_pEndOfTrack;
 
-    ControlProxy* m_pLoopInPoint;
-    ControlProxy* m_pLoopOutPoint;
+    ControlProxy * m_pLoopInPoint;
+    ControlProxy * m_pLoopOutPoint;
     ControlObject* m_pDuration;
 
     // TODO() these COs are reconnected during runtime
@@ -85,14 +85,14 @@ class TrackPlayer : public BasePlayer {
 
     ControlProxy* m_pReplayGain;
     ControlProxy* m_pPlay;
-    ControlProxy* m_pLowFilter;
-    ControlProxy* m_pMidFilter;
-    ControlProxy* m_pHighFilter;
-    ControlProxy* m_pLowFilterKill;
-    ControlProxy* m_pMidFilterKill;
-    ControlProxy* m_pHighFilterKill;
-    ControlProxy* m_pPreGain;
-    ControlProxy* m_pRateSlider;
+    ControlObject * m_pLowFilter;
+    ControlObject * m_pMidFilter;
+    ControlObject * m_pHighFilter;
+    ControlObject * m_pLowFilterKill;
+    ControlObject *  m_pMidFilterKill;
+    ControlObject * m_pHighFilterKill;
+    ControlObject * m_pPreGain;
+    ControlObject * m_pRateSlider;
     ControlProxy* m_pPitchAdjust;
     ControlProxy* m_pInputConfigured;
     ControlProxy* m_pPassthroughEnabled;

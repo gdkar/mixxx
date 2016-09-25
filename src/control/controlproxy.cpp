@@ -1,6 +1,5 @@
 #include <QApplication>
 #include <QtDebug>
-
 #include "control/controlproxy.h"
 #include "control/control.h"
 
@@ -18,15 +17,6 @@ ControlProxy::ControlProxy(ConfigKey key, QObject* pParent)
         : QObject(pParent) {
     initialize(key);
 }
-void ControlProxy::attach_if_available() const
-{
-    if(!m_pControl && !m_key.isNull()) {
-        auto now = ControlDoublePrivate::generation();
-        if(now > m_last_generation)
-            initialize();
-    }
-}
-
 void ControlProxy::initialize() const
 {
     // Don't bother looking up the control if key is NULL. Prevents log spew.
@@ -41,7 +31,6 @@ void ControlProxy::initialize() const
                 _valid = true;
                 disconnect(m_pControl.data(),nullptr, this, nullptr);
             }
-            m_last_generation = ControlDoublePrivate::generation();
             if((m_pControl = ControlDoublePrivate::getIfExists(m_key))){
                 connect(
                     m_pControl.data()
@@ -102,7 +91,6 @@ void ControlProxy::initialize(ConfigKey key)
         if(m_pControl) {
             disconnect(m_pControl.data(),nullptr, this, nullptr);
         }
-        m_last_generation = ControlDoublePrivate::generation();
         m_pControl = ControlDoublePrivate::getIfExists(key);
         if(m_pControl){
             connect(
@@ -146,7 +134,6 @@ void ControlProxy::initialize(ConfigKey key)
 }
 void ControlProxy::trigger()
 {
-    attach_if_available();
     if(m_pControl)
         m_pControl->trigger();
 }
@@ -236,7 +223,6 @@ bool ControlProxy::valid() const
 // Returns the value of the object. Thread safe, non-blocking.
 double ControlProxy::get() const
 {
-    attach_if_available();
     return m_pControl ? m_pControl->get() : 0.0;
 }
 // Returns the bool interpretation of the value
@@ -247,24 +233,20 @@ bool ControlProxy::toBool() const
 // Returns the parameterized value of the object. Thread safe, non-blocking.
 double ControlProxy::getParameter() const
 {
-    attach_if_available();
     return m_pControl ? m_pControl->getParameter() : 0.0;
 }
 // Returns the parameterized value of the object. Thread safe, non-blocking.
 double ControlProxy::getParameterForValue(double value) const {
-    attach_if_available();
     return m_pControl ? m_pControl->getParameterForValue(value) : 0.0;
 }
 // Returns the normalized parameter of the object. Thread safe, non-blocking.
 double ControlProxy::getDefault() const
 {
-    attach_if_available();
     return m_pControl ? m_pControl->defaultValue() : 0.0;
 }
 // Sets the control value to v. Thread safe, non-blocking.
 void ControlProxy::set(double v)
 {
-    attach_if_available();
     if (m_pControl) {
         m_pControl->set(v, this);
     }
@@ -272,7 +254,6 @@ void ControlProxy::set(double v)
 // Sets the control parameterized value to v. Thread safe, non-blocking.
 void ControlProxy::setParameter(double v)
 {
-    attach_if_available();
     if (m_pControl) {
         m_pControl->setParameter(v, this);
     }
@@ -280,7 +261,6 @@ void ControlProxy::setParameter(double v)
 // Resets the control to its default value. Thread safe, non-blocking.
 void ControlProxy::reset()
 {
-    attach_if_available();
     if (m_pControl) {
         // NOTE(rryan): This is important. The originator of this action does
         // not know the resulting value so it makes sense that we should emit a
@@ -360,7 +340,6 @@ QString ControlProxy::item() const
 }
 double ControlProxy::operator += ( double incr)
 {
-    attach_if_available();
     if(m_pControl) {
         return m_pControl->updateAtomically([incr](double x){return x + incr;});
     }
@@ -369,14 +348,12 @@ double ControlProxy::operator += ( double incr)
 double ControlProxy::operator -= ( double incr)
 {
     if(m_pControl) {
-    attach_if_available();
         return m_pControl->updateAtomically([incr](double x){return x - incr;});
     }
     return 0;
 }
 double ControlProxy::operator ++ (int)
 {
-    attach_if_available();
     if(m_pControl) {
         return m_pControl->updateAtomically([](double x){return x + 1;});
     }
@@ -384,7 +361,6 @@ double ControlProxy::operator ++ (int)
 }
 double ControlProxy::operator -- (int)
 {
-    attach_if_available();
     if(m_pControl) {
         return m_pControl->updateAtomically([](double x){return x - 1;});
     }
@@ -393,19 +369,35 @@ double ControlProxy::operator -- (int)
 double ControlProxy::operator ++ () { return (++(*this))+1; }
 double ControlProxy::operator -- () { return (--(*this))-1; }
 
+double ControlProxy::add_and_saturate(double val, double low_bar, double hi_bar)
+{
+    if(!m_pControl)
+        return 0.0;
+    if(!val)
+        return get();
+    std::tie(low_bar,hi_bar) = std::minmax(low_bar,hi_bar);
+    if(val > 0)
+        return m_pControl->updateAtomically([val,low_bar,hi_bar](double x)
+        {
+            return std::min(hi_bar,x + val);
+        });
+    else
+        return m_pControl->updateAtomically([val,low_bar,hi_bar](double x)
+        {
+            return std::max(low_bar,x + val);
+        });
+
+}
 double ControlProxy::fetch_add(double val)
 {
-    attach_if_available();
     return m_pControl ? m_pControl->updateAtomically([val](double x){return x + val;}) : 0.0;
 }
 double ControlProxy::fetch_sub(double val)
 {
-    attach_if_available();
     return m_pControl ? m_pControl->updateAtomically([val](double x){return x - val;}) : 0.0;
 }
 double ControlProxy::compare_exchange(double expected, double desired)
 {
-    attach_if_available();
     if(m_pControl) {
         m_pControl->compare_exchange_strong(expected,desired);
         return expected;
@@ -415,21 +407,17 @@ double ControlProxy::compare_exchange(double expected, double desired)
 }
 double ControlProxy::exchange(double val)
 {
-    attach_if_available();
     return m_pControl ? m_pControl->exchange(val) : 0.0;
 }
 double ControlProxy::fetch_mul(double val)
 {
-    attach_if_available();
     return m_pControl ? m_pControl->updateAtomically([val](double x){return val * x;}) : 0.0;
 }
 double ControlProxy::fetch_div(double val)
 {
-    attach_if_available();
     return m_pControl ? m_pControl->updateAtomically([val](double x){return val / x;}) : 0.0;
 }
 double ControlProxy::fetch_toggle()
 {
-    attach_if_available();
     return m_pControl ? m_pControl->updateAtomically([](double x){return !x;}) : 0.0;
 }

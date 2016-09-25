@@ -5,10 +5,11 @@ import QtQuick 2.7
 Item {
     id: root
     focus:true
-    property string key
-    property alias sequence: root.key
+    property string seq
+    property alias sequence: root.seq
+    property alias key: root.seq
     property bool allowAuto: false
     Component.onCompleted: {
-        Keyboard.getBindingFor(key).targets = root;
+        Keyboard.getBindingFor(seq).targets = root;
     }
 }

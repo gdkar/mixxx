@@ -21,6 +21,14 @@ Item {
         source: "./Kbd.qml"
 //        Kbd { }
     }
+    KeyBinder {
+        seq: "Ctrl+Alt+Esc"
+        Keys.onPressed: {
+            console.log("reloading.")
+            keyboardLoader.sourceComponent = null
+            keyboardLoader.source = "./Kbd.qml";
+        }
+    }
     Loader {
         id: controllerLoader
         source : "../controllers/HerculesAir.qml"

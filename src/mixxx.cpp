@@ -149,6 +149,7 @@ void MixxxMainWindow::initialize(QApplication* pApp, const CmdlineArgs& args)
     ScopedTimer t("MixxxMainWindow::initialize");
 
     // Register custom data types for signal processing
+    qRegisterMetaType<ConfigKey>("ConfigKey");
     qRegisterMetaType<TrackId>("TrackId");
     qRegisterMetaType<QSet<TrackId>>("QSet<TrackId>");
     qRegisterMetaType<TrackPointer>("TrackPointer");
@@ -495,14 +496,14 @@ void MixxxMainWindow::finalize()
         // These delete calls could cause crashes if a destructor for a control
         // we thought was leaked is triggered after this one exits.
         // So, only delete so if developer mode is on.
-        if (CmdlineArgs::Instance().getDeveloper()) {
+/*        if (CmdlineArgs::Instance().getDeveloper()) {
             for(auto && key: leakedConfigKeys) {
                 // A deletion early in the list may trigger a destructor
                 // for a control later in the list, so we check for a null
                 // pointer each time.
                 delete ControlObject::getControl(key, false);
             }
-        }
+        }*/
         leakedControls.clear();
     }
 

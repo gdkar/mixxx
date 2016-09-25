@@ -72,9 +72,14 @@ bool KeyProxy::event(QEvent *ev)
     if(!m_targets.size())
         return false;
     if(ev->type() == QEvent::KeyPress || ev->type() == QEvent::KeyRelease) {
-        for(auto && target : m_targets) {
-            if (QCoreApplication::sendEvent(target, ev))
-                return true;
+        for(auto it = m_targets.begin(); it != m_targets.end();){
+            if(auto target = *it) {
+                if( QCoreApplication::sendEvent(target, ev))
+                    return true;
+                ++it;
+            }else{
+                it = m_targets.erase(it);
+            }
         }
     }
     return false;

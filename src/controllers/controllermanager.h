@@ -56,6 +56,7 @@ class ControllerManager : public QObject {
     void closeController(Controller* pController);
 
   private slots:
+    void onFileChanged(QString);
     // Perform initialization that should be delayed until the ControllerManager
     // thread is started.
     void onInitialize();

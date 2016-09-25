@@ -45,21 +45,34 @@ Item {
                     'stepStop':0x4f
         }
     }
+    PlaylistControls {
+        id: playlist
+        group: "[Playlist]"
+        bindings: {
+            'next': '\u0034',
+            'prev': '\u0033',
+            'nextList':'\u0035',
+            'prevList':'\u0036'
+            }
+    }
     property Controller controller: RtMidiController {
         id: air
-        inputIndex: -1
-        outputIndex: -1
+        inputIndex: 1
+        outputIndex: 1
         Component.onCompleted: {
+            air.close()
             for(var i = 0; i < air.inputPortCount;++i) {
-                    if(String.prototype.indexOf(air.inputPortName(i), "DJ Control Air")>=0) {
-                        air.in_index = i
-                        break;
+                console.log(air.inputPortName(i))
+                    if(String.prototype.indexOf("DJ",air.inputPortName(i) )>=0) {
+                        air.inputIndex=
+                        console.log("****")
                     }
             }
             for(var i = 0; i < air.outputPortCount;++i) {
-                    if(String.prototype.indexOf(air.outputPortName(i), "DJ Control Air")>=0) {
-                        out_index = i;
-                        break;
+                console.log(air.outputPortName(i))
+                    if(String.prototype.indexOf("DJ",air.outputPortName(i))>=0) {
+                        air.outputIndex= i;
+                        console.log("****")
                     }
             }
             air.open()

@@ -29,7 +29,7 @@ signals:
     void pressed(QKeyEvent event);
     void released(QKeyEvent event);
 protected:
-    std::vector<QObject*> m_targets{};
+    std::vector<QPointer<QObject> > m_targets{};
     QKeySequence m_keySequence{};
     int m_nativeScanCode{-1};
     static void AppendTarget(QQmlListProperty<QObject> *, QObject*);

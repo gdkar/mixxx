@@ -49,12 +49,12 @@ namespace {
     const int drTabSize[] = { 0, 0, 0, 0, sizeof(dr4Tab)/sizeof(dr4Tab[0]), 0, 0, 0, sizeof(dr8Tab)/sizeof(dr8Tab[0])};
     int setFrequencyCornersForIntDelay(std::unique_ptr<EngineFilterIIR> &filt, size_t size, double desiredCorner1Ratio, int maxDelay)
     {
-        
+
         // these values are calculated using the phase returned by
         // Fid::response_pha() at corner / 20
 
         // group delay at 1 Hz freqCorner1 and 1 Hz Samplerate
-        if(size > sizeof(kf1Tab) / sizeof(kf1Tab[0])) 
+        if(size > sizeof(kf1Tab) / sizeof(kf1Tab[0]))
             return 0;
         auto kDelayFactor1 = kf1Tab[size];
         auto kDelayFactor2 = kf2Tab[size];
@@ -149,7 +149,6 @@ void LVMixEQEffectGroupState::processChannel(const CSAMPLE* pInput, CSAMPLE* pOu
     //    pOutput[i] = pState->m_pLowBuf[i];
     //    pOutput[i + 1] = pState->m_pBandBuf[i];
     //}
-
     SampleUtil::copyWithRampingGain(pOutput,&m_pLowBuf[0], m_oldLow,fLow,numSamples);
     SampleUtil::addWithRampingGain (pOutput,&m_pBandBuf[0],m_oldMid,fMid,numSamples);
     SampleUtil::addWithRampingGain (pOutput,&m_pHighBuf[0],m_oldHigh,fHigh,numSamples);

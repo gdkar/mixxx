@@ -95,9 +95,7 @@ EngineMaster::EngineMaster(UserSettingsPointer pConfig,
 
     // Legacy: the headphone "headGain" control used to be named "headVolume" in
     // Mixxx 1.11.0 and earlier. See Bug #1306253.
-    ControlDoublePrivate::insertAlias(ConfigKey(group, "headVolume"),
-                                      ConfigKey(group, "headGain"));
-
+    ControlDoublePrivate::insertAlias(ConfigKey(group, "headVolume"), ConfigKey(group, "headGain"));
     // Headphone mix (left/right)
     m_pHeadMix = new ControlPotmeter(ConfigKey(group, "headMix"),this,-1.,1.);
     m_pHeadMix->setDefaultValue(-1.);
@@ -139,16 +137,13 @@ EngineMaster::EngineMaster(UserSettingsPointer pConfig,
             ConfigKey(EngineXfader::kXfaderConfigKey, "xFaderReverse"),this);
     m_pXFaderReverse->setButtonMode(ControlPushButton::TOGGLE);
 
-    m_pKeylockEngine = new ControlObject(ConfigKey(group, "keylock_engine"),this,
-                                         true, false, true);
+    m_pKeylockEngine = new ControlObject(ConfigKey(group, "keylock_engine"),this,true, false, true);
     m_pKeylockEngine->set(pConfig->getValueString(ConfigKey(group, "keylock_engine")).toDouble());
 
-    m_pMasterEnabled = new ControlObject(ConfigKey(group, "enabled"),this,
-            true, false, true);  // persist = true
-    m_pMasterMonoMixdown = new ControlObject(ConfigKey(group, "mono_mixdown"), this,
-            true, false, true);  // persist = true
+    m_pMasterEnabled = new ControlObject(ConfigKey(group, "enabled"),this,true, false, true);  // persist = true
+    m_pMasterMonoMixdown = new ControlObject(ConfigKey(group, "mono_mixdown"), this,true, false, true);  // persist = true
     m_pMasterTalkoverMix = new ControlObject(ConfigKey(group, "talkover_mix"), this,
-            true, false, true);  // persist = true
+true, false, true);  // persist = true
     m_pHeadphoneEnabled = new ControlObject(ConfigKey(group, "headEnabled"),this);
     m_pHeadphoneEnabled = new ControlObject(ConfigKey(group, "sidechainEnabled"),this);
 

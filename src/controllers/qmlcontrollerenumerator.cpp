@@ -12,6 +12,12 @@ QmlControllerEnumerator::QmlControllerEnumerator(QObject *p)
                   static_cast<Qt::ConnectionType>(
             Qt::AutoConnection
            |Qt::UniqueConnection));
+
+    connect(&m_fileWatcher, &QFileSystemWatcher::fileChanged
+        ,this,&QmlControllerEnumerator::fileChanged,
+            static_cast<Qt::ConnectionType>(Qt::AutoConnection|Qt::UniqueConnection));
+
+
 }
 
 QmlControllerEnumerator::QmlControllerEnumerator(QStringList searchPaths, QObject *p)
@@ -51,8 +57,10 @@ void QmlControllerEnumerator::refreshFileLists()
             auto path = it.filePath();
             if (path.endsWith(".qml",Qt::CaseInsensitive)) {
                 m_controllerFileNames.insert(path);
+                m_fileWatcher.addPath(path);
             } else if(path.endsWith(".js",Qt::CaseInsensitive)) {
                 m_scriptFileNames.insert(path);
+                m_fileWatcher.addPath(path);
             }
         }
     }
@@ -67,6 +75,9 @@ void QmlControllerEnumerator::setSearchPaths(QStringList s)
     m_searchPaths = s;
     m_directoryWatcher.removePaths(m_directoryWatcher.directories());
     m_directoryWatcher.removePaths(m_directoryWatcher.files());
+    m_fileWatcher.removePaths(m_fileWatcher.directories());
+    m_fileWatcher.removePaths(m_fileWatcher.files());
+
     m_directoryWatcher.addPaths(s);
 }
 QStringList QmlControllerEnumerator::controllerFileNames() const

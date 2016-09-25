@@ -20,7 +20,7 @@ EffectManifest Bessel8LVMixEQEffect::getManifest() {
     manifest.setIsMixingEQ(true);
     manifest.setEffectRampsFromDry(true);
 
-    EffectManifestParameter* low = manifest.addParameter();
+    auto low = manifest.addParameter();
     low->setId("low");
     low->setName(QObject::tr("Low"));
     low->setDescription(QObject::tr("Gain for Low Filter"));
@@ -32,7 +32,7 @@ EffectManifest Bessel8LVMixEQEffect::getManifest() {
     low->setMinimum(0);
     low->setMaximum(4.0);
 
-    EffectManifestParameter* killLow = manifest.addParameter();
+    auto killLow = manifest.addParameter();
     killLow->setId("killLow");
     killLow->setName(QObject::tr("Kill Low"));
     killLow->setDescription(QObject::tr("Kill the Low Filter"));
@@ -43,7 +43,7 @@ EffectManifest Bessel8LVMixEQEffect::getManifest() {
     killLow->setMinimum(0);
     killLow->setMaximum(1);
 
-    EffectManifestParameter* mid = manifest.addParameter();
+    auto mid = manifest.addParameter();
     mid->setId("mid");
     mid->setName(QObject::tr("Mid"));
     mid->setDescription(QObject::tr("Gain for Band Filter"));
@@ -55,7 +55,7 @@ EffectManifest Bessel8LVMixEQEffect::getManifest() {
     mid->setMinimum(0);
     mid->setMaximum(4.0);
 
-    EffectManifestParameter* killMid = manifest.addParameter();
+    auto killMid = manifest.addParameter();
     killMid->setId("killMid");
     killMid->setName(QObject::tr("Kill Mid"));
     killMid->setDescription(QObject::tr("Kill the Mid Filter"));
@@ -66,7 +66,7 @@ EffectManifest Bessel8LVMixEQEffect::getManifest() {
     killMid->setMinimum(0);
     killMid->setMaximum(1);
 
-    EffectManifestParameter* high = manifest.addParameter();
+    auto high = manifest.addParameter();
     high->setId("high");
     high->setName(QObject::tr("High"));
     high->setDescription(QObject::tr("Gain for High Filter"));
@@ -78,7 +78,7 @@ EffectManifest Bessel8LVMixEQEffect::getManifest() {
     high->setMinimum(0);
     high->setMaximum(4.0);
 
-    EffectManifestParameter* killHigh = manifest.addParameter();
+    auto killHigh = manifest.addParameter();
     killHigh->setId("killHigh");
     killHigh->setName(QObject::tr("Kill High"));
     killHigh->setDescription(QObject::tr("Kill the High Filter"));

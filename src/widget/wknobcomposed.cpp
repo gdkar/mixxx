@@ -17,32 +17,30 @@ void WKnobComposed::setup(const QDomNode& node, const SkinContext& context) {
     clear();
 
     // Set background pixmap if available
-    QDomElement backPathElement = context.selectElement(node, "BackPath");
+    auto backPathElement = context.selectElement(node, "BackPath");
     if (!backPathElement.isNull()) {
         setPixmapBackground(context.getPixmapSource(backPathElement),
                             context.selectScaleMode(backPathElement, Paintable::STRETCH));
     }
-
     // Set knob pixmap if available
-    QDomElement knobNode = context.selectElement(node, "Knob");
+    auto knobNode = context.selectElement(node, "Knob");
     if (!knobNode.isNull()) {
         setPixmapKnob(context.getPixmapSource(knobNode),
                       context.selectScaleMode(knobNode, Paintable::STRETCH));
     }
-
     context.hasNodeSelectDouble(node, "MinAngle", &m_dMinAngle);
     context.hasNodeSelectDouble(node, "MaxAngle", &m_dMaxAngle);
     context.hasNodeSelectDouble(node, "KnobCenterXOffset", &m_dKnobCenterXOffset);
     context.hasNodeSelectDouble(node, "KnobCenterYOffset", &m_dKnobCenterYOffset);
 }
 
-void WKnobComposed::clear() {
+void WKnobComposed::clear()
+{
     m_pPixmapBack.clear();
     m_pKnob.clear();
 }
-
-void WKnobComposed::setPixmapBackground(PixmapSource source,
-                                        Paintable::DrawMode mode) {
+void WKnobComposed::setPixmapBackground(PixmapSource source,Paintable::DrawMode mode)
+{
     m_pPixmapBack = WPixmapStore::getPaintable(source, mode);
     if (m_pPixmapBack.isNull() || m_pPixmapBack->isNull()) {
         qDebug() << metaObject()->className()
@@ -50,20 +48,19 @@ void WKnobComposed::setPixmapBackground(PixmapSource source,
     }
 }
 
-void WKnobComposed::setPixmapKnob(PixmapSource source,
-                                  Paintable::DrawMode mode) {
+void WKnobComposed::setPixmapKnob(PixmapSource source,Paintable::DrawMode mode)
+{
     m_pKnob = WPixmapStore::getPaintable(source, mode);
     if (m_pKnob.isNull() || m_pKnob->isNull()) {
         qDebug() << metaObject()->className()
                  << "Error loading knob pixmap:" << source.getPath();
     }
 }
-
-void WKnobComposed::onConnectedControlChanged(double dParameter, double dValue) {
+void WKnobComposed::onConnectedControlChanged(double dParameter, double dValue)
+{
     Q_UNUSED(dValue);
     // dParameter is in the range [0, 1].
-    double angle = m_dMinAngle + (m_dMaxAngle - m_dMinAngle) * dParameter;
-
+    auto angle = m_dMinAngle + (m_dMaxAngle - m_dMinAngle) * dParameter;
     // TODO(rryan): What's a good epsilon? Should it be dependent on the min/max
     // angle range? Right now it's just 1/100th of a degree.
     if (fabs(angle - m_dCurrentAngle) > 0.01) {
@@ -72,7 +69,8 @@ void WKnobComposed::onConnectedControlChanged(double dParameter, double dValue) 
     }
 }
 
-void WKnobComposed::paintEvent(QPaintEvent* e) {
+void WKnobComposed::paintEvent(QPaintEvent* e)
+{
     Q_UNUSED(e);
     QStyleOption option;
     option.initFrom(this);
@@ -87,20 +85,18 @@ void WKnobComposed::paintEvent(QPaintEvent* e) {
 
     QTransform transform;
     if (!m_pKnob.isNull() && !m_pKnob->isNull()) {
-        qreal tx = m_dKnobCenterXOffset + width() / 2.0;
-        qreal ty = m_dKnobCenterYOffset + height() / 2.0;
+        auto tx = m_dKnobCenterXOffset + width() / 2.0;
+        auto ty = m_dKnobCenterYOffset + height() / 2.0;
         transform.translate(-tx, -ty);
         p.translate(tx, ty);
-
         // We update m_dCurrentAngle since onConnectedControlChanged uses it for
         // no-op detection.
         m_dCurrentAngle = m_dMinAngle + (m_dMaxAngle - m_dMinAngle) * getControlParameterDisplay();
         p.rotate(m_dCurrentAngle);
 
         // Need to convert from QRect to a QRectF to avoid losing precison.
-        QRectF targetRect = rect();
-        m_pKnob->drawCentered(transform.mapRect(targetRect), &p,
-                              m_pKnob->rect());
+        auto targetRect = QRectF(rect());
+        m_pKnob->drawCentered(transform.mapRect(targetRect), &p,m_pKnob->rect());
     }
 }
 

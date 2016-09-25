@@ -8,142 +8,151 @@ Item {
     Item {
         id: channel1
         property string group: "[Channel1]"
-        ToggleKey { item: "play" ;      key: "d" }
-        PushKey   { item: "cue_set";    key: "Shift+d"}
-        PushKey   { item: "cue_default";key: "f" }
-        PushKey   { item: "cue_gotoandstop";key:"Shift+f"}
+        ToggleKey { item: "play" ;      seq: "d" }
+        PushKey   { item: "cue_set";    seq: "Shift+d"}
+        PushKey   { item: "cue_default";seq: "f" }
+        PushKey   { item: "cue_gotoandstop";seq:"Shift+f"}
 
-        PushKey   { item: "back";key:"a"}
-        PushKey   { item: "reverse";key:"Shift+a"}
-        PushKey   { item: "fwd";key:"s"}
+        PushKey   { item: "back";seq:"a"}
+        PushKey   { item: "reverse";seq:"Shift+a"}
+        PushKey   { item: "fwd";seq:"s"}
 
-        PushKey   { item: "beatsync";key:"1"}
-        PushKey   { item: "bpm_tap";key:"Shift+1"}
-        PushKey   { item: "loop_in";key:"2"}
-        PushKey   { item: "loop_out";key:"3"}
-        PushKey   { item: "reloop_exit";key:"4"}
-        Add       { item: "rate";amount: -0.5e-2;key:"F1";min:-3;max:3}
-        Add       { item: "rate";amount:  0.5e-2;key:"F2";min:-3;max:3}
-        Add       { item: "rate";amount: -0.1e-2;key:"Shift+F1";min:-3;max:3}
-        Add       { item: "rate";amount:  0.1e-2;key:"Shift+F2";min:-3;max:3}
-        IncDec    { item: "rate";amount: -2.e-2;key:"F3"}
-        IncDec    { item: "rate";amount:  2.e-2;key:"F4"}
-        IncDec    { item: "rate";amount: -0.5e-2;key:"Shift+F3"}
-        IncDec    { item: "rate";amount:  0.5e-2;key:"Shift+F4"}
+        PushKey   { item: "beatsync";seq:"1"}
+        PushKey   { item: "bpm_tap";seq:"Shift+1"}
+        PushKey   { item: "loop_in";seq:"2"}
+        PushKey   { item: "loop_out";seq:"3"}
+        PushKey   { item: "reloop_exit";seq:"4"}
+        Add       { item: "rate";amount: -0.5e-2;seq:"F1";min:-3;max:3}
+        Add       { item: "rate";amount:  0.5e-2;seq:"F2";min:-3;max:3}
+        Add       { item: "rate";amount: -0.1e-2;seq:"Shift+F1";min:-3;max:3}
+        Add       { item: "rate";amount:  0.1e-2;seq:"Shift+F2";min:-3;max:3}
+        IncDec    { item: "rate";amount: -2.e-2;seq:"F3"}
+        IncDec    { item: "rate";amount:  2.e-2;seq:"F4"}
+        IncDec    { item: "rate";amount: -0.5e-2;seq:"Shift+F3"}
+        IncDec    { item: "rate";amount:  0.5e-2;seq:"Shift+F4"}
 
-        ToggleKey { item: "pfl";key:"b"}
-        Set       { item: "volume"; to: 1; key: "Ctrl+5"}
-        Set       { item: "volume"; to: 0; key: "Ctrl+t"}
-        Add       { item: "volume"; amount: 1/16; key:"5";min:0;max:1}
-        Add       { item: "volume"; amount: -1/16; key:"t";min:0;max:1}
-        Add       { item: "volume"; amount: 1/64; key:"Shift+%";min:0;max:1}
-        Add       { item: "volume"; amount: -1/64; key:"Shift+t";min:0;max:1}
+        ToggleKey { item: "pfl";seq:"b"}
+        Set       { item: "volume"; to: 1; seq: "Ctrl+5"}
+        Set       { item: "volume"; to: 0; seq: "Ctrl+t"}
+        Add       { item: "volume"; amount: 1/16; seq:"5";min:0;max:1}
+        Add       { item: "volume"; amount: -1/16; seq:"t";min:0;max:1}
+        Add       { item: "volume"; amount: 1/64; seq:"Shift+%";min:0;max:1}
+        Add       { item: "volume"; amount: -1/64; seq:"Shift+t";min:0;max:1}
 
-        Set       { item: "filterHigh";to: 0;key:"Alt+Shift+#"}
-        Set       { item: "filterHigh";to: 1;key:"Alt+Shift+$"}
-        Add       { item: "filterHigh";amount: -1/8;key:"Alt+3";min:0;max:4}
-        Add       { item: "filterHigh";amount:  1/8;key:"Alt+4";min:0;max:4}
+        Set       { item: "filterHigh";to: 0;seq:"Alt+Shift+#"}
+        Set       { item: "filterHigh";to: 1;seq:"Alt+Shift+$"}
+        Add       { item: "filterHigh";amount: -1/8;seq:"Alt+3";min:0;max:4}
+        Add       { item: "filterHigh";amount:  1/8;seq:"Alt+4";min:0;max:4}
 
-        Set       { item: "filterMid";to: 0;key:"Alt+Shift+e"}
-        Set       { item: "filterMid";to: 1;key:"Alt+Shift+r"}
-        Add       { item: "filterMid";amount: -1/8;key:"Alt+e";min:0;max:4}
-        Add       { item: "filterMid";amount:  1/8;key:"Alt+r";min:0;max:4}
+        Set       { item: "filterMid";to: 0;seq:"Alt+Shift+e"}
+        Set       { item: "filterMid";to: 1;seq:"Alt+Shift+r"}
+        Add       { item: "filterMid";amount: -1/8;seq:"Alt+e";min:0;max:4}
+        Add       { item: "filterMid";amount:  1/8;seq:"Alt+r";min:0;max:4}
 
-        Set       { item: "filterLow";to: 0;key:"Alt+Shift+d"}
-        Set       { item: "filterLow";to: 1;key:"Alt+Shift+f"}
-        Add       { item: "filterLow";amount: -1/8;key:"Alt+d";min:0;max:4}
-        Add       { item: "filterLow";amount:  1/8;key:"Alt+f";min:0;max:4}
+        Set       { item: "filterLow";to: 0;seq:"Alt+Shift+d"}
+        Set       { item: "filterLow";to: 1;seq:"Alt+Shift+f"}
+        Add       { item: "filterLow";amount: -1/8;seq:"Alt+d";min:0;max:4}
+        Add       { item: "filterLow";amount:  1/8;seq:"Alt+f";min:0;max:4}
 
 
-        PushKey   { item:"LoadSelectedTrack";key: "Shift+Left"}
-        PushKey   { item:"eject";key:"Alt+Shift+Left"}
+        PushKey   { item:"LoadSelectedTrack";seq: "Shift+Left"}
+        PushKey   { item:"eject";seq:"Alt+Shift+Left"}
 
-        PushKey   { item:"hotcue_1_activate";key:"z";}
-        PushKey   { item:"hotcue_1_clear";key:"z";}
-        PushKey   { item:"hotcue_2_activate";key:"x";}
-        PushKey   { item:"hotcue_2_clear";key:"Shift+x";}
+/*        PushKey   { item:"hotcue_1_activate";seq:"z";}
+        PushKey   { item:"hotcue_1_clear";seq:"z";}
+        PushKey   { item:"hotcue_2_activate";seq:"x";}
+        PushKey   { item:"hotcue_2_clear";seq:"Shift+x";}*/
     }
     Item {
         id: channel2
         property string group: "[Channel2]"
-        ToggleKey { item: "play" ;      key: "l" }
-        PushKey   { item: "cue_set";    key: "Shift+l"}
-        PushKey   { item: "cue_default";key: ";" }
-        PushKey   { item: "cue_gotoandstop";key:"Shift+:"}
+        ToggleKey { item: "play" ;      seq: "l" }
+        PushKey   { item: "cue_set";    seq: "Shift+l"}
+        PushKey   { item: "cue_default";seq: ";" }
+        PushKey   { item: "cue_gotoandstop";seq:"Shift+:"}
 
-        PushKey   { item: "back";key:"j"}
-        PushKey   { item: "reverse";key:"Shift+j"}
-        PushKey   { item: "fwd";key:"k"}
+        PushKey   { item: "back";seq:"j"}
+        PushKey   { item: "reverse";seq:"Shift+j"}
+        PushKey   { item: "fwd";seq:"k"}
 
-        PushKey   { item: "beatsync";key:"-"}
-        PushKey   { item: "bpm_tap";key:"Shift+_"}
-        PushKey   { item: "loop_in";key:"7"}
-        PushKey   { item: "loop_out";key:"8"}
-        PushKey   { item: "reloop_exit";key:"9"}
+        PushKey   { item: "beatsync";seq:"-"}
+        PushKey   { item: "bpm_tap";seq:"Shift+_"}
+        PushKey   { item: "loop_in";seq:"7"}
+        PushKey   { item: "loop_out";seq:"8"}
+        PushKey   { item: "reloop_exit";seq:"9"}
 
-        Add       { item: "rate";amount: -0.5e-2;key:"F5";min:-3;max:3}
-        Add       { item: "rate";amount:  0.5e-2;key:"F6";min:-3;max:3}
-        Add       { item: "rate";amount: -0.1e-2;key:"Shift+F5";min:-3;max:3}
-        Add       { item: "rate";amount:  0.1e-2;key:"Shift+F6";min:-3;max:3}
-        IncDec    { item: "rate";amount: -2.e-2;key:"F7"}
-        IncDec    { item: "rate";amount:  2.e-2;key:"F8"}
-        IncDec    { item: "rate";amount: -0.5e-2;key:"Shift+F7"}
-        IncDec    { item: "rate";amount:  0.5e-2;key:"Shift+F8"}
+        Add       { item: "rate";amount: -0.5e-2;seq:"F5";min:-3;max:3}
+        Add       { item: "rate";amount:  0.5e-2;seq:"F6";min:-3;max:3}
+        Add       { item: "rate";amount: -0.1e-2;seq:"Shift+F5";min:-3;max:3}
+        Add       { item: "rate";amount:  0.1e-2;seq:"Shift+F6";min:-3;max:3}
+        IncDec    { item: "rate";amount: -2.e-2;seq:"F7"}
+        IncDec    { item: "rate";amount:  2.e-2;seq:"F8"}
+        IncDec    { item: "rate";amount: -0.5e-2;seq:"Shift+F7"}
+        IncDec    { item: "rate";amount:  0.5e-2;seq:"Shift+F8"}
 
-        ToggleKey { item: "pfl";key:"n"}
+        ToggleKey { item: "pfl";seq:"n"}
 
-        Set       { item: "volume"; to: 1; key: "Ctrl+6"}
-        Set       { item: "volume"; to: 0; key: "Ctrl+y"}
-        Add       { item: "volume"; amount: 1/16.; key:"6";min:0;max:1}
-        Add       { item: "volume"; amount: -1/16.; key:"^";min:0;max:1}
-        Add       { item: "volume"; amount: 1/64; key:"Shift+y";min:0;max:1}
-        Add       { item: "volume"; amount: -1/64; key:"Shift+y";min:0;max:1}
+        Set       { item: "volume"; to: 1; seq: "Ctrl+6"}
+        Set       { item: "volume"; to: 0; seq: "Ctrl+y"}
+        Add       { item: "volume"; amount: 1/16.; seq:"6";min:0;max:1}
+        Add       { item: "volume"; amount: -1/16.; seq:"^";min:0;max:1}
+        Add       { item: "volume"; amount: 1/64; seq:"Shift+y";min:0;max:1}
+        Add       { item: "volume"; amount: -1/64; seq:"Shift+y";min:0;max:1}
 
-        Add       { item: "filterHigh";amount: -1/8;key:"Alt+7";min:0;max:4}
-        Add       { item: "filterHigh";amount:  1/8;key:"Alt+8";min:0;max:4}
-        Set       { item: "filterHigh";to: 0;key:"Alt+Shift+&"}
-        Set       { item: "filterHigh";to: 1;key:"Alt+Shift+*"}
+        Add       { item: "filterHigh";amount: -1/8;seq:"Alt+7";min:0;max:4}
+        Add       { item: "filterHigh";amount:  1/8;seq:"Alt+8";min:0;max:4}
+        Set       { item: "filterHigh";to: 0;seq:"Alt+Shift+&"}
+        Set       { item: "filterHigh";to: 1;seq:"Alt+Shift+*"}
 
-        Add       { item: "filterMid";amount: -1/8;key:"Alt+u";min:0;max:4}
-        Add       { item: "filterMid";amount:  1/8;key:"Alt+i";min:0;max:4}
-        Set       { item: "filterMid";to: 0;key:"ALt+Shift+u"}
-        Set       { item: "filterMid";to: 1;key:"Alt+Shift+i"}
+        Add       { item: "filterMid";amount: -1/8;seq:"Alt+u";min:0;max:4}
+        Add       { item: "filterMid";amount:  1/8;seq:"Alt+i";min:0;max:4}
+        Set       { item: "filterMid";to: 0;seq:"ALt+Shift+u"}
+        Set       { item: "filterMid";to: 1;seq:"Alt+Shift+i"}
 
-        Add       { item: "filterLow";amount: -1/8;key:"Alt+j"}
-        Add       { item: "filterLow";amount:  1/8;key:"Alt+k"}
-        Set       { item: "filterLow";to:0;key:"Alt+Shift+j"}
-        Set       { item: "filterLow";to:1;key:"Alt+Shift+k"}
+        Add       { item: "filterLow";amount: -1/8;seq:"Alt+j"}
+        Add       { item: "filterLow";amount:  1/8;seq:"Alt+k"}
+        Set       { item: "filterLow";to:0;seq:"Alt+Shift+j"}
+        Set       { item: "filterLow";to:1;seq:"Alt+Shift+k"}
 
 
-        PushKey   { item:"LoadSelectedTrack";key: "Shift+Right";}
-        PushKey   { item:"eject";key:"Alt+Shift+Right"}
+        PushKey   { item:"LoadSelectedTrack";seq: "Shift+Right";}
+        PushKey   { item:"eject";seq:"Alt+Shift+Right"}
 
-        PushKey   { item:"hotcue_1_activate";key:"m";}
-        PushKey   { item:"hotcue_1_clear";key:"Shift+m";}
-        PushKey   { item:"hotcue_2_activate";key:",";}
-        PushKey   { item:"hotcue_2_clear";key:"Shift+<";}
+/*        PushKey   { item:"hotcue_1_activate";seq:"m";}
+        PushKey   { item:"hotcue_1_clear";seq:"Shift+m";}
+        PushKey   { item:"hotcue_2_activate";seq:",";}
+        PushKey   { item:"hotcue_2_clear";seq:"Shift+<";}*/
     }
     Item {
         id: master
         property string group: "[Master]"
-        Set       { item: "crossfader";to: -1;key:"Ctrl+g"}
-        Set       { item: "crossfader";to:  1;key:"Ctrl+h"}
-        Add       { item: "crossfader";amount: -1/16;key:"g";min:-1;max:1}
-        Add       { item: "crossfader";amount:  1/16;key:"h";min:-1;max:1}
-        Add       { item: "crossfader";amount: -1/8;key:"Shift+g";min:-1;max:1}
-        Add       { item: "crossfader";amount:  1/8;key:"Shift+h";min:-1;max:1}
+        Set       { item: "crossfader";to: -1;seq:"Ctrl+g"}
+        Set       { item: "crossfader";to:  1;seq:"Ctrl+h"}
+        Add       { item: "crossfader";amount: -1/16;seq:"g";min:-1;max:1}
+        Add       { item: "crossfader";amount:  1/16;seq:"h";min:-1;max:1}
+        Add       { item: "crossfader";amount: -1/8;seq:"Shift+g";min:-1;max:1}
+        Add       { item: "crossfader";amount:  1/8;seq:"Shift+h";min:-1;max:1}
 
     }
     Item {
         id: keyboardShortcuts
         property string group: "[KeyboardShortcuts]"
-//c        PushKey { item: "FileMenu_LoadDeck1";key:"Ctrl+o"}
-//        PushKey { item: "FileMenu_LoadDeck2";key:"Ctrl+Shift+o"}
-        PushKey { item: "FileMenu_Quit";key:"Ctrl+q"}
-//        PushKey { item: "ViewMenu_MaximizeLibrary";key:"Ctrl+Space"}
-//        PushKey { item: "OptionsMenu_EnableLiveBroadcasting";key:"Ctrl+l"}
-//        PushKey { item: "OptionsMenu_RecordMix";key:"Ctrl+r"}
-//        PushKey { item: "OptionsMenu_ReloadSkin";key:"Ctrl+Shift+r"}
+//c        PushKey { item: "FileMenu_LoadDeck1";seq:"Ctrl+o"}
+//        PushKey { item: "FileMenu_LoadDeck2";seq:"Ctrl+Shift+o"}
+        PushKey { item: "FileMenu_Quit";seq:"Ctrl+q"}
+//        PushKey { item: "ViewMenu_MaximizeLibrary";seq:"Ctrl+Space"}
+//        PushKey { item: "OptionsMenu_EnableLiveBroadcasting";seq:"Ctrl+l"}
+//        PushKey { item: "OptionsMenu_RecordMix";seq:"Ctrl+r"}
+//        PushKey { item: "OptionsMenu_ReloadSkin";seq:"Ctrl+Shift+r"}
 
+    }
+    Component.onCompleted: {
+        for(var i = 0; i < keyboardConfig.data.length;++i) {
+            var sub = keyboardConfig.data[i];
+            for(var j = 0; j < sub.data.length; ++j) {
+                var ssub = sub.data[j];
+                console.log(ssub.group,ssub.item,ssub.seq)
+            }
+        }
     }
 }

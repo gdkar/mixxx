@@ -1,4 +1,4 @@
-#ifndef CONTROLLERS_QMLCONTROLLERENUMERATOR_H
+#ifndef CONTROLLERS_QMLCONTROLLERENUMERATOR_Hj
 #define CONTROLLERS_QMLCONTROLLERENUMERATOR_H
 #include <QtGlobal>
 #include <QtDebug>
@@ -21,15 +21,18 @@ public:
    ~QmlControllerEnumerator();
     QStringList controllerFileNames() const;
     QStringList scriptFileNames() const;
+public slots:
     void setSearchPaths(QStringList);
+    void refreshFileLists();
 signals:
     void controllerFileNamesChanged();
     void scriptFileNamesChanged();
+    void fileChanged(QString);
 protected slots:
-    void refreshFileLists();
     void onDirectoryChanged(QString);
 protected:
     QFileSystemWatcher m_directoryWatcher{this};
+    QFileSystemWatcher m_fileWatcher{this};
     QTimer             m_rescanHoldoff{this};
     QStringList        m_searchPaths;
     QSet<QString>      m_controllerFileNames;

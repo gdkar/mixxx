@@ -61,8 +61,9 @@ ControllerManager::ControllerManager(UserSettingsPointer pConfig)
           m_pollTimer(this),
           m_skipPoll(false)
 {
-    qmlRegisterType<BindProxy>("org.mixxx.qml", 0, 1, "BindProxy");
+    qmlRegisterUncreatableType<ConfigKey>("org.mixxx.qml", 0, 1, "ConfigKey","you can't make one of those....");
     qmlRegisterType<KeyProxy>("org.mixxx.qml", 0, 1, "KeyProxy");
+    qmlRegisterType<BindProxy>("org.mixxx.qml", 0, 1, "BindProxy");
     qmlRegisterType<Controller>("org.mixxx.qml", 0, 1, "Controller");
     qmlRegisterUncreatableType<KeyboardEventFilter>("org.mixxx.qml", 0, 1, "KbdController",
         "There is only one static keyboard: just use that one. <_<");
@@ -86,13 +87,7 @@ ControllerManager::ControllerManager(UserSettingsPointer pConfig)
         qDebug() << "Creating user controller presets directory:" << userPresets;
         QDir().mkpath(userPresets);
     }
-    {
-        auto paths = QStringList{} << userPresetsPath(pConfig)
-                                   << resourcePresetsPath(pConfig);
-        auto qmlEnumerator = new QmlControllerEnumerator(this);
-        qmlEnumerator->setSearchPaths(paths);
-    }
-//    m_pThread = new QThread{};
+    //    m_pThread = new QThread{};
 //    m_pThread->setObjectName("Controller");
     // Moves all children (including the poll timer) to m_pThread
 //    moveToThread(m_pThread);
@@ -127,6 +122,15 @@ void ControllerManager::onInitialize()
         << resourcePresetsPath(m_pConfig);
 
     auto qmlSearchPaths = presetSearchPaths << resourceQmlPath(m_pConfig);
+    {
+//        auto paths = QStringList{} << userPresetsPath(m_pConfig)
+//                                   << resourcePresetsPath(m_pConfig);
+        auto qmlEnumerator = new QmlControllerEnumerator(this);
+        connect(qmlEnumerator, &QmlControllerEnumerator::fileChanged, this, &ControllerManager::onFileChanged);
+        qmlEnumerator->setSearchPaths(qmlSearchPaths);
+        qmlEnumerator->refreshFileLists();
+    }
+
     // Instantiate all enumerators. Enumerators can take a long time to
     // construct since they interact with host MIDI APIs.
     m_pQmlEngine = new QQmlEngine(this);
@@ -134,28 +138,53 @@ void ControllerManager::onInitialize()
         m_pQmlEngine->addImportPath(path);
     }
     m_pQmlEngine->installExtensions(QQmlEngine::AllExtensions);
-    m_mainContext = new QQmlContext(m_pQmlEngine->rootContext(),m_pQmlEngine);
+
     QQmlEngine::setObjectOwnership(KeyboardEventFilter::create(), QQmlEngine::CppOwnership);
-    m_mainContext->setContextProperty("Keyboard", KeyboardEventFilter::instance());
+    auto keyboard = KeyboardEventFilter::instance();
+    m_pQmlEngine->rootContext()->setContextProperty("Keyboard", keyboard);
+    keyboard->setKeyboardHandler(this);
+
     auto mainPath = getAbsolutePath("main.qml", qmlSearchPaths);
 //    m_scriptWatcher.addPath(mainPath);
-    m_mainComponent = new QQmlComponent(m_pQmlEngine,m_pQmlEngine);
-    auto continueLoading = [this]()
-        {
-            if(m_mainComponent->isError()) {
-                qWarning() << m_mainComponent->errors();
-            } else if(m_mainComponent->isReady()) {
-                if(!m_mainInstance) {
-                    m_mainInstance = m_mainComponent->create(m_mainContext);
-                }
-                auto keyboard = KeyboardEventFilter::instance();
-                keyboard->setKeyboardHandler(this);
-            }
-        };
-    connect(m_mainComponent, &QQmlComponent::statusChanged, this, continueLoading);
-    m_mainComponent->loadUrl(QUrl::fromLocalFile(mainPath));
+    {
+        QQmlComponent component(m_pQmlEngine);
+        component.loadUrl(QUrl::fromLocalFile(mainPath));
+        if(!component.isReady()) {
+            qWarning() << component.errors();
+            return;
+        }
+        m_mainInstance = component.create( );
+    }
 }
+void ControllerManager::onFileChanged(QString path)
+{
+    auto presetSearchPaths = QStringList{}
+        << userPresetsPath(m_pConfig)
+        << resourcePresetsPath(m_pConfig);
 
+    auto qmlSearchPaths = presetSearchPaths << resourceQmlPath(m_pConfig);
+
+    auto mainPath = getAbsolutePath("main.qml", qmlSearchPaths);
+
+    m_mainInstance->deleteLater();
+    m_mainInstance = nullptr;
+    m_pQmlEngine->clearComponentCache();
+    auto keyboard = KeyboardEventFilter::instance();
+    m_pQmlEngine->rootContext()->setContextProperty("Keyboard", keyboard);
+
+//    m_scriptWatcher.addPath(mainPath);
+    {
+        QQmlComponent component(m_pQmlEngine);
+        component.loadUrl(QUrl::fromLocalFile(mainPath));
+        if(!component.isReady()) {
+            qWarning() << component.errors();
+            return;
+        }
+        m_mainInstance = component.create( );
+    }
+//    m_scriptWatcher.addPath(mainPath);
+
+}
 void ControllerManager::onShutdown()
 {
     stopPolling();

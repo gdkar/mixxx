@@ -41,19 +41,15 @@ class WPushButton : public WWidget {
     // Used by WPushButtonTest.
     WPushButton(QWidget* pParent, ControlPushButton::ButtonMode leftButtonMode,
                 ControlPushButton::ButtonMode rightButtonMode);
-
     Q_PROPERTY(bool pressed READ isPressed);
-
     bool isPressed() const {
         return m_bPressed;
     }
-
     // The displayValue property is used to restyle the pushbutton with CSS.
     // The declaration #MyButton[displayValue="0"] { } will define the style
     // when the widget is in state 0.  This allows for effects like reversing
     // background and foreground colors to indicate enabled/disabled state.
     Q_PROPERTY(int displayValue READ readDisplayValue NOTIFY displayValueChanged)
-
     int readDisplayValue() const {
         double value = getControlParameterDisplay();
         if (!isnan(value) && m_iNoStates > 0) {
@@ -61,19 +57,14 @@ class WPushButton : public WWidget {
         }
         return 0;
     }
-
     virtual void setup(const QDomNode& node, const SkinContext& context);
-
     // Sets the number of states associated with this button, and removes
     // associated pixmaps.
     void setStates(int iStates);
-
   signals:
     void displayValueChanged(int value);
-
   public slots:
     void onConnectedControlChanged(double dParameter, double dValue) override;
-
   protected:
     void paintEvent(QPaintEvent* /*unused*/) override;
     void mousePressEvent(QMouseEvent* e) override;

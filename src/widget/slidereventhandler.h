@@ -47,24 +47,19 @@ class SliderEventHandler {
             } else {
                 m_dPos = e->y() - m_dHandleLength / 2;
             }
-
             m_dPos = m_dStartHandlePos + (m_dPos - m_dStartMousePos);
-
             // Clamp to the range [0, sliderLength - m_dHandleLength].
             if (m_dSliderLength - m_dHandleLength > 0.0) {
                 m_dPos = math_clamp(m_dPos, 0.0, m_dSliderLength - m_dHandleLength);
             }
-            double newParameter = positionToParameter(m_dPos);
-
+            auto newParameter = positionToParameter(m_dPos);
             // If we don't change this, then updates might be rejected in
             // onConnectedControlChanged.
             m_dOldParameter = newParameter;
-
             // Emit valueChanged signal
             if (m_bEventWhileDrag) {
                 pWidget->setControlParameter(newParameter);
             }
-
             // Update display
             pWidget->update();
         }
@@ -105,12 +100,11 @@ class SliderEventHandler {
 
     void wheelEvent(T* pWidget, QWheelEvent* e) {
         // For legacy (MIDI) reasons this is tuned to 127.
-        double wheelAdjustment = (e)->delta() / (120.0 * 127.0);
-        double newParameter = pWidget->getControlParameter() + wheelAdjustment;
+        auto wheelAdjustment = (e)->delta() / (120.0 * 127.0);
+        auto newParameter = pWidget->getControlParameter() + wheelAdjustment;
 
         // Clamp to [0.0, 1.0]
         newParameter = math_clamp(newParameter, 0.0, 1.0);
-
         pWidget->setControlParameter(newParameter);
         onConnectedControlChanged(pWidget, newParameter);
         pWidget->update();
@@ -128,17 +122,13 @@ class SliderEventHandler {
         if (m_bDrag) {
             return;
         }
-
         if (m_dOldParameter != dParameter) {
             m_dOldParameter = dParameter;
-
-            double newPos = parameterToPosition(dParameter);
-
+            auto newPos = parameterToPosition(dParameter);
             // Clamp to [0.0, sliderLength - m_dHandleLength].
             if (m_dSliderLength - m_dHandleLength > 0.0) {
                 newPos = math_clamp(newPos, 0.0, m_dSliderLength - m_dHandleLength);
             }
-
             // Check a second time for no-ops. It's possible the parameter changed
             // but the visible pixmap didn't. Only update() the widget if we're
             // really sure we need to since this involves painting ALL of its
@@ -149,7 +139,6 @@ class SliderEventHandler {
             }
         }
     }
-
     void resizeEvent(T* pWidget, QResizeEvent* pEvent) {
         Q_UNUSED(pEvent);
         // m_dSliderLength and m_dHandleLength are explicitly updated.
@@ -173,13 +162,12 @@ class SliderEventHandler {
         if (m_dSliderLength - m_dHandleLength <= 0.0) {
             return 0.0;
         }
-        double val = pos / (m_dSliderLength - m_dHandleLength);
+        auto val = pos / (m_dSliderLength - m_dHandleLength);
         if (!m_bHorizontal) {
             return 1.0 - val;
         }
         return val;
     }
-
   private:
     // This is the position the handle was when a drag started.
     double m_dStartHandlePos;

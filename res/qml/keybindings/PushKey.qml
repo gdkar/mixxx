@@ -8,6 +8,7 @@ KeyBinder {
     property alias item:  cp.item
     ControlProxy {
         id: cp;
+        property string key:""
         group:kb.parent.group
     }
     Keys.onPressed: {
