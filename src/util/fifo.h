@@ -99,21 +99,21 @@ class fifo<T,true> {
     {
         back() = item;
         std::atomic_thread_fence(std::memory_order_release);
-        m_widx.fetch_add(1,std::memory_order_release);
+        m_widx.fetch_add(1,std::memory_order_relaxed);
     }
     void push_back(T &&item)
     {
         back() = std::forward<T>(item);
         std::atomic_thread_fence(std::memory_order_release);
-        m_widx.fetch_add(1,std::memory_order_release);
+        m_widx.fetch_add(1,std::memory_order_relaxed);
     }
     template<class... Args>
     void emplace_back(Args && ...args)
     {
         back().~T();
-        ::new( &back() ) T (std::forward<Args>(args)...);
+        ::new( static_cast<void*>(&back()) ) T (std::forward<Args>(args)...);
         std::atomic_thread_fence(std::memory_order_release);
-        m_widx.fetch_add(1,std::memory_order_release);
+        m_widx.fetch_add(1,std::memory_order_relaxed);
     }
     size_type capacity() const
     {
@@ -169,8 +169,8 @@ class fifo<T,true> {
             pointer* dataPtr1, size_type *sizePtr1,
             pointer* dataPtr2, size_type* sizePtr2)
     {
-        auto ridx = m_ridx.load(std::memory_order_acquire);
-        auto widx = m_widx.load(std::memory_order_acquire);
+        auto ridx = m_ridx.load(std::memory_order_relaxed);
+        auto widx = m_widx.load(std::memory_order_relaxed);
         if((count = std::min<size_type>(count, bufferSize - ((widx-ridx)&bigMask)))) {
             auto woff = widx & smallMask;
             auto size1 = std::min<size_type>(count, bufferSize - woff);
@@ -187,11 +187,11 @@ class fifo<T,true> {
     }
     size_type releaseWriteRegions(size_type count)
     {
-        auto ridx = m_ridx.load(std::memory_order_acquire);
-        auto widx = m_widx.load(std::memory_order_acquire);
+        auto ridx = m_ridx.load(std::memory_order_relaxed);
+        auto widx = m_widx.load(std::memory_order_relaxed);
         count = std::min<size_type>(count, bufferSize - ((widx-ridx)&bigMask));
         std::atomic_thread_fence(std::memory_order_release);
-        m_widx.fetch_add(count,std::memory_order_release);
+        m_widx.fetch_add(count,std::memory_order_relaxed);
         return count;
     }
     size_type acquireReadRegions(size_type count,
@@ -248,17 +248,19 @@ class fifo<T,false> {
         sizeof(T),
         std::alignment_of<T>::value
         >;
-    static T& t_cast(storage_type &x) { return *reinterpret_cast<T*>(&x);}
-    static const T& t_cast(const storage_type &x) { return *reinterpret_cast<const T*>(&x);}
+    static constexpr T& t_cast(storage_type &x) { return *reinterpret_cast<T*>(&x);}
+    static constexpr const T& t_cast(const storage_type &x) { return *reinterpret_cast<const T*>(&x);}
   public:
     using value_type      = T;
+
     using size_type       = std::size_t;
     using difference_type = std::int64_t;
-    using const_reference = const T&;
-    using const_pointer   = const T*;
 
-    using reference       = T&;
-    using pointer         = T*;
+    using const_reference = const value_type &;
+    using const_pointer   = const value_type *;
+
+    using reference       = value_type &;
+    using pointer         = value_type *;
 
   protected:
     size_type        bufferSize{};
@@ -295,6 +297,12 @@ class fifo<T,false> {
         std::atomic_thread_fence(std::memory_order_acquire);
         return t_cast(m_data[ridx & smallMask]);
     }
+    const_reference front() const
+    {
+        auto ridx = m_ridx.load(std::memory_order_relaxed);
+        std::atomic_thread_fence(std::memory_order_acquire);
+        return t_cast(m_data[ridx & smallMask]);
+    }
     reference operator[](difference_type x)
     {
         auto idx = ((x>=0)?m_ridx:m_widx).load(std::memory_order_relaxed);
@@ -309,12 +317,6 @@ class fifo<T,false> {
         std::atomic_thread_fence(std::memory_order_acquire);
         return t_cast(m_data[off]);
     }
-    const_reference front() const
-    {
-        auto ridx = m_ridx.load(std::memory_order_relaxed);
-        std::atomic_thread_fence(std::memory_order_acquire);
-        return t_cast(m_data[ridx & smallMask]);
-    }
     reference back()
     {
         auto widx = m_widx.load(std::memory_order_relaxed);
@@ -327,23 +329,23 @@ class fifo<T,false> {
     }
     void push_back(const_reference item)
     {
-        ::new( &back()) T (item);
+        ::new(static_cast<void*>(&back())) T (item);
 //        back() = item;
         std::atomic_thread_fence(std::memory_order_release);
-        m_widx.fetch_add(1,std::memory_order_release);
+        m_widx.fetch_add(1,std::memory_order_relaxed);
     }
     void push_back(T &&item)
     {
-        ::new(&back()) T (std::forward<T>(item));
+        ::new(static_cast<void*>(&back())) T (std::forward<T>(item));
         std::atomic_thread_fence(std::memory_order_release);
-        m_widx.fetch_add(1,std::memory_order_release);
+        m_widx.fetch_add(1,std::memory_order_relaxed);
     }
     template<class... Args>
     void emplace_back(Args && ...args)
     {
-        ::new( &back() ) T (std::forward<Args>(args)...);
+        ::new( static_cast<void*>(&back()) ) T (std::forward<Args>(args)...);
         std::atomic_thread_fence(std::memory_order_release);
-        m_widx.fetch_add(1,std::memory_order_release);
+        m_widx.fetch_add(1,std::memory_order_relaxed);
     }
     size_type capacity() const
     {
@@ -384,10 +386,10 @@ class fifo<T,false> {
         count = acquireWriteRegions(count, &data0, &size0, &data1, &size1);
         if(size0) {
             for(auto ptr = data0; ptr != (data0+size0); (++ptr),(++pData))
-                ::new(ptr) T (*pData);
+                ::new(static_cast<void*>(ptr)) T (*pData);
             if(size1) {
                 for(auto ptr = data1; ptr != (data1+size1); ++ptr,++pData)
-                    ::new(ptr) T(*pData);
+                    ::new(static_cast<void*>(ptr)) T(*pData);
             }
         }
         return releaseWriteRegions(count);
@@ -451,8 +453,9 @@ class fifo<T,false> {
     }
     size_type releaseReadRegions(size_type count)
     {
-        auto ridx = m_ridx.load(std::memory_order_acquire);
-        auto widx = m_widx.load(std::memory_order_acquire);
+        auto ridx = m_ridx.load(std::memory_order_relaxed);
+        auto widx = m_widx.load(std::memory_order_relaxed);
+        std::atomic_thread_fence(std::memory_order_acquire);
         count = std::min<size_type>(count, (widx-ridx)&bigMask);
         if(count){
             for(auto idx = ridx; idx < difference_type(ridx + count); ++idx)

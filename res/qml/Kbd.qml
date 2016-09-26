@@ -18,41 +18,41 @@ Item {
         PushKey   { item: "fwd";seq:"s"}
 
         PushKey   { item: "beatsync";seq:"1"}
-        PushKey   { item: "bpm_tap";seq:"Shift+1"}
+        ToggleKey   { item: "keylock";seq:"Shift+!"}
         PushKey   { item: "loop_in";seq:"2"}
         PushKey   { item: "loop_out";seq:"3"}
         PushKey   { item: "reloop_exit";seq:"4"}
-        Add       { item: "rate";amount: -0.5e-2;seq:"F1";min:-3;max:3}
-        Add       { item: "rate";amount:  0.5e-2;seq:"F2";min:-3;max:3}
-        Add       { item: "rate";amount: -0.1e-2;seq:"Shift+F1";min:-3;max:3}
-        Add       { item: "rate";amount:  0.1e-2;seq:"Shift+F2";min:-3;max:3}
+        AddKey    { item: "rate";amount: -0.5e-2;seq:"F1";min:-3;max:3}
+        AddKey    { item: "rate";amount:  0.5e-2;seq:"F2";min:-3;max:3}
+        AddKey    { item: "rate";amount: -0.1e-2;seq:"Shift+F1";min:-3;max:3}
+        AddKey    { item: "rate";amount:  0.1e-2;seq:"Shift+F2";min:-3;max:3}
         IncDec    { item: "rate";amount: -2.e-2;seq:"F3"}
         IncDec    { item: "rate";amount:  2.e-2;seq:"F4"}
         IncDec    { item: "rate";amount: -0.5e-2;seq:"Shift+F3"}
         IncDec    { item: "rate";amount:  0.5e-2;seq:"Shift+F4"}
 
         ToggleKey { item: "pfl";seq:"b"}
-        Set       { item: "volume"; to: 1; seq: "Ctrl+5"}
-        Set       { item: "volume"; to: 0; seq: "Ctrl+t"}
-        Add       { item: "volume"; amount: 1/16; seq:"5";min:0;max:1}
-        Add       { item: "volume"; amount: -1/16; seq:"t";min:0;max:1}
-        Add       { item: "volume"; amount: 1/64; seq:"Shift+%";min:0;max:1}
-        Add       { item: "volume"; amount: -1/64; seq:"Shift+t";min:0;max:1}
+        SetKey    { item: "volume"; to: 1; seq: "Ctrl+5"}
+        SetKey    { item: "volume"; to: 0; seq: "Ctrl+t"}
+        AddKey    { item: "volume"; amount: 1/16; seq:"5";min:0;max:1}
+        AddKey    { item: "volume"; amount: -1/16; seq:"t";min:0;max:1}
+        AddKey    { item: "volume"; amount: 1/64; seq:"Shift+%";min:0;max:1}
+        AddKey    { item: "volume"; amount: -1/64; seq:"Shift+t";min:0;max:1}
 
-        Set       { item: "filterHigh";to: 0;seq:"Alt+Shift+#"}
-        Set       { item: "filterHigh";to: 1;seq:"Alt+Shift+$"}
-        Add       { item: "filterHigh";amount: -1/8;seq:"Alt+3";min:0;max:4}
-        Add       { item: "filterHigh";amount:  1/8;seq:"Alt+4";min:0;max:4}
+        SetKey    { item: "filterHigh";to: 0;seq:"Alt+Shift+#"}
+        SetKey    { item: "filterHigh";to: 1;seq:"Alt+Shift+$"}
+        AddKey    { item: "filterHigh";amount: -1/8;seq:"Alt+3";min:0;max:4}
+        AddKey    { item: "filterHigh";amount:  1/8;seq:"Alt+4";min:0;max:4}
 
-        Set       { item: "filterMid";to: 0;seq:"Alt+Shift+e"}
-        Set       { item: "filterMid";to: 1;seq:"Alt+Shift+r"}
-        Add       { item: "filterMid";amount: -1/8;seq:"Alt+e";min:0;max:4}
-        Add       { item: "filterMid";amount:  1/8;seq:"Alt+r";min:0;max:4}
+        SetKey    { item: "filterMid";to: 0;seq:"Alt+Shift+e"}
+        SetKey    { item: "filterMid";to: 1;seq:"Alt+Shift+r"}
+        AddKey    { item: "filterMid";amount: -1/8;seq:"Alt+e";min:0;max:4}
+        AddKey    { item: "filterMid";amount:  1/8;seq:"Alt+r";min:0;max:4}
 
-        Set       { item: "filterLow";to: 0;seq:"Alt+Shift+d"}
-        Set       { item: "filterLow";to: 1;seq:"Alt+Shift+f"}
-        Add       { item: "filterLow";amount: -1/8;seq:"Alt+d";min:0;max:4}
-        Add       { item: "filterLow";amount:  1/8;seq:"Alt+f";min:0;max:4}
+        SetKey    { item: "filterLow";to: 0;seq:"Alt+Shift+d"}
+        SetKey    { item: "filterLow";to: 1;seq:"Alt+Shift+f"}
+        AddKey    { item: "filterLow";amount: -1/8;seq:"Alt+d";min:0;max:4}
+        AddKey    { item: "filterLow";amount:  1/8;seq:"Alt+f";min:0;max:4}
 
 
         PushKey   { item:"LoadSelectedTrack";seq: "Shift+Left"}
@@ -76,15 +76,15 @@ Item {
         PushKey   { item: "fwd";seq:"k"}
 
         PushKey   { item: "beatsync";seq:"-"}
-        PushKey   { item: "bpm_tap";seq:"Shift+_"}
+        ToggleKey   { item: "keylock";seq:"Shift+_"}
         PushKey   { item: "loop_in";seq:"7"}
         PushKey   { item: "loop_out";seq:"8"}
         PushKey   { item: "reloop_exit";seq:"9"}
 
-        Add       { item: "rate";amount: -0.5e-2;seq:"F5";min:-3;max:3}
-        Add       { item: "rate";amount:  0.5e-2;seq:"F6";min:-3;max:3}
-        Add       { item: "rate";amount: -0.1e-2;seq:"Shift+F5";min:-3;max:3}
-        Add       { item: "rate";amount:  0.1e-2;seq:"Shift+F6";min:-3;max:3}
+        AddKey    { item: "rate";amount: -0.5e-2;seq:"F5";min:-3;max:3}
+        AddKey    { item: "rate";amount:  0.5e-2;seq:"F6";min:-3;max:3}
+        AddKey    { item: "rate";amount: -0.1e-2;seq:"Shift+F5";min:-3;max:3}
+        AddKey    { item: "rate";amount:  0.1e-2;seq:"Shift+F6";min:-3;max:3}
         IncDec    { item: "rate";amount: -2.e-2;seq:"F7"}
         IncDec    { item: "rate";amount:  2.e-2;seq:"F8"}
         IncDec    { item: "rate";amount: -0.5e-2;seq:"Shift+F7"}
@@ -92,27 +92,27 @@ Item {
 
         ToggleKey { item: "pfl";seq:"n"}
 
-        Set       { item: "volume"; to: 1; seq: "Ctrl+6"}
-        Set       { item: "volume"; to: 0; seq: "Ctrl+y"}
-        Add       { item: "volume"; amount: 1/16.; seq:"6";min:0;max:1}
-        Add       { item: "volume"; amount: -1/16.; seq:"^";min:0;max:1}
-        Add       { item: "volume"; amount: 1/64; seq:"Shift+y";min:0;max:1}
-        Add       { item: "volume"; amount: -1/64; seq:"Shift+y";min:0;max:1}
+        SetKey    { item: "volume"; to: 1; seq: "Ctrl+6"}
+        SetKey    { item: "volume"; to: 0; seq: "Ctrl+y"}
+        AddKey    { item: "volume"; amount: 1/16.; seq:"6";min:0;max:1}
+        AddKey    { item: "volume"; amount: -1/16.; seq:"^";min:0;max:1}
+        AddKey    { item: "volume"; amount: 1/64; seq:"Shift+y";min:0;max:1}
+        AddKey    { item: "volume"; amount: -1/64; seq:"Shift+y";min:0;max:1}
 
-        Add       { item: "filterHigh";amount: -1/8;seq:"Alt+7";min:0;max:4}
-        Add       { item: "filterHigh";amount:  1/8;seq:"Alt+8";min:0;max:4}
-        Set       { item: "filterHigh";to: 0;seq:"Alt+Shift+&"}
-        Set       { item: "filterHigh";to: 1;seq:"Alt+Shift+*"}
+        AddKey    { item: "filterHigh";amount: -1/8;seq:"Alt+7";min:0;max:4}
+        AddKey    { item: "filterHigh";amount:  1/8;seq:"Alt+8";min:0;max:4}
+        SetKey    { item: "filterHigh";to: 0;seq:"Alt+Shift+&"}
+        SetKey    { item: "filterHigh";to: 1;seq:"Alt+Shift+*"}
 
-        Add       { item: "filterMid";amount: -1/8;seq:"Alt+u";min:0;max:4}
-        Add       { item: "filterMid";amount:  1/8;seq:"Alt+i";min:0;max:4}
-        Set       { item: "filterMid";to: 0;seq:"ALt+Shift+u"}
-        Set       { item: "filterMid";to: 1;seq:"Alt+Shift+i"}
+        AddKey    { item: "filterMid";amount: -1/8;seq:"Alt+u";min:0;max:4}
+        AddKey    { item: "filterMid";amount:  1/8;seq:"Alt+i";min:0;max:4}
+        SetKey    { item: "filterMid";to: 0;seq:"ALt+Shift+u"}
+        SetKey    { item: "filterMid";to: 1;seq:"Alt+Shift+i"}
 
-        Add       { item: "filterLow";amount: -1/8;seq:"Alt+j"}
-        Add       { item: "filterLow";amount:  1/8;seq:"Alt+k"}
-        Set       { item: "filterLow";to:0;seq:"Alt+Shift+j"}
-        Set       { item: "filterLow";to:1;seq:"Alt+Shift+k"}
+        AddKey    { item: "filterLow";amount: -1/8;seq:"Alt+j"}
+        AddKey    { item: "filterLow";amount:  1/8;seq:"Alt+k"}
+        SetKey    { item: "filterLow";to:0;seq:"Alt+Shift+j"}
+        SetKey    { item: "filterLow";to:1;seq:"Alt+Shift+k"}
 
 
         PushKey   { item:"LoadSelectedTrack";seq: "Shift+Right";}
@@ -126,12 +126,12 @@ Item {
     Item {
         id: master
         property string group: "[Master]"
-        Set       { item: "crossfader";to: -1;seq:"Ctrl+g"}
-        Set       { item: "crossfader";to:  1;seq:"Ctrl+h"}
-        Add       { item: "crossfader";amount: -1/16;seq:"g";min:-1;max:1}
-        Add       { item: "crossfader";amount:  1/16;seq:"h";min:-1;max:1}
-        Add       { item: "crossfader";amount: -1/8;seq:"Shift+g";min:-1;max:1}
-        Add       { item: "crossfader";amount:  1/8;seq:"Shift+h";min:-1;max:1}
+        SetKey    { item: "crossfader";to: -1;seq:"Ctrl+g"}
+        SetKey    { item: "crossfader";to:  1;seq:"Ctrl+h"}
+        AddKey    { item: "crossfader";amount: -1/16;seq:"g";min:-1;max:1}
+        AddKey    { item: "crossfader";amount:  1/16;seq:"h";min:-1;max:1}
+        AddKey    { item: "crossfader";amount: -1/8;seq:"Shift+g";min:-1;max:1}
+        AddKey    { item: "crossfader";amount:  1/8;seq:"Shift+h";min:-1;max:1}
 
     }
     Item {

@@ -1,6 +1,8 @@
 import org.mixxx.qml 0.1
 import "../qml"
 import "../qml/keybindings"
+import "./hercules_air"
+
 import QtQml 2.2
 import QtQuick 2.7
 Item {
@@ -22,7 +24,12 @@ Item {
                     'quantize':'\u0003',
                     'jog':'\u0030',
                     'stepStart':0x44,
-                    'stepStop':0x47
+                    'stepStop':0x47,
+                    'rate_perm_up':'\u000e',
+                    'rate_perm_down':'\u000d',
+                    'filterLow':'\u0039',
+                    'filterMid':'\u0038',
+                    'filterHigh':'\u0037',
         }
     }
     DeckControls {
@@ -42,7 +49,13 @@ Item {
                     'quantize':'\u0019',
                     'jog':'\u0031',
                     'stepStart':0x4c,
-                    'stepStop':0x4f
+                    'stepStop':0x4f,
+                    'rate_perm_up':'\u0024',
+                    'rate_perm_down':'\u0023',
+                    'filterLow':'\u003e',
+                    'filterMid':'\u003d',
+                    'filterHigh':'\u003c',
+
         }
     }
     PlaylistControls {

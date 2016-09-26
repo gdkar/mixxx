@@ -8,7 +8,7 @@ Item {
     property var controls
     property var bindings
     Component.onCompleted: {
-        var component = Qt.createComponent("ControlObject.qml")
+        var component = Qt.createComponent("ControlObjectQml.qml")
         if(component.status == Component.Ready) {
             finishCreation()
         }else{
