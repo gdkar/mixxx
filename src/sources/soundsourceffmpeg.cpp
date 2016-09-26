@@ -205,11 +205,14 @@ SINT SoundSourceFFmpeg::seekSampleFrame(SINT frameIndex)
     }
     if ( m_pkt_index > 0 )
         m_pkt_index--;
-//    auto delay = swr_get_delay ( m_swr, getSampleRate( ) );
-//    swr_drop_output(m_swr, delay);
+    if ( m_pkt_index > 0 )
+        m_pkt_index--;
+
+    auto delay = swr_get_delay ( m_swr, getSampleRate( ) );
+    swr_drop_output(m_swr, delay);
     {
         ScopedTimer t("decode after seek.");
-//        m_codec_ctx.flush_buffers();
+        m_codec_ctx.flush_buffers();
         decode_next_frame ();
     }
     first_sample = av_rescale_q ( m_frame->pts - m_first_pts, m_stream_tb, m_output_tb );
@@ -221,6 +224,8 @@ SINT SoundSourceFFmpeg::seekSampleFrame(SINT frameIndex)
             m_offset -= m_frame->nb_samples;
             if ( !decode_next_frame() )
                 break;
+            first_sample = av_rescale_q ( m_frame->pts - m_first_pts, m_stream_tb, m_output_tb );
+            m_offset = frameIndex - first_sample;
         }
     }
     Stat::track("Actual seek preroll.",

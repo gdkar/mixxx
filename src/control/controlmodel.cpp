@@ -62,9 +62,9 @@ QVariant ControlModel::data(const QModelIndex& index,
     QString value;
     switch (column) {
         case CONTROL_COLUMN_GROUP:
-            return control.key.group;
+            return control.key.group();
         case CONTROL_COLUMN_ITEM:
-            return control.key.item;
+            return control.key.item();
         case CONTROL_COLUMN_VALUE:
             return control.pControl->get();
         case CONTROL_COLUMN_PARAMETER:
@@ -74,7 +74,7 @@ QVariant ControlModel::data(const QModelIndex& index,
         case CONTROL_COLUMN_DESCRIPTION:
             return control.description;
         case CONTROL_COLUMN_FILTER:
-            return control.key.group + "," + control.key.item;
+            return control.key.group() + "," + control.key.item();
     }
     return QVariant();
 }

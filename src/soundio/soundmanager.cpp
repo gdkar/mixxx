@@ -341,7 +341,7 @@ Result SoundManager::setupDevices()
             // TODO(bkgood) look into allocating this with the frames per
             // buffer value from SMConfig
             auto aib = AudioInputBuffer(in, SampleUtil::alloc(MAX_BUFFER_LEN));
-            err = device->addInput(aib) != SOUNDDEVICE_ERROR_OK ? ERR : OK;
+            err = device->addInput(aib) != SoundDevice::SoundDeviceError::OK ? ERR : OK;
             if (err != OK) {
                 SampleUtil::free(aib.getBuffer());
                 goto closeAndError;
@@ -375,7 +375,7 @@ Result SoundManager::setupDevices()
                 continue;
             }
             auto aob = AudioOutputBuffer(out, pBuffer);
-            err = device->addOutput(aob) != SOUNDDEVICE_ERROR_OK ? ERR : OK;
+            err = device->addOutput(aob) != SoundDevice::SoundDeviceError::OK ? ERR : OK;
             if (err != OK)
                 goto closeAndError;
             if (out.getType() == AudioOutput::MASTER) {

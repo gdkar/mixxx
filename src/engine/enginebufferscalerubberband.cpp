@@ -42,13 +42,16 @@ void EngineBufferScaleRubberBand::initRubberBand()
     m_pRubberBand = std::make_unique<RubberBandStretcher>(
             getAudioSignal().getSampleRate(),
             getAudioSignal().getChannelCount(),
-            RubberBandStretcher::OptionProcessRealTime);
+            RubberBandStretcher::OptionProcessRealTime
+           |RubberBandStretcher::OptionThreadingNever
+           |RubberBandStretcher::OptionPitchHighConsistency
+           |RubberBandStretcher::OptionChannelsTogether);
     m_pRubberBand->setMaxProcessSize(kRubberBandBlockSize);
     // Setting the time ratio to a very high value will cause RubberBand
     // to preallocate buffers large enough to (almost certainly)
     // avoid memory reallocations during playback.
-    m_pRubberBand->setTimeRatio(8.0);
-    m_pRubberBand->setTimeRatio(1./8.0);
+    m_pRubberBand->setTimeRatio(16.0);
+    m_pRubberBand->setTimeRatio(1./32.0);
     m_pRubberBand->setTimeRatio(1.0);
 }
 

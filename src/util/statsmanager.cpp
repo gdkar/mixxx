@@ -9,7 +9,7 @@
 #include "util/cmdlineargs.h"
 
 // In practice we process stats pipes about once a minute @1ms latency.
-const int kStatsPipeSize = 1 << 20;
+const int kStatsPipeSize = 1 << 18;
 const int kProcessLength = kStatsPipeSize * 4 / 5;
 
 // static

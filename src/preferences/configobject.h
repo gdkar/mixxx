@@ -15,30 +15,36 @@
 // group and an item.
 class ConfigKey {
     Q_GADGET
-    Q_PROPERTY(QString group MEMBER group);
-    Q_PROPERTY(QString item MEMBER item);
+    Q_PROPERTY(QString group READ group WRITE setGroup);
+    Q_PROPERTY(QString item READ item WRITE setItem);
   public:
     Q_INVOKABLE ConfigKey(); // is required for qMetaTypeConstructHelper()
     Q_INVOKABLE ConfigKey(const ConfigKey& key);
     Q_INVOKABLE ConfigKey(const QString& g, const QString& i);
-    explicit ConfigKey(std::tuple<QString,QString> lst);
+    Q_INVOKABLE explicit ConfigKey(std::tuple<QString,QString> lst);
     static ConfigKey parseCommaSeparated(const QString& key);
     virtual ~ConfigKey() = default;
 
-    bool isEmpty() const {
-        return group.isEmpty() && item.isEmpty();
+    Q_INVOKABLE bool isEmpty() const {
+        return group().isEmpty() && item().isEmpty();
     }
 
-    bool isNull() const {
-        return group.isNull() && item.isNull();
+    Q_INVOKABLE bool isNull() const {
+        return group().isNull() && item().isNull();
     }
+    Q_INVOKABLE const QString &group() const { return m_data[0]; }
+    Q_INVOKABLE QString &group() { return m_data[0]; }
+    Q_INVOKABLE void setGroup(const QString &group) { m_data[0] = group; }
+    Q_INVOKABLE const QString &item() const { return m_data[1]; }
+    Q_INVOKABLE QString &item() { return m_data[1]; }
+    Q_INVOKABLE void setItem(const QString &item) { m_data[1] = item; }
     operator std::tuple<QString&,QString&> ()
     {
-        return {group,item};
+        return {group(),item()};
     }
     operator std::tuple<QString,QString> () const
     {
-        return {group,item};
+        return {group(),item()};
     }
     // comparison function for ConfigKeys. Used by a QHash in ControlObject
     friend bool operator==(const ConfigKey& lhs, const ConfigKey& rhs)
@@ -73,17 +79,17 @@ class ConfigKey {
     }
     friend QDebug operator<<(QDebug stream, const ConfigKey& c1)
     {
-        return stream << "["<< c1.group << "," << c1.item <<"]";
+        return stream << "["<< c1.group() << "," << c1.item() <<"]";
     }
     friend uint qHash(const ConfigKey& key)
     {
-        return qHash(key.group) ^ qHash(key.item);
+        return qHash(key.group()) ^ qHash(key.item());
     }
-    QString group, item;
+    std::array<QString,2> m_data;
+//    QString m_group, m_item;
 };
 
 Q_DECLARE_METATYPE(ConfigKey);
-
 
 // stream operator function for trivial qDebug()ing of ConfigKeys
 

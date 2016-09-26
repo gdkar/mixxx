@@ -299,8 +299,8 @@ ConfigKey ControlProxy::key() const
 void ControlProxy::setKey(ConfigKey new_key)
 {
     if(new_key != key()) {
-        auto group_changed = new_key.group != group();
-        auto item_changed  = new_key.item  != item();
+        auto group_changed = new_key.group() != group();
+        auto item_changed  = new_key.item()  != item();
         if(m_pControl)
             QObject::disconnect(m_pControl.data(), 0, this, 0);
         auto _value = get();
@@ -332,11 +332,11 @@ void ControlProxy::setItem(QString _item)
 }
 QString ControlProxy::group() const
 {
-    return m_key.group;
+    return m_key.group();
 }
 QString ControlProxy::item() const
 {
-    return m_key.item;
+    return m_key.item();
 }
 double ControlProxy::operator += ( double incr)
 {

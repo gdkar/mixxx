@@ -21,7 +21,7 @@
 #include <QObject>
 #include <QEvent>
 #include <QMutex>
-
+#include <QtQml>
 #include "preferences/usersettings.h"
 #include "controllers/midi/midimessage.h"
 #include "control/control.h"
@@ -130,5 +130,5 @@ class ControlObject : public QObject, public QEnableSharedFromThis<ControlObject
     void initialize(ConfigKey key, bool bIgnoreNops, bool bTrack,bool bPersist);
     bool ignoreNops() const;
 };
-
+QML_DECLARE_TYPE(ControlObject);
 #endif

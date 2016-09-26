@@ -19,12 +19,12 @@
 #include "preferences/dialog/ui_dlgprefsounddlg.h"
 #include "preferences/usersettings.h"
 #include "soundio/soundmanagerconfig.h"
+#include "soundio/sounddevice.h"
 #include "preferences/dlgpreferencepage.h"
 
 class SoundManager;
 class PlayerManager;
 class ControlObject;
-class SoundDevice;
 class DlgPrefSoundItem;
 class ControlProxy;
 
@@ -40,6 +40,7 @@ class ControlProxy;
 class DlgPrefSound : public DlgPreferencePage, public Ui::DlgPrefSoundDlg  {
     Q_OBJECT;
   public:
+  using SoundDeviceError = SoundDevice::SoundDeviceError;
     DlgPrefSound(QWidget *parent, SoundManager *soundManager,
                  PlayerManager* pPlayerManager,
                  UserSettingsPointer config);

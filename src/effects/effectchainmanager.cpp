@@ -136,9 +136,9 @@ bool EffectChainManager::saveEffectChains() {
         "</MixxxEffects>\n";
     doc.setContent(blank);
 
-    QDomElement rootNode = doc.documentElement();
+    auto rootNode = doc.documentElement();
 
-    QDomElement chains = doc.createElement("EffectChains");
+    auto chains = doc.createElement("EffectChains");
     foreach (EffectChainPointer pChain, m_effectChains) {
         QDomElement chain = pChain->toXML(&doc);
         chains.appendChild(chain);
@@ -158,7 +158,7 @@ bool EffectChainManager::saveEffectChains() {
         return false;
     }
 
-    QString effectsXml = doc.toString();
+    auto effectsXml = doc.toString();
     file.write(effectsXml.toUtf8());
     file.close();
     return true;
@@ -173,26 +173,19 @@ bool EffectChainManager::loadEffectChains() {
     if (!file.open(QIODevice::ReadOnly)) {
         return false;
     }
-
     QDomDocument doc;
     if (!doc.setContent(&file)) {
         file.close();
         return false;
     }
     file.close();
-
-    QDomElement root = doc.documentElement();
-
-    QDomElement effectChains = XmlParse::selectElement(root, "EffectChains");
-    QDomNodeList chains = effectChains.childNodes();
-
+    auto root = doc.documentElement();
+    auto effectChains = XmlParse::selectElement(root, "EffectChains");
+    auto chains = effectChains.childNodes();
     for (int i = 0; i < chains.count(); ++i) {
-        QDomNode chainNode = chains.at(i);
-
+        auto chainNode = chains.at(i);
         if (chainNode.isElement()) {
-            EffectChainPointer pChain = EffectChain::fromXML(
-                m_pEffectsManager, chainNode.toElement());
-
+            auto pChain = EffectChain::fromXML(m_pEffectsManager, chainNode.toElement());
             m_effectChains.append(pChain);
         }
     }

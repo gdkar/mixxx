@@ -60,7 +60,7 @@ void ControlDoublePrivate::initialize()
     //qDebug() << "Creating:" << m_trackKey << "at" << &m_value << sizeof(m_value);
     if (m_bTrack) {
         // TODO(rryan): Make configurable.
-        m_trackKey = "control " + m_key.group + "," + m_key.item;
+        m_trackKey = "control " + m_key.group() + "," + m_key.item();
         Stat::track(m_trackKey, static_cast<Stat::StatType>(m_trackType),
                     static_cast<Stat::ComputeFlags>(m_trackFlags),
                     m_value.load());

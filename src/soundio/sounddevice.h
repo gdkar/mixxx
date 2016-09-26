@@ -18,6 +18,8 @@
 #ifndef SOUNDDEVICE_H
 #define SOUNDDEVICE_H
 
+#include <QtGlobal>
+#include <QObject>
 #include <QString>
 #include <QList>
 
@@ -25,23 +27,20 @@
 #include "util/result.h"
 
 //Forward declarations
-class SoundDevice;
-class SoundManager;
-class AudioOutput;
-class AudioInput;
 
-enum SoundDeviceError {
-    SOUNDDEVICE_ERROR_OK = OK,
-    SOUNDDEVICE_ERROR_DUPLICATE_OUTPUT_CHANNEL,
-    SOUNDDEVICE_ERROR_EXCESSIVE_OUTPUT_CHANNEL,
-    SOUNDDEVICE_ERROR_EXCESSIVE_INPUT_CHANNEL,
-};
 
 const QString kNetworkDeviceInternalName = "Network stream";
 
 class SoundDevice : public QObject {
     Q_OBJECT
   public:
+    enum class SoundDeviceError {
+        OK = OK,
+        DUPLICATE_OUTPUT_CHANNEL,
+        EXCESSIVE_OUTPUT_CHANNEL,
+        EXCESSIVE_INPUT_CHANNEL,
+    };
+    Q_ENUM(SoundDeviceError)
     SoundDevice(UserSettingsPointer config, SoundManager* sm);
     virtual ~SoundDevice();
 
@@ -49,8 +48,8 @@ class SoundDevice : public QObject {
     QString getDisplayName() const;
     QString getHostAPI() const;
 
-    void setSampleRate(double sampleRate);
-    void setFramesPerBuffer(uint32_t framesPerBuffer);
+    virtual void setSampleRate(double sampleRate);
+    virtual void setFramesPerBuffer(uint32_t framesPerBuffer);
     virtual Result open(bool isClkRefDevice, int syncBuffers) = 0;
     virtual bool isOpen() const = 0;
     virtual Result close() = 0;
@@ -58,15 +57,15 @@ class SoundDevice : public QObject {
     virtual void writeProcess() = 0;
     virtual QString getError() const = 0;
     virtual uint32_t getDefaultSampleRate() const = 0;
-    int getNumOutputChannels() const;
-    int getNumInputChannels() const;
-    SoundDeviceError addOutput(const AudioOutputBuffer& out);
-    SoundDeviceError addInput(const AudioInputBuffer& in);
-    QList<AudioInputBuffer> inputs() const;
-    QList<AudioOutputBuffer> outputs() const;
+    virtual int getNumOutputChannels() const;
+    virtual int getNumInputChannels() const;
+    virtual SoundDeviceError addOutput(const AudioOutputBuffer& out);
+    virtual SoundDeviceError addInput(const AudioInputBuffer& in);
+    virtual QList<AudioInputBuffer> inputs() const;
+    virtual QList<AudioOutputBuffer> outputs() const;
 
-    void clearOutputs();
-    void clearInputs();
+    virtual void clearOutputs();
+    virtual void clearInputs();
     bool operator==(const SoundDevice &other) const;
     bool operator==(const QString &other) const;
 

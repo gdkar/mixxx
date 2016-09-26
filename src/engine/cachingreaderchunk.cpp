@@ -26,8 +26,7 @@ CachingReaderChunk::CachingReaderChunk()
           m_sampleBuffer(std::make_unique<CSAMPLE[]>(kSamples))
 { }
 
-CachingReaderChunk::~CachingReaderChunk() {
-}
+CachingReaderChunk::~CachingReaderChunk() { }
 
 void CachingReaderChunk::init(SINT index) {
     m_index = index;

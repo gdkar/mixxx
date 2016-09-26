@@ -36,4 +36,5 @@ class ControlObjectScript : public ControlProxy {
     QJSValue m_callback{};
     QJSValue m_context{};
 };
+QML_DECLARE_TYPE(ControlObjectScript)
 #endif // CONTROLOBJECTSCRIPT_H

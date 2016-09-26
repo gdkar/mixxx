@@ -54,12 +54,12 @@ namespace
 
         qDebug() << "reading file took" << timerReadingFile.elapsed().debugMillisWithUnit();
 
-        ChromaprintContext* ctx = chromaprint_new(CHROMAPRINT_ALGORITHM_DEFAULT);
+        auto ctx = chromaprint_new(CHROMAPRINT_ALGORITHM_DEFAULT);
         chromaprint_start(ctx, pAudioSource->getSampleRate(), kFingerprintChannels);
 
         PerformanceTimer timerGeneratingFingerprint;
         timerGeneratingFingerprint.start();
-        int success = chromaprint_feed(ctx, &fingerprintSamples[0], fingerprintSamples.size());
+        auto success = chromaprint_feed(ctx, &fingerprintSamples[0], fingerprintSamples.size());
         chromaprint_finish(ctx);
         if (!success) {
             qDebug() << "could not generate fingerprint";
@@ -68,12 +68,12 @@ namespace
         }
 
         void* fprint = NULL;
-        int size = 0;
-        int ret = chromaprint_get_raw_fingerprint(ctx, &fprint, &size);
+        auto size = 0;
+        auto  ret = chromaprint_get_raw_fingerprint(ctx, &fprint, &size);
         QByteArray fingerprint;
         if (ret == 1) {
             void* encoded = NULL;
-            int encoded_size = 0;
+            auto encoded_size = 0;
             chromaprint_encode_fingerprint(fprint, size,
                                            CHROMAPRINT_ALGORITHM_DEFAULT,
                                            &encoded,
@@ -101,7 +101,7 @@ QString ChromaPrinter::getFingerprint(TrackPointer pTrack) {
     SoundSourceProxy soundSourceProxy(pTrack);
     mixxx::AudioSourceConfig audioSrcCfg;
     audioSrcCfg.setChannelCount(kFingerprintChannels);
-    mixxx::AudioSourcePointer pAudioSource(soundSourceProxy.openAudioSource(audioSrcCfg));
+    auto pAudioSource = soundSourceProxy.openAudioSource(audioSrcCfg);
     if (!pAudioSource) {
         qDebug() << "Skipping invalid file:" << pTrack->getLocation();
         return QString();

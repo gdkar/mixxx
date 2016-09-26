@@ -12,7 +12,12 @@
 #include <QVarLengthArray>
 
 #include <functional>
+#include <vector>
+#include <deque>
+#include <map>
+#include <forward_list>
 #include <utility>
+#include <algorithm>
 
 #include "util/types.h"
 #include "preferences/usersettings.h"
@@ -120,35 +125,27 @@ class CachingReader : public QObject {
     // returns it if it is present. If not, returns nullptr. If it is present then
     // freshenChunk is called on the chunk to make it the MRU chunk.
     CachingReaderChunkForOwner* lookupChunkAndFreshen(SINT chunkIndex);
-
     // Looks for the provided chunk number in the index of in-memory chunks and
     // returns it if it is present. If not, returns nullptr.
     CachingReaderChunkForOwner* lookupChunk(SINT chunkIndex);
-
     // Moves the provided chunk to the MRU position.
     void freshenChunk(CachingReaderChunkForOwner* pChunk);
-
     // Returns a CachingReaderChunk to the free list
     void freeChunk(CachingReaderChunkForOwner* pChunk);
-
     // Returns all allocated chunks to the free list
     void freeAllChunks();
-
     // Gets a chunk from the free list. Returns nullptr if none available.
     CachingReaderChunkForOwner* allocateChunk(SINT chunkIndex);
-
     // Gets a chunk from the free list, frees the LRU CachingReaderChunk if none available.
     CachingReaderChunkForOwner* allocateChunkExpireLRU(SINT chunkIndex);
-
     ReaderStatus m_readerStatus;
 
     // Keeps track of all CachingReaderChunks we've allocated.
-    QVector<CachingReaderChunkForOwner*> m_chunks;
+    std::deque<std::unique_ptr<CachingReaderChunkForOwner> > m_chunks;
 
     // List of free chunks. Linked list so that we have constant time insertions
     // and deletions. Iteration is not necessary.
-    QLinkedList<CachingReaderChunkForOwner*> m_freeChunks;
-
+    std::forward_list<CachingReaderChunkForOwner*> m_freeChunks;
     // Keeps track of what CachingReaderChunks we've allocated and indexes them based on what
     // chunk number they are allocated to.
     QHash<int, CachingReaderChunkForOwner*> m_allocatedCachingReaderChunks;
@@ -161,7 +158,6 @@ class CachingReader : public QObject {
     // This frame index references the frame that follows the last
     // frame with sample data.
     SINT m_maxReadableFrameIndex;
-
     CachingReaderWorker m_worker;
 };
 

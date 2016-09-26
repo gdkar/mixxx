@@ -103,8 +103,8 @@ AutoDJProcessor::AutoDJProcessor(QObject* pParent,
     // TODO(rryan) listen to signals from PlayerManager and add/remove as decks
     // are created.
     for (unsigned int i = 0; i < pPlayerManager->numberOfDecks(); ++i) {
-        QString group = PlayerManager::groupForDeck(i);
-        TrackPlayer* pPlayer = pPlayerManager->getPlayer(group);
+        auto group = PlayerManager::groupForDeck(i);
+        auto pPlayer = pPlayerManager->getPlayer(group);
         // Shouldn't be possible.
         if (pPlayer == NULL) {
             qWarning() << "PROGRAMMING ERROR deck does not exist" << i;
@@ -239,8 +239,8 @@ AutoDJProcessor::AutoDJError AutoDJProcessor::skipNext() {
 }
 
 AutoDJProcessor::AutoDJError AutoDJProcessor::toggleAutoDJ(bool enable) {
-    DeckAttributes& deck1 = *m_decks[0];
-    DeckAttributes& deck2 = *m_decks[1];
+    auto& deck1 = *m_decks[0];
+    auto& deck2 = *m_decks[1];
     bool deck1Playing = deck1.isPlaying();
     bool deck2Playing = deck2.isPlaying();
 
@@ -332,10 +332,8 @@ AutoDJProcessor::AutoDJError AutoDJProcessor::toggleAutoDJ(bool enable) {
             // loaded track from the queue and wait for the next call to
             // playerPositionChanged for deck1 after the track is loaded.
             m_eState = ADJ_ENABLE_P1LOADED;
-
             // Move crossfader to the left.
             setCrossfader(-1.0, false);
-
             // Load track into the left deck and play. Once it starts playing,
             // we will receive a playerPositionChanged update for deck 1 which
             // will load a track into the right deck and switch to IDLE mode.

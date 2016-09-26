@@ -57,12 +57,10 @@ Result SoundDeviceNetwork::open(bool isClkRefDevice, int syncBuffers) {
         // This is what should work best.
 
         if (m_iNumOutputChannels) {
-            m_outputFifo = new FIFO<CSAMPLE>(
-                    m_iNumOutputChannels * m_framesPerBuffer * 2);
+            m_outputFifo = new FIFO<CSAMPLE>(m_iNumOutputChannels * m_framesPerBuffer * 2);
         }
         if (m_iNumInputChannels) {
-            m_inputFifo = new FIFO<CSAMPLE>(
-                    m_iNumInputChannels * m_framesPerBuffer * 2);
+            m_inputFifo = new FIFO<CSAMPLE>(m_iNumInputChannels * m_framesPerBuffer * 2);
         }
     }
 

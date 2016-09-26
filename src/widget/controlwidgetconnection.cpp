@@ -55,7 +55,7 @@ void ControlParameterWidgetConnection::Init() {
 QString ControlParameterWidgetConnection::toDebugString() const {
     auto key = getKey();
     return QString("%1,%2 Parameter: %3 Direction: %4 Emit: %5")
-            .arg(key.group, key.item,
+            .arg(key.group(), key.item(),
                  QString::number(m_pControl->getParameter()),
                  directionOptionToString(m_directionOption),
                  emitOptionToString(m_emitOption));
@@ -104,7 +104,7 @@ ControlWidgetPropertyConnection::ControlWidgetPropertyConnection(WBaseWidget* pB
 QString ControlWidgetPropertyConnection::toDebugString() const {
     auto key = getKey();
     return QString("%1,%2 Parameter: %3 Property: %4 Value: %5").arg(
-        key.group, key.item, QString::number(m_pControl->getParameter()), m_propertyName,
+        key.group(), key.item(), QString::number(m_pControl->getParameter()), m_propertyName,
         m_pWidget->toQWidget()->property(
             m_propertyName.constData()).toString());
 }

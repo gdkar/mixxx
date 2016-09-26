@@ -152,12 +152,12 @@ unsigned int PlayerManager::numDecks()
 }
 
 // static
-bool PlayerManager::isDeckGroup(const QString& group, int* number) {
+bool PlayerManager::isDeckGroup(const QString& group, int* number)
+{
     if (!group.startsWith("[Channel")) {
         return false;
     }
-
-    bool ok = false;
+    auto ok = false;
     int deckNum = group.mid(8,group.lastIndexOf("]")-8).toInt(&ok);
     if (!ok || deckNum <= 0) {
         return false;
@@ -312,10 +312,8 @@ void PlayerManager::addConfiguredDecks() {
 void PlayerManager::addDeckInner()
 {
     // Do not lock m_mutex here.
-    QString group = groupForDeck(m_decks.count());
-    DEBUG_ASSERT_AND_HANDLE(!m_players.contains(group)) {
-        return;
-    }
+    auto group = groupForDeck(m_decks.count());
+    DEBUG_ASSERT_AND_HANDLE(!m_players.contains(group)) {return;}
     auto number = m_decks.count() + 1;
 
     auto orientation = EngineChannel::LEFT;
@@ -352,7 +350,8 @@ void PlayerManager::addDeckInner()
         pQuickEffectRack->addEffectChainSlotForGroup(group);
     }
 }
-void PlayerManager::addSampler() {
+void PlayerManager::addSampler()
+{
     QMutexLocker locker(&m_mutex);
     addSamplerInner();
     m_pCONumSamplers->set(m_samplers.count());
@@ -431,9 +430,7 @@ void PlayerManager::addAuxiliaryInner() {
     // Do not lock m_mutex here.
     auto index = m_auxiliaries.count();
     auto group = groupForAuxiliary(index);
-
-    auto pAuxiliary = new Auxiliary(this, group, index, m_pSoundManager,
-                                          m_pEngine, m_pEffectsManager);
+    auto pAuxiliary = new Auxiliary(this, group, index, m_pSoundManager,m_pEngine, m_pEffectsManager);
     m_auxiliaries.append(pAuxiliary);
 }
 
@@ -498,31 +495,31 @@ Auxiliary* PlayerManager::getAuxiliary(unsigned int auxiliary) const {
 void PlayerManager::slotLoadTrackToPlayer(TrackPointer pTrack, QString group, bool play) {
     // Do not lock mutex in this method unless it is changed to access
     // PlayerManager state.
-    TrackPlayer* pPlayer = getPlayer(group);
-
+    auto  pPlayer = getPlayer(group);
     if (pPlayer == nullptr) {
         qWarning() << "Invalid group argument " << group << " to slotLoadTrackToPlayer.";
         return;
     }
-
     pPlayer->slotLoadTrack(pTrack, play);
 }
-
-void PlayerManager::slotLoadToPlayer(QString location, QString group) {
+void PlayerManager::slotLoadToPlayer(QString location, QString group)
+{
     // The library will get the track and then signal back to us to load the
     // track via slotLoadTrackToPlayer.
     emit(loadLocationToPlayer(location, group));
 }
-
-void PlayerManager::slotLoadToDeck(QString location, int deck) {
+void PlayerManager::slotLoadToDeck(QString location, int deck)
+{
     slotLoadToPlayer(location, groupForDeck(deck-1));
 }
 
-void PlayerManager::slotLoadToPreviewDeck(QString location, int previewDeck) {
+void PlayerManager::slotLoadToPreviewDeck(QString location, int previewDeck)
+{
     slotLoadToPlayer(location, groupForPreviewDeck(previewDeck-1));
 }
 
-void PlayerManager::slotLoadToSampler(QString location, int sampler) {
+void PlayerManager::slotLoadToSampler(QString location, int sampler)
+{
     slotLoadToPlayer(location, groupForSampler(sampler-1));
 }
 
@@ -542,15 +539,13 @@ void PlayerManager::slotLoadTrackIntoNextAvailableDeck(TrackPointer pTrack)
         ++it;
     }
 }
-
 void PlayerManager::slotLoadTrackIntoNextAvailableSampler(TrackPointer pTrack)
 {
     QMutexLocker locker(&m_mutex);
     auto it = m_samplers.begin();
     while (it != m_samplers.end()) {
         auto pSampler = *it;
-        auto playControl =
-                ControlObject::getControl(ConfigKey(pSampler->getGroup(), "play"));
+        auto playControl = ControlObject::getControl(ConfigKey(pSampler->getGroup(), "play"));
         if (playControl && playControl->get() != 1.) {
             locker.unlock();
             pSampler->slotLoadTrack(pTrack, false);

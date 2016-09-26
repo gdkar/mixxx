@@ -147,7 +147,7 @@ void ControlObject::privateValueChanged(double dValue, QObject* pSender)
 // static
 ControlObject* ControlObject::getControl(ConfigKey key, bool warn)
 {
-    //qDebug() << "ControlObject::getControl for (" << key.group << "," << key.item << ")";
+    //qDebug() << "ControlObject::getControl for (" << key.group() << "," << key.item() << ")";
     if(!warn) {
         if(auto pCDP = ControlDoublePrivate::getIfExists(key)) {
             return pCDP->getCreatorCO();

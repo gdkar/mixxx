@@ -24,8 +24,8 @@ void WSplitter::setup(const QDomNode& node, const SkinContext& context) {
         if (m_pConfig->exists(m_configKey)) {
             sizesJoined = m_pConfig->getValueString(m_configKey);
             msg = "Reading .cfg file: '"
-                    + m_configKey.group + " "
-                    + m_configKey.item + " "
+                    + m_configKey.group() + " "
+                    + m_configKey.item() + " "
                     + sizesJoined
                     + "' does not match the number of children nodes:"
                     + QString::number(this->count());
@@ -101,7 +101,7 @@ void WSplitter::setup(const QDomNode& node, const SkinContext& context) {
 }
 
 void WSplitter::slotSplitterMoved() {
-    if (!m_configKey.group.isEmpty() && !m_configKey.item.isEmpty()) {
+    if (!m_configKey.isEmpty()){
         QStringList sizeStrList;
         for (const int& sizeInt : sizes()) {
             sizeStrList.push_back(QString::number(sizeInt));

@@ -29,12 +29,12 @@ const SINT kDefaultHintSamples = 1024 * CachingReaderChunk::kChannels;
 // currently CachingReaderWorker::kCachingReaderChunkLength is 65536 (0x10000);
 // For 80 chunks we need 5242880 (0x500000) bytes (5 MiB) of Memory
 //static
-const int CachingReader::maximumCachingReaderChunksInMemory = 1024;
+const int CachingReader::maximumCachingReaderChunksInMemory = 256;
 
 CachingReader::CachingReader(QString group,
                              UserSettingsPointer config)
         : m_pConfig(config),
-          m_chunkReadRequestFIFO(256),
+          m_chunkReadRequestFIFO(512),
           m_readerStatusFIFO(1024),
           m_readerStatus(INVALID),
           m_mruCachingReaderChunk(nullptr),
@@ -44,27 +44,20 @@ CachingReader::CachingReader(QString group,
 {
 
     m_allocatedCachingReaderChunks.reserve(maximumCachingReaderChunksInMemory);
-
     // Divide up the allocated raw memory buffer into total_chunks
     // chunks. Initialize each chunk to hold nothing and add it to the free
     // list.
     for (int i = 0; i < maximumCachingReaderChunksInMemory; ++i) {
-        auto c = new CachingReaderChunkForOwner();
-
-        m_chunks.push_back(c);
-        m_freeChunks.push_back(c);
+        m_chunks.emplace_back(std::make_unique<CachingReaderChunkForOwner>());
+        m_freeChunks.push_front(m_chunks.back().get());
     }
-
     // Forward signals from worker
-    connect(&m_worker, SIGNAL(trackLoading()),
-            this, SIGNAL(trackLoading()),
-            Qt::DirectConnection);
-    connect(&m_worker, SIGNAL(trackLoaded(TrackPointer, int, int)),
-            this, SIGNAL(trackLoaded(TrackPointer, int, int)),
-            Qt::DirectConnection);
-    connect(&m_worker, SIGNAL(trackLoadFailed(TrackPointer, QString)),
-            this, SIGNAL(trackLoadFailed(TrackPointer, QString)),
-            Qt::DirectConnection);
+    connect(&m_worker, &CachingReaderWorker::trackLoading,
+            this, &CachingReader::trackLoading,Qt::AutoConnection);
+    connect(&m_worker, &CachingReaderWorker::trackLoaded,
+            this, &CachingReader::trackLoaded,Qt::AutoConnection);
+    connect(&m_worker, &CachingReaderWorker::trackLoadFailed,
+            this, &CachingReader::trackLoadFailed,Qt::AutoConnection);
 
     m_worker.start(QThread::HighPriority);
 }
@@ -72,7 +65,6 @@ CachingReader::CachingReader(QString group,
 CachingReader::~CachingReader()
 {
     m_worker.quitWait();
-    qDeleteAll(m_chunks);
 }
 
 void CachingReader::freeChunk(CachingReaderChunkForOwner* pChunk)
@@ -87,35 +79,34 @@ void CachingReader::freeChunk(CachingReaderChunkForOwner* pChunk)
 
     pChunk->removeFromList(&m_mruCachingReaderChunk, &m_lruCachingReaderChunk);
     pChunk->free();
-    m_freeChunks.push_back(pChunk);
+    m_freeChunks.push_front(pChunk);
 }
 
 void CachingReader::freeAllChunks()
 {
-    for (CachingReaderChunkForOwner* pChunk: m_chunks) {
+    for (auto & pChunk: m_chunks) {
         // We will receive CHUNK_READ_INVALID for all pending chunk reads
         // which should free the chunks individually.
         if (pChunk->getState() == CachingReaderChunkForOwner::READ_PENDING) {
             continue;
         }
-
         if (pChunk->getState() != CachingReaderChunkForOwner::FREE) {
             pChunk->removeFromList(&m_mruCachingReaderChunk, &m_lruCachingReaderChunk);
             pChunk->free();
-            m_freeChunks.push_back(pChunk);
+            m_freeChunks.push_front(pChunk.get());
         }
     }
-
     m_allocatedCachingReaderChunks.clear();
     m_mruCachingReaderChunk = nullptr;
 }
 
 CachingReaderChunkForOwner* CachingReader::allocateChunk(SINT chunkIndex)
 {
-    if (m_freeChunks.isEmpty()) {
+    if (m_freeChunks.empty()) {
         return nullptr;
     }
-    CachingReaderChunkForOwner* pChunk = m_freeChunks.takeFirst();
+    auto pChunk = m_freeChunks.front();
+    m_freeChunks.pop_front();
     pChunk->init(chunkIndex);
     //qDebug() << "Allocating chunk" << pChunk << pChunk->getIndex();
     m_allocatedCachingReaderChunks.insert(chunkIndex, pChunk);

@@ -77,97 +77,87 @@ QString computeSettingsPath(const QString& configFilename) {
 
 }  // namespace
 
-ConfigKey::ConfigKey() {
-}
-
-ConfigKey::ConfigKey(const ConfigKey& key)
-    : group(key.group),
-      item(key.item) {
-}
-
+ConfigKey::ConfigKey() = default;
+ConfigKey::ConfigKey(const ConfigKey& key) = default;
+ConfigKey::ConfigKey(std::tuple<QString,QString> lst)
+    : m_data{std::get<0>(lst),std::get<1>(lst)}
+{}
 ConfigKey::ConfigKey(const QString& g, const QString& i)
-    : group(g),
-      item(i) {
-}
+    : m_data{g,i}
+{ }
 
 // static
 ConfigKey ConfigKey::parseCommaSeparated(const QString& key) {
-    int comma = key.indexOf(",");
-    ConfigKey configKey(key.left(comma), key.mid(comma + 1));
-    return configKey;
+    auto comma = key.indexOf(",");
+    return ConfigKey (key.left(comma), key.mid(comma + 1));
 }
 
-ConfigValue::ConfigValue() {
-}
+ConfigValue::ConfigValue() { }
 
 ConfigValue::ConfigValue(const QString& stValue)
-    : value(stValue) {
-}
+    : value(stValue)
+{ }
 
 ConfigValue::ConfigValue(int iValue)
-    : value(QString::number(iValue)) {
-}
+    : value(QString::number(iValue))
+{ }
 
-void ConfigValue::valCopy(const ConfigValue& configValue) {
+void ConfigValue::valCopy(const ConfigValue& configValue)
+{
     value = configValue.value;
 }
 
-
-ConfigValueKbd::ConfigValueKbd() {
-}
+ConfigValueKbd::ConfigValueKbd()
+{}
 
 ConfigValueKbd::ConfigValueKbd(const QString& value)
-        : ConfigValue(value) {
+        : ConfigValue(value)
+{
     m_qKey = QKeySequence(value);
 }
-
-ConfigValueKbd::ConfigValueKbd(const QKeySequence& key) {
+ConfigValueKbd::ConfigValueKbd(const QKeySequence& key)
+{
     m_qKey = key;
     QTextStream(&value) << m_qKey.toString();
     // qDebug() << "value" << value;
 }
-
-void ConfigValueKbd::valCopy(const ConfigValueKbd& v) {
+void ConfigValueKbd::valCopy(const ConfigValueKbd& v)
+{
     m_qKey = v.m_qKey;
     QTextStream(&value) << m_qKey.toString();
 }
-
-bool operator==(const ConfigValue& s1, const ConfigValue& s2) {
+bool operator==(const ConfigValue& s1, const ConfigValue& s2)
+{
     return (s1.value.toUpper() == s2.value.toUpper());
 }
-
-bool operator==(const ConfigValueKbd& s1, const ConfigValueKbd& s2) {
+bool operator==(const ConfigValueKbd& s1, const ConfigValueKbd& s2)
+{
     //qDebug() << s1.m_qKey << "==" << s2.m_qKey;
     return (s1.m_qKey == s2.m_qKey);
 }
-
 template <class ValueType> ConfigObject<ValueType>::ConfigObject(const QString& file)
         : m_resourcePath(computeResourcePath()),
-          m_settingsPath(computeSettingsPath(file)) {
+          m_settingsPath(computeSettingsPath(file))
+{
     reopen(file);
 }
-
 template <class ValueType> ConfigObject<ValueType>::~ConfigObject() {
 }
-
 template <class ValueType>
 void ConfigObject<ValueType>::set(const ConfigKey& k, const ValueType& v) {
     QWriteLocker lock(&m_valuesLock);
     m_values.insert(k, v);
 }
-
 template <class ValueType>
 ValueType ConfigObject<ValueType>::get(const ConfigKey& k) const {
     QReadLocker lock(&m_valuesLock);
     return m_values.value(k);
 }
-
 template <class ValueType>
 bool ConfigObject<ValueType>::exists(const ConfigKey& k) const {
     QReadLocker lock(&m_valuesLock);
     return m_values.contains(k);
 }
-
 template <class ValueType>
 QString ConfigObject<ValueType>::getValueString(const ConfigKey& k) const {
     return get(k).value;
@@ -244,12 +234,11 @@ template <class ValueType> void ConfigObject<ValueType>::save() {
         QString grp = "";
 
         for (auto i = m_values.constBegin(); i != m_values.constEnd(); ++i) {
-            //qDebug() << "group:" << it.key().group << "item" << it.key().item << "val" << it.value()->value;
-            if (i.key().group.trimmed() != grp) {
-                grp = i.key().group.trimmed();
+            if (i.key().group().trimmed() != grp.trimmed()) {
+                grp = i.key().group().trimmed();
                 stream << "\n" << grp << "\n";
             }
-            stream << i.key().item << " " << i.value().value.trimmed() << "\n";
+            stream << i.key().item().trimmed() << " " << i.value().value.trimmed() << "\n";
         }
         file.close();
         if (file.error()!=QFile::NoError) { //could be better... should actually say what the error was..

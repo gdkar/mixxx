@@ -27,7 +27,7 @@ DlgDeveloperTools::DlgDeveloperTools(QWidget* pParent,
             auto aliasKey = controlAliases[pControl->getKey()];
             if (!aliasKey.isNull()) {
                 m_controlModel.addControl(aliasKey, pControl->name(),
-                                          "Alias for " + pControl->getKey().group + pControl->getKey().item);
+                                          "Alias for " + pControl->getKey().group() + pControl->getKey().item());
             }
         }
     }
@@ -136,8 +136,8 @@ void DlgDeveloperTools::slotControlDump()
             controlsList.constBegin(); it != controlsList.constEnd(); ++it) {
         auto pControl = *it;
         if (pControl) {
-            auto line = pControl->getKey().group + "," +
-                           pControl->getKey().item + "," +
+            auto line = pControl->getKey().group() + "," +
+                           pControl->getKey().item() + "," +
                            QString::number(pControl->get()) + "\n";
             dumpFile.write(line.toLocal8Bit());
         }

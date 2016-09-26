@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QSharedPointer>
 #include <QString>
+#include <QtQml>
 #include <limits>
 #include <algorithm>
 #include <utility>
@@ -106,5 +107,5 @@ class ControlProxy : public QObject {
     // Pointer to connected control.
     mutable QSharedPointer<ControlDoublePrivate> m_pControl;
 };
-
+QML_DECLARE_TYPE(ControlProxy)
 #endif // CONTROLPROXY_H

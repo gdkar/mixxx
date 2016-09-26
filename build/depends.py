@@ -1051,7 +1051,6 @@ class MixxxCore(Feature):
                    "util/dbid.cpp",
                    "util/sample.cpp",
                    "util/samplebuffer.cpp",
-                   "util/singularsamplebuffer.cpp",
                    "util/rotary.cpp",
                    "util/logging.cpp",
                    "util/cmdlineargs.cpp",

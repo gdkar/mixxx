@@ -64,6 +64,7 @@ int main(int argc, char * argv[]) {
         format.setAlphaBufferSize(8);
         format.setStencilBufferSize(8);
         format.setDepthBufferSize(24);
+        format.setVersion(4,3);
         QSurfaceFormat::setDefaultFormat(format);
     }
     // Construct a list of strings based on the command line arguments
@@ -81,10 +82,6 @@ int main(int argc, char * argv[]) {
     // Support utf-8 for all translation strings. Not supported in Qt 5.
     // TODO(rryan): Is this needed when we switch to qt5? Some sources claim it
     // isn't.
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-    QTextCodec::setCodecForTr(QTextCodec::codecForName("UTF-8"));
-#endif
-
     // Enumerate and load SoundSource plugins
     SoundSourceProxy::loadPlugins();
 
@@ -104,11 +101,9 @@ int main(int argc, char * argv[]) {
         QApplication::setLibraryPaths(QStringList(dir.absolutePath()));
     }
 #endif
-
-    MixxxMainWindow* mixxx = new MixxxMainWindow(&a, args);
-
+    auto mixxx = new MixxxMainWindow(&a, args);
     // When the last window is closed, terminate the Qt event loop.
-    QObject::connect(&a, SIGNAL(lastWindowClosed()), &a, SLOT(quit()));
+    QObject::connect(&a, &MixxxApplication::lastWindowClosed, &a, &MixxxApplication::quit);
     int result = -1;
     // If startup produced a fatal error, then don't even start the Qt event
     // loop.
@@ -117,7 +112,6 @@ int main(int argc, char * argv[]) {
     } else {
         qDebug() << "Displaying mixxx";
         mixxx->show();
-
         qDebug() << "Running Mixxx";
         result = a.exec();
     }

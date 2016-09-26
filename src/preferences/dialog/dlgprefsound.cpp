@@ -95,9 +95,9 @@ DlgPrefSound::DlgPrefSound(QWidget* pParent, SoundManager* pSoundManager,
     connect(queryButton, SIGNAL(clicked()),
             this, SLOT(queryClicked()));
 
-    connect(m_pSoundManager, SIGNAL(outputRegistered(AudioOutput, AudioSource*)),
+    connect(m_pSoundManager, SIGNAL(outputRegistered(AudioOutput, AudioOrigin*)),
             this, SLOT(addPath(AudioOutput)));
-    connect(m_pSoundManager, SIGNAL(outputRegistered(AudioOutput, AudioSource*)),
+    connect(m_pSoundManager, SIGNAL(outputRegistered(AudioOutput, AudioOrigin*)),
             this, SLOT(loadSettings()));
 
     connect(m_pSoundManager, SIGNAL(inputRegistered(AudioInput, AudioDestination*)),
@@ -208,13 +208,10 @@ void DlgPrefSound::slotApply() {
             deviceName = tr("sound device \"%1\"").arg(device->getDisplayName());
             detailedError = device->getError();
         }
-        switch (err) {
-        case SOUNDDEVICE_ERROR_DUPLICATE_OUTPUT_CHANNEL:
+        if(err == static_cast<int>(SoundDeviceError::DUPLICATE_OUTPUT_CHANNEL)) {
             error = tr("Two outputs cannot share channels on %1").arg(deviceName);
-            break;
-        default:
+        }else{
             error = tr("Error opening %1\n%2").arg(deviceName, detailedError);
-            break;
         }
         QMessageBox::warning(NULL, tr("Configuration error"), error);
     }
