@@ -913,11 +913,8 @@ bool CueControl::isTrackAtCue()
 
 ConfigKey HotcueControl::keyForControl(int hotcue, const char* name)
 {
-    ConfigKey key;
-    key.group = m_group;
     // Add one to hotcue so that we dont have a hotcue_0
-    key.item = QLatin1String("hotcue_") % QString::number(hotcue+1) % "_" % name;
-    return key;
+    return { m_group,QLatin1String("hotcue_") % QString::number(hotcue+1) % "_" % name};
 }
 
 HotcueControl::HotcueControl(QObject *pParent,QString group, int i)

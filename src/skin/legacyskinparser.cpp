@@ -104,7 +104,7 @@ ControlObject* controlFromConfigKey(const ConfigKey& key, bool bPersist,
     // TODO(rryan): Make this configurable by the skin.
     if (CmdlineArgs::Instance().getDeveloper()) {
         qWarning() << "Requested control does not exist:"
-                   << QString("%1,%2").arg(key.group, key.item)
+                   << QString("%1,%2").arg(key.group(), key.item())
                    << "Creating it.";
     }
     // Since the usual behavior here is to create a skin-defined push

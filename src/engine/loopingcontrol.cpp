@@ -21,10 +21,7 @@ double LoopingControl::s_dBeatSizes[] = { 0.03125, 0.0625, 0.125, 0.25, 0.5,
 // Used to generate the beatloop_%SIZE, beatjump_%SIZE, and loop_move_%SIZE CO
 // ConfigKeys.
 ConfigKey keyForControl(QString group, QString ctrlName, double num) {
-    ConfigKey key;
-    key.group = group;
-    key.item = ctrlName.arg(num);
-    return key;
+    return {group, ctrlName.arg(num)};
 }
 
 // static

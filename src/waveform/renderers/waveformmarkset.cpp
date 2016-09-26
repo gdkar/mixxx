@@ -38,7 +38,7 @@ void WaveformMarkSet::setup(const QString& group, const QDomNode& node,
             auto uniqueMark = true;
             if (pMark->m_pPointCos) {
                 // guarantee uniqueness even if there is a misdesigned skin
-                auto item = pMark->m_pPointCos->getKey().item;
+                auto item = pMark->m_pPointCos->getKey().item();
                 if (!controlItemSet.insert(item).second) {
                     qWarning() << "WaveformRenderMark::setup - redefinition of" << item;
                     uniqueMark = false;
