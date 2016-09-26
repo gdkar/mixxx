@@ -1042,6 +1042,7 @@ class MixxxCore(Feature):
                    "util/file.cpp",
                    "util/mac.cpp",
                    "util/task.cpp",
+                   "util/rdtsc.cpp",
                    "util/experiment.cpp",
                    "util/xml.cpp",
                    "util/tapfilter.cpp",
@@ -1056,6 +1057,7 @@ class MixxxCore(Feature):
                    "util/cmdlineargs.cpp",
                    "util/audiosignal.cpp",
                    "util/intrusive_fifo.cpp",
+                   "util/dnd.cpp",
                    '#res/mixxx.qrc'
                    ]
 
