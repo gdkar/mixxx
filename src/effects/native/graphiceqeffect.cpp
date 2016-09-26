@@ -19,14 +19,12 @@ EffectManifest GraphicEQEffect::getManifest() {
     manifest.setName(QObject::tr("Graphic EQ"));
     manifest.setAuthor("The Mixxx Team");
     manifest.setVersion("1.0");
-    manifest.setDescription(QObject::tr(
-        "An 8 band Graphic EQ based on Biquad Filters"));
-    manifest.setEffectRampsFromDry(true);
+    manifest.setDescription(QObject::tr("An 8 band Graphic EQ based on Biquad Filters"));
     manifest.setIsMasterEQ(true);
 
     // Display rounded center frequencies for each filter
     float centerFrequencies[] = {45, 100, 220, 500, 1100, 2500,5500, 12000};
-    for(auto i =  0; i < sizeof(centerFrequencies)/sizeof(centerFrequencies[0]);i++) {
+    for(auto i =  0u; i < sizeof(centerFrequencies)/sizeof(centerFrequencies[0]);i++) {
         auto paramName = QString{};
         if (centerFrequencies[i ] < 1000) {
             paramName = QString("%1 Hz").arg(centerFrequencies[i ]);
@@ -73,16 +71,16 @@ GraphicEQEffectGroupState::GraphicEQEffectGroupState()
 GraphicEQEffectGroupState::~GraphicEQEffectGroupState() = default;
 void GraphicEQEffectGroupState::setFilters(int sampleRate, std::vector<double> &gain)
 {
-    if(m_oldSampleRate != sampleRate || m_oldGain[0] != gain[0])
+    if((int)m_oldSampleRate != sampleRate || m_oldGain[0] != gain[0])
         m_bands[0]->setCoefs(sampleRate, 5, QString{"LsBq/%1/%2"}.arg(Q).arg(gain[0]),m_centerFrequencies[0]);
     m_oldGain[0] = gain[0];
     auto i = 1u;
     for (; i < m_size - 1; i++) {
-        if(sampleRate != m_oldSampleRate || gain[i] != m_oldGain[i])
+        if(sampleRate != (int)m_oldSampleRate || gain[i] != m_oldGain[i])
             m_bands[i]->setCoefs(sampleRate, 5, QString{"PkBq/%1/%2"}.arg(Q).arg(gain[i]),m_centerFrequencies[i]);
         m_oldGain [i] = gain[i];
     }
-    if(m_oldSampleRate != sampleRate || m_oldGain[i] != gain[i])
+    if((int)m_oldSampleRate != sampleRate || m_oldGain[i] != gain[i])
         m_bands[i]->setCoefs(sampleRate, 5, QString{"HsBq/%1/%2"}.arg(Q).arg(gain[i]),m_centerFrequencies[i]);
     m_oldGain[i] = gain[i];
     m_oldSampleRate = sampleRate;
@@ -92,7 +90,7 @@ GraphicEQEffect::GraphicEQEffect(EngineEffect* pEffect,const EffectManifest& man
 {
     Q_UNUSED(manifest);
     m_pPotGain.clear();
-    for (auto i = 0; i < 8; i++)
+    for (auto i = 0u; i < 8u; i++)
         m_pPotGain.push_back(pEffect->getParameterById(QString("band%1").arg(i)));
 }
 GraphicEQEffect::~GraphicEQEffect() = default;
@@ -130,7 +128,7 @@ void GraphicEQEffect::processChannel(const ChannelHandle& handle,
         SampleUtil::copy(pTo, pFrom, numSamples);
 
     if (enableState == EffectProcessor::DISABLING) {
-        for (auto i = 0; i < 8; i++) {
+        for (auto i = 0u; i < 8u; i++) {
             pState->m_bands[i]->pauseFilter();
             pState->m_oldGain[i] = 0.;
         }
