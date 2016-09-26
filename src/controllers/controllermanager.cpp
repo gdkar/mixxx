@@ -61,14 +61,16 @@ ControllerManager::ControllerManager(UserSettingsPointer pConfig)
           m_pollTimer(this),
           m_skipPoll(false)
 {
+    qRegisterMetaType<ConfigKey>("ConfigKey");
+    qmlRegisterUncreatableType<MidiController>("org.mixxx.qml",0,1,"MidiController",
+        "MidiController is abstract, use RtMidiController or PortMidiController");
+    qmlRegisterUncreatableType<KeyboardEventFilter>("org.mixxx.qml", 0, 1, "KbdController",
+        "There is only one static keyboard: just use that one. <_<");
     qmlRegisterUncreatableType<ConfigKey>("org.mixxx.qml", 0, 1, "ConfigKey","you can't make one of those....");
+
     qmlRegisterType<KeyProxy>("org.mixxx.qml", 0, 1, "KeyProxy");
     qmlRegisterType<BindProxy>("org.mixxx.qml", 0, 1, "BindProxy");
     qmlRegisterType<Controller>("org.mixxx.qml", 0, 1, "Controller");
-    qmlRegisterUncreatableType<KeyboardEventFilter>("org.mixxx.qml", 0, 1, "KbdController",
-        "There is only one static keyboard: just use that one. <_<");
-    qmlRegisterUncreatableType<MidiController>("org.mixxx.qml",0,1,"MidiController",
-        "MidiController is abstract, use RtMidiController or PortMidiController");
     qmlRegisterType<RtMidiController>("org.mixxx.qml", 0, 1, "RtMidiController");
     qmlRegisterType<PortMidiController>("org.mixxx.qml", 0, 1, "PortMidiController");
 #ifdef __HID__
@@ -77,6 +79,7 @@ ControllerManager::ControllerManager(UserSettingsPointer pConfig)
 #ifdef __BULK__
     qmlRegisterType<BulkController>("org.mixxx.qml", 0, 1, "BulkController");
 #endif
+    qmlRegisterType<ControlObject>("org.mixxx.qml", 0, 1, "ControlObject");
     qmlRegisterType<ControlProxy>("org.mixxx.qml", 0, 1, "ControlProxy");
     qmlRegisterType<ControlObjectScript>("org.mixxx.qml", 0, 1, "ControlObjectScript");
 
@@ -134,6 +137,8 @@ void ControllerManager::onInitialize()
     // Instantiate all enumerators. Enumerators can take a long time to
     // construct since they interact with host MIDI APIs.
     m_pQmlEngine = new QQmlEngine(this);
+    m_pQmlEngine->setOutputWarningsToStandardError(true);
+
     for(auto && path : qmlSearchPaths) {
         m_pQmlEngine->addImportPath(path);
     }
@@ -169,10 +174,10 @@ void ControllerManager::onFileChanged(QString path)
     m_mainInstance->deleteLater();
     m_mainInstance = nullptr;
     m_pQmlEngine->clearComponentCache();
+    m_pQmlEngine->collectGarbage();
     auto keyboard = KeyboardEventFilter::instance();
     m_pQmlEngine->rootContext()->setContextProperty("Keyboard", keyboard);
 
-//    m_scriptWatcher.addPath(mainPath);
     {
         QQmlComponent component(m_pQmlEngine);
         component.loadUrl(QUrl::fromLocalFile(mainPath));
@@ -182,20 +187,17 @@ void ControllerManager::onFileChanged(QString path)
         }
         m_mainInstance = component.create( );
     }
-//    m_scriptWatcher.addPath(mainPath);
-
 }
 void ControllerManager::onShutdown()
 {
     stopPolling();
-            // Stop the processor after the enumerators since the engines live in it
-//    m_pThread->quit();
+    m_pQmlEngine->clearComponentCache();
+    m_pQmlEngine->collectGarbage();
+    m_pQmlEngine->deleteLater();
 }
-
 void ControllerManager::updateControllerList()
 {
     QMutexLocker locker(&m_mutex);
-
     QList<Controller*> newDeviceList;
     if (newDeviceList != m_controllers) {
         m_controllers = newDeviceList;

@@ -4,7 +4,7 @@ QmlControllerEnumerator::QmlControllerEnumerator(QObject *p)
 : QObject(p)
 {
     m_rescanHoldoff.setTimerType (Qt::VeryCoarseTimer);
-    m_rescanHoldoff.setInterval  (60 * 1000);
+    m_rescanHoldoff.setInterval  (15 * 1000);
     m_rescanHoldoff.setSingleShot(true);
 
     connect(&m_directoryWatcher, &QFileSystemWatcher::directoryChanged,this,
@@ -51,16 +51,24 @@ void QmlControllerEnumerator::refreshFileLists()
     m_controllerFileNames.clear();
 
     for(auto && dirPath : m_searchPaths) {
-        QDirIterator it(dirPath);
+        QDirIterator it(dirPath, QDirIterator::Subdirectories);
         while(it.hasNext()) {
             it.next();
-            auto path = it.filePath();
-            if (path.endsWith(".qml",Qt::CaseInsensitive)) {
+            auto info  = it.fileInfo();
+            auto path = info.canonicalFilePath();
+            if(info.isDir()) {
+                qDebug() << "adding recursive directory: " << path;
+                m_directoryWatcher.addPath(path);
+            }else if (info.suffix().endsWith(".qml",Qt::CaseInsensitive)) {
+                qDebug() << "adding controller file : " << path;
                 m_controllerFileNames.insert(path);
                 m_fileWatcher.addPath(path);
-            } else if(path.endsWith(".js",Qt::CaseInsensitive)) {
+            } else if(info.suffix().endsWith(".js",Qt::CaseInsensitive)) {
+                qDebug() << "adding script file : " << path;
                 m_scriptFileNames.insert(path);
                 m_fileWatcher.addPath(path);
+            }else{
+                continue;
             }
         }
     }
@@ -73,11 +81,22 @@ void QmlControllerEnumerator::refreshFileLists()
 void QmlControllerEnumerator::setSearchPaths(QStringList s)
 {
     m_searchPaths = s;
-    m_directoryWatcher.removePaths(m_directoryWatcher.directories());
-    m_directoryWatcher.removePaths(m_directoryWatcher.files());
-    m_fileWatcher.removePaths(m_fileWatcher.directories());
-    m_fileWatcher.removePaths(m_fileWatcher.files());
-
+    auto paths = m_directoryWatcher.directories();
+    if(!paths.isEmpty()) {
+        m_directoryWatcher.removePaths(paths);
+    }
+    paths = m_directoryWatcher.files();
+    if(!paths.isEmpty()) {
+        m_directoryWatcher.removePaths(paths);
+    }
+    paths = m_fileWatcher.directories();
+    if(!paths.isEmpty()) {
+        m_fileWatcher.removePaths(paths);
+    }
+    paths = m_fileWatcher.files();
+    if(!paths.isEmpty()) {
+        m_fileWatcher.removePaths(paths);
+    }
     m_directoryWatcher.addPaths(s);
 }
 QStringList QmlControllerEnumerator::controllerFileNames() const
