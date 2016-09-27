@@ -51,16 +51,12 @@ class CachingReaderWorker : public EngineWorker {
             FIFO<CachingReaderChunk*>* pChunkReadRequestFIFO,
             FIFO<ReaderStatusUpdate>* pReaderStatusFIFO);
     virtual ~CachingReaderWorker();
-
     // Request to load a new track. wake() must be called afterwards.
     virtual void newTrack(TrackPointer pTrack);
-
     // Run upkeep operations like loading tracks and reading from file. Run by a
     // thread pool via the EngineWorkerScheduler.
     virtual void run();
-
     void quitWait();
-
   signals:
     // Emitted once a new track is loaded and ready to be read from.
     void trackLoading();

@@ -10,7 +10,7 @@
 class Event {
   public:
     Event()
-            : m_type(Stat::UNSPECIFIED) {
+    : m_type(Stat::UNSPECIFIED) {
     }
 
     typedef Stat::StatType EventType;

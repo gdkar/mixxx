@@ -3,12 +3,15 @@
 
 #include <QString>
 #include <QKeySequence>
+#include <QStringList>
 #include <QDomNode>
 #include <QMap>
 #include <QHash>
 #include <QMetaType>
 #include <QReadWriteLock>
 #include <initializer_list>
+#include <algorithm>
+#include <utility>
 #include "util/debug.h"
 
 // Class for the key for a specific configuration element. A key consists of a
@@ -17,6 +20,7 @@ class ConfigKey {
     Q_GADGET
     Q_PROPERTY(QString group READ group WRITE setGroup);
     Q_PROPERTY(QString item READ item WRITE setItem);
+    Q_PROPERTY(QStringList sections READ sections WRITE setSections);
   public:
     Q_INVOKABLE ConfigKey(); // is required for qMetaTypeConstructHelper()
     Q_INVOKABLE ConfigKey(const ConfigKey& key);
@@ -26,11 +30,10 @@ class ConfigKey {
     virtual ~ConfigKey() = default;
 
     Q_INVOKABLE bool isEmpty() const {
-        return group().isEmpty() && item().isEmpty();
+        return std::all_of(m_data.cbegin(),m_data.cend(),[](auto && str){return str.isEmpty();});
     }
-
     Q_INVOKABLE bool isNull() const {
-        return group().isNull() && item().isNull();
+        return std::all_of(m_data.cbegin(),m_data.cend(),[](auto && str){return str.isNull();});
     }
     Q_INVOKABLE const QString &group() const { return m_data[0]; }
     Q_INVOKABLE QString &group() { return m_data[0]; }
@@ -38,6 +41,13 @@ class ConfigKey {
     Q_INVOKABLE const QString &item() const { return m_data[1]; }
     Q_INVOKABLE QString &item() { return m_data[1]; }
     Q_INVOKABLE void setItem(const QString &item) { m_data[1] = item; }
+    Q_INVOKABLE QStringList &sections() { return m_data;}
+    Q_INVOKABLE const QStringList &sections() const { return m_data;}
+    Q_INVOKABLE void setSections(const QStringList &lst){
+        m_data = lst;
+        while(m_data.size() < 2)
+            m_data.append(QString{});
+    }
     operator std::tuple<QString&,QString&> ()
     {
         return {group(),item()};
@@ -85,7 +95,7 @@ class ConfigKey {
     {
         return qHash(key.group()) ^ qHash(key.item());
     }
-    std::array<QString,2> m_data;
+    QStringList m_data{QString{},QString{}};
 //    QString m_group, m_item;
 };
 

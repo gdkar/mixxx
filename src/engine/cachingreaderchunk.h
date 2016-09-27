@@ -2,6 +2,7 @@
 #define ENGINE_CACHINGREADERCHUNK_H
 
 #include "sources/audiosource.h"
+#include "util/intrusive_fifo.hpp"
 #include <utility>
 #include <memory>
 // A Chunk is a memory-resident section of audio that has been cached.
@@ -15,52 +16,40 @@
 //
 // This is the common (abstract) base class for both the cache (as the owner)
 // and the worker.
-class CachingReaderChunk {
+class CachingReaderChunk : public intrusive_node {
 public:
-    static const SINT kInvalidIndex;
-    static const SINT kChannels;
-    static const SINT kFrames;
-    static const SINT kSamples;
-
-    // Returns the corresponding chunk index for a frame index
-    static SINT indexForFrame(SINT frameIndex) {
-        DEBUG_ASSERT(mixxx::AudioSource::getMinFrameIndex() <= frameIndex);
-        const SINT chunkIndex = frameIndex / kFrames;
-        return chunkIndex;
-    }
-
-    // Returns the corresponding chunk index for a frame index
-    static SINT frameForIndex(SINT chunkIndex) {
-        DEBUG_ASSERT(0 <= chunkIndex);
-        return chunkIndex * kFrames;
-    }
-
+    static constexpr SINT kInvalidIndex = -1;
+    static constexpr SINT kChannels     =  mixxx::AudioSignal::kChannelCountStereo;
+    static constexpr SINT kFrames       = 8192;
+    static constexpr SINT kSamples = kFrames * kChannels;
     // Converts frames to samples
-    static SINT frames2samples(SINT frames) {
+    static constexpr SINT frames2samples(SINT frames)
+    {
         return frames * kChannels;
     }
     // Converts samples to frames
-    static SINT samples2frames(SINT samples) {
-        DEBUG_ASSERT(0 == (samples % kChannels));
+    static constexpr SINT samples2frames(SINT samples)
+    {
         return samples / kChannels;
+    }
+    // Returns the corresponding chunk index for a frame index
+    static constexpr SINT indexForFrame(SINT frameIndex)
+    {
+        return frameIndex / kFrames;
+    }
+    // Returns the corresponding chunk index for a frame index
+    static constexpr SINT frameForIndex(SINT chunkIndex)
+    {
+        return chunkIndex * kFrames;
     }
 
     // Disable copy and move constructors
     CachingReaderChunk(const CachingReaderChunk&) = delete;
     CachingReaderChunk(CachingReaderChunk&&) = delete;
 
-    SINT getIndex() const {
-        return m_index;
-    }
-
-    bool isValid() const {
-        return 0 <= getIndex();
-    }
-
-    SINT getFrameCount() const {
-        return m_frameCount;
-    }
-
+    SINT getIndex() const;
+    bool isValid() const;
+    SINT getFrameCount() const;
     // Check if the audio source has sample data available
     // for this chunk.
     bool isReadable(
@@ -88,72 +77,45 @@ public:
             SINT sampleOffset,
             SINT sampleCount) const;
 
-protected:
-    explicit CachingReaderChunk();
-    virtual ~CachingReaderChunk();
-
-    void init(SINT index);
-
-private:
-    std::atomic<SINT> m_index;
-    std::atomic<SINT> m_frameCount;
-    std::unique_ptr<CSAMPLE[]> m_sampleBuffer{};
-
-    // The worker thread will fill the sample buffer and
-    // set the frame count.
-};
-
-// This derived class is only accessible for the cache as the owner,
-// but not the worker thread. The state READ_PENDING indicates that
-// the worker thread is in control.
-class CachingReaderChunkForOwner: public CachingReaderChunk {
-public:
-    explicit CachingReaderChunkForOwner();
-    virtual ~CachingReaderChunkForOwner();
-
-    void init(SINT index);
-    void free();
-
     enum State {
         FREE,
         READY,
         READ_PENDING
     };
 
-    State getState() const {
-        return m_state;
-    }
-
+    State getState() const;
     // The state is controlled by the cache as the owner of each chunk!
-    void giveToWorker() {
-        DEBUG_ASSERT(READY == m_state);
-        m_state = READ_PENDING;
-    }
-    void takeFromWorker() {
-        DEBUG_ASSERT(READ_PENDING == m_state);
-        m_state = READY;
-    }
-
+    void giveToWorker();
+    void takeFromWorker();
     // Inserts a chunk into the double-linked list before the
     // given chunk. If the list is currently empty simply pass
     // pBefore = nullptr. Please note that if pBefore points to
     // the head of the current list this chunk becomes the new
     // head of the list.
     void insertIntoListBefore(
-            CachingReaderChunkForOwner* pBefore);
+            CachingReaderChunk* pBefore);
     // Removes a chunk from the double-linked list and optionally
     // adjusts head/tail pointers. Pass ppHead/ppTail = nullptr if
     // you prefer to adjust those pointers manually.
     void removeFromList(
-            CachingReaderChunkForOwner** ppHead,
-            CachingReaderChunkForOwner** ppTail);
+            CachingReaderChunk** ppHead,
+            CachingReaderChunk** ppTail);
 
-private:
+    void init(SINT index);
+    void free();
+    explicit CachingReaderChunk();
+    virtual ~CachingReaderChunk();
+protected:
+    std::atomic<SINT> m_index{};
+    std::atomic<SINT> m_frameCount{};
+    std::unique_ptr<CSAMPLE[]> m_sampleBuffer{};
     State m_state;
 
-    CachingReaderChunkForOwner* m_pPrev; // previous item in double-linked list
-    CachingReaderChunkForOwner* m_pNext; // next item in double-linked list
-};
+    CachingReaderChunk* m_pPrev{}; // previous item in double-linked list
+    CachingReaderChunk* m_pNext{}; // next item in double-linked list
 
+    // The worker thread will fill the sample buffer and
+    // set the frame count.
+};
 
 #endif // ENGINE_CACHINGREADERCHUNK_H

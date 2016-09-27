@@ -23,7 +23,7 @@ Waveform::Waveform(const QByteArray data)
           m_dataSize(0),
           m_visualSampleRate(0),
           m_audioVisualRatio(0),
-          m_textureStride(computeTextureStride(0)),
+          m_textureStride(1024),
           m_completion(-1) {
     readByteArray(data);
 }
@@ -198,8 +198,9 @@ void Waveform::readByteArray(const QByteArray& data) {
 
 void Waveform::resize(int size) {
     m_dataSize = size;
-    m_textureStride = computeTextureStride(size);
-    m_data.resize(m_textureStride * m_textureStride);
+    m_textureStride = 1024;//computeTextureStride(size);
+    auto roundedUp = (m_dataSize + 1024)/1024;
+    m_data.resize(roundedUp * m_textureStride);
     m_bDirty = true;
 }
 

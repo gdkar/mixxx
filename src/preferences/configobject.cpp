@@ -69,8 +69,8 @@ QString computeResourcePath()
     qDebug() << "Loading resources from " << qResourcePath;
     return qResourcePath;
 }
-
-QString computeSettingsPath(const QString& configFilename) {
+QString computeSettingsPath(const QString& configFilename)
+{
     QFileInfo configFileInfo(configFilename);
     return configFileInfo.absoluteDir().absolutePath();
 }
@@ -83,13 +83,14 @@ ConfigKey::ConfigKey(std::tuple<QString,QString> lst)
     : m_data{std::get<0>(lst),std::get<1>(lst)}
 {}
 ConfigKey::ConfigKey(const QString& g, const QString& i)
-    : m_data{g,i}
+    : m_data{g.trimmed(),i.trimmed()}
 { }
 
 // static
-ConfigKey ConfigKey::parseCommaSeparated(const QString& key) {
+ConfigKey ConfigKey::parseCommaSeparated(const QString& key)
+{
     auto comma = key.indexOf(",");
-    return ConfigKey (key.left(comma), key.mid(comma + 1));
+    return ConfigKey (key.left(comma).trimmed(), key.mid(comma + 1).trimmed());
 }
 
 ConfigValue::ConfigValue() { }
@@ -192,13 +193,13 @@ template <class ValueType> bool ConfigObject<ValueType>::parse() {
             if (line.length() != 0) {
                 if (line.startsWith("[") && line.endsWith("]")) {
                     group++;
-                    groupStr = line;
+                    groupStr = line.trimmed();
                     //qDebug() << "Group :" << groupStr;
                 } else if (group > 0) {
                     QString key;
                     QTextStream(&line) >> key;
-                    auto val = line.right(line.length() - key.length()); // finds the value string
-                    val = val.trimmed();
+                    key = key.trimmed();
+                    auto val = line.right(line.length() - key.length()).trimmed(); // finds the value string
                     //qDebug() << "control:" << key << "value:" << val;
                     ConfigKey k(groupStr, key);
                     ValueType m(val);
@@ -230,8 +231,7 @@ template <class ValueType> void ConfigObject<ValueType>::save() {
     } else {
         QTextStream stream(&file);
         stream.setCodec("UTF-8");
-
-        QString grp = "";
+        auto grp = QString{};
 
         for (auto i = m_values.constBegin(); i != m_values.constEnd(); ++i) {
             if (i.key().group().trimmed() != grp.trimmed()) {
@@ -270,7 +270,7 @@ QMultiHash<ValueType, ConfigKey> ConfigObject<ValueType>::transpose() const {
     QReadLocker lock(&m_valuesLock);
 
     QMultiHash<ValueType, ConfigKey> transposedHash;
-    for (auto it = m_values.begin(); it != m_values.end(); ++it) {
+    for (auto it = m_values.cbegin(); it != m_values.cend(); ++it) {
         transposedHash.insert(it.value(), it.key());
     }
     return transposedHash;
@@ -280,17 +280,20 @@ template class ConfigObject<ConfigValue>;
 template class ConfigObject<ConfigValueKbd>;
 
 template <> template <>
-void ConfigObject<ConfigValue>::setValue(const ConfigKey& key, const QString& value) {
+void ConfigObject<ConfigValue>::setValue(const ConfigKey& key, const QString& value)
+{
     set(key, ConfigValue(value));
 }
 
 template <> template <>
-void ConfigObject<ConfigValue>::setValue(const ConfigKey& key, const bool& value) {
+void ConfigObject<ConfigValue>::setValue(const ConfigKey& key, const bool& value)
+{
     set(key, value ? ConfigValue("1") : ConfigValue("0"));
 }
 
 template <> template <>
-void ConfigObject<ConfigValue>::setValue(const ConfigKey& key, const int& value) {
+void ConfigObject<ConfigValue>::setValue(const ConfigKey& key, const int& value)
+{
     set(key, ConfigValue(QString::number(value)));
 }
 

@@ -165,6 +165,8 @@ SINT SoundSourceFFmpeg::seekSampleFrame(SINT frameIndex)
       return frameIndex;
     }
     {
+        auto target_pts    = av_rescale_q ( frameIndex - 512, m_output_tb,m_stream_tb);
+        target_pts = std::max<int64_t>(target_pts, 0);
         auto hindex = m_pkt_array.size() - 1;
         auto lindex = decltype(hindex){0};
         auto lpts   = m_pkt_array.at(lindex)->pts - m_first_pts;
@@ -174,7 +176,7 @@ SINT SoundSourceFFmpeg::seekSampleFrame(SINT frameIndex)
         while ( hindex > lindex + 1) {
             auto pts_dist   = m_pkt_array.at(hindex)->pts - m_pkt_array.at(lindex)->pts;
             auto idx_dist   = hindex - lindex;
-            auto target_dist= frame_pts - ( lpts );
+            auto target_dist= target_pts - ( lpts );
             auto mindex = lindex + (( target_dist * idx_dist ) / pts_dist);
             if ( mindex >= hindex )
                 mindex = hindex - 1;
@@ -190,9 +192,9 @@ SINT SoundSourceFFmpeg::seekSampleFrame(SINT frameIndex)
             }
             auto mpts = m_pkt_array.at(mindex  )->pts - m_first_pts;
             auto npts = m_pkt_array.at(mindex+1)->pts - m_first_pts;
-            if ( mpts > frame_pts ) {
+            if ( mpts > target_pts ) {
                 hindex = mindex;
-            }else if ( npts <= frame_pts ) {
+            }else if ( npts <= target_pts ) {
                 lindex = mindex + 1;
                 lpts   = npts;
             } else {
@@ -205,18 +207,16 @@ SINT SoundSourceFFmpeg::seekSampleFrame(SINT frameIndex)
     }
     if ( m_pkt_index > 0 )
         m_pkt_index--;
-    if ( m_pkt_index > 0 )
-        m_pkt_index--;
 
-    auto delay = swr_get_delay ( m_swr, getSampleRate( ) );
-    swr_drop_output(m_swr, delay);
+//    auto delay = swr_get_delay ( m_swr, getSampleRate( ) );
+//    swr_drop_output(m_swr, delay);
     {
         ScopedTimer t("decode after seek.");
         m_codec_ctx.flush_buffers();
         decode_next_frame ();
+        first_sample = av_rescale_q ( m_frame->pts - m_first_pts, m_stream_tb, m_output_tb );
+        m_offset = frameIndex - first_sample;
     }
-    first_sample = av_rescale_q ( m_frame->pts - m_first_pts, m_stream_tb, m_output_tb );
-    m_offset = frameIndex - first_sample;
     {
         ScopedTimer t("clearing out preroll after seek.");
         while( m_offset >= m_frame->nb_samples ) {
@@ -232,7 +232,7 @@ SINT SoundSourceFFmpeg::seekSampleFrame(SINT frameIndex)
         Stat::UNSPECIFIED,
         Stat::COUNT|Stat::AVERAGE|Stat::MIN|Stat::MAX|Stat::SAMPLE_VARIANCE,
         m_offset);
-    return     frameIndex;
+    return frameIndex;
 }
 bool SoundSourceFFmpeg::decode_next_frame()
 {

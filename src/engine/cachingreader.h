@@ -79,8 +79,7 @@ class CachingReader : public QObject {
 
   public:
     // Construct a CachingReader with the given group.
-    CachingReader(QString group,
-                  UserSettingsPointer _config);
+    CachingReader(QString group, UserSettingsPointer _config);
     virtual ~CachingReader();
 
     virtual void process();
@@ -89,24 +88,20 @@ class CachingReader : public QObject {
     // buffer. Returns the total number of samples actually written to buffer
     // support reading stereo samples in reverse (backward) order
     virtual SINT read(SINT sample, bool reverse, SINT numSamples, CSAMPLE* buffer);
-
     // Issue a list of hints, but check whether any of the hints request a chunk
     // that is not in the cache. If any hints do request a chunk not in cache,
     // then wake the reader so that it can process them. Must only be called
     // from the engine callback.
     virtual void hintAndMaybeWake(const HintVector& hintList);
-
     // Request that the CachingReader load a new track. These requests are
     // processed in the work thread, so the reader must be woken up via wake()
     // for this to take effect.
     virtual void newTrack(TrackPointer pTrack);
-
-    void setScheduler(EngineWorkerScheduler* pScheduler) {
+    void setScheduler(EngineWorkerScheduler* pScheduler)
+    {
         m_worker.setScheduler(pScheduler);
     }
-
     const static int maximumCachingReaderChunksInMemory;
-
   signals:
     // Emitted once a new track is loaded and ready to be read from.
     void trackLoading();
@@ -124,35 +119,35 @@ class CachingReader : public QObject {
     // Looks for the provided chunk number in the index of in-memory chunks and
     // returns it if it is present. If not, returns nullptr. If it is present then
     // freshenChunk is called on the chunk to make it the MRU chunk.
-    CachingReaderChunkForOwner* lookupChunkAndFreshen(SINT chunkIndex);
+    CachingReaderChunk* lookupChunkAndFreshen(SINT chunkIndex);
     // Looks for the provided chunk number in the index of in-memory chunks and
     // returns it if it is present. If not, returns nullptr.
-    CachingReaderChunkForOwner* lookupChunk(SINT chunkIndex);
+    CachingReaderChunk* lookupChunk(SINT chunkIndex);
     // Moves the provided chunk to the MRU position.
-    void freshenChunk(CachingReaderChunkForOwner* pChunk);
+    void freshenChunk(CachingReaderChunk* pChunk);
     // Returns a CachingReaderChunk to the free list
-    void freeChunk(CachingReaderChunkForOwner* pChunk);
+    void freeChunk(CachingReaderChunk* pChunk);
     // Returns all allocated chunks to the free list
     void freeAllChunks();
     // Gets a chunk from the free list. Returns nullptr if none available.
-    CachingReaderChunkForOwner* allocateChunk(SINT chunkIndex);
+    CachingReaderChunk* allocateChunk(SINT chunkIndex);
     // Gets a chunk from the free list, frees the LRU CachingReaderChunk if none available.
-    CachingReaderChunkForOwner* allocateChunkExpireLRU(SINT chunkIndex);
+    CachingReaderChunk* allocateChunkExpireLRU(SINT chunkIndex);
     ReaderStatus m_readerStatus;
 
     // Keeps track of all CachingReaderChunks we've allocated.
-    std::deque<std::unique_ptr<CachingReaderChunkForOwner> > m_chunks;
+    std::deque<std::unique_ptr<CachingReaderChunk> > m_chunks;
 
     // List of free chunks. Linked list so that we have constant time insertions
     // and deletions. Iteration is not necessary.
-    std::forward_list<CachingReaderChunkForOwner*> m_freeChunks;
+    std::forward_list<CachingReaderChunk*> m_freeChunks;
     // Keeps track of what CachingReaderChunks we've allocated and indexes them based on what
     // chunk number they are allocated to.
-    QHash<int, CachingReaderChunkForOwner*> m_allocatedCachingReaderChunks;
+    QHash<int, CachingReaderChunk*> m_allocatedCachingReaderChunks;
 
     // The linked list of recently-used chunks.
-    CachingReaderChunkForOwner* m_mruCachingReaderChunk;
-    CachingReaderChunkForOwner* m_lruCachingReaderChunk;
+    CachingReaderChunk* m_mruCachingReaderChunk;
+    CachingReaderChunk* m_lruCachingReaderChunk;
 
     // The maximum readable frame index as reported by the worker.
     // This frame index references the frame that follows the last

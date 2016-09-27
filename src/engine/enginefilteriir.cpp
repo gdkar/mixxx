@@ -92,7 +92,7 @@ void EngineFilterIIR::process(const CSAMPLE* pIn, CSAMPLE* pOutput,const int iBu
     processBuffer(pIn, pOutput, &m_coef[0], &m_buf[0], m_coef.size() - 1, iBufferSize);
     if(m_doRamping) {
         if(!m_doStart) {
-            auto pTmp = reinterpret_cast<CSAMPLE*>(alloca(sizeof(CSAMPLE) * iBufferSize));
+            auto pTmp = static_cast<CSAMPLE*>(alloca(sizeof(CSAMPLE) * iBufferSize));
             std::swap(PASS,m_oldPASS);
             processBuffer(pIn, pTmp, &m_oldCoef[0], &m_oldBuf[0],m_oldCoef.size() - 1, iBufferSize);
             std::swap(PASS,m_oldPASS);

@@ -19,7 +19,7 @@ class EngineFilterIIRBase : public EngineObjectConstIn {
     virtual ~EngineFilterIIRBase();
     virtual void assumeSettled() = 0;
     virtual void pauseFilter() = 0;
-        virtual void processAndPauseFilter(const CSAMPLE* pIn, CSAMPLE* pOutput,const int iBufferSize) = 0;
+    virtual void processAndPauseFilter(const CSAMPLE* pIn, CSAMPLE* pOutput,const int iBufferSize) = 0;
     virtual void initBuffers() = 0;
     virtual void setCoefs(double, size_t, QString spec, double, double, int) = 0;
     virtual void process(const CSAMPLE* pIn, CSAMPLE* pOutput,const int iBufferSize) = 0;

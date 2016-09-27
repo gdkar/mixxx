@@ -5,7 +5,7 @@
 #include "util/math.h"
 #include "util/sample.h"
 
-const SINT CachingReaderChunk::kInvalidIndex = -1;
+//const SINT CachingReaderChunk::kInvalidIndex = -1;
 
 // One chunk should contain 1/2 - 1/4th of a second of audio.
 // 8192 frames contain about 170 ms of audio at 48 kHz, which
@@ -15,20 +15,25 @@ const SINT CachingReaderChunk::kInvalidIndex = -1;
 // easier memory alignment.
 // TODO(XXX): The optimum value of the "constant" kFrames depends
 // on the properties of the AudioSource as the remarks above suggest!
-const SINT CachingReaderChunk::kChannels = mixxx::AudioSource::kChannelCountStereo;
+/*const SINT CachingReaderChunk::kChannels = mixxx::AudioSource::kChannelCountStereo;
 const SINT CachingReaderChunk::kFrames = 8192; // ~ 170 ms at 48 kHz
 const SINT CachingReaderChunk::kSamples =
-        CachingReaderChunk::frames2samples(CachingReaderChunk::kFrames);
+        CachingReaderChunk::frames2samples(CachingReaderChunk::kFrames);*/
 
 CachingReaderChunk::CachingReaderChunk()
         : m_index(kInvalidIndex),
           m_frameCount(0),
-          m_sampleBuffer(std::make_unique<CSAMPLE[]>(kSamples))
+          m_sampleBuffer(std::make_unique<CSAMPLE[]>(kSamples)),
+          m_state(FREE),
+          m_pPrev(nullptr),
+          m_pNext(nullptr)
 { }
 
 CachingReaderChunk::~CachingReaderChunk() { }
 
 void CachingReaderChunk::init(SINT index) {
+    DEBUG_ASSERT(READ_PENDING != m_state);
+    m_state = READY;
     m_index = index;
     m_frameCount = 0;
 }
@@ -41,9 +46,8 @@ bool CachingReaderChunk::isReadable(
     if (!isValid() || !pAudioSource) {
         return false;
     }
-    const SINT frameIndex = frameForIndex(getIndex());
-    const SINT maxFrameIndex = math_min(
-            maxReadableFrameIndex, pAudioSource->getMaxFrameIndex());
+    auto frameIndex = frameForIndex(getIndex());
+    auto maxFrameIndex = math_min(maxReadableFrameIndex, pAudioSource->getMaxFrameIndex());
     return frameIndex <= maxFrameIndex;
 }
 
@@ -52,16 +56,15 @@ SINT CachingReaderChunk::readSampleFrames(
         SINT* pMaxReadableFrameIndex) {
     DEBUG_ASSERT(pMaxReadableFrameIndex);
 
-    const SINT frameIndex = frameForIndex(getIndex());
-    const SINT maxFrameIndex = math_min(
+    auto frameIndex = frameForIndex(getIndex());
+    auto maxFrameIndex = math_min(
             *pMaxReadableFrameIndex, pAudioSource->getMaxFrameIndex());
-    const SINT framesRemaining =
+    auto framesRemaining =
             *pMaxReadableFrameIndex - frameIndex;
-    const SINT framesToRead =
+    auto framesToRead =
             math_min(kFrames, framesRemaining);
 
-    SINT seekFrameIndex =
-            pAudioSource->seekSampleFrame(frameIndex);
+    auto seekFrameIndex = pAudioSource->seekSampleFrame(frameIndex);
     if (frameIndex != seekFrameIndex) {
         // Failed to seek to the requested index. The file might
         // be corrupt and decoding should be aborted.
@@ -123,31 +126,15 @@ void CachingReaderChunk::copySamplesReverse(
     SampleUtil::copyReverse(sampleBuffer, &m_sampleBuffer [ sampleOffset], sampleCount);
 }
 
-CachingReaderChunkForOwner::CachingReaderChunkForOwner()
-        : CachingReaderChunk(),
-          m_state(FREE),
-          m_pPrev(nullptr),
-          m_pNext(nullptr) {
-}
-
-CachingReaderChunkForOwner::~CachingReaderChunkForOwner() { }
-
-void CachingReaderChunkForOwner::init(SINT index)
-{
-    DEBUG_ASSERT(READ_PENDING != m_state);
-    CachingReaderChunk::init(index);
-    m_state = READY;
-}
-
-void CachingReaderChunkForOwner::free()
+void CachingReaderChunk::free()
 {
     DEBUG_ASSERT(READ_PENDING != m_state);
     CachingReaderChunk::init(kInvalidIndex);
     m_state = FREE;
 }
 
-void CachingReaderChunkForOwner::insertIntoListBefore(
-        CachingReaderChunkForOwner* pBefore) {
+void CachingReaderChunk::insertIntoListBefore(
+        CachingReaderChunk* pBefore) {
     DEBUG_ASSERT(m_pNext == nullptr);
     DEBUG_ASSERT(m_pPrev == nullptr);
     DEBUG_ASSERT(m_state != READ_PENDING); // Must not be accessed by a worker!
@@ -163,12 +150,12 @@ void CachingReaderChunkForOwner::insertIntoListBefore(
     }
 }
 
-void CachingReaderChunkForOwner::removeFromList(
-        CachingReaderChunkForOwner** ppHead,
-        CachingReaderChunkForOwner** ppTail) {
+void CachingReaderChunk::removeFromList(
+        CachingReaderChunk** ppHead,
+        CachingReaderChunk** ppTail) {
     // Remove this chunk from the double-linked list...
-    CachingReaderChunkForOwner* pNext = m_pNext;
-    CachingReaderChunkForOwner* pPrev = m_pPrev;
+    CachingReaderChunk* pNext = m_pNext;
+    CachingReaderChunk* pPrev = m_pPrev;
     m_pNext = nullptr;
     m_pPrev = nullptr;
 
@@ -189,4 +176,35 @@ void CachingReaderChunkForOwner::removeFromList(
     if (ppTail && (this == *ppTail)) {
         *ppTail = pPrev;
     }
+}
+
+SINT CachingReaderChunk::getIndex() const
+{
+    return m_index;
+}
+
+bool CachingReaderChunk::isValid() const
+{
+    return 0 <= getIndex();
+}
+
+SINT CachingReaderChunk::getFrameCount() const
+{
+    return m_frameCount;
+}
+CachingReaderChunk::State CachingReaderChunk::getState() const
+{
+    return m_state;
+}
+
+// The state is controlled by the cache as the owner of each chunk!
+void CachingReaderChunk::giveToWorker()
+{
+    DEBUG_ASSERT(READY == m_state);
+    m_state = READ_PENDING;
+}
+void CachingReaderChunk::takeFromWorker()
+{
+    DEBUG_ASSERT(READ_PENDING == m_state);
+    m_state = READY;
 }

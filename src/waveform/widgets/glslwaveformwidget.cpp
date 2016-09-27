@@ -15,28 +15,19 @@
 
 #include "util/performancetimer.h"
 
-GLSLFilteredWaveformWidget::GLSLFilteredWaveformWidget(const char* group,
-                                                       QWidget* parent)
-        : GLSLWaveformWidget(group, parent, false) {
-}
+GLSLFilteredWaveformWidget::GLSLFilteredWaveformWidget(const char* group,QWidget* parent)
+        : GLSLWaveformWidget(group, parent)
+{ }
 
-GLSLRGBWaveformWidget::GLSLRGBWaveformWidget(const char* group, QWidget* parent)
-        : GLSLWaveformWidget(group, parent, true) {
-}
 
-GLSLWaveformWidget::GLSLWaveformWidget(const char* group, QWidget* parent,
-                                       bool rgbRenderer)
-        : QGLWidget(parent, SharedGLContext::getWidget()),
+GLSLWaveformWidget::GLSLWaveformWidget(const char* group, QWidget* parent)
+        : QGLWidget(parent),
           WaveformWidgetAbstract(group) {
     addRenderer<WaveformRenderBackground>();
     addRenderer<WaveformRendererEndOfTrack>();
     addRenderer<WaveformRendererPreroll>();
     addRenderer<WaveformRenderMarkRange>();
-    if (rgbRenderer) {
-        signalRenderer_ = addRenderer<GLSLWaveformRendererRGBSignal>();
-    } else {
-        signalRenderer_ = addRenderer<GLSLWaveformRendererFilteredSignal>();
-    }
+    signalRenderer_ = addRenderer<GLSLWaveformRendererFilteredSignal>();
     addRenderer<WaveformRenderBeat>();
     addRenderer<WaveformRenderMark>();
 
@@ -44,11 +35,7 @@ GLSLWaveformWidget::GLSLWaveformWidget(const char* group, QWidget* parent,
     setAttribute(Qt::WA_OpaquePaintEvent);
 
     setAutoBufferSwap(false);
-
-    qDebug() << "Created QGLWidget. Context"
-             << "Valid:" << context()->isValid()
-             << "Sharing:" << context()->isSharing();
-
+    qDebug() << "Created QGLWidget. Context" << "Valid:" << context()->isValid();
     // Initialization requires activating our context.
     if (QGLContext::currentContext() != context()) {
         makeCurrent();

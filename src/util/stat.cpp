@@ -56,7 +56,7 @@ void Stat::processReport(const StatReport& report)
             m_variance_mk = report.value;
             m_variance_sk = 0.0;
         } else {
-            double variance_mk_prev = m_variance_mk;
+            auto variance_mk_prev = m_variance_mk;
             m_variance_mk += (report.value - m_variance_mk) / m_report_count;
             m_variance_sk += (report.value - variance_mk_prev) * (report.value - m_variance_mk);
         }
@@ -126,7 +126,7 @@ QDebug operator<<(QDebug dbg, const Stat &stat) {
 
     if (stat.m_compute & Stat::HISTOGRAM) {
         QStringList histogram;
-        for (QMap<double, double>::const_iterator it = stat.m_histogram.begin();
+        for (auto it = stat.m_histogram.begin();
              it != stat.m_histogram.end(); ++it) {
             histogram << QString::number(it.key()) + stat.valueUnits() + ":" +
                     QString::number(it.value());
@@ -137,7 +137,36 @@ QDebug operator<<(QDebug dbg, const Stat &stat) {
     dbg.nospace() << "Stat(" << stat.m_tag << "," << stats.join(",") << ")";
     return dbg.maybeSpace();
 }
+StatReport::StatReport(
+        const QString &_tag
+      , double value
+      , Stat::StatType type
+      , Stat::ComputeFlags flags
+        )
+: StatReport(
+    _tag
+  , QThread::currentThread()->objectName()
+  , mixxx::Time::elapsed().toIntegerNanos()
+  , value
+  , type
+  , flags)
+{}
 
+StatReport::StatReport(
+     const QString &tag
+    , const QString &thread
+    , qint64 time
+    , double value
+    , Stat::StatType type
+    , Stat::ComputeFlags flags
+    )
+: tag(tag)
+, thread_id(thread)
+, time(time)
+, value(value)
+, type(type)
+, compute(flags)
+{}
 // static
 bool Stat::track(const QString& tag,
                  Stat::StatType type,
@@ -147,12 +176,20 @@ bool Stat::track(const QString& tag,
     if (!StatsManager::s_bStatsManagerEnabled) {
         return false;
     }
-    StatReport report;
-    report.tag = strdup(tag.toAscii().constData());
-    report.type = type;
-    report.compute = compute;
-    report.time = mixxx::Time::elapsed().toIntegerNanos();
-    report.value = value;
-    auto pManager = StatsManager::instance();
-    return pManager && pManager->maybeWriteReport(report);
+    if(auto pManager = StatsManager::instance()) {
+        auto report = std::make_unique<StatReport>(
+            tag
+          , value
+          , type
+          , compute);
+        return pManager->maybeWriteReport(report);
+/*        StatReport report;
+        report.tag = strdup(tag.toAscii().constData());
+        report.type = type;
+        report.compute = compute;
+        report.time = mixxx::Time::elapsed().toIntegerNanos();
+        report.value = value;
+        return pManager && pManager->maybeWriteReport(report);*/
+    }
+    return false;
 }

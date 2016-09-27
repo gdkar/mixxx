@@ -12,11 +12,7 @@ class WaveformWidgetType {
         GLSimpleWaveform,
         GLFilteredWaveform,
         GLSLFilteredWaveform,
-        HSVWaveform,
         GLVSyncTest,
-        RGBWaveform,
-        GLRGBWaveform,
-        GLSLRGBWaveform,
         Count_WaveformwidgetType // Also used as invalid value
     };
 };

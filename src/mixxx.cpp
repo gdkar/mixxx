@@ -108,12 +108,10 @@ MixxxMainWindow::MixxxMainWindow(QApplication* pApp, const CmdlineArgs& args)
     mixxx::Time::start();
 
     Version::logBuildDetails();
-
     // Only record stats in developer mode.
     if (m_cmdLineArgs.getDeveloper()) {
         StatsManager::create();
     }
-
     m_pSettingsManager = new SettingsManager(this, args.getSettingsPath());
 
     initializeKeyboard();
@@ -137,17 +135,14 @@ MixxxMainWindow::MixxxMainWindow(QApplication* pApp, const CmdlineArgs& args)
     pApp->processEvents();
     initialize(pApp, args);
 }
-
 MixxxMainWindow::~MixxxMainWindow()
 {
     // SkinLoader depends on Config;
     delete m_pSkinLoader;
 }
-
 void MixxxMainWindow::initialize(QApplication* pApp, const CmdlineArgs& args)
 {
     ScopedTimer t("MixxxMainWindow::initialize");
-
     // Register custom data types for signal processing
     qRegisterMetaType<ConfigKey>("ConfigKey");
     qRegisterMetaType<TrackId>("TrackId");
@@ -171,30 +166,22 @@ void MixxxMainWindow::initialize(QApplication* pApp, const CmdlineArgs& args)
 
     // Create the Effects subsystem.
     m_pEffectsManager = new EffectsManager(this, pConfig);
-
     // Starting the master (mixing of the channels and effects):
     m_pEngine = new EngineMaster(pConfig, "[Master]", m_pEffectsManager,true, true);
-
     // Create effect backends. We do this after creating EngineMaster to allow
     // effect backends to refer to controls that are produced by the engine.
     auto pNativeBackend = new NativeBackend(m_pEffectsManager);
     m_pEffectsManager->addEffectsBackend(pNativeBackend);
-
     // Sets up the default EffectChains and EffectRacks (long)
     m_pEffectsManager->setupDefaults();
-
     launchProgress(8);
-
     // Initialize player device
     // while this is created here, setupDevices needs to be called sometime
     // after the players are added to the engine (as is done currently) -- bkgood
     // (long)
     m_pSoundManager = new SoundManager(pConfig, m_pEngine);
     m_pRecordingManager = new RecordingManager(pConfig, m_pEngine);
-
-#ifdef __BROADCAST__
     m_pBroadcastManager = new BroadcastManager(pConfig, m_pSoundManager);
-#endif
 
     launchProgress(11);
     // Needs to be created before CueControl (decks) and WTrackTableView.
@@ -206,15 +193,12 @@ void MixxxMainWindow::initialize(QApplication* pApp, const CmdlineArgs& args)
             this, SLOT(slotNoMicrophoneInputConfigured()));
     connect(m_pPlayerManager, SIGNAL(noDeckPassthroughInputConfigured()),
             this, SLOT(slotNoDeckPassthroughInputConfigured()));
-
     for (int i = 0; i < kMicrophoneCount; ++i) {
         m_pPlayerManager->addMicrophone();
     }
-
     for (int i = 0; i < kAuxiliaryCount; ++i) {
         m_pPlayerManager->addAuxiliary();
     }
-
     m_pPlayerManager->addConfiguredDecks();
     m_pPlayerManager->addSampler();
     m_pPlayerManager->addSampler();
@@ -223,18 +207,13 @@ void MixxxMainWindow::initialize(QApplication* pApp, const CmdlineArgs& args)
     m_pPlayerManager->addPreviewDeck();
 
     launchProgress(30);
-
     CoverArtCache::create();
-
     // (long)
     m_pLibrary = new Library(this, pConfig,m_pPlayerManager,m_pRecordingManager);
     m_pPlayerManager->bindToLibrary(m_pLibrary);
-
     launchProgress(35);
-
     // Get Music dir
     auto hasChanged_MusicDir = false;
-
     auto dirs = m_pLibrary->getDirs();
     if (dirs.size() < 1) {
         // TODO(XXX) this needs to be smarter, we can't distinguish between an empty
@@ -263,15 +242,12 @@ void MixxxMainWindow::initialize(QApplication* pApp, const CmdlineArgs& args)
     m_pControllerManager = new ControllerManager(pConfig);
 
     launchProgress(47);
-
     WaveformWidgetFactory::create(); // takes a long time
     WaveformWidgetFactory::instance()->startVSync(m_pGuiTick);
     WaveformWidgetFactory::instance()->setConfig(pConfig);
-
     launchProgress(52);
 
-    connect(this, SIGNAL(newSkinLoaded()),
-            m_pLibrary, SLOT(onSkinLoadFinished()));
+    connect(this, SIGNAL(newSkinLoaded()),m_pLibrary, SLOT(onSkinLoadFinished()));
 
     // Initialize preference dialog
     m_pPrefDlg = new DlgPreferences(this, m_pSkinLoader, m_pSoundManager, m_pPlayerManager,
@@ -279,13 +255,10 @@ void MixxxMainWindow::initialize(QApplication* pApp, const CmdlineArgs& args)
                                     pConfig, m_pLibrary);
     m_pPrefDlg->setWindowIcon(QIcon(":/images/ic_mixxx_window.png"));
     m_pPrefDlg->setHidden(true);
-
     launchProgress(60);
-
     // Connect signals to the menubar. Should be done before we go fullscreen
     // and emit newSkinLoaded.
     connectMenuBar();
-
     // Before creating the first skin we need to create a QGLWidget so that all
     // the QGLWidget's we create can use it as a shared QGLContext.
     auto pContextWidget = new QGLWidget(this);

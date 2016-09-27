@@ -9,6 +9,7 @@
 #include <numeric>
 #include <type_traits>
 
+
 struct intrusive_node {
     std::atomic<intrusive_node *> m_next{};
     constexpr intrusive_node() = default;
@@ -36,7 +37,7 @@ struct intrusive_node {
         m_next.store(_next,ord);
     }
 };
-
+namespace impl {
 class intrusive_fifo_base {
 protected:
     intrusive_node                m_stub{nullptr};
@@ -56,18 +57,20 @@ public:
     bool            pop();
     void            push(intrusive_node *node);
 };
+}
 template<class T>
-class intrusive_fifo : public intrusive_fifo_base {
+class intrusive_fifo : public impl::intrusive_fifo_base {
 public:
+    using super = impl::intrusive_fifo_base;
              intrusive_fifo() = default;
     virtual ~intrusive_fifo() = default;
-    using intrusive_fifo_base::empty;
-    using intrusive_fifo_base::pop;
-    T *begin() { return static_cast<T*>(intrusive_fifo_base::begin());}
-    T *begin() const { return static_cast<const T*>(intrusive_fifo_base::begin());}
-    T &front() { return static_cast<T&>(intrusive_fifo_base::front());}
-    T &front() const { return static_cast<const T&>(intrusive_fifo_base::front());}
-    T *take() { return static_cast<T*>(intrusive_fifo_base::take());}
-    void push(T *node) { intrusive_fifo_base::push(static_cast<intrusive_node*>(node));}
+    using super::empty;
+    using super::pop;
+    T *begin() { return static_cast<T*>(super::begin());}
+    T *begin() const { return static_cast<const T*>(super::begin());}
+    T &front() { return static_cast<T&>(super::front());}
+    T &front() const { return static_cast<const T&>(super::front());}
+    T *take() { return static_cast<T*>(super::take());}
+    void push(T *node) { super::push(static_cast<intrusive_node*>(node));}
 };
 #endif

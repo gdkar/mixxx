@@ -4,12 +4,17 @@
 #include <QMap>
 #include <QVector>
 #include <QString>
+#include <QMetaEnum>
+#include <QMetaType>
+#include <QtGlobal>
 
+#include "util/intrusive_fifo.hpp"
 #include "util/experiment.h"
 
 struct StatReport;
 
 class Stat {
+    Q_GADGET
   public:
     enum StatType {
         UNSPECIFIED = 0,
@@ -21,9 +26,11 @@ class Stat {
         EVENT_START,
         EVENT_END,
     };
-
+    Q_ENUM(StatType);
     static QString statTypeToString(StatType type) {
-        switch (type) {
+        auto me = QMetaEnum::fromType<StatType>();
+        return me.valueToKey(type);
+/*        switch (type) {
             case UNSPECIFIED:
                 return "UNSPECIFIED";
             case COUNTER:
@@ -42,10 +49,10 @@ class Stat {
                 return "END";
             default:
                 return "UNKNOWN";
-        }
+        }*/
     }
 
-    enum ComputeTypes {
+    enum ComputeType {
         NONE            = 0x0000,
         // O(1) in time and space.
         COUNT           = 0x0001,
@@ -75,7 +82,8 @@ class Stat {
         // Used for marking stats recorded in BASE mode.
         STATS_BASE        = 0x1000,
     };
-    typedef int ComputeFlags;
+    Q_DECLARE_FLAGS(ComputeFlags,ComputeType)
+//    typedef int ComputeFlags;
 
     static Experiment::Mode modeFromFlags(ComputeFlags flags) {
         if (flags & Stat::STATS_EXPERIMENT) {
@@ -98,14 +106,14 @@ class Stat {
         }
     }
 
-    explicit Stat();
-    void processReport(const StatReport& report);
+    Q_INVOKABLE Stat();
+    Q_INVOKABLE void processReport(const StatReport& report);
     QString valueUnits() const;
 
-    double variance() const {
+    Q_INVOKABLE double variance() const {
         return m_report_count > 1 ? m_variance_sk / (m_report_count - 1) : 0.0;
     }
-    void clear()
+    Q_INVOKABLE void clear()
     {
         m_report_count = m_sum = m_min = m_max = m_variance_mk = m_variance_sk = 0.;
         m_histogram.clear();
@@ -128,15 +136,33 @@ class Stat {
                       Stat::ComputeFlags compute,
                       double value);
 };
+Q_DECLARE_OPERATORS_FOR_FLAGS(Stat::ComputeFlags);
 
 QDebug operator<<(QDebug dbg, const Stat &stat);
 
-struct StatReport {
-    char* tag;
+struct StatReport : public intrusive_node {
+    QString tag;
+    QString thread_id;
+//    char* tag;
     qint64 time;
+    double value;
     Stat::StatType type;
     Stat::ComputeFlags compute;
-    double value;
+    StatReport() = default;
+    StatReport(
+        const QString &_tag
+      , double value
+      , Stat::StatType type
+      , Stat::ComputeFlags flags
+        );
+    StatReport(
+        const QString &_tag
+      , const QString &_thread
+      , qint64 time
+      , double value
+      , Stat::StatType type
+      , Stat::ComputeFlags flags
+        );
 };
-
+Q_DECLARE_METATYPE(StatReport*);
 #endif /* STAT_H */

@@ -18,7 +18,7 @@
 #include "util/stat.h"
 #include "util/event.h"
 
-class StatsManager;
+/*class StatsManager;
 
 class StatsPipe : public FIFO<StatReport> {
   public:
@@ -26,7 +26,7 @@ class StatsPipe : public FIFO<StatReport> {
     virtual ~StatsPipe();
   private:
     StatsManager* m_pManager;
-};
+};*/
 
 class StatsManager : public QThread, public Singleton<StatsManager> {
     Q_OBJECT
@@ -34,7 +34,9 @@ class StatsManager : public QThread, public Singleton<StatsManager> {
     explicit StatsManager();
     virtual ~StatsManager();
     // Returns true if write succeeds.
-    bool maybeWriteReport(const StatReport& report);
+    bool maybeWriteReport(std::unique_ptr<StatReport>& report);
+    bool maybeWriteReport(StatReport* report);
+
     static bool s_bStatsManagerEnabled;
     // Tell the StatsManager to emit statUpdated for every stat that exists.
   public slots:
@@ -53,14 +55,12 @@ class StatsManager : public QThread, public Singleton<StatsManager> {
     }
   signals:
     void statUpdated(const Stat& stat);
-
   protected:
     virtual void run();
-
   private:
     void processIncomingStatReports();
-    StatsPipe* getStatsPipeForThread();
-    void onStatsPipeDestroyed(StatsPipe* pPipe);
+//    StatsPipe* getStatsPipeForThread();
+//    void onStatsPipeDestroyed(StatsPipe* pPipe);
     void writeTimeline(const QString& filename);
     std::atomic<int> m_resetStats{0};
     std::atomic<int> m_emitAllStats{0};
@@ -70,10 +70,12 @@ class StatsManager : public QThread, public Singleton<StatsManager> {
     QMap<QString, Stat> m_experimentStats;
     QList<Event> m_events;
 
+    intrusive_fifo<StatReport>  m_statsPipe{};
+    std::atomic<size_t> m_pendingStats{0};
     mixxx::MSemaphore m_statsSema;
-    QMutex m_statsPipeLock;
-    QList<StatsPipe*> m_statsPipes;
-    QThreadStorage<StatsPipe*> m_threadStatsPipes;
+//    QMutex m_statsPipeLock;
+//    QList<StatsPipe*> m_statsPipes;
+//    QThreadStorage<StatsPipe*> m_threadStatsPipes;
 
     friend class StatsPipe;
 };

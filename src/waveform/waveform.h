@@ -102,22 +102,22 @@ class Waveform {
 
     // We do not lock the mutex since m_textureStride is not changed after
     // the constructor runs.
-    inline int getTextureStride() const { return m_textureStride; }
+    int getTextureStride() const { return m_textureStride; }
 
     // We do not lock the mutex since m_data is not resized after the
     // constructor runs.
-    inline int getTextureSize() const { return m_data.size(); }
+    int getTextureSize() const { return m_data.size(); }
 
     // Atomically get the number of data elements in this Waveform. We do not
     // lock the mutex since m_dataSize is not changed after the constructor
     // runs.
-    inline int getDataSize() const { return m_dataSize; }
+    int getDataSize() const { return m_dataSize; }
 
-    inline const WaveformData& get(int i) const { return m_data[i];}
-    inline unsigned char getLow(int i) const { return m_data[i].filtered.low;}
-    inline unsigned char getMid(int i) const { return m_data[i].filtered.mid;}
-    inline unsigned char getHigh(int i) const { return m_data[i].filtered.high;}
-    inline unsigned char getAll(int i) const { return m_data[i].filtered.all;}
+    const WaveformData& get(int i) const { return m_data[i];}
+    unsigned char getLow(int i) const { return m_data[i].filtered.low;}
+    unsigned char getMid(int i) const { return m_data[i].filtered.mid;}
+    unsigned char getHigh(int i) const { return m_data[i].filtered.high;}
+    unsigned char getAll(int i) const { return m_data[i].filtered.all;}
 
     // We do not lock the mutex since m_data is not resized after the
     // constructor runs.
@@ -134,11 +134,11 @@ class Waveform {
     void resize(int size);
     void assign(int size, int value = 0);
 
-    inline WaveformData& at(int i) { return m_data[i];}
-    inline unsigned char& low(int i) { return m_data[i].filtered.low;}
-    inline unsigned char& mid(int i) { return m_data[i].filtered.mid;}
-    inline unsigned char& high(int i) { return m_data[i].filtered.high;}
-    inline unsigned char& all(int i) { return m_data[i].filtered.all;}
+    WaveformData& at(int i) { return m_data[i];}
+    unsigned char& low(int i) { return m_data[i].filtered.low;}
+    unsigned char& mid(int i) { return m_data[i].filtered.mid;}
+    unsigned char& high(int i) { return m_data[i].filtered.high;}
+    unsigned char& all(int i) { return m_data[i].filtered.all;}
     double getVisualSampleRate() const { return m_visualSampleRate; }
 
     // If stored in the database, the ID of the waveform.

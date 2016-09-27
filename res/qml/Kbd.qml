@@ -18,7 +18,7 @@ Item {
         PushKey   { item: "fwd";seq:"s"}
 
         PushKey   { item: "beatsync";seq:"1"}
-        ToggleKey   { item: "keylock";seq:"Shift+!"}
+        ToggleKey { item: "keylock";seq:"Shift+!"}
         PushKey   { item: "loop_in";seq:"2"}
         PushKey   { item: "loop_out";seq:"3"}
         PushKey   { item: "reloop_exit";seq:"4"}
@@ -95,8 +95,8 @@ Item {
         SetKey    { item: "volume"; to: 1; seq: "Ctrl+6"}
         SetKey    { item: "volume"; to: 0; seq: "Ctrl+y"}
         AddKey    { item: "volume"; amount: 1/16.; seq:"6";min:0;max:1}
-        AddKey    { item: "volume"; amount: -1/16.; seq:"^";min:0;max:1}
-        AddKey    { item: "volume"; amount: 1/64; seq:"Shift+y";min:0;max:1}
+        AddKey    { item: "volume"; amount: -1/16.; seq:"y";min:0;max:1}
+        AddKey    { item: "volume"; amount: 1/64; seq:"Shift+^";min:0;max:1}
         AddKey    { item: "volume"; amount: -1/64; seq:"Shift+y";min:0;max:1}
 
         AddKey    { item: "filterHigh";amount: -1/8;seq:"Alt+7";min:0;max:4}
@@ -144,7 +144,6 @@ Item {
 //        PushKey { item: "OptionsMenu_EnableLiveBroadcasting";seq:"Ctrl+l"}
 //        PushKey { item: "OptionsMenu_RecordMix";seq:"Ctrl+r"}
 //        PushKey { item: "OptionsMenu_ReloadSkin";seq:"Ctrl+Shift+r"}
-
     }
     Component.onCompleted: {
         for(var i = 0; i < keyboardConfig.data.length;++i) {
