@@ -18,11 +18,10 @@ class SoftwareWaveformWidget : public QWidget, public WaveformWidgetAbstract {
     static inline bool developerOnly() { return false; }
 
   protected:
-    virtual void castToQWidget();
     virtual void paintEvent(QPaintEvent* event);
 
   private:
-    SoftwareWaveformWidget(const char* group, QWidget* parent);
+    Q_INVOKABLE SoftwareWaveformWidget(const char* group, QWidget* parent);
     friend class WaveformWidgetFactory;
 };
 

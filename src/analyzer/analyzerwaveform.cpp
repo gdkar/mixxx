@@ -15,7 +15,8 @@ AnalyzerWaveform::AnalyzerWaveform(UserSettingsPointer pConfig) :
         m_waveformSummaryData(nullptr),
         m_stride(0, 0),
         m_currentStride(0),
-        m_currentSummaryStride(0) {
+        m_currentSummaryStride(0)
+{
     qDebug() << "AnalyzerWaveform::AnalyzerWaveform()";
 
     m_filter[0] = 0;
@@ -46,16 +47,14 @@ AnalyzerWaveform::~AnalyzerWaveform() {
     m_database.close();
 }
 
-bool AnalyzerWaveform::initialize(TrackPointer tio, int sampleRate, int totalSamples) {
+bool AnalyzerWaveform::initialize(TrackPointer tio, int sampleRate, int totalSamples)
+{
     m_skipProcessing = false;
-
     m_timer.start();
-
     if (totalSamples == 0) {
         qWarning() << "AnalyzerWaveform::initialize - no waveform/waveform summary";
         return false;
     }
-
     // If we don't need to calculate the waveform/wavesummary, skip.
     if (isDisabledOrLoadStoredSuccess(tio)) {
         m_skipProcessing = true;
@@ -69,10 +68,8 @@ bool AnalyzerWaveform::initialize(TrackPointer tio, int sampleRate, int totalSam
         // two visual sample per pixel in full width overview in full hd
         const int summaryWaveformSamples = 2 * 1920;
 
-        m_waveform = WaveformPointer(new Waveform(
-                sampleRate, totalSamples, mainWaveformSampleRate, -1));
-        m_waveformSummary = WaveformPointer(new Waveform(
-                sampleRate, totalSamples, mainWaveformSampleRate,
+        m_waveform = WaveformPointer(new Waveform(sampleRate, totalSamples, mainWaveformSampleRate, -1));
+        m_waveformSummary = WaveformPointer(new Waveform(sampleRate, totalSamples, mainWaveformSampleRate,
                 summaryWaveformSamples));
 
         // Now, that the Waveform memory is initialized, we can set set them to
@@ -84,8 +81,7 @@ bool AnalyzerWaveform::initialize(TrackPointer tio, int sampleRate, int totalSam
         m_waveformData = m_waveform->data();
         m_waveformSummaryData = m_waveformSummary->data();
 
-        m_stride = WaveformStride(m_waveform->getAudioVisualRatio(),
-                                  m_waveformSummary->getAudioVisualRatio());
+        m_stride = WaveformStride(m_waveform->getAudioVisualRatio(),m_waveformSummary->getAudioVisualRatio());
 
         m_currentStride = 0;
         m_currentSummaryStride = 0;
@@ -93,49 +89,40 @@ bool AnalyzerWaveform::initialize(TrackPointer tio, int sampleRate, int totalSam
         //debug
         //m_waveform->dump();
         //m_waveformSummary->dump();
-
-    #ifdef TEST_HEAT_MAP
-        test_heatMap = new QImage(256,256,QImage::Format_RGB32);
-        test_heatMap->fill(0xFFFFFFFF);
-    #endif
     }
     return !m_skipProcessing;
 }
 
-bool AnalyzerWaveform::isDisabledOrLoadStoredSuccess(TrackPointer tio) const {
+bool AnalyzerWaveform::isDisabledOrLoadStoredSuccess(TrackPointer tio) const
+{
     ConstWaveformPointer pTrackWaveform = tio->getWaveform();
     ConstWaveformPointer pTrackWaveformSummary = tio->getWaveformSummary();
     ConstWaveformPointer pLoadedTrackWaveform;
     ConstWaveformPointer pLoadedTrackWaveformSummary;
 
-    TrackId trackId = tio->getId();
-    bool missingWaveform = pTrackWaveform.isNull();
-    bool missingWavesummary = pTrackWaveformSummary.isNull();
+    auto trackId = tio->getId();
+    auto missingWaveform = pTrackWaveform.isNull();
+    auto missingWavesummary = pTrackWaveformSummary.isNull();
 
     if (trackId.isValid() && (missingWaveform || missingWavesummary)) {
-        QList<AnalysisDao::AnalysisInfo> analyses =
-                m_pAnalysisDao->getAnalysesForTrack(trackId);
+        auto analyses = m_pAnalysisDao->getAnalysesForTrack(trackId);
 
         QListIterator<AnalysisDao::AnalysisInfo> it(analyses);
         while (it.hasNext()) {
-            const AnalysisDao::AnalysisInfo& analysis = it.next();
-            WaveformFactory::VersionClass vc;
-
+            auto && analysis = it.next();
             if (analysis.type == AnalysisDao::TYPE_WAVEFORM) {
-                vc = WaveformFactory::waveformVersionToVersionClass(analysis.version);
+                auto vc = WaveformFactory::waveformVersionToVersionClass(analysis.version);
                 if (missingWaveform && vc == WaveformFactory::VC_USE) {
-                    pLoadedTrackWaveform = ConstWaveformPointer(
-                            WaveformFactory::loadWaveformFromAnalysis(analysis));
+                    pLoadedTrackWaveform = ConstWaveformPointer(WaveformFactory::loadWaveformFromAnalysis(analysis));
                     missingWaveform = false;
                 } else if (vc != WaveformFactory::VC_KEEP) {
                     // remove all other Analysis except that one we should keep
                     m_pAnalysisDao->deleteAnalysis(analysis.analysisId);
                 }
             } if (analysis.type == AnalysisDao::TYPE_WAVESUMMARY) {
-                vc = WaveformFactory::waveformSummaryVersionToVersionClass(analysis.version);
+                auto vc = WaveformFactory::waveformSummaryVersionToVersionClass(analysis.version);
                 if (missingWavesummary && vc == WaveformFactory::VC_USE) {
-                    pLoadedTrackWaveformSummary = ConstWaveformPointer(
-                            WaveformFactory::loadWaveformFromAnalysis(analysis));
+                    pLoadedTrackWaveformSummary = ConstWaveformPointer(WaveformFactory::loadWaveformFromAnalysis(analysis));
                     missingWavesummary = false;
                 } else if (vc != WaveformFactory::VC_KEEP) {
                     // remove all other Analysis except that one we should keep
@@ -144,7 +131,6 @@ bool AnalyzerWaveform::isDisabledOrLoadStoredSuccess(TrackPointer tio) const {
             }
         }
     }
-
     // If we don't need to calculate the waveform/wavesummary, skip.
     if (!missingWaveform && !missingWavesummary) {
         qDebug() << "AnalyzerWaveform::loadStored - Stored waveform loaded";
@@ -158,21 +144,20 @@ bool AnalyzerWaveform::isDisabledOrLoadStoredSuccess(TrackPointer tio) const {
     }
     return false;
 }
-
 void AnalyzerWaveform::createFilters(int sampleRate) {
     // m_filter[Low] = new EngineFilterButterworth8(FILTER_LOWPASS, sampleRate, 200);
     // m_filter[Mid] = new EngineFilterButterworth8(FILTER_BANDPASS, sampleRate, 200, 2000);
     // m_filter[High] = new EngineFilterButterworth8(FILTER_HIGHPASS, sampleRate, 2000);
-    m_filter[Low] = new EngineFilterIIR(4,IIR_LP, "LpBe4");
-    m_filter[Low]->setFrequencyCorners(sampleRate, 600);
-    m_filter[Mid] = new EngineFilterIIR(8,IIR_BP,"BpBe4");
-    m_filter[Mid]->setFrequencyCorners(sampleRate,600,4000);
-    m_filter[High] = new EngineFilterIIR(4, IIR_HP, "HpBe4");
-    m_filter[High]->setFrequencyCorners(sampleRate,4000);
+    m_filter[Low] = new EngineFilterIIR(8,EngineFilterIIR::LowPass, "LpBu8");
+    m_filter[Low]->setFrequencyCorners(sampleRate, 300);
+    m_filter[Mid] = new EngineFilterIIR(16,EngineFilterIIR::BandPass,"BpBu8");
+    m_filter[Mid]->setFrequencyCorners(sampleRate,300,2000);
+    m_filter[High] = new EngineFilterIIR(8, EngineFilterIIR::HighPass, "HpBu8");
+    m_filter[High]->setFrequencyCorners(sampleRate,2000);
     // settle filters for silence in preroll to avoids ramping (Bug #1406389)
-    for (int i = 0; i < FilterCount; ++i) {
+/*    for (int i = 0; i < FilterCount; ++i) {
         m_filter[i]->assumeSettled();
-    }
+    }*/
 }
 
 void AnalyzerWaveform::destroyFilters() {
@@ -184,7 +169,8 @@ void AnalyzerWaveform::destroyFilters() {
     }
 }
 
-void AnalyzerWaveform::process(const CSAMPLE* buffer, const int bufferLength) {
+void AnalyzerWaveform::process(const CSAMPLE* buffer, const int bufferLength)
+{
     if (m_skipProcessing || !m_waveform || !m_waveformSummary)
         return;
 
@@ -249,16 +235,6 @@ void AnalyzerWaveform::process(const CSAMPLE* buffer, const int bufferLength) {
             m_currentSummaryStride += 2;
             m_waveformSummary->setCompletion(m_currentSummaryStride);
 
-#ifdef TEST_HEAT_MAP
-                QPointF point(m_stride.m_filteredData[Right][High],
-                              m_stride.m_filteredData[Right][Mid]);
-
-                float norm = sqrt(point.x()*point.x() + point.y()*point.y());
-                point /= norm;
-
-                point *= m_stride.m_filteredData[Right][Low];
-                test_heatMap->setPixel(point.toPoint(),0xFF0000FF);
-#endif
         }
     }
 
@@ -266,7 +242,8 @@ void AnalyzerWaveform::process(const CSAMPLE* buffer, const int bufferLength) {
     //qDebug() << "AnalyzerWaveform::process - m_waveformSummary->getCompletion()" << m_waveformSummary->getCompletion() << "off" << m_waveformSummary->getDataSize();
 }
 
-void AnalyzerWaveform::cleanup(TrackPointer tio) {
+void AnalyzerWaveform::cleanup(TrackPointer tio)
+{
     Q_UNUSED(tio);
     if (m_skipProcessing) {
         return;
@@ -285,7 +262,8 @@ void AnalyzerWaveform::cleanup(TrackPointer tio) {
     m_waveformSummary.clear();
 }
 
-void AnalyzerWaveform::finalize(TrackPointer tio) {
+void AnalyzerWaveform::finalize(TrackPointer tio)
+{
     if (m_skipProcessing) {
         return;
     }
@@ -311,11 +289,6 @@ void AnalyzerWaveform::finalize(TrackPointer tio) {
         m_waveformSummaryData = nullptr;
         m_waveformSummary.clear();
     }
-
-#ifdef TEST_HEAT_MAP
-    test_heatMap->save("heatMap.png");
-#endif
-
     qDebug() << "Waveform generation for track" << tio->getId() << "done"
              << m_timer.elapsed().debugSecondsWithUnit();
 }

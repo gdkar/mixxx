@@ -6,7 +6,6 @@
 #include "preferences/usersettings.h"
 #include "control/controlobject.h"
 #include "control/controlproxy.h"
-#include "control/controlpushbutton.h"
 
 class VinylControlControl : public EngineControl {
     Q_OBJECT
@@ -28,12 +27,12 @@ class VinylControlControl : public EngineControl {
     ControlObject* m_pControlVinylSeek;
     ControlObject* m_pControlVinylSpeedType;
     ControlObject* m_pControlVinylStatus;
-    ControlPushButton* m_pControlVinylScratching;
-    ControlPushButton* m_pControlVinylMode;
-    ControlPushButton* m_pControlVinylEnabled;
-    ControlPushButton* m_pControlVinylWantEnabled;
-    ControlPushButton* m_pControlVinylCueing;
-    ControlPushButton* m_pControlVinylSignalEnabled;
+    ControlObject* m_pControlVinylScratching;
+    ControlObject* m_pControlVinylMode;
+    ControlObject* m_pControlVinylEnabled;
+    ControlObject* m_pControlVinylWantEnabled;
+    ControlObject* m_pControlVinylCueing;
+    ControlObject* m_pControlVinylSignalEnabled;
     ControlProxy* m_pPlayEnabled;
     TrackPointer m_pCurrentTrack;
     bool m_bSeekRequested;

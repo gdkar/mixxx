@@ -629,7 +629,7 @@ class MixxxCore(Feature):
                    "preferences/upgrade.cpp",
                    "preferences/dlgpreferencepage.cpp",
 
-
+                   "ladspa/qmlladspa.cpp",
                    "effects/effectmanifest.cpp",
                    "effects/effectmanifestparameter.cpp",
 
@@ -1021,6 +1021,7 @@ class MixxxCore(Feature):
                    "encoder/encodervorbis.cpp",
 
                    "util/statsmanager.cpp",
+                   "util/alphabetafilter.cpp",
                    "util/stat.cpp",
                    "util/statmodel.cpp",
                    "util/duration.cpp",

@@ -1,11 +1,7 @@
 #include "engine/enginefilteriir.h"
 
-EngineFilterIIRBase::EngineFilterIIRBase(QObject *p)
-    :EngineObjectConstIn(p)
-{ }
-EngineFilterIIRBase::~EngineFilterIIRBase() = default;
 namespace {
-    void processBQ(const CSAMPLE * pIn, CSAMPLE *pOut, CSAMPLE *coef, CSAMPLE mcoef, CSAMPLE *buf, const int count)
+    void processBQ(const CSAMPLE * pIn, CSAMPLE *pOut, CSAMPLE *coef, CSAMPLE mcoef, CSAMPLE *buf, int count)
     {
         for(auto i = 0; i < count; i += 2) {
             auto iir0   = pIn[i + 0] - buf[0] * coef[0] - buf[2] * coef[1];
@@ -19,7 +15,7 @@ namespace {
         }
     }
 };
-void EngineFilterIIR::processAndPauseFilter(const CSAMPLE* pIn, CSAMPLE* pOutput,const int iBufferSize)
+void EngineFilterIIR::processAndPauseFilter(const CSAMPLE* pIn, CSAMPLE* pOutput,int iBufferSize)
 {
     process(pIn, pOutput, iBufferSize);
     SampleUtil::applyRampingGain(pOutput,1,0,iBufferSize);
@@ -35,34 +31,62 @@ void EngineFilterIIR::initBuffers()
     // Set the current buffers to 0
     m_doRamping = true;
 }
+double EngineFilterIIR::getSampleRate() const
+{
+    return m_rate;
+}
 void EngineFilterIIR::setCoefs(double sampleRate, size_t n_coef1, QString spec, double freq0, double freq1, int adj)
 {
     // Copy to dynamic-ish memory to prevent fidlib API breakage.
     // Copy the old coefficients into m_oldCoef
-    if(n_coef1 == getSize() && freq0 == m_freq0 && freq1 == m_freq1 && spec == getSpec())
+    auto rate_changed = m_rate != sampleRate;
+    auto size_changed = n_coef1 != getSize();
+    auto freq0_changed = freq0 != m_freq0;
+    auto freq1_changed = freq1 != m_freq1;
+    auto spec_changed  = spec != getSpec();
+    auto adj_changed   = adj != m_adj;
+    if(!rate_changed
+    && !size_changed
+    && !freq0_changed
+    && !freq1_changed
+    && !spec_changed
+    && !adj_changed)
         return;
 
     if(!m_doRamping) {
         m_oldCoef   = m_coef;
-        m_oldPASS   = PASS;
+        m_oldPass   = m_pass;
         m_oldBuf    = m_buf;
         m_doRamping = true;
     }
-    SIZE = n_coef1;
+    m_size = n_coef1;
     auto coef = std::vector<double>(n_coef1 + 1);
     coef[0] = m_fid.design_coef(&coef [1], n_coef1 ,spec.toLocal8Bit().constData(), sampleRate, freq0, freq1, adj);
     std::copy(coef.begin(),coef.end(),m_coef.begin());
-    m_buf.resize(2 * SIZE);
+    m_buf.resize(2 * m_size);
     std::fill(m_buf.begin(),m_buf.end(), 0);
+    m_spec = spec;
+    m_adj   = adj;
+    m_rate  = sampleRate;
     m_freq0 = freq0;
     m_freq1 = freq1;
+    if(rate_changed)
+        emit sampleRateChanged(m_rate);
+    if(size_changed)
+        emit sizeChanged(m_size);
+    if(freq0_changed)
+        emit freq0Changed(m_freq0);
+    if(freq1_changed)
+        emit freq1Changed(m_freq1);
+    if(spec_changed)
+        emit specChanged(m_spec);
 }
 void EngineFilterIIR::assumeSettled()
 {
     m_doRamping = false;
     m_doStart = false;
 }
-void EngineFilterIIR::processBuffer(const CSAMPLE *pIn, CSAMPLE *pOut, CSAMPLE *coef, CSAMPLE *buf, size_t size, const int count)
+void EngineFilterIIR::processBuffer(const CSAMPLE *pIn, CSAMPLE *pOut, CSAMPLE *coef, CSAMPLE *buf, size_t size, int count)
 {
 // IIR_LP and IIR_HP use the same processSample routine
    if(size == 5) {
@@ -77,25 +101,25 @@ void EngineFilterIIR::processBuffer(const CSAMPLE *pIn, CSAMPLE *pOut, CSAMPLE *
             buf[3] = iir1;
         }
    } else {
-        auto mcoef = (PASS == IIR_BP && size == 2) ? 0.f : ((PASS == IIR_LP) ? 2.f : -2.f);
+        auto mcoef = (m_pass == BandPass && size == 2) ? 0.f : ((m_pass == LowPass ) ? 2.f : -2.f);
         processBQ(pIn,pOut,&coef[1], mcoef, &buf[0], count);
         for(auto i = size_t{2}; i < size; i += 2) {
-            if(PASS == IIR_BP && i == (size/2))
+            if(m_pass == BandPass && i == (size/2))
                 mcoef = 2.f;
             processBQ(pOut,pOut,&coef[1 + i], mcoef, &buf[i * 2], count);
         }
         SampleUtil::applyGain(pOut, coef[0], count);
     }
 }
-void EngineFilterIIR::process(const CSAMPLE* pIn, CSAMPLE* pOutput,const int iBufferSize)
+void EngineFilterIIR::process(const CSAMPLE* pIn, CSAMPLE* pOutput,int iBufferSize)
 {
     processBuffer(pIn, pOutput, &m_coef[0], &m_buf[0], m_coef.size() - 1, iBufferSize);
     if(m_doRamping) {
         if(!m_doStart) {
             auto pTmp = static_cast<CSAMPLE*>(alloca(sizeof(CSAMPLE) * iBufferSize));
-            std::swap(PASS,m_oldPASS);
+            std::swap(m_pass,m_oldPass);
             processBuffer(pIn, pTmp, &m_oldCoef[0], &m_oldBuf[0],m_oldCoef.size() - 1, iBufferSize);
-            std::swap(PASS,m_oldPASS);
+            std::swap(m_pass,m_oldPass);
             SampleUtil::copy(pOutput, pTmp, iBufferSize/2);
             SampleUtil::applyRampingGain(&pOutput[iBufferSize/2], 0.f, 1.f, iBufferSize/2);
             SampleUtil::addWithRampingGain(&pOutput[iBufferSize/2], &pTmp[iBufferSize/2], 1.f, 0.f, iBufferSize/2);
@@ -127,36 +151,65 @@ void EngineFilterIIR::pauseFilterInner()
 }
 void EngineFilterIIR::setFrequencyCorners(double rate, double freq0, double freq1)
 {
-    setCoefs(rate, SIZE, m_spec, freq0, freq1);
+    setCoefs(rate, m_size, m_spec, freq0, freq1);
 }
-EngineFilterIIR::EngineFilterIIR(QObject *pParent, size_t _SIZE, IIRPass _PASS, QString spec, QString tmpl)
-    : EngineFilterIIRBase(pParent)
-    , SIZE     (_SIZE)
-    , PASS     (_PASS)
+EngineFilterIIR::EngineFilterIIR(QObject *pParent, size_t _m_size, IIRPass _m_pass, QString spec, QString tmpl)
+    : EngineObjectConstIn(pParent)
+    , m_size     (_m_size)
+    , m_pass     (_m_pass)
     , m_spec(spec)
     , m_tmpl(tmpl)
-    , m_coef   (SIZE + 1)
-    , m_buf    (SIZE * 2)
-    , m_oldCoef(SIZE + 1)
-    , m_oldBuf (SIZE * 2)
+    , m_coef   (m_size + 1)
+    , m_buf    (m_size * 2)
+    , m_oldCoef(m_size + 1)
+    , m_oldBuf (m_size * 2)
 {
     pauseFilter();
 }
-EngineFilterIIR::EngineFilterIIR(size_t _SIZE, IIRPass _PASS, QString spec, QString tmpl)
-    : EngineFilterIIR(nullptr, _SIZE, _PASS, spec, tmpl)
+EngineFilterIIR::EngineFilterIIR(size_t _m_size, IIRPass _m_pass, QString spec, QString tmpl)
+    : EngineFilterIIR(nullptr, _m_size, _m_pass, spec, tmpl)
 { }
 EngineFilterIIR::~EngineFilterIIR() = default;
 void EngineFilterIIR::setStartFromDry(bool sfd)
 {
-    m_startFromDry = sfd;
+    if(m_startFromDry != sfd)
+        emit startFromDryChanged(m_startFromDry = sfd);
 }
 bool EngineFilterIIR::getStartFromDry() const
 {
     return m_startFromDry;
 }
+double EngineFilterIIR::getFreq0() const
+{
+    return m_freq0;
+}
+double EngineFilterIIR::getFreq1() const
+{
+    return m_freq1;
+}
+void EngineFilterIIR::setFreq0(double f)
+{
+    if(m_freq0 != f) {
+        setCoefs(m_rate,m_size, m_spec, f, m_freq1, m_adj);
+    }
+}
+void EngineFilterIIR::setSampleRate(double rate)
+{
+    if(rate != m_rate) {
+        setCoefs(rate,m_size, m_spec, m_freq0, m_freq1, m_adj);
+    }
+}
+void EngineFilterIIR::setFreq1(double f)
+{
+    if(m_freq1 != f) {
+        setCoefs(m_rate,m_size, m_spec, m_freq0, f, m_adj);
+    }
+}
 void EngineFilterIIR::setSpec(QString s)
 {
-    m_spec = s;
+    if(m_spec != s) {
+        setCoefs(m_rate,m_size, s, m_freq0, m_freq1, m_adj);
+    }
 }
 QString EngineFilterIIR::getSpec() const
 {
@@ -164,7 +217,8 @@ QString EngineFilterIIR::getSpec() const
 }
 void EngineFilterIIR::setTemplate(QString t)
 {
-    m_tmpl = t;
+    if(m_tmpl != t)
+        emit templateChanged(m_tmpl = t);
 }
 QString EngineFilterIIR::getTemplate() const
 {
@@ -172,11 +226,11 @@ QString EngineFilterIIR::getTemplate() const
 }
 size_t EngineFilterIIR::getSize() const
 {
-    return SIZE;
+    return m_size;
 }
-IIRPass EngineFilterIIR::getPass() const
+EngineFilterIIR::IIRPass EngineFilterIIR::getPass() const
 {
-    return PASS;
+    return m_pass;
 }
 void EngineFilterIIR::setPass(IIRPass _pass)
 {
@@ -184,9 +238,10 @@ void EngineFilterIIR::setPass(IIRPass _pass)
         if(!m_doRamping) {
             m_oldCoef   = m_coef;
             m_oldBuf    = m_buf;
-            m_oldPASS   = PASS;
+            m_oldPass   = m_pass;
             m_doRamping = true;
         }
-        PASS = _pass;
+        m_pass = _pass;
+        emit passChanged(_pass);
     }
 }

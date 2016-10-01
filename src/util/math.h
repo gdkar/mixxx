@@ -52,6 +52,41 @@ constexpr T math_clamp(T val, T minval, T maxval) {
 template <typename T>
 constexpr std::enable_if_t<std::is_integral<T>::value,bool> even(T value) { return value % 2 == 0; }
 
+namespace builtin {
+    template<class T> struct _clz{};
+    template<> struct _clz<uint32_t> {
+        using restype = int;
+        constexpr restype operator()(uint32_t x){ return __builtin_clz(x);}
+    };
+    template<> struct _clz<int32_t> {
+        using restype = int;
+        constexpr restype operator()(int32_t x){ return __builtin_clz(x);}
+    };
+    template<> struct _clz<uint64_t> {
+        using restype = int;
+        constexpr restype operator()(uint64_t x){ return __builtin_clzl(x);}
+    };
+    template<> struct _clz<int64_t> {
+        using restype = int;
+        constexpr restype operator()(int64_t x){ return __builtin_clzl(x);}
+    };
+};
+template<class T>
+constexpr typename builtin::_clz<T>::restype clz(T t)
+{
+    return builtin::_clz<T>{}(t);
+}
+template<class T>
+constexpr int _digits() { return std::numeric_limits<T>::digits;}
+
+template<class T>
+constexpr std::enable_if_t<std::is_integral<T>::value,int> _bits() { return _digits<std::make_unsigned_t<T>>();}
+
+template<class T>
+constexpr typename builtin::_clz<T>::restype ilog2(T x)
+{
+    return _bits<T>() - clz(x-1);
+}
 template<class T>
 constexpr std::enable_if_t<std::is_integral<T>::value,T>
 roundUpToPowerOf2(T x)

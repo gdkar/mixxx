@@ -44,86 +44,83 @@ WWaveformViewer::~WWaveformViewer()
 
 void WWaveformViewer::setup(const QDomNode& node, const SkinContext& context)
 {
-    if (m_waveformWidget) {
-        m_waveformWidget->setup(node, context);
+    if (auto w = getWaveformWidget()) {
+        w->setup(node, context);
     }
 }
 
 void WWaveformViewer::resizeEvent(QResizeEvent* /*event*/)
 {
-    if (m_waveformWidget) {
-        m_waveformWidget->resize(width(), height());
+    if (auto w = getWaveformWidget()) {
+        w->resize(width(), height());
     }
 }
 
-void WWaveformViewer::mousePressEvent(QMouseEvent* event) {
-    if (!m_waveformWidget) {
-        return;
-    }
-
-    m_mouseAnchor = event->pos();
-
-    if (event->button() == Qt::LeftButton) {
-        // If we are pitch-bending then disable and reset because the two
-        // shouldn't be used at once.
-        if (m_bBending) {
+void WWaveformViewer::mousePressEvent(QMouseEvent* event)
+{
+    if (auto w = getWaveformWidget()) {
+        m_mouseAnchor = event->pos();
+        if (event->button() == Qt::LeftButton) {
+            // If we are pitch-bending then disable and reset because the two
+            // shouldn't be used at once.
+            if (m_bBending) {
+                m_pWheel->setParameter(0.5);
+                m_bBending = false;
+            }
+            m_bScratching = true;
+            int eventPosValue = w->getOrientation() == Qt::Horizontal
+                ? event->pos().x()
+                : event->pos().y();
+            auto audioSamplePerPixel = w->getAudioSamplePerPixel();
+            auto targetPosition = -1.0 * eventPosValue * audioSamplePerPixel * 2;
+            m_pScratchPosition->set(targetPosition);
+            m_pScratchPositionEnable->set(1.0);
+        } else if (event->button() == Qt::RightButton) {
+            // If we are scratching then disable and reset because the two shouldn't
+            // be used at once.
+            if (m_bScratching) {
+                m_pScratchPositionEnable->set(0.0);
+                m_bScratching = false;
+            }
             m_pWheel->setParameter(0.5);
-            m_bBending = false;
+            m_bBending = true;
         }
-        m_bScratching = true;
-        int eventPosValue = m_waveformWidget->getOrientation() == Qt::Horizontal ?
-                    event->pos().x() : event->pos().y();
-        double audioSamplePerPixel = m_waveformWidget->getAudioSamplePerPixel();
-        double targetPosition = -1.0 * eventPosValue * audioSamplePerPixel * 2;
-        m_pScratchPosition->set(targetPosition);
-        m_pScratchPositionEnable->set(1.0);
-    } else if (event->button() == Qt::RightButton) {
-        // If we are scratching then disable and reset because the two shouldn't
-        // be used at once.
+
+        // Set the cursor to a hand while the mouse is down.
+        setCursor(Qt::ClosedHandCursor);
+    }
+}
+
+void WWaveformViewer::mouseMoveEvent(QMouseEvent* event)
+{
+    if (auto w = getWaveformWidget()) {
+
+        // Only send signals for mouse moving if the left button is pressed
         if (m_bScratching) {
-            m_pScratchPositionEnable->set(0.0);
-            m_bScratching = false;
+            int eventPosValue = w->getOrientation() == Qt::Horizontal ?
+                        event->pos().x() : event->pos().y();
+            // Adjusts for one-to-one movement.
+            auto audioSamplePerPixel = w->getAudioSamplePerPixel();
+            auto targetPosition = -1.0 * eventPosValue * audioSamplePerPixel * 2;
+            //qDebug() << "Target:" << targetPosition;
+            m_pScratchPosition->set(targetPosition);
+        } else if (m_bBending) {
+            QPoint diff = event->pos() - m_mouseAnchor;
+            int diffValue = w->getOrientation() == Qt::Horizontal ?diff.x() : diff.y();
+            // Start at the middle of [0.0, 1.0], and emit values based on how far
+            // the mouse has traveled horizontally. Note, for legacy (MIDI) reasons,
+            // this is tuned to 127.
+            // NOTE(rryan): This is basically a direct connection to the "wheel"
+            // control since we manually connect it in LegacySkinParser regardless
+            // of whether the skin specifies it. See ControlTTRotaryBehavior to see
+            // where this value is handled.
+            auto v = 0.5 + (diffValue / 1270.0);
+            // clamp to [0.0, 1.0]
+            v = math_clamp(v, 0.0, 1.0);
+            m_pWheel->setParameter(v);
         }
-        m_pWheel->setParameter(0.5);
-        m_bBending = true;
-    }
-
-    // Set the cursor to a hand while the mouse is down.
-    setCursor(Qt::ClosedHandCursor);
+        }
 }
-
-void WWaveformViewer::mouseMoveEvent(QMouseEvent* event) {
-    if (!m_waveformWidget) {
-        return;
-    }
-
-    // Only send signals for mouse moving if the left button is pressed
-    if (m_bScratching) {
-        int eventPosValue = m_waveformWidget->getOrientation() == Qt::Horizontal ?
-                    event->pos().x() : event->pos().y();
-        // Adjusts for one-to-one movement.
-        double audioSamplePerPixel = m_waveformWidget->getAudioSamplePerPixel();
-        double targetPosition = -1.0 * eventPosValue * audioSamplePerPixel * 2;
-        //qDebug() << "Target:" << targetPosition;
-        m_pScratchPosition->set(targetPosition);
-    } else if (m_bBending) {
-        QPoint diff = event->pos() - m_mouseAnchor;
-        int diffValue = m_waveformWidget->getOrientation() == Qt::Horizontal ?
-                    diff.x() : diff.y();
-        // Start at the middle of [0.0, 1.0], and emit values based on how far
-        // the mouse has traveled horizontally. Note, for legacy (MIDI) reasons,
-        // this is tuned to 127.
-        // NOTE(rryan): This is basically a direct connection to the "wheel"
-        // control since we manually connect it in LegacySkinParser regardless
-        // of whether the skin specifies it. See ControlTTRotaryBehavior to see
-        // where this value is handled.
-        double v = 0.5 + (diffValue / 1270.0);
-        // clamp to [0.0, 1.0]
-        v = math_clamp(v, 0.0, 1.0);
-        m_pWheel->setParameter(v);
-    }
-}
-
 void WWaveformViewer::mouseReleaseEvent(QMouseEvent* /*event*/)
 {
     if (m_bScratching) {
@@ -141,20 +138,19 @@ void WWaveformViewer::mouseReleaseEvent(QMouseEvent* /*event*/)
 
 void WWaveformViewer::wheelEvent(QWheelEvent *event)
 {
-    if (m_waveformWidget) {
+    if (auto w = getWaveformWidget()) {
         //NOTE: (vrince) to limit the zoom action area uncomment the following line
         //if (event->x() > width() - m_zoomZoneWidth) {
             if (event->delta() > 0) {
                 //qDebug() << "WaveformWidgetRenderer::wheelEvent +1";
-                onZoomChange(m_waveformWidget->getZoomFactor() + 1);
+                onZoomChange(w->getZoomFactor() + 1);
             } else {
                 //qDebug() << "WaveformWidgetRenderer::wheelEvent -1";
-                onZoomChange(m_waveformWidget->getZoomFactor() - 1);
+                onZoomChange(w->getZoomFactor() - 1);
             }
         //}
     }
 }
-
 void WWaveformViewer::dragEnterEvent(QDragEnterEvent* event)
 {
     if (DragAndDropHelper::allowLoadToPlayer(m_pGroup, m_pConfig) &&
@@ -177,20 +173,18 @@ void WWaveformViewer::dropEvent(QDropEvent* event)
     }
     event->ignore();
 }
-
 void WWaveformViewer::slotTrackLoaded(TrackPointer track)
 {
-    if (m_waveformWidget) {
-        m_waveformWidget->setTrack(track);
+    if (auto w = getWaveformWidget()) {
+        w->setTrack(track);
     }
 }
-
 void WWaveformViewer::slotLoadingTrack(TrackPointer pNewTrack, TrackPointer pOldTrack)
 {
     Q_UNUSED(pNewTrack);
     Q_UNUSED(pOldTrack);
-    if (m_waveformWidget) {
-        m_waveformWidget->setTrack(TrackPointer());
+    if (auto w = getWaveformWidget()) {
+        w->setTrack(TrackPointer());
     }
 }
 
@@ -205,8 +199,8 @@ void WWaveformViewer::onZoomChange(double zoom)
 void WWaveformViewer::setZoom(int zoom)
 {
     //qDebug() << "WaveformWidgetRenderer::setZoom" << zoom;
-    if (m_waveformWidget) {
-        m_waveformWidget->setZoom(zoom);
+    if (auto w = getWaveformWidget()) {
+        w->setZoom(zoom);
     }
 
     // If multiple waveform widgets for the same group are created then it's
@@ -223,15 +217,10 @@ void WWaveformViewer::setZoom(int zoom)
 
 void WWaveformViewer::setWaveformWidget(WaveformWidgetAbstract* waveformWidget)
 {
-    if (m_waveformWidget) {
-        auto pWidget = m_waveformWidget->getWidget();
-        disconnect(pWidget, SIGNAL(destroyed()),
-                   this, SLOT(slotWidgetDead()));
-    }
-    m_waveformWidget = waveformWidget;
-    if (m_waveformWidget) {
-        auto pWidget = m_waveformWidget->getWidget();
-        connect(pWidget, SIGNAL(destroyed()),
-                this, SLOT(slotWidgetDead()));
-    }
+    m_waveformWidget = dynamic_cast<QWidget*>(waveformWidget);
 }
+WaveformWidgetAbstract* WWaveformViewer::getWaveformWidget() const
+{
+    return dynamic_cast<WaveformWidgetAbstract*>(m_waveformWidget.data());
+}
+const char* WWaveformViewer::getGroup() const{ return m_pGroup;}

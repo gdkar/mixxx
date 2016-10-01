@@ -20,6 +20,7 @@
 #include <algorithm>
 
 #include "util/types.h"
+#include "util/intrusive_fifo.hpp"
 #include "preferences/usersettings.h"
 #include "track/track.h"
 #include "engine/engineworker.h"
@@ -55,7 +56,7 @@ typedef struct Hint {
 //    reallocate on every callback. resize(0) should work but a future developer
 //    may see a resize(0) and say "that's a silly way of writing clear()!" and
 //    replace it without realizing.
-typedef QVarLengthArray<Hint, 512> HintVector;
+typedef QVarLengthArray<Hint, 64> HintVector;
 
 // CachingReader provides a layer on top of a SoundSource for reading samples
 // from a file. Since we cannot do file I/O in the audio callback thread
@@ -99,7 +100,7 @@ class CachingReader : public QObject {
     virtual void newTrack(TrackPointer pTrack);
     void setScheduler(EngineWorkerScheduler* pScheduler)
     {
-        m_worker.setScheduler(pScheduler);
+        m_worker->setScheduler(pScheduler);
     }
     const static int maximumCachingReaderChunksInMemory;
   signals:
@@ -110,12 +111,12 @@ class CachingReader : public QObject {
 
   private:
     const UserSettingsPointer m_pConfig;
-
+    SINT m_epoch{0};
     // Thread-safe FIFOs for communication between the engine callback and
     // reader thread.
-    FIFO<CachingReaderChunk*> m_chunkReadRequestFIFO;
+    intrusive_fifo<CachingReaderChunk> m_chunkReadRequestFIFO;
+//    FIFO<CachingReaderChunk*> m_chunkReadRequestFIFO;
     FIFO<ReaderStatusUpdate> m_readerStatusFIFO;
-
     // Looks for the provided chunk number in the index of in-memory chunks and
     // returns it if it is present. If not, returns nullptr. If it is present then
     // freshenChunk is called on the chunk to make it the MRU chunk.
@@ -133,27 +134,26 @@ class CachingReader : public QObject {
     CachingReaderChunk* allocateChunk(SINT chunkIndex);
     // Gets a chunk from the free list, frees the LRU CachingReaderChunk if none available.
     CachingReaderChunk* allocateChunkExpireLRU(SINT chunkIndex);
-    ReaderStatus m_readerStatus;
-
+    ReaderStatusUpdate::ReaderStatus m_readerStatus;
     // Keeps track of all CachingReaderChunks we've allocated.
     std::deque<std::unique_ptr<CachingReaderChunk> > m_chunks;
-
     // List of free chunks. Linked list so that we have constant time insertions
     // and deletions. Iteration is not necessary.
-    std::forward_list<CachingReaderChunk*> m_freeChunks;
+//    std::forward_list<CachingReaderChunk*> m_freeChunks;
+    intrusive_fifo<CachingReaderChunk> m_freeChunks;
     // Keeps track of what CachingReaderChunks we've allocated and indexes them based on what
     // chunk number they are allocated to.
     QHash<int, CachingReaderChunk*> m_allocatedCachingReaderChunks;
 
     // The linked list of recently-used chunks.
-    CachingReaderChunk* m_mruCachingReaderChunk;
-    CachingReaderChunk* m_lruCachingReaderChunk;
+    CachingReaderChunk* m_mruCachingReaderChunk{};
+    CachingReaderChunk* m_lruCachingReaderChunk{};
 
     // The maximum readable frame index as reported by the worker.
     // This frame index references the frame that follows the last
     // frame with sample data.
     SINT m_maxReadableFrameIndex;
-    CachingReaderWorker m_worker;
+    CachingReaderWorker *m_worker{};
 };
 
 

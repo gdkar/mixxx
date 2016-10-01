@@ -8,7 +8,7 @@
 class QtSimpleWaveformWidget : public QWidget, public WaveformWidgetAbstract {
     Q_OBJECT
   public:
-    QtSimpleWaveformWidget(const char* group, QWidget* parent);
+    Q_INVOKABLE QtSimpleWaveformWidget(const char* group, QWidget* parent);
     virtual ~QtSimpleWaveformWidget();
 
     virtual WaveformWidgetType::Type getType() const { return WaveformWidgetType::GLSimpleWaveform; }
@@ -19,7 +19,6 @@ class QtSimpleWaveformWidget : public QWidget, public WaveformWidgetAbstract {
     static bool developerOnly() { return false; }
 
   protected:
-    virtual void castToQWidget();
     virtual void paintEvent(QPaintEvent* event);
 
   private:

@@ -48,7 +48,6 @@ void Stat::processReport(const StatReport& report)
     if (m_compute & Stat::MIN && report.value < m_min) {
         m_min = report.value;
     }
-
     // Method comes from Knuth, see:
     // http://www.johndcook.com/standard_deviation.html
     if (m_compute & Stat::SAMPLE_VARIANCE) {
@@ -61,16 +60,13 @@ void Stat::processReport(const StatReport& report)
             m_variance_sk += (report.value - variance_mk_prev) * (report.value - m_variance_mk);
         }
     }
-
     if (m_compute & Stat::HISTOGRAM) {
         m_histogram[report.value] += 1.0;
     }
-
     if (m_compute & Stat::VALUES) {
         m_values.push_back(report.value);
     }
 }
-
 QDebug operator<<(QDebug dbg, const Stat &stat) {
     QStringList stats;
     if (stat.m_compute & Stat::COUNT)
@@ -101,7 +97,6 @@ QDebug operator<<(QDebug dbg, const Stat &stat) {
         }
         stats << value;
     }
-
     if (stat.m_compute & Stat::MAX) {
         QString value = "max=";
         if (stat.m_report_count > 0) {
@@ -119,21 +114,17 @@ QDebug operator<<(QDebug dbg, const Stat &stat) {
             stats << "stddev=" + QString::number(sqrt(variance)) + stat.valueUnits();
         }
     }
-
     if (stat.m_compute & Stat::SAMPLE_MEDIAN) {
         // TODO(rryan): implement
     }
-
     if (stat.m_compute & Stat::HISTOGRAM) {
-        QStringList histogram;
-        for (auto it = stat.m_histogram.begin();
-             it != stat.m_histogram.end(); ++it) {
+        auto histogram = QStringList{};
+        for (auto it = stat.m_histogram.begin(); it != stat.m_histogram.end(); ++it) {
             histogram << QString::number(it.key()) + stat.valueUnits() + ":" +
                     QString::number(it.value());
         }
         stats << "histogram=" + histogram.join(",");
     }
-
     dbg.nospace() << "Stat(" << stat.m_tag << "," << stats.join(",") << ")";
     return dbg.maybeSpace();
 }
@@ -183,13 +174,6 @@ bool Stat::track(const QString& tag,
           , type
           , compute);
         return pManager->maybeWriteReport(report);
-/*        StatReport report;
-        report.tag = strdup(tag.toAscii().constData());
-        report.type = type;
-        report.compute = compute;
-        report.time = mixxx::Time::elapsed().toIntegerNanos();
-        report.value = value;
-        return pManager && pManager->maybeWriteReport(report);*/
     }
     return false;
 }

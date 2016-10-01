@@ -94,13 +94,10 @@ class EngineBroadcast
 
     void serverWrite(unsigned char *header, unsigned char *body,
                int headerLen, int bodyLen);
-
 #ifndef __WINDOWS__
     void ignoreSigpipe();
 #endif
-
     bool writeSingle(const unsigned char *data, size_t len);
-
     QByteArray encodeString(const QString& string);
     QTextCodec* m_pTextCodec;
     TrackPointer m_pMetaData;

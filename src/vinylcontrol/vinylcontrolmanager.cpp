@@ -5,6 +5,7 @@
  */
 
 #include "control/controlobject.h"
+#include "control/controlpushbutton.h"
 #include "control/controlproxy.h"
 #include "mixer/playermanager.h"
 #include "soundio/soundmanager.h"

@@ -26,8 +26,7 @@ RecordingManager::RecordingManager(UserSettingsPointer pConfig, EngineMaster* pE
           m_durationRecorded("")
 {
     m_pToggleRecording = new ControlPushButton(ConfigKey(RECORDING_PREF_KEY, "toggle_recording"),this);
-    connect(m_pToggleRecording, SIGNAL(valueChanged(double)),
-            this, SLOT(slotToggleRecording(double)));
+    connect(m_pToggleRecording, SIGNAL(valueChanged(double)),this, SLOT(slotToggleRecording(double)));
     m_recReadyCO = new ControlObject(ConfigKey(RECORDING_PREF_KEY, "status"),this);
     m_recReady = new ControlProxy(m_recReadyCO->getKey(), this);
 
@@ -38,12 +37,9 @@ RecordingManager::RecordingManager(UserSettingsPointer pConfig, EngineMaster* pE
     auto pSidechain = pEngine->getSideChain();
     if (pSidechain) {
         auto pEngineRecord = new EngineRecord(m_pConfig);
-        connect(pEngineRecord, SIGNAL(isRecording(bool, bool)),
-                this, SLOT(slotIsRecording(bool, bool)));
-        connect(pEngineRecord, SIGNAL(bytesRecorded(int)),
-                this, SLOT(slotBytesRecorded(int)));
-        connect(pEngineRecord, SIGNAL(durationRecorded(QString)),
-                this, SLOT(slotDurationRecorded(QString)));
+        connect(pEngineRecord, SIGNAL(isRecording(bool, bool)),this, SLOT(slotIsRecording(bool, bool)));
+        connect(pEngineRecord, SIGNAL(bytesRecorded(int)),this, SLOT(slotBytesRecorded(int)));
+        connect(pEngineRecord, SIGNAL(durationRecorded(QString)),this, SLOT(slotDurationRecorded(QString)));
         pSidechain->addSideChainWorker(pEngineRecord);
     }
 }

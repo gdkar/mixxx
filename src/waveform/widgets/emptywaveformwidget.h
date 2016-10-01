@@ -21,12 +21,11 @@ class EmptyWaveformWidget : public QWidget, public WaveformWidgetAbstract {
     static inline bool developerOnly() { return false; }
 
   protected:
-    virtual void castToQWidget();
     virtual void paintEvent(QPaintEvent* event);
     virtual mixxx::Duration render();
 
   private:
-    EmptyWaveformWidget(const char* group, QWidget* parent);
+    Q_INVOKABLE EmptyWaveformWidget(const char* group, QWidget* parent);
     friend class WaveformWidgetFactory;
 };
 

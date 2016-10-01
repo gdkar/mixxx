@@ -44,11 +44,6 @@ GLVSyncTestWidget::~GLVSyncTestWidget() {
         makeCurrent();
     }
 }
-
-void GLVSyncTestWidget::castToQWidget() {
-    m_widget = static_cast<QWidget*>(static_cast<QGLWidget*>(this));
-}
-
 void GLVSyncTestWidget::paintEvent(QPaintEvent* event) {
     Q_UNUSED(event);
 }

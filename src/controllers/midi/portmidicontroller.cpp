@@ -182,7 +182,7 @@ bool PortMidiController::poll()
             if (data == MIDI_EOX) {
                 m_bInSysex = false;
                 const char* buffer = reinterpret_cast<const char*>(m_sysex.data());
-                receive(QByteArray::fromRawData(buffer, m_sysex.size()),timestamp);
+//                receive(QByteArray::fromRawData(buffer, m_sysex.size()),timestamp);
                 m_sysex.clear();
             }
         }

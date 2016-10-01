@@ -20,10 +20,6 @@ EmptyWaveformWidget::EmptyWaveformWidget(const char* group, QWidget* parent)
 EmptyWaveformWidget::~EmptyWaveformWidget() {
 }
 
-void EmptyWaveformWidget::castToQWidget() {
-    m_widget = static_cast<QWidget*>(this);
-}
-
 void EmptyWaveformWidget::paintEvent(QPaintEvent* event) {
     // Only render if Qt thinks it is required
     QPainter painter(this);

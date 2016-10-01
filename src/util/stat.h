@@ -7,6 +7,7 @@
 #include <QMetaEnum>
 #include <QMetaType>
 #include <QtGlobal>
+#include <deque>
 
 #include "util/intrusive_fifo.hpp"
 #include "util/experiment.h"
@@ -30,26 +31,6 @@ class Stat {
     static QString statTypeToString(StatType type) {
         auto me = QMetaEnum::fromType<StatType>();
         return me.valueToKey(type);
-/*        switch (type) {
-            case UNSPECIFIED:
-                return "UNSPECIFIED";
-            case COUNTER:
-                return "COUNTER";
-            case DURATION_MSEC:
-                return "DURATION_MSEC";
-            case DURATION_NANOSEC:
-                return "DURATION_NANOSEC";
-            case DURATION_SEC:
-                return "DURATION_SEC";
-            case EVENT:
-                return "EVENT";
-            case EVENT_START:
-                return "START";
-            case EVENT_END:
-                return "END";
-            default:
-                return "UNKNOWN";
-        }*/
     }
 
     enum ComputeType {
@@ -67,7 +48,7 @@ class Stat {
         MIN             = 0x0020,
         // O(1) in time and space.
         MAX             = 0x0040,
-        // O(1) in time, O(k) in space where k is # of distinct values.
+        // O(log(k)) in time, O(k) in space where k is # of distinct values.
         // Use carefully!
         HISTOGRAM       = 0x0080,
         // O(1) in time, O(n) in space where n is the # of reports.
@@ -84,8 +65,8 @@ class Stat {
     };
     Q_DECLARE_FLAGS(ComputeFlags,ComputeType)
 //    typedef int ComputeFlags;
-
-    static Experiment::Mode modeFromFlags(ComputeFlags flags) {
+    static Experiment::Mode modeFromFlags(ComputeFlags flags)
+    {
         if (flags & Stat::STATS_EXPERIMENT) {
             return Experiment::EXPERIMENT;
         } else if (flags & Stat::STATS_BASE) {
@@ -93,16 +74,13 @@ class Stat {
         }
         return Experiment::OFF;
     }
-
-    static ComputeFlags experimentFlags(ComputeFlags flags) {
+    static ComputeFlags experimentFlags(ComputeFlags flags)
+    {
         switch (Experiment::mode()) {
-            case Experiment::EXPERIMENT:
-                return flags | STATS_EXPERIMENT;
-            case Experiment::BASE:
-                return flags | STATS_BASE;
+            case Experiment::EXPERIMENT: return flags | STATS_EXPERIMENT;
+            case Experiment::BASE:       return flags | STATS_BASE;
             default:
-            case Experiment::OFF:
-                return flags;
+            case Experiment::OFF:        return flags;
         }
     }
 
@@ -122,7 +100,7 @@ class Stat {
     QString m_tag;
     StatType m_type;
     ComputeFlags m_compute;
-    QVector<double> m_values;
+    std::deque<double> m_values;
     double m_report_count;
     double m_sum;
     double m_min;
@@ -130,7 +108,6 @@ class Stat {
     double m_variance_mk;
     double m_variance_sk;
     QMap<double, double> m_histogram;
-
     static bool track(const QString& tag,
                       Stat::StatType type,
                       Stat::ComputeFlags compute,

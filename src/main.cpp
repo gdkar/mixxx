@@ -57,15 +57,19 @@ int main(int argc, char * argv[]) {
     QCoreApplication::setApplicationVersion(Version::version());
     QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
     {
-        auto format = QSurfaceFormat::defaultFormat();
-        format.setRedBufferSize(8);
-        format.setGreenBufferSize(8);
-        format.setBlueBufferSize(8);
-        format.setAlphaBufferSize(8);
-        format.setStencilBufferSize(8);
-        format.setDepthBufferSize(24);
-        format.setVersion(4,3);
-        QSurfaceFormat::setDefaultFormat(format);
+        auto glFormat = QSurfaceFormat::defaultFormat();
+        glFormat.setVersion(4,3);
+        glFormat.setDepthBufferSize(24);
+        glFormat.setStencilBufferSize(8);
+        // Disable waiting for vertical Sync
+        // This can be enabled when using a single Threads for each QGLContext
+        // Setting 1 causes QGLContext::swapBuffer to sleep until the next VSync
+        glFormat.setRedBufferSize(8);
+        glFormat.setBlueBufferSize(8);
+        glFormat.setGreenBufferSize(8);
+        glFormat.setAlphaBufferSize(8);
+        QSurfaceFormat::setDefaultFormat(glFormat);
+
     }
     // Construct a list of strings based on the command line arguments
     auto & args = CmdlineArgs::Instance();

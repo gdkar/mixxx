@@ -238,8 +238,8 @@ void RtMidiController::callback(double deltatime, std::vector<uint8_t> &message)
             auto data = message.at(i);
             // End System Exclusive message if the EOX byte was received
             if(data == MIDI_EOX) {
-                receive( QByteArray::fromRawData(reinterpret_cast<const char *>(m_sysex.data()),m_sysex.size()),
-                    timestamp);
+//                receive( QByteArray::fromRawData(reinterpret_cast<const char *>(m_sysex.data()),m_sysex.size()),
+//                    timestamp);
                 m_sysex.clear();
                 m_bInSysex = false;
                 return;

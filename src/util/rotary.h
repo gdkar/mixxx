@@ -1,6 +1,7 @@
 #ifndef MIXXX_UTIL_ROTARY_H
 #define MIXXX_UTIL_ROTARY_H
-
+#include <memory>
+#include <utility>
 class Rotary {
   public:
     Rotary();
@@ -31,7 +32,7 @@ class Rotary {
     // Update position in filter
     int m_iFilterPos;
     // Pointer to rotary filter buffer
-    double *m_pFilter;
+    std::unique_ptr<double[]> m_pFilter;
     // Calibration value
     double m_dCalibration;
     // Last value

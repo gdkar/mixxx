@@ -14,25 +14,30 @@
 #include "sources/audiosource.h"
 #include "util/fifo.h"
 
-enum ReaderStatus {
-    INVALID,
-    TRACK_NOT_LOADED,
-    TRACK_LOADED,
-    CHUNK_READ_SUCCESS,
-    CHUNK_READ_EOF,
-    CHUNK_READ_INVALID
-};
 
-typedef struct ReaderStatusUpdate {
-    ReaderStatus status;
-    CachingReaderChunk* chunk;
-    SINT maxReadableFrameIndex;
-    ReaderStatusUpdate()
-        : status(INVALID)
-        , chunk(nullptr)
-        , maxReadableFrameIndex(mixxx::AudioSource::getMinFrameIndex()) {
-    }
-    ReaderStatusUpdate(
+
+struct ReaderStatusUpdate {
+    Q_GADGET
+    Q_PROPERTY(ReaderStatus status MEMBER status)
+    Q_PROPERTY(CachingReaderChunk* chunk MEMBER chunk)
+    Q_PROPERTY(qint64 maxReadableFrameIndex MEMBER maxReadableFrameIndex)
+public:
+    enum ReaderStatus {
+        INVALID,
+        TRACK_NOT_LOADED,
+        TRACK_LOADED,
+        CHUNK_READ_SUCCESS,
+        CHUNK_READ_EOF,
+        CHUNK_READ_INVALID
+    };
+    Q_ENUM(ReaderStatus)
+
+    ReaderStatus status{INVALID};
+    CachingReaderChunk* chunk{};
+    SINT maxReadableFrameIndex{};
+    constexpr ReaderStatusUpdate() = default;
+
+    constexpr ReaderStatusUpdate(
             ReaderStatus statusArg,
             CachingReaderChunk* chunkArg,
             SINT maxReadableFrameIndexArg)
@@ -40,7 +45,7 @@ typedef struct ReaderStatusUpdate {
         , chunk(chunkArg)
         , maxReadableFrameIndex(maxReadableFrameIndexArg) {
     }
-} ReaderStatusUpdate;
+};
 
 class CachingReaderWorker : public EngineWorker {
     Q_OBJECT
@@ -48,8 +53,10 @@ class CachingReaderWorker : public EngineWorker {
   public:
     // Construct a CachingReader with the given group.
     CachingReaderWorker(QString group,
-            FIFO<CachingReaderChunk*>* pChunkReadRequestFIFO,
-            FIFO<ReaderStatusUpdate>* pReaderStatusFIFO);
+            intrusive_fifo<CachingReaderChunk>& pFreeChunks,
+            intrusive_fifo<CachingReaderChunk>& pChunkReadRequestFIFO,
+            FIFO<ReaderStatusUpdate>& pReaderStatusFIFO,
+            QObject *pParent);
     virtual ~CachingReaderWorker();
     // Request to load a new track. wake() must be called afterwards.
     virtual void newTrack(TrackPointer pTrack);
@@ -69,29 +76,26 @@ class CachingReaderWorker : public EngineWorker {
 
     // Thread-safe FIFOs for communication between the engine callback and
     // reader thread.
-    FIFO<CachingReaderChunk*>* m_pChunkReadRequestFIFO;
-    FIFO<ReaderStatusUpdate>* m_pReaderStatusFIFO;
+    intrusive_fifo<CachingReaderChunk>& m_freeChunks;;
+    intrusive_fifo<CachingReaderChunk>& m_pChunkReadRequestFIFO;
+    fifo<ReaderStatusUpdate>& m_pReaderStatusFIFO;
 
     // Queue of Tracks to load, and the corresponding lock. Must acquire the
     // lock to touch.
     QMutex m_newTrackMutex;
     TrackPointer m_newTrack;
-
     // Internal method to load a track. Emits trackLoaded when finished.
     void loadTrack(const TrackPointer& pTrack);
 
     ReaderStatusUpdate processReadRequest(CachingReaderChunk* request);
-
     // The current audio source of the track loaded
     mixxx::AudioSourcePointer m_pAudioSource;
-
     // The maximum readable frame index of the AudioSource. Might
     // be adjusted when decoding errors occur to prevent reading
     // the same chunk(s) over and over again.
     // This frame index references the frame that follows the
     // last frame with readable sample data.
     SINT m_maxReadableFrameIndex;
-
     std::atomic<bool> m_stop;
 };
 

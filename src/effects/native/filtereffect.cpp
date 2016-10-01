@@ -67,11 +67,11 @@ FilterGroupState::FilterGroupState()
           m_q(0.707106781),
           m_hiFreq(kMinCorner) {
     m_pBuf = SampleUtil::alloc(MAX_BUFFER_LEN);
-    m_pLowFilter = std::make_unique<EngineFilterIIR>(2, IIR_LP, QString{"LpBq/%1"}.arg(m_q),
+    m_pLowFilter = std::make_unique<EngineFilterIIR>(2, EngineFilterIIR::LowPass, QString{"LpBq/%1"}.arg(m_q),
             QString{"LpBq/%1"});
     m_pLowFilter->setFrequencyCorners(1., m_loFreq);
     m_pLowFilter->setStartFromDry(true);
-    m_pHighFilter = std::make_unique<EngineFilterIIR>(2, IIR_HP, QString{"HpBq/%1"}.arg(m_q),
+    m_pHighFilter = std::make_unique<EngineFilterIIR>(2, EngineFilterIIR::HighPass, QString{"HpBq/%1"}.arg(m_q),
             QString{"HpBq/%1"});
     m_pHighFilter->setFrequencyCorners(1., m_hiFreq);
     m_pHighFilter->setStartFromDry(true);

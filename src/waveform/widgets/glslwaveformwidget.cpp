@@ -47,10 +47,6 @@ GLSLWaveformWidget::~GLSLWaveformWidget() {
     makeCurrent();
 }
 
-void GLSLWaveformWidget::castToQWidget() {
-    m_widget = static_cast<QWidget*>(static_cast<QGLWidget*>(this));
-}
-
 void GLSLWaveformWidget::paintEvent(QPaintEvent* event) {
     Q_UNUSED(event);
 }

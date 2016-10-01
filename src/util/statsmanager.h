@@ -68,7 +68,9 @@ class StatsManager : public QThread, public Singleton<StatsManager> {
     QMap<QString, Stat> m_stats;
     QMap<QString, Stat> m_baseStats;
     QMap<QString, Stat> m_experimentStats;
+    QSet<QString> m_tags;
     QList<Event> m_events;
+//    QList<Event> m_events;
 
     intrusive_fifo<StatReport>  m_statsPipe{};
     std::atomic<size_t> m_pendingStats{0};

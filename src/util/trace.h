@@ -39,7 +39,8 @@ class Trace {
         }
     }
 
-    virtual ~Trace() {
+    virtual ~Trace()
+    {
         // Proxy for whether initialize was called.
         if (m_tag.isEmpty()) {
             return;

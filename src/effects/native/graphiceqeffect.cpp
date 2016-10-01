@@ -55,16 +55,16 @@ GraphicEQEffectGroupState::GraphicEQEffectGroupState()
     m_bands.resize(m_size);
 
     // Initialize the filters with default parameters
-    m_bands[0] = std::make_unique<EngineFilterIIR>(5,IIR_LP,  QString{"LsBq/%1/%2"}.arg(Q).arg(0));//44100, m_centerFrequencies[0], Q);
+    m_bands[0] = std::make_unique<EngineFilterIIR>(5,EngineFilterIIR::LowPass,  QString{"LsBq/%1/%2"}.arg(Q).arg(0));//44100, m_centerFrequencies[0], Q);
     m_bands[0]->setStartFromDry(true);
     m_bands[0]->setCoefs(44100., 5, QString{"LsBq/%1/%2"}.arg(Q).arg(0),m_centerFrequencies[0]);
     auto i = 1u;
     for (; i < m_size - 1; i++) {
-        m_bands[i] = std::make_unique<EngineFilterIIR>(5,IIR_BP, QString{"PkBq/%1/%2"}.arg(Q).arg(0));
+        m_bands[i] = std::make_unique<EngineFilterIIR>(5,EngineFilterIIR::BandPass, QString{"PkBq/%1/%2"}.arg(Q).arg(0));
         m_bands[i]->setStartFromDry(true);
         m_bands[i]->setCoefs(44100., 5, QString{"PkBq/%1/%2"}.arg(Q).arg(0),m_centerFrequencies[i]);
     }
-    m_bands[i] = std::make_unique<EngineFilterIIR>(5,IIR_BP, QString{"HsBq/%1/%2"}.arg(Q).arg(0));
+    m_bands[i] = std::make_unique<EngineFilterIIR>(5,EngineFilterIIR::BandPass, QString{"HsBq/%1/%2"}.arg(Q).arg(0));
     m_bands[i]->setStartFromDry(true);
     m_bands[i]->setCoefs(44100., 5, QString{"HsBq/%1/%2"}.arg(Q).arg(0),m_centerFrequencies[i]);
 }

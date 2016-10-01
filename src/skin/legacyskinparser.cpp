@@ -61,6 +61,7 @@
 #include "widget/wspinny.h"
 #include "widget/wwaveformviewer.h"
 #include "waveform/waveformwidgetfactory.h"
+#include "waveform/widgets/waveformwidgetabstract.h"
 #include "widget/wsearchlineedit.h"
 #include "widget/wlibrary.h"
 #include "widget/wlibrarysidebar.h"

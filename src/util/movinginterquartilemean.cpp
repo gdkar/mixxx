@@ -22,7 +22,7 @@ double MovingInterquartileMean::insert(double value) {
         m_list.append(value);
         m_queue.enqueue(--m_list.end());
     } else {
-        QLinkedList<double>::iterator it = m_list.begin()++;
+        auto it = m_list.begin()++;
         while (value >= *it) {
             ++it;
         }

@@ -32,7 +32,7 @@ CachingReaderChunk::CachingReaderChunk()
 CachingReaderChunk::~CachingReaderChunk() { }
 
 void CachingReaderChunk::init(SINT index) {
-    DEBUG_ASSERT(READ_PENDING != m_state);
+    DEBUG_ASSERT(PENDING != m_state);
     m_state = READY;
     m_index = index;
     m_frameCount = 0;
@@ -57,12 +57,9 @@ SINT CachingReaderChunk::readSampleFrames(
     DEBUG_ASSERT(pMaxReadableFrameIndex);
 
     auto frameIndex = frameForIndex(getIndex());
-    auto maxFrameIndex = math_min(
-            *pMaxReadableFrameIndex, pAudioSource->getMaxFrameIndex());
-    auto framesRemaining =
-            *pMaxReadableFrameIndex - frameIndex;
-    auto framesToRead =
-            math_min(kFrames, framesRemaining);
+    auto maxFrameIndex = math_min( *pMaxReadableFrameIndex, pAudioSource->getMaxFrameIndex());
+    auto framesRemaining = *pMaxReadableFrameIndex - frameIndex;
+    auto framesToRead = math_min(kFrames, framesRemaining);
 
     auto seekFrameIndex = pAudioSource->seekSampleFrame(frameIndex);
     if (frameIndex != seekFrameIndex) {
@@ -92,7 +89,6 @@ SINT CachingReaderChunk::readSampleFrames(
             return m_frameCount;
         }
     }
-
     DEBUG_ASSERT(frameIndex == seekFrameIndex);
     DEBUG_ASSERT(CachingReaderChunk::kChannels
             == mixxx::AudioSource::kChannelCountStereo);
@@ -128,7 +124,7 @@ void CachingReaderChunk::copySamplesReverse(
 
 void CachingReaderChunk::free()
 {
-    DEBUG_ASSERT(READ_PENDING != m_state);
+    DEBUG_ASSERT(PENDING != m_state);
     CachingReaderChunk::init(kInvalidIndex);
     m_state = FREE;
 }
@@ -137,7 +133,7 @@ void CachingReaderChunk::insertIntoListBefore(
         CachingReaderChunk* pBefore) {
     DEBUG_ASSERT(m_pNext == nullptr);
     DEBUG_ASSERT(m_pPrev == nullptr);
-    DEBUG_ASSERT(m_state != READ_PENDING); // Must not be accessed by a worker!
+    DEBUG_ASSERT(m_state != PENDING); // Must not be accessed by a worker!
 
     m_pNext = pBefore;
     if (pBefore) {
@@ -154,8 +150,8 @@ void CachingReaderChunk::removeFromList(
         CachingReaderChunk** ppHead,
         CachingReaderChunk** ppTail) {
     // Remove this chunk from the double-linked list...
-    CachingReaderChunk* pNext = m_pNext;
-    CachingReaderChunk* pPrev = m_pPrev;
+    auto pNext = m_pNext;
+    auto pPrev = m_pPrev;
     m_pNext = nullptr;
     m_pPrev = nullptr;
 
@@ -201,10 +197,10 @@ CachingReaderChunk::State CachingReaderChunk::getState() const
 void CachingReaderChunk::giveToWorker()
 {
     DEBUG_ASSERT(READY == m_state);
-    m_state = READ_PENDING;
+    m_state = PENDING;
 }
 void CachingReaderChunk::takeFromWorker()
 {
-    DEBUG_ASSERT(READ_PENDING == m_state);
+    DEBUG_ASSERT(PENDING == m_state);
     m_state = READY;
 }

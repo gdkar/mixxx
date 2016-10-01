@@ -96,11 +96,11 @@ void MidiController::receive(unsigned char status, unsigned char control,
         auto val = parts.second;
         if(!pre.isEmpty()) {
             if(auto prox = m_dispatch.value(pre,nullptr)) {
-                prox->setValue(val);
+                prox->setValue(val,timestamp.toDoubleSeconds());
             }
         }
     }
-    emit messageReceived(status,control,value,timestamp.toDoubleSeconds());
+//    emit messageReceived(status,control,value,timestamp.toDoubleSeconds());
     auto channel = MidiUtils::channelFromStatus(status);
     auto opCode = MidiUtils::opCodeFromStatus(status);
 
@@ -215,20 +215,6 @@ QString formatSysexMessage(const QString& controllerName, const QByteArray& data
     }
     return message;
 }
-
-void MidiController::receive(QVariant vdata, mixxx::Duration timestamp)
-{
-    auto data = vdata.value<QByteArray>();
-    if(data.size()){
-        controllerDebug(formatSysexMessage(getDeviceName(), data, timestamp));
-        // TODO(rryan): Need to review how MIDI learn works with sysex messages. I
-        // don't think this actually does anything useful.
-    }
-/*    if(auto engine = getEngine()) {
-        engine->receive((QJSValueList{}<<engine->toScriptValue(vdata)), timestamp);
-    }*/
-}
-
 void MidiController::sendShortMsg(unsigned int status, unsigned int byte1, unsigned int byte2)
 {
     unsigned int word = (((unsigned int)byte2) << 16) | (((unsigned int)byte1) << 8) | status;

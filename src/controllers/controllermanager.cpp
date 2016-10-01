@@ -8,13 +8,16 @@
 #include <QSet>
 #include <QStringList>
 #include "util/trace.h"
+#include "util/cmdlineargs.h"
+#include "util/time.h"
+
+#include "ladspa/qmlladspa.hpp"
+
 #include "control/controlobjectscript.h"
 #include "control/controlproxy.h"
 #include "control/controlobject.h"
 #include "controllers/controllermanager.h"
 #include "controllers/defs_controllers.h"
-#include "util/cmdlineargs.h"
-#include "util/time.h"
 #include "controllers/midi/portmidicontroller.h"
 #include "controllers/midi/rtmidicontroller.h"
 #include "controllers/keyboard/keyboardeventfilter.h"
@@ -83,7 +86,7 @@ ControllerManager::ControllerManager(UserSettingsPointer pConfig)
     qmlRegisterType<ControlProxy>("org.mixxx.qml", 0, 1, "ControlProxy");
     qmlRegisterType<ControlObjectScript>("org.mixxx.qml", 0, 1, "ControlObjectScript");
 
-
+    LADSPA::registerTypes();
     // Create controller mapping paths in the user's home directory.
     auto userPresets = userPresetsPath(m_pConfig);
     if (!QDir(userPresets).exists()) {

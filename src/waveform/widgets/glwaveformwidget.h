@@ -8,7 +8,7 @@
 class GLWaveformWidget : public QGLWidget, public WaveformWidgetAbstract {
     Q_OBJECT
   public:
-    GLWaveformWidget(const char* group, QWidget* parent);
+    Q_INVOKABLE GLWaveformWidget(const char* group, QWidget* parent);
     virtual ~GLWaveformWidget();
 
     virtual WaveformWidgetType::Type getType() const { return WaveformWidgetType::GLFilteredWaveform; }
@@ -19,7 +19,6 @@ class GLWaveformWidget : public QGLWidget, public WaveformWidgetAbstract {
     static inline bool developerOnly() { return false; }
 
   protected:
-    virtual void castToQWidget();
     virtual void paintEvent(QPaintEvent* event);
     virtual mixxx::Duration render();
 

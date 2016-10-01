@@ -88,8 +88,8 @@ LVMixEQEffectGroupState::LVMixEQEffectGroupState(size_t size)
     m_pBandBuf = std::make_unique<CSAMPLE[]>(MAX_BUFFER_LEN);
     m_pHighBuf = std::make_unique<CSAMPLE[]>(MAX_BUFFER_LEN);
 
-    m_low1 = std::make_unique<EngineFilterIIR>(m_size, IIR_LP, QString{"LpBe%1"}.arg(m_size));//kStartupSamplerate, kStartupLoFreq);
-    m_low2 = std::make_unique<EngineFilterIIR>(m_size, IIR_LP, QString{"LpBe%1"}.arg(m_size));//kStartupSamplerate, kStartupLoFreq);
+    m_low1 = std::make_unique<EngineFilterIIR>(m_size, EngineFilterIIR::LowPass, QString{"LpBe%1"}.arg(m_size));//kStartupSamplerate, kStartupLoFreq);
+    m_low2 = std::make_unique<EngineFilterIIR>(m_size, EngineFilterIIR::LowPass, QString{"LpBe%1"}.arg(m_size));//kStartupSamplerate, kStartupLoFreq);
 
     m_delay2 = std::make_unique<EngineFilterDelay>(nullptr, kMaxDelay);
     m_delay3 = std::make_unique<EngineFilterDelay>(nullptr, kMaxDelay);

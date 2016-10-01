@@ -30,11 +30,6 @@ SoftwareWaveformWidget::SoftwareWaveformWidget(const char* group, QWidget* paren
 
 SoftwareWaveformWidget::~SoftwareWaveformWidget() {
 }
-
-void SoftwareWaveformWidget::castToQWidget() {
-    m_widget = qobject_cast<QWidget*>(this);
-}
-
 void SoftwareWaveformWidget::paintEvent(QPaintEvent* event) {
     QPainter painter(this);
     draw(&painter, event);

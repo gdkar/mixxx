@@ -486,11 +486,13 @@ class fifo<T,false> {
 };
 }
 template<class T>
-class FIFO : public detail::fifo<T, std::is_trivial<T>::value> {
+class fifo : public detail::fifo<T, std::is_trivial<T>::value> {
 public:
     using super = detail::fifo<T,std::is_trivial<T>::value >;
     using super::super;
 };
+template<class T>
+using FIFO = fifo<T>;
 
 // MessagePipe represents one side of a TwoWayMessagePipe. The direction of the
 // pipe is with respect to the owner so send and recv are
@@ -501,8 +503,8 @@ class MessagePipe {
   public:
     using size_type  = std::size_t;
     using difference_type = std::ptrdiff_t;
-    MessagePipe(FIFO<SendType>& recv_messages,
-                FIFO<RecvType>& send_messages,
+    MessagePipe(fifo<SendType>& recv_messages,
+                fifo<RecvType>& send_messages,
                 std::shared_ptr<void> pTwoWayMessagePipeReference,
                 bool serialize_writes)
             : m_recv_messages(recv_messages),
@@ -565,8 +567,8 @@ class MessagePipe {
     }
   private:
     QMutex m_serializationMutex;
-    FIFO<SendType>& m_recv_messages;
-    FIFO<RecvType>& m_send_messages;
+    fifo<SendType>& m_recv_messages;
+    fifo<RecvType>& m_send_messages;
     std::shared_ptr<void> m_pTwoWayMessagePipeReference;
     bool m_bSerializeWrites;
 };
@@ -620,8 +622,8 @@ class TwoWayMessagePipe {
               m_send_messages(send_fifo_size)
     { }
     // Messages waiting to be delivered to the recv.
-    FIFO<SendType> m_recv_messages;
+    fifo<SendType> m_recv_messages;
     // Messages waiting to be delivered to the send.
-    FIFO<RecvType> m_send_messages;
+    fifo<RecvType> m_send_messages;
 };
 #endif /* FIFO_H */

@@ -48,7 +48,9 @@
 // Added restart() function.
 // Returns time in nanosecond resolution.
 //
-
+#if defined(__x86_64__) || defined(__ia64__) || defined(__i386__)
+#include "util/rdtsc.hpp"
+#endif
 #include <QtCore/qglobal.h>
 
 #include "util/duration.h"

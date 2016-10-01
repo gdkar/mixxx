@@ -32,11 +32,6 @@ QtSimpleWaveformWidget::QtSimpleWaveformWidget(const char* group, QWidget* paren
 }
 
 QtSimpleWaveformWidget::~QtSimpleWaveformWidget() { }
-
-void QtSimpleWaveformWidget::castToQWidget()
-{
-    m_widget = qobject_cast<QWidget*>(this);
-}
 void QtSimpleWaveformWidget::paintEvent(QPaintEvent* event)
 {
     QPainter painter(this);

@@ -6,23 +6,21 @@
 #include "util/cmdlineargs.h"
 #include "util/statsmanager.h"
 
-DlgDeveloperTools::DlgDeveloperTools(QWidget* pParent,
-                                     UserSettingsPointer pConfig)
+DlgDeveloperTools::DlgDeveloperTools(QWidget* pParent,UserSettingsPointer pConfig)
         : QDialog(pParent)
 {
     Q_UNUSED(pConfig);
+    setAttribute(Qt::WA_DeleteOnClose);
     setupUi(this);
 
     QList<QSharedPointer<ControlDoublePrivate> > controlsList;
     ControlDoublePrivate::getControls(&controlsList);
-    QHash<ConfigKey, ConfigKey> controlAliases =
-            ControlDoublePrivate::getControlAliases();
+    auto controlAliases = ControlDoublePrivate::getControlAliases();
 
     for (auto it = controlsList.begin(); it != controlsList.end(); ++it) {
         auto pControl = *it;
         if (pControl) {
-            m_controlModel.addControl(pControl->getKey(), pControl->name(),
-                                      pControl->description());
+            m_controlModel.addControl(pControl->getKey(), pControl->name(),pControl->description());
 
             auto aliasKey = controlAliases[pControl->getKey()];
             if (!aliasKey.isNull()) {
@@ -46,37 +44,27 @@ DlgDeveloperTools::DlgDeveloperTools(QWidget* pParent,
                 &m_statModel, SLOT(statUpdated(const Stat&)));
         pManager->emitAllStats();
     }
-
     m_statProxyModel.setSourceModel(&m_statModel);
     statsTable->setModel(&m_statProxyModel);
 
-    QString logFileName = QDir(CmdlineArgs::Instance().getSettingsPath()).filePath("mixxx.log");
+    auto logFileName = QDir(CmdlineArgs::Instance().getSettingsPath()).filePath("mixxx.log");
     m_logFile.setFileName(logFileName);
     if (!m_logFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
         qWarning() << "ERROR: Could not open log file:" << logFileName;
     }
-
     // Connect search box signals to the library
-    connect(controlSearch, SIGNAL(search(const QString&)),
-            this, SLOT(slotControlSearch(const QString&)));
-    connect(controlSearch, SIGNAL(searchCleared()),
-            this, SLOT(slotControlSearchClear()));
-    connect(controlDump, SIGNAL(clicked()),
-            this, SLOT(slotControlDump()));
+    connect(controlSearch, SIGNAL(search(const QString&)),this, SLOT(slotControlSearch(const QString&)));
+    connect(controlSearch, SIGNAL(searchCleared()),       this, SLOT(slotControlSearchClear()));
+    connect(controlDump, SIGNAL(clicked()),               this, SLOT(slotControlDump()));
 
     // Set up the log search box
-    connect(logSearch, SIGNAL(returnPressed()),
-            this, SLOT(slotLogSearch()));
-    connect(logSearchButton, SIGNAL(clicked()),
-            this, SLOT(slotLogSearch()));
+    connect(logSearch, SIGNAL(returnPressed()), this, SLOT(slotLogSearch()));
+    connect(logSearchButton, SIGNAL(clicked()), this, SLOT(slotLogSearch()));
 
     m_logCursor = logTextView->textCursor();
-
     // Update at 2FPS.
-    startTimer(500);
-
+    startTimer(1000);
     // Delete this dialog when its closed. We don't want any persistence.
-    setAttribute(Qt::WA_DeleteOnClose);
 }
 
 void DlgDeveloperTools::timerEvent(QTimerEvent* pEvent)
@@ -84,12 +72,10 @@ void DlgDeveloperTools::timerEvent(QTimerEvent* pEvent)
     Q_UNUSED(pEvent);
     if (m_logFile.isOpen()) {
         QStringList newLines;
-
         while (true) {
             auto line = m_logFile.readLine();
-            if (line.isEmpty()) {
+            if (line.isEmpty())
                 break;
-            }
             newLines.append(QString::fromLocal8Bit(line));
         }
         if (!newLines.isEmpty()) {
@@ -132,15 +118,11 @@ void DlgDeveloperTools::slotControlDump()
 
     QList<QSharedPointer<ControlDoublePrivate> > controlsList;
     ControlDoublePrivate::getControls(&controlsList);
-    for (auto it =
-            controlsList.constBegin(); it != controlsList.constEnd(); ++it) {
-        auto pControl = *it;
-        if (pControl) {
+    for(auto &&pControl : controlsList){
             auto line = pControl->getKey().group() + "," +
                            pControl->getKey().item() + "," +
                            QString::number(pControl->get()) + "\n";
             dumpFile.write(line.toLocal8Bit());
-        }
     }
 }
 void DlgDeveloperTools::slotLogSearch()

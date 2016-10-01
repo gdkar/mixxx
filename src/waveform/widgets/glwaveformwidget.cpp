@@ -40,14 +40,8 @@ GLWaveformWidget::GLWaveformWidget(const char* group, QWidget* parent)
     }
     m_initSuccess = init();
 }
-
 GLWaveformWidget::~GLWaveformWidget() {
 }
-
-void GLWaveformWidget::castToQWidget() {
-    m_widget = static_cast<QWidget*>(static_cast<QGLWidget*>(this));
-}
-
 void GLWaveformWidget::paintEvent(QPaintEvent* event) {
     Q_UNUSED(event);
 }

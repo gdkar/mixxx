@@ -195,11 +195,11 @@ SINT ReadAheadManager::getEffectiveVirtualPlaypositionFromLog(double currentVirt
         return currentVirtualPlayposition;
     }
 
-    double virtualPlayposition = 0;
-    bool shouldNotifySeek = false;
-    bool direction = true;
+    auto virtualPlayposition = 0.;
+    auto shouldNotifySeek = false;
+    auto direction = true;
     while (m_readAheadLog.size() > 0 && numConsumedSamples > 0) {
-        ReadLogEntry& entry = m_readAheadLog.first();
+        auto & entry = m_readAheadLog.first();
         direction = entry.direction();
 
         // Notify EngineControls that we have taken a seek.
@@ -209,21 +209,18 @@ SINT ReadAheadManager::getEffectiveVirtualPlaypositionFromLog(double currentVirt
                 m_pRateControl->notifySeek(entry.virtualPlaypositionStart);
             }
         }
-
-        double consumed = entry.consume(numConsumedSamples);
+        auto consumed = entry.consume(numConsumedSamples);
         numConsumedSamples -= consumed;
-
         // Advance our idea of the current virtual playposition to this
         // ReadLogEntry's start position.
         virtualPlayposition = entry.virtualPlaypositionStart;
-
         if (entry.length() == 0) {
             // This entry is empty now.
             m_readAheadLog.removeFirst();
         }
         shouldNotifySeek = true;
     }
-    SINT result = 0;
+    auto result = SINT{0};
     if (direction) {
         result = static_cast<SINT>(floor(virtualPlayposition));
         // TODO(XXX): Remove implicit assumption of 2 channels

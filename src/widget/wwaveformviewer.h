@@ -20,9 +20,9 @@ class WWaveformViewer : public WWidget {
     Q_OBJECT
   public:
     WWaveformViewer(const char *group, UserSettingsPointer pConfig, QWidget *parent=nullptr);
-    ~WWaveformViewer() override;
+   ~WWaveformViewer() override;
 
-    const char* getGroup() const { return m_pGroup;}
+    const char* getGroup() const;
     void setup(const QDomNode& node, const SkinContext& context);
 
     void dragEnterEvent(QDragEnterEvent *event) override;
@@ -45,15 +45,10 @@ protected:
 
 private slots:
     void onZoomChange(double zoom);
-    void slotWidgetDead() {
-        m_waveformWidget = nullptr;
-    }
 
 private:
     void setWaveformWidget(WaveformWidgetAbstract* waveformWidget);
-    WaveformWidgetAbstract* getWaveformWidget() {
-        return m_waveformWidget;
-    }
+    WaveformWidgetAbstract* getWaveformWidget() const;
     //direct access to let factory sync/set default zoom
     void setZoom(int zoom);
 
@@ -69,7 +64,7 @@ private:
     bool m_bBending;
     QPoint m_mouseAnchor;
 
-    WaveformWidgetAbstract* m_waveformWidget;
+    QPointer<QWidget> m_waveformWidget;
 
     friend class WaveformWidgetFactory;
 };

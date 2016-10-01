@@ -16,14 +16,14 @@ QString BindProxy::prefix() const
 {
     return m_prefix;
 }
-void BindProxy::setValue(double val)
+void BindProxy::setValue(double val, double timestamp)
 {
     auto changed = val != m_value;
     m_value = val;
     if(changed) {
       valueChanged(val);
     }
-    messageReceived(val);
+    messageReceived(val, timestamp);
 }
 void BindProxy::setPrefix(QString pre)
 {

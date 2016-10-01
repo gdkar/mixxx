@@ -148,7 +148,7 @@ class MixxxMainWindow : public QMainWindow {
     // The library management object
     Library* m_pLibrary;
     WMainMenuBar* m_pMenuBar;
-    DlgDeveloperTools* m_pDeveloperToolsDlg;
+    QPointer<DlgDeveloperTools> m_pDeveloperToolsDlg;
     /** Pointer to preference dialog */
     DlgPreferences* m_pPrefDlg;
 

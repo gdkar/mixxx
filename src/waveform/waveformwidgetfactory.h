@@ -42,8 +42,12 @@ class WaveformWidgetHolder {
                          WWaveformViewer* waveformViewer,
                          const QDomNode& skinNode,
                          const SkinContext& skinContext);
-
-    WaveformWidgetAbstract* m_waveformWidget;
+    void setWaveformWidget();
+    void setWaveformWidget(QWidget *_widget);
+    void setWaveformWidget(WaveformWidgetAbstract *_widget);
+    WaveformWidgetAbstract *waveformWidget() const;
+    QWidget *widget() const;
+    QWidget* m_waveformWidget;
     WWaveformViewer* m_waveformViewer;
     QDomNode m_skinNodeCache;
     SkinContext m_skinContextCache;

@@ -7,40 +7,40 @@
 
 WaveformWidgetAbstract::WaveformWidgetAbstract(const char* group)
     : WaveformWidgetRenderer(group),
-      m_initSuccess(false) {
-    m_widget = NULL;
-}
+      m_initSuccess(false)
+{ }
 
 WaveformWidgetAbstract::~WaveformWidgetAbstract() {
 }
 
-void WaveformWidgetAbstract::hold() {
-    if (m_widget) {
-        m_widget->hide();
-    }
+void WaveformWidgetAbstract::hold()
+{
+    if (auto widget = getWidget())
+        widget->hide();
 }
 
-void WaveformWidgetAbstract::release() {
-    if (m_widget) {
-        m_widget->show();
-    }
+void WaveformWidgetAbstract::release()
+{
+    if (auto widget = getWidget())
+        widget->show();
 }
 
-void WaveformWidgetAbstract::preRender(VSyncThread* vsyncThread) {
+void WaveformWidgetAbstract::preRender(VSyncThread* vsyncThread)
+{
     WaveformWidgetRenderer::onPreRender(vsyncThread);
 }
 
-mixxx::Duration WaveformWidgetAbstract::render() {
-    if (m_widget) {
-        m_widget->repaint(); // Repaints the widget directly by calling paintEvent()
-    }
+mixxx::Duration WaveformWidgetAbstract::render()
+{
+    if (auto widget = getWidget())
+        widget->repaint(); // Repaints the widget directly by calling paintEvent()
     // Time for Painter setup, unknown in this case
     return mixxx::Duration();
 }
 
-void WaveformWidgetAbstract::resize(int width, int height) {
-    if (m_widget) {
-        m_widget->resize(width, height);
-    }
+void WaveformWidgetAbstract::resize(int width, int height)
+{
+    if (auto widget = getWidget())
+        widget->resize(width, height);
     WaveformWidgetRenderer::resize(width, height);
 }

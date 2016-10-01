@@ -76,7 +76,7 @@ void EngineSideChain::addSideChainWorker(SideChainWorker* pWorker)
 void EngineSideChain::writeSamples(const CSAMPLE* newBuffer, int buffer_size)
 {
     Trace sidechain("EngineSideChain::writeSamples");
-    int samples_written = m_sampleFifo.write(newBuffer, buffer_size);
+    auto samples_written = m_sampleFifo.write(newBuffer, buffer_size);
 
     if (samples_written != buffer_size) {
         Counter("EngineSideChain::writeSamples buffer overrun").increment();

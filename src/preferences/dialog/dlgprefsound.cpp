@@ -542,7 +542,12 @@ void DlgPrefSound::slotResetToDefaults()
     SoundManagerConfig newConfig;
     newConfig.loadDefaults(m_pSoundManager, SoundManagerConfig::ALL);
     loadSettings(newConfig);
-    keylockComboBox->setCurrentIndex(keylockComboBox->findData(QVariant::fromValue(EngineBuffer::KeylockEngine::RubberBand)));
+    keylockComboBox->setCurrentIndex(
+        keylockComboBox->findData(
+            QVariant::fromValue(
+                EngineBuffer::KeylockEngine::RubberBand)
+            )
+        );
     m_pKeylockEngine->set(static_cast<int>(EngineBuffer::KeylockEngine::RubberBand));
 
     masterMixComboBox->setCurrentIndex(1);
@@ -553,7 +558,6 @@ void DlgPrefSound::slotResetToDefaults()
 
     headDelaySpinBox->setValue(0.0);
     m_pHeadDelay->set(0.0);
-
     // Enable talkover master output
     m_pMasterTalkoverMix->set(0.0);
     micMixComboBox->setCurrentIndex(0);
@@ -561,7 +565,8 @@ void DlgPrefSound::slotResetToDefaults()
     settingChanged(); // force the apply button to enable
 }
 
-void DlgPrefSound::bufferUnderflow(double count) {
+void DlgPrefSound::bufferUnderflow(double count)
+{
     bufferUnderflowCount->setText(QString::number(count));
     update();
 }

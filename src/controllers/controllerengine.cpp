@@ -49,19 +49,15 @@ ControllerEngine::ControllerEngine(Controller* controller)
     // Initialize arrays used for testing and pointers
     for (int i = 0; i < kDecks; ++i) {
         m_dx[i] = 0.0;
-        m_scratchFilters[i] = new AlphaBetaFilter();
+        m_scratchFilters[i] = new AlphaBetaFilter(this);
         m_ramp[i] = false;
     }
 
     initializeScriptEngine();
 }
 
-ControllerEngine::~ControllerEngine() {
-    // Clean up
-    for (int i = 0; i < kDecks; ++i) {
-        delete m_scratchFilters[i];
-        m_scratchFilters[i] = nullptr;
-    }
+ControllerEngine::~ControllerEngine()
+{
 
     // Delete the script engine, first clearing the pointer so that
     // other threads will not get the dead pointer after we delete it.
@@ -1051,13 +1047,13 @@ void ControllerEngine::scratchProcess(int timerId)
         // recently (spinback after lift-off,) feed fixed data
         if (m_ramp[deck] &&
             ((mixxx::Time::elapsed() - m_lastMovement[deck]) >= mixxx::Duration::fromMillis(1))) {
-            filter->observation(m_rampTo[deck] * m_rampFactor[deck]);
+            filter->observe(m_rampTo[deck] * m_rampFactor[deck]);
             // Once this code path is run, latch so it always runs until reset
             //m_lastMovement[deck] += mixxx::Duration::fromSeconds(1);
         } else {
             // This will (and should) be 0 if no net ticks have been accumulated
             // (i.e. the wheel is stopped)
-            filter->observation(m_dx[deck] * m_intervalAccumulator[deck]);
+            filter->observe(m_dx[deck] * m_intervalAccumulator[deck]);
         }
         auto newRate = filter->predictedVelocity();
         // Actually do the scratching

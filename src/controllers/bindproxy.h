@@ -14,7 +14,7 @@ public:
     Q_INVOKABLE BindProxy(QString prefix, QObject *p);
    ~BindProxy();
     virtual double value() const;
-    virtual void setValue(double);
+    virtual void setValue(double, double = 0.);
     virtual QString prefix() const;
     virtual void setPrefix(QString);
 signals:

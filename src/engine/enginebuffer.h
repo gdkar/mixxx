@@ -27,7 +27,6 @@
 #include <gtest/gtest_prod.h>
 
 #include "engine/cachingreader.h"
-#include "engine/scaledreader.h"
 #include "preferences/usersettings.h"
 #include "control/controlvalue.h"
 #include "engine/engineobject.h"
@@ -329,12 +328,14 @@ class EngineBuffer : public EngineObject {
 
     // Indicates whether the scaler has changed since the last process()
     bool m_bScalerChanged;
-
-    std::atomic<SeekRequest>    m_iSeekQueued;
+    struct alignas(16) SeekRecord {
+        double       pos;
+        SeekRequests req;
+    };
+    std::atomic<SeekRecord>      m_iSeekQueued;
     std::atomic<bool>           m_iSeekPhaseQueued;
     std::atomic<SyncRequest>    m_iEnableSyncQueued;
     std::atomic<SyncMode>       m_iSyncModeQueued;
-    std::atomic<double>         m_queuedSeekPosition;
 
     // Is true if the previous buffer was silent due to pausing
     std::atomic<int> m_iTrackLoading;

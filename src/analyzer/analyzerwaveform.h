@@ -5,6 +5,7 @@
 #include <QSqlDatabase>
 
 #include <limits>
+#include <valarray>
 
 #include "analyzer/analyzer.h"
 #include "preferences/usersettings.h"
@@ -170,7 +171,7 @@ class AnalyzerWaveform : public Analyzer {
     int m_currentSummaryStride;
 
     EngineFilterIIR * m_filter[FilterCount];
-    std::vector<float> m_buffers[FilterCount];
+    std::valarray<float> m_buffers[FilterCount];
 
     PerformanceTimer m_timer;
     QSqlDatabase m_database;

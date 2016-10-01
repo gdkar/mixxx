@@ -93,8 +93,7 @@ void EngineSync::requestSyncMode(Syncable* pSyncable, SyncMode mode)
             activateFollower(pSyncable);
         }
     } else {
-        if (pSyncable == m_pInternalClock && channelIsMaster &&
-                syncDeckExists()) {
+        if (pSyncable == m_pInternalClock && channelIsMaster && syncDeckExists()) {
             // Internal clock cannot be disabled if there are other decks with
             // sync on. Notify them that their mode has not changed.
             pSyncable->notifySyncModeChanged(SYNC_MASTER);

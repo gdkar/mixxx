@@ -3,9 +3,11 @@
 #include <QTime>
 #include <QtDebug>
 #include <QTime>
+#include <ctime>
 
 #include "vsyncthread.h"
 #include "util/performancetimer.h"
+#include "util/rdtsc.hpp"
 #include "util/event.h"
 #include "util/counter.h"
 #include "util/math.h"
@@ -70,7 +72,7 @@ void VSyncThread::run() {
 
             m_timer.restart();
             m_usWaitToSwap = 1000;
-            usleep(1000);
+            mixxx::usleep_update(1000);
         } else { // if (m_vSyncMode == ST_TIMER) {
 
             Event::start("VsyncThread vsync render");
@@ -86,8 +88,13 @@ void VSyncThread::run() {
                 m_timer.elapsed().toIntegerMicros());
             // waiting for interval by sleep
             if (usRemainingForSwap > 100) {
+                auto sleep_for = (usRemainingForSwap - 50) * 1000;
+                auto req = timespec{ sleep_for/1000000000,
+                                    sleep_for%1000000000};
+                auto rem = timespec{};
                 Event::start("VsyncThread usleep for VSync");
-                usleep(usRemainingForSwap);
+                nanosleep( &req, &rem);
+//                mixxx::usleep_update(usRemainingForSwap - 100);
                 Event::end("VsyncThread usleep for VSync");
             }
 

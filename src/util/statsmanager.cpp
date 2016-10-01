@@ -10,23 +10,11 @@
 #include "util/cmdlineargs.h"
 
 // In practice we process stats pipes about once a minute @1ms latency.
-const int kStatsPipeSize = 1 << 14;
+const int kStatsPipeSize = 1 << 18;
 //const int kProcessLength = kStatsPipeSize * 4 / 5;
 
 // static
 bool StatsManager::s_bStatsManagerEnabled = false;
-
-/*StatsPipe::StatsPipe(StatsManager* pManager)
-        : FIFO<StatReport>(kStatsPipeSize),
-          m_pManager(pManager) {
-    qRegisterMetaType<Stat>("Stat");
-}
-
-StatsPipe::~StatsPipe() {
-    if (m_pManager) {
-        m_pManager->onStatsPipeDestroyed(this);
-    }
-}*/
 
 StatsManager::StatsManager()
         : QThread(),
@@ -50,29 +38,23 @@ StatsManager::~StatsManager()
     qDebug() << "=====================================";
     qDebug() << "ALL STATS";
     qDebug() << "=====================================";
-    for (auto it = m_stats.begin(); it != m_stats.end(); ++it) {
-        qDebug() << it.value();
-    }
+    for (auto && stat : m_stats.values())
+        qDebug() << stat;
 
     if (!m_baseStats.isEmpty()) {
         qDebug() << "=====================================";
         qDebug() << "BASE STATS";
         qDebug() << "=====================================";
-        for (auto it = m_baseStats.begin(); it != m_baseStats.end(); ++it)
-        {
-            qDebug() << it.value();
-        }
+        for (auto && stat : m_baseStats.values())
+            qDebug() << stat;
     }
 
     if (!m_experimentStats.isEmpty()) {
         qDebug() << "=====================================";
         qDebug() << "EXPERIMENT STATS";
         qDebug() << "=====================================";
-        for (auto it = m_experimentStats.begin();
-             it != m_experimentStats.end(); ++it)
-        {
-            qDebug() << it.value();
-        }
+        for (auto && stat : m_experimentStats.values())
+            qDebug() << stat;
     }
     qDebug() << "=====================================";
 
@@ -122,8 +104,9 @@ void StatsManager::writeTimeline(const QString& filename)
     }
 
     // Sort by time.
-    qSort(m_events.begin(), m_events.end(), OrderByTime());
-    auto last_time = m_events[0].m_time;
+    std::sort(m_events.begin(),m_events.end(),
+        [](const auto &lhs, const auto &rhs){ return lhs.m_time < rhs.m_time;});
+    auto last_time = m_events.front().m_time;
     QMap<QString, qint64> startTimes;
     QMap<QString, qint64> endTimes;
     QMap<QString, Stat> tagStats;
@@ -156,8 +139,7 @@ void StatsManager::writeTimeline(const QString& filename)
             << "+" << humanizeNanos(elapsed) << ","
             << "+" << humanizeNanos(duration_since_last_start) << ","
             << "+" << humanizeNanos(duration_since_last_end) << ","
-            << Stat::statTypeToString(event.m_type) << ","
-            << event.m_tag << "\n";
+            << event.m_type << "," << event.m_tag << "\n";
         last_time = event.m_time;
     }
 
@@ -222,13 +204,19 @@ bool StatsManager::maybeWriteReport(StatReport* report)
 void StatsManager::processIncomingStatReports()
 {
     while(!m_statsPipe.empty()) {
-        auto *stat = m_statsPipe.take();
-        if(!stat) {
+        auto stat = m_statsPipe.take();
+        if(!stat)
             break;
+        {
+            auto tmp = stat->tag + QString{"/"} + stat->thread_id;
+            auto it = m_tags.constFind(tmp);
+            if(it == m_tags.constEnd())
+                it = m_tags.insert(tmp);
+            stat->tag = *it;
         }
-        auto &&tag  = stat->tag;
+        const auto & tag = stat->tag;
         auto & info = m_stats[tag];
-        info.m_tag  = stat->tag;
+        info.m_tag  = tag;
         info.m_type = stat->type;
         info.m_compute = stat->compute;
         info.processReport(*stat);

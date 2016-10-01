@@ -29,7 +29,8 @@ SteadyPitch::SteadyPitch(double threshold, bool assumeSteady)
       m_dLastSteadyDur(0.0),        // last known duration of steadiness
       m_dLastTime(0.0),             // track location of previous call
       m_dPitchThreshold(threshold), // variation above which we say we aren't steady
-      m_iPlayDirection(1) {         // 1=forward, -1=backward
+      m_iPlayDirection(1)
+{         // 1=forward, -1=backward
 }
 
 void SteadyPitch::reset(double pitch, double time)
@@ -47,24 +48,12 @@ void SteadyPitch::reset(double pitch, double time)
 
 bool SteadyPitch::directionChanged(double pitch)
 {
-    if (pitch >= 0) {
-        return m_iPlayDirection != 1;
-    } else {
-        return m_iPlayDirection != -1;
-    }
+    return (m_iPlayDirection != std::copysign(1,pitch));
 }
-
 bool SteadyPitch::resyncDetected(double new_time)
 {
     //did track location jump opposite to the play direction?
-    if (m_iPlayDirection >= 0)
-    {
-        return new_time < m_dLastTime;
-    }
-    else
-    {
-        return new_time > m_dLastTime;
-    }
+    return (m_iPlayDirection * m_dLastTime > m_iPlayDirection * new_time);
 }
 
 double SteadyPitch::check(double pitch, double time)

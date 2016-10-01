@@ -52,7 +52,7 @@
 #include <hal_data.h>
 #elif defined(Q_OS_UNIX)
 #include <sys/time.h>
-#include <time.h>
+#include <ctime>
 #include <unistd.h>
 #elif defined(Q_OS_WIN)
 #include <windows.h>
@@ -135,6 +135,50 @@ mixxx::Duration PerformanceTimer::difference(const PerformanceTimer& timer) cons
 ////////////////////////////// Unix //////////////////////////////
 #elif defined(Q_OS_UNIX)
 
+
+#if defined(__x86_64__) || defined(__ia64__) || defined(__X86_64__) || defined(i386)
+
+void PerformanceTimer::start()
+{
+    t1 = mixxx::get_ticks_ns_relative();
+//    do_gettime(&t1, &t2);
+}
+
+mixxx::Duration PerformanceTimer::elapsed() const
+{
+    return mixxx::Duration::fromNanos(mixxx::get_ticks_ns_relative() - t1);
+//    sec = sec - t1;
+//    frac = frac - t2;
+//
+//    return mixxx::Duration::fromNanos(sec * Q_INT64_C(1000000000) + frac);
+}
+
+mixxx::Duration PerformanceTimer::restart()
+{
+    auto now = mixxx::get_ticks_ns_relative();
+    auto retval = now - t1;
+    t1 = now;
+    return mixxx::Duration::fromNanos(retval);
+/*    qint64 sec, frac;
+    sec = t1;
+    frac = t2;
+    do_gettime(&t1, &t2);
+    sec = t1 - sec;
+    frac = t2 - frac;
+    return mixxx::Duration::fromNanos(sec * Q_INT64_C(1000000000) + frac);*/
+}
+
+mixxx::Duration PerformanceTimer::difference(const PerformanceTimer& timer) const
+{
+    return mixxx::Duration::fromNanos(t1 - timer.t1);
+/*    qint64 sec, frac;
+    sec = t1 - timer.t1;
+    frac = t2 - timer.t2;
+    return mixxx::Duration::fromNanos(sec * Q_INT64_C(1000000000) + frac);*/
+}
+
+#else
+
 #if defined(QT_NO_CLOCK_MONOTONIC) || defined(QT_BOOTSTRAPPED)
 // turn off the monotonic clock
 # ifdef _POSIX_MONOTONIC_CLOCK
@@ -143,12 +187,12 @@ mixxx::Duration PerformanceTimer::difference(const PerformanceTimer& timer) cons
 # define _POSIX_MONOTONIC_CLOCK -1
 #endif
 
-#if (_POSIX_MONOTONIC_CLOCK-0 != 0)
-static const bool monotonicClockChecked = true;
-static const bool monotonicClockAvailable = _POSIX_MONOTONIC_CLOCK > 0;
+#if (_POSIX_MONOTONIC_CLOCK != 0)
+static constexpr bool monotonicClockChecked = true;
+static constexpr bool monotonicClockAvailable = _POSIX_MONOTONIC_CLOCK > 0;
 #else
-static int monotonicClockChecked = false;
-static int monotonicClockAvailable = false;
+static std::atomic<int> monotonicClockChecked{false};
+static std::atomic<int> monotonicClockAvailable{false};
 #endif
 
 #ifdef Q_CC_GNU
@@ -156,22 +200,18 @@ static int monotonicClockAvailable = false;
 #else
 # define is_likely(x) (x)
 #endif
-#define load_acquire(x) ((volatile const int&)(x))
-#define store_release(x,v) ((volatile int&)(x) = (v))
 
 static void unixCheckClockType()
 {
 #if (_POSIX_MONOTONIC_CLOCK-0 == 0)
-    if (is_likely(load_acquire(monotonicClockChecked)))
+    if (is_likely(monotonicClockChecked.load(std::memory_order_acquire)))
         return;
-
 # if defined(_SC_MONOTONIC_CLOCK)
     // detect if the system support monotonic timers
     long x = sysconf(_SC_MONOTONIC_CLOCK);
-    store_release(monotonicClockAvailable, x >= 200112L);
+    monotonicClockAvailable.store( x >= 200112L, std::memory_order_release);
 # endif
-
-    store_release(monotonicClockChecked, true);
+    monotonicClockChecked.store( true,std::memory_order_release);
 #endif
 }
 
@@ -179,9 +219,15 @@ static inline void do_gettime(qint64 *sec, qint64 *frac)
 {
 #if (_POSIX_MONOTONIC_CLOCK-0 >= 0)
     unixCheckClockType();
-    if (is_likely(monotonicClockAvailable)) {
+    if (is_likely(monotonicClockAvailable.load(std::memory_order_relaxed))) {
         timespec ts;
         clock_gettime(CLOCK_MONOTONIC, &ts);
+        *sec = ts.tv_sec;
+        *frac = ts.tv_nsec;
+        return;
+    }else{
+        timespec ts;
+        clock_gettime(CLOCK_REALTIME, &ts);
         *sec = ts.tv_sec;
         *frac = ts.tv_nsec;
         return;
@@ -190,7 +236,6 @@ static inline void do_gettime(qint64 *sec, qint64 *frac)
     *sec = 0;
     *frac = 0;
 }
-
 void PerformanceTimer::start()
 {
     do_gettime(&t1, &t2);
@@ -224,7 +269,7 @@ mixxx::Duration PerformanceTimer::difference(const PerformanceTimer& timer) cons
     frac = t2 - timer.t2;
     return mixxx::Duration::fromNanos(sec * Q_INT64_C(1000000000) + frac);
 }
-
+#endif
 ////////////////////////////// Windows //////////////////////////////
 #elif defined(Q_OS_WIN)
 

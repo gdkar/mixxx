@@ -201,9 +201,8 @@ bool AnalyzerQueue::doAnalysis(TrackPointer tio, mixxx::AudioSourcePointer pAudi
                 math_min(kAnalysisFramesPerBlock, framesRemaining);
         DEBUG_ASSERT(0 < framesToRead);
 
-        const SINT framesRead =
-                pAudioSource->readSampleFramesStereo(
-                        framesToRead,
+        const SINT framesRead = pAudioSource->readSampleFramesStereo(
+                        kAnalysisFramesPerBlock,
                         &m_sampleBuffer);
         DEBUG_ASSERT(framesRead <= framesToRead);
         frameIndex += framesRead;

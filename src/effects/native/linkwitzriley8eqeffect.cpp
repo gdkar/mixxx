@@ -126,16 +126,16 @@ LinkwitzRiley8EQEffectGroupState::LinkwitzRiley8EQEffectGroupState()
     m_pBandBuf = SampleUtil::alloc(MAX_BUFFER_LEN);
     m_pHighBuf = SampleUtil::alloc(MAX_BUFFER_LEN);
     for(auto i : { 0, 1 }) {
-        m_low_low[i] = std::make_unique<EngineFilterIIR>(4,IIR_LP,"LpBu4");
+        m_low_low[i] = std::make_unique<EngineFilterIIR>(4,EngineFilterIIR::LowPass,"LpBu4");
         m_low_low[i]->setFrequencyCorners(kStartupSamplerate, kStartupLoFreq);
 
-        m_low_high[i] = std::make_unique<EngineFilterIIR>(4,IIR_HP,"HpBu4");
+        m_low_high[i] = std::make_unique<EngineFilterIIR>(4,EngineFilterIIR::HighPass,"HpBu4");
         m_low_high[i]->setFrequencyCorners(kStartupSamplerate, kStartupLoFreq);
 
-        m_high_low[i] = std::make_unique<EngineFilterIIR>(4,IIR_LP,"LpBu4");
+        m_high_low[i] = std::make_unique<EngineFilterIIR>(4,EngineFilterIIR::LowPass,"LpBu4");
         m_high_low[i]->setFrequencyCorners(kStartupSamplerate, kStartupHiFreq);
 
-        m_high_high[i] = std::make_unique<EngineFilterIIR>(4,IIR_HP,"HpBu4");
+        m_high_high[i] = std::make_unique<EngineFilterIIR>(4,EngineFilterIIR::HighPass,"HpBu4");
         m_high_high[i]->setFrequencyCorners(kStartupSamplerate, kStartupHiFreq);
     }
     setFilters(kStartupSamplerate, kStartupLoFreq, kStartupHiFreq);

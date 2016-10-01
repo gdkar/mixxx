@@ -22,7 +22,7 @@
 #include "mixer/playerinfo.h"
 #include "preferences/usersettings.h"
 #include "track/track.h"
-#include "util/sleep.h"
+#include "util/rdtsc.hpp"
 
 static const int kConnectRetries = 30;
 static const int kMaxNetworkCache = 491520;  // 10 s mp3 @ 192 kbit/s
@@ -50,37 +50,32 @@ EngineBroadcast::EngineBroadcast(UserSettingsPointer pConfig)
           m_threadWaiting(false),
           m_pOutputFifo(nullptr) {
     const bool persist = true;
-    m_pBroadcastEnabled = new ControlPushButton(
-            ConfigKey(BROADCAST_PREF_KEY,"enabled"),this, persist);
+    m_pBroadcastEnabled = new ControlPushButton(ConfigKey(BROADCAST_PREF_KEY,"enabled"),this, persist);
     m_pBroadcastEnabled->setButtonMode(ControlPushButton::TOGGLE);
-    connect(m_pBroadcastEnabled, SIGNAL(valueChanged(double)),
-            this, SLOT(slotEnableCO(double)));
+    connect(m_pBroadcastEnabled, SIGNAL(valueChanged(double)),this, SLOT(slotEnableCO(double)));
 
     m_pStatusCO = new ControlObject(ConfigKey(BROADCAST_PREF_KEY, "status"),this);
-    m_pStatusCO->connectValueChangeRequest(
-            this, SLOT(slotStatusCO(double)));
+    m_pStatusCO->connectValueChangeRequest(this, SLOT(slotStatusCO(double)));
     m_pStatusCO->setAndConfirm(STATUSCO_UNCONNECTED);
 
     setState(NETWORKSTREAMWORKER_STATE_INIT);
 
     // Initialize libshout
     shout_init();
-
     if (!(m_pShout = shout_new())) {
         errorDialog(tr("Mixxx encountered a problem"), tr("Could not allocate shout_t"));
     }
-
     if (!(m_pShoutMetaData = shout_metadata_new())) {
         errorDialog(tr("Mixxx encountered a problem"), tr("Could not allocate shout_metadata_t"));
     }
-
     setFunctionCode(14);
     if (shout_set_nonblocking(m_pShout, 1) != SHOUTERR_SUCCESS) {
         errorDialog(tr("Error setting non-blocking mode:"), shout_get_error(m_pShout));
     }
 }
 
-EngineBroadcast::~EngineBroadcast() {
+EngineBroadcast::~EngineBroadcast()
+{
     m_pBroadcastEnabled->set(0);
     m_readSema.release();
 
@@ -107,7 +102,8 @@ EngineBroadcast::~EngineBroadcast() {
     shout_shutdown();
 }
 
-bool EngineBroadcast::isConnected() {
+bool EngineBroadcast::isConnected()
+{
     if (m_pShout) {
         m_iShoutStatus = shout_get_connected(m_pShout);
         if (m_iShoutStatus == SHOUTERR_CONNECTED)
@@ -116,18 +112,19 @@ bool EngineBroadcast::isConnected() {
     return false;
 }
 
-QByteArray EngineBroadcast::encodeString(const QString& string) {
+QByteArray EngineBroadcast::encodeString(const QString& string)
+{
     if (m_pTextCodec) {
         return m_pTextCodec->fromUnicode(string);
     }
     return string.toLatin1();
 }
 
-void EngineBroadcast::updateFromPreferences() {
+void EngineBroadcast::updateFromPreferences()
+{
     qDebug() << "EngineBroadcast: updating from preferences";
     NetworkStreamWorker::debugState();
-
-    double dStatus = m_pStatusCO->get();
+    auto dStatus = m_pStatusCO->get();
     if (dStatus == STATUSCO_CONNECTED ||
             dStatus == STATUSCO_CONNECTING) {
         qDebug() << "EngineBroadcast::updateFromPreferences status:"
@@ -135,7 +132,6 @@ void EngineBroadcast::updateFromPreferences() {
                  << ". Can't edit preferences when playing";
         return;
     }
-
     setState(NETWORKSTREAMWORKER_STATE_BUSY);
 
     if (m_encoder) {
@@ -156,9 +152,9 @@ void EngineBroadcast::updateFromPreferences() {
     // Convert a bunch of QStrings to QByteArrays so we can get regular C char*
     // strings to pass to libshout.
 
-    QString codec = m_pConfig->getValueString(
+    auto codec = m_pConfig->getValueString(
             ConfigKey(BROADCAST_PREF_KEY, "metadata_charset"));
-    QByteArray baCodec = codec.toLatin1();
+    auto baCodec = codec.toLatin1();
     m_pTextCodec = QTextCodec::codecForName(baCodec);
     if (!m_pTextCodec) {
         qDebug() << "Couldn't find broadcast metadata codec for codec:" << codec
@@ -168,12 +164,12 @@ void EngineBroadcast::updateFromPreferences() {
     // Indicates our metadata is in the provided charset.
     shout_metadata_add(m_pShoutMetaData, "charset",  baCodec.constData());
 
-    QString serverType = m_pConfig->getValueString(
+    auto serverType = m_pConfig->getValueString(
             ConfigKey(BROADCAST_PREF_KEY, "servertype"));
 
-    QString host = m_pConfig->getValueString(
+    auto host = m_pConfig->getValueString(
                 ConfigKey(BROADCAST_PREF_KEY, "host"));
-    int start = host.indexOf(QLatin1String("//"));
+    auto start = host.indexOf(QLatin1String("//"));
     if (start == -1) {
         // the host part requires preceding //.
         // Without them, the path is treated relative and goes to the
@@ -189,7 +185,7 @@ void EngineBroadcast::updateFromPreferences() {
         serverUrl.setPort(port);
     }
 
-    QString mountPoint = m_pConfig->getValueString(
+    auto mountPoint = m_pConfig->getValueString(
             ConfigKey(BROADCAST_PREF_KEY, "mountpoint")).toLatin1();
     if (!mountPoint.isEmpty()) {
         if (!mountPoint.startsWith('/')) {
@@ -198,7 +194,7 @@ void EngineBroadcast::updateFromPreferences() {
         serverUrl.setPath(mountPoint);
     }
 
-    QString login = m_pConfig->getValueString(
+    auto login = m_pConfig->getValueString(
             ConfigKey(BROADCAST_PREF_KEY, "login"));
     if (!login.isEmpty()) {
         serverUrl.setUserName(login);
@@ -206,22 +202,22 @@ void EngineBroadcast::updateFromPreferences() {
 
     qDebug() << "Using server URL:" << serverUrl;
 
-    QByteArray baPassword = m_pConfig->getValueString(
+    auto baPassword = m_pConfig->getValueString(
             ConfigKey(BROADCAST_PREF_KEY, "password")).toLatin1();
-    QByteArray baFormat = m_pConfig->getValueString(
+    auto baFormat = m_pConfig->getValueString(
             ConfigKey(BROADCAST_PREF_KEY, "format")).toLatin1();
-    QByteArray baBitrate = m_pConfig->getValueString(
+    auto baBitrate = m_pConfig->getValueString(
             ConfigKey(BROADCAST_PREF_KEY, "bitrate")).toLatin1();
 
     // Encode metadata like stream name, website, desc, genre, title/author with
     // the chosen TextCodec.
-    QByteArray baStreamName = encodeString(m_pConfig->getValueString(
+    auto baStreamName = encodeString(m_pConfig->getValueString(
             ConfigKey(BROADCAST_PREF_KEY, "stream_name")));
-    QByteArray baStreamWebsite = encodeString(m_pConfig->getValueString(
+    auto baStreamWebsite = encodeString(m_pConfig->getValueString(
             ConfigKey(BROADCAST_PREF_KEY, "stream_website")));
-    QByteArray baStreamDesc = encodeString(m_pConfig->getValueString(
+    auto baStreamDesc = encodeString(m_pConfig->getValueString(
             ConfigKey(BROADCAST_PREF_KEY, "stream_desc")));
-    QByteArray baStreamGenre = encodeString(m_pConfig->getValueString(
+    auto baStreamGenre = encodeString(m_pConfig->getValueString(
             ConfigKey(BROADCAST_PREF_KEY, "stream_genre")));
 
     // Whether the stream is public.
@@ -487,7 +483,7 @@ bool EngineBroadcast::processConnect() {
 
             // If socket is busy then we wait half second
             if (m_iShoutStatus == SHOUTERR_BUSY) {
-               QThread::msleep(500);
+                ::usleep(50000);
             }
 
             ++ timeout;

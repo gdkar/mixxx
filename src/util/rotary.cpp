@@ -1,5 +1,7 @@
 #include "util/rotary.h"
-
+#include <cmath>
+#include <numeric>
+#include <algorithm>
 #include <QtDebug>
 
 const int kiRotaryFilterMaxLen = 50;
@@ -8,16 +10,13 @@ Rotary::Rotary()
     : m_iFilterPos(0),
       m_dCalibration(1.0),
       m_dLastValue(0.0),
-      m_iCalibrationCount(0) {
+      m_iCalibrationCount(0)
+{
     m_iFilterLength = kiRotaryFilterMaxLen;
-    m_pFilter = new double[m_iFilterLength];
-    for (int i=0; i<m_iFilterLength; ++i)
-        m_pFilter[i] = 0.;
+    m_pFilter = std::make_unique<double[]>(m_iFilterLength);
 }
 
-Rotary::~Rotary() {
-    delete [] m_pFilter;
-}
+Rotary::~Rotary() { }
 
 /* Note: There's probably a bug in this function (or this class) somewhere.
    The filter function seems to be the cause of the "drifting" bug in the Hercules stuff.
@@ -28,7 +27,8 @@ Rotary::~Rotary() {
    have you), the ControlObject's internal value never goes back to zero properly.
    - Albert (March 13, 2007)
  */
-double Rotary::filter(double dValue) {
+double Rotary::filter(double dValue)
+{
     // Update filter buffer
     m_pFilter[m_iFilterPos] = dValue/m_dCalibration;
     m_iFilterPos = (m_iFilterPos+1)%m_iFilterLength;

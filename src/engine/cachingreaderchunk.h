@@ -16,7 +16,9 @@
 //
 // This is the common (abstract) base class for both the cache (as the owner)
 // and the worker.
+
 class CachingReaderChunk : public intrusive_node {
+    Q_GADGET
 public:
     static constexpr SINT kInvalidIndex = -1;
     static constexpr SINT kChannels     =  mixxx::AudioSignal::kChannelCountStereo;
@@ -77,12 +79,14 @@ public:
             SINT sampleOffset,
             SINT sampleCount) const;
 
-    enum State {
+    enum State : int {
         FREE,
         READY,
-        READ_PENDING
+        PENDING,
+        INVALID,
+        FAILED,
     };
-
+    Q_ENUM(State);
     State getState() const;
     // The state is controlled by the cache as the owner of each chunk!
     void giveToWorker();
@@ -102,12 +106,15 @@ public:
             CachingReaderChunk** ppTail);
 
     void init(SINT index);
+    SINT epoch() { return m_epoch.load(); }
+    void setEpoch(SINT e) { m_epoch.store(e);}
     void free();
     explicit CachingReaderChunk();
     virtual ~CachingReaderChunk();
 protected:
     std::atomic<SINT> m_index{};
     std::atomic<SINT> m_frameCount{};
+    std::atomic<SINT> m_epoch{};
     std::unique_ptr<CSAMPLE[]> m_sampleBuffer{};
     State m_state;
 

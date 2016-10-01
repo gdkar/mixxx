@@ -37,9 +37,6 @@
 #include "util/timer.h"
 #include "waveform/visualplayposition.h"
 
-#ifdef __VINYLCONTROL__
-#include "engine/vinylcontrolcontrol.h"
-#endif
 
 namespace {
 
@@ -80,7 +77,7 @@ EngineBuffer::EngineBuffer(QObject *p, QString group, UserSettingsPointer pConfi
           m_pRepeat(NULL),
           m_startButton(NULL),
           m_endButton(NULL),
-          m_iSeekQueued(SeekRequest::None),
+          m_iSeekQueued({0.,SeekRequests(SeekRequest::None)}),
           m_iSeekPhaseQueued(0),
           m_iEnableSyncQueued(SyncRequest::None),
           m_iSyncModeQueued(SYNC_INVALID),
@@ -205,10 +202,6 @@ EngineBuffer::EngineBuffer(QObject *p, QString group, UserSettingsPointer pConfi
     m_pSyncControl = new SyncControl(group, pConfig, pChannel, m_pEngineSync);
     addControl(m_pSyncControl);
 
-#ifdef __VINYLCONTROL__
-    m_pVinylControlControl = new VinylControlControl(group, pConfig);
-    addControl(m_pVinylControlControl);
-#endif
     m_pRateControl = new RateControl(group, pConfig);
     // Add the Rate Controller
     addControl(m_pRateControl);
@@ -368,17 +361,17 @@ void EngineBuffer::queueNewPlaypos(double newpos, enum SeekRequest seekType) {
         // use SEEK_STANDARD for that
         seekType = SeekRequest::Standard;
     }
-    m_queuedSeekPosition.store(newpos);
     // set m_queuedPosition valid
-    m_iSeekQueued = seekType;
+    m_iSeekQueued.store(SeekRecord { newpos, seekType});
 }
-
-void EngineBuffer::requestSyncPhase() {
+void EngineBuffer::requestSyncPhase()
+{
     // Don't overwrite m_iSeekQueued
     m_iSeekPhaseQueued = 1;
 }
 
-void EngineBuffer::requestEnableSync(bool enabled) {
+void EngineBuffer::requestEnableSync(bool enabled)
+{
     // If we're not playing, the queued event won't get processed so do it now.
     if (!playing()){//m_playButton->get() == 0.0) {
         m_pEngineSync->requestEnableSync(m_pSyncControl, enabled);
@@ -423,12 +416,14 @@ void EngineBuffer::readToCrossfadeBuffer(const int iBufferSize)
 //        clearAndPreroll(m_filepos_play, 256);
     }
     m_pReadAheadManager->notifySeek(m_filepos_play);
+    m_pScale->clear();
 }
 void EngineBuffer::clearAndPreroll(double playpos, double preroll)
 {
     if(!m_rate_old || playpos < 0.) {
         m_filepos_play = playpos;
         m_pReadAheadManager->notifySeek(size_t(m_filepos_play)&(~1ul));
+        m_pScale->clear();
         return;
     }else{
         auto target = playpos - preroll / m_rate_old;
@@ -462,13 +457,13 @@ void EngineBuffer::setNewPlaypos(double newpos)
         // Before seeking, read extra buffer for crossfading
         // (calls notifySeek())
         readToCrossfadeBuffer(m_iLastBufferSize);
-//        clearAndPreroll(m_filepos_play,256);
+        clearAndPreroll(m_filepos_play,256);
 //        readToCrossfadeBuffer(m_iLastBufferSize);
     } else {
 //        clearAndPreroll(m_filepos_play,256);
         m_pReadAheadManager->notifySeek(m_filepos_play);
+        m_pScale->clear();
     }
-    m_pScale->clear();
     // Ensures that the playpos slider gets updated in next process call
     m_iSamplesCalculated = 1000000;
     // Must hold the engineLock while using m_engineControls
@@ -615,15 +610,6 @@ void EngineBuffer::doSeekPlayPos(double new_playpos, SeekRequest seekType)
     if (new_playpos > m_trackSamplesOld) {
         new_playpos = m_trackSamplesOld;
     }
-
-#ifdef __VINYLCONTROL__
-    // Notify the vinyl control that a seek has taken place in case it is in
-    // absolute mode and needs be switched to relative.
-    if (m_pVinylControlControl) {
-        m_pVinylControlControl->notifySeekQueued();
-    }
-#endif
-
     queueNewPlaypos(new_playpos, seekType);
 }
 
@@ -635,7 +621,7 @@ bool EngineBuffer::updateIndicatorsAndModifyPlay(bool newPlay) {
     if ((!m_pCurrentTrack && m_iTrackLoading.load() == 0) ||
             (m_pCurrentTrack && m_iTrackLoading.load() == 0 &&
              m_filepos_play >= m_trackSamplesOld &&
-             (m_iSeekQueued.load() == SeekRequest::None))) {
+             (SeekRequests(m_iSeekQueued.load().req) == SeekRequests(SeekRequest::None)))) {
         // play not possible
         playPossible = false;
     }
@@ -726,9 +712,9 @@ void EngineBuffer::slotKeylockEngineChanged(double dIndex)
 void EngineBuffer::process(CSAMPLE* pOutput, int iBufferSize)
 {
     // Bail if we receive a buffer size with incomplete sample frames. Assert in debug builds.
-    DEBUG_ASSERT_AND_HANDLE((iBufferSize % kSamplesPerFrame) == 0) {
+    DEBUG_ASSERT_AND_HANDLE((iBufferSize % kSamplesPerFrame) == 0)
         return;
-    }
+
     m_pReader->process();
     // Steps:
     // - Lookup new reader information
@@ -740,9 +726,9 @@ void EngineBuffer::process(CSAMPLE* pOutput, int iBufferSize)
     // - Set last sample value (m_fLastSampleValue) so that rampOut works? Other
     //   miscellaneous upkeep issues.
 
-    bool bCurBufferPaused = false;
-    double rate = 0;
-    int sample_rate = static_cast<int>(m_pSampleRate->get());
+    auto bCurBufferPaused = false;
+    auto rate = 0.;
+    auto sample_rate = static_cast<int>(m_pSampleRate->get());
 
     // If the sample rate has changed, force Rubberband to reset so that
     // it doesn't reallocate when the user engages keylock during playback.
@@ -753,7 +739,6 @@ void EngineBuffer::process(CSAMPLE* pOutput, int iBufferSize)
         m_pScaleRB->setSampleRate(sample_rate);
         m_iSampleRate = sample_rate;
     }
-
     auto bTrackLoading = m_iTrackLoading.load() != 0;
     if (!bTrackLoading && m_pause.tryLock()) {
         ScopedTimer t("EngineBuffer::process_pauselock");
@@ -773,8 +758,8 @@ void EngineBuffer::process(CSAMPLE* pOutput, int iBufferSize)
         auto tempoRatio = pitchTempoRatio.tempoRatio;
         auto keylock_enabled = pitchTempoRatio.keylock;
 
-        bool is_scratching = false;
-        bool is_reverse = false;
+        auto is_scratching = false;
+        auto is_reverse = false;
 
         // Update the slipped position and seek if it was disabled.
         processSlip(iBufferSize);
@@ -1066,8 +1051,6 @@ void EngineBuffer::process(CSAMPLE* pOutput, int iBufferSize)
         m_speed_old = 0;
         m_scratching_old = false;
     }
-
-
     if (m_pSyncControl->getSyncMode() == SYNC_MASTER) {
         // Report our speed to SyncControl immediately instead of waiting
         // for postProcess so we can broadcast this update to followers.
@@ -1080,7 +1063,7 @@ void EngineBuffer::process(CSAMPLE* pOutput, int iBufferSize)
 
 void EngineBuffer::processSlip(int iBufferSize) {
     // Do a single read from m_bSlipEnabled so we don't run in to race conditions.
-    bool enabled = static_cast<bool>(m_slipEnabled.load());
+    auto enabled = static_cast<bool>(m_slipEnabled.load());
     if (enabled != m_bSlipEnabledProcessing) {
         m_bSlipEnabledProcessing = enabled;
         if (enabled) {
@@ -1088,20 +1071,19 @@ void EngineBuffer::processSlip(int iBufferSize) {
             m_dSlipRate = m_rate_old;
         } else {
             // TODO(owen) assuming that looping will get canceled properly
-            double newPlayFrame = m_dSlipPosition / kSamplesPerFrame;
-            double roundedSlip = round(newPlayFrame) * kSamplesPerFrame;
+            auto newPlayFrame = m_dSlipPosition / kSamplesPerFrame;
+            auto roundedSlip = round(newPlayFrame) * kSamplesPerFrame;
             slotControlSeekExact(roundedSlip);
             m_dSlipPosition = 0;
         }
     }
-
     // Increment slip position even if it was just toggled -- this ensures the position is correct.
     if (enabled) {
         m_dSlipPosition += static_cast<double>(iBufferSize) * m_dSlipRate;
     }
 }
-
-void EngineBuffer::processSyncRequests() {
+void EngineBuffer::processSyncRequests()
+{
     auto enable_request = static_cast<SyncRequest>(
                     m_iEnableSyncQueued.exchange(SyncRequest::None,std::memory_order_release));
     auto mode_request =
@@ -1121,21 +1103,20 @@ void EngineBuffer::processSyncRequests() {
         break;
     }
     if (mode_request != SYNC_INVALID) {
-        m_pEngineSync->requestSyncMode(m_pSyncControl,
-                                       static_cast<SyncMode>(mode_request));
+        m_pEngineSync->requestSyncMode(m_pSyncControl,static_cast<SyncMode>(mode_request));
     }
 }
 
-void EngineBuffer::processSeek(bool paused) {
+void EngineBuffer::processSeek(bool paused)
+{
     // We need to read position just after reading seekType, to ensure that we
     // read the matching position to seek_typ or a position from a new (second)
     // seek just queued from an other thread
     // The later case is ok, because we will process the new seek in the next
     // call anyway again.
-
-    auto seekType = static_cast<SeekRequests>(
-            m_iSeekQueued.exchange(SeekRequest::None,std::memory_order_release));
-    auto position = m_queuedSeekPosition.load();
+    auto rec = m_iSeekQueued.exchange(SeekRecord{0.,SeekRequest::None});
+    auto seekType = rec.req;
+    auto position = rec.pos;
 
     // Add SEEK_PHASE bit, if any
     if (m_iSeekPhaseQueued.exchange(0,std::memory_order_release)) {
@@ -1157,12 +1138,10 @@ void EngineBuffer::processSeek(bool paused) {
             qWarning() << "Unhandled seek request type: " << seekType;
             return;
     }
-
     if ((seekType & SeekRequest::Phase) && !paused && m_pQuantize->toBool()) {
         position += m_pBpmControl->getPhaseOffset(position);
     }
-
-    double newPlayFrame = position / kSamplesPerFrame;
+    auto newPlayFrame = position / kSamplesPerFrame;
     position = round(newPlayFrame) * kSamplesPerFrame;
     if (position != m_filepos_play) {
         setNewPlaypos(position);

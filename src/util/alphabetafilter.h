@@ -12,70 +12,45 @@ This is essentially just a C++ version of xwax's pitch.h,
 #ifndef ALPHABETAFILTER_H
 #define ALPHABETAFILTER_H
 
+#include <QtGlobal>
+#include <QObject>
+#include <QMetaType>
+#include <QMetaObject>
+#include <QtQml>
+#include <QtQuick>
+
 // This is a simple alpha-beta filter. It follows the example from Wikipedia
 // closely: http://en.wikipedia.org/wiki/Alpha_beta_filter
 //
 // Given an initial position and velocity, learning parameters alpha and beta,
 // and a series of input observations of the distance travelled, the filter
 // predicts the real position and velocity.
-class AlphaBetaFilter {
+class AlphaBetaFilter : public QObject {
+    Q_OBJECT
+    Q_PROPERTY(double dt MEMBER m_dt)
+    Q_PROPERTY(double position READ predictedPosition)
+    Q_PROPERTY(double velocity READ predictedVelocity)
+    Q_PROPERTY(double alpha MEMBER m_alpha)
+    Q_PROPERTY(double beta MEMBER m_beta)
   public:
-    AlphaBetaFilter()
-            : m_initialized(false),
-              m_dt(0.0),
-              m_x(0.0),
-              m_v(0.0),
-              m_alpha(0.0),
-              m_beta(0.0) {
-    }
-
-    // Prepare the filter for observations every dt seconds. Default filter
+    Q_INVOKABLE AlphaBetaFilter(QObject *p = nullptr);
     // values were concluded experimentally for time code vinyl.
-    void init(double dt, double v, double alpha = 1.0/512, double beta = (1.0/512)/1024) {
-        m_initialized = true;
-        m_dt = dt;
-        m_x = 0.0;
-        m_v = v;
-        m_alpha = alpha;
-        m_beta = beta;
-    }
-
+    Q_INVOKABLE void init(double dt, double v, double alpha = 1.0/512, double beta = (1.0/512)/1024);
     // Input an observation to the filter; in the last dt seconds the position
     // has moved by dx.
     //
     // Because the values come from a digital controller, the values for dx are
     // discrete rather than smooth.
-    void observation(double dx) {
-        if (!m_initialized) {
-            return;
-        }
-
-        double predicted_x = m_x + m_v * m_dt;
-        double predicted_v = m_v;
-        double residual_x = dx - predicted_x;
-
-        m_x = predicted_x + residual_x * m_alpha;
-        m_v = predicted_v + residual_x * m_beta / m_dt;
-
-        // relative to previous
-        m_x -= dx;
-    }
-
+    Q_INVOKABLE void observe(double dx);
     // Get the velocity after filtering.
-    double predictedVelocity() const {
-        return m_v;
-    }
-
+    double predictedVelocity() const;
     // Get the position after filtering.
-    double predictedPosition() const {
-        return m_x;
-    }
-
+    double predictedPosition() const;
   private:
     // Whether init() has been called.
-    bool m_initialized;
+    bool m_initialized = false;
     // State of the rate calculation filter
-    double m_dt, m_x, m_v, m_alpha, m_beta;
+    double m_dt, m_x = 0., m_v = 0., m_alpha = 1./512, m_beta = (1./512)/1024;
 };
 
 #endif

@@ -538,11 +538,13 @@ void WMainMenuBar::onBroadcastingStateChange(bool broadcasting) {
     emit(internalBroadcastingStateChange(broadcasting));
 }
 
-void WMainMenuBar::onDeveloperToolsShown() {
+void WMainMenuBar::onDeveloperToolsShown()
+{
     emit(internalDeveloperToolsStateChange(true));
 }
 
-void WMainMenuBar::onDeveloperToolsHidden() {
+void WMainMenuBar::onDeveloperToolsHidden()
+{
     emit(internalDeveloperToolsStateChange(false));
 }
 

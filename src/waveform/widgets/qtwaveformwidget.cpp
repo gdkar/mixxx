@@ -33,11 +33,6 @@ QtWaveformWidget::QtWaveformWidget(const char* group, QWidget* parent)
 
 QtWaveformWidget::~QtWaveformWidget() {
 }
-
-void QtWaveformWidget::castToQWidget() {
-    m_widget = qobject_cast<QWidget*>(this);
-}
-
 void QtWaveformWidget::paintEvent(QPaintEvent* event) {
     QPainter painter(this);
     draw(&painter, event);
