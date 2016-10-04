@@ -11,7 +11,9 @@
 #include "util/cmdlineargs.h"
 #include "util/time.h"
 
-#include "ladspa/qmlladspa.hpp"
+#include "ladspa/port.hpp"
+#include "ladspa/descriptor.hpp"
+#include "ladspa/effect.hpp"
 
 #include "control/controlobjectscript.h"
 #include "control/controlproxy.h"
@@ -85,8 +87,8 @@ ControllerManager::ControllerManager(UserSettingsPointer pConfig)
     qmlRegisterType<ControlObject>("org.mixxx.qml", 0, 1, "ControlObject");
     qmlRegisterType<ControlProxy>("org.mixxx.qml", 0, 1, "ControlProxy");
     qmlRegisterType<ControlObjectScript>("org.mixxx.qml", 0, 1, "ControlObjectScript");
-
-    LADSPA::registerTypes();
+    LadspaEffect::registerTypes();
+//    LADSPA::registerTypes();
     // Create controller mapping paths in the user's home directory.
     auto userPresets = userPresetsPath(m_pConfig);
     if (!QDir(userPresets).exists()) {

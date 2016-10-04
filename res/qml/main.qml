@@ -41,21 +41,8 @@ Item {
             event.accepted = true;
         }
     }
-    LadspaLibrary {
-        id: ladspaLib
-        fileName : "/usr/lib/ladspa/ladspa-rubberband.so"
-    }
     Loader {
         id: controllerLoader
         source : "../controllers/HerculesAir.qml"
-    }
-    Component.onCompleted: {
-        ladspaLib.open("/usr/lib/ladspa/ladspa-rubberband.so")
-        console.log(ladspaLib)
-        for(var i = ladspaLib.plugins.length; i--;) {
-            for(var key in ladspaLib.plugins[i]) {
-                console.log(key, ladspaLib.plugins[i][key]);
-            }
-        }
     }
 }

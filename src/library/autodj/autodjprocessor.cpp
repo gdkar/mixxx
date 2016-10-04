@@ -79,24 +79,25 @@ AutoDJProcessor::AutoDJProcessor(QObject* pParent,
                                                  "mixxx.db.model.autodj");
     m_pAutoDJTableModel->setTableModel(iAutoDJPlaylistId);
 
-    m_pShufflePlaylist = new ControlPushButton(
+    m_pShufflePlaylist = new ControlObject(
             ConfigKey("[AutoDJ]", "shuffle_playlist"),this);
     connect(m_pShufflePlaylist, SIGNAL(valueChanged(double)),
             this, SLOT(controlShuffle(double)));
 
-    m_pSkipNext = new ControlPushButton(
+    m_pSkipNext = new ControlObject(
             ConfigKey("[AutoDJ]", "skip_next"),this);
     connect(m_pSkipNext, SIGNAL(valueChanged(double)),
             this, SLOT(controlSkipNext(double)));
 
-    m_pFadeNow = new ControlPushButton(
+    m_pFadeNow = new ControlObject(
             ConfigKey("[AutoDJ]", "fade_now"),this);
     connect(m_pFadeNow, SIGNAL(valueChanged(double)),
             this, SLOT(controlFadeNow(double)));
 
-    m_pEnabledAutoDJ = new ControlPushButton(
+    auto button = new ControlPushButton(
             ConfigKey("[AutoDJ]", "enabled"),this);
-    m_pEnabledAutoDJ->setButtonMode(ControlPushButton::TOGGLE);
+    m_pEnabledAutoDJ = button;
+    button->setButtonMode(ControlPushButton::TOGGLE);
     connect(m_pEnabledAutoDJ, SIGNAL(valueChanged(double)),
             this, SLOT(controlEnable(double)));
 

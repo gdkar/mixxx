@@ -15,7 +15,6 @@
 
 #define MINIMUM_AUDIBLE_LOOP_SIZE   300  // In samples
 
-class ControlPushButton;
 class ControlObject;
 
 class LoopMoveControl;
@@ -104,13 +103,13 @@ class LoopingControl : public EngineControl {
     ControlObject* m_pCOLoopStartPosition;
     ControlObject* m_pCOLoopEndPosition;
     ControlObject* m_pCOLoopEnabled;
-    ControlPushButton* m_pLoopInButton;
-    ControlPushButton* m_pLoopOutButton;
-    ControlPushButton* m_pLoopExitButton;
-    ControlPushButton* m_pReloopExitButton;
+    ControlObject* m_pLoopInButton;
+    ControlObject* m_pLoopOutButton;
+    ControlObject* m_pLoopExitButton;
+    ControlObject* m_pReloopExitButton;
     ControlObject* m_pCOLoopScale;
-    ControlPushButton* m_pLoopHalveButton;
-    ControlPushButton* m_pLoopDoubleButton;
+    ControlObject* m_pLoopHalveButton;
+    ControlObject* m_pLoopDoubleButton;
     ControlObject* m_pSlipEnabled;
 
     bool m_bLoopingEnabled;
@@ -157,8 +156,8 @@ class LoopMoveControl : public QObject {
 
   private:
     double m_dLoopMoveSize;
-    ControlPushButton* m_pMoveForward;
-    ControlPushButton* m_pMoveBackward;
+    ControlObject* m_pMoveForward;
+    ControlObject* m_pMoveBackward;
 };
 
 // Class for handling beat jumps of a set size. This allows easy access from
@@ -178,8 +177,8 @@ class BeatJumpControl : public QObject {
 
   private:
     double m_dBeatJumpSize;
-    ControlPushButton* m_pJumpForward;
-    ControlPushButton* m_pJumpBackward;
+    ControlObject* m_pJumpForward;
+    ControlObject* m_pJumpBackward;
 };
 
 // Class for handling beat loops of a set size. This allows easy access from
@@ -210,10 +209,10 @@ class BeatLoopingControl : public QObject {
   private:
     double m_dBeatLoopSize;
     bool m_bActive;
-    ControlPushButton* m_pLegacy;
-    ControlPushButton* m_pActivate;
-    ControlPushButton* m_pActivateRoll;
-    ControlPushButton* m_pToggle;
+    ControlObject* m_pLegacy;
+    ControlObject* m_pActivate;
+    ControlObject* m_pActivateRoll;
+    ControlObject* m_pToggle;
     ControlObject* m_pEnabled;
 };
 

@@ -5,8 +5,6 @@
 #include "control/controlobject.h"
 #include "util/performancetimer.h"
 
-class ControlAudioTaperPot;
-class ControlPotmeter;
 class ControlObject;
 
 // The pregain control alters the volume of the track based on several inputs,
@@ -33,12 +31,12 @@ class EnginePregain : public EngineObject {
     double m_dOldSpeed;
     bool m_scratching;
     float m_fPrevGain;
-    ControlAudioTaperPot* m_pPotmeterPregain;
+    ControlObject* m_pPotmeterPregain;
     ControlObject* m_pTotalGain;
     ControlObject* m_pCOReplayGain;
     ControlObject* m_pPassthroughEnabled;
-    static ControlPotmeter* s_pReplayGainBoost;
-    static ControlPotmeter* s_pDefaultBoost;
+    static ControlObject* s_pReplayGainBoost;
+    static ControlObject* s_pDefaultBoost;
     static ControlObject* s_pEnableReplayGain;
     bool m_bSmoothFade;
     PerformanceTimer m_timer;

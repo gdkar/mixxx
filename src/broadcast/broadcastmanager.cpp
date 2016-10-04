@@ -2,6 +2,8 @@
 
 #include "broadcast/defs_broadcast.h"
 #include "engine/enginemaster.h"
+#include "control/controlproxy.h"
+#include "control/controlobject.h"
 #include "engine/sidechain/enginenetworkstream.h"
 #include "engine/sidechain/enginesidechain.h"
 #include "soundio/soundmanager.h"

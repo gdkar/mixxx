@@ -108,6 +108,7 @@ class Stat {
     double m_variance_mk;
     double m_variance_sk;
     QMap<double, double> m_histogram;
+    QHash<QString, int>  m_thread_usage;
     static bool track(const QString& tag,
                       Stat::StatType type,
                       Stat::ComputeFlags compute,

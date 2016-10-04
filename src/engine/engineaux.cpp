@@ -7,6 +7,8 @@
 #include <QtDebug>
 
 #include "control/control.h"
+#include "control/controlobject.h"
+#include "control/controlproxy.h"
 #include "preferences/usersettings.h"
 #include "control/controlaudiotaperpot.h"
 #include "effects/effectsmanager.h"

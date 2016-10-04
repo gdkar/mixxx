@@ -629,7 +629,9 @@ class MixxxCore(Feature):
                    "preferences/upgrade.cpp",
                    "preferences/dlgpreferencepage.cpp",
 
-                   "ladspa/qmlladspa.cpp",
+                   "ladspa/port.cpp",
+                   "ladspa/effect.cpp",
+                   "ladspa/descriptor.cpp",
                    "effects/effectmanifest.cpp",
                    "effects/effectmanifestparameter.cpp",
 

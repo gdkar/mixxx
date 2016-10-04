@@ -12,7 +12,7 @@
 #include "track/track.h"
 #include "util/class.h"
 
-class ControlPushButton;
+class ControlObject;
 class TrackCollection;
 class PlayerManagerInterface;
 class TrackPlayer;
@@ -205,12 +205,11 @@ class AutoDJProcessor : public QObject {
     ControlProxy* m_pCOCrossfader;
     ControlProxy* m_pCOCrossfaderReverse;
 
-    ControlPushButton* m_pSkipNext;
-    ControlPushButton* m_pFadeNow;
-    ControlPushButton* m_pShufflePlaylist;
-    ControlPushButton* m_pEnabledAutoDJ;
+    ControlObject* m_pSkipNext;
+    ControlObject* m_pFadeNow;
+    ControlObject* m_pShufflePlaylist;
+    ControlObject* m_pEnabledAutoDJ;
 
-    DISALLOW_COPY_AND_ASSIGN(AutoDJProcessor);
 };
 
 #endif /* AUTODJPROCESSOR_H */

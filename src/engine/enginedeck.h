@@ -22,7 +22,6 @@
 
 #include "preferences/usersettings.h"
 #include "control/controlproxy.h"
-#include "control/controlpushbutton.h"
 #include "engine/engineobject.h"
 #include "engine/enginechannel.h"
 
@@ -35,7 +34,6 @@ class EngineMaster;
 class EngineVuMeter;
 class EffectsManager;
 class EngineEffectsManager;
-class ControlPushButton;
 
 class EngineDeck : public EngineChannel, public AudioDestination {
     Q_OBJECT

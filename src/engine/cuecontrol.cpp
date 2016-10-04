@@ -48,15 +48,15 @@ CueControl::CueControl(QString group,
 
     m_pCueMode = new ControlObject(ConfigKey(group, "cue_mode"),this);
 
-    m_pCueSet = new ControlPushButton(ConfigKey(group, "cue_set"),this);
-    m_pCueSet->setButtonMode(ControlPushButton::TRIGGER);
+    auto button = new ControlPushButton(ConfigKey(group, "cue_set"),this);
+    m_pCueSet = button;
+    button->setButtonMode(ControlPushButton::TRIGGER);
     connect(m_pCueSet, SIGNAL(valueChanged(double)),this, SLOT(cueSet(double)),Qt::AutoConnection);
 
-    m_pCueGoto = new ControlPushButton(ConfigKey(group, "cue_goto"),this);
+    m_pCueGoto = button = new ControlPushButton(ConfigKey(group, "cue_goto"),this);
     connect(m_pCueGoto, SIGNAL(valueChanged(double)),this, SLOT(cueGoto(double)),Qt::AutoConnection);
 
-    m_pCueGotoAndPlay =
-            new ControlPushButton(ConfigKey(group, "cue_gotoandplay"),this);
+    m_pCueGotoAndPlay = new ControlPushButton(ConfigKey(group, "cue_gotoandplay"),this);
     connect(m_pCueGotoAndPlay, SIGNAL(valueChanged(double)),this, SLOT(cueGotoAndPlay(double)),Qt::AutoConnection);
 
     m_pCuePlay = new ControlPushButton(ConfigKey(group, "cue_play"),this);

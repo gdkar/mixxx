@@ -15,7 +15,7 @@
 #define NUM_HOT_CUES 8
 
 class ControlObject;
-class ControlPushButton;
+class ControlObject;
 class ControlIndicator;
 
 class HotcueControl : public QObject {
@@ -143,17 +143,17 @@ class CueControl : public EngineControl {
     ControlObject* m_pTrackSamples;
     ControlObject* m_pCuePoint;
     ControlObject* m_pCueMode;
-    ControlPushButton* m_pCueSet;
-    ControlPushButton* m_pCueCDJ;
-    ControlPushButton* m_pCueDefault;
-    ControlPushButton* m_pPlayStutter;
+    ControlObject* m_pCueSet;
+    ControlObject* m_pCueCDJ;
+    ControlObject* m_pCueDefault;
+    ControlObject* m_pPlayStutter;
     ControlIndicator* m_pCueIndicator;
     ControlIndicator* m_pPlayIndicator;
-    ControlPushButton* m_pCueGoto;
-    ControlPushButton* m_pCueGotoAndPlay;
-    ControlPushButton* m_pCuePlay;
-    ControlPushButton* m_pCueGotoAndStop;
-    ControlPushButton* m_pCuePreview;
+    ControlObject* m_pCueGoto;
+    ControlObject* m_pCueGotoAndPlay;
+    ControlObject* m_pCuePlay;
+    ControlObject* m_pCueGotoAndStop;
+    ControlObject* m_pCuePreview;
     ControlProxy* m_pVinylControlEnabled;
     ControlProxy* m_pVinylControlMode;
 

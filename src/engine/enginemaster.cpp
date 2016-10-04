@@ -104,9 +104,10 @@ EngineMaster::EngineMaster(UserSettingsPointer pConfig,
     m_pHeadMix->set(-1.);
 
     // Master / Headphone split-out mode (for devices with only one output).
-    m_pHeadSplitEnabled = new ControlPushButton(ConfigKey(group, "headSplit"),this);
-    m_pHeadSplitEnabled->setButtonMode(ControlPushButton::TOGGLE);
-    m_pHeadSplitEnabled->set(0.0);
+    auto button = new ControlPushButton(ConfigKey(group, "headSplit"),this);
+    m_pHeadSplitEnabled = button;
+    button->setButtonMode(ControlPushButton::TOGGLE);
+    button->set(0.0);
 
     m_pTalkoverDucking = new EngineTalkoverDucking(pConfig, group);
 
@@ -125,9 +126,9 @@ EngineMaster::EngineMaster(UserSettingsPointer pConfig,
     // Starts a thread for recording and broadcast
     m_pEngineSideChain = bEnableSidechain ? new EngineSideChain(pConfig) : NULL;
     // X-Fader Setup
-    m_pXFaderMode = new ControlPushButton(
+    m_pXFaderMode = button = new ControlPushButton(
             ConfigKey(EngineXfader::kXfaderConfigKey, "xFaderMode"),this);
-    m_pXFaderMode->setButtonMode(ControlPushButton::TOGGLE);
+    button->setButtonMode(ControlPushButton::TOGGLE);
 
     m_pXFaderCurve = new ControlPotmeter(
             ConfigKey(EngineXfader::kXfaderConfigKey, "xFaderCurve"),this,
@@ -135,9 +136,8 @@ EngineMaster::EngineMaster(UserSettingsPointer pConfig,
     m_pXFaderCalibration = new ControlPotmeter(
             ConfigKey(EngineXfader::kXfaderConfigKey, "xFaderCalibration"),this,
             0.3, 1., true);
-    m_pXFaderReverse = new ControlPushButton(
-            ConfigKey(EngineXfader::kXfaderConfigKey, "xFaderReverse"),this);
-    m_pXFaderReverse->setButtonMode(ControlPushButton::TOGGLE);
+    m_pXFaderReverse = button = new ControlPushButton(ConfigKey(EngineXfader::kXfaderConfigKey, "xFaderReverse"),this);
+    button->setButtonMode(ControlPushButton::TOGGLE);
 
     m_pKeylockEngine = new ControlObject(ConfigKey(group, "keylock_engine"),this,true, false, true);
     m_pKeylockEngine->set(pConfig->getValueString(ConfigKey(group, "keylock_engine")).toDouble());
@@ -494,8 +494,9 @@ void EngineMaster::addChannel(EngineChannel* pChannel)
     pChannelInfo->m_pVolumeControl = new ControlAudioTaperPot(ConfigKey(group, "volume"),this, -20, 0, 1);
     pChannelInfo->m_pVolumeControl->setDefaultValue(1.0);
     pChannelInfo->m_pVolumeControl->set(1.0);
-    pChannelInfo->m_pMuteControl = new ControlPushButton(ConfigKey(group, "mute"),this);
-    pChannelInfo->m_pMuteControl->setButtonMode(ControlPushButton::POWERWINDOW);
+    auto button = new ControlPushButton(ConfigKey(group, "mute"),this);
+    pChannelInfo->m_pMuteControl = button;
+    button->setButtonMode(ControlPushButton::POWERWINDOW);
     pChannelInfo->m_pBuffer = SampleUtil::alloc(MAX_BUFFER_LEN);
     SampleUtil::clear(pChannelInfo->m_pBuffer, MAX_BUFFER_LEN);
     m_channels.append(pChannelInfo);

@@ -9,6 +9,14 @@
 #include <QReadWriteLock>
 #include <QMutexLocker>
 
+#include <mutex>
+#include <thread>
+#include <atomic>
+#include <condition_variable>
+
+template<class T>
+std::unique_lock<T> lock_uniquely(T &t) { return std::unique_lock<T>(t); }
+
 #include "util/thread_annotations.h"
 
 class CAPABILITY("mutex") MMutex {

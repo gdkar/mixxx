@@ -1012,9 +1012,10 @@ BeatLoopingControl::BeatLoopingControl(QString group, double size)
           m_bActive(false) {
     // This is the original beatloop control which is now deprecated. Its value
     // is the state of the beatloop control (1 for enabled, 0 for disabled).
-    m_pLegacy = new ControlPushButton(
+    auto button = new ControlPushButton(
             keyForControl(group, "beatloop_%1", size),this);
-    m_pLegacy->setButtonMode(ControlPushButton::TOGGLE);
+    m_pLegacy = button;
+    button->setButtonMode(ControlPushButton::TOGGLE);
     connect(m_pLegacy, SIGNAL(valueChanged(double)),
             this, SLOT(slotLegacy(double)),
             Qt::DirectConnection);
@@ -1025,22 +1026,19 @@ BeatLoopingControl::BeatLoopingControl(QString group, double size)
             this, SLOT(slotActivate(double)),
             Qt::DirectConnection);
     // A push-button which toggles the beatloop as active or inactive.
-    m_pToggle = new ControlPushButton(
-            keyForControl(group, "beatloop_%1_toggle", size),this);
+    m_pToggle = new ControlPushButton(keyForControl(group, "beatloop_%1_toggle", size),this);
     connect(m_pToggle, SIGNAL(valueChanged(double)),
             this, SLOT(slotToggle(double)),
             Qt::DirectConnection);
 
     // A push-button which activates rolling beatloops
-    m_pActivateRoll = new ControlPushButton(
-            keyForControl(group, "beatlooproll_%1_activate", size),this);
+    m_pActivateRoll = new ControlPushButton(keyForControl(group, "beatlooproll_%1_activate", size),this);
     connect(m_pActivateRoll, SIGNAL(valueChanged(double)),
             this, SLOT(slotActivateRoll(double)),
             Qt::DirectConnection);
 
     // An indicator control which is 1 if the beatloop is enabled and 0 if not.
-    m_pEnabled = new ControlObject(
-            keyForControl(group, "beatloop_%1_enabled", size),this);
+    m_pEnabled = new ControlObject(keyForControl(group, "beatloop_%1_enabled", size),this);
 }
 
 BeatLoopingControl::~BeatLoopingControl() {

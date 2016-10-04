@@ -30,6 +30,14 @@ Item {
                     'filterLow':'\u0039',
                     'filterMid':'\u0038',
                     'filterHigh':'\u0037',
+
+                    'playLed':0x12,
+                    'keylockLed':0x04,
+                    'loop_enabledLed':0x0c,
+                    'beat_activeLed':0x13,
+                    'pflLed':0x14,
+                    'quantizeLed':0x03
+
         }
     }
     DeckControls {
@@ -55,7 +63,12 @@ Item {
                     'filterLow':'\u003e',
                     'filterMid':'\u003d',
                     'filterHigh':'\u003c',
-
+                    'playLed':0x28,
+                    'keylockLed':0x1a,
+                    'loop_enabledLed':0x22,
+                    'beat_activeLed':0x29,
+                    'pflLed':0x2a,
+                    'quantizeLed':0x19
         }
     }
     PlaylistControls {
@@ -68,6 +81,8 @@ Item {
             'prevList':'\u0036'
             }
     }
+    property bool shift: (shiftButton.value != 0)
+    property BindProxy shiftButton: controller.getBindingFor("\u0090\u002e")
     property Controller controller: RtMidiController {
         id: air
         inputIndex: 1

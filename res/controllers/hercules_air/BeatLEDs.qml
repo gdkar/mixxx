@@ -2,7 +2,7 @@ import org.mixxx.qml 0.1
 import QtQml 2.2
 import QtQuick 2.7
 
-ControlObjectQml {
+ControlObjectScript {
     id: root
     group: parent.group
     item:  "beat_active"

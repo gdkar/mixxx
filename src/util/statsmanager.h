@@ -65,9 +65,10 @@ class StatsManager : public QThread, public Singleton<StatsManager> {
     std::atomic<int> m_resetStats{0};
     std::atomic<int> m_emitAllStats{0};
     std::atomic<int> m_quit{-1};
-    QMap<QString, Stat> m_stats;
-    QMap<QString, Stat> m_baseStats;
-    QMap<QString, Stat> m_experimentStats;
+    QHash<QString, Stat> m_stats;
+    QHash<QString, Stat> m_baseStats;
+    QHash<QString, Stat> m_experimentStats;
+
     QSet<QString> m_tags;
     QList<Event> m_events;
 //    QList<Event> m_events;

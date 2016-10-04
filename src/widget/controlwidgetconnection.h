@@ -56,43 +56,36 @@ class ControlParameterWidgetConnection : public ControlWidgetConnection {
         EMIT_ON_PRESS_AND_RELEASE = 0x03,
         EMIT_DEFAULT              = 0x04
     };
-
+    Q_ENUM(EmitOption);
     static QString emitOptionToString(EmitOption option) {
-        switch (option & EMIT_ON_PRESS_AND_RELEASE) {
-            case EMIT_NEVER:
-                return "NEVER";
-            case EMIT_ON_PRESS:
-                return "PRESS";
-            case EMIT_ON_RELEASE:
-                return "RELEASE";
-            case EMIT_ON_PRESS_AND_RELEASE:
-                return "PRESS_AND_RELEASE";
-            default:
-                return "UNKNOWN";
-        }
+        return QVariant::fromValue(option).toString();
+/*        switch (option & EMIT_ON_PRESS_AND_RELEASE) {
+            case EMIT_NEVER: return "NEVER";
+            case EMIT_ON_PRESS:return "PRESS";
+            case EMIT_ON_RELEASE:return "RELEASE";
+            case EMIT_ON_PRESS_AND_RELEASE:return "PRESS_AND_RELEASE";
+            default:return "UNKNOWN";
+        }*/
     }
 
-    enum DirectionOption {
+    enum DirectionOptionBit {
         DIR_NON                  = 0x00,
         DIR_FROM_WIDGET          = 0x01,
         DIR_TO_WIDGET            = 0x02,
-        DIR_FROM_AND_TO_WIDGET   = 0x03,
+        DIR_FROM_AND_TO_WIDGET   = DIR_FROM_WIDGET|DIR_TO_WIDGET,
         DIR_DEFAULT              = 0x04
     };
-
+    Q_ENUM(DirectionOptionBit);
+    Q_DECLARE_FLAGS(DirectionOption,DirectionOptionBit);
     static QString directionOptionToString(DirectionOption option) {
-        switch (option & DIR_FROM_AND_TO_WIDGET) {
-            case DIR_NON:
-                return "NON";
-            case DIR_FROM_WIDGET:
-                return "FROM_WIDGET";
-            case DIR_TO_WIDGET:
-                return "TO_WIDGET";
-            case DIR_FROM_AND_TO_WIDGET:
-                return "FROM_AND_TO_WIDGET";
-            default:
-                return "UNKNOWN";
-        }
+        return QVariant::fromValue(option).toString();
+/*        switch (option & DIR_FROM_AND_TO_WIDGET) {
+            case DIR_NON: return "NON";
+            case DIR_FROM_WIDGET: return "FROM_WIDGET";
+            case DIR_TO_WIDGET: return "TO_WIDGET";
+            case DIR_FROM_AND_TO_WIDGET: return "FROM_AND_TO_WIDGET";
+            default: return "UNKNOWN";
+        }*/
     }
 
     ControlParameterWidgetConnection(WBaseWidget* pBaseWidget,
@@ -108,8 +101,8 @@ class ControlParameterWidgetConnection : public ControlWidgetConnection {
     int getDirectionOption() const { return m_directionOption; };
     int getEmitOption() const { return m_emitOption; };
 
-    void setDirectionOption(enum DirectionOption v) { m_directionOption = v; };
-    void setEmitOption(enum EmitOption v) { m_emitOption = v; };
+    void setDirectionOption(DirectionOption v) { m_directionOption = v; };
+    void setEmitOption(EmitOption v) { m_emitOption = v; };
 
     void resetControl();
     void setControlParameter(double v);
@@ -123,7 +116,9 @@ class ControlParameterWidgetConnection : public ControlWidgetConnection {
     DirectionOption m_directionOption;
     EmitOption m_emitOption;
 };
-
+Q_DECLARE_OPERATORS_FOR_FLAGS(ControlParameterWidgetConnection::DirectionOption);
+Q_DECLARE_METATYPE(ControlParameterWidgetConnection::DirectionOption);
+Q_DECLARE_METATYPE(ControlParameterWidgetConnection::EmitOption);
 class ControlWidgetPropertyConnection : public ControlWidgetConnection {
     Q_OBJECT
   public:
@@ -140,5 +135,4 @@ class ControlWidgetPropertyConnection : public ControlWidgetConnection {
   private:
     QByteArray m_propertyName;
 };
-
 #endif /* CONTROLWIDGETCONNECTION_H */

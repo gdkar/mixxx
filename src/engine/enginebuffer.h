@@ -49,11 +49,9 @@ class CueControl;
 class ReadAheadManager;
 class ControlObject;
 class ControlProxy;
-class ControlPushButton;
 class ControlIndicator;
 class ControlBeat;
 class ControlTTRotary;
-class ControlPotmeter;
 class EngineBufferScale;
 class EngineBufferScaleLinear;
 class EngineBufferScaleST;
@@ -276,14 +274,14 @@ class EngineBuffer : public EngineObject {
     ControlObject* m_pTrackSamples;
     ControlObject* m_pTrackSampleRate;
 
-    ControlPushButton* m_playButton;
-    ControlPushButton* m_playStartButton;
-    ControlPushButton* m_stopStartButton;
-    ControlPushButton* m_stopButton;
+    ControlObject* m_playButton;
+    ControlObject* m_playStartButton;
+    ControlObject* m_stopStartButton;
+    ControlObject* m_stopButton;
 
     ControlObject* m_fwdButton;
     ControlObject* m_backButton;
-    ControlPushButton* m_pSlipButton;
+    ControlObject* m_pSlipButton;
 
     ControlObject* m_visualBpm;
     ControlObject* m_visualKey;
@@ -292,21 +290,21 @@ class EngineBuffer : public EngineObject {
     ControlObject* m_playposSlider;
     ControlProxy* m_pSampleRate;
     ControlProxy* m_pKeylockEngine;
-    ControlPushButton* m_pKeylock;
+    ControlObject* m_pKeylock;
 
     // This ControlProxys is created as parent to this and deleted by
     // the Qt object tree. This helps that they are deleted by the creating
     // thread, which is required to avoid segfaults.
     ControlProxy* m_pPassthroughEnabled;
 
-    ControlPushButton* m_pEject;
+    ControlObject* m_pEject;
 
     // Whether or not to repeat the track when at the end
-    ControlPushButton* m_pRepeat;
+    ControlObject* m_pRepeat;
 
     // Fwd and back controls, start and end of track control
-    ControlPushButton* m_startButton;
-    ControlPushButton* m_endButton;
+    ControlObject* m_startButton;
+    ControlObject* m_endButton;
 
     // Object used to perform waveform scaling (sample rate conversion).  These
     // three pointers may be reassigned depending on configuration and tests.

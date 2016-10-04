@@ -5,13 +5,14 @@
 #include "preferences/usersettings.h"
 #include "control/controlaudiotaperpot.h"
 #include "control/controlobject.h"
+#include "control/controlproxy.h"
 #include "control/controlpotmeter.h"
 #include "control/controlpushbutton.h"
 #include "util/math.h"
 #include "util/sample.h"
 
-ControlPotmeter* EnginePregain::s_pReplayGainBoost = NULL;
-ControlPotmeter* EnginePregain::s_pDefaultBoost = NULL;
+ControlObject* EnginePregain::s_pReplayGainBoost = NULL;
+ControlObject* EnginePregain::s_pDefaultBoost = NULL;
 ControlObject* EnginePregain::s_pEnableReplayGain = NULL;
 
 EnginePregain::EnginePregain(QObject *p, QString group)

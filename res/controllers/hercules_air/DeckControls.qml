@@ -26,4 +26,10 @@ Item {
     BindValue { parent:root;prefix:"\u00b0" + bindings.filterMid;item: "filterMid"; value: proxy.value * 2./ 128;}
     BindValue { parent:root;prefix:"\u00b0" + bindings.filterHigh;item: "filterHigh"; value: proxy.value * 2./ 128;}
     BeatLEDs  { id:beatLeds;parent:root;midi:root.controller;stepStart:bindings.stepStart;stepStop:bindings.stepStop}
+    MidiOutput{ id:playLed;parent:root;midi:root.controller;item:"play";midiNumber:bindings.playLed;}
+    MidiOutput{ id:loop_enabledLed;parent:root;midi:root.controller;item:"loop_enabled";midiNumber:bindings.loop_enabledLed;}
+    MidiOutput{ id:beat_activeLed;parent:root;midi:root.controller;item:"beat_active";midiNumber:bindings.beat_activeLed;}
+    MidiOutput{ id:keylockLed;parent:root;midi:root.controller;item:"keylock";midiNumber:bindings.keylockLed;}
+    MidiOutput{ id:pflLed;parent:root;midi:root.controller;item:"pfl";midiNumber:bindings.pflLed;}
+    MidiOutput{ id:quantizeLed;parent:root;midi:root.controller;item:"quantize";midiNumber:bindings.quantizeLed;}
 }

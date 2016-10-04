@@ -16,6 +16,7 @@
 
 #include "broadcast/defs_broadcast.h"
 #include "control/controlpushbutton.h"
+#include "control/controlproxy.h"
 #include "encoder/encoder.h"
 #include "encoder/encodermp3.h"
 #include "encoder/encodervorbis.h"
@@ -50,16 +51,14 @@ EngineBroadcast::EngineBroadcast(UserSettingsPointer pConfig)
           m_threadWaiting(false),
           m_pOutputFifo(nullptr) {
     const bool persist = true;
-    m_pBroadcastEnabled = new ControlPushButton(ConfigKey(BROADCAST_PREF_KEY,"enabled"),this, persist);
-    m_pBroadcastEnabled->setButtonMode(ControlPushButton::TOGGLE);
+    auto button = new ControlPushButton(ConfigKey(BROADCAST_PREF_KEY,"enabled"),this, persist);
+    m_pBroadcastEnabled = button;
+    button->setButtonMode(ControlPushButton::TOGGLE);
     connect(m_pBroadcastEnabled, SIGNAL(valueChanged(double)),this, SLOT(slotEnableCO(double)));
 
     m_pStatusCO = new ControlObject(ConfigKey(BROADCAST_PREF_KEY, "status"),this);
-    m_pStatusCO->connectValueChangeRequest(this, SLOT(slotStatusCO(double)));
     m_pStatusCO->setAndConfirm(STATUSCO_UNCONNECTED);
-
     setState(NETWORKSTREAMWORKER_STATE_INIT);
-
     // Initialize libshout
     shout_init();
     if (!(m_pShout = shout_new())) {
@@ -78,20 +77,14 @@ EngineBroadcast::~EngineBroadcast()
 {
     m_pBroadcastEnabled->set(0);
     m_readSema.release();
-
     // Wait maximum ~4 seconds. User will get annoyed but
     // if there is some network problems we let them settle
     wait(4000);
-
     // Signal user if thread doesn't die
     DEBUG_ASSERT_AND_HANDLE(!isRunning()) {
        qWarning() << "EngineBroadcast:~EngineBroadcast(): Thread didn't die.\
        Ignored but file a bug report if problems rise!";
     }
-
-    delete m_pStatusCO;
-    delete m_pMasterSamplerate;
-
     if (m_pShoutMetaData) {
         shout_metadata_free(m_pShoutMetaData);
     }
@@ -111,7 +104,6 @@ bool EngineBroadcast::isConnected()
     }
     return false;
 }
-
 QByteArray EngineBroadcast::encodeString(const QString& string)
 {
     if (m_pTextCodec) {
@@ -167,8 +159,7 @@ void EngineBroadcast::updateFromPreferences()
     auto serverType = m_pConfig->getValueString(
             ConfigKey(BROADCAST_PREF_KEY, "servertype"));
 
-    auto host = m_pConfig->getValueString(
-                ConfigKey(BROADCAST_PREF_KEY, "host"));
+    auto host = m_pConfig->getValueString(ConfigKey(BROADCAST_PREF_KEY, "host"));
     auto start = host.indexOf(QLatin1String("//"));
     if (start == -1) {
         // the host part requires preceding //.
@@ -176,10 +167,10 @@ void EngineBroadcast::updateFromPreferences()
         // path() section.
         host.prepend(QLatin1String("//"));
     }
-    QUrl serverUrl = host;
+    auto serverUrl = QUrl(host);
 
-    bool ok = false;
-    unsigned int port = m_pConfig->getValueString(
+    auto ok = false;
+    auto port = m_pConfig->getValueString(
             ConfigKey(BROADCAST_PREF_KEY, "port")).toUInt(&ok);
     if (ok) {
         serverUrl.setPort(port);
@@ -316,14 +307,14 @@ void EngineBroadcast::updateFromPreferences()
         return;
     }
 
-    bool bitrate_is_int = false;
-    int iBitrate = baBitrate.toInt(&bitrate_is_int);
+    auto bitrate_is_int = false;
+    auto iBitrate = baBitrate.toInt(&bitrate_is_int);
 
     if (!bitrate_is_int) {
         qWarning() << "Error: unknown bitrate:" << baBitrate.constData();
     }
 
-    int iMasterSamplerate = m_pMasterSamplerate->get();
+    auto iMasterSamplerate = m_pMasterSamplerate->get();
     if (m_format_is_ov && iMasterSamplerate == 96000) {
         errorDialog(tr("Broadcasting at 96kHz with Ogg Vorbis is not currently "
                        "supported. Please try a different sample-rate or switch "
@@ -466,10 +457,8 @@ bool EngineBroadcast::processConnect() {
          m_iShoutStatus == SHOUTERR_SUCCESS) &&
          m_iShoutFailures < kMaxShoutFailures) {
         m_iShoutFailures = 0;
-        int timeout = 0;
-        while (m_iShoutStatus == SHOUTERR_BUSY &&
-                timeout < kConnectRetries &&
-                m_pBroadcastEnabled->toBool()) {
+        auto timeout = 0;
+        while (m_iShoutStatus == SHOUTERR_BUSY && timeout < kConnectRetries && m_pBroadcastEnabled->toBool()) {
             setState(NETWORKSTREAMWORKER_STATE_WAITING);
             qDebug() << "Connection pending. Waiting...";
             NetworkStreamWorker::debugState();
@@ -850,13 +839,6 @@ void EngineBroadcast::ignoreSigpipe()
     }
 }
 #endif
-void EngineBroadcast::slotStatusCO(double v)
-{
-    // Ignore external sets "status"
-    Q_UNUSED(v);
-    qWarning() << "WARNING:"
-            << BROADCAST_PREF_KEY << "\"status\" is a read-only control, ignoring";
-}
 void EngineBroadcast::slotEnableCO(double v)
 {
     if (v > 1.0) {

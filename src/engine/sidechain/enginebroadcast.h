@@ -9,8 +9,6 @@
 #include <QThread>
 #include <QVector>
 
-#include "control/controlobject.h"
-#include "control/controlproxy.h"
 #include "encoder/encodercallback.h"
 #include "engine/sidechain/networkstreamworker.h"
 #include "errordialoghandler.h"
@@ -19,7 +17,8 @@
 #include "util/fifo.h"
 
 class Encoder;
-class ControlPushButton;
+class ControlObject;
+class ControlProxy;
 
 // Forward declare libshout structures to prevent leaking shout.h definitions
 // beyond where they are needed.
@@ -38,7 +37,7 @@ class EngineBroadcast
         STATUSCO_CONNECTED = 2, // On Air
         STATUSCO_FAILURE = 3 // Happens when disconnected by an error
     };
-
+    Q_ENUM(StatusCOStates);
     EngineBroadcast(UserSettingsPointer pConfig);
     virtual ~EngineBroadcast();
 
@@ -66,9 +65,7 @@ class EngineBroadcast
     virtual void run();
 
   private slots:
-    void slotStatusCO(double v);
     void slotEnableCO(double v);
-
   signals:
     void broadcastDisconnected();
     void broadcastConnected();
@@ -108,7 +105,7 @@ class EngineBroadcast
     long m_iShoutFailures;
     UserSettingsPointer m_pConfig;
     Encoder* m_encoder;
-    ControlPushButton* m_pBroadcastEnabled;
+    ControlObject* m_pBroadcastEnabled;
     ControlProxy* m_pMasterSamplerate;
     ControlObject* m_pStatusCO;
     // static metadata according to prefereneces

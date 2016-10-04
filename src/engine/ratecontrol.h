@@ -19,8 +19,7 @@ class BpmControl;
 class Rotary;
 class ControlTTRotary;
 class ControlObject;
-class ControlPotmeter;
-class ControlPushButton;
+class ControlObject;
 class ControlProxy;
 class EngineChannel;
 class PositionScratchController;
@@ -96,15 +95,15 @@ public:
     // Values used when temp and perm rate buttons are pressed
     static double m_dTemp, m_dTempSmall, m_dPerm, m_dPermSmall;
 
-    ControlPushButton *buttonRateTempDown, *buttonRateTempDownSmall,
+    ControlObject *buttonRateTempDown, *buttonRateTempDownSmall,
         *buttonRateTempUp, *buttonRateTempUpSmall;
-    ControlPushButton *buttonRatePermDown, *buttonRatePermDownSmall,
+    ControlObject *buttonRatePermDown, *buttonRatePermDownSmall,
         *buttonRatePermUp, *buttonRatePermUpSmall;
     ControlObject *m_pRateDir, *m_pRateRange;
-    ControlPotmeter* m_pRateSlider;
-    ControlPotmeter* m_pRateSearch;
-    ControlPushButton* m_pReverseButton;
-    ControlPushButton* m_pReverseRollButton;
+    ControlObject* m_pRateSlider;
+    ControlObject* m_pRateSearch;
+    ControlObject* m_pReverseButton;
+    ControlObject* m_pReverseRollButton;
     ControlObject* m_pBackButton;
     ControlObject* m_pForwardButton;
 
@@ -112,7 +111,7 @@ public:
     ControlObject* m_pScratch2;
     PositionScratchController* m_pScratchController;
 
-    ControlPushButton* m_pScratch2Enable;
+    ControlObject* m_pScratch2Enable;
     ControlObject* m_pJog;
     ControlObject* m_pVCEnabled;
     ControlObject* m_pVCScratching;

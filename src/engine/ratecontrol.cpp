@@ -55,24 +55,24 @@ RateControl::RateControl(QString group,
     m_pRateSearch = new ControlPotmeter(ConfigKey(group, "rateSearch"),this,  -300., 300.);
 
     // Reverse button
-    m_pReverseButton = new ControlPushButton(ConfigKey(group, "reverse"),this);
+    m_pReverseButton = new ControlObject(ConfigKey(group, "reverse"),this);
     m_pReverseButton->set(0);
 
     // Forward button
-    m_pForwardButton = new ControlPushButton(ConfigKey(group, "fwd"),this);
+    m_pForwardButton = new ControlObject(ConfigKey(group, "fwd"),this);
     connect(m_pForwardButton, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlFastForward(double)),
             Qt::DirectConnection);
     m_pForwardButton->set(0);
 
     // Back button
-    m_pBackButton = new ControlPushButton(ConfigKey(group, "back"),this);
+    m_pBackButton = new ControlObject(ConfigKey(group, "back"),this);
     connect(m_pBackButton, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlFastBack(double)),
             Qt::DirectConnection);
     m_pBackButton->set(0);
 
-    m_pReverseRollButton = new ControlPushButton(ConfigKey(group, "reverseroll"),this);
+    m_pReverseRollButton = new ControlObject(ConfigKey(group, "reverseroll"),this);
     connect(m_pReverseRollButton, SIGNAL(valueChanged(double)),
             this, SLOT(slotReverseRollActivate(double)),
             Qt::DirectConnection);
@@ -85,50 +85,46 @@ RateControl::RateControl(QString group,
 
     // Permanent rate-change buttons
     buttonRatePermDown =
-        new ControlPushButton(ConfigKey(group,"rate_perm_down"),this);
+        new ControlObject(ConfigKey(group,"rate_perm_down"),this);
     connect(buttonRatePermDown, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlRatePermDown(double)),
             Qt::DirectConnection);
 
     buttonRatePermDownSmall =
-        new ControlPushButton(ConfigKey(group,"rate_perm_down_small"),this);
+        new ControlObject(ConfigKey(group,"rate_perm_down_small"),this);
     connect(buttonRatePermDownSmall, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlRatePermDownSmall(double)),
             Qt::DirectConnection);
 
     buttonRatePermUp =
-        new ControlPushButton(ConfigKey(group,"rate_perm_up"),this);
+        new ControlObject(ConfigKey(group,"rate_perm_up"),this);
     connect(buttonRatePermUp, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlRatePermUp(double)),
             Qt::DirectConnection);
 
-    buttonRatePermUpSmall =
-        new ControlPushButton(ConfigKey(group,"rate_perm_up_small"),this);
+    buttonRatePermUpSmall = new ControlObject(ConfigKey(group,"rate_perm_up_small"),this);
     connect(buttonRatePermUpSmall, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlRatePermUpSmall(double)),
             Qt::DirectConnection);
 
     // Temporary rate-change buttons
-    buttonRateTempDown =
-        new ControlPushButton(ConfigKey(group,"rate_temp_down"),this);
+    buttonRateTempDown = new ControlObject(ConfigKey(group,"rate_temp_down"),this);
     connect(buttonRateTempDown, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlRateTempDown(double)),
             Qt::DirectConnection);
 
-    buttonRateTempDownSmall =
-        new ControlPushButton(ConfigKey(group,"rate_temp_down_small"),this);
+    buttonRateTempDownSmall = new ControlObject(ConfigKey(group,"rate_temp_down_small"),this);
     connect(buttonRateTempDownSmall, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlRateTempDownSmall(double)),
             Qt::DirectConnection);
 
-    buttonRateTempUp =
-        new ControlPushButton(ConfigKey(group,"rate_temp_up"),this);
+    buttonRateTempUp = new ControlObject(ConfigKey(group,"rate_temp_up"),this);
     connect(buttonRateTempUp, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlRateTempUp(double)),
             Qt::DirectConnection);
 
     buttonRateTempUpSmall =
-        new ControlPushButton(ConfigKey(group,"rate_temp_up_small"),this);
+        new ControlObject(ConfigKey(group,"rate_temp_up_small"),this);
     connect(buttonRateTempUpSmall, SIGNAL(valueChanged(double)),
             this, SLOT(slotControlRateTempUpSmall(double)),
             Qt::DirectConnection);
@@ -143,11 +139,10 @@ RateControl::RateControl(QString group,
     // cleared when we read
     m_pScratch2 = new ControlObject(ConfigKey(group, "scratch2"),this);
     // Scratch enable toggle
-    m_pScratch2Enable = new ControlPushButton(ConfigKey(group, "scratch2_enable"),this);
+    m_pScratch2Enable = new ControlObject(ConfigKey(group, "scratch2_enable"),this);
     m_pScratch2Enable->set(0);
 
-    m_pScratch2Scratching = new ControlPushButton(ConfigKey(group,
-                                                            "scratch2_indicates_scratching"),this);
+    m_pScratch2Scratching = new ControlObject(ConfigKey(group,"scratch2_indicates_scratching"),this);
     // Enable by default, because it was always scratching before introducing
     // this control.
     m_pScratch2Scratching->set(1.0);

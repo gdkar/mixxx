@@ -1,4 +1,7 @@
+#include "control/controlpotmeter.h"
+#include "control/controlpushbutton.h"
 #include "control/controlproxy.h"
+#include "control/controlobject.h"
 #include "engine/enginetalkoverducking.h"
 
 #define DUCK_THRESHOLD 0.1
@@ -27,10 +30,10 @@ EngineTalkoverDucking::EngineTalkoverDucking(
             m_pDuckStrength->get(),
             m_pMasterSampleRate->get() / 2 * .1,
             m_pMasterSampleRate->get() / 2);
-
-    m_pTalkoverDucking = new ControlPushButton(ConfigKey(m_group, "talkoverDucking"),this);
-    m_pTalkoverDucking->setButtonMode(ControlPushButton::TOGGLE);
-    m_pTalkoverDucking->setStates(3);
+    auto button = new ControlPushButton(ConfigKey(m_group, "talkoverDucking"),this);
+    m_pTalkoverDucking = button;
+    button->setButtonMode(ControlPushButton::TOGGLE);
+    button->setStates(3);
     m_pTalkoverDucking->set(
             m_pConfig->getValueString(
                 ConfigKey(m_group, "duckMode"), QString::number(AUTO)).toDouble());
@@ -77,3 +80,7 @@ CSAMPLE EngineTalkoverDucking::getGain(int numFrames) {
     qWarning() << "Invalid ducking mode, returning 1.0";
     return 1.0;
 }
+EngineTalkoverDucking::TalkoverDuckSetting EngineTalkoverDucking::getMode() const {
+    return static_cast<TalkoverDuckSetting>(int(m_pTalkoverDucking->get()));
+}
+

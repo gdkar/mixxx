@@ -31,7 +31,6 @@ class EnginePregain;
 class EngineFilterBlock;
 class EngineEffectsManager;
 class EngineVuMeter;
-class ControlPushButton;
 
 class EngineChannel : public EngineObject {
     Q_OBJECT
@@ -112,13 +111,13 @@ class EngineChannel : public EngineObject {
 
   private:
     const ChannelHandleAndGroup m_group;
-    ControlPushButton* m_pMaster;
-    ControlPushButton* m_pPFL;
-    ControlPushButton* m_pOrientation;
-    ControlPushButton* m_pOrientationLeft;
-    ControlPushButton* m_pOrientationRight;
-    ControlPushButton* m_pOrientationCenter;
-    ControlPushButton* m_pTalkover;
+    ControlObject* m_pMaster;
+    ControlObject* m_pPFL;
+    ControlObject* m_pOrientation;
+    ControlObject* m_pOrientationLeft;
+    ControlObject* m_pOrientationRight;
+    ControlObject* m_pOrientationCenter;
+    ControlObject* m_pTalkover;
 };
 
 #endif

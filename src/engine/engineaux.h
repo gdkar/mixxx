@@ -7,15 +7,14 @@
 
 #include <QScopedPointer>
 
-#include "control/controlproxy.h"
-#include "control/controlpushbutton.h"
 #include "engine/enginechannel.h"
 #include "engine/enginevumeter.h"
 #include "soundio/soundmanagerutil.h"
 
 class EffectsManager;
 class EngineEffectsManager;
-class ControlAudioTaperPot;
+class ControlObject;
+class ControlProxy;
 
 // EngineAux is an EngineChannel that implements a mixing source whose
 // samples are fed directly from the SoundManager
@@ -46,7 +45,7 @@ class EngineAux : public EngineChannel, public AudioDestination {
     // Reject all change requests for input configured.
     void slotInputConfiguredChangeRequest(double) {}
   private:
-    ControlAudioTaperPot* m_pPregain;
+    ControlObject* m_pPregain;
     std::atomic<const CSAMPLE*>m_sampleBuffer;
 };
 

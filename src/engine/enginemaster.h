@@ -23,7 +23,6 @@
 
 #include "preferences/usersettings.h"
 #include "control/controlobject.h"
-#include "control/controlpushbutton.h"
 #include "engine/engineobject.h"
 #include "engine/enginechannel.h"
 #include "engine/channelhandle.h"
@@ -36,8 +35,7 @@ class EngineChannel;
 class EngineDeck;
 class EngineFlanger;
 class EngineVuMeter;
-class ControlPotmeter;
-class ControlPushButton;
+class ControlObject;
 class EngineSideChain;
 class EffectsManager;
 class EngineEffectsManager;
@@ -147,7 +145,7 @@ class EngineMaster : public QObject, public AudioOrigin {
         EngineChannel* m_pChannel;
         CSAMPLE* m_pBuffer;
         ControlObject* m_pVolumeControl;
-        ControlPushButton* m_pMuteControl;
+        ControlObject* m_pMuteControl;
         int m_index;
     };
 
@@ -303,8 +301,8 @@ class EngineMaster : public QObject, public AudioOrigin {
     ControlObject* m_pMasterLatency;
     ControlObject* m_pMasterAudioBufferSize;
     ControlObject* m_pAudioLatencyOverloadCount;
-    ControlPotmeter* m_pAudioLatencyUsage;
-    ControlPotmeter* m_pAudioLatencyOverload;
+    ControlObject* m_pAudioLatencyUsage;
+    ControlObject* m_pAudioLatencyOverload;
     EngineTalkoverDucking* m_pTalkoverDucking;
     EngineDelay* m_pMasterDelay;
     EngineDelay* m_pHeadDelay;
@@ -312,14 +310,14 @@ class EngineMaster : public QObject, public AudioOrigin {
     EngineVuMeter* m_pVumeter;
     EngineSideChain* m_pEngineSideChain;
 
-    ControlPotmeter* m_pCrossfader;
-    ControlPotmeter* m_pHeadMix;
-    ControlPotmeter* m_pBalance;
-    ControlPushButton* m_pXFaderMode;
-    ControlPotmeter* m_pXFaderCurve;
-    ControlPotmeter* m_pXFaderCalibration;
-    ControlPushButton* m_pXFaderReverse;
-    ControlPushButton* m_pHeadSplitEnabled;
+    ControlObject* m_pCrossfader;
+    ControlObject* m_pHeadMix;
+    ControlObject* m_pBalance;
+    ControlObject* m_pXFaderMode;
+    ControlObject* m_pXFaderCurve;
+    ControlObject* m_pXFaderCalibration;
+    ControlObject* m_pXFaderReverse;
+    ControlObject* m_pHeadSplitEnabled;
     ControlObject* m_pKeylockEngine;
 
     PflGainCalculator m_headphoneGain;
