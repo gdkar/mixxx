@@ -25,7 +25,7 @@
 #include <QString>
 #include <QList>
 
-#include "util/class.h"
+
 
 /**
   * Class used to allow all threads to display message boxes on error conditions
@@ -158,7 +158,6 @@ class ErrorDialogHandler : public QObject {
     QSignalMapper m_signalMapper;
     QMutex m_mutex;
 
-    DISALLOW_COPY_AND_ASSIGN(ErrorDialogHandler);
 };
 
 #endif
