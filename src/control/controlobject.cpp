@@ -33,6 +33,14 @@ ControlObject::ControlObject(QObject *p) : QObject(p)
                 this, &ControlObject::privateValueChanged,
                 static_cast<Qt::ConnectionType>(Qt::AutoConnection| Qt::UniqueConnection)
                 );
+        connect(m_pControl.data(), &ControlDoublePrivate::minimumChanged,
+                this, &ControlObject::minimumChanged,
+                static_cast<Qt::ConnectionType>(Qt::AutoConnection| Qt::UniqueConnection)
+                );
+        connect(m_pControl.data(), &ControlDoublePrivate::maximumChanged,
+                this, &ControlObject::maximumChanged,
+                static_cast<Qt::ConnectionType>(Qt::AutoConnection| Qt::UniqueConnection)
+                );
         connect(m_pControl.data(), &ControlDoublePrivate::defaultValueChanged,
                 this, &ControlObject::defaultValueChanged,
                 static_cast<Qt::ConnectionType>(Qt::AutoConnection| Qt::UniqueConnection)
@@ -294,6 +302,28 @@ void ControlObject::reset() {
     if (auto co = control()) {
         co->reset();
     }
+}
+void ControlObject::setMaximum(double dValue)
+{
+    if (auto co = control()) {
+        co->setMaximum(dValue);
+    }
+}
+double ControlObject::maximum() const
+{
+    if(auto co = control()) return co->maximum();
+    return 0;
+}
+void ControlObject::setMinimum(double dValue)
+{
+    if (auto co = control()) {
+        co->setMinimum(dValue);
+    }
+}
+double ControlObject::minimum() const
+{
+    if(auto co = control()) return co->minimum();
+    return 0;
 }
 void ControlObject::setDefaultValue(double dValue)
 {

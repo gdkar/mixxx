@@ -19,11 +19,13 @@ class ControlDoublePrivate : public QObject, public QEnableSharedFromThis<Contro
     Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
     Q_PROPERTY(QString description READ description WRITE setDescription NOTIFY descriptionChanged)
     Q_PROPERTY(double value READ get WRITE set RESET reset NOTIFY valueChanged)
-    Q_PROPERTY(double defaultValue READ defaultValue WRITE setDefaultValue NOTIFY defaultValueChanged)
+    Q_PROPERTY(double minimum READ minimum WRITE setMinimum NOTIFY minimumChanged)
+    Q_PROPERTY(double maximum READ maximum WRITE setMaximum NOTIFY maximumChanged)
+    Q_PROPERTY(double default READ defaultValue WRITE setDefaultValue NOTIFY defaultValueChanged)
   public:
     virtual ~ControlDoublePrivate();
 
-    // Used to implement control persistence. All controls that are marked
+    // Used to implement control persistence. All controls
     // "persist in user config" get and set their value on creation/deletion
     // using this UserSettings.
     static void setUserConfig(UserSettingsPointer pConfig);
@@ -69,6 +71,10 @@ class ControlDoublePrivate : public QObject, public QEnableSharedFromThis<Contro
     void setName(QString name);
     QString description() const;
     void setDescription(QString description);
+    double minimum() const;
+    void setMinimum(double value);
+    double maximum() const;
+    void setMaximum(double value);
 
     // Sets the control value.
     void set(double value, QObject* pSender = nullptr);
@@ -79,7 +85,6 @@ class ControlDoublePrivate : public QObject, public QEnableSharedFromThis<Contro
     double get() const;
     // Resets the control value to its default.
     void reset();
-
     // Set the behavior to be used when setting values and translating between
     // parameter and value space. Returns the previously set behavior (if any).
     // The caller must not delete the behavior at any time. The memory is managed
@@ -112,6 +117,8 @@ class ControlDoublePrivate : public QObject, public QEnableSharedFromThis<Contro
   signals:
     // Emitted when the ControlDoublePrivate value changes. pSender is a
     // pointer to the setter of the value (potentially NULL).
+    void minimumChanged(double value);
+    void maximumChanged(double value);
     void valueChanged(double value, QObject* pSender);
     void defaultValueChanged(double);
     void valueChangeRequest(double value);
@@ -122,39 +129,31 @@ class ControlDoublePrivate : public QObject, public QEnableSharedFromThis<Contro
     ControlDoublePrivate(ConfigKey key,
                          bool bIgnoreNops, bool bTrack, bool bPersist);
     void initialize();
-
     ConfigKey m_key;
-
     // Whether the control should persist in the Mixxx user configuration. The
     // value is loaded from configuration when the control is created and
     // written to the configuration when the control is deleted.
     bool m_bPersistInConfiguration;
-
     // User-visible, i18n name for what the control is.
     QString m_name;
-
     // User-visible, i18n descripton for what the control does.
     QString m_description;
-
     // Whether to ignore sets which would have no effect.
     bool m_bIgnoreNops;
-
     // Whether to track value changes with the stats framework.
     bool m_bTrack;
     QString m_trackKey;
     int m_trackType;
     int m_trackFlags;
     bool m_confirmRequired;
-
     // The control value.
     std::atomic<double> m_value;
     // The default control value.
+    std::atomic<double> m_minimum{-std::numeric_limits<double>::infinity()};
+    std::atomic<double> m_maximum{std::numeric_limits<double>::infinity()};
     std::atomic<double> m_defaultValue;
-
     QSharedPointer<ControlNumericBehavior> m_pBehavior;
-
     ControlObject* m_pCreatorCO{};
-
     // Hack to implement persistent controls. This is a pointer to the current
     // user configuration object (if one exists). In general, we do not want the
     // user configuration to be a singleton -- objects that need access to it

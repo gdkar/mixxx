@@ -28,7 +28,10 @@ class ControlProxy : public QObject {
     Q_PROPERTY(QString   group READ group WRITE setGroup NOTIFY groupChanged )
     Q_PROPERTY(QString   item READ item WRITE setItem NOTIFY itemChanged     )
     Q_PROPERTY(double value READ get WRITE set RESET reset NOTIFY valueChanged)
-    Q_PROPERTY(double defaultValue READ getDefault NOTIFY defaultValueChanged)
+    Q_PROPERTY(double default READ getDefault NOTIFY defaultChanged)
+    Q_PROPERTY(double minimum READ minimum NOTIFY minimumChanged)
+    Q_PROPERTY(double maximum READ maximum NOTIFY maximumChanged)
+
   public:
     Q_INVOKABLE ControlProxy(QObject* pParent = nullptr);
     Q_INVOKABLE ControlProxy(QString g, QString i, QObject* pParent = nullptr);
@@ -78,7 +81,11 @@ class ControlProxy : public QObject {
     Q_INVOKABLE virtual double fetch_toggle();
     // Sets the control value to v. Thread safe, non-blocking.
     //    // Returns the value of the object. Thread safe, non-blocking.
+    double minimum() const;
+    double maximum() const;
+
   public slots:
+
     double get() const;
     void   set(double val);
     void   reset();
@@ -86,6 +93,7 @@ class ControlProxy : public QObject {
     // Resets the control to its default value. Thread safe, non-blocking.
     void trigger();
   signals:
+
     void validChanged(bool valid) const;
     void groupChanged(QString group);
     void itemChanged (QString item);
@@ -93,7 +101,10 @@ class ControlProxy : public QObject {
     // This signal must not connected by connect(). Use connectValueChanged()
     // instead. It will connect to the base ControlDoublePrivate as well.
     void valueChanged(double val) const;
-    void defaultValueChanged(double defaultVal) const;
+    void defaultChanged(double val) const;
+    void minimumChanged(double val);
+    void maximumChanged(double val);
+
     void triggered();
   protected slots:
     // Receives the value from the master control by a unique direct connection

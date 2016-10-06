@@ -32,7 +32,9 @@ class ControlObject : public QObject, public QEnableSharedFromThis<ControlObject
     Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
     Q_PROPERTY(QString description READ description WRITE setDescription NOTIFY descriptionChanged)
     Q_PROPERTY(double value READ get WRITE set RESET reset NOTIFY valueChanged)
-    Q_PROPERTY(double defaultValue READ defaultValue WRITE setDefaultValue NOTIFY defaultValueChanged)
+    Q_PROPERTY(double minimum READ minimum WRITE setMinimum NOTIFY minimumChanged)
+    Q_PROPERTY(double maximum READ maximum WRITE setMaximum NOTIFY maximumChanged)
+    Q_PROPERTY(double default READ defaultValue WRITE setDefaultValue NOTIFY defaultValueChanged)
   public:
     Q_INVOKABLE ControlObject(QObject *p = nullptr);
     // bIgnoreNops: Don't emit a signal if the CO is set to its current value.
@@ -106,7 +108,16 @@ class ControlObject : public QObject, public QEnableSharedFromThis<ControlObject
     bool connectValueChangeRequest(const QObject* receiver,
                                    const char* method, Qt::ConnectionType type = Qt::AutoConnection);
     virtual void trigger();
+
+    double minimum() const;
+    void setMinimum(double value);
+    double maximum() const;
+    void setMaximum(double value);
+
+
   signals:
+    void minimumChanged(double value);
+    void maximumChanged(double value);
     void nameChanged();
     void descriptionChanged();
     void valueChanged(double);

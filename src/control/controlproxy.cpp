@@ -46,7 +46,27 @@ void ControlProxy::initialize() const
                     m_pControl.data()
                 ,&ControlDoublePrivate::defaultValueChanged
                 , this
-                ,&ControlProxy::defaultValueChanged
+                ,&ControlProxy::defaultChanged
+                , static_cast<Qt::ConnectionType>(
+                        Qt::AutoConnection
+                    | Qt::UniqueConnection
+                        )
+                    );
+                connect(
+                    m_pControl.data()
+                ,&ControlDoublePrivate::minimumChanged
+                , this
+                ,&ControlProxy::minimumChanged
+                , static_cast<Qt::ConnectionType>(
+                        Qt::AutoConnection
+                    | Qt::UniqueConnection
+                        )
+                    );
+                connect(
+                    m_pControl.data()
+                ,&ControlDoublePrivate::maximumChanged
+                , this
+                ,&ControlProxy::maximumChanged
                 , static_cast<Qt::ConnectionType>(
                         Qt::AutoConnection
                     | Qt::UniqueConnection
@@ -67,14 +87,14 @@ void ControlProxy::initialize() const
                 if(_val != get())
                     emit valueChanged(get());
                 if(_def != getDefault())
-                    emit defaultValueChanged(getDefault());
+                    emit defaultChanged(getDefault());
             }else{
                 if(_valid)
                     emit validChanged(false);
                 if(_val)
                     emit valueChanged(0.);
                 if(_def)
-                    emit defaultValueChanged(0.);
+                    emit defaultChanged(0.);
             }
         }
     }
@@ -107,7 +127,7 @@ void ControlProxy::initialize(ConfigKey key)
                 m_pControl.data()
               ,&ControlDoublePrivate::defaultValueChanged
               , this
-              ,&ControlProxy::defaultValueChanged
+              ,&ControlProxy::defaultChanged
               , static_cast<Qt::ConnectionType>(
                     Qt::AutoConnection
                   | Qt::UniqueConnection
@@ -129,7 +149,7 @@ void ControlProxy::initialize(ConfigKey key)
         if(_val != get())
             emit valueChanged(get());
         if(_def != getDefault())
-            emit defaultValueChanged(getDefault());
+            emit defaultChanged(getDefault());
     }
 }
 void ControlProxy::trigger()
@@ -315,7 +335,7 @@ void ControlProxy::setKey(ConfigKey new_key)
         if(_value != get())
             emit valueChanged(get());
         if(_default != getDefault())
-            emit defaultValueChanged(getDefault());
+            emit defaultChanged(getDefault());
     }
 }
 void ControlProxy::setGroup(QString _group)
@@ -421,3 +441,14 @@ double ControlProxy::fetch_toggle()
 {
     return m_pControl ? m_pControl->updateAtomically([](double x){return !x;}) : 0.0;
 }
+double ControlProxy::maximum() const
+{
+    if(auto co = m_pControl) return co->maximum();
+    return 0;
+}
+double ControlProxy::minimum() const
+{
+    if(auto co = m_pControl) return co->minimum();
+    return 0;
+}
+

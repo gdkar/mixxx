@@ -1,9 +1,10 @@
 #include <QtDebug>
 #include <QSharedPointer>
+#include <cmath>
 #include <initializer_list>
 #include "control/control.h"
 #include "control/controlobject.h"
-
+#include "util/math.h"
 #include "util/stat.h"
 #include "util/timer.h"
 
@@ -210,6 +211,12 @@ bool ControlDoublePrivate::compare_exchange_strong(double &expected, double desi
 }
 void ControlDoublePrivate::set(double value, QObject* pSender)
 {
+    auto _min = minimum();
+    auto _max = maximum();
+    if(isfinite(_min))
+        value = std::max(value,_min);
+    if(isfinite(_max))
+        value = std::min(value,_max);
     // If the behavior says to ignore the set, ignore it.
     if(auto pBehavior = m_pBehavior) {
         if(!pBehavior->setFilter(&value))
@@ -226,9 +233,7 @@ void ControlDoublePrivate::setAndConfirm(double value, QObject* pSender)
 {
     if ( m_value.exchange(value) == value)
         return;
-
     valueChanged(value, pSender);
-
     if (m_bTrack) {
         Stat::track(m_trackKey, static_cast<Stat::StatType>(m_trackType),
                     static_cast<Stat::ComputeFlags>(m_trackFlags), value);
@@ -337,11 +342,24 @@ bool ControlDoublePrivate::ignoreNops() const
 {
     return m_bIgnoreNops;
 }
-
-void ControlDoublePrivate::setDefaultValue(double dValue)
+void ControlDoublePrivate::setMinimum(double value)
 {
-    if(dValue != m_defaultValue.exchange(dValue)) {
-        emit defaultValueChanged(dValue);
+    if(value != m_minimum.exchange(value)) {
+        emit minimumChanged(value);
+    }
+}
+void ControlDoublePrivate::setMaximum(double value)
+{
+    if(value != m_maximum.exchange(value)) {
+        emit maximumChanged(value);
+    }
+}
+double ControlDoublePrivate::minimum() const { return m_minimum.load();}
+double ControlDoublePrivate::maximum() const { return m_maximum.load();}
+void ControlDoublePrivate::setDefaultValue(double value)
+{
+    if(value != m_defaultValue.exchange(value)) {
+        emit defaultValueChanged(value);
     }
 }
 double ControlDoublePrivate::defaultValue() const
