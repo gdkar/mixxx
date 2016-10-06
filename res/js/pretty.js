@@ -1,6 +1,7 @@
-//"use strict";
 .pragma library
-var pretty = function pretty(jsObject, indentLength, outputTo, fullFunction) {
+"use strict";
+
+var pretty = function pretty (jsObject, indentLength, outputTo, fullFunction) {
     var indentString,
         newLine,
         newLineJoin,

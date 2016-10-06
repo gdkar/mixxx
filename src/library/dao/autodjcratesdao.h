@@ -6,7 +6,7 @@
 #include "preferences/usersettings.h"
 #include "library/dao/dao.h"
 #include "track/track.h"
-#include "util/class.h"
+
 
 class QSqlDatabase;
 class TrackDAO;
@@ -44,8 +44,6 @@ class AutoDJCratesDAO : public QObject, public virtual DAO {
 
     // Disallow copy and assign.
     // (Isn't that normal for QObject subclasses?)
-    DISALLOW_COPY_AND_ASSIGN(AutoDJCratesDAO);
-
     // Create the temporary auto-DJ-crates database.
     // Done the first time it's used, since the user might not even make
     // use of this feature.

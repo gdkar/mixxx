@@ -50,14 +50,14 @@ ApplicationWindow {
                 color: "blue"
                 font { family: "monospace" }
             }
-            TextEdit{
+            TextArea {
                 id: input
                 focus: true
                 persistentSelection: true
                 anchors.left:prompt.right
                 anchors.right:prompt.left
                 anchors.top:prompt.top
-                color: "white"
+                color: "black"
                 font: prompt.font
                 property alias historyPos: background.historyPos
                 property alias history: background.history

@@ -8,7 +8,7 @@
 #include "control/controlobject.h"
 #include "effects/effect.h"
 #include "effects/effectparameterslotbase.h"
-#include "util/class.h"
+
 
 class ControlObject;
 class ControlPushButton;
@@ -61,8 +61,6 @@ class EffectParameterSlot : public EffectParameterSlotBase {
     ControlEffectKnob* m_pControlValue;
     ControlPushButton* m_pControlLinkType;
     ControlPushButton* m_pControlLinkInverse;
-
-    DISALLOW_COPY_AND_ASSIGN(EffectParameterSlot);
 };
 
 #endif // EFFECTPARAMETERSLOT_H

@@ -10,7 +10,7 @@
 #include <atomic>
 
 //#include "pa_ringbuffer.h"
-#include "util/class.h"
+
 #include "util/math.h"
 
 namespace detail {

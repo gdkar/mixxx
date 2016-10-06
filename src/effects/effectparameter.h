@@ -5,7 +5,7 @@
 #include <QVariant>
 
 #include "effects/effectmanifestparameter.h"
-#include "util/class.h"
+
 
 class Effect;
 class EffectsManager;
@@ -81,8 +81,6 @@ class EffectParameter : public QObject {
     double m_default;
     double m_value;
     bool m_bAddedToEngine;
-
-    DISALLOW_COPY_AND_ASSIGN(EffectParameter);
 };
 
 

@@ -8,7 +8,7 @@
 
 #include "library/dao/dao.h"
 #include "track/trackid.h"
-#include "util/class.h"
+
 
 #define PLAYLIST_TABLE "Playlists"
 #define PLAYLIST_TRACKS_TABLE "PlaylistTracks"
@@ -133,7 +133,6 @@ class PlaylistDAO : public QObject, public virtual DAO {
     QSqlDatabase& m_database;
     QMultiHash<TrackId, int> m_playlistsTrackIsIn;
     AutoDJProcessor* m_pAutoDJProcessor;
-    DISALLOW_COPY_AND_ASSIGN(PlaylistDAO);
 };
 
 #endif //PLAYLISTDAO_H

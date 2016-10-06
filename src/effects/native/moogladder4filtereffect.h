@@ -6,7 +6,7 @@
 #include "engine/effects/engineeffect.h"
 #include "engine/effects/engineeffectparameter.h"
 #include "engine/enginefiltermoogladder4.h"
-#include "util/class.h"
+
 #include "util/defs.h"
 #include "util/sample.h"
 #include "util/types.h"
@@ -54,8 +54,6 @@ class MoogLadder4FilterEffect : public PerChannelEffectProcessor<MoogLadder4Filt
     EngineEffectParameter* m_pLPF;
     EngineEffectParameter* m_pResonance;
     EngineEffectParameter* m_pHPF;
-
-    DISALLOW_COPY_AND_ASSIGN(MoogLadder4FilterEffect);
 };
 
 #endif /* MOOGLADDER4FILTEREFFECT_H */

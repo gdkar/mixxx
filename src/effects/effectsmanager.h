@@ -19,7 +19,7 @@
 #include "effects/effectsbackend.h"
 #include "engine/channelhandle.h"
 #include "engine/effects/message.h"
-#include "util/class.h"
+
 #include "util/fifo.h"
 
 class EngineEffectsManager;
@@ -101,8 +101,6 @@ class EffectsManager : public QObject {
     ControlPotmeter* m_pHiEqFreq;
 
     bool m_underDestruction;
-
-    DISALLOW_COPY_AND_ASSIGN(EffectsManager);
 };
 
 

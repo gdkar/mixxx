@@ -17,7 +17,7 @@
 #include "library/dao/trackdao.h"
 #include "library/columncache.h"
 #include "track/track.h"
-#include "util/class.h"
+
 #include "util/memory.h"
 
 class SearchQueryParser;
@@ -135,8 +135,6 @@ class BaseTrackCache : public QObject {
     QSqlDatabase m_database;
     SearchQueryParser* m_pQueryParser;
     ControlProxy* m_pKeyNotationCP;
-
-    DISALLOW_COPY_AND_ASSIGN(BaseTrackCache);
 };
 
 #endif // BASETRACKCACHE_H

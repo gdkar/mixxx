@@ -7,7 +7,7 @@
 #include "engine/effects/engineeffect.h"
 #include "engine/effects/engineeffectparameter.h"
 #include "engine/enginefilterpansingle.h"
-#include "util/class.h"
+
 #include "util/defs.h"
 #include "util/sample.h"
 #include "util/types.h"
@@ -107,8 +107,6 @@ class AutoPanEffect : public PerChannelEffectProcessor<PanGroupState> {
     EngineEffectParameter* m_pPeriodUnitParameter;
     EngineEffectParameter* m_pPeriodParameter;
     EngineEffectParameter* m_pWidthParameter;
-
-    DISALLOW_COPY_AND_ASSIGN(AutoPanEffect);
 };
 
 #endif /* AUTOPANEFFECT_H */

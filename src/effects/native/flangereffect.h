@@ -6,7 +6,7 @@
 #include "effects/effectprocessor.h"
 #include "engine/effects/engineeffect.h"
 #include "engine/effects/engineeffectparameter.h"
-#include "util/class.h"
+
 #include "util/defs.h"
 #include "util/sample.h"
 #include "util/types.h"
@@ -49,8 +49,6 @@ class FlangerEffect : public PerChannelEffectProcessor<FlangerGroupState> {
     EngineEffectParameter* m_pPeriodParameter;
     EngineEffectParameter* m_pDepthParameter;
     EngineEffectParameter* m_pDelayParameter;
-
-    DISALLOW_COPY_AND_ASSIGN(FlangerEffect);
 };
 
 #endif /* FLANGEREFFECT_H */

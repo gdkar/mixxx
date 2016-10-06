@@ -7,7 +7,7 @@
 
 #include "library/searchquery.h"
 #include "track/track.h"
-#include "util/class.h"
+
 
 class SearchQueryParser {
   public:
@@ -38,8 +38,6 @@ class SearchQueryParser {
     QRegExp m_textFilterMatcher;
     QRegExp m_numericFilterMatcher;
     QRegExp m_specialFilterMatcher;
-
-    DISALLOW_COPY_AND_ASSIGN(SearchQueryParser);
 };
 
 #endif /* SEARCHQUERYPARSER_H */

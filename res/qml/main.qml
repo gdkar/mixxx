@@ -37,7 +37,7 @@ Item {
     KeyBinder {
         seq: "Ctrl+Alt+I"
         Keys.onPressed: {
-            termLoader.source = "./Terminal.qml";
+            termLoader.source = "./Terminal2.qml";
             event.accepted = true;
         }
     }

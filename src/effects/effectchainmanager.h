@@ -9,7 +9,7 @@
 #include "effects/effectchain.h"
 #include "effects/effectrack.h"
 #include "engine/channelhandle.h"
-#include "util/class.h"
+
 
 class EffectsManager;
 
@@ -65,7 +65,6 @@ class EffectChainManager : public QObject {
     QHash<QString, EffectRackPointer> m_effectRacksByGroup;
     QList<EffectChainPointer> m_effectChains;
     QSet<ChannelHandleAndGroup> m_registeredChannels;
-    DISALLOW_COPY_AND_ASSIGN(EffectChainManager);
 };
 
 #endif /* EFFECTCHAINMANAGER_H */

@@ -15,7 +15,7 @@
 #include "preferences/usersettings.h"
 #include "library/dao/dao.h"
 #include "track/track.h"
-#include "util/class.h"
+
 #include "util/memory.h"
 
 #define LIBRARY_TABLE "library"
@@ -245,8 +245,6 @@ class TrackDAO : public QObject, public virtual DAO {
     int m_queryLibraryMixxxDeletedColumn;
 
     QSet<TrackId> m_tracksAddedSet;
-
-    DISALLOW_COPY_AND_ASSIGN(TrackDAO);
 };
 
 #endif //TRACKDAO_H

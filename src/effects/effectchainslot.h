@@ -10,7 +10,7 @@
 #include "effects/effectslot.h"
 #include "effects/effectchain.h"
 #include "engine/channelhandle.h"
-#include "util/class.h"
+
 
 class ControlObject;
 class ControlPushButton;
@@ -158,8 +158,6 @@ class EffectChainSlot : public QObject {
 
     QList<EffectSlotPointer> m_slots;
     QSignalMapper m_channelStatusMapper;
-
-    DISALLOW_COPY_AND_ASSIGN(EffectChainSlot);
 };
 
 

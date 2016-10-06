@@ -12,7 +12,7 @@
 
 #include "library/dao/dao.h"
 #include "track/trackid.h"
-#include "util/class.h"
+
 
 #define CRATE_TABLE "crates"
 #define CRATE_TRACKS_TABLE "crate_tracks"
@@ -80,7 +80,6 @@ class CrateDAO : public QObject, public virtual DAO {
 
     QSqlDatabase& m_database;
     QMultiHash<TrackId, int> m_cratesTrackIsIn;
-    DISALLOW_COPY_AND_ASSIGN(CrateDAO);
 };
 
 #endif /* CRATEDAO_H */

@@ -10,7 +10,7 @@
 #include "engine/enginechannel.h"
 #include "library/playlisttablemodel.h"
 #include "track/track.h"
-#include "util/class.h"
+
 
 class ControlObject;
 class TrackCollection;

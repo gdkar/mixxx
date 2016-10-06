@@ -8,7 +8,7 @@ _Pragma("once")
 #include "engine/effects/engineeffect.h"
 #include "engine/effects/engineeffectparameter.h"
 #include "engine/enginefilteriir.h"
-#include "util/class.h"
+
 #include "util/defs.h"
 #include "util/sample.h"
 #include "util/types.h"

@@ -10,7 +10,7 @@
 #include "effects/effect.h"
 #include "effects/effectparameterslot.h"
 #include "effects/effectbuttonparameterslot.h"
-#include "util/class.h"
+
 
 class EffectSlot;
 class ControlProxy;
@@ -108,8 +108,6 @@ class EffectSlot : public QObject {
     ControlObject* m_pControlClear;
     QList<EffectParameterSlotPointer> m_parameters;
     QList<EffectButtonParameterSlotPointer> m_buttonParameters;
-
-    DISALLOW_COPY_AND_ASSIGN(EffectSlot);
 };
 
 #endif /* EFFECTSLOT_H */

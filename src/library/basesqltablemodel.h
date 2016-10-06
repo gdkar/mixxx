@@ -10,7 +10,7 @@
 #include "library/trackcollection.h"
 #include "library/trackmodel.h"
 #include "library/columncache.h"
-#include "util/class.h"
+
 
 // BaseSqlTableModel is a custom-written SQL-backed table which aggressively
 // caches the contents of the table and supports lightweight updates.
@@ -148,8 +148,6 @@ class BaseSqlTableModel : public QAbstractTableModel, public TrackModel {
     QString m_currentSearchFilter;
     QVector<QHash<int, QVariant> > m_headerInfo;
     QString m_trackSourceOrderBy;
-
-    DISALLOW_COPY_AND_ASSIGN(BaseSqlTableModel);
 };
 
 #endif /* BASESQLTABLEMODEL_H */

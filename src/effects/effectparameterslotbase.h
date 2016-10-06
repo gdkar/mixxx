@@ -7,7 +7,6 @@
 
 #include "control/controlobject.h"
 #include "effects/effect.h"
-#include "util/class.h"
 
 class ControlObject;
 class ControlPushButton;
@@ -44,8 +43,6 @@ class EffectParameterSlotBase : public QObject {
     ControlObject* m_pControlLoaded;
     ControlObject* m_pControlType;
     double m_dChainParameter;
-
-    DISALLOW_COPY_AND_ASSIGN(EffectParameterSlotBase);
 };
 
 #endif /* EFFECTPARAMETERSLOTBASE_H */

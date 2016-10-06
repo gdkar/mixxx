@@ -8,7 +8,7 @@ _Pragma("once")
 #include "effects/native/lvmixeqbase.h"
 #include "engine/effects/engineeffect.h"
 #include "engine/effects/engineeffectparameter.h"
-#include "util/class.h"
+
 #include "util/types.h"
 #include "util/defs.h"
 

@@ -15,7 +15,7 @@
 #include <vamp-hostsdk/vamp-hostsdk.h>
 #include <string>
 
-#include "util/class.h"
+
 
 using Vamp::Plugin;
 using Vamp::PluginHostAdapter;
@@ -42,7 +42,6 @@ class VampPluginLoader {
     static VampPluginLoader* s_instance;
     static QMutex s_mutex;
     Vamp::HostExt::PluginLoader* m_pVampPluginLoader;
-    DISALLOW_COPY_AND_ASSIGN(VampPluginLoader);
 };
 
 #endif // ANALYZER_VAMP_VAMPPLUGINLOADER_H

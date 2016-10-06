@@ -14,6 +14,7 @@
 #include <QWeakPointer>
 
 #include "util/file.h"
+#include <atomic>
 
 // This class is a singleton and represents a thread
 // that is used to read ID3 metadata
@@ -46,7 +47,7 @@ class BrowseThread : public QThread {
 
     QMutex m_mutex;
     QWaitCondition m_locationUpdated;
-    volatile bool m_bStopThread;
+    std::atomic<bool> m_bStopThread;
 
     // You must hold m_path_mutex to touch m_path or m_model_observer
     QMutex m_path_mutex;

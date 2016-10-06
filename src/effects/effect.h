@@ -7,7 +7,7 @@
 #include "effects/effectmanifest.h"
 #include "effects/effectparameter.h"
 #include "effects/effectinstantiator.h"
-#include "util/class.h"
+
 
 class EffectProcessor;
 class EngineEffectChain;
@@ -77,8 +77,6 @@ class Effect : public QObject {
     bool m_bEnabled;
     QList<EffectParameter*> m_parameters;
     QMap<QString, EffectParameter*> m_parametersById;
-
-    DISALLOW_COPY_AND_ASSIGN(Effect);
 };
 
 #endif /* EFFECT_H */

@@ -8,7 +8,7 @@
 
 #include "effects/effect.h"
 #include "engine/channelhandle.h"
-#include "util/class.h"
+
 
 class EffectsManager;
 class EngineEffectRack;
@@ -129,8 +129,6 @@ class EffectChain : public QObject {
     QList<EffectPointer> m_effects;
     EngineEffectChain* m_pEngineEffectChain;
     bool m_bAddedToEngine;
-
-    DISALLOW_COPY_AND_ASSIGN(EffectChain);
 };
 
 #endif /* EFFECTCHAIN_H */

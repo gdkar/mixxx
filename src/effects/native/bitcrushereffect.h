@@ -7,7 +7,7 @@
 #include "effects/effectprocessor.h"
 #include "engine/effects/engineeffect.h"
 #include "engine/effects/engineeffectparameter.h"
-#include "util/class.h"
+
 #include "util/types.h"
 
 struct BitCrusherGroupState {
@@ -46,8 +46,6 @@ class BitCrusherEffect : public PerChannelEffectProcessor<BitCrusherGroupState> 
 
     EngineEffectParameter* m_pBitDepthParameter;
     EngineEffectParameter* m_pDownsampleParameter;
-
-    DISALLOW_COPY_AND_ASSIGN(BitCrusherEffect);
 };
 
 #endif /* BITCRUSHEREFFECT_H */
