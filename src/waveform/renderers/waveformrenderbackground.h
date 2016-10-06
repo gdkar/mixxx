@@ -7,7 +7,7 @@
 #include <QPainter>
 
 #include "skin/skincontext.h"
-#include "util/class.h"
+
 #include "waveformrendererabstract.h"
 
 class WaveformWidgetRenderer;
@@ -26,8 +26,6 @@ class WaveformRenderBackground : public WaveformRendererAbstract {
     QString m_backgroundPixmapPath;
     QColor m_backgroundColor;
     QImage m_backgroundImage;
-
-    DISALLOW_COPY_AND_ASSIGN(WaveformRenderBackground);
 };
 
 #endif /* WAVEFORMRENDERBACKGROUND_H */

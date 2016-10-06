@@ -10,7 +10,7 @@
 #include <QSharedPointer>
 #include <QMutexLocker>
 
-#include "util/class.h"
+
 #include "util/compatibility.h"
 
 enum FilterIndex { Low = 0, Mid = 1, High = 2, FilterCount = 3};
@@ -173,8 +173,6 @@ class Waveform {
     QAtomicInt m_completion;
 
     mutable QMutex m_mutex;
-
-    DISALLOW_COPY_AND_ASSIGN(Waveform);
 };
 
 typedef QSharedPointer<Waveform> WaveformPointer;

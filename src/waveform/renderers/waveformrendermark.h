@@ -4,7 +4,7 @@
 #include <QObject>
 
 #include "skin/skincontext.h"
-#include "util/class.h"
+
 #include "waveform/renderers/waveformmarkset.h"
 #include "waveform/renderers/waveformrendererabstract.h"
 #include "library/dao/cue.h"
@@ -33,7 +33,6 @@ class WaveformRenderMark : public QObject, public WaveformRendererAbstract {
     void generateMarkImage(WaveformMark* pMark);
 
     WaveformMarkSet m_marks;
-    DISALLOW_COPY_AND_ASSIGN(WaveformRenderMark);
 };
 
 #endif

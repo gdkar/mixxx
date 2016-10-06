@@ -30,7 +30,6 @@ class WaveformMarkSet {
     WaveformMark m_defaultMark;
     QList<WaveformMarkPointer> m_marks;
     int m_iFirstHotCue;
-    DISALLOW_COPY_AND_ASSIGN(WaveformMarkSet);
 };
 
 #endif // WAVEFORMMARKSET_H

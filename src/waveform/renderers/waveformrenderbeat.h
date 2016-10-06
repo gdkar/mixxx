@@ -4,7 +4,7 @@
 #include <QColor>
 
 #include "skin/skincontext.h"
-#include "util/class.h"
+
 #include "waveform/renderers/waveformrendererabstract.h"
 
 class WaveformRenderBeat : public WaveformRendererAbstract {
@@ -18,8 +18,6 @@ class WaveformRenderBeat : public WaveformRendererAbstract {
   private:
     QColor m_beatColor;
     QVector<QLineF> m_beats;
-
-    DISALLOW_COPY_AND_ASSIGN(WaveformRenderBeat);
 };
 
 #endif //WAVEFORMRENDERBEAT_H

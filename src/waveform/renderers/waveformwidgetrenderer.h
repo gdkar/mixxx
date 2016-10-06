@@ -7,7 +7,7 @@
 #include <QtDebug>
 
 #include "track/track.h"
-#include "util/class.h"
+
 #include "waveform/renderers/waveformrendererabstract.h"
 #include "waveform/renderers/waveformsignalcolors.h"
 #include "util/performancetimer.h"
@@ -131,7 +131,6 @@ class WaveformWidgetRenderer {
 #endif
 
 private:
-    DISALLOW_COPY_AND_ASSIGN(WaveformWidgetRenderer);
     friend class WaveformWidgetFactory;
 };
 

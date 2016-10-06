@@ -11,7 +11,7 @@
 
 #include "preferences/usersettings.h"
 #include "skin/skincontext.h"
-#include "util/class.h"
+
 #include "waveform/renderers/waveformmarkrange.h"
 #include "waveform/renderers/waveformrendererabstract.h"
 
@@ -30,8 +30,6 @@ class WaveformRenderMarkRange : public WaveformRendererAbstract {
     void generateImages();
 
     std::vector<WaveformMarkRange> m_markRanges;
-
-    DISALLOW_COPY_AND_ASSIGN(WaveformRenderMarkRange);
 };
 
 #endif

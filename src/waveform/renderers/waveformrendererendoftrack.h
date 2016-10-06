@@ -6,7 +6,7 @@
 //#include <QLinearGradient>
 
 #include "skin/skincontext.h"
-#include "util/class.h"
+
 #include "waveform/renderers/waveformrendererabstract.h"
 #include "waveform/waveformwidgetfactory.h"
 #include "util/performancetimer.h"
@@ -43,8 +43,6 @@ class WaveformRendererEndOfTrack : public WaveformRendererAbstract {
     QVector<QRect> m_backRects;
     QPen m_pen;
     //QLinearGradient m_gradient;
-
-    DISALLOW_COPY_AND_ASSIGN(WaveformRendererEndOfTrack);
 };
 
 #endif // WAVEFORMRENDERERENDOFTRACK_H
