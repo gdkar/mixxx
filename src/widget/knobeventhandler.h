@@ -15,12 +15,11 @@ class KnobEventHandler {
     KnobEventHandler()
             : m_bRightButtonPressed(false) {
     }
-
     double valueFromMouseEvent(T* pWidget, QMouseEvent* e) {
         QPoint cur(e->globalPos());
         QPoint diff(cur - m_startPos);
-        double dist = sqrt(static_cast<double>(diff.x() * diff.x() + diff.y() * diff.y()));
-        bool y_dominant = abs(diff.y()) > abs(diff.x());
+        auto dist = std::sqrt(static_cast<double>(diff.x() * diff.x() + diff.y() * diff.y()));
+        auto y_dominant = std::abs(diff.y()) > std::abs(diff.x());
 
         // if y is dominant, then thread an increase in dy as negative (y is
         // pointed downward). Otherwise, if y is not dominant and x has
@@ -28,20 +27,17 @@ class KnobEventHandler {
         if ((y_dominant && diff.y() > 0) || (!y_dominant && diff.x() < 0)) {
             dist = -dist;
         }
-
         // For legacy (MIDI) reasons this is tuned to 127.
-        double value = pWidget->getControlParameter() + dist / 127.0;
-
+        auto value = pWidget->getControlParameter() + dist / 127.0;
         // Clamp to [0.0, 1.0]
         value = math_clamp(value, 0.0, 1.0);
-
         return value;
     }
-
-    void mouseMoveEvent(T* pWidget, QMouseEvent* e) {
+    void mouseMoveEvent(T* pWidget, QMouseEvent* e)
+    {
         if (!m_bRightButtonPressed) {
             QCursor::setPos(m_startPos);
-            double value = valueFromMouseEvent(pWidget, e);
+            auto value = valueFromMouseEvent(pWidget, e);
             pWidget->setControlParameterDown(value);
             pWidget->update();
         }
@@ -85,8 +81,8 @@ class KnobEventHandler {
 
     void wheelEvent(T* pWidget, QWheelEvent* e) {
         // For legacy (MIDI) reasons this is tuned to 127.
-        double wheelDirection = e->delta() / (120.0 * 127.0);
-        double newValue = pWidget->getControlParameter() + wheelDirection;
+        auto wheelDirection = e->delta() / (120.0 * 127.0);
+        auto newValue = pWidget->getControlParameter() + wheelDirection;
 
         // Clamp to [0.0, 1.0]
         newValue = math_clamp(newValue, 0.0, 1.0);

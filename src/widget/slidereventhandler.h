@@ -24,23 +24,24 @@ class SliderEventHandler {
               m_bDrag(false),
               m_bEventWhileDrag(true) { }
 
-    void setHorizontal(bool horiz) {
+    void setHorizontal(bool horiz)
+    {
         m_bHorizontal = horiz;
     }
-
-    void setHandleLength(double len) {
+    void setHandleLength(double len)
+    {
         m_dHandleLength = len;
     }
-
-    void setSliderLength(double len) {
+    void setSliderLength(double len)
+    {
         m_dSliderLength = len;
     }
-
-    void setEventWhileDrag(bool eventwhile) {
+    void setEventWhileDrag(bool eventwhile)
+    {
         m_bEventWhileDrag = eventwhile;
     }
-
-    void mouseMoveEvent(T* pWidget, QMouseEvent* e) {
+    void mouseMoveEvent(T* pWidget, QMouseEvent* e)
+    {
         if (!m_bRightButtonPressed) {
             if (m_bHorizontal) {
                 m_dPos = e->x() - m_dHandleLength / 2;
@@ -97,12 +98,10 @@ class SliderEventHandler {
             pWidget->setControlParameter(m_dOldParameter);
         }
     }
-
     void wheelEvent(T* pWidget, QWheelEvent* e) {
         // For legacy (MIDI) reasons this is tuned to 127.
         auto wheelAdjustment = (e)->delta() / (120.0 * 127.0);
         auto newParameter = pWidget->getControlParameter() + wheelAdjustment;
-
         // Clamp to [0.0, 1.0]
         newParameter = math_clamp(newParameter, 0.0, 1.0);
         pWidget->setControlParameter(newParameter);
@@ -110,8 +109,8 @@ class SliderEventHandler {
         pWidget->update();
         e->accept();
     }
-
-    void onConnectedControlChanged(T* pWidget, double dParameter) {
+    void onConnectedControlChanged(T* pWidget, double dParameter)
+    {
         // WARNING: The second parameter to this method is unused and called with
         // invalid values in parts of WSliderComposed. Do not use it unless you fix
         // this.
