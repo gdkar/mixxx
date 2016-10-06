@@ -58,8 +58,6 @@ class EngineEffect : public EffectsRequestHandler {
     // Must not be modified after construction.
     QVector<EngineEffectParameter*> m_parameters;
     QMap<QString, EngineEffectParameter*> m_parametersById;
-
-    DISALLOW_COPY_AND_ASSIGN(EngineEffect);
 };
 
 #endif /* ENGINEEFFECT_H */

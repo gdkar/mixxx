@@ -4,7 +4,7 @@
 #include <QString>
 #include <QVariant>
 
-#include "util/class.h"
+
 #include "effects/effectmanifestparameter.h"
 
 class EngineEffectParameter {
@@ -82,8 +82,6 @@ class EngineEffectParameter {
     double m_defaultValue;
     double m_minimum;
     double m_maximum;
-
-    DISALLOW_COPY_AND_ASSIGN(EngineEffectParameter);
 };
 
 #endif /* ENGINEEFFECTPARAMETER_H */
