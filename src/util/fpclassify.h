@@ -16,11 +16,6 @@
 // std=c++11. See https://bugs.webkit.org/show_bug.cgi?id=59249 for some
 // relevant discussion.
 
-#define isnan util_isnan
-#define isinf util_isinf
-#define isnormal util_isnormal
-#define fpclassify util_fpclassify
-#define isfinite util_isfinite
 
 int util_fpclassify(float x);
 int util_isfinite(float x);
@@ -32,6 +27,11 @@ int util_isfinite(double x);
 int util_isnormal(double x);
 int util_isnan(double x);
 int util_isinf(double x);
+#define isnan util_isnan
+#define isinf util_isinf
+#define isnormal util_isnormal
+#define fpclassify util_fpclassify
+#define isfinite util_isfinite
 
 #endif
 

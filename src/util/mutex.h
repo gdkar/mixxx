@@ -12,6 +12,7 @@
 #include <mutex>
 #include <thread>
 #include <atomic>
+#include <shared_mutex>
 #include <condition_variable>
 
 template<class T>
