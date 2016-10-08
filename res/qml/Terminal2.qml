@@ -19,29 +19,7 @@ ApplicationWindow {
 /*        id:background
         anchors.left:parent.left
         anchors.right:parent.right*/
-    FileDialog {
-        id: openDialog
-        selectExisting: true
-        sidebarVisible:true
-        title: "Open"
-        selectedNameFilter: nameFilters[0]
-        nameFilters: ["Qml Files (*.qml) *.js)","Script Files (*.js)","All Files (*)"]
-//        folder: StandardPaths.writeableLocation(
-//      onAccepted: document.load(file)
-    }
-    FileDialog {
-        id: saveDialog
-        title: "Save As"
-        selectExisting: true
-        selectFolder: false
-
-        selectedNameFilter: nameFilters[0]
-        nameFilters: ["Qml Files (*.qml) *.js)","Script Files (*.js)","All Files (*)"]
-//        onAccepted
-//        folder: StandardPaths.writeableLocation(
-//        onAccepted: document.saveAs(file)
-    }
-    FontDialog {
+   FontDialog {
         id: fontDialog
         onAccepted: {
         }
@@ -63,8 +41,8 @@ ApplicationWindow {
 //        }
     ListModel {
         id: history
+        ListElement { folded: false; result: ""; input: "false"}
     }
-
     ListView {
         id: historyView
         Layout.fillWidth: true
@@ -232,26 +210,13 @@ ApplicationWindow {
                         historyPos = history.count
 
                     }
-    //                log(result)
-    //                    prompt.anchors.top = background.lastLine.bottom;
                 }
-
-    //            function log(text) {
-    //                    var outputLine = outputLineComponent.createObject(parent)
-    //                    outputLine.y = 0
-    //                    if(background.lastLine != null)
-    //                output.text += "\n\n" + text
-    //                        outputLine.anchors.top = background.lastLine.bottom
-    //                        outputLine.y = background.lastLine.y + background.lastLine.height
-    //                    outputLine.text = text
-    //                    background.lastLine = outputLine
-    //            }
                 Component.onCompleted: {
     //                log("\n")
                     console.log("recreated!")
                 }
         }
-        }
+    }
     Menu {
         id: contextMenu
         MenuItem {

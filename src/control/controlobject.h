@@ -35,6 +35,7 @@ class ControlObject : public QObject, public QEnableSharedFromThis<ControlObject
     Q_PROPERTY(double minimum READ minimum WRITE setMinimum NOTIFY minimumChanged)
     Q_PROPERTY(double maximum READ maximum WRITE setMaximum NOTIFY maximumChanged)
     Q_PROPERTY(double default READ defaultValue WRITE setDefaultValue NOTIFY defaultValueChanged)
+    Q_PROPERTY(ControlHint range READ range WRITE setRange NOTIFY rangeChanged);
   public:
     Q_INVOKABLE ControlObject(QObject *p = nullptr);
     // bIgnoreNops: Don't emit a signal if the CO is set to its current value.
@@ -90,8 +91,6 @@ class ControlObject : public QObject, public QEnableSharedFromThis<ControlObject
     virtual double getParameter() const;
     // Returns the parameterized value of the object. Thread safe, non-blocking.
     virtual double getParameterForValue(double value) const;
-    // Returns the parameterized value of the object. Thread safe, non-blocking.
-    virtual double getParameterForMidiValue(double midiValue) const;
     // Sets the control parameterized value to v. Thread safe, non-blocking.
     virtual void setParameter(double v);
     // Sets the control parameterized value to v. Thread safe, non-blocking.
@@ -113,6 +112,8 @@ class ControlObject : public QObject, public QEnableSharedFromThis<ControlObject
     void setMinimum(double value);
     double maximum() const;
     void setMaximum(double value);
+    ControlHint  range() const;
+    void setRange(const ControlHint &hint);
 
 
   signals:
@@ -123,12 +124,9 @@ class ControlObject : public QObject, public QEnableSharedFromThis<ControlObject
     void valueChanged(double);
     void defaultValueChanged(double);
     void valueChangedFromEngine(double);
+    void rangeChanged(const ControlHint &hint);
     void triggered();
-  public:
-    // DEPRECATED: Called to set the control value from the controller
-    // subsystem.
-    virtual void setValueFromMidi(MidiOpCode o, double v);
-    virtual double getMidiParameter() const;
+
   protected:
     // Key of the object
     ConfigKey m_key;

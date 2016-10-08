@@ -22,12 +22,35 @@
 #include <memory>
 #include "controllers/midi/midicontroller.h"
 
+struct RtMidiControllerInfo {
+    Q_PROPERTY(QString inputName MEMBER inputName)
+    Q_PROPERTY(QString outputName MEMBER outputName)
+    Q_PROPERTY(int inputIndex MEMBER inputIndex)
+    Q_PROPERTY(int outputIndex MEMBER outputIndex)
+    Q_GADGET
+public:
+    RtMidiControllerInfo() = default;
+    RtMidiControllerInfo(const RtMidiControllerInfo&) = default;
+    RtMidiControllerInfo(RtMidiControllerInfo&&) noexcept = default;
+    RtMidiControllerInfo&operator=(const RtMidiControllerInfo&) = default;
+    RtMidiControllerInfo&operator=(RtMidiControllerInfo&&) noexcept = default;
+    RtMidiControllerInfo(const QString &iname, const QString &oname, int iidx = -1, int iodx = -1);
+    virtual ~RtMidiControllerInfo();
+    QString inputName{};
+    QString outputName{};
+    int     inputIndex{};
+    int     outputIndex{};
+};
+Q_DECLARE_METATYPE(RtMidiControllerInfo)
 
 // A PortMidi-based implementation of MidiController
 class RtMidiController : public MidiController {
     Q_OBJECT
     Q_PROPERTY(int inputPortCount READ inputPortCount NOTIFY inputPortCountChanged)
     Q_PROPERTY(int outputPortCount READ outputPortCount NOTIFY outputPortCountChanged)
+    Q_PROPERTY(QStringList inputPortNames READ inputPortNames)
+    Q_PROPERTY(QStringList outputPortNames READ outputPortNames)
+    Q_PROPERTY(QList<RtMidiControllerInfo> devices READ deviceList)
 
     Q_PROPERTY(int inputIndex READ inputIndex WRITE setInputIndex NOTIFY inputIndexChanged)
     Q_PROPERTY(int outputIndex READ outputIndex WRITE setOutputIndex NOTIFY outputIndexChanged)
@@ -74,7 +97,9 @@ class RtMidiController : public MidiController {
     void sendWord(uint32_t word) override;
     void send(QByteArray data) override;
     bool isPolling() const override;
-
+    QStringList inputPortNames() const;
+    QStringList outputPortNames() const;
+    QList<RtMidiControllerInfo> deviceList() const;
     int in_index{-1};
     QString in_name{};
     int out_index{-1};

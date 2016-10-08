@@ -9,8 +9,179 @@
 
 #include "controllers/midi/rtmidicontroller.h"
 #include "controllers/controllerdebug.h"
+RtMidiControllerInfo::~RtMidiControllerInfo() = default;
+RtMidiControllerInfo::RtMidiControllerInfo(const QString& iname, const QString &oname, int iidx, int oidx)
+: inputName{iname}
+, outputName{oname}
+, inputIndex{iidx}
+, outputIndex{oidx}
+{}
+namespace {
+bool namesMatchMidiPattern(const QString input_name,
+                           const QString output_name) {
+    // Some platforms format MIDI device names as "deviceName MIDI ###" where
+    // ### is the instance # of the device. Therefore we want to link two
+    // devices that have an equivalent "deviceName" and ### section.
+    QRegExp deviceNamePattern("^(.*) MIDI (\\d+)( .*)?$");
+
+    auto inputMatch = deviceNamePattern.indexIn(input_name);
+    if (inputMatch == 0) {
+        auto inputDeviceName = deviceNamePattern.cap(1);
+        auto inputDeviceIndex = deviceNamePattern.cap(2);
+        auto outputMatch = deviceNamePattern.indexIn(output_name);
+        if (outputMatch == 0) {
+            auto outputDeviceName = deviceNamePattern.cap(1);
+            auto outputDeviceIndex = deviceNamePattern.cap(2);
+            if (outputDeviceName.compare(inputDeviceName, Qt::CaseInsensitive) == 0 &&
+                outputDeviceIndex == inputDeviceIndex) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+bool namesMatchPattern(const QString input_name,
+                       const QString output_name) {
+    // This is a broad pattern that matches a text blob followed by a numeral
+    // potentially followed by non-numeric text. The non-numeric requirement is
+    // meant to avoid corner cases around devices with names like "Hercules RMX
+    // 2" where we would potentially confuse the number in the device name as
+    // the ordinal index of the device.
+    QRegExp deviceNamePattern("^(.*) (\\d+)( [^0-9]+)?$");
+
+    auto inputMatch = deviceNamePattern.indexIn(input_name);
+    if (inputMatch == 0) {
+        auto inputDeviceName = deviceNamePattern.cap(1);
+        auto inputDeviceIndex = deviceNamePattern.cap(2);
+        auto outputMatch = deviceNamePattern.indexIn(output_name);
+        if (outputMatch == 0) {
+            auto outputDeviceName = deviceNamePattern.cap(1);
+            auto outputDeviceIndex = deviceNamePattern.cap(2);
+            if (outputDeviceName.compare(inputDeviceName, Qt::CaseInsensitive) == 0 &&
+                outputDeviceIndex == inputDeviceIndex) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool namesMatchInOutPattern(const QString input_name,
+                            const QString output_name) {
+    QString basePattern = "^(.*) %1 (\\d+)( .*)?$";
+    QRegExp inputPattern(basePattern.arg("in"));
+    QRegExp outputPattern(basePattern.arg("out"));
+
+    int inputMatch = inputPattern.indexIn(input_name);
+    if (inputMatch == 0) {
+        auto inputDeviceName = inputPattern.cap(1);
+        auto inputDeviceIndex = inputPattern.cap(2);
+        int outputMatch = outputPattern.indexIn(output_name);
+        if (outputMatch == 0) {
+            auto outputDeviceName = outputPattern.cap(1);
+            auto outputDeviceIndex = outputPattern.cap(2);
+            if (outputDeviceName.compare(inputDeviceName, Qt::CaseInsensitive) == 0 &&
+                outputDeviceIndex == inputDeviceIndex) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
 
 
+bool shouldLinkInputToOutput(const QString input_name,
+                             const QString output_name)
+{
+    // Early exit.
+    if (input_name == output_name)
+        return true;
+    // Some device drivers prepend "To" and "From" to the names of their MIDI
+    // ports. If the output and input device names don't match, let's try
+    // trimming those words from the start, and seeing if they then match.
+
+    // Ignore "From" text in the beginning of device input name.
+    auto input_name_stripped = input_name;
+    if (input_name.indexOf("from", 0, Qt::CaseInsensitive) == 0) {
+        input_name_stripped = input_name.right(input_name.length() - 4);
+    }
+
+    // Ignore "To" text in the beginning of device output name.
+    auto output_name_stripped = output_name;
+    if (output_name.indexOf("to", 0, Qt::CaseInsensitive) == 0) {
+        output_name_stripped = output_name.right(output_name.length() - 2);
+    }
+
+    if (output_name_stripped != input_name_stripped) {
+        // Ignore " input " text in the device names
+        auto offset = input_name_stripped.indexOf(" input ", 0,
+                                                 Qt::CaseInsensitive);
+        if (offset != -1) {
+            input_name_stripped = input_name_stripped.replace(offset, 7, " ");
+        }
+        // Ignore " output " text in the device names
+        offset = output_name_stripped.indexOf(" output ", 0,Qt::CaseInsensitive);
+        if (offset != -1) {
+            output_name_stripped = output_name_stripped.replace(offset, 8, " ");
+        }
+    }
+    if (input_name_stripped == output_name_stripped ||
+        namesMatchMidiPattern(input_name_stripped, output_name_stripped) ||
+        namesMatchMidiPattern(input_name, output_name) ||
+        namesMatchInOutPattern(input_name_stripped, output_name_stripped) ||
+        namesMatchInOutPattern(input_name, output_name) ||
+        namesMatchPattern(input_name_stripped, output_name_stripped) ||
+        namesMatchPattern(input_name, output_name)) {
+        return true;
+    }
+
+    return false;
+}
+
+}
+QList<RtMidiControllerInfo> RtMidiController::deviceList() const
+{
+    auto retval = QList<RtMidiControllerInfo>{};
+    try {
+        auto inMap = QMap<QString,int>{};
+        for(auto i = 0; i < inputPortCount();++i){
+            inMap.insert(inputPortName(i),i);
+        }
+        for(auto i = 0; i < outputPortCount();++i){
+            auto oname = outputPortName(i);
+            auto found = false;
+            for(auto it = inMap.begin(); it != inMap.end();++it){
+                if(shouldLinkInputToOutput(it.key(), oname)) {
+                    retval.append(RtMidiControllerInfo{
+                        it.key(),
+                        oname,
+                        it.value(),
+                        i});
+                    inMap.erase(it);
+                    found = true;
+                    break;
+                }
+            }
+            if(!found) {
+                retval.append(RtMidiControllerInfo{
+                    QString{},
+                    oname,
+                    -1,
+                     i});
+            }
+        }
+        for(auto it = inMap.cbegin(); it != inMap.cend(); ++it){
+            retval.append(RtMidiControllerInfo{
+                it.key(),
+                QString{},
+                it.value(),
+                -1});
+        }
+    } catch(...) {
+        return retval;
+    }
+    return retval;
+}
 RtMidiController::RtMidiController(QObject *p)
 : MidiController(p)
 , m_midiIn(std::make_unique<RtMidiIn>())
@@ -51,6 +222,22 @@ int RtMidiController::outputPortCount() const
     }catch(...) {
         return 0;
     }
+}
+QStringList RtMidiController::outputPortNames() const
+{
+    auto retval = QStringList{};
+    for (auto i = 0; i < outputPortCount(); ++i) {
+        retval << outputPortName(i);
+    }
+    return retval;
+}
+QStringList RtMidiController::inputPortNames() const
+{
+    auto retval = QStringList{};
+    for (auto i = 0; i < inputPortCount(); ++i) {
+        retval << inputPortName(i);
+    }
+    return retval;
 }
 QString RtMidiController::inputPortName(int index) const
 {

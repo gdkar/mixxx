@@ -20,10 +20,8 @@ namespace SampleUtil {
     // Allocated a buffer of CSAMPLE's with length size. Ensures that the buffer
     // is 16-byte aligned for SSE enhancement.
     CSAMPLE* alloc(int size);
-
     // Frees a 16-byte aligned buffer allocated by SampleUtil::alloc()
     void free(CSAMPLE* pBuffer);
-
     // Sets every sample in pBuffer to zero
     inline
     void clear(CSAMPLE* pBuffer, int iNumSamples)
@@ -64,13 +62,13 @@ namespace SampleUtil {
     }
 
     // Limits a CSAMPLE value to the valid range [-CSAMPLE_PEAK, CSAMPLE_PEAK]
-    inline CSAMPLE clampSample(CSAMPLE in)
+    inline constexpr CSAMPLE clampSample(CSAMPLE in)
     {
         return CSAMPLE_clamp(in);
     }
 
     // Limits a CSAMPLE_GAIN value to the valid range [CSAMPLE_GAIN_MIN, CSAMPLE_GAIN_MAX]
-    inline CSAMPLE clampGain(CSAMPLE_GAIN in)
+    inline constexpr CSAMPLE clampGain(CSAMPLE_GAIN in)
     {
         return CSAMPLE_GAIN_clamp(in);
     }
@@ -110,18 +108,6 @@ namespace SampleUtil {
     void addWithRampingGain(CSAMPLE* pDest, const CSAMPLE* pSrc,
             CSAMPLE_GAIN old_gain, CSAMPLE_GAIN new_gain,
             int iNumSamples);
-
-    // Add to each sample of pDest, pSrc1 multiplied by gain1 plus pSrc2
-    // multiplied by gain2
-    void add2WithGain(CSAMPLE* pDest, const CSAMPLE* pSrc1,
-            CSAMPLE_GAIN gain1, const CSAMPLE* pSrc2, CSAMPLE_GAIN gain2,
-            int iNumSamples);
-
-    // Add to each sample of pDest, pSrc1 multiplied by gain1 plus pSrc2
-    // multiplied by gain2 plus pSrc3 multiplied by gain3
-    void add3WithGain(CSAMPLE* pDest, const CSAMPLE* pSrc1,
-            CSAMPLE_GAIN gain1, const CSAMPLE* pSrc2, CSAMPLE_GAIN gain2,
-            const CSAMPLE* pSrc3, CSAMPLE_GAIN gain3, int iNumSamples);
 
     // Convert and normalize a buffer of SAMPLEs in the range [-SAMPLE_MAX, SAMPLE_MAX]
     // to a buffer of CSAMPLEs in the range [-1.0, 1.0].

@@ -167,20 +167,6 @@ ControlObject* ControlObject::getControl(ConfigKey key, bool warn)
     }
     return NULL;
 }
-
-void ControlObject::setValueFromMidi(MidiOpCode o, double v)
-{
-    if (auto co = control()) {
-        co->setMidiParameter(o, v);
-    }
-}
-
-double ControlObject::getMidiParameter() const {
-    if(auto co = control())
-        return co->getMidiParameter();
-    return 0.;
-}
-
 // static
 double ControlObject::get(ConfigKey key) {
     if(auto pCop = ControlDoublePrivate::getIfExists(key))
@@ -203,13 +189,6 @@ double ControlObject::getParameterForValue(double value) const
     return 0;
     return m_pControl ? m_pControl->getParameterForValue(value) : 0.0;
 }
-
-double ControlObject::getParameterForMidiValue(double midiValue) const {
-    if(auto co = control())
-        co->getParameterForMidiValue(midiValue);
-    return 0.0;
-}
-
 void ControlObject::setParameter(double v) {
     if (auto co = control()) {
         co->setParameter(v, this);
@@ -331,6 +310,19 @@ void ControlObject::setDefaultValue(double dValue)
         co->setDefaultValue(dValue);
     }
 }
+void ControlObject::setRange(const ControlHint &hint)
+{
+    if(auto co = control()) {
+        co->setRange(hint);
+    }
+}
+ControlHint ControlObject::range() const
+{
+    if(auto co = control())
+        return co->range();
+    else
+        return {};
+}
 double ControlObject::defaultValue() const
 {
     if(auto co = control()) return co->defaultValue();
@@ -398,7 +390,6 @@ bool ControlObject::compare_exchange(double &expected, double desired)
 {
     return m_pControl ? m_pControl->compare_exchange_strong(expected,desired) : false;
 }
-
 double ControlObject::exchange(double val)
 {
     return m_pControl ? m_pControl->updateAtomically([val](double ){return val;}) : 0.0;

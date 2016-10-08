@@ -14,7 +14,7 @@ var pretty = function pretty (jsObject, indentLength, outputTo, fullFunction) {
         prettyObjectPrint,
         prettyArray,
         functionSignature,
-        pretty,
+        localPretty,
         visited;
 
     TOSTRING = Object.prototype.toString;
@@ -22,10 +22,13 @@ var pretty = function pretty (jsObject, indentLength, outputTo, fullFunction) {
     TYPES = {
         'undefined'        : 'undefined',
         'number'           : 'number',
+        'Number'           : 'number',
         'boolean'          : 'boolean',
+        'Boolean'          : 'boolean',
         'string'           : 'string',
+        'String'           : 'string',
         '[object Function]': 'function',
-        '[object RegExp]'  : 'regexp',
+        '[object Regexp]'  : 'regexp',
         '[object Array]'   : 'array',
         '[object Date]'    : 'date',
         '[object Error]'   : 'error'
@@ -53,7 +56,7 @@ var pretty = function pretty (jsObject, indentLength, outputTo, fullFunction) {
         indent += indentString;
         for (property in object) {
             if (object.hasOwnProperty(property)) {
-                value.push(indent + '"' + property + '": ' + pretty(object[property], indent));
+                value.push(indent + '"' + property + '": ' + localPretty(object[property], indent));
             }
         }
 
@@ -67,7 +70,7 @@ var pretty = function pretty (jsObject, indentLength, outputTo, fullFunction) {
         indent += indentString;
         for (property in object) {
             if (object.hasOwnProperty(property)) {
-                value.push(indent + property + ': ' + pretty(object[property], indent));
+                value.push(indent + property + ': ' + localPretty(object[property], indent));
             }
         }
 
@@ -81,7 +84,7 @@ var pretty = function pretty (jsObject, indentLength, outputTo, fullFunction) {
 
         indent += indentString;
         for (index = 0; index < length; index += 1) {
-            value.push(pretty(array[index], indent, indent));
+            value.push(localPretty(array[index], indent, indent));
         }
 
         return value.join(newLineJoin) + newLine;
@@ -98,7 +101,7 @@ var pretty = function pretty (jsObject, indentLength, outputTo, fullFunction) {
         return fullFunction ? element : '"' + signature + '"';
     };
 
-    pretty = function (element, indent, fromArray) {
+    localPretty = function (element, indent, fromArray) {
         var type;
 
         type = valueType(element);
@@ -144,7 +147,7 @@ var pretty = function pretty (jsObject, indentLength, outputTo, fullFunction) {
         return fromArray + 'circular reference to ' + element.toString();
     };
 
-    if (jsObject) {
+    if (jsObject ||true) {
         if (indentLength === undefined) {
             indentLength = 4;
         }
@@ -155,7 +158,7 @@ var pretty = function pretty (jsObject, indentLength, outputTo, fullFunction) {
         newLine = outputTo === 'html' ? '<br/>' : '\n';
         newLineJoin = ',' + newLine;
         visited = [];
-        return pretty(jsObject, '') + newLine;
+        return localPretty(jsObject, '') + newLine;
     }
 
     return 'Error: no Javascript object provided';

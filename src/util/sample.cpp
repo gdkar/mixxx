@@ -100,25 +100,11 @@ void SampleUtil::applyAlternatingGain(CSAMPLE* pBuffer, CSAMPLE gain1,
         return applyGain(pBuffer, gain1, iNumSamples);
     // note: LOOP VECTORIZED.
     for (int i = 0; i < iNumSamples / 2; ++i) {
-        pBuffer[i * 2]     *= gain1;
+        pBuffer[i * 2 + 0] *= gain1;
         pBuffer[i * 2 + 1] *= gain2;
     }
 }
-// static
-void SampleUtil::add2WithGain(CSAMPLE*  pDest, const CSAMPLE*  pSrc1,
-        CSAMPLE_GAIN gain1, const CSAMPLE*  pSrc2, CSAMPLE_GAIN gain2,
-        int iNumSamples) {
-    addWithGain(pDest,pSrc1,gain1,iNumSamples);
-    addWithGain(pDest,pSrc2,gain2,iNumSamples);
-}
-void SampleUtil::add3WithGain(CSAMPLE* pDest, const CSAMPLE* pSrc1,
-        CSAMPLE_GAIN gain1, const CSAMPLE* pSrc2, CSAMPLE_GAIN gain2,
-        const CSAMPLE *pSrc3, CSAMPLE_GAIN gain3,
-        int iNumSamples) {
-    addWithGain(pDest,pSrc1,gain1,iNumSamples);
-    addWithGain(pDest,pSrc2,gain2,iNumSamples);
-    addWithGain(pDest,pSrc3,gain3,iNumSamples);
-}
+
 // static
 void SampleUtil::convertS16ToFloat32(CSAMPLE*  pDest, const SAMPLE*  pSrc,
         int iNumSamples) {
@@ -126,19 +112,16 @@ void SampleUtil::convertS16ToFloat32(CSAMPLE*  pDest, const SAMPLE*  pSrc,
     // is the highest valid sample. Note that this means that although some
     // sample values convert to -1.0, none will convert to +1.0.
     DEBUG_ASSERT(-SAMPLE_MIN >= SAMPLE_MAX);
-    const CSAMPLE kConversionFactor = -SAMPLE_MIN;
+    constexpr CSAMPLE kConversionFactor = 1./-SAMPLE_MIN;
     // note: LOOP VECTORIZED.
-    for (int i = 0; i < iNumSamples; ++i)
-        pDest[i] = CSAMPLE(pSrc[i]) / kConversionFactor;
+    std::transform(pSrc,pSrc + iNumSamples, pDest,[=](auto x){return x * kConversionFactor;});
 }
-
 //static
 void SampleUtil::convertFloat32ToS16(SAMPLE* pDest, const CSAMPLE* pSrc,
         unsigned int iNumSamples) {
     DEBUG_ASSERT(-SAMPLE_MIN >= SAMPLE_MAX);
-    const CSAMPLE kConversionFactor = -SAMPLE_MIN;
-    for (unsigned int i = 0; i < iNumSamples; ++i)
-        pDest[i] = SAMPLE(pSrc[i] * kConversionFactor);
+    constexpr CSAMPLE kConversionFactor = -SAMPLE_MIN;
+    std::transform(pSrc,pSrc + iNumSamples, pDest,[=](auto x){return x * kConversionFactor;});
 }
 
 // static
@@ -174,8 +157,7 @@ SampleUtil::CLIP_FLAGS SampleUtil::sumAbsPerChannel(CSAMPLE* pfAbsL, CSAMPLE* pf
 void SampleUtil::copyClampBuffer(CSAMPLE*  pDest, const  CSAMPLE* pSrc,
         int iNumSamples) {
     // note: LOOP VECTORIZED.
-    for (int i = 0; i < iNumSamples; ++i)
-        pDest[i] = clampSample(pSrc[i]);
+    std::transform(pSrc,pSrc + iNumSamples,pDest,clampSample);
 }
 
 // static
@@ -183,7 +165,7 @@ void SampleUtil::interleaveBuffer(CSAMPLE*  pDest, const CSAMPLE*  pSrc1,
         const CSAMPLE*  pSrc2, int iNumSamples) {
     // note: LOOP VECTORIZED.
     for (int i = 0; i < iNumSamples; ++i) {
-        pDest[2 * i] = pSrc1[i];
+        pDest[2 * i + 0] = pSrc1[i];
         pDest[2 * i + 1] = pSrc2[i];
     }
 }
@@ -233,8 +215,8 @@ void SampleUtil::doubleMonoToDualMono(CSAMPLE* pBuffer, int numFrames) {
     int i = numFrames;
     // Unvectorizable Loop
     while (0 < i--) {
-        const CSAMPLE s = pBuffer[i];
-        pBuffer[i * 2] = s;
+        auto s = pBuffer[i];
+        pBuffer[i * 2 + 0] = s;
         pBuffer[i * 2 + 1] = s;
     }
 }
@@ -245,8 +227,8 @@ void SampleUtil::copyMonoToDualMono(CSAMPLE*  pDest, const CSAMPLE*  pSrc,
     // forward loop
     // note: LOOP VECTORIZED
     for (int i = 0; i < numFrames; ++i) {
-        const CSAMPLE s = pSrc[i];
-        pDest[i * 2] = s;
+        auto s = pSrc[i];
+        pDest[i * 2 + 0] = s;
         pDest[i * 2 + 1] = s;
     }
 }
@@ -256,7 +238,7 @@ void SampleUtil::stripMultiToStereo(CSAMPLE* pBuffer, int numFrames,
         int numChannels) {
     // forward loop
     for (int i = 0; i < numFrames; ++i) {
-        pBuffer[i * 2] = pBuffer[i * numChannels];
+        pBuffer[i * 2 + 0] = pBuffer[i * numChannels];
         pBuffer[i * 2 + 1] = pBuffer[i * numChannels + 1];
     }
 }
@@ -284,7 +266,6 @@ void SampleUtil::reverse(CSAMPLE* pBuffer, int iNumSamples) {
         pBuffer[endpos] = temp2;
     }
 }
-
 // static
 void SampleUtil::copyReverse(CSAMPLE*  pDest, const CSAMPLE*  pSrc,
         int iNumSamples) {

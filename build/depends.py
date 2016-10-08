@@ -590,6 +590,7 @@ class MixxxCore(Feature):
 
     def sources(self, build):
         sources = ["control/control.cpp",
+                   "control/controlhint.cpp",
                    "control/controlaudiotaperpot.cpp",
                    "control/controlbehavior.cpp",
                    "control/controleffectknob.cpp",

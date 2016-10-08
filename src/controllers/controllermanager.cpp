@@ -67,11 +67,13 @@ ControllerManager::ControllerManager(UserSettingsPointer pConfig)
           m_skipPoll(false)
 {
     qRegisterMetaType<ConfigKey>("ConfigKey");
+    qRegisterMetaType<RtMidiControllerInfo>("RtMidiControllerInfo");
     qmlRegisterUncreatableType<MidiController>("org.mixxx.qml",0,1,"MidiController",
         "MidiController is abstract, use RtMidiController or PortMidiController");
     qmlRegisterUncreatableType<KeyboardEventFilter>("org.mixxx.qml", 0, 1, "KbdController",
         "There is only one static keyboard: just use that one. <_<");
     qmlRegisterUncreatableType<ConfigKey>("org.mixxx.qml", 0, 1, "ConfigKey","you can't make one of those....");
+    qmlRegisterUncreatableType<RtMidiControllerInfo>("org.mixxx.qml", 0, 1, "RtMidiControllerInfo","you can't make one of those....");
 
     qmlRegisterType<KeyProxy>("org.mixxx.qml", 0, 1, "KeyProxy");
     qmlRegisterType<BindProxy>("org.mixxx.qml", 0, 1, "BindProxy");

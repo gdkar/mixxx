@@ -44,6 +44,9 @@ ControlDoublePrivate::ControlDoublePrivate(ConfigKey key,
           m_confirmRequired(false),
           m_pCreatorCO(nullptr)
 {
+    qRegisterMetaType<ControlHint>("ControlHint");
+    qRegisterMetaType<ControlHint::Default>("ControlHint::Default");
+    qmlRegisterUncreatableType<ControlHint>("org.mixxx.qml", 0, 1, "ControlHint", "you can't make one of those....");
     initialize();
 }
 
@@ -268,32 +271,6 @@ double ControlDoublePrivate::getParameterForValue(double value) const
     }
     return value;
 }
-
-double ControlDoublePrivate::getParameterForMidiValue(double midiValue) const
-{
-    if(auto pBehavior = m_pBehavior) {
-        return pBehavior->midiValueToParameter(midiValue);
-    }
-    return midiValue;
-}
-
-void ControlDoublePrivate::setMidiParameter(MidiOpCode opcode, double dParam)
-{
-    if(auto pBehavior = m_pBehavior){
-        pBehavior->setValueFromMidiParameter(opcode, dParam, this);
-    } else {
-        set(dParam, NULL);
-    }
-}
-
-double ControlDoublePrivate::getMidiParameter() const {
-    double value = get();
-    if(auto pBehavior = m_pBehavior) {
-        value = pBehavior->valueToMidiParameter(value);
-    }
-    return value;
-}
-
 bool ControlDoublePrivate::connectValueChangeRequest(const QObject* receiver,
         const char* method, Qt::ConnectionType type)
 {
@@ -345,17 +322,46 @@ bool ControlDoublePrivate::ignoreNops() const
 void ControlDoublePrivate::setMinimum(double value)
 {
     if(value != m_minimum.exchange(value)) {
+        range().setLowerBound(value);
         emit minimumChanged(value);
+        emit rangeChanged(range());
     }
 }
 void ControlDoublePrivate::setMaximum(double value)
 {
     if(value != m_maximum.exchange(value)) {
+        range().setUpperBound(value);
         emit maximumChanged(value);
+        emit rangeChanged(range());
     }
 }
-double ControlDoublePrivate::minimum() const { return m_minimum.load();}
-double ControlDoublePrivate::maximum() const { return m_maximum.load();}
+double ControlDoublePrivate::minimum() const
+{
+//    return hint().lowerBound();
+    return m_minimum.load();
+}
+double ControlDoublePrivate::maximum() const
+{
+//    return hint().upperBound();
+    return m_maximum.load();
+}
+const ControlHint& ControlDoublePrivate::range() const
+{
+    return m_range;
+}
+ControlHint& ControlDoublePrivate::range()
+{
+    return m_range;
+}
+void ControlDoublePrivate::setRange(const ControlHint& _range)
+{
+    if(m_range != _range) {
+        m_range = _range;
+        setMinimum(_range.lowerBound());
+        setMaximum(_range.upperBound());
+        setDefaultValue(_range.defaultValue());
+    }
+}
 void ControlDoublePrivate::setDefaultValue(double value)
 {
     if(value != m_defaultValue.exchange(value)) {
@@ -375,4 +381,3 @@ ConfigKey ControlDoublePrivate::getKey()
 {
     return m_key;
 }
-

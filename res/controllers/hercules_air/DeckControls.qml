@@ -6,6 +6,7 @@ import QtQuick 2.7
 Item {
     id: root
     property string group: "[Channel1]"
+    property real wheel_multiplier: 0.4
     property var controller:parent.controller
     property var bindings
     Pushy     { parent:root;prefix:"\u0090" + bindings.fwd;item: "fwd";  }
@@ -25,6 +26,7 @@ Item {
     BindValue { parent:root;prefix:"\u00b0" + bindings.filterLow;item: "filterLow"; value: proxy.value * 2 / 128.;}
     BindValue { parent:root;prefix:"\u00b0" + bindings.filterMid;item: "filterMid"; value: proxy.value * 2./ 128;}
     BindValue { parent:root;prefix:"\u00b0" + bindings.filterHigh;item: "filterHigh"; value: proxy.value * 2./ 128;}
+    Jog       { parent:root;prefix:"\u00b0" + bindings.jog; item:"jog";}
     BeatLEDs  { id:beatLeds;parent:root;midi:root.controller;stepStart:bindings.stepStart;stepStop:bindings.stepStop}
     MidiOutput{ id:playLed;parent:root;midi:root.controller;item:"play";midiNumber:bindings.playLed;}
     MidiOutput{ id:loop_enabledLed;parent:root;midi:root.controller;item:"loop_enabled";midiNumber:bindings.loop_enabledLed;}

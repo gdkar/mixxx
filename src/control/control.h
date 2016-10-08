@@ -6,6 +6,7 @@
 #include <QObject>
 #include <QAtomicPointer>
 
+#include "control/controlhint.h"
 #include "control/controlbehavior.h"
 #include "control/controlvalue.h"
 #include "preferences/usersettings.h"
@@ -22,6 +23,7 @@ class ControlDoublePrivate : public QObject, public QEnableSharedFromThis<Contro
     Q_PROPERTY(double minimum READ minimum WRITE setMinimum NOTIFY minimumChanged)
     Q_PROPERTY(double maximum READ maximum WRITE setMaximum NOTIFY maximumChanged)
     Q_PROPERTY(double default READ defaultValue WRITE setDefaultValue NOTIFY defaultValueChanged)
+    Q_PROPERTY(ControlHint range READ range WRITE setRange NOTIFY rangeChanged);
   public:
     virtual ~ControlDoublePrivate();
 
@@ -48,6 +50,9 @@ class ControlDoublePrivate : public QObject, public QEnableSharedFromThis<Contro
 
     static QHash<ConfigKey, ConfigKey> getControlAliases();
     double exchange(double with);
+    const ControlHint  &range() const;
+    ControlHint &range();
+    void setRange(const ControlHint &hint);
     template<class Func>
     double updateAtomically(Func &&func)
     {
@@ -94,10 +99,7 @@ class ControlDoublePrivate : public QObject, public QEnableSharedFromThis<Contro
     void setParameter(double dParam, QObject* pSender);
     double getParameter() const;
     double getParameterForValue(double value) const;
-    double getParameterForMidiValue(double midiValue) const;
 
-    void setMidiParameter(MidiOpCode opcode, double dParam);
-    double getMidiParameter() const;
 
     bool ignoreNops() const;
     void setDefaultValue(double dValue);
@@ -125,6 +127,7 @@ class ControlDoublePrivate : public QObject, public QEnableSharedFromThis<Contro
     void trigger();
     void nameChanged();
     void descriptionChanged();
+    void rangeChanged(const ControlHint &hint);
   private:
     ControlDoublePrivate(ConfigKey key,
                          bool bIgnoreNops, bool bTrack, bool bPersist);
@@ -152,6 +155,7 @@ class ControlDoublePrivate : public QObject, public QEnableSharedFromThis<Contro
     std::atomic<double> m_minimum{-std::numeric_limits<double>::infinity()};
     std::atomic<double> m_maximum{std::numeric_limits<double>::infinity()};
     std::atomic<double> m_defaultValue;
+    ControlHint m_range{};
     QSharedPointer<ControlNumericBehavior> m_pBehavior;
     ControlObject* m_pCreatorCO{};
     // Hack to implement persistent controls. This is a pointer to the current

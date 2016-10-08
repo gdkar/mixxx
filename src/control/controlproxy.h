@@ -31,6 +31,7 @@ class ControlProxy : public QObject {
     Q_PROPERTY(double default READ getDefault NOTIFY defaultChanged)
     Q_PROPERTY(double minimum READ minimum NOTIFY minimumChanged)
     Q_PROPERTY(double maximum READ maximum NOTIFY maximumChanged)
+    Q_PROPERTY(ControlHint range READ range WRITE setRange NOTIFY rangeChanged);
 
   public:
     Q_INVOKABLE ControlProxy(QObject* pParent = nullptr);
@@ -83,6 +84,8 @@ class ControlProxy : public QObject {
     //    // Returns the value of the object. Thread safe, non-blocking.
     double minimum() const;
     double maximum() const;
+    ControlHint range() const;
+    void setRange(const ControlHint &hint);
 
   public slots:
 
@@ -104,6 +107,7 @@ class ControlProxy : public QObject {
     void defaultChanged(double val) const;
     void minimumChanged(double val);
     void maximumChanged(double val);
+    void rangeChanged(const ControlHint &hint);
 
     void triggered();
   protected slots:

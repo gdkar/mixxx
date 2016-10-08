@@ -31,12 +31,20 @@ protected:
     // if we ever gonna need to change it from 'int' to 'long'
     // or any other type.
     typedef int value_type;
+    static constexpr value_type kInvalidValue = -1;
+
+    static const QVariant::Type kVariantType;
+
+    static constexpr bool isValidValue(value_type value) {
+        return 0 <= value;
+    }
 
 public:
-    DbId()
-        : m_value(kInvalidValue) {
-        DEBUG_ASSERT(!isValid());
-    }
+    constexpr DbId() = default;
+    constexpr DbId(const DbId&) = default;
+    constexpr DbId(DbId&&) noexcept = default;
+    constexpr DbId&operator=(const DbId&) = default;
+    constexpr DbId&operator=(DbId&&) noexcept = default;
     explicit DbId(value_type value)
         : m_value(value) {
         DEBUG_ASSERT(isValid() || (kInvalidValue == m_value));
@@ -67,27 +75,27 @@ public:
         return QString::number(m_value);
     }
 
-    friend bool operator==(const DbId& lhs, const DbId& rhs) {
+    friend constexpr bool operator==(const DbId& lhs, const DbId& rhs) {
         return lhs.m_value == rhs.m_value;
     }
 
-    friend bool operator!=(const DbId& lhs, const DbId& rhs) {
+    friend constexpr bool operator!=(const DbId& lhs, const DbId& rhs) {
         return lhs.m_value != rhs.m_value;
     }
 
-    friend bool operator<(const DbId& lhs, const DbId& rhs) {
+    friend constexpr bool operator<(const DbId& lhs, const DbId& rhs) {
         return lhs.m_value < rhs.m_value;
     }
 
-    friend bool operator>(const DbId& lhs, const DbId& rhs) {
+    friend constexpr bool operator>(const DbId& lhs, const DbId& rhs) {
         return lhs.m_value > rhs.m_value;
     }
 
-    friend bool operator<=(const DbId& lhs, const DbId& rhs) {
+    friend constexpr bool operator<=(const DbId& lhs, const DbId& rhs) {
         return lhs.m_value <= rhs.m_value;
     }
 
-    friend bool operator>=(const DbId& lhs, const DbId& rhs) {
+    friend constexpr bool operator>=(const DbId& lhs, const DbId& rhs) {
         return lhs.m_value >= rhs.m_value;
     }
 
@@ -102,19 +110,9 @@ public:
     friend uint qHash(const DbId& dbId) {
         return qHash(dbId.m_value);
     }
-
 private:
-    static const value_type kInvalidValue = -1;
-
-    static const QVariant::Type kVariantType;
-
-    static bool isValidValue(value_type value) {
-        return 0 <= value;
-    }
-
     static value_type valueOf(QVariant /*pass-by-value*/ variant);
-
-    value_type m_value;
+    value_type m_value{kInvalidValue};
 };
 
 Q_DECLARE_METATYPE(DbId)

@@ -53,6 +53,16 @@ void ControlProxy::initialize() const
                         )
                     );
                 connect(
+                m_pControl.data()
+                ,&ControlDoublePrivate::rangeChanged
+                , this
+                ,&ControlProxy::rangeChanged
+                , static_cast<Qt::ConnectionType>(
+                        Qt::AutoConnection
+                    | Qt::UniqueConnection
+                    )
+                );
+                connect(
                     m_pControl.data()
                 ,&ControlDoublePrivate::minimumChanged
                 , this
@@ -133,6 +143,38 @@ void ControlProxy::initialize(ConfigKey key)
                   | Qt::UniqueConnection
                     )
                 );
+            connect(
+                m_pControl.data()
+              ,&ControlDoublePrivate::rangeChanged
+              , this
+              ,&ControlProxy::rangeChanged
+              , static_cast<Qt::ConnectionType>(
+                    Qt::AutoConnection
+                  | Qt::UniqueConnection
+                    )
+                );
+
+            connect(
+                m_pControl.data()
+            ,&ControlDoublePrivate::minimumChanged
+            , this
+            ,&ControlProxy::minimumChanged
+            , static_cast<Qt::ConnectionType>(
+                    Qt::AutoConnection
+                | Qt::UniqueConnection
+                    )
+                );
+            connect(
+                m_pControl.data()
+            ,&ControlDoublePrivate::maximumChanged
+            , this
+            ,&ControlProxy::maximumChanged
+            , static_cast<Qt::ConnectionType>(
+                    Qt::AutoConnection
+                | Qt::UniqueConnection
+                    )
+                );
+
             connect(
                 m_pControl.data()
               ,&ControlDoublePrivate::valueChanged
@@ -324,6 +366,8 @@ void ControlProxy::setKey(ConfigKey new_key)
         if(m_pControl)
             QObject::disconnect(m_pControl.data(), 0, this, 0);
         auto _value = get();
+        auto _min = maximum();
+        auto _max = minimum();
         auto _default = getDefault();
         initialize(new_key);
 
@@ -336,6 +380,10 @@ void ControlProxy::setKey(ConfigKey new_key)
             emit valueChanged(get());
         if(_default != getDefault())
             emit defaultChanged(getDefault());
+        if(_min != minimum())
+            emit minimumChanged(minimum());
+        if(_max != maximum())
+            emit maximumChanged(maximum());
     }
 }
 void ControlProxy::setGroup(QString _group)
@@ -397,12 +445,12 @@ double ControlProxy::add_and_saturate(double val, double low_bar, double hi_bar)
         return get();
     std::tie(low_bar,hi_bar) = std::minmax(low_bar,hi_bar);
     if(val > 0)
-        return m_pControl->updateAtomically([val,low_bar,hi_bar](double x)
+        return m_pControl->updateAtomically([=](double x)
         {
             return std::min(hi_bar,x + val);
         });
     else
-        return m_pControl->updateAtomically([val,low_bar,hi_bar](double x)
+        return m_pControl->updateAtomically([=](double x)
         {
             return std::max(low_bar,x + val);
         });
@@ -410,11 +458,11 @@ double ControlProxy::add_and_saturate(double val, double low_bar, double hi_bar)
 }
 double ControlProxy::fetch_add(double val)
 {
-    return m_pControl ? m_pControl->updateAtomically([val](double x){return x + val;}) : 0.0;
+    return m_pControl ? m_pControl->updateAtomically([=](double x){return x + val;}) : 0.0;
 }
 double ControlProxy::fetch_sub(double val)
 {
-    return m_pControl ? m_pControl->updateAtomically([val](double x){return x - val;}) : 0.0;
+    return m_pControl ? m_pControl->updateAtomically([=](double x){return x - val;}) : 0.0;
 }
 double ControlProxy::compare_exchange(double expected, double desired)
 {
@@ -431,11 +479,11 @@ double ControlProxy::exchange(double val)
 }
 double ControlProxy::fetch_mul(double val)
 {
-    return m_pControl ? m_pControl->updateAtomically([val](double x){return val * x;}) : 0.0;
+    return m_pControl ? m_pControl->updateAtomically([=](double x){return val * x;}) : 0.0;
 }
 double ControlProxy::fetch_div(double val)
 {
-    return m_pControl ? m_pControl->updateAtomically([val](double x){return val / x;}) : 0.0;
+    return m_pControl ? m_pControl->updateAtomically([=](double x){return val / x;}) : 0.0;
 }
 double ControlProxy::fetch_toggle()
 {
@@ -444,11 +492,24 @@ double ControlProxy::fetch_toggle()
 double ControlProxy::maximum() const
 {
     if(auto co = m_pControl) return co->maximum();
-    return 0;
+    return +std::numeric_limits<double>::infinity();
 }
 double ControlProxy::minimum() const
 {
     if(auto co = m_pControl) return co->minimum();
-    return 0;
+    return -std::numeric_limits<double>::infinity();
+}
+void ControlProxy::setRange(const ControlHint &hint)
+{
+    if(auto co = m_pControl) {
+        co->setRange(hint);
+    }
+}
+ControlHint ControlProxy::range() const
+{
+    if(auto co = m_pControl)
+        return co->range();
+    else
+        return {};
 }
 
