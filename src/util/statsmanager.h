@@ -40,14 +40,8 @@ class StatsManager : public QThread, public Singleton<StatsManager> {
     static bool s_bStatsManagerEnabled;
     // Tell the StatsManager to emit statUpdated for every stat that exists.
   public slots:
-    void emitAllStats()
-    {
-        m_emitAllStats = 1;
-    }
-    void updateStats()
-    {
-        m_statsSema.release();
-    }
+    void emitAllStats() { m_emitAllStats = 1; }
+    void updateStats() { m_statsSema.release(); }
     void resetStats()
     {
         m_resetStats.store(1);
@@ -59,8 +53,7 @@ class StatsManager : public QThread, public Singleton<StatsManager> {
     virtual void run();
   private:
     void processIncomingStatReports();
-//    StatsPipe* getStatsPipeForThread();
-//    void onStatsPipeDestroyed(StatsPipe* pPipe);
+
     void writeTimeline(const QString& filename);
     std::atomic<int> m_resetStats{0};
     std::atomic<int> m_emitAllStats{0};
@@ -71,14 +64,10 @@ class StatsManager : public QThread, public Singleton<StatsManager> {
 
     QSet<QString> m_tags;
     QList<Event> m_events;
-//    QList<Event> m_events;
 
     intrusive_fifo<StatReport>  m_statsPipe{};
     std::atomic<size_t> m_pendingStats{0};
     mixxx::MSemaphore m_statsSema;
-//    QMutex m_statsPipeLock;
-//    QList<StatsPipe*> m_statsPipes;
-//    QThreadStorage<StatsPipe*> m_threadStatsPipes;
 
     friend class StatsPipe;
 };

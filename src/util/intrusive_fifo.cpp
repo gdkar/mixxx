@@ -27,19 +27,20 @@ namespace impl {
     {
         return !(skip_stub());
     }
-    intrusive_node *intrusive_fifo_base::begin() const
+    intrusive_fifo_base::const_iterator intrusive_fifo_base::begin() const
     {
-        if(m_tail == &m_stub) {
-            return m_tail->next(std::memory_order_relaxed);
-        }else{
-            return m_tail;
-        }
+        return const_iterator(*this);
     }
-    intrusive_node *intrusive_fifo_base::begin()
+    intrusive_fifo_base::const_iterator intrusive_fifo_base::cbegin() const
     {
-        return skip_stub();
+        return const_iterator(*this);
     }
-    intrusive_node &intrusive_fifo_base::front() const
+
+    intrusive_fifo_base::iterator intrusive_fifo_base::begin()
+    {
+        return iterator(*this,skip_stub());
+    }
+    const intrusive_node &intrusive_fifo_base::front() const
     {
         return *begin();
     }
@@ -69,10 +70,27 @@ namespace impl {
     {
         auto node = begin();
         if(pop())
-            return node;
+            return node.m_node;
         return nullptr;
     }
+    void intrusive_fifo_base::push_front(intrusive_node *node)
+    {
+        if(node) {
+            if(m_tail == &m_stub) {
+                if(auto second = m_tail->next()) {
+                    m_tail->set_next(nullptr);
+                    m_tail = second;
+                }
+            }
+            node->set_next(m_tail);
+            m_tail = node;
+        }
+    }
     void intrusive_fifo_base::push(intrusive_node *node)
+    {
+        push_back(node);
+    }
+    void intrusive_fifo_base::push_back(intrusive_node *node)
     {
         if(node) {
             node->set_next(nullptr,std::memory_order_release);

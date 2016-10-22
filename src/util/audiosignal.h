@@ -3,7 +3,8 @@
 
 #include "util/assert.h"
 #include "util/types.h"
-
+#include <QAudioFormat>
+#include <QAudioBuffer>
 namespace mixxx {
 
 // Common properties of audio signals in Mixxx.
@@ -64,6 +65,12 @@ public:
     {
         DEBUG_ASSERT(!hasValidChannelCount());
         DEBUG_ASSERT(!hasValidSampleRate());
+        m_qAudioFormat.setChannelCount(m_channelCount);
+        m_qAudioFormat.setSampleSize(32);
+        m_qAudioFormat.setSampleType(QAudioFormat::Float);
+        m_qAudioFormat.setSampleRate(m_samplingRate);
+        m_qAudioFormat.setByteOrder(QAudioFormat::LittleEndian);
+        m_qAudioFormat.setCodec("audio/pcm");
     }
     AudioSignal(SampleLayout sampleLayout, SINT channelCount, SINT samplingRate)
         : m_sampleLayout(sampleLayout),
@@ -72,6 +79,12 @@ public:
     {
         DEBUG_ASSERT(kChannelCountZero <= m_channelCount); // unsigned value
         DEBUG_ASSERT(kSampleRateZero <= m_samplingRate); // unsigned value
+        m_qAudioFormat.setChannelCount(m_channelCount);
+        m_qAudioFormat.setSampleSize(32);
+        m_qAudioFormat.setSampleType(QAudioFormat::Float);
+        m_qAudioFormat.setSampleRate(m_samplingRate);
+        m_qAudioFormat.setByteOrder(QAudioFormat::LittleEndian);
+        m_qAudioFormat.setCodec("audio/pcm");
     }
     virtual ~AudioSignal() = default;
     // Returns the ordering of samples in contiguous buffers
@@ -136,29 +149,36 @@ public:
         DEBUG_ASSERT(hasValidChannelCount());
         return frames * getChannelCount();
     }
+    const QAudioFormat &format() const
+    {
+        return m_qAudioFormat;
+    }
 protected:
     void setChannelCount(SINT channelCount)
     {
         DEBUG_ASSERT(kChannelCountZero <= m_channelCount); // unsigned value
         m_channelCount = channelCount;
+        m_qAudioFormat.setChannelCount(channelCount);
     }
     void resetChannelCount()
     {
-        m_channelCount = kChannelCountDefault;
+        setChannelCount(kChannelCountDefault);
     }
     void setSampleRate(SINT samplingRate)
     {
         DEBUG_ASSERT(kSampleRateZero <= m_samplingRate); // unsigned value
         m_samplingRate = samplingRate;
+        m_qAudioFormat.setSampleRate(samplingRate);
     }
     void resetSampleRate()
     {
-        m_samplingRate = kSampleRateDefault;
+        setSampleRate(kSampleRateDefault);
     }
 private:
     SampleLayout m_sampleLayout;
     SINT m_channelCount;
     SINT m_samplingRate;
+    QAudioFormat m_qAudioFormat{};
 };
 }
 #endif // MIXXX_AUDIOSIGNAL_H

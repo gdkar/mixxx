@@ -211,7 +211,6 @@ struct avframe{
     int channels() const { return av_frame_get_channels(m_d);}
     int samples() const { return m_d->nb_samples;}
     int64_t pts() const { return m_d->pts;}
-    int64_t pkt_pts() const { return m_d->pkt_pts;}
     int64_t pkt_dts() const { return m_d->pkt_dts;}
     int64_t pkt_pos() const { return m_d->pkt_pos;}
     int64_t pkt_duration() const { return m_d->pkt_duration;}
