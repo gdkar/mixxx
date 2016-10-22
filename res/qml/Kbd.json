@@ -1,6 +1,6 @@
+{ content: "
 import org.mixxx.qml 0.1
-import '../qml'
-import '../qml/keybindings'
+import './keybindings'
 import QtQml 2.2
 import QtQuick 2.7
 
@@ -155,4 +155,4 @@ Item {
             }
         }
     }
-}
+} " }

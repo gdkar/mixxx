@@ -353,29 +353,26 @@ class Vamp(Feature):
     def configure(self, build, conf):
         if not self.enabled(build):
             return
-
         build.env.Append(CPPDEFINES='__VAMP__')
-        build.env.Append(CPPDEFINES='kiss_fft_scalar=double')
-
+        build.env.Append(CPPDEFINES='kiss_fft_scalar=float')
+        build.env.Append(CPPDEFINES='KISS_FFT_USE_ALLOCA=1')
         # If there is no system vamp-hostdk installed, then we'll directly link
         # the vamp-hostsdk.
         if not conf.CheckLib(['vamp-hostsdk']):
             # For header includes
             build.env.Append(CPPPATH=[self.INTERNAL_VAMP_PATH])
             self.INTERNAL_LINK = True
-
         # Needed on Linux at least. Maybe needed elsewhere?
         if build.platform_is_linux:
             # Optionally link libdl Required for some distros.
             conf.CheckLib(['dl', 'libdl'])
-
         # FFTW3 support
         have_fftw3_h = conf.CheckHeader('fftw3.h')
         have_fftw3 = conf.CheckLib('fftw3', autoadd=False)
-        if have_fftw3_h and have_fftw3 and build.platform_is_linux:
+        have_fftw3f = conf.CheckLib('fftw3f', autoadd=False)
+        if have_fftw3_h and have_fftw3 and have_fftw3f and build.platform_is_linux:
             build.env.Append(CPPDEFINES='HAVE_FFTW3')
-            build.env.ParseConfig(
-                'pkg-config fftw3 --silence-errors --cflags --libs')
+            build.env.ParseConfig( 'pkg-config fftw3f fftw3 --silence-errors --cflags --libs')
 
     def sources(self, build):
         sources = ['analyzer/vamp/vampanalyzer.cpp',

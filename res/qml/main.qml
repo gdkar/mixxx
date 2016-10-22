@@ -2,6 +2,7 @@ import org.mixxx.qml 0.1
 import "./keybindings"
 import QtQml 2.2
 import QtQuick 2.7
+import "../js/loadfile.js" as LoadFile
 Item {
 
     id: root
@@ -19,20 +20,37 @@ Item {
             anchors.fill: parent
         }
     }*/
-    Loader {
+/*    Loader {
         id: keyboardLoader
-        source: "./Kbd.qml"
+        source: "../Kbd.qml"
 //        Kbd { }
-    }
+    }*/
+    property var keyboardItem
     KeyBinder {
         seq: "Ctrl+Alt+Esc"
         Keys.onPressed: {
             console.log("reloading.")
-            keyboardLoader.sourceComponent = null
-            keyboardLoader.source = "./Kbd.qml";
-            termLoader.sourceComponent = null
+            LoadFile.load_file("../keyboard/en_US.kbd.qml",function(text){
+                if(keyboardItem) {
+                    keyboardItem.destroy()
+                    keyboardItem = null
+                }
+                keyboardItem = Qt.createQmlObject(text, root, "en_US.kbd.qml")
+            });
+//            keyboardLoader.sourceComponent = null
+//            keyboardLoader.source = "./Kbd.qml";
+//            termLoader.sourceComponent = null
             event.accepted = true
         }
+    }
+    Component.onCompleted: {
+        LoadFile.load_file("../keyboard/en_US.kbd.qml",function(text){
+                if(keyboardItem) {
+                    keyboardItem.destroy()
+                    keyboardItem = null
+                }
+                keyboardItem = Qt.createQmlObject(text, root, "en_US.kbd.qml")
+            });
     }
     KeyBinder {
         seq: "Ctrl+Alt+I"
